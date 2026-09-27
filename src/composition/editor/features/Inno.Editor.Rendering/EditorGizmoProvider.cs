@@ -67,13 +67,10 @@ public interface IEditorGizmoSink
     /// <param name="position">
     /// The icon position in world space.
     /// </param>
-    /// <param name="glyph">
-    /// A short symbol displayed inside the icon.
+    /// <param name="iconId">
+    /// A stable semantic icon ID. Unknown IDs use the generic scene icon.
     /// </param>
-    /// <param name="color">
-    /// The icon tint.
-    /// </param>
-    void Icon(Identity owner, Vector3 position, string glyph, Color color);
+    void Icon(Identity owner, Vector3 position, string iconId);
 
     /// <summary>
     /// Adds a non-interactive world-space line, normally for selected bounds.
@@ -84,10 +81,7 @@ public interface IEditorGizmoSink
     /// <param name="end">
     /// The second world-space endpoint.
     /// </param>
-    /// <param name="color">
-    /// The line tint.
-    /// </param>
-    void Line(Vector3 start, Vector3 end, Color color);
+    void Line(Vector3 start, Vector3 end);
 }
 
 /// <summary>
@@ -140,13 +134,10 @@ public sealed class EditorGizmoProviderExtensionAttribute : Attribute
 /// <param name="position">
 /// The vector3 value used to initialize this instance.
 /// </param>
-/// <param name="glyph">
-/// The string value used to initialize this instance.
+/// <param name="iconId">
+/// The stable visual identity resolved by the Scene View presentation.
 /// </param>
-/// <param name="color">
-/// The color value used to initialize this instance.
-/// </param>
-public readonly record struct EditorGizmoIcon(Identity owner, Vector3 position, string glyph, Color color);
+public readonly record struct EditorGizmoIcon(Identity owner, Vector3 position, string iconId);
 
 /// <summary>
 /// One non-interactive Editor line.
@@ -157,10 +148,7 @@ public readonly record struct EditorGizmoIcon(Identity owner, Vector3 position, 
 /// <param name="end">
 /// The vector3 value used to initialize this instance.
 /// </param>
-/// <param name="color">
-/// The color value used to initialize this instance.
-/// </param>
-public readonly record struct EditorGizmoLine(Vector3 start, Vector3 end, Color color);
+public readonly record struct EditorGizmoLine(Vector3 start, Vector3 end);
 
 /// <summary>
 /// Holds the transient gizmo primitives for one Scene viewport frame.
@@ -188,16 +176,13 @@ public sealed class EditorGizmoFrame : IEditorGizmoSink
     /// <param name="position">
     /// The position consumed by icon; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
-    /// <param name="glyph">
-    /// The glyph text validated by the icon operation.
+    /// <param name="iconId">
+    /// The stable icon identity resolved by the Scene View.
     /// </param>
-    /// <param name="color">
-    /// The color consumed by icon; ownership remains with the caller unless explicitly stated otherwise.
-    /// </param>
-    public void Icon(Identity owner, Vector3 position, string glyph, Color color)
+    public void Icon(Identity owner, Vector3 position, string iconId)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(glyph);
-        m_icons.Add(new EditorGizmoIcon(owner, position, glyph, color));
+        ArgumentException.ThrowIfNullOrWhiteSpace(iconId);
+        m_icons.Add(new EditorGizmoIcon(owner, position, iconId));
     }
 
     /// <summary>
@@ -209,9 +194,6 @@ public sealed class EditorGizmoFrame : IEditorGizmoSink
     /// <param name="end">
     /// The end consumed by line; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
-    /// <param name="color">
-    /// The color consumed by line; ownership remains with the caller unless explicitly stated otherwise.
-    /// </param>
-    public void Line(Vector3 start, Vector3 end, Color color)
-        => m_lines.Add(new EditorGizmoLine(start, end, color));
+    public void Line(Vector3 start, Vector3 end)
+        => m_lines.Add(new EditorGizmoLine(start, end));
 }

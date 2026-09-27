@@ -74,7 +74,10 @@ internal sealed class RenderResourceService : RenderResourceProvider, IRenderRes
     /// <param name="material">
     /// The material consumed by prewarm material; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
-    public void PrewarmMaterial(MaterialAsset material)
+    /// <returns>
+    /// The selected variant's available, pending, unavailable, or failed target artifact state.
+    /// </returns>
+    public RenderTargetArtifactStatus PrewarmMaterial(MaterialAsset material)
     {
         ThrowIfDisposed();
         ArgumentNullException.ThrowIfNull(material);
@@ -83,7 +86,7 @@ internal sealed class RenderResourceService : RenderResourceProvider, IRenderRes
         RenderShaderVariant variant = RenderShaderVariant.FromMaterial(material);
         if (m_targetArtifacts is null)
             throw new InvalidOperationException("No render target artifact provider is configured for this runtime.");
-        _ = m_targetArtifacts.GetShaderArtifact(shader, variant, m_device.capabilities, out _);
+        return m_targetArtifacts.GetShaderArtifact(shader, variant, m_device.capabilities, out _);
     }
 
     /// <summary>

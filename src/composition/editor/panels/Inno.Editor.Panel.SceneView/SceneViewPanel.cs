@@ -36,6 +36,7 @@ internal sealed class SceneViewPanel : EditorPanel
     private const string C_VIEWPORT_ID = "scene-view";
     private const string C_GIZMO_CLUSTER_POPUP = "##scene-gizmo-cluster";
     private const int C_MANIPULATION_TOOL_COUNT = 4;
+    private const float C_IMGUIZMO_AXIS_LIMIT_DEFAULT = 0.0025f;
     private static readonly EditorViewportKindId S_KIND = new("inno.editor.viewport.scene");
     private static readonly Vector2 S_UNAVAILABLE_PADDING = new(48f, 32f);
 
@@ -136,11 +137,25 @@ internal sealed class SceneViewPanel : EditorPanel
         bool viewportClicked = NativeImGui.IsItemClicked(ImGuiMouseButton.Left);
         toolbar = CreateManipulationToolbarLayout(minimum, maximum);
         toolbarHovered = IsManipulationToolbarHovered(toolbar);
-        bool gizmoOwnsPointer = !navigationOwnsPointer
-                                && !toolbarHovered
-                                && DrawTransformGizmo(minimum, maximum);
-        bool toolbarOwnsPointer = DrawManipulationToolbar(toolbar);
-        bool iconOwnsPointer = DrawGizmos(minimum, maximum,
+        ImDrawListPtr drawList = NativeImGui.GetWindowDrawList();
+        IReadOnlyList<(Vector2 center, EditorGizmoIcon icon)> icons;
+        bool toolbarOwnsPointer;
+        bool gizmoOwnsPointer;
+        drawList.ChannelsSplit(3);
+        try
+        {
+            drawList.ChannelsSetCurrent(0);
+            icons = DrawGizmos(minimum, maximum);
+            drawList.ChannelsSetCurrent(2);
+            toolbarOwnsPointer = DrawManipulationToolbar(toolbar);
+            drawList.ChannelsSetCurrent(1);
+            gizmoOwnsPointer = !navigationOwnsPointer && DrawTransformGizmo(minimum, maximum);
+        }
+        finally
+        {
+            drawList.ChannelsMerge();
+        }
+        bool iconOwnsPointer = SelectGizmoIcons(icons,
             viewportClicked && !toolbarOwnsPointer && !gizmoOwnsPointer && !navigationOwnsPointer);
         if (!viewportClicked
             || toolbarOwnsPointer
@@ -280,85 +295,39 @@ internal sealed class SceneViewPanel : EditorPanel
     private ContentReadScope CreateContentScope()
         => m_scenePresentation.Capture();
 
-    private bool DrawGizmos(Vector2 minimum, Vector2 maximum, bool maySelect)
+    private IReadOnlyList<(Vector2 center, EditorGizmoIcon icon)> DrawGizmos(Vector2 minimum, Vector2 maximum)
     {
         if (!m_rendering.TryGetManipulationSpace(C_VIEWPORT_ID,
                 out EditorViewportManipulationSpace space))
-            return false;
+            return [];
         int width = Math.Max(1, (int)(maximum.X - minimum.X));
         int height = Math.Max(1, (int)(maximum.Y - minimum.Y));
         EditorGizmoFrame frame = m_rendering.CollectGizmos(C_VIEWPORT_ID, width, height);
         EngineMatrix worldToClip = space.projectionMatrix * space.viewMatrix;
         var draw = NativeImGui.GetWindowDrawList();
+        uint white = NativeImGui.ColorConvertFloat4ToU32(Vector4.One);
+        uint outline = NativeImGui.ColorConvertFloat4ToU32(new Vector4(0f, 0f, 0f, 0.75f));
         foreach (EditorGizmoLine line in frame.lines)
         {
             if (!TryProject(line.start, out Vector2 start) || !TryProject(line.end, out Vector2 end))
                 continue;
-            draw.AddLine(start, end, GizmoColor(line.color), 1.5f);
+            draw.AddLine(start + Vector2.One, end + Vector2.One, outline, 3.5f);
+            draw.AddLine(start, end, white, 2.5f);
         }
-        const float iconRadius = 13f;
-        var clusters = new List<(Vector2 center, List<EditorGizmoIcon> icons)>();
+        float iconSize = 24f * EditorWidget.style.zoom;
+        var displayIcons = new List<(Vector2 center, EditorGizmoIcon icon)>();
+        ImFontPtr font = NativeImGui.GetFont();
         foreach (EditorGizmoIcon icon in frame.icons)
         {
-            if (!TryProject(icon.position, out Vector2 origin))
+            if (!TryProject(icon.position, out Vector2 center))
                 continue;
-            int clusterIndex = clusters.FindIndex(cluster =>
-                Vector2.DistanceSquared(cluster.center, origin) < 28f * 28f);
-            if (clusterIndex >= 0)
-                clusters[clusterIndex].icons.Add(icon);
-            else
-                clusters.Add((origin, [icon]));
+            displayIcons.Add((center, icon));
+            string glyph = GizmoIconGlyph(icon.iconId);
+            Vector2 size = font.CalcTextSizeA(iconSize, float.MaxValue, 0f, glyph);
+            draw.AddText(font, iconSize, center - size * 0.5f + Vector2.One, outline, glyph);
+            draw.AddText(font, iconSize, center - size * 0.5f, white, glyph);
         }
-        var displayIcons = new List<(Vector2 center, List<EditorGizmoIcon> icons)>();
-        foreach ((Vector2 center, List<EditorGizmoIcon> icons) in clusters)
-        {
-            if (icons.Count > 3)
-            {
-                displayIcons.Add((center, icons));
-                continue;
-            }
-            for (int index = 0; index < icons.Count; index++)
-            {
-                Vector2 position = center + new Vector2(
-                    (index - (icons.Count - 1) * 0.5f) * 28f, 0f);
-                displayIcons.Add((position, [icons[index]]));
-            }
-        }
-        foreach ((Vector2 center, List<EditorGizmoIcon> icons) in displayIcons)
-        {
-            EditorGizmoIcon icon = icons[^1];
-            draw.AddCircleFilled(center, iconRadius, GizmoColor(icon.color));
-            string glyph = icons.Count == 1 ? icon.glyph : icons.Count.ToString();
-            Vector2 textSize = NativeImGui.CalcTextSize(glyph);
-            draw.AddText(center - textSize * 0.5f, NativeImGui.GetColorU32(ImGuiCol.Text), glyph);
-        }
-        bool iconClicked = false;
-        if (maySelect)
-        {
-            Vector2 mouse = NativeImGui.GetMousePos();
-            for (int index = displayIcons.Count - 1; index >= 0; index--)
-            {
-                (Vector2 center, List<EditorGizmoIcon> icons) = displayIcons[index];
-                if (Vector2.DistanceSquared(mouse, center) > iconRadius * iconRadius)
-                    continue;
-                if (icons.Count == 1)
-                {
-                    GameObject? owner = icons[0].owner.Resolve<GameObject>();
-                    if (owner is null || owner.isDestroyed)
-                        continue;
-                    m_interactions.SetSelection(owner);
-                }
-                else
-                {
-                    m_popupGizmoOwners = icons.Select(static icon => icon.owner).ToArray();
-                    NativeImGui.OpenPopup(C_GIZMO_CLUSTER_POPUP);
-                }
-                iconClicked = true;
-                break;
-            }
-        }
-        DrawGizmoClusterPopup();
-        return iconClicked;
+        return displayIcons;
 
         bool TryProject(EngineVector3 world, out Vector2 screen)
         {
@@ -374,6 +343,34 @@ internal sealed class SceneViewPanel : EditorPanel
                 (1f - clip.y / clip.w) * height * 0.5f);
             return float.IsFinite(screen.X) && float.IsFinite(screen.Y);
         }
+    }
+
+    private bool SelectGizmoIcons(IReadOnlyList<(Vector2 center, EditorGizmoIcon icon)> displayIcons, bool maySelect)
+    {
+        bool iconClicked = false;
+        if (maySelect)
+        {
+            Vector2 mouse = NativeImGui.GetMousePos();
+            float radius = 20f * EditorWidget.style.zoom;
+            Identity[] owners = displayIcons
+                .Where(icon => Vector2.DistanceSquared(mouse, icon.center) <= radius * radius)
+                .Select(static icon => icon.icon.owner)
+                .DistinctBy(static owner => owner.persistentId)
+                .ToArray();
+            if (owners.Length == 1 && owners[0].Resolve<GameObject>() is { isDestroyed: false } owner)
+            {
+                m_interactions.SetSelection(owner);
+                iconClicked = true;
+            }
+            else if (owners.Length > 1)
+            {
+                m_popupGizmoOwners = owners;
+                NativeImGui.OpenPopup(C_GIZMO_CLUSTER_POPUP);
+                iconClicked = true;
+            }
+        }
+        DrawGizmoClusterPopup();
+        return iconClicked;
     }
 
     private void DrawGizmoClusterPopup()
@@ -395,8 +392,14 @@ internal sealed class SceneViewPanel : EditorPanel
         NativeImGui.EndPopup();
     }
 
-    private static uint GizmoColor(Inno.Core.Mathematics.Color color)
-        => NativeImGui.ColorConvertFloat4ToU32(new Vector4(color.r, color.g, color.b, color.a));
+    private static string GizmoIconGlyph(string iconId)
+        => iconId switch
+        {
+            "camera" => ImGuiIcon.Camera,
+            "light" => ImGuiIcon.Lightbulb,
+            "canvas" => ImGuiIcon.VectorSquare,
+            _ => ImGuiIcon.CircleQuestion
+        };
 
     private bool HandleNavigation(
         EditorViewportNavigationProfile profile,
@@ -777,7 +780,7 @@ internal sealed class SceneViewPanel : EditorPanel
             drawList.AddLine(
                 new Vector2(layout.minimum.X + layout.padding, separatorY),
                 new Vector2(layout.maximum.X - layout.padding, separatorY),
-                NativeImGui.ColorConvertFloat4ToU32(EditorPalette.tableBorderLight),
+                NativeImGui.ColorConvertFloat4ToU32(Vector4.One),
                 EditorWidget.style.borderSize);
 
             bool supportsCoordinateSpace = m_operation != ImGuizmoOperation.Scale;
@@ -839,7 +842,7 @@ internal sealed class SceneViewPanel : EditorPanel
     {
         NativeImGui.SetCursorScreenPos(position);
         if (selected)
-            NativeImGui.PushStyleColor(ImGuiCol.Text, EditorPalette.accentActive);
+            NativeImGui.PushStyleColor(ImGuiCol.Text, Vector4.One);
         bool pressed;
         try
         {
@@ -863,7 +866,7 @@ internal sealed class SceneViewPanel : EditorPanel
             NativeImGui.GetWindowDrawList().AddRectFilled(
                 minimum,
                 new Vector2(minimum.X + thickness, maximum.Y),
-                NativeImGui.ColorConvertFloat4ToU32(EditorPalette.accentActive));
+                NativeImGui.ColorConvertFloat4ToU32(Vector4.One));
         }
         return pressed;
     }
@@ -939,20 +942,47 @@ internal sealed class SceneViewPanel : EditorPanel
             MathF.Max(1f, maximum.X - minimum.X),
             MathF.Max(1f, maximum.Y - minimum.Y));
         NativeImGuizmo.SetOrthographic(manipulationSpace.isOrthographic);
+        NativeImGuizmo.SetGizmoSizeClipSpace(0.21f);
+        var gizmoStyle = new Inno.Native.ImGuizmo.StylePtr(NativeImGuizmo.GetStyle());
+        gizmoStyle.TranslationLineThickness = 3.5f;
+        gizmoStyle.TranslationLineArrowSize = 9f;
+        gizmoStyle.RotationLineThickness = 3f;
+        gizmoStyle.RotationOuterLineThickness = 4f;
+        gizmoStyle.ScaleLineThickness = 3.5f;
+        gizmoStyle.ScaleLineCircleSize = 9f;
+        gizmoStyle.CenterCircleSize = 8f;
         ImGuizmoMode effectiveMode = m_operation == ImGuizmoOperation.Scale
             ? ImGuizmoMode.Local
             : m_mode;
-        bool changed = NativeImGuizmo.Manipulate(
-            view,
-            projection,
-            m_operation,
-            effectiveMode,
-            model,
-            null,
-            null,
-            null,
-            null) != 0;
-        bool isUsing = NativeImGuizmo.IsUsing();
+        ImGuizmoOperation operation = SelectManipulationOperation(manipulationSpace.plane, m_operation);
+        bool planarTranslation = manipulationSpace.plane != EditorViewportManipulationPlane.Spatial
+            && m_operation == ImGuizmoOperation.Translate;
+        bool changed;
+        bool isUsing;
+        bool isOver;
+        try
+        {
+            if (planarTranslation)
+            {
+                NativeImGuizmo.SetAxisMask(
+                    manipulationSpace.plane == EditorViewportManipulationPlane.YZ,
+                    manipulationSpace.plane == EditorViewportManipulationPlane.XZ,
+                    manipulationSpace.plane == EditorViewportManipulationPlane.XY);
+                NativeImGuizmo.SetAxisLimit(float.PositiveInfinity);
+            }
+            changed = NativeImGuizmo.Manipulate(view, projection, operation, effectiveMode, model,
+                null, null, null, null) != 0;
+            isUsing = NativeImGuizmo.IsUsing();
+            isOver = NativeImGuizmo.IsOver(operation);
+        }
+        finally
+        {
+            if (planarTranslation)
+            {
+                NativeImGuizmo.SetAxisMask(false, false, false);
+                NativeImGuizmo.SetAxisLimit(C_IMGUIZMO_AXIS_LIMIT_DEFAULT);
+            }
+        }
         if (isUsing && m_gestureTarget is null)
         {
             m_gestureTarget = target;
@@ -969,8 +999,29 @@ internal sealed class SceneViewPanel : EditorPanel
         }
         if (!isUsing && m_gestureTarget is not null)
             CommitGesture();
-        return isUsing || NativeImGuizmo.IsOver(m_operation);
+        return isUsing || isOver;
     }
+
+    private static ImGuizmoOperation SelectManipulationOperation(
+        EditorViewportManipulationPlane plane, ImGuizmoOperation operation)
+        => operation switch
+        {
+            ImGuizmoOperation.Rotate => plane switch
+            {
+                EditorViewportManipulationPlane.XY => ImGuizmoOperation.RotateZ,
+                EditorViewportManipulationPlane.XZ => ImGuizmoOperation.RotateY,
+                EditorViewportManipulationPlane.YZ => ImGuizmoOperation.RotateX,
+                _ => operation
+            },
+            ImGuizmoOperation.Scale => plane switch
+            {
+                EditorViewportManipulationPlane.XY => ImGuizmoOperation.ScaleX | ImGuizmoOperation.ScaleY,
+                EditorViewportManipulationPlane.XZ => ImGuizmoOperation.ScaleX | ImGuizmoOperation.ScaleZ,
+                EditorViewportManipulationPlane.YZ => ImGuizmoOperation.ScaleY | ImGuizmoOperation.ScaleZ,
+                _ => operation
+            },
+            _ => operation
+        };
 
     private bool TryGetSelectedTransform(out Transform? transform)
     {

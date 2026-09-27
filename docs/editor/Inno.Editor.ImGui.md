@@ -20,6 +20,8 @@ Core `RetirementPendingException` 原样上抛并保留内部 runtime；普通�
 
 EditorScripts 使用逻辑 namespace `InnoEditor.ImGui`。该项目的唯一 `Properties/ScriptingApi.cs` 导出 Editor widgets、常用 Dear ImGui flags 与 pointer-free `ImGui` facade；`Inno.Adapter.Presentation.ImGui` 不声明脚本 API。Facade 不暴露 native pointer、callback userdata 或 backend texture ID，只能在 Panel/Modal/Drawer 绘制回调期间调用。
 
+`ImGui.ColorEdit4` 沿用 Dear ImGui 的显示 RGB 数值语义。编辑渲染用的线性 RGB 时使用 `ImGui.ColorEditLinear4(label, ref Vector4 value, flags)`：显示前以标准 sRGB 传递函数编码，编辑后解码回线性 RGB，alpha 不转换；输入若显式声明 `InputHsv` 则拒绝，避免把 HSV 数值当作线性 RGB。Inspector 的 `Color` 属性与 Scene/Game 背景设置都使用后一入口，所以选择器的色块与实际画面基于同一线性值。
+
 ```text
 Inno.Editor.ImGui/
 ├─ Styling/
@@ -51,6 +53,8 @@ Palette 与 Style Metrics 并列位于 `Styling`，runtime host 与三个表现�
 所有跨 Panel 的像素布局、padding、spacing、rounding、列比例和最小尺寸集中在 `ImGuiWidget.style`（`EditorStyleMetrics`）。Panel 可以读取语义名，例如 `panelTabFramePadding`、`sectionHeaderPadding`、`inspectorSectionPadding`、`inspectorSectionRounding`、`inspectorCollapsedSectionCapLength`、`propertyMetadataSpacing`、`assetListNameSeparatorPosition`、`inspectorCardSpacing`、`hierarchyItemSpacing`、`hierarchyRenameMinimumWidth` 与 `settingsFieldPadding`，不应新增散落的固定像素。Inspector fieldset 的 outline 同样来自 `EditorPalette.inspectorSectionBorder`。
 
 `ImGuiWidget.SetupStyle()` 把 layout metrics 和 `EditorPalette` 应用到原生 ImGui style；运行期间 zoom 改变时，runtime 只在倍率发生变化后重新应用一次 native style。普通窗口绘制时，`ResizeGrip`、`ResizeGripHovered` 与 `ResizeGripActive` 使用透明色，因此可缩放窗口仍保留边缘/角落命中能力，但不会显示右下角三角形。Dear ImGui 在更新 Dock tree splitter 时会把 separator hover/active 临时映射到 resize-grip hover/active；`ImGuiEditorRuntime` 只在 `DockSpaceOverViewport` 调用范围内恢复这两个 accent color，保证 Panel 间连接线的 hover/drag feedback 可见，同时不恢复窗口三角形。
+
+主 dockspace 在窗口尺寸变化时按 ImGui 当前节点数据逐层更新子节点的 `SizeRef`，中央 node 不再独占新增加的空间。只有两个子节点的实际尺寸之和等于父节点的可用尺寸时，才用实际尺寸推导比例；刚载入 layout 时的子节点 `Size` 可能为零或错误地等于父尺寸，这时改用 ImGui 保存的 `SizeRef`，避免比例在启动首帧逐次漂移。宿主按当前 ImGui viewport ID 推导 dockspace ID，在第一次提交 dockspace 前读取已加载的节点并等比更新；拖动 splitter 的实际结果成为下一次 resize 的比例，最小尺寸仍由原生 `WindowMinSize` 和 separator 限制。比例不另存一份，布局的唯一持久来源仍是 `editor.ini` 的 `[Docking][Data]`。
 
 `PanelWindow(..., useWindowPadding)` 在 native `Begin` 阶段锁定当前 Panel 的窗口内边距。关闭 padding 只影响该 Panel window 本身，不污染随后打开的菜单、selector 或 popup；它与 `EditorPanel.useWindowPadding` 组成表现无关的布局契约。
 

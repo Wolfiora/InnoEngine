@@ -14,7 +14,7 @@
 每个 `PlatformImGuiContext` 独立拥有自己的 viewport、SDL window 与 renderer target 映射。Native
 ImGui callback 只使用当前 `ImGuiContext` 查找 owner backend；创建第二个 context 不会覆盖第一个
 context 的路由，Dispose 只注销精确 owner。该 router 保存 Host-owned backend，不保存 Plugin 类型、
-实例或 delegate，因此不会延长 collectible extension generation。
+实例或 delegate，因此不会延长 collectible extension generation。跨窗口拖拽时 SDL mouse capture 仅用于保持同一次按下/释放事件完整；释放鼠标不主动改变窗口焦点或层级。只有操作系统焦点事件或 ImGui 显式的 `PlatformSetWindowFocus` 请求会改变 native 窗口焦点。
 
 这项 context 隔离不改变 BGFX 的进程约束：平台层可以正确管理多个 ImGui context，但当前 BGFX
 Adapter 同一进程只允许一个活动设备。Editor Application 是唯一图形 composition root；若未来要

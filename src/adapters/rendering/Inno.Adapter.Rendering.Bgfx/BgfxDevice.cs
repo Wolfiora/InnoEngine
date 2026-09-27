@@ -124,6 +124,11 @@ public sealed unsafe partial class BgfxDevice : RenderDevice, IRenderDevice, IRe
     public GraphicsCapabilities capabilities { get; }
 
     /// <summary>
+    /// Gets whether the primary presentation surface encodes linear color as sRGB.
+    /// </summary>
+    public bool backbufferIsSrgb => (m_resetFlags & (uint)bgfx.ResetFlags.SrgbBackbuffer) != 0;
+
+    /// <summary>
     /// Gets the generation identity that owns this value.
     /// </summary>
     public uint generation { get; private set; }

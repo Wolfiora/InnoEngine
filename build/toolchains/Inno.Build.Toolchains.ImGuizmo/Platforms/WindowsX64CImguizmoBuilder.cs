@@ -10,7 +10,7 @@ internal sealed class WindowsX64CImguizmoBuilder : CImguizmoBuilder
 {
     private const string OUTPUT_PLATFORM = "windows-x64";
     private const string BUILD_DIR_NAME = "windows-x64";
-    private const string THIRD_PARTY_WARNING_POLICY = "/WX /wd4996";
+    private const string THIRD_PARTY_WARNING_POLICY = "/WX /wd4996 /wd4273";
 
     /// <summary>
     /// Gets the native platform identifier produced by this builder.
@@ -67,12 +67,12 @@ internal sealed class WindowsX64CImguizmoBuilder : CImguizmoBuilder
 
         var includeArgs = string.Join(" ", includes.Select(path => $"/I\"{path}\""));
         var cflags = config == ToolchainLayout.C_DEBUG_CONFIGURATION ? "/Od /Zi" : "/O2";
-        // The published C wrapper intentionally retains ImGuizmo_SetID for ABI compatibility even though
-        // upstream marks the underlying C++ member deprecated. Keep that single third-party diagnostic quiet
-        // while treating every other compiler diagnostic enabled by default as an error.
-        var args = $"/LD {cflags} {THIRD_PARTY_WARNING_POLICY} {includeArgs} \"{cimguizmoCpp}\" \"{imguizmoCpp}\" /link /OUT:\"{outputLib}\" \"{cimguiLib}\"";
+        // The published C wrapper retains upstream's deprecated SetID, and importing Dear ImGui also marks
+        // locally defined ImGuizmo functions as imported through the shared IMGUI_API annotation.
+        // Ignore these two third-party diagnostics while treating other compiler warnings as errors.
+        var args = $"/LD {cflags} {THIRD_PARTY_WARNING_POLICY} /DIMGUI_API=__declspec(dllimport) {includeArgs} \"{cimguizmoCpp}\" \"{imguizmoCpp}\" /link /OUT:\"{outputLib}\" \"{cimguiLib}\"";
 
-        ToolchainEnvironment.Run("cl", args, cimguizmoDir);
+        ToolchainEnvironment.Run("cl", args, buildDir);
     }
 
     private static string FindCimguiImportLibrary(string cimguiBuildDir, string config)
@@ -82,17 +82,10 @@ internal sealed class WindowsX64CImguizmoBuilder : CImguizmoBuilder
             throw new DirectoryNotFoundException($"cimgui build directory not found: {cimguiBuildDir}");
         }
 
-        var candidates = Directory.EnumerateFiles(cimguiBuildDir, "*.lib", SearchOption.AllDirectories)
-            .Where(path => path.Contains("cimgui", StringComparison.OrdinalIgnoreCase))
-            .ToList();
-
-        if (candidates.Count == 0)
-        {
-            throw new FileNotFoundException($"cimgui import library not found under: {cimguiBuildDir}");
-        }
-
-        var configToken = config == ToolchainLayout.C_DEBUG_CONFIGURATION ? "debug" : "release";
-        var match = candidates.FirstOrDefault(path => path.Contains(configToken, StringComparison.OrdinalIgnoreCase));
-        return match ?? candidates[0];
+        string buildType = config == ToolchainLayout.C_DEBUG_CONFIGURATION ? "Debug" : "Release";
+        string importLibrary = Path.Combine(cimguiBuildDir, buildType, $"libcimgui-{config}.lib");
+        return File.Exists(importLibrary)
+            ? importLibrary
+            : throw new FileNotFoundException($"cimgui {config} import library not found: {importLibrary}", importLibrary);
     }
 }

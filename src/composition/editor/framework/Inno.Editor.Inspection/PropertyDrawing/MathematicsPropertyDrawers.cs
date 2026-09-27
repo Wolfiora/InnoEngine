@@ -254,7 +254,7 @@ internal sealed class ColorPropertyDrawer : IPropertyDrawer
             ? Inno.Native.ImGui.ImGuiColorEditFlags.Hdr | Inno.Native.ImGui.ImGuiColorEditFlags.Float
                 | Inno.Native.ImGui.ImGuiColorEditFlags.InputRgb | Inno.Native.ImGui.ImGuiColorEditFlags.DisplayRgb
             : Inno.Native.ImGui.ImGuiColorEditFlags.None;
-        if (EditorImGui.ColorEdit4($"##{context.path}", ref nativeValue, flags))
+        if (EditorImGui.ColorEditLinear4($"##{context.path}", ref nativeValue, flags))
         {
             context.SetValue(new Color(nativeValue.X, nativeValue.Y, nativeValue.Z, nativeValue.W));
         }

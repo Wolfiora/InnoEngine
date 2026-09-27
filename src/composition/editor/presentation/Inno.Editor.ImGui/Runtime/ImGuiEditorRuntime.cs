@@ -25,6 +25,8 @@ public sealed class ImGuiEditorRuntime : EditorRuntime
     private readonly Stopwatch m_timer = Stopwatch.StartNew();
     private readonly EditorInteractionRuntime m_runtime;
     private readonly EditorModalHost m_modals = new();
+    private uint m_dockspaceId;
+    private Vector2 m_dockspaceSize;
     private bool m_disposed;
 
     /// <summary>
@@ -146,18 +148,91 @@ public sealed class ImGuiEditorRuntime : EditorRuntime
         m_modals.Draw(context, modals, now);
     }
 
-    private static void DrawDockSpace()
+    private void DrawDockSpace()
     {
+        ImGuiViewportPtr viewport = NativeImGui.GetMainViewport();
+        Vector2 size = viewport.WorkSize;
+        ImGuiStylePtr style = NativeImGui.GetStyle();
+        if (m_dockspaceId == 0)
+        {
+            uint hostId = ImGuiP.ImHashStr($"WindowOverViewport_{viewport.ID:X8}");
+            m_dockspaceId = ImGuiP.ImHashStr("DockSpace", hostId);
+            ImGuiDockNodePtr loaded = ImGuiP.DockBuilderGetNode(m_dockspaceId);
+            if (loaded != ImGuiDockNodePtr.Null)
+                ResizeDockSplits(loaded, size, style.DockingSeparatorSize, style.WindowMinSize);
+        }
+        else if (m_dockspaceSize != Vector2.Zero
+            && (MathF.Abs(size.X - m_dockspaceSize.X) >= 0.5f
+                || MathF.Abs(size.Y - m_dockspaceSize.Y) >= 0.5f))
+        {
+            ImGuiDockNodePtr root = ImGuiP.DockBuilderGetNode(m_dockspaceId);
+            if (root != ImGuiDockNodePtr.Null)
+                ResizeDockSplits(root, size, style.DockingSeparatorSize, style.WindowMinSize);
+        }
+
         NativeImGui.PushStyleColor(ImGuiCol.ResizeGripHovered, EditorPalette.accentHovered);
         NativeImGui.PushStyleColor(ImGuiCol.ResizeGripActive, EditorPalette.accentActive);
         try
         {
-            _ = NativeImGui.DockSpaceOverViewport();
+            uint submittedId = NativeImGui.DockSpaceOverViewport();
+            if (submittedId != m_dockspaceId)
+                throw new InvalidOperationException("The ImGui viewport dockspace identity changed before layout could be resized.");
         }
         finally
         {
             NativeImGui.PopStyleColor(2);
         }
+        if (m_dockspaceSize == Vector2.Zero)
+        {
+            ImGuiDockNodePtr root = ImGuiP.DockBuilderGetNode(m_dockspaceId);
+            if (root != ImGuiDockNodePtr.Null)
+                ResizeDockSplits(root, size, style.DockingSeparatorSize, style.WindowMinSize);
+        }
+        m_dockspaceSize = size;
+    }
+
+    private static unsafe void ResizeDockSplits(ImGuiDockNodePtr node, Vector2 size,
+        float separator, Vector2 minimumWindowSize)
+    {
+        ImGuiDockNodePtr first = new(node.ChildNodes[0].Handle);
+        ImGuiDockNodePtr second = new(node.ChildNodes[1].Handle);
+        if (first == ImGuiDockNodePtr.Null || second == ImGuiDockNodePtr.Null
+            || node.SplitAxis is not (ImGuiAxis.X or ImGuiAxis.Y))
+            return;
+        bool horizontal = node.SplitAxis == ImGuiAxis.X;
+        float firstReference = horizontal ? first.Size.X : first.Size.Y;
+        float secondReference = horizontal ? second.Size.X : second.Size.Y;
+        float previousAvailable = (horizontal ? node.Size.X : node.Size.Y) - separator;
+        if (firstReference <= 0f || secondReference <= 0f
+            || MathF.Abs(firstReference + secondReference - previousAvailable) > MathF.Max(1f, separator))
+        {
+            firstReference = horizontal ? first.SizeRef.X : first.SizeRef.Y;
+            secondReference = horizontal ? second.SizeRef.X : second.SizeRef.Y;
+        }
+        float available = (horizontal ? size.X : size.Y) - separator;
+        if (!float.IsFinite(firstReference) || !float.IsFinite(secondReference)
+            || firstReference <= 0f || secondReference <= 0f || available <= 1f)
+            return;
+        float minimum = MathF.Min(available * 0.5f,
+            horizontal ? minimumWindowSize.X : minimumWindowSize.Y);
+        float firstExtent = Math.Clamp(available * firstReference / (firstReference + secondReference),
+            minimum, available - minimum);
+        Vector2 firstSize = size;
+        Vector2 secondSize = size;
+        if (horizontal)
+        {
+            firstSize.X = firstExtent;
+            secondSize.X = available - firstExtent;
+        }
+        else
+        {
+            firstSize.Y = firstExtent;
+            secondSize.Y = available - firstExtent;
+        }
+        first.SizeRef = firstSize;
+        second.SizeRef = secondSize;
+        ResizeDockSplits(first, firstSize, separator, minimumWindowSize);
+        ResizeDockSplits(second, secondSize, separator, minimumWindowSize);
     }
 
     /// <summary>

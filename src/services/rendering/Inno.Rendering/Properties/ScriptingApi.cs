@@ -12,6 +12,7 @@ using Inno.Rendering;
 [assembly: ScriptingApiExport(typeof(RenderShaderPassArtifact), ScriptingApiScope.Runtime)]
 [assembly: ScriptingApiExport(typeof(RenderShaderStageArtifact), ScriptingApiScope.Runtime)]
 [assembly: ScriptingApiExport(typeof(RenderShaderVariant), ScriptingApiScope.Runtime)]
+[assembly: ScriptingApiExport(typeof(RenderTargetArtifactStatus), ScriptingApiScope.Runtime)]
 [assembly: ScriptingApiExport(typeof(RenderDeviceAllocationCounters), ScriptingApiScope.Runtime)]
 [assembly: ScriptingApiExport(typeof(GraphicsCapability), ScriptingApiScope.Runtime)]
 [assembly: ScriptingApiExport(typeof(GraphicsLimits), ScriptingApiScope.Runtime)]

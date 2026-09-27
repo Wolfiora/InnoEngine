@@ -235,6 +235,32 @@ public readonly record struct EditorViewportPresentation
 }
 
 /// <summary>
+/// Selects whether transform handles use all axes or a contributor-declared planar orientation.
+/// </summary>
+public enum EditorViewportManipulationPlane
+{
+    /// <summary>
+    /// Keeps the full three-dimensional translation, rotation, and scale controls.
+    /// </summary>
+    Spatial,
+
+    /// <summary>
+    /// Uses the X/Y translation and scale axes with the Z rotation handle.
+    /// </summary>
+    XY,
+
+    /// <summary>
+    /// Uses the X/Z translation and scale axes with the Y rotation handle.
+    /// </summary>
+    XZ,
+
+    /// <summary>
+    /// Uses the Y/Z translation and scale axes with the X rotation handle.
+    /// </summary>
+    YZ
+}
+
+/// <summary>
 /// Describes the exact backend-neutral view and projection used to draw a viewport so host tools can manipulate
 /// selected scene transforms without knowing the controller's camera model.
 /// </summary>
@@ -250,16 +276,26 @@ public readonly record struct EditorViewportManipulationSpace
     /// View-to-clip matrix used by the submitted frame.
     /// </param>
     /// <param name="isOrthographic">
-    /// Whether the projection is orthographic.
+    /// Whether the projection is orthographic; this does not imply planar manipulation.
     /// </param>
+    /// <param name="plane">
+    /// The contributor-selected transform handle orientation, independent of projection.
+    /// </param>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// The plane is not one of the defined neutral manipulation orientations.
+    /// </exception>
     public EditorViewportManipulationSpace(
         Matrix viewMatrix,
         Matrix projectionMatrix,
-        bool isOrthographic)
+        bool isOrthographic,
+        EditorViewportManipulationPlane plane = EditorViewportManipulationPlane.Spatial)
     {
+        if (!Enum.IsDefined(plane))
+            throw new ArgumentOutOfRangeException(nameof(plane));
         this.viewMatrix = viewMatrix;
         this.projectionMatrix = projectionMatrix;
         this.isOrthographic = isOrthographic;
+        this.plane = plane;
     }
 
     /// <summary>
@@ -276,6 +312,11 @@ public readonly record struct EditorViewportManipulationSpace
     /// Gets whether the submitted frame used an orthographic projection.
     /// </summary>
     public bool isOrthographic { get; }
+
+    /// <summary>
+    /// Gets the contributor-declared neutral manipulation plane, or Spatial for all axes.
+    /// </summary>
+    public EditorViewportManipulationPlane plane { get; }
 }
 
 /// <summary>

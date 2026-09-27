@@ -46,7 +46,7 @@ static class Program
             var cimguizmoDir = Path.Combine(externDir, CImguizmoBuildConstants.CIMGUIZMO_DIR_NAME);
             var outputDir = Path.Combine(repoRoot, ToolchainLayout.C_OUTPUT_DIRECTORY_NAME, CImguizmoBuildConstants.OUTPUT_PRODUCT_DIR_NAME, builder.outputPlatform);
             var cimguiOutputDir = Path.Combine(repoRoot, ToolchainLayout.C_OUTPUT_DIRECTORY_NAME, "cimgui", builder.outputPlatform);
-            var cimguiBuildDir = Path.Combine(cimguiDir, CImguizmoBuildConstants.CIMGUI_BUILD_DIR_NAME, builder.outputPlatform);
+            var cimguiBuildDir = Path.Combine(cimguiDir, CImguizmoBuildConstants.CIMGUI_BUILD_DIR_NAME, "inno", builder.outputPlatform, "upstream");
 
             Directory.CreateDirectory(externDir);
             Directory.CreateDirectory(outputDir);

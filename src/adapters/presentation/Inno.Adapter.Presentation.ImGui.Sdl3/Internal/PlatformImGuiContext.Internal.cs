@@ -40,8 +40,6 @@ public sealed partial class PlatformImGuiContext
     private TimeSpan m_lastFrameTime;
     private TimeSpan m_lastLiveResizeLockTime;
     private IntPtr m_iniFilename;
-    private Vector2 m_leftMousePressPosition;
-    private uint m_leftMousePressWindowId;
     private uint m_liveResizeLockedWindowId;
     private uint m_mousePendingLeaveWindowId;
     private uint m_mouseWindowId;
@@ -50,7 +48,6 @@ public sealed partial class PlatformImGuiContext
     private readonly bool m_enableSmoothResize;
     private bool m_hasStartedFrame;
     private bool m_isFrameActive;
-    private bool m_leftMouseWasDragged;
     private bool m_textInputActive;
     private bool m_disposed;
 
@@ -504,7 +501,6 @@ public sealed partial class PlatformImGuiContext
                     eventWindowId,
                     sdlEvent.Motion.X,
                     sdlEvent.Motion.Y);
-                UpdateLeftMouseDragState(io, mousePosition);
                 io.AddMousePosEvent(mousePosition.X, mousePosition.Y);
                 break;
             }
@@ -512,54 +508,18 @@ public sealed partial class PlatformImGuiContext
             case SDLEventType.MouseButtonDown:
             case SDLEventType.MouseButtonUp:
             {
-                var down = eventType == SDLEventType.MouseButtonDown;
-                uint pointerFocusSourceWindowId = 0;
-                if (TryTranslateMouseButton(sdlEvent.Button.Button, out var button))
+                bool down = eventType == SDLEventType.MouseButtonDown;
+                if (TryTranslateMouseButton(sdlEvent.Button.Button, out int button))
                 {
                     int mask = 1 << button;
                     if (down)
-                    {
                         m_mouseButtonsDown |= mask;
-                        if (button == 0)
-                        {
-                            m_leftMousePressWindowId = eventWindowId;
-                            m_leftMousePressPosition = GetEventMousePosition(
-                                io,
-                                eventWindowId,
-                                sdlEvent.Button.X,
-                                sdlEvent.Button.Y);
-                            m_leftMouseWasDragged = false;
-                        }
-                    }
                     else
-                    {
                         m_mouseButtonsDown &= ~mask;
-                        if (button == 0)
-                        {
-                            Vector2 mousePosition = GetEventMousePosition(
-                                io,
-                                eventWindowId,
-                                sdlEvent.Button.X,
-                                sdlEvent.Button.Y);
-                            UpdateLeftMouseDragState(io, mousePosition);
-                            if (m_leftMouseWasDragged)
-                            {
-                                pointerFocusSourceWindowId = m_leftMousePressWindowId;
-                            }
-
-                            m_leftMousePressPosition = default;
-                            m_leftMousePressWindowId = 0;
-                            m_leftMouseWasDragged = false;
-                        }
-                    }
                     io.AddMouseButtonEvent(button, down);
                     // Docking can destroy the source viewport before SDL emits MouseUp. Capturing
                     // the mouse keeps the complete press/release sequence inside this application.
                     _ = SDL.CaptureMouse(m_mouseButtonsDown != 0);
-                    if (pointerFocusSourceWindowId != 0)
-                    {
-                        m_viewports?.FocusPointerTarget(pointerFocusSourceWindowId);
-                    }
                 }
                 break;
             }
@@ -803,9 +763,6 @@ public sealed partial class PlatformImGuiContext
 
         _ = SDL.CaptureMouse(false);
         m_mouseButtonsDown = 0;
-        m_leftMousePressPosition = default;
-        m_leftMousePressWindowId = 0;
-        m_leftMouseWasDragged = false;
         m_mouseWindowId = 0;
         m_mousePendingLeaveFrame = 0;
         m_pendingLiveResizeWindowIds.Clear();
@@ -957,7 +914,6 @@ public sealed partial class PlatformImGuiContext
         if (m_mouseButtonsDown == 0)
             return;
 
-        uint pointerFocusSourceWindowId = 0;
         float mouseX = 0f;
         float mouseY = 0f;
         SDLMouseButtonFlags currentButtons = SDL.GetMouseState(ref mouseX, ref mouseY);
@@ -983,27 +939,10 @@ public sealed partial class PlatformImGuiContext
             // reaching the event queue. Without this release ImGui keeps its active drag forever.
             m_mouseButtonsDown &= ~trackedMask;
             io.AddMouseButtonEvent(button, false);
-            if (button == 0)
-            {
-                float globalMouseX = 0f;
-                float globalMouseY = 0f;
-                _ = SDL.GetGlobalMouseState(ref globalMouseX, ref globalMouseY);
-                UpdateLeftMouseDragState(io, new Vector2(globalMouseX, globalMouseY));
-                if (m_leftMouseWasDragged)
-                {
-                    pointerFocusSourceWindowId = m_leftMousePressWindowId;
-                }
-
-                m_leftMousePressPosition = default;
-                m_leftMousePressWindowId = 0;
-                m_leftMouseWasDragged = false;
-            }
         }
 
         if (m_mouseButtonsDown == 0)
             _ = SDL.CaptureMouse(false);
-        if (pointerFocusSourceWindowId != 0)
-            m_viewports?.FocusPointerTarget(pointerFocusSourceWindowId);
     }
 
     private static Vector2 GetEventMousePosition(
@@ -1028,20 +967,6 @@ public sealed partial class PlatformImGuiContext
         var windowY = 0;
         _ = SDL.GetWindowPosition(window, ref windowX, ref windowY);
         return position + new Vector2(windowX, windowY);
-    }
-
-    private void UpdateLeftMouseDragState(ImGuiIOPtr io, Vector2 mousePosition)
-    {
-        if (m_leftMouseWasDragged || m_leftMousePressWindowId == 0)
-        {
-            return;
-        }
-
-        float dragThreshold = io.MouseDragThreshold;
-        if (Vector2.DistanceSquared(m_leftMousePressPosition, mousePosition) >= dragThreshold * dragThreshold)
-        {
-            m_leftMouseWasDragged = true;
-        }
     }
 
     private void FlushPendingMouseLeave(ImGuiIOPtr io)

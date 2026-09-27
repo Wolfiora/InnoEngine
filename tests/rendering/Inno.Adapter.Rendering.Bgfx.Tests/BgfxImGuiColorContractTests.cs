@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Linq;
 using Inno.Adapter.Rendering.Bgfx;
 using Inno.Adapter.Presentation.ImGui;
 using Inno.Rendering;
@@ -17,23 +18,30 @@ public sealed class BgfxImGuiColorContractTests
 
         Assert.True(options.sRgbBackbuffer);
         Assert.Contains("SrgbToLinear(tint.rgb)", source);
+        Assert.Contains("LinearToSrgb(color.rgb)", source);
+        Assert.Contains("outputEncoding.x > 0.5", source);
         Assert.Contains("tint.a", source);
         Assert.DoesNotContain("SrgbToLinear(texture2D", source);
         Assert.DoesNotContain("void main", source);
     }
 
     [Fact]
-    public void DistributedImGuiGraphLoadsCompiledStagesAndOneTextureBinding()
+    public void DistributedImGuiGraphLoadsTextureAndOutputTransferBindings()
     {
         GraphicsApi api = OperatingSystem.IsMacOS() ? GraphicsApi.Metal : GraphicsApi.Direct3D11;
         GraphicsPipelineDescriptor pipeline = BgfxImGuiShaderArtifacts.Load(api);
 
         Assert.False(pipeline.vertexShader.IsEmpty);
         Assert.False(pipeline.fragmentShader.IsEmpty);
-        RenderShaderBindingDescriptor binding = Assert.Single(pipeline.bindings);
-        Assert.Equal("s_tex", binding.id.value);
-        Assert.Equal(RenderShaderBindingKind.Texture, binding.kind);
-        Assert.Equal(0, binding.slot);
-        Assert.InRange(binding.nativeName.Length, 1, 63);
+        Assert.Equal(2, pipeline.bindings.Count);
+        RenderShaderBindingDescriptor texture = Assert.Single(pipeline.bindings.Where(
+            binding => binding.id.value == "s_tex"));
+        Assert.Equal(RenderShaderBindingKind.Texture, texture.kind);
+        Assert.Equal(0, texture.slot);
+        Assert.InRange(texture.nativeName.Length, 1, 63);
+        RenderShaderBindingDescriptor output = Assert.Single(pipeline.bindings.Where(
+            binding => binding.id.value == "outputEncoding"));
+        Assert.Equal(RenderShaderBindingKind.Uniform, output.kind);
+        Assert.InRange(output.nativeName.Length, 1, 63);
     }
 }

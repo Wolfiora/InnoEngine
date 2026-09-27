@@ -66,6 +66,25 @@ public sealed unsafe partial class BgfxDevice
     }
 
     /// <summary>
+    /// Reports whether the native window surface encodes linear render-target writes as sRGB.
+    /// </summary>
+    /// <param name="surface">
+    /// Active detached-window surface owned by this device generation.
+    /// </param>
+    /// <returns>
+    /// True for an sRGB presentation target; false when a final output transfer is required.
+    /// </returns>
+    /// <exception cref="ArgumentException">
+    /// The surface is stale or not active on this device.
+    /// </exception>
+    public bool WindowSurfaceIsSrgb(RenderSurfaceHandle surface)
+    {
+        _ = ResolveSurface(surface);
+        return backbufferIsSrgb
+            && capabilities.backend is not (GraphicsApi.Direct3D11 or GraphicsApi.Direct3D12);
+    }
+
+    /// <summary>
     /// Recreates a detached-window presentation surface for a new drawable extent.
     /// </summary>
     /// <param name="surface">

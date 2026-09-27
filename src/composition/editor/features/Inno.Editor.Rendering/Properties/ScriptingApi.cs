@@ -18,6 +18,7 @@ using Inno.Editor.Rendering;
 [assembly: ScriptingApiExport(typeof(EditorViewportNavigationProfile), ScriptingApiScope.Editor)]
 [assembly: ScriptingApiExport(typeof(EditorViewportNavigationState), ScriptingApiScope.Editor)]
 [assembly: ScriptingApiExport(typeof(EditorViewportPresentation), ScriptingApiScope.Editor)]
+[assembly: ScriptingApiExport(typeof(EditorViewportManipulationPlane), ScriptingApiScope.Editor)]
 [assembly: ScriptingApiExport(typeof(EditorViewportManipulationSpace), ScriptingApiScope.Editor)]
 [assembly: ScriptingApiExport(typeof(EditorViewportPointerContext), ScriptingApiScope.Editor)]
 [assembly: ScriptingApiExport(typeof(EditorViewportContribution), ScriptingApiScope.Editor)]

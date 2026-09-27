@@ -8,4 +8,4 @@
 
 公开的 `UiNativeConfig.AotStaticLink` 选择静态 AOT 符号解析；`UiNative.GetLibraryName()` 返回稳定库 stem。BGCS 生成的 `UiNative` 覆盖 runtime/context/document 生命周期、DOM 修改、输入、字体、命名纹理、帧几何、裁剪、像素及事件复制；`InnoUi*` 数据结构只为 ABI 使用。异常文本由 Cpp2C 的 thread-local last-error 通道传递，稳定 `Result` 不泄漏 RmlUi 名称。动态库由 `NativeDllLoader` 从目标 `.lib/ui/<platform>` 或 Player Support Pack 加载，缺库和 ABI 错误直接失败。
 
-RmlUi 字体引擎是进程级资源；Context 销毁时释放文档与像素，但仍可能在最后一个 backend 关闭时收到字体纹理释放回调，因此原生层仅保留渲染接口壳直至 `Rml::Shutdown`。Context/Document ID 在进程内单调分配以拒绝跨 backend 旧句柄。参见 [UI adapter](../ui/Inno.Adapter.UI.RmlUi.md) 和 [绑定验收工具](../build/Inno.Build.NativeBindings.md)；macOS ARM64 已验证，其他平台需目标宿主验收。
+RmlUi 字体引擎是进程级资源；Context 销毁时释放文档与像素，但仍可能在最后一个 backend 关闭时收到字体纹理释放回调，因此原生层仅保留渲染接口壳直至 `Rml::Shutdown`。文档创建后会检查作者的根布局宽高：仅在宽高仍为 `auto` 时为该轴设置 Context 的 `100%`，显式 CSS 不被覆盖，viewport 尺寸变化继续由 RmlUi 重新布局。Context/Document ID 在进程内单调分配以拒绝跨 backend 旧句柄。参见 [UI adapter](../ui/Inno.Adapter.UI.RmlUi.md) 和 [绑定验收工具](../build/Inno.Build.NativeBindings.md)；Windows x64 的 Canvas 定位与高密度 RCSS 验证已在 `TestProject/Tools/CanvasLayoutProbe.csproj` 运行；本次变更仍需 macOS ARM64 与其他平台的目标宿主回归。

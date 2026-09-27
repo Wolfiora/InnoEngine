@@ -286,6 +286,13 @@ Result Runtime::LoadDocument(
     Rml::ElementDocument* value = state->context->LoadDocumentFromMemory(markup, source_url);
     if (!value)
         return Result::BackendError;
+    const auto& style = value->GetComputedValues();
+    if ((style.width().type == Rml::Style::Width::Auto && !value->SetProperty("width", "100%"))
+        || (style.height().type == Rml::Style::Height::Auto && !value->SetProperty("height", "100%")))
+    {
+        value->Close();
+        return Result::BackendError;
+    }
     const std::uint64_t id = Inno::UI::RmlUiAdapter::AllocateDocumentId();
     if (id == 0)
     {

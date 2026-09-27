@@ -97,13 +97,13 @@ public sealed class RenderTargetStore : IDisposable
     /// Receives a backend-neutral persistent handle.
     /// </param>
     /// <returns>
-    /// <see langword="true"/> when the target has completed allocation.
+    /// <see langword="true"/> after a graph write to the current target revision has been recorded successfully.
     /// </returns>
     public bool TryGetTexture(RenderTexture target, out PersistentTextureHandle texture)
     {
         ObjectDisposedException.ThrowIf(m_disposed || m_retirement is not null, this);
         ArgumentNullException.ThrowIfNull(target);
-        if (m_targets.TryGetValue(target, out TargetEntry? entry))
+        if (m_targets.TryGetValue(target, out TargetEntry? entry) && entry.hasWritten)
         {
             texture = entry.handle;
             return true;
@@ -111,6 +111,21 @@ public sealed class RenderTargetStore : IDisposable
 
         texture = default;
         return false;
+    }
+
+    /// <summary>
+    /// Publishes target availability only after the backend recorded a graph write to its active revision.
+    /// </summary>
+    /// <param name="graph">
+    /// The graph whose backend command recording completed without an exception.
+    /// </param>
+    internal void MarkWrittenOutputs(CompiledRenderGraph graph)
+    {
+        ObjectDisposedException.ThrowIf(m_disposed || m_retirement is not null, this);
+        ArgumentNullException.ThrowIfNull(graph);
+        foreach (TargetEntry entry in m_targets.Values)
+            if (!entry.hasWritten && WritesTarget(graph, entry.handle))
+                entry.hasWritten = true;
     }
 
     /// <summary>
@@ -193,6 +208,20 @@ public sealed class RenderTargetStore : IDisposable
         CompleteRetirement();
     }
 
+    private static bool WritesTarget(CompiledRenderGraph graph, PersistentTextureHandle handle)
+    {
+        foreach (CompiledRenderTexture texture in graph.textures)
+        {
+            if (!texture.imported || texture.persistentHandle != handle)
+                continue;
+            foreach (CompiledRenderPass pass in graph.passes)
+                foreach (CompiledRenderAttachment attachment in pass.attachments)
+                    if (attachment.texture == texture.handle)
+                        return true;
+        }
+        return false;
+    }
+
     private void CompleteRetirement()
     {
         m_targets.Clear();
@@ -211,5 +240,8 @@ public sealed class RenderTargetStore : IDisposable
     private sealed record TargetEntry(
         long revision,
         RenderTextureDescriptor descriptor,
-        PersistentTextureHandle handle);
+        PersistentTextureHandle handle)
+    {
+        internal bool hasWritten { get; set; }
+    }
 }

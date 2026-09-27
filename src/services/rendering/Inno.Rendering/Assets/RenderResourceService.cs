@@ -385,7 +385,17 @@ public interface IRenderResourceService
     /// <param name="material">
     /// Material whose selected static variant should be prepared.
     /// </param>
-    void PrewarmMaterial(MaterialAsset material);
+    /// <returns>
+    /// The exact target artifact state for this material variant: Ready includes a usable last-good artifact,
+    /// Pending means compilation is ongoing, and Failed or Unavailable means no artifact can currently be used.
+    /// </returns>
+    /// <exception cref="ArgumentException">
+    /// The material has no shader or declares an invalid static variant.
+    /// </exception>
+    /// <exception cref="InvalidOperationException">
+    /// No target artifact provider is available for this runtime.
+    /// </exception>
+    RenderTargetArtifactStatus PrewarmMaterial(MaterialAsset material);
 
     /// <summary>
     /// Queues target texture conversion without blocking the render thread.

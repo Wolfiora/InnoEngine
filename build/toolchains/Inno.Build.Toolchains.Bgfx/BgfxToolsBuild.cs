@@ -83,7 +83,14 @@ internal static class BgfxToolsBuild
                 }
 
                 var normalized = path.Replace('\\', '/');
-                return normalized.Contains(builder.artifactPathToken, StringComparison.OrdinalIgnoreCase);
+                if (!normalized.Contains(builder.artifactPathToken, StringComparison.OrdinalIgnoreCase))
+                    return false;
+                string stem = Path.GetFileNameWithoutExtension(path);
+                if (stem.EndsWith("Debug", StringComparison.OrdinalIgnoreCase))
+                    return config == ToolchainLayout.C_DEBUG_CONFIGURATION;
+                if (stem.EndsWith("Release", StringComparison.OrdinalIgnoreCase))
+                    return config == ToolchainLayout.C_RELEASE_CONFIGURATION;
+                return true;
             })
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToList();

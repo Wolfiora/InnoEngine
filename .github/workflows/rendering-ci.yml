@@ -88,11 +88,16 @@ jobs:
           dotnet run --project build/toolchains/Inno.Build.Toolchains.Sdl3 -- build --config release
           dotnet run --project build/toolchains/Inno.Build.Toolchains.MiniAudio -- build --config debug
           dotnet run --project build/toolchains/Inno.Build.Toolchains.MiniAudio -- build --config release
+          dotnet run --project build/toolchains/Inno.Build.Toolchains.Text -- build --config debug
+          dotnet run --project build/toolchains/Inno.Build.Toolchains.Text -- build --config release
+          dotnet run --project build/toolchains/Inno.Build.Toolchains.UI -- build --config debug
+          dotnet run --project build/toolchains/Inno.Build.Toolchains.UI -- build --config release
           dotnet run --project build/toolchains/Inno.Build.Toolchains.ImGui -- build --config debug
           dotnet run --project build/toolchains/Inno.Build.Toolchains.ImGuizmo -- build --config debug
           dotnet run --project build/toolchains/Inno.Build.Toolchains.Bgfx -- native --config debug
           dotnet run --project build/toolchains/Inno.Build.Toolchains.Bgfx -- native --config release
           dotnet run --project build/toolchains/Inno.Build.Toolchains.Bgfx -- tools --config debug
+          dotnet run --project build/toolchains/Inno.Build.Toolchains.Bgfx -- tools --config release
 
       - name: Build managed solution
         shell: pwsh

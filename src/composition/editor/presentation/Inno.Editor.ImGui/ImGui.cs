@@ -236,6 +236,41 @@ public static class ImGui
     }
 
     /// <summary>
+    /// Displays a linear RGBA color through a display-sRGB picker and returns edits in linear space.
+    /// </summary>
+    /// <param name="label">
+    /// The stable identity and visible label of the color control.
+    /// </param>
+    /// <param name="value">
+    /// Linear RGB and alpha; only changed RGB channels are decoded, while alpha is never transfer-encoded.
+    /// </param>
+    /// <param name="flags">
+    /// Dear ImGui color-edit flags; display modes interpret sRGB values and input storage must be RGB.
+    /// </param>
+    /// <returns>
+    /// True if the display color changed and <paramref name="value"/> contains decoded linear RGB.
+    /// </returns>
+    /// <exception cref="ArgumentException">
+    /// HSV input storage conflicts with the linear-RGB value contract.
+    /// </exception>
+    public static bool ColorEditLinear4(string label, ref Vector4 value,
+        ImGuiColorEditFlags flags = ImGuiColorEditFlags.None)
+    {
+        if ((flags & ImGuiColorEditFlags.InputHsv) != 0)
+            throw new ArgumentException("Linear RGBA editing requires RGB input storage.", nameof(flags));
+        Vector4 display = new(LinearToSrgb(value.X), LinearToSrgb(value.Y), LinearToSrgb(value.Z), value.W);
+        Vector4 original = display;
+        if (!ColorEdit4(label, ref display, flags | ImGuiColorEditFlags.InputRgb))
+            return false;
+        value = new Vector4(
+            display.X == original.X ? value.X : SrgbToLinear(display.X),
+            display.Y == original.Y ? value.Y : SrgbToLinear(display.Y),
+            display.Z == original.Z ? value.Z : SrgbToLinear(display.Z),
+            display.W);
+        return true;
+    }
+
+    /// <summary>
     /// Begins a child region.
     /// </summary>
     /// <param name="id">
@@ -840,4 +875,10 @@ public static class ImGui
     /// </param>
     public static void DrawText(Vector2 position, uint color, string text)
         => RawImGui.GetWindowDrawList().AddText(position, color, text);
+
+    private static float LinearToSrgb(float value)
+        => value <= 0.0031308f ? value * 12.92f : 1.055f * MathF.Pow(value, 1f / 2.4f) - 0.055f;
+
+    private static float SrgbToLinear(float value)
+        => value <= 0.04045f ? value / 12.92f : MathF.Pow((value + 0.055f) / 1.055f, 2.4f);
 }

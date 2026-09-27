@@ -33,7 +33,7 @@ Runtime 先退休 reload/Pipeline/Provider，再释放 GPU targets、uploads、r
 | 类型 | 公开职责与成员 |
 | --- | --- |
 | `RenderRuntime` | 构造注入、`targets`、`viewContent`、`currentFrameIndex`、`SetPrimaryRoute`、`EnterExecutionScope`、`RegisterContributor`/`UnregisterContributor`、`Submit`、`TryActivateDefaultPipeline`、`BeginExtensionReload`；帧和退出入口继承 `RuntimeSubsystem` |
-| `RenderTargetStore` | `Import`、`TryGetTexture`、`Release`、`PrepareFrame`、`Dispose`；退出开始后不再接受操作，Pending 时保留未释放资源 |
+| `RenderTargetStore` | `Import`、`TryGetTexture`、`Release`、`PrepareFrame`、`Dispose`；只有当前目标修订的 Graph attachment 写入成功录制后才向 UI 返回可采样纹理，退出开始后不再接受操作，Pending 时保留未释放资源 |
 | `IRenderRuntimeReloadTransaction` | `Prepare`、`Activate`、`Complete`、`Rollback`；只有真实退休完成后才释放事务引用，Pending/timeout 不 Finish |
 | `RenderRuntimeFactory` | 构造注入 runtime factory，`descriptor` 和 `Create` 接入统一 Runtime subsystem 装配 |
 | `GraphicsSettings` | 当前 execution scope 的 `capabilities`、`defaultPipeline`、`frameStatistics` |
@@ -75,7 +75,7 @@ OnCompleteOutput
 | --- | --- |
 | `RenderRuntime` | 唯一设备帧拥有者与 `IRenderRequestSink` 实现。 |
 | `RenderRuntime.EnterExecutionScope()` | 把当前 Runtime 的 Graphics 脚本门面绑定到当前异步执行流；返回的 scope 必须按嵌套顺序释放。 |
-| `RenderTargetStore` | 在帧安全点创建、resize、导入和释放离屏目标；被替换的目标会跨一个完整提交帧退役，避免已录制的 UI/呈现命令持有失效句柄。 |
+| `RenderTargetStore` | 在帧安全点创建、resize、导入和释放离屏目标；只有当前修订的 RenderGraph attachment 写入命令已成功录制，`TryGetTexture` 才返回可供下一帧 UI 采样的 handle。未写入的新 RT 不会被 Vulkan 当成 shader-readable 图片使用；被替换的目标会跨一个完整提交帧退役，避免已录制的 UI/呈现命令持有失效句柄。 |
 | `IRenderFrameGraphContributor` | 在用户请求后向同一帧贡献 Graph，例如 ImGui。 |
 
 Project/Plugin 不需要获得 Runtime 实例。实现 `[RenderRequestProviderExtension(id)]` 后，Provider 会随 TypeCache candidate 一起发现、排序、恢复和原子切换，并在 `OnRender` 通过公开 `RenderRequestProviderContext.requests` 提交零到多个请求。应用组合根可给 Runtime 提供 `ContentReadScope` callback 和主呈现 viewport callback；Context 将同一个显式、frame-scoped 内容集合与 content viewport 交给全部 Provider，Runtime 本身仍不知道 Scene、World 或具体适配策略。viewport callback 缺失时使用完整表面，返回越界区域时产生结构化诊断并安全恢复为完整表面。单个 Provider 抛异常只隔离该 Provider；其他请求和 Editor 合成继续运行。
@@ -99,7 +99,7 @@ Runtime 不把一次请求假定为整个 target 的唯一 owner。请求仍按 
 - Runtime 只在活动 generation 与尚未完成的 reload transaction 中短暂持有 Pipeline/Feature 实例；持久身份只使用 Stable ID 和中立配置 bytes。提交后旧实例释放，回滚后候选实例释放。
 - Plugin 移除会同时退休 Plugin-owned Pipeline、Feature、Request Provider 与 Editor Viewport Contributor；不会通过 rendering last-good 把已经退出 TypeCache 的 Plugin 类型继续固定在旧 collectible ALC 中。
 - Shader 与纹理目标编译器由 Host 注入。Runtime 不引用 BGFX 工具或选择平台 profile；没有编译器时低级 GPU 路径和预编译资源仍可运行，源资产解析会给出明确诊断。
-- shaderc/texturec 只在后台预热任务中运行。`PrewarmMaterial`、`PrewarmTexture` 与首次 Resolve 只登记候选；完成结果在后续 `BeginFrame` 安全点发布，失败保留 CPU artifact 与 GPU Program/Texture 的 last-good，不阻塞当前帧。
+- shaderc/texturec 只在后台预热任务中运行。`PrewarmMaterial` 返回当前 variant 的 Ready/Pending/Failed/Unavailable 状态，`PrewarmTexture` 与首次 Resolve 也只登记候选；完成结果在后续 `BeginFrame` 安全点发布，失败保留 CPU artifact 与 GPU Program/Texture 的 last-good，不阻塞当前帧。Plugin 可以据此将尚未准备好的输出标为 Warning，而非在编译完成前误报 Error。
 - `IRenderFrameUploadService` 用可复用动态页处理当前帧 Vertex/Index/Storage 数据；页按布局复用，闲置后回收，返回的 slice 跨帧使用会被拒绝。
 - `IRenderResourceService.UpdateTexture` 在帧安全点验证并提交持久纹理局部更新，适合动态图集和持续变化的纹理，不替换 handle。
 - `IRenderResourceService.ReadTextureAsync` 建立 generation-scoped pending transfer；Runtime 在后续 `BeginFrame` 轮询设备完成，异步恢复等待者。取消和 Runtime 关闭都会通知设备释放 pending readback，不进行 CPU busy wait。

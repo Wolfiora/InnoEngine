@@ -785,6 +785,7 @@ public sealed class RenderRuntime : RuntimeSubsystem, IRenderRequestSink, IViewC
                 {
                     m_resourceService.EndMutation();
                     m_device.Execute(result.graph, m_frameIndex);
+                    targets.MarkWrittenOutputs(result.graph);
                     m_resourceService.BeginMutation();
                 }
             }

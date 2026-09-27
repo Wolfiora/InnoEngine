@@ -38,7 +38,7 @@ internal sealed class GameViewBackgroundSetting : EditorSetting
     {
         Vector4 value = ReadVector(setting);
         NativeImGui.SetNextItemWidth(-1f);
-        if (EditorImGui.ColorEdit4("##game_view_background", ref value))
+        if (EditorImGui.ColorEditLinear4("##game_view_background", ref value))
             setting.SetAsSingleArray("value", [value.X, value.Y, value.Z, value.W]);
     }
 

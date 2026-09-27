@@ -38,13 +38,18 @@ public static class BgfxImGuiShaderArtifacts
         source.CopyTo(bytes);
         RenderShaderArtifact artifact = RenderShaderArtifactCodec.Decode(bytes.ToArray(), "Inno/Host/ImGui", RenderShaderVariant.empty);
         RenderShaderPassArtifact pass = artifact.passes.Single();
-        ShaderInterfaceBinding binding = pass.shaderInterface.bindings.Single();
-        if (binding.id.value != "s_tex" || binding.bindingKind != ShaderPropertyBindingKind.SampledTexture || binding.location != 0)
-            throw new InvalidDataException("The built-in ImGui graph must expose exactly the s_tex sampled texture at slot zero.");
+        var bindings = pass.shaderInterface.bindings;
+        ShaderInterfaceBinding? texture = bindings.SingleOrDefault(static binding => binding.id.value == "s_tex");
+        ShaderInterfaceBinding? outputEncoding = bindings.SingleOrDefault(static binding => binding.id.value == "outputEncoding");
+        if (bindings.Count != 2 || texture is null || texture.bindingKind != ShaderPropertyBindingKind.SampledTexture
+            || texture.location != 0 || outputEncoding is null
+            || outputEncoding.bindingKind != ShaderPropertyBindingKind.Uniform)
+            throw new InvalidDataException("The built-in ImGui graph must expose s_tex and the outputEncoding render-pass uniform.");
         return new GraphicsPipelineDescriptor(
             pass.stages.Single(static stage => stage.stage == ShaderStage.Vertex).bytes.Span,
             pass.stages.Single(static stage => stage.stage == ShaderStage.Fragment).bytes.Span,
-            [new(new("s_tex"), RenderShaderBindingKind.Texture, slot: 0, nativeName: binding.nativeName)],
+            [new(new("s_tex"), RenderShaderBindingKind.Texture, slot: 0, nativeName: texture.nativeName),
+                new(new("outputEncoding"), RenderShaderBindingKind.Uniform, slot: 0, nativeName: outputEncoding.nativeName)],
             BgfxImGuiRenderer.vertexLayout, pass.rasterState);
     }
 }

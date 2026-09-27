@@ -49,15 +49,16 @@ Save/Revert 使用共享文档服务，保存与导入/激活状态分开呈现�
 | `EditorViewportNavigationProfile` | 当前交互控制者声明的 Pan、Zoom、Orbit、Fly、Frame Selection 能力与边界。 |
 | `RenderContentScope` | Host 显式选择的有序、frame-scoped 内容集合；Contributor 不扫描全局 Loaded Scene。 |
 | `EditorViewportPresentation` | Host 提供的呈现偏好；包含线性背景色及物理渲染像素与逻辑显示单位的比例 `pixelDensity`（默认 `1`）。 |
-| `EditorViewportManipulationSpace` | 控制者可选提供的本帧精确 view/projection，供 Transform 工具使用。 |
-| `EditorViewportOutput` | Host 拥有的 opaque `ImGuiTextureHandle` 输出。 |
+| `EditorViewportManipulationPlane` | 中立的操作维度：`Spatial` 默认完整空间，`XY`、`XZ`、`YZ` 声明由模型选择的平面；不包含 ImGuizmo 类型。 |
+| `EditorViewportManipulationSpace` | 控制者可选提供的本帧精确 view/projection、是否正交及独立的操作平面；正交投影不会自动切换平面手柄。 |
+| `EditorViewportOutput` | Host 拥有的 opaque `PresentationTextureHandle` 输出；`isReady` 只有在当前目标修订的 Graph attachment 写入命令成功录制后才为 true，首次分配/resize/Shader 仍准备中时只绘制 Preparing 占位，不采样未初始化的 Vulkan RT。 |
 | `EditorRenderingModule` | Contributor generation、参与判断、控制者选择、Composition、Submit/Draw/Release 与逐 Contributor 异常隔离。 |
 
 同一种 kind 可以注册多个 Contributor。`EditorRenderingModule` 每帧询问全部候选的 `CanContribute`；只有一个适用模型时直接提交。多个模型同时适用时必须为该 viewport 配置 `RenderOutputRoute`，明确层顺序及专属世界内容源。Host 为每个模型建立独立目标，并校验共同的目标格式后按预乘 Alpha 合成；未配置 route 或任一模型失败时拒绝整个输出并显示诊断。跨模型不共享几何深度。
 
 显式 `RenderRequest` 写入同一目标重叠区域时会收到 `RenderPipelineContext.preservePresentationTarget=true`。该 Pipeline 必须 Load/Preserve 已有颜色，不能再次清屏。多 Contributor 使用独立模型目标与图层合成。
 
-渲染顺序和交互所有权是两个正交维度。`controllerPriority` 只选择一个 Contributor 负责导航、Toolbar、Pointer 与 Gizmo manipulation space；它不提供多模型合成。错误、导航和 target 状态均按稳定 `viewportId` 隔离，多开同 kind viewport 不会串状态。
+渲染顺序和交互所有权是两个正交维度。`controllerPriority` 只选择一个 Contributor 负责导航、Toolbar、Pointer 与 Gizmo manipulation space；它不提供多模型合成。控制者可以将 `EditorViewportManipulationSpace.plane` 声明为 `XY` 等平面：Scene View 只依据这个中立几何契约选择轴和中心拖动，无需引用任何 2D Plugin 类型；未声明时保持完整的 3D 手柄。正交投影和 Planar 导航本身都不代表操作维度。错误、导航和 target 状态均按稳定 `viewportId` 隔离，多开同 kind viewport 不会串状态。
 
 Plugin 示例：
 
@@ -88,9 +89,11 @@ public sealed class SampleSceneContributor : EditorViewportContributor
 
 `RenderContentScope` 是类型擦除但带 Stable ID 的当前帧边界。Contributor 可用 `GetValues<T>()` 取得它理解的 Scene/Document 类型；`RenderContentReference.value` 不得跨帧或跨 generation 保存。每个渲染模型自行判断哪些 Scene 选择了该模型。因此同一个 scope 可以同时包含纯 3D Scene、纯 2D Scene，以及同时挂载两种 extraction system 的混合 Scene；缺少某个模型的 system 只表示该模型跳过此 Scene，不会令整个 viewport 失败。
 
-`manipulationSpace` 完全可选，也不向 Host 引入 Camera/2D/3D 概念。只有控制者提供的 manipulation space 会被接受；矩阵必须来自该控制者同一帧提交的 snapshot，避免画面、Picking 与 Gizmo 使用不同相机状态。一次连续拖拽只在释放时通过 `SceneEdits` 的最小 Transform payload 组成一个 History transaction，不捕获 Plugin delegate 或 runtime `Type`。
+`manipulationSpace` 完全可选，不向 Host 引入具体 Camera、渲染模型或 ImGuizmo 类型；几何约束通过中立 `EditorViewportManipulationPlane` 表示。只有控制者提供的 manipulation space 会被接受；矩阵必须来自该控制者同一帧提交的 snapshot，避免画面、Picking 与 Gizmo 使用不同相机状态。一次连续拖拽只在释放时通过 `SceneEdits` 的最小 Transform payload 组成一个 History transaction，不捕获 Plugin delegate 或 runtime `Type`。
 
-Host 创建或 resize `RenderTexture`，再将 GPU texture 注册为 `ImGuiTextureHandle`。不存在 CPU readback，也不向 Panel 暴露 BGFX handle。单个 Contributor 的 participation、导航、Build、Toolbar 或 Pointer 异常只隔离该 Contributor；没有任何适用 Contributor 时显示居中的不可用状态，Editor 其他功能继续运行。
+`[EditorGizmoProviderExtension(id)]` 注册代际化的 `EditorGizmoProvider.Collect(EditorGizmoContext, IEditorGizmoSink)`。`EditorGizmoContext` 提供当前内容作用域、选中对象的 runtime identity 与视口物理尺寸；`IEditorGizmoSink.Icon(owner, position, iconId)` 接受开放的语义图标 ID，内置 `camera`、`light`、`canvas`，未知 ID 显示统一问号图标；`Line(start, end)` 提交选中范围。`EditorGizmoFrame.icons`/`lines` 分别是 `EditorGizmoIcon`/`EditorGizmoLine` 的当前帧列表，不持久化对象引用。插件不传颜色或 ImGui 字体代码点，Scene View 统一绘制大号白色图标与白色轮廓线，重叠图标仍位于各自世界位置并在点击时提供目标选择。调用示例：`sink.Icon(owner.identity, owner.transform.worldPosition, "camera"); sink.Line(start, end);`。
+
+Host 创建或 resize `RenderTexture`，首个目标写入成功录制后再将 GPU texture 注册为 `PresentationTextureHandle`。不存在 CPU readback，也不向 Panel 暴露 BGFX handle。单个 Contributor 的 participation、导航、Build、Toolbar 或 Pointer 异常只隔离该 Contributor；没有任何适用 Contributor 时显示居中的不可用状态，Editor 其他功能继续运行。
 
 ## Editor 目标产物编译
 

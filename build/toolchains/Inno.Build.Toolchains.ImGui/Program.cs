@@ -82,7 +82,7 @@ static class Program
     {
         var options = new BuildArtifactOptions(
             Path.Combine(CimguiBuildConstants.BUILD_DIR_NAME, "inno", platform),
-            LIBRARY_TOKENS,
+            OperatingSystem.IsWindows() ? [$"libcimgui-{config}"] : LIBRARY_TOKENS,
             SHARED_EXTENSIONS,
             null,
             NormalizeOutputName);
@@ -93,7 +93,7 @@ static class Program
     private static string NormalizeOutputName(string fileName, string config)
     {
         var ext = Path.GetExtension(fileName);
-        return $"{CimguiBuildConstants.OUTPUT_DLL_NAME}-{config}{ext}";
+        return OperatingSystem.IsWindows() ? fileName : $"{CimguiBuildConstants.OUTPUT_DLL_NAME}-{config}{ext}";
     }
 }
 
