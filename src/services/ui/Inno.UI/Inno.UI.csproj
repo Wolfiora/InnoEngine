@@ -12,6 +12,7 @@
     <ProjectReference Include="..\..\text\Inno.Text\Inno.Text.csproj" />
     <ProjectReference Include="..\..\input\Inno.Input\Inno.Input.csproj" PrivateAssets="compile" />
     <ProjectReference Include="..\..\..\foundation\core\Inno.Core.Execution\Inno.Core.Execution.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="..\..\..\foundation\core\Inno.Core.Events\Inno.Core.Events.csproj" />
     <ProjectReference Include="..\..\..\foundation\core\Inno.Core.Input\Inno.Core.Input.csproj" PrivateAssets="compile" />
     <ProjectReference Include="..\..\..\foundation\core\Inno.Core.Mathematics\Inno.Core.Mathematics.csproj" PrivateAssets="compile" />
     <ProjectReference Include="..\..\..\foundation\scripting\Inno.Scripting.Api\Inno.Scripting.Api.csproj" PrivateAssets="compile" />

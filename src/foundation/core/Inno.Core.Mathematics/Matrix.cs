@@ -685,7 +685,6 @@ public struct Matrix : IEquatable<Matrix>
         if (Determinant(m) < 0f)
         {
             scale.x = -scale.x;
-            col0 = -col0;
         }
 
         var rot = new Matrix(

@@ -6,6 +6,8 @@
 
 Events 系统由一个 `EventDispatcher` 和多个有序 `EventHub` 构成。Dispatcher 决定 hub 顺序；Hub 决定监听器优先级，并支持只终止当前 hub 或终止全局链。
 
+脚本使用 `InnoEngine.Events` 逻辑命名空间中的 `Event`、`EventDispatcher` 和 `EventHub`。Canvas 通过该系统管理 UI 监听与即时分发；订阅 token 应随脚本生命周期释放。
+
 ## 分发模型
 
 - Hub `order` 越大越先执行；相同 order 按 hub 创建顺序。

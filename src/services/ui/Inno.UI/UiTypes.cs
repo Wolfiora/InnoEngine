@@ -212,19 +212,28 @@ public enum UiEventType
 /// <summary>
 /// Describes one queued document event after a context update.
 /// </summary>
-/// <param name="type">
-/// The ui event type value used to initialize this instance.
-/// </param>
-/// <param name="document">
-/// The ui document handle value used to initialize this instance.
-/// </param>
-/// <param name="targetId">
-/// The string value used to initialize this instance.
-/// </param>
-public readonly record struct UiEvent(
-    UiEventType type,
-    UiDocumentHandle document,
-    string targetId);
+public sealed class UiEvent : Inno.Core.Events.Event
+{
+    /// <summary>Creates a document event with its source document and target element.</summary>
+    /// <param name="type">The kind of document interaction.</param>
+    /// <param name="document">The document that produced the event.</param>
+    /// <param name="targetId">The target element identifier, which can be empty.</param>
+    public UiEvent(UiEventType type, UiDocumentHandle document, string targetId)
+    {
+        this.type = type;
+        this.document = document;
+        this.targetId = targetId ?? throw new ArgumentNullException(nameof(targetId));
+    }
+
+    /// <summary>Gets the kind of document interaction.</summary>
+    public UiEventType type { get; }
+
+    /// <summary>Gets the source document.</summary>
+    public UiDocumentHandle document { get; }
+
+    /// <summary>Gets the target element identifier.</summary>
+    public string targetId { get; }
+}
 
 /// <summary>
 /// Carries one immutable input snapshot across the UI backend boundary.

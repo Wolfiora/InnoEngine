@@ -132,6 +132,24 @@ public sealed class VectorMatrixTests
     }
 
     [Fact]
+    public void Matrix_Decompose_PreservesReflectedTransform()
+    {
+        var scale = new Vector3(-2f, 3f, 4f);
+        var rotation = Quaternion.FromEulerAnglesXYZ(new Vector3(0.2f, 0.3f, 0.4f));
+        var translation = new Vector3(5f, 6f, 7f);
+        Matrix matrix = Matrix.CreateTranslation(translation)
+            * Matrix.CreateFromQuaternion(rotation)
+            * Matrix.CreateScale(scale);
+
+        Assert.True(Matrix.Decompose(matrix, out Vector3 resultScale,
+            out Quaternion resultRotation, out Vector3 resultTranslation));
+        Matrix reconstructed = Matrix.CreateTranslation(resultTranslation)
+            * Matrix.CreateFromQuaternion(resultRotation)
+            * Matrix.CreateScale(resultScale);
+        Assert.True(matrix == reconstructed);
+    }
+
+    [Fact]
     public void Matrix_LookAtRH_IdentityForMinusZ()
     {
         var eye = new Vector3(0f, 0f, 0f);

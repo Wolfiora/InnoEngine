@@ -559,10 +559,7 @@ public sealed class ScriptReloadHost : IDisposable
             m_assets.Update();
             m_assets.Rescan();
         }
-        ScriptCompilationResult? activeCompilation;
-        lock (m_sync)
-            activeCompilation = m_activeCompilation;
-        m_compiler.GenerateProjectFiles(activeCompilation);
+        m_compiler.GenerateProjectFiles();
     }
 
     /// <summary>

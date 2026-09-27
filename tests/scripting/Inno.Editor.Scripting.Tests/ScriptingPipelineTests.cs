@@ -147,7 +147,7 @@ public sealed class ScriptingPipelineTests : IDisposable
         ScriptCompilationResult result = m_fixture.Compile();
         Assert.True(result.success, FormatDiagnostics(result));
         Assert.Contains(result.activationRequests, static request => request.scope == AssemblyScope.Editor);
-        m_fixture.compiler.GenerateProjectFiles(result);
+        m_fixture.compiler.GenerateProjectFiles();
         Assert.True(ContainsShaderApi("Inno.EditorScripts.csproj"));
         Assert.False(ContainsShaderApi("Inno.GameScripts.csproj"));
 
@@ -629,7 +629,7 @@ public sealed class ScriptingPipelineTests : IDisposable
         Assert.False(importedDirectory.isSampleContent);
         ScriptCompilationResult compilation = fixture.Compile();
         Assert.True(compilation.success, FormatDiagnostics(compilation));
-        fixture.compiler.GenerateProjectFiles(compilation);
+        fixture.compiler.GenerateProjectFiles();
         string gameProject = File.ReadAllText(
             Path.Combine(fixture.projectRoot, "Inno.GameScripts.csproj"));
         Assert.Contains("Compile Include=\"Assets/tests.samples-Starter/StarterBehavior.cs\"", gameProject);
@@ -653,7 +653,7 @@ public sealed class ScriptingPipelineTests : IDisposable
     }
 
     [Fact]
-    public void IdeProjectionHidesPluginProjectsAndReferencesTheirCompiledArtifacts()
+    public void IdeProjectionUsesPluginSourceProjectsWithLogicalApiReferences()
     {
         using var fixture = new ScriptingFixture(WriteProjectionPlugin);
         fixture.Write("UsesProjectionPlugin.cs", """
@@ -668,20 +668,20 @@ public sealed class ScriptingPipelineTests : IDisposable
         File.WriteAllText(staleProject, "stale");
 
         ScriptCompilationResult result = fixture.Compile();
-        fixture.compiler.GenerateProjectFiles(result);
+        fixture.compiler.GenerateProjectFiles();
 
         Assert.True(result.success, FormatDiagnostics(result));
         Assert.False(File.Exists(staleProject));
-        Assert.Empty(Directory.EnumerateFiles(
-            fixture.projectRoot,
-            "Inno.Plugin.*.csproj",
-            SearchOption.TopDirectoryOnly));
+        string pluginProject = File.ReadAllText(Path.Combine(
+            fixture.projectRoot, "Inno.Plugin.TestsProjection.csproj"));
+        Assert.Contains("Inno.ScriptApi.Runtime.dll", pluginProject);
+        Assert.DoesNotContain("Inno.Scene.dll", pluginProject, StringComparison.Ordinal);
         string solution = File.ReadAllText(Path.Combine(fixture.projectRoot, "InnoProject.sln"));
-        Assert.DoesNotContain("Inno.Plugin.", solution, StringComparison.Ordinal);
+        Assert.Contains("Inno.Plugin.TestsProjection", solution, StringComparison.Ordinal);
         string gameProject = File.ReadAllText(
             Path.Combine(fixture.projectRoot, "Inno.GameScripts.csproj"));
-        Assert.Contains("Reference Include=\"Inno.Plugin.TestsProjection\"", gameProject);
-        Assert.Contains("Inno.Plugin.TestsProjection.dll", gameProject);
+        Assert.Contains("ProjectReference Include=\"Inno.Plugin.TestsProjection.csproj\"", gameProject);
+        Assert.DoesNotContain("Inno.Plugin.TestsProjection.dll", gameProject, StringComparison.Ordinal);
     }
 
     [Fact]

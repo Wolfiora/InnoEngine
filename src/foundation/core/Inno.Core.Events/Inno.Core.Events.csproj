@@ -6,5 +6,6 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\Inno.Core.Input\Inno.Core.Input.csproj" />
+    <ProjectReference Include="..\..\scripting\Inno.Scripting.Api\Inno.Scripting.Api.csproj" PrivateAssets="compile" />
   </ItemGroup>
 </Project>

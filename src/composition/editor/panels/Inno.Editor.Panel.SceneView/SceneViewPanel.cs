@@ -988,11 +988,11 @@ internal sealed class SceneViewPanel : EditorPanel
             m_gestureTarget = target;
             m_gestureBefore = TransformSnapshot.Capture(target);
         }
-        if (changed && EngineMatrix.Decompose(
-                ReadColumnMajor(model),
-                out Inno.Core.Mathematics.Vector3 scale,
+        if (changed && TryReadManipulatedTransform(
+                ReadColumnMajor(model), target, m_operation,
+                out Inno.Core.Mathematics.Vector3 position,
                 out EngineQuaternion rotation,
-                out Inno.Core.Mathematics.Vector3 position)
+                out Inno.Core.Mathematics.Vector3 scale)
             && IsUsable(position, rotation, scale))
         {
             target.SetWorldTransform(position, rotation, scale);
@@ -1006,13 +1006,7 @@ internal sealed class SceneViewPanel : EditorPanel
         EditorViewportManipulationPlane plane, ImGuizmoOperation operation)
         => operation switch
         {
-            ImGuizmoOperation.Rotate => plane switch
-            {
-                EditorViewportManipulationPlane.XY => ImGuizmoOperation.RotateZ,
-                EditorViewportManipulationPlane.XZ => ImGuizmoOperation.RotateY,
-                EditorViewportManipulationPlane.YZ => ImGuizmoOperation.RotateX,
-                _ => operation
-            },
+            ImGuizmoOperation.Rotate => ImGuizmoOperation.Rotate,
             ImGuizmoOperation.Scale => plane switch
             {
                 EditorViewportManipulationPlane.XY => ImGuizmoOperation.ScaleX | ImGuizmoOperation.ScaleY,
@@ -1022,6 +1016,53 @@ internal sealed class SceneViewPanel : EditorPanel
             },
             _ => operation
         };
+
+    private static bool TryReadManipulatedTransform(
+        EngineMatrix matrix, Transform target, ImGuizmoOperation operation,
+        out Inno.Core.Mathematics.Vector3 position,
+        out EngineQuaternion rotation,
+        out Inno.Core.Mathematics.Vector3 scale)
+    {
+        position = new Inno.Core.Mathematics.Vector3(matrix.m14, matrix.m24, matrix.m34);
+        rotation = target.worldRotation;
+        scale = target.worldScale;
+        if (operation == ImGuizmoOperation.Translate)
+            return true;
+
+        if (operation == ImGuizmoOperation.Scale)
+        {
+            EngineMatrix original = target.localToWorldMatrix;
+            scale = new Inno.Core.Mathematics.Vector3(
+                scale.x * SignedColumnRatio(original.m11, original.m21, original.m31,
+                    matrix.m11, matrix.m21, matrix.m31),
+                scale.y * SignedColumnRatio(original.m12, original.m22, original.m32,
+                    matrix.m12, matrix.m22, matrix.m32),
+                scale.z * SignedColumnRatio(original.m13, original.m23, original.m33,
+                    matrix.m13, matrix.m23, matrix.m33));
+            return true;
+        }
+
+        if (MathF.Abs(scale.x) <= 0.00001f || MathF.Abs(scale.y) <= 0.00001f
+            || MathF.Abs(scale.z) <= 0.00001f)
+            return false;
+        EngineMatrix normalized = new(
+            matrix.m11 / scale.x, matrix.m12 / scale.y, matrix.m13 / scale.z, 0f,
+            matrix.m21 / scale.x, matrix.m22 / scale.y, matrix.m23 / scale.z, 0f,
+            matrix.m31 / scale.x, matrix.m32 / scale.y, matrix.m33 / scale.z, 0f,
+            0f, 0f, 0f, 1f);
+        rotation = EngineQuaternion.FromRotationMatrix(normalized).normalized;
+        return true;
+    }
+
+    private static float SignedColumnRatio(
+        float originalX, float originalY, float originalZ,
+        float changedX, float changedY, float changedZ)
+    {
+        float squaredLength = originalX * originalX + originalY * originalY + originalZ * originalZ;
+        return squaredLength <= 0.0000000001f
+            ? 1f
+            : (originalX * changedX + originalY * changedY + originalZ * changedZ) / squaredLength;
+    }
 
     private bool TryGetSelectedTransform(out Transform? transform)
     {
