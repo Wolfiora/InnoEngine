@@ -214,10 +214,18 @@ public enum UiEventType
 /// </summary>
 public sealed class UiEvent : Inno.Core.Events.Event
 {
-    /// <summary>Creates a document event with its source document and target element.</summary>
-    /// <param name="type">The kind of document interaction.</param>
-    /// <param name="document">The document that produced the event.</param>
-    /// <param name="targetId">The target element identifier, which can be empty.</param>
+    /// <summary>
+    /// Creates a document event with its source document and target element.
+    /// </summary>
+    /// <param name="type">
+    /// The kind of document interaction.
+    /// </param>
+    /// <param name="document">
+    /// The document that produced the event.
+    /// </param>
+    /// <param name="targetId">
+    /// The target element identifier, which can be empty.
+    /// </param>
     public UiEvent(UiEventType type, UiDocumentHandle document, string targetId)
     {
         this.type = type;
@@ -225,13 +233,19 @@ public sealed class UiEvent : Inno.Core.Events.Event
         this.targetId = targetId ?? throw new ArgumentNullException(nameof(targetId));
     }
 
-    /// <summary>Gets the kind of document interaction.</summary>
+    /// <summary>
+    /// Gets the kind of document interaction.
+    /// </summary>
     public UiEventType type { get; }
 
-    /// <summary>Gets the source document.</summary>
+    /// <summary>
+    /// Gets the source document.
+    /// </summary>
     public UiDocumentHandle document { get; }
 
-    /// <summary>Gets the target element identifier.</summary>
+    /// <summary>
+    /// Gets the target element identifier.
+    /// </summary>
     public string targetId { get; }
 }
 

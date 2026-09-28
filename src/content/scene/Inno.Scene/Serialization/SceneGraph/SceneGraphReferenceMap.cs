@@ -118,6 +118,18 @@ internal sealed class SceneGraphReferenceMap
         }
     }
 
+    internal Dictionary<Guid, Guid> CaptureRemappedAliases()
+    {
+        var aliases = new Dictionary<Guid, Guid>();
+        foreach ((Guid sourceId, EngineObject engineObject) in m_objectBySourceId)
+        {
+            Guid persistentId = engineObject.identity.persistentId;
+            if (sourceId != persistentId)
+                aliases.Add(sourceId, persistentId);
+        }
+        return aliases;
+    }
+
     internal EngineObject GetRegistered(Guid sourceId)
         => m_objectBySourceId.TryGetValue(sourceId, out EngineObject? engineObject)
             ? engineObject

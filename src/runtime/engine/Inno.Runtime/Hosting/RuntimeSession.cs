@@ -85,6 +85,10 @@ public sealed class RuntimeSession : IDisposable
         IReferenceResolver[] referenceResolvers = m_assets is IReferenceResolver assetResolver
             ? [.. options.referenceResolvers, assetResolver]
             : [.. options.referenceResolvers];
+        IAssetReferenceResolver? prefabAssets = m_assets
+            ?? options.referenceResolvers.OfType<IAssetReferenceResolver>().SingleOrDefault();
+        if (prefabAssets is not null)
+            scenes.ConfigurePrefabInstantiation(m_host.serialization, prefabAssets);
         m_references = referenceResolvers.Length == 0
             ? ReferenceCatalog.empty
             : ReferenceCatalog.Create(1, referenceResolvers);

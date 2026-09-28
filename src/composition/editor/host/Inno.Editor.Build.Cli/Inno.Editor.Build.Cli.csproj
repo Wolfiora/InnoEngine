@@ -30,6 +30,7 @@
     <ProjectReference Include="../../../../runtime/plugins/Inno.Plugins.Authoring/Inno.Plugins.Authoring.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../../../runtime/engine/Inno.Runtime/Inno.Runtime.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../../../content/scene/Inno.Scene.Assets/Inno.Scene.Assets.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../../../services/audio/Inno.Audio.Assets/Inno.Audio.Assets.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../../../services/text/Inno.Text.Assets/Inno.Text.Assets.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../../../services/ui/Inno.UI.Assets/Inno.UI.Assets.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../../../adapters/ui/Inno.Adapter.UI.RmlUi.Authoring/Inno.Adapter.UI.RmlUi.Authoring.csproj" PrivateAssets="compile" />

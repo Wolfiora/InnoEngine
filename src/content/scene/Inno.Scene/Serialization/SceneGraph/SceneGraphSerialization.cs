@@ -653,7 +653,7 @@ internal static class SceneGraphSerialization
         SceneGraphReferenceMap references,
         IReadOnlyList<EngineObject> missingPlaceholders)
     {
-        var retained = new Dictionary<Guid, Guid>();
+        Dictionary<Guid, Guid> retained = references.CaptureRemappedAliases();
         foreach ((Guid alias, Guid targetSourceId) in aliases)
         {
             EngineObject target = references.GetRegistered(targetSourceId);

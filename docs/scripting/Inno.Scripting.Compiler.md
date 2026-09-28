@@ -18,7 +18,7 @@ Compiler 拥有 Roslyn、裁剪 reference assemblies、logical namespace analyze
 - `ScriptSourceAsset`, `ScriptAssemblyDefinitionAsset`, `ScriptAssemblyScope`：由 common Asset Pipeline 导入的脚本模型。
 - `LogicalScriptingApiAnalyzer`：拒绝实现 namespace、global using 和未导出 API。
 
-同一裁剪 reference 规则用于 authoring generation、runtime deployment 与 IDE project。Runtime deployment 先用当前裁剪 API 和 analyzer 验证逻辑 namespace、可见性与脚本规则，再把改写后的源码直接针对目标 Support Pack 的 `Inno.*` 实现程序集编译；目标程序集内容指纹属于增量缓存键，因此更换或修改 Pack 不会复用不兼容脚本产物。IDE 投影为 Project 与已安装 Plugin 的每个 Runtime、Editor 和显式 `.iasmdef` assembly 生成源码工程；项目间通过 `ProjectReference` 连接，全部使用相同的逻辑 API reference。这样 Plugin 类型的基类与用户源码中的 `InnoEngine.*` 类型属于同一引用图，不会把运行时代的 `Inno.*` 实现程序集泄漏到 IDE。Game Build 只调用 runtime deployment 入口，不解析 Editor API reference、不编译 `.editor.cs`，也不生成 `Inno.EditorScripts.dll`。取消或失败结果没有 activation artifact；缓存命中仍重放诊断。
+同一裁剪 reference 规则用于 authoring generation、runtime deployment 与 IDE project。Runtime deployment 先用当前裁剪 API 和 analyzer 验证逻辑 namespace、可见性与脚本规则，再把改写后的源码直接针对目标 Support Pack 的 `Inno.*` 实现程序集编译；目标程序集内容指纹属于增量缓存键，因此更换或修改 Pack 不会复用不兼容脚本产物。IDE 只为 Project 的 Runtime、Editor 和显式 `.iasmdef` assembly 生成源码工程；Project 工程之间通过 `ProjectReference` 连接。安装 Plugin 的源码按同一逻辑 API reference 图编译成 `Library/IDE/PluginReferences` 中的 metadata reference，供 Project 工程引用，不在 Project 根目录生成 Plugin 工程。这样 Plugin 类型的基类与用户源码中的 `InnoEngine.*` 类型属于同一引用图，不会把运行时代的 `Inno.*` 实现程序集泄漏到 IDE。Game Build 只调用 runtime deployment 入口，不解析 Editor API reference、不编译 `.editor.cs`，也不生成 `Inno.EditorScripts.dll`。取消或失败结果没有 activation artifact；缓存命中仍重放诊断。
 
 Shader 创作扩展通过 [`InnoEditor.Rendering.Shaders`](../render/Inno.Rendering.Shaders.md) 的逐类型 Editor scope 清单进入同一规则，
 不在 Compiler 中增加 Shader 类型或程序集白名单。新增集成用例实际编译节点扩展，并读取生成 IDE reference 的公开 metadata：

@@ -3,7 +3,10 @@ using Inno.Core.Execution;
 using System.Collections.Generic;
 using System.Threading;
 using Inno.Core.Identity;
+using Inno.Core.Serialization;
+using Inno.Assets;
 using Inno.Extensibility.Types;
+using Inno.Scene.Components;
 
 namespace Inno.Scene;
 
@@ -17,6 +20,8 @@ public sealed class SceneWorld : IDisposable
     private readonly List<GameScene> m_loadedScenes = [];
     private readonly IdentityAllocator m_identities;
     private readonly SceneTypeCatalog m_types;
+    private SerializationRegistry? m_prefabSerialization;
+    private IAssetReferenceResolver? m_prefabAssets;
     private GameScene? m_activeScene;
     private GameScene[]? m_loadedSceneSnapshot;
     private bool m_disposed;
@@ -50,6 +55,47 @@ public sealed class SceneWorld : IDisposable
         => S_CURRENT_SCOPE.current;
 
     internal SceneTypeCatalog typeCatalog => m_types;
+
+    /// <summary>
+    /// Binds the session-owned serialization and asset generations used by scene prefab instances.
+    /// </summary>
+    /// <param name="serialization">
+    /// The active serialization registry for this session.
+    /// </param>
+    /// <param name="assets">
+    /// The asset resolver that owns prefab dependencies.
+    /// </param>
+    /// <exception cref="InvalidOperationException">
+    /// The binding was already configured.
+    /// </exception>
+    [Inno.Scripting.Api.ScriptingApiIgnore]
+    public void ConfigurePrefabInstantiation(
+        SerializationRegistry serialization,
+        IAssetReferenceResolver assets)
+    {
+        EnsureActive();
+        ArgumentNullException.ThrowIfNull(serialization);
+        ArgumentNullException.ThrowIfNull(assets);
+        if (m_prefabSerialization is not null)
+            throw new InvalidOperationException("Prefab instantiation is already configured for this scene world.");
+        m_prefabSerialization = serialization;
+        m_prefabAssets = assets;
+    }
+
+    internal GameObject InstantiatePrefab(PrefabAsset prefab, GameScene scene, Transform? parent)
+    {
+        EnsureActive();
+        ArgumentNullException.ThrowIfNull(prefab);
+        ArgumentNullException.ThrowIfNull(scene);
+        if (!m_loadedScenes.Contains(scene))
+            throw new InvalidOperationException("A prefab can only be instantiated into a loaded scene in the current world.");
+        SerializationRegistry serialization = m_prefabSerialization
+            ?? throw new InvalidOperationException("The current scene world has no prefab serialization context.");
+        IAssetReferenceResolver assets = m_prefabAssets
+            ?? throw new InvalidOperationException("The current scene world has no prefab asset resolver.");
+        using IDisposable scope = EnterScope();
+        return prefab.Instantiate(scene, serialization, assets, parent);
+    }
 
     /// <summary>
     /// Gets the scene currently selected for unqualified scene operations.
@@ -163,7 +209,7 @@ public sealed class SceneWorld : IDisposable
         m_loadedScenes.Add(scene);
         InvalidateSnapshot();
         m_activeScene = scene;
-        scene.Load();
+        scene.Load(this);
     }
 
     /// <summary>
@@ -183,7 +229,7 @@ public sealed class SceneWorld : IDisposable
         {
             m_loadedScenes.Add(scene);
             InvalidateSnapshot();
-            scene.Load();
+            scene.Load(this);
         }
         if (makeActive || m_activeScene is null)
             m_activeScene = scene;

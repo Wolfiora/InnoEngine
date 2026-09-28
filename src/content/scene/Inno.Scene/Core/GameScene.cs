@@ -22,6 +22,7 @@ public sealed class GameScene : EngineObject, ISerializable
     private readonly ActivationService m_activation = new();
     private readonly SceneSystemScheduler m_systems;
     private string m_name;
+    private SceneWorld? m_ownerWorld;
     private bool m_isLoaded;
     private bool m_isUnloading;
     private AssetObject? m_sourceAsset;
@@ -79,6 +80,28 @@ public sealed class GameScene : EngineObject, ISerializable
     /// </returns>
     public GameObject CreateObject(string name = "GameObject")
         => CreateObject(name, persistentId: null, transformPersistentId: null, invokeReset: true);
+
+    /// <summary>
+    /// Creates a connected instance of an imported prefab in this loaded scene.
+    /// </summary>
+    /// <param name="prefab">
+    /// The prefab asset that supplies the object subtree.
+    /// </param>
+    /// <param name="parent">
+    /// Optional parent for the new instance.
+    /// </param>
+    /// <returns>
+    /// The newly instantiated prefab root.
+    /// </returns>
+    /// <exception cref="ArgumentNullException">
+    /// The prefab is null.
+    /// </exception>
+    /// <exception cref="InvalidOperationException">
+    /// The scene is not loaded in its owning world or prefab services are unavailable.
+    /// </exception>
+    public GameObject InstantiatePrefab(PrefabAsset prefab, Transform? parent = null)
+        => (m_ownerWorld ?? throw new InvalidOperationException("The scene is not loaded in a world."))
+            .InstantiatePrefab(prefab, this, parent);
 
     /// <summary>
     /// Recursively destroys a game object and its complete child subtree.
@@ -868,11 +891,13 @@ public sealed class GameScene : EngineObject, ISerializable
         }
     }
 
-    internal void Load()
+    internal void Load(SceneWorld ownerWorld)
     {
+        ArgumentNullException.ThrowIfNull(ownerWorld);
         EnsureNotDestroyed();
         if (m_isLoaded)
             throw new InvalidOperationException($"Scene '{m_name}' is already loaded.");
+        m_ownerWorld = ownerWorld;
         m_isLoaded = true;
         m_systems.NotifyHierarchyActivationChanged();
     }
@@ -884,6 +909,7 @@ public sealed class GameScene : EngineObject, ISerializable
 
         m_isUnloading = true;
         m_isLoaded = false;
+        m_ownerWorld = null;
         Exception? firstException = null;
         GameObject[] objects = [.. m_store.GetOwnedObjects()];
         for (int i = 0; i < objects.Length; i++)

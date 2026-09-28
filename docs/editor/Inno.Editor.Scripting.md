@@ -73,7 +73,7 @@ AssetPipeline.Save("Scripts/Gameplay/Gameplay.iasmdef", definition);
 └─ InnoProject.sln
 ```
 
-Project 根目录和 `InnoProject.sln` 只投影用户可编辑的 Project assembly。安装在 `Plugins` 中的代码由同一编译图构建并参与原子 generation，但其 source 与内部 assembly topology 不作为 Rider/IDE 项目暴露；`Inno.GameScripts`、`Inno.EditorScripts` 和 Project `.iasmdef` 工程只引用当前成功 generation 中的 Plugin DLL。每次成功激活都会删除历史遗留的 `Inno.Plugin.*.csproj` 与对应 API map。
+Project 根目录和 `InnoProject.sln` 只投影用户可编辑的 Project assembly。安装在 `Plugins` 中的代码由同一编译图构建并参与原子 generation，但其 source 与内部 assembly topology 不作为 Rider/IDE 项目暴露；`Inno.GameScripts`、`Inno.EditorScripts` 和 Project `.iasmdef` 工程引用 `Library/IDE/PluginReferences` 中按同一裁剪逻辑 API 从 Plugin source 生成的 metadata reference。这样 IDE 与运行时编译保留一致的逻辑类型身份，同时 Project 根目录不出现 Plugin 工程。每次成功激活都会删除历史遗留的 `Inno.Plugin.*.csproj` 与对应 API map。
 
 `ScriptAssemblies` 不再出现 `1/2/3...` 数字 generation。每个 asmdef/builtin assembly 的 key 覆盖脚本内容 hash、规范化 asmdef 配置、scope/options、公开 Script API contract fingerprint、所属 Source Mount 及直接 dependency key；它不使用无关 Importer 实现 MVID。依赖 key 变化会自然传播到反向依赖，而无关 assembly 直接复用 `.assemblies` 中的 DLL/PDB/XML/type manifest/diagnostics。完整 generation key 组合有序 assembly key 与 Plugin content key，并在成功后一次性形成 load staging。Script assembly cache 使用 7 天 grace period 与 4 GiB 上限；`Library/ScriptApi` reference artifact cache 独立使用 7 天与 512 MiB 上限，并保护当前 Runtime/Editor contract 目录。
 
@@ -245,7 +245,7 @@ Generator 从 Asset Catalog 与 asmdef graph 生成每个 assembly 的 SDK-style
 - `EnableDefaultItems=false`；
 - 只有明确 `Assets/**/*.cs` Compile item；
 - `Library` 不显示为 source folder；
-- Editor project 引用允许的 Runtime project；
+- Editor project 引用允许的 Runtime project；Plugin 依赖使用 IDE metadata reference；
 - facade reference 绑定同 fingerprint XML documentation；
 - `bin`/`obj`/analyzer/map 全部位于 `Library/IDE`。
 
