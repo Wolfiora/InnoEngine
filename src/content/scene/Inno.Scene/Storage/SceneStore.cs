@@ -430,18 +430,11 @@ internal sealed class SceneStore
 
     internal void SetComponentIndex(GameObject owner, GameComponent component, int componentIndex)
     {
-        if (isExecuting || hasPendingChanges)
-            throw new InvalidOperationException("Components cannot be reordered during a scene execution phase.");
         SceneObjectRecord record = GetAliveRecord(owner);
+        if (record.isCommitted && (isExecuting || hasPendingChanges))
+            throw new InvalidOperationException("Components cannot be reordered during a scene execution phase.");
         int currentIndex = GetComponentIndex(owner, component);
-        if (component is Components.Transform)
-        {
-            if (componentIndex != 0)
-                throw new InvalidOperationException("The mandatory Transform component must remain at index zero.");
-            return;
-        }
-
-        int targetIndex = Math.Clamp(componentIndex, 1, record.components.Count - 1);
+        int targetIndex = Math.Clamp(componentIndex, 0, record.components.Count - 1);
         if (currentIndex == targetIndex)
             return;
         record.components.RemoveAt(currentIndex);

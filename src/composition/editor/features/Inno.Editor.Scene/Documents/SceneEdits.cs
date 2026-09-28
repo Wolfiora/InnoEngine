@@ -38,6 +38,36 @@ public sealed class SceneEdits : EditorModule
     }
 
     /// <summary>
+    /// Gets whether the scene is editable in the current Edit or isolated Play world.
+    /// </summary>
+    /// <param name="scene">
+    /// The loaded scene to inspect.
+    /// </param>
+    /// <returns>
+    /// <see langword="true"/> when scene commands may change this scene. Play changes use
+    /// a temporary history branch and are discarded when the Play session ends.
+    /// </returns>
+    public bool CanEdit(GameScene scene) => m_workspace.CanEdit(scene);
+
+    /// <summary>
+    /// Gets whether a scene object belongs to an editable presented scene.
+    /// </summary>
+    /// <param name="target">
+    /// The scene object to inspect.
+    /// </param>
+    /// <returns>
+    /// <see langword="true"/> when its owning scene is writable.
+    /// </returns>
+    public bool CanEdit(EngineObject target)
+    {
+        ArgumentNullException.ThrowIfNull(target);
+        if (target.isDestroyed)
+            return false;
+        try { return m_workspace.CanEdit(ResolveOwnerScene(target)); }
+        catch (InvalidOperationException) { return false; }
+    }
+
+    /// <summary>
     /// Creates an additive scene and records a reversible document change.
     /// </summary>
     /// <param name="historyName">
@@ -100,6 +130,7 @@ public sealed class SceneEdits : EditorModule
         ArgumentNullException.ThrowIfNull(scene);
         ArgumentException.ThrowIfNullOrWhiteSpace(historyName);
         using IDisposable presentationScope = m_workspace.EnterPresentationScope();
+        m_workspace.EnsureEditable(scene);
         if (parent is not null && !ReferenceEquals(parent.gameObject.scene, scene))
             throw new ArgumentException("The parent belongs to another scene.", nameof(parent));
         Guid? selectedBefore = GetSelectionId();
@@ -132,6 +163,71 @@ public sealed class SceneEdits : EditorModule
     }
 
     /// <summary>
+    /// Instantiates a prefab into a loaded scene and records the created subtree as one reversible edit.
+    /// </summary>
+    /// <param name="prefab">
+    /// The imported prefab asset to instantiate.
+    /// </param>
+    /// <param name="scene">
+    /// The loaded scene that will own the instance.
+    /// </param>
+    /// <param name="parent">
+    /// The optional parent transform for the instantiated root.
+    /// </param>
+    /// <param name="historyName">
+    /// The user-facing history entry name.
+    /// </param>
+    /// <returns>
+    /// The instantiated prefab root.
+    /// </returns>
+    public GameObject InstantiatePrefab(
+        PrefabAsset prefab,
+        GameScene scene,
+        Transform? parent = null,
+        string historyName = "Instantiate Prefab")
+    {
+        ArgumentNullException.ThrowIfNull(prefab);
+        ArgumentNullException.ThrowIfNull(scene);
+        ArgumentException.ThrowIfNullOrWhiteSpace(historyName);
+        using IDisposable presentationScope = m_workspace.EnterPresentationScope();
+        m_workspace.EnsureEditable(scene);
+        if (!scene.isLoaded)
+            throw new InvalidOperationException("A prefab can only be instantiated into a loaded scene.");
+        if (parent is not null && !ReferenceEquals(parent.gameObject.scene, scene))
+            throw new ArgumentException("The parent belongs to another scene.", nameof(parent));
+
+        Guid? selectedBefore = GetSelectionId();
+        GameObject instance = prefab.Instantiate(
+            scene,
+            m_workspace.serialization,
+            m_workspace.assets,
+            parent);
+        RecordWithRollback(
+            () =>
+            {
+                byte[] subtree = SceneSubtreeSerialization.Capture(
+                    instance,
+                    m_workspace.serialization,
+                    m_workspace.assets);
+                RecordSubtree(
+                    historyName,
+                    instance,
+                    existsBefore: false,
+                    existsAfter: true,
+                    subtree,
+                    [],
+                    selectedBefore,
+                    instance.identity.persistentId);
+            },
+            () =>
+            {
+                if (instance.isRuntimeValid && !scene.DestroyObject(instance))
+                    throw new InvalidOperationException("The unrecorded prefab instance could not be removed.");
+            });
+        return instance;
+    }
+
+    /// <summary>
     /// Deletes a GameObject subtree and records only that subtree plus incoming serialized references.
     /// </summary>
     /// <param name="gameObject">
@@ -148,6 +244,7 @@ public sealed class SceneEdits : EditorModule
         ArgumentNullException.ThrowIfNull(gameObject);
         ArgumentException.ThrowIfNullOrWhiteSpace(historyName);
         using IDisposable presentationScope = m_workspace.EnterPresentationScope();
+        m_workspace.EnsureEditable(gameObject.scene);
         if (!gameObject.isRuntimeValid)
             return false;
         GameScene scene = gameObject.scene;
@@ -226,6 +323,7 @@ public sealed class SceneEdits : EditorModule
         ArgumentNullException.ThrowIfNull(owner);
         ArgumentNullException.ThrowIfNull(componentType);
         using IDisposable presentationScope = m_workspace.EnterPresentationScope();
+        m_workspace.EnsureEditable(owner.scene);
         GameComponent component = owner.AddComponent(componentType);
         try
         {
@@ -280,6 +378,7 @@ public sealed class SceneEdits : EditorModule
         using IDisposable presentationScope = m_workspace.EnterPresentationScope();
         if (component.isDestroyed)
             return false;
+        m_workspace.EnsureEditable(component.gameObject.scene);
         GameObject owner = component.gameObject;
         GameScene scene = owner.scene;
         TypeRef typeRef = GetElementType(component);
@@ -350,6 +449,7 @@ public sealed class SceneEdits : EditorModule
     {
         ArgumentNullException.ThrowIfNull(component);
         using IDisposable presentationScope = m_workspace.EnterPresentationScope();
+        m_workspace.EnsureEditable(component.gameObject.scene);
         GameObject owner = component.gameObject;
         byte[] before = SceneElementSerialization.CaptureState(
             component,
@@ -395,7 +495,7 @@ public sealed class SceneEdits : EditorModule
     /// Moves an attached component and records only its two attachment indices.
     /// </summary>
     /// <param name="component">
-    /// The attached non-Transform component to move.
+    /// The attached component to move, including the mandatory Transform.
     /// </param>
     /// <param name="componentIndex">
     /// The requested attachment index.
@@ -411,6 +511,7 @@ public sealed class SceneEdits : EditorModule
         ArgumentNullException.ThrowIfNull(component);
         ArgumentException.ThrowIfNullOrWhiteSpace(historyName);
         using IDisposable presentationScope = m_workspace.EnterPresentationScope();
+        m_workspace.EnsureEditable(component.gameObject.scene);
         GameObject owner = component.gameObject;
         int beforeIndex = owner.GetComponentIndex(component);
         int afterIndex;
@@ -465,6 +566,7 @@ public sealed class SceneEdits : EditorModule
         ArgumentNullException.ThrowIfNull(scene);
         ArgumentNullException.ThrowIfNull(systemType);
         using IDisposable presentationScope = m_workspace.EnterPresentationScope();
+        m_workspace.EnsureEditable(scene);
         GameSystem system = scene.AddSystem(systemType);
         try
         {
@@ -519,6 +621,7 @@ public sealed class SceneEdits : EditorModule
         ArgumentNullException.ThrowIfNull(scene);
         ArgumentNullException.ThrowIfNull(system);
         using IDisposable presentationScope = m_workspace.EnterPresentationScope();
+        m_workspace.EnsureEditable(scene);
         if (system.isDestroyed)
             return false;
         byte[] state = SceneElementSerialization.CaptureState(
@@ -593,6 +696,7 @@ public sealed class SceneEdits : EditorModule
         ArgumentNullException.ThrowIfNull(scene);
         ArgumentNullException.ThrowIfNull(system);
         using IDisposable presentationScope = m_workspace.EnterPresentationScope();
+        m_workspace.EnsureEditable(scene);
         byte[] before = SceneElementSerialization.CaptureState(
             system,
             m_workspace.serialization,
@@ -658,6 +762,7 @@ public sealed class SceneEdits : EditorModule
         ArgumentNullException.ThrowIfNull(system);
         ArgumentException.ThrowIfNullOrWhiteSpace(historyName);
         using IDisposable presentationScope = m_workspace.EnterPresentationScope();
+        m_workspace.EnsureEditable(scene);
         int beforeIndex = scene.GetSystemIndex(system);
         int afterIndex;
         try
@@ -789,6 +894,7 @@ public sealed class SceneEdits : EditorModule
         ArgumentNullException.ThrowIfNull(scene);
         ArgumentNullException.ThrowIfNull(name);
         using IDisposable presentationScope = m_workspace.EnterPresentationScope();
+        m_workspace.EnsureEditable(scene);
         ChangeScalar(
             scene,
             SceneScalarKind.SceneName,
@@ -819,6 +925,7 @@ public sealed class SceneEdits : EditorModule
         ArgumentNullException.ThrowIfNull(gameObject);
         ArgumentNullException.ThrowIfNull(name);
         using IDisposable presentationScope = m_workspace.EnterPresentationScope();
+        m_workspace.EnsureEditable(gameObject.scene);
         ChangeScalar(
             gameObject,
             SceneScalarKind.GameObjectName,
@@ -848,6 +955,7 @@ public sealed class SceneEdits : EditorModule
     {
         ArgumentNullException.ThrowIfNull(gameObject);
         using IDisposable presentationScope = m_workspace.EnterPresentationScope();
+        m_workspace.EnsureEditable(gameObject.scene);
         string before = gameObject.activeSelf ? "1" : "0";
         string after = active ? "1" : "0";
         ChangeScalar(
@@ -887,6 +995,7 @@ public sealed class SceneEdits : EditorModule
         ArgumentException.ThrowIfNullOrWhiteSpace(tag);
         ArgumentException.ThrowIfNullOrWhiteSpace(historyName);
         using IDisposable presentationScope = m_workspace.EnterPresentationScope();
+        m_workspace.EnsureEditable(gameObject.scene);
         string requestedTag = tag.Trim();
         ChangeScalar(
             gameObject,
@@ -924,6 +1033,7 @@ public sealed class SceneEdits : EditorModule
         ArgumentNullException.ThrowIfNull(gameObject);
         ArgumentException.ThrowIfNullOrWhiteSpace(historyName);
         using IDisposable presentationScope = m_workspace.EnterPresentationScope();
+        m_workspace.EnsureEditable(gameObject.scene);
         ChangeScalar(
             gameObject,
             SceneScalarKind.GameObjectLayer,
@@ -968,33 +1078,58 @@ public sealed class SceneEdits : EditorModule
         ArgumentNullException.ThrowIfNull(mutation);
         ArgumentException.ThrowIfNullOrWhiteSpace(historyName);
         using IDisposable presentationScope = m_workspace.EnterPresentationScope();
-        byte[] before = ScenePropertySerialization.CaptureProperty(
-            target,
-            propertyName,
-            m_workspace.serialization,
-            m_workspace.assets);
-        byte[] after;
+        m_workspace.EnsureEditable(ResolveOwnerScene(target));
+        IReadOnlyList<SerializationPropertySnapshot> before = OrderPropertySnapshots(
+            ScenePropertySerialization.CapturePropertySnapshots(
+                target,
+                m_workspace.serialization,
+                m_workspace.assets),
+            propertyName);
+        if (!before.Any(snapshot => string.Equals(snapshot.name, propertyName, StringComparison.Ordinal)))
+        {
+            throw new ArgumentException(
+                $"Serializable property '{propertyName}' was not found on '{target.GetType().FullName}'.",
+                nameof(propertyName));
+        }
+        IReadOnlyList<SerializationPropertySnapshot> after;
         try
         {
             mutation();
-            after = ScenePropertySerialization.CaptureProperty(
-                target,
-                propertyName,
-                m_workspace.serialization,
-                m_workspace.assets);
+            after = OrderPropertySnapshots(
+                ScenePropertySerialization.CapturePropertySnapshots(
+                    target,
+                    m_workspace.serialization,
+                    m_workspace.assets),
+                propertyName);
         }
         catch (Exception exception)
         {
-            RollbackAndRethrow(exception, () => RequirePropertyRestore(target, before));
+            RollbackAndRethrow(exception, () => RestoreSnapshots(target, before));
             throw;
         }
-        if (before.AsSpan().SequenceEqual(after))
+
+        IReadOnlyDictionary<string, SerializationPropertySnapshot> afterByName = after.ToDictionary(
+            static snapshot => snapshot.name,
+            StringComparer.Ordinal);
+        var deltas = new List<ScenePropertyValueDelta>();
+        for (int index = 0; index < before.Count; index++)
+        {
+            SerializationPropertySnapshot previous = before[index];
+            if (!afterByName.TryGetValue(previous.name, out SerializationPropertySnapshot? current))
+                continue;
+            if (previous.data.Span.SequenceEqual(current.data.Span))
+                continue;
+            deltas.Add(new ScenePropertyValueDelta(
+                previous.name,
+                m_workspace.serialization.EncodePropertySnapshots([previous]),
+                m_workspace.serialization.EncodePropertySnapshots([current])));
+        }
+        if (deltas.Count == 0)
             return false;
         ScenePropertyHistoryData data = ScenePropertyHistoryData.Create(
             target.identity.persistentId,
             propertyName,
-            before,
-            after);
+            deltas);
         RecordWithRollback(
             () => m_interactions.history.RecordApplied(
                 historyName,
@@ -1002,8 +1137,36 @@ public sealed class SceneEdits : EditorModule
                     SceneHistoryKinds.Property,
                     EditorHistoryPayload.FromBytes(data.Encode()),
                     mergeKey)),
-            () => RequirePropertyRestore(target, before));
+            () => RestorePropertyDeltas(target, deltas, useAfter: false));
         return true;
+    }
+
+    private static IReadOnlyList<SerializationPropertySnapshot> OrderPropertySnapshots(
+        IReadOnlyList<SerializationPropertySnapshot> snapshots,
+        string primaryPropertyName)
+        => snapshots
+            .OrderBy(snapshot => string.Equals(snapshot.name, primaryPropertyName, StringComparison.Ordinal) ? 0 : 1)
+            .ToArray();
+
+    private void RestoreSnapshots(
+        EngineObject target,
+        IReadOnlyList<SerializationPropertySnapshot> snapshots)
+    {
+        for (int index = 0; index < snapshots.Count; index++)
+        {
+            RequirePropertyRestore(
+                target,
+                m_workspace.serialization.EncodePropertySnapshots([snapshots[index]]));
+        }
+    }
+
+    private void RestorePropertyDeltas(
+        EngineObject target,
+        IReadOnlyList<ScenePropertyValueDelta> deltas,
+        bool useAfter)
+    {
+        for (int index = 0; index < deltas.Count; index++)
+            RequirePropertyRestore(target, useAfter ? deltas[index].after : deltas[index].before);
     }
 
     /// <summary>
@@ -1034,10 +1197,13 @@ public sealed class SceneEdits : EditorModule
         ArgumentNullException.ThrowIfNull(mutation);
         ArgumentException.ThrowIfNullOrWhiteSpace(historyName);
         using IDisposable presentationScope = m_workspace.EnterPresentationScope();
+        m_workspace.EnsureEditable(gameObject.scene);
         GameObject[] affected = (relatedObjects ?? Array.Empty<GameObject>())
             .Prepend(gameObject)
             .DistinctBy(static candidate => candidate.identity.persistentId)
             .ToArray();
+        foreach (GameObject affectedObject in affected)
+            m_workspace.EnsureEditable(affectedObject.scene);
         SceneObjectPlacement[] before = CapturePlacements(affected);
         SceneObjectPlacement[] after;
         try
@@ -1151,6 +1317,18 @@ public sealed class SceneEdits : EditorModule
         => m_workspace.activeScene is { isDestroyed: false } scene
             ? scene.identity.persistentId
             : null;
+
+    private GameScene ResolveOwnerScene(EngineObject target)
+        => target switch
+        {
+            GameScene scene => scene,
+            GameObject gameObject => gameObject.scene,
+            GameComponent component => component.gameObject.scene,
+            GameSystem system => m_workspace.scenes.FirstOrDefault(scene =>
+                scene.GetSystems().Contains(system))
+                ?? throw new InvalidOperationException("The system has no loaded scene."),
+            _ => throw new InvalidOperationException("The object has no loaded scene.")
+        };
 
     private Guid? GetSelectionId()
         => m_interactions.selection.selectedTarget is EngineObject { isDestroyed: false } target

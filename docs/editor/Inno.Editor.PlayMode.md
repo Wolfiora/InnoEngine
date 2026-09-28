@@ -28,6 +28,7 @@ flowchart LR
 - Entry 主动申请 fresh compilation ticket，并只接受该 ticket 成功发布的脚本 generation；失败、取消或被更新请求取代时保持 Edit Scene，不创建半成品 Runtime Session。
 - Scene session 用当前序列化契约把所有已加载 Edit Scene 复制到独立 `RuntimeSession`，保留 Scene、GameObject、Component 与 System 的 persistent ID、顺序和 active Scene。Edit 对象始终留在 Edit Session，不参与游戏生命周期。
 - 全部 runtime Scene 准备成功后，Game View、Scene View、Hierarchy、Inspector、Selection 与 Gizmo 在同一安全点切换到 Play Session。它们读取并操作同一批 runtime 对象，不会出现画面已经运行而 Inspector 仍指向 Edit 对象的分裂状态。
+- Play Session 的 UI execution scope 同时覆盖脚本更新与 Editor 的 Game/Scene View 呈现和输入；Canvas 文档因此保持同一个 retained UI context，界面切换与独立 Player 一致。
 - Play runtime Scene 允许通过 Hierarchy、Inspector、Gizmo 和 Scene Action 临时编辑，但 `IEditorSceneWorkspace.canPersist` 为 `false`、`IsDirty` 恒为 `false`，Scene/Prefab Open/Save 被拒绝，因此不会显示未保存 `*`，也不会把 runtime 状态写入项目 Asset。
 - Undo/Redo 使用临时分支；Play 中产生的记录在退出时释放，进入 Play 前的 Undo 与 Redo 分支完整恢复。
 - runtime fixed/update/late callback 发生异常时立即停止后续模拟并请求恢复 Edit；异常只保存为字符串，不长期持有可卸载脚本 generation 的 `Exception` 或 delegate。

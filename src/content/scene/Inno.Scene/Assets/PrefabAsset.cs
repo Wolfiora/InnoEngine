@@ -83,12 +83,14 @@ public sealed class PrefabAsset : AssetObject
         ArgumentNullException.ThrowIfNull(scene);
         ArgumentNullException.ThrowIfNull(serialization);
         ArgumentNullException.ThrowIfNull(assets);
+        if (parent is not null && !ReferenceEquals(parent.gameObject.scene, scene))
+            throw new InvalidOperationException("The prefab parent must belong to the target scene.");
         SerializationContext context = AssetSerializationContext.Create(assets)
             .With(scene)
             .With<AssetObject>(this);
-        if (parent is not null)
-            context = context.With(parent);
         GameObject root = serialization.Deserialize<GameObject>(GetPayload(), context);
+        if (parent is not null)
+            scene.SetParent(root.transform, parent, worldPositionStays: false);
         if (!string.IsNullOrWhiteSpace(assetPath.localPath))
             root.name = Path.GetFileNameWithoutExtension(assetPath.localPath);
         return root;

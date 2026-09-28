@@ -1,8 +1,16 @@
 # Inno.Editor.ImGui
 
+## 共享 Inspector 与窗口呈现
+
+`ImGuiWidget.SectionLayout(Action drawContent)` 为一段内容建立可复用的 fieldset scope；scope 内连续调用 `bool SectionHeader(string title, string? description = null, Action? drawLeadingControl = null)` 时，标题嵌入上边框，直到下一个标题或 scope 结束的内容都被同一边框完整包裹。展开的内部 content fieldset 使用轻微圆角；窗口、Panel、顶层 Header 和其他大容器保持直角。返回值决定当前 section 正文是否应绘制；标题文字本身通过共享的 `ClickableText` widget 切换展开状态，不显示额外的加减号或整行 hover 背景。标题与 Stats 的共享 `CollectionSectionHeader` 使用同一 `sectionHeaderPadding`，因此左侧缩进不会由各 Panel 自行估算。折叠态保留中断式横线，并在整条线的左右端各绘制一根以横线为中心的短竖帽，形成 `⊢ … ⊣` 轮廓；竖帽与横线共享颜色、粗细和交点，不形成向下的残留边框。折叠状态由 ImGui 按当前 Inspector scope 的稳定顺序保存，标题或 Local/World 文案变化不会重置状态。`EnsureSection` 为没有 `[Header]` 的默认属性自动建立 `Properties` fieldset，`isSectionContentVisible` 则让 serialized-property pipeline 在任意 section 折叠后持续跳过内容，直到下一个 Header。可选 leading control 用于 Local/World 这类属于分组语义本身的开关；scope 外的 `SectionHeader` 仍保持普通分隔标题并返回 `true`。`HeaderSurface(id, drawContent, spanWindowPadding)` 是 Inspector target 与 Shader Editor 顶部共用的直角 header 容器；`CollectionSectionHeader` 是 Stats 等 collection surface 的直角分组条。`HelpBox(string text, string icon, Vector4 color)` 绘制有边框、状态图标与侧边语义色的内部提示卡片。`DrawItemTooltip` 使用父 viewport work area、真实内宽和缩放 padding 测量，靠边自动翻向并约束位置。File Browser、Hierarchy 与 Stats 共用暗色 collectionRow/collectionRowAlternate，交替条纹、hover、选择仍保持区分。
+
+浮动 Panel 在标题右侧显示统一关闭按钮；docked Panel 保持每个 dock node 一个关闭入口。Docked close glyph 以 ImGui 实际 `TabBar.BarRect` 的几何中心定位，不用字体高度或 DockNode 顶点推测，因此不同缩放与顶栏布局下仍严格垂直居中。窗口标题不继承输入控件的 FrameBorderSize，避免额外分隔线；这与透明接缝是两个不同的问题。窗口、Child、Tab 和 component header 的外轮廓使用直角；按钮、输入框、菜单、tooltip、HelpBox 与 Inspector content fieldset 等内部交互/内容表面仍使用语义圆角。所有按钮仍走现有 Panel close/dirty 确认生命周期。
+
 [Editor 索引](README.md) · [Platform ImGui](../platform/Inno.Adapter.Presentation.ImGui.Sdl3.md) · [Wiki 首页](../README.md)
 
 ## 退出所有权
+
+`ImGuiEditorRuntime.HandleKeyPressed()` 在原生文本控件要求文本输入时，不向底层 Panel 分发删除、复制、撤销等快捷键；Command/Ctrl+S 仍可执行当前文档的显式保存。焦点与语义动作继续由共享 Interactions 管理，不在控件中直接写盘。
 
 `ImGuiEditorRuntime.Dispose()` 只有在 interaction runtime 完整退场后才标记完成。
 Core `RetirementPendingException` 原样上抛并保留内部 runtime；普通已终结错误仍传播，但不会重复已完成的 Dispose。
@@ -11,6 +19,8 @@ Core `RetirementPendingException` 原样上抛并保留内部 runtime；普通�
 `Inno.Editor.ImGui` 提供编辑器统一控件、菜单/拖放渲染桥和视觉配置。它只包装可复用的 UI 原语，不持有 Scene、Selection 或 Panel 业务状态。
 
 EditorScripts 使用逻辑 namespace `InnoEditor.ImGui`。该项目的唯一 `Properties/ScriptingApi.cs` 导出 Editor widgets、常用 Dear ImGui flags 与 pointer-free `ImGui` facade；`Inno.Adapter.Presentation.ImGui` 不声明脚本 API。Facade 不暴露 native pointer、callback userdata 或 backend texture ID，只能在 Panel/Modal/Drawer 绘制回调期间调用。
+
+`ImGui.ColorEdit4` 沿用 Dear ImGui 的显示 RGB 数值语义。编辑渲染用的线性 RGB 时使用 `ImGui.ColorEditLinear4(label, ref Vector4 value, flags)`：显示前以标准 sRGB 传递函数编码，编辑后解码回线性 RGB，alpha 不转换；输入若显式声明 `InputHsv` 则拒绝，避免把 HSV 数值当作线性 RGB。Inspector 的 `Color` 属性与 Scene/Game 背景设置都使用后一入口，所以选择器的色块与实际画面基于同一线性值。
 
 ```text
 Inno.Editor.ImGui/
@@ -40,9 +50,11 @@ Palette 与 Style Metrics 并列位于 `Styling`，runtime host 与三个表现�
 
 所有主题颜色集中在 `EditorPalette`：原生 ImGui col、Inspector、Hierarchy、Asset Browser、Logging、轴颜色与 drag target 都不在 Panel 中声明。换主题只需替换这一个 palette surface。
 
-所有跨 Panel 的像素布局、padding、spacing、rounding、列比例和最小尺寸集中在 `ImGuiWidget.style`（`EditorStyleMetrics`）。Panel 可以读取语义名，例如 `assetListNameSeparatorPosition`、`inspectorCardSpacing`、`hierarchyItemSpacing`、`hierarchyRenameMinimumWidth` 与 `settingsFieldPadding`，不应新增散落的固定像素。
+所有跨 Panel 的像素布局、padding、spacing、rounding、列比例和最小尺寸集中在 `ImGuiWidget.style`（`EditorStyleMetrics`）。Panel 可以读取语义名，例如 `panelTabFramePadding`、`sectionHeaderPadding`、`inspectorSectionPadding`、`inspectorSectionRounding`、`inspectorCollapsedSectionCapLength`、`propertyMetadataSpacing`、`assetListNameSeparatorPosition`、`inspectorCardSpacing`、`hierarchyItemSpacing`、`hierarchyRenameMinimumWidth` 与 `settingsFieldPadding`，不应新增散落的固定像素。Inspector fieldset 的 outline 同样来自 `EditorPalette.inspectorSectionBorder`。
 
 `ImGuiWidget.SetupStyle()` 把 layout metrics 和 `EditorPalette` 应用到原生 ImGui style；运行期间 zoom 改变时，runtime 只在倍率发生变化后重新应用一次 native style。普通窗口绘制时，`ResizeGrip`、`ResizeGripHovered` 与 `ResizeGripActive` 使用透明色，因此可缩放窗口仍保留边缘/角落命中能力，但不会显示右下角三角形。Dear ImGui 在更新 Dock tree splitter 时会把 separator hover/active 临时映射到 resize-grip hover/active；`ImGuiEditorRuntime` 只在 `DockSpaceOverViewport` 调用范围内恢复这两个 accent color，保证 Panel 间连接线的 hover/drag feedback 可见，同时不恢复窗口三角形。
+
+主 dockspace 在窗口尺寸变化时按 ImGui 当前节点数据逐层更新子节点的 `SizeRef`，中央 node 不再独占新增加的空间。只有两个子节点的实际尺寸之和等于父节点的可用尺寸时，才用实际尺寸推导比例；刚载入 layout 时的子节点 `Size` 可能为零或错误地等于父尺寸，这时改用 ImGui 保存的 `SizeRef`，避免比例在启动首帧逐次漂移。宿主按当前 ImGui viewport ID 推导 dockspace ID，在第一次提交 dockspace 前读取已加载的节点并等比更新；拖动 splitter 的实际结果成为下一次 resize 的比例，最小尺寸仍由原生 `WindowMinSize` 和 separator 限制。比例不另存一份，布局的唯一持久来源仍是 `editor.ini` 的 `[Docking][Data]`。
 
 `PanelWindow(..., useWindowPadding)` 在 native `Begin` 阶段锁定当前 Panel 的窗口内边距。关闭 padding 只影响该 Panel window 本身，不污染随后打开的菜单、selector 或 popup；它与 `EditorPanel.useWindowPadding` 组成表现无关的布局契约。
 
@@ -60,7 +72,7 @@ Editor ImGui context 默认启用 Inno overlay scrollbar 扩展。纵横滚动�
 | `View/Zoom Out` | Command/Ctrl + `-` | 在 actual size 基础上减少一个 `0.10` 倍率步长。 |
 | `View/Actual Size` | Command/Ctrl + `0` | 恢复 Settings 中配置的 actual size。 |
 
-有效范围固定为 `0.75..1.50`；持久值使用完整路径 `Editor/Appearance/Accessibility/Actual Size`，只由 Settings Apply 写入 `<ProjectRoot>/Settings.Editor.inno`。Zoom In/Out 是 session 内的临时倍率，不改持久设置，也不制造 History。
+有效范围固定为 `0.75..1.50`；Actual Size 使用完整路径 `Editor/Appearance/Accessibility/Actual Size`，只由 Settings Apply 写入 `<ProjectRoot>/Settings.Editor.inno`。Zoom In/Out 的相对步数通过 `EditorZoomModule` 的项目状态保存到 `<ProjectRoot>/editor.ini`，不改 Settings，也不制造 History。
 
 ## Modal renderer
 
@@ -72,13 +84,13 @@ Editor ImGui context 默认启用 Inno overlay scrollbar 扩展。纵横滚动�
 
 `EditorMenuRenderer` 是唯一调用原生 `BeginMenu/MenuItem` 的业务渲染桥。它递归绘制任意层级的 `EditorMenuModel`，从 Action Attribute 自动读取快捷键标签，并把点击排入 Action queue。Panel 只提供 `EditorMenuContext(surface, target)`。
 
-主菜单由同一模型生成，并包含 `File`、`Edit`、`View`、`Panel` 等顶层节点。全局缩放属于 `View`；当前 `EditorPanelRegistry` 中的窗口开关统一生成到 `Panel`，显示 checked 状态并调用内建 Toggle Panel Action。脚本代际新增或移除 Panel 时不需要修改菜单代码。标准 Panel window 不向原生 ImGui 提交 `p_open`，因此普通 Tab 完全不包含关闭按钮。当前可见 Panel 根据所属 Dock Node 的实际位置和尺寸，在 Dock Header 最右侧的原生 close slot 位置绘制一个独立关闭控件。控件会补偿图标在字体 slot 中的水平居中 inset，使 X 的可见右边缘与第一个 Tab 的可见左边缘使用相同的 `WindowBorderSize + FramePadding.X` 外边距。它不参与 Tab 排列、不绘制 Tab 背景，并与 Inspector card 删除按钮共用 `ImGuiIcon.Xmark`、文本颜色及 hover 颜色。点击只关闭当前选中的 Panel，不会关闭同一 Dock Node 内的其他 Tab。该实现不修改 cimgui 或 Dear ImGui 源码。
+主菜单由同一模型生成，并包含 `File`、`Edit`、`View`、`Panel` 等顶层节点。全局缩放属于 `View`；当前 `EditorPanelRegistry` 中的窗口开关统一生成到 `Panel`，显示 checked 状态并调用内建 Toggle Panel Action。脚本代际新增或移除 Panel 时不需要修改菜单代码。标准 Panel window 不向原生 ImGui 提交 `p_open`，因此普通 Tab 完全不包含关闭按钮。`PanelWindow` 只在原生 `Begin` 建立窗口装饰时应用 `panelTabFramePadding`，避免紧凑输入控件的 padding 把紧贴 Main Menu 的第一行 Dock Tab 压扁。当前可见 Panel 根据所属 Dock Node 的实际位置和尺寸，在 Dock Header 最右侧的原生 close slot 位置绘制一个独立关闭控件；其纵向中心使用当前字体高度与该 `ImGuiTabBar` 已保存的 `FramePadding` 计算，不读取 amend pass 中正在变化的临时矩形。控件会补偿图标在字体 slot 中的水平居中 inset，使 X 的可见右边缘与第一个 Tab 的可见左边缘使用相同的 `WindowBorderSize + FramePadding.X` 外边距。它不参与 Tab 排列、不绘制 Tab 背景，并与 Inspector card 删除按钮共用 `ImGuiIcon.Xmark`、文本颜色及 hover 颜色。点击只关闭当前选中的 Panel，不会关闭同一 Dock Node 内的其他 Tab。该实现不修改 cimgui 或 Dear ImGui 源码。
 
 同一个 MainMenu pass 还读取 `EditorToolbarModel`，按 MenuBar window 的实际宽度把紧凑 icon 组放到几何中心。Renderer 只负责把 `EditorToolbarIcon` 映射到 `ImGuiIcon`、绘制 checked/hover/disabled 状态、tooltip 与快捷键，然后把点击排回 Action queue；Play Mode ID、状态机与命令语义不进入 ImGui 项目。左侧菜单宽度异常接近中心时，toolbar 会向右避让而不覆盖菜单 item。
 
 `ContextMenu` 绑定最近提交的 ImGui item；`WindowContextMenu` 只响应当前 window 中没有 item 占用的背景区域。两者都会先构建菜单模型，模型没有可见条目时不会打开原生 popup，因此不会显示空的黑色菜单框。
 
-所有 context menu 在 `BeginContextMenu` / `EndContextMenu` 范围内应用同一组 `EditorPalette.menu*` 颜色和 `EditorStyleMetrics.menu*` padding、spacing、rounding 与 border。显式点击 Popup 使用 `BeginMenuPopup` / `EndMenuPopup`；hover tooltip 使用 `BeginMenuTooltip` / `EndMenuTooltip`，因此三种浮层共享同一个 presentation contract。短生命周期 Popup 显式继承调用窗口的 viewport，不会因为靠近平台窗口边缘而被提升为独立 OS viewport。Popup 先按内容 auto-size，达到 viewport work area 或调用方约束后转为纵向滚动，且不保存临时窗口尺寸；长菜单不会继续扩大 native window。Panel 的局部 Table/Tree style 不会再改变浮层外观。Popup 打开时，Tree、disclosure 等自绘控件会暂停其底层 hover feedback；原生 popup 本身接收鼠标事件，避免 hover 或点击继续影响菜单后面的 entry。
+所有 context menu 在 `BeginContextMenu` / `EndContextMenu` 范围内应用同一组 `EditorPalette.menu*` 颜色和 `EditorStyleMetrics.menu*` padding、spacing、rounding 与 border。显式点击 Popup 使用 `BeginMenuPopup` / `EndMenuPopup`；hover tooltip 使用 `BeginMenuTooltip` / `EndMenuTooltip`，因此三种浮层共享同一个 presentation contract。`DrawItemTooltip` 是 Settings、Inspector 和其他 property surface 的统一入口：它从最近提交的 item 取得 hover 状态，使用随 Editor zoom 缩放的 300 px 最小宽度和 440 px 换行上限，并复用完全相同的 menu tooltip 外观。短生命周期 Popup 显式继承调用窗口的 viewport，不会因为靠近平台窗口边缘而被提升为独立 OS viewport。Popup 先按内容 auto-size，达到 viewport work area 或调用方约束后转为纵向滚动，且不保存临时窗口尺寸；长菜单不会继续扩大 native window。Panel 的局部 Table/Tree style 不会再改变浮层外观。Popup 打开时，Tree、disclosure 等自绘控件会暂停其底层 hover feedback；原生 popup 本身接收鼠标事件，避免 hover 或点击继续影响菜单后面的 entry。
 
 ## CollapsingCard
 
@@ -98,9 +110,13 @@ bool open = ImGuiWidget.CollapsingCard(
 
 Header 的 disclosure triangle 由 `DrawDisclosureIndicator` 统一绘制：保留 `▶ / ▼` glyph，并根据实际 header bounds 居中。卡片、disabled text 与 disclosure hover 颜色都来自 `EditorPalette`，便于主题统一替换。底层 TreeNode 仍负责 open state 和点击命中，因此没有第二套折叠状态。
 
-`trailingControlWidth` 可以为多个右侧按钮预留固定宽度。Component 与 System Inspector 使用它放置 Move Up、Move Down 与 Remove。
+`trailingControlWidth` 可以为多个右侧按钮预留固定宽度。Component 与 System Inspector 使用它放置 Reset 与 Remove；Transform 不可移除，因此只显示 Reset。
 
 `drawContextMenu` 在完整 Header TreeNode 仍是当前 ImGui item 时执行，因此右键命中覆盖整个 Header，而不会错误绑定到 enabled checkbox、标题或末尾按钮。Component、Transform 与 System 都使用相同入口。
+
+Component（包含 Transform）与 GameSystem 的排序拖拽也绑定在这个完整 Header item 上。拖动时 tooltip 使用相同 header surface、drag grip、标题和 dimmed text，明确表现被提起的是整张卡片。Drop target 使用 header 到展开 body 底部的完整矩形；目标展开时，“插入到后面”的黄色 insertion line 位于整个 body 下方，而不是 header 下方。Inspector 调用 `DragDropSource(..., allowHoldToOpenOthers: false)`，由 ImGui 实现内部映射为 `SourceNoHoldToOpenOthers`，禁止 TreeNode 在 drag-hover 超时后自动展开，也不向上层暴露 native flag。payload 只携带 generation-safe `RuntimeIdentity`，preview 和 delivery 都重新解析 live object，最后仍调用 `SceneEdits.SetComponentIndex` / `SetSystemIndex`，所以排序继续进入同一 Undo/Redo 历史。
+
+`DragDropTarget<TPayload>(string payloadType, Vector2 minimum, Vector2 maximum, uint targetId, out TPayload payload, out bool isPreviewing, bool drawDefaultHighlight = true)` 是可复用的显式矩形 drop target：它允许调用方把 header 与展开 body 合并成一个命中区，并在关闭默认 highlight 后绘制统一 insertion line。
 
 `CenteredWrappedText` 在调用方提供的完整区域内按水平/垂直 padding 计算换行宽度，将整个文本块居中，并以同一 padded rectangle 裁剪。Scene View 与 Game View 的 Provider 缺失、隔离失败和 GPU target 准备提示统一使用该 primitive，因此长诊断不会贴边、越界或只停留在左上角。
 
@@ -117,11 +133,11 @@ if (open)
 }
 ```
 
-`CardBody` 提供统一的背景、边框与内边距；`dimmed` 为 `true` 时，正文整体灰化且不可编辑，但 header 中的 enabled checkbox 仍可用于重新启用对象。Card 的 full-width bounds 使用当前 window 的实际 padding，而不是全局默认值，因此零 padding Panel 不会被误判为横向溢出。Header title 在 leading/trailing 控件之间裁剪并提交固定可用宽度，长 GameBehavior/GameSystem 类型名不会扩大 window content size。相邻卡片之间的外部间距由调用方控制。
+`CardBody` 提供统一的背景、边框与内边距；`dimmed` 为 `true` 时，正文整体灰化且不可编辑，但 header 中的 enabled checkbox 仍可用于重新启用对象。`CollapsingCard` 的 header 自身也使用同色语义边框；展开时 header 与 body 使用同一左右边界并在同一 Y 坐标衔接，body 原有上边框继续作为明确的 header/content 分隔线。折叠时 header 保持完整独立外框。Card 的 full-width bounds 使用当前 window 的实际 padding，而不是全局默认值，因此零 padding Panel 不会被误判为横向溢出。Header title 在 leading/trailing 控件之间裁剪并提交固定可用宽度，长 GameBehavior/GameSystem 类型名不会扩大 window content size。相邻卡片之间的外部间距由调用方控制。
 
-`PropertyRow` 会按当前可用宽度限制 label column，并保证 value column 仍有可用区域；向量属性的每个 axis field 同样按实际列宽收缩，不用全局最小宽度反向撑大 Inspector。这些控件在宽窗口保持原有比例，在窄窗口只压缩自身布局，不创建人工 `ScrollMaxX`。
+`PropertyRow` 会按当前可用宽度限制 label column，并保证 value column 仍有可用区域；除普通字符串 label 外，也可传入自定义 label callback，在同一列组合名称、类型 badge 或多行说明。向量属性的每个 axis field 同样按实际列宽收缩，不用全局最小宽度反向撑大 Inspector。这些控件在宽窗口保持原有比例，在窄窗口只压缩自身布局，不创建人工 `ScrollMaxX`。`CompactDragFloat` 与 `CompactSliderFloat` 默认只呈现一位小数，并启用 `NoRoundToFormat` 保留底层精确值；双击（或 Ctrl+单击）使用同一 ImGui ID 进入九位有效数字文本编辑，所以 Vector、Rect、Quaternion、Transform 与普通 float 共享相同语义。
 
-其余常用控件包括 `SearchInput`、`BeginSearchPopup`/`EndSearchPopup`、`BeginMenuPopup`/`EndMenuPopup`、`BeginMenuTooltip`/`EndMenuTooltip`、`BeginBoundedCombo`、`BeginMenuSelector`/`EndMenuSelector`、`InlineRename`、`IconButton`、`CompactCheckbox`、`LabelChip`、`CenteredButton`、`CenteredProgressBar` 和 `WrappedText`。`BeginBoundedCombo` 统一为普通 Enum、索引、Asset、Scene Object 与节点选择器设置稳定宽度、可视行数和 work-area 高度上限：Popup 宽度由触发控件确定且固定，内部 `SearchInput(-1)` 只填充该固定区域，不会与 `AlwaysAutoResize` 形成逐帧横向放大；内容超出后使用 overlay scrollbar。`LabelChip` 与 `GetLabelChipSize` 共用全局 padding/rounding，给紧凑的非交互标签提供柔和彩色背景；调用方无需分别估算背景与文字宽度。`BeginMenuSelector(id, preview, width, minimumPopupWidth)` 使用与原生 Combo 相同的独立箭头按钮区，并把 Popup 委托给共享 menu popup contract；其固定宽度取 `width` 与 `minimumPopupWidth` 的较大值，超长文字由 clip/tooltip 处理而不会反向撑宽 Popup。`WrappedText` 通过 wrap scope 与 `TextUnformatted` 绘制 literal text，不经过 native variadic formatting ABI，适合诊断、说明文字和来自 Asset 的内容。`CenteredProgressBar` 使用原生进度填充，但把 overlay 独立绘制在完整 bar 的几何中心，因此百分比不会跟随填充边缘移动。每个组件位于对应的 `ImGuiWidget.<Component>.cs`，避免继续形成一个混合所有控件的 EditorControls 文件。`GetGlyphVisualBounds` 与 `AddGlyphCentered` 使用 baked font 的 glyph bearing，而不是字符串 advance rectangle，适合把不对称 icon glyph 按实际可见轮廓居中；`ClickableIcon` 同样按 glyph 可见边界居中，而不是按 advance rectangle 估算。`InlineRename` 不缩放字体；它直接在调用方当前内容层绘制原生输入框，使用统一的紧凑 frame padding、rounding 与 border，并在 `rowHeight` 内垂直居中。该控件只对自身隐藏原生向外扩展 4px 的 nav cursor，并沿实际输入框外扩 1px 重画焦点线框。焦点线框与 DropTarget/InsertionLine 共用 `interactionOverlayThickness`，并绘制到 foreground draw list，因此始终覆盖 Table、Tree、Grid 的 highlight、分隔线和后续普通内容。首次请求焦点时控件会显式全选当前值；其结果明确区分 Enter `Commit`、`FocusLost` 与 Escape `Cancel`，因此 feature 可以为校验失败定义一致的收尾规则。所有需要 identity 的控件都应传入稳定且在当前 ImGui scope 内唯一的 `id`。
+其余常用控件包括 `SearchInput`、`BeginSearchPopup`/`EndSearchPopup`、`BeginMenuPopup`/`EndMenuPopup`、`BeginMenuTooltip`/`EndMenuTooltip`、`BeginBoundedCombo`、`BeginMenuSelector`/`EndMenuSelector`、`InlineRename`、`IconButton`、`Checkbox`、`CompactCheckbox`、`MetadataValue`、`LabelChip`、`TypeBadge`、`CenteredButton`、`CenteredProgressBar` 和 `WrappedText`。`Checkbox` 与 `CompactCheckbox` 都在控件自身的 hover item 上接受可选 tooltip，调用方不需要在每个 header 或 PropertyDrawer 中重复手写 hover 检测。`MetadataValue` 把类型、来源等短 metadata 保留在右侧 value column，可选择后接文字或交互控件，避免把类型 badge 污染到属性 label。`BeginBoundedCombo` 统一为普通 Enum、索引、Asset、Scene Object 与节点选择器设置稳定宽度、可视行数和 work-area 高度上限：Popup 宽度由触发控件确定且固定，内部 `SearchInput(-1)` 只填充该固定区域，不会与 `AlwaysAutoResize` 形成逐帧横向放大；内容超出后使用 overlay scrollbar。`LabelChip` 与 `GetLabelChipSize` 共用全局 padding/rounding，给紧凑的非交互标签提供柔和彩色背景；`TypeBadge` 与 `GetTypeBadgeSize` 仍可用于确实需要独立语义色图例的界面，但普通属性类型应优先使用 `MetadataValue`。调用方无需分别估算背景、边框与文字宽度。`BeginMenuSelector(id, preview, width, minimumPopupWidth)` 使用与原生 Combo 相同的独立箭头按钮区，并把 Popup 委托给共享 menu popup contract；其固定宽度取 `width` 与 `minimumPopupWidth` 的较大值，超长文字由 clip/tooltip 处理而不会反向撑宽 Popup。`WrappedText` 通过 wrap scope 与 `TextUnformatted` 绘制 literal text，不经过 native variadic formatting ABI，适合诊断、说明文字和来自 Asset 的内容。`Hint` 同样使用当前内容宽度换行，不再要求 Panel 预估单行长度。`CenteredProgressBar` 使用原生进度填充，但把 overlay 独立绘制在完整 bar 的几何中心，因此百分比不会跟随填充边缘移动。每个组件位于对应的 `ImGuiWidget.<Component>.cs`，避免继续形成一个混合所有控件的 EditorControls 文件。`GetGlyphVisualBounds` 与 `AddGlyphCentered` 使用 baked font 的 glyph bearing，而不是字符串 advance rectangle，适合把不对称 icon glyph 按实际可见轮廓居中；`ClickableIcon` 同样按 glyph 可见边界居中，而不是按 advance rectangle 估算。`InlineRename` 不缩放字体；它直接在调用方当前内容层绘制原生输入框，使用统一的紧凑 frame padding、rounding 与 border，并在 `rowHeight` 内垂直居中。该控件只对自身隐藏原生向外扩展 4px 的 nav cursor，并沿实际输入框外扩 1px 重画焦点线框。焦点线框与 DropTarget/InsertionLine 共用 `interactionOverlayThickness`，并绘制到 foreground draw list，因此始终覆盖 Table、Tree、Grid 的 highlight、分隔线和后续普通内容。首次请求焦点时控件会显式全选当前值；其结果明确区分 Enter `Commit`、`FocusLost` 与 Escape `Cancel`，因此 feature 可以为校验失败定义一致的收尾规则。所有需要 identity 的控件都应传入稳定且在当前 ImGui scope 内唯一的 `id`。
 
 ## Tree 与拖拽反馈
 

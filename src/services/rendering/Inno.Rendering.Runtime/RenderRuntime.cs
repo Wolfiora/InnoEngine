@@ -2,18 +2,21 @@ using Inno.References;
 using Inno.Runtime.Contracts;
 using Inno.Core.Diagnostics;
 using Inno.Core.Execution;
+using Inno.Core.Identity;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using Inno.Extensibility.Types;
 using Inno.Rendering;
+using Inno.Input;
+using Inno.Core.Mathematics;
 
 namespace Inno.Rendering.Runtime;
 
 /// <summary>
 /// Owns the sole graphics frame boundary and executes model-neutral render requests.
 /// </summary>
-public sealed class RenderRuntime : RuntimeSubsystem, IRenderRequestSink
+public sealed class RenderRuntime : RuntimeSubsystem, IRenderRequestSink, IViewContentCollector
 {
     private const int C_MAX_QUEUED_REQUESTS = 4096;
     private static readonly RenderPhaseId S_PRESENTATION_BACKGROUND_PHASE = new(
@@ -25,14 +28,20 @@ public sealed class RenderRuntime : RuntimeSubsystem, IRenderRequestSink
     private readonly IRenderDevice m_device;
     private readonly IDiagnosticReporter m_diagnostics;
     private readonly Func<ContentReadScope>? m_contentScopeProvider;
+    private readonly Func<InputSnapshot>? m_inputSnapshotProvider;
+    private readonly Func<RenderPresentationSize>? m_primaryInputSurfaceSizeProvider;
     private readonly Func<RenderPresentationSize, RenderViewport>? m_primaryPresentationViewportProvider;
     private readonly RenderResourceService m_resourceService;
     private readonly RenderFrameUploadService m_uploads;
+    private readonly RenderLayerCompositor m_compositor;
     private readonly RenderExtensionRegistry m_extensions;
     private readonly GraphicsSettingsState m_graphicsSettings;
     private readonly Dictionary<RenderPipelineAsset, GenerationCacheEntry> m_generations = [];
+    private readonly List<RenderPipelineAsset> m_retiredAssets = [];
     private readonly List<RenderRequest> m_pendingRequests = [];
     private readonly List<RenderRequest> m_currentRequests = [];
+    private readonly List<CompositionRequest> m_pendingCompositions = [];
+    private readonly List<CompositionRequest> m_currentCompositions = [];
     private readonly List<IRenderFrameGraphContributor> m_contributors = [];
     private ulong m_frameIndex;
     private uint m_graphGeneration;
@@ -44,6 +53,10 @@ public sealed class RenderRuntime : RuntimeSubsystem, IRenderRequestSink
     private RenderRuntimeReloadSession? m_reloadSession;
     private RenderPresentationSize m_primaryPresentationSize = new(1, 1);
     private RenderViewport m_primaryPresentationViewport = new(0, 0, 1, 1);
+    private RenderOutputRoute? m_primaryRoute;
+    private bool m_primaryModelOutputEnabled = true;
+    private string? m_lastModelDiagnostic;
+    private InputSnapshot m_frameInput = InputSnapshot.empty;
 
     /// <summary>
     /// Creates a render runtime without installing any concrete pipeline.
@@ -78,6 +91,12 @@ public sealed class RenderRuntime : RuntimeSubsystem, IRenderRequestSink
     /// <param name="resourceLimits">
     /// Finite native cache and asynchronous readback limits; omitted values use the engine defaults.
     /// </param>
+    /// <param name="inputSnapshotProvider">
+    /// Optional host callback that reads the completed session input snapshot when output is collected.
+    /// </param>
+    /// <param name="primaryInputSurfaceSizeProvider">
+    /// Optional logical window size used to scale input coordinates onto the presentation surface.
+    /// </param>
     public RenderRuntime(
         TypeCatalog types,
         IRenderDevice device,
@@ -86,7 +105,9 @@ public sealed class RenderRuntime : RuntimeSubsystem, IRenderRequestSink
         IRenderTargetArtifactProvider? targetArtifacts = null,
         Func<ContentReadScope>? contentScopeProvider = null,
         Func<RenderPresentationSize, RenderViewport>? primaryPresentationViewportProvider = null,
-        RenderResourceLimits? resourceLimits = null)
+        RenderResourceLimits? resourceLimits = null,
+        Func<InputSnapshot>? inputSnapshotProvider = null,
+        Func<RenderPresentationSize>? primaryInputSurfaceSizeProvider = null)
     {
         ArgumentNullException.ThrowIfNull(types);
         resourceLimits ??= new RenderResourceLimits();
@@ -103,6 +124,8 @@ public sealed class RenderRuntime : RuntimeSubsystem, IRenderRequestSink
             }
         }
         m_contentScopeProvider = contentScopeProvider;
+        m_inputSnapshotProvider = inputSnapshotProvider;
+        m_primaryInputSurfaceSizeProvider = primaryInputSurfaceSizeProvider;
         m_primaryPresentationViewportProvider = primaryPresentationViewportProvider;
         m_extensions = new RenderExtensionRegistry(types);
         m_graphicsSettings = new GraphicsSettingsState(m_device.capabilities);
@@ -112,6 +135,7 @@ public sealed class RenderRuntime : RuntimeSubsystem, IRenderRequestSink
             targetArtifacts,
             resourceLimits);
         m_uploads = new RenderFrameUploadService(m_device, resourceLimits);
+        m_compositor = new RenderLayerCompositor(m_device);
         targets = new RenderTargetStore(device, resourceLimits.targets);
     }
 
@@ -119,6 +143,92 @@ public sealed class RenderRuntime : RuntimeSubsystem, IRenderRequestSink
     /// Gets persistent offscreen target services for viewport presentation.
     /// </summary>
     public RenderTargetStore targets { get; }
+
+    /// <summary>
+    /// Gets backend-neutral persistent resource resolution for host-owned previews and rendering integrations.
+    /// </summary>
+    public IRenderResourceService resources => m_resourceService;
+
+    /// <summary>
+    /// Gets the generation-scoped collector used by rendering models for world content.
+    /// </summary>
+    public IViewContentCollector viewContent => this;
+
+    /// <summary>
+    /// Gets the monotonic index of the current or most recently completed output frame.
+    /// </summary>
+    public ulong currentFrameIndex => m_frameIndex;
+
+    /// <summary>
+    /// Sets the explicit model composition route for the primary output at a frame boundary.
+    /// </summary>
+    /// <param name="route">
+    /// Ordered model identities, or null for automatic single-model selection.
+    /// </param>
+    public void SetPrimaryRoute(RenderOutputRoute? route)
+    {
+        EnsureActive();
+        if (m_frameOpen)
+            throw new InvalidOperationException("Output routes can only change at a frame boundary.");
+        m_primaryRoute = route;
+    }
+
+    /// <summary>
+    /// Enables or disables model rendering to the host's primary backbuffer.
+    /// Editor hosts disable this because their Game and Scene sessions own offscreen outputs.
+    /// </summary>
+    /// <param name="enabled">
+    /// Whether the primary backbuffer is a model output.
+    /// </param>
+    public void SetPrimaryModelOutputEnabled(bool enabled)
+    {
+        EnsureActive();
+        if (m_frameOpen)
+            throw new InvalidOperationException("Primary output ownership can only change at a frame boundary.");
+        m_primaryModelOutputEnabled = enabled;
+        m_lastModelDiagnostic = null;
+    }
+
+    /// <summary>
+    /// Collects frame requests from rendering models and registered providers.
+    /// </summary>
+    /// <param name="context">
+    /// The context that supplies state and services for this operation.
+    /// </param>
+    /// <returns>
+    /// An immutable snapshot of the values selected by the operation.
+    /// </returns>
+    public IReadOnlyList<ViewContentItem> Collect(ViewContentContext context)
+    {
+        ArgumentNullException.ThrowIfNull(context);
+        EnsureActive();
+        var sink = new ViewContentSink();
+        foreach (RenderExtensionRegistry.ContentSourceEntry entry in m_extensions.extensions.sources.sources)
+        {
+            if (context.sourceIds is { } sourceIds
+                && !sourceIds.Contains(entry.id, StringComparer.Ordinal))
+                continue;
+            try
+            {
+                entry.source.Collect(context, sink);
+            }
+            catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null) { throw; }
+            catch (Exception exception)
+            {
+                m_diagnostics.Publish(new Diagnostic(
+                    "RENDER_VIEW_CONTENT_SOURCE_FAILED",
+                    $"View content source '{entry.id}' was isolated after failure: {exception}",
+                    DiagnosticSeverity.Error,
+                    entry.id));
+            }
+        }
+        return sink.items;
+    }
+
+    /// <summary>
+    /// Gets the non-zero rendering-device generation that owns persistent handles.
+    /// </summary>
+    public uint deviceGeneration => m_device.generation;
 
     /// <summary>
     /// Gets a detached control-thread snapshot of resource occupancy, high-water marks and rejected admissions.
@@ -209,9 +319,61 @@ public sealed class RenderRuntime : RuntimeSubsystem, IRenderRequestSink
         lock (m_requestLock)
         {
             EnsureActive();
-            if (m_currentRequests.Count + m_pendingRequests.Count >= C_MAX_QUEUED_REQUESTS)
+            if (m_currentRequests.Count + m_pendingRequests.Count
+                + m_currentCompositions.Count + m_pendingCompositions.Count >= C_MAX_QUEUED_REQUESTS)
                 throw new InvalidOperationException("The rendering request queue is at capacity.");
             (m_acceptingCurrentFrame ? m_currentRequests : m_pendingRequests).Add(request);
+        }
+    }
+
+    /// <summary>
+    /// Submits independently rendered model layers for premultiplied-alpha output composition.
+    /// </summary>
+    /// <param name="name">
+    /// Stable frame-local composition identity.
+    /// </param>
+    /// <param name="target">
+    /// Final host-owned output target.
+    /// </param>
+    /// <param name="viewport">
+    /// Output viewport in physical pixels.
+    /// </param>
+    /// <param name="format">
+    /// Shared sampled color format required by every layer.
+    /// </param>
+    /// <param name="layers">
+    /// Ordered requests, one per rendering model.
+    /// </param>
+    /// <param name="priority">
+    /// Ascending scheduling priority relative to ordinary requests.
+    /// </param>
+    /// <exception cref="ArgumentException">
+    /// The layer set or format is invalid.
+    /// </exception>
+    /// <exception cref="InvalidOperationException">
+    /// The bounded frame queue is full or retirement has started.
+    /// </exception>
+    public void SubmitComposition(string name, RenderTarget target, RenderViewport viewport,
+        RenderTextureFormat format, IReadOnlyList<RenderRequest> layers, int priority = 0)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(name);
+        ArgumentNullException.ThrowIfNull(layers);
+        if (layers.Count < 2 || layers.Any(static layer => layer is null))
+            throw new ArgumentException("A composition requires at least two non-null model layers.", nameof(layers));
+        if (layers.Any(layer => layer.viewport != viewport || layer.target != target))
+            throw new ArgumentException("All composition layers must name the same final target and viewport.", nameof(layers));
+        if (!m_device.capabilities.SupportsRenderTarget(format)
+            || !m_device.capabilities.SupportsSampled(format))
+            throw new ArgumentException($"The device cannot sample and render model layers in '{format}'.", nameof(format));
+        var composition = new CompositionRequest(name, target, viewport, format,
+            layers.ToArray(), priority);
+        lock (m_requestLock)
+        {
+            EnsureActive();
+            if (m_currentRequests.Count + m_pendingRequests.Count
+                + m_currentCompositions.Count + m_pendingCompositions.Count >= C_MAX_QUEUED_REQUESTS)
+                throw new InvalidOperationException("The rendering request queue is at capacity.");
+            (m_acceptingCurrentFrame ? m_currentCompositions : m_pendingCompositions).Add(composition);
         }
     }
 
@@ -276,7 +438,12 @@ public sealed class RenderRuntime : RuntimeSubsystem, IRenderRequestSink
     /// <param name="frame">
     /// The variable frame timing.
     /// </param>
-    protected override void OnBeginFrame(RuntimeFrame frame) => OwnFrameScope(EnterExecutionScope());
+    protected override void OnBeginFrame(RuntimeFrame frame)
+    {
+        m_frameInput = InputExecutionContext.TryGet(out IInputService? input)
+            ? input!.snapshot : InputSnapshot.empty;
+        OwnFrameScope(EnterExecutionScope());
+    }
     /// <summary>
     /// Opens resources required for this frame's output.
     /// </summary>
@@ -324,6 +491,9 @@ public sealed class RenderRuntime : RuntimeSubsystem, IRenderRequestSink
                 m_currentRequests.Clear();
                 m_currentRequests.AddRange(m_pendingRequests);
                 m_pendingRequests.Clear();
+                m_currentCompositions.Clear();
+                m_currentCompositions.AddRange(m_pendingCompositions);
+                m_pendingCompositions.Clear();
                 m_acceptingCurrentFrame = true;
             }
         }
@@ -336,6 +506,7 @@ public sealed class RenderRuntime : RuntimeSubsystem, IRenderRequestSink
             }
             finally
             {
+                m_resourceService.EndMutation();
                 m_frameOpen = false;
             }
             throw;
@@ -355,6 +526,25 @@ public sealed class RenderRuntime : RuntimeSubsystem, IRenderRequestSink
 
         using IDisposable executionScope = EnterExecutionScope();
         using ContentReadScope content = GetFrameContentScope();
+        InputSnapshot input = m_inputSnapshotProvider?.Invoke() ?? m_frameInput;
+        Vector2 pointerPosition = input.mousePosition;
+        if (m_primaryInputSurfaceSizeProvider is not null)
+        {
+            RenderPresentationSize logicalSize = m_primaryInputSurfaceSizeProvider();
+            if (logicalSize.width <= 0 || logicalSize.height <= 0)
+                throw new InvalidOperationException("The primary input surface has an invalid logical size.");
+            pointerPosition = new Vector2(
+                pointerPosition.x * m_primaryPresentationSize.width / logicalSize.width,
+                pointerPosition.y * m_primaryPresentationSize.height / logicalSize.height);
+        }
+        Vector2 pointer = pointerPosition - new Vector2(
+            m_primaryPresentationViewport.x, m_primaryPresentationViewport.y);
+        var outputInput = new RenderOutputInput(pointer,
+            pointer.x >= 0f && pointer.y >= 0f
+            && pointer.x < m_primaryPresentationViewport.width
+            && pointer.y < m_primaryPresentationViewport.height,
+            input.scrollDelta, input.modifiers, input.keysPressed, input.keysReleased,
+            input.mouseButtonsPressed, input.mouseButtonsReleased, input.textInput);
         var context = new RenderRequestProviderContext(
             this,
             content,
@@ -362,7 +552,12 @@ public sealed class RenderRuntime : RuntimeSubsystem, IRenderRequestSink
             m_primaryPresentationSize,
             m_primaryPresentationViewport,
             m_frameIndex,
-            deltaTime);
+            deltaTime,
+            this,
+            outputInput);
+        if (m_primaryModelOutputEnabled)
+            CollectModels(new RenderOutputSession("primary", content, m_primaryPresentationViewport,
+                m_frameIndex, deltaTime, this, outputInput, m_primaryRoute));
         foreach (RenderExtensionRegistry.RequestProviderEntry entry in m_requestProviders.providers)
         {
             try
@@ -379,6 +574,91 @@ public sealed class RenderRuntime : RuntimeSubsystem, IRenderRequestSink
                     entry.id));
             }
         }
+    }
+
+    private void CollectModels(RenderOutputSession session)
+    {
+        var applicable = new List<RenderExtensionRegistry.RenderModelEntry>();
+        foreach (RenderExtensionRegistry.RenderModelEntry entry in m_extensions.extensions.models.models)
+        {
+            try
+            {
+                if (entry.model.CanRender(session))
+                    applicable.Add(entry);
+            }
+            catch (Exception exception)
+            {
+                m_diagnostics.Publish(new Diagnostic("RENDER_MODEL_ACCEPT_FAILED",
+                    $"Render model '{entry.id}' failed to inspect output content: {exception}",
+                    DiagnosticSeverity.Error, entry.id));
+            }
+        }
+        if (applicable.Count == 0)
+        {
+            PublishModelDiagnostic("No rendering model accepts the primary output content.");
+            return;
+        }
+        IReadOnlyList<RenderExtensionRegistry.RenderModelEntry> ordered = applicable;
+        RenderOutputRoute? route = session.route;
+        if (route is not null)
+        {
+            if (route.layers.Count != applicable.Count
+                || route.layers.Any(layer => applicable.All(entry => entry.id != layer.modelId)))
+            {
+                PublishModelDiagnostic("The primary output route must name every applicable rendering model exactly once.");
+                return;
+            }
+            ordered = route.layers.Select(layer => applicable.Single(entry => entry.id == layer.modelId)).ToArray();
+        }
+        else if (applicable.Count > 1)
+        {
+            PublishModelDiagnostic("Multiple rendering models accept the primary output; configure a RenderOutputRoute: "
+                + string.Join(", ", applicable.Select(static entry => entry.id)));
+            return;
+        }
+        m_lastModelDiagnostic = null;
+        var requests = new List<RenderRequest>(ordered.Count);
+        RenderTextureFormat? format = null;
+        for (int index = 0; index < ordered.Count; index++)
+        {
+            RenderExtensionRegistry.RenderModelEntry entry = ordered[index];
+            try
+            {
+                RenderOutputSession modelSession = route is null
+                    ? session
+                    : session.ForLayer(route.layers[index]);
+                RenderModelOutput model = entry.model.Build(modelSession);
+                if (format is RenderTextureFormat selected && selected != model.targetFormat)
+                {
+                    PublishModelDiagnostic($"Output models require different target formats: '{selected}' and '{model.targetFormat}'.");
+                    return;
+                }
+                format ??= model.targetFormat;
+                requests.Add(new RenderRequest(model.name, RenderTarget.backbuffer, session.viewport,
+                    model.pipeline, model.data, 1000 + index));
+            }
+            catch (Exception exception)
+            {
+                m_diagnostics.Publish(new Diagnostic("RENDER_MODEL_BUILD_FAILED",
+                    $"Render model '{entry.id}' failed to build output: {exception}",
+                    DiagnosticSeverity.Error, entry.id));
+                return;
+            }
+        }
+        if (requests.Count == 1)
+            Submit(requests[0]);
+        else
+            SubmitComposition($"Output:{session.id}", RenderTarget.backbuffer,
+                session.viewport, format!.Value, requests, priority: 1000);
+    }
+
+    private void PublishModelDiagnostic(string message)
+    {
+        if (string.Equals(message, m_lastModelDiagnostic, StringComparison.Ordinal))
+            return;
+        m_lastModelDiagnostic = message;
+        m_diagnostics.Publish(new Diagnostic("RENDER_OUTPUT_MODEL_UNAVAILABLE", message,
+            DiagnosticSeverity.Warning));
     }
 
     private ContentReadScope GetFrameContentScope()
@@ -472,21 +752,26 @@ public sealed class RenderRuntime : RuntimeSubsystem, IRenderRequestSink
             RenderGraphBuilder graph = CreateGraph();
             AddPrimaryPresentationBackground(graph);
             IReadOnlyList<IRenderFrameGraphContributor> preparedContributors = PrepareContributors();
+            CompleteViewContentFrame();
             int requestIndex = 0;
             var presentation = new RenderPresentationComposer();
-            foreach (RenderRequest request in m_currentRequests
-                         .OrderBy(static value => value.priority)
-                         .ThenBy(static value => value.name, StringComparer.Ordinal))
+            var scheduled = m_currentRequests
+                .Select(static request => new ScheduledWork(request.priority, request.name, request, null))
+                .Concat(m_currentCompositions.Select(static composition =>
+                    new ScheduledWork(composition.priority, composition.name, null, composition)))
+                .OrderBy(static value => value.priority)
+                .ThenBy(static value => value.name, StringComparer.Ordinal);
+            foreach (ScheduledWork work in scheduled)
             {
-                bool preservePresentationTarget = presentation.MustPreserve(request);
-                if (TryBuildRequest(
-                        graph,
-                        request,
-                        requestIndex++,
-                        preservePresentationTarget))
+                if (work.composition is CompositionRequest composition)
                 {
-                    presentation.Commit(request);
+                    BuildComposition(graph, composition, ref requestIndex);
+                    continue;
                 }
+                RenderRequest request = work.request!;
+                bool preservePresentationTarget = presentation.MustPreserve(request);
+                if (TryBuildRequest(graph, request, requestIndex++, preservePresentationTarget))
+                    presentation.Commit(request);
             }
 
             AddContributors(graph, preparedContributors);
@@ -497,7 +782,12 @@ public sealed class RenderRuntime : RuntimeSubsystem, IRenderRequestSink
             {
                 executedViewCount = result.graph.passes.Count;
                 if (executedViewCount != 0)
+                {
+                    m_resourceService.EndMutation();
                     m_device.Execute(result.graph, m_frameIndex);
+                    targets.MarkWrittenOutputs(result.graph);
+                    m_resourceService.BeginMutation();
+                }
             }
             m_resourceService.SweepUnused();
             m_uploads.SweepUnused();
@@ -517,6 +807,8 @@ public sealed class RenderRuntime : RuntimeSubsystem, IRenderRequestSink
     private void EndRenderingFrame(int executedViewCount, int culledPassCount)
     {
         RenderDeviceFrameCounters counters = m_device.frameCounters;
+        RenderDeviceAllocationCounters? allocations = m_device.allocationCounters;
+        m_resourceService.EndMutation();
         try { _ = m_device.EndFrame(); }
         catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null) { throw; }
         catch
@@ -531,9 +823,11 @@ public sealed class RenderRuntime : RuntimeSubsystem, IRenderRequestSink
             m_frameOpen = false;
             m_uploads.EndFrame();
             m_currentRequests.Clear();
+            m_currentCompositions.Clear();
             m_frameIndex++;
             m_graphicsSettings.frameStatistics = new RenderFrameStatistics(
-                m_frameIndex, executedViewCount, counters.drawCount, counters.dispatchCount, culledPassCount);
+                m_frameIndex, executedViewCount, counters.drawCount, counters.dispatchCount, culledPassCount,
+                allocations);
         }
     }
 
@@ -559,6 +853,8 @@ public sealed class RenderRuntime : RuntimeSubsystem, IRenderRequestSink
                     m_acceptingCurrentFrame = false;
                     m_pendingRequests.Clear();
                     m_currentRequests.Clear();
+                    m_pendingCompositions.Clear();
+                    m_currentCompositions.Clear();
                 }
                 lock (m_contributorLock)
                     m_contributors.Clear();
@@ -572,6 +868,7 @@ public sealed class RenderRuntime : RuntimeSubsystem, IRenderRequestSink
                 }
             });
             m_retirement.Add(targets.Dispose);
+            m_retirement.Add(m_compositor.Dispose);
             m_retirement.Add(m_uploads.Dispose);
             m_retirement.Add(m_resourceService.Dispose);
             m_retirement.Add(() =>
@@ -625,11 +922,85 @@ public sealed class RenderRuntime : RuntimeSubsystem, IRenderRequestSink
     protected override void OnStop()
         => ReleaseRendering();
 
+    private void BuildComposition(RenderGraphBuilder graph, CompositionRequest composition,
+        ref int requestIndex)
+    {
+        try
+        {
+            using RenderGraphMutationScope mutation = graph.BeginMutationScope();
+            using RenderGraphNameScope names = graph.BeginNameScope(
+                $"Composition {composition.name}");
+            var layers = new List<RenderTextureHandle>(composition.layers.Length);
+            for (int index = 0; index < composition.layers.Length; index++)
+            {
+                RenderTextureHandle color = graph.CreateTexture(
+                    $"Model Layer {index + 1}",
+                    new RenderTextureDescriptor(
+                        composition.viewport.width, composition.viewport.height,
+                        composition.format,
+                        RenderTextureUsage.ColorAttachment | RenderTextureUsage.Sampled));
+                RenderRequest layer = composition.layers[index];
+                var localLayer = new RenderRequest(layer.name, layer.target,
+                    new RenderViewport(0, 0, composition.viewport.width, composition.viewport.height),
+                    layer.pipeline, layer.data, layer.priority);
+                if (!TryBuildRequest(graph, localLayer, requestIndex++,
+                        preservePresentationTarget: false, outputOverride: color))
+                    return;
+                layers.Add(color);
+            }
+            RenderTextureHandle output = composition.target.kind == RenderTargetKind.Texture
+                ? targets.Import(graph, composition.target.texture
+                    ?? throw new InvalidOperationException("A texture output requires a RenderTexture."))
+                : default;
+            m_compositor.AddPasses(graph, composition.name, layers, output,
+                composition.viewport);
+            if (output.isValid)
+                graph.MarkOutput(output);
+            RenderGraphCompileResult validation = graph.Validate();
+            if (validation.graph is null)
+            {
+                PublishGraphDiagnostics(validation, composition.name);
+                return;
+            }
+            mutation.Commit();
+        }
+        catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null) { throw; }
+        catch (Exception exception)
+        {
+            m_diagnostics.Publish(new Diagnostic(
+                "RENDER_OUTPUT_COMPOSITION_FAILED",
+                $"Output composition '{composition.name}' was isolated after failure: {exception}",
+                DiagnosticSeverity.Error,
+                composition.name));
+        }
+    }
+
+    private void CompleteViewContentFrame()
+    {
+        foreach (RenderExtensionRegistry.ContentSourceEntry entry in m_extensions.extensions.sources.sources)
+        {
+            if (entry.source is not IViewContentFrameSource source)
+                continue;
+            try
+            {
+                source.CompleteFrame(m_frameIndex);
+            }
+            catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null) { throw; }
+            catch (Exception exception)
+            {
+                m_diagnostics.Publish(new Diagnostic("RENDER_VIEW_CONTENT_FRAME_FAILED",
+                    $"View content source '{entry.id}' failed to complete its frame: {exception}",
+                    DiagnosticSeverity.Error, entry.id));
+            }
+        }
+    }
+
     private bool TryBuildRequest(
         RenderGraphBuilder graph,
         RenderRequest request,
         int requestIndex,
-        bool preservePresentationTarget)
+        bool preservePresentationTarget,
+        RenderTextureHandle outputOverride = default)
     {
         RenderPipelineAsset? asset = request.pipeline ?? m_graphicsSettings.defaultPipeline;
         if (asset is null)
@@ -650,13 +1021,15 @@ public sealed class RenderRuntime : RuntimeSubsystem, IRenderRequestSink
             using RenderGraphMutationScope mutation = graph.BeginMutationScope();
             using RenderGraphNameScope names = graph.BeginNameScope(
                 $"Request[{requestIndex}] {request.name}");
-            RenderTextureHandle outputTexture = request.target.kind == RenderTargetKind.Texture
+            RenderTextureHandle outputTexture = outputOverride.isValid
+                ? outputOverride
+                : request.target.kind == RenderTargetKind.Texture
                 ? targets.Import(
                     graph,
                     request.target.texture
                         ?? throw new InvalidOperationException("A texture target requires a RenderTexture."))
                 : default;
-            if (outputTexture.isValid)
+            if (outputTexture.isValid && !outputOverride.isValid)
                 graph.MarkOutput(outputTexture);
 
             var context = new RenderPipelineContext(
@@ -687,7 +1060,7 @@ public sealed class RenderRuntime : RuntimeSubsystem, IRenderRequestSink
         {
             m_diagnostics.Publish(new Diagnostic(
                 "RENDER_REQUEST_FAILED",
-                $"Render request '{request.name}' was isolated after failure: {exception.Message}",
+                $"Render request '{request.name}' was isolated after failure: {exception}",
                 DiagnosticSeverity.Error,
                 request.name));
             return false;
@@ -718,7 +1091,7 @@ public sealed class RenderRuntime : RuntimeSubsystem, IRenderRequestSink
 
         if (!m_generations.TryGetValue(asset, out GenerationCacheEntry? entry))
         {
-            entry = new GenerationCacheEntry();
+            entry = new GenerationCacheEntry(asset);
             m_generations.Add(asset, entry);
         }
 
@@ -781,6 +1154,7 @@ public sealed class RenderRuntime : RuntimeSubsystem, IRenderRequestSink
 
     private void PruneRetiredGenerations()
     {
+        PruneRetiredAssets();
         RenderExtensionRegistry.Snapshot snapshot;
         try
         {
@@ -820,6 +1194,24 @@ public sealed class RenderRuntime : RuntimeSubsystem, IRenderRequestSink
     private void EnsureRequestProviders()
     {
         m_requestProviders = m_extensions.extensions.providers;
+    }
+
+    private void PruneRetiredAssets()
+    {
+        try
+        {
+            foreach ((RenderPipelineAsset asset, GenerationCacheEntry entry) in m_generations)
+            {
+                if (entry.hasAssetOwner && !ReferenceEquals(entry.assetIdentity.Resolve<RenderPipelineAsset>(), asset))
+                    m_retiredAssets.Add(asset);
+            }
+            foreach (RenderPipelineAsset asset in m_retiredAssets)
+            {
+                m_extensions.Retire(m_generations[asset].lastGood);
+                m_generations.Remove(asset);
+            }
+        }
+        finally { m_retiredAssets.Clear(); }
     }
 
     private IReadOnlyList<IRenderFrameGraphContributor> PrepareContributors()
@@ -939,8 +1331,24 @@ public sealed class RenderRuntime : RuntimeSubsystem, IRenderRequestSink
         }
     }
 
-    private sealed class GenerationCacheEntry
+    private sealed record CompositionRequest(
+        string name,
+        RenderTarget target,
+        RenderViewport viewport,
+        RenderTextureFormat format,
+        RenderRequest[] layers,
+        int priority);
+
+    private readonly record struct ScheduledWork(
+        int priority,
+        string name,
+        RenderRequest? request,
+        CompositionRequest? composition);
+
+    private sealed class GenerationCacheEntry(RenderPipelineAsset asset)
     {
+        internal readonly Identity assetIdentity = asset.identity;
+        internal readonly bool hasAssetOwner = asset.identity.runtimeIdentity.HasValue;
         internal long attemptedTypeCacheVersion { get; set; } = -1;
         internal string? attemptedFingerprint { get; set; }
         internal RenderPipelineGeneration? lastGood { get; set; }
@@ -951,6 +1359,25 @@ public sealed class RenderRuntime : RuntimeSubsystem, IRenderRequestSink
         string? attemptedFingerprint,
         RenderPipelineGeneration? lastGood);
 
+    private sealed class ViewContentSink : IViewContentSink
+    {
+        private readonly List<ViewContentItem> m_items = [];
+
+        internal IReadOnlyList<ViewContentItem> items => m_items;
+
+        /// <summary>
+        /// Submits validated work to the active backend for ordered processing.
+        /// </summary>
+        /// <param name="item">
+        /// The stored item associated with the validated handle.
+        /// </param>
+public void Submit(ViewContentItem item)
+        {
+            ArgumentNullException.ThrowIfNull(item);
+            m_items.Add(item);
+        }
+    }
+
     internal sealed class RenderRuntimeReloadSession : IRenderRuntimeReloadTransaction
     {
         private readonly RenderRuntime m_owner;
@@ -958,6 +1385,8 @@ public sealed class RenderRuntime : RuntimeSubsystem, IRenderRequestSink
         private RenderExtensionRegistry.RequestProviderGeneration? m_previousRequestProviders;
         private RenderRequest[]? m_previousPendingRequests;
         private RenderRequest[]? m_previousCurrentRequests;
+        private CompositionRequest[]? m_previousPendingCompositions;
+        private CompositionRequest[]? m_previousCurrentCompositions;
         private readonly Dictionary<RenderPipelineAsset, GenerationState> m_candidates = [];
         private RenderExtensionRegistry.RequestProviderGeneration? m_candidateRequestProviders;
         private bool m_prepared;
@@ -969,17 +1398,23 @@ public sealed class RenderRuntime : RuntimeSubsystem, IRenderRequestSink
             IReadOnlyDictionary<RenderPipelineAsset, GenerationState> previous,
             RenderExtensionRegistry.RequestProviderGeneration? previousRequestProviders,
             RenderRequest[] previousPendingRequests,
-            RenderRequest[] previousCurrentRequests)
+            RenderRequest[] previousCurrentRequests,
+            CompositionRequest[] previousPendingCompositions,
+            CompositionRequest[] previousCurrentCompositions)
         {
             m_owner = owner;
             m_previous = previous;
             m_previousRequestProviders = previousRequestProviders;
             m_previousPendingRequests = previousPendingRequests;
             m_previousCurrentRequests = previousCurrentRequests;
+            m_previousPendingCompositions = previousPendingCompositions;
+            m_previousCurrentCompositions = previousCurrentCompositions;
         }
 
         internal static RenderRuntimeReloadSession Create(RenderRuntime owner)
         {
+            // Disposed sessions must not contribute obsolete assets to the next extension generation.
+            owner.PruneRetiredAssets();
             var previous = new Dictionary<RenderPipelineAsset, GenerationState>();
             foreach ((RenderPipelineAsset asset, GenerationCacheEntry entry) in owner.m_generations)
             {
@@ -995,7 +1430,9 @@ public sealed class RenderRuntime : RuntimeSubsystem, IRenderRequestSink
                     previous,
                     owner.m_requestProviders,
                     [.. owner.m_pendingRequests],
-                    [.. owner.m_currentRequests]);
+                    [.. owner.m_currentRequests],
+                    [.. owner.m_pendingCompositions],
+                    [.. owner.m_currentCompositions]);
             }
         }
 
@@ -1061,6 +1498,8 @@ public sealed class RenderRuntime : RuntimeSubsystem, IRenderRequestSink
                 m_owner.m_acceptingCurrentFrame = false;
                 m_owner.m_pendingRequests.Clear();
                 m_owner.m_currentRequests.Clear();
+                m_owner.m_pendingCompositions.Clear();
+                m_owner.m_currentCompositions.Clear();
             }
             m_activated = true;
         }
@@ -1111,6 +1550,10 @@ public sealed class RenderRuntime : RuntimeSubsystem, IRenderRequestSink
                     m_owner.m_pendingRequests.AddRange(m_previousPendingRequests!);
                     m_owner.m_currentRequests.Clear();
                     m_owner.m_currentRequests.AddRange(m_previousCurrentRequests!);
+                    m_owner.m_pendingCompositions.Clear();
+                    m_owner.m_pendingCompositions.AddRange(m_previousPendingCompositions!);
+                    m_owner.m_currentCompositions.Clear();
+                    m_owner.m_currentCompositions.AddRange(m_previousCurrentCompositions!);
                 }
             }
             try { DisposeCandidates(); }
@@ -1152,6 +1595,8 @@ public sealed class RenderRuntime : RuntimeSubsystem, IRenderRequestSink
             m_previousRequestProviders = null;
             m_previousPendingRequests = null;
             m_previousCurrentRequests = null;
+            m_previousPendingCompositions = null;
+            m_previousCurrentCompositions = null;
             m_finished = true;
             m_owner.EndReloadSession(this);
         }

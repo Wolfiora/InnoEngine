@@ -12,7 +12,7 @@
 - `GraphValidator` 检查方向、类型转换、端口容量、必填输入、缺失 endpoint，并复用 Core Collections DependencyGraph 检查确定性有向循环。
 - Missing Node 是 warning：文档保持可编辑；真正缺失的物理 node/port endpoint 才是 error。
 
-该项目只私有引用 `Inno.Scripting.Api` 以声明逻辑脚本 API `InnoEngine.Graphs`。ShaderGraph 是上层消费者，Core Graph 不知道 Shader 语义。
+该项目只私有引用 `Inno.Scripting.Api` 以声明逻辑脚本 API `InnoEngine.Graphs`。Shader 图是上层消费者，Core Graph 不知道 Material、Shader 或 ImGui 语义。
 
 ## 公开 API
 
@@ -23,10 +23,11 @@
 | `GraphEdgeRecord` / `GraphEndpoint` | 保存 output 到 input 的稳定连接。 |
 | `GraphSerializedValue` | 通过共同 SerializationRegistry 按类型读写中立 bytes；不是独立 JSON 协议。 |
 | `GraphNodeDefinition` | reload-scoped 节点定义与动态端口扩展点。 |
-| `[GraphNodeExtension(id)]` | Project 脚本节点发现协议。 |
 | `IGraphNodeDefinitionResolver` | 通过 Stable ID 查询当前 generation 候选快照。 |
 | `IGraphTypeConversion` | 声明有方向的隐式类型转换。 |
 | `GraphValidator.Validate` | 生成确定顺序的结构化诊断。 |
+
+`GraphNodeDefinition` 不使用 marker Attribute。静态节点由拥有该图语义的领域 Registry 按基类或接口发现；数据驱动节点由领域 `IGraphNodeDefinitionResolver` 根据当前 generation 构造并解析。定义自身的 `id` 是唯一身份来源，不能再通过 Attribute 维护第二份 ID。
 
 ## 常见工作流
 

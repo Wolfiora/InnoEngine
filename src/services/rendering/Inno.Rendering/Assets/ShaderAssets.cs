@@ -109,6 +109,21 @@ public enum ShaderPropertyBindingKind
 }
 
 /// <summary>
+/// Identifies which layer supplies a declared shader property's value for each dispatch or draw.
+/// </summary>
+public enum ShaderPropertyBindingOwner
+{
+    /// <summary>
+    /// The material and its optional property block supply the value.
+    /// </summary>
+    Material,
+    /// <summary>
+    /// The render pass supplies the value directly through its command encoder.
+    /// </summary>
+    RenderPass
+}
+
+/// <summary>
 /// Selects the programmable stage combination of a pass.
 /// </summary>
 public enum ShaderProgramKind
@@ -448,6 +463,9 @@ public struct ShaderPropertyDefinition
     /// <param name="storageAccess">
     /// Required access for storage texture or buffer bindings.
     /// </param>
+    /// <param name="bindingOwner">
+    /// Layer responsible for supplying the binding value at execution time.
+    /// </param>
     public ShaderPropertyDefinition(
         ShaderPropertyId id,
         string displayName,
@@ -455,7 +473,8 @@ public struct ShaderPropertyDefinition
         ShaderStage stages,
         MaterialValue defaultValue,
         ShaderPropertyBindingKind? bindingKind = null,
-        RenderStorageAccess storageAccess = RenderStorageAccess.Read)
+        RenderStorageAccess storageAccess = RenderStorageAccess.Read,
+        ShaderPropertyBindingOwner bindingOwner = ShaderPropertyBindingOwner.Material)
     {
         if (!id.isValid)
             throw new ArgumentException("A shader property ID must be valid.", nameof(id));
@@ -467,8 +486,11 @@ public struct ShaderPropertyDefinition
         this.defaultValue = defaultValue;
         this.bindingKind = bindingKind ?? InferBindingKind(type);
         this.storageAccess = storageAccess;
+        this.bindingOwner = bindingOwner;
         if (!Enum.IsDefined(storageAccess))
             throw new ArgumentOutOfRangeException(nameof(storageAccess));
+        if (!Enum.IsDefined(bindingOwner))
+            throw new ArgumentOutOfRangeException(nameof(bindingOwner));
         ValidateBindingKind(type, this.bindingKind);
     }
 
@@ -506,6 +528,11 @@ public struct ShaderPropertyDefinition
     /// Gets or sets required access for storage texture or buffer bindings.
     /// </summary>
     public RenderStorageAccess storageAccess { get; set; }
+
+    /// <summary>
+    /// Gets or sets the layer responsible for supplying this binding at execution time.
+    /// </summary>
+    public ShaderPropertyBindingOwner bindingOwner { get; set; }
 
     internal static bool IsBindingKindCompatible(
         ShaderPropertyType type,
@@ -579,37 +606,6 @@ public struct ShaderKeywordDefinition
 }
 
 /// <summary>
-/// Represents shaderc-compatible source imported through the common asset system.
-/// </summary>
-[StableTypeId("80356429-c04e-4cf0-b32e-ebda7ed8d428")]
-public sealed class ShaderSourceAsset : AssetObject
-{
-    internal ShaderSourceAsset()
-    {
-    }
-
-    /// <summary>
-    /// Creates an immutable imported shader-source description.
-    /// </summary>
-    /// <param name="content">
-    /// The fully expanded shader source text.
-    /// </param>
-    /// <exception cref="ArgumentNullException">
-    /// Thrown when <paramref name="content"/> is <see langword="null"/>.
-    /// </exception>
-    public ShaderSourceAsset(string content)
-    {
-        this.content = content ?? throw new ArgumentNullException(nameof(content));
-    }
-
-    /// <summary>
-    /// Gets or sets decoded source text.
-    /// </summary>
-    [SerializableProperty]
-    public string content { get; internal set; } = string.Empty;
-}
-
-/// <summary>
 /// Defines one backend-neutral raster or compute shader pass.
 /// </summary>
 public struct ShaderPassDefinition
@@ -623,18 +619,6 @@ public struct ShaderPassDefinition
     /// <param name="programKind">
     /// Programmable stage combination.
     /// </param>
-    /// <param name="vertexSource">
-    /// Optional vertex source asset.
-    /// </param>
-    /// <param name="fragmentSource">
-    /// Optional fragment source asset.
-    /// </param>
-    /// <param name="computeSource">
-    /// Optional compute source asset.
-    /// </param>
-    /// <param name="varyingSource">
-    /// Optional varying definition source asset.
-    /// </param>
     /// <param name="requiredFeatures">
     /// Required device capability mask.
     /// </param>
@@ -647,10 +631,6 @@ public struct ShaderPassDefinition
     public ShaderPassDefinition(
         string name,
         ShaderProgramKind programKind,
-        ShaderSourceAsset? vertexSource = null,
-        ShaderSourceAsset? fragmentSource = null,
-        ShaderSourceAsset? computeSource = null,
-        ShaderSourceAsset? varyingSource = null,
         GraphicsCapability requiredFeatures = GraphicsCapability.None,
         ShaderRenderState? renderState = null,
         IEnumerable<ShaderMetadataEntry>? metadata = null)
@@ -658,10 +638,6 @@ public struct ShaderPassDefinition
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
         this.name = name;
         this.programKind = programKind;
-        this.vertexSource = vertexSource;
-        this.fragmentSource = fragmentSource;
-        this.computeSource = computeSource;
-        this.varyingSource = varyingSource;
         this.requiredFeatures = requiredFeatures;
         this.renderState = renderState ?? ShaderRenderState.opaque;
         this.metadata = metadata?.ToArray() ?? [];
@@ -676,26 +652,6 @@ public struct ShaderPassDefinition
     /// Gets or sets the programmable stage combination.
     /// </summary>
     public ShaderProgramKind programKind { get; set; }
-
-    /// <summary>
-    /// Gets or sets the vertex source asset.
-    /// </summary>
-    public ShaderSourceAsset? vertexSource { get; set; }
-
-    /// <summary>
-    /// Gets or sets the fragment source asset.
-    /// </summary>
-    public ShaderSourceAsset? fragmentSource { get; set; }
-
-    /// <summary>
-    /// Gets or sets the compute source asset.
-    /// </summary>
-    public ShaderSourceAsset? computeSource { get; set; }
-
-    /// <summary>
-    /// Gets or sets the varying definition source asset.
-    /// </summary>
-    public ShaderSourceAsset? varyingSource { get; set; }
 
     /// <summary>
     /// Gets or sets required device capabilities.
@@ -806,7 +762,7 @@ public struct ShaderTechniqueDefinition
 }
 
 /// <summary>
-/// Contains the source-of-truth definition shared by handwritten and graph shaders.
+/// Contains the source-of-truth definition shared by shader import and material tooling.
 /// </summary>
 public sealed class ShaderDefinition : ISerializable
 {
@@ -885,7 +841,7 @@ public sealed class ShaderDefinition : ISerializable
 }
 
 /// <summary>
-/// Represents an imported handwritten or generated shader definition.
+/// Represents the runtime contract imported from a shader graph.
 /// </summary>
 [StableTypeId("e6672287-145f-4f51-8380-a6aeaf57a801")]
 public class ShaderAsset : AssetObject
@@ -894,9 +850,6 @@ public class ShaderAsset : AssetObject
 
     [SerializableProperty(PropertyVisibility.Hide)]
     private byte[] m_definitionData = [];
-
-    [SerializableProperty(PropertyVisibility.Hide)]
-    private ShaderSourceAsset[] m_sourceDependencies = [];
 
     /// <summary>
     /// Gets a detached editable copy of the committed backend-neutral definition, or null before import.
@@ -913,6 +866,9 @@ public class ShaderAsset : AssetObject
     /// <param name="serialization">
     /// The serialization registry that owns the active shader converter generation.
     /// </param>
+    /// <param name="context">
+    /// The complete owner reference context used for material texture defaults.
+    /// </param>
     /// <exception cref="ArgumentException">
     /// A declaration collection is null. The previous committed definition remains unchanged.
     /// </exception>
@@ -922,27 +878,16 @@ public class ShaderAsset : AssetObject
     [ScriptingApiIgnore]
     public void SetDefinition(
         ShaderDefinition value,
-        SerializationRegistry serialization)
+        SerializationRegistry serialization,
+        SerializationContext context)
     {
         ArgumentNullException.ThrowIfNull(value);
         ArgumentNullException.ThrowIfNull(serialization);
+        ArgumentNullException.ThrowIfNull(context);
         var snapshot = new ShaderDefinitionSnapshot(value);
         ShaderDefinition captured = snapshot.CreateDefinition();
-        byte[] definitionData = serialization.Serialize(captured);
-        ShaderSourceAsset[] sourceDependencies = captured.passes
-            .SelectMany(static pass => new[]
-            {
-                pass.vertexSource,
-                pass.fragmentSource,
-                pass.computeSource,
-                pass.varyingSource
-            })
-            .Where(static source => source is not null)
-            .Cast<ShaderSourceAsset>()
-            .Distinct()
-            .ToArray();
+        byte[] definitionData = serialization.Serialize(captured, context);
         m_definitionData = definitionData;
-        m_sourceDependencies = sourceDependencies;
         m_definition = snapshot;
     }
 
@@ -976,8 +921,13 @@ public enum TextureColorSpace
 /// Represents imported texture content without owning a GPU handle.
 /// </summary>
 [StableTypeId("e174b6eb-f79a-470f-a460-84f88ab49d0e")]
-public sealed class TextureAsset : AssetObject
+public sealed class TextureAsset : AssetObject, IRenderTextureArtifactSource
 {
+    private static readonly RenderTextureArtifactSlot[] S_linearTextureArtifacts =
+        [new RenderTextureArtifactSlot("main", "source", TextureColorSpace.Linear)];
+    private static readonly RenderTextureArtifactSlot[] S_sRgbTextureArtifacts =
+        [new RenderTextureArtifactSlot("main", "source", TextureColorSpace.Srgb)];
+
     internal TextureAsset()
     {
     }
@@ -1041,6 +991,31 @@ public sealed class TextureAsset : AssetObject
     /// </summary>
     [SerializableProperty]
     public string sourceFormat { get; internal set; } = string.Empty;
+
+    /// <summary>
+    /// Gets the single source artifact compiled for this imported texture.
+    /// </summary>
+    public IReadOnlyList<RenderTextureArtifactSlot> textureArtifacts
+        => colorSpace == TextureColorSpace.Srgb
+            ? S_sRgbTextureArtifacts
+            : S_linearTextureArtifacts;
+
+    /// <summary>
+    /// Creates a stable reference to this texture's current imported content.
+    /// </summary>
+    /// <returns>
+    /// A reference suitable for target compilation and generation-scoped GPU resolution.
+    /// </returns>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown when this texture has not been assigned a persistent asset identity.
+    /// </exception>
+    public RenderTextureArtifactReference GetTextureArtifactReference()
+    {
+        Guid id = identity.persistentId;
+        if (id == Guid.Empty)
+            throw new InvalidOperationException("Texture must have a persistent asset identity.");
+        return new RenderTextureArtifactReference(id, contentVersion, textureArtifacts[0]);
+    }
 }
 
 /// <summary>

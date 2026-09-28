@@ -1,5 +1,9 @@
 # Inno.Adapter.Rendering.Bgfx
 
+## 帧同步与 framebuffer 缓存
+
+`SetVerticalSync(bool enabled)` 更新设备 reset flags，并在下一 BeginFrame 与 backbuffer resize 合并应用；不改变 graph 或资源 generation。Framebuffer 缓存按实际 attachment（texture、mip、layer、depth/color）匹配，而不是依赖可能变化的 Request/pass 名称。原生 framebuffer handle 在 BGFX 帧推进后才回收，不能假设 destroy 调用立即释放容量。
+
 [返回 Rendering 索引](README.md) · [Wiki 首页](../README.md) · [后端中立 API](Inno.Rendering.md)
 
 ## 职责与边界
@@ -31,6 +35,7 @@ Noop 测试可启用 `forceSingleThreaded`。BGFX 的该模式是进程级一次
 | --- | --- |
 | `BgfxDeviceOptions` | 后端偏好、窗口、backbuffer、VSync/sRGB、延迟销毁帧数和 Noop 单线程测试设置 |
 | `BgfxDevice` | BGFX 设备所有权、能力映射、帧边界、RenderGraph 执行、帧命令计数、KTX/普通纹理、Buffer、Program 与延迟销毁 |
+| `BgfxDevice.backbufferIsSrgb`、`WindowSurfaceIsSrgb(surface)` | 报告主 backbuffer 和有效独立窗口的真实线性 RGB→sRGB 输出传递。Windows D3D11/D3D12 的附加 BGFX swapchain 使用 UNORM RTV，不会自动编码；无效或过期的 surface 明确失败。 |
 
 Shader 与纹理目标产物分别由 `Inno.Build.Toolchains.Bgfx` 和 `Inno.Build.Toolchains.Bgfx.Tools` 生成；这里不公开编译工具链 API。
 
@@ -56,6 +61,8 @@ Metal、D3D、Vulkan 等 BGFX renderer 不要求分别维护业务 Shader：同�
 - `UpdateTextureRegion` 分别映射 2D、3D 与 Cube update API，并在进入 native call 前校验 mip texel bounds、层/face 与精确 byte count；持久 handle 和设备 generation 保持不变。
 - `Draw` 不会在缺少 Vertex Buffer 时隐式转成 procedural；调用方必须使用 `DrawProcedural`。Indirect Draw 会先提交当前 Vertex/Index range，无 Vertex Buffer 时要求 ProceduralDraw capability。
 - 每次直接或间接 draw/dispatch 成功交给 BGFX Encoder 后更新 `frameCounters`；`BeginFrame` 原子清零，因此 Runtime 读取的是本帧真实提交量。
+- `allocationCounters` 实现通用设备诊断契约，报告当前 generation 的 transient Texture、Buffer、Framebuffer 累计分配；每项只在原生创建成功后递增。外部通过 `IRenderDevice` 或完成帧统计读取，不公开 BGFX 专属分配计数器属性。
+- `SetVerticalSync` 完整实现两种幂等策略，变更与下一次 `BeginFrame` 的 resize/reset 合并；Noop 保留策略与尺寸，但不执行原生 reset。
 - shaderc/profile 和 texturec 不位于通用 Assets、Runtime 或 Player；Build 在导出时生成目标产物，Player 只消费已经冻结的 KTX 与 Shader 二进制。
 
 ## 失败与资源安全

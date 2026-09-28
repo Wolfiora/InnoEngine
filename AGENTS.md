@@ -127,10 +127,10 @@
 
 ## 17. Rendering 强制边界
 - Rendering 的公开设计必须同时满足：跨平台、API 易用、扩展灵活和低耦合。不得以实现便利为由破坏其中任一项。
-- 只有 `Inno.Adapter.Rendering.Bgfx` 可以引用 `Inno.Native.Bgfx` 与 `Inno.Native.Bgfx.Tools`。BGFX handle、View ID、原生指针和 BGFX 枚举不得出现在其他项目的 public/protected API 中。
+- 只有 `Inno.Adapter.Rendering.Bgfx`、BGFX build toolchains 与对应 native tests 可以引用 `Inno.Native.Bgfx`。BGFX handle、View ID、原生指针和 BGFX 枚举不得出现在其他项目的 public/protected API 中。
 - `Inno.Rendering.Core` 必须保持后端中立，且不得引用 Scene、Assets、Editor 或任何具体图形后端。上层模块通过资源描述、能力集合、RenderGraph 和命令编码接口工作。
-- 通用 Graph 不得引用 Rendering 或 ImGui；Rendering 也不得反向引用 ShaderGraph 或 Editor Graph。ShaderGraph 只能作为面向 Rendering 契约的上层编译前端。
-- 手写 Shader 与节点生成 Shader 必须进入同一个 Shader IR、编译、反射、验证和产物缓存链；不得维护第二套节点专用 shader 编译路径。
+- 通用 Graph 不得引用 Rendering 或 ImGui；Rendering 也不得反向引用 Shader 创作层或 Editor Graph。Shader 图与源码函数模块属于内置创作层，Material 只保存 Shader 引用与参数，不保存图。
+- 所有 Shader 通过图创作，并经统一的 Shader IR、编译、反射、验证和产物缓存链进入运行时；源码语言解析和后端生成由对应 provider 实现，不得建立第二套完整源码 Shader 创作路径。
 - Pipeline、Feature、Pass、Shader Node、GPU 资源与编译产物必须 capability-aware、generation-scoped 且 reload-safe。持久状态只保存 Stable ID 与中立数据，禁止长期保存 collectible ALC 的 `Type`、delegate 或 runtime 对象。
 - Project 脚本扩展只允许使用后端中立 Rendering API。扩展失败必须隔离，候选成功后只能在帧安全点原子切换，并保留 last-good Pipeline、Shader 和 GPU 资源。
 - Rendering Core 只提供图形机制，不得内建 2D、2.5D、3D、PBR、Forward、Deferred、Light、Shadow、Camera、MeshRenderer 或任何具体渲染世界观。所有具体渲染模型必须能够由 Project 脚本或 Plugin 从零组合。
@@ -148,6 +148,8 @@
 
 ## 19. 新系统完成标准
 - 新功能必须先定义清晰的程序集/领域边界与最小公开入口，再实现具体 UI 或平台适配；平台、存储、编译器和 presentation 通过可替换契约隔离，禁止把临时流程堆入 Panel、Application 或静态工具类。
+- 扩展发现优先由明确的基类或接口完成：当继承/接口本身已完整表达“这是一个扩展”且不需要额外声明数据时，禁止再增加无参数 marker Attribute。Attribute 只用于携带稳定 ID、顺序、作用域、允许多实例等无法由类型关系表达的参数或显式可选语义；不得让继承与无参数 Attribute 成为必须同步的双重注册条件。
+- 可发现扩展的不可变 Stable ID 必须作为参数写入该扩展协议的 Attribute，并由 Registry 在构造实例前读取；禁止要求扩展通过 `abstract`/`virtual`/`override` 实例成员返回编译期常量 ID，也禁止 Attribute ID 与实例 ID 双重声明。基类或接口只表达行为契约；Attribute 承载 ID、顺序、作用域、允许多实例等不可变发现元数据。只有确实由运行时状态生成且不参与类型发现或持久路由的身份，才可以是实例属性。
 - 默认一次完成源码、调用方、项目引用、解决方案归类、公开 XML、Wiki、成功/失败/边界测试与必要构建验证。不得留下占位实现、静默 fallback、重复协议或“以后再重构”的妥协路径。
 - 公开 API 必须少而完整；能由引擎可靠推导的信息不得要求用户创建 companion asset、重复填写清单或修改无关调用方。新增公开 API 时必须在交付说明中列出其必要性与稳定语义。
 - 绝对禁止使用 `InternalsVisibleTo`、测试专用后门、反射穿透或扩大 `internal` 成员可见性来简化测试。测试只能通过真实公开契约和可替换 public boundary 验证行为。
@@ -164,3 +166,18 @@
 - Scripting、Plugin、Asset type、Serializer 和 extension generation 必须进入统一 candidate transaction。旧 collectible ALC 的成功退休必须执行 Full GC → `GC.WaitForPendingFinalizers()` → Full GC，并由弱 monitor 确认全部 context 不可达；在此之前 reload 不得报告 Success，也不得开始新的 reload、Play、Build 或 Export。
 - unload verification 的 timeout 只能触发明确异常和 `Faulted`，绝不能清空仍 Pending 的 monitor 后继续。失败必须列出 module/domain/scope/generation；Faulted 进程禁止继续 generation transaction，需完整重启 Host。static/event/task/thread/AsyncLocal/GCHandle/native callback/Editor transient state 等旧 generation 强引用必须被测试覆盖。
 - 完整规范、目标 API、当前差距和测试矩阵见 `docs/architecture/IDENTITY_REFERENCE_RELOAD_STANDARD.md`；修改 Identity、Scripting、Plugins、Assets、Scene、Editor Interactions/History 或任何 collectible extension 时必须同步核对此页。
+
+## 21. 架构优先、语言前端与第三方实现边界
+- 架构清晰度、依赖方向、职责归属与低耦合是所有功能、性能与开发便利性之上的最高优先级。任何新功能或扩展都必须先明确所属层、公共契约、生命周期与失败边界；不得以临时直连、实现名泄漏、全局单例或跨层便利调用换取短期进度。
+- 通用源码资产在服务层与资产层中必须被视为惰性的文本或字节载体。除非某种语言已经被明确规定为引擎公共标准，否则核心导入器、运行时服务与脚本契约不得解析、推断或依赖第三方语法，也不得根据当前后端或文件名隐式选择语义。
+- 语言与实现选择必须使用稳定、显式、可序列化的 `languageId` 与 `implementationId`。语言前端必须通过现有 TypeRegistry/TypeCache 体系形成代际化的不可变快照；前端只接收受控源码解析器与不可变请求，并产出中立依赖、结构化诊断和冻结产物。词法、预处理、语法解析、降级规则与原生编译必须留在具体前端、适配器或工具链中。
+- 若引擎决定把某种语言定义为公共标准，必须在公共契约和文档中明确声明；否则 BGFX SC、RML、RmlUi、FreeType、HarfBuzz 等实现名、专有术语、能力限制和错误文本不得出现在服务层、脚本层或中立资产契约中，只能存在于具体实现及其诊断中。
+- 可扩展运行时后端必须使用开放的稳定 ID、provider catalog 与 capability 描述；不得用封闭枚举或核心层 `switch` 作为第三方扩展入口。服务层只能表达中立能力缺失，具体实现负责解释自己的限制。
+- 第三方 C++ 库必须由所属 `native/Inno.Native.XXX/Native` 中的手写语义适配器隔离；同一项目的 BGCS 配置与生成扩展归属 `Bindings/`，managed 单文件归属 `Generated/Bindings.cs`；CMake 中间产物归属对应 `build/toolchains/Inno.Build.Toolchains.XXX/obj/native`，不得写入 `Native/`；`extern` 第三方源码不得修改。适配器只公开后端中立的窄 C++ facade，并通过 PImpl/不透明句柄和中立 DTO 隐藏第三方类型。默认由 BGCS Cpp2C 从该 facade 生成 C ABI，再由 BGCS 从生成的 C header 生成平台无关路径的单文件 managed binding；原生和 managed 生成物分别归属独立输出根，禁止手写 export/import 或修改生成代码。仅当 BGCS 无法表达且有明确记录的 lowering/shim 需求时，才允许额外手写 C ABI。原生句柄、符号和第三方类型不得越过适配层；帧热路径 callback 应留在原生侧，不得仅为 binding 方便穿越 managed 边界。第三方库的进程全局状态必须由显式进程宿主管理引用计数、线程归属、会话隔离、代际与最终释放，禁止用匿名全局变量伪装成 session-local 状态。
+- 为源码插件提供后端中立的底层公共 API 是允许且必要的；“最小 public”指完成外部插件组合所需的最小稳定表面，而不是只允许游戏逻辑级 API。插件作者 API 必须显式进入 scripting 导出清单；后端 SPI、原生桥、具体实现和第三方句柄必须保持未导出。
+- 帧热路径必须显式定义所有权与生命周期。禁止每帧无条件复制完整几何、索引、纹理像素或为每条绘制命令重复编码；优先使用代际化稳定句柄、资源增量更新/释放、持久 GPU 缓存与具有明确释放协议的池化或所有权缓冲区。不得以优化为由向公共层暴露不安全的原生借用内存。
+- 新系统或边界调整必须同步更新架构验证器中的项目分类、解决方案归属、依赖规则、原生消费规则、scripting allowlist 与公共文档；仓库级架构验证通过之前不得视为完成。
+
+## 22. 基础能力复用
+- 新增事件、身份、序列化、数学、诊断或其他基础能力前，先检查 `Inno.Core` 是否已有可用契约；优先直接使用或封装现有契约，禁止在 UI、Canvas、插件等上层模块另建平行管理系统。
+- UI 与插件事件的订阅、分发及生命周期统一复用 `Inno.Core.Events`。领域可以定义自己的事件类型及适配入口，但不能另建队列、监听器注册表或事件总线来取代核心事件管理。

@@ -17,6 +17,8 @@ public sealed unsafe partial class BgfxDevice
     private readonly Dictionary<ulong, BgfxPipelineResource> m_computePipelines = [];
     private readonly Dictionary<int, BgfxBufferResource> m_graphBuffers = [];
     private readonly Dictionary<int, BgfxBufferResource> m_transientBufferSlots = [];
+    private readonly List<PooledTransientBuffer> m_transientBufferPool = [];
+    private ulong m_transientBufferAllocationCount;
 
     /// <summary>
     /// Creates a buffer using this implementation's validated inputs.
@@ -322,8 +324,13 @@ public sealed unsafe partial class BgfxDevice
 
                 if (!m_transientBufferSlots.TryGetValue(buffer.physicalSlot, out resource!))
                 {
-                    resource = CreateTransientBuffer(buffer.descriptor);
+                    resource = AcquireTransientBuffer(buffer.descriptor, buffer.physicalSlot);
                     m_transientBufferSlots.Add(buffer.physicalSlot, resource);
+                }
+                else if (!resource.descriptor.Equals(buffer.descriptor))
+                {
+                    throw new InvalidOperationException(
+                        $"Render-graph physical buffer slot {buffer.physicalSlot} aliases incompatible descriptors.");
                 }
             }
 
@@ -470,6 +477,35 @@ public sealed unsafe partial class BgfxDevice
         return BgfxBufferResource.FromDynamicVertex(descriptor, null, vertex);
     }
 
+    private BgfxBufferResource AcquireTransientBuffer(
+        RenderBufferDescriptor descriptor,
+        int physicalSlot)
+    {
+        for (int index = m_transientBufferPool.Count - 1; index >= 0; index--)
+        {
+            PooledTransientBuffer pooled = m_transientBufferPool[index];
+            if (pooled.physicalSlot != physicalSlot
+                || !pooled.resource.descriptor.Equals(descriptor))
+            {
+                continue;
+            }
+            m_transientBufferPool.RemoveAt(index);
+            return pooled.resource;
+        }
+
+        for (int index = m_transientBufferPool.Count - 1; index >= 0; index--)
+        {
+            PooledTransientBuffer pooled = m_transientBufferPool[index];
+            if (!pooled.resource.descriptor.Equals(descriptor))
+                continue;
+            m_transientBufferPool.RemoveAt(index);
+            return pooled.resource;
+        }
+
+        m_transientBufferAllocationCount++;
+        return CreateTransientBuffer(descriptor);
+    }
+
     private BgfxPipelineResource CreateGraphicsPipelineResource(
         GraphicsPipelineDescriptor descriptor,
         string name)
@@ -600,7 +636,7 @@ public sealed unsafe partial class BgfxDevice
         IReadOnlyDictionary<string, ReflectedUniform> reflected)
     {
         Dictionary<string, RenderShaderBindingDescriptor> declared = declaredBindings
-            .ToDictionary(static value => value.id.value, StringComparer.Ordinal);
+            .ToDictionary(static value => value.nativeName, StringComparer.Ordinal);
         foreach ((string name, ReflectedUniform uniform) in reflected)
         {
             if (!declared.TryGetValue(name, out RenderShaderBindingDescriptor? binding)
@@ -630,7 +666,7 @@ public sealed unsafe partial class BgfxDevice
                 continue;
             }
 
-            if (!reflected.TryGetValue(binding.id.value, out ReflectedUniform uniform))
+            if (!reflected.TryGetValue(binding.nativeName, out ReflectedUniform uniform))
             {
                 throw new InvalidOperationException(
                     $"Shader manifest binding '{binding.id.value}' is absent from compiled reflection.");
@@ -680,14 +716,9 @@ public sealed unsafe partial class BgfxDevice
 
     private static string UniformName(bgfx.UniformInfo info)
     {
-        byte* name = info.name;
-        int length = 0;
-        while (length < 256 && name[length] != 0)
-        {
-            length++;
-        }
-
-        return Encoding.UTF8.GetString(name, length);
+        ReadOnlySpan<byte> name = info.name;
+        int terminator = name.IndexOf((byte)0);
+        return Encoding.UTF8.GetString(terminator >= 0 ? name[..terminator] : name);
     }
 
     private bgfx.ShaderHandle CreateShader(ReadOnlySpan<byte> binary, string name)
@@ -709,7 +740,7 @@ public sealed unsafe partial class BgfxDevice
             AddVertexLayoutPadding(&native, attribute.byteOffset - currentOffset);
             (byte count, bgfx.AttribType type, bool normalized, bool asInteger) = AttributeFormat(attribute.format);
             bgfx.vertex_layout_add(
-                &native,
+                ref native,
                 ToNativeAttribute(attribute.semantic),
                 count,
                 type,

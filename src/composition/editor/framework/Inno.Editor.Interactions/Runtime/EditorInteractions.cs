@@ -20,6 +20,7 @@ public sealed class EditorInteractions : IEditorSelectionCoordinator, IEditorHis
     private readonly EditorContext m_editor;
     private readonly IReadOnlyDictionary<IdentityDomainId, IdentityAllocator> m_identityDomains;
     private readonly EditorHistory m_history;
+    private readonly EditorDocumentService m_documents;
     private readonly Logger m_log;
     private EditorActionRouter? m_actions;
     private EditorExtensionCatalog? m_catalog;
@@ -42,6 +43,7 @@ public sealed class EditorInteractions : IEditorSelectionCoordinator, IEditorHis
         ArgumentNullException.ThrowIfNull(identityDomains);
         m_identityDomains = identityDomains.ToDictionary(static allocator => allocator.domainId);
         m_log = log ?? throw new ArgumentNullException(nameof(log));
+        m_documents = new EditorDocumentService();
         m_history = new EditorHistory(new EditorHistoryOptions
         {
             cacheDirectory = Path.Combine(editor.projectDirectory, "Library", "Editor", "History")
@@ -60,6 +62,33 @@ public sealed class EditorInteractions : IEditorSelectionCoordinator, IEditorHis
     /// Gets the transactional Undo and Redo history owned by this editor runtime.
     /// </summary>
     public IEditorHistory history => m_history;
+
+    /// <summary>
+    /// Gets the headless reload-safe document lifetime used by dedicated asset editors and Inspectors.
+    /// </summary>
+    public IEditorDocumentService documents => m_documents;
+
+    /// <summary>
+    /// Resolves an active feature module for immediate use in the current Editor callback.
+    /// </summary>
+    /// <typeparam name="TModule">
+    /// The feature module contract to resolve.
+    /// </typeparam>
+    /// <param name="module">
+    /// The started, non-quarantined module, or null when unavailable.
+    /// </param>
+    /// <returns>
+    /// True when the active generation supplies the requested module.
+    /// </returns>
+    /// <remarks>
+    /// Do not retain the result across callbacks or generation changes. Candidate modules are never exposed.
+    /// </remarks>
+    public bool TryGetModule<TModule>(out TModule? module) where TModule : EditorModule
+    {
+        if (m_catalog is not null) return m_catalog.TryGetModule(out module);
+        module = null;
+        return false;
+    }
 
     /// <summary>
     /// Starts an isolated temporary Undo and Redo branch while retaining the current editing branch.
@@ -167,6 +196,91 @@ public sealed class EditorInteractions : IEditorSelectionCoordinator, IEditorHis
         return m_catalog?.TryTogglePanel(panelId) == true;
     }
 
+    /// <summary>
+    /// Resolves a domain-qualified runtime identity through the Editor's complete identity-domain set.
+    /// </summary>
+    /// <param name="identity">
+    /// Runtime identity captured from a live Editor target.
+    /// </param>
+    /// <param name="target">
+    /// Receives the current live object, or <see langword="null"/> when its domain or generation is unavailable.
+    /// </param>
+    /// <returns>
+    /// <see langword="true"/> when the exact identity resolves in its owning domain.
+    /// </returns>
+    [ScriptingApiIgnore]
+    public bool TryResolveIdentity(RuntimeIdentity identity, out IdentityObject? target)
+    {
+        target = m_identityDomains.TryGetValue(identity.domainId, out IdentityAllocator? allocator)
+            ? allocator.Get<IdentityObject>(identity)
+            : null;
+        return target is not null;
+    }
+
+    /// <summary>
+    /// Resolves a persistent identity through one explicitly selected Editor identity domain.
+    /// </summary>
+    /// <param name="domainId">
+    /// Identity domain that owns the object and any replacement generation.
+    /// </param>
+    /// <param name="persistentId">
+    /// Stable object identity to resolve inside that domain.
+    /// </param>
+    /// <param name="target">
+    /// Receives the current live object, or <see langword="null"/> when the domain or object is unavailable.
+    /// </param>
+    /// <returns>
+    /// <see langword="true"/> when the stable identity resolves in the requested domain.
+    /// </returns>
+    [ScriptingApiIgnore]
+    public bool TryResolveIdentity(
+        IdentityDomainId domainId,
+        Guid persistentId,
+        out IdentityObject? target)
+    {
+        target = persistentId != Guid.Empty
+            && m_identityDomains.TryGetValue(domainId, out IdentityAllocator? allocator)
+                ? allocator.Get<IdentityObject>(persistentId)
+                : null;
+        return target is not null;
+    }
+
+    /// <summary>
+    /// Opens and requests presentation focus for one panel in the active extension generation.
+    /// </summary>
+    /// <param name="panelId">
+    /// The stable panel identifier to resolve.
+    /// </param>
+    /// <returns>
+    /// <see langword="true"/> when an available panel was found.
+    /// </returns>
+    /// <exception cref="ArgumentException">
+    /// Thrown when <paramref name="panelId"/> is empty.
+    /// </exception>
+    public bool OpenPanel(string panelId)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(panelId);
+        return m_catalog?.TryOpenPanel(panelId) == true;
+    }
+
+    /// <summary>
+    /// Closes one panel in the active extension generation without toggling its current state.
+    /// </summary>
+    /// <param name="panelId">
+    /// The stable panel identifier to resolve.
+    /// </param>
+    /// <returns>
+    /// <see langword="true"/> when an available panel was found.
+    /// </returns>
+    /// <exception cref="ArgumentException">
+    /// Thrown when <paramref name="panelId"/> is empty.
+    /// </exception>
+    public bool ClosePanel(string panelId)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(panelId);
+        return m_catalog?.TryClosePanel(panelId) == true;
+    }
+
     internal void Attach(EditorExtensionCatalog catalog)
     {
         ArgumentNullException.ThrowIfNull(catalog);
@@ -234,6 +348,7 @@ public sealed class EditorInteractions : IEditorSelectionCoordinator, IEditorHis
         m_pendingFocusId = null;
         m_previousGenerationSelection = null;
         m_previousGenerationFocus = null;
+        m_documents.Shutdown();
         m_history.Dispose();
     }
 

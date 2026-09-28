@@ -11,6 +11,14 @@ namespace Inno.Assets.Pipeline;
 public readonly struct AssetPipelineOptions
 {
     /// <summary>
+    /// Gets whether the composition host must still publish its initial authoring extensions.
+    /// </summary>
+    /// <remarks>
+    /// Only missing extensions are deferred. The host must call AssetPipeline.CompleteExtensionDiscovery after activation.
+    /// </remarks>
+    public bool deferUnavailableExtensions { get; init; }
+
+    /// <summary>
     /// Gets whether the pipeline reconciles authoring sources or consumes a deployed artifact catalog.
     /// </summary>
     public AssetPipelineMode mode { get; init; }

@@ -26,6 +26,7 @@ using Inno.Rendering;
 using Inno.Rendering.Runtime;
 using Inno.Shell;
 using Inno.Storage.Runtime;
+using Inno.UI.Runtime;
 using ShellHost = Inno.Shell.Shell;
 
 namespace Inno.Player;
@@ -46,9 +47,13 @@ internal sealed class GamePlayerHost : ShellHost
         : base(adapterCatalog, shellOptions)
     {
         m_engine = engine;
+        m_engine.logs.RegisterSink(new ConsoleLogSink());
     }
 
-    internal static GamePlayerHost Create(IAdapterCatalog adapterCatalog, AdapterSelection adapterSelection)
+    internal static GamePlayerHost Create(
+        IAdapterCatalog adapterCatalog,
+        AdapterSelection adapterSelection,
+        GraphicsApi? preferredGraphicsApi = null)
     {
         ArgumentNullException.ThrowIfNull(adapterCatalog);
         string packagedContentRoot = ResolvePackagedContentRoot();
@@ -83,6 +88,7 @@ internal sealed class GamePlayerHost : ShellHost
                         resizable = true,
                         highPixelDensity = true
                     },
+                    preferredGraphicsApi = preferredGraphicsApi,
                     verticalSync = true,
                     sRgbBackbuffer = true
                 },
@@ -108,6 +114,16 @@ internal sealed class GamePlayerHost : ShellHost
 
     private RuntimeSession session
         => m_session ?? throw new InvalidOperationException("The Player runtime session is not initialized.");
+
+    internal int RunGame(int? smokeFrameLimit)
+    {
+        // Output content is collected during presentation, after the session tick has ended.
+        // Keep its asset and UI services bound throughout the complete shell frame.
+        using IDisposable scope = settings.EnterExecutionScope();
+        using IDisposable sessionScope = session.EnterExecutionScope();
+        using IDisposable uiScope = session.subsystems.GetRequiredSubsystem<UiRuntime>().EnterExecutionScope();
+        return Run(smokeFrameLimit);
+    }
 
     private ProjectSettingsStore settings
         => m_settings ?? throw new InvalidOperationException("The Player settings owner is not initialized.");
@@ -156,10 +172,16 @@ internal sealed class GamePlayerHost : ShellHost
             .GetRequiredSubsystem<AudioRuntime>();
         AnimationRuntime animation = session.subsystems
             .GetRequiredSubsystem<AnimationRuntime>();
+        InputRuntime inputRuntime = session.subsystems
+            .GetRequiredSubsystem<InputRuntime>();
         m_rendering = new RenderRuntime(m_engine.types, renderDevice, m_renderDiagnostics,
-            targetArtifacts: new FileRenderTargetArtifactProvider(runtimeContentRoot),
+            targetArtifacts: new FileRenderTargetArtifactProvider(runtimeContentRoot, m_engine.serialization,
+                AssetSerializationContext.Create(session.assets)),
             contentScopeProvider: () => SceneContentSource.CreateScope(session.scenes),
-            primaryPresentationViewportProvider: size => CreatePresentationViewport(presentation, size));
+            primaryPresentationViewportProvider: size => CreatePresentationViewport(presentation, size),
+            inputSnapshotProvider: () => inputRuntime.snapshot,
+            primaryInputSurfaceSizeProvider: () => new RenderPresentationSize(
+                Math.Max(1, primaryWindow.width), Math.Max(1, primaryWindow.height)));
         UseHostPipeline(m_engine.CreateHostPipeline(DefaultEngine.CreateHostSubsystems(m_rendering)));
         using (settings.EnterExecutionScope())
         using (AnimationExecutionContext.EnterScope(animation))
@@ -191,10 +213,7 @@ internal sealed class GamePlayerHost : ShellHost
     /// Immutable timing and identity for the current shell frame.
     /// </param>
     protected override void OnFrame(ShellFrame frame)
-    {
-        using (settings.EnterExecutionScope())
-            session.Tick(frame.deltaTime);
-    }
+        => session.Tick(frame.deltaTime);
 
     /// <summary>
     /// Writes deterministic rendering statistics after a bounded smoke run completes.
@@ -204,6 +223,12 @@ internal sealed class GamePlayerHost : ShellHost
     /// </param>
     protected override void OnSmokeCompleted(int frameCount)
     {
+        var diagnostics = new SmokeDiagnostics();
+        m_engine.diagnostics.RegisterSink(diagnostics);
+        m_engine.diagnostics.UnregisterSink(diagnostics);
+        if (diagnostics.errors.Count != 0)
+            throw new InvalidOperationException("Player smoke completed with active errors:" + Environment.NewLine
+                + string.Join(Environment.NewLine, diagnostics.errors));
         RenderFrameStatistics? statistics;
         using (rendering.EnterExecutionScope())
             statistics = GraphicsSettings.frameStatistics;
@@ -212,6 +237,30 @@ internal sealed class GamePlayerHost : ShellHost
             + $"views={statistics?.viewCount ?? 0} "
             + $"draws={statistics?.drawCount ?? 0} "
             + $"dispatches={statistics?.dispatchCount ?? 0}");
+    }
+
+    private sealed class SmokeDiagnostics : IDiagnosticSink
+    {
+        internal readonly List<string> errors = [];
+        /// <summary>
+        /// Records errors from the current diagnostic report.
+        /// </summary>
+        /// <param name="report">
+        /// The report consumed by replace; ownership remains with the caller unless explicitly stated otherwise.
+        /// </param>
+public void Replace(DiagnosticReport report)
+        {
+            foreach (Diagnostic diagnostic in report.diagnostics)
+                if (diagnostic.severity == DiagnosticSeverity.Error)
+                    errors.Add(report.source.id + "/" + diagnostic.code + ": " + diagnostic.message);
+        }
+        /// <summary>
+        /// Removes all retained entries and returns the instance to an empty reusable state.
+        /// </summary>
+        /// <param name="source">
+        /// The source value or location read by this operation.
+        /// </param>
+public void Clear(DiagnosticSource source) { }
     }
 
     /// <summary>

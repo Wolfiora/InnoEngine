@@ -24,11 +24,34 @@ public sealed class EditorStyleMetrics
     public const float C_ZOOM_STEP = 0.10f;
 
     private float m_zoom = 1f;
+    private bool m_compactMode;
 
     /// <summary>
     /// Gets the current editor UI zoom multiplier.
     /// </summary>
     public float zoom => m_zoom;
+
+    /// <summary>
+    /// Gets whether compact editor density is active.
+    /// </summary>
+    public bool isCompact => m_compactMode;
+
+    /// <summary>
+    /// Switches between comfortable and compact editor density.
+    /// </summary>
+    /// <param name="value">
+    /// <see langword="true"/> for compact density.
+    /// </param>
+    /// <returns>
+    /// <see langword="true"/> when the density changed.
+    /// </returns>
+    public bool SetCompactMode(bool value)
+    {
+        if (m_compactMode == value)
+            return false;
+        m_compactMode = value;
+        return true;
+    }
 
     /// <summary>
     /// Sets the editor UI zoom after clamping it to the supported range.
@@ -80,22 +103,22 @@ public sealed class EditorStyleMetrics
     /// <summary>
     /// Gets global content scale.
     /// </summary>
-    public float fontScale => Scale(1.25f);
+    public float fontScale => Scale(m_compactMode ? 1.10f : 1.20f);
 
     /// <summary>
     /// Gets disabled content opacity.
     /// </summary>
-    public float disabledAlpha => 0.1f;
+    public float disabledAlpha => EditorPalette.opacityMedium;
 
     /// <summary>
     /// Gets standard window padding.
     /// </summary>
-    public Vector2 windowPadding => ScaleVector(new(6f, 6f));
+    public Vector2 windowPadding => ScaleVector(m_compactMode ? new(5f, 4f) : new(8f, 7f));
 
     /// <summary>
     /// Gets standard window rounding.
     /// </summary>
-    public float windowRounding => Scale(2f);
+    public float windowRounding => 0f;
 
     /// <summary>
     /// Gets standard border thickness.
@@ -110,7 +133,12 @@ public sealed class EditorStyleMetrics
     /// <summary>
     /// Gets standard frame padding.
     /// </summary>
-    public Vector2 framePadding => ScaleVector(new(6f, 2f));
+    public Vector2 framePadding => ScaleVector(m_compactMode ? new(4f, 1f) : new(7f, 3f));
+
+    /// <summary>
+    /// Gets the frame padding used while docked panel tabs are laid out.
+    /// </summary>
+    public Vector2 panelTabFramePadding => ScaleVector(m_compactMode ? new(4f, 3f) : new(7f, 4f));
 
     /// <summary>
     /// Gets the uniform content padding of editor context menus.
@@ -121,6 +149,12 @@ public sealed class EditorStyleMetrics
     /// Gets the uniform item padding of editor context menus.
     /// </summary>
     public Vector2 menuFramePadding => ScaleVector(new(8f, 3f));
+
+    /// <summary>
+    /// Gets the compact padding used by the search field at the top of editor context menus.
+    /// Its vertical padding matches the half-spacing that menu entries add above and below a line.
+    /// </summary>
+    public Vector2 menuSearchFramePadding => ScaleVector(new(8f, 1f));
 
     /// <summary>
     /// Gets the uniform spacing between editor context-menu items.
@@ -165,7 +199,7 @@ public sealed class EditorStyleMetrics
     /// <summary>
     /// Gets standard item spacing.
     /// </summary>
-    public Vector2 itemSpacing => ScaleVector(new(4f, 3f));
+    public Vector2 itemSpacing => ScaleVector(m_compactMode ? new(4f, 2f) : new(6f, 4f));
 
     /// <summary>
     /// Gets compact vertical item spacing.
@@ -180,12 +214,12 @@ public sealed class EditorStyleMetrics
     /// <summary>
     /// Gets standard inner item spacing.
     /// </summary>
-    public Vector2 itemInnerSpacing => ScaleVector(new(4f, 4f));
+    public Vector2 itemInnerSpacing => ScaleVector(m_compactMode ? new(3f, 3f) : new(5f, 4f));
 
     /// <summary>
     /// Gets standard table cell padding.
     /// </summary>
-    public Vector2 cellPadding => ScaleVector(new(3f, 2f));
+    public Vector2 cellPadding => ScaleVector(m_compactMode ? new(3f, 1f) : new(5f, 3f));
 
     /// <summary>
     /// Gets the inner padding applied to one complete Settings field.
@@ -215,7 +249,7 @@ public sealed class EditorStyleMetrics
     /// <summary>
     /// Gets tree indentation.
     /// </summary>
-    public float indentSpacing => Scale(20f);
+    public float indentSpacing => Scale(m_compactMode ? 18f : 22f);
 
     /// <summary>
     /// Gets minimum column spacing.
@@ -225,7 +259,7 @@ public sealed class EditorStyleMetrics
     /// <summary>
     /// Gets scrollbar width.
     /// </summary>
-    public float scrollbarSize => Scale(12f);
+    public float scrollbarSize => Scale(m_compactMode ? 10f : 12f);
 
     /// <summary>
     /// Gets the inset that keeps an overlay scrollbar grab visually lightweight.
@@ -235,7 +269,7 @@ public sealed class EditorStyleMetrics
     /// <summary>
     /// Gets minimum grab size.
     /// </summary>
-    public float grabMinimumSize => Scale(12f);
+    public float grabMinimumSize => Scale(m_compactMode ? 10f : 12f);
 
     /// <summary>
     /// Gets the minimum visible width retained for either asset browser pane while its splitter is dragged.
@@ -313,6 +347,41 @@ public sealed class EditorStyleMetrics
     public Vector2 inspectorCardHeaderPadding => ScaleVector(new(4f, 1f));
 
     /// <summary>
+    /// Gets the shared padding around separator-style section titles.
+    /// </summary>
+    public Vector2 sectionHeaderPadding => ScaleVector(new(20f, 3f));
+
+    /// <summary>
+    /// Gets the inner padding of a framed Inspector section.
+    /// </summary>
+    public Vector2 inspectorSectionPadding => ScaleVector(new(7f, 5f));
+
+    /// <summary>
+    /// Gets the gap between an Inspector section legend and its interrupted top border.
+    /// </summary>
+    public float inspectorSectionLegendGap => itemSpacing.X;
+
+    /// <summary>
+    /// Gets the length of each centered end cap on a collapsed Inspector section.
+    /// </summary>
+    public float inspectorCollapsedSectionCapLength => Scale(10f);
+
+    /// <summary>
+    /// Gets the spacing around the separator between inline metadata and its value.
+    /// </summary>
+    public float propertyMetadataSpacing => Scale(5f);
+
+    /// <summary>
+    /// Gets the vertical distance after a framed Inspector section.
+    /// </summary>
+    public float inspectorSectionSpacing => Scale(4f);
+
+    /// <summary>
+    /// Gets the subtle corner rounding used by framed content sections inside editor containers.
+    /// </summary>
+    public float inspectorSectionRounding => Scale(3f);
+
+    /// <summary>
     /// Gets inspector disclosure inset.
     /// </summary>
     public float disclosureButtonInset => Scale(2f);
@@ -371,6 +440,26 @@ public sealed class EditorStyleMetrics
     /// Gets the corner rounding of compact colored label chips.
     /// </summary>
     public float labelChipRounding => frameRounding;
+
+    /// <summary>
+    /// Gets the compact inner padding of outlined type badges.
+    /// </summary>
+    public Vector2 typeBadgePadding => ScaleVector(new(5f, 1f));
+
+    /// <summary>
+    /// Gets the corner rounding of outlined type badges.
+    /// </summary>
+    public float typeBadgeRounding => Scale(3f);
+
+    /// <summary>
+    /// Gets the horizontal gap between a property name and its type badge.
+    /// </summary>
+    public float typeBadgeSpacing => Scale(6f);
+
+    /// <summary>
+    /// Gets the vertical padding inside one statistics row.
+    /// </summary>
+    public float statisticRowPadding => Scale(3f);
 
     /// <summary>
     /// Gets spacing between distinct control groups in an Inspector target header row.

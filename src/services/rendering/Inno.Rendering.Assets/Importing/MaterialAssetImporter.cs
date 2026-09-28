@@ -9,14 +9,9 @@ using Inno.Rendering;
 
 namespace Inno.Rendering.Assets;
 
-[AssetImporterExtension]
+[AssetImporter("inno.rendering.material")]
 internal sealed class MaterialAssetImporter : AssetImporter<MaterialAsset>
 {
-    /// <summary>
-    /// Gets the stable importer identity used in artifact fingerprints.
-    /// </summary>
-    public override string importerId => "inno.rendering.material";
-
     /// <summary>
     /// Gets the normalized source extensions accepted by this importer.
     /// </summary>

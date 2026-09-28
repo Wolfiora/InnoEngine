@@ -28,6 +28,7 @@ internal static class ScriptCompilerEngine
     private const string C_EDITOR_ASSEMBLY_NAME = "Inno.EditorScripts";
     private const string C_RUNTIME_MODULE_NAME = "RuntimeScripts";
     private const string C_EDITOR_MODULE_NAME = "EditorScripts";
+    private const string C_EDITOR_COMPILATION_SYMBOL = "INNO_EDITOR";
     private static readonly object S_CACHE_SYNC = new();
 
     internal static async ValueTask<ScriptCompilationResult> CompileAsync(
@@ -88,13 +89,15 @@ internal static class ScriptCompilerEngine
                 ? editorApiReferences ?? throw new InvalidOperationException(
                     "A runtime deployment cannot contain an editor script assembly.")
                 : runtimeApiReferences;
+            IReadOnlyList<string> defines = GetCompilationDefines(assembly, includeEditor);
             assemblyKeys.Add(
                 assembly.name,
                 ComputeAssemblyBuildKey(
                     assembly,
                     api,
                     deploymentReferences?.fingerprint,
-                    assemblyKeys));
+                    assemblyKeys,
+                    defines));
         }
         string buildKey = ComputeGenerationBuildKey(sources, assemblyKeys);
         string outputDirectory = Path.Combine(options.outputDirectory, buildKey);
@@ -175,7 +178,7 @@ internal static class ScriptCompilerEngine
                 string.IsNullOrEmpty(assembly.ownerPluginId)
                     ? AssetSourceId.project.value
                     : assembly.ownerPluginId,
-                assembly.defines,
+                GetCompilationDefines(assembly, includeEditor),
                 assembly.nullable,
                 assembly.allowUnsafe,
                 progress,
@@ -331,10 +334,17 @@ internal static class ScriptCompilerEngine
 
         var usingRewriter = new ScriptApiUsingRewriter(api.namespaceMappings, api.typeMappings);
         var propertyOrderRewriter = new SerializablePropertyOrderRewriter();
+        var logicalReferences = new Dictionary<string, MetadataReference>(StringComparer.OrdinalIgnoreCase);
+        foreach (MetadataReference reference in platformReferences)
+            if (!string.IsNullOrWhiteSpace(reference.Display)) logicalReferences[reference.Display!] = reference;
+        foreach (string referencePath in apiReferences.ideReferencePaths)
+            logicalReferences[referencePath] = MetadataReference.CreateFromFile(referencePath);
+        var logicalBindings = CSharpCompilation.Create(assemblyName, syntaxTrees, logicalReferences.Values, validationCompilation.Options);
         SyntaxTree[] runtimeTrees = syntaxTrees
             .Select(tree => CSharpSyntaxTree.Create(
                 (CSharpSyntaxNode)usingRewriter.Visit(
-                    propertyOrderRewriter.Visit(tree.GetRoot(cancellationToken)))!,
+                    propertyOrderRewriter.Visit(new ScriptStaticMemberRewriter(logicalBindings.GetSemanticModel(tree))
+                        .Visit(tree.GetRoot(cancellationToken))))!,
                 parseOptions,
                 tree.FilePath,
                 Encoding.UTF8))
@@ -346,6 +356,9 @@ internal static class ScriptCompilerEngine
         }
         else
         {
+            var authoringCompilation = CSharpCompilation.Create(
+                assemblyName, runtimeTrees, validationReferences.Values, validationCompilation.Options);
+            runtimeTrees = ScriptAuthoringAnnotationRewriter.Erase(authoringCompilation, api, cancellationToken);
             var targetReferences = new Dictionary<string, MetadataReference>(StringComparer.OrdinalIgnoreCase);
             foreach (MetadataReference reference in platformReferences)
             {
@@ -488,7 +501,8 @@ internal static class ScriptCompilerEngine
         ScriptAssemblyInput assembly,
         ScriptApiReferenceSet api,
         string? deploymentReferenceFingerprint,
-        IReadOnlyDictionary<string, string> dependencyKeys)
+        IReadOnlyDictionary<string, string> dependencyKeys,
+        IReadOnlyList<string> defines)
     {
         using var hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
         AppendHash(hash, "Inno.ScriptAssemblyArtifact.SourceOwned");
@@ -501,7 +515,7 @@ internal static class ScriptCompilerEngine
         AppendHash(hash, assembly.definitionHash);
         AppendHash(hash, assembly.nullable.ToString());
         AppendHash(hash, assembly.allowUnsafe.ToString());
-        foreach (string define in assembly.defines.OrderBy(static value => value, StringComparer.Ordinal))
+        foreach (string define in defines.OrderBy(static value => value, StringComparer.Ordinal))
             AppendHash(hash, define);
         foreach (ScriptSourceInput source in assembly.sources.OrderBy(static value => value.relativePath, StringComparer.Ordinal))
         {
@@ -516,6 +530,20 @@ internal static class ScriptCompilerEngine
         AppendHash(hash, api.contractFingerprint);
         AppendHash(hash, deploymentReferenceFingerprint ?? "Authoring");
         return Convert.ToHexString(hash.GetHashAndReset());
+    }
+
+    private static IReadOnlyList<string> GetCompilationDefines(
+        ScriptAssemblyInput assembly,
+        bool includeEditor)
+    {
+        ArgumentNullException.ThrowIfNull(assembly);
+        return includeEditor
+            ? assembly.defines
+                .Append(C_EDITOR_COMPILATION_SYMBOL)
+                .Distinct(StringComparer.Ordinal)
+                .OrderBy(static value => value, StringComparer.Ordinal)
+                .ToArray()
+            : assembly.defines;
     }
 
     private static string ComputeGenerationBuildKey(

@@ -1,6 +1,15 @@
 # Inno.Rendering
 
-[Rendering 索引](README.md) · [Runtime](Inno.Rendering.Runtime.md) · [ShaderGraph](Inno.Rendering.ShaderGraph.md)
+## 独立编译产物消费者
+
+`IRenderResourceService.TryResolveMaterialArtifact(scope, artifact, material, contractId, passRoleId, programKind, vertexLayout, overrides, diagnostics, out materialPass)` 接收已经过创作编译链的完整不可变产物。
+它用于隔离预览等显式消费者，不读取图、不解析源码，也不将传入产物注册为资产。Raster/Compute 均经过正式材质的反射校验、能力检查、绑定及全 Pass 原子发布流程。
+缓存由非空 `RenderPersistentResourceId` 与 Shader 身份、目标和变体共同隔离；同一帧内相同 scope 的产物固定。候选失败只保留同 scope 的 last-good；调用者提供的 `IDiagnosticReporter` 不被保留或转发到正式项目诊断。
+`Release(scope)` 退休该消费者的全部程序，不影响 canonical Material 或其他预览。统一程序容量限制和未使用资源清扫对这类程序同样生效。
+`IRenderResourceService.ValidateShaderArtifact(artifact)` 只能在帧资源变更安全点调用；它复用正式程序创建和 Reflection 校验路径创建并退休所有 Pass，但不发布、不缓存，也不解析创作源码。Editor 的显式 Check 通过异步帧队列使用该入口，因此不会在 UI/Presentation 阶段越过设备生命周期。
+`RenderShaderArtifact`、`RenderShaderPassArtifact`、`RenderShaderStageArtifact`、`RenderShaderVariant` 的脚本导出为后端中立运行时产物协议，不新增完整 Shader 源码资产入口。
+
+[Rendering 索引](README.md) · [Runtime](Inno.Rendering.Runtime.md) · [Shader 图](Inno.Rendering.Shaders.md)
 
 ## 发布集合的不可变性
 
@@ -8,7 +17,7 @@ Vertex Layout、Graphics/Compute Pipeline bindings、Shader IR 与部署 Artifac
 
 Graphics/Compute pipeline binding、Shader IR 的 stages/passes/interface bindings/source mapping、RenderGeometry sections 均复制并冻结容器。调用者不能通过将 IReadOnlyList 转回数组或 IList 来改变已验证的发布集合。该约束针对运行快照，不把可编辑的 Shader/Material 创作模型伪装成不可变值。
 
-`ShaderDefinition` 仍是可编辑的创作 DTO。`ShaderAsset.SetDefinition` 先捕获完整嵌套声明、编码 bytes 和依赖，再一次提交；失败不改变旧 definition 或序列化 bytes。`ShaderAsset.definition`、`ShaderIRModule.definition` 返回独立可编辑副本，keywords/options、pass metadata、technique/pass mappings 都隔离。`ShaderIRPass`、`MaterialPassResolution`、`RenderMaterialPass` 同样不暴露其内部嵌套数组。Asset 引用仍属于 Identity owner，不复制出第二套 canonical Asset；这里冻结的是声明值，而不是把可编辑 Asset 宣称为深度不可变世界。
+`ShaderDefinition` 仍是可编辑的创作 DTO。`ShaderAsset.SetDefinition` 先捕获完整嵌套声明、编码 bytes 和依赖，再一次提交；失败不改变旧 definition 或序列化 bytes。`ShaderAsset.definition` 返回独立可编辑副本，keywords/options、pass metadata、technique/pass mappings 都隔离。`MaterialPassResolution`、`RenderMaterialPass` 同样不暴露其内部嵌套数组。Asset 引用仍属于 Identity owner，不复制出第二套 canonical Asset；这里冻结的是声明值，而不是把可编辑 Asset 宣称为深度不可变世界。
 
 `Inno.Rendering` 是 Project/Plugin 脚本面对的通用渲染 API。它不引用 Scene，也不定义 Camera、Light、MeshRenderer、PBR 参数、Render Queue 或固定 Pass Tag。
 
@@ -17,6 +26,9 @@ Graphics/Compute pipeline binding、Shader IR 的 stages/passes/interface bindin
 | 分类 | API | 语义 |
 | --- | --- | --- |
 | 请求 | `RenderRequest`, `RenderTarget`, `RenderViewport`, `RenderFrameData` | 将目标、尺寸、可选 Pipeline 与 Plugin 自有帧数据提交给 Runtime。 |
+| 输出模型 | `RenderOutputSession`, `IRenderModel`, `RenderModelOutput`, `RenderOutputRoute`, `RenderOutputLayer` | Host 声明内容、目标视口和输入；单模型直接输出，多模型用 route 排序并明确分配内容源。 |
+| 世界内容 | `RenderView`, `ViewContentContext`, `IViewContentSource`, `IViewContentFrameSource`, `ViewContentItem`, `IViewDrawable`, `IPreparedViewDrawable` | 模型给出真实 View，并按自身排序规则接纳外部内容；所有 View 输入收集后，内容源每帧统一推进一次。 |
+| 命中与输入 | `RenderOutputInput`, `IViewPointerTarget` | 模型按绘制顺序反向命中；目标可保留指针捕获和键盘焦点。点击更新焦点后，焦点目标在指针移出时仍接收按键与文字。 |
 | 内容作用域 | `ContentReadScope`（Inno.References） | Host 显式选择的 Identity 内容根；无 Rendering 专用平行协议，不预设 Scene、World 或 Document。 |
 | 请求生产 | `RenderRequestProvider`, `RenderRequestProviderContext`, `RenderRequestProviderExtensionAttribute` | Plugin 每帧自动产生请求的 reload-safe TypeRegistry 扩展入口；Context 提供显式 content、capability、完整主表面尺寸与 Host 选定的主呈现 viewport，不预设 Camera。 |
 | Pipeline | `RenderPipelineAsset`, `RenderPipeline`, `RenderPipelineContext` | Stable Type ID + 原生配置状态，以及每请求建图入口。 |
@@ -28,6 +40,27 @@ Graphics/Compute pipeline binding、Shader IR 的 stages/passes/interface bindin
 | 目标产物 | `IRenderTargetArtifactProvider`, `RenderTargetArtifactStatus` | 以 `Ready`、`Pending`、`Unavailable`、`Failed` 精确表达无源码 Shader/Texture 目标产物状态。 |
 | 诊断 | `IDiagnosticReporter`, `Diagnostic`（Core.Diagnostics） | 发布并在条件恢复后解除领域问题；没有 Rendering 专用 sink/severity。 |
 | 全局 | `GraphicsSettings`, `RenderFrameStatistics` | 当前 capability、默认 Pipeline 与只读统计。 |
+
+Pipeline/Feature/Request Provider 的 Attribute 与 Shader Target 的实例 ID 并非两套相互矛盾的风格。Runtime Registry 必须先用资产里保存的 Stable ID 路由到实现类型，之后才按需构造 Pipeline，因此参数化 Attribute 同时承担“构造前 ID → Type 索引”的必要元数据。它不是空 marker，也不与实例成员重复。若改成实例 `id`，Registry 就必须为查表提前构造全部 Pipeline，改变资源生命周期和失败边界。
+
+### 设备呈现节奏
+
+`IRenderDevice.SetVerticalSync(bool)` 是所有后端必须实现的契约，不提供默认抛异常实现。
+两种策略必须均可接受，相同值幂等；在安全帧边界更改垂直同步，不能在已开始的 Pass 中重置。
+BGFX 适配器将变更与下一次 `BeginFrame` 的 backbuffer reset 合并，相同值不产生重复 reset。
+无窗口设备保留请求的策略，不执行无意义的呈现操作。新增后端漏实现此方法时直接编译失败。
+软件限帧属于 Shell 的
+`FramePacingOptions`，不属于 Render Graph 或特定渲染插件；`0` 表示不限帧。
+
+### 设备资源诊断
+
+`IRenderDevice.allocationCounters` 返回可选的 `RenderDeviceAllocationCounters` 值快照，由 Runtime
+写入最近完成帧的 `RenderFrameStatistics.allocationCounters`，供 Editor Stats、脚本和性能工具使用。
+快照包含 `deviceGeneration` 及 `textureAllocations`、`bufferAllocations`、`frameBufferAllocations`。
+三项均为该 generation 从创建以来成功分配的原生 transient 资源总数：池复用不递增，退休不递减，
+新设备重新计数。它们不是活跃资源数、显存字节或 GC 分配数；比较快照前先确认 generation 相同。
+不提供此诊断的后端返回 `null`，不能用全零伪装为已测量。设备 getter 仅在 API thread 读取，
+完成帧的值快照不保留设备、插件或原生 handle。
 
 ## Shader → Technique → Material → Pipeline
 
@@ -45,7 +78,9 @@ MaterialPassResolution? selection = MaterialPassResolver.Resolve(
 
 解析不是“内建所有模型再用开关启用”。Resolver 只做四件通用工作：按 Plugin 提供的 Contract 找 Technique、按设备能力过滤、尊重 Material 显式 Technique、按 Plugin 提供的 Role 找 Pass。它不知道 sprite、PBR、shadow 或 post process；这些名字、属性、排序和 pass 组合都由 Pipeline/Plugin 拥有。解析结果会被确定性缓存和验证，不会在每个 draw 上用 CLR 反射猜测语义。
 
-Material/Geometry 是可选帮助层，不是强制执行路径。纹理 `MaterialValue` 同时保存后端中立 `RenderSamplerState`，因此 filter/address mode 不由 Runtime 写死；BGFX 的 texture/sampler 组合绑定不会伪装成不可用的独立 Material Sampler property。Buffer 属于 Pipeline/Pass 显式资源接口，不被 Material helper 隐式拥有。低级 Pipeline 可以通过 `IRenderResourceService.AcquireBuffer`、`AcquireTexture`、`AcquireKtxTexture`、`AcquireGraphicsPipeline` 和 `AcquireComputePipeline` 提交自己的目标二进制与资源描述，再直接使用 `RenderCommandEncoder` 绑定和录制；这些入口仍只返回后端中立 opaque handle。
+Material/Geometry 是可选帮助层，不是强制执行路径。纹理 `MaterialValue` 同时保存后端中立 `RenderSamplerState`，因此 filter/address mode 不由 Runtime 写死；BGFX 的 texture/sampler 组合绑定不会伪装成不可用的独立 Material Sampler property。Buffer 属于 Pipeline/Pass 显式资源接口，不被 Material helper 隐式拥有。`IRenderResourceService.PrewarmMaterial(material)` 不阻塞当前帧，返回选中 Shader variant 的 `RenderTargetArtifactStatus`：`Pending` 表示尚无可用产物、只应提示准备中的 Warning；`Failed`/`Unavailable` 表示当前没有可用目标产物，需要 Error，`Ready` 包括可用的 last-good。`TryResolveGraphicsMaterial` 仍负责最终契约和 GPU Program 校验，即使产物 Ready 也可能有明确的解析错误。低级 Pipeline 可以通过 `IRenderResourceService.AcquireBuffer`、`AcquireTexture`、`AcquireKtxTexture`、`AcquireGraphicsPipeline` 和 `AcquireComputePipeline` 提交自己的目标二进制与资源描述，再直接使用 `RenderCommandEncoder` 绑定和录制；这些入口仍只返回后端中立 opaque handle。
+
+`RenderMaterialPass.UsesBinding(id, kind)` 是 Pipeline 在录制 Pass-owned uniform、texture 或 storage 资源前查询最终编译接口的严格入口。它先核对 Shader 声明中确实存在相同 ID 和 binding kind，再返回当前 Pass 的编译后 Reflection 是否仍消费该 binding：`false` 只表示编译器证明未使用并已优化掉；未声明 ID、拼写错误和类型错误继续抛出，不能借此静默跳过契约错误。Material-owned binding 仍由 `Bind` 自动处理；直接调用 `RenderCommandEncoder` 的 Pipeline 必须用该入口保护可能被编译优化移除的绑定。后端的绑定解析保持严格，不提供“缺失即忽略”的兼容路径。
 
 `ShaderPropertyDefinition.bindingKind` 用 `ShaderPropertyBindingKind` 明确区分 `Uniform`、`SampledTexture`、`StorageTexture` 与 `StorageBuffer`；storage binding 还通过 `RenderStorageAccess` 声明 Read、Write 或 ReadWrite。数值默认推断为 Uniform，纹理默认推断为 SampledTexture，Buffer 默认推断为 StorageBuffer，但资产可以显式声明。Shader IR、Pass-local `ShaderInterface`、编译 artifact 与 Runtime binding descriptor 会保留同一个绑定契约。Material 只拥有 Uniform 与 SampledTexture 值；StorageTexture/StorageBuffer 必须由 Pipeline 在对应 Pass 中显式获取、向 RenderGraph 声明，并通过 `BindStorageTexture`/`BindBuffer` 绑定，避免把帧级 UAV 错误持久化到材质资产。
 
@@ -91,6 +126,8 @@ public sealed class SampleRequestProvider : RenderRequestProvider
 
 `ContentReadScope` 由应用组合根在帧边界建立。Rendering Runtime 只调用 Host 提供的中立 callback，因此不引用 Scene；Plugin Provider 只消费 `context.content`，不扫描全局 Scene Manager。`primaryPresentationSize` 表示完整物理表面，`primaryPresentationViewport` 表示实际游戏内容区域；面向 Player backbuffer 的模型应使用后者，才能统一支持 letterbox、pillarbox 与未来的显示适配策略。内容对象不得跨帧或跨 Plugin generation 保留，Provider 必须在提交前把需要的数据复制进 immutable frame snapshot。Host 没有提供内容或 callback 失败时使用空 scope，并产生结构化诊断而不破坏当前帧。
 
+`IRenderModel` 是场景输出的主入口：只有一个模型接受 Session 时直接使用；多个模型必须配置 `RenderOutputRoute`，其中每层列出专属的 `IViewContentSource` ID。Runtime 校验唯一分配和格式，分别绘制到采样目标，再按 route 进行预乘 Alpha 合成。跨模型深度不会交错；一个 Canvas 若要与精灵逐项排序，应由同一个 2D 模型收集。`IViewContentSource` 在模型建立真实 View 后收集世界内容，Canvas 等插件无需引用 2D 或 Camera2D。`IViewPointerTarget` 的捕获与键盘焦点由模型按同一排序结果路由，局部命中计算留给内容插件。`RenderRequestProvider` 继续承担 Shader/Material 等独立预览及其他显式请求，不与场景模型重复承担 GameView 合成。
+
 逐帧 Sprite 顶点、粒子或实例数据使用 `context.uploads.UploadBuffer(...)`。它返回 opaque `RenderBufferSlice`，可直接交给 `RenderCommandEncoder.BindVertexBuffer`、`BindIndexBuffer`、`BindInstanceBuffer` 或 Storage `BindBuffer`，不暴露持久 Buffer handle，也不允许跨帧缓存。
 
 长期存在的动态图集、画布或 simulation texture 可通过 `IRenderResourceService.UpdateTexture(texture, region, data)` 原位更新局部矩形，不需要重建资源。通用 GPU→CPU 结果通过 `ReadTextureAsync` 返回不可变 `RenderTextureReadbackResult`；调用取消只停止该等待并安全回收 pending transfer。Readback texture 必须以 `RenderTextureUsage.Readback` 创建，Pipeline 自己决定何时 Copy/Blit 生产结果，因此 API 不内建 Picking、截图或任何领域语义。
@@ -105,7 +142,9 @@ SceneWorld
   → ContentReadScope (Identity roots)
   → Rendering2DSceneScope
   → Rendering2DSceneSystem.Capture
-  → Rendering2DFrameCollector
+  → Rendering2DModel / RenderOutputSession
+  → RenderView + IViewContentSource
+  → Rendering2DFrameCollector（统一排序 Sprite 与世界内容）
   → RenderFrameData
   → RenderRequest
   → Rendering2DPipeline.Build
@@ -123,7 +162,7 @@ SceneWorld
 
 `Rendering2DSceneScope` 只收集显式包含 `Rendering2DSceneSystem` 的 Scene，并跳过没有选择 2D 模型的 Scene；同一 Host scope 因而可以并存纯 3D、纯 2D 和混合 Scene。一个 Scene 中出现多个 2D system 仍是所有权错误，会被明确拒绝。系统存在但 `enabled=false` 时，`Capture` 立即清空并返回空 snapshot：Scene View 仍把它视为已安装的 2D authoring model，由自己的 Editor Camera 保留网格、导航和重新启用后的连续编辑位置，但不会提取 Scene 中的 Camera、Sprite、Tilemap 或 Light；Game View contributor 不参与，Player backbuffer 也不提交 2D request。Remove 则表示 Scene 完全退出 2D 模型，Scene View 也不再获得 2D contributor。重新启用后下一次 `Capture` 从当前 Scene 结构重建索引。
 
-`Rendering2DFrameCollector` 读取 scope、Camera 和项目 2D Settings，计算正交 view/projection、camera bounds、layer/culling、Light 快照、Sprite/Tilemap quad、排序键、batch、CPU picking 数据与诊断，并把结果冻结在 Plugin-owned `RenderFrameData` channel 中。Scene View Contributor 使用独立 Editor Camera，并在同一个 frame snapshot 中返回 view/projection 和 picking；Game View Contributor 使用 Scene 的 Base/Overlay Camera stack；Player 的 `Rendering2DRequestProvider` 则直接使用 Host 计算好的 `primaryPresentationViewport` 提交 backbuffer request。2D Editor 层使用稳定 order `1000`，会叠加在未来低 order 的 3D 底层之上；Pipeline 在 `preservePresentationTarget` 为 true 时加载已有 presentation color。
+`Rendering2DFrameCollector` 读取 scope、Camera 和项目 2D Settings，计算正交 view/projection、camera bounds、layer/culling、Light 快照、Sprite/Tilemap quad、排序键、batch、CPU picking 数据与诊断，并把结果冻结在 Plugin-owned `RenderFrameData` channel 中。Scene View Contributor 使用独立 Editor Camera，并在同一个 frame snapshot 中返回 view/projection 和 picking；Game View Contributor 与 Player 均调用 `Rendering2DModel` 建立场景 Camera stack。模型在排序前收集 `IViewContentSource`，因此 Canvas 等外部世界内容可以位于 Sprite 之间。多个模型争用同一输出时当前会给出诊断并拒绝，直到独立层合成实现。
 
 `Rendering2DPipeline.Build` 只消费 immutable frame data。它通过 `IRenderResourceService` 解析开放的 shader contract/material role，通过 `IRenderFrameUploadService` 上传当前帧 vertex/index slices，再用 `RenderGraphBuilder.AddRasterPass` 声明 attachment、load/store、view/projection 和 side effect。真正的资源创建、依赖排序、pass culling、command replay 与 platform backend 都由引擎完成；2D Plugin 从未引用 `Inno.Native.Bgfx`。因此未来 3D、矢量、UI 或自定义渲染 Plugin 可以复用同一底座，却不需要继承或修改 2D 世界观。
 

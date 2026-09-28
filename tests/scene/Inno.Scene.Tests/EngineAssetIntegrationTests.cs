@@ -119,6 +119,43 @@ public sealed class EngineAssetIntegrationTests : IDisposable
     }
 
     [Fact]
+    public void LoadedScene_InstantiatesConnectedPrefabsDuringUpdate()
+    {
+        var sourceScene = new GameScene("Source");
+        GameObject sourceRoot = sourceScene.CreateObject("Root");
+        GameObject sourceChild = sourceScene.CreateObject("Child");
+        sourceChild.transform.SetParent(sourceRoot.transform);
+        sourceRoot.AddComponent<EngineObjectReferenceComponent>().targetObject = sourceChild;
+        PrefabAsset captured = PrefabAsset.Capture(sourceRoot, m_fixture.serialization, m_assets);
+        Assert.True(m_assets.Save(AssetPath.Project("Prefabs/runtime.iprefab"), captured));
+        PrefabAsset prefab = m_assets.Load<PrefabAsset>(AssetPath.Project("Prefabs/runtime.iprefab"));
+        m_fixture.world.ConfigurePrefabInstantiation(m_fixture.serialization, m_assets);
+
+        var targetScene = new GameScene("Target");
+        PrefabInstantiationBehavior spawner = targetScene.CreateObject("Spawner")
+            .AddComponent<PrefabInstantiationBehavior>();
+        spawner.prefab = prefab;
+        SceneManager.LoadScene(targetScene);
+
+        SceneManager.Update(0.016f);
+        SceneManager.Update(0.016f);
+
+        Assert.Equal(2, spawner.instances.Count);
+        Assert.Equal(5, targetScene.GetObjects().Count);
+        foreach (GameObject instance in spawner.instances)
+        {
+            Assert.True(instance.prefabInstance?.isRoot);
+            Assert.Same(spawner.gameObject.transform, instance.transform.parent);
+            Assert.Same(
+                Assert.Single(instance.transform.children).gameObject,
+                instance.GetComponent<EngineObjectReferenceComponent>().targetObject);
+        }
+
+        DestroyScene(sourceScene);
+        SceneManager.UnloadAllScenes();
+    }
+
+    [Fact]
     public void SceneAsset_DirectAssetReferenceUsesCanonicalInstanceAndDependencyMetadata()
     {
         WriteAsset("Text/shared.txt", "shared");
@@ -253,7 +290,7 @@ public sealed class EngineAssetIntegrationTests : IDisposable
     [Fact]
     public void EngineImporters_AreDiscoveredWithoutManualRegistration()
     {
-        var importerTypes = m_fixture.types.GetTypesWithAttribute<AssetImporterExtensionAttribute>();
+        var importerTypes = m_fixture.types.GetSubTypesOf<AssetImporter>();
 
         Assert.Contains(importerTypes, type => type.Resolve(m_fixture.types).Name == "SceneAssetImporter");
         Assert.Contains(importerTypes, type => type.Resolve(m_fixture.types).Name == "PrefabAssetImporter");

@@ -24,6 +24,8 @@ internal sealed class RenderResourceService : RenderResourceProvider, IRenderRes
     private readonly RenderGeometryOwner m_geometry;
     private readonly RenderMaterialOwner m_materials;
     private readonly RenderReadbackOwner m_readbacks;
+    private readonly HashSet<RenderPersistentResourceId> m_pendingReleases = [];
+    private bool m_mutationAllowed;
     private ulong m_frameIndex;
     private bool m_disposed;
     private RenderRetirementQueue? m_retirement;
@@ -43,7 +45,7 @@ internal sealed class RenderResourceService : RenderResourceProvider, IRenderRes
         m_graphicsPipelines = new(entry => m_device.DestroyGraphicsPipeline(entry.handle), limits.resourcesPerKind);
         m_computePipelines = new(entry => m_device.DestroyComputePipeline(entry.handle), limits.resourcesPerKind);
         m_geometry = new(device, diagnostics, limits.resourcesPerKind);
-        m_materials = new(device, diagnostics, targetArtifacts, TryResolveTexture, limits.resourcesPerKind);
+        m_materials = new(device, diagnostics, targetArtifacts, TryResolveTextureArtifact, limits.resourcesPerKind);
     }
 
     /// <summary>
@@ -52,12 +54,30 @@ internal sealed class RenderResourceService : RenderResourceProvider, IRenderRes
     public GraphicsCapabilities capabilities => m_device.capabilities;
 
     /// <summary>
+    /// Validates a compiled shader artifact against the current graphics device.
+    /// </summary>
+    /// <param name="artifact">
+    /// The resolved immutable artifact payload returned to the caller.
+    /// </param>
+    public void ValidateShaderArtifact(RenderShaderArtifact artifact)
+    {
+        ThrowIfDisposed();
+        ArgumentNullException.ThrowIfNull(artifact);
+        if (!m_mutationAllowed)
+            throw new InvalidOperationException("Shader artifact validation requires an open frame before graph execution.");
+        m_materials.ValidateArtifact(artifact);
+    }
+
+    /// <summary>
     /// Creates runtime pipeline and binding resources for the material before first use.
     /// </summary>
     /// <param name="material">
     /// The material consumed by prewarm material; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
-    public void PrewarmMaterial(MaterialAsset material)
+    /// <returns>
+    /// The selected variant's available, pending, unavailable, or failed target artifact state.
+    /// </returns>
+    public RenderTargetArtifactStatus PrewarmMaterial(MaterialAsset material)
     {
         ThrowIfDisposed();
         ArgumentNullException.ThrowIfNull(material);
@@ -66,7 +86,7 @@ internal sealed class RenderResourceService : RenderResourceProvider, IRenderRes
         RenderShaderVariant variant = RenderShaderVariant.FromMaterial(material);
         if (m_targetArtifacts is null)
             throw new InvalidOperationException("No render target artifact provider is configured for this runtime.");
-        _ = m_targetArtifacts.GetShaderArtifact(shader, variant, m_device.capabilities, out _);
+        return m_targetArtifacts.GetShaderArtifact(shader, variant, m_device.capabilities, out _);
     }
 
     /// <summary>
@@ -79,6 +99,20 @@ internal sealed class RenderResourceService : RenderResourceProvider, IRenderRes
     {
         ThrowIfDisposed();
         ArgumentNullException.ThrowIfNull(texture);
+        PrewarmTextureArtifact(texture.GetTextureArtifactReference());
+    }
+
+    /// <summary>
+    /// Queues target conversion for one stable texture artifact slot.
+    /// </summary>
+    /// <param name="texture">
+    /// Stable artifact reference to prepare.
+    /// </param>
+    public void PrewarmTextureArtifact(RenderTextureArtifactReference texture)
+    {
+        ThrowIfDisposed();
+        if (texture.assetId == Guid.Empty || string.IsNullOrWhiteSpace(texture.slot.id))
+            throw new ArgumentException("A valid texture artifact reference is required.", nameof(texture));
         if (m_targetArtifacts is null)
             throw new InvalidOperationException("No render target artifact provider is configured for this runtime.");
         _ = m_targetArtifacts.GetTextureArtifact(texture, out _);
@@ -368,6 +402,58 @@ internal sealed class RenderResourceService : RenderResourceProvider, IRenderRes
     }
 
     /// <summary>
+    /// Attempts to resolve material artifact without changing state when the operation cannot complete.
+    /// </summary>
+    /// <param name="scope">
+    /// The scope consumed by try resolve material artifact; ownership remains with the caller unless explicitly stated otherwise.
+    /// </param>
+    /// <param name="artifact">
+    /// The resolved immutable artifact payload returned to the caller.
+    /// </param>
+    /// <param name="material">
+    /// The material consumed by try resolve material artifact; ownership remains with the caller unless explicitly stated otherwise.
+    /// </param>
+    /// <param name="contractId">
+    /// The contract id consumed by try resolve material artifact; ownership remains with the caller unless explicitly stated otherwise.
+    /// </param>
+    /// <param name="passRoleId">
+    /// The pass role id consumed by try resolve material artifact; ownership remains with the caller unless explicitly stated otherwise.
+    /// </param>
+    /// <param name="programKind">
+    /// The program kind consumed by try resolve material artifact; ownership remains with the caller unless explicitly stated otherwise.
+    /// </param>
+    /// <param name="vertexLayout">
+    /// The vertex layout consumed by try resolve material artifact; ownership remains with the caller unless explicitly stated otherwise.
+    /// </param>
+    /// <param name="overrides">
+    /// The overrides consumed by try resolve material artifact; ownership remains with the caller unless explicitly stated otherwise.
+    /// </param>
+    /// <param name="diagnostics">
+    /// The diagnostics consumed by try resolve material artifact; ownership remains with the caller unless explicitly stated otherwise.
+    /// </param>
+    /// <param name="materialPass">
+    /// The material pass consumed by try resolve material artifact; ownership remains with the caller unless explicitly stated otherwise.
+    /// </param>
+    /// <returns>
+    /// <see langword="true"/> when the operation succeeds or its condition is satisfied; otherwise, <see langword="false"/>.
+    /// </returns>
+    public bool TryResolveMaterialArtifact(RenderPersistentResourceId scope, RenderShaderArtifact artifact, MaterialAsset material,
+        ShaderContractId contractId, ShaderPassRoleId passRoleId, ShaderProgramKind programKind, RenderVertexLayout? vertexLayout,
+        MaterialPropertyBlock? overrides, IDiagnosticReporter diagnostics, out RenderMaterialPass? materialPass)
+    {
+        ThrowIfDisposed();
+        RequireId(scope);
+        ArgumentNullException.ThrowIfNull(artifact);
+        ArgumentNullException.ThrowIfNull(diagnostics);
+        if (m_targetArtifacts is null) throw new InvalidOperationException("No render target artifact decoder is configured.");
+        if (!Enum.IsDefined(programKind)) throw new ArgumentOutOfRangeException(nameof(programKind));
+        if (programKind == ShaderProgramKind.Compute && vertexLayout is not null)
+            throw new ArgumentException("A compute program cannot consume a vertex layout.", nameof(vertexLayout));
+        return m_materials.TryResolveMaterial(material, contractId, passRoleId, programKind, vertexLayout, overrides,
+            out materialPass, artifact, scope.value, diagnostics);
+    }
+
+    /// <summary>
     /// Attempts to resolve compute material without changing state when the operation cannot complete.
     /// </summary>
     /// <param name="material">
@@ -440,19 +526,42 @@ internal sealed class RenderResourceService : RenderResourceProvider, IRenderRes
     {
         ThrowIfDisposed();
         ArgumentNullException.ThrowIfNull(texture);
-        resolvedTexture = default;
         Guid id = texture.identity.persistentId;
         if (id == Guid.Empty)
         {
+            resolvedTexture = default;
             Publish("RENDER_TEXTURE_ID_MISSING", "Texture must have a persistent asset identity.", texture.assetPath.ToString());
             return false;
         }
+        return TryResolveTextureArtifact(texture.GetTextureArtifactReference(), out resolvedTexture);
+    }
 
-        var resourceId = new RenderPersistentResourceId($"asset:{id:D}:texture");
-        bool sRgb = texture.colorSpace == TextureColorSpace.Srgb;
+    /// <summary>
+    /// Resolves one stable texture artifact slot into a generation-scoped sampled texture.
+    /// </summary>
+    /// <param name="texture">
+    /// Stable texture artifact reference.
+    /// </param>
+    /// <param name="resolvedTexture">
+    /// Receives the current or last-good GPU texture when successful.
+    /// </param>
+    /// <returns>
+    /// <see langword="true"/> when current or last-good texture content is usable.
+    /// </returns>
+    public bool TryResolveTextureArtifact(
+        RenderTextureArtifactReference texture,
+        out PersistentTextureHandle resolvedTexture)
+    {
+        ThrowIfDisposed();
+        resolvedTexture = default;
+        if (texture.assetId == Guid.Empty || string.IsNullOrWhiteSpace(texture.slot.id))
+            return false;
+
+        RenderPersistentResourceId resourceId = texture.resourceId;
+        bool sRgb = texture.slot.colorSpace == TextureColorSpace.Srgb;
         if (m_textures.TryGetValue(resourceId, out TextureEntry? current)
             && current.kind == TextureEntryKind.Ktx
-            && current.revision == texture.contentVersion
+            && current.revision == texture.contentRevision
             && current.sRgb == sRgb)
         {
             current.lastUsedFrame = m_frameIndex;
@@ -465,7 +574,7 @@ internal sealed class RenderResourceService : RenderResourceProvider, IRenderRes
             RenderTargetArtifactStatus status = m_targetArtifacts is null
                 ? RenderTargetArtifactStatus.Unavailable
                 : m_targetArtifacts.GetTextureArtifact(texture, out artifact);
-            string sourceId = texture.assetPath.ToString();
+            string sourceId = $"{texture.assetId:D}:{texture.slot.id}";
             if (status != RenderTargetArtifactStatus.Unavailable)
                 m_diagnostics.Resolve("RENDER_TEXTURE_TARGET_UNAVAILABLE", sourceId);
             if (status != RenderTargetArtifactStatus.Ready)
@@ -476,7 +585,7 @@ internal sealed class RenderResourceService : RenderResourceProvider, IRenderRes
                         "RENDER_TEXTURE_TARGET_UNAVAILABLE",
                         m_targetArtifacts is null
                             ? "No render target artifact provider is configured for this runtime."
-                            : $"No deployed target texture artifact exists for '{texture.assetPath}'.",
+                            : $"No deployed target texture artifact exists for '{sourceId}'.",
                         sourceId);
                 }
                 if (m_textures.TryGetValue(resourceId, out TextureEntry? lastGood))
@@ -490,14 +599,14 @@ internal sealed class RenderResourceService : RenderResourceProvider, IRenderRes
             if (artifact.IsEmpty)
             {
                 throw new InvalidOperationException(
-                    $"Target artifact provider returned an empty ready texture for '{texture.assetPath}'.");
+                    $"Target artifact provider returned an empty ready texture for '{sourceId}'.");
             }
             resolvedTexture = AcquireKtxTexture(
                 resourceId,
-                texture.contentVersion,
+                texture.contentRevision,
                 artifact,
                 sRgb,
-                texture.name);
+                sourceId);
             m_diagnostics.Resolve("RENDER_TEXTURE_RESOLVE_FAILED", sourceId);
             return true;
         }
@@ -506,8 +615,8 @@ internal sealed class RenderResourceService : RenderResourceProvider, IRenderRes
         {
             Publish(
                 "RENDER_TEXTURE_RESOLVE_FAILED",
-                $"Texture '{texture.assetPath.ToString()}' kept its last-good GPU resource: {exception.Message}",
-                texture.assetPath.ToString());
+                $"Texture artifact '{texture.assetId:D}:{texture.slot.id}' kept its last-good GPU resource: {exception.Message}",
+                $"{texture.assetId:D}:{texture.slot.id}");
             if (m_textures.TryGetValue(resourceId, out TextureEntry? lastGood))
             {
                 lastGood.lastUsedFrame = m_frameIndex;
@@ -612,8 +721,22 @@ internal sealed class RenderResourceService : RenderResourceProvider, IRenderRes
     /// </param>
     public void Release(RenderPersistentResourceId id)
     {
-        ThrowIfDisposed();
+        ObjectDisposedException.ThrowIf(m_disposed || m_retirement is not null, this);
         RequireId(id);
+        if (!m_mutationAllowed)
+        {
+            if (m_materials.HasScope(id.value) || m_graphicsPipelines.TryGetValue(id, out _)
+                || m_computePipelines.TryGetValue(id, out _) || m_buffers.TryGetValue(id, out _) || m_textures.TryGetValue(id, out _))
+                m_pendingReleases.Add(id);
+            return;
+        }
+        ThrowIfDisposed();
+        ReleaseNow(id);
+    }
+
+    private void ReleaseNow(RenderPersistentResourceId id)
+    {
+        m_materials.ReleaseScope(id.value);
         m_graphicsPipelines.Release(id);
         m_computePipelines.Release(id);
         m_buffers.Release(id);
@@ -665,12 +788,18 @@ internal sealed class RenderResourceService : RenderResourceProvider, IRenderRes
 
     internal void BeginFrame(ulong frameIndex)
     {
+        m_mutationAllowed = true;
         ThrowIfDisposed();
         m_frameIndex = frameIndex;
         m_geometry.BeginFrame(frameIndex);
         m_materials.BeginFrame(frameIndex);
         m_readbacks.Update();
+        foreach (RenderPersistentResourceId id in m_pendingReleases) ReleaseNow(id);
+        m_pendingReleases.Clear();
     }
+
+    internal void EndMutation() => m_mutationAllowed = false;
+    internal void BeginMutation() => m_mutationAllowed = true;
 
     internal void SweepUnused()
     {

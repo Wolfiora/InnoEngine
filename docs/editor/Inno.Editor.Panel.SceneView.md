@@ -28,5 +28,7 @@ Host 导航状态不是 Scene Component，也不规定 2D、3D、投影矩阵或
 Local/World 只改变操作轴基准，不改变 Transform 数据模型：World 轴保持世界方向，Local 轴跟随
 选择对象的最终 world rotation，所以未旋转的 2D 对象看起来相同；父节点或对象有旋转时 Move/Rotate
 会明显不同。Scale 按 ImGuizmo 与 Transform 的约定始终在 Local 空间执行，toolbar 会禁用该切换并
-显示说明，避免制造无效状态。导航状态通过 Panel 的 `Capture`/`Restore` 写入 `editor.ini`，但不会进入
-Scene、Undo 或 Plugin 持久状态。
+显示说明，避免制造无效状态。Transform 手柄保留 ImGuizmo 原生的红、绿、蓝轴向及交互颜色，操作轴长度约为 ImGuizmo 默认值的 2.1 倍，并加粗平移、缩放与旋转线条；相机、灯光与 Canvas 的插件图标和范围线则统一使用白色。图标仅绘制白色 glyph 和细微阴影，不加圆形背景或外框；普通 Gizmo 绘制层位于 ImGuizmo 手柄下方，工具栏在其上方。工具栏 hover 只接管交互，不使 Transform 手柄消失。图标保留原世界位置，不为避免重叠而平移；同一点击范围内存在多个对象时使用选择菜单。
+Contributor 在 `EditorViewportManipulationSpace.plane` 声明平面时，Scene View 将其转换为 ImGuizmo 的操作子集：Move 保留平面两条轴和中心自由拖拽，移除法线轴及重复的平面方块；Rotate 保留 XYZ 三轴，以便 2D 对象也能绕任意轴旋转；Scale 保留平面内两轴，并在读取操作矩阵时保持已有的负缩放符号。对原生轴 mask 和平面可见性阈值的调整局限在单次 ImGuizmo 调用范围内，退出时还原默认值；未声明平面的 3D（包括正交 3D）保持原有操作方式。具体 Plugin 不需要引用 ImGuizmo，核心也不识别 Rendering2D。
+
+导航状态通过 Panel 的 `Capture`/`Restore` 写入 `editor.ini`，但不会进入 Scene、Undo 或 Plugin 持久状态。

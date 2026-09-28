@@ -251,6 +251,7 @@ Inno.References
 - `IAssetReferenceResolver`。
 - Type/serialization generation。
 - Scene graph reference map。
+- Prefab 在 GameBehavior 执行阶段实例化时，差异引用映射可包含当前有效但尚待提交的对象和组件；完整 Scene Capture 仍只能在结构提交后进行。失败回滚必须移除本次创建的待提交对象，不得留下已注册 Identity。
 - 必要的 Asset dependency collector。
 
 缺少 required resolver 是 composition/startup 错误，不能等到 Play、Undo 或 Missing recovery 时才抛出。此前出现的 `Serialization context 'Inno.Assets.IAssetReferenceResolver' is not registered` 正是这一规则要消除的重复组合问题。
@@ -461,6 +462,11 @@ AwaitingCollection 期间只允许访问已经发布的数据；Play/Build/Expor
 
 因此 rollback/unload/dispose API 也必须返回或加入同一个 unload barrier。没有 collectible ALC 的纯数据 Asset
 candidate 可以立即通过这一阶段，但不能为了统一表面 API 无条件触发 Full GC。
+
+项目脚本的 GameScripts 与 EditorScripts 属于同一个创作代际：任一侧发生变化时，两侧的加载上下文
+共同进入候选切换和退休验证。编译器仍可复用未变化的编译产物，但不能保留旧 GameScripts 上下文并
+单独卸载 EditorScripts；Editor 泛型扩展闭合于 Game 类型时，CLR 的加载器依赖可能反向保留 Editor
+上下文。Scene 状态通过既有候选事务恢复；不得以延长超时、跳过 GC 或忽略存活 monitor 代替完整退休。
 
 允许把多次 GC verification 分散到后续 Editor frame，以避免一个同步无限循环冻结 UI；但在 barrier 完成前：
 

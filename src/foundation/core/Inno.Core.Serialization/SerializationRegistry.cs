@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using Inno.Extensibility.Types;
+using Inno.Scripting.Api;
 
 namespace Inno.Core.Serialization;
 
@@ -23,6 +24,7 @@ public sealed class SerializationRegistry : IDisposable
     /// <exception cref="ArgumentNullException">
     /// Thrown when <paramref name="types"/> is null.
     /// </exception>
+    [ScriptingApiIgnore]
     public SerializationRegistry(TypeCatalog types)
     {
         ArgumentNullException.ThrowIfNull(types);
@@ -52,6 +54,7 @@ public sealed class SerializationRegistry : IDisposable
     /// <exception cref="InvalidOperationException">
     /// Thrown when serialization services have not been initialized.
     /// </exception>
+    [ScriptingApiIgnore]
     public SerializationGeneration CaptureGeneration()
     {
         EnsureInitialized();
@@ -98,6 +101,7 @@ public sealed class SerializationRegistry : IDisposable
     /// <exception cref="InvalidOperationException">
     /// Thrown when the manager is not initialized.
     /// </exception>
+    [ScriptingApiIgnore]
     public IReadOnlyList<SerializationPropertySnapshot> CaptureProperties(
         ISerializable value,
         SerializationContext? context = null)
@@ -178,6 +182,26 @@ public sealed class SerializationRegistry : IDisposable
     }
 
     /// <summary>
+    /// Encodes an existing ordered set of independent property snapshots as neutral restoration bytes.
+    /// </summary>
+    /// <param name="snapshots">
+    /// Snapshots previously produced by <see cref="CaptureProperties"/>.
+    /// </param>
+    /// <returns>
+    /// Strictly validated bytes accepted by <see cref="RestorePropertiesData"/>.
+    /// </returns>
+    /// <exception cref="ArgumentNullException">
+    /// Thrown when <paramref name="snapshots"/> is <see langword="null"/>.
+    /// </exception>
+    [ScriptingApiIgnore]
+    public byte[] EncodePropertySnapshots(IReadOnlyList<SerializationPropertySnapshot> snapshots)
+    {
+        EnsureInitialized();
+        ArgumentNullException.ThrowIfNull(snapshots);
+        return PropertySnapshotBinaryFormat.Encode(snapshots);
+    }
+
+    /// <summary>
     /// Restores independently captured properties into an existing object.
     /// </summary>
     /// <param name="target">
@@ -204,6 +228,7 @@ public sealed class SerializationRegistry : IDisposable
     /// <exception cref="InvalidOperationException">
     /// Thrown when strict restoration or an object-level callback fails.
     /// </exception>
+    [ScriptingApiIgnore]
     public SerializationPropertyRestoreResult RestoreProperties(
         ISerializable target,
         IReadOnlyList<SerializationPropertySnapshot> snapshots,
@@ -254,6 +279,7 @@ public sealed class SerializationRegistry : IDisposable
     /// <exception cref="InvalidOperationException">
     /// Thrown when strict restoration or an object-level callback fails.
     /// </exception>
+    [ScriptingApiIgnore]
     public SerializationPropertyRestoreResult RestorePropertiesData(
         ISerializable target,
         ReadOnlySpan<byte> data,

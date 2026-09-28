@@ -11,7 +11,6 @@ using Inno.Scene.Components;
 
 namespace Inno.Scene;
 
-[SerializationExtension]
 internal sealed class GameObjectConverter : SerializationConverter<GameObject>
 {
     private const string C_SOURCE_ROOT_ID_KEY = "sourceRootId";
@@ -102,7 +101,7 @@ internal sealed class GameObjectConverter : SerializationConverter<GameObject>
             throw new InvalidOperationException("The prefab parent must belong to the target scene.");
 
         ValidatePrefab(reader);
-        var existingObjects = new HashSet<GameObject>(scene.GetObjects(), ReferenceEqualityComparer.Instance);
+        var existingObjects = new HashSet<GameObject>(scene.GetOwnedObjects(), ReferenceEqualityComparer.Instance);
         try
         {
             var references = new SceneGraphReferenceMap(scene);
@@ -183,7 +182,7 @@ internal sealed class GameObjectConverter : SerializationConverter<GameObject>
         }
         catch
         {
-            GameObject[] createdObjects = scene.GetObjects()
+            GameObject[] createdObjects = scene.GetOwnedObjects()
                 .Where(gameObject => !existingObjects.Contains(gameObject))
                 .ToArray();
             for (int i = 0; i < createdObjects.Length; i++)

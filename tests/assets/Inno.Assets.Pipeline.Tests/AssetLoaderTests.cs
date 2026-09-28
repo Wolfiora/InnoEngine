@@ -36,7 +36,11 @@ public sealed class AssetLoaderTests : IDisposable
     public AssetLoaderTests()
     {
         _ = typeof(PrivateConstructorAssetImporter);
+        _ = typeof(DeferredAssetImporter);
         _ = typeof(TestBuildProcessor);
+        DeferredAssetImporter.isAvailable = true;
+        ExtensionDependentImporter.available = false;
+        ExtensionDependentImporter.attempts = 0;
         m_identityScope = m_identities.EnterScope();
         m_diagnosticScope = m_diagnostics.EnterScope();
         m_modules = new ModuleHost(new ModuleHostOptions
@@ -46,7 +50,8 @@ public sealed class AssetLoaderTests : IDisposable
         m_types = new TypeCatalog(m_modules);
         m_serialization = new SerializationRegistry(m_types);
         SlowAssetImporter.Reset();
-        ImporterConflictProbe.mode = ImporterConflictMode.None;
+        ImporterConflictProbe.duplicateExtension = false;
+        MutableAssetImporter.attempts = 0;
     }
 
     public void Dispose()
@@ -82,6 +87,142 @@ public sealed class AssetLoaderTests : IDisposable
         Assert.True(loader.TryGetInfo(new AssetPath(source, "README.md"), out AssetInfo? failure));
         Assert.Equal(AssetImportStatus.Failed, failure!.status);
         Assert.Contains(failure.diagnostics, value => value.Contains("Read-only source metadata", StringComparison.Ordinal));
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void ExtensionDiscoveryDefersOnlyMissingExtensionsAndRetriesOnceWhenCompleted(bool available)
+    {
+        using TestWorkspace workspace = new();
+        workspace.WriteText("surface.extensionasset", "authored");
+        var sink = new TestDiagnosticSink();
+        m_diagnostics.RegisterSink(sink);
+        using var pipeline = new AssetPipeline(m_modules, m_types, m_serialization, m_identities,
+            m_diagnostics, m_logs, new AssetPipelineOptions
+            { assetRoot = workspace.assetRoot, libraryRoot = workspace.libraryRoot, deferUnavailableExtensions = true });
+        AssetPath path = AssetPath.Project("surface.extensionasset");
+        Assert.True(pipeline.TryGetInfo(path, out AssetInfo? pending));
+        Assert.Equal(AssetImportStatus.Pending, pending!.status);
+        Assert.Equal(DiagnosticSeverity.Info, Assert.Single(Assert.Single(sink.reports.Values).diagnostics).severity);
+        byte[] sidecar = System.IO.File.ReadAllBytes(workspace.SourcePath("surface.extensionasset.imeta"));
+        int attempts = ExtensionDependentImporter.attempts;
+        for (int i = 0; i < 5; i++) pipeline.Rescan();
+        Assert.Equal(attempts, ExtensionDependentImporter.attempts);
+        Assert.Throws<InvalidOperationException>(() => pipeline.ExportRuntimeArtifacts(Path.Combine(workspace.libraryRoot, "PendingExport")));
+
+        ExtensionDependentImporter.available = available;
+        pipeline.CompleteExtensionDiscovery();
+        Assert.True(pipeline.TryGetInfo(path, out AssetInfo? completed));
+        Assert.Equal(available ? AssetImportStatus.Imported : AssetImportStatus.Failed, completed!.status);
+        if (available)
+            Assert.Empty(sink.reports);
+        else
+            Assert.Equal(DiagnosticSeverity.Error, Assert.Single(Assert.Single(sink.reports.Values).diagnostics).severity);
+        Assert.Equal(pending.persistentId, completed.persistentId);
+        Assert.Equal(sidecar, System.IO.File.ReadAllBytes(workspace.SourcePath("surface.extensionasset.imeta")));
+        Assert.Equal("authored", System.IO.File.ReadAllText(workspace.SourcePath("surface.extensionasset")));
+        attempts = ExtensionDependentImporter.attempts;
+        for (int i = 0; i < 5; i++) pipeline.Rescan();
+        Assert.Equal(attempts, ExtensionDependentImporter.attempts);
+        if (!available)
+        {
+            Assert.Throws<InvalidOperationException>(() => pipeline.ExportRuntimeArtifacts(Path.Combine(workspace.libraryRoot, "MissingExport")));
+            ExtensionDependentImporter.available = true;
+            Assert.True(pipeline.Import(path));
+            Assert.True(pipeline.TryGetInfo(path, out AssetInfo? restored));
+            Assert.Equal(AssetImportStatus.Imported, restored!.status);
+            Assert.Equal(pending.persistentId, restored.persistentId);
+        }
+        m_diagnostics.UnregisterSink(sink);
+    }
+
+    [Fact]
+    public void ReadOnlyExtensionWaitPreservesSidecarAndBecomesStrictAfterDiscovery()
+    {
+        using TestWorkspace workspace = new();
+        using TestWorkspace package = new();
+        package.WriteText("surface.extensionasset", "authored");
+        byte[] metadata = m_serialization.Serialize(new MountedSourceMetadata
+        {
+            persistentId = Guid.NewGuid(), sourceKind = (int)AssetSourceKind.File,
+            importerId = "tests.extension-dependent"
+        });
+        System.IO.File.WriteAllBytes(package.SourcePath("surface.extensionasset.imeta"), metadata);
+        var source = new AssetSourceId("tests.readonly-extension");
+        using var pipeline = new AssetPipeline(m_modules, m_types, m_serialization, m_identities,
+            m_diagnostics, m_logs, new AssetPipelineOptions
+            {
+                assetRoot = workspace.assetRoot, libraryRoot = workspace.libraryRoot,
+                deferUnavailableExtensions = true,
+                sourceMounts = [new(AssetSourceId.project, workspace.assetRoot, false), new(source, package.assetRoot, true)]
+            });
+        var path = new AssetPath(source, "surface.extensionasset");
+        Assert.True(pipeline.TryGetInfo(path, out AssetInfo? pending));
+        Assert.Equal(AssetImportStatus.Pending, pending!.status);
+        Assert.Throws<InvalidDataException>(pipeline.CompleteExtensionDiscovery);
+        Assert.True(pipeline.TryGetInfo(path, out AssetInfo? failed));
+        Assert.Equal(AssetImportStatus.Failed, failed!.status);
+        Assert.Equal(metadata, System.IO.File.ReadAllBytes(package.SourcePath("surface.extensionasset.imeta")));
+        ExtensionDependentImporter.available = true;
+        Assert.True(pipeline.Import(path));
+        Assert.True(pipeline.TryGetInfo(path, out AssetInfo? recovered));
+        Assert.Equal(AssetImportStatus.Imported, recovered!.status);
+        Assert.Equal(pending.persistentId, recovered.persistentId);
+    }
+
+    [Fact]
+    public void DiscoveryDoesNotDeferMalformedContentAndCandidateActivationDoesNotHideMissingExtensions()
+    {
+        using TestWorkspace workspace = new();
+        workspace.WriteText("bad.mutableasset", "!invalid!");
+        using var pipeline = new AssetPipeline(m_modules, m_types, m_serialization, m_identities,
+            m_diagnostics, m_logs, new AssetPipelineOptions
+            { assetRoot = workspace.assetRoot, libraryRoot = workspace.libraryRoot, deferUnavailableExtensions = true });
+        Assert.True(pipeline.TryGetInfo(AssetPath.Project("bad.mutableasset"), out AssetInfo? bad));
+        Assert.Equal(AssetImportStatus.Failed, bad!.status);
+        workspace.WriteText("surface.extensionasset", "authored");
+        pipeline.Rescan();
+        m_modules.Rebuild();
+        Assert.True(pipeline.TryGetInfo(AssetPath.Project("surface.extensionasset"), out AssetInfo? waiting));
+        Assert.Equal(AssetImportStatus.Pending, waiting!.status);
+        ExtensionDependentImporter.available = true;
+        pipeline.CompleteExtensionDiscovery();
+        ExtensionDependentImporter.available = false;
+        workspace.WriteText("surface.extensionasset", "changed before activation");
+        Assert.Throws<InvalidDataException>(m_modules.Rebuild);
+        ExtensionDependentImporter.available = true;
+        m_modules.Rebuild();
+        Assert.True(pipeline.TryGetInfo(AssetPath.Project("surface.extensionasset"), out AssetInfo? recovered));
+        Assert.Equal(AssetImportStatus.Imported, recovered!.status);
+        Assert.Equal(waiting.persistentId, recovered.persistentId);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void MissingExtensionPropagatesToImportDependentsWithoutHydratingEmptyArtifacts(bool reference)
+    {
+        using TestWorkspace workspace = new();
+        workspace.WriteText("surface.extensionasset", "authored");
+        using var pipeline = new AssetPipeline(m_modules, m_types, m_serialization, m_identities,
+            m_diagnostics, m_logs, new AssetPipelineOptions
+            { assetRoot = workspace.assetRoot, libraryRoot = workspace.libraryRoot, deferUnavailableExtensions = true });
+        Assert.True(pipeline.TryGetInfo(AssetPath.Project("surface.extensionasset"), out AssetInfo? root));
+        workspace.WriteText("material.extensiondependent", reference ? root!.persistentId.ToString() : "surface.extensionasset");
+        pipeline.Rescan();
+        Assert.True(pipeline.TryGetInfo(AssetPath.Project("material.extensiondependent"), out AssetInfo? pending));
+        Assert.Equal(AssetImportStatus.Pending, pending!.status);
+        Assert.Contains(pending.diagnostics, static text => text.Contains("tests.surface", StringComparison.Ordinal));
+        InvalidOperationException unavailable = Assert.Throws<InvalidOperationException>(() =>
+            pipeline.Load<ExtensionDependentAsset>(AssetPath.Project("surface.extensionasset")));
+        Assert.Null(unavailable.InnerException);
+        ExtensionDependentImporter.available = true;
+        Assert.True(pipeline.Import(AssetPath.Project("surface.extensionasset")));
+        pipeline.Rescan();
+        Assert.True(pipeline.TryGetInfo(AssetPath.Project("material.extensiondependent"), out AssetInfo? restored));
+        Assert.Equal(AssetImportStatus.Imported, restored!.status);
+        Assert.Equal(pending.persistentId, restored.persistentId);
     }
 
     [Theory]
@@ -649,6 +790,25 @@ public sealed class AssetLoaderTests : IDisposable
     }
 
     [Fact]
+    public void OneImporterCanKeepGraphInputsInAuthoringWhileExportingExecutableAssets()
+    {
+        using TestWorkspace workspace = new();
+        workspace.WriteText("node.mixedscope", "authoring");
+        workspace.WriteText("shader.mixedscope", "runtime");
+        using var loader = workspace.CreateLoader(m_types, m_serialization, m_identities, m_diagnostics, m_logs);
+        Assert.NotNull(loader.Load(AssetPath.Project("node.mixedscope"), typeof(DependencyAsset)));
+        Assert.NotNull(loader.Load(AssetPath.Project("shader.mixedscope"), typeof(DependencyAsset)));
+        string contentRoot = Path.Combine(workspace.libraryRoot, "Runtime");
+        loader.ExportRuntimeArtifacts(contentRoot);
+        using SerializationGeneration serialization = m_serialization.CaptureGeneration();
+        using var database = new AssetDatabase(contentRoot, serialization, m_types.current, new IdentityAllocator());
+        Assert.True(database.TryLoad(AssetPath.Project("shader.mixedscope"), out DependencyAsset? shader));
+        Assert.NotNull(shader);
+        Assert.False(database.TryLoad(AssetPath.Project("node.mixedscope"), out DependencyAsset? node));
+        Assert.Null(node);
+    }
+
+    [Fact]
     public async Task RuntimeLeaseRetriesPendingBudgetEvictionWithoutReleasingAnotherLease()
     {
         using TestWorkspace workspace = new();
@@ -775,12 +935,21 @@ public sealed class AssetLoaderTests : IDisposable
     public void DuplicateImporterId_IsRejectedDuringAutomaticDiscovery()
     {
         using TestWorkspace workspace = new();
-        workspace.WriteText("Conflict/value.probea", "value");
+        workspace.WriteText("Conflict/initialize.txt", "initialize");
         using var loader = workspace.CreateLoader(m_types, m_serialization, m_identities, m_diagnostics, m_logs);
-        ImporterConflictProbe.mode = ImporterConflictMode.DuplicateId;
-
+        Assert.True(loader.Import(AssetPath.Project("Conflict/initialize.txt")));
         InvalidOperationException exception = Assert.Throws<InvalidOperationException>(
-            () => loader.Import(AssetPath.Project("Conflict/value.probea")));
+            () => m_modules.Load(new AssemblyLoadRequest
+            {
+                moduleName = "DuplicateAssetImporters",
+                mainAssemblyPath = Path.Combine(
+                    AppContext.BaseDirectory,
+                    "Modules",
+                    "DuplicateAssetImporters",
+                    "Inno.Assets.Pipeline.DuplicateImporterFixture.dll"),
+                domain = AssemblyDomain.InnoPlugin,
+                scope = AssemblyScope.Editor
+            }));
 
         Assert.Contains("importer id", exception.Message, StringComparison.OrdinalIgnoreCase);
     }
@@ -791,7 +960,7 @@ public sealed class AssetLoaderTests : IDisposable
         using TestWorkspace workspace = new();
         workspace.WriteText("Conflict/value.conflict", "value");
         using var loader = workspace.CreateLoader(m_types, m_serialization, m_identities, m_diagnostics, m_logs);
-        ImporterConflictProbe.mode = ImporterConflictMode.DuplicateExtension;
+        ImporterConflictProbe.duplicateExtension = true;
 
         InvalidOperationException exception = Assert.Throws<InvalidOperationException>(
             () => loader.Import(AssetPath.Project("Conflict/value.conflict")));
@@ -935,6 +1104,72 @@ public sealed class AssetLoaderTests : IDisposable
         Assert.Single(recursive);
         Assert.Equal("Graphs/b.depgraph", direct[0].lastKnownPath);
         Assert.Equal(2, loader.GetLoadedPaths().Count);
+    }
+
+    [Theory]
+    [InlineData("success")]
+    [InlineData("cancel")]
+    [InlineData("invalid")]
+    public async Task AsyncRuntimeExportReleasesItsGenerationLeaseAfterEveryOutcome(string outcome)
+    {
+        using TestWorkspace workspace = new();
+        workspace.WriteText("leaf.buildinput", "original");
+        using var pipeline = new AssetPipeline(m_modules, m_types, m_serialization, m_identities,
+            m_diagnostics, m_logs, new AssetPipelineOptions
+            { assetRoot = workspace.assetRoot, libraryRoot = workspace.libraryRoot, enableFileSystemWatcher = false });
+        DependencyAsset leaf = pipeline.Load<DependencyAsset>(AssetPath.Project("leaf.buildinput"));
+        workspace.WriteText("root.buildconsumer", leaf.identity.persistentId.ToString());
+        _ = pipeline.Load<DependencyAsset>(AssetPath.Project("root.buildconsumer"));
+        if (outcome == "invalid") workspace.WriteText("leaf.buildinput", "changed input");
+        using var cancellation = new CancellationTokenSource();
+        if (outcome == "cancel") cancellation.Cancel();
+        Task<AssetRuntimeContentInfo> export = pipeline.ExportRuntimeArtifactsAsync(
+            Path.Combine(workspace.libraryRoot, "AsyncRuntime"), cancellation.Token);
+        if (outcome == "cancel")
+            await Assert.ThrowsAnyAsync<OperationCanceledException>(() => export);
+        else if (outcome == "invalid")
+            await Assert.ThrowsAsync<InvalidOperationException>(() => export);
+        else
+            _ = await export;
+        m_modules.generations.EnsureReady("replace the generation after export");
+    }
+
+    [Theory]
+    [InlineData("failed", true)]
+    [InlineData("changed", false)]
+    public void RuntimeExportRejectsTransitiveAuthoringInputsWithoutDiscardingLastGood(string change, bool importChange)
+    {
+        using TestWorkspace workspace = new();
+        workspace.WriteText("leaf.buildinput", "original");
+        using var loader = workspace.CreateLoader(m_types, m_serialization, m_identities, m_diagnostics, m_logs);
+        Assert.True(loader.Import(AssetPath.Project("leaf.buildinput")));
+        AssetObject leaf = Assert.IsType<DependencyAsset>(loader.Load(AssetPath.Project("leaf.buildinput"), typeof(DependencyAsset)));
+        workspace.WriteText("middle.buildinput", leaf.identity.persistentId.ToString());
+        Assert.True(loader.Import(AssetPath.Project("middle.buildinput")));
+        AssetObject middle = Assert.IsType<DependencyAsset>(loader.Load(AssetPath.Project("middle.buildinput"), typeof(DependencyAsset)));
+        workspace.WriteText("root.buildconsumer", middle.identity.persistentId.ToString());
+        Assert.True(loader.Import(AssetPath.Project("root.buildconsumer")));
+        loader.ExportRuntimeArtifacts(Path.Combine(workspace.libraryRoot, "ValidRuntime"));
+
+        workspace.WriteText("leaf.buildinput", change);
+        if (importChange)
+            Assert.False(loader.Import(AssetPath.Project("leaf.buildinput")));
+        using (ArtifactLease lastGood = loader.AcquireArtifact(leaf.identity.persistentId, "authoring"))
+            Assert.Equal("original", System.IO.File.ReadAllText(lastGood.info.absolutePath));
+        string invalidDestination = Path.Combine(workspace.libraryRoot, "InvalidRuntime");
+        InvalidOperationException error = Assert.Throws<InvalidOperationException>(() => loader.ExportRuntimeArtifacts(invalidDestination));
+        Assert.Contains("root.buildconsumer -> middle.buildinput -> leaf.buildinput", error.Message);
+        Assert.False(Directory.Exists(invalidDestination));
+
+        workspace.WriteText("leaf.buildinput", "original");
+        Assert.True(loader.Import(AssetPath.Project("leaf.buildinput")));
+        loader.ExportRuntimeArtifacts(Path.Combine(workspace.libraryRoot, "RestoredRuntime"));
+
+        workspace.WriteText("root.buildconsumer", "not a valid dependency identity");
+        Assert.False(loader.Import(AssetPath.Project("root.buildconsumer")));
+        error = Assert.Throws<InvalidOperationException>(() =>
+            loader.ExportRuntimeArtifacts(Path.Combine(workspace.libraryRoot, "FailedRootRuntime")));
+        Assert.Contains("root.buildconsumer", error.Message);
     }
 
     [Theory]
@@ -1159,6 +1394,114 @@ public sealed class AssetLoaderTests : IDisposable
     }
 
     [Fact]
+    public void CatalogRestart_PrefersCurrentSourceIdentityOverHistoricalPathRecord()
+    {
+        using TestWorkspace workspace = new();
+        const string path = "Text/identity.txt";
+        workspace.WriteText(path, "value");
+        Guid historicalId;
+        using (AssetLoader first = workspace.CreateLoader(
+                   m_types, m_serialization, m_identities, m_diagnostics, m_logs))
+        {
+            first.Rescan();
+            Assert.True(first.TryGetPersistentId(AssetPath.Project(path), out historicalId));
+        }
+
+        string sidecarPath = workspace.SourcePath(path + ".imeta");
+        MountedSourceMetadata metadata = m_serialization.Deserialize<MountedSourceMetadata>(
+            System.IO.File.ReadAllBytes(sidecarPath));
+        Guid currentId = Guid.NewGuid();
+        metadata.persistentId = currentId;
+        System.IO.File.WriteAllBytes(sidecarPath, m_serialization.Serialize(metadata));
+
+        using (AssetLoader recovered = workspace.CreateLoader(
+                   m_types, m_serialization, m_identities, m_diagnostics, m_logs))
+        {
+            recovered.Rescan();
+            Assert.True(recovered.TryGetPersistentId(AssetPath.Project(path), out Guid indexedId));
+            Assert.Equal(currentId, indexedId);
+            Assert.True(recovered.TryGetInfo(historicalId, out AssetInfo? historical));
+            Assert.Equal(AssetImportStatus.Missing, historical!.status);
+        }
+
+        using AssetLoader restarted = workspace.CreateLoader(
+            m_types, m_serialization, m_identities, m_diagnostics, m_logs);
+        restarted.Rescan();
+        Assert.True(restarted.TryGetPersistentId(AssetPath.Project(path), out Guid stableId));
+        Assert.Equal(currentId, stableId);
+        MountedSourceMetadata stableMetadata = m_serialization.Deserialize<MountedSourceMetadata>(
+            System.IO.File.ReadAllBytes(sidecarPath));
+        Assert.Equal(currentId, stableMetadata.persistentId);
+    }
+
+    [Fact]
+    public void CatalogRestart_DoesNotPromoteHistoricalTombstonesToMissingReferences()
+    {
+        using TestWorkspace workspace = new();
+        workspace.WriteText("Text/removed.txt", "one");
+        Guid removedId;
+        using (AssetLoader loader = workspace.CreateLoader(
+            m_types, m_serialization, m_identities, m_diagnostics, m_logs))
+        {
+            loader.Rescan();
+            Assert.True(loader.TryGetPersistentId(AssetPath.Project("Text/removed.txt"), out removedId));
+            workspace.DeleteSource("Text/removed.txt");
+            loader.ApplySourceChanges([
+                new Inno.Assets.Pipeline.AssetChangedEvent(
+                    "Text/removed.txt", WatcherChangeTypes.Deleted)
+            ]);
+        }
+
+        var sink = new TestDiagnosticSink();
+        m_diagnostics.RegisterSink(sink);
+        try
+        {
+            using var restarted = new AssetPipeline(
+                m_modules,
+                m_types,
+                m_serialization,
+                m_identities,
+                m_diagnostics,
+                m_logs,
+                new AssetPipelineOptions
+                {
+                    assetRoot = workspace.assetRoot,
+                    libraryRoot = workspace.libraryRoot,
+                    enableFileSystemWatcher = false
+                });
+
+            Assert.True(restarted.TryGetInfo(removedId, out AssetInfo? tombstone));
+            Assert.Equal(AssetImportStatus.Missing, tombstone!.status);
+
+            using AssetSourceMountTransaction generation =
+                restarted.PrepareSourceMounts(restarted.sourceMounts);
+            generation.Activate();
+
+            Assert.Empty(generation.recoveryChanges);
+            Assert.DoesNotContain(
+                sink.reports.Values.SelectMany(static report => report.diagnostics),
+                static diagnostic => diagnostic.code == "ASSET-REFERENCE");
+
+            generation.Complete();
+
+            AssetObject explicitlyResolved = ((IAssetReferenceResolver)restarted).Resolve(
+                removedId,
+                tombstone.stableAssetTypeId,
+                "Text/removed.txt",
+                typeof(TextAsset),
+                "$test.reference");
+            Assert.True(explicitlyResolved.isMissing);
+            Assert.Contains(
+                sink.reports.Values.SelectMany(static report => report.diagnostics),
+                static diagnostic => diagnostic.code == "ASSET-REFERENCE");
+        }
+        finally
+        {
+            m_diagnostics.UnregisterSink(sink);
+        }
+    }
+
+    [Fact]
     public void RestoredSourceAndMetadata_ReactivatesOriginalIdentityInPlace()
     {
         using TestWorkspace workspace = new();
@@ -1314,6 +1657,25 @@ public sealed class AssetLoaderTests : IDisposable
     }
 
     [Fact]
+    public void UnchangedFailedSourceIsNotRetriedUntilItsInputChanges()
+    {
+        using TestWorkspace workspace = new();
+        workspace.WriteText("Data/retry.mutableasset", "!invalid!");
+        using var loader = workspace.CreateLoader(m_types, m_serialization, m_identities, m_diagnostics, m_logs);
+        AssetPath path = AssetPath.Project("Data/retry.mutableasset");
+        Assert.False(loader.Import(path));
+        int failedAttempts = MutableAssetImporter.attempts;
+        for (int index = 0; index < 5; index++)
+            loader.Rescan();
+        Assert.Equal(failedAttempts, MutableAssetImporter.attempts);
+
+        workspace.WriteText("Data/retry.mutableasset", "repaired");
+        loader.Rescan();
+        Assert.Equal(failedAttempts + 1, MutableAssetImporter.attempts);
+        Assert.Equal("repaired", Assert.IsType<MutableAsset>(loader.Load(path, typeof(MutableAsset))).value);
+    }
+
+    [Fact]
     public void FailedSave_PreservesCommittedSourceMetaArtifactAndVersion()
     {
         using TestWorkspace workspace = new();
@@ -1417,6 +1779,121 @@ public sealed class AssetLoaderTests : IDisposable
         Assert.Equal(Guid.Empty, unsupported.persistentId);
         Assert.False(System.IO.File.Exists(workspace.SourcePath("Unknown/value.unknown.imeta")));
         Assert.True(unsupported.artifactKey.isEmpty);
+    }
+
+    [Fact]
+    public void Rescan_RecoversAnonymousCatalogEntryFromSourceIdentityWithoutFalseMissingWarning()
+    {
+        using TestWorkspace workspace = new();
+        const string path = "Deferred/value.unavailable";
+        workspace.WriteText(path, "source awaiting its module generation");
+        using (AssetLoader first = workspace.CreateLoader(
+                   m_types, m_serialization, m_identities, m_diagnostics, m_logs))
+        {
+            first.Rescan();
+            Assert.True(first.TryGetInfo(AssetPath.Project(path), out AssetInfo? unsupported));
+            Assert.Equal(Guid.Empty, unsupported!.persistentId);
+        }
+
+        Guid persistentId = Guid.NewGuid();
+        Guid expectedStableTypeId = Guid.NewGuid();
+        System.IO.File.WriteAllBytes(
+            workspace.SourcePath(path + ".imeta"),
+            m_serialization.Serialize(new MountedSourceMetadata
+            {
+                persistentId = persistentId,
+                sourceKind = (int)AssetSourceKind.File,
+                importerId = "tests.unavailable-generation"
+            }));
+        var sink = new TestDiagnosticSink();
+        m_diagnostics.RegisterSink(sink);
+        try
+        {
+            using (AssetLoader recovered = workspace.CreateLoader(
+                       m_types, m_serialization, m_identities, m_diagnostics, m_logs))
+            {
+                recovered.Rescan();
+                Assert.True(recovered.TryGetInfo(persistentId, out AssetInfo? pending));
+                Assert.Equal(path, pending!.assetPath.ToString());
+                Assert.Equal("tests.unavailable-generation", pending.importerId);
+                Assert.Equal(AssetImportStatus.Pending, pending.status);
+
+                AssetObject placeholder = recovered.ResolveReference(
+                    persistentId,
+                    expectedStableTypeId,
+                    path,
+                    typeof(AssetObject));
+                Assert.True(placeholder.isMissing);
+                Assert.DoesNotContain(
+                    sink.reports.Values.SelectMany(static report => report.diagnostics),
+                    static diagnostic => diagnostic.code == "ASSET-REFERENCE");
+            }
+
+            using AssetLoader restarted = workspace.CreateLoader(
+                m_types, m_serialization, m_identities, m_diagnostics, m_logs);
+            restarted.Rescan();
+            Assert.True(restarted.TryGetInfo(persistentId, out AssetInfo? retained));
+            Assert.Equal("tests.unavailable-generation", retained!.importerId);
+        }
+        finally
+        {
+            m_diagnostics.UnregisterSink(sink);
+        }
+    }
+
+    [Fact]
+    public void Rescan_PreservesLastGoodCatalogWhileItsPathImporterIsUnavailable()
+    {
+        using TestWorkspace workspace = new();
+        const string path = "Deferred/value.deferredasset";
+        workspace.WriteText(path, "last-good source");
+        Guid persistentId;
+        Guid stableTypeId;
+        AssetArtifactKey artifactKey;
+        using (AssetLoader first = workspace.CreateLoader(
+                   m_types, m_serialization, m_identities, m_diagnostics, m_logs))
+        {
+            first.Rescan();
+            Assert.True(first.TryGetInfo(AssetPath.Project(path), out AssetInfo? imported));
+            persistentId = imported!.persistentId;
+            stableTypeId = imported.stableAssetTypeId;
+            artifactKey = imported.artifactKey;
+            Assert.False(artifactKey.isEmpty);
+        }
+
+        var sink = new TestDiagnosticSink();
+        m_diagnostics.RegisterSink(sink);
+        DeferredAssetImporter.isAvailable = false;
+        m_modules.Rebuild();
+        try
+        {
+            using (AssetLoader restarted = workspace.CreateLoader(
+                       m_types, m_serialization, m_identities, m_diagnostics, m_logs))
+            {
+                restarted.Rescan();
+
+                Assert.True(restarted.TryGetInfo(AssetPath.Project(path), out AssetInfo? preserved));
+                Assert.Equal(persistentId, preserved!.persistentId);
+                Assert.Equal(stableTypeId, preserved.stableAssetTypeId);
+                Assert.Equal(AssetImportStatus.Imported, preserved.status);
+                Assert.Equal(artifactKey, preserved.artifactKey);
+                AssetObject resolved = restarted.ResolveReference(
+                    persistentId,
+                    stableTypeId,
+                    path,
+                    typeof(AssetObject));
+                Assert.False(resolved.isMissing);
+                Assert.DoesNotContain(
+                    sink.reports.Values.SelectMany(static report => report.diagnostics),
+                    static diagnostic => diagnostic.code == "ASSET-REFERENCE");
+            }
+        }
+        finally
+        {
+            DeferredAssetImporter.isAvailable = true;
+            m_modules.Rebuild();
+            m_diagnostics.UnregisterSink(sink);
+        }
     }
 
     [Fact]
@@ -1584,7 +2061,7 @@ internal sealed class PrivateConstructorAsset : AssetObject
     internal string value { get; set; } = string.Empty;
 }
 
-[AssetImporterExtension]
+[AssetImporter("inno.tests.private-constructor")]
 internal sealed class PrivateConstructorAssetImporter : AssetImporter<PrivateConstructorAsset>
 {
     private static readonly IReadOnlyList<string> s_extensions = [".privateasset"];
@@ -1593,7 +2070,6 @@ internal sealed class PrivateConstructorAssetImporter : AssetImporter<PrivateCon
     {
     }
 
-    public override string importerId => "inno.tests.private-constructor";
     public override IReadOnlyList<string> supportedExtensions => s_extensions;
 
     protected override ValueTask ImportAsync(
@@ -1606,13 +2082,75 @@ internal sealed class PrivateConstructorAssetImporter : AssetImporter<PrivateCon
     }
 }
 
+[StableTypeId("8d0d31ab-f9ea-4297-b865-e9014ae82a94")]
+internal sealed class DeferredAsset : AssetObject;
+
+[StableTypeId("79cef88a-3d5a-4c36-8095-a59cae3c641c")]
+internal sealed class ExtensionDependentAsset : AssetObject;
+
+[AssetImporter("tests.extension-dependent")]
+internal sealed class ExtensionDependentImporter : AssetImporter<ExtensionDependentAsset>
+{
+    internal static bool available;
+    internal static int attempts;
+    public override IReadOnlyList<string> supportedExtensions { get; } = [".extensionasset"];
+
+    protected override ValueTask ImportAsync(AssetImportContext context,
+        AssetImportWriter<ExtensionDependentAsset> output, CancellationToken cancellationToken)
+    {
+        attempts++;
+        if (!available)
+            throw new AssetImportExtensionUnavailableException("tests.target", "tests.surface");
+        output.SetAsset(new ExtensionDependentAsset());
+        return output.WriteArtifactAsync("runtime", context.sourceBytes, cancellationToken);
+    }
+}
+
+[AssetImporter("tests.extension-consumer")]
+internal sealed class ExtensionConsumerImporter : AssetImporter<ExtensionDependentAsset>
+{
+    public override IReadOnlyList<string> supportedExtensions { get; } = [".extensiondependent"];
+
+    protected override ValueTask ImportAsync(AssetImportContext context,
+        AssetImportWriter<ExtensionDependentAsset> output, CancellationToken cancellationToken)
+    {
+        string source = context.ReadUtf8Text();
+        if (Guid.TryParse(source, out Guid id))
+            _ = context.references.Resolve(id, context.services.GetStableTypeId<ExtensionDependentAsset>(),
+                "surface.extensionasset", typeof(ExtensionDependentAsset), "$.shader");
+        else
+            _ = context.ResolveDependency<ExtensionDependentAsset>(AssetPath.Project(source));
+        output.SetAsset(new ExtensionDependentAsset());
+        return output.WriteArtifactAsync("runtime", context.sourceBytes, cancellationToken);
+    }
+}
+
+[AssetImporter("inno.tests.deferred")]
+internal sealed class DeferredAssetImporter : AssetImporter<DeferredAsset>
+{
+    private static readonly IReadOnlyList<string> s_extensions = [".deferredasset"];
+
+    internal static bool isAvailable { get; set; } = true;
+
+    public override IReadOnlyList<string> supportedExtensions
+        => isAvailable ? s_extensions : Array.Empty<string>();
+
+    protected override ValueTask ImportAsync(
+        AssetImportContext context,
+        AssetImportWriter<DeferredAsset> output,
+        CancellationToken cancellationToken)
+    {
+        output.SetAsset(new DeferredAsset());
+        return output.WriteArtifactAsync("runtime", context.sourceBytes, cancellationToken);
+    }
+}
+
 [StableTypeId("a49b603c-0f5f-4861-903a-3819513da002")]
 internal sealed class DependencyAsset : AssetObject;
 
-[AssetImporterExtension]
+[AssetImporter("inno.tests.runtime-dependency")]
 internal sealed class DependencyAssetImporter : AssetImporter<DependencyAsset>
 {
-    public override string importerId => "inno.tests.runtime-dependency";
     public override IReadOnlyList<string> supportedExtensions { get; } = [".depgraph"];
 
     protected override ValueTask ImportAsync(
@@ -1628,10 +2166,9 @@ internal sealed class DependencyAssetImporter : AssetImporter<DependencyAsset>
     }
 }
 
-[AssetImporterExtension]
+[AssetImporter("inno.tests.runtime-dependency-alternate")]
 internal sealed class AlternateDependencyAssetImporter : AssetImporter<DependencyAsset>
 {
-    public override string importerId => "inno.tests.runtime-dependency-alternate";
     public override IReadOnlyList<string> supportedExtensions { get; } = [".depgraph2"];
 
     protected override ValueTask ImportAsync(
@@ -1644,13 +2181,64 @@ internal sealed class AlternateDependencyAssetImporter : AssetImporter<Dependenc
     }
 }
 
+[AssetImporter("inno.tests.build-input")]
+internal sealed class BuildInputAssetImporter : AssetImporter<DependencyAsset>
+{
+    public override IReadOnlyList<string> supportedExtensions { get; } = [".buildinput"];
+    public override AssetDeploymentScope deploymentScope => AssetDeploymentScope.AuthoringOnly;
+
+    protected override ValueTask ImportAsync(AssetImportContext context, AssetImportWriter<DependencyAsset> output,
+        CancellationToken cancellationToken)
+    {
+        string text = context.ReadUtf8Text();
+        if (text == "failed")
+            throw new InvalidDataException("Required authoring input failed.");
+        if (Guid.TryParse(text, out Guid dependency))
+            context.DependsOnArtifact(dependency);
+        output.SetAsset(new DependencyAsset());
+        return output.WriteArtifactAsync("authoring", context.sourceBytes, cancellationToken, AssetDeploymentScope.AuthoringOnly);
+    }
+}
+
+[AssetImporter("inno.tests.mixed-scope")]
+internal sealed class MixedScopeAssetImporter : AssetImporter<DependencyAsset>
+{
+    public override IReadOnlyList<string> supportedExtensions { get; } = [".mixedscope"];
+
+    protected override ValueTask ImportAsync(AssetImportContext context, AssetImportWriter<DependencyAsset> output,
+        CancellationToken cancellationToken)
+    {
+        output.SetAsset(new DependencyAsset());
+        if (context.ReadUtf8Text() == "authoring")
+        {
+            output.SetDeploymentScope(AssetDeploymentScope.AuthoringOnly);
+            return output.WriteArtifactAsync("graph", context.sourceBytes, cancellationToken,
+                AssetDeploymentScope.AuthoringOnly);
+        }
+        return output.WriteArtifactAsync("runtime", context.sourceBytes, cancellationToken);
+    }
+}
+
+[AssetImporter("inno.tests.build-consumer")]
+internal sealed class BuildConsumerAssetImporter : AssetImporter<DependencyAsset>
+{
+    public override IReadOnlyList<string> supportedExtensions { get; } = [".buildconsumer"];
+
+    protected override ValueTask ImportAsync(AssetImportContext context, AssetImportWriter<DependencyAsset> output,
+        CancellationToken cancellationToken)
+    {
+        context.DependsOnArtifact(Guid.Parse(context.ReadUtf8Text()));
+        output.SetAsset(new DependencyAsset());
+        return output.WriteArtifactAsync("runtime", context.sourceBytes, cancellationToken);
+    }
+}
+
 [StableTypeId("a80d363f-8e49-4615-89ee-589613b91c03")]
 internal sealed class ImportGraphAsset : AssetObject;
 
-[AssetImporterExtension]
+[AssetImporter("inno.tests.import-dependency")]
 internal sealed class ImportGraphAssetImporter : AssetImporter<ImportGraphAsset>
 {
-    public override string importerId => "inno.tests.import-dependency";
     public override IReadOnlyList<string> supportedExtensions { get; } = [".importgraph"];
 
     protected override ValueTask ImportAsync(
@@ -1673,14 +2261,13 @@ internal sealed class SlowAsset : AssetObject
     internal string value { get; set; } = string.Empty;
 }
 
-[AssetImporterExtension]
+[AssetImporter("inno.tests.slow")]
 internal sealed class SlowAssetImporter : AssetImporter<SlowAsset>
 {
     internal static readonly ManualResetEventSlim importStarted = new(false);
     internal static readonly ManualResetEventSlim allowImport = new(false);
     internal static int importCount;
 
-    public override string importerId => "inno.tests.slow";
     public override IReadOnlyList<string> supportedExtensions { get; } = [".slowasset"];
 
     internal static void Reset()
@@ -1711,10 +2298,10 @@ internal sealed class MutableAsset : AssetObject
     internal string value { get; set; } = string.Empty;
 }
 
-[AssetImporterExtension]
+[AssetImporter("inno.tests.mutable")]
 internal sealed class MutableAssetImporter : AssetImporter<MutableAsset>
 {
-    public override string importerId => "inno.tests.mutable";
+    internal static int attempts;
     public override IReadOnlyList<string> supportedExtensions { get; } = [".mutableasset"];
 
     protected override ValueTask ImportAsync(
@@ -1722,6 +2309,7 @@ internal sealed class MutableAssetImporter : AssetImporter<MutableAsset>
         AssetImportWriter<MutableAsset> output,
         CancellationToken cancellationToken)
     {
+        attempts++;
         string value = context.ReadUtf8Text();
         if (value == "!invalid!")
             throw new InvalidDataException("The mutable asset source is invalid.");
@@ -1765,10 +2353,9 @@ internal sealed class HookAsset : AssetObject
     }
 }
 
-[AssetImporterExtension]
+[AssetImporter("inno.tests.hook")]
 internal sealed class HookAssetImporter : AssetImporter<HookAsset>
 {
-    public override string importerId => "inno.tests.hook";
     public override IReadOnlyList<string> supportedExtensions { get; } = [".hookasset"];
 
     protected override ValueTask ImportAsync(
@@ -1781,30 +2368,19 @@ internal sealed class HookAssetImporter : AssetImporter<HookAsset>
     }
 }
 
-internal enum ImporterConflictMode
-{
-    None,
-    DuplicateId,
-    DuplicateExtension
-}
-
 internal static class ImporterConflictProbe
 {
-    internal static ImporterConflictMode mode;
+    internal static bool duplicateExtension;
 }
 
 [StableTypeId("da675da1-9276-40c4-9964-0eb4b8ff9a07")]
 internal sealed class ImporterConflictAsset : AssetObject;
 
-[AssetImporterExtension]
+[AssetImporter("inno.tests.conflict-a")]
 internal sealed class ImporterConflictAssetImporterA : AssetImporter<ImporterConflictAsset>
 {
-    public override string importerId => ImporterConflictProbe.mode == ImporterConflictMode.DuplicateId
-        ? "inno.tests.conflict"
-        : "inno.tests.conflict-a";
-
     public override IReadOnlyList<string> supportedExtensions =>
-        ImporterConflictProbe.mode == ImporterConflictMode.DuplicateExtension
+        ImporterConflictProbe.duplicateExtension
             ? [".conflict"]
             : [".probea"];
 
@@ -1818,15 +2394,11 @@ internal sealed class ImporterConflictAssetImporterA : AssetImporter<ImporterCon
     }
 }
 
-[AssetImporterExtension]
+[AssetImporter("inno.tests.conflict-b")]
 internal sealed class ImporterConflictAssetImporterB : AssetImporter<ImporterConflictAsset>
 {
-    public override string importerId => ImporterConflictProbe.mode == ImporterConflictMode.DuplicateId
-        ? "inno.tests.conflict"
-        : "inno.tests.conflict-b";
-
     public override IReadOnlyList<string> supportedExtensions =>
-        ImporterConflictProbe.mode == ImporterConflictMode.DuplicateExtension
+        ImporterConflictProbe.duplicateExtension
             ? [".conflict"]
             : [".probeb"];
 
@@ -1847,11 +2419,9 @@ internal sealed class TestBuildDefinitionAsset : AssetObject
     internal string label { get; set; } = string.Empty;
 }
 
-[AssetBuildProcessorExtension]
+[AssetBuildProcessor("inno.tests.aggregate-build")]
 internal sealed class TestBuildProcessor : AssetBuildProcessor<TestBuildDefinitionAsset>
 {
-    public override string processorId => "inno.tests.aggregate-build";
-
     protected override ValueTask BuildAsync(
         AssetBuildContext<TestBuildDefinitionAsset> context,
         AssetArtifactWriter output,

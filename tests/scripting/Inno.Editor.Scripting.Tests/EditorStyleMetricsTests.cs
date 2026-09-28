@@ -5,7 +5,9 @@ using System.Numerics;
 
 using Inno.Editor.ImGui;
 using Inno.Native.ImGui;
+using EditorImGui = Inno.Editor.ImGui.ImGui;
 using EditorWidget = Inno.Editor.ImGui.ImGuiWidget.ImGuiWidget;
+using InlineRenameResult = Inno.Editor.ImGui.ImGuiWidget.InlineRenameResult;
 using TreeNodeOptions = Inno.Editor.ImGui.ImGuiWidget.TreeNodeOptions;
 using TreeNodeResult = Inno.Editor.ImGui.ImGuiWidget.TreeNodeResult;
 using NativeImGui = Inno.Native.ImGui.ImGui;
@@ -23,12 +25,13 @@ public sealed class EditorStyleMetricsTests
 
         Assert.True(metrics.SetZoom(1.5f));
         Assert.Equal(1.5f, metrics.zoom, 3);
-        Assert.Equal(9f, metrics.windowPadding.X, 3);
+        Assert.Equal(12f, metrics.windowPadding.X, 3);
+        Assert.Equal(10.5f, metrics.windowPadding.Y, 3);
         Assert.Equal(3f, metrics.frameRounding, 3);
-        Assert.Equal(1.875f, metrics.fontScale, 3);
+        Assert.Equal(1.8f, metrics.fontScale, 3);
         Assert.Equal(0.4f, metrics.propertyLabelRatio, 3);
         Assert.Equal(3f, metrics.assetGridDefaultScale, 3);
-        Assert.Equal(new Vector2(4.5f, 3f), metrics.cellPadding);
+        Assert.Equal(new Vector2(7.5f, 4.5f), metrics.cellPadding);
     }
 
     [Fact]
@@ -191,8 +194,8 @@ public sealed class EditorStyleMetricsTests
 
             Assert.False(requestFocus);
             Assert.False(inputState.IsNull);
-            Assert.Equal(0, ImGuiP.GetSelectionStart(inputState));
-            Assert.Equal(value.Length, ImGuiP.GetSelectionEnd(inputState));
+            Assert.Equal(0, inputState.GetSelectionStart());
+            Assert.Equal(value.Length, inputState.GetSelectionEnd());
             uint navCursorColor = NativeImGui.GetColorU32(ImGuiCol.NavCursor);
             AssertDrawListDoesNotContainColor(
                 NativeImGui.GetWindowDrawList(),
@@ -206,6 +209,59 @@ public sealed class EditorStyleMetricsTests
                 1f + EditorWidget.style.interactionOverlayThickness);
             NativeImGui.End();
             NativeImGui.Render();
+        }
+        finally
+        {
+            NativeImGui.DestroyContext(context);
+        }
+    }
+
+    [Fact]
+    public void InlineRenameReleasesFocusBeforeAContextMenuCanOpen()
+    {
+        var context = NativeImGui.CreateContext();
+        try
+        {
+            ImGuiIOPtr io = NativeImGui.GetIO();
+            io.DisplaySize = new Vector2(640f, 480f);
+            io.DeltaTime = 1f / 60f;
+            io.BackendFlags |= ImGuiBackendFlags.RendererHasTextures;
+            io.Fonts.RendererHasTextures = true;
+            string value = "Untitled Scene";
+            bool requestFocus = true;
+            InlineRenameResult result = InlineRenameResult.None;
+            Vector2 center = default;
+
+            void Frame()
+            {
+                NativeImGui.NewFrame();
+                NativeImGui.SetNextWindowPos(new Vector2(30f, 30f), ImGuiCond.Always);
+                NativeImGui.SetNextWindowSize(new Vector2(320f, 180f), ImGuiCond.Always);
+                _ = NativeImGui.Begin("Inline Rename Context Test");
+                result = EditorWidget.InlineRename(
+                    "created_asset",
+                    ref value,
+                    ref requestFocus,
+                    NativeImGui.GetFrameHeight(),
+                    width: 220f);
+                center = (NativeImGui.GetItemRectMin() + NativeImGui.GetItemRectMax()) * 0.5f;
+                NativeImGui.End();
+                NativeImGui.Render();
+            }
+
+            Frame();
+            Frame();
+            Assert.False(requestFocus);
+            Assert.NotEqual(0u, ImGuiP.GetActiveID());
+
+            io.AddMousePosEvent(center.X, center.Y);
+            io.AddMouseButtonEvent((int)ImGuiMouseButton.Right, true);
+            Frame();
+            io.AddMouseButtonEvent((int)ImGuiMouseButton.Right, false);
+            Frame();
+
+            Assert.Equal(InlineRenameResult.FocusLost, result);
+            Assert.Equal(0u, ImGuiP.GetActiveID());
         }
         finally
         {
@@ -319,11 +375,11 @@ public sealed class EditorStyleMetricsTests
                 Assert.True(NativeImGui.GetWindowSize().X >= 240f);
                 string newTag = string.Empty;
                 NativeImGui.SetNextItemWidth(160f);
-                _ = NativeImGui.InputTextWithHint(
+                _ = EditorImGui.InputTextWithHint(
                     "##new_tag",
                     "Add tag...",
                     ref newTag,
-                    (nuint)128);
+                    128);
                 float inputCenterY = (NativeImGui.GetItemRectMin().Y + NativeImGui.GetItemRectMax().Y) * 0.5f;
                 NativeImGui.SameLine();
                 _ = EditorWidget.ClickableText(
@@ -540,7 +596,8 @@ public sealed class EditorStyleMetricsTests
             NativeImGui.NewFrame();
             NativeImGui.SetNextWindowSize(new Vector2(480f, 320f), ImGuiCond.Always);
             _ = NativeImGui.Begin("Dragging Tree Guide Test");
-            NativeImGui.GetCurrentContext().DragDropActive = true;
+            ImGuiContextPtr currentContext = NativeImGui.GetCurrentContext();
+            currentContext.DragDropActive = true;
             EditorWidget.SetNextTreeNodeOpen(true);
             TreeNodeResult root = EditorWidget.TreeNode(
                 "drag_root",
@@ -555,7 +612,7 @@ public sealed class EditorStyleMetricsTests
                 NativeImGui.TreePop();
             }
             AssertCurrentDrawListContainsTreeGuideColor();
-            NativeImGui.GetCurrentContext().DragDropActive = false;
+            currentContext.DragDropActive = false;
             NativeImGui.End();
             NativeImGui.Render();
         }

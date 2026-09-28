@@ -73,6 +73,12 @@ public interface IRenderDevice : IDisposable
     RenderDeviceFrameCounters frameCounters => default;
 
     /// <summary>
+    /// Gets cumulative native transient allocations for this device generation on the API thread.
+    /// A null snapshot means allocation accounting is unavailable, not that no resources were allocated.
+    /// </summary>
+    RenderDeviceAllocationCounters? allocationCounters => null;
+
+    /// <summary>
     /// Begins the sole API-thread frame scope and processes queued resource work.
     /// </summary>
     void BeginFrame();
@@ -106,6 +112,16 @@ public interface IRenderDevice : IDisposable
     /// Backbuffer height in pixels.
     /// </param>
     void ResizeBackbuffer(int width, int height);
+
+    /// <summary>
+    /// Queues display synchronization policy on the API thread for the next frame boundary.
+    /// Every backend must implement both policies. Repeated values are idempotent and must not reset
+    /// an active pass. Windowless devices retain the requested policy without performing presentation.
+    /// </summary>
+    /// <param name="enabled">
+    /// Whether presentation should wait for display refresh when a presentation surface is present.
+    /// </param>
+    void SetVerticalSync(bool enabled);
 
     /// <summary>
     /// Creates a persistent texture at a frame safety point.

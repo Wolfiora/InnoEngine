@@ -1,7 +1,9 @@
 using System;
 using System.Globalization;
+using EditorImGui = Inno.Editor.ImGui.ImGui;
 
 using Inno.Native.ImGui;
+using EditorWidget = Inno.Editor.ImGui.ImGuiWidget.ImGuiWidget;
 using NativeImGui = Inno.Native.ImGui.ImGui;
 
 namespace Inno.Editor.Inspection;
@@ -19,7 +21,7 @@ namespace Inno.Editor.Inspection;
 [PropertyDrawer(typeof(decimal))]
 internal sealed class NumericPropertyDrawer : IPropertyDrawer
 {
-    private const nuint C_BUFFER_SIZE = 128;
+    private const int C_BUFFER_SIZE = 128;
     private const string C_TEXT_STATE = "numeric";
 
     /// <summary>
@@ -35,7 +37,14 @@ internal sealed class NumericPropertyDrawer : IPropertyDrawer
         if (type == typeof(int))
         {
             int value = rawValue is int current ? current : 0;
-            if (NativeImGui.DragInt($"##{context.path}", ref value, 1f))
+            bool changed = context.minimum is double minimum && context.maximum is double maximum
+                ? NativeImGui.SliderInt(
+                    $"##{context.path}",
+                    ref value,
+                    (int)Math.Clamp(Math.Ceiling(minimum), int.MinValue, int.MaxValue),
+                    (int)Math.Clamp(Math.Floor(maximum), int.MinValue, int.MaxValue))
+                : NativeImGui.DragInt($"##{context.path}", ref value, 1f);
+            if (changed)
             {
                 context.SetValue(value);
             }
@@ -46,7 +55,14 @@ internal sealed class NumericPropertyDrawer : IPropertyDrawer
         if (type == typeof(float))
         {
             float value = rawValue is float current ? current : 0f;
-            if (NativeImGui.DragFloat($"##{context.path}", ref value, 0.1f))
+            bool changed = context.minimum is double minimum && context.maximum is double maximum
+                ? EditorWidget.CompactSliderFloat(
+                    $"##{context.path}",
+                    ref value,
+                    (float)minimum,
+                    (float)maximum)
+                : EditorWidget.CompactDragFloat($"##{context.path}", ref value, 0.1f);
+            if (changed)
             {
                 context.SetValue(value);
             }
@@ -54,12 +70,10 @@ internal sealed class NumericPropertyDrawer : IPropertyDrawer
             return;
         }
 
-        if (!context.TryGetTextState(C_TEXT_STATE, out string? text))
-        {
-            text = Convert.ToString(rawValue, CultureInfo.InvariantCulture) ?? "0";
-        }
+        _ = context.TryGetTextState(C_TEXT_STATE, out string? text);
+        text ??= Convert.ToString(rawValue, CultureInfo.InvariantCulture) ?? "0";
 
-        if (NativeImGui.InputText(
+        if (EditorImGui.InputText(
                 $"##{context.path}",
                 ref text,
                 C_BUFFER_SIZE,
@@ -67,6 +81,7 @@ internal sealed class NumericPropertyDrawer : IPropertyDrawer
         {
             if (TryConvert(text, type, out object? converted))
             {
+                converted = Clamp(converted, type, context.minimum, context.maximum);
                 context.SetValue(converted);
                 context.ClearTextState(C_TEXT_STATE);
                 return;
@@ -88,5 +103,14 @@ internal sealed class NumericPropertyDrawer : IPropertyDrawer
             value = null;
             return false;
         }
+    }
+
+    private static object? Clamp(object? value, Type type, double? minimum, double? maximum)
+    {
+        if (value is null || minimum is null || maximum is null)
+            return value;
+        double numeric = Convert.ToDouble(value, CultureInfo.InvariantCulture);
+        double clamped = Math.Clamp(numeric, minimum.Value, maximum.Value);
+        return Convert.ChangeType(clamped, type, CultureInfo.InvariantCulture);
     }
 }

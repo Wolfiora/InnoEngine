@@ -9,6 +9,7 @@
 - 每个参与脚本 API 的 feature 项目只保留一个 `Properties/ScriptingApi.cs`。清单通常导出本项目类型，也可以选择性导出依赖项目的类型；不设置反向依赖全部模块的中央清单项目。
 - 清单必须逐类型显式导出，不允许用“整个 public assembly 都可用”代替。
 - `InnoEngine.Scene`、`InnoEngine.Mathematics` 等名称是稳定且可直接 `using` 的脚本 API namespace；它们映射到一个或多个真实 CLR namespace。
+- `InnoEngine.Events` 导出 Core `Event`、`EventDispatcher` 与 `EventHub`，UI 与 Canvas 等上层模块复用这组订阅、分发及生命周期契约。
 - 导出会为 IDE 生成逻辑 API facade，但 facade 只是编辑期代码模型。Editor 内的热编译仍将逻辑 namespace 转换为真实类型身份，因此热重载、`TypeCatalog` 和序列化看到的是真实 `Inno.*` 类型体系。
 - 该项目不知道源文件目录、Roslyn、程序集加载上下文或 Scene 迁移。
 
@@ -20,6 +21,9 @@
 | --- | --- |
 | `Runtime` | `Inno.GameScripts` 和 `Inno.EditorScripts`。 |
 | `Editor` | 仅 `Inno.EditorScripts`。 |
+| `Authoring` | GameScripts/EditorScripts 的创作编译与 IDE 可见；Player 绑定前移除标注使用、派生标注声明及其 namespace import。 |
+
+`Authoring` 用于独立 namespace 中的编译期标注及其枚举，不是运行时服务权限。自定义展示标注可以派生公开的标注基类；编译器依据导出清单及符号继承关系处理，不维护 Editor 类型名单。把这类类型当作 Player 的普通字段或业务对象使用会产生编译错误，而不会把 Editor DLL 带入 Player。
 
 ### ScriptingApiExportAttribute
 
@@ -77,6 +81,8 @@ public sealed class PlayerController : GameBehavior
 ```
 
 Editor 会为 IDE 生成一个真正声明 `InnoEngine.Scene.GameBehavior` 等编译期类型的 metadata-only facade。它只保留已导出 API，且生成的 IDE csproj 不参考任何真实引擎 DLL，所以 `Inno.*` 无法被 IDE 解析。
+
+Plugin 源码与 Project 脚本会分别生成 IDE 工程，并通过普通 `ProjectReference` 连接；两者引用同一逻辑 facade，因此插件派生自 `GameBehavior` 等类型时，使用方不需要额外引用实现程序集。
 
 运行时热编译不使用 facade 产物；`ScriptCompiler` 在内存中将已声明的逻辑 `using` 改写到对应实现 namespace，并使用保留真实程序集身份的裁剪参考集编译。最终 IL 因此仍引用 `Inno.Scene.GameBehavior`，不会把 facade 类型带入运行时。
 

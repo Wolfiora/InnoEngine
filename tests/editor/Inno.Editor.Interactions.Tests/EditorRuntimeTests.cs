@@ -16,6 +16,7 @@ using Inno.Core.Serialization;
 using Inno.Core.Settings;
 using Inno.Extensibility.Types;
 using Inno.Editor.Core;
+using Inno.Editor.ImGui;
 using Inno.Editor.Interactions;
 using Inno.Editor.Settings;
 using Xunit;
@@ -31,6 +32,7 @@ public sealed class EditorRuntimeTests : IDisposable
     private readonly DiagnosticHub m_diagnostics = new();
     private readonly LogRouter m_logs = new();
     private readonly IdentityAllocator m_identities = new();
+    private readonly IdentityAllocator m_secondaryIdentities = new();
     private readonly IDisposable m_diagnosticScope;
     private readonly ModuleHost m_modules;
     private readonly TypeCatalog m_types;
@@ -99,7 +101,20 @@ public sealed class EditorRuntimeTests : IDisposable
     private EditorInteractionRuntime CreateRuntime(
         EditorContext context,
         params object[] hostServices)
-        => new(context, m_types, m_logs, [m_types, m_identities, .. hostServices]);
+        => new(context, m_types, m_logs, [m_types, m_identities, m_secondaryIdentities, .. hostServices]);
+
+    [Fact]
+    public void FeatureLookupReturnsOnlyStartedNonQuarantinedModules()
+    {
+        Assert.True(m_runtime.interactions.TryGetModule<TestModule>(out var first));
+        Assert.NotNull(first);
+        Assert.True(m_runtime.interactions.TryGetModule<TestModule>(out var again));
+        Assert.Same(first, again);
+        UpdateBarrierModule.throwWhenRead = true;
+        m_runtime.Update(new EditorFrame());
+        Assert.False(m_runtime.interactions.TryGetModule<UpdateBarrierModule>(out var quarantined));
+        Assert.Null(quarantined);
+    }
 
     [Fact]
     public void HistoryAndExtensionStateContractsDoNotExposeStandaloneWorkspaceTypes()
@@ -113,6 +128,22 @@ public sealed class EditorRuntimeTests : IDisposable
         Assert.Collection(
             constructor.GetParameters(),
             static parameter => Assert.Equal(typeof(string), parameter.ParameterType));
+    }
+
+    [Fact]
+    public void EditorDensityDefaultsToComfortableAndCanSwitchIdempotently()
+    {
+        var style = new EditorStyleMetrics();
+        float comfortablePadding = style.framePadding.Y;
+
+        Assert.False(style.isCompact);
+        Assert.True(style.SetCompactMode(true));
+        Assert.True(style.isCompact);
+        Assert.True(style.framePadding.Y < comfortablePadding);
+        Assert.False(style.SetCompactMode(true));
+        Assert.True(style.SetCompactMode(false));
+        Assert.False(style.isCompact);
+        Assert.Equal(comfortablePadding, style.framePadding.Y);
     }
 
     [Fact]
@@ -159,6 +190,140 @@ public sealed class EditorRuntimeTests : IDisposable
         Assert.Equal(typeof(string), forMethod.GetParameters()[0].ParameterType);
         Assert.Throws<ArgumentException>(() => m_runtime.interactions.For(string.Empty));
         Assert.Throws<ArgumentException>(() => m_runtime.interactions.TogglePanel(" "));
+        Assert.Throws<ArgumentException>(() => m_runtime.interactions.OpenPanel(" "));
+        Assert.Throws<ArgumentException>(() => m_runtime.interactions.ClosePanel(" "));
+    }
+
+    [Fact]
+    public void PanelOpenAndCloseOperationsAreIdempotentAndRequestFocus()
+    {
+        EditorPanelExtension panel = Assert.Single(
+            m_runtime.panels.Where(static candidate => candidate.id == "tests.panel"));
+        Assert.False(panel.isOpen);
+
+        Assert.True(m_runtime.interactions.OpenPanel("tests.panel"));
+        Assert.True(m_runtime.interactions.OpenPanel("tests.panel"));
+        Assert.True(panel.isOpen);
+        Assert.True(panel.TakeFocusRequest());
+        Assert.False(panel.TakeFocusRequest());
+
+        Assert.True(m_runtime.interactions.ClosePanel("tests.panel"));
+        Assert.True(m_runtime.interactions.ClosePanel("tests.panel"));
+        Assert.False(panel.isOpen);
+        Assert.False(panel.TakeFocusRequest());
+        Assert.False(m_runtime.interactions.OpenPanel("tests.missing-panel"));
+    }
+
+    [Fact]
+    public void DocumentHostOpensOneInstanceAndRequiresExplicitDirtyCloseDecision()
+    {
+        IEditorDocumentService documents = m_runtime.interactions.documents;
+        var provider = new TestDocumentProvider();
+        using IDisposable lease = documents.RegisterProvider(provider);
+        Guid assetId = Guid.NewGuid();
+
+        EditorDocumentContext opened = documents.Open("./Assets/Hero.ispriteatlas2d", assetId);
+        EditorDocumentContext focused = documents.Open("Assets/OtherName.ispriteatlas2d", assetId);
+        documents.SetDirty(opened.documentId);
+
+        Assert.Same(opened, focused);
+        Assert.Equal("Assets/OtherName.ispriteatlas2d", opened.assetPath);
+        Assert.Equal("OtherName.ispriteatlas2d", opened.title);
+        Assert.True(opened.isDirty);
+        Assert.False(documents.Close(opened.documentId, EditorDocumentCloseMode.Cancel));
+        Assert.Single(documents.documents);
+        Assert.True(documents.Close(opened.documentId, EditorDocumentCloseMode.Save));
+        Assert.Empty(documents.documents);
+        Assert.Equal(1, provider.saveCount);
+        Assert.Equal(1, provider.closeCount);
+    }
+
+    [Fact]
+    public void DocumentPathReassignmentRetiresOnlyCleanStaleOwner()
+    {
+        IEditorDocumentService documents = m_runtime.interactions.documents;
+        var provider = new TestDocumentProvider();
+        using IDisposable lease = documents.RegisterProvider(provider);
+        const string path = "Assets/Shared.ispriteatlas2d";
+
+        EditorDocumentContext first = documents.Open(path, Guid.NewGuid());
+        EditorDocumentContext replacement = documents.Open(path, Guid.NewGuid());
+
+        Assert.NotSame(first, replacement);
+        Assert.Single(documents.documents);
+        Assert.Equal(1, provider.closeCount);
+
+        documents.SetDirty(replacement.documentId);
+        InvalidOperationException failure = Assert.Throws<InvalidOperationException>(
+            () => documents.Open(path, Guid.NewGuid()));
+        Assert.Contains("unsaved changes", failure.Message, StringComparison.Ordinal);
+        Assert.Same(replacement, Assert.Single(documents.documents));
+    }
+
+    [Fact]
+    public void DocumentStateSurvivesProviderGenerationReplacement()
+    {
+        IEditorDocumentService documents = m_runtime.interactions.documents;
+        var firstProvider = new TestDocumentProvider();
+        IDisposable firstLease = documents.RegisterProvider(firstProvider);
+        EditorDocumentContext opened = documents.Open("Assets/World.itilemap2d", Guid.NewGuid());
+        opened.SetViewParameter("zoom", "2.5");
+        documents.SetDirty(opened.documentId);
+
+        firstLease.Dispose();
+
+        Assert.False(opened.isProviderAvailable);
+        Assert.False(documents.Save(opened.documentId));
+
+        var replacement = new TestDocumentProvider();
+        using IDisposable replacementLease = documents.RegisterProvider(replacement);
+
+        Assert.True(opened.isProviderAvailable);
+        Assert.Equal(1, replacement.openCount);
+        EditorDocumentContext restored = Assert.Single(documents.documents);
+        Assert.True(restored.TryGetViewParameter("zoom", out string zoom));
+        Assert.Equal("2.5", zoom);
+        Assert.True(documents.Close(opened.documentId, EditorDocumentCloseMode.Discard));
+    }
+
+    [Fact]
+    public void ViewportToolCapturesOnePointerAndCommitsOneGestureTransaction()
+    {
+        IEditorHistory history = m_runtime.interactions.history;
+        var coordinates = new TestViewportCoordinates();
+        var tool = new TestViewportTool(history);
+        using var session = new EditorViewportToolSession(history, coordinates);
+        session.SetTool(tool);
+        var down = new EditorViewportPointerEvent(
+            7,
+            EditorViewportPointerPhase.Down,
+            new Inno.Core.Mathematics.Vector2(2f, 3f),
+            coordinates.ScreenToWorld(new Inno.Core.Mathematics.Vector2(2f, 3f)),
+            0,
+            KeyModifier.None);
+
+        Assert.True(session.HandlePointer(down));
+        Assert.False(session.HandlePointer(new EditorViewportPointerEvent(
+            8,
+            EditorViewportPointerPhase.Move,
+            default,
+            default,
+            0,
+            KeyModifier.None)));
+        Assert.True(session.HandlePointer(new EditorViewportPointerEvent(
+            7,
+            EditorViewportPointerPhase.Up,
+            down.screenPosition,
+            down.worldPosition,
+            0,
+            KeyModifier.None)));
+
+        Assert.Equal(1, tool.downCount);
+        Assert.Equal(1, tool.upCount);
+        Assert.True(history.canUndo);
+        Assert.Equal("Paint Tile", history.undoName);
+        Assert.True(history.Undo().succeeded);
+        Assert.Equal(0, NeutralHistoryHandler.value);
     }
 
     [Fact]
@@ -359,8 +524,13 @@ public sealed class EditorRuntimeTests : IDisposable
         EditorMenuItem create = Assert.Single(tools.children);
         Assert.Equal("Create", create.label);
         Assert.Equal(
-            ["Asset", "Generated"],
+            ["Asset", "Libraries", "Generated"],
             create.children.Select(static item => item.label));
+        EditorMenuItem libraries = Assert.Single(create.children.Where(static item => item.label == "Libraries"));
+        Assert.True(libraries.separatorBefore);
+        Assert.False(tools.separatorBefore);
+        Assert.False(create.separatorBefore);
+        Assert.Equal("Function", Assert.Single(libraries.children).label);
     }
 
     [Fact]
@@ -492,6 +662,41 @@ public sealed class EditorRuntimeTests : IDisposable
     }
 
     [Fact]
+    public void IdentityResolutionUsesTheOwningDomain()
+    {
+        DragSource primary = Register(new DragSource());
+        var secondary = new DragSource();
+        Assert.True(m_secondaryIdentities.Register(secondary));
+        RuntimeIdentity primaryIdentity = primary.identity.runtimeIdentity!.Value;
+        RuntimeIdentity secondaryIdentity = secondary.identity.runtimeIdentity!.Value;
+
+        Assert.True(m_runtime.interactions.TryResolveIdentity(primaryIdentity, out IdentityObject? primaryResult));
+        Assert.Same(primary, primaryResult);
+        Assert.True(m_runtime.interactions.TryResolveIdentity(secondaryIdentity, out IdentityObject? secondaryResult));
+        Assert.Same(secondary, secondaryResult);
+        Assert.True(m_runtime.interactions.TryResolveIdentity(
+            secondaryIdentity.domainId,
+            secondary.identity.persistentId,
+            out IdentityObject? persistentResult));
+        Assert.Same(secondary, persistentResult);
+
+        var crossDomainAlias = new RuntimeIdentity(secondaryIdentity.domainId, primaryIdentity.runtimeId);
+        Assert.NotSame(primary, m_runtime.interactions.TryResolveIdentity(crossDomainAlias, out IdentityObject? alias)
+            ? alias
+            : null);
+
+        Guid persistentId = secondary.identity.persistentId;
+        Assert.True(m_secondaryIdentities.Unregister(secondary));
+        var replacement = new DragSource();
+        Assert.True(m_secondaryIdentities.Register(replacement, persistentId));
+        Assert.True(m_runtime.interactions.TryResolveIdentity(
+            secondaryIdentity.domainId,
+            persistentId,
+            out IdentityObject? replacementResult));
+        Assert.Same(replacement, replacementResult);
+    }
+
+    [Fact]
     public void TypedDropRoutesAndCancelsItsManagedSession()
     {
         DragSource supersededSource = Register(new DragSource());
@@ -542,7 +747,7 @@ public sealed class EditorRuntimeTests : IDisposable
         EditorPanelExtension panel = Assert.Single(
             m_runtime.panels.Where(static value => value.id == "tests.panel"));
 
-        Assert.False(panel.TryGetWindowPresentation(out _, out _));
+        Assert.False(panel.TryGetWindowPresentation(out _, out _, out _));
         Assert.False(panel.isOpen);
     }
 
@@ -997,8 +1202,6 @@ public sealed class MultiPresentationSetting : ISerializable
 [ProjectSettingPath("Project/Tests/Multi/Primary")]
 public sealed class PrimaryMultiPresentationEditor : ProjectSettingEditor<MultiPresentationSetting>
 {
-    public override ProjectSettingId settingId => MultiPresentationSetting.settingId;
-
     protected override void OnDraw(MultiPresentationSetting setting)
         => _ = setting;
 }
@@ -1006,8 +1209,6 @@ public sealed class PrimaryMultiPresentationEditor : ProjectSettingEditor<MultiP
 [ProjectSettingPath("Project/Tests/Multi/Secondary")]
 public sealed class SecondaryMultiPresentationEditor : ProjectSettingEditor<MultiPresentationSetting>
 {
-    public override ProjectSettingId settingId => MultiPresentationSetting.settingId;
-
     protected override void OnDraw(MultiPresentationSetting setting)
         => _ = setting;
 }
@@ -1229,7 +1430,11 @@ public sealed class MenuAction : EditorAction
 public sealed class DynamicMenuSource : EditorMenuSource
 {
     public override void Build(EditorMenuContext context, EditorMenuBuilder builder)
-        => builder.Add("Tools/Create/Generated", "tests.menu", order: 200);
+    {
+        builder.AddGroup("Tools/Create/Libraries", order: 150, separatorBefore: true);
+        builder.Add("Tools/Create/Libraries/Function", "tests.menu", order: 150);
+        builder.Add("Tools/Create/Generated", "tests.menu", order: 200);
+    }
 }
 
 [EditorDrop("tests/drop")]
@@ -1242,5 +1447,69 @@ public sealed class TestDrop : EditorDrop<DragSource, DropTarget>
     {
         context.target.wasDropped = true;
         return EditorDropResult.Accepted();
+    }
+}
+
+public sealed class TestDocumentProvider : EditorDocumentProvider
+{
+    public int openCount { get; private set; }
+    public int saveCount { get; private set; }
+    public int closeCount { get; private set; }
+
+    public override string id => "tests.documents";
+
+    public override bool CanOpen(string assetPath)
+        => assetPath.EndsWith(".ispriteatlas2d", StringComparison.Ordinal)
+           || assetPath.EndsWith(".itilemap2d", StringComparison.Ordinal);
+
+    public override void Open(EditorDocumentContext context) => openCount++;
+
+    public override bool Save(EditorDocumentContext context)
+    {
+        saveCount++;
+        return true;
+    }
+
+    public override void Close(EditorDocumentContext context) => closeCount++;
+}
+
+public sealed class TestViewportCoordinates : IEditorViewportCoordinateConverter
+{
+    public Inno.Core.Mathematics.Vector2 ScreenToWorld(Inno.Core.Mathematics.Vector2 screenPosition)
+        => screenPosition * 2f;
+
+    public Inno.Core.Mathematics.Vector2 WorldToScreen(Inno.Core.Mathematics.Vector2 worldPosition)
+        => worldPosition / 2f;
+}
+
+public sealed class TestViewportTool(IEditorHistory history) : EditorViewportTool
+{
+    public int downCount { get; private set; }
+    public int upCount { get; private set; }
+
+    public override string id => "tests.viewport.paint";
+
+    public override EditorViewportCursor cursor => EditorViewportCursor.Crosshair;
+
+    public override void OnPointerDown(
+        EditorViewportToolContext context,
+        EditorViewportPointerEvent pointer)
+    {
+        downCount++;
+        context.CapturePointer(pointer.pointerId);
+        context.BeginHistoryGesture("Paint Tile");
+        NeutralHistoryHandler.value = 1;
+        history.RecordApplied(
+            "Paint Tile Cell",
+            NeutralHistoryHandler.CreateChange(before: 0, after: 1));
+    }
+
+    public override void OnPointerUp(
+        EditorViewportToolContext context,
+        EditorViewportPointerEvent pointer)
+    {
+        upCount++;
+        context.CompleteHistoryGesture(commit: true);
+        context.ReleasePointer();
     }
 }

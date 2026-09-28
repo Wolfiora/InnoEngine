@@ -35,7 +35,7 @@ public static class NativeDllLoader
         {
             foreach (var name in candidateNames)
             {
-                var match = Directory.EnumerateFiles(root, name, SearchOption.AllDirectories).FirstOrDefault();
+                var match = FindPreferredTargetFile(root, name);
                 if (match != null)
                 {
                     return NativeLibrary.Load(match);
@@ -59,7 +59,7 @@ public static class NativeDllLoader
     {
         foreach (var root in GetSearchRoots())
         {
-            var match = Directory.EnumerateFiles(root, fileName, SearchOption.AllDirectories).FirstOrDefault();
+            var match = FindPreferredTargetFile(root, fileName);
             if (match != null)
             {
                 return match;
@@ -108,6 +108,61 @@ public static class NativeDllLoader
         return copied;
     }
 
+    /// <summary>
+    /// Deploys a known native file into a relative path under the current output's native directory.
+    /// </summary>
+    /// <param name="sourcePath">
+    /// Existing source file to deploy.
+    /// </param>
+    /// <param name="relativeOutputPath">
+    /// Relative path below the native output directory.
+    /// </param>
+    /// <returns>
+    /// The absolute deployed file path.
+    /// </returns>
+    public static string DeployNativeFile(string sourcePath, string relativeOutputPath)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(sourcePath);
+        ArgumentException.ThrowIfNullOrWhiteSpace(relativeOutputPath);
+        if (Path.IsPathRooted(relativeOutputPath))
+        {
+            throw new ArgumentException("Native output path must be relative.", nameof(relativeOutputPath));
+        }
+
+        string fullSourcePath = Path.GetFullPath(sourcePath);
+        if (!File.Exists(fullSourcePath))
+        {
+            throw new FileNotFoundException("Native source file was not found.", fullSourcePath);
+        }
+
+        string nativeRoot = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, NativeDllConstants.NATIVE_DIR_NAME));
+        string destinationPath = Path.GetFullPath(Path.Combine(nativeRoot, relativeOutputPath));
+        string nativeRootPrefix = Path.TrimEndingDirectorySeparator(nativeRoot) + Path.DirectorySeparatorChar;
+        StringComparison pathComparison = OperatingSystem.IsWindows()
+            ? StringComparison.OrdinalIgnoreCase
+            : StringComparison.Ordinal;
+        if (!destinationPath.StartsWith(nativeRootPrefix, pathComparison))
+        {
+            throw new ArgumentException("Native output path escapes the native directory.", nameof(relativeOutputPath));
+        }
+
+        string destinationDirectory = Path.GetDirectoryName(destinationPath)
+            ?? throw new InvalidOperationException("Native output path does not have a parent directory.");
+        Directory.CreateDirectory(destinationDirectory);
+        if (!File.Exists(destinationPath) || !FileContentsMatch(fullSourcePath, destinationPath))
+        {
+            File.Copy(fullSourcePath, destinationPath, overwrite: true);
+        }
+
+        if (!OperatingSystem.IsWindows())
+        {
+            File.SetUnixFileMode(destinationPath, File.GetUnixFileMode(fullSourcePath));
+        }
+
+        File.SetLastWriteTimeUtc(destinationPath, File.GetLastWriteTimeUtc(fullSourcePath));
+        return destinationPath;
+    }
+
     private static string EnsureNativeFile(string fileName, bool throwIfMissing)
     {
         string? deployed = FindNativeOutputFile(fileName);
@@ -142,7 +197,7 @@ public static class NativeDllLoader
         var nativeRoot = Path.Combine(AppContext.BaseDirectory, NativeDllConstants.NATIVE_DIR_NAME);
         Directory.CreateDirectory(nativeRoot);
 
-        var srcFile = Directory.EnumerateFiles(libRoot, fileName, SearchOption.AllDirectories).FirstOrDefault();
+        var srcFile = FindPreferredTargetFile(libRoot, fileName);
         if (srcFile == null)
         {
             if (deployed is not null)
@@ -192,9 +247,7 @@ public static class NativeDllLoader
     {
         foreach (string root in GetSearchRoots())
         {
-            string? match = Directory
-                .EnumerateFiles(root, fileName, SearchOption.AllDirectories)
-                .FirstOrDefault();
+            string? match = FindPreferredTargetFile(root, fileName);
             if (match is not null)
                 return match;
         }
@@ -221,7 +274,7 @@ public static class NativeDllLoader
         {
             foreach (var name in candidateNames)
             {
-                var match = Directory.EnumerateFiles(root, name, SearchOption.AllDirectories).FirstOrDefault();
+                var match = FindPreferredTargetFile(root, name);
                 if (match != null)
                 {
                     return NativeLibrary.Load(match);
@@ -271,6 +324,58 @@ public static class NativeDllLoader
             yield return nativeRoot;
         }
     }
+
+    private static string? FindPreferredTargetFile(string root, string fileName)
+    {
+        var candidates = Directory
+            .EnumerateFiles(root, fileName, SearchOption.AllDirectories)
+            .ToArray();
+        if (candidates.Length == 0)
+        {
+            return null;
+        }
+
+        string targetSegment = $"/{GetTargetPlatformIdentifier()}/";
+        string? targetMatch = candidates.FirstOrDefault(path =>
+            NormalizePath(path).Contains(targetSegment, StringComparison.OrdinalIgnoreCase));
+        if (targetMatch is not null)
+        {
+            return targetMatch;
+        }
+
+        return candidates.FirstOrDefault(path => !HasPlatformScope(NormalizePath(path)));
+    }
+
+    private static string GetTargetPlatformIdentifier()
+    {
+        string operatingSystem = OperatingSystem.IsMacOS()
+            ? "osx"
+            : OperatingSystem.IsWindows()
+                ? "windows"
+                : OperatingSystem.IsLinux()
+                    ? "linux"
+                    : throw new PlatformNotSupportedException("Native library loading supports Windows, macOS, and Linux.");
+        string architecture = RuntimeInformation.OSArchitecture switch
+        {
+            Architecture.X64 => "x64",
+            Architecture.Arm64 => "arm64",
+            Architecture.X86 => "x86",
+            Architecture.Arm => "arm",
+            _ => throw new PlatformNotSupportedException(
+                $"Unsupported native architecture: {RuntimeInformation.OSArchitecture}.")
+        };
+        return $"{operatingSystem}-{architecture}";
+    }
+
+    private static bool HasPlatformScope(string normalizedPath)
+    {
+        return normalizedPath.Contains("/windows-", StringComparison.OrdinalIgnoreCase)
+            || normalizedPath.Contains("/osx-", StringComparison.OrdinalIgnoreCase)
+            || normalizedPath.Contains("/linux-", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static string NormalizePath(string path)
+        => path.Replace('\\', '/');
 
     private static string? FindRepoRoot(string startDir)
     {

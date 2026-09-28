@@ -51,7 +51,7 @@ static class Program
             CimguiBuildUtils.ValidateSource(cimguiDir);
 
             builder.Build(cimguiDir, options.Config);
-            CopyArtifacts(cimguiDir, outputDir, options.Config);
+            CopyArtifacts(cimguiDir, outputDir, builder.outputPlatform, options.Config);
 
             Console.WriteLine($"cimgui build complete. Output: {outputDir}");
             return 0;
@@ -78,11 +78,11 @@ static class Program
         Console.WriteLine("ImGui outputs cleaned.");
     }
 
-    private static void CopyArtifacts(string cimguiDir, string outputDir, string config)
+    private static void CopyArtifacts(string cimguiDir, string outputDir, string platform, string config)
     {
         var options = new BuildArtifactOptions(
-            CimguiBuildConstants.BUILD_DIR_NAME,
-            LIBRARY_TOKENS,
+            Path.Combine(CimguiBuildConstants.BUILD_DIR_NAME, "inno", platform),
+            OperatingSystem.IsWindows() ? [$"libcimgui-{config}"] : LIBRARY_TOKENS,
             SHARED_EXTENSIONS,
             null,
             NormalizeOutputName);
@@ -93,7 +93,7 @@ static class Program
     private static string NormalizeOutputName(string fileName, string config)
     {
         var ext = Path.GetExtension(fileName);
-        return $"{CimguiBuildConstants.OUTPUT_DLL_NAME}-{config}{ext}";
+        return OperatingSystem.IsWindows() ? fileName : $"{CimguiBuildConstants.OUTPUT_DLL_NAME}-{config}{ext}";
     }
 }
 

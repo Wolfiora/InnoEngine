@@ -4,6 +4,8 @@ using System.Numerics;
 using Inno.Editor.Inspection;
 using Inno.Editor.ImGui;
 using Inno.Editor.ImGui.ImGuiWidget;
+using Inno.Editor.Interactions;
+using EditorImGui = Inno.Editor.ImGui.ImGui;
 using EditorWidget = Inno.Editor.ImGui.ImGuiWidget.ImGuiWidget;
 using Inno.Native.ImGui;
 using Inno.Adapter.Presentation.ImGui;
@@ -16,7 +18,7 @@ namespace Inno.Editor.Panel.Inspector;
 /// </summary>
 internal sealed class InspectorTargetHeader
 {
-    private const nuint C_NAME_BUFFER_SIZE = 512;
+    private const int C_NAME_BUFFER_SIZE = 512;
 
     private readonly InspectorLockControl m_lock = new();
 
@@ -26,10 +28,14 @@ internal sealed class InspectorTargetHeader
     /// <returns>
     /// The current valid Inspector target, or <see langword="null"/> when none is available.
     /// </returns>
+    /// <param name="interactions">
+    /// Shared interaction service that resolves targets in their owning identity domains.
+    /// </param>
     /// <param name="selectedTarget">
     /// The current inspection target used to render the header.
     /// </param>
-    internal object? Resolve(object? selectedTarget) => m_lock.Resolve(selectedTarget);
+    internal object? Resolve(EditorInteractions interactions, object? selectedTarget)
+        => m_lock.Resolve(interactions, selectedTarget);
 
     /// <summary>
     /// Draws the common framed header for a resolved Inspector target.
@@ -40,53 +46,36 @@ internal sealed class InspectorTargetHeader
     /// <param name="context">
     /// The drawing context for the current target.
     /// </param>
-    internal void Draw(IInspectionDrawer drawer, InspectionDrawContext context)
+    /// <param name="readOnly">
+    /// Whether target controls must be disabled while the notice remains visible.
+    /// </param>
+    /// <param name="notice">
+    /// The optional contextual message placed beneath the regular header rows.
+    /// </param>
+    internal void Draw(
+        IInspectionDrawer drawer,
+        InspectionDrawContext context,
+        bool readOnly,
+        string? notice)
     {
         ArgumentNullException.ThrowIfNull(drawer);
         ArgumentNullException.ThrowIfNull(context);
-        ImGuiWindowPtr parentWindow = ImGuiP.GetCurrentWindow();
-        Vector2 contentCursor = NativeImGui.GetCursorScreenPos();
-        Vector2 parentPadding = parentWindow.WindowPadding;
-        Vector2 headerOrigin = contentCursor - parentPadding;
-        float width = MathF.Max(
-            1f,
-            NativeImGui.GetContentRegionAvail().X + parentPadding.X * 2f);
-        NativeImGui.SetCursorScreenPos(headerOrigin);
-
-        NativeImGui.PushStyleColor(ImGuiCol.FrameBg, EditorPalette.inspectorTargetHeader);
-        NativeImGui.PushStyleColor(ImGuiCol.Border, EditorPalette.inspectorTargetHeaderBorder);
-        NativeImGui.PushStyleVar(ImGuiStyleVar.FramePadding, EditorWidget.style.inspectorTargetHeaderPadding);
-        NativeImGui.PushStyleVar(ImGuiStyleVar.FrameRounding, EditorWidget.style.frameRounding);
-        NativeImGui.PushStyleVar(ImGuiStyleVar.FrameBorderSize, EditorWidget.style.borderSize);
-        try
-        {
-            ImGuiChildFlags childFlags = ImGuiChildFlags.FrameStyle | ImGuiChildFlags.AutoResizeY;
-            ImGuiWindowFlags windowFlags = ImGuiWindowFlags.NoScrollbar |
-                                           ImGuiWindowFlags.NoScrollWithMouse |
-                                           ImGuiWindowFlags.NoSavedSettings;
-            bool visible = NativeImGui.BeginChild(
-                "##inspector_target_header",
-                new Vector2(width, 0f),
-                childFlags,
-                windowFlags);
-            try
+        EditorWidget.HeaderSurface(
+            "##inspector_target_header",
+            () =>
             {
-                if (visible)
-                    DrawContent(drawer, context);
-            }
-            finally
-            {
-                NativeImGui.EndChild();
-            }
-        }
-        finally
-        {
-            NativeImGui.PopStyleVar(3);
-            NativeImGui.PopStyleColor(2);
-        }
-        NativeImGui.SetCursorScreenPos(new Vector2(
-            contentCursor.X,
-            NativeImGui.GetCursorScreenPos().Y));
+                NativeImGui.BeginDisabled(readOnly);
+                try { DrawContent(drawer, context); }
+                finally { NativeImGui.EndDisabled(); }
+                if (notice is null)
+                    return;
+                NativeImGui.Spacing();
+                EditorWidget.HelpBox(
+                    notice,
+                    ImGuiIcon.CircleInfo,
+                    new Vector4(0.42f, 0.66f, 0.88f, EditorPalette.opacityOpaque));
+            },
+            spanWindowPadding: true);
     }
 
     private void DrawContent(IInspectionDrawer drawer, InspectionDrawContext context)
@@ -133,7 +122,7 @@ internal sealed class InspectorTargetHeader
         if (nameSetter is not null)
         {
             NativeImGui.SetNextItemWidth(nameWidth);
-            if (NativeImGui.InputText(
+            if (EditorImGui.InputText(
                     $"##inspector_target_name_{GetTargetId(context.target)}",
                     ref name,
                     C_NAME_BUFFER_SIZE,
@@ -167,7 +156,7 @@ internal sealed class InspectorTargetHeader
         string lockIcon = m_lock.isLocked ? ImGuiIcon.Lock : ImGuiIcon.LockOpen;
         string tooltip = m_lock.isLocked ? "Unlock Inspector" : "Lock Inspector";
         if (EditorWidget.ClickableIcon("inspector_target_lock", lockIcon, tooltip))
-            m_lock.Toggle(context.target);
+            m_lock.Toggle(context.interactions, context.target);
     }
 
     private static void DrawIcon(string icon, float slotSize)

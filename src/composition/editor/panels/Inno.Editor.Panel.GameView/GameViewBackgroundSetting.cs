@@ -1,6 +1,8 @@
 using System.Numerics;
 
+using Inno.Editor.ImGui;
 using Inno.Editor.Settings;
+using EditorImGui = Inno.Editor.ImGui.ImGui;
 using NativeImGui = Inno.Native.ImGui.ImGui;
 
 namespace Inno.Editor.Panel.GameView;
@@ -9,7 +11,7 @@ namespace Inno.Editor.Panel.GameView;
 internal sealed class GameViewBackgroundSetting : EditorSetting
 {
     internal const string C_PATH = "Editor/Appearance/Viewports/Game Background";
-    private static readonly float[] S_DEFAULT = [0.035f, 0.04f, 0.05f, 1f];
+    private static readonly float[] S_DEFAULT = [0.035f, 0.04f, 0.05f, EditorPalette.opacityOpaque];
 
     /// <summary>
     /// Gets a new value initialized to this setting's canonical default state.
@@ -36,7 +38,7 @@ internal sealed class GameViewBackgroundSetting : EditorSetting
     {
         Vector4 value = ReadVector(setting);
         NativeImGui.SetNextItemWidth(-1f);
-        if (NativeImGui.ColorEdit4("##game_view_background", ref value))
+        if (EditorImGui.ColorEditLinear4("##game_view_background", ref value))
             setting.SetAsSingleArray("value", [value.X, value.Y, value.Z, value.W]);
     }
 

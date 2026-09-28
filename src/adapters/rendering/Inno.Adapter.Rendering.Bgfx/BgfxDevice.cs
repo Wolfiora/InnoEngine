@@ -15,6 +15,8 @@ namespace Inno.Adapter.Rendering.Bgfx;
 /// </summary>
 public sealed unsafe partial class BgfxDevice : RenderDevice, IRenderDevice, IRenderGraphBackend
 {
+    private const uint C_TRANSIENT_CACHE_RETENTION_FRAMES = 8;
+
     private static int s_nextGeneration;
 
     private readonly BgfxProcessDeviceLease m_processLease;
@@ -26,11 +28,15 @@ public sealed unsafe partial class BgfxDevice : RenderDevice, IRenderDevice, IRe
     private readonly Dictionary<ulong, PendingTextureReadback> m_textureReadbacks = [];
     private readonly Dictionary<int, bgfx.TextureHandle> m_graphTextures = [];
     private readonly Dictionary<int, bgfx.TextureHandle> m_transientTextureSlots = [];
+    private readonly Dictionary<int, RenderTextureDescriptor> m_transientTextureSlotDescriptors = [];
+    private readonly List<PooledTransientTexture> m_transientTexturePool = [];
     private readonly List<bgfx.FrameBufferHandle> m_graphFrameBuffers = [];
-    private readonly uint m_resetFlags;
+    private readonly List<CachedGraphFrameBuffer> m_graphFrameBufferCache = [];
+    private uint m_resetFlags;
+    private bool m_resetPending;
 
     private CompiledRenderGraph? m_activeGraph;
-    private bgfx.Encoder* m_activeEncoder;
+    private bgfx.Encoder m_activeEncoder;
     private ulong m_nextPersistentId = 1;
     private ulong m_nextReadbackId = 1;
     private uint m_backendFrame;
@@ -42,6 +48,8 @@ public sealed unsafe partial class BgfxDevice : RenderDevice, IRenderDevice, IRe
     private int m_pendingHeight;
     private int m_drawCount;
     private int m_dispatchCount;
+    private ulong m_transientTextureAllocationCount;
+    private ulong m_transientFrameBufferAllocationCount;
     private bool m_frameOpen;
     private bool m_disposed;
 
@@ -116,6 +124,11 @@ public sealed unsafe partial class BgfxDevice : RenderDevice, IRenderDevice, IRe
     public GraphicsCapabilities capabilities { get; }
 
     /// <summary>
+    /// Gets whether the primary presentation surface encodes linear color as sRGB.
+    /// </summary>
+    public bool backbufferIsSrgb => (m_resetFlags & (uint)bgfx.ResetFlags.SrgbBackbuffer) != 0;
+
+    /// <summary>
     /// Gets the generation identity that owns this value.
     /// </summary>
     public uint generation { get; private set; }
@@ -131,6 +144,20 @@ public sealed unsafe partial class BgfxDevice : RenderDevice, IRenderDevice, IRe
     /// </summary>
     public RenderDeviceFrameCounters frameCounters
         => new(Volatile.Read(ref m_drawCount), Volatile.Read(ref m_dispatchCount));
+
+    /// <summary>
+    /// Gets API-thread allocation diagnostics for the current device generation's native transient pools.
+    /// </summary>
+    public RenderDeviceAllocationCounters? allocationCounters
+    {
+        get
+        {
+            EnsureApiThread();
+            ObjectDisposedException.ThrowIf(m_disposed, this);
+            return new RenderDeviceAllocationCounters(generation, m_transientTextureAllocationCount,
+                m_transientBufferAllocationCount, m_transientFrameBufferAllocationCount);
+        }
+    }
 
     /// <summary>
     /// Gets the last frame number returned by BGFX submission.
@@ -154,10 +181,15 @@ public sealed unsafe partial class BgfxDevice : RenderDevice, IRenderDevice, IRe
         Volatile.Write(ref m_dispatchCount, 0);
         ProcessDeferredResources(force: false);
         ProcessCanceledReadbacks();
-        if (m_pendingWidth > 0 && m_pendingHeight > 0)
+        TrimTransientResourceCaches();
+        if (m_resetPending || (m_pendingWidth > 0 && m_pendingHeight > 0))
         {
-            m_backbufferWidth = m_pendingWidth;
-            m_backbufferHeight = m_pendingHeight;
+            if (m_pendingWidth > 0 && m_pendingHeight > 0)
+            {
+                m_backbufferWidth = m_pendingWidth;
+                m_backbufferHeight = m_pendingHeight;
+            }
+            m_resetPending = false;
             m_pendingWidth = 0;
             m_pendingHeight = 0;
             if (capabilities.backend != GraphicsApi.Noop)
@@ -204,7 +236,7 @@ public sealed unsafe partial class BgfxDevice : RenderDevice, IRenderDevice, IRe
             throw new InvalidOperationException("No BGFX frame is open.");
         }
 
-        if (m_activeGraph is not null || m_activeEncoder is not null)
+        if (m_activeGraph is not null || !m_activeEncoder.IsNull)
         {
             throw new InvalidOperationException("All render graphs and encoders must end before BGFX frame submission.");
         }
@@ -236,6 +268,26 @@ public sealed unsafe partial class BgfxDevice : RenderDevice, IRenderDevice, IRe
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(height);
         m_pendingWidth = width;
         m_pendingHeight = height;
+    }
+
+    /// <summary>
+    /// Queues an idempotent presentation policy update for the next BeginFrame reset.
+    /// Noop devices retain the policy without issuing a native presentation reset.
+    /// </summary>
+    /// <param name="enabled">
+    /// Whether presentation should wait for display refresh.
+    /// </param>
+    public void SetVerticalSync(bool enabled)
+    {
+        EnsureApiThread();
+        ObjectDisposedException.ThrowIf(m_disposed, this);
+        uint next = enabled
+            ? m_resetFlags | (uint)bgfx.ResetFlags.Vsync
+            : m_resetFlags & ~(uint)bgfx.ResetFlags.Vsync;
+        if (next == m_resetFlags)
+            return;
+        m_resetFlags = next;
+        m_resetPending = true;
     }
 
     /// <summary>
@@ -653,6 +705,7 @@ public sealed unsafe partial class BgfxDevice : RenderDevice, IRenderDevice, IRe
         }
 
         m_persistentTextureDescriptors.Remove(GetHandleIdentity(texture).value);
+        RemoveCachedFrameBuffersReferencing(nativeTexture.idx);
 
         EnqueueDestroy(DeferredResource.ForTexture(nativeTexture));
     }
@@ -685,6 +738,7 @@ public sealed unsafe partial class BgfxDevice : RenderDevice, IRenderDevice, IRe
         m_activeGraphViewBase = m_nextViewId;
         m_graphTextures.Clear();
         m_transientTextureSlots.Clear();
+        m_transientTextureSlotDescriptors.Clear();
         m_graphFrameBuffers.Clear();
         try
         {
@@ -710,14 +764,17 @@ public sealed unsafe partial class BgfxDevice : RenderDevice, IRenderDevice, IRe
 
                     if (!m_transientTextureSlots.TryGetValue(texture.physicalSlot, out nativeTexture))
                     {
-                        nativeTexture = CreateNativeTexture(texture.descriptor);
-                        if (!nativeTexture.Valid)
-                        {
-                            throw new InvalidOperationException($"BGFX could not allocate transient texture '{texture.name}'.");
-                        }
-
-                        bgfx.set_texture_name(nativeTexture, texture.name, Utf8Length(texture.name));
+                        nativeTexture = AcquireTransientTexture(
+                            texture.descriptor,
+                            texture.name,
+                            texture.physicalSlot);
                         m_transientTextureSlots.Add(texture.physicalSlot, nativeTexture);
+                        m_transientTextureSlotDescriptors.Add(texture.physicalSlot, texture.descriptor);
+                    }
+                    else if (!m_transientTextureSlotDescriptors[texture.physicalSlot].Equals(texture.descriptor))
+                    {
+                        throw new InvalidOperationException(
+                            $"Render-graph physical texture slot {texture.physicalSlot} aliases incompatible descriptors.");
                     }
                 }
 
@@ -760,7 +817,7 @@ public sealed unsafe partial class BgfxDevice : RenderDevice, IRenderDevice, IRe
     public RenderCommandEncoder BeginPass(CompiledRenderPass pass)
     {
         ArgumentNullException.ThrowIfNull(pass);
-        if (m_activeGraph is null || m_activeEncoder is not null)
+        if (m_activeGraph is null || !m_activeEncoder.IsNull)
         {
             throw new InvalidOperationException("Pass execution is outside a valid BGFX graph scope.");
         }
@@ -771,7 +828,7 @@ public sealed unsafe partial class BgfxDevice : RenderDevice, IRenderDevice, IRe
         ApplyViewTransform(viewId, pass.viewTransform);
         ConfigureViewTarget(viewId, pass);
         m_activeEncoder = bgfx.encoder_begin(false);
-        if (m_activeEncoder is null)
+        if (m_activeEncoder.IsNull)
         {
             throw new InvalidOperationException($"BGFX could not acquire an encoder for pass '{pass.name}'.");
         }
@@ -789,13 +846,13 @@ public sealed unsafe partial class BgfxDevice : RenderDevice, IRenderDevice, IRe
     public void EndPass(CompiledRenderPass pass)
     {
         ArgumentNullException.ThrowIfNull(pass);
-        if (m_activeEncoder is null)
+        if (m_activeEncoder.IsNull)
         {
             throw new InvalidOperationException("No BGFX encoder is active.");
         }
 
         bgfx.encoder_end(m_activeEncoder);
-        m_activeEncoder = null;
+        m_activeEncoder = bgfx.Encoder.Null;
     }
 
     /// <summary>
@@ -807,30 +864,14 @@ public sealed unsafe partial class BgfxDevice : RenderDevice, IRenderDevice, IRe
     public void EndGraph(CompiledRenderGraph graph)
     {
         ArgumentNullException.ThrowIfNull(graph);
-        if (!ReferenceEquals(m_activeGraph, graph) || m_activeEncoder is not null)
+        if (!ReferenceEquals(m_activeGraph, graph) || !m_activeEncoder.IsNull)
         {
             throw new InvalidOperationException("BGFX graph cleanup does not match the active graph state.");
         }
 
-        foreach (bgfx.FrameBufferHandle frameBuffer in m_graphFrameBuffers)
-        {
-            EnqueueDestroy(DeferredResource.ForFrameBuffer(frameBuffer));
-        }
-
-        foreach (bgfx.TextureHandle texture in m_transientTextureSlots.Values)
-        {
-            EnqueueDestroy(DeferredResource.ForTexture(texture));
-        }
-
-        foreach (BgfxBufferResource buffer in m_transientBufferSlots.Values)
-        {
-            EnqueueDestroy(DeferredResource.ForBuffer(buffer));
-        }
-
+        ReturnTransientGraphResources();
         m_graphFrameBuffers.Clear();
-        m_transientTextureSlots.Clear();
         m_graphTextures.Clear();
-        m_transientBufferSlots.Clear();
         m_graphBuffers.Clear();
         m_activeGraph = null;
         m_activeGraphViewBase = 0;
@@ -853,7 +894,7 @@ public sealed unsafe partial class BgfxDevice : RenderDevice, IRenderDevice, IRe
         }
 
         EnsureApiThread();
-        if (m_activeEncoder is not null || m_activeGraph is not null)
+        if (!m_activeEncoder.IsNull || m_activeGraph is not null)
         {
             throw new InvalidOperationException("Cannot dispose BGFX while a render graph or encoder is active.");
         }
@@ -894,12 +935,30 @@ public sealed unsafe partial class BgfxDevice : RenderDevice, IRenderDevice, IRe
             EnqueueDestroy(DeferredResource.ForFrameBuffer(surface.frameBuffer));
         }
 
+        foreach (CachedGraphFrameBuffer cached in m_graphFrameBufferCache)
+        {
+            EnqueueDestroy(DeferredResource.ForFrameBuffer(cached.handle));
+        }
+
+        foreach (PooledTransientTexture pooled in m_transientTexturePool)
+        {
+            EnqueueDestroy(DeferredResource.ForTexture(pooled.handle));
+        }
+
+        foreach (PooledTransientBuffer pooled in m_transientBufferPool)
+        {
+            EnqueueDestroy(DeferredResource.ForBuffer(pooled.resource));
+        }
+
         m_persistentTextures.Clear();
         m_persistentTextureDescriptors.Clear();
         m_persistentBuffers.Clear();
         m_graphicsPipelines.Clear();
         m_computePipelines.Clear();
         m_windowSurfaces.Clear();
+        m_graphFrameBufferCache.Clear();
+        m_transientTexturePool.Clear();
+        m_transientBufferPool.Clear();
         DrainDeferredResourcesForShutdown();
         string? closureFailure = GetManagedResourceClosureFailure();
         try
@@ -960,62 +1019,63 @@ public sealed unsafe partial class BgfxDevice : RenderDevice, IRenderDevice, IRe
         }
         else if (pass.attachments.Count != 0)
         {
-            bgfx.Attachment* attachments = stackalloc bgfx.Attachment[pass.attachments.Count];
-            for (int index = 0; index < pass.attachments.Count; index++)
+            bgfx.FrameBufferHandle cachedFrameBuffer = FindCachedFrameBuffer(pass);
+            if (cachedFrameBuffer.Valid)
             {
-                CompiledRenderAttachment attachment = pass.attachments[index];
-                bgfx.TextureHandle nativeTexture = ResolveTexture(attachment.texture);
-                bgfx.attachment_init(
-                    &attachments[index],
-                    nativeTexture,
-                    bgfx.Access.Write,
-                    checked((ushort)attachment.arrayLayer),
-                    1,
-                    checked((ushort)attachment.mipLevel),
-                    (byte)bgfx.ResolveFlags.None);
-                RenderTextureDescriptor descriptor = ResolveTextureDescriptor(attachment.texture);
-                width = Math.Max(1, descriptor.width >> attachment.mipLevel);
-                height = Math.Max(1, descriptor.height >> attachment.mipLevel);
-
-                if (attachment.loadAction == RenderLoadAction.Clear)
+                bgfx.set_view_frame_buffer(viewId, cachedFrameBuffer);
+            }
+            else
+            {
+                RetireSupersededFrameBuffer(pass.name);
+                bgfx.Attachment* attachments = stackalloc bgfx.Attachment[pass.attachments.Count];
+                GraphAttachmentSignature[] signature = new GraphAttachmentSignature[pass.attachments.Count];
+                for (int index = 0; index < pass.attachments.Count; index++)
                 {
-                    if (attachment.isDepth)
-                    {
-                        clearFlags |= bgfx.ClearFlags.Depth;
-                        if (descriptor.format == RenderTextureFormat.Depth24Stencil8)
-                        {
-                            clearFlags |= bgfx.ClearFlags.Stencil;
-                        }
-
-                        clearDepth = attachment.clearDepth;
-                        clearStencil = attachment.clearStencil;
-                    }
-                    else
-                    {
-                        clearFlags |= bgfx.ClearFlags.Color;
-                        clearColor = PackColor(attachment.clearColor);
-                    }
+                    CompiledRenderAttachment attachment = pass.attachments[index];
+                    bgfx.TextureHandle nativeTexture = ResolveTexture(attachment.texture);
+                    signature[index] = new GraphAttachmentSignature(
+                        nativeTexture.idx,
+                        attachment.slot,
+                        attachment.isDepth,
+                        attachment.mipLevel,
+                        attachment.arrayLayer);
+                    bgfx.attachment_init(
+                        &attachments[index],
+                        nativeTexture,
+                        bgfx.Access.Write,
+                        checked((ushort)attachment.arrayLayer),
+                        1,
+                        checked((ushort)attachment.mipLevel),
+                        (byte)bgfx.ResolveFlags.None);
                 }
 
-                if (attachment.storeAction == RenderStoreAction.Discard)
+                bgfx.FrameBufferHandle frameBuffer = bgfx.create_frame_buffer_from_attachment(
+                    checked((byte)pass.attachments.Count),
+                    attachments,
+                    false);
+                if (!frameBuffer.Valid)
                 {
-                    clearFlags |= attachment.isDepth
-                        ? bgfx.ClearFlags.DiscardDepth
-                        : ColorDiscardFlag(attachment.slot);
+                    throw new InvalidOperationException($"BGFX could not create framebuffer for pass '{pass.name}'.");
                 }
+
+                m_transientFrameBufferAllocationCount++;
+                m_graphFrameBufferCache.Add(new CachedGraphFrameBuffer(
+                    frameBuffer,
+                    pass.name,
+                    signature,
+                    m_backendFrame));
+                m_graphFrameBuffers.Add(frameBuffer);
+                bgfx.set_view_frame_buffer(viewId, frameBuffer);
             }
 
-            bgfx.FrameBufferHandle frameBuffer = bgfx.create_frame_buffer_from_attachment(
-                checked((byte)pass.attachments.Count),
-                attachments,
-                false);
-            if (!frameBuffer.Valid)
-            {
-                throw new InvalidOperationException($"BGFX could not create framebuffer for pass '{pass.name}'.");
-            }
-
-            m_graphFrameBuffers.Add(frameBuffer);
-            bgfx.set_view_frame_buffer(viewId, frameBuffer);
+            ApplyAttachmentState(
+                pass,
+                ref width,
+                ref height,
+                ref clearFlags,
+                ref clearColor,
+                ref clearDepth,
+                ref clearStencil);
         }
         else
         {
@@ -1053,6 +1113,132 @@ public sealed unsafe partial class BgfxDevice : RenderDevice, IRenderDevice, IRe
         {
             bgfx.set_view_transform(viewId, viewPointer, projectionPointer);
         }
+    }
+
+    private bgfx.FrameBufferHandle FindCachedFrameBuffer(CompiledRenderPass pass)
+    {
+        for (int cacheIndex = m_graphFrameBufferCache.Count - 1; cacheIndex >= 0; cacheIndex--)
+        {
+            CachedGraphFrameBuffer cached = m_graphFrameBufferCache[cacheIndex];
+            if (cached.attachments.Length != pass.attachments.Count)
+                continue;
+
+            bool matches = true;
+            for (int attachmentIndex = 0; attachmentIndex < pass.attachments.Count; attachmentIndex++)
+            {
+                CompiledRenderAttachment attachment = pass.attachments[attachmentIndex];
+                bgfx.TextureHandle texture = ResolveTexture(attachment.texture);
+                GraphAttachmentSignature signature = cached.attachments[attachmentIndex];
+                if (signature.textureIndex != texture.idx
+                    || signature.slot != attachment.slot
+                    || signature.isDepth != attachment.isDepth
+                    || signature.mipLevel != attachment.mipLevel
+                    || signature.arrayLayer != attachment.arrayLayer)
+                {
+                    matches = false;
+                    break;
+                }
+            }
+
+            if (!matches)
+                continue;
+
+            cached.lastUsedFrame = m_backendFrame;
+            return cached.handle;
+        }
+
+        return new bgfx.FrameBufferHandle { idx = ushort.MaxValue };
+    }
+
+    private void RetireSupersededFrameBuffer(string passName)
+    {
+        for (int index = m_graphFrameBufferCache.Count - 1; index >= 0; index--)
+        {
+            CachedGraphFrameBuffer cached = m_graphFrameBufferCache[index];
+            if (!string.Equals(cached.passName, passName, StringComparison.Ordinal)
+                || cached.lastUsedFrame == m_backendFrame)
+            {
+                continue;
+            }
+
+            // BGFX owns the native command retirement and releases handles after frame
+            // advancement. Avoid adding our persistent-resource delay to obsolete bindings.
+            bgfx.destroy_frame_buffer(cached.handle);
+            m_graphFrameBufferCache.RemoveAt(index);
+        }
+    }
+
+    private void ApplyAttachmentState(
+        CompiledRenderPass pass,
+        ref int width,
+        ref int height,
+        ref bgfx.ClearFlags clearFlags,
+        ref uint clearColor,
+        ref float clearDepth,
+        ref byte clearStencil)
+    {
+        for (int index = 0; index < pass.attachments.Count; index++)
+        {
+            CompiledRenderAttachment attachment = pass.attachments[index];
+            RenderTextureDescriptor descriptor = ResolveTextureDescriptor(attachment.texture);
+            width = Math.Max(1, descriptor.width >> attachment.mipLevel);
+            height = Math.Max(1, descriptor.height >> attachment.mipLevel);
+
+            if (attachment.loadAction == RenderLoadAction.Clear)
+            {
+                if (attachment.isDepth)
+                {
+                    clearFlags |= bgfx.ClearFlags.Depth;
+                    if (descriptor.format == RenderTextureFormat.Depth24Stencil8)
+                        clearFlags |= bgfx.ClearFlags.Stencil;
+                    clearDepth = attachment.clearDepth;
+                    clearStencil = attachment.clearStencil;
+                }
+                else
+                {
+                    clearFlags |= bgfx.ClearFlags.Color;
+                    clearColor = PackColor(attachment.clearColor);
+                }
+            }
+
+            if (attachment.storeAction == RenderStoreAction.Discard)
+            {
+                clearFlags |= attachment.isDepth
+                    ? bgfx.ClearFlags.DiscardDepth
+                    : ColorDiscardFlag(attachment.slot);
+            }
+        }
+    }
+
+    private bgfx.TextureHandle AcquireTransientTexture(
+        RenderTextureDescriptor descriptor,
+        string name,
+        int physicalSlot)
+    {
+        for (int index = m_transientTexturePool.Count - 1; index >= 0; index--)
+        {
+            PooledTransientTexture pooled = m_transientTexturePool[index];
+            if (pooled.physicalSlot != physicalSlot || !pooled.descriptor.Equals(descriptor))
+                continue;
+            m_transientTexturePool.RemoveAt(index);
+            return pooled.handle;
+        }
+
+        for (int index = m_transientTexturePool.Count - 1; index >= 0; index--)
+        {
+            PooledTransientTexture pooled = m_transientTexturePool[index];
+            if (!pooled.descriptor.Equals(descriptor))
+                continue;
+            m_transientTexturePool.RemoveAt(index);
+            return pooled.handle;
+        }
+
+        bgfx.TextureHandle texture = CreateNativeTexture(descriptor);
+        if (!texture.Valid)
+            throw new InvalidOperationException($"BGFX could not allocate transient texture '{name}'.");
+        bgfx.set_texture_name(texture, name, Utf8Length(name));
+        m_transientTextureAllocationCount++;
+        return texture;
     }
 
     private bgfx.TextureHandle CreateNativeTexture(RenderTextureDescriptor descriptor)
@@ -1214,26 +1400,75 @@ public sealed unsafe partial class BgfxDevice : RenderDevice, IRenderDevice, IRe
     private void EnqueuePipelineDestroy(BgfxPipelineResource pipeline)
         => EnqueueDestroy(DeferredResource.ForProgram(pipeline.program));
 
+    private void ReturnTransientGraphResources()
+    {
+        foreach ((int slot, bgfx.TextureHandle texture) in m_transientTextureSlots)
+        {
+            m_transientTexturePool.Add(new PooledTransientTexture(
+                m_transientTextureSlotDescriptors[slot],
+                texture,
+                m_backendFrame,
+                slot));
+        }
+
+        foreach ((int slot, BgfxBufferResource buffer) in m_transientBufferSlots)
+            m_transientBufferPool.Add(new PooledTransientBuffer(buffer, m_backendFrame, slot));
+
+        m_transientTextureSlots.Clear();
+        m_transientTextureSlotDescriptors.Clear();
+        m_transientBufferSlots.Clear();
+    }
+
+    private void TrimTransientResourceCaches()
+    {
+        for (int index = m_graphFrameBufferCache.Count - 1; index >= 0; index--)
+        {
+            CachedGraphFrameBuffer cached = m_graphFrameBufferCache[index];
+            if (!CacheEntryExpired(cached.lastUsedFrame))
+                continue;
+            EnqueueDestroy(DeferredResource.ForFrameBuffer(cached.handle));
+            m_graphFrameBufferCache.RemoveAt(index);
+        }
+
+        for (int index = m_transientTexturePool.Count - 1; index >= 0; index--)
+        {
+            PooledTransientTexture pooled = m_transientTexturePool[index];
+            if (!CacheEntryExpired(pooled.lastUsedFrame))
+                continue;
+            RemoveCachedFrameBuffersReferencing(pooled.handle.idx);
+            EnqueueDestroy(DeferredResource.ForTexture(pooled.handle));
+            m_transientTexturePool.RemoveAt(index);
+        }
+
+        for (int index = m_transientBufferPool.Count - 1; index >= 0; index--)
+        {
+            PooledTransientBuffer pooled = m_transientBufferPool[index];
+            if (!CacheEntryExpired(pooled.lastUsedFrame))
+                continue;
+            EnqueueDestroy(DeferredResource.ForBuffer(pooled.resource));
+            m_transientBufferPool.RemoveAt(index);
+        }
+    }
+
+    private bool CacheEntryExpired(uint lastUsedFrame)
+        => unchecked(m_backendFrame - lastUsedFrame) > C_TRANSIENT_CACHE_RETENTION_FRAMES;
+
+    private void RemoveCachedFrameBuffersReferencing(ushort textureIndex)
+    {
+        for (int index = m_graphFrameBufferCache.Count - 1; index >= 0; index--)
+        {
+            CachedGraphFrameBuffer cached = m_graphFrameBufferCache[index];
+            if (!cached.ContainsTexture(textureIndex))
+                continue;
+            EnqueueDestroy(DeferredResource.ForFrameBuffer(cached.handle));
+            m_graphFrameBufferCache.RemoveAt(index);
+        }
+    }
+
     private void ReleasePreparedGraphResources()
     {
-        foreach (bgfx.FrameBufferHandle frameBuffer in m_graphFrameBuffers)
-        {
-            EnqueueDestroy(DeferredResource.ForFrameBuffer(frameBuffer));
-        }
-
-        foreach (bgfx.TextureHandle texture in m_transientTextureSlots.Values)
-        {
-            EnqueueDestroy(DeferredResource.ForTexture(texture));
-        }
-
-        foreach (BgfxBufferResource buffer in m_transientBufferSlots.Values)
-        {
-            EnqueueDestroy(DeferredResource.ForBuffer(buffer));
-        }
-
+        ReturnTransientGraphResources();
         m_graphFrameBuffers.Clear();
-        m_transientTextureSlots.Clear();
-        m_transientBufferSlots.Clear();
         m_graphTextures.Clear();
         m_graphBuffers.Clear();
         m_activeGraph = null;
@@ -1312,13 +1547,17 @@ public sealed unsafe partial class BgfxDevice : RenderDevice, IRenderDevice, IRe
 
     private string? GetManagedResourceClosureFailure()
     {
-        if (m_activeEncoder is not null
+        if (!m_activeEncoder.IsNull
             || m_activeGraph is not null
             || m_graphFrameBuffers.Count != 0
             || m_graphTextures.Count != 0
             || m_transientTextureSlots.Count != 0
+            || m_transientTextureSlotDescriptors.Count != 0
+            || m_transientTexturePool.Count != 0
+            || m_graphFrameBufferCache.Count != 0
             || m_graphBuffers.Count != 0
             || m_transientBufferSlots.Count != 0
+            || m_transientBufferPool.Count != 0
             || m_persistentTextures.Count != 0
             || m_persistentTextureDescriptors.Count != 0
             || m_persistentBuffers.Count != 0
@@ -1363,7 +1602,7 @@ public sealed unsafe partial class BgfxDevice : RenderDevice, IRenderDevice, IRe
     {
         EnsureApiThread();
         ObjectDisposedException.ThrowIf(m_disposed, this);
-        if (!m_frameOpen || m_activeGraph is not null || m_activeEncoder is not null)
+        if (!m_frameOpen || m_activeGraph is not null || !m_activeEncoder.IsNull)
         {
             throw new InvalidOperationException("Operation requires an open frame before graph execution.");
         }
@@ -1452,6 +1691,47 @@ public sealed unsafe partial class BgfxDevice : RenderDevice, IRenderDevice, IRe
         internal nint data { get; } = data;
         internal uint readyFrame { get; } = readyFrame;
         internal bool canceled { get; set; }
+    }
+
+    private readonly record struct PooledTransientTexture(
+        RenderTextureDescriptor descriptor,
+        bgfx.TextureHandle handle,
+        uint lastUsedFrame,
+        int physicalSlot);
+
+    private readonly record struct PooledTransientBuffer(
+        BgfxBufferResource resource,
+        uint lastUsedFrame,
+        int physicalSlot);
+
+    private readonly record struct GraphAttachmentSignature(
+        ushort textureIndex,
+        int slot,
+        bool isDepth,
+        int mipLevel,
+        int arrayLayer);
+
+    private sealed class CachedGraphFrameBuffer(
+        bgfx.FrameBufferHandle handle,
+        string passName,
+        GraphAttachmentSignature[] attachments,
+        uint lastUsedFrame)
+    {
+        internal bgfx.FrameBufferHandle handle { get; } = handle;
+        internal string passName { get; } = passName;
+        internal GraphAttachmentSignature[] attachments { get; } = attachments;
+        internal uint lastUsedFrame { get; set; } = lastUsedFrame;
+
+        internal bool ContainsTexture(ushort textureIndex)
+        {
+            foreach (GraphAttachmentSignature attachment in attachments)
+            {
+                if (attachment.textureIndex == textureIndex)
+                    return true;
+            }
+
+            return false;
+        }
     }
 
     private static bgfx.ClearFlags ColorDiscardFlag(int slot)

@@ -10,14 +10,9 @@ using Inno.Rendering;
 
 namespace Inno.Rendering.Assets;
 
-[AssetImporterExtension]
+[AssetImporter("inno.rendering.texture")]
 internal sealed partial class TextureAssetImporter : AssetImporter<TextureAsset>
 {
-    /// <summary>
-    /// Gets the stable importer identity used in artifact fingerprints.
-    /// </summary>
-    public override string importerId => "inno.rendering.texture";
-
     /// <summary>
     /// Gets the normalized source extensions accepted by this importer.
     /// </summary>

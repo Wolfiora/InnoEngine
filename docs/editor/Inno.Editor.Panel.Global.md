@@ -1,5 +1,9 @@
 # Inno.Editor.Panel.Global
 
+## Editor / Rendering
+
+Settings 新增 `Editor/Rendering` 页面。`Vertical Sync` 默认关闭；`Maximum Frame Rate` 默认 0（Unlimited），可设 1–1000。保存、Apply、Undo/Redo 都通过现有 EditorSettings 管线，`EditorFramePacingModule` 将已应用值同步到 Shell 注入的中立 FramePacingOptions。不需要重启；VSync 在下一设备帧安全点 reset。高帧率增加 GPU/功耗，操作系统合成器和显示硬件仍可能限制实际呈现频率。
+
 [Editor 索引](README.md) · [Settings API](Inno.Editor.Settings.md) · [Interactions](Inno.Editor.Interactions.md) · [Wiki 首页](../README.md)
 
 `Inno.Editor.Panel.Global` 是 Editor Application 的全局 feature composition 项目。它不提供一个可停靠 Panel，也没有公开 API；它只放置需要由宿主统一发现、但不应属于 Settings 或 Interactions 基础程序集的内建定义。
@@ -41,10 +45,12 @@ Zoom 的持久设置、session 倍率 Module 与三个 Action 作为一个 featu
 | `Editor/Appearance/Icons/Layers` | String 属性 `value` | Settings/Inspector presentation |
 | `Editor/Appearance/Icons/Folder` | String 属性 `value` | FileBrowser |
 | `Editor/Appearance/Icons/File` | String 属性 `value` | FileBrowser fallback |
+| `Editor/Appearance/Icons/ShaderSource` | String 属性 `value`；默认 `RupeeSign` | FileBrowser、Inspector |
+| `Editor/Appearance/Icons/RenderPipeline` | String 属性 `value`；默认 `RupiahSign` | FileBrowser、Inspector |
 
 每个 icon 是独立的 `EditorSetting` field，并在自己的 `OnDraw(EditorSettingObject)` 中绘制 ImGui glyph selector。Selector 的关闭预览和弹出选项使用同一个最大 icon slot；每个 glyph 再按 baked font 的真实可见边界居中，因此 File、Folder 与较宽的 Cubes 等轮廓中心保持在同一竖线上，label 也从同一位置开始。消费者直接调用 `EditorSettings.Get("...")`，再读取 `value`；Settings 内核不会解析 icon，也不导出路径常量。
 
-Actual Size field 同样直接绘制选择器，并通过 Settings Modal 的 Apply 进入统一 Undo/Redo。Zoom In/Out 只改变以 actual size 为基准的 session 倍率，Actual Size action 只清除临时倍率；这三个快捷键不会改 `Settings.Editor.inno`，也不会制造 Settings History。
+Actual Size field 同样直接绘制选择器，并通过 Settings Modal 的 Apply 进入统一 Undo/Redo。Zoom In/Out 改变以 actual size 为基准的项目缩放步数；`EditorZoomModule` 通过 Module state 将步数保存到项目 `editor.ini`，重启后恢复。Actual Size action 将步数归零；这三个快捷键不会改 `Settings.Editor.inno`，也不会制造 Settings History。
 
 ## 内建 Actions
 

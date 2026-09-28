@@ -10,6 +10,7 @@ using Inno.Editor.Settings;
 using Inno.Scene;
 using Inno.Native.ImGui;
 using Inno.Adapter.Presentation.ImGui;
+using EditorImGui = Inno.Editor.ImGui.ImGui;
 using NativeImGui = Inno.Native.ImGui.ImGui;
 
 namespace Inno.Editor.Panel.Inspector;
@@ -17,7 +18,7 @@ namespace Inno.Editor.Panel.Inspector;
 [ProjectSettingPath("Project/Scene/Tags")]
 internal sealed class GameTagsSetting : ProjectSettingEditor<GameTagCatalog>
 {
-    private const nuint C_TAG_BUFFER_SIZE = 128;
+    private const int C_TAG_BUFFER_SIZE = 128;
 
     private string m_error = string.Empty;
     private string m_newTag = string.Empty;
@@ -25,8 +26,6 @@ internal sealed class GameTagsSetting : ProjectSettingEditor<GameTagCatalog>
     /// <summary>
     /// Gets the stable project-setting identity used for discovery and persistence.
     /// </summary>
-    public override ProjectSettingId settingId => GameTagCatalog.settingId;
-
     /// <summary>
     /// Gets the presentation section that groups this setting.
     /// </summary>
@@ -60,7 +59,7 @@ internal sealed class GameTagsSetting : ProjectSettingEditor<GameTagCatalog>
         NativeImGui.SetNextItemWidth(MathF.Max(
             1f,
             NativeImGui.GetContentRegionAvail().X - actionWidth - spacing));
-        bool submit = NativeImGui.InputTextWithHint(
+        bool submit = EditorImGui.InputTextWithHint(
             "##new_project_tag",
             "New tag",
             ref m_newTag,

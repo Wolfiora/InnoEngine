@@ -19,6 +19,8 @@ public sealed class AssetImportWriter<TAsset> where TAsset : AssetObject
     private readonly Dictionary<string, ReadOnlyMemory<byte>> m_outputs =
         new(StringComparer.Ordinal);
     private readonly List<string> m_diagnostics = [];
+    private readonly HashSet<string> m_authoringOutputs = new(StringComparer.Ordinal);
+    private AssetDeploymentScope? m_deploymentScope;
 
     internal AssetImportWriter(AssetImportContext context)
     {
@@ -29,6 +31,23 @@ public sealed class AssetImportWriter<TAsset> where TAsset : AssetObject
     /// Gets the candidate asset assigned by the importer.
     /// </summary>
     public TAsset? asset { get; private set; }
+
+    /// <summary>
+    /// Selects the deployment scope for this imported asset.
+    /// This permits one importer to produce runtime assets and editor-only assets
+    /// from different source documents without changing their asset type.
+    /// </summary>
+    /// <param name="deploymentScope">
+    /// The scope of the complete imported asset, including its generated state.
+    /// </param>
+    public void SetDeploymentScope(AssetDeploymentScope deploymentScope)
+    {
+        if (!Enum.IsDefined(deploymentScope))
+            throw new ArgumentOutOfRangeException(nameof(deploymentScope));
+        if (m_deploymentScope.HasValue)
+            throw new InvalidOperationException("An importer can select its deployment scope only once.");
+        m_deploymentScope = deploymentScope;
+    }
 
     /// <summary>
     /// Assigns the managed asset produced by the importer.
@@ -56,19 +75,26 @@ public sealed class AssetImportWriter<TAsset> where TAsset : AssetObject
     /// <param name="cancellationToken">
     /// Cancellation for the write operation.
     /// </param>
+    /// <param name="deploymentScope">
+    /// Whether this output is retained in runtime packages. Runtime payload and asset state cannot be authoring-only.
+    /// </param>
     /// <returns>
     /// A completed operation after the output has been staged.
     /// </returns>
     public ValueTask WriteArtifactAsync(
         string outputName,
         ReadOnlyMemory<byte> bytes,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default,
+        AssetDeploymentScope deploymentScope = AssetDeploymentScope.Runtime)
     {
         cancellationToken.ThrowIfCancellationRequested();
         if (string.IsNullOrWhiteSpace(outputName))
             throw new ArgumentException("An artifact output name is required.", nameof(outputName));
+        if (!Enum.IsDefined(deploymentScope) || (deploymentScope == AssetDeploymentScope.AuthoringOnly && outputName is "runtime" or "asset-state"))
+            throw new ArgumentException("The output deployment scope is invalid.", nameof(deploymentScope));
         if (!m_outputs.TryAdd(outputName, bytes.ToArray()))
             throw new InvalidOperationException($"Artifact output '{outputName}' was written more than once.");
+        if (deploymentScope == AssetDeploymentScope.AuthoringOnly) m_authoringOutputs.Add(outputName);
         return ValueTask.CompletedTask;
     }
 
@@ -133,6 +159,6 @@ public sealed class AssetImportWriter<TAsset> where TAsset : AssetObject
     {
         if (asset is null)
             throw new InvalidOperationException("The importer did not assign an asset.");
-        return new AssetImportProduct(asset, m_outputs, m_diagnostics);
+        return new AssetImportProduct(asset, m_outputs, m_diagnostics, m_authoringOutputs, m_deploymentScope);
     }
 }

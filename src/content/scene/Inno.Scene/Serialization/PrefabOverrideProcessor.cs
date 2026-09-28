@@ -538,9 +538,8 @@ internal static class PrefabOverrideProcessor
         GameScene scene,
         PrefabConnectionRecord connection)
     {
-        SceneStructureSnapshot snapshot = scene.CaptureStructure();
-        EngineObject[] allObjects = snapshot.objects
-            .SelectMany(static entry => entry.components.Cast<EngineObject>().Prepend(entry.gameObject))
+        EngineObject[] allObjects = scene.GetOwnedObjects()
+            .SelectMany(static gameObject => gameObject.GetComponents().Cast<EngineObject>().Prepend(gameObject))
             .ToArray();
         var ids = new Dictionary<EngineObject, Guid>(ReferenceEqualityComparer.Instance);
         for (int objectIndex = 0; objectIndex < allObjects.Length; objectIndex++)

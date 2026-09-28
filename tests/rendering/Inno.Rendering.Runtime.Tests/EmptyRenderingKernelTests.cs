@@ -21,6 +21,19 @@ namespace Inno.Rendering.Runtime.Tests;
 
 public sealed class EmptyRenderingKernelTests
 {
+    [Fact]
+    public void OutputRouteAssignsEachWorldContentSourceOnlyOnce()
+    {
+        Assert.Throws<ArgumentException>(() => new RenderOutputRoute(
+        [new RenderOutputLayer("model-a", ["canvas"]),
+            new RenderOutputLayer("model-b", ["canvas"])]));
+        var route = new RenderOutputRoute(
+            [new RenderOutputLayer("model-a", ["canvas"]),
+                new RenderOutputLayer("model-b", [])]);
+        Assert.Equal("canvas", Assert.Single(route.layers[0].sourceIds));
+        Assert.Empty(route.layers[1].sourceIds);
+    }
+
     [Theory]
     [InlineData("Pbr")]
     [InlineData("Forward")]
@@ -44,7 +57,7 @@ public sealed class EmptyRenderingKernelTests
     }
 }
 
-public sealed class RenderRuntimeGenerationTests : IDisposable
+public sealed partial class RenderRuntimeGenerationTests : IDisposable
 {
     private readonly string m_cacheDirectory = Path.Combine(
         Path.GetTempPath(),
@@ -68,6 +81,9 @@ public sealed class RenderRuntimeGenerationTests : IDisposable
         DisposablePipeline.Reset();
         PendingFeature.Reset();
         TestRequestProvider.Reset();
+        FirstTestRenderModel.Reset();
+        SecondTestRenderModel.Reset();
+        CompositionLayerPipeline.viewports.Clear();
         UploadPipeline.Reset();
         TexturePrewarmPipeline.texture = null;
         PendingShaderPipeline.Reset();
@@ -521,11 +537,16 @@ public sealed class RenderRuntimeGenerationTests : IDisposable
         Assert.True(monitor.isCompleted);
     }
 
-    [Fact]
-    public void FrameStatisticsReportBackendCommandsAndGraphCulling()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void FrameStatisticsReportBackendCommandsAndGraphCulling(bool reportsAllocations)
     {
         IRenderDevice device = TestDeviceProxy.Create(out TestDeviceProxy proxy);
         proxy.frameCounters = new RenderDeviceFrameCounters(3, 2);
+        proxy.allocationCounters = reportsAllocations
+            ? new RenderDeviceAllocationCounters(device.generation, 17, 23, 11)
+            : null;
         var runtime = new RenderRuntime(m_types, device, new TestDiagnosticSink());
         using IDisposable executionScope = runtime.EnterExecutionScope();
         var asset = new RenderPipelineAsset { pipelineTypeId = StatisticsPipeline.extensionId };
@@ -546,7 +567,24 @@ public sealed class RenderRuntimeGenerationTests : IDisposable
         Assert.Equal(3, statistics.drawCount);
         Assert.Equal(2, statistics.dispatchCount);
         Assert.Equal(1, statistics.culledPassCount);
+        Assert.Equal(proxy.allocationCounters, statistics.allocationCounters);
+        proxy.allocationCounters = new RenderDeviceAllocationCounters(device.generation, 19, 25, 13);
+        Assert.NotEqual(proxy.allocationCounters, statistics.allocationCounters);
         runtime.Detach();
+    }
+
+    [Fact]
+    public void DeviceSynchronizationIsRequiredAndUnsupportedDiagnosticsAreExplicitlyUnavailable()
+    {
+        Assert.True(typeof(IRenderDevice).GetMethod(nameof(IRenderDevice.SetVerticalSync))!.IsAbstract);
+        using var backend = new RecordingRenderDevice();
+        IRenderDevice device = backend;
+        device.SetVerticalSync(true);
+        Assert.True(backend.verticalSync);
+        device.SetVerticalSync(false);
+        Assert.False(backend.verticalSync);
+        Assert.Null(device.allocationCounters);
+        Assert.Throws<ArgumentOutOfRangeException>(() => new RenderDeviceAllocationCounters(0, 0, 0, 0));
     }
 
     [Fact]
@@ -668,6 +706,103 @@ public sealed class RenderRuntimeGenerationTests : IDisposable
         Assert.Equal("Primary Presentation Background", pass.name);
         Assert.True(pass.clearsPresentationTarget);
         Assert.Equal(new RenderClearColor(0f, 0f, 0f, 1f), pass.presentationClearColor);
+        runtime.Detach();
+    }
+
+    [Fact]
+    public void PrimaryOutputScalesLogicalWindowPointerToPhysicalPixels()
+    {
+        IRenderDevice device = TestDeviceProxy.Create(out TestDeviceProxy proxy);
+        proxy.presentationSize = new RenderPresentationSize(2560, 1440);
+        TestRequestProvider.enabled = true;
+        var snapshot = new Inno.Input.InputSnapshot(1,
+            mousePosition: new Inno.Core.Mathematics.Vector2(400f, 274f),
+            mouseButtonsPressed: [Inno.Core.Input.MouseButton.Left]);
+        using var runtime = new RenderRuntime(m_types, device, new TestDiagnosticSink(),
+            inputSnapshotProvider: () => snapshot,
+            primaryInputSurfaceSizeProvider: static () => new RenderPresentationSize(1280, 720));
+
+        BeginRenderFrame(runtime, 0f);
+        runtime.Render(default);
+        runtime.AfterRender(default);
+        runtime.EndFrame(default);
+
+        Assert.Equal(new Inno.Core.Mathematics.Vector2(800f, 548f),
+            TestRequestProvider.lastInput.pointerPosition);
+        Assert.Single(TestRequestProvider.lastInput.buttonsPressed);
+    }
+
+    [Fact]
+    public void CompetingModelsDoNotShareATargetWhenAnExactRouteExists()
+    {
+        IRenderDevice device = TestDeviceProxy.Create(out TestDeviceProxy proxy);
+        var diagnostics = new TestDiagnosticSink();
+        proxy.capabilities = new GraphicsCapabilities(GraphicsApi.Metal, GraphicsCapability.None,
+            new GraphicsLimits(64, 4, 4096, 8), Enum.GetValues<RenderTextureFormat>(),
+            Enum.GetValues<RenderTextureFormat>(), [], [], originBottomLeft: false,
+            homogeneousDepth: false);
+        proxy.presentationSize = new RenderPresentationSize(1000, 1000);
+        FirstTestRenderModel.enabled = true;
+        SecondTestRenderModel.enabled = true;
+        using var runtime = new RenderRuntime(m_types, device, diagnostics,
+            primaryPresentationViewportProvider: static _ => new RenderViewport(100, 200, 800, 600));
+
+        BeginRenderFrame(runtime, 0f);
+        runtime.Render(default);
+        runtime.AfterRender(default);
+        runtime.EndFrame(default);
+        Assert.Equal(0, FirstTestRenderModel.buildCount);
+        Assert.Equal(0, SecondTestRenderModel.buildCount);
+        Assert.Contains(diagnostics.items, item => item.code == "RENDER_OUTPUT_MODEL_UNAVAILABLE"
+            && item.message.Contains("Multiple rendering models", StringComparison.Ordinal));
+
+        runtime.SetPrimaryRoute(new RenderOutputRoute(
+            [new RenderOutputLayer(SecondTestRenderModel.extensionId, []),
+                new RenderOutputLayer(FirstTestRenderModel.extensionId, [])]));
+        BeginRenderFrame(runtime, 0f);
+        runtime.Render(default);
+        runtime.AfterRender(default);
+        runtime.EndFrame(default);
+        Assert.Equal(1, FirstTestRenderModel.buildCount);
+        Assert.Equal(1, SecondTestRenderModel.buildCount);
+        Assert.Equal([new RenderViewport(0, 0, 800, 600), new RenderViewport(0, 0, 800, 600)],
+            CompositionLayerPipeline.viewports);
+        Assert.DoesNotContain(diagnostics.items, item => item.code == "RENDER_OUTPUT_MODEL_UNAVAILABLE"
+            && item.message.Contains("independent model targets", StringComparison.Ordinal));
+        Assert.True(diagnostics.items.All(item => item.code != "RENDER_OUTPUT_COMPOSITION_FAILED"),
+            string.Join("\n", diagnostics.items.Select(item => item.message)));
+        Assert.True(proxy.lastGraph is not null,
+            string.Join("\n", diagnostics.items.Select(item => item.message)));
+        Assert.Contains(proxy.lastGraph.passes,
+            pass => pass.name.Contains("Layer 2", StringComparison.Ordinal));
+        runtime.Detach();
+    }
+
+    [Fact]
+    public void OutputWithoutAnApplicableModelReportsItsMissingRenderer()
+    {
+        var diagnostics = new TestDiagnosticSink();
+        using var runtime = new RenderRuntime(m_types, new RecordingRenderDevice(), diagnostics);
+        BeginRenderFrame(runtime, 0f);
+        runtime.Render(default);
+        runtime.AfterRender(default);
+        runtime.EndFrame(default);
+        Assert.Contains(diagnostics.items, item => item.code == "RENDER_OUTPUT_MODEL_UNAVAILABLE"
+            && item.message.Contains("No rendering model", StringComparison.Ordinal));
+        runtime.Detach();
+    }
+
+    [Fact]
+    public void EditorOwnedOffscreenOutputsDoNotReportAnUnusedPrimaryModel()
+    {
+        var diagnostics = new TestDiagnosticSink();
+        using var runtime = new RenderRuntime(m_types, new RecordingRenderDevice(), diagnostics);
+        runtime.SetPrimaryModelOutputEnabled(false);
+        BeginRenderFrame(runtime, 0f);
+        runtime.Render(default);
+        runtime.AfterRender(default);
+        runtime.EndFrame(default);
+        Assert.DoesNotContain(diagnostics.items, item => item.code == "RENDER_OUTPUT_MODEL_UNAVAILABLE");
         runtime.Detach();
     }
 
@@ -961,7 +1096,8 @@ public sealed class RenderRuntimeGenerationTests : IDisposable
                     new ShaderTechniqueId("default"),
                     contract,
                     [new ShaderTechniquePass(role, pass.name)])]),
-            m_serialization);
+            m_serialization,
+            SerializationContext.empty);
         PendingShaderPipeline.material = new MaterialAsset { shader = shader };
         PendingShaderPipeline.contract = contract;
         PendingShaderPipeline.role = role;
@@ -1173,6 +1309,40 @@ public sealed class RenderRuntimeGenerationTests : IDisposable
 
     private sealed class TestContent : IdentityObject;
 
+    [RenderModelExtension(extensionId)]
+    private sealed class FirstTestRenderModel : IRenderModel
+    {
+        internal const string extensionId = "tests.runtime.model.first";
+        internal static bool enabled;
+        internal static int buildCount;
+        public bool CanRender(RenderOutputSession session) => enabled;
+        public RenderModelOutput Build(RenderOutputSession session)
+        {
+            buildCount++;
+            return new RenderModelOutput("First Model",
+                new RenderPipelineAsset { pipelineTypeId = CompositionLayerPipeline.extensionId }, new RenderFrameData());
+        }
+        public void Dispose() { }
+        internal static void Reset() { enabled = false; buildCount = 0; }
+    }
+
+    [RenderModelExtension(extensionId)]
+    private sealed class SecondTestRenderModel : IRenderModel
+    {
+        internal const string extensionId = "tests.runtime.model.second";
+        internal static bool enabled;
+        internal static int buildCount;
+        public bool CanRender(RenderOutputSession session) => enabled;
+        public RenderModelOutput Build(RenderOutputSession session)
+        {
+            buildCount++;
+            return new RenderModelOutput("Second Model",
+                new RenderPipelineAsset { pipelineTypeId = CompositionLayerPipeline.extensionId }, new RenderFrameData());
+        }
+        public void Dispose() { }
+        internal static void Reset() { enabled = false; buildCount = 0; }
+    }
+
     [RenderPipelineExtension(extensionId)]
     private sealed class DisposablePipeline : RenderPipeline
     {
@@ -1189,7 +1359,7 @@ public sealed class RenderRuntimeGenerationTests : IDisposable
 
         public override void Build(RenderPipelineContext context) => _ = context;
 
-        protected override void OnConfigure(SerializedRenderExtensionState state)
+        protected override void OnConfigure(SerializedRenderExtensionState state, RenderExtensionStateContext settings)
         {
             _ = state;
             if (rejectConfiguration)
@@ -1267,6 +1437,24 @@ public sealed class RenderRuntimeGenerationTests : IDisposable
                 new RenderPhaseId("tests.statistics.culled"),
                 0,
                 static (_, _) => { });
+        }
+    }
+
+    [RenderPipelineExtension(extensionId)]
+    private sealed class CompositionLayerPipeline : RenderPipeline
+    {
+        internal const string extensionId = "tests.runtime.composition-layer";
+        internal static List<RenderViewport> viewports { get; } = [];
+
+        public override void Build(RenderPipelineContext context)
+        {
+            viewports.Add(context.request.viewport);
+            context.graph.AddRasterPass("Scene Color",
+                    new RenderPhaseId("tests.runtime.composition-layer"), 0,
+                    static (_, _) => { })
+                .UseColorAttachment(context.outputTexture, 0,
+                    RenderLoadAction.Clear, RenderStoreAction.Store,
+                    new RenderClearColor(0f, 0f, 0f, 0f));
         }
     }
 
@@ -1476,6 +1664,7 @@ public sealed class RenderRuntimeGenerationTests : IDisposable
         internal static int retirementAttempts { get; private set; }
         internal static ContentReadScope? lastContent { get; private set; }
         internal static RenderViewport lastPresentationViewport { get; private set; }
+        internal static RenderOutputInput lastInput { get; private set; } = RenderOutputInput.empty;
 
         public override void Submit(RenderRequestProviderContext context)
         {
@@ -1484,6 +1673,7 @@ public sealed class RenderRuntimeGenerationTests : IDisposable
             submitCount++;
             lastContent = context.content;
             lastPresentationViewport = context.primaryPresentationViewport;
+            lastInput = context.input;
             if (pipeline is null)
                 return;
             context.requests.Submit(CreateRequest(
@@ -1500,6 +1690,7 @@ public sealed class RenderRuntimeGenerationTests : IDisposable
             retirementAttempts = 0;
             lastContent = null;
             lastPresentationViewport = default;
+            lastInput = RenderOutputInput.empty;
         }
 
         protected override void Dispose(bool disposing)
@@ -1561,6 +1752,9 @@ public sealed class RenderRuntimeGenerationTests : IDisposable
             homogeneousDepth: false);
 
         public RenderDeviceFrameCounters frameCounters { get; internal set; }
+        public RenderDeviceAllocationCounters? allocationCounters { get; internal set; }
+        internal bool verticalSync { get; private set; }
+        public void SetVerticalSync(bool enabled) => verticalSync = enabled;
         internal List<PersistentBufferHandle> createdBuffers { get; } = [];
         internal List<PersistentBufferHandle> destroyedBuffers { get; } = [];
         internal int failBufferCreationAt { get; set; }
@@ -1583,7 +1777,7 @@ public sealed class RenderRuntimeGenerationTests : IDisposable
 
         internal void ReleaseRecordedGraph() => lastGraph = null;
 
-        public GraphicsCapabilities capabilities => S_CAPABILITIES;
+        public GraphicsCapabilities capabilities { get; internal set; } = S_CAPABILITIES;
         public uint generation => 1;
         public RenderPresentationSize presentationSize { get; set; } = new(1, 1);
         public RenderPresentationSize primaryPresentationSize => presentationSize;
@@ -1739,6 +1933,16 @@ public sealed class RenderRuntimeGenerationTests : IDisposable
 
     private sealed class RecordingRenderDevice : RenderDevice, IRenderDevice
     {
+        internal List<GraphicsPipelineHandle> createdPrograms { get; } = [];
+        internal List<GraphicsPipelineHandle> destroyedPrograms { get; } = [];
+        internal List<GraphicsPipelineDescriptor> programDescriptors { get; } = [];
+        internal string? failProgramName { get; set; }
+        internal int pendingProgramRetirements { get; set; }
+        internal int failedProgramRetirements { get; set; }
+        internal int programRetirementAttempts { get; private set; }
+        internal bool verticalSync { get; private set; }
+        public void SetVerticalSync(bool enabled) => verticalSync = enabled;
+
         private readonly RenderTextureDescriptor m_readbackDescriptor = new(
             4,
             4,
@@ -1907,12 +2111,29 @@ public sealed class RenderRuntimeGenerationTests : IDisposable
             GraphicsPipelineDescriptor descriptor,
             string name)
         {
-            _ = descriptor;
-            _ = name;
-            return default;
+            if (name == failProgramName) throw new InvalidOperationException("Injected program allocation failure.");
+            GraphicsPipelineHandle handle = CreateGraphicsPipelineHandle(checked((ulong)createdPrograms.Count + 1), generation);
+            createdPrograms.Add(handle);
+            programDescriptors.Add(descriptor);
+            return handle;
         }
 
-        public void DestroyGraphicsPipeline(GraphicsPipelineHandle pipeline) => _ = pipeline;
+        public void DestroyGraphicsPipeline(GraphicsPipelineHandle pipeline)
+        {
+            programRetirementAttempts++;
+            if (pendingProgramRetirements > 0)
+            {
+                pendingProgramRetirements--;
+                throw new RetirementPendingException("Injected unfinished program retirement.");
+            }
+            Assert.DoesNotContain(pipeline, destroyedPrograms);
+            destroyedPrograms.Add(pipeline);
+            if (failedProgramRetirements > 0)
+            {
+                failedProgramRetirements--;
+                throw new InvalidOperationException("Injected completed program retirement failure.");
+            }
+        }
 
         public ComputePipelineHandle CreateComputePipeline(
             ComputePipelineDescriptor descriptor,
@@ -1951,6 +2172,9 @@ public sealed class RenderRuntimeGenerationTests : IDisposable
     {
         private Task<byte[]>? m_texture;
 
+        public ShaderDefinition ReadShaderDefinition(RenderShaderArtifact artifact)
+            => throw new InvalidOperationException("This pending provider never publishes a shader artifact.");
+
         public RenderTargetArtifactStatus GetShaderArtifact(
             ShaderAsset shader,
             RenderShaderVariant variant,
@@ -1965,7 +2189,7 @@ public sealed class RenderRuntimeGenerationTests : IDisposable
         }
 
         public RenderTargetArtifactStatus GetTextureArtifact(
-            TextureAsset texture,
+            RenderTextureArtifactReference texture,
             out ReadOnlyMemory<byte> artifact)
         {
             _ = texture;

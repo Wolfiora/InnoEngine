@@ -8,6 +8,20 @@ namespace Inno.Editor.Panel.Hierarchy;
 internal sealed class OpenSceneAssetAction(IEditorSceneWorkspace workspace) : EditorAction<SceneAsset, string>
 {
     /// <summary>
+    /// Evaluates whether the requested change can be applied to the current generation.
+    /// </summary>
+    /// <param name="context">
+    /// The operation scope that provides state, services, and ownership boundaries.
+    /// </param>
+    /// <returns>
+    /// The validated editor action state that represents the completed operation.
+    /// </returns>
+protected override EditorActionState Query(EditorActionContext<SceneAsset, string> context)
+        => workspace.canPersist
+            ? EditorActionState.enabled
+            : EditorActionState.disabled;
+
+    /// <summary>
     /// Executes the prepared operation and publishes only a completed result.
     /// </summary>
     /// <param name="context">

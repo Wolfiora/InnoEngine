@@ -16,6 +16,12 @@ namespace Inno.Editor.ImGui;
 /// </summary>
 public static class EditorMenuRenderer
 {
+    private static readonly Dictionary<uint, string> m_contextSearches = [];
+
+    private readonly record struct MenuSection(
+        EditorInteraction interaction,
+        IReadOnlyList<EditorMenuItem> items);
+
     /// <summary>
     /// Draws a resolved right-click menu for the most recently submitted ImGui item.
     /// </summary>
@@ -31,8 +37,12 @@ public static class EditorMenuRenderer
     public static bool ContextMenu(string id, EditorInteraction interaction)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(id);
+        uint popupId = NativeImGui.GetID(id);
         if (!ShouldResolveItemContextMenu(id))
+        {
+            m_contextSearches.Remove(popupId);
             return false;
+        }
         EditorMenuModel menu = interaction.BuildMenu();
         if (menu.items.Count == 0)
             return false;
@@ -40,7 +50,56 @@ public static class EditorMenuRenderer
             return false;
         try
         {
-            DrawItems(interaction, menu.items);
+            DrawContextMenuContents(popupId, [new MenuSection(interaction, menu.items)]);
+        }
+        finally
+        {
+            EditorWidget.EndContextMenu();
+        }
+        return true;
+    }
+
+    /// <summary>
+    /// Draws one context popup composed from an item interaction and its containing-scope interaction.
+    /// </summary>
+    /// <param name="id">
+    /// Stable popup identifier in the current ImGui ID scope.
+    /// </param>
+    /// <param name="scopeInteraction">
+    /// Container interaction whose commands are shown first, such as creation commands for a directory.
+    /// </param>
+    /// <param name="itemInteraction">
+    /// Selected-item interaction whose commands are shown after the container commands.
+    /// </param>
+    /// <returns>
+    /// <see langword="true"/> while the context popup is open and at least one command group was drawn.
+    /// </returns>
+    public static bool ContextMenu(
+        string id,
+        EditorInteraction scopeInteraction,
+        EditorInteraction itemInteraction)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(id);
+        uint popupId = NativeImGui.GetID(id);
+        if (!ShouldResolveItemContextMenu(id))
+        {
+            m_contextSearches.Remove(popupId);
+            return false;
+        }
+        EditorMenuModel scopeMenu = scopeInteraction.BuildMenu();
+        EditorMenuModel itemMenu = itemInteraction.BuildMenu();
+        if (scopeMenu.items.Count == 0 && itemMenu.items.Count == 0)
+            return false;
+        if (!EditorWidget.BeginContextMenu(id))
+            return false;
+        try
+        {
+            DrawContextMenuContents(
+                popupId,
+                [
+                    new MenuSection(scopeInteraction, scopeMenu.items),
+                    new MenuSection(itemInteraction, itemMenu.items)
+                ]);
         }
         finally
         {
@@ -64,8 +123,12 @@ public static class EditorMenuRenderer
     public static bool WindowContextMenu(string id, EditorInteraction interaction)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(id);
+        uint popupId = NativeImGui.GetID(id);
         if (!ShouldResolveWindowContextMenu(id))
+        {
+            m_contextSearches.Remove(popupId);
             return false;
+        }
         EditorMenuModel menu = interaction.BuildMenu();
         if (menu.items.Count == 0)
             return false;
@@ -73,13 +136,60 @@ public static class EditorMenuRenderer
             return false;
         try
         {
-            DrawItems(interaction, menu.items);
+            DrawContextMenuContents(popupId, [new MenuSection(interaction, menu.items)]);
         }
         finally
         {
             EditorWidget.EndContextMenu();
         }
         return true;
+    }
+
+    private static void DrawContextMenuContents(
+        uint popupId,
+        IReadOnlyList<MenuSection> sections)
+    {
+        string search = NativeImGui.IsWindowAppearing()
+            ? string.Empty
+            : m_contextSearches.GetValueOrDefault(popupId, string.Empty);
+        NativeImGui.PushStyleVar(
+            ImGuiStyleVar.FramePadding,
+            EditorWidget.style.menuSearchFramePadding);
+        try
+        {
+            if (NativeImGui.IsWindowAppearing())
+                NativeImGui.SetKeyboardFocusHere();
+            _ = EditorWidget.SearchInput(
+                $"context-menu-{popupId}",
+                "Search commands…",
+                ref search,
+                width: EditorWidget.style.searchPopupWidth);
+        }
+        finally
+        {
+            NativeImGui.PopStyleVar();
+        }
+        m_contextSearches[popupId] = search;
+        NativeImGui.Separator();
+
+        bool searching = !string.IsNullOrWhiteSpace(search);
+        bool drewSection = false;
+        foreach (MenuSection section in sections)
+        {
+            if (section.items.Count == 0)
+                continue;
+            if (!searching && drewSection)
+                NativeImGui.Separator();
+            if (searching)
+            {
+                if (!DrawSearchItems(section.interaction, section.items, search))
+                    continue;
+                NativeImGui.CloseCurrentPopup();
+                return;
+            }
+            DrawItems(section.interaction, section.items);
+            drewSection = true;
+        }
     }
 
     private static bool ShouldResolveItemContextMenu(string id)
@@ -210,7 +320,10 @@ public static class EditorMenuRenderer
         for (int i = 0; i < items.Count; i++)
         {
             EditorMenuItem item = items[i];
-            if (item.separatorBefore)
+            // A separator groups adjacent commands; it is never meaningful before the first
+            // visible item of a popup or submenu. Enforcing that here keeps every menu surface
+            // consistent even when a type-specific query hides the commands that preceded it.
+            if (i > 0 && item.separatorBefore)
                 NativeImGui.Separator();
             if (item.children.Count > 0)
             {

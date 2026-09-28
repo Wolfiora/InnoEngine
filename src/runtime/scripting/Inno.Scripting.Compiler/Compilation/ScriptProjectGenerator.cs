@@ -8,21 +8,28 @@ using System.Xml.Linq;
 using Inno.Assets;
 using Inno.Assets.Pipeline;
 using Inno.Plugins.Authoring;
+using Inno.Extensibility.Modules;
 
 namespace Inno.Scripting.Compiler;
 
 internal static class ScriptProjectGenerator
 {
+    private const string C_EDITOR_COMPILATION_SYMBOL = "INNO_EDITOR";
+    private static readonly IReadOnlyList<string> C_IDE_CONTENT_FILE_EXTENSIONS =
+    [
+        ".ishadersource"
+    ];
+
     internal static void Generate(
         ScriptCompilerOptions options,
         AssetPipeline assets,
-        PluginEnvironment plugins,
-        ScriptCompilationResult? compiledGeneration)
+        PluginEnvironment plugins)
     {
         Directory.CreateDirectory(options.projectRootDirectory);
+        RemoveStalePluginProjectionFiles(options);
         ScriptSourceSet sources = ScriptSourceSet.Discover(assets, plugins, includeEditor: true);
         ScriptAssemblyInput[] userAssemblies = sources.assemblies
-            .Where(static assembly => assembly.domain == Inno.Extensibility.Modules.AssemblyDomain.InnoScripting)
+            .Where(static assembly => assembly.domain == AssemblyDomain.InnoScripting)
             .ToArray();
         ScriptApiProfile runtimeApi = ScriptApiCatalog.Build(includeEditor: false);
         ScriptApiProfile editorApi = ScriptApiCatalog.Build(includeEditor: true);
@@ -32,6 +39,8 @@ internal static class ScriptProjectGenerator
             editorApi,
             runtimeApi,
             runtimeApiReferences);
+        IReadOnlyDictionary<string, string> pluginReferences = ScriptIdePluginReferenceBuilder.Build(
+            options, sources, runtimeApiReferences, editorApiReferences);
         string apiMapDirectory = Path.Combine(options.ideDirectory, "ScriptApiMaps");
         Directory.CreateDirectory(apiMapDirectory);
         string codeAnalysisPath = CopyCodeAnalysisAssembly(options.ideDirectory);
@@ -51,7 +60,7 @@ internal static class ScriptProjectGenerator
                         assembly.sources.Select(static source => source.sourcePath).ToArray()),
                     api,
                     references,
-                    ResolvePluginReferences(sources, assembly, compiledGeneration),
+                    ResolvePluginReferences(sources, assembly, pluginReferences),
                     apiMapPath,
                     codeAnalysisPath,
                     assembly.references
@@ -61,12 +70,15 @@ internal static class ScriptProjectGenerator
                             StringComparison.OrdinalIgnoreCase)))
                         .Select(static reference => reference + ".csproj")
                         .ToArray(),
-                    assembly.defines,
+                    assembly.defines
+                        .Concat(editor ? [C_EDITOR_COMPILATION_SYMBOL] : [])
+                        .Distinct(StringComparer.Ordinal)
+                        .OrderBy(static value => value, StringComparer.Ordinal)
+                        .ToArray(),
                     assembly.nullable,
                     assembly.allowUnsafe)
                 .Save(Path.Combine(options.projectRootDirectory, assembly.name + ".csproj"));
         }
-        RemoveStalePluginProjectionFiles(options);
         File.WriteAllText(
             Path.Combine(options.projectRootDirectory, "InnoProject.sln"),
             CreateSolution(userAssemblies));
@@ -75,11 +87,8 @@ internal static class ScriptProjectGenerator
     private static string[] ResolvePluginReferences(
         ScriptSourceSet sources,
         ScriptAssemblyInput userAssembly,
-        ScriptCompilationResult? compiledGeneration)
+        IReadOnlyDictionary<string, string> pluginReferences)
     {
-        if (compiledGeneration?.success != true || compiledGeneration.outputDirectory is null)
-            return [];
-
         IReadOnlyDictionary<string, ScriptAssemblyInput> assemblies = sources.assemblies.ToDictionary(
             static assembly => assembly.name,
             StringComparer.OrdinalIgnoreCase);
@@ -93,16 +102,10 @@ internal static class ScriptProjectGenerator
                 continue;
             foreach (string transitiveReference in dependency.references)
                 pending.Enqueue(transitiveReference);
-            if (dependency.domain != Inno.Extensibility.Modules.AssemblyDomain.InnoPlugin)
+            if (dependency.domain != AssemblyDomain.InnoPlugin)
                 continue;
-
-            string path = Path.Combine(compiledGeneration.outputDirectory, dependency.name + ".dll");
-            if (!File.Exists(path))
-            {
-                throw new InvalidDataException(
-                    $"Compiled Plugin reference '{dependency.name}' is absent from generation " +
-                    $"'{compiledGeneration.outputDirectory}'.");
-            }
+            if (!pluginReferences.TryGetValue(dependency.name, out string? path))
+                throw new InvalidDataException($"IDE Plugin reference '{dependency.name}' was not generated.");
             references.Add(path);
         }
         return references
@@ -175,6 +178,10 @@ internal static class ScriptProjectGenerator
             "ItemGroup",
             sourcePaths.Select(static path =>
                 new XElement("Compile", new XAttribute("Include", path))));
+        var contentGroup = new XElement(
+            "ItemGroup",
+            C_IDE_CONTENT_FILE_EXTENSIONS.Select(static extension =>
+                new XElement("None", new XAttribute("Include", $"Assets/**/*{extension}"))));
 
         var referenceGroup = new XElement("ItemGroup");
         foreach (string path in apiReferences.ideReferencePaths)
@@ -202,6 +209,7 @@ internal static class ScriptProjectGenerator
                 new XAttribute("Sdk", "Microsoft.NET.Sdk")),
             propertyGroup,
             compileGroup,
+            contentGroup,
             referenceGroup,
             codeAnalysisGroup);
         project.Add(folderGroup);

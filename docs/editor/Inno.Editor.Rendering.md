@@ -1,10 +1,40 @@
 # Inno.Editor.Rendering
 
+## 离屏预览与编译候选
+
+`IEditorPreviewService.TryRender(EditorViewportComposition, out EditorPreviewHandle)` 将模型贡献提交到现有 `IEditorRenderingHost` 离屏链；只返回当前设备 generation 的可绘制图像。首次分配或 resize 等待完整新目标，不暴露失效原生句柄。
+`ReleaseRendered(viewportId)` 可以释放尚未产生首张图像的预览，同时退休同名 `RenderPersistentResourceId` 范围的 Shader 程序。`Release(handle)` 和 `ReleaseAll()` 同样覆盖生成预览。
+纹理预览每次核对当前 resident texture、generation 与尺寸；依赖重导入之后重新注册图像，不永久显示旧贴图。
+
+`EditorShaderCompilation.RequestArtifact(shader, variant)` 为 Material 预览读取当前正式 Shader 的不可变候选和编译状态，不改变 Material 值。
+`ReadDefinition(artifact)` 使用 owner 引用上下文读取该产物携带的精确接口。Shader 草稿仍通过 `RequestDraft` 独立缓存编译；预览错误和正式保存状态互不冒充。
+交互式 `Check` 在工具链编译完成后还会通过 `IEditorShaderArtifactValidator` 把不可变候选排入下一次渲染帧安全点；Host 使用正式 `IRenderResourceService.ValidateShaderArtifact` 为每个 Pass 创建并立即退休真实 Pipeline。只有二进制加载、Program link 和 Reflection 合同全部成功，当前 revision 才进入可预览状态。设备校验失败只产生本次 Check 诊断，不发布候选，也不回退显示旧预览。
+
 [Editor 索引](README.md) · [Rendering](../render/README.md) · [Scene View](Inno.Editor.Panel.SceneView.md) · [Game View](Inno.Editor.Panel.GameView.md)
 
 `Inno.Editor.Rendering` 是 Editor viewport 与任意 Plugin 渲染模型之间的后端中立合成边界。Viewport kind 只表示“Scene View”“Game View”或自定义预览等用途，不再等同于某一种 2D/3D 渲染器。Editor 不知道 Camera、Scene snapshot、Picking buffer、Render Path 或材质世界观。
 
+## Pipeline Inspector 与源草稿
+
+`PipelineDocuments` 是内置 Editor Module，使用 [通用资产草稿](Inno.Editor.Assets.md) 编辑 `.irenderpipeline`，不保存第二份配置。
+选择原生 Pipeline 或导入失败的源均进入统一 Inspector。强类型设置按当前 stableTypeId 恢复，并使用实际 AssetPipeline owner 捕获引用与依赖。
+字段复用共享属性 Drawer 和 Header/Tooltip，不添加 2D 分支。缺失设置保留中立 bytes、依赖与 Feature 顺序。
+
+公开 API（同时导出到 `InnoEditor.Rendering`）：
+
+- `Open(path)` / `Read(id)`：打开源并解码独立 Pipeline 草稿。
+- `Replace(id, candidate, finishGesture)` / `Commit(id)`：一手势一次共享 History，不保存、不改变 Scene/Game。
+- `ReplaceSettings<TSettings>(id, settings, finishGesture)`：自动捕获设置的完整依赖，写入草稿 pipelineState。
+
+Save/Revert 使用共享文档服务，保存与导入/激活状态分开呈现；源冲突拒绝覆盖。
+当前 Inspector 支持既有设置类型的字段、Feature 开关和顺序。Pipeline 类型及新增 Feature 由配置创建 API/插件模板提供。
+范例：`var id = documents.Open(path); documents.ReplaceSettings(id, settings);`；显式 Save 是另一个文档操作。
+
 ## Contributor 与 Composition 协议
+
+`EditorRenderingModule` 从完成帧统计发布 Stats 数据，不直接依赖具体后端。除 View/Draw/Dispatch 外，
+还展示 Allocation Generation 与 transient Texture/Buffer/Framebuffer 的设备生命周期累计分配数；
+后端不提供分配诊断时显示 `Unavailable`，不显示误导性的零。
 
 | API | 说明 |
 | --- | --- |
@@ -13,21 +43,22 @@
 | `EditorViewportContributor` | 一个渲染模型对 viewport 的可选贡献；负责 participation、frame data、Pipeline，以及可选导航/工具/pointer。 |
 | `EditorViewportContribution` | 单个模型提供的 frame data、可选 Pipeline、共享目标格式与 manipulation space。 |
 | `EditorViewportLayer` | Host 接受后的中立模型层；只含 Stable ID、Pipeline、frame data 与 order。 |
-| `EditorViewportComposition` | 一个 viewport 的非空层集合；按 `order`、Contributor Stable ID 确定性排序并冻结结构。 |
+| `EditorViewportComposition` | 一个 viewport 的非空模型输出；多模型时先各自绘制，再按 route 合成。 |
 | `EditorViewportContext` | 当前 Editor、交互服务、viewport ID、物理尺寸、导航状态、显式内容作用域与呈现偏好。 |
 | `EditorViewportNavigationState` | Host 持有的 position/rotation、正交/透视参数、pivot、focus distance、移动速度与 Planar/Orbit/Fly 模式。 |
 | `EditorViewportNavigationProfile` | 当前交互控制者声明的 Pan、Zoom、Orbit、Fly、Frame Selection 能力与边界。 |
 | `RenderContentScope` | Host 显式选择的有序、frame-scoped 内容集合；Contributor 不扫描全局 Loaded Scene。 |
-| `EditorViewportPresentation` | Host 提供的呈现偏好；当前包含线性背景色。 |
-| `EditorViewportManipulationSpace` | 控制者可选提供的本帧精确 view/projection，供 Transform 工具使用。 |
-| `EditorViewportOutput` | Host 拥有的 opaque `ImGuiTextureHandle` 输出。 |
+| `EditorViewportPresentation` | Host 提供的呈现偏好；包含线性背景色及物理渲染像素与逻辑显示单位的比例 `pixelDensity`（默认 `1`）。 |
+| `EditorViewportManipulationPlane` | 中立的操作维度：`Spatial` 默认完整空间，`XY`、`XZ`、`YZ` 声明由模型选择的平面；不包含 ImGuizmo 类型。 |
+| `EditorViewportManipulationSpace` | 控制者可选提供的本帧精确 view/projection、是否正交及独立的操作平面；正交投影不会自动切换平面手柄。 |
+| `EditorViewportOutput` | Host 拥有的 opaque `PresentationTextureHandle` 输出；`isReady` 只有在当前目标修订的 Graph attachment 写入命令成功录制后才为 true，首次分配/resize/Shader 仍准备中时只绘制 Preparing 占位，不采样未初始化的 Vulkan RT。 |
 | `EditorRenderingModule` | Contributor generation、参与判断、控制者选择、Composition、Submit/Draw/Release 与逐 Contributor 异常隔离。 |
 
-同一种 kind 可以同时有多个 Contributor。`EditorRenderingModule` 每帧询问全部候选的 `CanContribute`，将成功结果组成一个 `EditorViewportComposition`，再让 Host 把每层作为普通 `RenderRequest` 提交到同一 `RenderTexture`。低 order 先绘制，高 order 后叠加；相同 order 使用 Stable ID 排序，因此热重载、文件枚举顺序和反射顺序不会改变画面层次。
+同一种 kind 可以注册多个 Contributor。`EditorRenderingModule` 每帧询问全部候选的 `CanContribute`；只有一个适用模型时直接提交。多个模型同时适用时必须为该 viewport 配置 `RenderOutputRoute`，明确层顺序及专属世界内容源。Host 为每个模型建立独立目标，并校验共同的目标格式后按预乘 Alpha 合成；未配置 route 或任一模型失败时拒绝整个输出并显示诊断。跨模型不共享几何深度。
 
-同一目标上与已成功层发生像素重叠的后续请求，会收到 `RenderPipelineContext.preservePresentationTarget=true`。该 Pipeline 必须 Load/Preserve 已有颜色，不能再次清屏。互不重叠的 split-screen viewport 可以分别初始化自己的区域；建图失败的层会回滚，不会占据目标，也不会阻止其他 Contributor。所有层必须使用同一 presentation format，否则仅隔离格式不一致的 Contributor。
+显式 `RenderRequest` 写入同一目标重叠区域时会收到 `RenderPipelineContext.preservePresentationTarget=true`。该 Pipeline 必须 Load/Preserve 已有颜色，不能再次清屏。多 Contributor 使用独立模型目标与图层合成。
 
-渲染顺序和交互所有权是两个正交维度。`controllerPriority` 只选择一个 Contributor 负责导航、Toolbar、Pointer 与 Gizmo manipulation space，不改变 layer order。这样 3D 可以作为底层和交互控制者，2D 可以作为 overlay；也允许 2D 在纯 2D 内容中同时承担两者。错误、导航和 target 状态均按稳定 `viewportId` 隔离，多开同 kind viewport 不会串状态。
+渲染顺序和交互所有权是两个正交维度。`controllerPriority` 只选择一个 Contributor 负责导航、Toolbar、Pointer 与 Gizmo manipulation space；它不提供多模型合成。控制者可以将 `EditorViewportManipulationSpace.plane` 声明为 `XY` 等平面：Scene View 只依据这个中立几何契约选择轴和中心拖动，无需引用任何 2D Plugin 类型；未声明时保持完整的 3D 手柄。正交投影和 Planar 导航本身都不代表操作维度。错误、导航和 target 状态均按稳定 `viewportId` 隔离，多开同 kind viewport 不会串状态。
 
 Plugin 示例：
 
@@ -58,9 +89,11 @@ public sealed class SampleSceneContributor : EditorViewportContributor
 
 `RenderContentScope` 是类型擦除但带 Stable ID 的当前帧边界。Contributor 可用 `GetValues<T>()` 取得它理解的 Scene/Document 类型；`RenderContentReference.value` 不得跨帧或跨 generation 保存。每个渲染模型自行判断哪些 Scene 选择了该模型。因此同一个 scope 可以同时包含纯 3D Scene、纯 2D Scene，以及同时挂载两种 extraction system 的混合 Scene；缺少某个模型的 system 只表示该模型跳过此 Scene，不会令整个 viewport 失败。
 
-`manipulationSpace` 完全可选，也不向 Host 引入 Camera/2D/3D 概念。只有控制者提供的 manipulation space 会被接受；矩阵必须来自该控制者同一帧提交的 snapshot，避免画面、Picking 与 Gizmo 使用不同相机状态。一次连续拖拽只在释放时通过 `SceneEdits` 的最小 Transform payload 组成一个 History transaction，不捕获 Plugin delegate 或 runtime `Type`。
+`manipulationSpace` 完全可选，不向 Host 引入具体 Camera、渲染模型或 ImGuizmo 类型；几何约束通过中立 `EditorViewportManipulationPlane` 表示。只有控制者提供的 manipulation space 会被接受；矩阵必须来自该控制者同一帧提交的 snapshot，避免画面、Picking 与 Gizmo 使用不同相机状态。一次连续拖拽只在释放时通过 `SceneEdits` 的最小 Transform payload 组成一个 History transaction，不捕获 Plugin delegate 或 runtime `Type`。
 
-Host 创建或 resize `RenderTexture`，再将 GPU texture 注册为 `ImGuiTextureHandle`。不存在 CPU readback，也不向 Panel 暴露 BGFX handle。单个 Contributor 的 participation、导航、Build、Toolbar 或 Pointer 异常只隔离该 Contributor；没有任何适用 Contributor 时显示居中的不可用状态，Editor 其他功能继续运行。
+`[EditorGizmoProviderExtension(id)]` 注册代际化的 `EditorGizmoProvider.Collect(EditorGizmoContext, IEditorGizmoSink)`。`EditorGizmoContext` 提供当前内容作用域、选中对象的 runtime identity 与视口物理尺寸；`IEditorGizmoSink.Icon(owner, position, iconId)` 接受开放的语义图标 ID，内置 `camera`、`light`、`canvas`，未知 ID 显示统一问号图标；`Line(start, end)` 提交选中范围。`EditorGizmoFrame.icons`/`lines` 分别是 `EditorGizmoIcon`/`EditorGizmoLine` 的当前帧列表，不持久化对象引用。插件不传颜色或 ImGui 字体代码点，Scene View 统一绘制大号白色图标与白色轮廓线，重叠图标仍位于各自世界位置并在点击时提供目标选择。调用示例：`sink.Icon(owner.identity, owner.transform.worldPosition, "camera"); sink.Line(start, end);`。
+
+Host 创建或 resize `RenderTexture`，首个目标写入成功录制后再将 GPU texture 注册为 `PresentationTextureHandle`。不存在 CPU readback，也不向 Panel 暴露 BGFX handle。单个 Contributor 的 participation、导航、Build、Toolbar 或 Pointer 异常只隔离该 Contributor；没有任何适用 Contributor 时显示居中的不可用状态，Editor 其他功能继续运行。
 
 ## Editor 目标产物编译
 

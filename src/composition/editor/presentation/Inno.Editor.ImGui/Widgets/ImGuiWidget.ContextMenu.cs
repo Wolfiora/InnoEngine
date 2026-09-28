@@ -1,4 +1,5 @@
 using System;
+using System.Numerics;
 
 using Inno.Native.ImGui;
 using NativeImGui = Inno.Native.ImGui.ImGui;
@@ -10,6 +11,9 @@ namespace Inno.Editor.ImGui.ImGuiWidget;
 /// </summary>
 public static partial class ImGuiWidget
 {
+    private const float C_TOOLTIP_MINIMUM_WIDTH = 300f;
+    private const float C_TOOLTIP_WRAP_WIDTH = 440f;
+
     /// <summary>
     /// Begins an explicitly opened popup using the editor context-menu presentation contract.
     /// The popup stays in its parent viewport, sizes itself to submitted content, and scrolls when
@@ -71,6 +75,77 @@ public static partial class ImGuiWidget
     {
         NativeImGui.EndTooltip();
         PopContextMenuStyle();
+    }
+
+    /// <summary>
+    /// Draws a consistently sized, wrapped editor tooltip for the most recently submitted item.
+    /// </summary>
+    /// <param name="text">
+    /// Tooltip text. Empty values do not draw a tooltip.
+    /// </param>
+    public static void DrawItemTooltip(string? text)
+    {
+        if (string.IsNullOrWhiteSpace(text) ||
+            !NativeImGui.IsItemHovered(ImGuiHoveredFlags.AllowWhenDisabled))
+        {
+            return;
+        }
+
+        DrawTooltip(text);
+    }
+
+    /// <summary>
+    /// Draws the standard viewport-clamped tooltip when a custom-drawn canvas element is hovered.
+    /// </summary>
+    /// <param name="text">
+    /// Tooltip contents. The caller owns hit testing; empty text draws nothing.
+    /// </param>
+    public static void DrawTooltip(string? text)
+    {
+        if (string.IsNullOrWhiteSpace(text)) return;
+
+        ImGuiViewportPtr viewport = NativeImGui.GetWindowViewport();
+        Vector2 margin = new(6f * style.zoom);
+        Vector2 available = Vector2.Max(Vector2.One, viewport.WorkSize - margin * 2f);
+        Vector2 padding = style.menuWindowPadding;
+        float outerWidth = MathF.Min(C_TOOLTIP_WRAP_WIDTH * style.zoom, available.X);
+        float innerWidth = MathF.Max(1f, outerWidth - padding.X * 2f - style.menuBorderSize * 2f);
+        Vector2 textSize = NativeImGui.CalcTextSize(text, false, innerWidth);
+        outerWidth = MathF.Min(outerWidth, MathF.Max(
+            MathF.Min(C_TOOLTIP_MINIMUM_WIDTH * style.zoom, available.X),
+            textSize.X + padding.X * 2f + style.menuBorderSize * 2f));
+        innerWidth = MathF.Max(1f, outerWidth - padding.X * 2f - style.menuBorderSize * 2f);
+        textSize = NativeImGui.CalcTextSize(text, false, innerWidth);
+        Vector2 size = new(outerWidth, MathF.Min(available.Y, textSize.Y + padding.Y * 2f + style.menuBorderSize * 2f));
+        Vector2 workMin = viewport.WorkPos + margin;
+        Vector2 workMax = workMin + available;
+        Vector2 mouse = NativeImGui.GetMousePos();
+        Vector2 position = mouse + new Vector2(16f, 20f) * style.zoom;
+        if (position.X + size.X > workMax.X)
+            position.X = mouse.X - size.X - 12f * style.zoom;
+        if (position.Y + size.Y > workMax.Y)
+            position.Y = mouse.Y - size.Y - 12f * style.zoom;
+        position = Vector2.Clamp(position, workMin, Vector2.Max(workMin, workMax - size));
+        NativeImGui.SetNextWindowPos(position);
+        NativeImGui.SetNextWindowSize(size);
+        if (!BeginMenuTooltip())
+            return;
+        try
+        {
+            NativeImGui.PushTextWrapPos(NativeImGui.GetCursorPosX() + MathF.Max(1f, NativeImGui.GetContentRegionAvail().X));
+            try
+            {
+                NativeImGui.TextUnformatted(text);
+            }
+            finally
+            {
+                NativeImGui.PopTextWrapPos();
+            }
+        }
+        finally
+        {
+            EndMenuTooltip();
+        }
     }
 
     /// <summary>
@@ -138,6 +213,7 @@ public static partial class ImGuiWidget
         NativeImGui.PushStyleColor(ImGuiCol.HeaderHovered, EditorPalette.menuItemHovered);
         NativeImGui.PushStyleColor(ImGuiCol.HeaderActive, EditorPalette.menuItemActive);
         NativeImGui.PushStyleColor(ImGuiCol.Separator, EditorPalette.menuSeparator);
+        NativeImGui.PushStyleColor(ImGuiCol.NavCursor, EditorPalette.transparent);
         NativeImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, style.menuWindowPadding);
         NativeImGui.PushStyleVar(ImGuiStyleVar.FramePadding, style.menuFramePadding);
         NativeImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing, style.menuItemSpacing);
@@ -148,6 +224,6 @@ public static partial class ImGuiWidget
     private static void PopContextMenuStyle()
     {
         NativeImGui.PopStyleVar(5);
-        NativeImGui.PopStyleColor(6);
+        NativeImGui.PopStyleColor(7);
     }
 }

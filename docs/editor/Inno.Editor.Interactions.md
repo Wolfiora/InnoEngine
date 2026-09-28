@@ -122,7 +122,7 @@ public sealed class CreateAnimationStateAction : EditorAction<AnimationGraph>
 }
 ```
 
-同一个 Attribute 同时适用于主菜单和右键菜单；区别只在 area。`EditorMenuRenderer` 会递归创建一级、二级或任意更深的菜单。
+同一个 Attribute 同时适用于主菜单和右键菜单；区别只在 area。`EditorMenuRenderer` 会递归创建一级、二级或任意更深的菜单。Create 类命令应使用 `Create/...` 路径形成统一子菜单，不在 label 中手写层级或分隔线。`separatorBefore` 只表达两个相邻可见命令组之间的边界；当前菜单/子菜单的首个可见项永远不会绘制分隔线，因此前置命令被 Query 隐藏时也不会留下孤立横线。
 
 动态列表使用 `EditorMenuSource`：
 
@@ -141,6 +141,8 @@ public sealed class AnimationTemplateMenu : EditorMenuSource
 ```
 
 Action 的 `Query` 决定条目是否可见、可用、勾选和动态标题；快捷键标签从 `[EditorShortcut]` 自动生成。
+
+File Browser 的资产操作同样使用 Action/Menu 路由：条目 Action 只负责识别 source entry 类型并转发稳定语义动作，实际 Scene Load、Prefab Instantiate 等行为由对应资产类型的 `editor/open` Action 完成。双击和右键因此共享一条执行链；未来资产类型可按相同方式贡献自己的右键功能，不在 File Browser renderer 中增加类型 switch。
 
 Panel 主菜单使用同一棵层级菜单模型。`EditorPanelAttribute.menuPath` 是 `Panel/` 下的开放分类路径，支持任意斜杠层级；`separatorBefore` 在条目所在分类内开启视觉分组。每次构建菜单时，generated Panel leaf 直接从当前 extension generation 的 `isOpen` 生成 checked 状态，因此勾选与窗口关闭按钮、reload 后恢复状态始终一致。Host 不维护封闭类别枚举，内置 Panel 当前按 Workspace、Viewports、Authoring、Content 与 Diagnostics 分类，Plugin Panel 可以声明自己的稳定分类而无需修改 Editor。
 
@@ -183,6 +185,32 @@ if (panelFocused)
 
 `IEditorSelectionCoordinator` 是给会替换对象实例的 host feature 使用的窄接口，只暴露 `selectedTarget` 与 `SetSelection`。当前 `EditorInteractions` 实现该接口；extension activator 可按此接口注入同一个稳定 interaction instance。普通 Panel 仍应使用 `EditorInteraction.Select()`，只有 Scene generation/Play Mode 这类必须在原子替换期间重绑 persistent identity 的基础设施才依赖 coordinator。
 
+## Scene 与图画布的共享平面导航
+
+`EditorPlanarNavigation` 是不依赖 ImGui、Assets 或 Scene 的公开输入状态机；Scene View 与 Shader Editor 共用它，
+坐标均为逻辑像素，表现后端负责 framebuffer DPI 换算。
+
+| API | 行为 |
+| --- | --- |
+| `isPanning` | 只读，表示当前画布持有平移手势，包括指针已离开画布时 |
+| `Update(hovered, primaryPressed, middlePressed, primaryDown, middleDown, alt, allowAltPrimary)` | 悬停时开始中键或 Alt 左键手势；用全局按钮 down 状态释放捕获。`allowAltPrimary=false` 可把 Alt 左键留给 3D orbit，中键不受影响 |
+| `Cancel()` | Esc、失去文档、关闭画布时明确释放捕获 |
+| `WheelFactor(wheel, sensitivity=0.16f)` | 公用指数缩放倍率；拒绝非有限输入与非正 sensitivity，极端输入限幅以保持有限结果 |
+| `ZoomOrigin(origin, pivot, previousScale, nextScale)` | 用缩放前后倍率重算屏幕原点，保持鼠标下的内容坐标不变；拒绝非有限或非正倍率 |
+
+平移/缩放属于视图状态，不进入数据 History。每帧传入全局按钮状态，不能只在鼠标悬停时调用 `Update`，否则窗口外
+释放会丢失。它不拥有场景或图的 live object，也不代替节点拖动、3D orbit、飞行和业务工具的状态机。
+
+```csharp
+using System.Numerics;
+using Inno.Editor.Interactions;
+
+static Vector2 Zoom(Vector2 origin, Vector2 cursor, float previous, float next)
+    => EditorPlanarNavigation.ZoomOrigin(origin, cursor, previous, next);
+```
+
+脚本通过 Editor-only 逻辑命名空间 `InnoEditor.Interactions` 使用已导出的类型；上例为宿主源码写法。
+
 ## Drag and Drop
 
 ```csharp
@@ -211,6 +239,10 @@ generation 变化、源注销、domain 不匹配或成功 Drop 会结束当前�
 ## Runtime 与热重载
 
 `EditorInteractionRuntime` 从当前 TypeCache snapshot 原子构建 Module、Action、Menu source、Drop、Panel 和 Modal。候选冲突或构造失败会拒绝新 snapshot，旧 generation 继续工作。Host 类型实例会尽量保留；插件类型会 Detach/Stop/Dispose，避免固定旧 ALC。
+
+Editor 同时拥有 Scene、Asset、Graph 等多个 `IdentityAllocator` domain。需要跨帧保留对象身份的通用 UI（例如 Inspector lock）必须保存完整 `RuntimeIdentity`，并通过 `EditorInteractions.TryResolveIdentity` 回到该 identity 自己的 domain；不得使用 `IdentityAllocator.current` 猜测当前 domain，也不得只保存 persistent Guid 后在错误 allocator 中查询。Inspector lock 同时保留原 domain 与 persistent ID，当前 runtime slot 退休后只在原 domain 重绑定同一稳定对象，因此 generation 替换不会锁到同 ID 的其他域。非 identity 的 collectible 插件对象只允许弱引用，避免 lock 阻止旧 ALC 回收。
+
+`IEditorDocumentService` 是无可见 Panel 的共享创作文档所有权服务。它统一管理 Shader、Material、Pipeline 等草稿的单实例身份、dirty 状态、Save/Revert/Close、恢复和 provider generation 重连；Shader Editor 与 Inspector 是各资产的唯一呈现入口。打开文档时 persistent asset ID 与规范化 source path 同时保持唯一：同一路径的干净陈旧上下文会在 provider 回调后安全退休，含未保存修改的上下文则拒绝被替换并要求用户先 Save、Revert 或 Close，不能静默丢弃草稿。
 
 candidate 激活前会取消 drag、清空 pending action/presentation/menu model。Selection 与 Focus 指向 retiring collectible 类型时先清除；若对象继承 `IdentityObject`，则暂存 persistent ID 并在下一次 Update 尝试绑定当前 generation 对象，解析失败才保持清空。
 

@@ -16,6 +16,7 @@ using Inno.Audio;
 using Inno.Build;
 using Inno.Build.Platform.MacOS;
 using Inno.Build.Platform.Windows;
+using Inno.UI.Runtime;
 using Inno.Core.Events;
 using Inno.Core.Layers;
 using Inno.Core.Logging;
@@ -25,9 +26,9 @@ using Inno.Editor.Core;
 using Inno.Editor.Rendering;
 using Inno.Input.Runtime;
 using Inno.Platform;
+using Inno.Rendering;
 using Inno.Rendering.Assets;
 using Inno.Rendering.Runtime;
-using Inno.Rendering.ShaderGraph;
 using Inno.Runtime;
 using Inno.Scene;
 using Inno.Shell;
@@ -56,13 +57,15 @@ internal sealed class EditorHost : ShellHost
     private LayerStack? m_layers;
     private EditorLayer? m_editorLayer;
     private bool m_shutdownStateSaved;
+    private DiagnosticHub? m_diagnostics;
 
     private EditorHost(
         IAuthoringAdapterCatalog adapterCatalog,
         AdapterSelection adapterSelection,
         PresentationBackend presentationBackend,
         string projectDirectory,
-        string bootLogPath)
+        string bootLogPath,
+        GraphicsApi? preferredGraphicsApi)
         : base(
             adapterCatalog,
             new ShellOptions
@@ -76,7 +79,8 @@ internal sealed class EditorHost : ShellHost
                     resizable = true,
                     highPixelDensity = true
                 },
-                verticalSync = true,
+                preferredGraphicsApi = preferredGraphicsApi,
+                verticalSync = false,
                 sRgbBackbuffer = true
             })
     {
@@ -97,9 +101,15 @@ internal sealed class EditorHost : ShellHost
         IAuthoringAdapterCatalog adapterCatalog,
         AdapterSelection adapterSelection,
         PresentationBackend presentationBackend,
-        string projectDirectory)
+        string projectDirectory,
+        GraphicsApi? preferredGraphicsApi = null)
     {
         ArgumentNullException.ThrowIfNull(adapterCatalog);
+        if (!adapterSelection.rendering.isValid ||
+            !adapterCatalog.rendering.supportedBackends.Contains(adapterSelection.rendering) ||
+            !adapterCatalog.renderingAuthoring.supportedBackends.Contains(adapterSelection.rendering))
+            throw new NotSupportedException(
+                $"Rendering backend '{adapterSelection.rendering}' requires paired runtime and authoring providers.");
         string normalizedProject = PrepareProjectDirectory(projectDirectory);
         string logDirectory = Path.Combine(normalizedProject, C_LOG_DIRECTORY_NAME);
         Directory.CreateDirectory(logDirectory);
@@ -109,7 +119,8 @@ internal sealed class EditorHost : ShellHost
             adapterSelection,
             presentationBackend,
             normalizedProject,
-            bootLogPath);
+            bootLogPath,
+            preferredGraphicsApi);
         try
         {
             host.Initialize();
@@ -186,6 +197,7 @@ internal sealed class EditorHost : ShellHost
             authoring.Update();
             editSession.Tick(frame.deltaTime);
             using (editSession.EnterExecutionScope())
+            using (editSession.subsystems.GetRequiredSubsystem<UiRuntime>().EnterExecutionScope())
             {
                 layers.OnUpdate(frame.deltaTime);
                 layers.OnLateUpdate(frame.deltaTime);
@@ -203,7 +215,40 @@ internal sealed class EditorHost : ShellHost
     /// Number of editor frames completed.
     /// </param>
     protected override void OnSmokeCompleted(int frameCount)
-        => BootLog($"Smoke frame limit reached after {frameCount} frame(s).");
+    {
+        BootLog($"Smoke frame limit reached after {frameCount} frame(s).");
+        var snapshot = new SmokeDiagnostics();
+        DiagnosticHub hub = m_diagnostics ?? throw new InvalidOperationException("The Editor diagnostic owner is unavailable.");
+        hub.RegisterSink(snapshot);
+        hub.UnregisterSink(snapshot);
+        foreach (string error in snapshot.errors) BootLog("Smoke diagnostic: " + error);
+        if (snapshot.errors.Count != 0)
+            throw new InvalidOperationException($"Native Editor smoke completed with {snapshot.errors.Count} active error diagnostic(s). See the smoke diagnostics above.");
+    }
+
+    private sealed class SmokeDiagnostics : Inno.Core.Diagnostics.IDiagnosticSink
+    {
+        internal readonly List<string> errors = [];
+        /// <summary>
+        /// Records errors from the current diagnostic report.
+        /// </summary>
+        /// <param name="report">
+        /// The report consumed by replace; ownership remains with the caller unless explicitly stated otherwise.
+        /// </param>
+public void Replace(Inno.Core.Diagnostics.DiagnosticReport report)
+        {
+            foreach (var diagnostic in report.diagnostics)
+                if (diagnostic.severity == Inno.Core.Diagnostics.DiagnosticSeverity.Error)
+                    errors.Add(report.source.id + "/" + diagnostic.code + ": " + diagnostic.message);
+        }
+        /// <summary>
+        /// Removes all retained entries and returns the instance to an empty reusable state.
+        /// </summary>
+        /// <param name="source">
+        /// The source value or location read by this operation.
+        /// </param>
+public void Clear(Inno.Core.Diagnostics.DiagnosticSource source) { }
+    }
     /// <summary>
     /// Submits product UI requests while the host output pipeline is open.
     /// </summary>
@@ -213,6 +258,7 @@ internal sealed class EditorHost : ShellHost
     protected override void OnPresentation(ShellFrame frame)
     {
         using IDisposable scope = editSession.EnterExecutionScope();
+        using IDisposable uiScope = editSession.subsystems.GetRequiredSubsystem<UiRuntime>().EnterExecutionScope();
         layers.RenderFrame(frame.deltaTime);
     }
 
@@ -276,6 +322,7 @@ internal sealed class EditorHost : ShellHost
                 .Build(),
             static host => host.Dispose());
         var consoleLog = new ConsoleLogSink();
+        m_diagnostics = engineHost.diagnostics;
         engineHost.logs.RegisterSink(consoleLog);
         m_resources.Register(() => engineHost.logs.UnregisterSink(consoleLog));
         EditorAuthoringServices activeAuthoring = m_resources.Acquire(
@@ -333,8 +380,8 @@ internal sealed class EditorHost : ShellHost
             activeAuthoring.compiler,
             ResolveSupportPackRoot(),
             [
-                new MacOSArm64GameBuildTarget(activeAuthoring.assets, engineHost.serialization),
-                new WindowsX64GameBuildTarget(activeAuthoring.assets, engineHost.serialization)
+                new MacOSArm64GameBuildTarget(activeAuthoring.assets, engineHost.serialization, engineHost.types),
+                new WindowsX64GameBuildTarget(activeAuthoring.assets, engineHost.serialization, engineHost.types)
             ]);
         BuildSettings defaultBuildSettings = BuildSettings.CreateDefault(
             Path.GetFileName(Path.TrimEndingDirectorySeparator(projectDirectory)),
@@ -374,6 +421,7 @@ internal sealed class EditorHost : ShellHost
             () => new EditorRenderTargetArtifactProvider(
                 activeAuthoring.assets,
                 engineHost.serialization,
+                engineHost.types,
                 shaderCompiler,
                 textureCompiler,
                 renderDiagnostics),
@@ -386,8 +434,6 @@ internal sealed class EditorHost : ShellHost
                     platformApplication = platformApplication,
                     window = primaryWindow,
                     renderDevice = renderDevice,
-                    shaderCompiler = shaderCompiler,
-                    assetSourceDirectory = Path.Combine(projectDirectory, "Assets"),
                     features = PresentationFeatures.MultipleWindows
                                | PresentationFeatures.Docking
                                | PresentationFeatures.SmoothResize
@@ -410,10 +456,6 @@ internal sealed class EditorHost : ShellHost
                 presentation,
                 reloadCoordinator),
             static service => service.Dispose());
-        var shaderNodes = m_resources.Acquire(
-            () => new ShaderNodeRegistry(engineHost.types),
-            static registry => registry.Dispose());
-        shaderNodes.RefreshExtensions();
         var editorContext = new EditorContext(projectDirectory);
         presentation.SetLayoutFile(null);
         presentation.LoadLayout(editorContext.imguiLayout);
@@ -440,7 +482,8 @@ internal sealed class EditorHost : ShellHost
             engineHost.logs,
             [
                 renderingHost,
-                shaderNodes,
+                new EditorShaderCompilation(renderArtifacts, renderingHost),
+                framePacing,
                 reloadCoordinator,
                 engineHost,
                 engineHost.modules,

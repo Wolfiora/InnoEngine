@@ -56,31 +56,17 @@ public sealed class ScriptCompiler
     }
 
     /// <summary>
-    /// Regenerates IDE project files from the current source graph and an optional validated binary generation.
+    /// Regenerates IDE project files from the current source graph and logical API references.
     /// </summary>
-    /// <param name="referenceGeneration">
-    /// The successful generation whose Plugin binaries should be referenced, or <see langword="null"/>
-    /// when no validated generation is available.
-    /// </param>
     /// <exception cref="InvalidOperationException">
     /// Thrown when the authoring asset pipeline is not initialized.
     /// </exception>
-    /// <exception cref="ArgumentException">
-    /// Thrown when <paramref name="referenceGeneration"/> did not compile successfully.
-    /// </exception>
-    public void GenerateProjectFiles(ScriptCompilationResult? referenceGeneration = null)
+    public void GenerateProjectFiles()
     {
-        if (referenceGeneration is { success: false })
-        {
-            throw new ArgumentException(
-                "IDE Plugin references require a successful script generation.",
-                nameof(referenceGeneration));
-        }
         ScriptProjectGenerator.Generate(
             m_options,
             m_assets,
-            m_plugins,
-            referenceGeneration);
+            m_plugins);
     }
 
     /// <summary>

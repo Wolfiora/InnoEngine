@@ -1,3 +1,4 @@
+using System.IO;
 using System.Runtime.InteropServices;
 using Inno.Build.Toolchains;
 
@@ -11,7 +12,7 @@ internal sealed class WindowsX64BgfxBuilder : BgfxBuilder
     public const string OUTPUT_PLATFORM = "windows-x64";
     private const string DEBUG_TARGET = "vs2022-debug64";
     private const string RELEASE_TARGET = "vs2022-release64";
-    private const string GENIE_RELATIVE_PATH = @"..\bx\tools\bin\windows\genie";
+    private const string GENIE_RELATIVE_PATH = @"..\bx\tools\bin\windows\genie.exe";
     private const string VS2022_SOLUTION_RELATIVE_PATH = @".build\projects\vs2022\bgfx.sln";
     private const string PLATFORM = "x64";
 
@@ -19,6 +20,10 @@ internal sealed class WindowsX64BgfxBuilder : BgfxBuilder
     /// Gets the native platform identifier produced by this builder.
     /// </summary>
     public override string outputPlatform => OUTPUT_PLATFORM;
+    /// <summary>
+    /// Gets the artifact path token text used by the current instance.
+    /// </summary>
+public override string artifactPathToken => "/win64_vs2022/bin/";
     /// <summary>
     /// Gets the native make target used for debug output.
     /// </summary>
@@ -81,7 +86,7 @@ internal sealed class WindowsX64BgfxBuilder : BgfxBuilder
 
     private static void RunGenie(string bgfxDir, string args)
     {
-        ToolchainEnvironment.Run(GENIE_RELATIVE_PATH, $"{args} vs2022", bgfxDir);
+        ToolchainEnvironment.Run(Path.GetFullPath(Path.Combine(bgfxDir, GENIE_RELATIVE_PATH)), $"{args} vs2022", bgfxDir);
     }
 
     private static void RunMsBuild(string bgfxDir, string config)

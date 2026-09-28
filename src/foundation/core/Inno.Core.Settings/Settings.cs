@@ -40,6 +40,11 @@ public static class Settings
     public static long revision => ProjectSettingsExecutionContext.current.revision;
 
     /// <summary>
+    /// Gets the current owner's lifetime identity. Pair it with revision when caching an isolated settings snapshot.
+    /// </summary>
+    public static Guid ownerId => ProjectSettingsExecutionContext.current.ownerId;
+
+    /// <summary>
     /// Gets an isolated effective setting from the current extension generation.
     /// </summary>
     /// <typeparam name="TSetting">

@@ -3,11 +3,15 @@ using Inno.Extensibility.Reload;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using Inno.Editor.Annotations;
 using System.IO.Compression;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Reflection.Metadata;
+using System.Reflection.PortableExecutable;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 
 using Inno.Assets;
 using Inno.Assets.Pipeline;
@@ -37,6 +41,173 @@ public sealed class ScriptingPipelineTests : IDisposable
     private readonly ScriptingFixture m_fixture = new();
 
     public void Dispose() => m_fixture.Dispose();
+
+    [Fact]
+    public void ShaderPreviewOptionalInputsRemainNullableInTheLogicalAndImplementationApis()
+    {
+        m_fixture.Write("NullablePreview.editor.cs", """
+            #nullable enable
+            #pragma warning error CS8625, CS8602, CS8604
+            using InnoEngine.Rendering;
+            using InnoEditor.Shaders;
+            public sealed class NullablePreviewProbe
+            {
+                public bool Resolve(ShaderPreviewContext preview, IRenderResourceService resources)
+                    => resources.TryResolveMaterialArtifact(preview.resourceId, preview.artifact, preview.material,
+                        new ShaderContractId("test.surface"), new ShaderPassRoleId("test.color"),
+                        ShaderProgramKind.Raster, null, null, preview.diagnostics, out _);
+                public void TypedCallback(RenderGraphBuilder graph)
+                    => graph.AddRasterPass("typed", new RenderPhaseId("test"), "payload",
+                        static (value, context) => Consume(value));
+                private static void Consume(string value) { _ = value.Length; }
+            }
+            """);
+        ScriptCompilationResult result = m_fixture.Compile();
+        Assert.True(result.success, FormatDiagnostics(result));
+    }
+
+    [Fact]
+    public void ShaderNodeExtensionsCompileThroughTheEditorOnlyLogicalApi()
+    {
+        m_fixture.Write("ShaderNodeProbe.editor.cs", """
+            using System.Collections.Generic;
+            using System.Threading;
+            using InnoEngine.Graphs;
+            using InnoEngine.Serialization;
+            using InnoEngine.Assets;
+            using InnoEngine.Rendering;
+            using InnoEditor.Assets;
+            using InnoEditor.Rendering.Shaders;
+            using InnoEditor.Rendering.Assets;
+            using InnoEditor.Shaders;
+            using InnoEditor.Rendering;
+
+            public static class PipelineSettingsProbe
+            {
+                public static SerializedRenderExtensionState Capture<T>(T settings) where T : class, ISerializable
+                    => new(EditorAssets.CaptureProperties(settings));
+                public static void Edit<T>(InnoEditor.Rendering.PipelineDocuments documents, AssetPath path, T settings) where T : class, ISerializable
+                    => documents.ReplaceSettings(documents.Open(path), settings);
+            }
+
+            [ShaderPreviewProvider("tests.preview")]
+            public sealed class PreviewProbe : ShaderPreviewProvider
+            {
+                public override EditorViewportLayer CreateLayer(ShaderPreviewContext context)
+                {
+                    var frame = new RenderFrameData();
+                    frame.Set(new("tests.preview"), context);
+                    return new("tests.preview", null, frame, 0);
+                }
+                public static bool Resolve(IRenderResourceService resources, ShaderPreviewContext context)
+                    => resources.TryResolveMaterialArtifact(context.resourceId, context.artifact, context.material,
+                        new("tests.preview"), new("draw"), ShaderProgramKind.Raster, null, null, context.diagnostics, out _);
+            }
+
+            public sealed class ShaderNodeProbe : IShaderNodeCompiler
+            {
+                public string definitionId => "tests.shader-node-probe";
+                public IReadOnlyList<ShaderNodePort> GetPorts(ShaderNodeDescriptionContext context)
+                    => [new("value", ShaderSourceType.Atomic("float"), GraphPortDirection.Output)];
+                public IReadOnlyDictionary<string, ShaderIrValue> Lower(ShaderNodeLoweringContext context)
+                    => new Dictionary<string, ShaderIrValue> { ["value"] = context.builder.Constant(0.5f) };
+            }
+
+            [ShaderTarget("tests.script-target")]
+            public sealed class ShaderTargetProbe : ShaderTarget
+            {
+                public override GraphDocument Expand(ShaderTargetContext context, CancellationToken cancellationToken)
+                    => ShaderGraphTemplates.CreateRaster(context.serialization, context.references);
+            }
+
+            [ShaderGraphTemplate("tests.script-template", "Script Surface")]
+            public sealed class ShaderTemplateProbe : ShaderGraphTemplate
+            {
+                public override GraphDocument Create(SerializationRegistry serialization, SerializationContext context)
+                {
+                    GraphDocument graph = ShaderGraphTemplates.CreateRaster(serialization, context);
+                    ShaderParameterPresentation.Write(graph, new("gain"), new()
+                    { group = "Surface", description = "Preview gain", hasRange = true, minimum = 0, maximum = 2 }, serialization, context);
+                    ShaderGraphDocument.SetTarget(graph, "tests.script-target", serialization, context);
+                    return ShaderGraphBindings.RemoveNodes(graph, [], serialization, context);
+                }
+            }
+
+            [ShaderNodeDrawer("tests.shader-node-probe")]
+            public sealed class ShaderDrawerProbe : ShaderNodeDrawer
+            {
+                public override void Draw(ShaderNodeDrawContext context)
+                {
+                    _ = context.Read("gain", 1f);
+                    _ = context.previews.deviceGeneration;
+                    context.DrawProperty<ShaderFunctionAsset?>("function", "Function", null);
+                }
+            }
+            """);
+        ScriptCompilationResult result = m_fixture.Compile();
+        Assert.True(result.success, FormatDiagnostics(result));
+        Assert.Contains(result.activationRequests, static request => request.scope == AssemblyScope.Editor);
+        m_fixture.compiler.GenerateProjectFiles();
+        Assert.True(ContainsShaderApi("Inno.EditorScripts.csproj"));
+        Assert.False(ContainsShaderApi("Inno.GameScripts.csproj"));
+
+        bool ContainsShaderApi(string project)
+        {
+            XDocument document = XDocument.Load(Path.Combine(m_fixture.projectRoot, project));
+            foreach (XElement element in document.Descendants("HintPath"))
+            {
+                string path = Path.GetFullPath(element.Value, m_fixture.projectRoot);
+                using FileStream stream = File.OpenRead(path);
+                using var executable = new PEReader(stream);
+                MetadataReader metadata = executable.GetMetadataReader();
+                if (metadata.TypeDefinitions.Any(handle =>
+                {
+                    TypeDefinition type = metadata.GetTypeDefinition(handle);
+                    return metadata.GetString(type.Namespace) == "InnoEditor.Rendering.Shaders" && metadata.GetString(type.Name) == "IShaderNodeCompiler";
+                })) return true;
+            }
+            return false;
+        }
+    }
+
+    [Fact]
+    public void UserStaticImportsKeepTheirBindingWhenNativeApiNamespacesAreIntroduced()
+    {
+        m_fixture.Write("StaticNames.editor.cs", """
+            using System;
+            using InnoEditor.Rendering.Shaders;
+            using static Inno.StaticNames.Helpers;
+            namespace Inno.StaticNames;
+            public static class Helpers
+            {
+                public static ShaderGraphInputSettings Input() => new();
+                public static T Settings<T>(T value) => value;
+            }
+            public sealed class Consumer
+            {
+                public ShaderGraphInputSettings Build() => Input();
+                public Func<ShaderGraphInputSettings> Factory() => Input;
+                public int Value() => Settings<int>(7);
+                public int Local()
+                {
+                    Func<int> Input = () => 9;
+                    return Input();
+                }
+            }
+            """);
+        ScriptCompilationResult result = m_fixture.Compile();
+        Assert.True(result.success, FormatDiagnostics(result));
+    }
+
+    [Fact]
+    public void RuntimeScriptsCannotReferenceShaderAuthoringIr()
+    {
+        m_fixture.Write("ShaderRuntimeLeak.cs", """
+            using InnoEditor.Rendering.Shaders;
+            public sealed class ShaderRuntimeLeak { public ShaderIrBuilder? builder; }
+            """);
+        Assert.False(m_fixture.Compile().success);
+    }
 
     [Fact]
     public void RuntimeAndEditorSourcesProduceSeparateDeterministicArtifacts()
@@ -100,8 +271,6 @@ public sealed class ScriptingPipelineTests : IDisposable
             [ProjectSettingPath("Project/Tests/Probe")]
             public sealed class SettingsProbeEditor : ProjectSettingEditor<SettingsProbe>
             {
-                public override ProjectSettingId settingId => new("tests.scripting.settings-probe");
-
                 protected override void OnDraw(SettingsProbe setting)
                 {
                 }
@@ -135,6 +304,58 @@ public sealed class ScriptingPipelineTests : IDisposable
         Assert.DoesNotContain(
             result.compiledAssemblyNames.Concat(result.reusedAssemblyNames),
             static assemblyName => assemblyName.Contains("Editor", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void InspectorPresentationMetadataIsAuthoringOnlyWhileSerializationRemainsInPlayer()
+    {
+        m_fixture.Write("AttributedBehavior.cs", """
+            using InnoEngine.Scene;
+            using InnoEngine.Serialization;
+            using InnoEditor.Annotations;
+
+            public sealed class CustomPresentationAttribute : InspectorPresentationAttribute
+            {
+            }
+
+            public sealed class AttributedBehavior : GameBehavior
+            {
+                [SerializableProperty]
+                [Header("Visual")]
+                [Text("Persistent authoring text.")]
+                [Tooltip("Authoring help only.")]
+                [Range(0, 10)]
+                [CustomPresentation]
+                public int value { get; set; }
+            }
+            """);
+
+        ScriptCompilationResult authoring = m_fixture.Compile();
+        Assert.True(authoring.success, FormatDiagnostics(authoring));
+        string authoringAssembly = Path.Combine(authoring.outputDirectory!, "Inno.GameScripts.dll");
+        Assert.True(ContainsCustomAttribute(authoringAssembly, nameof(HeaderAttribute)));
+        Assert.True(ContainsCustomAttribute(authoringAssembly, nameof(TextAttribute)));
+        Assert.True(ContainsCustomAttribute(authoringAssembly, nameof(TooltipAttribute)));
+        Assert.True(ContainsCustomAttribute(authoringAssembly, nameof(RangeAttribute)));
+        Assert.True(ContainsCustomAttribute(authoringAssembly, "CustomPresentationAttribute"));
+        Assert.True(ContainsCustomAttribute(authoringAssembly, nameof(SerializablePropertyAttribute)));
+
+        ScriptCompilationResult player = m_fixture.CompileRuntimeDeployment();
+        Assert.True(player.success, FormatDiagnostics(player));
+        string playerAssembly = Path.Combine(player.outputDirectory!, "Inno.GameScripts.dll");
+        Assert.False(ContainsCustomAttribute(playerAssembly, nameof(HeaderAttribute)));
+        Assert.False(ContainsCustomAttribute(playerAssembly, nameof(TextAttribute)));
+        Assert.False(ContainsCustomAttribute(playerAssembly, nameof(TooltipAttribute)));
+        Assert.False(ContainsCustomAttribute(playerAssembly, nameof(RangeAttribute)));
+        Assert.False(ContainsCustomAttribute(playerAssembly, "CustomPresentationAttribute"));
+        Assert.True(ContainsCustomAttribute(playerAssembly, nameof(SerializablePropertyAttribute)));
+        using FileStream stream = File.OpenRead(playerAssembly);
+        using var executable = new PEReader(stream);
+        MetadataReader metadata = executable.GetMetadataReader();
+        Assert.DoesNotContain(metadata.AssemblyReferences, handle =>
+            metadata.GetString(metadata.GetAssemblyReference(handle).Name).Contains("Editor", StringComparison.Ordinal));
+        Assert.DoesNotContain(metadata.TypeDefinitions, handle =>
+            metadata.GetString(metadata.GetTypeDefinition(handle).Name) == "CustomPresentationAttribute");
     }
 
     [Fact]
@@ -372,16 +593,34 @@ public sealed class ScriptingPipelineTests : IDisposable
             out AssetInfo? templateInfo));
         Guid sourcePersistentId = Assert.IsType<AssetInfo>(templateInfo).persistentId;
 
-        AssetPath imported = fixture.assets.ImportSample(source);
+        ScriptCompilationResult authoring = fixture.Compile();
+        Assert.True(authoring.success, FormatDiagnostics(authoring));
+        Assert.Contains(authoring.compiledAssemblyNames,
+            name => name.EndsWith(".Samples", StringComparison.Ordinal));
+        Assert.DoesNotContain(authoring.runtimeAssemblyPaths,
+            path => Path.GetFileNameWithoutExtension(path).EndsWith(".Samples", StringComparison.Ordinal));
+        ScriptCompilationResult player = fixture.CompileRuntimeDeployment();
+        Assert.True(player.success, FormatDiagnostics(player));
+        Assert.DoesNotContain(player.compiledAssemblyNames,
+            name => name.EndsWith(".Samples", StringComparison.Ordinal));
 
-        Assert.Equal(AssetPath.Project("~Starter"), imported);
+        AssetPath imported = fixture.assets.ImportSample(source, _ =>
+        {
+            ScriptCompilationResult candidate = fixture.Compile();
+            Assert.True(candidate.success, FormatDiagnostics(candidate));
+        });
+
+        Assert.Equal(AssetPath.Project("tests.samples-Starter"), imported);
         Assert.True(File.Exists(Path.Combine(
             fixture.projectRoot,
             "Assets",
-            "~Starter",
+            "tests.samples-Starter",
             "StarterBehavior.cs")));
+        Assert.DoesNotContain("ce3b52c6-2a07-42ea-b632-a307a0ef7407",
+            File.ReadAllText(Path.Combine(fixture.projectRoot, "Assets", "tests.samples-Starter", "StarterBehavior.cs")),
+            StringComparison.OrdinalIgnoreCase);
         Assert.True(fixture.assets.TryGetInfo(
-            AssetPath.Project("~Starter/StarterBehavior.cs"),
+            AssetPath.Project("tests.samples-Starter/StarterBehavior.cs"),
             out AssetInfo? importedInfo));
         Assert.NotEqual(sourcePersistentId, Assert.IsType<AssetInfo>(importedInfo).persistentId);
         Assert.True(fixture.assets.TryGetFileSystemEntry(imported, out AssetFileEntry importedDirectory));
@@ -390,14 +629,31 @@ public sealed class ScriptingPipelineTests : IDisposable
         Assert.False(importedDirectory.isSampleContent);
         ScriptCompilationResult compilation = fixture.Compile();
         Assert.True(compilation.success, FormatDiagnostics(compilation));
-        fixture.compiler.GenerateProjectFiles(compilation);
+        fixture.compiler.GenerateProjectFiles();
         string gameProject = File.ReadAllText(
             Path.Combine(fixture.projectRoot, "Inno.GameScripts.csproj"));
-        Assert.Contains("Compile Include=\"Assets/~Starter/StarterBehavior.cs\"", gameProject);
+        Assert.Contains("Compile Include=\"Assets/tests.samples-Starter/StarterBehavior.cs\"", gameProject);
     }
 
     [Fact]
-    public void IdeProjectionHidesPluginProjectsAndReferencesTheirCompiledArtifacts()
+    public void InvalidSampleScriptPreflightLeavesNoProjectCopy()
+    {
+        using var fixture = new ScriptingFixture((root, serialization) =>
+            WriteSamplePlugin(root, serialization, "public sealed class BrokenSample { this is invalid; }"));
+        AssetPath source = new(new AssetSourceId("tests.samples"), "~Starter");
+        Assert.Throws<InvalidOperationException>(() => fixture.assets.ImportSample(source, _ =>
+        {
+            ScriptCompilationResult candidate = fixture.Compile();
+            if (!candidate.success)
+                throw new InvalidOperationException(FormatDiagnostics(candidate));
+        }));
+        Assert.False(Directory.Exists(Path.Combine(fixture.projectRoot, "Assets", "tests.samples-Starter")));
+        Assert.False(fixture.assets.TryGetFileSystemEntry(
+            AssetPath.Project("tests.samples-Starter"), out _));
+    }
+
+    [Fact]
+    public void IdeProjectionUsesPluginSourceProjectsWithLogicalApiReferences()
     {
         using var fixture = new ScriptingFixture(WriteProjectionPlugin);
         fixture.Write("UsesProjectionPlugin.cs", """
@@ -412,20 +668,20 @@ public sealed class ScriptingPipelineTests : IDisposable
         File.WriteAllText(staleProject, "stale");
 
         ScriptCompilationResult result = fixture.Compile();
-        fixture.compiler.GenerateProjectFiles(result);
+        fixture.compiler.GenerateProjectFiles();
 
         Assert.True(result.success, FormatDiagnostics(result));
         Assert.False(File.Exists(staleProject));
-        Assert.Empty(Directory.EnumerateFiles(
-            fixture.projectRoot,
-            "Inno.Plugin.*.csproj",
-            SearchOption.TopDirectoryOnly));
+        string pluginProject = File.ReadAllText(Path.Combine(
+            fixture.projectRoot, "Inno.Plugin.TestsProjection.csproj"));
+        Assert.Contains("Inno.ScriptApi.Runtime.dll", pluginProject);
+        Assert.DoesNotContain("Inno.Scene.dll", pluginProject, StringComparison.Ordinal);
         string solution = File.ReadAllText(Path.Combine(fixture.projectRoot, "InnoProject.sln"));
-        Assert.DoesNotContain("Inno.Plugin.", solution, StringComparison.Ordinal);
+        Assert.Contains("Inno.Plugin.TestsProjection", solution, StringComparison.Ordinal);
         string gameProject = File.ReadAllText(
             Path.Combine(fixture.projectRoot, "Inno.GameScripts.csproj"));
-        Assert.Contains("Reference Include=\"Inno.Plugin.TestsProjection\"", gameProject);
-        Assert.Contains("Inno.Plugin.TestsProjection.dll", gameProject);
+        Assert.Contains("ProjectReference Include=\"Inno.Plugin.TestsProjection.csproj\"", gameProject);
+        Assert.DoesNotContain("Inno.Plugin.TestsProjection.dll", gameProject, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -486,6 +742,35 @@ public sealed class ScriptingPipelineTests : IDisposable
         Assert.False(failed.success);
         Assert.False(reload.ApplyPendingReload());
         Assert.Same(second, m_fixture.ResolveActiveType("VersionedBehavior"));
+    }
+
+    [Fact]
+    public void EditorSourceChangeRetiresTheWholeProjectAuthoringGeneration()
+    {
+        m_fixture.WriteVersionedBehavior(1);
+        m_fixture.Write("Editor/GenericPresentation.editor.cs", """
+            public class GenericPresentation<T> { public int version => 1; }
+            public sealed class ProjectPresentation : GenericPresentation<VersionedBehavior> { }
+            """);
+        using ScriptReloadHost reload = m_fixture.CreateReloadHost();
+        reload.Start();
+        Assert.True(m_fixture.CompilePending(reload).success);
+        Assert.True(reload.ApplyPendingReload());
+        WeakReference runtime = CaptureActiveType(m_fixture, "VersionedBehavior", 1);
+        WeakReference editor = CaptureActiveType(m_fixture, "ProjectPresentation", 1);
+
+        m_fixture.Write("Editor/GenericPresentation.editor.cs", """
+            public class GenericPresentation<T> { public int version => 2; }
+            public sealed class ProjectPresentation : GenericPresentation<VersionedBehavior> { }
+            """);
+        ScriptCompilationResult candidate = m_fixture.CompilePending(reload);
+        Assert.True(candidate.success, FormatDiagnostics(candidate));
+        Assert.True(reload.ApplyPendingReload());
+        CompleteUnloadVerification(reload);
+        Assert.False(runtime.IsAlive);
+        Assert.False(editor.IsAlive);
+        Assert.Equal(1, ReadVersion(m_fixture.ResolveActiveType("VersionedBehavior")));
+        Assert.Equal(2, ReadVersion(m_fixture.ResolveActiveType("ProjectPresentation")));
     }
 
     [Fact]
@@ -804,6 +1089,79 @@ public sealed class ScriptingPipelineTests : IDisposable
         fixture.host.modules.generations.Wait();
         Assert.Equal(GenerationState.Ready, fixture.host.modules.generations.state);
         Assert.Empty(fixture.host.modules.modules);
+    }
+
+    [Fact]
+    public void ShutdownPreservesLoadedScriptAssetAsMissingUntilItsTypeReturns()
+    {
+        using var fixture = new ScriptingFixture();
+        fixture.Write("ShutdownAsset.cs", """
+            using InnoEngine.Assets;
+            using InnoEngine.Reflection;
+
+            [StableTypeId("527df6c8-1373-48c9-9230-805a85590544")]
+            public sealed class ShutdownAsset : AssetObject
+            {
+            }
+            """);
+        fixture.Write("ShutdownAssetImporter.editor.cs", """
+            using System.Collections.Generic;
+            using System.Threading;
+            using System.Threading.Tasks;
+            using InnoEngine.Assets;
+            using InnoEditor.Assets;
+
+            [AssetImporter("tests.shutdown-script-asset")]
+            public sealed class ShutdownAssetImporter : AssetImporter<ShutdownAsset>
+            {
+                public override IReadOnlyList<string> supportedExtensions { get; } = [".shutdownasset"];
+
+                protected override async ValueTask ImportAsync(
+                    AssetImportContext context,
+                    AssetImportWriter<ShutdownAsset> output,
+                    CancellationToken cancellationToken)
+                {
+                    output.SetAsset(new ShutdownAsset());
+                    await output.WriteArtifactAsync("runtime", context.sourceBytes, cancellationToken);
+                }
+            }
+            """);
+        fixture.Write("Content/value.shutdownasset", "last-good");
+        (Guid persistentId, Guid stableTypeId) = LoadScriptAssetAndUnloadScripts(fixture);
+
+        Assert.Empty(fixture.host.modules.modules);
+        Assert.True(fixture.assets.TryGetInfo(persistentId, out AssetInfo? preserved));
+        Assert.Equal(AssetImportStatus.Imported, preserved!.status);
+        Assert.Equal(stableTypeId, preserved.stableAssetTypeId);
+        AssetObject missing = ((IAssetReferenceResolver)fixture.assets).Resolve(
+            persistentId,
+            stableTypeId,
+            "Content/value.shutdownasset",
+            typeof(AssetObject),
+            "$test");
+        Assert.True(missing.isMissing);
+        Assert.Equal(persistentId, missing.identity.persistentId);
+    }
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static (Guid persistentId, Guid stableTypeId) LoadScriptAssetAndUnloadScripts(
+        ScriptingFixture fixture)
+    {
+        using ScriptReloadHost reload = fixture.CreateReloadHost(new EditorReloadCoordinator());
+        reload.Start();
+        ScriptCompilationResult compilation = fixture.CompilePending(reload);
+        Assert.True(compilation.success, FormatDiagnostics(compilation));
+        Assert.True(reload.ApplyPendingReload());
+        Type assetType = fixture.ResolveActiveType("ShutdownAsset");
+        AssetObject loaded = fixture.assets.Load(
+            AssetPath.Project("Content/value.shutdownasset"),
+            assetType);
+        Assert.True(fixture.assets.TryGetInfo(loaded.identity.persistentId, out AssetInfo? imported));
+        Assert.Equal(AssetImportStatus.Imported, imported!.status);
+        Guid persistentId = loaded.identity.persistentId;
+        Guid stableTypeId = imported.stableAssetTypeId;
+        reload.Dispose();
+        return (persistentId, stableTypeId);
     }
 
     [Fact]
@@ -1165,7 +1523,17 @@ public sealed class ScriptingPipelineTests : IDisposable
         SerializationRegistry serialization)
     {
         const string c_source =
-            "using InnoEngine.Scene; public sealed class StarterBehavior : GameBehavior { }";
+            "using InnoEngine.Reflection; using InnoEngine.Scene; " +
+            "[StableTypeId(\"ce3b52c6-2a07-42ea-b632-a307a0ef7407\")] " +
+            "public sealed class StarterBehavior : GameBehavior { }";
+        WriteSamplePlugin(projectRoot, serialization, c_source);
+    }
+
+    private static void WriteSamplePlugin(
+        string projectRoot,
+        SerializationRegistry serialization,
+        string source)
+    {
         WritePluginPackage(
             projectRoot,
             "samples.iplugin",
@@ -1184,7 +1552,7 @@ public sealed class ScriptingPipelineTests : IDisposable
                     persistentId = Guid.Parse("7726b1d2-9aee-4d2c-a865-2fd53155095f"),
                     sourceKind = (int)AssetSourceKind.Directory
                 }),
-                ["Assets/~Starter/StarterBehavior.cs"] = System.Text.Encoding.UTF8.GetBytes(c_source),
+                ["Assets/~Starter/StarterBehavior.cs"] = System.Text.Encoding.UTF8.GetBytes(source),
                 ["Assets/~Starter/StarterBehavior.cs.imeta"] = CreateScriptSourceMeta(
                     serialization,
                     Guid.Parse("75f6a70b-93b2-47f0-8747-cc359474b7a3"))
@@ -1231,6 +1599,45 @@ public sealed class ScriptingPipelineTests : IDisposable
     private static string FormatDiagnostics(ScriptCompilationResult result)
         => string.Join(Environment.NewLine, result.diagnostics.Select(static diagnostic =>
             $"{diagnostic.id}: {diagnostic.message}"));
+
+    private static bool ContainsCustomAttribute(string assemblyPath, string attributeTypeName)
+    {
+        using FileStream stream = File.OpenRead(assemblyPath);
+        using var portableExecutable = new PEReader(stream);
+        MetadataReader metadata = portableExecutable.GetMetadataReader();
+        foreach (CustomAttributeHandle handle in metadata.CustomAttributes)
+        {
+            CustomAttribute attribute = metadata.GetCustomAttribute(handle);
+            string? typeName = attribute.Constructor.Kind switch
+            {
+                HandleKind.MemberReference => GetMemberReferenceDeclaringTypeName(
+                    metadata,
+                    (MemberReferenceHandle)attribute.Constructor),
+                HandleKind.MethodDefinition => metadata.GetString(metadata.GetTypeDefinition(
+                    metadata.GetMethodDefinition((MethodDefinitionHandle)attribute.Constructor)
+                        .GetDeclaringType()).Name),
+                _ => null
+            };
+            if (string.Equals(typeName, attributeTypeName, StringComparison.Ordinal))
+                return true;
+        }
+        return false;
+    }
+
+    private static string? GetMemberReferenceDeclaringTypeName(
+        MetadataReader metadata,
+        MemberReferenceHandle constructorHandle)
+    {
+        MemberReference constructor = metadata.GetMemberReference(constructorHandle);
+        return constructor.Parent.Kind switch
+        {
+            HandleKind.TypeReference => metadata.GetString(
+                metadata.GetTypeReference((TypeReferenceHandle)constructor.Parent).Name),
+            HandleKind.TypeDefinition => metadata.GetString(
+                metadata.GetTypeDefinition((TypeDefinitionHandle)constructor.Parent).Name),
+            _ => null
+        };
+    }
 
     private sealed class ProgressRecorder : IProgress<ScriptCompilationProgress>
     {

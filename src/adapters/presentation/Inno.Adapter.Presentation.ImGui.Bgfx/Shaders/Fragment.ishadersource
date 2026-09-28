@@ -1,0 +1,21 @@
+vec3 SrgbToLinear(vec3 color)
+{
+    vec3 lower = color / 12.92;
+    vec3 upper = pow((color + 0.055) / 1.055, vec3(2.4, 2.4, 2.4));
+    return mix(upper, lower, step(color, vec3(0.04045, 0.04045, 0.04045)));
+}
+
+vec3 LinearToSrgb(vec3 color)
+{
+    vec3 lower = color * 12.92;
+    vec3 upper = pow(max(color, vec3(0.0, 0.0, 0.0)), vec3(0.41666667, 0.41666667, 0.41666667)) * 1.055 - 0.055;
+    return mix(upper, lower, step(color, vec3(0.0031308, 0.0031308, 0.0031308)));
+}
+
+vec4 Evaluate(sampler2D image, vec2 texcoord, vec4 tint, vec4 outputEncoding)
+{
+    vec4 color = texture2D(image, texcoord) * vec4(SrgbToLinear(tint.rgb), tint.a);
+    if (outputEncoding.x > 0.5)
+        color.rgb = LinearToSrgb(color.rgb);
+    return color;
+}

@@ -6,6 +6,9 @@
 
 ## 初始化
 
+Shader 等 Editor 创作回调可以借用宿主的 `SerializationRegistry`，脚本侧只导出数据编解码及属性读取。
+构造 Registry、捕获 generation 和底层属性恢复快照仍由宿主管理，不进入脚本 API。运行时脚本不导出 Registry。
+
 `SerializationRegistry.Initialize()` 必须在 `ModuleHost` 与 `TypeCatalog` 之后调用。Converter Registry 会跟随 TypeCache 的事务刷新；热重载新增/替换 Converter 不需要业务层手动订阅事件。
 
 ```csharp
@@ -29,6 +32,7 @@ SerializationRegistry.Initialize();
 | `Restore<T>(T target, ReadOnlySpan<byte>, context?)` | 将数据恢复到既有实例，适合身份必须保留的对象。 |
 | `Encode(Action<SerializationWriter>, context?)` | 用手写 structured schema 编码。 |
 | `Decode<TResult>(bytes, Func<SerializationReader,TResult>, context?)` | 用手写 schema 解码并返回结果。 |
+| `SerializedIdentityRemapper.Rewrite(source, identities, paths?)` | 在已识别的二进制对象或属性快照中精确重写 Guid 与完整路径字符串；嵌套 payload 递归处理，未知格式原样复制。用于样例克隆等需要保持序列化结构的事务。 |
 
 ## 属性序列化
 
@@ -62,7 +66,10 @@ public sealed class PlayerState : ISerializable
 | `[SerializableProperty(visibility)]` | 标注 field/property；默认 `Show`。`propertyVisibility` 暴露规则，`order` 控制同一声明类型内的处理顺序。 |
 | `[OnSerializableRestored]` | 标记无参实例方法，在完整 restore 成功后调用。 |
 | `[RequiresSerializationConverter]` | 强制该 class 必须由显式 Converter 处理。 |
-| `[SerializationExtension]` | 标记 Converter class，让 TypeCache/Registry 自动发现。 |
+| `SerializationConverter` | 非泛型发现基类；具体 Converter 通过继承关系自动进入当前 generation 的 Registry。 |
+| `SerializationConverter<T>` | 强类型读写与 Restore 扩展契约；不再要求重复 marker Attribute。 |
+
+Inspector 展示标注不属于 Serialization。`Header`、`Text`、`Tooltip`、`Range`、`ShowIf` 等均由独立的 [Inno.Editor.Annotations](../editor/Inno.Editor.Annotations.md) 声明；本程序集不声明、引用或转发这些类型。`SerializableProperty` 继续只负责持久数据契约。
 
 ### PropertyVisibility
 
@@ -149,7 +156,6 @@ byte[] bytes = SerializationRegistry.Serialize(state, context);
 ## 自定义 Converter
 
 ```csharp
-[SerializationExtension]
 public sealed class RangeConverter : SerializationConverter<Range>
 {
     public override void Write(SerializationWriter writer, Range value)

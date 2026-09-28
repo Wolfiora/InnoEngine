@@ -11,6 +11,11 @@ namespace Inno.Adapter.Platform.Sdl3;
 public sealed partial class Sdl3PlatformApplication : IPlatformApplication
 {
     /// <summary>
+    /// Occurs after the observable redraw requested state changes.
+    /// </summary>
+    public event Action<uint>? redrawRequested;
+
+    /// <summary>
     /// Initializes platform subsystems required for windowing and input events.
     /// </summary>
     public Sdl3PlatformApplication()

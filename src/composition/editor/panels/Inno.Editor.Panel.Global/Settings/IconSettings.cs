@@ -247,3 +247,43 @@ internal sealed class FileIconSetting() : IconSetting(ImGuiIcon.File)
     public override string description
         => "Selects the icon used wherever the editor presents a generic source file.";
 }
+
+[EditorSettingPath("Editor/Appearance/Icons/Shader")]
+internal sealed class ShaderIconSetting() : IconSetting(ImGuiIcon.Shader)
+{
+    /// <summary>
+    /// Gets the user-facing explanation of this feature or setting.
+    /// </summary>
+public override string description
+        => "Selects the icon used consistently for Shader graph assets and their Inspector headers.";
+}
+
+[EditorSettingPath("Editor/Appearance/Icons/ShaderSource")]
+internal sealed class ShaderSourceIconSetting() : IconSetting(ImGuiIcon.RupeeSign)
+{
+    /// <summary>
+    /// Gets the user-facing explanation of this feature or setting.
+    /// </summary>
+public override string description
+        => "Selects the icon used consistently for Shader source-function libraries. The default function symbol distinguishes reusable code from complete Shader graphs.";
+}
+
+[EditorSettingPath("Editor/Appearance/Icons/Material")]
+internal sealed class MaterialIconSetting() : IconSetting(ImGuiIcon.Palette)
+{
+    /// <summary>
+    /// Gets the user-facing explanation of this feature or setting.
+    /// </summary>
+public override string description
+        => "Selects the icon used consistently for Material assets and their Inspector headers.";
+}
+
+[EditorSettingPath("Editor/Appearance/Icons/RenderPipeline")]
+internal sealed class RenderPipelineIconSetting() : IconSetting(ImGuiIcon.RupiahSign)
+{
+    /// <summary>
+    /// Gets the user-facing explanation of this feature or setting.
+    /// </summary>
+public override string description
+        => "Selects the icon used consistently for Render Pipeline assets and their Inspector headers.";
+}

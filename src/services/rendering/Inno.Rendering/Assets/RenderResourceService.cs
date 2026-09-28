@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Inno.Core.Diagnostics;
 using Inno.Rendering;
 
 namespace Inno.Rendering;
@@ -236,17 +237,29 @@ internal sealed record RenderMaterialBinding(
 public sealed class RenderMaterialPass
 {
     private readonly ShaderPassDefinition m_definition;
+    private readonly IReadOnlyDictionary<RenderBindingId, RenderShaderBindingKind> m_declaredBindings;
+    private readonly IReadOnlySet<RenderBindingId> m_activeBindings;
     private readonly IReadOnlyList<RenderMaterialBinding> m_bindings;
 
     internal RenderMaterialPass(
         ShaderPassDefinition definition,
         GraphicsPipelineHandle graphicsPipeline,
         ComputePipelineHandle computePipeline,
+        IReadOnlyList<ShaderPropertyDefinition> declaredBindings,
+        ShaderInterface activeInterface,
         IReadOnlyList<RenderMaterialBinding> bindings)
     {
+        ArgumentNullException.ThrowIfNull(declaredBindings);
+        ArgumentNullException.ThrowIfNull(activeInterface);
         m_definition = ShaderDefinitionSnapshot.Copy(definition);
         this.graphicsPipeline = graphicsPipeline;
         this.computePipeline = computePipeline;
+        m_declaredBindings = declaredBindings.ToDictionary(
+            static property => new RenderBindingId(property.id.value),
+            static property => ToRenderBindingKind(property.bindingKind));
+        m_activeBindings = activeInterface.bindings
+            .Select(static binding => new RenderBindingId(binding.id.value))
+            .ToHashSet();
         m_bindings = Array.AsReadOnly(bindings.Select(static binding => binding with
         {
             uniformData = binding.uniformData?.ToArray()
@@ -279,6 +292,37 @@ public sealed class RenderMaterialPass
     public bool isCompute => computePipeline.isValid;
 
     /// <summary>
+    /// Gets whether the compiled program actively consumes one declared binding.
+    /// </summary>
+    /// <param name="binding">
+    /// Stable binding declared by the shader contract.
+    /// </param>
+    /// <param name="kind">
+    /// Expected command-binding domain.
+    /// </param>
+    /// <returns>
+    /// <see langword="true"/> when the final compiled pass reflects the binding; otherwise,
+    /// <see langword="false"/> when the compiler proved the declared binding unused and removed it.
+    /// </returns>
+    /// <exception cref="ArgumentException">
+    /// The binding is not declared by the shader, or its declared kind differs from <paramref name="kind"/>.
+    /// </exception>
+    public bool UsesBinding(RenderBindingId binding, RenderShaderBindingKind kind)
+    {
+        if (!binding.isValid)
+            throw new ArgumentException("A stable shader binding identifier is required.", nameof(binding));
+        if (!Enum.IsDefined(kind))
+            throw new ArgumentOutOfRangeException(nameof(kind));
+        if (!m_declaredBindings.TryGetValue(binding, out RenderShaderBindingKind declaredKind))
+            throw new ArgumentException($"Shader does not declare binding '{binding.value}'.", nameof(binding));
+        if (declaredKind != kind)
+            throw new ArgumentException(
+                $"Shader binding '{binding.value}' is declared as {declaredKind}, not {kind}.",
+                nameof(kind));
+        return m_activeBindings.Contains(binding);
+    }
+
+    /// <summary>
     /// Binds the program and all material-owned values and textures.
     /// </summary>
     /// <param name="commands">
@@ -302,6 +346,16 @@ public sealed class RenderMaterialPass
                 commands.BindTexture(binding.id, binding.texture, binding.sampler);
         }
     }
+
+    private static RenderShaderBindingKind ToRenderBindingKind(ShaderPropertyBindingKind kind)
+        => kind switch
+        {
+            ShaderPropertyBindingKind.Uniform => RenderShaderBindingKind.Uniform,
+            ShaderPropertyBindingKind.SampledTexture => RenderShaderBindingKind.Texture,
+            ShaderPropertyBindingKind.StorageTexture => RenderShaderBindingKind.StorageTexture,
+            ShaderPropertyBindingKind.StorageBuffer => RenderShaderBindingKind.StorageBuffer,
+            _ => throw new ArgumentOutOfRangeException(nameof(kind))
+        };
 }
 
 /// <summary>
@@ -315,12 +369,33 @@ public interface IRenderResourceService
     GraphicsCapabilities capabilities { get; }
 
     /// <summary>
+    /// Creates and retires every program in one compiled artifact through the active device without publishing it.
+    /// </summary>
+    /// <param name="artifact">
+    /// Complete target artifact whose binaries, links, and reflected interfaces must be accepted by the active device.
+    /// </param>
+    /// <exception cref="InvalidOperationException">
+    /// The call is outside a frame resource-mutation safety point, or the artifact fails device validation.
+    /// </exception>
+    void ValidateShaderArtifact(RenderShaderArtifact artifact);
+
+    /// <summary>
     /// Queues all target shader work required by a material without blocking the render thread.
     /// </summary>
     /// <param name="material">
     /// Material whose selected static variant should be prepared.
     /// </param>
-    void PrewarmMaterial(MaterialAsset material);
+    /// <returns>
+    /// The exact target artifact state for this material variant: Ready includes a usable last-good artifact,
+    /// Pending means compilation is ongoing, and Failed or Unavailable means no artifact can currently be used.
+    /// </returns>
+    /// <exception cref="ArgumentException">
+    /// The material has no shader or declares an invalid static variant.
+    /// </exception>
+    /// <exception cref="InvalidOperationException">
+    /// No target artifact provider is available for this runtime.
+    /// </exception>
+    RenderTargetArtifactStatus PrewarmMaterial(MaterialAsset material);
 
     /// <summary>
     /// Queues target texture conversion without blocking the render thread.
@@ -329,6 +404,14 @@ public interface IRenderResourceService
     /// Texture source to prepare.
     /// </param>
     void PrewarmTexture(TextureAsset texture);
+
+    /// <summary>
+    /// Queues target conversion for a texture slot owned by any imported asset.
+    /// </summary>
+    /// <param name="texture">
+    /// Stable texture artifact reference to prepare.
+    /// </param>
+    void PrewarmTextureArtifact(RenderTextureArtifactReference texture);
 
     /// <summary>
     /// Acquires or atomically replaces a provider-owned persistent buffer.
@@ -532,6 +615,49 @@ public interface IRenderResourceService
         out RenderMaterialPass? materialPass);
 
     /// <summary>
+    /// Resolves an explicitly compiled candidate in a caller-owned publication scope, without publishing it as an asset.
+    /// </summary>
+    /// <param name="scope">
+    /// Non-empty resource identity for this isolated consumer; release it when the consumer closes.
+    /// </param>
+    /// <param name="artifact">
+    /// Complete immutable candidate built for the active device and exact Material variant.
+    /// </param>
+    /// <param name="material">
+    /// Invocation-local values and a persistent Shader reference; neither asset is changed or retained.
+    /// </param>
+    /// <param name="contractId">
+    /// Required provider-owned Shader contract.
+    /// </param>
+    /// <param name="passRoleId">
+    /// Required role within the selected Technique.
+    /// </param>
+    /// <param name="programKind">
+    /// Required graphics or compute program kind.
+    /// </param>
+    /// <param name="vertexLayout">
+    /// Graphics layout, or null for procedural or compute work.
+    /// </param>
+    /// <param name="overrides">
+    /// Optional invocation-local Material values.
+    /// </param>
+    /// <param name="diagnostics">
+    /// Consumer-owned diagnostic reporter, not retained or forwarded to canonical asset diagnostics.
+    /// </param>
+    /// <param name="materialPass">
+    /// Receives the current or complete last-good scoped pass.
+    /// </param>
+    /// <returns>
+    /// True when the isolated publication can satisfy this request; failure never changes canonical programs.
+    /// </returns>
+    /// <exception cref="InvalidOperationException">
+    /// No artifact decoder is configured, or resource retirement cannot complete.
+    /// </exception>
+    bool TryResolveMaterialArtifact(RenderPersistentResourceId scope, RenderShaderArtifact artifact, MaterialAsset material,
+        ShaderContractId contractId, ShaderPassRoleId passRoleId, ShaderProgramKind programKind, RenderVertexLayout? vertexLayout,
+        MaterialPropertyBlock? overrides, IDiagnosticReporter diagnostics, out RenderMaterialPass? materialPass);
+
+    /// <summary>
     /// Resolves one compute material pass through an open provider contract and role.
     /// </summary>
     /// <param name="material">
@@ -588,8 +714,26 @@ public interface IRenderResourceService
     bool TryResolveTexture(TextureAsset texture, out PersistentTextureHandle resolvedTexture);
 
     /// <summary>
-    /// Releases any cached resource with the specified provider-owned identifier.
+    /// Resolves one imported artifact texture into a persistent sampled texture.
     /// </summary>
+    /// <param name="texture">
+    /// Stable texture artifact reference.
+    /// </param>
+    /// <param name="resolvedTexture">
+    /// Receives a generation-scoped texture handle when successful.
+    /// </param>
+    /// <returns>
+    /// <see langword="true"/> when current or last-good texture content is usable.
+    /// </returns>
+    bool TryResolveTextureArtifact(
+        RenderTextureArtifactReference texture,
+        out PersistentTextureHandle resolvedTexture);
+
+    /// <summary>
+    /// Releases cached resources with this provider-owned identifier at a safe GPU mutation point.
+    /// </summary>
+    /// <remarks>Calls between frames or during graph execution queue neutral identities until the next frame;
+    /// runtime shutdown also retires them. Calls must occur on the rendering owner thread. Unused identities are ignored.</remarks>
     /// <param name="id">
     /// Stable resource identifier to release.
     /// </param>

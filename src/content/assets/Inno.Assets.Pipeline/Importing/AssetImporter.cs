@@ -4,18 +4,47 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using Inno.Assets;
+using Inno.Core.Serialization;
 
 namespace Inno.Assets.Pipeline;
+
+/// <summary>
+/// Declares the immutable protocol identity of an automatically discovered asset importer.
+/// </summary>
+[AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = false)]
+public sealed class AssetImporterAttribute : Attribute
+{
+    /// <summary>
+    /// Creates importer discovery metadata.
+    /// </summary>
+    /// <param name="id">
+    /// Globally stable importer protocol identifier.
+    /// </param>
+    public AssetImporterAttribute(string id)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(id);
+        this.id = id.Trim();
+    }
+
+    /// <summary>
+    /// Gets the globally stable importer protocol identifier.
+    /// </summary>
+    public string id { get; }
+}
 
 /// <summary>
 /// Defines metadata shared by automatically discovered asset importers.
 /// </summary>
 public abstract class AssetImporter
 {
+    private string? m_importerId;
+
     /// <summary>
     /// Gets the stable importer implementation identifier.
     /// </summary>
-    public abstract string importerId { get; }
+    public string importerId => m_importerId
+        ?? throw new InvalidOperationException(
+            $"Asset importer '{GetType().FullName}' has not been bound to discovery metadata.");
 
     /// <summary>
     /// Gets whether imported assets are deployed or retained only for authoring workflows.
@@ -32,6 +61,15 @@ public abstract class AssetImporter
     /// </summary>
     public abstract IReadOnlyList<string> supportedExtensions { get; }
 
+    /// <summary>
+    /// Creates a detached settings value for this importer in the current extension generation.
+    /// </summary>
+    /// <returns>
+    /// A fresh serializable value with a registered stable type identity, or null when this importer has no settings.
+    /// Defaults must be deterministic; implementations must not retain the returned instance.
+    /// </returns>
+    public virtual ISerializable? CreateImportSettings() => null;
+
     internal abstract ValueTask<AssetImportProduct> ImportInternalAsync(
         AssetImportContext context,
         CancellationToken cancellationToken);
@@ -39,6 +77,17 @@ public abstract class AssetImporter
         AssetExportContext context,
         AssetObject asset,
         CancellationToken cancellationToken);
+
+    internal void BindImporterId(string id)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(id);
+        if (m_importerId is not null && !string.Equals(m_importerId, id, StringComparison.Ordinal))
+        {
+            throw new InvalidOperationException(
+                $"Asset importer '{GetType().FullName}' cannot be bound to more than one protocol ID.");
+        }
+        m_importerId = id;
+    }
 }
 
 /// <summary>
@@ -118,11 +167,15 @@ public abstract class AssetImporter<TAsset> : AssetImporter where TAsset : Asset
 internal readonly struct AssetImportProduct(
     AssetObject asset,
     IReadOnlyDictionary<string, ReadOnlyMemory<byte>> outputs,
-    IReadOnlyList<string> diagnostics)
+    IReadOnlyList<string> diagnostics,
+    IReadOnlySet<string> authoringOutputs,
+    AssetDeploymentScope? deploymentScope)
 {
     internal AssetObject asset { get; } = asset ?? throw new ArgumentNullException(nameof(asset));
     internal IReadOnlyDictionary<string, ReadOnlyMemory<byte>> outputs { get; } = outputs;
     internal IReadOnlyList<string> diagnostics { get; } = diagnostics;
+    internal IReadOnlySet<string> authoringOutputs { get; } = authoringOutputs;
+    internal AssetDeploymentScope? deploymentScope { get; } = deploymentScope;
 
     internal ReadOnlyMemory<byte> runtimePayload
         => outputs.TryGetValue("runtime", out ReadOnlyMemory<byte> bytes)

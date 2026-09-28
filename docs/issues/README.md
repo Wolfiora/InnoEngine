@@ -10,6 +10,15 @@
 
 | 日期 | 页面 | 范围 |
 | --- | --- | --- |
+| 2026-09-14 | [Shader Editor 创作体验与函数库模型收口](2026-09-14-shader-editor-authoring-experience.md) | 左到右 Format、显式多函数源码库、菜单/Group/Check/Output 不变量、统一图标与 Attribute 发现原则 |
+| 2026-09-13 | [Scene View System 失效与 Play 后插件退休修复](2026-09-13-scene-scope-plugin-retirement.md) | GC 根定位、Pipeline owner 清理、298 项测试、三轮 Metal 重载及 Scope 零分配 |
+| 2026-09-13 | [Shader Target 启动导入时序修复](2026-09-13-shader-target-import-lifecycle.md) | 扩展发现等待、候选严格校验、依赖传播、380 项测试及 Metal 冷/暖启动 |
+| 2026-09-13 | [Shader 创作体系阶段验收](2026-09-13-shader-authoring-validation.md) | P1–P6 代码边界、完整 Metal 脚本与 Player 证据；锁屏 UI、全帧性能与既有测试失败仍未收口 |
+| 2026-09-12 | [Shader 创作体系实施记录](2026-09-12-shader-authoring-execution.md) | 持续实施中的代码边界、验证结果与未完成验收；不是完成声明 |
+| 2026-09-12 | [Shader 创作体系与渲染2D解耦实施计划](2026-09-12-shader-authoring-completion-plan.md) | 计划、缺口与完整阶段；后续实施与验收标准 |
+| 2026-09-12 | [Shader 草稿保存与 Console 布局](2026-09-12-shader-drafts-and-console.md) | 显式 Save 取代自动保存；修复未提交事务、资产身份、阶段删除及详情标签裁剪；242 项通过 |
+| 2026-09-11 | [统一 Shader 实施记录](2026-09-11-unified-shader-implementation.md) | 新批准方案；基础契约与导入设置已实施，完整替换及验收未完成 |
+| 2026-09-11 | [MaterialGraph 双资产路径残留](2026-09-11-material-graph-dual-asset-path.md) | 已授权并删除代码及当前资产残留；统一 Shader 验收独立跟踪 |
 | 2026-09-08 | [累积收口报告](../architecture/ENGINE_CLOSURE_CONTINUATION_2026_09_07.md) | Source/Scene Recovery、Asset/Audio/Rendering Pending 退休、837 项回归和持续收口目标 |
 | 2026-09-07 | [前轮收口报告](../architecture/ENGINE_CLOSURE_ACCEPTANCE_2026_09_07.md) | 前轮源码修复、742 项本地回归与发布验证 |
 | 2026-08-31 | [完整架构审查结论](2026-08-31-full-architecture-audit.md) | Core、Assets、Plugin、Scripting、Play Mode、Editor、Rendering、Native、Game Export、Player、测试与整改顺序 |

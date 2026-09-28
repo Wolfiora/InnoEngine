@@ -10,6 +10,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\framework\Inno.Editor.Inspection\Inno.Editor.Inspection.csproj" PrivateAssets="compile" />
     <ProjectReference Include="..\..\features\Inno.Editor.Scene\Inno.Editor.Scene.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="..\..\features\Inno.Editor.PlayMode\Inno.Editor.PlayMode.csproj" PrivateAssets="compile" />
     <ProjectReference Include="..\..\presentation\Inno.Editor.ImGui\Inno.Editor.ImGui.csproj" PrivateAssets="compile" />
     <ProjectReference Include="..\..\framework\Inno.Editor.Settings\Inno.Editor.Settings.csproj" PrivateAssets="compile" />
     <ProjectReference Include="..\..\..\..\content\assets\Inno.Assets\Inno.Assets.csproj" PrivateAssets="compile" />

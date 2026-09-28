@@ -69,9 +69,11 @@ public sealed unsafe partial class PlatformImGuiContext
             return null;
         }
 
-        byte* text = SDL.GetClipboardText();
-        m_clipboardText = (nint)text;
-        return text;
+        string? text = SDL.GetClipboardText();
+        if (text is null)
+            return null;
+        m_clipboardText = Marshal.StringToCoTaskMemUTF8(text);
+        return (byte*)m_clipboardText;
     }
 
     private void RegisterClipboardCallbacks()
@@ -83,8 +85,8 @@ public sealed unsafe partial class PlatformImGuiContext
         }
 
         ImGuiPlatformIOPtr platformIo = ImGuiNative.GetPlatformIO();
-        platformIo.PlatformGetClipboardTextFn = FunctionPointer(S_PLATFORM_GET_CLIPBOARD_TEXT);
-        platformIo.PlatformSetClipboardTextFn = FunctionPointer(S_PLATFORM_SET_CLIPBOARD_TEXT);
+        platformIo.PlatformGetClipboardTextFn = (delegate* unmanaged[Cdecl]<ImGuiContext*, byte*>)FunctionPointer(S_PLATFORM_GET_CLIPBOARD_TEXT);
+        platformIo.PlatformSetClipboardTextFn = (delegate* unmanaged[Cdecl]<ImGuiContext*, byte*, void>)FunctionPointer(S_PLATFORM_SET_CLIPBOARD_TEXT);
     }
 
     private void UnregisterClipboardCallbacks()
@@ -112,7 +114,7 @@ public sealed unsafe partial class PlatformImGuiContext
             return;
         }
 
-        SDL.Free(m_clipboardText);
+        Marshal.FreeCoTaskMem(m_clipboardText);
         m_clipboardText = 0;
     }
 

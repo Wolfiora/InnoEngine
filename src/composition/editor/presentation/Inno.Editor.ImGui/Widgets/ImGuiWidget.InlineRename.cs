@@ -82,13 +82,14 @@ public static partial class ImGuiWidget
             }
 
             bool submitted;
-            NativeImGui.PushStyleColor(ImGuiCol.NavCursor, Vector4.Zero);
+            NativeImGui.PushStyleColor(ImGuiCol.NavCursor, EditorPalette.transparent);
             try
             {
-                submitted = NativeImGui.InputText(
+                submitted = ImGuiUtf8Buffer.InputText(
                     controlId,
+                    null,
                     ref text,
-                    capacity,
+                    (nuint)capacity,
                     ImGuiInputTextFlags.EnterReturnsTrue | ImGuiInputTextFlags.AutoSelectAll);
             }
             finally
@@ -98,13 +99,15 @@ public static partial class ImGuiWidget
             bool deactivated = NativeImGui.IsItemDeactivated();
             bool escapePressed = NativeImGui.IsKeyPressed(ImGuiKey.Escape);
             bool active = NativeImGui.IsItemActive();
+            bool contextMenuRequested = active &&
+                                        NativeImGui.IsMouseReleased(ImGuiMouseButton.Right);
             if (selectAll && active)
             {
                 uint inputId = NativeImGui.GetItemID();
                 ImGuiInputTextStatePtr inputState = ImGuiP.GetInputTextState(inputId);
                 if (!inputState.IsNull)
                 {
-                    ImGuiP.SelectAll(inputState);
+                    inputState.SelectAll();
                     requestFocus = false;
                 }
             }
@@ -124,6 +127,14 @@ public static partial class ImGuiWidget
                 return InlineRenameResult.Cancel;
             if (submitted)
                 return InlineRenameResult.Commit;
+            if (contextMenuRequested)
+            {
+                // A context menu transfers focus into a popup after this item has already been
+                // submitted. Complete the edit in this frame so its active text/navigation state
+                // cannot be inherited by the popup on the following frame.
+                ImGuiP.ClearActiveID();
+                return InlineRenameResult.FocusLost;
+            }
             return deactivated
                 ? InlineRenameResult.FocusLost
                 : InlineRenameResult.None;

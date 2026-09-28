@@ -28,14 +28,15 @@ namespace Inno.Assets.Pipeline;
 /// Coordinates importing, persistent cataloging, canonical loading, reloading and collection
 /// for one source and artifact root pair.
 /// </summary>
-public sealed class AssetLoader : IDisposable, IAssetReferenceResolver
+public sealed partial class AssetLoader : IDisposable, IAssetReferenceResolver, IAssetArtifactLookup, IAssetPropertyStateResolver
 {
     internal const string C_META_POSTFIX = ".imeta";
+    private const string C_REJECTED_SOURCE_REFERENCE = "REJECTED_SOURCE_REFERENCE:";
 
     [ThreadStatic]
     private static AssetLoader? t_activeLoader;
 
-    private readonly AssetRuntimeOwner m_runtimeOwner = new();
+    private readonly AssetRuntimeOwner m_runtimeOwner;
     private readonly ArtifactRetention m_artifactRetention = new();
     private readonly SemaphoreSlim m_operationGate = new(1, 1);
     private readonly object m_asyncSync = new();
@@ -52,6 +53,8 @@ public sealed class AssetLoader : IDisposable, IAssetReferenceResolver
     private readonly ConditionalWeakTable<AssetObject, AssetDependencySet> m_dependencyRetention = new();
     private readonly HashSet<string> m_activeImports = new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<string, Guid> m_pendingImportIds = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string, (long generation, AssetSourceFileStamp source, AssetSourceFileStamp metadata,
+        string kind, string id)> m_unavailableImports = new(StringComparer.OrdinalIgnoreCase);
     private readonly AssetArtifactStore m_artifacts;
     private readonly AssetCatalogStore m_catalog;
     private readonly AssetDiagnosticPublisher m_diagnostics;
@@ -71,10 +74,36 @@ public sealed class AssetLoader : IDisposable, IAssetReferenceResolver
     private int m_admittedOperations;
     private bool m_retirementActive;
     private bool m_identitiesActive = true;
+    private bool m_deferUnavailableExtensions;
+    private bool m_preserveInitialExtensionDiscovery;
     private LifetimeScope? m_retirement;
     private AssetSourceMetadataStage? m_sourceMetadataStage;
     private long m_importerRegistryVersion = -1;
     private long m_buildProcessorRegistryVersion = -1;
+
+    /// <summary>
+    /// Restores serialized properties to the existing asset object.
+    /// </summary>
+    /// <param name="stableTypeId">
+    /// The stable type id consumed by restore properties; ownership remains with the caller unless explicitly stated otherwise.
+    /// </param>
+    /// <param name="propertyData">
+    /// The property data consumed by restore properties; ownership remains with the caller unless explicitly stated otherwise.
+    /// </param>
+    /// <param name="target">
+    /// The existing target that receives the validated result.
+    /// </param>
+    /// <typeparam name="TValue">
+    /// Serialized asset object type receiving restored properties.
+    /// </typeparam>
+    public void RestoreProperties<TValue>(Guid stableTypeId, byte[] propertyData, TValue target) where TValue : class, ISerializable
+    {
+        ObjectDisposedException.ThrowIf(m_disposed || m_disposeRequested, this);
+        ArgumentNullException.ThrowIfNull(target);
+        if (m_types.GetTypeRef(target.GetType()).stableId != stableTypeId)
+            throw new InvalidOperationException("The asset property payload has an incompatible stable type identity.");
+        m_serialization.Decode(propertyData, reader => { reader.RestoreProperties(target); return true; }, m_serializationContext);
+    }
 
     /// <summary>
     /// Creates an asset loader for one source and Library root pair.
@@ -190,6 +219,7 @@ public sealed class AssetLoader : IDisposable, IAssetReferenceResolver
         AssetSourcePolicy? sourcePolicy,
         bool runtimeArtifactsOnly = false)
     {
+        m_runtimeOwner = new(this);
         ArgumentNullException.ThrowIfNull(types);
         ArgumentNullException.ThrowIfNull(serialization);
         ArgumentNullException.ThrowIfNull(identities);
@@ -270,7 +300,8 @@ public sealed class AssetLoader : IDisposable, IAssetReferenceResolver
     /// Counts and source identities for the exported runtime snapshot.
     /// </returns>
     /// <exception cref="InvalidOperationException">
-    /// Thrown when a runtime-scoped asset has no complete artifact or depends on an authoring-only asset.
+    /// Thrown when runtime artifacts are incomplete, a deployed reference is authoring-only,
+    /// or a transitive authoring input has failed or become stale.
     /// </exception>
     /// <exception cref="IOException">
     /// Thrown when the destination is not empty or content cannot be copied.
@@ -290,6 +321,9 @@ public sealed class AssetLoader : IDisposable, IAssetReferenceResolver
     /// <returns>
     /// Counts and source identities represented by the exported snapshot.
     /// </returns>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown when artifacts are incomplete or transitive source inputs no longer certify the imported snapshot.
+    /// </exception>
     /// <exception cref="OperationCanceledException">
     /// Thrown when cancellation is requested before the snapshot finishes.
     /// </exception>
@@ -360,6 +394,8 @@ public sealed class AssetLoader : IDisposable, IAssetReferenceResolver
                     candidateLibraryRoot,
                     sourcePolicy ?? m_sourcePolicy);
                 candidateLoader.m_identitiesActive = false;
+                candidateLoader.m_deferUnavailableExtensions = true;
+                candidateLoader.m_preserveInitialExtensionDiscovery = m_deferUnavailableExtensions;
                 candidateLoader.m_diagnostics.SetActive(false);
                 candidateLoader.m_sourceMetadataStage = new AssetSourceMetadataStage();
                 return new AssetCatalogCandidate(libraryRoot, candidateLibraryRoot, candidateLoader);
@@ -396,13 +432,34 @@ public sealed class AssetLoader : IDisposable, IAssetReferenceResolver
     /// <see langword="true"/> when an importer handled the source.
     /// </returns>
     public bool Import(AssetPath path)
-        => Execute(() => ImportLocked(NormalizeAssetPath(path)));
+        => Execute(() => ImportLocked(NormalizeAssetPath(path), force: true));
 
     /// <summary>
     /// Reconciles source files, metadata, artifacts and the in-memory catalog.
     /// </summary>
     public void Rescan()
         => Execute(RescanLocked);
+
+    internal void DeferUnavailableExtensions()
+        => Execute(() => { m_deferUnavailableExtensions = true; });
+
+    internal void CompleteExtensionDiscovery()
+        => Execute(() =>
+        {
+            if (!m_deferUnavailableExtensions)
+                return;
+            m_deferUnavailableExtensions = false;
+            m_unavailableImports.Clear();
+            RescanLocked();
+        });
+
+    internal void ActivateExtensionDiscovery()
+    {
+        // Assembly discovery may publish built-in catalogs before the initial script compilation.
+        // Only the composition host can close that initial discovery boundary.
+        if (!m_preserveInitialExtensionDiscovery)
+            CompleteExtensionDiscovery();
+    }
 
     /// <summary>
     /// Loads a canonical asset by isolated source path.
@@ -602,6 +659,7 @@ public sealed class AssetLoader : IDisposable, IAssetReferenceResolver
         {
             return ResolveReference(persistentId, stableTypeId, lastKnownPath, expectedType);
         }
+        catch (AssetImportExtensionUnavailableException) { throw; }
         catch (Exception exception)
         {
             throw new InvalidOperationException(
@@ -629,13 +687,13 @@ public sealed class AssetLoader : IDisposable, IAssetReferenceResolver
     }
 
     /// <summary>
-    /// Saves an asset to its initial or existing isolated source path.
+    /// Saves an asset to its initial or existing isolated source path while preserving an existing destination identity.
     /// </summary>
     /// <param name="path">
     /// The isolated source path.
     /// </param>
     /// <param name="asset">
-    /// The asset to export.
+    /// The asset to export. Detached replacement values do not replace an existing source's persistent identity.
     /// </param>
     /// <returns>
     /// <see langword="true"/> when an importer exported the asset.
@@ -911,7 +969,7 @@ public sealed class AssetLoader : IDisposable, IAssetReferenceResolver
                 if (output.outputs.Count == 0)
                     throw new InvalidOperationException("An asset build processor produced no outputs.");
                 string fingerprint = CreateBuildFingerprint(processor, definition, inputs);
-                AssetArtifactKey result = m_artifacts.Commit(fingerprint, output.outputs);
+                AssetArtifactKey result = m_artifacts.Commit(fingerprint, output.outputs, output.authoringOutputs);
                 m_diagnostics.PublishBuild(targetId, displayName, output.diagnostics);
                 return result;
             }
@@ -1094,10 +1152,12 @@ public sealed class AssetLoader : IDisposable, IAssetReferenceResolver
         }
     }
 
-    private bool ImportLocked(string relativePath)
+    private bool ImportLocked(string relativePath, bool force = false)
     {
         if (m_activeImports.Contains(relativePath))
             return true;
+        if (!force && IsExtensionImportUnchanged(relativePath))
+            return false;
         if (IsSourceIgnored(relativePath, isDirectory: false))
             return false;
         string sourcePath = GetSourcePath(relativePath);
@@ -1147,6 +1207,7 @@ public sealed class AssetLoader : IDisposable, IAssetReferenceResolver
         try
         {
             byte[] sourceBytes = ReadStableSourceBytes(sourcePath, out AssetSourceFileStamp sourceStamp);
+            AssetImportContext? attemptedContext = null;
             try
             {
                 ImportBuild build = BuildImportLocked(
@@ -1154,10 +1215,18 @@ public sealed class AssetLoader : IDisposable, IAssetReferenceResolver
                     sourceBytes,
                     importer,
                     persistentId,
-                    sourceStamp);
+                    sourceStamp,
+                    context => attemptedContext = context);
                 try
                 {
                     CommitBuildLocked(build, writeSource: false, sourceBytes);
+                    if (m_unavailableImports.Remove(relativePath, out var recovered))
+                    {
+                        foreach (string dependent in m_unavailableImports
+                            .Where(pair => pair.Value.kind == recovered.kind && pair.Value.id == recovered.id)
+                            .Select(static pair => pair.Key).ToArray())
+                            m_unavailableImports.Remove(dependent);
+                    }
                 }
                 finally
                 {
@@ -1172,7 +1241,9 @@ public sealed class AssetLoader : IDisposable, IAssetReferenceResolver
                     sourceBytes,
                     importer,
                     persistentId,
-                    exception);
+                    exception,
+                    sourceStamp,
+                    attemptedContext);
                 return false;
             }
         }
@@ -1198,37 +1269,119 @@ public sealed class AssetLoader : IDisposable, IAssetReferenceResolver
         byte[] sourceBytes,
         AssetImporter importer,
         Guid persistentId,
-        Exception exception)
+        Exception exception,
+        AssetSourceFileStamp sourceStamp = default,
+        AssetImportContext? attemptedContext = null)
     {
         AssetRecord record = FindRecordLocked(relativePath) ?? new AssetRecord
         {
             relativePath = relativePath,
             persistentId = persistentId
         };
+        string sourceHash = sourceBytes.Length == 0 ? string.Empty : ComputeSha256Hex(sourceBytes);
+        string settingsHash;
+        try { settingsHash = ComputeSha256Hex(ReadImportSettingsBytesLocked(relativePath, importer)); }
+        catch { settingsHash = string.Empty; }
+        AssetImportDependencyData[] dependencies = attemptedContext?.importDependencies
+            .Select(dependency => TryCaptureFailedImportDependency(relativePath, dependency))
+            .Where(static dependency => dependency.HasValue)
+            .Select(static dependency => dependency!.Value)
+            .ToArray() ?? [];
+        string diagnostic = $"{exception.GetType().Name}: {exception.Message}";
+        bool repeatedFailure = record.meta.importStatus == (int)AssetImportStatus.Failed
+            && string.Equals(record.meta.sourceHash, sourceHash, StringComparison.Ordinal)
+            && string.Equals(record.meta.importerSettingsHash, settingsHash, StringComparison.Ordinal)
+            && record.importerGeneration == m_importers.GetGeneration(importer.importerId)
+            && string.Equals(record.meta.importerImplementationFingerprint,
+                GetImporterImplementationFingerprint(importer), StringComparison.Ordinal)
+            && record.meta.diagnostics.Length == 1
+            && string.Equals(record.meta.diagnostics[0], diagnostic, StringComparison.Ordinal)
+            && record.meta.importDependencies.SequenceEqual(dependencies);
         record.relativePath = relativePath;
         record.persistentId = persistentId;
         record.meta.relativePath = relativePath;
         record.meta.persistentId = persistentId;
-        record.meta.sourceHash = sourceBytes.Length == 0 ? string.Empty : ComputeSha256Hex(sourceBytes);
+        record.meta.sourceHash = sourceHash;
         record.meta.importerId = importer.importerId;
         record.meta.importerImplementationFingerprint = GetImporterImplementationFingerprint(importer);
+        record.meta.importerSettingsHash = settingsHash;
+        record.meta.importDependencies = dependencies;
+        record.importerGeneration = m_importers.GetGeneration(importer.importerId);
+        ApplySourceStamp(record.meta, sourceStamp);
+        record.meta.deploymentScope = (int)importer.deploymentScope;
         if (record.meta.stableAssetTypeId == Guid.Empty &&
             m_types.TryGetTypeRef(importer.targetAssetType, out TypeRef importerTypeRef))
         {
             record.meta.stableAssetTypeId = importerTypeRef.stableId;
             record.stableTypeId = importerTypeRef.stableId;
         }
-        record.meta.importStatus = (int)AssetImportStatus.Failed;
-        record.meta.diagnostics = [$"{exception.GetType().Name}: {exception.Message}"];
+        AssetImportExtensionUnavailableException? unavailable = exception as AssetImportExtensionUnavailableException;
+        bool extensionUnavailable = unavailable is not null;
+        bool pending = extensionUnavailable && m_deferUnavailableExtensions;
+        record.meta.importStatus = (int)(pending ? AssetImportStatus.Pending : AssetImportStatus.Failed);
+        record.meta.diagnostics = [pending
+            ? $"Waiting for authoring extension publication (or recovery after compilation failure). {exception.Message}"
+            : diagnostic];
         AddOrReplaceRecordLocked(record);
         // Failure belongs to the writable catalog, not the immutable source being rejected.
-        if (!GetMount(relativePath).isReadOnly)
+        if (!GetMount(relativePath).isReadOnly &&
+            (ReadMetadata(GetMetaPath(relativePath)) is null || TryReadSourceMeta(GetMetaPath(relativePath), out _)))
             WriteSourceMeta(record.meta);
         CommitCatalogLocked();
+        if (extensionUnavailable)
+        {
+            AssetSourceFileStamp.TryCapture(GetSourcePath(relativePath), out AssetSourceFileStamp pendingSourceStamp);
+            AssetSourceFileStamp.TryCapture(GetMetaPath(relativePath), out AssetSourceFileStamp metadataStamp);
+            m_unavailableImports[relativePath] = (m_types.current.version, pendingSourceStamp, metadataStamp,
+                unavailable!.extensionKind, unavailable.extensionId);
+        }
+        else
+            m_unavailableImports.Remove(relativePath);
+        if (pending || repeatedFailure)
+            return;
         m_log.Write(
             LogLevel.Error,
             "Asset import for '{0}' failed: {1}",
             [relativePath, exception]);
+    }
+
+    private AssetImportDependencyData? TryCaptureFailedImportDependency(
+        string ownerPath,
+        AssetImportDependency dependency)
+    {
+        try { return CreateImportDependencyDataLocked(ownerPath, dependency); }
+        catch (Exception exception) when (dependency.kind == AssetImportDependencyKind.Source
+                                          && exception is InvalidOperationException or ArgumentException)
+        {
+            return new AssetImportDependencyData
+            {
+                kind = (int)dependency.kind,
+                key = dependency.key,
+                fingerprint = C_REJECTED_SOURCE_REFERENCE + exception.Message
+            };
+        }
+    }
+
+    private bool IsExtensionImportUnchanged(string relativePath)
+    {
+        if (!m_unavailableImports.TryGetValue(relativePath, out var previous) ||
+            previous.generation != m_types.current.version ||
+            !AssetSourceFileStamp.TryCapture(GetSourcePath(relativePath), out AssetSourceFileStamp sourceStamp) ||
+            sourceStamp != previous.source)
+            return false;
+        AssetSourceFileStamp.TryCapture(GetMetaPath(relativePath), out AssetSourceFileStamp metadataStamp);
+        if (metadataStamp != previous.metadata)
+            return false;
+        AssetRecord? record = FindRecordLocked(relativePath);
+        if (record is null)
+            return false;
+        foreach (AssetImportDependencyData value in record.meta.importDependencies)
+        {
+            AssetImportDependencyData dependency = value;
+            if (ComputeImportDependencyFingerprintLocked(ref dependency, out _) != value.fingerprint)
+                return false;
+        }
+        return true;
     }
 
     private ImportBuild BuildImportLocked(
@@ -1236,7 +1389,8 @@ public sealed class AssetLoader : IDisposable, IAssetReferenceResolver
         byte[] sourceBytes,
         AssetImporter importer,
         Guid persistentId,
-        AssetSourceFileStamp sourceStamp = default)
+        AssetSourceFileStamp sourceStamp = default,
+        Action<AssetImportContext>? onContextCreated = null)
     {
         string sourceHash = ComputeSha256Hex(sourceBytes);
         var context = new AssetImportContext(
@@ -1266,13 +1420,16 @@ public sealed class AssetLoader : IDisposable, IAssetReferenceResolver
                         physicalPath);
                 }
                 return ReadStableSourceBytes(physicalPath, out _);
-            });
+            }, this);
+        onContextCreated?.Invoke(context);
+        byte[] settingsBytes = ReadImportSettingsBytesLocked(relativePath, importer);
+        context.importSettings = RestoreImportSettingsLocked(importer, settingsBytes, context);
         AssetImportProduct product = importer
             .ImportInternalAsync(context, CancellationToken.None)
             .AsTask()
             .GetAwaiter()
             .GetResult();
-        AssetDeploymentScope deploymentScope = importer.deploymentScope;
+        AssetDeploymentScope deploymentScope = product.deploymentScope ?? importer.deploymentScope;
         if (!Enum.IsDefined(deploymentScope))
         {
             throw new InvalidOperationException(
@@ -1329,6 +1486,7 @@ public sealed class AssetLoader : IDisposable, IAssetReferenceResolver
                 .ToArray(),
             importStatus = (int)AssetImportStatus.Imported,
             importerImplementationFingerprint = implementationFingerprint,
+            importerSettingsHash = ComputeSha256Hex(settingsBytes),
             diagnostics = product.diagnostics.ToArray()
         };
         ApplySourceStamp(meta, sourceStamp);
@@ -1338,6 +1496,7 @@ public sealed class AssetLoader : IDisposable, IAssetReferenceResolver
             product.asset,
             product.runtimePayload.ToArray(),
             outputs,
+            product.authoringOutputs,
             runtimeDependencies);
     }
 
@@ -1421,10 +1580,15 @@ public sealed class AssetLoader : IDisposable, IAssetReferenceResolver
                     $"Source '{build.meta.relativePath}' changed while its importer was running.");
             }
             ApplySourceStamp(build.meta, sourceStamp);
+            if (!string.Equals(build.meta.importerSettingsHash,
+                    ComputeSha256Hex(ReadImportSettingsBytesLocked(build.meta.relativePath,
+                        m_importers.FindById(build.meta.importerId)!)), StringComparison.Ordinal))
+                throw new IOException($"Import settings for '{build.meta.relativePath}' changed during import.");
             ValidateImportDependencySnapshotsLocked(build.meta);
             AssetArtifactKey artifactKey = m_artifacts.Commit(
                 CreateImportFingerprint(build.meta),
-                build.outputs);
+                build.outputs,
+                build.authoringOutputs);
             build.meta.artifactKey = artifactKey.value;
             build.meta.lastSuccessfulArtifactKey = artifactKey.value;
             WriteSourceMeta(build.meta);
@@ -1482,7 +1646,7 @@ public sealed class AssetLoader : IDisposable, IAssetReferenceResolver
             return false;
         ReadOnlyMemory<byte>? exported = importer
             .ExportInternalAsync(
-                new AssetExportContext(m_types, m_serialization),
+                new AssetExportContext(m_types, m_serialization, this),
                 asset,
                 CancellationToken.None)
             .AsTask()
@@ -1491,13 +1655,24 @@ public sealed class AssetLoader : IDisposable, IAssetReferenceResolver
         if (exported is null)
             return false;
         byte[] sourceBytes = exported.Value.ToArray();
-        Guid persistentId = asset.identity.persistentId;
+        AssetRecord? destinationRecord = FindRecordLocked(relativePath);
+        bool destinationOwnsIdentity = destinationRecord is not null
+            && destinationRecord.persistentId != Guid.Empty;
+        Guid persistentId = destinationOwnsIdentity
+            ? destinationRecord!.persistentId
+            : asset.identity.persistentId;
         if (persistentId == Guid.Empty)
             persistentId = Guid.NewGuid();
+        if (asset.identity.runtimeId is not null && asset.identity.persistentId != persistentId)
+        {
+            throw new InvalidOperationException(
+                $"Registered asset '{asset.identity.persistentId:D}' cannot replace destination identity " +
+                $"'{persistentId:D}' at '{relativePath}'.");
+        }
         ImportBuild build = BuildImportLocked(relativePath, sourceBytes, importer, persistentId);
         AssetRecord? provisionalRecord = null;
         bool registeredHere = false;
-        if (string.IsNullOrWhiteSpace(asset.assetPath.ToString()))
+        if (string.IsNullOrWhiteSpace(asset.assetPath.ToString()) && !destinationOwnsIdentity)
         {
             m_identities.InitializePersistentIdentity(asset, persistentId);
             registeredHere = m_identitiesActive && m_identities.Register(asset, persistentId);
@@ -1534,6 +1709,8 @@ public sealed class AssetLoader : IDisposable, IAssetReferenceResolver
         AssetRecord committed = m_recordsByPath[relativePath];
         if (committed.asset is null)
         {
+            if (asset.identity.persistentId != persistentId)
+                m_identities.InitializePersistentIdentity(asset, persistentId);
             committed.asset = asset;
             if (m_identitiesActive && asset.identity.runtimeId is null)
                 m_identities.Register(asset, persistentId);
@@ -1562,7 +1739,10 @@ public sealed class AssetLoader : IDisposable, IAssetReferenceResolver
         if (record is null || stale)
         {
             if (!ImportLocked(relativePath))
+            {
+                record = FindRecordLocked(relativePath);
                 return record is null ? null : LoadRecordLocked(record, requestedAssetType);
+            }
             record = FindRecordLocked(relativePath);
         }
         return record is null ? null : LoadRecordLocked(record, requestedAssetType);
@@ -1599,6 +1779,12 @@ public sealed class AssetLoader : IDisposable, IAssetReferenceResolver
 
     private AssetObject? LoadRecordLocked(AssetRecord record, Type requestedAssetType)
     {
+        if (string.IsNullOrEmpty(record.meta.artifactKey) && record.meta.assetStateBytes.Length == 0)
+        {
+            if (m_activeImports.Count != 0 && m_unavailableImports.TryGetValue(record.relativePath, out var unavailable))
+                throw new AssetImportExtensionUnavailableException(unavailable.kind, unavailable.id);
+            return null;
+        }
         Type? actualType = ResolveRecordType(record);
         if (actualType is null || !requestedAssetType.IsAssignableFrom(actualType))
             return null;
@@ -1649,7 +1835,12 @@ public sealed class AssetLoader : IDisposable, IAssetReferenceResolver
         foreach (AssetDependency dependency in GetDirectDependencies(record.meta))
         {
             AssetRecord? dependencyRecord = FindDependencyRecordLocked(dependency);
-            if (dependencyRecord is not null)
+            // A valid last-good dependency may belong to a module generation that has not
+            // activated yet. Do not let that temporary type gap abort the entire object graph;
+            // AttachDependenciesLocked installs the identity-preserving placeholder and a later
+            // registry generation rehydrates the reference from the retained catalog record.
+            if (dependencyRecord is not null && ResolveRecordType(dependencyRecord) is not null &&
+                (dependencyRecord.meta.assetStateBytes.Length != 0 || !string.IsNullOrEmpty(dependencyRecord.meta.artifactKey)))
                 PrepareShellsLocked(dependencyRecord, transaction);
         }
     }
@@ -1703,7 +1894,12 @@ public sealed class AssetLoader : IDisposable, IAssetReferenceResolver
         AssetObject? loaded = LoadIdLocked(persistentId, expectedType);
         if (loaded is not null)
             return loaded;
-        m_diagnostics.PublishMissingReference(persistentId, lastKnownPath, expectedType);
+        // A cataloged source whose importer/type belongs to a later module generation is
+        // unavailable, not missing. Startup and atomic reload may legitimately observe this
+        // state before the corresponding generation is activated; publishing a missing-reference
+        // diagnostic here would turn a healthy last-good asset into a false warning.
+        if (!IsSourceBackedTypeUnavailableLocked(persistentId))
+            m_diagnostics.PublishMissingReference(persistentId, lastKnownPath, expectedType);
         if (m_missingAssets.TryGetValue(persistentId, out WeakReference<AssetObject>? weak) &&
             weak.TryGetTarget(out AssetObject? existing) && expectedType.IsInstanceOfType(existing))
         {
@@ -1735,6 +1931,20 @@ public sealed class AssetLoader : IDisposable, IAssetReferenceResolver
             0);
         m_missingAssets[persistentId] = new WeakReference<AssetObject>(missing);
         return missing;
+    }
+
+    private bool IsSourceBackedTypeUnavailableLocked(Guid persistentId)
+    {
+        if (!m_recordsById.TryGetValue(persistentId, out AssetRecord? record) ||
+            record.meta.isTombstone ||
+            record.persistentId == Guid.Empty ||
+            string.IsNullOrWhiteSpace(record.meta.importerId) ||
+            !IsMounted(record.relativePath) ||
+            !IOFile.Exists(GetSourcePath(record.relativePath)))
+        {
+            return false;
+        }
+        return ResolveRecordType(record) is null || m_unavailableImports.ContainsKey(record.relativePath);
     }
 
     private AssetDependency[] ResolveDeclaredDependenciesLocked(AssetImportContext context)
@@ -1827,11 +2037,14 @@ public sealed class AssetLoader : IDisposable, IAssetReferenceResolver
     private void RescanLocked()
     {
         LoadCatalogLocked();
+        bool registriesChanged =
+            m_importerRegistryVersion != m_importers.snapshotVersion ||
+            m_buildProcessorRegistryVersion != m_buildProcessors.snapshotVersion;
         bool releasedRetiredAssets = ReleaseRetiredCanonicalAssetsLocked();
         if (m_runtimeArtifactsOnly)
         {
             ValidateRuntimeArtifactsLocked();
-            if (releasedRetiredAssets)
+            if (releasedRetiredAssets || registriesChanged)
                 RefreshLoadedAssetReferencesLocked();
             m_importerRegistryVersion = m_importers.snapshotVersion;
             m_buildProcessorRegistryVersion = m_buildProcessors.snapshotVersion;
@@ -1860,10 +2073,10 @@ public sealed class AssetLoader : IDisposable, IAssetReferenceResolver
             if (record is null ||
                 record.asset?.isMissing == true ||
                 IsStale(record, out _) ||
-                !m_artifacts.TryGet(
+                (record.meta.importStatus == (int)AssetImportStatus.Imported && !m_artifacts.TryGet(
                     new AssetArtifactKey(record.meta.artifactKey),
                     "asset-state",
-                    out _))
+                    out _)))
             {
                 ImportLocked(relative);
             }
@@ -1877,18 +2090,12 @@ public sealed class AssetLoader : IDisposable, IAssetReferenceResolver
                 continue;
             }
 
-            if (AssetSample.Contains(AssetPath.Parse(record.relativePath), record.meta.isDirectory))
-            {
-                RetireSampleRecordLocked(record);
-                continue;
-            }
-
             if (IOFile.Exists(GetSourcePath(record.relativePath)) ||
                 Directory.Exists(GetSourcePath(record.relativePath)))
                 continue;
             HandleDeletedLocked(record.relativePath);
         }
-        if (releasedRetiredAssets)
+        if (releasedRetiredAssets || registriesChanged)
             RefreshLoadedAssetReferencesLocked();
         CommitCatalogLocked();
         EnsureReadOnlyImportsSucceededLocked();
@@ -1906,14 +2113,15 @@ public sealed class AssetLoader : IDisposable, IAssetReferenceResolver
         string destination = Path.GetFullPath(destinationLibraryRoot);
         if (Directory.Exists(destination) && Directory.EnumerateFileSystemEntries(destination).Any())
             throw new IOException("Runtime asset content destination must be empty.");
-        Directory.CreateDirectory(destination);
-
         AssetRecord[] imported = m_recordsByPath.Values
             .Where(static record =>
                 !record.meta.isDirectory
                 && !record.meta.isTombstone
                 && !AssetSample.IsRuntimeExcluded(AssetPath.Parse(record.relativePath), isDirectory: false)
-                && record.meta.importStatus == (int)AssetImportStatus.Imported)
+                && (record.meta.importStatus == (int)AssetImportStatus.Imported
+                    || !string.IsNullOrEmpty(record.meta.artifactKey)
+                    || (!string.IsNullOrEmpty(record.meta.importerId)
+                        && record.meta.importStatus is (int)AssetImportStatus.Pending or (int)AssetImportStatus.Failed)))
             .OrderBy(static record => record.relativePath, StringComparer.Ordinal)
             .ToArray();
         AssetRecord? invalidScope = imported.FirstOrDefault(static record =>
@@ -1926,6 +2134,9 @@ public sealed class AssetLoader : IDisposable, IAssetReferenceResolver
         AssetRecord[] exported = imported
             .Where(static record => record.meta.deploymentScope == (int)AssetDeploymentScope.Runtime)
             .ToArray();
+        var validated = new HashSet<Guid>();
+        foreach (AssetRecord record in exported)
+            ValidateExportInputsLocked(record, record.relativePath, validated, cancellationToken);
         string[] keys = exported
             .Select(static record => record.meta.artifactKey)
             .Distinct(StringComparer.Ordinal)
@@ -1956,21 +2167,29 @@ public sealed class AssetLoader : IDisposable, IAssetReferenceResolver
             }
         }
 
+        Directory.CreateDirectory(destination);
         AssetCatalogStore catalog = serialization is null
             ? new AssetCatalogStore(destination, m_serialization)
             : new AssetCatalogStore(destination, serialization);
-        catalog.Commit(exported.Select(static record => record.meta).ToArray());
+        var destinationArtifacts = new AssetArtifactStore(destination, m_serialization);
+        var projectedKeys = new Dictionary<string, AssetArtifactKey>(StringComparer.Ordinal);
+        foreach (string key in keys)
+            projectedKeys.Add(key, m_artifacts.ExportRuntime(new(key), destinationArtifacts, serialization, cancellationToken));
+        var deployed = new List<AssetMeta>();
+        foreach (AssetRecord record in exported)
+        {
+            byte[] bytes = serialization is null ? m_serialization.Serialize(record.meta) : serialization.Serialize(record.meta);
+            AssetMeta meta = serialization is null ? m_serialization.Deserialize<AssetMeta>(bytes) : serialization.Deserialize<AssetMeta>(bytes);
+            meta.artifactKey = projectedKeys[record.meta.artifactKey].value;
+            meta.lastSuccessfulArtifactKey = meta.artifactKey;
+            meta.importDependencies = [];
+            deployed.Add(meta);
+        }
+        catalog.Commit(deployed.ToArray());
         long totalBytes = Directory
             .EnumerateFiles(Path.Combine(destination, "AssetDatabase"), "*", SearchOption.AllDirectories)
             .Sum(static path => new FileInfo(path).Length);
-        foreach (string keyValue in keys)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            AssetArtifactKey key = new(keyValue);
-            string source = GetArtifactBundlePath(m_artifacts.root, key);
-            string target = GetArtifactBundlePath(Path.Combine(destination, "Artifacts"), key);
-            totalBytes += CopyDirectory(source, target, cancellationToken);
-        }
+        totalBytes += Directory.EnumerateFiles(destinationArtifacts.root, "*", SearchOption.AllDirectories).Sum(static path => new FileInfo(path).Length);
 
         AssetSourceId[] sources = exported
             .Select(static record => AssetPath.Parse(record.relativePath).source)
@@ -1983,39 +2202,44 @@ public sealed class AssetLoader : IDisposable, IAssetReferenceResolver
         return new AssetRuntimeContentInfo(sources, exported.Length, keys.Length, totalBytes);
     }
 
-    private static string GetArtifactBundlePath(string root, AssetArtifactKey key)
-    {
-        string value = key.value;
-        if (value.Length < 4)
-            throw new InvalidDataException("A deployed artifact key must contain a SHA-256 value.");
-        return Path.Combine(root, value[..2].ToLowerInvariant(), value[2..4].ToLowerInvariant(), value);
-    }
-
-    private static long CopyDirectory(
-        string source,
-        string destination,
+    private void ValidateExportInputsLocked(
+        AssetRecord record,
+        string dependencyChain,
+        HashSet<Guid> validated,
         CancellationToken cancellationToken)
     {
-        if (!Directory.Exists(source))
-            throw new DirectoryNotFoundException($"Artifact bundle '{source}' does not exist.");
-        long bytes = 0;
-        foreach (string directory in Directory.EnumerateDirectories(source, "*", SearchOption.AllDirectories))
+        cancellationToken.ThrowIfCancellationRequested();
+        if (!validated.Add(record.persistentId))
+            return;
+        if (record.meta.isTombstone || record.meta.importStatus != (int)AssetImportStatus.Imported)
         {
-            cancellationToken.ThrowIfCancellationRequested();
-            string relative = Path.GetRelativePath(source, directory);
-            Directory.CreateDirectory(Path.Combine(destination, relative));
+            throw new InvalidOperationException(
+                $"Runtime export requires successful current inputs: {dependencyChain}. " +
+                $"Status: {(AssetImportStatus)record.meta.importStatus}. " +
+                string.Join(" | ", record.meta.diagnostics));
         }
-        Directory.CreateDirectory(destination);
-        foreach (string file in Directory.EnumerateFiles(source, "*", SearchOption.AllDirectories))
+
+        // Validate authoring inputs as well as deployed references. Editor last-good artifacts
+        // remain available, but must never certify a build of failed or stale source content.
+        foreach (AssetImportDependencyData dependency in record.meta.importDependencies)
         {
-            cancellationToken.ThrowIfCancellationRequested();
-            string relative = Path.GetRelativePath(source, file);
-            string target = Path.Combine(destination, relative);
-            Directory.CreateDirectory(Path.GetDirectoryName(target)!);
-            IOFile.Copy(file, target, overwrite: false);
-            bytes = checked(bytes + new FileInfo(file).Length);
+            if ((AssetImportDependencyKind)dependency.kind != AssetImportDependencyKind.Artifact)
+                continue;
+            if (!Guid.TryParse(dependency.key, out Guid id)
+                || !m_recordsById.TryGetValue(id, out AssetRecord? input))
+            {
+                throw new InvalidOperationException(
+                    $"Runtime export has a missing artifact input: {dependencyChain} -> {dependency.key}.");
+            }
+            ValidateExportInputsLocked(input, $"{dependencyChain} -> {input.relativePath}", validated, cancellationToken);
         }
-        return bytes;
+        // Do not reimport here: target compilation may already have captured this generation.
+        // A source change during the build must reject the snapshot, not mix two generations.
+        if (IsStale(record, out _))
+        {
+            throw new InvalidOperationException(
+                $"Runtime export has stale source inputs: {dependencyChain}. Reimport current sources and rebuild.");
+        }
     }
 
     private void ValidateRuntimeArtifactsLocked()
@@ -2078,33 +2302,6 @@ public sealed class AssetLoader : IDisposable, IAssetReferenceResolver
         => RetireRecordLocked(
             record,
             $"Asset source mount for '{record.relativePath}' is not active.");
-
-    private void RetireSampleRecordLocked(AssetRecord record)
-    {
-        AssetObject? asset = record.asset;
-        RemoveRecordLocked(record, removeGeneratedFiles: false);
-        if (asset is not null)
-        {
-            m_dependencyRetention.Remove(asset);
-            m_runtimeOwner.Release(asset);
-            try
-            {
-                _ = m_identities.Unregister(asset);
-            }
-            catch (Exception exception)
-            {
-                m_log.Write(
-                    LogLevel.Error,
-                    "Authoring-only sample asset '{0}' was released, but an identity observer failed: {1}",
-                    [record.relativePath, exception]);
-            }
-            finally
-            {
-                record.asset = null;
-                PublishReloaded(asset);
-            }
-        }
-    }
 
     private void RetireRecordLocked(AssetRecord record, string diagnostic)
     {
@@ -2234,12 +2431,6 @@ public sealed class AssetLoader : IDisposable, IAssetReferenceResolver
                     mount.id,
                     localMeta[..^C_META_POSTFIX.Length]).ToString();
                 string sourcePath = GetSourcePath(relative);
-                if (AssetSample.Contains(
-                        AssetPath.Parse(relative),
-                        Directory.Exists(sourcePath)))
-                {
-                    continue;
-                }
                 if (Directory.Exists(sourcePath))
                     continue;
                 try
@@ -2288,6 +2479,14 @@ public sealed class AssetLoader : IDisposable, IAssetReferenceResolver
         IReadOnlyDictionary<string, int> ambiguousRenames = AssociateUntrackedRenamesLocked(changes);
         foreach (AssetChangedEvent change in changes)
         {
+            if (change.relativePath.EndsWith(C_META_POSTFIX, StringComparison.OrdinalIgnoreCase))
+            {
+                string ownerPath = NormalizeRelativePath(change.relativePath[..^C_META_POSTFIX.Length]);
+                AssetRecord? owner = FindRecordLocked(ownerPath);
+                if (owner is not null && !owner.meta.isDirectory && IsStale(owner, out _))
+                    ImportLocked(ownerPath);
+                continue;
+            }
             if (IsInternalGeneratedPath(change.relativePath))
                 continue;
             if (change.changeType.HasFlag(WatcherChangeTypes.Renamed))
@@ -2374,7 +2573,10 @@ public sealed class AssetLoader : IDisposable, IAssetReferenceResolver
                 m_runtimeOwner.UpdateAssetPath(record.asset, AssetPath.Parse(newNormalized));
         }
         m_recordsByPath[newNormalized] = record;
-        WriteSourceMeta(record.meta);
+        // A renamed source may deliberately carry a different importer and its matching settings.
+        // The source sidecar is authoritative; cached importer state must not relabel those bytes.
+        if (ReadMetadata(newMeta) is null)
+            WriteSourceMeta(record.meta);
         UpdateGraphsLocked(record);
         CommitCatalogLocked();
 
@@ -2564,7 +2766,10 @@ public sealed class AssetLoader : IDisposable, IAssetReferenceResolver
             var states = new Dictionary<Guid, SerializedMissingState>();
             foreach (AssetRecord record in m_recordsById.Values)
             {
-                if (record.asset is not null || record.meta.isTombstone)
+                // Catalog tombstones preserve source identity, but they are not live reference
+                // roots. Only a materialized canonical asset belongs to the active generation;
+                // retained missing placeholders are captured separately below.
+                if (record.asset is not null)
                     Capture(record.persistentId, record.relativePath, record.stableTypeId, record.meta.assetStateBytes);
             }
             foreach ((Guid id, WeakReference<AssetObject> reference) in m_missingAssets)
@@ -2584,6 +2789,9 @@ public sealed class AssetLoader : IDisposable, IAssetReferenceResolver
                         lastKnownPath: path), payload));
             }
         });
+
+    internal bool IsSourceBackedTypeUnavailable(Guid persistentId)
+        => Execute(() => IsSourceBackedTypeUnavailableLocked(persistentId));
 
     internal void SetIdentitiesActive(bool active)
         => Execute(() =>
@@ -2630,13 +2838,23 @@ public sealed class AssetLoader : IDisposable, IAssetReferenceResolver
 
     private AssetRecord? FindRecordLocked(string relativePath)
     {
-        if (m_recordsByPath.TryGetValue(relativePath, out AssetRecord? record))
-            return record;
+        m_recordsByPath.TryGetValue(relativePath, out AssetRecord? record);
         string metaPath = GetMetaPath(relativePath);
         if (!TryReadSourceMeta(metaPath, out AssetSourceMeta sourceMeta))
-            return null;
+            return record;
         if (sourceMeta.persistentId == Guid.Empty)
-            return null;
+            return record;
+        if (record is not null && record.persistentId == sourceMeta.persistentId)
+            return record;
+        if (record is not null && record.persistentId != Guid.Empty)
+        {
+            // The source sidecar owns path identity. A catalog entry at the same path can be
+            // historical after an interrupted save or catalog promotion and must not replace it.
+            RetireRecordLocked(
+                record,
+                $"Source '{relativePath}' now declares persistent id '{sourceMeta.persistentId}'.");
+            record = null;
+        }
         if (m_recordsById.TryGetValue(sourceMeta.persistentId, out AssetRecord? tombstone) &&
             tombstone.meta.isTombstone)
         {
@@ -2667,10 +2885,10 @@ public sealed class AssetLoader : IDisposable, IAssetReferenceResolver
                 return sameId;
             }
         }
-        record = m_recordsById.GetValueOrDefault(sourceMeta.persistentId) ?? new AssetRecord();
+        record = m_recordsById.GetValueOrDefault(sourceMeta.persistentId) ?? record ?? new AssetRecord();
         record.relativePath = relativePath;
         record.persistentId = sourceMeta.persistentId;
-        if (record.meta.isTombstone)
+        if (record.meta.isTombstone || record.meta.persistentId == Guid.Empty)
         {
             record.meta = new AssetMeta
             {
@@ -2783,7 +3001,10 @@ public sealed class AssetLoader : IDisposable, IAssetReferenceResolver
         }
         if (record.importerGeneration != m_importers.GetGeneration(record.meta.importerId))
             return true;
-        if (record.meta.importStatus != (int)AssetImportStatus.Imported)
+        if (record.meta.importStatus != (int)AssetImportStatus.Imported &&
+            record.meta.importStatus != (int)AssetImportStatus.Failed)
+            return true;
+        if (AreImportSettingsStaleLocked(record, importer))
             return true;
         if (!AssetSourceFileStamp.TryCapture(sourcePath, out AssetSourceFileStamp sourceStamp))
             return true;
@@ -2803,6 +3024,20 @@ public sealed class AssetLoader : IDisposable, IAssetReferenceResolver
         for (int i = 0; i < record.meta.importDependencies.Length; i++)
         {
             AssetImportDependencyData dependency = record.meta.importDependencies[i];
+            if (record.meta.importStatus == (int)AssetImportStatus.Failed
+                && dependency.fingerprint.StartsWith(C_REJECTED_SOURCE_REFERENCE, StringComparison.Ordinal))
+            {
+                try
+                {
+                    ValidateSourceReferenceLocked(record.relativePath,
+                        NormalizeRelativePath(dependency.key));
+                    return true;
+                }
+                catch (Exception exception) when (exception is InvalidOperationException or ArgumentException)
+                {
+                    continue;
+                }
+            }
             string fingerprint = ComputeImportDependencyFingerprintLocked(
                 ref dependency,
                 out bool dependencyChanged);
@@ -2993,6 +3228,21 @@ public sealed class AssetLoader : IDisposable, IAssetReferenceResolver
     private void TrackUnsupportedSourceLocked(string relativePath)
     {
         AssetRecord record = m_recordsByPath.GetValueOrDefault(relativePath) ?? new AssetRecord();
+        // The source catalog is last-good state. An importer can be absent briefly while the
+        // module/type generation that owns it is compiling or activating. Preserve a previously
+        // cataloged source verbatim so a scan cannot erase its persistent identity, stable type,
+        // dependency graph, or immutable artifact closure. A source that has never been imported
+        // still follows the Unsupported path below.
+        if (record.persistentId != Guid.Empty &&
+            !record.meta.isTombstone &&
+            !string.IsNullOrWhiteSpace(record.meta.importerId))
+        {
+            record.relativePath = relativePath;
+            record.meta.relativePath = relativePath;
+            AddOrReplaceRecordLocked(record);
+            UpdateGraphsLocked(record);
+            return;
+        }
         if (record.persistentId != Guid.Empty)
             m_recordsById.Remove(record.persistentId);
         record.relativePath = relativePath;
@@ -3039,8 +3289,12 @@ public sealed class AssetLoader : IDisposable, IAssetReferenceResolver
             if (meta.persistentId == Guid.Empty)
                 return;
             AssetRecord tombstone = FindRecordByIdWithoutLoading(meta.persistentId) ?? new AssetRecord();
-            if (!string.IsNullOrWhiteSpace(tombstone.relativePath))
+            if (!string.IsNullOrWhiteSpace(tombstone.relativePath) &&
+                m_recordsByPath.TryGetValue(tombstone.relativePath, out AssetRecord? pathRecord) &&
+                ReferenceEquals(pathRecord, tombstone))
+            {
                 m_recordsByPath.Remove(tombstone.relativePath);
+            }
             tombstone.relativePath = meta.relativePath;
             tombstone.persistentId = meta.persistentId;
             tombstone.stableTypeId = meta.stableAssetTypeId;
@@ -3055,7 +3309,11 @@ public sealed class AssetLoader : IDisposable, IAssetReferenceResolver
         if (!string.IsNullOrWhiteSpace(record.relativePath) &&
             !string.Equals(record.relativePath, meta.relativePath, StringComparison.OrdinalIgnoreCase))
         {
-            m_recordsByPath.Remove(record.relativePath);
+            if (m_recordsByPath.TryGetValue(record.relativePath, out AssetRecord? pathRecord) &&
+                ReferenceEquals(pathRecord, record))
+            {
+                m_recordsByPath.Remove(record.relativePath);
+            }
         }
         record.relativePath = meta.relativePath;
         record.persistentId = meta.persistentId;
@@ -3231,7 +3489,9 @@ public sealed class AssetLoader : IDisposable, IAssetReferenceResolver
     private void WriteSourceMeta(AssetMeta meta)
     {
         string metaPath = GetMetaPath(meta.relativePath);
-        _ = TryReadSourceMeta(metaPath, out AssetSourceMeta existing);
+        byte[]? existingBytes = ReadMetadata(metaPath);
+        AssetSourceMeta? existing = existingBytes is null
+            ? null : m_serialization.Deserialize<AssetSourceMeta>(existingBytes);
         var sourceMeta = new AssetSourceMeta
         {
             persistentId = meta.persistentId,
@@ -3278,7 +3538,8 @@ public sealed class AssetLoader : IDisposable, IAssetReferenceResolver
             "Inno.AssetImport",
             meta.sourceHash,
             meta.importerId,
-            meta.importerImplementationFingerprint
+            meta.importerImplementationFingerprint,
+            meta.importerSettingsHash
         };
         foreach (AssetDependencyData dependency in meta.runtimeDependencies
                      .OrderBy(static value => value.persistentId))
@@ -3347,8 +3608,6 @@ public sealed class AssetLoader : IDisposable, IAssetReferenceResolver
 
     private bool IsSourceIgnored(AssetPath assetPath, bool isDirectory)
     {
-        if (AssetSample.Contains(assetPath, isDirectory))
-            return true;
         string localPath = assetPath.localPath;
         string[] segments = localPath.Split('/', StringSplitOptions.RemoveEmptyEntries);
         for (int i = 0; i < segments.Length - (isDirectory ? 0 : 1); i++)
@@ -3619,6 +3878,7 @@ public sealed class AssetLoader : IDisposable, IAssetReferenceResolver
         internal AssetObject? asset;
         internal bool? lastSweepReachability;
         internal long importerGeneration;
+        internal AssetSourceFileStamp settingsStamp;
     }
 
     private sealed class AssetRecordRetirement(AssetLoader owner, AssetRecord record) : IDisposable
@@ -3666,6 +3926,7 @@ public sealed class AssetLoader : IDisposable, IAssetReferenceResolver
         AssetObject asset,
         byte[] payload,
         IReadOnlyDictionary<string, ReadOnlyMemory<byte>> outputs,
+        IReadOnlySet<string> authoringOutputs,
         AssetDependency[] dependencies);
 
     private readonly record struct SweepCandidate(

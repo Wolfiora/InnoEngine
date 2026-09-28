@@ -3,6 +3,7 @@ using System;
 using Inno.Core.Mathematics;
 using Inno.Editor.ImGui;
 using Inno.Editor.ImGui.ImGuiWidget;
+using EditorImGui = Inno.Editor.ImGui.ImGui;
 using EditorWidget = Inno.Editor.ImGui.ImGuiWidget.ImGuiWidget;
 using NativeImGui = Inno.Native.ImGui.ImGui;
 using NumericsVector4 = System.Numerics.Vector4;
@@ -249,7 +250,11 @@ internal sealed class ColorPropertyDrawer : IPropertyDrawer
     {
         Color value = context.GetValue() is Color current ? current : default;
         var nativeValue = new NumericsVector4(value.r, value.g, value.b, value.a);
-        if (NativeImGui.ColorEdit4($"##{context.path}", ref nativeValue))
+        var flags = context.hdrColor
+            ? Inno.Native.ImGui.ImGuiColorEditFlags.Hdr | Inno.Native.ImGui.ImGuiColorEditFlags.Float
+                | Inno.Native.ImGui.ImGuiColorEditFlags.InputRgb | Inno.Native.ImGui.ImGuiColorEditFlags.DisplayRgb
+            : Inno.Native.ImGui.ImGuiColorEditFlags.None;
+        if (EditorImGui.ColorEditLinear4($"##{context.path}", ref nativeValue, flags))
         {
             context.SetValue(new Color(nativeValue.X, nativeValue.Y, nativeValue.Z, nativeValue.W));
         }

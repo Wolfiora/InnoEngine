@@ -1,10 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Numerics;
 
 using Inno.Core.Events;
 using Inno.Core.Execution;
 using Inno.Core.Logging;
+using Inno.Core.Input;
 using Inno.Extensibility.Types;
 using Inno.Editor.Core;
 using Inno.Editor.ImGui.ImGuiWidget;
@@ -23,6 +25,8 @@ public sealed class ImGuiEditorRuntime : EditorRuntime
     private readonly Stopwatch m_timer = Stopwatch.StartNew();
     private readonly EditorInteractionRuntime m_runtime;
     private readonly EditorModalHost m_modals = new();
+    private uint m_dockspaceId;
+    private Vector2 m_dockspaceSize;
     private bool m_disposed;
 
     /// <summary>
@@ -54,8 +58,6 @@ public sealed class ImGuiEditorRuntime : EditorRuntime
         ArgumentNullException.ThrowIfNull(types);
         ArgumentNullException.ThrowIfNull(logs);
         ArgumentNullException.ThrowIfNull(hostServices);
-        ImGuiIOPtr io = NativeImGui.GetIO();
-        io.ConfigFlags |= ImGuiConfigFlags.InnoOverlayScrollbars;
         m_runtime = new EditorInteractionRuntime(context, types, logs, hostServices);
     }
 
@@ -122,12 +124,15 @@ public sealed class ImGuiEditorRuntime : EditorRuntime
         double now = m_timer.Elapsed.TotalSeconds;
         bool blocksInteraction = m_modals.Update(modals, now);
 
-        DrawDockSpace();
         if (blocksInteraction)
             NativeImGui.BeginDisabled(true);
         try
         {
+            // The main menu must reserve the viewport work area before the dockspace snapshots it.
+            // Reversing this order makes the dockspace overlap the bottom of the menu and clip the
+            // first docked tab bar row.
             EditorMenuRenderer.MainMenu(interactions.For(ImGuiInteractionIds.C_MAIN_MENU_AREA));
+            DrawDockSpace();
             DrawPanels(m_runtime.panels);
         }
         finally
@@ -143,22 +148,95 @@ public sealed class ImGuiEditorRuntime : EditorRuntime
         m_modals.Draw(context, modals, now);
     }
 
-    private static void DrawDockSpace()
+    private void DrawDockSpace()
     {
+        ImGuiViewportPtr viewport = NativeImGui.GetMainViewport();
+        Vector2 size = viewport.WorkSize;
+        ImGuiStylePtr style = NativeImGui.GetStyle();
+        if (m_dockspaceId == 0)
+        {
+            uint hostId = ImGuiP.ImHashStr($"WindowOverViewport_{viewport.ID:X8}");
+            m_dockspaceId = ImGuiP.ImHashStr("DockSpace", hostId);
+            ImGuiDockNodePtr loaded = ImGuiP.DockBuilderGetNode(m_dockspaceId);
+            if (loaded != ImGuiDockNodePtr.Null)
+                ResizeDockSplits(loaded, size, style.DockingSeparatorSize, style.WindowMinSize);
+        }
+        else if (m_dockspaceSize != Vector2.Zero
+            && (MathF.Abs(size.X - m_dockspaceSize.X) >= 0.5f
+                || MathF.Abs(size.Y - m_dockspaceSize.Y) >= 0.5f))
+        {
+            ImGuiDockNodePtr root = ImGuiP.DockBuilderGetNode(m_dockspaceId);
+            if (root != ImGuiDockNodePtr.Null)
+                ResizeDockSplits(root, size, style.DockingSeparatorSize, style.WindowMinSize);
+        }
+
         NativeImGui.PushStyleColor(ImGuiCol.ResizeGripHovered, EditorPalette.accentHovered);
         NativeImGui.PushStyleColor(ImGuiCol.ResizeGripActive, EditorPalette.accentActive);
         try
         {
-            _ = NativeImGui.DockSpaceOverViewport();
+            uint submittedId = NativeImGui.DockSpaceOverViewport();
+            if (submittedId != m_dockspaceId)
+                throw new InvalidOperationException("The ImGui viewport dockspace identity changed before layout could be resized.");
         }
         finally
         {
             NativeImGui.PopStyleColor(2);
         }
+        if (m_dockspaceSize == Vector2.Zero)
+        {
+            ImGuiDockNodePtr root = ImGuiP.DockBuilderGetNode(m_dockspaceId);
+            if (root != ImGuiDockNodePtr.Null)
+                ResizeDockSplits(root, size, style.DockingSeparatorSize, style.WindowMinSize);
+        }
+        m_dockspaceSize = size;
+    }
+
+    private static unsafe void ResizeDockSplits(ImGuiDockNodePtr node, Vector2 size,
+        float separator, Vector2 minimumWindowSize)
+    {
+        ImGuiDockNodePtr first = new(node.ChildNodes[0].Handle);
+        ImGuiDockNodePtr second = new(node.ChildNodes[1].Handle);
+        if (first == ImGuiDockNodePtr.Null || second == ImGuiDockNodePtr.Null
+            || node.SplitAxis is not (ImGuiAxis.X or ImGuiAxis.Y))
+            return;
+        bool horizontal = node.SplitAxis == ImGuiAxis.X;
+        float firstReference = horizontal ? first.Size.X : first.Size.Y;
+        float secondReference = horizontal ? second.Size.X : second.Size.Y;
+        float previousAvailable = (horizontal ? node.Size.X : node.Size.Y) - separator;
+        if (firstReference <= 0f || secondReference <= 0f
+            || MathF.Abs(firstReference + secondReference - previousAvailable) > MathF.Max(1f, separator))
+        {
+            firstReference = horizontal ? first.SizeRef.X : first.SizeRef.Y;
+            secondReference = horizontal ? second.SizeRef.X : second.SizeRef.Y;
+        }
+        float available = (horizontal ? size.X : size.Y) - separator;
+        if (!float.IsFinite(firstReference) || !float.IsFinite(secondReference)
+            || firstReference <= 0f || secondReference <= 0f || available <= 1f)
+            return;
+        float minimum = MathF.Min(available * 0.5f,
+            horizontal ? minimumWindowSize.X : minimumWindowSize.Y);
+        float firstExtent = Math.Clamp(available * firstReference / (firstReference + secondReference),
+            minimum, available - minimum);
+        Vector2 firstSize = size;
+        Vector2 secondSize = size;
+        if (horizontal)
+        {
+            firstSize.X = firstExtent;
+            secondSize.X = available - firstExtent;
+        }
+        else
+        {
+            firstSize.Y = firstExtent;
+            secondSize.Y = available - firstExtent;
+        }
+        first.SizeRef = firstSize;
+        second.SizeRef = secondSize;
+        ResizeDockSplits(first, firstSize, separator, minimumWindowSize);
+        ResizeDockSplits(second, secondSize, separator, minimumWindowSize);
     }
 
     /// <summary>
-    /// Dispatches an unhandled keyboard event through contextual shortcuts.
+    /// Dispatches contextual shortcuts, leaving editing keys with active text widgets while permitting explicit save.
     /// </summary>
     /// <param name="keyEvent">
     /// The keyboard event received from the application event stream.
@@ -167,6 +245,11 @@ public sealed class ImGuiEditorRuntime : EditorRuntime
     {
         ArgumentNullException.ThrowIfNull(keyEvent);
         if (m_modals.Update(m_runtime.modals, m_timer.Elapsed.TotalSeconds))
+            return;
+        // Text widgets own editing keys, including Backspace and clipboard/history gestures.
+        // Explicit document save remains available without first leaving an input field.
+        HotKeyGesture save = HotKeyGesture.Primary(KeyCode.S);
+        if (NativeImGui.GetIO().WantTextInput && (keyEvent.key != save.key || keyEvent.modifiers != save.modifiers))
             return;
         m_runtime.HandleKeyPressed(keyEvent);
     }
@@ -200,12 +283,17 @@ public sealed class ImGuiEditorRuntime : EditorRuntime
             EditorPanelExtension extension = panels[i];
             if (!extension.isOpen || !extension.TryGetWindowPresentation(
                     out bool useWindowPadding,
-                    out bool allowScrolling))
+                    out bool allowScrolling,
+                    out Vector2 initialSize))
                 continue;
             bool isOpen = extension.isOpen;
+            if (initialSize.X > 0 && initialSize.Y > 0)
+                NativeImGui.SetNextWindowSize(initialSize, ImGuiCond.FirstUseEver);
             ImGuiWindowFlags flags = ImGuiWindowFlags.NoCollapse;
             if (!allowScrolling)
                 flags |= ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse;
+            if (extension.TakeFocusRequest())
+                NativeImGui.SetNextWindowFocus();
             EditorWidget.PanelWindow(extension.title, ref isOpen, () =>
             {
                 if (extension.Draw(context) &&

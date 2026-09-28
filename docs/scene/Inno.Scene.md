@@ -22,6 +22,32 @@ SceneManager.MoveGameObjectToScene(player, second); // Moves the complete subtre
 
 Hierarchy 的 Scene context menu 和 Delete hotkey 会关闭该内存 Scene，但不会删除对应的 SceneAsset。最后一个已加载 Scene 也可以关闭；此时 `SceneManager.activeScene` 为 `null`，Hierarchy 保持为空，直到用户显式创建或打开 Scene。
 
+## 运行时实例化 Prefab
+
+脚本可在已加载的 Scene 中实例化序列化引用的 prefab，并把实例放入同一 Scene 的父物体下：
+
+```csharp
+using InnoEngine.Scene;
+using InnoEngine.Serialization;
+
+public sealed class ObstacleSpawner : GameBehavior
+{
+    [SerializableProperty]
+    public PrefabAsset? obstacle { get; set; }
+
+    protected override void Start()
+    {
+        if (obstacle is not null)
+            gameObject.scene.InstantiatePrefab(obstacle, gameObject.transform);
+    }
+}
+```
+
+`GameScene.InstantiatePrefab` 返回已连接 prefab 的根对象，并使用加载该 Scene 的 world；Canvas 等呈现阶段回调即使处于其他临时作用域，也会在正确的场景与 Identity 作用域中创建实例。Prefab 或目标 Scene 不可用、父物体不属于目标 Scene 时会明确失败。Host 在会话启动时通过 `SceneWorld.ConfigurePrefabInstantiation` 注入当前序列化器与资产解析器；该装配方法不属于脚本 API。底层 `PrefabAsset.Instantiate` 先恢复独立实例，再设置目标父级，避免把父物体带进 prefab 内部用于差异对比的临时 Scene。
+
+`GameBehavior.Update` 等执行阶段允许创建 prefab。新建对象及其组件会在执行阶段结束时一同提交；反序列化可在提交前恢复该新对象的组件顺序，但仍禁止在执行阶段重排已提交对象的组件。
+Prefab 差异映射在这个阶段读取当前有效对象（包含尚待提交的实例及组件），不触发要求场景已稳定的完整 Scene Capture。一次实例化只校准其新建子树中的嵌套 prefab；场景序列化仍要求结构修改全部提交。
+
 Scene 顺序决定当前 `SceneManager` 的跨 Scene traversal 顺序，但业务脚本不应把它作为精确的脚本执行顺序契约；显式依赖应放入可排序的 GameSystem 或独立 scheduler。
 
 `MoveGameObjectToScene` 要求 source 与 destination 都已加载。被移动对象会成为目标 Scene 的 root；完整 child subtree、GameObject/Component 实例、persistent ID、世界变换和生命周期状态保持不变。该操作不会通过序列化复制对象，也不会调用 Reset 或 Destroy。
@@ -92,10 +118,10 @@ gameObject.SetComponentIndex(components[2], 1);
 int index = gameObject.GetComponentIndex(components[2]);
 ```
 
-- `Transform` 永远保持 index `0`，不能移动。
+- `Transform` 仍是每个 GameObject 唯一且不可删除的必需组件，但可以和其他 Component 一样调整显示/序列化顺序。
 - 顺序由 Scene/Prefab serialization 保存。
 - `GetComponents()` 与 Inspector 使用相同顺序。
-- Inspector 通过 header 右侧的上下箭头逐位移动 Component；到达边界的箭头会禁用。
+- Inspector 通过拖动完整 header 调整 Component 顺序；Transform 与其他 Component 使用同一拖拽契约。
 - 手动顺序不改变 GameBehavior Update 优先级；需要确定性调度时使用专门 scheduler，而不是依赖 Inspector 位置。
 
 ## GameSystem 顺序
@@ -114,7 +140,7 @@ public sealed class PhysicsSystem : GameSystem
 }
 ```
 
-Inspector header 提供 Move Up、Move Down 和 Remove，但不允许拖拽。移动按钮只改变显示与序列化顺序，不会修改代码声明的 `order`；相同 `order` 时显示顺序作为稳定 tie-breaker。
+Inspector header 提供 Reset 和 Remove，并通过拖拽调整显示与序列化顺序。该顺序不会修改代码声明的 `order`；相同 `order` 时显示顺序作为稳定 tie-breaker。
 
 ## GameSystem 定位
 
@@ -161,6 +187,8 @@ Scene/Prefab 的 History、Missing、序列化和 reload previous/candidate 边�
 这两个类型只能由 Scene restore 或脚本 reload 管线创建，不能通过普通 `AddComponent` / `AddSystem` 添加，也不进入 Scripting API facade。占位对象只保存 `TypeRef`、类型名、中立 property bytes、资产依赖和引用别名；`TypeRef` 不保存旧 `Type`、反射 metadata、委托或旧脚本实例，所以本身不会阻止 collectible ALC 卸载。原 Stable ID 再次可解析时，`missingType.IsValid(types)` 返回 true；reload 原位创建真实类型，严格恢复全部原属性和当前图引用。构造、属性失败回滚到原占位，提交后的退休清理失败则 Fault，不伪回滚。
 
 Missing 是运行时占位状态，不是 Scene 数据格式中的额外元素类型或 dirty 修改。序列化仍写原逻辑 Stable Type ID、原类型名和原 property bytes，不写 `MissingGameComponent` / `MissingGameSystem` 的 Stable ID，也不写 missing 标志；普通 Scene 中恒等的引用 token 不产生冗余 alias。因而 clean Scene 在类型消失或恢复时保持 clean，Hierarchy 不显示 `*`。用户可以在 missing 存在时修改并保存其他内容；后续相同 Stable ID 恢复时，保存过的原始状态仍会原位还原。
+
+Prefab 等复制图恢复时会为实例分配新的 persistent ID。若脚本类型尚未可用，Missing 状态中的 Scene 引用别名也会按源对象到实例对象的映射重建；脚本恢复后引用仍指向该实例的对象。
 
 ## 热重载同步
 

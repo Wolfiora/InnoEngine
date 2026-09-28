@@ -1,6 +1,8 @@
 using Inno.References;
+using Inno.Core.Identity;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Numerics;
 
 using Inno.Editor.Core;
@@ -32,7 +34,9 @@ namespace Inno.Editor.Panel.SceneView;
 internal sealed class SceneViewPanel : EditorPanel
 {
     private const string C_VIEWPORT_ID = "scene-view";
+    private const string C_GIZMO_CLUSTER_POPUP = "##scene-gizmo-cluster";
     private const int C_MANIPULATION_TOOL_COUNT = 4;
+    private const float C_IMGUIZMO_AXIS_LIMIT_DEFAULT = 0.0025f;
     private static readonly EditorViewportKindId S_KIND = new("inno.editor.viewport.scene");
     private static readonly Vector2 S_UNAVAILABLE_PADDING = new(48f, 32f);
 
@@ -43,11 +47,13 @@ internal sealed class SceneViewPanel : EditorPanel
     private readonly EditorSettings m_settings;
     private Vector4 m_backgroundColor;
     private NavigationDrag m_navigationDrag;
+    private readonly EditorPlanarNavigation m_planarNavigation = new();
     private ImGuiMouseButton m_navigationDragButton;
     private ImGuizmoOperation m_operation = ImGuizmoOperation.Translate;
     private ImGuizmoMode m_mode = ImGuizmoMode.World;
     private Transform? m_gestureTarget;
     private TransformSnapshot m_gestureBefore;
+    private Identity[] m_popupGizmoOwners = [];
 
     internal SceneViewPanel(
         EditorRenderingModule rendering,
@@ -131,13 +137,30 @@ internal sealed class SceneViewPanel : EditorPanel
         bool viewportClicked = NativeImGui.IsItemClicked(ImGuiMouseButton.Left);
         toolbar = CreateManipulationToolbarLayout(minimum, maximum);
         toolbarHovered = IsManipulationToolbarHovered(toolbar);
-        bool gizmoOwnsPointer = !navigationOwnsPointer
-                                && !toolbarHovered
-                                && DrawTransformGizmo(minimum, maximum);
-        bool toolbarOwnsPointer = DrawManipulationToolbar(toolbar);
+        ImDrawListPtr drawList = NativeImGui.GetWindowDrawList();
+        IReadOnlyList<(Vector2 center, EditorGizmoIcon icon)> icons;
+        bool toolbarOwnsPointer;
+        bool gizmoOwnsPointer;
+        drawList.ChannelsSplit(3);
+        try
+        {
+            drawList.ChannelsSetCurrent(0);
+            icons = DrawGizmos(minimum, maximum);
+            drawList.ChannelsSetCurrent(2);
+            toolbarOwnsPointer = DrawManipulationToolbar(toolbar);
+            drawList.ChannelsSetCurrent(1);
+            gizmoOwnsPointer = !navigationOwnsPointer && DrawTransformGizmo(minimum, maximum);
+        }
+        finally
+        {
+            drawList.ChannelsMerge();
+        }
+        bool iconOwnsPointer = SelectGizmoIcons(icons,
+            viewportClicked && !toolbarOwnsPointer && !gizmoOwnsPointer && !navigationOwnsPointer);
         if (!viewportClicked
             || toolbarOwnsPointer
             || gizmoOwnsPointer
+            || iconOwnsPointer
             || navigationOwnsPointer
             || NativeImGui.GetIO().KeyAlt)
             return;
@@ -170,6 +193,7 @@ internal sealed class SceneViewPanel : EditorPanel
     {
         _ = context;
         m_settings.changed -= ApplySettings;
+        m_planarNavigation.Cancel();
         m_navigationDrag = NavigationDrag.None;
         CommitGesture();
         m_rendering.Release(C_VIEWPORT_ID);
@@ -271,6 +295,112 @@ internal sealed class SceneViewPanel : EditorPanel
     private ContentReadScope CreateContentScope()
         => m_scenePresentation.Capture();
 
+    private IReadOnlyList<(Vector2 center, EditorGizmoIcon icon)> DrawGizmos(Vector2 minimum, Vector2 maximum)
+    {
+        if (!m_rendering.TryGetManipulationSpace(C_VIEWPORT_ID,
+                out EditorViewportManipulationSpace space))
+            return [];
+        int width = Math.Max(1, (int)(maximum.X - minimum.X));
+        int height = Math.Max(1, (int)(maximum.Y - minimum.Y));
+        EditorGizmoFrame frame = m_rendering.CollectGizmos(C_VIEWPORT_ID, width, height);
+        EngineMatrix worldToClip = space.projectionMatrix * space.viewMatrix;
+        var draw = NativeImGui.GetWindowDrawList();
+        uint white = NativeImGui.ColorConvertFloat4ToU32(Vector4.One);
+        uint outline = NativeImGui.ColorConvertFloat4ToU32(new Vector4(0f, 0f, 0f, 0.75f));
+        foreach (EditorGizmoLine line in frame.lines)
+        {
+            if (!TryProject(line.start, out Vector2 start) || !TryProject(line.end, out Vector2 end))
+                continue;
+            draw.AddLine(start + Vector2.One, end + Vector2.One, outline, 3.5f);
+            draw.AddLine(start, end, white, 2.5f);
+        }
+        float iconSize = 24f * EditorWidget.style.zoom;
+        var displayIcons = new List<(Vector2 center, EditorGizmoIcon icon)>();
+        ImFontPtr font = NativeImGui.GetFont();
+        foreach (EditorGizmoIcon icon in frame.icons)
+        {
+            if (!TryProject(icon.position, out Vector2 center))
+                continue;
+            displayIcons.Add((center, icon));
+            string glyph = GizmoIconGlyph(icon.iconId);
+            Vector2 size = font.CalcTextSizeA(iconSize, float.MaxValue, 0f, glyph);
+            draw.AddText(font, iconSize, center - size * 0.5f + Vector2.One, outline, glyph);
+            draw.AddText(font, iconSize, center - size * 0.5f, white, glyph);
+        }
+        return displayIcons;
+
+        bool TryProject(EngineVector3 world, out Vector2 screen)
+        {
+            Inno.Core.Mathematics.Vector4 clip = Inno.Core.Mathematics.Vector4.Transform(
+                new Inno.Core.Mathematics.Vector4(world.x, world.y, world.z, 1f), worldToClip);
+            if (clip.w <= 0.000001f)
+            {
+                screen = default;
+                return false;
+            }
+            screen = minimum + new Vector2(
+                (clip.x / clip.w + 1f) * width * 0.5f,
+                (1f - clip.y / clip.w) * height * 0.5f);
+            return float.IsFinite(screen.X) && float.IsFinite(screen.Y);
+        }
+    }
+
+    private bool SelectGizmoIcons(IReadOnlyList<(Vector2 center, EditorGizmoIcon icon)> displayIcons, bool maySelect)
+    {
+        bool iconClicked = false;
+        if (maySelect)
+        {
+            Vector2 mouse = NativeImGui.GetMousePos();
+            float radius = 20f * EditorWidget.style.zoom;
+            Identity[] owners = displayIcons
+                .Where(icon => Vector2.DistanceSquared(mouse, icon.center) <= radius * radius)
+                .Select(static icon => icon.icon.owner)
+                .DistinctBy(static owner => owner.persistentId)
+                .ToArray();
+            if (owners.Length == 1 && owners[0].Resolve<GameObject>() is { isDestroyed: false } owner)
+            {
+                m_interactions.SetSelection(owner);
+                iconClicked = true;
+            }
+            else if (owners.Length > 1)
+            {
+                m_popupGizmoOwners = owners;
+                NativeImGui.OpenPopup(C_GIZMO_CLUSTER_POPUP);
+                iconClicked = true;
+            }
+        }
+        DrawGizmoClusterPopup();
+        return iconClicked;
+    }
+
+    private void DrawGizmoClusterPopup()
+    {
+        if (!NativeImGui.BeginPopup(C_GIZMO_CLUSTER_POPUP))
+            return;
+        foreach (Identity identity in m_popupGizmoOwners)
+        {
+            GameObject? owner = identity.Resolve<GameObject>();
+            if (owner is null || owner.isDestroyed)
+                continue;
+            string label = $"{owner.name}##{identity.runtimeIdentity}";
+            if (!NativeImGui.MenuItem(label, string.Empty, false, true))
+                continue;
+            m_interactions.SetSelection(owner);
+            NativeImGui.CloseCurrentPopup();
+            break;
+        }
+        NativeImGui.EndPopup();
+    }
+
+    private static string GizmoIconGlyph(string iconId)
+        => iconId switch
+        {
+            "camera" => ImGuiIcon.Camera,
+            "light" => ImGuiIcon.Lightbulb,
+            "canvas" => ImGuiIcon.VectorSquare,
+            _ => ImGuiIcon.CircleQuestion
+        };
+
     private bool HandleNavigation(
         EditorViewportNavigationProfile profile,
         bool hovered,
@@ -282,6 +412,7 @@ internal sealed class SceneViewPanel : EditorPanel
             || profile.capabilities == EditorViewportNavigationCapabilities.None)
         {
             m_navigationDrag = NavigationDrag.None;
+            m_planarNavigation.Cancel();
             return false;
         }
 
@@ -293,24 +424,18 @@ internal sealed class SceneViewPanel : EditorPanel
         {
             m_navigationDrag = NavigationDrag.None;
         }
-        if (hovered && m_navigationDrag == NavigationDrag.None)
+        bool panning = m_planarNavigation.Update(hovered && m_navigationDrag == NavigationDrag.None
+            && profile.capabilities.HasFlag(EditorViewportNavigationCapabilities.Pan),
+            NativeImGui.IsMouseClicked(ImGuiMouseButton.Left), NativeImGui.IsMouseClicked(ImGuiMouseButton.Middle),
+            NativeImGui.IsMouseDown(ImGuiMouseButton.Left), NativeImGui.IsMouseDown(ImGuiMouseButton.Middle), io.KeyAlt,
+            allowAltPrimary: !profile.capabilities.HasFlag(EditorViewportNavigationCapabilities.Orbit));
+        if (hovered && !panning && m_navigationDrag == NavigationDrag.None)
         {
-            if (profile.capabilities.HasFlag(EditorViewportNavigationCapabilities.Pan)
-                && NativeImGui.IsMouseClicked(ImGuiMouseButton.Middle))
-            {
-                m_navigationDrag = NavigationDrag.Pan;
-                m_navigationDragButton = ImGuiMouseButton.Middle;
-            }
-            else if (io.KeyAlt && NativeImGui.IsMouseClicked(ImGuiMouseButton.Left))
+            if (io.KeyAlt && NativeImGui.IsMouseClicked(ImGuiMouseButton.Left))
             {
                 if (profile.capabilities.HasFlag(EditorViewportNavigationCapabilities.Orbit))
                 {
                     m_navigationDrag = NavigationDrag.Orbit;
-                    m_navigationDragButton = ImGuiMouseButton.Left;
-                }
-                else if (profile.capabilities.HasFlag(EditorViewportNavigationCapabilities.Pan))
-                {
-                    m_navigationDrag = NavigationDrag.Pan;
                     m_navigationDragButton = ImGuiMouseButton.Left;
                 }
             }
@@ -322,18 +447,25 @@ internal sealed class SceneViewPanel : EditorPanel
             }
         }
 
-        bool ownsPointer = m_navigationDrag != NavigationDrag.None;
+        if (!io.WantTextInput && NativeImGui.IsKeyPressed(ImGuiKey.Escape, repeat: false))
+        {
+            m_planarNavigation.Cancel();
+            m_navigationDrag = NavigationDrag.None;
+            panning = false;
+        }
+        bool ownsPointer = panning || m_navigationDrag != NavigationDrag.None;
         if (!hovered && !ownsPointer)
             return false;
         float width = MathF.Max(1f, maximum.X - minimum.X);
         float height = MathF.Max(1f, maximum.Y - minimum.Y);
         float aspect = width / height;
+        if (panning)
+        {
+            Pan(navigation, io.MouseDelta, height);
+            NativeImGui.SetMouseCursor(ImGuiMouseCursor.ResizeAll);
+        }
         switch (m_navigationDrag)
         {
-            case NavigationDrag.Pan:
-                Pan(navigation, io.MouseDelta, height);
-                NativeImGui.SetMouseCursor(ImGuiMouseCursor.ResizeAll);
-                break;
             case NavigationDrag.Orbit:
                 Orbit(navigation, profile, io.MouseDelta);
                 break;
@@ -464,7 +596,7 @@ internal sealed class SceneViewPanel : EditorPanel
                 minimumSize,
                 GetPositive(profile.maximumOrthographicSize, 100000f));
             float nextSize = Math.Clamp(
-                previousSize * MathF.Exp(-wheel * zoomSensitivity),
+                previousSize / EditorPlanarNavigation.WheelFactor(wheel, zoomSensitivity),
                 minimumSize,
                 maximumSize);
             EngineVector3 nextOffset = GetViewportOffset(
@@ -485,7 +617,7 @@ internal sealed class SceneViewPanel : EditorPanel
             minimumDistance,
             GetPositive(profile.maximumFocusDistance, 1000000f));
         navigation.focusDistance = Math.Clamp(
-            navigation.focusDistance * MathF.Exp(-wheel * zoomSensitivity),
+            navigation.focusDistance / EditorPlanarNavigation.WheelFactor(wheel, zoomSensitivity),
             minimumDistance,
             maximumDistance);
         EngineVector3 direction = EngineVector3.Transform(EngineVector3.FORWARD, navigation.rotation);
@@ -597,7 +729,7 @@ internal sealed class SceneViewPanel : EditorPanel
     {
         ImDrawListPtr drawList = NativeImGui.GetWindowDrawList();
         Vector4 background = EditorPalette.inspectorTargetHeader;
-        background.W = 0.5f;
+        background.W = EditorPalette.opacityMedium;
         drawList.AddRectFilled(
             layout.minimum,
             layout.maximum,
@@ -648,7 +780,7 @@ internal sealed class SceneViewPanel : EditorPanel
             drawList.AddLine(
                 new Vector2(layout.minimum.X + layout.padding, separatorY),
                 new Vector2(layout.maximum.X - layout.padding, separatorY),
-                NativeImGui.ColorConvertFloat4ToU32(EditorPalette.tableBorderLight),
+                NativeImGui.ColorConvertFloat4ToU32(Vector4.One),
                 EditorWidget.style.borderSize);
 
             bool supportsCoordinateSpace = m_operation != ImGuizmoOperation.Scale;
@@ -710,7 +842,7 @@ internal sealed class SceneViewPanel : EditorPanel
     {
         NativeImGui.SetCursorScreenPos(position);
         if (selected)
-            NativeImGui.PushStyleColor(ImGuiCol.Text, EditorPalette.accentActive);
+            NativeImGui.PushStyleColor(ImGuiCol.Text, Vector4.One);
         bool pressed;
         try
         {
@@ -734,7 +866,7 @@ internal sealed class SceneViewPanel : EditorPanel
             NativeImGui.GetWindowDrawList().AddRectFilled(
                 minimum,
                 new Vector2(minimum.X + thickness, maximum.Y),
-                NativeImGui.ColorConvertFloat4ToU32(EditorPalette.accentActive));
+                NativeImGui.ColorConvertFloat4ToU32(Vector4.One));
         }
         return pressed;
     }
@@ -802,40 +934,134 @@ internal sealed class SceneViewPanel : EditorPanel
         WriteColumnMajor(world, model);
 
         NativeImGuizmo.BeginFrame();
-        NativeImGuizmo.SetDrawlist(NativeImGui.GetWindowDrawList());
+        NativeImGuizmo.SetDrawlist(
+            (Inno.Native.ImGuizmo.ImDrawList*)(nint)NativeImGui.GetWindowDrawList().Handle);
         NativeImGuizmo.SetRect(
             minimum.X,
             minimum.Y,
             MathF.Max(1f, maximum.X - minimum.X),
             MathF.Max(1f, maximum.Y - minimum.Y));
         NativeImGuizmo.SetOrthographic(manipulationSpace.isOrthographic);
+        NativeImGuizmo.SetGizmoSizeClipSpace(0.21f);
+        var gizmoStyle = new Inno.Native.ImGuizmo.StylePtr(NativeImGuizmo.GetStyle());
+        gizmoStyle.TranslationLineThickness = 3.5f;
+        gizmoStyle.TranslationLineArrowSize = 9f;
+        gizmoStyle.RotationLineThickness = 3f;
+        gizmoStyle.RotationOuterLineThickness = 4f;
+        gizmoStyle.ScaleLineThickness = 3.5f;
+        gizmoStyle.ScaleLineCircleSize = 9f;
+        gizmoStyle.CenterCircleSize = 8f;
         ImGuizmoMode effectiveMode = m_operation == ImGuizmoOperation.Scale
             ? ImGuizmoMode.Local
             : m_mode;
-        bool changed = NativeImGuizmo.Manipulate(
-            view,
-            projection,
-            m_operation,
-            effectiveMode,
-            model);
-        bool isUsing = NativeImGuizmo.IsUsing();
+        ImGuizmoOperation operation = SelectManipulationOperation(manipulationSpace.plane, m_operation);
+        bool planarTranslation = manipulationSpace.plane != EditorViewportManipulationPlane.Spatial
+            && m_operation == ImGuizmoOperation.Translate;
+        bool changed;
+        bool isUsing;
+        bool isOver;
+        try
+        {
+            if (planarTranslation)
+            {
+                NativeImGuizmo.SetAxisMask(
+                    manipulationSpace.plane == EditorViewportManipulationPlane.YZ,
+                    manipulationSpace.plane == EditorViewportManipulationPlane.XZ,
+                    manipulationSpace.plane == EditorViewportManipulationPlane.XY);
+                NativeImGuizmo.SetAxisLimit(float.PositiveInfinity);
+            }
+            changed = NativeImGuizmo.Manipulate(view, projection, operation, effectiveMode, model,
+                null, null, null, null) != 0;
+            isUsing = NativeImGuizmo.IsUsing();
+            isOver = NativeImGuizmo.IsOver(operation);
+        }
+        finally
+        {
+            if (planarTranslation)
+            {
+                NativeImGuizmo.SetAxisMask(false, false, false);
+                NativeImGuizmo.SetAxisLimit(C_IMGUIZMO_AXIS_LIMIT_DEFAULT);
+            }
+        }
         if (isUsing && m_gestureTarget is null)
         {
             m_gestureTarget = target;
             m_gestureBefore = TransformSnapshot.Capture(target);
         }
-        if (changed && EngineMatrix.Decompose(
-                ReadColumnMajor(model),
-                out Inno.Core.Mathematics.Vector3 scale,
+        if (changed && TryReadManipulatedTransform(
+                ReadColumnMajor(model), target, m_operation,
+                out Inno.Core.Mathematics.Vector3 position,
                 out EngineQuaternion rotation,
-                out Inno.Core.Mathematics.Vector3 position)
+                out Inno.Core.Mathematics.Vector3 scale)
             && IsUsable(position, rotation, scale))
         {
             target.SetWorldTransform(position, rotation, scale);
         }
         if (!isUsing && m_gestureTarget is not null)
             CommitGesture();
-        return isUsing || NativeImGuizmo.IsOver(m_operation);
+        return isUsing || isOver;
+    }
+
+    private static ImGuizmoOperation SelectManipulationOperation(
+        EditorViewportManipulationPlane plane, ImGuizmoOperation operation)
+        => operation switch
+        {
+            ImGuizmoOperation.Rotate => ImGuizmoOperation.Rotate,
+            ImGuizmoOperation.Scale => plane switch
+            {
+                EditorViewportManipulationPlane.XY => ImGuizmoOperation.ScaleX | ImGuizmoOperation.ScaleY,
+                EditorViewportManipulationPlane.XZ => ImGuizmoOperation.ScaleX | ImGuizmoOperation.ScaleZ,
+                EditorViewportManipulationPlane.YZ => ImGuizmoOperation.ScaleY | ImGuizmoOperation.ScaleZ,
+                _ => operation
+            },
+            _ => operation
+        };
+
+    private static bool TryReadManipulatedTransform(
+        EngineMatrix matrix, Transform target, ImGuizmoOperation operation,
+        out Inno.Core.Mathematics.Vector3 position,
+        out EngineQuaternion rotation,
+        out Inno.Core.Mathematics.Vector3 scale)
+    {
+        position = new Inno.Core.Mathematics.Vector3(matrix.m14, matrix.m24, matrix.m34);
+        rotation = target.worldRotation;
+        scale = target.worldScale;
+        if (operation == ImGuizmoOperation.Translate)
+            return true;
+
+        if (operation == ImGuizmoOperation.Scale)
+        {
+            EngineMatrix original = target.localToWorldMatrix;
+            scale = new Inno.Core.Mathematics.Vector3(
+                scale.x * SignedColumnRatio(original.m11, original.m21, original.m31,
+                    matrix.m11, matrix.m21, matrix.m31),
+                scale.y * SignedColumnRatio(original.m12, original.m22, original.m32,
+                    matrix.m12, matrix.m22, matrix.m32),
+                scale.z * SignedColumnRatio(original.m13, original.m23, original.m33,
+                    matrix.m13, matrix.m23, matrix.m33));
+            return true;
+        }
+
+        if (MathF.Abs(scale.x) <= 0.00001f || MathF.Abs(scale.y) <= 0.00001f
+            || MathF.Abs(scale.z) <= 0.00001f)
+            return false;
+        EngineMatrix normalized = new(
+            matrix.m11 / scale.x, matrix.m12 / scale.y, matrix.m13 / scale.z, 0f,
+            matrix.m21 / scale.x, matrix.m22 / scale.y, matrix.m23 / scale.z, 0f,
+            matrix.m31 / scale.x, matrix.m32 / scale.y, matrix.m33 / scale.z, 0f,
+            0f, 0f, 0f, 1f);
+        rotation = EngineQuaternion.FromRotationMatrix(normalized).normalized;
+        return true;
+    }
+
+    private static float SignedColumnRatio(
+        float originalX, float originalY, float originalZ,
+        float changedX, float changedY, float changedZ)
+    {
+        float squaredLength = originalX * originalX + originalY * originalY + originalZ * originalZ;
+        return squaredLength <= 0.0000000001f
+            ? 1f
+            : (originalX * changedX + originalY * changedY + originalZ * changedZ) / squaredLength;
     }
 
     private bool TryGetSelectedTransform(out Transform? transform)
@@ -847,7 +1073,7 @@ internal sealed class SceneViewPanel : EditorPanel
             GameComponent component when !component.isDestroyed => component.transform,
             _ => null
         };
-        return transform is not null;
+        return transform is not null && m_sceneEdits.CanEdit(transform);
     }
 
     private void CommitGesture()
@@ -959,7 +1185,6 @@ internal sealed class SceneViewPanel : EditorPanel
     private enum NavigationDrag
     {
         None,
-        Pan,
         Orbit,
         Fly
     }

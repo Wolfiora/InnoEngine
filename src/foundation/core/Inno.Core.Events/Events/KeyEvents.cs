@@ -1,3 +1,5 @@
+using System;
+
 using Inno.Core.Input;
 
 namespace Inno.Core.Events;
@@ -14,9 +16,6 @@ namespace Inno.Core.Events;
 /// <param name="modifiers">
 /// The modifiers used to initialize this instance.
 /// </param>
-/// <returns>
-/// The value produced by this implementation of the contract.
-/// </returns>
 public abstract class KeyEvent(uint windowId, KeyCode key, KeyModifier modifiers = KeyModifier.None)
     : Event
 {
@@ -51,9 +50,6 @@ public abstract class KeyEvent(uint windowId, KeyCode key, KeyModifier modifiers
 /// <param name="repeat">
 /// The repeat used to initialize this instance.
 /// </param>
-/// <returns>
-/// The value produced by this implementation of the contract.
-/// </returns>
 public class KeyPressedEvent(
     uint windowId,
     KeyCode key,
@@ -79,10 +75,31 @@ public class KeyPressedEvent(
 /// <param name="modifiers">
 /// The modifiers used to initialize this instance.
 /// </param>
-/// <returns>
-/// The value produced by this implementation of the contract.
-/// </returns>
 public class KeyReleasedEvent(uint windowId, KeyCode key, KeyModifier modifiers = KeyModifier.None)
     : KeyEvent(windowId, key, modifiers)
 {
+}
+
+/// <summary>
+/// Raised when the platform commits UTF-8 text through keyboard, IME, or virtual-keyboard input.
+/// </summary>
+/// <param name="windowId">
+/// The source window identifier.
+/// </param>
+/// <param name="text">
+/// The committed Unicode text.
+/// </param>
+public sealed class TextInputEvent(uint windowId, string text) : Event
+{
+    /// <summary>
+    /// Gets the source window identifier.
+    /// </summary>
+    public uint windowId { get; } = windowId;
+
+    /// <summary>
+    /// Gets the committed Unicode text.
+    /// </summary>
+    public string text { get; } = string.IsNullOrEmpty(text)
+        ? throw new ArgumentException("Committed text cannot be empty.", nameof(text))
+        : text;
 }

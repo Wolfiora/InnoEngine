@@ -200,13 +200,17 @@ internal static class SceneGraphSerialization
             Guid sourceObjectId = objectReader.Read<Guid>(C_OBJECT_ID_KEY);
             GameObject gameObject = gameObjectBySourceId[sourceObjectId];
             IReadOnlyList<SerializationReader> componentReaders = objectReader.ReadObjectArray(C_COMPONENTS_KEY);
+            int transformIndex = -1;
             for (int componentIndex = 0; componentIndex < componentReaders.Count; componentIndex++)
             {
                 SerializationReader componentReader = componentReaders[componentIndex];
                 Guid stableTypeId = componentReader.Read<Guid>(C_STABLE_TYPE_ID_KEY);
                 if (TryResolveComponentType(stableTypeId, componentReader.context, out Type? componentType) &&
                     componentType == typeof(Transform))
+                {
+                    transformIndex = componentIndex;
                     continue;
+                }
 
                 Guid sourceComponentId = componentReader.Read<Guid>(C_COMPONENT_ID_KEY);
                 byte[] state = componentReader.Read<byte[]>(C_STATE_KEY);
@@ -234,6 +238,12 @@ internal static class SceneGraphSerialization
                 }
                 componentBySourceId.Add(sourceComponentId, component);
             }
+            if (transformIndex < 0)
+            {
+                throw new InvalidDataException(
+                    $"Scene graph object '{sourceObjectId}' does not contain its validated Transform component.");
+            }
+            gameObject.SetComponentIndex(gameObject.transform, transformIndex);
         }
 
         foreach ((Guid sourceId, GameObject gameObject) in gameObjectBySourceId)
@@ -467,21 +477,43 @@ internal static class SceneGraphSerialization
     internal static void ReconcilePrefabConnections(
         GameScene scene,
         SerializationContext context,
-        GameObject? excludedRoot = null)
+        GameObject? restoredRoot = null,
+        bool includeRestoredRoot = false)
     {
         ArgumentNullException.ThrowIfNull(scene);
         ArgumentNullException.ThrowIfNull(context);
-        GameObject[] roots = scene.GetObjects()
+        IEnumerable<GameObject> candidates = restoredRoot is null
+            ? scene.GetOwnedObjects()
+            : EnumerateRestoredObjects(restoredRoot, includeRestoredRoot);
+        GameObject[] roots = candidates
             .Where(gameObject =>
                 gameObject.prefabInstance?.isRoot == true &&
-                gameObject.prefabConnection is not null &&
-                !ReferenceEquals(gameObject, excludedRoot))
+                gameObject.prefabConnection is not null)
             .ToArray();
         for (int i = 0; i < roots.Length; i++)
         {
             if (!roots[i].isRuntimeValid || roots[i].prefabConnection is null)
                 continue;
             PrefabOverrideProcessor.Reconcile(roots[i].prefabConnection!, roots[i], context);
+        }
+    }
+
+    private static IEnumerable<GameObject> EnumerateRestoredObjects(GameObject root, bool includeRoot)
+    {
+        var pending = new Stack<Transform>();
+        if (includeRoot)
+            pending.Push(root.transform);
+        else
+        {
+            foreach (Transform child in root.transform.children)
+                pending.Push(child);
+        }
+        while (pending.Count != 0)
+        {
+            Transform current = pending.Pop();
+            yield return current.gameObject;
+            foreach (Transform child in current.children)
+                pending.Push(child);
         }
     }
 
@@ -643,7 +675,7 @@ internal static class SceneGraphSerialization
         SceneGraphReferenceMap references,
         IReadOnlyList<EngineObject> missingPlaceholders)
     {
-        var retained = new Dictionary<Guid, Guid>();
+        Dictionary<Guid, Guid> retained = references.CaptureRemappedAliases();
         foreach ((Guid alias, Guid targetSourceId) in aliases)
         {
             EngineObject target = references.GetRegistered(targetSourceId);
