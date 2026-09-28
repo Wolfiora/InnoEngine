@@ -46,13 +46,35 @@ internal sealed class InspectorTargetHeader
     /// <param name="context">
     /// The drawing context for the current target.
     /// </param>
-    internal void Draw(IInspectionDrawer drawer, InspectionDrawContext context)
+    /// <param name="readOnly">
+    /// Whether target controls must be disabled while the notice remains visible.
+    /// </param>
+    /// <param name="notice">
+    /// The optional contextual message placed beneath the regular header rows.
+    /// </param>
+    internal void Draw(
+        IInspectionDrawer drawer,
+        InspectionDrawContext context,
+        bool readOnly,
+        string? notice)
     {
         ArgumentNullException.ThrowIfNull(drawer);
         ArgumentNullException.ThrowIfNull(context);
         EditorWidget.HeaderSurface(
             "##inspector_target_header",
-            () => DrawContent(drawer, context),
+            () =>
+            {
+                NativeImGui.BeginDisabled(readOnly);
+                try { DrawContent(drawer, context); }
+                finally { NativeImGui.EndDisabled(); }
+                if (notice is null)
+                    return;
+                NativeImGui.Spacing();
+                EditorWidget.HelpBox(
+                    notice,
+                    ImGuiIcon.CircleInfo,
+                    new Vector4(0.42f, 0.66f, 0.88f, EditorPalette.opacityOpaque));
+            },
             spanWindowPadding: true);
     }
 

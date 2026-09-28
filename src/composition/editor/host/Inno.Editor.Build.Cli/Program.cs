@@ -40,6 +40,11 @@ internal static class Program
                 Console.WriteLine(workspace.ImportSample(command.sampleSource));
                 return 0;
             }
+            if (command.kind == BuildCommandKind.Scripts)
+            {
+                Console.WriteLine(workspace.ExportProjectScripts(command.outputDirectory));
+                return 0;
+            }
             BuildResult result = command.kind switch
             {
                 BuildCommandKind.Game => await workspace.pipeline.BuildGameAsync(
@@ -125,6 +130,57 @@ internal sealed class BuildWorkspace : IDisposable
                         result.diagnostics.Select(static diagnostic => diagnostic.message)));
         });
 
+    internal string ExportProjectScripts(string outputDirectory)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(outputDirectory);
+        ScriptCompilationResult result = m_compiler.CompileAuthoringGenerationAsync()
+            .GetAwaiter().GetResult();
+        if (!result.success)
+            throw new InvalidOperationException("Project script compilation failed:" + Environment.NewLine
+                + string.Join(Environment.NewLine,
+                    result.diagnostics.Select(static diagnostic => diagnostic.message)));
+        string[] assemblies = result.activationRequests
+            .Where(static request => request.domain == Inno.Extensibility.Modules.AssemblyDomain.InnoScripting)
+            .SelectMany(static request => new[] { request.mainAssemblyPath }
+                .Concat(request.preloadAssemblyPaths))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        string destination = Path.GetFullPath(outputDirectory);
+        string staging = destination + ".staging-" + Guid.NewGuid().ToString("N");
+        string backup = destination + ".backup-" + Guid.NewGuid().ToString("N");
+        Directory.CreateDirectory(Path.GetDirectoryName(destination)!);
+        Directory.CreateDirectory(staging);
+        try
+        {
+            foreach (string assembly in assemblies)
+            {
+                File.Copy(assembly, Path.Combine(staging, Path.GetFileName(assembly)));
+                string symbols = Path.ChangeExtension(assembly, ".pdb");
+                if (File.Exists(symbols))
+                    File.Copy(symbols, Path.Combine(staging, Path.GetFileName(symbols)));
+            }
+            if (Directory.Exists(destination))
+                Directory.Move(destination, backup);
+            try
+            {
+                Directory.Move(staging, destination);
+            }
+            catch
+            {
+                if (Directory.Exists(backup))
+                    Directory.Move(backup, destination);
+                throw;
+            }
+        }
+        finally
+        {
+            if (Directory.Exists(staging))
+                Directory.Delete(staging, recursive: true);
+            if (Directory.Exists(destination) && Directory.Exists(backup))
+                Directory.Delete(backup, recursive: true);
+        }
+        return destination;
+    }
 
     internal static BuildWorkspace Open(string projectDirectory, string supportPackRoot)
     {
@@ -289,7 +345,8 @@ internal enum BuildCommandKind
 {
     Game,
     Plugin,
-    ImportSample
+    ImportSample,
+    Scripts
 }
 
 internal sealed class BuildCommand
@@ -316,6 +373,8 @@ internal sealed class BuildCommand
 
     internal AssetPath sampleSource => AssetPath.Parse(Require(m_values, "source"));
 
+    internal string outputDirectory => Require(m_values, "output");
+
     internal static BuildCommand Parse(IReadOnlyList<string> args)
     {
         if (args.Count == 0 || args[0] is "help" or "--help" or "-h")
@@ -325,6 +384,7 @@ internal sealed class BuildCommand
             "game" => BuildCommandKind.Game,
             "plugin" => BuildCommandKind.Plugin,
             "import-sample" => BuildCommandKind.ImportSample,
+            "scripts" => BuildCommandKind.Scripts,
             _ => throw new ArgumentException($"Unknown command '{args[0]}'.{Environment.NewLine}{Usage()}")
         };
         var values = new Dictionary<string, string>(StringComparer.Ordinal);
@@ -379,5 +439,6 @@ internal sealed class BuildCommand
         => "Usage:\n"
            + "  Inno.Editor.Build.Cli game --project <dir> --support-packs <dir> --output <dir> [--profile <BuildProfile.inno>] [--startup-scene <scene>]\n"
            + "  Inno.Editor.Build.Cli plugin --project <dir> --output <package.iplugin> --display-name <name> [--dependencies <id,id>] [--include-dependencies]\n"
-           + "  Inno.Editor.Build.Cli import-sample --project <dir> --source <plugin-id::~Sample>";
+           + "  Inno.Editor.Build.Cli import-sample --project <dir> --source <plugin-id::~Sample>\n"
+           + "  Inno.Editor.Build.Cli scripts --project <dir> --output <dir>";
 }

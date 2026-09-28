@@ -621,6 +621,8 @@ public sealed class GameScene : EngineObject, ISerializable
 
     internal SceneStructureSnapshot CaptureStructure() => m_store.CaptureStructure();
 
+    internal IReadOnlyList<GameObject> GetOwnedObjects() => m_store.GetOwnedObjects();
+
     internal GameObject? FindObject(Guid persistentId)
         => m_store.FindObject(persistentId);
 

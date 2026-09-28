@@ -477,21 +477,43 @@ internal static class SceneGraphSerialization
     internal static void ReconcilePrefabConnections(
         GameScene scene,
         SerializationContext context,
-        GameObject? excludedRoot = null)
+        GameObject? restoredRoot = null,
+        bool includeRestoredRoot = false)
     {
         ArgumentNullException.ThrowIfNull(scene);
         ArgumentNullException.ThrowIfNull(context);
-        GameObject[] roots = scene.GetObjects()
+        IEnumerable<GameObject> candidates = restoredRoot is null
+            ? scene.GetOwnedObjects()
+            : EnumerateRestoredObjects(restoredRoot, includeRestoredRoot);
+        GameObject[] roots = candidates
             .Where(gameObject =>
                 gameObject.prefabInstance?.isRoot == true &&
-                gameObject.prefabConnection is not null &&
-                !ReferenceEquals(gameObject, excludedRoot))
+                gameObject.prefabConnection is not null)
             .ToArray();
         for (int i = 0; i < roots.Length; i++)
         {
             if (!roots[i].isRuntimeValid || roots[i].prefabConnection is null)
                 continue;
             PrefabOverrideProcessor.Reconcile(roots[i].prefabConnection!, roots[i], context);
+        }
+    }
+
+    private static IEnumerable<GameObject> EnumerateRestoredObjects(GameObject root, bool includeRoot)
+    {
+        var pending = new Stack<Transform>();
+        if (includeRoot)
+            pending.Push(root.transform);
+        else
+        {
+            foreach (Transform child in root.transform.children)
+                pending.Push(child);
+        }
+        while (pending.Count != 0)
+        {
+            Transform current = pending.Pop();
+            yield return current.gameObject;
+            foreach (Transform child in current.children)
+                pending.Push(child);
         }
     }
 

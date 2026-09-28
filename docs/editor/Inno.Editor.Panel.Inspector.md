@@ -14,6 +14,8 @@ Transform 使用专用的 Editor InspectionDrawer，复用 fieldset `SectionHead
 
 Inspector 为所有可检查目标统一绘制无外部缝隙的 Target Header。Header 会抵消正文统一 content padding，背景与边框完整贴合 Inspector 顶部、左侧和右侧；内部仍使用自己的 header padding。Header 的大图标、名称、名称修改能力和第二行内容全部由当前 `InspectionDrawer<TTarget>` 提供；统一容器只负责布局、裁剪、边框和锁定。`BindName` 原子返回 `(name, setter)`；setter 为 `null` 时名称直接显示为文字，不绘制输入框。第二行严格限制为一行，适合放置 active、tag、路径、标签或其他轻量目标信息。
 
+Play Mode 中 Project scene 的运行副本保持可编辑；Inspector 的提示使用共享 `HelpBox` 样式，放在同一个 Target Header 框内、名称与第二行信息的下方。提示说明这些修改只进入运行副本，停止 Play 后恢复 Edit scene。Plugin 等只读来源仍禁用修改控件，原因提示也在 Header 内显示。Scene/Prefab 保存继续由 Workspace 的 `canPersist` 边界阻止，避免将 Play 状态写回项目资产。
+
 Target Header 右上角提供 lock/unlock 控件，其交互面积、图标居中与 hover 表现和 Panel Tab Bar 的关闭 X 使用同一套 compact icon widget。锁定只固定 Inspector 当前展示目标，不修改全局 Selection；Hierarchy 和 File Browser 可以继续选择其他对象，以便把它们拖到被锁定目标的属性上。Scene identity 只以 persistent ID 保留并从当前 Edit/Play Session 重新解析，因此 assembly reload 后会指向 replacement 或 Missing placeholder；没有稳定 identity 的 collectible target 只保留弱引用。锁定目标被销毁、移除或无法重解析时自动解锁，不会固定退休 Plugin/Script ALC。
 
 Asset target Drawer 由 FileBrowser 项目自身提供，并通过 `IInspectionIconProvider<AssetFileEntry>` 复用 `AssetEditorModule` 的 type/extension icon registry；因此 File Browser Tree/List/Grid 与 Inspector Header 始终一致，EditorScripts 热重载图标声明后两处会同时更新。第二行 source path 使用与 File Browser 底部 breadcrumb 相同的半透明 palette color。Plugin Source Mount 根使用 `IPlugin` 类型，不伪装成普通 Directory，也不创建 `.iplugin` companion asset。

@@ -38,18 +38,19 @@ public sealed class SceneEdits : EditorModule
     }
 
     /// <summary>
-    /// Gets whether a scene is a writable Edit document.
+    /// Gets whether the scene is editable in the current Edit or isolated Play world.
     /// </summary>
     /// <param name="scene">
     /// The loaded scene to inspect.
     /// </param>
     /// <returns>
-    /// <see langword="true"/> when authoring commands may change this scene.
+    /// <see langword="true"/> when scene commands may change this scene. Play changes use
+    /// a temporary history branch and are discarded when the Play session ends.
     /// </returns>
     public bool CanEdit(GameScene scene) => m_workspace.CanEdit(scene);
 
     /// <summary>
-    /// Gets whether a scene object belongs to a writable Edit document.
+    /// Gets whether a scene object belongs to an editable presented scene.
     /// </summary>
     /// <param name="target">
     /// The scene object to inspect.

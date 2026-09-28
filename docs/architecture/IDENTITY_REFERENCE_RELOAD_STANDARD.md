@@ -251,6 +251,7 @@ Inno.References
 - `IAssetReferenceResolver`。
 - Type/serialization generation。
 - Scene graph reference map。
+- Prefab 在 GameBehavior 执行阶段实例化时，差异引用映射可包含当前有效但尚待提交的对象和组件；完整 Scene Capture 仍只能在结构提交后进行。失败回滚必须移除本次创建的待提交对象，不得留下已注册 Identity。
 - 必要的 Asset dependency collector。
 
 缺少 required resolver 是 composition/startup 错误，不能等到 Play、Undo 或 Missing recovery 时才抛出。此前出现的 `Serialization context 'Inno.Assets.IAssetReferenceResolver' is not registered` 正是这一规则要消除的重复组合问题。

@@ -19,3 +19,5 @@ Headless 构建先编译并激活完整 authoring generation，再对账资产�
 `--project` 接受绝对或相对目录路径，包括末尾带目录分隔符的写法。与 Editor 一样，初始 Project ID 从目录本身的名称派生，不把末尾分隔符解释为空项目名；已有项目设置中的 ID 保持不变。
 
 `import-sample --project <dir> --source <plugin-id::~Sample>` 在无 UI 的作者端环境执行与 Editor 相同的样例克隆事务。目标使用 `<plugin-id>-<sampleName>`，可作为项目资产参与运行时导出。`game --startup-scene <scene>` 仅覆盖本次构建所用的启动场景，不修改项目 Build Settings；可用它验证导入样例的 Player 闭包。
+
+`scripts --project <dir> --output <dir>` 使用相同的作者端脚本编译、API 裁剪、命名空间映射与程序集依赖图，并将当前 Project 的 `InnoScripting` 运行时和 Editor 程序集复制到指定目录。它用于需要引用真实可执行脚本程序集的外部测试工程；输出目录是可重建产物，每次成功编译后整体替换。编译失败时保留此前的输出，不导出逻辑 IDE reference assembly 或 Plugin 安装包。

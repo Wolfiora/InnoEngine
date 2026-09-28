@@ -46,6 +46,7 @@ public sealed class ObstacleSpawner : GameBehavior
 `GameScene.InstantiatePrefab` 返回已连接 prefab 的根对象，并使用加载该 Scene 的 world；Canvas 等呈现阶段回调即使处于其他临时作用域，也会在正确的场景与 Identity 作用域中创建实例。Prefab 或目标 Scene 不可用、父物体不属于目标 Scene 时会明确失败。Host 在会话启动时通过 `SceneWorld.ConfigurePrefabInstantiation` 注入当前序列化器与资产解析器；该装配方法不属于脚本 API。底层 `PrefabAsset.Instantiate` 先恢复独立实例，再设置目标父级，避免把父物体带进 prefab 内部用于差异对比的临时 Scene。
 
 `GameBehavior.Update` 等执行阶段允许创建 prefab。新建对象及其组件会在执行阶段结束时一同提交；反序列化可在提交前恢复该新对象的组件顺序，但仍禁止在执行阶段重排已提交对象的组件。
+Prefab 差异映射在这个阶段读取当前有效对象（包含尚待提交的实例及组件），不触发要求场景已稳定的完整 Scene Capture。一次实例化只校准其新建子树中的嵌套 prefab；场景序列化仍要求结构修改全部提交。
 
 Scene 顺序决定当前 `SceneManager` 的跨 Scene traversal 顺序，但业务脚本不应把它作为精确的脚本执行顺序契约；显式依赖应放入可排序的 GameSystem 或独立 scheduler。
 

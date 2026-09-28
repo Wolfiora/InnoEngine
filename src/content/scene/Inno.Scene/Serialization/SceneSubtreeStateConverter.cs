@@ -86,7 +86,11 @@ internal sealed class SceneSubtreeStateConverter : SerializationConverter<SceneS
                 reader.context);
             if (!restored.objects.TryGetValue(rootId, out GameObject? root))
                 throw new InvalidDataException($"Scene subtree root '{rootId}' is missing.");
-            SceneGraphSerialization.ReconcilePrefabConnections(scene, reader.context, root);
+            SceneGraphSerialization.ReconcilePrefabConnections(
+                scene,
+                reader.context,
+                root,
+                includeRestoredRoot: true);
             return new SceneSubtreeState(root);
         }
         catch (Exception exception)

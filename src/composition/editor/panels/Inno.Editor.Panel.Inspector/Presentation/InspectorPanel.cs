@@ -8,6 +8,7 @@ using Inno.Editor.ImGui.ImGuiWidget;
 using EditorWidget = Inno.Editor.ImGui.ImGuiWidget.ImGuiWidget;
 using Inno.Editor.Inspection;
 using Inno.Editor.Interactions;
+using Inno.Editor.PlayMode;
 using Inno.Editor.Scene;
 using Inno.Scene;
 using Inno.Native.ImGui;
@@ -23,6 +24,7 @@ internal sealed class InspectorPanel : EditorPanel
 {
     private readonly SceneInspectionModule m_inspection;
     private readonly EditorInteractions m_interactions;
+    private readonly IEditorPlayMode m_playMode;
     private readonly SceneEdits m_sceneEdits;
     private readonly InspectorTargetHeader m_targetHeader;
     private readonly Logger m_log;
@@ -45,6 +47,9 @@ internal sealed class InspectorPanel : EditorPanel
     /// <param name="sceneEdits">
     /// The scene command service used to inspect edit permissions.
     /// </param>
+    /// <param name="playMode">
+    /// The current simulation state used to explain temporary scene edits.
+    /// </param>
     /// <param name="logs">
     /// The application log router used for inspector presentation failures.
     /// </param>
@@ -55,11 +60,13 @@ internal sealed class InspectorPanel : EditorPanel
         SceneInspectionModule inspection,
         EditorInteractions interactions,
         SceneEdits sceneEdits,
+        IEditorPlayMode playMode,
         LogRouter logs)
     {
         m_inspection = inspection ?? throw new ArgumentNullException(nameof(inspection));
         m_interactions = interactions ?? throw new ArgumentNullException(nameof(interactions));
         m_sceneEdits = sceneEdits ?? throw new ArgumentNullException(nameof(sceneEdits));
+        m_playMode = playMode ?? throw new ArgumentNullException(nameof(playMode));
         ArgumentNullException.ThrowIfNull(logs);
         m_log = logs.CreateLogger<InspectorPanel>();
         m_targetHeader = new InspectorTargetHeader();
@@ -116,14 +123,19 @@ internal sealed class InspectorPanel : EditorPanel
             return;
         }
 
+        bool sceneTarget = target is EngineObject;
         bool readOnlyScene = target is EngineObject sceneObject && !m_sceneEdits.CanEdit(sceneObject);
-        if (readOnlyScene)
-            EditorWidget.Hint("Read-only Plugin scene. Copy it into Project Assets to edit.");
-        NativeImGui.BeginDisabled(readOnlyScene);
+        string? notice = readOnlyScene
+            ? "Read-only scene source. Import it into Project Assets to edit."
+            : sceneTarget && m_playMode.isPlaying
+                ? "Play Mode edits are temporary. Stopping Play restores the Edit scene."
+                : null;
         try
         {
-            m_targetHeader.Draw(drawer, drawContext);
-            EditorWidget.SectionLayout(() => drawer.Draw(drawContext));
+            m_targetHeader.Draw(drawer, drawContext, readOnlyScene, notice);
+            NativeImGui.BeginDisabled(readOnlyScene);
+            try { EditorWidget.SectionLayout(() => drawer.Draw(drawContext)); }
+            finally { NativeImGui.EndDisabled(); }
             m_failureState = string.Empty;
         }
         catch (Exception exception)
@@ -140,10 +152,6 @@ internal sealed class InspectorPanel : EditorPanel
                     [target.GetType().FullName ?? target.GetType().Name, exception]);
                 m_failureState = failureState;
             }
-        }
-        finally
-        {
-            NativeImGui.EndDisabled();
         }
     }
 }

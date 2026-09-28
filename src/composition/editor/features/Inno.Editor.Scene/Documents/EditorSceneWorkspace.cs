@@ -135,19 +135,28 @@ internal sealed class EditorSceneWorkspace :
     public bool canPersist => !m_isPreparingPlayMode && m_playModeSession is null;
 
     /// <summary>
-    /// Checks whether the scene is a writable Edit document.
+    /// Checks whether the presented scene can be changed without writing to a read-only source.
     /// </summary>
     /// <param name="scene">
     /// The scene consumed by can edit; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
     /// <returns>
-    /// <see langword="true"/> when the operation succeeds or its condition is satisfied; otherwise, <see langword="false"/>.
+    /// <see langword="true"/> for a Project scene or a transient scene in the current Edit or
+    /// isolated Play world. Play changes remain in the runtime copy and are discarded on stop.
     /// </returns>
     public bool CanEdit(GameScene scene)
     {
         ArgumentNullException.ThrowIfNull(scene);
-        if (!canPersist || scene.isDestroyed || !scene.isLoaded)
+        if (m_isPreparingPlayMode || scene.isDestroyed || !scene.isLoaded ||
+            !world.loadedScenes.Any(candidate => ReferenceEquals(candidate, scene)))
             return false;
+        if (m_playModeSession is PlayModeLease playModeSession)
+        {
+            if (!playModeSession.TryGetSnapshot(scene.identity.persistentId, out SceneDocumentSnapshot snapshot))
+                return true;
+            return string.IsNullOrEmpty(snapshot.sourcePath)
+                || AssetPath.Parse(snapshot.sourcePath).source == AssetSourceId.project;
+        }
         return !m_documents.TryGetValue(scene.identity.persistentId, out SceneDocument? document)
             || string.IsNullOrEmpty(document.sourcePath)
             || AssetPath.Parse(document.sourcePath).source == AssetSourceId.project;
@@ -1193,7 +1202,7 @@ internal sealed class EditorSceneWorkspace :
     {
         if (!CanEdit(scene))
             throw new InvalidOperationException(
-                "This Plugin scene is read-only. Use Import Sample to create a writable Project copy.");
+                "The scene is not editable in the current presentation or belongs to a read-only source.");
     }
 
     private void EnsurePresentedScene(GameScene scene)

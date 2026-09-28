@@ -25,13 +25,14 @@ public interface IEditorSceneWorkspace
     bool canPersist { get; }
 
     /// <summary>
-    /// Gets whether a loaded scene may be changed in the Edit workspace.
+    /// Gets whether a loaded scene may be changed in the current Edit or isolated Play world.
     /// </summary>
     /// <param name="scene">
     /// The scene to inspect.
     /// </param>
     /// <returns>
-    /// <see langword="true"/> for a writable Project document outside Play Mode.
+    /// <see langword="true"/> for a writable Project scene or transient scene in the presented
+    /// world. Changes made during Play remain in the runtime copy and are discarded on stop.
     /// </returns>
     bool CanEdit(GameScene scene);
 
