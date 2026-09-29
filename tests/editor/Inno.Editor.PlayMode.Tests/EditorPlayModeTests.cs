@@ -280,6 +280,36 @@ public sealed class EditorPlayModeTests : IDisposable
     }
 
     [Fact]
+    public void DeletingTheLastRuntimeSceneRestoresTheEditSceneOnExit()
+    {
+        using EditorSceneWorkspaceHost workspaceHost = EditorSceneWorkspaceFactory.Create(
+            m_editSession,
+            m_authoringAssets,
+            m_engineHost.types,
+            m_engineHost.serialization,
+            m_engineHost.logs);
+        var editScene = new GameScene("Edit Scene");
+        SceneManager.LoadScene(editScene);
+
+        using RuntimeSession runtimeSession = m_engineHost.CreateSession(
+            CreateSessionOptions(RuntimeSessionKind.Play));
+        IDisposable playLease = workspaceHost.playMode.BeginPlayMode(runtimeSession);
+        using (runtimeSession.EnterExecutionScope())
+        {
+            GameScene runtimeScene = Assert.Single(SceneManager.loadedScenes);
+            Assert.NotSame(editScene, runtimeScene);
+            Assert.True(SceneManager.UnloadScene(runtimeScene));
+            Assert.Empty(SceneManager.loadedScenes);
+        }
+
+        playLease.Dispose();
+
+        Assert.Same(editScene, Assert.Single(SceneManager.loadedScenes));
+        Assert.Same(editScene, Assert.Single(workspaceHost.workspace.scenes));
+        Assert.True(workspaceHost.workspace.canPersist);
+    }
+
+    [Fact]
     public void SceneSessionMaterializesSerializedAssetReferences()
     {
         string sourcePath = Path.Combine(m_projectRoot, "Assets", "Text", "shared.txt");

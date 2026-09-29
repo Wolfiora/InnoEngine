@@ -25,6 +25,12 @@ public sealed class GameRuntimeManifest : ISerializable
     public string productName { get; set; } = string.Empty;
 
     /// <summary>
+    /// Gets or sets the writable data folder below local application data; empty uses the application ID.
+    /// </summary>
+    [SerializableProperty]
+    public string persistentDataPath { get; set; } = string.Empty;
+
+    /// <summary>
     /// Gets or sets the mount-qualified startup scene path.
     /// </summary>
     [SerializableProperty]
@@ -72,6 +78,10 @@ public sealed class GameRuntimeManifest : ISerializable
         }
         if (string.IsNullOrWhiteSpace(productName))
             throw new InvalidDataException("A game product name is required.");
+        if (persistentDataPath is null)
+            throw new InvalidDataException("Game persistent data path cannot be null.");
+        RuntimeManifestEnvelope.ValidatePersistentDataPath(
+            persistentDataPath.Length == 0 ? applicationId : persistentDataPath);
         if (string.IsNullOrWhiteSpace(startupScene))
             throw new InvalidDataException("A game startup scene is required.");
         if (windowWidth <= 0 || windowHeight <= 0)

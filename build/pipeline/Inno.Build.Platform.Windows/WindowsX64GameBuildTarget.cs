@@ -90,12 +90,14 @@ public sealed class WindowsX64GameBuildTarget : IGameBuildTarget
     ) {
         ArgumentNullException.ThrowIfNull(context);
         string application = Path.Combine(context.outputDirectory, context.profile.productName + "-Windows-x64");
-        await CopyDirectoryAsync(context.supportPackDirectory, application, cancellationToken).ConfigureAwait(false);
+        await CopyDirectoryAsync(context.supportPackDirectory, application, cancellationToken,
+            excludeCompilerReferences: true).ConfigureAwait(false);
         string player = Path.Combine(application, "Inno.Player.exe");
         if (!File.Exists(player))
             throw new InvalidDataException("The Windows Support Pack does not contain Inno.Player.exe.");
         File.Move(player, Path.Combine(application, context.profile.productName + ".exe"));
-        await CopyDirectoryAsync(context.contentDirectory, Path.Combine(application, "Content"), cancellationToken)
+        await CopyDirectoryAsync(context.contentDirectory, Path.Combine(application, "Content"), cancellationToken,
+                excludeCompilerReferences: false)
             .ConfigureAwait(false);
         return application;
     }
@@ -103,22 +105,33 @@ public sealed class WindowsX64GameBuildTarget : IGameBuildTarget
     private static async ValueTask CopyDirectoryAsync(
         string source,
         string destination,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken,
+        bool excludeCompilerReferences
     ) {
         Directory.CreateDirectory(destination);
         foreach (string directory in Directory.EnumerateDirectories(source, "*", SearchOption.AllDirectories))
         {
             cancellationToken.ThrowIfCancellationRequested();
-            Directory.CreateDirectory(Path.Combine(destination, Path.GetRelativePath(source, directory)));
+            string relativePath = Path.GetRelativePath(source, directory);
+            if (excludeCompilerReferences && IsCompilerReferencePath(relativePath))
+                continue;
+            Directory.CreateDirectory(Path.Combine(destination, relativePath));
         }
         foreach (string file in Directory.EnumerateFiles(source, "*", SearchOption.AllDirectories))
         {
             cancellationToken.ThrowIfCancellationRequested();
-            string target = Path.Combine(destination, Path.GetRelativePath(source, file));
+            string relativePath = Path.GetRelativePath(source, file);
+            if (excludeCompilerReferences && IsCompilerReferencePath(relativePath))
+                continue;
+            string target = Path.Combine(destination, relativePath);
             Directory.CreateDirectory(Path.GetDirectoryName(target)!);
             await using FileStream input = new(file, FileMode.Open, FileAccess.Read, FileShare.Read, 131072, true);
             await using FileStream output = new(target, FileMode.CreateNew, FileAccess.Write, FileShare.None, 131072, true);
             await input.CopyToAsync(output, cancellationToken).ConfigureAwait(false);
         }
     }
+
+    private static bool IsCompilerReferencePath(string relativePath)
+        => relativePath.Equals("References", StringComparison.OrdinalIgnoreCase)
+           || relativePath.StartsWith("References" + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase);
 }

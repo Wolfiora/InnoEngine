@@ -47,6 +47,8 @@ target 作为默认值。Editor Export 与 Settings UI 枚举 `availableGameTarg
 
 `Settings.Build.inno` 保存团队可版本控制的导出默认值；文件不存在时，composition root 以项目名、host target 和按路径排序的第一个已导入且可部署 Scene 建立隔离默认值，`~` authoring sample 中的 Scene 不会被自动选为 Startup Scene。Editor 的 Settings Apply 才会持久化该文件。每次打开导出 modal 都重新复制这些默认值，modal 内修改只属于本次请求，绝不回写 `Settings.Build.inno`。Game Application ID 与 Plugin ID 不是 Build 默认值，而是直接取 `Settings.Project.inno` 中的当前 Project ID；`BuildProfile` 仅保存 one-off 构建参数，加载后也会绑定当前 Project ID。
 
+`BuildSettings.gamePersistentDataPath` 和 `BuildProfile.persistentDataPath` 指定 Player 在系统 Local Application Data 下使用的可移植相对子目录，空值采用 Application ID。它们允许发行游戏自行选择厂商/游戏目录，例如 `my-studio/flappybird`；路径段只能使用小写字母、数字、点、下划线和连字符，不能含 `.`、`..` 或绝对路径。Player manifest 在初始化引擎前帧定并核对这个目录，导出游戏不再在路径中加入 `InnoEngine`。
+
 `Settings.Editor.inno`、`Settings.Project.inno` 和 `Settings.Build.inno` 不合并：它们分别属于本机 Editor 偏好、runtime 项目协议和 authoring/build 默认值。只有 `Settings.Project.inno` 进入 Player；Build Settings 和 Editor Settings 都不会进入 runtime closure。游戏内容的参考分辨率与保持比例策略属于项目 `GamePresentationSettings`，由 Game View 和 Player 共用。
 
 ## 错误与生命周期

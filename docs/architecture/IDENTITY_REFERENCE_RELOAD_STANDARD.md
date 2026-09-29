@@ -856,3 +856,5 @@ Editor participant Capture 在共享 Prepare 内执行，失败只补偿已尝�
 ScriptReloadHost 关闭前先等待共享 GenerationCoordinator 完成上一批 AwaitingCollection，再发布模块卸载；退休失败继续抛异常并封锁 Host，不清除 monitor 后伪装关闭成功。此顺序由真实脚本双代卸载回归和非空原生 Editor 600 帧退出验证覆盖。
 
 自动编译必须区分源输入变化和当前候选的发布通知回声，不能由 Assembly/Asset Catalog 自身重新发布而无限排队。Editor 编译票据与进度 UI 也参与完整 GC 完成语义：先发布、后回收、最后成功；外部边界已经推进完成屏障时，Editor 仍须完成 deferred ticket。退休失败显式进入 Failed 并解除忙碌弹窗，不能被遗留 compilation request 覆盖，也不能因关闭弹窗就放开 Faulted Host 门禁。
+
+Editor 菜单的单一 `Reload Scripts` 只排队变化感知的脚本重编译；没有变化时不创建新 ALC，有变化时仍通过同一个 candidate transaction 和 Full GC → Finalizers → Full GC 的卸载屏障。Rendering 的帧级诊断只描述当前帧失败，下一帧恢复后按 issue identity 撤销；Render generation/extension 候选失败仍保持独立的长期问题，直到对应候选恢复。单文件 Player 中框架程序集可能不列入 `TRUSTED_PLATFORM_ASSEMBLIES`，ModuleHost 只接受默认 ALC 内、具有已知框架强签名的 System/Microsoft.Win32 程序集作为该场景的 BCL 契约。

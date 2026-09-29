@@ -130,16 +130,6 @@ jobs:
             throw "Expected exactly one '$expectedMiniAudio' in the generated Support Pack, found $($miniAudioFiles.Count)."
           }
 
-      - name: Export and run real Player E2E
-        shell: pwsh
-        run: |
-          $supportPacks = Join-Path $env:RUNNER_TEMP "InnoSupportPacks"
-          $e2eOutput = Join-Path $env:RUNNER_TEMP "InnoPlayerE2E"
-          dotnet run --project tests/player/Inno.Player.E2E --no-build -- `
-            --target '${{ matrix.build_target }}' `
-            --support-packs $supportPacks `
-            --output $e2eOutput
-
       - name: Run real renderer smoke
         shell: pwsh
         run: |

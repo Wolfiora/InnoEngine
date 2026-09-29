@@ -3127,6 +3127,14 @@ public sealed partial class AssetLoader : IDisposable, IAssetReferenceResolver, 
         if (record.meta.importStatus != (int)AssetImportStatus.Imported &&
             record.meta.importStatus != (int)AssetImportStatus.Failed)
             return true;
+        if (record.meta.importStatus == (int)AssetImportStatus.Failed &&
+            record.meta.diagnostics.Any(static diagnostic =>
+                diagnostic.StartsWith("IOException:", StringComparison.Ordinal) ||
+                diagnostic.StartsWith("UnauthorizedAccessException:", StringComparison.Ordinal)))
+        {
+            // File locks and access checks may clear without any source or importer change.
+            return true;
+        }
         if (AreImportSettingsStaleLocked(record, importer))
             return true;
         if (!AssetSourceFileStamp.TryCapture(sourcePath, out AssetSourceFileStamp sourceStamp))

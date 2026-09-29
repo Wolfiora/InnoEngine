@@ -146,9 +146,7 @@ internal sealed class EditorScripting : EditorModule, IEditorScriptCompilation
     /// </summary>
     public IScriptCompilationTicket? currentTicket => m_currentTicket;
 
-    internal void RecompileScripting() => QueueReload(static manager => manager.RecompileScripting(), supersedeCurrentTicket: true);
-
-    internal void ReloadScripting() => QueueReload(static manager => manager.ReloadScripting(), supersedeCurrentTicket: true);
+    internal void ReloadScripting() => QueueReload(static manager => manager.RecompileScripting(), supersedeCurrentTicket: true);
 
     internal void ReloadPlugins() => QueueReload(static manager => manager.ReloadPlugins(), supersedeCurrentTicket: true);
 

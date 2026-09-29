@@ -6,7 +6,7 @@
 
 本项目承载 Player Support Pack 的发布实现与源码工作区供给器，依赖 `Inno.Build` 的目标 ID 和 Pack 校验契约。`Inno.Build` 只依赖 `IPlayerSupportPackProvisioner`，不引用 SDK、Player 项目或本项目。Editor 与 Build CLI 在 composition root 选择是否提供源码工作区供给能力。
 
-发布器使用 `dotnet publish` 生成目标 Player，复制可部署程序集和对应目标的 release 原生库，在隔离目录验证后原子安装。缺少 SDK、目标原生库或校验失败会明确报错；失败不交付不完整的目标目录。
+发布器使用 `dotnet publish` 的 self-contained single-file 模式生成目标 Player，将托管宿主与 .NET runtime 合入一个可执行文件；编译专用的目标程序集放在 Support Pack 的 `References` 中，仅用于导出时编译脚本，最终游戏包不复制它们。目标 release 原生库保持独立，在隔离目录验证后原子安装。缺少 SDK、目标原生库或校验失败会明确报错；失败不交付不完整的目标目录。
 
 ## 公开 API
 

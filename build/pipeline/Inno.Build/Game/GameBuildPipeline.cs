@@ -105,7 +105,7 @@ internal sealed class GameBuildPipeline
                 .AsTask();
 
             ScriptCompilationResult compilation = await m_compiler.CompileRuntimeDeploymentAsync(
-                    supportPack,
+                    Path.Combine(supportPack, "References"),
                     new ScriptBuildProgress(progress),
                     stagingToken)
                 .ConfigureAwait(false);
@@ -270,6 +270,7 @@ internal sealed class GameBuildPipeline
         var manifest = new GameRuntimeManifest
         {
             applicationId = profile.applicationId,
+            persistentDataPath = profile.persistentDataPath,
             productName = profile.productName,
             startupScene = AssetPath.Parse(profile.startupScene).ToString(),
             windowWidth = profile.windowWidth,

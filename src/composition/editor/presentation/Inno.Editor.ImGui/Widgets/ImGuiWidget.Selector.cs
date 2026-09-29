@@ -12,12 +12,9 @@ namespace Inno.Editor.ImGui.ImGuiWidget;
 /// </summary>
 public static partial class ImGuiWidget
 {
-    private const int C_DEFAULT_COMBO_VISIBLE_ITEMS = 12;
-    private const float C_POPUP_WORK_AREA_RATIO = 0.70f;
-
     /// <summary>
     /// Begins a combo whose popup retains a stable trigger-derived width, remains in the parent
-    /// viewport, and becomes vertically scrollable when its submitted content exceeds its bound.
+    /// viewport, and becomes vertically scrollable only when its content exceeds the available work area.
     /// </summary>
     /// <param name="id">
     /// Stable combo identifier in the current ImGui scope.
@@ -27,9 +24,6 @@ public static partial class ImGuiWidget
     /// </param>
     /// <param name="flags">
     /// Native combo presentation flags.
-    /// </param>
-    /// <param name="maximumVisibleItems">
-    /// Preferred maximum number of ordinary rows before scrolling.
     /// </param>
     /// <returns>
     /// <see langword="true"/> when the combo popup is open and its contents should be submitted;
@@ -41,30 +35,18 @@ public static partial class ImGuiWidget
     /// <exception cref="ArgumentNullException">
     /// Thrown when <paramref name="preview"/> is null.
     /// </exception>
-    /// <exception cref="ArgumentOutOfRangeException">
-    /// Thrown when <paramref name="maximumVisibleItems"/> is not positive.
-    /// </exception>
     public static bool BeginBoundedCombo(
         string id,
         string preview,
-        ImGuiComboFlags flags = ImGuiComboFlags.None,
-        int maximumVisibleItems = C_DEFAULT_COMBO_VISIBLE_ITEMS
+        ImGuiComboFlags flags = ImGuiComboFlags.None
     ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(id);
         ArgumentNullException.ThrowIfNull(preview);
-        if (maximumVisibleItems <= 0)
-        {
-            throw new ArgumentOutOfRangeException(
-                nameof(maximumVisibleItems),
-                maximumVisibleItems,
-                "A combo must allow at least one visible item.");
-        }
 
         ImGuiViewportPtr parentViewport = NativeImGui.GetWindowViewport();
         NativeImGui.SetNextWindowViewport(parentViewport.ID);
-        SetFixedBoundedPopupSize(
+        SetWorkAreaPopupSize(
             NativeImGui.CalcItemWidth(),
-            maximumVisibleItems,
             parentViewport.WorkSize);
         return NativeImGui.BeginCombo(id, preview, flags);
     }
@@ -132,9 +114,8 @@ public static partial class ImGuiWidget
             ImGuiCond.Appearing);
         ImGuiViewportPtr parentViewport = NativeImGui.GetWindowViewport();
         NativeImGui.SetNextWindowViewport(parentViewport.ID);
-        SetFixedBoundedPopupSize(
+        SetWorkAreaPopupSize(
             MathF.Max(width, minimumPopupWidth),
-            C_DEFAULT_COMBO_VISIBLE_ITEMS,
             parentViewport.WorkSize);
         return BeginMenuPopup(popupId);
     }
@@ -144,17 +125,14 @@ public static partial class ImGuiWidget
     /// </summary>
     public static void EndMenuSelector() => EndMenuPopup();
 
-    private static void SetFixedBoundedPopupSize(
+    private static void SetWorkAreaPopupSize(
         float requestedWidth,
-        int maximumVisibleItems,
         Vector2 workSize
     ) {
         ImGuiStylePtr nativeStyle = NativeImGui.GetStyle();
-        float minimumHeight = MathF.Max(1f, NativeImGui.GetFrameHeight() * 2f);
-        float preferredHeight = NativeImGui.GetTextLineHeightWithSpacing() * maximumVisibleItems
-                                + nativeStyle.WindowPadding.Y * 2f;
-        float availableHeight = MathF.Max(minimumHeight, workSize.Y * C_POPUP_WORK_AREA_RATIO);
-        float maximumHeight = MathF.Max(minimumHeight, MathF.Min(preferredHeight, availableHeight));
+        float maximumHeight = MathF.Max(
+            1f,
+            workSize.Y - nativeStyle.DisplaySafeAreaPadding.Y * 2f);
         float availableWidth = MathF.Max(1f, workSize.X);
         float popupWidth = Math.Clamp(requestedWidth, 1f, availableWidth);
         NativeImGui.SetNextWindowSizeConstraints(

@@ -46,6 +46,8 @@ internal sealed class ExportWindowModule : EditorModule
 
     internal bool isGameVisible { get; private set; }
 
+    internal bool isGameProgressVisible { get; private set; }
+
     internal bool isPluginBusy => m_pluginExport is not null;
 
     internal bool isGameBusy => m_gamePreparation is not null || m_gameExport is not null;
@@ -59,6 +61,8 @@ internal sealed class ExportWindowModule : EditorModule
     internal string gameApplicationId => m_projectSettings.projectId.value;
 
     internal string gameProductName { get; set; } = string.Empty;
+
+    internal string gamePersistentDataPath { get; set; } = string.Empty;
 
     internal string gameStartupScene { get; set; } = string.Empty;
 
@@ -75,6 +79,8 @@ internal sealed class ExportWindowModule : EditorModule
     internal string status { get; private set; } = string.Empty;
 
     internal string error { get; private set; } = string.Empty;
+
+    internal float gameProgress { get; private set; }
 
     internal bool includePluginDependencies { get; set; }
 
@@ -98,10 +104,14 @@ internal sealed class ExportWindowModule : EditorModule
     internal void OpenGame()
     {
         ClosePlugin();
+        if (isGameBusy)
+            return;
+        isGameProgressVisible = false;
         status = string.Empty;
         error = string.Empty;
         BuildSettings defaults = LoadBuildSettings();
         gameProductName = defaults.gameProductName;
+        gamePersistentDataPath = defaults.gamePersistentDataPath;
         gameStartupScene = defaults.gameStartupScene;
         gameOutputDirectory = defaults.gameOutputDirectory;
         gameWindowWidth = defaults.gameWindowWidth;
@@ -145,21 +155,32 @@ internal sealed class ExportWindowModule : EditorModule
         {
             applicationId = gameApplicationId,
             productName = gameProductName,
+            persistentDataPath = gamePersistentDataPath,
             startupScene = gameStartupScene,
             target = gameTarget,
             windowWidth = gameWindowWidth,
             windowHeight = gameWindowHeight
         };
         StartCancellation();
+        isGameVisible = false;
+        isGameProgressVisible = true;
+        gameProgress = 0f;
         status = "Checking or preparing the Player Support Pack...";
         error = string.Empty;
-        m_pendingGameRequest = new GameBuildRequest
+        try
         {
-            profile = profile,
-            outputDirectory = ResolveOutputPath(gameOutputDirectory)
-        };
-        m_gamePreparation = m_buildPipeline.EnsurePlayerSupportPackAsync(
-            profile.target, m_cancellation!.Token).AsTask();
+            m_pendingGameRequest = new GameBuildRequest
+            {
+                profile = profile,
+                outputDirectory = ResolveOutputPath(gameOutputDirectory)
+            };
+            m_gamePreparation = m_buildPipeline.EnsurePlayerSupportPackAsync(
+                profile.target, m_cancellation!.Token).AsTask();
+        }
+        catch (Exception exception)
+        {
+            m_gamePreparation = Task.FromException<string>(exception);
+        }
     }
 
     internal void CancelGameExport()
@@ -192,6 +213,12 @@ internal sealed class ExportWindowModule : EditorModule
         }
     }
 
+    internal void CloseGameProgress()
+    {
+        if (!isGameBusy)
+            isGameProgressVisible = false;
+    }
+
     /// <summary>
     /// Advances compilation tickets, build progress, and completed export tasks.
     /// </summary>
@@ -201,7 +228,11 @@ internal sealed class ExportWindowModule : EditorModule
     protected override void OnUpdate(EditorContext context)
     {
         while (m_progress.TryDequeue(out BuildProgress progress))
+        {
             status = progress.message;
+            if (isGameProgressVisible)
+                gameProgress = MathF.Max(gameProgress, (float)progress.fraction);
+        }
         CompletePluginExport();
         CompleteGamePreparation();
         CompleteGameExport();
@@ -218,6 +249,7 @@ internal sealed class ExportWindowModule : EditorModule
         m_cancellation?.Cancel();
         isPluginVisible = false;
         isGameVisible = false;
+        isGameProgressVisible = false;
     }
 
     /// <summary>
@@ -290,6 +322,7 @@ internal sealed class ExportWindowModule : EditorModule
                 ?? throw new InvalidOperationException("A successful game build has no output path.");
             status = $"Exported {result.assetCount} assets and {result.runtimeAssemblyCount} runtime assemblies to {outputPath}";
             error = string.Empty;
+            gameProgress = 1f;
             m_log.Write(
                 LogLevel.Info,
                 "Exported game to '{0}' ({1}, {2} assets, {3} artifact bundles, {4} runtime assemblies).",

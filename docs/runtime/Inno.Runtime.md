@@ -41,7 +41,7 @@ using RuntimeSession play = host.CreateSession(new RuntimeSessionOptions
 play.Tick(deltaTime);
 ```
 
-`RuntimeSessionOptions.persistentDataDirectory` 的最后一个路径段必须严格等于 `applicationId`。`Player` Session 还必须提供已经物化的 `runtimeContentDirectory`；Edit/Play 可以由 Editor 组合 authoring 资产服务。
+`RuntimeSessionOptions.persistentDataDirectory` 由宿主选择并必须是有效的可写目录；Player 导出默认使用系统 Local Application Data 下的 Application ID 目录，也可以在 Build Settings 或一次导出中指定其下的可移植相对子目录。`Player` Session 还必须提供已经物化的 `runtimeContentDirectory`；Edit/Play 可以由 Editor 组合 authoring 资产服务。
 
 ## 公开 API
 
@@ -63,7 +63,8 @@ play.Tick(deltaTime);
 | `EngineHost.CreateHostPipeline(factories, capabilities)` | 对 Host 使用同一 Required/Optional、能力、依赖和补偿策略 |
 | `RuntimeSubsystemPipeline.startupDiagnostics` | 不可用 Optional 子系统的中立诊断快照，同时进入 Core DiagnosticHub；退休时撤销 |
 | `RuntimeSessionKind` | 区分 `Edit`、`Play` 和 `Player` 所有权语义。 |
-| `GameRuntimeManifest` | 描述当前 Player 的应用 ID、产品名、启动 Scene、窗口、Plugin 设置贡献和冻结模块 generation。 |
+| `GameRuntimeManifest` | 描述当前 Player 的应用 ID、持久数据子目录、产品名、启动 Scene、窗口、Plugin 设置贡献和冻结模块 generation。 |
+| `RuntimeManifestEnvelope.ReadPersistentDataPath` | 在初始化序列化服务前读取并严格验证可移植的 Player 数据目录，与完整 manifest 解码时的值必须一致。 |
 | `GameRuntimePlugin` | 保存依赖有序的中立 Plugin 设置贡献，不保存 Plugin `Type`、实例或 delegate。 |
 | `GameRuntimeModule` | 保存依赖有序的 runtime module 名称、domain 与部署 DLL 文件名，不保存运行时 `Assembly`。 |
 | `GamePresentationSettings`, `GamePresentationViewport` | 定义 Game View 与 Player 共用的参考帧、aspect-preserving 策略及确定性居中内容区域。 |

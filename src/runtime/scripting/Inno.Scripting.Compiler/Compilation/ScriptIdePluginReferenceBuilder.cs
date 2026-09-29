@@ -106,23 +106,32 @@ internal static class ScriptIdePluginReferenceBuilder
                 nullableContextOptions: assembly.nullable
                     ? NullableContextOptions.Enable
                     : NullableContextOptions.Disable));
-        string temporaryPath = outputPath + ".tmp";
+        string temporaryPath = outputPath + ".tmp-" + Guid.NewGuid().ToString("N");
         try
         {
-            using FileStream stream = File.Create(temporaryPath);
-            EmitResult result = compilation.Emit(
-                stream,
-                options: new EmitOptions(metadataOnly: true, includePrivateMembers: false));
-            if (!result.Success)
+            using (FileStream stream = File.Create(temporaryPath))
             {
-                string errors = string.Join(Environment.NewLine,
-                    result.Diagnostics
-                        .Where(static diagnostic => diagnostic.Severity == DiagnosticSeverity.Error)
-                        .Select(static diagnostic => diagnostic.ToString()));
-                throw new InvalidDataException(
-                    $"Failed to generate IDE Plugin reference '{assembly.name}':{Environment.NewLine}{errors}");
+                EmitResult result = compilation.Emit(
+                    stream,
+                    options: new EmitOptions(metadataOnly: true, includePrivateMembers: false));
+                if (!result.Success)
+                {
+                    string errors = string.Join(Environment.NewLine,
+                        result.Diagnostics
+                            .Where(static diagnostic => diagnostic.Severity == DiagnosticSeverity.Error)
+                            .Select(static diagnostic => diagnostic.ToString()));
+                    throw new InvalidDataException(
+                        $"Failed to generate IDE Plugin reference '{assembly.name}':{Environment.NewLine}{errors}");
+                }
             }
-            File.Move(temporaryPath, outputPath, overwrite: true);
+            try
+            {
+                File.Move(temporaryPath, outputPath);
+            }
+            catch (IOException) when (File.Exists(outputPath))
+            {
+                // Another projection already published the same immutable reference.
+            }
         }
         finally
         {

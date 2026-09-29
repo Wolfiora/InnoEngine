@@ -103,6 +103,12 @@ public sealed class PlayerSupportPackCatalog
             : Path.Combine(directory, "Inno.Player.exe");
         if (!File.Exists(executable))
             throw new InvalidDataException($"Player Support Pack '{target}' has no Player executable.");
+        string referenceDirectory = Path.Combine(directory, "References");
+        if (!Directory.Exists(referenceDirectory)
+            || !Directory.EnumerateFiles(referenceDirectory, "Inno.*.dll", SearchOption.TopDirectoryOnly).Any())
+        {
+            throw new InvalidDataException($"Player Support Pack '{target}' has no target compilation references.");
+        }
         string[] requiredNativeFiles = target == BuildTargetId.macOSArm64
             ?
             [

@@ -1262,12 +1262,18 @@ internal sealed class FileBrowserPanel : EditorPanel
             m_assets.browser.currentDirectory);
         Vector2 framePadding = EditorWidget.style.breadcrumbFramePadding;
         float contentWidth = CalculateBreadcrumbContentWidth(parts, framePadding);
-        NativeImGui.SetNextWindowContentSize(new Vector2(MathF.Max(contentWidth, NativeImGui.GetContentRegionAvail().X), 0f));
+        float availableWidth = NativeImGui.GetContentRegionAvail().X;
+        bool hasHorizontalOverflow = contentWidth > availableWidth;
+        NativeImGui.SetNextWindowContentSize(new Vector2(
+            hasHorizontalOverflow ? contentWidth : 0f,
+            0f));
         NativeImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, Vector2.Zero);
         if (NativeImGui.BeginChild("##BreadcrumbBar", new Vector2(0f, height), ImGuiChildFlags.None, ImGuiWindowFlags.HorizontalScrollbar))
         {
             DrawBreadcrumbTopSeparator();
-            float contentHeight = contentWidth > NativeImGui.GetWindowSize().X ? EditorWidget.style.assetBreadcrumbHeight : height;
+            float contentHeight = hasHorizontalOverflow
+                ? height - NativeImGui.GetStyle().ScrollbarSize
+                : height;
             float itemHeight = EditorWidget.GetClickableTextSize("A", framePadding).Y;
             NativeImGui.SetCursorPosY(MathF.Max(0f, (contentHeight - itemHeight) * 0.5f));
             NativeImGui.PushStyleColor(ImGuiCol.Text, EditorPalette.assetBreadcrumbText);
@@ -1309,12 +1315,19 @@ internal sealed class FileBrowserPanel : EditorPanel
         string currentDirectory
     ) {
         IReadOnlyList<BreadcrumbPart> parts = BuildBreadcrumbParts(root, currentDirectory);
+        ImGuiStylePtr style = NativeImGui.GetStyle();
+        float itemHeight = EditorWidget.GetClickableTextSize(
+            "A",
+            EditorWidget.style.breadcrumbFramePadding).Y;
+        float contentHeight = MathF.Max(
+            EditorWidget.style.assetBreadcrumbHeight,
+            MathF.Ceiling(itemHeight + style.ItemSpacing.Y * 2f + EditorWidget.style.borderSize));
         float contentWidth = CalculateBreadcrumbContentWidth(
             parts,
             EditorWidget.style.breadcrumbFramePadding);
         return contentWidth > NativeImGui.GetContentRegionAvail().X
-            ? EditorWidget.style.assetBreadcrumbHeight + NativeImGui.GetStyle().ScrollbarSize
-            : EditorWidget.style.assetBreadcrumbHeight;
+            ? contentHeight + style.ScrollbarSize
+            : contentHeight;
     }
 
     private static float CalculateBreadcrumbContentWidth(

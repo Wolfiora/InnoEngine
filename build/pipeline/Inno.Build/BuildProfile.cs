@@ -33,6 +33,13 @@ public sealed class BuildProfile : ISerializable
     public string productName { get; set; } = string.Empty;
 
     /// <summary>
+    /// Gets or sets the writable data folder relative to the operating system's local application data directory.
+    /// An empty value uses <see cref="applicationId"/>.
+    /// </summary>
+    [SerializableProperty]
+    public string persistentDataPath { get; set; } = string.Empty;
+
+    /// <summary>
     /// Gets or sets the mount-qualified startup scene path.
     /// </summary>
     [SerializableProperty]
@@ -74,6 +81,9 @@ public sealed class BuildProfile : ISerializable
             throw new InvalidDataException("Application ID must be a stable lowercase portable identifier.");
         if (!IsPortableProductName(productName))
             throw new InvalidDataException("Product name must be a portable file name.");
+        if (persistentDataPath is null ||
+            !IsPortableDataPath(persistentDataPath.Length == 0 ? applicationId : persistentDataPath))
+            throw new InvalidDataException("Persistent data path must contain only portable folder names separated by '/'.");
         if (string.IsNullOrWhiteSpace(startupScene))
             throw new InvalidDataException("A startup scene is required.");
         try
@@ -97,6 +107,14 @@ public sealed class BuildProfile : ISerializable
             || character is >= '0' and <= '9'
             || character is '.' or '_' or '-');
     }
+
+    private static bool IsPortableDataPath(string value)
+        => value is not null
+           && (value.Length == 0 || value.Split('/').All(static segment =>
+               segment is not "." and not ".."
+               && !segment.EndsWith('.')
+               && !S_WINDOWS_RESERVED_NAMES.Contains(segment.Split('.', 2)[0])
+               && IsPortableIdentifier(segment)));
 
     private static bool IsPortableProductName(string value)
     {

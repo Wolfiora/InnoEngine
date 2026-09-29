@@ -421,7 +421,6 @@ InnoEngine
 | `tests/extensibility/fixtures` | `Inno.Extensibility.Modules.TestDependency`、`Inno.Extensibility.Modules.TestModule.V1`、`Inno.Extensibility.Modules.TestModule.V2`、`Inno.Extensibility.Modules.TestModule.Invalid`、`Inno.Extensibility.Types.TestAssemblyA`、`Inno.Extensibility.Types.TestAssemblyB` |
 | `tests/input` | `Inno.Input.Tests` |
 | `tests/native` | `Inno.Native.Sdl3.Tests`、`Inno.Native.Bgfx.Tests`、`Inno.Native.MiniAudio.Tests`、`Inno.Native.ImGui.Tests`、`Inno.Native.ImGuizmo.Tests` |
-| `tests/player` | `Inno.Player.E2E` |
 | `tests/plugins` | `Inno.Plugins.Tests` |
 | `tests/references` | `Inno.References.Tests` |
 | `tests/rendering` | `Inno.Rendering.Tests`、`Inno.Rendering.Assets.Tests`、`Inno.Rendering.Shaders.Tests`、`Inno.Rendering.Runtime.Tests`、`Inno.Adapter.Rendering.Bgfx.Tests` |

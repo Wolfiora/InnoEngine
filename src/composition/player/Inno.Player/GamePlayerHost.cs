@@ -59,8 +59,8 @@ internal sealed class GamePlayerHost : ShellHost
         ArgumentNullException.ThrowIfNull(adapterCatalog);
         string packagedContentRoot = ResolvePackagedContentRoot();
         byte[] manifestEnvelope = File.ReadAllBytes(Path.Combine(packagedContentRoot, "runtime.manifest"));
-        string applicationId = RuntimeManifestEnvelope.ReadApplicationId(manifestEnvelope);
-        string persistentRoot = ResolvePersistentRoot(applicationId);
+        string persistentDataPath = RuntimeManifestEnvelope.ReadPersistentDataPath(manifestEnvelope);
+        string persistentRoot = ResolvePersistentRoot(persistentDataPath);
         string runtimeContentRoot = RuntimeContentDeployment.Materialize(
             packagedContentRoot,
             persistentRoot);
@@ -96,7 +96,8 @@ internal sealed class GamePlayerHost : ShellHost
                 engine);
             host.InitializeRuntime(
                 manifest,
-                runtimeContentRoot);
+                runtimeContentRoot,
+                persistentRoot);
             return host;
         }
         catch
@@ -141,7 +142,8 @@ internal sealed class GamePlayerHost : ShellHost
 
     private void InitializeRuntime(
         GameRuntimeManifest manifest,
-        string runtimeContentRoot
+        string runtimeContentRoot,
+        string persistentRoot
     ) {
         InitializeAdapterResources();
         m_diagnosticLogs = new DiagnosticLogSink(m_engine.diagnostics, m_engine.logs);
@@ -151,7 +153,7 @@ internal sealed class GamePlayerHost : ShellHost
             kind = RuntimeSessionKind.Player,
             applicationId = manifest.applicationId,
             runtimeContentDirectory = runtimeContentRoot,
-            persistentDataDirectory = ResolvePersistentRoot(manifest.applicationId),
+            persistentDataDirectory = persistentRoot,
             createSubsystems = owner =>
             {
                 m_settings = new ProjectSettingsStore(
@@ -311,13 +313,11 @@ public void Clear(DiagnosticSource source) { }
 
 
 
-    private static string ResolvePersistentRoot(string applicationId)
+    private static string ResolvePersistentRoot(string persistentDataPath)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(applicationId);
-        return Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            "InnoEngine",
-            applicationId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(persistentDataPath);
+        string localData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+        return Path.GetFullPath(Path.Combine(localData, persistentDataPath.Replace('/', Path.DirectorySeparatorChar)));
     }
 
     private static void ActivateRuntimeModules(

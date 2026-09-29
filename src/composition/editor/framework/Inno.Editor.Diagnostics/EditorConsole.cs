@@ -173,16 +173,15 @@ public sealed class EditorConsole : IEditorConsole, ILogSink, IDiagnosticSink, I
     }
 
     /// <summary>
-    /// Removes all retained logs and current diagnostic reports.
+    /// Removes retained logs while keeping currently reported issues visible until their owners resolve them.
     /// </summary>
     public void Clear()
     {
         lock (m_sync)
         {
-            if (m_logs.Count == 0 && m_diagnostics.Count == 0)
+            if (m_logs.Count == 0)
                 return;
             m_logs.Clear();
-            m_diagnostics.Clear();
             m_revision++;
         }
     }

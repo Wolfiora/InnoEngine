@@ -31,7 +31,7 @@ public sealed class RuntimeSessionOptions
     public string? runtimeContentDirectory { get; init; }
 
     /// <summary>
-    /// Gets or initializes the writable application-specific persistent data root.
+    /// Gets or initializes the writable application-specific persistent data root selected by the host.
     /// </summary>
     public string persistentDataDirectory { get; init; } = string.Empty;
 

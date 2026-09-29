@@ -94,13 +94,15 @@ public sealed class MacOSArm64GameBuildTarget : IGameBuildTarget
         string contents = Path.Combine(application, "Contents");
         string executableRoot = Path.Combine(contents, "MacOS");
         string resources = Path.Combine(contents, "Resources");
-        await CopyDirectoryAsync(context.supportPackDirectory, executableRoot, cancellationToken)
+        await CopyDirectoryAsync(context.supportPackDirectory, executableRoot, cancellationToken,
+                excludeCompilerReferences: true)
             .ConfigureAwait(false);
         string player = Path.Combine(executableRoot, "Inno.Player");
         if (!File.Exists(player))
             throw new InvalidDataException("The macOS Support Pack does not contain Inno.Player.");
         File.Move(player, Path.Combine(executableRoot, context.profile.productName));
-        await CopyDirectoryAsync(context.contentDirectory, Path.Combine(resources, "Content"), cancellationToken)
+        await CopyDirectoryAsync(context.contentDirectory, Path.Combine(resources, "Content"), cancellationToken,
+                excludeCompilerReferences: false)
             .ConfigureAwait(false);
         Directory.CreateDirectory(contents);
         string product = SecurityElement.Escape(context.profile.productName) ?? context.profile.productName;
@@ -126,18 +128,25 @@ public sealed class MacOSArm64GameBuildTarget : IGameBuildTarget
     private static async ValueTask CopyDirectoryAsync(
         string source,
         string destination,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken,
+        bool excludeCompilerReferences
     ) {
         Directory.CreateDirectory(destination);
         foreach (string directory in Directory.EnumerateDirectories(source, "*", SearchOption.AllDirectories))
         {
             cancellationToken.ThrowIfCancellationRequested();
-            Directory.CreateDirectory(Path.Combine(destination, Path.GetRelativePath(source, directory)));
+            string relativePath = Path.GetRelativePath(source, directory);
+            if (excludeCompilerReferences && IsCompilerReferencePath(relativePath))
+                continue;
+            Directory.CreateDirectory(Path.Combine(destination, relativePath));
         }
         foreach (string file in Directory.EnumerateFiles(source, "*", SearchOption.AllDirectories))
         {
             cancellationToken.ThrowIfCancellationRequested();
-            string target = Path.Combine(destination, Path.GetRelativePath(source, file));
+            string relativePath = Path.GetRelativePath(source, file);
+            if (excludeCompilerReferences && IsCompilerReferencePath(relativePath))
+                continue;
+            string target = Path.Combine(destination, relativePath);
             Directory.CreateDirectory(Path.GetDirectoryName(target)!);
             await using FileStream input = new(file, FileMode.Open, FileAccess.Read, FileShare.Read, 131072, true);
             await using FileStream output = new(target, FileMode.CreateNew, FileAccess.Write, FileShare.None, 131072, true);
@@ -146,4 +155,8 @@ public sealed class MacOSArm64GameBuildTarget : IGameBuildTarget
                 File.SetUnixFileMode(target, File.GetUnixFileMode(file));
         }
     }
+
+    private static bool IsCompilerReferencePath(string relativePath)
+        => relativePath.Equals("References", StringComparison.OrdinalIgnoreCase)
+           || relativePath.StartsWith("References" + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase);
 }

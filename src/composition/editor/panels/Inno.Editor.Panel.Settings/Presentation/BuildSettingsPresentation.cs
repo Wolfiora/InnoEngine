@@ -11,6 +11,7 @@ namespace Inno.Editor.Panel.Settings;
 internal enum BuildSettingsKey
 {
     GameProductName,
+    GamePersistentDataPath,
     GameStartupScene,
     GameWindowWidth,
     GameWindowHeight,
@@ -55,6 +56,9 @@ internal sealed class BuildSettingsField
             BuildSettingsKey.GameProductName => DrawTextValue(
                 settings.gameProductName,
                 value => settings.gameProductName = value),
+            BuildSettingsKey.GamePersistentDataPath => DrawTextValue(
+                settings.gamePersistentDataPath,
+                value => settings.gamePersistentDataPath = value),
             BuildSettingsKey.GameStartupScene => DrawTextValue(
                 settings.gameStartupScene,
                 value => settings.gameStartupScene = value),
@@ -85,6 +89,7 @@ internal sealed class BuildSettingsField
         => key switch
         {
             BuildSettingsKey.GameProductName => settings.gameProductName == defaults.gameProductName,
+            BuildSettingsKey.GamePersistentDataPath => settings.gamePersistentDataPath == defaults.gamePersistentDataPath,
             BuildSettingsKey.GameStartupScene => settings.gameStartupScene == defaults.gameStartupScene,
             BuildSettingsKey.GameWindowWidth => settings.gameWindowWidth == defaults.gameWindowWidth,
             BuildSettingsKey.GameWindowHeight => settings.gameWindowHeight == defaults.gameWindowHeight,
@@ -105,6 +110,9 @@ internal sealed class BuildSettingsField
         {
             case BuildSettingsKey.GameProductName:
                 settings.gameProductName = defaults.gameProductName;
+                break;
+            case BuildSettingsKey.GamePersistentDataPath:
+                settings.gamePersistentDataPath = defaults.gamePersistentDataPath;
                 break;
             case BuildSettingsKey.GameStartupScene:
                 settings.gameStartupScene = defaults.gameStartupScene;
@@ -140,6 +148,7 @@ internal sealed class BuildSettingsField
         BuildSettings right
     )
         => string.Equals(left.gameProductName, right.gameProductName, StringComparison.Ordinal)
+           && string.Equals(left.gamePersistentDataPath, right.gamePersistentDataPath, StringComparison.Ordinal)
            && string.Equals(left.gameStartupScene, right.gameStartupScene, StringComparison.Ordinal)
            && string.Equals(left.gameOutputDirectory, right.gameOutputDirectory, StringComparison.Ordinal)
            && left.gameWindowWidth == right.gameWindowWidth
@@ -240,6 +249,11 @@ internal static class BuildSettingsPresentation
             "Build/Game/Product Name",
             "Game Export Defaults",
             "Player-facing product name copied into each game export."),
+        new BuildSettingsField(
+            BuildSettingsKey.GamePersistentDataPath,
+            "Build/Game/Persistent Data Folder",
+            "Game Export Defaults",
+            "Folder below local application data. Empty uses the Project ID; use portable names separated by '/'."),
         new BuildSettingsField(
             BuildSettingsKey.GameStartupScene,
             "Build/Game/Startup Scene",

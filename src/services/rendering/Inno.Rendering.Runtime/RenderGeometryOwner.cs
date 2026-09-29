@@ -65,6 +65,7 @@ internal sealed class RenderGeometryOwner : RenderResourceProvider, IDisposable
                 "Geometry must have a persistent asset identity.", DiagnosticSeverity.Error, source));
             return false;
         }
+        m_diagnostics.Resolve("RENDER_GEOMETRY_ID_MISSING", source);
         m_entries.TryGetValue(id, out Entry? entry);
         if (entry is null || entry.revision != asset.contentVersion)
         {

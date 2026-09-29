@@ -31,7 +31,8 @@
   </PropertyGroup>
   <Target Name="BuildCompositionShaderCompiler">
     <MSBuild Projects="../../../../build/toolchains/Inno.Build.Toolchains.Bgfx.Shaders/Inno.Build.Toolchains.Bgfx.Shaders.csproj"
-             Targets="Build" Properties="Configuration=$(Configuration)" />
+             Targets="Build" Properties="Configuration=$(Configuration)"
+             RemoveProperties="RuntimeIdentifier;SelfContained;PublishSingleFile" />
   </Target>
   <Target Name="CollectCompositionShaderCompilerInputs" DependsOnTargets="BuildCompositionShaderCompiler">
     <ItemGroup>

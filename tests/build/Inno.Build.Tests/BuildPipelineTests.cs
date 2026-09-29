@@ -138,6 +138,17 @@ public sealed class BuildPipelineTests : IDisposable
     }
 
     [Theory]
+    [InlineData("../other-game")]
+    [InlineData("C:/absolute")]
+    [InlineData("studio//game")]
+    public void ProfileRejectsPersistentDataPathsOutsidePortableApplicationFolders(string path)
+    {
+        BuildProfile profile = CreateProfile(BuildTargetId.windowsX64);
+        profile.persistentDataPath = path;
+        Assert.Throws<InvalidDataException>(profile.Validate);
+    }
+
+    [Theory]
     [InlineData("macos-arm64")]
     [InlineData("windows-x64")]
     public async Task GameBuildPublishesOnlyVerifiedContentPacksAndRuntimeAssemblies(string targetValue)
@@ -146,10 +157,12 @@ public sealed class BuildPipelineTests : IDisposable
         TypeCacheSnapshot runtimeTypes = m_engine.types.current;
         BuildTargetId target = new(targetValue);
         using SerializationGeneration serialization = m_engine.serialization.CaptureGeneration();
+        BuildProfile profile = CreateProfile(target);
+        profile.persistentDataPath = "studio/testgame";
 
         BuildResult result = await m_pipeline.BuildGameAsync(new GameBuildRequest
         {
-            profile = CreateProfile(target),
+            profile = profile,
             outputDirectory = Path.Combine(m_root, "Builds", targetValue)
         });
 
@@ -163,6 +176,10 @@ public sealed class BuildPipelineTests : IDisposable
             ? Path.Combine(outputPath, "Contents", "MacOS", "Test Game")
             : Path.Combine(outputPath, "Test Game.exe");
         Assert.True(File.Exists(executable));
+        string playerRoot = target == BuildTargetId.macOSArm64
+            ? Path.Combine(outputPath, "Contents", "MacOS")
+            : outputPath;
+        Assert.False(Directory.Exists(Path.Combine(playerRoot, "References")));
         string deployedNative = target == BuildTargetId.macOSArm64
             ? Path.Combine(outputPath, "Contents", "MacOS", "native")
             : Path.Combine(outputPath, "native");
@@ -180,7 +197,9 @@ public sealed class BuildPipelineTests : IDisposable
 
         byte[] envelope = File.ReadAllBytes(Path.Combine(packagedContent, "runtime.manifest"));
         Assert.Equal("tests.game", RuntimeManifestEnvelope.ReadApplicationId(envelope));
+        Assert.Equal("studio/testgame", RuntimeManifestEnvelope.ReadPersistentDataPath(envelope));
         GameRuntimeManifest manifest = RuntimeManifestEnvelope.Decode(envelope, serialization);
+        Assert.Equal("studio/testgame", manifest.persistentDataPath);
         Assert.Equal("Scenes/Startup.iscene", manifest.startupScene);
         GameRuntimeModule runtimeModule = Assert.Single(manifest.modules);
         Assert.Equal("RuntimeScripts", runtimeModule.name);
@@ -657,11 +676,13 @@ public sealed class BuildPipelineTests : IDisposable
     {
         string directory = Path.Combine(m_supportPackRoot, target.value);
         Directory.CreateDirectory(directory);
+        string references = Path.Combine(directory, "References");
+        Directory.CreateDirectory(references);
         foreach (string assembly in Directory
                      .EnumerateFiles(AppContext.BaseDirectory, "Inno.*.dll", SearchOption.TopDirectoryOnly)
                      .Where(static path => !IsAuthoringAssembly(Path.GetFileName(path))))
         {
-            File.Copy(assembly, Path.Combine(directory, Path.GetFileName(assembly)));
+            File.Copy(assembly, Path.Combine(references, Path.GetFileName(assembly)));
         }
         File.WriteAllBytes(Path.Combine(directory, executable), [0x49, 0x4E, 0x4E, 0x4F]);
         string native = Path.Combine(directory, "native");

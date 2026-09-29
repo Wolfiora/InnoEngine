@@ -154,7 +154,7 @@ internal static class ScriptApiReferenceBuilder
                 concurrentBuild: false,
                 nullableContextOptions: NullableContextOptions.Enable,
                 metadataImportOptions: MetadataImportOptions.Public));
-        string temporaryPath = referencePath + ".tmp";
+        string temporaryPath = referencePath + ".tmp-" + Guid.NewGuid().ToString("N");
         using (FileStream stream = File.Create(temporaryPath))
         {
             EmitResult result = compilation.Emit(
@@ -173,7 +173,7 @@ internal static class ScriptApiReferenceBuilder
                     $"{Environment.NewLine}{source}");
             }
         }
-        File.Move(temporaryPath, referencePath, overwrite: true);
+        InstallReference(temporaryPath, referencePath);
     }
 
     private static void EmitLogicalReferenceAssembly(
@@ -216,7 +216,7 @@ internal static class ScriptApiReferenceBuilder
                 concurrentBuild: false,
                 nullableContextOptions: NullableContextOptions.Enable,
                 metadataImportOptions: MetadataImportOptions.Public));
-        string temporaryPath = referencePath + ".tmp";
+        string temporaryPath = referencePath + ".tmp-" + Guid.NewGuid().ToString("N");
         using (FileStream stream = File.Create(temporaryPath))
         {
             EmitResult result = compilation.Emit(
@@ -235,7 +235,26 @@ internal static class ScriptApiReferenceBuilder
                     $"{Environment.NewLine}{source}");
             }
         }
-        File.Move(temporaryPath, referencePath, overwrite: true);
+        InstallReference(temporaryPath, referencePath);
+    }
+
+    private static void InstallReference(
+        string temporaryPath,
+        string referencePath
+    ) {
+        try
+        {
+            File.Move(temporaryPath, referencePath);
+        }
+        catch (IOException) when (File.Exists(referencePath))
+        {
+            // Another compiler already published the same immutable reference.
+        }
+        finally
+        {
+            if (File.Exists(temporaryPath))
+                File.Delete(temporaryPath);
+        }
     }
 
     private static void WriteLogicalDocumentation(

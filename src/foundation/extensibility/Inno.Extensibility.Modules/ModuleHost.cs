@@ -1189,7 +1189,9 @@ public sealed class ModuleHost : IDisposable
                     throw new InvalidDataException(
                         $"Assembly '{assembly.GetName().Name}' has an unavailable downstream reference to '{name}'.");
                 }
-                if (m_trustedPlatformAssemblies.Contains(name))
+                if (m_trustedPlatformAssemblies.Contains(name)
+                    || (sharedAssemblies.TryGetValue(name, out Assembly? platformAssembly)
+                        && IsTrustedFrameworkAssembly(platformAssembly)))
                     continue;
                 if (sharedAssemblies.TryGetValue(name, out Assembly? sharedAssembly))
                 {
@@ -1382,6 +1384,22 @@ public sealed class ModuleHost : IDisposable
             .OfType<string>()
             .Where(static name => !string.IsNullOrWhiteSpace(name))
             .ToHashSet(StringComparer.OrdinalIgnoreCase);
+    }
+
+    private static bool IsTrustedFrameworkAssembly(Assembly assembly)
+    {
+        if (AssemblyLoadContext.GetLoadContext(assembly) != AssemblyLoadContext.Default)
+            return false;
+        AssemblyName identity = assembly.GetName();
+        string name = identity.Name ?? string.Empty;
+        if (!name.StartsWith("System.", StringComparison.Ordinal)
+            && !name.StartsWith("Microsoft.Win32.", StringComparison.Ordinal)
+            && name is not ("System" or "netstandard" or "mscorlib"))
+        {
+            return false;
+        }
+        string token = Convert.ToHexString(identity.GetPublicKeyToken() ?? []);
+        return token is "B03F5F7F11D50A3A" or "7CEC85D7BEA7798E" or "CC7B13FFCD2DDD51";
     }
 
     private void ValidateUniqueModuleName(string moduleName)

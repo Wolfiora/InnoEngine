@@ -15,6 +15,8 @@ Tombstone 保留中立 property bytes、依赖描述与 last-successful artifact
 
 只读源 metadata 不一致时，失败进入可写 Catalog；记录失败不会再次调用只读 source writer，也不会修改安装包。缺失 sidecar 或 identity 冲突仍明确拒绝，不提供 legacy metadata fallback。Source mount dependency set 和发布的 mount 列表为不可修改快照。
 
+文件占用或暂时的访问拒绝引起的导入失败会在下次 Rescan 时重新尝试，即使源码和 Importer 未变化。其他确定性的导入失败仍按源码、设置、依赖或 Importer 变化触发重导入，避免无意义的重复工作。
+
 [Assets 索引](README.md) · [Runtime Assets](Inno.Assets.md) · [Plugins](../plugins/Inno.Plugins.Authoring.md)
 
 ## 职责与边界

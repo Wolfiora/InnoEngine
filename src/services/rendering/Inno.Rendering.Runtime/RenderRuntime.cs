@@ -43,6 +43,8 @@ public sealed class RenderRuntime : RuntimeSubsystem, IRenderRequestSink, IViewC
     private readonly List<CompositionRequest> m_pendingCompositions = [];
     private readonly List<CompositionRequest> m_currentCompositions = [];
     private readonly List<IRenderFrameGraphContributor> m_contributors = [];
+    private readonly Dictionary<FrameIssueKey, Diagnostic> m_previousFrameIssues = [];
+    private readonly Dictionary<FrameIssueKey, Diagnostic> m_currentFrameIssues = [];
     private ulong m_frameIndex;
     private uint m_graphGeneration;
     private RenderExtensionRegistry.RequestProviderGeneration? m_requestProviders;
@@ -222,7 +224,7 @@ public sealed class RenderRuntime : RuntimeSubsystem, IRenderRequestSink, IViewC
             }
             catch (Exception exception)
             {
-                m_diagnostics.Publish(new Diagnostic(
+                PublishFrameIssue(new Diagnostic(
                     "RENDER_VIEW_CONTENT_SOURCE_FAILED",
                     $"View content source '{entry.id}' was isolated after failure: {exception}",
                     DiagnosticSeverity.Error,
@@ -489,6 +491,7 @@ public sealed class RenderRuntime : RuntimeSubsystem, IRenderRequestSink, IViewC
         EnsureActive();
         PruneRetiredGenerations();
         EnsureRequestProviders();
+        m_currentFrameIssues.Clear();
         m_device.BeginFrame();
         m_frameOpen = true;
         try
@@ -585,7 +588,7 @@ public sealed class RenderRuntime : RuntimeSubsystem, IRenderRequestSink, IViewC
             }
             catch (Exception exception)
             {
-                m_diagnostics.Publish(new Diagnostic(
+                PublishFrameIssue(new Diagnostic(
                     "RENDER_REQUEST_PROVIDER_FAILED",
                     $"Render request provider '{entry.id}' was isolated after failure: {exception}",
                     DiagnosticSeverity.Error,
@@ -606,7 +609,7 @@ public sealed class RenderRuntime : RuntimeSubsystem, IRenderRequestSink, IViewC
             }
             catch (Exception exception)
             {
-                m_diagnostics.Publish(new Diagnostic("RENDER_MODEL_ACCEPT_FAILED",
+                PublishFrameIssue(new Diagnostic("RENDER_MODEL_ACCEPT_FAILED",
                     $"Render model '{entry.id}' failed to inspect output content: {exception}",
                     DiagnosticSeverity.Error, entry.id));
             }
@@ -657,7 +660,7 @@ public sealed class RenderRuntime : RuntimeSubsystem, IRenderRequestSink, IViewC
             }
             catch (Exception exception)
             {
-                m_diagnostics.Publish(new Diagnostic("RENDER_MODEL_BUILD_FAILED",
+                PublishFrameIssue(new Diagnostic("RENDER_MODEL_BUILD_FAILED",
                     $"Render model '{entry.id}' failed to build output: {exception}",
                     DiagnosticSeverity.Error, entry.id));
                 return;
@@ -675,7 +678,7 @@ public sealed class RenderRuntime : RuntimeSubsystem, IRenderRequestSink, IViewC
         if (string.Equals(message, m_lastModelDiagnostic, StringComparison.Ordinal))
             return;
         m_lastModelDiagnostic = message;
-        m_diagnostics.Publish(new Diagnostic("RENDER_OUTPUT_MODEL_UNAVAILABLE", message,
+        PublishFrameIssue(new Diagnostic("RENDER_OUTPUT_MODEL_UNAVAILABLE", message,
             DiagnosticSeverity.Warning));
     }
 
@@ -694,7 +697,7 @@ public sealed class RenderRuntime : RuntimeSubsystem, IRenderRequestSink, IViewC
         }
         catch (Exception exception)
         {
-            m_diagnostics.Publish(new Diagnostic(
+            PublishFrameIssue(new Diagnostic(
                 "RENDER_CONTENT_SCOPE_FAILED",
                 $"The host content scope failed and an empty scope was used for this frame: {exception}",
                 DiagnosticSeverity.Error,
@@ -725,7 +728,7 @@ public sealed class RenderRuntime : RuntimeSubsystem, IRenderRequestSink, IViewC
         }
         catch (Exception exception)
         {
-            m_diagnostics.Publish(new Diagnostic(
+            PublishFrameIssue(new Diagnostic(
                 "RENDER_PRESENTATION_VIEWPORT_FAILED",
                 $"The primary presentation viewport was invalid and the complete surface was used: {exception.Message}",
                 DiagnosticSeverity.Error,
@@ -856,6 +859,7 @@ public sealed class RenderRuntime : RuntimeSubsystem, IRenderRequestSink, IViewC
         void CompleteFrameState()
         {
             m_frameOpen = false;
+            ReconcileFrameIssues();
             m_uploads.EndFrame();
             m_currentRequests.Clear();
             m_currentCompositions.Clear();
@@ -1018,7 +1022,7 @@ public sealed class RenderRuntime : RuntimeSubsystem, IRenderRequestSink, IViewC
         }
         catch (Exception exception)
         {
-            m_diagnostics.Publish(new Diagnostic(
+            PublishFrameIssue(new Diagnostic(
                 "RENDER_OUTPUT_COMPOSITION_FAILED",
                 $"Output composition '{composition.name}' was isolated after failure: {exception}",
                 DiagnosticSeverity.Error,
@@ -1042,7 +1046,7 @@ public sealed class RenderRuntime : RuntimeSubsystem, IRenderRequestSink, IViewC
             }
             catch (Exception exception)
             {
-                m_diagnostics.Publish(new Diagnostic("RENDER_VIEW_CONTENT_FRAME_FAILED",
+                PublishFrameIssue(new Diagnostic("RENDER_VIEW_CONTENT_FRAME_FAILED",
                     $"View content source '{entry.id}' failed to complete its frame: {exception}",
                     DiagnosticSeverity.Error, entry.id));
             }
@@ -1059,7 +1063,7 @@ public sealed class RenderRuntime : RuntimeSubsystem, IRenderRequestSink, IViewC
         RenderPipelineAsset? asset = request.pipeline ?? m_graphicsSettings.defaultPipeline;
         if (asset is null)
         {
-            m_diagnostics.Publish(new Diagnostic(
+            PublishFrameIssue(new Diagnostic(
                 "RENDER_PIPELINE_UNAVAILABLE",
                 $"Render request '{request.name}' has no pipeline. The frame and UI remain active.",
                 DiagnosticSeverity.Warning,
@@ -1115,7 +1119,7 @@ public sealed class RenderRuntime : RuntimeSubsystem, IRenderRequestSink, IViewC
         }
         catch (Exception exception)
         {
-            m_diagnostics.Publish(new Diagnostic(
+            PublishFrameIssue(new Diagnostic(
                 "RENDER_REQUEST_FAILED",
                 $"Render request '{request.name}' was isolated after failure: {exception}",
                 DiagnosticSeverity.Error,
@@ -1150,6 +1154,7 @@ public sealed class RenderRuntime : RuntimeSubsystem, IRenderRequestSink, IViewC
             return m_generations.TryGetValue(asset, out GenerationCacheEntry? failedEntry)
                 && (generation = failedEntry.lastGood) is not null;
         }
+        m_diagnostics.Resolve("RENDER_EXTENSION_REGISTRY_FAILED", asset.pipelineTypeId);
 
         if (!m_generations.TryGetValue(asset, out GenerationCacheEntry? entry))
         {
@@ -1239,6 +1244,7 @@ public sealed class RenderRuntime : RuntimeSubsystem, IRenderRequestSink, IViewC
                 DiagnosticSeverity.Error));
             return;
         }
+        m_diagnostics.Resolve("RENDER_EXTENSION_REGISTRY_FAILED");
 
         foreach ((RenderPipelineAsset asset, GenerationCacheEntry entry) in m_generations.ToArray())
         {
@@ -1352,13 +1358,33 @@ public sealed class RenderRuntime : RuntimeSubsystem, IRenderRequestSink, IViewC
         return new RenderGraphBuilder(m_graphGeneration, m_device.capabilities);
     }
 
+    private void PublishFrameIssue(Diagnostic diagnostic)
+    {
+        var key = new FrameIssueKey(diagnostic.code, diagnostic.semanticId, diagnostic.objectId);
+        m_currentFrameIssues[key] = diagnostic;
+        m_diagnostics.Publish(diagnostic);
+    }
+
+    private void ReconcileFrameIssues()
+    {
+        foreach (FrameIssueKey key in m_previousFrameIssues.Keys)
+        {
+            if (!m_currentFrameIssues.ContainsKey(key))
+                m_diagnostics.Resolve(key.code, key.semanticId, key.objectId);
+        }
+        m_previousFrameIssues.Clear();
+        foreach ((FrameIssueKey key, Diagnostic diagnostic) in m_currentFrameIssues)
+            m_previousFrameIssues.Add(key, diagnostic);
+        m_currentFrameIssues.Clear();
+    }
+
     private void PublishGraphDiagnostics(
         RenderGraphCompileResult result,
         string source
     ) {
         foreach (RenderGraphDiagnostic diagnostic in result.diagnostics)
         {
-            m_diagnostics.Publish(new Diagnostic(
+            PublishFrameIssue(new Diagnostic(
                 diagnostic.code,
                 diagnostic.message,
                 diagnostic.severity == DiagnosticSeverity.Error
@@ -1375,7 +1401,7 @@ public sealed class RenderRuntime : RuntimeSubsystem, IRenderRequestSink, IViewC
         string stage,
         Exception exception
     )
-        => m_diagnostics.Publish(new Diagnostic(
+        => PublishFrameIssue(new Diagnostic(
             "RENDER_FRAME_CONTRIBUTOR_FAILED",
             $"Frame contributor '{contributor.GetType().Name}' failed during {stage}: {exception.Message}",
             DiagnosticSeverity.Error,
@@ -1406,7 +1432,7 @@ public sealed class RenderRuntime : RuntimeSubsystem, IRenderRequestSink, IViewC
             }
             catch (Exception exception)
             {
-                m_diagnostics.Publish(new Diagnostic(
+                PublishFrameIssue(new Diagnostic(
                     "RENDER_FEATURE_FAILED",
                     $"Feature '{configuration.featureTypeId}' was rolled back: {exception.Message}",
                     DiagnosticSeverity.Error,
@@ -1414,6 +1440,12 @@ public sealed class RenderRuntime : RuntimeSubsystem, IRenderRequestSink, IViewC
             }
         }
     }
+
+    private readonly record struct FrameIssueKey(
+        string code,
+        string? semanticId,
+        Guid? objectId
+    );
 
     private sealed record CompositionRequest(
         string name,
@@ -1618,6 +1650,7 @@ public void Submit(ViewContentItem item)
                 Finish();
                 throw;
             }
+            m_owner.m_diagnostics.Resolve("RENDER_EXTENSION_RELOAD_REJECTED");
             Finish();
         }
 

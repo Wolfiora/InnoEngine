@@ -66,6 +66,8 @@ Tree、List 和 Grid 使用同一个 `AssetFileEntry` 目录目标及 `panel/ass
 
 Tree pane 只在名称或层级缩进真实超出 viewport 时产生横向范围，并显示原生水平 scrollbar；短内容没有 scrollbar。Tree 的 label/icon/hit area 只应用一次 `ScrollX`，不会出现内容比 disclosure 或 guide 多移动一份滚动距离的情况。
 
+底部面包屑栏仅在路径实际超出可用宽度时设置显式内容宽度并启用横向滚动；可容纳的路径交给 ImGui 按真实 item 宽度布局，避免 Windows 缩放和像素取整使等宽的空白滚动范围常驻。
+
 提交前统一检查目标目录存在、同名冲突、目录拖入自身或 descendant，以及 AssetEditor 对 move 的验证。拖到当前 parent 属于 no-op，不产生 History；成功移动后保留 source/meta identity、选择新路径，并以单个 `Move Asset` 操作进入 Undo/Redo。目录移动由 `AssetPipeline.Move` 原子处理，目录内子项不单独复制或逐项重建。SceneAsset 的 Rename、Move、拖放及其 Undo/Redo 只改变 Asset source metadata；已加载的 clean Scene 会在同一 UI frame 更新 document 路径和显示名，不产生 Hierarchy `*`。
 
 所有 Tree/List/Grid 目录目标统一调用 `ImGuiWidget.DropTargetHighlight`。目标框使用全局 `DragDropTarget` 黄色、统一 rounding/thickness，并绘制在 viewport foreground draw list，因此不会被 Table column、Grid cell 或 child window 的 clip rect 截断。

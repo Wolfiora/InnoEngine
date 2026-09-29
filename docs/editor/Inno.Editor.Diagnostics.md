@@ -15,3 +15,5 @@
 Fingerprint 包含 domain、severity、source、code、message、location、stack identity 和 `LogSessionId`；同一 Session 的非连续等价项全局聚合，不同 Session 不会误合并。Buffer、capacity queue、fingerprint builder 与 clear-on-play implementation 均保持 internal。
 
 Console timeline 与 collapse group 都按 occurrence sequence 正序排列：最旧在上、最新在下。Panel 仅在用户已经位于底部或明确请求滚动时跟随新条目；用户向上查看历史后不会被强制拉回。因此新启动错误显示在最下方是正常的时间线语义，不是 Error 优先级异常。编译器、Importer、Rendering 等可恢复问题使用 `DiagnosticHub` 的当前状态报告；普通 `Log` 才保留历史调用栈。
+
+`Clear()` 只清理历史 Log；当前 Diagnostic 的权威数据属于 producer，直到 producer 报告恢复才撤销。相同内容的 Issue 重复发布不会刷新 Console 时间线；Rendering 的帧级 Issue 在下一次成功帧自动对账清退。Panel header 显示 `[Issue]` 与 `[Log]`，便于识别当前问题和过去事件。

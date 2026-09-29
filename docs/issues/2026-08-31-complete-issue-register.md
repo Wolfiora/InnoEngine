@@ -312,9 +312,9 @@
 
 - 历史证据：旧全量测试出现过 Roslyn 偶发失败，Game Export 只使用 Fake Publisher。
 - 根因与影响：无法证明脱离源码的真实 Player 能启动、创建图形 backend、运行帧并有序退出。
-- 当前实现：`tests/player/Inno.Player.E2E` 创建临时 Project、fresh script generation、Artifact closure、Build、启动导出 Player 并验证帧与退出；CI matrix 在 macOS ARM64 和 Windows x64 构建 Native/Support Pack 后执行同一 E2E。
-- 当前证据：macOS ARM64 本机 E2E 已成功，Metal/BGFX 初始化并运行 3 帧；Windows x64 代码、Support Pack 生成和 CI job 已配置，但当前 macOS 主机不能执行 Windows 进程。
-- 关闭标准：两个目标 runner 都产生一次成功 E2E 记录。状态保持“待平台验证”，在 Windows CI 实际成功前不得写成已关闭。
+- 当前实现：原 `tests/player/Inno.Player.E2E` 项目已移除。现在通过真实 Samples Project 的 Build CLI 导出和 Player `--smoke-frames` 验证目标平台；CI 不再引用不存在的项目。
+- 当前证据：历史 macOS ARM64 本机 E2E 曾成功；2026-09-29 在 Windows x64 上用 FlappyBird 导出并运行 3 帧，得到 `views=2`、`draws=25`。macOS 的当前 single-file 导出改动仍需在 macOS runner 复验。
+- 关闭标准：两个目标 runner 都产生基于当前源码和真实样例的成功导出与运行记录。当前 macOS single-file 路径仍待复验。
 
 ### ARCH-031：保留现有 API 阻碍正确领域建模
 
@@ -557,10 +557,10 @@ dotnet run --project tools/Inno.Tooling.Architecture -- .
 dotnet build InnoEngine.sln --no-restore --disable-build-servers -m:1 -p:UseSharedCompilation=false
 dotnet test InnoEngine.sln --no-build --no-restore --disable-build-servers -m:1 -p:UseSharedCompilation=false
 dotnet run --project build/support/Inno.Build.SupportPacks -- --target macos-arm64 ...
-dotnet run --project tests/player/Inno.Player.E2E -- --target macos-arm64 ...
+dotnet run --project src/composition/editor/host/Inno.Editor.Build.Cli -- game --project <SampleProject> --support-packs <SupportPacks> --output <Output> ...
 ```
 
-Windows x64 的最后一条 E2E 必须在 Windows runner 执行；CI 定义位于 `.github/workflows/rendering-ci.yml`。
+真实 Player 的导出和启动验证须在对应目标系统执行；CI 定义位于 `.github/workflows/rendering-ci.yml`。
 
 ## 2026-09-01 本机验收记录
 

@@ -15,7 +15,7 @@
 
 游戏脚本的 `InnoEngine.Logging.Log` 与 Editor Panel 消费的是同一 Core stream。生命周期日志只会在 Scene 真正执行 Runtime lifecycle 时产生；Edit Mode 中单纯切换 enabled 不会伪造 `OnEnable`/`OnDisable`。
 
-Console 默认启用与 Unity 一致的 `Clear on Play`：Play 请求进入 `Compiling` 时先 `Flush` LogRouter，再清除 Console 内上一轮普通 Log；Compiler、Importer、Rendering 等 `DiagnosticHub` current report 不会被清除，因为它们描述的错误仍然存在。当前 Play Session 的 Debug/Info/Warn/Error/Fatal 在退出后全部保留，便于停止后检查；下一次 Play 开始时再统一清除。该策略位于 Settings 的 `Editor/Diagnostics/Console/Clear on Play`，默认值为 `true`，Apply、Undo 或 Redo 后立即作用于 Console backend。Console toolbar 不再保存或显示第二份开关。Collapse 仍是 Panel layout preference；日志内容、展开项和 filter 临时状态不持久化。手动 Clear 同时清除普通 Log 和当前 Diagnostic 展示，后续 producer 发布完整 report 时会重新出现仍然有效的诊断。
+Console 默认启用与 Unity 一致的 `Clear on Play`：Play 请求进入 `Compiling` 时先 `Flush` LogRouter，再清除 Console 内上一轮普通 Log；Compiler、Importer、Rendering 等 `DiagnosticHub` current report 不会被清除，因为它们描述的错误仍然存在。当前 Play Session 的 Debug/Info/Warn/Error/Fatal 在退出后全部保留，便于停止后检查；下一次 Play 开始时再统一清除。该策略位于 Settings 的 `Editor/Diagnostics/Console/Clear on Play`，默认值为 `true`，Apply、Undo 或 Redo 后立即作用于 Console backend。Console toolbar 不再保存或显示第二份开关。Collapse 仍是 Panel layout preference；日志内容、展开项和 filter 临时状态不持久化。手动 Clear 只清除普通 Log；当前 Diagnostic 仍由 producer 拥有并持续显示。
 
 Collapse fingerprint 包含 `LogSessionId`。同一 Session 内非连续、且 message/location/stack 相同的 occurrence 会全局聚合；不同 Edit/Play Session 即使文本完全相同也不会合并，展开时仍保留每次 occurrence。
 
@@ -23,7 +23,7 @@ Collapse fingerprint 包含 `LogSessionId`。同一 Session 内非连续、且 m
 
 Console 还会实时显示 Asset Import/Build/Catalog、Asset Source Database、Scene Workspace、Editor Workspace、Panel Activation 和 Project Persistence 的当前报告。Diagnostic 恢复时对应卡片自动消失；同一失败首次出现时写入的异常 Log 不会随之删除。这使 Console 同时保留“现在需要处理什么”和“过去发生过什么”，但两者不会混成一条不可清理的历史流。
 
-Console card header 只显示等级，例如 `[Info]` 或 `[Error]`。展开后的详情通过 `Kind: Log` 或 `Kind: Diagnostic` 明确来源；元数据稳定按 Kind、File、Source、Session、Time 排列，未分配的 Session 行省略。Header/metadata 与 stack trace 之间的横线都使用同一张 card 推导出的 separator color，避免展开区域出现两种无语义差异的颜色。`Copy Full Entry` 文本也保留同一来源信息，避免等级相同的历史日志与当前诊断产生歧义。所有 card 都使用统一 Editor Action/Menu 系统提供右键菜单：
+Console card header 显示等级和来源，例如 `[Info] [Log]` 或 `[Error] [Issue]`。展开后的详情通过 `Kind: Log` 或 `Kind: Diagnostic` 明确来源；元数据稳定按 Kind、File、Source、Session、Time 排列，未分配的 Session 行省略。Header/metadata 与 stack trace 之间的横线都使用同一张 card 推导出的 separator color，避免展开区域出现两种无语义差异的颜色。`Copy Full Entry` 文本也保留同一来源信息，避免等级相同的历史日志与当前诊断产生歧义。所有 card 都使用统一 Editor Action/Menu 系统提供右键菜单：
 
 - `Copy Message`：复制诊断 code 与消息正文。
 - `Copy Full Entry`：复制时间、等级、category、重复次数和源文件位置。

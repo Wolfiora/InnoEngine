@@ -26,9 +26,19 @@ internal sealed class GameExportModal(ExportWindowModule window) : EditorModal
     public override bool canMove => true;
 
     /// <summary>
+    /// Gets whether this implementation can resize.
+    /// </summary>
+    public override bool canResize => true;
+
+    /// <summary>
     /// Gets the preferred initial window size in logical editor units.
     /// </summary>
-    public override Vector2 initialSize => new(720f, 0f);
+    public override Vector2 initialSize => new(760f, 540f);
+
+    /// <summary>
+    /// Gets the smallest size that keeps the export form usable.
+    /// </summary>
+    public override Vector2 minimumSize => new(620f, 460f);
 
     /// <summary>
     /// Draws this feature using the current editor presentation context.
@@ -38,41 +48,90 @@ internal sealed class GameExportModal(ExportWindowModule window) : EditorModal
     /// </param>
     protected override void OnDraw(EditorContext context)
     {
-        EditorWidget.WrappedText(
-            "Builds a self-contained Player from a fresh runtime script generation. Only imported, " +
-            "content-addressed artifacts are deployed; project source files are never copied.");
-        NativeImGui.Spacing();
-        bool enabled = !window.isGameBusy;
-        NativeImGui.BeginDisabled(!enabled);
-        try
+        float footerHeight = NativeImGui.GetFrameHeightWithSpacing() +
+                             NativeImGui.GetStyle().ItemSpacing.Y;
+        Vector2 available = NativeImGui.GetContentRegionAvail();
+        if (NativeImGui.BeginChild(
+                "##game_export_form",
+                new Vector2(0f, MathF.Max(1f, available.Y - footerHeight))))
         {
-            NativeImGui.TextUnformatted("Application ID");
-            NativeImGui.TextDisabled($"{window.gameApplicationId} (from Project ID)");
-            DrawText("Product Name", "game_name", window.gameProductName, value => window.gameProductName = value);
-            DrawText("Startup Scene", "game_scene", window.gameStartupScene, value => window.gameStartupScene = value);
-            DrawWindowSize();
-            DrawTarget();
-            DrawText("Output Directory", "game_output", window.gameOutputDirectory, value => window.gameOutputDirectory = value);
-            NativeImGui.TextDisabled(
-                "Identity comes from Settings > Project > Identity. Other defaults come from Build > Game.");
+            EditorWidget.WrappedText(
+                "Build a standalone Player from the current project. Only imported runtime content " +
+                "is deployed; source files stay in the project.");
+            NativeImGui.SeparatorText("Application");
+            if (BeginFields("##application_fields"))
+            {
+                DrawReadOnly("Application ID", window.gameApplicationId);
+                DrawText("Product Name", "game_name", window.gameProductName, value => window.gameProductName = value);
+                DrawText("Persistent Data Folder", "game_data", window.gamePersistentDataPath,
+                    value => window.gamePersistentDataPath = value);
+                DrawText("Startup Scene", "game_scene", window.gameStartupScene, value => window.gameStartupScene = value);
+                NativeImGui.EndTable();
+            }
+            NativeImGui.SeparatorText("Window and Platform");
+            if (BeginFields("##platform_fields"))
+            {
+                DrawWindowSize();
+                DrawTarget();
+                NativeImGui.EndTable();
+            }
+            NativeImGui.SeparatorText("Output");
+            if (BeginFields("##output_fields"))
+            {
+                DrawText("Output Directory", "game_output", window.gameOutputDirectory, value => window.gameOutputDirectory = value);
+                NativeImGui.EndTable();
+            }
+            NativeImGui.Spacing();
+            NativeImGui.TextDisabled("Defaults: Settings > Build > Game. Application ID: Settings > Project > Identity.");
         }
-        finally
-        {
-            NativeImGui.EndDisabled();
-        }
+        NativeImGui.EndChild();
         DrawOutcome();
+        NativeImGui.Separator();
         DrawButtons();
+    }
+
+    private static bool BeginFields(string id)
+    {
+        if (!NativeImGui.BeginTable(
+                id,
+                2,
+                ImGuiTableFlags.SizingStretchProp |
+                ImGuiTableFlags.NoSavedSettings |
+                ImGuiTableFlags.NoPadOuterX))
+        {
+            return false;
+        }
+        NativeImGui.TableSetupColumn("Field", ImGuiTableColumnFlags.WidthFixed, 180f * EditorWidget.style.zoom);
+        NativeImGui.TableSetupColumn("Value", ImGuiTableColumnFlags.WidthStretch);
+        return true;
+    }
+
+    private static void BeginField(string label)
+    {
+        NativeImGui.TableNextRow();
+        _ = NativeImGui.TableSetColumnIndex(0);
+        NativeImGui.AlignTextToFramePadding();
+        NativeImGui.TextUnformatted(label);
+        _ = NativeImGui.TableSetColumnIndex(1);
+    }
+
+    private static void DrawReadOnly(
+        string label,
+        string value
+    ) {
+        BeginField(label);
+        NativeImGui.TextDisabled(value);
     }
 
     private void DrawWindowSize()
     {
         int width = window.gameWindowWidth;
         int height = window.gameWindowHeight;
-        NativeImGui.TextUnformatted("Initial Window Width");
+        BeginField("Initial Width");
         NativeImGui.SetNextItemWidth(-1f);
         if (NativeImGui.InputInt("##game_window_width", ref width))
             window.gameWindowWidth = Math.Max(1, width);
-        NativeImGui.TextUnformatted("Initial Window Height");
+        BeginField("Initial Height");
         NativeImGui.SetNextItemWidth(-1f);
         if (NativeImGui.InputInt("##game_window_height", ref height))
             window.gameWindowHeight = Math.Max(1, height);
@@ -80,7 +139,7 @@ internal sealed class GameExportModal(ExportWindowModule window) : EditorModal
 
     private void DrawTarget()
     {
-        NativeImGui.TextUnformatted("Target");
+        BeginField("Target");
         NativeImGui.SetNextItemWidth(-1f);
         string preview = window.GetGameTargetDisplayName(window.gameTarget);
         if (!NativeImGui.BeginCombo("##game_target", preview))
@@ -122,31 +181,18 @@ internal sealed class GameExportModal(ExportWindowModule window) : EditorModal
     private void DrawButtons()
     {
         NativeImGui.Spacing();
-        string primaryLabel = window.isGameBusy ? "Cancel" : "Export";
+        string primaryLabel = "Export";
         ImGuiStylePtr style = NativeImGui.GetStyle();
         float closeWidth = NativeImGui.CalcTextSize("Close").X + style.FramePadding.X * 2f;
         float primaryWidth = NativeImGui.CalcTextSize(primaryLabel).X + style.FramePadding.X * 2f;
         NativeImGui.SetCursorPosX(
             NativeImGui.GetCursorPosX() +
             MathF.Max(0f, NativeImGui.GetContentRegionAvail().X - closeWidth - style.ItemSpacing.X - primaryWidth));
-        NativeImGui.BeginDisabled(window.isGameBusy);
-        try
-        {
-            if (NativeImGui.Button("Close"))
-                window.CloseGame();
-        }
-        finally
-        {
-            NativeImGui.EndDisabled();
-        }
+        if (NativeImGui.Button("Close"))
+            window.CloseGame();
         NativeImGui.SameLine();
         if (NativeImGui.Button(primaryLabel))
-        {
-            if (window.isGameBusy)
-                window.CancelGameExport();
-            else
-                window.BeginGameExport();
-        }
+            window.BeginGameExport();
     }
 
     private static void DrawText(
@@ -155,7 +201,7 @@ internal sealed class GameExportModal(ExportWindowModule window) : EditorModal
         string value,
         Action<string> apply
     ) {
-        NativeImGui.TextUnformatted(label);
+        BeginField(label);
         NativeImGui.SetNextItemWidth(-1f);
         _ = EditorImGui.InputText($"##{id}", ref value, C_TEXT_CAPACITY);
         apply(value);

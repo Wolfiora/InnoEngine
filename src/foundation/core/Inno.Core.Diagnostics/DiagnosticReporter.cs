@@ -40,7 +40,15 @@ public sealed class DiagnosticReporter : IDiagnosticReporter, IDisposable
         lock (m_sync)
         {
             DiagnosticHub hub = GetHub();
-            m_issues[new(diagnostic.code, diagnostic.semanticId, diagnostic.objectId)] = diagnostic;
+            var key = new IssueKey(diagnostic.code, diagnostic.semanticId, diagnostic.objectId);
+            if (m_issues.TryGetValue(key, out Diagnostic? current)
+                && current.severity == diagnostic.severity
+                && string.Equals(current.message, diagnostic.message, StringComparison.Ordinal)
+                && Nullable.Equals(current.location, diagnostic.location))
+            {
+                return;
+            }
+            m_issues[key] = diagnostic;
             hub.SetOwned(m_source, m_epoch, Ordered());
         }
     }
@@ -68,7 +76,8 @@ public sealed class DiagnosticReporter : IDiagnosticReporter, IDisposable
         lock (m_sync)
         {
             DiagnosticHub hub = GetHub();
-            m_issues.Remove(new(code, semanticId, objectId));
+            if (!m_issues.Remove(new(code, semanticId, objectId)))
+                return;
             hub.SetOwned(m_source, m_epoch, Ordered());
         }
     }

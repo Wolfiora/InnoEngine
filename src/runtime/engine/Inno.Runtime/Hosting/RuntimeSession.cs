@@ -394,15 +394,6 @@ public sealed class RuntimeSession : IDisposable
         if (options.maxFixedStepsPerFrame <= 0)
             throw new ArgumentOutOfRangeException(nameof(options), "Maximum fixed steps must be positive.");
         string persistentRoot = Path.GetFullPath(options.persistentDataDirectory);
-        if (!string.Equals(
-                Path.GetFileName(Path.TrimEndingDirectorySeparator(persistentRoot)),
-                options.applicationId,
-                OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal))
-        {
-            throw new ArgumentException(
-                "The persistent data directory must be rooted in the exact application identifier.",
-                nameof(options));
-        }
         string? contentRoot = string.IsNullOrWhiteSpace(options.runtimeContentDirectory)
             ? null
             : Path.GetFullPath(options.runtimeContentDirectory);

@@ -21,8 +21,8 @@ reporter.Resolve("audio.device.lost");
 | --- | --- |
 | `Diagnostic(code, message, severity, semanticId?, objectId?, location?)` | 中立问题；semantic ID、persistent object ID 与文件位置各有独立语义 |
 | `DiagnosticHub.CreateReporter(source)` | 创建当前 producer registration，同 ID 的旧 registration 被撤销 |
-| `IDiagnosticReporter.Publish(diagnostic)` | 以 code + semanticId + objectId 更新同一问题，message 不参与身份 |
-| `Resolve(code, semanticId?, objectId?)` | 条件恢复后撤销指定问题 |
+| `IDiagnosticReporter.Publish(diagnostic)` | 以 code + semanticId + objectId 更新同一问题，message 不参与身份；内容完全相同时不重新通知 sink |
+| `Resolve(code, semanticId?, objectId?)` | 条件恢复后撤销指定问题；已撤销的身份重复 Resolve 不重新通知 sink |
 | `Replace(diagnostics)` | 冻结并替换整个问题集合，拒绝重复问题身份 |
 | `DiagnosticReporter.Dispose()` | 释放该 registration 的报告；不能清除同 ID 的较新 producer |
 

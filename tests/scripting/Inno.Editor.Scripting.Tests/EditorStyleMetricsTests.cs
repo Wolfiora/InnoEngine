@@ -392,10 +392,85 @@ public sealed class EditorStyleMetricsTests
                     NativeImGui.Selectable($"Entry {index:D2}");
                 if (frame == 1)
                 {
-                    Assert.True(NativeImGui.GetWindowSize().Y <= io.DisplaySize.Y * 0.70f + 1f);
+                    Assert.True(NativeImGui.GetWindowSize().Y <= io.DisplaySize.Y + 1f);
                     Assert.True(NativeImGui.GetScrollMaxY() > 0f);
                 }
                 EditorWidget.EndMenuSelector();
+                NativeImGui.End();
+                NativeImGui.Render();
+            }
+        }
+        finally
+        {
+            NativeImGui.DestroyContext(context);
+        }
+    }
+
+    [Fact]
+    public void SmallMenuSelectorDoesNotReserveAScrollbar()
+    {
+        var context = NativeImGui.CreateContext();
+        try
+        {
+            ImGuiIOPtr io = NativeImGui.GetIO();
+            io.DisplaySize = new Vector2(640f, 480f);
+            io.DeltaTime = 1f / 60f;
+            io.BackendFlags |= ImGuiBackendFlags.RendererHasTextures;
+            io.Fonts.RendererHasTextures = true;
+
+            for (int frame = 0; frame < 3; frame++)
+            {
+                NativeImGui.NewFrame();
+                _ = NativeImGui.Begin("Small Menu Selector Test");
+                if (frame == 0)
+                    NativeImGui.OpenPopup("##menu_selector_popup_small");
+                Assert.True(EditorWidget.BeginMenuSelector("small", "Current", 180f, 240f));
+                for (int index = 0; index < 3; index++)
+                    NativeImGui.Selectable($"Entry {index}");
+                if (frame == 2)
+                {
+                    Assert.False(ImGuiP.GetCurrentWindow().ScrollbarY);
+                    Assert.Equal(0f, NativeImGui.GetScrollMaxY(), 3);
+                }
+                EditorWidget.EndMenuSelector();
+                NativeImGui.End();
+                NativeImGui.Render();
+            }
+        }
+        finally
+        {
+            NativeImGui.DestroyContext(context);
+        }
+    }
+
+    [Fact]
+    public void SmallContextMenuDoesNotReserveScrollbars()
+    {
+        var context = NativeImGui.CreateContext();
+        try
+        {
+            ImGuiIOPtr io = NativeImGui.GetIO();
+            io.DisplaySize = new Vector2(640f, 480f);
+            io.DeltaTime = 1f / 60f;
+            io.BackendFlags |= ImGuiBackendFlags.RendererHasTextures;
+            io.Fonts.RendererHasTextures = true;
+
+            for (int frame = 0; frame < 3; frame++)
+            {
+                NativeImGui.NewFrame();
+                _ = NativeImGui.Begin("Small Context Menu Test");
+                NativeImGui.Selectable("Target");
+                if (frame == 0)
+                    NativeImGui.OpenPopup("context");
+                Assert.True(EditorWidget.BeginContextMenu("context"));
+                NativeImGui.MenuItem("Rename");
+                NativeImGui.MenuItem("Delete");
+                if (frame == 2)
+                {
+                    Assert.False(ImGuiP.GetCurrentWindow().ScrollbarX);
+                    Assert.False(ImGuiP.GetCurrentWindow().ScrollbarY);
+                }
+                EditorWidget.EndContextMenu();
                 NativeImGui.End();
                 NativeImGui.Render();
             }
@@ -447,7 +522,7 @@ public sealed class EditorStyleMetricsTests
                     if (openFrames >= 2)
                     {
                         Assert.InRange(NativeImGui.GetWindowSize().X, 179f, 181f);
-                        Assert.True(NativeImGui.GetWindowSize().Y <= io.DisplaySize.Y * 0.70f + 1f);
+                        Assert.True(NativeImGui.GetWindowSize().Y <= io.DisplaySize.Y + 1f);
                         Assert.True(NativeImGui.GetScrollMaxY() > 0f);
                         ImGuiViewportPtr popupViewport = NativeImGui.GetWindowViewport();
                         Vector2 popupMinimum = NativeImGui.GetWindowPos();

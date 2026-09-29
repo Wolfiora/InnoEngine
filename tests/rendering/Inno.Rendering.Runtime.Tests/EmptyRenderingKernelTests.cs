@@ -521,8 +521,11 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
         runtime.EndFrame(default);
         Assert.Equal(2, proxy.executeCount);
 
+        proxy.ReleaseRecordedGraph();
         runtime.Detach();
-        _ = m_modules.Unload(activeModule);
+        AssemblyUnloadMonitor recoveryMonitor = m_modules.Unload(activeModule);
+        ForceCollection();
+        Assert.True(recoveryMonitor.isCompleted);
     }
 
     [Fact]
@@ -768,6 +771,7 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
         Assert.Equal(1, SecondTestRenderModel.buildCount);
         Assert.Equal([new RenderViewport(0, 0, 800, 600), new RenderViewport(0, 0, 800, 600)],
             CompositionLayerPipeline.viewports);
+        Assert.DoesNotContain(diagnostics.items, item => item.code == "RENDER_OUTPUT_MODEL_UNAVAILABLE");
         Assert.DoesNotContain(diagnostics.items, item => item.code == "RENDER_OUTPUT_MODEL_UNAVAILABLE"
             && item.message.Contains("independent model targets", StringComparison.Ordinal));
         Assert.True(diagnostics.items.All(item => item.code != "RENDER_OUTPUT_COMPOSITION_FAILED"),
@@ -1017,6 +1021,11 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
         CompiledRenderPass pass = Assert.Single(Assert.IsType<CompiledRenderGraph>(proxy.lastGraph).passes);
         Assert.Equal("Request[1] B Valid/Visible", pass.name);
         Assert.Contains(diagnostics.items, diagnostic => diagnostic.code == "RENDER_REQUEST_FAILED");
+
+        BeginRenderFrame(runtime, 0f);
+        runtime.AfterRender(default);
+        runtime.EndFrame(default);
+        Assert.DoesNotContain(diagnostics.items, diagnostic => diagnostic.code == "RENDER_REQUEST_FAILED");
         runtime.Detach();
     }
 

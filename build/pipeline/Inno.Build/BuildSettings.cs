@@ -37,6 +37,13 @@ public sealed class BuildSettings : ISerializable
     public string gameProductName { get; set; } = string.Empty;
 
     /// <summary>
+    /// Gets or sets the default writable data folder below the operating system's local application data directory.
+    /// An empty value uses the project ID.
+    /// </summary>
+    [SerializableProperty]
+    public string gamePersistentDataPath { get; set; } = string.Empty;
+
+    /// <summary>
     /// Gets or sets the default mount-qualified startup Scene path.
     /// </summary>
     [SerializableProperty]
@@ -128,6 +135,7 @@ public sealed class BuildSettings : ISerializable
         {
             applicationId = projectId.value,
             productName = gameProductName,
+            persistentDataPath = gamePersistentDataPath,
             startupScene = gameStartupScene,
             target = gameTarget,
             windowWidth = gameWindowWidth,
@@ -147,6 +155,7 @@ public sealed class BuildSettings : ISerializable
             pluginOutputPath = pluginOutputPath,
             includePluginDependencies = includePluginDependencies,
             gameProductName = gameProductName,
+            gamePersistentDataPath = gamePersistentDataPath,
             gameStartupScene = gameStartupScene,
             gameOutputDirectory = gameOutputDirectory,
             gameWindowWidth = gameWindowWidth,
@@ -159,6 +168,7 @@ public sealed class BuildSettings : ISerializable
         if (pluginDisplayName is null
             || pluginOutputPath is null
             || gameProductName is null
+            || gamePersistentDataPath is null
             || gameStartupScene is null
             || gameOutputDirectory is null
             || m_gameTargetId is null)

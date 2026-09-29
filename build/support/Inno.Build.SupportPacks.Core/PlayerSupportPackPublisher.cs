@@ -105,6 +105,7 @@ public static class PlayerSupportPackPublisher
         {
             await RunPublishAsync(command, playerProject, publishedRuntime, cancellationToken).ConfigureAwait(false);
             ComposeRuntimeClosure(publishedRuntime, staging, cancellationToken);
+            CopyCompilerReferences(playerProject, command.target, staging);
             CopyNativeRuntime(command, staging);
             cancellationToken.ThrowIfCancellationRequested();
             _ = new PlayerSupportPackCatalog(stagingRoot).Resolve(command.target);
@@ -169,6 +170,8 @@ public static class PlayerSupportPackPublisher
         startInfo.ArgumentList.Add(staging);
         startInfo.ArgumentList.Add("--nologo");
         startInfo.ArgumentList.Add("-p:DebugType=None");
+        startInfo.ArgumentList.Add("-p:PublishSingleFile=true");
+        startInfo.ArgumentList.Add("-p:IncludeNativeLibrariesForSelfExtract=true");
         startInfo.ArgumentList.Add("-p:DebugSymbols=false");
         startInfo.ArgumentList.Add("-p:CopyOutputSymbolsToPublishDirectory=false");
         startInfo.ArgumentList.Add("-p:CopyDebugSymbolFilesFromPackages=false");
@@ -233,6 +236,25 @@ public static class PlayerSupportPackPublisher
             foreach (string file in files.Order(StringComparer.Ordinal))
                 File.Copy(file, Path.Combine(componentDestination, Path.GetFileName(file)));
         }
+    }
+
+    private static void CopyCompilerReferences(
+        string playerProject,
+        BuildTargetId target,
+        string staging
+    ) {
+        string runtimeIdentifier = target == BuildTargetId.macOSArm64 ? "osx-arm64" : "win-x64";
+        string buildOutput = Path.Combine(
+            Path.GetDirectoryName(playerProject)!, "bin", "Release", "net9.0", runtimeIdentifier);
+        string[] references = Directory.Exists(buildOutput)
+            ? Directory.EnumerateFiles(buildOutput, "Inno.*.dll", SearchOption.TopDirectoryOnly).ToArray()
+            : [];
+        if (references.Length == 0)
+            throw new InvalidDataException("Player publish produced no target runtime compilation references.");
+        string referenceDirectory = Path.Combine(staging, "References");
+        Directory.CreateDirectory(referenceDirectory);
+        foreach (string reference in references.Order(StringComparer.Ordinal))
+            File.Copy(reference, Path.Combine(referenceDirectory, Path.GetFileName(reference)));
     }
 
     private static void ComposeRuntimeClosure(

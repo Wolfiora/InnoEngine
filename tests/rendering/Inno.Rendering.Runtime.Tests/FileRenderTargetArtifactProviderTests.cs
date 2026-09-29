@@ -85,7 +85,10 @@ public sealed class FileRenderTargetArtifactProviderTests : IDisposable
 
         Assert.NotEqual(firstRelativePath, secondRelativePath);
         Assert.Equal(firstRelativePath, RenderTargetArtifactPath.GetTexturePath(first));
-        Assert.StartsWith($"TargetArtifacts/Textures/{assetId:D}/", firstRelativePath, StringComparison.Ordinal);
+        Assert.StartsWith(
+            Path.Combine("TargetArtifacts", "Textures", $"{assetId:D}") + Path.DirectorySeparatorChar,
+            firstRelativePath,
+            StringComparison.Ordinal);
 
         string firstPath = Path.Combine(m_root, firstRelativePath);
         string secondPath = Path.Combine(m_root, secondRelativePath);
