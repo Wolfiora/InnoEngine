@@ -10,7 +10,8 @@ namespace Inno.Scripting.Compiler;
 
 internal sealed record ScriptDeploymentReferenceSet(
     IReadOnlyList<string> paths,
-    string fingerprint);
+    string fingerprint
+);
 
 internal static class ScriptDeploymentReferenceResolver
 {
@@ -70,8 +71,10 @@ internal static class ScriptDeploymentReferenceResolver
             Convert.ToHexString(fingerprint.GetHashAndReset()));
     }
 
-    private static void Append(IncrementalHash hash, string value)
-    {
+    private static void Append(
+        IncrementalHash hash,
+        string value
+    ) {
         byte[] bytes = Encoding.UTF8.GetBytes(value);
         hash.AppendData(BitConverter.GetBytes(bytes.Length));
         hash.AppendData(bytes);

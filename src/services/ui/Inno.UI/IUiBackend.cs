@@ -49,7 +49,12 @@ public interface IUiBackend : IDisposable
     /// <param name="density">
     /// Physical pixels per logical layout pixel.
     /// </param>
-    void SetViewport(UiContextHandle context, int width, int height, float density);
+    void SetViewport(
+        UiContextHandle context,
+        int width,
+        int height,
+        float density
+    );
     /// <summary>
     /// Loads one explicitly tagged in-memory document.
     /// </summary>
@@ -62,7 +67,10 @@ public interface IUiBackend : IDisposable
     /// <returns>
     /// A document handle owned by the supplied context.
     /// </returns>
-    UiDocumentHandle LoadDocument(UiContextHandle context, UiDocumentSource source);
+    UiDocumentHandle LoadDocument(
+        UiContextHandle context,
+        UiDocumentSource source
+    );
     /// <summary>
     /// Shows one document.
     /// </summary>
@@ -72,7 +80,10 @@ public interface IUiBackend : IDisposable
     /// <param name="document">
     /// The document owned by the supplied context.
     /// </param>
-    void ShowDocument(UiContextHandle context, UiDocumentHandle document);
+    void ShowDocument(
+        UiContextHandle context,
+        UiDocumentHandle document
+    );
     /// <summary>
     /// Hides one document.
     /// </summary>
@@ -82,7 +93,10 @@ public interface IUiBackend : IDisposable
     /// <param name="document">
     /// The document owned by the supplied context.
     /// </param>
-    void HideDocument(UiContextHandle context, UiDocumentHandle document);
+    void HideDocument(
+        UiContextHandle context,
+        UiDocumentHandle document
+    );
     /// <summary>
     /// Closes one document.
     /// </summary>
@@ -92,7 +106,10 @@ public interface IUiBackend : IDisposable
     /// <param name="document">
     /// The document owned by the supplied context.
     /// </param>
-    void CloseDocument(UiContextHandle context, UiDocumentHandle document);
+    void CloseDocument(
+        UiContextHandle context,
+        UiDocumentHandle document
+    );
     /// <summary>
     /// Replaces an element's children with plain Unicode text.
     /// </summary>
@@ -111,7 +128,12 @@ public interface IUiBackend : IDisposable
     /// <returns>
     /// True when the element exists and its text was changed.
     /// </returns>
-    bool SetText(UiContextHandle context, UiDocumentHandle document, string elementId, string text);
+    bool SetText(
+        UiContextHandle context,
+        UiDocumentHandle document,
+        string elementId,
+        string text
+    );
     /// <summary>
     /// Replaces an element's children with an explicitly tagged source-language fragment.
     /// </summary>
@@ -130,7 +152,12 @@ public interface IUiBackend : IDisposable
     /// <returns>
     /// True when the element exists and its content was changed.
     /// </returns>
-    bool SetContent(UiContextHandle context, UiDocumentHandle document, string elementId, UiDocumentFragment fragment);
+    bool SetContent(
+        UiContextHandle context,
+        UiDocumentHandle document,
+        string elementId,
+        UiDocumentFragment fragment
+    );
     /// <summary>
     /// Sets one element attribute.
     /// </summary>
@@ -152,7 +179,13 @@ public interface IUiBackend : IDisposable
     /// <returns>
     /// True when the element exists and its attribute was changed.
     /// </returns>
-    bool SetAttribute(UiContextHandle context, UiDocumentHandle document, string elementId, string name, string value);
+    bool SetAttribute(
+        UiContextHandle context,
+        UiDocumentHandle document,
+        string elementId,
+        string name,
+        string value
+    );
     /// <summary>
     /// Activates or deactivates one element class.
     /// </summary>
@@ -174,7 +207,13 @@ public interface IUiBackend : IDisposable
     /// <returns>
     /// True when the element exists and its class was changed.
     /// </returns>
-    bool SetClass(UiContextHandle context, UiDocumentHandle document, string elementId, string className, bool active);
+    bool SetClass(
+        UiContextHandle context,
+        UiDocumentHandle document,
+        string elementId,
+        string className,
+        bool active
+    );
     /// <summary>
     /// Registers an encoded font face in the document engine.
     /// </summary>
@@ -194,7 +233,11 @@ public interface IUiBackend : IDisposable
     /// <param name="texture">
     /// Immutable RGBA texture data.
     /// </param>
-    void RegisterTexture(UiContextHandle context, string source, UiTextureData texture);
+    void RegisterTexture(
+        UiContextHandle context,
+        string source,
+        UiTextureData texture
+    );
     /// <summary>
     /// Tests whether a visible document element receives pointer events at a pixel location.
     /// </summary>
@@ -207,7 +250,10 @@ public interface IUiBackend : IDisposable
     /// <returns>
     /// True when an interactive visible element occupies the location.
     /// </returns>
-    bool HasElementAtPoint(UiContextHandle context, Vector2 position);
+    bool HasElementAtPoint(
+        UiContextHandle context,
+        Vector2 position
+    );
     /// <summary>
     /// Processes input and advances document state.
     /// </summary>
@@ -217,7 +263,10 @@ public interface IUiBackend : IDisposable
     /// <param name="input">
     /// The input snapshot routed to this context.
     /// </param>
-    void Update(UiContextHandle context, UiInputSnapshot input);
+    void Update(
+        UiContextHandle context,
+        UiInputSnapshot input
+    );
     /// <summary>
     /// Builds an immutable frame of incremental resources and ordered draws.
     /// </summary>

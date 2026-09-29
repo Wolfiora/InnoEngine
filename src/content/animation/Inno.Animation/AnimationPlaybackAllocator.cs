@@ -44,8 +44,10 @@ public sealed class AnimationPlaybackAllocator
     /// <exception cref="ArgumentOutOfRangeException">
     /// The slot or its generation is invalid.
     /// </exception>
-    public AnimationPlaybackHandle Create(int slot, uint slotGeneration)
-    {
+    public AnimationPlaybackHandle Create(
+        int slot,
+        uint slotGeneration
+    ) {
         ArgumentOutOfRangeException.ThrowIfNegative(slot);
         if (slotGeneration == 0)
             throw new ArgumentOutOfRangeException(nameof(slotGeneration));

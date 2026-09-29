@@ -26,8 +26,8 @@ public sealed class AssetReferenceLocation
         AssetReferenceKind kind,
         Guid ownerId,
         string ownerName,
-        string propertyPath)
-    {
+        string propertyPath
+    ) {
         this.kind = kind;
         this.ownerId = ownerId;
         this.ownerName = ownerName ?? string.Empty;

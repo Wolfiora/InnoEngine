@@ -23,8 +23,10 @@ internal static class MiniAudioBuildUtils
         ValidateFile(miniAudioDirectory, MiniAudioBuildConstants.SOURCE_FILE);
     }
 
-    private static void ValidateFile(string miniAudioDirectory, string fileName)
-    {
+    private static void ValidateFile(
+        string miniAudioDirectory,
+        string fileName
+    ) {
         string path = Path.Combine(miniAudioDirectory, fileName);
         if (!File.Exists(path))
             throw new FileNotFoundException($"miniaudio source is missing '{fileName}'.", path);

@@ -37,8 +37,10 @@ internal sealed class WindowsX64CimguiBuilder : CimguiBuilder
     /// <param name="config">
     /// The validated configuration that controls this operation.
     /// </param>
-    public override void Build(string cimguiDir, string config)
-    {
+    public override void Build(
+        string cimguiDir,
+        string config
+    ) {
         var buildDir = Path.Combine(cimguiDir, CimguiBuildConstants.BUILD_DIR_NAME, "inno", BUILD_DIR_NAME);
         var buildType = GetBuildType(config);
         string sourceDir = CimguiSourceOverlay.Prepare(cimguiDir);

@@ -23,8 +23,10 @@ internal sealed class AssetWatcher : IDisposable
     private bool m_requiresFullRescan;
     private bool m_disposed;
 
-    internal AssetWatcher(string assetRoot, int flushDelayMs)
-    {
+    internal AssetWatcher(
+        string assetRoot,
+        int flushDelayMs
+    ) {
         m_root = assetRoot ?? throw new ArgumentNullException(nameof(assetRoot));
         m_flushDelayMs = Math.Max(flushDelayMs, 1);
         m_watcher = new FileSystemWatcher(assetRoot)
@@ -133,17 +135,23 @@ internal sealed class AssetWatcher : IDisposable
         return elapsed >= (long)(Stopwatch.Frequency * (m_flushDelayMs / 1000d));
     }
 
-    private void OnChanged(object sender, FileSystemEventArgs args)
-        => Enqueue(args.FullPath, args.ChangeType);
+    private void OnChanged(
+        object sender,
+        FileSystemEventArgs args
+    ) => Enqueue(args.FullPath, args.ChangeType);
 
-    private void OnRenamed(object sender, RenamedEventArgs args)
-    {
+    private void OnRenamed(
+        object sender,
+        RenamedEventArgs args
+    ) {
         string oldRelative = NormalizeRelativePath(Path.GetRelativePath(m_root, args.OldFullPath));
         Enqueue(args.FullPath, WatcherChangeTypes.Renamed, oldRelative);
     }
 
-    private void OnError(object sender, ErrorEventArgs args)
-    {
+    private void OnError(
+        object sender,
+        ErrorEventArgs args
+    ) {
         lock (m_sync)
         {
             if (m_disposed)
@@ -153,8 +161,11 @@ internal sealed class AssetWatcher : IDisposable
         }
     }
 
-    private void Enqueue(string fullPath, WatcherChangeTypes changeType, string oldRelativePath = "")
-    {
+    private void Enqueue(
+        string fullPath,
+        WatcherChangeTypes changeType,
+        string oldRelativePath = ""
+    ) {
         if (m_disposed)
             return;
         string relativePath = NormalizeRelativePath(Path.GetRelativePath(m_root, fullPath));
@@ -185,8 +196,8 @@ internal sealed class AssetWatcher : IDisposable
 
 internal readonly struct WatcherPollResult(
     IReadOnlyList<AssetChangedEvent> changes,
-    bool requiresFullRescan)
-{
+    bool requiresFullRescan
+) {
     internal IReadOnlyList<AssetChangedEvent> changes { get; } = changes ?? Array.Empty<AssetChangedEvent>();
     internal bool requiresFullRescan { get; } = requiresFullRescan;
 }

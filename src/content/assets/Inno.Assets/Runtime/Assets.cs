@@ -116,7 +116,10 @@ public static class Assets
     /// <exception cref="InvalidOperationException">
     /// Thrown when no asset lookup is active for the caller.
     /// </exception>
-    public static bool TryLoad<TAsset>(AssetPath path, out TAsset? asset)
+    public static bool TryLoad<TAsset>(
+        AssetPath path,
+        out TAsset? asset
+    )
         where TAsset : AssetObject
         => AssetExecutionContext.current.TryLoad(path, out asset);
 
@@ -139,7 +142,10 @@ public static class Assets
     /// <exception cref="InvalidOperationException">
     /// Thrown when no asset lookup is active for the caller.
     /// </exception>
-    public static bool TryLoad<TAsset>(Guid persistentId, out TAsset? asset)
+    public static bool TryLoad<TAsset>(
+        Guid persistentId,
+        out TAsset? asset
+    )
         where TAsset : AssetObject
         => AssetExecutionContext.current.TryLoad(persistentId, out asset);
 
@@ -160,7 +166,8 @@ public static class Assets
     /// </returns>
     public static ValueTask<AssetLease<TAsset>> AcquireAsync<TAsset>(
         AssetPath path,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
         where TAsset : AssetObject
         => GetResidency().AcquireAsync<TAsset>(path, cancellationToken);
 
@@ -181,7 +188,8 @@ public static class Assets
     /// </returns>
     public static ValueTask<AssetLease<TAsset>> AcquireAsync<TAsset>(
         Guid persistentId,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
         where TAsset : AssetObject
         => GetResidency().AcquireAsync<TAsset>(persistentId, cancellationToken);
 
@@ -197,7 +205,10 @@ public static class Assets
     /// <returns>
     /// A lease over verified artifact metadata and bytes.
     /// </returns>
-    public static ArtifactLease AcquireArtifact(Guid persistentId, string outputName)
+    public static ArtifactLease AcquireArtifact(
+        Guid persistentId,
+        string outputName
+    )
         => GetResidency().AcquireArtifact(persistentId, outputName);
 
     private static IAssetResidency GetResidency()

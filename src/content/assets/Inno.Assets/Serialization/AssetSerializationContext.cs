@@ -26,8 +26,8 @@ public static class AssetSerializationContext
     /// </exception>
     public static SerializationContext Create(
         IAssetReferenceResolver references,
-        AssetDependencyCollection? dependencies = null)
-    {
+        AssetDependencyCollection? dependencies = null
+    ) {
         ArgumentNullException.ThrowIfNull(references);
         SerializationContext context = SerializationContext.empty
             .With<IAssetReferenceResolver>(references);

@@ -20,7 +20,10 @@ internal sealed class AudioExtensionRegistry : TypeRegistry<AudioExtensionRegist
 
     internal void RetireBackend(Action retire)
     {
-        try { RetireResource("audio device generation", retire); }
+        try
+        {
+            RetireResource("audio device generation", retire);
+        }
         catch (Exception exception)
         {
             Fault(exception);
@@ -49,8 +52,10 @@ internal sealed class AudioExtensionRegistry : TypeRegistry<AudioExtensionRegist
     /// <param name="exception">
     /// The terminal cleanup failure already reported to the shared gate.
     /// </param>
-    protected override void OnCleanupFailed(string phase, Exception exception)
-    {
+    protected override void OnCleanupFailed(
+        string phase,
+        Exception exception
+    ) {
         m_retirementFailure ??= exception;
     }
 
@@ -77,7 +82,8 @@ internal sealed class AudioExtensionRegistry : TypeRegistry<AudioExtensionRegist
     private static Dictionary<string, Type> Discover<TAttribute, TContract>(
         TypeCacheSnapshot types,
         Func<TAttribute, string> getId,
-        string kind)
+        string kind
+    )
         where TAttribute : Attribute
     {
         var result = new Dictionary<string, Type>(StringComparer.Ordinal);
@@ -119,8 +125,8 @@ internal sealed class AudioExtensionRegistry : TypeRegistry<AudioExtensionRegist
             IReadOnlyDictionary<string, Type> mixers,
             IReadOnlyDictionary<string, Type> features,
             IReadOnlyDictionary<string, Type> providers,
-            Func<Type, AudioContentProvider> createProvider)
-        {
+            Func<Type, AudioContentProvider> createProvider
+        ) {
             this.typeCacheVersion = typeCacheVersion;
             m_mixers = mixers;
             m_features = features;
@@ -146,7 +152,10 @@ internal sealed class AudioExtensionRegistry : TypeRegistry<AudioExtensionRegist
                     type.GetCustomAttribute<AudioContentProviderExtensionAttribute>(inherit: false)!;
                 entries.Add(new ProviderEntry(id, attribute.priority, createProvider(type)));
             }
-            entries.Sort(static (left, right) =>
+            entries.Sort(static (
+                left,
+                right
+            ) =>
             {
                 int priority = left.priority.CompareTo(right.priority);
                 return priority != 0 ? priority : string.CompareOrdinal(left.id, right.id);
@@ -154,8 +163,10 @@ internal sealed class AudioExtensionRegistry : TypeRegistry<AudioExtensionRegist
             return new ProviderGeneration(typeCacheVersion, entries);
         }
 
-        internal bool TryBuildMixer(AudioMixerAsset asset, out AudioMixer? mixer)
-        {
+        internal bool TryBuildMixer(
+            AudioMixerAsset asset,
+            out AudioMixer? mixer
+        ) {
             ArgumentNullException.ThrowIfNull(asset);
             var builder = new AudioMixerBuilder();
             if (!string.IsNullOrWhiteSpace(asset.mixerTypeId))
@@ -205,8 +216,10 @@ internal sealed class AudioExtensionRegistry : TypeRegistry<AudioExtensionRegist
         private bool m_disposed;
         private readonly LifetimeScope m_lifetime = new();
 
-        internal ProviderGeneration(long typeCacheVersion, IReadOnlyList<ProviderEntry> providers)
-        {
+        internal ProviderGeneration(
+            long typeCacheVersion,
+            IReadOnlyList<ProviderEntry> providers
+        ) {
             this.typeCacheVersion = typeCacheVersion;
             this.providers = Array.AsReadOnly(providers.ToArray());
             foreach (ProviderEntry entry in providers)
@@ -224,8 +237,14 @@ internal sealed class AudioExtensionRegistry : TypeRegistry<AudioExtensionRegist
         {
             if (m_disposed)
                 return;
-            try { m_lifetime.Dispose(); }
-            catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null) { throw; }
+            try
+            {
+                m_lifetime.Dispose();
+            }
+            catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null)
+            {
+                throw;
+            }
             catch
             {
                 providers = Array.Empty<ProviderEntry>();
@@ -237,5 +256,9 @@ internal sealed class AudioExtensionRegistry : TypeRegistry<AudioExtensionRegist
         }
     }
 
-    internal sealed record ProviderEntry(string id, int priority, AudioContentProvider provider);
+    internal sealed record ProviderEntry(
+        string id,
+        int priority,
+        AudioContentProvider provider
+    );
 }

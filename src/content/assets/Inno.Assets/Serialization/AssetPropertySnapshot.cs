@@ -22,9 +22,13 @@ public sealed class AssetPropertySnapshot
     /// <param name="dependencies">
     /// Direct dependencies collected during the same serialization operation.
     /// </param>
-    public AssetPropertySnapshot(Guid stableTypeId, ReadOnlySpan<byte> data, IEnumerable<AssetDependency> dependencies)
-    {
-        if (stableTypeId == Guid.Empty) throw new ArgumentException("A property snapshot requires a stable type identity.", nameof(stableTypeId));
+    public AssetPropertySnapshot(
+        Guid stableTypeId,
+        ReadOnlySpan<byte> data,
+        IEnumerable<AssetDependency> dependencies
+    ) {
+        if (stableTypeId == Guid.Empty)
+            throw new ArgumentException("A property snapshot requires a stable type identity.", nameof(stableTypeId));
         ArgumentNullException.ThrowIfNull(dependencies);
         this.stableTypeId = stableTypeId;
         m_data = data.ToArray();

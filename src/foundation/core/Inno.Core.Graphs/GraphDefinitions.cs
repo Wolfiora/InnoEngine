@@ -65,8 +65,8 @@ public sealed class GraphPortDefinition
         string valueTypeId,
         GraphPortDirection direction,
         GraphPortCapacity capacity = GraphPortCapacity.Single,
-        bool required = false)
-    {
+        bool required = false
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(displayName);
         ArgumentException.ThrowIfNullOrWhiteSpace(valueTypeId);
         this.id = id;
@@ -125,8 +125,11 @@ public abstract class GraphNodeDefinition
     /// <param name="category">
     /// Search-menu category path.
     /// </param>
-    protected GraphNodeDefinition(string id, string displayName, string category)
-    {
+    protected GraphNodeDefinition(
+        string id,
+        string displayName,
+        string category
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(id);
         ArgumentException.ThrowIfNullOrWhiteSpace(displayName);
         ArgumentException.ThrowIfNullOrWhiteSpace(category);
@@ -179,7 +182,10 @@ public interface IGraphNodeDefinitionResolver
     /// <returns>
     /// <see langword="true"/> when active; otherwise <see langword="false"/>.
     /// </returns>
-    bool TryResolve(string definitionId, out GraphNodeDefinition? definition);
+    bool TryResolve(
+        string definitionId,
+        out GraphNodeDefinition? definition
+    );
 }
 
 /// <summary>
@@ -199,5 +205,8 @@ public interface IGraphTypeConversion
     /// <returns>
     /// <see langword="true"/> when the conversion is valid; otherwise <see langword="false"/>.
     /// </returns>
-    bool CanConvert(string sourceTypeId, string destinationTypeId);
+    bool CanConvert(
+        string sourceTypeId,
+        string destinationTypeId
+    );
 }

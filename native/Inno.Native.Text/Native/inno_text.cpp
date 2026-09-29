@@ -13,7 +13,8 @@
 #include <hb-ft.h>
 #include <hb.h>
 
-struct inno_text_face {
+struct inno_text_face
+{
     std::vector<uint8_t> bytes;
     FT_Face face = nullptr;
     hb_font_t* font = nullptr;
@@ -27,7 +28,8 @@ struct inno_text_face {
     }
 };
 
-struct inno_text_context {
+struct inno_text_context
+{
     FT_Library library = nullptr;
     uint64_t next_handle = 1;
     std::unordered_map<uint64_t, std::unique_ptr<inno_text_face>> faces;
@@ -63,11 +65,16 @@ static hb_direction_t resolve_direction(inno_text_direction direction)
 {
     switch (direction)
     {
-    case INNO_TEXT_DIRECTION_LEFT_TO_RIGHT: return HB_DIRECTION_LTR;
-    case INNO_TEXT_DIRECTION_RIGHT_TO_LEFT: return HB_DIRECTION_RTL;
-    case INNO_TEXT_DIRECTION_TOP_TO_BOTTOM: return HB_DIRECTION_TTB;
-    case INNO_TEXT_DIRECTION_BOTTOM_TO_TOP: return HB_DIRECTION_BTT;
-    default: return HB_DIRECTION_INVALID;
+    case INNO_TEXT_DIRECTION_LEFT_TO_RIGHT:
+        return HB_DIRECTION_LTR;
+    case INNO_TEXT_DIRECTION_RIGHT_TO_LEFT:
+        return HB_DIRECTION_RTL;
+    case INNO_TEXT_DIRECTION_TOP_TO_BOTTOM:
+        return HB_DIRECTION_TTB;
+    case INNO_TEXT_DIRECTION_BOTTOM_TO_TOP:
+        return HB_DIRECTION_BTT;
+    default:
+        return HB_DIRECTION_INVALID;
     }
 }
 
@@ -90,12 +97,8 @@ void inno_text_destroy(inno_text_context* context)
     delete context;
 }
 
-inno_text_result inno_text_load_font(
-    inno_text_context* context,
-    const uint8_t* data,
-    size_t length,
-    int32_t face_index,
-    uint64_t* font_handle)
+inno_text_result inno_text_load_font(inno_text_context* context, const uint8_t* data, size_t length, int32_t face_index,
+                                     uint64_t* font_handle)
 {
     if (!context || !data || length == 0 || face_index < 0 || !font_handle)
         return INNO_TEXT_INVALID_ARGUMENT;
@@ -111,12 +114,7 @@ inno_text_result inno_text_load_font(
     {
         return INNO_TEXT_OUT_OF_MEMORY;
     }
-    if (FT_New_Memory_Face(
-            context->library,
-            value->bytes.data(),
-            static_cast<FT_Long>(value->bytes.size()),
-            face_index,
-            &value->face) != 0)
+    if (FT_New_Memory_Face(context->library, value->bytes.data(), static_cast<FT_Long>(value->bytes.size()), face_index, &value->face) != 0)
         return INNO_TEXT_INVALID_FONT;
     value->font = hb_ft_font_create_referenced(value->face);
     if (!value->font)
@@ -138,16 +136,10 @@ inno_text_result inno_text_release_font(inno_text_context* context, uint64_t fon
 {
     if (!context || font_handle == 0)
         return INNO_TEXT_INVALID_ARGUMENT;
-    return context->faces.erase(font_handle) == 1
-        ? INNO_TEXT_SUCCESS
-        : INNO_TEXT_INVALID_HANDLE;
+    return context->faces.erase(font_handle) == 1 ? INNO_TEXT_SUCCESS : INNO_TEXT_INVALID_HANDLE;
 }
 
-inno_text_result inno_text_get_metrics(
-    inno_text_context* context,
-    uint64_t font_handle,
-    float font_size,
-    inno_text_metrics* metrics)
+inno_text_result inno_text_get_metrics(inno_text_context* context, uint64_t font_handle, float font_size, inno_text_metrics* metrics)
 {
     if (!metrics)
         return INNO_TEXT_INVALID_ARGUMENT;
@@ -160,26 +152,15 @@ inno_text_result inno_text_get_metrics(
     metrics->ascender = value.ascender / 64.f;
     metrics->descender = value.descender / 64.f;
     metrics->line_height = value.height / 64.f;
-    const float scale = face->face->units_per_EM == 0
-        ? 0.f
-        : font_size / static_cast<float>(face->face->units_per_EM);
+    const float scale = face->face->units_per_EM == 0 ? 0.f : font_size / static_cast<float>(face->face->units_per_EM);
     metrics->underline_position = face->face->underline_position * scale;
     metrics->underline_thickness = std::max(1.f, face->face->underline_thickness * scale);
     return INNO_TEXT_SUCCESS;
 }
 
-inno_text_result inno_text_shape_utf8(
-    inno_text_context* context,
-    uint64_t font_handle,
-    const char* text,
-    size_t text_length,
-    float font_size,
-    inno_text_direction direction,
-    const char* language,
-    const char* script,
-    inno_text_glyph* glyphs,
-    size_t glyph_capacity,
-    size_t* glyph_count)
+inno_text_result inno_text_shape_utf8(inno_text_context* context, uint64_t font_handle, const char* text, size_t text_length,
+                                      float font_size, inno_text_direction direction, const char* language, const char* script,
+                                      inno_text_glyph* glyphs, size_t glyph_capacity, size_t* glyph_count)
 {
     if (!text || !glyph_count || (glyph_capacity > 0 && !glyphs))
         return INNO_TEXT_INVALID_ARGUMENT;
@@ -227,14 +208,8 @@ inno_text_result inno_text_shape_utf8(
     return INNO_TEXT_SUCCESS;
 }
 
-inno_text_result inno_text_rasterize_glyph(
-    inno_text_context* context,
-    uint64_t font_handle,
-    uint32_t glyph_id,
-    float font_size,
-    uint8_t* pixels,
-    size_t pixel_capacity,
-    inno_text_bitmap* bitmap)
+inno_text_result inno_text_rasterize_glyph(inno_text_context* context, uint64_t font_handle, uint32_t glyph_id, float font_size,
+                                           uint8_t* pixels, size_t pixel_capacity, inno_text_bitmap* bitmap)
 {
     if (!bitmap || (pixel_capacity > 0 && !pixels))
         return INNO_TEXT_INVALID_ARGUMENT;
@@ -243,8 +218,7 @@ inno_text_result inno_text_rasterize_glyph(
         return INNO_TEXT_INVALID_HANDLE;
     if (!set_size(face, font_size))
         return INNO_TEXT_INVALID_ARGUMENT;
-    if (FT_Load_Glyph(face->face, glyph_id, FT_LOAD_DEFAULT) != 0
-        || FT_Render_Glyph(face->face->glyph, FT_RENDER_MODE_NORMAL) != 0)
+    if (FT_Load_Glyph(face->face, glyph_id, FT_LOAD_DEFAULT) != 0 || FT_Render_Glyph(face->face->glyph, FT_RENDER_MODE_NORMAL) != 0)
         return INNO_TEXT_BACKEND_ERROR;
 
     const FT_GlyphSlot slot = face->face->glyph;
@@ -288,13 +262,21 @@ const char* inno_text_result_message(inno_text_result result)
 {
     switch (result)
     {
-    case INNO_TEXT_SUCCESS: return "success";
-    case INNO_TEXT_INVALID_ARGUMENT: return "invalid argument";
-    case INNO_TEXT_OUT_OF_MEMORY: return "out of memory";
-    case INNO_TEXT_INVALID_FONT: return "invalid font";
-    case INNO_TEXT_INVALID_HANDLE: return "invalid handle";
-    case INNO_TEXT_BACKEND_ERROR: return "backend error";
-    case INNO_TEXT_BUFFER_TOO_SMALL: return "buffer too small";
-    default: return "unknown error";
+    case INNO_TEXT_SUCCESS:
+        return "success";
+    case INNO_TEXT_INVALID_ARGUMENT:
+        return "invalid argument";
+    case INNO_TEXT_OUT_OF_MEMORY:
+        return "out of memory";
+    case INNO_TEXT_INVALID_FONT:
+        return "invalid font";
+    case INNO_TEXT_INVALID_HANDLE:
+        return "invalid handle";
+    case INNO_TEXT_BACKEND_ERROR:
+        return "backend error";
+    case INNO_TEXT_BUFFER_TOO_SMALL:
+        return "buffer too small";
+    default:
+        return "unknown error";
     }
 }

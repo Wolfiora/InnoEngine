@@ -26,7 +26,8 @@ public sealed partial class PlatformImGuiContext : IDisposable
     public partial void RegisterFontStyle(
         ImGuiFontStyle style,
         string filePath,
-        float fontSizePixels = 16f);
+        float fontSizePixels = 16f
+    );
 
     /// <summary>
     /// Sets the ImGui layout file used by this context.
@@ -62,7 +63,10 @@ public sealed partial class PlatformImGuiContext : IDisposable
     /// <returns>
     /// <see langword="true"/> when layout text was captured.
     /// </returns>
-    public partial bool TryCaptureIniSettings(out string settings, bool force = false);
+    public partial bool TryCaptureIniSettings(
+        out string settings,
+        bool force = false
+    );
 
     /// <summary>
     /// Renders one ImGui frame by running the provided draw callback.
@@ -97,7 +101,8 @@ public sealed partial class PlatformImGuiContext : IDisposable
         ImGuiTextureHandle texture,
         Vector2 size,
         Vector2 uv0 = default,
-        Vector2 uv1 = default);
+        Vector2 uv1 = default
+    );
 
     /// <summary>
     /// Releases all unmanaged/native resources associated with this ImGui context.

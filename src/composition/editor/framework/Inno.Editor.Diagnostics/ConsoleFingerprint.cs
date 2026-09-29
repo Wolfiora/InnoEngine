@@ -24,6 +24,8 @@ internal static class ConsoleFingerprint
         return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(builder.ToString())));
     }
 
-    private static void Append(StringBuilder builder, string value)
-        => builder.Append(value.Length).Append(':').Append(value).Append('|');
+    private static void Append(
+        StringBuilder builder,
+        string value
+    ) => builder.Append(value.Length).Append(':').Append(value).Append('|');
 }

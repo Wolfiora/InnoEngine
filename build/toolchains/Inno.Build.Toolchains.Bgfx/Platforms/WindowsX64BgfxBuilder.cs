@@ -57,8 +57,11 @@ public override string artifactPathToken => "/win64_vs2022/bin/";
     /// <param name="makeTargetOverride">
     /// The make target override text validated by the build operation.
     /// </param>
-    public override void Build(string bgfxDir, string config, string? makeTargetOverride)
-    {
+    public override void Build(
+        string bgfxDir,
+        string config,
+        string? makeTargetOverride
+    ) {
         if (!string.IsNullOrWhiteSpace(makeTargetOverride))
         {
             ToolchainEnvironment.Run("make", makeTargetOverride, bgfxDir);
@@ -78,19 +81,25 @@ public override string artifactPathToken => "/win64_vs2022/bin/";
     /// <param name="config">
     /// The validated configuration that controls this operation.
     /// </param>
-    public override void BuildTools(string bgfxDir, string config)
-    {
+    public override void BuildTools(
+        string bgfxDir,
+        string config
+    ) {
         RunGenie(bgfxDir, "--with-tools --with-shared-lib");
         RunMsBuild(bgfxDir, config);
     }
 
-    private static void RunGenie(string bgfxDir, string args)
-    {
+    private static void RunGenie(
+        string bgfxDir,
+        string args
+    ) {
         ToolchainEnvironment.Run(Path.GetFullPath(Path.Combine(bgfxDir, GENIE_RELATIVE_PATH)), $"{args} vs2022", bgfxDir);
     }
 
-    private static void RunMsBuild(string bgfxDir, string config)
-    {
+    private static void RunMsBuild(
+        string bgfxDir,
+        string config
+    ) {
         var vsConfig = config == ToolchainLayout.C_DEBUG_CONFIGURATION ? "Debug" : "Release";
         var args = $"{VS2022_SOLUTION_RELATIVE_PATH} /m /p:Configuration={vsConfig} /p:Platform={PLATFORM}";
         ToolchainEnvironment.Run("msbuild", args, bgfxDir);

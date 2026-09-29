@@ -118,8 +118,10 @@ internal sealed class EditorSettingValue : ISerializable
         throw new NotSupportedException($"Editor Settings values do not support '{type.FullName}'.");
     }
 
-    internal T Read<T>(T defaultValue, string propertyName)
-    {
+    internal T Read<T>(
+        T defaultValue,
+        string propertyName
+    ) {
         Type type = typeof(T);
         object? value;
         if (type == typeof(bool) && kind == EditorSettingValueKind.Boolean)
@@ -238,20 +240,34 @@ internal sealed class EditorSettingValue : ISerializable
 
     private static EditorSettingValueKind GetKind(Type type)
     {
-        if (type == typeof(bool)) return EditorSettingValueKind.Boolean;
-        if (type == typeof(int)) return EditorSettingValueKind.Int32;
-        if (type == typeof(uint)) return EditorSettingValueKind.UInt32;
-        if (type == typeof(long)) return EditorSettingValueKind.Int64;
-        if (type == typeof(ulong)) return EditorSettingValueKind.UInt64;
-        if (type == typeof(float)) return EditorSettingValueKind.Single;
-        if (type == typeof(double)) return EditorSettingValueKind.Double;
-        if (type == typeof(string)) return EditorSettingValueKind.String;
-        if (type == typeof(bool[])) return EditorSettingValueKind.BooleanArray;
-        if (type == typeof(int[])) return EditorSettingValueKind.Int32Array;
-        if (type == typeof(uint[])) return EditorSettingValueKind.UInt32Array;
-        if (type == typeof(float[])) return EditorSettingValueKind.SingleArray;
-        if (type == typeof(double[])) return EditorSettingValueKind.DoubleArray;
-        if (type == typeof(string[])) return EditorSettingValueKind.StringArray;
+        if (type == typeof(bool))
+            return EditorSettingValueKind.Boolean;
+        if (type == typeof(int))
+            return EditorSettingValueKind.Int32;
+        if (type == typeof(uint))
+            return EditorSettingValueKind.UInt32;
+        if (type == typeof(long))
+            return EditorSettingValueKind.Int64;
+        if (type == typeof(ulong))
+            return EditorSettingValueKind.UInt64;
+        if (type == typeof(float))
+            return EditorSettingValueKind.Single;
+        if (type == typeof(double))
+            return EditorSettingValueKind.Double;
+        if (type == typeof(string))
+            return EditorSettingValueKind.String;
+        if (type == typeof(bool[]))
+            return EditorSettingValueKind.BooleanArray;
+        if (type == typeof(int[]))
+            return EditorSettingValueKind.Int32Array;
+        if (type == typeof(uint[]))
+            return EditorSettingValueKind.UInt32Array;
+        if (type == typeof(float[]))
+            return EditorSettingValueKind.SingleArray;
+        if (type == typeof(double[]))
+            return EditorSettingValueKind.DoubleArray;
+        if (type == typeof(string[]))
+            return EditorSettingValueKind.StringArray;
         throw new NotSupportedException($"Editor Settings values do not support '{type.FullName}'.");
     }
 

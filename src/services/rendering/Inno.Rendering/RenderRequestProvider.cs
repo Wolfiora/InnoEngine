@@ -21,8 +21,10 @@ public sealed class RenderRequestProviderExtensionAttribute : Attribute
     /// <param name="priority">
     /// Provider invocation priority; lower values run first.
     /// </param>
-    public RenderRequestProviderExtensionAttribute(string id, int priority = 0)
-    {
+    public RenderRequestProviderExtensionAttribute(
+        string id,
+        int priority = 0
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(id);
         this.id = id;
         this.priority = priority;
@@ -83,8 +85,8 @@ public sealed class RenderRequestProviderContext
         ulong frameIndex,
         float deltaTime,
         IViewContentCollector viewContent,
-        RenderOutputInput? input = null)
-    {
+        RenderOutputInput? input = null
+    ) {
         this.requests = requests ?? throw new ArgumentNullException(nameof(requests));
         this.content = content ?? throw new ArgumentNullException(nameof(content));
         this.capabilities = capabilities ?? throw new ArgumentNullException(nameof(capabilities));
@@ -173,8 +175,14 @@ public abstract class RenderRequestProvider : IDisposable
     {
         if (m_disposed)
             return;
-        try { Dispose(true); }
-        catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null) { throw; }
+        try
+        {
+            Dispose(true);
+        }
+        catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null)
+        {
+            throw;
+        }
         catch
         {
             m_disposed = true;

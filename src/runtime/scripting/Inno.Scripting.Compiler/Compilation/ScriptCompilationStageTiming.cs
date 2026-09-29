@@ -22,8 +22,10 @@ public readonly record struct ScriptCompilationStageTiming
     /// <exception cref="ArgumentOutOfRangeException">
     /// Thrown when <paramref name="elapsed"/> is negative.
     /// </exception>
-    public ScriptCompilationStageTiming(string stage, TimeSpan elapsed)
-    {
+    public ScriptCompilationStageTiming(
+        string stage,
+        TimeSpan elapsed
+    ) {
         if (string.IsNullOrWhiteSpace(stage))
             throw new ArgumentException("A compilation stage name is required.", nameof(stage));
         if (elapsed < TimeSpan.Zero)

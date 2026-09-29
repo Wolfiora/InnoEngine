@@ -38,8 +38,7 @@ internal sealed unsafe class PlatformImGuiSdlRenderer : IPlatformImGuiRenderer
     /// <param name="drawData">
     /// The draw data consumed by render main; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
-    public void RenderMain(IntPtr drawData)
-        => Render(new ImDrawDataPtr((ImDrawData*)drawData));
+    public void RenderMain(IntPtr drawData) => Render(new ImDrawDataPtr((ImDrawData*)drawData));
 
     /// <summary>
     /// Synchronizes the main render output with the current drawable dimensions.
@@ -50,8 +49,10 @@ internal sealed unsafe class PlatformImGuiSdlRenderer : IPlatformImGuiRenderer
     /// <param name="pixelHeight">
     /// The pixel height consumed by synchronize main output; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
-    public void SynchronizeMainOutput(int pixelWidth, int pixelHeight)
-    {
+    public void SynchronizeMainOutput(
+        int pixelWidth,
+        int pixelHeight
+    ) {
         _ = pixelWidth;
         _ = pixelHeight;
         SynchronizeOutputSize();
@@ -83,7 +84,10 @@ internal sealed unsafe class PlatformImGuiSdlRenderer : IPlatformImGuiRenderer
     /// <param name="drawData">
     /// The draw data consumed by render viewport; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
-    public void RenderViewport(PlatformImGuiViewportTarget target, IntPtr drawData) { }
+    public void RenderViewport(
+        PlatformImGuiViewportTarget target,
+        IntPtr drawData
+    ) { }
 
     /// <summary>
     /// Presents the completed frame for the supplied auxiliary viewport.
@@ -322,8 +326,10 @@ internal sealed unsafe class PlatformImGuiSdlRenderer : IPlatformImGuiRenderer
         }
     }
 
-    private void CreateOrUpdateTexture(ImTextureDataPtr textureData, bool createIfMissing)
-    {
+    private void CreateOrUpdateTexture(
+        ImTextureDataPtr textureData,
+        bool createIfMissing
+    ) {
         var texture = TextureFromImGui(textureData.TexID);
         if (texture.IsNull && createIfMissing)
         {
@@ -369,8 +375,10 @@ internal sealed unsafe class PlatformImGuiSdlRenderer : IPlatformImGuiRenderer
         textureData.SetStatus(ImTextureStatus.Destroyed);
     }
 
-    private SDLTexturePtr CreateTexture(int width, int height)
-    {
+    private SDLTexturePtr CreateTexture(
+        int width,
+        int height
+    ) {
         if (width <= 0 || height <= 0)
         {
             return SDLTexturePtr.Null;
@@ -400,8 +408,11 @@ internal sealed unsafe class PlatformImGuiSdlRenderer : IPlatformImGuiRenderer
         }
     }
 
-    private static SDLVertex ToSdlVertex(ImDrawVert vtx, Vector2 displayPos, Vector2 framebufferScale)
-    {
+    private static SDLVertex ToSdlVertex(
+        ImDrawVert vtx,
+        Vector2 displayPos,
+        Vector2 framebufferScale
+    ) {
         var color = ImGuiPackedColor.ToSdlFColor(vtx.Col);
         var x = (vtx.Pos.X - displayPos.X) * framebufferScale.X;
         var y = (vtx.Pos.Y - displayPos.Y) * framebufferScale.Y;

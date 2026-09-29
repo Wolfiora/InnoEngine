@@ -94,8 +94,13 @@ public struct AnimationValue
     /// <param name="w">
     /// Fourth component.
     /// </param>
-    public AnimationValue(AnimationValueKind kind, float x, float y = 0f, float z = 0f, float w = 0f)
-    {
+    public AnimationValue(
+        AnimationValueKind kind,
+        float x,
+        float y = 0f,
+        float z = 0f,
+        float w = 0f
+    ) {
         this.kind = kind;
         this.x = x;
         this.y = y;
@@ -133,8 +138,11 @@ public struct AnimationValue
     [SerializableProperty]
     public float w { get; set; }
 
-    internal static AnimationValue Lerp(AnimationValue left, AnimationValue right, float amount)
-    {
+    internal static AnimationValue Lerp(
+        AnimationValue left,
+        AnimationValue right,
+        float amount
+    ) {
         if (left.kind != right.kind)
             throw new InvalidOperationException("Animation values with different kinds cannot be interpolated.");
         float t = Math.Clamp(amount, 0f, 1f);
@@ -147,8 +155,10 @@ public struct AnimationValue
         return left.kind == AnimationValueKind.Quaternion ? NormalizeQuaternion(value) : value;
     }
 
-    internal static AnimationValue WeightedAverage(AnimationValue sum, float inverseWeight)
-    {
+    internal static AnimationValue WeightedAverage(
+        AnimationValue sum,
+        float inverseWeight
+    ) {
         var value = new AnimationValue(
             sum.kind,
             sum.x * inverseWeight,
@@ -158,8 +168,11 @@ public struct AnimationValue
         return sum.kind == AnimationValueKind.Quaternion ? NormalizeQuaternion(value) : value;
     }
 
-    internal static AnimationValue AddWeighted(AnimationValue sum, AnimationValue value, float weight)
-    {
+    internal static AnimationValue AddWeighted(
+        AnimationValue sum,
+        AnimationValue value,
+        float weight
+    ) {
         if (sum.kind != value.kind)
             throw new InvalidOperationException("Animation tracks targeting one binding must use one value kind.");
         sum.x += value.x * weight;
@@ -282,8 +295,10 @@ public struct AnimationPlayOptions
 /// </summary>
 public readonly record struct AnimationPlaybackHandle
 {
-    internal AnimationPlaybackHandle(ulong value, uint runtimeGeneration)
-    {
+    internal AnimationPlaybackHandle(
+        ulong value,
+        uint runtimeGeneration
+    ) {
         this.value = value;
         this.runtimeGeneration = runtimeGeneration;
     }
@@ -318,8 +333,11 @@ public readonly record struct AnimationSample
     /// <param name="target">
     /// The weak destination or explicit sampling-only policy.
     /// </param>
-    public AnimationSample(AnimationTarget target, AnimationBindingId binding, AnimationValue value)
-    {
+    public AnimationSample(
+        AnimationTarget target,
+        AnimationBindingId binding,
+        AnimationValue value
+    ) {
         if (!target.isValid)
             throw new ArgumentException("A valid animation destination is required.", nameof(target));
         if (!binding.isValid)

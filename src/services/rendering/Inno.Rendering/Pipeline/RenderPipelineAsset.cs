@@ -31,8 +31,10 @@ public struct SerializedRenderExtensionState
     /// <param name="propertyData">
     /// Neutral native property bytes produced by asset serialization. Use the snapshot constructor when settings reference assets.
     /// </param>
-    public SerializedRenderExtensionState(Guid stableTypeId, ReadOnlySpan<byte> propertyData)
-    {
+    public SerializedRenderExtensionState(
+        Guid stableTypeId,
+        ReadOnlySpan<byte> propertyData
+    ) {
         this.stableTypeId = stableTypeId;
         this.propertyData = propertyData.ToArray();
         dependencies = [];
@@ -87,7 +89,8 @@ public struct SerializedRenderExtensionState
     /// </exception>
     public void Restore<TSettings>(
         TSettings target,
-        RenderExtensionStateContext context)
+        RenderExtensionStateContext context
+    )
         where TSettings : class, ISerializable
     {
         ArgumentNullException.ThrowIfNull(target);
@@ -123,8 +126,8 @@ public struct RenderFeatureConfiguration
     public RenderFeatureConfiguration(
         string featureTypeId,
         SerializedRenderExtensionState? state = null,
-        bool enabled = true)
-    {
+        bool enabled = true
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(featureTypeId);
         this.featureTypeId = featureTypeId;
         this.state = state ?? new SerializedRenderExtensionState();

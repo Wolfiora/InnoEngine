@@ -32,8 +32,8 @@ public sealed class BgfxTextureTargetCompiler : ITextureTargetCompiler
     public async ValueTask<byte[]> CompileKtxAsync(
         string sourcePath,
         TextureColorSpace colorSpace,
-        CancellationToken cancellationToken = default)
-    {
+        CancellationToken cancellationToken = default
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(sourcePath);
         string temporaryDirectory = Path.Combine(
             Path.GetTempPath(),

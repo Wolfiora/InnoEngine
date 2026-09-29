@@ -21,7 +21,7 @@ internal static class Program
     private static int Main(string[] args)
     {
         if (args.Length != 5 || !Enum.TryParse(args[2], true, out BgfxShaderTargetPlatform platform)
-            || !Enum.TryParse(args[3], true, out GraphicsApi backend))
+            || !GraphicsApi.TryParse(args[3], out GraphicsApi backend))
         {
             Console.Error.WriteLine("Usage: Inno.Build.Toolchains.Bgfx.Shaders <asset-root> <shader-path> <MacOSArm64|WindowsX64> <Metal|Direct3D11|Direct3D12|Vulkan|OpenGL> <output-file>");
             return 2;
@@ -43,11 +43,15 @@ internal static class Program
                 new() { assetRoot = Path.GetFullPath(args[0]), libraryRoot = Path.Combine(scratch, "Library") });
             AssetPath path = AssetPath.Project(args[1]);
             // A fresh source import must succeed. An earlier build artifact never masks current source errors.
-            if (!assets.Import(path)) throw new InvalidDataException($"Shader source '{path}' failed to import.");
+            if (!assets.Import(path))
+                throw new InvalidDataException($"Shader source '{path}' failed to import.");
             ShaderAsset shader = assets.Load<ShaderAsset>(path);
             RenderTextureFormat[] formats = Enum.GetValues<RenderTextureFormat>();
             var capabilities = new GraphicsCapabilities(backend,
-                Enum.GetValues<GraphicsCapability>().Aggregate(GraphicsCapability.None, static (all, feature) => all | feature),
+                Enum.GetValues<GraphicsCapability>().Aggregate(GraphicsCapability.None, static (
+                    all,
+                    feature
+                ) => all | feature),
                 new(256, 8, 16384, 16), formats, formats, formats, formats, false, false, formats, formats, formats);
             var compiler = new ShaderCompiler(new BgfxShadercToolchain(platform));
             ShaderCompileTarget target = compiler.CreateTarget(capabilities);
@@ -55,7 +59,8 @@ internal static class Program
                 types, serialization, AssetSerializationContext.Create(assets), assets).AsTask().GetAwaiter().GetResult();
             foreach (ShaderDiagnostic diagnostic in result.diagnostics)
                 Console.Error.WriteLine($"{diagnostic.code}: {diagnostic.message}");
-            if (!result.succeeded || result.artifact is null) return 1;
+            if (!result.succeeded || result.artifact is null)
+                return 1;
             AtomicFile.WriteAllBytes(Path.GetFullPath(args[4]), RenderShaderArtifactCodec.Encode(result.artifact.CreateRuntimeArtifact()));
             Console.WriteLine($"Compiled {path}: {result.artifact.passes.Count} passes, {target.key}");
             return 0;
@@ -65,7 +70,10 @@ internal static class Program
             Console.Error.WriteLine(failure);
             return 1;
         }
-        finally { Directory.Delete(scratch, recursive: true); }
+        finally
+        {
+            Directory.Delete(scratch, recursive: true);
+        }
     }
 
     private sealed class DiagnosticOutput : IDiagnosticSink

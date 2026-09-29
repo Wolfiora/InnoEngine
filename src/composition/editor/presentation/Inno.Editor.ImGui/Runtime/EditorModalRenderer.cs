@@ -42,8 +42,8 @@ internal static class EditorModalRenderer
         float alpha,
         EditorModalExtension modal,
         EditorModalExtension.Presentation presentation,
-        EditorContext context)
-    {
+        EditorContext context
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(id);
         ArgumentException.ThrowIfNullOrWhiteSpace(title);
         ArgumentNullException.ThrowIfNull(modal);
@@ -124,8 +124,10 @@ internal static class EditorModalRenderer
     /// <param name="title">
     /// The visible title used when the modal was opened.
     /// </param>
-    internal static void Close(string id, string title)
-    {
+    internal static void Close(
+        string id,
+        string title
+    ) {
         string popupId = $"{title}##{id}";
         if (!NativeImGui.IsPopupOpen(popupId) || !NativeImGui.BeginPopupModal(popupId))
             return;

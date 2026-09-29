@@ -132,14 +132,19 @@ public sealed class RmlUiDocumentFrontend : IUiDocumentFrontend
         return diagnostics.Count == 0 ? new(canonical, diagnostics, fonts) : new(null, diagnostics);
     }
 
-    private static string PrivateFamily(string source, string logical)
-    {
+    private static string PrivateFamily(
+        string source,
+        string logical
+    ) {
         byte[] digest = SHA256.HashData(Encoding.UTF8.GetBytes(source + "\n" + logical.ToLowerInvariant()));
         return "__inno_ui_" + Convert.ToHexString(digest.AsSpan(0, 12)).ToLowerInvariant();
     }
 
-    private static string ExpandStyles(UiDocumentSourceFile source, AssetPath documentPath,
-        HashSet<AssetPath> active)
+    private static string ExpandStyles(
+        UiDocumentSourceFile source,
+        AssetPath documentPath,
+        HashSet<AssetPath> active
+    )
         => S_LINK.Replace(source.text, match =>
         {
             Match href = S_HREF.Match(match.Value);
@@ -151,9 +156,11 @@ public sealed class RmlUiDocumentFrontend : IUiDocumentFrontend
             return "<style>" + ExpandSheet(source.readSource, sheetPath, active) + "</style>";
         });
 
-    private static string ExpandSheet(Func<AssetPath, string> readSource, AssetPath path,
-        HashSet<AssetPath> active)
-    {
+    private static string ExpandSheet(
+        Func<AssetPath, string> readSource,
+        AssetPath path,
+        HashSet<AssetPath> active
+    ) {
         if (!active.Add(path))
             throw new InvalidDataException($"RCSS import cycle includes '{path}'.");
         try
@@ -172,8 +179,10 @@ public sealed class RmlUiDocumentFrontend : IUiDocumentFrontend
         }
     }
 
-    private static AssetPath ResolvePath(AssetPath owner, string relative)
-    {
+    private static AssetPath ResolvePath(
+        AssetPath owner,
+        string relative
+    ) {
         if (relative.Contains("::", StringComparison.Ordinal))
             return AssetPath.Parse(relative);
         if (Path.IsPathRooted(relative))

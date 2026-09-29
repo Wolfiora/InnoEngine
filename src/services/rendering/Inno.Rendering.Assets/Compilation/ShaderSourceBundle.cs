@@ -28,8 +28,10 @@ public static class ShaderSourceBundle
     /// <returns>
     /// Detached module bytes retained for the duration of reading.
     /// </returns>
-    public static byte[] Read(ShaderFunctionAsset function, Inno.Assets.IAssetArtifactLookup artifacts)
-    {
+    public static byte[] Read(
+        ShaderFunctionAsset function,
+        Inno.Assets.IAssetArtifactLookup artifacts
+    ) {
         ArgumentNullException.ThrowIfNull(function);
         ArgumentNullException.ThrowIfNull(artifacts);
         using Inno.Assets.ArtifactLease lease = artifacts.AcquireArtifact(function.identity.persistentId, outputName);
@@ -48,8 +50,10 @@ public static class ShaderSourceBundle
     /// <returns>
     /// Deterministic native authoring artifact bytes, not Player content.
     /// </returns>
-    public static byte[] Encode(IReadOnlyDictionary<string, ShaderSourceModuleAnalysis> functions, SerializationRegistry serialization)
-    {
+    public static byte[] Encode(
+        IReadOnlyDictionary<string, ShaderSourceModuleAnalysis> functions,
+        SerializationRegistry serialization
+    ) {
         ArgumentNullException.ThrowIfNull(functions);
         ArgumentNullException.ThrowIfNull(serialization);
         if (functions.Count == 0 || functions.Any(static pair => string.IsNullOrWhiteSpace(pair.Key) || pair.Value is null))
@@ -91,9 +95,12 @@ public static class ShaderSourceBundle
     /// <returns>
     /// Detached requests without filesystem access or old-generation provider references.
     /// </returns>
-    public static IReadOnlyList<ShaderSourceImplementationRequest> Decode(ReadOnlySpan<byte> bytes, string function, SerializationRegistry serialization,
-        IReadOnlyDictionary<string, string>? defines = null)
-    {
+    public static IReadOnlyList<ShaderSourceImplementationRequest> Decode(
+        ReadOnlySpan<byte> bytes,
+        string function,
+        SerializationRegistry serialization,
+        IReadOnlyDictionary<string, string>? defines = null
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(function);
         ArgumentNullException.ThrowIfNull(serialization);
         BundleData data = serialization.Deserialize<BundleData>(bytes);
@@ -108,10 +115,19 @@ public static class ShaderSourceBundle
             if (value.paths.Length != value.texts.Length || value.includeOwners.Length != value.includeNames.Length
                 || value.includeOwners.Length != value.includePaths.Length || value.defineNames.Length != value.defineValues.Length)
                 throw new InvalidOperationException("The frozen shader source bundle has inconsistent collection lengths.");
-            var files = value.paths.Select((path, index) => new ShaderSourceFile(path, value.texts[index])).ToDictionary(static file => file.assetPath, StringComparer.Ordinal);
-            var edges = value.includeOwners.Select((owner, index) => new ShaderSourceInclude(owner, value.includeNames[index], value.includePaths[index]))
+            var files = value.paths.Select((
+                path,
+                index
+            ) => new ShaderSourceFile(path, value.texts[index])).ToDictionary(static file => file.assetPath, StringComparer.Ordinal);
+            var edges = value.includeOwners.Select((
+                owner,
+                index
+            ) => new ShaderSourceInclude(owner, value.includeNames[index], value.includePaths[index]))
                 .ToDictionary(static edge => (edge.includingFile, edge.include));
-            var macros = value.defineNames.Select((name, index) => new KeyValuePair<string, string>(name, value.defineValues[index])).ToDictionary(StringComparer.Ordinal);
+            var macros = value.defineNames.Select((
+                name,
+                index
+            ) => new KeyValuePair<string, string>(name, value.defineValues[index])).ToDictionary(StringComparer.Ordinal);
             foreach ((string name, string text) in defines ?? new Dictionary<string, string>())
             {
                 if (macros.TryGetValue(name, out string? previous) && previous != text)
@@ -123,8 +139,10 @@ public static class ShaderSourceBundle
         }).ToArray());
     }
 
-    private sealed class FrozenResolver(Dictionary<string, ShaderSourceFile> files,
-        Dictionary<(string, string), ShaderSourceInclude> edges) : IShaderSourceResolver
+    private sealed class FrozenResolver(
+        Dictionary<string, ShaderSourceFile> files,
+        Dictionary<(string, string), ShaderSourceInclude> edges
+    ) : IShaderSourceResolver
     {
         /// <summary>
         /// Reads and validates the include value from its authoritative source.
@@ -138,7 +156,10 @@ public static class ShaderSourceBundle
         /// <returns>
         /// The validated shader source file that represents the completed operation.
         /// </returns>
-public ShaderSourceFile ReadInclude(string includingFile, string include)
+public ShaderSourceFile ReadInclude(
+    string includingFile,
+    string include
+)
             => edges.TryGetValue((includingFile, include), out ShaderSourceInclude? edge) && files.TryGetValue(edge.resolvedPath, out ShaderSourceFile? file)
                 ? file : throw new InvalidOperationException($"Source dependency '{include}' from '{includingFile}' was not captured by import.");
     }

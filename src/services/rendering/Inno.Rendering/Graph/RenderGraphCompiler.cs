@@ -36,8 +36,8 @@ internal static class RenderGraphCompiler
         IReadOnlyList<RenderTextureRecord> textures,
         IReadOnlyList<RenderBufferRecord> buffers,
         IReadOnlyList<RenderPassRecord> passes,
-        IReadOnlySet<RenderResourceKey> outputs)
-    {
+        IReadOnlySet<RenderResourceKey> outputs
+    ) {
         List<RenderGraphDiagnostic> diagnostics = [];
         ValidateResources(capabilities, textures, buffers, diagnostics);
         ValidatePasses(capabilities, textures, buffers, passes, diagnostics);
@@ -97,8 +97,8 @@ internal static class RenderGraphCompiler
         GraphicsCapabilities capabilities,
         IReadOnlyList<RenderTextureRecord> textures,
         IReadOnlyList<RenderBufferRecord> buffers,
-        List<RenderGraphDiagnostic> diagnostics)
-    {
+        List<RenderGraphDiagnostic> diagnostics
+    ) {
         foreach (RenderTextureRecord texture in textures)
         {
             RenderTextureDescriptor descriptor = texture.descriptor;
@@ -222,8 +222,8 @@ internal static class RenderGraphCompiler
         IReadOnlyList<RenderTextureRecord> textures,
         IReadOnlyList<RenderBufferRecord> buffers,
         IReadOnlyList<RenderPassRecord> passes,
-        List<RenderGraphDiagnostic> diagnostics)
-    {
+        List<RenderGraphDiagnostic> diagnostics
+    ) {
         foreach (RenderPassRecord pass in passes)
         {
             if (pass.kind == RenderPassKind.Compute && !capabilities.Supports(GraphicsCapability.Compute))
@@ -367,13 +367,15 @@ internal static class RenderGraphCompiler
         }
     }
 
-    private static int MipExtent(int extent, int mipLevel)
-        => mipLevel >= 31 ? 1 : Math.Max(1, extent >> mipLevel);
+    private static int MipExtent(
+        int extent,
+        int mipLevel
+    ) => mipLevel >= 31 ? 1 : Math.Max(1, extent >> mipLevel);
 
     private static void ValidatePassResourceConflicts(
         RenderPassRecord pass,
-        List<RenderGraphDiagnostic> diagnostics)
-    {
+        List<RenderGraphDiagnostic> diagnostics
+    ) {
         Dictionary<RenderResourceKey, RenderResourceAccess> accessByResource = [];
         foreach (RenderResourceUse use in pass.resources)
         {
@@ -401,8 +403,8 @@ internal static class RenderGraphCompiler
         IReadOnlyList<RenderTextureRecord> textures,
         IReadOnlyList<RenderBufferRecord> buffers,
         RenderPassRecord pass,
-        List<RenderGraphDiagnostic> diagnostics)
-    {
+        List<RenderGraphDiagnostic> diagnostics
+    ) {
         foreach (RenderResourceUse use in pass.resources)
         {
             if (use.key.isTexture)
@@ -495,8 +497,8 @@ internal static class RenderGraphCompiler
         RenderPassRecord pass,
         RenderResourceUse use,
         RenderBufferUsage requiredUsage,
-        List<RenderGraphDiagnostic> diagnostics)
-    {
+        List<RenderGraphDiagnostic> diagnostics
+    ) {
         RenderBufferRecord buffer = buffers[use.key.index];
         if ((buffer.descriptor.usage & requiredUsage) != requiredUsage)
         {
@@ -522,8 +524,8 @@ internal static class RenderGraphCompiler
         IReadOnlySet<RenderResourceKey> outputs,
         IReadOnlyList<HashSet<int>> dependencies,
         IReadOnlyList<HashSet<int>> dataDependencies,
-        List<RenderGraphDiagnostic> diagnostics)
-    {
+        List<RenderGraphDiagnostic> diagnostics
+    ) {
         Dictionary<RenderResourceKey, int> lastWriters = [];
         Dictionary<RenderResourceKey, List<int>> readers = [];
         HashSet<RenderResourceKey> initialized = [];
@@ -626,8 +628,10 @@ internal static class RenderGraphCompiler
         }
     }
 
-    private static bool StoresResult(RenderPassRecord pass, RenderResourceKey key)
-    {
+    private static bool StoresResult(
+        RenderPassRecord pass,
+        RenderResourceKey key
+    ) {
         foreach (RenderAttachment attachment in pass.attachments)
         {
             if (key.isTexture
@@ -643,8 +647,8 @@ internal static class RenderGraphCompiler
 
     private static void BuildPhaseDependencies(
         IReadOnlyList<RenderPassRecord> passes,
-        IReadOnlyList<HashSet<int>> dependencies)
-    {
+        IReadOnlyList<HashSet<int>> dependencies
+    ) {
         for (int passIndex = 0; passIndex < passes.Count; passIndex++)
         {
             RenderPassRecord pass = passes[passIndex];
@@ -674,8 +678,8 @@ internal static class RenderGraphCompiler
         IReadOnlyList<RenderBufferRecord> buffers,
         IReadOnlyList<RenderPassRecord> passes,
         IReadOnlySet<RenderResourceKey> outputs,
-        IReadOnlyList<HashSet<int>> dataDependencies)
-    {
+        IReadOnlyList<HashSet<int>> dataDependencies
+    ) {
         Stack<int> pending = [];
         HashSet<int> live = [];
         for (int passIndex = 0; passIndex < passes.Count; passIndex++)
@@ -717,8 +721,8 @@ internal static class RenderGraphCompiler
     private static List<int>? TopologicalSort(
         int passCount,
         IReadOnlySet<int> livePasses,
-        IReadOnlyList<HashSet<int>> dependencies)
-    {
+        IReadOnlyList<HashSet<int>> dependencies
+    ) {
         int[] inDegrees = new int[passCount];
         List<List<int>> dependants = new(passCount);
         for (int i = 0; i < passCount; i++)
@@ -771,11 +775,15 @@ internal static class RenderGraphCompiler
     private static int[] AllocateTextureSlots(
         IReadOnlyList<RenderTextureRecord> textures,
         IReadOnlyList<RenderPassRecord> passes,
-        IReadOnlyDictionary<int, int> schedulePositions)
+        IReadOnlyDictionary<int, int> schedulePositions
+    )
         => AllocateSlots(
             textures.Count,
             index => textures[index].imported,
-            (left, right) => textures[left].descriptor.Equals(textures[right].descriptor),
+            (
+                left,
+                right
+            ) => textures[left].descriptor.Equals(textures[right].descriptor),
             new RenderResourceKey(true, 0),
             passes,
             schedulePositions);
@@ -783,11 +791,15 @@ internal static class RenderGraphCompiler
     private static int[] AllocateBufferSlots(
         IReadOnlyList<RenderBufferRecord> buffers,
         IReadOnlyList<RenderPassRecord> passes,
-        IReadOnlyDictionary<int, int> schedulePositions)
+        IReadOnlyDictionary<int, int> schedulePositions
+    )
         => AllocateSlots(
             buffers.Count,
             index => buffers[index].imported,
-            (left, right) => buffers[left].descriptor.Equals(buffers[right].descriptor),
+            (
+                left,
+                right
+            ) => buffers[left].descriptor.Equals(buffers[right].descriptor),
             new RenderResourceKey(false, 0),
             passes,
             schedulePositions);
@@ -798,8 +810,8 @@ internal static class RenderGraphCompiler
         Func<int, int, bool> descriptorsEqual,
         RenderResourceKey keyTemplate,
         IReadOnlyList<RenderPassRecord> passes,
-        IReadOnlyDictionary<int, int> schedulePositions)
-    {
+        IReadOnlyDictionary<int, int> schedulePositions
+    ) {
         int[] firstUses = new int[resourceCount];
         int[] lastUses = new int[resourceCount];
         int[] slots = new int[resourceCount];
@@ -830,7 +842,10 @@ internal static class RenderGraphCompiler
             }
         }
 
-        resources.Sort((left, right) => firstUses[left].CompareTo(firstUses[right]));
+        resources.Sort((
+            left,
+            right
+        ) => firstUses[left].CompareTo(firstUses[right]));
         List<(int representative, int lastUse)> allocations = [];
         foreach (int resource in resources)
         {
@@ -866,8 +881,8 @@ internal static class RenderGraphCompiler
         IReadOnlyList<RenderPassRecord> passes,
         IReadOnlyList<int> schedule,
         IReadOnlyList<int> textureSlots,
-        IReadOnlyList<int> bufferSlots)
-    {
+        IReadOnlyList<int> bufferSlots
+    ) {
         List<CompiledRenderPass> compiledPasses = [];
         for (int viewIndex = 0; viewIndex < schedule.Count; viewIndex++)
         {
@@ -936,13 +951,15 @@ internal static class RenderGraphCompiler
     private static bool IsImported(
         RenderResourceKey key,
         IReadOnlyList<RenderTextureRecord> textures,
-        IReadOnlyList<RenderBufferRecord> buffers)
+        IReadOnlyList<RenderBufferRecord> buffers
+    )
         => key.isTexture ? textures[key.index].imported : buffers[key.index].imported;
 
     private static string GetResourceName(
         RenderResourceKey key,
         IReadOnlyList<RenderTextureRecord> textures,
-        IReadOnlyList<RenderBufferRecord> buffers)
+        IReadOnlyList<RenderBufferRecord> buffers
+    )
         => key.isTexture ? textures[key.index].name : buffers[key.index].name;
 
     private static bool IsDepthFormat(RenderTextureFormat format)
@@ -976,8 +993,8 @@ internal static class RenderGraphCompiler
         int dependency,
         int dependant,
         IReadOnlyList<HashSet<int>> dependencies,
-        IReadOnlyList<HashSet<int>> dataDependencies)
-    {
+        IReadOnlyList<HashSet<int>> dataDependencies
+    ) {
         if (dependency == dependant)
         {
             return;
@@ -991,8 +1008,8 @@ internal static class RenderGraphCompiler
         RenderPassRecord pass,
         RenderTextureRecord texture,
         string role,
-        List<RenderGraphDiagnostic> diagnostics)
-    {
+        List<RenderGraphDiagnostic> diagnostics
+    ) {
         diagnostics.Add(new RenderGraphDiagnostic(
             "RENDER_GRAPH_ATTACHMENT_USAGE",
             $"Texture '{texture.name}' is not declared for {role} attachment usage.",
@@ -1005,8 +1022,8 @@ internal static class RenderGraphCompiler
         RenderPassRecord pass,
         string resourceName,
         string requiredUsage,
-        List<RenderGraphDiagnostic> diagnostics)
-    {
+        List<RenderGraphDiagnostic> diagnostics
+    ) {
         diagnostics.Add(new RenderGraphDiagnostic(
             "RENDER_GRAPH_RESOURCE_USAGE",
             $"Resource '{resourceName}' used by pass '{pass.name}' requires '{requiredUsage}' usage.",
@@ -1020,8 +1037,8 @@ internal static class RenderGraphCompiler
         string resourceName,
         string operation,
         GraphicsCapability requiredFeature,
-        List<RenderGraphDiagnostic> diagnostics)
-    {
+        List<RenderGraphDiagnostic> diagnostics
+    ) {
         diagnostics.Add(new RenderGraphDiagnostic(
             "RENDER_GRAPH_CAPABILITY_UNSUPPORTED",
             $"Pass '{pass.name}' requires '{requiredFeature}' for {operation} operations.",

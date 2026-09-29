@@ -31,14 +31,16 @@ public sealed partial class ShaderIrBuilder
     /// <exception cref="InvalidOperationException">
     /// A callback mutates the enclosing scope or declares a nested stage input.
     /// </exception>
-    public IReadOnlyDictionary<string, ShaderIrValue> Branch(ShaderIrValue condition,
+    public IReadOnlyDictionary<string, ShaderIrValue> Branch(
+        ShaderIrValue condition,
         Func<ShaderIrBuilder, IReadOnlyDictionary<string, ShaderIrValue>> whenTrue,
-        Func<ShaderIrBuilder, IReadOnlyDictionary<string, ShaderIrValue>> whenFalse)
-    {
+        Func<ShaderIrBuilder, IReadOnlyDictionary<string, ShaderIrValue>> whenFalse
+    ) {
         RequireOwned(condition);
         ArgumentNullException.ThrowIfNull(whenTrue);
         ArgumentNullException.ThrowIfNull(whenFalse);
-        if (!condition.type.IsEquivalentTo(ShaderSourceType.Atomic("bool"))) throw new ArgumentException("A branch condition must be bool.", nameof(condition));
+        if (!condition.type.IsEquivalentTo(ShaderSourceType.Atomic("bool")))
+            throw new ArgumentException("A branch condition must be bool.", nameof(condition));
         int nextValue = m_root.m_nextValue;
         try
         {
@@ -49,7 +51,11 @@ public sealed partial class ShaderIrBuilder
             m_instructions.Add(new(ShaderIrOperation.Branch, [condition], outputs.Values, regions: [first, second]));
             return outputs;
         }
-        catch { m_root.m_nextValue = nextValue; throw; }
+        catch
+        {
+            m_root.m_nextValue = nextValue;
+            throw;
+        }
     }
 
     /// <summary>
@@ -73,14 +79,16 @@ public sealed partial class ShaderIrBuilder
     /// <exception cref="InvalidOperationException">
     /// The body mutates the enclosing builder.
     /// </exception>
-    public IReadOnlyDictionary<string, ShaderIrValue> Loop(ShaderIrValue iterations,
+    public IReadOnlyDictionary<string, ShaderIrValue> Loop(
+        ShaderIrValue iterations,
         IReadOnlyDictionary<string, ShaderIrValue> initialState,
-        Func<ShaderIrBuilder, ShaderIrValue, IReadOnlyDictionary<string, ShaderIrValue>, IReadOnlyDictionary<string, ShaderIrValue>> body)
-    {
+        Func<ShaderIrBuilder, ShaderIrValue, IReadOnlyDictionary<string, ShaderIrValue>, IReadOnlyDictionary<string, ShaderIrValue>> body
+    ) {
         RequireOwned(iterations);
         ArgumentNullException.ThrowIfNull(initialState);
         ArgumentNullException.ThrowIfNull(body);
-        if (!iterations.type.IsEquivalentTo(ShaderSourceType.Atomic("uint"))) throw new ArgumentException("A loop count must be uint.", nameof(iterations));
+        if (!iterations.type.IsEquivalentTo(ShaderSourceType.Atomic("uint")))
+            throw new ArgumentException("A loop count must be uint.", nameof(iterations));
         foreach ((string name, ShaderIrValue value) in initialState)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
@@ -94,7 +102,8 @@ public sealed partial class ShaderIrBuilder
             {
                 ShaderIrValue index = builder.RegionInput("iteration", ShaderSourceType.Atomic("uint"));
                 var carried = new Dictionary<string, ShaderIrValue>(StringComparer.Ordinal);
-                foreach ((string name, ShaderIrValue value) in initial) carried.Add(name, builder.RegionInput("state." + name, value.type));
+                foreach ((string name, ShaderIrValue value) in initial)
+                    carried.Add(name, builder.RegionInput("state." + name, value.type));
                 return body(builder, index, new ReadOnlyDictionary<string, ShaderIrValue>(carried));
             });
             ValidateOutputs(initial, region.outputs);
@@ -102,19 +111,32 @@ public sealed partial class ShaderIrBuilder
             m_instructions.Add(new(ShaderIrOperation.Loop, new[] { iterations }.Concat(initial.Values), outputs.Values, regions: [region]));
             return outputs;
         }
-        catch { m_root.m_nextValue = nextValue; throw; }
+        catch
+        {
+            m_root.m_nextValue = nextValue;
+            throw;
+        }
     }
 
     private ShaderIrBlock BuildRegion(Func<ShaderIrBuilder, IReadOnlyDictionary<string, ShaderIrValue>> body)
     {
         var child = new ShaderIrBuilder(this);
         m_buildingChild = true;
-        try { return child.Build(body(child)); }
-        finally { m_buildingChild = false; child.m_closed = true; }
+        try
+        {
+            return child.Build(body(child));
+        }
+        finally
+        {
+            m_buildingChild = false;
+            child.m_closed = true;
+        }
     }
 
-    private ShaderIrValue RegionInput(string name, ShaderSourceType type)
-    {
+    private ShaderIrValue RegionInput(
+        string name,
+        ShaderSourceType type
+    ) {
         ShaderIrValue output = NewValue(type);
         m_instructions.Add(new(ShaderIrOperation.RegionInput, [], [output], inputName: name));
         return output;
@@ -132,8 +154,10 @@ public sealed partial class ShaderIrBuilder
         return new ReadOnlyDictionary<string, ShaderIrValue>(values);
     }
 
-    private static void ValidateOutputs(IReadOnlyDictionary<string, ShaderIrValue> expected, IReadOnlyDictionary<string, ShaderIrValue> actual)
-    {
+    private static void ValidateOutputs(
+        IReadOnlyDictionary<string, ShaderIrValue> expected,
+        IReadOnlyDictionary<string, ShaderIrValue> actual
+    ) {
         if (expected.Count != actual.Count || expected.Any(pair => !actual.TryGetValue(pair.Key, out ShaderIrValue? value) || !pair.Value.type.IsEquivalentTo(value.type)))
             throw new ArgumentException("Control-flow regions require identical named output types.");
     }

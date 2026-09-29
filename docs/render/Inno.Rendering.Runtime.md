@@ -90,6 +90,8 @@ Runtime 不把一次请求假定为整个 target 的唯一 owner。请求仍按 
 
 上述保留机制只适用于有意共享目标的显式 `RenderRequest`。多个 `IRenderModel` 需要 `RenderOutputRoute`：每个 `RenderOutputLayer` 指定模型 ID 和只分给这一层的内容源 ID，重复分配会在构造 route 时失败。Runtime 检查模型集合与颜色格式，为每层建立独立可采样目标，再以预乘 Alpha 按 route 顺序合成；Editor GameView 使用同一机制。模型层的视口从 `(0,0)` 开始，最终合成才使用输出视口偏移。图层合成不支持跨模型几何深度交错；需要这类排序的内容应由同一模型接纳。`IViewContentFrameSource.CompleteFrame` 在所有输出收集完输入后、RenderGraph 建图前执行一次。
 
+Host 在 `RenderRuntime` 构造时传入 `IRenderLayerCompositionProgramProvider`。只有实际请求多层合成时才创建程序；缺少供给器时抛出明确错误，由现有输出诊断边界报告。Runtime 只持有后端中立的顶点布局和图层排序，BGFX 编译产物与平台选择由 [BGFX adapter](Inno.Adapter.Rendering.Bgfx.md) 拥有。Editor 和 Player 注入相同适配器，保持原来的画面合成语义。
+
 ## 资源与代际
 
 - Pipeline 缓存记录资产注册时的 Identity。Session 退出、资产卸载或身份替换后，下一帧及 reload 候选捕获前按原 owner 解析身份；失效条目先通过共享退休协议释放 Pipeline/Feature，再移除缓存。不能把已退出 Play 世界的 Pipeline 带入下一代。未注册的宿主自建 Pipeline 仍由 Runtime 生命周期拥有。

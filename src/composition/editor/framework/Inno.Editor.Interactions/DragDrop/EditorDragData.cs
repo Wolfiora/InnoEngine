@@ -24,8 +24,10 @@ public sealed class EditorDragData
     /// <exception cref="InvalidOperationException">
     /// Thrown when <paramref name="source"/> is not registered in a live identity domain.
     /// </exception>
-    public EditorDragData(IdentityObject source, string label)
-    {
+    public EditorDragData(
+        IdentityObject source,
+        string label
+    ) {
         ArgumentNullException.ThrowIfNull(source);
         sourceIdentity = source.identity.runtimeIdentity
             ?? throw new InvalidOperationException(

@@ -15,7 +15,8 @@ namespace Inno.Editor.Rendering;
 /// </param>
 public sealed record EditorShaderArtifactValidationSnapshot(
     EditorShaderCompilationState state,
-    IReadOnlyList<ShaderDiagnostic> diagnostics);
+    IReadOnlyList<ShaderDiagnostic> diagnostics
+);
 
 /// <summary>
 /// Queues immutable shader candidates for validation at the active device's next frame safety point.
@@ -45,7 +46,8 @@ public interface IEditorShaderArtifactValidator
     EditorShaderArtifactValidationSnapshot Request(
         Guid documentId,
         ulong revision,
-        RenderShaderArtifact artifact);
+        RenderShaderArtifact artifact
+    );
 
     /// <summary>
     /// Forgets pending and completed validation state owned by one document.

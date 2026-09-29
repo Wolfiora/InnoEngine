@@ -20,8 +20,10 @@ public sealed class GraphNodeRecord
     /// <param name="definitionId">
     /// Stable node definition identifier.
     /// </param>
-    public GraphNodeRecord(GraphNodeId id, string definitionId)
-    {
+    public GraphNodeRecord(
+        GraphNodeId id,
+        string definitionId
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(definitionId);
         this.id = id;
         this.definitionId = definitionId;
@@ -56,8 +58,10 @@ public sealed class GraphNodeRecord
     /// <param name="value">
     /// Serialized value.
     /// </param>
-    public void SetValue(string propertyId, GraphSerializedValue value)
-    {
+    public void SetValue(
+        string propertyId,
+        GraphSerializedValue value
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(propertyId);
         ArgumentNullException.ThrowIfNull(value);
         m_values[propertyId] = value;
@@ -75,8 +79,10 @@ public sealed class GraphNodeRecord
     /// <returns>
     /// <see langword="true"/> when the property exists; otherwise <see langword="false"/>.
     /// </returns>
-    public bool TryGetValue(string propertyId, out GraphSerializedValue? value)
-    {
+    public bool TryGetValue(
+        string propertyId,
+        out GraphSerializedValue? value
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(propertyId);
         return m_values.TryGetValue(propertyId, out value);
     }
@@ -111,8 +117,10 @@ public readonly record struct GraphEndpoint
     /// <param name="portId">
     /// Port identifier within the node definition.
     /// </param>
-    public GraphEndpoint(GraphNodeId nodeId, GraphPortId portId)
-    {
+    public GraphEndpoint(
+        GraphNodeId nodeId,
+        GraphPortId portId
+    ) {
         this.nodeId = nodeId;
         this.portId = portId;
     }
@@ -145,8 +153,11 @@ public sealed class GraphEdgeRecord
     /// <param name="input">
     /// Destination endpoint.
     /// </param>
-    public GraphEdgeRecord(GraphEdgeId id, GraphEndpoint output, GraphEndpoint input)
-    {
+    public GraphEdgeRecord(
+        GraphEdgeId id,
+        GraphEndpoint output,
+        GraphEndpoint input
+    ) {
         this.id = id;
         this.output = output;
         this.input = input;
@@ -311,8 +322,7 @@ public sealed class GraphDocument
     /// <returns>
     /// The node record, or <see langword="null"/> when absent.
     /// </returns>
-    public GraphNodeRecord? FindNode(GraphNodeId nodeId)
-        => m_nodes.Find(node => node.id == nodeId);
+    public GraphNodeRecord? FindNode(GraphNodeId nodeId) => m_nodes.Find(node => node.id == nodeId);
 
     /// <summary>
     /// Adds an edge while preserving document order.
@@ -364,8 +374,10 @@ public sealed class GraphDocument
     /// <param name="value">
     /// Serialized metadata value.
     /// </param>
-    public void SetMetadata(string key, GraphSerializedValue value)
-    {
+    public void SetMetadata(
+        string key,
+        GraphSerializedValue value
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(key);
         ArgumentNullException.ThrowIfNull(value);
         m_metadata[key] = value;

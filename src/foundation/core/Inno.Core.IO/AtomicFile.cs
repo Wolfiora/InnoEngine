@@ -20,8 +20,11 @@ public static class AtomicFile
     /// <param name="overwrite">
     /// Whether an existing destination may be replaced; false atomically rejects name collisions.
     /// </param>
-    public static void WriteAllBytes(string path, ReadOnlySpan<byte> data, bool overwrite = true)
-    {
+    public static void WriteAllBytes(
+        string path,
+        ReadOnlySpan<byte> data,
+        bool overwrite = true
+    ) {
         string destination = NormalizeDestination(path);
         string candidate = destination + ".staging-" + Guid.NewGuid().ToString("N");
         try
@@ -58,8 +61,11 @@ public static class AtomicFile
     /// <param name="overwrite">
     /// Whether an existing destination may be replaced; false never overwrites an external creator.
     /// </param>
-    public static void Install(string source, string destination, bool overwrite = true)
-    {
+    public static void Install(
+        string source,
+        string destination,
+        bool overwrite = true
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(source);
         string candidate = Path.GetFullPath(source);
         string target = NormalizeDestination(destination);

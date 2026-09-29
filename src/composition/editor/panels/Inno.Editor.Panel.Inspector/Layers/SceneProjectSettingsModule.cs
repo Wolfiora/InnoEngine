@@ -25,8 +25,8 @@ internal sealed class SceneProjectSettingsModule : EditorModule
     internal SceneProjectSettingsModule(
         ProjectSettingsStore settings,
         RuntimeSession runtimeSession,
-        DiagnosticHub diagnostics)
-    {
+        DiagnosticHub diagnostics
+    ) {
         m_settings = settings ?? throw new ArgumentNullException(nameof(settings));
         ArgumentNullException.ThrowIfNull(runtimeSession);
         ArgumentNullException.ThrowIfNull(diagnostics);
@@ -58,8 +58,7 @@ internal sealed class SceneProjectSettingsModule : EditorModule
     /// <param name="context">
     /// The context that supplies state and services for this operation.
     /// </param>
-    protected override void OnStart(EditorContext context)
-        => RefreshSettings();
+    protected override void OnStart(EditorContext context) => RefreshSettings();
 
     /// <summary>
     /// Advances this feature using the current runtime state.

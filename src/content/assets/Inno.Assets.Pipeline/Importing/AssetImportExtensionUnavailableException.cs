@@ -19,7 +19,10 @@ public sealed class AssetImportExtensionUnavailableException : InvalidOperationE
     /// <param name="extensionId">
     /// The required implementation's stable identity.
     /// </param>
-    public AssetImportExtensionUnavailableException(string extensionKind, string extensionId)
+    public AssetImportExtensionUnavailableException(
+        string extensionKind,
+        string extensionId
+    )
         : base($"Required authoring extension '{extensionKind}/{extensionId}' is unavailable. Source and last-good artifacts are retained.")
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(extensionKind);

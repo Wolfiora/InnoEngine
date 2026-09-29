@@ -10,8 +10,11 @@ internal static class StorageNodePorts
         => context.Read("resource", new ShaderGraphType { isStorage = true, storageElement = new() { id = "float4" }, access = RenderStorageAccess.ReadWrite }).CreateType();
     internal static ShaderSourceType Coordinate(ShaderStorageType storage)
         => ShaderSourceType.Atomic(!storage.isImage ? "uint" : storage.array || storage.dimension == RenderTextureDimension.Texture3D ? "int3" : "int2");
-    internal static IReadOnlyList<ShaderNodePort> Describe(ShaderNodeDescriptionContext context, bool write, bool atomic)
-    {
+    internal static IReadOnlyList<ShaderNodePort> Describe(
+        ShaderNodeDescriptionContext context,
+        bool write,
+        bool atomic
+    ) {
         ShaderSourceType type = Resource(context);
         ShaderStorageType storage = type.storage ?? throw new ArgumentException("A storage node requires a storage resource descriptor.");
         var ports = new List<ShaderNodePort>
@@ -21,8 +24,10 @@ internal static class StorageNodePorts
             new("after", ShaderSourceType.Atomic("bool"), GraphPortDirection.Input, false),
             new("then", ShaderSourceType.Atomic("bool"), GraphPortDirection.Output)
         };
-        if (write) ports.Add(new("value", storage.valueType, GraphPortDirection.Input));
-        if (!write || atomic) ports.Add(new(atomic ? "previous" : "value", storage.valueType, GraphPortDirection.Output));
+        if (write)
+            ports.Add(new("value", storage.valueType, GraphPortDirection.Input));
+        if (!write || atomic)
+            ports.Add(new(atomic ? "previous" : "value", storage.valueType, GraphPortDirection.Output));
         return ports;
     }
 }

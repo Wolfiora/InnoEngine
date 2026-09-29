@@ -55,7 +55,10 @@ public interface IAudioService
     /// <exception cref="ArgumentException">
     /// Playback options are uninitialized; construct options instead of passing a default struct.
     /// </exception>
-    AudioVoiceHandle Play(AudioClipAsset clip, AudioPlayOptions options);
+    AudioVoiceHandle Play(
+        AudioClipAsset clip,
+        AudioPlayOptions options
+    );
 
     /// <summary>
     /// Schedules one clip against the monotonic audio clock.
@@ -75,7 +78,8 @@ public interface IAudioService
     AudioVoiceHandle PlayScheduled(
         AudioClipAsset clip,
         double scheduledDspTime,
-        AudioPlayOptions options);
+        AudioPlayOptions options
+    );
 
     /// <summary>
     /// Stops a live voice.
@@ -122,7 +126,10 @@ public interface IAudioService
     /// <returns>
     /// <see langword="true"/> when the cursor was updated.
     /// </returns>
-    bool Seek(AudioVoiceHandle voice, TimeSpan position);
+    bool Seek(
+        AudioVoiceHandle voice,
+        TimeSpan position
+    );
 
     /// <summary>
     /// Replaces mutable parameters for a live voice.
@@ -136,7 +143,10 @@ public interface IAudioService
     /// <returns>
     /// <see langword="true"/> when a live voice was updated; false for stale handles or uninitialized parameters.
     /// </returns>
-    bool SetVoiceParameters(AudioVoiceHandle voice, AudioVoiceParameters parameters);
+    bool SetVoiceParameters(
+        AudioVoiceHandle voice,
+        AudioVoiceParameters parameters
+    );
 
     /// <summary>
     /// Queries the current state of a voice.
@@ -150,7 +160,10 @@ public interface IAudioService
     /// <returns>
     /// <see langword="true"/> when the handle belongs to a known voice.
     /// </returns>
-    bool TryGetVoiceState(AudioVoiceHandle voice, out AudioPlaybackState playbackState);
+    bool TryGetVoiceState(
+        AudioVoiceHandle voice,
+        out AudioPlaybackState playbackState
+    );
 
     /// <summary>
     /// Updates linear gain for a semantic mixer bus.
@@ -164,7 +177,10 @@ public interface IAudioService
     /// <returns>
     /// <see langword="true"/> when the bus exists and was updated.
     /// </returns>
-    bool SetBusVolume(AudioBusId bus, float volume);
+    bool SetBusVolume(
+        AudioBusId bus,
+        float volume
+    );
 
     /// <summary>
     /// Updates mute state for a semantic mixer bus.
@@ -178,7 +194,10 @@ public interface IAudioService
     /// <returns>
     /// <see langword="true"/> when the bus exists and was updated.
     /// </returns>
-    bool SetBusMuted(AudioBusId bus, bool muted);
+    bool SetBusMuted(
+        AudioBusId bus,
+        bool muted
+    );
 
     /// <summary>
     /// Updates pause state for a semantic mixer bus.
@@ -192,7 +211,10 @@ public interface IAudioService
     /// <returns>
     /// <see langword="true"/> when the bus exists and was updated.
     /// </returns>
-    bool SetBusPaused(AudioBusId bus, bool paused);
+    bool SetBusPaused(
+        AudioBusId bus,
+        bool paused
+    );
 
     /// <summary>
     /// Prepares a clip and retains it in the decoded or streamed cache.
@@ -212,7 +234,8 @@ public interface IAudioService
     ValueTask PreloadAsync(
         AudioClipAsset clip,
         AudioClipLoadMode loadMode = AudioClipLoadMode.Automatic,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default
+    );
 
     /// <summary>
     /// Releases one explicit preload retention without interrupting active voices.

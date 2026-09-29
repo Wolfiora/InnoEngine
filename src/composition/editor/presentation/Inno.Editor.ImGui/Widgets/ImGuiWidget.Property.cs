@@ -44,8 +44,8 @@ public static partial class ImGuiWidget
         string label,
         Action drawValue,
         float labelWidth = -1f,
-        string? tooltip = null)
-    {
+        string? tooltip = null
+    ) {
         ArgumentNullException.ThrowIfNull(label);
         PropertyRow(
             id,
@@ -83,8 +83,8 @@ public static partial class ImGuiWidget
         string id,
         Action drawLabel,
         Action drawValue,
-        float labelWidth = -1f)
-    {
+        float labelWidth = -1f
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(id);
         ArgumentNullException.ThrowIfNull(drawLabel);
         ArgumentNullException.ThrowIfNull(drawValue);
@@ -145,8 +145,8 @@ public static partial class ImGuiWidget
     public static void MetadataValue(
         string metadata,
         Action drawValue,
-        string? tooltip = null)
-    {
+        string? tooltip = null
+    ) {
         ArgumentNullException.ThrowIfNull(metadata);
         ArgumentNullException.ThrowIfNull(drawValue);
         NativeImGui.AlignTextToFramePadding();
@@ -178,8 +178,8 @@ public static partial class ImGuiWidget
     public static void MetadataValue(
         string metadata,
         string value,
-        string? tooltip = null)
-    {
+        string? tooltip = null
+    ) {
         ArgumentNullException.ThrowIfNull(metadata);
         ArgumentNullException.ThrowIfNull(value);
         NativeImGui.PushStyleColor(ImGuiCol.Text, EditorPalette.textDisabled);
@@ -215,8 +215,13 @@ public static partial class ImGuiWidget
     /// <returns>
     /// <see langword="true"/> when the value changed.
     /// </returns>
-    public static bool AxisDragFloat(string id, string axis, ref float value, float width, float speed = 0.1f)
-    {
+    public static bool AxisDragFloat(
+        string id,
+        string axis,
+        ref float value,
+        float width,
+        float speed = 0.1f
+    ) {
         DrawAxisPrefix(id, axis, width);
         return CompactDragFloat($"##axis_float_{id}_{axis}", ref value, speed);
     }
@@ -247,8 +252,8 @@ public static partial class ImGuiWidget
         ref float value,
         float speed = 0.1f,
         float? minimum = null,
-        float? maximum = null)
-    {
+        float? maximum = null
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(label);
         ValidateFloatBounds(minimum, maximum);
         bool bounded = minimum.HasValue;
@@ -289,8 +294,8 @@ public static partial class ImGuiWidget
         string label,
         ref float value,
         float minimum,
-        float maximum)
-    {
+        float maximum
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(label);
         ValidateFloatBounds(minimum, maximum);
         ImGuiSliderFlags flags = ImGuiSliderFlags.NoRoundToFormat | ImGuiSliderFlags.AlwaysClamp;
@@ -336,8 +341,13 @@ public static partial class ImGuiWidget
     /// <returns>
     /// <see langword="true"/> when the value changed.
     /// </returns>
-    public static bool AxisDragInt(string id, string axis, ref int value, float width, float speed = 1f)
-    {
+    public static bool AxisDragInt(
+        string id,
+        string axis,
+        ref int value,
+        float width,
+        float speed = 1f
+    ) {
         DrawAxisPrefix(id, axis, width);
         return NativeImGui.DragInt($"##axis_int_{id}_{axis}", ref value, speed);
     }
@@ -351,8 +361,10 @@ public static partial class ImGuiWidget
     /// <param name="draw">
     /// Drawing callback.
     /// </param>
-    public static void Disabled(bool disabled, Action draw)
-    {
+    public static void Disabled(
+        bool disabled,
+        Action draw
+    ) {
         ArgumentNullException.ThrowIfNull(draw);
         NativeImGui.BeginDisabled(disabled);
         try
@@ -377,8 +389,11 @@ public static partial class ImGuiWidget
     /// <param name="y">
     /// Marker Y coordinate.
     /// </param>
-    public static void InsertionLine(float fromX, float toX, float y)
-    {
+    public static void InsertionLine(
+        float fromX,
+        float toX,
+        float y
+    ) {
         uint color = NativeImGui.GetColorU32(ImGuiCol.DragDropTarget);
         NativeImGui.GetForegroundDrawList().AddLine(
             new Vector2(fromX, y),
@@ -397,8 +412,10 @@ public static partial class ImGuiWidget
     /// <param name="max">
     /// Maximum target coordinate.
     /// </param>
-    public static void DropTargetHighlight(Vector2 min, Vector2 max)
-    {
+    public static void DropTargetHighlight(
+        Vector2 min,
+        Vector2 max
+    ) {
         NativeImGui.GetForegroundDrawList().AddRect(
             min,
             max,
@@ -452,8 +469,11 @@ public static partial class ImGuiWidget
         return builder.ToString();
     }
 
-    private static void DrawAxisPrefix(string id, string axis, float width)
-    {
+    private static void DrawAxisPrefix(
+        string id,
+        string axis,
+        float width
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(id);
         ArgumentException.ThrowIfNullOrWhiteSpace(axis);
 
@@ -495,8 +515,10 @@ public static partial class ImGuiWidget
         return NativeImGui.IsMouseHoveringRect(minimum, maximum, true);
     }
 
-    private static void ValidateFloatBounds(float? minimum, float? maximum)
-    {
+    private static void ValidateFloatBounds(
+        float? minimum,
+        float? maximum
+    ) {
         if (minimum.HasValue != maximum.HasValue)
         {
             throw new ArgumentException("Floating-point bounds must either both be supplied or both be omitted.");

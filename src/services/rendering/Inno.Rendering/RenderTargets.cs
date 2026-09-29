@@ -19,8 +19,10 @@ public sealed class RenderTexture
     /// <param name="descriptor">
     /// Initial texture requirements.
     /// </param>
-    public RenderTexture(string name, RenderTextureDescriptor descriptor)
-    {
+    public RenderTexture(
+        string name,
+        RenderTextureDescriptor descriptor
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
         ArgumentNullException.ThrowIfNull(descriptor);
         this.name = name;
@@ -81,8 +83,10 @@ public enum RenderTargetKind
 /// </summary>
 public readonly record struct RenderTarget
 {
-    private RenderTarget(RenderTargetKind kind, RenderTexture? texture)
-    {
+    private RenderTarget(
+        RenderTargetKind kind,
+        RenderTexture? texture
+    ) {
         this.kind = kind;
         this.texture = texture;
     }

@@ -16,10 +16,11 @@ Game Build 在内容打包前把已验证 Support Pack 作为目标运行时交�
 | `BuildProfile`, `BuildProfileStore`, `BuildTargetId` | 一次 Game 构建所需的可验证 profile 与目标身份；显式 profile 文件可供 headless one-off 构建使用 |
 | `GameBuildRequest`, `PluginBuildRequest` | 一次不可变构建请求 |
 | `BuildProgress`, `BuildDiagnostic`, `BuildDiagnosticSeverity`, `BuildResult` | 进度、结构化诊断与最终结果 |
-| `BuildPipeline` | Game/Plugin 的最小异步入口，并公开当前注册目标、adapter-selected 默认目标与显示名称查询 |
+| `BuildPipeline` | Game/Plugin 的最小异步入口，并公开当前注册目标、adapter-selected 默认目标、显示名称查询与 `EnsurePlayerSupportPackAsync` 预备入口 |
 | `IGameBuildTarget` | 真正可替换的平台目标 contract；目标自己声明稳定 ID、显示名称和当前 Host preference |
 | `GameBuildContentContext`, `GameBuildPackageContext` | 平台目标获得的隔离 staging context |
-| `PlayerSupportPackCatalog` | 验证并解析部署 closure |
+| `PlayerSupportPackCatalog` | 验证并解析部署 closure；只将不存在的目标交给可选供给器 |
+| `IPlayerSupportPackProvisioner` | Host 注入的异步缺包供给边界；独立发行可不安装 SDK |
 
 Content writer、`.iplugin` archive writer、snapshot fingerprint、script stage、staging transaction 与 player composer 全部 internal。
 
@@ -50,4 +51,4 @@ target 作为默认值。Editor Export 与 Settings UI 枚举 `availableGameTarg
 
 ## 错误与生命周期
 
-调用者拥有 cancellation 和 progress；`BuildPipeline` 使用注入服务但不拥有其生命周期。输出不能位于 Assets、Plugins 或 Library。损坏 Artifact、缺失 Support Pack、无 runtime assembly、目标返回越界路径都会在提交前失败。Startup Scene 必须是已导入且可部署的 `SceneAsset`；位于任意 `~` 目录时会以 authoring-only 错误明确拒绝。
+调用者拥有 cancellation 和 progress；`BuildPipeline` 使用注入服务但不拥有其生命周期。源码工作区的 Editor/CLI 注入 [SourcePlayerSupportPackProvisioner](Inno.Build.SupportPacks.Core.md)：目标 Pack 缺失时运行隔离发布、验证并继续导出；已有有效 Pack 直接使用，已有损坏 Pack 明确失败。Editor 先异步调用 `EnsurePlayerSupportPackAsync`，在完成后的主线程帧启动 `BuildGameAsync`，因此 Pack 发布不会让资产数据库跨线程运行，也不会在发布期间冻结 UI。直接调用 `BuildGameAsync` 仍自动供给缺失 Pack，其资产读取阶段保持在调用线程。独立发行的 Editor 必须预装 Pack。输出不能位于 Assets、Plugins 或 Library。损坏 Artifact、无法供给的 Support Pack、无 runtime assembly、目标返回越界路径都会在提交前失败。Startup Scene 必须是已导入且可部署的 `SceneAsset`；位于任意 `~` 目录时会以 authoring-only 错误明确拒绝。

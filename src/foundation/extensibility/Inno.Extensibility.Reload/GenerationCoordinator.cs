@@ -27,12 +27,26 @@ public sealed class GenerationCoordinator
     /// <summary>
     /// Gets the gate state shared by reload, Play, Build and Export owners.
     /// </summary>
-    public GenerationState state { get { lock (m_sync) return m_state; } }
+    public GenerationState state
+    {
+        get
+        {
+            lock (m_sync)
+                return m_state;
+        }
+    }
 
     /// <summary>
     /// Gets the terminal failure, retained until the entire host is discarded.
     /// </summary>
-    public Exception? failure { get { lock (m_sync) return m_failure; } }
+    public Exception? failure
+    {
+        get
+        {
+            lock (m_sync)
+                return m_failure;
+        }
+    }
 
     /// <summary>
     /// Configures collection cadence before beginning a generation or retirement.
@@ -160,8 +174,10 @@ public sealed class GenerationCoordinator
     /// <exception cref="InvalidOperationException">
     /// The generation owner is Faulted and requires a host restart.
     /// </exception>
-    public bool TryAcquireChange(string operation, out IDisposable? reservation)
-    {
+    public bool TryAcquireChange(
+        string operation,
+        out IDisposable? reservation
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(operation);
         lock (m_sync)
         {
@@ -220,8 +236,11 @@ public sealed class GenerationCoordinator
     /// <exception cref="InvalidOperationException">
     /// Another generation or retirement is pending.
     /// </exception>
-    public TProbe Execute<TProbe>(string operation, IGenerationPublication<TProbe> publication,
-        IReadOnlyList<IGenerationChange> changes) where TProbe : IAssemblyUnloadProbe
+    public TProbe Execute<TProbe>(
+        string operation,
+        IGenerationPublication<TProbe> publication,
+        IReadOnlyList<IGenerationChange> changes
+    ) where TProbe : IAssemblyUnloadProbe
     {
         ArgumentNullException.ThrowIfNull(publication);
         ArgumentNullException.ThrowIfNull(changes);
@@ -359,7 +378,8 @@ public sealed class GenerationCoordinator
         }
         finally
         {
-            lock (m_sync) m_advancing = false;
+            lock (m_sync)
+                m_advancing = false;
         }
     }
 
@@ -417,20 +437,30 @@ public sealed class GenerationCoordinator
         }
     }
 
-    private static void Attempt(Action operation, ICollection<Exception> failures)
-    {
-        try { operation(); }
+    private static void Attempt(
+        Action operation,
+        ICollection<Exception> failures
+    ) {
+        try
+        {
+            operation();
+        }
         catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null)
         {
             if (failures.Count > 0)
                 throw new AggregateException("Generation retirement remains pending after earlier cleanup failures.", [.. failures, pendingRetirement]);
             throw;
         }
-        catch (Exception exception) { failures.Add(exception); }
+        catch (Exception exception)
+        {
+            failures.Add(exception);
+        }
     }
 
-    private void RetainFailedRetirement(Exception failure, object transaction)
-    {
+    private void RetainFailedRetirement(
+        Exception failure,
+        object transaction
+    ) {
         lock (m_sync)
             m_retainedTransaction = transaction;
         Fault(failure);

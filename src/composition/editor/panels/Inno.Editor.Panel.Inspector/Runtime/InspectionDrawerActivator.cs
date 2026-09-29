@@ -57,8 +57,10 @@ internal sealed class InspectionDrawerActivator
                    $"'{typeof(IInspectionDrawer).FullName}'.");
     }
 
-    private object Resolve(Type drawerType, Type dependencyType)
-    {
+    private object Resolve(
+        Type drawerType,
+        Type dependencyType
+    ) {
         object[] matches = m_dependencies
             .Where(dependencyType.IsInstanceOfType)
             .ToArray();

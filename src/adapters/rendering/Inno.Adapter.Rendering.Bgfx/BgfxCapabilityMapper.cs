@@ -200,18 +200,25 @@ internal static class BgfxCapabilityMapper
     /// The validated bgfx.renderer type that represents the completed operation.
     /// </returns>
     public static bgfx.RendererType ToNativeRenderer(GraphicsApi backend)
-        => backend switch
-        {
-            GraphicsApi.Noop => bgfx.RendererType.Noop,
-            GraphicsApi.Direct3D11 => bgfx.RendererType.Direct3D11,
-            GraphicsApi.Direct3D12 => bgfx.RendererType.Direct3D12,
-            GraphicsApi.Metal => bgfx.RendererType.Metal,
-            GraphicsApi.Vulkan => bgfx.RendererType.Vulkan,
-            GraphicsApi.OpenGL => bgfx.RendererType.OpenGL,
-            GraphicsApi.OpenGLES => bgfx.RendererType.OpenGLES,
-            GraphicsApi.WebGPU => bgfx.RendererType.WebGPU,
-            _ => throw new ArgumentOutOfRangeException(nameof(backend))
-        };
+    {
+        if (backend == GraphicsApi.Noop)
+            return bgfx.RendererType.Noop;
+        if (backend == GraphicsApi.Direct3D11)
+            return bgfx.RendererType.Direct3D11;
+        if (backend == GraphicsApi.Direct3D12)
+            return bgfx.RendererType.Direct3D12;
+        if (backend == GraphicsApi.Metal)
+            return bgfx.RendererType.Metal;
+        if (backend == GraphicsApi.Vulkan)
+            return bgfx.RendererType.Vulkan;
+        if (backend == GraphicsApi.OpenGL)
+            return bgfx.RendererType.OpenGL;
+        if (backend == GraphicsApi.OpenGLES)
+            return bgfx.RendererType.OpenGLES;
+        if (backend == GraphicsApi.WebGPU)
+            return bgfx.RendererType.WebGPU;
+        throw new NotSupportedException($"BGFX does not support graphics backend '{backend}'.");
+    }
 
     /// <summary>
     /// Converts this value to its graphics backend representation.

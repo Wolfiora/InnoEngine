@@ -22,8 +22,8 @@ internal sealed class ScriptApiMap
 
     internal static ScriptApiMap Read(
         IEnumerable<AdditionalText> additionalFiles,
-        CancellationToken cancellationToken)
-    {
+        CancellationToken cancellationToken
+    ) {
         var mappings = new Dictionary<string, HashSet<string>>(StringComparer.Ordinal);
         foreach (AdditionalText file in additionalFiles)
         {
@@ -59,8 +59,10 @@ internal sealed class ScriptApiMap
 
 internal sealed class ScriptApiNamespaceMap
 {
-    internal ScriptApiNamespaceMap(string apiNamespace, ImmutableArray<string> implementationNamespaces)
-    {
+    internal ScriptApiNamespaceMap(
+        string apiNamespace,
+        ImmutableArray<string> implementationNamespaces
+    ) {
         this.apiNamespace = apiNamespace;
         this.implementationNamespaces = implementationNamespaces;
     }

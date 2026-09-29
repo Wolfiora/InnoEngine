@@ -69,8 +69,10 @@ public sealed class GameTagCatalog : ISerializable
     /// <returns>
     /// The canonical <c>projectId.name</c> identity.
     /// </returns>
-    public ProjectScopedId GetId(ProjectId projectId, string tag)
-        => projectId.Qualify(GetLocalId(tag));
+    public ProjectScopedId GetId(
+        ProjectId projectId,
+        string tag
+    ) => projectId.Qualify(GetLocalId(tag));
 
     /// <summary>
     /// Determines whether an ordinal tag is defined by the project.
@@ -157,8 +159,7 @@ public sealed class GameTagCatalog : ISerializable
     }
 
     [OnSerializableRestored]
-    private void OnSerializableRestored()
-        => ValidateState();
+    private void OnSerializableRestored() => ValidateState();
 
     internal static string Normalize(string tag)
     {

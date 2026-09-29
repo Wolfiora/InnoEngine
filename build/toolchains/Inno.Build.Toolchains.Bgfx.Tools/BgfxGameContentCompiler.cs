@@ -29,8 +29,8 @@ public sealed class BgfxGameContentCompiler
         SerializationRegistry serialization,
         TypeCatalog types,
         BgfxShaderTargetPlatform platform,
-        IEnumerable<GraphicsApi> backends)
-    {
+        IEnumerable<GraphicsApi> backends
+    ) {
         ArgumentNullException.ThrowIfNull(assets);
         ArgumentNullException.ThrowIfNull(serialization);
         ArgumentNullException.ThrowIfNull(backends);
@@ -64,7 +64,8 @@ public sealed class BgfxGameContentCompiler
     public static BgfxGameContentCompiler CreateMacOSArm64(
         AssetPipeline assets,
         SerializationRegistry serialization,
-        TypeCatalog types)
+        TypeCatalog types
+    )
         => new(
             assets,
             serialization,
@@ -90,7 +91,8 @@ public sealed class BgfxGameContentCompiler
     public static BgfxGameContentCompiler CreateWindowsX64(
         AssetPipeline assets,
         SerializationRegistry serialization,
-        TypeCatalog types)
+        TypeCatalog types
+    )
         => new(
             assets,
             serialization,
@@ -115,8 +117,8 @@ public sealed class BgfxGameContentCompiler
     /// </exception>
     public async ValueTask CompileAsync(
         GameBuildContentContext context,
-        CancellationToken cancellationToken = default)
-    {
+        CancellationToken cancellationToken = default
+    ) {
         ArgumentNullException.ThrowIfNull(context);
         ContentSnapshot snapshot = CaptureSnapshot();
         string outputRoot = Path.GetFullPath(context.outputDirectory);
@@ -236,8 +238,8 @@ public sealed class BgfxGameContentCompiler
 
     private static void AddTextures(
         IDictionary<TextureArtifactKey, TextureInput> textures,
-        AssetObject asset)
-    {
+        AssetObject asset
+    ) {
         if (asset is not IRenderTextureArtifactSource source)
             return;
         Guid id = RequireIdentity(asset);
@@ -263,8 +265,8 @@ public sealed class BgfxGameContentCompiler
         IDictionary<Guid, ShaderInput> shaders,
         IReadOnlyDictionary<AssetSourceId, AssetSourceMount> mounts,
         ShaderAsset shader,
-        RenderShaderVariant variant)
-    {
+        RenderShaderVariant variant
+    ) {
         Guid id = RequireIdentity(shader);
         if (!shaders.TryGetValue(id, out ShaderInput? input))
         {
@@ -284,7 +286,8 @@ public sealed class BgfxGameContentCompiler
 
     private static AssetSourceMount GetMount(
         IReadOnlyDictionary<AssetSourceId, AssetSourceMount> mounts,
-        AssetPath path)
+        AssetPath path
+    )
         => mounts.TryGetValue(path.source, out AssetSourceMount? mount)
             ? mount
             : throw new InvalidOperationException($"Asset source mount '{path.source}' is not active.");
@@ -293,7 +296,10 @@ public sealed class BgfxGameContentCompiler
     {
         RenderTextureFormat[] formats = Enum.GetValues<RenderTextureFormat>();
         GraphicsCapability features = Enum.GetValues<GraphicsCapability>()
-            .Aggregate(GraphicsCapability.None, static (current, value) => current | value);
+            .Aggregate(GraphicsCapability.None, static (
+                current,
+                value
+            ) => current | value);
         return new GraphicsCapabilities(
             backend,
             features,
@@ -309,8 +315,10 @@ public sealed class BgfxGameContentCompiler
             formats);
     }
 
-    private static string ResolveOutput(string root, string relativePath)
-    {
+    private static string ResolveOutput(
+        string root,
+        string relativePath
+    ) {
         string result = Path.GetFullPath(Path.Combine(root, relativePath));
         string prefix = Path.TrimEndingDirectorySeparator(root) + Path.DirectorySeparatorChar;
         StringComparison comparison = OperatingSystem.IsWindows()
@@ -321,12 +329,17 @@ public sealed class BgfxGameContentCompiler
         return result;
     }
 
-    private sealed record ContentSnapshot(ShaderInput[] shaders, TextureInput[] textures);
+    private sealed record ContentSnapshot(
+        ShaderInput[] shaders,
+        TextureInput[] textures
+    );
 
     private sealed class ShaderInput
     {
-        internal ShaderInput(ShaderAsset asset, string sourceRoot)
-        {
+        internal ShaderInput(
+            ShaderAsset asset,
+            string sourceRoot
+        ) {
             this.asset = asset;
             this.sourceRoot = sourceRoot;
         }
@@ -336,7 +349,10 @@ public sealed class BgfxGameContentCompiler
         internal HashSet<RenderShaderVariant> variants { get; } = [];
     }
 
-    private readonly record struct TextureArtifactKey(Guid assetId, string slotId);
+    private readonly record struct TextureArtifactKey(
+        Guid assetId,
+        string slotId
+    );
 
     private sealed record TextureInput(RenderTextureArtifactReference reference);
 }

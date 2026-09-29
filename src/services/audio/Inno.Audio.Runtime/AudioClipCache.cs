@@ -18,9 +18,12 @@ internal sealed class AudioClipCache : IDisposable
     private readonly List<PendingPreload> m_preloads = [];
     private readonly List<Exception> m_retirementFailures = [];
 
-    internal AudioClipCache(IAudioDevice device, IAssetArtifactLookup artifacts, AudioRuntimeOptions options,
-        Action<Action> retireResources)
-    {
+    internal AudioClipCache(
+        IAudioDevice device,
+        IAssetArtifactLookup artifacts,
+        AudioRuntimeOptions options,
+        Action<Action> retireResources
+    ) {
         m_device = device;
         m_artifacts = artifacts;
         m_options = options;
@@ -33,8 +36,8 @@ internal sealed class AudioClipCache : IDisposable
     internal ValueTask PreloadAsync(
         AudioClipAsset clip,
         AudioClipLoadMode loadMode = AudioClipLoadMode.Automatic,
-        CancellationToken cancellationToken = default)
-    {
+        CancellationToken cancellationToken = default
+    ) {
         ArgumentNullException.ThrowIfNull(clip);
         cancellationToken.ThrowIfCancellationRequested();
         if (!Enum.IsDefined(loadMode))
@@ -43,7 +46,10 @@ internal sealed class AudioClipCache : IDisposable
             throw new InvalidOperationException("Audio preload waiters are at capacity; retry after an update safety point.");
         var request = new AudioClipRequest(clip, m_artifacts);
         Exception? preparationFailure = null;
-        try { return PreparePreload(request, loadMode, cancellationToken); }
+        try
+        {
+            return PreparePreload(request, loadMode, cancellationToken);
+        }
         catch (Exception exception)
         {
             preparationFailure = exception;
@@ -51,8 +57,14 @@ internal sealed class AudioClipCache : IDisposable
         }
         finally
         {
-            try { m_retireResources(request.Dispose); }
-            catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null) { throw; }
+            try
+            {
+                m_retireResources(request.Dispose);
+            }
+            catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null)
+            {
+                throw;
+            }
             catch (Exception cleanup) when (preparationFailure is not null)
             {
                 throw new AggregateException("Audio preload preparation and request retirement failed.",
@@ -80,8 +92,10 @@ internal sealed class AudioClipCache : IDisposable
         entry.preloadReferences--;
         TryReleaseClip(entry);
     }
-    internal ClipCacheEntry GetOrCreateClip(AudioClipRequest clip, AudioClipLoadMode requestedMode)
-    {
+    internal ClipCacheEntry GetOrCreateClip(
+        AudioClipRequest clip,
+        AudioClipLoadMode requestedMode
+    ) {
         AudioClipMetadata metadata = clip.metadata
             ?? throw new InvalidOperationException("The audio clip has no imported runtime metadata.");
         AssetArtifactInfo artifact = clip.artifact;
@@ -155,7 +169,10 @@ internal sealed class AudioClipCache : IDisposable
                     else
                         pending.completion.TrySetException(new InvalidOperationException("Native audio preparation failed."));
                 }
-                catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null) { throw; }
+                catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null)
+                {
+                    throw;
+                }
                 catch (Exception exception)
                 {
                     pending.completion.TrySetException(exception);
@@ -179,9 +196,18 @@ internal sealed class AudioClipCache : IDisposable
         m_preloads.Clear();
         foreach (ClipCacheEntry clip in m_clips.Values.ToArray())
         {
-            try { clip.Dispose(); }
-            catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null) { throw; }
-            catch (Exception exception) { m_retirementFailures.Add(exception); }
+            try
+            {
+                clip.Dispose();
+            }
+            catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null)
+            {
+                throw;
+            }
+            catch (Exception exception)
+            {
+                m_retirementFailures.Add(exception);
+            }
             m_clips.Remove(clip.key);
         }
         m_clips.Clear();
@@ -192,9 +218,11 @@ internal sealed class AudioClipCache : IDisposable
             throw new AggregateException("Audio cache retirement failed after every clip and artifact was attempted.", failures);
         }
     }
-    private ValueTask PreparePreload(AudioClipRequest request, AudioClipLoadMode loadMode,
-        CancellationToken cancellationToken)
-    {
+    private ValueTask PreparePreload(
+        AudioClipRequest request,
+        AudioClipLoadMode loadMode,
+        CancellationToken cancellationToken
+    ) {
         ClipCacheEntry entry = GetOrCreateClip(request, loadMode);
         AudioClipState state;
         try
@@ -205,8 +233,14 @@ internal sealed class AudioClipCache : IDisposable
         }
         catch (Exception failure)
         {
-            try { m_retireResources(() => TryReleaseClip(entry)); }
-            catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null) { throw; }
+            try
+            {
+                m_retireResources(() => TryReleaseClip(entry));
+            }
+            catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null)
+            {
+                throw;
+            }
             catch (Exception cleanup)
             {
                 throw new AggregateException("Audio preload preparation and cache retirement failed.", failure, cleanup);
@@ -233,8 +267,10 @@ internal sealed class AudioClipCache : IDisposable
         long currentBytes = m_clips.Values.Sum(static clip => clip.decodedByteLength);
         return currentBytes > m_options.decodedCacheBudgetBytes - additionalBytes;
     }
-    private static long EstimateDecodedByteLength(AudioClipMetadata metadata, long encodedByteLength)
-    {
+    private static long EstimateDecodedByteLength(
+        AudioClipMetadata metadata,
+        long encodedByteLength
+    ) {
         try
         {
             long decoded = checked(metadata.frameCount * metadata.channels * sizeof(float));
@@ -249,14 +285,19 @@ internal sealed class AudioClipCache : IDisposable
         Guid persistentId,
         long contentVersion,
         AssetArtifactKey artifactKey,
-        AudioClipLoadMode loadMode);
+        AudioClipLoadMode loadMode
+    );
     internal sealed class ClipCacheEntry : IDisposable
     {
         private readonly LifetimeScope m_lifetime = new();
 
-        internal ClipCacheEntry(ClipCacheKey key, AudioClipHandle handle, long decodedByteLength,
-            ArtifactLease artifact, IAudioDevice device)
-        {
+        internal ClipCacheEntry(
+            ClipCacheKey key,
+            AudioClipHandle handle,
+            long decodedByteLength,
+            ArtifactLease artifact,
+            IAudioDevice device
+        ) {
             this.key = key;
             this.handle = handle;
             this.decodedByteLength = decodedByteLength;
@@ -281,7 +322,10 @@ internal sealed class AudioClipCache : IDisposable
         internal int pendingPreloadReferences { get; set; }
         internal int voiceReferences { get; set; }
     }
-    private sealed class NativeClipRetirement(IAudioDevice device, AudioClipHandle handle) : IDisposable
+    private sealed class NativeClipRetirement(
+        IAudioDevice device,
+        AudioClipHandle handle
+    ) : IDisposable
     {
         /// <summary>
         /// Releases one backend clip under the containing cache entry's lifetime.
@@ -292,8 +336,10 @@ internal sealed class AudioClipCache : IDisposable
                 throw new InvalidOperationException("The audio backend refused clip retirement.");
         }
     }
-    private sealed class PendingPreload(ClipCacheEntry clip, CancellationToken cancellationToken)
-    {
+    private sealed class PendingPreload(
+        ClipCacheEntry clip,
+        CancellationToken cancellationToken
+    ) {
         internal bool completing { get; set; }
         internal bool canceled { get; set; }
         internal bool failed { get; set; }

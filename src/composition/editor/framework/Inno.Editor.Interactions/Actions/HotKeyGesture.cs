@@ -23,8 +23,10 @@ public readonly record struct HotKeyGesture
     /// <param name="modifiers">
     /// The modifier keys required by the gesture.
     /// </param>
-    public HotKeyGesture(KeyCode key, KeyModifier modifiers = KeyModifier.None)
-    {
+    public HotKeyGesture(
+        KeyCode key,
+        KeyModifier modifiers = KeyModifier.None
+    ) {
         this.key = key;
         this.modifiers = modifiers;
     }
@@ -51,7 +53,10 @@ public readonly record struct HotKeyGesture
     /// <returns>
     /// A platform-aware keyboard gesture.
     /// </returns>
-    public static HotKeyGesture Primary(KeyCode key, KeyModifier additionalModifiers = KeyModifier.None)
+    public static HotKeyGesture Primary(
+        KeyCode key,
+        KeyModifier additionalModifiers = KeyModifier.None
+    )
         => new(key, S_PRIMARY_MODIFIER | additionalModifiers);
 
     /// <summary>
@@ -89,8 +94,10 @@ public readonly record struct HotKeyGesture
            keyEvent.key == key &&
            Normalize(key, keyEvent.modifiers) == Normalize(key, modifiers);
 
-    private static KeyModifier Normalize(KeyCode key, KeyModifier value)
-    {
+    private static KeyModifier Normalize(
+        KeyCode key,
+        KeyModifier value
+    ) {
         KeyModifier normalized = value &
                                  (KeyModifier.Alt |
                                   KeyModifier.Control |

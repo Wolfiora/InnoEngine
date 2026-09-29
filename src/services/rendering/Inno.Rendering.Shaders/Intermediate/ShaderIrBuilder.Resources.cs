@@ -23,8 +23,10 @@ public sealed partial class ShaderIrBuilder
     /// <exception cref="ArgumentException">
     /// Operands have incompatible types or owners.
     /// </exception>
-    public ShaderIrValue Sample(ShaderIrValue texture, ShaderIrValue coordinate)
-    {
+    public ShaderIrValue Sample(
+        ShaderIrValue texture,
+        ShaderIrValue coordinate
+    ) {
         ValidateSample(texture, coordinate);
         ShaderIrValue output = NewValue(ShaderSourceType.Atomic("float4"));
         m_instructions.Add(new(ShaderIrOperation.TextureSample, [texture, coordinate], [output]));
@@ -49,11 +51,15 @@ public sealed partial class ShaderIrBuilder
     /// <exception cref="ArgumentException">
     /// Operands have incompatible types or owners.
     /// </exception>
-    public ShaderIrValue SampleLevel(ShaderIrValue texture, ShaderIrValue coordinate, ShaderIrValue level)
-    {
+    public ShaderIrValue SampleLevel(
+        ShaderIrValue texture,
+        ShaderIrValue coordinate,
+        ShaderIrValue level
+    ) {
         ValidateSample(texture, coordinate);
         RequireOwned(level);
-        if (!level.type.IsEquivalentTo(ShaderSourceType.Atomic("float"))) throw new ArgumentException("A mip level must be float.", nameof(level));
+        if (!level.type.IsEquivalentTo(ShaderSourceType.Atomic("float")))
+            throw new ArgumentException("A mip level must be float.", nameof(level));
         ShaderIrValue output = NewValue(ShaderSourceType.Atomic("float4"));
         m_instructions.Add(new(ShaderIrOperation.TextureSampleLevel, [texture, coordinate, level], [output]));
         return output;
@@ -74,10 +80,13 @@ public sealed partial class ShaderIrBuilder
     /// <exception cref="ArgumentException">
     /// The resource is write-only or the coordinate is incompatible.
     /// </exception>
-    public ShaderIrValue LoadStorage(ShaderIrValue resource, ShaderIrValue coordinate)
-    {
+    public ShaderIrValue LoadStorage(
+        ShaderIrValue resource,
+        ShaderIrValue coordinate
+    ) {
         ShaderStorageType storage = ValidateStorage(resource, coordinate);
-        if (storage.access == RenderStorageAccess.Write) throw new ArgumentException("A write-only resource cannot be loaded.", nameof(resource));
+        if (storage.access == RenderStorageAccess.Write)
+            throw new ArgumentException("A write-only resource cannot be loaded.", nameof(resource));
         ShaderIrValue output = NewValue(storage.valueType);
         m_instructions.Add(new(ShaderIrOperation.StorageLoad, [resource, coordinate], [output]));
         return output;
@@ -98,8 +107,11 @@ public sealed partial class ShaderIrBuilder
     /// <exception cref="ArgumentException">
     /// The resource is read-only or operands have incompatible types.
     /// </exception>
-    public void StoreStorage(ShaderIrValue resource, ShaderIrValue coordinate, ShaderIrValue value)
-    {
+    public void StoreStorage(
+        ShaderIrValue resource,
+        ShaderIrValue coordinate,
+        ShaderIrValue value
+    ) {
         ShaderStorageType storage = ValidateStorage(resource, coordinate);
         RequireOwned(value);
         if (storage.access == RenderStorageAccess.Read || !storage.valueType.IsEquivalentTo(value.type))
@@ -125,13 +137,17 @@ public sealed partial class ShaderIrBuilder
     /// <exception cref="ArgumentException">
     /// The resource is not an appropriate read-write integer buffer.
     /// </exception>
-    public ShaderIrValue AtomicAddStorage(ShaderIrValue resource, ShaderIrValue index, ShaderIrValue value)
-    {
+    public ShaderIrValue AtomicAddStorage(
+        ShaderIrValue resource,
+        ShaderIrValue index,
+        ShaderIrValue value
+    ) {
         ShaderStorageType storage = ValidateStorage(resource, index);
         RequireOwned(value);
         if (storage.isImage || storage.access != RenderStorageAccess.ReadWrite
             || !(storage.valueType.IsEquivalentTo(ShaderSourceType.Atomic("int")) || storage.valueType.IsEquivalentTo(ShaderSourceType.Atomic("uint")))
-            || !storage.valueType.IsEquivalentTo(value.type)) throw new ArgumentException("Atomic add requires a read-write scalar integer buffer.", nameof(resource));
+            || !storage.valueType.IsEquivalentTo(value.type))
+                throw new ArgumentException("Atomic add requires a read-write scalar integer buffer.", nameof(resource));
         ShaderIrValue output = NewValue(storage.valueType);
         m_instructions.Add(new(ShaderIrOperation.StorageAtomicAdd, [resource, index, value], [output]));
         return output;
@@ -149,12 +165,15 @@ public sealed partial class ShaderIrBuilder
     public void Discard(ShaderIrValue condition)
     {
         RequireOwned(condition);
-        if (!condition.type.IsEquivalentTo(ShaderSourceType.Atomic("bool"))) throw new ArgumentException("Discard requires bool.", nameof(condition));
+        if (!condition.type.IsEquivalentTo(ShaderSourceType.Atomic("bool")))
+            throw new ArgumentException("Discard requires bool.", nameof(condition));
         m_instructions.Add(new(ShaderIrOperation.Discard, [condition], []));
     }
 
-    private void ValidateSample(ShaderIrValue texture, ShaderIrValue coordinate)
-    {
+    private void ValidateSample(
+        ShaderIrValue texture,
+        ShaderIrValue coordinate
+    ) {
         RequireOwned(texture);
         RequireOwned(coordinate);
         if (!texture.type.IsEquivalentTo(ShaderSourceType.Atomic(texture.type.id)))
@@ -165,11 +184,14 @@ public sealed partial class ShaderIrBuilder
             "sampled-texture2d-array" or "sampled-texture3d" or "sampled-texture-cube" => "float3",
             _ => throw new ArgumentException("Sampling requires a supported sampled texture type.", nameof(texture))
         };
-        if (!coordinate.type.IsEquivalentTo(ShaderSourceType.Atomic(type))) throw new ArgumentException($"Sampling requires a {type} coordinate.", nameof(coordinate));
+        if (!coordinate.type.IsEquivalentTo(ShaderSourceType.Atomic(type)))
+            throw new ArgumentException($"Sampling requires a {type} coordinate.", nameof(coordinate));
     }
 
-    private ShaderStorageType ValidateStorage(ShaderIrValue resource, ShaderIrValue coordinate)
-    {
+    private ShaderStorageType ValidateStorage(
+        ShaderIrValue resource,
+        ShaderIrValue coordinate
+    ) {
         RequireOwned(resource);
         RequireOwned(coordinate);
         ShaderStorageType storage = resource.type.storage ?? throw new ArgumentException("A typed storage binding is required.", nameof(resource));

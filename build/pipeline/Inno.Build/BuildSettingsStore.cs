@@ -36,8 +36,8 @@ public sealed class BuildSettingsStore
     public BuildSettingsStore(
         string path,
         SerializationRegistry serialization,
-        BuildSettings defaultSettings)
-    {
+        BuildSettings defaultSettings
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(path);
         ArgumentNullException.ThrowIfNull(serialization);
         ArgumentNullException.ThrowIfNull(defaultSettings);
@@ -152,8 +152,7 @@ public sealed class BuildSettingsStore
     /// <exception cref="InvalidDataException">
     /// Thrown when the document is malformed.
     /// </exception>
-    public void ValidateDocument(ReadOnlySpan<byte> document)
-        => _ = Deserialize(document);
+    public void ValidateDocument(ReadOnlySpan<byte> document) => _ = Deserialize(document);
 
     private BuildSettings LoadLocked()
     {

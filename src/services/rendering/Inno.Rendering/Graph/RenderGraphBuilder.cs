@@ -28,8 +28,10 @@ public sealed class RenderGraphBuilder
     /// <param name="capabilities">
     /// Device capabilities used during validation.
     /// </param>
-    public RenderGraphBuilder(uint generation, GraphicsCapabilities capabilities)
-    {
+    public RenderGraphBuilder(
+        uint generation,
+        GraphicsCapabilities capabilities
+    ) {
         if (generation == 0)
         {
             throw new ArgumentOutOfRangeException(nameof(generation), "Generation must be non-zero.");
@@ -52,8 +54,10 @@ public sealed class RenderGraphBuilder
     /// <returns>
     /// A handle valid only for this graph generation.
     /// </returns>
-    public RenderTextureHandle CreateTexture(string name, RenderTextureDescriptor descriptor)
-    {
+    public RenderTextureHandle CreateTexture(
+        string name,
+        RenderTextureDescriptor descriptor
+    ) {
         EnsureBuilding();
         ValidateNameAndValue(name, descriptor);
         RenderTextureHandle handle = new(m_textures.Count, m_generation);
@@ -79,8 +83,8 @@ public sealed class RenderGraphBuilder
     public RenderTextureHandle ImportTexture(
         string name,
         PersistentTextureHandle texture,
-        RenderTextureDescriptor descriptor)
-    {
+        RenderTextureDescriptor descriptor
+    ) {
         EnsureBuilding();
         ValidateNameAndValue(name, descriptor);
         if (!texture.isValid)
@@ -105,8 +109,10 @@ public sealed class RenderGraphBuilder
     /// <returns>
     /// A handle valid only for this graph generation.
     /// </returns>
-    public RenderBufferHandle CreateBuffer(string name, RenderBufferDescriptor descriptor)
-    {
+    public RenderBufferHandle CreateBuffer(
+        string name,
+        RenderBufferDescriptor descriptor
+    ) {
         EnsureBuilding();
         ValidateNameAndValue(name, descriptor);
         RenderBufferHandle handle = new(m_buffers.Count, m_generation);
@@ -132,8 +138,8 @@ public sealed class RenderGraphBuilder
     public RenderBufferHandle ImportBuffer(
         string name,
         PersistentBufferHandle buffer,
-        RenderBufferDescriptor descriptor)
-    {
+        RenderBufferDescriptor descriptor
+    ) {
         EnsureBuilding();
         ValidateNameAndValue(name, descriptor);
         if (!buffer.isValid)
@@ -229,7 +235,8 @@ public sealed class RenderGraphBuilder
         string name,
         RenderPhaseId phase,
         TPassData passData,
-        RenderPassExecute<TPassData> execute)
+        RenderPassExecute<TPassData> execute
+    )
         where TPassData : notnull
         => new(this, AddPass(name, phase, RenderPassKind.Raster, passData, execute));
 
@@ -258,7 +265,8 @@ public sealed class RenderGraphBuilder
         string name,
         RenderPhaseId phase,
         TPassData passData,
-        RenderPassExecute<TPassData> execute)
+        RenderPassExecute<TPassData> execute
+    )
         where TPassData : notnull
         => new(this, AddPass(name, phase, RenderPassKind.Compute, passData, execute));
 
@@ -287,7 +295,8 @@ public sealed class RenderGraphBuilder
         string name,
         RenderPhaseId phase,
         TPassData passData,
-        RenderPassExecute<TPassData> execute)
+        RenderPassExecute<TPassData> execute
+    )
         where TPassData : notnull
         => new(this, AddPass(name, phase, RenderPassKind.Copy, passData, execute));
 
@@ -342,8 +351,8 @@ public sealed class RenderGraphBuilder
         RenderPassRecord pass,
         RenderTextureHandle texture,
         RenderResourceAccess access,
-        RenderResourceUseKind kind)
-    {
+        RenderResourceUseKind kind
+    ) {
         EnsureTexture(texture);
         pass.resources.Add(new RenderResourceUse(new RenderResourceKey(true, texture.index), access, kind));
     }
@@ -352,14 +361,16 @@ public sealed class RenderGraphBuilder
         RenderPassRecord pass,
         RenderBufferHandle buffer,
         RenderResourceAccess access,
-        RenderResourceUseKind kind)
-    {
+        RenderResourceUseKind kind
+    ) {
         EnsureBuffer(buffer);
         pass.resources.Add(new RenderResourceUse(new RenderResourceKey(false, buffer.index), access, kind));
     }
 
-    internal void AddAttachment(RenderPassRecord pass, RenderAttachment attachment)
-    {
+    internal void AddAttachment(
+        RenderPassRecord pass,
+        RenderAttachment attachment
+    ) {
         EnsureTexture(attachment.texture);
         pass.attachments.Add(attachment);
         AddUse(
@@ -377,8 +388,8 @@ public sealed class RenderGraphBuilder
         int textureCount,
         int bufferCount,
         int passCount,
-        IReadOnlySet<RenderResourceKey> outputs)
-    {
+        IReadOnlySet<RenderResourceKey> outputs
+    ) {
         EnsureBuilding();
         m_textures.RemoveRange(textureCount, m_textures.Count - textureCount);
         m_buffers.RemoveRange(bufferCount, m_buffers.Count - bufferCount);
@@ -392,7 +403,8 @@ public sealed class RenderGraphBuilder
         RenderPhaseId phase,
         RenderPassKind kind,
         TPassData passData,
-        RenderPassExecute<TPassData> execute)
+        RenderPassExecute<TPassData> execute
+    )
         where TPassData : notnull
     {
         EnsureBuilding();
@@ -446,7 +458,10 @@ public sealed class RenderGraphBuilder
             ? name
             : $"{string.Join('/', m_nameScopes)}/{name}";
 
-    private static void ValidateNameAndValue<T>(string name, T value)
+    private static void ValidateNameAndValue<T>(
+        string name,
+        T value
+    )
         where T : class
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
@@ -462,8 +477,10 @@ public sealed class RenderGraphNameScope : IDisposable
     private RenderGraphBuilder? m_graph;
     private readonly int m_depth;
 
-    internal RenderGraphNameScope(RenderGraphBuilder graph, int depth)
-    {
+    internal RenderGraphNameScope(
+        RenderGraphBuilder graph,
+        int depth
+    ) {
         m_graph = graph;
         m_depth = depth;
     }
@@ -498,8 +515,8 @@ public sealed class RenderGraphMutationScope : IDisposable
         int textureCount,
         int bufferCount,
         int passCount,
-        IReadOnlySet<RenderResourceKey> outputs)
-    {
+        IReadOnlySet<RenderResourceKey> outputs
+    ) {
         m_graph = graph;
         m_textureCount = textureCount;
         m_bufferCount = bufferCount;
@@ -543,8 +560,10 @@ public abstract class RenderPassBuilder
     private readonly RenderGraphBuilder m_graph;
     private readonly RenderPassRecord m_pass;
 
-    internal RenderPassBuilder(RenderGraphBuilder graph, RenderPassRecord pass)
-    {
+    internal RenderPassBuilder(
+        RenderGraphBuilder graph,
+        RenderPassRecord pass
+    ) {
         m_graph = graph;
         m_pass = pass;
     }
@@ -654,7 +673,10 @@ public abstract class RenderPassBuilder
 /// </summary>
 public sealed class RasterPassBuilder : RenderPassBuilder
 {
-    internal RasterPassBuilder(RenderGraphBuilder graph, RenderPassRecord pass)
+    internal RasterPassBuilder(
+        RenderGraphBuilder graph,
+        RenderPassRecord pass
+    )
         : base(graph, pass) { }
 
     /// <summary>
@@ -671,8 +693,8 @@ public sealed class RasterPassBuilder : RenderPassBuilder
     /// </returns>
     public RasterPassBuilder SetViewTransform(
         ReadOnlySpan<float> viewMatrix,
-        ReadOnlySpan<float> projectionMatrix)
-    {
+        ReadOnlySpan<float> projectionMatrix
+    ) {
         pass.viewTransform = new RenderViewTransform(viewMatrix, projectionMatrix);
         return this;
     }
@@ -750,8 +772,8 @@ public sealed class RasterPassBuilder : RenderPassBuilder
         RenderStoreAction storeAction = RenderStoreAction.Store,
         RenderClearColor clearColor = default,
         int mipLevel = 0,
-        int arrayLayer = 0)
-    {
+        int arrayLayer = 0
+    ) {
         ArgumentOutOfRangeException.ThrowIfNegative(slot);
         ArgumentOutOfRangeException.ThrowIfNegative(mipLevel);
         ArgumentOutOfRangeException.ThrowIfNegative(arrayLayer);
@@ -803,8 +825,8 @@ public sealed class RasterPassBuilder : RenderPassBuilder
         float clearDepth = 1f,
         byte clearStencil = 0,
         int mipLevel = 0,
-        int arrayLayer = 0)
-    {
+        int arrayLayer = 0
+    ) {
         ArgumentOutOfRangeException.ThrowIfNegative(mipLevel);
         ArgumentOutOfRangeException.ThrowIfNegative(arrayLayer);
         graph.AddAttachment(pass, new RenderAttachment(
@@ -827,7 +849,10 @@ public sealed class RasterPassBuilder : RenderPassBuilder
 /// </summary>
 public sealed class ComputePassBuilder : RenderPassBuilder
 {
-    internal ComputePassBuilder(RenderGraphBuilder graph, RenderPassRecord pass)
+    internal ComputePassBuilder(
+        RenderGraphBuilder graph,
+        RenderPassRecord pass
+    )
         : base(graph, pass) { }
 
     /// <summary>
@@ -844,8 +869,8 @@ public sealed class ComputePassBuilder : RenderPassBuilder
     /// </returns>
     public ComputePassBuilder SetViewTransform(
         ReadOnlySpan<float> viewMatrix,
-        ReadOnlySpan<float> projectionMatrix)
-    {
+        ReadOnlySpan<float> projectionMatrix
+    ) {
         pass.viewTransform = new RenderViewTransform(viewMatrix, projectionMatrix);
         return this;
     }
@@ -970,7 +995,10 @@ public sealed class ComputePassBuilder : RenderPassBuilder
 /// </summary>
 public sealed class CopyPassBuilder : RenderPassBuilder
 {
-    internal CopyPassBuilder(RenderGraphBuilder graph, RenderPassRecord pass)
+    internal CopyPassBuilder(
+        RenderGraphBuilder graph,
+        RenderPassRecord pass
+    )
         : base(graph, pass) { }
 
     /// <summary>
@@ -985,8 +1013,10 @@ public sealed class CopyPassBuilder : RenderPassBuilder
     /// <returns>
     /// This builder for fluent declarations.
     /// </returns>
-    public CopyPassBuilder CopyTexture(RenderTextureHandle source, RenderTextureHandle destination)
-    {
+    public CopyPassBuilder CopyTexture(
+        RenderTextureHandle source,
+        RenderTextureHandle destination
+    ) {
         graph.AddUse(
             pass,
             source,
@@ -1012,8 +1042,10 @@ public sealed class CopyPassBuilder : RenderPassBuilder
     /// <returns>
     /// This builder for fluent declarations.
     /// </returns>
-    public CopyPassBuilder CopyBuffer(RenderBufferHandle source, RenderBufferHandle destination)
-    {
+    public CopyPassBuilder CopyBuffer(
+        RenderBufferHandle source,
+        RenderBufferHandle destination
+    ) {
         graph.AddUse(
             pass,
             source,

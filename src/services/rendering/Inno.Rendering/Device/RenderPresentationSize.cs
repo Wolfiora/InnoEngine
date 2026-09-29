@@ -16,8 +16,10 @@ public readonly record struct RenderPresentationSize
     /// <param name="height">
     /// Positive physical-pixel height.
     /// </param>
-    public RenderPresentationSize(int width, int height)
-    {
+    public RenderPresentationSize(
+        int width,
+        int height
+    ) {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(width);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(height);
         this.width = width;

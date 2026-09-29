@@ -24,13 +24,19 @@ public sealed partial class Sdl3PlatformWindow
     private bool m_disposed;
     internal SDLWindow sdlWindow => m_window;
 
-    internal unsafe Sdl3PlatformWindow(SDLWindow window, string title)
+    internal unsafe Sdl3PlatformWindow(
+        SDLWindow window,
+        string title
+    )
         : this(window, title, ownsNativeWindow: true)
     {
     }
 
-    internal unsafe Sdl3PlatformWindow(SDLWindow window, string title, bool ownsNativeWindow)
-    {
+    internal unsafe Sdl3PlatformWindow(
+        SDLWindow window,
+        string title,
+        bool ownsNativeWindow
+    ) {
         m_window = window;
         m_sdlWindowHandle = (nint)window.Handle;
         m_title = title;
@@ -47,15 +53,19 @@ public sealed partial class Sdl3PlatformWindow
         m_nativeHandles = GetNativeHandles(m_window);
     }
 
-    internal void UpdateLogicalSize(int width, int height)
-    {
+    internal void UpdateLogicalSize(
+        int width,
+        int height
+    ) {
         m_width = width;
         m_height = height;
         RefreshPixelSize();
     }
 
-    internal void UpdatePixelSize(int width, int height)
-    {
+    internal void UpdatePixelSize(
+        int width,
+        int height
+    ) {
         m_pixelWidth = Math.Max(1, width);
         m_pixelHeight = Math.Max(1, height);
     }

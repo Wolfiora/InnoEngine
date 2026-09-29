@@ -15,8 +15,11 @@ public sealed class DiagnosticReporter : IDiagnosticReporter, IDisposable
     private readonly Dictionary<IssueKey, Diagnostic> m_issues = [];
     private DiagnosticHub? m_hub;
 
-    internal DiagnosticReporter(DiagnosticHub hub, DiagnosticSource source, long epoch)
-    {
+    internal DiagnosticReporter(
+        DiagnosticHub hub,
+        DiagnosticSource source,
+        long epoch
+    ) {
         m_hub = hub;
         m_sync = hub.synchronizationRoot;
         m_source = source;
@@ -56,8 +59,11 @@ public sealed class DiagnosticReporter : IDiagnosticReporter, IDisposable
     /// <exception cref="ObjectDisposedException">
     /// This producer has retired or been replaced.
     /// </exception>
-    public void Resolve(string code, string? semanticId = null, Guid? objectId = null)
-    {
+    public void Resolve(
+        string code,
+        string? semanticId = null,
+        Guid? objectId = null
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(code);
         lock (m_sync)
         {
@@ -112,13 +118,16 @@ public sealed class DiagnosticReporter : IDiagnosticReporter, IDisposable
         }
     }
 
-    private DiagnosticHub GetHub()
-        => m_hub ?? throw new ObjectDisposedException(nameof(DiagnosticReporter));
+    private DiagnosticHub GetHub() => m_hub ?? throw new ObjectDisposedException(nameof(DiagnosticReporter));
 
     private Diagnostic[] Ordered() => m_issues.Values
         .OrderBy(static issue => issue.code, StringComparer.Ordinal)
         .ThenBy(static issue => issue.semanticId, StringComparer.Ordinal)
         .ThenBy(static issue => issue.objectId).ToArray();
 
-    private readonly record struct IssueKey(string code, string? semanticId, Guid? objectId);
+    private readonly record struct IssueKey(
+        string code,
+        string? semanticId,
+        Guid? objectId
+    );
 }

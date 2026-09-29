@@ -10,8 +10,8 @@ internal static class PropertySnapshotPipeline
         ISerializable value,
         string propertyName,
         SerializationContext context,
-        ConverterRegistryLease converters)
-    {
+        ConverterRegistryLease converters
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(propertyName);
         return Capture(value, context, converters).FirstOrDefault(snapshot =>
                    string.Equals(snapshot.name, propertyName, StringComparison.Ordinal))
@@ -23,8 +23,8 @@ internal static class PropertySnapshotPipeline
     internal static IReadOnlyList<SerializationPropertySnapshot> Capture(
         ISerializable value,
         SerializationContext context,
-        ConverterRegistryLease converters)
-    {
+        ConverterRegistryLease converters
+    ) {
         SerializableMember[] members = ReflectionMetadata.GetSerializableMembers(value.GetType());
         var snapshots = new List<SerializationPropertySnapshot>(members.Length);
         for (int i = 0; i < members.Length; i++)
@@ -60,8 +60,8 @@ internal static class PropertySnapshotPipeline
         IReadOnlyList<SerializationPropertySnapshot> snapshots,
         SerializationPropertyRestoreMode mode,
         SerializationContext context,
-        ConverterRegistryLease converters)
-    {
+        ConverterRegistryLease converters
+    ) {
         SerializableMember[] members = ReflectionMetadata.GetSerializableMembers(target.GetType());
         var membersByName = new Dictionary<string, SerializableMember>(members.Length, StringComparer.Ordinal);
         for (int i = 0; i < members.Length; i++)

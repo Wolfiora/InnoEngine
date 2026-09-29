@@ -23,8 +23,11 @@ internal static class CimguiSourceOverlay
         return directory;
     }
 
-    private static string ReplaceOnce(string source, string expected, string replacement)
-    {
+    private static string ReplaceOnce(
+        string source,
+        string expected,
+        string replacement
+    ) {
         int index = source.IndexOf(expected, StringComparison.Ordinal);
         if (index < 0 || source.IndexOf(expected, index + expected.Length, StringComparison.Ordinal) >= 0)
             throw new InvalidOperationException("The cimgui window-background source no longer matches its validated overlay. Review the upstream change before building.");

@@ -24,8 +24,10 @@ public sealed class RenderShaderStageArtifact
     /// <exception cref="ArgumentException">
     /// Thrown when <paramref name="stage"/> is not a single stage or <paramref name="bytes"/> is empty.
     /// </exception>
-    public RenderShaderStageArtifact(ShaderStage stage, ReadOnlySpan<byte> bytes)
-    {
+    public RenderShaderStageArtifact(
+        ShaderStage stage,
+        ReadOnlySpan<byte> bytes
+    ) {
         if (stage is not ShaderStage.Vertex and not ShaderStage.Fragment and not ShaderStage.Compute)
             throw new ArgumentException("A deployed shader stage must identify one programmable stage.", nameof(stage));
         if (bytes.IsEmpty)
@@ -78,8 +80,8 @@ public sealed class RenderShaderPassArtifact
         ShaderProgramKind programKind,
         RenderRasterState rasterState,
         ShaderInterface shaderInterface,
-        IReadOnlyList<RenderShaderStageArtifact> stages)
-    {
+        IReadOnlyList<RenderShaderStageArtifact> stages
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
         if (!Enum.IsDefined(programKind))
             throw new ArgumentOutOfRangeException(nameof(programKind));
@@ -146,8 +148,8 @@ public sealed class RenderShaderPassArtifact
 
     private static void ValidateStages(
         ShaderProgramKind programKind,
-        IReadOnlyCollection<RenderShaderStageArtifact> stages)
-    {
+        IReadOnlyCollection<RenderShaderStageArtifact> stages
+    ) {
         ShaderStage[] actual = stages.Select(static value => value.stage).Order().ToArray();
         ShaderStage[] expected = programKind == ShaderProgramKind.Raster
             ? [ShaderStage.Vertex, ShaderStage.Fragment]
@@ -199,8 +201,8 @@ public sealed class RenderShaderArtifact
         RenderShaderVariant variant,
         ShaderInterface shaderInterface,
         IReadOnlyList<RenderShaderPassArtifact> passes,
-        ReadOnlySpan<byte> definitionData)
-    {
+        ReadOnlySpan<byte> definitionData
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(shaderName);
         ArgumentException.ThrowIfNullOrWhiteSpace(targetKey);
         ArgumentNullException.ThrowIfNull(shaderInterface);
@@ -215,7 +217,8 @@ public sealed class RenderShaderArtifact
         this.variant = variant;
         this.shaderInterface = RenderShaderPassArtifact.CloneInterface(shaderInterface);
         m_passes = Array.AsReadOnly(passSnapshot);
-        if (definitionData.IsEmpty) throw new ArgumentException("A shader publication requires its captured runtime contract.", nameof(definitionData));
+        if (definitionData.IsEmpty)
+            throw new ArgumentException("A shader publication requires its captured runtime contract.", nameof(definitionData));
         m_definitionData = definitionData.ToArray();
         contentHash = Convert.ToHexString(SHA256.HashData(RenderShaderArtifactCodec.Encode(this)));
     }

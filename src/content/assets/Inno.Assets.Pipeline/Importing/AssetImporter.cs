@@ -72,11 +72,13 @@ public abstract class AssetImporter
 
     internal abstract ValueTask<AssetImportProduct> ImportInternalAsync(
         AssetImportContext context,
-        CancellationToken cancellationToken);
+        CancellationToken cancellationToken
+    );
     internal abstract ValueTask<ReadOnlyMemory<byte>?> ExportInternalAsync(
         AssetExportContext context,
         AssetObject asset,
-        CancellationToken cancellationToken);
+        CancellationToken cancellationToken
+    );
 
     internal void BindImporterId(string id)
     {
@@ -121,7 +123,8 @@ public abstract class AssetImporter<TAsset> : AssetImporter where TAsset : Asset
     protected abstract ValueTask ImportAsync(
         AssetImportContext context,
         AssetImportWriter<TAsset> output,
-        CancellationToken cancellationToken);
+        CancellationToken cancellationToken
+    );
 
     /// <summary>
     /// Exports an asset back into source bytes.
@@ -141,13 +144,14 @@ public abstract class AssetImporter<TAsset> : AssetImporter where TAsset : Asset
     protected virtual ValueTask<ReadOnlyMemory<byte>?> ExportAsync(
         AssetExportContext context,
         TAsset asset,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken
+    )
         => ValueTask.FromResult<ReadOnlyMemory<byte>?>(null);
 
     internal sealed override async ValueTask<AssetImportProduct> ImportInternalAsync(
         AssetImportContext context,
-        CancellationToken cancellationToken)
-    {
+        CancellationToken cancellationToken
+    ) {
         var writer = new AssetImportWriter<TAsset>(context);
         await ImportAsync(context, writer, cancellationToken).ConfigureAwait(false);
         return writer.Complete();
@@ -156,8 +160,8 @@ public abstract class AssetImporter<TAsset> : AssetImporter where TAsset : Asset
     internal sealed override ValueTask<ReadOnlyMemory<byte>?> ExportInternalAsync(
         AssetExportContext context,
         AssetObject asset,
-        CancellationToken cancellationToken)
-    {
+        CancellationToken cancellationToken
+    ) {
         if (asset is TAsset typed)
             return ExportAsync(context, typed, cancellationToken);
         return ValueTask.FromResult<ReadOnlyMemory<byte>?>(null);
@@ -169,8 +173,8 @@ internal readonly struct AssetImportProduct(
     IReadOnlyDictionary<string, ReadOnlyMemory<byte>> outputs,
     IReadOnlyList<string> diagnostics,
     IReadOnlySet<string> authoringOutputs,
-    AssetDeploymentScope? deploymentScope)
-{
+    AssetDeploymentScope? deploymentScope
+) {
     internal AssetObject asset { get; } = asset ?? throw new ArgumentNullException(nameof(asset));
     internal IReadOnlyDictionary<string, ReadOnlyMemory<byte>> outputs { get; } = outputs;
     internal IReadOnlyList<string> diagnostics { get; } = diagnostics;

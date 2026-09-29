@@ -17,7 +17,10 @@ public class RetirementPendingException : InvalidOperationException
     /// <param name="innerException">
     /// The original retirement failure, including any contextual wrappers, or null when there is no cause.
     /// </param>
-    public RetirementPendingException(string message, Exception? innerException = null) : base(message, innerException) { }
+    public RetirementPendingException(
+        string message,
+        Exception? innerException = null
+    ) : base(message, innerException) { }
 
     /// <summary>
     /// Finds unfinished retirement in an exception tree without discarding its contextual or sibling failures.
@@ -63,8 +66,10 @@ public class RetirementPendingException : InvalidOperationException
     /// <exception cref="ArgumentNullException">
     /// The exception or collection is null.
     /// </exception>
-    public static void CollectCompletedFailures(Exception exception, ICollection<Exception> failures)
-    {
+    public static void CollectCompletedFailures(
+        Exception exception,
+        ICollection<Exception> failures
+    ) {
         ArgumentNullException.ThrowIfNull(exception);
         ArgumentNullException.ThrowIfNull(failures);
         if (exception is RetirementPendingException pending)
@@ -85,7 +90,8 @@ public class RetirementPendingException : InvalidOperationException
             return;
         }
         foreach (Exception previous in failures)
-            if (ReferenceEquals(previous, exception)) return;
+            if (ReferenceEquals(previous, exception))
+                return;
         failures.Add(exception);
     }
 }

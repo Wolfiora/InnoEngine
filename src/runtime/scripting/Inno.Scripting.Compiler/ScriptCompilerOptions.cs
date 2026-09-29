@@ -14,8 +14,7 @@ public sealed class ScriptCompilerOptions
 
     internal string ideDirectory => Path.Combine(projectRootDirectory, "Library", "IDE");
 
-    internal string outputDirectory
-        => Path.Combine(projectRootDirectory, "Library", "Artifacts", "ScriptAssemblies");
+    internal string outputDirectory => Path.Combine(projectRootDirectory, "Library", "Artifacts", "ScriptAssemblies");
 
     internal string scriptApiDirectory => Path.Combine(projectRootDirectory, "Library", "ScriptApi");
 }

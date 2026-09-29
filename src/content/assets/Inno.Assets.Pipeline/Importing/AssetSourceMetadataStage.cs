@@ -11,11 +11,12 @@ internal sealed class AssetSourceMetadataStage
 {
     private readonly Dictionary<string, Entry> m_entries = new(StringComparer.Ordinal);
 
-    internal byte[]? Read(string path)
-        => GetEntry(path).value?.ToArray();
+    internal byte[]? Read(string path) => GetEntry(path).value?.ToArray();
 
-    internal void Write(string path, byte[]? value)
-        => GetEntry(path).value = value?.ToArray();
+    internal void Write(
+        string path,
+        byte[]? value
+    ) => GetEntry(path).value = value?.ToArray();
 
     internal void Commit(Action publishCatalog)
     {
@@ -43,8 +44,14 @@ internal sealed class AssetSourceMetadataStage
             var failures = new List<Exception> { failure };
             for (int index = applied.Count - 1; index >= 0; index--)
             {
-                try { WritePhysical(applied[index].path, applied[index].original); }
-                catch (Exception rollback) { failures.Add(rollback); }
+                try
+                {
+                    WritePhysical(applied[index].path, applied[index].original);
+                }
+                catch (Exception rollback)
+                {
+                    failures.Add(rollback);
+                }
             }
             if (failures.Count > 1)
                 throw new AggregateException("Asset catalog publication and source metadata compensation failed.", failures);
@@ -63,22 +70,28 @@ internal sealed class AssetSourceMetadataStage
         return entry;
     }
 
-    private static bool Equal(byte[]? left, byte[]? right)
+    private static bool Equal(
+        byte[]? left,
+        byte[]? right
+    )
         => left is null ? right is null : right is not null && left.AsSpan().SequenceEqual(right);
 
-    private static byte[]? ReadPhysical(string path)
-        => IOFile.Exists(path) ? IOFile.ReadAllBytes(path) : null;
+    private static byte[]? ReadPhysical(string path) => IOFile.Exists(path) ? IOFile.ReadAllBytes(path) : null;
 
-    private static void WritePhysical(string path, byte[]? value)
-    {
+    private static void WritePhysical(
+        string path,
+        byte[]? value
+    ) {
         if (value is not null)
             AtomicFile.WriteAllBytes(path, value);
         else if (IOFile.Exists(path))
             IOFile.Delete(path);
     }
 
-    private sealed class Entry(string path, byte[]? original)
-    {
+    private sealed class Entry(
+        string path,
+        byte[]? original
+    ) {
         internal string path { get; } = path;
         internal byte[]? original { get; } = original;
         internal byte[]? value { get; set; } = original;

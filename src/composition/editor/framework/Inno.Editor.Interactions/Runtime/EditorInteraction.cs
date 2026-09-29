@@ -11,8 +11,11 @@ public readonly struct EditorInteraction
 {
     private readonly EditorInteractions m_interactions;
 
-    internal EditorInteraction(EditorInteractions interactions, string area, object? target)
-    {
+    internal EditorInteraction(
+        EditorInteractions interactions,
+        string area,
+        object? target
+    ) {
         m_interactions = interactions ?? throw new ArgumentNullException(nameof(interactions));
         ArgumentException.ThrowIfNullOrWhiteSpace(area);
         this.area = area;
@@ -66,8 +69,10 @@ public readonly struct EditorInteraction
     /// <exception cref="ArgumentException">
     /// Thrown when <paramref name="action"/> is empty.
     /// </exception>
-    public EditorActionState Query(string action, object? argument = null)
-        => m_interactions.Query(action, area, target, argument);
+    public EditorActionState Query(
+        string action,
+        object? argument = null
+    ) => m_interactions.Query(action, area, target, argument);
 
     /// <summary>
     /// Executes an action for this area and target.
@@ -84,8 +89,10 @@ public readonly struct EditorInteraction
     /// <exception cref="ArgumentException">
     /// Thrown when <paramref name="action"/> is empty.
     /// </exception>
-    public bool Execute(string action, object? argument = null)
-        => m_interactions.Execute(action, area, target, argument);
+    public bool Execute(
+        string action,
+        object? argument = null
+    ) => m_interactions.Execute(action, area, target, argument);
 
     /// <summary>
     /// Queues an action until the current UI traversal completes.
@@ -99,8 +106,10 @@ public readonly struct EditorInteraction
     /// <exception cref="ArgumentException">
     /// Thrown when <paramref name="action"/> is empty.
     /// </exception>
-    public void Enqueue(string action, object? argument = null)
-        => m_interactions.Enqueue(action, area, target, argument);
+    public void Enqueue(
+        string action,
+        object? argument = null
+    ) => m_interactions.Enqueue(action, area, target, argument);
 
     /// <summary>
     /// Presents an active action in place of this target's normal content.
@@ -117,8 +126,10 @@ public readonly struct EditorInteraction
     /// <exception cref="ArgumentException">
     /// Thrown when <paramref name="action"/> is empty.
     /// </exception>
-    public bool Present(string action, object? argument = null)
-        => m_interactions.Present(action, area, target, argument);
+    public bool Present(
+        string action,
+        object? argument = null
+    ) => m_interactions.Present(action, area, target, argument);
 
     /// <summary>
     /// Gets whether an action owns an active multi-frame operation for this target.
@@ -132,8 +143,7 @@ public readonly struct EditorInteraction
     /// <exception cref="ArgumentException">
     /// Thrown when <paramref name="action"/> is empty.
     /// </exception>
-    public bool IsActive(string action)
-        => m_interactions.IsActive(action, area, target);
+    public bool IsActive(string action) => m_interactions.IsActive(action, area, target);
 
     /// <summary>
     /// Builds the complete contextual menu for this area and target.
@@ -166,7 +176,10 @@ public readonly struct EditorInteraction
     /// <exception cref="ArgumentException">
     /// Thrown when <paramref name="action"/> is empty.
     /// </exception>
-    public bool TryGetShortcut(string action, out HotKeyGesture gesture)
+    public bool TryGetShortcut(
+        string action,
+        out HotKeyGesture gesture
+    )
         => m_interactions.TryGetShortcut(action, area, target, out gesture);
 
     /// <summary>
@@ -178,8 +191,7 @@ public readonly struct EditorInteraction
     /// <returns>
     /// <see langword="true"/> when a live drag source exists; otherwise, <see langword="false"/>.
     /// </returns>
-    public bool TryGetActiveDragIdentity(out RuntimeIdentity identity)
-        => m_interactions.TryGetActiveDragIdentity(out identity);
+    public bool TryGetActiveDragIdentity(out RuntimeIdentity identity) => m_interactions.TryGetActiveDragIdentity(out identity);
 
     /// <summary>
     /// Begins a managed drag originating from this area.
@@ -190,8 +202,7 @@ public readonly struct EditorInteraction
     /// <returns>
     /// The source object's domain-qualified transient identity.
     /// </returns>
-    public RuntimeIdentity BeginDrag(EditorDragData data)
-        => m_interactions.BeginDrag(area, data);
+    public RuntimeIdentity BeginDrag(EditorDragData data) => m_interactions.BeginDrag(area, data);
 
     /// <summary>
     /// Queries this handle as a drop target.
@@ -207,7 +218,8 @@ public readonly struct EditorInteraction
     /// </returns>
     public EditorDropStatus QueryDrop(
         RuntimeIdentity identity,
-        EditorDropPlacement placement = EditorDropPlacement.None)
+        EditorDropPlacement placement = EditorDropPlacement.None
+    )
         => m_interactions.QueryDrop(identity, area, target, placement);
 
     /// <summary>
@@ -224,6 +236,7 @@ public readonly struct EditorInteraction
     /// </returns>
     public EditorDropResult Drop(
         RuntimeIdentity identity,
-        EditorDropPlacement placement = EditorDropPlacement.None)
+        EditorDropPlacement placement = EditorDropPlacement.None
+    )
         => m_interactions.Drop(identity, area, target, placement);
 }

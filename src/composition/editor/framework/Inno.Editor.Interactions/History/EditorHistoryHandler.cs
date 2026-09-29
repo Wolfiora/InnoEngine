@@ -25,7 +25,8 @@ public abstract class EditorHistoryHandler
     protected abstract EditorHistoryAvailability Query(
         EditorHistoryContext context,
         EditorHistoryChange change,
-        EditorHistoryDirection direction);
+        EditorHistoryDirection direction
+    );
 
     /// <summary>
     /// Atomically applies a neutral history change in the requested direction.
@@ -45,7 +46,8 @@ public abstract class EditorHistoryHandler
     protected abstract EditorHistoryResult Apply(
         EditorHistoryContext context,
         EditorHistoryChange change,
-        EditorHistoryDirection direction);
+        EditorHistoryDirection direction
+    );
 
     /// <summary>
     /// Attempts to merge two adjacent changes to the same logical value.
@@ -65,8 +67,8 @@ public abstract class EditorHistoryHandler
     protected virtual bool TryMerge(
         EditorHistoryChange older,
         EditorHistoryChange newer,
-        out EditorHistoryChange? merged)
-    {
+        out EditorHistoryChange? merged
+    ) {
         merged = null;
         return false;
     }
@@ -80,24 +82,26 @@ public abstract class EditorHistoryHandler
     /// <returns>
     /// A failure that faults the owning history.
     /// </returns>
-    protected static EditorHistoryResult StateIntegrityFailure(string message)
-        => EditorHistoryResult.StateIntegrityLost(message);
+    protected static EditorHistoryResult StateIntegrityFailure(string message) => EditorHistoryResult.StateIntegrityLost(message);
 
     internal EditorHistoryAvailability QueryInternal(
         EditorHistoryContext context,
         EditorHistoryChange change,
-        EditorHistoryDirection direction)
+        EditorHistoryDirection direction
+    )
         => Query(context, change, direction);
 
     internal EditorHistoryResult ApplyInternal(
         EditorHistoryContext context,
         EditorHistoryChange change,
-        EditorHistoryDirection direction)
+        EditorHistoryDirection direction
+    )
         => Apply(context, change, direction);
 
     internal bool TryMergeInternal(
         EditorHistoryChange older,
         EditorHistoryChange newer,
-        out EditorHistoryChange? merged)
+        out EditorHistoryChange? merged
+    )
         => TryMerge(older, newer, out merged);
 }

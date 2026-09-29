@@ -16,6 +16,7 @@ using Inno.Audio;
 using Inno.Build;
 using Inno.Build.Platform.MacOS;
 using Inno.Build.Platform.Windows;
+using Inno.Build.SupportPacks;
 using Inno.UI.Runtime;
 using Inno.Core.Events;
 using Inno.Core.Layers;
@@ -65,7 +66,8 @@ internal sealed class EditorHost : ShellHost
         PresentationBackend presentationBackend,
         string projectDirectory,
         string bootLogPath,
-        GraphicsApi? preferredGraphicsApi)
+        GraphicsApi? preferredGraphicsApi
+    )
         : base(
             adapterCatalog,
             new ShellOptions
@@ -102,8 +104,8 @@ internal sealed class EditorHost : ShellHost
         AdapterSelection adapterSelection,
         PresentationBackend presentationBackend,
         string projectDirectory,
-        GraphicsApi? preferredGraphicsApi = null)
-    {
+        GraphicsApi? preferredGraphicsApi = null
+    ) {
         ArgumentNullException.ThrowIfNull(adapterCatalog);
         if (!adapterSelection.rendering.isValid ||
             !adapterCatalog.rendering.supportedBackends.Contains(adapterSelection.rendering) ||
@@ -136,8 +138,7 @@ internal sealed class EditorHost : ShellHost
     /// <summary>
     /// Records that the shared composition run loop is starting.
     /// </summary>
-    protected override void OnStarting()
-        => BootLog("Run loop start.");
+    protected override void OnStarting() => BootLog("Run loop start.");
 
     /// <summary>
     /// Applies editor focus policy before accepting an orderly application or primary-window exit.
@@ -175,8 +176,7 @@ internal sealed class EditorHost : ShellHost
     /// <param name="evnt">
     /// Event produced by the common shell.
     /// </param>
-    protected override void OnEvent(Event evnt)
-        => editSession.events.Enqueue(evnt);
+    protected override void OnEvent(Event evnt) => editSession.events.Enqueue(evnt);
 
     /// <summary>
     /// Advances authoring services, the edit runtime session, and editor presentation for one frame.
@@ -221,7 +221,8 @@ internal sealed class EditorHost : ShellHost
         DiagnosticHub hub = m_diagnostics ?? throw new InvalidOperationException("The Editor diagnostic owner is unavailable.");
         hub.RegisterSink(snapshot);
         hub.UnregisterSink(snapshot);
-        foreach (string error in snapshot.errors) BootLog("Smoke diagnostic: " + error);
+        foreach (string error in snapshot.errors)
+            BootLog("Smoke diagnostic: " + error);
         if (snapshot.errors.Count != 0)
             throw new InvalidOperationException($"Native Editor smoke completed with {snapshot.errors.Count} active error diagnostic(s). See the smoke diagnostics above.");
     }
@@ -291,8 +292,7 @@ public void Clear(Inno.Core.Diagnostics.DiagnosticSource source) { }
     private RuntimeSession editSession
         => m_editSession ?? throw new InvalidOperationException("The Editor runtime session is not initialized.");
 
-    private IEditorAudioHost audio
-        => m_audio ?? throw new InvalidOperationException("The Editor audio host is not initialized.");
+    private IEditorAudioHost audio => m_audio ?? throw new InvalidOperationException("The Editor audio host is not initialized.");
 
     private EditorAuthoringServices authoring
         => m_authoring ?? throw new InvalidOperationException("The Editor authoring services are not initialized.");
@@ -300,11 +300,9 @@ public void Clear(Inno.Core.Diagnostics.DiagnosticSource source) { }
     private RenderRuntime rendering
         => m_rendering ?? throw new InvalidOperationException("The Editor rendering runtime is not initialized.");
 
-    private LayerStack layers
-        => m_layers ?? throw new InvalidOperationException("The Editor layer stack is not initialized.");
+    private LayerStack layers => m_layers ?? throw new InvalidOperationException("The Editor layer stack is not initialized.");
 
-    private EditorLayer editorLayer
-        => m_editorLayer ?? throw new InvalidOperationException("The Editor layer is not initialized.");
+    private EditorLayer editorLayer => m_editorLayer ?? throw new InvalidOperationException("The Editor layer is not initialized.");
 
     private void Initialize()
     {
@@ -382,7 +380,8 @@ public void Clear(Inno.Core.Diagnostics.DiagnosticSource source) { }
             [
                 new MacOSArm64GameBuildTarget(activeAuthoring.assets, engineHost.serialization, engineHost.types),
                 new WindowsX64GameBuildTarget(activeAuthoring.assets, engineHost.serialization, engineHost.types)
-            ]);
+            ],
+            SourcePlayerSupportPackProvisioner.TryCreateForHost(AppContext.BaseDirectory));
         BuildSettings defaultBuildSettings = BuildSettings.CreateDefault(
             Path.GetFileName(Path.TrimEndingDirectorySeparator(projectDirectory)),
             FindDefaultStartupScene(activeAuthoring.assets),
@@ -444,7 +443,9 @@ public void Clear(Inno.Core.Diagnostics.DiagnosticSource source) { }
             renderDevice,
             renderDiagnostics,
             contributors: [presentation],
-            targetArtifacts: renderArtifacts);
+            targetArtifacts: renderArtifacts,
+            compositionProgramProvider: adapters.rendering.CreateCompositionProgramProvider(
+                adapterSelection.rendering));
         m_rendering = renderingLayer;
         RuntimeSubsystemPipeline hostPipeline = engineHost.CreateHostPipeline(DefaultEngine.CreateHostSubsystems(renderingLayer));
         m_resources.Register(hostPipeline.Dispose);
@@ -527,8 +528,10 @@ public void Clear(Inno.Core.Diagnostics.DiagnosticSource source) { }
             + $"root='{activeAuthoring.assets.assetRoot}'.");
     }
 
-    private IReadOnlyList<IRuntimeSubsystemFactory> CreateStandardRuntimeSubsystems(IEditorAudioHost activeAudio, RuntimeSession owner)
-    {
+    private IReadOnlyList<IRuntimeSubsystemFactory> CreateStandardRuntimeSubsystems(
+        IEditorAudioHost activeAudio,
+        RuntimeSession owner
+    ) {
         ArgumentNullException.ThrowIfNull(activeAudio);
         return DefaultEngine.CreateSessionSubsystems(new EngineSessionComposition(
             owner, adapters, adapterSelection, inputSource, authoring.assets,
@@ -569,8 +572,7 @@ public void Clear(Inno.Core.Diagnostics.DiagnosticSource source) { }
         return string.Empty;
     }
 
-    private bool HasEditorFocus()
-        => m_focusedWindowIds.Count > 0;
+    private bool HasEditorFocus() => m_focusedWindowIds.Count > 0;
 
     private void SaveBeforeShutdown()
     {
@@ -597,11 +599,12 @@ public void Clear(Inno.Core.Diagnostics.DiagnosticSource source) { }
         }
     }
 
-    private void BootLog(string message)
-        => AppendBootLog(m_bootLogPath, message);
+    private void BootLog(string message) => AppendBootLog(m_bootLogPath, message);
 
-    private static void AppendBootLog(string bootLogPath, string message)
-    {
+    private static void AppendBootLog(
+        string bootLogPath,
+        string message
+    ) {
         string line = $"[{DateTime.Now:O}] {message}{Environment.NewLine}";
         Console.Write(line);
         File.AppendAllText(bootLogPath, line);

@@ -45,8 +45,12 @@ public struct Vector4 : IEquatable<Vector4>
     /// <param name="w">
     /// The homogeneous or fourth component.
     /// </param>
-    public Vector4(float x, float y, float z, float w)
-    {
+    public Vector4(
+        float x,
+        float y,
+        float z,
+        float w
+    ) {
         this.x = x;
         this.y = y;
         this.z = z;
@@ -124,7 +128,10 @@ public struct Vector4 : IEquatable<Vector4>
 
     // Dot product
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static float Dot(Vector4 a, Vector4 b) =>
+    public static float Dot(
+        Vector4 a,
+        Vector4 b
+    ) =>
         SimdMath.Dot4(a.x, a.y, a.z, a.w, b.x, b.y, b.z, b.w);
     /// <summary>
     /// Interpolates linearly between two values without clamping the interpolation factor.
@@ -144,7 +151,11 @@ public struct Vector4 : IEquatable<Vector4>
 
     // Lerp
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Vector4 Lerp(Vector4 a, Vector4 b, float t) =>
+    public static Vector4 Lerp(
+        Vector4 a,
+        Vector4 b,
+        float t
+    ) =>
         a + (b - a) * Math.Clamp(t, 0f, 1f);
     /// <summary>
     /// Reflects an incident value across the supplied normal.
@@ -161,7 +172,10 @@ public struct Vector4 : IEquatable<Vector4>
 
     // Reflect
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Vector4 Reflect(Vector4 vec, Vector4 normal) =>
+    public static Vector4 Reflect(
+        Vector4 vec,
+        Vector4 normal
+    ) =>
         vec - 2f * Dot(vec, normal) * normal;
     /// <summary>
     /// Transforms the supplied value by the requested transformation.
@@ -178,8 +192,10 @@ public struct Vector4 : IEquatable<Vector4>
 
     // Transform by Matrix (assumes Vector4 is column vector)
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Vector4 Transform(Vector4 v, Matrix m)
-    {
+    public static Vector4 Transform(
+        Vector4 v,
+        Matrix m
+    ) {
         if (Sse.IsSupported || AdvSimd.IsSupported)
         {
             var vec = Vector128.Create(v.x, v.y, v.z, v.w);
@@ -212,7 +228,8 @@ public struct Vector4 : IEquatable<Vector4>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Vector3 ProjectToVector3()
     {
-        if (w == 0f) return new Vector3(x, y, z); // Avoid division by zero
+        if (w == 0f)
+            return new Vector3(x, y, z); // Avoid division by zero
         return new Vector3(x / w, y / w, z / w);
     }
     /// <summary>
@@ -230,7 +247,10 @@ public struct Vector4 : IEquatable<Vector4>
 
     // Operators
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Vector4 operator +(Vector4 a, Vector4 b) =>
+    public static Vector4 operator +(
+        Vector4 a,
+        Vector4 b
+    ) =>
         new(a.x + b.x, a.y + b.y, a.z + b.z, a.w + b.w);
 
     /// <summary>
@@ -246,7 +266,10 @@ public struct Vector4 : IEquatable<Vector4>
     /// The validated vector4 that represents the completed operation.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Vector4 operator -(Vector4 a, Vector4 b) =>
+    public static Vector4 operator -(
+        Vector4 a,
+        Vector4 b
+    ) =>
         new(a.x - b.x, a.y - b.y, a.z - b.z, a.w - b.w);
 
     /// <summary>
@@ -275,7 +298,10 @@ public struct Vector4 : IEquatable<Vector4>
     /// The validated vector4 that represents the completed operation.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Vector4 operator *(Vector4 v, float s) =>
+    public static Vector4 operator *(
+        Vector4 v,
+        float s
+    ) =>
         new(v.x * s, v.y * s, v.z * s, v.w * s);
 
     /// <summary>
@@ -291,7 +317,10 @@ public struct Vector4 : IEquatable<Vector4>
     /// The validated vector4 that represents the completed operation.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Vector4 operator *(float s, Vector4 v) => v * s;
+    public static Vector4 operator *(
+        float s,
+        Vector4 v
+    ) => v * s;
     
     /// <summary>
     /// Multiplies the supplied values according to their algebraic contract.
@@ -306,8 +335,10 @@ public struct Vector4 : IEquatable<Vector4>
     /// The validated vector4 that represents the completed operation.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Vector4 operator *(Matrix m, Vector4 v)
-    {
+    public static Vector4 operator *(
+        Matrix m,
+        Vector4 v
+    ) {
         return new Vector4(
             m.m11 * v.x + m.m12 * v.y + m.m13 * v.z + m.m14 * v.w,
             m.m21 * v.x + m.m22 * v.y + m.m23 * v.z + m.m24 * v.w,
@@ -329,7 +360,10 @@ public struct Vector4 : IEquatable<Vector4>
     /// The validated vector4 that represents the completed operation.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Vector4 operator /(Vector4 v, float s) =>
+    public static Vector4 operator /(
+        Vector4 v,
+        float s
+    ) =>
         new(v.x / s, v.y / s, v.z / s, v.w / s);
 
     /// <summary>
@@ -345,7 +379,10 @@ public struct Vector4 : IEquatable<Vector4>
     /// <see langword="true"/> when the requested condition is satisfied; otherwise, <see langword="false"/>.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool operator ==(Vector4 a, Vector4 b) =>
+    public static bool operator ==(
+        Vector4 a,
+        Vector4 b
+    ) =>
         MathHelper.AlmostEquals(a.x, b.x) &&
         MathHelper.AlmostEquals(a.y, b.y) &&
         MathHelper.AlmostEquals(a.z, b.z) &&
@@ -364,7 +401,10 @@ public struct Vector4 : IEquatable<Vector4>
     /// <see langword="true"/> when the requested condition is satisfied; otherwise, <see langword="false"/>.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool operator !=(Vector4 a, Vector4 b) => !(a == b);
+    public static bool operator !=(
+        Vector4 a,
+        Vector4 b
+    ) => !(a == b);
     
     /// <summary>
     /// Converts the supplied value to <see cref="System.Numerics.Vector4"/>.

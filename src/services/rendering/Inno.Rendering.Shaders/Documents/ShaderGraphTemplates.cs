@@ -22,8 +22,10 @@ public static class ShaderGraphTemplates
     /// <returns>
     /// A valid two-stage document; pipelines may replace its vertex transform or provide their own templates.
     /// </returns>
-    public static GraphDocument CreateRaster(SerializationRegistry serialization, SerializationContext context)
-    {
+    public static GraphDocument CreateRaster(
+        SerializationRegistry serialization,
+        SerializationContext context
+    ) {
         var pass = new ShaderPassDefinition("Main", ShaderProgramKind.Raster, renderState: new()
         { cull = ShaderCullMode.None, depthCompare = ShaderCompareFunction.Always, depthWrite = false, blend = RenderBlendState.alpha, colorWriteMask = 15 });
         var definition = new ShaderDefinition("New Shader", [new(new("color"), "Color", ShaderPropertyType.Color, ShaderStage.Fragment,
@@ -51,14 +53,29 @@ public static class ShaderGraphTemplates
         Connect(color, "value", fragment, "color");
         return ShaderGraphPrograms.Bind(graph, "Main", [vertex.id, fragment.id], serialization, context);
 
-        GraphNodeRecord Node(string id, string type, float x, float y, GraphNodeRecord? stage = null)
-        {
+        GraphNodeRecord Node(
+            string id,
+            string type,
+            float x,
+            float y,
+            GraphNodeRecord? stage = null
+        ) {
             var node = new GraphNodeRecord(new(id), type) { position = new(x, y) };
-            if (stage is not null) Set(node, "stage", stage.id.value);
+            if (stage is not null)
+                Set(node, "stage", stage.id.value);
             graph.AddNode(node); return node;
         }
-        void Set<T>(GraphNodeRecord node, string key, T value) => node.SetValue(key, ShaderGraphDocument.Encode(value, serialization, context));
-        void Connect(GraphNodeRecord a, string output, GraphNodeRecord b, string input)
+        void Set<T>(
+            GraphNodeRecord node,
+            string key,
+            T value
+        ) => node.SetValue(key, ShaderGraphDocument.Encode(value, serialization, context));
+        void Connect(
+            GraphNodeRecord a,
+            string output,
+            GraphNodeRecord b,
+            string input
+        )
             => graph.AddEdge(new(new(Guid.NewGuid().ToString("N")), new(a.id, new(output)), new(b.id, new(input))));
     }
 }

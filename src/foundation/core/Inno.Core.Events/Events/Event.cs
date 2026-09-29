@@ -65,7 +65,10 @@ public abstract class Event
         return frames is not null && frames.IsCurrentHandled(this);
     }
 
-    internal readonly struct HubDispatchScope(HubFrameStack frames, Event eventRef) : IDisposable
+    internal readonly struct HubDispatchScope(
+        HubFrameStack frames,
+        Event eventRef
+    ) : IDisposable
     {
         /// <summary>
         /// Releases the resources owned by this instance.

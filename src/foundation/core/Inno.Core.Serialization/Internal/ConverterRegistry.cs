@@ -43,8 +43,10 @@ internal sealed class ConverterRegistry : IDisposable
 
     internal ConverterRegistryLease Capture() => RequireRegistry().Capture();
 
-    internal static ConverterInvoker? ResolveSnapshot(ConverterRegistrySnapshot snapshot, Type valueType)
-    {
+    internal static ConverterInvoker? ResolveSnapshot(
+        ConverterRegistrySnapshot snapshot,
+        Type valueType
+    ) {
         var candidates = new List<ConverterCandidate>();
         for (int i = 0; i < snapshot.registrations.Count; i++)
         {
@@ -74,8 +76,8 @@ internal sealed class ConverterRegistry : IDisposable
         ConverterRegistrySnapshot snapshot,
         Type registeredType,
         Type valueType,
-        out ConverterCandidate? candidate)
-    {
+        out ConverterCandidate? candidate
+    ) {
         candidate = null;
         if (!TryGetConverterTargetPattern(registeredType, out Type targetPattern))
             throw new InvalidOperationException(
@@ -131,8 +133,10 @@ internal sealed class ConverterRegistry : IDisposable
         return true;
     }
 
-    private static object GetOrCreateConverter(ConverterRegistrySnapshot snapshot, Type converterType)
-    {
+    private static object GetOrCreateConverter(
+        ConverterRegistrySnapshot snapshot,
+        Type converterType
+    ) {
         if (snapshot.converterInstances.TryGetValue(converterType, out object? converter))
             return converter;
 
@@ -152,8 +156,10 @@ internal sealed class ConverterRegistry : IDisposable
         return converter;
     }
 
-    private static bool TryGetConverterTargetPattern(Type converterType, out Type targetPattern)
-    {
+    private static bool TryGetConverterTargetPattern(
+        Type converterType,
+        out Type targetPattern
+    ) {
         for (Type? current = converterType; current is not null; current = current.BaseType)
         {
             if (!current.IsGenericType || current.GetGenericTypeDefinition() != typeof(SerializationConverter<>))
@@ -167,8 +173,11 @@ internal sealed class ConverterRegistry : IDisposable
         return false;
     }
 
-    private static bool TryUnify(Type pattern, Type concrete, Dictionary<Type, Type> bindings)
-    {
+    private static bool TryUnify(
+        Type pattern,
+        Type concrete,
+        Dictionary<Type, Type> bindings
+    ) {
         if (pattern.IsGenericParameter)
         {
             if (bindings.TryGetValue(pattern, out Type? existing))
@@ -200,8 +209,10 @@ internal sealed class ConverterRegistry : IDisposable
         return true;
     }
 
-    private static int GetTypeDistance(Type derivedType, Type targetType)
-    {
+    private static int GetTypeDistance(
+        Type derivedType,
+        Type targetType
+    ) {
         if (derivedType == targetType)
             return 0;
 
@@ -230,7 +241,8 @@ internal sealed class ConverterRegistry : IDisposable
     private sealed record ConverterCandidate(
         Type converterType,
         int distance,
-        ConverterInvoker invoker);
+        ConverterInvoker invoker
+    );
 
     private sealed class ConverterTypeRegistry : TypeRegistry<ConverterRegistrySnapshot>
     {
@@ -296,8 +308,7 @@ internal sealed class ConverterRegistry : IDisposable
         /// <param name="snapshot">
         /// The immutable state snapshot consumed by this operation.
         /// </param>
-        protected override void DisposeSnapshot(ConverterRegistrySnapshot snapshot)
-            => snapshot.Release();
+        protected override void DisposeSnapshot(ConverterRegistrySnapshot snapshot) => snapshot.Release();
     }
 
     private ConverterTypeRegistry RequireRegistry()
@@ -411,8 +422,10 @@ internal abstract class ConverterInvoker
     /// <param name="converterType">
     /// The converter type consumed by converter invoker; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
-    protected ConverterInvoker(Type targetType, Type converterType)
-    {
+    protected ConverterInvoker(
+        Type targetType,
+        Type converterType
+    ) {
         this.targetType = targetType;
         this.converterType = converterType;
     }
@@ -425,27 +438,33 @@ internal abstract class ConverterInvoker
         SerializationOperation operation,
         string path,
         Type valueType,
-        object value);
+        object value
+    );
 
     internal abstract object Read(
         SerializationOperation operation,
         string path,
         Type valueType,
-        ObjectSerializationNode node);
+        ObjectSerializationNode node
+    );
 
     internal abstract void Restore(
         SerializationOperation operation,
         string path,
         Type valueType,
         ObjectSerializationNode node,
-        object target);
+        object target
+    );
 }
 
 internal sealed class ConverterInvoker<T> : ConverterInvoker
 {
     private readonly SerializationConverter<T> m_converter;
 
-    internal ConverterInvoker(object converter, Type converterType)
+    internal ConverterInvoker(
+        object converter,
+        Type converterType
+    )
         : base(typeof(T), converterType)
     {
         m_converter = (SerializationConverter<T>)converter;
@@ -455,8 +474,8 @@ internal sealed class ConverterInvoker<T> : ConverterInvoker
         SerializationOperation operation,
         string path,
         Type valueType,
-        object value)
-    {
+        object value
+    ) {
         if (value is not T typed)
         {
             throw new InvalidOperationException(
@@ -472,8 +491,8 @@ internal sealed class ConverterInvoker<T> : ConverterInvoker
         SerializationOperation operation,
         string path,
         Type valueType,
-        ObjectSerializationNode node)
-    {
+        ObjectSerializationNode node
+    ) {
         T result = m_converter.Read(new SerializationReader(operation, node, path, valueType));
         if (result is null)
             throw new InvalidOperationException($"Converter '{converterType.FullName}' returned null at '{path}'.");
@@ -492,8 +511,8 @@ internal sealed class ConverterInvoker<T> : ConverterInvoker
         string path,
         Type valueType,
         ObjectSerializationNode node,
-        object target)
-    {
+        object target
+    ) {
         if (target is not T typed)
         {
             throw new InvalidOperationException(

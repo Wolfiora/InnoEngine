@@ -14,9 +14,12 @@ internal sealed class SceneReloadRecovery : ISceneReloadStateTransfer
     private SceneReloadStateTransfer? m_transfer;
     private IReadOnlyList<SceneReloadDiagnostic> m_diagnostics = Array.Empty<SceneReloadDiagnostic>();
 
-    internal SceneReloadRecovery(SceneReloadStateTransfer transfer, SceneWorld world,
-        TypeCacheReloadContext context, IAssetReferenceResolver assets)
-    {
+    internal SceneReloadRecovery(
+        SceneReloadStateTransfer transfer,
+        SceneWorld world,
+        TypeCacheReloadContext context,
+        IAssetReferenceResolver assets
+    ) {
         m_transfer = transfer;
         m_recovery = new ReferenceRecoveryTransaction(
             ReferenceCatalog.Create(context.candidate.version,

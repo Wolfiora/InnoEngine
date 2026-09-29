@@ -23,8 +23,8 @@ internal static class ScriptProjectGenerator
     internal static void Generate(
         ScriptCompilerOptions options,
         AssetPipeline assets,
-        PluginEnvironment plugins)
-    {
+        PluginEnvironment plugins
+    ) {
         Directory.CreateDirectory(options.projectRootDirectory);
         RemoveStalePluginProjectionFiles(options);
         ScriptSourceSet sources = ScriptSourceSet.Discover(assets, plugins, includeEditor: true);
@@ -87,8 +87,8 @@ internal static class ScriptProjectGenerator
     private static string[] ResolvePluginReferences(
         ScriptSourceSet sources,
         ScriptAssemblyInput userAssembly,
-        IReadOnlyDictionary<string, string> pluginReferences)
-    {
+        IReadOnlyDictionary<string, string> pluginReferences
+    ) {
         IReadOnlyDictionary<string, ScriptAssemblyInput> assemblies = sources.assemblies.ToDictionary(
             static assembly => assembly.name,
             StringComparer.OrdinalIgnoreCase);
@@ -156,8 +156,8 @@ internal static class ScriptProjectGenerator
         IReadOnlyList<string> projectReferences,
         IReadOnlyList<string> defines,
         bool nullable,
-        bool allowUnsafe)
-    {
+        bool allowUnsafe
+    ) {
         var earlyPropertyGroup = new XElement("PropertyGroup",
             new XElement("BaseOutputPath", "Library/IDE/bin/" + assemblyName + "/"),
             new XElement("BaseIntermediateOutputPath", "Library/IDE/obj/" + assemblyName + "/"),
@@ -227,14 +227,17 @@ internal static class ScriptProjectGenerator
 
     private static string[] ToProjectRelativePaths(
         ScriptCompilerOptions options,
-        IReadOnlyList<string> absolutePaths)
+        IReadOnlyList<string> absolutePaths
+    )
         => absolutePaths
             .Select(path => Path.GetRelativePath(options.projectRootDirectory, path).Replace('\\', '/'))
             .OrderBy(static path => path, StringComparer.Ordinal)
             .ToArray();
 
-    private static void AddReference(XElement group, string path)
-    {
+    private static void AddReference(
+        XElement group,
+        string path
+    ) {
         var reference = new XElement("Reference",
             new XAttribute("Include", Path.GetFileNameWithoutExtension(path)),
             new XElement("HintPath", path),

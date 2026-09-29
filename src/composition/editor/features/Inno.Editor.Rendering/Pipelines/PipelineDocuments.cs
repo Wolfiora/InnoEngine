@@ -23,8 +23,12 @@ public sealed class PipelineDocuments : EditorModule
     internal readonly SerializationRegistry serialization;
     internal readonly AssetDraftDocuments<RenderPipelineAsset> drafts;
 
-    internal PipelineDocuments(AssetPipeline assets, SerializationRegistry serialization, TypeCatalog types, EditorInteractions interactions)
-    {
+    internal PipelineDocuments(
+        AssetPipeline assets,
+        SerializationRegistry serialization,
+        TypeCatalog types,
+        EditorInteractions interactions
+    ) {
         this.assets = assets; this.serialization = serialization; m_types = types;
         drafts = new(assets, serialization, interactions, "inno.pipeline", C_HISTORY, ".irenderpipeline", "Pipeline");
     }
@@ -63,7 +67,11 @@ public sealed class PipelineDocuments : EditorModule
     /// <param name="finishGesture">
     /// Whether this sample completes the gesture.
     /// </param>
-    public void Replace(Guid assetId, RenderPipelineAsset candidate, bool finishGesture = true)
+    public void Replace(
+        Guid assetId,
+        RenderPipelineAsset candidate,
+        bool finishGesture = true
+    )
         => drafts.Replace(assetId, candidate, finishGesture);
 
     /// <summary>
@@ -89,7 +97,11 @@ public sealed class PipelineDocuments : EditorModule
     /// <param name="finishGesture">
     /// Whether this sample completes the gesture.
     /// </param>
-    public void ReplaceSettings<TSettings>(Guid assetId, TSettings settings, bool finishGesture = true)
+    public void ReplaceSettings<TSettings>(
+        Guid assetId,
+        TSettings settings,
+        bool finishGesture = true
+    )
         where TSettings : class, ISerializable
     {
         RenderPipelineAsset pipeline = Read(assetId);
@@ -99,7 +111,8 @@ public sealed class PipelineDocuments : EditorModule
 
     internal ISerializable? RestoreSettings(SerializedRenderExtensionState state)
     {
-        if (state.stableTypeId == Guid.Empty) return null;
+        if (state.stableTypeId == Guid.Empty)
+            return null;
         Type type = m_types.Resolve(new TypeRef(state.stableTypeId));
         if (Activator.CreateInstance(type) is not ISerializable settings)
             throw new InvalidOperationException("Pipeline settings must be a constructible native serializable type.");
@@ -151,10 +164,20 @@ internal sealed class PipelineDraftHistory(PipelineDocuments documents) : Editor
     /// <returns>
     /// The validated editor history availability that represents the completed operation.
     /// </returns>
-protected override EditorHistoryAvailability Query(EditorHistoryContext context, EditorHistoryChange change, EditorHistoryDirection direction)
-    {
-        try { documents.drafts.ValidateHistory(change, direction); return EditorHistoryAvailability.Available(); }
-        catch (Exception error) when (PipelineDocuments.Recoverable(error)) { return EditorHistoryAvailability.Unavailable(error.Message); }
+protected override EditorHistoryAvailability Query(
+    EditorHistoryContext context,
+    EditorHistoryChange change,
+    EditorHistoryDirection direction
+) {
+        try
+        {
+            documents.drafts.ValidateHistory(change, direction);
+            return EditorHistoryAvailability.Available();
+        }
+        catch (Exception error) when (PipelineDocuments.Recoverable(error))
+        {
+            return EditorHistoryAvailability.Unavailable(error.Message);
+        }
     }
     /// <summary>
     /// Applies a validated change atomically at the caller-controlled commit point.
@@ -171,9 +194,19 @@ protected override EditorHistoryAvailability Query(EditorHistoryContext context,
     /// <returns>
     /// The validated editor history result that represents the completed operation.
     /// </returns>
-protected override EditorHistoryResult Apply(EditorHistoryContext context, EditorHistoryChange change, EditorHistoryDirection direction)
-    {
-        try { documents.drafts.ApplyHistory(change, direction); return EditorHistoryResult.Success(); }
-        catch (Exception error) when (PipelineDocuments.Recoverable(error)) { return EditorHistoryResult.Failure(error.Message); }
+protected override EditorHistoryResult Apply(
+    EditorHistoryContext context,
+    EditorHistoryChange change,
+    EditorHistoryDirection direction
+) {
+        try
+        {
+            documents.drafts.ApplyHistory(change, direction);
+            return EditorHistoryResult.Success();
+        }
+        catch (Exception error) when (PipelineDocuments.Recoverable(error))
+        {
+            return EditorHistoryResult.Failure(error.Message);
+        }
     }
 }

@@ -157,8 +157,8 @@ public sealed class InspectionDrawContext
         object target,
         SerializedPropertyRenderer properties,
         InspectionDrawerRegistry drawers,
-        IReadOnlyList<SerializedProperty> serializedProperties)
-    {
+        IReadOnlyList<SerializedProperty> serializedProperties
+    ) {
         this.editorContext = editorContext ?? throw new ArgumentNullException(nameof(editorContext));
         this.interactions = interactions ?? throw new ArgumentNullException(nameof(interactions));
         this.target = target ?? throw new ArgumentNullException(nameof(target));

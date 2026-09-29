@@ -26,6 +26,7 @@ internal sealed class GameBuildPipeline
     private readonly ScriptCompiler m_compiler;
     private readonly IReadOnlyDictionary<BuildTargetId, IGameBuildTarget> m_targets;
     private readonly PlayerSupportPackCatalog m_supportPacks;
+    private readonly IPlayerSupportPackProvisioner? m_supportPackProvisioner;
 
     internal GameBuildPipeline(
         AssetPipeline assets,
@@ -34,8 +35,9 @@ internal sealed class GameBuildPipeline
         SerializationRegistry serialization,
         ScriptCompiler compiler,
         IReadOnlyDictionary<BuildTargetId, IGameBuildTarget> targets,
-        PlayerSupportPackCatalog supportPacks)
-    {
+        PlayerSupportPackCatalog supportPacks,
+        IPlayerSupportPackProvisioner? supportPackProvisioner
+    ) {
         m_assets = assets;
         m_plugins = plugins;
         m_settings = settings;
@@ -43,13 +45,14 @@ internal sealed class GameBuildPipeline
         m_compiler = compiler;
         m_targets = targets;
         m_supportPacks = supportPacks;
+        m_supportPackProvisioner = supportPackProvisioner;
     }
 
     internal async ValueTask<BuildResult> BuildAsync(
         GameBuildRequest request,
         IProgress<BuildProgress>? progress,
-        CancellationToken cancellationToken)
-    {
+        CancellationToken cancellationToken
+    ) {
         ArgumentNullException.ThrowIfNull(request);
         request.Validate();
         if (!m_targets.TryGetValue(request.profile.target, out IGameBuildTarget? target))
@@ -58,7 +61,9 @@ internal sealed class GameBuildPipeline
             throw new InvalidOperationException("Game build requires an active authoring asset database.");
         string outputRoot = Path.GetFullPath(request.outputDirectory);
         ValidateOutputRoot(outputRoot);
-        string supportPack = m_supportPacks.Resolve(request.profile.target);
+        progress?.Report(new BuildProgress("support-pack", 0.01d, "Checking or preparing the Player Support Pack."));
+        string supportPack = m_supportPacks.ResolveOrProvisionAsync(
+            request.profile.target, m_supportPackProvisioner, cancellationToken).GetAwaiter().GetResult();
         m_assets.WaitForIdle();
         AssetPath startupPath = AssetPath.Parse(request.profile.startupScene);
         if (!m_assets.TryGetAssetType(startupPath, out Type? sceneType) || sceneType != typeof(SceneAsset))
@@ -198,11 +203,7 @@ internal sealed class GameBuildPipeline
             Directory.CreateDirectory(platformStaging);
             progress?.Report(new BuildProgress("package", 0.78d, $"Composing {request.profile.target} Player output."));
             string composed = await target.PackageAsync(
-                    new GameBuildPackageContext(
-                        request.profile,
-                        supportPack,
-                        packagedContent,
-                        platformStaging),
+                    new GameBuildPackageContext(request.profile, supportPack, packagedContent, platformStaging),
                     stagingToken)
                 .ConfigureAwait(false);
             string normalizedComposed = Path.GetFullPath(composed);
@@ -264,8 +265,8 @@ internal sealed class GameBuildPipeline
     private static GameRuntimeManifest CreateManifest(
         BuildProfile profile,
         IReadOnlyList<PluginCandidate> plugins,
-        GameRuntimeModule[] modules)
-    {
+        GameRuntimeModule[] modules
+    ) {
         var manifest = new GameRuntimeManifest
         {
             applicationId = profile.applicationId,
@@ -286,8 +287,7 @@ internal sealed class GameBuildPipeline
         return manifest;
     }
 
-    private static GameRuntimeModule[] CreateRuntimeModules(
-        IReadOnlyList<AssemblyLoadRequest> requests)
+    private static GameRuntimeModule[] CreateRuntimeModules(IReadOnlyList<AssemblyLoadRequest> requests)
     {
         var selected = requests
             .Select(request => new
@@ -349,8 +349,8 @@ internal sealed class GameBuildPipeline
     private void EnsureGenerationUnchanged(
         long expectedAssetRevision,
         long expectedPluginRevision,
-        long expectedSettingsRevision)
-    {
+        long expectedSettingsRevision
+    ) {
         if (m_assets.revision != expectedAssetRevision
             || m_plugins.revision != expectedPluginRevision
             || m_settings.revision != expectedSettingsRevision)
@@ -378,8 +378,10 @@ internal sealed class GameBuildPipeline
         }
     }
 
-    private static bool IsWithin(string root, string candidate)
-    {
+    private static bool IsWithin(
+        string root,
+        string candidate
+    ) {
         string normalizedRoot = Path.TrimEndingDirectorySeparator(Path.GetFullPath(root));
         StringComparison comparison = OperatingSystem.IsWindows()
             ? StringComparison.OrdinalIgnoreCase

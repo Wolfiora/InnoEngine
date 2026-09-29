@@ -22,5 +22,8 @@ public interface IInputBackendFactory
     /// <exception cref="System.NotSupportedException">
     /// Thrown when the catalog does not contain the selected backend or the platform is incompatible.
     /// </exception>
-    IInputEventSource CreateEventSource(InputBackend backend, IPlatformWindow window);
+    IInputEventSource CreateEventSource(
+        InputBackend backend,
+        IPlatformWindow window
+    );
 }

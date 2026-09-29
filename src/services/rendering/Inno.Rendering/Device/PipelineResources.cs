@@ -170,8 +170,8 @@ public readonly record struct RenderVertexAttribute
     public RenderVertexAttribute(
         RenderVertexSemantic semantic,
         RenderVertexFormat format,
-        int byteOffset = -1)
-    {
+        int byteOffset = -1
+    ) {
         if (byteOffset < -1)
             throw new ArgumentOutOfRangeException(nameof(byteOffset));
         this.semantic = semantic;
@@ -235,8 +235,10 @@ public sealed class RenderVertexLayout : IEquatable<RenderVertexLayout>
     /// Explicit positive stream stride, or zero to use the end of the final attribute. A larger stride preserves
     /// trailing application-defined padding.
     /// </param>
-    public RenderVertexLayout(IReadOnlyList<RenderVertexAttribute> attributes, int stride = 0)
-    {
+    public RenderVertexLayout(
+        IReadOnlyList<RenderVertexAttribute> attributes,
+        int stride = 0
+    ) {
         ArgumentNullException.ThrowIfNull(attributes);
         ArgumentOutOfRangeException.ThrowIfNegative(stride);
         if (attributes.Count == 0)
@@ -449,8 +451,8 @@ public struct RenderSamplerState : IEquatable<RenderSamplerState>
         RenderSamplerFilter filter,
         RenderSamplerAddressMode addressU,
         RenderSamplerAddressMode addressV,
-        RenderSamplerAddressMode addressW)
-    {
+        RenderSamplerAddressMode addressW
+    ) {
         this.filter = filter;
         this.addressU = addressU;
         this.addressV = addressV;
@@ -501,8 +503,7 @@ public struct RenderSamplerState : IEquatable<RenderSamplerState>
     /// <param name="obj">
     /// The object to compare with this instance.
     /// </param>
-    public override readonly bool Equals(object? obj)
-        => obj is RenderSamplerState other && Equals(other);
+    public override readonly bool Equals(object? obj) => obj is RenderSamplerState other && Equals(other);
 
     /// <summary>
     /// Computes a hash code from the fields that participate in logical equality.
@@ -510,8 +511,7 @@ public struct RenderSamplerState : IEquatable<RenderSamplerState>
     /// <returns>
     /// A hash code consistent with the implemented equality contract.
     /// </returns>
-    public override readonly int GetHashCode()
-        => HashCode.Combine(filter, addressU, addressV, addressW);
+    public override readonly int GetHashCode() => HashCode.Combine(filter, addressU, addressV, addressW);
 
     /// <summary>
     /// Determines whether two sampler descriptions are equal.
@@ -525,8 +525,10 @@ public struct RenderSamplerState : IEquatable<RenderSamplerState>
     /// <returns>
     /// True when every filtering and addressing field is equal.
     /// </returns>
-    public static bool operator ==(RenderSamplerState left, RenderSamplerState right)
-        => left.Equals(right);
+    public static bool operator ==(
+        RenderSamplerState left,
+        RenderSamplerState right
+    ) => left.Equals(right);
 
     /// <summary>
     /// Determines whether two sampler descriptions differ.
@@ -540,8 +542,10 @@ public struct RenderSamplerState : IEquatable<RenderSamplerState>
     /// <returns>
     /// True when at least one filtering or addressing field differs.
     /// </returns>
-    public static bool operator !=(RenderSamplerState left, RenderSamplerState right)
-        => !left.Equals(right);
+    public static bool operator !=(
+        RenderSamplerState left,
+        RenderSamplerState right
+    ) => !left.Equals(right);
 }
 
 /// <summary>
@@ -564,8 +568,8 @@ public sealed class PersistentBufferDescriptor
     public PersistentBufferDescriptor(
         RenderBufferDescriptor buffer,
         RenderVertexLayout? vertexLayout = null,
-        RenderIndexFormat indexFormat = RenderIndexFormat.UInt32)
-    {
+        RenderIndexFormat indexFormat = RenderIndexFormat.UInt32
+    ) {
         ArgumentNullException.ThrowIfNull(buffer);
         if (buffer.usage == 0)
         {
@@ -713,8 +717,8 @@ public sealed class RenderShaderBindingDescriptor
         RenderUniformType uniformType = RenderUniformType.Vector4,
         int count = 1,
         RenderStorageAccess storageAccess = RenderStorageAccess.Read,
-        string? nativeName = null)
-    {
+        string? nativeName = null
+    ) {
         if (!id.isValid)
         {
             throw new ArgumentException("A shader binding requires a stable manifest name.", nameof(id));
@@ -1132,8 +1136,8 @@ public readonly record struct RenderStencilFaceState
         RenderStencilCompare compare,
         RenderStencilOperation fail,
         RenderStencilOperation depthFail,
-        RenderStencilOperation pass)
-    {
+        RenderStencilOperation pass
+    ) {
         this.compare = compare;
         this.fail = fail;
         this.depthFail = depthFail;
@@ -1200,8 +1204,8 @@ public sealed class RenderStencilState
         byte readMask,
         byte writeMask,
         RenderStencilFaceState front,
-        RenderStencilFaceState back)
-    {
+        RenderStencilFaceState back
+    ) {
         this.enabled = enabled;
         this.reference = reference;
         this.readMask = readMask;
@@ -1301,8 +1305,8 @@ public sealed class RenderRasterState
         RenderBlendState blend,
         byte colorWriteMask,
         bool multisampling,
-        RenderPrimitiveTopology topology)
-    {
+        RenderPrimitiveTopology topology
+    ) {
         this.cull = cull;
         this.frontFace = frontFace;
         this.depthCompare = depthCompare;
@@ -1391,8 +1395,8 @@ public sealed class GraphicsPipelineDescriptor
         ReadOnlySpan<byte> fragmentShader,
         IReadOnlyList<RenderShaderBindingDescriptor> bindings,
         RenderVertexLayout? vertexLayout,
-        RenderRasterState? rasterState = null)
-    {
+        RenderRasterState? rasterState = null
+    ) {
         if (vertexShader.IsEmpty)
         {
             throw new ArgumentException("Vertex shader binary cannot be empty.", nameof(vertexShader));
@@ -1465,8 +1469,8 @@ public sealed class ComputePipelineDescriptor
     /// </param>
     public ComputePipelineDescriptor(
         ReadOnlySpan<byte> computeShader,
-        IReadOnlyList<RenderShaderBindingDescriptor> bindings)
-    {
+        IReadOnlyList<RenderShaderBindingDescriptor> bindings
+    ) {
         if (computeShader.IsEmpty)
         {
             throw new ArgumentException("Compute shader binary cannot be empty.", nameof(computeShader));

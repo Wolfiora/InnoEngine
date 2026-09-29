@@ -90,18 +90,7 @@ public sealed class BuildPipelineTests : IDisposable
             },
             m_assets,
             m_plugins);
-        m_pipeline = new BuildPipeline(
-            m_assets,
-            m_plugins,
-            m_settings,
-            m_engine.serialization,
-            m_engine.generations,
-            m_compiler,
-            m_supportPackRoot,
-            [
-                new MacOSArm64GameBuildTarget(m_assets, m_engine.serialization, m_engine.types),
-                new WindowsX64GameBuildTarget(m_assets, m_engine.serialization, m_engine.types)
-            ]);
+        m_pipeline = CreatePipeline();
     }
 
     public void Dispose()
@@ -493,6 +482,44 @@ public sealed class BuildPipelineTests : IDisposable
     }
 
     [Fact]
+    public async Task MissingSupportPackIsProvisionedBeforeExport()
+    {
+        SaveStartupScene();
+        Directory.Delete(Path.Combine(m_supportPackRoot, BuildTargetId.macOSArm64.value), recursive: true);
+        var provisioner = new TestSupportPackProvisioner(target =>
+            CreateSupportPack(target, "Inno.Player"));
+
+        BuildResult result = await CreatePipeline(provisioner).BuildGameAsync(new GameBuildRequest
+        {
+            profile = CreateProfile(BuildTargetId.macOSArm64),
+            outputDirectory = Path.Combine(m_root, "Builds", "Provisioned")
+        });
+
+        Assert.True(result.succeeded);
+        Assert.Equal(1, provisioner.callCount);
+        Assert.True(Directory.Exists(Path.Combine(m_supportPackRoot, BuildTargetId.macOSArm64.value)));
+    }
+
+    [Fact]
+    public async Task InvalidInstalledSupportPackDoesNotTriggerProvisioning()
+    {
+        SaveStartupScene();
+        File.Delete(Path.Combine(m_supportPackRoot, BuildTargetId.macOSArm64.value,
+            "native", "libminiaudio-release.dylib"));
+        var provisioner = new TestSupportPackProvisioner(target =>
+            CreateSupportPack(target, "Inno.Player"));
+
+        await Assert.ThrowsAsync<InvalidDataException>(() =>
+            CreatePipeline(provisioner).BuildGameAsync(new GameBuildRequest
+            {
+                profile = CreateProfile(BuildTargetId.macOSArm64),
+                outputDirectory = Path.Combine(m_root, "Builds", "InvalidPack")
+            }).AsTask());
+
+        Assert.Equal(0, provisioner.callCount);
+    }
+
+    [Fact]
     public void SupportPackRejectsMissingMiniAudioRuntime()
     {
         string supportPack = Path.Combine(m_supportPackRoot, BuildTargetId.macOSArm64.value);
@@ -646,6 +673,39 @@ public sealed class BuildPipelineTests : IDisposable
                 "inno-text-release.dll", "inno-ui-release.dll"];
         foreach (string file in required)
             File.WriteAllBytes(Path.Combine(native, file), [0x49, 0x4E, 0x4E, 0x4F]);
+    }
+
+    private BuildPipeline CreatePipeline(IPlayerSupportPackProvisioner? provisioner = null)
+        => new(
+            m_assets,
+            m_plugins,
+            m_settings,
+            m_engine.serialization,
+            m_engine.generations,
+            m_compiler,
+            m_supportPackRoot,
+            [
+                new MacOSArm64GameBuildTarget(m_assets, m_engine.serialization, m_engine.types),
+                new WindowsX64GameBuildTarget(m_assets, m_engine.serialization, m_engine.types)
+            ],
+            provisioner);
+
+    private sealed class TestSupportPackProvisioner(Action<BuildTargetId> provision)
+        : IPlayerSupportPackProvisioner
+    {
+        internal int callCount { get; private set; }
+
+        public ValueTask ProvisionAsync(
+            BuildTargetId target,
+            string supportPackRoot,
+            CancellationToken cancellationToken = default)
+        {
+            _ = supportPackRoot;
+            cancellationToken.ThrowIfCancellationRequested();
+            callCount++;
+            provision(target);
+            return ValueTask.CompletedTask;
+        }
     }
 
     private static bool IsAuthoringAssembly(string name)

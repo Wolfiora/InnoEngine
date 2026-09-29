@@ -20,8 +20,8 @@ public sealed class EditorPanelExtension
         int order,
         EditorPanel panel,
         Func<bool> takeFocusRequest,
-        Action<Exception> quarantine)
-    {
+        Action<Exception> quarantine
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(id);
         this.id = id;
         this.title = title;
@@ -81,8 +81,8 @@ public sealed class EditorPanelExtension
     public bool TryGetWindowPresentation(
         out bool useWindowPadding,
         out bool allowScrolling,
-        out Vector2 initialSize)
-    {
+        out Vector2 initialSize
+    ) {
         try
         {
             useWindowPadding = m_panel.useWindowPadding;

@@ -17,8 +17,10 @@ public static class AtomicDirectory
     /// <param name="destination">
     /// The destination directory.
     /// </param>
-    public static void Install(string source, string destination)
-    {
+    public static void Install(
+        string source,
+        string destination
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(source);
         ArgumentException.ThrowIfNullOrWhiteSpace(destination);
         string candidate = Path.GetFullPath(source);

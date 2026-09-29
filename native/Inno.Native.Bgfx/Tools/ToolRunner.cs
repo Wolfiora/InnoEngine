@@ -26,8 +26,11 @@ public sealed class ToolRunResult
     /// <param name="standardError">
     /// Captured standard error.
     /// </param>
-    public ToolRunResult(int exitCode, string standardOutput, string standardError)
-    {
+    public ToolRunResult(
+        int exitCode,
+        string standardOutput,
+        string standardError
+    ) {
         this.exitCode = exitCode;
         this.standardOutput = standardOutput ?? string.Empty;
         this.standardError = standardError ?? string.Empty;
@@ -77,7 +80,8 @@ public static class ToolRunner
     public static ToolRunResult Run(
         BgfxTool tool,
         IReadOnlyList<string> arguments,
-        string? workingDirectory = null)
+        string? workingDirectory = null
+    )
         => RunAsync(tool, arguments, workingDirectory).AsTask().GetAwaiter().GetResult();
 
     /// <summary>
@@ -108,8 +112,8 @@ public static class ToolRunner
         BgfxTool tool,
         IReadOnlyList<string> arguments,
         string? workingDirectory = null,
-        CancellationToken cancellationToken = default)
-    {
+        CancellationToken cancellationToken = default
+    ) {
         ArgumentNullException.ThrowIfNull(arguments);
         string toolPath = ResolveToolPath(tool);
         var startInfo = new ProcessStartInfo
@@ -201,8 +205,10 @@ public static class ToolRunner
         }
     }
 
-    private static bool TryFindNativeFile(string fileName, out string fullPath)
-    {
+    private static bool TryFindNativeFile(
+        string fileName,
+        out string fullPath
+    ) {
         try
         {
             fullPath = NativeDllLoader.FindNativeFile(fileName);

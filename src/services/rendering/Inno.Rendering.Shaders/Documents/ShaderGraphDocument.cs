@@ -33,7 +33,11 @@ public static class ShaderGraphDocument
     /// <returns>
     /// The assigned stable ID, or an empty string for generic explicit stage authoring.
     /// </returns>
-    public static string ReadTarget(GraphDocument graph, SerializationRegistry serialization, SerializationContext context)
+    public static string ReadTarget(
+        GraphDocument graph,
+        SerializationRegistry serialization,
+        SerializationContext context
+    )
         => graph.metadata.TryGetValue(targetKey, out GraphSerializedValue? value) ? Decode<string>(value, serialization, context) : "";
 
     /// <summary>
@@ -51,11 +55,17 @@ public static class ShaderGraphDocument
     /// <param name="context">
     /// Complete owner reference context.
     /// </param>
-    public static void SetTarget(GraphDocument graph, string targetId, SerializationRegistry serialization, SerializationContext context)
-    {
+    public static void SetTarget(
+        GraphDocument graph,
+        string targetId,
+        SerializationRegistry serialization,
+        SerializationContext context
+    ) {
         ArgumentNullException.ThrowIfNull(targetId);
-        if (targetId.Length == 0) graph.RemoveMetadata(targetKey);
-        else graph.SetMetadata(targetKey, Encode(targetId, serialization, context));
+        if (targetId.Length == 0)
+            graph.RemoveMetadata(targetKey);
+        else
+            graph.SetMetadata(targetKey, Encode(targetId, serialization, context));
     }
     /// <summary>
     /// Identifies a stage output node; its incoming edges name the stage's GPU outputs.
@@ -89,8 +99,11 @@ public static class ShaderGraphDocument
     /// <returns>
     /// A detached graph ready for authoring.
     /// </returns>
-    public static GraphDocument Create(ShaderDefinition definition, SerializationRegistry serialization, SerializationContext context)
-    {
+    public static GraphDocument Create(
+        ShaderDefinition definition,
+        SerializationRegistry serialization,
+        SerializationContext context
+    ) {
         ArgumentNullException.ThrowIfNull(definition);
         var graph = new GraphDocument();
         graph.SetMetadata(definitionKey, Encode(serialization.Serialize(definition, context), serialization, context));
@@ -113,8 +126,11 @@ public static class ShaderGraphDocument
     /// <returns>
     /// A detached contract; missing or corrupt metadata is an explicit error.
     /// </returns>
-    public static ShaderDefinition ReadDefinition(GraphDocument graph, SerializationRegistry serialization, SerializationContext context)
-    {
+    public static ShaderDefinition ReadDefinition(
+        GraphDocument graph,
+        SerializationRegistry serialization,
+        SerializationContext context
+    ) {
         ArgumentNullException.ThrowIfNull(graph);
         if (!graph.metadata.TryGetValue(definitionKey, out GraphSerializedValue? value))
             throw new InvalidOperationException("The shader graph has no program definition.");
@@ -139,8 +155,11 @@ public static class ShaderGraphDocument
     /// <returns>
     /// Neutral bytes suitable for graph persistence and history.
     /// </returns>
-    public static GraphSerializedValue Encode<T>(T value, SerializationRegistry serialization, SerializationContext context)
-    {
+    public static GraphSerializedValue Encode<T>(
+        T value,
+        SerializationRegistry serialization,
+        SerializationContext context
+    ) {
         ArgumentNullException.ThrowIfNull(serialization);
         ArgumentNullException.ThrowIfNull(context);
         return new(serialization.Encode(writer => writer.Write("value", value), context));
@@ -164,8 +183,11 @@ public static class ShaderGraphDocument
     /// <returns>
     /// A detached current-generation value.
     /// </returns>
-    public static T Decode<T>(GraphSerializedValue value, SerializationRegistry serialization, SerializationContext context)
-    {
+    public static T Decode<T>(
+        GraphSerializedValue value,
+        SerializationRegistry serialization,
+        SerializationContext context
+    ) {
         ArgumentNullException.ThrowIfNull(value);
         ArgumentNullException.ThrowIfNull(serialization);
         ArgumentNullException.ThrowIfNull(context);
@@ -196,7 +218,13 @@ public static class ShaderGraphDocument
     /// <returns>
     /// The decoded value or explicit absent-property default.
     /// </returns>
-    public static T Read<T>(GraphNodeRecord node, string key, T defaultValue, SerializationRegistry serialization, SerializationContext context)
+    public static T Read<T>(
+        GraphNodeRecord node,
+        string key,
+        T defaultValue,
+        SerializationRegistry serialization,
+        SerializationContext context
+    )
         => node.TryGetValue(key, out GraphSerializedValue? value) ? Decode<T>(value!, serialization, context) : defaultValue;
 }
 

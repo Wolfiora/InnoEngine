@@ -108,8 +108,11 @@ internal static partial class Program
         throw new DirectoryNotFoundException("Could not locate the InnoEngine repository root.");
     }
 
-    private static void ValidateDirectories(string repositoryRoot, string root, ICollection<string> failures)
-    {
+    private static void ValidateDirectories(
+        string repositoryRoot,
+        string root,
+        ICollection<string> failures
+    ) {
         foreach (string directory in EnumerateDirectories(root))
         {
             string name = Path.GetFileName(directory);
@@ -120,8 +123,11 @@ internal static partial class Program
         }
     }
 
-    private static void ValidateSources(string repositoryRoot, string root, ICollection<string> failures)
-    {
+    private static void ValidateSources(
+        string repositoryRoot,
+        string root,
+        ICollection<string> failures
+    ) {
         foreach (string path in EnumerateFiles(root, "*.cs"))
         {
             string source = File.ReadAllText(path);
@@ -232,8 +238,10 @@ internal static partial class Program
         return changedFileCount;
     }
 
-    private static string ReadFollowingDeclaration(IReadOnlyList<string> lines, int start)
-    {
+    private static string ReadFollowingDeclaration(
+        IReadOnlyList<string> lines,
+        int start
+    ) {
         var builder = new StringBuilder();
         bool inAttribute = false;
         int parenthesisDepth = 0;
@@ -394,8 +402,10 @@ internal static partial class Program
         return changedFileCount;
     }
 
-    private static string CreateExplicitDocumentation(string indentation, string declaration)
-    {
+    private static string CreateExplicitDocumentation(
+        string indentation,
+        string declaration
+    ) {
         Match method = MethodDeclarationPattern().Match(declaration);
         string summary;
         string returns = string.Empty;
@@ -505,8 +515,11 @@ internal static partial class Program
         };
     }
 
-    private static string DescribeProperty(string name, string type, bool hasSetter)
-    {
+    private static string DescribeProperty(
+        string name,
+        string type,
+        bool hasSetter
+    ) {
         string access = hasSetter ? "Gets or sets" : "Gets";
         if (name.StartsWith("is", StringComparison.Ordinal) && name.Length > 2)
             return $"{access} whether this implementation is {Humanize(name[2..])}.";
@@ -536,8 +549,10 @@ internal static partial class Program
         };
     }
 
-    private static string DescribeReturn(string name, string returnType)
-    {
+    private static string DescribeReturn(
+        string name,
+        string returnType
+    ) {
         if (name == "Equals")
             return "<see langword=\"true\"/> when both values represent the same logical state; otherwise, <see langword=\"false\"/>.";
         if (name == "GetHashCode")
@@ -564,8 +579,11 @@ internal static partial class Program
         return $"{article} {value}";
     }
 
-    private static void ValidateProjects(string repositoryRoot, string root, ICollection<string> failures)
-    {
+    private static void ValidateProjects(
+        string repositoryRoot,
+        string root,
+        ICollection<string> failures
+    ) {
         foreach (string path in EnumerateFiles(root, "*.csproj"))
         {
             XDocument project = XDocument.Load(path, LoadOptions.SetLineInfo);
@@ -580,8 +598,10 @@ internal static partial class Program
         }
     }
 
-    private static void ValidateProjectReferences(string repositoryRoot, ICollection<string> failures)
-    {
+    private static void ValidateProjectReferences(
+        string repositoryRoot,
+        ICollection<string> failures
+    ) {
         foreach (string projectPath in EnumerateFiles(repositoryRoot, "*.csproj"))
         {
             if (IsIgnoredPath(projectPath))
@@ -648,8 +668,10 @@ internal static partial class Program
         }
     }
 
-    private static void ValidateTestSolutionFolders(string repositoryRoot, ICollection<string> failures)
-    {
+    private static void ValidateTestSolutionFolders(
+        string repositoryRoot,
+        ICollection<string> failures
+    ) {
         string solutionPath = Path.Combine(repositoryRoot, "InnoEngine.sln");
         var names = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         var paths = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
@@ -737,8 +759,10 @@ internal static partial class Program
         }
     }
 
-    private static void ValidateSourceSolutionFolders(string repositoryRoot, ICollection<string> failures)
-    {
+    private static void ValidateSourceSolutionFolders(
+        string repositoryRoot,
+        ICollection<string> failures
+    ) {
         string solutionPath = Path.Combine(repositoryRoot, "InnoEngine.sln");
         var names = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         var paths = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
@@ -782,21 +806,28 @@ internal static partial class Program
         }
 
         var declaredSourceProjects = paths
-            .Where(static pair => pair.Value.StartsWith("src/", StringComparison.Ordinal) &&
+            .Where(static pair => (pair.Value.StartsWith("src/", StringComparison.Ordinal) ||
+                                   pair.Value.StartsWith("build/support/", StringComparison.Ordinal)) &&
                                   pair.Value.EndsWith(".csproj", StringComparison.OrdinalIgnoreCase))
             .ToDictionary(static pair => pair.Value, static pair => pair.Key, StringComparer.OrdinalIgnoreCase);
         string sourceDirectory = Path.Combine(repositoryRoot, "src");
-        foreach (string projectPath in EnumerateFiles(sourceDirectory, "*.csproj"))
+        string supportDirectory = Path.Combine(repositoryRoot, "build", "support");
+        foreach (string projectPath in EnumerateFiles(sourceDirectory, "*.csproj")
+                     .Concat(Directory.Exists(supportDirectory)
+                         ? EnumerateFiles(supportDirectory, "*.csproj")
+                         : []))
         {
             string relative = Relative(repositoryRoot, projectPath);
             if (!declaredSourceProjects.ContainsKey(relative))
-                failures.Add($"{relative}: source project is missing from InnoEngine.sln.");
+                failures.Add($"{relative}: project is missing from InnoEngine.sln.");
         }
 
         foreach ((string projectPath, string projectId) in declaredSourceProjects)
         {
             string projectName = names[projectId];
-            string? expectedPath = ClassifySourceSolutionPath(projectName);
+            string? expectedPath = projectPath.StartsWith("build/support/", StringComparison.Ordinal)
+                ? "build/support"
+                : ClassifySourceSolutionPath(projectName);
             if (expectedPath is null)
             {
                 failures.Add($"{projectPath}: source project '{projectName}' has no conceptual Solution Folder classification.");
@@ -913,8 +944,8 @@ internal static partial class Program
         string projectId,
         IReadOnlyDictionary<string, string> names,
         IReadOnlySet<string> solutionFolders,
-        IReadOnlyDictionary<string, string> parents)
-    {
+        IReadOnlyDictionary<string, string> parents
+    ) {
         if (!parents.TryGetValue(projectId, out string? currentId))
             return "<solution-root>";
 
@@ -935,8 +966,8 @@ internal static partial class Program
     private static bool HasSolutionAncestor(
         string startingId,
         string expectedAncestorId,
-        IReadOnlyDictionary<string, string> parents)
-    {
+        IReadOnlyDictionary<string, string> parents
+    ) {
         string currentId = startingId;
         var visited = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         while (visited.Add(currentId))
@@ -953,8 +984,8 @@ internal static partial class Program
         string startingId,
         string expectedName,
         IReadOnlyDictionary<string, string> names,
-        IReadOnlyDictionary<string, string> parents)
-    {
+        IReadOnlyDictionary<string, string> parents
+    ) {
         string currentId = startingId;
         var visited = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         while (visited.Add(currentId))
@@ -967,15 +998,18 @@ internal static partial class Program
         return false;
     }
 
-    private static bool IsAnyDomain(string path, params string[] domains)
+    private static bool IsAnyDomain(
+        string path,
+        params string[] domains
+    )
         => domains.Any(domain => path.StartsWith($"src/{domain}/", StringComparison.Ordinal));
 
     private static void AddSourceFailure(
         bool condition,
         string path,
         string message,
-        ICollection<string> failures)
-    {
+        ICollection<string> failures
+    ) {
         if (condition)
             failures.Add($"{path}: {message}.");
     }
@@ -997,8 +1031,10 @@ internal static partial class Program
         }
     }
 
-    private static IEnumerable<string> EnumerateFiles(string root, string pattern)
-    {
+    private static IEnumerable<string> EnumerateFiles(
+        string root,
+        string pattern
+    ) {
         var pending = new Stack<string>();
         pending.Push(root);
         while (pending.Count > 0)
@@ -1014,15 +1050,16 @@ internal static partial class Program
         }
     }
 
-    private static bool IsIgnoredPath(string path)
-        => path.Split(Path.DirectorySeparatorChar).Any(S_IGNORED_DIRECTORIES.Contains);
+    private static bool IsIgnoredPath(string path) => path.Split(Path.DirectorySeparatorChar).Any(S_IGNORED_DIRECTORIES.Contains);
 
     private static bool IsGenerated(string source)
         => source.Contains("<auto-generated>", StringComparison.OrdinalIgnoreCase) ||
            source.Contains("[GeneratedCode", StringComparison.Ordinal);
 
-    private static string Relative(string repositoryRoot, string path)
-        => Path.GetRelativePath(repositoryRoot, path).Replace('\\', '/');
+    private static string Relative(
+        string repositoryRoot,
+        string path
+    ) => Path.GetRelativePath(repositoryRoot, path).Replace('\\', '/');
 
     [GeneratedRegex(@"\b(schemaVersion|formatVersion|formerVersion)\b", RegexOptions.IgnoreCase)]
     private static partial Regex CompatibilityFieldPattern();

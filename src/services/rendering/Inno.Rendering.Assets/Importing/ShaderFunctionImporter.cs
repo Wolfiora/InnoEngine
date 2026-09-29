@@ -45,16 +45,19 @@ internal sealed class ShaderFunctionImporter : AssetImporter<ShaderFunctionAsset
     /// <returns>
     /// An asynchronous operation that completes after all requested work has finished.
     /// </returns>
-    protected override async ValueTask ImportAsync(AssetImportContext context, AssetImportWriter<ShaderFunctionAsset> output,
-        CancellationToken cancellationToken)
-    {
+    protected override async ValueTask ImportAsync(
+        AssetImportContext context,
+        AssetImportWriter<ShaderFunctionAsset> output,
+        CancellationToken cancellationToken
+    ) {
         var settings = context.importSettings as ShaderSourceImportSettings
             ?? throw new InvalidOperationException("Shader source requires its standard import settings.");
         ArgumentException.ThrowIfNullOrWhiteSpace(settings.languageId);
         ArgumentException.ThrowIfNullOrWhiteSpace(settings.implementationId);
         string[] exports = (settings.exports ?? []).Where(static value => !string.IsNullOrWhiteSpace(value))
             .Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal).ToArray();
-        if (exports.Length == 0) throw new InvalidDataException("Shader source libraries must export at least one named function.");
+        if (exports.Length == 0)
+            throw new InvalidDataException("Shader source libraries must export at least one named function.");
         var source = new ShaderSourceFile(context.assetPath.ToString(), context.ReadUtf8Text());
         using var frontends = new ShaderSourceFrontendRegistry(context.types);
         var modules = new Dictionary<string, ShaderSourceModuleAnalysis>(StringComparer.Ordinal);
@@ -106,8 +109,10 @@ internal sealed class ShaderFunctionImporter : AssetImporter<ShaderFunctionAsset
         /// <returns>
         /// The validated shader source file that represents the completed operation.
         /// </returns>
-public ShaderSourceFile ReadInclude(string includingFile, string include)
-        {
+public ShaderSourceFile ReadInclude(
+    string includingFile,
+    string include
+) {
             AssetPath owner = AssetPath.Parse(includingFile);
             string normalized = include.Replace('\\', '/');
             AssetPath path = normalized.Contains("::", StringComparison.Ordinal) ? AssetPath.Parse(normalized)

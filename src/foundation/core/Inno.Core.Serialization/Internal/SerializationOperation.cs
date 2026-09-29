@@ -15,8 +15,8 @@ internal sealed class SerializationOperation
 
     internal SerializationOperation(
         SerializationContext context,
-        ConverterRegistryLease converters)
-    {
+        ConverterRegistryLease converters
+    ) {
         ArgumentNullException.ThrowIfNull(converters);
         this.context = context;
         m_converters = converters;
@@ -55,8 +55,10 @@ internal sealed class SerializationOperation
             m_completionCallbacks.Add(callback);
     }
 
-    internal void EnterCapture(object value, string path)
-    {
+    internal void EnterCapture(
+        object value,
+        string path
+    ) {
         EnsureActive();
         if (m_capturePaths.TryGetValue(value, out string? existingPath))
         {
@@ -133,7 +135,10 @@ internal sealed class SerializationOperation
         m_capturePaths.Clear();
     }
 
-    internal readonly record struct Checkpoint(int callbackCount, int scheduledObjectCount);
+    internal readonly record struct Checkpoint(
+        int callbackCount,
+        int scheduledObjectCount
+    );
 
     private sealed class ReferenceComparer : IEqualityComparer<object>
     {
@@ -151,7 +156,10 @@ internal sealed class SerializationOperation
         /// <returns>
         /// <see langword="true"/> when the requested condition is satisfied; otherwise, <see langword="false"/>.
         /// </returns>
-        public new bool Equals(object? x, object? y) => ReferenceEquals(x, y);
+        public new bool Equals(
+            object? x,
+            object? y
+        ) => ReferenceEquals(x, y);
 
         /// <summary>
         /// Computes a hash code consistent with the implemented equality contract.

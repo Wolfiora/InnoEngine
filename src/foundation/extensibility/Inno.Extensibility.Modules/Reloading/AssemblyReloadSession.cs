@@ -17,8 +17,10 @@ public sealed class AssemblyReloadSession : IDisposable, IGenerationPublication<
     private bool m_disposed;
     private Exception? m_retirementFailure;
 
-    internal AssemblyReloadSession(ModuleHost owner, ReloadState state)
-    {
+    internal AssemblyReloadSession(
+        ModuleHost owner,
+        ReloadState state
+    ) {
         m_owner = owner;
         m_state = state;
         context = new AssemblyReloadContext(
@@ -64,7 +66,10 @@ public sealed class AssemblyReloadSession : IDisposable, IGenerationPublication<
     {
         EnsureRetirementSafe();
         ObjectDisposedException.ThrowIf(m_disposed, this);
-        try { return m_owner.Complete(m_state!); }
+        try
+        {
+            return m_owner.Complete(m_state!);
+        }
         catch (Exception failure) when (RetirementPendingException.Find(failure) is not null)
         {
             m_retirementFailure = failure;
@@ -92,7 +97,10 @@ public sealed class AssemblyReloadSession : IDisposable, IGenerationPublication<
         EnsureRetirementSafe();
         if (m_disposed)
             return;
-        try { m_owner.Rollback(m_state!); }
+        try
+        {
+            m_owner.Rollback(m_state!);
+        }
         catch (Exception failure) when (RetirementPendingException.Find(failure) is not null)
         {
             m_retirementFailure = failure;

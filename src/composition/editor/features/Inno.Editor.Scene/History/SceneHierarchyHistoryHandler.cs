@@ -15,8 +15,10 @@ internal sealed class SceneHierarchyHistoryHandler : EditorHistoryHandler
     private readonly EditorSceneWorkspace m_workspace;
     private readonly Logger m_log;
 
-    internal SceneHierarchyHistoryHandler(EditorSceneWorkspace workspace, LogRouter logs)
-    {
+    internal SceneHierarchyHistoryHandler(
+        EditorSceneWorkspace workspace,
+        LogRouter logs
+    ) {
         m_workspace = workspace ?? throw new ArgumentNullException(nameof(workspace));
         ArgumentNullException.ThrowIfNull(logs);
         m_log = logs.CreateLogger<SceneHierarchyHistoryHandler>();
@@ -40,8 +42,8 @@ internal sealed class SceneHierarchyHistoryHandler : EditorHistoryHandler
     protected override EditorHistoryAvailability Query(
         EditorHistoryContext context,
         EditorHistoryChange change,
-        EditorHistoryDirection direction)
-    {
+        EditorHistoryDirection direction
+    ) {
         try
         {
             SceneHierarchyHistoryData data = SceneHierarchyHistoryData.Decode(change.payload.ReadBytes());
@@ -109,8 +111,8 @@ internal sealed class SceneHierarchyHistoryHandler : EditorHistoryHandler
     protected override EditorHistoryResult Apply(
         EditorHistoryContext context,
         EditorHistoryChange change,
-        EditorHistoryDirection direction)
-    {
+        EditorHistoryDirection direction
+    ) {
         try
         {
             SceneHierarchyHistoryData data = SceneHierarchyHistoryData.Decode(change.payload.ReadBytes());
@@ -205,8 +207,10 @@ internal sealed class SceneHierarchyHistoryHandler : EditorHistoryHandler
             ResolveObject(placement.objectId).transform.SetSiblingIndex(placement.siblingIndex);
     }
 
-    private static bool IsDescendantOf(Transform transform, Transform possibleAncestor)
-    {
+    private static bool IsDescendantOf(
+        Transform transform,
+        Transform possibleAncestor
+    ) {
         for (Transform? current = transform; current is not null; current = current.parent)
         {
             if (ReferenceEquals(current, possibleAncestor))

@@ -9,8 +9,11 @@ public sealed class SerializationPropertySnapshot
 {
     private readonly byte[] m_data;
 
-    internal SerializationPropertySnapshot(string name, Type propertyType, byte[] data)
-    {
+    internal SerializationPropertySnapshot(
+        string name,
+        Type propertyType,
+        byte[] data
+    ) {
         this.name = name;
         this.propertyType = propertyType;
         m_data = data;

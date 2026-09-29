@@ -29,8 +29,10 @@ public abstract class EngineObject : IdentityObject
     /// <returns>
     /// <see langword="true"/> when both operands refer to the same live object or both behave as null.
     /// </returns>
-    public static bool operator ==(EngineObject? left, EngineObject? right)
-    {
+    public static bool operator ==(
+        EngineObject? left,
+        EngineObject? right
+    ) {
         if (ReferenceEquals(left, right))
             return true;
         if (ReferenceEquals(left, null))
@@ -52,7 +54,10 @@ public abstract class EngineObject : IdentityObject
     /// <returns>
     /// <see langword="true"/> when the operands do not represent the same object.
     /// </returns>
-    public static bool operator !=(EngineObject? left, EngineObject? right) => !(left == right);
+    public static bool operator !=(
+        EngineObject? left,
+        EngineObject? right
+    ) => !(left == right);
 
     /// <summary>
     /// Compares this instance to another object using reference identity.

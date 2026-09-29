@@ -538,6 +538,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "player", "player", "{BA3DA2
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inno.Player.E2E", "tests\player\Inno.Player.E2E\Inno.Player.E2E.csproj", "{AE1EFD54-1ABA-4658-9A81-32DFE63118F0}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inno.Build.SupportPacks.Core", "build\support\Inno.Build.SupportPacks.Core\Inno.Build.SupportPacks.Core.csproj", "{B3AE0F12-728E-4D85-8C09-6B5861013E08}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -1304,6 +1306,10 @@ Global
 		{AE1EFD54-1ABA-4658-9A81-32DFE63118F0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AE1EFD54-1ABA-4658-9A81-32DFE63118F0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AE1EFD54-1ABA-4658-9A81-32DFE63118F0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B3AE0F12-728E-4D85-8C09-6B5861013E08}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B3AE0F12-728E-4D85-8C09-6B5861013E08}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B3AE0F12-728E-4D85-8C09-6B5861013E08}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B3AE0F12-728E-4D85-8C09-6B5861013E08}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -1572,5 +1578,6 @@ Global
 		{DFB17FA4-50BC-4FB3-A81C-83C89A2E2B1A} = {5DF3708D-E2F4-496F-AC5C-507F87A4128F}
 		{BA3DA2F9-16D2-4135-8A41-B1559B12069A} = {D6BE33BD-7AC1-4C59-AF9A-52C523FABA31}
 		{AE1EFD54-1ABA-4658-9A81-32DFE63118F0} = {BA3DA2F9-16D2-4135-8A41-B1559B12069A}
+		{B3AE0F12-728E-4D85-8C09-6B5861013E08} = {46BA87AD-031B-4150-9E7E-AC18561B50E7}
 	EndGlobalSection
 EndGlobal

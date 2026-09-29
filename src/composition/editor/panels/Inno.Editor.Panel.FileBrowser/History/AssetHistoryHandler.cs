@@ -7,7 +7,10 @@ using Inno.Editor.Interactions;
 namespace Inno.Editor.Panel.FileBrowser;
 
 [EditorHistoryHandler(AssetHistoryKinds.SourceOperation)]
-internal sealed class AssetHistoryHandler(AssetEditorModule assets, LogRouter logs) : EditorHistoryHandler
+internal sealed class AssetHistoryHandler(
+    AssetEditorModule assets,
+    LogRouter logs
+) : EditorHistoryHandler
 {
     private readonly Logger m_log = (logs ?? throw new ArgumentNullException(nameof(logs)))
         .CreateLogger<AssetHistoryHandler>();
@@ -30,8 +33,8 @@ internal sealed class AssetHistoryHandler(AssetEditorModule assets, LogRouter lo
     protected override EditorHistoryAvailability Query(
         EditorHistoryContext context,
         EditorHistoryChange change,
-        EditorHistoryDirection direction)
-    {
+        EditorHistoryDirection direction
+    ) {
         try
         {
             AssetHistoryData data = AssetHistoryData.Decode(change.payload.ReadBytes());
@@ -68,8 +71,8 @@ internal sealed class AssetHistoryHandler(AssetEditorModule assets, LogRouter lo
     protected override EditorHistoryResult Apply(
         EditorHistoryContext context,
         EditorHistoryChange change,
-        EditorHistoryDirection direction)
-    {
+        EditorHistoryDirection direction
+    ) {
         try
         {
             AssetHistoryData data = AssetHistoryData.Decode(change.payload.ReadBytes());
@@ -117,8 +120,10 @@ internal sealed class AssetHistoryHandler(AssetEditorModule assets, LogRouter lo
         }
     }
 
-    private EditorHistoryResult ApplyMove(string sourcePath, string targetPath)
-    {
+    private EditorHistoryResult ApplyMove(
+        string sourcePath,
+        string targetPath
+    ) {
         try
         {
             assets.MoveFromHistory(sourcePath, targetPath);
@@ -146,8 +151,8 @@ internal sealed class AssetHistoryHandler(AssetEditorModule assets, LogRouter lo
 
     private EditorHistoryResult ApplyCreateDirectory(
         AssetHistoryData data,
-        EditorHistoryDirection direction)
-    {
+        EditorHistoryDirection direction
+    ) {
         bool shouldExist = direction == EditorHistoryDirection.Redo;
         try
         {
@@ -182,8 +187,8 @@ internal sealed class AssetHistoryHandler(AssetEditorModule assets, LogRouter lo
 
     private EditorHistoryResult ApplyDelete(
         AssetHistoryData data,
-        EditorHistoryDirection direction)
-    {
+        EditorHistoryDirection direction
+    ) {
         bool shouldExist = direction == EditorHistoryDirection.Undo;
         try
         {
@@ -218,8 +223,8 @@ internal sealed class AssetHistoryHandler(AssetEditorModule assets, LogRouter lo
 
     private EditorHistoryResult ApplyCreateAsset(
         AssetHistoryData data,
-        EditorHistoryDirection direction)
-    {
+        EditorHistoryDirection direction
+    ) {
         bool shouldExist = direction == EditorHistoryDirection.Redo;
         try
         {
@@ -254,8 +259,8 @@ internal sealed class AssetHistoryHandler(AssetEditorModule assets, LogRouter lo
 
     private EditorHistoryAvailability QueryMove(
         AssetHistoryData data,
-        EditorHistoryDirection direction)
-    {
+        EditorHistoryDirection direction
+    ) {
         string source = direction == EditorHistoryDirection.Undo ? data.targetPath : data.sourcePath;
         string target = direction == EditorHistoryDirection.Undo ? data.sourcePath : data.targetPath;
         if (!assets.pipeline.TryGetFileSystemEntry(AssetPath.Parse(source), out _))
@@ -267,7 +272,8 @@ internal sealed class AssetHistoryHandler(AssetEditorModule assets, LogRouter lo
 
     private EditorHistoryAvailability QueryCreateDirectory(
         AssetHistoryData data,
-        EditorHistoryDirection direction)
+        EditorHistoryDirection direction
+    )
         => direction == EditorHistoryDirection.Undo
             ? assets.pipeline.TryGetFileSystemEntry(AssetPath.Parse(data.sourcePath), out _)
                 ? EditorHistoryAvailability.Available()
@@ -278,7 +284,8 @@ internal sealed class AssetHistoryHandler(AssetEditorModule assets, LogRouter lo
 
     private EditorHistoryAvailability QueryDelete(
         AssetHistoryData data,
-        EditorHistoryDirection direction)
+        EditorHistoryDirection direction
+    )
         => direction == EditorHistoryDirection.Undo
             ? !assets.pipeline.TryGetFileSystemEntry(AssetPath.Parse(data.sourcePath), out _)
                 ? EditorHistoryAvailability.Available()
@@ -289,7 +296,8 @@ internal sealed class AssetHistoryHandler(AssetEditorModule assets, LogRouter lo
 
     private EditorHistoryAvailability QueryCreateAsset(
         AssetHistoryData data,
-        EditorHistoryDirection direction)
+        EditorHistoryDirection direction
+    )
         => direction == EditorHistoryDirection.Undo
             ? assets.pipeline.TryGetFileSystemEntry(AssetPath.Parse(data.sourcePath), out _)
                 ? EditorHistoryAvailability.Available()

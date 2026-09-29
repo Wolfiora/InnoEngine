@@ -2,28 +2,30 @@
 
 #include <RmlUi/Core/EventListener.h>
 
-namespace Rml {
+namespace Rml
+{
 class Event;
 }
 
-namespace Inno::UI::RmlUiAdapter {
+namespace Inno::UI::RmlUiAdapter
+{
 
 class RmlUiEventSink
 {
-public:
+  public:
     virtual void ProcessRmlUiEvent(Rml::Event& event) = 0;
 
-protected:
+  protected:
     ~RmlUiEventSink() = default;
 };
 
 class RmlUiEventListener final : public Rml::EventListener
 {
-public:
+  public:
     explicit RmlUiEventListener(RmlUiEventSink& sink) noexcept;
     void ProcessEvent(Rml::Event& event) override;
 
-private:
+  private:
     RmlUiEventSink& m_sink;
 };
 

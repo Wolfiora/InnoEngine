@@ -36,6 +36,5 @@ internal sealed class EditorProjectDiagnosticPublisher : IDisposable
     /// <summary>
     /// Releases the resources owned by this instance.
     /// </summary>
-    public void Dispose()
-        => ResolvePersistence();
+    public void Dispose() => ResolvePersistence();
 }

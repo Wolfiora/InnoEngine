@@ -130,8 +130,8 @@ internal static partial class Program
         IReadOnlyList<string> bindingProjects,
         string uiBridgeConfig,
         string bindGenProject,
-        string bindGenRuntimeProject)
-    {
+        string bindGenRuntimeProject
+    ) {
         foreach (string project in bindingProjects)
         {
             string config = Path.Combine(Path.GetDirectoryName(project)!, "Bindings", "bindgen.json");
@@ -166,8 +166,8 @@ internal static partial class Program
         string repositoryRoot,
         AcceptanceOptions options,
         string bindGenProject,
-        string uiBridgeConfig)
-    {
+        string uiBridgeConfig
+    ) {
         using JsonDocument bridgeConfig = JsonDocument.Parse(File.ReadAllText(uiBridgeConfig));
         string outputPath = bridgeConfig.RootElement.GetProperty("OutputPath").GetString()
             ?? throw new InvalidOperationException("RmlUi Cpp2C OutputPath must be a directory.");
@@ -250,8 +250,8 @@ internal static partial class Program
     private static void BuildNativeDependencies(
         string repositoryRoot,
         AcceptanceOptions options,
-        string nativeConfiguration)
-    {
+        string nativeConfiguration
+    ) {
         Console.WriteLine("[inno-bindings] Build every native dependency required by generated bindings.");
         foreach (NativeBuildStep step in S_NATIVE_BUILD_STEPS)
         {
@@ -296,8 +296,8 @@ internal static partial class Program
     private static void RunTests(
         string repositoryRoot,
         AcceptanceOptions options,
-        IReadOnlyList<string> testProjects)
-    {
+        IReadOnlyList<string> testProjects
+    ) {
         Console.WriteLine("[inno-bindings] Run every native binding, Text, and UI test project.");
         foreach (string project in testProjects)
         {
@@ -319,8 +319,8 @@ internal static partial class Program
         string bindGenRoot,
         string target,
         IReadOnlyList<string> bindingProjects,
-        int testProjectCount)
-    {
+        int testProjectCount
+    ) {
         string innoRevision = ProcessRunner.Capture(
             "git", ["-C", repositoryRoot, "rev-parse", "HEAD"], repositoryRoot).Trim();
         string bindGenRevision = ProcessRunner.Capture(
@@ -433,15 +433,21 @@ internal static partial class Program
     [GeneratedRegex(@"\[(DllImport|LibraryImport)\b|partial\s+.*\bextern\b|static\s+extern\b")]
     private static partial Regex NativeImportPattern();
 
-    private readonly record struct NativeBuildStep(string project, string command);
+    private readonly record struct NativeBuildStep(
+        string project,
+        string command
+    );
 }
 
 internal sealed class AcceptanceOptions
 {
     private const string C_DEFAULT_CONFIGURATION = "Release";
 
-    private AcceptanceOptions(string bindGenRoot, string configuration, string dotnet)
-    {
+    private AcceptanceOptions(
+        string bindGenRoot,
+        string configuration,
+        string dotnet
+    ) {
         this.bindGenRoot = bindGenRoot;
         this.configuration = configuration;
         this.dotnet = dotnet;
@@ -522,8 +528,11 @@ internal sealed class AcceptanceOptions
 
 internal static class ProcessRunner
 {
-    internal static void Run(string fileName, IReadOnlyList<string> arguments, string workingDirectory)
-    {
+    internal static void Run(
+        string fileName,
+        IReadOnlyList<string> arguments,
+        string workingDirectory
+    ) {
         using Process process = Start(fileName, arguments, workingDirectory, captureOutput: false);
         process.WaitForExit();
         if (process.ExitCode != 0)
@@ -533,8 +542,11 @@ internal static class ProcessRunner
         }
     }
 
-    internal static string Capture(string fileName, IReadOnlyList<string> arguments, string workingDirectory)
-    {
+    internal static string Capture(
+        string fileName,
+        IReadOnlyList<string> arguments,
+        string workingDirectory
+    ) {
         using Process process = Start(fileName, arguments, workingDirectory, captureOutput: true);
         string output = process.StandardOutput.ReadToEnd();
         string error = process.StandardError.ReadToEnd();
@@ -552,8 +564,8 @@ internal static class ProcessRunner
         string fileName,
         IReadOnlyList<string> arguments,
         string workingDirectory,
-        bool captureOutput)
-    {
+        bool captureOutput
+    ) {
         Console.WriteLine($"> {FormatCommand(fileName, arguments)}");
         var startInfo = new ProcessStartInfo
         {
@@ -569,9 +581,11 @@ internal static class ProcessRunner
             ?? throw new InvalidOperationException($"Failed to start process '{fileName}'.");
     }
 
-    private static string FormatCommand(string fileName, IReadOnlyList<string> arguments)
+    private static string FormatCommand(
+        string fileName,
+        IReadOnlyList<string> arguments
+    )
         => string.Join(' ', new[] { fileName }.Concat(arguments).Select(QuoteArgument));
 
-    private static string QuoteArgument(string value)
-        => value.Any(char.IsWhiteSpace) ? $"\"{value.Replace("\"", "\\\"")}\"" : value;
+    private static string QuoteArgument(string value) => value.Any(char.IsWhiteSpace) ? $"\"{value.Replace("\"", "\\\"")}\"" : value;
 }

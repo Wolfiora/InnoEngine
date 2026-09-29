@@ -35,8 +35,8 @@ internal sealed class RenderPipelineAssetImporter : AssetImporter<RenderPipeline
     protected override async ValueTask ImportAsync(
         AssetImportContext context,
         AssetImportWriter<RenderPipelineAsset> output,
-        CancellationToken cancellationToken)
-    {
+        CancellationToken cancellationToken
+    ) {
         RenderPipelineAsset asset = NativeAssetSourceSerialization.Import<RenderPipelineAsset>(
             context.sourceBytes.Span,
             context.services,
@@ -67,8 +67,8 @@ internal sealed class RenderPipelineAssetImporter : AssetImporter<RenderPipeline
     protected override ValueTask<ReadOnlyMemory<byte>?> ExportAsync(
         AssetExportContext context,
         RenderPipelineAsset asset,
-        CancellationToken cancellationToken)
-    {
+        CancellationToken cancellationToken
+    ) {
         cancellationToken.ThrowIfCancellationRequested();
         Validate(asset);
         return ValueTask.FromResult<ReadOnlyMemory<byte>?>(NativeAssetSourceSerialization.Export(

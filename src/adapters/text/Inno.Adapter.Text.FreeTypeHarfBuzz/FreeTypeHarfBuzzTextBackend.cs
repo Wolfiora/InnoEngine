@@ -38,8 +38,10 @@ public sealed unsafe class FreeTypeHarfBuzzTextBackend : ITextBackend
     /// <returns>
     /// A generation-local face handle.
     /// </returns>
-    public TextFontHandle LoadFont(ReadOnlySpan<byte> data, int faceIndex)
-    {
+    public TextFontHandle LoadFont(
+        ReadOnlySpan<byte> data,
+        int faceIndex
+    ) {
         EnsureActive();
         if (data.IsEmpty)
             throw new ArgumentException("Font data cannot be empty.", nameof(data));
@@ -81,8 +83,12 @@ public sealed unsafe class FreeTypeHarfBuzzTextBackend : ITextBackend
     /// <returns>
     /// The immutable layout.
     /// </returns>
-    public TextLayout Shape(TextFontHandle font, string text, TextStyle style, TextShapingOptions options)
-    {
+    public TextLayout Shape(
+        TextFontHandle font,
+        string text,
+        TextStyle style,
+        TextShapingOptions options
+    ) {
         EnsureActive();
         if (!font.isValid)
             throw new ArgumentException("A valid font handle is required.", nameof(font));
@@ -174,8 +180,11 @@ public sealed unsafe class FreeTypeHarfBuzzTextBackend : ITextBackend
     /// <returns>
     /// The immutable glyph bitmap.
     /// </returns>
-    public GlyphBitmap Rasterize(TextFontHandle font, uint glyphId, float fontSize)
-    {
+    public GlyphBitmap Rasterize(
+        TextFontHandle font,
+        uint glyphId,
+        float fontSize
+    ) {
         EnsureActive();
         if (!font.isValid)
             throw new ArgumentException("A valid font handle is required.", nameof(font));
@@ -220,8 +229,10 @@ public sealed unsafe class FreeTypeHarfBuzzTextBackend : ITextBackend
         return bytes;
     }
 
-    private static void ThrowIfFailed(InnoTextResult result, string operation)
-    {
+    private static void ThrowIfFailed(
+        InnoTextResult result,
+        string operation
+    ) {
         if (result != InnoTextResult.Success)
             throw new InvalidOperationException($"Failed to {operation}: {TextNative.ResultMessage(result) ?? result.ToString()}.");
     }

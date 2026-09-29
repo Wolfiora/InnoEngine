@@ -52,8 +52,8 @@ public sealed class ProjectSettingsStore : IDisposable, IProjectSettingsLookup
         TypeCatalog types,
         SerializationRegistry serialization,
         ProjectId defaultProjectId,
-        SerializationContext serializationContext)
-    {
+        SerializationContext serializationContext
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(documentPath);
         ArgumentNullException.ThrowIfNull(types);
         ArgumentNullException.ThrowIfNull(serialization);
@@ -69,7 +69,11 @@ public sealed class ProjectSettingsStore : IDisposable, IProjectSettingsLookup
     [ScriptingApiIgnore]
     public IReadOnlyList<ProjectSettingRecord> unavailableSettings
     {
-        get { lock (m_sync) return RequireCurrent().GetUnavailable(m_contributors); }
+        get
+        {
+            lock (m_sync)
+                return RequireCurrent().GetUnavailable(m_contributors);
+        }
     }
 
     /// <summary>
@@ -85,8 +89,7 @@ public sealed class ProjectSettingsStore : IDisposable, IProjectSettingsLookup
     /// <summary>
     /// Gets the current project namespace.
     /// </summary>
-    public ProjectId projectId
-        => Get<ProjectIdentitySettings>(ProjectIdentitySettings.settingId).id;
+    public ProjectId projectId => Get<ProjectIdentitySettings>(ProjectIdentitySettings.settingId).id;
 
     /// <summary>
     /// Qualifies one local name under the current project namespace.
@@ -97,8 +100,7 @@ public sealed class ProjectSettingsStore : IDisposable, IProjectSettingsLookup
     /// <returns>
     /// The canonical <c>projectId.name</c> identity.
     /// </returns>
-    public ProjectScopedId QualifyId(string name)
-        => projectId.Qualify(ProjectLocalId.FromName(name));
+    public ProjectScopedId QualifyId(string name) => projectId.Qualify(ProjectLocalId.FromName(name));
 
     /// <summary>
     /// Gets whether project settings are initialized.
@@ -177,7 +179,10 @@ public sealed class ProjectSettingsStore : IDisposable, IProjectSettingsLookup
     /// <returns>
     /// <see langword="true"/> when a compatible setting exists.
     /// </returns>
-    public bool TryGet<TSetting>(ProjectSettingId id, out TSetting? setting)
+    public bool TryGet<TSetting>(
+        ProjectSettingId id,
+        out TSetting? setting
+    )
         where TSetting : class, ISerializable
     {
         lock (m_sync)
@@ -234,8 +239,8 @@ public sealed class ProjectSettingsStore : IDisposable, IProjectSettingsLookup
         string contributorId,
         IReadOnlySet<string> declaredDependencies,
         IReadOnlySet<string> declaredOverrides,
-        out ProjectSettingRecord record)
-    {
+        out ProjectSettingRecord record
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(contributorId);
         ArgumentNullException.ThrowIfNull(declaredDependencies);
         ArgumentNullException.ThrowIfNull(declaredOverrides);
@@ -264,8 +269,10 @@ public sealed class ProjectSettingsStore : IDisposable, IProjectSettingsLookup
     /// <see langword="true"/> when the setting is defined.
     /// </returns>
     [ScriptingApiIgnore]
-    public bool TryClone(ProjectSettingId id, out ISerializable? setting)
-    {
+    public bool TryClone(
+        ProjectSettingId id,
+        out ISerializable? setting
+    ) {
         lock (m_sync)
         {
             if (m_current is null)
@@ -290,8 +297,10 @@ public sealed class ProjectSettingsStore : IDisposable, IProjectSettingsLookup
     /// <see langword="true"/> when the setting is defined.
     /// </returns>
     [ScriptingApiIgnore]
-    public bool TryCloneComposedDefault(ProjectSettingId id, out ISerializable? setting)
-    {
+    public bool TryCloneComposedDefault(
+        ProjectSettingId id,
+        out ISerializable? setting
+    ) {
         lock (m_sync)
         {
             if (m_current is null)
@@ -386,8 +395,8 @@ public sealed class ProjectSettingsStore : IDisposable, IProjectSettingsLookup
     public void SetProjectOverride(
         ProjectSettingId id,
         ISerializable value,
-        IReadOnlyList<ProjectSettingsContributor> contributors)
-    {
+        IReadOnlyList<ProjectSettingsContributor> contributors
+    ) {
         ArgumentNullException.ThrowIfNull(value);
         ArgumentNullException.ThrowIfNull(contributors);
         lock (m_sync)
@@ -412,8 +421,8 @@ public sealed class ProjectSettingsStore : IDisposable, IProjectSettingsLookup
     [ScriptingApiIgnore]
     public bool ApplyProjectOverrides(
         IReadOnlyDictionary<ProjectSettingId, ISerializable> values,
-        IReadOnlySet<ProjectSettingId>? resets = null)
-    {
+        IReadOnlySet<ProjectSettingId>? resets = null
+    ) {
         ArgumentNullException.ThrowIfNull(values);
         lock (m_sync)
         {
@@ -447,8 +456,7 @@ public sealed class ProjectSettingsStore : IDisposable, IProjectSettingsLookup
     /// Native project settings bytes.
     /// </param>
     [ScriptingApiIgnore]
-    public void ValidateDocument(ReadOnlySpan<byte> document)
-        => _ = m_serialization.Deserialize<ProjectSettingsDocument>(document);
+    public void ValidateDocument(ReadOnlySpan<byte> document) => _ = m_serialization.Deserialize<ProjectSettingsDocument>(document);
 
     /// <summary>
     /// Shuts down settings and releases generation-scoped values.
@@ -481,7 +489,8 @@ public sealed class ProjectSettingsStore : IDisposable, IProjectSettingsLookup
         {
             lock (owner.m_sync)
             {
-                if (m_previous is not null) throw new InvalidOperationException("Settings change was already prepared.");
+                if (m_previous is not null)
+                    throw new InvalidOperationException("Settings change was already prepared.");
                 m_previous = owner.RequireCurrent().CaptureEffective();
                 m_contributors = owner.m_contributors.ToArray();
                 m_revision = owner.m_revision;
@@ -493,14 +502,19 @@ public sealed class ProjectSettingsStore : IDisposable, IProjectSettingsLookup
         /// </summary>
         public void Apply()
         {
-            if (m_previous is null) throw new InvalidOperationException("Settings change was not prepared.");
+            if (m_previous is null)
+                throw new InvalidOperationException("Settings change was not prepared.");
             owner.RebuildCurrent(allowUnresolvedContributions: true);
         }
 
         /// <summary>
         /// Completes the committed operation and releases temporary state.
         /// </summary>
-        public void Complete() { m_previous = null; m_contributors = []; }
+        public void Complete()
+        {
+            m_previous = null;
+            m_contributors = [];
+        }
 
         /// <summary>
         /// Restores the state that existed before candidate activation began.
@@ -512,7 +526,8 @@ public sealed class ProjectSettingsStore : IDisposable, IProjectSettingsLookup
         /// </summary>
         public void RestorePreviousState()
         {
-            if (m_previous is null) return;
+            if (m_previous is null)
+                return;
             lock (owner.m_sync)
             {
                 owner.RequireCurrent().RestoreEffective(m_previous);

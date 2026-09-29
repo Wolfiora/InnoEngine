@@ -50,8 +50,8 @@ public sealed class AssetInfo
         Guid stableAssetTypeId,
         AssetArtifactKey artifactKey,
         AssetArtifactKey lastSuccessfulArtifactKey,
-        IReadOnlyList<string>? diagnostics = null)
-    {
+        IReadOnlyList<string>? diagnostics = null
+    ) {
         this.persistentId = persistentId;
         if (!assetPath.isValid)
             throw new ArgumentException("An asset information snapshot requires a valid path.", nameof(assetPath));

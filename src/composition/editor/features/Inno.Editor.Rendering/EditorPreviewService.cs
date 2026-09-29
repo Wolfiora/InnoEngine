@@ -24,8 +24,12 @@ public readonly record struct EditorPreviewHandle
     /// <param name="pixelHeight">
     /// Positive source height.
     /// </param>
-    public EditorPreviewHandle(ulong value, uint deviceGeneration, int pixelWidth, int pixelHeight)
-    {
+    public EditorPreviewHandle(
+        ulong value,
+        uint deviceGeneration,
+        int pixelWidth,
+        int pixelHeight
+    ) {
         if (value == 0 || deviceGeneration == 0)
             throw new ArgumentOutOfRangeException(nameof(value), "Preview identity and device generation must be non-zero.");
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(pixelWidth);
@@ -84,7 +88,10 @@ public interface IEditorPreviewService
     /// <returns>
     /// True when the completed previous output can be drawn; false during initial allocation or resize.
     /// </returns>
-    bool TryRender(EditorViewportComposition composition, out EditorPreviewHandle handle);
+    bool TryRender(
+        EditorViewportComposition composition,
+        out EditorPreviewHandle handle
+    );
 
     /// <summary>
     /// Releases an offscreen preview, including one which has not produced its first handle.
@@ -106,7 +113,10 @@ public interface IEditorPreviewService
     /// <returns>
     /// <see langword="true"/> when the preview is ready.
     /// </returns>
-    bool TryGetTexture(TextureAsset texture, out EditorPreviewHandle handle);
+    bool TryGetTexture(
+        TextureAsset texture,
+        out EditorPreviewHandle handle
+    );
 
     /// <summary>
     /// Tries to resolve a named texture artifact preview without blocking target compilation.
@@ -130,7 +140,8 @@ public interface IEditorPreviewService
         RenderTextureArtifactReference texture,
         int pixelWidth,
         int pixelHeight,
-        out EditorPreviewHandle handle);
+        out EditorPreviewHandle handle
+    );
 
     /// <summary>
     /// Draws one current-generation preview into the active presentation surface.
@@ -141,7 +152,10 @@ public interface IEditorPreviewService
     /// <param name="logicalSize">
     /// Positive destination size in logical pixels.
     /// </param>
-    void Draw(EditorPreviewHandle handle, Vector2 logicalSize);
+    void Draw(
+        EditorPreviewHandle handle,
+        Vector2 logicalSize
+    );
 
     /// <summary>
     /// Releases one cached preview registration.

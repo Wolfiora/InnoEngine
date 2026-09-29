@@ -31,8 +31,10 @@ public sealed class SceneEdits : EditorModule
     /// <param name="interactions">
     /// The current editor interaction runtime.
     /// </param>
-    internal SceneEdits(EditorSceneWorkspace workspace, EditorInteractions interactions)
-    {
+    internal SceneEdits(
+        EditorSceneWorkspace workspace,
+        EditorInteractions interactions
+    ) {
         m_workspace = workspace ?? throw new ArgumentNullException(nameof(workspace));
         m_interactions = interactions ?? throw new ArgumentNullException(nameof(interactions));
     }
@@ -63,8 +65,14 @@ public sealed class SceneEdits : EditorModule
         ArgumentNullException.ThrowIfNull(target);
         if (target.isDestroyed)
             return false;
-        try { return m_workspace.CanEdit(ResolveOwnerScene(target)); }
-        catch (InvalidOperationException) { return false; }
+        try
+        {
+            return m_workspace.CanEdit(ResolveOwnerScene(target));
+        }
+        catch (InvalidOperationException)
+        {
+            return false;
+        }
     }
 
     /// <summary>
@@ -125,8 +133,8 @@ public sealed class SceneEdits : EditorModule
     public GameObject CreateGameObject(
         GameScene scene,
         Transform? parent = null,
-        string historyName = "Create GameObject")
-    {
+        string historyName = "Create GameObject"
+    ) {
         ArgumentNullException.ThrowIfNull(scene);
         ArgumentException.ThrowIfNullOrWhiteSpace(historyName);
         using IDisposable presentationScope = m_workspace.EnterPresentationScope();
@@ -184,8 +192,8 @@ public sealed class SceneEdits : EditorModule
         PrefabAsset prefab,
         GameScene scene,
         Transform? parent = null,
-        string historyName = "Instantiate Prefab")
-    {
+        string historyName = "Instantiate Prefab"
+    ) {
         ArgumentNullException.ThrowIfNull(prefab);
         ArgumentNullException.ThrowIfNull(scene);
         ArgumentException.ThrowIfNullOrWhiteSpace(historyName);
@@ -239,8 +247,10 @@ public sealed class SceneEdits : EditorModule
     /// <returns>
     /// <see langword="true"/> when the subtree was deleted and recorded.
     /// </returns>
-    public bool DeleteGameObject(GameObject gameObject, string historyName = "Delete GameObject")
-    {
+    public bool DeleteGameObject(
+        GameObject gameObject,
+        string historyName = "Delete GameObject"
+    ) {
         ArgumentNullException.ThrowIfNull(gameObject);
         ArgumentException.ThrowIfNullOrWhiteSpace(historyName);
         using IDisposable presentationScope = m_workspace.EnterPresentationScope();
@@ -318,8 +328,8 @@ public sealed class SceneEdits : EditorModule
     public GameComponent AddComponent(
         GameObject owner,
         Type componentType,
-        string? historyName = null)
-    {
+        string? historyName = null
+    ) {
         ArgumentNullException.ThrowIfNull(owner);
         ArgumentNullException.ThrowIfNull(componentType);
         using IDisposable presentationScope = m_workspace.EnterPresentationScope();
@@ -372,8 +382,10 @@ public sealed class SceneEdits : EditorModule
     /// <returns>
     /// <see langword="true"/> when the component was removed and recorded.
     /// </returns>
-    public bool RemoveComponent(GameComponent component, string? historyName = null)
-    {
+    public bool RemoveComponent(
+        GameComponent component,
+        string? historyName = null
+    ) {
         ArgumentNullException.ThrowIfNull(component);
         using IDisposable presentationScope = m_workspace.EnterPresentationScope();
         if (component.isDestroyed)
@@ -445,8 +457,10 @@ public sealed class SceneEdits : EditorModule
     /// <param name="historyName">
     /// An optional user-facing history entry name.
     /// </param>
-    public void ResetComponent(GameComponent component, string? historyName = null)
-    {
+    public void ResetComponent(
+        GameComponent component,
+        string? historyName = null
+    ) {
         ArgumentNullException.ThrowIfNull(component);
         using IDisposable presentationScope = m_workspace.EnterPresentationScope();
         m_workspace.EnsureEditable(component.gameObject.scene);
@@ -506,8 +520,8 @@ public sealed class SceneEdits : EditorModule
     public void SetComponentIndex(
         GameComponent component,
         int componentIndex,
-        string historyName = "Move Component")
-    {
+        string historyName = "Move Component"
+    ) {
         ArgumentNullException.ThrowIfNull(component);
         ArgumentException.ThrowIfNullOrWhiteSpace(historyName);
         using IDisposable presentationScope = m_workspace.EnterPresentationScope();
@@ -561,8 +575,11 @@ public sealed class SceneEdits : EditorModule
     /// <returns>
     /// The newly registered system.
     /// </returns>
-    public GameSystem AddSystem(GameScene scene, Type systemType, string? historyName = null)
-    {
+    public GameSystem AddSystem(
+        GameScene scene,
+        Type systemType,
+        string? historyName = null
+    ) {
         ArgumentNullException.ThrowIfNull(scene);
         ArgumentNullException.ThrowIfNull(systemType);
         using IDisposable presentationScope = m_workspace.EnterPresentationScope();
@@ -616,8 +633,11 @@ public sealed class SceneEdits : EditorModule
     /// <returns>
     /// <see langword="true"/> when the system was removed and recorded.
     /// </returns>
-    public bool RemoveSystem(GameScene scene, GameSystem system, string? historyName = null)
-    {
+    public bool RemoveSystem(
+        GameScene scene,
+        GameSystem system,
+        string? historyName = null
+    ) {
         ArgumentNullException.ThrowIfNull(scene);
         ArgumentNullException.ThrowIfNull(system);
         using IDisposable presentationScope = m_workspace.EnterPresentationScope();
@@ -691,8 +711,11 @@ public sealed class SceneEdits : EditorModule
     /// <param name="historyName">
     /// An optional user-facing history entry name.
     /// </param>
-    public void ResetSystem(GameScene scene, GameSystem system, string? historyName = null)
-    {
+    public void ResetSystem(
+        GameScene scene,
+        GameSystem system,
+        string? historyName = null
+    ) {
         ArgumentNullException.ThrowIfNull(scene);
         ArgumentNullException.ThrowIfNull(system);
         using IDisposable presentationScope = m_workspace.EnterPresentationScope();
@@ -756,8 +779,8 @@ public sealed class SceneEdits : EditorModule
         GameScene scene,
         GameSystem system,
         int systemIndex,
-        string historyName = "Move System")
-    {
+        string historyName = "Move System"
+    ) {
         ArgumentNullException.ThrowIfNull(scene);
         ArgumentNullException.ThrowIfNull(system);
         ArgumentException.ThrowIfNullOrWhiteSpace(historyName);
@@ -808,8 +831,10 @@ public sealed class SceneEdits : EditorModule
     /// <returns>
     /// <see langword="true"/> when the scene was closed and recorded.
     /// </returns>
-    public bool CloseScene(GameScene scene, string historyName = "Close Scene")
-    {
+    public bool CloseScene(
+        GameScene scene,
+        string historyName = "Close Scene"
+    ) {
         ArgumentNullException.ThrowIfNull(scene);
         ArgumentException.ThrowIfNullOrWhiteSpace(historyName);
         using IDisposable presentationScope = m_workspace.EnterPresentationScope();
@@ -848,8 +873,11 @@ public sealed class SceneEdits : EditorModule
     /// <param name="historyName">
     /// The user-facing history entry name.
     /// </param>
-    public void SetSceneIndex(GameScene scene, int sceneIndex, string historyName = "Reorder Scene")
-    {
+    public void SetSceneIndex(
+        GameScene scene,
+        int sceneIndex,
+        string historyName = "Reorder Scene"
+    ) {
         ArgumentNullException.ThrowIfNull(scene);
         ArgumentException.ThrowIfNullOrWhiteSpace(historyName);
         using IDisposable presentationScope = m_workspace.EnterPresentationScope();
@@ -889,8 +917,11 @@ public sealed class SceneEdits : EditorModule
     /// <param name="historyName">
     /// The user-facing history entry name.
     /// </param>
-    public void RenameScene(GameScene scene, string name, string historyName = "Rename Scene")
-    {
+    public void RenameScene(
+        GameScene scene,
+        string name,
+        string historyName = "Rename Scene"
+    ) {
         ArgumentNullException.ThrowIfNull(scene);
         ArgumentNullException.ThrowIfNull(name);
         using IDisposable presentationScope = m_workspace.EnterPresentationScope();
@@ -920,8 +951,8 @@ public sealed class SceneEdits : EditorModule
     public void RenameGameObject(
         GameObject gameObject,
         string name,
-        string historyName = "Rename GameObject")
-    {
+        string historyName = "Rename GameObject"
+    ) {
         ArgumentNullException.ThrowIfNull(gameObject);
         ArgumentNullException.ThrowIfNull(name);
         using IDisposable presentationScope = m_workspace.EnterPresentationScope();
@@ -951,8 +982,8 @@ public sealed class SceneEdits : EditorModule
     public void SetGameObjectActive(
         GameObject gameObject,
         bool active,
-        string? historyName = null)
-    {
+        string? historyName = null
+    ) {
         ArgumentNullException.ThrowIfNull(gameObject);
         using IDisposable presentationScope = m_workspace.EnterPresentationScope();
         m_workspace.EnsureEditable(gameObject.scene);
@@ -989,8 +1020,8 @@ public sealed class SceneEdits : EditorModule
     public void SetGameObjectTag(
         GameObject gameObject,
         string tag,
-        string historyName = "Set GameObject Tag")
-    {
+        string historyName = "Set GameObject Tag"
+    ) {
         ArgumentNullException.ThrowIfNull(gameObject);
         ArgumentException.ThrowIfNullOrWhiteSpace(tag);
         ArgumentException.ThrowIfNullOrWhiteSpace(historyName);
@@ -1028,8 +1059,8 @@ public sealed class SceneEdits : EditorModule
     public void SetGameObjectLayer(
         GameObject gameObject,
         GameLayer layer,
-        string historyName = "Set GameObject Layer")
-    {
+        string historyName = "Set GameObject Layer"
+    ) {
         ArgumentNullException.ThrowIfNull(gameObject);
         ArgumentException.ThrowIfNullOrWhiteSpace(historyName);
         using IDisposable presentationScope = m_workspace.EnterPresentationScope();
@@ -1071,8 +1102,8 @@ public sealed class SceneEdits : EditorModule
         string propertyName,
         Action mutation,
         string historyName,
-        string? mergeKey = null)
-    {
+        string? mergeKey = null
+    ) {
         ArgumentNullException.ThrowIfNull(target);
         ArgumentException.ThrowIfNullOrWhiteSpace(propertyName);
         ArgumentNullException.ThrowIfNull(mutation);
@@ -1143,15 +1174,16 @@ public sealed class SceneEdits : EditorModule
 
     private static IReadOnlyList<SerializationPropertySnapshot> OrderPropertySnapshots(
         IReadOnlyList<SerializationPropertySnapshot> snapshots,
-        string primaryPropertyName)
+        string primaryPropertyName
+    )
         => snapshots
             .OrderBy(snapshot => string.Equals(snapshot.name, primaryPropertyName, StringComparison.Ordinal) ? 0 : 1)
             .ToArray();
 
     private void RestoreSnapshots(
         EngineObject target,
-        IReadOnlyList<SerializationPropertySnapshot> snapshots)
-    {
+        IReadOnlyList<SerializationPropertySnapshot> snapshots
+    ) {
         for (int index = 0; index < snapshots.Count; index++)
         {
             RequirePropertyRestore(
@@ -1163,8 +1195,8 @@ public sealed class SceneEdits : EditorModule
     private void RestorePropertyDeltas(
         EngineObject target,
         IReadOnlyList<ScenePropertyValueDelta> deltas,
-        bool useAfter)
-    {
+        bool useAfter
+    ) {
         for (int index = 0; index < deltas.Count; index++)
             RequirePropertyRestore(target, useAfter ? deltas[index].after : deltas[index].before);
     }
@@ -1191,8 +1223,8 @@ public sealed class SceneEdits : EditorModule
         GameObject gameObject,
         Action<SceneHierarchyEdit> mutation,
         string historyName = "Move GameObject",
-        IReadOnlyCollection<GameObject>? relatedObjects = null)
-    {
+        IReadOnlyCollection<GameObject>? relatedObjects = null
+    ) {
         ArgumentNullException.ThrowIfNull(gameObject);
         ArgumentNullException.ThrowIfNull(mutation);
         ArgumentException.ThrowIfNullOrWhiteSpace(historyName);
@@ -1236,8 +1268,8 @@ public sealed class SceneEdits : EditorModule
         Guid? activeBefore,
         Guid? activeAfter,
         Guid? selectedBefore,
-        Guid? selectedAfter)
-    {
+        Guid? selectedAfter
+    ) {
         var data = new SceneDocumentHistoryData(
             existsBefore,
             existsAfter,
@@ -1261,8 +1293,8 @@ public sealed class SceneEdits : EditorModule
         byte[] subtree,
         SceneIncomingReferenceState[] incoming,
         Guid? selectedBefore,
-        Guid? selectedAfter)
-    {
+        Guid? selectedAfter
+    ) {
         var data = new SceneSubtreeHistoryData(
             root.scene.identity.persistentId,
             root.identity.persistentId,
@@ -1277,7 +1309,12 @@ public sealed class SceneEdits : EditorModule
         Record(name, SceneHistoryKinds.Subtree, data.Encode());
     }
 
-    private void Record(string name, string kind, byte[] data, string? mergeKey = null)
+    private void Record(
+        string name,
+        string kind,
+        byte[] data,
+        string? mergeKey = null
+    )
         => m_interactions.history.RecordApplied(
             name,
             new EditorHistoryChange(
@@ -1285,8 +1322,10 @@ public sealed class SceneEdits : EditorModule
                 EditorHistoryPayload.FromBytes(data),
                 mergeKey));
 
-    private void RecordElement(string name, SceneElementHistoryData data)
-        => Record(name, SceneHistoryKinds.Element, data.Encode());
+    private void RecordElement(
+        string name,
+        SceneElementHistoryData data
+    ) => Record(name, SceneHistoryKinds.Element, data.Encode());
 
     private void ChangeScalar(
         EngineObject target,
@@ -1295,8 +1334,8 @@ public sealed class SceneEdits : EditorModule
         string after,
         Action<string> setter,
         string historyName,
-        string? mergeKey)
-    {
+        string? mergeKey
+    ) {
         if (string.Equals(before, after, StringComparison.Ordinal))
             return;
         RecordWithRollback(
@@ -1386,11 +1425,16 @@ public sealed class SceneEdits : EditorModule
             _ => GetTypeRef(element.GetType())
         };
 
-    private void RequireElementRestore(EngineObject element, ReadOnlySpan<byte> data)
+    private void RequireElementRestore(
+        EngineObject element,
+        ReadOnlySpan<byte> data
+    )
         => SceneElementSerialization.RestoreState(element, data, m_workspace.serialization, m_workspace.assets);
 
-    private void RequirePropertyRestore(EngineObject target, ReadOnlySpan<byte> data)
-    {
+    private void RequirePropertyRestore(
+        EngineObject target,
+        ReadOnlySpan<byte> data
+    ) {
         SerializationPropertyRestoreResult result = ScenePropertySerialization.RestoreProperties(
             target,
             data,
@@ -1406,8 +1450,10 @@ public sealed class SceneEdits : EditorModule
             throw new InvalidOperationException(result.message);
     }
 
-    private static void RecordWithRollback(Action record, Action rollback)
-    {
+    private static void RecordWithRollback(
+        Action record,
+        Action rollback
+    ) {
         try
         {
             record();
@@ -1418,8 +1464,10 @@ public sealed class SceneEdits : EditorModule
         }
     }
 
-    private static void RollbackAndRethrow(Exception failure, Action rollback)
-    {
+    private static void RollbackAndRethrow(
+        Exception failure,
+        Action rollback
+    ) {
         try
         {
             rollback();

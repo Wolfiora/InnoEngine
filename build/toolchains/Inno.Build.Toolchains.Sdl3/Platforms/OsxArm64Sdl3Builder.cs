@@ -35,8 +35,10 @@ internal sealed class OsxArm64Sdl3Builder : Sdl3Builder
     /// <param name="config">
     /// The validated configuration that controls this operation.
     /// </param>
-    public override void Build(string sdlDir, string config)
-    {
+    public override void Build(
+        string sdlDir,
+        string config
+    ) {
         var buildDir = Path.Combine(sdlDir, Sdl3BuildConstants.BUILD_DIR_NAME, BUILD_DIR_NAME);
         var buildType = GetBuildType(config);
 

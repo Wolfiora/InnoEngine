@@ -46,8 +46,8 @@ public struct MaterialValue
         Vector4 vector,
         Matrix matrix,
         TextureAsset? texture,
-        RenderSamplerState sampler)
-    {
+        RenderSamplerState sampler
+    ) {
         this.kind = kind;
         this.vector = vector;
         this.matrix = matrix;
@@ -101,8 +101,7 @@ public struct MaterialValue
     /// <returns>
     /// A vector material value.
     /// </returns>
-    public static MaterialValue FromVector(Vector4 value)
-        => new(MaterialValueKind.Vector, value, default, null, default);
+    public static MaterialValue FromVector(Vector4 value) => new(MaterialValueKind.Vector, value, default, null, default);
 
     /// <summary>
     /// Creates a linear color material value.
@@ -125,8 +124,7 @@ public struct MaterialValue
     /// <returns>
     /// A matrix material value.
     /// </returns>
-    public static MaterialValue FromMatrix(Matrix value)
-        => new(MaterialValueKind.Matrix, default, value, null, default);
+    public static MaterialValue FromMatrix(Matrix value) => new(MaterialValueKind.Matrix, default, value, null, default);
 
     /// <summary>
     /// Creates a texture material value.
@@ -142,8 +140,8 @@ public struct MaterialValue
     /// </returns>
     public static MaterialValue FromTexture(
         TextureAsset value,
-        RenderSamplerState? sampler = null)
-    {
+        RenderSamplerState? sampler = null
+    ) {
         ArgumentNullException.ThrowIfNull(value);
         return new MaterialValue(
             MaterialValueKind.Texture,
@@ -168,8 +166,10 @@ public struct MaterialPropertyEntry
     /// <param name="value">
     /// Neutral material value.
     /// </param>
-    public MaterialPropertyEntry(ShaderPropertyId id, MaterialValue value)
-    {
+    public MaterialPropertyEntry(
+        ShaderPropertyId id,
+        MaterialValue value
+    ) {
         if (!id.isValid)
             throw new ArgumentException("A material property ID must be valid.", nameof(id));
         this.id = id;
@@ -201,8 +201,10 @@ public struct MaterialMetadataEntry
     /// <param name="value">
     /// Provider-defined value.
     /// </param>
-    public MaterialMetadataEntry(string key, string value)
-    {
+    public MaterialMetadataEntry(
+        string key,
+        string value
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(key);
         this.key = key;
         this.value = value ?? string.Empty;
@@ -270,8 +272,10 @@ public class MaterialAsset : AssetObject
     /// <param name="value">
     /// Neutral material value.
     /// </param>
-    public void Set(ShaderPropertyId id, MaterialValue value)
-    {
+    public void Set(
+        ShaderPropertyId id,
+        MaterialValue value
+    ) {
         if (!id.isValid)
             throw new ArgumentException("A material property ID must be valid.", nameof(id));
         int index = Array.FindIndex(m_properties, candidate => candidate.id == id);
@@ -324,8 +328,10 @@ public class MaterialAsset : AssetObject
     /// <returns>
     /// <see langword="true"/> when the property exists.
     /// </returns>
-    public bool TryGet(ShaderPropertyId id, out MaterialValue value)
-    {
+    public bool TryGet(
+        ShaderPropertyId id,
+        out MaterialValue value
+    ) {
         int index = Array.FindIndex(m_properties, candidate => candidate.id == id);
         value = index < 0 ? default : m_properties[index].value;
         return index >= 0;
@@ -340,8 +346,10 @@ public class MaterialAsset : AssetObject
     /// <param name="enabled">
     /// Whether the option should be enabled.
     /// </param>
-    public void SetKeyword(string keyword, bool enabled)
-    {
+    public void SetKeyword(
+        string keyword,
+        bool enabled
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(keyword);
         var values = m_keywords.ToHashSet(StringComparer.Ordinal);
         if (enabled)
@@ -360,8 +368,10 @@ public class MaterialAsset : AssetObject
     /// <param name="value">
     /// Provider-defined value.
     /// </param>
-    public void SetMetadata(string key, string value)
-    {
+    public void SetMetadata(
+        string key,
+        string value
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(key);
         int index = Array.FindIndex(m_metadata, entry => string.Equals(entry.key, key, StringComparison.Ordinal));
         if (index < 0)
@@ -386,8 +396,10 @@ public class MaterialAsset : AssetObject
     /// <returns>
     /// <see langword="true"/> when the key exists.
     /// </returns>
-    public bool TryGetMetadata(string key, out string? value)
-    {
+    public bool TryGetMetadata(
+        string key,
+        out string? value
+    ) {
         int index = Array.FindIndex(m_metadata, entry => string.Equals(entry.key, key, StringComparison.Ordinal));
         value = index < 0 ? null : m_metadata[index].value;
         return index >= 0;
@@ -447,8 +459,10 @@ public sealed class MaterialPropertyBlock
     /// <param name="value">
     /// Neutral material value.
     /// </param>
-    public void Set(ShaderPropertyId id, MaterialValue value)
-    {
+    public void Set(
+        ShaderPropertyId id,
+        MaterialValue value
+    ) {
         if (!id.isValid)
             throw new ArgumentException("A material property ID must be valid.", nameof(id));
         m_values[id] = value;
@@ -466,7 +480,10 @@ public sealed class MaterialPropertyBlock
     /// <param name="value">
     /// The concrete value read or transformed by this operation.
     /// </param>
-    public bool TryGet(ShaderPropertyId id, out MaterialValue value) => m_values.TryGetValue(id, out value);
+    public bool TryGet(
+        ShaderPropertyId id,
+        out MaterialValue value
+    ) => m_values.TryGetValue(id, out value);
 
     /// <summary>
     /// Removes all frame-local overrides.
@@ -499,8 +516,10 @@ public sealed class MaterialPassResolution
     /// <param name="pass">
     /// Concrete pass mapped to the requested role.
     /// </param>
-    public MaterialPassResolution(ShaderTechniqueDefinition technique, ShaderPassDefinition pass)
-    {
+    public MaterialPassResolution(
+        ShaderTechniqueDefinition technique,
+        ShaderPassDefinition pass
+    ) {
         m_technique = ShaderDefinitionSnapshot.Copy(technique);
         m_pass = ShaderDefinitionSnapshot.Copy(pass);
     }
@@ -543,8 +562,8 @@ public static class MaterialPassResolver
         MaterialAsset material,
         ShaderContractId contractId,
         ShaderPassRoleId passRoleId,
-        GraphicsCapabilities capabilities)
-    {
+        GraphicsCapabilities capabilities
+    ) {
         ArgumentNullException.ThrowIfNull(material);
         ShaderDefinition? definition = material.shader?.definition;
         return definition is null ? null : Resolve(definition, material.techniqueId, contractId, passRoleId, capabilities);
@@ -574,9 +593,13 @@ public static class MaterialPassResolver
     /// <exception cref="ArgumentException">
     /// A required contract or role identity is invalid.
     /// </exception>
-    public static MaterialPassResolution? Resolve(ShaderDefinition definition, ShaderTechniqueId techniqueId,
-        ShaderContractId contractId, ShaderPassRoleId passRoleId, GraphicsCapabilities capabilities)
-    {
+    public static MaterialPassResolution? Resolve(
+        ShaderDefinition definition,
+        ShaderTechniqueId techniqueId,
+        ShaderContractId contractId,
+        ShaderPassRoleId passRoleId,
+        GraphicsCapabilities capabilities
+    ) {
         ArgumentNullException.ThrowIfNull(definition);
         ArgumentNullException.ThrowIfNull(capabilities);
         if (!contractId.isValid)
@@ -587,10 +610,12 @@ public static class MaterialPassResolver
         foreach (ShaderTechniqueDefinition technique in definition.techniques)
         {
             if (technique.contract != contractId || !capabilities.Supports(technique.requiredFeatures)
-                || techniqueId.isValid && technique.id != techniqueId) continue;
+                || techniqueId.isValid && technique.id != techniqueId)
+                    continue;
             foreach (ShaderTechniquePass mapping in technique.passes)
             {
-                if (mapping.role != passRoleId) continue;
+                if (mapping.role != passRoleId)
+                    continue;
                 foreach (ShaderPassDefinition pass in definition.passes)
                     if (string.Equals(pass.name, mapping.passName, StringComparison.Ordinal) && capabilities.Supports(pass.requiredFeatures))
                         return new MaterialPassResolution(technique, pass);

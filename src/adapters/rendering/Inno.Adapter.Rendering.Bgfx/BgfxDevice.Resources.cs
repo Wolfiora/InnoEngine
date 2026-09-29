@@ -38,8 +38,8 @@ public sealed unsafe partial class BgfxDevice
     public PersistentBufferHandle CreateBuffer(
         PersistentBufferDescriptor descriptor,
         ReadOnlySpan<byte> initialData,
-        string name)
-    {
+        string name
+    ) {
         EnsureFrameSafetyPoint();
         ArgumentNullException.ThrowIfNull(descriptor);
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
@@ -90,8 +90,8 @@ public sealed unsafe partial class BgfxDevice
     public void UpdateBuffer(
         PersistentBufferHandle buffer,
         ReadOnlySpan<byte> data,
-        int startElement = 0)
-    {
+        int startElement = 0
+    ) {
         EnsureFrameSafetyPoint();
         ArgumentOutOfRangeException.ThrowIfNegative(startElement);
         if (data.IsEmpty)
@@ -153,8 +153,10 @@ public sealed unsafe partial class BgfxDevice
     /// <returns>
     /// The validated graphics pipeline handle that represents the completed operation.
     /// </returns>
-    public GraphicsPipelineHandle CreateGraphicsPipeline(GraphicsPipelineDescriptor descriptor, string name)
-    {
+    public GraphicsPipelineHandle CreateGraphicsPipeline(
+        GraphicsPipelineDescriptor descriptor,
+        string name
+    ) {
         EnsureFrameSafetyPoint();
         ArgumentNullException.ThrowIfNull(descriptor);
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
@@ -198,8 +200,10 @@ public sealed unsafe partial class BgfxDevice
     /// <returns>
     /// The validated compute pipeline handle that represents the completed operation.
     /// </returns>
-    public ComputePipelineHandle CreateComputePipeline(ComputePipelineDescriptor descriptor, string name)
-    {
+    public ComputePipelineHandle CreateComputePipeline(
+        ComputePipelineDescriptor descriptor,
+        string name
+    ) {
         EnsureFrameSafetyPoint();
         ArgumentNullException.ThrowIfNull(descriptor);
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
@@ -341,8 +345,8 @@ public sealed unsafe partial class BgfxDevice
     private BgfxBufferResource CreateNativeBuffer(
         PersistentBufferDescriptor descriptor,
         ReadOnlySpan<byte> initialData,
-        string name)
-    {
+        string name
+    ) {
         RenderBufferDescriptor buffer = descriptor.buffer;
         if ((buffer.usage & RenderBufferUsage.Indirect) != 0
             && (buffer.usage & (RenderBufferUsage.Vertex | RenderBufferUsage.Index)) == 0)
@@ -479,8 +483,8 @@ public sealed unsafe partial class BgfxDevice
 
     private BgfxBufferResource AcquireTransientBuffer(
         RenderBufferDescriptor descriptor,
-        int physicalSlot)
-    {
+        int physicalSlot
+    ) {
         for (int index = m_transientBufferPool.Count - 1; index >= 0; index--)
         {
             PooledTransientBuffer pooled = m_transientBufferPool[index];
@@ -508,8 +512,8 @@ public sealed unsafe partial class BgfxDevice
 
     private BgfxPipelineResource CreateGraphicsPipelineResource(
         GraphicsPipelineDescriptor descriptor,
-        string name)
-    {
+        string name
+    ) {
         ValidateBindingSlots(descriptor.bindings, allowStorageResources: false);
         ValidateVertexLayoutCapabilities(descriptor.vertexLayout);
         ValidateRasterStateCapabilities(descriptor.rasterState);
@@ -596,8 +600,8 @@ public sealed unsafe partial class BgfxDevice
 
     private BgfxPipelineResource CreateComputePipelineResource(
         ComputePipelineDescriptor descriptor,
-        string name)
-    {
+        string name
+    ) {
         ValidateBindingSlots(descriptor.bindings, allowStorageResources: true);
         bgfx.ShaderHandle computeShader = InvalidShader();
         bgfx.ProgramHandle program = InvalidProgram();
@@ -633,8 +637,8 @@ public sealed unsafe partial class BgfxDevice
 
     private static IReadOnlyDictionary<string, BgfxShaderBindingResource> ValidateReflectedBindings(
         IReadOnlyList<RenderShaderBindingDescriptor> declaredBindings,
-        IReadOnlyDictionary<string, ReflectedUniform> reflected)
-    {
+        IReadOnlyDictionary<string, ReflectedUniform> reflected
+    ) {
         Dictionary<string, RenderShaderBindingDescriptor> declared = declaredBindings
             .ToDictionary(static value => value.nativeName, StringComparer.Ordinal);
         foreach ((string name, ReflectedUniform uniform) in reflected)
@@ -721,8 +725,10 @@ public sealed unsafe partial class BgfxDevice
         return Encoding.UTF8.GetString(terminator >= 0 ? name[..terminator] : name);
     }
 
-    private bgfx.ShaderHandle CreateShader(ReadOnlySpan<byte> binary, string name)
-    {
+    private bgfx.ShaderHandle CreateShader(
+        ReadOnlySpan<byte> binary,
+        string name
+    ) {
         bgfx.Memory* memory = Copy(binary);
         bgfx.ShaderHandle shader = bgfx.create_shader(memory);
         EnsureValid(shader.Valid, name);
@@ -761,8 +767,10 @@ public sealed unsafe partial class BgfxDevice
         return native;
     }
 
-    private static void AddVertexLayoutPadding(bgfx.VertexLayout* layout, int byteCount)
-    {
+    private static void AddVertexLayoutPadding(
+        bgfx.VertexLayout* layout,
+        int byteCount
+    ) {
         if (byteCount < 0)
             throw new InvalidOperationException("A resolved vertex layout cannot contain overlapping attributes.");
         while (byteCount != 0)
@@ -789,8 +797,7 @@ public sealed unsafe partial class BgfxDevice
         return native;
     }
 
-    private static (byte count, bgfx.AttribType type, bool normalized, bool asInteger) AttributeFormat(
-        RenderVertexFormat format)
+    private static (byte count, bgfx.AttribType type, bool normalized, bool asInteger) AttributeFormat(RenderVertexFormat format)
         => format switch
         {
             RenderVertexFormat.Float1 => (1, bgfx.AttribType.Float, false, false),
@@ -846,8 +853,8 @@ public sealed unsafe partial class BgfxDevice
 
     private void ValidateBindingSlots(
         IReadOnlyList<RenderShaderBindingDescriptor> bindings,
-        bool allowStorageResources)
-    {
+        bool allowStorageResources
+    ) {
         var storageSlots = new HashSet<int>();
         foreach (RenderShaderBindingDescriptor binding in bindings)
         {
@@ -892,8 +899,10 @@ public sealed unsafe partial class BgfxDevice
         }
     }
 
-    private static ushort BufferFlags(RenderBufferDescriptor descriptor, RenderIndexFormat indexFormat)
-    {
+    private static ushort BufferFlags(
+        RenderBufferDescriptor descriptor,
+        RenderIndexFormat indexFormat
+    ) {
         bgfx.BufferFlags flags = bgfx.BufferFlags.None;
         if ((descriptor.usage & RenderBufferUsage.Storage) != 0)
         {
@@ -921,8 +930,10 @@ public sealed unsafe partial class BgfxDevice
         }
     }
 
-    private static void EnsureValid(bool valid, string name)
-    {
+    private static void EnsureValid(
+        bool valid,
+        string name
+    ) {
         if (!valid)
         {
             throw new InvalidOperationException($"BGFX could not create '{name}'.");
@@ -994,20 +1005,17 @@ public sealed unsafe partial class BgfxDevice
         }
     }
 
-    private static bgfx.ShaderHandle InvalidShader()
-        => new() { idx = ushort.MaxValue };
+    private static bgfx.ShaderHandle InvalidShader() => new() { idx = ushort.MaxValue };
 
-    private static bgfx.ProgramHandle InvalidProgram()
-        => new() { idx = ushort.MaxValue };
+    private static bgfx.ProgramHandle InvalidProgram() => new() { idx = ushort.MaxValue };
 
-    private static bgfx.UniformHandle InvalidUniform()
-        => new() { idx = ushort.MaxValue };
+    private static bgfx.UniformHandle InvalidUniform() => new() { idx = ushort.MaxValue };
 
-    private static bgfx.VertexLayoutHandle InvalidVertexLayout()
-        => new() { idx = ushort.MaxValue };
+    private static bgfx.VertexLayoutHandle InvalidVertexLayout() => new() { idx = ushort.MaxValue };
 
     private readonly record struct ReflectedUniform(
         bgfx.UniformHandle handle,
         bgfx.UniformType type,
-        ushort count);
+        ushort count
+    );
 }

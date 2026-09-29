@@ -92,8 +92,9 @@ public sealed class PropertyDrawContext
         string? tooltip,
         Func<object?> getter,
         Action<object?> setter,
-        SerializedPropertyRenderer renderer, bool hdrColor = false)
-    {
+        SerializedPropertyRenderer renderer,
+        bool hdrColor = false
+    ) {
         this.editorContext = editorContext;
         this.interactions = interactions ?? throw new ArgumentNullException(nameof(interactions));
         m_edits = edits ?? throw new ArgumentNullException(nameof(edits));
@@ -135,8 +136,10 @@ public sealed class PropertyDrawContext
     /// <returns>
     /// <see langword="true"/> when text state exists for the exact owner and property path.
     /// </returns>
-    public bool TryGetTextState(string key, out string? value)
-        => m_renderer.TryGetTextState(m_owner, path, key, out value);
+    public bool TryGetTextState(
+        string key,
+        out string? value
+    ) => m_renderer.TryGetTextState(m_owner, path, key, out value);
 
     /// <summary>
     /// Stores text-edit state scoped to this renderer, inspected owner, and property path.
@@ -147,8 +150,10 @@ public sealed class PropertyDrawContext
     /// <param name="value">
     /// Current neutral text state to retain between frames.
     /// </param>
-    public void SetTextState(string key, string value)
-        => m_renderer.SetTextState(m_owner, path, key, value);
+    public void SetTextState(
+        string key,
+        string value
+    ) => m_renderer.SetTextState(m_owner, path, key, value);
 
     /// <summary>
     /// Removes text-edit state for this renderer, inspected owner, and property path.
@@ -156,8 +161,7 @@ public sealed class PropertyDrawContext
     /// <param name="key">
     /// Drawer-local state identity within the current property path.
     /// </param>
-    public void ClearTextState(string key)
-        => m_renderer.ClearTextState(m_owner, path, key);
+    public void ClearTextState(string key) => m_renderer.ClearTextState(m_owner, path, key);
 
     /// <summary>
     /// Assigns a value when the property is writable.
@@ -201,8 +205,8 @@ public sealed class PropertyDrawContext
         Type childType,
         Func<object?> getter,
         Action<object?> setter,
-        bool readOnly = false)
-    {
+        bool readOnly = false
+    ) {
         PropertyVisibility childVisibility = readOnly || isReadOnly
             ? PropertyVisibility.Readonly
             : PropertyVisibility.Show;
@@ -228,8 +232,7 @@ public sealed class PropertyDrawContext
     /// <param name="property">
     /// Nested property.
     /// </param>
-    public void DrawChild(SerializedProperty property)
-        => DrawChild(GetValue() ?? m_owner, property);
+    public void DrawChild(SerializedProperty property) => DrawChild(GetValue() ?? m_owner, property);
 
     /// <summary>
     /// Draws a nested serialized property with presentation metadata resolved from its immediate owner.
@@ -240,8 +243,10 @@ public sealed class PropertyDrawContext
     /// <param name="property">
     /// Nested property.
     /// </param>
-    public void DrawChild(object metadataOwner, SerializedProperty property)
-    {
+    public void DrawChild(
+        object metadataOwner,
+        SerializedProperty property
+    ) {
         ArgumentNullException.ThrowIfNull(metadataOwner);
         ArgumentNullException.ThrowIfNull(property);
         m_renderer.Draw(
@@ -266,8 +271,8 @@ public sealed class PropertyDrawContext
         Type childType,
         Func<object?> getter,
         Action<object?> setter,
-        bool readOnly)
-    {
+        bool readOnly
+    ) {
         ArgumentNullException.ThrowIfNull(metadataOwner);
         ArgumentNullException.ThrowIfNull(member);
         PropertyVisibility childVisibility = readOnly || isReadOnly
@@ -312,8 +317,8 @@ public sealed class PropertyDrawContext
         Type childType,
         Func<object?> getter,
         Action<object?> setter,
-        bool readOnly = false)
-    {
+        bool readOnly = false
+    ) {
         PropertyVisibility childVisibility = readOnly || isReadOnly
             ? PropertyVisibility.Readonly
             : PropertyVisibility.Show;

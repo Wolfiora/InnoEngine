@@ -23,8 +23,12 @@ public readonly record struct RenderViewport
     /// <param name="height">
     /// Positive viewport height.
     /// </param>
-    public RenderViewport(int x, int y, int width, int height)
-    {
+    public RenderViewport(
+        int x,
+        int y,
+        int width,
+        int height
+    ) {
         ArgumentOutOfRangeException.ThrowIfNegative(x);
         ArgumentOutOfRangeException.ThrowIfNegative(y);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(width);
@@ -88,7 +92,10 @@ public sealed class RenderFrameData
     /// <exception cref="InvalidOperationException">
     /// Thrown after the data has entered a request.
     /// </exception>
-    public void Set<TValue>(Inno.Rendering.RenderDataChannelId channel, TValue value)
+    public void Set<TValue>(
+        Inno.Rendering.RenderDataChannelId channel,
+        TValue value
+    )
         where TValue : notnull
     {
         if (!channel.isValid)
@@ -116,8 +123,8 @@ public sealed class RenderFrameData
     /// </returns>
     public bool TryGet<TValue>(
         Inno.Rendering.RenderDataChannelId channel,
-        out TValue? value)
-    {
+        out TValue? value
+    ) {
         if (channel.isValid
             && m_values.TryGetValue(new FrameDataKey(channel, typeof(TValue)), out object? stored)
             && stored is TValue typed)
@@ -154,7 +161,8 @@ public sealed class RenderFrameData
 
     private readonly record struct FrameDataKey(
         Inno.Rendering.RenderDataChannelId channel,
-        Type type);
+        Type type
+    );
 }
 
 /// <summary>
@@ -189,8 +197,8 @@ public sealed class RenderRequest
         RenderViewport viewport,
         RenderPipelineAsset? pipeline = null,
         RenderFrameData? data = null,
-        int priority = 0)
-    {
+        int priority = 0
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
         this.name = name;
         this.target = target;

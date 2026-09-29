@@ -46,8 +46,11 @@ public class FileLogSink : ILogSink, IDisposable
     /// <param name="maxFiles">
     /// Maximum number of retained files.
     /// </param>
-    public FileLogSink(string logDirectory, long maxFileSizeBytes = 10 * 1024 * 1024, int maxFiles = 10)
-    {
+    public FileLogSink(
+        string logDirectory,
+        long maxFileSizeBytes = 10 * 1024 * 1024,
+        int maxFiles = 10
+    ) {
         m_logDirectory = logDirectory;
         m_maxFileSize = maxFileSizeBytes;
         m_maxFiles = maxFiles;

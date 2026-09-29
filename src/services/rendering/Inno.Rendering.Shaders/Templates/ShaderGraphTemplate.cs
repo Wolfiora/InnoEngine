@@ -19,8 +19,10 @@ public sealed class ShaderGraphTemplateAttribute : Attribute
     /// <param name="displayName">
     /// User-facing creation menu label.
     /// </param>
-    public ShaderGraphTemplateAttribute(string id, string displayName)
-    {
+    public ShaderGraphTemplateAttribute(
+        string id,
+        string displayName
+    ) {
         this.id = string.IsNullOrWhiteSpace(id)
             ? throw new ArgumentException("Shader graph template identity cannot be empty.", nameof(id))
             : id;
@@ -57,7 +59,10 @@ public abstract class ShaderGraphTemplate
     /// <returns>
     /// A graph ready for native serialization and ordinary shader import.
     /// </returns>
-    public abstract GraphDocument Create(SerializationRegistry serialization, SerializationContext context);
+    public abstract GraphDocument Create(
+        SerializationRegistry serialization,
+        SerializationContext context
+    );
 }
 
 [ShaderGraphTemplate(ShaderBuiltInIds.rasterTemplate, "Raster")]
@@ -75,7 +80,10 @@ internal sealed class RasterShaderGraphTemplate : ShaderGraphTemplate
     /// <returns>
     /// The validated graph document that represents the completed operation.
     /// </returns>
-public override GraphDocument Create(SerializationRegistry serialization, SerializationContext context)
+public override GraphDocument Create(
+    SerializationRegistry serialization,
+    SerializationContext context
+)
         => ShaderGraphTemplates.CreateRaster(serialization, context);
 }
 
@@ -94,8 +102,10 @@ internal sealed class ReusableShaderGraphNodeTemplate : ShaderGraphTemplate
     /// <returns>
     /// The validated graph document that represents the completed operation.
     /// </returns>
-    public override GraphDocument Create(SerializationRegistry serialization, SerializationContext context)
-    {
+    public override GraphDocument Create(
+        SerializationRegistry serialization,
+        SerializationContext context
+    ) {
         GraphDocument graph = ShaderGraphDocument.Create(new("Graph Node", [], [], []), serialization, context);
         ShaderGraphNodes.WriteSettings(graph, new ShaderGraphNodeSettings(), serialization, context);
         var input = new GraphNodeRecord(new("node-inputs"), ShaderGraphNodes.inputDefinitionId)

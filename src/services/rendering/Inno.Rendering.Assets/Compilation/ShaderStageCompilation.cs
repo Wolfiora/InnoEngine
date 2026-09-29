@@ -17,7 +17,10 @@ namespace Inno.Rendering.Assets;
 /// <param name="target">
 /// Exact toolchain profile and capability snapshot.
 /// </param>
-public sealed record ShaderStageToolRequest(ShaderIrStage stage, ShaderCompileTarget target);
+public sealed record ShaderStageToolRequest(
+    ShaderIrStage stage,
+    ShaderCompileTarget target
+);
 
 /// <summary>
 /// Maps one logical binding to the adapter-generated native name, without exposing a GPU handle.
@@ -31,7 +34,11 @@ public sealed record ShaderStageToolRequest(ShaderIrStage stage, ShaderCompileTa
 /// <param name="location">
 /// Assigned texture slot; uniform locations are resolved by the runtime.
 /// </param>
-public sealed record ShaderStageBinding(string id, string nativeName, int location);
+public sealed record ShaderStageBinding(
+    string id,
+    string nativeName,
+    int location
+);
 
 /// <summary>
 /// Returns a frozen typed-stage compilation candidate; failure never carries a usable artifact.
@@ -52,9 +59,11 @@ public sealed class ShaderStageToolResult
     /// <param name="diagnostics">
     /// Structured adapter diagnostics with original source positions.
     /// </param>
-    public ShaderStageToolResult(ReadOnlySpan<byte> bytes, IEnumerable<ShaderStageBinding> bindings,
-        IEnumerable<ShaderSourceDiagnostic> diagnostics)
-    {
+    public ShaderStageToolResult(
+        ReadOnlySpan<byte> bytes,
+        IEnumerable<ShaderStageBinding> bindings,
+        IEnumerable<ShaderSourceDiagnostic> diagnostics
+    ) {
         ArgumentNullException.ThrowIfNull(bindings);
         ArgumentNullException.ThrowIfNull(diagnostics);
         this.bindings = Array.AsReadOnly(bindings.ToArray());
@@ -105,15 +114,18 @@ public sealed partial class ShaderCompiler
     /// <returns>
     /// Compiled stage bytes, exact generated binding names and structured diagnostics.
     /// </returns>
-    public async ValueTask<ShaderStageToolResult> CompileAsync(ShaderIrStage stage, ShaderCompileTarget target,
-        CancellationToken cancellationToken = default)
-    {
+    public async ValueTask<ShaderStageToolResult> CompileAsync(
+        ShaderIrStage stage,
+        ShaderCompileTarget target,
+        CancellationToken cancellationToken = default
+    ) {
         ArgumentNullException.ThrowIfNull(stage);
         ArgumentNullException.ThrowIfNull(target);
         cancellationToken.ThrowIfCancellationRequested();
         var key = (stage.contentHash, target.key, target.capabilities);
         lock (m_stageCacheLock)
-            if (m_stageCache.TryGetValue(key, out ShaderStageToolResult? previous)) return previous;
+            if (m_stageCache.TryGetValue(key, out ShaderStageToolResult? previous))
+                return previous;
         ShaderStageToolResult result = await m_toolchain.CompileAsync(new ShaderStageToolRequest(stage, target), cancellationToken).ConfigureAwait(false);
         cancellationToken.ThrowIfCancellationRequested();
         // The bounded cache contains immutable backend results only, never IR, providers or source assets.
@@ -122,8 +134,12 @@ public sealed partial class ShaderCompiler
             lock (m_stageCacheLock)
             {
                 if (m_stageCache.Count >= 256 || m_stageCacheBytes + result.bytes.Length > 32 * 1024 * 1024)
-                { m_stageCache.Clear(); m_stageCacheBytes = 0; }
-                if (m_stageCache.TryAdd(key, result)) m_stageCacheBytes += result.bytes.Length;
+                {
+                    m_stageCache.Clear();
+                    m_stageCacheBytes = 0;
+                }
+                if (m_stageCache.TryAdd(key, result))
+                    m_stageCacheBytes += result.bytes.Length;
             }
         return result;
     }

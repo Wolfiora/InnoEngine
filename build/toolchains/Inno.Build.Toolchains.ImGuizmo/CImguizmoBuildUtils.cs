@@ -14,8 +14,10 @@ internal static class CImguizmoBuildUtils
     /// <param name="cimguiDir">
     /// The cimgui dir text validated by the validate source operation.
     /// </param>
-    public static void ValidateSource(string cimguizmoDir, string cimguiDir)
-    {
+    public static void ValidateSource(
+        string cimguizmoDir,
+        string cimguiDir
+    ) {
         if (!Directory.Exists(cimguizmoDir))
         {
             throw new DirectoryNotFoundException(

@@ -72,17 +72,21 @@ public sealed partial class BgfxShadercToolchain : IShaderCompilerToolchain
     public ShaderCompileTarget CreateTarget(
         GraphicsCapabilities capabilities,
         bool optimize = true,
-        bool debugInformation = false)
-    {
+        bool debugInformation = false
+    ) {
         BgfxShaderCompilerProfile profile = BgfxRendererProfileCatalog.Resolve(
             m_targetPlatform,
             capabilities);
         return new ShaderCompileTarget(profile.key, capabilities, optimize, debugInformation);
     }
 
-    private async ValueTask<BgfxShadercResult> RunCompilerAsync(string source, string? varying, ShaderStage stage,
-        ShaderCompileTarget target, CancellationToken cancellationToken)
-    {
+    private async ValueTask<BgfxShadercResult> RunCompilerAsync(
+        string source,
+        string? varying,
+        ShaderStage stage,
+        ShaderCompileTarget target,
+        CancellationToken cancellationToken
+    ) {
         cancellationToken.ThrowIfCancellationRequested();
         BgfxShaderCompilerProfile profile = BgfxRendererProfileCatalog.Resolve(
             m_targetPlatform,
@@ -238,7 +242,12 @@ public sealed partial class BgfxShadercToolchain : IShaderCompilerToolchain
     }
 }
 
-internal sealed record BgfxShadercResult(byte[]? bytes, int exitCode, string standardOutput, string standardError);
+internal sealed record BgfxShadercResult(
+    byte[]? bytes,
+    int exitCode,
+    string standardOutput,
+    string standardError
+);
 
 internal sealed class BgfxShaderCompilerProfile(
     BgfxShaderTargetPlatform targetPlatform,
@@ -246,8 +255,8 @@ internal sealed class BgfxShaderCompilerProfile(
     string shadercPlatform,
     string vertexProfile,
     string fragmentProfile,
-    string computeProfile)
-{
+    string computeProfile
+) {
     internal BgfxShaderTargetPlatform targetPlatform { get; } = targetPlatform;
     internal GraphicsApi backend { get; } = backend;
     internal string shadercPlatform { get; } = shadercPlatform;
@@ -272,48 +281,49 @@ internal static class BgfxRendererProfileCatalog
 {
     internal static BgfxShaderCompilerProfile Resolve(
         BgfxShaderTargetPlatform targetPlatform,
-        GraphicsCapabilities capabilities)
-    {
+        GraphicsCapabilities capabilities
+    ) {
         ArgumentNullException.ThrowIfNull(capabilities);
         bool compute = capabilities.Supports(GraphicsCapability.Compute);
         return (targetPlatform, capabilities.backend) switch
         {
-            (BgfxShaderTargetPlatform.WindowsX64, GraphicsApi.Direct3D11 or GraphicsApi.Direct3D12) => new(
+            (BgfxShaderTargetPlatform.WindowsX64, var api) when
+                api == GraphicsApi.Direct3D11 || api == GraphicsApi.Direct3D12 => new(
                 targetPlatform,
                 capabilities.backend,
                 "windows",
                 "s_5_0",
                 "s_5_0",
                 compute ? "s_5_0" : string.Empty),
-            (BgfxShaderTargetPlatform.MacOSArm64, GraphicsApi.Metal) => new(
+            (BgfxShaderTargetPlatform.MacOSArm64, var api) when api == GraphicsApi.Metal => new(
                 targetPlatform,
                 capabilities.backend,
                 "osx",
                 "metal",
                 "metal",
                 compute ? "metal" : string.Empty),
-            (BgfxShaderTargetPlatform.WindowsX64, GraphicsApi.Vulkan) => new(
+            (BgfxShaderTargetPlatform.WindowsX64, var api) when api == GraphicsApi.Vulkan => new(
                 targetPlatform,
                 capabilities.backend,
                 "windows",
                 "spirv",
                 "spirv",
                 compute ? "spirv" : string.Empty),
-            (BgfxShaderTargetPlatform.MacOSArm64, GraphicsApi.Vulkan) => new(
+            (BgfxShaderTargetPlatform.MacOSArm64, var api) when api == GraphicsApi.Vulkan => new(
                 targetPlatform,
                 capabilities.backend,
                 "osx",
                 "spirv",
                 "spirv",
                 compute ? "spirv" : string.Empty),
-            (BgfxShaderTargetPlatform.WindowsX64, GraphicsApi.OpenGL) => new(
+            (BgfxShaderTargetPlatform.WindowsX64, var api) when api == GraphicsApi.OpenGL => new(
                 targetPlatform,
                 capabilities.backend,
                 "windows",
                 "430",
                 "430",
                 compute ? "430" : string.Empty),
-            (BgfxShaderTargetPlatform.MacOSArm64, GraphicsApi.OpenGL) => new(
+            (BgfxShaderTargetPlatform.MacOSArm64, var api) when api == GraphicsApi.OpenGL => new(
                 targetPlatform,
                 capabilities.backend,
                 "osx",

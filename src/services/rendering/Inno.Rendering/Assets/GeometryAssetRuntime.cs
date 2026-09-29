@@ -25,8 +25,12 @@ public readonly record struct GeometryVertex
     /// <param name="textureCoordinate">
     /// Primary texture coordinate.
     /// </param>
-    public GeometryVertex(Vector3 position, Vector3 normal, Vector4 tangent, Vector2 textureCoordinate)
-    {
+    public GeometryVertex(
+        Vector3 position,
+        Vector3 normal,
+        Vector4 tangent,
+        Vector2 textureCoordinate
+    ) {
         this.position = position;
         this.normal = normal;
         this.tangent = tangent;
@@ -68,8 +72,10 @@ public readonly record struct GeometrySection
     /// <param name="indexCount">
     /// Number of indices in the range.
     /// </param>
-    public GeometrySection(int firstIndex, int indexCount)
-    {
+    public GeometrySection(
+        int firstIndex,
+        int indexCount
+    ) {
         ArgumentOutOfRangeException.ThrowIfNegative(firstIndex);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(indexCount);
         this.firstIndex = firstIndex;
@@ -104,8 +110,11 @@ public sealed class GeometryData
     /// <param name="sections">
     /// Contiguous submesh ranges.
     /// </param>
-    public GeometryData(GeometryVertex[] vertices, uint[] indices, GeometrySection[] sections)
-    {
+    public GeometryData(
+        GeometryVertex[] vertices,
+        uint[] indices,
+        GeometrySection[] sections
+    ) {
         ArgumentNullException.ThrowIfNull(vertices);
         ArgumentNullException.ThrowIfNull(indices);
         ArgumentNullException.ThrowIfNull(sections);
@@ -286,7 +295,10 @@ public static class GeometryArtifact
         return new GeometryData(vertices, indices, sections);
     }
 
-    private static int RequireCount(int value, string kind)
+    private static int RequireCount(
+        int value,
+        string kind
+    )
         => value >= 0 && value <= 100_000_000
             ? value
             : throw new InvalidDataException($"Mesh artifact {kind} count is invalid.");

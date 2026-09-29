@@ -14,7 +14,10 @@ public abstract class AudioDevice
     /// <param name="generation">
     /// Device generation that owns the resource.
     /// </param>
-    protected readonly record struct DeviceHandleIdentity(ulong value, uint generation);
+    protected readonly record struct DeviceHandleIdentity(
+        ulong value,
+        uint generation
+    );
 
     /// <summary>
     /// Encodes a clip identity into a backend-neutral handle.
@@ -28,7 +31,10 @@ public abstract class AudioDevice
     /// <returns>
     /// An opaque clip handle.
     /// </returns>
-    protected static AudioClipHandle CreateClipHandle(ulong value, uint generation) => new(value, generation);
+    protected static AudioClipHandle CreateClipHandle(
+        ulong value,
+        uint generation
+    ) => new(value, generation);
 
     /// <summary>
     /// Encodes a voice identity into a backend-neutral handle.
@@ -42,7 +48,10 @@ public abstract class AudioDevice
     /// <returns>
     /// An opaque voice handle.
     /// </returns>
-    protected static AudioDeviceVoiceHandle CreateVoiceHandle(ulong value, uint generation) => new(value, generation);
+    protected static AudioDeviceVoiceHandle CreateVoiceHandle(
+        ulong value,
+        uint generation
+    ) => new(value, generation);
 
     /// <summary>
     /// Encodes a bus identity into a backend-neutral handle.
@@ -56,7 +65,10 @@ public abstract class AudioDevice
     /// <returns>
     /// An opaque bus handle.
     /// </returns>
-    protected static AudioBusHandle CreateBusHandle(ulong value, uint generation) => new(value, generation);
+    protected static AudioBusHandle CreateBusHandle(
+        ulong value,
+        uint generation
+    ) => new(value, generation);
 
     /// <summary>
     /// Encodes a listener identity into a backend-neutral handle.
@@ -70,7 +82,10 @@ public abstract class AudioDevice
     /// <returns>
     /// An opaque listener handle.
     /// </returns>
-    protected static AudioListenerHandle CreateListenerHandle(ulong value, uint generation) => new(value, generation);
+    protected static AudioListenerHandle CreateListenerHandle(
+        ulong value,
+        uint generation
+    ) => new(value, generation);
 
     /// <summary>
     /// Decodes a clip handle for backend lookup and generation validation.
@@ -81,8 +96,7 @@ public abstract class AudioDevice
     /// <returns>
     /// Backend identity and owning generation.
     /// </returns>
-    protected static DeviceHandleIdentity GetHandleIdentity(AudioClipHandle handle)
-        => new(handle.value, handle.deviceGeneration);
+    protected static DeviceHandleIdentity GetHandleIdentity(AudioClipHandle handle) => new(handle.value, handle.deviceGeneration);
 
     /// <summary>
     /// Decodes a voice handle for backend lookup and generation validation.
@@ -93,8 +107,7 @@ public abstract class AudioDevice
     /// <returns>
     /// Backend identity and owning generation.
     /// </returns>
-    protected static DeviceHandleIdentity GetHandleIdentity(AudioDeviceVoiceHandle handle)
-        => new(handle.value, handle.deviceGeneration);
+    protected static DeviceHandleIdentity GetHandleIdentity(AudioDeviceVoiceHandle handle) => new(handle.value, handle.deviceGeneration);
 
     /// <summary>
     /// Decodes a bus handle for backend lookup and generation validation.
@@ -105,8 +118,7 @@ public abstract class AudioDevice
     /// <returns>
     /// Backend identity and owning generation.
     /// </returns>
-    protected static DeviceHandleIdentity GetHandleIdentity(AudioBusHandle handle)
-        => new(handle.value, handle.deviceGeneration);
+    protected static DeviceHandleIdentity GetHandleIdentity(AudioBusHandle handle) => new(handle.value, handle.deviceGeneration);
 
     /// <summary>
     /// Decodes a listener handle for backend lookup and generation validation.
@@ -117,6 +129,5 @@ public abstract class AudioDevice
     /// <returns>
     /// Backend identity and owning generation.
     /// </returns>
-    protected static DeviceHandleIdentity GetHandleIdentity(AudioListenerHandle handle)
-        => new(handle.value, handle.deviceGeneration);
+    protected static DeviceHandleIdentity GetHandleIdentity(AudioListenerHandle handle) => new(handle.value, handle.deviceGeneration);
 }

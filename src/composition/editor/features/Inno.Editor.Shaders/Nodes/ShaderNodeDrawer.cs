@@ -36,8 +36,8 @@ public sealed class ShaderNodeDrawerAttribute : Attribute
         string displayName = "",
         string createPath = "",
         int createOrder = 0,
-        bool separatorBefore = false)
-    {
+        bool separatorBefore = false
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(definitionId);
         this.definitionId = definitionId;
         this.displayName = displayName ?? throw new ArgumentNullException(nameof(displayName));
@@ -87,8 +87,12 @@ public readonly record struct ShaderNodePresentation
     /// <param name="separatorBefore">
     /// Whether the contributed group starts a visual section.
     /// </param>
-    public ShaderNodePresentation(string displayName, string createPath, int createOrder, bool separatorBefore)
-    {
+    public ShaderNodePresentation(
+        string displayName,
+        string createPath,
+        int createOrder,
+        bool separatorBefore
+    ) {
         this.displayName = displayName;
         this.createPath = createPath;
         this.createOrder = createOrder;
@@ -165,9 +169,23 @@ public sealed class ShaderNodeDrawContext
     /// <param name="readOnly">
     /// Whether the source belongs to an immutable installation.
     /// </param>
-    public ShaderNodeDrawContext(GraphNodeRecord node, SerializationRegistry serialization, SerializationContext context,
-        Action<string, GraphSerializedValue, bool> write, IEditorPreviewService previews, InspectionDrawContext inspection, bool readOnly)
-    { m_node = node; m_serialization = serialization; m_context = context; m_write = write; this.previews = previews; m_inspection = inspection; m_readOnly = readOnly; }
+    public ShaderNodeDrawContext(
+        GraphNodeRecord node,
+        SerializationRegistry serialization,
+        SerializationContext context,
+        Action<string, GraphSerializedValue, bool> write,
+        IEditorPreviewService previews,
+        InspectionDrawContext inspection,
+        bool readOnly
+    ) {
+        m_node = node;
+        m_serialization = serialization;
+        m_context = context;
+        m_write = write;
+        this.previews = previews;
+        m_inspection = inspection;
+        m_readOnly = readOnly;
+    }
 
     /// <summary>
     /// Gets the shared generation-scoped preview service for optional inline texture previews; valid only during this draw.
@@ -194,7 +212,10 @@ public sealed class ShaderNodeDrawContext
     /// <returns>
     /// The detached value. Malformed stored data is not silently replaced.
     /// </returns>
-    public T Read<T>(string key, T defaultValue)
+    public T Read<T>(
+        string key,
+        T defaultValue
+    )
         => Inno.Rendering.Shaders.ShaderGraphDocument.Read(m_node, key, defaultValue, m_serialization, m_context);
 
     /// <summary>
@@ -212,9 +233,13 @@ public sealed class ShaderNodeDrawContext
     /// <param name="continuous">
     /// Whether this sample belongs to the active text or numeric gesture.
     /// </param>
-    public void Write<T>(string key, T value, bool continuous = false)
-    {
-        if (m_readOnly) throw new InvalidOperationException("Copy this installed Shader into the project before editing.");
+    public void Write<T>(
+        string key,
+        T value,
+        bool continuous = false
+    ) {
+        if (m_readOnly)
+            throw new InvalidOperationException("Copy this installed Shader into the project before editing.");
         m_write(key, Inno.Rendering.Shaders.ShaderGraphDocument.Encode(value, m_serialization, m_context), continuous);
     }
 
@@ -233,12 +258,18 @@ public sealed class ShaderNodeDrawContext
     /// <param name="defaultValue">
     /// Value used only when no property is stored.
     /// </param>
-    public void DrawProperty<T>(string key, string label, T defaultValue)
-    {
+    public void DrawProperty<T>(
+        string key,
+        string label,
+        T defaultValue
+    ) {
         T value = Read(key, defaultValue);
         m_inspection.properties.DrawValue(m_inspection.editorContext, m_node, "shader.node." + key, label, typeof(T),
             () => value, edited => value = (T)edited!, new Edits(mutation =>
-            { mutation(); Write(key, value, ImGuiApi.IsAnyItemActive()); }), m_readOnly);
+            {
+                mutation();
+                Write(key, value, ImGuiApi.IsAnyItemActive());
+            }), m_readOnly);
     }
 
     private sealed class Edits(Action<Action> apply) : IInspectionPropertyEditService
@@ -261,7 +292,14 @@ public sealed class ShaderNodeDrawContext
         /// <returns>
         /// <see langword="true"/> when the documented condition is satisfied; otherwise, <see langword="false"/>.
         /// </returns>
-public bool ChangeProperty(object owner, string propertyName, Action mutation, string historyName)
-        { apply(mutation); return true; }
+public bool ChangeProperty(
+    object owner,
+    string propertyName,
+    Action mutation,
+    string historyName
+) {
+            apply(mutation);
+            return true;
+        }
     }
 }

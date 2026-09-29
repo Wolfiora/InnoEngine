@@ -36,8 +36,8 @@ internal sealed class EditorLayer : Layer
         EditorContext context,
         TypeCatalog types,
         LogRouter logs,
-        System.Collections.Generic.IEnumerable<object>? hostServices = null)
-    {
+        System.Collections.Generic.IEnumerable<object>? hostServices = null
+    ) {
         m_presentation = presentation ?? throw new ArgumentNullException(nameof(presentation));
         m_context = context;
         m_log = logs.CreateLogger<EditorLayer>();
@@ -90,8 +90,7 @@ internal sealed class EditorLayer : Layer
     /// <param name="deltaTime">
     /// The elapsed frame time in seconds.
     /// </param>
-    public override void OnUpdate(float deltaTime)
-        => m_playModeLoop.Tick(deltaTime);
+    public override void OnUpdate(float deltaTime) => m_playModeLoop.Tick(deltaTime);
 
     /// <summary>
     /// Updates editor presentation after the active Play Mode session has advanced.
@@ -183,8 +182,8 @@ internal sealed class EditorLayer : Layer
 
     private static IEnumerable<object> CreateHostServices(
         IEnumerable<object>? hostServices,
-        EditorPlayModeLoop playModeLoop)
-    {
+        EditorPlayModeLoop playModeLoop
+    ) {
         List<object> services = hostServices is null ? [] : new List<object>(hostServices);
         services.Add(playModeLoop);
         return services;

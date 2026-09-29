@@ -25,8 +25,8 @@ internal sealed class EditorAuthoringServices : IDisposable
         AssetPipeline assets,
         IdentityAllocator identities,
         PluginEnvironment plugins,
-        ScriptCompiler compiler)
-    {
+        ScriptCompiler compiler
+    ) {
         this.settings = settings;
         this.assets = assets;
         this.identities = identities;
@@ -46,8 +46,8 @@ internal sealed class EditorAuthoringServices : IDisposable
 
     internal static EditorAuthoringServices Start(
         string projectDirectory,
-        EngineHost engineHost)
-    {
+        EngineHost engineHost
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(projectDirectory);
         ArgumentNullException.ThrowIfNull(engineHost);
         Logger log = engineHost.logs.CreateLogger<EditorAuthoringServices>();

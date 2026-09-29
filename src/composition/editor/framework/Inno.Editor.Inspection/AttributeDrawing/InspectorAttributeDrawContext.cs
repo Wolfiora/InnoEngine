@@ -17,8 +17,8 @@ public sealed class InspectorAttributeDrawContext
         SerializedProperty? property,
         string path,
         string label,
-        bool isReadOnly)
-    {
+        bool isReadOnly
+    ) {
         this.owner = owner ?? throw new ArgumentNullException(nameof(owner));
         this.member = member ?? throw new ArgumentNullException(nameof(member));
         this.property = property;
@@ -120,6 +120,5 @@ public sealed class InspectorAttributeDrawContext
             $"Inspector condition member '{owner.GetType().FullName}.{memberName}' does not exist.");
     }
 
-    internal void SelectAttribute(Attribute value)
-        => m_attribute = value ?? throw new ArgumentNullException(nameof(value));
+    internal void SelectAttribute(Attribute value) => m_attribute = value ?? throw new ArgumentNullException(nameof(value));
 }

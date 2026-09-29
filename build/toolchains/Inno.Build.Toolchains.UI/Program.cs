@@ -112,8 +112,10 @@ internal static class Program
         throw new PlatformNotSupportedException("UI supports macOS ARM64, Windows x64, and Linux x64/ARM64 hosts.");
     }
 
-    private static string FindLibrary(string buildDirectory, string buildType)
-    {
+    private static string FindLibrary(
+        string buildDirectory,
+        string buildType
+    ) {
         string expected = OperatingSystem.IsWindows() ? "inno-ui.dll"
             : OperatingSystem.IsMacOS() ? "libinno-ui.dylib"
             : "libinno-ui.so";

@@ -43,7 +43,8 @@ internal sealed class GamePlayerHost : ShellHost
     private GamePlayerHost(
         IAdapterCatalog adapterCatalog,
         ShellOptions shellOptions,
-        EngineHost engine)
+        EngineHost engine
+    )
         : base(adapterCatalog, shellOptions)
     {
         m_engine = engine;
@@ -53,8 +54,8 @@ internal sealed class GamePlayerHost : ShellHost
     internal static GamePlayerHost Create(
         IAdapterCatalog adapterCatalog,
         AdapterSelection adapterSelection,
-        GraphicsApi? preferredGraphicsApi = null)
-    {
+        GraphicsApi? preferredGraphicsApi = null
+    ) {
         ArgumentNullException.ThrowIfNull(adapterCatalog);
         string packagedContentRoot = ResolvePackagedContentRoot();
         byte[] manifestEnvelope = File.ReadAllBytes(Path.Combine(packagedContentRoot, "runtime.manifest"));
@@ -112,8 +113,7 @@ internal sealed class GamePlayerHost : ShellHost
         }
     }
 
-    private RuntimeSession session
-        => m_session ?? throw new InvalidOperationException("The Player runtime session is not initialized.");
+    private RuntimeSession session => m_session ?? throw new InvalidOperationException("The Player runtime session is not initialized.");
 
     internal int RunGame(int? smokeFrameLimit)
     {
@@ -133,16 +133,16 @@ internal sealed class GamePlayerHost : ShellHost
 
     private static RenderViewport CreatePresentationViewport(
         GamePresentationSettings presentation,
-        RenderPresentationSize size)
-    {
+        RenderPresentationSize size
+    ) {
         GamePresentationViewport viewport = presentation.CalculateViewport(size.width, size.height);
         return new RenderViewport(viewport.x, viewport.y, viewport.width, viewport.height);
     }
 
     private void InitializeRuntime(
         GameRuntimeManifest manifest,
-        string runtimeContentRoot)
-    {
+        string runtimeContentRoot
+    ) {
         InitializeAdapterResources();
         m_diagnosticLogs = new DiagnosticLogSink(m_engine.diagnostics, m_engine.logs);
         m_renderDiagnostics = m_engine.diagnostics.CreateReporter(new DiagnosticSource("inno.player.rendering", "Rendering"));
@@ -181,7 +181,9 @@ internal sealed class GamePlayerHost : ShellHost
             primaryPresentationViewportProvider: size => CreatePresentationViewport(presentation, size),
             inputSnapshotProvider: () => inputRuntime.snapshot,
             primaryInputSurfaceSizeProvider: () => new RenderPresentationSize(
-                Math.Max(1, primaryWindow.width), Math.Max(1, primaryWindow.height)));
+                Math.Max(1, primaryWindow.width), Math.Max(1, primaryWindow.height)),
+            compositionProgramProvider: adapters.rendering.CreateCompositionProgramProvider(
+                adapterSelection.rendering));
         UseHostPipeline(m_engine.CreateHostPipeline(DefaultEngine.CreateHostSubsystems(m_rendering)));
         using (settings.EnterExecutionScope())
         using (AnimationExecutionContext.EnterScope(animation))
@@ -203,8 +205,7 @@ internal sealed class GamePlayerHost : ShellHost
     /// <param name="evnt">
     /// Event produced by the common shell.
     /// </param>
-    protected override void OnEvent(Event evnt)
-        => session.events.Enqueue(evnt);
+    protected override void OnEvent(Event evnt) => session.events.Enqueue(evnt);
 
     /// <summary>
     /// Advances the active game runtime session for one common shell frame.
@@ -212,8 +213,7 @@ internal sealed class GamePlayerHost : ShellHost
     /// <param name="frame">
     /// Immutable timing and identity for the current shell frame.
     /// </param>
-    protected override void OnFrame(ShellFrame frame)
-        => session.Tick(frame.deltaTime);
+    protected override void OnFrame(ShellFrame frame) => session.Tick(frame.deltaTime);
 
     /// <summary>
     /// Writes deterministic rendering statistics after a bounded smoke run completes.
@@ -284,9 +284,18 @@ public void Clear(DiagnosticSource source) { }
 
         void Attempt(Action cleanup)
         {
-            try { cleanup(); }
-            catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null) { throw; }
-            catch (Exception exception) { failures.Add(exception); }
+            try
+            {
+                cleanup();
+            }
+            catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null)
+            {
+                throw;
+            }
+            catch (Exception exception)
+            {
+                failures.Add(exception);
+            }
         }
     }
 
@@ -314,8 +323,8 @@ public void Clear(DiagnosticSource source) { }
     private static void ActivateRuntimeModules(
         ModuleHost modules,
         IReadOnlyList<GameRuntimeModule> deployedModules,
-        string managedRoot)
-    {
+        string managedRoot
+    ) {
         ArgumentNullException.ThrowIfNull(modules);
         ArgumentNullException.ThrowIfNull(deployedModules);
         string root = Path.GetFullPath(managedRoot);

@@ -43,11 +43,16 @@ public sealed class ShaderSourceParameter
     /// <exception cref="ArgumentException">
     /// The parameter has void type.
     /// </exception>
-    public ShaderSourceParameter(string name, ShaderSourceType type, ShaderSourceParameterDirection direction)
-    {
+    public ShaderSourceParameter(
+        string name,
+        ShaderSourceType type,
+        ShaderSourceParameterDirection direction
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
-        if (!Enum.IsDefined(direction)) throw new ArgumentOutOfRangeException(nameof(direction));
-        if (type?.id == "void") throw new ArgumentException("A parameter cannot have void type.", nameof(type));
+        if (!Enum.IsDefined(direction))
+            throw new ArgumentOutOfRangeException(nameof(direction));
+        if (type?.id == "void")
+            throw new ArgumentException("A parameter cannot have void type.", nameof(type));
         this.name = name;
         this.type = type ?? throw new ArgumentNullException(nameof(type));
         this.direction = direction;
@@ -89,12 +94,16 @@ public sealed class ShaderSourceFunction
     /// <exception cref="ArgumentException">
     /// The name is reserved or parameters have duplicate names.
     /// </exception>
-    public ShaderSourceFunction(string name, ShaderSourceType returnType,
-        IEnumerable<ShaderSourceParameter> parameters, ShaderSourcePosition location)
-    {
+    public ShaderSourceFunction(
+        string name,
+        ShaderSourceType returnType,
+        IEnumerable<ShaderSourceParameter> parameters,
+        ShaderSourcePosition location
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
         ArgumentNullException.ThrowIfNull(parameters);
-        if (name == "main") throw new ArgumentException("A source module exports a function, not a shader main entry point.", nameof(name));
+        if (name == "main")
+            throw new ArgumentException("A source module exports a function, not a shader main entry point.", nameof(name));
         ShaderSourceParameter[] snapshot = parameters.ToArray();
         if (snapshot.Any(static parameter => parameter is null) ||
             snapshot.Select(static parameter => parameter.name).Distinct(StringComparer.Ordinal).Count() != snapshot.Length)
@@ -136,7 +145,8 @@ public sealed class ShaderSourceFunction
             return false;
         for (int i = 0; i < parameters.Count; i++)
             if (parameters[i].name != other.parameters[i].name || parameters[i].direction != other.parameters[i].direction ||
-                !parameters[i].type.IsEquivalentTo(other.parameters[i].type)) return false;
+                !parameters[i].type.IsEquivalentTo(other.parameters[i].type))
+                    return false;
         return true;
     }
 }

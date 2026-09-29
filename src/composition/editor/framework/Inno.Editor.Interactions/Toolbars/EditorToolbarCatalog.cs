@@ -5,8 +5,8 @@ namespace Inno.Editor.Interactions;
 
 internal sealed class EditorToolbarCatalog(
     EditorExtensionCatalog catalog,
-    EditorActionRouter actions)
-{
+    EditorActionRouter actions
+) {
     internal EditorToolbarModel Build(EditorActionContext context)
     {
         ArgumentNullException.ThrowIfNull(context);
@@ -36,7 +36,10 @@ internal sealed class EditorToolbarCatalog(
             }
         }
 
-        items.Sort(static (left, right) =>
+        items.Sort(static (
+            left,
+            right
+        ) =>
         {
             int order = left.Item.order.CompareTo(right.Item.order);
             if (order != 0)

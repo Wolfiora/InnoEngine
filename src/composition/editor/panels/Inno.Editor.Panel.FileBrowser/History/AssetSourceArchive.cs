@@ -15,8 +15,8 @@ internal static class AssetSourceArchive
     internal static byte[] Capture(
         AssetPipeline assets,
         string relativePath,
-        out bool isDirectory)
-    {
+        out bool isDirectory
+    ) {
         ArgumentNullException.ThrowIfNull(assets);
         string source = GetSourcePath(assets, relativePath);
         isDirectory = Directory.Exists(source);
@@ -63,8 +63,8 @@ internal static class AssetSourceArchive
         AssetPipeline assets,
         string relativePath,
         bool isDirectory,
-        ReadOnlySpan<byte> data)
-    {
+        ReadOnlySpan<byte> data
+    ) {
         ArgumentNullException.ThrowIfNull(assets);
         string target = GetSourcePath(assets, relativePath);
         if (File.Exists(target) || Directory.Exists(target))
@@ -153,8 +153,8 @@ internal static class AssetSourceArchive
         string stagingSource,
         string stagingMeta,
         bool isDirectory,
-        string entryName)
-    {
+        string entryName
+    ) {
         if (string.Equals(entryName, C_META_ENTRY, StringComparison.Ordinal))
             return stagingMeta;
         if (!isDirectory && string.Equals(entryName, C_SOURCE_ENTRY, StringComparison.Ordinal))
@@ -169,8 +169,10 @@ internal static class AssetSourceArchive
         throw new InvalidDataException($"Unknown asset history archive entry '{entryName}'.");
     }
 
-    private static string GetSourcePath(AssetPipeline assets, string relativePath)
-    {
+    private static string GetSourcePath(
+        AssetPipeline assets,
+        string relativePath
+    ) {
         string root = Path.GetFullPath(assets.assetRoot) + Path.DirectorySeparatorChar;
         string result = Path.GetFullPath(Path.Combine(
             assets.assetRoot,
@@ -180,8 +182,11 @@ internal static class AssetSourceArchive
         return result;
     }
 
-    private static void MoveSource(string source, string target, bool isDirectory)
-    {
+    private static void MoveSource(
+        string source,
+        string target,
+        bool isDirectory
+    ) {
         if (isDirectory)
             Directory.Move(source, target);
         else

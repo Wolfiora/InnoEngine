@@ -26,8 +26,16 @@ public sealed class ShaderPreviews : EditorModule
     private readonly Dictionary<Guid, State> m_states = [];
     private ulong m_frame;
 
-    internal ShaderPreviews(TypeCatalog types, IEditorPreviewService previews, EditorShaderCompilation compilation)
-    { m_types = types; m_registry = new(types); m_previews = previews; m_compilation = compilation; }
+    internal ShaderPreviews(
+        TypeCatalog types,
+        IEditorPreviewService previews,
+        EditorShaderCompilation compilation
+    ) {
+        m_types = types;
+        m_registry = new(types);
+        m_previews = previews;
+        m_compilation = compilation;
+    }
 
     /// <summary>
     /// Draws detached Material overrides using its Shader's compiled contract.
@@ -41,11 +49,24 @@ public sealed class ShaderPreviews : EditorModule
     /// <param name="logicalSize">
     /// Positive square image size in logical pixels.
     /// </param>
-    public void DrawMaterial(Guid ownerId, MaterialAsset material, float logicalSize)
-    {
-        if (material.shader is null || material.shader.isMissing) { Widget.Hint("Preview requires an available Shader."); return; }
-        try { Draw(ownerId, material, m_compilation.RequestArtifact(material.shader, RenderShaderVariant.FromMaterial(material)), logicalSize); }
-        catch (Exception error) when (Recoverable(error)) { Widget.Hint("Preview: " + error.Message); }
+    public void DrawMaterial(
+        Guid ownerId,
+        MaterialAsset material,
+        float logicalSize
+    ) {
+        if (material.shader is null || material.shader.isMissing)
+        {
+            Widget.Hint("Preview requires an available Shader.");
+            return;
+        }
+        try
+        {
+            Draw(ownerId, material, m_compilation.RequestArtifact(material.shader, RenderShaderVariant.FromMaterial(material)), logicalSize);
+        }
+        catch (Exception error) when (Recoverable(error))
+        {
+            Widget.Hint("Preview: " + error.Message);
+        }
     }
 
     /// <summary>
@@ -63,13 +84,24 @@ public sealed class ShaderPreviews : EditorModule
     /// <param name="logicalSize">
     /// Positive square image size in logical pixels.
     /// </param>
-    public void Draw(Guid ownerId, MaterialAsset material, EditorShaderDraftCompilationSnapshot compilation, float logicalSize)
-    {
-        if (ownerId == Guid.Empty) throw new ArgumentException("A preview owner identity is required.", nameof(ownerId));
+    public void Draw(
+        Guid ownerId,
+        MaterialAsset material,
+        EditorShaderDraftCompilationSnapshot compilation,
+        float logicalSize
+    ) {
+        if (ownerId == Guid.Empty)
+            throw new ArgumentException("A preview owner identity is required.", nameof(ownerId));
         ArgumentNullException.ThrowIfNull(material); ArgumentNullException.ThrowIfNull(compilation);
-        if (!(logicalSize > 0f) || !float.IsFinite(logicalSize)) throw new ArgumentOutOfRangeException(nameof(logicalSize));
-        if (compilation.artifact is not { } artifact) { Widget.Hint("Preview: " + compilation.state); return; }
-        if (!m_states.TryGetValue(ownerId, out State? state)) m_states.Add(ownerId, state = new("shader-preview/" + ownerId.ToString("N")));
+        if (!(logicalSize > 0f) || !float.IsFinite(logicalSize))
+            throw new ArgumentOutOfRangeException(nameof(logicalSize));
+        if (compilation.artifact is not { } artifact)
+        {
+            Widget.Hint("Preview: " + compilation.state);
+            return;
+        }
+        if (!m_states.TryGetValue(ownerId, out State? state))
+            m_states.Add(ownerId, state = new("shader-preview/" + ownerId.ToString("N")));
         state.frame = m_frame;
         try
         {
@@ -77,18 +109,31 @@ public sealed class ShaderPreviews : EditorModule
             ShaderDefinition definition = m_compilation.ReadDefinition(artifact);
             string[] contracts = definition.techniques.Where(value => !material.techniqueId.isValid || value.id == material.techniqueId)
                 .Select(value => value.contract.value).Distinct(StringComparer.Ordinal).Where(m_registry.providers.ContainsKey).ToArray();
-            if (contracts.Length == 0) { Widget.Hint("No preview provider for this Shader contract."); return; }
-            if (contracts.Length != 1) { Widget.Hint("Select a Technique to choose an unambiguous preview contract."); return; }
+            if (contracts.Length == 0)
+            {
+                Widget.Hint("No preview provider for this Shader contract.");
+                return;
+            }
+            if (contracts.Length != 1)
+            {
+                Widget.Hint("Select a Technique to choose an unambiguous preview contract.");
+                return;
+            }
             int pixels = Math.Clamp((int)MathF.Ceiling(logicalSize * ImGuiApi.GetWindowDpiScale()), 1, 2048);
             var context = new ShaderPreviewContext(new(state.viewportId), material, artifact, definition, state, pixels, pixels);
             EditorViewportLayer layer = m_registry.providers[contracts[0]].CreateLayer(context);
             if (m_previews.TryRender(new(state.viewportId, pixels, pixels, RenderTextureFormat.RGBA8, [layer]), out var handle))
                 m_previews.Draw(handle, new(logicalSize, logicalSize));
-            else ImGuiApi.Dummy(new(logicalSize, logicalSize));
+            else
+                ImGuiApi.Dummy(new(logicalSize, logicalSize));
             Widget.Hint(compilation.usingLastGood ? "Draft preview · last-good candidate · Scene/Game unchanged" : "Isolated preview · Scene/Game unchanged");
-            foreach (Diagnostic error in state.errors.Values) ImGuiApi.TextWrapped(error.message);
+            foreach (Diagnostic error in state.errors.Values)
+                ImGuiApi.TextWrapped(error.message);
         }
-        catch (Exception error) when (Recoverable(error)) { Widget.Hint("Preview: " + error.Message); }
+        catch (Exception error) when (Recoverable(error))
+        {
+            Widget.Hint("Preview: " + error.Message);
+        }
     }
 
     /// <summary>
@@ -99,7 +144,8 @@ public sealed class ShaderPreviews : EditorModule
     /// </param>
     public void Release(Guid ownerId)
     {
-        if (m_states.Remove(ownerId, out State? state)) m_previews.ReleaseRendered(state.viewportId);
+        if (m_states.Remove(ownerId, out State? state))
+            m_previews.ReleaseRendered(state.viewportId);
     }
 
     /// <summary>
@@ -111,7 +157,8 @@ public sealed class ShaderPreviews : EditorModule
     protected override void OnUpdate(EditorContext context)
     {
         m_frame++;
-        foreach (Guid id in m_states.Where(pair => m_frame - pair.Value.frame > 2).Select(pair => pair.Key).ToArray()) Release(id);
+        foreach (Guid id in m_states.Where(pair => m_frame - pair.Value.frame > 2).Select(pair => pair.Key).ToArray())
+            Release(id);
     }
     /// <summary>
     /// Stops this feature before its owning runtime releases the active generation.
@@ -121,7 +168,8 @@ public sealed class ShaderPreviews : EditorModule
     /// </param>
     protected override void OnStop(EditorContext context)
     {
-        foreach (Guid id in m_states.Keys.ToArray()) Release(id);
+        foreach (Guid id in m_states.Keys.ToArray())
+            Release(id);
         m_registry.Dispose();
     }
 
@@ -152,14 +200,23 @@ public void Publish(Diagnostic diagnostic) => errors[(diagnostic.code, diagnosti
         /// <param name="objectId">
         /// The object id consumed by resolve; ownership remains with the caller unless explicitly stated otherwise.
         /// </param>
-public void Resolve(string code, string? semanticId = null, Guid? objectId = null) => errors.Remove((code, semanticId, objectId));
+public void Resolve(
+    string code,
+    string? semanticId = null,
+    Guid? objectId = null
+) => errors.Remove((code, semanticId, objectId));
         /// <summary>
         /// Records errors from the current diagnostic report.
         /// </summary>
         /// <param name="diagnostics">
         /// The diagnostics consumed by replace; ownership remains with the caller unless explicitly stated otherwise.
         /// </param>
-public void Replace(IEnumerable<Diagnostic> diagnostics) { errors.Clear(); foreach (Diagnostic value in diagnostics) Publish(value); }
+public void Replace(IEnumerable<Diagnostic> diagnostics)
+{
+    errors.Clear();
+    foreach (Diagnostic value in diagnostics)
+        Publish(value);
+}
     }
 
     private sealed class Registry(TypeCatalog types) : TypeRegistry<IReadOnlyDictionary<string, ShaderPreviewProvider>>(types)
@@ -182,15 +239,22 @@ protected override IReadOnlyDictionary<string, ShaderPreviewProvider> Build(Type
                 foreach (Type type in snapshot.GetTypesWithAttribute<ShaderPreviewProviderAttribute>().Select(value => value.Resolve(snapshot)))
                 {
                     string id = type.GetCustomAttribute<ShaderPreviewProviderAttribute>()!.contractId;
-                    if (result.ContainsKey(id)) throw new InvalidOperationException("Duplicate Shader preview contract: " + id);
+                    if (result.ContainsKey(id))
+                        throw new InvalidOperationException("Duplicate Shader preview contract: " + id);
                     result.Add(id, CreateExtension<ShaderPreviewProvider>(type));
                 }
                 return result;
             }
             catch (Exception failure)
             {
-                try { DisposeExtensions(result.Values); }
-                catch (Exception retirement) { throw new AggregateException(failure, retirement); }
+                try
+                {
+                    DisposeExtensions(result.Values);
+                }
+                catch (Exception retirement)
+                {
+                    throw new AggregateException(failure, retirement);
+                }
                 throw;
             }
         }

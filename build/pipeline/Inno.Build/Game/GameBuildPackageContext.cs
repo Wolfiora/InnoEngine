@@ -11,8 +11,8 @@ public sealed class GameBuildPackageContext
         BuildProfile profile,
         string supportPackDirectory,
         string contentDirectory,
-        string outputDirectory)
-    {
+        string outputDirectory
+    ) {
         this.profile = profile;
         this.supportPackDirectory = supportPackDirectory;
         this.contentDirectory = contentDirectory;

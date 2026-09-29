@@ -12,8 +12,10 @@ internal sealed class EditorModalHost
 {
     private readonly Dictionary<string, Transition> m_transitions = new(StringComparer.Ordinal);
 
-    internal bool Update(IReadOnlyList<EditorModalExtension> modals, double now)
-    {
+    internal bool Update(
+        IReadOnlyList<EditorModalExtension> modals,
+        double now
+    ) {
         bool blocksInteraction = false;
         for (int i = 0; i < modals.Count; i++)
         {
@@ -31,8 +33,8 @@ internal sealed class EditorModalHost
     internal void Draw(
         EditorContext context,
         IReadOnlyList<EditorModalExtension> modals,
-        double now)
-    {
+        double now
+    ) {
         for (int i = 0; i < modals.Count; i++)
         {
             EditorModalExtension extension = modals[i];
@@ -76,8 +78,10 @@ internal sealed class EditorModalHost
 
         internal bool isVisible { get; private set; }
 
-        internal void Update(bool requested, double now)
-        {
+        internal void Update(
+            bool requested,
+            double now
+        ) {
             if (requested)
             {
                 if (!m_requested)

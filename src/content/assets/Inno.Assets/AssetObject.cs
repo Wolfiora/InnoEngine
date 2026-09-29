@@ -66,7 +66,11 @@ public abstract class AssetObject : IdentityObject, ISerializable
     /// <exception cref="InvalidOperationException">
     /// The asset is unowned, retired, or lacks property-state services.
     /// </exception>
-    public void RestoreProperties<TValue>(Guid stableTypeId, byte[] propertyData, TValue target) where TValue : class, ISerializable
+    public void RestoreProperties<TValue>(
+        Guid stableTypeId,
+        byte[] propertyData,
+        TValue target
+    ) where TValue : class, ISerializable
     {
         if (m_runtimeResourcesReleased || m_propertyStateOwner is null || !m_propertyStateOwner.TryGetTarget(out var owner))
             throw new InvalidOperationException("The asset's property-state owner is unavailable.");
@@ -84,8 +88,8 @@ public abstract class AssetObject : IdentityObject, ISerializable
     /// </param>
     protected virtual void OnRuntimePayloadChanged(
         ReadOnlyMemory<byte> previousPayload,
-        ReadOnlyMemory<byte> currentPayload)
-    {
+        ReadOnlyMemory<byte> currentPayload
+    ) {
     }
 
     /// <summary>
@@ -104,8 +108,10 @@ public abstract class AssetObject : IdentityObject, ISerializable
 
     internal string sourceHash => m_sourceHash;
 
-    internal void ClaimRuntimeOwner(object authority, WeakReference<IAssetPropertyStateResolver>? properties)
-    {
+    internal void ClaimRuntimeOwner(
+        object authority,
+        WeakReference<IAssetPropertyStateResolver>? properties
+    ) {
         object? previous = System.Threading.Interlocked.CompareExchange(ref m_runtimeOwner, authority, null);
         if (previous is not null && !ReferenceEquals(previous, authority))
             throw new InvalidOperationException("The asset belongs to another runtime owner.");
@@ -117,8 +123,8 @@ public abstract class AssetObject : IdentityObject, ISerializable
         string sourceHash,
         ReadOnlyMemory<byte> payload,
         bool isMissing,
-        long version)
-    {
+        long version
+    ) {
         byte[] previous = m_runtimePayload;
         AssetPath previousPath = this.assetPath;
         string previousHash = m_sourceHash;
@@ -160,7 +166,10 @@ public abstract class AssetObject : IdentityObject, ISerializable
         {
             OnUnloading();
         }
-        catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null) { throw; }
+        catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null)
+        {
+            throw;
+        }
         catch
         {
             m_runtimeResourcesReleased = true;

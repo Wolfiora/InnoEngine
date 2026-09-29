@@ -25,13 +25,22 @@ public sealed class AnimationBindingRuntime : IAnimationBindingSink, IDisposable
     /// <param name="diagnostics">
     /// A borrowed reporter scoped to this session's binding diagnostics.
     /// </param>
-    public AnimationBindingRuntime(TypeCatalog types, IDiagnosticReporter diagnostics)
-    {
+    public AnimationBindingRuntime(
+        TypeCatalog types,
+        IDiagnosticReporter diagnostics
+    ) {
         ArgumentNullException.ThrowIfNull(types);
         m_diagnostics = diagnostics ?? throw new ArgumentNullException(nameof(diagnostics));
         m_registry = new Registry(types);
-        try { m_registry.Refresh(); }
-        catch { m_registry.Dispose(); throw; }
+        try
+        {
+            m_registry.Refresh();
+        }
+        catch
+        {
+            m_registry.Dispose();
+            throw;
+        }
     }
 
     /// <summary>
@@ -153,8 +162,14 @@ public sealed class AnimationBindingRuntime : IAnimationBindingSink, IDisposable
             List<Exception>? failures = null;
             foreach (AnimationBindingProvider provider in providers.Values)
             {
-                try { provider.Dispose(); }
-                catch (Exception exception) { (failures ??= []).Add(exception); }
+                try
+                {
+                    provider.Dispose();
+                }
+                catch (Exception exception)
+                {
+                    (failures ??= []).Add(exception);
+                }
             }
             providers.Clear();
             if (failures is not null)

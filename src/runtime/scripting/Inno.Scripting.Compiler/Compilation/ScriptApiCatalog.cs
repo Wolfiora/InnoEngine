@@ -11,26 +11,31 @@ namespace Inno.Scripting.Compiler;
 
 internal sealed record ScriptApiAssembly(
     Assembly assembly,
-    IReadOnlyList<ScriptApiTypeExport> exports);
+    IReadOnlyList<ScriptApiTypeExport> exports
+);
 
 internal sealed record ScriptApiTypeExport(
     Type type,
-    string name);
+    string name
+);
 
 internal sealed record ScriptApiNamespaceMapping(
     string apiNamespace,
-    string implementationNamespace);
+    string implementationNamespace
+);
 
 internal sealed record ScriptApiTypeMapping(
     string apiNamespace,
     string apiName,
     string implementationNamespace,
     string implementationName,
-    int arity);
+    int arity
+);
 
 internal sealed record ScriptApiAttachableType(
     string implementationName,
-    string kind);
+    string kind
+);
 
 internal sealed record ScriptApiProfile(
     string name,
@@ -39,7 +44,8 @@ internal sealed record ScriptApiProfile(
     IReadOnlyList<string> apiNamespaces,
     IReadOnlyList<ScriptApiNamespaceMapping> namespaceMappings,
     IReadOnlyList<ScriptApiTypeMapping> typeMappings,
-    IReadOnlyList<ScriptApiAttachableType> attachableTypes);
+    IReadOnlyList<ScriptApiAttachableType> attachableTypes
+);
 
 internal static class ScriptApiCatalog
 {
@@ -146,13 +152,16 @@ internal static class ScriptApiCatalog
             attachableTypes);
     }
 
-    private static bool Includes(ScriptingApiScope scope, bool includeEditor)
+    private static bool Includes(
+        ScriptingApiScope scope,
+        bool includeEditor
+    )
         => scope is ScriptingApiScope.Runtime or ScriptingApiScope.Authoring || includeEditor && scope == ScriptingApiScope.Editor;
 
     private static void ValidateExports(
         IReadOnlyList<DeclaredTypeExport> exports,
-        IReadOnlyList<NamespaceMapping> mappings)
-    {
+        IReadOnlyList<NamespaceMapping> mappings
+    ) {
         foreach (IGrouping<Type, DeclaredTypeExport> group in exports.GroupBy(static export => export.type))
         {
             if (group.Select(static export => export.name).Distinct(StringComparer.Ordinal).Skip(1).Any())
@@ -192,7 +201,8 @@ internal static class ScriptApiCatalog
 
     private static ScriptApiTypeMapping[] CreateTypeMappings(
         IReadOnlyList<ScriptApiAssembly> exports,
-        IReadOnlyList<NamespaceMapping> namespaceMappings)
+        IReadOnlyList<NamespaceMapping> namespaceMappings
+    )
         => exports
             .SelectMany(assemblyExport => assemblyExport.exports.Select(typeExport =>
             {
@@ -263,8 +273,8 @@ internal static class ScriptApiCatalog
     private static void AddWithDependencies(
         Assembly assembly,
         IReadOnlyDictionary<string, Assembly> byName,
-        ISet<Assembly> selected)
-    {
+        ISet<Assembly> selected
+    ) {
         if (!selected.Add(assembly))
             return;
         foreach (AssemblyName reference in assembly.GetReferencedAssemblies())
@@ -311,10 +321,12 @@ internal static class ScriptApiCatalog
     private sealed record NamespaceMapping(
         string apiNamespace,
         string implementationNamespace,
-        Assembly declarationAssembly);
+        Assembly declarationAssembly
+    );
 
     private sealed record DeclaredTypeExport(
         Assembly declarationAssembly,
         Type type,
-        string name);
+        string name
+    );
 }

@@ -60,8 +60,10 @@ internal static class StructMetadata
             ?? int.MaxValue;
     }
 
-    private static StructMember? TryCreateField(Type structType, FieldInfo field)
-    {
+    private static StructMember? TryCreateField(
+        Type structType,
+        FieldInfo field
+    ) {
         if (field.IsStatic)
             return null;
 
@@ -87,8 +89,10 @@ internal static class StructMetadata
             field.IsInitOnly ? null : field.SetValue);
     }
 
-    private static StructMember? TryCreateProperty(Type structType, PropertyInfo property)
-    {
+    private static StructMember? TryCreateProperty(
+        Type structType,
+        PropertyInfo property
+    ) {
         if (property.GetIndexParameters().Length != 0)
             return null;
 
@@ -135,8 +139,8 @@ internal sealed class StructMember
         Type type,
         PropertyVisibility visibility,
         Func<object, object?>? getter,
-        Action<object, object?>? setter)
-    {
+        Action<object, object?>? setter
+    ) {
         this.name = name;
         this.type = type;
         this.visibility = visibility;
@@ -155,8 +159,10 @@ internal sealed class StructMember
             ? m_getter(target)
             : throw new InvalidOperationException($"Struct member '{name}' does not permit reads.");
 
-    internal void SetValue(object target, object? value)
-    {
+    internal void SetValue(
+        object target,
+        object? value
+    ) {
         if (m_setter is null)
             throw new InvalidOperationException($"Struct member '{name}' does not permit writes.");
         m_setter(target, value);

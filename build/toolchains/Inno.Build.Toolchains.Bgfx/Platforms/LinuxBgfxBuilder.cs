@@ -72,8 +72,11 @@ public override bool IsSupported()
     /// <param name="makeTargetOverride">
     /// The make target override text validated by the build operation.
     /// </param>
-public override void Build(string bgfxDir, string config, string? makeTargetOverride)
-    {
+public override void Build(
+    string bgfxDir,
+    string config,
+    string? makeTargetOverride
+) {
         if (!string.IsNullOrWhiteSpace(makeTargetOverride))
         {
             ToolchainEnvironment.Run("make", $"{ParallelMakeOption} {makeTargetOverride}", bgfxDir);
@@ -102,8 +105,10 @@ public override void Build(string bgfxDir, string config, string? makeTargetOver
     /// <param name="config">
     /// The validated configuration that controls this operation.
     /// </param>
-public override void BuildTools(string bgfxDir, string config)
-    {
+public override void BuildTools(
+    string bgfxDir,
+    string config
+) {
         if (RuntimeInformation.ProcessArchitecture == Architecture.X64)
         {
             ToolchainEnvironment.Run("make", $"{ParallelMakeOption} tools config={config}", bgfxDir);
@@ -118,8 +123,10 @@ public override void BuildTools(string bgfxDir, string config)
             bgfxDir);
     }
 
-    private static void GenerateArmProjects(string bgfxDir, bool includeTools)
-    {
+    private static void GenerateArmProjects(
+        string bgfxDir,
+        bool includeTools
+    ) {
         var genie = ResolveHostGenie(bgfxDir);
         var toolsOption = includeTools ? "--with-tools " : string.Empty;
         ToolchainEnvironment.Run(

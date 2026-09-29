@@ -9,8 +9,8 @@ internal sealed record AssetHistoryData(
     string sourcePath,
     string targetPath,
     bool isDirectory,
-    byte[] archive)
-{
+    byte[] archive
+) {
     internal byte[] Encode()
     {
         using var stream = new MemoryStream();

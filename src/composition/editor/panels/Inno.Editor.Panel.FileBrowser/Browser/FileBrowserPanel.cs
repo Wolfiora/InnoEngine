@@ -257,8 +257,11 @@ internal sealed class FileBrowserPanel : EditorPanel
         return MathF.Max(EditorWidget.style.assetSplitterMinimumWidth, style.DockingSeparatorSize);
     }
 
-    private void DrawTreeSplitter(float width, float availableWidth, float treeWidth)
-    {
+    private void DrawTreeSplitter(
+        float width,
+        float availableWidth,
+        float treeWidth
+    ) {
         Vector2 size = new(width, MathF.Max(1f, NativeImGui.GetContentRegionAvail().Y));
         _ = NativeImGui.InvisibleButton("##TreeSplitterGrip", size);
 
@@ -293,8 +296,8 @@ internal sealed class FileBrowserPanel : EditorPanel
     private static float ClampTreeWidth(
         float requestedWidth,
         float availableWidth,
-        float splitterWidth)
-    {
+        float splitterWidth
+    ) {
         float combinedPaneWidth = MathF.Max(0f, availableWidth - splitterWidth);
         float minimumPaneWidth = MathF.Min(
             EditorWidget.style.assetPaneMinimumVisibleWidth,
@@ -306,8 +309,8 @@ internal sealed class FileBrowserPanel : EditorPanel
     private static float ResolveTreeWidth(
         float treePaneRatio,
         float availableWidth,
-        float splitterWidth)
-    {
+        float splitterWidth
+    ) {
         float combinedPaneWidth = MathF.Max(0f, availableWidth - splitterWidth);
         return ClampTreeWidth(
             combinedPaneWidth * Math.Clamp(treePaneRatio, 0f, 1f),
@@ -318,8 +321,8 @@ internal sealed class FileBrowserPanel : EditorPanel
     private static float CalculateTreePaneRatio(
         float treeWidth,
         float availableWidth,
-        float splitterWidth)
-    {
+        float splitterWidth
+    ) {
         float combinedPaneWidth = MathF.Max(0f, availableWidth - splitterWidth);
         return combinedPaneWidth > float.Epsilon
             ? Math.Clamp(treeWidth / combinedPaneWidth, 0f, 1f)
@@ -525,8 +528,10 @@ internal sealed class FileBrowserPanel : EditorPanel
         NativeImGui.EndCombo();
     }
 
-    private void DrawEntryTypeFilterOption(string label, FileBrowserEntryTypeFilter filter)
-    {
+    private void DrawEntryTypeFilterOption(
+        string label,
+        FileBrowserEntryTypeFilter filter
+    ) {
         bool selected = m_entryTypeFilter == filter;
         if (NativeImGui.Checkbox(label, ref selected))
         {
@@ -537,8 +542,10 @@ internal sealed class FileBrowserPanel : EditorPanel
         }
     }
 
-    private void DrawEntryScopeFilterOption(string label, FileBrowserEntryScopeFilter filter)
-    {
+    private void DrawEntryScopeFilterOption(
+        string label,
+        FileBrowserEntryScopeFilter filter
+    ) {
         bool selected = m_entryScopeFilter == filter;
         if (NativeImGui.Checkbox(label, ref selected))
         {
@@ -551,8 +558,8 @@ internal sealed class FileBrowserPanel : EditorPanel
 
     private void DrawEntriesRegion(
         EditorContext context,
-        IReadOnlyList<FileBrowserDisplayEntry> entries)
-    {
+        IReadOnlyList<FileBrowserDisplayEntry> entries
+    ) {
         if (m_viewMode == ViewMode.List)
         {
             DrawListRegion(context, entries);
@@ -564,8 +571,8 @@ internal sealed class FileBrowserPanel : EditorPanel
 
     private void DrawListRegion(
         EditorContext context,
-        IReadOnlyList<FileBrowserDisplayEntry> entries)
-    {
+        IReadOnlyList<FileBrowserDisplayEntry> entries
+    ) {
         bool entriesVisible = NativeImGui.BeginChild(
             "##EntriesScroll",
             Vector2.Zero,
@@ -590,8 +597,8 @@ internal sealed class FileBrowserPanel : EditorPanel
 
     private void DrawGridRegion(
         EditorContext context,
-        IReadOnlyList<FileBrowserDisplayEntry> entries)
-    {
+        IReadOnlyList<FileBrowserDisplayEntry> entries
+    ) {
         ImGuiStylePtr style = NativeImGui.GetStyle();
         float sliderHeight = NativeImGui.GetFrameHeight() + style.WindowPadding.Y * 2f + style.ItemSpacing.Y;
         bool entriesVisible = NativeImGui.BeginChild(
@@ -662,8 +669,8 @@ internal sealed class FileBrowserPanel : EditorPanel
     private void DrawEntriesTable(
         EditorContext context,
         IReadOnlyList<FileBrowserDisplayEntry> entries,
-        string currentDirectory)
-    {
+        string currentDirectory
+    ) {
         ImGuiTableFlags flags =
             ImGuiTableFlags.RowBg |
             ImGuiTableFlags.NoPadOuterX |
@@ -746,8 +753,10 @@ internal sealed class FileBrowserPanel : EditorPanel
         }
     }
 
-    private ListColumnSeparatorState HandleListColumnSeparators(Vector2 origin, Vector2 size)
-    {
+    private ListColumnSeparatorState HandleListColumnSeparators(
+        Vector2 origin,
+        Vector2 size
+    ) {
         float width = MathF.Max(1f, size.X);
         float height = MathF.Max(1f, size.Y);
         float hitWidth = EditorWidget.style.assetListSeparatorHitWidth;
@@ -793,8 +802,8 @@ internal sealed class FileBrowserPanel : EditorPanel
         Vector2 origin,
         float width,
         float height,
-        ListColumnSeparatorState state)
-    {
+        ListColumnSeparatorState state
+    ) {
         float bottom = origin.Y + MathF.Max(1f, height);
         DrawListColumnSeparator(
             origin.X + width * m_listNameSeparatorPosition,
@@ -815,8 +824,8 @@ internal sealed class FileBrowserPanel : EditorPanel
         float top,
         float bottom,
         bool hovered,
-        bool active)
-    {
+        bool active
+    ) {
         Vector4 color = active
             ? EditorPalette.assetAccent
             : hovered
@@ -829,8 +838,10 @@ internal sealed class FileBrowserPanel : EditorPanel
             EditorWidget.style.borderSize);
     }
 
-    private void SetListColumnSeparators(float namePosition, float typePosition)
-    {
+    private void SetListColumnSeparators(
+        float namePosition,
+        float typePosition
+    ) {
         float minimum = EditorWidget.style.assetListMinimumColumnRatio;
         m_listNameSeparatorPosition = Math.Clamp(
             namePosition,
@@ -862,8 +873,10 @@ internal sealed class FileBrowserPanel : EditorPanel
         NativeImGui.TextUnformatted("Source");
     }
 
-    private void DrawNameCell(EditorContext context, FileBrowserDisplayEntry item)
-    {
+    private void DrawNameCell(
+        EditorContext context,
+        FileBrowserDisplayEntry item
+    ) {
         AssetFileEntry entry = item.entry;
         _ = NativeImGui.TableSetColumnIndex(0);
         string icon = m_assets.GetIcon(entry);
@@ -953,8 +966,10 @@ internal sealed class FileBrowserPanel : EditorPanel
         }
     }
 
-    private static void DrawTextCell(string text, Vector4 color)
-    {
+    private static void DrawTextCell(
+        string text,
+        Vector4 color
+    ) {
         NativeImGui.TableNextColumn();
         InsetListCellContent();
         NativeImGui.PushStyleColor(ImGuiCol.Text, color);
@@ -970,8 +985,8 @@ internal sealed class FileBrowserPanel : EditorPanel
 
     private void DrawGrid(
         EditorContext context,
-        IReadOnlyList<FileBrowserDisplayEntry> entries)
-    {
+        IReadOnlyList<FileBrowserDisplayEntry> entries
+    ) {
         float cellSize = GetGridCellSize();
         float available = MathF.Max(cellSize, NativeImGui.GetContentRegionAvail().X);
         int columns = Math.Max(1, (int)(available / cellSize));
@@ -998,8 +1013,10 @@ internal sealed class FileBrowserPanel : EditorPanel
         }
     }
 
-    private void DrawGridItem(EditorContext context, FileBrowserDisplayEntry item)
-    {
+    private void DrawGridItem(
+        EditorContext context,
+        FileBrowserDisplayEntry item
+    ) {
         AssetFileEntry entry = item.entry;
         float cellSize = GetGridCellSize();
         string icon = m_assets.GetIcon(entry);
@@ -1100,8 +1117,8 @@ internal sealed class FileBrowserPanel : EditorPanel
         EditorContext context,
         AssetFileEntry entry,
         FileBrowserPresentation presentation,
-        bool doubleClicked)
-    {
+        bool doubleClicked
+    ) {
         m_rename.MarkInteraction(presentation);
         if (doubleClicked)
         {
@@ -1111,7 +1128,8 @@ internal sealed class FileBrowserPanel : EditorPanel
 
         if (NativeImGui.GetIO().KeyCtrl || NativeImGui.GetIO().KeySuper)
             m_assets.browser.ToggleSelection(context, entry);
-        else m_assets.browser.Select(context, entry.assetPath.ToString());
+        else
+            m_assets.browser.Select(context, entry.assetPath.ToString());
     }
 
     private static void DrawGridItemVisual(
@@ -1123,8 +1141,8 @@ internal sealed class FileBrowserPanel : EditorPanel
         bool active,
         Vector2 min,
         Vector2 max,
-        bool drawName)
-    {
+        bool drawName
+    ) {
         Vector2 size = max - min;
 
         Vector4 bg = selected ? EditorPalette.assetAccent : EditorPalette.collectionHeader;
@@ -1221,7 +1239,8 @@ internal sealed class FileBrowserPanel : EditorPanel
         bool nameHovered,
         bool nameActive,
         bool typeHovered,
-        bool typeActive);
+        bool typeActive
+    );
 
     private void DrawSearchInput()
     {
@@ -1234,8 +1253,10 @@ internal sealed class FileBrowserPanel : EditorPanel
     #endregion
 
     #region Bottom Bar
-    private void DrawBreadcrumbBar(EditorContext context, float height)
-    {
+    private void DrawBreadcrumbBar(
+        EditorContext context,
+        float height
+    ) {
         IReadOnlyList<BreadcrumbPart> parts = BuildBreadcrumbParts(
             m_assets.browser.root,
             m_assets.browser.currentDirectory);
@@ -1285,8 +1306,8 @@ internal sealed class FileBrowserPanel : EditorPanel
 
     private static float GetBreadcrumbBarHeight(
         AssetBrowserRoot root,
-        string currentDirectory)
-    {
+        string currentDirectory
+    ) {
         IReadOnlyList<BreadcrumbPart> parts = BuildBreadcrumbParts(root, currentDirectory);
         float contentWidth = CalculateBreadcrumbContentWidth(
             parts,
@@ -1298,8 +1319,8 @@ internal sealed class FileBrowserPanel : EditorPanel
 
     private static float CalculateBreadcrumbContentWidth(
         IReadOnlyList<BreadcrumbPart> parts,
-        Vector2 framePadding)
-    {
+        Vector2 framePadding
+    ) {
         if (parts.Count == 0)
             return 0f;
 

@@ -25,8 +25,11 @@ public readonly struct DiagnosticLocation : IEquatable<DiagnosticLocation>
     /// <exception cref="ArgumentOutOfRangeException">
     /// Thrown when <paramref name="line"/> or <paramref name="column"/> is negative.
     /// </exception>
-    public DiagnosticLocation(string sourcePath, int line = 0, int column = 0)
-    {
+    public DiagnosticLocation(
+        string sourcePath,
+        int line = 0,
+        int column = 0
+    ) {
         if (string.IsNullOrWhiteSpace(sourcePath))
             throw new ArgumentException("A diagnostic source path is required.", nameof(sourcePath));
         if (line < 0)
@@ -76,8 +79,7 @@ public readonly struct DiagnosticLocation : IEquatable<DiagnosticLocation>
     /// <param name="obj">
     /// The object to compare with this instance.
     /// </param>
-    public override bool Equals(object? obj)
-        => obj is DiagnosticLocation other && Equals(other);
+    public override bool Equals(object? obj) => obj is DiagnosticLocation other && Equals(other);
 
     /// <summary>
     /// Computes a hash code from the fields that participate in logical equality.
@@ -85,8 +87,7 @@ public readonly struct DiagnosticLocation : IEquatable<DiagnosticLocation>
     /// <returns>
     /// A hash code consistent with the implemented equality contract.
     /// </returns>
-    public override int GetHashCode()
-        => HashCode.Combine(sourcePath, line, column);
+    public override int GetHashCode() => HashCode.Combine(sourcePath, line, column);
 
     /// <summary>
     /// Determines whether two locations are equal.
@@ -100,8 +101,10 @@ public readonly struct DiagnosticLocation : IEquatable<DiagnosticLocation>
     /// <returns>
     /// <see langword="true"/> when both locations identify the same source position.
     /// </returns>
-    public static bool operator ==(DiagnosticLocation left, DiagnosticLocation right)
-        => left.Equals(right);
+    public static bool operator ==(
+        DiagnosticLocation left,
+        DiagnosticLocation right
+    ) => left.Equals(right);
 
     /// <summary>
     /// Determines whether two locations are different.
@@ -115,6 +118,8 @@ public readonly struct DiagnosticLocation : IEquatable<DiagnosticLocation>
     /// <returns>
     /// <see langword="true"/> when the locations identify different source positions.
     /// </returns>
-    public static bool operator !=(DiagnosticLocation left, DiagnosticLocation right)
-        => !left.Equals(right);
+    public static bool operator !=(
+        DiagnosticLocation left,
+        DiagnosticLocation right
+    ) => !left.Equals(right);
 }

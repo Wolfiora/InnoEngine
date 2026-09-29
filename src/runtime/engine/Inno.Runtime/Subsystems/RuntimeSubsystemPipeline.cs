@@ -39,9 +39,11 @@ public sealed class RuntimeSubsystemPipeline : IDisposable
     /// <param name="generations">
     /// The shared gate faulted by irreversible retirement failure.
     /// </param>
-    internal RuntimeSubsystemPipeline(RuntimeSubsystemContext context, TimeSpan retirementTimeout,
-        GenerationCoordinator generations)
-    {
+    internal RuntimeSubsystemPipeline(
+        RuntimeSubsystemContext context,
+        TimeSpan retirementTimeout,
+        GenerationCoordinator generations
+    ) {
         ArgumentNullException.ThrowIfNull(context);
         m_context = context;
         m_resources = context.resources;
@@ -113,8 +115,7 @@ public sealed class RuntimeSubsystemPipeline : IDisposable
     /// <summary>
     /// Gets the active immutable subsystem descriptors in execution order.
     /// </summary>
-    public IReadOnlyList<RuntimeSubsystemDescriptor> descriptors
-        => m_entries.Select(static entry => entry.descriptor).ToArray();
+    public IReadOnlyList<RuntimeSubsystemDescriptor> descriptors => m_entries.Select(static entry => entry.descriptor).ToArray();
 
     /// <summary>
     /// Gets immutable diagnostics for unavailable optional subsystems; no exception or extension instance is retained.
@@ -183,7 +184,10 @@ public sealed class RuntimeSubsystemPipeline : IDisposable
     public void FixedUpdate(RuntimeFixedFrame frame)
     {
         EnsureFrame();
-        ExecuteForward(static (subsystem, state) => subsystem.FixedUpdate(state), frame);
+        ExecuteForward(static (
+            subsystem,
+            state
+        ) => subsystem.FixedUpdate(state), frame);
     }
 
     /// <summary>
@@ -195,7 +199,10 @@ public sealed class RuntimeSubsystemPipeline : IDisposable
     public void Update(RuntimeFrame frame)
     {
         EnsureFrame();
-        ExecuteForward(static (subsystem, state) => subsystem.Update(state), frame);
+        ExecuteForward(static (
+            subsystem,
+            state
+        ) => subsystem.Update(state), frame);
     }
 
     /// <summary>
@@ -207,7 +214,10 @@ public sealed class RuntimeSubsystemPipeline : IDisposable
     public void LateUpdate(RuntimeFrame frame)
     {
         EnsureFrame();
-        ExecuteForward(static (subsystem, state) => subsystem.LateUpdate(state), frame);
+        ExecuteForward(static (
+            subsystem,
+            state
+        ) => subsystem.LateUpdate(state), frame);
     }
 
     /// <summary>
@@ -219,8 +229,10 @@ public sealed class RuntimeSubsystemPipeline : IDisposable
     /// <param name="submit">
     /// Optional control-thread presentation code that submits requests while output is open.
     /// </param>
-    public void RenderFrame(RuntimeFrame frame, Action? submit = null)
-    {
+    public void RenderFrame(
+        RuntimeFrame frame,
+        Action? submit = null
+    ) {
         EnsureFrame();
         int preparedCount = 0;
         List<Exception> failures = [];
@@ -232,7 +244,10 @@ public sealed class RuntimeSubsystemPipeline : IDisposable
                 preparedCount++;
             }
             submit?.Invoke();
-            ExecuteForward(static (subsystem, state) => subsystem.Render(state), frame);
+            ExecuteForward(static (
+                subsystem,
+                state
+            ) => subsystem.Render(state), frame);
         }
         catch (Exception failure)
         {
@@ -241,7 +256,10 @@ public sealed class RuntimeSubsystemPipeline : IDisposable
         try
         {
             ExecuteReverse(
-                static (subsystem, state) => subsystem.AfterRender(state),
+                static (
+                    subsystem,
+                    state
+                ) => subsystem.AfterRender(state),
                 frame,
                 preparedCount);
         }
@@ -268,7 +286,10 @@ public sealed class RuntimeSubsystemPipeline : IDisposable
         try
         {
             ExecuteReverse(
-                static (subsystem, state) => subsystem.EndFrame(state),
+                static (
+                    subsystem,
+                    state
+                ) => subsystem.EndFrame(state),
                 frame,
                 m_begunEntryCount);
         }
@@ -292,9 +313,18 @@ public sealed class RuntimeSubsystemPipeline : IDisposable
         m_stopping = true;
         m_frameOpen = false;
         Release();
-        try { m_resources.Dispose(); }
-        catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null) { throw; }
-        catch (Exception exception) { m_retirementFailures.Add(exception); }
+        try
+        {
+            m_resources.Dispose();
+        }
+        catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null)
+        {
+            throw;
+        }
+        catch (Exception exception)
+        {
+            m_retirementFailures.Add(exception);
+        }
         m_disposed = true;
         if (m_retirementFailures.Count > 0)
         {
@@ -367,8 +397,10 @@ public sealed class RuntimeSubsystemPipeline : IDisposable
         return result.ToArray();
     }
 
-    private static int CompareFactories(IRuntimeSubsystemFactory left, IRuntimeSubsystemFactory right)
-    {
+    private static int CompareFactories(
+        IRuntimeSubsystemFactory left,
+        IRuntimeSubsystemFactory right
+    ) {
         int order = left.descriptor.order.CompareTo(right.descriptor.order);
         return order != 0
             ? order
@@ -380,8 +412,14 @@ public sealed class RuntimeSubsystemPipeline : IDisposable
         while (m_entries.Count > 0)
         {
             Entry entry = m_entries[^1];
-            try { RetireEntry(entry); }
-            catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null) { throw; }
+            try
+            {
+                RetireEntry(entry);
+            }
+            catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null)
+            {
+                throw;
+            }
             catch (Exception exception)
             {
                 m_retirementFailures.Add(exception);
@@ -394,21 +432,48 @@ public sealed class RuntimeSubsystemPipeline : IDisposable
     {
         if (entry.isAttached)
         {
-            try { entry.subsystem.Detach(); }
-            catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null) { throw; }
-            catch (Exception exception) { entry.failures.Add(exception); }
+            try
+            {
+                entry.subsystem.Detach();
+            }
+            catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null)
+            {
+                throw;
+            }
+            catch (Exception exception)
+            {
+                entry.failures.Add(exception);
+            }
             entry.isAttached = false;
         }
         if (entry.subsystem is not null)
         {
-            try { entry.subsystem.Dispose(); }
-            catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null) { throw; }
-            catch (Exception exception) { entry.failures.Add(exception); }
+            try
+            {
+                entry.subsystem.Dispose();
+            }
+            catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null)
+            {
+                throw;
+            }
+            catch (Exception exception)
+            {
+                entry.failures.Add(exception);
+            }
             entry.subsystem = null!;
         }
-        try { entry.resources.Dispose(); }
-        catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null) { throw; }
-        catch (Exception exception) { entry.failures.Add(exception); }
+        try
+        {
+            entry.resources.Dispose();
+        }
+        catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null)
+        {
+            throw;
+        }
+        catch (Exception exception)
+        {
+            entry.failures.Add(exception);
+        }
         if (entry.failures.Count > 0)
         {
             var failure = new AggregateException($"Subsystem '{entry.descriptor.id}' failed to retire.", entry.failures);
@@ -427,8 +492,10 @@ public sealed class RuntimeSubsystemPipeline : IDisposable
         return dependencies.Length == 0 ? null : $"Unavailable dependencies: {string.Join(", ", dependencies)}.";
     }
 
-    private void RejectOrReport(RuntimeSubsystemDescriptor descriptor, string reason)
-    {
+    private void RejectOrReport(
+        RuntimeSubsystemDescriptor descriptor,
+        string reason
+    ) {
         if (descriptor.requirement == RuntimeSubsystemRequirement.Required)
             throw new InvalidOperationException($"Required subsystem '{descriptor.id}' cannot start: {reason}");
         var diagnostic = new Diagnostic("runtime.subsystem.unavailable", reason, DiagnosticSeverity.Warning,
@@ -437,8 +504,10 @@ public sealed class RuntimeSubsystemPipeline : IDisposable
         m_reporter!.Publish(diagnostic);
     }
 
-    private void ExecuteForward<TState>(Action<IRuntimeSubsystem, TState> action, TState state)
-    {
+    private void ExecuteForward<TState>(
+        Action<IRuntimeSubsystem, TState> action,
+        TState state
+    ) {
         foreach (Entry entry in m_entries)
             action(entry.subsystem, state);
     }
@@ -446,8 +515,8 @@ public sealed class RuntimeSubsystemPipeline : IDisposable
     private void ExecuteReverse<TState>(
         Action<IRuntimeSubsystem, TState> action,
         TState state,
-        int count)
-    {
+        int count
+    ) {
         List<Exception>? failures = null;
         for (int index = count - 1; index >= 0; index--)
         {

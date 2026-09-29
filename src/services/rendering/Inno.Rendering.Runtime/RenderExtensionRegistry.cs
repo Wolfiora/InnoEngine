@@ -50,8 +50,10 @@ internal sealed class RenderExtensionRegistry : TypeRegistry<RenderExtensionRegi
     /// <param name="exception">
     /// The failure already recorded by the shared generation gate.
     /// </param>
-    protected override void OnCleanupFailed(string phase, Exception exception)
-    {
+    protected override void OnCleanupFailed(
+        string phase,
+        Exception exception
+    ) {
         m_retirementFailure ??= exception;
     }
 
@@ -112,8 +114,10 @@ internal sealed class RenderExtensionRegistry : TypeRegistry<RenderExtensionRegi
         return Convert.ToHexString(SHA256.HashData(stream.GetBuffer().AsSpan(0, checked((int)stream.Length))));
     }
 
-    private static void WriteState(System.IO.BinaryWriter writer, SerializedRenderExtensionState state)
-    {
+    private static void WriteState(
+        System.IO.BinaryWriter writer,
+        SerializedRenderExtensionState state
+    ) {
         writer.Write(state.stableTypeId.ToByteArray());
         byte[] data = state.propertyData ?? [];
         writer.Write(data.Length);
@@ -123,7 +127,8 @@ internal sealed class RenderExtensionRegistry : TypeRegistry<RenderExtensionRegi
     private static Dictionary<string, Type> Discover<TAttribute, TContract>(
         TypeCacheSnapshot types,
         Func<TAttribute, string> getId,
-        string kind)
+        string kind
+    )
         where TAttribute : Attribute
     {
         var result = new Dictionary<string, Type>(StringComparer.Ordinal);
@@ -178,8 +183,8 @@ internal sealed class RenderExtensionRegistry : TypeRegistry<RenderExtensionRegi
             Func<Type, RenderRequestProvider> createProvider,
             Func<Type, IViewContentSource> createSource,
             Func<Type, IRenderModel> createModel,
-            Action<IDisposable> retire)
-        {
+            Action<IDisposable> retire
+        ) {
             this.typeCacheVersion = typeCacheVersion;
             m_pipelines = pipelines;
             m_features = features;
@@ -234,7 +239,10 @@ internal sealed class RenderExtensionRegistry : TypeRegistry<RenderExtensionRegi
                     type.GetCustomAttribute<RenderRequestProviderExtensionAttribute>(inherit: false)!;
                 providers.Add(new RequestProviderEntry(id, attribute.priority, createProvider(type)));
             }
-            providers.Sort(static (left, right) =>
+            providers.Sort(static (
+                left,
+                right
+            ) =>
             {
                 int priority = left.priority.CompareTo(right.priority);
                 return priority != 0 ? priority : string.CompareOrdinal(left.id, right.id);
@@ -244,8 +252,8 @@ internal sealed class RenderExtensionRegistry : TypeRegistry<RenderExtensionRegi
 
         internal bool TryCreateGeneration(
             RenderPipelineAsset asset,
-            out RenderPipelineGeneration? generation)
-        {
+            out RenderPipelineGeneration? generation
+        ) {
             ArgumentNullException.ThrowIfNull(asset);
             if (string.IsNullOrWhiteSpace(asset.pipelineTypeId))
                 throw new InvalidOperationException("A render pipeline asset requires a stable pipeline extension ID.");
@@ -294,8 +302,14 @@ internal sealed class RenderExtensionRegistry : TypeRegistry<RenderExtensionRegi
             }
             catch (Exception failure)
             {
-                try { m_retire(candidate); }
-                catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null) { throw; }
+                try
+                {
+                    m_retire(candidate);
+                }
+                catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null)
+                {
+                    throw;
+                }
                 catch (Exception cleanup)
                 {
                     throw new AggregateException("Render generation preparation and retirement failed.", failure, cleanup);
@@ -327,8 +341,8 @@ internal sealed class RenderExtensionRegistry : TypeRegistry<RenderExtensionRegi
 
         internal RequestProviderGeneration(
             long typeCacheVersion,
-            IReadOnlyList<RequestProviderEntry> providers)
-        {
+            IReadOnlyList<RequestProviderEntry> providers
+        ) {
             this.typeCacheVersion = typeCacheVersion;
             m_providers = Array.AsReadOnly(providers.ToArray());
             foreach (RequestProviderEntry entry in m_providers)
@@ -344,8 +358,14 @@ internal sealed class RenderExtensionRegistry : TypeRegistry<RenderExtensionRegi
         /// </summary>
         public void Dispose()
         {
-            try { m_lifetime.Dispose(); }
-            catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null) { throw; }
+            try
+            {
+                m_lifetime.Dispose();
+            }
+            catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null)
+            {
+                throw;
+            }
             catch
             {
                 m_providers = Array.Empty<RequestProviderEntry>();
@@ -358,15 +378,18 @@ internal sealed class RenderExtensionRegistry : TypeRegistry<RenderExtensionRegi
     internal sealed record RequestProviderEntry(
         string id,
         int priority,
-        RenderRequestProvider provider);
+        RenderRequestProvider provider
+    );
 
     internal sealed class ContentSourceGeneration : IDisposable
     {
         private readonly LifetimeScope m_lifetime = new();
         private IReadOnlyList<ContentSourceEntry> m_sources;
 
-        internal ContentSourceGeneration(long typeCacheVersion, IReadOnlyList<ContentSourceEntry> sources)
-        {
+        internal ContentSourceGeneration(
+            long typeCacheVersion,
+            IReadOnlyList<ContentSourceEntry> sources
+        ) {
             this.typeCacheVersion = typeCacheVersion;
             m_sources = Array.AsReadOnly(sources.ToArray());
             foreach (ContentSourceEntry entry in m_sources)
@@ -387,15 +410,20 @@ public void Dispose()
         }
     }
 
-    internal sealed record ContentSourceEntry(string id, IViewContentSource source);
+    internal sealed record ContentSourceEntry(
+        string id,
+        IViewContentSource source
+    );
 
     internal sealed class RenderModelGeneration : IDisposable
     {
         private readonly LifetimeScope m_lifetime = new();
         private IReadOnlyList<RenderModelEntry> m_models;
 
-        internal RenderModelGeneration(long typeCacheVersion, IReadOnlyList<RenderModelEntry> models)
-        {
+        internal RenderModelGeneration(
+            long typeCacheVersion,
+            IReadOnlyList<RenderModelEntry> models
+        ) {
             this.typeCacheVersion = typeCacheVersion;
             m_models = Array.AsReadOnly(models.ToArray());
             foreach (RenderModelEntry entry in m_models)
@@ -415,6 +443,9 @@ public void Dispose()
         }
     }
 
-    internal sealed record RenderModelEntry(string id, IRenderModel model);
+    internal sealed record RenderModelEntry(
+        string id,
+        IRenderModel model
+    );
 
 }

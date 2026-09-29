@@ -38,7 +38,10 @@ public abstract class RenderResourceProvider
     /// <returns>
     /// A binding token accepted by the material-pass construction helpers.
     /// </returns>
-    protected static MaterialBinding CreateUniformBinding(RenderBindingId id, ReadOnlySpan<byte> data)
+    protected static MaterialBinding CreateUniformBinding(
+        RenderBindingId id,
+        ReadOnlySpan<byte> data
+    )
         => new(new RenderMaterialBinding(RenderMaterialBindingKind.Uniform, id, data.ToArray(), default, default));
 
     /// <summary>
@@ -59,7 +62,8 @@ public abstract class RenderResourceProvider
     protected static MaterialBinding CreateTextureBinding(
         RenderBindingId id,
         PersistentTextureHandle texture,
-        RenderSamplerState sampler)
+        RenderSamplerState sampler
+    )
         => new(new RenderMaterialBinding(RenderMaterialBindingKind.Texture, id, null, texture, sampler));
 
     /// <summary>
@@ -85,7 +89,8 @@ public abstract class RenderResourceProvider
         ShaderPassDefinition definition,
         GraphicsPipelineHandle graphicsPipeline,
         ComputePipelineHandle computePipeline,
-        IReadOnlyList<MaterialBinding> bindings)
+        IReadOnlyList<MaterialBinding> bindings
+    )
         => CreateMaterialPass(definition, graphicsPipeline, computePipeline, [], new ShaderInterface([]), bindings);
 
     /// <summary>
@@ -118,7 +123,8 @@ public abstract class RenderResourceProvider
         ComputePipelineHandle computePipeline,
         IReadOnlyList<ShaderPropertyDefinition> declaredBindings,
         ShaderInterface activeInterface,
-        IReadOnlyList<MaterialBinding> bindings)
+        IReadOnlyList<MaterialBinding> bindings
+    )
         => new(
             definition,
             graphicsPipeline,
@@ -157,6 +163,7 @@ public abstract class RenderResourceProvider
         RenderVertexLayout vertexLayout,
         int vertexCount,
         int indexCount,
-        IReadOnlyList<RenderGeometrySection> sections)
+        IReadOnlyList<RenderGeometrySection> sections
+    )
         => new(vertexBuffer, indexBuffer, vertexLayout, vertexCount, indexCount, sections);
 }

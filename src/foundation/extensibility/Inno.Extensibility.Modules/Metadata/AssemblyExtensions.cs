@@ -63,8 +63,8 @@ public static class AssemblyExtensions
     internal static bool TryGetInnoAssemblyClassification(
         this Assembly assembly,
         out AssemblyDomain domain,
-        out AssemblyScope scope)
-    {
+        out AssemblyScope scope
+    ) {
         ArgumentNullException.ThrowIfNull(assembly);
         AssemblyClassification classification = GetClassification(assembly);
         domain = classification.domain.GetValueOrDefault();
@@ -75,8 +75,8 @@ public static class AssemblyExtensions
     internal static void RegisterInnoAssemblyClassification(
         this Assembly assembly,
         AssemblyDomain domain,
-        AssemblyScope scope)
-    {
+        AssemblyScope scope
+    ) {
         ArgumentNullException.ThrowIfNull(assembly);
         S_CACHE.Remove(assembly);
         S_CACHE.Add(assembly, new AssemblyClassification(domain, scope));
@@ -106,5 +106,8 @@ public static class AssemblyExtensions
         return new AssemblyClassification(domain, scope);
     }
 
-    private sealed record AssemblyClassification(AssemblyDomain? domain, AssemblyScope? scope);
+    private sealed record AssemblyClassification(
+        AssemblyDomain? domain,
+        AssemblyScope? scope
+    );
 }

@@ -10,6 +10,7 @@ using Inno.Assets.Pipeline;
 using Inno.Build;
 using Inno.Build.Platform.MacOS;
 using Inno.Build.Platform.Windows;
+using Inno.Build.SupportPacks;
 using Inno.Core.Identity;
 using Inno.Core.Settings;
 using Inno.Plugins.Authoring;
@@ -27,7 +28,10 @@ internal static class Program
         {
             BuildCommand command = BuildCommand.Parse(args);
             using var cancellation = new CancellationTokenSource();
-            Console.CancelKeyPress += (_, eventArgs) =>
+            Console.CancelKeyPress += (
+                _,
+                eventArgs
+            ) =>
             {
                 eventArgs.Cancel = true;
                 cancellation.Cancel();
@@ -84,8 +88,7 @@ internal static class Program
         /// <param name="value">
         /// The concrete value read or transformed by this operation.
         /// </param>
-        public void Report(BuildProgress value)
-            => Console.Error.WriteLine($"[{value.fraction:P0}] {value.message}");
+        public void Report(BuildProgress value) => Console.Error.WriteLine($"[{value.fraction:P0}] {value.message}");
     }
 }
 
@@ -105,8 +108,8 @@ internal sealed class BuildWorkspace : IDisposable
         PluginEnvironment plugins,
         ScriptCompiler compiler,
         string projectDirectory,
-        BuildPipeline pipeline)
-    {
+        BuildPipeline pipeline
+    ) {
         m_engine = engine;
         m_settings = settings;
         m_assets = assets;
@@ -182,8 +185,10 @@ internal sealed class BuildWorkspace : IDisposable
         return destination;
     }
 
-    internal static BuildWorkspace Open(string projectDirectory, string supportPackRoot)
-    {
+    internal static BuildWorkspace Open(
+        string projectDirectory,
+        string supportPackRoot
+    ) {
         string projectRoot = Path.GetFullPath(projectDirectory);
         string assetsRoot = Path.Combine(projectRoot, "Assets");
         string pluginsRoot = Path.Combine(projectRoot, "Plugins");
@@ -267,7 +272,8 @@ internal sealed class BuildWorkspace : IDisposable
                 [
                     new MacOSArm64GameBuildTarget(assets, engine.serialization, engine.types),
                     new WindowsX64GameBuildTarget(assets, engine.serialization, engine.types)
-                ]);
+                ],
+                SourcePlayerSupportPackProvisioner.TryCreateForHost(AppContext.BaseDirectory));
             return new BuildWorkspace(engine, settings, assets, plugins, compiler, projectRoot, pipeline);
         }
         catch
@@ -280,8 +286,11 @@ internal sealed class BuildWorkspace : IDisposable
         }
     }
 
-    private static void ActivateAuthoring(EngineHost engine, PluginEnvironment plugins, ScriptCompiler compiler)
-    {
+    private static void ActivateAuthoring(
+        EngineHost engine,
+        PluginEnvironment plugins,
+        ScriptCompiler compiler
+    ) {
         // Asset importers and graph extensions belong to the authoring generation, including in a
         // headless build. Compiling only Player scripts would export unresolved/last-good asset state.
         ScriptCompilationResult result = compiler.CompileAuthoringGenerationAsync().GetAwaiter().GetResult();
@@ -353,8 +362,10 @@ internal sealed class BuildCommand
 {
     private readonly IReadOnlyDictionary<string, string> m_values;
 
-    private BuildCommand(BuildCommandKind kind, IReadOnlyDictionary<string, string> values)
-    {
+    private BuildCommand(
+        BuildCommandKind kind,
+        IReadOnlyDictionary<string, string> values
+    ) {
         this.kind = kind;
         m_values = values;
         projectDirectory = Require(values, "project");
@@ -430,7 +441,10 @@ internal sealed class BuildCommand
             includeDependencies = m_values.ContainsKey("include-dependencies")
         };
 
-    private static string Require(IReadOnlyDictionary<string, string> values, string key)
+    private static string Require(
+        IReadOnlyDictionary<string, string> values,
+        string key
+    )
         => values.TryGetValue(key, out string? value) && !string.IsNullOrWhiteSpace(value)
             ? value
             : throw new ArgumentException($"Required argument '--{key}' is missing.");

@@ -36,8 +36,8 @@ internal sealed class SceneScalarHistoryHandler : EditorHistoryHandler
     protected override EditorHistoryAvailability Query(
         EditorHistoryContext context,
         EditorHistoryChange change,
-        EditorHistoryDirection direction)
-    {
+        EditorHistoryDirection direction
+    ) {
         try
         {
             SceneScalarHistoryData data = SceneScalarHistoryData.Decode(change.payload.ReadBytes());
@@ -70,8 +70,8 @@ internal sealed class SceneScalarHistoryHandler : EditorHistoryHandler
     protected override EditorHistoryResult Apply(
         EditorHistoryContext context,
         EditorHistoryChange change,
-        EditorHistoryDirection direction)
-    {
+        EditorHistoryDirection direction
+    ) {
         try
         {
             SceneScalarHistoryData data = SceneScalarHistoryData.Decode(change.payload.ReadBytes());
@@ -122,8 +122,8 @@ internal sealed class SceneScalarHistoryHandler : EditorHistoryHandler
     protected override bool TryMerge(
         EditorHistoryChange older,
         EditorHistoryChange newer,
-        out EditorHistoryChange? merged)
-    {
+        out EditorHistoryChange? merged
+    ) {
         merged = null;
         if (older.mergeKey is null || !string.Equals(older.mergeKey, newer.mergeKey, StringComparison.Ordinal))
             return false;
@@ -170,7 +170,10 @@ internal sealed class SceneScalarHistoryHandler : EditorHistoryHandler
             _ => null
         };
 
-    private static string GetValue(EngineObject target, SceneScalarKind kind)
+    private static string GetValue(
+        EngineObject target,
+        SceneScalarKind kind
+    )
         => kind switch
         {
             SceneScalarKind.SceneName => ((GameScene)target).name,
@@ -182,8 +185,11 @@ internal sealed class SceneScalarHistoryHandler : EditorHistoryHandler
             _ => throw new InvalidOperationException($"Unsupported scene scalar '{kind}'.")
         };
 
-    private static void SetValue(EngineObject target, SceneScalarKind kind, string value)
-    {
+    private static void SetValue(
+        EngineObject target,
+        SceneScalarKind kind,
+        string value
+    ) {
         switch (kind)
         {
             case SceneScalarKind.SceneName:

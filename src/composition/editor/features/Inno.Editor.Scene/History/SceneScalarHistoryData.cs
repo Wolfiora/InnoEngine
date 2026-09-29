@@ -10,8 +10,8 @@ internal sealed record SceneScalarHistoryData(
     SceneScalarKind scalarKind,
     string before,
     string after,
-    long timestamp)
-{
+    long timestamp
+) {
     internal byte[] Encode()
     {
         using var stream = new MemoryStream();
@@ -29,7 +29,8 @@ internal sealed record SceneScalarHistoryData(
         Guid targetId,
         SceneScalarKind scalarKind,
         string before,
-        string after)
+        string after
+    )
         => new(targetId, scalarKind, before, after, Stopwatch.GetTimestamp());
 
     internal static SceneScalarHistoryData Decode(ReadOnlySpan<byte> bytes)

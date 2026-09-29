@@ -37,8 +37,10 @@ internal sealed class WindowsX64MiniAudioBuilder : MiniAudioBuilder
     /// <param name="config">
     /// The normalized debug or release configuration token.
     /// </param>
-    public override void Build(string miniAudioDirectory, string config)
-    {
+    public override void Build(
+        string miniAudioDirectory,
+        string config
+    ) {
         string buildDirectory = Path.Combine(
             miniAudioDirectory,
             MiniAudioBuildConstants.BUILD_DIR_NAME,

@@ -29,7 +29,11 @@ public abstract class MouseEvent(uint windowId) : Event
 /// <param name="y">
 /// The vertical or second component.
 /// </param>
-public class MouseMovedEvent(uint windowId, float x, float y) : MouseEvent(windowId)
+public class MouseMovedEvent(
+    uint windowId,
+    float x,
+    float y
+) : MouseEvent(windowId)
 {
     /// <summary>
     /// Gets cursor X coordinate.
@@ -54,7 +58,11 @@ public class MouseMovedEvent(uint windowId, float x, float y) : MouseEvent(windo
 /// <param name="offsetY">
 /// The offset y used to initialize this instance.
 /// </param>
-public class MouseScrolledEvent(uint windowId, float offsetX, float offsetY) : MouseEvent(windowId)
+public class MouseScrolledEvent(
+    uint windowId,
+    float offsetX,
+    float offsetY
+) : MouseEvent(windowId)
 {
     /// <summary>
     /// Gets horizontal scroll offset.
@@ -76,7 +84,10 @@ public class MouseScrolledEvent(uint windowId, float offsetX, float offsetY) : M
 /// <param name="button">
 /// The button used to initialize this instance.
 /// </param>
-public abstract class MouseButtonEvent(uint windowId, MouseButton button) : MouseEvent(windowId)
+public abstract class MouseButtonEvent(
+    uint windowId,
+    MouseButton button
+) : MouseEvent(windowId)
 {
     /// <summary>
     /// Gets the mouse button for this event.
@@ -93,7 +104,10 @@ public abstract class MouseButtonEvent(uint windowId, MouseButton button) : Mous
 /// <param name="button">
 /// The button used to initialize this instance.
 /// </param>
-public class MouseButtonPressedEvent(uint windowId, MouseButton button) : MouseButtonEvent(windowId, button)
+public class MouseButtonPressedEvent(
+    uint windowId,
+    MouseButton button
+) : MouseButtonEvent(windowId, button)
 {
 }
 
@@ -106,6 +120,9 @@ public class MouseButtonPressedEvent(uint windowId, MouseButton button) : MouseB
 /// <param name="button">
 /// The button used to initialize this instance.
 /// </param>
-public class MouseButtonReleasedEvent(uint windowId, MouseButton button) : MouseButtonEvent(windowId, button)
+public class MouseButtonReleasedEvent(
+    uint windowId,
+    MouseButton button
+) : MouseButtonEvent(windowId, button)
 {
 }

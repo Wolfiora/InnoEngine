@@ -73,7 +73,10 @@ public interface IAssetReferenceResolver : IReferenceResolver
                 ReferenceResolutionState.Resolved,
                 runtimeIdentity);
         }
-        catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null) { throw; }
+        catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null)
+        {
+            throw;
+        }
         catch (Exception exception) when (exception is InvalidOperationException or System.IO.InvalidDataException)
         {
             return new ReferenceResolution(
@@ -112,5 +115,6 @@ public interface IAssetReferenceResolver : IReferenceResolver
         Guid stableTypeId,
         string lastKnownPath,
         Type expectedType,
-        string propertyPath);
+        string propertyPath
+    );
 }

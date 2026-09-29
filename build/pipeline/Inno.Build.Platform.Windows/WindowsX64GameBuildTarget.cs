@@ -32,8 +32,8 @@ public sealed class WindowsX64GameBuildTarget : IGameBuildTarget
     public WindowsX64GameBuildTarget(
         AssetPipeline assets,
         SerializationRegistry serialization,
-        TypeCatalog types)
-    {
+        TypeCatalog types
+    ) {
         m_contentCompiler = BgfxGameContentCompiler.CreateWindowsX64(assets, serialization, types);
     }
 
@@ -66,8 +66,8 @@ public sealed class WindowsX64GameBuildTarget : IGameBuildTarget
     /// </returns>
     public ValueTask BuildContentAsync(
         GameBuildContentContext context,
-        CancellationToken cancellationToken = default)
-    {
+        CancellationToken cancellationToken = default
+    ) {
         ArgumentNullException.ThrowIfNull(context);
         return m_contentCompiler.CompileAsync(context, cancellationToken);
     }
@@ -86,8 +86,8 @@ public sealed class WindowsX64GameBuildTarget : IGameBuildTarget
     /// </returns>
     public async ValueTask<string> PackageAsync(
         GameBuildPackageContext context,
-        CancellationToken cancellationToken = default)
-    {
+        CancellationToken cancellationToken = default
+    ) {
         ArgumentNullException.ThrowIfNull(context);
         string application = Path.Combine(context.outputDirectory, context.profile.productName + "-Windows-x64");
         await CopyDirectoryAsync(context.supportPackDirectory, application, cancellationToken).ConfigureAwait(false);
@@ -103,8 +103,8 @@ public sealed class WindowsX64GameBuildTarget : IGameBuildTarget
     private static async ValueTask CopyDirectoryAsync(
         string source,
         string destination,
-        CancellationToken cancellationToken)
-    {
+        CancellationToken cancellationToken
+    ) {
         Directory.CreateDirectory(destination);
         foreach (string directory in Directory.EnumerateDirectories(source, "*", SearchOption.AllDirectories))
         {

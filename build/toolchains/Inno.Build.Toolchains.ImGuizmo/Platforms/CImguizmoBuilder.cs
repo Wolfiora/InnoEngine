@@ -35,7 +35,13 @@ internal abstract class CImguizmoBuilder
     /// <param name="config">
     /// The validated configuration that controls this operation.
     /// </param>
-    public abstract void Build(string cimguizmoDir, string cimguiDir, string cimguiBuildDir, string cimguiOutputDir, string config);
+    public abstract void Build(
+        string cimguizmoDir,
+        string cimguiDir,
+        string cimguiBuildDir,
+        string cimguiOutputDir,
+        string config
+    );
 
     /// <summary>
     /// Retrieves the requested build type value from current authoritative state.

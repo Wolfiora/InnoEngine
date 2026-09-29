@@ -55,8 +55,7 @@ public static class Log
     /// </param>
     [Conditional("DEBUG")]
     [MethodImpl(MethodImplOptions.NoInlining)]
-    public static void Debug(object? obj)
-        => Write(LogLevel.Debug, $"{obj}", null);
+    public static void Debug(object? obj) => Write(LogLevel.Debug, $"{obj}", null);
     
     /// <summary>
     /// Writes a formatted debug-level message.
@@ -69,8 +68,10 @@ public static class Log
     /// </param>
     [Conditional("DEBUG")]
     [MethodImpl(MethodImplOptions.NoInlining)]
-    public static void Debug(string message, params object[]? args)
-        => Write(LogLevel.Debug, message, args);
+    public static void Debug(
+        string message,
+        params object[]? args
+    ) => Write(LogLevel.Debug, message, args);
 
     /// <summary>
     /// Writes an info-level message using the object's string representation.
@@ -79,8 +80,7 @@ public static class Log
     /// The object to log.
     /// </param>
     [MethodImpl(MethodImplOptions.NoInlining)]
-    public static void Info(object? obj)
-        => Write(LogLevel.Info, $"{obj}", null);
+    public static void Info(object? obj) => Write(LogLevel.Info, $"{obj}", null);
     
     /// <summary>
     /// Writes a formatted info-level message.
@@ -92,8 +92,10 @@ public static class Log
     /// The format arguments.
     /// </param>
     [MethodImpl(MethodImplOptions.NoInlining)]
-    public static void Info(string message, params object[]? args)
-        => Write(LogLevel.Info, message, args);
+    public static void Info(
+        string message,
+        params object[]? args
+    ) => Write(LogLevel.Info, message, args);
 
     /// <summary>
     /// Writes a warning-level message using the object's string representation.
@@ -102,8 +104,7 @@ public static class Log
     /// The object to log.
     /// </param>
     [MethodImpl(MethodImplOptions.NoInlining)]
-    public static void Warn(object? obj)
-        => Write(LogLevel.Warn, $"{obj}", null);
+    public static void Warn(object? obj) => Write(LogLevel.Warn, $"{obj}", null);
     
     /// <summary>
     /// Writes a formatted warning-level message.
@@ -115,8 +116,10 @@ public static class Log
     /// The format arguments.
     /// </param>
     [MethodImpl(MethodImplOptions.NoInlining)]
-    public static void Warn(string message, params object[]? args)
-        => Write(LogLevel.Warn, message, args);
+    public static void Warn(
+        string message,
+        params object[]? args
+    ) => Write(LogLevel.Warn, message, args);
 
     /// <summary>
     /// Writes an error-level message using the object's string representation.
@@ -125,8 +128,7 @@ public static class Log
     /// The object to log.
     /// </param>
     [MethodImpl(MethodImplOptions.NoInlining)]
-    public static void Error(object? obj)
-        => Write(LogLevel.Error, $"{obj}", null);
+    public static void Error(object? obj) => Write(LogLevel.Error, $"{obj}", null);
     
     /// <summary>
     /// Writes a formatted error-level message.
@@ -138,8 +140,10 @@ public static class Log
     /// The format arguments.
     /// </param>
     [MethodImpl(MethodImplOptions.NoInlining)]
-    public static void Error(string message, params object[]? args)
-        => Write(LogLevel.Error, message, args);
+    public static void Error(
+        string message,
+        params object[]? args
+    ) => Write(LogLevel.Error, message, args);
 
     /// <summary>
     /// Writes a fatal-level message using the object's string representation.
@@ -148,8 +152,7 @@ public static class Log
     /// The object to log.
     /// </param>
     [MethodImpl(MethodImplOptions.NoInlining)]
-    public static void Fatal(object? obj)
-        => Write(LogLevel.Fatal, $"{obj}", null);
+    public static void Fatal(object? obj) => Write(LogLevel.Fatal, $"{obj}", null);
 
     /// <summary>
     /// Writes a formatted fatal-level message.
@@ -161,12 +164,17 @@ public static class Log
     /// The format arguments.
     /// </param>
     [MethodImpl(MethodImplOptions.NoInlining)]
-    public static void Fatal(string message, params object[]? args)
-        => Write(LogLevel.Fatal, message, args);
+    public static void Fatal(
+        string message,
+        params object[]? args
+    ) => Write(LogLevel.Fatal, message, args);
 
     [MethodImpl(MethodImplOptions.NoInlining)]
-    private static void Write(LogLevel level, string message, params object[]? args)
-    {
+    private static void Write(
+        LogLevel level,
+        string message,
+        params object[]? args
+    ) {
         LogRouter router = LogRouter.current;
         if (!router.IsEnabled(level))
             return;

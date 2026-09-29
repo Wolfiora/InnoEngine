@@ -118,8 +118,10 @@ internal sealed class ProjectSettingsRegistry : TypeRegistry<ProjectSettingsRegi
     {
         private readonly FrozenDictionary<ProjectSettingId, Definition> m_definitions;
 
-        internal Snapshot(long typeCacheVersion, FrozenDictionary<ProjectSettingId, Definition> definitions)
-        {
+        internal Snapshot(
+            long typeCacheVersion,
+            FrozenDictionary<ProjectSettingId, Definition> definitions
+        ) {
             this.typeCacheVersion = typeCacheVersion;
             m_definitions = definitions;
         }
@@ -128,16 +130,18 @@ internal sealed class ProjectSettingsRegistry : TypeRegistry<ProjectSettingsRegi
 
         internal IEnumerable<KeyValuePair<ProjectSettingId, Definition>> definitions => m_definitions;
 
-        internal bool TryGet(ProjectSettingId id, out Definition definition)
-            => m_definitions.TryGetValue(id, out definition!);
+        internal bool TryGet(
+            ProjectSettingId id,
+            out Definition definition
+        ) => m_definitions.TryGetValue(id, out definition!);
     }
 
     internal sealed record Definition(
         Guid stableTypeId,
         Type runtimeType,
         ProjectSettingComposer? composer,
-        bool allowPluginContributions)
-    {
+        bool allowPluginContributions
+    ) {
         internal ISerializable Create()
             => (ISerializable)(Activator.CreateInstance(runtimeType, nonPublic: true)
                 ?? throw new InvalidOperationException(

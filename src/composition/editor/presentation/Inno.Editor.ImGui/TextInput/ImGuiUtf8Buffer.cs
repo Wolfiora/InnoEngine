@@ -13,8 +13,8 @@ internal static unsafe class ImGuiUtf8Buffer
         string? hint,
         ref string value,
         nuint capacity,
-        ImGuiInputTextFlags flags)
-    {
+        ImGuiInputTextFlags flags
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(label);
         if (capacity is 0 or > int.MaxValue)
             throw new ArgumentOutOfRangeException(nameof(capacity));

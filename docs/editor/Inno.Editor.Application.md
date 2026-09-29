@@ -19,6 +19,8 @@ Editor 当前不需要额外的 InnoEngine project descriptor。目录本身就�
 - 如果传入路径指向普通文件，构造会抛出 `IOException`。
 - 目录可以使用绝对路径、相对路径，或带末尾目录分隔符的路径。初始 Project ID 从目录名称派生，`/path/TestProject` 与 `/path/TestProject/` 得到相同名称；已有设置中的 Project ID 不会因路径写法改变。
 
+在 macOS arm64 或 Windows x64 上发布 Editor 时，项目的 Publish 目标会生成并随发布目录放置对应的 Player Support Pack、Editor Release 原生库、BGFX shaderc/texturec 及其 shader include，以及脚本编译所需的 .NET Ref Pack。BGFX 工具与 include 属于 Editor 的内容编译闭包，Player Support Pack 不包含它们。源码工作区的普通构建不触发该发布步骤；缺少 Pack 时，导出窗口仍会在导出前自动准备它。
+
 未来如果需要引擎版本、Package 列表或 Project GUID，可在目录内增加独立 descriptor；不应让 Editor 解析 InnoEngine 自身的 `.csproj` 作为游戏项目格式。
 
 ## internal EditorHost

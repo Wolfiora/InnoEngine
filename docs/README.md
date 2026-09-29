@@ -29,6 +29,8 @@
 | [Architecture Tooling](tooling/README.md) | 可执行架构规则 |
 | [Issues](issues/README.md) | 唯一问题台账、审查记录与整改规格 |
 
+Build 分类已覆盖新增的 [Inno.Build.SupportPacks.Core](build/Inno.Build.SupportPacks.Core.md) 项目页；源码工作区 Export 的缺包自动发布由该项目提供，发布契约与错误边界见对应页面。
+
 ## 核心依赖方向
 
 ```text
@@ -54,7 +56,7 @@ Core 不引用业务领域；Build 不引用 Editor；Runtime 不引用 Build/Ed
 
 ## 当前格式与状态
 
-新增 [Text](text/README.md) 与 [UI](ui/README.md) 内建 Service 分类，分别覆盖契约、资产导入、Session Runtime、adapter、原生桥与测试项目页；[Inno.Canvas](plugins/Inno.Canvas.md) 是独立 Project Plugin，提供 Scene 组件、完整默认 Shader/Material/Pipeline 与 Editor 模板。macOS ARM64 的七套 BGCS 绑定、八个原生依赖/工具构建及相关 Release 验收通过；Linux/Windows Text/UI 目标仍需分别生成绑定并验收，不视为已完成跨平台发行。
+新增 [Text](text/README.md) 与 [UI](ui/README.md) 内建 Service 分类，分别覆盖契约、资产导入、Session Runtime、adapter、原生桥与测试项目页；Inno.Canvas 是独立 Project Plugin，提供 Scene 组件、完整默认 Shader/Material/Pipeline 与 Editor 模板。macOS ARM64 的七套 BGCS 绑定、八个原生依赖/工具构建及相关 Release 验收通过；Linux/Windows Text/UI 目标仍需分别生成绑定并验收，不视为已完成跨平台发行。
 
 新增 [Inno.Editor.Annotations](editor/Inno.Editor.Annotations.md) 已包含独立项目页与 Editor 索引；展示标注不再归属 Core.Serialization。
 新增 [Inno.Rendering.Shaders](render/Inno.Rendering.Shaders.md) 已包含独立项目页与 Rendering 索引；

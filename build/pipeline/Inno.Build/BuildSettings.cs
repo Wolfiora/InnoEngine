@@ -93,8 +93,8 @@ public sealed class BuildSettings : ISerializable
     public static BuildSettings CreateDefault(
         string projectName,
         string startupScene,
-        BuildTargetId target)
-    {
+        BuildTargetId target
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(projectName);
         ArgumentNullException.ThrowIfNull(startupScene);
         if (string.IsNullOrWhiteSpace(target.value))

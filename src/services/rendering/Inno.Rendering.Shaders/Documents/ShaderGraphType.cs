@@ -80,8 +80,10 @@ public sealed class ShaderGraphType : ISerializable
             result.access = storage.access;
             result.dimension = storage.dimension;
             result.isArray = storage.array;
-            if (storage.isImage) result.format = storage.format!.Value;
-            else result.storageElement = Capture(storage.valueType);
+            if (storage.isImage)
+                result.format = storage.format!.Value;
+            else
+                result.storageElement = Capture(storage.valueType);
         }
         return result;
     }
@@ -94,7 +96,8 @@ public sealed class ShaderGraphType : ISerializable
     /// </returns>
     public ShaderSourceType CreateType()
     {
-        if (fieldNames.Length != fieldTypes.Length) throw new InvalidOperationException("Shader structure field names and types differ in length.");
+        if (fieldNames.Length != fieldTypes.Length)
+            throw new InvalidOperationException("Shader structure field names and types differ in length.");
         if (isStorage)
         {
             if (element is not null || fieldNames.Length != 0 || length != 0)
@@ -105,11 +108,16 @@ public sealed class ShaderGraphType : ISerializable
         }
         if (element is not null)
         {
-            if (fieldNames.Length != 0) throw new InvalidOperationException("An array cannot also declare structure fields.");
+            if (fieldNames.Length != 0)
+                throw new InvalidOperationException("An array cannot also declare structure fields.");
             return ShaderSourceType.ArrayOf(element.CreateType(), length);
         }
-        if (length != 0 || storageElement is not null) throw new InvalidOperationException("A non-array value contains an unexpected element descriptor.");
+        if (length != 0 || storageElement is not null)
+            throw new InvalidOperationException("A non-array value contains an unexpected element descriptor.");
         return fieldNames.Length == 0 ? ShaderSourceType.Atomic(id)
-            : ShaderSourceType.Structure(id, fieldNames.Select((name, index) => new ShaderSourceField(name, fieldTypes[index].CreateType())).ToArray());
+            : ShaderSourceType.Structure(id, fieldNames.Select((
+                name,
+                index
+            ) => new ShaderSourceField(name, fieldTypes[index].CreateType())).ToArray());
     }
 }

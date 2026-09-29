@@ -32,8 +32,8 @@ public static class Sdl3PlatformApplicationImGuiExtensions
 
         void ISdl3ApplicationExtension.ProcessNativeEvent(
             Sdl3PlatformApplication application,
-            scoped ReadOnlySpan<byte> nativeEventData)
-        {
+            scoped ReadOnlySpan<byte> nativeEventData
+        ) {
             if (nativeEventData.Length < Marshal.SizeOf<SDLEvent>())
             {
                 return;
@@ -46,8 +46,8 @@ public static class Sdl3PlatformApplicationImGuiExtensions
 
         void ISdl3ApplicationExtension.PrepareLiveResizeWindow(
             Sdl3PlatformApplication application,
-            uint windowId)
-        {
+            uint windowId
+        ) {
             foreach (PlatformImGuiContext context in contexts.Values)
                 context.PrepareLiveResizeWindow(windowId);
         }
@@ -87,8 +87,8 @@ public static class Sdl3PlatformApplicationImGuiExtensions
         this Sdl3PlatformApplication application,
         Sdl3PlatformWindow window,
         ImGuiContextFlags contextFlags,
-        IPlatformImGuiRenderer? renderer = null)
-    {
+        IPlatformImGuiRenderer? renderer = null
+    ) {
         ArgumentNullException.ThrowIfNull(application);
         ArgumentNullException.ThrowIfNull(window);
 
@@ -113,8 +113,10 @@ public static class Sdl3PlatformApplicationImGuiExtensions
     /// <param name="window">
     /// Target platform window.
     /// </param>
-    public static void DestroyImGuiContext(this Sdl3PlatformApplication application, Sdl3PlatformWindow window)
-    {
+    public static void DestroyImGuiContext(
+        this Sdl3PlatformApplication application,
+        Sdl3PlatformWindow window
+    ) {
         ArgumentNullException.ThrowIfNull(application);
         ArgumentNullException.ThrowIfNull(window);
 

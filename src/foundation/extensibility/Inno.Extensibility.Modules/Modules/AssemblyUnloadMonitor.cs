@@ -37,8 +37,8 @@ public sealed class AssemblyUnloadMonitor : IAssemblyUnloadProbe
     internal AssemblyUnloadMonitor(
         WeakReference? loadContext,
         string? shadowDirectory = null,
-        string? description = null)
-    {
+        string? description = null
+    ) {
         m_loadContext = loadContext;
         m_shadowDirectory = shadowDirectory;
         m_description = description ?? "non-collectible assembly generation";

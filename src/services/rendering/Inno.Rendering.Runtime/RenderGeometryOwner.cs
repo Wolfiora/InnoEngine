@@ -17,8 +17,11 @@ internal sealed class RenderGeometryOwner : RenderResourceProvider, IDisposable
     private RenderRetirementQueue? m_retirement;
     private ulong m_frameIndex;
 
-    internal RenderGeometryOwner(IRenderDevice device, IDiagnosticReporter diagnostics, int capacity)
-    {
+    internal RenderGeometryOwner(
+        IRenderDevice device,
+        IDiagnosticReporter diagnostics,
+        int capacity
+    ) {
         m_device = device;
         m_diagnostics = diagnostics;
         m_entries = new(entry => entry.retirement.Dispose(), capacity);
@@ -47,8 +50,10 @@ internal sealed class RenderGeometryOwner : RenderResourceProvider, IDisposable
 
     internal void Sweep(ulong oldest) => m_entries.Sweep(entry => entry.lastUsedFrame < oldest);
 
-    internal bool TryResolve(GeometryAsset asset, out RenderGeometry? geometry)
-    {
+    internal bool TryResolve(
+        GeometryAsset asset,
+        out RenderGeometry? geometry
+    ) {
         Drain();
         ArgumentNullException.ThrowIfNull(asset);
         geometry = null;
@@ -65,14 +70,21 @@ internal sealed class RenderGeometryOwner : RenderResourceProvider, IDisposable
         {
             m_entries.RequireCapacity(id);
             Entry candidate;
-            try { candidate = Create(asset); }
-            catch (Exception pending) when (RetirementPendingException.Find(pending) is not null) { throw; }
+            try
+            {
+                candidate = Create(asset);
+            }
+            catch (Exception pending) when (RetirementPendingException.Find(pending) is not null)
+            {
+                throw;
+            }
             catch (Exception failure)
             {
                 m_diagnostics.Publish(new Diagnostic("RENDER_GEOMETRY_RESOLVE_FAILED",
                     $"Geometry '{source}' kept its complete last-good buffer pair: {failure.Message}",
                     DiagnosticSeverity.Error, source));
-                if (entry is null) return false;
+                if (entry is null)
+                    return false;
                 entry.lastUsedFrame = m_frameIndex;
                 geometry = entry.geometry;
                 return true;
@@ -95,7 +107,8 @@ internal sealed class RenderGeometryOwner : RenderResourceProvider, IDisposable
         if (m_retirement is null)
         {
             m_retirement = new RenderRetirementQueue();
-            if (m_allocation is not null) m_retirement.Add(m_allocation.Dispose);
+            if (m_allocation is not null)
+                m_retirement.Add(m_allocation.Dispose);
             m_retirement.Add(m_entries.Dispose);
         }
         m_retirement.Dispose();
@@ -128,8 +141,14 @@ internal sealed class RenderGeometryOwner : RenderResourceProvider, IDisposable
         }
         catch (Exception failure)
         {
-            try { m_allocation?.Dispose(); }
-            catch (Exception retirement) { throw new AggregateException("Geometry allocation and retirement failed.", failure, retirement); }
+            try
+            {
+                m_allocation?.Dispose();
+            }
+            catch (Exception retirement)
+            {
+                throw new AggregateException("Geometry allocation and retirement failed.", failure, retirement);
+            }
             m_allocation = null;
             throw;
         }
@@ -165,8 +184,12 @@ internal sealed class RenderGeometryOwner : RenderResourceProvider, IDisposable
         return MemoryMarshal.AsBytes(values.AsSpan()).ToArray();
     }
 
-    private sealed class Entry(RenderGeometry geometry, long revision, ulong frameIndex, RenderRetirementQueue retirement)
-    {
+    private sealed class Entry(
+        RenderGeometry geometry,
+        long revision,
+        ulong frameIndex,
+        RenderRetirementQueue retirement
+    ) {
         internal RenderGeometry geometry { get; } = geometry;
         internal long revision { get; } = revision;
         internal ulong lastUsedFrame { get; set; } = frameIndex;

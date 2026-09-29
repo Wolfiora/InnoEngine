@@ -32,8 +32,10 @@ public static class RuntimeContentDeployment
     /// <exception cref="IOException">
     /// Thrown when the persistent cache cannot be created atomically.
     /// </exception>
-    public static string Materialize(string packagedContentRoot, string persistentRoot)
-    {
+    public static string Materialize(
+        string packagedContentRoot,
+        string persistentRoot
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(packagedContentRoot);
         ArgumentException.ThrowIfNullOrWhiteSpace(persistentRoot);
         string packaged = Path.GetFullPath(packagedContentRoot);
@@ -76,8 +78,10 @@ public static class RuntimeContentDeployment
         }
     }
 
-    private static void ExtractVerified(string packPath, string destinationRoot)
-    {
+    private static void ExtractVerified(
+        string packPath,
+        string destinationRoot
+    ) {
         string normalizedRoot = Path.TrimEndingDirectorySeparator(Path.GetFullPath(destinationRoot));
         using ZipArchive archive = ZipFile.OpenRead(packPath);
         foreach (ZipArchiveEntry entry in archive.Entries.OrderBy(static value => value.FullName, StringComparer.Ordinal))

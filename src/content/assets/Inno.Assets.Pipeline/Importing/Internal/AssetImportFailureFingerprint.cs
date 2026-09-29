@@ -5,4 +5,5 @@ internal readonly record struct AssetImportFailureFingerprint(
     int status,
     string sourceHash,
     string importerId,
-    string diagnostics);
+    string diagnostics
+);

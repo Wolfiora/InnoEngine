@@ -22,8 +22,8 @@ internal sealed class SettingsTree
         IReadOnlyList<SettingsPage> pages,
         string query,
         string selectedPath,
-        Action<SettingsPage> select)
-    {
+        Action<SettingsPage> select
+    ) {
         string? revealPath = m_revealPath;
         try
         {
@@ -43,8 +43,8 @@ internal sealed class SettingsTree
 
     internal static SettingsPage? FindPage(
         IReadOnlyList<SettingsPage> pages,
-        string path)
-    {
+        string path
+    ) {
         for (int i = 0; i < pages.Count; i++)
         {
             SettingsPage page = pages[i];
@@ -59,8 +59,8 @@ internal sealed class SettingsTree
 
     internal static SettingsPage? FindFirstMatch(
         IReadOnlyList<SettingsPage> pages,
-        string query)
-    {
+        string query
+    ) {
         if (string.IsNullOrWhiteSpace(query))
             return pages.Count > 0 ? pages[0] : null;
         SettingsPage? fieldMatch = FindFirstFieldMatch(pages, query);
@@ -82,8 +82,8 @@ internal sealed class SettingsTree
         string query,
         string selectedPath,
         string? revealPath,
-        Action<SettingsPage> select)
-    {
+        Action<SettingsPage> select
+    ) {
         bool hasVisibleChildren = false;
         for (int i = 0; i < page.children.Count; i++)
             hasVisibleChildren |= Matches(page.children[i], query);
@@ -112,13 +112,18 @@ internal sealed class SettingsTree
         NativeImGui.TreePop();
     }
 
-    private static bool IsRevealed(string pagePath, string? revealPath)
+    private static bool IsRevealed(
+        string pagePath,
+        string? revealPath
+    )
         => revealPath is not null &&
            (string.Equals(pagePath, revealPath, StringComparison.Ordinal) ||
             revealPath.StartsWith(pagePath + "/", StringComparison.Ordinal));
 
-    private static bool Matches(SettingsPage page, string query)
-    {
+    private static bool Matches(
+        SettingsPage page,
+        string query
+    ) {
         if (string.IsNullOrWhiteSpace(query))
             return true;
         if (MatchesSelf(page, query))
@@ -131,8 +136,10 @@ internal sealed class SettingsTree
         return false;
     }
 
-    private static bool MatchesSelf(SettingsPage page, string query)
-    {
+    private static bool MatchesSelf(
+        SettingsPage page,
+        string query
+    ) {
         if (page.label.Contains(query, StringComparison.OrdinalIgnoreCase) ||
             page.path.Contains(query, StringComparison.OrdinalIgnoreCase) ||
             page.description.Contains(query, StringComparison.OrdinalIgnoreCase))
@@ -154,8 +161,8 @@ internal sealed class SettingsTree
 
     private static SettingsPage? FindFirstFieldMatch(
         IReadOnlyList<SettingsPage> pages,
-        string query)
-    {
+        string query
+    ) {
         for (int i = 0; i < pages.Count; i++)
         {
             SettingsPage page = pages[i];

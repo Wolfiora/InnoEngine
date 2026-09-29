@@ -48,8 +48,8 @@ internal static class ReflectionMetadata
 
     internal static Action? CreateRestoreCallback(
         ISerializable value,
-        SerializationContext context)
-    {
+        SerializationContext context
+    ) {
         MethodInfo[] hooks = GetRestoreHooks(value.GetType());
         if (hooks.Length == 0)
             return null;
@@ -120,8 +120,8 @@ internal static class ReflectionMetadata
     private static SerializableMember CreateFieldMember(
         Type runtimeType,
         FieldInfo field,
-        PropertyVisibility visibility)
-    {
+        PropertyVisibility visibility
+    ) {
         bool requiresRead = RequiresRead(visibility);
         bool requiresWrite = RequiresWrite(visibility);
         if (requiresWrite && field.IsInitOnly)
@@ -141,8 +141,8 @@ internal static class ReflectionMetadata
     private static SerializableMember CreatePropertyMember(
         Type runtimeType,
         PropertyInfo property,
-        PropertyVisibility visibility)
-    {
+        PropertyVisibility visibility
+    ) {
         if (property.GetIndexParameters().Length != 0)
             throw new InvalidOperationException($"Serializable property '{runtimeType.FullName}.{property.Name}' cannot be an indexer.");
 
@@ -235,8 +235,8 @@ internal sealed class SerializableMember
         Type type,
         PropertyVisibility visibility,
         Func<object, object?>? getter,
-        Action<object, object?>? setter)
-    {
+        Action<object, object?>? setter
+    ) {
         this.name = name;
         this.type = type;
         this.visibility = visibility;
@@ -255,8 +255,10 @@ internal sealed class SerializableMember
             ? m_getter(target)
             : throw new InvalidOperationException($"Serializable member '{name}' does not permit reads.");
 
-    internal void SetValue(object target, object? value)
-    {
+    internal void SetValue(
+        object target,
+        object? value
+    ) {
         if (m_setter is null)
             throw new InvalidOperationException($"Serializable member '{name}' does not permit writes.");
         m_setter(target, value);

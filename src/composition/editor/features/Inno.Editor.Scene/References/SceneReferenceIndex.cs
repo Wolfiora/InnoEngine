@@ -13,8 +13,8 @@ internal static class SceneReferenceIndex
 {
     internal static SceneIncomingReferenceState[] CaptureIncoming(
         GameObject root,
-        EditorSceneWorkspace workspace)
-    {
+        EditorSceneWorkspace workspace
+    ) {
         ArgumentNullException.ThrowIfNull(root);
         ArgumentNullException.ThrowIfNull(workspace);
         var subtreeIds = new HashSet<Guid>();
@@ -49,8 +49,8 @@ internal static class SceneReferenceIndex
     internal static SceneIncomingReferenceState[] CaptureIncoming(
         EngineObject target,
         GameScene scene,
-        EditorSceneWorkspace workspace)
-    {
+        EditorSceneWorkspace workspace
+    ) {
         ArgumentNullException.ThrowIfNull(target);
         ArgumentNullException.ThrowIfNull(scene);
         var targetIds = new HashSet<Guid> { target.identity.persistentId };
@@ -59,8 +59,8 @@ internal static class SceneReferenceIndex
 
     internal static SceneReferenceRestoreResult RestoreIncoming(
         IReadOnlyList<SceneIncomingReferenceState> references,
-        EditorSceneWorkspace workspace)
-    {
+        EditorSceneWorkspace workspace
+    ) {
         var rollback = new List<SceneReferenceRollbackState>(references.Count);
         for (int i = 0; i < references.Count; i++)
         {
@@ -103,8 +103,8 @@ internal static class SceneReferenceIndex
 
     internal static SceneReferenceRollbackState[] CaptureCurrent(
         IReadOnlyList<SceneIncomingReferenceState> references,
-        EditorSceneWorkspace workspace)
-    {
+        EditorSceneWorkspace workspace
+    ) {
         var result = new SceneReferenceRollbackState[references.Count];
         for (int i = 0; i < references.Count; i++)
         {
@@ -119,14 +119,15 @@ internal static class SceneReferenceIndex
 
     internal static SceneReferenceRestoreResult RestoreCurrent(
         IReadOnlyList<SceneReferenceRollbackState> references,
-        EditorSceneWorkspace workspace)
+        EditorSceneWorkspace workspace
+    )
         => Rollback(references, failure: null, workspace);
 
     private static SceneReferenceRestoreResult Rollback(
         IReadOnlyList<SceneReferenceRollbackState> rollback,
         string? failure,
-        EditorSceneWorkspace workspace)
-    {
+        EditorSceneWorkspace workspace
+    ) {
         var rollbackFailures = new List<string>();
         for (int i = rollback.Count - 1; i >= 0; i--)
         {
@@ -169,8 +170,8 @@ internal static class SceneReferenceIndex
     private static SceneReferenceRollbackState CaptureRollback(
         EngineObject owner,
         string propertyName,
-        EditorSceneWorkspace workspace)
-    {
+        EditorSceneWorkspace workspace
+    ) {
         try
         {
             return new SceneReferenceRollbackState(
@@ -197,8 +198,8 @@ internal static class SceneReferenceIndex
     private static SerializedProperty ResolveProperty(
         EngineObject owner,
         string propertyName,
-        SerializationRegistry serialization)
-    {
+        SerializationRegistry serialization
+    ) {
         if (owner is not ISerializable serializable)
             throw new InvalidOperationException($"Incoming reference owner '{owner.identity.persistentId}' is not serializable.");
         IReadOnlyList<SerializedProperty> properties = serialization.GetProperties(serializable);
@@ -217,8 +218,8 @@ internal static class SceneReferenceIndex
     private static bool ContainsReference(
         object? value,
         IReadOnlySet<Guid> targetIds,
-        ISet<object> visited)
-    {
+        ISet<object> visited
+    ) {
         if (value is null)
             return false;
         if (value is EngineObject engineObject)
@@ -263,8 +264,8 @@ internal static class SceneReferenceIndex
     private static SceneIncomingReferenceState[] CaptureIncoming(
         GameScene scene,
         IReadOnlySet<Guid> targetIds,
-        EditorSceneWorkspace workspace)
-    {
+        EditorSceneWorkspace workspace
+    ) {
         var result = new List<SceneIncomingReferenceState>();
         foreach (EngineObject owner in EnumerateSceneObjects(scene))
         {
@@ -307,8 +308,10 @@ internal static class SceneReferenceIndex
             yield return systems[i];
     }
 
-    private static void CollectSubtreeIds(GameObject gameObject, ISet<Guid> result)
-    {
+    private static void CollectSubtreeIds(
+        GameObject gameObject,
+        ISet<Guid> result
+    ) {
         _ = result.Add(gameObject.identity.persistentId);
         IReadOnlyList<GameComponent> components = gameObject.GetComponents();
         for (int i = 0; i < components.Count; i++)
@@ -323,13 +326,14 @@ internal readonly record struct SceneReferenceRollbackState(
     Guid ownerId,
     string propertyName,
     byte[]? data,
-    object? runtimeValue);
+    object? runtimeValue
+);
 
 internal readonly record struct SceneReferenceRestoreResult(
     bool succeeded,
     bool statePreserved,
-    string message)
-{
+    string message
+) {
     internal static SceneReferenceRestoreResult Success() => new(true, true, string.Empty);
 
     internal static SceneReferenceRestoreResult Failure(string message) => new(false, true, message);

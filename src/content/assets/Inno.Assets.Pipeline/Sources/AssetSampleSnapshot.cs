@@ -14,8 +14,8 @@ internal static class AssetSampleSnapshot
         string source,
         string target,
         string targetLocalPath,
-        AssetSourcePolicy sourcePolicy)
-    {
+        AssetSourcePolicy sourcePolicy
+    ) {
         List<string> copied = CopyDirectory(source, target, targetLocalPath, sourcePolicy);
         string sourceMeta = source + ".imeta";
         if (File.Exists(sourceMeta))
@@ -28,8 +28,8 @@ internal static class AssetSampleSnapshot
         AssetPath source,
         AssetPath target,
         SerializationRegistry serialization,
-        Action<AssetSampleTransformContext> transform)
-    {
+        Action<AssetSampleTransformContext> transform
+    ) {
         var identities = new Dictionary<Guid, Guid>();
         var paths = new Dictionary<string, string>(StringComparer.Ordinal);
         var sourceIdentities = new Dictionary<string, (Guid oldId, Guid newId)>(StringComparer.Ordinal);
@@ -73,8 +73,8 @@ internal static class AssetSampleSnapshot
         string source,
         string target,
         string targetLocalPath,
-        AssetSourcePolicy sourcePolicy)
-    {
+        AssetSourcePolicy sourcePolicy
+    ) {
         EnsureRegularDirectory(source);
         Directory.CreateDirectory(target);
         string[] directories = Directory.GetDirectories(source)
@@ -121,8 +121,10 @@ internal static class AssetSampleSnapshot
         return copied;
     }
 
-    private static bool ShouldCopyFile(string path, AssetSourcePolicy sourcePolicy)
-    {
+    private static bool ShouldCopyFile(
+        string path,
+        AssetSourcePolicy sourcePolicy
+    ) {
         string name = Path.GetFileName(path);
         if (name.EndsWith(".imeta", StringComparison.OrdinalIgnoreCase))
             return true;
@@ -131,8 +133,10 @@ internal static class AssetSampleSnapshot
         return !sourcePolicy.IsIgnored(name, isDirectory: false);
     }
 
-    private static void CopyStableFile(string source, string target)
-    {
+    private static void CopyStableFile(
+        string source,
+        string target
+    ) {
         EnsureRegularFile(source);
         FileInfo before = new(source);
         long beforeLength = before.Length;

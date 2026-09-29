@@ -11,8 +11,8 @@ internal sealed record SceneDocumentHistoryData(
     Guid? activeBefore,
     Guid? activeAfter,
     Guid? selectedBefore,
-    Guid? selectedAfter)
-{
+    Guid? selectedAfter
+) {
     internal byte[] Encode()
     {
         using var stream = new MemoryStream();
@@ -53,8 +53,8 @@ internal sealed record SceneDocumentHistoryData(
 
     private static void WriteSnapshot(
         BinaryWriter writer,
-        EditorSceneWorkspace.SceneDocumentSnapshot snapshot)
-    {
+        EditorSceneWorkspace.SceneDocumentSnapshot snapshot
+    ) {
         writer.Write(snapshot.sceneId.ToByteArray());
         writer.Write(snapshot.payload.Length);
         writer.Write(snapshot.payload);
@@ -85,8 +85,10 @@ internal sealed record SceneDocumentHistoryData(
             sceneIndex);
     }
 
-    private static byte[] ReadBytes(BinaryReader reader, string name)
-    {
+    private static byte[] ReadBytes(
+        BinaryReader reader,
+        string name
+    ) {
         int length = reader.ReadInt32();
         if (length < 0 || length > reader.BaseStream.Length - reader.BaseStream.Position)
             throw new InvalidDataException($"Scene document history {name} length is invalid.");
@@ -96,13 +98,14 @@ internal sealed record SceneDocumentHistoryData(
         return bytes;
     }
 
-    private static void WriteGuid(BinaryWriter writer, Guid? value)
-    {
+    private static void WriteGuid(
+        BinaryWriter writer,
+        Guid? value
+    ) {
         writer.Write(value.HasValue);
         if (value.HasValue)
             writer.Write(value.Value.ToByteArray());
     }
 
-    private static Guid? ReadGuid(BinaryReader reader)
-        => reader.ReadBoolean() ? new Guid(reader.ReadBytes(16)) : null;
+    private static Guid? ReadGuid(BinaryReader reader) => reader.ReadBoolean() ? new Guid(reader.ReadBytes(16)) : null;
 }

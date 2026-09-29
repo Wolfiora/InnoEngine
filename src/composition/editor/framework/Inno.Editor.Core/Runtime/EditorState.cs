@@ -39,7 +39,10 @@ public abstract class EditorState
     /// <exception cref="ArgumentException">
     /// Thrown when <paramref name="key"/> is empty.
     /// </exception>
-    public abstract T Get<T>(string key, T fallback);
+    public abstract T Get<T>(
+        string key,
+        T fallback
+    );
 
     /// <summary>
     /// Writes one neutral value under a stable extension-local key.
@@ -62,5 +65,8 @@ public abstract class EditorState
     /// <exception cref="NotSupportedException">
     /// Thrown when <paramref name="value"/> cannot be represented by the runtime state serializer.
     /// </exception>
-    public abstract void Set<T>(string key, T value);
+    public abstract void Set<T>(
+        string key,
+        T value
+    );
 }

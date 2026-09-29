@@ -20,8 +20,10 @@ internal sealed class UniqueKeyStorage<TKey, T> : IKeyStorage<TKey, T> where T :
     /// <returns>
     /// <see langword="true"/> when the requested condition is satisfied; otherwise, <see langword="false"/>.
     /// </returns>
-    public bool Add(TKey key, T item)
-    {
+    public bool Add(
+        TKey key,
+        T item
+    ) {
         if (m_map.TryGetValue(key, out var existing) && !ReferenceEquals(existing, item))
             throw new InvalidOperationException($"Duplicate key '{key}' in unique index.");
 
@@ -38,8 +40,10 @@ internal sealed class UniqueKeyStorage<TKey, T> : IKeyStorage<TKey, T> where T :
     /// <param name="item">
     /// The stored item associated with the validated handle.
     /// </param>
-    public void Remove(TKey key, T item)
-    {
+    public void Remove(
+        TKey key,
+        T item
+    ) {
         if (m_map.TryGetValue(key, out var existing) && ReferenceEquals(existing, item))
             m_map.Remove(key);
     }
@@ -56,8 +60,10 @@ internal sealed class UniqueKeyStorage<TKey, T> : IKeyStorage<TKey, T> where T :
     /// <returns>
     /// <see langword="true"/> when the requested condition is satisfied; otherwise, <see langword="false"/>.
     /// </returns>
-    public bool TryGetSingle(TKey key, out T? item)
-        => m_map.TryGetValue(key, out item);
+    public bool TryGetSingle(
+        TKey key,
+        out T? item
+    ) => m_map.TryGetValue(key, out item);
 
     /// <summary>
     /// Retrieves the requested count value from current authoritative state.
@@ -69,8 +75,7 @@ internal sealed class UniqueKeyStorage<TKey, T> : IKeyStorage<TKey, T> where T :
     /// The scalar result calculated from the supplied inputs.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public int GetCount(TKey key)
-        => m_map.TryGetValue(key, out _) ? 1 : 0;
+    public int GetCount(TKey key) => m_map.TryGetValue(key, out _) ? 1 : 0;
 
     /// <summary>
     /// Determines whether current state contains the requested value value.
@@ -85,8 +90,10 @@ internal sealed class UniqueKeyStorage<TKey, T> : IKeyStorage<TKey, T> where T :
     /// <see langword="true"/> when the requested condition is satisfied; otherwise, <see langword="false"/>.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public bool Contains(TKey key, T item)
-        => m_map.TryGetValue(key, out var existing) && ReferenceEquals(existing, item);
+    public bool Contains(
+        TKey key,
+        T item
+    ) => m_map.TryGetValue(key, out var existing) && ReferenceEquals(existing, item);
 
     /// <summary>
     /// Determines whether a key currently has no indexed values.
@@ -98,8 +105,7 @@ internal sealed class UniqueKeyStorage<TKey, T> : IKeyStorage<TKey, T> where T :
     /// <see langword="true"/> when the requested condition is satisfied; otherwise, <see langword="false"/>.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public bool IsKeyEmpty(TKey key)
-        => !m_map.TryGetValue(key, out _);
+    public bool IsKeyEmpty(TKey key) => !m_map.TryGetValue(key, out _);
 
     /// <summary>
     /// Retrieves the requested set value from current authoritative state.
@@ -110,13 +116,11 @@ internal sealed class UniqueKeyStorage<TKey, T> : IKeyStorage<TKey, T> where T :
     /// <returns>
     /// The validated hash sett? that represents the completed operation.
     /// </returns>
-    public HashSet<T>? GetSet(TKey key)
-        => null;
+    public HashSet<T>? GetSet(TKey key) => null;
 
     /// <summary>
     /// Removes all retained entries and returns the instance to an empty reusable state.
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Clear()
-        => m_map.Clear();
+    public void Clear() => m_map.Clear();
 }

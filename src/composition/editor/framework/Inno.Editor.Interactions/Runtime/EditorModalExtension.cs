@@ -19,8 +19,8 @@ public sealed class EditorModalExtension
         string title,
         int order,
         EditorModal modal,
-        Action<Exception> quarantine)
-    {
+        Action<Exception> quarantine
+    ) {
         this.id = id;
         this.title = title;
         this.order = order;
@@ -141,8 +141,8 @@ public sealed class EditorModalExtension
             bool canMove,
             bool canResize,
             Vector2 initialSize,
-            Vector2 minimumSize)
-        {
+            Vector2 minimumSize
+        ) {
             this.isVisible = isVisible;
             this.blocksInteraction = blocksInteraction;
             this.canMove = canMove;

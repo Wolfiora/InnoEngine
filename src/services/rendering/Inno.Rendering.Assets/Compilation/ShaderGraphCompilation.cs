@@ -45,10 +45,16 @@ public sealed partial class ShaderCompiler
     /// <returns>
     /// A native compilation task for the captured graph, or graph diagnostics without any native work.
     /// </returns>
-    public ValueTask<ShaderCompilationResult> CompileGraphAsync(ShaderAsset shader, ShaderCompileTarget target,
-        RenderShaderVariant variant, TypeCatalog types, SerializationRegistry serialization, SerializationContext context, Inno.Assets.IAssetArtifactLookup artifacts,
-        CancellationToken cancellationToken = default)
-    {
+    public ValueTask<ShaderCompilationResult> CompileGraphAsync(
+        ShaderAsset shader,
+        ShaderCompileTarget target,
+        RenderShaderVariant variant,
+        TypeCatalog types,
+        SerializationRegistry serialization,
+        SerializationContext context,
+        Inno.Assets.IAssetArtifactLookup artifacts,
+        CancellationToken cancellationToken = default
+    ) {
         ArgumentNullException.ThrowIfNull(shader);
         return CompileGraphAsync(ShaderGraphArtifact.Read(shader, artifacts), target, variant, types, serialization, context, cancellationToken);
     }
@@ -80,21 +86,28 @@ public sealed partial class ShaderCompiler
     /// <returns>
     /// A complete immutable compilation result, never published by this method.
     /// </returns>
-    public ValueTask<ShaderCompilationResult> CompileGraphAsync(ReadOnlyMemory<byte> artifact, ShaderCompileTarget target,
-        RenderShaderVariant variant, TypeCatalog types, SerializationRegistry serialization, SerializationContext context,
-        CancellationToken cancellationToken = default)
-    {
+    public ValueTask<ShaderCompilationResult> CompileGraphAsync(
+        ReadOnlyMemory<byte> artifact,
+        ShaderCompileTarget target,
+        RenderShaderVariant variant,
+        TypeCatalog types,
+        SerializationRegistry serialization,
+        SerializationContext context,
+        CancellationToken cancellationToken = default
+    ) {
         using IDisposable operation = types.AcquireOperation("Capture shader graph compilation");
         using var nodes = new ShaderNodeCompilerRegistry(types);
         using var frontends = new ShaderSourceFrontendRegistry(types);
         ShaderDefinition definition = ShaderGraphArtifact.ReadDefinition(artifact.Span, serialization, context);
         var diagnostics = ShaderDefinitionValidator.Validate(definition, target.capabilities).ToList();
-        if (diagnostics.Any(static value => value.severity == DiagnosticSeverity.Error)) return ValueTask.FromResult(new ShaderCompilationResult(null, diagnostics));
+        if (diagnostics.Any(static value => value.severity == DiagnosticSeverity.Error))
+            return ValueTask.FromResult(new ShaderCompilationResult(null, diagnostics));
         var keywords = definition.keywords.ToDictionary(static value => value.id, StringComparer.Ordinal);
         foreach ((string id, string value) in variant.options)
             if (!keywords.TryGetValue(id, out ShaderKeywordDefinition keyword) || !keyword.options.Contains(value, StringComparer.Ordinal))
                 diagnostics.Add(new("SHADER_VARIANT_INVALID", DiagnosticSeverity.Error, $"Shader variant selects undeclared option '{id}={value}'."));
-        if (diagnostics.Any(static value => value.severity == DiagnosticSeverity.Error)) return ValueTask.FromResult(new ShaderCompilationResult(null, diagnostics));
+        if (diagnostics.Any(static value => value.severity == DiagnosticSeverity.Error))
+            return ValueTask.FromResult(new ShaderCompilationResult(null, diagnostics));
         ShaderGraphProgramResult program = ShaderGraphArtifact.Lower(artifact.Span, m_toolchain.implementationId,
             nodes, frontends, serialization, context, variant.options);
         return CompileAsync(definition, program, target, variant, serialization, context, cancellationToken);
@@ -127,10 +140,15 @@ public sealed partial class ShaderCompiler
     /// <returns>
     /// One complete immutable target artifact, or errors without a partial candidate.
     /// </returns>
-    public ValueTask<ShaderCompilationResult> CompileAsync(ShaderDefinition definition, ShaderGraphProgramResult program,
-        ShaderCompileTarget target, RenderShaderVariant variant, SerializationRegistry serialization,
-        SerializationContext context, CancellationToken cancellationToken = default)
-    {
+    public ValueTask<ShaderCompilationResult> CompileAsync(
+        ShaderDefinition definition,
+        ShaderGraphProgramResult program,
+        ShaderCompileTarget target,
+        RenderShaderVariant variant,
+        SerializationRegistry serialization,
+        SerializationContext context,
+        CancellationToken cancellationToken = default
+    ) {
         ArgumentNullException.ThrowIfNull(definition);
         ArgumentNullException.ThrowIfNull(serialization);
         ArgumentNullException.ThrowIfNull(context);
@@ -156,16 +174,23 @@ public sealed partial class ShaderCompiler
         return CompileCapturedAsync(captured, definitionData, program, target, variant, cancellationToken);
     }
 
-    private async ValueTask<ShaderCompilationResult> CompileCapturedAsync(ShaderDefinition definition, byte[] definitionData,
-        ShaderGraphProgramResult program, ShaderCompileTarget target, RenderShaderVariant variant, CancellationToken cancellationToken)
-    {
+    private async ValueTask<ShaderCompilationResult> CompileCapturedAsync(
+        ShaderDefinition definition,
+        byte[] definitionData,
+        ShaderGraphProgramResult program,
+        ShaderCompileTarget target,
+        RenderShaderVariant variant,
+        CancellationToken cancellationToken
+    ) {
         ArgumentNullException.ThrowIfNull(definition);
         ArgumentNullException.ThrowIfNull(program);
         ArgumentNullException.ThrowIfNull(target);
         var diagnostics = program.diagnostics.Select(static value => new ShaderDiagnostic(value.code, value.severity, value.message)).ToList();
         diagnostics.AddRange(ShaderDefinitionValidator.Validate(definition, target.capabilities));
-        if (diagnostics.Any(static value => value.severity == DiagnosticSeverity.Error)) return new(null, diagnostics);
-        if (!program.succeeded) return new(null, diagnostics);
+        if (diagnostics.Any(static value => value.severity == DiagnosticSeverity.Error))
+            return new(null, diagnostics);
+        if (!program.succeeded)
+            return new(null, diagnostics);
         string shaderName = definition.name;
         // Only value contracts cross the asynchronous native compiler boundary. Texture defaults remain owned by the imported asset.
         ShaderPropertyDefinition[] properties = definition.properties.Select(static value => new ShaderPropertyDefinition(value.id,
@@ -179,7 +204,8 @@ public sealed partial class ShaderCompiler
             cancellationToken.ThrowIfCancellationRequested();
             if (!passes.TryGetValue(pass.name, out ShaderPassDefinition passDefinition))
                 throw new InvalidOperationException($"The graph produced undeclared pass '{pass.name}'.");
-            if ((passDefinition.requiredFeatures & ~target.capabilities.features) != 0) continue;
+            if ((passDefinition.requiredFeatures & ~target.capabilities.features) != 0)
+                continue;
             var binaries = new List<ShaderStageArtifact>();
             var bindings = new Dictionary<string, ShaderInterfaceBinding>(StringComparer.Ordinal);
             foreach (ShaderIrStage stage in pass.stages)
@@ -187,7 +213,8 @@ public sealed partial class ShaderCompiler
                 ShaderStageToolResult result = await CompileAsync(stage, target, cancellationToken).ConfigureAwait(false);
                 diagnostics.AddRange(result.diagnostics.Select(value => new ShaderDiagnostic(value.code, value.severity, value.message,
                     new ShaderSourceLocation(value.location.assetPath, pass.name, stage.stage, value.location.line, value.location.column))));
-                if (!result.succeeded) return new(null, diagnostics);
+                if (!result.succeeded)
+                    return new(null, diagnostics);
                 binaries.Add(new(stage.stage, result.bytes.Span, new ShaderSourceLocation(shaderName, pass.name, stage.stage)));
                 foreach (ShaderStageBinding generated in result.bindings)
                 {
@@ -216,19 +243,24 @@ public sealed partial class ShaderCompiler
             }
             compiledPasses.Add(new(passDefinition, binaries, new(bindings.Values.ToArray())));
         }
-        if (compiledPasses.Count == 0) diagnostics.Add(new("SHADER_NO_SUPPORTED_PASS", DiagnosticSeverity.Error,
+        if (compiledPasses.Count == 0)
+            diagnostics.Add(new("SHADER_NO_SUPPORTED_PASS", DiagnosticSeverity.Error,
             $"Shader '{shaderName}' has no pass supported by '{target.key}'."));
-        if (diagnostics.Any(static value => value.severity == DiagnosticSeverity.Error)) return new(null, diagnostics);
+        if (diagnostics.Any(static value => value.severity == DiagnosticSeverity.Error))
+            return new(null, diagnostics);
         return new(new(shaderName, target.key, variant, new(allBindings.Values.ToArray()), compiledPasses, definitionData), diagnostics);
     }
 
-    private static bool Matches(ShaderPropertyDefinition property, ShaderIrStageInput input)
-    {
+    private static bool Matches(
+        ShaderPropertyDefinition property,
+        ShaderIrStageInput input
+    ) {
         if (property.bindingKind == ShaderPropertyBindingKind.StorageBuffer)
             return input.kind == ShaderIrInputKind.Storage && input.type.storage is { isImage: false } buffer && buffer.access == property.storageAccess;
         if (property.bindingKind == ShaderPropertyBindingKind.StorageTexture)
             return input.kind == ShaderIrInputKind.Storage && input.type.storage is { isImage: true } image && image.access == property.storageAccess;
-        if ((property.bindingKind == ShaderPropertyBindingKind.SampledTexture) != (input.kind == ShaderIrInputKind.SampledTexture)) return false;
+        if ((property.bindingKind == ShaderPropertyBindingKind.SampledTexture) != (input.kind == ShaderIrInputKind.SampledTexture))
+            return false;
         string type = (input.type.elementType ?? input.type).id;
         return property.type switch
         {
@@ -245,8 +277,10 @@ public sealed partial class ShaderCompiler
         };
     }
 
-    private static void Merge(Dictionary<string, ShaderInterfaceBinding> target, ShaderInterfaceBinding binding)
-    {
+    private static void Merge(
+        Dictionary<string, ShaderInterfaceBinding> target,
+        ShaderInterfaceBinding binding
+    ) {
         if (target.TryGetValue(binding.id.value, out ShaderInterfaceBinding? previous))
         {
             if (previous.type != binding.type || previous.arrayCount != binding.arrayCount || previous.bindingKind != binding.bindingKind

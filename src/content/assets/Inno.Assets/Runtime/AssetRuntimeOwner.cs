@@ -21,8 +21,7 @@ public sealed class AssetRuntimeOwner
     /// <param name="properties">
     /// Owner resolver, weakly referenced so stale assets cannot retain a retired database.
     /// </param>
-    public AssetRuntimeOwner(IAssetPropertyStateResolver? properties = null)
-        => m_properties = properties is null ? null : new(properties);
+    public AssetRuntimeOwner(IAssetPropertyStateResolver? properties = null) => m_properties = properties is null ? null : new(properties);
 
     /// <summary>
     /// Reads the source fingerprint of an asset claimed by this owner.
@@ -66,9 +65,14 @@ public sealed class AssetRuntimeOwner
     /// <exception cref="InvalidOperationException">
     /// The asset belongs to a different owner.
     /// </exception>
-    public void Initialize(AssetObject asset, AssetPath assetPath, string sourceHash,
-        ReadOnlyMemory<byte> payload, bool isMissing, long version)
-    {
+    public void Initialize(
+        AssetObject asset,
+        AssetPath assetPath,
+        string sourceHash,
+        ReadOnlyMemory<byte> payload,
+        bool isMissing,
+        long version
+    ) {
         Validate(asset);
         asset.InitializeRuntimeState(assetPath, sourceHash, payload, isMissing, version);
     }
@@ -85,8 +89,10 @@ public sealed class AssetRuntimeOwner
     /// <exception cref="InvalidOperationException">
     /// The asset belongs to a different owner.
     /// </exception>
-    public void UpdateAssetPath(AssetObject asset, AssetPath assetPath)
-    {
+    public void UpdateAssetPath(
+        AssetObject asset,
+        AssetPath assetPath
+    ) {
         Validate(asset);
         asset.UpdateAssetPath(assetPath);
     }

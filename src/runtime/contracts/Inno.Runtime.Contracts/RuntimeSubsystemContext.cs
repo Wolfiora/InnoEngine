@@ -48,11 +48,17 @@ public sealed class RuntimeSubsystemContext
     /// <exception cref="ArgumentNullException">
     /// A required foundation service is null.
     /// </exception>
-    public RuntimeSubsystemContext(EventDispatcher events, DiagnosticHub diagnostics,
-        IdentityAllocator identities, TypeCatalog types, LifetimeScope resources,
-        RuntimeSubsystemLifetime lifetime, string persistentDataDirectory = "", bool isEditMode = false,
-        IEnumerable<RuntimeCapabilityId>? capabilities = null)
-    {
+    public RuntimeSubsystemContext(
+        EventDispatcher events,
+        DiagnosticHub diagnostics,
+        IdentityAllocator identities,
+        TypeCatalog types,
+        LifetimeScope resources,
+        RuntimeSubsystemLifetime lifetime,
+        string persistentDataDirectory = "",
+        bool isEditMode = false,
+        IEnumerable<RuntimeCapabilityId>? capabilities = null
+    ) {
         this.events = events ?? throw new ArgumentNullException(nameof(events));
         this.diagnostics = diagnostics ?? throw new ArgumentNullException(nameof(diagnostics));
         this.identities = identities ?? throw new ArgumentNullException(nameof(identities));

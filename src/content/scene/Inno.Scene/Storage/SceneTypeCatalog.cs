@@ -20,8 +20,10 @@ internal sealed class SceneTypeCatalog : IDisposable
         m_registry = new SceneTypeRegistry(types);
     }
 
-    internal bool TryGetComponent(Type type, out SceneComponentTypeDescriptor? descriptor)
-    {
+    internal bool TryGetComponent(
+        Type type,
+        out SceneComponentTypeDescriptor? descriptor
+    ) {
         ArgumentNullException.ThrowIfNull(type);
         descriptor = null;
         return m_types.TryGetTypeRef(type, out TypeRef typeRef) &&
@@ -48,8 +50,10 @@ internal sealed class SceneTypeCatalog : IDisposable
             $"Component runtime type ID '{runtimeTypeId}' is not part of the active TypeCache generation.");
     }
 
-    internal bool TryGetSystem(Type type, out SceneSystemTypeDescriptor? descriptor)
-    {
+    internal bool TryGetSystem(
+        Type type,
+        out SceneSystemTypeDescriptor? descriptor
+    ) {
         ArgumentNullException.ThrowIfNull(type);
         descriptor = null;
         return m_types.TryGetTypeRef(type, out TypeRef typeRef) &&
@@ -154,7 +158,10 @@ internal sealed class SceneTypeCatalog : IDisposable
         /// <param name="candidate">
         /// The candidate consumed by on activating; ownership remains with the caller unless explicitly stated otherwise.
         /// </param>
-        protected override void OnActivating(SceneTypeSnapshot? previous, SceneTypeSnapshot candidate)
+        protected override void OnActivating(
+            SceneTypeSnapshot? previous,
+            SceneTypeSnapshot candidate
+        )
             => SceneStore.InvalidateAllTypeCaches();
 
         /// <summary>
@@ -166,7 +173,10 @@ internal sealed class SceneTypeCatalog : IDisposable
         /// <param name="candidate">
         /// The candidate consumed by on activation rolled back; ownership remains with the caller unless explicitly stated otherwise.
         /// </param>
-        protected override void OnActivationRolledBack(SceneTypeSnapshot? previous, SceneTypeSnapshot candidate)
+        protected override void OnActivationRolledBack(
+            SceneTypeSnapshot? previous,
+            SceneTypeSnapshot candidate
+        )
             => SceneStore.InvalidateAllTypeCaches();
 
         private static GameBehaviorLifecyclePhase GetBehaviorPhases(Type componentType)
@@ -185,8 +195,10 @@ internal sealed class SceneTypeCatalog : IDisposable
             AddOverride("OnDestroy", GameBehaviorLifecyclePhase.Destroy);
             return phases;
 
-            void AddOverride(string callbackName, GameBehaviorLifecyclePhase phase)
-            {
+            void AddOverride(
+                string callbackName,
+                GameBehaviorLifecyclePhase phase
+            ) {
                 MethodInfo? callback = componentType.GetMethod(
                     callbackName,
                     BindingFlags.Instance | BindingFlags.NonPublic,
@@ -208,7 +220,8 @@ internal sealed class SceneTypeCatalog : IDisposable
 internal sealed record SceneTypeSnapshot(
     long generation,
     FrozenDictionary<int, SceneComponentTypeDescriptor> componentsByRuntimeId,
-    FrozenDictionary<int, SceneSystemTypeDescriptor> systemsByRuntimeId);
+    FrozenDictionary<int, SceneSystemTypeDescriptor> systemsByRuntimeId
+);
 
 internal sealed record SceneComponentTypeDescriptor(
     int runtimeTypeId,
@@ -217,10 +230,9 @@ internal sealed record SceneComponentTypeDescriptor(
     bool allowsMultiple,
     GameBehaviorLifecyclePhase behaviorPhases,
     int[] assignableConcreteRuntimeTypeIds,
-    FrozenSet<int> assignableConcreteRuntimeTypeIdSet)
-{
-    internal bool IsAssignableFrom(int concreteRuntimeTypeId)
-        => assignableConcreteRuntimeTypeIdSet.Contains(concreteRuntimeTypeId);
+    FrozenSet<int> assignableConcreteRuntimeTypeIdSet
+) {
+    internal bool IsAssignableFrom(int concreteRuntimeTypeId) => assignableConcreteRuntimeTypeIdSet.Contains(concreteRuntimeTypeId);
 }
 
 [Flags]
@@ -244,4 +256,5 @@ internal sealed record SceneSystemTypeDescriptor(
     int runtimeTypeId,
     string displayName,
     bool isConcrete,
-    bool allowsMultiple);
+    bool allowsMultiple
+);

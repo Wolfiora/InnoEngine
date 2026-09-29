@@ -29,8 +29,7 @@ internal sealed class AssetImporterRegistry
         return current.byExtension.GetValueOrDefault(extension);
     }
 
-    internal AssetImporter? FindById(string importerId)
-        => current.byId.GetValueOrDefault(importerId);
+    internal AssetImporter? FindById(string importerId) => current.byId.GetValueOrDefault(importerId);
 
     internal long GetGeneration(string importerId)
     {
@@ -115,8 +114,10 @@ internal sealed class AssetImporterRegistry
     /// <param name="candidate">
     /// The candidate consumed by on activating; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
-    protected override void OnActivating(Snapshot? previous, Snapshot candidate)
-    {
+    protected override void OnActivating(
+        Snapshot? previous,
+        Snapshot candidate
+    ) {
         lock (m_generationSync)
         {
             m_generationRollback = new Dictionary<string, long>(m_generations, StringComparer.Ordinal);
@@ -141,8 +142,10 @@ internal sealed class AssetImporterRegistry
     /// <param name="candidate">
     /// The candidate consumed by on activation rolled back; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
-    protected override void OnActivationRolledBack(Snapshot? previous, Snapshot candidate)
-    {
+    protected override void OnActivationRolledBack(
+        Snapshot? previous,
+        Snapshot candidate
+    ) {
         lock (m_generationSync)
         {
             if (m_generationRollback is null)
@@ -163,8 +166,10 @@ internal sealed class AssetImporterRegistry
     /// <param name="currentSnapshot">
     /// The current snapshot consumed by on activation completed; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
-    protected override void OnActivationCompleted(Snapshot? previous, Snapshot currentSnapshot)
-    {
+    protected override void OnActivationCompleted(
+        Snapshot? previous,
+        Snapshot currentSnapshot
+    ) {
         lock (m_generationSync)
             m_generationRollback = null;
     }
@@ -175,8 +180,7 @@ internal sealed class AssetImporterRegistry
     /// <param name="snapshot">
     /// The immutable state snapshot consumed by this operation.
     /// </param>
-    protected override void DisposeSnapshot(Snapshot snapshot)
-        => DisposeExtensions(snapshot.byId.Values);
+    protected override void DisposeSnapshot(Snapshot snapshot) => DisposeExtensions(snapshot.byId.Values);
 
     private static string NormalizeExtension(string extension)
     {
@@ -189,5 +193,6 @@ internal sealed class AssetImporterRegistry
     internal sealed record Snapshot(
         FrozenDictionary<string, AssetImporter> byExtension,
         FrozenDictionary<string, AssetImporter> byId,
-        FrozenDictionary<string, Type> typesById);
+        FrozenDictionary<string, Type> typesById
+    );
 }

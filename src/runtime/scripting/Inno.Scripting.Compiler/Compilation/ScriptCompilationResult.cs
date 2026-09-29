@@ -19,8 +19,8 @@ public sealed class ScriptCompilationResult
         IReadOnlyList<AssemblyLoadRequest>? reloadRequests,
         IReadOnlyList<string>? compiledAssemblies = null,
         IReadOnlyList<string>? reusedAssemblies = null,
-        IReadOnlyList<ScriptCompilationStageTiming>? stageTimings = null)
-    {
+        IReadOnlyList<ScriptCompilationStageTiming>? stageTimings = null
+    ) {
         this.success = success;
         this.diagnostics = diagnostics;
         this.outputDirectory = outputDirectory;

@@ -18,8 +18,8 @@ internal sealed record SceneElementHistoryData(
     bool existsAfter,
     byte[] beforeState,
     byte[] afterState,
-    SceneIncomingReferenceState[] incomingReferences)
-{
+    SceneIncomingReferenceState[] incomingReferences
+) {
     internal byte[] Encode()
     {
         using var stream = new MemoryStream();
@@ -92,14 +92,18 @@ internal sealed record SceneElementHistoryData(
             references);
     }
 
-    private static void WriteBytes(BinaryWriter writer, byte[] bytes)
-    {
+    private static void WriteBytes(
+        BinaryWriter writer,
+        byte[] bytes
+    ) {
         writer.Write(bytes.Length);
         writer.Write(bytes);
     }
 
-    private static byte[] ReadBytes(BinaryReader reader, string name)
-    {
+    private static byte[] ReadBytes(
+        BinaryReader reader,
+        string name
+    ) {
         int length = reader.ReadInt32();
         if (length < 0 || length > reader.BaseStream.Length - reader.BaseStream.Position)
             throw new InvalidDataException($"Scene element history {name} length is invalid.");

@@ -35,8 +35,8 @@ internal sealed class MaterialAssetImporter : AssetImporter<MaterialAsset>
     protected override async ValueTask ImportAsync(
         AssetImportContext context,
         AssetImportWriter<MaterialAsset> output,
-        CancellationToken cancellationToken)
-    {
+        CancellationToken cancellationToken
+    ) {
         MaterialAsset asset = NativeAssetSourceSerialization.Import<MaterialAsset>(
             context.sourceBytes.Span,
             context.services,
@@ -67,8 +67,8 @@ internal sealed class MaterialAssetImporter : AssetImporter<MaterialAsset>
     protected override ValueTask<ReadOnlyMemory<byte>?> ExportAsync(
         AssetExportContext context,
         MaterialAsset asset,
-        CancellationToken cancellationToken)
-    {
+        CancellationToken cancellationToken
+    ) {
         cancellationToken.ThrowIfCancellationRequested();
         Validate(asset);
         return ValueTask.FromResult<ReadOnlyMemory<byte>?>(NativeAssetSourceSerialization.Export(
@@ -107,7 +107,10 @@ internal sealed class MaterialAssetImporter : AssetImporter<MaterialAsset>
             throw new InvalidOperationException($"Material keyword '{unknownKeyword}' is not declared by its shader.");
     }
 
-    private static bool IsCompatible(ShaderPropertyType propertyType, MaterialValueKind valueKind)
+    private static bool IsCompatible(
+        ShaderPropertyType propertyType,
+        MaterialValueKind valueKind
+    )
         => propertyType switch
         {
             ShaderPropertyType.Float => valueKind == MaterialValueKind.Float,

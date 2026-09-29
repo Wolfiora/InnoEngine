@@ -10,8 +10,11 @@ namespace Inno.Tooling.Architecture;
 
 internal static class PublicApiDocumentationValidator
 {
-    internal static void Validate(string relativePath, string source, ICollection<string> failures)
-    {
+    internal static void Validate(
+        string relativePath,
+        string source,
+        ICollection<string> failures
+    ) {
         SyntaxNode root = CSharpSyntaxTree.ParseText(source, path: relativePath).GetRoot();
         foreach (MemberDeclarationSyntax member in root.DescendantNodes().OfType<MemberDeclarationSyntax>())
         {
@@ -62,8 +65,8 @@ internal static class PublicApiDocumentationValidator
         string location,
         MemberDeclarationSyntax member,
         DocumentationCommentTriviaSyntax documentation,
-        ICollection<string> failures)
-    {
+        ICollection<string> failures
+    ) {
         TypeParameterListSyntax? parameters = member switch
         {
             TypeDeclarationSyntax type => type.TypeParameterList,
@@ -85,8 +88,8 @@ internal static class PublicApiDocumentationValidator
         string location,
         MemberDeclarationSyntax member,
         DocumentationCommentTriviaSyntax documentation,
-        ICollection<string> failures)
-    {
+        ICollection<string> failures
+    ) {
         IEnumerable<ParameterSyntax> parameters = member switch
         {
             ClassDeclarationSyntax type => type.ParameterList?.Parameters ?? default,
@@ -121,11 +124,17 @@ internal static class PublicApiDocumentationValidator
     private static bool IsVoid(TypeSyntax type)
         => type is PredefinedTypeSyntax predefined && predefined.Keyword.IsKind(SyntaxKind.VoidKeyword);
 
-    private static XmlElementSyntax? FindElement(DocumentationCommentTriviaSyntax documentation, string name)
+    private static XmlElementSyntax? FindElement(
+        DocumentationCommentTriviaSyntax documentation,
+        string name
+    )
         => documentation.Content.OfType<XmlElementSyntax>().FirstOrDefault(element =>
             element.StartTag.Name.LocalName.Text == name);
 
-    private static HashSet<string> GetNamedElements(DocumentationCommentTriviaSyntax documentation, string name)
+    private static HashSet<string> GetNamedElements(
+        DocumentationCommentTriviaSyntax documentation,
+        string name
+    )
         => documentation.Content
             .OfType<XmlElementSyntax>()
             .Where(element => element.StartTag.Name.LocalName.Text == name)

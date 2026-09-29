@@ -4,8 +4,10 @@ namespace Inno.Core.Jobs.Internal;
 
 internal sealed class WorkerRuntime
 {
-    internal WorkerRuntime(int workerId, ThreadStart loopBody)
-    {
+    internal WorkerRuntime(
+        int workerId,
+        ThreadStart loopBody
+    ) {
         id = workerId;
         localQueue = new WorkStealingDeque<int>();
         thread = new Thread(loopBody)

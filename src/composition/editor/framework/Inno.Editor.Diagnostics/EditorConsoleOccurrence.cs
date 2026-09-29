@@ -23,8 +23,8 @@ public sealed class EditorConsoleOccurrence
         int line,
         int column,
         string stackTrace,
-        LogSessionId sessionId)
-    {
+        LogSessionId sessionId
+    ) {
         this.sequence = sequence;
         this.kind = kind;
         this.level = level;

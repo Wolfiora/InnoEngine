@@ -100,8 +100,8 @@ public sealed class ScriptReloadHost : IDisposable
         PluginEnvironment plugins,
         ModuleHost modules,
         ProjectSettingsStore settings,
-        IScriptReloadCoordinator reloads)
-    {
+        IScriptReloadCoordinator reloads
+    ) {
         ArgumentNullException.ThrowIfNull(options);
         ArgumentNullException.ThrowIfNull(compiler);
         ArgumentNullException.ThrowIfNull(assets);
@@ -382,8 +382,8 @@ public sealed class ScriptReloadHost : IDisposable
     private async ValueTask<ScriptCompilationResult> CompileAsync(
         ScriptReloadRequest request,
         PluginUnavailabilityPlan? unavailability,
-        CancellationToken cancellationToken = default)
-    {
+        CancellationToken cancellationToken = default
+    ) {
         ObjectDisposedException.ThrowIf(m_disposed, this);
         using CancellationTokenSource linkedCancellation = CancellationTokenSource.CreateLinkedTokenSource(
             cancellationToken,
@@ -404,7 +404,10 @@ public sealed class ScriptReloadHost : IDisposable
             {
                 result = await m_compiler
                     .CompileAuthoringGenerationAsync(
-                        new ScriptProgressObserver((progress, status) => SetCompilationProgress(
+                        new ScriptProgressObserver((
+                            progress,
+                            status
+                        ) => SetCompilationProgress(
                             progress * C_COMPILATION_PROGRESS_SHARE,
                             status)),
                         effectiveCancellation)
@@ -718,8 +721,10 @@ public sealed class ScriptReloadHost : IDisposable
         QueueReload(ScriptReloadRequest.ReloadPlugins);
     }
 
-    private void SetCompilationProgress(float progress, string status)
-    {
+    private void SetCompilationProgress(
+        float progress,
+        string status
+    ) {
         Volatile.Write(ref m_compilationProgress, Math.Clamp(progress, 0f, 1f));
         Volatile.Write(ref m_compilationStatus, status);
     }
@@ -959,14 +964,15 @@ public sealed class ScriptReloadHost : IDisposable
     private sealed record PendingReload(
         ScriptCompilationResult compilation,
         ScriptReloadRequest request,
-        PluginUnavailabilityPlan? unavailability = null);
+        PluginUnavailabilityPlan? unavailability = null
+    );
 
-    private sealed record PluginUnavailabilityPlan(
-        IReadOnlyList<string> removedModuleNames);
+    private sealed record PluginUnavailabilityPlan(IReadOnlyList<string> removedModuleNames);
 
     private sealed record ReloadPlan(
         IReadOnlyList<AssemblyLoadRequest> requests,
-        IReadOnlyList<string> removedModuleNames);
+        IReadOnlyList<string> removedModuleNames
+    );
 
     private sealed class ScriptProgressObserver(Action<float, string> report)
         : IProgress<ScriptCompilationProgress>
@@ -977,8 +983,7 @@ public sealed class ScriptReloadHost : IDisposable
         /// <param name="value">
         /// The concrete value read or transformed by this operation.
         /// </param>
-        public void Report(ScriptCompilationProgress value)
-            => report(value.fraction, value.stage);
+        public void Report(ScriptCompilationProgress value) => report(value.fraction, value.stage);
     }
 
     private enum ScriptReloadRequest

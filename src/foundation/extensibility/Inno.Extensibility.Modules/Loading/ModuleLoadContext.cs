@@ -19,7 +19,8 @@ internal sealed class ModuleLoadContext : AssemblyLoadContext
         string mainAssemblyPath,
         bool collectible,
         IReadOnlyDictionary<string, Assembly> sharedAssemblies,
-        IEnumerable<string> moduleAssemblyPaths)
+        IEnumerable<string> moduleAssemblyPaths
+    )
         : base(name, collectible)
     {
         m_resolver = new AssemblyDependencyResolver(mainAssemblyPath);
@@ -63,8 +64,10 @@ internal sealed class ModuleLoadContext : AssemblyLoadContext
         ((ModuleLoadContext)context).m_sharedAssemblies = FrozenDictionary<string, Assembly>.Empty;
     }
 
-    private static void ValidateSharedIdentity(AssemblyName requested, AssemblyName shared)
-    {
+    private static void ValidateSharedIdentity(
+        AssemblyName requested,
+        AssemblyName shared
+    ) {
         bool versionMatches = requested.Version is null || requested.Version == shared.Version;
         string requestedCulture = requested.CultureName ?? string.Empty;
         string sharedCulture = shared.CultureName ?? string.Empty;

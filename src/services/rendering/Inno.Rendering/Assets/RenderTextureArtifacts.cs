@@ -26,8 +26,8 @@ public readonly record struct RenderTextureArtifactSlot
     public RenderTextureArtifactSlot(
         string id,
         string sourceOutputName,
-        TextureColorSpace colorSpace)
-    {
+        TextureColorSpace colorSpace
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(id);
         ArgumentException.ThrowIfNullOrWhiteSpace(sourceOutputName);
         this.id = id;
@@ -74,8 +74,8 @@ public readonly record struct RenderTextureArtifactReference
     public RenderTextureArtifactReference(
         Guid assetId,
         long contentRevision,
-        RenderTextureArtifactSlot slot)
-    {
+        RenderTextureArtifactSlot slot
+    ) {
         if (assetId == Guid.Empty)
             throw new ArgumentException("A texture artifact reference requires a persistent asset identity.", nameof(assetId));
         ArgumentOutOfRangeException.ThrowIfNegative(contentRevision);
@@ -104,8 +104,7 @@ public readonly record struct RenderTextureArtifactReference
     /// <summary>
     /// Gets the stable provider-owned GPU resource identity for this texture slot.
     /// </summary>
-    public RenderPersistentResourceId resourceId
-        => new($"asset:{assetId:D}:texture:{slot.id}");
+    public RenderPersistentResourceId resourceId => new($"asset:{assetId:D}:texture:{slot.id}");
 }
 
 /// <summary>

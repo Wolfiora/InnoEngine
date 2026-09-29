@@ -22,4 +22,12 @@ public abstract class RenderingBackendProvider
     /// A new device owned by the caller.
     /// </returns>
     public abstract IRenderDevice CreateDevice(RenderingBackendOptions options);
+
+    /// <summary>
+    /// Creates the backend-owned program provider used when the host composites render layers.
+    /// </summary>
+    /// <returns>
+    /// A provider compatible with devices created by this rendering implementation.
+    /// </returns>
+    public abstract IRenderLayerCompositionProgramProvider CreateCompositionProgramProvider();
 }

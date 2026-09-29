@@ -53,8 +53,10 @@ internal sealed class GameLayersSetting : ProjectSettingEditor<GameLayerCatalog>
             ImGuiWidget.ColoredText(EditorPalette.error, m_error);
     }
 
-    private void DrawLayerRows(GameLayerCatalog setting, string?[] names)
-    {
+    private void DrawLayerRows(
+        GameLayerCatalog setting,
+        string?[] names
+    ) {
         int definedCount = names.Count(static name => !string.IsNullOrWhiteSpace(name));
         DrawLayerToolbar(setting, names, definedCount);
         NativeImGui.Spacing();
@@ -101,8 +103,8 @@ internal sealed class GameLayersSetting : ProjectSettingEditor<GameLayerCatalog>
     private void DrawLayerRow(
         GameLayerCatalog setting,
         IReadOnlyList<string?> names,
-        int index)
-    {
+        int index
+    ) {
         var layer = new GameLayer(index);
         NativeImGui.TableNextRow();
         _ = NativeImGui.TableSetColumnIndex(0);
@@ -151,8 +153,11 @@ internal sealed class GameLayersSetting : ProjectSettingEditor<GameLayerCatalog>
         }
     }
 
-    private static bool DrawTextField(string id, string hint, ref string value)
-    {
+    private static bool DrawTextField(
+        string id,
+        string hint,
+        ref string value
+    ) {
         NativeImGui.SetNextItemWidth(-1f);
         NativeImGui.PushStyleColor(ImGuiCol.FrameBg, EditorPalette.transparent);
         NativeImGui.PushStyleColor(ImGuiCol.FrameBgHovered, EditorPalette.transparent);
@@ -173,8 +178,11 @@ internal sealed class GameLayersSetting : ProjectSettingEditor<GameLayerCatalog>
         }
     }
 
-    private void DrawLayerToolbar(GameLayerCatalog setting, string?[] names, int definedCount)
-    {
+    private void DrawLayerToolbar(
+        GameLayerCatalog setting,
+        string?[] names,
+        int definedCount
+    ) {
         float spacing = NativeImGui.GetStyle().ItemSpacing.X;
         ImGuiWidget.LabelChip("Defined", EditorPalette.collectionRowAlternate);
         NativeImGui.SameLine(0f, 0f);
@@ -183,8 +191,10 @@ internal sealed class GameLayersSetting : ProjectSettingEditor<GameLayerCatalog>
         DrawAddLayer(setting, names, definedCount);
     }
 
-    private static void DrawReadOnlyCount(string value, float width)
-    {
+    private static void DrawReadOnlyCount(
+        string value,
+        float width
+    ) {
         ImGuiStylePtr style = NativeImGui.GetStyle();
         Vector2 minimum = NativeImGui.GetCursorScreenPos();
         Vector2 size = new(MathF.Max(1f, width), NativeImGui.GetFrameHeight());
@@ -213,8 +223,10 @@ internal sealed class GameLayersSetting : ProjectSettingEditor<GameLayerCatalog>
         DrawHeaderCell(2, "Action");
     }
 
-    private static void DrawHeaderCell(int column, string label)
-    {
+    private static void DrawHeaderCell(
+        int column,
+        string label
+    ) {
         _ = NativeImGui.TableSetColumnIndex(column);
         InsetPlainCell();
         NativeImGui.TextUnformatted(label);
@@ -224,8 +236,11 @@ internal sealed class GameLayersSetting : ProjectSettingEditor<GameLayerCatalog>
         => NativeImGui.SetCursorPosX(
             NativeImGui.GetCursorPosX() + NativeImGui.GetStyle().FramePadding.X);
 
-    private void DrawAddLayer(GameLayerCatalog setting, string?[] names, int definedCount)
-    {
+    private void DrawAddLayer(
+        GameLayerCatalog setting,
+        string?[] names,
+        int definedCount
+    ) {
         NativeImGui.BeginDisabled(definedCount >= GameLayer.C_MAX_COUNT);
         try
         {
@@ -260,8 +275,11 @@ internal sealed class GameLayersSetting : ProjectSettingEditor<GameLayerCatalog>
         }
     }
 
-    private void CommitDefinition(GameLayerCatalog setting, GameLayer layer, string name)
-    {
+    private void CommitDefinition(
+        GameLayerCatalog setting,
+        GameLayer layer,
+        string name
+    ) {
         try
         {
             setting.Define(layer, name);
@@ -287,8 +305,10 @@ internal sealed class GameLayersSetting : ProjectSettingEditor<GameLayerCatalog>
         m_observedNames = names.ToArray();
     }
 
-    private void SynchronizeSlot(GameLayerCatalog setting, GameLayer layer)
-    {
+    private void SynchronizeSlot(
+        GameLayerCatalog setting,
+        GameLayer layer
+    ) {
         m_nameBuffers[layer.index] = setting.GetName(layer) ?? string.Empty;
         m_observedNames = CaptureNames(setting);
     }

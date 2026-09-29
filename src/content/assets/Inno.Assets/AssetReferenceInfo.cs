@@ -40,8 +40,8 @@ public sealed class AssetReferenceInfo
         long contentVersion,
         bool isLoaded,
         bool? lastSweepReachability,
-        IReadOnlyList<AssetReferenceLocation> references)
-    {
+        IReadOnlyList<AssetReferenceLocation> references
+    ) {
         this.persistentId = persistentId;
         this.assetPath = assetPath;
         this.contentVersion = contentVersion;

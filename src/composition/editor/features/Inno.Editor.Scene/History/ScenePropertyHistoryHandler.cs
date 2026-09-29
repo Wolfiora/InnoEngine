@@ -38,8 +38,8 @@ internal sealed class ScenePropertyHistoryHandler : EditorHistoryHandler
     protected override EditorHistoryAvailability Query(
         EditorHistoryContext context,
         EditorHistoryChange change,
-        EditorHistoryDirection direction)
-    {
+        EditorHistoryDirection direction
+    ) {
         try
         {
             ScenePropertyHistoryData data = ScenePropertyHistoryData.Decode(change.payload.ReadBytes());
@@ -86,8 +86,8 @@ internal sealed class ScenePropertyHistoryHandler : EditorHistoryHandler
     protected override EditorHistoryResult Apply(
         EditorHistoryContext context,
         EditorHistoryChange change,
-        EditorHistoryDirection direction)
-    {
+        EditorHistoryDirection direction
+    ) {
         ScenePropertyHistoryData data;
         EngineObject? target;
         try
@@ -145,14 +145,16 @@ internal sealed class ScenePropertyHistoryHandler : EditorHistoryHandler
     private void RestoreDeltas(
         EngineObject target,
         IReadOnlyList<ScenePropertyValueDelta> deltas,
-        bool useAfter)
-    {
+        bool useAfter
+    ) {
         for (int index = 0; index < deltas.Count; index++)
             RestoreOne(target, useAfter ? deltas[index].after : deltas[index].before);
     }
 
-    private void RestoreOne(EngineObject target, ReadOnlySpan<byte> data)
-    {
+    private void RestoreOne(
+        EngineObject target,
+        ReadOnlySpan<byte> data
+    ) {
         SerializationPropertyRestoreResult result = ScenePropertySerialization.RestoreProperties(
             target,
             data,
@@ -180,8 +182,8 @@ internal sealed class ScenePropertyHistoryHandler : EditorHistoryHandler
     protected override bool TryMerge(
         EditorHistoryChange older,
         EditorHistoryChange newer,
-        out EditorHistoryChange? merged)
-    {
+        out EditorHistoryChange? merged
+    ) {
         merged = null;
         if (!string.Equals(older.mergeKey, newer.mergeKey, StringComparison.Ordinal) || older.mergeKey is null)
             return false;

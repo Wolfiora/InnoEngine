@@ -653,7 +653,7 @@ public sealed class ScriptingPipelineTests : IDisposable
     }
 
     [Fact]
-    public void IdeProjectionUsesPluginSourceProjectsWithLogicalApiReferences()
+    public void IdeProjectionUsesPluginMetadataReferencesWithoutExtraProjects()
     {
         using var fixture = new ScriptingFixture(WriteProjectionPlugin);
         fixture.Write("UsesProjectionPlugin.cs", """
@@ -672,16 +672,14 @@ public sealed class ScriptingPipelineTests : IDisposable
 
         Assert.True(result.success, FormatDiagnostics(result));
         Assert.False(File.Exists(staleProject));
-        string pluginProject = File.ReadAllText(Path.Combine(
-            fixture.projectRoot, "Inno.Plugin.TestsProjection.csproj"));
-        Assert.Contains("Inno.ScriptApi.Runtime.dll", pluginProject);
-        Assert.DoesNotContain("Inno.Scene.dll", pluginProject, StringComparison.Ordinal);
+        Assert.False(File.Exists(Path.Combine(
+            fixture.projectRoot, "Inno.Plugin.TestsProjection.csproj")));
         string solution = File.ReadAllText(Path.Combine(fixture.projectRoot, "InnoProject.sln"));
-        Assert.Contains("Inno.Plugin.TestsProjection", solution, StringComparison.Ordinal);
+        Assert.DoesNotContain("Inno.Plugin.TestsProjection", solution, StringComparison.Ordinal);
         string gameProject = File.ReadAllText(
             Path.Combine(fixture.projectRoot, "Inno.GameScripts.csproj"));
-        Assert.Contains("ProjectReference Include=\"Inno.Plugin.TestsProjection.csproj\"", gameProject);
-        Assert.DoesNotContain("Inno.Plugin.TestsProjection.dll", gameProject, StringComparison.Ordinal);
+        Assert.Contains("Inno.Plugin.TestsProjection.dll", gameProject, StringComparison.Ordinal);
+        Assert.DoesNotContain("ProjectReference Include=\"Inno.Plugin.TestsProjection.csproj\"", gameProject);
     }
 
     [Fact]

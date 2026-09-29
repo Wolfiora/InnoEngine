@@ -67,10 +67,17 @@ public sealed class ShaderPreviewContext
     /// <param name="pixelHeight">
     /// Positive target height.
     /// </param>
-    public ShaderPreviewContext(RenderPersistentResourceId resourceId, MaterialAsset material, RenderShaderArtifact artifact,
-        ShaderDefinition definition, IDiagnosticReporter diagnostics, int pixelWidth, int pixelHeight)
-    {
-        if (!resourceId.isValid) throw new ArgumentException("A resource identity is required.", nameof(resourceId));
+    public ShaderPreviewContext(
+        RenderPersistentResourceId resourceId,
+        MaterialAsset material,
+        RenderShaderArtifact artifact,
+        ShaderDefinition definition,
+        IDiagnosticReporter diagnostics,
+        int pixelWidth,
+        int pixelHeight
+    ) {
+        if (!resourceId.isValid)
+            throw new ArgumentException("A resource identity is required.", nameof(resourceId));
         ArgumentNullException.ThrowIfNull(material); ArgumentNullException.ThrowIfNull(artifact);
         ArgumentNullException.ThrowIfNull(definition); ArgumentNullException.ThrowIfNull(diagnostics);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(pixelWidth); ArgumentOutOfRangeException.ThrowIfNegativeOrZero(pixelHeight);

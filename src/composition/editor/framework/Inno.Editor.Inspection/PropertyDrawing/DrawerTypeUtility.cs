@@ -5,8 +5,12 @@ namespace Inno.Editor.Inspection;
 
 internal static class DrawerTypeUtility
 {
-    internal static bool TryGetDistance(Type concreteType, Type registeredType, bool useForChildren, out int distance)
-    {
+    internal static bool TryGetDistance(
+        Type concreteType,
+        Type registeredType,
+        bool useForChildren,
+        out int distance
+    ) {
         Type normalizedRegistered = registeredType;
         Type normalizedConcrete = concreteType;
 
@@ -58,8 +62,11 @@ internal static class DrawerTypeUtility
         return true;
     }
 
-    private static bool TryGetOpenGenericDistance(Type concreteType, Type openGenericType, out int distance)
-    {
+    private static bool TryGetOpenGenericDistance(
+        Type concreteType,
+        Type openGenericType,
+        out int distance
+    ) {
         var queue = new Queue<(Type type, int distance)>();
         var visited = new HashSet<Type>();
         queue.Enqueue((concreteType, 0));
@@ -93,8 +100,10 @@ internal static class DrawerTypeUtility
         return false;
     }
 
-    private static int GetAssignableDistance(Type concreteType, Type targetType)
-    {
+    private static int GetAssignableDistance(
+        Type concreteType,
+        Type targetType
+    ) {
         var queue = new Queue<(Type type, int distance)>();
         var visited = new HashSet<Type>();
         queue.Enqueue((concreteType, 0));

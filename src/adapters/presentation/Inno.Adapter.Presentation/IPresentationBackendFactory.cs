@@ -20,5 +20,8 @@ public interface IPresentationBackendFactory
     /// <exception cref="System.NotSupportedException">
     /// Thrown when the selected platform, rendering, and presentation backends are incompatible.
     /// </exception>
-    IPresentationContext CreateContext(PresentationBackend backend, PresentationBackendOptions options);
+    IPresentationContext CreateContext(
+        PresentationBackend backend,
+        PresentationBackendOptions options
+    );
 }

@@ -97,6 +97,9 @@ public sealed class RenderRuntime : RuntimeSubsystem, IRenderRequestSink, IViewC
     /// <param name="primaryInputSurfaceSizeProvider">
     /// Optional logical window size used to scale input coordinates onto the presentation surface.
     /// </param>
+    /// <param name="compositionProgramProvider">
+    /// Backend-specific program provider used when the host composites multiple render layers.
+    /// </param>
     public RenderRuntime(
         TypeCatalog types,
         IRenderDevice device,
@@ -107,8 +110,9 @@ public sealed class RenderRuntime : RuntimeSubsystem, IRenderRequestSink, IViewC
         Func<RenderPresentationSize, RenderViewport>? primaryPresentationViewportProvider = null,
         RenderResourceLimits? resourceLimits = null,
         Func<InputSnapshot>? inputSnapshotProvider = null,
-        Func<RenderPresentationSize>? primaryInputSurfaceSizeProvider = null)
-    {
+        Func<RenderPresentationSize>? primaryInputSurfaceSizeProvider = null,
+        IRenderLayerCompositionProgramProvider? compositionProgramProvider = null
+    ) {
         ArgumentNullException.ThrowIfNull(types);
         resourceLimits ??= new RenderResourceLimits();
         resourceLimits.Validate();
@@ -135,7 +139,7 @@ public sealed class RenderRuntime : RuntimeSubsystem, IRenderRequestSink, IViewC
             targetArtifacts,
             resourceLimits);
         m_uploads = new RenderFrameUploadService(m_device, resourceLimits);
-        m_compositor = new RenderLayerCompositor(m_device);
+        m_compositor = new RenderLayerCompositor(m_device, compositionProgramProvider);
         targets = new RenderTargetStore(device, resourceLimits.targets);
     }
 
@@ -212,7 +216,10 @@ public sealed class RenderRuntime : RuntimeSubsystem, IRenderRequestSink, IViewC
             {
                 entry.source.Collect(context, sink);
             }
-            catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null) { throw; }
+            catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null)
+            {
+                throw;
+            }
             catch (Exception exception)
             {
                 m_diagnostics.Publish(new Diagnostic(
@@ -353,9 +360,14 @@ public sealed class RenderRuntime : RuntimeSubsystem, IRenderRequestSink, IViewC
     /// <exception cref="InvalidOperationException">
     /// The bounded frame queue is full or retirement has started.
     /// </exception>
-    public void SubmitComposition(string name, RenderTarget target, RenderViewport viewport,
-        RenderTextureFormat format, IReadOnlyList<RenderRequest> layers, int priority = 0)
-    {
+    public void SubmitComposition(
+        string name,
+        RenderTarget target,
+        RenderViewport viewport,
+        RenderTextureFormat format,
+        IReadOnlyList<RenderRequest> layers,
+        int priority = 0
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
         ArgumentNullException.ThrowIfNull(layers);
         if (layers.Count < 2 || layers.Any(static layer => layer is null))
@@ -497,7 +509,10 @@ public sealed class RenderRuntime : RuntimeSubsystem, IRenderRequestSink, IViewC
                 m_acceptingCurrentFrame = true;
             }
         }
-        catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null) { throw; }
+        catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null)
+        {
+            throw;
+        }
         catch
         {
             try
@@ -564,7 +579,10 @@ public sealed class RenderRuntime : RuntimeSubsystem, IRenderRequestSink, IViewC
             {
                 entry.provider.Submit(context);
             }
-            catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null) { throw; }
+            catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null)
+            {
+                throw;
+            }
             catch (Exception exception)
             {
                 m_diagnostics.Publish(new Diagnostic(
@@ -670,7 +688,10 @@ public sealed class RenderRuntime : RuntimeSubsystem, IRenderRequestSink, IViewC
             return m_contentScopeProvider()
                 ?? throw new InvalidOperationException("The host content-scope provider returned null.");
         }
-        catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null) { throw; }
+        catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null)
+        {
+            throw;
+        }
         catch (Exception exception)
         {
             m_diagnostics.Publish(new Diagnostic(
@@ -698,7 +719,10 @@ public sealed class RenderRuntime : RuntimeSubsystem, IRenderRequestSink, IViewC
             }
             return viewport;
         }
-        catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null) { throw; }
+        catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null)
+        {
+            throw;
+        }
         catch (Exception exception)
         {
             m_diagnostics.Publish(new Diagnostic(
@@ -724,7 +748,10 @@ public sealed class RenderRuntime : RuntimeSubsystem, IRenderRequestSink, IViewC
                 "Primary Presentation Background",
                 S_PRESENTATION_BACKGROUND_PHASE,
                 0,
-                static (_, _) => { })
+                static (
+                    _,
+                    _
+                ) => { })
             .ClearPresentationTarget(S_PRESENTATION_BACKGROUND_COLOR)
             .HasSideEffect();
     }
@@ -804,13 +831,21 @@ public sealed class RenderRuntime : RuntimeSubsystem, IRenderRequestSink, IViewC
         }
     }
 
-    private void EndRenderingFrame(int executedViewCount, int culledPassCount)
-    {
+    private void EndRenderingFrame(
+        int executedViewCount,
+        int culledPassCount
+    ) {
         RenderDeviceFrameCounters counters = m_device.frameCounters;
         RenderDeviceAllocationCounters? allocations = m_device.allocationCounters;
         m_resourceService.EndMutation();
-        try { _ = m_device.EndFrame(); }
-        catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null) { throw; }
+        try
+        {
+            _ = m_device.EndFrame();
+        }
+        catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null)
+        {
+            throw;
+        }
         catch
         {
             CompleteFrameState();
@@ -879,8 +914,14 @@ public sealed class RenderRuntime : RuntimeSubsystem, IRenderRequestSink, IViewC
             });
             m_retirement.Add(m_uploads.EndFrame);
         }
-        try { m_extensions.Retire(m_retirement); }
-        catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null) { throw; }
+        try
+        {
+            m_extensions.Retire(m_retirement);
+        }
+        catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null)
+        {
+            throw;
+        }
         catch
         {
             m_disposed = true;
@@ -897,8 +938,14 @@ public sealed class RenderRuntime : RuntimeSubsystem, IRenderRequestSink, IViewC
             if (entry.lastGood is not null)
                 resources.Add(entry.lastGood.Dispose);
         }
-        try { m_extensions.Retire(resources); }
-        catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null) { throw; }
+        try
+        {
+            m_extensions.Retire(resources);
+        }
+        catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null)
+        {
+            throw;
+        }
         catch
         {
             m_generations.Clear();
@@ -919,12 +966,13 @@ public sealed class RenderRuntime : RuntimeSubsystem, IRenderRequestSink, IViewC
     /// Releases every runtime rendering generation, persistent target, upload, and GPU resource
     /// owned by this instance.
     /// </summary>
-    protected override void OnStop()
-        => ReleaseRendering();
+    protected override void OnStop() => ReleaseRendering();
 
-    private void BuildComposition(RenderGraphBuilder graph, CompositionRequest composition,
-        ref int requestIndex)
-    {
+    private void BuildComposition(
+        RenderGraphBuilder graph,
+        CompositionRequest composition,
+        ref int requestIndex
+    ) {
         try
         {
             using RenderGraphMutationScope mutation = graph.BeginMutationScope();
@@ -964,7 +1012,10 @@ public sealed class RenderRuntime : RuntimeSubsystem, IRenderRequestSink, IViewC
             }
             mutation.Commit();
         }
-        catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null) { throw; }
+        catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null)
+        {
+            throw;
+        }
         catch (Exception exception)
         {
             m_diagnostics.Publish(new Diagnostic(
@@ -985,7 +1036,10 @@ public sealed class RenderRuntime : RuntimeSubsystem, IRenderRequestSink, IViewC
             {
                 source.CompleteFrame(m_frameIndex);
             }
-            catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null) { throw; }
+            catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null)
+            {
+                throw;
+            }
             catch (Exception exception)
             {
                 m_diagnostics.Publish(new Diagnostic("RENDER_VIEW_CONTENT_FRAME_FAILED",
@@ -1000,8 +1054,8 @@ public sealed class RenderRuntime : RuntimeSubsystem, IRenderRequestSink, IViewC
         RenderRequest request,
         int requestIndex,
         bool preservePresentationTarget,
-        RenderTextureHandle outputOverride = default)
-    {
+        RenderTextureHandle outputOverride = default
+    ) {
         RenderPipelineAsset? asset = request.pipeline ?? m_graphicsSettings.defaultPipeline;
         if (asset is null)
         {
@@ -1055,7 +1109,10 @@ public sealed class RenderRuntime : RuntimeSubsystem, IRenderRequestSink, IViewC
             mutation.Commit();
             return true;
         }
-        catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null) { throw; }
+        catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null)
+        {
+            throw;
+        }
         catch (Exception exception)
         {
             m_diagnostics.Publish(new Diagnostic(
@@ -1067,8 +1124,10 @@ public sealed class RenderRuntime : RuntimeSubsystem, IRenderRequestSink, IViewC
         }
     }
 
-    private bool TryGetGeneration(RenderPipelineAsset asset, out RenderPipelineGeneration? generation)
-    {
+    private bool TryGetGeneration(
+        RenderPipelineAsset asset,
+        out RenderPipelineGeneration? generation
+    ) {
         generation = null;
         string fingerprint = RenderExtensionRegistry.GetConfigurationFingerprint(asset);
         RenderExtensionRegistry.Snapshot snapshot;
@@ -1076,7 +1135,10 @@ public sealed class RenderRuntime : RuntimeSubsystem, IRenderRequestSink, IViewC
         {
             snapshot = m_extensions.extensions;
         }
-        catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null) { throw; }
+        catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null)
+        {
+            throw;
+        }
         catch (Exception exception)
         {
             m_extensions.EnsureHealthy();
@@ -1120,7 +1182,10 @@ public sealed class RenderRuntime : RuntimeSubsystem, IRenderRequestSink, IViewC
             }
             entry.lastGood = next!;
         }
-        catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null) { throw; }
+        catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null)
+        {
+            throw;
+        }
         catch (Exception exception)
         {
             m_extensions.EnsureHealthy();
@@ -1143,7 +1208,8 @@ public sealed class RenderRuntime : RuntimeSubsystem, IRenderRequestSink, IViewC
     private static bool TryCreateGeneration(
         RenderExtensionRegistry.Snapshot snapshot,
         RenderPipelineAsset asset,
-        out RenderPipelineGeneration? generation)
+        out RenderPipelineGeneration? generation
+    )
         => snapshot.TryCreateGeneration(asset, out generation);
 
     private void EndReloadSession(RenderRuntimeReloadSession session)
@@ -1160,7 +1226,10 @@ public sealed class RenderRuntime : RuntimeSubsystem, IRenderRequestSink, IViewC
         {
             snapshot = m_extensions.extensions;
         }
-        catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null) { throw; }
+        catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null)
+        {
+            throw;
+        }
         catch (Exception exception)
         {
             m_extensions.EnsureHealthy();
@@ -1211,7 +1280,10 @@ public sealed class RenderRuntime : RuntimeSubsystem, IRenderRequestSink, IViewC
                 m_generations.Remove(asset);
             }
         }
-        finally { m_retiredAssets.Clear(); }
+        finally
+        {
+            m_retiredAssets.Clear();
+        }
     }
 
     private IReadOnlyList<IRenderFrameGraphContributor> PrepareContributors()
@@ -1228,7 +1300,10 @@ public sealed class RenderRuntime : RuntimeSubsystem, IRenderRequestSink, IViewC
                 contributor.PrepareFrame(m_frameIndex);
                 prepared.Add(contributor);
             }
-            catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null) { throw; }
+            catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null)
+            {
+                throw;
+            }
             catch (Exception exception)
             {
                 PublishContributorFailure(contributor, "prepare", exception);
@@ -1239,8 +1314,8 @@ public sealed class RenderRuntime : RuntimeSubsystem, IRenderRequestSink, IViewC
 
     private void AddContributors(
         RenderGraphBuilder graph,
-        IReadOnlyList<IRenderFrameGraphContributor> contributors)
-    {
+        IReadOnlyList<IRenderFrameGraphContributor> contributors
+    ) {
         for (int index = 0; index < contributors.Count; index++)
         {
             IRenderFrameGraphContributor contributor = contributors[index];
@@ -1258,7 +1333,10 @@ public sealed class RenderRuntime : RuntimeSubsystem, IRenderRequestSink, IViewC
                 }
                 mutation.Commit();
             }
-            catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null) { throw; }
+            catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null)
+            {
+                throw;
+            }
             catch (Exception exception)
             {
                 PublishContributorFailure(contributor, "graph build", exception);
@@ -1274,8 +1352,10 @@ public sealed class RenderRuntime : RuntimeSubsystem, IRenderRequestSink, IViewC
         return new RenderGraphBuilder(m_graphGeneration, m_device.capabilities);
     }
 
-    private void PublishGraphDiagnostics(RenderGraphCompileResult result, string source)
-    {
+    private void PublishGraphDiagnostics(
+        RenderGraphCompileResult result,
+        string source
+    ) {
         foreach (RenderGraphDiagnostic diagnostic in result.diagnostics)
         {
             m_diagnostics.Publish(new Diagnostic(
@@ -1293,7 +1373,8 @@ public sealed class RenderRuntime : RuntimeSubsystem, IRenderRequestSink, IViewC
     private void PublishContributorFailure(
         IRenderFrameGraphContributor contributor,
         string stage,
-        Exception exception)
+        Exception exception
+    )
         => m_diagnostics.Publish(new Diagnostic(
             "RENDER_FRAME_CONTRIBUTOR_FAILED",
             $"Frame contributor '{contributor.GetType().Name}' failed during {stage}: {exception.Message}",
@@ -1303,8 +1384,8 @@ public sealed class RenderRuntime : RuntimeSubsystem, IRenderRequestSink, IViewC
     private void AddFeatures(
         RenderPipelineAsset asset,
         IReadOnlyDictionary<string, RenderPipelineFeature> features,
-        RenderPipelineContext context)
-    {
+        RenderPipelineContext context
+    ) {
         foreach (RenderFeatureConfiguration configuration in asset.features)
         {
             if (!configuration.enabled
@@ -1319,7 +1400,10 @@ public sealed class RenderRuntime : RuntimeSubsystem, IRenderRequestSink, IViewC
                 feature.AddRenderPasses(new RenderFeatureContext(context, configuration));
                 mutation.Commit();
             }
-            catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null) { throw; }
+            catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null)
+            {
+                throw;
+            }
             catch (Exception exception)
             {
                 m_diagnostics.Publish(new Diagnostic(
@@ -1337,13 +1421,15 @@ public sealed class RenderRuntime : RuntimeSubsystem, IRenderRequestSink, IViewC
         RenderViewport viewport,
         RenderTextureFormat format,
         RenderRequest[] layers,
-        int priority);
+        int priority
+    );
 
     private readonly record struct ScheduledWork(
         int priority,
         string name,
         RenderRequest? request,
-        CompositionRequest? composition);
+        CompositionRequest? composition
+    );
 
     private sealed class GenerationCacheEntry(RenderPipelineAsset asset)
     {
@@ -1357,7 +1443,8 @@ public sealed class RenderRuntime : RuntimeSubsystem, IRenderRequestSink, IViewC
     private readonly record struct GenerationState(
         long attemptedTypeCacheVersion,
         string? attemptedFingerprint,
-        RenderPipelineGeneration? lastGood);
+        RenderPipelineGeneration? lastGood
+    );
 
     private sealed class ViewContentSink : IViewContentSink
     {
@@ -1400,8 +1487,8 @@ public void Submit(ViewContentItem item)
             RenderRequest[] previousPendingRequests,
             RenderRequest[] previousCurrentRequests,
             CompositionRequest[] previousPendingCompositions,
-            CompositionRequest[] previousCurrentCompositions)
-        {
+            CompositionRequest[] previousCurrentCompositions
+        ) {
             m_owner = owner;
             m_previous = previous;
             m_previousRequestProviders = previousRequestProviders;
@@ -1457,7 +1544,10 @@ public void Submit(ViewContentItem item)
                 }
                 m_prepared = true;
             }
-            catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null) { throw; }
+            catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null)
+            {
+                throw;
+            }
             catch (Exception exception)
             {
                 DisposeCandidates();
@@ -1519,7 +1609,10 @@ public void Submit(ViewContentItem item)
                 }
                 m_owner.m_extensions.Retire(resources);
             }
-            catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null) { throw; }
+            catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null)
+            {
+                throw;
+            }
             catch
             {
                 Finish();
@@ -1556,8 +1649,14 @@ public void Submit(ViewContentItem item)
                     m_owner.m_currentCompositions.AddRange(m_previousCurrentCompositions!);
                 }
             }
-            try { DisposeCandidates(); }
-            catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null) { throw; }
+            try
+            {
+                DisposeCandidates();
+            }
+            catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null)
+            {
+                throw;
+            }
             catch
             {
                 Finish();

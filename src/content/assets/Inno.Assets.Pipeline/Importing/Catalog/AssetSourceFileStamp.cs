@@ -8,8 +8,8 @@ internal readonly struct AssetSourceFileStamp : IEquatable<AssetSourceFileStamp>
     private AssetSourceFileStamp(
         long length,
         long lastWriteUtcTicks,
-        long creationTimeUtcTicks)
-    {
+        long creationTimeUtcTicks
+    ) {
         this.length = length;
         this.lastWriteUtcTicks = lastWriteUtcTicks;
         this.creationTimeUtcTicks = creationTimeUtcTicks;
@@ -21,8 +21,10 @@ internal readonly struct AssetSourceFileStamp : IEquatable<AssetSourceFileStamp>
     internal long lastWriteUtcTicks { get; }
     internal long creationTimeUtcTicks { get; }
 
-    internal static bool TryCapture(string path, out AssetSourceFileStamp stamp)
-    {
+    internal static bool TryCapture(
+        string path,
+        out AssetSourceFileStamp stamp
+    ) {
         try
         {
             var info = new FileInfo(path);
@@ -75,8 +77,7 @@ internal readonly struct AssetSourceFileStamp : IEquatable<AssetSourceFileStamp>
     /// <returns>
     /// <see langword="true"/> when the requested condition is satisfied; otherwise, <see langword="false"/>.
     /// </returns>
-    public override bool Equals(object? obj)
-        => obj is AssetSourceFileStamp other && Equals(other);
+    public override bool Equals(object? obj) => obj is AssetSourceFileStamp other && Equals(other);
 
     /// <summary>
     /// Computes a hash code consistent with the implemented equality contract.
@@ -84,8 +85,7 @@ internal readonly struct AssetSourceFileStamp : IEquatable<AssetSourceFileStamp>
     /// <returns>
     /// The scalar result calculated from the supplied inputs.
     /// </returns>
-    public override int GetHashCode()
-        => HashCode.Combine(isValid, length, lastWriteUtcTicks, creationTimeUtcTicks);
+    public override int GetHashCode() => HashCode.Combine(isValid, length, lastWriteUtcTicks, creationTimeUtcTicks);
 
     /// <summary>
     /// Determines whether the supplied values are equal under the type's equality tolerance.
@@ -99,8 +99,10 @@ internal readonly struct AssetSourceFileStamp : IEquatable<AssetSourceFileStamp>
     /// <returns>
     /// <see langword="true"/> when the requested condition is satisfied; otherwise, <see langword="false"/>.
     /// </returns>
-    public static bool operator ==(AssetSourceFileStamp left, AssetSourceFileStamp right)
-        => left.Equals(right);
+    public static bool operator ==(
+        AssetSourceFileStamp left,
+        AssetSourceFileStamp right
+    ) => left.Equals(right);
 
     /// <summary>
     /// Determines whether the supplied values differ under the type's equality tolerance.
@@ -114,6 +116,8 @@ internal readonly struct AssetSourceFileStamp : IEquatable<AssetSourceFileStamp>
     /// <returns>
     /// <see langword="true"/> when the requested condition is satisfied; otherwise, <see langword="false"/>.
     /// </returns>
-    public static bool operator !=(AssetSourceFileStamp left, AssetSourceFileStamp right)
-        => !left.Equals(right);
+    public static bool operator !=(
+        AssetSourceFileStamp left,
+        AssetSourceFileStamp right
+    ) => !left.Equals(right);
 }

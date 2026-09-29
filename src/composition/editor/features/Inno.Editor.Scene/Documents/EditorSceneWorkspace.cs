@@ -91,8 +91,8 @@ internal sealed class EditorSceneWorkspace :
         SerializationRegistry serialization,
         EditorReloadCoordinator reloads,
         LogRouter logs,
-        IEditorSelectionCoordinator? selection = null)
-    {
+        IEditorSelectionCoordinator? selection = null
+    ) {
         m_runtimeSession = runtimeSession ?? throw new ArgumentNullException(nameof(runtimeSession));
         m_assets = assets ?? throw new ArgumentNullException(nameof(assets));
         m_types = types ?? throw new ArgumentNullException(nameof(types));
@@ -106,8 +106,7 @@ internal sealed class EditorSceneWorkspace :
 
     internal SceneWorld world => m_playModeSession?.runtimeWorld ?? m_runtimeSession.scenes;
 
-    internal IDisposable EnterPresentationScope()
-        => (m_playModeSession?.runtimeSession ?? m_runtimeSession).EnterExecutionScope();
+    internal IDisposable EnterPresentationScope() => (m_playModeSession?.runtimeSession ?? m_runtimeSession).EnterExecutionScope();
 
     internal SerializationRegistry serialization => m_serialization;
 
@@ -277,10 +276,13 @@ internal sealed class EditorSceneWorkspace :
         try
         {
             SynchronizeSource(scene, document);
+            m_diagnostics.ResolveSynchronization(scene.identity.persistentId);
         }
-        catch
+        catch (Exception exception)
         {
             document.isDirty = true;
+            if (m_diagnostics.PublishSynchronizationFailure(scene, exception))
+                m_log.Write(LogLevel.Error, "Scene document synchronization failed: {0}", [exception]);
         }
         if (string.IsNullOrEmpty(document.sourcePath))
             return true;
@@ -298,10 +300,13 @@ internal sealed class EditorSceneWorkspace :
         try
         {
             document.isDirty = HasSerializedChanges(scene, document);
+            m_diagnostics.ResolveDirtyCheck(scene.identity.persistentId);
         }
-        catch
+        catch (Exception exception)
         {
             document.isDirty = true;
+            if (m_diagnostics.PublishDirtyCheckFailure(scene, exception))
+                m_log.Write(LogLevel.Error, "Scene dirty check failed: {0}", [exception]);
         }
         return document.isDirty;
     }
@@ -318,8 +323,10 @@ internal sealed class EditorSceneWorkspace :
     /// <returns>
     /// The saved source-relative path.
     /// </returns>
-    public string Save(GameScene scene, string currentDirectory)
-    {
+    public string Save(
+        GameScene scene,
+        string currentDirectory
+    ) {
         ArgumentNullException.ThrowIfNull(scene);
         EnsureCanPersist();
         SceneDocument document = GetOrCreateDocument(scene);
@@ -349,8 +356,10 @@ internal sealed class EditorSceneWorkspace :
     /// <returns>
     /// The saved source-relative path.
     /// </returns>
-    public string SaveToDirectory(GameScene scene, string currentDirectory)
-    {
+    public string SaveToDirectory(
+        GameScene scene,
+        string currentDirectory
+    ) {
         ArgumentNullException.ThrowIfNull(scene);
         EnsureCanPersist();
         SceneDocument document = GetOrCreateDocument(scene);
@@ -384,8 +393,10 @@ internal sealed class EditorSceneWorkspace :
     /// <returns>
     /// The saved source-relative path.
     /// </returns>
-    public string SavePrefab(GameObject gameObject, string currentDirectory)
-    {
+    public string SavePrefab(
+        GameObject gameObject,
+        string currentDirectory
+    ) {
         ArgumentNullException.ThrowIfNull(gameObject);
         EnsureCanPersist();
         EnsureEditable(gameObject.scene);
@@ -453,6 +464,7 @@ internal sealed class EditorSceneWorkspace :
         {
             m_documents.Remove(sceneId);
             m_diagnostics.ResolveSynchronization(sceneId);
+            m_diagnostics.ResolveDirtyCheck(sceneId);
         }
         return closed;
     }
@@ -469,8 +481,10 @@ internal sealed class EditorSceneWorkspace :
     /// <returns>
     /// <see langword="true"/> when the scene is backed by a scene asset.
     /// </returns>
-    public bool TryGetSourcePath(GameScene scene, out string relativePath)
-    {
+    public bool TryGetSourcePath(
+        GameScene scene,
+        out string relativePath
+    ) {
         ArgumentNullException.ThrowIfNull(scene);
         if (m_playModeSession is PlayModeLease playModeSession)
         {
@@ -675,8 +689,10 @@ internal sealed class EditorSceneWorkspace :
     void IEditorReloadParticipant.RefreshDiagnostics()
         => m_sceneStateDiagnostics.Reconcile(force: true);
 
-    private void SaveSceneAtPath(GameScene scene, string relativePath)
-    {
+    private void SaveSceneAtPath(
+        GameScene scene,
+        string relativePath
+    ) {
         scene.name = GetAssetName(relativePath);
         bool exists = m_assets.TryLoad(AssetPath.Parse(relativePath), out SceneAsset? sceneAsset);
         sceneAsset ??= new SceneAsset();
@@ -710,8 +726,10 @@ internal sealed class EditorSceneWorkspace :
         return document;
     }
 
-    private void SynchronizeSource(GameScene scene, SceneDocument document)
-    {
+    private void SynchronizeSource(
+        GameScene scene,
+        SceneDocument document
+    ) {
         if (document.sourceAssetId == Guid.Empty)
             return;
         if (!m_assets.TryLoad(document.sourceAssetId, out SceneAsset? asset) ||
@@ -740,8 +758,10 @@ internal sealed class EditorSceneWorkspace :
                                         (long)(Stopwatch.Frequency * C_DIRTY_REFRESH_SECONDS);
     }
 
-    private void ApplyRename(string oldRelativePath, string newRelativePath)
-    {
+    private void ApplyRename(
+        string oldRelativePath,
+        string newRelativePath
+    ) {
         string oldPath = NormalizePath(oldRelativePath);
         string newPath = NormalizePath(newRelativePath);
         if (m_assets.TryGetFileSystemEntry(AssetPath.Parse(newPath), out Inno.Assets.Pipeline.AssetFileEntry entry) &&
@@ -760,8 +780,10 @@ internal sealed class EditorSceneWorkspace :
             ApplyPrefabRename(oldPath, newPath);
     }
 
-    private void ApplySceneRename(string oldPath, string newPath)
-    {
+    private void ApplySceneRename(
+        string oldPath,
+        string newPath
+    ) {
         foreach (SceneDocument document in m_documents.Values)
         {
             if (!string.Equals(document.sourcePath, oldPath, StringComparison.OrdinalIgnoreCase) ||
@@ -774,8 +796,10 @@ internal sealed class EditorSceneWorkspace :
         }
     }
 
-    private void ApplyDirectoryRename(string oldPath, string newPath)
-    {
+    private void ApplyDirectoryRename(
+        string oldPath,
+        string newPath
+    ) {
         string oldPrefix = oldPath + "/";
         foreach (SceneDocument document in m_documents.Values)
         {
@@ -790,8 +814,10 @@ internal sealed class EditorSceneWorkspace :
         }
     }
 
-    private void RelocateSceneDocument(SceneDocument document, string newPath)
-    {
+    private void RelocateSceneDocument(
+        SceneDocument document,
+        string newPath
+    ) {
         bool wasDirty = HasSerializedChanges(document.scene, document);
         document.sourcePath = newPath;
         document.scene.name = GetAssetName(newPath);
@@ -804,8 +830,10 @@ internal sealed class EditorSceneWorkspace :
                                         (long)(Stopwatch.Frequency * C_DIRTY_REFRESH_SECONDS);
     }
 
-    private string RenameSceneSourceIfNeeded(GameScene scene, SceneDocument document)
-    {
+    private string RenameSceneSourceIfNeeded(
+        GameScene scene,
+        SceneDocument document
+    ) {
         string currentPath = NormalizePath(document.sourcePath);
         string directory = NormalizePath(Path.GetDirectoryName(currentPath));
         string targetPath = Combine(directory, SanitizeFileName(scene.name) + C_SCENE_EXTENSION);
@@ -822,8 +850,10 @@ internal sealed class EditorSceneWorkspace :
         return targetPath;
     }
 
-    private void ApplyPrefabRename(string oldPath, string newPath)
-    {
+    private void ApplyPrefabRename(
+        string oldPath,
+        string newPath
+    ) {
         if (!m_assets.TryGetPersistentId(AssetPath.Parse(newPath), out Guid sourceAssetId))
             return;
         string oldName = GetAssetName(oldPath);
@@ -969,8 +999,7 @@ internal sealed class EditorSceneWorkspace :
         m_diagnostics.ResolveRestore();
     }
 
-    private void DisposeRestoreCandidates(
-        IReadOnlyList<(GameScene Scene, string Path, Guid AssetId, byte[] Hash)> candidates)
+    private void DisposeRestoreCandidates(IReadOnlyList<(GameScene Scene, string Path, Guid AssetId, byte[] Hash)> candidates)
     {
         for (int i = candidates.Count - 1; i >= 0; i--)
         {
@@ -1101,6 +1130,7 @@ internal sealed class EditorSceneWorkspace :
         {
             m_documents.Remove(sceneId);
             m_diagnostics.ResolveSynchronization(sceneId);
+            m_diagnostics.ResolveDirtyCheck(sceneId);
         }
         return closed;
     }
@@ -1114,8 +1144,10 @@ internal sealed class EditorSceneWorkspace :
             world.SetActiveScene(world.loadedScenes[0]);
     }
 
-    internal void RestoreSelection(Guid? selectedId, bool selectActiveSceneWhenMissing = true)
-    {
+    internal void RestoreSelection(
+        Guid? selectedId,
+        bool selectActiveSceneWhenMissing = true
+    ) {
         if (m_selection is null)
             return;
         object? target = selectedId is Guid id ? FindEngineObject(id) : null;
@@ -1124,8 +1156,7 @@ internal sealed class EditorSceneWorkspace :
         m_selection.SetSelection(target);
     }
 
-    private EngineObject? FindEngineObject(Guid id)
-        => world.Find<EngineObject>(id);
+    private EngineObject? FindEngineObject(Guid id) => world.Find<EngineObject>(id);
 
     private void ReleasePlayModeLease(PlayModeLease session)
     {
@@ -1230,11 +1261,17 @@ internal sealed class EditorSceneWorkspace :
         return SHA256.HashData(payload);
     }
 
-    private bool HasSerializedChanges(GameScene scene, SceneDocument document)
+    private bool HasSerializedChanges(
+        GameScene scene,
+        SceneDocument document
+    )
         => !ComputeSceneHash(scene).AsSpan().SequenceEqual(document.savedHash);
 
-    private string CreateUniquePath(string directory, string name, string extension)
-    {
+    private string CreateUniquePath(
+        string directory,
+        string name,
+        string extension
+    ) {
         directory = NormalizePath(directory);
         string fileName = SanitizeFileName(name);
         string candidate = Combine(directory, fileName + extension);
@@ -1273,7 +1310,10 @@ internal sealed class EditorSceneWorkspace :
         return string.IsNullOrWhiteSpace(sanitized) ? "Untitled" : sanitized;
     }
 
-    private static string Combine(string directory, string fileName)
+    private static string Combine(
+        string directory,
+        string fileName
+    )
         => string.IsNullOrEmpty(directory) ? fileName : $"{directory}/{fileName}";
 
     private static string NormalizePath(string? path)
@@ -1284,7 +1324,8 @@ internal sealed class EditorSceneWorkspace :
     private sealed class WorkspaceReloadTransaction(
         EditorSceneWorkspace workspace,
         IReadOnlyList<ReloadDocumentState> documents,
-        bool preserveDocumentBaselines) : IGenerationChange
+        bool preserveDocumentBaselines
+    ) : IGenerationChange
     {
         /// <summary>
         /// Prepares candidate state without changing the active generation.
@@ -1329,14 +1370,12 @@ internal sealed class EditorSceneWorkspace :
         /// <summary>
         /// Restores the state that existed before candidate activation began.
         /// </summary>
-        public void RollbackStructure()
-            => RestoreBaseline();
+        public void RollbackStructure() => RestoreBaseline();
 
         /// <summary>
         /// Restores the state that existed before candidate activation began.
         /// </summary>
-        public void RestorePreviousState()
-            => RestoreBaseline();
+        public void RestorePreviousState() => RestoreBaseline();
 
         private void RestoreBaseline()
         {
@@ -1357,14 +1396,15 @@ internal sealed class EditorSceneWorkspace :
         byte[] savedHash,
         bool isDirty,
         long nextRefreshTimestamp,
-        bool wasDirty);
+        bool wasDirty
+    );
 
     private sealed class SceneDocument(
         GameScene scene,
         string sourcePath,
         Guid sourceAssetId,
-        byte[] savedHash)
-    {
+        byte[] savedHash
+    ) {
         /// <summary>
         /// The scene value used as part of this type's public representation.
         /// </summary>
@@ -1396,7 +1436,8 @@ internal sealed class EditorSceneWorkspace :
         RuntimeSession playSession,
         SceneDocumentSnapshot[] sceneSnapshots,
         Guid? activeScene,
-        Guid? selectedSceneObject) : IDisposable
+        Guid? selectedSceneObject
+    ) : IDisposable
     {
         private readonly Dictionary<Guid, SceneDocumentSnapshot> m_snapshotBySceneId =
             sceneSnapshots.ToDictionary(static snapshot => snapshot.sceneId);
@@ -1439,7 +1480,10 @@ internal sealed class EditorSceneWorkspace :
             state.Set("activeScene", activePath);
         }
 
-        internal bool TryGetSnapshot(Guid sceneId, out SceneDocumentSnapshot snapshot)
+        internal bool TryGetSnapshot(
+            Guid sceneId,
+            out SceneDocumentSnapshot snapshot
+        )
             => m_snapshotBySceneId.TryGetValue(sceneId, out snapshot!);
     }
 
@@ -1451,5 +1495,6 @@ internal sealed class EditorSceneWorkspace :
         byte[] savedHash,
         bool isDirty,
         int sceneIndex,
-        long nextRefreshTimestamp = 0);
+        long nextRefreshTimestamp = 0
+    );
 }

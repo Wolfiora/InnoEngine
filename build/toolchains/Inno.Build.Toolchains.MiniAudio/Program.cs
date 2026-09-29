@@ -100,8 +100,8 @@ internal static class Program
         string miniAudioDirectory,
         string outputDirectory,
         string outputPlatform,
-        string config)
-    {
+        string config
+    ) {
         var options = new BuildArtifactOptions(
             MiniAudioBuildConstants.BUILD_DIR_NAME,
             S_LIBRARY_TOKENS,
@@ -111,8 +111,10 @@ internal static class Program
         BuildArtifactCopier.CopyArtifacts(miniAudioDirectory, outputDirectory, config, options);
     }
 
-    private static string GetExpectedOutputFileName(string outputPlatform, string config)
-    {
+    private static string GetExpectedOutputFileName(
+        string outputPlatform,
+        string config
+    ) {
         return outputPlatform switch
         {
             "osx-arm64" => $"libminiaudio-{config}.dylib",
@@ -155,8 +157,10 @@ internal sealed record Options(string Config)
         return new Options(config);
     }
 
-    private static string GetNext(string[] arguments, ref int index)
-    {
+    private static string GetNext(
+        string[] arguments,
+        ref int index
+    ) {
         if (index + 1 >= arguments.Length)
             throw new ArgumentException($"Missing value for {arguments[index]}.");
         index++;

@@ -41,8 +41,10 @@ public sealed class Sdl3InputBackend : IInputBackend
     {
     }
 
-    internal Sdl3InputBackend(uint windowId, Action<Sdl3InputBackend>? disposeCallback)
-    {
+    internal Sdl3InputBackend(
+        uint windowId,
+        Action<Sdl3InputBackend>? disposeCallback
+    ) {
         m_windowId = windowId;
         m_disposeCallback = disposeCallback;
     }

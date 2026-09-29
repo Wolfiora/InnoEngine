@@ -63,8 +63,11 @@ public sealed class RenderTextureSubresourceData
     /// <param name="data">
     /// Tightly packed complete subresource bytes.
     /// </param>
-    public RenderTextureSubresourceData(int mipLevel, int arrayLayer, ReadOnlySpan<byte> data)
-    {
+    public RenderTextureSubresourceData(
+        int mipLevel,
+        int arrayLayer,
+        ReadOnlySpan<byte> data
+    ) {
         ArgumentOutOfRangeException.ThrowIfNegative(mipLevel);
         ArgumentOutOfRangeException.ThrowIfNegative(arrayLayer);
         if (data.IsEmpty)
@@ -104,8 +107,10 @@ public readonly record struct RenderGeometrySection
     /// <param name="indexCount">
     /// Positive index count.
     /// </param>
-    public RenderGeometrySection(int firstIndex, int indexCount)
-    {
+    public RenderGeometrySection(
+        int firstIndex,
+        int indexCount
+    ) {
         ArgumentOutOfRangeException.ThrowIfNegative(firstIndex);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(indexCount);
         this.firstIndex = firstIndex;
@@ -136,8 +141,8 @@ public sealed class RenderGeometry
         RenderVertexLayout vertexLayout,
         int vertexCount,
         int indexCount,
-        IReadOnlyList<RenderGeometrySection> sections)
-    {
+        IReadOnlyList<RenderGeometrySection> sections
+    ) {
         this.vertexBuffer = vertexBuffer;
         this.indexBuffer = indexBuffer;
         this.vertexLayout = vertexLayout;
@@ -201,8 +206,11 @@ public sealed class RenderGeometry
     /// <param name="instanceCount">
     /// Positive instance count.
     /// </param>
-    public void DrawSection(RenderCommandEncoder commands, int sectionIndex, int instanceCount = 1)
-    {
+    public void DrawSection(
+        RenderCommandEncoder commands,
+        int sectionIndex,
+        int instanceCount = 1
+    ) {
         ArgumentNullException.ThrowIfNull(commands);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(instanceCount);
         if ((uint)sectionIndex >= (uint)m_sections.Count)
@@ -225,7 +233,8 @@ internal sealed record RenderMaterialBinding(
     RenderBindingId id,
     byte[]? uniformData,
     PersistentTextureHandle texture,
-    RenderSamplerState sampler);
+    RenderSamplerState sampler
+);
 
 /// <summary>
 /// Represents one frame-resolved material pass and its material-owned bindings.
@@ -247,8 +256,8 @@ public sealed class RenderMaterialPass
         ComputePipelineHandle computePipeline,
         IReadOnlyList<ShaderPropertyDefinition> declaredBindings,
         ShaderInterface activeInterface,
-        IReadOnlyList<RenderMaterialBinding> bindings)
-    {
+        IReadOnlyList<RenderMaterialBinding> bindings
+    ) {
         ArgumentNullException.ThrowIfNull(declaredBindings);
         ArgumentNullException.ThrowIfNull(activeInterface);
         m_definition = ShaderDefinitionSnapshot.Copy(definition);
@@ -307,8 +316,10 @@ public sealed class RenderMaterialPass
     /// <exception cref="ArgumentException">
     /// The binding is not declared by the shader, or its declared kind differs from <paramref name="kind"/>.
     /// </exception>
-    public bool UsesBinding(RenderBindingId binding, RenderShaderBindingKind kind)
-    {
+    public bool UsesBinding(
+        RenderBindingId binding,
+        RenderShaderBindingKind kind
+    ) {
         if (!binding.isValid)
             throw new ArgumentException("A stable shader binding identifier is required.", nameof(binding));
         if (!Enum.IsDefined(kind))
@@ -439,7 +450,8 @@ public interface IRenderResourceService
         long revision,
         PersistentBufferDescriptor descriptor,
         ReadOnlyMemory<byte> initialData,
-        string name);
+        string name
+    );
 
     /// <summary>
     /// Acquires or atomically replaces a provider-owned persistent texture.
@@ -467,7 +479,8 @@ public interface IRenderResourceService
         long revision,
         RenderTextureDescriptor descriptor,
         IReadOnlyList<RenderTextureSubresourceData> subresources,
-        string name);
+        string name
+    );
 
     /// <summary>
     /// Acquires or atomically replaces a sampled texture from a portable KTX container.
@@ -495,7 +508,8 @@ public interface IRenderResourceService
         long revision,
         ReadOnlyMemory<byte> containerData,
         bool sRgb,
-        string name);
+        string name
+    );
 
     /// <summary>
     /// Updates a rectangular region of an active persistent texture without recreating it.
@@ -512,7 +526,8 @@ public interface IRenderResourceService
     void UpdateTexture(
         PersistentTextureHandle texture,
         RenderTextureRegion region,
-        ReadOnlyMemory<byte> data);
+        ReadOnlyMemory<byte> data
+    );
 
     /// <summary>
     /// Asynchronously copies one complete persistent texture mip into CPU-visible memory.
@@ -532,7 +547,8 @@ public interface IRenderResourceService
     ValueTask<RenderTextureReadbackResult> ReadTextureAsync(
         PersistentTextureHandle texture,
         int mipLevel = 0,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default
+    );
 
     /// <summary>
     /// Acquires or atomically replaces a provider-owned graphics pipeline.
@@ -556,7 +572,8 @@ public interface IRenderResourceService
         RenderPersistentResourceId id,
         long revision,
         GraphicsPipelineDescriptor descriptor,
-        string name);
+        string name
+    );
 
     /// <summary>
     /// Acquires or atomically replaces a provider-owned compute pipeline.
@@ -580,7 +597,8 @@ public interface IRenderResourceService
         RenderPersistentResourceId id,
         long revision,
         ComputePipelineDescriptor descriptor,
-        string name);
+        string name
+    );
 
     /// <summary>
     /// Resolves one graphics material pass through an open provider contract and role.
@@ -612,7 +630,8 @@ public interface IRenderResourceService
         ShaderPassRoleId passRoleId,
         RenderVertexLayout? vertexLayout,
         MaterialPropertyBlock? overrides,
-        out RenderMaterialPass? materialPass);
+        out RenderMaterialPass? materialPass
+    );
 
     /// <summary>
     /// Resolves an explicitly compiled candidate in a caller-owned publication scope, without publishing it as an asset.
@@ -653,9 +672,18 @@ public interface IRenderResourceService
     /// <exception cref="InvalidOperationException">
     /// No artifact decoder is configured, or resource retirement cannot complete.
     /// </exception>
-    bool TryResolveMaterialArtifact(RenderPersistentResourceId scope, RenderShaderArtifact artifact, MaterialAsset material,
-        ShaderContractId contractId, ShaderPassRoleId passRoleId, ShaderProgramKind programKind, RenderVertexLayout? vertexLayout,
-        MaterialPropertyBlock? overrides, IDiagnosticReporter diagnostics, out RenderMaterialPass? materialPass);
+    bool TryResolveMaterialArtifact(
+        RenderPersistentResourceId scope,
+        RenderShaderArtifact artifact,
+        MaterialAsset material,
+        ShaderContractId contractId,
+        ShaderPassRoleId passRoleId,
+        ShaderProgramKind programKind,
+        RenderVertexLayout? vertexLayout,
+        MaterialPropertyBlock? overrides,
+        IDiagnosticReporter diagnostics,
+        out RenderMaterialPass? materialPass
+    );
 
     /// <summary>
     /// Resolves one compute material pass through an open provider contract and role.
@@ -683,7 +711,8 @@ public interface IRenderResourceService
         ShaderContractId contractId,
         ShaderPassRoleId passRoleId,
         MaterialPropertyBlock? overrides,
-        out RenderMaterialPass? materialPass);
+        out RenderMaterialPass? materialPass
+    );
 
     /// <summary>
     /// Resolves imported helper geometry into persistent vertex and index buffers.
@@ -697,7 +726,10 @@ public interface IRenderResourceService
     /// <returns>
     /// True when current or last-good geometry is usable.
     /// </returns>
-    bool TryResolveGeometry(GeometryAsset geometry, out RenderGeometry? resolvedGeometry);
+    bool TryResolveGeometry(
+        GeometryAsset geometry,
+        out RenderGeometry? resolvedGeometry
+    );
 
     /// <summary>
     /// Resolves an imported texture into a persistent sampled texture.
@@ -711,7 +743,10 @@ public interface IRenderResourceService
     /// <returns>
     /// True when current or last-good texture content is usable.
     /// </returns>
-    bool TryResolveTexture(TextureAsset texture, out PersistentTextureHandle resolvedTexture);
+    bool TryResolveTexture(
+        TextureAsset texture,
+        out PersistentTextureHandle resolvedTexture
+    );
 
     /// <summary>
     /// Resolves one imported artifact texture into a persistent sampled texture.
@@ -727,7 +762,8 @@ public interface IRenderResourceService
     /// </returns>
     bool TryResolveTextureArtifact(
         RenderTextureArtifactReference texture,
-        out PersistentTextureHandle resolvedTexture);
+        out PersistentTextureHandle resolvedTexture
+    );
 
     /// <summary>
     /// Releases cached resources with this provider-owned identifier at a safe GPU mutation point.

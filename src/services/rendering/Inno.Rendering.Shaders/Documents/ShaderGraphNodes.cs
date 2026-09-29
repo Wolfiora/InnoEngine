@@ -217,9 +217,12 @@ public static class ShaderGraphNodes
     /// <param name="context">
     /// Complete owner reference context.
     /// </param>
-    public static void WriteSettings(GraphDocument graph, ShaderGraphNodeSettings settings,
-        SerializationRegistry serialization, SerializationContext context)
-    {
+    public static void WriteSettings(
+        GraphDocument graph,
+        ShaderGraphNodeSettings settings,
+        SerializationRegistry serialization,
+        SerializationContext context
+    ) {
         ArgumentNullException.ThrowIfNull(graph);
         ArgumentNullException.ThrowIfNull(settings);
         graph.SetMetadata(settingsKey, ShaderGraphDocument.Encode(settings, serialization, context));
@@ -240,9 +243,11 @@ public static class ShaderGraphNodes
     /// <returns>
     /// Detached node metadata.
     /// </returns>
-    public static ShaderGraphNodeSettings ReadSettings(GraphDocument graph, SerializationRegistry serialization,
-        SerializationContext context)
-    {
+    public static ShaderGraphNodeSettings ReadSettings(
+        GraphDocument graph,
+        SerializationRegistry serialization,
+        SerializationContext context
+    ) {
         ArgumentNullException.ThrowIfNull(graph);
         if (!graph.metadata.TryGetValue(settingsKey, out GraphSerializedValue? value))
             throw new InvalidOperationException("The Shader graph does not declare reusable-node settings.");
@@ -264,9 +269,11 @@ public static class ShaderGraphNodes
     /// <returns>
     /// The detached graph-node interface.
     /// </returns>
-    public static ShaderGraphNodeInterface ReadInterface(GraphDocument graph, SerializationRegistry serialization,
-        SerializationContext context)
-    {
+    public static ShaderGraphNodeInterface ReadInterface(
+        GraphDocument graph,
+        SerializationRegistry serialization,
+        SerializationContext context
+    ) {
         ArgumentNullException.ThrowIfNull(graph);
         if (ShaderGraphDocument.ReadTarget(graph, serialization, context).Length != 0)
             throw new InvalidOperationException("A graph-authored node cannot select a Shader Target.");
@@ -274,8 +281,10 @@ public static class ShaderGraphNodes
             throw new InvalidOperationException("A graph-authored node cannot contain explicit GPU stage outputs.");
         GraphNodeRecord[] inputs = graph.nodes.Where(static node => node.definitionId == inputDefinitionId).ToArray();
         GraphNodeRecord[] outputs = graph.nodes.Where(static node => node.definitionId == outputDefinitionId).ToArray();
-        if (inputs.Length > 1) throw new InvalidOperationException("A graph-authored node can contain at most one Function Inputs record.");
-        if (outputs.Length > 1) throw new InvalidOperationException("A graph-authored node can contain at most one Function Outputs record.");
+        if (inputs.Length > 1)
+            throw new InvalidOperationException("A graph-authored node can contain at most one Function Inputs record.");
+        if (outputs.Length > 1)
+            throw new InvalidOperationException("A graph-authored node can contain at most one Function Outputs record.");
         if (inputs.Length == 0 && outputs.Length == 0)
             throw new InvalidOperationException("A graph-authored node requires Function Inputs, Function Outputs, or both.");
         ShaderGraphNodeSettings settings = ReadSettings(graph, serialization, context);
@@ -317,9 +326,11 @@ public static class ShaderGraphNodes
     /// <returns>
     /// The detached stored interface.
     /// </returns>
-    public static ShaderGraphNodeInterface ReadCallInterface(GraphNodeRecord node, SerializationRegistry serialization,
-        SerializationContext context)
-    {
+    public static ShaderGraphNodeInterface ReadCallInterface(
+        GraphNodeRecord node,
+        SerializationRegistry serialization,
+        SerializationContext context
+    ) {
         ShaderGraphNodeInterface result = ShaderGraphDocument.Read(
             node, interfaceKey, new ShaderGraphNodeInterface(), serialization, context);
         Validate(result, result.inputs.Length == 0 ? 0 : 1, result.outputs.Length == 0 ? 0 : 1);
@@ -344,9 +355,12 @@ public static class ShaderGraphNodes
     /// <returns>
     /// A detached graph containing no inline graph-node references.
     /// </returns>
-    public static GraphDocument Expand(GraphDocument graph, Func<Guid, string, GraphDocument> resolve,
-        SerializationRegistry serialization, SerializationContext context)
-    {
+    public static GraphDocument Expand(
+        GraphDocument graph,
+        Func<Guid, string, GraphDocument> resolve,
+        SerializationRegistry serialization,
+        SerializationContext context
+    ) {
         ArgumentNullException.ThrowIfNull(graph);
         ArgumentNullException.ThrowIfNull(resolve);
         GraphDocument expanded = graph.Clone();
@@ -354,17 +368,23 @@ public static class ShaderGraphNodes
         return expanded;
     }
 
-    private static void Expand(GraphDocument graph, Func<Guid, string, GraphDocument> resolve,
-        SerializationRegistry serialization, SerializationContext context, HashSet<Guid> stack)
-    {
+    private static void Expand(
+        GraphDocument graph,
+        Func<Guid, string, GraphDocument> resolve,
+        SerializationRegistry serialization,
+        SerializationContext context,
+        HashSet<Guid> stack
+    ) {
         var retainedDomainOutputs = new HashSet<GraphNodeId>();
         while (graph.nodes.FirstOrDefault(node => node.definitionId == callDefinitionId
                    && !retainedDomainOutputs.Contains(node.id)) is { } call)
         {
             Guid sourceId = ShaderGraphDocument.Read(call, "sourceId", Guid.Empty, serialization, context);
             string sourcePath = ShaderGraphDocument.Read(call, "sourcePath", "", serialization, context);
-            if (sourceId == Guid.Empty) throw new InvalidOperationException("A graph-node reference has no Shader asset identity.");
-            if (!stack.Add(sourceId)) throw new InvalidOperationException($"Graph-node references contain a cycle at '{sourcePath}'.");
+            if (sourceId == Guid.Empty)
+                throw new InvalidOperationException("A graph-node reference has no Shader asset identity.");
+            if (!stack.Add(sourceId))
+                throw new InvalidOperationException($"Graph-node references contain a cycle at '{sourcePath}'.");
             GraphDocument child = resolve(sourceId, sourcePath).Clone();
             ShaderGraphNodeInterface nodeInterface = ReadInterface(child, serialization, context);
             if (nodeInterface.kind == ShaderGraphNodeKind.DomainOutput)
@@ -380,9 +400,14 @@ public static class ShaderGraphNodes
         }
     }
 
-    private static void Inline(GraphDocument parent, GraphNodeRecord call, GraphDocument child,
-        ShaderGraphNodeInterface nodeInterface, SerializationRegistry serialization, SerializationContext context)
-    {
+    private static void Inline(
+        GraphDocument parent,
+        GraphNodeRecord call,
+        GraphDocument child,
+        ShaderGraphNodeInterface nodeInterface,
+        SerializationRegistry serialization,
+        SerializationContext context
+    ) {
         GraphNodeRecord? inputNode = child.nodes.SingleOrDefault(static node => node.definitionId == inputDefinitionId);
         GraphNodeRecord? outputNode = child.nodes.SingleOrDefault(static node => node.definitionId == outputDefinitionId);
         string stage = ShaderGraphDocument.Read(call, ShaderGraphDocument.stageKey, "", serialization, context);
@@ -391,10 +416,13 @@ public static class ShaderGraphNodes
         foreach (GraphNodeRecord node in child.nodes.Where(node => node.id != inputNode?.id && node.id != outputNode?.id))
         {
             var mapped = new GraphNodeId(call.id.value + "/" + node.id.value);
-            if (parent.FindNode(mapped) is not null) throw new InvalidOperationException($"Inlining '{nodeInterface.displayName}' produced duplicate node identity '{mapped.value}'.");
+            if (parent.FindNode(mapped) is not null)
+                throw new InvalidOperationException($"Inlining '{nodeInterface.displayName}' produced duplicate node identity '{mapped.value}'.");
             var copy = new GraphNodeRecord(mapped, node.definitionId) { position = new(call.position.x + node.position.x, call.position.y + node.position.y) };
-            foreach ((string key, GraphSerializedValue value) in node.values) copy.SetValue(key, value);
-            if (stage.Length != 0) copy.SetValue(ShaderGraphDocument.stageKey, ShaderGraphDocument.Encode(stage, serialization, context));
+            foreach ((string key, GraphSerializedValue value) in node.values)
+                copy.SetValue(key, value);
+            if (stage.Length != 0)
+                copy.SetValue(ShaderGraphDocument.stageKey, ShaderGraphDocument.Encode(stage, serialization, context));
             parent.AddNode(copy);
             map.Add(node.id, mapped);
         }
@@ -416,7 +444,8 @@ public static class ShaderGraphNodes
             throw new InvalidOperationException(
                 $"Graph-node call '{nodeInterface.displayName}' retains unavailable output port '{missingOutput}'.");
         foreach (GraphEdgeRecord[] values in incoming.Values)
-            if (values.Length != 1) throw new InvalidOperationException("A graph-node input has multiple incoming connections.");
+            if (values.Length != 1)
+                throw new InvalidOperationException("A graph-node input has multiple incoming connections.");
 
         var resolvedInputs = new Dictionary<string, GraphEndpoint>(StringComparer.Ordinal);
         foreach (ShaderGraphNodePortDefinition port in nodeInterface.inputs)
@@ -438,12 +467,14 @@ public static class ShaderGraphNodes
             GraphEndpoint mappedSource;
             if (fromInput)
             {
-                if (!resolvedInputs.TryGetValue(edge.output.portId.value, out GraphEndpoint source)) continue;
+                if (!resolvedInputs.TryGetValue(edge.output.portId.value, out GraphEndpoint source))
+                    continue;
                 mappedSource = source;
             }
             else
             {
-                if (!map.TryGetValue(edge.output.nodeId, out GraphNodeId sourceNode)) continue;
+                if (!map.TryGetValue(edge.output.nodeId, out GraphNodeId sourceNode))
+                    continue;
                 mappedSource = new(sourceNode, edge.output.portId);
             }
             if (toOutput)
@@ -458,16 +489,21 @@ public static class ShaderGraphNodes
         {
             if (!resolvedOutputs.TryGetValue(port.id, out GraphEndpoint source))
                 throw new InvalidOperationException($"Graph-node output '{port.id}' has no value inside '{nodeInterface.displayName}'.");
-            if (!outgoing.TryGetValue(port.id, out GraphEdgeRecord[]? edges)) continue;
+            if (!outgoing.TryGetValue(port.id, out GraphEdgeRecord[]? edges))
+                continue;
             foreach (GraphEdgeRecord edge in edges)
                 parent.AddEdge(new(new(call.id.value + "/return/" + edge.id.value), source, edge.input));
         }
         parent.RemoveNode(call.id);
     }
 
-    private static void MergeDefinition(GraphDocument parent, GraphDocument child, string stageId,
-        SerializationRegistry serialization, SerializationContext context)
-    {
+    private static void MergeDefinition(
+        GraphDocument parent,
+        GraphDocument child,
+        string stageId,
+        SerializationRegistry serialization,
+        SerializationContext context
+    ) {
         ShaderDefinition parentDefinition = ShaderGraphDocument.ReadDefinition(parent, serialization, context);
         ShaderDefinition childDefinition = ShaderGraphDocument.ReadDefinition(child, serialization, context);
         ShaderStage callerStage = ShaderStage.None;
@@ -478,7 +514,8 @@ public static class ShaderGraphNodes
         foreach (ShaderPropertyDefinition childPropertyValue in childDefinition.properties)
         {
             ShaderPropertyDefinition childProperty = childPropertyValue;
-            if (callerStage != ShaderStage.None) childProperty.stages |= callerStage;
+            if (callerStage != ShaderStage.None)
+                childProperty.stages |= callerStage;
             int index = properties.FindIndex(value => value.id.value == childProperty.id.value);
             if (index < 0)
             {
@@ -497,24 +534,35 @@ public static class ShaderGraphNodes
             ShaderGraphDocument.Encode(serialization.Serialize(parentDefinition, context), serialization, context));
     }
 
-    private static GraphEndpoint AddOptionalZero(GraphDocument graph, GraphNodeRecord call,
-        ShaderGraphNodePortDefinition port, string stage,
-        SerializationRegistry serialization, SerializationContext context)
-    {
+    private static GraphEndpoint AddOptionalZero(
+        GraphDocument graph,
+        GraphNodeRecord call,
+        ShaderGraphNodePortDefinition port,
+        string stage,
+        SerializationRegistry serialization,
+        SerializationContext context
+    ) {
         _ = ShaderGraphLiteral.Zero(port.type.CreateType());
         var id = new GraphNodeId(call.id.value + "/default/" + port.id);
         var node = new GraphNodeRecord(id, "inno.shader.reroute") { position = call.position };
         node.SetValue("valueType", ShaderGraphDocument.Encode(port.type, serialization, context));
-        if (stage.Length != 0) node.SetValue(ShaderGraphDocument.stageKey, ShaderGraphDocument.Encode(stage, serialization, context));
+        if (stage.Length != 0)
+            node.SetValue(ShaderGraphDocument.stageKey, ShaderGraphDocument.Encode(stage, serialization, context));
         graph.AddNode(node);
         return new(id, new("value"));
     }
 
-    private static void Validate(ShaderGraphNodeInterface value, int inputRecords, int outputRecords)
-    {
-        if (string.IsNullOrWhiteSpace(value.displayName)) throw new InvalidOperationException("A graph-authored node requires a display name.");
-        if (!Enum.IsDefined(value.kind)) throw new InvalidOperationException("The graph-authored node kind is invalid.");
-        if (!Enum.IsDefined(value.effect)) throw new InvalidOperationException("The graph-authored node effect is invalid.");
+    private static void Validate(
+        ShaderGraphNodeInterface value,
+        int inputRecords,
+        int outputRecords
+    ) {
+        if (string.IsNullOrWhiteSpace(value.displayName))
+            throw new InvalidOperationException("A graph-authored node requires a display name.");
+        if (!Enum.IsDefined(value.kind))
+            throw new InvalidOperationException("The graph-authored node kind is invalid.");
+        if (!Enum.IsDefined(value.effect))
+            throw new InvalidOperationException("The graph-authored node effect is invalid.");
         if (inputRecords is < 0 or > 1 || outputRecords is < 0 or > 1 || inputRecords + outputRecords == 0)
             throw new InvalidOperationException("A graph-authored node requires at most one interface record per direction and at least one direction.");
         if (value.inputs.Length + value.outputs.Length == 0)
@@ -529,15 +577,19 @@ public static class ShaderGraphNodes
         ValidatePorts(value.outputs, "output");
     }
 
-    private static void ValidatePorts(IEnumerable<ShaderGraphNodePortDefinition> ports, string direction)
-    {
-        if (ports is null) throw new InvalidOperationException($"The graph-node {direction} port list is missing.");
+    private static void ValidatePorts(
+        IEnumerable<ShaderGraphNodePortDefinition> ports,
+        string direction
+    ) {
+        if (ports is null)
+            throw new InvalidOperationException($"The graph-node {direction} port list is missing.");
         var ids = new HashSet<string>(StringComparer.Ordinal);
         foreach (ShaderGraphNodePortDefinition port in ports)
         {
             if (port is null || string.IsNullOrWhiteSpace(port.id) || port.type is null || port.type.CreateType().id == "void")
                 throw new InvalidOperationException($"A graph-node {direction} port is invalid.");
-            if (!ids.Add(port.id)) throw new InvalidOperationException($"A graph-node {direction} port repeats '{port.id}'.");
+            if (!ids.Add(port.id))
+                throw new InvalidOperationException($"A graph-node {direction} port repeats '{port.id}'.");
         }
     }
 }

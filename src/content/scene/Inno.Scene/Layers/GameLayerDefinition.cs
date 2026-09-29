@@ -21,8 +21,11 @@ public sealed class GameLayerDefinition
     /// <param name="name">
     /// The non-empty display and lookup name.
     /// </param>
-    public GameLayerDefinition(ProjectLocalId localId, GameLayer layer, string name)
-    {
+    public GameLayerDefinition(
+        ProjectLocalId localId,
+        GameLayer layer,
+        string name
+    ) {
         if (string.IsNullOrEmpty(localId.value))
             throw new ArgumentException("A layer definition requires a valid local identity.", nameof(localId));
         this.localId = localId;
@@ -54,6 +57,5 @@ public sealed class GameLayerDefinition
     /// <returns>
     /// The canonical project-scoped layer identity.
     /// </returns>
-    public GameLayerId GetId(ProjectId projectId)
-        => new(projectId, localId);
+    public GameLayerId GetId(ProjectId projectId) => new(projectId, localId);
 }

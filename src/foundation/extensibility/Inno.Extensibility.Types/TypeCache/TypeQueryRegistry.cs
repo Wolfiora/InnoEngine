@@ -22,8 +22,10 @@ internal sealed class TypeQueryRegistry
     /// <param name="typeIdentityRegistry">
     /// The type identity registry consumed by rebuild; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
-    public void Rebuild(IEnumerable<Type> concreteTypes, TypeIdentityRegistry typeIdentityRegistry)
-    {
+    public void Rebuild(
+        IEnumerable<Type> concreteTypes,
+        TypeIdentityRegistry typeIdentityRegistry
+    ) {
         ArgumentNullException.ThrowIfNull(concreteTypes);
         ArgumentNullException.ThrowIfNull(typeIdentityRegistry);
 
@@ -126,8 +128,8 @@ internal sealed class TypeQueryRegistry
         Dictionary<int, HashSet<Type>> index,
         Type keyType,
         Type valueType,
-        TypeIdentityRegistry typeIdentityRegistry)
-    {
+        TypeIdentityRegistry typeIdentityRegistry
+    ) {
         int keyId = typeIdentityRegistry.GetOrAddRuntimeTypeId(keyType);
         if (!index.TryGetValue(keyId, out HashSet<Type>? set))
         {
@@ -140,8 +142,8 @@ internal sealed class TypeQueryRegistry
 
     private static Dictionary<int, IReadOnlyList<TypeRef>> FreezeIndex(
         Dictionary<int, HashSet<Type>> index,
-        TypeIdentityRegistry typeIdentityRegistry)
-    {
+        TypeIdentityRegistry typeIdentityRegistry
+    ) {
         var frozen = new Dictionary<int, IReadOnlyList<TypeRef>>(index.Count);
         foreach ((int key, HashSet<Type> value) in index)
         {

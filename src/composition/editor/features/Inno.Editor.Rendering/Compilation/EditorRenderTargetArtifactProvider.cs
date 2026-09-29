@@ -63,8 +63,8 @@ public sealed partial class EditorRenderTargetArtifactProvider : IRenderTargetAr
         TypeCatalog types,
         ShaderCompiler shaderCompiler,
         ITextureTargetCompiler textureCompiler,
-        IDiagnosticReporter diagnostics)
-    {
+        IDiagnosticReporter diagnostics
+    ) {
         m_assets = assets ?? throw new ArgumentNullException(nameof(assets));
         m_serialization = serialization ?? throw new ArgumentNullException(nameof(serialization));
         m_types = types ?? throw new ArgumentNullException(nameof(types));
@@ -102,8 +102,8 @@ public sealed partial class EditorRenderTargetArtifactProvider : IRenderTargetAr
         ShaderAsset shader,
         RenderShaderVariant variant,
         GraphicsCapabilities capabilities,
-        out RenderShaderArtifact? artifact)
-    {
+        out RenderShaderArtifact? artifact
+    ) {
         ArgumentNullException.ThrowIfNull(shader);
         ArgumentNullException.ThrowIfNull(capabilities);
         lock (m_sync)
@@ -171,8 +171,11 @@ public sealed partial class EditorRenderTargetArtifactProvider : IRenderTargetAr
     /// <returns>
     /// A detached status and diagnostic snapshot; last-good is explicit and never implies current-source success.
     /// </returns>
-    public EditorShaderCompilationSnapshot RequestShaderCompilation(ShaderAsset shader, RenderShaderVariant variant, GraphicsCapabilities capabilities)
-    {
+    public EditorShaderCompilationSnapshot RequestShaderCompilation(
+        ShaderAsset shader,
+        RenderShaderVariant variant,
+        GraphicsCapabilities capabilities
+    ) {
         lock (m_sync)
         {
             _ = GetShaderArtifact(shader, variant, capabilities, out _);
@@ -205,8 +208,8 @@ public sealed partial class EditorRenderTargetArtifactProvider : IRenderTargetAr
     /// </exception>
     public RenderTargetArtifactStatus GetTextureArtifact(
         RenderTextureArtifactReference texture,
-        out ReadOnlyMemory<byte> artifact)
-    {
+        out ReadOnlyMemory<byte> artifact
+    ) {
         if (texture.assetId == Guid.Empty || string.IsNullOrWhiteSpace(texture.slot.id))
             throw new ArgumentException("A valid texture artifact reference is required.", nameof(texture));
         lock (m_sync)
@@ -239,7 +242,8 @@ public sealed partial class EditorRenderTargetArtifactProvider : IRenderTargetAr
                 return;
             m_stopping = true;
             m_lifetime.Cancel();
-            foreach (DraftEntry draft in m_drafts.Values) Retire(draft.compilation.pending, draft.compilation.cancellation);
+            foreach (DraftEntry draft in m_drafts.Values)
+                Retire(draft.compilation.pending, draft.compilation.cancellation);
             m_drafts.Clear();
             foreach (ShaderEntry entry in m_shaders.Values)
             {
@@ -265,8 +269,8 @@ public sealed partial class EditorRenderTargetArtifactProvider : IRenderTargetAr
         ShaderAsset shader,
         ShaderCompileTarget target,
         RenderShaderVariant variant,
-        ShaderEntry entry)
-    {
+        ShaderEntry entry
+    ) {
         Retire(entry.pending, entry.cancellation);
         entry.pending = null;
         entry.cancellation = CancellationTokenSource.CreateLinkedTokenSource(m_lifetime.Token);
@@ -293,8 +297,10 @@ public sealed partial class EditorRenderTargetArtifactProvider : IRenderTargetAr
         }
     }
 
-    private void CompleteShader(ShaderKey key, ShaderEntry entry)
-    {
+    private void CompleteShader(
+        ShaderKey key,
+        ShaderEntry entry
+    ) {
         Task<ShaderCompilationResult>? pending = entry.pending;
         if (pending is null || !pending.IsCompleted)
             return;
@@ -347,8 +353,10 @@ public sealed partial class EditorRenderTargetArtifactProvider : IRenderTargetAr
         ReplaceDiagnostics(entry.diagnostics, diagnostics);
     }
 
-    private void StartTexture(RenderTextureArtifactReference texture, TextureEntry entry)
-    {
+    private void StartTexture(
+        RenderTextureArtifactReference texture,
+        TextureEntry entry
+    ) {
         Retire(entry.pending, entry.cancellation);
         entry.pending = null;
         entry.cancellation = CancellationTokenSource.CreateLinkedTokenSource(m_lifetime.Token);
@@ -380,8 +388,10 @@ public sealed partial class EditorRenderTargetArtifactProvider : IRenderTargetAr
         }
     }
 
-    private void CompleteTexture(TextureKey key, TextureEntry entry)
-    {
+    private void CompleteTexture(
+        TextureKey key,
+        TextureEntry entry
+    ) {
         Task<byte[]>? pending = entry.pending;
         if (pending is null || !pending.IsCompleted)
             return;
@@ -416,27 +426,37 @@ public sealed partial class EditorRenderTargetArtifactProvider : IRenderTargetAr
         => m_assets.sourceMounts.FirstOrDefault(mount => mount.id == source)
             ?? throw new InvalidOperationException($"Asset source mount '{source}' is not active.");
 
-    private Task<T> RunOwned<T>(Func<CancellationToken, ValueTask<T>> operation, CancellationToken token)
-    {
+    private Task<T> RunOwned<T>(
+        Func<CancellationToken, ValueTask<T>> operation,
+        CancellationToken token
+    ) {
         // Admit before starting work or acquiring leases. Ordinary compilation errors are data;
         // retirement-pending failures stay in the lifetime and retain every dependent owner.
         return Unwrap(m_work.RunAsync<(T value, Exception? failure)>(async cancellation =>
         {
-            try { return (await operation(cancellation).ConfigureAwait(false), null); }
+            try
+            {
+                return (await operation(cancellation).ConfigureAwait(false), null);
+            }
             catch (Exception failure) when (Inno.Core.Execution.RetirementPendingException.Find(failure) is null)
-            { return (default!, failure); }
+            {
+                return (default!, failure);
+            }
         }, token));
 
         static async Task<T> Unwrap(Task<(T value, Exception? failure)> task)
         {
             var result = await task.ConfigureAwait(false);
-            if (result.failure is not null) System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(result.failure).Throw();
+            if (result.failure is not null)
+                System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(result.failure).Throw();
             return result.value;
         }
     }
 
-    private static void Retire(Task? task, CancellationTokenSource? cancellation)
-    {
+    private static void Retire(
+        Task? task,
+        CancellationTokenSource? cancellation
+    ) {
         if (cancellation is null)
             return;
         cancellation.Cancel();
@@ -446,7 +466,10 @@ public sealed partial class EditorRenderTargetArtifactProvider : IRenderTargetAr
             return;
         }
         _ = task.ContinueWith(
-            static (completed, state) =>
+            static (
+                completed,
+                state
+            ) =>
             {
                 _ = completed.Exception;
                 ((CancellationTokenSource)state!).Dispose();
@@ -459,8 +482,8 @@ public sealed partial class EditorRenderTargetArtifactProvider : IRenderTargetAr
 
     private void ReplaceDiagnostics(
         ISet<DiagnosticIdentity> active,
-        IEnumerable<Diagnostic> diagnostics)
-    {
+        IEnumerable<Diagnostic> diagnostics
+    ) {
         ClearDiagnostics(active);
         foreach (Diagnostic diagnostic in diagnostics)
         {
@@ -479,15 +502,24 @@ public sealed partial class EditorRenderTargetArtifactProvider : IRenderTargetAr
     private void EnsureActive()
     {
         ObjectDisposedException.ThrowIf(m_disposed, this);
-        if (m_stopping) throw new InvalidOperationException("A retiring artifact provider cannot accept compilation requests.");
+        if (m_stopping)
+            throw new InvalidOperationException("A retiring artifact provider cannot accept compilation requests.");
     }
 
-    private readonly record struct ShaderKey(Guid shaderId, string targetKey, string variantKey);
+    private readonly record struct ShaderKey(
+        Guid shaderId,
+        string targetKey,
+        string variantKey
+    );
     private readonly record struct TextureKey(
         Guid textureId,
         string slotId,
-        TextureColorSpace colorSpace);
-    private readonly record struct DiagnosticIdentity(string code, string? semanticId);
+        TextureColorSpace colorSpace
+    );
+    private readonly record struct DiagnosticIdentity(
+        string code,
+        string? semanticId
+    );
 
     private sealed class ShaderEntry
     {

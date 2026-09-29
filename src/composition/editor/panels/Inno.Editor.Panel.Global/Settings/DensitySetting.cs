@@ -20,8 +20,7 @@ internal sealed class DensitySetting : EditorSetting
     /// <summary>
     /// Gets the user-facing density description.
     /// </summary>
-    public override string description
-        => "Use comfortable spacing by default, or fit more controls with compact density.";
+    public override string description => "Use comfortable spacing by default, or fit more controls with compact density.";
 
     /// <summary>
     /// Draws the density selector.

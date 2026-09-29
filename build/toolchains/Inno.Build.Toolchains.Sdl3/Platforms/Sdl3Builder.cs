@@ -26,7 +26,10 @@ internal abstract class Sdl3Builder
     /// <param name="config">
     /// The validated configuration that controls this operation.
     /// </param>
-    public abstract void Build(string sdlDir, string config);
+    public abstract void Build(
+        string sdlDir,
+        string config
+    );
 
     /// <summary>
     /// Retrieves the requested build type value from current authoritative state.

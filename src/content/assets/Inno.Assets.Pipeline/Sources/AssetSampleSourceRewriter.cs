@@ -13,10 +13,13 @@ public sealed class AssetSampleTransformContext
     private readonly Dictionary<Guid, Guid> m_identityMap;
     private readonly IReadOnlyDictionary<string, (Guid oldId, Guid newId)> m_sourceIdentities;
 
-    internal AssetSampleTransformContext(string stagedRoot, AssetPath source, AssetPath target,
+    internal AssetSampleTransformContext(
+        string stagedRoot,
+        AssetPath source,
+        AssetPath target,
         Dictionary<Guid, Guid> identityMap,
-        IReadOnlyDictionary<string, (Guid oldId, Guid newId)> sourceIdentities)
-    {
+        IReadOnlyDictionary<string, (Guid oldId, Guid newId)> sourceIdentities
+    ) {
         this.stagedRoot = stagedRoot;
         this.source = source;
         this.target = target;
@@ -59,8 +62,11 @@ public sealed class AssetSampleTransformContext
     /// <returns>
     /// Whether both identities were recorded from sample metadata.
     /// </returns>
-    public bool TryGetSourceIdentity(string relativePath, out Guid oldId, out Guid newId)
-    {
+    public bool TryGetSourceIdentity(
+        string relativePath,
+        out Guid oldId,
+        out Guid newId
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(relativePath);
         if (m_sourceIdentities.TryGetValue(relativePath.Replace('\\', '/'), out var pair))
         {
@@ -85,8 +91,10 @@ public sealed class AssetSampleTransformContext
     /// <exception cref="InvalidDataException">
     /// A source identity is reused inconsistently.
     /// </exception>
-    public void MapType(Guid oldId, Guid newId)
-    {
+    public void MapType(
+        Guid oldId,
+        Guid newId
+    ) {
         if (oldId == Guid.Empty || newId == Guid.Empty)
             throw new ArgumentException("Sample type identities must be non-empty.");
         if (m_identityMap.TryGetValue(oldId, out Guid existing) && existing != newId)

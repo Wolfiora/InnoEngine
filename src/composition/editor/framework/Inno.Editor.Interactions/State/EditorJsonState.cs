@@ -37,8 +37,10 @@ internal sealed class EditorJsonState : EditorState
     /// <returns>
     /// The validated t that represents the completed operation.
     /// </returns>
-    public override T Get<T>(string key, T fallback)
-    {
+    public override T Get<T>(
+        string key,
+        T fallback
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(key);
         if (!m_values.TryGetValue(key, out string? payload))
             return fallback;
@@ -69,8 +71,10 @@ internal sealed class EditorJsonState : EditorState
     /// <param name="value">
     /// The concrete value read or transformed by this operation.
     /// </param>
-    public override void Set<T>(string key, T value)
-    {
+    public override void Set<T>(
+        string key,
+        T value
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(key);
         if (m_writableValues is null)
         {

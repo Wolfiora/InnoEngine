@@ -61,8 +61,10 @@ public static class AssetSample
     /// <see langword="true"/> when the path belongs to an installed Plugin source and any directory
     /// segment starts with <c>~</c>. Project content is never hidden from authoring import by this method.
     /// </returns>
-    public static bool Contains(AssetPath path, bool isDirectory)
-    {
+    public static bool Contains(
+        AssetPath path,
+        bool isDirectory
+    ) {
         return path.source != AssetSourceId.project && ContainsTildeDirectory(path, isDirectory);
     }
 
@@ -103,11 +105,15 @@ public static class AssetSample
     /// <see langword="true"/> when any directory segment starts with <c>~</c>, including in the
     /// writable Project source.
     /// </returns>
-    public static bool IsRuntimeExcluded(AssetPath path, bool isDirectory)
-        => ContainsTildeDirectory(path, isDirectory);
+    public static bool IsRuntimeExcluded(
+        AssetPath path,
+        bool isDirectory
+    ) => ContainsTildeDirectory(path, isDirectory);
 
-    private static bool ContainsTildeDirectory(AssetPath path, bool isDirectory)
-    {
+    private static bool ContainsTildeDirectory(
+        AssetPath path,
+        bool isDirectory
+    ) {
         if (!path.isValid || string.IsNullOrEmpty(path.localPath))
             return false;
         string[] segments = path.localPath.Split('/', StringSplitOptions.RemoveEmptyEntries);

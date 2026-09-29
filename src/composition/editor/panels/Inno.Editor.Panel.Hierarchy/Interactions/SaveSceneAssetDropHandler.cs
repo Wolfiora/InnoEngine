@@ -17,8 +17,8 @@ internal sealed class SaveSceneAssetDropHandler
 
     internal SaveSceneAssetDropHandler(
         IEditorSceneWorkspace workspace,
-        AssetPipeline assets)
-    {
+        AssetPipeline assets
+    ) {
         m_workspace = workspace ?? throw new System.ArgumentNullException(nameof(workspace));
         m_assets = assets ?? throw new System.ArgumentNullException(nameof(assets));
     }
@@ -32,8 +32,7 @@ internal sealed class SaveSceneAssetDropHandler
     /// <returns>
     /// The validated editor drop status that represents the completed operation.
     /// </returns>
-    protected override EditorDropStatus Query(
-        EditorDropContext<GameScene, string> context)
+    protected override EditorDropStatus Query(EditorDropContext<GameScene, string> context)
         => m_workspace.canPersist && context.source.isLoaded
             ? EditorDropStatus.Accept()
             : EditorDropStatus.rejected;
@@ -47,8 +46,7 @@ internal sealed class SaveSceneAssetDropHandler
     /// <returns>
     /// The validated editor drop result that represents the completed operation.
     /// </returns>
-    protected override EditorDropResult Drop(
-        EditorDropContext<GameScene, string> context)
+    protected override EditorDropResult Drop(EditorDropContext<GameScene, string> context)
     {
         string path = m_workspace.SaveToDirectory(context.source, context.target);
         if (!m_assets.TryGetFileSystemEntry(AssetPath.Parse(path), out AssetFileEntry selection))

@@ -53,8 +53,8 @@ public sealed class PluginSourceService
         SerializationRegistry serialization,
         string pluginRoot,
         string libraryRoot,
-        PluginSourceLimits? limits = null)
-    {
+        PluginSourceLimits? limits = null
+    ) {
         ArgumentNullException.ThrowIfNull(serialization);
         ArgumentException.ThrowIfNullOrWhiteSpace(pluginRoot);
         ArgumentException.ThrowIfNullOrWhiteSpace(libraryRoot);
@@ -162,8 +162,8 @@ public sealed class PluginSourceService
         string packagePath,
         PluginSourceKind sourceKind,
         int depth,
-        ref int embeddedCount)
-    {
+        ref int embeddedCount
+    ) {
         if (depth > m_limits.maximumEmbeddedDepth)
             throw new InvalidDataException("Plugin dependency packages exceed the configured nesting limit.");
         using ZipArchive archive = ZipFile.OpenRead(packagePath);
@@ -223,7 +223,8 @@ public sealed class PluginSourceService
         string contentHash,
         PluginManifest manifest,
         string contentRoot,
-        bool containsCode)
+        bool containsCode
+    )
         => new(
             Path.GetFullPath(sourcePath),
             sourceKind,
@@ -265,8 +266,11 @@ public sealed class PluginSourceService
         }
     }
 
-    private void ValidateFileSize(string path, long length, ref long totalBytes)
-    {
+    private void ValidateFileSize(
+        string path,
+        long length,
+        ref long totalBytes
+    ) {
         if (length > m_limits.maximumFileBytes)
             throw new InvalidDataException($"Plugin source '{path}' exceeds the file-size limit.");
         totalBytes = checked(totalBytes + length);
@@ -328,8 +332,8 @@ public sealed class PluginSourceService
 
     private static IReadOnlyList<PluginCandidate> ValidateDependencyGraph(
         IReadOnlyList<PluginCandidate> candidates,
-        List<PluginDiagnostic> diagnostics)
-    {
+        List<PluginDiagnostic> diagnostics
+    ) {
         var byId = new Dictionary<string, PluginCandidate>(StringComparer.Ordinal);
         var rejected = new HashSet<string>(StringComparer.Ordinal);
         foreach (IGrouping<string, PluginCandidate> group in candidates.GroupBy(
@@ -478,14 +482,13 @@ public sealed class PluginSourceService
             && name[3] is >= '1' and <= '9';
     }
 
-    private static bool IsSymbolicLink(ZipArchiveEntry entry)
-        => ((entry.ExternalAttributes >> 16) & 0xF000) == 0xA000;
+    private static bool IsSymbolicLink(ZipArchiveEntry entry) => ((entry.ExternalAttributes >> 16) & 0xF000) == 0xA000;
 
     private void ExtractAtomically(
         ZipArchive archive,
         IReadOnlyList<ValidatedPackageEntry> entries,
-        string destinationRoot)
-    {
+        string destinationRoot
+    ) {
         string stagingRoot = Path.Combine(m_cacheRoot, ".staging", Guid.NewGuid().ToString("N"));
         try
         {
@@ -514,8 +517,10 @@ public sealed class PluginSourceService
         }
     }
 
-    private static string ResolveContainedPath(string root, string relativePath)
-    {
+    private static string ResolveContainedPath(
+        string root,
+        string relativePath
+    ) {
         try
         {
             return PathBoundary.Resolve(root, relativePath);
@@ -542,8 +547,10 @@ public sealed class PluginSourceService
         return Convert.ToHexString(hash.GetHashAndReset());
     }
 
-    private static void AppendPath(IncrementalHash hash, string path)
-    {
+    private static void AppendPath(
+        IncrementalHash hash,
+        string path
+    ) {
         byte[] pathBytes = Encoding.UTF8.GetBytes(path);
         Span<byte> lengthBytes = stackalloc byte[sizeof(int)];
         BinaryPrimitives.WriteInt32LittleEndian(lengthBytes, pathBytes.Length);
@@ -551,8 +558,10 @@ public sealed class PluginSourceService
         hash.AppendData(pathBytes);
     }
 
-    private static void AppendStream(IncrementalHash hash, Stream stream)
-    {
+    private static void AppendStream(
+        IncrementalHash hash,
+        Stream stream
+    ) {
         byte[] buffer = new byte[64 * 1024];
         int read;
         while ((read = stream.Read(buffer, 0, buffer.Length)) > 0)
@@ -577,5 +586,8 @@ public sealed class PluginSourceService
         }
     }
 
-    private sealed record ValidatedPackageEntry(string path, ZipArchiveEntry entry);
+    private sealed record ValidatedPackageEntry(
+        string path,
+        ZipArchiveEntry entry
+    );
 }

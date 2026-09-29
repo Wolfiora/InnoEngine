@@ -30,5 +30,6 @@ public interface ITextureTargetCompiler
     ValueTask<byte[]> CompileKtxAsync(
         string sourcePath,
         TextureColorSpace colorSpace,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default
+    );
 }

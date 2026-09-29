@@ -43,14 +43,18 @@ public sealed class RenderOutputInput
     /// <param name="interactionEnabled">
     /// Whether the output may dispatch game interaction.
     /// </param>
-    public RenderOutputInput(Vector2 pointerPosition, bool pointerInside, Vector2 scrollDelta,
-        KeyModifier modifiers, IReadOnlyCollection<KeyCode> keysPressed,
+    public RenderOutputInput(
+        Vector2 pointerPosition,
+        bool pointerInside,
+        Vector2 scrollDelta,
+        KeyModifier modifiers,
+        IReadOnlyCollection<KeyCode> keysPressed,
         IReadOnlyCollection<KeyCode> keysReleased,
         IReadOnlyCollection<MouseButton> buttonsPressed,
         IReadOnlyCollection<MouseButton> buttonsReleased,
         IReadOnlyList<string> textInput,
-        bool interactionEnabled = true)
-    {
+        bool interactionEnabled = true
+    ) {
         this.pointerPosition = pointerPosition;
         this.pointerInside = pointerInside;
         this.scrollDelta = scrollDelta;

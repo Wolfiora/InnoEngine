@@ -23,5 +23,9 @@ public interface IAssetPropertyStateResolver
     /// <param name="target">
     /// Detached destination. Referenced assets resolve in this owner.
     /// </param>
-    void RestoreProperties<TValue>(Guid stableTypeId, byte[] propertyData, TValue target) where TValue : class, ISerializable;
+    void RestoreProperties<TValue>(
+        Guid stableTypeId,
+        byte[] propertyData,
+        TValue target
+    ) where TValue : class, ISerializable;
 }

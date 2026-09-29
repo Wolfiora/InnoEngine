@@ -53,8 +53,12 @@ public static class BuildArtifactCopier
     /// <param name="options">
     /// The immutable filtering and naming policy.
     /// </param>
-    public static void CopyArtifacts(string buildRoot, string outputDir, string config, BuildArtifactOptions options)
-    {
+    public static void CopyArtifacts(
+        string buildRoot,
+        string outputDir,
+        string config,
+        BuildArtifactOptions options
+    ) {
         var buildDir = Path.Combine(buildRoot, options.buildDirName);
         if (!Directory.Exists(buildDir))
             throw new DirectoryNotFoundException($"Native artifact directory not found: {buildDir}");
@@ -107,8 +111,10 @@ public static class BuildArtifactCopier
             File.Copy(artifact.source, Path.Combine(outputDir, artifact.name), overwrite: true);
     }
 
-    private static bool MatchesConfiguration(string path, string config)
-    {
+    private static bool MatchesConfiguration(
+        string path,
+        string config
+    ) {
         string name = Path.GetFileNameWithoutExtension(path);
         if (name.EndsWith("Debug", StringComparison.OrdinalIgnoreCase))
             return config.Equals("debug", StringComparison.OrdinalIgnoreCase);

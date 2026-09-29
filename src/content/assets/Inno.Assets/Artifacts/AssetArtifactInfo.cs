@@ -28,8 +28,8 @@ public sealed class AssetArtifactInfo
         string outputName,
         string absolutePath,
         string contentHash,
-        long length)
-    {
+        long length
+    ) {
         this.key = key;
         this.outputName = outputName ?? string.Empty;
         this.absolutePath = absolutePath ?? string.Empty;

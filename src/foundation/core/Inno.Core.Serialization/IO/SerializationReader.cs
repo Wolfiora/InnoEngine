@@ -15,8 +15,8 @@ public sealed class SerializationReader
         SerializationOperation operation,
         ObjectSerializationNode node,
         string path,
-        Type valueType)
-    {
+        Type valueType
+    ) {
         m_operation = operation;
         m_node = node;
         this.path = path;
@@ -94,8 +94,10 @@ public sealed class SerializationReader
     /// <returns>
     /// <see langword="true"/> when the member exists; otherwise, <see langword="false"/>.
     /// </returns>
-    public bool TryRead<TValue>(string name, out TValue value)
-    {
+    public bool TryRead<TValue>(
+        string name,
+        out TValue value
+    ) {
         m_operation.EnsureActive();
         if (!m_node.values.TryGetValue(name, out SerializationNode? node))
         {

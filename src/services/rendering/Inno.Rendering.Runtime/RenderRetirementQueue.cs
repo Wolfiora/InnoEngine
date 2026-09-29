@@ -25,9 +25,18 @@ internal sealed class RenderRetirementQueue : IDisposable
         m_stopping = true;
         while (m_steps.TryPeek(out Action? step))
         {
-            try { step(); }
-            catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null) { throw; }
-            catch (Exception exception) { m_failures.Add(exception); }
+            try
+            {
+                step();
+            }
+            catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null)
+            {
+                throw;
+            }
+            catch (Exception exception)
+            {
+                m_failures.Add(exception);
+            }
             m_steps.Dequeue();
         }
         if (m_failures.Count > 0)

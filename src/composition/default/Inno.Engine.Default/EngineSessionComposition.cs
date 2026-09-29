@@ -37,10 +37,15 @@ public sealed class EngineSessionComposition
     /// <param name="audioOverride">
     /// An optional product-specific audio owner, such as Editor preview/Play isolation.
     /// </param>
-    public EngineSessionComposition(RuntimeSession session, IAdapterCatalog adapters, AdapterSelection selection,
-        IInputEventSource inputSource, IAssetArtifactLookup artifacts, Func<AudioProjectSettings> audioSettings,
-        IRuntimeSubsystemFactory? audioOverride = null)
-    {
+    public EngineSessionComposition(
+        RuntimeSession session,
+        IAdapterCatalog adapters,
+        AdapterSelection selection,
+        IInputEventSource inputSource,
+        IAssetArtifactLookup artifacts,
+        Func<AudioProjectSettings> audioSettings,
+        IRuntimeSubsystemFactory? audioOverride = null
+    ) {
         this.session = session ?? throw new ArgumentNullException(nameof(session));
         this.adapters = adapters ?? throw new ArgumentNullException(nameof(adapters));
         this.selection = selection;

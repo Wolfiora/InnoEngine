@@ -16,8 +16,8 @@ public sealed class AssemblyReloadContext
         AssemblyCatalogSnapshot previousCatalog,
         AssemblyCatalogSnapshot candidateCatalog,
         IReadOnlyList<AssemblyModuleHandle> modules,
-        IReadOnlyList<object> participantContexts)
-    {
+        IReadOnlyList<object> participantContexts
+    ) {
         m_previousCatalog = previousCatalog;
         m_candidateCatalog = candidateCatalog;
         m_participantContexts = participantContexts;
@@ -27,14 +27,12 @@ public sealed class AssemblyReloadContext
     /// <summary>
     /// Gets the assembly catalog from before activation.
     /// </summary>
-    public AssemblyCatalogSnapshot previousCatalog
-        => m_previousCatalog ?? throw CreateCompletedException();
+    public AssemblyCatalogSnapshot previousCatalog => m_previousCatalog ?? throw CreateCompletedException();
 
     /// <summary>
     /// Gets the validated candidate assembly catalog.
     /// </summary>
-    public AssemblyCatalogSnapshot candidateCatalog
-        => m_candidateCatalog ?? throw CreateCompletedException();
+    public AssemblyCatalogSnapshot candidateCatalog => m_candidateCatalog ?? throw CreateCompletedException();
 
     /// <summary>
     /// Gets the first logical module in dependency staging order.

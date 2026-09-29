@@ -10,8 +10,10 @@ namespace Inno.Rendering.Assets;
 
 internal static partial class MeshSourceParser
 {
-    internal static GeometryData ParseObj(string sourcePath, string text)
-    {
+    internal static GeometryData ParseObj(
+        string sourcePath,
+        string text
+    ) {
         var positions = new List<Vector3>();
         var normals = new List<Vector3>();
         var textureCoordinates = new List<Vector2>();
@@ -102,8 +104,8 @@ internal static partial class MeshSourceParser
 
     internal static void GenerateMissingNormalsAndTangents(
         List<MutableVertex> vertices,
-        IReadOnlyList<uint> indices)
-    {
+        IReadOnlyList<uint> indices
+    ) {
         for (int index = 0; index < indices.Count; index += 3)
         {
             int i0 = checked((int)indices[index]);
@@ -115,9 +117,12 @@ internal static partial class MeshSourceParser
             Vector3 edge1 = v1.position - v0.position;
             Vector3 edge2 = v2.position - v0.position;
             Vector3 faceNormal = Vector3.Cross(edge1, edge2);
-            if (!v0.hasNormal) v0.normal += faceNormal;
-            if (!v1.hasNormal) v1.normal += faceNormal;
-            if (!v2.hasNormal) v2.normal += faceNormal;
+            if (!v0.hasNormal)
+                v0.normal += faceNormal;
+            if (!v1.hasNormal)
+                v1.normal += faceNormal;
+            if (!v2.hasNormal)
+                v2.normal += faceNormal;
 
             Vector2 uv1 = v1.textureCoordinate - v0.textureCoordinate;
             Vector2 uv2 = v2.textureCoordinate - v0.textureCoordinate;
@@ -126,9 +131,12 @@ internal static partial class MeshSourceParser
             {
                 float inverse = 1f / determinant;
                 Vector3 tangent = (edge1 * uv2.y - edge2 * uv1.y) * inverse;
-                if (!v0.hasTangent) v0.tangent += tangent;
-                if (!v1.hasTangent) v1.tangent += tangent;
-                if (!v2.hasTangent) v2.tangent += tangent;
+                if (!v0.hasTangent)
+                    v0.tangent += tangent;
+                if (!v1.hasTangent)
+                    v1.tangent += tangent;
+                if (!v2.hasTangent)
+                    v2.tangent += tangent;
             }
         }
     }
@@ -141,8 +149,8 @@ internal static partial class MeshSourceParser
         IReadOnlyList<Vector3> normals,
         IReadOnlyList<Vector2> textureCoordinates,
         List<MutableVertex> vertices,
-        Dictionary<ObjVertexKey, uint> vertexMap)
-    {
+        Dictionary<ObjVertexKey, uint> vertexMap
+    ) {
         string[] values = token.Split('/');
         int position = ResolveIndex(values[0], positions.Count, sourcePath, lineIndex, "position");
         int texture = values.Length > 1 && values[1].Length != 0
@@ -174,8 +182,8 @@ internal static partial class MeshSourceParser
         int count,
         string sourcePath,
         int lineIndex,
-        string kind)
-    {
+        string kind
+    ) {
         if (!int.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out int parsed)
             || parsed == 0)
         {
@@ -191,7 +199,11 @@ internal static partial class MeshSourceParser
         return resolved;
     }
 
-    private static float ParseFloat(string value, string sourcePath, int lineIndex)
+    private static float ParseFloat(
+        string value,
+        string sourcePath,
+        int lineIndex
+    )
         => float.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out float result)
             && float.IsFinite(result)
                 ? result
@@ -201,8 +213,8 @@ internal static partial class MeshSourceParser
         IReadOnlyList<string> values,
         int count,
         string sourcePath,
-        int lineIndex)
-    {
+        int lineIndex
+    ) {
         if (values.Count < count)
         {
             throw Error(sourcePath, lineIndex, "OBJ record has too few values.");
@@ -212,8 +224,8 @@ internal static partial class MeshSourceParser
     private static void CloseSubMesh(
         int currentIndexCount,
         ref int subMeshStart,
-        List<GeometrySection> sections)
-    {
+        List<GeometrySection> sections
+    ) {
         if (currentIndexCount > subMeshStart)
         {
             sections.Add(new GeometrySection(subMeshStart, currentIndexCount - subMeshStart));
@@ -221,8 +233,10 @@ internal static partial class MeshSourceParser
         }
     }
 
-    internal static Vector4 ToTangent(Vector3 value, float handedness)
-    {
+    internal static Vector4 ToTangent(
+        Vector3 value,
+        float handedness
+    ) {
         Vector3 normalized = Vector3.NormalizeSafe(value);
         if (normalized.LengthSquared() <= 1e-8f)
         {
@@ -232,10 +246,18 @@ internal static partial class MeshSourceParser
         return new Vector4(normalized.x, normalized.y, normalized.z, handedness < 0f ? -1f : 1f);
     }
 
-    private static RenderingAssetFormatException Error(string path, int lineIndex, string message)
+    private static RenderingAssetFormatException Error(
+        string path,
+        int lineIndex,
+        string message
+    )
         => new($"{path}:{lineIndex + 1}", message);
 
-    private readonly record struct ObjVertexKey(int position, int texture, int normal);
+    private readonly record struct ObjVertexKey(
+        int position,
+        int texture,
+        int normal
+    );
 
     internal sealed class MutableVertex
     {

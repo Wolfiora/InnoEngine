@@ -37,5 +37,6 @@ public interface IInspectionPropertyEditService
         object owner,
         string propertyName,
         Action mutation,
-        string historyName);
+        string historyName
+    );
 }

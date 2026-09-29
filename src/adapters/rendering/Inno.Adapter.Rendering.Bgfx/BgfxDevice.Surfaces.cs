@@ -41,8 +41,8 @@ public sealed unsafe partial class BgfxDevice
         PlatformNativeHandles nativeHandles,
         int width,
         int height,
-        string name)
-    {
+        string name
+    ) {
         EnsureSurfaceSafetyPoint();
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(width);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(height);
@@ -81,7 +81,8 @@ public sealed unsafe partial class BgfxDevice
     {
         _ = ResolveSurface(surface);
         return backbufferIsSrgb
-            && capabilities.backend is not (GraphicsApi.Direct3D11 or GraphicsApi.Direct3D12);
+            && capabilities.backend != GraphicsApi.Direct3D11
+            && capabilities.backend != GraphicsApi.Direct3D12;
     }
 
     /// <summary>
@@ -99,8 +100,11 @@ public sealed unsafe partial class BgfxDevice
     /// <exception cref="ArgumentException">
     /// Thrown when the surface is stale or no longer active.
     /// </exception>
-    public void ResizeWindowSurface(RenderSurfaceHandle surface, int width, int height)
-    {
+    public void ResizeWindowSurface(
+        RenderSurfaceHandle surface,
+        int width,
+        int height
+    ) {
         EnsureSurfaceSafetyPoint();
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(width);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(height);
@@ -147,7 +151,8 @@ public sealed unsafe partial class BgfxDevice
     private static bgfx.FrameBufferHandle CreateNativeWindowSurface(
         PlatformNativeHandles nativeHandles,
         int width,
-        int height)
+        int height
+    )
         => bgfx.create_frame_buffer_from_nwh(
             nativeHandles.windowHandle.ToPointer(),
             checked((ushort)width),
@@ -216,8 +221,8 @@ public sealed unsafe partial class BgfxDevice
             int width,
             int height,
             PlatformNativeHandles nativeHandles,
-            string name)
-        {
+            string name
+        ) {
             this.frameBuffer = frameBuffer;
             this.width = width;
             this.height = height;

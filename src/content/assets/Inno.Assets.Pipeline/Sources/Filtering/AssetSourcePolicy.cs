@@ -68,8 +68,8 @@ public sealed class AssetSourcePolicy
         IEnumerable<string>? ignoredFileNames,
         IEnumerable<string>? ignoredDirectoryNames,
         IEnumerable<string>? ignoredPrefixes,
-        IEnumerable<string>? ignoredSuffixes)
-    {
+        IEnumerable<string>? ignoredSuffixes
+    ) {
         m_fileNames = new HashSet<string>(S_DEFAULT_FILE_NAMES, StringComparer.OrdinalIgnoreCase);
         m_directoryNames = new HashSet<string>(S_DEFAULT_DIRECTORY_NAMES, StringComparer.OrdinalIgnoreCase);
         AddNonEmpty(m_fileNames, ignoredFileNames);
@@ -95,8 +95,10 @@ public sealed class AssetSourcePolicy
     /// <returns>
     /// <see langword="true"/> when the operation succeeds or its condition is satisfied; otherwise, <see langword="false"/>.
     /// </returns>
-    public bool IsIgnored(string relativePath, bool isDirectory)
-    {
+    public bool IsIgnored(
+        string relativePath,
+        bool isDirectory
+    ) {
         string name = Path.GetFileName(relativePath);
         if (string.IsNullOrEmpty(name))
             return false;
@@ -130,8 +132,10 @@ public sealed class AssetSourcePolicy
         => relativePath.EndsWith(".imeta", StringComparison.OrdinalIgnoreCase) ||
            relativePath.EndsWith(".abin", StringComparison.OrdinalIgnoreCase);
 
-    private static void AddNonEmpty(HashSet<string> target, IEnumerable<string>? values)
-    {
+    private static void AddNonEmpty(
+        HashSet<string> target,
+        IEnumerable<string>? values
+    ) {
         if (values is null)
             return;
         foreach (string value in values)
@@ -141,8 +145,10 @@ public sealed class AssetSourcePolicy
         }
     }
 
-    private static string[] Combine(string[] defaults, IEnumerable<string>? additional)
-    {
+    private static string[] Combine(
+        string[] defaults,
+        IEnumerable<string>? additional
+    ) {
         var values = new List<string>(defaults);
         if (additional is not null)
         {

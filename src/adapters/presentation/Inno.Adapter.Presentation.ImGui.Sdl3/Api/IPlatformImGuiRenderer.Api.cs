@@ -45,8 +45,8 @@ public sealed class PlatformImGuiViewportTarget
         uint windowId,
         PlatformNativeHandles nativeHandles,
         int width,
-        int height)
-    {
+        int height
+    ) {
         this.viewportId = viewportId;
         this.windowId = windowId;
         this.nativeHandles = nativeHandles;
@@ -107,7 +107,10 @@ public interface IPlatformImGuiRenderer : IDisposable
     /// <param name="pixelHeight">
     /// Current drawable height in physical pixels.
     /// </param>
-    void SynchronizeMainOutput(int pixelWidth, int pixelHeight);
+    void SynchronizeMainOutput(
+        int pixelWidth,
+        int pixelHeight
+    );
 
     /// <summary>
     /// Creates backend presentation state for one detached viewport.
@@ -134,7 +137,10 @@ public interface IPlatformImGuiRenderer : IDisposable
     /// <param name="drawData">
     /// Opaque native ImDrawData pointer valid for the current frame.
     /// </param>
-    void RenderViewport(PlatformImGuiViewportTarget target, IntPtr drawData);
+    void RenderViewport(
+        PlatformImGuiViewportTarget target,
+        IntPtr drawData
+    );
 
     /// <summary>
     /// Marks one detached viewport ready for presentation.

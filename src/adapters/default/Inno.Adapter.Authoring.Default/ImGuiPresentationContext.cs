@@ -46,7 +46,10 @@ internal sealed class ImGuiPresentationContext : IPresentationContext
 
     void IPresentationContext.LoadLayout(string? settings) => m_context.LoadIniSettings(settings);
 
-    bool IPresentationContext.TryCaptureLayout(out string settings, bool force)
+    bool IPresentationContext.TryCaptureLayout(
+        out string settings,
+        bool force
+    )
         => m_context.TryCaptureIniSettings(out settings, force);
 
     void IPresentationContext.RenderFrame(Action drawFrame)
@@ -61,8 +64,10 @@ internal sealed class ImGuiPresentationContext : IPresentationContext
     bool IPresentationContext.UnregisterTexture(PresentationTextureHandle texture)
         => texture.isValid && m_renderer.UnregisterTexture(new ImGuiTextureHandle(texture.value));
 
-    void IPresentationContext.DrawImage(PresentationTextureHandle texture, Vector2 size)
-    {
+    void IPresentationContext.DrawImage(
+        PresentationTextureHandle texture,
+        Vector2 size
+    ) {
         if (!texture.isValid)
             throw new ArgumentException("The presentation texture handle is invalid.", nameof(texture));
         m_context.DrawImage(new ImGuiTextureHandle(texture.value), size);
@@ -70,7 +75,10 @@ internal sealed class ImGuiPresentationContext : IPresentationContext
 
     void IRenderFrameGraphContributor.PrepareFrame(ulong frameIndex) => m_renderer.PrepareFrame(frameIndex);
 
-    void IRenderFrameGraphContributor.AddRenderPasses(RenderGraphBuilder graph, ulong frameIndex)
+    void IRenderFrameGraphContributor.AddRenderPasses(
+        RenderGraphBuilder graph,
+        ulong frameIndex
+    )
         => m_renderer.AddRenderPasses(graph, frameIndex);
 
     void IDisposable.Dispose()

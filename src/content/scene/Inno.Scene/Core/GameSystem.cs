@@ -36,8 +36,7 @@ public abstract class GameSystem : EngineObject, ISerializable, ISceneLifecycleO
     /// <summary>
     /// Gets whether this system is registered, enabled, and dispatchable.
     /// </summary>
-    public bool isActiveAndEnabled
-        => !isDestroyed && m_scene is { canDispatch: true } && m_enabled;
+    public bool isActiveAndEnabled => !isDestroyed && m_scene is { canDispatch: true } && m_enabled;
 
     /// <summary>
     /// Gets the ascending execution order used by the owning scene.
@@ -123,8 +122,7 @@ public abstract class GameSystem : EngineObject, ISerializable, ISceneLifecycleO
     /// <returns>
     /// An immutable snapshot of the values selected by the operation.
     /// </returns>
-    protected IReadOnlyList<TComponent> GetComponents<TComponent>() where TComponent : GameComponent
-        => scene.GetComponents<TComponent>();
+    protected IReadOnlyList<TComponent> GetComponents<TComponent>() where TComponent : GameComponent => scene.GetComponents<TComponent>();
 
     /// <summary>
     /// Gets all committed live game objects in deterministic scene storage order.
@@ -132,8 +130,7 @@ public abstract class GameSystem : EngineObject, ISerializable, ISceneLifecycleO
     /// <returns>
     /// The immutable structure snapshot retained by the scene until its object or component structure changes.
     /// </returns>
-    protected IReadOnlyList<GameObject> GetObjects()
-        => scene.GetObjects();
+    protected IReadOnlyList<GameObject> GetObjects() => scene.GetObjects();
 
     /// <summary>
     /// Queries game objects containing one required component type.
@@ -144,8 +141,7 @@ public abstract class GameSystem : EngineObject, ISerializable, ISceneLifecycleO
     /// <returns>
     /// An immutable snapshot of the values selected by the operation.
     /// </returns>
-    protected IReadOnlyList<GameObject> Query<T1>() where T1 : GameComponent
-        => scene.Query<T1>();
+    protected IReadOnlyList<GameObject> Query<T1>() where T1 : GameComponent => scene.Query<T1>();
 
     /// <summary>
     /// Queries game objects containing two required component types.

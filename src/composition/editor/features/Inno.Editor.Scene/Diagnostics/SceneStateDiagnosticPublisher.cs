@@ -62,7 +62,8 @@ internal static class SceneStateDiagnosticPublisher
     private static Diagnostic CreateMissingDiagnostic(
         GameScene scene,
         Guid elementId,
-        string missingTypeName)
+        string missingTypeName
+    )
         => Diagnostic.Warning(
             "INNOHR0002",
             $"'{missingTypeName}' is unavailable in scene '{scene.name}' " +

@@ -33,8 +33,8 @@ internal sealed class PluginPackageBuilder
         AssetPipeline assets,
         PluginEnvironment plugins,
         ProjectSettingsStore settings,
-        SerializationRegistry serialization)
-    {
+        SerializationRegistry serialization
+    ) {
         m_assets = assets;
         m_plugins = plugins;
         m_settings = settings;
@@ -44,8 +44,8 @@ internal sealed class PluginPackageBuilder
     internal async ValueTask<BuildResult> BuildAsync(
         PluginBuildRequest request,
         IProgress<BuildProgress>? progress,
-        CancellationToken cancellationToken)
-    {
+        CancellationToken cancellationToken
+    ) {
         ArgumentNullException.ThrowIfNull(request);
         request.Validate();
         if (!m_assets.isInitialized)
@@ -221,7 +221,10 @@ internal sealed class PluginPackageBuilder
             projectEntries.Add(SourceEntry.Capture(source, "Assets/" + relative));
             projectEntries.Add(SourceEntry.Capture(source + ".imeta", "Assets/" + relative + ".imeta"));
         }
-        projectEntries.Sort(static (left, right) => StringComparer.Ordinal.Compare(left.archivePath, right.archivePath));
+        projectEntries.Sort(static (
+            left,
+            right
+        ) => StringComparer.Ordinal.Compare(left.archivePath, right.archivePath));
 
         var dependencies = new List<PluginDependencyPlan>();
         if (request.includeDependencies)
@@ -255,8 +258,8 @@ internal sealed class PluginPackageBuilder
     private static async ValueTask WriteSourceAsync(
         ZipArchive archive,
         SourceEntry source,
-        CancellationToken cancellationToken)
-    {
+        CancellationToken cancellationToken
+    ) {
         source.EnsureUnchanged();
         ZipArchiveEntry entry = archive.CreateEntry(source.archivePath, CompressionLevel.Optimal);
         entry.LastWriteTime = S_ARCHIVE_TIME;
@@ -276,8 +279,8 @@ internal sealed class PluginPackageBuilder
         ZipArchive archive,
         string path,
         ReadOnlyMemory<byte> bytes,
-        CancellationToken cancellationToken)
-    {
+        CancellationToken cancellationToken
+    ) {
         ZipArchiveEntry entry = archive.CreateEntry(path, CompressionLevel.Optimal);
         entry.LastWriteTime = S_ARCHIVE_TIME;
         await using Stream output = entry.Open();
@@ -357,8 +360,10 @@ internal sealed class PluginPackageBuilder
             throw new InvalidOperationException($"Plugin output cannot be written inside '{Path.GetFullPath(conflict)}'.");
     }
 
-    private static bool IsWithin(string root, string candidate)
-    {
+    private static bool IsWithin(
+        string root,
+        string candidate
+    ) {
         string normalizedRoot = Path.TrimEndingDirectorySeparator(Path.GetFullPath(root));
         StringComparison comparison = OperatingSystem.IsWindows()
             ? StringComparison.OrdinalIgnoreCase
@@ -372,22 +377,26 @@ internal sealed class PluginPackageBuilder
         IReadOnlyList<SourceEntry> projectEntries,
         IReadOnlyList<PluginDependencyPlan> dependencies,
         int assetCount,
-        IReadOnlyList<(string pluginId, string contentHash)> activePlugins);
+        IReadOnlyList<(string pluginId, string contentHash)> activePlugins
+    );
 
     private sealed record PluginDependencyPlan(
         string pluginId,
         string contentHash,
         byte[] manifest,
-        IReadOnlyList<SourceEntry> entries);
+        IReadOnlyList<SourceEntry> entries
+    );
 
     private sealed record SourceEntry(
         string sourcePath,
         string archivePath,
         long length,
-        DateTime lastWriteTimeUtc)
-    {
-        internal static SourceEntry Capture(string sourcePath, string archivePath)
-        {
+        DateTime lastWriteTimeUtc
+    ) {
+        internal static SourceEntry Capture(
+            string sourcePath,
+            string archivePath
+        ) {
             var info = new FileInfo(sourcePath);
             if (!info.Exists)
                 throw new InvalidOperationException($"Plugin source dependency '{sourcePath}' is missing.");

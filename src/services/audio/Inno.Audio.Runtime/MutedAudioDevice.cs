@@ -32,8 +32,10 @@ public sealed class MutedAudioDevice : AudioDevice, IAudioDevice
     /// <param name="limits">
     /// Optional finite device resource capacities.
     /// </param>
-    public MutedAudioDevice(int sampleRate = 48000, AudioDeviceLimits? limits = null)
-    {
+    public MutedAudioDevice(
+        int sampleRate = 48000,
+        AudioDeviceLimits? limits = null
+    ) {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(sampleRate);
         m_limits = limits ?? new AudioDeviceLimits();
         generation = unchecked(++S_NEXT_GENERATION);
@@ -75,7 +77,8 @@ public sealed class MutedAudioDevice : AudioDevice, IAudioDevice
     AudioClipHandle IAudioDevice.CreateClip(AudioClipDescriptor descriptor)
     {
         EnsureActive();
-        if (m_clips.Count >= m_limits.clips) return default;
+        if (m_clips.Count >= m_limits.clips)
+            return default;
         ulong id = m_nextIdentity++;
         m_clips.Add(id, descriptor);
         return CreateClipHandle(id, generation);
@@ -101,10 +104,11 @@ public sealed class MutedAudioDevice : AudioDevice, IAudioDevice
         AudioClipHandle clip,
         AudioBusHandle bus,
         AudioPlayOptions options,
-        double? scheduledDspTime)
-    {
+        double? scheduledDspTime
+    ) {
         EnsureActive();
-        if (m_voices.Count >= m_limits.voices) return default;
+        if (m_voices.Count >= m_limits.voices)
+            return default;
         if (!options.bus.isValid || scheduledDspTime is double startTime && (!double.IsFinite(startTime) || startTime < 0))
             return default;
         DeviceHandleIdentity clipIdentity = GetHandleIdentity(clip);
@@ -150,8 +154,10 @@ public sealed class MutedAudioDevice : AudioDevice, IAudioDevice
         return true;
     }
 
-    bool IAudioDevice.Seek(AudioDeviceVoiceHandle voice, TimeSpan position)
-    {
+    bool IAudioDevice.Seek(
+        AudioDeviceVoiceHandle voice,
+        TimeSpan position
+    ) {
         if (position < TimeSpan.Zero || !TryGetVoice(voice, out VoiceRecord record) ||
             record.state == AudioPlaybackState.Completed)
         {
@@ -161,8 +167,10 @@ public sealed class MutedAudioDevice : AudioDevice, IAudioDevice
         return true;
     }
 
-    bool IAudioDevice.SetVoiceParameters(AudioDeviceVoiceHandle voice, AudioVoiceParameters parameters)
-    {
+    bool IAudioDevice.SetVoiceParameters(
+        AudioDeviceVoiceHandle voice,
+        AudioVoiceParameters parameters
+    ) {
         if (parameters.pitch <= 0f)
             return false;
         if (!TryGetVoice(voice, out VoiceRecord record) || record.state == AudioPlaybackState.Completed)
@@ -171,8 +179,10 @@ public sealed class MutedAudioDevice : AudioDevice, IAudioDevice
         return true;
     }
 
-    bool IAudioDevice.TryGetVoiceState(AudioDeviceVoiceHandle voice, out AudioPlaybackState playbackState)
-    {
+    bool IAudioDevice.TryGetVoiceState(
+        AudioDeviceVoiceHandle voice,
+        out AudioPlaybackState playbackState
+    ) {
         if (TryGetVoice(voice, out VoiceRecord record))
         {
             playbackState = record.state;
@@ -182,8 +192,10 @@ public sealed class MutedAudioDevice : AudioDevice, IAudioDevice
         return false;
     }
 
-    AudioBusHandle IAudioDevice.CreateBus(AudioBusId id, AudioBusHandle parent)
-    {
+    AudioBusHandle IAudioDevice.CreateBus(
+        AudioBusId id,
+        AudioBusHandle parent
+    ) {
         EnsureActive();
         if (!id.isValid || m_buses.Count >= m_limits.buses)
             return default;
@@ -204,32 +216,40 @@ public sealed class MutedAudioDevice : AudioDevice, IAudioDevice
         return m_buses.Remove(identity.value);
     }
 
-    bool IAudioDevice.SetBusVolume(AudioBusHandle bus, float volume)
-    {
+    bool IAudioDevice.SetBusVolume(
+        AudioBusHandle bus,
+        float volume
+    ) {
         if (!float.IsFinite(volume) || volume < 0f || !TryGetBus(bus, out BusRecord record))
             return false;
         record.volume = volume;
         return true;
     }
 
-    bool IAudioDevice.SetBusMuted(AudioBusHandle bus, bool muted)
-    {
+    bool IAudioDevice.SetBusMuted(
+        AudioBusHandle bus,
+        bool muted
+    ) {
         if (!TryGetBus(bus, out BusRecord record))
             return false;
         record.muted = muted;
         return true;
     }
 
-    bool IAudioDevice.SetBusPaused(AudioBusHandle bus, bool paused)
-    {
+    bool IAudioDevice.SetBusPaused(
+        AudioBusHandle bus,
+        bool paused
+    ) {
         if (!TryGetBus(bus, out BusRecord record))
             return false;
         record.paused = paused;
         return true;
     }
 
-    bool IAudioDevice.AddBusProcessor(AudioBusHandle bus, AudioProcessorConfiguration processor)
-    {
+    bool IAudioDevice.AddBusProcessor(
+        AudioBusHandle bus,
+        AudioProcessorConfiguration processor
+    ) {
         ArgumentNullException.ThrowIfNull(processor);
         return TryGetBus(bus, out _);
     }
@@ -244,8 +264,10 @@ public sealed class MutedAudioDevice : AudioDevice, IAudioDevice
         return CreateListenerHandle(id, generation);
     }
 
-    bool IAudioDevice.SetListener(AudioListenerHandle listener, AudioListenerState state)
-    {
+    bool IAudioDevice.SetListener(
+        AudioListenerHandle listener,
+        AudioListenerState state
+    ) {
         DeviceHandleIdentity identity = GetHandleIdentity(listener);
         if (identity.generation != generation || !m_listeners.TryGetValue(identity.value, out ListenerRecord? record))
             return false;
@@ -311,8 +333,10 @@ public sealed class MutedAudioDevice : AudioDevice, IAudioDevice
         m_completions.Clear();
     }
 
-    private bool CompleteVoice(AudioDeviceVoiceHandle voice, AudioCompletionReason reason)
-    {
+    private bool CompleteVoice(
+        AudioDeviceVoiceHandle voice,
+        AudioCompletionReason reason
+    ) {
         if (!TryGetVoice(voice, out VoiceRecord record) || record.state == AudioPlaybackState.Completed)
             return false;
         record.state = AudioPlaybackState.Completed;
@@ -320,8 +344,10 @@ public sealed class MutedAudioDevice : AudioDevice, IAudioDevice
         return true;
     }
 
-    private bool TryGetBus(AudioBusHandle bus, out BusRecord record)
-    {
+    private bool TryGetBus(
+        AudioBusHandle bus,
+        out BusRecord record
+    ) {
         EnsureActive();
         DeviceHandleIdentity identity = GetHandleIdentity(bus);
         if (identity.generation == generation && m_buses.TryGetValue(identity.value, out BusRecord? found))
@@ -333,8 +359,10 @@ public sealed class MutedAudioDevice : AudioDevice, IAudioDevice
         return false;
     }
 
-    private bool TryGetVoice(AudioDeviceVoiceHandle voice, out VoiceRecord record)
-    {
+    private bool TryGetVoice(
+        AudioDeviceVoiceHandle voice,
+        out VoiceRecord record
+    ) {
         EnsureActive();
         DeviceHandleIdentity identity = GetHandleIdentity(voice);
         if (identity.generation == generation && m_voices.TryGetValue(identity.value, out VoiceRecord? found))
@@ -369,8 +397,10 @@ public sealed class MutedAudioDevice : AudioDevice, IAudioDevice
 
     private void EnsureActive() => ObjectDisposedException.ThrowIf(m_disposed, this);
 
-    private sealed class BusRecord(AudioBusId id, ulong parent)
-    {
+    private sealed class BusRecord(
+        AudioBusId id,
+        ulong parent
+    ) {
         internal AudioBusId id { get; } = id;
         internal ulong parent { get; } = parent;
         internal float volume { get; set; } = 1f;
@@ -390,8 +420,8 @@ public sealed class MutedAudioDevice : AudioDevice, IAudioDevice
             double duration,
             AudioPlayOptions options,
             AudioPlaybackState state,
-            double scheduledDspTime)
-        {
+            double scheduledDspTime
+        ) {
             this.clip = clip;
             this.duration = duration;
             loop = options.loop;

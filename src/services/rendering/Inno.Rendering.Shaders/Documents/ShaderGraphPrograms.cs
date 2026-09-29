@@ -46,7 +46,11 @@ public static class ShaderGraphPrograms
     /// <returns>
     /// Detached native references; corrupt or missing program metadata is an error.
     /// </returns>
-    public static ShaderGraphPassProgram[] Read(GraphDocument graph, SerializationRegistry serialization, SerializationContext context)
+    public static ShaderGraphPassProgram[] Read(
+        GraphDocument graph,
+        SerializationRegistry serialization,
+        SerializationContext context
+    )
         => graph.metadata.TryGetValue(bindingsKey, out GraphSerializedValue? data)
             ? ShaderGraphDocument.Decode<ShaderGraphPassProgram[]>(data, serialization, context)
             : throw new InvalidOperationException("The shader document has no pass-to-program references.");
@@ -72,12 +76,17 @@ public static class ShaderGraphPrograms
     /// <returns>
     /// A candidate suitable for one shared History transaction.
     /// </returns>
-    public static GraphDocument Bind(GraphDocument graph, string pass, IEnumerable<GraphNodeId> stages,
-        SerializationRegistry serialization, SerializationContext context)
-    {
+    public static GraphDocument Bind(
+        GraphDocument graph,
+        string pass,
+        IEnumerable<GraphNodeId> stages,
+        SerializationRegistry serialization,
+        SerializationContext context
+    ) {
         ArgumentNullException.ThrowIfNull(stages);
         ShaderDefinition definition = ShaderGraphDocument.ReadDefinition(graph, serialization, context);
-        if (!definition.passes.Any(value => value.name == pass)) throw new ArgumentException($"Unknown pass '{pass}'.", nameof(pass));
+        if (!definition.passes.Any(value => value.name == pass))
+            throw new ArgumentException($"Unknown pass '{pass}'.", nameof(pass));
         string[] references = stages.Select(static value => value.value).ToArray();
         if (references.Distinct(StringComparer.Ordinal).Count() != references.Length)
             throw new ArgumentException("A pass cannot reference the same stage twice.", nameof(stages));
@@ -88,7 +97,10 @@ public static class ShaderGraphPrograms
         ShaderGraphPassProgram[] bindings = Read(graph, serialization, context);
         int index = Array.FindIndex(bindings, value => value.pass == pass);
         var binding = new ShaderGraphPassProgram { pass = pass, stages = references };
-        if (index < 0) bindings = [.. bindings, binding]; else bindings[index] = binding;
+        if (index < 0)
+            bindings = [.. bindings, binding];
+        else
+            bindings[index] = binding;
         Write(candidate, bindings, serialization, context);
         return candidate;
     }
@@ -111,10 +123,15 @@ public static class ShaderGraphPrograms
     /// <returns>
     /// A candidate preserving programs shared by other passes and their parameter declarations.
     /// </returns>
-    public static GraphDocument RemovePass(GraphDocument graph, string pass, SerializationRegistry serialization, SerializationContext context)
-    {
+    public static GraphDocument RemovePass(
+        GraphDocument graph,
+        string pass,
+        SerializationRegistry serialization,
+        SerializationContext context
+    ) {
         ShaderDefinition definition = ShaderGraphDocument.ReadDefinition(graph, serialization, context);
-        if (!definition.passes.Any(value => value.name == pass)) throw new ArgumentException($"Unknown pass '{pass}'.", nameof(pass));
+        if (!definition.passes.Any(value => value.name == pass))
+            throw new ArgumentException($"Unknown pass '{pass}'.", nameof(pass));
         ShaderGraphPassProgram[] bindings = Read(graph, serialization, context);
         string[] removedStages = bindings.Where(value => value.pass == pass).SelectMany(static value => value.stages).ToArray();
         ShaderGraphPassProgram[] remaining = bindings.Where(value => value.pass != pass).ToArray();
@@ -134,6 +151,11 @@ public static class ShaderGraphPrograms
             .Distinct(StringComparer.Ordinal).Select(static id => new GraphNodeId(id)).Where(id => candidate.FindNode(id) is not null), serialization, context);
     }
 
-    internal static void Write(GraphDocument graph, ShaderGraphPassProgram[] programs, SerializationRegistry serialization, SerializationContext context)
+    internal static void Write(
+        GraphDocument graph,
+        ShaderGraphPassProgram[] programs,
+        SerializationRegistry serialization,
+        SerializationContext context
+    )
         => graph.SetMetadata(bindingsKey, ShaderGraphDocument.Encode(programs, serialization, context));
 }

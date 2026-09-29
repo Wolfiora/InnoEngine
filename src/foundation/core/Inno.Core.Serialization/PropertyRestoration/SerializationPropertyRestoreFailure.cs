@@ -11,8 +11,8 @@ public sealed class SerializationPropertyRestoreFailure
         string name,
         Type previousPropertyType,
         Type currentPropertyType,
-        string message)
-    {
+        string message
+    ) {
         this.name = name;
         this.previousPropertyType = previousPropertyType;
         this.currentPropertyType = currentPropertyType;

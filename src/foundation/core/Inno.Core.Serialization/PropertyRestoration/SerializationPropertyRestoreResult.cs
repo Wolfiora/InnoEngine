@@ -10,8 +10,8 @@ public sealed class SerializationPropertyRestoreResult
     internal SerializationPropertyRestoreResult(
         int restoredCount,
         int ignoredCount,
-        IReadOnlyList<SerializationPropertyRestoreFailure> failures)
-    {
+        IReadOnlyList<SerializationPropertyRestoreFailure> failures
+    ) {
         this.restoredCount = restoredCount;
         this.ignoredCount = ignoredCount;
         this.failures = failures;

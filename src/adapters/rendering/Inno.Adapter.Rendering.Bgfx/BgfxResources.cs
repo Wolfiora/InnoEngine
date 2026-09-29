@@ -21,8 +21,8 @@ internal sealed class BgfxBufferResource
         RenderVertexLayout? vertexLayout,
         RenderIndexFormat indexFormat,
         BgfxBufferKind kind,
-        ushort nativeIndex)
-    {
+        ushort nativeIndex
+    ) {
         this.descriptor = descriptor;
         this.vertexLayout = vertexLayout;
         this.indexFormat = indexFormat;
@@ -69,7 +69,8 @@ internal sealed class BgfxBufferResource
     public static BgfxBufferResource FromVertex(
         RenderBufferDescriptor descriptor,
         RenderVertexLayout? layout,
-        bgfx.VertexBufferHandle handle)
+        bgfx.VertexBufferHandle handle
+    )
         => new(descriptor, layout, RenderIndexFormat.UInt32, BgfxBufferKind.Vertex, handle.idx);
 
     /// <summary>
@@ -90,7 +91,8 @@ internal sealed class BgfxBufferResource
     public static BgfxBufferResource FromIndex(
         RenderBufferDescriptor descriptor,
         RenderIndexFormat format,
-        bgfx.IndexBufferHandle handle)
+        bgfx.IndexBufferHandle handle
+    )
         => new(descriptor, null, format, BgfxBufferKind.Index, handle.idx);
 
     /// <summary>
@@ -111,7 +113,8 @@ internal sealed class BgfxBufferResource
     public static BgfxBufferResource FromDynamicVertex(
         RenderBufferDescriptor descriptor,
         RenderVertexLayout? layout,
-        bgfx.DynamicVertexBufferHandle handle)
+        bgfx.DynamicVertexBufferHandle handle
+    )
         => new(descriptor, layout, RenderIndexFormat.UInt32, BgfxBufferKind.DynamicVertex, handle.idx);
 
     /// <summary>
@@ -132,7 +135,8 @@ internal sealed class BgfxBufferResource
     public static BgfxBufferResource FromDynamicIndex(
         RenderBufferDescriptor descriptor,
         RenderIndexFormat format,
-        bgfx.DynamicIndexBufferHandle handle)
+        bgfx.DynamicIndexBufferHandle handle
+    )
         => new(descriptor, null, format, BgfxBufferKind.DynamicIndex, handle.idx);
 
     /// <summary>
@@ -149,7 +153,8 @@ internal sealed class BgfxBufferResource
     /// </returns>
     public static BgfxBufferResource FromIndirect(
         RenderBufferDescriptor descriptor,
-        bgfx.IndirectBufferHandle handle)
+        bgfx.IndirectBufferHandle handle
+    )
         => new(descriptor, null, RenderIndexFormat.UInt32, BgfxBufferKind.Indirect, handle.idx);
 }
 
@@ -166,8 +171,8 @@ internal sealed class BgfxShaderBindingResource
     /// </param>
     public BgfxShaderBindingResource(
         RenderShaderBindingDescriptor descriptor,
-        bgfx.UniformHandle uniform)
-    {
+        bgfx.UniformHandle uniform
+    ) {
         this.descriptor = descriptor;
         this.uniform = uniform;
     }
@@ -211,8 +216,8 @@ internal sealed class BgfxPipelineResource
         RenderVertexLayout? vertexLayout,
         bgfx.VertexLayoutHandle vertexLayoutHandle,
         RenderRasterState? rasterState,
-        bool compute)
-    {
+        bool compute
+    ) {
         this.program = program;
         this.bindings = bindings;
         this.vertexLayout = vertexLayout;

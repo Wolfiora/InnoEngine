@@ -22,5 +22,8 @@ public interface IAudioBackendFactory
     /// <exception cref="System.NotSupportedException">
     /// Thrown when the catalog does not contain the selected backend.
     /// </exception>
-    IAudioDevice CreateDevice(AudioBackend backend, AudioBackendOptions options = default);
+    IAudioDevice CreateDevice(
+        AudioBackend backend,
+        AudioBackendOptions options = default
+    );
 }

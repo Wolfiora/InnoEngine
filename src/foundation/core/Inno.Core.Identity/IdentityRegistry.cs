@@ -61,8 +61,10 @@ internal sealed class IdentityRegistry
     /// <returns>
     /// <see langword="true"/> when registered; <see langword="false"/> when already registered.
     /// </returns>
-    public bool Register(IdentityObject obj, Guid? persistentId = null)
-    {
+    public bool Register(
+        IdentityObject obj,
+        Guid? persistentId = null
+    ) {
         ArgumentNullException.ThrowIfNull(obj);
 
         m_lock.EnterWriteLock();
@@ -303,8 +305,10 @@ internal sealed class IdentityRegistry
         return result;
     }
 
-    internal bool TryGetRuntimeId(in Identity identity, out int runtimeId)
-    {
+    internal bool TryGetRuntimeId(
+        in Identity identity,
+        out int runtimeId
+    ) {
         runtimeId = 0;
         if (identity.persistentId == Guid.Empty || identity.rawRuntimeId == 0)
             return false;
@@ -348,8 +352,10 @@ internal sealed class IdentityRegistry
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private bool TryResolveDenseIndexNoLock(int runtimeId, out int denseIndex)
-    {
+    private bool TryResolveDenseIndexNoLock(
+        int runtimeId,
+        out int denseIndex
+    ) {
         int slot = RuntimeIdCodec.UnpackSlot(runtimeId);
         int generation = RuntimeIdCodec.UnpackGeneration(runtimeId);
         if ((uint)slot >= (uint)m_generations.Count)
@@ -368,8 +374,10 @@ internal sealed class IdentityRegistry
         return denseIndex >= 0 && denseIndex < m_active.Count;
     }
 
-    private bool TryGetDenseIndexBySlotNoLock(int slot, out int denseIndex)
-    {
+    private bool TryGetDenseIndexBySlotNoLock(
+        int slot,
+        out int denseIndex
+    ) {
         if ((uint)slot >= (uint)m_sparseToDense.Count)
         {
             denseIndex = -1;
@@ -380,13 +388,17 @@ internal sealed class IdentityRegistry
         return denseIndex >= 0 && denseIndex < m_active.Count;
     }
 
-    private bool TryGetDenseIndexByRuntimeIdNoLock(int runtimeId, out int denseIndex)
-    {
+    private bool TryGetDenseIndexByRuntimeIdNoLock(
+        int runtimeId,
+        out int denseIndex
+    ) {
         return TryResolveDenseIndexNoLock(runtimeId, out denseIndex) && TryGetEntryByDenseNoLock(denseIndex, out _);
     }
 
-    private bool TryGetEntryByDenseNoLock(int denseIndex, out RegistryEntry? entry)
-    {
+    private bool TryGetEntryByDenseNoLock(
+        int denseIndex,
+        out RegistryEntry? entry
+    ) {
         if (denseIndex < 0 || denseIndex >= m_active.Count)
         {
             entry = null;
@@ -397,8 +409,10 @@ internal sealed class IdentityRegistry
         return entry.TryGetObject(out _);
     }
 
-    private bool TryGetLiveObjectByDenseNoLock(int denseIndex, out IdentityObject? obj)
-    {
+    private bool TryGetLiveObjectByDenseNoLock(
+        int denseIndex,
+        out IdentityObject? obj
+    ) {
         if (!TryGetEntryByDenseNoLock(denseIndex, out RegistryEntry? entry))
         {
             obj = null;
@@ -408,8 +422,11 @@ internal sealed class IdentityRegistry
         return entry!.TryGetObject(out obj);
     }
 
-    private bool TryGetLiveObjectBySlotNoLock(int slot, out IdentityObject? obj, out RegistryEntry? entry)
-    {
+    private bool TryGetLiveObjectBySlotNoLock(
+        int slot,
+        out IdentityObject? obj,
+        out RegistryEntry? entry
+    ) {
         if (!TryGetDenseIndexBySlotNoLock(slot, out int denseIndex))
         {
             obj = null;
@@ -426,8 +443,11 @@ internal sealed class IdentityRegistry
         return entry!.TryGetObject(out obj);
     }
 
-    private bool TryGetLiveEntryBySlotNoLock(int slot, out RegistryEntry? entry, out int denseIndex)
-    {
+    private bool TryGetLiveEntryBySlotNoLock(
+        int slot,
+        out RegistryEntry? entry,
+        out int denseIndex
+    ) {
         if (!TryGetDenseIndexBySlotNoLock(slot, out denseIndex))
         {
             entry = null;
@@ -437,8 +457,10 @@ internal sealed class IdentityRegistry
         return TryGetEntryByDenseNoLock(denseIndex, out entry);
     }
 
-    private bool TryGetSlotByObjectNoLock(IdentityObject obj, out int slot)
-    {
+    private bool TryGetSlotByObjectNoLock(
+        IdentityObject obj,
+        out int slot
+    ) {
         if (m_slotByObject.TryGetValue(obj, out RegistrySlot? slotInfo))
         {
             slot = slotInfo.slot;
@@ -449,8 +471,10 @@ internal sealed class IdentityRegistry
         return false;
     }
 
-    private bool TryGetSlotByPersistentNoLock(Guid persistentId, out int slot)
-    {
+    private bool TryGetSlotByPersistentNoLock(
+        Guid persistentId,
+        out int slot
+    ) {
         if (!m_slotByPersistent.TryGetValue(persistentId, out slot))
         {
             return false;
@@ -465,8 +489,10 @@ internal sealed class IdentityRegistry
         return false;
     }
 
-    private bool TryGetLiveObject(RegistryEntry entry, out IdentityObject? obj)
-    {
+    private bool TryGetLiveObject(
+        RegistryEntry entry,
+        out IdentityObject? obj
+    ) {
         return entry.TryGetObject(out obj);
     }
 
@@ -500,8 +526,10 @@ internal sealed class IdentityRegistry
         return m_active[denseIndex].persistentId;
     }
 
-    private void RemoveSlotByObjectNoLock(IdentityObject obj, int objectSlot)
-    {
+    private void RemoveSlotByObjectNoLock(
+        IdentityObject obj,
+        int objectSlot
+    ) {
         m_slotByObject.Remove(obj);
         if (TryGetDenseIndexBySlotNoLock(objectSlot, out int denseIndex))
         {
@@ -519,8 +547,10 @@ internal sealed class IdentityRegistry
         RemoveSlotBySlotNoLock(slot, denseIndex);
     }
 
-    private void RemoveSlotBySlotNoLock(int slot, int denseIndex)
-    {
+    private void RemoveSlotBySlotNoLock(
+        int slot,
+        int denseIndex
+    ) {
         RegistryEntry removed = m_active[denseIndex];
         RegistryEntry lastEntry = m_active[^1];
         int lastIndex = m_active.Count - 1;
@@ -587,8 +617,10 @@ internal sealed class IdentityRegistry
         /// <param name="persistentId">
         /// The stable persistent identity used for lookup.
         /// </param>
-        public RegistryEntry(IdentityObject obj, Guid persistentId)
-        {
+        public RegistryEntry(
+            IdentityObject obj,
+            Guid persistentId
+        ) {
             m_objectRef = new WeakReference<IdentityObject>(obj);
             this.persistentId = persistentId;
         }
@@ -602,8 +634,7 @@ internal sealed class IdentityRegistry
         /// <returns>
         /// <see langword="true"/> when the requested condition is satisfied; otherwise, <see langword="false"/>.
         /// </returns>
-        public bool TryGetObject(out IdentityObject? obj)
-            => m_objectRef.TryGetTarget(out obj);
+        public bool TryGetObject(out IdentityObject? obj) => m_objectRef.TryGetTarget(out obj);
     }
 
     private sealed class RegistrySlot

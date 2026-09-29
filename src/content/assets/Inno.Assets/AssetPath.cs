@@ -71,8 +71,10 @@ public record struct AssetPath
     /// <param name="localPath">
     /// Source-local path using forward slashes.
     /// </param>
-    public AssetPath(AssetSourceId source, string localPath)
-    {
+    public AssetPath(
+        AssetSourceId source,
+        string localPath
+    ) {
         if (!source.isValid)
             throw new ArgumentException("An asset source ID must be valid.", nameof(source));
         this.source = source;

@@ -13,8 +13,10 @@ public readonly struct IndexedObjectEntry<T> where T : class
     private readonly IndexedObjectStore<T> m_store;
     private readonly T m_item;
 
-    internal IndexedObjectEntry(IndexedObjectStore<T> store, T item)
-    {
+    internal IndexedObjectEntry(
+        IndexedObjectStore<T> store,
+        T item
+    ) {
         m_store = store;
         m_item = item;
     }
@@ -40,7 +42,10 @@ public readonly struct IndexedObjectEntry<T> where T : class
     /// The same entry for chaining.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public IndexedObjectEntry<T> Set<TKey>(IndexedObjectKey<TKey> key, TKey value) where TKey : notnull
+    public IndexedObjectEntry<T> Set<TKey>(
+        IndexedObjectKey<TKey> key,
+        TKey value
+    ) where TKey : notnull
     {
         m_store.SetKey(m_item, key, value);
         return this;

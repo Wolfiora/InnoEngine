@@ -128,11 +128,14 @@ public readonly struct RenderShaderVariant : IEquatable<RenderShaderVariant>
     /// <exception cref="InvalidOperationException">
     /// A selected option is unknown or conflicts with another option.
     /// </exception>
-    public static RenderShaderVariant FromMaterial(MaterialAsset material, ShaderDefinition definition)
-    {
+    public static RenderShaderVariant FromMaterial(
+        MaterialAsset material,
+        ShaderDefinition definition
+    ) {
         ArgumentNullException.ThrowIfNull(material);
         ArgumentNullException.ThrowIfNull(definition);
-        if (material.keywords.Count == 0) return empty;
+        if (material.keywords.Count == 0)
+            return empty;
         HashSet<string> enabled = material.keywords.ToHashSet(StringComparer.Ordinal);
         var selections = new Dictionary<string, string>(StringComparer.Ordinal);
         foreach (ShaderKeywordDefinition keyword in definition.keywords)
@@ -166,8 +169,7 @@ public readonly struct RenderShaderVariant : IEquatable<RenderShaderVariant>
     /// <returns>
     /// <see langword="true"/> when both values select identical options; otherwise, <see langword="false"/>.
     /// </returns>
-    public bool Equals(RenderShaderVariant other)
-        => string.Equals(value, other.value, StringComparison.Ordinal);
+    public bool Equals(RenderShaderVariant other) => string.Equals(value, other.value, StringComparison.Ordinal);
 
     /// <summary>
     /// Determines whether this instance and the supplied object represent the same logical state.
@@ -178,8 +180,7 @@ public readonly struct RenderShaderVariant : IEquatable<RenderShaderVariant>
     /// <returns>
     /// <see langword="true"/> when the object is an identical variant; otherwise, <see langword="false"/>.
     /// </returns>
-    public override bool Equals(object? obj)
-        => obj is RenderShaderVariant other && Equals(other);
+    public override bool Equals(object? obj) => obj is RenderShaderVariant other && Equals(other);
 
     /// <summary>
     /// Computes a hash code from the canonical variant representation.
@@ -201,7 +202,10 @@ public readonly struct RenderShaderVariant : IEquatable<RenderShaderVariant>
     /// <returns>
     /// <see langword="true"/> when both variants contain identical stable options; otherwise, <see langword="false"/>.
     /// </returns>
-    public static bool operator ==(RenderShaderVariant left, RenderShaderVariant right) => left.Equals(right);
+    public static bool operator ==(
+        RenderShaderVariant left,
+        RenderShaderVariant right
+    ) => left.Equals(right);
 
     /// <summary>
     /// Determines whether two variants select different stable options.
@@ -215,7 +219,10 @@ public readonly struct RenderShaderVariant : IEquatable<RenderShaderVariant>
     /// <returns>
     /// <see langword="true"/> when the stable options differ; otherwise, <see langword="false"/>.
     /// </returns>
-    public static bool operator !=(RenderShaderVariant left, RenderShaderVariant right) => !left.Equals(right);
+    public static bool operator !=(
+        RenderShaderVariant left,
+        RenderShaderVariant right
+    ) => !left.Equals(right);
 
     /// <summary>
     /// Formats this value as its canonical representation.
@@ -225,8 +232,10 @@ public readonly struct RenderShaderVariant : IEquatable<RenderShaderVariant>
     /// </returns>
     public override string ToString() => value;
 
-    private static void ValidatePart(string value, string parameterName)
-    {
+    private static void ValidatePart(
+        string value,
+        string parameterName
+    ) {
         if (string.IsNullOrWhiteSpace(value) || value.Contains(';') || value.Contains('='))
         {
             throw new ArgumentException(

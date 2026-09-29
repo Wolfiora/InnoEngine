@@ -38,8 +38,8 @@ public sealed class PropertyDrawerRegistry : IDisposable
         EditorInteractions interactions,
         TypeCatalog types,
         SerializationRegistry serialization,
-        IEnumerable<object> drawerServices)
-    {
+        IEnumerable<object> drawerServices
+    ) {
         m_registry = new PropertyTypeRegistry(interactions, types, serialization, drawerServices);
     }
 
@@ -76,7 +76,8 @@ public sealed class PropertyDrawerRegistry : IDisposable
             EditorInteractions interactions,
             TypeCatalog types,
             SerializationRegistry serialization,
-            IEnumerable<object> drawerServices)
+            IEnumerable<object> drawerServices
+        )
             : base(types)
         {
             m_interactions = interactions ?? throw new ArgumentNullException(nameof(interactions));
@@ -167,8 +168,8 @@ public sealed class PropertyDrawerRegistry : IDisposable
         EditorInteractions interactions,
         TypeCacheSnapshot types,
         SerializationRegistry serialization,
-        IReadOnlyList<object> drawerServices)
-    {
+        IReadOnlyList<object> drawerServices
+    ) {
         ConstructorInfo[] constructors = type.GetConstructors(
             BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
         if (constructors.Length != 1)
@@ -204,8 +205,8 @@ public sealed class PropertyDrawerRegistry : IDisposable
     private static void EnsureNoConflict(
         IReadOnlyList<Registration> registrations,
         PropertyDrawerAttribute attribute,
-        Type drawerType)
-    {
+        Type drawerType
+    ) {
         foreach (Registration existing in registrations)
         {
             if (existing.targetType == attribute.targetType && existing.priority == attribute.priority)
@@ -222,5 +223,6 @@ public sealed class PropertyDrawerRegistry : IDisposable
         bool useForChildren,
         int priority,
         Type drawerType,
-        IPropertyDrawer drawer);
+        IPropertyDrawer drawer
+    );
 }

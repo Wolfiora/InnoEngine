@@ -136,14 +136,12 @@ public sealed unsafe partial class BgfxDevice : RenderDevice, IRenderDevice, IRe
     /// <summary>
     /// Gets the current drawable pixel size of the main presentation surface.
     /// </summary>
-    public RenderPresentationSize primaryPresentationSize
-        => new(m_backbufferWidth, m_backbufferHeight);
+    public RenderPresentationSize primaryPresentationSize => new(m_backbufferWidth, m_backbufferHeight);
 
     /// <summary>
     /// Gets the submitted and completed frame counters used for deferred retirement.
     /// </summary>
-    public RenderDeviceFrameCounters frameCounters
-        => new(Volatile.Read(ref m_drawCount), Volatile.Read(ref m_dispatchCount));
+    public RenderDeviceFrameCounters frameCounters => new(Volatile.Read(ref m_drawCount), Volatile.Read(ref m_dispatchCount));
 
     /// <summary>
     /// Gets API-thread allocation diagnostics for the current device generation's native transient pools.
@@ -214,8 +212,10 @@ public sealed unsafe partial class BgfxDevice : RenderDevice, IRenderDevice, IRe
     /// <param name="frameIndex">
     /// The monotonic frame identity associated with this operation.
     /// </param>
-    public void Execute(CompiledRenderGraph graph, ulong frameIndex)
-    {
+    public void Execute(
+        CompiledRenderGraph graph,
+        ulong frameIndex
+    ) {
         EnsureFrameSafetyPoint();
         ArgumentNullException.ThrowIfNull(graph);
         graph.Execute(this, frameIndex);
@@ -260,8 +260,10 @@ public sealed unsafe partial class BgfxDevice : RenderDevice, IRenderDevice, IRe
     /// <param name="height">
     /// The height in logical units or pixels required by this operation.
     /// </param>
-    public void ResizeBackbuffer(int width, int height)
-    {
+    public void ResizeBackbuffer(
+        int width,
+        int height
+    ) {
         EnsureApiThread();
         ObjectDisposedException.ThrowIf(m_disposed, this);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(width);
@@ -302,8 +304,10 @@ public sealed unsafe partial class BgfxDevice : RenderDevice, IRenderDevice, IRe
     /// <returns>
     /// The validated persistent texture handle that represents the completed operation.
     /// </returns>
-    public PersistentTextureHandle CreateTexture(RenderTextureDescriptor descriptor, string name)
-    {
+    public PersistentTextureHandle CreateTexture(
+        RenderTextureDescriptor descriptor,
+        string name
+    ) {
         EnsureFrameSafetyPoint();
         ArgumentNullException.ThrowIfNull(descriptor);
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
@@ -342,8 +346,8 @@ public sealed unsafe partial class BgfxDevice : RenderDevice, IRenderDevice, IRe
         RenderTextureContainer container,
         ReadOnlySpan<byte> data,
         bool sRgb,
-        string name)
-    {
+        string name
+    ) {
         EnsureFrameSafetyPoint();
         if (container != RenderTextureContainer.Ktx)
         {
@@ -398,8 +402,8 @@ public sealed unsafe partial class BgfxDevice : RenderDevice, IRenderDevice, IRe
         PersistentTextureHandle texture,
         ReadOnlySpan<byte> data,
         int mipLevel = 0,
-        int arrayLayer = 0)
-    {
+        int arrayLayer = 0
+    ) {
         EnsureFrameSafetyPoint();
         ArgumentOutOfRangeException.ThrowIfNegative(mipLevel);
         ArgumentOutOfRangeException.ThrowIfNegative(arrayLayer);
@@ -491,8 +495,8 @@ public sealed unsafe partial class BgfxDevice : RenderDevice, IRenderDevice, IRe
     public void UpdateTextureRegion(
         PersistentTextureHandle texture,
         RenderTextureRegion region,
-        ReadOnlySpan<byte> data)
-    {
+        ReadOnlySpan<byte> data
+    ) {
         EnsureFrameSafetyPoint();
         ValidatePersistentHandle(texture);
         if (!m_persistentTextures.TryGetValue(GetHandleIdentity(texture).value, out bgfx.TextureHandle nativeTexture)
@@ -587,8 +591,8 @@ public sealed unsafe partial class BgfxDevice : RenderDevice, IRenderDevice, IRe
     /// </returns>
     public RenderTextureReadbackHandle BeginTextureReadback(
         PersistentTextureHandle texture,
-        int mipLevel = 0)
-    {
+        int mipLevel = 0
+    ) {
         EnsureFrameSafetyPoint();
         ArgumentOutOfRangeException.ThrowIfNegative(mipLevel);
         ValidatePersistentHandle(texture);
@@ -646,8 +650,8 @@ public sealed unsafe partial class BgfxDevice : RenderDevice, IRenderDevice, IRe
     /// </returns>
     public bool TryGetTextureReadback(
         RenderTextureReadbackHandle readback,
-        out RenderTextureReadbackResult? result)
-    {
+        out RenderTextureReadbackResult? result
+    ) {
         EnsureFrameSafetyPoint();
         ValidateReadbackHandle(readback);
         if (!m_textureReadbacks.TryGetValue(GetHandleIdentity(readback).value, out PendingTextureReadback? pending))
@@ -1001,8 +1005,10 @@ public sealed unsafe partial class BgfxDevice : RenderDevice, IRenderDevice, IRe
         return m_activeGraph.textures[GetHandleIdentity(texture).index].descriptor;
     }
 
-    private void ConfigureViewTarget(ushort viewId, CompiledRenderPass pass)
-    {
+    private void ConfigureViewTarget(
+        ushort viewId,
+        CompiledRenderPass pass
+    ) {
         int width = m_backbufferWidth;
         int height = m_backbufferHeight;
         bgfx.ClearFlags clearFlags = 0;
@@ -1098,8 +1104,10 @@ public sealed unsafe partial class BgfxDevice : RenderDevice, IRenderDevice, IRe
         bgfx.set_view_clear(viewId, (ushort)clearFlags, clearColor, clearDepth, clearStencil);
     }
 
-    private static void ApplyViewTransform(ushort viewId, RenderViewTransform? transform)
-    {
+    private static void ApplyViewTransform(
+        ushort viewId,
+        RenderViewTransform? transform
+    ) {
         if (transform is null)
         {
             bgfx.set_view_transform(viewId, null, null);
@@ -1175,8 +1183,8 @@ public sealed unsafe partial class BgfxDevice : RenderDevice, IRenderDevice, IRe
         ref bgfx.ClearFlags clearFlags,
         ref uint clearColor,
         ref float clearDepth,
-        ref byte clearStencil)
-    {
+        ref byte clearStencil
+    ) {
         for (int index = 0; index < pass.attachments.Count; index++)
         {
             CompiledRenderAttachment attachment = pass.attachments[index];
@@ -1213,8 +1221,8 @@ public sealed unsafe partial class BgfxDevice : RenderDevice, IRenderDevice, IRe
     private bgfx.TextureHandle AcquireTransientTexture(
         RenderTextureDescriptor descriptor,
         string name,
-        int physicalSlot)
-    {
+        int physicalSlot
+    ) {
         for (int index = m_transientTexturePool.Count - 1; index >= 0; index--)
         {
             PooledTransientTexture pooled = m_transientTexturePool[index];
@@ -1397,8 +1405,7 @@ public sealed unsafe partial class BgfxDevice : RenderDevice, IRenderDevice, IRe
                 + checked((uint)m_deferredDestroyFrames)
         });
 
-    private void EnqueuePipelineDestroy(BgfxPipelineResource pipeline)
-        => EnqueueDestroy(DeferredResource.ForProgram(pipeline.program));
+    private void EnqueuePipelineDestroy(BgfxPipelineResource pipeline) => EnqueueDestroy(DeferredResource.ForProgram(pipeline.program));
 
     private void ReturnTransientGraphResources()
     {
@@ -1450,8 +1457,7 @@ public sealed unsafe partial class BgfxDevice : RenderDevice, IRenderDevice, IRe
         }
     }
 
-    private bool CacheEntryExpired(uint lastUsedFrame)
-        => unchecked(m_backendFrame - lastUsedFrame) > C_TRANSIENT_CACHE_RETENTION_FRAMES;
+    private bool CacheEntryExpired(uint lastUsedFrame) => unchecked(m_backendFrame - lastUsedFrame) > C_TRANSIENT_CACHE_RETENTION_FRAMES;
 
     private void RemoveCachedFrameBuffersReferencing(ushort textureIndex)
     {
@@ -1616,8 +1622,10 @@ public sealed unsafe partial class BgfxDevice : RenderDevice, IRenderDevice, IRe
         }
     }
 
-    private static void ApplyPlatformData(ref bgfx.Init init, IPlatformWindow? window)
-    {
+    private static void ApplyPlatformData(
+        ref bgfx.Init init,
+        IPlatformWindow? window
+    ) {
         if (window is null)
         {
             return;
@@ -1643,8 +1651,7 @@ public sealed unsafe partial class BgfxDevice : RenderDevice, IRenderDevice, IRe
         return ((uint)r << 24) | ((uint)g << 16) | ((uint)b << 8) | a;
     }
 
-    private static int Utf8Length(string value)
-        => Encoding.UTF8.GetByteCount(value);
+    private static int Utf8Length(string value) => Encoding.UTF8.GetByteCount(value);
 
     private static int BytesPerPixel(RenderTextureFormat format)
         => format switch
@@ -1682,8 +1689,8 @@ public sealed unsafe partial class BgfxDevice : RenderDevice, IRenderDevice, IRe
         int rowPitch,
         int byteCount,
         nint data,
-        uint readyFrame)
-    {
+        uint readyFrame
+    ) {
         internal RenderTextureDescriptor descriptor { get; } = descriptor;
         internal int mipLevel { get; } = mipLevel;
         internal int rowPitch { get; } = rowPitch;
@@ -1697,26 +1704,29 @@ public sealed unsafe partial class BgfxDevice : RenderDevice, IRenderDevice, IRe
         RenderTextureDescriptor descriptor,
         bgfx.TextureHandle handle,
         uint lastUsedFrame,
-        int physicalSlot);
+        int physicalSlot
+    );
 
     private readonly record struct PooledTransientBuffer(
         BgfxBufferResource resource,
         uint lastUsedFrame,
-        int physicalSlot);
+        int physicalSlot
+    );
 
     private readonly record struct GraphAttachmentSignature(
         ushort textureIndex,
         int slot,
         bool isDepth,
         int mipLevel,
-        int arrayLayer);
+        int arrayLayer
+    );
 
     private sealed class CachedGraphFrameBuffer(
         bgfx.FrameBufferHandle handle,
         string passName,
         GraphAttachmentSignature[] attachments,
-        uint lastUsedFrame)
-    {
+        uint lastUsedFrame
+    ) {
         internal bgfx.FrameBufferHandle handle { get; } = handle;
         internal string passName { get; } = passName;
         internal GraphAttachmentSignature[] attachments { get; } = attachments;
@@ -1764,8 +1774,8 @@ public sealed unsafe partial class BgfxDevice : RenderDevice, IRenderDevice, IRe
     private readonly record struct DeferredResource(
         DeferredResourceKind kind,
         ushort index,
-        uint eligibleFrame)
-    {
+        uint eligibleFrame
+    ) {
         /// <summary>
         /// Creates a deferred resource record for the supplied texture handle.
         /// </summary>
@@ -1775,8 +1785,7 @@ public sealed unsafe partial class BgfxDevice : RenderDevice, IRenderDevice, IRe
         /// <returns>
         /// The validated deferred resource that represents the completed operation.
         /// </returns>
-        public static DeferredResource ForTexture(bgfx.TextureHandle texture)
-            => new(DeferredResourceKind.Texture, texture.idx, 0);
+        public static DeferredResource ForTexture(bgfx.TextureHandle texture) => new(DeferredResourceKind.Texture, texture.idx, 0);
 
         /// <summary>
         /// Creates a deferred resource record for the supplied frame buffer handle.
@@ -1819,8 +1828,7 @@ public sealed unsafe partial class BgfxDevice : RenderDevice, IRenderDevice, IRe
         /// <returns>
         /// The validated deferred resource that represents the completed operation.
         /// </returns>
-        public static DeferredResource ForProgram(bgfx.ProgramHandle program)
-            => new(DeferredResourceKind.Program, program.idx, 0);
+        public static DeferredResource ForProgram(bgfx.ProgramHandle program) => new(DeferredResourceKind.Program, program.idx, 0);
 
         /// <summary>
         /// Creates a deferred resource record for the supplied vertex layout handle.

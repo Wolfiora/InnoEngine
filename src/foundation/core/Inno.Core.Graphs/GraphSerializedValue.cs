@@ -48,8 +48,10 @@ public sealed class GraphSerializedValue
     /// A detached graph value containing native serialization bytes.
     /// </returns>
     [ScriptingApiIgnore]
-    public static GraphSerializedValue From<T>(T value, SerializationRegistry serialization)
-    {
+    public static GraphSerializedValue From<T>(
+        T value,
+        SerializationRegistry serialization
+    ) {
         ArgumentNullException.ThrowIfNull(serialization);
         return new GraphSerializedValue(serialization.Encode(writer => writer.Write("value", value)));
     }

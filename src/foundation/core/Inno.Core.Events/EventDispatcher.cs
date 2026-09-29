@@ -31,8 +31,10 @@ public sealed class EventDispatcher
     /// <exception cref="ArgumentOutOfRangeException">
     /// A budget is not positive.
     /// </exception>
-    public EventDispatcher(int queueCapacity = 65536, int flushBudget = 4096)
-    {
+    public EventDispatcher(
+        int queueCapacity = 65536,
+        int flushBudget = 4096
+    ) {
         if (queueCapacity <= 0)
             throw new ArgumentOutOfRangeException(nameof(queueCapacity));
         if (flushBudget <= 0)
@@ -193,7 +195,10 @@ public sealed class EventDispatcher
 
     private static void SortHubs(List<EventHub> hubs)
     {
-        hubs.Sort(static (a, b) =>
+        hubs.Sort(static (
+            a,
+            b
+        ) =>
         {
             int byOrder = b.order.CompareTo(a.order);
             if (byOrder != 0)

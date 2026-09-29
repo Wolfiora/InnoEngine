@@ -13,8 +13,10 @@ internal sealed class SceneStateDiagnosticTracker
     private WeakReference<GameScene>[] m_scenes = [];
     private long m_typeCacheVersion = -1;
 
-    internal SceneStateDiagnosticTracker(SceneWorld world, TypeCatalog types)
-    {
+    internal SceneStateDiagnosticTracker(
+        SceneWorld world,
+        TypeCatalog types
+    ) {
         m_world = world ?? throw new ArgumentNullException(nameof(world));
         m_types = types ?? throw new ArgumentNullException(nameof(types));
     }

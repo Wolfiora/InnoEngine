@@ -1,9 +1,6 @@
 using System;
 using System.Buffers.Binary;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices;
 using Inno.Rendering;
 
 namespace Inno.Rendering.Runtime;
@@ -30,21 +27,27 @@ internal sealed class RenderLayerCompositor : IDisposable
     ]);
 
     private readonly IRenderDevice m_device;
+    private readonly IRenderLayerCompositionProgramProvider? m_programProvider;
     private GraphicsPipelineHandle m_pipeline;
     private PersistentBufferHandle m_vertices;
     private PersistentBufferHandle m_indices;
     private bool m_disposed;
 
-    internal RenderLayerCompositor(IRenderDevice device)
-        => m_device = device ?? throw new ArgumentNullException(nameof(device));
+    internal RenderLayerCompositor(
+        IRenderDevice device,
+        IRenderLayerCompositionProgramProvider? programProvider
+    ) {
+        m_device = device ?? throw new ArgumentNullException(nameof(device));
+        m_programProvider = programProvider;
+    }
 
     internal void AddPasses(
         RenderGraphBuilder graph,
         string name,
         IReadOnlyList<RenderTextureHandle> layers,
         RenderTextureHandle output,
-        RenderViewport viewport)
-    {
+        RenderViewport viewport
+    ) {
         ObjectDisposedException.ThrowIf(m_disposed, this);
         ArgumentNullException.ThrowIfNull(graph);
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
@@ -59,7 +62,10 @@ internal sealed class RenderLayerCompositor : IDisposable
             var data = new PassData(m_pipeline, m_vertices, m_indices, layers[index], viewport);
             RasterPassBuilder pass = graph.AddRasterPass(
                 $"{name}/Layer {index + 1}", S_PHASE, data,
-                static (value, context) =>
+                static (
+                    value,
+                    context
+                ) =>
                 {
                     context.commands.SetViewport(value.viewport.x, value.viewport.y,
                         value.viewport.width, value.viewport.height);
@@ -111,7 +117,9 @@ internal sealed class RenderLayerCompositor : IDisposable
     {
         if (m_pipeline.isValid)
             return;
-        GraphicsPipelineDescriptor descriptor = LoadDescriptor(m_device.capabilities.backend);
+        IRenderLayerCompositionProgramProvider provider = m_programProvider
+            ?? throw new InvalidOperationException("The rendering host has no layer composition program provider.");
+        GraphicsPipelineDescriptor descriptor = provider.CreateDescriptor(m_device.capabilities, S_VERTEX_LAYOUT);
         GraphicsPipelineHandle pipeline = m_device.CreateGraphicsPipeline(
             descriptor, "Render Model Composition");
         PersistentBufferHandle vertices = default;
@@ -119,9 +127,7 @@ internal sealed class RenderLayerCompositor : IDisposable
         try
         {
             vertices = m_device.CreateBuffer(
-                new PersistentBufferDescriptor(
-                    new RenderBufferDescriptor(4, 20, RenderBufferUsage.Vertex),
-                    S_VERTEX_LAYOUT),
+                new PersistentBufferDescriptor(new RenderBufferDescriptor(4, 20, RenderBufferUsage.Vertex), S_VERTEX_LAYOUT),
                 CreateVertices(m_device.capabilities.originBottomLeft),
                 "Render Model Composition Vertices");
             indices = m_device.CreateBuffer(
@@ -133,46 +139,16 @@ internal sealed class RenderLayerCompositor : IDisposable
         }
         catch
         {
-            if (indices.isValid) m_device.DestroyBuffer(indices);
-            if (vertices.isValid) m_device.DestroyBuffer(vertices);
+            if (indices.isValid)
+                m_device.DestroyBuffer(indices);
+            if (vertices.isValid)
+                m_device.DestroyBuffer(vertices);
             m_device.DestroyGraphicsPipeline(pipeline);
             throw;
         }
         m_pipeline = pipeline;
         m_vertices = vertices;
         m_indices = indices;
-    }
-
-    private static GraphicsPipelineDescriptor LoadDescriptor(GraphicsApi api)
-    {
-        string platform = OperatingSystem.IsMacOS() && RuntimeInformation.ProcessArchitecture == Architecture.Arm64
-            ? "MacOSArm64"
-            : OperatingSystem.IsWindows() && RuntimeInformation.ProcessArchitecture == Architecture.X64
-                ? "WindowsX64"
-                : throw new PlatformNotSupportedException("Model composition artifacts require macOS arm64 or Windows x64.");
-        string resource = $"Inno.BuiltInShaders.Composition.{platform}.{api}";
-        using Stream source = typeof(RenderLayerCompositor).Assembly.GetManifestResourceStream(resource)
-            ?? throw new InvalidDataException($"The engine has no precompiled model composition shader '{resource}'.");
-        using var bytes = new MemoryStream();
-        source.CopyTo(bytes);
-        RenderShaderArtifact artifact = RenderShaderArtifactCodec.Decode(
-            bytes.ToArray(), "Inno/Host/Composition", RenderShaderVariant.empty);
-        RenderShaderPassArtifact pass = artifact.passes.Single();
-        ShaderInterfaceBinding binding = pass.shaderInterface.bindings.Single();
-        if (binding.id.value != "s_tex"
-            || binding.bindingKind != ShaderPropertyBindingKind.SampledTexture
-            || binding.location != 0)
-            throw new InvalidDataException("The model composition shader must expose s_tex at slot zero.");
-        RenderRasterState authored = pass.rasterState;
-        var raster = new RenderRasterState(
-            RenderCullMode.None, authored.frontFace, RenderDepthCompare.Always,
-            depthWrite: false, RenderBlendState.premultiplied,
-            authored.colorWriteMask, authored.multisampling, authored.topology);
-        return new GraphicsPipelineDescriptor(
-            pass.stages.Single(static stage => stage.stage == ShaderStage.Vertex).bytes.Span,
-            pass.stages.Single(static stage => stage.stage == ShaderStage.Fragment).bytes.Span,
-            [new(S_TEXTURE, RenderShaderBindingKind.Texture, slot: 0, nativeName: binding.nativeName)],
-            S_VERTEX_LAYOUT, raster);
     }
 
     private static byte[] CreateVertices(bool originBottomLeft)
@@ -186,8 +162,13 @@ internal sealed class RenderLayerCompositor : IDisposable
         WriteVertex(3, -1f, -1f, 0f, bottom);
         return bytes;
 
-        void WriteVertex(int index, float x, float y, float u, float v)
-        {
+        void WriteVertex(
+            int index,
+            float x,
+            float y,
+            float u,
+            float v
+        ) {
             Span<byte> value = bytes.AsSpan(index * 20, 20);
             BinaryPrimitives.WriteSingleLittleEndian(value, x);
             BinaryPrimitives.WriteSingleLittleEndian(value[4..], y);
@@ -197,6 +178,11 @@ internal sealed class RenderLayerCompositor : IDisposable
         }
     }
 
-    private sealed record PassData(GraphicsPipelineHandle pipeline, PersistentBufferHandle vertices,
-        PersistentBufferHandle indices, RenderTextureHandle source, RenderViewport viewport);
+    private sealed record PassData(
+        GraphicsPipelineHandle pipeline,
+        PersistentBufferHandle vertices,
+        PersistentBufferHandle indices,
+        RenderTextureHandle source,
+        RenderViewport viewport
+    );
 }

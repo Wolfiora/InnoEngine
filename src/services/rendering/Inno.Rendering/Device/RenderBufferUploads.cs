@@ -26,8 +26,8 @@ public sealed class RenderBufferUploadDescriptor
         int elementStride,
         RenderBufferUsage usage,
         RenderVertexLayout? vertexLayout = null,
-        RenderIndexFormat indexFormat = RenderIndexFormat.UInt32)
-    {
+        RenderIndexFormat indexFormat = RenderIndexFormat.UInt32
+    ) {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(elementStride);
         RenderBufferUsage allowed = RenderBufferUsage.Vertex
             | RenderBufferUsage.Index
@@ -88,8 +88,8 @@ public readonly record struct RenderBufferSlice
         int firstElement,
         int elementCount,
         RenderBufferUsage usage,
-        ulong frameIndex)
-    {
+        ulong frameIndex
+    ) {
         this.buffer = buffer;
         this.firstElement = firstElement;
         this.elementCount = elementCount;
@@ -152,6 +152,7 @@ public abstract class RenderFrameUploadProvider
         int firstElement,
         int elementCount,
         RenderBufferUsage usage,
-        ulong frameIndex)
+        ulong frameIndex
+    )
         => new(buffer, firstElement, elementCount, usage, frameIndex);
 }

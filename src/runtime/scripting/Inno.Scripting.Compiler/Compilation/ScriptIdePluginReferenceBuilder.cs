@@ -19,8 +19,8 @@ internal static class ScriptIdePluginReferenceBuilder
         ScriptCompilerOptions options,
         ScriptSourceSet sources,
         ScriptApiReferenceSet runtimeApi,
-        ScriptApiReferenceSet editorApi)
-    {
+        ScriptApiReferenceSet editorApi
+    ) {
         var results = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         string root = Path.Combine(options.ideDirectory, "PluginReferences");
         foreach (ScriptAssemblyInput assembly in sources.assemblies)
@@ -53,8 +53,8 @@ internal static class ScriptIdePluginReferenceBuilder
     private static string CreateFingerprint(
         ScriptAssemblyInput assembly,
         ScriptApiReferenceSet api,
-        IReadOnlyList<string> dependencies)
-    {
+        IReadOnlyList<string> dependencies
+    ) {
         string input = string.Join('\n', new[]
         {
             assembly.name,
@@ -73,8 +73,8 @@ internal static class ScriptIdePluginReferenceBuilder
         ScriptAssemblyInput assembly,
         ScriptApiReferenceSet api,
         IReadOnlyList<string> dependencies,
-        string outputPath)
-    {
+        string outputPath
+    ) {
         string[] symbols = assembly.defines
             .Concat(assembly.scope == ScriptAssemblyScope.Editor ? ["INNO_EDITOR"] : [])
             .Concat(["DEBUG", "TRACE"])

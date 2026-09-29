@@ -44,8 +44,7 @@ public readonly struct AssetArtifactKey : IEquatable<AssetArtifactKey>
     /// <param name="other">
     /// The value to compare with this instance.
     /// </param>
-    public bool Equals(AssetArtifactKey other)
-        => string.Equals(value, other.value, StringComparison.Ordinal);
+    public bool Equals(AssetArtifactKey other) => string.Equals(value, other.value, StringComparison.Ordinal);
 
     /// <summary>
     /// Determines whether this instance and the supplied value represent the same logical state.
@@ -56,8 +55,7 @@ public readonly struct AssetArtifactKey : IEquatable<AssetArtifactKey>
     /// <param name="obj">
     /// The object to compare with this instance.
     /// </param>
-    public override bool Equals(object? obj)
-        => obj is AssetArtifactKey other && Equals(other);
+    public override bool Equals(object? obj) => obj is AssetArtifactKey other && Equals(other);
 
     /// <summary>
     /// Computes a hash code from the fields that participate in logical equality.
@@ -65,8 +63,7 @@ public readonly struct AssetArtifactKey : IEquatable<AssetArtifactKey>
     /// <returns>
     /// A hash code consistent with the implemented equality contract.
     /// </returns>
-    public override int GetHashCode()
-        => StringComparer.Ordinal.GetHashCode(value ?? string.Empty);
+    public override int GetHashCode() => StringComparer.Ordinal.GetHashCode(value ?? string.Empty);
 
     /// <summary>
     /// Formats this value as a human-readable representation.
@@ -88,7 +85,10 @@ public readonly struct AssetArtifactKey : IEquatable<AssetArtifactKey>
     /// <returns>
     /// <see langword="true"/> when both keys contain the same normalized fingerprint; otherwise, <see langword="false"/>.
     /// </returns>
-    public static bool operator ==(AssetArtifactKey left, AssetArtifactKey right) => left.Equals(right);
+    public static bool operator ==(
+        AssetArtifactKey left,
+        AssetArtifactKey right
+    ) => left.Equals(right);
 
     /// <summary>
     /// Determines whether two artifact keys differ.
@@ -102,5 +102,8 @@ public readonly struct AssetArtifactKey : IEquatable<AssetArtifactKey>
     /// <returns>
     /// <see langword="true"/> when the normalized fingerprints differ; otherwise, <see langword="false"/>.
     /// </returns>
-    public static bool operator !=(AssetArtifactKey left, AssetArtifactKey right) => !left.Equals(right);
+    public static bool operator !=(
+        AssetArtifactKey left,
+        AssetArtifactKey right
+    ) => !left.Equals(right);
 }

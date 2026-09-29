@@ -29,8 +29,8 @@ internal static class Program
     private static void ParseOptions(
         string[] arguments,
         out int? smokeFrameLimit,
-        out GraphicsApi? graphicsApi)
-    {
+        out GraphicsApi? graphicsApi
+    ) {
         smokeFrameLimit = null;
         graphicsApi = null;
         for (int index = 0; index < arguments.Length; index += 2)
@@ -59,8 +59,15 @@ internal static class Program
         }
     }
 
-    private static bool TryParseGraphicsApi(string value, out GraphicsApi api)
-    {
+    private static bool TryParseGraphicsApi(
+        string value,
+        out GraphicsApi api
+    ) {
+        if (string.Equals(value, "noop", StringComparison.OrdinalIgnoreCase))
+        {
+            api = default;
+            return false;
+        }
         api = value.ToLowerInvariant() switch
         {
             "d3d11" => GraphicsApi.Direct3D11,
@@ -68,11 +75,10 @@ internal static class Program
             "metal" => GraphicsApi.Metal,
             "vulkan" => GraphicsApi.Vulkan,
             "opengl" => GraphicsApi.OpenGL,
-            _ => GraphicsApi.Noop
+            _ => GraphicsApi.TryParse(value, out GraphicsApi parsed) ? parsed : default
         };
-        return api != GraphicsApi.Noop;
+        return api.isValid && api != GraphicsApi.Noop;
     }
 
-    private static ArgumentException Usage()
-        => new("Usage: Inno.Player [--graphics-api <d3d11|d3d12|metal|vulkan|opengl>] [--smoke-frames <positive-count>].");
+    private static ArgumentException Usage() => new("Usage: Inno.Player [--graphics-api <renderer-id>] [--smoke-frames <positive-count>].");
 }

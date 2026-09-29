@@ -120,8 +120,10 @@ public static class NativeDllLoader
     /// <returns>
     /// The absolute deployed file path.
     /// </returns>
-    public static string DeployNativeFile(string sourcePath, string relativeOutputPath)
-    {
+    public static string DeployNativeFile(
+        string sourcePath,
+        string relativeOutputPath
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(sourcePath);
         ArgumentException.ThrowIfNullOrWhiteSpace(relativeOutputPath);
         if (Path.IsPathRooted(relativeOutputPath))
@@ -163,8 +165,10 @@ public static class NativeDllLoader
         return destinationPath;
     }
 
-    private static string EnsureNativeFile(string fileName, bool throwIfMissing)
-    {
+    private static string EnsureNativeFile(
+        string fileName,
+        bool throwIfMissing
+    ) {
         string? deployed = FindNativeOutputFile(fileName);
         var repoRoot = FindRepoRoot(AppContext.BaseDirectory);
         if (repoRoot == null)
@@ -229,8 +233,10 @@ public static class NativeDllLoader
         return dest;
     }
 
-    private static bool FileContentsMatch(string firstPath, string secondPath)
-    {
+    private static bool FileContentsMatch(
+        string firstPath,
+        string secondPath
+    ) {
         var firstInfo = new FileInfo(firstPath);
         var secondInfo = new FileInfo(secondPath);
         if (firstInfo.Length != secondInfo.Length)
@@ -267,8 +273,11 @@ public static class NativeDllLoader
         }
     }
 
-    private static IntPtr ResolveNativeLibrary(string libraryName, Assembly assembly, DllImportSearchPath? searchPath)
-    {
+    private static IntPtr ResolveNativeLibrary(
+        string libraryName,
+        Assembly assembly,
+        DllImportSearchPath? searchPath
+    ) {
         var candidateNames = GetLibraryFileNames(libraryName);
         foreach (var root in GetSearchRoots())
         {
@@ -325,8 +334,10 @@ public static class NativeDllLoader
         }
     }
 
-    private static string? FindPreferredTargetFile(string root, string fileName)
-    {
+    private static string? FindPreferredTargetFile(
+        string root,
+        string fileName
+    ) {
         var candidates = Directory
             .EnumerateFiles(root, fileName, SearchOption.AllDirectories)
             .ToArray();
@@ -374,8 +385,7 @@ public static class NativeDllLoader
             || normalizedPath.Contains("/linux-", StringComparison.OrdinalIgnoreCase);
     }
 
-    private static string NormalizePath(string path)
-        => path.Replace('\\', '/');
+    private static string NormalizePath(string path) => path.Replace('\\', '/');
 
     private static string? FindRepoRoot(string startDir)
     {

@@ -24,8 +24,8 @@ internal static class SerializedPropertyValueCodec
         PropertyMember member,
         GameComponent component,
         SerializationContext context,
-        SceneGraphReferenceMap references)
-    {
+        SceneGraphReferenceMap references
+    ) {
         ArgumentNullException.ThrowIfNull(member);
         ArgumentNullException.ThrowIfNull(component);
         ArgumentNullException.ThrowIfNull(context);
@@ -45,8 +45,8 @@ internal static class SerializedPropertyValueCodec
         GameComponent component,
         ReadOnlySpan<byte> bytes,
         SerializationContext context,
-        SceneGraphReferenceMap references)
-    {
+        SceneGraphReferenceMap references
+    ) {
         ArgumentNullException.ThrowIfNull(member);
         ArgumentNullException.ThrowIfNull(component);
         ArgumentNullException.ThrowIfNull(context);
@@ -116,18 +116,19 @@ internal static class SerializedPropertyValueCodec
         return [.. result];
     }
 
-    private static void WriteValue<TValue>(SerializationWriter writer, object? value)
-        => writer.Write("value", (TValue)value!);
+    private static void WriteValue<TValue>(
+        SerializationWriter writer,
+        object? value
+    ) => writer.Write("value", (TValue)value!);
 
-    private static object? ReadValue<TValue>(SerializationReader reader)
-        => reader.Read<TValue>("value");
+    private static object? ReadValue<TValue>(SerializationReader reader) => reader.Read<TValue>("value");
 
     internal sealed class PropertyMember(
         string name,
         Type type,
         Func<object, object?> getter,
-        Action<object, object?> setter)
-    {
+        Action<object, object?> setter
+    ) {
         private readonly Func<object, object?> m_getter = getter;
         private readonly Action<object, object?> m_setter = setter;
 
@@ -135,6 +136,9 @@ internal static class SerializedPropertyValueCodec
         internal Type type { get; } = type;
 
         internal object? GetValue(object target) => m_getter(target);
-        internal void SetValue(object target, object? value) => m_setter(target, value);
+        internal void SetValue(
+            object target,
+            object? value
+        ) => m_setter(target, value);
     }
 }

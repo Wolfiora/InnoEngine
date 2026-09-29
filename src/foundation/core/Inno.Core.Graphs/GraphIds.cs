@@ -118,8 +118,10 @@ public readonly record struct GraphPosition
     /// <param name="y">
     /// Vertical graph-space coordinate.
     /// </param>
-    public GraphPosition(float x, float y)
-    {
+    public GraphPosition(
+        float x,
+        float y
+    ) {
         this.x = x;
         this.y = y;
     }

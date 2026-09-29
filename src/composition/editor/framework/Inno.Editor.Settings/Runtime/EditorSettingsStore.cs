@@ -14,8 +14,10 @@ internal sealed class EditorSettingsStore
     private readonly SettingsDocumentStore<EditorSettingsDocument> m_documents;
     private Dictionary<string, EditorSettingObject> m_values;
 
-    internal EditorSettingsStore(string projectDirectory, SerializationRegistry serialization)
-    {
+    internal EditorSettingsStore(
+        string projectDirectory,
+        SerializationRegistry serialization
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(projectDirectory);
         ArgumentNullException.ThrowIfNull(serialization);
         string path = Path.Combine(Path.GetFullPath(projectDirectory), C_FILE_NAME);
@@ -27,8 +29,10 @@ internal sealed class EditorSettingsStore
         m_values = ValidateAndCopy(m_documents.Load().values);
     }
 
-    internal bool TryGet(string path, out EditorSettingObject? value)
-    {
+    internal bool TryGet(
+        string path,
+        out EditorSettingObject? value
+    ) {
         if (m_values.TryGetValue(path, out EditorSettingObject? stored))
         {
             value = stored.Copy();
@@ -38,14 +42,11 @@ internal sealed class EditorSettingsStore
         return false;
     }
 
-    internal bool Contains(string path)
-        => m_values.ContainsKey(path);
+    internal bool Contains(string path) => m_values.ContainsKey(path);
 
-    internal Dictionary<string, EditorSettingObject> GetSnapshot()
-        => Copy(m_values);
+    internal Dictionary<string, EditorSettingObject> GetSnapshot() => Copy(m_values);
 
-    internal byte[] GetDocument()
-        => Serialize(m_values);
+    internal byte[] GetDocument() => Serialize(m_values);
 
     internal void Replace(IReadOnlyDictionary<string, EditorSettingObject> values)
     {
@@ -63,8 +64,7 @@ internal sealed class EditorSettingsStore
         m_values = values;
     }
 
-    internal void ValidateDocument(ReadOnlySpan<byte> document)
-        => _ = ReadValues(document);
+    internal void ValidateDocument(ReadOnlySpan<byte> document) => _ = ReadValues(document);
 
     private Dictionary<string, EditorSettingObject> ReadValues(ReadOnlySpan<byte> document)
     {
@@ -87,8 +87,7 @@ internal sealed class EditorSettingsStore
     private byte[] Serialize(IReadOnlyDictionary<string, EditorSettingObject> values)
         => m_documents.Capture(new EditorSettingsDocument { values = Copy(values) });
 
-    private static Dictionary<string, EditorSettingObject> ValidateAndCopy(
-        IReadOnlyDictionary<string, EditorSettingObject> values)
+    private static Dictionary<string, EditorSettingObject> ValidateAndCopy(IReadOnlyDictionary<string, EditorSettingObject> values)
     {
         ArgumentNullException.ThrowIfNull(values);
         var result = new Dictionary<string, EditorSettingObject>(values.Count, StringComparer.Ordinal);
@@ -113,8 +112,7 @@ internal sealed class EditorSettingsStore
         return result;
     }
 
-    private static Dictionary<string, EditorSettingObject> Copy(
-        IReadOnlyDictionary<string, EditorSettingObject> values)
+    private static Dictionary<string, EditorSettingObject> Copy(IReadOnlyDictionary<string, EditorSettingObject> values)
     {
         var result = new Dictionary<string, EditorSettingObject>(values.Count, StringComparer.Ordinal);
         foreach ((string path, EditorSettingObject value) in values)
@@ -122,8 +120,7 @@ internal sealed class EditorSettingsStore
         return result;
     }
 
-    private void Write(ReadOnlySpan<byte> document)
-        => m_documents.Restore(document);
+    private void Write(ReadOnlySpan<byte> document) => m_documents.Restore(document);
 
     private static void ValidateDocumentValue(EditorSettingsDocument document)
     {

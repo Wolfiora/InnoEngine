@@ -42,7 +42,10 @@ public sealed class CSharpSampleSourceRewriter : IAssetSampleSourceRewriter
                 .Where(static attribute => IsStableTypeId(attribute.Name.ToString())).ToArray();
             if (attributes.Length == 0)
                 continue;
-            SyntaxNode rewritten = root.ReplaceNodes(attributes, (original, _) =>
+            SyntaxNode rewritten = root.ReplaceNodes(attributes, (
+                original,
+                _
+            ) =>
             {
                 AttributeSyntax attribute = (AttributeSyntax)original;
                 if (attribute.ArgumentList?.Arguments is not { Count: 1 } arguments
@@ -66,6 +69,5 @@ public sealed class CSharpSampleSourceRewriter : IAssetSampleSourceRewriter
         }
     }
 
-    private static bool IsStableTypeId(string name)
-        => name.Split('.').Last() is "StableTypeId" or "StableTypeIdAttribute";
+    private static bool IsStableTypeId(string name) => name.Split('.').Last() is "StableTypeId" or "StableTypeIdAttribute";
 }

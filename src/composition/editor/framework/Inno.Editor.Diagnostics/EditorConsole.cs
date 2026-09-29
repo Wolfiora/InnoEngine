@@ -45,8 +45,8 @@ public sealed class EditorConsole : IEditorConsole, ILogSink, IDiagnosticSink, I
     public EditorConsole(
         LogRouter logRouter,
         DiagnosticHub diagnosticHub,
-        IEditorPlayMode playMode)
-    {
+        IEditorPlayMode playMode
+    ) {
         m_logRouter = logRouter ?? throw new ArgumentNullException(nameof(logRouter));
         m_diagnosticHub = diagnosticHub ?? throw new ArgumentNullException(nameof(diagnosticHub));
         m_playMode = playMode ?? throw new ArgumentNullException(nameof(playMode));
@@ -222,7 +222,10 @@ public sealed class EditorConsole : IEditorConsole, ILogSink, IDiagnosticSink, I
         }
     }
 
-    private static EditorConsoleOccurrence FromLog(long sequence, LogEntry entry)
+    private static EditorConsoleOccurrence FromLog(
+        long sequence,
+        LogEntry entry
+    )
         => new(
             sequence,
             EditorConsoleEntryKind.Log,
@@ -242,8 +245,8 @@ public sealed class EditorConsole : IEditorConsole, ILogSink, IDiagnosticSink, I
     private static EditorConsoleOccurrence FromDiagnostic(
         long sequence,
         DiagnosticReport report,
-        Diagnostic diagnostic)
-    {
+        Diagnostic diagnostic
+    ) {
         DiagnosticLocation? location = diagnostic.location;
         return new EditorConsoleOccurrence(
             sequence,
@@ -268,8 +271,7 @@ public sealed class EditorConsole : IEditorConsole, ILogSink, IDiagnosticSink, I
             LogSessionId.none);
     }
 
-    private long NextSequence()
-        => Interlocked.Increment(ref m_nextSequence);
+    private long NextSequence() => Interlocked.Increment(ref m_nextSequence);
 
     private void TrimLogsUnsafe()
     {

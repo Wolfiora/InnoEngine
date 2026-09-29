@@ -15,8 +15,10 @@ internal sealed class EditorHostResourceStack(Action<Exception> reportCleanupFai
     private readonly List<Action> m_cleanup = [];
     private bool m_disposed;
 
-    internal T Acquire<T>(Func<T> factory, Action<T> cleanup)
-    {
+    internal T Acquire<T>(
+        Func<T> factory,
+        Action<T> cleanup
+    ) {
         ArgumentNullException.ThrowIfNull(factory);
         ArgumentNullException.ThrowIfNull(cleanup);
         ObjectDisposedException.ThrowIf(m_disposed, this);
@@ -47,7 +49,10 @@ internal sealed class EditorHostResourceStack(Action<Exception> reportCleanupFai
             {
                 cleanup();
             }
-            catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null) { throw; }
+            catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null)
+            {
+                throw;
+            }
             catch (Exception exception)
             {
                 failures.Add(exception);

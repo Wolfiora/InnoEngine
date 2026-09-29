@@ -36,8 +36,8 @@ public sealed class RenderFrameStatistics
         int drawCount,
         int dispatchCount,
         int culledPassCount,
-        RenderDeviceAllocationCounters? allocationCounters)
-    {
+        RenderDeviceAllocationCounters? allocationCounters
+    ) {
         ArgumentOutOfRangeException.ThrowIfNegative(viewCount);
         ArgumentOutOfRangeException.ThrowIfNegative(drawCount);
         ArgumentOutOfRangeException.ThrowIfNegative(dispatchCount);
@@ -90,8 +90,7 @@ public static class GraphicsSettings
     /// <summary>
     /// Gets current device capabilities, or <see langword="null"/> before device initialization.
     /// </summary>
-    public static GraphicsCapabilities? capabilities
-        => GraphicsSettingsExecutionContext.currentOrNull?.capabilities;
+    public static GraphicsCapabilities? capabilities => GraphicsSettingsExecutionContext.currentOrNull?.capabilities;
 
     /// <summary>
     /// Gets or sets the project default pipeline used by requests without an override.
@@ -105,8 +104,7 @@ public static class GraphicsSettings
     /// <summary>
     /// Gets statistics for the last completed frame, or <see langword="null"/> before the first frame.
     /// </summary>
-    public static RenderFrameStatistics? frameStatistics
-        => GraphicsSettingsExecutionContext.currentOrNull?.frameStatistics;
+    public static RenderFrameStatistics? frameStatistics => GraphicsSettingsExecutionContext.currentOrNull?.frameStatistics;
 }
 
 internal sealed class GraphicsSettingsState

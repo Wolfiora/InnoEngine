@@ -49,9 +49,14 @@ internal sealed class ShaderEditorPanel(ShaderEditorDocuments documents) : Edito
                 new Vector2(40f, 28f));
             return;
         }
-        try { new ShaderEditorCanvas(documents, documents.Open(entry)).Draw(); }
+        try
+        {
+            new ShaderEditorCanvas(documents, documents.Open(entry)).Draw();
+        }
         catch (Exception failure) when ((failure is System.IO.IOException or InvalidOperationException or FormatException) && Inno.Core.Execution.RetirementPendingException.Find(failure) is null)
-        { NativeImGui.TextWrapped(failure.Message); }
+        {
+            NativeImGui.TextWrapped(failure.Message);
+        }
     }
 }
 
@@ -67,8 +72,7 @@ internal sealed class OpenShaderEditorAction : EditorAction<ShaderAsset, string>
     /// <returns>
     /// The validated editor action state that represents the completed operation.
     /// </returns>
-    protected override EditorActionState Query(EditorActionContext<ShaderAsset, string> context)
-        => EditorActionState.enabled;
+    protected override EditorActionState Query(EditorActionContext<ShaderAsset, string> context) => EditorActionState.enabled;
     /// <summary>
     /// Applies the editor action to the supplied interaction context.
     /// </summary>
@@ -78,6 +82,7 @@ internal sealed class OpenShaderEditorAction : EditorAction<ShaderAsset, string>
     protected override void Execute(EditorActionContext<ShaderAsset, string> context)
     {
         context.interactions.SetSelection(context.target);
-        if (!context.interactions.OpenPanel("rendering.shader-editor")) throw new InvalidOperationException("Shader Editor is unavailable.");
+        if (!context.interactions.OpenPanel("rendering.shader-editor"))
+            throw new InvalidOperationException("Shader Editor is unavailable.");
     }
 }

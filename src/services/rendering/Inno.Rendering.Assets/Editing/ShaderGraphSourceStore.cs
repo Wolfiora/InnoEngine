@@ -24,8 +24,10 @@ public sealed class ShaderGraphSourceStore
     /// <param name="serialization">
     /// Current native converter registry.
     /// </param>
-    public ShaderGraphSourceStore(AssetPipeline assets, SerializationRegistry serialization)
-    {
+    public ShaderGraphSourceStore(
+        AssetPipeline assets,
+        SerializationRegistry serialization
+    ) {
         ArgumentNullException.ThrowIfNull(assets);
         m_sources = assets.CreateSourceStore();
         m_serialization = serialization ?? throw new ArgumentNullException(nameof(serialization));
@@ -68,8 +70,11 @@ public sealed class ShaderGraphSourceStore
     /// <exception cref="InvalidOperationException">
     /// The mount is unavailable or read-only.
     /// </exception>
-    public string Save(AssetPath path, GraphDocument graph, string? expectedHash)
-    {
+    public string Save(
+        AssetPath path,
+        GraphDocument graph,
+        string? expectedHash
+    ) {
         ArgumentNullException.ThrowIfNull(graph);
         Validate(path);
         return m_sources.Save(path, GraphDocumentCodec.Encode(graph, m_serialization), expectedHash);
@@ -89,8 +94,15 @@ public sealed class ShaderGraphSourceStore
 public sealed class ShaderGraphSourceSnapshot
 {
     private readonly GraphDocument m_document;
-    internal ShaderGraphSourceSnapshot(GraphDocument document, string hash, bool readOnly)
-    { m_document = document; contentHash = hash; isReadOnly = readOnly; }
+    internal ShaderGraphSourceSnapshot(
+        GraphDocument document,
+        string hash,
+        bool readOnly
+    ) {
+        m_document = document;
+        contentHash = hash;
+        isReadOnly = readOnly;
+    }
     /// <summary>
     /// Gets a detached copy of authored graph records.
     /// </summary>

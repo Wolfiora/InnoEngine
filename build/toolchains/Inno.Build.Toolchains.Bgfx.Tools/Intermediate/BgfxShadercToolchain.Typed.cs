@@ -46,8 +46,10 @@ public sealed partial class BgfxShadercToolchain
     /// <returns>
     /// An asynchronous operation that completes after all requested work has finished.
     /// </returns>
-    public async ValueTask<ShaderStageToolResult> CompileAsync(ShaderStageToolRequest request, CancellationToken cancellationToken)
-    {
+    public async ValueTask<ShaderStageToolResult> CompileAsync(
+        ShaderStageToolRequest request,
+        CancellationToken cancellationToken
+    ) {
         ArgumentNullException.ThrowIfNull(request);
         ArgumentNullException.ThrowIfNull(request.stage);
         ArgumentNullException.ThrowIfNull(request.target);
@@ -119,15 +121,20 @@ public sealed partial class BgfxShadercToolchain
         return result;
     }
 
-    private static void RequireBinaryRange(ReadOnlySpan<byte> binary, int offset, int length)
-    {
+    private static void RequireBinaryRange(
+        ReadOnlySpan<byte> binary,
+        int offset,
+        int length
+    ) {
         if (length < 0 || offset < 0 || offset > binary.Length - length)
             throw new InvalidDataException("BGFX shaderc returned a truncated reflected uniform table.");
     }
 
-    private static List<ShaderSourceDiagnostic> ParseDiagnostics(BgfxShadercResult native,
-        IReadOnlyList<ShaderSourcePosition> sourcePositions, ShaderSourcePosition fallback)
-    {
+    private static List<ShaderSourceDiagnostic> ParseDiagnostics(
+        BgfxShadercResult native,
+        IReadOnlyList<ShaderSourcePosition> sourcePositions,
+        ShaderSourcePosition fallback
+    ) {
         var diagnostics = new List<ShaderSourceDiagnostic>();
         string[] lines = (native.standardOutput + "\n" + native.standardError).Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
         var sourceMap = new Dictionary<int, ShaderSourcePosition>();
@@ -135,12 +142,15 @@ public sealed partial class BgfxShadercToolchain
         {
             Match excerpt = SourceExcerptPattern().Match(line);
             if (!excerpt.Success || !int.TryParse(excerpt.Groups["line"].Value, out int physicalLine)
-                || !int.TryParse(excerpt.Groups["marker"].Value, out int marker)) continue;
-            if (marker >= 0 && marker < sourcePositions.Count) sourceMap[physicalLine] = sourcePositions[marker];
+                || !int.TryParse(excerpt.Groups["marker"].Value, out int marker))
+                    continue;
+            if (marker >= 0 && marker < sourcePositions.Count)
+                sourceMap[physicalLine] = sourcePositions[marker];
         }
         foreach (string line in lines)
         {
-            if (line == "Code:" || line == "---") continue;
+            if (line == "Code:" || line == "---")
+                continue;
             DiagnosticSeverity severity = ErrorSeverityPattern().IsMatch(line) ? DiagnosticSeverity.Error
                 : WarningSeverityPattern().IsMatch(line) ? DiagnosticSeverity.Warning : DiagnosticSeverity.Info;
             Match match = SourceDiagnosticPattern().Match(line);
@@ -156,15 +166,22 @@ public sealed partial class BgfxShadercToolchain
         return diagnostics;
     }
 
-    private static void ValidateCapabilities(ShaderIrStage stage, GraphicsCapabilities capabilities)
-    {
-        if (stage.stage == ShaderStage.Compute) Require(GraphicsCapability.Compute);
+    private static void ValidateCapabilities(
+        ShaderIrStage stage,
+        GraphicsCapabilities capabilities
+    ) {
+        if (stage.stage == ShaderStage.Compute)
+            Require(GraphicsCapability.Compute);
         foreach (ShaderIrStageInput input in stage.inputs)
         {
-            if (input.kind == ShaderIrInputKind.VertexAttribute && input.semantic == "instance-data") Require(GraphicsCapability.Instancing);
-            if (input.kind == ShaderIrInputKind.Builtin && input.semantic == "vertex-id") Require(GraphicsCapability.ProceduralDraw);
-            if (input.type.id == "sampled-texture2d-array") Require(GraphicsCapability.Texture2DArray);
-            if (input.type.id == "sampled-texture3d") Require(GraphicsCapability.Texture3D);
+            if (input.kind == ShaderIrInputKind.VertexAttribute && input.semantic == "instance-data")
+                Require(GraphicsCapability.Instancing);
+            if (input.kind == ShaderIrInputKind.Builtin && input.semantic == "vertex-id")
+                Require(GraphicsCapability.ProceduralDraw);
+            if (input.type.id == "sampled-texture2d-array")
+                Require(GraphicsCapability.Texture2DArray);
+            if (input.type.id == "sampled-texture3d")
+                Require(GraphicsCapability.Texture3D);
             if (input.type.storage is ShaderStorageType storage)
             {
                 if (stage.stage != ShaderStage.Compute)
@@ -174,8 +191,10 @@ public sealed partial class BgfxShadercToolchain
                     throw new BgfxSourceSyntaxException("A storage binding exceeds the target compute binding limit.", new("inno-generated-stage", 1, 1));
                 if (storage.isImage)
                 {
-                    if (storage.array) Require(GraphicsCapability.Texture2DArray);
-                    if (storage.dimension == RenderTextureDimension.Texture3D) Require(GraphicsCapability.Texture3D);
+                    if (storage.array)
+                        Require(GraphicsCapability.Texture2DArray);
+                    if (storage.dimension == RenderTextureDimension.Texture3D)
+                        Require(GraphicsCapability.Texture3D);
                     if (!capabilities.SupportsStorage(storage.format!.Value, storage.access))
                         throw new BgfxSourceSyntaxException($"Storage format '{storage.format}' does not support '{storage.access}' on this target.", new("inno-generated-stage", 1, 1));
                 }
@@ -183,14 +202,16 @@ public sealed partial class BgfxShadercToolchain
         }
         foreach (ShaderIrStageOutput output in stage.outputs)
         {
-            if (output.kind == ShaderIrOutputKind.Depth) Require(GraphicsCapability.FragmentDepth);
+            if (output.kind == ShaderIrOutputKind.Depth)
+                Require(GraphicsCapability.FragmentDepth);
             if (output.kind == ShaderIrOutputKind.Color && output.location >= capabilities.limits.maxColorAttachments)
                 throw new BgfxSourceSyntaxException($"Color attachment {output.location} exceeds the target limit {capabilities.limits.maxColorAttachments}.", new("inno-generated-stage", 1, 1));
         }
         return;
         void Require(GraphicsCapability capability)
         {
-            if (!capabilities.Supports(capability)) throw new BgfxSourceSyntaxException($"The stage requires unsupported capability '{capability}'.", new("inno-generated-stage", 1, 1));
+            if (!capabilities.Supports(capability))
+                throw new BgfxSourceSyntaxException($"The stage requires unsupported capability '{capability}'.", new("inno-generated-stage", 1, 1));
         }
     }
 

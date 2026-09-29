@@ -20,7 +20,8 @@ public static class EditorMenuRenderer
 
     private readonly record struct MenuSection(
         EditorInteraction interaction,
-        IReadOnlyList<EditorMenuItem> items);
+        IReadOnlyList<EditorMenuItem> items
+    );
 
     /// <summary>
     /// Draws a resolved right-click menu for the most recently submitted ImGui item.
@@ -34,8 +35,10 @@ public static class EditorMenuRenderer
     /// <returns>
     /// <see langword="true"/> while the context popup is open and its items were drawn.
     /// </returns>
-    public static bool ContextMenu(string id, EditorInteraction interaction)
-    {
+    public static bool ContextMenu(
+        string id,
+        EditorInteraction interaction
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(id);
         uint popupId = NativeImGui.GetID(id);
         if (!ShouldResolveItemContextMenu(id))
@@ -77,8 +80,8 @@ public static class EditorMenuRenderer
     public static bool ContextMenu(
         string id,
         EditorInteraction scopeInteraction,
-        EditorInteraction itemInteraction)
-    {
+        EditorInteraction itemInteraction
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(id);
         uint popupId = NativeImGui.GetID(id);
         if (!ShouldResolveItemContextMenu(id))
@@ -120,8 +123,10 @@ public static class EditorMenuRenderer
     /// <returns>
     /// <see langword="true"/> while the background context popup is open and its items were drawn.
     /// </returns>
-    public static bool WindowContextMenu(string id, EditorInteraction interaction)
-    {
+    public static bool WindowContextMenu(
+        string id,
+        EditorInteraction interaction
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(id);
         uint popupId = NativeImGui.GetID(id);
         if (!ShouldResolveWindowContextMenu(id))
@@ -147,8 +152,8 @@ public static class EditorMenuRenderer
 
     private static void DrawContextMenuContents(
         uint popupId,
-        IReadOnlyList<MenuSection> sections)
-    {
+        IReadOnlyList<MenuSection> sections
+    ) {
         string search = NativeImGui.IsWindowAppearing()
             ? string.Empty
             : m_contextSearches.GetValueOrDefault(popupId, string.Empty);
@@ -225,8 +230,8 @@ public static class EditorMenuRenderer
 
     private static void DrawCenteredToolbar(
         EditorInteraction interaction,
-        IReadOnlyList<EditorToolbarItem> items)
-    {
+        IReadOnlyList<EditorToolbarItem> items
+    ) {
         if (items.Count == 0)
             return;
         ImGuiStylePtr style = NativeImGui.GetStyle();
@@ -247,8 +252,8 @@ public static class EditorMenuRenderer
     private static void DrawToolbarItem(
         EditorInteraction interaction,
         EditorToolbarItem item,
-        Vector2 size)
-    {
+        Vector2 size
+    ) {
         bool disabled = !item.status.isEnabled;
         if (disabled)
             NativeImGui.BeginDisabled(true);
@@ -314,8 +319,10 @@ public static class EditorMenuRenderer
     /// <param name="items">
     /// The immutable menu nodes to draw in display order.
     /// </param>
-    public static void DrawItems(EditorInteraction interaction, IReadOnlyList<EditorMenuItem> items)
-    {
+    public static void DrawItems(
+        EditorInteraction interaction,
+        IReadOnlyList<EditorMenuItem> items
+    ) {
         ArgumentNullException.ThrowIfNull(items);
         for (int i = 0; i < items.Count; i++)
         {
@@ -372,8 +379,8 @@ public static class EditorMenuRenderer
     public static bool DrawSearchItems(
         EditorInteraction interaction,
         IReadOnlyList<EditorMenuItem> items,
-        string search)
-    {
+        string search
+    ) {
         ArgumentNullException.ThrowIfNull(items);
         return DrawSearchItems(interaction, items, search ?? string.Empty, string.Empty);
     }
@@ -382,8 +389,8 @@ public static class EditorMenuRenderer
         EditorInteraction interaction,
         IReadOnlyList<EditorMenuItem> items,
         string search,
-        string parentPath)
-    {
+        string parentPath
+    ) {
         for (int i = 0; i < items.Count; i++)
         {
             EditorMenuItem item = items[i];

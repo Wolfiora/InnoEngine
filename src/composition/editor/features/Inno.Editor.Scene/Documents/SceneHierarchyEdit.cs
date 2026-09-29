@@ -31,6 +31,8 @@ public sealed class SceneHierarchyEdit
     /// <exception cref="InvalidOperationException">
     /// Thrown when either scene is not loaded by the editor world.
     /// </exception>
-    public void MoveToScene(GameObject gameObject, GameScene destination)
-        => m_world.MoveGameObjectToScene(gameObject, destination);
+    public void MoveToScene(
+        GameObject gameObject,
+        GameScene destination
+    ) => m_world.MoveGameObjectToScene(gameObject, destination);
 }

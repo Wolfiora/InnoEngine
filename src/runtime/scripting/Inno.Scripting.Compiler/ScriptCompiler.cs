@@ -40,8 +40,8 @@ public sealed class ScriptCompiler
     public ScriptCompiler(
         ScriptCompilerOptions options,
         AssetPipeline assets,
-        PluginEnvironment plugins)
-    {
+        PluginEnvironment plugins
+    ) {
         ArgumentNullException.ThrowIfNull(options);
         ArgumentNullException.ThrowIfNull(assets);
         ArgumentNullException.ThrowIfNull(plugins);
@@ -86,7 +86,8 @@ public sealed class ScriptCompiler
     /// </exception>
     public ValueTask<ScriptCompilationResult> CompileAuthoringGenerationAsync(
         IProgress<ScriptCompilationProgress>? progress = null,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
         => ScriptCompilerEngine.CompileAsync(
             m_options,
             m_assets,
@@ -95,7 +96,10 @@ public sealed class ScriptCompiler
             targetRuntimeDirectory: null,
             progress is null
                 ? null
-                : (fraction, stage) => progress.Report(new ScriptCompilationProgress(fraction, stage)),
+                : (
+                    fraction,
+                    stage
+                ) => progress.Report(new ScriptCompilationProgress(fraction, stage)),
             cancellationToken);
 
     /// <summary>
@@ -128,8 +132,8 @@ public sealed class ScriptCompiler
     public ValueTask<ScriptCompilationResult> CompileRuntimeDeploymentAsync(
         string targetRuntimeDirectory,
         IProgress<ScriptCompilationProgress>? progress = null,
-        CancellationToken cancellationToken = default)
-    {
+        CancellationToken cancellationToken = default
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(targetRuntimeDirectory);
         return ScriptCompilerEngine.CompileAsync(
             m_options,
@@ -139,7 +143,10 @@ public sealed class ScriptCompiler
             targetRuntimeDirectory: targetRuntimeDirectory,
             progress is null
                 ? null
-                : (fraction, stage) => progress.Report(new ScriptCompilationProgress(fraction, stage)),
+                : (
+                    fraction,
+                    stage
+                ) => progress.Report(new ScriptCompilationProgress(fraction, stage)),
             cancellationToken);
     }
 

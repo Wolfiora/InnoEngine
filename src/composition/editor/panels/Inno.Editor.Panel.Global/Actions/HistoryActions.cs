@@ -33,8 +33,7 @@ internal sealed class UndoEditorAction : EditorAction
     /// <param name="context">
     /// The operation scope that provides state, services, and ownership boundaries.
     /// </param>
-    protected override void Execute(EditorActionContext context)
-        => _ = context.history.Undo();
+    protected override void Execute(EditorActionContext context) => _ = context.history.Undo();
 }
 
 [EditorAction(GlobalInteractionIds.C_REDO, priority: 1000)]
@@ -68,6 +67,5 @@ internal sealed class RedoEditorAction : EditorAction
     /// <param name="context">
     /// The operation scope that provides state, services, and ownership boundaries.
     /// </param>
-    protected override void Execute(EditorActionContext context)
-        => _ = context.history.Redo();
+    protected override void Execute(EditorActionContext context) => _ = context.history.Redo();
 }

@@ -48,8 +48,10 @@ public sealed class AssetBrowserState
     /// <exception cref="ArgumentNullException">
     /// Thrown when <paramref name="interactions"/> is <see langword="null"/>.
     /// </exception>
-    internal AssetBrowserState(EditorInteractions interactions, AssetPipeline assets)
-    {
+    internal AssetBrowserState(
+        EditorInteractions interactions,
+        AssetPipeline assets
+    ) {
         m_interactions = interactions ?? throw new ArgumentNullException(nameof(interactions));
         m_assets = assets ?? throw new ArgumentNullException(nameof(assets));
     }
@@ -92,24 +94,35 @@ public sealed class AssetBrowserState
         return (m_interactions.selection.selectedTarget as Inno.Assets.Pipeline.AssetFileEntry)?.assetPath.ToString();
     }
 
-    internal bool IsSelected(EditorContext context, AssetFileEntry entry)
+    internal bool IsSelected(
+        EditorContext context,
+        AssetFileEntry entry
+    )
         => m_interactions.selection.selectedTarget is AssetInspectionSelection group
             ? m_assets.TryGetInfo(entry.assetPath, out AssetInfo? info) && info is not null && group.assetIds.Contains(info.persistentId)
             : string.Equals(GetSelectedPath(context), entry.assetPath.ToString(), StringComparison.Ordinal);
 
-    internal void ToggleSelection(EditorContext context, AssetFileEntry entry)
-    {
+    internal void ToggleSelection(
+        EditorContext context,
+        AssetFileEntry entry
+    ) {
         if (entry.isDirectory || !m_assets.TryGetInfo(entry.assetPath, out AssetInfo? info) || info is null)
-        { Select(context, entry.assetPath.ToString()); return; }
+        {
+            Select(context, entry.assetPath.ToString());
+            return;
+        }
         var ids = m_interactions.selection.selectedTarget is AssetInspectionSelection group ? group.assetIds.ToList() : new System.Collections.Generic.List<Guid>();
         if (ids.Count == 0 && m_interactions.selection.selectedTarget is AssetFileEntry selected && !selected.isDirectory
             && m_assets.TryGetInfo(selected.assetPath, out AssetInfo? previous) && previous is not null)
             ids.Add(previous.persistentId);
-        if (!ids.Remove(info.persistentId)) ids.Add(info.persistentId);
-        if (ids.Count == 0) Select(context, null);
+        if (!ids.Remove(info.persistentId))
+            ids.Add(info.persistentId);
+        if (ids.Count == 0)
+            Select(context, null);
         else if (ids.Count == 1 && m_assets.TryGetInfo(ids[0], out AssetInfo? remaining) && remaining is not null)
             Select(context, remaining.assetPath.ToString());
-        else m_interactions.SetSelection(new AssetInspectionSelection(ids));
+        else
+            m_interactions.SetSelection(new AssetInspectionSelection(ids));
     }
 
     /// <summary>
@@ -118,8 +131,7 @@ public sealed class AssetBrowserState
     /// <param name="value">
     /// The authoring or installed-content root to display.
     /// </param>
-    public void SetRoot(AssetBrowserRoot value)
-        => root = value;
+    public void SetRoot(AssetBrowserRoot value) => root = value;
 
     /// <summary>
     /// Sets the current Asset Browser directory and infers its root from the isolated source identity.
@@ -156,8 +168,10 @@ public sealed class AssetBrowserState
     /// <exception cref="ArgumentNullException">
     /// Thrown when <paramref name="context"/> is <see langword="null"/>.
     /// </exception>
-    public void Select(EditorContext context, string? relativePath)
-    {
+    public void Select(
+        EditorContext context,
+        string? relativePath
+    ) {
         ArgumentNullException.ThrowIfNull(context);
         object? target = null;
         if (!string.IsNullOrWhiteSpace(relativePath))
@@ -180,15 +194,17 @@ public sealed class AssetBrowserState
     internal void Restore(
         AssetBrowserRoot restoredRoot,
         string assetsDirectory,
-        string pluginsDirectory)
-    {
+        string pluginsDirectory
+    ) {
         m_assetsDirectory = Normalize(assetsDirectory);
         m_pluginsDirectory = Normalize(pluginsDirectory);
         root = restoredRoot;
     }
 
-    internal void SetLocation(AssetBrowserRoot targetRoot, string directory)
-    {
+    internal void SetLocation(
+        AssetBrowserRoot targetRoot,
+        string directory
+    ) {
         string normalized = Normalize(directory);
         if (!string.IsNullOrEmpty(normalized))
         {
@@ -206,8 +222,10 @@ public sealed class AssetBrowserState
         root = targetRoot;
     }
 
-    private void SetDirectory(AssetBrowserRoot targetRoot, string directory)
-    {
+    private void SetDirectory(
+        AssetBrowserRoot targetRoot,
+        string directory
+    ) {
         if (targetRoot == AssetBrowserRoot.Assets)
             m_assetsDirectory = directory;
         else

@@ -57,7 +57,11 @@ internal abstract class BgfxBuilder
     /// <param name="makeTargetOverride">
     /// The make target override text validated by the build operation.
     /// </param>
-    public abstract void Build(string bgfxDir, string config, string? makeTargetOverride);
+    public abstract void Build(
+        string bgfxDir,
+        string config,
+        string? makeTargetOverride
+    );
 
     /// <summary>
     /// Builds the native offline tools required by the selected configuration.
@@ -68,5 +72,8 @@ internal abstract class BgfxBuilder
     /// <param name="config">
     /// The validated configuration that controls this operation.
     /// </param>
-    public abstract void BuildTools(string bgfxDir, string config);
+    public abstract void BuildTools(
+        string bgfxDir,
+        string config
+    );
 }

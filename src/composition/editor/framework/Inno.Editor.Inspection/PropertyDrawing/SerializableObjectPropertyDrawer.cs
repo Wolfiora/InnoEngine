@@ -18,8 +18,8 @@ internal sealed class SerializableObjectPropertyDrawer : IPropertyDrawer
 
     internal SerializableObjectPropertyDrawer(
         TypeCacheSnapshot types,
-        SerializationRegistry serialization)
-    {
+        SerializationRegistry serialization
+    ) {
         m_types = types ?? throw new ArgumentNullException(nameof(types));
         m_serialization = serialization ?? throw new ArgumentNullException(nameof(serialization));
     }
@@ -60,8 +60,11 @@ internal sealed class SerializableObjectPropertyDrawer : IPropertyDrawer
         NativeImGui.TreePop();
     }
 
-    private void DrawTypeSelector(PropertyDrawContext context, Type runtimeType, object? value)
-    {
+    private void DrawTypeSelector(
+        PropertyDrawContext context,
+        Type runtimeType,
+        object? value
+    ) {
         if (!EditorWidget.BeginBoundedCombo(
                 $"##{context.path}_runtime_type",
                 value is null ? "Null" : runtimeType.Name))

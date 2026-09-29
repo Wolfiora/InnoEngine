@@ -13,8 +13,10 @@
 #include <unordered_map>
 #include <vector>
 
-namespace Inno::UI::RmlUiAdapter {
-namespace {
+namespace Inno::UI::RmlUiAdapter
+{
+namespace
+{
 
 struct ProcessHost
 {
@@ -114,21 +116,15 @@ std::uint64_t AllocateDocumentId() noexcept
     return GetProcessHost().next_document.fetch_add(1, std::memory_order_relaxed);
 }
 
-Result LoadFont(
-    const std::uint8_t* data,
-    std::uint64_t length,
-    const char* family,
-    int style,
-    int weight,
-    bool fallback)
+Result LoadFont(const std::uint8_t* data, std::uint64_t length, const char* family, int style, int weight, bool fallback)
 {
     if (!data || length == 0 || !family || family[0] == '\0' || style < 0 || style > 2 || weight < 1 || weight > 1000)
         return Result::InvalidArgument;
     if (length > static_cast<std::uint64_t>(std::numeric_limits<std::size_t>::max()))
         return Result::InvalidArgument;
 
-    const std::string registration_key = std::string(family) + "\x1f" + std::to_string(style)
-        + "\x1f" + std::to_string(weight) + "\x1f" + std::to_string(fallback);
+    const std::string registration_key =
+        std::string(family) + "\x1f" + std::to_string(style) + "\x1f" + std::to_string(weight) + "\x1f" + std::to_string(fallback);
     const std::uint64_t content_hash = HashBytes(data, length);
     ProcessHost& host = GetProcessHost();
     std::lock_guard<std::mutex> lock(host.mutex);
@@ -138,15 +134,8 @@ Result LoadFont(
 
     const auto native_length = static_cast<std::size_t>(length);
     auto memory = std::make_unique<std::vector<std::uint8_t>>(data, data + native_length);
-    const Rml::Style::FontStyle font_style = style == 0
-        ? Rml::Style::FontStyle::Normal
-        : Rml::Style::FontStyle::Italic;
-    if (!Rml::LoadFontFace(
-            {memory->data(), memory->size()},
-            family,
-            font_style,
-            static_cast<Rml::Style::FontWeight>(weight),
-            fallback))
+    const Rml::Style::FontStyle font_style = style == 0 ? Rml::Style::FontStyle::Normal : Rml::Style::FontStyle::Italic;
+    if (!Rml::LoadFontFace({memory->data(), memory->size()}, family, font_style, static_cast<Rml::Style::FontWeight>(weight), fallback))
     {
         return Result::BackendError;
     }

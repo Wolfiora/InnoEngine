@@ -12,8 +12,10 @@ internal sealed class SceneOrderHistoryHandler : EditorHistoryHandler
     private readonly EditorSceneWorkspace m_workspace;
     private readonly Logger m_log;
 
-    internal SceneOrderHistoryHandler(EditorSceneWorkspace workspace, LogRouter logs)
-    {
+    internal SceneOrderHistoryHandler(
+        EditorSceneWorkspace workspace,
+        LogRouter logs
+    ) {
         m_workspace = workspace ?? throw new ArgumentNullException(nameof(workspace));
         ArgumentNullException.ThrowIfNull(logs);
         m_log = logs.CreateLogger<SceneOrderHistoryHandler>();
@@ -37,8 +39,8 @@ internal sealed class SceneOrderHistoryHandler : EditorHistoryHandler
     protected override EditorHistoryAvailability Query(
         EditorHistoryContext context,
         EditorHistoryChange change,
-        EditorHistoryDirection direction)
-    {
+        EditorHistoryDirection direction
+    ) {
         try
         {
             SceneOrderHistoryData data = SceneOrderHistoryData.Decode(change.payload.ReadBytes());
@@ -70,8 +72,8 @@ internal sealed class SceneOrderHistoryHandler : EditorHistoryHandler
     protected override EditorHistoryResult Apply(
         EditorHistoryContext context,
         EditorHistoryChange change,
-        EditorHistoryDirection direction)
-    {
+        EditorHistoryDirection direction
+    ) {
         try
         {
             SceneOrderHistoryData data = SceneOrderHistoryData.Decode(change.payload.ReadBytes());

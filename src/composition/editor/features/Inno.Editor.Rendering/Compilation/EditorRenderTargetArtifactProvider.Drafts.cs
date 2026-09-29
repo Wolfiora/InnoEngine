@@ -18,16 +18,22 @@ public sealed partial class EditorRenderTargetArtifactProvider
 {
     private readonly Dictionary<Guid, DraftEntry> m_drafts = [];
 
-    internal EditorShaderDraftCompilationSnapshot RequestDraft(Guid documentId, GraphDocument graph, ulong revision,
-        RenderShaderVariant variant, GraphicsCapabilities capabilities)
-    {
-        if (documentId == Guid.Empty) throw new ArgumentException("A preview requires a document identity.", nameof(documentId));
+    internal EditorShaderDraftCompilationSnapshot RequestDraft(
+        Guid documentId,
+        GraphDocument graph,
+        ulong revision,
+        RenderShaderVariant variant,
+        GraphicsCapabilities capabilities
+    ) {
+        if (documentId == Guid.Empty)
+            throw new ArgumentException("A preview requires a document identity.", nameof(documentId));
         ArgumentNullException.ThrowIfNull(graph);
         lock (m_sync)
         {
             EnsureActive();
             ShaderCompileTarget target = m_shaderCompiler.CreateTarget(capabilities, optimize: false, debugInformation: true);
-            if (!m_drafts.TryGetValue(documentId, out DraftEntry? draft)) m_drafts.Add(documentId, draft = new());
+            if (!m_drafts.TryGetValue(documentId, out DraftEntry? draft))
+                m_drafts.Add(documentId, draft = new());
             ShaderEntry entry = draft.compilation;
             string targetVariant = target.key + "\n" + variant.value;
             if (!draft.attempted || draft.revision != revision || draft.assetRevision != m_assets.revision
@@ -42,14 +48,20 @@ public sealed partial class EditorRenderTargetArtifactProvider
                 try
                 {
                     byte[] captured = ShaderGraphArtifact.Capture(graph, m_types, m_serialization, AssetSerializationContext.Create(m_assets),
-                        (id, _) =>
+                        (
+                            id,
+                            _
+                        ) =>
                         {
                             if (!m_assets.TryGetInfo(id, out AssetInfo? source) || source is null || source.status != AssetImportStatus.Imported)
                                 throw new InvalidDataException($"Shader function '{id}' has no current successful import. Preview cannot hide its source error with an old bundle.");
                             using ArtifactLease lease = m_assets.AcquireArtifact(id, ShaderSourceBundle.outputName);
                             return File.ReadAllBytes(lease.info.absolutePath);
                         }, m_lifetime.Token,
-                        (id, _) =>
+                        (
+                            id,
+                            _
+                        ) =>
                         {
                             if (!m_assets.TryLoad(id, out ShaderAsset? node) || node is null || node.isMissing)
                                 throw new InvalidDataException($"Shader graph node '{id}' has no current successful import.");
@@ -76,14 +88,16 @@ public sealed partial class EditorRenderTargetArtifactProvider
             }
             if (entry.pending is { IsCompleted: true } pending)
             {
-                if (pending.Exception is Exception failure && Inno.Core.Execution.RetirementPendingException.Find(failure) is not null) throw failure;
+                if (pending.Exception is Exception failure && Inno.Core.Execution.RetirementPendingException.Find(failure) is not null)
+                    throw failure;
                 entry.pending = null;
                 entry.cancellation?.Dispose(); entry.cancellation = null;
                 ShaderCompilationResult result = pending.IsCompletedSuccessfully ? pending.Result : new(null,
                     [new("SHADER_PREVIEW_COMPILE", DiagnosticSeverity.Error, pending.Exception?.GetBaseException().Message ?? "Preview compilation cancelled.")]);
                 entry.latestSucceeded = result.succeeded;
                 entry.sourceDiagnostics = Array.AsReadOnly(result.diagnostics.ToArray());
-                if (result.succeeded) entry.artifact = result.artifact!.CreateRuntimeArtifact();
+                if (result.succeeded)
+                    entry.artifact = result.artifact!.CreateRuntimeArtifact();
             }
             return new(entry.pending is not null ? EditorShaderCompilationState.Compiling
                 : entry.latestSucceeded ? EditorShaderCompilationState.Succeeded : EditorShaderCompilationState.Failed,
@@ -96,7 +110,8 @@ public sealed partial class EditorRenderTargetArtifactProvider
         lock (m_sync)
         {
             EnsureActive();
-            if (!m_drafts.Remove(documentId, out DraftEntry? draft)) return;
+            if (!m_drafts.Remove(documentId, out DraftEntry? draft))
+                return;
             Retire(draft.compilation.pending, draft.compilation.cancellation);
         }
     }

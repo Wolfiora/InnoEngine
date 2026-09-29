@@ -44,8 +44,8 @@ public sealed class GraphDocumentController
     internal GraphDocumentController(
         GraphDocumentSession session,
         IEditorHistory history,
-        SerializationRegistry serialization)
-    {
+        SerializationRegistry serialization
+    ) {
         m_identity = session.identity;
         m_history = history;
         m_serialization = serialization;
@@ -93,8 +93,11 @@ public sealed class GraphDocumentController
     /// <param name="gestureId">
     /// Unique active gesture identity for continuous samples, or null for an independent edit.
     /// </param>
-    public void ReplaceDocument(GraphDocument replacement, string historyName, string? gestureId = null)
-    {
+    public void ReplaceDocument(
+        GraphDocument replacement,
+        string historyName,
+        string? gestureId = null
+    ) {
         ArgumentNullException.ThrowIfNull(replacement);
         ArgumentException.ThrowIfNullOrWhiteSpace(historyName);
         GraphDocument snapshot = replacement.Clone();
@@ -119,8 +122,8 @@ public sealed class GraphDocumentController
     public GraphNodeId AddNode(
         string definitionId,
         GraphPosition position,
-        IReadOnlyDictionary<string, GraphSerializedValue>? values = null)
-    {
+        IReadOnlyDictionary<string, GraphSerializedValue>? values = null
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(definitionId);
         GraphNodeId id = NewNodeId();
         Mutate("Create Node", null, () =>
@@ -211,8 +214,10 @@ public sealed class GraphDocumentController
     /// <returns>
     /// The generated connection identity.
     /// </returns>
-    public GraphEdgeId Connect(GraphEndpoint output, GraphEndpoint input)
-    {
+    public GraphEdgeId Connect(
+        GraphEndpoint output,
+        GraphEndpoint input
+    ) {
         RequireNode(output.nodeId);
         RequireNode(input.nodeId);
         if (output.nodeId == input.nodeId && output.portId == input.portId)
@@ -272,8 +277,12 @@ public sealed class GraphDocumentController
     /// <param name="gestureId">
     /// Unique current text/numeric gesture identity, or null for an independent edit.
     /// </param>
-    public void SetNodeValue(GraphNodeId nodeId, string propertyId, GraphSerializedValue value, string? gestureId = null)
-    {
+    public void SetNodeValue(
+        GraphNodeId nodeId,
+        string propertyId,
+        GraphSerializedValue value,
+        string? gestureId = null
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(propertyId);
         ArgumentNullException.ThrowIfNull(value);
         GraphNodeRecord node = RequireNode(nodeId);
@@ -295,8 +304,10 @@ public sealed class GraphDocumentController
     /// <returns>
     /// <see langword="true"/> when the property existed.
     /// </returns>
-    public bool RemoveNodeValue(GraphNodeId nodeId, string propertyId)
-    {
+    public bool RemoveNodeValue(
+        GraphNodeId nodeId,
+        string propertyId
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(propertyId);
         GraphNodeRecord node = RequireNode(nodeId);
         if (!node.values.ContainsKey(propertyId))
@@ -351,9 +362,11 @@ public sealed class GraphDocumentController
     /// <param name="remapNode">
     /// Optional synchronous domain remapping of neutral node values after identity allocation. The callback is never stored in History.
     /// </param>
-    public IReadOnlyList<GraphNodeId> Paste(GraphClipboardData clipboard, GraphPosition offset,
-        Action<GraphNodeRecord, IReadOnlyDictionary<GraphNodeId, GraphNodeId>>? remapNode = null)
-    {
+    public IReadOnlyList<GraphNodeId> Paste(
+        GraphClipboardData clipboard,
+        GraphPosition offset,
+        Action<GraphNodeRecord, IReadOnlyDictionary<GraphNodeId, GraphNodeId>>? remapNode = null
+    ) {
         ArgumentNullException.ThrowIfNull(clipboard);
         GraphDocument fragment = clipboard.CloneFragment();
         Dictionary<GraphNodeId, GraphNodeId> remap = [];
@@ -385,8 +398,11 @@ public sealed class GraphDocumentController
         return fragment.nodes.Select(node => remap[node.id]).ToArray();
     }
 
-    private void Mutate(string name, string? mergeKey, Action mutation)
-    {
+    private void Mutate(
+        string name,
+        string? mergeKey,
+        Action mutation
+    ) {
         if (!session.available)
         {
             throw new InvalidOperationException($"Graph document '{documentId}' is closed.");
@@ -430,8 +446,8 @@ public sealed class GraphDocumentController
     private static GraphNodeRecord CloneNode(
         GraphNodeRecord source,
         GraphNodeId id,
-        GraphPosition position)
-    {
+        GraphPosition position
+    ) {
         var clone = new GraphNodeRecord(id, source.definitionId) { position = position };
         foreach ((string propertyId, GraphSerializedValue value) in source.values)
         {

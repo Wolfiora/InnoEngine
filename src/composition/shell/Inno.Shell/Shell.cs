@@ -46,8 +46,10 @@ public abstract class Shell : IDisposable
     /// <exception cref="ArgumentNullException">
     /// Thrown when <paramref name="adapterCatalog"/> or <paramref name="options"/> is null.
     /// </exception>
-    protected Shell(IAdapterCatalog adapterCatalog, ShellOptions options)
-    {
+    protected Shell(
+        IAdapterCatalog adapterCatalog,
+        ShellOptions options
+    ) {
         m_adapterCatalog = adapterCatalog ?? throw new ArgumentNullException(nameof(adapterCatalog));
         ArgumentNullException.ThrowIfNull(options);
         m_adapterSelection = options.adapters;
@@ -427,13 +429,18 @@ public abstract class Shell : IDisposable
         OnStopping();
     }
 
-    private static void Release(Action release, ref List<Exception>? failures)
-    {
+    private static void Release(
+        Action release,
+        ref List<Exception>? failures
+    ) {
         try
         {
             release();
         }
-        catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null) { throw; }
+        catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null)
+        {
+            throw;
+        }
         catch (Exception exception)
         {
             failures ??= [];

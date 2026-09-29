@@ -108,8 +108,10 @@ internal static class Program
         throw new PlatformNotSupportedException("Text supports macOS ARM64, Windows x64, and Linux x64/ARM64 hosts.");
     }
 
-    private static string FindLibrary(string buildDirectory, string buildType)
-    {
+    private static string FindLibrary(
+        string buildDirectory,
+        string buildType
+    ) {
         string expected = OperatingSystem.IsWindows() ? "inno-text.dll"
             : OperatingSystem.IsMacOS() ? "libinno-text.dylib"
             : "libinno-text.so";

@@ -19,8 +19,8 @@ internal static class ScriptTypeAnalyzer
         CSharpCompilation compilation,
         IReadOnlyList<ScriptSourceInput> sources,
         IReadOnlyDictionary<string, string> attachableTypes,
-        CancellationToken cancellationToken)
-    {
+        CancellationToken cancellationToken
+    ) {
         var sourcesByPath = sources.ToDictionary(
             static source => source.sourcePath,
             StringComparer.OrdinalIgnoreCase);
@@ -198,8 +198,8 @@ internal static class ScriptTypeAnalyzer
     private static bool TryGetAttachableKind(
         INamedTypeSymbol symbol,
         IReadOnlyDictionary<string, string> attachableTypes,
-        out string kind)
-    {
+        out string kind
+    ) {
         for (INamedTypeSymbol? current = symbol.BaseType; current is not null; current = current.BaseType)
         {
             if (attachableTypes.TryGetValue(GetMetadataTypeName(current), out string? value))
@@ -256,8 +256,8 @@ internal static class ScriptTypeAnalyzer
         ScriptDeclaration declaration,
         Guid stableTypeId,
         bool explicitIdentity,
-        bool canonicalSource)
-    {
+        bool canonicalSource
+    ) {
         FileLinePositionSpan span = declaration.location.GetLineSpan();
         return new ScriptTypeManifestEntry(
             GetMetadataTypeName(type.symbol),
@@ -275,8 +275,8 @@ internal static class ScriptTypeAnalyzer
         string id,
         Inno.Core.Diagnostics.DiagnosticSeverity severity,
         string message,
-        ScriptDeclaration declaration)
-    {
+        ScriptDeclaration declaration
+    ) {
         FileLinePositionSpan span = declaration.location.GetLineSpan();
         return new ScriptDiagnostic(
             id,
@@ -287,12 +287,17 @@ internal static class ScriptTypeAnalyzer
             span.StartLinePosition.Character + 1);
     }
 
-    private sealed class MutableScriptType(INamedTypeSymbol symbol, string kind)
-    {
+    private sealed class MutableScriptType(
+        INamedTypeSymbol symbol,
+        string kind
+    ) {
         internal INamedTypeSymbol symbol { get; } = symbol;
         internal string kind { get; } = kind;
         internal List<ScriptDeclaration> declarations { get; } = [];
     }
 
-    private sealed record ScriptDeclaration(ScriptSourceInput source, Location location);
+    private sealed record ScriptDeclaration(
+        ScriptSourceInput source,
+        Location location
+    );
 }

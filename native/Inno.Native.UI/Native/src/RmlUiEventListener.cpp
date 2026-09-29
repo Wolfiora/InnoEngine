@@ -2,10 +2,10 @@
 
 #include <RmlUi/Core/Event.h>
 
-namespace Inno::UI::RmlUiAdapter {
+namespace Inno::UI::RmlUiAdapter
+{
 
-RmlUiEventListener::RmlUiEventListener(RmlUiEventSink& sink) noexcept
-    : m_sink(sink)
+RmlUiEventListener::RmlUiEventListener(RmlUiEventSink& sink) noexcept : m_sink(sink)
 {
 }
 

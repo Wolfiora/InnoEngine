@@ -16,8 +16,11 @@ internal static class BgfxBuildUtils
     /// <param name="bimgDir">
     /// The bimg dir text validated by the validate submodules operation.
     /// </param>
-    public static void ValidateSubmodules(string bgfxDir, string bxDir, string bimgDir)
-    {
+    public static void ValidateSubmodules(
+        string bgfxDir,
+        string bxDir,
+        string bimgDir
+    ) {
         if (!Directory.Exists(bgfxDir))
         {
             throw new DirectoryNotFoundException(

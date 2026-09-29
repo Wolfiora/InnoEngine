@@ -54,8 +54,11 @@ internal static class ImGuiPackedColor
         return new SDLFColor(r, g, b, a);
     }
 
-    private static int SelectBestShift(ReadOnlySpan<int> packedBytes, int expected, ref int usedMask)
-    {
+    private static int SelectBestShift(
+        ReadOnlySpan<int> packedBytes,
+        int expected,
+        ref int usedMask
+    ) {
         var bestIndex = 0;
         var bestError = int.MaxValue;
         for (var i = 0; i < 4; i++)

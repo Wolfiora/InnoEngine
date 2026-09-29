@@ -19,8 +19,8 @@ internal sealed class LoggingModule : EditorModule, IEditorConsole
         LogRouter logRouter,
         DiagnosticHub diagnosticHub,
         IEditorPlayMode playMode,
-        EditorSettings settings)
-    {
+        EditorSettings settings
+    ) {
         m_settings = settings ?? throw new ArgumentNullException(nameof(settings));
         m_console = new EditorConsole(logRouter, diagnosticHub, playMode);
     }
@@ -53,11 +53,9 @@ internal sealed class LoggingModule : EditorModule, IEditorConsole
     /// <summary>
     /// Releases resources retained by this feature after it has stopped.
     /// </summary>
-    protected override void OnDispose()
-        => m_console.Dispose();
+    protected override void OnDispose() => m_console.Dispose();
 
-    private void ApplySettings(EditorSettings settings)
-        => m_console.clearOnPlay = ClearConsoleOnPlaySetting.Read(settings);
+    private void ApplySettings(EditorSettings settings) => m_console.clearOnPlay = ClearConsoleOnPlaySetting.Read(settings);
 
     int IEditorConsole.capacity
     {

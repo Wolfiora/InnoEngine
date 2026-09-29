@@ -21,8 +21,10 @@ public sealed class EditorSettingPathAttribute : Attribute
     /// <exception cref="ArgumentException">
     /// Thrown when <paramref name="path"/> contains an empty segment or is outside the <c>Editor</c> root.
     /// </exception>
-    public EditorSettingPathAttribute(string path, int order = 0)
-    {
+    public EditorSettingPathAttribute(
+        string path,
+        int order = 0
+    ) {
         string normalized = EditorSettingsPathUtility.Normalize(path);
         if (!string.Equals(normalized, "Editor", StringComparison.Ordinal) &&
             !normalized.StartsWith("Editor/", StringComparison.Ordinal))

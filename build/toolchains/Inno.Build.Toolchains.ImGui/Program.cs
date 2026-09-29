@@ -78,8 +78,12 @@ static class Program
         Console.WriteLine("ImGui outputs cleaned.");
     }
 
-    private static void CopyArtifacts(string cimguiDir, string outputDir, string platform, string config)
-    {
+    private static void CopyArtifacts(
+        string cimguiDir,
+        string outputDir,
+        string platform,
+        string config
+    ) {
         var options = new BuildArtifactOptions(
             Path.Combine(CimguiBuildConstants.BUILD_DIR_NAME, "inno", platform),
             OperatingSystem.IsWindows() ? [$"libcimgui-{config}"] : LIBRARY_TOKENS,
@@ -90,8 +94,10 @@ static class Program
         BuildArtifactCopier.CopyArtifacts(cimguiDir, outputDir, config, options);
     }
 
-    private static string NormalizeOutputName(string fileName, string config)
-    {
+    private static string NormalizeOutputName(
+        string fileName,
+        string config
+    ) {
         var ext = Path.GetExtension(fileName);
         return OperatingSystem.IsWindows() ? fileName : $"{CimguiBuildConstants.OUTPUT_DLL_NAME}-{config}{ext}";
     }
@@ -133,8 +139,10 @@ internal sealed record Options(string Config)
         return new Options(config);
     }
 
-    private static string GetNext(string[] args, ref int index)
-    {
+    private static string GetNext(
+        string[] args,
+        ref int index
+    ) {
         if (index + 1 >= args.Length)
         {
             throw new ArgumentException($"Missing value for {args[index]}.");

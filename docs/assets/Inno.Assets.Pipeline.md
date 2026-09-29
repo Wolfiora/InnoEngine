@@ -86,6 +86,9 @@ Authoring 启动与 Rescan 时，当前 source 的 `.imeta` 是“路径属于�
 这个入口只供 Host 诊断与事务组合，不导出到游戏脚本。损坏的 Imported canonical recovery 拒绝候选；
 真正暂缺的资产保留同一 ID、type、路径提示与 property bytes。原 source 和原 `.imeta` 返回后可恢复；
 同路径新建文件但没有原 metadata 不视为同一资产。
+提交 Missing 结果时，候选 Loader 保存这些恢复槽的中立数据；它们不依赖 Missing 占位对象的弱引用存活，
+因此 GC 或下一次 Source Mount 切换不会丢失先前已加载资产的恢复意图。未曾成为活动引用根的普通
+Catalog tombstone 不会仅因存在于索引中而生成新的恢复槽。
 
 `Complete` 提升 catalog 并退休旧 loader；`Rollback` 恢复未被修改的旧 canonical object，再退休候选。
 两者均复用 Core `LifetimeScope` 与 `RetirementBarrier`，退出真正完成前不清空候选或旧 owner。
@@ -133,6 +136,7 @@ bool imported = assets.SaveImportSettings(path, snapshot.value, snapshot.fingerp
   sidecar 后尝试导入。传 null 表示重置为 importer 默认值。返回 false 表示**设置已经保存，但导入失败**；
   last-good artifact 和当前诊断保持分离。保存失败抛异常，不静默覆盖外部设置。
 - Importer 从 `AssetImportContext.importSettings` 取得候选代际恢复后的值。导入期间改动这个对象不写回设置。
+- 导入失败记录若再次读取设置也失败，会在同一导入诊断中附上该次设置检查错误；不会把设置读取失败静默记录为空 hash 并伪装为完整诊断。
 - 设置中的 Asset 引用以 persistent ID 恢复，声明为 source/artifact **导入依赖**，不会仅因出现在设置中
   而成为 runtime dependency。跨 mount 引用沿用现有权限校验。临时缺失的引用仍保留原 identity。
 - 设置内容参与 artifact fingerprint；移动文件身份不变，重建 Library 仍从 `.imeta` 恢复设置。

@@ -22,7 +22,10 @@ internal interface IIndexedObjectStore
     /// <returns>
     /// <see langword="true"/> when the requested condition is satisfied; otherwise, <see langword="false"/>.
     /// </returns>
-    bool IsValidKey(int id, Type keyType);
+    bool IsValidKey(
+        int id,
+        Type keyType
+    );
 }
 
 /// <summary>
@@ -157,7 +160,8 @@ public sealed class IndexedObjectStore<T> : IIndexedObjectStore where T : class
     public IndexedObjectKey<TKey> DefineKey<TKey>(
         string name,
         IndexedObjectKeyFlags flags = IndexedObjectKeyFlags.Unordered,
-        IComparer<TKey>? orderComparer = null) where TKey : notnull
+        IComparer<TKey>? orderComparer = null
+    ) where TKey : notnull
     {
         if (string.IsNullOrWhiteSpace(name))
             throw new ArgumentException("Key name is required.", nameof(name));
@@ -230,7 +234,10 @@ public sealed class IndexedObjectStore<T> : IIndexedObjectStore where T : class
     /// <returns>
     /// True if found and type matches.
     /// </returns>
-    public bool TryGetKey<TKey>(string name, out IndexedObjectKey<TKey> key) where TKey : notnull
+    public bool TryGetKey<TKey>(
+        string name,
+        out IndexedObjectKey<TKey> key
+    ) where TKey : notnull
     {
         if (string.IsNullOrWhiteSpace(name))
             throw new ArgumentException("Key name is required.", nameof(name));
@@ -259,8 +266,10 @@ public sealed class IndexedObjectStore<T> : IIndexedObjectStore where T : class
         }
     }
 
-    bool IIndexedObjectStore.IsValidKey(int id, Type keyType)
-    {
+    bool IIndexedObjectStore.IsValidKey(
+        int id,
+        Type keyType
+    ) {
         m_lock.EnterReadLock();
         try
         {
@@ -281,8 +290,7 @@ public sealed class IndexedObjectStore<T> : IIndexedObjectStore where T : class
     /// <returns>
     /// Lazy enumerable of key names.
     /// </returns>
-    public IEnumerable<string> GetAllKeys()
-        => EnumerateKeys();
+    public IEnumerable<string> GetAllKeys() => EnumerateKeys();
 
     private IEnumerable<string> EnumerateKeys()
     {
@@ -305,7 +313,8 @@ public sealed class IndexedObjectStore<T> : IIndexedObjectStore where T : class
     /// </returns>
     public IndexedObjectEntry<T> Add(T item)
     {
-        if (item == null) throw new ArgumentNullException(nameof(item));
+        if (item == null)
+            throw new ArgumentNullException(nameof(item));
 
         m_lock.EnterWriteLock();
         try
@@ -341,7 +350,8 @@ public sealed class IndexedObjectStore<T> : IIndexedObjectStore where T : class
     /// </returns>
     public bool Remove(T item)
     {
-        if (item == null) throw new ArgumentNullException(nameof(item));
+        if (item == null)
+            throw new ArgumentNullException(nameof(item));
 
         m_lock.EnterWriteLock();
         try
@@ -382,7 +392,8 @@ public sealed class IndexedObjectStore<T> : IIndexedObjectStore where T : class
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal bool IsValidItem(T item)
     {
-        if (item == null) return false;
+        if (item == null)
+            return false;
 
         m_lock.EnterReadLock();
         try
@@ -407,8 +418,10 @@ public sealed class IndexedObjectStore<T> : IIndexedObjectStore where T : class
     /// <returns>
     /// True when the item is currently stored in this store.
     /// </returns>
-    internal bool TryGetHandle(T item, out IndexedObjectRuntimeHandle handle)
-    {
+    internal bool TryGetHandle(
+        T item,
+        out IndexedObjectRuntimeHandle handle
+    ) {
         if (item == null)
         {
             handle = default;
@@ -460,8 +473,10 @@ public sealed class IndexedObjectStore<T> : IIndexedObjectStore where T : class
     /// <returns>
     /// <see langword="true"/> when the operation succeeds or its condition is satisfied; otherwise, <see langword="false"/>.
     /// </returns>
-    internal bool TryGetByHandle(IndexedObjectRuntimeHandle handle, out T? item)
-    {
+    internal bool TryGetByHandle(
+        IndexedObjectRuntimeHandle handle,
+        out T? item
+    ) {
         m_lock.EnterReadLock();
         try
         {
@@ -499,7 +514,10 @@ public sealed class IndexedObjectStore<T> : IIndexedObjectStore where T : class
     /// <returns>
     /// Lazy fail-fast enumerable of matching items.
     /// </returns>
-    public IEnumerable<T> FindFast<TKey>(IndexedObjectKey<TKey> key, TKey value) where TKey : notnull
+    public IEnumerable<T> FindFast<TKey>(
+        IndexedObjectKey<TKey> key,
+        TKey value
+    ) where TKey : notnull
     {
         var index = GetIndex(key);
         return EnumerateFind(index, value);
@@ -523,7 +541,10 @@ public sealed class IndexedObjectStore<T> : IIndexedObjectStore where T : class
     /// <returns>
     /// A stable snapshot list of matching items.
     /// </returns>
-    public IReadOnlyList<T> Find<TKey>(IndexedObjectKey<TKey> key, TKey value) where TKey : notnull
+    public IReadOnlyList<T> Find<TKey>(
+        IndexedObjectKey<TKey> key,
+        TKey value
+    ) where TKey : notnull
     {
         m_lock.EnterReadLock();
         try
@@ -537,7 +558,10 @@ public sealed class IndexedObjectStore<T> : IIndexedObjectStore where T : class
         }
     }
 
-    private IEnumerable<T> EnumerateFind<TKey>(IndexedObjectIndex<T, TKey> index, TKey value) where TKey : notnull
+    private IEnumerable<T> EnumerateFind<TKey>(
+        IndexedObjectIndex<T, TKey> index,
+        TKey value
+    ) where TKey : notnull
     {
         var version = Volatile.Read(ref m_version);
         if ((index.flags & IndexedObjectKeyFlags.Unique) != 0 && index.TryGetSingle(value, out var single) && single != null)
@@ -558,7 +582,10 @@ public sealed class IndexedObjectStore<T> : IIndexedObjectStore where T : class
         }
     }
 
-    private List<T> BuildFindSnapshot<TKey>(IndexedObjectIndex<T, TKey> index, TKey value) where TKey : notnull
+    private List<T> BuildFindSnapshot<TKey>(
+        IndexedObjectIndex<T, TKey> index,
+        TKey value
+    ) where TKey : notnull
     {
         var result = new List<T>();
         if ((index.flags & IndexedObjectKeyFlags.Unique) != 0 && index.TryGetSingle(value, out var single) && single != null)
@@ -596,7 +623,10 @@ public sealed class IndexedObjectStore<T> : IIndexedObjectStore where T : class
     /// <returns>
     /// The first matching item or null.
     /// </returns>
-    public T? First<TKey>(IndexedObjectKey<TKey> key, TKey value) where TKey : notnull
+    public T? First<TKey>(
+        IndexedObjectKey<TKey> key,
+        TKey value
+    ) where TKey : notnull
     {
         m_lock.EnterReadLock();
         try
@@ -660,8 +690,7 @@ public sealed class IndexedObjectStore<T> : IIndexedObjectStore where T : class
     /// <returns>
     /// A query builder.
     /// </returns>
-    public IndexedObjectQuery<T> Query()
-        => new(this);
+    public IndexedObjectQuery<T> Query() => new(this);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal bool IsOrderedKey<TKey>(IndexedObjectKey<TKey> key) where TKey : notnull
@@ -681,7 +710,11 @@ public sealed class IndexedObjectStore<T> : IIndexedObjectStore where T : class
         return (IndexedObjectIndex<T, TKey>)index;
     }
 
-    internal void SetKey<TKey>(T item, IndexedObjectKey<TKey> key, TKey value) where TKey : notnull
+    internal void SetKey<TKey>(
+        T item,
+        IndexedObjectKey<TKey> key,
+        TKey value
+    ) where TKey : notnull
     {
         m_lock.EnterWriteLock();
         try
@@ -699,16 +732,30 @@ public sealed class IndexedObjectStore<T> : IIndexedObjectStore where T : class
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal int GetCountUnsafe<TKey>(IndexedObjectKey<TKey> key, TKey value) where TKey : notnull => GetIndex(key).GetCount(value);
+    internal int GetCountUnsafe<TKey>(
+        IndexedObjectKey<TKey> key,
+        TKey value
+    ) where TKey : notnull => GetIndex(key).GetCount(value);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal bool TryGetSingleUnsafe<TKey>(IndexedObjectKey<TKey> key, TKey value, out T? item) where TKey : notnull => GetIndex(key).TryGetSingle(value, out item);
+    internal bool TryGetSingleUnsafe<TKey>(
+        IndexedObjectKey<TKey> key,
+        TKey value,
+        out T? item
+    ) where TKey : notnull => GetIndex(key).TryGetSingle(value, out item);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal HashSet<T>? GetSetUnsafe<TKey>(IndexedObjectKey<TKey> key, TKey value) where TKey : notnull => GetIndex(key).FindUnsafe(value);
+    internal HashSet<T>? GetSetUnsafe<TKey>(
+        IndexedObjectKey<TKey> key,
+        TKey value
+    ) where TKey : notnull => GetIndex(key).FindUnsafe(value);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal bool ContainsInSet<TKey>(IndexedObjectKey<TKey> key, TKey value, T item) where TKey : notnull => GetIndex(key).Contains(value, item);
+    internal bool ContainsInSet<TKey>(
+        IndexedObjectKey<TKey> key,
+        TKey value,
+        T item
+    ) where TKey : notnull => GetIndex(key).Contains(value, item);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private IndexedObjectRuntimeHandle AllocateHandle()
@@ -750,8 +797,7 @@ public sealed class IndexedObjectStore<T> : IIndexedObjectStore where T : class
         return denseIndex >= 0 && denseIndex < m_activeList.Count;
     }
 
-    internal IEnumerable<T> ExecuteQueryFast(List<IIndexedObjectQueryCondition<T>> conditions)
-        => EnumerateQuery(conditions);
+    internal IEnumerable<T> ExecuteQueryFast(List<IIndexedObjectQueryCondition<T>> conditions) => EnumerateQuery(conditions);
 
     internal IReadOnlyList<T> ExecuteQuerySnapshot(List<IIndexedObjectQueryCondition<T>> conditions)
     {
@@ -1033,12 +1079,14 @@ public sealed class IndexedObjectStore<T> : IIndexedObjectStore where T : class
 
     internal IEnumerable<T> ExecuteOrderedQueryFast<TKey>(
         IndexedObjectKey<TKey> orderKey,
-        List<IIndexedObjectQueryCondition<T>> conditions) where TKey : notnull
+        List<IIndexedObjectQueryCondition<T>> conditions
+    ) where TKey : notnull
         => EnumerateOrderedQuery(orderKey, conditions);
 
     internal IReadOnlyList<T> ExecuteOrderedQuerySnapshot<TKey>(
         IndexedObjectKey<TKey> orderKey,
-        List<IIndexedObjectQueryCondition<T>> conditions) where TKey : notnull
+        List<IIndexedObjectQueryCondition<T>> conditions
+    ) where TKey : notnull
     {
         m_lock.EnterReadLock();
         try
@@ -1062,7 +1110,8 @@ public sealed class IndexedObjectStore<T> : IIndexedObjectStore where T : class
 
     private IEnumerable<T> EnumerateOrderedQuery<TKey>(
         IndexedObjectKey<TKey> orderKey,
-        List<IIndexedObjectQueryCondition<T>> conditions) where TKey : notnull
+        List<IIndexedObjectQueryCondition<T>> conditions
+    ) where TKey : notnull
     {
         var version = Volatile.Read(ref m_version);
         var index = GetIndex(orderKey);
@@ -1126,8 +1175,7 @@ public sealed class IndexedObjectStore<T> : IIndexedObjectStore where T : class
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private void BumpVersion()
-        => Interlocked.Increment(ref m_version);
+    private void BumpVersion() => Interlocked.Increment(ref m_version);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void EnsureVersion(int expected)
@@ -1138,7 +1186,8 @@ public sealed class IndexedObjectStore<T> : IIndexedObjectStore where T : class
 
     internal T? ExecuteOrderedFirst<TKey>(
         IndexedObjectKey<TKey> orderKey,
-        List<IIndexedObjectQueryCondition<T>> conditions) where TKey : notnull
+        List<IIndexedObjectQueryCondition<T>> conditions
+    ) where TKey : notnull
     {
         m_lock.EnterReadLock();
         try
@@ -1194,7 +1243,8 @@ public sealed class IndexedObjectStore<T> : IIndexedObjectStore where T : class
     private bool TryBuildOrderedCandidates<TKey>(
         IndexedObjectIndex<T, TKey> orderIndex,
         List<IIndexedObjectQueryCondition<T>> conditions,
-        out List<OrderedCandidate<TKey>> candidates) where TKey : notnull
+        out List<OrderedCandidate<TKey>> candidates
+    ) where TKey : notnull
     {
         candidates = [];
         if (!TryGetOrderedCandidateSeed(conditions, out int seedIndex, out int seedCount))
@@ -1220,8 +1270,8 @@ public sealed class IndexedObjectStore<T> : IIndexedObjectStore where T : class
     private bool TryGetOrderedCandidateSeed(
         List<IIndexedObjectQueryCondition<T>> conditions,
         out int seedIndex,
-        out int seedCount)
-    {
+        out int seedCount
+    ) {
         seedIndex = -1;
         seedCount = int.MaxValue;
         for (int i = 0; i < conditions.Count; i++)
@@ -1239,7 +1289,8 @@ public sealed class IndexedObjectStore<T> : IIndexedObjectStore where T : class
         IndexedObjectIndex<T, TKey> orderIndex,
         List<IIndexedObjectQueryCondition<T>> conditions,
         List<OrderedCandidate<TKey>> candidates,
-        T item) where TKey : notnull
+        T item
+    ) where TKey : notnull
     {
         if (ValidateConditions(conditions, item) &&
             orderIndex.TryGetKey(item, out TKey itemKey) &&
@@ -1249,8 +1300,7 @@ public sealed class IndexedObjectStore<T> : IIndexedObjectStore where T : class
         }
     }
 
-    private static IReadOnlyList<T> SelectOrderedItems<TKey>(
-        List<OrderedCandidate<TKey>> candidates) where TKey : notnull
+    private static IReadOnlyList<T> SelectOrderedItems<TKey>(List<OrderedCandidate<TKey>> candidates) where TKey : notnull
     {
         var result = new T[candidates.Count];
         for (int i = 0; i < candidates.Count; i++)
@@ -1260,7 +1310,8 @@ public sealed class IndexedObjectStore<T> : IIndexedObjectStore where T : class
 
     private IReadOnlyList<T> ScanOrderedSnapshot<TKey>(
         IndexedObjectIndex<T, TKey> index,
-        List<IIndexedObjectQueryCondition<T>> conditions) where TKey : notnull
+        List<IIndexedObjectQueryCondition<T>> conditions
+    ) where TKey : notnull
     {
         var result = new List<T>();
         foreach (TKey key in index.EnumerateOrderedKeys())
@@ -1286,7 +1337,8 @@ public sealed class IndexedObjectStore<T> : IIndexedObjectStore where T : class
 
     private T? ScanOrderedFirst<TKey>(
         IndexedObjectIndex<T, TKey> index,
-        List<IIndexedObjectQueryCondition<T>> conditions) where TKey : notnull
+        List<IIndexedObjectQueryCondition<T>> conditions
+    ) where TKey : notnull
     {
         foreach (TKey key in index.EnumerateOrderedKeys())
         {
@@ -1310,8 +1362,10 @@ public sealed class IndexedObjectStore<T> : IIndexedObjectStore where T : class
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private bool ValidateConditions(List<IIndexedObjectQueryCondition<T>> conditions, T item)
-    {
+    private bool ValidateConditions(
+        List<IIndexedObjectQueryCondition<T>> conditions,
+        T item
+    ) {
         for (int i = 0; i < conditions.Count; i++)
         {
             if (!conditions[i].Validate(this, item))
@@ -1322,8 +1376,12 @@ public sealed class IndexedObjectStore<T> : IIndexedObjectStore where T : class
 
     private static void SortOrderedCandidates<TKey>(
         IndexedObjectIndex<T, TKey> index,
-        List<OrderedCandidate<TKey>> candidates) where TKey : notnull
-        => candidates.Sort((left, right) =>
+        List<OrderedCandidate<TKey>> candidates
+    ) where TKey : notnull
+        => candidates.Sort((
+            left,
+            right
+        ) =>
         {
             int comparison = index.CompareKeys(left.key, right.key);
             return comparison != 0
@@ -1331,7 +1389,11 @@ public sealed class IndexedObjectStore<T> : IIndexedObjectStore where T : class
                 : left.denseIndex.CompareTo(right.denseIndex);
         });
 
-    private readonly record struct OrderedCandidate<TKey>(T item, TKey key, int denseIndex)
+    private readonly record struct OrderedCandidate<TKey>(
+        T item,
+        TKey key,
+        int denseIndex
+    )
         where TKey : notnull;
 
     internal sealed class ReferenceEqualityComparer<TItem> : IEqualityComparer<TItem> where TItem : class
@@ -1353,7 +1415,10 @@ public sealed class IndexedObjectStore<T> : IIndexedObjectStore where T : class
         /// <returns>
         /// <see langword="true"/> when the requested condition is satisfied; otherwise, <see langword="false"/>.
         /// </returns>
-        public bool Equals(TItem? x, TItem? y) => ReferenceEquals(x, y);
+        public bool Equals(
+            TItem? x,
+            TItem? y
+        ) => ReferenceEquals(x, y);
 
         /// <summary>
         /// Computes a hash code consistent with the implemented equality contract.

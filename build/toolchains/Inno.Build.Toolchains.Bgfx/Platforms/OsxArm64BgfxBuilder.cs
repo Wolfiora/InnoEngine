@@ -53,8 +53,11 @@ public override string artifactPathToken => "/osx-arm64/bin/";
     /// <param name="makeTargetOverride">
     /// The make target override text validated by the build operation.
     /// </param>
-    public override void Build(string bgfxDir, string config, string? makeTargetOverride)
-    {
+    public override void Build(
+        string bgfxDir,
+        string config,
+        string? makeTargetOverride
+    ) {
         if (!string.IsNullOrWhiteSpace(makeTargetOverride))
         {
             ToolchainEnvironment.Run("make", makeTargetOverride, bgfxDir);
@@ -74,8 +77,10 @@ public override string artifactPathToken => "/osx-arm64/bin/";
     /// <param name="config">
     /// The validated configuration that controls this operation.
     /// </param>
-    public override void BuildTools(string bgfxDir, string config)
-    {
+    public override void BuildTools(
+        string bgfxDir,
+        string config
+    ) {
         ToolchainEnvironment.Run("make", $"tools config={config}", bgfxDir);
     }
 }

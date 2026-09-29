@@ -44,7 +44,8 @@ public abstract class InspectionDrawer<TTarget> : IInspectionDrawer
     /// </returns>
     protected abstract (string name, Action<string>? setter) BindName(
         InspectionDrawContext context,
-        TTarget target);
+        TTarget target
+    );
 
     /// <summary>
     /// Resolves the icon glyph displayed for the current target.
@@ -58,8 +59,10 @@ public abstract class InspectionDrawer<TTarget> : IInspectionDrawer
     /// <returns>
     /// The target-specific icon glyph. The default implementation returns <see cref="icon"/>.
     /// </returns>
-    protected virtual string GetIcon(InspectionDrawContext context, TTarget target)
-        => icon;
+    protected virtual string GetIcon(
+        InspectionDrawContext context,
+        TTarget target
+    ) => icon;
 
     /// <summary>
     /// Draws target-specific controls in the second row of the Inspector target header.
@@ -74,8 +77,10 @@ public abstract class InspectionDrawer<TTarget> : IInspectionDrawer
     /// The callback is clipped to one header row. Implementations should keep all controls on the
     /// current line and must not begin another window, child, table, or popup.
     /// </remarks>
-    protected virtual void DrawHeader(InspectionDrawContext context, TTarget target)
-    {
+    protected virtual void DrawHeader(
+        InspectionDrawContext context,
+        TTarget target
+    ) {
     }
 
     /// <summary>
@@ -87,7 +92,10 @@ public abstract class InspectionDrawer<TTarget> : IInspectionDrawer
     /// <param name="target">
     /// The strongly typed target being inspected.
     /// </param>
-    protected abstract void Draw(InspectionDrawContext context, TTarget target);
+    protected abstract void Draw(
+        InspectionDrawContext context,
+        TTarget target
+    );
 
     string IInspectionDrawer.GetIcon(InspectionDrawContext context)
         => GetIcon(context, GetTarget(context));

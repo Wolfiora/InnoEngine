@@ -33,8 +33,10 @@ public sealed unsafe partial class PlatformImGuiContext
         }
     }
 
-    private static void PlatformSetClipboardTextCallback(ImGuiContext* context, byte* text)
-    {
+    private static void PlatformSetClipboardTextCallback(
+        ImGuiContext* context,
+        byte* text
+    ) {
         try
         {
             if (text != null && FindClipboardContext(context) is not null)

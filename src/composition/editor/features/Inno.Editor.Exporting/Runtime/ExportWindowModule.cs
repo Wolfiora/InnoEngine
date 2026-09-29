@@ -22,16 +22,18 @@ internal sealed class ExportWindowModule : EditorModule
     private readonly Logger m_log;
     private readonly ConcurrentQueue<BuildProgress> m_progress = new();
     private CancellationTokenSource? m_cancellation;
+    private Task<string>? m_gamePreparation;
     private Task<BuildResult>? m_gameExport;
     private Task<BuildResult>? m_pluginExport;
+    private GameBuildRequest? m_pendingGameRequest;
 
     internal ExportWindowModule(
         EditorContext editor,
         BuildPipeline buildPipeline,
         BuildSettingsStore buildSettings,
         ProjectSettingsStore projectSettings,
-        LogRouter logs)
-    {
+        LogRouter logs
+    ) {
         m_editor = editor ?? throw new ArgumentNullException(nameof(editor));
         m_buildPipeline = buildPipeline ?? throw new ArgumentNullException(nameof(buildPipeline));
         m_buildSettings = buildSettings ?? throw new ArgumentNullException(nameof(buildSettings));
@@ -46,7 +48,7 @@ internal sealed class ExportWindowModule : EditorModule
 
     internal bool isPluginBusy => m_pluginExport is not null;
 
-    internal bool isGameBusy => m_gameExport is not null;
+    internal bool isGameBusy => m_gamePreparation is not null || m_gameExport is not null;
 
     internal string pluginId => m_projectSettings.projectId.value;
 
@@ -149,16 +151,15 @@ internal sealed class ExportWindowModule : EditorModule
             windowHeight = gameWindowHeight
         };
         StartCancellation();
-        status = "Capturing the authoring generation and compiling runtime scripts...";
+        status = "Checking or preparing the Player Support Pack...";
         error = string.Empty;
-        m_gameExport = m_buildPipeline.BuildGameAsync(
-            new GameBuildRequest
-            {
-                profile = profile,
-                outputDirectory = ResolveOutputPath(gameOutputDirectory)
-            },
-            new BuildProgressSink(m_progress),
-            m_cancellation!.Token).AsTask();
+        m_pendingGameRequest = new GameBuildRequest
+        {
+            profile = profile,
+            outputDirectory = ResolveOutputPath(gameOutputDirectory)
+        };
+        m_gamePreparation = m_buildPipeline.EnsurePlayerSupportPackAsync(
+            profile.target, m_cancellation!.Token).AsTask();
     }
 
     internal void CancelGameExport()
@@ -202,6 +203,7 @@ internal sealed class ExportWindowModule : EditorModule
         while (m_progress.TryDequeue(out BuildProgress progress))
             status = progress.message;
         CompletePluginExport();
+        CompleteGamePreparation();
         CompleteGameExport();
     }
 
@@ -317,6 +319,41 @@ internal sealed class ExportWindowModule : EditorModule
         }
     }
 
+    private void CompleteGamePreparation()
+    {
+        Task<string>? preparation = m_gamePreparation;
+        if (preparation is null || !preparation.IsCompleted)
+            return;
+        m_gamePreparation = null;
+        try
+        {
+            _ = preparation.GetAwaiter().GetResult();
+            m_cancellation!.Token.ThrowIfCancellationRequested();
+            GameBuildRequest request = m_pendingGameRequest
+                ?? throw new InvalidOperationException("The prepared game build has no request.");
+            m_pendingGameRequest = null;
+            status = "Capturing the authoring generation and compiling runtime scripts...";
+            m_gameExport = m_buildPipeline.BuildGameAsync(
+                request, new BuildProgressSink(m_progress), m_cancellation.Token).AsTask();
+        }
+        catch (OperationCanceledException)
+        {
+            m_pendingGameRequest = null;
+            status = string.Empty;
+            error = "Game build was canceled; no partial output was installed.";
+            m_log.Write(LogLevel.Info, "Game build was canceled while preparing its Support Pack.");
+            ReleaseCancellation();
+        }
+        catch (Exception exception)
+        {
+            m_pendingGameRequest = null;
+            status = string.Empty;
+            error = exception.Message;
+            m_log.Write(LogLevel.Error, "Game Support Pack preparation failed: {0}", [exception]);
+            ReleaseCancellation();
+        }
+    }
+
     private BuildSettings LoadBuildSettings()
     {
         try
@@ -354,8 +391,10 @@ internal sealed class ExportWindowModule : EditorModule
         m_cancellation = null;
     }
 
-    private void ReportBuildFailure(string operation, BuildResult result)
-    {
+    private void ReportBuildFailure(
+        string operation,
+        BuildResult result
+    ) {
         string message = string.Join(
             Environment.NewLine,
             result.diagnostics.Select(static diagnostic => $"[{diagnostic.code}] {diagnostic.message}"));
@@ -375,7 +414,6 @@ internal sealed class ExportWindowModule : EditorModule
         /// <param name="value">
         /// The concrete value read or transformed by this operation.
         /// </param>
-        public void Report(BuildProgress value)
-            => progress.Enqueue(value);
+        public void Report(BuildProgress value) => progress.Enqueue(value);
     }
 }

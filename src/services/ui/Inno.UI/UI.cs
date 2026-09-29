@@ -70,7 +70,12 @@ public static class UI
     /// <param name="density">
     /// The density consumed by set viewport; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
-    public static void SetViewport(UiContextHandle context, int width, int height, float density = 1f)
+    public static void SetViewport(
+        UiContextHandle context,
+        int width,
+        int height,
+        float density = 1f
+    )
         => UiExecutionContext.current.SetViewport(context, width, height, density);
     /// <summary>
     /// Loads one explicitly tagged in-memory document.
@@ -84,7 +89,10 @@ public static class UI
     /// <returns>
     /// The validated ui document handle that represents the completed operation.
     /// </returns>
-    public static UiDocumentHandle LoadDocument(UiContextHandle context, UiDocumentSource source)
+    public static UiDocumentHandle LoadDocument(
+        UiContextHandle context,
+        UiDocumentSource source
+    )
         => UiExecutionContext.current.LoadDocument(context, source);
     /// <summary>
     /// Loads one imported document compatible with the selected backend.
@@ -98,7 +106,10 @@ public static class UI
     /// <returns>
     /// The validated ui document handle that represents the completed operation.
     /// </returns>
-    public static UiDocumentHandle LoadDocument(UiContextHandle context, UiDocumentAsset document)
+    public static UiDocumentHandle LoadDocument(
+        UiContextHandle context,
+        UiDocumentAsset document
+    )
         => UiExecutionContext.current.LoadDocument(context, document);
     /// <summary>
     /// Shows one document.
@@ -109,7 +120,10 @@ public static class UI
     /// <param name="document">
     /// The document consumed by show document; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
-    public static void ShowDocument(UiContextHandle context, UiDocumentHandle document)
+    public static void ShowDocument(
+        UiContextHandle context,
+        UiDocumentHandle document
+    )
         => UiExecutionContext.current.ShowDocument(context, document);
     /// <summary>
     /// Hides one document.
@@ -120,7 +134,10 @@ public static class UI
     /// <param name="document">
     /// The document consumed by hide document; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
-    public static void HideDocument(UiContextHandle context, UiDocumentHandle document)
+    public static void HideDocument(
+        UiContextHandle context,
+        UiDocumentHandle document
+    )
         => UiExecutionContext.current.HideDocument(context, document);
     /// <summary>
     /// Closes one document.
@@ -131,7 +148,10 @@ public static class UI
     /// <param name="document">
     /// The document consumed by close document; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
-    public static void CloseDocument(UiContextHandle context, UiDocumentHandle document)
+    public static void CloseDocument(
+        UiContextHandle context,
+        UiDocumentHandle document
+    )
         => UiExecutionContext.current.CloseDocument(context, document);
     /// <summary>
     /// Replaces an element's children with plain Unicode text.
@@ -151,7 +171,12 @@ public static class UI
     /// <returns>
     /// <see langword="true"/> when the operation succeeds or its condition is satisfied; otherwise, <see langword="false"/>.
     /// </returns>
-    public static bool SetText(UiContextHandle context, UiDocumentHandle document, string elementId, string text)
+    public static bool SetText(
+        UiContextHandle context,
+        UiDocumentHandle document,
+        string elementId,
+        string text
+    )
         => UiExecutionContext.current.SetText(context, document, elementId, text);
     /// <summary>
     /// Replaces an element's children with an explicitly tagged source-language fragment.
@@ -171,7 +196,12 @@ public static class UI
     /// <returns>
     /// <see langword="true"/> when the operation succeeds or its condition is satisfied; otherwise, <see langword="false"/>.
     /// </returns>
-    public static bool SetContent(UiContextHandle context, UiDocumentHandle document, string elementId, UiDocumentFragment fragment)
+    public static bool SetContent(
+        UiContextHandle context,
+        UiDocumentHandle document,
+        string elementId,
+        UiDocumentFragment fragment
+    )
         => UiExecutionContext.current.SetContent(context, document, elementId, fragment);
     /// <summary>
     /// Sets one element attribute.
@@ -194,7 +224,13 @@ public static class UI
     /// <returns>
     /// <see langword="true"/> when the operation succeeds or its condition is satisfied; otherwise, <see langword="false"/>.
     /// </returns>
-    public static bool SetAttribute(UiContextHandle context, UiDocumentHandle document, string elementId, string name, string value)
+    public static bool SetAttribute(
+        UiContextHandle context,
+        UiDocumentHandle document,
+        string elementId,
+        string name,
+        string value
+    )
         => UiExecutionContext.current.SetAttribute(context, document, elementId, name, value);
     /// <summary>
     /// Activates or deactivates one element class.
@@ -217,7 +253,13 @@ public static class UI
     /// <returns>
     /// <see langword="true"/> when the operation succeeds or its condition is satisfied; otherwise, <see langword="false"/>.
     /// </returns>
-    public static bool SetClass(UiContextHandle context, UiDocumentHandle document, string elementId, string className, bool active)
+    public static bool SetClass(
+        UiContextHandle context,
+        UiDocumentHandle document,
+        string elementId,
+        string className,
+        bool active
+    )
         => UiExecutionContext.current.SetClass(context, document, elementId, className, active);
     /// <summary>
     /// Registers one named RGBA8 texture source.
@@ -231,7 +273,11 @@ public static class UI
     /// <param name="texture">
     /// The texture consumed by register texture; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
-    public static void RegisterTexture(UiContextHandle context, string source, UiTextureData texture)
+    public static void RegisterTexture(
+        UiContextHandle context,
+        string source,
+        UiTextureData texture
+    )
         => UiExecutionContext.current.RegisterTexture(context, source, texture);
     /// <summary>
     /// Processes current-frame input and advances one context.
@@ -249,8 +295,10 @@ public static class UI
     /// <param name="input">
     /// The input consumed by update; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
-    public static void Update(UiContextHandle context, UiInputSnapshot input)
-        => UiExecutionContext.current.Update(context, input);
+    public static void Update(
+        UiContextHandle context,
+        UiInputSnapshot input
+    ) => UiExecutionContext.current.Update(context, input);
     /// <summary>
     /// Builds an immutable frame of incremental resources and ordered draws.
     /// </summary>
@@ -270,6 +318,5 @@ public static class UI
     /// <returns>
     /// An immutable snapshot of the values selected by the operation.
     /// </returns>
-    public static IReadOnlyList<UiEvent> DrainEvents(UiContextHandle context)
-        => UiExecutionContext.current.DrainEvents(context);
+    public static IReadOnlyList<UiEvent> DrainEvents(UiContextHandle context) => UiExecutionContext.current.DrainEvents(context);
 }

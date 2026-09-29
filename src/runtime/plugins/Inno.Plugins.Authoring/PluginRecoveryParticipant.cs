@@ -15,8 +15,11 @@ internal sealed class PluginRecoveryParticipant : IReferenceRecoveryParticipant
     private readonly IGenerationChange m_settings;
     private bool m_prepared;
 
-    internal PluginRecoveryParticipant(PluginEnvironment owner, AssetPipeline assets, ProjectSettingsStore settings)
-    {
+    internal PluginRecoveryParticipant(
+        PluginEnvironment owner,
+        AssetPipeline assets,
+        ProjectSettingsStore settings
+    ) {
         m_owner = owner;
         m_assets = assets;
         m_settings = settings.CreateReloadChange();
@@ -76,7 +79,8 @@ internal sealed class PluginRecoveryParticipant : IReferenceRecoveryParticipant
     public void RestorePreviousState()
     {
         m_owner.RollbackPending();
-        if (!m_prepared) return;
+        if (!m_prepared)
+            return;
         m_assets.Update();
         m_settings.RestorePreviousState();
     }

@@ -10,7 +10,10 @@ namespace Inno.Editor.Panel.FileBrowser;
 
 [EditorAction(FileBrowserInteractionIds.C_IMPORT_SAMPLE, FileBrowserInteractionIds.C_AREA)]
 [EditorMenu(FileBrowserInteractionIds.C_AREA, "Import Sample", order: 120)]
-internal sealed class ImportAssetSampleCommand(AssetEditorModule assets, ScriptCompiler compiler) : EditorAction<AssetFileEntry>
+internal sealed class ImportAssetSampleCommand(
+    AssetEditorModule assets,
+    ScriptCompiler compiler
+) : EditorAction<AssetFileEntry>
 {
     /// <summary>
     /// Determines whether the selected asset sample can be imported into the Project source.

@@ -16,8 +16,10 @@ internal static class ScriptTypeIdentity
         return CreateGuidV5(C_SCRIPT_SOURCE_NAMESPACE, sourcePersistentId.ToString("D"));
     }
 
-    private static Guid CreateGuidV5(Guid namespaceId, string name)
-    {
+    private static Guid CreateGuidV5(
+        Guid namespaceId,
+        string name
+    ) {
         byte[] namespaceBytes = namespaceId.ToByteArray();
         SwapGuidByteOrder(namespaceBytes);
         byte[] nameBytes = Encoding.UTF8.GetBytes(name);

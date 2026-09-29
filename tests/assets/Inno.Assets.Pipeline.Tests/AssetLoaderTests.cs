@@ -583,6 +583,13 @@ public sealed class AssetLoaderTests : IDisposable
         Assert.Equal(id, missing.resolution.descriptor.targetPersistentId);
         Assert.Equal(ReferenceResolutionState.Missing, missing.resolution.state);
         removal.Complete();
+        GC.Collect();
+        GC.WaitForPendingFinalizers();
+        GC.Collect();
+        using AssetSourceMountTransaction stillMissing = pipeline.PrepareSourceMounts(pipeline.sourceMounts);
+        stillMissing.Activate();
+        Assert.Equal(ReferenceResolutionState.Missing, Assert.Single(stillMissing.recoveryChanges).resolution.state);
+        stillMissing.Complete();
         workspace.WriteText("value.txt", "preserved");
         System.IO.File.WriteAllBytes(workspace.SourcePath("value.txt.imeta"), metadata);
         using AssetSourceMountTransaction recovery = pipeline.PrepareSourceMounts(pipeline.sourceMounts);

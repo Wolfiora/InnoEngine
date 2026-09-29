@@ -36,8 +36,8 @@ public static partial class ImGuiWidget
         string hint,
         ref string query,
         nuint capacity = 256,
-        float width = -1f)
-    {
+        float width = -1f
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(id);
         NativeImGui.SetNextItemWidth(width);
         return ImGuiUtf8Buffer.InputText($"##search_{id}", hint, ref query, capacity, ImGuiInputTextFlags.None);
@@ -69,8 +69,8 @@ public static partial class ImGuiWidget
         ref string query,
         string hint,
         nuint capacity = 256,
-        float width = -1f)
-    {
+        float width = -1f
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(id);
         if (width < 0f)
             width = style.searchPopupWidth;

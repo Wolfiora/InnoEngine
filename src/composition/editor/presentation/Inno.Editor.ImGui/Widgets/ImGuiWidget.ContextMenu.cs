@@ -102,7 +102,8 @@ public static partial class ImGuiWidget
     /// </param>
     public static void DrawTooltip(string? text)
     {
-        if (string.IsNullOrWhiteSpace(text)) return;
+        if (string.IsNullOrWhiteSpace(text))
+            return;
 
         ImGuiViewportPtr viewport = NativeImGui.GetWindowViewport();
         Vector2 margin = new(6f * style.zoom);

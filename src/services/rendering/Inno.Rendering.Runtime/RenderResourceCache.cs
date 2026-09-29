@@ -7,7 +7,10 @@ using Inno.Core.Execution;
 
 namespace Inno.Rendering.Runtime;
 
-internal sealed class RenderResourceCache<TKey, TEntry>(Action<TEntry> release, int capacity)
+internal sealed class RenderResourceCache<TKey, TEntry>(
+    Action<TEntry> release,
+    int capacity
+)
     : IEnumerable<KeyValuePair<TKey, TEntry>>, IDisposable where TKey : notnull where TEntry : class
 {
     private readonly Dictionary<TKey, TEntry> m_entries = [];
@@ -24,7 +27,10 @@ internal sealed class RenderResourceCache<TKey, TEntry>(Action<TEntry> release, 
     internal int peakCount => m_peak;
     internal long rejectedCount => m_rejected;
 
-    internal bool TryGetValue(TKey key, [NotNullWhen(true)] out TEntry? value) => m_entries.TryGetValue(key, out value);
+    internal bool TryGetValue(
+        TKey key,
+        [NotNullWhen(true)] out TEntry? value
+    ) => m_entries.TryGetValue(key, out value);
 
     internal void RequireCapacity(TKey key)
     {
@@ -37,8 +43,10 @@ internal sealed class RenderResourceCache<TKey, TEntry>(Action<TEntry> release, 
         }
     }
 
-    internal void Replace(TKey key, TEntry candidate)
-    {
+    internal void Replace(
+        TKey key,
+        TEntry candidate
+    ) {
         if (m_entries.TryGetValue(key, out TEntry? previous))
             m_retiring.Enqueue(previous);
         m_entries[key] = candidate;
@@ -76,7 +84,10 @@ internal sealed class RenderResourceCache<TKey, TEntry>(Action<TEntry> release, 
                     throw new AggregateException("GPU retirement is pending after completed failures.", [.. failures, pending]);
                 throw;
             }
-            catch (Exception failure) { failures.Add(failure); }
+            catch (Exception failure)
+            {
+                failures.Add(failure);
+            }
             m_retiring.Dequeue();
             m_barrier = null;
         }

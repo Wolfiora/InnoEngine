@@ -21,8 +21,8 @@ public sealed class AssetCatalogCandidate : IDisposable
     internal AssetCatalogCandidate(
         string activeLibraryRoot,
         string candidateLibraryRoot,
-        AssetLoader loader)
-    {
+        AssetLoader loader
+    ) {
         m_activeLibraryRoot = activeLibraryRoot;
         m_candidateLibraryRoot = candidateLibraryRoot;
         this.loader = loader;

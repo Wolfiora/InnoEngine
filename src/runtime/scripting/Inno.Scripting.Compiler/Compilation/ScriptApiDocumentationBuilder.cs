@@ -14,8 +14,8 @@ internal static class ScriptApiDocumentationBuilder
         string assemblyName,
         IReadOnlyList<ScriptApiTypeExport> exports,
         IReadOnlyDictionary<string, string> namespaceMappings,
-        IReadOnlyList<ScriptApiTypeMapping> typeMappings)
-    {
+        IReadOnlyList<ScriptApiTypeMapping> typeMappings
+    ) {
         var outputMembers = new List<XElement>();
         var emittedNames = new HashSet<string>(StringComparer.Ordinal);
         foreach (IGrouping<Assembly, ScriptApiTypeExport> group in exports.GroupBy(
@@ -84,8 +84,10 @@ internal static class ScriptApiDocumentationBuilder
         File.Move(temporaryPath, outputPath, overwrite: true);
     }
 
-    private static bool BelongsToType(XElement member, string typeName)
-    {
+    private static bool BelongsToType(
+        XElement member,
+        string typeName
+    ) {
         string? name = member.Attribute("name")?.Value;
         if (string.IsNullOrEmpty(name) || name.Length < 3 || name[1] != ':')
             return false;
@@ -95,8 +97,7 @@ internal static class ScriptApiDocumentationBuilder
             : declarationName.StartsWith(typeName + ".", StringComparison.Ordinal);
     }
 
-    private static string GetDocumentationTypeName(Type type)
-        => (type.FullName ?? type.Name).Replace('+', '.');
+    private static string GetDocumentationTypeName(Type type) => (type.FullName ?? type.Name).Replace('+', '.');
 
     private static string GetRuntimeTypeName(Type type)
     {
@@ -108,8 +109,8 @@ internal static class ScriptApiDocumentationBuilder
         ICollection<XElement> outputMembers,
         ISet<string> emittedNames,
         string memberName,
-        string summary)
-    {
+        string summary
+    ) {
         if (!emittedNames.Add(memberName))
             return;
         outputMembers.Add(new XElement(
@@ -121,8 +122,8 @@ internal static class ScriptApiDocumentationBuilder
     private static void RewriteDocumentationIdentities(
         XElement member,
         IReadOnlyDictionary<string, string> namespaceMappings,
-        IReadOnlyList<ScriptApiTypeMapping> typeMappings)
-    {
+        IReadOnlyList<ScriptApiTypeMapping> typeMappings
+    ) {
         foreach (XAttribute attribute in member.DescendantsAndSelf().Attributes())
         {
             if (attribute.Name.LocalName is not ("name" or "cref"))
@@ -135,8 +136,8 @@ internal static class ScriptApiDocumentationBuilder
 
     private static string RewriteNamespace(
         string value,
-        IReadOnlyDictionary<string, string> namespaceMappings)
-    {
+        IReadOnlyDictionary<string, string> namespaceMappings
+    ) {
         foreach ((string implementationNamespace, string apiNamespace) in namespaceMappings
                      .OrderByDescending(static pair => pair.Key.Length))
         {
@@ -150,8 +151,8 @@ internal static class ScriptApiDocumentationBuilder
 
     private static string RewriteTypeNames(
         string value,
-        IReadOnlyList<ScriptApiTypeMapping> typeMappings)
-    {
+        IReadOnlyList<ScriptApiTypeMapping> typeMappings
+    ) {
         foreach (ScriptApiTypeMapping mapping in typeMappings
                      .OrderByDescending(static mapping =>
                          mapping.apiNamespace.Length + mapping.implementationName.Length))

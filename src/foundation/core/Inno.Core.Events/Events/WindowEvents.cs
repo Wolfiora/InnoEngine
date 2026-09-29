@@ -27,7 +27,11 @@ public abstract class WindowEvent(uint windowId) : Event
 /// <param name="height">
 /// The height in logical units or pixels required by this operation.
 /// </param>
-public class WindowResizeEvent(uint windowId, int width, int height) : WindowEvent(windowId)
+public class WindowResizeEvent(
+    uint windowId,
+    int width,
+    int height
+) : WindowEvent(windowId)
 {
     /// <summary>
     /// Gets the new window width.
@@ -59,7 +63,10 @@ public class WindowCloseEvent(uint windowId) : WindowEvent(windowId)
 /// <param name="isFocused">
 /// The is focused used to initialize this instance.
 /// </param>
-public class WindowFocusChangedEvent(uint windowId, bool isFocused) : WindowEvent(windowId)
+public class WindowFocusChangedEvent(
+    uint windowId,
+    bool isFocused
+) : WindowEvent(windowId)
 {
     /// <summary>
     /// Gets whether the window has input focus after the change.

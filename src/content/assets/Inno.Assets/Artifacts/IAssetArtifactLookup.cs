@@ -22,7 +22,10 @@ public interface IAssetArtifactLookup
     /// <exception cref="InvalidOperationException">
     /// The requested output is unavailable or invalid.
     /// </exception>
-    ArtifactLease AcquireArtifact(Guid persistentId, string outputName);
+    ArtifactLease AcquireArtifact(
+        Guid persistentId,
+        string outputName
+    );
 
     /// <summary>
     /// Tries to resolve one named immutable artifact output by persistent asset identity.
@@ -42,5 +45,6 @@ public interface IAssetArtifactLookup
     bool TryGetArtifact(
         Guid persistentId,
         string outputName,
-        out AssetArtifactInfo? artifact);
+        out AssetArtifactInfo? artifact
+    );
 }

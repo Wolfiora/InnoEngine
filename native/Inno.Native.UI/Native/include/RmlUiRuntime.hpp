@@ -28,7 +28,8 @@ enum class EventType : std::uint32_t
     MouseLeave = 6
 };
 
-namespace Inno::UI::RmlUiAdapter {
+namespace Inno::UI::RmlUiAdapter
+{
 
 /// Carries one byte across the generated span ABI.
 struct Byte
@@ -116,71 +117,33 @@ struct EventInfo
 /// Owns one isolated RmlUi adapter session and its retained contexts.
 class Runtime final
 {
-public:
+  public:
     /// Initializes an adapter session on the current thread.
     Runtime();
 
     /// Releases every retained context and the process-wide RmlUi reference.
     ~Runtime() noexcept;
 
-    Result CreateContext(
-        const char* name,
-        std::int32_t width,
-        std::int32_t height,
-        float density,
-        std::uint64_t& context);
+    Result CreateContext(const char* name, std::int32_t width, std::int32_t height, float density, std::uint64_t& context);
     Result DestroyContext(std::uint64_t context);
     Result SetViewport(std::uint64_t context, std::int32_t width, std::int32_t height, float density);
 
-    Result LoadDocument(
-        std::uint64_t context,
-        const char* markup,
-        const char* source_url,
-        std::uint64_t& document);
+    Result LoadDocument(std::uint64_t context, const char* markup, const char* source_url, std::uint64_t& document);
     Result ShowDocument(std::uint64_t context, std::uint64_t document);
     Result HideDocument(std::uint64_t context, std::uint64_t document);
     Result CloseDocument(std::uint64_t context, std::uint64_t document);
-    Result SetInnerMarkup(
-        std::uint64_t context,
-        std::uint64_t document,
-        const char* element_id,
-        const char* markup,
-        std::uint8_t& changed);
-    Result SetAttribute(
-        std::uint64_t context,
-        std::uint64_t document,
-        const char* element_id,
-        const char* name,
-        const char* value,
-        std::uint8_t& changed);
-    Result SetClass(
-        std::uint64_t context,
-        std::uint64_t document,
-        const char* element_id,
-        const char* class_name,
-        std::uint8_t active,
-        std::uint8_t& changed);
+    Result SetInnerMarkup(std::uint64_t context, std::uint64_t document, const char* element_id, const char* markup, std::uint8_t& changed);
+    Result SetAttribute(std::uint64_t context, std::uint64_t document, const char* element_id, const char* name, const char* value,
+                        std::uint8_t& changed);
+    Result SetClass(std::uint64_t context, std::uint64_t document, const char* element_id, const char* class_name, std::uint8_t active,
+                    std::uint8_t& changed);
 
-    Result LoadFont(
-        std::span<Byte> data,
-        const char* family,
-        std::int32_t style,
-        std::int32_t weight,
-        std::uint8_t fallback);
-    Result RegisterTexture(
-        std::uint64_t context,
-        const char* source,
-        std::int32_t width,
-        std::int32_t height,
-        std::span<Byte> pixels);
+    Result LoadFont(std::span<Byte> data, const char* family, std::int32_t style, std::int32_t weight, std::uint8_t fallback);
+    Result RegisterTexture(std::uint64_t context, const char* source, std::int32_t width, std::int32_t height, std::span<Byte> pixels);
 
     Result ProcessMouseMove(std::uint64_t context, std::int32_t x, std::int32_t y, std::int32_t modifiers);
     Result HasElementAtPoint(std::uint64_t context, std::int32_t x, std::int32_t y, std::uint8_t& hit);
-    Result ProcessMouseButton(
-        std::uint64_t context,
-        std::int32_t button,
-        std::uint8_t down,
-        std::int32_t modifiers);
+    Result ProcessMouseButton(std::uint64_t context, std::int32_t button, std::uint8_t down, std::int32_t modifiers);
     Result ProcessMouseWheel(std::uint64_t context, float x, float y, std::int32_t modifiers);
     Result ProcessKey(std::uint64_t context, std::int32_t key, std::uint8_t down, std::int32_t modifiers);
     Result ProcessText(std::uint64_t context, const char* text);
@@ -202,7 +165,7 @@ public:
     Result CopyEventTargetId(std::uint64_t context, std::uint64_t index, std::span<Utf8CodeUnit> target_id);
     Result ClearEvents(std::uint64_t context);
 
-private:
+  private:
     void* m_state;
 };
 

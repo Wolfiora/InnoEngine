@@ -8,8 +8,11 @@ namespace Inno.Build.Toolchains.Bgfx.Tools;
 
 internal sealed partial class BgfxShaderIrGenerator
 {
-    private void EmitStorageDeclaration(StringBuilder text, ShaderIrStageInput input, string name)
-    {
+    private void EmitStorageDeclaration(
+        StringBuilder text,
+        ShaderIrStageInput input,
+        string name
+    ) {
         ShaderStorageType storage = input.type.storage!;
         string access = storage.access switch
         {
@@ -43,7 +46,8 @@ internal sealed partial class BgfxShaderIrGenerator
     private bool EmitResourceInstruction(ShaderIrInstruction instruction)
     {
         if (instruction.operation is not (ShaderIrOperation.TextureSample or ShaderIrOperation.TextureSampleLevel
-            or ShaderIrOperation.StorageLoad or ShaderIrOperation.StorageStore or ShaderIrOperation.StorageAtomicAdd or ShaderIrOperation.Discard)) return false;
+            or ShaderIrOperation.StorageLoad or ShaderIrOperation.StorageStore or ShaderIrOperation.StorageAtomicAdd or ShaderIrOperation.Discard))
+                return false;
         string[] operands = instruction.inputs.Select(Value).ToArray();
         string? result = null;
         if (instruction.outputs.Count != 0)
@@ -62,7 +66,8 @@ internal sealed partial class BgfxShaderIrGenerator
                     "sampled-texture3d" => "texture3D", "sampled-texture-cube" => "textureCube",
                     _ => throw Error("Unsupported sampled texture shape.")
                 };
-                if (instruction.operation == ShaderIrOperation.TextureSampleLevel) function += "Lod";
+                if (instruction.operation == ShaderIrOperation.TextureSampleLevel)
+                    function += "Lod";
                 Assign(m_body, instruction.outputs[0].type, result!, function + "(" + string.Join(", ", operands) + ")");
                 break;
             case ShaderIrOperation.StorageLoad:
@@ -73,7 +78,8 @@ internal sealed partial class BgfxShaderIrGenerator
             case ShaderIrOperation.StorageStore:
                 if (instruction.inputs[0].type.storage!.isImage)
                     m_body.Append("    imageStore(").AppendJoin(", ", operands).AppendLine(");");
-                else Assign(m_body, instruction.inputs[2].type, $"{operands[0]}[{operands[1]}]", operands[2]);
+                else
+                    Assign(m_body, instruction.inputs[2].type, $"{operands[0]}[{operands[1]}]", operands[2]);
                 break;
             case ShaderIrOperation.StorageAtomicAdd:
                 m_body.Append("    atomicFetchAndAdd(").Append(operands[0]).Append('[').Append(operands[1]).Append("], ")

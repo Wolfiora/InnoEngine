@@ -10,8 +10,12 @@ using Inno.Rendering.Shaders;
 
 namespace Inno.Build.Toolchains.Bgfx.Tools;
 
-internal sealed record BgfxGeneratedStage(string source, string varying, IReadOnlyList<ShaderStageBinding> bindings,
-    IReadOnlyList<ShaderSourcePosition> sourcePositions);
+internal sealed record BgfxGeneratedStage(
+    string source,
+    string varying,
+    IReadOnlyList<ShaderStageBinding> bindings,
+    IReadOnlyList<ShaderSourcePosition> sourcePositions
+);
 
 // SC spelling, hardware semantics and module symbol isolation belong only to this adapter.
 internal sealed partial class BgfxShaderIrGenerator(ShaderIrStage stage)
@@ -58,7 +62,8 @@ internal sealed partial class BgfxShaderIrGenerator(ShaderIrStage stage)
                         Fail("BGFX uniform layout requires vec4, mat3 or mat4 storage (or fixed arrays); lower scalar/vector parameters through explicit layout components.");
                     declarations.Append("uniform ").Append(Declaration(packed ? ShaderSourceType.Atomic("float4") : input.type, name)).AppendLine(";");
                     m_bindings.Add(new(input.id, name, input.location));
-                    if (packed) name += input.type.id switch { "float" => ".x", "float2" => ".xy", _ => ".xyz" };
+                    if (packed)
+                        name += input.type.id switch { "float" => ".x", "float2" => ".xy", _ => ".xyz" };
                     break;
                 case ShaderIrInputKind.SampledTexture:
                     name = BindingName("s_inno_", input.id);
@@ -73,7 +78,8 @@ internal sealed partial class BgfxShaderIrGenerator(ShaderIrStage stage)
                     break;
                 case ShaderIrInputKind.Builtin:
                     (name, string type) = Builtin(input.semantic, stage.stage);
-                    if (!input.type.IsEquivalentTo(ShaderSourceType.Atomic(type))) Fail($"Builtin '{input.semantic}' requires {type}, not {input.type.id}.");
+                    if (!input.type.IsEquivalentTo(ShaderSourceType.Atomic(type)))
+                        Fail($"Builtin '{input.semantic}' requires {type}, not {input.type.id}.");
                     break;
                 case ShaderIrInputKind.Storage:
                     name = BindingName("r_inno_", input.id);
@@ -92,11 +98,14 @@ internal sealed partial class BgfxShaderIrGenerator(ShaderIrStage stage)
                 varying.Append(Declaration(stage.body.outputs[output.id].type, name)).Append(" : ")
                     .Append(Semantic(output.semantic, output.location)).AppendLine(";");
             }
-        if (inputNames.Count != 0) header.Append("$input ").AppendJoin(", ", inputNames.Order(StringComparer.Ordinal)).AppendLine();
-        if (outputNames.Count != 0) header.Append("$output ").AppendJoin(", ", outputNames.Order(StringComparer.Ordinal)).AppendLine();
+        if (inputNames.Count != 0)
+            header.Append("$input ").AppendJoin(", ", inputNames.Order(StringComparer.Ordinal)).AppendLine();
+        if (outputNames.Count != 0)
+            header.Append("$output ").AppendJoin(", ", outputNames.Order(StringComparer.Ordinal)).AppendLine();
         header.AppendLine("#include <bgfx_shader.sh>");
         header.AppendLine("#if BGFX_SHADER_MATRIX_COLUMN_MAJOR\n#define inno_matrix_element(m,c,r) ((m)[c][r])\n#else\n#define inno_matrix_element(m,c,r) ((m)[r][c])\n#endif");
-        if (stage.stage == ShaderStage.Compute) header.AppendLine("#include <bgfx_compute.sh>");
+        if (stage.stage == ShaderStage.Compute)
+            header.AppendLine("#include <bgfx_compute.sh>");
         foreach (ShaderIrInstruction instruction in stage.body.instructions)
         {
             if (instruction.operation == ShaderIrOperation.Input)
@@ -122,16 +131,23 @@ internal sealed partial class BgfxShaderIrGenerator(ShaderIrStage stage)
         }
         var source = new StringBuilder().Append(header).Append(m_types).Append(declarations).Append(m_modules);
         source.AppendLine("#line 1 \"inno-generated-stage\"");
-        if (stage.stage == ShaderStage.Compute) source.Append("NUM_THREADS(").Append(stage.threadsX).Append(", ").Append(stage.threadsY).Append(", ").Append(stage.threadsZ).AppendLine(")");
+        if (stage.stage == ShaderStage.Compute)
+            source.Append("NUM_THREADS(").Append(stage.threadsX).Append(", ").Append(stage.threadsY).Append(", ").Append(stage.threadsZ).AppendLine(")");
         source.AppendLine("void main() {").Append(m_body).AppendLine("}");
         return new(source.ToString(), varying.ToString(), m_bindings.AsReadOnly(), m_sourcePositions.AsReadOnly());
     }
 
     private void EmitInstruction(ShaderIrInstruction instruction)
     {
-        if (instruction.operation == ShaderIrOperation.SourceCall) { EmitCall(instruction); return; }
-        if (EmitControlFlow(instruction)) return;
-        if (EmitResourceInstruction(instruction)) return;
+        if (instruction.operation == ShaderIrOperation.SourceCall)
+        {
+            EmitCall(instruction);
+            return;
+        }
+        if (EmitControlFlow(instruction))
+            return;
+        if (EmitResourceInstruction(instruction))
+            return;
         ShaderIrValue output = instruction.outputs[0];
         string name = NewLocal(output);
         m_body.Append("    ").Append(Declaration(output.type, name)).AppendLine(";");
@@ -143,25 +159,30 @@ internal sealed partial class BgfxShaderIrGenerator(ShaderIrStage stage)
                 break;
             case ShaderIrOperation.Construct:
                 if (output.type.elementType is not null)
-                    for (int index = 0; index < operands.Length; index++) Assign(m_body, output.type.elementType, $"{name}[{index}]", operands[index]);
+                    for (int index = 0; index < operands.Length; index++)
+                        Assign(m_body, output.type.elementType, $"{name}[{index}]", operands[index]);
                 else if (output.type.fields.Count != 0)
-                    for (int index = 0; index < operands.Length; index++) Assign(m_body, output.type.fields[index].type, name + "." + FieldName(output.type.fields[index].name), operands[index]);
+                    for (int index = 0; index < operands.Length; index++)
+                        Assign(m_body, output.type.fields[index].type, name + "." + FieldName(output.type.fields[index].name), operands[index]);
                 else if (IsMatrix(output.type))
                 {
                     int columns = output.type.id[5] - '0';
                     int rows = output.type.id[7] - '0';
                     for (int column = 0; column < columns; column++)
-                        for (int row = 0; row < rows; row++) Assign(m_body, ShaderSourceType.Atomic("float"),
+                        for (int row = 0; row < rows; row++)
+                            Assign(m_body, ShaderSourceType.Atomic("float"),
                             MatrixElement(name, column, row), operands[column * rows + row]);
                 }
-                else Assign(m_body, output.type, name, TypeName(output.type) + "(" + string.Join(", ", operands) + ")");
+                else
+                    Assign(m_body, output.type, name, TypeName(output.type) + "(" + string.Join(", ", operands) + ")");
                 break;
             case ShaderIrOperation.Extract:
                 ShaderSourceType aggregate = instruction.inputs[0].type;
                 if (IsMatrix(aggregate))
                 {
                     int rows = aggregate.id[7] - '0';
-                    for (int row = 0; row < rows; row++) Assign(m_body, ShaderSourceType.Atomic("float"), $"{name}[{row}]",
+                    for (int row = 0; row < rows; row++)
+                        Assign(m_body, ShaderSourceType.Atomic("float"), $"{name}[{row}]",
                         MatrixElement(operands[0], instruction.memberIndex, row));
                     break;
                 }
@@ -187,7 +208,8 @@ internal sealed partial class BgfxShaderIrGenerator(ShaderIrStage stage)
                                 Binary(instruction.operation, MatrixElement(operands[0], column, row), MatrixElement(operands[1], column, row)));
                         }
                 }
-                else Assign(m_body, output.type, name, Binary(instruction.operation, operands[0], operands[1]));
+                else
+                    Assign(m_body, output.type, name, Binary(instruction.operation, operands[0], operands[1]));
                 break;
         }
     }
@@ -208,7 +230,8 @@ internal sealed partial class BgfxShaderIrGenerator(ShaderIrStage stage)
         var arguments = new List<string>();
         foreach (ShaderSourceParameter parameter in function.parameters)
         {
-            if (parameter.direction == ShaderSourceParameterDirection.Input) arguments.Add(Value(instruction.inputs[inputIndex++]));
+            if (parameter.direction == ShaderSourceParameterDirection.Input)
+                arguments.Add(Value(instruction.inputs[inputIndex++]));
             else
             {
                 string output = Value(instruction.outputs[outputIndex++]);
@@ -218,7 +241,9 @@ internal sealed partial class BgfxShaderIrGenerator(ShaderIrStage stage)
             }
         }
         string call = functionName + "(" + string.Join(", ", arguments) + ")";
-        if (function.returnType.id == "void") m_body.Append("    ").Append(call).AppendLine(";");
-        else Assign(m_body, function.returnType, Value(instruction.outputs[0]), call);
+        if (function.returnType.id == "void")
+            m_body.Append("    ").Append(call).AppendLine(";");
+        else
+            Assign(m_body, function.returnType, Value(instruction.outputs[0]), call);
     }
 }

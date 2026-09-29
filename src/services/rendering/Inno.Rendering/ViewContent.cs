@@ -34,8 +34,8 @@ public readonly record struct RenderView
         RenderViewport viewport,
         Matrix viewMatrix,
         Matrix projectionMatrix,
-        ulong visibilityMask = ulong.MaxValue)
-    {
+        ulong visibilityMask = ulong.MaxValue
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(id);
         this.id = id;
         this.viewport = viewport;
@@ -102,10 +102,16 @@ public sealed class ViewContentContext
     /// <param name="sourceIds">
     /// Optional explicit source allowlist for a routed model layer.
     /// </param>
-    public ViewContentContext(ContentReadScope content, string sessionId, RenderView view, ulong frameIndex, float deltaTime,
-        RenderOutputInput? input = null, IReadOnlyList<RenderView>? views = null,
-        IReadOnlyList<string>? sourceIds = null)
-    {
+    public ViewContentContext(
+        ContentReadScope content,
+        string sessionId,
+        RenderView view,
+        ulong frameIndex,
+        float deltaTime,
+        RenderOutputInput? input = null,
+        IReadOnlyList<RenderView>? views = null,
+        IReadOnlyList<string>? sourceIds = null
+    ) {
         this.content = content ?? throw new ArgumentNullException(nameof(content));
         ArgumentException.ThrowIfNullOrWhiteSpace(sessionId);
         this.sessionId = sessionId;
@@ -175,7 +181,11 @@ public interface IViewDrawable
     /// <returns>
     /// Whether the drawable is ready for this pass.
     /// </returns>
-    bool TryPrepare(RenderPipelineContext context, RenderView view, out IPreparedViewDrawable? prepared);
+    bool TryPrepare(
+        RenderPipelineContext context,
+        RenderView view,
+        out IPreparedViewDrawable? prepared
+    );
 }
 
 /// <summary>
@@ -231,7 +241,11 @@ public interface IViewPointerTarget
     /// <returns>
     /// Whether this target is eligible to receive pointer input.
     /// </returns>
-    bool TryHit(RenderView view, RenderOutputInput input, out Vector2 localPosition);
+    bool TryHit(
+        RenderView view,
+        RenderOutputInput input,
+        out Vector2 localPosition
+    );
 
     /// <summary>
     /// Advances this target once for the frame with either routed input or an empty snapshot.
@@ -245,7 +259,11 @@ public interface IViewPointerTarget
     /// <param name="frameIndex">
     /// Shared output frame index.
     /// </param>
-    void Advance(RenderOutputInput input, Vector2 localPosition, ulong frameIndex);
+    void Advance(
+        RenderOutputInput input,
+        Vector2 localPosition,
+        ulong frameIndex
+    );
 }
 
 /// <summary>
@@ -280,8 +298,8 @@ public sealed class ViewContentItem
         Vector3 localBoundsMin,
         Vector3 localBoundsMax,
         IViewDrawable drawable,
-        IViewPointerTarget? pointerTarget = null)
-    {
+        IViewPointerTarget? pointerTarget = null
+    ) {
         this.owner = owner;
         this.localToWorld = localToWorld;
         this.localBoundsMin = localBoundsMin;
@@ -348,7 +366,10 @@ public interface IViewContentSource : IDisposable
     /// <param name="sink">
     /// Collector receiving items.
     /// </param>
-    void Collect(ViewContentContext context, IViewContentSink sink);
+    void Collect(
+        ViewContentContext context,
+        IViewContentSink sink
+    );
 }
 
 /// <summary>
@@ -423,8 +444,10 @@ public sealed class SelectedViewContentCollector : IViewContentCollector
     /// <param name="sourceIds">
     /// Source IDs exclusively assigned to this layer.
     /// </param>
-    public SelectedViewContentCollector(IViewContentCollector inner, IReadOnlyList<string> sourceIds)
-    {
+    public SelectedViewContentCollector(
+        IViewContentCollector inner,
+        IReadOnlyList<string> sourceIds
+    ) {
         m_inner = inner ?? throw new ArgumentNullException(nameof(inner));
         m_sourceIds = sourceIds ?? throw new ArgumentNullException(nameof(sourceIds));
     }

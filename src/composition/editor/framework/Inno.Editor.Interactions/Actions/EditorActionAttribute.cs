@@ -20,7 +20,10 @@ public sealed class EditorActionAttribute : Attribute
     /// <exception cref="ArgumentException">
     /// Thrown when <paramref name="action"/> is empty.
     /// </exception>
-    public EditorActionAttribute(string action, int priority = 0)
+    public EditorActionAttribute(
+        string action,
+        int priority = 0
+    )
         : this(action, string.Empty, priority)
     {
     }
@@ -40,8 +43,11 @@ public sealed class EditorActionAttribute : Attribute
     /// <exception cref="ArgumentException">
     /// Thrown when <paramref name="action"/> is empty.
     /// </exception>
-    public EditorActionAttribute(string action, string area, int priority = 0)
-    {
+    public EditorActionAttribute(
+        string action,
+        string area,
+        int priority = 0
+    ) {
         if (string.IsNullOrWhiteSpace(action))
             throw new ArgumentException("An editor action name is required.", nameof(action));
         this.action = action;

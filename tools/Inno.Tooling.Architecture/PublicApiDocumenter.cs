@@ -12,8 +12,10 @@ namespace Inno.Tooling.Architecture;
 
 internal static class PublicApiDocumenter
 {
-    internal static int Document(string repositoryRoot, IReadOnlyList<string> roots)
-    {
+    internal static int Document(
+        string repositoryRoot,
+        IReadOnlyList<string> roots
+    ) {
         int changedFileCount = 0;
         foreach (string rootName in roots)
         {
@@ -209,7 +211,8 @@ internal static class PublicApiDocumenter
             string summary,
             SeparatedSyntaxList<ParameterSyntax> parameters = default,
             TypeParameterListSyntax? typeParameters = null,
-            TypeSyntax? returnType = null)
+            TypeSyntax? returnType = null
+        )
             where T : MemberDeclarationSyntax
         {
             if (HasDocumentation(node))
@@ -268,7 +271,8 @@ internal static class PublicApiDocumenter
             string summary,
             SeparatedSyntaxList<ParameterSyntax> parameters,
             TypeParameterListSyntax? typeParameters,
-            TypeSyntax? returnType)
+            TypeSyntax? returnType
+        )
             where T : SyntaxNode
         {
             string leading = node.GetLeadingTrivia().ToFullString();
@@ -320,8 +324,8 @@ internal static class PublicApiDocumenter
             string element,
             string? name,
             string replacement,
-            string newline)
-        {
+            string newline
+        ) {
             string opening = name is null
                 ? $"/// <{element}>"
                 : $"/// <{element} name=\"{name}\">";
@@ -351,8 +355,8 @@ internal static class PublicApiDocumenter
             string documentation,
             string element,
             string? name,
-            string newline)
-        {
+            string newline
+        ) {
             string opening = name is null
                 ? $"/// <{element}>"
                 : $"/// <{element} name=\"{name}\">";
@@ -430,8 +434,8 @@ internal static class PublicApiDocumenter
             string indentation,
             string opening,
             string content,
-            string? closing = null)
-        {
+            string? closing = null
+        ) {
             builder.Append(indentation).Append("/// <").Append(opening).AppendLine(">");
             builder.Append(indentation).Append("/// ").AppendLine(content);
             builder.Append(indentation).Append("/// </").Append(closing ?? opening).AppendLine(">");
@@ -444,8 +448,10 @@ internal static class PublicApiDocumenter
             return whitespace.ToString();
         }
 
-        private static string DescribeType(string name, BaseTypeDeclarationSyntax node)
-        {
+        private static string DescribeType(
+            string name,
+            BaseTypeDeclarationSyntax node
+        ) {
             if (name == "KeyCode")
                 return "Represents a backend-neutral physical key used by runtime input and editor shortcut contracts.";
             if (name.StartsWith("Vector", StringComparison.Ordinal))
@@ -508,7 +514,10 @@ internal static class PublicApiDocumenter
                 ? "Creates a vector from explicit component values."
                 : $"Creates a validated {Humanize(node.Identifier.ValueText)} instance.";
 
-        private static string DescribeMethod(string name, SyntaxNode? parent)
+        private static string DescribeMethod(
+            string name,
+            SyntaxNode? parent
+        )
             => name switch
             {
                 "Length" => "Calculates the Euclidean magnitude of this value.",
@@ -789,8 +798,10 @@ internal static class PublicApiDocumenter
                 _ => $"Applies the <c>{token}</c> operator to the supplied values."
             };
 
-        private static string DescribeProperty(string name, TypeSyntax type)
-        {
+        private static string DescribeProperty(
+            string name,
+            TypeSyntax type
+        ) {
             if (name == "normalized")
                 return "Gets a unit-length copy, or the zero value when normalization is undefined.";
             if (name.StartsWith("is", StringComparison.Ordinal) && type.ToString() == "bool")
@@ -938,8 +949,10 @@ internal static class PublicApiDocumenter
             return $"The {Humanize(name)} key.";
         }
 
-        private static string DescribeParameter(ParameterSyntax parameter, string operationName)
-        {
+        private static string DescribeParameter(
+            ParameterSyntax parameter,
+            string operationName
+        ) {
             string name = parameter.Identifier.ValueText;
             return name switch
             {
@@ -1037,8 +1050,10 @@ internal static class PublicApiDocumenter
             };
         }
 
-        private static string DescribeUnclassifiedParameter(ParameterSyntax parameter, string operationName)
-        {
+        private static string DescribeUnclassifiedParameter(
+            ParameterSyntax parameter,
+            string operationName
+        ) {
             string name = parameter.Identifier.ValueText;
             string type = parameter.Type?.ToString() ?? string.Empty;
             if (type is "bool" or "bool?")
@@ -1058,8 +1073,10 @@ internal static class PublicApiDocumenter
             return $"Occurs after the observable {subject} state changes.";
         }
 
-        private static string DescribeReturn(string operationName, TypeSyntax returnType)
-        {
+        private static string DescribeReturn(
+            string operationName,
+            TypeSyntax returnType
+        ) {
             string type = returnType.ToString();
             if (type == "bool")
                 return operationName.StartsWith("Try", StringComparison.Ordinal)

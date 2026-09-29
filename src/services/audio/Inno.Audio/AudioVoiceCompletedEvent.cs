@@ -17,8 +17,10 @@ public sealed class AudioVoiceCompletedEvent : Event
     /// <param name="reason">
     /// Reason playback ended.
     /// </param>
-    public AudioVoiceCompletedEvent(AudioVoiceHandle voice, AudioCompletionReason reason)
-    {
+    public AudioVoiceCompletedEvent(
+        AudioVoiceHandle voice,
+        AudioCompletionReason reason
+    ) {
         if (!voice.isValid)
             throw new ArgumentException("A valid voice handle is required.", nameof(voice));
         this.voice = voice;

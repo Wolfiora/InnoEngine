@@ -28,8 +28,8 @@ public sealed class ShaderArtifactSelection
         CompiledShaderArtifact? artifact,
         bool candidateSucceeded,
         bool usingLastGood,
-        IReadOnlyList<ShaderDiagnostic> diagnostics)
-    {
+        IReadOnlyList<ShaderDiagnostic> diagnostics
+    ) {
         ArgumentNullException.ThrowIfNull(diagnostics);
         this.artifact = artifact;
         this.candidateSucceeded = candidateSucceeded;
@@ -88,8 +88,8 @@ public sealed class ShaderLastGoodStore
         Guid shaderId,
         string targetKey,
         RenderShaderVariant variant,
-        ShaderCompilationResult candidate)
-    {
+        ShaderCompilationResult candidate
+    ) {
         if (shaderId == Guid.Empty)
         {
             throw new ArgumentException("A persistent shader identity is required.", nameof(shaderId));
@@ -150,5 +150,9 @@ public sealed class ShaderLastGoodStore
         }
     }
 
-    private readonly record struct ArtifactKey(Guid shaderId, string targetKey, string variantKey);
+    private readonly record struct ArtifactKey(
+        Guid shaderId,
+        string targetKey,
+        string variantKey
+    );
 }

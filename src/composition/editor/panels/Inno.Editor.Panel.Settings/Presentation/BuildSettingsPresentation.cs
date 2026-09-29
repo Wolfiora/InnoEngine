@@ -29,8 +29,8 @@ internal sealed class BuildSettingsField
         BuildSettingsKey key,
         string path,
         string section,
-        string description)
-    {
+        string description
+    ) {
         this.key = key;
         this.path = path;
         pagePath = path[..path.LastIndexOf('/')];
@@ -46,7 +46,10 @@ internal sealed class BuildSettingsField
     internal string section { get; }
     internal string description { get; }
 
-    internal bool Draw(BuildSettings settings, BuildPipeline buildPipeline)
+    internal bool Draw(
+        BuildSettings settings,
+        BuildPipeline buildPipeline
+    )
         => key switch
         {
             BuildSettingsKey.GameProductName => DrawTextValue(
@@ -75,7 +78,10 @@ internal sealed class BuildSettingsField
             _ => throw new InvalidOperationException($"Unknown Build Settings field '{key}'.")
         };
 
-    internal bool IsDefault(BuildSettings settings, BuildSettings defaults)
+    internal bool IsDefault(
+        BuildSettings settings,
+        BuildSettings defaults
+    )
         => key switch
         {
             BuildSettingsKey.GameProductName => settings.gameProductName == defaults.gameProductName,
@@ -91,8 +97,10 @@ internal sealed class BuildSettingsField
             _ => throw new InvalidOperationException($"Unknown Build Settings field '{key}'.")
         };
 
-    internal void Reset(BuildSettings settings, BuildSettings defaults)
-    {
+    internal void Reset(
+        BuildSettings settings,
+        BuildSettings defaults
+    ) {
         switch (key)
         {
             case BuildSettingsKey.GameProductName:
@@ -127,7 +135,10 @@ internal sealed class BuildSettingsField
         }
     }
 
-    internal static bool ValuesEqual(BuildSettings left, BuildSettings right)
+    internal static bool ValuesEqual(
+        BuildSettings left,
+        BuildSettings right
+    )
         => string.Equals(left.gameProductName, right.gameProductName, StringComparison.Ordinal)
            && string.Equals(left.gameStartupScene, right.gameStartupScene, StringComparison.Ordinal)
            && string.Equals(left.gameOutputDirectory, right.gameOutputDirectory, StringComparison.Ordinal)
@@ -140,8 +151,8 @@ internal sealed class BuildSettingsField
 
     private static bool DrawTextValue(
         string value,
-        Action<string> apply)
-    {
+        Action<string> apply
+    ) {
         NativeImGui.SetNextItemWidth(-1f);
         if (!EditorImGui.InputText("##value", ref value, C_TEXT_CAPACITY))
             return false;
@@ -150,8 +161,10 @@ internal sealed class BuildSettingsField
         return true;
     }
 
-    private static bool DrawPositiveInt(int value, Action<int> apply)
-    {
+    private static bool DrawPositiveInt(
+        int value,
+        Action<int> apply
+    ) {
         NativeImGui.SetNextItemWidth(-1f);
         if (!NativeImGui.InputInt("##value", ref value))
             return false;
@@ -160,8 +173,10 @@ internal sealed class BuildSettingsField
         return true;
     }
 
-    private static bool DrawTarget(BuildSettings settings, BuildPipeline buildPipeline)
-    {
+    private static bool DrawTarget(
+        BuildSettings settings,
+        BuildPipeline buildPipeline
+    ) {
         bool changed = false;
         NativeImGui.SetNextItemWidth(-1f);
         if (!NativeImGui.BeginCombo(
@@ -193,8 +208,8 @@ internal sealed class BuildSettingsField
     private static bool DrawTargetChoice(
         BuildSettings settings,
         BuildTargetId target,
-        BuildPipeline buildPipeline)
-    {
+        BuildPipeline buildPipeline
+    ) {
         bool selected = settings.gameTarget == target;
         bool changed = NativeImGui.Selectable(
             GetTargetLabel(target, buildPipeline),
@@ -206,7 +221,10 @@ internal sealed class BuildSettingsField
         return changed;
     }
 
-    private static string GetTargetLabel(BuildTargetId target, BuildPipeline buildPipeline)
+    private static string GetTargetLabel(
+        BuildTargetId target,
+        BuildPipeline buildPipeline
+    )
         => buildPipeline.TryGetGameTargetDisplayName(target, out string displayName)
             ? displayName
             : $"Missing ({target})";

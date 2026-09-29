@@ -13,8 +13,10 @@ public sealed class WaitForSeconds(float seconds) : YieldInstruction
     /// </summary>
     public float seconds { get; } = seconds;
 
-    internal override CoroutineWaitDelegate CreateWaiter(double now, ulong frame)
-    {
+    internal override CoroutineWaitDelegate CreateWaiter(
+        double now,
+        ulong frame
+    ) {
         ulong targetFrame = frame + 1;
         if (seconds <= 0f)
         {

@@ -23,7 +23,8 @@ public interface IScriptReloadCoordinator
     /// </returns>
     AssemblyUnloadMonitor Execute(
         AssemblyReloadSession reload,
-        IGenerationChange? externalChange = null);
+        IGenerationChange? externalChange = null
+    );
 
     /// <summary>
     /// Requests diagnostics derived from the active host generation to be republished.

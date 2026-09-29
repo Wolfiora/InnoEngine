@@ -17,8 +17,11 @@ public readonly record struct RuntimeFixedFrame
     /// <param name="deltaTime">
     /// The fixed interval.
     /// </param>
-    public RuntimeFixedFrame(long stepIndex, float time, float deltaTime)
-    {
+    public RuntimeFixedFrame(
+        long stepIndex,
+        float time,
+        float deltaTime
+    ) {
         this.stepIndex = stepIndex;
         this.time = time;
         this.deltaTime = deltaTime;

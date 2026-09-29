@@ -28,4 +28,5 @@ public sealed record ScriptDiagnostic(
     string message,
     string? filePath,
     int line,
-    int column);
+    int column
+);

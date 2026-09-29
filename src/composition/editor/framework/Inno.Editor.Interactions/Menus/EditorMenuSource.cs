@@ -16,5 +16,8 @@ public abstract class EditorMenuSource
     /// <param name="builder">
     /// The collector that receives dynamic action placements.
     /// </param>
-    public abstract void Build(EditorMenuContext context, EditorMenuBuilder builder);
+    public abstract void Build(
+        EditorMenuContext context,
+        EditorMenuBuilder builder
+    );
 }

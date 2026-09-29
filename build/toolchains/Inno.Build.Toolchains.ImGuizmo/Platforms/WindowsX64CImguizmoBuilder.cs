@@ -47,8 +47,13 @@ internal sealed class WindowsX64CImguizmoBuilder : CImguizmoBuilder
     /// <param name="config">
     /// The validated configuration that controls this operation.
     /// </param>
-    public override void Build(string cimguizmoDir, string cimguiDir, string cimguiBuildDir, string cimguiOutputDir, string config)
-    {
+    public override void Build(
+        string cimguizmoDir,
+        string cimguiDir,
+        string cimguiBuildDir,
+        string cimguiOutputDir,
+        string config
+    ) {
         var buildDir = Path.Combine(cimguizmoDir, CImguizmoBuildConstants.BUILD_DIR_NAME, BUILD_DIR_NAME);
         Directory.CreateDirectory(buildDir);
 
@@ -75,8 +80,10 @@ internal sealed class WindowsX64CImguizmoBuilder : CImguizmoBuilder
         ToolchainEnvironment.Run("cl", args, buildDir);
     }
 
-    private static string FindCimguiImportLibrary(string cimguiBuildDir, string config)
-    {
+    private static string FindCimguiImportLibrary(
+        string cimguiBuildDir,
+        string config
+    ) {
         if (!Directory.Exists(cimguiBuildDir))
         {
             throw new DirectoryNotFoundException($"cimgui build directory not found: {cimguiBuildDir}");

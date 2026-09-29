@@ -37,7 +37,8 @@ public sealed class RmlUiDocumentImporter : AssetImporter<UiDocumentAsset>
     protected override ValueTask ImportAsync(
         AssetImportContext context,
         AssetImportWriter<UiDocumentAsset> output,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken
+    )
         => UiDocumentImportPipeline.ImportAsync(
             context,
             output,

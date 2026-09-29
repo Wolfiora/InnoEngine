@@ -17,16 +17,16 @@ internal sealed record ScriptSourceSet(
     IReadOnlyList<string> editorSources,
     IReadOnlyList<ScriptAssemblyDefinition> definitions,
     IReadOnlyList<ScriptAssemblyInput> assemblies,
-    bool includesEditor)
-{
+    bool includesEditor
+) {
     private const string C_GAME_ASSEMBLY_NAME = "Inno.GameScripts";
     private const string C_EDITOR_ASSEMBLY_NAME = "Inno.EditorScripts";
 
     internal static ScriptSourceSet Discover(
         AssetPipeline assets,
         PluginEnvironment plugins,
-        bool includeEditor)
-    {
+        bool includeEditor
+    ) {
         ArgumentNullException.ThrowIfNull(assets);
         ArgumentNullException.ThrowIfNull(plugins);
         if (!assets.isInitialized)
@@ -184,8 +184,8 @@ internal sealed record ScriptSourceSet(
     private static ScriptAssemblyDefinition ParseDefinition(
         AssetFileEntry entry,
         AssetSourceMountTransaction? candidateAssets,
-        AssetPipeline assets)
-    {
+        AssetPipeline assets
+    ) {
         ScriptAssemblyDefinitionAsset asset = candidateAssets is null
             ? assets.Load<ScriptAssemblyDefinitionAsset>(entry.assetPath)
             : candidateAssets.Load<ScriptAssemblyDefinitionAsset>(entry.assetPath);
@@ -212,8 +212,8 @@ internal sealed record ScriptSourceSet(
     private static ScriptSourceInput CreateSourceInput(
         AssetFileEntry entry,
         AssetSourceMountTransaction? candidateAssets,
-        AssetPipeline assets)
-    {
+        AssetPipeline assets
+    ) {
         bool hasInfo = candidateAssets is null
             ? assets.TryGetInfo(entry.assetPath, out AssetInfo? info)
             : candidateAssets.TryGetInfo(entry.assetPath, out info);
@@ -257,8 +257,8 @@ internal sealed record ScriptSourceSet(
     private static void ValidateManifestDefinitions(
         IReadOnlyList<AssetFileEntry> entries,
         IReadOnlyList<ScriptAssemblyDefinition> definitions,
-        IReadOnlyList<PluginCandidate> plugins)
-    {
+        IReadOnlyList<PluginCandidate> plugins
+    ) {
         _ = definitions;
         foreach (PluginCandidate plugin in plugins)
         {
@@ -287,8 +287,8 @@ internal sealed record ScriptSourceSet(
         IReadOnlyDictionary<string, AssemblyBuilder> builders,
         IReadOnlyList<ScriptAssemblyDefinition> explicitDefinitions,
         IReadOnlyList<PluginCandidate> plugins,
-        IReadOnlyDictionary<string, PluginDefaultNames> defaultNames)
-    {
+        IReadOnlyDictionary<string, PluginDefaultNames> defaultNames
+    ) {
         AssemblyBuilder game = builders[C_GAME_ASSEMBLY_NAME];
         AssemblyBuilder editor = builders[C_EDITOR_ASSEMBLY_NAME];
         foreach (PluginCandidate plugin in plugins)
@@ -338,8 +338,8 @@ internal sealed record ScriptSourceSet(
 
     private static ScriptAssemblyDefinition? FindNearestDefinition(
         AssetPath path,
-        IReadOnlyList<ScriptAssemblyDefinition> definitions)
-    {
+        IReadOnlyList<ScriptAssemblyDefinition> definitions
+    ) {
         string directory = Path.GetDirectoryName(path.localPath)?.Replace('\\', '/') ?? string.Empty;
         return definitions
             .Where(definition => definition.source == path.source && IsWithin(directory, definition.directory))
@@ -349,8 +349,8 @@ internal sealed record ScriptSourceSet(
 
     private static ScriptAssemblyInput[] ValidateAndOrderAssemblies(
         IReadOnlyDictionary<string, AssemblyBuilder> builders,
-        PluginEnvironment plugins)
-    {
+        PluginEnvironment plugins
+    ) {
         var referencesByAssembly = new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase);
         foreach (AssemblyBuilder builder in builders.Values)
         {
@@ -415,8 +415,8 @@ internal sealed record ScriptSourceSet(
     private static void ValidateDomainDependency(
         ScriptAssemblyDefinition assembly,
         ScriptAssemblyDefinition dependency,
-        PluginEnvironment plugins)
-    {
+        PluginEnvironment plugins
+    ) {
         if (assembly.domain != AssemblyDomain.InnoPlugin)
             return;
         if (dependency.domain != AssemblyDomain.InnoPlugin)
@@ -444,7 +444,8 @@ internal sealed record ScriptSourceSet(
         ScriptAssemblyScope scope,
         AssemblyDomain domain,
         string ownerPluginId,
-        string configurationHash)
+        string configurationHash
+    )
         => new(
             name,
             source,
@@ -460,8 +461,8 @@ internal sealed record ScriptSourceSet(
 
     private static void AddBuilder(
         IDictionary<string, AssemblyBuilder> builders,
-        ScriptAssemblyDefinition definition)
-    {
+        ScriptAssemblyDefinition definition
+    ) {
         if (!builders.TryAdd(definition.name, new AssemblyBuilder(definition)))
             throw new InvalidDataException($"Script assembly name '{definition.name}' is declared more than once.");
     }
@@ -478,7 +479,10 @@ internal sealed record ScriptSourceSet(
         return builder.ToString();
     }
 
-    private static bool IsWithin(string directory, string ancestor)
+    private static bool IsWithin(
+        string directory,
+        string ancestor
+    )
         => string.IsNullOrEmpty(ancestor)
            || string.Equals(directory, ancestor, StringComparison.OrdinalIgnoreCase)
            || directory.StartsWith(ancestor + "/", StringComparison.OrdinalIgnoreCase);
@@ -496,7 +500,11 @@ internal sealed record ScriptSourceSet(
         internal List<string> references { get; } = [];
     }
 
-    private readonly record struct PluginDefaultNames(string runtime, string editor, string samples);
+    private readonly record struct PluginDefaultNames(
+        string runtime,
+        string editor,
+        string samples
+    );
 }
 
 internal sealed record ScriptAssemblyDefinition(
@@ -510,7 +518,8 @@ internal sealed record ScriptAssemblyDefinition(
     IReadOnlyList<string> defines,
     bool nullable,
     bool allowUnsafe,
-    string configurationHash);
+    string configurationHash
+);
 
 internal sealed record ScriptAssemblyInput(
     string name,
@@ -522,14 +531,15 @@ internal sealed record ScriptAssemblyInput(
     IReadOnlyList<string> defines,
     bool nullable,
     bool allowUnsafe,
-    string definitionHash);
+    string definitionHash
+);
 
 internal sealed record ScriptSourceInput(
     AssetPath assetPath,
     string sourcePath,
     string snapshotPath,
     Guid persistentId,
-    string contentHash)
-{
+    string contentHash
+) {
     internal string relativePath => assetPath.ToString();
 }

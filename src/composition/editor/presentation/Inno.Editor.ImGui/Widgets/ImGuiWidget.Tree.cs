@@ -47,8 +47,8 @@ public static partial class ImGuiWidget
     public static TreeNodeResult TreeNode(
         string id,
         Action<TreeNodeDrawContext> onDraw,
-        in TreeNodeOptions options)
-    {
+        in TreeNodeOptions options
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(id);
         ArgumentNullException.ThrowIfNull(onDraw);
 
@@ -72,8 +72,8 @@ public static partial class ImGuiWidget
         Action<TreeNodeDrawContext> onDraw,
         in TreeNodeOptions options,
         bool isLeaf,
-        ImDrawListPtr drawList)
-    {
+        ImDrawListPtr drawList
+    ) {
         bool open = !isLeaf && s_openStatesById.TryGetValue(id, out bool storedOpen) && storedOpen;
         if (!isLeaf && s_hasNextTreeNodeOpen)
         {
@@ -196,8 +196,8 @@ public static partial class ImGuiWidget
         float nativeRowMaxY,
         Action<TreeNodeDrawContext> onDraw,
         Action? drawViewportOverlay,
-        out Vector2 interactionMin)
-    {
+        out Vector2 interactionMin
+    ) {
         ImGuiWindowPtr window = ImGuiP.GetCurrentWindow();
         Vector2 windowPos = NativeImGui.GetWindowPos();
         float contentX = nodeCursor.X + NativeImGui.GetTreeNodeToLabelSpacing();
@@ -244,8 +244,8 @@ public static partial class ImGuiWidget
 
     private static void DrawTreeNodeViewportOverlay(
         ImGuiWindowPtr window,
-        Action? drawViewportOverlay)
-    {
+        Action? drawViewportOverlay
+    ) {
         if (drawViewportOverlay is null)
             return;
 
@@ -288,8 +288,10 @@ public static partial class ImGuiWidget
             s_treeNodeStack.RemoveAt(s_treeNodeStack.Count - 1);
     }
 
-    private static bool TrackSiblingState(string id, int depth)
-    {
+    private static bool TrackSiblingState(
+        string id,
+        int depth
+    ) {
         bool hasNextSibling = s_hasNextSiblingById.TryGetValue(id, out bool cachedHasNextSibling) && cachedHasNextSibling;
 
         while (s_lastNodeIdsByDepth.Count <= depth)
@@ -311,8 +313,8 @@ public static partial class ImGuiWidget
     private static void DrawTreeGuideLines(
         Vector2 nodeCursor,
         bool hasNextSibling,
-        bool hasDisclosureArrow)
-    {
+        bool hasDisclosureArrow
+    ) {
         if (s_treeNodeStack.Count == 0)
             return;
 
@@ -351,8 +353,10 @@ public static partial class ImGuiWidget
             AddTreeLine(new Vector2(branchX, rowCenterY), new Vector2(targetX, rowCenterY));
     }
 
-    private static void AddTreeLine(Vector2 from, Vector2 to)
-    {
+    private static void AddTreeLine(
+        Vector2 from,
+        Vector2 to
+    ) {
         TreeWidgetLineSegment line = new()
         {
             from = SnapTreeLinePoint(from),
@@ -374,8 +378,8 @@ public static partial class ImGuiWidget
     private static void DrawTreeRowBackground(
         ImDrawListPtr drawList,
         TreeWidgetHighlightRect rect,
-        uint color)
-    {
+        uint color
+    ) {
         drawList.ChannelsSetCurrent(0);
         drawList.AddRectFilled(rect.min, rect.max, color);
         drawList.ChannelsSetCurrent(1);
@@ -453,8 +457,8 @@ public readonly struct TreeNodeResult
         bool isHovered,
         Vector2 min,
         Vector2 max,
-        Vector2 contentMin)
-    {
+        Vector2 contentMin
+    ) {
         this.isOpen = isOpen;
         this.isClicked = isClicked;
         this.isDoubleClicked = isDoubleClicked;

@@ -48,6 +48,5 @@ public readonly record struct BuildTargetId
     /// <returns>
     /// The exact stable target identity.
     /// </returns>
-    public override string ToString()
-        => value ?? string.Empty;
+    public override string ToString() => value ?? string.Empty;
 }

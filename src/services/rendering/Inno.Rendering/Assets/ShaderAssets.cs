@@ -415,8 +415,10 @@ public struct ShaderMetadataEntry
     /// <param name="value">
     /// Provider-defined value.
     /// </param>
-    public ShaderMetadataEntry(string key, string value)
-    {
+    public ShaderMetadataEntry(
+        string key,
+        string value
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(key);
         this.key = key;
         this.value = value ?? string.Empty;
@@ -474,8 +476,8 @@ public struct ShaderPropertyDefinition
         MaterialValue defaultValue,
         ShaderPropertyBindingKind? bindingKind = null,
         RenderStorageAccess storageAccess = RenderStorageAccess.Read,
-        ShaderPropertyBindingOwner bindingOwner = ShaderPropertyBindingOwner.Material)
-    {
+        ShaderPropertyBindingOwner bindingOwner = ShaderPropertyBindingOwner.Material
+    ) {
         if (!id.isValid)
             throw new ArgumentException("A shader property ID must be valid.", nameof(id));
         ArgumentException.ThrowIfNullOrWhiteSpace(displayName);
@@ -536,7 +538,8 @@ public struct ShaderPropertyDefinition
 
     internal static bool IsBindingKindCompatible(
         ShaderPropertyType type,
-        ShaderPropertyBindingKind bindingKind)
+        ShaderPropertyBindingKind bindingKind
+    )
         => bindingKind switch
         {
             ShaderPropertyBindingKind.Uniform => !IsTexture(type) && type != ShaderPropertyType.Buffer,
@@ -561,8 +564,8 @@ public struct ShaderPropertyDefinition
 
     private static void ValidateBindingKind(
         ShaderPropertyType type,
-        ShaderPropertyBindingKind bindingKind)
-    {
+        ShaderPropertyBindingKind bindingKind
+    ) {
         if (!IsBindingKindCompatible(type, bindingKind))
         {
             throw new ArgumentException(
@@ -586,8 +589,10 @@ public struct ShaderKeywordDefinition
     /// <param name="options">
     /// Allowed stable option identifiers.
     /// </param>
-    public ShaderKeywordDefinition(string id, IEnumerable<string> options)
-    {
+    public ShaderKeywordDefinition(
+        string id,
+        IEnumerable<string> options
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(id);
         ArgumentNullException.ThrowIfNull(options);
         this.id = id;
@@ -633,8 +638,8 @@ public struct ShaderPassDefinition
         ShaderProgramKind programKind,
         GraphicsCapability requiredFeatures = GraphicsCapability.None,
         ShaderRenderState? renderState = null,
-        IEnumerable<ShaderMetadataEntry>? metadata = null)
-    {
+        IEnumerable<ShaderMetadataEntry>? metadata = null
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
         this.name = name;
         this.programKind = programKind;
@@ -683,8 +688,10 @@ public struct ShaderTechniquePass
     /// <param name="passName">
     /// Concrete pass name within the shader.
     /// </param>
-    public ShaderTechniquePass(ShaderPassRoleId role, string passName)
-    {
+    public ShaderTechniquePass(
+        ShaderPassRoleId role,
+        string passName
+    ) {
         if (!role.isValid)
             throw new ArgumentException("A pass role must be valid.", nameof(role));
         ArgumentException.ThrowIfNullOrWhiteSpace(passName);
@@ -727,8 +734,8 @@ public struct ShaderTechniqueDefinition
         ShaderTechniqueId id,
         ShaderContractId contract,
         IEnumerable<ShaderTechniquePass> passes,
-        GraphicsCapability requiredFeatures = GraphicsCapability.None)
-    {
+        GraphicsCapability requiredFeatures = GraphicsCapability.None
+    ) {
         if (!id.isValid)
             throw new ArgumentException("A technique ID must be valid.", nameof(id));
         if (!contract.isValid)
@@ -796,8 +803,8 @@ public sealed class ShaderDefinition : ISerializable
         IEnumerable<ShaderPropertyDefinition> properties,
         IEnumerable<ShaderKeywordDefinition> keywords,
         IEnumerable<ShaderPassDefinition> passes,
-        IEnumerable<ShaderTechniqueDefinition>? techniques = null)
-    {
+        IEnumerable<ShaderTechniqueDefinition>? techniques = null
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
         ArgumentNullException.ThrowIfNull(properties);
         ArgumentNullException.ThrowIfNull(keywords);
@@ -879,8 +886,8 @@ public class ShaderAsset : AssetObject
     public void SetDefinition(
         ShaderDefinition value,
         SerializationRegistry serialization,
-        SerializationContext context)
-    {
+        SerializationContext context
+    ) {
         ArgumentNullException.ThrowIfNull(value);
         ArgumentNullException.ThrowIfNull(serialization);
         ArgumentNullException.ThrowIfNull(context);
@@ -957,8 +964,8 @@ public sealed class TextureAsset : AssetObject, IRenderTextureArtifactSource
         int width,
         int height,
         TextureColorSpace colorSpace,
-        string sourceFormat)
-    {
+        string sourceFormat
+    ) {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(width);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(height);
         ArgumentException.ThrowIfNullOrWhiteSpace(sourceFormat);
@@ -1054,8 +1061,8 @@ public sealed class GeometryAsset : AssetObject
         int indexCount,
         int sectionCount,
         Vector3 boundsCenter,
-        Vector3 boundsExtents)
-    {
+        Vector3 boundsExtents
+    ) {
         ArgumentOutOfRangeException.ThrowIfNegative(vertexCount);
         ArgumentOutOfRangeException.ThrowIfNegative(indexCount);
         ArgumentOutOfRangeException.ThrowIfNegative(sectionCount);

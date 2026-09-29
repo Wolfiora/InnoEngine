@@ -12,14 +12,16 @@ internal sealed class EditorActionRouter(
     EditorExtensionCatalog catalog,
     EditorContext editor,
     EditorInteractions interactions,
-    Logger log)
-{
+    Logger log
+) {
     private readonly Queue<(string Action, EditorActionContext Context)> m_pending = [];
     private readonly HashSet<string> m_presentationFailures = new(StringComparer.Ordinal);
     private readonly HashSet<string> m_queryFailures = new(StringComparer.Ordinal);
 
-    internal EditorActionState Query(string action, EditorActionContext context)
-    {
+    internal EditorActionState Query(
+        string action,
+        EditorActionContext context
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(action);
         ArgumentNullException.ThrowIfNull(context);
         EditorExtensionCatalog.ActionRegistration? registration = Resolve(action, context);
@@ -39,8 +41,10 @@ internal sealed class EditorActionRouter(
         }
     }
 
-    internal bool Execute(string action, EditorActionContext context)
-    {
+    internal bool Execute(
+        string action,
+        EditorActionContext context
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(action);
         ArgumentNullException.ThrowIfNull(context);
         EditorExtensionCatalog.ActionRegistration? registration = Resolve(action, context);
@@ -62,8 +66,10 @@ internal sealed class EditorActionRouter(
         }
     }
 
-    internal bool Present(string action, EditorActionContext context)
-    {
+    internal bool Present(
+        string action,
+        EditorActionContext context
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(action);
         ArgumentNullException.ThrowIfNull(context);
         EditorExtensionCatalog.ActionRegistration? registration = Resolve(action, context);
@@ -87,16 +93,20 @@ internal sealed class EditorActionRouter(
         }
     }
 
-    internal bool IsActive(string action, EditorActionContext context)
-    {
+    internal bool IsActive(
+        string action,
+        EditorActionContext context
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(action);
         ArgumentNullException.ThrowIfNull(context);
         EditorExtensionCatalog.ActionRegistration? registration = Resolve(action, context);
         return registration is not null && registration.action.IsActiveFor(context.target);
     }
 
-    internal void Enqueue(string action, EditorActionContext context)
-    {
+    internal void Enqueue(
+        string action,
+        EditorActionContext context
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(action);
         ArgumentNullException.ThrowIfNull(context);
         m_pending.Enqueue((action, context));
@@ -154,8 +164,8 @@ internal sealed class EditorActionRouter(
         string action,
         string area,
         object? target,
-        out HotKeyGesture gesture)
-    {
+        out HotKeyGesture gesture
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(action);
         ArgumentException.ThrowIfNullOrWhiteSpace(area);
         var context = new EditorActionContext(editor, interactions, area, target);
@@ -163,8 +173,11 @@ internal sealed class EditorActionRouter(
         return TryResolveShortcut(registration, area, out gesture);
     }
 
-    internal bool DispatchShortcut(KeyPressedEvent keyEvent, string area, object? target)
-    {
+    internal bool DispatchShortcut(
+        KeyPressedEvent keyEvent,
+        string area,
+        object? target
+    ) {
         var actionIds = new HashSet<string>(StringComparer.Ordinal);
         foreach (EditorExtensionCatalog.ActionRegistration registration in catalog.extensions.actions)
             _ = actionIds.Add(registration.id);
@@ -188,7 +201,10 @@ internal sealed class EditorActionRouter(
                 break;
             }
         }
-        candidates.Sort(static (left, right) =>
+        candidates.Sort(static (
+            left,
+            right
+        ) =>
         {
             int areaComparison = right.resolved.exactArea.CompareTo(left.resolved.exactArea);
             if (areaComparison != 0)
@@ -214,8 +230,8 @@ internal sealed class EditorActionRouter(
     private static bool TryResolveShortcut(
         EditorExtensionCatalog.ActionRegistration? registration,
         string area,
-        out HotKeyGesture gesture)
-    {
+        out HotKeyGesture gesture
+    ) {
         EditorShortcutAttribute? best = registration is null
             ? null
             : GetApplicableShortcuts(registration, area).FirstOrDefault();
@@ -230,13 +246,14 @@ internal sealed class EditorActionRouter(
 
     private EditorExtensionCatalog.ActionRegistration? Resolve(
         string action,
-        EditorActionContext context)
+        EditorActionContext context
+    )
         => ResolveWithSpecificity(action, context)?.registration;
 
     private ResolvedAction? ResolveWithSpecificity(
         string action,
-        EditorActionContext context)
-    {
+        EditorActionContext context
+    ) {
         EditorExtensionCatalog.ActionRegistration? best = null;
         int bestDistance = int.MaxValue;
         foreach (EditorExtensionCatalog.ActionRegistration registration in catalog.extensions.actions)
@@ -292,8 +309,8 @@ internal sealed class EditorActionRouter(
 
     private static IEnumerable<EditorShortcutAttribute> GetApplicableShortcuts(
         EditorExtensionCatalog.ActionRegistration registration,
-        string area)
-    {
+        string area
+    ) {
         bool hasExact = registration.shortcuts.Any(shortcut =>
             !string.IsNullOrEmpty(shortcut.area) &&
             string.Equals(shortcut.area, area, StringComparison.Ordinal));
@@ -302,8 +319,11 @@ internal sealed class EditorActionRouter(
             : string.IsNullOrEmpty(shortcut.area));
     }
 
-    private void TryCancel(EditorAction action, string actionId, string phase)
-    {
+    private void TryCancel(
+        EditorAction action,
+        string actionId,
+        string phase
+    ) {
         try
         {
             action.CancelInternal();
@@ -320,10 +340,12 @@ internal sealed class EditorActionRouter(
     private readonly record struct ResolvedAction(
         EditorExtensionCatalog.ActionRegistration registration,
         int targetDistance,
-        bool exactArea);
+        bool exactArea
+    );
 
     private readonly record struct ShortcutCandidate(
         string action,
         ResolvedAction resolved,
-        HotKeyGesture gesture);
+        HotKeyGesture gesture
+    );
 }

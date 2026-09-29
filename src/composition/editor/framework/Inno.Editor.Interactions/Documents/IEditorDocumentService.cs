@@ -55,7 +55,10 @@ public interface IEditorDocumentService
     /// <returns>
     /// The stable document context.
     /// </returns>
-    EditorDocumentContext Open(string assetPath, Guid assetId = default);
+    EditorDocumentContext Open(
+        string assetPath,
+        Guid assetId = default
+    );
 
     /// <summary>
     /// Updates an open document's source location after an identity-preserving asset move, without changing history or focus.
@@ -69,7 +72,10 @@ public interface IEditorDocumentService
     /// <returns>
     /// Whether the document exists.
     /// </returns>
-    bool UpdateAssetPath(Guid documentId, string assetPath);
+    bool UpdateAssetPath(
+        Guid documentId,
+        string assetPath
+    );
 
     /// <summary>
     /// Updates a document's unsaved state without saving, discarding or changing its History.
@@ -80,7 +86,10 @@ public interface IEditorDocumentService
     /// <param name="isDirty">
     /// Whether the provider's current draft differs from its saved baseline.
     /// </param>
-    void SetDirty(Guid documentId, bool isDirty = true);
+    void SetDirty(
+        Guid documentId,
+        bool isDirty = true
+    );
 
     /// <summary>
     /// Saves one open document through its current provider.
@@ -135,6 +144,9 @@ public interface IEditorDocumentService
     /// <returns>
     /// <see langword="true"/> when the document closed.
     /// </returns>
-    bool Close(Guid documentId, EditorDocumentCloseMode mode);
+    bool Close(
+        Guid documentId,
+        EditorDocumentCloseMode mode
+    );
 
 }

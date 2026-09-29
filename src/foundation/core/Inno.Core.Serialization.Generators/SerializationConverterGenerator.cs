@@ -66,15 +66,26 @@ public sealed class SerializationConverterGenerator : IIncrementalGenerator
         IncrementalValuesProvider<INamedTypeSymbol> types = context.SyntaxProvider
             .ForAttributeWithMetadataName(
                 C_GENERATE_ATTRIBUTE,
-                static (node, _) => node is ClassDeclarationSyntax,
-                static (attributeContext, _) => (INamedTypeSymbol)attributeContext.TargetSymbol);
+                static (
+                    node,
+                    _
+                ) => node is ClassDeclarationSyntax,
+                static (
+                    attributeContext,
+                    _
+                ) => (INamedTypeSymbol)attributeContext.TargetSymbol);
 
-        context.RegisterSourceOutput(types, static (productionContext, type) =>
+        context.RegisterSourceOutput(types, static (
+            productionContext,
+            type
+        ) =>
             Generate(productionContext, type));
     }
 
-    private static void Generate(SourceProductionContext context, INamedTypeSymbol type)
-    {
+    private static void Generate(
+        SourceProductionContext context,
+        INamedTypeSymbol type
+    ) {
         Location location = type.Locations.FirstOrDefault() ?? Location.None;
         if (type.TypeKind != TypeKind.Class
             || type.IsAbstract
@@ -187,8 +198,10 @@ public sealed class SerializationConverterGenerator : IIncrementalGenerator
         return members.ToImmutable();
     }
 
-    private static string BuildSource(INamedTypeSymbol type, ImmutableArray<SerializableMember> members)
-    {
+    private static string BuildSource(
+        INamedTypeSymbol type,
+        ImmutableArray<SerializableMember> members
+    ) {
         string targetType = type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
         string converterName = "__InnoGeneratedSerializationConverter_" + GetGeneratedName(type);
         var source = new StringBuilder();
@@ -239,8 +252,10 @@ public sealed class SerializationConverterGenerator : IIncrementalGenerator
         return source.ToString();
     }
 
-    private static void AppendAssignments(StringBuilder source, ImmutableArray<SerializableMember> members)
-    {
+    private static void AppendAssignments(
+        StringBuilder source,
+        ImmutableArray<SerializableMember> members
+    ) {
         foreach (SerializableMember member in members.Where(static member => member.deserialize))
         {
             source.Append("            value.").Append(member.name).Append(" = reader.Read<")
@@ -291,8 +306,7 @@ public sealed class SerializationConverterGenerator : IIncrementalGenerator
         return result.ToString();
     }
 
-    private static string Escape(string value)
-        => value.Replace("\\", "\\\\").Replace("\"", "\\\"");
+    private static string Escape(string value) => value.Replace("\\", "\\\\").Replace("\"", "\\\"");
 
     private sealed class SerializableMember
     {
@@ -304,8 +318,8 @@ public sealed class SerializationConverterGenerator : IIncrementalGenerator
             bool deserialize,
             bool canRead,
             bool canWrite,
-            Location location)
-        {
+            Location location
+        ) {
             this.name = name;
             this.displayName = displayName;
             this.typeName = typeName;

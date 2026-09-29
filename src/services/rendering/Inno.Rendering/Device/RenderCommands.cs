@@ -35,8 +35,10 @@ public readonly record struct RenderBindingId
 /// </summary>
 public readonly record struct GraphicsPipelineHandle
 {
-    internal GraphicsPipelineHandle(ulong value, uint deviceGeneration)
-    {
+    internal GraphicsPipelineHandle(
+        ulong value,
+        uint deviceGeneration
+    ) {
         this.value = value;
         this.deviceGeneration = deviceGeneration;
     }
@@ -55,8 +57,10 @@ public readonly record struct GraphicsPipelineHandle
 /// </summary>
 public readonly record struct ComputePipelineHandle
 {
-    internal ComputePipelineHandle(ulong value, uint deviceGeneration)
-    {
+    internal ComputePipelineHandle(
+        ulong value,
+        uint deviceGeneration
+    ) {
         this.value = value;
         this.deviceGeneration = deviceGeneration;
     }
@@ -99,8 +103,15 @@ public readonly record struct RenderTextureRegion
     /// <param name="depth">
     /// Positive layer or depth-slice count.
     /// </param>
-    public RenderTextureRegion(int mip, int x, int y, int layer, int width, int height, int depth = 1)
-    {
+    public RenderTextureRegion(
+        int mip,
+        int x,
+        int y,
+        int layer,
+        int width,
+        int height,
+        int depth = 1
+    ) {
         ArgumentOutOfRangeException.ThrowIfNegative(mip);
         ArgumentOutOfRangeException.ThrowIfNegative(x);
         ArgumentOutOfRangeException.ThrowIfNegative(y);
@@ -186,7 +197,10 @@ public abstract class RenderCommandEncoder
     /// <param name="texture">
     /// Graph texture to bind.
     /// </param>
-    public void BindTexture(RenderBindingId binding, RenderTextureHandle texture)
+    public void BindTexture(
+        RenderBindingId binding,
+        RenderTextureHandle texture
+    )
         => BindTexture(binding, texture, RenderSamplerState.linearClamp);
 
     /// <summary>
@@ -204,7 +218,8 @@ public abstract class RenderCommandEncoder
     public abstract void BindTexture(
         RenderBindingId binding,
         RenderTextureHandle texture,
-        RenderSamplerState sampler);
+        RenderSamplerState sampler
+    );
 
     /// <summary>
     /// Binds a persistent texture to a shader interface slot.
@@ -215,7 +230,10 @@ public abstract class RenderCommandEncoder
     /// <param name="texture">
     /// Persistent texture owned by the active device generation.
     /// </param>
-    public void BindTexture(RenderBindingId binding, PersistentTextureHandle texture)
+    public void BindTexture(
+        RenderBindingId binding,
+        PersistentTextureHandle texture
+    )
         => BindTexture(binding, texture, RenderSamplerState.linearClamp);
 
     /// <summary>
@@ -233,7 +251,8 @@ public abstract class RenderCommandEncoder
     public abstract void BindTexture(
         RenderBindingId binding,
         PersistentTextureHandle texture,
-        RenderSamplerState sampler);
+        RenderSamplerState sampler
+    );
 
     /// <summary>
     /// Binds a graph texture for shader storage access.
@@ -250,7 +269,8 @@ public abstract class RenderCommandEncoder
     public abstract void BindStorageTexture(
         RenderBindingId binding,
         RenderTextureHandle texture,
-        int mipLevel = 0);
+        int mipLevel = 0
+    );
 
     /// <summary>
     /// Binds a persistent texture for shader storage access.
@@ -267,7 +287,8 @@ public abstract class RenderCommandEncoder
     public abstract void BindStorageTexture(
         RenderBindingId binding,
         PersistentTextureHandle texture,
-        int mipLevel = 0);
+        int mipLevel = 0
+    );
 
     /// <summary>
     /// Binds a graph buffer to a shader interface slot.
@@ -278,7 +299,10 @@ public abstract class RenderCommandEncoder
     /// <param name="buffer">
     /// Graph buffer to bind.
     /// </param>
-    public abstract void BindBuffer(RenderBindingId binding, RenderBufferHandle buffer);
+    public abstract void BindBuffer(
+        RenderBindingId binding,
+        RenderBufferHandle buffer
+    );
 
     /// <summary>
     /// Binds a persistent storage buffer to a shader interface slot.
@@ -289,7 +313,10 @@ public abstract class RenderCommandEncoder
     /// <param name="buffer">
     /// Persistent buffer owned by the active device generation.
     /// </param>
-    public abstract void BindBuffer(RenderBindingId binding, PersistentBufferHandle buffer);
+    public abstract void BindBuffer(
+        RenderBindingId binding,
+        PersistentBufferHandle buffer
+    );
 
     /// <summary>
     /// Binds a frame-uploaded storage buffer to a shader interface slot.
@@ -300,8 +327,10 @@ public abstract class RenderCommandEncoder
     /// <param name="buffer">
     /// Current-frame storage slice.
     /// </param>
-    public void BindBuffer(RenderBindingId binding, RenderBufferSlice buffer)
-    {
+    public void BindBuffer(
+        RenderBindingId binding,
+        RenderBufferSlice buffer
+    ) {
         ValidateSlice(buffer, RenderBufferUsage.Storage);
         if (buffer.firstElement != 0)
         {
@@ -321,7 +350,10 @@ public abstract class RenderCommandEncoder
     /// <param name="value">
     /// Uniform bytes matching the reflected shader interface.
     /// </param>
-    public abstract void SetUniform(RenderBindingId binding, ReadOnlySpan<byte> value);
+    public abstract void SetUniform(
+        RenderBindingId binding,
+        ReadOnlySpan<byte> value
+    );
 
     /// <summary>
     /// Sets the current object transform from one column-major 4x4 matrix.
@@ -362,7 +394,12 @@ public abstract class RenderCommandEncoder
     /// <param name="height">
     /// Positive framebuffer height.
     /// </param>
-    public abstract void SetViewport(int x, int y, int width, int height);
+    public abstract void SetViewport(
+        int x,
+        int y,
+        int width,
+        int height
+    );
 
     /// <summary>
     /// Restricts subsequent rasterization to a pixel rectangle in the active view.
@@ -379,7 +416,12 @@ public abstract class RenderCommandEncoder
     /// <param name="height">
     /// Positive rectangle height in pixels.
     /// </param>
-    public abstract void SetScissor(int x, int y, int width, int height);
+    public abstract void SetScissor(
+        int x,
+        int y,
+        int width,
+        int height
+    );
 
     /// <summary>
     /// Binds a graph buffer as vertex input.
@@ -390,7 +432,10 @@ public abstract class RenderCommandEncoder
     /// <param name="firstVertex">
     /// First vertex element.
     /// </param>
-    public abstract void BindVertexBuffer(RenderBufferHandle buffer, int firstVertex = 0);
+    public abstract void BindVertexBuffer(
+        RenderBufferHandle buffer,
+        int firstVertex = 0
+    );
 
     /// <summary>
     /// Binds a persistent buffer as vertex input.
@@ -401,7 +446,10 @@ public abstract class RenderCommandEncoder
     /// <param name="firstVertex">
     /// First vertex element.
     /// </param>
-    public abstract void BindVertexBuffer(PersistentBufferHandle buffer, int firstVertex = 0);
+    public abstract void BindVertexBuffer(
+        PersistentBufferHandle buffer,
+        int firstVertex = 0
+    );
 
     /// <summary>
     /// Binds a frame-uploaded vertex slice.
@@ -424,7 +472,10 @@ public abstract class RenderCommandEncoder
     /// <param name="firstIndex">
     /// First index element.
     /// </param>
-    public abstract void BindIndexBuffer(RenderBufferHandle buffer, int firstIndex = 0);
+    public abstract void BindIndexBuffer(
+        RenderBufferHandle buffer,
+        int firstIndex = 0
+    );
 
     /// <summary>
     /// Binds a persistent buffer as index input.
@@ -435,7 +486,10 @@ public abstract class RenderCommandEncoder
     /// <param name="firstIndex">
     /// First index element.
     /// </param>
-    public abstract void BindIndexBuffer(PersistentBufferHandle buffer, int firstIndex = 0);
+    public abstract void BindIndexBuffer(
+        PersistentBufferHandle buffer,
+        int firstIndex = 0
+    );
 
     /// <summary>
     /// Binds a frame-uploaded index slice.
@@ -464,7 +518,8 @@ public abstract class RenderCommandEncoder
     public abstract void BindInstanceBuffer(
         RenderBufferHandle buffer,
         int firstInstance,
-        int instanceCount);
+        int instanceCount
+    );
 
     /// <summary>
     /// Binds persistent buffer elements as per-instance input.
@@ -481,7 +536,8 @@ public abstract class RenderCommandEncoder
     public abstract void BindInstanceBuffer(
         PersistentBufferHandle buffer,
         int firstInstance,
-        int instanceCount);
+        int instanceCount
+    );
 
     /// <summary>
     /// Binds a frame-uploaded vertex slice as per-instance input.
@@ -504,7 +560,10 @@ public abstract class RenderCommandEncoder
     /// <param name="instanceCount">
     /// Number of instances.
     /// </param>
-    public abstract void Draw(int vertexCount, int instanceCount = 1);
+    public abstract void Draw(
+        int vertexCount,
+        int instanceCount = 1
+    );
 
     /// <summary>
     /// Issues a procedural non-indexed draw that does not consume a vertex buffer.
@@ -515,7 +574,10 @@ public abstract class RenderCommandEncoder
     /// <param name="instanceCount">
     /// Number of instances.
     /// </param>
-    public abstract void DrawProcedural(int vertexCount, int instanceCount = 1);
+    public abstract void DrawProcedural(
+        int vertexCount,
+        int instanceCount = 1
+    );
 
     /// <summary>
     /// Issues an indexed draw.
@@ -526,7 +588,10 @@ public abstract class RenderCommandEncoder
     /// <param name="instanceCount">
     /// Number of instances.
     /// </param>
-    public abstract void DrawIndexed(int indexCount, int instanceCount = 1);
+    public abstract void DrawIndexed(
+        int indexCount,
+        int instanceCount = 1
+    );
 
     /// <summary>
     /// Issues graphics commands stored in an indirect graph buffer.
@@ -543,7 +608,8 @@ public abstract class RenderCommandEncoder
     public abstract void DrawIndirect(
         RenderBufferHandle buffer,
         int firstCommand = 0,
-        int commandCount = 1);
+        int commandCount = 1
+    );
 
     /// <summary>
     /// Issues graphics commands stored in an indirect persistent buffer.
@@ -560,7 +626,8 @@ public abstract class RenderCommandEncoder
     public abstract void DrawIndirect(
         PersistentBufferHandle buffer,
         int firstCommand = 0,
-        int commandCount = 1);
+        int commandCount = 1
+    );
 
     /// <summary>
     /// Dispatches compute workgroups.
@@ -574,7 +641,11 @@ public abstract class RenderCommandEncoder
     /// <param name="groupCountZ">
     /// Workgroup count on Z.
     /// </param>
-    public abstract void Dispatch(int groupCountX, int groupCountY = 1, int groupCountZ = 1);
+    public abstract void Dispatch(
+        int groupCountX,
+        int groupCountY = 1,
+        int groupCountZ = 1
+    );
 
     /// <summary>
     /// Dispatches compute commands stored in an indirect graph buffer.
@@ -591,7 +662,8 @@ public abstract class RenderCommandEncoder
     public abstract void DispatchIndirect(
         RenderBufferHandle buffer,
         int firstCommand = 0,
-        int commandCount = 1);
+        int commandCount = 1
+    );
 
     /// <summary>
     /// Dispatches compute commands stored in an indirect persistent buffer.
@@ -608,7 +680,8 @@ public abstract class RenderCommandEncoder
     public abstract void DispatchIndirect(
         PersistentBufferHandle buffer,
         int firstCommand = 0,
-        int commandCount = 1);
+        int commandCount = 1
+    );
 
     /// <summary>
     /// Copies all compatible subresources between graph textures.
@@ -619,7 +692,10 @@ public abstract class RenderCommandEncoder
     /// <param name="destination">
     /// Copy destination texture.
     /// </param>
-    public abstract void CopyTexture(RenderTextureHandle source, RenderTextureHandle destination);
+    public abstract void CopyTexture(
+        RenderTextureHandle source,
+        RenderTextureHandle destination
+    );
 
     /// <summary>
     /// Blits compatible texture regions without CPU readback.
@@ -640,7 +716,8 @@ public abstract class RenderCommandEncoder
         RenderTextureHandle source,
         RenderTextureRegion sourceRegion,
         RenderTextureHandle destination,
-        RenderTextureRegion destinationRegion);
+        RenderTextureRegion destinationRegion
+    );
 
     /// <summary>
     /// Copies complete compatible graph buffer ranges.
@@ -654,7 +731,10 @@ public abstract class RenderCommandEncoder
     /// <exception cref="NotSupportedException">
     /// Thrown when the backend has no safe buffer-copy path.
     /// </exception>
-    public abstract void CopyBuffer(RenderBufferHandle source, RenderBufferHandle destination);
+    public abstract void CopyBuffer(
+        RenderBufferHandle source,
+        RenderBufferHandle destination
+    );
 
     internal void SetFrameIndex(ulong frameIndex)
     {
@@ -662,8 +742,10 @@ public abstract class RenderCommandEncoder
         m_hasFrameIndex = true;
     }
 
-    private void ValidateSlice(RenderBufferSlice buffer, RenderBufferUsage requiredUsage)
-    {
+    private void ValidateSlice(
+        RenderBufferSlice buffer,
+        RenderBufferUsage requiredUsage
+    ) {
         if (!buffer.isValid)
             throw new ArgumentException("A frame buffer slice must be valid.", nameof(buffer));
         if (!m_hasFrameIndex || buffer.frameIndex != m_frameIndex)
@@ -686,8 +768,10 @@ public abstract class RenderCommandEncoder
 /// </summary>
 public sealed class RenderPassContext
 {
-    internal RenderPassContext(RenderCommandEncoder commands, ulong frameIndex)
-    {
+    internal RenderPassContext(
+        RenderCommandEncoder commands,
+        ulong frameIndex
+    ) {
         this.commands = commands;
         this.frameIndex = frameIndex;
     }
@@ -715,4 +799,7 @@ public sealed class RenderPassContext
 /// <param name="context">
 /// Current pass execution context.
 /// </param>
-public delegate void RenderPassExecute<in TPassData>(TPassData passData, RenderPassContext context);
+public delegate void RenderPassExecute<in TPassData>(
+    TPassData passData,
+    RenderPassContext context
+);

@@ -42,8 +42,8 @@ public sealed class InspectionDrawerRegistry : IDisposable
         EditorInteractions interactions,
         InspectionDrawerFactory factory,
         TypeCatalog types,
-        SerializationRegistry serialization)
-    {
+        SerializationRegistry serialization
+    ) {
         m_registry = new InspectionTypeRegistry(interactions, factory, types);
         m_serialization = serialization ?? throw new ArgumentNullException(nameof(serialization));
     }
@@ -78,8 +78,8 @@ public sealed class InspectionDrawerRegistry : IDisposable
         object target,
         SerializedPropertyRenderer renderer,
         out IInspectionDrawer? drawer,
-        out InspectionDrawContext? context)
-    {
+        out InspectionDrawContext? context
+    ) {
         ArgumentNullException.ThrowIfNull(editorContext);
         ArgumentNullException.ThrowIfNull(target);
         drawer = m_registry.Resolve(target);
@@ -129,8 +129,8 @@ public sealed class InspectionDrawerRegistry : IDisposable
         object target,
         SerializedPropertyRenderer renderer,
         out IInspectionDrawer? drawer,
-        out InspectionDrawContext? context)
-    {
+        out InspectionDrawContext? context
+    ) {
         ArgumentNullException.ThrowIfNull(editorContext);
         ArgumentNullException.ThrowIfNull(target);
         ArgumentNullException.ThrowIfNull(renderer);
@@ -169,29 +169,34 @@ public sealed class InspectionDrawerRegistry : IDisposable
         internal InspectionTypeRegistry(
             EditorInteractions interactions,
             InspectionDrawerFactory factory,
-            TypeCatalog types)
+            TypeCatalog types
+        )
             : base(types)
         {
             this.interactions = interactions ?? throw new ArgumentNullException(nameof(interactions));
             m_factory = factory ?? throw new ArgumentNullException(nameof(factory));
         }
 
-        internal IInspectionDrawer? Resolve(object target, bool exactOnly = false)
-        {
+        internal IInspectionDrawer? Resolve(
+            object target,
+            bool exactOnly = false
+        ) {
             Type targetType = target.GetType();
             Registration? best = null;
             Registration? ambiguous = null;
             int bestDistance = int.MaxValue;
             foreach (Registration registration in current)
             {
-                if (exactOnly && registration.targetType != targetType) continue;
+                if (exactOnly && registration.targetType != targetType)
+                    continue;
                 if (!DrawerTypeUtility.TryGetDistance(
                         targetType,
                         registration.targetType,
                         registration.useForChildren,
                         out int distance))
                     continue;
-                if (!registration.drawer.CanInspect(target)) continue;
+                if (!registration.drawer.CanInspect(target))
+                    continue;
                 if (best is null || distance < bestDistance ||
                     distance == bestDistance && registration.priority > best.priority)
                 {
@@ -208,8 +213,7 @@ public sealed class InspectionDrawerRegistry : IDisposable
             return best?.drawer;
         }
 
-        internal IInspectionDrawer? ResolveExact(object target)
-            => Resolve(target, exactOnly: true);
+        internal IInspectionDrawer? ResolveExact(object target) => Resolve(target, exactOnly: true);
 
         /// <summary>
         /// Builds a validated result from the current immutable input snapshot.
@@ -268,8 +272,8 @@ public sealed class InspectionDrawerRegistry : IDisposable
     private static void EnsureNoConflict(
         IReadOnlyList<Registration> registrations,
         InspectionDrawerAttribute attribute,
-        Type drawerType)
-    {
+        Type drawerType
+    ) {
         foreach (Registration existing in registrations)
         {
             if (existing.targetType == attribute.targetType && existing.priority == attribute.priority
@@ -288,5 +292,6 @@ public sealed class InspectionDrawerRegistry : IDisposable
         int priority,
         bool conditional,
         Type drawerType,
-        IInspectionDrawer drawer);
+        IInspectionDrawer drawer
+    );
 }

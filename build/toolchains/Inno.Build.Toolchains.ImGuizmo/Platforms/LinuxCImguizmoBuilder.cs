@@ -49,12 +49,12 @@ public override bool IsSupported() =>
     /// The validated configuration that controls this operation.
     /// </param>
 public override void Build(
-        string cimguizmoDir,
-        string cimguiDir,
-        string cimguiBuildDir,
-        string cimguiOutputDir,
-        string config)
-    {
+    string cimguizmoDir,
+    string cimguiDir,
+    string cimguiBuildDir,
+    string cimguiOutputDir,
+    string config
+) {
         string buildDir = Path.Combine(cimguizmoDir, CImguizmoBuildConstants.BUILD_DIR_NAME, outputPlatform);
         Directory.CreateDirectory(buildDir);
 
@@ -76,8 +76,10 @@ public override void Build(
         ToolchainEnvironment.Run("clang++", args, cimguizmoDir);
     }
 
-    private static string FindCimguiLibrary(string cimguiOutputDir, string config)
-    {
+    private static string FindCimguiLibrary(
+        string cimguiOutputDir,
+        string config
+    ) {
         string path = Path.Combine(cimguiOutputDir, $"libcimgui-{config}.so");
         if (!File.Exists(path))
             throw new FileNotFoundException($"cimgui shared library not found: {path}", path);

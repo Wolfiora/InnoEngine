@@ -36,8 +36,10 @@ public override bool IsSupported() =>
     /// <param name="config">
     /// The validated configuration that controls this operation.
     /// </param>
-public override void Build(string sdlDir, string config)
-    {
+public override void Build(
+    string sdlDir,
+    string config
+) {
         string buildDir = Path.Combine(sdlDir, Sdl3BuildConstants.BUILD_DIR_NAME, OutputPlatform);
         string buildType = GetBuildType(config);
         ToolchainEnvironment.Run(

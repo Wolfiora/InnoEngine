@@ -45,8 +45,8 @@ internal sealed class EditorScripting : EditorModule, IEditorScriptCompilation
         ProjectSettingsStore settings,
         ScriptCompiler compiler,
         EditorReloadCoordinator reloads,
-        LogRouter logs)
-    {
+        LogRouter logs
+    ) {
         m_assets = assets ?? throw new ArgumentNullException(nameof(assets));
         m_plugins = plugins ?? throw new ArgumentNullException(nameof(plugins));
         m_modules = modules ?? throw new ArgumentNullException(nameof(modules));
@@ -109,8 +109,7 @@ internal sealed class EditorScripting : EditorModule, IEditorScriptCompilation
     /// <summary>
     /// Gets the current compiler stage.
     /// </summary>
-    public string status
-        => m_activationFailure ?? m_manager?.compilationStatus ?? "Initializing project scripting.";
+    public string status => m_activationFailure ?? m_manager?.compilationStatus ?? "Initializing project scripting.";
 
     /// <summary>
     /// Gets the most recently completed compiler result, which may still await activation and retirement verification.
@@ -147,17 +146,13 @@ internal sealed class EditorScripting : EditorModule, IEditorScriptCompilation
     /// </summary>
     public IScriptCompilationTicket? currentTicket => m_currentTicket;
 
-    internal void RecompileScripting()
-        => QueueReload(static manager => manager.RecompileScripting(), supersedeCurrentTicket: true);
+    internal void RecompileScripting() => QueueReload(static manager => manager.RecompileScripting(), supersedeCurrentTicket: true);
 
-    internal void ReloadScripting()
-        => QueueReload(static manager => manager.ReloadScripting(), supersedeCurrentTicket: true);
+    internal void ReloadScripting() => QueueReload(static manager => manager.ReloadScripting(), supersedeCurrentTicket: true);
 
-    internal void ReloadPlugins()
-        => QueueReload(static manager => manager.ReloadPlugins(), supersedeCurrentTicket: true);
+    internal void ReloadPlugins() => QueueReload(static manager => manager.ReloadPlugins(), supersedeCurrentTicket: true);
 
-    internal void CancelCompilation()
-        => m_manager?.CancelCompilation();
+    internal void CancelCompilation() => m_manager?.CancelCompilation();
 
     /// <summary>
     /// Initializes this feature when its owning runtime becomes active.
@@ -230,14 +225,12 @@ internal sealed class EditorScripting : EditorModule, IEditorScriptCompilation
     /// <param name="context">
     /// The context that supplies state and services for this operation.
     /// </param>
-    protected override void OnStop(EditorContext context)
-        => DisposeManager();
+    protected override void OnStop(EditorContext context) => DisposeManager();
 
     /// <summary>
     /// Releases resources retained by this feature after it has stopped.
     /// </summary>
-    protected override void OnDispose()
-        => DisposeManager();
+    protected override void OnDispose() => DisposeManager();
 
     private void CompleteCompilation()
     {
@@ -387,8 +380,10 @@ internal sealed class EditorScripting : EditorModule, IEditorScriptCompilation
         }
     }
 
-    private void QueueReload(Action<ScriptReloadHost> request, bool supersedeCurrentTicket)
-    {
+    private void QueueReload(
+        Action<ScriptReloadHost> request,
+        bool supersedeCurrentTicket
+    ) {
         ScriptReloadHost? manager = m_manager;
         if (manager is null)
             return;
@@ -434,5 +429,6 @@ internal sealed class EditorScripting : EditorModule, IEditorScriptCompilation
         ScriptCompilationTicket? ticket,
         ScriptCompilationResult result,
         bool succeeded,
-        string status);
+        string status
+    );
 }

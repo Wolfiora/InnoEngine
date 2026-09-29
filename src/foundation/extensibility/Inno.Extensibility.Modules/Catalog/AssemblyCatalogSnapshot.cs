@@ -15,8 +15,10 @@ public sealed class AssemblyCatalogSnapshot
 {
     private readonly IReadOnlyList<Assembly> m_assemblies;
 
-    internal AssemblyCatalogSnapshot(long version, Assembly[] assemblies)
-    {
+    internal AssemblyCatalogSnapshot(
+        long version,
+        Assembly[] assemblies
+    ) {
         this.version = version;
         m_assemblies = Array.AsReadOnly((Assembly[])assemblies.Clone());
     }

@@ -294,8 +294,10 @@ public sealed partial class Sdl3PlatformApplication
         m_disposed = true;
     }
 
-    private static unsafe byte LiveResizeEventWatch(void* userData, SDLEvent* evnt)
-    {
+    private static unsafe byte LiveResizeEventWatch(
+        void* userData,
+        SDLEvent* evnt
+    ) {
         if (userData == null || evnt == null)
         {
             return 1;
@@ -389,12 +391,12 @@ public sealed partial class Sdl3PlatformApplication
         }
     }
 
-    private void UnregisterExtension(ISdl3ApplicationExtension extension)
-        => m_extensions.Remove(extension);
+    private void UnregisterExtension(ISdl3ApplicationExtension extension) => m_extensions.Remove(extension);
 
     private sealed class ExtensionRegistration(
         Sdl3PlatformApplication application,
-        ISdl3ApplicationExtension extension) : IDisposable
+        ISdl3ApplicationExtension extension
+    ) : IDisposable
     {
         private Sdl3PlatformApplication? m_application = application;
         private ISdl3ApplicationExtension? m_extension = extension;
@@ -411,8 +413,10 @@ public sealed partial class Sdl3PlatformApplication
         }
     }
 
-    private unsafe bool TryTranslateEvent(ref SDLEvent sdlEvent, out Event? evnt)
-    {
+    private unsafe bool TryTranslateEvent(
+        ref SDLEvent sdlEvent,
+        out Event? evnt
+    ) {
         var eventType = (SDLEventType)sdlEvent.Type;
         switch (eventType)
         {
@@ -560,8 +564,10 @@ public sealed partial class Sdl3PlatformApplication
         return result;
     }
 
-    private static bool TryTranslateMouseButton(byte sdlButton, out MouseButton button)
-    {
+    private static bool TryTranslateMouseButton(
+        byte sdlButton,
+        out MouseButton button
+    ) {
         switch (sdlButton)
         {
             case SDL.SDL_BUTTON_LEFT:
@@ -698,8 +704,10 @@ public sealed partial class Sdl3PlatformApplication
         };
     }
 
-    private static bool TryCreatePendingEventCoalesceKey(Event evnt, out PendingEventCoalesceKey key)
-    {
+    private static bool TryCreatePendingEventCoalesceKey(
+        Event evnt,
+        out PendingEventCoalesceKey key
+    ) {
         if (evnt is WindowEvent windowEvent)
         {
             key = new PendingEventCoalesceKey(windowEvent.windowId, evnt.GetType());
@@ -716,5 +724,8 @@ public sealed partial class Sdl3PlatformApplication
         return false;
     }
 
-    private readonly record struct PendingEventCoalesceKey(uint windowId, Type eventType);
+    private readonly record struct PendingEventCoalesceKey(
+        uint windowId,
+        Type eventType
+    );
 }

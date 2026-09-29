@@ -20,8 +20,7 @@ public sealed class RenderExtensionStateContext
     /// <remarks>
     /// It must not outlive the asset generation. Authoring captures use the asset system's property snapshots.
     /// </remarks>
-    public RenderExtensionStateContext(AssetObject owner)
-        => m_owner = owner ?? throw new ArgumentNullException(nameof(owner));
+    public RenderExtensionStateContext(AssetObject owner) => m_owner = owner ?? throw new ArgumentNullException(nameof(owner));
 
     /// <summary>
     /// Restores a matching settings contract with this owner's asset references.
@@ -35,7 +34,10 @@ public sealed class RenderExtensionStateContext
     /// <param name="target">
     /// Current generation target, never retained by this context.
     /// </param>
-    public void Restore<TSettings>(SerializedRenderExtensionState state, TSettings target) where TSettings : class, ISerializable
+    public void Restore<TSettings>(
+        SerializedRenderExtensionState state,
+        TSettings target
+    ) where TSettings : class, ISerializable
     {
         ArgumentNullException.ThrowIfNull(target);
         m_owner.RestoreProperties(state.stableTypeId, state.propertyData, target);

@@ -72,8 +72,10 @@ public sealed class RenderResourceMap
     /// <param name="texture">
     /// Valid current-graph texture.
     /// </param>
-    public void PublishTexture(RenderResourceId id, RenderTextureHandle texture)
-    {
+    public void PublishTexture(
+        RenderResourceId id,
+        RenderTextureHandle texture
+    ) {
         if (!id.isValid)
             throw new ArgumentException("A render resource identifier must be valid.", nameof(id));
         if (!texture.isValid)
@@ -90,8 +92,10 @@ public sealed class RenderResourceMap
     /// <param name="buffer">
     /// Valid current-graph buffer.
     /// </param>
-    public void PublishBuffer(RenderResourceId id, RenderBufferHandle buffer)
-    {
+    public void PublishBuffer(
+        RenderResourceId id,
+        RenderBufferHandle buffer
+    ) {
         if (!id.isValid)
             throw new ArgumentException("A render resource identifier must be valid.", nameof(id));
         if (!buffer.isValid)
@@ -111,8 +115,10 @@ public sealed class RenderResourceMap
     /// <returns>
     /// <see langword="true"/> when the texture has been published.
     /// </returns>
-    public bool TryGetTexture(RenderResourceId id, out RenderTextureHandle texture)
-        => m_textures.TryGetValue(id, out texture);
+    public bool TryGetTexture(
+        RenderResourceId id,
+        out RenderTextureHandle texture
+    ) => m_textures.TryGetValue(id, out texture);
 
     /// <summary>
     /// Tries to get a published buffer.
@@ -126,8 +132,10 @@ public sealed class RenderResourceMap
     /// <returns>
     /// <see langword="true"/> when the buffer has been published.
     /// </returns>
-    public bool TryGetBuffer(RenderResourceId id, out RenderBufferHandle buffer)
-        => m_buffers.TryGetValue(id, out buffer);
+    public bool TryGetBuffer(
+        RenderResourceId id,
+        out RenderBufferHandle buffer
+    ) => m_buffers.TryGetValue(id, out buffer);
 }
 
 /// <summary>
@@ -182,8 +190,8 @@ public sealed class RenderPipelineContext
         IRenderFrameUploadService uploads,
         ulong frameIndex,
         bool preservePresentationTarget,
-        RenderTextureHandle outputTexture = default)
-    {
+        RenderTextureHandle outputTexture = default
+    ) {
         ArgumentNullException.ThrowIfNull(request);
         ArgumentNullException.ThrowIfNull(pipelineAsset);
         ArgumentNullException.ThrowIfNull(graph);
@@ -278,8 +286,10 @@ public sealed class RenderFeatureContext
     /// <param name="configuration">
     /// Stable feature configuration.
     /// </param>
-    public RenderFeatureContext(RenderPipelineContext pipeline, RenderFeatureConfiguration configuration)
-    {
+    public RenderFeatureContext(
+        RenderPipelineContext pipeline,
+        RenderFeatureConfiguration configuration
+    ) {
         this.pipeline = pipeline ?? throw new ArgumentNullException(nameof(pipeline));
         this.configuration = configuration;
     }
@@ -336,8 +346,10 @@ public abstract class RenderPipeline : IDisposable
     /// <param name="settings">
     /// Native context bound to the canonical Pipeline asset's actual owner.
     /// </param>
-    public void Configure(SerializedRenderExtensionState state, RenderExtensionStateContext settings)
-    {
+    public void Configure(
+        SerializedRenderExtensionState state,
+        RenderExtensionStateContext settings
+    ) {
         ArgumentNullException.ThrowIfNull(settings);
         OnConfigure(state, settings);
     }
@@ -360,8 +372,14 @@ public abstract class RenderPipeline : IDisposable
     {
         if (m_disposed)
             return;
-        try { Dispose(true); }
-        catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null) { throw; }
+        try
+        {
+            Dispose(true);
+        }
+        catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null)
+        {
+            throw;
+        }
         catch
         {
             m_disposed = true;
@@ -380,7 +398,10 @@ public abstract class RenderPipeline : IDisposable
     /// <param name="settings">
     /// Native context bound to the canonical Pipeline asset's actual owner.
     /// </param>
-    protected virtual void OnConfigure(SerializedRenderExtensionState state, RenderExtensionStateContext settings) { }
+    protected virtual void OnConfigure(
+        SerializedRenderExtensionState state,
+        RenderExtensionStateContext settings
+    ) { }
 
     /// <summary>
     /// Releases managed generation-scoped state.
@@ -408,8 +429,10 @@ public abstract class RenderPipelineFeature
     /// <param name="settings">
     /// Native context bound to the canonical Pipeline asset's actual owner.
     /// </param>
-    public void Configure(RenderFeatureConfiguration configuration, RenderExtensionStateContext settings)
-    {
+    public void Configure(
+        RenderFeatureConfiguration configuration,
+        RenderExtensionStateContext settings
+    ) {
         ArgumentNullException.ThrowIfNull(settings);
         OnConfigure(configuration.state, settings);
     }
@@ -431,5 +454,8 @@ public abstract class RenderPipelineFeature
     /// <param name="settings">
     /// Native context bound to the canonical Pipeline asset's actual owner.
     /// </param>
-    protected virtual void OnConfigure(SerializedRenderExtensionState state, RenderExtensionStateContext settings) { }
+    protected virtual void OnConfigure(
+        SerializedRenderExtensionState state,
+        RenderExtensionStateContext settings
+    ) { }
 }

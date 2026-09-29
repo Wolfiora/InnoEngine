@@ -36,8 +36,10 @@ public override bool IsSupported() =>
     /// <param name="config">
     /// The validated configuration that controls this operation.
     /// </param>
-public override void Build(string cimguiDir, string config)
-    {
+public override void Build(
+    string cimguiDir,
+    string config
+) {
         string buildDir = Path.Combine(cimguiDir, CimguiBuildConstants.BUILD_DIR_NAME, "inno", outputPlatform);
         string buildType = GetBuildType(config);
         string sourceDir = CimguiSourceOverlay.Prepare(cimguiDir);

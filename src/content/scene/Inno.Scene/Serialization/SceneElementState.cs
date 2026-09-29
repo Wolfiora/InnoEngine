@@ -34,11 +34,17 @@ internal sealed class SceneElementState : ISerializable
     }
 
     internal AssetDependency[] GetDependencies()
-        => dependencyIds.Select((id, index) => new AssetDependency(id,
+        => dependencyIds.Select((
+            id,
+            index
+        ) => new AssetDependency(id,
             new Inno.Extensibility.Types.TypeRef(dependencyTypes[index]), dependencyPaths[index])).ToArray();
 
     internal IReadOnlyDictionary<Guid, Guid> GetAliases()
-        => aliasIds.Select((id, index) => new KeyValuePair<Guid, Guid>(id, aliasTargets[index])).ToDictionary();
+        => aliasIds.Select((
+            id,
+            index
+        ) => new KeyValuePair<Guid, Guid>(id, aliasTargets[index])).ToDictionary();
 
     internal void Validate()
     {

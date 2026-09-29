@@ -12,8 +12,10 @@ public readonly struct CoroutineHandle
     private readonly long m_id;
     private readonly WeakReference<CoroutineScheduler>? m_schedulerRef;
 
-    internal CoroutineHandle(long id, WeakReference<CoroutineScheduler> schedulerRef)
-    {
+    internal CoroutineHandle(
+        long id,
+        WeakReference<CoroutineScheduler> schedulerRef
+    ) {
         m_id = id;
         m_schedulerRef = schedulerRef;
     }

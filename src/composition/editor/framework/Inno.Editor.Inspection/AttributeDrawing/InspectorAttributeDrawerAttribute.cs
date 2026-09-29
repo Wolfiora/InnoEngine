@@ -23,8 +23,8 @@ public sealed class InspectorAttributeDrawerAttribute : Attribute
     public InspectorAttributeDrawerAttribute(
         Type targetType,
         bool useForChildren = false,
-        int priority = 0)
-    {
+        int priority = 0
+    ) {
         ArgumentNullException.ThrowIfNull(targetType);
         if (!typeof(Attribute).IsAssignableFrom(targetType))
             throw new ArgumentException($"'{targetType.FullName}' is not an attribute type.", nameof(targetType));

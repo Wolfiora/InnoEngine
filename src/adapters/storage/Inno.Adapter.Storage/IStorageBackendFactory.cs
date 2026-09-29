@@ -22,5 +22,8 @@ public interface IStorageBackendFactory
     /// <exception cref="System.NotSupportedException">
     /// Thrown when the catalog does not contain the selected backend.
     /// </exception>
-    IApplicationStorage CreateStorage(StorageBackend backend, string rootDirectory);
+    IApplicationStorage CreateStorage(
+        StorageBackend backend,
+        string rootDirectory
+    );
 }

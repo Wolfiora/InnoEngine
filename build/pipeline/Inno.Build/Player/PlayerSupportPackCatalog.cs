@@ -1,7 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.IO;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Inno.Build;
 
@@ -29,6 +32,7 @@ public sealed class PlayerSupportPackCatalog
     ];
 
     private readonly string m_root;
+    private readonly ConcurrentDictionary<BuildTargetId, SemaphoreSlim> m_provisionGates = new();
 
     /// <summary>
     /// Creates a catalog rooted at the directory containing target-specific Player Support Packs.
@@ -128,5 +132,37 @@ public sealed class PlayerSupportPackCatalog
             }
         }
         return directory;
+    }
+
+    internal async ValueTask<string> ResolveOrProvisionAsync(
+        BuildTargetId target,
+        IPlayerSupportPackProvisioner? provisioner,
+        CancellationToken cancellationToken
+    ) {
+        try
+        {
+            return Resolve(target);
+        }
+        catch (DirectoryNotFoundException) when (provisioner is not null)
+        {
+            // A missing pack can be produced; an invalid installed pack must remain an explicit failure.
+        }
+
+        if (provisioner is null)
+            return Resolve(target);
+
+        SemaphoreSlim gate = m_provisionGates.GetOrAdd(target, static _ => new SemaphoreSlim(1, 1));
+        await gate.WaitAsync(cancellationToken).ConfigureAwait(false);
+        try
+        {
+            if (Directory.Exists(Path.Combine(m_root, target.value)))
+                return Resolve(target);
+            await provisioner.ProvisionAsync(target, m_root, cancellationToken).ConfigureAwait(false);
+            return Resolve(target);
+        }
+        finally
+        {
+            gate.Release();
+        }
     }
 }

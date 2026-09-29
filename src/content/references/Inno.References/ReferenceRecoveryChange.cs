@@ -17,8 +17,10 @@ public sealed class ReferenceRecoveryChange
     /// <exception cref="System.ArgumentNullException">
     /// Thrown when either argument is null.
     /// </exception>
-    public ReferenceRecoveryChange(SerializedMissingState missingState, ReferenceResolution resolution)
-    {
+    public ReferenceRecoveryChange(
+        SerializedMissingState missingState,
+        ReferenceResolution resolution
+    ) {
         System.ArgumentNullException.ThrowIfNull(missingState);
         System.ArgumentNullException.ThrowIfNull(resolution);
         this.missingState = missingState;

@@ -87,8 +87,8 @@ public sealed class EditorPlayModeController :
         IEditorScriptCompilation scripting,
         IEditorHistoryIsolation history,
         LogRouter logs,
-        IEditorAudioHost? audio = null)
-    {
+        IEditorAudioHost? audio = null
+    ) {
         m_engineHost = engineHost ?? throw new ArgumentNullException(nameof(engineHost));
         m_runtimeOptions = runtimeOptions ?? throw new ArgumentNullException(nameof(runtimeOptions));
         if (runtimeOptions.kind != RuntimeSessionKind.Play)
@@ -240,7 +240,10 @@ public sealed class EditorPlayModeController :
             if (m_state != EditorPlayModeState.Editing)
                 CompleteEditingTransition();
         }
-        catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null) { throw; }
+        catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null)
+        {
+            throw;
+        }
         catch (Exception failure)
         {
             m_engineHost.generations.Fault(failure);
@@ -426,8 +429,10 @@ public sealed class EditorPlayModeController :
         }
     }
 
-    private void RunSimulation(Action<RuntimeSession> callback, string phase)
-    {
+    private void RunSimulation(
+        Action<RuntimeSession> callback,
+        string phase
+    ) {
         if (m_state != EditorPlayModeState.Playing)
             return;
         RuntimeSession session = m_runtimeSession
@@ -524,7 +529,10 @@ public sealed class EditorPlayModeController :
             throw new AggregateException("One or more Play Mode state observers failed.", failures);
     }
 
-    private static void DisposeResource<T>(ref T? resource, ref List<Exception>? failures)
+    private static void DisposeResource<T>(
+        ref T? resource,
+        ref List<Exception>? failures
+    )
         where T : class, IDisposable
     {
         T? owned = resource;
@@ -534,7 +542,10 @@ public sealed class EditorPlayModeController :
         {
             owned.Dispose();
         }
-        catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null) { throw; }
+        catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null)
+        {
+            throw;
+        }
         catch (Exception exception)
         {
             failures ??= [];
@@ -546,7 +557,8 @@ public sealed class EditorPlayModeController :
     private sealed class PresentationScope(
         IDisposable sessionScope,
         IDisposable? audioScope,
-        IDisposable uiScope) : IDisposable
+        IDisposable uiScope
+    ) : IDisposable
     {
         private IDisposable? m_sessionScope = sessionScope;
         private IDisposable? m_audioScope = audioScope;

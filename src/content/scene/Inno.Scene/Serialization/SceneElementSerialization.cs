@@ -36,8 +36,11 @@ public static class SceneElementSerialization
     /// <exception cref="InvalidOperationException">
     /// The element is not live in a loaded scene.
     /// </exception>
-    public static byte[] CaptureState(EngineObject target, SerializationRegistry serialization, IAssetReferenceResolver assets)
-    {
+    public static byte[] CaptureState(
+        EngineObject target,
+        SerializationRegistry serialization,
+        IAssetReferenceResolver assets
+    ) {
         ArgumentNullException.ThrowIfNull(target);
         ArgumentNullException.ThrowIfNull(serialization);
         ArgumentNullException.ThrowIfNull(assets);
@@ -95,9 +98,12 @@ public static class SceneElementSerialization
     /// <exception cref="InvalidOperationException">
     /// Property or reference restoration is incomplete.
     /// </exception>
-    public static void RestoreState(EngineObject target, ReadOnlySpan<byte> stateData,
-        SerializationRegistry serialization, IAssetReferenceResolver assets)
-    {
+    public static void RestoreState(
+        EngineObject target,
+        ReadOnlySpan<byte> stateData,
+        SerializationRegistry serialization,
+        IAssetReferenceResolver assets
+    ) {
         ArgumentNullException.ThrowIfNull(target);
         SceneElementState state = ReadState(stateData, serialization, assets);
         GameScene scene = ScenePropertySerialization.ResolveScene(target);
@@ -164,8 +170,8 @@ public static class SceneElementSerialization
         int componentIndex,
         ReadOnlySpan<byte> stateData,
         SerializationRegistry serialization,
-        IAssetReferenceResolver assets)
-    {
+        IAssetReferenceResolver assets
+    ) {
         ArgumentNullException.ThrowIfNull(owner);
         ArgumentNullException.ThrowIfNull(serialization);
         ArgumentNullException.ThrowIfNull(assets);
@@ -237,8 +243,8 @@ public static class SceneElementSerialization
         int systemIndex,
         ReadOnlySpan<byte> stateData,
         SerializationRegistry serialization,
-        IAssetReferenceResolver assets)
-    {
+        IAssetReferenceResolver assets
+    ) {
         ArgumentNullException.ThrowIfNull(scene);
         ArgumentNullException.ThrowIfNull(serialization);
         ArgumentNullException.ThrowIfNull(assets);
@@ -265,8 +271,10 @@ public static class SceneElementSerialization
         }
     }
 
-    private static void RequireComplete(SerializationPropertyRestoreResult result, string kind)
-    {
+    private static void RequireComplete(
+        SerializationPropertyRestoreResult result,
+        string kind
+    ) {
         if (result.success && result.ignoredCount == 0)
             return;
         throw new InvalidOperationException(
@@ -279,8 +287,8 @@ public static class SceneElementSerialization
         Exception restoreFailure,
         EngineObject element,
         Func<bool> remove,
-        string kind)
-    {
+        string kind
+    ) {
         Guid persistentId = element.identity.persistentId;
         Exception? cleanupFailure = null;
         bool reportedRemoved = false;
@@ -313,9 +321,11 @@ public static class SceneElementSerialization
             new AggregateException(restoreFailure, cleanupFailure));
     }
 
-    private static SceneElementState ReadState(ReadOnlySpan<byte> bytes,
-        SerializationRegistry serialization, IAssetReferenceResolver assets)
-    {
+    private static SceneElementState ReadState(
+        ReadOnlySpan<byte> bytes,
+        SerializationRegistry serialization,
+        IAssetReferenceResolver assets
+    ) {
         ArgumentNullException.ThrowIfNull(serialization);
         ArgumentNullException.ThrowIfNull(assets);
         SceneElementState state = serialization.Deserialize<SceneElementState>(bytes, AssetSerializationContext.Create(assets))
@@ -324,8 +334,10 @@ public static class SceneElementSerialization
         return state;
     }
 
-    private static void RequireType(SceneElementState state, Guid typeId)
-    {
+    private static void RequireType(
+        SceneElementState state,
+        Guid typeId
+    ) {
         if (state.typeId != typeId)
             throw new InvalidDataException($"Element state type '{state.typeId}' does not match logical type '{typeId}'.");
     }
@@ -333,7 +345,8 @@ public static class SceneElementSerialization
     private static Type? ResolveType<TElement>(
         SceneTypeCatalog types,
         TypeRef typeRef,
-        string kind)
+        string kind
+    )
         where TElement : EngineObject
     {
         Type type;

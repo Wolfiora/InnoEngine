@@ -38,10 +38,16 @@ public sealed class RenderOutputSession
     /// <param name="route">
     /// Explicit composition route when several models are applicable.
     /// </param>
-    public RenderOutputSession(string id, ContentReadScope content, RenderViewport viewport,
-        ulong frameIndex, float deltaTime, IViewContentCollector viewContent,
-        RenderOutputInput? input = null, RenderOutputRoute? route = null)
-    {
+    public RenderOutputSession(
+        string id,
+        ContentReadScope content,
+        RenderViewport viewport,
+        ulong frameIndex,
+        float deltaTime,
+        IViewContentCollector viewContent,
+        RenderOutputInput? input = null,
+        RenderOutputRoute? route = null
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(id);
         this.id = id;
         this.content = content ?? throw new ArgumentNullException(nameof(content));
@@ -117,8 +123,10 @@ public sealed class RenderOutputLayer
     /// <param name="sourceIds">
     /// World-content sources exclusively owned by this layer.
     /// </param>
-    public RenderOutputLayer(string modelId, IEnumerable<string> sourceIds)
-    {
+    public RenderOutputLayer(
+        string modelId,
+        IEnumerable<string> sourceIds
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(modelId);
         ArgumentNullException.ThrowIfNull(sourceIds);
         string[] ids = sourceIds.ToArray();
@@ -189,9 +197,12 @@ public sealed class RenderModelOutput
     /// <param name="targetFormat">
     /// Required color target format.
     /// </param>
-    public RenderModelOutput(string name, RenderPipelineAsset pipeline,
-        RenderFrameData data, RenderTextureFormat targetFormat = RenderTextureFormat.RGBA8Srgb)
-    {
+    public RenderModelOutput(
+        string name,
+        RenderPipelineAsset pipeline,
+        RenderFrameData data,
+        RenderTextureFormat targetFormat = RenderTextureFormat.RGBA8Srgb
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
         this.name = name;
         this.pipeline = pipeline ?? throw new ArgumentNullException(nameof(pipeline));

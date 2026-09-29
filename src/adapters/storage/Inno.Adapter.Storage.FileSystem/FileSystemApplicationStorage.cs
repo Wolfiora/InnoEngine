@@ -63,8 +63,8 @@ public sealed class FileSystemApplicationStorage : IApplicationStorage, IDisposa
     /// </returns>
     public async ValueTask<bool> ExistsAsync(
         StorageKey key,
-        CancellationToken cancellationToken = default)
-    {
+        CancellationToken cancellationToken = default
+    ) {
         string path = Resolve(key);
         await m_gate.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
@@ -93,8 +93,8 @@ public sealed class FileSystemApplicationStorage : IApplicationStorage, IDisposa
     /// </returns>
     public async ValueTask<byte[]?> ReadAsync(
         StorageKey key,
-        CancellationToken cancellationToken = default)
-    {
+        CancellationToken cancellationToken = default
+    ) {
         string path = Resolve(key);
         await m_gate.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
@@ -129,8 +129,8 @@ public sealed class FileSystemApplicationStorage : IApplicationStorage, IDisposa
     public async ValueTask WriteAsync(
         StorageKey key,
         ReadOnlyMemory<byte> value,
-        CancellationToken cancellationToken = default)
-    {
+        CancellationToken cancellationToken = default
+    ) {
         string path = Resolve(key);
         await m_gate.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
@@ -188,8 +188,8 @@ public sealed class FileSystemApplicationStorage : IApplicationStorage, IDisposa
     /// </returns>
     public async ValueTask<bool> DeleteAsync(
         StorageKey key,
-        CancellationToken cancellationToken = default)
-    {
+        CancellationToken cancellationToken = default
+    ) {
         string path = Resolve(key);
         await m_gate.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
@@ -221,8 +221,8 @@ public sealed class FileSystemApplicationStorage : IApplicationStorage, IDisposa
     /// </returns>
     public async ValueTask<IReadOnlyList<StorageKey>> ListAsync(
         StorageKey? prefix = null,
-        CancellationToken cancellationToken = default)
-    {
+        CancellationToken cancellationToken = default
+    ) {
         await m_gate.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
@@ -253,8 +253,14 @@ public sealed class FileSystemApplicationStorage : IApplicationStorage, IDisposa
     public void Dispose()
     {
         m_gate.Wait();
-        try { m_disposed = true; }
-        finally { m_gate.Release(); }
+        try
+        {
+            m_disposed = true;
+        }
+        finally
+        {
+            m_gate.Release();
+        }
         // Waiters still own this managed semaphore and must be allowed to observe disposal.
         // No OS wait handle is requested; the semaphore is reclaimed with its final waiter.
     }
@@ -262,8 +268,8 @@ public sealed class FileSystemApplicationStorage : IApplicationStorage, IDisposa
     private void EnumerateDirectory(
         DirectoryInfo directory,
         List<StorageKey> values,
-        CancellationToken cancellationToken)
-    {
+        CancellationToken cancellationToken
+    ) {
         RejectLink(directory);
         foreach (FileSystemInfo entry in directory.EnumerateFileSystemInfos())
         {
@@ -295,8 +301,10 @@ public sealed class FileSystemApplicationStorage : IApplicationStorage, IDisposa
         return path;
     }
 
-    private void ValidateExistingPath(string path, bool includeLeaf)
-    {
+    private void ValidateExistingPath(
+        string path,
+        bool includeLeaf
+    ) {
         string relative = Path.GetRelativePath(m_root, path);
         string current = m_root;
         string[] segments = relative.Split(

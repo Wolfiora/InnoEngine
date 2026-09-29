@@ -31,8 +31,8 @@ public readonly record struct EditorViewportOutput
         string viewportId,
         PresentationTextureHandle texture,
         int pixelWidth,
-        int pixelHeight)
-    {
+        int pixelHeight
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(viewportId);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(pixelWidth);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(pixelHeight);
@@ -103,7 +103,10 @@ public interface IEditorRenderingHost
     /// <param name="logicalSize">
     /// Destination size in logical UI pixels.
     /// </param>
-    void Draw(EditorViewportOutput output, Vector2 logicalSize);
+    void Draw(
+        EditorViewportOutput output,
+        Vector2 logicalSize
+    );
 
     /// <summary>
     /// Releases one viewport and queues its GPU target for frame-safe destruction.
@@ -143,8 +146,8 @@ public sealed class EditorViewportLayer
         string contributorId,
         RenderPipelineAsset? pipeline,
         RenderFrameData data,
-        int order)
-    {
+        int order
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(contributorId);
         ArgumentNullException.ThrowIfNull(data);
         this.contributorId = contributorId;
@@ -204,8 +207,8 @@ public sealed class EditorViewportComposition
         int pixelWidth,
         int pixelHeight,
         RenderTextureFormat targetFormat,
-        IEnumerable<EditorViewportLayer> layers)
-    {
+        IEnumerable<EditorViewportLayer> layers
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(viewportId);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(pixelWidth);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(pixelHeight);

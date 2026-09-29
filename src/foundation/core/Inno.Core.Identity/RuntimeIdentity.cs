@@ -22,8 +22,10 @@ public readonly struct RuntimeIdentity : IEquatable<RuntimeIdentity>
     /// <exception cref="ArgumentException">
     /// Thrown when either value is invalid.
     /// </exception>
-    public RuntimeIdentity(IdentityDomainId domainId, int runtimeId)
-    {
+    public RuntimeIdentity(
+        IdentityDomainId domainId,
+        int runtimeId
+    ) {
         if (!domainId.isValid)
             throw new ArgumentException("A runtime identity requires a valid domain.", nameof(domainId));
         if (runtimeId <= 0)
@@ -92,7 +94,10 @@ public readonly struct RuntimeIdentity : IEquatable<RuntimeIdentity>
     /// <returns>
     /// <see langword="true"/> when both values are equal; otherwise, <see langword="false"/>.
     /// </returns>
-    public static bool operator ==(RuntimeIdentity left, RuntimeIdentity right) => left.Equals(right);
+    public static bool operator ==(
+        RuntimeIdentity left,
+        RuntimeIdentity right
+    ) => left.Equals(right);
 
     /// <summary>
     /// Determines whether two runtime identities are different.
@@ -106,5 +111,8 @@ public readonly struct RuntimeIdentity : IEquatable<RuntimeIdentity>
     /// <returns>
     /// <see langword="true"/> when the values are different; otherwise, <see langword="false"/>.
     /// </returns>
-    public static bool operator !=(RuntimeIdentity left, RuntimeIdentity right) => !left.Equals(right);
+    public static bool operator !=(
+        RuntimeIdentity left,
+        RuntimeIdentity right
+    ) => !left.Equals(right);
 }

@@ -54,8 +54,8 @@ public sealed partial class PlatformImGuiContext
     internal PlatformImGuiContext(
         Sdl3PlatformWindow window,
         ImGuiContextFlags contextFlags,
-        IPlatformImGuiRenderer? renderer)
-    {
+        IPlatformImGuiRenderer? renderer
+    ) {
         var enableViewports = (contextFlags & ImGuiContextFlags.EnableViewports) != 0;
         var enableDocking = (contextFlags & ImGuiContextFlags.EnableDocking) != 0;
         m_enableSmoothResize = (contextFlags & ImGuiContextFlags.EnableSmoothResize) != 0;
@@ -169,8 +169,8 @@ public sealed partial class PlatformImGuiContext
         ImGuiTextureHandle texture,
         Vector2 size,
         Vector2 uv0,
-        Vector2 uv1)
-    {
+        Vector2 uv1
+    ) {
         ObjectDisposedException.ThrowIf(m_disposed, this);
         if (!texture.isValid)
         {
@@ -201,8 +201,10 @@ public sealed partial class PlatformImGuiContext
     /// <returns>
     /// <see langword="true"/> when the requested condition is satisfied; otherwise, <see langword="false"/>.
     /// </returns>
-    public partial bool TryCaptureIniSettings(out string settings, bool force)
-    {
+    public partial bool TryCaptureIniSettings(
+        out string settings,
+        bool force
+    ) {
         ObjectDisposedException.ThrowIf(m_disposed, this);
         ImGuiNative.SetCurrentContext(m_context);
         ImGuiIOPtr io = ImGuiNative.GetIO();
@@ -238,8 +240,8 @@ public sealed partial class PlatformImGuiContext
     public partial void RegisterFontStyle(
         ImGuiFontStyle style,
         string filePath,
-        float fontSizePixels)
-    {
+        float fontSizePixels
+    ) {
         ObjectDisposedException.ThrowIf(m_disposed, this);
         if (m_hasStartedFrame)
             throw new InvalidOperationException("Font styles must be registered before the first ImGui frame.");
@@ -265,8 +267,10 @@ public sealed partial class PlatformImGuiContext
             io.FontDefault = loadedFont;
     }
 
-    private static void ConfigureFonts(ImGuiContextPtr context, ImGuiIOPtr io)
-    {
+    private static void ConfigureFonts(
+        ImGuiContextPtr context,
+        ImGuiIOPtr io
+    ) {
         var fonts = io.Fonts;
         fonts.Clear();
 
@@ -337,8 +341,10 @@ public sealed partial class PlatformImGuiContext
         return -1;
     }
 
-    private static void ResolveFontPaths(out List<string> baseFonts, out List<string> iconFonts)
-    {
+    private static void ResolveFontPaths(
+        out List<string> baseFonts,
+        out List<string> iconFonts
+    ) {
         baseFonts = new List<string>();
         iconFonts = new List<string>();
         var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -384,8 +390,12 @@ public sealed partial class PlatformImGuiContext
         return directories;
     }
 
-    private static void CollectFontFiles(string directory, List<string> output, HashSet<string> seen, bool includeSubdirectories)
-    {
+    private static void CollectFontFiles(
+        string directory,
+        List<string> output,
+        HashSet<string> seen,
+        bool includeSubdirectories
+    ) {
         var searchOption = includeSubdirectories ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly;
         var fontFiles = Directory.GetFiles(directory, "*.*", searchOption);
         foreach (var fontFile in fontFiles)
@@ -405,8 +415,10 @@ public sealed partial class PlatformImGuiContext
         }
     }
 
-    private static unsafe void MergeIconFontsIntoCurrentBaseFont(ImFontAtlasPtr fonts, List<string> iconFontPaths)
-    {
+    private static unsafe void MergeIconFontsIntoCurrentBaseFont(
+        ImFontAtlasPtr fonts,
+        List<string> iconFontPaths
+    ) {
         if (iconFontPaths.Count == 0)
         {
             return;
@@ -698,8 +710,11 @@ public sealed partial class PlatformImGuiContext
         }
     }
 
-    private void RefreshLiveResizeHoverLock(SDLEventType eventType, uint eventWindowId, ref SDLEvent sdlEvent)
-    {
+    private void RefreshLiveResizeHoverLock(
+        SDLEventType eventType,
+        uint eventWindowId,
+        ref SDLEvent sdlEvent
+    ) {
         if (m_liveResizeLockedWindowId == 0)
         {
             return;
@@ -844,12 +859,18 @@ public sealed partial class PlatformImGuiContext
         }
     }
 
-    private static unsafe void SetIniFilename(ImGuiIOPtr io, IntPtr fileName)
-    {
+    private static unsafe void SetIniFilename(
+        ImGuiIOPtr io,
+        IntPtr fileName
+    ) {
         io.IniFilename = (byte*)fileName;
     }
 
-    private static unsafe ImFontPtr LoadFont(ImFontAtlasPtr fonts, string filePath, float fontSizePixels) =>
+    private static unsafe ImFontPtr LoadFont(
+        ImFontAtlasPtr fonts,
+        string filePath,
+        float fontSizePixels
+    ) =>
         fonts.AddFontFromFileTTF(filePath, fontSizePixels, ImFontConfigPtr.Null, null);
 
     private static unsafe ImFontPtr LoadDefaultFont(ImFontAtlasPtr fonts) => fonts.AddFontDefault();
@@ -876,8 +897,10 @@ public sealed partial class PlatformImGuiContext
         return m_window.GetSdlWindow();
     }
 
-    private static void UpdateMouseData(ImGuiIOPtr io, SDLWindow window)
-    {
+    private static void UpdateMouseData(
+        ImGuiIOPtr io,
+        SDLWindow window
+    ) {
         // Mouse position is fed from SDL mouse events (per-window coordinates).
         // Polling here would overwrite secondary viewport coordinates with the wrong window space.
         if (io.WantSetMousePos)
@@ -949,8 +972,8 @@ public sealed partial class PlatformImGuiContext
         ImGuiIOPtr io,
         uint windowId,
         float localX,
-        float localY)
-    {
+        float localY
+    ) {
         Vector2 position = new(localX, localY);
         if ((io.ConfigFlags & ImGuiConfigFlags.ViewportsEnable) == 0)
         {
@@ -1008,8 +1031,8 @@ public sealed partial class PlatformImGuiContext
         int currentFrame,
         int mouseButtonsDown,
         uint pendingWindowId,
-        uint liveResizeLockedWindowId)
-    {
+        uint liveResizeLockedWindowId
+    ) {
         if (pendingFrame == 0 || mouseButtonsDown != 0 || currentFrame < pendingFrame)
             return false;
 
@@ -1069,8 +1092,10 @@ public sealed partial class PlatformImGuiContext
         return createdCursor;
     }
 
-    private static bool TryTranslateMouseButton(byte sdlButton, out int imguiButton)
-    {
+    private static bool TryTranslateMouseButton(
+        byte sdlButton,
+        out int imguiButton
+    ) {
         switch (sdlButton)
         {
             case SDL.SDL_BUTTON_LEFT:
@@ -1094,8 +1119,10 @@ public sealed partial class PlatformImGuiContext
         }
     }
 
-    private static void UpdateKeyModifiers(ImGuiIOPtr io, SDLKeymod modifiers)
-    {
+    private static void UpdateKeyModifiers(
+        ImGuiIOPtr io,
+        SDLKeymod modifiers
+    ) {
         io.AddKeyEvent(ImGuiKey.ModCtrl, (modifiers & SDLKeymod.Ctrl) != 0);
         io.AddKeyEvent(ImGuiKey.ModShift, (modifiers & SDLKeymod.Shift) != 0);
         io.AddKeyEvent(ImGuiKey.ModAlt, (modifiers & SDLKeymod.Alt) != 0);
@@ -1215,8 +1242,10 @@ public sealed partial class PlatformImGuiContext
         };
     }
 
-    private static bool TryGetWindowId(ref SDLEvent sdlEvent, out uint windowId)
-    {
+    private static bool TryGetWindowId(
+        ref SDLEvent sdlEvent,
+        out uint windowId
+    ) {
         var eventType = (SDLEventType)sdlEvent.Type;
         switch (eventType)
         {

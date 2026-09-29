@@ -44,8 +44,10 @@ public sealed class LogRouter : IDisposable
     /// <exception cref="ArgumentOutOfRangeException">
     /// A capacity or budget is not positive.
     /// </exception>
-    public LogRouter(int queueCapacity = 65536, int drainBudget = 4096)
-    {
+    public LogRouter(
+        int queueCapacity = 65536,
+        int drainBudget = 4096
+    ) {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(queueCapacity);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(drainBudget);
         m_queueCapacity = queueCapacity;
@@ -58,8 +60,7 @@ public sealed class LogRouter : IDisposable
         m_worker.Start();
     }
 
-    internal static LogRouter current
-        => S_CURRENT_SCOPE.current;
+    internal static LogRouter current => S_CURRENT_SCOPE.current;
 
     /// <summary>
     /// Binds this router to the current asynchronous execution context.
@@ -316,8 +317,10 @@ public sealed class LogRouter : IDisposable
         }
     }
 
-    private void ReportSinkFailure(ILogSink sink, Exception exception)
-    {
+    private void ReportSinkFailure(
+        ILogSink sink,
+        Exception exception
+    ) {
         Action<ILogSink, Exception>? handlers = sinkFailed;
         if (handlers is null)
         {
@@ -339,8 +342,10 @@ public sealed class LogRouter : IDisposable
         }
     }
 
-    private readonly record struct WorkItem(LogEntry entry, ManualResetEventSlim? completion)
-    {
+    private readonly record struct WorkItem(
+        LogEntry entry,
+        ManualResetEventSlim? completion
+    ) {
         internal static WorkItem ForEntry(LogEntry entry) => new(entry, null);
 
         internal static WorkItem ForBarrier(ManualResetEventSlim completion) => new(default, completion);

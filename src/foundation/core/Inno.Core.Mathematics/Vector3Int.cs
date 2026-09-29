@@ -35,8 +35,11 @@ public struct Vector3Int : IEquatable<Vector3Int>
     /// <param name="z">
     /// The depth or third component.
     /// </param>
-    public Vector3Int(int x, int y, int z)
-    {
+    public Vector3Int(
+        int x,
+        int y,
+        int z
+    ) {
         this.x = x;
         this.y = y;
         this.z = z;
@@ -88,8 +91,10 @@ public struct Vector3Int : IEquatable<Vector3Int>
     /// The validated vector3int that represents the completed operation.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Vector3Int operator +(Vector3Int a, Vector3Int b)
-        => new(a.x + b.x, a.y + b.y, a.z + b.z);
+    public static Vector3Int operator +(
+        Vector3Int a,
+        Vector3Int b
+    ) => new(a.x + b.x, a.y + b.y, a.z + b.z);
 
     /// <summary>
     /// Subtracts or negates the supplied value component by component.
@@ -104,8 +109,10 @@ public struct Vector3Int : IEquatable<Vector3Int>
     /// The validated vector3int that represents the completed operation.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Vector3Int operator -(Vector3Int a, Vector3Int b)
-        => new(a.x - b.x, a.y - b.y, a.z - b.z);
+    public static Vector3Int operator -(
+        Vector3Int a,
+        Vector3Int b
+    ) => new(a.x - b.x, a.y - b.y, a.z - b.z);
 
     /// <summary>
     /// Subtracts or negates the supplied value component by component.
@@ -117,8 +124,7 @@ public struct Vector3Int : IEquatable<Vector3Int>
     /// The validated vector3int that represents the completed operation.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Vector3Int operator -(Vector3Int v)
-        => new(-v.x, -v.y, -v.z);
+    public static Vector3Int operator -(Vector3Int v) => new(-v.x, -v.y, -v.z);
 
     /// <summary>
     /// Multiplies the supplied values according to their algebraic contract.
@@ -133,8 +139,10 @@ public struct Vector3Int : IEquatable<Vector3Int>
     /// The validated vector3int that represents the completed operation.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Vector3Int operator *(Vector3Int v, int scalar)
-        => new(v.x * scalar, v.y * scalar, v.z * scalar);
+    public static Vector3Int operator *(
+        Vector3Int v,
+        int scalar
+    ) => new(v.x * scalar, v.y * scalar, v.z * scalar);
 
     /// <summary>
     /// Multiplies the supplied values according to their algebraic contract.
@@ -149,8 +157,10 @@ public struct Vector3Int : IEquatable<Vector3Int>
     /// The validated vector3int that represents the completed operation.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Vector3Int operator *(int scalar, Vector3Int v)
-        => v * scalar;
+    public static Vector3Int operator *(
+        int scalar,
+        Vector3Int v
+    ) => v * scalar;
 
     /// <summary>
     /// Divides the supplied value by the scalar divisor component by component.
@@ -165,8 +175,10 @@ public struct Vector3Int : IEquatable<Vector3Int>
     /// The validated vector3int that represents the completed operation.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Vector3Int operator /(Vector3Int v, int scalar)
-        => new(v.x / scalar, v.y / scalar, v.z / scalar);
+    public static Vector3Int operator /(
+        Vector3Int v,
+        int scalar
+    ) => new(v.x / scalar, v.y / scalar, v.z / scalar);
 
     /// <summary>
     /// Determines whether the supplied values are equal under the type's equality tolerance.
@@ -181,8 +193,10 @@ public struct Vector3Int : IEquatable<Vector3Int>
     /// <see langword="true"/> when the requested condition is satisfied; otherwise, <see langword="false"/>.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool operator ==(Vector3Int a, Vector3Int b)
-        => a.x == b.x && a.y == b.y && a.z == b.z;
+    public static bool operator ==(
+        Vector3Int a,
+        Vector3Int b
+    ) => a.x == b.x && a.y == b.y && a.z == b.z;
 
     /// <summary>
     /// Determines whether the supplied values differ under the type's equality tolerance.
@@ -197,8 +211,10 @@ public struct Vector3Int : IEquatable<Vector3Int>
     /// <see langword="true"/> when the requested condition is satisfied; otherwise, <see langword="false"/>.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool operator !=(Vector3Int a, Vector3Int b)
-        => !(a == b);
+    public static bool operator !=(
+        Vector3Int a,
+        Vector3Int b
+    ) => !(a == b);
 
     /// <summary>
     /// Converts the supplied value to <see cref="Vector3"/>.
@@ -210,8 +226,7 @@ public struct Vector3Int : IEquatable<Vector3Int>
     /// The validated vector3 that represents the completed operation.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static explicit operator Vector3(Vector3Int v)
-        => new(v.x, v.y, v.z);
+    public static explicit operator Vector3(Vector3Int v) => new(v.x, v.y, v.z);
 
     /// <summary>
     /// Converts the supplied value to <see cref="Vector3Int"/>.
@@ -223,8 +238,7 @@ public struct Vector3Int : IEquatable<Vector3Int>
     /// The validated vector3int that represents the completed operation.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static explicit operator Vector3Int(Vector3 v)
-        => new((int)v.x, (int)v.y, (int)v.z);
+    public static explicit operator Vector3Int(Vector3 v) => new((int)v.x, (int)v.y, (int)v.z);
 
     /// <summary>
     /// Determines whether this value and the supplied value represent the same logical state.
@@ -235,8 +249,7 @@ public struct Vector3Int : IEquatable<Vector3Int>
     /// <returns>
     /// <see langword="true"/> when the requested condition is satisfied; otherwise, <see langword="false"/>.
     /// </returns>
-    public override bool Equals(object? obj)
-        => obj is Vector3Int other && Equals(other);
+    public override bool Equals(object? obj) => obj is Vector3Int other && Equals(other);
 
     /// <summary>
     /// Determines whether this value and the supplied value represent the same logical state.
@@ -247,8 +260,7 @@ public struct Vector3Int : IEquatable<Vector3Int>
     /// <returns>
     /// <see langword="true"/> when the requested condition is satisfied; otherwise, <see langword="false"/>.
     /// </returns>
-    public bool Equals(Vector3Int other)
-        => x == other.x && y == other.y && z == other.z;
+    public bool Equals(Vector3Int other) => x == other.x && y == other.y && z == other.z;
 
     /// <summary>
     /// Computes a hash code consistent with the implemented equality contract.
@@ -256,8 +268,7 @@ public struct Vector3Int : IEquatable<Vector3Int>
     /// <returns>
     /// The scalar result calculated from the supplied inputs.
     /// </returns>
-    public override int GetHashCode()
-        => HashCode.Combine(x, y, z);
+    public override int GetHashCode() => HashCode.Combine(x, y, z);
 
     /// <summary>
     /// Formats this value as a human-readable component list.
@@ -265,6 +276,5 @@ public struct Vector3Int : IEquatable<Vector3Int>
     /// <returns>
     /// The validated text representation owned by the caller.
     /// </returns>
-    public override string ToString()
-        => $"({x}, {y}, {z})";
+    public override string ToString() => $"({x}, {y}, {z})";
 }

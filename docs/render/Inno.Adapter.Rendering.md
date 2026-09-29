@@ -7,10 +7,10 @@
 ## 公开 API
 
 - `RenderingBackendId`：开放、区分大小写的稳定实现标识；`bgfx` 是默认值，不是支持名单。默认 struct 值未赋值，创建设备前拒绝。
-- `RenderingBackendProvider`：一个实现的 `id` 与 `CreateDevice(options)`，由当前 Composition 持有。
+- `RenderingBackendProvider`：一个实现的 `id`、`CreateDevice(options)` 与 `CreateCompositionProgramProvider()`，由当前 Composition 持有。
 - `RenderingBackendCatalog`：捕获完整 provider 集合，拒绝重复/空 ID；只解析明确注册的后端，不做静默替换。
 - `RenderingBackendOptions`：中立 window、graphics API preference、VSync、sRGB 与 threading policy。
-- `IRenderingBackendFactory.supportedBackends/CreateDevice`：Player 与 Shell 使用的 runtime-only device factory。Shell 在初始化窗口前检查所选 ID。
+- `IRenderingBackendFactory.supportedBackends/CreateDevice/CreateCompositionProgramProvider`：Player 与 Shell 使用的 runtime-only factory。Shell 在初始化窗口前检查所选 ID；Editor 与 Player 通过同一注册后端取得图层合成程序供给器。
 Authoring compiler factory 被隔离在 [Inno.Adapter.Rendering.Authoring](Inno.Adapter.Rendering.Authoring.md)。
 `Inno.Adapter.Default` 只依赖本项目，防止 Player 闭包间接带入 `Inno.Rendering.Assets`、AssetPipeline 与 Build Toolchain。
 

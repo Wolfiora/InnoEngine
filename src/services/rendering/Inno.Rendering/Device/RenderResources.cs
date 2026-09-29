@@ -188,8 +188,8 @@ public sealed class RenderTextureDescriptor : IEquatable<RenderTextureDescriptor
         int arrayLayers = 1,
         int sampleCount = 1,
         RenderTextureDimension dimension = RenderTextureDimension.Texture2D,
-        int depth = 1)
-    {
+        int depth = 1
+    ) {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(width);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(height);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(mipCount);
@@ -375,8 +375,11 @@ public sealed class RenderBufferDescriptor : IEquatable<RenderBufferDescriptor>
     /// <param name="usage">
     /// Permitted operations.
     /// </param>
-    public RenderBufferDescriptor(int elementCount, int elementStride, RenderBufferUsage usage)
-    {
+    public RenderBufferDescriptor(
+        int elementCount,
+        int elementStride,
+        RenderBufferUsage usage
+    ) {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(elementCount);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(elementStride);
         this.elementCount = elementCount;
@@ -439,8 +442,10 @@ public sealed class RenderBufferDescriptor : IEquatable<RenderBufferDescriptor>
 /// </summary>
 public readonly record struct RenderTextureHandle
 {
-    internal RenderTextureHandle(int index, uint generation)
-    {
+    internal RenderTextureHandle(
+        int index,
+        uint generation
+    ) {
         this.index = index;
         this.generation = generation;
     }
@@ -459,8 +464,10 @@ public readonly record struct RenderTextureHandle
 /// </summary>
 public readonly record struct RenderBufferHandle
 {
-    internal RenderBufferHandle(int index, uint generation)
-    {
+    internal RenderBufferHandle(
+        int index,
+        uint generation
+    ) {
         this.index = index;
         this.generation = generation;
     }
@@ -479,8 +486,10 @@ public readonly record struct RenderBufferHandle
 /// </summary>
 public readonly record struct PersistentTextureHandle
 {
-    internal PersistentTextureHandle(ulong value, uint deviceGeneration)
-    {
+    internal PersistentTextureHandle(
+        ulong value,
+        uint deviceGeneration
+    ) {
         this.value = value;
         this.deviceGeneration = deviceGeneration;
     }
@@ -499,8 +508,10 @@ public readonly record struct PersistentTextureHandle
 /// </summary>
 public readonly record struct PersistentBufferHandle
 {
-    internal PersistentBufferHandle(ulong value, uint deviceGeneration)
-    {
+    internal PersistentBufferHandle(
+        ulong value,
+        uint deviceGeneration
+    ) {
         this.value = value;
         this.deviceGeneration = deviceGeneration;
     }
@@ -519,8 +530,10 @@ public readonly record struct PersistentBufferHandle
 /// </summary>
 public readonly record struct RenderSurfaceHandle
 {
-    internal RenderSurfaceHandle(ulong value, uint deviceGeneration)
-    {
+    internal RenderSurfaceHandle(
+        ulong value,
+        uint deviceGeneration
+    ) {
         this.value = value;
         this.deviceGeneration = deviceGeneration;
     }

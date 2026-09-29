@@ -18,7 +18,7 @@ internal static class Program
                 out GraphicsApi? graphicsApi))
         {
             Console.Error.WriteLine(
-                "Usage: Inno.Editor.Application <project-directory> [--graphics-api <d3d11|d3d12|metal|vulkan|opengl>] [--smoke-frames <positive-count>]");
+                "Usage: Inno.Editor.Application <project-directory> [--graphics-api <renderer-id>] [--smoke-frames <positive-count>]");
             return 2;
         }
         try
@@ -43,8 +43,8 @@ internal static class Program
 
     internal static bool TryGetProjectDirectory(
         string[] args,
-        [NotNullWhen(true)] out string? projectDirectory)
-    {
+        [NotNullWhen(true)] out string? projectDirectory
+    ) {
         ArgumentNullException.ThrowIfNull(args);
         projectDirectory = args.Length == 1 ? args[0] : null;
         return projectDirectory is not null;
@@ -54,8 +54,8 @@ internal static class Program
         string[] args,
         [NotNullWhen(true)] out string? projectDirectory,
         out int? smokeFrameLimit,
-        out GraphicsApi? graphicsApi)
-    {
+        out GraphicsApi? graphicsApi
+    ) {
         ArgumentNullException.ThrowIfNull(args);
         smokeFrameLimit = null;
         graphicsApi = null;
@@ -89,8 +89,15 @@ internal static class Program
         return true;
     }
 
-    private static bool TryParseGraphicsApi(string value, out GraphicsApi api)
-    {
+    private static bool TryParseGraphicsApi(
+        string value,
+        out GraphicsApi api
+    ) {
+        if (string.Equals(value, "noop", StringComparison.OrdinalIgnoreCase))
+        {
+            api = default;
+            return false;
+        }
         api = value.ToLowerInvariant() switch
         {
             "d3d11" => GraphicsApi.Direct3D11,
@@ -98,8 +105,8 @@ internal static class Program
             "metal" => GraphicsApi.Metal,
             "vulkan" => GraphicsApi.Vulkan,
             "opengl" => GraphicsApi.OpenGL,
-            _ => GraphicsApi.Noop
+            _ => GraphicsApi.TryParse(value, out GraphicsApi parsed) ? parsed : default
         };
-        return api != GraphicsApi.Noop;
+        return api.isValid && api != GraphicsApi.Noop;
     }
 }

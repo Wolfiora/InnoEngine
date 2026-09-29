@@ -41,6 +41,8 @@ public sealed class RenderingBackendRegistrationTests
         public override RenderingBackendId id { get; } = id;
         public override IRenderDevice CreateDevice(RenderingBackendOptions options)
         { wasCreated = true; throw new InvalidOperationException("These registration tests must not create a GPU device."); }
+        public override IRenderLayerCompositionProgramProvider CreateCompositionProgramProvider()
+            => throw new InvalidOperationException("These registration tests do not create composition programs.");
     }
 
     private sealed class AuthoringProvider(RenderingBackendId id) : RenderingAuthoringBackendProvider

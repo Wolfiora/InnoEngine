@@ -70,8 +70,8 @@ public static class ImGuiFont
 
     internal static void RegisterContext(
         ImGuiContextPtr context,
-        IReadOnlyDictionary<ImGuiFontStyle, ImFontPtr> fonts)
-    {
+        IReadOnlyDictionary<ImGuiFontStyle, ImFontPtr> fonts
+    ) {
         if (context.IsNull)
             throw new ArgumentException("An ImGui context is required.", nameof(context));
         ArgumentNullException.ThrowIfNull(fonts);
@@ -91,8 +91,8 @@ public static class ImGuiFont
     internal static void RegisterStyle(
         ImGuiContextPtr context,
         ImGuiFontStyle style,
-        ImFontPtr font)
-    {
+        ImFontPtr font
+    ) {
         if (context.IsNull)
             throw new ArgumentException("An ImGui context is required.", nameof(context));
         ValidateStyle(style);
@@ -139,8 +139,8 @@ public static class ImGuiFont
     private static bool TryResolve(
         IReadOnlyDictionary<ImGuiFontStyle, ImFontPtr> fonts,
         ImGuiFontStyle style,
-        out ImFontPtr font)
-    {
+        out ImFontPtr font
+    ) {
         if (fonts.TryGetValue(style, out font))
             return true;
         if ((style & ImGuiFontStyle.Bold) != 0 && fonts.TryGetValue(ImGuiFontStyle.Bold, out font))
@@ -159,8 +159,10 @@ public ref struct ImGuiFontScope
     private readonly nuint m_contextKey;
     private bool m_isPushed;
 
-    internal ImGuiFontScope(nuint contextKey, bool isPushed)
-    {
+    internal ImGuiFontScope(
+        nuint contextKey,
+        bool isPushed
+    ) {
         m_contextKey = contextKey;
         m_isPushed = isPushed;
     }

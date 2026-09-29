@@ -4,12 +4,17 @@ using Inno.Rendering.Shaders;
 
 namespace Inno.Build.Toolchains.Bgfx.Tools;
 
-internal readonly record struct BgfxSourceToken(string text, ShaderSourcePosition position)
-{
+internal readonly record struct BgfxSourceToken(
+    string text,
+    ShaderSourcePosition position
+) {
     internal bool isIdentifier => text.Length != 0 && (char.IsLetter(text[0]) || text[0] == '_');
 }
 
-internal sealed class BgfxSourceSyntaxException(string message, ShaderSourcePosition position) : Exception(message)
+internal sealed class BgfxSourceSyntaxException(
+    string message,
+    ShaderSourcePosition position
+) : Exception(message)
 {
     internal ShaderSourcePosition position { get; } = position;
 }
@@ -29,19 +34,23 @@ internal static class BgfxSourceLexer
             if (current == '\\' && offset + 1 < text.Length && (text[offset + 1] == '\n' || text[offset + 1] == '\r'))
             {
                 Advance();
-                if (offset < text.Length && text[offset] == '\r') Advance();
-                if (offset < text.Length && text[offset] == '\n') Advance();
+                if (offset < text.Length && text[offset] == '\r')
+                    Advance();
+                if (offset < text.Length && text[offset] == '\n')
+                    Advance();
                 continue;
             }
             if (char.IsWhiteSpace(current))
             {
-                if (current == '\n') tokens.Add(new("\n", new(source.assetPath, line, column)));
+                if (current == '\n')
+                    tokens.Add(new("\n", new(source.assetPath, line, column)));
                 Advance();
                 continue;
             }
             if (current == '/' && offset + 1 < text.Length && text[offset + 1] == '/')
             {
-                while (offset < text.Length && text[offset] != '\n') Advance();
+                while (offset < text.Length && text[offset] != '\n')
+                    Advance();
                 continue;
             }
             var position = new ShaderSourcePosition(source.assetPath, line, column);
@@ -55,16 +64,19 @@ internal static class BgfxSourceLexer
                     {
                         Advance(); Advance(); closed = true; break;
                     }
-                    if (text[offset] == '\n') tokens.Add(new("\n", new(source.assetPath, line, column)));
+                    if (text[offset] == '\n')
+                        tokens.Add(new("\n", new(source.assetPath, line, column)));
                     Advance();
                 }
-                if (!closed) throw new BgfxSourceSyntaxException("Unterminated block comment.", position);
+                if (!closed)
+                    throw new BgfxSourceSyntaxException("Unterminated block comment.", position);
                 continue;
             }
             int start = offset;
             if (char.IsLetter(current) || current == '_')
             {
-                do Advance(); while (offset < text.Length && (char.IsLetterOrDigit(text[offset]) || text[offset] == '_'));
+                do
+                    Advance(); while (offset < text.Length && (char.IsLetterOrDigit(text[offset]) || text[offset] == '_'));
             }
             else if (char.IsDigit(current) || (current == '.' && offset + 1 < text.Length && char.IsDigit(text[offset + 1])))
             {
@@ -74,7 +86,8 @@ internal static class BgfxSourceLexer
                     char previous = text[offset];
                     Advance();
                     bool exponent = hexadecimal ? previous is 'p' or 'P' : previous is 'e' or 'E';
-                    if (exponent && offset < text.Length && text[offset] is '+' or '-') Advance();
+                    if (exponent && offset < text.Length && text[offset] is '+' or '-')
+                        Advance();
                 } while (offset < text.Length && (char.IsLetterOrDigit(text[offset]) || text[offset] == '.'));
             }
             else if (current is '"' or '\'')
@@ -85,11 +98,18 @@ internal static class BgfxSourceLexer
                 {
                     char character = text[offset];
                     Advance();
-                    if (character == current) { closed = true; break; }
-                    if (character == '\\' && offset < text.Length) Advance();
-                    else if (character == '\n') throw new BgfxSourceSyntaxException("Unterminated string literal.", position);
+                    if (character == current)
+                    {
+                        closed = true;
+                        break;
+                    }
+                    if (character == '\\' && offset < text.Length)
+                        Advance();
+                    else if (character == '\n')
+                        throw new BgfxSourceSyntaxException("Unterminated string literal.", position);
                 }
-                if (!closed) throw new BgfxSourceSyntaxException("Unterminated string literal.", position);
+                if (!closed)
+                    throw new BgfxSourceSyntaxException("Unterminated string literal.", position);
             }
             else
             {
@@ -98,7 +118,8 @@ internal static class BgfxSourceLexer
                 {
                     char second = text[offset];
                     Advance();
-                    if (current == second && current is '<' or '>' && offset < text.Length && text[offset] == '=') Advance();
+                    if (current == second && current is '<' or '>' && offset < text.Length && text[offset] == '=')
+                        Advance();
                 }
             }
             tokens.Add(new(text[start..offset], position));
@@ -107,12 +128,20 @@ internal static class BgfxSourceLexer
 
         void Advance()
         {
-            if (text[offset++] == '\n') { line++; column = 1; }
-            else column++;
+            if (text[offset++] == '\n')
+            {
+                line++;
+                column = 1;
+            }
+            else
+                column++;
         }
     }
 
-    private static bool IsPair(char first, char second)
+    private static bool IsPair(
+        char first,
+        char second
+    )
         => (first, second) is ('&', '&') or ('|', '|') or ('=', '=') or ('!', '=') or ('<', '=') or ('>', '=')
             or ('<', '<') or ('>', '>') or ('#', '#') or ('+', '+') or ('-', '-') or ('+', '=') or ('-', '=')
             or ('*', '=') or ('/', '=') or ('&', '=') or ('|', '=') or ('^', '=') or ('%', '=');

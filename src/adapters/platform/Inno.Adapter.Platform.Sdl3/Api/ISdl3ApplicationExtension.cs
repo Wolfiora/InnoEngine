@@ -18,7 +18,8 @@ public interface ISdl3ApplicationExtension
     /// </param>
     void ProcessNativeEvent(
         Sdl3PlatformApplication application,
-        scoped ReadOnlySpan<byte> nativeEventData);
+        scoped ReadOnlySpan<byte> nativeEventData
+    );
 
     /// <summary>
     /// Synchronizes integration window state before the host renders a complete live-resize frame.
@@ -29,7 +30,10 @@ public interface ISdl3ApplicationExtension
     /// <param name="windowId">
     /// The platform window identifier being resized.
     /// </param>
-    void PrepareLiveResizeWindow(Sdl3PlatformApplication application, uint windowId);
+    void PrepareLiveResizeWindow(
+        Sdl3PlatformApplication application,
+        uint windowId
+    );
 
     /// <summary>
     /// Releases application-bound integration state before platform resources are destroyed.

@@ -28,5 +28,8 @@ internal sealed class NullKeyOrdering<TKey> : IKeyOrdering<TKey> where TKey : no
     /// <returns>
     /// The validated ienumerabletkey that represents the completed operation.
     /// </returns>
-    public IEnumerable<TKey> Enumerate() { yield break; }
+    public IEnumerable<TKey> Enumerate()
+    {
+        yield break;
+    }
 }

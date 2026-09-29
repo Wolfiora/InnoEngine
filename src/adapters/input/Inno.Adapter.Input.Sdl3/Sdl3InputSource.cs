@@ -79,6 +79,5 @@ public sealed class Sdl3InputSource : IInputEventSource
             backend.DisconnectSource();
     }
 
-    private void RemoveBackend(Sdl3InputBackend backend)
-        => m_backends.Remove(backend);
+    private void RemoveBackend(Sdl3InputBackend backend) => m_backends.Remove(backend);
 }

@@ -20,8 +20,10 @@ public sealed class AudioContentProviderExtensionAttribute : Attribute
     /// <param name="priority">
     /// Provider invocation priority; lower values run first.
     /// </param>
-    public AudioContentProviderExtensionAttribute(string id, int priority = 0)
-    {
+    public AudioContentProviderExtensionAttribute(
+        string id,
+        int priority = 0
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(id);
         this.id = id;
         this.priority = priority;
@@ -72,8 +74,11 @@ public sealed class AudioContentProviderContext : IDisposable
     /// <exception cref="ArgumentNullException">
     /// The borrowed content scope is null.
     /// </exception>
-    public AudioContentProviderContext(ContentReadScope content, float deltaTime, int capacity = 1024)
-    {
+    public AudioContentProviderContext(
+        ContentReadScope content,
+        float deltaTime,
+        int capacity = 1024
+    ) {
         ArgumentNullException.ThrowIfNull(content);
         if (!float.IsFinite(deltaTime) || deltaTime < 0f)
             throw new ArgumentOutOfRangeException(nameof(deltaTime));
@@ -94,7 +99,11 @@ public sealed class AudioContentProviderContext : IDisposable
     /// </exception>
     public ContentReadScope content
     {
-        get { EnsureActive(); return m_content!; }
+        get
+        {
+            EnsureActive();
+            return m_content!;
+        }
     }
 
     /// <summary>
@@ -167,7 +176,11 @@ public sealed class AudioContentProviderContext : IDisposable
     /// </exception>
     public IReadOnlyList<AudioEmitterSnapshot> emitters
     {
-        get { EnsureActive(); return Array.AsReadOnly(m_emitters.ToArray()); }
+        get
+        {
+            EnsureActive();
+            return Array.AsReadOnly(m_emitters.ToArray());
+        }
     }
 
     /// <summary>
@@ -181,7 +194,11 @@ public sealed class AudioContentProviderContext : IDisposable
     /// </exception>
     public IReadOnlyList<AudioListenerSnapshot> listeners
     {
-        get { EnsureActive(); return Array.AsReadOnly(m_listeners.ToArray()); }
+        get
+        {
+            EnsureActive();
+            return Array.AsReadOnly(m_listeners.ToArray());
+        }
     }
 
     /// <summary>
@@ -254,8 +271,14 @@ public abstract class AudioContentProvider : IDisposable
     {
         if (m_disposed)
             return;
-        try { Dispose(true); }
-        catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null) { throw; }
+        try
+        {
+            Dispose(true);
+        }
+        catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null)
+        {
+            throw;
+        }
         catch
         {
             m_disposed = true;

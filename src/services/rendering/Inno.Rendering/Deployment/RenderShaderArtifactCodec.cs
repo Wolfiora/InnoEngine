@@ -78,8 +78,8 @@ public static class RenderShaderArtifactCodec
     public static RenderShaderArtifact Decode(
         ReadOnlySpan<byte> bytes,
         string expectedShaderName,
-        RenderShaderVariant expectedVariant)
-    {
+        RenderShaderVariant expectedVariant
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(expectedShaderName);
         try
         {
@@ -101,7 +101,8 @@ public static class RenderShaderArtifactCodec
                     $"Shader artifact variant '{variant}' does not match requested variant '{expectedVariant}'.");
             }
             int definitionLength = ReadCount(reader, C_MAX_STAGE_BYTES, "shader definition byte");
-            if (definitionLength == 0) throw new InvalidDataException("A shader publication has no runtime contract.");
+            if (definitionLength == 0)
+                throw new InvalidDataException("A shader publication has no runtime contract.");
             byte[] definitionData = ReadBytes(reader, definitionLength);
             ShaderInterface shaderInterface = ReadInterface(reader);
             int passCount = ReadCount(reader, C_MAX_PASSES, "shader pass");
@@ -149,8 +150,10 @@ public static class RenderShaderArtifactCodec
         }
     }
 
-    private static void WriteInterface(BinaryWriter writer, ShaderInterface shaderInterface)
-    {
+    private static void WriteInterface(
+        BinaryWriter writer,
+        ShaderInterface shaderInterface
+    ) {
         writer.Write(shaderInterface.bindings.Count);
         foreach (ShaderInterfaceBinding binding in shaderInterface.bindings)
         {
@@ -162,7 +165,8 @@ public static class RenderShaderArtifactCodec
             writer.Write((int)binding.storageAccess);
             WriteString(writer, binding.nativeName);
             writer.Write(binding.location.HasValue);
-            if (binding.location.HasValue) writer.Write(binding.location.Value);
+            if (binding.location.HasValue)
+                writer.Write(binding.location.Value);
         }
     }
 
@@ -197,8 +201,10 @@ public static class RenderShaderArtifactCodec
         return new ShaderInterface(bindings);
     }
 
-    private static void WriteRasterState(BinaryWriter writer, RenderRasterState state)
-    {
+    private static void WriteRasterState(
+        BinaryWriter writer,
+        RenderRasterState state
+    ) {
         writer.Write((int)state.topology);
         writer.Write((int)state.cull);
         writer.Write((int)state.frontFace);
@@ -241,8 +247,10 @@ public static class RenderShaderArtifactCodec
             }
         };
 
-    private static void WriteString(BinaryWriter writer, string value)
-    {
+    private static void WriteString(
+        BinaryWriter writer,
+        string value
+    ) {
         ArgumentNullException.ThrowIfNull(value);
         byte[] bytes = Encoding.UTF8.GetBytes(value);
         if (bytes.Length > C_MAX_STRING_BYTES)
@@ -257,16 +265,21 @@ public static class RenderShaderArtifactCodec
         return Encoding.UTF8.GetString(ReadBytes(reader, length));
     }
 
-    private static int ReadCount(BinaryReader reader, int maximum, string subject)
-    {
+    private static int ReadCount(
+        BinaryReader reader,
+        int maximum,
+        string subject
+    ) {
         int value = reader.ReadInt32();
         if (value < 0 || value > maximum)
             throw new InvalidDataException($"Shader artifact {subject} count '{value}' is outside the valid range.");
         return value;
     }
 
-    private static byte[] ReadBytes(BinaryReader reader, int count)
-    {
+    private static byte[] ReadBytes(
+        BinaryReader reader,
+        int count
+    ) {
         byte[] bytes = reader.ReadBytes(count);
         if (bytes.Length != count)
             throw new EndOfStreamException("Shader artifact ended before the declared payload length.");

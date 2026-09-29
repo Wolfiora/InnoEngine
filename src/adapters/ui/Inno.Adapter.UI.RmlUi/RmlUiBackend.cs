@@ -94,8 +94,12 @@ public sealed unsafe class RmlUiBackend : IUiBackend
     /// <param name="density">
     /// The density consumed by set viewport; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
-    public void SetViewport(UiContextHandle context, int width, int height, float density)
-    {
+    public void SetViewport(
+        UiContextHandle context,
+        int width,
+        int height,
+        float density
+    ) {
         EnsureActive();
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(width);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(height);
@@ -116,8 +120,10 @@ public sealed unsafe class RmlUiBackend : IUiBackend
     /// <returns>
     /// The validated ui document handle that represents the completed operation.
     /// </returns>
-    public UiDocumentHandle LoadDocument(UiContextHandle context, UiDocumentSource source)
-    {
+    public UiDocumentHandle LoadDocument(
+        UiContextHandle context,
+        UiDocumentSource source
+    ) {
         EnsureActive();
         ArgumentNullException.ThrowIfNull(source);
         EnsureRml(source.language);
@@ -136,8 +142,10 @@ public sealed unsafe class RmlUiBackend : IUiBackend
     /// <param name="document">
     /// The document consumed by show document; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
-    public void ShowDocument(UiContextHandle context, UiDocumentHandle document)
-    {
+    public void ShowDocument(
+        UiContextHandle context,
+        UiDocumentHandle document
+    ) {
         EnsureActive();
         ThrowIfFailed(UiNative.ShowDocument(m_runtime, Require(context), Require(document)), "show UI document");
     }
@@ -151,8 +159,10 @@ public sealed unsafe class RmlUiBackend : IUiBackend
     /// <param name="document">
     /// The document consumed by hide document; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
-    public void HideDocument(UiContextHandle context, UiDocumentHandle document)
-    {
+    public void HideDocument(
+        UiContextHandle context,
+        UiDocumentHandle document
+    ) {
         EnsureActive();
         ThrowIfFailed(UiNative.HideDocument(m_runtime, Require(context), Require(document)), "hide UI document");
     }
@@ -166,8 +176,10 @@ public sealed unsafe class RmlUiBackend : IUiBackend
     /// <param name="document">
     /// The document consumed by close document; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
-    public void CloseDocument(UiContextHandle context, UiDocumentHandle document)
-    {
+    public void CloseDocument(
+        UiContextHandle context,
+        UiDocumentHandle document
+    ) {
         EnsureActive();
         ThrowIfFailed(UiNative.CloseDocument(m_runtime, Require(context), Require(document)), "close UI document");
     }
@@ -190,8 +202,12 @@ public sealed unsafe class RmlUiBackend : IUiBackend
     /// <returns>
     /// <see langword="true"/> when the operation succeeds or its condition is satisfied; otherwise, <see langword="false"/>.
     /// </returns>
-    public bool SetText(UiContextHandle context, UiDocumentHandle document, string elementId, string text)
-    {
+    public bool SetText(
+        UiContextHandle context,
+        UiDocumentHandle document,
+        string elementId,
+        string text
+    ) {
         EnsureActive();
         ArgumentException.ThrowIfNullOrWhiteSpace(elementId);
         ArgumentNullException.ThrowIfNull(text);
@@ -223,8 +239,8 @@ public sealed unsafe class RmlUiBackend : IUiBackend
         UiContextHandle context,
         UiDocumentHandle document,
         string elementId,
-        UiDocumentFragment content)
-    {
+        UiDocumentFragment content
+    ) {
         EnsureActive();
         ArgumentException.ThrowIfNullOrWhiteSpace(elementId);
         EnsureRml(content.language);
@@ -265,8 +281,8 @@ public sealed unsafe class RmlUiBackend : IUiBackend
         UiDocumentHandle document,
         string elementId,
         string name,
-        string value)
-    {
+        string value
+    ) {
         EnsureActive();
         ArgumentException.ThrowIfNullOrWhiteSpace(elementId);
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
@@ -309,8 +325,8 @@ public sealed unsafe class RmlUiBackend : IUiBackend
         UiDocumentHandle document,
         string elementId,
         string className,
-        bool active)
-    {
+        bool active
+    ) {
         EnsureActive();
         ArgumentException.ThrowIfNullOrWhiteSpace(elementId);
         ArgumentException.ThrowIfNullOrWhiteSpace(className);
@@ -370,8 +386,11 @@ public sealed unsafe class RmlUiBackend : IUiBackend
     /// <param name="texture">
     /// The texture consumed by register texture; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
-    public void RegisterTexture(UiContextHandle context, string source, UiTextureData texture)
-    {
+    public void RegisterTexture(
+        UiContextHandle context,
+        string source,
+        UiTextureData texture
+    ) {
         EnsureActive();
         ArgumentException.ThrowIfNullOrWhiteSpace(source);
         ArgumentNullException.ThrowIfNull(texture);
@@ -402,8 +421,10 @@ public sealed unsafe class RmlUiBackend : IUiBackend
     /// <returns>
     /// <see langword="true"/> when the operation succeeds or its condition is satisfied; otherwise, <see langword="false"/>.
     /// </returns>
-    public bool HasElementAtPoint(UiContextHandle context, Vector2 position)
-    {
+    public bool HasElementAtPoint(
+        UiContextHandle context,
+        Vector2 position
+    ) {
         EnsureActive();
         byte hit = 0;
         ThrowIfFailed(UiNative.HasElementAtPoint(m_runtime, Require(context),
@@ -420,8 +441,10 @@ public sealed unsafe class RmlUiBackend : IUiBackend
     /// <param name="input">
     /// The input consumed by update; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
-    public void Update(UiContextHandle context, UiInputSnapshot input)
-    {
+    public void Update(
+        UiContextHandle context,
+        UiInputSnapshot input
+    ) {
         EnsureActive();
         ArgumentNullException.ThrowIfNull(input);
         ulong handle = Require(context);
@@ -576,15 +599,21 @@ public sealed unsafe class RmlUiBackend : IUiBackend
         m_runtime = InnoUiRuntime.Null;
     }
 
-    private void CopyMeshVertices(ulong context, ulong mesh, InnoUiVertex[] values)
-    {
+    private void CopyMeshVertices(
+        ulong context,
+        ulong mesh,
+        InnoUiVertex[] values
+    ) {
         if (values.Length == 0)
             return;
         ThrowIfFailed(UiNative.CopyMeshVertices(m_runtime, context, mesh, values), "copy UI mesh vertices");
     }
 
-    private void CopyMeshIndices(ulong context, ulong mesh, uint[] values)
-    {
+    private void CopyMeshIndices(
+        ulong context,
+        ulong mesh,
+        uint[] values
+    ) {
         if (values.Length == 0)
             return;
         ThrowIfFailed(UiNative.CopyMeshIndices(
@@ -594,15 +623,19 @@ public sealed unsafe class RmlUiBackend : IUiBackend
             MemoryMarshal.Cast<uint, InnoUiIndex>(values)), "copy UI mesh indices");
     }
 
-    private void CopyCommands(ulong context, InnoUiDrawCommand[] values)
-    {
+    private void CopyCommands(
+        ulong context,
+        InnoUiDrawCommand[] values
+    ) {
         if (values.Length == 0)
             return;
         ThrowIfFailed(UiNative.CopyCommands(m_runtime, context, values), "copy UI commands");
     }
 
-    private ulong[] CopyReleasedMeshes(ulong context, ulong count)
-    {
+    private ulong[] CopyReleasedMeshes(
+        ulong context,
+        ulong count
+    ) {
         ulong[] values = new ulong[checked((int)count)];
         if (values.Length > 0)
             ThrowIfFailed(UiNative.CopyReleasedMeshes(
@@ -612,8 +645,10 @@ public sealed unsafe class RmlUiBackend : IUiBackend
         return values;
     }
 
-    private ulong[] CopyReleasedTextures(ulong context, ulong count)
-    {
+    private ulong[] CopyReleasedTextures(
+        ulong context,
+        ulong count
+    ) {
         ulong[] values = new ulong[checked((int)count)];
         if (values.Length > 0)
             ThrowIfFailed(UiNative.CopyReleasedTextures(
@@ -648,14 +683,18 @@ public sealed unsafe class RmlUiBackend : IUiBackend
     private static ulong Require(UiDocumentHandle document)
         => document.isValid ? document.value : throw new ArgumentException("A valid UI document handle is required.", nameof(document));
 
-    private static void ThrowIfFailed(InnoUiResult result, string operation)
-    {
+    private static void ThrowIfFailed(
+        InnoUiResult result,
+        string operation
+    ) {
         if (result != InnoUiResult.Success)
             throw CreateNativeException(operation, result);
     }
 
-    private static InvalidOperationException CreateNativeException(string operation, InnoUiResult result)
-    {
+    private static InvalidOperationException CreateNativeException(
+        string operation,
+        InnoUiResult result
+    ) {
         string? detail = UiNative.GetLastError();
         string message = string.IsNullOrWhiteSpace(detail)
             ? result switch
@@ -682,8 +721,7 @@ public sealed unsafe class RmlUiBackend : IUiBackend
         /// <param name="value">
         /// The concrete value read or transformed by this operation.
         /// </param>
-public Utf8String(string value)
-            => m_memory = Marshal.StringToCoTaskMemUTF8(value);
+public Utf8String(string value) => m_memory = Marshal.StringToCoTaskMemUTF8(value);
 
         /// <summary>
         /// Gets the native pointer owned by this backend handle.

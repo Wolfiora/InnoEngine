@@ -34,8 +34,7 @@ internal sealed class ZoomInEditorAction(EditorZoomModule zoom) : EditorAction
     /// <param name="context">
     /// The context that supplies state and services for this operation.
     /// </param>
-    protected override void Execute(EditorActionContext context)
-        => _ = zoom.ZoomIn();
+    protected override void Execute(EditorActionContext context) => _ = zoom.ZoomIn();
 }
 
 /// <summary>
@@ -69,8 +68,7 @@ internal sealed class ZoomOutEditorAction(EditorZoomModule zoom) : EditorAction
     /// <param name="context">
     /// The context that supplies state and services for this operation.
     /// </param>
-    protected override void Execute(EditorActionContext context)
-        => _ = zoom.ZoomOut();
+    protected override void Execute(EditorActionContext context) => _ = zoom.ZoomOut();
 }
 
 /// <summary>
@@ -104,6 +102,5 @@ internal sealed class ActualSizeEditorAction(EditorZoomModule zoom) : EditorActi
     /// <param name="context">
     /// The context that supplies state and services for this operation.
     /// </param>
-    protected override void Execute(EditorActionContext context)
-        => _ = zoom.UseActualSize();
+    protected override void Execute(EditorActionContext context) => _ = zoom.UseActualSize();
 }

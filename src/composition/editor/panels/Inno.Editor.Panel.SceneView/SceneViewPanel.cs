@@ -60,8 +60,8 @@ internal sealed class SceneViewPanel : EditorPanel
         EditorInteractions interactions,
         SceneEdits sceneEdits,
         IEditorGameScenePresentation scenePresentation,
-        EditorSettings settings)
-    {
+        EditorSettings settings
+    ) {
         m_rendering = rendering ?? throw new ArgumentNullException(nameof(rendering));
         m_interactions = interactions ?? throw new ArgumentNullException(nameof(interactions));
         m_sceneEdits = sceneEdits ?? throw new ArgumentNullException(nameof(sceneEdits));
@@ -289,14 +289,14 @@ internal sealed class SceneViewPanel : EditorPanel
         }
     }
 
-    private void ApplySettings(EditorSettings settings)
-        => m_backgroundColor = SceneViewBackgroundSetting.Read(settings);
+    private void ApplySettings(EditorSettings settings) => m_backgroundColor = SceneViewBackgroundSetting.Read(settings);
 
-    private ContentReadScope CreateContentScope()
-        => m_scenePresentation.Capture();
+    private ContentReadScope CreateContentScope() => m_scenePresentation.Capture();
 
-    private IReadOnlyList<(Vector2 center, EditorGizmoIcon icon)> DrawGizmos(Vector2 minimum, Vector2 maximum)
-    {
+    private IReadOnlyList<(Vector2 center, EditorGizmoIcon icon)> DrawGizmos(
+        Vector2 minimum,
+        Vector2 maximum
+    ) {
         if (!m_rendering.TryGetManipulationSpace(C_VIEWPORT_ID,
                 out EditorViewportManipulationSpace space))
             return [];
@@ -329,8 +329,10 @@ internal sealed class SceneViewPanel : EditorPanel
         }
         return displayIcons;
 
-        bool TryProject(EngineVector3 world, out Vector2 screen)
-        {
+        bool TryProject(
+            EngineVector3 world,
+            out Vector2 screen
+        ) {
             Inno.Core.Mathematics.Vector4 clip = Inno.Core.Mathematics.Vector4.Transform(
                 new Inno.Core.Mathematics.Vector4(world.x, world.y, world.z, 1f), worldToClip);
             if (clip.w <= 0.000001f)
@@ -345,8 +347,10 @@ internal sealed class SceneViewPanel : EditorPanel
         }
     }
 
-    private bool SelectGizmoIcons(IReadOnlyList<(Vector2 center, EditorGizmoIcon icon)> displayIcons, bool maySelect)
-    {
+    private bool SelectGizmoIcons(
+        IReadOnlyList<(Vector2 center, EditorGizmoIcon icon)> displayIcons,
+        bool maySelect
+    ) {
         bool iconClicked = false;
         if (maySelect)
         {
@@ -405,8 +409,8 @@ internal sealed class SceneViewPanel : EditorPanel
         EditorViewportNavigationProfile profile,
         bool hovered,
         Vector2 minimum,
-        Vector2 maximum)
-    {
+        Vector2 maximum
+    ) {
         EditorViewportNavigationState navigation = m_rendering.GetNavigationState(C_VIEWPORT_ID);
         if (!navigation.isInitialized
             || profile.capabilities == EditorViewportNavigationCapabilities.None)
@@ -491,8 +495,11 @@ internal sealed class SceneViewPanel : EditorPanel
         return ownsPointer;
     }
 
-    private static void Pan(EditorViewportNavigationState navigation, Vector2 mouseDelta, float height)
-    {
+    private static void Pan(
+        EditorViewportNavigationState navigation,
+        Vector2 mouseDelta,
+        float height
+    ) {
         float verticalSpan = navigation.projection == EditorViewportProjection.Orthographic
             ? navigation.orthographicSize * 2f
             : 2f * navigation.focusDistance
@@ -509,8 +516,8 @@ internal sealed class SceneViewPanel : EditorPanel
     private static void Orbit(
         EditorViewportNavigationState navigation,
         EditorViewportNavigationProfile profile,
-        Vector2 mouseDelta)
-    {
+        Vector2 mouseDelta
+    ) {
         EngineVector3 worldUp = GetWorldUp(profile);
         float sensitivity = GetPositive(profile.rotationSensitivity, 0.005f);
         EngineQuaternion yaw = EngineQuaternion.CreateFromAxisAngle(
@@ -531,8 +538,8 @@ internal sealed class SceneViewPanel : EditorPanel
     private static void Fly(
         EditorViewportNavigationState navigation,
         EditorViewportNavigationProfile profile,
-        ImGuiIOPtr io)
-    {
+        ImGuiIOPtr io
+    ) {
         float sensitivity = GetPositive(profile.rotationSensitivity, 0.005f);
         EngineVector3 worldUp = GetWorldUp(profile);
         EngineQuaternion yaw = EngineQuaternion.CreateFromAxisAngle(
@@ -550,12 +557,18 @@ internal sealed class SceneViewPanel : EditorPanel
         EngineVector3 movement = EngineVector3.ZERO;
         EngineVector3 forward = EngineVector3.Transform(EngineVector3.FORWARD, navigation.rotation);
         right = EngineVector3.Transform(EngineVector3.RIGHT, navigation.rotation);
-        if (NativeImGui.IsKeyDown(ImGuiKey.W)) movement += forward;
-        if (NativeImGui.IsKeyDown(ImGuiKey.S)) movement -= forward;
-        if (NativeImGui.IsKeyDown(ImGuiKey.D)) movement += right;
-        if (NativeImGui.IsKeyDown(ImGuiKey.A)) movement -= right;
-        if (NativeImGui.IsKeyDown(ImGuiKey.E)) movement += worldUp;
-        if (NativeImGui.IsKeyDown(ImGuiKey.Q)) movement -= worldUp;
+        if (NativeImGui.IsKeyDown(ImGuiKey.W))
+            movement += forward;
+        if (NativeImGui.IsKeyDown(ImGuiKey.S))
+            movement -= forward;
+        if (NativeImGui.IsKeyDown(ImGuiKey.D))
+            movement += right;
+        if (NativeImGui.IsKeyDown(ImGuiKey.A))
+            movement -= right;
+        if (NativeImGui.IsKeyDown(ImGuiKey.E))
+            movement += worldUp;
+        if (NativeImGui.IsKeyDown(ImGuiKey.Q))
+            movement -= worldUp;
         if (movement.LengthSquared() > 0.000001f)
         {
             float multiplier = io.KeyShift
@@ -576,8 +589,8 @@ internal sealed class SceneViewPanel : EditorPanel
         Vector2 minimum,
         float width,
         float height,
-        float aspect)
-    {
+        float aspect
+    ) {
         float zoomSensitivity = GetPositive(profile.zoomSensitivity, 0.16f);
         if (navigation.projection == EditorViewportProjection.Orthographic)
         {
@@ -627,8 +640,8 @@ internal sealed class SceneViewPanel : EditorPanel
     private static void Frame(
         EditorViewportNavigationState navigation,
         EditorViewportNavigationProfile profile,
-        EditorViewportFocusBounds focus)
-    {
+        EditorViewportFocusBounds focus
+    ) {
         float padding = GetPositive(profile.framePadding, 1.25f);
         float radius = MathF.Max(focus.radius, 0.01f);
         navigation.pivot = focus.center;
@@ -656,7 +669,8 @@ internal sealed class SceneViewPanel : EditorPanel
 
     private static bool SupportsMode(
         EditorViewportNavigationProfile profile,
-        EditorViewportNavigationMode mode)
+        EditorViewportNavigationMode mode
+    )
         => mode switch
         {
             EditorViewportNavigationMode.Orbit =>
@@ -670,8 +684,8 @@ internal sealed class SceneViewPanel : EditorPanel
         EngineQuaternion yawed,
         EngineVector3 right,
         EngineVector3 worldUp,
-        float angle)
-    {
+        float angle
+    ) {
         EngineQuaternion pitch = EngineQuaternion.CreateFromAxisAngle(right, angle);
         EngineQuaternion candidate = (pitch * yawed).normalized;
         EngineVector3 forward = EngineVector3.Transform(EngineVector3.FORWARD, candidate).normalized;
@@ -685,16 +699,18 @@ internal sealed class SceneViewPanel : EditorPanel
             ? profile.worldUp.normalized
             : EngineVector3.UP;
 
-    private static float GetPositive(float value, float fallback)
-        => float.IsFinite(value) && value > 0f ? value : fallback;
+    private static float GetPositive(
+        float value,
+        float fallback
+    ) => float.IsFinite(value) && value > 0f ? value : fallback;
 
     private static EngineVector3 GetViewportOffset(
         float normalizedX,
         float normalizedY,
         float halfHeight,
         float aspect,
-        EngineQuaternion rotation)
-    {
+        EngineQuaternion rotation
+    ) {
         var local = new EngineVector3(
             (normalizedX * 2f - 1f) * halfHeight * aspect,
             (1f - normalizedY * 2f) * halfHeight,
@@ -702,8 +718,10 @@ internal sealed class SceneViewPanel : EditorPanel
         return EngineVector3.Transform(local, rotation);
     }
 
-    private void DrawUnavailable(Vector2 size, string message)
-    {
+    private void DrawUnavailable(
+        Vector2 size,
+        string message
+    ) {
         Vector2 minimum = NativeImGui.GetCursorScreenPos();
         Vector2 maximum = minimum + size;
         ImDrawListPtr drawList = NativeImGui.GetWindowDrawList();
@@ -722,8 +740,7 @@ internal sealed class SceneViewPanel : EditorPanel
         }
     }
 
-    private static Inno.Core.Mathematics.Color ToEngineColor(Vector4 value)
-        => new(value.X, value.Y, value.Z, value.W);
+    private static Inno.Core.Mathematics.Color ToEngineColor(Vector4 value) => new(value.X, value.Y, value.Z, value.W);
 
     private bool DrawManipulationToolbar(ManipulationToolbarLayout layout)
     {
@@ -838,8 +855,8 @@ internal sealed class SceneViewPanel : EditorPanel
         string tooltip,
         Vector2 position,
         Vector2 size,
-        bool selected)
-    {
+        bool selected
+    ) {
         NativeImGui.SetCursorScreenPos(position);
         if (selected)
             NativeImGui.PushStyleColor(ImGuiCol.Text, Vector4.One);
@@ -873,8 +890,8 @@ internal sealed class SceneViewPanel : EditorPanel
 
     private static ManipulationToolbarLayout CreateManipulationToolbarLayout(
         Vector2 viewportMinimum,
-        Vector2 viewportMaximum)
-    {
+        Vector2 viewportMaximum
+    ) {
         float zoom = EditorWidget.style.zoom;
         float inset = 10f * zoom;
         float padding = 4f * zoom;
@@ -914,8 +931,10 @@ internal sealed class SceneViewPanel : EditorPanel
     private static bool IsManipulationToolbarHovered(ManipulationToolbarLayout layout)
         => NativeImGui.IsMouseHoveringRect(layout.minimum, layout.maximum);
 
-    private unsafe bool DrawTransformGizmo(Vector2 minimum, Vector2 maximum)
-    {
+    private unsafe bool DrawTransformGizmo(
+        Vector2 minimum,
+        Vector2 maximum
+    ) {
         if (!m_rendering.TryGetManipulationSpace(
                 C_VIEWPORT_ID,
                 out EditorViewportManipulationSpace manipulationSpace)
@@ -1003,7 +1022,9 @@ internal sealed class SceneViewPanel : EditorPanel
     }
 
     private static ImGuizmoOperation SelectManipulationOperation(
-        EditorViewportManipulationPlane plane, ImGuizmoOperation operation)
+        EditorViewportManipulationPlane plane,
+        ImGuizmoOperation operation
+    )
         => operation switch
         {
             ImGuizmoOperation.Rotate => ImGuizmoOperation.Rotate,
@@ -1018,11 +1039,13 @@ internal sealed class SceneViewPanel : EditorPanel
         };
 
     private static bool TryReadManipulatedTransform(
-        EngineMatrix matrix, Transform target, ImGuizmoOperation operation,
+        EngineMatrix matrix,
+        Transform target,
+        ImGuizmoOperation operation,
         out Inno.Core.Mathematics.Vector3 position,
         out EngineQuaternion rotation,
-        out Inno.Core.Mathematics.Vector3 scale)
-    {
+        out Inno.Core.Mathematics.Vector3 scale
+    ) {
         position = new Inno.Core.Mathematics.Vector3(matrix.m14, matrix.m24, matrix.m34);
         rotation = target.worldRotation;
         scale = target.worldScale;
@@ -1055,9 +1078,13 @@ internal sealed class SceneViewPanel : EditorPanel
     }
 
     private static float SignedColumnRatio(
-        float originalX, float originalY, float originalZ,
-        float changedX, float changedY, float changedZ)
-    {
+        float originalX,
+        float originalY,
+        float originalZ,
+        float changedX,
+        float changedY,
+        float changedZ
+    ) {
         float squaredLength = originalX * originalX + originalY * originalY + originalZ * originalZ;
         return squaredLength <= 0.0000000001f
             ? 1f
@@ -1115,7 +1142,8 @@ internal sealed class SceneViewPanel : EditorPanel
     private static bool IsUsable(
         Inno.Core.Mathematics.Vector3 position,
         EngineQuaternion rotation,
-        Inno.Core.Mathematics.Vector3 scale)
+        Inno.Core.Mathematics.Vector3 scale
+    )
         => float.IsFinite(position.x)
            && float.IsFinite(position.y)
            && float.IsFinite(position.z)
@@ -1130,8 +1158,10 @@ internal sealed class SceneViewPanel : EditorPanel
            && MathF.Abs(scale.y) > 0.00001f
            && MathF.Abs(scale.z) > 0.00001f;
 
-    private static unsafe void WriteColumnMajor(EngineMatrix matrix, float* destination)
-    {
+    private static unsafe void WriteColumnMajor(
+        EngineMatrix matrix,
+        float* destination
+    ) {
         destination[0] = matrix.m11;
         destination[1] = matrix.m21;
         destination[2] = matrix.m31;
@@ -1164,13 +1194,14 @@ internal sealed class SceneViewPanel : EditorPanel
         Vector2 itemSize,
         float padding,
         float spacing,
-        float sectionSpacing);
+        float sectionSpacing
+    );
 
     private readonly record struct TransformSnapshot(
         Inno.Core.Mathematics.Vector3 position,
         EngineQuaternion rotation,
-        Inno.Core.Mathematics.Vector3 scale)
-    {
+        Inno.Core.Mathematics.Vector3 scale
+    ) {
         internal static TransformSnapshot Capture(Transform transform)
             => new(transform.localPosition, transform.localRotation, transform.localScale);
 

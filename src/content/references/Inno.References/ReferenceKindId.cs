@@ -83,7 +83,10 @@ public readonly struct ReferenceKindId : IEquatable<ReferenceKindId>
     /// <returns>
     /// <see langword="true"/> when the identifiers are equal; otherwise, <see langword="false"/>.
     /// </returns>
-    public static bool operator ==(ReferenceKindId left, ReferenceKindId right) => left.Equals(right);
+    public static bool operator ==(
+        ReferenceKindId left,
+        ReferenceKindId right
+    ) => left.Equals(right);
 
     /// <summary>
     /// Determines whether two reference kind identifiers are different.
@@ -97,5 +100,8 @@ public readonly struct ReferenceKindId : IEquatable<ReferenceKindId>
     /// <returns>
     /// <see langword="true"/> when the identifiers are different; otherwise, <see langword="false"/>.
     /// </returns>
-    public static bool operator !=(ReferenceKindId left, ReferenceKindId right) => !left.Equals(right);
+    public static bool operator !=(
+        ReferenceKindId left,
+        ReferenceKindId right
+    ) => !left.Equals(right);
 }

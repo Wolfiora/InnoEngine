@@ -29,7 +29,8 @@ public static class NativeAssetSourceSerialization
     /// </returns>
     public static byte[] Export<TAsset>(
         TAsset asset,
-        AssetSerializationServices services)
+        AssetSerializationServices services
+    )
         where TAsset : AssetObject
     {
         ArgumentNullException.ThrowIfNull(asset);
@@ -72,7 +73,8 @@ public static class NativeAssetSourceSerialization
     public static TAsset Import<TAsset>(
         ReadOnlySpan<byte> bytes,
         AssetSerializationServices services,
-        out IReadOnlyList<AssetDependency> dependencies)
+        out IReadOnlyList<AssetDependency> dependencies
+    )
         where TAsset : AssetObject
     {
         ArgumentNullException.ThrowIfNull(services);

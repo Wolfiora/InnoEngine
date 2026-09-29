@@ -62,8 +62,10 @@ public override bool useWindowPadding => false;
         }
     }
 
-    private static void DrawGroup(string title, IEnumerable<(string label, string value)> values)
-    {
+    private static void DrawGroup(
+        string title,
+        IEnumerable<(string label, string value)> values
+    ) {
         EditorWidget.CollectionSectionHeader(title);
 
         System.Numerics.Vector2 padding = EditorWidget.style.inspectorSectionPadding;

@@ -36,8 +36,8 @@ internal sealed class SceneElementHistoryHandler : EditorHistoryHandler
     protected override EditorHistoryAvailability Query(
         EditorHistoryContext context,
         EditorHistoryChange change,
-        EditorHistoryDirection direction)
-    {
+        EditorHistoryDirection direction
+    ) {
         try
         {
             SceneElementHistoryData data = SceneElementHistoryData.Decode(change.payload.ReadBytes());
@@ -107,8 +107,8 @@ internal sealed class SceneElementHistoryHandler : EditorHistoryHandler
     protected override EditorHistoryResult Apply(
         EditorHistoryContext context,
         EditorHistoryChange change,
-        EditorHistoryDirection direction)
-    {
+        EditorHistoryDirection direction
+    ) {
         try
         {
             SceneElementHistoryData data = SceneElementHistoryData.Decode(change.payload.ReadBytes());
@@ -260,7 +260,8 @@ internal sealed class SceneElementHistoryHandler : EditorHistoryHandler
         SceneElementHistoryData data,
         GameScene scene,
         int index,
-        byte[] state)
+        byte[] state
+    )
         => data.elementKind switch
         {
             SceneElementKind.Component => SceneElementSerialization.RestoreComponent(
@@ -283,7 +284,11 @@ internal sealed class SceneElementHistoryHandler : EditorHistoryHandler
             _ => throw new InvalidOperationException($"Unsupported scene element kind '{data.elementKind}'.")
         };
 
-    private static bool Remove(SceneElementHistoryData data, GameScene scene, EngineObject current)
+    private static bool Remove(
+        SceneElementHistoryData data,
+        GameScene scene,
+        EngineObject current
+    )
         => data.elementKind switch
         {
             SceneElementKind.Component when current is GameComponent component =>
@@ -296,8 +301,8 @@ internal sealed class SceneElementHistoryHandler : EditorHistoryHandler
         SceneElementHistoryData data,
         GameScene scene,
         EngineObject current,
-        int index)
-    {
+        int index
+    ) {
         if (data.elementKind == SceneElementKind.Component && current is GameComponent component)
             component.gameObject.SetComponentIndex(component, index);
         else if (data.elementKind == SceneElementKind.System && current is GameSystem system)
@@ -307,7 +312,8 @@ internal sealed class SceneElementHistoryHandler : EditorHistoryHandler
     private static int GetIndex(
         SceneElementHistoryData data,
         GameScene scene,
-        EngineObject current)
+        EngineObject current
+    )
         => data.elementKind switch
         {
             SceneElementKind.Component when current is GameComponent component =>
@@ -324,8 +330,8 @@ internal sealed class SceneElementHistoryHandler : EditorHistoryHandler
         byte[] rollbackState,
         int rollbackIndex,
         IReadOnlyList<SceneReferenceRollbackState> rollbackReferences,
-        string failure)
-    {
+        string failure
+    ) {
         var failures = new System.Collections.Generic.List<string>();
         try
         {
@@ -358,6 +364,9 @@ internal sealed class SceneElementHistoryHandler : EditorHistoryHandler
                 $"Scene element transition failed: {failure} Rollback failed: {string.Join("; ", failures)}");
     }
 
-    private static string JoinFailures(string failure, string cleanup)
+    private static string JoinFailures(
+        string failure,
+        string cleanup
+    )
         => string.IsNullOrWhiteSpace(cleanup) ? failure : $"{failure} {cleanup}";
 }

@@ -37,8 +37,8 @@ internal sealed partial class TextureAssetImporter : AssetImporter<TextureAsset>
     protected override async ValueTask ImportAsync(
         AssetImportContext context,
         AssetImportWriter<TextureAsset> output,
-        CancellationToken cancellationToken)
-    {
+        CancellationToken cancellationToken
+    ) {
         (int width, int height) = context.extension switch
         {
             ".png" => ReadPngSize(context.sourceBytes.Span),
@@ -145,10 +145,13 @@ internal sealed partial class TextureAssetImporter : AssetImporter<TextureAsset>
         return RequirePositiveSize(width, height, "texture.hdr");
     }
 
-    private static bool IsStartOfFrame(byte marker)
-        => marker is >= 0xc0 and <= 0xcf and not (0xc4 or 0xc8 or 0xcc);
+    private static bool IsStartOfFrame(byte marker) => marker is >= 0xc0 and <= 0xcf and not (0xc4 or 0xc8 or 0xcc);
 
-    private static (int width, int height) RequirePositiveSize(int width, int height, string path)
+    private static (int width, int height) RequirePositiveSize(
+        int width,
+        int height,
+        string path
+    )
         => width > 0 && height > 0
             ? (width, height)
             : throw new RenderingAssetFormatException(path, "Texture dimensions must be positive.");

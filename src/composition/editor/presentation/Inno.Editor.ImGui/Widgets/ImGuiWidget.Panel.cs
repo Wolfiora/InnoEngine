@@ -36,8 +36,8 @@ public static partial class ImGuiWidget
         ref bool isOpen,
         Action drawBody,
         ImGuiWindowFlags flags = ImGuiWindowFlags.NoCollapse,
-        bool useWindowPadding = true)
-    {
+        bool useWindowPadding = true
+    ) {
         if (!isOpen)
             return;
 
@@ -58,8 +58,14 @@ public static partial class ImGuiWidget
             // editor theme. Suppress that extra strip only while window decorations are built.
             NativeImGui.PushStyleVar(ImGuiStyleVar.FrameBorderSize, 0f);
             bool visible;
-            try { visible = NativeImGui.Begin(title, flags); }
-            finally { NativeImGui.PopStyleVar(2); }
+            try
+            {
+                visible = NativeImGui.Begin(title, flags);
+            }
+            finally
+            {
+                NativeImGui.PopStyleVar(2);
+            }
             beganWindow = true;
             if (pushedPadding)
             {
@@ -106,8 +112,8 @@ public static partial class ImGuiWidget
     public static void ConstrainedContent(
         string id,
         Action drawContent,
-        bool useWindowPadding = true)
-    {
+        bool useWindowPadding = true
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(id);
         ArgumentNullException.ThrowIfNull(drawContent);
 
@@ -158,8 +164,8 @@ public static partial class ImGuiWidget
     public static void HeaderSurface(
         string id,
         Action drawContent,
-        bool spanWindowPadding = false)
-    {
+        bool spanWindowPadding = false
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(id);
         ArgumentNullException.ThrowIfNull(drawContent);
 
@@ -315,8 +321,8 @@ public static partial class ImGuiWidget
         ImDrawListPtr drawList,
         Vector2 center,
         float slotSize,
-        uint color)
-    {
+        uint color
+    ) {
         float thickness = MathF.Max(1f, style.borderSize);
         float extent = MathF.Max(
             thickness,

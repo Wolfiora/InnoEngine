@@ -61,14 +61,20 @@ internal sealed class AssemblyCatalogCoordinator
             List<Exception> failures = [preparationFailure];
             for (int i = transactions.Count - 1; i >= 0; i--)
             {
-                try { transactions[i].Rollback(); }
+                try
+                {
+                    transactions[i].Rollback();
+                }
                 catch (Exception failure) when (RetirementPendingException.Find(failure) is not null)
                 {
                     m_retirementFailure = new AggregateException("Catalog preparation failed and rollback remains pending.", [.. failures, failure]);
                     m_retainedPreparation = (participants, transactions);
                     throw m_retirementFailure;
                 }
-                catch (Exception cleanupFailure) { failures.Add(cleanupFailure); }
+                catch (Exception cleanupFailure)
+                {
+                    failures.Add(cleanupFailure);
+                }
             }
             if (failures.Count > 1)
                 throw new AggregateException("Assembly catalog preparation and rollback failed.", failures);
@@ -87,12 +93,14 @@ internal sealed class AssemblyCatalogCoordinator
 
     private readonly record struct ParticipantReference(
         Guid id,
-        WeakReference<IAssemblyCatalogParticipant> participant);
+        WeakReference<IAssemblyCatalogParticipant> participant
+    );
 }
 
 internal sealed class CatalogParticipantRegistration(
     AssemblyCatalogCoordinator owner,
-    Guid id) : IDisposable
+    Guid id
+) : IDisposable
 {
     private bool m_disposed;
 
@@ -148,7 +156,10 @@ internal sealed class AssemblyCatalogRefreshSet(IReadOnlyList<IAssemblyCatalogTr
         }
         catch (Exception activationFailure)
         {
-            try { Rollback(); }
+            try
+            {
+                Rollback();
+            }
             catch (Exception rollbackFailure)
             {
                 var combined = new AggregateException("Assembly catalog activation and rollback failed.", activationFailure, rollbackFailure);
@@ -190,16 +201,25 @@ internal sealed class AssemblyCatalogRefreshSet(IReadOnlyList<IAssemblyCatalogTr
             throw new AggregateException("Assembly catalog rollback failed after all participants were attempted.", failures);
     }
 
-    private void TryCleanup(Action cleanup, List<Exception> failures)
-    {
-        try { cleanup(); }
+    private void TryCleanup(
+        Action cleanup,
+        List<Exception> failures
+    ) {
+        try
+        {
+            cleanup();
+        }
         catch (Exception failure) when (RetirementPendingException.Find(failure) is not null)
         {
             m_failure = failures.Count == 0 ? failure : new AggregateException(
                 "Catalog cleanup remains pending after earlier failures.", [.. failures, failure]);
-            if (ReferenceEquals(m_failure, failure)) throw;
+            if (ReferenceEquals(m_failure, failure))
+                throw;
             throw m_failure;
         }
-        catch (Exception exception) { failures.Add(exception); }
+        catch (Exception exception)
+        {
+            failures.Add(exception);
+        }
     }
 }

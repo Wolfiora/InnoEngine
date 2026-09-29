@@ -22,6 +22,7 @@
     <ProjectReference Include="../../panels/Inno.Editor.Panel.Inspector/Inno.Editor.Panel.Inspector.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../../../foundation/extensibility/Inno.Extensibility.Modules/Inno.Extensibility.Modules.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../../../../build/pipeline/Inno.Build/Inno.Build.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../../../../build/support/Inno.Build.SupportPacks.Core/Inno.Build.SupportPacks.Core.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../../../../build/pipeline/Inno.Build.Platform.MacOS/Inno.Build.Platform.MacOS.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../../../../build/pipeline/Inno.Build.Platform.Windows/Inno.Build.Platform.Windows.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../../../content/assets/Inno.Assets.Pipeline/Inno.Assets.Pipeline.csproj" PrivateAssets="compile" />

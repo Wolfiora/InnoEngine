@@ -32,8 +32,8 @@ public sealed class ShaderCompileTarget
         string profileKey,
         GraphicsCapabilities capabilities,
         bool optimize = true,
-        bool debugInformation = false)
-    {
+        bool debugInformation = false
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(profileKey);
         ArgumentNullException.ThrowIfNull(capabilities);
         this.profileKey = profileKey;
@@ -90,8 +90,8 @@ public sealed class ShaderStageArtifact
     public ShaderStageArtifact(
         ShaderStage stage,
         ReadOnlySpan<byte> bytes,
-        ShaderSourceLocation sourceLocation)
-    {
+        ShaderSourceLocation sourceLocation
+    ) {
         if (bytes.IsEmpty)
         {
             throw new ArgumentException("A compiled shader stage cannot be empty.", nameof(bytes));
@@ -139,8 +139,8 @@ public sealed class CompiledShaderPass
     public CompiledShaderPass(
         ShaderPassDefinition definition,
         IReadOnlyList<ShaderStageArtifact> stages,
-        ShaderInterface shaderInterface)
-    {
+        ShaderInterface shaderInterface
+    ) {
         ArgumentNullException.ThrowIfNull(stages);
         ArgumentNullException.ThrowIfNull(shaderInterface);
         definition.metadata = definition.metadata?.ToArray() ?? [];
@@ -206,8 +206,8 @@ public sealed class CompiledShaderArtifact
         RenderShaderVariant variant,
         ShaderInterface shaderInterface,
         IReadOnlyList<CompiledShaderPass> passes,
-        ReadOnlySpan<byte> definitionData)
-    {
+        ReadOnlySpan<byte> definitionData
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(shaderName);
         ArgumentException.ThrowIfNullOrWhiteSpace(targetKey);
         ArgumentNullException.ThrowIfNull(shaderInterface);
@@ -217,7 +217,8 @@ public sealed class CompiledShaderArtifact
         this.variant = variant;
         this.shaderInterface = shaderInterface;
         this.passes = Array.AsReadOnly(passes.ToArray());
-        if (definitionData.IsEmpty) throw new ArgumentException("Compiled programs require a captured runtime contract.", nameof(definitionData));
+        if (definitionData.IsEmpty)
+            throw new ArgumentException("Compiled programs require a captured runtime contract.", nameof(definitionData));
         m_definitionData = definitionData.ToArray();
     }
 
@@ -315,8 +316,8 @@ public sealed class ShaderCompilationResult
     /// </param>
     public ShaderCompilationResult(
         CompiledShaderArtifact? artifact,
-        IReadOnlyList<ShaderDiagnostic> diagnostics)
-    {
+        IReadOnlyList<ShaderDiagnostic> diagnostics
+    ) {
         ArgumentNullException.ThrowIfNull(diagnostics);
         this.artifact = artifact;
         this.diagnostics = Array.AsReadOnly(diagnostics.ToArray());
@@ -366,7 +367,10 @@ public interface IShaderCompilerToolchain
     /// <returns>
     /// Immutable compiled bytes, generated binding names and structured diagnostics.
     /// </returns>
-    ValueTask<ShaderStageToolResult> CompileAsync(ShaderStageToolRequest request, CancellationToken cancellationToken);
+    ValueTask<ShaderStageToolResult> CompileAsync(
+        ShaderStageToolRequest request,
+        CancellationToken cancellationToken
+    );
 
     /// <summary>
     /// Creates a target supported by this toolchain and capability snapshot.
@@ -386,7 +390,8 @@ public interface IShaderCompilerToolchain
     ShaderCompileTarget CreateTarget(
         GraphicsCapabilities capabilities,
         bool optimize = true,
-        bool debugInformation = false);
+        bool debugInformation = false
+    );
 
 }
 
@@ -426,7 +431,8 @@ public sealed partial class ShaderCompiler
     public ShaderCompileTarget CreateTarget(
         GraphicsCapabilities capabilities,
         bool optimize = true,
-        bool debugInformation = false)
+        bool debugInformation = false
+    )
         => m_toolchain.CreateTarget(capabilities, optimize, debugInformation);
 
 }

@@ -31,8 +31,11 @@ internal sealed unsafe class BgfxCommandEncoder : RenderCommandEncoder
     /// <param name="viewId">
     /// The view id consumed by bgfx command encoder; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
-    public BgfxCommandEncoder(BgfxDevice device, bgfx.Encoder encoder, ushort viewId)
-    {
+    public BgfxCommandEncoder(
+        BgfxDevice device,
+        bgfx.Encoder encoder,
+        ushort viewId
+    ) {
         m_device = device;
         m_encoder = encoder;
         m_viewId = viewId;
@@ -90,7 +93,8 @@ internal sealed unsafe class BgfxCommandEncoder : RenderCommandEncoder
     public override void BindTexture(
         RenderBindingId binding,
         RenderTextureHandle texture,
-        RenderSamplerState sampler)
+        RenderSamplerState sampler
+    )
         => BindTexture(binding, m_device.ResolveTexture(texture), sampler);
 
     /// <summary>
@@ -108,7 +112,8 @@ internal sealed unsafe class BgfxCommandEncoder : RenderCommandEncoder
     public override void BindTexture(
         RenderBindingId binding,
         PersistentTextureHandle texture,
-        RenderSamplerState sampler)
+        RenderSamplerState sampler
+    )
         => BindTexture(binding, m_device.ResolveTexture(texture), sampler);
 
     /// <summary>
@@ -126,7 +131,8 @@ internal sealed unsafe class BgfxCommandEncoder : RenderCommandEncoder
     public override void BindStorageTexture(
         RenderBindingId binding,
         RenderTextureHandle texture,
-        int mipLevel = 0)
+        int mipLevel = 0
+    )
         => BindStorageTexture(
             binding,
             m_device.ResolveTexture(texture),
@@ -148,7 +154,8 @@ internal sealed unsafe class BgfxCommandEncoder : RenderCommandEncoder
     public override void BindStorageTexture(
         RenderBindingId binding,
         PersistentTextureHandle texture,
-        int mipLevel = 0)
+        int mipLevel = 0
+    )
         => BindStorageTexture(
             binding,
             m_device.ResolveTexture(texture),
@@ -164,7 +171,10 @@ internal sealed unsafe class BgfxCommandEncoder : RenderCommandEncoder
     /// <param name="buffer">
     /// The buffer consumed by bind buffer; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
-    public override void BindBuffer(RenderBindingId binding, RenderBufferHandle buffer)
+    public override void BindBuffer(
+        RenderBindingId binding,
+        RenderBufferHandle buffer
+    )
         => BindBuffer(binding, m_device.ResolveBuffer(buffer));
 
     /// <summary>
@@ -176,7 +186,10 @@ internal sealed unsafe class BgfxCommandEncoder : RenderCommandEncoder
     /// <param name="buffer">
     /// The buffer consumed by bind buffer; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
-    public override void BindBuffer(RenderBindingId binding, PersistentBufferHandle buffer)
+    public override void BindBuffer(
+        RenderBindingId binding,
+        PersistentBufferHandle buffer
+    )
         => BindBuffer(binding, m_device.ResolveBuffer(buffer));
 
     /// <summary>
@@ -188,8 +201,10 @@ internal sealed unsafe class BgfxCommandEncoder : RenderCommandEncoder
     /// <param name="value">
     /// The concrete value read or transformed by this operation.
     /// </param>
-    public override void SetUniform(RenderBindingId binding, ReadOnlySpan<byte> value)
-    {
+    public override void SetUniform(
+        RenderBindingId binding,
+        ReadOnlySpan<byte> value
+    ) {
         BgfxShaderBindingResource resource = ResolveBinding(binding, RenderShaderBindingKind.Uniform);
         int elementSize = resource.descriptor.uniformType switch
         {
@@ -287,8 +302,12 @@ internal sealed unsafe class BgfxCommandEncoder : RenderCommandEncoder
     /// <param name="height">
     /// The height in logical units or pixels required by this operation.
     /// </param>
-    public override void SetViewport(int x, int y, int width, int height)
-    {
+    public override void SetViewport(
+        int x,
+        int y,
+        int width,
+        int height
+    ) {
         ArgumentOutOfRangeException.ThrowIfNegative(x);
         ArgumentOutOfRangeException.ThrowIfNegative(y);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(width);
@@ -316,8 +335,12 @@ internal sealed unsafe class BgfxCommandEncoder : RenderCommandEncoder
     /// <param name="height">
     /// The height in logical units or pixels required by this operation.
     /// </param>
-    public override void SetScissor(int x, int y, int width, int height)
-    {
+    public override void SetScissor(
+        int x,
+        int y,
+        int width,
+        int height
+    ) {
         ArgumentOutOfRangeException.ThrowIfNegative(x);
         ArgumentOutOfRangeException.ThrowIfNegative(y);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(width);
@@ -339,7 +362,10 @@ internal sealed unsafe class BgfxCommandEncoder : RenderCommandEncoder
     /// <param name="firstVertex">
     /// The first vertex consumed by bind vertex buffer; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
-    public override void BindVertexBuffer(RenderBufferHandle buffer, int firstVertex = 0)
+    public override void BindVertexBuffer(
+        RenderBufferHandle buffer,
+        int firstVertex = 0
+    )
         => BindVertexBuffer(m_device.ResolveBuffer(buffer), firstVertex);
 
     /// <summary>
@@ -351,7 +377,10 @@ internal sealed unsafe class BgfxCommandEncoder : RenderCommandEncoder
     /// <param name="firstVertex">
     /// The first vertex consumed by bind vertex buffer; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
-    public override void BindVertexBuffer(PersistentBufferHandle buffer, int firstVertex = 0)
+    public override void BindVertexBuffer(
+        PersistentBufferHandle buffer,
+        int firstVertex = 0
+    )
         => BindVertexBuffer(m_device.ResolveBuffer(buffer), firstVertex);
 
     /// <summary>
@@ -363,7 +392,10 @@ internal sealed unsafe class BgfxCommandEncoder : RenderCommandEncoder
     /// <param name="firstIndex">
     /// The first index consumed by bind index buffer; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
-    public override void BindIndexBuffer(RenderBufferHandle buffer, int firstIndex = 0)
+    public override void BindIndexBuffer(
+        RenderBufferHandle buffer,
+        int firstIndex = 0
+    )
         => BindIndexBuffer(m_device.ResolveBuffer(buffer), firstIndex);
 
     /// <summary>
@@ -375,7 +407,10 @@ internal sealed unsafe class BgfxCommandEncoder : RenderCommandEncoder
     /// <param name="firstIndex">
     /// The first index consumed by bind index buffer; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
-    public override void BindIndexBuffer(PersistentBufferHandle buffer, int firstIndex = 0)
+    public override void BindIndexBuffer(
+        PersistentBufferHandle buffer,
+        int firstIndex = 0
+    )
         => BindIndexBuffer(m_device.ResolveBuffer(buffer), firstIndex);
 
     /// <summary>
@@ -393,7 +428,8 @@ internal sealed unsafe class BgfxCommandEncoder : RenderCommandEncoder
     public override void BindInstanceBuffer(
         RenderBufferHandle buffer,
         int firstInstance,
-        int instanceCount)
+        int instanceCount
+    )
         => BindInstanceBuffer(m_device.ResolveBuffer(buffer), firstInstance, instanceCount);
 
     /// <summary>
@@ -411,7 +447,8 @@ internal sealed unsafe class BgfxCommandEncoder : RenderCommandEncoder
     public override void BindInstanceBuffer(
         PersistentBufferHandle buffer,
         int firstInstance,
-        int instanceCount)
+        int instanceCount
+    )
         => BindInstanceBuffer(m_device.ResolveBuffer(buffer), firstInstance, instanceCount);
 
     /// <summary>
@@ -423,8 +460,10 @@ internal sealed unsafe class BgfxCommandEncoder : RenderCommandEncoder
     /// <param name="instanceCount">
     /// The instance count consumed by draw; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
-    public override void Draw(int vertexCount, int instanceCount = 1)
-    {
+    public override void Draw(
+        int vertexCount,
+        int instanceCount = 1
+    ) {
         BgfxPipelineResource pipeline = RequireGraphicsPipeline();
         ValidateDrawCounts(vertexCount, instanceCount);
         if (m_vertexBuffer is null)
@@ -446,8 +485,10 @@ internal sealed unsafe class BgfxCommandEncoder : RenderCommandEncoder
     /// <param name="instanceCount">
     /// The instance count consumed by draw procedural; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
-    public override void DrawProcedural(int vertexCount, int instanceCount = 1)
-    {
+    public override void DrawProcedural(
+        int vertexCount,
+        int instanceCount = 1
+    ) {
         BgfxPipelineResource pipeline = RequireGraphicsPipeline();
         if (!m_device.capabilities.Supports(GraphicsCapability.ProceduralDraw))
         {
@@ -468,8 +509,10 @@ internal sealed unsafe class BgfxCommandEncoder : RenderCommandEncoder
     /// <param name="instanceCount">
     /// The instance count consumed by draw indexed; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
-    public override void DrawIndexed(int indexCount, int instanceCount = 1)
-    {
+    public override void DrawIndexed(
+        int indexCount,
+        int instanceCount = 1
+    ) {
         BgfxPipelineResource pipeline = RequireGraphicsPipeline();
         ValidateDrawCounts(indexCount, instanceCount);
         if (m_vertexBuffer is null)
@@ -506,7 +549,8 @@ internal sealed unsafe class BgfxCommandEncoder : RenderCommandEncoder
     public override void DrawIndirect(
         RenderBufferHandle buffer,
         int firstCommand = 0,
-        int commandCount = 1)
+        int commandCount = 1
+    )
         => DrawIndirect(m_device.ResolveBuffer(buffer), firstCommand, commandCount);
 
     /// <summary>
@@ -524,7 +568,8 @@ internal sealed unsafe class BgfxCommandEncoder : RenderCommandEncoder
     public override void DrawIndirect(
         PersistentBufferHandle buffer,
         int firstCommand = 0,
-        int commandCount = 1)
+        int commandCount = 1
+    )
         => DrawIndirect(m_device.ResolveBuffer(buffer), firstCommand, commandCount);
 
     /// <summary>
@@ -539,8 +584,11 @@ internal sealed unsafe class BgfxCommandEncoder : RenderCommandEncoder
     /// <param name="groupCountZ">
     /// The group count z consumed by dispatch; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
-    public override void Dispatch(int groupCountX, int groupCountY = 1, int groupCountZ = 1)
-    {
+    public override void Dispatch(
+        int groupCountX,
+        int groupCountY = 1,
+        int groupCountZ = 1
+    ) {
         BgfxPipelineResource pipeline = RequireComputePipeline();
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(groupCountX);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(groupCountY);
@@ -571,7 +619,8 @@ internal sealed unsafe class BgfxCommandEncoder : RenderCommandEncoder
     public override void DispatchIndirect(
         RenderBufferHandle buffer,
         int firstCommand = 0,
-        int commandCount = 1)
+        int commandCount = 1
+    )
         => DispatchIndirect(m_device.ResolveBuffer(buffer), firstCommand, commandCount);
 
     /// <summary>
@@ -589,7 +638,8 @@ internal sealed unsafe class BgfxCommandEncoder : RenderCommandEncoder
     public override void DispatchIndirect(
         PersistentBufferHandle buffer,
         int firstCommand = 0,
-        int commandCount = 1)
+        int commandCount = 1
+    )
         => DispatchIndirect(m_device.ResolveBuffer(buffer), firstCommand, commandCount);
 
     /// <summary>
@@ -601,8 +651,10 @@ internal sealed unsafe class BgfxCommandEncoder : RenderCommandEncoder
     /// <param name="destination">
     /// The destination that receives the completed result.
     /// </param>
-    public override void CopyTexture(RenderTextureHandle source, RenderTextureHandle destination)
-    {
+    public override void CopyTexture(
+        RenderTextureHandle source,
+        RenderTextureHandle destination
+    ) {
         RequireTextureBlit();
         RenderTextureDescriptor sourceDescriptor = m_device.ResolveTextureDescriptor(source);
         RenderTextureDescriptor destinationDescriptor = m_device.ResolveTextureDescriptor(destination);
@@ -655,8 +707,8 @@ internal sealed unsafe class BgfxCommandEncoder : RenderCommandEncoder
         RenderTextureHandle source,
         RenderTextureRegion sourceRegion,
         RenderTextureHandle destination,
-        RenderTextureRegion destinationRegion)
-    {
+        RenderTextureRegion destinationRegion
+    ) {
         RequireTextureBlit();
         RenderTextureDescriptor sourceDescriptor = m_device.ResolveTextureDescriptor(source);
         RenderTextureDescriptor destinationDescriptor = m_device.ResolveTextureDescriptor(destination);
@@ -696,8 +748,10 @@ internal sealed unsafe class BgfxCommandEncoder : RenderCommandEncoder
     /// <param name="destination">
     /// The destination that receives the completed result.
     /// </param>
-    public override void CopyBuffer(RenderBufferHandle source, RenderBufferHandle destination)
-    {
+    public override void CopyBuffer(
+        RenderBufferHandle source,
+        RenderBufferHandle destination
+    ) {
         _ = source;
         _ = destination;
         throw new NotSupportedException(
@@ -714,8 +768,8 @@ internal sealed unsafe class BgfxCommandEncoder : RenderCommandEncoder
 
     private static void ValidateCompleteTextureCopy(
         RenderTextureDescriptor source,
-        RenderTextureDescriptor destination)
-    {
+        RenderTextureDescriptor destination
+    ) {
         ValidateTextureCopyFormats(source, destination);
         if (source.width != destination.width
             || source.height != destination.height
@@ -731,8 +785,8 @@ internal sealed unsafe class BgfxCommandEncoder : RenderCommandEncoder
 
     private static void ValidateTextureCopyFormats(
         RenderTextureDescriptor source,
-        RenderTextureDescriptor destination)
-    {
+        RenderTextureDescriptor destination
+    ) {
         if (source.format != destination.format || source.sampleCount != destination.sampleCount)
         {
             throw new ArgumentException("Texture copies require equal formats and sample counts.");
@@ -754,8 +808,8 @@ internal sealed unsafe class BgfxCommandEncoder : RenderCommandEncoder
     private static void ValidateTextureRegion(
         RenderTextureDescriptor descriptor,
         RenderTextureRegion region,
-        string parameterName)
-    {
+        string parameterName
+    ) {
         if (region.mip >= descriptor.mipCount)
         {
             throw new ArgumentOutOfRangeException(parameterName, "Texture mip level is outside the descriptor.");
@@ -774,8 +828,8 @@ internal sealed unsafe class BgfxCommandEncoder : RenderCommandEncoder
     private void BindTexture(
         RenderBindingId binding,
         bgfx.TextureHandle texture,
-        RenderSamplerState sampler)
-    {
+        RenderSamplerState sampler
+    ) {
         BgfxShaderBindingResource resource = ResolveBinding(binding, RenderShaderBindingKind.Texture);
         bgfx.encoder_set_texture(
             m_encoder,
@@ -789,8 +843,8 @@ internal sealed unsafe class BgfxCommandEncoder : RenderCommandEncoder
         RenderBindingId binding,
         bgfx.TextureHandle texture,
         RenderTextureDescriptor descriptor,
-        int mipLevel)
-    {
+        int mipLevel
+    ) {
         BgfxShaderBindingResource resource = ResolveBinding(binding, RenderShaderBindingKind.StorageTexture);
         if (!m_device.capabilities.Supports(GraphicsCapability.StorageTexture))
         {
@@ -821,8 +875,10 @@ internal sealed unsafe class BgfxCommandEncoder : RenderCommandEncoder
             BgfxCapabilityMapper.ToNativeFormat(descriptor.format));
     }
 
-    private void BindBuffer(RenderBindingId binding, BgfxBufferResource buffer)
-    {
+    private void BindBuffer(
+        RenderBindingId binding,
+        BgfxBufferResource buffer
+    ) {
         BgfxShaderBindingResource resource = ResolveBinding(binding, RenderShaderBindingKind.StorageBuffer);
         if ((buffer.descriptor.usage & RenderBufferUsage.Storage) == 0)
         {
@@ -875,8 +931,10 @@ internal sealed unsafe class BgfxCommandEncoder : RenderCommandEncoder
         }
     }
 
-    private void BindVertexBuffer(BgfxBufferResource buffer, int firstVertex)
-    {
+    private void BindVertexBuffer(
+        BgfxBufferResource buffer,
+        int firstVertex
+    ) {
         ArgumentOutOfRangeException.ThrowIfNegative(firstVertex);
         if ((buffer.descriptor.usage & RenderBufferUsage.Vertex) == 0)
         {
@@ -892,8 +950,10 @@ internal sealed unsafe class BgfxCommandEncoder : RenderCommandEncoder
         m_firstVertex = firstVertex;
     }
 
-    private void BindIndexBuffer(BgfxBufferResource buffer, int firstIndex)
-    {
+    private void BindIndexBuffer(
+        BgfxBufferResource buffer,
+        int firstIndex
+    ) {
         ArgumentOutOfRangeException.ThrowIfNegative(firstIndex);
         if ((buffer.descriptor.usage & RenderBufferUsage.Index) == 0)
         {
@@ -909,8 +969,11 @@ internal sealed unsafe class BgfxCommandEncoder : RenderCommandEncoder
         m_firstIndex = firstIndex;
     }
 
-    private void BindInstanceBuffer(BgfxBufferResource buffer, int firstInstance, int instanceCount)
-    {
+    private void BindInstanceBuffer(
+        BgfxBufferResource buffer,
+        int firstInstance,
+        int instanceCount
+    ) {
         if (!m_device.capabilities.Supports(GraphicsCapability.Instancing))
             throw new NotSupportedException("The active graphics backend does not support instancing.");
         ArgumentOutOfRangeException.ThrowIfNegative(firstInstance);
@@ -938,8 +1001,11 @@ internal sealed unsafe class BgfxCommandEncoder : RenderCommandEncoder
         m_instanceDataBound = true;
     }
 
-    private void DrawIndirect(BgfxBufferResource buffer, int firstCommand, int commandCount)
-    {
+    private void DrawIndirect(
+        BgfxBufferResource buffer,
+        int firstCommand,
+        int commandCount
+    ) {
         BgfxPipelineResource pipeline = RequireGraphicsPipeline();
         ValidateIndirect(buffer, firstCommand, commandCount);
         if (m_vertexBuffer is not null)
@@ -976,8 +1042,11 @@ internal sealed unsafe class BgfxCommandEncoder : RenderCommandEncoder
         m_instanceDataBound = false;
     }
 
-    private void DispatchIndirect(BgfxBufferResource buffer, int firstCommand, int commandCount)
-    {
+    private void DispatchIndirect(
+        BgfxBufferResource buffer,
+        int firstCommand,
+        int commandCount
+    ) {
         BgfxPipelineResource pipeline = RequireComputePipeline();
         ValidateIndirect(buffer, firstCommand, commandCount);
         bgfx.encoder_dispatch_indirect(
@@ -991,8 +1060,11 @@ internal sealed unsafe class BgfxCommandEncoder : RenderCommandEncoder
         m_device.RecordDispatch(commandCount);
     }
 
-    private void ValidateIndirect(BgfxBufferResource buffer, int firstCommand, int commandCount)
-    {
+    private void ValidateIndirect(
+        BgfxBufferResource buffer,
+        int firstCommand,
+        int commandCount
+    ) {
         if (!m_device.capabilities.Supports(GraphicsCapability.Indirect))
             throw new NotSupportedException("The active graphics backend does not support indirect commands.");
         ArgumentOutOfRangeException.ThrowIfNegative(firstCommand);
@@ -1004,8 +1076,8 @@ internal sealed unsafe class BgfxCommandEncoder : RenderCommandEncoder
 
     private BgfxShaderBindingResource ResolveBinding(
         RenderBindingId binding,
-        RenderShaderBindingKind requiredKind)
-    {
+        RenderShaderBindingKind requiredKind
+    ) {
         if (!binding.isValid)
         {
             throw new ArgumentException("A stable shader binding name is required.", nameof(binding));
@@ -1054,8 +1126,8 @@ internal sealed unsafe class BgfxCommandEncoder : RenderCommandEncoder
         BgfxPipelineResource pipeline,
         BgfxBufferResource buffer,
         int firstVertex,
-        int vertexCount)
-    {
+        int vertexCount
+    ) {
         ValidateRange(firstVertex, vertexCount, buffer.descriptor.elementCount, nameof(vertexCount));
         if (pipeline.vertexLayout is null || !pipeline.vertexLayoutHandle.Valid)
         {
@@ -1115,8 +1187,11 @@ internal sealed unsafe class BgfxCommandEncoder : RenderCommandEncoder
         throw new InvalidOperationException("The bound resource is not a vertex buffer.");
     }
 
-    private void SetIndexBuffer(BgfxBufferResource buffer, int firstIndex, int indexCount)
-    {
+    private void SetIndexBuffer(
+        BgfxBufferResource buffer,
+        int firstIndex,
+        int indexCount
+    ) {
         ValidateRange(firstIndex, indexCount, buffer.descriptor.elementCount, nameof(indexCount));
         uint first = checked((uint)firstIndex);
         uint count = checked((uint)indexCount);
@@ -1143,8 +1218,10 @@ internal sealed unsafe class BgfxCommandEncoder : RenderCommandEncoder
         throw new InvalidOperationException("The bound resource is not an index buffer.");
     }
 
-    private void Submit(BgfxPipelineResource pipeline, int instanceCount)
-    {
+    private void Submit(
+        BgfxPipelineResource pipeline,
+        int instanceCount
+    ) {
         if (instanceCount > 1 && !m_device.capabilities.Supports(GraphicsCapability.Instancing))
             throw new NotSupportedException("The active graphics backend does not support instancing.");
         if (m_instanceDataBound && instanceCount != 1)
@@ -1291,7 +1368,10 @@ internal sealed unsafe class BgfxCommandEncoder : RenderCommandEncoder
         return (uint)flags;
     }
 
-    private static bgfx.SamplerFlags AddressFlags(RenderSamplerAddressMode mode, char axis)
+    private static bgfx.SamplerFlags AddressFlags(
+        RenderSamplerAddressMode mode,
+        char axis
+    )
         => (axis, mode) switch
         {
             (_, RenderSamplerAddressMode.Repeat) => bgfx.SamplerFlags.None,
@@ -1307,8 +1387,10 @@ internal sealed unsafe class BgfxCommandEncoder : RenderCommandEncoder
             _ => throw new ArgumentOutOfRangeException(nameof(mode))
         };
 
-    private static uint StencilFlags(RenderStencilState state, RenderStencilFaceState face)
-    {
+    private static uint StencilFlags(
+        RenderStencilState state,
+        RenderStencilFaceState face
+    ) {
         bgfx.StencilFlags flags = (bgfx.StencilFlags)(
             state.reference
             | (uint)(state.readMask << (int)bgfx.StencilFlags.FuncRmaskShift));
@@ -1330,8 +1412,10 @@ internal sealed unsafe class BgfxCommandEncoder : RenderCommandEncoder
         return (uint)flags;
     }
 
-    private static bgfx.StencilFlags StencilOperation(RenderStencilOperation operation, int field)
-    {
+    private static bgfx.StencilFlags StencilOperation(
+        RenderStencilOperation operation,
+        int field
+    ) {
         int value = operation switch
         {
             RenderStencilOperation.Zero => 0,
@@ -1402,14 +1486,20 @@ internal sealed unsafe class BgfxCommandEncoder : RenderCommandEncoder
             _ => throw new ArgumentOutOfRangeException(nameof(equation))
         };
 
-    private static void ValidateDrawCounts(int primitiveCount, int instanceCount)
-    {
+    private static void ValidateDrawCounts(
+        int primitiveCount,
+        int instanceCount
+    ) {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(primitiveCount);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(instanceCount);
     }
 
-    private static void ValidateRange(int first, int count, int available, string parameterName)
-    {
+    private static void ValidateRange(
+        int first,
+        int count,
+        int available,
+        string parameterName
+    ) {
         if (first < 0 || count <= 0 || first > available - count)
         {
             throw new ArgumentOutOfRangeException(

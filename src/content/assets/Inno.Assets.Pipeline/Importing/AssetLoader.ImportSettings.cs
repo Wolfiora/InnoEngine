@@ -65,7 +65,11 @@ public sealed partial class AssetLoader
     /// <exception cref="ArgumentException">
     /// The settings have a different type from the current importer.
     /// </exception>
-    public bool SaveImportSettings(AssetPath path, ISerializable? settings, string expectedFingerprint)
+    public bool SaveImportSettings(
+        AssetPath path,
+        ISerializable? settings,
+        string expectedFingerprint
+    )
         => Execute(() =>
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(expectedFingerprint);
@@ -93,18 +97,26 @@ public sealed partial class AssetLoader
                 throw new InvalidDataException($"Source metadata for '{normalized}' does not match its importer.");
             source.importerSettingsBytes = encoded;
             WriteAtomic(metaPath, m_serialization.Serialize(source));
-            try { return ImportLocked(normalized); }
+            try
+            {
+                return ImportLocked(normalized);
+            }
             catch (Exception failure) when (RetirementPendingException.Find(failure) is null)
             {
                 // A reported failed import is a saved authoring state. An exceptional transaction is not:
                 // restore the exact sidecar and refresh its old publication before the history caller retries.
                 try
                 {
-                    if (metadata is null) System.IO.File.Delete(metaPath);
-                    else WriteAtomic(metaPath, metadata);
+                    if (metadata is null)
+                        System.IO.File.Delete(metaPath);
+                    else
+                        WriteAtomic(metaPath, metadata);
                     _ = ImportLocked(normalized);
                 }
-                catch (Exception rollback) { throw new AggregateException("Import settings rollback failed.", failure, rollback); }
+                catch (Exception rollback)
+                {
+                    throw new AggregateException("Import settings rollback failed.", failure, rollback);
+                }
                 throw;
             }
         });
@@ -117,12 +129,18 @@ public sealed partial class AssetLoader
             ?? throw new NotSupportedException($"No importer is registered for '{path}'.");
     }
 
-    private byte[] ReadImportSettingsBytesLocked(string path, AssetImporter importer)
+    private byte[] ReadImportSettingsBytesLocked(
+        string path,
+        AssetImporter importer
+    )
         => ReadImportSettingsBytes(importer, ReadMetadata(GetMetaPath(path)));
 
-    private byte[] ReadImportSettingsBytes(AssetImporter importer, byte[]? metadata)
-    {
-        if (metadata is null) return [];
+    private byte[] ReadImportSettingsBytes(
+        AssetImporter importer,
+        byte[]? metadata
+    ) {
+        if (metadata is null)
+            return [];
         AssetSourceMeta source = m_serialization.Deserialize<AssetSourceMeta>(metadata);
         if (source.importerSettingsBytes.Length > 0 &&
             !string.Equals(source.importerId, importer.importerId, StringComparison.Ordinal))
@@ -131,8 +149,11 @@ public sealed partial class AssetLoader
     }
 
     private ISerializable? RestoreImportSettingsLocked(
-        AssetImporter importer, byte[] bytes, AssetImportContext? context, string? ownerPath = null)
-    {
+        AssetImporter importer,
+        byte[] bytes,
+        AssetImportContext? context,
+        string? ownerPath = null
+    ) {
         ISerializable? value = importer.CreateImportSettings();
         ownerPath ??= context!.assetPath.ToString();
         if (value is null)
@@ -159,8 +180,11 @@ public sealed partial class AssetLoader
         return value;
     }
 
-    private byte[] CaptureImportSettingsLocked(ISerializable settings, string ownerPath, AssetImportContext? context)
-    {
+    private byte[] CaptureImportSettingsLocked(
+        ISerializable settings,
+        string ownerPath,
+        AssetImportContext? context
+    ) {
         var dependencies = new AssetDependencyCollection();
         byte[] properties = m_serialization.Encode(writer => writer.WriteProperties(settings),
             AssetSerializationContext.Create(this, dependencies));
@@ -174,8 +198,11 @@ public sealed partial class AssetLoader
         });
     }
 
-    private void DeclareSettingsDependenciesLocked(AssetDependency[] dependencies, string ownerPath, AssetImportContext? context)
-    {
+    private void DeclareSettingsDependenciesLocked(
+        AssetDependency[] dependencies,
+        string ownerPath,
+        AssetImportContext? context
+    ) {
         foreach (AssetDependency dependency in dependencies)
         {
             AssetRecord? record = FindRecordByIdWithoutLoading(dependency.persistentId);
@@ -189,14 +216,19 @@ public sealed partial class AssetLoader
         }
     }
 
-    private bool AreImportSettingsStaleLocked(AssetRecord record, AssetImporter importer)
-    {
+    private bool AreImportSettingsStaleLocked(
+        AssetRecord record,
+        AssetImporter importer
+    ) {
         string path = GetMetaPath(record.relativePath);
         bool exists = AssetSourceFileStamp.TryCapture(path, out AssetSourceFileStamp stamp);
         if (m_sourceMetadataStage is null && exists && record.settingsStamp.Equals(stamp))
             return false;
         string hash;
-        try { hash = ComputeSha256Hex(ReadImportSettingsBytesLocked(record.relativePath, importer)); }
+        try
+        {
+            hash = ComputeSha256Hex(ReadImportSettingsBytesLocked(record.relativePath, importer));
+        }
         catch (Exception exception) when (
             exception is IOException or ArgumentException or InvalidOperationException or FormatException &&
             RetirementPendingException.Find(exception) is null)

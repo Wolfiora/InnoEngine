@@ -10,6 +10,8 @@ Plugin 打包默认不声明其他插件依赖；使用 `--dependencies renderin
 
 CLI 不包含独立构建算法；错误通过结构化 Build diagnostics 和非零进程退出码报告。它可以依赖 Build/Compiler/authoring projects，但不会进入 Player closure。
 
+`game` 仍接受 `--support-packs <dir>` 指定目标 Pack 根目录。在源码工作区中，该目录缺少目标 Pack 时，CLI 通过注入的 `SourcePlayerSupportPackProvisioner` 自动发布、验证并继续构建；已存在但损坏的 Pack 明确报错。Pack 的 release 原生库仍须先由对应 native toolchain 生成。
+
 Headless 构建先编译并激活完整 authoring generation，再对账资产，最后编译目标 Player scripts 和导出。
 这样项目/插件的 `.editor.cs` importer、Shader 节点和语言扩展与 Editor 构建路径一致；编译失败直接终止，
 不把缺失 importer 的 last-good 状态当作当前源码。CLI 只提供这些脚本需要的 Editor API 程序集元数据，

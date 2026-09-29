@@ -11,8 +11,7 @@ internal static class HostDependencyManifest
 {
     private const string C_DEPENDENCY_FILES_KEY = "APP_CONTEXT_DEPS_FILES";
 
-    internal static IReadOnlyList<AssemblyName> GetInnoRuntimeAssemblies(
-        IReadOnlyList<Assembly> rootAssemblies)
+    internal static IReadOnlyList<AssemblyName> GetInnoRuntimeAssemblies(IReadOnlyList<Assembly> rootAssemblies)
     {
         ArgumentNullException.ThrowIfNull(rootAssemblies);
 
@@ -50,8 +49,10 @@ internal static class HostDependencyManifest
         return paths.ToArray();
     }
 
-    private static void ReadRuntimeAssemblyNames(string dependencyFile, ISet<string> names)
-    {
+    private static void ReadRuntimeAssemblyNames(
+        string dependencyFile,
+        ISet<string> names
+    ) {
         try
         {
             using FileStream stream = File.OpenRead(dependencyFile);

@@ -16,7 +16,8 @@ namespace Inno.Editor.Panel.Settings;
 internal sealed class SettingsModal(
     EditorSettings editorSettings,
     ProjectSettingsEditor projectSettings,
-    SettingsWindowModule window) : EditorModal
+    SettingsWindowModule window
+) : EditorModal
 {
     private readonly SettingsNavigation m_navigation = new();
     private readonly SettingsTree m_tree = new();
@@ -91,8 +92,8 @@ internal sealed class SettingsModal(
     private void DrawBody(
         SettingsEditSession session,
         IReadOnlyList<SettingsPage> pages,
-        Vector2 size)
-    {
+        Vector2 size
+    ) {
         ImGuiTableFlags flags = ImGuiTableFlags.NoPadOuterX |
                                 ImGuiTableFlags.NoKeepColumnsVisible |
                                 ImGuiTableFlags.SizingFixedFit |
@@ -136,8 +137,10 @@ internal sealed class SettingsModal(
         }
     }
 
-    private void DrawTreePane(IReadOnlyList<SettingsPage> pages, float height)
-    {
+    private void DrawTreePane(
+        IReadOnlyList<SettingsPage> pages,
+        float height
+    ) {
         bool visible = NativeImGui.BeginChild(
             "##settings_tree_pane",
             new Vector2(0f, height),
@@ -197,8 +200,8 @@ internal sealed class SettingsModal(
     private void DrawPagePane(
         SettingsEditSession session,
         IReadOnlyList<SettingsPage> pages,
-        float height)
-    {
+        float height
+    ) {
         bool visible = NativeImGui.BeginChild(
             "##settings_page_pane",
             new Vector2(0f, height),
@@ -228,8 +231,12 @@ internal sealed class SettingsModal(
         }
     }
 
-    private void DrawSplitter(float width, float availableWidth, float treeWidth, float height)
-    {
+    private void DrawSplitter(
+        float width,
+        float availableWidth,
+        float treeWidth,
+        float height
+    ) {
         _ = NativeImGui.InvisibleButton(
             "##settings_tree_splitter_grip",
             new Vector2(width, MathF.Max(1f, height)));
@@ -266,14 +273,18 @@ internal sealed class SettingsModal(
             EditorWidget.style.borderSize);
     }
 
-    private float ResolveTreeWidth(float availableWidth, float splitterWidth)
-    {
+    private float ResolveTreeWidth(
+        float availableWidth,
+        float splitterWidth
+    ) {
         float usable = MathF.Max(1f, availableWidth - splitterWidth);
         return ClampTreeWidth(usable * Math.Clamp(m_treePaneRatio, 0f, 1f), usable);
     }
 
-    private static float ClampTreeWidth(float requested, float usable)
-    {
+    private static float ClampTreeWidth(
+        float requested,
+        float usable
+    ) {
         float minimum = MathF.Min(
             EditorWidget.style.assetPaneMinimumVisibleWidth,
             usable * 0.5f);
@@ -335,8 +346,8 @@ internal sealed class SettingsModal(
 
     private void EnsureNavigationSession(
         SettingsEditSession session,
-        IReadOnlyList<SettingsPage> pages)
-    {
+        IReadOnlyList<SettingsPage> pages
+    ) {
         if (ReferenceEquals(m_navigationSession, session))
             return;
         m_navigationSession = session;

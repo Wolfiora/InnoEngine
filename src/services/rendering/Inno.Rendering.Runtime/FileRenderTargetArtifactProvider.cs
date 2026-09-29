@@ -32,8 +32,11 @@ public sealed class FileRenderTargetArtifactProvider : IRenderTargetArtifactProv
     /// <param name="context">
     /// Complete runtime asset/reference context used to resolve captured texture defaults.
     /// </param>
-    public FileRenderTargetArtifactProvider(string contentRoot, SerializationRegistry serialization, SerializationContext context)
-    {
+    public FileRenderTargetArtifactProvider(
+        string contentRoot,
+        SerializationRegistry serialization,
+        SerializationContext context
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(contentRoot);
         m_serialization = serialization ?? throw new ArgumentNullException(nameof(serialization));
         m_context = context ?? throw new ArgumentNullException(nameof(context));
@@ -86,15 +89,16 @@ public sealed class FileRenderTargetArtifactProvider : IRenderTargetArtifactProv
         ShaderAsset shader,
         RenderShaderVariant variant,
         GraphicsCapabilities capabilities,
-        out RenderShaderArtifact? artifact)
-    {
+        out RenderShaderArtifact? artifact
+    ) {
         ArgumentNullException.ThrowIfNull(shader);
         ArgumentNullException.ThrowIfNull(capabilities);
         string path = Resolve(RenderTargetArtifactPath.GetShaderPath(
             shader.identity.persistentId,
             capabilities.backend,
             variant));
-        if (m_shaders.TryGetValue(path, out artifact)) return RenderTargetArtifactStatus.Ready;
+        if (m_shaders.TryGetValue(path, out artifact))
+            return RenderTargetArtifactStatus.Ready;
         if (!File.Exists(path))
         {
             artifact = null;
@@ -141,8 +145,8 @@ public sealed class FileRenderTargetArtifactProvider : IRenderTargetArtifactProv
     /// </exception>
     public RenderTargetArtifactStatus GetTextureArtifact(
         RenderTextureArtifactReference texture,
-        out ReadOnlyMemory<byte> artifact)
-    {
+        out ReadOnlyMemory<byte> artifact
+    ) {
         if (texture.assetId == Guid.Empty || string.IsNullOrWhiteSpace(texture.slot.id))
             throw new ArgumentException("A valid texture artifact reference is required.", nameof(texture));
         string path = Resolve(RenderTargetArtifactPath.GetTexturePath(texture));

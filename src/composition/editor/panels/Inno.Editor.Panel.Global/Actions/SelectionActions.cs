@@ -11,8 +11,7 @@ internal sealed class ClearEditorSelectionAction : EditorAction
     /// <param name="context">
     /// The operation scope that provides state, services, and ownership boundaries.
     /// </param>
-    protected override void Execute(EditorActionContext context)
-        => context.interactions.SetSelection(null);
+    protected override void Execute(EditorActionContext context) => context.interactions.SetSelection(null);
 }
 
 [EditorAction(GlobalInteractionIds.C_SELECT)]
@@ -24,6 +23,5 @@ internal sealed class SelectEditorTargetAction : EditorAction<object>
     /// <param name="context">
     /// The operation scope that provides state, services, and ownership boundaries.
     /// </param>
-    protected override void Execute(EditorActionContext<object> context)
-        => context.interactions.SetSelection(context.target);
+    protected override void Execute(EditorActionContext<object> context) => context.interactions.SetSelection(context.target);
 }

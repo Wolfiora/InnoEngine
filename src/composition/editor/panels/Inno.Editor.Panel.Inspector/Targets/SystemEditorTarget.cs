@@ -22,8 +22,10 @@ internal sealed class SystemEditorTarget
     /// <exception cref="ArgumentNullException">
     /// Thrown when either argument is <see langword="null"/>.
     /// </exception>
-    internal SystemEditorTarget(GameScene scene, GameSystem system)
-    {
+    internal SystemEditorTarget(
+        GameScene scene,
+        GameSystem system
+    ) {
         this.scene = scene ?? throw new ArgumentNullException(nameof(scene));
         this.system = system ?? throw new ArgumentNullException(nameof(system));
     }

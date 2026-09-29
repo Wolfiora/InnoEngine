@@ -63,8 +63,8 @@ internal static class BgfxNativeBuild
         string outputDir,
         BgfxBuilder builder,
         bool includeStatic,
-        string config)
-    {
+        string config
+    ) {
         var extensions = includeStatic
             ? SHARED_EXTENSIONS.Concat(new[] { ".a", ".lib" }).ToArray()
             : SHARED_EXTENSIONS;
@@ -84,8 +84,8 @@ internal static class BgfxNativeBuild
     private static void DeleteExistingConfigurationArtifacts(
         string outputDir,
         IReadOnlyCollection<string> extensions,
-        string config)
-    {
+        string config
+    ) {
         if (!Directory.Exists(outputDir))
         {
             return;
@@ -111,8 +111,8 @@ internal static class BgfxNativeBuild
 internal sealed record NativeBuildOptions(
     string makeTargetOverride,
     bool includeStatic,
-    string config)
-{
+    string config
+) {
     /// <summary>
     /// Parses validated input into the strongly typed state required by the caller.
     /// </summary>
@@ -155,8 +155,10 @@ internal sealed record NativeBuildOptions(
         return new NativeBuildOptions(makeTargetOverride, includeStatic, config);
     }
 
-    private static string GetNext(string[] args, ref int index)
-    {
+    private static string GetNext(
+        string[] args,
+        ref int index
+    ) {
         if (index + 1 >= args.Length)
         {
             throw new ArgumentException($"Missing value for {args[index]}.");

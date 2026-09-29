@@ -37,8 +37,11 @@ public enum EditorShaderCompilationState
 /// <param name="diagnostics">
 /// Immutable latest completed compiler diagnostics.
 /// </param>
-public sealed record EditorShaderCompilationSnapshot(EditorShaderCompilationState state, bool usingLastGood,
-    IReadOnlyList<ShaderDiagnostic> diagnostics);
+public sealed record EditorShaderCompilationSnapshot(
+    EditorShaderCompilationState state,
+    bool usingLastGood,
+    IReadOnlyList<ShaderDiagnostic> diagnostics
+);
 
 /// <summary>
 /// Contains a preview-only immutable candidate, never registered as a canonical asset artifact.
@@ -55,8 +58,12 @@ public sealed record EditorShaderCompilationSnapshot(EditorShaderCompilationStat
 /// <param name="artifact">
 /// Preview-only complete shader candidate, or null before the first success.
 /// </param>
-public sealed record EditorShaderDraftCompilationSnapshot(EditorShaderCompilationState state, bool usingLastGood,
-    IReadOnlyList<ShaderDiagnostic> diagnostics, RenderShaderArtifact? artifact);
+public sealed record EditorShaderDraftCompilationSnapshot(
+    EditorShaderCompilationState state,
+    bool usingLastGood,
+    IReadOnlyList<ShaderDiagnostic> diagnostics,
+    RenderShaderArtifact? artifact
+);
 
 /// <summary>
 /// Schedules Editor shader compilation for the active device without exposing native handles to authoring panels.
@@ -75,8 +82,13 @@ public sealed class EditorShaderCompilation
     /// <param name="capabilities">
     /// Current device capability snapshot.
     /// </param>
-    public EditorShaderCompilation(EditorRenderTargetArtifactProvider provider, GraphicsCapabilities capabilities)
-    { m_provider = provider ?? throw new ArgumentNullException(nameof(provider)); m_capabilities = capabilities ?? throw new ArgumentNullException(nameof(capabilities)); }
+    public EditorShaderCompilation(
+        EditorRenderTargetArtifactProvider provider,
+        GraphicsCapabilities capabilities
+    ) {
+        m_provider = provider ?? throw new ArgumentNullException(nameof(provider));
+        m_capabilities = capabilities ?? throw new ArgumentNullException(nameof(capabilities));
+    }
 
     /// <summary>
     /// Pairs the authoring artifact owner with active-device validation at frame safety points.
@@ -87,8 +99,10 @@ public sealed class EditorShaderCompilation
     /// <param name="validator">
     /// Host-owned active-device artifact validator.
     /// </param>
-    public EditorShaderCompilation(EditorRenderTargetArtifactProvider provider, IEditorShaderArtifactValidator validator)
-    {
+    public EditorShaderCompilation(
+        EditorRenderTargetArtifactProvider provider,
+        IEditorShaderArtifactValidator validator
+    ) {
         m_provider = provider ?? throw new ArgumentNullException(nameof(provider));
         m_validator = validator ?? throw new ArgumentNullException(nameof(validator));
         m_capabilities = validator.capabilities;
@@ -105,7 +119,10 @@ public sealed class EditorShaderCompilation
     /// <returns>
     /// A detached status snapshot.
     /// </returns>
-    public EditorShaderCompilationSnapshot Request(ShaderAsset shader, RenderShaderVariant variant)
+    public EditorShaderCompilationSnapshot Request(
+        ShaderAsset shader,
+        RenderShaderVariant variant
+    )
         => m_provider.RequestShaderCompilation(shader, variant, m_capabilities);
 
     /// <summary>
@@ -120,8 +137,10 @@ public sealed class EditorShaderCompilation
     /// <returns>
     /// Compilation status and immutable last-good artifact when available.
     /// </returns>
-    public EditorShaderDraftCompilationSnapshot RequestArtifact(ShaderAsset shader, RenderShaderVariant variant)
-    {
+    public EditorShaderDraftCompilationSnapshot RequestArtifact(
+        ShaderAsset shader,
+        RenderShaderVariant variant
+    ) {
         EditorShaderCompilationSnapshot status = Request(shader, variant);
         m_provider.GetShaderArtifact(shader, variant, m_capabilities, out RenderShaderArtifact? artifact);
         return new(status.state, status.usingLastGood, status.diagnostics, artifact);
@@ -156,8 +175,12 @@ public sealed class EditorShaderCompilation
     /// <returns>
     /// Preview-only state and artifact; calling this method cannot publish to Scene/Game.
     /// </returns>
-    public EditorShaderDraftCompilationSnapshot RequestDraft(Guid documentId, GraphDocument graph, ulong revision, RenderShaderVariant variant)
-    {
+    public EditorShaderDraftCompilationSnapshot RequestDraft(
+        Guid documentId,
+        GraphDocument graph,
+        ulong revision,
+        RenderShaderVariant variant
+    ) {
         EditorShaderDraftCompilationSnapshot compiled = m_provider.RequestDraft(
             documentId,
             graph,

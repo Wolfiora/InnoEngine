@@ -28,8 +28,8 @@ public sealed class TypeCacheSnapshot
         Type[] types,
         Dictionary<Assembly, Type[]> typesByAssembly,
         TypeIdentityRegistry identityRegistry,
-        TypeQueryRegistry queryRegistry)
-    {
+        TypeQueryRegistry queryRegistry
+    ) {
         this.version = version;
         m_types = types;
         m_typeRefs = Array.AsReadOnly(types.Select(identityRegistry.GetTypeRef).ToArray());
@@ -57,8 +57,7 @@ public sealed class TypeCacheSnapshot
     /// <returns>
     /// An immutable snapshot of the values selected by the operation.
     /// </returns>
-    public IReadOnlyList<TypeRef> GetSubTypesOf<T>()
-        => m_queryRegistry.GetSubTypesOf<T>(m_identityRegistry);
+    public IReadOnlyList<TypeRef> GetSubTypesOf<T>() => m_queryRegistry.GetSubTypesOf<T>(m_identityRegistry);
 
     /// <summary>
     /// Gets all concrete discovered types implementing <typeparamref name="TInterface"/>.
@@ -113,19 +112,23 @@ public sealed class TypeCacheSnapshot
     /// <returns>
     /// <see langword="true"/> when the type belongs to this snapshot.
     /// </returns>
-    public bool TryGetTypeRef(Type type, out TypeRef typeRef)
-        => m_identityRegistry.TryGetTypeRef(type, out typeRef);
+    public bool TryGetTypeRef(
+        Type type,
+        out TypeRef typeRef
+    ) => m_identityRegistry.TryGetTypeRef(type, out typeRef);
 
     internal IReadOnlyList<Type> runtimeTypes => m_types;
 
-    internal bool TryResolve(TypeRef typeRef, out Type? type)
-        => m_identityRegistry.TryResolveType(typeRef, out type);
+    internal bool TryResolve(
+        TypeRef typeRef,
+        out Type? type
+    ) => m_identityRegistry.TryResolveType(typeRef, out type);
 
     internal static TypeCacheSnapshot Build(
         IEnumerable<Assembly> assemblies,
         TypeCacheSnapshot? previous,
-        long version)
-    {
+        long version
+    ) {
         ArgumentNullException.ThrowIfNull(assemblies);
 
         var discoveredTypes = new List<Type>();

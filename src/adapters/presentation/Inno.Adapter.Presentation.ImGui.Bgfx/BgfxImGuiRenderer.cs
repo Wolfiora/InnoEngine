@@ -77,8 +77,10 @@ public sealed unsafe class BgfxImGuiRenderer : IPlatformImGuiRenderer, IRenderFr
     /// <exception cref="NotSupportedException">
     /// Thrown when <paramref name="device"/> is not BGFX-backed.
     /// </exception>
-    public BgfxImGuiRenderer(IRenderDevice device, GraphicsPipelineDescriptor pipelineDescriptor)
-    {
+    public BgfxImGuiRenderer(
+        IRenderDevice device,
+        GraphicsPipelineDescriptor pipelineDescriptor
+    ) {
         ArgumentNullException.ThrowIfNull(device);
         ArgumentNullException.ThrowIfNull(pipelineDescriptor);
         ValidatePipelineDescriptor(pipelineDescriptor);
@@ -202,8 +204,10 @@ public sealed unsafe class BgfxImGuiRenderer : IPlatformImGuiRenderer, IRenderFr
     /// <param name="pixelHeight">
     /// The pixel height consumed by synchronize main output; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
-    public void SynchronizeMainOutput(int pixelWidth, int pixelHeight)
-    {
+    public void SynchronizeMainOutput(
+        int pixelWidth,
+        int pixelHeight
+    ) {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(pixelWidth);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(pixelHeight);
         lock (m_sync)
@@ -261,8 +265,10 @@ public sealed unsafe class BgfxImGuiRenderer : IPlatformImGuiRenderer, IRenderFr
     /// <param name="drawData">
     /// The draw data consumed by render viewport; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
-    public void RenderViewport(PlatformImGuiViewportTarget target, IntPtr drawData)
-    {
+    public void RenderViewport(
+        PlatformImGuiViewportTarget target,
+        IntPtr drawData
+    ) {
         ArgumentNullException.ThrowIfNull(target);
         lock (m_sync)
         {
@@ -367,8 +373,10 @@ public sealed unsafe class BgfxImGuiRenderer : IPlatformImGuiRenderer, IRenderFr
     /// <param name="frameIndex">
     /// The monotonic frame identity associated with this operation.
     /// </param>
-    public void AddRenderPasses(RenderGraphBuilder graph, ulong frameIndex)
-    {
+    public void AddRenderPasses(
+        RenderGraphBuilder graph,
+        ulong frameIndex
+    ) {
         ArgumentNullException.ThrowIfNull(graph);
         _ = frameIndex;
         lock (m_sync)
@@ -482,9 +490,7 @@ public sealed unsafe class BgfxImGuiRenderer : IPlatformImGuiRenderer, IRenderFr
         try
         {
             vertices = m_device.CreateBuffer(
-                new PersistentBufferDescriptor(
-                    new RenderBufferDescriptor(4, C_VERTEX_STRIDE, RenderBufferUsage.Vertex),
-                    S_VERTEX_LAYOUT),
+                new PersistentBufferDescriptor(new RenderBufferDescriptor(4, C_VERTEX_STRIDE, RenderBufferUsage.Vertex), S_VERTEX_LAYOUT),
                 CreatePresentationVertices(m_device.capabilities.originBottomLeft),
                 "ImGui Presentation Vertices");
             indices = m_device.CreateBuffer(
@@ -496,8 +502,10 @@ public sealed unsafe class BgfxImGuiRenderer : IPlatformImGuiRenderer, IRenderFr
         }
         catch
         {
-            if (indices.isValid) m_device.DestroyBuffer(indices);
-            if (vertices.isValid) m_device.DestroyBuffer(vertices);
+            if (indices.isValid)
+                m_device.DestroyBuffer(indices);
+            if (vertices.isValid)
+                m_device.DestroyBuffer(vertices);
             throw;
         }
         m_presentationVertices = vertices;
@@ -554,11 +562,7 @@ public sealed unsafe class BgfxImGuiRenderer : IPlatformImGuiRenderer, IRenderFr
             else
             {
                 texture = m_device.CreateTexture(
-                    new RenderTextureDescriptor(
-                        upload.width,
-                        upload.height,
-                        RenderTextureFormat.RGBA8,
-                        RenderTextureUsage.Sampled),
+                    new RenderTextureDescriptor(upload.width, upload.height, RenderTextureFormat.RGBA8, RenderTextureUsage.Sampled),
                     $"ImGui Texture {token}");
                 if (current is not null)
                 {
@@ -648,17 +652,16 @@ public sealed unsafe class BgfxImGuiRenderer : IPlatformImGuiRenderer, IRenderFr
         m_framePackets = prepared;
     }
 
-    private void EnsureDynamicBuffers(int vertexCount, int indexCount)
-    {
+    private void EnsureDynamicBuffers(
+        int vertexCount,
+        int indexCount
+    ) {
         if (vertexCount > m_vertexCapacity)
         {
             int capacity = GrowCapacity(vertexCount, C_INITIAL_VERTEX_CAPACITY);
             PersistentBufferHandle replacement = m_device.CreateBuffer(
                 new PersistentBufferDescriptor(
-                    new RenderBufferDescriptor(
-                        capacity,
-                        C_VERTEX_STRIDE,
-                        RenderBufferUsage.Vertex | RenderBufferUsage.Dynamic),
+                    new RenderBufferDescriptor(capacity, C_VERTEX_STRIDE, RenderBufferUsage.Vertex | RenderBufferUsage.Dynamic),
                     S_VERTEX_LAYOUT),
                 ReadOnlySpan<byte>.Empty,
                 "ImGui Vertices");
@@ -676,10 +679,7 @@ public sealed unsafe class BgfxImGuiRenderer : IPlatformImGuiRenderer, IRenderFr
             int capacity = GrowCapacity(indexCount, C_INITIAL_INDEX_CAPACITY);
             PersistentBufferHandle replacement = m_device.CreateBuffer(
                 new PersistentBufferDescriptor(
-                    new RenderBufferDescriptor(
-                        capacity,
-                        C_INDEX_STRIDE,
-                        RenderBufferUsage.Index | RenderBufferUsage.Dynamic),
+                    new RenderBufferDescriptor(capacity, C_INDEX_STRIDE, RenderBufferUsage.Index | RenderBufferUsage.Dynamic),
                     indexFormat: RenderIndexFormat.UInt16),
                 ReadOnlySpan<byte>.Empty,
                 "ImGui Indices");
@@ -693,8 +693,11 @@ public sealed unsafe class BgfxImGuiRenderer : IPlatformImGuiRenderer, IRenderFr
         }
     }
 
-    private DrawPacket? CaptureDrawData(IntPtr address, uint viewportId, RenderSurfaceHandle surface)
-    {
+    private DrawPacket? CaptureDrawData(
+        IntPtr address,
+        uint viewportId,
+        RenderSurfaceHandle surface
+    ) {
         if (address == IntPtr.Zero)
         {
             return null;
@@ -857,8 +860,10 @@ public sealed unsafe class BgfxImGuiRenderer : IPlatformImGuiRenderer, IRenderFr
         return expanded;
     }
 
-    private static void ExecutePacket(PreparedPacket packet, RenderPassContext context)
-    {
+    private static void ExecutePacket(
+        PreparedPacket packet,
+        RenderPassContext context
+    ) {
         context.commands.BindGraphicsPipeline(packet.pipeline);
         context.commands.SetUniform(S_OUTPUT_ENCODING, S_LINEAR_OUTPUT);
         foreach (PreparedDrawCommand command in packet.commands)
@@ -871,8 +876,10 @@ public sealed unsafe class BgfxImGuiRenderer : IPlatformImGuiRenderer, IRenderFr
         }
     }
 
-    private static void ExecutePresentationPacket(PresentationPacket packet, RenderPassContext context)
-    {
+    private static void ExecutePresentationPacket(
+        PresentationPacket packet,
+        RenderPassContext context
+    ) {
         context.commands.SetViewport(0, 0, packet.width, packet.height);
         context.commands.SetScissor(0, 0, packet.width, packet.height);
         context.commands.BindGraphicsPipeline(packet.pipeline);
@@ -947,8 +954,10 @@ public sealed unsafe class BgfxImGuiRenderer : IPlatformImGuiRenderer, IRenderFr
             throw new ArgumentException("ImGui pipeline must declare its outputEncoding render-pass uniform.", nameof(descriptor));
     }
 
-    private static int GrowCapacity(int required, int minimum)
-    {
+    private static int GrowCapacity(
+        int required,
+        int minimum
+    ) {
         int capacity = minimum;
         while (capacity < required)
         {
@@ -976,8 +985,13 @@ public sealed unsafe class BgfxImGuiRenderer : IPlatformImGuiRenderer, IRenderFr
         WriteVertex(3, -1f, -1f, 0f, bottom);
         return data;
 
-        void WriteVertex(int index, float x, float y, float u, float v)
-        {
+        void WriteVertex(
+            int index,
+            float x,
+            float y,
+            float u,
+            float v
+        ) {
             Span<byte> bytes = data.AsSpan(index * C_VERTEX_STRIDE, C_VERTEX_STRIDE);
             BinaryPrimitives.WriteSingleLittleEndian(bytes, x);
             BinaryPrimitives.WriteSingleLittleEndian(bytes[4..], y);
@@ -1001,8 +1015,10 @@ public sealed unsafe class BgfxImGuiRenderer : IPlatformImGuiRenderer, IRenderFr
             0f, 0f, 0f, 1f
         ];
 
-    private static float[] Orthographic(Vector2 position, Vector2 size)
-    {
+    private static float[] Orthographic(
+        Vector2 position,
+        Vector2 size
+    ) {
         float left = position.X;
         float right = position.X + size.X;
         float top = position.Y;
@@ -1043,8 +1059,16 @@ public sealed unsafe class BgfxImGuiRenderer : IPlatformImGuiRenderer, IRenderFr
         public bool resizePending { get; set; }
     }
 
-    private sealed record OwnedTexture(PersistentTextureHandle handle, int width, int height);
-    private sealed record TextureUpload(int width, int height, byte[] pixels);
+    private sealed record OwnedTexture(
+        PersistentTextureHandle handle,
+        int width,
+        int height
+    );
+    private sealed record TextureUpload(
+        int width,
+        int height,
+        byte[] pixels
+    );
     private sealed record CapturedDrawCommand(
         int clipX,
         int clipY,
@@ -1053,7 +1077,8 @@ public sealed unsafe class BgfxImGuiRenderer : IPlatformImGuiRenderer, IRenderFr
         int firstVertex,
         int firstIndex,
         int indexCount,
-        ulong textureToken);
+        ulong textureToken
+    );
 
     private sealed record PreparedDrawCommand(
         int clipX,
@@ -1063,7 +1088,8 @@ public sealed unsafe class BgfxImGuiRenderer : IPlatformImGuiRenderer, IRenderFr
         int firstVertex,
         int firstIndex,
         int indexCount,
-        PersistentTextureHandle texture);
+        PersistentTextureHandle texture
+    );
 
     private sealed record DrawPacket(
         uint viewportId,
@@ -1074,8 +1100,8 @@ public sealed unsafe class BgfxImGuiRenderer : IPlatformImGuiRenderer, IRenderFr
         int pixelHeight,
         byte[] vertices,
         byte[] indices,
-        IReadOnlyList<CapturedDrawCommand> commands)
-    {
+        IReadOnlyList<CapturedDrawCommand> commands
+    ) {
         /// <summary>
         /// Gets the presentation surface targeted by this render pass.
         /// </summary>
@@ -1092,7 +1118,8 @@ public sealed unsafe class BgfxImGuiRenderer : IPlatformImGuiRenderer, IRenderFr
         IReadOnlyList<PreparedDrawCommand> commands,
         GraphicsPipelineHandle pipeline,
         PersistentBufferHandle vertexBuffer,
-        PersistentBufferHandle indexBuffer);
+        PersistentBufferHandle indexBuffer
+    );
 
     private sealed record PresentationPacket(
         RenderSurfaceHandle surface,
@@ -1101,5 +1128,6 @@ public sealed unsafe class BgfxImGuiRenderer : IPlatformImGuiRenderer, IRenderFr
         int height,
         GraphicsPipelineHandle pipeline,
         PersistentBufferHandle vertices,
-        PersistentBufferHandle indices);
+        PersistentBufferHandle indices
+    );
 }

@@ -26,8 +26,8 @@ public sealed class RenderingAuthoringBackendCatalog : IRenderingAuthoringBacken
     /// </exception>
     public RenderingAuthoringBackendCatalog(
         IRenderingBackendFactory runtime,
-        IEnumerable<RenderingAuthoringBackendProvider> providers)
-    {
+        IEnumerable<RenderingAuthoringBackendProvider> providers
+    ) {
         ArgumentNullException.ThrowIfNull(runtime);
         ArgumentNullException.ThrowIfNull(providers);
         foreach (RenderingAuthoringBackendProvider provider in providers)

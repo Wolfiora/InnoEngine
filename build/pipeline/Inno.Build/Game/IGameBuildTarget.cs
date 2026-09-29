@@ -40,7 +40,8 @@ public interface IGameBuildTarget
     /// </exception>
     ValueTask BuildContentAsync(
         GameBuildContentContext context,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default
+    );
 
     /// <summary>
     /// Composes one platform output from a verified Support Pack and source-free content directory.
@@ -59,5 +60,6 @@ public interface IGameBuildTarget
     /// </exception>
     ValueTask<string> PackageAsync(
         GameBuildPackageContext context,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default
+    );
 }

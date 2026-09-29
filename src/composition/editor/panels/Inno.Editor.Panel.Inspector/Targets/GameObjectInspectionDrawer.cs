@@ -61,8 +61,8 @@ internal sealed class GameObjectInspectionDrawer : InspectionDrawer<GameObject>
         SceneProjectSettingsModule classificationSettings,
         EditorSettings settings,
         SerializationRegistry serialization,
-        LogRouter logs)
-    {
+        LogRouter logs
+    ) {
         m_edits = edits ?? throw new ArgumentNullException(nameof(edits));
         ArgumentNullException.ThrowIfNull(classificationSettings);
         m_tagSelector = new GameObjectTagSelector(
@@ -97,7 +97,8 @@ internal sealed class GameObjectInspectionDrawer : InspectionDrawer<GameObject>
     /// </returns>
     protected override (string name, Action<string>? setter) BindName(
         InspectionDrawContext context,
-        GameObject target)
+        GameObject target
+    )
         => (target.name, name => m_edits.RenameGameObject(target, name));
 
     /// <summary>
@@ -109,8 +110,10 @@ internal sealed class GameObjectInspectionDrawer : InspectionDrawer<GameObject>
     /// <param name="target">
     /// The existing target that receives the validated result.
     /// </param>
-    protected override void DrawHeader(InspectionDrawContext context, GameObject target)
-    {
+    protected override void DrawHeader(
+        InspectionDrawContext context,
+        GameObject target
+    ) {
         bool active = target.activeSelf;
         if (EditorWidget.CompactCheckbox(
                 $"target_active_{target.identity.persistentId:N}",
@@ -143,8 +146,10 @@ internal sealed class GameObjectInspectionDrawer : InspectionDrawer<GameObject>
     /// <param name="gameObject">
     /// The scene object captured by this structural snapshot.
     /// </param>
-    protected override void Draw(InspectionDrawContext context, GameObject gameObject)
-    {
+    protected override void Draw(
+        InspectionDrawContext context,
+        GameObject gameObject
+    ) {
         if (!gameObject.isRuntimeValid || !gameObject.scene.isLoaded)
         {
             _ = context.interactions.For(context.interactions.focusedArea).Select();
@@ -185,8 +190,10 @@ internal sealed class GameObjectInspectionDrawer : InspectionDrawer<GameObject>
         }
     }
 
-    private void DrawComponents(InspectionDrawContext context, GameObject gameObject)
-    {
+    private void DrawComponents(
+        InspectionDrawContext context,
+        GameObject gameObject
+    ) {
         IReadOnlyList<GameComponent> components = gameObject.GetComponents();
         for (int i = 0; i < components.Count; i++)
         {
@@ -297,8 +304,10 @@ internal sealed class GameObjectInspectionDrawer : InspectionDrawer<GameObject>
 
     }
 
-    private void DrawAddComponent(InspectionDrawContext context, GameObject gameObject)
-    {
+    private void DrawAddComponent(
+        InspectionDrawContext context,
+        GameObject gameObject
+    ) {
         if (EditorWidget.CenteredButton(
                 "Add Component",
                 EditorWidget.style.inspectorAddButtonTopPadding))

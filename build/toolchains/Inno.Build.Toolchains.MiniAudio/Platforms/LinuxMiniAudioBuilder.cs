@@ -36,8 +36,10 @@ public override bool IsSupported() =>
     /// <param name="config">
     /// The validated configuration that controls this operation.
     /// </param>
-public override void Build(string miniAudioDirectory, string config)
-    {
+public override void Build(
+    string miniAudioDirectory,
+    string config
+) {
         string buildDirectory = Path.Combine(
             miniAudioDirectory,
             MiniAudioBuildConstants.BUILD_DIR_NAME,

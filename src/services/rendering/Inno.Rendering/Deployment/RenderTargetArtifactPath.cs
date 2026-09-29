@@ -32,8 +32,8 @@ public static class RenderTargetArtifactPath
     public static string GetShaderPath(
         Guid shaderId,
         GraphicsApi backend,
-        RenderShaderVariant variant)
-    {
+        RenderShaderVariant variant
+    ) {
         if (shaderId == Guid.Empty)
             throw new ArgumentException("A target shader path requires a persistent asset identity.", nameof(shaderId));
         return Path.Combine(
@@ -70,6 +70,5 @@ public static class RenderTargetArtifactPath
     private static string HashVariant(string value)
         => Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(value))).ToLowerInvariant();
 
-    private static string HashSlot(string value)
-        => Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(value))).ToLowerInvariant();
+    private static string HashSlot(string value) => Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(value))).ToLowerInvariant();
 }

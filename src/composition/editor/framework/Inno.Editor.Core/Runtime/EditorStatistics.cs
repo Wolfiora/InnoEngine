@@ -121,8 +121,8 @@ public sealed class EditorStatistic
         string label,
         string value,
         int groupOrder = 0,
-        int order = 0)
-    {
+        int order = 0
+    ) {
         if (!id.isValid)
             throw new ArgumentException("A statistic ID is required.", nameof(id));
         if (!groupId.isValid)

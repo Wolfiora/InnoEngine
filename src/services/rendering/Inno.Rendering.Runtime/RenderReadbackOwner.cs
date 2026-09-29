@@ -8,7 +8,10 @@ using Inno.Rendering;
 
 namespace Inno.Rendering.Runtime;
 
-internal sealed class RenderReadbackOwner(IRenderDevice device, int capacity) : IDisposable
+internal sealed class RenderReadbackOwner(
+    IRenderDevice device,
+    int capacity
+) : IDisposable
 {
     private readonly Dictionary<RenderTextureReadbackHandle, PendingReadback> m_pending = [];
     private RenderRetirementQueue? m_retirement;
@@ -21,8 +24,10 @@ internal sealed class RenderReadbackOwner(IRenderDevice device, int capacity) : 
     internal long rejectedCount => m_rejected;
 
     internal ValueTask<RenderTextureReadbackResult> Read(
-        PersistentTextureHandle texture, int mipLevel, CancellationToken cancellation)
-    {
+        PersistentTextureHandle texture,
+        int mipLevel,
+        CancellationToken cancellation
+    ) {
         ObjectDisposedException.ThrowIf(m_disposed || m_retirement is not null, this);
         cancellation.ThrowIfCancellationRequested();
         if (!device.capabilities.Supports(GraphicsCapability.TextureReadback))
@@ -48,13 +53,20 @@ internal sealed class RenderReadbackOwner(IRenderDevice device, int capacity) : 
             {
                 try
                 {
-                    if (!device.TryGetTextureReadback(handle, out RenderTextureReadbackResult? result)) continue;
+                    if (!device.TryGetTextureReadback(handle, out RenderTextureReadbackResult? result))
+                        continue;
                     m_pending.Remove(handle);
                     pending.completion.TrySetResult(result!);
                     continue;
                 }
-                catch (Exception unfinished) when (RetirementPendingException.Find(unfinished) is not null) { throw; }
-                catch (Exception failure) { pending.failure = failure; }
+                catch (Exception unfinished) when (RetirementPendingException.Find(unfinished) is not null)
+                {
+                    throw;
+                }
+                catch (Exception failure)
+                {
+                    pending.failure = failure;
+                }
             }
             pending.retirement ??= new RetirementBarrier("Texture readback cancellation");
             try
@@ -62,14 +74,19 @@ internal sealed class RenderReadbackOwner(IRenderDevice device, int capacity) : 
                 if (!pending.retirement.TryComplete(() => device.CancelTextureReadback(handle)))
                     throw new RetirementPendingException("Texture readback cancellation is still pending.");
             }
-            catch (Exception unfinished) when (RetirementPendingException.Find(unfinished) is not null) { throw; }
+            catch (Exception unfinished) when (RetirementPendingException.Find(unfinished) is not null)
+            {
+                throw;
+            }
             catch (Exception cleanup)
             {
                 pending.failure = pending.failure is null ? cleanup : new AggregateException(pending.failure, cleanup);
             }
             m_pending.Remove(handle);
-            if (pending.failure is not null) pending.completion.TrySetException(pending.failure);
-            else pending.completion.TrySetCanceled(pending.cancellation);
+            if (pending.failure is not null)
+                pending.completion.TrySetException(pending.failure);
+            else
+                pending.completion.TrySetCanceled(pending.cancellation);
         }
     }
 
@@ -78,7 +95,8 @@ internal sealed class RenderReadbackOwner(IRenderDevice device, int capacity) : 
     /// </summary>
     public void Dispose()
     {
-        if (m_disposed) return;
+        if (m_disposed)
+            return;
         if (m_retirement is null)
         {
             m_retirement = new RenderRetirementQueue();
@@ -88,8 +106,14 @@ internal sealed class RenderReadbackOwner(IRenderDevice device, int capacity) : 
                 m_retirement.Add(() => pending.completion.TrySetException(new ObjectDisposedException(nameof(RenderReadbackOwner))));
             }
         }
-        try { m_retirement.Dispose(); }
-        catch (Exception pending) when (RetirementPendingException.Find(pending) is not null) { throw; }
+        try
+        {
+            m_retirement.Dispose();
+        }
+        catch (Exception pending) when (RetirementPendingException.Find(pending) is not null)
+        {
+            throw;
+        }
         catch
         {
             m_pending.Clear();

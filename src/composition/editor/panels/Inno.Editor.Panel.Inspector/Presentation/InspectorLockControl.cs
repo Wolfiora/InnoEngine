@@ -29,8 +29,10 @@ internal sealed class InspectorLockControl
     /// <returns>
     /// The retained target while locked; otherwise, the current valid global selection.
     /// </returns>
-    internal object? Resolve(EditorInteractions interactions, object? selectedTarget)
-    {
+    internal object? Resolve(
+        EditorInteractions interactions,
+        object? selectedTarget
+    ) {
         ArgumentNullException.ThrowIfNull(interactions);
         object? lockedTarget = m_isLocked ? ResolveLockedTarget(interactions) : null;
         if (m_isLocked && !IsValid(lockedTarget))
@@ -56,8 +58,10 @@ internal sealed class InspectorLockControl
     /// <param name="displayedTarget">
     /// The current valid Inspector target to retain when locking.
     /// </param>
-    internal void Toggle(EditorInteractions interactions, object displayedTarget)
-    {
+    internal void Toggle(
+        EditorInteractions interactions,
+        object displayedTarget
+    ) {
         ArgumentNullException.ThrowIfNull(interactions);
         if (m_isLocked)
         {
@@ -112,6 +116,5 @@ internal sealed class InspectorLockControl
         return m_lockedTarget;
     }
 
-    private static bool IsValid(object? target)
-        => target is not null && target is not EngineObject { isDestroyed: true };
+    private static bool IsValid(object? target) => target is not null && target is not EngineObject { isDestroyed: true };
 }

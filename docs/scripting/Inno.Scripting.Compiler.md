@@ -9,6 +9,8 @@
 ## 职责与边界
 
 Compiler 拥有 Roslyn、裁剪 reference assemblies、logical namespace analyzer、source fingerprint、runtime/editor artifact 和编译进度。它不拥有 active assembly generation，也不进入 Player。
+框架参考程序集优先从宿主输出目录的 `packs/Microsoft.NETCore.App.Ref` 读取；源码开发环境继续从 `DOTNET_ROOT` 或当前 .NET 安装目录读取。Editor Publish 会随发行目录复制与目标框架匹配的 Ref Pack，因此脱离引擎源码和本机 SDK 安装后仍可编译脚本、生成 IDE 工程。
+生成实现侧 reference assembly 时以 Ref Pack 的程序集身份排除框架实现，不能按 DLL 所在目录判断：自包含 Editor 将引擎和 .NET DLL 放在同一目录，按目录过滤会在首次生成脚本 API 缓存时误删引擎依赖。
 
 ## 公开 API
 

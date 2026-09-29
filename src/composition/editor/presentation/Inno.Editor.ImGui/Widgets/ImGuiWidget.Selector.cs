@@ -48,8 +48,8 @@ public static partial class ImGuiWidget
         string id,
         string preview,
         ImGuiComboFlags flags = ImGuiComboFlags.None,
-        int maximumVisibleItems = C_DEFAULT_COMBO_VISIBLE_ITEMS)
-    {
+        int maximumVisibleItems = C_DEFAULT_COMBO_VISIBLE_ITEMS
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(id);
         ArgumentNullException.ThrowIfNull(preview);
         if (maximumVisibleItems <= 0)
@@ -101,8 +101,8 @@ public static partial class ImGuiWidget
         string id,
         string preview,
         float width,
-        float minimumPopupWidth)
-    {
+        float minimumPopupWidth
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(id);
         ArgumentNullException.ThrowIfNull(preview);
         if (width <= 0f)
@@ -142,14 +142,13 @@ public static partial class ImGuiWidget
     /// <summary>
     /// Ends a selector popup opened by <see cref="BeginMenuSelector"/>.
     /// </summary>
-    public static void EndMenuSelector()
-        => EndMenuPopup();
+    public static void EndMenuSelector() => EndMenuPopup();
 
     private static void SetFixedBoundedPopupSize(
         float requestedWidth,
         int maximumVisibleItems,
-        Vector2 workSize)
-    {
+        Vector2 workSize
+    ) {
         ImGuiStylePtr nativeStyle = NativeImGui.GetStyle();
         float minimumHeight = MathF.Max(1f, NativeImGui.GetFrameHeight() * 2f);
         float preferredHeight = NativeImGui.GetTextLineHeightWithSpacing() * maximumVisibleItems
@@ -168,8 +167,8 @@ public static partial class ImGuiWidget
         Vector2 size,
         string preview,
         bool hovered,
-        bool active)
-    {
+        bool active
+    ) {
         ImGuiStylePtr nativeStyle = NativeImGui.GetStyle();
         uint background = NativeImGui.GetColorU32(
             active ? ImGuiCol.FrameBgActive : hovered ? ImGuiCol.FrameBgHovered : ImGuiCol.FrameBg);
@@ -202,9 +201,7 @@ public static partial class ImGuiWidget
         drawList.PopClipRect();
         ImGuiP.RenderArrow(
             drawList,
-            new Vector2(
-                arrowMinimumX + nativeStyle.FramePadding.Y,
-                minimum.Y + nativeStyle.FramePadding.Y),
+            new Vector2(arrowMinimumX + nativeStyle.FramePadding.Y, minimum.Y + nativeStyle.FramePadding.Y),
             NativeImGui.GetColorU32(ImGuiCol.Text),
             ImGuiDir.Down);
         ImGuiP.RenderFrameBorder(minimum, maximum, nativeStyle.FrameRounding);

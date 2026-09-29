@@ -99,8 +99,7 @@ public sealed class AssetPipeline : AssetResidencyProvider,
     /// A source store that must not outlive this asset pipeline.
     /// </returns>
     [ScriptingApiIgnore]
-    public AssetSourceStore CreateSourceStore()
-        => new(this, new AssetSerializationServices(m_types, m_serialization, this, null));
+    public AssetSourceStore CreateSourceStore() => new(this, new AssetSerializationServices(m_types, m_serialization, this, null));
 
     /// <summary>
     /// Captures native settings and nested asset dependencies through this explicit authoring owner.
@@ -136,13 +135,21 @@ public sealed class AssetPipeline : AssetResidencyProvider,
     /// <typeparam name="TValue">
     /// Serialized asset object type receiving restored properties.
     /// </typeparam>
-    public void RestoreProperties<TValue>(Guid stableTypeId, byte[] propertyData, TValue target) where TValue : class, ISerializable
+    public void RestoreProperties<TValue>(
+        Guid stableTypeId,
+        byte[] propertyData,
+        TValue target
+    ) where TValue : class, ISerializable
     {
         ArgumentNullException.ThrowIfNull(target);
         using IDisposable operationScope = AcquireOperation();
         if (m_types.GetTypeRef(target.GetType()).stableId != stableTypeId)
             throw new InvalidOperationException("The asset property payload has an incompatible stable type identity.");
-        m_serialization.Decode(propertyData, reader => { reader.RestoreProperties(target); return true; }, AssetSerializationContext.Create(this));
+        m_serialization.Decode(propertyData, reader =>
+        {
+            reader.RestoreProperties(target);
+            return true;
+        }, AssetSerializationContext.Create(this));
     }
 
     /// <summary>
@@ -196,8 +203,8 @@ public sealed class AssetPipeline : AssetResidencyProvider,
         IdentityAllocator identities,
         DiagnosticHub diagnostics,
         LogRouter logs,
-        AssetPipelineOptions options)
-    {
+        AssetPipelineOptions options
+    ) {
         ArgumentNullException.ThrowIfNull(modules);
         ArgumentNullException.ThrowIfNull(types);
         ArgumentNullException.ThrowIfNull(serialization);
@@ -376,7 +383,10 @@ public sealed class AssetPipeline : AssetResidencyProvider,
                     Retire(m_failedPreparation!, new RetirementBarrier("Asset source preparation"));
                     m_failedPreparation = null;
                 }
-                catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null) { throw; }
+                catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null)
+                {
+                    throw;
+                }
                 catch (Exception cleanup)
                 {
                     throw new AggregateException("Asset source preparation and retirement failed.", failure, cleanup);
@@ -387,9 +397,12 @@ public sealed class AssetPipeline : AssetResidencyProvider,
             void RetainPreparation()
             {
                 m_failedPreparation = new LifetimeScope();
-                if (catalogCandidate is not null) m_failedPreparation.Own(catalogCandidate);
-                if (candidateLoader is not null) m_failedPreparation.Own(candidateLoader);
-                if (candidateFileSystem is not null) m_failedPreparation.Own(candidateFileSystem);
+                if (catalogCandidate is not null)
+                    m_failedPreparation.Own(catalogCandidate);
+                if (candidateLoader is not null)
+                    m_failedPreparation.Own(candidateLoader);
+                if (candidateFileSystem is not null)
+                    m_failedPreparation.Own(candidateFileSystem);
             }
         }
     }
@@ -500,8 +513,14 @@ public sealed class AssetPipeline : AssetResidencyProvider,
 
     private void RetireSourceMounts(AssetSourceMountTransaction transaction)
     {
-        try { Retire(transaction.retirement!, transaction.retirementBarrier); }
-        catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null) { throw; }
+        try
+        {
+            Retire(transaction.retirement!, transaction.retirementBarrier);
+        }
+        catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null)
+        {
+            throw;
+        }
         catch
         {
             Finish();
@@ -519,10 +538,15 @@ public sealed class AssetPipeline : AssetResidencyProvider,
         }
     }
 
-    private void Retire(LifetimeScope lifetime, RetirementBarrier barrier)
-    {
+    private void Retire(
+        LifetimeScope lifetime,
+        RetirementBarrier barrier
+    ) {
         m_generations.EnsureRetirementSafe();
-        try { barrier.Wait(lifetime.Dispose); }
+        try
+        {
+            barrier.Wait(lifetime.Dispose);
+        }
         catch (Exception failure)
         {
             m_generations.Fault(failure);
@@ -537,9 +561,12 @@ public sealed class AssetPipeline : AssetResidencyProvider,
             Directory.Delete(root, recursive: true);
     }
 
-    private void SwitchSourceIdentities(AssetLoader previousLoader, AssetFileSystem previousFiles,
-        AssetLoader candidateLoader, AssetFileSystem candidateFiles)
-    {
+    private void SwitchSourceIdentities(
+        AssetLoader previousLoader,
+        AssetFileSystem previousFiles,
+        AssetLoader candidateLoader,
+        AssetFileSystem candidateFiles
+    ) {
         var rollback = new Stack<Action>();
         try
         {
@@ -558,13 +585,19 @@ public sealed class AssetPipeline : AssetResidencyProvider,
             List<Exception> failures = [failure];
             while (rollback.TryPop(out Action? restore))
             {
-                try { restore(); }
+                try
+                {
+                    restore();
+                }
                 catch (Exception pending) when (RetirementPendingException.Find(pending) is not null)
                 {
                     m_generations.Fault(pending);
                     throw;
                 }
-                catch (Exception compensation) { failures.Add(compensation); }
+                catch (Exception compensation)
+                {
+                    failures.Add(compensation);
+                }
             }
             if (failures.Count > 1)
             {
@@ -575,8 +608,10 @@ public sealed class AssetPipeline : AssetResidencyProvider,
             throw;
         }
 
-        void Apply(Action apply, Action compensate)
-        {
+        void Apply(
+            Action apply,
+            Action compensate
+        ) {
             rollback.Push(compensate);
             apply();
         }
@@ -629,8 +664,10 @@ public sealed class AssetPipeline : AssetResidencyProvider,
     /// Thrown when no compatible canonical asset can be loaded.
     /// </exception>
     [ScriptingApiIgnore]
-    public AssetObject Load(AssetPath path, Type assetType)
-    {
+    public AssetObject Load(
+        AssetPath path,
+        Type assetType
+    ) {
         ArgumentNullException.ThrowIfNull(assetType);
         if (!typeof(AssetObject).IsAssignableFrom(assetType))
         {
@@ -679,7 +716,10 @@ public sealed class AssetPipeline : AssetResidencyProvider,
     /// <returns>
     /// <see langword="true"/> when a compatible asset was loaded.
     /// </returns>
-    public bool TryLoad<TAsset>(AssetPath path, out TAsset? asset) where TAsset : AssetObject
+    public bool TryLoad<TAsset>(
+        AssetPath path,
+        out TAsset? asset
+    ) where TAsset : AssetObject
     {
         bool success = GetLoader().TryLoad(path, typeof(TAsset), out AssetObject? value);
         asset = value as TAsset;
@@ -701,7 +741,10 @@ public sealed class AssetPipeline : AssetResidencyProvider,
     /// <returns>
     /// <see langword="true"/> when a compatible asset was loaded.
     /// </returns>
-    public bool TryLoad<TAsset>(Guid persistentId, out TAsset? asset) where TAsset : AssetObject
+    public bool TryLoad<TAsset>(
+        Guid persistentId,
+        out TAsset? asset
+    ) where TAsset : AssetObject
     {
         bool success = GetLoader().TryLoad(persistentId, typeof(TAsset), out AssetObject? value);
         asset = value as TAsset;
@@ -725,7 +768,8 @@ public sealed class AssetPipeline : AssetResidencyProvider,
     /// </returns>
     public async ValueTask<TAsset> LoadAsync<TAsset>(
         AssetPath path,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
         where TAsset : AssetObject
     {
         AssetLoader loader = GetLoader();
@@ -753,7 +797,8 @@ public sealed class AssetPipeline : AssetResidencyProvider,
     /// </returns>
     public async ValueTask<TAsset> LoadAsync<TAsset>(
         Guid persistentId,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
         where TAsset : AssetObject
     {
         AssetLoader loader = GetLoader();
@@ -781,7 +826,8 @@ public sealed class AssetPipeline : AssetResidencyProvider,
     /// </returns>
     public async ValueTask<AssetLease<TAsset>> AcquireAsync<TAsset>(
         AssetPath path,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
         where TAsset : AssetObject
     {
         TAsset asset = await LoadAsync<TAsset>(path, cancellationToken).ConfigureAwait(false);
@@ -805,7 +851,8 @@ public sealed class AssetPipeline : AssetResidencyProvider,
     /// </returns>
     public async ValueTask<AssetLease<TAsset>> AcquireAsync<TAsset>(
         Guid persistentId,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
         where TAsset : AssetObject
     {
         TAsset asset = await LoadAsync<TAsset>(persistentId, cancellationToken).ConfigureAwait(false);
@@ -870,8 +917,11 @@ public sealed class AssetPipeline : AssetResidencyProvider,
     /// <exception cref="IOException">
     /// The settings changed externally or could not be written.
     /// </exception>
-    public bool SaveImportSettings(AssetPath path, ISerializable? settings, string expectedFingerprint)
-    {
+    public bool SaveImportSettings(
+        AssetPath path,
+        ISerializable? settings,
+        string expectedFingerprint
+    ) {
         EnsureOwnerThread();
         using IDisposable operationScope = AcquireOperation();
         _ = NormalizeMutationPath(path, nameof(path));
@@ -910,8 +960,10 @@ public sealed class AssetPipeline : AssetResidencyProvider,
     /// <returns>
     /// <see langword="true"/> when an importer exported the asset.
     /// </returns>
-    public bool Save(AssetPath path, AssetObject asset)
-    {
+    public bool Save(
+        AssetPath path,
+        AssetObject asset
+    ) {
         EnsureOwnerThread();
         using IDisposable operationScope = AcquireOperation();
         _ = NormalizeMutationPath(path, nameof(path));
@@ -936,8 +988,8 @@ public sealed class AssetPipeline : AssetResidencyProvider,
         Guid stableTypeId,
         string lastKnownPath,
         Type expectedType,
-        string propertyPath)
-    {
+        string propertyPath
+    ) {
         try
         {
             return GetLoader().ResolveReference(
@@ -970,8 +1022,10 @@ public sealed class AssetPipeline : AssetResidencyProvider,
     /// <exception cref="IOException">
     /// Thrown when the target source or metadata already exists.
     /// </exception>
-    public void Move(AssetPath source, AssetPath target)
-    {
+    public void Move(
+        AssetPath source,
+        AssetPath target
+    ) {
         EnsureOwnerThread();
         using IDisposable operationScope = AcquireOperation();
         string sourcePath = NormalizeMutationPath(source, nameof(source));
@@ -1176,8 +1230,10 @@ public sealed class AssetPipeline : AssetResidencyProvider,
     /// Thrown when the destination exists, the source contains symbolic links, or the source changes
     /// while its stable import snapshot is being copied.
     /// </exception>
-    public AssetPath ImportSample(AssetPath source, Action<AssetPath>? validateCandidate = null)
-    {
+    public AssetPath ImportSample(
+        AssetPath source,
+        Action<AssetPath>? validateCandidate = null
+    ) {
         EnsureOwnerThread();
         using IDisposable operationScope = AcquireOperation();
         AssetFileSystem fileSystem = GetFileSystem();
@@ -1363,8 +1419,10 @@ public sealed class AssetPipeline : AssetResidencyProvider,
     /// <returns>
     /// <see langword="true"/> when the type can be resolved.
     /// </returns>
-    public bool TryGetAssetType(AssetPath path, out Type? assetType)
-        => GetLoader().TryGetAssetType(path, out assetType);
+    public bool TryGetAssetType(
+        AssetPath path,
+        out Type? assetType
+    ) => GetLoader().TryGetAssetType(path, out assetType);
 
     /// <summary>
     /// Tries to resolve a persistent identity without loading the asset.
@@ -1378,8 +1436,10 @@ public sealed class AssetPipeline : AssetResidencyProvider,
     /// <returns>
     /// <see langword="true"/> when catalog metadata exists.
     /// </returns>
-    public bool TryGetPersistentId(AssetPath path, out Guid persistentId)
-        => GetLoader().TryGetPersistentId(path, out persistentId);
+    public bool TryGetPersistentId(
+        AssetPath path,
+        out Guid persistentId
+    ) => GetLoader().TryGetPersistentId(path, out persistentId);
 
     /// <summary>
     /// Tries to get a catalog snapshot by source-relative path.
@@ -1393,8 +1453,10 @@ public sealed class AssetPipeline : AssetResidencyProvider,
     /// <returns>
     /// <see langword="true"/> when the path is cataloged.
     /// </returns>
-    public bool TryGetInfo(AssetPath path, out AssetInfo? info)
-        => GetLoader().TryGetInfo(path, out info);
+    public bool TryGetInfo(
+        AssetPath path,
+        out AssetInfo? info
+    ) => GetLoader().TryGetInfo(path, out info);
 
     /// <summary>
     /// Tries to get a catalog snapshot by persistent identity.
@@ -1408,8 +1470,10 @@ public sealed class AssetPipeline : AssetResidencyProvider,
     /// <returns>
     /// <see langword="true"/> when the identity is cataloged.
     /// </returns>
-    public bool TryGetInfo(Guid persistentId, out AssetInfo? info)
-        => GetLoader().TryGetInfo(persistentId, out info);
+    public bool TryGetInfo(
+        Guid persistentId,
+        out AssetInfo? info
+    ) => GetLoader().TryGetInfo(persistentId, out info);
 
     /// <summary>
     /// Tries to resolve a named artifact output.
@@ -1429,7 +1493,8 @@ public sealed class AssetPipeline : AssetResidencyProvider,
     public bool TryGetArtifact(
         Guid persistentId,
         string outputName,
-        out AssetArtifactInfo? artifact)
+        out AssetArtifactInfo? artifact
+    )
         => GetLoader().TryGetArtifact(persistentId, outputName, out artifact);
 
     /// <summary>
@@ -1447,8 +1512,10 @@ public sealed class AssetPipeline : AssetResidencyProvider,
     /// <exception cref="InvalidOperationException">
     /// Thrown when the requested artifact is unavailable.
     /// </exception>
-    public ArtifactLease AcquireArtifact(Guid persistentId, string outputName)
-        => GetLoader().AcquireArtifact(persistentId, outputName);
+    public ArtifactLease AcquireArtifact(
+        Guid persistentId,
+        string outputName
+    ) => GetLoader().AcquireArtifact(persistentId, outputName);
 
     /// <summary>
     /// Runs an aggregate asset build using the processor registered for a definition.
@@ -1468,8 +1535,8 @@ public sealed class AssetPipeline : AssetResidencyProvider,
     public ValueTask<AssetArtifactKey> BuildAsync(
         AssetObject definition,
         IReadOnlyList<AssetInfo> inputs,
-        CancellationToken cancellationToken = default)
-    {
+        CancellationToken cancellationToken = default
+    ) {
         EnsureOwnerThread();
         using IDisposable operationScope = AcquireOperation();
         return GetLoader().BuildAsync(definition, inputs, cancellationToken);
@@ -1530,8 +1597,8 @@ public sealed class AssetPipeline : AssetResidencyProvider,
     [ScriptingApiIgnore]
     public async Task<AssetRuntimeContentInfo> ExportRuntimeArtifactsAsync(
         string destinationContentRoot,
-        CancellationToken cancellationToken = default)
-    {
+        CancellationToken cancellationToken = default
+    ) {
         EnsureOwnerThread();
         using IDisposable operationScope = m_generations.AcquireRead("export runtime artifacts");
         WaitForIdle();
@@ -1548,8 +1615,7 @@ public sealed class AssetPipeline : AssetResidencyProvider,
     /// <returns>
     /// A stable isolated path snapshot.
     /// </returns>
-    public IReadOnlyList<AssetPath> GetLoadedPaths()
-        => GetLoader().GetLoadedPaths();
+    public IReadOnlyList<AssetPath> GetLoadedPaths() => GetLoader().GetLoadedPaths();
 
     /// <summary>
     /// Gets direct or transitive runtime dependencies of an asset.
@@ -1565,7 +1631,8 @@ public sealed class AssetPipeline : AssetResidencyProvider,
     /// </returns>
     public IReadOnlyList<AssetDependency> GetDependencies(
         AssetObject asset,
-        bool recursive = false)
+        bool recursive = false
+    )
         => GetLoader().GetDependencies(asset, recursive);
 
     /// <summary>
@@ -1582,7 +1649,8 @@ public sealed class AssetPipeline : AssetResidencyProvider,
     /// </returns>
     public IReadOnlyList<AssetPath> GetImportDependencies(
         AssetObject asset,
-        bool recursive = false)
+        bool recursive = false
+    )
         => GetLoader().GetImportDependencies(asset, recursive);
 
     /// <summary>
@@ -1594,8 +1662,7 @@ public sealed class AssetPipeline : AssetResidencyProvider,
     /// <returns>
     /// The reference diagnostic snapshot.
     /// </returns>
-    public AssetReferenceInfo GetReferenceInfo(AssetObject asset)
-        => GetLoader().GetReferenceInfo(asset);
+    public AssetReferenceInfo GetReferenceInfo(AssetObject asset) => GetLoader().GetReferenceInfo(asset);
 
     /// <summary>
     /// Gets indexed source entries.
@@ -1618,8 +1685,7 @@ public sealed class AssetPipeline : AssetResidencyProvider,
     /// <returns>
     /// The immediate child entry snapshot.
     /// </returns>
-    public IReadOnlyList<AssetFileEntry> GetFileSystemChildren(AssetPath parent)
-        => GetFileSystem().GetChildren(parent);
+    public IReadOnlyList<AssetFileEntry> GetFileSystemChildren(AssetPath parent) => GetFileSystem().GetChildren(parent);
 
     /// <summary>
     /// Tries to resolve an indexed source entry.
@@ -1633,8 +1699,10 @@ public sealed class AssetPipeline : AssetResidencyProvider,
     /// <returns>
     /// <see langword="true"/> when the entry exists and is not generated metadata.
     /// </returns>
-    public bool TryGetFileSystemEntry(AssetPath path, out AssetFileEntry entry)
-    {
+    public bool TryGetFileSystemEntry(
+        AssetPath path,
+        out AssetFileEntry entry
+    ) {
         return GetFileSystem().TryGetEntry(path, out entry);
     }
 
@@ -1655,8 +1723,8 @@ public sealed class AssetPipeline : AssetResidencyProvider,
 
     private void ApplySourceChanges(
         IReadOnlyList<AssetChangedEvent> changes,
-        bool requiresFullRescan)
-    {
+        bool requiresFullRescan
+    ) {
         AssetLoader? loader = m_loader;
         if (loader is null)
             return;
@@ -1706,8 +1774,8 @@ public sealed class AssetPipeline : AssetResidencyProvider,
 
     private AssetChangedEvent[] CreateDeletionEvents(
         AssetFileSystem fileSystem,
-        string sourcePath)
-    {
+        string sourcePath
+    ) {
         string prefix = sourcePath + "/";
         return fileSystem.GetEntries()
             .Where(entry =>
@@ -1719,11 +1787,12 @@ public sealed class AssetPipeline : AssetResidencyProvider,
             .ToArray();
     }
 
-    private void OnAssetReloaded(AssetObject asset)
-        => InvokeObservers(AssetReloaded, asset);
+    private void OnAssetReloaded(AssetObject asset) => InvokeObservers(AssetReloaded, asset);
 
-    private void InvokeObservers<T>(Action<T>? handlers, T value)
-    {
+    private void InvokeObservers<T>(
+        Action<T>? handlers,
+        T value
+    ) {
         if (handlers is null)
             return;
         foreach (Delegate handler in handlers.GetInvocationList())
@@ -1764,8 +1833,8 @@ public sealed class AssetPipeline : AssetResidencyProvider,
 
     private void RemoveRetiredObservers<T>(
         Action<T>? handlers,
-        Action<Action<T>> remove)
-    {
+        Action<Action<T>> remove
+    ) {
         if (handlers is null)
             return;
         foreach (Delegate observer in handlers.GetInvocationList())
@@ -1830,8 +1899,8 @@ public sealed class AssetPipeline : AssetResidencyProvider,
 
     private Dictionary<string, Guid> CapturePreviousIds(
         AssetLoader loader,
-        IReadOnlyList<AssetChangedEvent> changes)
-    {
+        IReadOnlyList<AssetChangedEvent> changes
+    ) {
         var result = new Dictionary<string, Guid>(StringComparer.OrdinalIgnoreCase);
         for (int i = 0; i < changes.Count; i++)
         {
@@ -1849,8 +1918,8 @@ public sealed class AssetPipeline : AssetResidencyProvider,
         AssetLoader loader,
         IReadOnlyList<AssetChangedEvent> changes,
         IReadOnlyDictionary<string, Guid> previousIds,
-        bool requiresFullRescan)
-    {
+        bool requiresFullRescan
+    ) {
         if (requiresFullRescan && changes.Count == 0)
             return [new AssetChange(AssetChangeKind.StatusChanged, Guid.Empty, AssetPath.Project(string.Empty))];
 
@@ -1902,8 +1971,10 @@ public sealed class AssetPipeline : AssetResidencyProvider,
         }
     }
 
-    private string NormalizeMutationPath(AssetPath path, string parameterName)
-    {
+    private string NormalizeMutationPath(
+        AssetPath path,
+        string parameterName
+    ) {
         if (!path.isValid || string.IsNullOrWhiteSpace(path.localPath))
             throw new ArgumentException("Asset source path is required.", parameterName);
         if (path.source != AssetSourceId.project)
@@ -1911,16 +1982,22 @@ public sealed class AssetPipeline : AssetResidencyProvider,
         return path.localPath;
     }
 
-    private void MovePhysicalSource(string sourcePath, string targetPath, bool isDirectory)
-    {
+    private void MovePhysicalSource(
+        string sourcePath,
+        string targetPath,
+        bool isDirectory
+    ) {
         if (isDirectory)
             Directory.Move(sourcePath, targetPath);
         else
             System.IO.File.Move(sourcePath, targetPath);
     }
 
-    private void TryRollbackPhysicalMove(string sourcePath, string targetPath, bool isDirectory)
-    {
+    private void TryRollbackPhysicalMove(
+        string sourcePath,
+        string targetPath,
+        bool isDirectory
+    ) {
         try
         {
             bool targetExists = isDirectory ? Directory.Exists(targetPath) : System.IO.File.Exists(targetPath);
@@ -1934,8 +2011,10 @@ public sealed class AssetPipeline : AssetResidencyProvider,
         }
     }
 
-    private void TryRollbackMetadataMove(string sourcePath, string targetPath)
-    {
+    private void TryRollbackMetadataMove(
+        string sourcePath,
+        string targetPath
+    ) {
         try
         {
             if (System.IO.File.Exists(targetPath) && !System.IO.File.Exists(sourcePath))
@@ -1950,8 +2029,8 @@ public sealed class AssetPipeline : AssetResidencyProvider,
     private void RestoreStagedDeletion(
         string sourcePath,
         string stagedSource,
-        bool isDirectory)
-    {
+        bool isDirectory
+    ) {
         if (isDirectory ? Directory.Exists(stagedSource) : System.IO.File.Exists(stagedSource))
         {
             Directory.CreateDirectory(Path.GetDirectoryName(sourcePath)!);
@@ -1959,8 +2038,10 @@ public sealed class AssetPipeline : AssetResidencyProvider,
         }
     }
 
-    private void RestoreStagedMetadata(string metaPath, string stagedMetaPath)
-    {
+    private void RestoreStagedMetadata(
+        string metaPath,
+        string stagedMetaPath
+    ) {
         if (!System.IO.File.Exists(stagedMetaPath))
             return;
         Directory.CreateDirectory(Path.GetDirectoryName(metaPath)!);
@@ -1984,8 +2065,10 @@ public sealed class AssetPipeline : AssetResidencyProvider,
         }
     }
 
-    private void CollectArtifactsIfDue(AssetLoader loader, bool force)
-    {
+    private void CollectArtifactsIfDue(
+        AssetLoader loader,
+        bool force
+    ) {
         if (m_options.mode == AssetPipelineMode.RuntimeArtifacts)
             return;
         long now = Environment.TickCount64;
@@ -2010,12 +2093,21 @@ public sealed class AssetPipeline : AssetResidencyProvider,
                 m_loader.AssetReloaded -= OnAssetReloaded;
                 m_shutdown.Own(m_loader);
             }
-            if (m_fileSystem is not null) m_shutdown.Own(m_fileSystem);
-            if (m_catalogParticipantRegistration is not null) m_shutdown.Own(m_catalogParticipantRegistration);
-            if (m_failedPreparation is not null) m_shutdown.Own(m_failedPreparation);
+            if (m_fileSystem is not null)
+                m_shutdown.Own(m_fileSystem);
+            if (m_catalogParticipantRegistration is not null)
+                m_shutdown.Own(m_catalogParticipantRegistration);
+            if (m_failedPreparation is not null)
+                m_shutdown.Own(m_failedPreparation);
         }
-        try { Retire(m_shutdown, m_shutdownBarrier!); }
-        catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null) { throw; }
+        try
+        {
+            Retire(m_shutdown, m_shutdownBarrier!);
+        }
+        catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null)
+        {
+            throw;
+        }
         catch
         {
             FinishShutdown();
@@ -2074,7 +2166,8 @@ public sealed class AssetPipeline : AssetResidencyProvider,
     private sealed class AssetCatalogTransaction(
         AssetSourceMountTransaction? candidate,
         bool ownsCandidate,
-        AssetImportHealthSnapshot existingFailures) : IAssemblyCatalogTransaction
+        AssetImportHealthSnapshot existingFailures
+    ) : IAssemblyCatalogTransaction
     {
         private bool m_activated;
         private bool m_finished;

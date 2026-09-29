@@ -68,8 +68,7 @@ public sealed class EditorContext
     /// Thrown when <paramref name="prefix"/> is <see langword="null"/>.
     /// </exception>
     [ScriptingApiIgnore]
-    public IReadOnlyList<string> GetLayoutSectionNames(string prefix = "")
-        => layout.GetSectionNames(prefix);
+    public IReadOnlyList<string> GetLayoutSectionNames(string prefix = "") => layout.GetSectionNames(prefix);
 
     /// <summary>
     /// Tries to read one independent editor layout section snapshot.
@@ -89,7 +88,8 @@ public sealed class EditorContext
     [ScriptingApiIgnore]
     public bool TryGetLayoutSection(
         string sectionName,
-        out IReadOnlyDictionary<string, string> values)
+        out IReadOnlyDictionary<string, string> values
+    )
         => layout.TryGetSection(sectionName, out values);
 
     /// <summary>
@@ -110,7 +110,8 @@ public sealed class EditorContext
     [ScriptingApiIgnore]
     public void SetLayoutSection(
         string sectionName,
-        IEnumerable<KeyValuePair<string, string>> values)
+        IEnumerable<KeyValuePair<string, string>> values
+    )
         => layout.SetSection(sectionName, values);
 
     /// <summary>
@@ -126,8 +127,7 @@ public sealed class EditorContext
     /// Thrown when <paramref name="sectionName"/> is empty or cannot be represented in the layout.
     /// </exception>
     [ScriptingApiIgnore]
-    public bool RemoveLayoutSection(string sectionName)
-        => layout.RemoveSection(sectionName);
+    public bool RemoveLayoutSection(string sectionName) => layout.RemoveSection(sectionName);
 
     /// <summary>
     /// Replaces the Dear ImGui layout while retaining editor module and panel state sections.
@@ -136,8 +136,7 @@ public sealed class EditorContext
     /// The complete layout text returned by Dear ImGui.
     /// </param>
     [ScriptingApiIgnore]
-    public void SetImGuiLayout(string? value)
-        => layout.SetImGuiLayout(value);
+    public void SetImGuiLayout(string? value) => layout.SetImGuiLayout(value);
 
     /// <summary>
     /// Atomically saves the project editor layout when it changed.
@@ -152,8 +151,7 @@ public sealed class EditorContext
     /// Thrown when the layout document is inaccessible.
     /// </exception>
     [ScriptingApiIgnore]
-    public bool SaveLayoutIfChanged()
-        => layout.SaveIfChanged();
+    public bool SaveLayoutIfChanged() => layout.SaveIfChanged();
 
     /// <summary>
     /// Atomically rewrites the complete project editor layout document.
@@ -165,8 +163,7 @@ public sealed class EditorContext
     /// Thrown when the layout document is inaccessible.
     /// </exception>
     [ScriptingApiIgnore]
-    public void SaveLayout()
-        => layout.Save();
+    public void SaveLayout() => layout.Save();
 
     /// <summary>
     /// Gets the latest immutable editor frame snapshot.

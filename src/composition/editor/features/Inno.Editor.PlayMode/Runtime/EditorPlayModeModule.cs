@@ -27,8 +27,8 @@ internal sealed class EditorPlayModeModule : EditorModule, IEditorPlayMode
         IEditorScriptCompilation scripting,
         EditorInteractions interactions,
         EditorReloadCoordinator reloads,
-        IEditorAudioHost audio)
-    {
+        IEditorAudioHost audio
+    ) {
         m_loop = loop ?? throw new ArgumentNullException(nameof(loop));
         m_reloads = reloads ?? throw new ArgumentNullException(nameof(reloads));
         m_controller = new EditorPlayModeController(
@@ -119,8 +119,7 @@ internal sealed class EditorPlayModeModule : EditorModule, IEditorPlayMode
     /// <param name="context">
     /// The operation scope that provides state, services, and ownership boundaries.
     /// </param>
-    protected override void OnUpdate(EditorContext context)
-        => m_controller.AdvanceTransition();
+    protected override void OnUpdate(EditorContext context) => m_controller.AdvanceTransition();
 
     /// <summary>
     /// Stops this feature before its owning runtime releases generation-scoped services.

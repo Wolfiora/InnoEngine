@@ -40,8 +40,8 @@ public sealed class DefaultAuthoringAdapterCatalog :
     /// </exception>
     public DefaultAuthoringAdapterCatalog(
         IEnumerable<RenderingBackendProvider>? renderingProviders = null,
-        IEnumerable<RenderingAuthoringBackendProvider>? authoringProviders = null)
-    {
+        IEnumerable<RenderingAuthoringBackendProvider>? authoringProviders = null
+    ) {
         m_runtime = new DefaultAdapterCatalog(renderingProviders);
         m_renderingAuthoring = new RenderingAuthoringBackendCatalog(
             m_runtime.rendering,
@@ -128,8 +128,8 @@ public override ITextureTargetCompiler CreateTextureTargetCompiler() => new Bgfx
 
     IPresentationContext IPresentationBackendFactory.CreateContext(
         PresentationBackend backend,
-        PresentationBackendOptions options)
-    {
+        PresentationBackendOptions options
+    ) {
         ArgumentNullException.ThrowIfNull(options);
         return backend switch
         {
@@ -138,7 +138,10 @@ public override ITextureTargetCompiler CreateTextureTargetCompiler() => new Bgfx
         };
     }
 
-    private static NotSupportedException Unsupported<TBackend>(string parameterName, TBackend backend)
+    private static NotSupportedException Unsupported<TBackend>(
+        string parameterName,
+        TBackend backend
+    )
         where TBackend : struct, Enum
         => new($"The {parameterName} selection '{backend}' is not available in the default authoring adapter catalog.");
 }

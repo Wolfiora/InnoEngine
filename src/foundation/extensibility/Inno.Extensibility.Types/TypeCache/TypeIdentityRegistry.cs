@@ -62,8 +62,10 @@ internal sealed class TypeIdentityRegistry
     /// <param name="previous">
     /// The previous consumed by rebuild; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
-    public void Rebuild(IEnumerable<Type> types, TypeIdentityRegistry? previous)
-    {
+    public void Rebuild(
+        IEnumerable<Type> types,
+        TypeIdentityRegistry? previous
+    ) {
         ArgumentNullException.ThrowIfNull(types);
 
         Type[] sourceTypes = types
@@ -160,8 +162,10 @@ internal sealed class TypeIdentityRegistry
     /// <returns>
     /// <see langword="true"/> when the requested condition is satisfied; otherwise, <see langword="false"/>.
     /// </returns>
-    public bool TryGetStableTypeId(Type type, out Guid stableTypeId)
-    {
+    public bool TryGetStableTypeId(
+        Type type,
+        out Guid stableTypeId
+    ) {
         ArgumentNullException.ThrowIfNull(type);
 
         lock (m_sync)
@@ -182,8 +186,10 @@ internal sealed class TypeIdentityRegistry
     /// <returns>
     /// <see langword="true"/> when the requested condition is satisfied; otherwise, <see langword="false"/>.
     /// </returns>
-    public bool TryGetTypeRef(Type type, out TypeRef typeRef)
-    {
+    public bool TryGetTypeRef(
+        Type type,
+        out TypeRef typeRef
+    ) {
         ArgumentNullException.ThrowIfNull(type);
 
         lock (m_sync)
@@ -228,8 +234,10 @@ internal sealed class TypeIdentityRegistry
     /// <returns>
     /// <see langword="true"/> when the requested condition is satisfied; otherwise, <see langword="false"/>.
     /// </returns>
-    public bool TryResolveType(Guid stableTypeId, out Type? type)
-    {
+    public bool TryResolveType(
+        Guid stableTypeId,
+        out Type? type
+    ) {
         lock (m_sync)
         {
             if (m_typeByStable.TryGetValue(stableTypeId, out Type? resolved))
@@ -255,8 +263,10 @@ internal sealed class TypeIdentityRegistry
     /// <returns>
     /// <see langword="true"/> when the requested condition is satisfied; otherwise, <see langword="false"/>.
     /// </returns>
-    public bool TryGetRuntimeTypeId(Type type, out int runtimeTypeId)
-    {
+    public bool TryGetRuntimeTypeId(
+        Type type,
+        out int runtimeTypeId
+    ) {
         ArgumentNullException.ThrowIfNull(type);
 
         lock (m_sync)
@@ -304,8 +314,10 @@ internal sealed class TypeIdentityRegistry
     /// <returns>
     /// <see langword="true"/> when the requested condition is satisfied; otherwise, <see langword="false"/>.
     /// </returns>
-    public bool TryResolveRuntimeType(int runtimeTypeId, out Type? type)
-    {
+    public bool TryResolveRuntimeType(
+        int runtimeTypeId,
+        out Type? type
+    ) {
         lock (m_sync)
         {
             if (m_typeByRuntime.TryGetValue(runtimeTypeId, out Type? resolved))
@@ -331,8 +343,10 @@ internal sealed class TypeIdentityRegistry
     /// <returns>
     /// <see langword="true"/> when the requested condition is satisfied; otherwise, <see langword="false"/>.
     /// </returns>
-    public bool TryResolveType(TypeRef typeRef, out Type? type)
-    {
+    public bool TryResolveType(
+        TypeRef typeRef,
+        out Type? type
+    ) {
         lock (m_sync)
         {
             if (typeRef.stableId == Guid.Empty)
@@ -456,8 +470,8 @@ internal sealed class TypeIdentityRegistry
 
     private static GeneratedStableTypeMapping ParseGeneratedMapping(
         string assemblyName,
-        string? value)
-    {
+        string? value
+    ) {
         string[] parts = (value ?? string.Empty).Split('|', 2, StringSplitOptions.None);
         if (parts.Length != 2)
         {
@@ -467,8 +481,10 @@ internal sealed class TypeIdentityRegistry
         return new GeneratedStableTypeMapping(parts[1], parts[0]);
     }
 
-    private static Guid CreateGuidV5(Guid namespaceId, string name)
-    {
+    private static Guid CreateGuidV5(
+        Guid namespaceId,
+        string name
+    ) {
         byte[] ns = namespaceId.ToByteArray();
         SwapGuidByteOrder(ns);
 
@@ -499,5 +515,6 @@ internal sealed class TypeIdentityRegistry
 
     private sealed record GeneratedStableTypeMapping(
         string typeName,
-        string id);
+        string id
+    );
 }

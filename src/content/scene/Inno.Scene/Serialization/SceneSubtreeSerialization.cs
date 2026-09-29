@@ -37,8 +37,8 @@ public static class SceneSubtreeSerialization
     public static byte[] Capture(
         GameObject root,
         SerializationRegistry serialization,
-        IAssetReferenceResolver assets)
-    {
+        IAssetReferenceResolver assets
+    ) {
         ArgumentNullException.ThrowIfNull(root);
         ArgumentNullException.ThrowIfNull(serialization);
         ArgumentNullException.ThrowIfNull(assets);
@@ -84,8 +84,8 @@ public static class SceneSubtreeSerialization
         SerializationRegistry serialization,
         IAssetReferenceResolver assets,
         Transform? parent,
-        int siblingIndex)
-    {
+        int siblingIndex
+    ) {
         ArgumentNullException.ThrowIfNull(scene);
         ArgumentNullException.ThrowIfNull(serialization);
         ArgumentNullException.ThrowIfNull(assets);

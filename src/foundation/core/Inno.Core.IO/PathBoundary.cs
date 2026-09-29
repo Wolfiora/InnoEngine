@@ -20,8 +20,10 @@ public static class PathBoundary
     /// <returns>
     /// The normalized absolute contained path.
     /// </returns>
-    public static string Resolve(string root, string relativePath)
-    {
+    public static string Resolve(
+        string root,
+        string relativePath
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(root);
         ArgumentNullException.ThrowIfNull(relativePath);
         if (Path.IsPathRooted(relativePath))
@@ -44,8 +46,10 @@ public static class PathBoundary
     /// <returns>
     /// The normalized absolute contained path.
     /// </returns>
-    public static string RequireContained(string root, string path)
-    {
+    public static string RequireContained(
+        string root,
+        string path
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(root);
         ArgumentException.ThrowIfNullOrWhiteSpace(path);
         string normalizedRoot = Path.TrimEndingDirectorySeparator(Path.GetFullPath(root));
@@ -54,8 +58,10 @@ public static class PathBoundary
         return candidate;
     }
 
-    private static void EnsureContains(string root, string candidate)
-    {
+    private static void EnsureContains(
+        string root,
+        string candidate
+    ) {
         string prefix = root + Path.DirectorySeparatorChar;
         StringComparison comparison = OperatingSystem.IsWindows() || OperatingSystem.IsMacOS()
             ? StringComparison.OrdinalIgnoreCase

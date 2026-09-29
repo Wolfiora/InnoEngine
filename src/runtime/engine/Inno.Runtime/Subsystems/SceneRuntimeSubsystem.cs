@@ -3,7 +3,10 @@ using Inno.Scene;
 
 namespace Inno.Runtime;
 
-internal sealed class SceneRuntimeSubsystemFactory(SceneWorld scenes, RuntimeSessionKind kind) : IRuntimeSubsystemFactory
+internal sealed class SceneRuntimeSubsystemFactory(
+    SceneWorld scenes,
+    RuntimeSessionKind kind
+) : IRuntimeSubsystemFactory
 {
     internal static readonly RuntimeSubsystemId subsystemId = new("inno.runtime.scene");
 
@@ -21,11 +24,13 @@ internal sealed class SceneRuntimeSubsystemFactory(SceneWorld scenes, RuntimeSes
     /// <returns>
     /// A new subsystem that advances the context's scene world.
     /// </returns>
-    public IRuntimeSubsystem Create(RuntimeSubsystemContext context)
-        => new SceneRuntimeSubsystem(scenes, kind);
+    public IRuntimeSubsystem Create(RuntimeSubsystemContext context) => new SceneRuntimeSubsystem(scenes, kind);
 }
 
-internal sealed class SceneRuntimeSubsystem(SceneWorld scenes, RuntimeSessionKind sessionKind) : RuntimeSubsystem
+internal sealed class SceneRuntimeSubsystem(
+    SceneWorld scenes,
+    RuntimeSessionKind sessionKind
+) : RuntimeSubsystem
 {
     /// <summary>
     /// Advances non-editor scene systems by one deterministic interval.

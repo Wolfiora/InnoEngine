@@ -56,8 +56,8 @@ public sealed class SerializedPropertyRenderer
         InspectorAttributeDrawerRegistry attributes,
         EditorInteractions interactions,
         IInspectionPropertyEditService edits,
-        LogRouter logs)
-    {
+        LogRouter logs
+    ) {
         m_drawers = drawers ?? throw new ArgumentNullException(nameof(drawers));
         m_attributes = attributes ?? throw new ArgumentNullException(nameof(attributes));
         m_interactions = interactions ?? throw new ArgumentNullException(nameof(interactions));
@@ -85,8 +85,8 @@ public sealed class SerializedPropertyRenderer
         EditorContext editorContext,
         object owner,
         string ownerPath,
-        SerializedProperty property)
-    {
+        SerializedProperty property
+    ) {
         ArgumentNullException.ThrowIfNull(editorContext);
         ArgumentNullException.ThrowIfNull(owner);
         ArgumentNullException.ThrowIfNull(property);
@@ -147,10 +147,21 @@ public sealed class SerializedPropertyRenderer
     /// <param name="maximum">
     /// Optional inclusive numeric editing bound.
     /// </param>
-    public void DrawValue(EditorContext editorContext, object owner, string path, string label, Type propertyType,
-        Func<object?> getter, Action<object?> setter, IInspectionPropertyEditService edits, bool readOnly = false, bool hdrColor = false,
-        string? tooltip = null, double? minimum = null, double? maximum = null)
-    {
+    public void DrawValue(
+        EditorContext editorContext,
+        object owner,
+        string path,
+        string label,
+        Type propertyType,
+        Func<object?> getter,
+        Action<object?> setter,
+        IInspectionPropertyEditService edits,
+        bool readOnly = false,
+        bool hdrColor = false,
+        string? tooltip = null,
+        double? minimum = null,
+        double? maximum = null
+    ) {
         ArgumentNullException.ThrowIfNull(edits);
         Draw(editorContext, owner, owner, null, null, path, path, label, propertyType,
             readOnly ? PropertyVisibility.Readonly : PropertyVisibility.Show, getter, setter, edits, hdrColor, tooltip, minimum, maximum);
@@ -181,9 +192,15 @@ public sealed class SerializedPropertyRenderer
     /// Whether source ownership prohibits edits.
     /// </param>
     [ScriptingApiIgnore]
-    public void DrawDraftProperty(EditorContext editorContext, object stateOwner, object valueOwner, string ownerPath,
-        SerializedProperty property, IInspectionPropertyEditService edits, bool readOnly = false)
-    {
+    public void DrawDraftProperty(
+        EditorContext editorContext,
+        object stateOwner,
+        object valueOwner,
+        string ownerPath,
+        SerializedProperty property,
+        IInspectionPropertyEditService edits,
+        bool readOnly = false
+    ) {
         ArgumentNullException.ThrowIfNull(valueOwner);
         ArgumentNullException.ThrowIfNull(stateOwner);
         ArgumentNullException.ThrowIfNull(property);
@@ -207,9 +224,12 @@ public sealed class SerializedPropertyRenderer
         PropertyVisibility visibility,
         Func<object?> getter,
         Action<object?> setter,
-        IInspectionPropertyEditService? edits = null, bool hdrColor = false,
-        string? tooltip = null, double? minimum = null, double? maximum = null)
-    {
+        IInspectionPropertyEditService? edits = null,
+        bool hdrColor = false,
+        string? tooltip = null,
+        double? minimum = null,
+        double? maximum = null
+    ) {
         string displayLabel = EditorWidget.NicifyName(label);
         bool isReadOnly = (visibility & PropertyVisibility.RuntimeSet) == 0;
         Attribute[] attributes = member is null ? [] : InspectorMemberMetadata.GetAttributes(member);
@@ -282,8 +302,8 @@ public sealed class SerializedPropertyRenderer
         PropertyVisibility visibility,
         Func<object?> getter,
         Action<object?> setter,
-        IInspectionPropertyEditService? edits = null)
-    {
+        IInspectionPropertyEditService? edits = null
+    ) {
         var context = new PropertyDrawContext(
             editorContext,
             m_interactions,
@@ -329,30 +349,43 @@ public sealed class SerializedPropertyRenderer
         }
     }
 
-    internal bool TryGetTextState(object owner, string path, string key, out string? value)
-    {
+    internal bool TryGetTextState(
+        object owner,
+        string path,
+        string key,
+        out string? value
+    ) {
         ArgumentNullException.ThrowIfNull(owner);
         value = null;
         return m_textStates.TryGetValue(owner, out Dictionary<string, string>? states)
             && states.TryGetValue(CreateStateKey(path, key), out value);
     }
 
-    internal void SetTextState(object owner, string path, string key, string value)
-    {
+    internal void SetTextState(
+        object owner,
+        string path,
+        string key,
+        string value
+    ) {
         ArgumentNullException.ThrowIfNull(owner);
         ArgumentNullException.ThrowIfNull(value);
         m_textStates.GetOrCreateValue(owner)[CreateStateKey(path, key)] = value;
     }
 
-    internal void ClearTextState(object owner, string path, string key)
-    {
+    internal void ClearTextState(
+        object owner,
+        string path,
+        string key
+    ) {
         ArgumentNullException.ThrowIfNull(owner);
         if (m_textStates.TryGetValue(owner, out Dictionary<string, string>? states))
             states.Remove(CreateStateKey(path, key));
     }
 
-    private static string CreateStateKey(string path, string key)
-    {
+    private static string CreateStateKey(
+        string path,
+        string key
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(path);
         ArgumentException.ThrowIfNullOrWhiteSpace(key);
         return string.Concat(path, "\n", key);

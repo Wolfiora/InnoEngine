@@ -65,8 +65,8 @@ public sealed class EditorReloadCoordinator : IScriptReloadCoordinator
     /// </exception>
     public AssemblyUnloadMonitor Execute(
         AssemblyReloadSession reload,
-        IGenerationChange? externalChange = null)
-    {
+        IGenerationChange? externalChange = null
+    ) {
         ArgumentNullException.ThrowIfNull(reload);
         IGenerationChange[] transactions = CaptureTransactions(reload.context);
         var publication = new EditorPublication(reload, externalChange);
@@ -84,7 +84,10 @@ public sealed class EditorReloadCoordinator : IScriptReloadCoordinator
             {
                 participant.RefreshDiagnostics();
             }
-            catch (Exception pending) when (RetirementPendingException.Find(pending) is not null) { throw; }
+            catch (Exception pending) when (RetirementPendingException.Find(pending) is not null)
+            {
+                throw;
+            }
             catch (Exception exception)
             {
                 Trace.TraceError(
@@ -121,10 +124,12 @@ public sealed class EditorReloadCoordinator : IScriptReloadCoordinator
         return participants;
     }
 
-    private void RemoveCollectedParticipants()
-        => m_participants.RemoveAll(static reference => !reference.participant.TryGetTarget(out _));
+    private void RemoveCollectedParticipants() => m_participants.RemoveAll(static reference => !reference.participant.TryGetTarget(out _));
 
-    private sealed class EditorPublication(AssemblyReloadSession reload, IGenerationChange? external)
+    private sealed class EditorPublication(
+        AssemblyReloadSession reload,
+        IGenerationChange? external
+    )
         : IGenerationPublication<AssemblyUnloadMonitor>, IGenerationChange
     {
         /// <summary>
@@ -156,18 +161,39 @@ public sealed class EditorReloadCoordinator : IScriptReloadCoordinator
         public void Rollback()
         {
             List<Exception> failures = [];
-            try { reload.Rollback(); }
-            catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null) { throw; }
-            catch (Exception exception) { failures.Add(exception); }
-            try { external?.RestorePreviousState(); }
-            catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null) { throw; }
-            catch (Exception exception) { failures.Add(exception); }
+            try
+            {
+                reload.Rollback();
+            }
+            catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null)
+            {
+                throw;
+            }
+            catch (Exception exception)
+            {
+                failures.Add(exception);
+            }
+            try
+            {
+                external?.RestorePreviousState();
+            }
+            catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null)
+            {
+                throw;
+            }
+            catch (Exception exception)
+            {
+                failures.Add(exception);
+            }
             if (failures.Count > 0)
                 throw new AggregateException("Editor publication rollback was incomplete.", failures);
         }
     }
 
-    private sealed class ParticipantChange(IEditorReloadParticipant participant, AssemblyReloadContext context)
+    private sealed class ParticipantChange(
+        IEditorReloadParticipant participant,
+        AssemblyReloadContext context
+    )
         : IGenerationChange
     {
         private IGenerationChange? m_change;
@@ -187,7 +213,11 @@ public sealed class EditorReloadCoordinator : IScriptReloadCoordinator
         /// <summary>
         /// Completes the committed operation and releases temporary state.
         /// </summary>
-        public void Complete() { m_change!.Complete(); m_change = null; }
+        public void Complete()
+        {
+            m_change!.Complete();
+            m_change = null;
+        }
         /// <summary>
         /// Restores the state that existed before candidate activation began.
         /// </summary>
@@ -195,7 +225,11 @@ public sealed class EditorReloadCoordinator : IScriptReloadCoordinator
         /// <summary>
         /// Restores the state that existed before candidate activation began.
         /// </summary>
-        public void RestorePreviousState() { m_change?.RestorePreviousState(); m_change = null; }
+        public void RestorePreviousState()
+        {
+            m_change?.RestorePreviousState();
+            m_change = null;
+        }
     }
 
     private void Unregister(Guid registrationId)
@@ -206,7 +240,8 @@ public sealed class EditorReloadCoordinator : IScriptReloadCoordinator
 
     private readonly record struct ParticipantReference(
         Guid id,
-        WeakReference<IEditorReloadParticipant> participant);
+        WeakReference<IEditorReloadParticipant> participant
+    );
 
     private sealed class Registration : IDisposable
     {
@@ -217,8 +252,8 @@ public sealed class EditorReloadCoordinator : IScriptReloadCoordinator
         internal Registration(
             EditorReloadCoordinator owner,
             Guid id,
-            IEditorReloadParticipant participant)
-        {
+            IEditorReloadParticipant participant
+        ) {
             m_owner = owner;
             this.id = id;
             m_participant = participant;

@@ -15,13 +15,16 @@ internal sealed class SerializedRenderExtensionStateConverter : SerializationCon
     /// <param name="value">
     /// The concrete value read or transformed by this operation.
     /// </param>
-    public override void Write(SerializationWriter writer, SerializedRenderExtensionState value)
-    {
+    public override void Write(
+        SerializationWriter writer,
+        SerializedRenderExtensionState value
+    ) {
         writer.Write("stableTypeId", value.stableTypeId);
         writer.Write("propertyData", value.propertyData ?? []);
         writer.Write("dependencies", value.dependencies ?? []);
         if (writer.context.TryGet(out AssetDependencyCollection? dependencies) && dependencies is not null)
-            foreach (AssetDependency dependency in value.dependencies ?? []) dependencies.Add(dependency);
+            foreach (AssetDependency dependency in value.dependencies ?? [])
+                dependencies.Add(dependency);
     }
 
     /// <summary>

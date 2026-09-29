@@ -745,7 +745,8 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
         FirstTestRenderModel.enabled = true;
         SecondTestRenderModel.enabled = true;
         using var runtime = new RenderRuntime(m_types, device, diagnostics,
-            primaryPresentationViewportProvider: static _ => new RenderViewport(100, 200, 800, 600));
+            primaryPresentationViewportProvider: static _ => new RenderViewport(100, 200, 800, 600),
+            compositionProgramProvider: new TestCompositionProgramProvider());
 
         BeginRenderFrame(runtime, 0f);
         runtime.Render(default);
@@ -2201,6 +2202,20 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
             }
             artifact = ReadOnlyMemory<byte>.Empty;
             return RenderTargetArtifactStatus.Pending;
+        }
+    }
+
+    private sealed class TestCompositionProgramProvider : IRenderLayerCompositionProgramProvider
+    {
+        public GraphicsPipelineDescriptor CreateDescriptor(
+            GraphicsCapabilities capabilities, RenderVertexLayout vertexLayout)
+        {
+            _ = capabilities;
+            return new GraphicsPipelineDescriptor(
+                [1], [1],
+                [new RenderShaderBindingDescriptor(
+                    new RenderBindingId("s_tex"), RenderShaderBindingKind.Texture, 0, nativeName: "s_tex")],
+                vertexLayout);
         }
     }
 }

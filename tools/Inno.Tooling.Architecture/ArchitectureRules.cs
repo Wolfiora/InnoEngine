@@ -55,8 +55,10 @@ internal static partial class ArchitectureRules
         "PlatformImGuiContext"
     ];
 
-    internal static void Validate(string repositoryRoot, ICollection<string> failures)
-    {
+    internal static void Validate(
+        string repositoryRoot,
+        ICollection<string> failures
+    ) {
         ValidateRepositorySources(repositoryRoot, failures);
         Dictionary<string, ProjectNode> graph = LoadProjectGraph(repositoryRoot, failures);
         ValidateCycles(repositoryRoot, graph, failures);
@@ -66,8 +68,10 @@ internal static partial class ArchitectureRules
         ValidateRemovedProjects(repositoryRoot, failures);
     }
 
-    private static void ValidateRepositorySources(string repositoryRoot, ICollection<string> failures)
-    {
+    private static void ValidateRepositorySources(
+        string repositoryRoot,
+        ICollection<string> failures
+    ) {
         foreach (string rootName in S_SCAN_ROOTS)
         {
             string root = Path.Combine(repositoryRoot, rootName);
@@ -91,8 +95,8 @@ internal static partial class ArchitectureRules
     private static void ValidateForbiddenImplementationNames(
         string relative,
         string source,
-        ICollection<string> failures)
-    {
+        ICollection<string> failures
+    ) {
         string fileName = Path.GetFileNameWithoutExtension(relative);
         foreach (string word in S_FORBIDDEN_IMPLEMENTATION_WORDS)
         {
@@ -113,8 +117,8 @@ internal static partial class ArchitectureRules
     private static void ValidateProductionSource(
         string relative,
         string source,
-        ICollection<string> failures)
-    {
+        ICollection<string> failures
+    ) {
         if (relative.StartsWith("tools/Inno.Tooling.Architecture/", StringComparison.Ordinal))
             return;
         if (source.Contains(".With<IAssetReferenceResolver>", StringComparison.Ordinal) &&
@@ -185,8 +189,8 @@ internal static partial class ArchitectureRules
     private static void ValidateTestSource(
         string relative,
         string source,
-        ICollection<string> failures)
-    {
+        ICollection<string> failures
+    ) {
         if (source.Contains("InternalsVisibleTo", StringComparison.Ordinal))
             failures.Add($"{relative}: tests cannot introduce friend-assembly access.");
         if (NonPublicReflectionPattern().IsMatch(source))
@@ -195,8 +199,8 @@ internal static partial class ArchitectureRules
 
     private static Dictionary<string, ProjectNode> LoadProjectGraph(
         string repositoryRoot,
-        ICollection<string> failures)
-    {
+        ICollection<string> failures
+    ) {
         var graph = new Dictionary<string, ProjectNode>(StringComparer.OrdinalIgnoreCase);
         foreach (string path in EnumerateFiles(repositoryRoot, "*.csproj"))
         {
@@ -254,8 +258,8 @@ internal static partial class ArchitectureRules
     private static void ValidateProjectProperties(
         ProjectNode project,
         XDocument document,
-        ICollection<string> failures)
-    {
+        ICollection<string> failures
+    ) {
         foreach (XElement noWarn in document.Descendants("NoWarn"))
         {
             string value = noWarn.Value;
@@ -271,8 +275,8 @@ internal static partial class ArchitectureRules
     private static void ValidateReferenceBoundary(
         ProjectNode project,
         ProjectNode target,
-        ICollection<string> failures)
-    {
+        ICollection<string> failures
+    ) {
         string sourcePath = project.relative;
         string targetPath = target.relative;
         if (sourcePath.StartsWith("native/", StringComparison.Ordinal) &&
@@ -289,6 +293,19 @@ internal static partial class ArchitectureRules
             targetPath.StartsWith("src/composition/editor/", StringComparison.Ordinal))
         {
             failures.Add($"{sourcePath}: Build cannot reference Editor project {targetPath}.");
+        }
+        if ((string.Equals(project.name, "Inno.Rendering", StringComparison.Ordinal) ||
+             string.Equals(project.name, "Inno.Rendering.Runtime", StringComparison.Ordinal)) &&
+            (targetPath.StartsWith("build/", StringComparison.Ordinal) ||
+             targetPath.StartsWith("src/adapters/", StringComparison.Ordinal) ||
+             targetPath.StartsWith("native/", StringComparison.Ordinal)))
+        {
+            failures.Add($"{sourcePath}: backend-neutral Rendering cannot reference implementation project {targetPath}.");
+        }
+        if (string.Equals(project.name, "Inno.Build", StringComparison.Ordinal) &&
+            targetPath.StartsWith("build/support/", StringComparison.Ordinal))
+        {
+            failures.Add($"{sourcePath}: Build pipeline must depend on the provisioner contract, not Support Pack implementations.");
         }
         if (sourcePath.Contains("Inno.Rendering/", StringComparison.Ordinal) &&
             (targetPath.Contains("MaterialGraph", StringComparison.Ordinal) ||
@@ -347,8 +364,8 @@ internal static partial class ArchitectureRules
     private static void ValidateCycles(
         string repositoryRoot,
         IReadOnlyDictionary<string, ProjectNode> graph,
-        ICollection<string> failures)
-    {
+        ICollection<string> failures
+    ) {
         var states = new Dictionary<ProjectNode, VisitState>();
         var stack = new List<ProjectNode>();
         foreach (ProjectNode node in graph.Values)
@@ -378,8 +395,8 @@ internal static partial class ArchitectureRules
     private static void ValidatePlayerClosure(
         string repositoryRoot,
         IReadOnlyDictionary<string, ProjectNode> graph,
-        ICollection<string> failures)
-    {
+        ICollection<string> failures
+    ) {
         ProjectNode? player = graph.Values.SingleOrDefault(static value => value.name == "Inno.Player");
         if (player is null)
         {
@@ -405,8 +422,10 @@ internal static partial class ArchitectureRules
         }
     }
 
-    private static void ValidateRemovedProjects(string repositoryRoot, ICollection<string> failures)
-    {
+    private static void ValidateRemovedProjects(
+        string repositoryRoot,
+        ICollection<string> failures
+    ) {
         string solution = File.ReadAllText(Path.Combine(repositoryRoot, "InnoEngine.sln"));
         foreach (string removed in S_REMOVED_PROJECT_NAMES)
         {
@@ -428,8 +447,8 @@ internal static partial class ArchitectureRules
 
     private static void ValidateConceptualLayerReferences(
         IReadOnlyDictionary<string, ProjectNode> graph,
-        ICollection<string> failures)
-    {
+        ICollection<string> failures
+    ) {
         foreach (ProjectNode project in graph.Values)
         {
             ConceptualLayer? sourceLayer = ClassifyConceptualLayer(project);
@@ -448,8 +467,8 @@ internal static partial class ArchitectureRules
 
     private static void ValidateCompositionShellBoundaries(
         IReadOnlyDictionary<string, ProjectNode> graph,
-        ICollection<string> failures)
-    {
+        ICollection<string> failures
+    ) {
         ValidateHost("Inno.Player");
         ValidateHost("Inno.Editor.Application");
 
@@ -541,8 +560,10 @@ internal static partial class ArchitectureRules
            name.StartsWith("Inno.Native.UI", StringComparison.Ordinal) ||
            name.EndsWith(".Tests", StringComparison.Ordinal);
 
-    private static IEnumerable<string> EnumerateFiles(string root, string pattern)
-    {
+    private static IEnumerable<string> EnumerateFiles(
+        string root,
+        string pattern
+    ) {
         foreach (string path in Directory.EnumerateFiles(root, pattern, SearchOption.AllDirectories))
         {
             string normalized = path.Replace('\\', '/');
@@ -560,8 +581,10 @@ internal static partial class ArchitectureRules
         => source.Contains("<auto-generated>", StringComparison.OrdinalIgnoreCase) ||
            source.Contains("[GeneratedCode", StringComparison.Ordinal);
 
-    private static string Relative(string repositoryRoot, string path)
-        => Path.GetRelativePath(repositoryRoot, path).Replace('\\', '/');
+    private static string Relative(
+        string repositoryRoot,
+        string path
+    ) => Path.GetRelativePath(repositoryRoot, path).Replace('\\', '/');
 
     [GeneratedRegex(@"\b(class|struct|interface|enum|record)\s+([A-Za-z_]\w*)")]
     private static partial Regex DeclaredTypePattern();
@@ -578,8 +601,11 @@ internal static partial class ArchitectureRules
     [GeneratedRegex(@"BindingFlags\s*\.[^\r\n;]*(NonPublic|Private)|(GetField|GetMethod|GetProperty|GetConstructor)\s*\([^\r\n;]*BindingFlags\s*\.[^\r\n;]*(NonPublic|Private)")]
     private static partial Regex NonPublicReflectionPattern();
 
-    private sealed class ProjectNode(string path, string relative, string name)
-    {
+    private sealed class ProjectNode(
+        string path,
+        string relative,
+        string name
+    ) {
         internal string path { get; } = path;
         internal string relative { get; } = relative;
         internal string name { get; } = name;

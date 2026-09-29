@@ -51,8 +51,8 @@ public sealed class DefaultAdapterCatalog :
     /// </param>
     public DefaultAdapterCatalog(
         IEnumerable<RenderingBackendProvider>? renderingProviders = null,
-        IEnumerable<UiBackendProvider>? uiProviders = null)
-    {
+        IEnumerable<UiBackendProvider>? uiProviders = null
+    ) {
         m_rendering = new RenderingBackendCatalog(renderingProviders ?? [new BgfxRenderingProvider()]);
         m_ui = new UiBackendCatalog(uiProviders ?? [new RmlUiProvider()]);
     }
@@ -102,8 +102,10 @@ public sealed class DefaultAdapterCatalog :
             _ => throw Unsupported(nameof(backend), backend)
         };
 
-    IInputEventSource IInputBackendFactory.CreateEventSource(InputBackend backend, IPlatformWindow window)
-    {
+    IInputEventSource IInputBackendFactory.CreateEventSource(
+        InputBackend backend,
+        IPlatformWindow window
+    ) {
         ArgumentNullException.ThrowIfNull(window);
         return backend switch
         {
@@ -112,8 +114,10 @@ public sealed class DefaultAdapterCatalog :
         };
     }
 
-    IApplicationStorage IStorageBackendFactory.CreateStorage(StorageBackend backend, string rootDirectory)
-    {
+    IApplicationStorage IStorageBackendFactory.CreateStorage(
+        StorageBackend backend,
+        string rootDirectory
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(rootDirectory);
         return backend switch
         {
@@ -124,8 +128,13 @@ public sealed class DefaultAdapterCatalog :
 
     IRenderDevice IRenderingBackendFactory.CreateDevice(
         RenderingBackendId backend,
-        RenderingBackendOptions options)
+        RenderingBackendOptions options
+    )
         => m_rendering.CreateDevice(backend, options);
+
+    IRenderLayerCompositionProgramProvider IRenderingBackendFactory.CreateCompositionProgramProvider(
+        RenderingBackendId backend)
+        => m_rendering.CreateCompositionProgramProvider(backend);
 
     private sealed class BgfxRenderingProvider : RenderingBackendProvider
     {
@@ -152,9 +161,20 @@ public override IRenderDevice CreateDevice(RenderingBackendOptions options)
                 sRgbBackbuffer = options.sRgbBackbuffer,
                 forceSingleThreaded = options.forceSingleThreaded
             });
+
+        /// <summary>
+        /// Creates the BGFX program provider for ordered model output layers.
+        /// </summary>
+        /// <returns>
+        /// A provider for BGFX target shader artifacts.
+        /// </returns>
+        public override IRenderLayerCompositionProgramProvider CreateCompositionProgramProvider() => new BgfxCompositionProgramProvider();
     }
 
-    IAudioDevice IAudioBackendFactory.CreateDevice(AudioBackend backend, AudioBackendOptions options)
+    IAudioDevice IAudioBackendFactory.CreateDevice(
+        AudioBackend backend,
+        AudioBackendOptions options
+    )
         => backend switch
         {
             AudioBackend.MiniAudio => new MiniAudioDevice(new MiniAudioDeviceOptions
@@ -189,7 +209,10 @@ public override UiBackendId id => UiBackendId.rmlUi;
 public override IUiBackend CreateBackend() => new RmlUiBackend();
     }
 
-    private static NotSupportedException Unsupported<TBackend>(string parameterName, TBackend backend)
+    private static NotSupportedException Unsupported<TBackend>(
+        string parameterName,
+        TBackend backend
+    )
         where TBackend : struct, Enum
         => new($"The {parameterName} selection '{backend}' is not available in the default adapter catalog.");
 }

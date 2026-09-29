@@ -37,8 +37,8 @@ internal sealed class GeometryAssetImporter : AssetImporter<GeometryAsset>
     protected override async ValueTask ImportAsync(
         AssetImportContext context,
         AssetImportWriter<GeometryAsset> output,
-        CancellationToken cancellationToken)
-    {
+        CancellationToken cancellationToken
+    ) {
         byte[] ReadDependency(string relativePath)
         {
             AssetPath dependency = AssetPath.Parse(relativePath);

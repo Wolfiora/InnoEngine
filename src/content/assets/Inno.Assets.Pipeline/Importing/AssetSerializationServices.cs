@@ -32,8 +32,8 @@ public sealed class AssetSerializationServices
         TypeCatalog types,
         SerializationRegistry serialization,
         IAssetReferenceResolver? references,
-        Action<AssetDependency>? dependencySink)
-    {
+        Action<AssetDependency>? dependencySink
+    ) {
         m_types = types ?? throw new ArgumentNullException(nameof(types));
         m_serialization = serialization ?? throw new ArgumentNullException(nameof(serialization));
         m_references = references;
@@ -52,8 +52,7 @@ public sealed class AssetSerializationServices
     /// <exception cref="InvalidOperationException">
     /// Thrown when <typeparamref name="TValue"/> has no stable type registration.
     /// </exception>
-    public Guid GetStableTypeId<TValue>()
-        => m_types.GetTypeRef(typeof(TValue)).stableId;
+    public Guid GetStableTypeId<TValue>() => m_types.GetTypeRef(typeof(TValue)).stableId;
 
     /// <summary>
     /// Captures typed properties and their references as one neutral, owner-independent value.
@@ -74,7 +73,8 @@ public sealed class AssetSerializationServices
         var dependencies = new AssetDependencyCollection();
         byte[] data = m_serialization.Encode(writer => writer.WriteProperties(value), context.With(dependencies));
         if (m_dependencySink is not null)
-            foreach (AssetDependency dependency in dependencies.dependencies) m_dependencySink(dependency);
+            foreach (AssetDependency dependency in dependencies.dependencies)
+                m_dependencySink(dependency);
         return new(m_types.GetTypeRef(value.GetType()).stableId, data, dependencies.dependencies);
     }
 

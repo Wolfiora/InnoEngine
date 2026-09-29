@@ -20,9 +20,13 @@ internal sealed class AudioContentOwner : IDisposable
     private readonly Func<ContentReadScope>? m_contentScopeProvider;
     private readonly int m_capacity;
 
-    internal AudioContentOwner(IAudioDevice device, AudioVoiceOwner voices, IDiagnosticReporter diagnostics,
-        Func<ContentReadScope>? contentScopeProvider, int capacity)
-    {
+    internal AudioContentOwner(
+        IAudioDevice device,
+        AudioVoiceOwner voices,
+        IDiagnosticReporter diagnostics,
+        Func<ContentReadScope>? contentScopeProvider,
+        int capacity
+    ) {
         m_device = device;
         m_voices = voices;
         m_diagnostics = diagnostics;
@@ -53,15 +57,20 @@ internal sealed class AudioContentOwner : IDisposable
         m_listenerDiagnosticId = Guid.Empty;
     }
 
-    internal void Update(AudioExtensionRegistry.ProviderGeneration providers, float deltaTime)
-    {
+    internal void Update(
+        AudioExtensionRegistry.ProviderGeneration providers,
+        float deltaTime
+    ) {
         ContentReadScope content;
         try
         {
             content = m_contentScopeProvider?.Invoke() ?? ContentReadScope.empty;
             m_diagnostics.Resolve("AUDIO_CONTENT_SCOPE_FAILED", "AudioRuntime");
         }
-        catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null) { throw; }
+        catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null)
+        {
+            throw;
+        }
         catch (Exception exception)
         {
             Publish(
@@ -106,7 +115,10 @@ internal sealed class AudioContentOwner : IDisposable
                 m_diagnostics.Resolve("AUDIO_CONTENT_PROVIDER_FAILED", entry.id);
                 m_providerDiagnosticIds.Remove(entry.id);
             }
-            catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null) { throw; }
+            catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null)
+            {
+                throw;
+            }
             catch (Exception exception)
             {
                 rejectedProviders++;
@@ -215,14 +227,19 @@ internal sealed class AudioContentOwner : IDisposable
     private sealed class EmitterRecord(
         AudioClipAsset clip,
         ulong playbackRevision,
-        AudioVoiceHandle voice)
-    {
+        AudioVoiceHandle voice
+    ) {
         internal Guid clipId { get; } = clip.identity.persistentId;
         internal long contentVersion { get; } = clip.contentVersion;
         internal ulong playbackRevision { get; } = playbackRevision;
         internal AudioVoiceHandle voice { get; } = voice;
     }
 
-    private void Publish(string code, string message, DiagnosticSeverity severity, string? source)
+    private void Publish(
+        string code,
+        string message,
+        DiagnosticSeverity severity,
+        string? source
+    )
         => m_diagnostics.Publish(new Diagnostic(code, message, severity, source));
 }

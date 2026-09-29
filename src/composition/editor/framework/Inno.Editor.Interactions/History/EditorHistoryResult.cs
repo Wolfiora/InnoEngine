@@ -7,8 +7,11 @@ namespace Inno.Editor.Interactions;
 /// </summary>
 public readonly record struct EditorHistoryResult
 {
-    private EditorHistoryResult(bool succeeded, bool statePreserved, string message)
-    {
+    private EditorHistoryResult(
+        bool succeeded,
+        bool statePreserved,
+        string message
+    ) {
         this.succeeded = succeeded;
         this.statePreserved = statePreserved;
         this.message = message;

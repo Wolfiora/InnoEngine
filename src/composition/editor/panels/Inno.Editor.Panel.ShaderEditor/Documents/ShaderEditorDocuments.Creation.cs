@@ -10,24 +10,32 @@ using Inno.Rendering.Shaders;
 
 namespace Inno.Editor.Panel.ShaderEditor;
 
-internal sealed record ShaderNodeCreation(string definitionId, Guid sourceId = default, string function = "");
+internal sealed record ShaderNodeCreation(
+    string definitionId,
+    Guid sourceId = default,
+    string function = ""
+);
 
 internal sealed partial class ShaderEditorDocuments
 {
-    internal GraphNodeRecord PrepareNode(Draft draft, ShaderNodeCreation creation)
-    {
+    internal GraphNodeRecord PrepareNode(
+        Draft draft,
+        ShaderNodeCreation creation
+    ) {
         GraphDocument graph = Controller(draft).document;
         GraphNodeId? stage = draft.createFromPort is GraphEndpoint endpoint
             ? new(ShaderGraphDocument.Read(graph.FindNode(endpoint.nodeId)!, "stage", "", serialization, context))
             : draft.activeStage ?? graph.nodes.FirstOrDefault(static node => node.definitionId == ShaderGraphDocument.outputDefinitionId)?.id;
         var node = new GraphNodeRecord(new(Guid.NewGuid().ToString("N")), creation.definitionId) { position = draft.menuPosition };
-        if (stage is GraphNodeId id) node.SetValue("stage", ShaderGraphDocument.Encode(id.value, serialization, context));
+        if (stage is GraphNodeId id)
+            node.SetValue("stage", ShaderGraphDocument.Encode(id.value, serialization, context));
         if (creation.definitionId == "inno.shader.stage-input")
         {
             HashSet<string> names = graph.nodes.Where(static value => value.definitionId == "inno.shader.stage-input")
                 .Select(value => ShaderGraphDocument.Read(value, "settings", new ShaderGraphInputSettings(), serialization, context).id).ToHashSet(StringComparer.Ordinal);
             string name = "parameter";
-            for (int suffix = 2; names.Contains(name); suffix++) name = "parameter" + suffix;
+            for (int suffix = 2; names.Contains(name); suffix++)
+                name = "parameter" + suffix;
             node.SetValue("settings", ShaderGraphDocument.Encode(new ShaderGraphInputSettings
             { id = name, kind = ShaderIrInputKind.Uniform, type = new() { id = "float4" }, semantic = "" }, serialization, context));
         }
@@ -87,7 +95,8 @@ internal sealed partial class ShaderEditorDocuments
             if (id != Guid.Empty && TryLoadGraphNodeInterface(id, out ShaderGraphNodeInterface? nodeInterface))
             {
                 described = new GraphNodeRecord(node.id, node.definitionId) { position = node.position };
-                foreach ((string key, GraphSerializedValue value) in node.values) described.SetValue(key, value);
+                foreach ((string key, GraphSerializedValue value) in node.values)
+                    described.SetValue(key, value);
                 described.SetValue(ShaderGraphNodes.interfaceKey,
                     ShaderGraphDocument.Encode(nodeInterface!, serialization, context));
             }
@@ -102,8 +111,10 @@ internal sealed partial class ShaderEditorDocuments
             : throw new InvalidOperationException("Graph node Shader is unavailable or has import diagnostics.");
     }
 
-    private bool TryLoadGraphNodeInterface(Guid id, out ShaderGraphNodeInterface? nodeInterface)
-    {
+    private bool TryLoadGraphNodeInterface(
+        Guid id,
+        out ShaderGraphNodeInterface? nodeInterface
+    ) {
         nodeInterface = null;
         if (!assets.TryGetInfo(id, out AssetInfo? info) || info is null || info.status != AssetImportStatus.Imported
             || !assets.TryLoad(id, out ShaderAsset? shader) || shader is null || shader.isMissing)
@@ -113,25 +124,41 @@ internal sealed partial class ShaderEditorDocuments
         return true;
     }
 
-    internal ShaderNodePort? CompatibleInput(Draft draft, GraphNodeRecord node)
-    {
-        if (draft.createFromPort is not GraphEndpoint source) return null;
+    internal ShaderNodePort? CompatibleInput(
+        Draft draft,
+        GraphNodeRecord node
+    ) {
+        if (draft.createFromPort is not GraphEndpoint source)
+            return null;
         ShaderNodePort output = draft.ports[source.nodeId].Single(value => value.id == source.portId.value);
         return Describe(node).FirstOrDefault(value => value.direction == GraphPortDirection.Input && value.type.IsEquivalentTo(output.type));
     }
 
-    internal bool CanCreate(Draft draft, ShaderNodeCreation creation)
-    {
-        if (draft.readOnly) return false;
+    internal bool CanCreate(
+        Draft draft,
+        ShaderNodeCreation creation
+    ) {
+        if (draft.readOnly)
+            return false;
         if (creation.definitionId is ShaderGraphNodes.inputDefinitionId or ShaderGraphNodes.outputDefinitionId
-            && Controller(draft).document.nodes.Any(node => node.definitionId == creation.definitionId)) return false;
-        if (draft.createFromPort is null) return true;
-        try { return CompatibleInput(draft, PrepareNode(draft, creation)) is not null; }
-        catch (Exception failure) when ((failure is InvalidOperationException or ArgumentException or IOException or FormatException) && Inno.Core.Execution.RetirementPendingException.Find(failure) is null) { return false; }
+            && Controller(draft).document.nodes.Any(node => node.definitionId == creation.definitionId))
+                return false;
+        if (draft.createFromPort is null)
+            return true;
+        try
+        {
+            return CompatibleInput(draft, PrepareNode(draft, creation)) is not null;
+        }
+        catch (Exception failure) when ((failure is InvalidOperationException or ArgumentException or IOException or FormatException) && Inno.Core.Execution.RetirementPendingException.Find(failure) is null)
+        {
+            return false;
+        }
     }
 
-    internal void Create(Draft draft, ShaderNodeCreation creation)
-    {
+    internal void Create(
+        Draft draft,
+        ShaderNodeCreation creation
+    ) {
         GraphNodeRecord node = PrepareNode(draft, creation);
         ShaderNodePort? input = CompatibleInput(draft, node);
         GraphDocument graph = Controller(draft).document.Clone();

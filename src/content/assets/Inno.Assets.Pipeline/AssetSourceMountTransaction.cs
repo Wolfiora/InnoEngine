@@ -26,8 +26,8 @@ public sealed class AssetSourceMountTransaction : IDisposable
         AssetCatalogCandidate catalogCandidate,
         AssetFileSystem candidateFileSystem,
         IReadOnlyList<SerializedMissingState> previousStates,
-        long generation)
-    {
+        long generation
+    ) {
         m_mounts = Array.AsReadOnly(mounts.ToArray());
         this.catalogCandidate = catalogCandidate;
         this.candidateFileSystem = candidateFileSystem;
@@ -123,8 +123,10 @@ public sealed class AssetSourceMountTransaction : IDisposable
     /// True when the candidate path is cataloged.
     /// </returns>
     [ScriptingApiIgnore]
-    public bool TryGetInfo(AssetPath path, out AssetInfo? info)
-    {
+    public bool TryGetInfo(
+        AssetPath path,
+        out AssetInfo? info
+    ) {
         EnsureOpen();
         return candidateLoader.TryGetInfo(path, out info);
     }
@@ -148,8 +150,8 @@ public sealed class AssetSourceMountTransaction : IDisposable
     public bool TryGetArtifact(
         Guid persistentId,
         string outputName,
-        out AssetArtifactInfo? artifact)
-    {
+        out AssetArtifactInfo? artifact
+    ) {
         EnsureOpen();
         return candidateLoader.TryGetArtifact(persistentId, outputName, out artifact);
     }
@@ -187,7 +189,10 @@ public sealed class AssetSourceMountTransaction : IDisposable
         EnsureOpen();
         if (!m_activationComplete)
             throw new InvalidOperationException("A source-mount candidate must finish activation before completion.");
-        try { m_recovery.Complete(); }
+        try
+        {
+            m_recovery.Complete();
+        }
         catch (Exception failure)
         {
             m_terminalFailure = failure;

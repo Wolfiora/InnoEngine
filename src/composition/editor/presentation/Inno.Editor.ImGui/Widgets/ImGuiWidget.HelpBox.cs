@@ -25,8 +25,11 @@ public static partial class ImGuiWidget
     /// <param name="color">
     /// Semantic accent for the icon, outline, and leading stripe.
     /// </param>
-    public static void HelpBox(string text, string icon, Vector4 color)
-    {
+    public static void HelpBox(
+        string text,
+        string icon,
+        Vector4 color
+    ) {
         ArgumentNullException.ThrowIfNull(text);
         ArgumentNullException.ThrowIfNull(icon);
         Vector2 origin = NativeImGui.GetCursorScreenPos();
@@ -48,8 +51,14 @@ public static partial class ImGuiWidget
         draw.AddText(origin + padding, NativeImGui.ColorConvertFloat4ToU32(color), icon);
         NativeImGui.SetCursorScreenPos(origin + padding + new Vector2(iconWidth + gap, 0f));
         NativeImGui.PushTextWrapPos(NativeImGui.GetCursorPosX() + textWidth);
-        try { NativeImGui.TextUnformatted(text); }
-        finally { NativeImGui.PopTextWrapPos(); }
+        try
+        {
+            NativeImGui.TextUnformatted(text);
+        }
+        finally
+        {
+            NativeImGui.PopTextWrapPos();
+        }
         NativeImGui.SetCursorScreenPos(origin);
         NativeImGui.Dummy(new Vector2(width, height));
     }
@@ -138,8 +147,8 @@ public static partial class ImGuiWidget
     /// </exception>
     public static bool EnsureSection(
         string title = "Properties",
-        string? description = null)
-    {
+        string? description = null
+    ) {
         ArgumentNullException.ThrowIfNull(title);
         SectionLayoutState? layout = s_sectionLayout;
         if (layout is null)
@@ -171,8 +180,8 @@ public static partial class ImGuiWidget
     public static bool SectionHeader(
         string title,
         string? description = null,
-        Action? drawLeadingControl = null)
-    {
+        Action? drawLeadingControl = null
+    ) {
         ArgumentNullException.ThrowIfNull(title);
         SectionLayoutState? layout = s_sectionLayout;
         if (layout is null)
@@ -262,8 +271,8 @@ public static partial class ImGuiWidget
         float right,
         float top,
         float legendLeft,
-        float legendRight)
-    {
+        float legendRight
+    ) {
         uint color = NativeImGui.ColorConvertFloat4ToU32(EditorPalette.inspectorSectionBorder);
         DrawCappedSectionSegment(
             draw,
@@ -287,8 +296,8 @@ public static partial class ImGuiWidget
         float to,
         float centerY,
         bool capAtStart,
-        uint color)
-    {
+        uint color
+    ) {
         float thickness = style.borderSize;
         float halfThickness = thickness * 0.5f;
         float halfCap = style.inspectorCollapsedSectionCapLength * 0.5f;

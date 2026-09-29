@@ -21,7 +21,10 @@ public sealed class ShaderNodeDrawerRegistry : IDisposable
     /// Shared type catalog, which must outlive this registry.
     /// </param>
     public ShaderNodeDrawerRegistry(TypeCatalog types)
-    { m_types = types ?? throw new ArgumentNullException(nameof(types)); m_registry = new(types); }
+    {
+        m_types = types ?? throw new ArgumentNullException(nameof(types));
+        m_registry = new(types);
+    }
 
     /// <summary>
     /// Invokes optional node controls within one generation lease.
@@ -35,10 +38,13 @@ public sealed class ShaderNodeDrawerRegistry : IDisposable
     /// <returns>
     /// True when a registered drawer rendered the controls; false leaves presentation to the host.
     /// </returns>
-    public bool TryDraw(string definitionId, ShaderNodeDrawContext context)
-    {
+    public bool TryDraw(
+        string definitionId,
+        ShaderNodeDrawContext context
+    ) {
         using IDisposable operation = m_types.AcquireOperation("Draw shader node controls");
-        if (!m_registry.snapshot.drawers.TryGetValue(definitionId, out ShaderNodeDrawer? drawer)) return false;
+        if (!m_registry.snapshot.drawers.TryGetValue(definitionId, out ShaderNodeDrawer? drawer))
+            return false;
         drawer.Draw(context);
         return true;
     }
@@ -70,8 +76,10 @@ public sealed class ShaderNodeDrawerRegistry : IDisposable
     /// <returns>
     /// True when the current generation contributes presentation for the node; otherwise false.
     /// </returns>
-    public bool TryGetPresentation(string definitionId, out ShaderNodePresentation presentation)
-    {
+    public bool TryGetPresentation(
+        string definitionId,
+        out ShaderNodePresentation presentation
+    ) {
         using IDisposable operation = m_types.AcquireOperation("Resolve shader node authoring presentation");
         return m_registry.snapshot.presentations.TryGetValue(definitionId, out presentation);
     }
@@ -105,7 +113,8 @@ protected override Snapshot Build(TypeCacheSnapshot snapshot)
                 {
                     ShaderNodeDrawerAttribute attribute = type.GetCustomAttribute<ShaderNodeDrawerAttribute>()!;
                     string id = attribute.definitionId;
-                    if (result.ContainsKey(id)) throw new InvalidOperationException($"Shader node drawer '{id}' is registered twice.");
+                    if (result.ContainsKey(id))
+                        throw new InvalidOperationException($"Shader node drawer '{id}' is registered twice.");
                     result.Add(id, CreateExtension<ShaderNodeDrawer>(type));
                     names.Add(id, attribute.displayName);
                     presentations.Add(id, new(attribute.displayName, Normalize(attribute.createPath), attribute.createOrder, attribute.separatorBefore));
@@ -114,8 +123,14 @@ protected override Snapshot Build(TypeCacheSnapshot snapshot)
             }
             catch (Exception failure)
             {
-                try { DisposeExtensions(result.Values); }
-                catch (Exception retirement) { throw new AggregateException(failure, retirement); }
+                try
+                {
+                    DisposeExtensions(result.Values);
+                }
+                catch (Exception retirement)
+                {
+                    throw new AggregateException(failure, retirement);
+                }
                 throw;
             }
         }
@@ -135,5 +150,6 @@ protected override void DisposeSnapshot(Snapshot snapshot) => DisposeExtensions(
     private sealed record Snapshot(
         IReadOnlyDictionary<string, ShaderNodeDrawer> drawers,
         IReadOnlyDictionary<string, string> names,
-        IReadOnlyDictionary<string, ShaderNodePresentation> presentations);
+        IReadOnlyDictionary<string, ShaderNodePresentation> presentations
+    );
 }

@@ -17,8 +17,8 @@ internal static class ContentPackWriter
     internal static async ValueTask<(string packPath, string contentHash)> WriteAsync(
         string sourceRoot,
         string contentRoot,
-        CancellationToken cancellationToken)
-    {
+        CancellationToken cancellationToken
+    ) {
         Directory.CreateDirectory(contentRoot);
         string temporary = Path.Combine(contentRoot, ".content.pack.staging");
         if (File.Exists(temporary))

@@ -29,7 +29,10 @@ CanceledPendingAddition,
 RemovedCommitted,
 }
 
-internal readonly record struct SceneStoreRemovedComponent(GameComponent component, bool wasCommitted);
+internal readonly record struct SceneStoreRemovedComponent(
+    GameComponent component,
+    bool wasCommitted
+);
 
 internal sealed class SceneStore
 {
@@ -145,8 +148,8 @@ internal sealed class SceneStore
         GameObject owner,
         GameComponent component,
         SceneComponentTypeDescriptor descriptor,
-        bool allowsMultiple)
-    {
+        bool allowsMultiple
+    ) {
         ArgumentNullException.ThrowIfNull(component);
         ArgumentNullException.ThrowIfNull(descriptor);
         SceneObjectRecord record = GetAliveRecord(owner);
@@ -195,8 +198,10 @@ internal sealed class SceneStore
         CommitComponentAddition(entry);
     }
 
-    internal SceneStoreRemovalKind RemoveComponent(GameObject owner, GameComponent component)
-    {
+    internal SceneStoreRemovalKind RemoveComponent(
+        GameObject owner,
+        GameComponent component
+    ) {
         if (!TryGetRecord(owner, out SceneObjectRecord? record) ||
             !record!.isAlive ||
             !TryGetEntry(component, out ComponentEntry? entry) ||
@@ -225,8 +230,8 @@ internal sealed class SceneStore
     internal void ReplaceComponent(
         GameComponent previous,
         GameComponent replacement,
-        int replacementRuntimeTypeId)
-    {
+        int replacementRuntimeTypeId
+    ) {
         ArgumentNullException.ThrowIfNull(previous);
         ArgumentNullException.ThrowIfNull(replacement);
         if (isExecuting || hasPendingChanges)
@@ -279,8 +284,7 @@ internal sealed class SceneStore
         return removed;
     }
 
-    internal bool Contains(GameObject gameObject)
-        => TryGetRecord(gameObject, out SceneObjectRecord? record) && record!.isAlive;
+    internal bool Contains(GameObject gameObject) => TryGetRecord(gameObject, out SceneObjectRecord? record) && record!.isAlive;
 
     internal IReadOnlyList<GameObject> GetObjects()
     {
@@ -379,7 +383,8 @@ internal sealed class SceneStore
     internal bool TryGetComponent<TComponent>(
         GameObject owner,
         SceneComponentTypeDescriptor requestedType,
-        out TComponent? component) where TComponent : GameComponent
+        out TComponent? component
+    ) where TComponent : GameComponent
     {
         SceneObjectRecord record = GetAliveRecord(owner);
         for (int i = 0; i < record.components.Count; i++)
@@ -400,8 +405,8 @@ internal sealed class SceneStore
     internal bool TryGetComponent(
         GameObject owner,
         SceneComponentTypeDescriptor requestedType,
-        out GameComponent? component)
-    {
+        out GameComponent? component
+    ) {
         SceneObjectRecord record = GetAliveRecord(owner);
         for (int i = 0; i < record.components.Count; i++)
         {
@@ -418,8 +423,10 @@ internal sealed class SceneStore
         return false;
     }
 
-    internal int GetComponentIndex(GameObject owner, GameComponent component)
-    {
+    internal int GetComponentIndex(
+        GameObject owner,
+        GameComponent component
+    ) {
         ArgumentNullException.ThrowIfNull(component);
         SceneObjectRecord record = GetAliveRecord(owner);
         int index = record.components.IndexOf(component);
@@ -428,8 +435,11 @@ internal sealed class SceneStore
             : throw new InvalidOperationException("The component is not attached to the requested GameObject.");
     }
 
-    internal void SetComponentIndex(GameObject owner, GameComponent component, int componentIndex)
-    {
+    internal void SetComponentIndex(
+        GameObject owner,
+        GameComponent component,
+        int componentIndex
+    ) {
         SceneObjectRecord record = GetAliveRecord(owner);
         if (record.isCommitted && (isExecuting || hasPendingChanges))
             throw new InvalidOperationException("Components cannot be reordered during a scene execution phase.");
@@ -443,7 +453,8 @@ internal sealed class SceneStore
 
     internal IReadOnlyList<TComponent> GetComponents<TComponent>(
         GameObject owner,
-        SceneComponentTypeDescriptor requestedType) where TComponent : GameComponent
+        SceneComponentTypeDescriptor requestedType
+    ) where TComponent : GameComponent
     {
         SceneObjectRecord record = GetAliveRecord(owner);
         var result = new List<TComponent>(record.components.Count);
@@ -480,13 +491,15 @@ internal sealed class SceneStore
 
     internal IReadOnlyList<GameObject> Query(
         SceneComponentTypeDescriptor first,
-        SceneComponentTypeDescriptor second)
+        SceneComponentTypeDescriptor second
+    )
         => Query(ComponentQueryKey.Create(first.runtimeTypeId, second.runtimeTypeId));
 
     internal IReadOnlyList<GameObject> Query(
         SceneComponentTypeDescriptor first,
         SceneComponentTypeDescriptor second,
-        SceneComponentTypeDescriptor third)
+        SceneComponentTypeDescriptor third
+    )
         => Query(ComponentQueryKey.Create(
             first.runtimeTypeId,
             second.runtimeTypeId,
@@ -622,8 +635,8 @@ internal sealed class SceneStore
 
     private bool HasVisibleComponent(
         SceneObjectRecord owner,
-        SceneComponentTypeDescriptor requestedType)
-    {
+        SceneComponentTypeDescriptor requestedType
+    ) {
         for (int i = 0; i < owner.components.Count; i++)
         {
             if (TryGetEntry(owner.components[i], out ComponentEntry? entry) &&
@@ -636,8 +649,7 @@ internal sealed class SceneStore
         return false;
     }
 
-    private bool IsVisible(ComponentEntry entry)
-        => entry.isAlive && entry.isCommitted && entry.owner.isAlive && entry.owner.isCommitted;
+    private bool IsVisible(ComponentEntry entry) => entry.isAlive && entry.isCommitted && entry.owner.isAlive && entry.owner.isCommitted;
 
     private bool IsLocallyVisible(GameComponent component)
         => TryGetEntry(component, out ComponentEntry? entry) && entry!.isAlive && entry.owner.isAlive;
@@ -653,20 +665,26 @@ internal sealed class SceneStore
         return record;
     }
 
-    private bool TryGetRecord(GameObject gameObject, out SceneObjectRecord? record)
-    {
+    private bool TryGetRecord(
+        GameObject gameObject,
+        out SceneObjectRecord? record
+    ) {
         record = m_objects.First(m_objectKey, gameObject);
         return record is not null;
     }
 
-    private bool TryGetEntry(GameComponent component, out ComponentEntry? entry)
-    {
+    private bool TryGetEntry(
+        GameComponent component,
+        out ComponentEntry? entry
+    ) {
         entry = m_components.First(m_componentKey, component);
         return entry is not null;
     }
 
-    private void RemoveComponentEntry(SceneObjectRecord record, GameComponent component)
-    {
+    private void RemoveComponentEntry(
+        SceneObjectRecord record,
+        GameComponent component
+    ) {
         if (!TryGetEntry(component, out ComponentEntry? entry) || !entry!.isAlive)
             return;
 
@@ -789,8 +807,11 @@ internal sealed class SceneStore
 
     private sealed class ComponentEntry
     {
-        internal ComponentEntry(SceneObjectRecord owner, GameComponent component, int runtimeTypeId)
-        {
+        internal ComponentEntry(
+            SceneObjectRecord owner,
+            GameComponent component,
+            int runtimeTypeId
+        ) {
             this.owner = owner;
             this.component = component;
             this.runtimeTypeId = runtimeTypeId;
@@ -808,20 +829,29 @@ internal sealed class SceneStore
     private readonly record struct PendingComponentAddition(ComponentEntry entry);
     private readonly record struct PendingComponentRemoval(ComponentEntry entry);
 
-    private readonly record struct ComponentQueryKey(int first, int second, int third, int count)
-    {
-        internal static ComponentQueryKey Create(int first)
-            => new(first, default, default, 1);
+    private readonly record struct ComponentQueryKey(
+        int first,
+        int second,
+        int third,
+        int count
+    ) {
+        internal static ComponentQueryKey Create(int first) => new(first, default, default, 1);
 
-        internal static ComponentQueryKey Create(int first, int second)
+        internal static ComponentQueryKey Create(
+            int first,
+            int second
+        )
             => first == second
                 ? Create(first)
                 : Compare(first, second) < 0
                     ? new ComponentQueryKey(first, second, default, 2)
                     : new ComponentQueryKey(second, first, default, 2);
 
-        internal static ComponentQueryKey Create(int first, int second, int third)
-        {
+        internal static ComponentQueryKey Create(
+            int first,
+            int second,
+            int third
+        ) {
             if (Compare(first, second) > 0)
                 (first, second) = (second, first);
             if (Compare(second, third) > 0)
@@ -837,8 +867,10 @@ internal sealed class SceneStore
             return new ComponentQueryKey(first, second, third, 3);
         }
 
-        private static int Compare(int left, int right)
-            => left.CompareTo(right);
+        private static int Compare(
+            int left,
+            int right
+        ) => left.CompareTo(right);
     }
 
     private sealed class ExecutionScope : IDisposable

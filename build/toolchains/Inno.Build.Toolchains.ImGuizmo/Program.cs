@@ -81,8 +81,11 @@ static class Program
         Console.WriteLine("ImGuizmo outputs cleaned.");
     }
 
-    private static void CopyArtifacts(string cimguizmoDir, string outputDir, string config)
-    {
+    private static void CopyArtifacts(
+        string cimguizmoDir,
+        string outputDir,
+        string config
+    ) {
         var options = new BuildArtifactOptions(
             CImguizmoBuildConstants.BUILD_DIR_NAME,
             LIBRARY_TOKENS,
@@ -93,8 +96,10 @@ static class Program
         BuildArtifactCopier.CopyArtifacts(cimguizmoDir, outputDir, config, options);
     }
 
-    private static string NormalizeOutputName(string fileName, string config)
-    {
+    private static string NormalizeOutputName(
+        string fileName,
+        string config
+    ) {
         var ext = Path.GetExtension(fileName);
         return $"{CImguizmoBuildConstants.OUTPUT_DLL_NAME}-{config}{ext}";
     }
@@ -136,8 +141,10 @@ internal sealed record Options(string Config)
         return new Options(config);
     }
 
-    private static string GetNext(string[] args, ref int index)
-    {
+    private static string GetNext(
+        string[] args,
+        ref int index
+    ) {
         if (index + 1 >= args.Length)
         {
             throw new ArgumentException($"Missing value for {args[index]}.");

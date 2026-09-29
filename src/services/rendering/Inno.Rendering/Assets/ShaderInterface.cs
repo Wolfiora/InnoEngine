@@ -44,8 +44,8 @@ public sealed class ShaderInterfaceBinding
         ShaderPropertyBindingKind bindingKind = ShaderPropertyBindingKind.Uniform,
         RenderStorageAccess storageAccess = RenderStorageAccess.Read,
         string? nativeName = null,
-        int? location = null)
-    {
+        int? location = null
+    ) {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(arrayCount);
         if (!Enum.IsDefined(bindingKind))
             throw new ArgumentOutOfRangeException(nameof(bindingKind));
@@ -59,7 +59,8 @@ public sealed class ShaderInterfaceBinding
         this.storageAccess = storageAccess;
         this.nativeName = nativeName ?? id.value;
         ArgumentException.ThrowIfNullOrWhiteSpace(this.nativeName);
-        if (location < 0) throw new ArgumentOutOfRangeException(nameof(location));
+        if (location < 0)
+            throw new ArgumentOutOfRangeException(nameof(location));
         this.location = location;
     }
 

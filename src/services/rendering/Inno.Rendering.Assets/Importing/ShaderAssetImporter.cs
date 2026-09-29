@@ -34,9 +34,11 @@ internal sealed class ShaderAssetImporter : AssetImporter<ShaderAsset>
     /// <returns>
     /// An asynchronous operation that completes after all requested work has finished.
     /// </returns>
-    protected override async ValueTask ImportAsync(AssetImportContext context, AssetImportWriter<ShaderAsset> output,
-        CancellationToken cancellationToken)
-    {
+    protected override async ValueTask ImportAsync(
+        AssetImportContext context,
+        AssetImportWriter<ShaderAsset> output,
+        CancellationToken cancellationToken
+    ) {
         GraphDocument graph = GraphDocumentCodec.Decode(context.sourceBytes.Span, context.serialization);
         var dependencies = new AssetDependencyCollection();
         SerializationContext owner = AssetSerializationContext.Create(context.references, dependencies);
@@ -44,7 +46,10 @@ internal sealed class ShaderAssetImporter : AssetImporter<ShaderAsset>
         try
         {
             captured = ShaderGraphArtifact.Capture(graph, context.types, context.serialization, owner,
-                (id, path) =>
+                (
+                    id,
+                    path
+                ) =>
                 {
                     context.DependsOnArtifact(id);
                     AssetObject resolved = context.references.Resolve(id, context.services.GetStableTypeId<ShaderFunctionAsset>(),
@@ -54,7 +59,10 @@ internal sealed class ShaderAssetImporter : AssetImporter<ShaderAsset>
                     using ArtifactLease sourceLease = context.AcquireArtifact(source.identity.persistentId, ShaderSourceBundle.outputName);
                     return File.ReadAllBytes(sourceLease.info.absolutePath);
                 }, cancellationToken,
-                (id, path) =>
+                (
+                    id,
+                    path
+                ) =>
                 {
                     context.DependsOnArtifact(id);
                     AssetObject resolved = context.references.Resolve(id, context.services.GetStableTypeId<ShaderAsset>(),
@@ -72,7 +80,8 @@ internal sealed class ShaderAssetImporter : AssetImporter<ShaderAsset>
         ShaderDefinition definition = ShaderGraphArtifact.ReadDefinition(captured, context.serialization, owner);
         // Function dependencies are authoring-only; texture defaults remain ordinary runtime references.
         _ = context.serialization.Serialize(definition, owner);
-        foreach (AssetDependency dependency in dependencies.dependencies) output.DependsOnAsset(dependency);
+        foreach (AssetDependency dependency in dependencies.dependencies)
+            output.DependsOnAsset(dependency);
         var asset = new ShaderAsset();
         asset.SetDefinition(definition, context.serialization, owner);
         output.SetAsset(asset);
@@ -99,9 +108,11 @@ internal sealed class ShaderAssetImporter : AssetImporter<ShaderAsset>
     /// <returns>
     /// An asynchronous operation that completes after all requested work has finished.
     /// </returns>
-    protected override ValueTask<ReadOnlyMemory<byte>?> ExportAsync(AssetExportContext context, ShaderAsset asset,
-        CancellationToken cancellationToken)
-    {
+    protected override ValueTask<ReadOnlyMemory<byte>?> ExportAsync(
+        AssetExportContext context,
+        ShaderAsset asset,
+        CancellationToken cancellationToken
+    ) {
         cancellationToken.ThrowIfCancellationRequested();
         return ValueTask.FromResult<ReadOnlyMemory<byte>?>(GraphDocumentCodec.Encode(
             ShaderGraphArtifact.ReadDocument(ShaderGraphArtifact.Read(asset, context.artifacts), context.serialization), context.serialization));

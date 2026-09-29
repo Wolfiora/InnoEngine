@@ -40,8 +40,8 @@ public sealed class PrefabAsset : AssetObject
     public static PrefabAsset Capture(
         GameObject root,
         SerializationRegistry serialization,
-        IAssetReferenceResolver assets)
-    {
+        IAssetReferenceResolver assets
+    ) {
         ArgumentNullException.ThrowIfNull(root);
         ArgumentNullException.ThrowIfNull(serialization);
         ArgumentNullException.ThrowIfNull(assets);
@@ -78,8 +78,8 @@ public sealed class PrefabAsset : AssetObject
         GameScene scene,
         SerializationRegistry serialization,
         IAssetReferenceResolver assets,
-        Transform? parent = null)
-    {
+        Transform? parent = null
+    ) {
         ArgumentNullException.ThrowIfNull(scene);
         ArgumentNullException.ThrowIfNull(serialization);
         ArgumentNullException.ThrowIfNull(assets);
@@ -111,8 +111,8 @@ public sealed class PrefabAsset : AssetObject
     [ScriptingApiIgnore]
     public static PrefabAsset CreateImported(
         ReadOnlySpan<byte> payload,
-        IReadOnlyList<AssetDependency> dependencies)
-    {
+        IReadOnlyList<AssetDependency> dependencies
+    ) {
         ArgumentNullException.ThrowIfNull(dependencies);
         if (payload.IsEmpty)
             throw new ArgumentException("Imported prefab content cannot be empty.", nameof(payload));
@@ -130,8 +130,7 @@ public sealed class PrefabAsset : AssetObject
     /// A detached authoring-content snapshot owned by the caller.
     /// </returns>
     [ScriptingApiIgnore]
-    public EngineAssetContent CaptureContent()
-        => new(GetPayload(), sourceDependencies);
+    public EngineAssetContent CaptureContent() => new(GetPayload(), sourceDependencies);
 
     private byte[] GetPayload()
     {

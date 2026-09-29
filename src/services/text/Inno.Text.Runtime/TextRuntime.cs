@@ -27,8 +27,10 @@ public sealed class TextRuntime : RuntimeSubsystem, ITextService
     /// <param name="artifacts">
     /// The immutable asset artifact lookup.
     /// </param>
-    public TextRuntime(ITextBackend backend, IAssetArtifactLookup artifacts)
-    {
+    public TextRuntime(
+        ITextBackend backend,
+        IAssetArtifactLookup artifacts
+    ) {
         m_backend = backend ?? throw new ArgumentNullException(nameof(backend));
         m_artifacts = artifacts ?? throw new ArgumentNullException(nameof(artifacts));
     }
@@ -39,8 +41,7 @@ public sealed class TextRuntime : RuntimeSubsystem, ITextService
     /// <param name="frame">
     /// The current runtime frame.
     /// </param>
-    protected override void OnBeginFrame(RuntimeFrame frame)
-        => OwnFrameScope(EnterExecutionScope());
+    protected override void OnBeginFrame(RuntimeFrame frame) => OwnFrameScope(EnterExecutionScope());
 
     /// <summary>
     /// Binds this runtime to the current asynchronous execution context.
@@ -72,8 +73,12 @@ public sealed class TextRuntime : RuntimeSubsystem, ITextService
     /// <returns>
     /// The immutable shaped layout.
     /// </returns>
-    public TextLayout Shape(FontAsset font, string text, TextStyle style, TextShapingOptions options)
-    {
+    public TextLayout Shape(
+        FontAsset font,
+        string text,
+        TextStyle style,
+        TextShapingOptions options
+    ) {
         ArgumentNullException.ThrowIfNull(font);
         ArgumentNullException.ThrowIfNull(text);
         ObjectDisposedException.ThrowIf(m_disposed, this);
@@ -99,8 +104,12 @@ public sealed class TextRuntime : RuntimeSubsystem, ITextService
     /// <returns>
     /// The immutable glyph bitmap.
     /// </returns>
-    public GlyphBitmap Rasterize(FontAsset font, int faceIndex, uint glyphId, float fontSize)
-    {
+    public GlyphBitmap Rasterize(
+        FontAsset font,
+        int faceIndex,
+        uint glyphId,
+        float fontSize
+    ) {
         ArgumentNullException.ThrowIfNull(font);
         if (!float.IsFinite(fontSize) || fontSize <= 0f)
             throw new ArgumentOutOfRangeException(nameof(fontSize));
@@ -119,20 +128,40 @@ public sealed class TextRuntime : RuntimeSubsystem, ITextService
         List<Exception> failures = [];
         foreach (LoadedFont font in m_fonts.Values)
         {
-            try { m_backend.ReleaseFont(font.handle); }
-            catch (Exception exception) { failures.Add(exception); }
-            try { font.artifact.Dispose(); }
-            catch (Exception exception) { failures.Add(exception); }
+            try
+            {
+                m_backend.ReleaseFont(font.handle);
+            }
+            catch (Exception exception)
+            {
+                failures.Add(exception);
+            }
+            try
+            {
+                font.artifact.Dispose();
+            }
+            catch (Exception exception)
+            {
+                failures.Add(exception);
+            }
         }
         m_fonts.Clear();
-        try { m_backend.Dispose(); }
-        catch (Exception exception) { failures.Add(exception); }
+        try
+        {
+            m_backend.Dispose();
+        }
+        catch (Exception exception)
+        {
+            failures.Add(exception);
+        }
         if (failures.Count > 0)
             throw new AggregateException("Text runtime retirement failed.", failures);
     }
 
-    private LoadedFont GetOrLoad(FontAsset font, int faceIndex)
-    {
+    private LoadedFont GetOrLoad(
+        FontAsset font,
+        int faceIndex
+    ) {
         FontMetadata metadata = font.metadata
             ?? throw new InvalidOperationException("The font has no imported runtime metadata.");
         if (font.isMissing)
@@ -161,7 +190,14 @@ public sealed class TextRuntime : RuntimeSubsystem, ITextService
         }
     }
 
-    private readonly record struct FontKey(Guid persistentId, long version, int faceIndex);
+    private readonly record struct FontKey(
+        Guid persistentId,
+        long version,
+        int faceIndex
+    );
 
-    private sealed record LoadedFont(TextFontHandle handle, ArtifactLease artifact);
+    private sealed record LoadedFont(
+        TextFontHandle handle,
+        ArtifactLease artifact
+    );
 }

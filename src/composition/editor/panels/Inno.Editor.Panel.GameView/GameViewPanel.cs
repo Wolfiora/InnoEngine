@@ -43,8 +43,8 @@ internal sealed class GameViewPanel : EditorPanel
         IEditorGameScenePresentation scenePresentation,
         IEditorPlayMode playMode,
         EditorSettings editorSettings,
-        ProjectSettingsStore projectSettings)
-    {
+        ProjectSettingsStore projectSettings
+    ) {
         m_rendering = rendering ?? throw new ArgumentNullException(nameof(rendering));
         m_scenePresentation = scenePresentation ?? throw new ArgumentNullException(nameof(scenePresentation));
         m_playMode = playMode ?? throw new ArgumentNullException(nameof(playMode));
@@ -94,14 +94,16 @@ internal sealed class GameViewPanel : EditorPanel
             && local.X < layout.size.X && local.Y < layout.size.Y;
         var io = NativeImGui.GetIO();
         KeyModifier modifiers = KeyModifier.None;
-        if (io.KeyAlt) modifiers |= KeyModifier.Alt;
-        if (io.KeyCtrl) modifiers |= KeyModifier.Control;
-        if (io.KeyShift) modifiers |= KeyModifier.Shift;
-        if (io.KeySuper) modifiers |= KeyModifier.Super;
+        if (io.KeyAlt)
+            modifiers |= KeyModifier.Alt;
+        if (io.KeyCtrl)
+            modifiers |= KeyModifier.Control;
+        if (io.KeyShift)
+            modifiers |= KeyModifier.Shift;
+        if (io.KeySuper)
+            modifiers |= KeyModifier.Super;
         m_rendering.SetOutputInput(C_VIEWPORT_ID, m_playMode.isPlaying ? new RenderOutputInput(
-            new Inno.Core.Mathematics.Vector2(
-                local.X * layout.pixelWidth / layout.size.X,
-                local.Y * layout.pixelHeight / layout.size.Y),
+            new Inno.Core.Mathematics.Vector2(local.X * layout.pixelWidth / layout.size.X, local.Y * layout.pixelHeight / layout.size.Y),
             inside,
             inside ? new Inno.Core.Mathematics.Vector2(0f, io.MouseWheel) : default,
             modifiers,
@@ -169,8 +171,7 @@ internal sealed class GameViewPanel : EditorPanel
         m_presentationRevision = -1;
     }
 
-    private void ApplyEditorSettings(EditorSettings settings)
-        => m_backgroundColor = GameViewBackgroundSetting.Read(settings);
+    private void ApplyEditorSettings(EditorSettings settings) => m_backgroundColor = GameViewBackgroundSetting.Read(settings);
 
     private void RefreshPresentationSettings()
     {
@@ -183,8 +184,8 @@ internal sealed class GameViewPanel : EditorPanel
     private static GameViewportLayout CalculateLayout(
         Vector2 available,
         GamePresentationSettings presentation,
-        float framebufferScale)
-    {
+        float framebufferScale
+    ) {
         int availableWidth = Math.Max(1, (int)MathF.Floor(available.X));
         int availableHeight = Math.Max(1, (int)MathF.Floor(available.Y));
         GamePresentationViewport viewport = presentation.CalculateViewport(
@@ -197,11 +198,12 @@ internal sealed class GameViewPanel : EditorPanel
             Math.Max(1, (int)MathF.Ceiling(viewport.height * framebufferScale)));
     }
 
-    private ContentReadScope CreateContentScope()
-        => m_scenePresentation.Capture();
+    private ContentReadScope CreateContentScope() => m_scenePresentation.Capture();
 
-    private void DrawUnavailable(Vector2 size, string message)
-    {
+    private void DrawUnavailable(
+        Vector2 size,
+        string message
+    ) {
         Vector2 minimum = NativeImGui.GetCursorScreenPos();
         NativeImGui.GetWindowDrawList().AddRectFilled(
             minimum,
@@ -222,5 +224,6 @@ internal sealed class GameViewPanel : EditorPanel
         Vector2 offset,
         Vector2 size,
         int pixelWidth,
-        int pixelHeight);
+        int pixelHeight
+    );
 }

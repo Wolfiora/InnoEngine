@@ -10,8 +10,10 @@ public sealed class ReferenceCatalog
 {
     private readonly IReadOnlyDictionary<ReferenceKindId, IReferenceResolver> m_resolvers;
 
-    private ReferenceCatalog(long generation, IReadOnlyDictionary<ReferenceKindId, IReferenceResolver> resolvers)
-    {
+    private ReferenceCatalog(
+        long generation,
+        IReadOnlyDictionary<ReferenceKindId, IReferenceResolver> resolvers
+    ) {
         this.generation = generation;
         m_resolvers = resolvers;
     }
@@ -47,8 +49,10 @@ public sealed class ReferenceCatalog
     /// <exception cref="InvalidOperationException">
     /// Thrown when a resolver kind is invalid or duplicated.
     /// </exception>
-    public static ReferenceCatalog Create(long generation, IEnumerable<IReferenceResolver> resolvers)
-    {
+    public static ReferenceCatalog Create(
+        long generation,
+        IEnumerable<IReferenceResolver> resolvers
+    ) {
         if (generation <= 0)
             throw new ArgumentOutOfRangeException(nameof(generation), "A published reference catalog requires a positive generation.");
         ArgumentNullException.ThrowIfNull(resolvers);

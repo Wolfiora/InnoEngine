@@ -51,8 +51,12 @@ internal static class BgfxToolsBuild
         }
     }
 
-    private static void CopyTools(string bgfxDir, string outputDir, BgfxBuilder builder, string config)
-    {
+    private static void CopyTools(
+        string bgfxDir,
+        string outputDir,
+        BgfxBuilder builder,
+        string config
+    ) {
         var buildDir = Path.Combine(bgfxDir, BgfxBuildConstants.BUILD_DIR_NAME);
         if (!Directory.Exists(buildDir))
         {
@@ -103,8 +107,10 @@ internal static class BgfxToolsBuild
         }
     }
 
-    private static void DeleteExistingTools(string toolDir, string config)
-    {
+    private static void DeleteExistingTools(
+        string toolDir,
+        string config
+    ) {
         foreach (var path in Directory.EnumerateFiles(toolDir, "*", SearchOption.TopDirectoryOnly))
         {
             if (Path.GetFileNameWithoutExtension(path)
@@ -115,8 +121,10 @@ internal static class BgfxToolsBuild
         }
     }
 
-    private static string NormalizeToolName(string fileName, string config)
-    {
+    private static string NormalizeToolName(
+        string fileName,
+        string config
+    ) {
         var ext = Path.GetExtension(fileName);
         var baseName = Path.GetFileNameWithoutExtension(fileName);
         var normalized = TrimConfigSuffix(baseName);
@@ -137,8 +145,10 @@ internal static class BgfxToolsBuild
         return baseName.TrimEnd('-', '_', '.');
     }
 
-    private static void EnsureBgfxBuilt(string outputDir, string config)
-    {
+    private static void EnsureBgfxBuilt(
+        string outputDir,
+        string config
+    ) {
         if (!Directory.Exists(outputDir))
         {
             throw new InvalidOperationException("bgfx outputs not found. Run Inno.Build.Toolchains.Bgfx first.");
@@ -202,8 +212,10 @@ internal sealed record ToolsBuildOptions(string Config)
         return new ToolsBuildOptions(config);
     }
 
-    private static string GetNext(string[] args, ref int index)
-    {
+    private static string GetNext(
+        string[] args,
+        ref int index
+    ) {
         if (index + 1 >= args.Length)
         {
             throw new ArgumentException($"Missing value for {args[index]}.");

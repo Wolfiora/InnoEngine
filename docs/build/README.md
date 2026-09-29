@@ -11,6 +11,7 @@
 | [Inno.Build.NativeBindings](Inno.Build.NativeBindings.md) | BGCS 生成、原生依赖、程序集与 ABI 验收入口 |
 | [Native binding generation](../native/BindingGeneration.md) | 各 Native 项目自己的单文件 binding 生成与检查入口 |
 | [Inno.Build.SupportPacks](Inno.Build.SupportPacks.md) | 生产 source-independent Player Support Pack |
+| [Inno.Build.SupportPacks.Core](Inno.Build.SupportPacks.Core.md) | 可嵌入 Export 的缺包供给与原子发布实现 |
 | [Inno.Build.Toolchains](Inno.Build.Toolchains.md) | toolchain layout、process environment 与 artifact copy |
 | [Inno.Build.Toolchains.Bgfx](Inno.Build.Toolchains.Bgfx.md) | BGFX native build CLI |
 | [Inno.Build.Toolchains.Bgfx.Tools](Inno.Build.Toolchains.Bgfx.Tools.md) | shaderc/texturec 与目标内容编译 |
@@ -22,4 +23,4 @@
 | [Inno.Build.Toolchains.Text](Inno.Build.Toolchains.Text.md) | FreeType/HarfBuzz Text bridge native build CLI |
 | [Inno.Build.Toolchains.UI](Inno.Build.Toolchains.UI.md) | RmlUi bridge native build CLI |
 
-Game Build 固定执行 Validate → Combined Snapshot → Scripts/Target Artifacts → Content Pack → Support Pack composition → Platform Package → Atomic Commit。Editor Exporting 只调用该 API，不拥有构建机制。
+Game Build 固定执行 Validate → Support Pack 供给与校验 → Combined Snapshot → Scripts/Target Artifacts → Content Pack → Platform Package → Atomic Commit。Editor Exporting 只调用该 API，不拥有构建机制。

@@ -27,8 +27,10 @@ public readonly record struct RenderDeviceFrameCounters
     /// <param name="dispatchCount">
     /// Direct and indirect compute dispatches submitted so far.
     /// </param>
-    public RenderDeviceFrameCounters(int drawCount, int dispatchCount)
-    {
+    public RenderDeviceFrameCounters(
+        int drawCount,
+        int dispatchCount
+    ) {
         ArgumentOutOfRangeException.ThrowIfNegative(drawCount);
         ArgumentOutOfRangeException.ThrowIfNegative(dispatchCount);
         this.drawCount = drawCount;
@@ -92,7 +94,10 @@ public interface IRenderDevice : IDisposable
     /// <param name="frameIndex">
     /// Monotonic engine render frame index.
     /// </param>
-    void Execute(CompiledRenderGraph graph, ulong frameIndex);
+    void Execute(
+        CompiledRenderGraph graph,
+        ulong frameIndex
+    );
 
     /// <summary>
     /// Ends all encoders and advances the graphics backend exactly once.
@@ -111,7 +116,10 @@ public interface IRenderDevice : IDisposable
     /// <param name="height">
     /// Backbuffer height in pixels.
     /// </param>
-    void ResizeBackbuffer(int width, int height);
+    void ResizeBackbuffer(
+        int width,
+        int height
+    );
 
     /// <summary>
     /// Queues display synchronization policy on the API thread for the next frame boundary.
@@ -135,7 +143,10 @@ public interface IRenderDevice : IDisposable
     /// <returns>
     /// An opaque device-generation handle.
     /// </returns>
-    PersistentTextureHandle CreateTexture(RenderTextureDescriptor descriptor, string name);
+    PersistentTextureHandle CreateTexture(
+        RenderTextureDescriptor descriptor,
+        string name
+    );
 
     /// <summary>
     /// Creates a persistent sampled texture from a validated portable container.
@@ -162,7 +173,8 @@ public interface IRenderDevice : IDisposable
         RenderTextureContainer container,
         ReadOnlySpan<byte> data,
         bool sRgb,
-        string name)
+        string name
+    )
         => throw new NotSupportedException("This render device does not support encoded texture containers.");
 
     /// <summary>
@@ -184,7 +196,8 @@ public interface IRenderDevice : IDisposable
         PersistentTextureHandle texture,
         ReadOnlySpan<byte> data,
         int mipLevel = 0,
-        int arrayLayer = 0);
+        int arrayLayer = 0
+    );
 
     /// <summary>
     /// Replaces a tightly packed rectangular region in one persistent texture subresource.
@@ -201,7 +214,8 @@ public interface IRenderDevice : IDisposable
     void UpdateTextureRegion(
         PersistentTextureHandle texture,
         RenderTextureRegion region,
-        ReadOnlySpan<byte> data);
+        ReadOnlySpan<byte> data
+    );
 
     /// <summary>
     /// Begins an asynchronous readback of one complete persistent texture mip.
@@ -217,7 +231,8 @@ public interface IRenderDevice : IDisposable
     /// </returns>
     RenderTextureReadbackHandle BeginTextureReadback(
         PersistentTextureHandle texture,
-        int mipLevel = 0);
+        int mipLevel = 0
+    );
 
     /// <summary>
     /// Tries to complete one previously requested texture readback.
@@ -233,7 +248,8 @@ public interface IRenderDevice : IDisposable
     /// </returns>
     bool TryGetTextureReadback(
         RenderTextureReadbackHandle readback,
-        out RenderTextureReadbackResult? result);
+        out RenderTextureReadbackResult? result
+    );
 
     /// <summary>
     /// Stops retaining a readback result that is no longer needed by its caller.
@@ -269,7 +285,8 @@ public interface IRenderDevice : IDisposable
     PersistentBufferHandle CreateBuffer(
         PersistentBufferDescriptor descriptor,
         ReadOnlySpan<byte> initialData,
-        string name);
+        string name
+    );
 
     /// <summary>
     /// Replaces a contiguous range in a dynamic persistent buffer at a frame safety point.
@@ -286,7 +303,8 @@ public interface IRenderDevice : IDisposable
     void UpdateBuffer(
         PersistentBufferHandle buffer,
         ReadOnlySpan<byte> data,
-        int startElement = 0);
+        int startElement = 0
+    );
 
     /// <summary>
     /// Queues a persistent buffer for delayed GPU-safe destruction.
@@ -308,7 +326,10 @@ public interface IRenderDevice : IDisposable
     /// <returns>
     /// An opaque device-generation graphics pipeline handle.
     /// </returns>
-    GraphicsPipelineHandle CreateGraphicsPipeline(GraphicsPipelineDescriptor descriptor, string name);
+    GraphicsPipelineHandle CreateGraphicsPipeline(
+        GraphicsPipelineDescriptor descriptor,
+        string name
+    );
 
     /// <summary>
     /// Queues a graphics pipeline for delayed GPU-safe destruction.
@@ -330,7 +351,10 @@ public interface IRenderDevice : IDisposable
     /// <returns>
     /// An opaque device-generation compute pipeline handle.
     /// </returns>
-    ComputePipelineHandle CreateComputePipeline(ComputePipelineDescriptor descriptor, string name);
+    ComputePipelineHandle CreateComputePipeline(
+        ComputePipelineDescriptor descriptor,
+        string name
+    );
 
     /// <summary>
     /// Queues a compute pipeline for delayed GPU-safe destruction.

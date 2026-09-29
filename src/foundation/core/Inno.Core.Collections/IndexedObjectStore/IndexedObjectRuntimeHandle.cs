@@ -9,4 +9,7 @@ namespace Inno.Core.Collections;
 /// <param name="generation">
 /// The generation used to initialize this instance.
 /// </param>
-internal readonly record struct IndexedObjectRuntimeHandle(int slot, uint generation);
+internal readonly record struct IndexedObjectRuntimeHandle(
+    int slot,
+    uint generation
+);

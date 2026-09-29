@@ -20,8 +20,10 @@ internal sealed class AddComponentMenuProvider(TypeCatalog types) : EditorMenuSo
     /// <param name="builder">
     /// The builder consumed by build; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
-    public override void Build(EditorMenuContext context, EditorMenuBuilder builder)
-    {
+    public override void Build(
+        EditorMenuContext context,
+        EditorMenuBuilder builder
+    ) {
         if (context.target is not GameObject gameObject)
             return;
         TypeCacheSnapshot snapshot = types.current;
@@ -34,8 +36,10 @@ internal sealed class AddComponentMenuProvider(TypeCatalog types) : EditorMenuSo
         }
     }
 
-    private static bool IsAddable(Type type, GameObject gameObject)
-    {
+    private static bool IsAddable(
+        Type type,
+        GameObject gameObject
+    ) {
         if (type.IsAbstract || type.GetConstructor(
                 BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic,
                 binder: null,

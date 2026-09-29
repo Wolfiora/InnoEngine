@@ -75,7 +75,10 @@ public readonly struct IdentityDomainId : IEquatable<IdentityDomainId>
     /// <returns>
     /// <see langword="true"/> when the values are equal; otherwise, <see langword="false"/>.
     /// </returns>
-    public static bool operator ==(IdentityDomainId left, IdentityDomainId right) => left.Equals(right);
+    public static bool operator ==(
+        IdentityDomainId left,
+        IdentityDomainId right
+    ) => left.Equals(right);
 
     /// <summary>
     /// Determines whether two values identify different runtime domains.
@@ -89,5 +92,8 @@ public readonly struct IdentityDomainId : IEquatable<IdentityDomainId>
     /// <returns>
     /// <see langword="true"/> when the values are different; otherwise, <see langword="false"/>.
     /// </returns>
-    public static bool operator !=(IdentityDomainId left, IdentityDomainId right) => !left.Equals(right);
+    public static bool operator !=(
+        IdentityDomainId left,
+        IdentityDomainId right
+    ) => !left.Equals(right);
 }

@@ -46,8 +46,13 @@ internal sealed class OsxArm64CImguizmoBuilder : CImguizmoBuilder
     /// <param name="config">
     /// The validated configuration that controls this operation.
     /// </param>
-    public override void Build(string cimguizmoDir, string cimguiDir, string cimguiBuildDir, string cimguiOutputDir, string config)
-    {
+    public override void Build(
+        string cimguizmoDir,
+        string cimguiDir,
+        string cimguiBuildDir,
+        string cimguiOutputDir,
+        string config
+    ) {
         var buildDir = Path.Combine(cimguizmoDir, CImguizmoBuildConstants.BUILD_DIR_NAME, BUILD_DIR_NAME);
         Directory.CreateDirectory(buildDir);
 
@@ -76,8 +81,10 @@ internal sealed class OsxArm64CImguizmoBuilder : CImguizmoBuilder
         ToolchainEnvironment.Run("clang++", args, cimguizmoDir);
     }
 
-    private static string FindCimguiLibrary(string cimguiOutputDir, string config)
-    {
+    private static string FindCimguiLibrary(
+        string cimguiOutputDir,
+        string config
+    ) {
         var name = config == ToolchainLayout.C_DEBUG_CONFIGURATION
             ? "libcimgui-debug.dylib"
             : "libcimgui-release.dylib";

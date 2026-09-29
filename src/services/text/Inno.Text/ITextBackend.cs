@@ -19,7 +19,10 @@ public interface ITextBackend : IDisposable
     /// <returns>
     /// A generation-local face handle.
     /// </returns>
-    TextFontHandle LoadFont(ReadOnlySpan<byte> data, int faceIndex);
+    TextFontHandle LoadFont(
+        ReadOnlySpan<byte> data,
+        int faceIndex
+    );
 
     /// <summary>
     /// Releases one loaded face.
@@ -47,7 +50,12 @@ public interface ITextBackend : IDisposable
     /// <returns>
     /// The immutable layout.
     /// </returns>
-    TextLayout Shape(TextFontHandle font, string text, TextStyle style, TextShapingOptions options);
+    TextLayout Shape(
+        TextFontHandle font,
+        string text,
+        TextStyle style,
+        TextShapingOptions options
+    );
 
     /// <summary>
     /// Rasterizes one shaped glyph into 8-bit coverage.
@@ -64,5 +72,9 @@ public interface ITextBackend : IDisposable
     /// <returns>
     /// The immutable glyph bitmap.
     /// </returns>
-    GlyphBitmap Rasterize(TextFontHandle font, uint glyphId, float fontSize);
+    GlyphBitmap Rasterize(
+        TextFontHandle font,
+        uint glyphId,
+        float fontSize
+    );
 }

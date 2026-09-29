@@ -64,8 +64,11 @@ public static class ToolchainEnvironment
     /// <exception cref="InvalidOperationException">
     /// Thrown when the process cannot start or exits with a nonzero code.
     /// </exception>
-    public static void Run(string fileName, string arguments, string workingDir)
-    {
+    public static void Run(
+        string fileName,
+        string arguments,
+        string workingDir
+    ) {
         Console.WriteLine($"> {fileName} {arguments}");
         var psi = new ProcessStartInfo
         {
@@ -83,14 +86,20 @@ public static class ToolchainEnvironment
             throw new InvalidOperationException($"Failed to start process: {fileName}");
         }
 
-        process.OutputDataReceived += (_, e) =>
+        process.OutputDataReceived += (
+            _,
+            e
+        ) =>
         {
             if (e.Data != null)
             {
                 Console.WriteLine(e.Data);
             }
         };
-        process.ErrorDataReceived += (_, e) =>
+        process.ErrorDataReceived += (
+            _,
+            e
+        ) =>
         {
             if (e.Data != null)
             {
@@ -120,8 +129,10 @@ public static class ToolchainEnvironment
     /// <returns>
     /// <see langword="true"/> when at least one token occurs in the value; otherwise <see langword="false"/>.
     /// </returns>
-    public static bool ContainsAny(string value, params string[] needles)
-    {
+    public static bool ContainsAny(
+        string value,
+        params string[] needles
+    ) {
         foreach (var needle in needles)
         {
             if (value.Contains(needle, StringComparison.OrdinalIgnoreCase))
@@ -145,8 +156,10 @@ public static class ToolchainEnvironment
     /// <returns>
     /// The deterministic output file name.
     /// </returns>
-    public static string NormalizeOutputName(string fileName, string config)
-    {
+    public static string NormalizeOutputName(
+        string fileName,
+        string config
+    ) {
         var ext = Path.GetExtension(fileName);
         var baseName = Path.GetFileNameWithoutExtension(fileName);
         var trimmed = TrimConfigSuffix(baseName);

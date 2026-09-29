@@ -47,7 +47,8 @@ public interface IRenderTargetArtifactProvider
         ShaderAsset shader,
         RenderShaderVariant variant,
         GraphicsCapabilities capabilities,
-        out RenderShaderArtifact? artifact);
+        out RenderShaderArtifact? artifact
+    );
 
     /// <summary>
     /// Resolves the portable KTX artifact for one imported runtime texture.
@@ -67,5 +68,6 @@ public interface IRenderTargetArtifactProvider
     /// </exception>
     RenderTargetArtifactStatus GetTextureArtifact(
         RenderTextureArtifactReference texture,
-        out ReadOnlyMemory<byte> artifact);
+        out ReadOnlyMemory<byte> artifact
+    );
 }

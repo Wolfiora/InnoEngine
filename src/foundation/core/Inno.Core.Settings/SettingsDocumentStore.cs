@@ -38,8 +38,8 @@ public sealed class SettingsDocumentStore<TDocument>
         string path,
         SerializationRegistry serialization,
         Func<TDocument> createDefault,
-        Action<TDocument>? validate = null)
-    {
+        Action<TDocument>? validate = null
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(path);
         ArgumentNullException.ThrowIfNull(serialization);
         ArgumentNullException.ThrowIfNull(createDefault);
@@ -152,9 +152,7 @@ public sealed class SettingsDocumentStore<TDocument>
     /// <param name="data">
     /// The native payload.
     /// </param>
-    public void Restore(ReadOnlySpan<byte> data)
-        => Save(Deserialize(data));
+    public void Restore(ReadOnlySpan<byte> data) => Save(Deserialize(data));
 
-    private TDocument Clone(TDocument document)
-        => Deserialize(m_serialization.Serialize(document));
+    private TDocument Clone(TDocument document) => Deserialize(m_serialization.Serialize(document));
 }

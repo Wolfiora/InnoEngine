@@ -228,8 +228,10 @@ public sealed class ModuleHost : IDisposable
     /// <returns>
     /// The validated assembly module handle that represents the completed operation.
     /// </returns>
-    public AssemblyModuleHandle Register(string moduleName, IReadOnlyList<Assembly> assemblies)
-    {
+    public AssemblyModuleHandle Register(
+        string moduleName,
+        IReadOnlyList<Assembly> assemblies
+    ) {
         if (string.IsNullOrWhiteSpace(moduleName))
             throw new ArgumentException("Module name is required.", nameof(moduleName));
         ArgumentNullException.ThrowIfNull(assemblies);
@@ -302,8 +304,8 @@ public sealed class ModuleHost : IDisposable
     /// </returns>
     public AssemblyReloadSession BeginReload(
         AssemblyModuleHandle module,
-        AssemblyLoadRequest request)
-    {
+        AssemblyLoadRequest request
+    ) {
         ArgumentNullException.ThrowIfNull(request);
         lock (m_sync)
         {
@@ -373,8 +375,8 @@ public sealed class ModuleHost : IDisposable
     /// </exception>
     public AssemblyReloadSession BeginReload(
         IReadOnlyList<AssemblyLoadRequest> requests,
-        IReadOnlyList<string> removedModuleNames)
-    {
+        IReadOnlyList<string> removedModuleNames
+    ) {
         ArgumentNullException.ThrowIfNull(requests);
         ArgumentNullException.ThrowIfNull(removedModuleNames);
         lock (m_sync)
@@ -554,7 +556,10 @@ public sealed class ModuleHost : IDisposable
                 m_reloadInProgress = false;
                 if (activationFailure is AggregateException)
                     generations.Fault(activationFailure);
-                try { state.refresh.Rollback(); }
+                try
+                {
+                    state.refresh.Rollback();
+                }
                 catch (Exception failure) when (RetirementPendingException.Find(failure) is not null)
                 {
                     RetainFailedRetirement(failure, state);
@@ -587,7 +592,10 @@ public sealed class ModuleHost : IDisposable
             state.finished = true;
             m_reloadInProgress = false;
             Exception? cleanupFailure = null;
-            try { state.refresh.Complete(); }
+            try
+            {
+                state.refresh.Complete();
+            }
             catch (Exception failure) when (RetirementPendingException.Find(failure) is not null)
             {
                 RetainFailedRetirement(failure, state);
@@ -625,7 +633,10 @@ public sealed class ModuleHost : IDisposable
 
             state.finished = true;
             m_reloadInProgress = false;
-            try { state.refresh.Rollback(); }
+            try
+            {
+                state.refresh.Rollback();
+            }
             catch (Exception failure) when (RetirementPendingException.Find(failure) is not null)
             {
                 RetainFailedRetirement(failure, state);
@@ -647,8 +658,8 @@ public sealed class ModuleHost : IDisposable
     private AssemblyReloadSession BeginReloadLocked(
         IReadOnlyList<AssemblyLoadRequest> requests,
         IReadOnlyList<string> removedModuleNames,
-        IReadOnlyDictionary<string, AssemblyModuleHandle>? forcedHandles)
-    {
+        IReadOnlyDictionary<string, AssemblyModuleHandle>? forcedHandles
+    ) {
         if (requests.Count == 0 && removedModuleNames.Count == 0)
             throw new ArgumentException("At least one module change is required.", nameof(requests));
         if (requests.Any(static request => request is null))
@@ -724,8 +735,8 @@ public sealed class ModuleHost : IDisposable
 
     private AssemblyModuleEntry? FindPreviousModule(
         AssemblyLoadRequest request,
-        IReadOnlyDictionary<string, AssemblyModuleHandle>? forcedHandles)
-    {
+        IReadOnlyDictionary<string, AssemblyModuleHandle>? forcedHandles
+    ) {
         if (forcedHandles is not null && forcedHandles.TryGetValue(request.moduleName, out AssemblyModuleHandle handle))
             return m_modules[handle];
         AssemblyModuleEntry? previous = m_modules.Values.SingleOrDefault(module =>
@@ -741,8 +752,8 @@ public sealed class ModuleHost : IDisposable
 
     private IReadOnlyList<AssemblyModuleEntry> GetUpstreamModules(
         AssemblyLoadRequest request,
-        IReadOnlyList<AssemblyModuleEntry> stagedCandidates)
-    {
+        IReadOnlyList<AssemblyModuleEntry> stagedCandidates
+    ) {
         IEnumerable<AssemblyModuleEntry> effectiveModules = m_modules.Values
             .Where(active => stagedCandidates.All(candidate => candidate.handle != active.handle))
             .Concat(stagedCandidates);
@@ -772,13 +783,15 @@ public sealed class ModuleHost : IDisposable
             _ => throw new ArgumentException("InnoInternal assemblies cannot be loaded into a collectible module.")
         };
 
-    private AssemblyLoadRequest[] OrderReloadRequests(
-        IReadOnlyList<AssemblyLoadRequest> requests)
+    private AssemblyLoadRequest[] OrderReloadRequests(IReadOnlyList<AssemblyLoadRequest> requests)
     {
         Dictionary<string, AssemblyLoadRequest> byName = requests.ToDictionary(
             static request => request.moduleName,
             StringComparer.Ordinal);
-        IComparer<string> ordering = Comparer<string>.Create((left, right) =>
+        IComparer<string> ordering = Comparer<string>.Create((
+            left,
+            right
+        ) =>
         {
             int domainOrder = GetReloadOrder(byName[left]).CompareTo(GetReloadOrder(byName[right]));
             return domainOrder != 0
@@ -891,7 +904,10 @@ public sealed class ModuleHost : IDisposable
                 else
                 {
                     m_currentCatalog = previous;
-                    try { refresh.Rollback(); }
+                    try
+                    {
+                        refresh.Rollback();
+                    }
                     catch (Exception pending) when (RetirementPendingException.Find(pending) is not null)
                     {
                         RetainFailedRetirement(pending, (refresh, previous));
@@ -917,16 +933,16 @@ public sealed class ModuleHost : IDisposable
 
     private AssemblyCatalogSnapshot BuildCatalog(
         IReadOnlyDictionary<AssemblyModuleHandle, AssemblyModuleEntry> replacements,
-        IReadOnlySet<AssemblyModuleHandle>? removed = null)
-    {
+        IReadOnlySet<AssemblyModuleHandle>? removed = null
+    ) {
         Assembly[] assemblies = GetActiveAssemblies(replacements, removed ?? new HashSet<AssemblyModuleHandle>());
         return new AssemblyCatalogSnapshot(++m_catalogVersion, assemblies);
     }
 
     private Assembly[] GetActiveAssemblies(
         IReadOnlyDictionary<AssemblyModuleHandle, AssemblyModuleEntry> replacements,
-        IReadOnlySet<AssemblyModuleHandle> removed)
-    {
+        IReadOnlySet<AssemblyModuleHandle> removed
+    ) {
         IEnumerable<Assembly> host = AppDomain.CurrentDomain.GetAssemblies()
             .Where(static assembly => !assembly.IsDynamic)
             .Where(static assembly => AssemblyLoadContext.GetLoadContext(assembly) == AssemblyLoadContext.Default)
@@ -944,8 +960,8 @@ public sealed class ModuleHost : IDisposable
         AssemblyLoadRequest request,
         int generation,
         IReadOnlyList<AssemblyModuleEntry> upstreamModules,
-        IReadOnlyDictionary<string, PlannedAssembly> plannedAssemblies)
-    {
+        IReadOnlyDictionary<string, PlannedAssembly> plannedAssemblies
+    ) {
         CleanupRetiredShadowDirectories();
         ValidateRequest(request);
         string generationDirectory = Path.Combine(
@@ -974,7 +990,10 @@ public sealed class ModuleHost : IDisposable
 
         string mainSourcePath = Path.GetFullPath(request.mainAssemblyPath);
         string mainShadowPath = explicitShadowPaths[sourcePaths
-            .Select((path, index) => (path, index))
+            .Select((
+                path,
+                index
+            ) => (path, index))
             .First(pair => string.Equals(pair.path, mainSourcePath, StringComparison.OrdinalIgnoreCase)).index];
         IReadOnlyDictionary<string, Assembly> sharedAssemblies = BuildSharedAssemblies(
             request,
@@ -1063,8 +1082,8 @@ public sealed class ModuleHost : IDisposable
     private IReadOnlyDictionary<string, Assembly> BuildSharedAssemblies(
         AssemblyLoadRequest request,
         IReadOnlyList<AssemblyModuleEntry> upstreamModules,
-        IEnumerable<string> ownedNames)
-    {
+        IEnumerable<string> ownedNames
+    ) {
         var result = AppDomain.CurrentDomain.GetAssemblies()
             .Where(static assembly => !assembly.IsDynamic)
             .Where(static assembly => AssemblyLoadContext.GetLoadContext(assembly) == AssemblyLoadContext.Default)
@@ -1103,8 +1122,8 @@ public sealed class ModuleHost : IDisposable
         IReadOnlyDictionary<Assembly, AssemblyScope> assemblyScopes,
         IReadOnlyDictionary<string, Assembly> sharedAssemblies,
         IReadOnlyList<AssemblyModuleEntry> upstreamModules,
-        IReadOnlyDictionary<string, PlannedAssembly> plannedAssemblies)
-    {
+        IReadOnlyDictionary<string, PlannedAssembly> plannedAssemblies
+    ) {
         var ownByName = assemblies.ToDictionary(
             static assembly => assembly.GetName().Name ?? string.Empty,
             StringComparer.OrdinalIgnoreCase);
@@ -1221,8 +1240,8 @@ public sealed class ModuleHost : IDisposable
     private string CopyAssemblyArtifacts(
         string sourcePath,
         string destinationDirectory,
-        string assemblyName)
-    {
+        string assemblyName
+    ) {
         string destinationPath = Path.Combine(destinationDirectory, assemblyName + ".dll");
         File.Copy(sourcePath, destinationPath, overwrite: true);
         string sourcePdb = Path.ChangeExtension(sourcePath, ".pdb");
@@ -1326,8 +1345,7 @@ public sealed class ModuleHost : IDisposable
         }
     }
 
-    private IReadOnlyDictionary<string, PlannedAssembly> BuildPlannedAssemblyMap(
-        IReadOnlyList<AssemblyLoadRequest> requests)
+    private IReadOnlyDictionary<string, PlannedAssembly> BuildPlannedAssemblyMap(IReadOnlyList<AssemblyLoadRequest> requests)
     {
         var result = new Dictionary<string, PlannedAssembly>(StringComparer.OrdinalIgnoreCase);
         foreach (AssemblyLoadRequest request in requests)
@@ -1374,8 +1392,10 @@ public sealed class ModuleHost : IDisposable
             throw new InvalidOperationException($"Assembly module '{moduleName}' is already active.");
     }
 
-    private void ValidateUniqueReloadBoundary(AssemblyDomain domain, AssemblyScope scope)
-    {
+    private void ValidateUniqueReloadBoundary(
+        AssemblyDomain domain,
+        AssemblyScope scope
+    ) {
         if (domain == AssemblyDomain.InnoPlugin)
             return;
         if (m_modules.Values.Any(module => module.domain == domain && module.scope == scope))
@@ -1387,8 +1407,8 @@ public sealed class ModuleHost : IDisposable
 
     private void ValidateReloadClosure(
         IReadOnlyList<AssemblyLoadRequest> requests,
-        IReadOnlyList<AssemblyModuleEntry> removedModules)
-    {
+        IReadOnlyList<AssemblyModuleEntry> removedModules
+    ) {
         bool reloadsPlugins = requests.Any(static request => request.domain == AssemblyDomain.InnoPlugin) ||
                               removedModules.Any(static module => module.domain == AssemblyDomain.InnoPlugin);
         bool reloadsRuntime = requests.Any(static request =>
@@ -1556,8 +1576,8 @@ public sealed class ModuleHost : IDisposable
     private void TryEnqueueHostAssembly(
         AssemblyName assemblyName,
         ISet<string> visited,
-        Queue<Assembly> pending)
-    {
+        Queue<Assembly> pending
+    ) {
         string name = assemblyName.Name ?? string.Empty;
         if (!name.StartsWith("Inno.", StringComparison.Ordinal) || !visited.Add(name))
             return;
@@ -1577,10 +1597,15 @@ public sealed class ModuleHost : IDisposable
         return new string(value.Select(character => invalid.Contains(character) ? '_' : character).ToArray());
     }
 
-    private readonly record struct PlannedAssembly(AssemblyDomain domain, AssemblyScope scope);
+    private readonly record struct PlannedAssembly(
+        AssemblyDomain domain,
+        AssemblyScope scope
+    );
 
-    private void OnAssemblyLoaded(object? sender, AssemblyLoadEventArgs args)
-    {
+    private void OnAssemblyLoaded(
+        object? sender,
+        AssemblyLoadEventArgs args
+    ) {
         if (!args.LoadedAssembly.IsDynamic &&
             AssemblyLoadContext.GetLoadContext(args.LoadedAssembly) == AssemblyLoadContext.Default &&
             IsDiscoverableHostAssembly(args.LoadedAssembly))
@@ -1628,8 +1653,10 @@ public sealed class ModuleHost : IDisposable
         m_currentCatalog = new AssemblyCatalogSnapshot(0, []);
     }
 
-    private void RetainFailedRetirement(Exception failure, object owner)
-    {
+    private void RetainFailedRetirement(
+        Exception failure,
+        object owner
+    ) {
         m_retirementFailure = failure;
         m_retainedRetirement = owner;
         generations.Fault(failure);

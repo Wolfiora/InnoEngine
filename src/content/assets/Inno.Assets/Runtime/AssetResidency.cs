@@ -28,7 +28,8 @@ public interface IAssetResidency
     /// </returns>
     ValueTask<AssetLease<TAsset>> AcquireAsync<TAsset>(
         AssetPath path,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
         where TAsset : AssetObject;
 
     /// <summary>
@@ -48,7 +49,8 @@ public interface IAssetResidency
     /// </returns>
     ValueTask<AssetLease<TAsset>> AcquireAsync<TAsset>(
         Guid persistentId,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
         where TAsset : AssetObject;
 
     /// <summary>
@@ -66,7 +68,10 @@ public interface IAssetResidency
     /// <exception cref="InvalidOperationException">
     /// Thrown when the requested artifact does not exist or fails verification.
     /// </exception>
-    ArtifactLease AcquireArtifact(Guid persistentId, string outputName);
+    ArtifactLease AcquireArtifact(
+        Guid persistentId,
+        string outputName
+    );
 }
 
 /// <summary>
@@ -89,7 +94,10 @@ public abstract class AssetResidencyProvider
     /// <returns>
     /// A lease that retains its value until release completes; a Pending callback is retried by the owning lifecycle.
     /// </returns>
-    protected static AssetLease<TAsset> CreateAssetLease<TAsset>(TAsset asset, Action release)
+    protected static AssetLease<TAsset> CreateAssetLease<TAsset>(
+        TAsset asset,
+        Action release
+    )
         where TAsset : AssetObject
         => new(asset, release);
 
@@ -105,8 +113,10 @@ public abstract class AssetResidencyProvider
     /// <returns>
     /// A lease that retains its value until release completes; a Pending callback is retried by the owning lifecycle.
     /// </returns>
-    protected static ArtifactLease CreateArtifactLease(AssetArtifactInfo artifact, Action release)
-        => new(artifact, release);
+    protected static ArtifactLease CreateArtifactLease(
+        AssetArtifactInfo artifact,
+        Action release
+    ) => new(artifact, release);
 }
 
 /// <summary>
@@ -120,8 +130,10 @@ public sealed class AssetLease<TAsset> : IDisposable
 {
     private readonly ResidencyLease<TAsset> m_residency;
 
-    internal AssetLease(TAsset asset, Action release)
-    {
+    internal AssetLease(
+        TAsset asset,
+        Action release
+    ) {
         m_residency = new ResidencyLease<TAsset>(asset, release);
     }
 
@@ -131,8 +143,7 @@ public sealed class AssetLease<TAsset> : IDisposable
     /// <exception cref="ObjectDisposedException">
     /// Thrown after the lease has been released.
     /// </exception>
-    public TAsset asset
-        => m_residency.value;
+    public TAsset asset => m_residency.value;
 
     /// <summary>
     /// Releases this caller's residency ownership, retaining its value and callback while the provider reports Pending.
@@ -157,16 +168,17 @@ public sealed class ArtifactLease : IDisposable
 {
     private readonly ResidencyLease<AssetArtifactInfo> m_residency;
 
-    internal ArtifactLease(AssetArtifactInfo artifact, Action release)
-    {
+    internal ArtifactLease(
+        AssetArtifactInfo artifact,
+        Action release
+    ) {
         m_residency = new ResidencyLease<AssetArtifactInfo>(artifact, release);
     }
 
     /// <summary>
     /// Gets verified metadata for the retained artifact.
     /// </summary>
-    public AssetArtifactInfo info
-        => m_residency.value;
+    public AssetArtifactInfo info => m_residency.value;
 
     /// <summary>
     /// Opens a read-only stream over the retained immutable artifact.
@@ -174,8 +186,7 @@ public sealed class ArtifactLease : IDisposable
     /// <returns>
     /// A new independently owned read stream.
     /// </returns>
-    public Stream OpenRead()
-        => File.Open(info.absolutePath, FileMode.Open, FileAccess.Read, FileShare.Read);
+    public Stream OpenRead() => File.Open(info.absolutePath, FileMode.Open, FileAccess.Read, FileShare.Read);
 
     /// <summary>
     /// Releases artifact ownership, retaining metadata and callback while the provider reports Pending.
@@ -250,8 +261,11 @@ public readonly record struct AssetResidencyStatistics
     /// <param name="budgetBytes">
     /// Configured runtime payload budget.
     /// </param>
-    public AssetResidencyStatistics(int residentAssetCount, long residentBytes, long budgetBytes)
-    {
+    public AssetResidencyStatistics(
+        int residentAssetCount,
+        long residentBytes,
+        long budgetBytes
+    ) {
         this.residentAssetCount = residentAssetCount;
         this.residentBytes = residentBytes;
         this.budgetBytes = budgetBytes;

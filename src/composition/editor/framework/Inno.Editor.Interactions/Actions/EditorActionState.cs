@@ -24,8 +24,8 @@ public readonly record struct EditorActionState
         bool isVisible,
         bool isEnabled,
         bool isChecked = false,
-        string? displayName = null)
-    {
+        string? displayName = null
+    ) {
         this.isVisible = isVisible;
         this.isEnabled = isEnabled;
         this.isChecked = isChecked;

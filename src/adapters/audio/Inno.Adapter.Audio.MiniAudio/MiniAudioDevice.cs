@@ -130,7 +130,8 @@ public sealed unsafe class MiniAudioDevice : AudioDevice, IAudioDevice
     AudioClipHandle IAudioDevice.CreateClip(AudioClipDescriptor descriptor)
     {
         EnsureActive();
-        if (m_clips.Count >= m_options.limits.clips) return default;
+        if (m_clips.Count >= m_options.limits.clips)
+            return default;
         if (!System.IO.File.Exists(descriptor.artifactPath))
             return default;
         MaResourceManagerDataSource* source = (MaResourceManagerDataSource*)NativeMemory.AllocZeroed(
@@ -193,10 +194,11 @@ public sealed unsafe class MiniAudioDevice : AudioDevice, IAudioDevice
         AudioClipHandle clip,
         AudioBusHandle bus,
         AudioPlayOptions options,
-        double? scheduledDspTime)
-    {
+        double? scheduledDspTime
+    ) {
         EnsureActive();
-        if (m_voices.Count + m_completions.Count >= m_options.limits.voices) return default;
+        if (m_voices.Count + m_completions.Count >= m_options.limits.voices)
+            return default;
         if (!options.bus.isValid)
             return default;
         DeviceHandleIdentity clipIdentity = GetHandleIdentity(clip);
@@ -294,16 +296,20 @@ public sealed unsafe class MiniAudioDevice : AudioDevice, IAudioDevice
         return true;
     }
 
-    bool IAudioDevice.Seek(AudioDeviceVoiceHandle voice, TimeSpan position)
-    {
+    bool IAudioDevice.Seek(
+        AudioDeviceVoiceHandle voice,
+        TimeSpan position
+    ) {
         if (position < TimeSpan.Zero || !TryGetVoice(voice, out _, out VoiceRecord record))
             return false;
         ulong frame = checked((ulong)Math.Round(position.TotalSeconds * capabilities.sampleRate));
         return NativeApi.SoundSeekToPcmFrame(new MaSoundPtr(record.sound), frame) == MaResult.Success;
     }
 
-    bool IAudioDevice.SetVoiceParameters(AudioDeviceVoiceHandle voice, AudioVoiceParameters parameters)
-    {
+    bool IAudioDevice.SetVoiceParameters(
+        AudioDeviceVoiceHandle voice,
+        AudioVoiceParameters parameters
+    ) {
         if (parameters.pitch <= 0f)
             return false;
         if (!TryGetVoice(voice, out _, out VoiceRecord record))
@@ -312,8 +318,10 @@ public sealed unsafe class MiniAudioDevice : AudioDevice, IAudioDevice
         return true;
     }
 
-    bool IAudioDevice.TryGetVoiceState(AudioDeviceVoiceHandle voice, out AudioPlaybackState playbackState)
-    {
+    bool IAudioDevice.TryGetVoiceState(
+        AudioDeviceVoiceHandle voice,
+        out AudioPlaybackState playbackState
+    ) {
         if (TryGetVoice(voice, out _, out VoiceRecord record))
         {
             MaResult preparation = NativeApi.ResourceManagerDataSourceResult(
@@ -325,8 +333,10 @@ public sealed unsafe class MiniAudioDevice : AudioDevice, IAudioDevice
         return false;
     }
 
-    AudioBusHandle IAudioDevice.CreateBus(AudioBusId id, AudioBusHandle parent)
-    {
+    AudioBusHandle IAudioDevice.CreateBus(
+        AudioBusId id,
+        AudioBusHandle parent
+    ) {
         EnsureActive();
         if (!id.isValid || m_buses.Count >= m_options.limits.buses)
             return default;
@@ -378,8 +388,10 @@ public sealed unsafe class MiniAudioDevice : AudioDevice, IAudioDevice
         return true;
     }
 
-    bool IAudioDevice.SetBusVolume(AudioBusHandle bus, float volume)
-    {
+    bool IAudioDevice.SetBusVolume(
+        AudioBusHandle bus,
+        float volume
+    ) {
         if (!float.IsFinite(volume) || volume < 0f || !TryGetBus(bus, out _, out BusRecord record))
             return false;
         record.volume = volume;
@@ -387,8 +399,10 @@ public sealed unsafe class MiniAudioDevice : AudioDevice, IAudioDevice
         return true;
     }
 
-    bool IAudioDevice.SetBusMuted(AudioBusHandle bus, bool muted)
-    {
+    bool IAudioDevice.SetBusMuted(
+        AudioBusHandle bus,
+        bool muted
+    ) {
         if (!TryGetBus(bus, out _, out BusRecord record))
             return false;
         record.muted = muted;
@@ -396,8 +410,10 @@ public sealed unsafe class MiniAudioDevice : AudioDevice, IAudioDevice
         return true;
     }
 
-    bool IAudioDevice.SetBusPaused(AudioBusHandle bus, bool paused)
-    {
+    bool IAudioDevice.SetBusPaused(
+        AudioBusHandle bus,
+        bool paused
+    ) {
         if (!TryGetBus(bus, out _, out BusRecord record))
             return false;
         if (record.paused == paused)
@@ -411,8 +427,10 @@ public sealed unsafe class MiniAudioDevice : AudioDevice, IAudioDevice
         return true;
     }
 
-    bool IAudioDevice.AddBusProcessor(AudioBusHandle bus, AudioProcessorConfiguration processor)
-    {
+    bool IAudioDevice.AddBusProcessor(
+        AudioBusHandle bus,
+        AudioProcessorConfiguration processor
+    ) {
         ArgumentNullException.ThrowIfNull(processor);
         if (!TryGetBus(bus, out _, out BusRecord record))
             return false;
@@ -450,8 +468,10 @@ public sealed unsafe class MiniAudioDevice : AudioDevice, IAudioDevice
         return CreateListenerHandle(identity, generation);
     }
 
-    bool IAudioDevice.SetListener(AudioListenerHandle listener, AudioListenerState state)
-    {
+    bool IAudioDevice.SetListener(
+        AudioListenerHandle listener,
+        AudioListenerState state
+    ) {
         DeviceHandleIdentity identity = GetHandleIdentity(listener);
         if (identity.generation != generation || !m_listeners.TryGetValue(identity.value, out uint listenerIndex))
             return false;
@@ -541,8 +561,14 @@ public sealed unsafe class MiniAudioDevice : AudioDevice, IAudioDevice
     {
         nint pointer = m_clipSources[identity];
         m_clipSources.Remove(identity);
-        try { NativeApi.ResourceManagerDataSourceUninit(new MaResourceManagerDataSourcePtr((MaResourceManagerDataSource*)pointer)); }
-        finally { NativeMemory.Free((void*)pointer); }
+        try
+        {
+            NativeApi.ResourceManagerDataSourceUninit(new MaResourceManagerDataSourcePtr((MaResourceManagerDataSource*)pointer));
+        }
+        finally
+        {
+            NativeMemory.Free((void*)pointer);
+        }
     }
 
     private static uint NextGeneration()
@@ -577,8 +603,8 @@ public sealed unsafe class MiniAudioDevice : AudioDevice, IAudioDevice
     private static float GetParameter(
         AudioProcessorConfiguration processor,
         AudioParameterId id,
-        float defaultValue)
-    {
+        float defaultValue
+    ) {
         foreach (AudioProcessorParameter parameter in processor.parameters)
         {
             if (parameter.id == id)
@@ -597,8 +623,10 @@ public sealed unsafe class MiniAudioDevice : AudioDevice, IAudioDevice
             _ => throw new ArgumentOutOfRangeException(nameof(model))
         };
 
-    private static void ApplyVoiceParameters(MaSoundPtr sound, AudioVoiceParameters parameters)
-    {
+    private static void ApplyVoiceParameters(
+        MaSoundPtr sound,
+        AudioVoiceParameters parameters
+    ) {
         NativeApi.SoundSetVolume(sound, parameters.volume);
         NativeApi.SoundSetPitch(sound, parameters.pitch);
         NativeApi.SoundSetPan(sound, parameters.pan);
@@ -625,8 +653,11 @@ public sealed unsafe class MiniAudioDevice : AudioDevice, IAudioDevice
         NativeApi.SoundSetDopplerFactor(sound, spatial.dopplerFactor);
     }
 
-    private void ApplyListener(uint index, AudioListenerState state, bool enabled)
-    {
+    private void ApplyListener(
+        uint index,
+        AudioListenerState state,
+        bool enabled
+    ) {
         MaEnginePtr engine = new(m_engine);
         NativeApi.EngineListenerSetPosition(engine, index, state.position.x, state.position.y, state.position.z);
         NativeApi.EngineListenerSetDirection(engine, index, state.direction.x, state.direction.y, state.direction.z);
@@ -635,8 +666,7 @@ public sealed unsafe class MiniAudioDevice : AudioDevice, IAudioDevice
         NativeApi.EngineListenerSetEnabled(engine, index, enabled ? 1u : 0u);
     }
 
-    private void ApplyBusVolume(BusRecord bus)
-        => NativeApi.SoundGroupSetVolume(new MaSoundPtr(bus.group), bus.muted ? 0f : bus.volume);
+    private void ApplyBusVolume(BusRecord bus) => NativeApi.SoundGroupSetVolume(new MaSoundPtr(bus.group), bus.muted ? 0f : bus.volume);
 
     private NativeProcessor? CreateProcessor(AudioProcessorConfiguration processor)
     {
@@ -795,8 +825,11 @@ public sealed unsafe class MiniAudioDevice : AudioDevice, IAudioDevice
             CompleteVoice(identity, voice, AudioCompletionReason.DeviceLost);
     }
 
-    private bool TryGetVoice(AudioDeviceVoiceHandle handle, out ulong identity, out VoiceRecord record)
-    {
+    private bool TryGetVoice(
+        AudioDeviceVoiceHandle handle,
+        out ulong identity,
+        out VoiceRecord record
+    ) {
         DeviceHandleIdentity decoded = GetHandleIdentity(handle);
         identity = decoded.value;
         if (decoded.generation == generation && m_voices.TryGetValue(decoded.value, out VoiceRecord? found))
@@ -808,8 +841,11 @@ public sealed unsafe class MiniAudioDevice : AudioDevice, IAudioDevice
         return false;
     }
 
-    private bool TryGetBus(AudioBusHandle handle, out ulong identity, out BusRecord record)
-    {
+    private bool TryGetBus(
+        AudioBusHandle handle,
+        out ulong identity,
+        out BusRecord record
+    ) {
         DeviceHandleIdentity decoded = GetHandleIdentity(handle);
         identity = decoded.value;
         if (decoded.generation == generation && m_buses.TryGetValue(decoded.value, out BusRecord? found))
@@ -821,8 +857,11 @@ public sealed unsafe class MiniAudioDevice : AudioDevice, IAudioDevice
         return false;
     }
 
-    private void CompleteVoice(ulong identity, VoiceRecord record, AudioCompletionReason reason)
-    {
+    private void CompleteVoice(
+        ulong identity,
+        VoiceRecord record,
+        AudioCompletionReason reason
+    ) {
         AudioDeviceVoiceHandle handle = CreateVoiceHandle(identity, generation);
         m_voices.Remove(identity);
         ReleaseVoice(record);
@@ -870,8 +909,12 @@ public sealed unsafe class MiniAudioDevice : AudioDevice, IAudioDevice
         internal void* tail;
         internal float volume = 1f;
 
-        internal BusRecord(AudioBusId id, BusRecord? parent, MaSound* group, void* target)
-        {
+        internal BusRecord(
+            AudioBusId id,
+            BusRecord? parent,
+            MaSound* group,
+            void* target
+        ) {
             this.id = id;
             this.parent = parent;
             this.group = group;
@@ -893,8 +936,8 @@ public sealed unsafe class MiniAudioDevice : AudioDevice, IAudioDevice
             BusRecord bus,
             MaSound* sound,
             AudioPlaybackState state,
-            double? scheduledDspTime)
-        {
+            double? scheduledDspTime
+        ) {
             this.clipIdentity = clipIdentity;
             this.bus = bus;
             this.sound = sound;
@@ -908,8 +951,10 @@ public sealed unsafe class MiniAudioDevice : AudioDevice, IAudioDevice
         internal readonly bool isDelay;
         internal readonly void* node;
 
-        internal NativeProcessor(void* node, bool isDelay)
-        {
+        internal NativeProcessor(
+            void* node,
+            bool isDelay
+        ) {
             this.node = node;
             this.isDelay = isDelay;
         }
@@ -924,8 +969,14 @@ public sealed unsafe class MiniAudioDevice : AudioDevice, IAudioDevice
         internal readonly float a1;
         internal readonly float a2;
 
-        internal BiquadCoefficients(double b0, double b1, double b2, double a0, double a1, double a2)
-        {
+        internal BiquadCoefficients(
+            double b0,
+            double b1,
+            double b2,
+            double a0,
+            double a1,
+            double a2
+        ) {
             this.b0 = checked((float)b0);
             this.b1 = checked((float)b1);
             this.b2 = checked((float)b2);

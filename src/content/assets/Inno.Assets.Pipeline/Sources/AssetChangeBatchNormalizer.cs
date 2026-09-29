@@ -19,8 +19,10 @@ internal static class AssetChangeBatchNormalizer
     /// <returns>
     /// An immutable snapshot of the values selected by the operation.
     /// </returns>
-    public static AssetChangedEvent[] Normalize(string rootPath, IReadOnlyList<AssetChangedEvent> rawBatch)
-    {
+    public static AssetChangedEvent[] Normalize(
+        string rootPath,
+        IReadOnlyList<AssetChangedEvent> rawBatch
+    ) {
         if (rawBatch.Count == 0)
             return [];
 
@@ -77,8 +79,11 @@ internal static class AssetChangeBatchNormalizer
             .ToArray();
     }
 
-    private static bool TryBuildNormalized(string rootPath, in Accumulator acc, out AssetChangedEvent normalized)
-    {
+    private static bool TryBuildNormalized(
+        string rootPath,
+        in Accumulator acc,
+        out AssetChangedEvent normalized
+    ) {
         if (acc.renamed && !string.IsNullOrWhiteSpace(acc.renameOldPath))
         {
             WatcherChangeTypes type = WatcherChangeTypes.Renamed;
@@ -117,8 +122,10 @@ internal static class AssetChangeBatchNormalizer
         return true;
     }
 
-    private static bool ExistsAt(string rootPath, string relativePath)
-    {
+    private static bool ExistsAt(
+        string rootPath,
+        string relativePath
+    ) {
         string full = Path.Combine(rootPath, relativePath);
         return System.IO.File.Exists(full) || Directory.Exists(full);
     }

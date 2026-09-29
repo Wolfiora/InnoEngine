@@ -14,8 +14,7 @@ public static class AnimationExecutionContext
     /// <summary>
     /// Gets the animation service bound to the current execution context.
     /// </summary>
-    public static IAnimationService current
-        => S_CURRENT_SCOPE.current;
+    public static IAnimationService current => S_CURRENT_SCOPE.current;
 
     /// <summary>
     /// Binds one animation service until the returned strict scope is disposed.
@@ -51,7 +50,10 @@ public static class Animation
     /// <param name="target">
     /// The weak destination or explicit sampling-only policy.
     /// </param>
-    public static AnimationPlaybackHandle Play(AnimationClipAsset clip, AnimationTarget target)
+    public static AnimationPlaybackHandle Play(
+        AnimationClipAsset clip,
+        AnimationTarget target
+    )
         => AnimationExecutionContext.current.Play(clip, target);
 
     /// <summary>
@@ -69,7 +71,11 @@ public static class Animation
     /// <param name="target">
     /// The weak destination or explicit sampling-only policy.
     /// </param>
-    public static AnimationPlaybackHandle Play(AnimationClipAsset clip, AnimationTarget target, AnimationPlayOptions options)
+    public static AnimationPlaybackHandle Play(
+        AnimationClipAsset clip,
+        AnimationTarget target,
+        AnimationPlayOptions options
+    )
         => AnimationExecutionContext.current.Play(clip, target, options);
 
     /// <summary>
@@ -81,8 +87,7 @@ public static class Animation
     /// <returns>
     /// <see langword="true"/> when the playback was live.
     /// </returns>
-    public static bool Stop(AnimationPlaybackHandle handle)
-        => AnimationExecutionContext.current.Stop(handle);
+    public static bool Stop(AnimationPlaybackHandle handle) => AnimationExecutionContext.current.Stop(handle);
 
     /// <summary>
     /// Pauses one live playback.
@@ -93,8 +98,7 @@ public static class Animation
     /// <returns>
     /// <see langword="true"/> when the state changed.
     /// </returns>
-    public static bool Pause(AnimationPlaybackHandle handle)
-        => AnimationExecutionContext.current.Pause(handle);
+    public static bool Pause(AnimationPlaybackHandle handle) => AnimationExecutionContext.current.Pause(handle);
 
     /// <summary>
     /// Resumes one paused playback.
@@ -105,8 +109,7 @@ public static class Animation
     /// <returns>
     /// <see langword="true"/> when the state changed.
     /// </returns>
-    public static bool Resume(AnimationPlaybackHandle handle)
-        => AnimationExecutionContext.current.Resume(handle);
+    public static bool Resume(AnimationPlaybackHandle handle) => AnimationExecutionContext.current.Resume(handle);
 
     /// <summary>
     /// Seeks one live playback to a clip-local time.
@@ -120,8 +123,10 @@ public static class Animation
     /// <returns>
     /// <see langword="true"/> when the handle was live.
     /// </returns>
-    public static bool Seek(AnimationPlaybackHandle handle, float time)
-        => AnimationExecutionContext.current.Seek(handle, time);
+    public static bool Seek(
+        AnimationPlaybackHandle handle,
+        float time
+    ) => AnimationExecutionContext.current.Seek(handle, time);
 
     /// <summary>
     /// Tries to read one live playback's state and position.
@@ -141,6 +146,7 @@ public static class Animation
     public static bool TryGetState(
         AnimationPlaybackHandle handle,
         out AnimationPlaybackState state,
-        out float time)
+        out float time
+    )
         => AnimationExecutionContext.current.TryGetState(handle, out state, out time);
 }

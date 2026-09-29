@@ -20,6 +20,7 @@
     <ProjectReference Include="..\..\..\..\content\animation\Inno.Animation.Runtime\Inno.Animation.Runtime.csproj" PrivateAssets="compile" />
     <ProjectReference Include="..\..\features\Inno.Editor.Audio\Inno.Editor.Audio.csproj" PrivateAssets="compile" />
     <ProjectReference Include="..\..\..\..\..\build\pipeline\Inno.Build\Inno.Build.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="..\..\..\..\..\build\support\Inno.Build.SupportPacks.Core\Inno.Build.SupportPacks.Core.csproj" PrivateAssets="compile" />
     <ProjectReference Include="..\..\..\..\..\build\pipeline\Inno.Build.Platform.MacOS\Inno.Build.Platform.MacOS.csproj" PrivateAssets="compile" />
     <ProjectReference Include="..\..\..\..\..\build\pipeline\Inno.Build.Platform.Windows\Inno.Build.Platform.Windows.csproj" PrivateAssets="compile" />
     <ProjectReference Include="..\..\framework\Inno.Editor.Core\Inno.Editor.Core.csproj" PrivateAssets="compile" />
@@ -71,4 +72,53 @@
   <ItemGroup>
     <ProjectReference Include="../../../../foundation/extensibility/Inno.Extensibility.Reload/Inno.Extensibility.Reload.csproj" />
   </ItemGroup>
+  <PropertyGroup>
+    <InnoEditorPublishRuntimeIdentifier Condition="'$(RuntimeIdentifier)' != ''">$(RuntimeIdentifier)</InnoEditorPublishRuntimeIdentifier>
+    <InnoEditorPublishRuntimeIdentifier Condition="'$(InnoEditorPublishRuntimeIdentifier)' == ''">$(NETCoreSdkRuntimeIdentifier)</InnoEditorPublishRuntimeIdentifier>
+    <InnoEditorPublishSupportPackTarget Condition="'$(InnoEditorPublishRuntimeIdentifier)' == 'osx-arm64'">macos-arm64</InnoEditorPublishSupportPackTarget>
+    <InnoEditorPublishSupportPackTarget Condition="'$(InnoEditorPublishRuntimeIdentifier)' == 'win-x64'">windows-x64</InnoEditorPublishSupportPackTarget>
+    <InnoEditorPublishNativePlatform Condition="'$(InnoEditorPublishSupportPackTarget)' == 'macos-arm64'">osx-arm64</InnoEditorPublishNativePlatform>
+    <InnoEditorPublishNativePlatform Condition="'$(InnoEditorPublishSupportPackTarget)' == 'windows-x64'">windows-x64</InnoEditorPublishNativePlatform>
+    <InnoEditorPublishNativeExtension Condition="'$(InnoEditorPublishSupportPackTarget)' == 'macos-arm64'">.dylib</InnoEditorPublishNativeExtension>
+    <InnoEditorPublishNativeExtension Condition="'$(InnoEditorPublishSupportPackTarget)' == 'windows-x64'">.dll</InnoEditorPublishNativeExtension>
+    <InnoEditorPublishNativeToolExtension Condition="'$(InnoEditorPublishSupportPackTarget)' == 'windows-x64'">.exe</InnoEditorPublishNativeToolExtension>
+  </PropertyGroup>
+  <Target Name="BundleEditorPlayerSupportPack" AfterTargets="Publish"
+          Condition="'$(InnoEditorPublishSupportPackTarget)' != ''">
+    <Exec Command="&quot;$(DOTNET_HOST_PATH)&quot; run --project &quot;$(MSBuildProjectDirectory)/../../../../../build/support/Inno.Build.SupportPacks/Inno.Build.SupportPacks.csproj&quot; --configuration Release --no-launch-profile -- --engine-root &quot;$(MSBuildProjectDirectory)/../../../../..&quot; --output &quot;$(PublishDir)SupportPacks&quot; --target &quot;$(InnoEditorPublishSupportPackTarget)&quot; --dotnet &quot;$(DOTNET_HOST_PATH)&quot;" />
+    <ItemGroup>
+      <_InnoEditorBgfxNative Include="$(PublishDir)SupportPacks/$(InnoEditorPublishSupportPackTarget)/native/bgfx/$(InnoEditorPublishSupportPackTarget)/*$(InnoEditorPublishNativeExtension)" />
+      <_InnoEditorSdlNative Include="$(PublishDir)SupportPacks/$(InnoEditorPublishSupportPackTarget)/native/sdl3/$(InnoEditorPublishSupportPackTarget)/*$(InnoEditorPublishNativeExtension)" />
+      <_InnoEditorAudioNative Include="$(PublishDir)SupportPacks/$(InnoEditorPublishSupportPackTarget)/native/miniaudio/$(InnoEditorPublishSupportPackTarget)/*$(InnoEditorPublishNativeExtension)" />
+      <_InnoEditorTextNative Include="$(PublishDir)SupportPacks/$(InnoEditorPublishSupportPackTarget)/native/text/$(InnoEditorPublishSupportPackTarget)/*$(InnoEditorPublishNativeExtension)" />
+      <_InnoEditorUiNative Include="$(PublishDir)SupportPacks/$(InnoEditorPublishSupportPackTarget)/native/ui/$(InnoEditorPublishSupportPackTarget)/*$(InnoEditorPublishNativeExtension)" />
+      <_InnoEditorImGuiNative Include="$(MSBuildProjectDirectory)/../../../../../.lib/cimgui/$(InnoEditorPublishNativePlatform)/*release*$(InnoEditorPublishNativeExtension)" />
+      <_InnoEditorImGuizmoNative Include="$(MSBuildProjectDirectory)/../../../../../.lib/cimguizmo/$(InnoEditorPublishNativePlatform)/*release*$(InnoEditorPublishNativeExtension)" />
+      <_InnoEditorBgfxShaderInclude Include="$(MSBuildProjectDirectory)/../../../../../extern/bgfx/src/bgfx_shader.sh" />
+      <_InnoEditorBgfxShaderInclude Include="$(MSBuildProjectDirectory)/../../../../../extern/bgfx/src/bgfx_compute.sh" />
+      <_InnoEditorBgfxShaderTool Include="$(MSBuildProjectDirectory)/../../../../../.lib/bgfx/$(InnoEditorPublishNativePlatform)/tools/shaderc-release$(InnoEditorPublishNativeToolExtension)" />
+      <_InnoEditorBgfxTextureTool Include="$(MSBuildProjectDirectory)/../../../../../.lib/bgfx/$(InnoEditorPublishNativePlatform)/tools/texturec-release$(InnoEditorPublishNativeToolExtension)" />
+      <_InnoEditorFrameworkReference Include="$(NetCoreTargetingPackRoot)/Microsoft.NETCore.App.Ref/**/ref/$(TargetFramework)/*.dll" />
+    </ItemGroup>
+    <Error Condition="'@(_InnoEditorBgfxNative)' == '' or '@(_InnoEditorSdlNative)' == '' or '@(_InnoEditorAudioNative)' == '' or '@(_InnoEditorTextNative)' == '' or '@(_InnoEditorUiNative)' == ''" Text="The published Player Support Pack has an incomplete native runtime closure." />
+    <Error Condition="'@(_InnoEditorImGuiNative)' == ''" Text="The Editor distribution requires a Release ImGui native library for $(InnoEditorPublishNativePlatform)." />
+    <Error Condition="'@(_InnoEditorImGuizmoNative)' == ''" Text="The Editor distribution requires a Release ImGuizmo native library for $(InnoEditorPublishNativePlatform)." />
+    <Error Condition="!Exists('$(MSBuildProjectDirectory)/../../../../../extern/bgfx/src/bgfx_shader.sh') or !Exists('$(MSBuildProjectDirectory)/../../../../../extern/bgfx/src/bgfx_compute.sh') or !Exists('$(MSBuildProjectDirectory)/../../../../../.lib/bgfx/$(InnoEditorPublishNativePlatform)/tools/shaderc-release$(InnoEditorPublishNativeToolExtension)') or !Exists('$(MSBuildProjectDirectory)/../../../../../.lib/bgfx/$(InnoEditorPublishNativePlatform)/tools/texturec-release$(InnoEditorPublishNativeToolExtension)')" Text="The Editor distribution requires BGFX shader includes and Release shaderc/texturec tools for $(InnoEditorPublishNativePlatform)." />
+    <Error Condition="'@(_InnoEditorFrameworkReference)' == ''" Text="The Editor distribution requires the $(TargetFramework) framework reference pack." />
+    <Copy SourceFiles="@(_InnoEditorBgfxNative)" DestinationFolder="$(PublishDir)native/bgfx/$(InnoEditorPublishNativePlatform)/" />
+    <Copy SourceFiles="@(_InnoEditorSdlNative)" DestinationFolder="$(PublishDir)native/sdl3/$(InnoEditorPublishNativePlatform)/" />
+    <Copy SourceFiles="@(_InnoEditorAudioNative)" DestinationFolder="$(PublishDir)native/miniaudio/$(InnoEditorPublishNativePlatform)/" />
+    <Copy SourceFiles="@(_InnoEditorTextNative)" DestinationFolder="$(PublishDir)native/text/$(InnoEditorPublishNativePlatform)/" />
+    <Copy SourceFiles="@(_InnoEditorUiNative)" DestinationFolder="$(PublishDir)native/ui/$(InnoEditorPublishNativePlatform)/" />
+    <Copy SourceFiles="@(_InnoEditorImGuiNative)"
+          DestinationFolder="$(PublishDir)native/cimgui/$(InnoEditorPublishNativePlatform)/" />
+    <Copy SourceFiles="@(_InnoEditorImGuizmoNative)"
+          DestinationFolder="$(PublishDir)native/cimguizmo/$(InnoEditorPublishNativePlatform)/" />
+    <Copy SourceFiles="@(_InnoEditorBgfxShaderInclude)"
+          DestinationFolder="$(PublishDir)native/bgfx/includes/" />
+    <Copy SourceFiles="@(_InnoEditorBgfxShaderTool);@(_InnoEditorBgfxTextureTool)"
+          DestinationFolder="$(PublishDir)native/bgfx/$(InnoEditorPublishNativePlatform)/tools/" />
+    <Copy SourceFiles="@(_InnoEditorFrameworkReference)"
+          DestinationFiles="@(_InnoEditorFrameworkReference->'$(PublishDir)packs/Microsoft.NETCore.App.Ref/%(RecursiveDir)%(Filename)%(Extension)')" />
+  </Target>
 </Project>

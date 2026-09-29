@@ -37,8 +37,10 @@ public sealed class RuntimeSession : IDisposable
     private float m_fixedAccumulator;
     private bool m_disposed;
 
-    internal RuntimeSession(EngineHost host, RuntimeSessionOptions options)
-    {
+    internal RuntimeSession(
+        EngineHost host,
+        RuntimeSessionOptions options
+    ) {
         m_host = host;
         this.options = Validate(options);
         sessionId = LogSessionId.Create();
@@ -323,7 +325,10 @@ public sealed class RuntimeSession : IDisposable
             m_host.generations.Fault(failure);
             throw;
         }
-        catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null) { throw; }
+        catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null)
+        {
+            throw;
+        }
         catch (Exception failure)
         {
             m_host.generations.Fault(failure);
@@ -429,13 +434,18 @@ public sealed class RuntimeSession : IDisposable
         };
     }
 
-    private static void DisposeStage(IDisposable stage, ref List<Exception>? failures)
-    {
+    private static void DisposeStage(
+        IDisposable stage,
+        ref List<Exception>? failures
+    ) {
         try
         {
             stage.Dispose();
         }
-        catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null) { throw; }
+        catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null)
+        {
+            throw;
+        }
         catch (Exception exception)
         {
             failures ??= [];
@@ -460,7 +470,10 @@ public sealed class RuntimeSession : IDisposable
         }
     }
 
-    private sealed class SessionFileLogSink(LogSessionId sessionId, FileLogSink sink)
+    private sealed class SessionFileLogSink(
+        LogSessionId sessionId,
+        FileLogSink sink
+    )
         : ILogSink, IDisposable
     {
         /// <summary>

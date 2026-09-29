@@ -33,8 +33,8 @@ public static class RuntimeManifestEnvelope
     /// </exception>
     public static byte[] Encode(
         GameRuntimeManifest manifest,
-        SerializationGeneration serialization)
-    {
+        SerializationGeneration serialization
+    ) {
         ArgumentNullException.ThrowIfNull(manifest);
         ArgumentNullException.ThrowIfNull(serialization);
         manifest.Validate();
@@ -90,8 +90,8 @@ public static class RuntimeManifestEnvelope
     /// </exception>
     public static GameRuntimeManifest Decode(
         ReadOnlySpan<byte> data,
-        SerializationGeneration serialization)
-    {
+        SerializationGeneration serialization
+    ) {
         ArgumentNullException.ThrowIfNull(serialization);
         Parse(data, out string applicationId, out ReadOnlySpan<byte> payload);
         ValidateApplicationId(applicationId);
@@ -105,8 +105,8 @@ public static class RuntimeManifestEnvelope
     private static void Parse(
         ReadOnlySpan<byte> data,
         out string applicationId,
-        out ReadOnlySpan<byte> payload)
-    {
+        out ReadOnlySpan<byte> payload
+    ) {
         int minimumLength = magic.Length + sizeof(int) * 2;
         if (data.Length < minimumLength || !data[..magic.Length].SequenceEqual(magic))
             throw new InvalidDataException("Runtime manifest envelope has an invalid header.");

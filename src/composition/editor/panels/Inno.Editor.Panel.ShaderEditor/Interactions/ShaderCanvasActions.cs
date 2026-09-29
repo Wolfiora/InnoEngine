@@ -24,9 +24,12 @@ internal sealed class ShaderCanvasMenu(ShaderEditorDocuments documents) : Editor
     /// <param name="builder">
     /// The builder consumed by build; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
-    public override void Build(EditorMenuContext context, EditorMenuBuilder builder)
-    {
-        if (context.target is not AssetFileEntry entry || !documents.TryGet(entry, out var draft)) return;
+    public override void Build(
+        EditorMenuContext context,
+        EditorMenuBuilder builder
+    ) {
+        if (context.target is not AssetFileEntry entry || !documents.TryGet(entry, out var draft))
+            return;
         builder.AddGroup("Create/Functions", order: 500, separatorBefore: true);
         builder.AddGroup("Create/Graph Nodes", order: 550, separatorBefore: true);
         builder.AddGroup("Create/Domain Outputs", order: 800, separatorBefore: true);
@@ -86,11 +89,18 @@ internal sealed class ShaderCanvasMenu(ShaderEditorDocuments documents) : Editor
                 || info.persistentId == draft.id || info.status != AssetImportStatus.Imported)
                 continue;
             ShaderGraphNodeInterface nodeInterface;
-            try { nodeInterface = documents.LoadGraphNodeInterface(info.persistentId); }
+            try
+            {
+                nodeInterface = documents.LoadGraphNodeInterface(info.persistentId);
+            }
             catch (Exception failure) when ((failure is InvalidOperationException or ArgumentException or FormatException)
-                && Inno.Core.Execution.RetirementPendingException.Find(failure) is null) { continue; }
+                && Inno.Core.Execution.RetirementPendingException.Find(failure) is null)
+                {
+                    continue;
+                }
             var creation = new ShaderNodeCreation(ShaderGraphNodes.callDefinitionId, info.persistentId);
-            if (!documents.CanCreate(draft, creation)) continue;
+            if (!documents.CanCreate(draft, creation))
+                continue;
             string catalog = NormalizeCatalog(nodeInterface.createPath);
             string root = nodeInterface.kind == ShaderGraphNodeKind.DomainOutput ? "Domain Outputs" : "Graph Nodes";
             string group = "Create/" + root + (catalog.Length == 0 ? "" : "/" + catalog);
@@ -161,7 +171,8 @@ internal sealed class CreateShaderOutput(ShaderEditorDocuments documents) : Edit
 protected override EditorActionState Query(EditorActionContext<AssetFileEntry, string> context)
     {
         if (!documents.TryGet(context.target, out var draft) || draft.readOnly
-            || !Enum.TryParse(context.argument, out Inno.Rendering.ShaderStage stage)) return EditorActionState.disabled;
+            || !Enum.TryParse(context.argument, out Inno.Rendering.ShaderStage stage))
+                return EditorActionState.disabled;
         GraphDocument graph = documents.Controller(draft).document;
         if (ShaderGraphDocument.ReadTarget(graph, documents.serialization, documents.context).Length != 0)
             return EditorActionState.disabled;
@@ -193,12 +204,16 @@ protected override void Execute(EditorActionContext<AssetFileEntry, string> cont
         string name;
         string[] stages;
         if (incomplete is ShaderGraphPassProgram existing && existing.pass is not null)
-        { name = existing.pass; stages = existing.stages; }
+        {
+            name = existing.pass;
+            stages = existing.stages;
+        }
         else
         {
             string prefix = kind.ToString();
             name = prefix;
-            for (int suffix = 2; definition.passes.Any(pass => pass.name == name); suffix++) name = prefix + " " + suffix;
+            for (int suffix = 2; definition.passes.Any(pass => pass.name == name); suffix++)
+                name = prefix + " " + suffix;
             definition.passes = [.. definition.passes, new(name, kind)];
             graph.SetMetadata(ShaderGraphDocument.definitionKey, ShaderGraphDocument.Encode(documents.serialization.Serialize(definition, documents.context), documents.serialization, documents.context));
             stages = [];
@@ -311,7 +326,8 @@ protected override bool needsSelection => false;
         var draft = documents.Open(context.target);
         var controller = documents.Controller(draft);
         using var transaction = context.history.BeginTransaction("Delete Shader Selection");
-        if (draft.selectedEdge is GraphEdgeId edge) controller.Disconnect(edge);
+        if (draft.selectedEdge is GraphEdgeId edge)
+            controller.Disconnect(edge);
         documents.RemoveNodes(draft);
         transaction.Commit();
         draft.selectedEdge = null;
@@ -370,7 +386,8 @@ protected override bool needsSelection => false;
     protected override void Execute(EditorActionContext<AssetFileEntry> context)
     {
         var draft = documents.Open(context.target);
-        if (documents.clipboard is not null) documents.Paste(draft, documents.clipboard);
+        if (documents.clipboard is not null)
+            documents.Paste(draft, documents.clipboard);
     }
 }
 
@@ -389,7 +406,8 @@ internal sealed class DuplicateShaderNodes(ShaderEditorDocuments documents) : Sh
     /// </returns>
 protected override EditorActionState Query(EditorActionContext<AssetFileEntry> context)
     {
-        if (!base.Query(context).isEnabled || !documents.TryGet(context.target, out var draft)) return EditorActionState.disabled;
+        if (!base.Query(context).isEnabled || !documents.TryGet(context.target, out var draft))
+            return EditorActionState.disabled;
         return draft.canvas.selectedNodes.Any(id => documents.Controller(draft).document.FindNode(id)?.definitionId == ShaderGraphDocument.outputDefinitionId)
             ? EditorActionState.disabled : EditorActionState.enabled;
     }

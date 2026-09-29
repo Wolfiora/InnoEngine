@@ -12,14 +12,12 @@
 #include <utility>
 #include <vector>
 
-namespace Inno::UI::RmlUiAdapter {
-namespace {
+namespace Inno::UI::RmlUiAdapter
+{
+namespace
+{
 
-template <typename TValue>
-Result CopyVector(
-    const std::vector<TValue>& source,
-    TValue* destination,
-    std::uint64_t capacity) noexcept
+template <typename TValue> Result CopyVector(const std::vector<TValue>& source, TValue* destination, std::uint64_t capacity) noexcept
 {
     if (capacity < static_cast<std::uint64_t>(source.size()))
         return Result::BufferTooSmall;
@@ -82,8 +80,7 @@ struct RmlUiRenderInterface::State
     Rml::Matrix4f transform;
 };
 
-RmlUiRenderInterface::RmlUiRenderInterface()
-    : m_state(new State())
+RmlUiRenderInterface::RmlUiRenderInterface() : m_state(new State())
 {
 }
 
@@ -93,9 +90,7 @@ RmlUiRenderInterface::~RmlUiRenderInterface()
     delete m_state;
 }
 
-Rml::CompiledGeometryHandle RmlUiRenderInterface::CompileGeometry(
-    Rml::Span<const Rml::Vertex> vertices,
-    Rml::Span<const int> indices)
+Rml::CompiledGeometryHandle RmlUiRenderInterface::CompileGeometry(Rml::Span<const Rml::Vertex> vertices, Rml::Span<const int> indices)
 {
     std::unique_ptr<State::Geometry> geometry(new (std::nothrow) State::Geometry());
     if (!geometry)
@@ -114,10 +109,7 @@ Rml::CompiledGeometryHandle RmlUiRenderInterface::CompileGeometry(
     }
 }
 
-void RmlUiRenderInterface::RenderGeometry(
-    Rml::CompiledGeometryHandle handle,
-    Rml::Vector2f translation,
-    Rml::TextureHandle texture)
+void RmlUiRenderInterface::RenderGeometry(Rml::CompiledGeometryHandle handle, Rml::Vector2f translation, Rml::TextureHandle texture)
 {
     auto* geometry = reinterpret_cast<State::Geometry*>(handle);
     if (!geometry)
@@ -159,10 +151,8 @@ void RmlUiRenderInterface::RenderGeometry(
                 }
             }
             const Rml::ColourbPremultiplied& color = source.colour;
-            const std::uint32_t packed = static_cast<std::uint32_t>(color.red)
-                | (static_cast<std::uint32_t>(color.green) << 8)
-                | (static_cast<std::uint32_t>(color.blue) << 16)
-                | (static_cast<std::uint32_t>(color.alpha) << 24);
+            const std::uint32_t packed = static_cast<std::uint32_t>(color.red) | (static_cast<std::uint32_t>(color.green) << 8) |
+                                         (static_cast<std::uint32_t>(color.blue) << 16) | (static_cast<std::uint32_t>(color.alpha) << 24);
             mesh.vertices.push_back({x, y, source.tex_coord.x, source.tex_coord.y, packed});
         }
         for (int index : geometry->indices)
@@ -182,15 +172,8 @@ void RmlUiRenderInterface::RenderGeometry(
         m_state->meshes.at(mesh_id).last_used_frame = m_state->frame_number;
     }
 
-    m_state->commands.push_back({
-        mesh_id,
-        static_cast<std::uint64_t>(texture),
-        static_cast<std::uint8_t>(m_state->scissor_enabled ? 1 : 0),
-        m_state->scissor.Left(),
-        m_state->scissor.Top(),
-        m_state->scissor.Width(),
-        m_state->scissor.Height()
-    });
+    m_state->commands.push_back({mesh_id, static_cast<std::uint64_t>(texture), static_cast<std::uint8_t>(m_state->scissor_enabled ? 1 : 0),
+                                 m_state->scissor.Left(), m_state->scissor.Top(), m_state->scissor.Width(), m_state->scissor.Height()});
 }
 
 void RmlUiRenderInterface::ReleaseGeometry(Rml::CompiledGeometryHandle handle)
@@ -214,8 +197,8 @@ Rml::TextureHandle RmlUiRenderInterface::LoadTexture(Rml::Vector2i& dimensions, 
     {
         for (auto candidate = m_state->source_textures.begin(); candidate != m_state->source_textures.end(); ++candidate)
         {
-            if (source.size() >= candidate->first.size()
-                && source.compare(source.size() - candidate->first.size(), candidate->first.size(), candidate->first) == 0)
+            if (source.size() >= candidate->first.size() &&
+                source.compare(source.size() - candidate->first.size(), candidate->first.size(), candidate->first) == 0)
             {
                 iterator = candidate;
                 break;
@@ -235,12 +218,9 @@ Rml::TextureHandle RmlUiRenderInterface::LoadTexture(Rml::Vector2i& dimensions, 
     return static_cast<Rml::TextureHandle>(id);
 }
 
-Rml::TextureHandle RmlUiRenderInterface::GenerateTexture(
-    Rml::Span<const Rml::byte> source,
-    Rml::Vector2i dimensions)
+Rml::TextureHandle RmlUiRenderInterface::GenerateTexture(Rml::Span<const Rml::byte> source, Rml::Vector2i dimensions)
 {
-    if (dimensions.x <= 0 || dimensions.y <= 0
-        || source.size() != static_cast<std::size_t>(dimensions.x) * dimensions.y * 4)
+    if (dimensions.x <= 0 || dimensions.y <= 0 || source.size() != static_cast<std::size_t>(dimensions.x) * dimensions.y * 4)
     {
         return 0;
     }
@@ -281,17 +261,11 @@ void RmlUiRenderInterface::SetTransform(const Rml::Matrix4f* transform)
         m_state->transform = *transform;
 }
 
-Result RmlUiRenderInterface::RegisterTexture(
-    const char* source,
-    int width,
-    int height,
-    const std::uint8_t* pixels,
-    std::uint64_t length)
+Result RmlUiRenderInterface::RegisterTexture(const char* source, int width, int height, const std::uint8_t* pixels, std::uint64_t length)
 {
     if (!source || source[0] == '\0' || width <= 0 || height <= 0 || !pixels)
         return Result::InvalidArgument;
-    const std::uint64_t expected = static_cast<std::uint64_t>(width)
-        * static_cast<std::uint64_t>(height) * 4ull;
+    const std::uint64_t expected = static_cast<std::uint64_t>(width) * static_cast<std::uint64_t>(height) * 4ull;
     if (length != expected || length > static_cast<std::uint64_t>(std::numeric_limits<std::size_t>::max()))
         return Result::InvalidArgument;
 
@@ -396,47 +370,28 @@ Result RmlUiRenderInterface::GetMeshInfo(std::uint64_t index, MeshInfo& mesh) co
     if (iterator == m_state->meshes.end())
         return Result::NotFound;
     const State::Mesh& value = iterator->second;
-    mesh = {
-        value.id,
-        value.revision,
-        static_cast<std::uint64_t>(value.vertices.size()),
-        static_cast<std::uint64_t>(value.indices.size())
-    };
+    mesh = {value.id, value.revision, static_cast<std::uint64_t>(value.vertices.size()), static_cast<std::uint64_t>(value.indices.size())};
     return Result::Success;
 }
 
-Result RmlUiRenderInterface::CopyMeshVertices(
-    std::uint64_t mesh,
-    Vertex* vertices,
-    std::uint64_t capacity) const noexcept
+Result RmlUiRenderInterface::CopyMeshVertices(std::uint64_t mesh, Vertex* vertices, std::uint64_t capacity) const noexcept
 {
     auto iterator = m_state->meshes.find(mesh);
-    return iterator == m_state->meshes.end()
-        ? Result::NotFound
-        : CopyVector(iterator->second.vertices, vertices, capacity);
+    return iterator == m_state->meshes.end() ? Result::NotFound : CopyVector(iterator->second.vertices, vertices, capacity);
 }
 
-Result RmlUiRenderInterface::CopyMeshIndices(
-    std::uint64_t mesh,
-    std::uint32_t* indices,
-    std::uint64_t capacity) const noexcept
+Result RmlUiRenderInterface::CopyMeshIndices(std::uint64_t mesh, std::uint32_t* indices, std::uint64_t capacity) const noexcept
 {
     auto iterator = m_state->meshes.find(mesh);
-    return iterator == m_state->meshes.end()
-        ? Result::NotFound
-        : CopyVector(iterator->second.indices, indices, capacity);
+    return iterator == m_state->meshes.end() ? Result::NotFound : CopyVector(iterator->second.indices, indices, capacity);
 }
 
-Result RmlUiRenderInterface::CopyCommands(
-    DrawCommand* commands,
-    std::uint64_t capacity) const noexcept
+Result RmlUiRenderInterface::CopyCommands(DrawCommand* commands, std::uint64_t capacity) const noexcept
 {
     return CopyVector(m_state->commands, commands, capacity);
 }
 
-Result RmlUiRenderInterface::GetTextureInfo(
-    std::uint64_t index,
-    TextureInfo& texture) const noexcept
+Result RmlUiRenderInterface::GetTextureInfo(std::uint64_t index, TextureInfo& texture) const noexcept
 {
     if (index >= static_cast<std::uint64_t>(m_state->texture_updates.size()))
         return Result::NotFound;
@@ -444,37 +399,22 @@ Result RmlUiRenderInterface::GetTextureInfo(
     if (iterator == m_state->textures.end())
         return Result::NotFound;
     const State::Texture& value = iterator->second;
-    texture = {
-        value.id,
-        value.revision,
-        value.width,
-        value.height,
-        static_cast<std::uint64_t>(value.pixels.size())
-    };
+    texture = {value.id, value.revision, value.width, value.height, static_cast<std::uint64_t>(value.pixels.size())};
     return Result::Success;
 }
 
-Result RmlUiRenderInterface::CopyTexturePixels(
-    std::uint64_t texture,
-    std::uint8_t* pixels,
-    std::uint64_t capacity) const noexcept
+Result RmlUiRenderInterface::CopyTexturePixels(std::uint64_t texture, std::uint8_t* pixels, std::uint64_t capacity) const noexcept
 {
     auto iterator = m_state->textures.find(texture);
-    return iterator == m_state->textures.end()
-        ? Result::NotFound
-        : CopyVector(iterator->second.pixels, pixels, capacity);
+    return iterator == m_state->textures.end() ? Result::NotFound : CopyVector(iterator->second.pixels, pixels, capacity);
 }
 
-Result RmlUiRenderInterface::CopyReleasedTextures(
-    std::uint64_t* textures,
-    std::uint64_t capacity) const noexcept
+Result RmlUiRenderInterface::CopyReleasedTextures(std::uint64_t* textures, std::uint64_t capacity) const noexcept
 {
     return CopyVector(m_state->released_textures, textures, capacity);
 }
 
-Result RmlUiRenderInterface::CopyReleasedMeshes(
-    std::uint64_t* meshes,
-    std::uint64_t capacity) const noexcept
+Result RmlUiRenderInterface::CopyReleasedMeshes(std::uint64_t* meshes, std::uint64_t capacity) const noexcept
 {
     return CopyVector(m_state->released_meshes, meshes, capacity);
 }

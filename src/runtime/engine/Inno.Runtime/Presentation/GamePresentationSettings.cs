@@ -57,8 +57,10 @@ public sealed class GamePresentationSettings : ISerializable
     /// <exception cref="ArgumentOutOfRangeException">
     /// Thrown when an available or reference dimension is not positive.
     /// </exception>
-    public GamePresentationViewport CalculateViewport(int availableWidth, int availableHeight)
-    {
+    public GamePresentationViewport CalculateViewport(
+        int availableWidth,
+        int availableHeight
+    ) {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(availableWidth);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(availableHeight);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(referenceWidth);
@@ -103,8 +105,12 @@ public readonly record struct GamePresentationViewport
     /// <param name="height">
     /// Positive content height.
     /// </param>
-    public GamePresentationViewport(int x, int y, int width, int height)
-    {
+    public GamePresentationViewport(
+        int x,
+        int y,
+        int width,
+        int height
+    ) {
         ArgumentOutOfRangeException.ThrowIfNegative(x);
         ArgumentOutOfRangeException.ThrowIfNegative(y);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(width);

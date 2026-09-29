@@ -20,8 +20,10 @@ public sealed class ProjectSettingPathAttribute : Attribute
     /// <exception cref="ArgumentException">
     /// Thrown when <paramref name="path"/> is outside the Project root or contains an empty segment.
     /// </exception>
-    public ProjectSettingPathAttribute(string path, int order = 0)
-    {
+    public ProjectSettingPathAttribute(
+        string path,
+        int order = 0
+    ) {
         string normalized = EditorSettingsPathUtility.Normalize(path);
         if (!normalized.StartsWith("Project/", StringComparison.Ordinal))
         {

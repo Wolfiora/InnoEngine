@@ -4,7 +4,10 @@ using Inno.References;
 
 namespace Inno.Scene;
 
-internal sealed class SceneElementReferenceResolver(SceneWorld world, TypeCacheSnapshot types) : IReferenceResolver
+internal sealed class SceneElementReferenceResolver(
+    SceneWorld world,
+    TypeCacheSnapshot types
+) : IReferenceResolver
 {
     internal static ReferenceKindId id { get; } = new("inno.reference.scene-element");
 

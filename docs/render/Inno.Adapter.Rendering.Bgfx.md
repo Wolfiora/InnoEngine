@@ -35,9 +35,12 @@ Noop 测试可启用 `forceSingleThreaded`。BGFX 的该模式是进程级一次
 | --- | --- |
 | `BgfxDeviceOptions` | 后端偏好、窗口、backbuffer、VSync/sRGB、延迟销毁帧数和 Noop 单线程测试设置 |
 | `BgfxDevice` | BGFX 设备所有权、能力映射、帧边界、RenderGraph 执行、帧命令计数、KTX/普通纹理、Buffer、Program 与延迟销毁 |
+| `BgfxCompositionProgramProvider` | 从适配器内嵌的目标 Shader 产物创建后端中立的图层合成 Pipeline 描述。 |
 | `BgfxDevice.backbufferIsSrgb`、`WindowSurfaceIsSrgb(surface)` | 报告主 backbuffer 和有效独立窗口的真实线性 RGB→sRGB 输出传递。Windows D3D11/D3D12 的附加 BGFX swapchain 使用 UNORM RTV，不会自动编码；无效或过期的 surface 明确失败。 |
 
 Shader 与纹理目标产物分别由 `Inno.Build.Toolchains.Bgfx` 和 `Inno.Build.Toolchains.Bgfx.Tools` 生成；这里不公开编译工具链 API。
+
+图层合成的 `.ishader` 源与离线编译目标产物属于本适配器；Runtime 不承担 BGFX profile 或主机架构选择。Provider 从当前适配器内嵌的产物按实际 `GraphicsApi` 精确选取唯一程序，不在运行时硬编码主机 OS/架构。Host 通过 `IRenderingBackendFactory` 取得该 Provider，多模型 route 仍按原有预乘 Alpha 顺序合成。没有适配器产物的目标会明确失败，不会把某个后端的二进制当成其他后端的程序。
 
 `BgfxCapabilityMapper` 与 `BgfxCommandEncoder` 是内部实现，不属于稳定脚本契约。
 

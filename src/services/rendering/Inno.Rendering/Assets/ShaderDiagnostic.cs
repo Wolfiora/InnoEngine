@@ -33,8 +33,8 @@ public readonly record struct ShaderSourceLocation
         string passName,
         ShaderStage stage,
         int line = 0,
-        int column = 0)
-    {
+        int column = 0
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(assetPath);
         ArgumentException.ThrowIfNullOrWhiteSpace(passName);
         ArgumentOutOfRangeException.ThrowIfNegative(line);
@@ -97,8 +97,8 @@ public sealed class ShaderDiagnostic
         string code,
         DiagnosticSeverity severity,
         string message,
-        ShaderSourceLocation? location = null)
-    {
+        ShaderSourceLocation? location = null
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(code);
         ArgumentException.ThrowIfNullOrWhiteSpace(message);
         this.code = code;

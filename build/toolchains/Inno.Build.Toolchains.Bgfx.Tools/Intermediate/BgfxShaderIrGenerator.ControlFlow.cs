@@ -9,7 +9,8 @@ internal sealed partial class BgfxShaderIrGenerator
 {
     private bool EmitControlFlow(ShaderIrInstruction instruction)
     {
-        if (instruction.operation is not (ShaderIrOperation.Branch or ShaderIrOperation.Loop)) return false;
+        if (instruction.operation is not (ShaderIrOperation.Branch or ShaderIrOperation.Loop))
+            return false;
         foreach (ShaderIrValue output in instruction.outputs)
             m_body.Append("    ").Append(Declaration(output.type, NewLocal(output))).AppendLine(";");
         if (instruction.operation == ShaderIrOperation.Branch)
@@ -51,11 +52,14 @@ internal sealed partial class BgfxShaderIrGenerator
     private void EmitRegion(ShaderIrBlock region)
     {
         foreach (ShaderIrInstruction instruction in region.instructions)
-            if (instruction.operation != ShaderIrOperation.RegionInput) EmitInstruction(instruction);
+            if (instruction.operation != ShaderIrOperation.RegionInput)
+                EmitInstruction(instruction);
     }
 
-    private void AssignRegionOutputs(ShaderIrInstruction instruction, int regionIndex = 0)
-    {
+    private void AssignRegionOutputs(
+        ShaderIrInstruction instruction,
+        int regionIndex = 0
+    ) {
         int index = 0;
         foreach (KeyValuePair<string, ShaderIrValue> pair in instruction.regions[regionIndex].outputs.OrderBy(static pair => pair.Key, StringComparer.Ordinal))
         {

@@ -15,8 +15,8 @@ public sealed class EditorViewportToolContext
 
     internal EditorViewportToolContext(
         IEditorHistory history,
-        IEditorViewportCoordinateConverter coordinates)
-    {
+        IEditorViewportCoordinateConverter coordinates
+    ) {
         m_history = history ?? throw new ArgumentNullException(nameof(history));
         m_coordinates = coordinates ?? throw new ArgumentNullException(nameof(coordinates));
     }
@@ -103,8 +103,7 @@ public sealed class EditorViewportToolContext
     /// <returns>
     /// World coordinates.
     /// </returns>
-    public Vector2 ScreenToWorld(Vector2 screenPosition)
-        => m_coordinates.ScreenToWorld(screenPosition);
+    public Vector2 ScreenToWorld(Vector2 screenPosition) => m_coordinates.ScreenToWorld(screenPosition);
 
     /// <summary>
     /// Converts world coordinates to viewport-local pixel coordinates.
@@ -115,11 +114,9 @@ public sealed class EditorViewportToolContext
     /// <returns>
     /// Viewport-local pixel coordinates.
     /// </returns>
-    public Vector2 WorldToScreen(Vector2 worldPosition)
-        => m_coordinates.WorldToScreen(worldPosition);
+    public Vector2 WorldToScreen(Vector2 worldPosition) => m_coordinates.WorldToScreen(worldPosition);
 
-    internal bool Accepts(int pointerId)
-        => !m_capturedPointerId.HasValue || m_capturedPointerId.Value == pointerId;
+    internal bool Accepts(int pointerId) => !m_capturedPointerId.HasValue || m_capturedPointerId.Value == pointerId;
 
     internal void Cancel()
     {

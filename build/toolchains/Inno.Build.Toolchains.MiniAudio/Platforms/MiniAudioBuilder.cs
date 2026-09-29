@@ -26,7 +26,10 @@ internal abstract class MiniAudioBuilder
     /// <param name="config">
     /// The normalized debug or release configuration token.
     /// </param>
-    public abstract void Build(string miniAudioDirectory, string config);
+    public abstract void Build(
+        string miniAudioDirectory,
+        string config
+    );
 
     /// <summary>
     /// Converts an engine configuration token into the corresponding CMake configuration name.

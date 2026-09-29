@@ -37,7 +37,10 @@ public interface IPresentationContext : IRenderFrameGraphContributor, IDisposabl
     /// <returns>
     /// <see langword="true"/> when layout text was captured.
     /// </returns>
-    bool TryCaptureLayout(out string settings, bool force = false);
+    bool TryCaptureLayout(
+        out string settings,
+        bool force = false
+    );
 
     /// <summary>
     /// Builds one presentation frame by invoking the host draw callback.
@@ -78,6 +81,9 @@ public interface IPresentationContext : IRenderFrameGraphContributor, IDisposabl
     /// <param name="size">
     /// Destination size in logical presentation units.
     /// </param>
-    void DrawImage(PresentationTextureHandle texture, Vector2 size);
+    void DrawImage(
+        PresentationTextureHandle texture,
+        Vector2 size
+    );
 
 }

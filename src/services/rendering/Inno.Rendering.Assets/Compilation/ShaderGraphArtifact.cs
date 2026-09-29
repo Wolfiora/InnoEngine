@@ -47,10 +47,15 @@ public static class ShaderGraphArtifact
     /// <returns>
     /// Native immutable authoring artifact bytes usable by import or isolated preview compilation.
     /// </returns>
-    public static byte[] Capture(GraphDocument graph, TypeCatalog types, SerializationRegistry serialization,
-        SerializationContext context, Func<Guid, string, byte[]> readSource,
-        CancellationToken cancellationToken = default, Func<Guid, string, GraphDocument>? readGraph = null)
-    {
+    public static byte[] Capture(
+        GraphDocument graph,
+        TypeCatalog types,
+        SerializationRegistry serialization,
+        SerializationContext context,
+        Func<Guid, string, byte[]> readSource,
+        CancellationToken cancellationToken = default,
+        Func<Guid, string, GraphDocument>? readGraph = null
+    ) {
         ArgumentNullException.ThrowIfNull(readSource);
         using IDisposable operation = types.AcquireOperation("Capture shader authoring candidate");
         using var targets = new ShaderTargetRegistry(types);
@@ -60,16 +65,21 @@ public static class ShaderGraphArtifact
         foreach (GraphNodeRecord node in program.nodes)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            if (node.definitionId != "inno.shader.source") continue;
+            if (node.definitionId != "inno.shader.source")
+                continue;
             Guid id = ShaderGraphDocument.Read(node, "sourceId", Guid.Empty, serialization, context);
-            if (id == Guid.Empty) continue;
+            if (id == Guid.Empty)
+                continue;
             string path = ShaderGraphDocument.Read(node, "sourcePath", "", serialization, context);
             sources.Add(node.id, readSource(id, path));
         }
         return Encode(graph, sources, serialization, program);
     }
 
-    private static GraphDocument MissingGraphResolver(Guid id, string path)
+    private static GraphDocument MissingGraphResolver(
+        Guid id,
+        string path
+    )
         => throw new InvalidOperationException(
             $"Shader graph node '{id}' at '{path}' requires a graph resolver during artifact capture.");
 
@@ -88,7 +98,11 @@ public static class ShaderGraphArtifact
     /// <returns>
     /// Detached definition paired with these exact graph programs.
     /// </returns>
-    public static ShaderDefinition ReadDefinition(ReadOnlySpan<byte> bytes, SerializationRegistry serialization, SerializationContext context)
+    public static ShaderDefinition ReadDefinition(
+        ReadOnlySpan<byte> bytes,
+        SerializationRegistry serialization,
+        SerializationContext context
+    )
         => ShaderGraphDocument.ReadDefinition(GraphDocumentCodec.Decode(serialization.Deserialize<ArtifactData>(bytes).program, serialization), serialization, context);
 
     /// <summary>
@@ -103,8 +117,10 @@ public static class ShaderGraphArtifact
     /// <returns>
     /// Detached graph bytes; absent authoring data is an error, never a runtime fallback.
     /// </returns>
-    public static byte[] Read(ShaderAsset shader, Inno.Assets.IAssetArtifactLookup artifacts)
-    {
+    public static byte[] Read(
+        ShaderAsset shader,
+        Inno.Assets.IAssetArtifactLookup artifacts
+    ) {
         ArgumentNullException.ThrowIfNull(shader);
         ArgumentNullException.ThrowIfNull(artifacts);
         using Inno.Assets.ArtifactLease lease = artifacts.AcquireArtifact(shader.identity.persistentId, outputName);
@@ -123,8 +139,10 @@ public static class ShaderGraphArtifact
     /// <returns>
     /// A stable semantic identity; target, variant and extension generation remain separate compiler cache inputs.
     /// </returns>
-    public static string GetSemanticHash(ReadOnlySpan<byte> bytes, SerializationRegistry serialization)
-    {
+    public static string GetSemanticHash(
+        ReadOnlySpan<byte> bytes,
+        SerializationRegistry serialization
+    ) {
         ArtifactData data = serialization.Deserialize<ArtifactData>(bytes);
         GraphDocument graph = GraphDocumentCodec.Decode(data.program, serialization);
         foreach (GraphNodeRecord node in graph.nodes)
@@ -158,8 +176,12 @@ public static class ShaderGraphArtifact
     /// <returns>
     /// Deterministic authoring artifact bytes without live objects.
     /// </returns>
-    public static byte[] Encode(GraphDocument graph, IReadOnlyDictionary<GraphNodeId, byte[]> sources, SerializationRegistry serialization,
-        GraphDocument? program = null)
+    public static byte[] Encode(
+        GraphDocument graph,
+        IReadOnlyDictionary<GraphNodeId, byte[]> sources,
+        SerializationRegistry serialization,
+        GraphDocument? program = null
+    )
         => serialization.Serialize(new ArtifactData
         {
             document = GraphDocumentCodec.Encode(graph, serialization),
@@ -180,7 +202,10 @@ public static class ShaderGraphArtifact
     /// <returns>
     /// A detached graph retaining all authored records.
     /// </returns>
-    public static GraphDocument ReadDocument(ReadOnlySpan<byte> bytes, SerializationRegistry serialization)
+    public static GraphDocument ReadDocument(
+        ReadOnlySpan<byte> bytes,
+        SerializationRegistry serialization
+    )
         => GraphDocumentCodec.Decode(serialization.Deserialize<ArtifactData>(bytes).document, serialization);
 
     /// <summary>
@@ -210,10 +235,15 @@ public static class ShaderGraphArtifact
     /// <returns>
     /// Complete typed stages or graph diagnostics, never a partial candidate.
     /// </returns>
-    public static ShaderGraphProgramResult Lower(ReadOnlySpan<byte> bytes, string implementationId,
-        ShaderNodeCompilerRegistry nodes, ShaderSourceFrontendRegistry frontends, SerializationRegistry serialization,
-        SerializationContext context, IReadOnlyDictionary<string, string>? defines = null)
-    {
+    public static ShaderGraphProgramResult Lower(
+        ReadOnlySpan<byte> bytes,
+        string implementationId,
+        ShaderNodeCompilerRegistry nodes,
+        ShaderSourceFrontendRegistry frontends,
+        SerializationRegistry serialization,
+        SerializationContext context,
+        IReadOnlyDictionary<string, string>? defines = null
+    ) {
         ArtifactData data = serialization.Deserialize<ArtifactData>(bytes);
         GraphDocument graph = GraphDocumentCodec.Decode(data.program, serialization);
         var sources = data.sources.ToDictionary(static source => new GraphNodeId(source.node), source =>

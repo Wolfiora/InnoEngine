@@ -10,8 +10,10 @@ namespace Inno.Tooling.Architecture;
 
 internal static class PublicApiBoundaryValidator
 {
-    internal static void Validate(string root, ICollection<string> failures)
-    {
+    internal static void Validate(
+        string root,
+        ICollection<string> failures
+    ) {
         Project[] projects = new[] { "src", "native", "build" }
             .SelectMany(folder => Directory.EnumerateFiles(Path.Combine(root, folder), "*.csproj", SearchOption.AllDirectories))
             .Where(path => !path.Split(Path.DirectorySeparatorChar).Any(segment => segment is "bin" or "obj"))
@@ -54,13 +56,16 @@ internal static class PublicApiBoundaryValidator
                     {
                         case IMethodSymbol method:
                             Inspect(method.ReturnType, member);
-                            foreach (IParameterSymbol parameter in method.Parameters) Inspect(parameter.Type, member);
+                            foreach (IParameterSymbol parameter in method.Parameters)
+                                Inspect(parameter.Type, member);
                             foreach (ITypeParameterSymbol parameter in method.TypeParameters)
-                                foreach (ITypeSymbol constraint in parameter.ConstraintTypes) Inspect(constraint, member);
+                                foreach (ITypeSymbol constraint in parameter.ConstraintTypes)
+                                    Inspect(constraint, member);
                             break;
                         case IPropertySymbol property:
                             Inspect(property.Type, member);
-                            foreach (IParameterSymbol parameter in property.Parameters) Inspect(parameter.Type, member);
+                            foreach (IParameterSymbol parameter in property.Parameters)
+                                Inspect(parameter.Type, member);
                             break;
                         case IFieldSymbol field: Inspect(field.Type, member); break;
                         case IEventSymbol signal: Inspect(signal.Type, member); break;
@@ -78,24 +83,30 @@ internal static class PublicApiBoundaryValidator
                 }
             }
 
-            void Inspect(ITypeSymbol? value, ISymbol member)
-            {
-                if (value is null) return;
+            void Inspect(
+                ITypeSymbol? value,
+                ISymbol member
+            ) {
+                if (value is null)
+                    return;
                 switch (value)
                 {
                     case IArrayTypeSymbol array: Inspect(array.ElementType, member); return;
                     case IPointerTypeSymbol pointer: Inspect(pointer.PointedAtType, member); return;
                     case IFunctionPointerTypeSymbol pointer:
                         Inspect(pointer.Signature.ReturnType, member);
-                        foreach (IParameterSymbol parameter in pointer.Signature.Parameters) Inspect(parameter.Type, member);
+                        foreach (IParameterSymbol parameter in pointer.Signature.Parameters)
+                            Inspect(parameter.Type, member);
                         return;
                     case INamedTypeSymbol named:
                         Inspect(named.ContainingType, member);
-                        foreach (ITypeSymbol argument in named.TypeArguments) Inspect(argument, member);
+                        foreach (ITypeSymbol argument in named.TypeArguments)
+                            Inspect(argument, member);
                         break;
                 }
                 string? dependency = value.ContainingAssembly?.Identity.Name;
-                if (dependency is null || dependency == project.name) return;
+                if (dependency is null || dependency == project.name)
+                    return;
                 dependencies.Add(dependency);
                 if (dependency.StartsWith("Inno.Native.Bgfx", StringComparison.Ordinal) ||
                     dependency == "Inno.Native.MiniAudio" || dependency == "Inno.Native.Sdl3")
@@ -116,17 +127,23 @@ internal static class PublicApiBoundaryValidator
         foreach (ISymbol member in owner.GetMembers())
         {
             if (member is INamespaceSymbol space)
-                foreach (INamedTypeSymbol type in Types(space)) yield return type;
+                foreach (INamedTypeSymbol type in Types(space))
+                    yield return type;
             else if (member is INamedTypeSymbol type && Exposed(type))
             {
                 yield return type;
-                foreach (INamedTypeSymbol nested in Types(type)) yield return nested;
+                foreach (INamedTypeSymbol nested in Types(type))
+                    yield return nested;
             }
         }
     }
 
-    private sealed record Project(string path, string name, string output, XElement[] references)
-    {
+    private sealed record Project(
+        string path,
+        string name,
+        string output,
+        XElement[] references
+    ) {
         internal static Project Read(string path)
         {
             XDocument document = XDocument.Load(path);

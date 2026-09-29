@@ -25,6 +25,7 @@ public sealed class BuildPipeline
     private readonly GameBuildPipeline m_game;
     private readonly PluginPackageBuilder m_plugins;
     private readonly PlayerSupportPackCatalog m_supportPacks;
+    private readonly IPlayerSupportPackProvisioner? m_supportPackProvisioner;
     private readonly GenerationCoordinator m_generations;
 
     /// <summary>
@@ -54,6 +55,9 @@ public sealed class BuildPipeline
     /// <param name="gameTargets">
     /// The complete set of replaceable platform package implementations available to this host.
     /// </param>
+    /// <param name="supportPackProvisioner">
+    /// Optional build-time provider used only when the selected target pack is absent.
+    /// </param>
     /// <exception cref="ArgumentException">
     /// Thrown when the Support Pack root is empty, no target is provided, a target identity is duplicated,
     /// or multiple targets claim current-host preference.
@@ -66,8 +70,9 @@ public sealed class BuildPipeline
         GenerationCoordinator generations,
         ScriptCompiler compiler,
         string supportPackRoot,
-        IEnumerable<IGameBuildTarget> gameTargets)
-    {
+        IEnumerable<IGameBuildTarget> gameTargets,
+        IPlayerSupportPackProvisioner? supportPackProvisioner = null
+    ) {
         ArgumentNullException.ThrowIfNull(assets);
         ArgumentNullException.ThrowIfNull(plugins);
         ArgumentNullException.ThrowIfNull(settings);
@@ -109,6 +114,7 @@ public sealed class BuildPipeline
             : m_availableGameTargets[0];
         m_gameTargets = targets.ToDictionary(static value => value.id);
         m_supportPacks = new PlayerSupportPackCatalog(supportPackRoot);
+        m_supportPackProvisioner = supportPackProvisioner;
         m_game = new GameBuildPipeline(
             assets,
             plugins,
@@ -116,7 +122,8 @@ public sealed class BuildPipeline
             serialization,
             compiler,
             m_gameTargets,
-            m_supportPacks);
+            m_supportPacks,
+            supportPackProvisioner);
         m_plugins = new PluginPackageBuilder(
             assets,
             plugins,
@@ -146,8 +153,10 @@ public sealed class BuildPipeline
     /// <returns>
     /// <see langword="true"/> when the target is registered; otherwise, <see langword="false"/>.
     /// </returns>
-    public bool TryGetGameTargetDisplayName(BuildTargetId target, out string displayName)
-    {
+    public bool TryGetGameTargetDisplayName(
+        BuildTargetId target,
+        out string displayName
+    ) {
         if (m_gameTargets.TryGetValue(target, out IGameBuildTarget? gameTarget))
         {
             displayName = gameTarget.displayName;
@@ -155,6 +164,37 @@ public sealed class BuildPipeline
         }
         displayName = string.Empty;
         return false;
+    }
+
+    /// <summary>
+    /// Asynchronously prepares and verifies a target Support Pack before a game build starts.
+    /// </summary>
+    /// <param name="target">
+    /// The registered platform and architecture target to prepare.
+    /// </param>
+    /// <param name="cancellationToken">
+    /// Cancellation before the Pack installation commits.
+    /// </param>
+    /// <returns>
+    /// The verified target Pack directory. No authoring asset database operations run during preparation.
+    /// </returns>
+    /// <exception cref="NotSupportedException">
+    /// No game target is registered for the requested identity.
+    /// </exception>
+    /// <exception cref="DirectoryNotFoundException">
+    /// The Pack is absent and this host has no provisioner.
+    /// </exception>
+    /// <exception cref="InvalidDataException">
+    /// An installed or newly published Pack fails deployment validation.
+    /// </exception>
+    public async ValueTask<string> EnsurePlayerSupportPackAsync(
+        BuildTargetId target,
+        CancellationToken cancellationToken = default
+    ) {
+        if (!m_gameTargets.ContainsKey(target))
+            throw new NotSupportedException($"Game target '{target}' is not registered.");
+        return await m_supportPacks.ResolveOrProvisionAsync(
+            target, m_supportPackProvisioner, cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -175,11 +215,17 @@ public sealed class BuildPipeline
     /// <exception cref="OperationCanceledException">
     /// Thrown when cancellation is requested before commit.
     /// </exception>
+    /// <exception cref="DirectoryNotFoundException">
+    /// The target Support Pack is missing and no host provisioner is available.
+    /// </exception>
+    /// <exception cref="InvalidDataException">
+    /// The target Support Pack is present but invalid, or a new Pack fails validation.
+    /// </exception>
     public async ValueTask<BuildResult> BuildGameAsync(
         GameBuildRequest request,
         IProgress<BuildProgress>? progress = null,
-        CancellationToken cancellationToken = default)
-    {
+        CancellationToken cancellationToken = default
+    ) {
         using IDisposable admission = m_generations.AcquireRead("build a Player");
         return await m_game.BuildAsync(request, progress, cancellationToken).ConfigureAwait(false);
     }
@@ -205,8 +251,8 @@ public sealed class BuildPipeline
     public async ValueTask<BuildResult> BuildPluginAsync(
         PluginBuildRequest request,
         IProgress<BuildProgress>? progress = null,
-        CancellationToken cancellationToken = default)
-    {
+        CancellationToken cancellationToken = default
+    ) {
         using IDisposable admission = m_generations.AcquireRead("export a Plugin");
         return await m_plugins.BuildAsync(request, progress, cancellationToken).ConfigureAwait(false);
     }

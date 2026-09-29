@@ -16,12 +16,20 @@ internal sealed class AudioMixerOwner : IDisposable
     private readonly List<Dictionary<AudioBusId, AudioBusHandle>> m_retiredBuses = [];
     private AudioMixer m_activeMixer;
 
-    internal AudioMixerOwner(IAudioDevice device, Action<Exception> retirementFailed, Action<Action> retire)
+    internal AudioMixerOwner(
+        IAudioDevice device,
+        Action<Exception> retirementFailed,
+        Action<Action> retire
+    )
         : this(device, new AudioMixerBuilder().Build(), null, retirementFailed, retire) { }
 
-    private AudioMixerOwner(IAudioDevice device, AudioMixer mixer,
-        IReadOnlyDictionary<AudioBusId, BusControlState>? controls, Action<Exception> retirementFailed, Action<Action> retire)
-    {
+    private AudioMixerOwner(
+        IAudioDevice device,
+        AudioMixer mixer,
+        IReadOnlyDictionary<AudioBusId, BusControlState>? controls,
+        Action<Exception> retirementFailed,
+        Action<Action> retire
+    ) {
         m_device = device;
         m_retirementFailed = retirementFailed;
         m_retire = retire;
@@ -39,10 +47,15 @@ internal sealed class AudioMixerOwner : IDisposable
     internal AudioMixerOwner PrepareReplacement(IAudioDevice device)
         => new(device, m_activeMixer, m_busControls, m_retirementFailed, m_retire);
 
-    internal bool TryGetBus(AudioBusId id, out AudioBusHandle handle) => m_buses.TryGetValue(id, out handle);
+    internal bool TryGetBus(
+        AudioBusId id,
+        out AudioBusHandle handle
+    ) => m_buses.TryGetValue(id, out handle);
 
-    internal bool SetBusVolume(AudioBusId bus, float volume)
-    {
+    internal bool SetBusVolume(
+        AudioBusId bus,
+        float volume
+    ) {
         if (volume < 0f || !float.IsFinite(volume) ||
             !m_buses.TryGetValue(bus, out AudioBusHandle handle) ||
             !m_device.SetBusVolume(handle, volume))
@@ -53,24 +66,30 @@ internal sealed class AudioMixerOwner : IDisposable
         return true;
     }
 
-    internal bool SetBusMuted(AudioBusId bus, bool muted)
-    {
+    internal bool SetBusMuted(
+        AudioBusId bus,
+        bool muted
+    ) {
         if (!m_buses.TryGetValue(bus, out AudioBusHandle handle) || !m_device.SetBusMuted(handle, muted))
             return false;
         m_busControls[bus].muted = muted;
         return true;
     }
 
-    internal bool SetBusPaused(AudioBusId bus, bool paused)
-    {
+    internal bool SetBusPaused(
+        AudioBusId bus,
+        bool paused
+    ) {
         if (!m_buses.TryGetValue(bus, out AudioBusHandle handle) || !m_device.SetBusPaused(handle, paused))
             return false;
         m_busControls[bus].paused = paused;
         return true;
     }
 
-    internal void Install(AudioMixer mixer, IEnumerable<AudioBusHandle> usedBuses)
-    {
+    internal void Install(
+        AudioMixer mixer,
+        IEnumerable<AudioBusHandle> usedBuses
+    ) {
         CollectRetiredBuses(usedBuses);
         IReadOnlyDictionary<AudioBusId, AudioBusHandle> candidate = CreateBusSet(m_device, mixer, null);
         if (m_buses.Count > 0)
@@ -92,7 +111,11 @@ internal sealed class AudioMixerOwner : IDisposable
             Dictionary<AudioBusId, AudioBusHandle> retired = m_retiredBuses[index];
             if (retired.Values.Any(retained.Contains))
                 continue;
-            try { DestroyBusSet(m_device, retired); m_retiredBuses.RemoveAt(index); }
+            try
+            {
+                DestroyBusSet(m_device, retired);
+                m_retiredBuses.RemoveAt(index);
+            }
             catch (Exception exception)
             {
                 m_retirementFailed(exception);
@@ -106,14 +129,32 @@ internal sealed class AudioMixerOwner : IDisposable
     /// </summary>
     public void Dispose()
     {
-        try { DestroyBusSet(m_device, m_buses); }
-        catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null) { throw; }
-        catch (Exception error) { m_retirementFailures.Add(error); }
+        try
+        {
+            DestroyBusSet(m_device, m_buses);
+        }
+        catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null)
+        {
+            throw;
+        }
+        catch (Exception error)
+        {
+            m_retirementFailures.Add(error);
+        }
         while (m_retiredBuses.Count > 0)
         {
-            try { DestroyBusSet(m_device, m_retiredBuses[^1]); }
-            catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null) { throw; }
-            catch (Exception error) { m_retirementFailures.Add(error); }
+            try
+            {
+                DestroyBusSet(m_device, m_retiredBuses[^1]);
+            }
+            catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null)
+            {
+                throw;
+            }
+            catch (Exception error)
+            {
+                m_retirementFailures.Add(error);
+            }
             m_retiredBuses.RemoveAt(m_retiredBuses.Count - 1);
         }
         m_busControls.Clear();
@@ -127,8 +168,8 @@ internal sealed class AudioMixerOwner : IDisposable
     private IReadOnlyDictionary<AudioBusId, AudioBusHandle> CreateBusSet(
         IAudioDevice device,
         AudioMixer mixer,
-        IReadOnlyDictionary<AudioBusId, BusControlState>? controls)
-    {
+        IReadOnlyDictionary<AudioBusId, BusControlState>? controls
+    ) {
         var candidate = new Dictionary<AudioBusId, AudioBusHandle>();
         try
         {
@@ -160,8 +201,14 @@ internal sealed class AudioMixerOwner : IDisposable
         }
         catch (Exception failure)
         {
-            try { m_retire(() => DestroyBusSet(device, candidate)); }
-            catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null) { throw; }
+            try
+            {
+                m_retire(() => DestroyBusSet(device, candidate));
+            }
+            catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null)
+            {
+                throw;
+            }
             catch (Exception cleanup)
             {
                 m_retirementFailed(cleanup);
@@ -173,8 +220,8 @@ internal sealed class AudioMixerOwner : IDisposable
 
     private static void DestroyBusSet(
         IAudioDevice device,
-        Dictionary<AudioBusId, AudioBusHandle> buses)
-    {
+        Dictionary<AudioBusId, AudioBusHandle> buses
+    ) {
         List<Exception> failures = [];
         foreach ((AudioBusId id, AudioBusHandle bus) in buses.Reverse().ToArray())
         {
@@ -183,16 +230,25 @@ internal sealed class AudioMixerOwner : IDisposable
                 if (!device.DestroyBus(bus))
                     throw new InvalidOperationException("The backend refused audio bus retirement.");
             }
-            catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null) { throw; }
-            catch (Exception exception) { failures.Add(exception); }
+            catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null)
+            {
+                throw;
+            }
+            catch (Exception exception)
+            {
+                failures.Add(exception);
+            }
             buses.Remove(id);
         }
         if (failures.Count > 0)
             throw new AggregateException("Audio bus retirement failed after every bus was attempted.", failures);
     }
 
-    private sealed class BusControlState(float volume, bool muted, bool paused)
-    {
+    private sealed class BusControlState(
+        float volume,
+        bool muted,
+        bool paused
+    ) {
         internal float volume { get; set; } = volume;
         internal bool muted { get; set; } = muted;
         internal bool paused { get; set; } = paused;

@@ -22,8 +22,11 @@ public readonly record struct AudioContentStatistics
     /// <exception cref="ArgumentOutOfRangeException">
     /// A count is negative or accepted snapshots exceed capacity.
     /// </exception>
-    public AudioContentStatistics(int capacity, int acceptedSnapshots, int rejectedProviders)
-    {
+    public AudioContentStatistics(
+        int capacity,
+        int acceptedSnapshots,
+        int rejectedProviders
+    ) {
         ArgumentOutOfRangeException.ThrowIfNegative(capacity);
         ArgumentOutOfRangeException.ThrowIfNegative(acceptedSnapshots);
         ArgumentOutOfRangeException.ThrowIfGreaterThan(acceptedSnapshots, capacity);

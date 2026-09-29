@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -18,7 +17,8 @@ internal sealed record ScriptApiReferenceSet(
     IReadOnlyList<string> runtimeReferencePaths,
     IReadOnlyList<string> ideReferencePaths,
     string contractFingerprint,
-    string cacheDirectory);
+    string cacheDirectory
+);
 
 internal static class ScriptApiReferenceBuilder
 {
@@ -28,8 +28,8 @@ internal static class ScriptApiReferenceBuilder
         ScriptCompilerOptions options,
         ScriptApiProfile profile,
         ScriptApiProfile? baseProfile = null,
-        ScriptApiReferenceSet? baseReferences = null)
-    {
+        ScriptApiReferenceSet? baseReferences = null
+    ) {
         lock (S_BUILD_SYNC)
             return BuildLocked(options, profile, baseProfile, baseReferences);
     }
@@ -38,8 +38,8 @@ internal static class ScriptApiReferenceBuilder
         ScriptCompilerOptions options,
         ScriptApiProfile profile,
         ScriptApiProfile? baseProfile,
-        ScriptApiReferenceSet? baseReferences)
-    {
+        ScriptApiReferenceSet? baseReferences
+    ) {
         string fingerprint = CreateFingerprint(profile);
         string directory = Path.Combine(options.scriptApiDirectory, profile.name, fingerprint);
         Directory.CreateDirectory(directory);
@@ -116,8 +116,8 @@ internal static class ScriptApiReferenceBuilder
         ScriptApiAssembly export,
         string referencePath,
         IReadOnlyList<string> implementationPaths,
-        IReadOnlySet<Type> exportedTypes)
-    {
+        IReadOnlySet<Type> exportedTypes
+    ) {
         string assemblyName = export.assembly.GetName().Name!;
         string source = ScriptApiStubSourceBuilder.BuildImplementation(export, exportedTypes);
         SyntaxTree syntaxTree = CSharpSyntaxTree.ParseText(
@@ -182,8 +182,8 @@ internal static class ScriptApiReferenceBuilder
         IReadOnlyList<ScriptApiTypeExport> exports,
         IReadOnlySet<Type> exportedTypes,
         IReadOnlyList<ScriptApiNamespaceMapping> namespaceMappings,
-        IReadOnlyList<string> baseReferencePaths)
-    {
+        IReadOnlyList<string> baseReferencePaths
+    ) {
         Dictionary<string, string> mappings = namespaceMappings
             .GroupBy(static mapping => mapping.implementationNamespace, StringComparer.Ordinal)
             .ToDictionary(
@@ -243,8 +243,8 @@ internal static class ScriptApiReferenceBuilder
         string assemblyName,
         IReadOnlyList<ScriptApiTypeExport> exports,
         IReadOnlyList<ScriptApiNamespaceMapping> namespaceMappings,
-        IReadOnlyList<ScriptApiTypeMapping> typeMappings)
-    {
+        IReadOnlyList<ScriptApiTypeMapping> typeMappings
+    ) {
         Dictionary<string, string> mappings = namespaceMappings
             .GroupBy(static mapping => mapping.implementationNamespace, StringComparer.Ordinal)
             .ToDictionary(
@@ -320,22 +320,14 @@ internal static class ScriptApiReferenceBuilder
 
     private static string[] GetImplementationPaths(ScriptApiProfile profile)
     {
-        string runtimeDirectory = Path.TrimEndingDirectorySeparator(
-            Path.GetFullPath(RuntimeEnvironment.GetRuntimeDirectory()));
+        IReadOnlySet<string> frameworkAssemblyNames = FrameworkReferenceResolver.GetFrameworkAssemblyNames();
         return profile.implementationAssemblies
+            .Where(assembly => !frameworkAssemblyNames.Contains(assembly.GetName().Name ?? string.Empty))
             .Select(static assembly => assembly.Location)
-            .Where(path => !string.IsNullOrWhiteSpace(path) && !IsFrameworkAssembly(path, runtimeDirectory))
+            .Where(static path => !string.IsNullOrWhiteSpace(path))
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .OrderBy(static path => path, StringComparer.Ordinal)
             .ToArray();
-    }
-
-    private static bool IsFrameworkAssembly(string path, string runtimeDirectory)
-    {
-        string assemblyPath = Path.GetFullPath(path);
-        return assemblyPath.StartsWith(
-            runtimeDirectory + Path.DirectorySeparatorChar,
-            StringComparison.OrdinalIgnoreCase);
     }
 
 }
