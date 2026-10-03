@@ -21,8 +21,6 @@ typedef enum
 } inno_ui_EventType;
 // begin namespace std
 // end namespace std
-// begin namespace std::__1
-// end namespace std::__1
 // begin namespace Inno
 // end namespace Inno
 // begin namespace Inno::UI

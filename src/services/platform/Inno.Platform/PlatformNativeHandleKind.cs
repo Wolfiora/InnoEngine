@@ -19,4 +19,9 @@ public enum PlatformNativeHandleKind
     /// Cocoa window handle.
     /// </summary>
     Cocoa,
+
+    /// <summary>
+    /// Browser canvas selected by the WebAssembly graphics backend without an operating-system handle.
+    /// </summary>
+    BrowserCanvas,
 }

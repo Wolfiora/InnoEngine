@@ -10,6 +10,6 @@
   <ItemGroup>
     <ProjectReference Include="..\Inno.Adapter.Text\Inno.Adapter.Text.csproj" />
     <ProjectReference Include="..\..\..\services\text\Inno.Text\Inno.Text.csproj" />
-    <ProjectReference Include="..\..\..\..\native\Inno.Native.Text\Inno.Native.Text.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../../../native/Inno.Native.Text/Inno.Native.Text.csproj" PrivateAssets="compile" />
   </ItemGroup>
 </Project>

@@ -15,7 +15,11 @@ IRenderingBackendFactory rendering = catalog.rendering;
 
 该项目禁止引用 Presentation、Build Toolchain、AssetPipeline、Compiler 或 Editor。它是 Player closure 的唯一默认 implementation 入口，后端初始化失败会原样终止启动或由对应 Runtime Service 进入明确 degraded state。
 
-`DefaultAdapterCatalog(IEnumerable<RenderingBackendProvider>? renderingProviders = null)` 可接收完整替换
-provider 集合，null 才使用内置 BGFX。它不是向默认列表追加项；重复/空 ID 在构造时失败，选择未注册
+`DefaultAdapterCatalog(renderingProviders, uiProviders, storageFactory)` 可接收完整替换
+provider 集合，三个参数均可省略；null 才使用相应内置实现。它不是向默认列表追加项；重复/空 ID 在构造时失败，选择未注册
 ID 在 Shell 创建窗口前失败。`platform`、`input`、`storage`、`rendering`、`audio`、`text`、`ui` 属性返回中立工厂。
 Provider 由 composition owner 持有，不参与 gameplay 插件热替换。
+
+## 显式存储组合
+
+`DefaultAdapterCatalog(renderingProviders, uiProviders, storageFactory)` 的第三个可选参数允许 Host 替换存储实现；`storage` 返回替换的 factory，否则返回默认文件系统工厂。后端选择、输入、渲染、音频、文本与 UI 仍使用同一个默认 catalog，不为 Web 复制整个目录。

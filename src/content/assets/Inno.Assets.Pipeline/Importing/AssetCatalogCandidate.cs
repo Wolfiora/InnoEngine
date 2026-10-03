@@ -42,6 +42,9 @@ public sealed class AssetCatalogCandidate : IDisposable
     /// <exception cref="IOException">
     /// Source metadata changed externally, a sidecar cannot be written, or the catalog cannot be promoted.
     /// </exception>
+    /// <exception cref="UnauthorizedAccessException">
+    /// The operating system rejects a source sidecar or catalog write, including a directory at a file destination.
+    /// </exception>
     public void Commit()
     {
         EnsureOpen();

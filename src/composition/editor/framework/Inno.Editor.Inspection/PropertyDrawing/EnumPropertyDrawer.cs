@@ -43,7 +43,7 @@ internal sealed class EnumPropertyDrawer : IPropertyDrawer
             }
         }
 
-        NativeImGui.EndCombo();
+        EditorWidget.EndBoundedCombo();
     }
 
     private static void DrawFlags(
@@ -80,7 +80,7 @@ internal sealed class EnumPropertyDrawer : IPropertyDrawer
             context.SetValue(Enum.ToObject(enumType, currentBits));
         }
 
-        NativeImGui.EndCombo();
+        EditorWidget.EndBoundedCombo();
     }
 
     private static ulong ToBits(

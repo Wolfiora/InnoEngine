@@ -16,6 +16,15 @@ namespace Inno.Storage.Tests;
 public sealed class StorageTests
 {
     [Fact]
+    public async Task FileSystemAdapterAcceptsAnExplicitVolumeRoot()
+    {
+        string root = Path.GetPathRoot(Path.GetFullPath(Path.GetTempPath()))!;
+        using var storage = new FileSystemApplicationStorage(root);
+
+        Assert.False(await storage.ExistsAsync(new StorageKey("InnoStorageProbe-" + Guid.NewGuid().ToString("N"))));
+    }
+
+    [Fact]
     public async Task AdmissionRejectsBeforeBackendAndAcceptedWriteOwnsItsBytes()
     {
         var backend = new PendingStorage();

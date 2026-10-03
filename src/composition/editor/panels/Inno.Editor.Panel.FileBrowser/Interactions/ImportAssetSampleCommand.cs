@@ -3,8 +3,6 @@ using System;
 using Inno.Assets;
 using Inno.Assets.Pipeline;
 using Inno.Editor.Interactions;
-using Inno.Scripting.Compiler;
-using System.Linq;
 
 namespace Inno.Editor.Panel.FileBrowser;
 
@@ -12,7 +10,7 @@ namespace Inno.Editor.Panel.FileBrowser;
 [EditorMenu(FileBrowserInteractionIds.C_AREA, "Import Sample", order: 120)]
 internal sealed class ImportAssetSampleCommand(
     AssetEditorModule assets,
-    ScriptCompiler compiler
+    AssetSampleImportModule imports
 ) : EditorAction<AssetFileEntry>
 {
     /// <summary>
@@ -28,6 +26,8 @@ internal sealed class ImportAssetSampleCommand(
     {
         if (!context.target.isSample)
             return EditorActionState.hidden;
+        if (!imports.canImport)
+            return EditorActionState.disabled;
         try
         {
             AssetPath target = AssetPath.Project(AssetSample.GetImportName(context.target.assetPath));
@@ -48,49 +48,5 @@ internal sealed class ImportAssetSampleCommand(
     /// The action context containing the selected sample and history transaction.
     /// </param>
     protected override void Execute(EditorActionContext<AssetFileEntry> context)
-    {
-        AssetPath imported = assets.pipeline.ImportSample(context.target.assetPath, _ =>
-        {
-            ScriptCompilationResult result = compiler.CompileAuthoringGenerationAsync()
-                .GetAwaiter().GetResult();
-            if (!result.success)
-                throw new InvalidOperationException("Sample script preflight failed:" + Environment.NewLine
-                    + string.Join(Environment.NewLine,
-                        result.diagnostics.Select(static diagnostic => diagnostic.message)));
-        });
-        byte[] archive = AssetSourceArchive.Capture(
-            assets.pipeline,
-            imported.localPath,
-            out bool isDirectory);
-        var data = new AssetHistoryData(
-            AssetHistoryOperationKind.CreateAsset,
-            imported.ToString(),
-            string.Empty,
-            isDirectory,
-            archive);
-        try
-        {
-            context.history.RecordApplied(
-                "Import Sample",
-                new EditorHistoryChange(
-                    AssetHistoryKinds.SourceOperation,
-                    EditorHistoryPayload.FromBytes(data.Encode())));
-        }
-        catch (Exception failure)
-        {
-            try
-            {
-                assets.pipeline.Delete(imported);
-            }
-            catch (Exception rollbackException)
-            {
-                throw new AggregateException(
-                    "The sample import could not be recorded and its compensation also failed.",
-                    failure,
-                    rollbackException);
-            }
-            throw;
-        }
-        assets.SelectPath(imported.ToString());
-    }
+        => imports.Request(context.target.assetPath);
 }

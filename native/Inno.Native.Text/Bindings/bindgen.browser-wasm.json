@@ -1,0 +1,14 @@
+{
+  "BaseConfig": {
+    "Url": "file://common.json"
+  },
+  "Preset": "emscripten-c,c-library",
+  "LibName": "libinno-text",
+  "IncludeFolders": [
+    "../Native",
+    "%EM_CACHE%/sysroot/include"
+  ],
+  "OutputPath": "../obj/browser-wasm/Generated",
+  "TargetSysRoot": "%EM_CACHE%/sysroot",
+  "WrapPointersAsHandle": true
+}

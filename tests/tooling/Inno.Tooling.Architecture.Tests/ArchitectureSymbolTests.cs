@@ -181,10 +181,12 @@ public sealed class ArchitectureSymbolTests
             {
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
-                UseShellExecute = false
+                UseShellExecute = false,
+                CreateNoWindow = true
             };
             start.ArgumentList.Add(Path.Combine(repository!.FullName,
-                "tools/Inno.Tooling.Architecture/bin/Debug/net9.0/Inno.Tooling.Architecture.dll"));
+                "build/cli/Inno.Build.Cli/bin/Debug/net9.0/Inno.Build.Cli.dll"));
+            start.ArgumentList.Add("verify");
             start.ArgumentList.Add(m_root);
             using Process process = Process.Start(start)!;
             Task<string> output = process.StandardOutput.ReadToEndAsync();

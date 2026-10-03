@@ -164,7 +164,7 @@ public sealed class RenderingImporterIntegrationTests : IDisposable
                    [project, provider, undeclaredConsumer],
                    Path.Combine(m_root, "UndeclaredLibrary")))
         {
-            InvalidDataException error = Assert.Throws<InvalidDataException>(undeclared.Rescan);
+            InvalidDataException error = Assert.Throws<InvalidDataException>(() => undeclared.Rescan());
             Assert.Contains("did not declare dependency", error.Message, StringComparison.OrdinalIgnoreCase);
         }
 

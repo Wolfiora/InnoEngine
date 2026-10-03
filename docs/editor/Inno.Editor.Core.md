@@ -68,6 +68,8 @@ Statistics 是唯一允许写入 Context 的帧数据通道，不是任意 servi
 
 这些 API 只处理 Module/Panel 项目状态与 Dear ImGui 使用的 `editor.ini`。业务设置由 [Inno.Editor.Settings](Inno.Editor.Settings.md) 通过 SerializationRegistry 写入项目根 `Settings.Editor.inno`。业务扩展通过构造注入接收正式服务，不向 `EditorContext` 添加全局 service locator。
 
+读取 `editor.ini` 时，`EditorLayoutSettings` 将 ImGui layout 的行分隔符规范化为 LF，避免同一项目从 macOS 转到 Windows 后仅因宿主平台的 `Environment.NewLine` 改变 `imguiLayout` 的文本值；具名 Editor section 仍保持原有解析规则。
+
 ## Module
 
 `EditorModule` 表示跨 Panel 共享、随扩展 generation 启停的 feature 状态：
@@ -171,7 +173,7 @@ public sealed class AnimationBakeModal(AnimationModule animation) : EditorModal
 }
 ```
 
-`canMove`、`canResize` 默认均为 false，因此既有进度 Modal 继续保持居中 auto-size。需要 Settings 风格窗口时可分别开启移动和缩放，并用 `initialSize` / `minimumSize` 提供未乘 zoom 的逻辑尺寸。Modal 仍是非 Dock 契约；具体 backend 必须阻止 Dock 与 Collapse/最小化。
+`canMove`、`canResize` 默认均为 false，因此既有进度 Modal 继续保持居中 auto-size。需要 Settings 风格窗口时可分别开启移动和缩放，并用 `initialSize` / `minimumSize` 提供未乘 zoom 的逻辑尺寸。`allowScrolling` 默认开启；当完整正文由一个或多个 Child 承担滚动时应关闭，防止 Modal 与 Child 重复生成滚动条。Modal 仍是非 Dock 契约；具体 backend 必须阻止 Dock 与 Collapse/最小化。
 
 ## Reload coordination
 

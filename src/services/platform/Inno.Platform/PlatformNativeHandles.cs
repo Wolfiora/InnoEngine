@@ -6,7 +6,7 @@ namespace Inno.Platform;
 /// Carries operating-system surface handles without exposing the active windowing backend.
 /// </summary>
 /// <param name="windowHandle">
-/// Native window handle.
+/// Native window handle, or a stable UTF-8 canvas selector for browser surfaces.
 /// </param>
 /// <param name="displayHandle">
 /// Native display handle when required by the platform.

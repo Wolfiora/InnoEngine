@@ -34,6 +34,8 @@
 
 后端集成可以据此构造自己的 native wrapper，普通业务代码不应持有该 handle。
 
+`PlatformNativeHandleKind.BrowserCanvas` 表示浏览器 Canvas；`windowHandle` 指向窗口持有的 UTF-8 选择器，`displayHandle` 为零。该指针不能传给本地窗口 API，且不能在窗口销毁后保留。
+
 ## ImGui layout 文件
 
 `Inno.Adapter.Presentation.ImGui.PlatformImGuiContext.SetIniFile(string?)` 在首帧之前设置 Dear ImGui 的 layout 持久化文件。相对路径会转换为绝对路径，父目录会按需创建；传入 `null` 或空白字符串会关闭 ini 持久化。首帧开始后再调用会抛出 `InvalidOperationException`。

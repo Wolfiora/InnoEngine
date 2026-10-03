@@ -257,7 +257,7 @@ internal static class MaterialInspector
                     }
                     finally
                     {
-                        NativeImGui.EndCombo();
+                        EditorWidget.EndBoundedCombo();
                     }
                 }
             }
@@ -342,7 +342,7 @@ internal static class MaterialInspector
                 }
                 finally
                 {
-                    NativeImGui.EndCombo();
+                    EditorWidget.EndBoundedCombo();
                 }
                 void SetOption(string? next)
                 {

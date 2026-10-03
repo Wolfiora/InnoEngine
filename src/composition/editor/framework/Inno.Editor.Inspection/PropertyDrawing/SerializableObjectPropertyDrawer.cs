@@ -92,6 +92,6 @@ internal sealed class SerializableObjectPropertyDrawer : IPropertyDrawer
             }
         }
 
-        NativeImGui.EndCombo();
+        EditorWidget.EndBoundedCombo();
     }
 }

@@ -9,6 +9,15 @@ Wiki，也不把未来规划描述为当前能力。
 
 | 页面 | 内容 | 维护要求 |
 | --- | --- | --- |
+| [Sample 导入修复与 BGCS 独立性复核](PRECOMMIT_SAMPLE_AUDIT_2026_10_03.md) | 后台候选导入、脚本 preflight、watcher 对账、History 与取消退休；BGCS 自有目标证据 | 2026-10-03 修复与两仓库分别验收，保留未定位的 Windows staging 访问拒绝 |
+| [提交前第四轮复核与 BGCS 说明](PRECOMMIT_BGCS_AUDIT_2026_10_02.md) | 生成器 ABI、编译器进程、全部 BGCS 测试与 SDK lowering 边界 | 本轮修复、完整矩阵及仍需整改的 Sample 导入响应性 |
+| [提交前全范围复核](PRECOMMIT_FULL_AUDIT_2026_10_02.md) | 目录数据保全、Core.IO 复用、输入边界、两阶段导出与退休、编译并行度及目标封装 | 八项补充修复、完整回归、实际导出与保留门禁 |
+| [提交前再次核查与补充修复](PRECOMMIT_RECHECK_ACCEPTANCE_2026_10_02.md) | 文件日志交付、实际输入消费顺序、Pack 最后取消与工具输出失败 | 当前源码、完整回归、FlappyBird 两平台导出与未验收边界 |
+| [提交前 1–8 项修复验收](PRECOMMIT_REPAIR_ACCEPTANCE_2026_10_02.md) | 日志、事件消费、Native 构建 root/配置/取消、Clang 资源与 minimap 性能 | 两仓库测试、FlappyBird 导出及未实测平台分别记录 |
+| [共享宿主与统一构建实施计划](WEB_HOST_REFACTOR_PLAN.md) | Native 目标、共享 Player、Shell 和 Build 入口的重构边界 | 与当前源码、契约测试及最终验收保持一致 |
+| [共享宿主与统一构建 2026-10-02 验收](WEB_HOST_REFACTOR_ACCEPTANCE_2026_10_02.md) | 删除 Native 副本、四个程序入口、通用宿主及 FlappyBird 回归 | 构建、契约测试、Windows 与 Web 运行及未实测平台分别记录 |
+| [浏览器 Player 与 Web 导出边界](WEB_PLAYER_ARCHITECTURE.md) | 当前实现、浏览器分层与 FlappyBird 实测边界 | Windows/macOS 主机和浏览器运行结果分别记录，不把单平台验证推断为全平台通过 |
+| [Web Player 2026-10-01 验收](WEB_PLAYER_ACCEPTANCE_2026_10_01.md) | Windows 正式 FlappyBird 导出、浏览器玩法与持久化结果 | 未实测的 macOS 与音频可听性明确列为验证边界 |
 | [2026-09-26 Rendering / Canvas 验收记录](RENDER_CANVAS_ACCEPTANCE_2026_09_26.md) | 本轮实现边界、TestProject 实测、包核对和未收口门禁 | 未通过项目不得标记为完整验收 |
 | [2026-09-08 实现交付与集中验收](ENGINE_CLOSURE_IMPLEMENTATION_2026_09_08.md) | 全清单剩余实现、公开 API、资源 owner 与集中验收 | 当前唯一状态入口，实现与验证分开 |
 | [2026-09-07—09-08 累积收口报告](ENGINE_CLOSURE_CONTINUATION_2026_09_07.md) | 之前 Source/Scene Recovery、Asset/Audio/Rendering 退休与 996 项基线 | 保留历史证据，不代替最新验收 |

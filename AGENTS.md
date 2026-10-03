@@ -202,3 +202,20 @@ public void AAA(
     // Method body.
 }
 ```
+
+## 24. Editor 表单与滚动约束
+
+- 每个可视区域只能指定一个滚动 owner。父 Panel/Modal、布局 Child 与内容 Child 不得同时为同一方向生成滚动条；承载填满区域的可滚动 Child 时，父容器必须禁用对应滚动。
+- 所有左侧 label、右侧 input 的 Editor 字段复用 `ImGuiWidget.SetupPropertyColumns()` 与 `PropertyLabel()`，按 2:3 分配可用宽度；有操作列时先扣除操作列。label 必须在自身列换行，行高随内容增长。
+- 禁止以固定 label 像素宽度、无条件 scrollbar flag、虚假的 content size 或额外嵌套滚动 Child 修补布局。修改表单、Panel、Popup 后要在小窗口、长文本与不同 zoom 下验证 `ScrollMaxX/ScrollMaxY` 只在内容确实溢出时为正。
+- Editor 下拉选择器统一使用 `BeginBoundedCombo` / `EndBoundedCombo` 或 `BeginMenuSelector` / `EndMenuSelector`；弹层从触发控件下边缘向下展开，宽度受所属窗口限制，高度同时受所属窗口剩余空间和窗口高度比例限制。不要直接用原生 Combo 的自动翻转定位。
+- 自绘命中区域除了矩形包含关系，还必须确认所属 ImGui window 是当前可交互的前景窗口；被浮动窗口、Popup 或 Modal 遮挡时不得触发底层 Panel 的关闭、画布手势或游戏输入。平台事件仍使用 `Inno.Core.Events`，ImGui 只决定可见 UI 的命中与焦点；Play Session 使用独立 Input backend 接收经 Game View 焦点策略筛选的事件，不建立第二个事件总线。
+
+
+## 25. 宿主、平台目标与统一构建
+
+- 共享 Foundation、Shell、Player Runtime 不通过 OperatingSystem.IsBrowser 判断能力。平台入口注入帧调度、模块激活、存储、日志和线程策略；Input 使用同一 Core Events 入口。
+- Native 每组件只有一个项目，共同 BGCS 声明与 target profile 分开。Host 单文件位于 Generated/Bindings.cs，目标 managed 单文件位于所属项目 obj/<target>/Generated/Bindings.cs；CMake 中间产物仍归对应 toolchain 的 obj/native。不同目标不能覆盖彼此输出。
+- Cpp2C 目标桥同样使用所属 Native 项目 obj/<target>/Native，不能覆盖宿主 Native/Generated。目标工具链通过 CMake 参数选择桥；Emscripten SDK/Cache/Node/Python 必须以目标项目的 MSBuild workload 选择为准，不从已安装包中猜测最高版本。
+- 构建工具只保留 Inno.Build.Cli 一个 Program。组件工具链、Shader 编译、Support Pack 事务和架构验证作为库组合，MSBuild 使用薄 Task 适配。
+- Support Pack 核心通过 IPlayerSupportPackSource 与 IPlayerSupportPackValidator 注册目标，不维护具体平台分支。Build CLI 是 composition root；通用 Build 库仍禁止引用 Editor。

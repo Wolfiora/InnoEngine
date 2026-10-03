@@ -1,3 +1,5 @@
+using System.Threading.Tasks;
+using System.Threading;
 using Inno.Build.Toolchains;
 
 namespace Inno.Build.Toolchains.MiniAudio.Platforms;
@@ -23,12 +25,19 @@ internal abstract class MiniAudioBuilder
     /// <param name="miniAudioDirectory">
     /// The absolute path of the validated miniaudio source checkout.
     /// </param>
-    /// <param name="config">
-    /// The normalized debug or release configuration token.
+    /// <param name="context">
+    /// The selected checkout and native configuration.
     /// </param>
-    public abstract void Build(
+    /// <param name="cancellationToken">
+    /// Cancels the native process tree.
+    /// </param>
+    /// <returns>
+    /// Completion after native compilation succeeds; failures and cancellation propagate.
+    /// </returns>
+    public abstract Task BuildAsync(
         string miniAudioDirectory,
-        string config
+        NativeBuildContext context,
+        CancellationToken cancellationToken
     );
 
     /// <summary>

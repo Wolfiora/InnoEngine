@@ -40,9 +40,11 @@ Graphics/Compute pipeline binding、Shader IR 的 stages/passes/interface bindin
 | 目标产物 | `IRenderTargetArtifactProvider`, `RenderTargetArtifactStatus` | 以 `Ready`、`Pending`、`Unavailable`、`Failed` 精确表达无源码 Shader/Texture 目标产物状态。 |
 | 诊断 | `IDiagnosticReporter`, `Diagnostic`（Core.Diagnostics） | 发布并在条件恢复后解除领域问题；没有 Rendering 专用 sink/severity。 |
 | 全局 | `GraphicsSettings`, `RenderFrameStatistics` | 当前 capability、默认 Pipeline 与只读统计。 |
-| 设备标识与合成 | `GraphicsApi`, `GraphicsCapabilities`, `IRenderLayerCompositionProgramProvider` | 开放稳定后端 ID、设备能力与 Host 注入的图层合成程序供给边界。 |
+| 设备标识与合成 | `GraphicsApi`, `GraphicsCapabilities`, `IRenderDevice.primaryPresentationEncodesSrgb`, `IRenderLayerCompositionProgramProvider` | 开放稳定后端 ID、主显示目标的真实颜色编码能力与 Host 注入的图层合成程序供给边界。 |
 
 `GraphicsApi` 现在是可扩展的区分大小写稳定值；`Metal`、`Vulkan` 等现有成员仍可直接使用，值与原有目标产物路径保持一致。新后端可使用 `new GraphicsApi("vendor.backend")`，但设备和目标产物仍由对应 provider 实现。默认值不是有效后端 ID，`GraphicsCapabilities` 会拒绝它。Render Runtime 需要多模型图层合成时调用 Host 提供的 `IRenderLayerCompositionProgramProvider`；通用 Rendering 不包含任何 BGFX Shader、平台架构分支或内置渲染模型。
+
+`IRenderDevice.primaryPresentationEncodesSrgb` 由设备报告主显示目标在写入线性 RGB 时是否自动编码。主目标不编码时，单模型直接读取自己的离屏图层并通过 `IRenderLayerCompositionProgramProvider.CreateOutputTransferDescriptor` 做一次最终 sRGB 传递；多模型先以共同声明的纹理格式在线性空间完成预乘 Alpha 合成，再执行这次传递。默认 sRGB 图层保留暗部存储精度，不转换为线性 RGBA8 中间层。离屏目标遵守声明格式，由最终呈现消费者决定显示传递。自定义后端必须准确报告主目标能力，并为合成和输出传递提供匹配的目标产物。
 
 Pipeline/Feature/Request Provider 的 Attribute 与 Shader Target 的实例 ID 并非两套相互矛盾的风格。Runtime Registry 必须先用资产里保存的 Stable ID 路由到实现类型，之后才按需构造 Pipeline，因此参数化 Attribute 同时承担“构造前 ID → Type 索引”的必要元数据。它不是空 marker，也不与实例成员重复。若改成实例 `id`，Registry 就必须为查表提前构造全部 Pipeline，改变资源生命周期和失败边界。
 

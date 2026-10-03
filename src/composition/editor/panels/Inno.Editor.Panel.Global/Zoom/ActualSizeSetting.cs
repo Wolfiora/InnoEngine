@@ -60,7 +60,7 @@ internal sealed class ActualSizeSetting : EditorSetting
         }
         finally
         {
-            NativeImGui.EndCombo();
+            EditorWidget.EndBoundedCombo();
         }
     }
 

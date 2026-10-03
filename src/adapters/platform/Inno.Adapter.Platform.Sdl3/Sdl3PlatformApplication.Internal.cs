@@ -49,6 +49,11 @@ public sealed partial class Sdl3PlatformApplication
             throw new InvalidOperationException(SDL.GetError() ?? "SDL_Init failed.");
         }
 
+        // Browser frames are already driven by requestAnimationFrame; SDL's native
+        // resize callback is only needed by desktop window move/resize loops.
+        if (OperatingSystem.IsBrowser())
+            return;
+
         m_liveResizeEventWatch = LiveResizeEventWatch;
         m_liveResizeMainThreadCallback = LiveResizeMainThreadCallback;
         m_liveResizeEventWatchPointer = (delegate* unmanaged[Cdecl]<void*, SDLEvent*, byte>)
@@ -89,7 +94,9 @@ public sealed partial class Sdl3PlatformApplication
             flags |= SDLWindowFlags.Resizable;
         }
 
-        var windowHandle = SDL.CreateWindow(options.title, options.width, options.height, flags);
+        SDLWindow windowHandle = OperatingSystem.IsBrowser()
+            ? CreateBrowserWindow(options)
+            : SDL.CreateWindow(options.title, options.width, options.height, flags);
         if (windowHandle.IsNull)
         {
             throw new InvalidOperationException(SDL.GetError() ?? "SDL_CreateWindow failed.");
@@ -98,6 +105,30 @@ public sealed partial class Sdl3PlatformApplication
         var window = new Sdl3PlatformWindow(windowHandle, options.title);
         m_windows[window.windowId] = window;
         return window;
+    }
+
+    private static SDLWindow CreateBrowserWindow(PlatformWindowOptions options)
+    {
+        uint properties = SDL.CreateProperties();
+        if (properties == 0)
+            throw new InvalidOperationException(SDL.GetError() ?? "SDL_CreateProperties failed.");
+        try
+        {
+            if (!SDL.SetStringProperty(properties, SDL.SDL_PROP_WINDOW_CREATE_TITLE_STRING, options.title)
+                || !SDL.SetNumberProperty(properties, SDL.SDL_PROP_WINDOW_CREATE_WIDTH_NUMBER, options.width)
+                || !SDL.SetNumberProperty(properties, SDL.SDL_PROP_WINDOW_CREATE_HEIGHT_NUMBER, options.height)
+                || !SDL.SetBooleanProperty(properties, SDL.SDL_PROP_WINDOW_CREATE_OPENGL_BOOLEAN, true)
+                || !SDL.SetBooleanProperty(properties, SDL.SDL_PROP_WINDOW_CREATE_RESIZABLE_BOOLEAN, options.resizable)
+                || !SDL.SetBooleanProperty(properties, SDL.SDL_PROP_WINDOW_CREATE_HIGH_PIXEL_DENSITY_BOOLEAN, options.highPixelDensity))
+            {
+                throw new InvalidOperationException(SDL.GetError() ?? "SDL window properties could not be set.");
+            }
+            return SDL.CreateWindowWithProperties(properties);
+        }
+        finally
+        {
+            SDL.DestroyProperties(properties);
+        }
     }
 
     /// <summary>

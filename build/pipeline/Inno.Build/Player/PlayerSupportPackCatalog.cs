@@ -64,8 +64,14 @@ public sealed class PlayerSupportPackCatalog
     /// <exception cref="InvalidDataException">
     /// Thrown when the pack is empty, contains build-time payload, or lacks its Player executable or native runtimes.
     /// </exception>
-    public string Resolve(BuildTargetId target)
-    {
+    /// <param name="validator">
+    /// The target-owned validator for runtime or linker inputs.
+    /// </param>
+    public string Resolve(
+        BuildTargetId target,
+        IPlayerSupportPackValidator validator
+    ) {
+        ArgumentNullException.ThrowIfNull(validator);
         string directory = Path.Combine(m_root, target.value);
         if (!Directory.Exists(directory))
         {
@@ -78,6 +84,9 @@ public sealed class PlayerSupportPackCatalog
             throw new InvalidDataException($"Player Support Pack '{target}' is empty.");
         foreach (string file in files)
         {
+            string relativePath = Path.GetRelativePath(directory, file);
+            if (relativePath.StartsWith("PlayerLink" + Path.DirectorySeparatorChar, StringComparison.Ordinal))
+                continue;
             string name = Path.GetFileName(file);
             if (S_FORBIDDEN_EXTENSIONS.Contains(Path.GetExtension(name))
                 || S_FORBIDDEN_NAME_TOKENS.Any(token => name.Contains(token, StringComparison.OrdinalIgnoreCase)))
@@ -86,68 +95,25 @@ public sealed class PlayerSupportPackCatalog
                     $"Player Support Pack '{target}' contains forbidden build-time file '{name}'.");
             }
         }
-        string nativeRoot = Path.Combine(directory, "native") + Path.DirectorySeparatorChar;
-        string[] foreignNativeExtensions = target == BuildTargetId.macOSArm64
-            ? [".dll", ".so"]
-            : [".dylib", ".so"];
-        foreach (string file in files.Where(file => file.StartsWith(nativeRoot, StringComparison.Ordinal)))
-        {
-            if (foreignNativeExtensions.Contains(Path.GetExtension(file), StringComparer.OrdinalIgnoreCase))
-            {
-                throw new InvalidDataException(
-                    $"Player Support Pack '{target}' contains foreign native runtime '{Path.GetFileName(file)}'.");
-            }
-        }
-        string executable = target == BuildTargetId.macOSArm64
-            ? Path.Combine(directory, "Inno.Player")
-            : Path.Combine(directory, "Inno.Player.exe");
-        if (!File.Exists(executable))
-            throw new InvalidDataException($"Player Support Pack '{target}' has no Player executable.");
         string referenceDirectory = Path.Combine(directory, "References");
         if (!Directory.Exists(referenceDirectory)
             || !Directory.EnumerateFiles(referenceDirectory, "Inno.*.dll", SearchOption.TopDirectoryOnly).Any())
         {
             throw new InvalidDataException($"Player Support Pack '{target}' has no target compilation references.");
         }
-        string[] requiredNativeFiles = target == BuildTargetId.macOSArm64
-            ?
-            [
-                "libbgfx-shared-lib-release.dylib",
-                "SDL3-release.dylib",
-                "libminiaudio-release.dylib",
-                "libinno-text-release.dylib",
-                "libinno-ui-release.dylib"
-            ]
-            :
-            [
-                "bgfx-shared-lib-release.dll",
-                "SDL3-release.dll",
-                "miniaudio-release.dll",
-                "inno-text-release.dll",
-                "inno-ui-release.dll"
-            ];
-        foreach (string requiredNativeFile in requiredNativeFiles)
-        {
-            if (!files.Any(file => string.Equals(
-                    Path.GetFileName(file),
-                    requiredNativeFile,
-                    StringComparison.OrdinalIgnoreCase)))
-            {
-                throw new InvalidDataException(
-                    $"Player Support Pack '{target}' is missing native runtime '{requiredNativeFile}'.");
-            }
-        }
+        validator.Validate(directory);
         return directory;
     }
 
     internal async ValueTask<string> ResolveOrProvisionAsync(
         BuildTargetId target,
+        IPlayerSupportPackValidator validator,
         IPlayerSupportPackProvisioner? provisioner,
         CancellationToken cancellationToken
     ) {
         try
         {
-            return Resolve(target);
+            return Resolve(target, validator);
         }
         catch (DirectoryNotFoundException) when (provisioner is not null)
         {
@@ -155,16 +121,16 @@ public sealed class PlayerSupportPackCatalog
         }
 
         if (provisioner is null)
-            return Resolve(target);
+            return Resolve(target, validator);
 
         SemaphoreSlim gate = m_provisionGates.GetOrAdd(target, static _ => new SemaphoreSlim(1, 1));
         await gate.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
             if (Directory.Exists(Path.Combine(m_root, target.value)))
-                return Resolve(target);
+                return Resolve(target, validator);
             await provisioner.ProvisionAsync(target, m_root, cancellationToken).ConfigureAwait(false);
-            return Resolve(target);
+            return Resolve(target, validator);
         }
         finally
         {

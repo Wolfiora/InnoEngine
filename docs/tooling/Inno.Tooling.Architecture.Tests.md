@@ -45,7 +45,7 @@ ImGui 原生 enum/pointer 的完整公开边界重构仍是实施清单 C17 的�
 ```sh
 dotnet build InnoEngine.sln
 dotnet test tests/tooling/Inno.Tooling.Architecture.Tests --no-build --no-restore
-dotnet run --project tools/Inno.Tooling.Architecture --no-build
+dotnet run --project build/cli/Inno.Build.Cli -- verifyno-build
 ```
 
 当前工具的符号检查要求 Debug solution 产物；负向源码 fixture 故意不伪造整个产品。测试不能替代完整解决方案归类检查、真实编译符号审计或运行时 GC/Recovery 验证。VSTest 需要本地进程通信权限。

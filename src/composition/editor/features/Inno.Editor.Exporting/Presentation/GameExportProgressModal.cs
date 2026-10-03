@@ -19,7 +19,7 @@ internal sealed class GameExportProgressModal(ExportWindowModule window) : Edito
     public override bool blocksInteraction => true;
 
     /// <summary>
-    /// Draws the current export status and its cancellation or dismissal action.
+    /// Draws the current export status and cancellation action while work is active.
     /// </summary>
     /// <param name="context">
     /// The active Editor context for the current frame.
@@ -32,12 +32,9 @@ internal sealed class GameExportProgressModal(ExportWindowModule window) : Edito
             window.gameProgress,
             new Vector2(-1f, 0f),
             $"{window.gameProgress:P0}");
-        string button = window.isGameBusy ? "Cancel" : "Close";
-        if (!EditorWidget.CenteredButton(button, EditorWidget.style.itemSpacing.Y))
+        if (!window.isGameBusy ||
+            !EditorWidget.CenteredButton("Cancel", EditorWidget.style.itemSpacing.Y))
             return;
-        if (window.isGameBusy)
-            window.CancelGameExport();
-        else
-            window.CloseGameProgress();
+        window.CancelGameExport();
     }
 }

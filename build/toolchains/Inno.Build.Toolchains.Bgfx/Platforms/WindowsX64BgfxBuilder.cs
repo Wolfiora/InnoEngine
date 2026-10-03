@@ -1,5 +1,7 @@
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
+using System.Threading;
 using Inno.Build.Toolchains;
 
 namespace Inno.Build.Toolchains.Bgfx.Platforms;
@@ -23,7 +25,7 @@ internal sealed class WindowsX64BgfxBuilder : BgfxBuilder
     /// <summary>
     /// Gets the artifact path token text used by the current instance.
     /// </summary>
-public override string artifactPathToken => "/win64_vs2022/bin/";
+    public override string artifactPathToken => "/win64_vs2022/bin/";
     /// <summary>
     /// Gets the native make target used for debug output.
     /// </summary>
@@ -46,30 +48,39 @@ public override string artifactPathToken => "/win64_vs2022/bin/";
     }
 
     /// <summary>
-    /// Builds a validated result from the current immutable input snapshot.
+    /// Compiles the component sources using the selected checkout and configuration.
     /// </summary>
     /// <param name="bgfxDir">
     /// The bgfx dir text validated by the build operation.
     /// </param>
-    /// <param name="config">
-    /// The validated configuration that controls this operation.
+    /// <param name="context">
+    /// The selected checkout and native configuration.
     /// </param>
     /// <param name="makeTargetOverride">
     /// The make target override text validated by the build operation.
     /// </param>
-    public override void Build(
+    /// <param name="cancellationToken">
+    /// Cancels the native process tree.
+    /// </param>
+    /// <returns>
+    /// Completion after native compilation succeeds; failures and cancellation propagate.
+    /// </returns>
+    public override async Task BuildAsync(
         string bgfxDir,
-        string config,
-        string? makeTargetOverride
+        NativeBuildContext context,
+        string? makeTargetOverride,
+        CancellationToken cancellationToken
     ) {
+        cancellationToken.ThrowIfCancellationRequested();
+        string config = context.configuration;
         if (!string.IsNullOrWhiteSpace(makeTargetOverride))
         {
-            ToolchainEnvironment.Run("make", makeTargetOverride, bgfxDir);
+            await ToolchainEnvironment.RunAsync("make", makeTargetOverride, bgfxDir, cancellationToken);
             return;
         }
 
-        RunGenie(bgfxDir, "--with-shared-lib");
-        RunMsBuild(bgfxDir, config);
+        await RunGenieAsync(bgfxDir, "--with-shared-lib", cancellationToken);
+        await RunMsBuildAsync(bgfxDir, config, cancellationToken);
     }
 
     /// <summary>
@@ -78,30 +89,41 @@ public override string artifactPathToken => "/win64_vs2022/bin/";
     /// <param name="bgfxDir">
     /// The bgfx dir text validated by the build tools operation.
     /// </param>
-    /// <param name="config">
-    /// The validated configuration that controls this operation.
+    /// <param name="context">
+    /// The selected checkout and native configuration.
     /// </param>
-    public override void BuildTools(
+    /// <param name="cancellationToken">
+    /// Cancels the native process tree.
+    /// </param>
+    /// <returns>
+    /// Completion after native compilation succeeds; failures and cancellation propagate.
+    /// </returns>
+    public override async Task BuildToolsAsync(
         string bgfxDir,
-        string config
+        NativeBuildContext context,
+        CancellationToken cancellationToken
     ) {
-        RunGenie(bgfxDir, "--with-tools --with-shared-lib");
-        RunMsBuild(bgfxDir, config);
+        cancellationToken.ThrowIfCancellationRequested();
+        string config = context.configuration;
+        await RunGenieAsync(bgfxDir, "--with-tools --with-shared-lib", cancellationToken);
+        await RunMsBuildAsync(bgfxDir, config, cancellationToken);
     }
 
-    private static void RunGenie(
+    private static async Task RunGenieAsync(
         string bgfxDir,
-        string args
+        string args,
+        CancellationToken cancellationToken
     ) {
-        ToolchainEnvironment.Run(Path.GetFullPath(Path.Combine(bgfxDir, GENIE_RELATIVE_PATH)), $"{args} vs2022", bgfxDir);
+        await ToolchainEnvironment.RunAsync(Path.GetFullPath(Path.Combine(bgfxDir, GENIE_RELATIVE_PATH)), $"{args} vs2022", bgfxDir, cancellationToken);
     }
 
-    private static void RunMsBuild(
+    private static async Task RunMsBuildAsync(
         string bgfxDir,
-        string config
+        string config,
+        CancellationToken cancellationToken
     ) {
         var vsConfig = config == ToolchainLayout.C_DEBUG_CONFIGURATION ? "Debug" : "Release";
-        var args = $"{VS2022_SOLUTION_RELATIVE_PATH} /m /p:Configuration={vsConfig} /p:Platform={PLATFORM}";
-        ToolchainEnvironment.Run("msbuild", args, bgfxDir);
+        var args = $"{VS2022_SOLUTION_RELATIVE_PATH} /m:1 /nodeReuse:false /p:Configuration={vsConfig} /p:Platform={PLATFORM}";
+        await ToolchainEnvironment.RunAsync("msbuild", args, bgfxDir, cancellationToken);
     }
 }

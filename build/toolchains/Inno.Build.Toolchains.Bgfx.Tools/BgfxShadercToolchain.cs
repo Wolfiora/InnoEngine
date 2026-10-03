@@ -22,7 +22,11 @@ public enum BgfxShaderTargetPlatform
     /// <summary>
     /// Apple Silicon macOS player or editor.
     /// </summary>
-    MacOSArm64
+    MacOSArm64,
+    /// <summary>
+    /// Browser WebAssembly player using WebGL 2.
+    /// </summary>
+    BrowserWasm
 }
 
 /// <summary>
@@ -212,8 +216,9 @@ public sealed partial class BgfxShadercToolchain : IShaderCompilerToolchain
 
     private static string ResolveBgfxShaderInclude()
     {
+        string owner = Path.GetDirectoryName(typeof(BgfxShadercToolchain).Assembly.Location) ?? AppContext.BaseDirectory;
         string deployed = Path.Combine(
-            AppContext.BaseDirectory,
+            owner,
             "native",
             "bgfx",
             "includes",
@@ -221,7 +226,7 @@ public sealed partial class BgfxShadercToolchain : IShaderCompilerToolchain
         if (File.Exists(deployed))
             return deployed;
 
-        string[] starts = [AppContext.BaseDirectory, Directory.GetCurrentDirectory()];
+        string[] starts = [owner, AppContext.BaseDirectory, Directory.GetCurrentDirectory()];
         foreach (string start in starts)
         {
             for (DirectoryInfo? directory = new(start); directory is not null; directory = directory.Parent)
@@ -330,6 +335,13 @@ internal static class BgfxRendererProfileCatalog
                 "430",
                 "430",
                 compute ? "430" : string.Empty),
+            (BgfxShaderTargetPlatform.BrowserWasm, var api) when api == GraphicsApi.OpenGLES && !compute => new(
+                targetPlatform,
+                capabilities.backend,
+                "asm.js",
+                "300_es",
+                "300_es",
+                string.Empty),
             _ => throw new NotSupportedException(
                 $"BGFX shader target '{targetPlatform}/{capabilities.backend}' is not supported.")
         };

@@ -9,6 +9,26 @@ namespace Inno.Adapter.Presentation.ImGui;
 public sealed partial class PlatformImGuiContext : IDisposable
 {
     /// <summary>
+    /// Resolves the SDL window currently owned by an ImGui viewport.
+    /// </summary>
+    /// <param name="viewportId">
+    /// The ImGui viewport identity.
+    /// </param>
+    /// <param name="windowId">
+    /// The SDL window identity when available.
+    /// </param>
+    /// <returns>
+    /// <see langword="true"/> when the viewport has a live SDL window.
+    /// </returns>
+    /// <exception cref="ObjectDisposedException">
+    /// Thrown after the presentation context has been disposed.
+    /// </exception>
+    public partial bool TryGetWindowId(
+        uint viewportId,
+        out uint windowId
+    );
+
+    /// <summary>
     /// Registers or replaces a font face for a composable style in this context.
     /// </summary>
     /// <param name="style">

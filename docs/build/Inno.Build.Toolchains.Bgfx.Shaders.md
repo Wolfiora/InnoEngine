@@ -1,26 +1,22 @@
 # Inno.Build.Toolchains.Bgfx.Shaders
 
-[Build 索引](README.md) · [Wiki 首页](../README.md) · [BGFX 工具链](Inno.Build.Toolchains.Bgfx.Tools.md) · [Shader 创作](../render/Inno.Rendering.Shaders.md)
+[Build 索引](README.md) · [Wiki 首页](../README.md) · [MSBuild Task](Inno.Build.Tasks.md) · [统一 CLI](Inno.Build.Cli.md)
 
-## 职责
+## 职责与公开 API
 
-离线 Shader 图编译命令。使用普通 Asset Pipeline 导入 `.ishader` 及 `.ishadersource`，经统一图降低、typed IR、BGFX 生成与原生编译输出 `RenderShaderArtifactCodec` 产物。当前源码导入或编译错误使命令失败，不使用旧成功产物掩盖构建错误。
+Shader 图离线编译库，没有 Program。唯一 public 入口 `ShaderArtifactBuilder.Compile(assetRoot, shaderPath, platform, backend, outputFile)` 通过现有 Asset Pipeline、Shader IR、后端前端与 Artifact Codec 编译一个图。公开参数的目标平台来自 BGFX 工具链，GraphicsApi 属于中立 Rendering。没有 protected 扩展点。
 
-该可执行项目没有供脚本调用的 public/protected 扩展 API。语言与节点扩展属于 Inno.Rendering.Shaders，后端生成属于 Inno.Build.Toolchains.Bgfx.Tools。
+```csharp
+using Inno.Build.Toolchains.Bgfx.Shaders;
+using Inno.Build.Toolchains.Bgfx.Tools;
+using Inno.Rendering;
 
-## 用法
-
-```sh
-dotnet Inno.Build.Toolchains.Bgfx.Shaders.dll \
-  /absolute/asset-root ImGui.ishader MacOSArm64 Metal /absolute/output/ImGui.bin
+ShaderArtifactBuilder.Compile(assetRoot, "ImGui.ishader",
+    BgfxShaderTargetPlatform.WindowsX64, GraphicsApi.Direct3D11, outputFile);
 ```
 
-参数依次为资产根目录、Shader 源内路径、编译平台、GraphicsApi、产物路径。当前 CLI 使用空变体；需要多变体分发时由正式内容构建管线收集请求。
+变量由调用者提供。MSBuild 内置 ImGui、Composition 和 OutputTransfer 使用同一个 CompileShaderTask；命令行使用统一 CLI 的 shader 命令。
 
-## 内置 ImGui
+## 失败、生命周期和热重载
 
-`Inno.Adapter.Presentation.ImGui.Bgfx` 的构建目标调用本 CLI 编译内置图并嵌入平台/API 对应产物。Editor 启动只读取匹配资源，不启动旧完整源码编译旁路；缺少对应资源明确报告安装/构建错误。
-
-本机已完成 Metal/Vulkan/OpenGL 产物编译以及 Metal Editor 启动检查；这不代表 Vulkan GPU 执行或 Windows 后端验收。Windows 按用户要求暂缓。
-
-临时导入缓存与当前进程绑定并在退出时释放。图/源码仍属于创作输入，不能将本 CLI、图解析器或 Editor 项目打入 Player。
+新源导入或编译失败明确抛出 InvalidDataException，保留既有目标文件；只有完整产物成功才通过 AtomicFile 替换。临时 Asset/Module/诊断 owner 使用隔离 scratch，退出释放并清理。没有第二套 Shader 源编译旁路；此库不能进入 Player closure。

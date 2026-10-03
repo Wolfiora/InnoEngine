@@ -1,54 +1,66 @@
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Inno.Build.Toolchains.Bgfx;
+using System.Threading.Tasks;
+using System.Threading;
+using System;
 using Inno.Build.Toolchains.Bgfx.Platforms;
 using Inno.Build.Toolchains;
 
 namespace Inno.Build.Toolchains.Bgfx;
 
-internal static class BgfxToolsBuild
+/// <summary>
+/// Builds the pinned graphics component through the shared native workflow.
+/// </summary>
+public static class BgfxToolsBuild
 {
     /// <summary>
-    /// Executes the configured workflow and returns its process outcome.
+    /// Builds and installs the native graphics artifacts for the current host.
     /// </summary>
-    /// <param name="args">
-    /// The command-line arguments that configure this invocation.
+    /// <param name="context">
+    /// The checkout and configuration whose sources and outputs belong to this operation.
+    /// </param>
+    /// <exception cref="ArgumentException">
+    /// The configuration is not debug or release.
+    /// </exception>
+    /// <exception cref="InvalidOperationException">
+    /// A native build process fails.
+    /// </exception>
+    /// <param name="cancellationToken">
+    /// Cancels child processes and prevents artifact installation after cancellation.
     /// </param>
     /// <returns>
-    /// The scalar result calculated from the supplied inputs.
+    /// Completion after the component has been built and installed in the selected checkout.
     /// </returns>
-    public static int Run(string[] args)
-    {
-        try
-        {
-            var options = ToolsBuildOptions.Parse(args);
-            var repoRoot = ToolchainEnvironment.FindRepoRoot();
-            var externDir = Path.Combine(repoRoot, ToolchainLayout.C_EXTERNAL_DIRECTORY_NAME);
-            var bgfxDir = Path.Combine(externDir, BgfxBuildConstants.BGFX_DIR_NAME);
-            var bxDir = Path.Combine(externDir, BgfxBuildConstants.BX_DIR_NAME);
-            var bimgDir = Path.Combine(externDir, BgfxBuildConstants.BIMG_DIR_NAME);
-            var builder = BgfxBuilderFactory.CreateForCurrentPlatform();
-            var outputDir = Path.Combine(repoRoot, ToolchainLayout.C_OUTPUT_DIRECTORY_NAME, BgfxBuildConstants.OUTPUT_PRODUCT_DIR_NAME, builder.outputPlatform);
+    /// <exception cref="OperationCanceledException">
+    /// The operation was canceled.
+    /// </exception>
+    public static async Task BuildAsync(
+        NativeBuildContext context,
+        CancellationToken cancellationToken = default
+    ) {
+        ArgumentNullException.ThrowIfNull(context);
+        cancellationToken.ThrowIfCancellationRequested();
+        string configuration = context.configuration;
+        var repoRoot = context.engineRoot;
+        var externDir = Path.Combine(repoRoot, ToolchainLayout.C_EXTERNAL_DIRECTORY_NAME);
+        var bgfxDir = Path.Combine(externDir, BgfxBuildConstants.BGFX_DIR_NAME);
+        var bxDir = Path.Combine(externDir, BgfxBuildConstants.BX_DIR_NAME);
+        var bimgDir = Path.Combine(externDir, BgfxBuildConstants.BIMG_DIR_NAME);
+        var builder = BgfxBuilderFactory.CreateForCurrentPlatform();
+        var outputDir = Path.Combine(repoRoot, ToolchainLayout.C_OUTPUT_DIRECTORY_NAME, BgfxBuildConstants.OUTPUT_PRODUCT_DIR_NAME, builder.outputPlatform);
 
-            Directory.CreateDirectory(externDir);
-            Directory.CreateDirectory(outputDir);
+        Directory.CreateDirectory(externDir);
+        Directory.CreateDirectory(outputDir);
 
-            BgfxBuildUtils.ValidateSubmodules(bgfxDir, bxDir, bimgDir);
+        BgfxBuildUtils.ValidateSubmodules(bgfxDir, bxDir, bimgDir);
 
-            EnsureBgfxBuilt(outputDir, options.Config);
-            builder.BuildTools(bgfxDir, options.Config);
-            CopyTools(bgfxDir, outputDir, builder, options.Config);
+        EnsureBgfxBuilt(outputDir, configuration);
+        await builder.BuildToolsAsync(bgfxDir, context, cancellationToken);
+        cancellationToken.ThrowIfCancellationRequested();
+        CopyTools(bgfxDir, outputDir, builder, configuration);
 
-            Console.WriteLine($"bgfx tools build complete. Output: {outputDir}");
-            return 0;
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine(ex.Message);
-            return 1;
-        }
+        Console.WriteLine($"bgfx tools build complete. Output: {outputDir}");
     }
 
     private static void CopyTools(
@@ -174,54 +186,4 @@ internal static class BgfxToolsBuild
         }
     }
 
-}
-
-internal sealed record ToolsBuildOptions(string Config)
-{
-    /// <summary>
-    /// Parses validated input into the strongly typed state required by the caller.
-    /// </summary>
-    /// <param name="args">
-    /// The command-line arguments that configure this invocation.
-    /// </param>
-    /// <returns>
-    /// The validated tools build options that represents the completed operation.
-    /// </returns>
-    public static ToolsBuildOptions Parse(string[] args)
-    {
-        var config = ToolchainEnvironment.DefaultConfig();
-
-        for (var i = 0; i < args.Length; i++)
-        {
-            var arg = args[i];
-            switch (arg)
-            {
-                case "--config":
-                    config = GetNext(args, ref i).ToLowerInvariant();
-                    break;
-                default:
-                    throw new ArgumentException($"Unknown argument: {arg}");
-            }
-        }
-
-        if (config is not (ToolchainLayout.C_DEBUG_CONFIGURATION or ToolchainLayout.C_RELEASE_CONFIGURATION))
-        {
-            throw new ArgumentException("--config must be 'debug' or 'release'.");
-        }
-
-        return new ToolsBuildOptions(config);
-    }
-
-    private static string GetNext(
-        string[] args,
-        ref int index
-    ) {
-        if (index + 1 >= args.Length)
-        {
-            throw new ArgumentException($"Missing value for {args[index]}.");
-        }
-
-        index++;
-        return args[index];
-    }
 }

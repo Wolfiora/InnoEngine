@@ -120,7 +120,7 @@ internal abstract class IconSetting : EditorSetting
             }
             finally
             {
-                NativeImGui.EndCombo();
+                EditorWidget.EndBoundedCombo();
             }
         }
     }

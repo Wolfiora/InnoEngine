@@ -49,6 +49,11 @@ if (!validation.isValid)
 
 节点、边、values、metadata 集合公开为不可写容器视图，不能强转成 List/Dictionary 绕过领域修改入口。GraphDocument 本身仍是可编辑创作对象，不等同于已编译的不可变运行快照；跨帧发布需要由 owner 显式 Clone/编译。
 
+`GraphDocument()` 创建空文档；集合视图在文档生命周期内保持同一实例并反映领域修改。
+`FindNode(GraphNodeId)` 通过文档维护的稳定 ID 索引查询，平均 O(1)，不分配委托或容器。
+`AddNode`、`RemoveNode` 和 `ReplaceContents` 同步维护有序记录和索引；替换先完成候选深复制，失败保留原内容。
+这只是中立记录的查询索引，不保存运行时扩展实例，也不取代 Core Identity 的 live object 协议。
+
 `GraphDocument` 可以跨 extension generation 存活；`GraphNodeDefinition` 和 resolver 只能属于当前候选快照。Registry 切换失败时继续使用上一份 resolver。Missing Node 不删除节点、属性或连线，脚本扩展重新可用后再次验证即可恢复。
 
 当前稳定行为没有旧 schema reader、migration、former ID 或兼容 alias。图资产 writer/reader 将由具体上层资产项目负责。

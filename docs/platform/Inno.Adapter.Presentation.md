@@ -9,7 +9,7 @@
 - `PresentationBackend`、`PresentationFeatures`：Editor 启动时选择实现与声明中立 capability。
 - `PresentationBackendOptions`：组合中立 platform/window/render device、shader compiler 与 asset source。
 - `PresentationTextureHandle`：presentation generation 内使用的 opaque texture token。
-- `IPresentationContext`：layout、frame draw、texture registration 与 render-graph contribution。
+- `IPresentationContext`：layout、frame draw、texture registration、render-graph contribution，以及 `TryGetWindowId(viewportId, out windowId)` 查询活动 viewport 的平台窗口身份。
 - `IPresentationBackendFactory`：创建 presentation context。
 - `IAuthoringAdapterCatalog`：在 runtime `IAdapterCatalog` 上增加 rendering authoring 与 presentation factory。
 

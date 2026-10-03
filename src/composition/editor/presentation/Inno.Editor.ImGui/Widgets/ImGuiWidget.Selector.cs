@@ -13,8 +13,7 @@ namespace Inno.Editor.ImGui.ImGuiWidget;
 public static partial class ImGuiWidget
 {
     /// <summary>
-    /// Begins a combo whose popup retains a stable trigger-derived width, remains in the parent
-    /// viewport, and becomes vertically scrollable only when its content exceeds the available work area.
+    /// Begins a combo whose popup opens below the control and stays within its containing window.
     /// </summary>
     /// <param name="id">
     /// Stable combo identifier in the current ImGui scope.
@@ -23,7 +22,7 @@ public static partial class ImGuiWidget
     /// Text displayed by the closed combo.
     /// </param>
     /// <param name="flags">
-    /// Native combo presentation flags.
+    /// Native combo presentation flags. Only <see cref="ImGuiComboFlags.WidthFitPreview"/> is supported.
     /// </param>
     /// <returns>
     /// <see langword="true"/> when the combo popup is open and its contents should be submitted;
@@ -35,6 +34,9 @@ public static partial class ImGuiWidget
     /// <exception cref="ArgumentNullException">
     /// Thrown when <paramref name="preview"/> is null.
     /// </exception>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// Thrown when <paramref name="flags"/> contains a presentation mode unsupported by the editor selector.
+    /// </exception>
     public static bool BeginBoundedCombo(
         string id,
         string preview,
@@ -42,14 +44,20 @@ public static partial class ImGuiWidget
     ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(id);
         ArgumentNullException.ThrowIfNull(preview);
+        if ((flags & ~ImGuiComboFlags.WidthFitPreview) != 0)
+            throw new ArgumentOutOfRangeException(nameof(flags), flags, "The combo flag is not supported by the editor selector.");
 
-        ImGuiViewportPtr parentViewport = NativeImGui.GetWindowViewport();
-        NativeImGui.SetNextWindowViewport(parentViewport.ID);
-        SetWorkAreaPopupSize(
-            NativeImGui.CalcItemWidth(),
-            parentViewport.WorkSize);
-        return NativeImGui.BeginCombo(id, preview, flags);
+        ImGuiStylePtr nativeStyle = NativeImGui.GetStyle();
+        float width = (flags & ImGuiComboFlags.WidthFitPreview) != 0
+            ? NativeImGui.CalcTextSize(preview).X + NativeImGui.GetFrameHeight() + nativeStyle.FramePadding.X * 2f
+            : NativeImGui.CalcItemWidth();
+        return BeginMenuSelector(id, preview, MathF.Max(1f, width), MathF.Max(1f, width));
     }
+
+    /// <summary>
+    /// Ends a combo opened by <see cref="BeginBoundedCombo"/>.
+    /// </summary>
+    public static void EndBoundedCombo() => EndMenuSelector();
 
     /// <summary>
     /// Draws a compact selector control and begins a work-area-bounded menu popup.
@@ -109,14 +117,14 @@ public static partial class ImGuiWidget
             NativeImGui.OpenPopup(popupId);
 
         DrawMenuSelectorFrame(minimum, size, preview, hovered, active || open);
-        NativeImGui.SetNextWindowPos(
-            new Vector2(minimum.X, minimum.Y + height),
-            ImGuiCond.Appearing);
+        Vector2 popupOrigin = new(minimum.X, minimum.Y + height);
+        NativeImGui.SetNextWindowPos(popupOrigin, ImGuiCond.Always);
         ImGuiViewportPtr parentViewport = NativeImGui.GetWindowViewport();
         NativeImGui.SetNextWindowViewport(parentViewport.ID);
         SetWorkAreaPopupSize(
             MathF.Max(width, minimumPopupWidth),
-            parentViewport.WorkSize);
+            popupOrigin,
+            parentViewport);
         return BeginMenuPopup(popupId);
     }
 
@@ -127,17 +135,19 @@ public static partial class ImGuiWidget
 
     private static void SetWorkAreaPopupSize(
         float requestedWidth,
-        Vector2 workSize
+        Vector2 popupOrigin,
+        ImGuiViewportPtr viewport
     ) {
-        ImGuiStylePtr nativeStyle = NativeImGui.GetStyle();
-        float maximumHeight = MathF.Max(
-            1f,
-            workSize.Y - nativeStyle.DisplaySafeAreaPadding.Y * 2f);
-        float availableWidth = MathF.Max(1f, workSize.X);
+        ImGuiWindowPtr containingWindow = ImGuiP.GetCurrentWindow().RootWindow;
+        Vector2 windowMaximum = containingWindow.Pos + containingWindow.Size;
+        Vector2 viewportMaximum = viewport.WorkPos + viewport.WorkSize;
+        float availableHeight = MathF.Max(1f, MathF.Min(windowMaximum.Y, viewportMaximum.Y) - popupOrigin.Y);
+        float maximumHeight = MathF.Min(availableHeight, containingWindow.Size.Y * 0.45f);
+        float availableWidth = MathF.Max(1f, MathF.Min(windowMaximum.X, viewportMaximum.X) - popupOrigin.X);
         float popupWidth = Math.Clamp(requestedWidth, 1f, availableWidth);
         NativeImGui.SetNextWindowSizeConstraints(
             new Vector2(popupWidth, 0f),
-            new Vector2(popupWidth, maximumHeight));
+            new Vector2(popupWidth, MathF.Max(1f, maximumHeight)));
     }
 
     private static void DrawMenuSelectorFrame(

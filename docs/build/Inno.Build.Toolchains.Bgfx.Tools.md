@@ -7,10 +7,21 @@
 - `BgfxShadercToolchain`、`BgfxShaderTargetPlatform`：把共享 Shader IR 编译为目标 backend artifact。
 - `BgfxTextureTargetCompiler`：把创作纹理离线编译为 portable KTX。
 - `BgfxGameContentCompiler`：遍历目标构建 snapshot 并写入 `TargetArtifacts`。
+- `BgfxTargetCapabilities.Create(platform, backend)`：为游戏内容与内置 Shader 编译器提供同一套目标能力约束，避免浏览器构建误用桌面 Compute/Storage 能力。
 - `BgfxShaderSourceFrontend`：实现 `IShaderSourceFrontend`；`languageId` 为
   `inno.shader-language.bgfx-sc`，`Analyze(ShaderSourceRequest)` 返回函数接口、原始 include 依赖和定位诊断。
 
 这些类型只在 authoring/build 路径使用。工具进程执行器 `BgfxTool`、`ToolRunner` 和 `ToolRunResult` 归属 `Inno.Native.Bgfx/Tools/`，本项目只负责 Shader/Texture 的离线编译策略。Player 通过 `FileRenderTargetArtifactProvider` 读取结果，不引用本项目或 BGFX tools。
+
+`BgfxGameContentCompiler.CreateMacOSArm64` / `CreateWindowsX64` / `CreateBrowserWasm` 接收
+`AssetPipeline`、`SerializationRegistry` 和 `TypeCatalog`；`CompileAsync(GameBuildContentContext, cancellationToken)`
+写入当前构建事务的目标 staging。上述 public 参数对应的项目引用明确作为公开依赖；Native 与
+具体 Asset 实现保持私有实现依赖。
+
+Windows 游戏闭包同时编译 Direct3D11、Direct3D12、Vulkan 和 OpenGL，与该平台内置 Shader
+产物及运行时可选 backend 保持一致。缺少任一目标的编译结果即导出失败，运行时不从源码补编。
+
+`BgfxShaderTargetPlatform.BrowserWasm` 使用 shaderc 的 `asm.js` 平台与 `300_es` profile，生成 WebGL 2 的 OpenGL ES 顶点/片段着色器；该 profile 明确拒绝 Compute。`BgfxGameContentCompiler.CreateBrowserWasm` 使用同一目标编译 Shader 与 portable KTX，不向浏览器目标声明 Compute、Storage 或 Indirect 能力。本项目只负责离线内容；浏览器 Player、Native 链接和持久化的实现见 [Web 架构](../architecture/WEB_PLAYER_ARCHITECTURE.md)。
 
 ## 源码函数前端
 
@@ -43,6 +54,7 @@ token 拼接、include guard/pragma once、常量表达式、结构体、typedef
 - 无 varying 的阶段写入明确的无声明文件，避免 shaderc 对空文件误报警；不是插入伪造 input。
 - shaderc 预处理会去掉 `#line`。此 Adapter 通过保留源码标记及原生错误代码摘录，恢复原始文件/行；无法精确映射的诊断保留 generated 位置，不伪造源行。
 - 不把 exit code 0 当成唯一成功条件；原生明确 ERROR 或缺失 bytes 一样拒绝候选。
+- 绑定反射属于具体工具链。OpenGL/OpenGLES 从 shaderc 的已编译 GLSL payload 读取实际 uniform 声明及引用，复用现有词法器处理 layout/precision；原生 scanner 遗漏的绑定按生成 IR 补入 BGFX 二进制 uniform 表，使引擎 manifest 与 BGFX 自身反射一致。保留存活记录的原生 metadata，删除只声明而未使用的记录；排序确定，采样器、矩阵及固定数组遵循当前 BGFX ABI。其他 backend 继续读取原生反射表。损坏的长度、终止符、UTF-8 或无法表达的存储返回 `BGFX_SHADER_REFLECTION`，不回退到未裁剪接口，也不放宽 Runtime 绑定校验。
 - 原生 stdout/stderr 的格式解析只在 BGFX 工具链；公共 `ShaderCompiler` 仅消费结构化 `ShaderDiagnostic`，不再按 shaderc 行格式做正则判断。
 - 支持 typed 纹理采样、显式 LOD、discard、buffer load/store/atomic-add 以及 2D/array/3D image load/store。
   BGFX 当前运行时只在 compute 暴露 storage 绑定，因此该限制由 Adapter 明确诊断；能力位、格式访问权限和 slot 上限均在调用 shaderc 前检查。
@@ -50,4 +62,5 @@ token 拼接、include guard/pragma once、常量表达式、结构体、typedef
 - Branch/Loop 生成真实控制流，区域内的内存操作不提升到外部；循环先捕获全部 carried state 再同时替换，保证交换值等操作的含义。
 - IR 矩阵统一按列构造/提取，Adapter 根据 `BGFX_SHADER_MATRIX_COLUMN_MAJOR` 映射下标和非方阵形状，不能直接把 SC/HLSL 行索引当作列。
 - 当前 BGFX uniform storage 为 vec4/mat3/mat4 及固定数组，标量参数须由 Target 做显式 packing/component lowering。
+- 现代桌面 GLSL 多颜色输出由 IR 生成器声明显式 attachment location，包含稀疏槽位；避免 shaderc 原样保留已移除的 `gl_FragData` 而触发 GPU 编译失败。ESSL、HLSL、Metal 和 SPIR-V 继续使用 shaderc 的对应输出 lowering，公共 Shader IR 不依赖这些语言差异。
 - 数组 typedef、全部原生语法/高级资源及完整反射覆盖仍待补齐；明确错误不是兼容旁路，也不代表完整计划已完成。

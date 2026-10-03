@@ -253,7 +253,7 @@ internal sealed class EditorLayoutSettings
                 continue;
             }
 
-            layoutBuilder.AppendLine(line);
+            layoutBuilder.Append(line).Append('\n');
         }
 
         layout = NormalizeLayout(layoutBuilder.ToString());

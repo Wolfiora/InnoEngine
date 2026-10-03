@@ -8,11 +8,13 @@ using Inno.Input;
 namespace Inno.Adapter.Input.Sdl3;
 
 /// <summary>
-/// Broadcasts translated SDL events to isolated input backends owned by runtime sessions.
+/// Routes translated SDL events through Core Events to isolated runtime-session input backends.
 /// </summary>
 public sealed class Sdl3InputSource : IInputEventSource
 {
     private readonly List<Sdl3InputBackend> m_backends = [];
+    private readonly EventDispatcher m_events = new();
+    private readonly EventHub m_inputHub;
     private readonly uint m_windowId;
     private bool m_disposed;
 
@@ -25,6 +27,7 @@ public sealed class Sdl3InputSource : IInputEventSource
     public Sdl3InputSource(uint windowId)
     {
         m_windowId = windowId;
+        m_inputHub = m_events.CreateHub();
     }
 
     /// <summary>
@@ -40,12 +43,13 @@ public sealed class Sdl3InputSource : IInputEventSource
     {
         ObjectDisposedException.ThrowIf(m_disposed, this);
         var backend = new Sdl3InputBackend(m_windowId, RemoveBackend);
+        backend.ConnectSource(m_inputHub.Listen<Event>(backend.ProcessEvent));
         m_backends.Add(backend);
         return backend;
     }
 
     /// <summary>
-    /// Broadcasts one translated platform event to every active runtime-session backend.
+    /// Dispatches one translated platform event to active session backends, honoring event consumption.
     /// </summary>
     /// <param name="evnt">
     /// The backend-neutral event produced by the SDL platform adapter.
@@ -60,9 +64,7 @@ public sealed class Sdl3InputSource : IInputEventSource
     {
         ArgumentNullException.ThrowIfNull(evnt);
         ObjectDisposedException.ThrowIf(m_disposed, this);
-        Sdl3InputBackend[] snapshot = m_backends.ToArray();
-        foreach (Sdl3InputBackend backend in snapshot)
-            backend.ProcessEvent(evnt);
+        m_events.Emit(evnt);
     }
 
     /// <summary>
@@ -73,6 +75,7 @@ public sealed class Sdl3InputSource : IInputEventSource
         if (m_disposed)
             return;
         m_disposed = true;
+        m_inputHub.Dispose();
         Sdl3InputBackend[] snapshot = m_backends.ToArray();
         m_backends.Clear();
         foreach (Sdl3InputBackend backend in snapshot)

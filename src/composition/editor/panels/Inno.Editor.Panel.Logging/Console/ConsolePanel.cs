@@ -35,6 +35,11 @@ internal sealed class ConsolePanel : EditorPanel
     private readonly EditorInteractions m_interactions;
     #endregion
 
+    /// <summary>
+    /// Lets the Console entries region own vertical scrolling.
+    /// </summary>
+    public override bool allowScrolling => false;
+
     #region Lifecycle
     /// <summary>
     /// Creates the panel.
@@ -86,7 +91,11 @@ internal sealed class ConsolePanel : EditorPanel
     /// </param>
     protected override void OnDraw(EditorContext context)
     {
-        NativeImGui.BeginChild("ConsoleChild", Vector2.Zero);
+        NativeImGui.BeginChild(
+            "ConsoleChild",
+            Vector2.Zero,
+            ImGuiChildFlags.None,
+            ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse);
         DrawToolbar();
         NativeImGui.Separator();
         DrawConsoleRegion();
@@ -151,7 +160,7 @@ internal sealed class ConsolePanel : EditorPanel
             changed = true;
         }
 
-        NativeImGui.EndCombo();
+        EditorWidget.EndBoundedCombo();
         return changed;
     }
 

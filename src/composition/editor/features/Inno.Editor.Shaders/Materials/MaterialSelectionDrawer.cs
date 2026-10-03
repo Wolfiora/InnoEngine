@@ -167,7 +167,7 @@ protected override void Draw(
                     }
                     finally
                     {
-                        ImGuiApi.EndCombo();
+                        Widget.EndBoundedCombo();
                     }
         }
     }
@@ -192,7 +192,7 @@ protected override void Draw(
                 }
                 finally
                 {
-                    ImGuiApi.EndCombo();
+                    Widget.EndBoundedCombo();
                 }
                 void SetOption(string? next)
                 {

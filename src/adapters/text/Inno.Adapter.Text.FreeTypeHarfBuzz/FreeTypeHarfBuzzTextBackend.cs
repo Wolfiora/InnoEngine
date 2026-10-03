@@ -110,7 +110,7 @@ public sealed unsafe class FreeTypeHarfBuzzTextBackend : ITextBackend
                 (InnoTextDirection)options.direction,
                 languagePointer,
                 scriptPointer,
-                InnoTextGlyphPtr.Null,
+                (InnoTextGlyph*)null,
                 0,
                 &glyphCount), "query shaped glyph count");
             InnoTextGlyph[] nativeGlyphs = new InnoTextGlyph[checked((int)glyphCount)];

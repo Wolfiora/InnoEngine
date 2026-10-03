@@ -45,6 +45,11 @@ internal sealed class HierarchyPanel : EditorPanel
     public override bool useWindowPadding => false;
 
     /// <summary>
+    /// Lets the hierarchy content child own both scroll directions.
+    /// </summary>
+    public override bool allowScrolling => false;
+
+    /// <summary>
     /// Creates the hierarchy panel.
     /// </summary>
     internal HierarchyPanel(

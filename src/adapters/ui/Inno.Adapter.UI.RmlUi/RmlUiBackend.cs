@@ -364,8 +364,8 @@ public sealed unsafe class RmlUiBackend : IUiBackend
         {
             ThrowIfFailed(UiNative.LoadFont(
                 m_runtime,
-                new InnoUiBytePtr((InnoUiByte*)bytes),
-                checked((ulong)data.Length),
+                (InnoUiByte*)bytes,
+                checked((nuint)data.Length),
                 family.pointer,
                 (int)registration.style,
                 registration.weight,
@@ -404,8 +404,8 @@ public sealed unsafe class RmlUiBackend : IUiBackend
                 nativeSource.pointer,
                 texture.width,
                 texture.height,
-                new InnoUiBytePtr((InnoUiByte*)pixelPointer),
-                checked((ulong)pixels.Length)), "register UI texture");
+                (InnoUiByte*)pixelPointer,
+                checked((nuint)pixels.Length)), "register UI texture");
         }
     }
 

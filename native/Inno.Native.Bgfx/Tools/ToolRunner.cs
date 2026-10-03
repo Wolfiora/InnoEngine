@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -122,7 +123,8 @@ public static class ToolRunner
             WorkingDirectory = workingDirectory ?? AppContext.BaseDirectory,
             RedirectStandardOutput = true,
             RedirectStandardError = true,
-            UseShellExecute = false
+            UseShellExecute = false,
+            CreateNoWindow = true
         };
         foreach (string argument in arguments)
         {
@@ -258,10 +260,13 @@ public static class ToolRunner
         return NativeDllLoader.DeployNativeFile(candidate, relativeOutputPath);
     }
 
+    [UnconditionalSuppressMessage("SingleFile", "IL3000",
+        Justification = "An assembly location scopes isolated tool hosts; bundled assemblies explicitly use the application directory.")]
     private static string? FindRepoRoot()
     {
         string[] starts =
         [
+            Path.GetDirectoryName(typeof(ToolRunner).Assembly.Location) ?? AppContext.BaseDirectory,
             AppContext.BaseDirectory,
             Directory.GetCurrentDirectory()
         ];

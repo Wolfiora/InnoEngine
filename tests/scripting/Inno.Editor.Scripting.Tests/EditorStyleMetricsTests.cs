@@ -363,6 +363,8 @@ public sealed class EditorStyleMetricsTests
             for (int frame = 0; frame < 2; frame++)
             {
                 NativeImGui.NewFrame();
+                NativeImGui.SetNextWindowPos(new Vector2(40f, 40f), ImGuiCond.Always);
+                NativeImGui.SetNextWindowSize(new Vector2(480f, 320f), ImGuiCond.Always);
                 _ = NativeImGui.Begin("Menu Selector Test");
                 if (frame == 0)
                     NativeImGui.OpenPopup("##menu_selector_popup_test");
@@ -421,6 +423,8 @@ public sealed class EditorStyleMetricsTests
             for (int frame = 0; frame < 3; frame++)
             {
                 NativeImGui.NewFrame();
+                NativeImGui.SetNextWindowPos(new Vector2(40f, 40f), ImGuiCond.Always);
+                NativeImGui.SetNextWindowSize(new Vector2(480f, 320f), ImGuiCond.Always);
                 _ = NativeImGui.Begin("Small Menu Selector Test");
                 if (frame == 0)
                     NativeImGui.OpenPopup("##menu_selector_popup_small");
@@ -482,7 +486,7 @@ public sealed class EditorStyleMetricsTests
     }
 
     [Fact]
-    public void NativeComboPopupUsesTheSharedBoundedScrollingContract()
+    public void BoundedComboPopupUsesTheSharedScrollingContract()
     {
         var context = NativeImGui.CreateContext();
         try
@@ -504,9 +508,7 @@ public sealed class EditorStyleMetricsTests
                 uint parentViewportId = NativeImGui.GetWindowViewport().ID;
                 if (frame == 0)
                 {
-                    uint comboId = NativeImGui.GetID("##asset");
-                    uint popupId = ImGuiP.ImHashStr("##ComboPopup", comboId);
-                    ImGuiP.OpenPopupEx(popupId);
+                    NativeImGui.OpenPopup("##menu_selector_popup_##asset");
                 }
                 NativeImGui.SetNextItemWidth(180f);
                 bool open = EditorWidget.BeginBoundedCombo("##asset", "project:Material");
@@ -532,7 +534,7 @@ public sealed class EditorStyleMetricsTests
                         Assert.True(popupMaximum.X <= popupViewport.WorkPos.X + popupViewport.WorkSize.X + 1f);
                         Assert.True(popupMaximum.Y <= popupViewport.WorkPos.Y + popupViewport.WorkSize.Y + 1f);
                     }
-                    NativeImGui.EndCombo();
+                    EditorWidget.EndBoundedCombo();
                 }
                 NativeImGui.End();
                 NativeImGui.Render();

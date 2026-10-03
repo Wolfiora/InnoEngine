@@ -3,6 +3,7 @@ using System.Collections.Generic;
 
 using Inno.Build;
 using EditorImGui = Inno.Editor.ImGui.ImGui;
+using EditorWidget = Inno.Editor.ImGui.ImGuiWidget.ImGuiWidget;
 using Inno.Native.ImGui;
 using NativeImGui = Inno.Native.ImGui.ImGui;
 
@@ -188,7 +189,7 @@ internal sealed class BuildSettingsField
     ) {
         bool changed = false;
         NativeImGui.SetNextItemWidth(-1f);
-        if (!NativeImGui.BeginCombo(
+        if (!EditorWidget.BeginBoundedCombo(
                 "##value",
                 GetTargetLabel(settings.gameTarget, buildPipeline)))
             return false;
@@ -199,7 +200,7 @@ internal sealed class BuildSettingsField
         }
         finally
         {
-            NativeImGui.EndCombo();
+            EditorWidget.EndBoundedCombo();
         }
         return changed;
     }

@@ -52,6 +52,9 @@ public sealed class GraphDocumentControllerTests : IDisposable
         m_types.Dispose();
         m_modules.Dispose();
         m_logs.Dispose();
+        GC.Collect();
+        GC.WaitForPendingFinalizers();
+        GC.Collect();
         if (Directory.Exists(m_testRoot))
             Directory.Delete(m_testRoot, recursive: true);
     }

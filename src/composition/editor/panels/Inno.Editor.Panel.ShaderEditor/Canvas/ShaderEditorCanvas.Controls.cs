@@ -144,7 +144,7 @@ internal sealed partial class ShaderEditorCanvas
             }
             finally
             {
-                ImGuiApi.EndCombo();
+                Widget.EndBoundedCombo();
             }
         });
         Widget.DrawItemTooltip(path);
@@ -229,7 +229,7 @@ internal sealed partial class ShaderEditorCanvas
             }
             finally
             {
-                ImGuiApi.EndCombo();
+                Widget.EndBoundedCombo();
             }
         });
         if (settings.kind == ShaderGraphNodeKind.Function)
@@ -249,7 +249,7 @@ internal sealed partial class ShaderEditorCanvas
                 }
                 finally
                 {
-                    ImGuiApi.EndCombo();
+                    Widget.EndBoundedCombo();
                 }
             });
         }
@@ -320,7 +320,7 @@ internal sealed partial class ShaderEditorCanvas
                     }
                     finally
                     {
-                        ImGuiApi.EndCombo();
+                        Widget.EndBoundedCombo();
                     }
                 });
                 if (inputs)
@@ -387,7 +387,7 @@ internal sealed partial class ShaderEditorCanvas
             }
             finally
             {
-                ImGuiApi.EndCombo();
+                Widget.EndBoundedCombo();
             }
         });
         switch (type)
@@ -458,7 +458,7 @@ internal sealed partial class ShaderEditorCanvas
             }
             finally
             {
-                ImGuiApi.EndCombo();
+                Widget.EndBoundedCombo();
             }
         });
         Widget.DrawItemTooltip(path);
@@ -480,7 +480,7 @@ internal sealed partial class ShaderEditorCanvas
                     }
                     finally
                     {
-                        ImGuiApi.EndCombo();
+                        Widget.EndBoundedCombo();
                     }
                 });
             }
@@ -532,7 +532,7 @@ internal sealed partial class ShaderEditorCanvas
             }
             finally
             {
-                ImGuiApi.EndCombo();
+                Widget.EndBoundedCombo();
             }
         });
         string type = input.type.id;
@@ -566,7 +566,7 @@ internal sealed partial class ShaderEditorCanvas
             }
             finally
             {
-                ImGuiApi.EndCombo();
+                Widget.EndBoundedCombo();
             }
         });
         string semantic = input.semantic;
@@ -678,7 +678,7 @@ internal sealed partial class ShaderEditorCanvas
             }
             finally
             {
-                ImGuiApi.EndCombo();
+                Widget.EndBoundedCombo();
             }
         });
     }

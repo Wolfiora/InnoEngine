@@ -5,6 +5,7 @@
 ## 公开 API
 
 - `PlatformImGuiContext`、`ImGuiContextFlags`：ImGui/viewport session ownership。
+- `PlatformImGuiContext.TryGetWindowId`：把主 viewport 或独立 viewport 的 ImGui ID 映射到当前 SDL window ID；窗口销毁后返回 `false`。
 - `IPlatformImGuiRenderer`, `PlatformImGuiViewportTarget`, `ImGuiTextureHandle`：平台与 renderer bridge。
 - `Sdl3PlatformApplicationImGuiExtensions`：在 SDL3 Application 上组合 ImGui。
 - `ImGuiFont`, `ImGuiFontStyle`, `ImGuiIcon`：Editor presentation assets。

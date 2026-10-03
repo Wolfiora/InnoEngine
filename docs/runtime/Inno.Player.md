@@ -2,7 +2,7 @@
 
 [Runtime 索引](README.md) · [Shell](Inno.Shell.md) · [Build](../build/README.md)
 
-`Inno.Player` 是标准游戏产品的 Composition Root，不提供脚本稳定 API。`GamePlayerHost : Shell` 负责读取已冻结 runtime manifest、创建 EngineHost/RuntimeSession、装配中立 Runtime Subsystems 并加载 startup Scene。
+`Inno.Player` 是标准游戏产品的 Composition Root，不提供脚本稳定 API。共享项目 [Inno.Player.Runtime](Inno.Player.Runtime.md) 的内部 `GamePlayerHost : Shell` 负责读取已冻结 runtime manifest、创建 EngineHost/RuntimeSession、装配中立 Runtime Subsystems 并加载 startup Scene。
 
 Player 通过 `DefaultAdapterCatalog` 与 `AdapterSelection` 选择默认后端，Session 同时装配 Text 与 UI。Host 源码和公开/protected surface 不包含 SDL3、BGFX、MiniAudio、FreeType、HarfBuzz、RmlUi、FileSystem 或 ImGui implementation 类型。
 
@@ -17,3 +17,5 @@ Player 先从 manifest envelope 读取并验证持久数据相对子目录，再
 Player 的单一 Project Settings 执行作用域覆盖完整 Shell 循环，而不只覆盖 `session.Tick()`。渲染 Request Provider 和 Pipeline 在 Tick 之后执行，仍必须解析到同一设置 owner；此职责属于产品宿主，不在 Rendering Core 或具体插件中增加作用域补丁。
 
 `--smoke-frames` 使用 Shell 的有界 run loop，并输出最终 rendering statistics；如果 DiagnosticHub 仍有活动错误则返回失败，不把空提交当作成功。普通启动运行到 application 或 primary window 请求退出。Player 接入既有 `ConsoleLogSink`，领域和渲染诊断不会在无 Editor Console 时被丢弃。
+
+桌面 Program 仅选择内容位置、系统持久数据父目录、CollectiblePlayerModuleActivator 和 PollingShellFrameDriver，然后调用 PlayerApplication.RunAsync。本项目没有供外部调用的 public/protected API。

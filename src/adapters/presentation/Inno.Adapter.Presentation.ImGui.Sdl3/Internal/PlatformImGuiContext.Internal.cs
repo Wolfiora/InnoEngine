@@ -100,6 +100,38 @@ public sealed partial class PlatformImGuiContext
     }
 
     /// <summary>
+    /// Resolves the SDL window currently owned by an ImGui viewport.
+    /// </summary>
+    /// <param name="viewportId">
+    /// The ImGui viewport identity.
+    /// </param>
+    /// <param name="windowId">
+    /// The SDL window identity when available.
+    /// </param>
+    /// <returns>
+    /// <see langword="true"/> when the viewport has a live SDL window.
+    /// </returns>
+    /// <exception cref="ObjectDisposedException">
+    /// Thrown after the presentation context has been disposed.
+    /// </exception>
+    public partial bool TryGetWindowId(
+        uint viewportId,
+        out uint windowId
+    ) {
+        ObjectDisposedException.ThrowIf(m_disposed, this);
+        ImGuiNative.SetCurrentContext(m_context);
+        if (viewportId == ImGuiNative.GetMainViewport().ID)
+        {
+            windowId = m_window.windowId;
+            return true;
+        }
+        if (m_viewports is not null && m_viewports.TryGetWindowId(viewportId, out windowId))
+            return true;
+        windowId = 0;
+        return false;
+    }
+
+    /// <summary>
     /// Updates the ini file state and applies the resulting invariants.
     /// </summary>
     /// <param name="filePath">

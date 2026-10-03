@@ -39,7 +39,7 @@ Runtime 导出不复制整个创作期 bundle：校验各输出的相对文件�
 | 分组 | 主要 API |
 | --- | --- |
 | Composition | `AssetPipeline`, `AssetPipelineOptions`, `AssetPipelineMode`, `AssetSourcePolicy`, `AssetCacheOptions` |
-| Source | `AssetSourceMount`, `AssetSourceMountTransaction`, `AssetFileSystem`, `AssetFileEntry`, `AssetSample`, `AssetSampleTransformContext`, `IAssetSampleSourceRewriter`, `AssetSampleSourceRewriterAttribute`, `AssetChangedEvent` |
+| Source | `IAssetSourceSnapshot`, `AssetSampleImportTransaction`, `AssetSourceMount`, `AssetSourceMountTransaction`, `AssetFileSystem`, `AssetFileEntry`, `AssetSample`, `AssetSampleTransformContext`, `IAssetSampleSourceRewriter`, `AssetSampleSourceRewriterAttribute`, `AssetChangedEvent` |
 | Import | `AssetImporter`, `AssetImporter<T>`, `AssetImportContext`, `AssetImportWriter<T>`, `AssetImportHealthSnapshot`, `AssetImportFailure` |
 | Import settings | `AssetImportSettingsSnapshot`、`AssetImporter.CreateImportSettings()`、`AssetImportContext.importSettings`、Pipeline/Loader 的 `GetImportSettings` 与 `SaveImportSettings` |
 | Build | `AssetBuildProcessor`, `AssetBuildProcessor<T>`, `AssetBuildContext<T>`, `AssetArtifactWriter` |
@@ -68,7 +68,7 @@ assets.Update();
 TextAsset value = assets.Load<TextAsset>(AssetPath.Project("Config/value.txt"));
 ```
 
-所有 mutation 必须在构造线程执行。Save、Import、ImportSample、Move、Delete、CreateDirectory 和 source candidate commit 各自发布一个 revision；后台 `ExportRuntimeArtifactsAsync` 使用 owner thread 捕获的 immutable Serialization generation，并在 worker 完成、失败或取消之前持续持有严格的 generation read lease。不能在提交 Task 后提前释放租约；Pending/Faulted generation 不允许开始导出。
+所有 mutation 必须在构造线程执行。Save、Import、Sample Commit、Move、Delete、CreateDirectory 和 source candidate commit 各自发布一个 revision；后台 `ExportRuntimeArtifactsAsync` 使用 owner thread 捕获的 immutable Serialization generation，并在 worker 完成、失败或取消之前持续持有严格的 generation read lease。不能在提交 Task 后提前释放租约；Pending/Faulted generation 不允许开始导出。
 
 `Save(path, detachedAsset)` 替换已有 source 内容时以目标 `.imeta` / Catalog 的 persistent ID 为权威，并原位更新已加载的 canonical asset；草稿对象自身的临时 identity 不会把同一路径保存成一个新资产。因此 Scene、Camera、Material 等现有引用在 Inspector 保存后仍指向同一个资产。只有目标路径尚未拥有 identity 时，保存才采用待保存对象的 identity 或创建新的 identity。
 
@@ -154,6 +154,50 @@ Project Source Mount 中，名称以 `~` 开头的目录在 File Browser 中显�
 
 只读 Plugin Source Mount 中，名称以 `~` 开头的目录才是逻辑 `.isample`。`AssetFileSystem` 索引目录及后代，`AssetFileEntry.isSample` 标记目录本身，`isSampleContent` 标记完整子树；Editor 可以直接打开其中的场景并进入 Play。样例脚本属于独立的作者端程序集，不进入插件运行程序集或 Player 闭包。
 
-`AssetPipeline.ImportSample(source, validateCandidate)` 把安装态 `.isample` 复制到 Project `Assets/<pluginId>-<sampleName>/`，去掉前导 `~`，因此副本可以进入 Player 构建。复制在私有 stage 中进行：每份 `.imeta` 获得新资产身份；结构化序列化数据中的资产及类型引用按精确身份重写；源语言扩展通过 `IAssetSampleSourceRewriter`、`AssetSampleSourceRewriterAttribute` 和 `AssetSampleTransformContext` 重写脚本声明的稳定类型身份。C# 实现位于 Scripting Compiler，不把 Roslyn 引入资产核心。候选索引后，资产层逐个导入检查已识别的资产；Editor 和构建 CLI 通过回调再编译候选脚本，然后才通知观察者。失败会撤销目录并刷新索引。`.abin` 与 source noise 不复制；目标冲突、符号链接、源变更或重写失败时，事务不发布半个目录。调用 `AssetSample.GetImportName(source)` 可以预先得到目标目录名。
+`AssetPipeline.PrepareSampleImport(source)` 返回 `AssetSampleImportTransaction`，后台复制并重写私有 stage；目标是 `Assets/<原始~目录名>/`，完整保留全部前导 `~`，不添加 Plugin ID。Project 副本正常参与 authoring 编译与 Play，仍按共同规则从 Player 的 `~` runtime closure 中排除。
+
+每份 `.imeta` 获得新资产身份，结构化源数据和 sidecar 内嵌的 importer settings 同时按完整身份映射重写。源语言扩展仍通过 `IAssetSampleSourceRewriter` 与带稳定 ID 的 Attribute 发现；它在后台只操作 transaction-owned stage，必须检查 `AssetSampleTransformContext.cancellationToken`，不得访问 live Assets、Editor 或其他线程所属的 native 状态。C# 实现位于 Scripting Compiler，不把 Roslyn 引入资产层。后台持有共享 generation read lease 和冻结的 Serialization generation，取消后也不会提前释放。
+
+`Advance()` 在复制完成后由 owner 捕获恢复状态并移入候选目录，后台准备隔离 Catalog、导入已识别资产并刷新索引；完成后在 owner thread 采用现有 `AssetSourceMountTransaction`。校验期间活动 Loader、File Browser 索引和 Identity domain 保持原状；候选仅通过只读 `IAssetSourceSnapshot` 供编译输入捕获。`BeginValidation` 在 owner thread 调用 validator，允许它先捕获输入再异步计算；其 continuation 不得修改 live Assets。未完成任务不会在 Editor 帧内同步等待。复制、哈希、身份重写、候选资产导入与 History archive 均在后台执行；owner 只捕获当前恢复状态、采用候选、记录 History 和最终发布/退休。这些共同事务安全点仍有工作量，不承诺任意用户扩展或全量状态捕获的固定帧耗时。
+
+| 入口 | 当前契约 |
+| --- | --- |
+| `PrepareSampleImport(source)` | 开始唯一 Sample 事务；拒绝目标冲突、其他源候选、Pending/Faulted generation。 |
+| `AssetSampleImportTransaction.target` | 保留原名的 Project 目标路径。 |
+| `Advance()` | 后台未完成返回 false；完成后采用隔离候选，出错保留事务供 Rollback。 |
+| `BeginValidation(validate)` | 恰好一次 preflight；传入只读候选快照和共享取消 token。 |
+| `isValidationComplete` | 表示工作已 drain，不表示验证成功。 |
+| `Commit(beforePublish)` | 重抛验证错误；成功时在一个 owner safe point 激活候选、完成可选 History finalization、提交与退休，最后发布一次 Changed。 |
+| `Cancel()` | 请求取消，保留全部资源。 |
+| `Rollback()` / `Dispose()` | drain 后撤销未完成候选并移走副本；大目录清理在独立受控后台阶段完成，Pending 保留 owner 并允许重试。 |
+| `isFaulted` | publication、rollback 或退休期限失败后要求完整重启 Host。 |
+| `IAssetSourceSnapshot` | `sourceMounts`、`GetFileSystemEntries`、`Load<TAsset>`、`TryGetInfo`、`TryGetArtifact`；活动 Pipeline 与源候选共用的只读输入边界，不提供发布操作。 |
+
+`AssetLoader.Rescan(cancellationToken = default)` 把取消传递到本轮扫描和 Importer。取消候选扫描会在退出前报告取消，由所属事务退休未发布的 Catalog；调用方不得把已取消的候选继续当作可发布快照。
+
+Frame owner 的典型流程：
+
+```csharp
+AssetSampleImportTransaction import = assets.PrepareSampleImport(samplePath);
+// On later owner-thread frames, call Advance until it returns true.
+if (import.Advance())
+{
+    import.BeginValidation(async (
+        sources,
+        cancellationToken
+    ) =>
+    {
+        ScriptCompilationResult result = await compiler.CompileAuthoringGenerationAsync(
+            cancellationToken: cancellationToken, sourceSnapshot: sources).ConfigureAwait(false);
+        if (!result.success)
+            throw new InvalidOperationException("Sample validation failed.");
+    });
+}
+// On a later owner-thread frame, after isValidationComplete, call Commit.
+// On cancellation or failure, retry Rollback while RetirementPendingException is reported.
+```
+
+`.abin` 与 source noise 不复制；符号链接、复制期间文件变化、重写错误或 preflight 失败不发布半个目录。`AssetSample.GetImportName(source)` 可预先得到目标名。Watcher 恢复后强制全量对账，避免暂停窗口中外部源变化被丢弃。停止与取消复用 `LifetimeScope` / `RetirementBarrier`，三十秒退休 deadline 后明确 Fault，绝不清空尚未 drain 的任务。这里是 owner-safe-point 事务与文件系统补偿，不是跨多文件 crash-atomic 操作。
+完整源对账或恢复 rescan 必须同时刷新 Catalog 与 FileSystem 索引，再通知 observer，不能只更新 Loader 后让 File Browser 保持过时的目录视图。
 
 损坏当前格式、只读 mount 写入、Importer 冲突、Artifact closure 不完整和 observer failure 都明确报告。`Library` 可删除重建，不作为创作事实来源。

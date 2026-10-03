@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using Inno.Adapter;
 using Inno.Adapter.Audio;
+using Inno.Adapter.Input;
 using Inno.Adapter.Presentation;
 using Inno.Assets;
 using Inno.Assets.Pipeline;
@@ -15,6 +16,7 @@ using Inno.Audio.Runtime;
 using Inno.Audio;
 using Inno.Build;
 using Inno.Build.Platform.MacOS;
+using Inno.Build.Platform.Browser;
 using Inno.Build.Platform.Windows;
 using Inno.Build.SupportPacks;
 using Inno.UI.Runtime;
@@ -24,6 +26,7 @@ using Inno.Core.Logging;
 using Inno.Core.Settings;
 using Inno.Editor.Audio;
 using Inno.Editor.Core;
+using Inno.Editor.ImGui;
 using Inno.Editor.Rendering;
 using Inno.Input.Runtime;
 using Inno.Platform;
@@ -57,6 +60,8 @@ internal sealed class EditorHost : ShellHost
     private RenderRuntime? m_rendering;
     private LayerStack? m_layers;
     private EditorLayer? m_editorLayer;
+    private IInputEventSource? m_gameInputSource;
+    private EditorGameInputCapture? m_gameInputCapture;
     private bool m_shutdownStateSaved;
     private DiagnosticHub? m_diagnostics;
 
@@ -200,7 +205,17 @@ internal sealed class EditorHost : ShellHost
             using (editSession.subsystems.GetRequiredSubsystem<UiRuntime>().EnterExecutionScope())
             {
                 layers.OnUpdate(frame.deltaTime);
-                layers.OnLateUpdate(frame.deltaTime);
+                m_gameInputCapture?.BeginFrame();
+                try
+                {
+                    layers.OnLateUpdate(frame.deltaTime);
+                }
+                finally
+                {
+                    uint resetWindowId = m_gameInputCapture?.CompleteFrame() ?? 0;
+                    if (resetWindowId != 0)
+                        m_gameInputSource?.ProcessEvent(new WindowFocusChangedEvent(resetWindowId, false));
+                }
             }
         }
 
@@ -221,34 +236,11 @@ internal sealed class EditorHost : ShellHost
         DiagnosticHub hub = m_diagnostics ?? throw new InvalidOperationException("The Editor diagnostic owner is unavailable.");
         hub.RegisterSink(snapshot);
         hub.UnregisterSink(snapshot);
-        foreach (string error in snapshot.errors)
+        string[] errors = snapshot.errors;
+        foreach (string error in errors)
             BootLog("Smoke diagnostic: " + error);
-        if (snapshot.errors.Count != 0)
-            throw new InvalidOperationException($"Native Editor smoke completed with {snapshot.errors.Count} active error diagnostic(s). See the smoke diagnostics above.");
-    }
-
-    private sealed class SmokeDiagnostics : Inno.Core.Diagnostics.IDiagnosticSink
-    {
-        internal readonly List<string> errors = [];
-        /// <summary>
-        /// Records errors from the current diagnostic report.
-        /// </summary>
-        /// <param name="report">
-        /// The report consumed by replace; ownership remains with the caller unless explicitly stated otherwise.
-        /// </param>
-public void Replace(Inno.Core.Diagnostics.DiagnosticReport report)
-        {
-            foreach (var diagnostic in report.diagnostics)
-                if (diagnostic.severity == Inno.Core.Diagnostics.DiagnosticSeverity.Error)
-                    errors.Add(report.source.id + "/" + diagnostic.code + ": " + diagnostic.message);
-        }
-        /// <summary>
-        /// Removes all retained entries and returns the instance to an empty reusable state.
-        /// </summary>
-        /// <param name="source">
-        /// The source value or location read by this operation.
-        /// </param>
-public void Clear(Inno.Core.Diagnostics.DiagnosticSource source) { }
+        if (errors.Length != 0)
+            throw new InvalidOperationException($"Native Editor smoke completed with {errors.Length} active error diagnostic(s). See the smoke diagnostics above.");
     }
     /// <summary>
     /// Submits product UI requests while the host output pipeline is open.
@@ -286,6 +278,8 @@ public void Clear(Inno.Core.Diagnostics.DiagnosticSource source) { }
         m_audio = null;
         m_editSession = null;
         m_authoring = null;
+        m_gameInputCapture = null;
+        m_gameInputSource = null;
         BootLog("Dispose end.");
     }
 
@@ -319,7 +313,7 @@ public void Clear(Inno.Core.Diagnostics.DiagnosticSource source) { }
                 .UseMetadataCache(Path.Combine(projectDirectory, "Library", "Assemblies"))
                 .Build(),
             static host => host.Dispose());
-        var consoleLog = new ConsoleLogSink();
+        var consoleLog = new ConsoleLogSink(useColors: true);
         m_diagnostics = engineHost.diagnostics;
         engineHost.logs.RegisterSink(consoleLog);
         m_resources.Register(() => engineHost.logs.UnregisterSink(consoleLog));
@@ -360,7 +354,7 @@ public void Clear(Inno.Core.Diagnostics.DiagnosticSource source) { }
                 maxFrameDeltaTime = 0.25f,
                 maxFixedStepsPerFrame = 8,
                 jobExecutionMode = RuntimeJobExecutionMode.WorkerPool,
-                createSubsystems = owner => CreateStandardRuntimeSubsystems(activeAudio, owner),
+                createSubsystems = owner => CreateStandardRuntimeSubsystems(activeAudio, inputSource, owner),
                 referenceResolvers = [activeAuthoring.assets]
             }),
             static session => session.Dispose());
@@ -379,9 +373,11 @@ public void Clear(Inno.Core.Diagnostics.DiagnosticSource source) { }
             ResolveSupportPackRoot(),
             [
                 new MacOSArm64GameBuildTarget(activeAuthoring.assets, engineHost.serialization, engineHost.types),
-                new WindowsX64GameBuildTarget(activeAuthoring.assets, engineHost.serialization, engineHost.types)
+                new WindowsX64GameBuildTarget(activeAuthoring.assets, engineHost.serialization, engineHost.types),
+                new BrowserWasmGameBuildTarget(activeAuthoring.assets, engineHost.serialization, engineHost.types)
             ],
-            SourcePlayerSupportPackProvisioner.TryCreateForHost(AppContext.BaseDirectory));
+            SourcePlayerSupportPackProvisioner.TryCreateForHost(
+                AppContext.BaseDirectory, BuiltInPlayerSupportPacks.CreatePublisher()));
         BuildSettings defaultBuildSettings = BuildSettings.CreateDefault(
             Path.GetFileName(Path.TrimEndingDirectorySeparator(projectDirectory)),
             FindDefaultStartupScene(activeAuthoring.assets),
@@ -438,6 +434,17 @@ public void Clear(Inno.Core.Diagnostics.DiagnosticSource source) { }
                                | PresentationFeatures.SmoothResize
                 }),
             static context => context.Dispose());
+        m_gameInputCapture = new EditorGameInputCapture(
+            viewportId => presentation.TryGetWindowId(viewportId, out uint windowId)
+                && m_focusedWindowIds.Contains(windowId)
+                    ? windowId
+                    : null);
+        IInputEventSource gameInputSource = m_resources.Acquire(
+            () => adapters.input.CreateEventSource(adapterSelection.input, primaryWindow, acceptAllWindows: true),
+            static source => source.Dispose());
+        m_gameInputSource = gameInputSource;
+        activeEditSession.events.dispatched += RouteGameInput;
+        m_resources.Register(() => activeEditSession.events.dispatched -= RouteGameInput);
         var renderingLayer = new RenderRuntime(
             engineHost.types,
             renderDevice,
@@ -473,7 +480,7 @@ public void Clear(Inno.Core.Diagnostics.DiagnosticSource source) { }
             maxFrameDeltaTime = 0.25f,
             maxFixedStepsPerFrame = 8,
             jobExecutionMode = RuntimeJobExecutionMode.WorkerPool,
-            createSubsystems = owner => CreateStandardRuntimeSubsystems(activeAudio, owner),
+            createSubsystems = owner => CreateStandardRuntimeSubsystems(activeAudio, gameInputSource, owner),
             referenceResolvers = [activeAuthoring.assets]
         };
         EditorLayer layer = new EditorLayer(
@@ -483,6 +490,7 @@ public void Clear(Inno.Core.Diagnostics.DiagnosticSource source) { }
             engineHost.logs,
             [
                 renderingHost,
+                m_gameInputCapture,
                 new EditorShaderCompilation(renderArtifacts, renderingHost),
                 framePacing,
                 reloadCoordinator,
@@ -530,11 +538,13 @@ public void Clear(Inno.Core.Diagnostics.DiagnosticSource source) { }
 
     private IReadOnlyList<IRuntimeSubsystemFactory> CreateStandardRuntimeSubsystems(
         IEditorAudioHost activeAudio,
+        IInputEventSource activeInputSource,
         RuntimeSession owner
     ) {
         ArgumentNullException.ThrowIfNull(activeAudio);
+        ArgumentNullException.ThrowIfNull(activeInputSource);
         return DefaultEngine.CreateSessionSubsystems(new EngineSessionComposition(
-            owner, adapters, adapterSelection, inputSource, authoring.assets,
+            owner, adapters, adapterSelection, activeInputSource, authoring.assets,
             () => authoring.settings.TryGet(AudioProjectSettings.settingId, out AudioProjectSettings? settings) && settings is not null
                 ? settings : new AudioProjectSettings(),
             activeAudio.CreateRuntimeSubsystemFactory(owner)));
@@ -570,6 +580,13 @@ public void Clear(Inno.Core.Diagnostics.DiagnosticSource source) { }
                 return entry.assetPath.ToString();
         }
         return string.Empty;
+    }
+
+    private void RouteGameInput(Event evnt)
+    {
+        Event? gameEvent = m_gameInputCapture?.Route(evnt);
+        if (gameEvent is not null)
+            m_gameInputSource?.ProcessEvent(gameEvent);
     }
 
     private bool HasEditorFocus() => m_focusedWindowIds.Count > 0;
@@ -608,5 +625,34 @@ public void Clear(Inno.Core.Diagnostics.DiagnosticSource source) { }
         string line = $"[{DateTime.Now:O}] {message}{Environment.NewLine}";
         Console.Write(line);
         File.AppendAllText(bootLogPath, line);
+    }
+
+    private sealed class SmokeDiagnostics : IDiagnosticSink
+    {
+        private readonly Dictionary<DiagnosticSource, string[]> m_reports = [];
+
+        /// <summary>
+        /// Replaces the captured errors owned by one diagnostic source.
+        /// </summary>
+        /// <param name="report">
+        /// The current immutable report whose error messages are copied into the smoke snapshot.
+        /// </param>
+        public void Replace(DiagnosticReport report)
+        {
+            m_reports[report.source] = report.diagnostics
+                .Where(static diagnostic => diagnostic.severity == DiagnosticSeverity.Error)
+                .Select(diagnostic => report.source.id + "/" + diagnostic.code + ": " + diagnostic.message)
+                .ToArray();
+        }
+
+        /// <summary>
+        /// Removes errors when their diagnostic source is retired.
+        /// </summary>
+        /// <param name="source">
+        /// The source whose captured report is no longer active.
+        /// </param>
+        public void Clear(DiagnosticSource source) => m_reports.Remove(source);
+
+        internal string[] errors => m_reports.Values.SelectMany(static report => report).ToArray();
     }
 }

@@ -19,14 +19,6 @@ internal static class CImguizmoBuildConstants
     /// </summary>
     public const string CIMGUIZMO_DIR_NAME = "cimguizmo";
     /// <summary>
-    /// The cimgui build dir name value used as part of this type's public representation.
-    /// </summary>
-    public const string CIMGUI_BUILD_DIR_NAME = "bld";
-    /// <summary>
-    /// The build dir name value used as part of this type's public representation.
-    /// </summary>
-    public const string BUILD_DIR_NAME = "build";
-    /// <summary>
     /// The cimguimo cpp file value used as part of this type's public representation.
     /// </summary>
     public const string CIMGUIMO_CPP_FILE = "cimguizmo.cpp";

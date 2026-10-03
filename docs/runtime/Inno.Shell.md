@@ -31,7 +31,7 @@ Shell 在控制线程重试 product retirement，最多等待 30 秒。收到 `R
 - `ShellFrame`：frame index、total time 与 delta time 的不可变值。
 - `Shell`：拥有 application、primary window、input event source、render device 与公共 run loop。
 - `InitializeAdapterResources`：派生产品完成非窗口 bootstrap 后显式创建公共 Adapter 资源。
-- `Run` / `RequestExit`：执行一次事件与 frame 生命周期。
+- `RunAsync(IShellFrameDriver, smokeFrameLimit, cancellationToken)` / `RequestExit`：执行一次事件与 frame 生命周期。
 - `OnStarting`、`ShouldExit`、`OnEvent`、`OnFrame`、`OnSmokeCompleted`、`OnStopping`：产品行为 hook。
 - `DisposeProductResources`：在公共 Adapter 逆序销毁前释放产品资源。
 
@@ -53,5 +53,16 @@ internal sealed class GameHost : Shell
 
 一个 Shell 只能运行一次。初始化中途失败会回滚已创建的 render/input/window/application；Dispose 先调用产品释放，再按 render → input → window → platform 逆序清理，并聚合 cleanup exception。`GamePlayerHost` 与 `EditorHost` 都必须继承 Shell，Architecture Tool 会拒绝直接引用具体 adapter 的 Host。
 
-`Run(smokeFrameLimit)` 只有实际完成的帧数达到所请求的上限，才调用 `OnSmokeCompleted`。
+`RunAsync(driver, smokeFrameLimit)` 只有实际完成的帧数达到所请求的上限，才调用 `OnSmokeCompleted`。
+
+唯一循环入口为 `RunAsync(driver, smokeFrameLimit, cancellationToken)`。`IShellFrameDriver` 只提供 `allowsBlockingPacing` 和 `RunAsync(advanceFrame, cancellationToken)`，回调必须在窗口/渲染 owner thread 执行。`PollingShellFrameDriver` 同步循环并允许软件帧率等待；`ScheduledShellFrameDriver(nextFrame)` 等待外部绘制机会、不阻塞宿主。两者共享 Shell 的同一帧实现，停止、取消和 callback 失败都经过同一 stopping 通知与资源退休。
+
+```csharp
+using Inno.Shell;
+
+await shell.RunAsync(new PollingShellFrameDriver(), smokeFrameLimit: 60);
+```
+
+`shell` 是调用方已经初始化的派生 Shell。异步调度器构造函数拒绝 null；frame callback 的 false 结束调度，异常传播；取消检查在等待前与帧执行前，未达到 smoke 上限不能报告成功。
+
 用户提前关闭窗口或产品 `RequestExit` 仍按正常生命周期清理，但不能打印 smoke 成功标记；验收调用方必须同时检查完成标记和退出码。

@@ -1,4 +1,6 @@
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
+using System.Threading;
 using Inno.Build.Toolchains;
 
 namespace Inno.Build.Toolchains.Bgfx.Platforms;
@@ -19,7 +21,7 @@ internal sealed class OsxArm64BgfxBuilder : BgfxBuilder
     /// <summary>
     /// Gets the artifact path token text used by the current instance.
     /// </summary>
-public override string artifactPathToken => "/osx-arm64/bin/";
+    public override string artifactPathToken => "/osx-arm64/bin/";
     /// <summary>
     /// Gets the native make target used for debug output.
     /// </summary>
@@ -42,30 +44,39 @@ public override string artifactPathToken => "/osx-arm64/bin/";
     }
 
     /// <summary>
-    /// Builds a validated result from the current immutable input snapshot.
+    /// Compiles the component sources using the selected checkout and configuration.
     /// </summary>
     /// <param name="bgfxDir">
     /// The bgfx dir text validated by the build operation.
     /// </param>
-    /// <param name="config">
-    /// The validated configuration that controls this operation.
+    /// <param name="context">
+    /// The selected checkout and native configuration.
     /// </param>
     /// <param name="makeTargetOverride">
     /// The make target override text validated by the build operation.
     /// </param>
-    public override void Build(
+    /// <param name="cancellationToken">
+    /// Cancels the native process tree.
+    /// </param>
+    /// <returns>
+    /// Completion after native compilation succeeds; failures and cancellation propagate.
+    /// </returns>
+    public override async Task BuildAsync(
         string bgfxDir,
-        string config,
-        string? makeTargetOverride
+        NativeBuildContext context,
+        string? makeTargetOverride,
+        CancellationToken cancellationToken
     ) {
+        cancellationToken.ThrowIfCancellationRequested();
+        string config = context.configuration;
         if (!string.IsNullOrWhiteSpace(makeTargetOverride))
         {
-            ToolchainEnvironment.Run("make", makeTargetOverride, bgfxDir);
+            await ToolchainEnvironment.RunAsync("make", makeTargetOverride, bgfxDir, cancellationToken);
             return;
         }
 
         var target = GetMakeTarget(config);
-        ToolchainEnvironment.Run("make", target, bgfxDir);
+        await ToolchainEnvironment.RunAsync("make", target, bgfxDir, cancellationToken);
     }
 
     /// <summary>
@@ -74,13 +85,22 @@ public override string artifactPathToken => "/osx-arm64/bin/";
     /// <param name="bgfxDir">
     /// The bgfx dir text validated by the build tools operation.
     /// </param>
-    /// <param name="config">
-    /// The validated configuration that controls this operation.
+    /// <param name="context">
+    /// The selected checkout and native configuration.
     /// </param>
-    public override void BuildTools(
+    /// <param name="cancellationToken">
+    /// Cancels the native process tree.
+    /// </param>
+    /// <returns>
+    /// Completion after native compilation succeeds; failures and cancellation propagate.
+    /// </returns>
+    public override async Task BuildToolsAsync(
         string bgfxDir,
-        string config
+        NativeBuildContext context,
+        CancellationToken cancellationToken
     ) {
-        ToolchainEnvironment.Run("make", $"tools config={config}", bgfxDir);
+        cancellationToken.ThrowIfCancellationRequested();
+        string config = context.configuration;
+        await ToolchainEnvironment.RunAsync("make", $"tools config={config}", bgfxDir, cancellationToken);
     }
 }

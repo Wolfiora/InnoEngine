@@ -119,6 +119,19 @@ internal sealed unsafe class PlatformImGuiViewportBackend : IDisposable
         return m_windowToViewport.ContainsKey(windowId);
     }
 
+    internal bool TryGetWindowId(
+        uint viewportId,
+        out uint windowId
+    ) {
+        if (m_viewportsById.TryGetValue(viewportId, out ViewportWindowData? viewport))
+        {
+            windowId = viewport.windowId;
+            return true;
+        }
+        windowId = 0;
+        return false;
+    }
+
     internal void ProcessEvent(
         ref SDLEvent sdlEvent,
         uint windowId

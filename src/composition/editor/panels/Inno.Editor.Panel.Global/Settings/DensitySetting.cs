@@ -44,7 +44,7 @@ internal sealed class DensitySetting : EditorSetting
         }
         finally
         {
-            NativeImGui.EndCombo();
+            ImGuiWidget.EndBoundedCombo();
         }
     }
 

@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk.WebAssembly">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net9.0-browser</TargetFramework>
+    <RuntimeIdentifier>browser-wasm</RuntimeIdentifier>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <WasmBuildNative>true</WasmBuildNative>
+    <PublishTrimmed>true</PublishTrimmed>
+    <TrimMode>partial</TrimMode>
+    <AssemblyName>Inno.Player.Browser</AssemblyName>
+    <EmccFlags>-sSUPPORT_LONGJMP=wasm -sMIN_WEBGL_VERSION=2 -sMAX_WEBGL_VERSION=2 -sFULL_ES3=1</EmccFlags>
+  </PropertyGroup>
+  <ItemGroup>
+    <_EngineAssembly Include="References/*.dll" />
+    <_GameAssembly Include="$(InnoBrowserGameManagedRoot)/*.dll" />
+    <Reference Include="@(_EngineAssembly);@(_GameAssembly)" />
+    <TrimmerRootAssembly Include="@(_EngineAssembly->'%(Filename)')"
+                         Condition="$([System.String]::Copy('%(_EngineAssembly.Filename)').StartsWith('Inno.'))" />
+    <TrimmerRootAssembly Include="@(_GameAssembly->'%(Filename)')" />
+    <TrimmerRootAssembly Include="BGCS.Runtime;System.Runtime" />
+    <NativeFileReference Include="Native/*.a;Native/*.c" />
+  </ItemGroup>
+  <Target Name="ValidateBrowserGameAssemblies" BeforeTargets="ResolveReferences">
+    <Error Condition="'$(InnoBrowserGameManagedRoot)' == '' or '@(_GameAssembly)' == ''"
+           Text="Browser link requires a frozen runtime assembly directory." />
+  </Target>
+</Project>

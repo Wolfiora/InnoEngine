@@ -37,6 +37,7 @@ public sealed class DefaultAdapterCatalog :
     ITextBackendFactory,
     IUiBackendFactory
 {
+    private readonly IStorageBackendFactory? m_storage;
     private readonly RenderingBackendCatalog m_rendering;
     private readonly UiBackendCatalog m_ui;
 
@@ -49,10 +50,15 @@ public sealed class DefaultAdapterCatalog :
     /// <param name="uiProviders">
     /// Replacement UI providers, or null to use bundled RmlUi.
     /// </param>
+    /// <param name="storageFactory">
+    /// A host-selected storage factory, or null to use local files.
+    /// </param>
     public DefaultAdapterCatalog(
         IEnumerable<RenderingBackendProvider>? renderingProviders = null,
-        IEnumerable<UiBackendProvider>? uiProviders = null
+        IEnumerable<UiBackendProvider>? uiProviders = null,
+        IStorageBackendFactory? storageFactory = null
     ) {
+        m_storage = storageFactory;
         m_rendering = new RenderingBackendCatalog(renderingProviders ?? [new BgfxRenderingProvider()]);
         m_ui = new UiBackendCatalog(uiProviders ?? [new RmlUiProvider()]);
     }
@@ -73,7 +79,7 @@ public sealed class DefaultAdapterCatalog :
     /// <summary>
     /// Gets the built-in application-storage backend factory.
     /// </summary>
-    public IStorageBackendFactory storage => this;
+    public IStorageBackendFactory storage => m_storage ?? this;
 
     /// <summary>
     /// Gets the built-in runtime rendering backend factory.
@@ -104,12 +110,13 @@ public sealed class DefaultAdapterCatalog :
 
     IInputEventSource IInputBackendFactory.CreateEventSource(
         InputBackend backend,
-        IPlatformWindow window
+        IPlatformWindow window,
+        bool acceptAllWindows
     ) {
         ArgumentNullException.ThrowIfNull(window);
         return backend switch
         {
-            InputBackend.Sdl3 => new Sdl3InputSource(window.windowId),
+            InputBackend.Sdl3 => new Sdl3InputSource(acceptAllWindows ? 0 : window.windowId),
             _ => throw Unsupported(nameof(backend), backend)
         };
     }

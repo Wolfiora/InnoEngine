@@ -2,6 +2,7 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -18,8 +19,12 @@ public sealed class ArchitectureCliTests
     [InlineData("src/services/audio/Probe.cs", "internal class Probe { void Release() { try { } catch (RetirementPendingException) { throw; } } }", "wrapped pending ownership", true)]
     [InlineData("src/services/audio/Probe.cs", "internal class Probe { void Release() { try { } catch (Inno.Core.Execution.RetirementTimeoutException failure) { throw; } } }", "wrapped pending ownership", true)]
     [InlineData("src/services/audio/Probe.cs", "internal class Probe { void Release() { try { } catch (Exception error) when (RetirementPendingException.Find(error) is not null) { throw; } } }", "wrapped pending ownership", false)]
-    public async Task CliValidatesSourceContracts(string relative, string source, string expected, bool rejected)
-    {
+    public async Task CliValidatesSourceContracts(
+        string relative,
+        string source,
+        string expected,
+        bool rejected
+    ) {
         string root = Path.Combine(Path.GetTempPath(), "InnoArchitectureTests", Guid.NewGuid().ToString("N"));
         try
         {
@@ -59,6 +64,43 @@ public sealed class ArchitectureCliTests
         }
     }
 
+    [Theory]
+    [InlineData("../Generated", "must not overlap", true)]
+    [InlineData("../Generated/target", "must not overlap", true)]
+    [InlineData("../../AnotherOwner/Generated", "inside its native owner", true)]
+    [InlineData("../obj/browser-wasm/Generated", "generated outputs", false)]
+    public async Task CliValidatesBindingOutputOwnership(
+        string targetOutput,
+        string expected,
+        bool rejected
+    ) {
+        string root = Path.Combine(Path.GetTempPath(), "InnoBindingArchitectureTests", Guid.NewGuid().ToString("N"));
+        try
+        {
+            foreach (string folder in new[] { "src", "native", "build", "tools", "tests" })
+                Directory.CreateDirectory(Path.Combine(root, folder));
+            File.WriteAllText(Path.Combine(root, "InnoEngine.sln"), """
+                Microsoft Visual Studio Solution File, Format Version 12.00
+                Global
+                EndGlobal
+                """);
+            string bindings = Path.Combine(root, "native", "Inno.Native.Probe", "Bindings");
+            Directory.CreateDirectory(bindings);
+            File.WriteAllText(Path.Combine(bindings, "bindgen.json"), JsonSerializer.Serialize(new { OutputPath = "../Generated" }));
+            File.WriteAllText(Path.Combine(bindings, "bindgen.browser-wasm.json"), JsonSerializer.Serialize(new { OutputPath = targetOutput }));
+
+            (int code, string output) = await Run(root);
+
+            Assert.Equal(1, code);
+            Assert.Equal(rejected, output.Contains(expected, StringComparison.Ordinal));
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+                Directory.Delete(root, recursive: true);
+        }
+    }
+
     private static async Task<(int, string)> Run(string root)
     {
         DirectoryInfo? repository = new(AppContext.BaseDirectory);
@@ -72,9 +114,11 @@ public sealed class ArchitectureCliTests
         {
             RedirectStandardOutput = true,
             RedirectStandardError = true,
-            UseShellExecute = false
+            UseShellExecute = false,
+            CreateNoWindow = true
         };
-        start.ArgumentList.Add(Path.Combine(repository!.FullName, "tools/Inno.Tooling.Architecture/bin/Debug/net9.0/Inno.Tooling.Architecture.dll"));
+        start.ArgumentList.Add(Path.Combine(repository!.FullName, "build/cli/Inno.Build.Cli/bin/Debug/net9.0/Inno.Build.Cli.dll"));
+        start.ArgumentList.Add("verify");
         start.ArgumentList.Add(root);
         using Process process = Process.Start(start)!;
         Task<string> output = process.StandardOutput.ReadToEndAsync();

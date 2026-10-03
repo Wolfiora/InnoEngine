@@ -1,3 +1,5 @@
+using System.Threading.Tasks;
+using System.Threading;
 using Inno.Build.Toolchains;
 
 namespace Inno.Build.Toolchains.Bgfx.Platforms;
@@ -33,7 +35,7 @@ internal abstract class BgfxBuilder
     /// Retrieves the requested make target value from current authoritative state.
     /// </summary>
     /// <param name="config">
-    /// The validated configuration that controls this operation.
+    /// The normalized debug or release configuration.
     /// </param>
     /// <returns>
     /// The validated text representation owned by the caller.
@@ -46,21 +48,28 @@ internal abstract class BgfxBuilder
     }
 
     /// <summary>
-    /// Builds a validated result from the current immutable input snapshot.
+    /// Compiles the component sources using the selected checkout and configuration.
     /// </summary>
     /// <param name="bgfxDir">
     /// The bgfx dir text validated by the build operation.
     /// </param>
-    /// <param name="config">
-    /// The validated configuration that controls this operation.
+    /// <param name="context">
+    /// The selected checkout and native configuration.
     /// </param>
     /// <param name="makeTargetOverride">
     /// The make target override text validated by the build operation.
     /// </param>
-    public abstract void Build(
+    /// <param name="cancellationToken">
+    /// Cancels the native process tree.
+    /// </param>
+    /// <returns>
+    /// Completion after native compilation succeeds; failures and cancellation propagate.
+    /// </returns>
+    public abstract Task BuildAsync(
         string bgfxDir,
-        string config,
-        string? makeTargetOverride
+        NativeBuildContext context,
+        string? makeTargetOverride,
+        CancellationToken cancellationToken
     );
 
     /// <summary>
@@ -69,11 +78,18 @@ internal abstract class BgfxBuilder
     /// <param name="bgfxDir">
     /// The bgfx dir text validated by the build tools operation.
     /// </param>
-    /// <param name="config">
-    /// The validated configuration that controls this operation.
+    /// <param name="context">
+    /// The selected checkout and native configuration.
     /// </param>
-    public abstract void BuildTools(
+    /// <param name="cancellationToken">
+    /// Cancels the native process tree.
+    /// </param>
+    /// <returns>
+    /// Completion after native compilation succeeds; failures and cancellation propagate.
+    /// </returns>
+    public abstract Task BuildToolsAsync(
         string bgfxDir,
-        string config
+        NativeBuildContext context,
+        CancellationToken cancellationToken
     );
 }

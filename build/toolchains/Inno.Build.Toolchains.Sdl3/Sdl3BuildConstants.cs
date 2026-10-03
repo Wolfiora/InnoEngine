@@ -15,10 +15,6 @@ internal static class Sdl3BuildConstants
     /// </summary>
     public const string SDL_DIR_NAME = "SDL";
     /// <summary>
-    /// The build dir name value used as part of this type's public representation.
-    /// </summary>
-    public const string BUILD_DIR_NAME = "build";
-    /// <summary>
     /// The source dir name value used as part of this type's public representation.
     /// </summary>
     public const string SOURCE_DIR_NAME = "src";

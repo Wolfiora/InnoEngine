@@ -69,6 +69,11 @@ public interface IRenderDevice : IDisposable
     RenderPresentationSize primaryPresentationSize => new(1, 1);
 
     /// <summary>
+    /// Gets whether the primary presentation target encodes linear RGB to sRGB during writes.
+    /// </summary>
+    bool primaryPresentationEncodesSrgb { get; }
+
+    /// <summary>
     /// Gets command counts recorded since the latest <see cref="BeginFrame"/> call.
     /// Backends that cannot provide command accounting return zero counters.
     /// </summary>

@@ -27,9 +27,6 @@ public static partial class ImGuiWidget
     /// <param name="drawValue">
     /// Value control callback.
     /// </param>
-    /// <param name="labelWidth">
-    /// Optional fixed label column width.
-    /// </param>
     /// <param name="tooltip">
     /// Optional hover help displayed from the property label.
     /// </param>
@@ -43,19 +40,13 @@ public static partial class ImGuiWidget
         string id,
         string label,
         Action drawValue,
-        float labelWidth = -1f,
         string? tooltip = null
     ) {
         ArgumentNullException.ThrowIfNull(label);
         PropertyRow(
             id,
-            () =>
-            {
-                NativeImGui.TextUnformatted(label);
-                DrawItemTooltip(tooltip);
-            },
-            drawValue,
-            labelWidth);
+            () => PropertyLabel(label, tooltip),
+            drawValue);
     }
 
     /// <summary>
@@ -70,9 +61,6 @@ public static partial class ImGuiWidget
     /// <param name="drawValue">
     /// Value control callback.
     /// </param>
-    /// <param name="labelWidth">
-    /// Optional fixed label column width.
-    /// </param>
     /// <exception cref="ArgumentException">
     /// Thrown when <paramref name="id"/> is empty or whitespace.
     /// </exception>
@@ -82,8 +70,7 @@ public static partial class ImGuiWidget
     public static void PropertyRow(
         string id,
         Action drawLabel,
-        Action drawValue,
-        float labelWidth = -1f
+        Action drawValue
     ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(id);
         ArgumentNullException.ThrowIfNull(drawLabel);
@@ -99,19 +86,7 @@ public static partial class ImGuiWidget
 
         try
         {
-            float availableWidth = MathF.Max(1f, NativeImGui.GetContentRegionAvail().X);
-            float desiredLabelWidth = labelWidth > 0f
-                ? labelWidth
-                : Math.Clamp(availableWidth * style.propertyLabelRatio,
-                    style.propertyLabelMinimumWidth,
-                    style.propertyLabelMaximumWidth);
-            float tablePadding = NativeImGui.GetStyle().CellPadding.X * 2f;
-            float maximumLabelWidth = MathF.Max(
-                1f,
-                availableWidth - style.axisValueMinimumWidth - tablePadding);
-            float resolvedLabelWidth = MathF.Min(desiredLabelWidth, maximumLabelWidth);
-            NativeImGui.TableSetupColumn("##label", ImGuiTableColumnFlags.WidthFixed, resolvedLabelWidth);
-            NativeImGui.TableSetupColumn("##value", ImGuiTableColumnFlags.WidthStretch, 1f);
+            SetupPropertyColumns();
             NativeImGui.TableNextRow();
             NativeImGui.TableSetColumnIndex(0);
             NativeImGui.AlignTextToFramePadding();
@@ -124,6 +99,38 @@ public static partial class ImGuiWidget
         {
             NativeImGui.EndTable();
         }
+    }
+
+    /// <summary>
+    /// Configures the label and input columns of an active table with a shared two-to-three ratio.
+    /// A following fixed-width action column may be added by the caller.
+    /// </summary>
+    public static void SetupPropertyColumns()
+    {
+        NativeImGui.TableSetupColumn("##label", ImGuiTableColumnFlags.WidthStretch, style.propertyLabelRatio);
+        NativeImGui.TableSetupColumn("##value", ImGuiTableColumnFlags.WidthStretch, 1f - style.propertyLabelRatio);
+    }
+
+    /// <summary>
+    /// Draws a label within its current table cell, wrapping when the column is narrow.
+    /// </summary>
+    /// <param name="label">
+    /// Visible label text.
+    /// </param>
+    /// <param name="tooltip">
+    /// Optional explanation shown while the label is hovered.
+    /// </param>
+    /// <exception cref="ArgumentNullException">
+    /// Thrown when <paramref name="label"/> is null.
+    /// </exception>
+    public static void PropertyLabel(
+        string label,
+        string? tooltip = null
+    ) {
+        ArgumentNullException.ThrowIfNull(label);
+        NativeImGui.AlignTextToFramePadding();
+        WrappedText(label);
+        DrawItemTooltip(tooltip);
     }
 
     /// <summary>
@@ -512,7 +519,8 @@ public static partial class ImGuiWidget
         Vector2 maximum = minimum + new Vector2(
             MathF.Max(1f, NativeImGui.CalcItemWidth()),
             NativeImGui.GetFrameHeight());
-        return NativeImGui.IsMouseHoveringRect(minimum, maximum, true);
+        return NativeImGui.IsWindowHovered(ImGuiHoveredFlags.RootAndChildWindows)
+            && NativeImGui.IsMouseHoveringRect(minimum, maximum, true);
     }
 
     private static void ValidateFloatBounds(

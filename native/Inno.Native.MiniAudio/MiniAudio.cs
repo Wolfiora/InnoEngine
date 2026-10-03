@@ -1,49 +1,31 @@
-#nullable disable
-
 using System.Runtime.CompilerServices;
+#if !INNO_STATIC_NATIVE
+using BGCS.Runtime;
+using Inno.Native.LibraryLoading;
+#endif
 
 [assembly: DisableRuntimeMarshalling]
 
-namespace Inno.Native.MiniAudio
+#if !INNO_STATIC_NATIVE
+
+namespace Inno.Native.MiniAudio;
+
+/// <summary>
+/// Initializes generated imports against the component's dynamic native library.
+/// </summary>
+public static unsafe partial class MiniAudio
 {
-    using BGCS.Runtime;
-    using Inno.Native.LibraryLoading;
-    using System.Diagnostics;
-
-    /// <summary>
-    /// Configures native miniaudio binding initialization before the generated API is first used.
-    /// </summary>
-    public static class MiniAudioConfig
-    {
-        /// <summary>
-        /// Selects process-module symbol resolution for statically linked AOT applications.
-        /// </summary>
-        public static bool AotStaticLink;
-    }
-
-    /// <summary>
-    /// Provides the generated miniaudio C ABI surface used exclusively by the audio backend adapter.
-    /// </summary>
-    public static unsafe partial class MiniAudio
-    {
 #if DEBUG
-        private const string DLL_NAME = "miniaudio-debug";
+    private const string C_LIBRARY_NAME = "miniaudio-debug";
 #else
-        private const string DLL_NAME = "miniaudio-release";
+    private const string C_LIBRARY_NAME = "miniaudio-release";
 #endif
 
-        static MiniAudio()
-        {
-            if (MiniAudioConfig.AotStaticLink)
-            {
-                InitApi(new NativeLibraryContext(Process.GetCurrentProcess().MainModule!.BaseAddress));
-                return;
-            }
-
-            NativeDllLoader.EnsureNativeDll(DLL_NAME);
-            nint handle = NativeDllLoader.LoadNativeDll(DLL_NAME);
-            InitApi(new NativeLibraryContext(handle));
-        }
-
+    static MiniAudio()
+    {
+        NativeDllLoader.EnsureNativeDll(C_LIBRARY_NAME);
+        nint handle = NativeDllLoader.LoadNativeDll(C_LIBRARY_NAME);
+        InitApi(new NativeLibraryContext(handle));
     }
 }
+#endif

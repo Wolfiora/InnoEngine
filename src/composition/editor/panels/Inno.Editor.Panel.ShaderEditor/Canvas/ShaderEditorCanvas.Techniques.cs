@@ -70,7 +70,7 @@ internal sealed partial class ShaderEditorCanvas
                     }
                     finally
                     {
-                        ImGuiApi.EndCombo();
+                        Inno.Editor.ImGui.ImGuiWidget.ImGuiWidget.EndBoundedCombo();
                     }
                 });
                 changed |= passChanged;

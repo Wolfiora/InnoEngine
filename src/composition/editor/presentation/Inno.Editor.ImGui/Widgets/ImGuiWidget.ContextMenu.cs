@@ -163,6 +163,7 @@ public static partial class ImGuiWidget
         ArgumentException.ThrowIfNullOrWhiteSpace(id);
         PushContextMenuStyle();
         NativeImGui.SetNextWindowViewport(NativeImGui.GetWindowViewport().ID);
+        ConstrainContextMenu();
         if (NativeImGui.BeginPopupContextItem(id, ImGuiPopupFlags.MouseButtonRight))
             return true;
         PopContextMenuStyle();
@@ -183,6 +184,7 @@ public static partial class ImGuiWidget
         ArgumentException.ThrowIfNullOrWhiteSpace(id);
         PushContextMenuStyle();
         NativeImGui.SetNextWindowViewport(NativeImGui.GetWindowViewport().ID);
+        ConstrainContextMenu();
         if (NativeImGui.BeginPopupContextWindow(
                 id,
                 ImGuiPopupFlags.MouseButtonRight | ImGuiPopupFlags.NoOpenOverItems))
@@ -205,6 +207,17 @@ public static partial class ImGuiWidget
         => NativeImGui.IsPopupOpen(
             string.Empty,
             ImGuiPopupFlags.AnyPopupId | ImGuiPopupFlags.AnyPopupLevel);
+
+    private static void ConstrainContextMenu()
+    {
+        Vector2 workSize = NativeImGui.GetWindowViewport().WorkSize;
+        float minimumWidth = MathF.Min(
+            workSize.X,
+            style.searchPopupWidth + style.menuWindowPadding.X * 2f + style.menuBorderSize * 2f);
+        NativeImGui.SetNextWindowSizeConstraints(
+            new Vector2(minimumWidth, 0f),
+            Vector2.Max(workSize, Vector2.One));
+    }
 
     private static void PushContextMenuStyle()
     {

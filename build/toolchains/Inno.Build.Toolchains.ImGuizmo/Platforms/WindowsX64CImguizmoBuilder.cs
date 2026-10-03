@@ -1,7 +1,9 @@
-using System;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
+using System.Threading;
+using System;
 using Inno.Build.Toolchains;
 
 namespace Inno.Build.Toolchains.ImGuizmo.Platforms;
@@ -30,7 +32,7 @@ internal sealed class WindowsX64CImguizmoBuilder : CImguizmoBuilder
     }
 
     /// <summary>
-    /// Builds a validated result from the current immutable input snapshot.
+    /// Compiles the component sources using the selected checkout and configuration.
     /// </summary>
     /// <param name="cimguizmoDir">
     /// The cimguizmo dir text validated by the build operation.
@@ -44,17 +46,26 @@ internal sealed class WindowsX64CImguizmoBuilder : CImguizmoBuilder
     /// <param name="cimguiOutputDir">
     /// The cimgui output dir text validated by the build operation.
     /// </param>
-    /// <param name="config">
-    /// The validated configuration that controls this operation.
+    /// <param name="context">
+    /// The selected checkout and native configuration.
     /// </param>
-    public override void Build(
+    /// <param name="cancellationToken">
+    /// Cancels the native process tree.
+    /// </param>
+    /// <returns>
+    /// Completion after native compilation succeeds; failures and cancellation propagate.
+    /// </returns>
+    public override async Task BuildAsync(
         string cimguizmoDir,
         string cimguiDir,
         string cimguiBuildDir,
         string cimguiOutputDir,
-        string config
+        NativeBuildContext context,
+        CancellationToken cancellationToken
     ) {
-        var buildDir = Path.Combine(cimguizmoDir, CImguizmoBuildConstants.BUILD_DIR_NAME, BUILD_DIR_NAME);
+        cancellationToken.ThrowIfCancellationRequested();
+        string config = context.configuration;
+        var buildDir = Path.Combine(context.GetNativeBuildRoot(typeof(ImGuizmoToolchain).Assembly), BUILD_DIR_NAME, config);
         Directory.CreateDirectory(buildDir);
 
         var cimguizmoCpp = Path.Combine(cimguizmoDir, CImguizmoBuildConstants.CIMGUIMO_CPP_FILE);
@@ -77,7 +88,7 @@ internal sealed class WindowsX64CImguizmoBuilder : CImguizmoBuilder
         // Ignore these two third-party diagnostics while treating other compiler warnings as errors.
         var args = $"/LD {cflags} {THIRD_PARTY_WARNING_POLICY} /DIMGUI_API=__declspec(dllimport) {includeArgs} \"{cimguizmoCpp}\" \"{imguizmoCpp}\" /link /OUT:\"{outputLib}\" \"{cimguiLib}\"";
 
-        ToolchainEnvironment.Run("cl", args, buildDir);
+        await ToolchainEnvironment.RunAsync("cl", args, buildDir, cancellationToken);
     }
 
     private static string FindCimguiImportLibrary(

@@ -20,8 +20,9 @@
     <ProjectReference Include="..\..\..\..\content\animation\Inno.Animation.Runtime\Inno.Animation.Runtime.csproj" PrivateAssets="compile" />
     <ProjectReference Include="..\..\features\Inno.Editor.Audio\Inno.Editor.Audio.csproj" PrivateAssets="compile" />
     <ProjectReference Include="..\..\..\..\..\build\pipeline\Inno.Build\Inno.Build.csproj" PrivateAssets="compile" />
-    <ProjectReference Include="..\..\..\..\..\build\support\Inno.Build.SupportPacks.Core\Inno.Build.SupportPacks.Core.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="..\..\..\..\..\build\support\Inno.Build.SupportPacks\Inno.Build.SupportPacks.csproj" PrivateAssets="compile" />
     <ProjectReference Include="..\..\..\..\..\build\pipeline\Inno.Build.Platform.MacOS\Inno.Build.Platform.MacOS.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="..\..\..\..\..\build\pipeline\Inno.Build.Platform.Browser\Inno.Build.Platform.Browser.csproj" PrivateAssets="compile" />
     <ProjectReference Include="..\..\..\..\..\build\pipeline\Inno.Build.Platform.Windows\Inno.Build.Platform.Windows.csproj" PrivateAssets="compile" />
     <ProjectReference Include="..\..\framework\Inno.Editor.Core\Inno.Editor.Core.csproj" PrivateAssets="compile" />
     <ProjectReference Include="..\..\features\Inno.Editor.Exporting\Inno.Editor.Exporting.csproj" PrivateAssets="compile" />
@@ -83,9 +84,22 @@
     <InnoEditorPublishNativeExtension Condition="'$(InnoEditorPublishSupportPackTarget)' == 'windows-x64'">.dll</InnoEditorPublishNativeExtension>
     <InnoEditorPublishNativeToolExtension Condition="'$(InnoEditorPublishSupportPackTarget)' == 'windows-x64'">.exe</InnoEditorPublishNativeToolExtension>
   </PropertyGroup>
-  <Target Name="BundleEditorPlayerSupportPack" AfterTargets="Publish"
+  <PropertyGroup>
+    <_InnoBuildTasks>$(MSBuildProjectDirectory)/../../../../../build/tasks/Inno.Build.Tasks/bin/$(Configuration)/net9.0/Inno.Build.Tasks.dll</_InnoBuildTasks>
+    <_InnoBuildDotnetHost Condition="'$(DOTNET_HOST_PATH)' != ''">$(DOTNET_HOST_PATH)</_InnoBuildDotnetHost>
+    <_InnoBuildDotnetHost Condition="'$(_InnoBuildDotnetHost)' == ''">dotnet</_InnoBuildDotnetHost>
+  </PropertyGroup>
+  <UsingTask TaskName="Inno.Build.Tasks.PublishSupportPackTask" AssemblyFile="$(_InnoBuildTasks)" />
+  <Target Name="BuildEditorPublishTasks">
+    <MSBuild Projects="../../../../../build/tasks/Inno.Build.Tasks/Inno.Build.Tasks.csproj"
+             Targets="Restore;Build" Properties="Configuration=$(Configuration)"
+             RemoveProperties="RuntimeIdentifier;SelfContained;PublishSingleFile;PublishDir" />
+  </Target>
+  <Target Name="BundleEditorPlayerSupportPack" AfterTargets="Publish" DependsOnTargets="BuildEditorPublishTasks"
           Condition="'$(InnoEditorPublishSupportPackTarget)' != ''">
-    <Exec Command="&quot;$(DOTNET_HOST_PATH)&quot; run --project &quot;$(MSBuildProjectDirectory)/../../../../../build/support/Inno.Build.SupportPacks/Inno.Build.SupportPacks.csproj&quot; --configuration Release --no-launch-profile -- --engine-root &quot;$(MSBuildProjectDirectory)/../../../../..&quot; --output &quot;$(PublishDir)SupportPacks&quot; --target &quot;$(InnoEditorPublishSupportPackTarget)&quot; --dotnet &quot;$(DOTNET_HOST_PATH)&quot;" />
+    <PublishSupportPackTask EngineRoot="$(MSBuildProjectDirectory)/../../../../.."
+                            OutputRoot="$(PublishDir)SupportPacks" Target="$(InnoEditorPublishSupportPackTarget)"
+                            DotnetHost="$(_InnoBuildDotnetHost)" />
     <ItemGroup>
       <_InnoEditorBgfxNative Include="$(PublishDir)SupportPacks/$(InnoEditorPublishSupportPackTarget)/native/bgfx/$(InnoEditorPublishSupportPackTarget)/*$(InnoEditorPublishNativeExtension)" />
       <_InnoEditorSdlNative Include="$(PublishDir)SupportPacks/$(InnoEditorPublishSupportPackTarget)/native/sdl3/$(InnoEditorPublishSupportPackTarget)/*$(InnoEditorPublishNativeExtension)" />

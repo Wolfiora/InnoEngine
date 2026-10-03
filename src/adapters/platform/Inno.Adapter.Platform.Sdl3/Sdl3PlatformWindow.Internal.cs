@@ -1,4 +1,5 @@
 using System;
+using System.Text;
 using Inno.Native.Sdl3;
 using Inno.Platform;
 
@@ -49,7 +50,8 @@ public sealed partial class Sdl3PlatformWindow
         m_width = currentWidth;
         m_height = currentHeight;
         RefreshPixelSize();
-        m_isFocused = ((SDLWindowFlags)SDL.GetWindowFlags(m_window) & SDLWindowFlags.InputFocus) != 0;
+        m_isFocused = !OperatingSystem.IsBrowser() &&
+            ((SDLWindowFlags)SDL.GetWindowFlags(m_window) & SDLWindowFlags.InputFocus) != 0;
         m_nativeHandles = GetNativeHandles(m_window);
     }
 
@@ -134,6 +136,17 @@ public sealed partial class Sdl3PlatformWindow
         {
             kind = PlatformNativeHandleKind.Cocoa;
             windowHandle = (IntPtr)SDL.GetPointerProperty(props, SDL.SDL_PROP_WINDOW_COCOA_WINDOW_POINTER, (void*)0);
+        }
+        else if (OperatingSystem.IsBrowser())
+        {
+            kind = PlatformNativeHandleKind.BrowserCanvas;
+            byte[] propertyName = Encoding.UTF8.GetBytes(SDL.SDL_PROP_WINDOW_EMSCRIPTEN_CANVAS_ID_STRING + '\0');
+            fixed (byte* name = propertyName)
+            {
+                windowHandle = (IntPtr)SDL.GetStringProperty(props, name, null);
+            }
+            if (windowHandle == IntPtr.Zero)
+                throw new InvalidOperationException("SDL did not provide a browser canvas selector.");
         }
 
         return new PlatformNativeHandles(windowHandle, displayHandle, kind);

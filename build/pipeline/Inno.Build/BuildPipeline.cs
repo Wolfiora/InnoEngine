@@ -105,10 +105,10 @@ public sealed class BuildPipeline
                 "More than one game build target is preferred on the current host.",
                 nameof(gameTargets));
         }
-        m_availableGameTargets = targets
+        m_availableGameTargets = Array.AsReadOnly(targets
             .Select(static target => target.id)
             .OrderBy(static id => id.value, StringComparer.Ordinal)
-            .ToArray();
+            .ToArray());
         m_defaultGameTarget = preferred.Length == 1
             ? preferred[0].id
             : m_availableGameTargets[0];
@@ -122,8 +122,7 @@ public sealed class BuildPipeline
             serialization,
             compiler,
             m_gameTargets,
-            m_supportPacks,
-            supportPackProvisioner);
+            m_supportPacks);
         m_plugins = new PluginPackageBuilder(
             assets,
             plugins,
@@ -132,7 +131,7 @@ public sealed class BuildPipeline
     }
 
     /// <summary>
-    /// Gets every build target registered by the current composition root in stable identity order.
+    /// Gets an immutable view of every registered build target in stable identity order.
     /// </summary>
     public IReadOnlyList<BuildTargetId> availableGameTargets => m_availableGameTargets;
 
@@ -191,15 +190,21 @@ public sealed class BuildPipeline
         BuildTargetId target,
         CancellationToken cancellationToken = default
     ) {
-        if (!m_gameTargets.ContainsKey(target))
+        if (!m_gameTargets.TryGetValue(target, out IGameBuildTarget? packager))
             throw new NotSupportedException($"Game target '{target}' is not registered.");
         return await m_supportPacks.ResolveOrProvisionAsync(
-            target, m_supportPackProvisioner, cancellationToken).ConfigureAwait(false);
+            target, packager, m_supportPackProvisioner, cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
-    /// Builds and atomically commits one source-free game deployment.
+    /// Builds and installs one complete source-free game deployment with rollback protection.
     /// </summary>
+    /// <remarks>
+    /// Prepare missing packs with EnsurePlayerSupportPackAsync before invoking this method on the
+    /// authoring owner's thread. The synchronous snapshot phase never waits for asynchronous provisioning.
+    /// Coordinate readers and writers of the output directory during its two installation moves.
+    /// Backup cleanup failures preserve the installed candidate and report its remaining backup.
+    /// </remarks>
     /// <param name="request">
     /// The exact profile, destination, and activated runtime compilation generation.
     /// </param>
@@ -207,7 +212,7 @@ public sealed class BuildPipeline
     /// Optional observer for monotonic stage progress.
     /// </param>
     /// <param name="cancellationToken">
-    /// The token that cancels work before atomic commit.
+    /// The token that cancels work before directory installation begins.
     /// </param>
     /// <returns>
     /// The durable output identity and deployment metrics.
@@ -216,10 +221,16 @@ public sealed class BuildPipeline
     /// Thrown when cancellation is requested before commit.
     /// </exception>
     /// <exception cref="DirectoryNotFoundException">
-    /// The target Support Pack is missing and no host provisioner is available.
+    /// The target Support Pack is missing; prepare it before starting the owner-thread build snapshot.
     /// </exception>
     /// <exception cref="InvalidDataException">
-    /// The target Support Pack is present but invalid, or a new Pack fails validation.
+    /// The target Support Pack is present but invalid.
+    /// </exception>
+    /// <exception cref="IOException">
+    /// Output installation fails, or cleanup of the previous output's backup fails after commit.
+    /// </exception>
+    /// <exception cref="AggregateException">
+    /// Output installation and restoration both fail; the previous tree remains at the reported backup path.
     /// </exception>
     public async ValueTask<BuildResult> BuildGameAsync(
         GameBuildRequest request,

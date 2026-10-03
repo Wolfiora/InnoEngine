@@ -25,14 +25,15 @@ internal sealed record ScriptSourceSet(
     internal static ScriptSourceSet Discover(
         AssetPipeline assets,
         PluginEnvironment plugins,
-        bool includeEditor
+        bool includeEditor,
+        IAssetSourceSnapshot? sourceSnapshot = null
     ) {
         ArgumentNullException.ThrowIfNull(assets);
         ArgumentNullException.ThrowIfNull(plugins);
         if (!assets.isInitialized)
             throw new InvalidOperationException("Script discovery requires the Asset Database.");
 
-        AssetSourceMountTransaction? candidateAssets = plugins.compilationAssets;
+        IAssetSourceSnapshot? candidateAssets = sourceSnapshot ?? plugins.compilationAssets;
         AssetFileEntry[] entries = (candidateAssets?.GetFileSystemEntries(includeDirectories: false)
                 ?? assets.GetFileSystemEntries(includeDirectories: false))
             .Where(entry => includeEditor || !entry.isSampleContent)
@@ -183,7 +184,7 @@ internal sealed record ScriptSourceSet(
 
     private static ScriptAssemblyDefinition ParseDefinition(
         AssetFileEntry entry,
-        AssetSourceMountTransaction? candidateAssets,
+        IAssetSourceSnapshot? candidateAssets,
         AssetPipeline assets
     ) {
         ScriptAssemblyDefinitionAsset asset = candidateAssets is null
@@ -211,7 +212,7 @@ internal sealed record ScriptSourceSet(
 
     private static ScriptSourceInput CreateSourceInput(
         AssetFileEntry entry,
-        AssetSourceMountTransaction? candidateAssets,
+        IAssetSourceSnapshot? candidateAssets,
         AssetPipeline assets
     ) {
         bool hasInfo = candidateAssets is null

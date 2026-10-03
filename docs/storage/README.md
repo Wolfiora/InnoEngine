@@ -10,3 +10,4 @@ Storage 提供游戏应用级持久数据机制，不定义 save slot、schema�
 | [Inno.Storage.Runtime](Inno.Storage.Runtime.md) | Session Feature 与 execution scope |
 | [Inno.Adapter.Storage](Inno.Adapter.Storage.md) | Storage backend 选择与 factory contract |
 | [Inno.Adapter.Storage.FileSystem](Inno.Adapter.Storage.FileSystem.md) | 默认本地文件系统 adapter |
+| [Inno.Adapter.Storage.Browser](Inno.Adapter.Storage.Browser.md) | 浏览器 origin 内的应用数据持久化 adapter |

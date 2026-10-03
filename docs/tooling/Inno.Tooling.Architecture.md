@@ -8,7 +8,9 @@
 
 Registry 派生实现不得直接调用 `OnCleanupFailed` 代替退休失败传播。源码 AST 检查会拒绝该绕过；统一清理应使用 `DisposeExtensions` 并让 TypeRegistry 封锁 generation。负向行为见[CLI 测试项目](Inno.Tooling.Architecture.Tests.md)。
 
-该 executable 没有稳定 library API。它从包含 `InnoEngine.sln` 的根目录加载源码与 `.csproj` 图，并以非零退出码报告违反项。
+本项目是架构验证库，由统一 Build CLI 调用。`ArchitectureValidator.Execute(arguments)` 从包含
+`InnoEngine.sln` 的根目录加载源码与 `.csproj` 图，返回 0 表示通过，1 表示违反项；源码根缺失时抛出
+`DirectoryNotFoundException`。首个参数可指定根，维护参数只用于明确请求的文档修复操作。
 
 ## 检查范围
 
@@ -20,7 +22,7 @@ Editor 公开签名中实际需要的项目不得标为 PrivateAssets=compile；
 Native 符号检查目前覆盖 BGFX、SDL3、MiniAudio；ImGui presentation 的边界仍由专项规则约束，
 不宣称已经通过统一规则证明所有 ImGui 类型均不可见。
 
-必须先构建 Solution，随后以 --no-build 运行审计；工具不替代编译，也不证明任意插件的动态线程行为。
+必须先构建 Solution，再运行 CLI 审计；工具不替代编译，也不证明任意插件的动态线程行为。
 
 - friend assembly、Obsolete、type forwarder、兼容字段和禁用实现名；
 - global/implicit using、循环 ProjectReference 和 removed project；
@@ -35,7 +37,14 @@ Native 符号检查目前覆盖 BGFX、SDL3、MiniAudio；ImGui presentation 的
 
 ```text
 dotnet build InnoEngine.sln -m:1 -p:UseSharedCompilation=false
-dotnet run --project tools/Inno.Tooling.Architecture --no-build -- .
+dotnet run --no-build --project build/cli/Inno.Build.Cli -- verify .
 ```
 
 修复工具参数只用于机械展开/补全 XML，不改变领域行为；正常 CI 运行不使用修复参数。
+
+## 库入口与 Host 隔离检查
+
+项目现在为库，公开 ArchitectureValidator.Execute(arguments) 返回 0/1，默认从当前目录寻找源码根，首个参数可指定根。使用统一 CLI verify 调用。新检查拒绝重复 Native Browser 项目、额外工具 Exe、共享 Foundation/Shell/Player Runtime 的 IsBrowser 判断及 Browser Player 的源码链接。核心 Build 的 Editor 禁止依赖规则继续生效，仅 Build CLI composition root 可组合作者端参考。
+
+BGCS/Cpp2C target profile 必须显式声明 Native owner 内的输出目录，与宿主输出不能相同或互相包含。
+此规则覆盖 managed binding 和 C++ bridge，避免任一生成器的原子目录替换删除另一目标的产物。

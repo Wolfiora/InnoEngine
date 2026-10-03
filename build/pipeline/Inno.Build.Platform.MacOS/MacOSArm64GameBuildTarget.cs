@@ -16,6 +16,7 @@ namespace Inno.Build.Platform.MacOS;
 /// </summary>
 public sealed class MacOSArm64GameBuildTarget : IGameBuildTarget
 {
+    private static readonly IPlayerSupportPackValidator S_SUPPORT_PACK_VALIDATOR = new MacOSSupportPackValidator();
     private readonly BgfxGameContentCompiler m_contentCompiler;
 
     /// <summary>
@@ -37,6 +38,17 @@ public sealed class MacOSArm64GameBuildTarget : IGameBuildTarget
     ) {
         m_contentCompiler = BgfxGameContentCompiler.CreateMacOSArm64(assets, serialization, types);
     }
+
+    /// <summary>
+    /// Validates the target closure before runtime script compilation.
+    /// </summary>
+    /// <param name="directory">
+    /// The Support Pack directory selected by the build catalog.
+    /// </param>
+    /// <exception cref="System.IO.InvalidDataException">
+    /// The required platform inputs are incomplete or incompatible.
+    /// </exception>
+    public void Validate(string directory) => S_SUPPORT_PACK_VALIDATOR.Validate(directory);
 
     /// <summary>
     /// Gets the macOS ARM64 target identity.

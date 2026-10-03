@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using Inno.Storage;
+using Inno.Core.IO;
 
 namespace Inno.Adapter.Storage.FileSystem;
 
@@ -15,9 +16,7 @@ namespace Inno.Adapter.Storage.FileSystem;
 public sealed class FileSystemApplicationStorage : IApplicationStorage, IDisposable
 {
     private readonly SemaphoreSlim m_gate = new(1, 1);
-    private readonly StringComparison m_pathComparison;
     private readonly string m_root;
-    private readonly string m_rootPrefix;
     private bool m_disposed;
 
     /// <summary>
@@ -38,10 +37,6 @@ public sealed class FileSystemApplicationStorage : IApplicationStorage, IDisposa
         m_root = Path.TrimEndingDirectorySeparator(Path.GetFullPath(rootDirectory));
         Directory.CreateDirectory(m_root);
         RejectLink(new DirectoryInfo(m_root));
-        m_rootPrefix = m_root + Path.DirectorySeparatorChar;
-        m_pathComparison = OperatingSystem.IsWindows()
-            ? StringComparison.OrdinalIgnoreCase
-            : StringComparison.Ordinal;
     }
 
     /// <summary>
@@ -293,12 +288,9 @@ public sealed class FileSystemApplicationStorage : IApplicationStorage, IDisposa
         ThrowIfDisposed();
         if (!key.isValid)
             throw new ArgumentException("A valid storage key is required.", nameof(key));
-        string path = Path.GetFullPath(Path.Combine(
+        return PathBoundary.Resolve(
             m_root,
-            key.value.Replace('/', Path.DirectorySeparatorChar)));
-        if (!path.StartsWith(m_rootPrefix, m_pathComparison))
-            throw new ArgumentException("The storage key resolves outside the configured sandbox.", nameof(key));
-        return path;
+            key.value.Replace('/', Path.DirectorySeparatorChar));
     }
 
     private void ValidateExistingPath(

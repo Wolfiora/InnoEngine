@@ -24,6 +24,7 @@ public sealed class Sdl3InputBackend : IInputBackend
     private readonly Lock m_sync = new();
     private readonly uint m_windowId;
     private Action<Sdl3InputBackend>? m_disposeCallback;
+    private IDisposable? m_subscription;
     private Vector2 m_mousePosition;
     private Vector2 m_mouseDelta;
     private Vector2 m_scrollDelta;
@@ -159,6 +160,8 @@ public sealed class Sdl3InputBackend : IInputBackend
         lock (m_sync)
         {
             m_disposed = true;
+            m_subscription?.Dispose();
+            m_subscription = null;
             Action<Sdl3InputBackend>? callback = m_disposeCallback;
             m_disposeCallback = null;
             callback?.Invoke(this);
@@ -172,7 +175,14 @@ public sealed class Sdl3InputBackend : IInputBackend
         }
     }
 
-    internal void DisconnectSource() => m_disposeCallback = null;
+    internal void ConnectSource(IDisposable subscription) => m_subscription = subscription;
+
+    internal void DisconnectSource()
+    {
+        m_subscription?.Dispose();
+        m_subscription = null;
+        m_disposeCallback = null;
+    }
 
     private bool Accepts(Event evnt)
         => m_windowId == 0 || evnt switch

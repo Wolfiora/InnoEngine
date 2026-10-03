@@ -10,6 +10,23 @@ namespace Inno.Adapter.Presentation;
 public interface IPresentationContext : IRenderFrameGraphContributor, IDisposable
 {
     /// <summary>
+    /// Resolves the platform window that owns a presentation viewport.
+    /// </summary>
+    /// <param name="viewportId">
+    /// The presentation viewport identity.
+    /// </param>
+    /// <param name="windowId">
+    /// The owning platform window identity when available.
+    /// </param>
+    /// <returns>
+    /// <see langword="true"/> when the viewport has a live platform window.
+    /// </returns>
+    bool TryGetWindowId(
+        uint viewportId,
+        out uint windowId
+    );
+
+    /// <summary>
     /// Disables or redirects backend-owned layout-file persistence.
     /// </summary>
     /// <param name="filePath">

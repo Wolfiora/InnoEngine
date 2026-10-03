@@ -32,22 +32,26 @@ internal sealed class GameViewPanel : EditorPanel
     private readonly EditorRenderingModule m_rendering;
     private readonly IEditorGameScenePresentation m_scenePresentation;
     private readonly IEditorPlayMode m_playMode;
+    private readonly EditorGameInputCapture m_inputCapture;
     private readonly EditorSettings m_editorSettings;
     private readonly ProjectSettingsStore m_projectSettings;
     private Vector4 m_backgroundColor;
     private GamePresentationSettings m_presentation = new();
     private long m_presentationRevision = -1;
+    private bool m_leftPointerActive;
 
     internal GameViewPanel(
         EditorRenderingModule rendering,
         IEditorGameScenePresentation scenePresentation,
         IEditorPlayMode playMode,
+        EditorGameInputCapture inputCapture,
         EditorSettings editorSettings,
         ProjectSettingsStore projectSettings
     ) {
         m_rendering = rendering ?? throw new ArgumentNullException(nameof(rendering));
         m_scenePresentation = scenePresentation ?? throw new ArgumentNullException(nameof(scenePresentation));
         m_playMode = playMode ?? throw new ArgumentNullException(nameof(playMode));
+        m_inputCapture = inputCapture ?? throw new ArgumentNullException(nameof(inputCapture));
         m_editorSettings = editorSettings ?? throw new ArgumentNullException(nameof(editorSettings));
         m_projectSettings = projectSettings ?? throw new ArgumentNullException(nameof(projectSettings));
     }
@@ -92,6 +96,29 @@ internal sealed class GameViewPanel : EditorPanel
         Vector2 local = mouse - outputOrigin;
         bool inside = local.X >= 0f && local.Y >= 0f
             && local.X < layout.size.X && local.Y < layout.size.Y;
+        ImGuiViewportPtr viewport = NativeImGui.GetWindowViewport();
+        bool gameViewFocused = m_playMode.isPlaying
+            && NativeImGui.IsWindowFocused(ImGuiFocusedFlags.RootAndChildWindows);
+        bool imageHovered = inside
+            && NativeImGui.IsWindowHovered(ImGuiHoveredFlags.RootAndChildWindows);
+        bool focused = m_inputCapture.Report(
+            viewport.ID,
+            outputOrigin - viewport.Pos,
+            layout.size,
+            gameViewFocused,
+            imageHovered);
+        bool acceptsPointer = focused && imageHovered;
+        if (!NativeImGui.IsMouseDown(ImGuiMouseButton.Left)
+            && !NativeImGui.IsMouseReleased(ImGuiMouseButton.Left))
+        {
+            m_leftPointerActive = false;
+        }
+        bool leftPressed = acceptsPointer && NativeImGui.IsMouseClicked(ImGuiMouseButton.Left);
+        if (leftPressed)
+            m_leftPointerActive = true;
+        bool leftReleased = m_leftPointerActive && NativeImGui.IsMouseReleased(ImGuiMouseButton.Left);
+        if (leftReleased || !focused)
+            m_leftPointerActive = false;
         var io = NativeImGui.GetIO();
         KeyModifier modifiers = KeyModifier.None;
         if (io.KeyAlt)
@@ -102,14 +129,14 @@ internal sealed class GameViewPanel : EditorPanel
             modifiers |= KeyModifier.Shift;
         if (io.KeySuper)
             modifiers |= KeyModifier.Super;
-        m_rendering.SetOutputInput(C_VIEWPORT_ID, m_playMode.isPlaying ? new RenderOutputInput(
+        m_rendering.SetOutputInput(C_VIEWPORT_ID, focused ? new RenderOutputInput(
             new Inno.Core.Mathematics.Vector2(local.X * layout.pixelWidth / layout.size.X, local.Y * layout.pixelHeight / layout.size.Y),
-            inside,
-            inside ? new Inno.Core.Mathematics.Vector2(0f, io.MouseWheel) : default,
+            acceptsPointer,
+            acceptsPointer ? new Inno.Core.Mathematics.Vector2(0f, io.MouseWheel) : default,
             modifiers,
             [], [],
-            inside && NativeImGui.IsMouseClicked(ImGuiMouseButton.Left) ? [MouseButton.Left] : [],
-            NativeImGui.IsMouseReleased(ImGuiMouseButton.Left) ? [MouseButton.Left] : [],
+            leftPressed ? [MouseButton.Left] : [],
+            leftReleased ? [MouseButton.Left] : [],
             []) : RenderOutputInput.suspended);
         if (!m_rendering.TrySubmit(
                 S_KIND,
@@ -169,6 +196,7 @@ internal sealed class GameViewPanel : EditorPanel
         m_editorSettings.changed -= ApplyEditorSettings;
         m_rendering.Release(C_VIEWPORT_ID);
         m_presentationRevision = -1;
+        m_leftPointerActive = false;
     }
 
     private void ApplyEditorSettings(EditorSettings settings) => m_backgroundColor = GameViewBackgroundSetting.Read(settings);

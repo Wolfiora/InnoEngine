@@ -6,7 +6,7 @@ namespace Inno.Build;
 /// <summary>
 /// Defines the replaceable platform packaging boundary for one game build target.
 /// </summary>
-public interface IGameBuildTarget
+public interface IGameBuildTarget : IPlayerSupportPackValidator
 {
     /// <summary>
     /// Gets the stable target identity implemented by this packager.

@@ -336,7 +336,7 @@ public sealed class RenderRuntime : RuntimeSubsystem, IRenderRequestSink, IViewC
     }
 
     /// <summary>
-    /// Submits independently rendered model layers for premultiplied-alpha output composition.
+    /// Submits one or more independently rendered model layers for premultiplied-alpha output composition.
     /// </summary>
     /// <param name="name">
     /// Stable frame-local composition identity.
@@ -372,8 +372,8 @@ public sealed class RenderRuntime : RuntimeSubsystem, IRenderRequestSink, IViewC
     ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
         ArgumentNullException.ThrowIfNull(layers);
-        if (layers.Count < 2 || layers.Any(static layer => layer is null))
-            throw new ArgumentException("A composition requires at least two non-null model layers.", nameof(layers));
+        if (layers.Count == 0 || layers.Any(static layer => layer is null))
+            throw new ArgumentException("A composition requires at least one non-null model layer.", nameof(layers));
         if (layers.Any(layer => layer.viewport != viewport || layer.target != target))
             throw new ArgumentException("All composition layers must name the same final target and viewport.", nameof(layers));
         if (!m_device.capabilities.SupportsRenderTarget(format)
@@ -666,7 +666,7 @@ public sealed class RenderRuntime : RuntimeSubsystem, IRenderRequestSink, IViewC
                 return;
             }
         }
-        if (requests.Count == 1)
+        if (requests.Count == 1 && m_device.primaryPresentationEncodesSrgb)
             Submit(requests[0]);
         else
             SubmitComposition($"Output:{session.id}", RenderTarget.backbuffer,
@@ -1005,7 +1005,7 @@ public sealed class RenderRuntime : RuntimeSubsystem, IRenderRequestSink, IViewC
                     ?? throw new InvalidOperationException("A texture output requires a RenderTexture."))
                 : default;
             m_compositor.AddPasses(graph, composition.name, layers, output,
-                composition.viewport);
+                composition.viewport, composition.format);
             if (output.isValid)
                 graph.MarkOutput(output);
             RenderGraphCompileResult validation = graph.Validate();

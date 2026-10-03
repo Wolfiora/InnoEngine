@@ -1,7 +1,9 @@
-using System;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
+using System.Threading;
+using System;
 using Inno.Build.Toolchains;
 
 namespace Inno.Build.Toolchains.ImGuizmo.Platforms;
@@ -13,7 +15,7 @@ internal sealed class LinuxCImguizmoBuilder : CImguizmoBuilder
     /// <summary>
     /// Gets the native platform identifier produced by this builder.
     /// </summary>
-public override string outputPlatform => RuntimeInformation.ProcessArchitecture switch
+    public override string outputPlatform => RuntimeInformation.ProcessArchitecture switch
     {
         Architecture.X64 => "linux-x64",
         Architecture.Arm64 => "linux-arm64",
@@ -26,12 +28,12 @@ public override string outputPlatform => RuntimeInformation.ProcessArchitecture 
     /// <returns>
     /// <see langword="true"/> when the documented condition is satisfied; otherwise, <see langword="false"/>.
     /// </returns>
-public override bool IsSupported() =>
+    public override bool IsSupported() =>
         OperatingSystem.IsLinux() &&
         RuntimeInformation.ProcessArchitecture is Architecture.X64 or Architecture.Arm64;
 
     /// <summary>
-    /// Builds a validated result from the current immutable input snapshot.
+    /// Compiles the component sources using the selected checkout and configuration.
     /// </summary>
     /// <param name="cimguizmoDir">
     /// The cimguizmo dir text validated by the build operation.
@@ -45,17 +47,26 @@ public override bool IsSupported() =>
     /// <param name="cimguiOutputDir">
     /// The cimgui output dir text validated by the build operation.
     /// </param>
-    /// <param name="config">
-    /// The validated configuration that controls this operation.
+    /// <param name="context">
+    /// The selected checkout and native configuration.
     /// </param>
-public override void Build(
-    string cimguizmoDir,
-    string cimguiDir,
-    string cimguiBuildDir,
-    string cimguiOutputDir,
-    string config
-) {
-        string buildDir = Path.Combine(cimguizmoDir, CImguizmoBuildConstants.BUILD_DIR_NAME, outputPlatform);
+    /// <param name="cancellationToken">
+    /// Cancels the native process tree.
+    /// </param>
+    /// <returns>
+    /// Completion after native compilation succeeds; failures and cancellation propagate.
+    /// </returns>
+    public override async Task BuildAsync(
+        string cimguizmoDir,
+        string cimguiDir,
+        string cimguiBuildDir,
+        string cimguiOutputDir,
+        NativeBuildContext context,
+        CancellationToken cancellationToken
+    ) {
+        cancellationToken.ThrowIfCancellationRequested();
+        string config = context.configuration;
+        string buildDir = Path.Combine(context.GetNativeBuildRoot(typeof(ImGuizmoToolchain).Assembly), outputPlatform, config);
         Directory.CreateDirectory(buildDir);
 
         string cimguizmoCpp = Path.Combine(cimguizmoDir, CImguizmoBuildConstants.CIMGUIMO_CPP_FILE);
@@ -73,7 +84,7 @@ public override void Build(
         string cflags = config == ToolchainLayout.C_DEBUG_CONFIGURATION ? "-O0 -g" : "-O3";
         string relativeRPath = $"$ORIGIN/../../cimgui/{outputPlatform}";
         string args = $"{cflags} {THIRD_PARTY_WARNING_POLICY} -std=c++11 -fPIC -shared {includeArgs} \"{cimguizmoCpp}\" \"{imguizmoCpp}\" \"{cimguiLib}\" -Wl,-soname,{CImguizmoBuildConstants.OUTPUT_DLL_NAME}.so -Wl,-rpath,{relativeRPath} -o \"{outputLib}\"";
-        ToolchainEnvironment.Run("clang++", args, cimguizmoDir);
+        await ToolchainEnvironment.RunAsync("clang++", args, cimguizmoDir, cancellationToken);
     }
 
     private static string FindCimguiLibrary(

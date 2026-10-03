@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Inno.Build;
 using Inno.Core.Logging;
+using Inno.Core.Execution;
 using Inno.Core.Settings;
 using Inno.Editor.Core;
 
@@ -91,6 +92,8 @@ internal sealed class ExportWindowModule : EditorModule
 
     internal void OpenPlugin()
     {
+        if (isPluginBusy || isGameBusy)
+            return;
         CloseGame();
         status = string.Empty;
         error = string.Empty;
@@ -103,9 +106,9 @@ internal sealed class ExportWindowModule : EditorModule
 
     internal void OpenGame()
     {
-        ClosePlugin();
-        if (isGameBusy)
+        if (isPluginBusy || isGameBusy)
             return;
+        ClosePlugin();
         isGameProgressVisible = false;
         status = string.Empty;
         error = string.Empty;
@@ -122,7 +125,7 @@ internal sealed class ExportWindowModule : EditorModule
 
     internal void BeginPluginExport()
     {
-        if (isPluginBusy)
+        if (isPluginBusy || isGameBusy)
             return;
         StartCancellation();
         status = "Capturing the current Plugin source and dependency generation...";
@@ -149,7 +152,7 @@ internal sealed class ExportWindowModule : EditorModule
 
     internal void BeginGameExport()
     {
-        if (isGameBusy)
+        if (isPluginBusy || isGameBusy)
             return;
         var profile = new BuildProfile
         {
@@ -213,12 +216,6 @@ internal sealed class ExportWindowModule : EditorModule
         }
     }
 
-    internal void CloseGameProgress()
-    {
-        if (!isGameBusy)
-            isGameProgressVisible = false;
-    }
-
     /// <summary>
     /// Advances compilation tickets, build progress, and completed export tasks.
     /// </summary>
@@ -239,26 +236,68 @@ internal sealed class ExportWindowModule : EditorModule
     }
 
     /// <summary>
-    /// Cancels active export work before the Editor generation is stopped.
+    /// Cancels and drains active export work before the Editor generation is stopped.
     /// </summary>
     /// <param name="context">
     /// The active Editor context being stopped.
     /// </param>
     protected override void OnStop(EditorContext context)
     {
-        m_cancellation?.Cancel();
         isPluginVisible = false;
         isGameVisible = false;
         isGameProgressVisible = false;
+        RetireExports();
     }
 
     /// <summary>
-    /// Releases cancellation resources owned by this module.
+    /// Drains export cleanup before releasing cancellation resources owned by this module.
     /// </summary>
     protected override void OnDispose()
     {
+        RetireExports();
+    }
+
+    private void RetireExports()
+    {
         m_cancellation?.Cancel();
-        m_cancellation?.Dispose();
+        if (m_gamePreparation is { IsCompleted: false }
+            || m_gameExport is { IsCompleted: false }
+            || m_pluginExport is { IsCompleted: false })
+        {
+            throw new RetirementPendingException("Canceled export work still owns build services; retry retirement after it drains.");
+        }
+        RequireRetiredOutcome(m_gamePreparation);
+        RequireRetiredOutcome(m_gameExport);
+        RequireRetiredOutcome(m_pluginExport);
+
+        CompletePluginExport();
+        CompleteGameExport();
+        Task<string>? preparation = m_gamePreparation;
+        m_gamePreparation = null;
+        m_pendingGameRequest = null;
+        if (preparation is not null)
+        {
+            try
+            {
+                _ = preparation.GetAwaiter().GetResult();
+            }
+            catch (OperationCanceledException)
+            {
+                // Cancellation during shutdown is expected; preparation must never start a new build here.
+            }
+            catch (Exception exception)
+            {
+                m_log.Write(LogLevel.Error, "Game Support Pack preparation failed during shutdown: {0}", [exception]);
+            }
+        }
+        while (m_progress.TryDequeue(out _)) { }
+        ReleaseCancellation();
+    }
+
+    private static void RequireRetiredOutcome(Task? task)
+    {
+        if (task?.Exception is Exception failure && RetirementPendingException.Find(failure) is not null)
+            throw failure;
     }
 
     private void CompletePluginExport()
@@ -348,6 +387,7 @@ internal sealed class ExportWindowModule : EditorModule
         }
         finally
         {
+            isGameProgressVisible = false;
             ReleaseCancellation();
         }
     }
@@ -375,6 +415,7 @@ internal sealed class ExportWindowModule : EditorModule
             status = string.Empty;
             error = "Game build was canceled; no partial output was installed.";
             m_log.Write(LogLevel.Info, "Game build was canceled while preparing its Support Pack.");
+            isGameProgressVisible = false;
             ReleaseCancellation();
         }
         catch (Exception exception)
@@ -383,6 +424,7 @@ internal sealed class ExportWindowModule : EditorModule
             status = string.Empty;
             error = exception.Message;
             m_log.Write(LogLevel.Error, "Game Support Pack preparation failed: {0}", [exception]);
+            isGameProgressVisible = false;
             ReleaseCancellation();
         }
     }

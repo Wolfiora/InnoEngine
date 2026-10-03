@@ -20,6 +20,14 @@ Plugin ID 条目对应 active Plugin catalog 明确拥有的 Source Mount 根，
 
 Project `Assets` 中名称以 `~` 开头的目录显示为 `ISAMPLE`，但仍按普通可写 authoring Folder 运行：正常导入、编译并参与 Editor 与 Play Mode，只在 Player deployment 中排除。相同目录导出并安装为 `.iplugin` 后，在只读 Plugin 根下才切换为待导入 Sample：它仍可展开、搜索、选择和浏览，但自身及后代不会直接导入或编译。右键该目录的 `Import Sample` 会把一个稳定快照直接导入到 `Assets/<原始~目录名>`，完整保留所有前导 `~`；目标已存在时命令禁用。导入结果是普通可编辑 Assets，保留 Sample 内部 `.imeta` 引用，并作为一个完整目录操作进入共享 Undo/Redo。
 
+Import Sample 的 Action 只启动资产层事务，`Samples/` 中的 feature Module 按帧推进；复制、身份重写、隔离资产预导入/索引、脚本 reference/Roslyn preflight 与 History archive/payload 编码在后台完成。进度复用同一 `EditorModal` 与共享 Widget，居中、不可拖拽、阻断底层交互，提供 Cancel；成功、普通失败或取消完成后自动关闭，详细结果进入共同 LogRouter。
+
+脚本校验读取 `IAssetSourceSnapshot` 隔离候选；成功前当前 File Browser / Catalog / Identity 不变。成功在发布前记录一个共享 History 项，History 失败回滚候选；没有第二套 Undo 栈、事件队列或资产数据库。Feature Module 的 stop 顺序先于 Scripting，取消仍 Pending 时保留任务、快照和所有依赖，退休超时明确 Fault。Source rewriter 的线程契约见 [Asset Pipeline](../assets/Inno.Assets.Pipeline.md)。
+
+项目引用先列仅实现依赖并设置 `PrivateAssets="compile"`，再列真实 public/protected 签名依赖；Compiler、Scripting readiness 和 presentation 不作为 File Browser 公开 API 传递。
+这是已记录的响应性整改项，不是已实现的异步导入能力；后续需保持校验失败回滚与 History 原子性。
+详见 [提交前第四轮复核](../architecture/PRECOMMIT_BGCS_AUDIT_2026_10_02.md)。
+
 ## 公共扩展 API
 
 | API | 作用 |
@@ -64,7 +72,7 @@ Create Asset、Create Folder、Import Sample、Rename、Move 与 Delete 都接�
 
 Tree、List 和 Grid 使用同一个 `AssetFileEntry` 目录目标及 `panel/asset.file-browser` drop area。文件仍以共享 `AssetInfo` 作为 payload，目录以 `AssetFileEntry` 作为 payload；两者都可以拖到任意视图中的目录，因此可以从 Grid 拖到 Tree，也可以从 Tree 拖到 List/Grid。Tree 的 `Assets` 根节点和 Tree pane 未占用背景都明确以 Assets 根目录为目标；List/Grid 的未占用背景才以当前打开目录为目标。目标路径必须由每个 drop site 显式提供，不会隐式回退到当前目录。
 
-Tree pane 只在名称或层级缩进真实超出 viewport 时产生横向范围，并显示原生水平 scrollbar；短内容没有 scrollbar。Tree 的 label/icon/hit area 只应用一次 `ScrollX`，不会出现内容比 disclosure 或 guide 多移动一份滚动距离的情况。
+FileBrowser 根 Panel 和填满正文的布局 Child 均不滚动；Tree、内容列表与底部面包屑各自只在自己的内容实际溢出时滚动。Tree pane 只在名称或层级缩进真实超出 viewport 时产生横向范围，并显示原生水平 scrollbar；短内容没有 scrollbar。Tree 的 label/icon/hit area 只应用一次 `ScrollX`，不会出现内容比 disclosure 或 guide 多移动一份滚动距离的情况。
 
 底部面包屑栏仅在路径实际超出可用宽度时设置显式内容宽度并启用横向滚动；可容纳的路径交给 ImGui 按真实 item 宽度布局，避免 Windows 缩放和像素取整使等宽的空白滚动范围常驻。
 
@@ -131,7 +139,7 @@ internal static class AnimationAssetIcons
 
 `ImGuiIcon` 与 pointer-free `NativeImGui` 统一由 `Inno.Editor.ImGui/Properties/ScriptingApi.cs` 导出到 `InnoEditor.ImGui`。FileBrowser 的脚本清单只拥有 Asset feature API，不重复导出图标；`Inno.Adapter.Presentation.ImGui` 不声明脚本 API。
 
-内建 Text、Binary、Scene、Prefab 和 Scripting 图标全部在 `BuiltInAssetIcons` 上使用 extension overload 声明，没有基于具体 Asset CLR 类型的引用。FileBrowser 项目因此不再引用 `Inno.Assets`、`Inno.Scene.Assets` 或 `Inno.Editor.Scripting`。内部 `AssetIconRegistry` 扫描当前 TypeCache snapshot 中的声明类型。EditorScripts 热重载时，新增或修改声明会随候选代际原子生效；移除声明或整个容器类型后，Registry 会释放旧映射并恢复优先级较低的内建声明，没有匹配时则使用通用 File icon。
+内建 Text、Binary、Scene、Prefab 和 Scripting 图标全部在 `BuiltInAssetIcons` 上使用 extension overload 声明，没有基于具体 Asset CLR 类型的引用。图标发现不依赖具体 Asset 类型项目；FileBrowser 的公开资产 API 仍声明 `Inno.Assets` 依赖，Sample module 通过实现依赖 `Inno.Editor.Scripting` 查询编译状态。内部 `AssetIconRegistry` 扫描当前 TypeCache snapshot 中的声明类型。EditorScripts 热重载时，新增或修改声明会随候选代际原子生效；移除声明或整个容器类型后，Registry 会释放旧映射并恢复优先级较低的内建声明，没有匹配时则使用通用 File icon。
 
 `AssetEditorModule.GetIcon(entry)` 是唯一对外 presentation resolver，同时通过 `IInspectionIconProvider<AssetFileEntry>` 向 Inspection 基础设施提供同一个规则。File Browser 的三种视图与 Asset Inspection Header 都调用该入口，不复制 extension switch，也不各自持有 Registry snapshot。Registry 先按类型/extension 选中声明；若 declaration 字符串是已注册 Settings path，就直接读取其中的 `value`，否则把它当作 literal glyph。Settings 基础项目不提供 icon resolver。
 

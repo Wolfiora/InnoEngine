@@ -12,6 +12,8 @@
 | [Inno.Adapter.Default](Inno.Adapter.Default.md) | Player 使用的默认 runtime implementation catalog |
 | [Inno.Adapter.Authoring.Default](Inno.Adapter.Authoring.Default.md) | Editor 使用的默认 authoring/presentation catalog |
 | [Inno.Shell](Inno.Shell.md) | Player 与 Editor 共用的 application/window/input/render/frame lifecycle |
+| [Inno.Player.Runtime](Inno.Player.Runtime.md) | 跨宿主共享 Player 生命周期与最小启动契约 |
 | [Inno.Player](Inno.Player.md) | 最小 Player Composition Root；没有稳定 library API |
+| [Inno.Player.Browser](Inno.Player.Browser.md) | 浏览器 Player 的帧驱动、内容下载与后端装配 |
 
 `EngineHost` 持有应用级实例服务，`RuntimeSession` 持有 Edit/Play/Player 状态。脚本静态门面不拥有真实状态，无 execution scope 时明确失败。

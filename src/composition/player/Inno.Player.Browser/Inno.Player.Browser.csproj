@@ -1,0 +1,50 @@
+<Project Sdk="Microsoft.NET.Sdk.WebAssembly">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net9.0-browser</TargetFramework>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <AssemblyName>Inno.Player.Browser</AssemblyName>
+    <RuntimeIdentifier>browser-wasm</RuntimeIdentifier>
+    <WasmBuildNative>true</WasmBuildNative>
+    <PublishTrimmed>true</PublishTrimmed>
+    <TrimMode>partial</TrimMode>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <InnoNativeTarget>browser-wasm</InnoNativeTarget>
+    <EmccFlags>-sSUPPORT_LONGJMP=wasm -sMIN_WEBGL_VERSION=2 -sMAX_WEBGL_VERSION=2 -sFULL_ES3=1</EmccFlags>
+    <InnoBrowserNativeRoot Condition="'$(InnoBrowserNativeRoot)' == ''">$(MSBuildThisFileDirectory)../../../../.lib</InnoBrowserNativeRoot>
+  </PropertyGroup>
+  <ItemGroup Condition="'$(InnoBrowserGameManagedRoot)' != ''">
+    <_BrowserGameAssembly Include="$(InnoBrowserGameManagedRoot)/*.dll" />
+    <Reference Include="@(_BrowserGameAssembly)">
+      <Private>true</Private>
+    </Reference>
+    <TrimmerRootAssembly Include="@(_BrowserGameAssembly->'%(Filename)')" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="../Inno.Player.Runtime/Inno.Player.Runtime.csproj" />
+    <ProjectReference Include="../../../adapters/default/Inno.Adapter.Default/Inno.Adapter.Default.csproj" />
+    <ProjectReference Include="../../../adapters/storage/Inno.Adapter.Storage.Browser/Inno.Adapter.Storage.Browser.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <NativeFileReference Include="$(InnoBrowserNativeRoot)/bgfx/browser-wasm/bgfxRelease.a" />
+    <NativeFileReference Include="$(InnoBrowserNativeRoot)/bgfx/browser-wasm/bxRelease.a" />
+    <NativeFileReference Include="$(InnoBrowserNativeRoot)/bgfx/browser-wasm/bimgRelease.a" />
+    <NativeFileReference Include="$(InnoBrowserNativeRoot)/bgfx/browser-wasm/bimg_decodeRelease.a" />
+    <NativeFileReference Include="$(InnoBrowserNativeRoot)/sdl3/browser-wasm/libSDL3.a" />
+    <NativeFileReference Include="$(InnoBrowserNativeRoot)/miniaudio/browser-wasm/libminiaudio.a" />
+    <NativeFileReference Include="$(InnoBrowserNativeRoot)/text/browser-wasm/libinno-text.a" />
+    <NativeFileReference Include="$(InnoBrowserNativeRoot)/ui/browser-wasm/libinno-ui.a" />
+    <NativeFileReference Include="$(InnoBrowserNativeRoot)/ui/browser-wasm/librmlui.a" />
+    <NativeFileReference Include="$(InnoBrowserNativeRoot)/text/browser-wasm/libfreetype.a" />
+    <NativeFileReference Include="$(InnoBrowserNativeRoot)/text/browser-wasm/libharfbuzz.a" />
+    <NativeFileReference Include="../../../../build/toolchains/Inno.Build.Toolchains.Browser/Native/wasm_sjlj_shim.c" />
+  </ItemGroup>
+  <Target Name="PreserveBrowserEngineMetadata" BeforeTargets="_RunILLink" DependsOnTargets="_ComputeManagedAssemblyToLink">
+    <ItemGroup>
+      <_BrowserEngineAssembly Include="@(ManagedAssemblyToLink)"
+                              Condition="$([System.String]::Copy('%(ManagedAssemblyToLink.Filename)').StartsWith('Inno.'))" />
+      <TrimmerRootAssembly Include="@(_BrowserEngineAssembly->'%(Filename)')" />
+    </ItemGroup>
+  </Target>
+</Project>

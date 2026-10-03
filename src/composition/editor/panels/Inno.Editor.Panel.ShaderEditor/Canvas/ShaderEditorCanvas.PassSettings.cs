@@ -53,7 +53,7 @@ internal sealed partial class ShaderEditorCanvas
                 }
                 finally
                 {
-                    ImGuiApi.EndCombo();
+                    Inno.Editor.ImGui.ImGuiWidget.ImGuiWidget.EndBoundedCombo();
                 }
             });
             ShaderGraphPassProgram assignment = programs.FirstOrDefault(program => program.pass == activePass);
@@ -209,7 +209,7 @@ internal sealed partial class ShaderEditorCanvas
                     }
                     finally
                     {
-                        ImGuiApi.EndCombo();
+                        Inno.Editor.ImGui.ImGuiWidget.ImGuiWidget.EndBoundedCombo();
                     }
                 });
                 int mask = state.colorWriteMask;
@@ -382,7 +382,7 @@ internal sealed partial class ShaderEditorCanvas
             }
             finally
             {
-                ImGuiApi.EndCombo();
+                Inno.Editor.ImGui.ImGuiWidget.ImGuiWidget.EndBoundedCombo();
             }
         });
         value = current;

@@ -70,6 +70,7 @@ public sealed partial class AssetLoader : IDisposable, IAssetReferenceResolver, 
     private readonly IReadOnlyDictionary<AssetSourceId, AssetSourceMount> m_mounts;
     private readonly bool m_runtimeArtifactsOnly;
 
+    private CancellationToken m_importCancellation;
     private bool m_disposed;
     private bool m_disposeRequested;
     private int m_admittedOperations;
@@ -448,7 +449,27 @@ public sealed partial class AssetLoader : IDisposable, IAssetReferenceResolver, 
     /// <summary>
     /// Reconciles source files, metadata, artifacts and the in-memory catalog.
     /// </summary>
-    public void Rescan() => Execute(RescanLocked);
+    /// <param name="cancellationToken">
+    /// Cancellation for reconciliation and importer work; unpublished candidates can be discarded after it drains.
+    /// </param>
+    /// <exception cref="OperationCanceledException">
+    /// Reconciliation or an importer observes cancellation.
+    /// </exception>
+    public void Rescan(CancellationToken cancellationToken = default)
+        => Execute(() =>
+        {
+            CancellationToken previous = m_importCancellation;
+            m_importCancellation = cancellationToken;
+            try
+            {
+                RescanLocked();
+                cancellationToken.ThrowIfCancellationRequested();
+            }
+            finally
+            {
+                m_importCancellation = previous;
+            }
+        });
 
     internal void DeferUnavailableExtensions() => Execute(() =>
     {
@@ -1490,7 +1511,7 @@ public sealed partial class AssetLoader : IDisposable, IAssetReferenceResolver, 
         byte[] settingsBytes = ReadImportSettingsBytesLocked(relativePath, importer);
         context.importSettings = RestoreImportSettingsLocked(importer, settingsBytes, context);
         AssetImportProduct product = importer
-            .ImportInternalAsync(context, CancellationToken.None)
+            .ImportInternalAsync(context, m_importCancellation)
             .AsTask()
             .GetAwaiter()
             .GetResult();
@@ -2114,6 +2135,7 @@ public sealed partial class AssetLoader : IDisposable, IAssetReferenceResolver, 
 
     private void RescanLocked()
     {
+        m_importCancellation.ThrowIfCancellationRequested();
         LoadCatalogLocked();
         bool registriesChanged =
             m_importerRegistryVersion != m_importers.snapshotVersion ||
@@ -2138,6 +2160,7 @@ public sealed partial class AssetLoader : IDisposable, IAssetReferenceResolver, 
             .ToArray();
         foreach (AssetPath sourceFile in sourceFiles)
         {
+            m_importCancellation.ThrowIfCancellationRequested();
             string relative = sourceFile.ToString();
             string absoluteSource = GetSourcePath(relative);
             AssetImporter? importer = m_importers.FindByPath(relative);

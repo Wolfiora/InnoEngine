@@ -1,25 +1,25 @@
-using System;
+#if !INNO_STATIC_NATIVE
 using BGCS.Runtime;
 using Inno.Native.LibraryLoading;
 
 namespace Inno.Native.Sdl3;
 
 /// <summary>
-/// Provides the generated SDL3 ABI surface used exclusively by the SDL platform adapter.
+/// Initializes generated imports against the component's dynamic native library.
 /// </summary>
 public static unsafe partial class SDL
 {
 #if DEBUG
-    private const string DLL_NAME = "SDL3-debug";
+    private const string C_LIBRARY_NAME = "SDL3-debug";
 #else
-    private const string DLL_NAME = "SDL3-release";
+    private const string C_LIBRARY_NAME = "SDL3-release";
 #endif
 
     static SDL()
     {
-        NativeDllLoader.EnsureNativeDll(DLL_NAME);
-        var handle = NativeDllLoader.LoadNativeDll(DLL_NAME);
+        NativeDllLoader.EnsureNativeDll(C_LIBRARY_NAME);
+        nint handle = NativeDllLoader.LoadNativeDll(C_LIBRARY_NAME);
         InitApi(new NativeLibraryContext(handle));
     }
-
 }
+#endif

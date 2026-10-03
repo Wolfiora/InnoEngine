@@ -2,7 +2,9 @@ using System;
 using System.Collections.Concurrent;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 
 using Inno.Core.Logging;
 
@@ -23,6 +25,75 @@ public sealed class LoggingBehaviorTests : IDisposable
     {
         m_scope = m_router.EnterScope();
         m_router.SetMinimumLevel(LogLevel.Debug);
+    }
+
+    [Fact]
+    public void InlineDeliveryIsImmediateAndQuarantinesAFailingSink()
+    {
+        using var router = new LogRouter(deliveryMode: LogDeliveryMode.Inline);
+        using var scope = router.EnterScope();
+        using var healthy = new ProbeSink();
+        var failing = new FailingSink();
+        Exception? failure = null;
+        router.sinkFailed += (
+            _,
+            exception
+        ) => failure = exception;
+        router.RegisterSink(failing);
+        router.RegisterSink(healthy);
+        Log.Warn("inline message");
+        Assert.NotNull(failure);
+        Assert.Single(healthy.entries);
+        router.Flush();
+        Assert.Single(healthy.entries);
+        router.UnregisterSink(healthy);
+    }
+
+    [Fact]
+    public void UnknownDeliveryPoliciesFailAtConstruction()
+    {
+        Assert.Throws<ArgumentOutOfRangeException>(() => new LogRouter(deliveryMode: (LogDeliveryMode)99));
+    }
+
+    [Theory]
+    [InlineData(LogDeliveryMode.Inline, false)]
+    [InlineData(LogDeliveryMode.Inline, true)]
+    [InlineData(LogDeliveryMode.Background, false)]
+    [InlineData(LogDeliveryMode.Background, true)]
+    public async Task BrokenFailureReportingCannotStopHealthySinkDelivery(
+        LogDeliveryMode mode,
+        bool failingObserver
+    ) {
+        using var router = new LogRouter(deliveryMode: mode);
+        using var scope = router.EnterScope();
+        using var healthy = new ProbeSink();
+        var failing = new FailingSink();
+        int reported = 0;
+        if (failingObserver)
+        {
+            router.sinkFailed += (_, _) => throw new InvalidOperationException("Expected observer failure.");
+            router.sinkFailed += (_, _) => reported++;
+        }
+        router.RegisterSink(failing);
+        router.RegisterSink(healthy);
+        TextWriter original = Console.Error;
+        using var broken = new BrokenErrorWriter();
+        try
+        {
+            Console.SetError(broken);
+            Log.Info("first");
+            Log.Info("second");
+            await Task.Run(router.Flush).WaitAsync(TimeSpan.FromSeconds(5));
+
+            Assert.Equal(1, failing.receiveCount);
+            Assert.Equal(failingObserver ? 1 : 0, reported);
+            Assert.Equal(["first", "second"], healthy.entries.Select(static entry => entry.message));
+        }
+        finally
+        {
+            Console.SetError(original);
+            router.UnregisterSink(healthy);
+        }
     }
 
     [Fact]
@@ -76,6 +147,36 @@ public sealed class LoggingBehaviorTests : IDisposable
         Log.Info("discarded-before-flush");
 
         m_router.Flush();
+    }
+
+    [Fact]
+    public void ConsoleLogSinkDeliversMessagesWithoutQuarantiningTheSink()
+    {
+        TextWriter originalOutput = Console.Out;
+        using var output = new StringWriter();
+        var sink = new ConsoleLogSink();
+        Exception? failure = null;
+        m_router.sinkFailed += (
+            _,
+            exception
+        ) => failure = exception;
+        m_router.RegisterSink(sink);
+        try
+        {
+            Console.SetOut(output);
+            Log.Warn("console-warning");
+            Log.Error("console-error");
+            m_router.Flush();
+
+            Assert.Null(failure);
+            Assert.Contains("console-warning", output.ToString());
+            Assert.Contains("console-error", output.ToString());
+        }
+        finally
+        {
+            m_router.UnregisterSink(sink);
+            Console.SetOut(originalOutput);
+        }
     }
 
     [Fact]
@@ -165,6 +266,13 @@ public sealed class LoggingBehaviorTests : IDisposable
         {
             m_signal.Dispose();
         }
+    }
+
+    private sealed class BrokenErrorWriter : TextWriter
+    {
+        public override Encoding Encoding => Encoding.UTF8;
+
+        public override void WriteLine(string? value) => throw new IOException("The error channel is closed.");
     }
 
     private sealed class FailingSink : ILogSink

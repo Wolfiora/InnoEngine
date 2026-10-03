@@ -73,7 +73,9 @@ public sealed unsafe partial class BgfxDevice : RenderDevice, IRenderDevice, IRe
         m_backbufferHeight = options.backbufferHeight;
         m_resetFlags = (uint)(
             (options.verticalSync ? bgfx.ResetFlags.Vsync : bgfx.ResetFlags.None)
-            | (options.sRgbBackbuffer ? bgfx.ResetFlags.SrgbBackbuffer : bgfx.ResetFlags.None));
+            | (options.sRgbBackbuffer && options.window?.nativeHandles.handleKind != PlatformNativeHandleKind.BrowserCanvas
+                ? bgfx.ResetFlags.SrgbBackbuffer
+                : bgfx.ResetFlags.None));
 
         bool nativeInitialized = false;
         try
@@ -127,6 +129,11 @@ public sealed unsafe partial class BgfxDevice : RenderDevice, IRenderDevice, IRe
     /// Gets whether the primary presentation surface encodes linear color as sRGB.
     /// </summary>
     public bool backbufferIsSrgb => (m_resetFlags & (uint)bgfx.ResetFlags.SrgbBackbuffer) != 0;
+
+    /// <summary>
+    /// Gets whether the primary BGFX surface automatically encodes linear RGB to sRGB.
+    /// </summary>
+    public bool primaryPresentationEncodesSrgb => backbufferIsSrgb;
 
     /// <summary>
     /// Gets the generation identity that owns this value.
@@ -1632,6 +1639,12 @@ public sealed unsafe partial class BgfxDevice : RenderDevice, IRenderDevice, IRe
         }
 
         PlatformNativeHandles handles = window.nativeHandles;
+        if (handles.handleKind == PlatformNativeHandleKind.BrowserCanvas)
+        {
+            init.platformData.nwh = handles.windowHandle.ToPointer();
+            return;
+        }
+
         if (handles.handleKind is not (PlatformNativeHandleKind.Win32 or PlatformNativeHandleKind.Cocoa))
         {
             throw new PlatformNotSupportedException(

@@ -1,5 +1,7 @@
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
+using System.Threading;
 using Inno.Build.Toolchains;
 
 namespace Inno.Build.Toolchains.ImGui.Platforms;
@@ -27,23 +29,32 @@ internal sealed class OsxArm64CimguiBuilder : CimguiBuilder
     }
 
     /// <summary>
-    /// Builds a validated result from the current immutable input snapshot.
+    /// Compiles the component sources using the selected checkout and configuration.
     /// </summary>
     /// <param name="cimguiDir">
     /// The cimgui dir text validated by the build operation.
     /// </param>
-    /// <param name="config">
-    /// The validated configuration that controls this operation.
+    /// <param name="context">
+    /// The selected checkout and native configuration.
     /// </param>
-    public override void Build(
+    /// <param name="cancellationToken">
+    /// Cancels the native process tree.
+    /// </param>
+    /// <returns>
+    /// Completion after native compilation succeeds; failures and cancellation propagate.
+    /// </returns>
+    public override async Task BuildAsync(
         string cimguiDir,
-        string config
+        NativeBuildContext context,
+        CancellationToken cancellationToken
     ) {
-        var buildDir = Path.Combine(cimguiDir, CimguiBuildConstants.BUILD_DIR_NAME, "inno", BUILD_DIR_NAME);
+        cancellationToken.ThrowIfCancellationRequested();
+        string config = context.configuration;
+        var buildDir = Path.Combine(context.GetNativeBuildRoot(typeof(ImGuiToolchain).Assembly), BUILD_DIR_NAME, config);
         var buildType = GetBuildType(config);
-        string sourceDir = CimguiSourceOverlay.Prepare(cimguiDir);
+        string sourceDir = CimguiSourceOverlay.Prepare(context, cimguiDir);
 
-        ToolchainEnvironment.Run("cmake", $"-S \"{sourceDir}\" -B \"{buildDir}\" -DINNO_CIMGUI_SOURCE_DIR=\"{cimguiDir}\" -DCMAKE_BUILD_TYPE={buildType} -DBUILD_SHARED_LIBS=ON -DCIMGUI_VARGS0=ON", cimguiDir);
-        ToolchainEnvironment.Run("cmake", $"--build \"{buildDir}\" --config {buildType}", cimguiDir);
+        await ToolchainEnvironment.RunAsync("cmake", $"-S \"{sourceDir}\" -B \"{buildDir}\" -DINNO_CIMGUI_SOURCE_DIR=\"{cimguiDir}\" -DCMAKE_BUILD_TYPE={buildType} -DBUILD_SHARED_LIBS=ON -DCIMGUI_VARGS0=ON", cimguiDir, cancellationToken);
+        await ToolchainEnvironment.RunAsync("cmake", $"--build \"{buildDir}\" --config {buildType}", cimguiDir, cancellationToken);
     }
 }

@@ -82,6 +82,8 @@ internal static class EditorModalRenderer
         }
         NativeImGui.PushStyleVar(ImGuiStyleVar.Alpha, alpha);
         ImGuiWindowFlags flags = ImGuiWindowFlags.NoDocking | ImGuiWindowFlags.NoCollapse;
+        if (!presentation.allowScrolling)
+            flags |= ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse;
         if (!presentation.canMove)
             flags |= ImGuiWindowFlags.NoMove;
         if (!presentation.canResize)

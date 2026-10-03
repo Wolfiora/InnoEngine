@@ -29,6 +29,8 @@ Editor 当前不需要额外的 InnoEngine project descriptor。目录本身就�
 
 默认 authoring adapter 会把 RML importer/frontend 随自身部署给 Editor；TypeCatalog 因而能通过宿主依赖闭包发现它们。Editor presentation 绘制期间绑定 Edit Session 的 UI service，让 Canvas 等 Game View contributor 能在独立视口建立 UI context。
 
+Edit Session 使用 Shell 主窗口 Input source；Play Session 使用 Host 独立创建的全窗口 Input source。Host 只转发 `EditorGameInputCapture.Route` 接受的 Core `Event`，因此独立 Game View 的 SDL 窗口可以输入，而其他 Panel、遮挡浮窗和失焦窗口不会把按键或点击送入游戏。隐藏、关闭或失焦时 Host 发出焦点释放事件，让 Play Input backend 清除 held state。Presentation 的 `TryGetWindowId` 是唯一 viewport 到平台窗口的映射入口，Host 不依赖 SDL/ImGui 实现类型。
+
 EditorLayer 的 runtime/diagnostics 通过 Core LifetimeScope 统一拥有，Core LayerStack 在 Attach 失败后调用 Detach 补偿。
 Pending 从 extension Stop/Detach 经 interaction runtime、ImGui runtime、Layer 和 Shell 原样传播；未退休 owner 不移出资源栈，
 不销毁下层 native adapter。最外层 Play quiesce 仍作为产品前置阶段，但不替代通用扩展退出协议。

@@ -104,3 +104,5 @@ Player 的 Runtime Session 使用 `AssetDatabase` 读取物化后的 Catalog 和
 - Session 日志携带明确 `LogSessionId`，Editor Console 不再根据 Assembly Scope 猜测来源。
 
 [下一页：Player](Inno.Player.md)
+
+`EngineHostBuilder.UseLogDelivery(LogDeliveryMode)` 显式指定 Host router 与所有 Session file sink 的后台或 Inline 交付策略；未知值在配置阶段失败。默认 Background，平台入口按实际线程能力选择。Inline 的 Session 日志在生产者调用返回前写入文件，不隐式创建日志线程。

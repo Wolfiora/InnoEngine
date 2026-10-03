@@ -2,7 +2,7 @@ using System;
 using System.Numerics;
 using Inno.Build;
 using Inno.Editor.Core;
-using Inno.Editor.ImGui.ImGuiWidget;
+using Inno.Editor.ImGui;
 using Inno.Native.ImGui;
 using EditorImGui = Inno.Editor.ImGui.ImGui;
 using EditorWidget = Inno.Editor.ImGui.ImGuiWidget.ImGuiWidget;
@@ -48,44 +48,39 @@ internal sealed class GameExportModal(ExportWindowModule window) : EditorModal
     /// </param>
     protected override void OnDraw(EditorContext context)
     {
-        float footerHeight = NativeImGui.GetFrameHeightWithSpacing() +
-                             NativeImGui.GetStyle().ItemSpacing.Y;
-        Vector2 available = NativeImGui.GetContentRegionAvail();
-        if (NativeImGui.BeginChild(
-                "##game_export_form",
-                new Vector2(0f, MathF.Max(1f, available.Y - footerHeight))))
+        EditorWidget.WrappedText(
+            "Build a standalone Player from the current project. Only imported runtime content " +
+            "is deployed; source files stay in the project.");
+        NativeImGui.SeparatorText("Application");
+        if (BeginFields("##application_fields"))
         {
-            EditorWidget.WrappedText(
-                "Build a standalone Player from the current project. Only imported runtime content " +
-                "is deployed; source files stay in the project.");
-            NativeImGui.SeparatorText("Application");
-            if (BeginFields("##application_fields"))
-            {
-                DrawReadOnly("Application ID", window.gameApplicationId);
-                DrawText("Product Name", "game_name", window.gameProductName, value => window.gameProductName = value);
-                DrawText("Persistent Data Folder", "game_data", window.gamePersistentDataPath,
-                    value => window.gamePersistentDataPath = value);
-                DrawText("Startup Scene", "game_scene", window.gameStartupScene, value => window.gameStartupScene = value);
-                NativeImGui.EndTable();
-            }
-            NativeImGui.SeparatorText("Window and Platform");
-            if (BeginFields("##platform_fields"))
-            {
-                DrawWindowSize();
-                DrawTarget();
-                NativeImGui.EndTable();
-            }
-            NativeImGui.SeparatorText("Output");
-            if (BeginFields("##output_fields"))
-            {
-                DrawText("Output Directory", "game_output", window.gameOutputDirectory, value => window.gameOutputDirectory = value);
-                NativeImGui.EndTable();
-            }
-            NativeImGui.Spacing();
-            NativeImGui.TextDisabled("Defaults: Settings > Build > Game. Application ID: Settings > Project > Identity.");
+            DrawReadOnly("Application ID", window.gameApplicationId);
+            DrawText("Product Name", "game_name", window.gameProductName, value => window.gameProductName = value);
+            DrawText("Persistent Data Folder", "game_data", window.gamePersistentDataPath,
+                value => window.gamePersistentDataPath = value);
+            DrawText("Startup Scene", "game_scene", window.gameStartupScene, value => window.gameStartupScene = value);
+            NativeImGui.EndTable();
         }
-        NativeImGui.EndChild();
-        DrawOutcome();
+        NativeImGui.SeparatorText("Window and Platform");
+        if (BeginFields("##platform_fields"))
+        {
+            DrawWindowSize();
+            DrawTarget();
+            NativeImGui.EndTable();
+        }
+        NativeImGui.SeparatorText("Output");
+        if (BeginFields("##output_fields"))
+        {
+            DrawText("Output Directory", "game_output", window.gameOutputDirectory, value => window.gameOutputDirectory = value);
+            NativeImGui.EndTable();
+        }
+        NativeImGui.Spacing();
+        EditorWidget.WrappedText("Defaults: Settings > Build > Game. Application ID: Settings > Project > Identity.");
+        if (!string.IsNullOrEmpty(window.error))
+        {
+            NativeImGui.Spacing();
+            EditorWidget.WrappedText(window.error);
+        }
         NativeImGui.Separator();
         DrawButtons();
     }
@@ -101,8 +96,7 @@ internal sealed class GameExportModal(ExportWindowModule window) : EditorModal
         {
             return false;
         }
-        NativeImGui.TableSetupColumn("Field", ImGuiTableColumnFlags.WidthFixed, 180f * EditorWidget.style.zoom);
-        NativeImGui.TableSetupColumn("Value", ImGuiTableColumnFlags.WidthStretch);
+        EditorWidget.SetupPropertyColumns();
         return true;
     }
 
@@ -110,8 +104,7 @@ internal sealed class GameExportModal(ExportWindowModule window) : EditorModal
     {
         NativeImGui.TableNextRow();
         _ = NativeImGui.TableSetColumnIndex(0);
-        NativeImGui.AlignTextToFramePadding();
-        NativeImGui.TextUnformatted(label);
+        EditorWidget.PropertyLabel(label);
         _ = NativeImGui.TableSetColumnIndex(1);
     }
 
@@ -120,7 +113,15 @@ internal sealed class GameExportModal(ExportWindowModule window) : EditorModal
         string value
     ) {
         BeginField(label);
-        NativeImGui.TextDisabled(value);
+        NativeImGui.PushStyleColor(ImGuiCol.Text, EditorPalette.textDisabled);
+        try
+        {
+            EditorWidget.WrappedText(value);
+        }
+        finally
+        {
+            NativeImGui.PopStyleColor();
+        }
     }
 
     private void DrawWindowSize()
@@ -142,7 +143,7 @@ internal sealed class GameExportModal(ExportWindowModule window) : EditorModal
         BeginField("Target");
         NativeImGui.SetNextItemWidth(-1f);
         string preview = window.GetGameTargetDisplayName(window.gameTarget);
-        if (!NativeImGui.BeginCombo("##game_target", preview))
+        if (!EditorWidget.BeginBoundedCombo("##game_target", preview))
             return;
         try
         {
@@ -151,7 +152,7 @@ internal sealed class GameExportModal(ExportWindowModule window) : EditorModal
         }
         finally
         {
-            NativeImGui.EndCombo();
+            EditorWidget.EndBoundedCombo();
         }
     }
 
@@ -162,20 +163,6 @@ internal sealed class GameExportModal(ExportWindowModule window) : EditorModal
             window.gameTarget = target;
         if (selected)
             NativeImGui.SetItemDefaultFocus();
-    }
-
-    private void DrawOutcome()
-    {
-        if (!string.IsNullOrEmpty(window.error))
-        {
-            NativeImGui.Spacing();
-            EditorWidget.WrappedText(window.error);
-        }
-        else if (!string.IsNullOrEmpty(window.status))
-        {
-            NativeImGui.Spacing();
-            EditorWidget.WrappedText(window.status);
-        }
     }
 
     private void DrawButtons()

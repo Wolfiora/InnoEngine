@@ -4,6 +4,7 @@ using System.IO;
 using System.Collections.Generic;
 
 using Inno.References;
+using Inno.Core.Logging;
 using Inno.Runtime;
 using Inno.Scene;
 
@@ -17,6 +18,25 @@ public sealed class RuntimeSessionTests : IDisposable
         Path.GetTempPath(),
         "InnoRuntimeSessionTests",
         Guid.NewGuid().ToString("N"));
+
+    [Fact]
+    public void InlineHostDeliveryPersistsSessionLogsBeforeTheProducerReturns()
+    {
+        using EngineHost host = new EngineHostBuilder()
+            .UseMetadataCache(Path.Combine(m_root, "Inline", "Metadata"))
+            .UseLogDelivery(LogDeliveryMode.Inline)
+            .Build();
+        RuntimeSessionOptions options = CreateOptions("inline", RuntimeSessionKind.Play);
+        using RuntimeSession session = host.CreateSession(options);
+
+        using (session.EnterExecutionScope())
+            Log.Info("session-inline-delivery");
+
+        string file = Assert.Single(Directory.GetFiles(Path.Combine(options.persistentDataDirectory, "Logs")));
+        using var stream = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+        using var reader = new StreamReader(stream);
+        Assert.Contains("session-inline-delivery", reader.ReadToEnd());
+    }
 
     [Fact]
     public void MultipleHostsAndSessionsKeepSceneAndTimeStateIsolated()

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -14,6 +15,7 @@ namespace Inno.Native.LibraryLoading;
 /// </summary>
 public static class NativeDllLoader
 {
+    private static readonly string S_OUTPUT_ROOT = ResolveOutputRoot();
     private static readonly Lock RESOLVER_LOCK = new();
     private static readonly HashSet<Assembly> REGISTERED_RESOLVERS = new();
 
@@ -137,7 +139,7 @@ public static class NativeDllLoader
             throw new FileNotFoundException("Native source file was not found.", fullSourcePath);
         }
 
-        string nativeRoot = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, NativeDllConstants.NATIVE_DIR_NAME));
+        string nativeRoot = Path.GetFullPath(Path.Combine(S_OUTPUT_ROOT, NativeDllConstants.NATIVE_DIR_NAME));
         string destinationPath = Path.GetFullPath(Path.Combine(nativeRoot, relativeOutputPath));
         string nativeRootPrefix = Path.TrimEndingDirectorySeparator(nativeRoot) + Path.DirectorySeparatorChar;
         StringComparison pathComparison = OperatingSystem.IsWindows()
@@ -170,7 +172,7 @@ public static class NativeDllLoader
         bool throwIfMissing
     ) {
         string? deployed = FindNativeOutputFile(fileName);
-        var repoRoot = FindRepoRoot(AppContext.BaseDirectory);
+        var repoRoot = FindRepoRoot(S_OUTPUT_ROOT);
         if (repoRoot == null)
         {
             if (deployed is not null)
@@ -198,7 +200,7 @@ public static class NativeDllLoader
             return string.Empty;
         }
 
-        var nativeRoot = Path.Combine(AppContext.BaseDirectory, NativeDllConstants.NATIVE_DIR_NAME);
+        var nativeRoot = Path.Combine(S_OUTPUT_ROOT, NativeDllConstants.NATIVE_DIR_NAME);
         Directory.CreateDirectory(nativeRoot);
 
         var srcFile = FindPreferredTargetFile(libRoot, fileName);
@@ -326,7 +328,7 @@ public static class NativeDllLoader
 
     private static IEnumerable<string> GetSearchRoots()
     {
-        var baseDir = AppContext.BaseDirectory;
+        var baseDir = S_OUTPUT_ROOT;
         var nativeRoot = Path.Combine(baseDir, NativeDllConstants.NATIVE_DIR_NAME);
         if (Directory.Exists(nativeRoot))
         {
@@ -383,6 +385,14 @@ public static class NativeDllLoader
         return normalizedPath.Contains("/windows-", StringComparison.OrdinalIgnoreCase)
             || normalizedPath.Contains("/osx-", StringComparison.OrdinalIgnoreCase)
             || normalizedPath.Contains("/linux-", StringComparison.OrdinalIgnoreCase);
+    }
+
+    [UnconditionalSuppressMessage("SingleFile", "IL3000",
+        Justification = "Assembly-local outputs serve isolated hosts; an empty bundled assembly location explicitly selects the application directory.")]
+    private static string ResolveOutputRoot()
+    {
+        string location = typeof(NativeDllLoader).Assembly.Location;
+        return string.IsNullOrEmpty(location) ? AppContext.BaseDirectory : Path.GetDirectoryName(location)!;
     }
 
     private static string NormalizePath(string path) => path.Replace('\\', '/');

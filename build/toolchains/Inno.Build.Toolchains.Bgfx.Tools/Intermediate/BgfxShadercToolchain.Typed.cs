@@ -22,6 +22,7 @@ public sealed partial class BgfxShadercToolchain
     private const byte C_SHADER_BINARY_VERSION = 11;
     private const int C_SHADER_BINARY_HEADER_SIZE = 12;
     private const int C_SHADER_UNIFORM_METADATA_SIZE = 10;
+    private static readonly UTF8Encoding S_GLSL_ENCODING = new(false, true);
     private static readonly IReadOnlyList<string> s_languages = Array.AsReadOnly(new[] { "inno.shader-language.bgfx-sc" });
 
     /// <summary>
@@ -77,12 +78,15 @@ public sealed partial class BgfxShadercToolchain
         IReadOnlyList<ShaderStageBinding> reflectedBindings;
         try
         {
-            HashSet<string> reflectedNames = ReadReflectedUniformNames(native.bytes);
+            HashSet<string> reflectedNames = ReadReflectedUniformNames(native.bytes, request.target.capabilities.backend);
             reflectedBindings = generated.bindings.Where(binding =>
             {
                 ShaderIrStageInput input = request.stage.inputs.Single(value => value.id == binding.id);
                 return input.kind == ShaderIrInputKind.Storage || reflectedNames.Contains(binding.nativeName);
             }).ToArray();
+            if (request.target.capabilities.backend == GraphicsApi.OpenGL
+                || request.target.capabilities.backend == GraphicsApi.OpenGLES)
+                native = native with { bytes = NormalizeGlslUniformTable(native.bytes, request.stage, reflectedBindings) };
         }
         catch (InvalidDataException failure)
         {
@@ -93,8 +97,10 @@ public sealed partial class BgfxShadercToolchain
         return new(native.bytes, reflectedBindings, diagnostics);
     }
 
-    private static HashSet<string> ReadReflectedUniformNames(ReadOnlySpan<byte> binary)
-    {
+    private static HashSet<string> ReadReflectedUniformNames(
+        ReadOnlySpan<byte> binary,
+        GraphicsApi backend
+    ) {
         if (binary.Length < C_SHADER_BINARY_HEADER_SIZE + sizeof(ushort))
             throw new InvalidDataException("BGFX shaderc returned a truncated shader binary header.");
         if (binary[1] != (byte)'S' || binary[2] != (byte)'H'
@@ -118,7 +124,62 @@ public sealed partial class BgfxShadercToolchain
                 throw new InvalidDataException("BGFX shader binary contains an invalid reflected uniform table.");
             offset += nameLength + C_SHADER_UNIFORM_METADATA_SIZE;
         }
+        if (backend == GraphicsApi.OpenGL || backend == GraphicsApi.OpenGLES)
+        {
+            result.Clear();
+            ReadCompiledGlslUniformNames(binary[offset..], result);
+        }
         return result;
+    }
+
+    private static void ReadCompiledGlslUniformNames(
+        ReadOnlySpan<byte> payload,
+        HashSet<string> names
+    ) {
+        RequireBinaryRange(payload, 0, sizeof(uint));
+        uint length = BinaryPrimitives.ReadUInt32LittleEndian(payload);
+        if (length > int.MaxValue - sizeof(uint) - 1)
+            throw new InvalidDataException("BGFX shaderc returned an invalid GLSL payload length.");
+        RequireBinaryRange(payload, sizeof(uint), (int)length + 1);
+        if (payload[sizeof(uint) + (int)length] != 0)
+            throw new InvalidDataException("BGFX shaderc returned an unterminated GLSL payload.");
+
+        List<BgfxSourceToken> tokens;
+        try
+        {
+            string source = S_GLSL_ENCODING.GetString(payload.Slice(sizeof(uint), (int)length));
+            tokens = BgfxSourceLexer.Tokenize(new ShaderSourceFile("bgfx-compiled-stage", source))
+                .Where(static token => token.text != "\n").ToList();
+        }
+        catch (Exception failure) when (failure is DecoderFallbackException or BgfxSourceSyntaxException)
+        {
+            throw new InvalidDataException("BGFX shaderc returned an invalid GLSL payload.", failure);
+        }
+
+        var identifierCounts = new Dictionary<string, int>(StringComparer.Ordinal);
+        foreach (BgfxSourceToken token in tokens)
+        {
+            if (token.isIdentifier)
+                identifierCounts[token.text] = identifierCounts.GetValueOrDefault(token.text) + 1;
+        }
+
+        // Desktop GLSL can retain layout qualifiers that shaderc's uniform table scanner does not recognize.
+        // A surviving declaration without any reference is also inactive when the driver links the program.
+        for (int index = 0; index < tokens.Count; index++)
+        {
+            if (tokens[index].text != "uniform")
+                continue;
+            int typeIndex = index + 1;
+            if (typeIndex < tokens.Count && tokens[typeIndex].text is "lowp" or "mediump" or "highp")
+                typeIndex++;
+            int nameIndex = typeIndex + 1;
+            if (nameIndex + 1 < tokens.Count && tokens[nameIndex].isIdentifier
+                && identifierCounts[tokens[nameIndex].text] > 1
+                && tokens[nameIndex + 1].text is ";" or "[")
+            {
+                names.Add(tokens[nameIndex].text);
+            }
+        }
     }
 
     private static void RequireBinaryRange(

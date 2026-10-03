@@ -6,7 +6,7 @@
 
 [上一页：Diagnose](Inno.Core.Diagnostics.md) · [Core 索引](README.md) · [下一页：Mathematics](Inno.Core.Mathematics.md)
 
-Logging 是基础、追加式日志系统。`LogRouter` 显式拥有一个 Host 的异步队列、过滤策略和 Sink；`Log` 只是解析当前执行上下文的脚本便利门面。Compiler、Importer 和 Validator 的可替换当前问题属于独立的 [Inno.Core.Diagnostics](Inno.Core.Diagnostics.md)。
+Logging 是基础、追加式日志系统。`LogRouter` 显式拥有一个 Host 的有界队列、过滤策略和 Sink；由 Host 显式选择 worker 或调用线程排空；核心不判断运行平台。`Log` 只是解析当前执行上下文的脚本便利门面。Compiler、Importer 和 Validator 的可替换当前问题属于独立的 [Inno.Core.Diagnostics](Inno.Core.Diagnostics.md)。
 
 ## 初始化
 
@@ -60,7 +60,17 @@ Log.Warn("Health is low: {0}", health);
 | `EnterScope()` | 将 Router 绑定到当前异步执行上下文，供脚本 `Log` 门面解析。 |
 | `Dispose()` | 停 worker、flush、清空并释放 sink。 |
 
-单个 sink 的 `Receive` 异常会被隔离并将该 sink 从 Router 原子隔离；`sinkFailed` 会报告失败，而健康 sink 继续接收日志。`Flush()` 通过异步队列中的 barrier 保证先前日志已送达，不会把常规日志调用改成同步分发；从 logging worker 自身调用会抛出 `InvalidOperationException`，避免等待自身造成死锁。
+单个 sink 的 `Receive` 异常会被隔离并将该 sink 从 Router 原子隔离；`sinkFailed` 会报告失败，而健康 sink 继续接收日志。
+失败 observer 之间也独立隔离。没有 observer 或 observer 自己失败时，stderr 仅作为次级报告渠道；
+该渠道关闭或写入失败不能终止日志 worker、阻断后续 observer 或健康 sink。需要可靠收集失败时应订阅 `sinkFailed`。
+
+`LogRouter` 构造函数的第三个参数 `deliveryMode` 接受 `Background`（默认）或 `Inline`。
+两种模式均只有一个交付执行者，均使用队列 barrier 保证 `Flush()` 等待调用前的日志完整送达。
+Inline 的并发 producer 串行交付；sink callback 中新写的日志先排队，当前 entry 交付给全部 sink 后再处理，
+不会递归进入 callback 或改变不同 sink 观察到的顺序。
+两种模式的交付 callback 均禁止调用自身 Router 的 `Flush()` 或 `Dispose()`，会明确抛出 `InvalidOperationException`。
+外部 `Dispose()` 等待当前交付完成，再释放 sink。sink 快照仅在注册、移除或隔离时重新创建。
+该行为由 Host 选择的策略决定，与浏览器或桌面平台无关。
 
 ## LogEntry 与 LogLevel
 
@@ -85,7 +95,7 @@ Log.Warn("Health is low: {0}", health);
 
 ### ConsoleLogSink
 
-`Receive` 根据等级设置 console color，并输出时间、domain/scope、category 与消息。
+`Receive` 输出时间、domain/scope、category 与消息。桌面终端根据等级设置颜色，并在写入失败时也恢复原颜色；重定向输出及浏览器、Android、iOS、tvOS 使用普通文本，不调用这些平台不支持的终端颜色 API。日志内容保留，因此渲染或构建诊断不会因颜色功能不可用而让 sink 被隔离。
 
 ### FileLogSink
 
@@ -97,14 +107,22 @@ using FileLogSink sink = new(
 ```
 
 - `C_LOG_FILE_PREFIX == "log_"`。
-- 生成文件使用 `log_<timestamp>.log` 命名并存放在调用方提供的日志目录中。
-- `Receive` 入自己的异步队列。
-- 达到 `maxFileSizeBytes` 后轮换文件。
-- 只保留最多 `maxFiles` 个匹配日志文件。
-- `Dispose()` 停止 worker 并 flush。
+- `FileLogSink(logDirectory, maxFileSizeBytes = 10 * 1024 * 1024, maxFiles = 10)` 拒绝空目录及非正预算。
+- 文件使用 `log_<UTC timestamp>_<unique ID>.log` 和 CreateNew 创建，多个 sink 或快速轮换不共用文件。
+- `Receive` 串行写入完整 entry 并 flush；队列、线程与背压统一由 `LogRouter` 拥有。文件 sink 不再有第二个队列或 delivery policy 参数。
+- 下一 entry 会超过 `maxFileSizeBytes` 时先轮换；单条超大 entry 保持完整，独占一个可超出该阈值的文件。
+- retention 保留当前文件与最近的其他文件，预算包含当前文件。其他活动 writer 锁定的旧文件不能强制删除，后续轮换会重试。
+- 写入、flush 和创建失败向调用方传播；Router 可以按统一 sink failure 机制隔离，不在隐藏线程中吞掉或抛出未处理异常。
+- `Dispose()` 等待活动写入，再关闭 writer；关闭失败明确传播。并发读取活动文件时需使用 `FileShare.ReadWrite`。
+- Retention 以 exclusive open + DeleteOnClose 清理过期文件，在支持文件锁的文件系统中保留活动 writer，关闭后下次轮换再清理。
+  保留预算属于尽力执行，锁定、权限受限或不支持共享锁的文件系统不能提供严格并发预算保证。浏览器 Player 每个虚拟文件系统只使用自身 Session 的 sink。
 
 ## 注意事项
 
-- File sink 又有独立 worker，因此必须 Dispose 才能保证最后的日志落盘。
+- Router 的 `Background` 使用 worker，`Inline` 使用调用线程；两种模式的 `Flush()` 都等待此前 entry 的文件写入完成。浏览器入口选择 Inline，文件日志位于 WASM 虚拟文件系统，游戏数据跨刷新持久化由 Storage adapter 提供。文件 sink 的 flush 不表示断电后的磁盘耐久性承诺。
 - `Debug` 不是单纯运行时过滤；非 DEBUG 构建中调用会被编译器移除。
 - 日志格式参数错误会在生产日志的一侧抛出；不要把不可信文本直接当 composite format。
+
+## 宿主能力策略
+
+`LogDeliveryMode.Background` 使用有界后台交付，`Inline` 在调用线程交付；两者保留过滤、Flush 和失败 sink 隔离。`LogRouter(queueCapacity, drainBudget, deliveryMode)` 拒绝未知枚举值。`ConsoleLogSink(useColors)` 显式控制终端颜色能力，重定向输出不改色。Host 通过 `EngineHostBuilder.UseLogDelivery(mode)` 配置唯一的引擎交付策略，不改变诊断 Replace/Clear 与追加 Log 的区别。

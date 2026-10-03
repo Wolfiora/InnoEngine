@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using Inno.Core.Logging;
 
 namespace Inno.Runtime;
 
@@ -8,6 +9,7 @@ namespace Inno.Runtime;
 /// </summary>
 public sealed class EngineHostBuilder
 {
+    private LogDeliveryMode m_logDeliveryMode = LogDeliveryMode.Background;
     private TimeSpan m_retirementTimeout = TimeSpan.FromSeconds(30);
     private string m_metadataCacheDirectory = Path.Combine(
         Path.GetTempPath(),
@@ -59,5 +61,25 @@ public sealed class EngineHostBuilder
     /// <returns>
     /// A host owned by the caller.
     /// </returns>
-    public EngineHost Build() => new(m_metadataCacheDirectory, m_retirementTimeout);
+    public EngineHost Build() => new(m_metadataCacheDirectory, m_retirementTimeout, m_logDeliveryMode);
+
+    /// <summary>
+    /// Selects the host router's delivery policy, which also schedules every session's file sink.
+    /// </summary>
+    /// <param name="deliveryMode">
+    /// Background worker or inline producer-thread delivery.
+    /// </param>
+    /// <returns>
+    /// This builder for fluent host composition.
+    /// </returns>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// The policy is undefined.
+    /// </exception>
+    public EngineHostBuilder UseLogDelivery(LogDeliveryMode deliveryMode)
+    {
+        if (!Enum.IsDefined(deliveryMode))
+            throw new ArgumentOutOfRangeException(nameof(deliveryMode));
+        m_logDeliveryMode = deliveryMode;
+        return this;
+    }
 }

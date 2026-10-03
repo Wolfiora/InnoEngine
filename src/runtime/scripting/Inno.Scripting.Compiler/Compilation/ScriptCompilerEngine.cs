@@ -38,7 +38,8 @@ internal static class ScriptCompilerEngine
         bool includeEditor,
         string? targetRuntimeDirectory,
         Action<float, string>? reportProgress,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken,
+        IAssetSourceSnapshot? sourceSnapshot = null
     ) {
         if (includeEditor == (targetRuntimeDirectory is not null))
         {
@@ -50,7 +51,21 @@ internal static class ScriptCompilerEngine
         }
         cancellationToken.ThrowIfCancellationRequested();
         reportProgress?.Invoke(0f, "Discovering project scripts...");
-        ScriptSourceSet sources = ScriptSourceSet.Discover(assets, plugins, includeEditor);
+        ScriptSourceSet sources = ScriptSourceSet.Discover(assets, plugins, includeEditor, sourceSnapshot);
+        return await Task.Run(() => CompileCapturedAsync(
+            options, sources, includeEditor, targetRuntimeDirectory, reportProgress, cancellationToken).AsTask(),
+            cancellationToken).ConfigureAwait(false);
+    }
+
+    private static async ValueTask<ScriptCompilationResult> CompileCapturedAsync(
+        ScriptCompilerOptions options,
+        ScriptSourceSet sources,
+        bool includeEditor,
+        string? targetRuntimeDirectory,
+        Action<float, string>? reportProgress,
+        CancellationToken cancellationToken
+    ) {
+        cancellationToken.ThrowIfCancellationRequested();
         var progress = new CompilationProgress(
             sources.assemblies.Sum(static assembly => assembly.sources.Count) +
             sources.assemblies.Count * 6 +
@@ -66,14 +81,16 @@ internal static class ScriptCompilerEngine
             : null;
         progress.Complete("Script API profile built.");
         progress.Begin("Resolving script references...");
-        ScriptApiReferenceSet runtimeApiReferences = ScriptApiReferenceBuilder.Build(options, runtimeApi);
+        ScriptApiReferenceSet runtimeApiReferences = ScriptApiReferenceBuilder.Build(
+            options, runtimeApi, cancellationToken: cancellationToken);
         ScriptApiReferenceSet? editorApiReferences = editorApi is null
             ? null
             : ScriptApiReferenceBuilder.Build(
                 options,
                 editorApi,
                 runtimeApi,
-                runtimeApiReferences);
+                runtimeApiReferences,
+                cancellationToken);
         progress.Complete("Script references resolved.");
         ScriptDeploymentReferenceSet? deploymentReferences = null;
         if (!includeEditor)

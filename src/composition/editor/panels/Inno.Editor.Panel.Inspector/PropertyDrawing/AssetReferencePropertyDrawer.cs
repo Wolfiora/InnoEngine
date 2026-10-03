@@ -129,7 +129,7 @@ internal sealed class AssetReferencePropertyDrawer : IPropertyDrawer, IDisposabl
         }
         finally
         {
-            NativeImGui.EndCombo();
+            EditorWidget.EndBoundedCombo();
         }
     }
 

@@ -9,7 +9,7 @@
 - `EditorConsole`：位于 `Inno.Editor.Diagnostics`，拥有有界日志、当前诊断、全局 fingerprint 分组和 Play Session 保留策略。
 - `ConsolePanel`：只读取 `IEditorConsole` 的不可变 Snapshot，负责等级过滤、折叠、详情和操作表现。
 
-当滚动条原本位于底部时，新日志会继续滚到底部；用户向上浏览后不会抢夺滚动位置。按钮、折叠三角、行距与颜色全部来自 `ImGuiWidget`、`EditorStyleMetrics` 和 `EditorPalette`。相邻 card 只使用一次标准 `ItemSpacing`，不会再叠加额外占位元素，因此展开与收起状态都保持确定、均匀的外部间距。
+Console 根 Panel 与布局 Child 不滚动，仅 entry region 承担纵向滚动，避免父子同时显示滚动条。当滚动条原本位于底部时，新日志会继续滚到底部；用户向上浏览后不会抢夺滚动位置。按钮、折叠三角、行距与颜色全部来自 `ImGuiWidget`、`EditorStyleMetrics` 和 `EditorPalette`。相邻 card 只使用一次标准 `ItemSpacing`，不会再叠加额外占位元素，因此展开与收起状态都保持确定、均匀的外部间距。
 
 内部实现中，Console entry identity 由来源种类与完整 64 位序号共同组成。普通 Log 与 Diagnostic 的计数空间彼此独立，ImGui scope 会分别压入来源、序号高位和低位，不能直接使用 `long.GetHashCode()` 代替身份；后者会让部分正负序号产生相同的 32 位值，并导致 auto-resize child 错误复用另一张 card 的布局状态。
 

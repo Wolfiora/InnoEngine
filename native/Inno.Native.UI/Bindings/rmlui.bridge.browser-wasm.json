@@ -1,0 +1,13 @@
+{
+  "BaseConfig": {
+    "Url": "file://rmlui.bridge.json"
+  },
+  "TargetPlatform": "Emscripten",
+  "TargetArchitecture": "Wasm32",
+  "OutputPath": "../obj/browser-wasm/Native",
+  "TargetSysRoot": "%EM_CACHE%/sysroot",
+  "SystemIncludeFolders": [
+    "%EM_CACHE%/sysroot/include/c++/v1",
+    "%EM_CACHE%/sysroot/include"
+  ]
+}

@@ -1,43 +1,47 @@
 # Inno.Build.SupportPacks.Core
 
-[Build 索引](README.md) · [Wiki 首页](../README.md) · [构建入口](Inno.Build.md) · [手动命令](Inno.Build.SupportPacks.md)
+[Build 索引](README.md) · [Wiki 首页](../README.md) · [内置平台组合](Inno.Build.SupportPacks.md) · [Build 管线](Inno.Build.md)
 
-## 职责与边界
+## 职责与依赖
 
-本项目承载 Player Support Pack 的发布实现与源码工作区供给器，依赖 `Inno.Build` 的目标 ID 和 Pack 校验契约。`Inno.Build` 只依赖 `IPlayerSupportPackProvisioner`，不引用 SDK、Player 项目或本项目。Editor 与 Build CLI 在 composition root 选择是否提供源码工作区供给能力。
+只拥有 Support Pack 事务和源码供给协调。依赖中立 Inno.Build 契约，目录提交复用 `Inno.Core.IO.AtomicDirectory`，不引用具体平台、Web、Native 工具链或 Editor。Host 显式注册平台 source；核心不根据 target 名称选择实现。
 
-发布器使用 `dotnet publish` 的 self-contained single-file 模式生成目标 Player，将托管宿主与 .NET runtime 合入一个可执行文件；编译专用的目标程序集放在 Support Pack 的 `References` 中，仅用于导出时编译脚本，最终游戏包不复制它们。目标 release 原生库保持独立，在隔离目录验证后原子安装。缺少 SDK、目标原生库或校验失败会明确报错；失败不交付不完整的目标目录。
+发布在 Prepare 后与完整 Validate 后分别检查取消；开始不可取消的目录安装前仍被取消时，保留原 installed pack 并清理 staging。
 
-## 公开 API
+## 所有公开 API
 
-| API | 语义 |
+| API | 稳定语义 |
 | --- | --- |
-| `PlayerSupportPackPublisher.PublishAsync` | 从引擎源码与目标 ID 构建、验证并安装一个 Support Pack，返回已安装目录。 |
-| `SourcePlayerSupportPackProvisioner` | 实现 `IPlayerSupportPackProvisioner`，在目标 Pack 缺失时调用发布器。 |
-| `SourcePlayerSupportPackProvisioner.TryCreateForHost` | 从宿主二进制目录向上查找引擎源码根；可用 `INNO_ENGINE_ROOT` 指定根目录；独立发行环境返回 `null`。 |
+| `IPlayerSupportPackSource.target` | source 负责的稳定平台 ID。 |
+| `PrepareAsync(context, cancellationToken)` | 将完整运行时和编译输入写入隔离 staging；不能替换已安装目录。 |
+| 继承的 `IPlayerSupportPackValidator.Validate(directory)` | 由平台验证所需文件和 ABI 输入。 |
+| `PlayerSupportPackBuildContext(engineRoot, stagingDirectory, dotnetHost)` 及同名只读属性 | 显式提供源码、事务目录和 SDK；不暴露已安装目录。 |
+| `PlayerSupportPackPublisher(sources)` | 冻结独立注册表，重复目标立即失败。 |
+| `PublishAsync(engineRoot, outputRoot, target, dotnetHost, cancellationToken)` | prepare → 校验 → 带回滚的目录安装，成功返回绝对目录。 |
+| `SourcePlayerSupportPackProvisioner(engineRoot, publisher)` | 使用 Host 注册的发布器供给缺失 Pack。 |
+| `TryCreateForHost(startDirectory, publisher)` | 查找源码根或 INNO_ENGINE_ROOT；独立发行 Host 返回 null。 |
+| `ProvisionAsync(target, supportPackRoot, cancellationToken)` | 实现 Inno.Build 的自动供给入口。 |
 
-## 初始化与常见工作流
+没有 protected 扩展点。实现新的 source 不修改事务核心。
 
-Host 在创建 `BuildPipeline` 时传入；Editor 导出窗口先调用 `EnsurePlayerSupportPackAsync`，完成后从下一主线程帧启动构建：
+## 常见工作流
 
 ```csharp
-IPlayerSupportPackProvisioner? provisioner =
-    SourcePlayerSupportPackProvisioner.TryCreateForHost(AppContext.BaseDirectory);
+using System;
+using Inno.Build.SupportPacks;
 
-var pipeline = new BuildPipeline(
-    assets, plugins, settings, serialization, generations, compiler,
-    supportPackRoot, gameTargets, provisioner);
+var publisher = BuiltInPlayerSupportPacks.CreatePublisher();
+var provisioner = SourcePlayerSupportPackProvisioner.TryCreateForHost(
+    AppContext.BaseDirectory,
+    publisher);
 ```
 
-已有有效 Pack 不会重新发布。已有目录但内容无效时保留目录并报告校验错误，避免掩盖损坏状态。目标目录不存在时，每个目标在同一进程内串行供给；取消会停止发布进程并清理 staging。独立发行的 Editor 应预装经过验证的 Pack，无需源码或 SDK。
+此示例同时引用内置平台组合项目。第三方 Host 可以直接 `new PlayerSupportPackPublisher(sources)`。
+Host 先调用 `BuildPipeline.EnsurePlayerSupportPackAsync`，在 Pack 缺失时通过 provisioner 准备；
+已安装但无效的 Pack 保持明确失败。之后在 authoring owner thread 调用 `BuildGameAsync`。
 
-本项目没有 `protected` 扩展点。若要提供不同的 Pack 来源，由 Host 实现 `IPlayerSupportPackProvisioner`；Pack 的部署内容仍由 `PlayerSupportPackCatalog` 验证。
+## 错误与生命周期
 
-## 生命周期与错误
-
-发布所需的 release 原生库必须已经存在于 `.lib/<component>/<target>`，SDK host 可通过 `DOTNET_HOST_PATH` 指定。发布期间仅创建重建型 staging；验证成功后才替换目标目录。失败不会改变已安装的有效 Pack。Pack 构建与验证属于 Export 前置阶段，游戏内容仍由后续的 Build Pipeline 构建和原子提交。
-
-## 相邻页面
-
-- [Inno.Build](Inno.Build.md)：Build 管线和可替换供给接口。
-- [Inno.Build.SupportPacks](Inno.Build.SupportPacks.md)：手动执行同一发布器的 CLI。
+source 抛出、取消、校验失败时删除 staging，保留原安装。只有完整候选校验成功后移动目录；候选安装失败恢复备份。
+提交后的旧备份清理失败时，明确报告已安装的新 Pack 和残留备份位置，同时保留完整新 Pack。两次目录移动需要调用方协调同一目录的读写；它们不提供文件替换式的无间隙可见性。
+SDK 由 DOTNET_HOST_PATH、DOTNET_ROOT 或 Host 安装位置确定，目标 source 检查自己的工具能力。整个过程没有 collectible 模块激活，游戏导出仍受 generation admission barrier 管理。

@@ -103,7 +103,8 @@ internal sealed class SceneViewPanel : EditorPanel
         Vector2 minimum = NativeImGui.GetCursorScreenPos();
         Vector2 maximum = minimum + new Vector2(width, height);
         ManipulationToolbarLayout toolbar = CreateManipulationToolbarLayout(minimum, maximum);
-        bool hovered = NativeImGui.IsMouseHoveringRect(minimum, maximum);
+        bool hovered = NativeImGui.IsWindowHovered(ImGuiHoveredFlags.RootAndChildWindows)
+            && NativeImGui.IsMouseHoveringRect(minimum, maximum);
         bool toolbarHovered = IsManipulationToolbarHovered(toolbar);
         _ = m_rendering.TryConfigureNavigation(
             S_KIND,
@@ -149,7 +150,8 @@ internal sealed class SceneViewPanel : EditorPanel
             drawList.ChannelsSetCurrent(2);
             toolbarOwnsPointer = DrawManipulationToolbar(toolbar);
             drawList.ChannelsSetCurrent(1);
-            gizmoOwnsPointer = !navigationOwnsPointer && DrawTransformGizmo(minimum, maximum);
+            gizmoOwnsPointer = !navigationOwnsPointer
+                && DrawTransformGizmo(minimum, maximum, hovered && !toolbarHovered);
         }
         finally
         {
@@ -929,11 +931,13 @@ internal sealed class SceneViewPanel : EditorPanel
     }
 
     private static bool IsManipulationToolbarHovered(ManipulationToolbarLayout layout)
-        => NativeImGui.IsMouseHoveringRect(layout.minimum, layout.maximum);
+        => NativeImGui.IsWindowHovered(ImGuiHoveredFlags.RootAndChildWindows)
+            && NativeImGui.IsMouseHoveringRect(layout.minimum, layout.maximum);
 
     private unsafe bool DrawTransformGizmo(
         Vector2 minimum,
-        Vector2 maximum
+        Vector2 maximum,
+        bool canInteract
     ) {
         if (!m_rendering.TryGetManipulationSpace(
                 C_VIEWPORT_ID,
@@ -981,6 +985,7 @@ internal sealed class SceneViewPanel : EditorPanel
         bool isOver;
         try
         {
+            NativeImGuizmo.Enable(canInteract || m_gestureTarget is not null);
             if (planarTranslation)
             {
                 NativeImGuizmo.SetAxisMask(
@@ -996,6 +1001,7 @@ internal sealed class SceneViewPanel : EditorPanel
         }
         finally
         {
+            NativeImGuizmo.Enable(true);
             if (planarTranslation)
             {
                 NativeImGuizmo.SetAxisMask(false, false, false);

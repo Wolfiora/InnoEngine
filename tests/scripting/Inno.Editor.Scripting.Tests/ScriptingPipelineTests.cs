@@ -2,6 +2,7 @@ using Inno.Core.Diagnostics;
 using Inno.Extensibility.Reload;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using Inno.Editor.Annotations;
 using System.IO.Compression;
@@ -41,6 +42,55 @@ public sealed class ScriptingPipelineTests : IDisposable
     private readonly ScriptingFixture m_fixture = new();
 
     public void Dispose() => m_fixture.Dispose();
+
+    [Fact]
+    public void DispatchObservationIsAvailableInRuntimeCompilationAndIdeReferences()
+    {
+        m_fixture.Write("DispatchObservation.cs", """
+            using System;
+            using InnoEngine.Events;
+            public static class DispatchObservationProbe
+            {
+                public static void Attach(
+                    EventDispatcher dispatcher,
+                    Action<Event> observer
+                ) {
+                    dispatcher.dispatched += observer;
+                }
+                public static void Detach(
+                    EventDispatcher dispatcher,
+                    Action<Event> observer
+                ) {
+                    dispatcher.dispatched -= observer;
+                }
+            }
+            """);
+        ScriptCompilationResult compilation = m_fixture.CompileRuntimeDeployment();
+        Assert.True(compilation.success, FormatDiagnostics(compilation));
+        m_fixture.compiler.GenerateProjectFiles();
+
+        foreach (string project in new[] { "Inno.GameScripts.csproj", "Inno.EditorScripts.csproj" })
+        {
+            XDocument document = XDocument.Load(Path.Combine(m_fixture.projectRoot, project));
+            bool found = false;
+            foreach (XElement reference in document.Descendants("HintPath"))
+            {
+                using FileStream stream = File.OpenRead(Path.GetFullPath(reference.Value, m_fixture.projectRoot));
+                using var executable = new PEReader(stream);
+                MetadataReader metadata = executable.GetMetadataReader();
+                foreach (TypeDefinitionHandle handle in metadata.TypeDefinitions)
+                {
+                    TypeDefinition type = metadata.GetTypeDefinition(handle);
+                    if (metadata.GetString(type.Namespace) != "InnoEngine.Events"
+                        || metadata.GetString(type.Name) != "EventDispatcher")
+                        continue;
+                    found = type.GetEvents().Any(eventHandle =>
+                        metadata.GetString(metadata.GetEventDefinition(eventHandle).Name) == "dispatched");
+                }
+            }
+            Assert.True(found, $"The IDE reference set in {project} must contain the dispatch observation event.");
+        }
+    }
 
     [Fact]
     public void ShaderPreviewOptionalInputsRemainNullableInTheLogicalAndImplementationApis()
@@ -604,23 +654,31 @@ public sealed class ScriptingPipelineTests : IDisposable
         Assert.DoesNotContain(player.compiledAssemblyNames,
             name => name.EndsWith(".Samples", StringComparison.Ordinal));
 
-        AssetPath imported = fixture.assets.ImportSample(source, _ =>
+        using AssetSampleImportTransaction import = PrepareSample(fixture, source);
+        import.BeginValidation(async (
+            sources,
+            cancellationToken
+        ) =>
         {
-            ScriptCompilationResult candidate = fixture.Compile();
+            ScriptCompilationResult candidate = await fixture.compiler.CompileAuthoringGenerationAsync(
+                cancellationToken: cancellationToken, sourceSnapshot: sources);
             Assert.True(candidate.success, FormatDiagnostics(candidate));
         });
+        Assert.True(SpinWait.SpinUntil(() => import.isValidationComplete, 60000));
+        import.Commit();
+        AssetPath imported = import.target;
 
-        Assert.Equal(AssetPath.Project("tests.samples-Starter"), imported);
+        Assert.Equal(AssetPath.Project("~Starter"), imported);
         Assert.True(File.Exists(Path.Combine(
             fixture.projectRoot,
             "Assets",
-            "tests.samples-Starter",
+            "~Starter",
             "StarterBehavior.cs")));
         Assert.DoesNotContain("ce3b52c6-2a07-42ea-b632-a307a0ef7407",
-            File.ReadAllText(Path.Combine(fixture.projectRoot, "Assets", "tests.samples-Starter", "StarterBehavior.cs")),
+            File.ReadAllText(Path.Combine(fixture.projectRoot, "Assets", "~Starter", "StarterBehavior.cs")),
             StringComparison.OrdinalIgnoreCase);
         Assert.True(fixture.assets.TryGetInfo(
-            AssetPath.Project("tests.samples-Starter/StarterBehavior.cs"),
+            AssetPath.Project("~Starter/StarterBehavior.cs"),
             out AssetInfo? importedInfo));
         Assert.NotEqual(sourcePersistentId, Assert.IsType<AssetInfo>(importedInfo).persistentId);
         Assert.True(fixture.assets.TryGetFileSystemEntry(imported, out AssetFileEntry importedDirectory));
@@ -632,7 +690,7 @@ public sealed class ScriptingPipelineTests : IDisposable
         fixture.compiler.GenerateProjectFiles();
         string gameProject = File.ReadAllText(
             Path.Combine(fixture.projectRoot, "Inno.GameScripts.csproj"));
-        Assert.Contains("Compile Include=\"Assets/tests.samples-Starter/StarterBehavior.cs\"", gameProject);
+        Assert.Contains("Compile Include=\"Assets/~Starter/StarterBehavior.cs\"", gameProject);
     }
 
     [Fact]
@@ -641,15 +699,427 @@ public sealed class ScriptingPipelineTests : IDisposable
         using var fixture = new ScriptingFixture((root, serialization) =>
             WriteSamplePlugin(root, serialization, "public sealed class BrokenSample { this is invalid; }"));
         AssetPath source = new(new AssetSourceId("tests.samples"), "~Starter");
-        Assert.Throws<InvalidOperationException>(() => fixture.assets.ImportSample(source, _ =>
+        using AssetSampleImportTransaction import = PrepareSample(fixture, source);
+        import.BeginValidation(async (
+            sources,
+            cancellationToken
+        ) =>
         {
-            ScriptCompilationResult candidate = fixture.Compile();
+            ScriptCompilationResult candidate = await fixture.compiler.CompileAuthoringGenerationAsync(
+                cancellationToken: cancellationToken, sourceSnapshot: sources);
             if (!candidate.success)
                 throw new InvalidOperationException(FormatDiagnostics(candidate));
-        }));
-        Assert.False(Directory.Exists(Path.Combine(fixture.projectRoot, "Assets", "tests.samples-Starter")));
+        });
+        Assert.True(SpinWait.SpinUntil(() => import.isValidationComplete, 60000));
+        Assert.Throws<InvalidOperationException>(() => import.Commit());
+        new Inno.Core.Execution.RetirementBarrier("Test sample import").Wait(import.Rollback);
+        Assert.False(Directory.Exists(Path.Combine(fixture.projectRoot, "Assets", "~Starter")));
         Assert.False(fixture.assets.TryGetFileSystemEntry(
-            AssetPath.Project("tests.samples-Starter"), out _));
+            AssetPath.Project("~Starter"), out _));
+    }
+
+    [Fact]
+    public void SampleImportPreservesEveryLeadingTildeAndRejectsDestinationCollisions()
+    {
+        AssetPath source = new(new AssetSourceId("tests.samples"), "Samples/~~~Starter");
+        Assert.Equal("~~~Starter", AssetSample.GetImportName(source));
+        Assert.True(AssetSample.IsRuntimeExcluded(AssetPath.Project("~~~Starter/File.cs"), false));
+        Assert.False(AssetSample.Contains(AssetPath.Project("~~~Starter/File.cs"), false));
+        using var fixture = new ScriptingFixture(WriteSamplePlugin);
+        fixture.assets.CreateDirectory(AssetPath.Project("~Starter"));
+        Assert.Throws<IOException>(() => fixture.assets.PrepareSampleImport(
+            new AssetPath(new AssetSourceId("tests.samples"), "~Starter")));
+        fixture.host.modules.generations.EnsureReady("retry after rejected import");
+    }
+
+    [Fact]
+    public void SampleValidationReturnsToOwnerWhileWorkIsPendingAndPublishesExactlyOnce()
+    {
+        using var fixture = new ScriptingFixture(WriteSamplePlugin);
+        int notifications = 0;
+        fixture.assets.Changed += _ => notifications++;
+        using AssetSampleImportTransaction import = PrepareSample(
+            fixture, new AssetPath(new AssetSourceId("tests.samples"), "~Starter"));
+        long revision = fixture.assets.revision;
+        Assert.False(fixture.assets.TryGetFileSystemEntry(import.target, out _));
+        var completion = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        import.BeginValidation((
+            _,
+            _
+        ) => new ValueTask(completion.Task));
+        for (int frame = 0; frame < 30; frame++)
+        {
+            fixture.assets.Update();
+            Assert.False(import.isValidationComplete);
+            Assert.Equal(0, notifications);
+            Assert.Equal(revision, fixture.assets.revision);
+        }
+        Assert.Throws<InvalidOperationException>(() => import.Commit());
+        Assert.Throws<InvalidOperationException>(() => fixture.assets.CreateDirectory(AssetPath.Project("Concurrent")));
+        Assert.Throws<InvalidOperationException>(() => fixture.host.modules.generations.EnsureReady("reload while importing"));
+        completion.SetResult();
+        Assert.True(SpinWait.SpinUntil(() => import.isValidationComplete, 60000));
+        import.Commit();
+        Assert.Equal(1, notifications);
+        Assert.Equal(revision + 1, fixture.assets.revision);
+        Assert.Throws<InvalidOperationException>(() => import.Commit());
+        fixture.host.modules.generations.EnsureReady("reload after import");
+    }
+
+    [Fact]
+    public void SampleCancellationRetainsDependenciesUntilUncooperativeValidationDrains()
+    {
+        using var fixture = new ScriptingFixture(WriteSamplePlugin);
+        int notifications = 0;
+        fixture.assets.Changed += _ => notifications++;
+        using AssetSampleImportTransaction import = PrepareSample(
+            fixture, new AssetPath(new AssetSourceId("tests.samples"), "~Starter"));
+        var completion = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        import.BeginValidation((
+            _,
+            _
+        ) => new ValueTask(completion.Task));
+        import.Cancel();
+        Assert.Throws<Inno.Core.Execution.RetirementPendingException>(() => import.Rollback());
+        Assert.Throws<Inno.Core.Execution.RetirementPendingException>(() => fixture.assets.Dispose());
+        Assert.True(fixture.assets.isInitialized);
+        Assert.Throws<InvalidOperationException>(() => fixture.host.modules.generations.EnsureReady("reload before drain"));
+        completion.SetResult();
+        Assert.True(SpinWait.SpinUntil(() => import.isValidationComplete, 60000));
+        new Inno.Core.Execution.RetirementBarrier("Test sample import").Wait(import.Rollback);
+        Assert.False(fixture.assets.TryGetFileSystemEntry(import.target, out _));
+        Assert.False(File.Exists(Path.Combine(fixture.projectRoot, "Assets", "~Starter.imeta")));
+        Assert.Equal(0, notifications);
+        fixture.host.modules.generations.EnsureReady("reload after canceled work drains");
+    }
+
+    [Fact]
+    public void SampleHistoryFinalizationFailureRollsBackWithoutPublication()
+    {
+        using var fixture = new ScriptingFixture(WriteSamplePlugin);
+        int notifications = 0;
+        fixture.assets.Changed += _ => notifications++;
+        using AssetSampleImportTransaction import = PrepareSample(
+            fixture, new AssetPath(new AssetSourceId("tests.samples"), "~Starter"));
+        import.BeginValidation((
+            _,
+            _
+        ) => ValueTask.CompletedTask);
+        Assert.True(SpinWait.SpinUntil(() => import.isValidationComplete, 60000));
+        Assert.Throws<IOException>(() => import.Commit(_ => throw new IOException("History spill failed.")));
+        new Inno.Core.Execution.RetirementBarrier("Test sample import").Wait(import.Rollback);
+        Assert.Equal(0, notifications);
+        Assert.False(fixture.assets.TryGetFileSystemEntry(import.target, out _));
+        fixture.host.modules.generations.EnsureReady("continue after finalization failure");
+    }
+
+    [Fact]
+    public void SampleCopyCancellationLeavesNoProjectOrTransactionDirectory()
+    {
+        using var fixture = new ScriptingFixture(WriteSamplePlugin);
+        using AssetSampleImportTransaction import = fixture.assets.PrepareSampleImport(
+            new AssetPath(new AssetSourceId("tests.samples"), "~Starter"));
+        import.Cancel();
+        Assert.True(SpinWait.SpinUntil(() =>
+        {
+            try { import.Rollback(); return true; }
+            catch (Inno.Core.Execution.RetirementPendingException) { return false; }
+        }, 15000));
+        Assert.False(Directory.Exists(Path.Combine(fixture.projectRoot, "Assets", "~Starter")));
+        string transactions = Path.Combine(fixture.assets.libraryRoot, "AssetDatabase", "Transactions");
+        Assert.True(!Directory.Exists(transactions) || !Directory.EnumerateFileSystemEntries(transactions).Any());
+        fixture.host.modules.generations.EnsureReady("continue after copy cancellation");
+    }
+
+    [Fact]
+    public void PendingAutomaticCompilationDefersUntilSampleRollback()
+    {
+        using var fixture = new ScriptingFixture(WriteSamplePlugin);
+        using ScriptReloadHost reload = fixture.CreateReloadHost(autoCompile: true);
+        reload.Start();
+        using AssetSampleImportTransaction import = fixture.assets.PrepareSampleImport(
+            new AssetPath(new AssetSourceId("tests.samples"), "~Starter"));
+        Assert.False(reload.TryCompilePending(out Task<ScriptCompilationResult>? pending));
+        Assert.Null(pending);
+        Assert.True(reload.isCompilationPending);
+        import.Cancel();
+        Assert.True(SpinWait.SpinUntil(() =>
+        {
+            try { import.Rollback(); return true; }
+            catch (Inno.Core.Execution.RetirementPendingException) { return false; }
+        }, 15000));
+        Assert.True(reload.TryCompilePending(out Task<ScriptCompilationResult>? compilation));
+        Assert.True(SpinWait.SpinUntil(() => compilation!.IsCompleted, 15000));
+        Assert.True(compilation!.IsCompletedSuccessfully);
+        Assert.True(reload.lastCompilation!.success);
+    }
+
+    [Fact]
+    public void EditorSampleImportUsesSharedModalAndUndoRedo()
+    {
+        using var fixture = new ScriptingFixture(WriteSamplePlugin);
+        using EditorInteractionRuntime runtime = fixture.CreateEditorRuntime();
+        runtime.Start();
+        IEditorScriptCompilation scripting = Assert.IsAssignableFrom<IEditorScriptCompilation>(ScriptingCompilationProbe.compilation);
+        PumpEditorUntil(fixture, runtime, () => scripting.state == EditorScriptCompilationState.Ready, () => scripting.status);
+        Assert.True(fixture.assets.TryGetFileSystemEntry(
+            new AssetPath(new AssetSourceId("tests.samples"), "~Starter"), out AssetFileEntry sample));
+        Assert.True(runtime.interactions.For("panel/asset.file-browser", sample).Execute("file-browser/import-sample"));
+        EditorModalExtension modal = runtime.modals.Single(value => value.id == "asset-sample-import.progress");
+        Assert.True(modal.TryGetPresentation(out EditorModalExtension.Presentation presentation));
+        Assert.True(presentation.isVisible);
+        Assert.True(presentation.blocksInteraction);
+        Assert.False(presentation.canMove);
+        EditorModalExtension compilationModal = runtime.modals.Single(value => value.id == "scripting.compilation");
+        Assert.True(compilationModal.TryGetPresentation(out EditorModalExtension.Presentation compilationPolicy));
+        Assert.Equal(compilationPolicy.allowScrolling, presentation.allowScrolling);
+        PumpEditorUntil(fixture, runtime,
+            () => modal.TryGetPresentation(out EditorModalExtension.Presentation state) && !state.isVisible,
+            () => scripting.status);
+        Assert.True(fixture.assets.TryGetFileSystemEntry(AssetPath.Project("~Starter"), out _));
+        Assert.True(runtime.interactions.history.Undo().succeeded);
+        Assert.False(fixture.assets.TryGetFileSystemEntry(AssetPath.Project("~Starter"), out _));
+        Assert.True(runtime.interactions.history.Redo().succeeded);
+        Assert.True(fixture.assets.TryGetFileSystemEntry(AssetPath.Project("~Starter"), out _));
+    }
+
+    [Fact]
+    public void SampleTransformRunsOnWorkerAndEditorStopRetainsPendingImport()
+    {
+        using var fixture = new ScriptingFixture(WriteSamplePlugin);
+        using EditorInteractionRuntime runtime = fixture.CreateEditorRuntime();
+        runtime.Start();
+        IEditorScriptCompilation scripting = Assert.IsAssignableFrom<IEditorScriptCompilation>(ScriptingCompilationProbe.compilation);
+        PumpEditorUntil(fixture, runtime, () => scripting.state == EditorScriptCompilationState.Ready, () => scripting.status);
+        using var control = new ControlledSampleSourceRewriter.Control();
+        ControlledSampleSourceRewriter.current = control;
+        try
+        {
+            Assert.True(fixture.assets.TryGetFileSystemEntry(
+                new AssetPath(new AssetSourceId("tests.samples"), "~Starter"), out AssetFileEntry sample));
+            Assert.True(runtime.interactions.For("panel/asset.file-browser", sample).Execute("file-browser/import-sample"));
+            Assert.True(control.started.Wait(TimeSpan.FromSeconds(5)));
+            Assert.NotEqual(Environment.CurrentManagedThreadId, control.workerThread);
+            for (int frame = 0; frame < 30; frame++)
+                runtime.Update(new EditorFrame(1f / 60f, frame / 60f, true));
+            Assert.False(fixture.assets.TryGetFileSystemEntry(AssetPath.Project("~Starter"), out _));
+            Task shutdownObserver = Task.Run(() =>
+            {
+                try
+                {
+                    Assert.True(control.canceled.Wait(TimeSpan.FromSeconds(5)));
+                    Assert.True(fixture.assets.isInitialized);
+                    Assert.Throws<InvalidOperationException>(() => fixture.host.modules.generations.EnsureReady("retire scripting before sample work"));
+                }
+                finally
+                {
+                    control.release.Set();
+                }
+            });
+            runtime.Dispose();
+            Assert.True(SpinWait.SpinUntil(() => shutdownObserver.IsCompleted, 15000));
+            Assert.True(shutdownObserver.IsCompletedSuccessfully, shutdownObserver.Exception?.ToString());
+        }
+        finally
+        {
+            control.release.Set();
+            ControlledSampleSourceRewriter.current = null;
+            Assert.True(SpinWait.SpinUntil(() =>
+            {
+                try { runtime.Dispose(); return true; }
+                catch (Inno.Core.Execution.RetirementPendingException) { return false; }
+            }, 15000));
+        }
+        Assert.False(Directory.Exists(Path.Combine(fixture.projectRoot, "Assets", "~Starter")));
+        fixture.host.modules.generations.Wait();
+        fixture.host.modules.generations.EnsureReady("continue after editor sample retirement");
+    }
+
+    [Fact]
+    public void SampleDirectoryMetadataRemapsNestedImportSettingsIdentities()
+    {
+        Guid sourceId = Guid.Parse("75f6a70b-93b2-47f0-8747-cc359474b7a3");
+        using var fixture = new ScriptingFixture((
+            root,
+            serialization
+        ) =>
+        {
+            WriteSamplePlugin(root, serialization);
+            string package = Path.Combine(root, "Plugins", "samples.iplugin");
+            using var archive = ZipFile.Open(package, ZipArchiveMode.Update);
+            archive.GetEntry("Assets/~Starter.imeta")!.Delete();
+            WritePluginPackageEntry(archive, "Assets/~Starter.imeta", serialization.Serialize(new ScriptingAssetSourceMeta
+            {
+                persistentId = Guid.Parse("7726b1d2-9aee-4d2c-a865-2fd53155095f"),
+                sourceKind = (int)AssetSourceKind.Directory,
+                importerSettingsBytes = serialization.Serialize(new SampleIdentitySettings { referenceId = sourceId })
+            }));
+        });
+        using AssetSampleImportTransaction import = PrepareSample(
+            fixture, new AssetPath(new AssetSourceId("tests.samples"), "~Starter"));
+        import.BeginValidation((
+            sources,
+            _
+        ) =>
+        {
+            Assert.True(sources.TryGetInfo(AssetPath.Project("~Starter/StarterBehavior.cs"), out AssetInfo? info));
+            ScriptingAssetSourceMeta metadata = fixture.host.serialization.Deserialize<ScriptingAssetSourceMeta>(
+                File.ReadAllBytes(Path.Combine(fixture.projectRoot, "Assets", "~Starter.imeta")));
+            SampleIdentitySettings settings = fixture.host.serialization.Deserialize<SampleIdentitySettings>(metadata.importerSettingsBytes);
+            Assert.Equal(info!.persistentId, settings.referenceId);
+            Assert.NotEqual(sourceId, settings.referenceId);
+            return ValueTask.CompletedTask;
+        });
+        Assert.True(SpinWait.SpinUntil(() => import.isValidationComplete, 60000));
+        import.Commit();
+    }
+
+    [Fact]
+    public void SampleAssetPreimportRunsOnWorkerAndReceivesCancellation()
+    {
+        using var fixture = new ScriptingFixture((
+            root,
+            serialization
+        ) =>
+        {
+            WriteSamplePlugin(root, serialization);
+            using var package = ZipFile.Open(Path.Combine(root, "Plugins", "samples.iplugin"), ZipArchiveMode.Update);
+            WritePluginPackageEntry(package, "Assets/~Starter/Slow.samplebusy", System.Text.Encoding.UTF8.GetBytes("sample"));
+            WritePluginPackageEntry(package, "Assets/~Starter/Slow.samplebusy.imeta", serialization.Serialize(new ScriptingAssetSourceMeta
+            {
+                persistentId = Guid.Parse("587849fc-777c-4501-a1b2-ec042ca40314"),
+                sourceKind = (int)AssetSourceKind.File,
+                importerId = "tests.scripting.controlled-sample-asset"
+            }));
+        });
+        using var control = new ControlledSampleAssetImporter.Control();
+        ControlledSampleAssetImporter.current = control;
+        AssetSampleImportTransaction import = fixture.assets.PrepareSampleImport(
+            new AssetPath(new AssetSourceId("tests.samples"), "~Starter"));
+        try
+        {
+            Assert.True(SpinWait.SpinUntil(() =>
+            {
+                Assert.False(import.Advance());
+                return control.started.IsSet;
+            }, 15000));
+            Assert.NotEqual(Environment.CurrentManagedThreadId, control.workerThread);
+            long revision = fixture.assets.revision;
+            for (int frame = 0; frame < 30; frame++)
+            {
+                fixture.assets.Update();
+                Assert.False(import.Advance());
+                Assert.False(fixture.assets.TryGetFileSystemEntry(import.target, out _));
+                Assert.Equal(revision, fixture.assets.revision);
+            }
+            import.Cancel();
+            Assert.True(control.canceled.Wait(TimeSpan.FromSeconds(5)));
+        }
+        finally
+        {
+            new Inno.Core.Execution.RetirementBarrier("Test sample preimport").Wait(import.Dispose);
+            ControlledSampleAssetImporter.current = null;
+        }
+        Assert.False(Directory.Exists(Path.Combine(fixture.projectRoot, "Assets", "~Starter")));
+        Assert.False(fixture.assets.TryGetFileSystemEntry(import.target, out _));
+        fixture.host.modules.generations.EnsureReady("continue after asset preimport cancellation");
+    }
+
+    [Fact]
+    public void SampleCompilerReferencePreparationRunsOnWorker()
+    {
+        using var fixture = new ScriptingFixture(WriteSamplePlugin);
+        using AssetSampleImportTransaction import = PrepareSample(
+            fixture, new AssetPath(new AssetSourceId("tests.samples"), "~Starter"));
+        using var progress = new CompilationGate();
+        try
+        {
+            import.BeginValidation(async (
+                sources,
+                cancellationToken
+            ) =>
+            {
+                ScriptCompilationResult result = await fixture.compiler.CompileAuthoringGenerationAsync(
+                    progress, cancellationToken, sources).ConfigureAwait(false);
+                Assert.True(result.success, FormatDiagnostics(result));
+            });
+            Assert.True(progress.started.Wait(TimeSpan.FromSeconds(5)));
+            Assert.NotEqual(Environment.CurrentManagedThreadId, progress.workerThread);
+            for (int frame = 0; frame < 30; frame++)
+            {
+                fixture.assets.Update();
+                Assert.False(import.isValidationComplete);
+                Assert.False(fixture.assets.TryGetFileSystemEntry(import.target, out _));
+            }
+        }
+        finally
+        {
+            progress.release.Set();
+            Assert.True(SpinWait.SpinUntil(() => import.isValidationComplete, 60000));
+        }
+        import.Commit();
+        Assert.True(fixture.assets.TryGetFileSystemEntry(import.target, out _));
+    }
+
+    /// <summary>
+    /// Verifies nonblocking watcher suspension and reconciliation after successful or canceled imports.
+    /// </summary>
+    /// <param name="commit">
+    /// Whether the candidate is committed rather than rolled back.
+    /// </param>
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void SampleIndexingDoesNotWaitForWatcherQuietPeriod(bool commit)
+    {
+        using var fixture = new ScriptingFixture(
+            WriteSamplePlugin, enableFileSystemWatcher: true, fileWatcherFlushDelayMs: 3000);
+        AssetSampleImportTransaction import = fixture.assets.PrepareSampleImport(
+            new AssetPath(new AssetSourceId("tests.samples"), "~Starter"));
+        try
+        {
+            TimeSpan maximumAdvance = TimeSpan.Zero;
+            bool indexed = SpinWait.SpinUntil(() =>
+            {
+                Stopwatch frame = Stopwatch.StartNew();
+                bool ready = import.Advance();
+                if (frame.Elapsed > maximumAdvance)
+                    maximumAdvance = frame.Elapsed;
+                return ready;
+            }, 15000);
+            Assert.True(indexed);
+            Assert.True(maximumAdvance < TimeSpan.FromSeconds(2),
+                $"Owner-thread Advance waited {maximumAdvance} with a three-second watcher quiet period.");
+            fixture.Write("External.txt", "Changed while watching was paused.");
+            Assert.False(fixture.assets.TryGetFileSystemEntry(AssetPath.Project("External.txt"), out _));
+            if (commit)
+            {
+                import.BeginValidation(static (
+                    _,
+                    _
+                ) => ValueTask.CompletedTask);
+                Assert.True(import.isValidationComplete);
+                import.Commit();
+            }
+            else
+                new Inno.Core.Execution.RetirementBarrier("Test canceled watched sample").Wait(import.Rollback);
+            fixture.assets.Update();
+            Assert.True(fixture.assets.TryGetFileSystemEntry(AssetPath.Project("External.txt"), out _));
+            Assert.Equal(commit, fixture.assets.TryGetFileSystemEntry(AssetPath.Project("~Starter"), out _));
+        }
+        finally
+        {
+            new Inno.Core.Execution.RetirementBarrier("Test watched sample import").Wait(import.Dispose);
+        }
+    }
+
+    private static AssetSampleImportTransaction PrepareSample(
+        ScriptingFixture fixture,
+        AssetPath source
+    ) {
+        AssetSampleImportTransaction import = fixture.assets.PrepareSampleImport(source);
+        Assert.True(SpinWait.SpinUntil(() => import.Advance(), 15000));
+        return import;
     }
 
     [Fact]
@@ -1637,6 +2107,38 @@ public sealed class ScriptingPipelineTests : IDisposable
         };
     }
 
+    private sealed class CompilationGate : IProgress<ScriptCompilationProgress>, IDisposable
+    {
+        internal ManualResetEventSlim started { get; } = new();
+        internal ManualResetEventSlim release { get; } = new();
+        internal int workerThread { get; private set; }
+
+        /// <summary>
+        /// Suspends reference preparation to verify that no Editor frame waits for the compiler.
+        /// </summary>
+        /// <param name="value">
+        /// The real compiler progress callback.
+        /// </param>
+        public void Report(ScriptCompilationProgress value)
+        {
+            if (value.stage != "Building the script API profile...")
+                return;
+            workerThread = Environment.CurrentManagedThreadId;
+            started.Set();
+            if (!release.Wait(TimeSpan.FromSeconds(15)))
+                throw new TimeoutException("The test-owned compilation gate was not released.");
+        }
+
+        /// <summary>
+        /// Releases the test-owned synchronization handles after compilation drains.
+        /// </summary>
+        public void Dispose()
+        {
+            started.Dispose();
+            release.Dispose();
+        }
+    }
+
     private sealed class ProgressRecorder : IProgress<ScriptCompilationProgress>
     {
         internal List<ScriptCompilationProgress> values { get; } = [];
@@ -1763,8 +2265,10 @@ internal sealed class ScriptingFixture : IDisposable
     private bool m_disposed;
 
     internal ScriptingFixture(
-        Action<string, SerializationRegistry>? configureProject = null)
-    {
+        Action<string, SerializationRegistry>? configureProject = null,
+        bool enableFileSystemWatcher = false,
+        int fileWatcherFlushDelayMs = 100
+    ) {
         projectRoot = Path.Combine(
             Path.GetTempPath(),
             "InnoScriptingPipelineTests",
@@ -1793,7 +2297,8 @@ internal sealed class ScriptingFixture : IDisposable
             host.logs,
             options with
             {
-                enableFileSystemWatcher = false,
+                enableFileSystemWatcher = enableFileSystemWatcher,
+                fileWatcherFlushDelayMs = fileWatcherFlushDelayMs,
                 sourceMounts =
                 [
                     .. options.sourceMounts!,
@@ -1994,6 +2499,15 @@ internal sealed class ScriptingFixture : IDisposable
         if (Directory.Exists(projectRoot))
             Directory.Delete(projectRoot, recursive: true);
     }
+}
+
+internal sealed class SampleIdentitySettings : ISerializable
+{
+    /// <summary>
+    /// Gets or sets one neutral identity stored inside an import settings payload.
+    /// </summary>
+    [SerializableProperty]
+    public Guid referenceId { get; set; }
 }
 
 internal sealed class ScriptingAssetSourceMeta : ISerializable

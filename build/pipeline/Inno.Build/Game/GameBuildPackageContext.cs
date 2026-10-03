@@ -11,11 +11,13 @@ public sealed class GameBuildPackageContext
         BuildProfile profile,
         string supportPackDirectory,
         string contentDirectory,
+        string runtimeAssemblyDirectory,
         string outputDirectory
     ) {
         this.profile = profile;
         this.supportPackDirectory = supportPackDirectory;
         this.contentDirectory = contentDirectory;
+        this.runtimeAssemblyDirectory = runtimeAssemblyDirectory;
         this.outputDirectory = outputDirectory;
     }
 
@@ -33,6 +35,11 @@ public sealed class GameBuildPackageContext
     /// Gets the source-free packaged content directory to deploy.
     /// </summary>
     public string contentDirectory { get; }
+
+    /// <summary>
+    /// Gets the frozen, source-free runtime assemblies for platform linkers that require static inclusion.
+    /// </summary>
+    public string runtimeAssemblyDirectory { get; }
 
     /// <summary>
     /// Gets the empty staging parent where the target must create exactly one output.

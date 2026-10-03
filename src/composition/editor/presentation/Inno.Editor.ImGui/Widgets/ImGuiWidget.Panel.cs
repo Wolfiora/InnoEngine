@@ -251,8 +251,12 @@ public static partial class ImGuiWidget
                 (int)ImGuiButtonFlagsPrivate.AllowOverlap |
                 (int)ImGuiButtonFlagsPrivate.NoNavFocus |
                 (int)ImGuiButtonFlagsPrivate.PressedOnClickRelease);
-            bool mouseHovered = NativeImGui.IsMouseHoveringRect(itemMinimum, itemMaximum);
-            bool pressed = ImGuiP.ItemAdd(itemBounds, itemId) &&
+            ImGuiWindowPtr hoveredWindow = NativeImGui.GetCurrentContext().HoveredWindow;
+            bool hostHovered = hoveredWindow != ImGuiWindowPtr.Null &&
+                               hoveredWindow.RootWindowDockTree == dockNode.HostWindow.RootWindowDockTree;
+            bool mouseHovered = hostHovered && NativeImGui.IsMouseHoveringRect(itemMinimum, itemMaximum);
+            bool itemAdded = ImGuiP.ItemAdd(itemBounds, itemId);
+            bool pressed = hostHovered && itemAdded &&
                            ImGuiP.ButtonBehavior(itemBounds, itemId, ref hovered, ref held, buttonFlags);
             hovered |= mouseHovered;
             pressed |= mouseHovered && NativeImGui.IsMouseClicked(ImGuiMouseButton.Left);

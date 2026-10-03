@@ -858,3 +858,23 @@ ScriptReloadHost 关闭前先等待共享 GenerationCoordinator 完成上一批 
 自动编译必须区分源输入变化和当前候选的发布通知回声，不能由 Assembly/Asset Catalog 自身重新发布而无限排队。Editor 编译票据与进度 UI 也参与完整 GC 完成语义：先发布、后回收、最后成功；外部边界已经推进完成屏障时，Editor 仍须完成 deferred ticket。退休失败显式进入 Failed 并解除忙碌弹窗，不能被遗留 compilation request 覆盖，也不能因关闭弹窗就放开 Faulted Host 门禁。
 
 Editor 菜单的单一 `Reload Scripts` 只排队变化感知的脚本重编译；没有变化时不创建新 ALC，有变化时仍通过同一个 candidate transaction 和 Full GC → Finalizers → Full GC 的卸载屏障。Rendering 的帧级诊断只描述当前帧失败，下一帧恢复后按 issue identity 撤销；Render generation/extension 候选失败仍保持独立的长期问题，直到对应候选恢复。单文件 Player 中框架程序集可能不列入 `TRUSTED_PLATFORM_ASSEMBLIES`，ModuleHost 只接受默认 ALC 内、具有已知框架强签名的 System/Microsoft.Win32 程序集作为该场景的 BCL 契约。
+
+## 2026-10-02 宿主加载上下文
+
+ModuleHost 的宿主目录、依赖预载与共享程序集解析以 `typeof(ModuleHost).Assembly` 所属 ALC 为准。隔离 MSBuild Task 不从默认 ALC 引入第二份引擎契约；框架程序集仍通过受信任的默认 ALC 解析。浏览器静态链接入口和桌面 collectible 激活使用同一个 ModuleHost，不改变 candidate、退休或 Faulted 的行为。
+
+`HostLoadContextTests.IsolatedHostDiscoversItsOwnTypesAndReleasesItsContext` 通过实际隔离 ALC 中的公开 ModuleHost/TypeCatalog 验证类型归属和完整释放；Full GC → Finalizers → Full GC 与弱 monitor 必须通过。相关实现与实测边界见 [共享宿主重构验收](WEB_HOST_REFACTOR_ACCEPTANCE_2026_10_02.md)。
+
+## 2026-10-02 导出任务退休
+
+Editor Export 停止必须等准备、构建和取消后的清理任务全部完成，才释放取消源和依赖服务。
+Module 复用现有 Pending/退休屏障；退出时完成的 Support Pack 准备不得启动新构建。
+已完成但仍报告 `RetirementPendingException` 的任务不能作为普通失败清空。
+
+
+## 2026-10-03 Sample 导入的共享事务边界
+
+Sample 后台快照复用 generation read lease、Serialization generation 和 Core LifetimeScope。后台候选 Catalog/导入/索引完成后，owner-thread 采用与发布复用现有 AssetSourceMountTransaction / ReferenceRecoveryTransaction，不新增 resolver 或候选资产数据库；preflight 通过 IAssetSourceSnapshot 捕获编译输入，成功前不切换活动索引或 Identity。
+
+取消 / Editor stop 必须先 drain，再 rollback、完成后台私有目录清理并释放租约。Sample Module 的 stop 先于 Scripting，读租约期间自动编译保留请求并延后；Faulted 或退休 timeout 不能清空仍被任务使用的 dependency。History 只保存 remap 后的目录、sidecar 和中立 archive bytes。
+已经完成但报告 Pending ownership 的后台任务必须保留为 Core lifetime 的失败任务并 Fault Host，不能转换成普通业务失败后释放其 generation。普通验证失败与取消只在后台消费者已经结束时进入可恢复 rollback。

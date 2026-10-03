@@ -15,6 +15,9 @@
     <ProjectReference Include="..\..\..\src\foundation\core\Inno.Core.Input\Inno.Core.Input.csproj" PrivateAssets="compile" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="../../../src/composition/shell/Inno.Shell/Inno.Shell.csproj" />
+  </ItemGroup>
+  <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
     <PackageReference Include="xunit" Version="2.6.6" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.5.6">

@@ -28,6 +28,7 @@ public sealed class CSharpSampleSourceRewriter : IAssetSampleSourceRewriter
         foreach (string path in Directory.GetFiles(context.stagedRoot, "*.cs", SearchOption.AllDirectories)
                      .Order(StringComparer.Ordinal))
         {
+            context.cancellationToken.ThrowIfCancellationRequested();
             string relative = Path.GetRelativePath(context.stagedRoot, path).Replace('\\', '/');
             if (!context.TryGetSourceIdentity(relative, out Guid oldSourceId, out Guid newSourceId))
                 throw new InvalidDataException($"Sample C# source '{relative}' has no asset identity metadata.");
@@ -37,7 +38,8 @@ public sealed class CSharpSampleSourceRewriter : IAssetSampleSourceRewriter
             byte[] bytes = File.ReadAllBytes(path);
             bool hasBom = bytes.AsSpan().StartsWith(Encoding.UTF8.GetPreamble());
             string source = File.ReadAllText(path, Encoding.UTF8);
-            SyntaxNode root = CSharpSyntaxTree.ParseText(source).GetRoot();
+            SyntaxNode root = CSharpSyntaxTree.ParseText(
+                source, cancellationToken: context.cancellationToken).GetRoot(context.cancellationToken);
             AttributeSyntax[] attributes = root.DescendantNodes().OfType<AttributeSyntax>()
                 .Where(static attribute => IsStableTypeId(attribute.Name.ToString())).ToArray();
             if (attributes.Length == 0)

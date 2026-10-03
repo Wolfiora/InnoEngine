@@ -16,3 +16,5 @@
 Native 不引用上层项目。Generated binding API 反映外部库 contract；上层只能通过对应 Platform、Rendering、Audio、Text 或 UI adapter 使用。
 
 绑定配置与扩展由各 Native 项目自己的 `Bindings/` 目录持有。独立生成、检查和跨平台验收流程见 [Native binding generation](BindingGeneration.md)。
+
+Native 项目同时支持桌面和静态链接目标，通过 Bindings/common.json 与 bindgen.browser-wasm.json 复用声明。不存在单独的 Native Browser 项目。

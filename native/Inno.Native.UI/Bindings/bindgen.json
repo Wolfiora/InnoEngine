@@ -1,11 +1,8 @@
 {
+  "BaseConfig": {
+    "Url": "file://common.json"
+  },
   "Preset": "host-c,c-library,function-table",
-  "IncludeTransitivelyReferencedHeaders": false,
-  "GenerateRuntimeSource": false,
-  "MergeGeneratedFilesToSingleFile": true,
-  "SingleFileOutputName": "Bindings.cs",
-  "Namespace": "Inno.Native.UI",
-  "ApiName": "UiNative",
   "LibName": "inno-ui",
   "EntryFiles": [
     "../Native/Generated/include/Classes.h"
@@ -18,18 +15,5 @@
   "IncludeFolders": [
     "../Native/Generated/include"
   ],
-  "OutputPath": "../Generated",
-  "MarshallingMappings": {
-    "inno_ui_GetLastError": {
-      "Return": { "Strategy": "String", "Ownership": "Borrowed", "Encoding": "Utf8", "NullTerminated": true }
-    }
-  },
-  "FunctionPrefixes": [
-    "inno_ui_Runtime_",
-    "inno_ui_Runtime",
-    "inno_ui_"
-  ],
-  "TypePrefixes": [
-    "inno_ui_"
-  ]
+  "OutputPath": "../Generated"
 }

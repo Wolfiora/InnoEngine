@@ -1,14 +1,12 @@
 using System;
-using System.Collections.Concurrent;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Threading;
 
 namespace Inno.Core.Logging;
 
 /// <summary>
-/// Persists log entries to rotating log files on disk.
+/// Writes complete log entries to uniquely named rotating files under the router's delivery policy.
 /// </summary>
 public class FileLogSink : ILogSink, IDisposable
 {
@@ -18,174 +16,111 @@ public class FileLogSink : ILogSink, IDisposable
     public const string C_LOG_FILE_PREFIX = "log_";
 
     private const string C_LOG_FILE_EXTENSION = ".log";
-    
+    private static readonly UTF8Encoding S_ENCODING = new(encoderShouldEmitUTF8Identifier: false);
+    private static readonly int S_NEWLINE_BYTES = S_ENCODING.GetByteCount(Environment.NewLine);
+
     private readonly string m_logDirectory;
     private readonly long m_maxFileSize;
     private readonly int m_maxFiles;
     private readonly object m_lifecycleSync = new();
-    private string m_currentFile;
+    private string m_currentFile = string.Empty;
     private long m_currentSize;
-    private FileStream? m_stream;
     private StreamWriter? m_writer;
-
-    private readonly ConcurrentQueue<LogEntry> m_queue = new();
-    private readonly SemaphoreSlim m_signal = new(0);
-    private readonly Thread m_workerThread;
-    private volatile bool m_running = true;
     private bool m_disposed;
 
     /// <summary>
-    /// Initializes a file sink.
+    /// Opens an isolated log file without creating another queue or delivery worker.
     /// </summary>
     /// <param name="logDirectory">
-    /// Directory where log files are stored.
+    /// Directory in which complete log files are retained.
     /// </param>
     /// <param name="maxFileSizeBytes">
-    /// Maximum file size before rotation.
+    /// Positive rotation threshold. An entry larger than this threshold occupies its own file.
     /// </param>
     /// <param name="maxFiles">
-    /// Maximum number of retained files.
+    /// Positive number of retained files, including the current file.
     /// </param>
+    /// <exception cref="ArgumentException">
+    /// The directory is blank or invalid.
+    /// </exception>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// A rotation or retention limit is not positive.
+    /// </exception>
+    /// <exception cref="IOException">
+    /// The directory or initial file cannot be opened.
+    /// </exception>
+    /// <exception cref="UnauthorizedAccessException">
+    /// The caller cannot create or access the log directory.
+    /// </exception>
     public FileLogSink(
         string logDirectory,
         long maxFileSizeBytes = 10 * 1024 * 1024,
         int maxFiles = 10
     ) {
-        m_logDirectory = logDirectory;
+        ArgumentException.ThrowIfNullOrWhiteSpace(logDirectory);
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(maxFileSizeBytes);
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(maxFiles);
+        m_logDirectory = Path.GetFullPath(logDirectory);
         m_maxFileSize = maxFileSizeBytes;
         m_maxFiles = maxFiles;
-
         Directory.CreateDirectory(m_logDirectory);
-        CleanupOldFiles();
-        
-        m_currentFile = GetNewLogFilePath();
-        m_currentSize = 0;
-        OpenWriter();
-
-        m_workerThread = new Thread(ProcessQueue) { IsBackground = true };
-        m_workerThread.Start();
+        try
+        {
+            OpenWriter();
+            CleanupOldFiles();
+        }
+        catch
+        {
+            CloseWriter();
+            throw;
+        }
     }
 
     /// <summary>
-    /// Queues a log entry for asynchronous file writing.
+    /// Writes and flushes one complete entry before returning, serializing concurrent callers.
     /// </summary>
     /// <param name="entry">
-    /// The entry to persist.
+    /// The immutable entry to persist.
     /// </param>
+    /// <remarks>
+    /// The router owns scheduling and backpressure. Write failures propagate to its sink quarantine.
+    /// Retention cannot remove files locked by another active writer and retries them on later rotation.
+    /// </remarks>
+    /// <exception cref="ObjectDisposedException">
+    /// The sink has been disposed.
+    /// </exception>
+    /// <exception cref="IOException">
+    /// An entry cannot be written, flushed or rotated.
+    /// </exception>
+    /// <exception cref="UnauthorizedAccessException">
+    /// The caller cannot create the next log file or access the directory.
+    /// </exception>
+    /// <exception cref="InvalidOperationException">
+    /// A previous failed rotation left no writable file.
+    /// </exception>
     public void Receive(LogEntry entry)
     {
         lock (m_lifecycleSync)
         {
             ObjectDisposedException.ThrowIf(m_disposed, this);
-            m_queue.Enqueue(entry);
-            m_signal.Release();
+            string line = FormatEntry(entry);
+            int bytes = S_ENCODING.GetByteCount(line) + S_NEWLINE_BYTES;
+            if (m_currentSize > 0 && bytes > m_maxFileSize - m_currentSize)
+                RotateFile();
+            StreamWriter writer = m_writer
+                ?? throw new InvalidOperationException("The file log sink has no writable file after a failed rotation.");
+            writer.WriteLine(line);
+            writer.Flush();
+            m_currentSize += bytes;
         }
-    }
-
-    private void ProcessQueue()
-    {
-        while (true)
-        {
-            m_signal.Wait();
-            DrainQueue();
-
-            if (!m_running && m_queue.IsEmpty)
-                break;
-        }
-    }
-
-    private void DrainQueue()
-    {
-        if (m_writer == null)
-            return;
-
-        var buffer = new StringBuilder(16 * 1024);
-        while (m_queue.TryDequeue(out var entry))
-        {
-            try
-            {
-                var line = FormatEntry(entry) + Environment.NewLine;
-                var bytes = Encoding.UTF8.GetByteCount(line);
-
-                buffer.Append(line);
-                m_currentSize += bytes;
-
-                if (m_currentSize > m_maxFileSize)
-                {
-                    m_writer.Write(buffer.ToString());
-                    m_writer.Flush();
-                    buffer.Clear();
-                    RotateFile();
-                }
-            }
-            catch
-            {
-                // Ignore I/O exceptions
-            }
-        }
-
-        if (buffer.Length > 0)
-        {
-            m_writer.Write(buffer.ToString());
-            m_writer.Flush();
-        }
-    }
-
-    private void RotateFile()
-    {
-        // Cleanup old files
-        CleanupOldFiles();
-
-        CloseWriter();
-
-        // Create a new log file
-        m_currentFile = GetNewLogFilePath();
-        m_currentSize = 0;
-        OpenWriter();
-    }
-
-    private void CleanupOldFiles()
-    {
-        try
-        {
-            var files = new DirectoryInfo(m_logDirectory)
-                .GetFiles(C_LOG_FILE_PREFIX + "*" + C_LOG_FILE_EXTENSION)
-                .OrderBy(f => f.CreationTime)
-                .ToList();
-
-            while (files.Count >= m_maxFiles)
-            {
-                try
-                {
-                    files[0].Delete();
-                }
-                catch
-                {
-                    // Ignore delete exceptions
-                }
-                files.RemoveAt(0);
-            }
-        }
-        catch
-        {
-            // Ignore directory scanning exceptions
-        }
-    }
-
-    private string FormatEntry(LogEntry entry)
-    {
-        return $"[{entry.time:yyyy-MM-dd HH:mm:ss.fff}] [{entry.domain}/{entry.scope}] [{entry.level}]: {entry.message} ({entry.file}:{entry.line})";
-    }
-
-    private string GetNewLogFilePath()
-    {
-        string timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmssfff"); // millisecond precision
-        return Path.Combine(m_logDirectory, $"{C_LOG_FILE_PREFIX}{timestamp}{C_LOG_FILE_EXTENSION}");
     }
 
     /// <summary>
-    /// Stops the sink worker and flushes remaining queued entries.
+    /// Waits for an active write and closes the owned file, reporting any final flush failure.
     /// </summary>
+    /// <exception cref="IOException">
+    /// The owned writer cannot finish flushing or closing its file.
+    /// </exception>
     public void Dispose()
     {
         lock (m_lifecycleSync)
@@ -193,49 +128,81 @@ public class FileLogSink : ILogSink, IDisposable
             if (m_disposed)
                 return;
             m_disposed = true;
-            m_running = false;
-            m_signal.Release();
+            CloseWriter();
         }
-
-        m_workerThread.Join();
-
-        DrainQueue();
-        CloseWriter();
-        m_signal.Dispose();
     }
+
+    private void RotateFile()
+    {
+        CloseWriter();
+        OpenWriter();
+        CleanupOldFiles();
+    }
+
+    private void CleanupOldFiles()
+    {
+        string currentName = Path.GetFileName(m_currentFile);
+        FileInfo[] expired = new DirectoryInfo(m_logDirectory)
+            .GetFiles(C_LOG_FILE_PREFIX + "*" + C_LOG_FILE_EXTENSION)
+            .Where(file => !string.Equals(file.Name, currentName, StringComparison.Ordinal))
+            .OrderByDescending(static file => file.LastWriteTimeUtc)
+            .ThenByDescending(static file => file.Name, StringComparer.Ordinal)
+            .Skip(m_maxFiles - 1)
+            .ToArray();
+        foreach (FileInfo file in expired)
+        {
+            try
+            {
+                // Hold an exclusive open through deletion, including on platforms with advisory sharing.
+                using var retired = new FileStream(
+                    file.FullName,
+                    FileMode.Open,
+                    FileAccess.Read,
+                    FileShare.None,
+                    bufferSize: 1,
+                    FileOptions.DeleteOnClose);
+            }
+            catch (IOException)
+            {
+                // Another active sink or reader may still own the file.
+            }
+            catch (UnauthorizedAccessException)
+            {
+                // Retention does not grant permission to alter another file's access policy.
+            }
+        }
+    }
+
+    private static string FormatEntry(LogEntry entry)
+        => $"[{entry.time:yyyy-MM-dd HH:mm:ss.fff}] [{entry.domain}/{entry.scope}] [{entry.level}]: {entry.message} ({entry.file}:{entry.line})";
 
     private void OpenWriter()
     {
-        m_stream = new FileStream(
+        string timestamp = DateTime.UtcNow.ToString("yyyyMMdd_HHmmssfffffff");
+        m_currentFile = Path.Combine(m_logDirectory, $"{C_LOG_FILE_PREFIX}{timestamp}_{Guid.NewGuid():N}{C_LOG_FILE_EXTENSION}");
+        var stream = new FileStream(
             m_currentFile,
-            FileMode.Append,
+            FileMode.CreateNew,
             FileAccess.Write,
             FileShare.Read,
             bufferSize: 16 * 1024,
             FileOptions.SequentialScan);
-
-        m_writer = new StreamWriter(m_stream, new UTF8Encoding(encoderShouldEmitUTF8Identifier: false))
+        try
         {
-            AutoFlush = false
-        };
+            m_writer = new StreamWriter(stream, S_ENCODING);
+            m_currentSize = 0;
+        }
+        catch
+        {
+            stream.Dispose();
+            throw;
+        }
     }
 
     private void CloseWriter()
     {
-        try
-        {
-            m_writer?.Flush();
-        }
-        catch
-        {
-            // Ignore flush exceptions
-        }
-        finally
-        {
-            m_writer?.Dispose();
-            m_stream?.Dispose();
-            m_writer = null;
-            m_stream = null;
-        }
+        StreamWriter? writer = m_writer;
+        m_writer = null;
+        writer?.Dispose();
     }
 }

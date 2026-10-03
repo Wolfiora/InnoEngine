@@ -6,6 +6,8 @@
 
 内置 `.ishader` 编辑界面，替代已经移除的 Material Graph Panel。`.imaterial` 仍只保存 Shader 引用及参数，不承载图。画布跟随 File Browser 当前 Shader 选择；双击 Shader 打开并聚焦。没有固定侧栏或路径输入框；画布 Header 第一行是当前 Shader 下拉选择，第二行提供 Save / Revert / Format / Check，星号表示尚未应用的草稿。没有选中 Shader 时 Header 仍然存在，显示 `Select Shader` 下拉选择，四个文档操作按钮禁用；其下使用带 Panel padding 的居中空状态。
 
+画布右上角显示小地图：按当前节点与可视区域的世界坐标计算缩放，显示节点、连接和当前视口框；左键点击或拖动小地图可平移画布到对应位置。小地图使用独立 child 命中区，不让其上的点击、拖拽或滚轮穿入底层节点和画布导航。
+
 当前实现与完整验收必须区分：右键菜单、节点值编辑、捕获式平移、鼠标锚点缩放、框选、节点移动、连接、复制粘贴、显式保存已经接线；完整 UI 实操、所有高级节点/资源操作和最终渲染一致性尚待验收。详见[实施状态](../issues/2026-09-11-unified-shader-implementation.md)。
 
 ## 初始化与生命周期
@@ -61,6 +63,10 @@ public sealed class SurfaceDrawer : ShaderNodeDrawer
 - 删除支持 Delete 与 Backspace。每个低级 Shader 最多拥有一个 Vertex、Fragment 和 Compute Output；创建菜单按 Output 单独创建，已存在的阶段禁用，复制/粘贴与 Duplicate 不能绕过该不变量。删除 Output 同时删除引用它的 Pass、配对后失去引用的阶段内容及声明。删除最后一个参数输入清理其声明，共享输入保留默认值和剩余阶段可见性。事务显式 Commit，一次操作对应一次 Undo。
 
 ## 当前限制
+
+画布右上角小地图每帧只计算一次各节点的中立几何，随后通过稳定节点 ID 连接端点。
+几何缓存复用容量并按帧刷新，不保留扩展对象或依赖隐式 dirty 通知；拖动预览与缩放仍实时反映。
+节点和边的计算为 O(V+E)，不再对每条边线性扫描完整文档。
 
 节点参数在 Inspector 编辑，不在画布重复一套字段；输入值本身只由 Graph 连接决定。Optional 输入在未连接时由编译器生成精确类型的零值，Inspector 只显示 `Optional · Zero when unconnected`，不保存或提供外部 override。Required 输入必须在 Graph 中连接 Constant 或其他类型兼容的 output；旧文档里残留的 `input-default.*` 不能再让 required 输入通过编译。资源类型若不能表示零值则不能声明为 optional。连接后只显示上游来源。输入 label 只保留端口名；类型和来源统一留在右侧 value column，以 `Float4 · From tint-multiply.value` 这类普通弱化文字表达。所有 Inspector fieldset 都可直接点击标题文字折叠，折叠后保留中断横线和左右居中的短竖帽，不显示额外加减号或整行 hover 背景。Preview、连接来源、错误提示和其他 Hint 都按当前 fieldset 宽度自动换行。
 Inspector 的 Draft Preview 只在用户显式执行 Check 且当前草稿编译成功后显示；任何后续草稿修改都会使其失效并要求重新 Check。Check 失败时 Inspector 只提示失败，不显示详细错误，也不呈现编译器缓存中的 last-good 候选；完整成功/失败诊断统一进入 Console。未经 Save 的预览不进入正式资源发布；它当前是编译预览，不是完整材质画面预览。

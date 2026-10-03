@@ -273,7 +273,7 @@
 - 历史证据：friend、错误引用、XML suppression 和 Native 泄漏只能人工发现。
 - 根因与影响：文档规范会随时间失效。
 - 当前实现：`Inno.Tooling.Architecture` 检查禁用实现、引用方向、循环、Player closure、removed projects、static managers、脚本门面、Native 泄漏、测试反射和多行 XML；CI 在 build/test 前运行。
-- 测试：工具自身作为 solution project 构建；本次验证命令 `dotnet run --project tools/Inno.Tooling.Architecture -- .`。
+- 测试：工具自身作为 solution project 构建；本次验证命令 `dotnet run --project build/cli/Inno.Build.Cli -- verify .`。
 - 关闭标准：违反规则产生非零退出码。已满足。
 
 ### ARCH-026：Export、Scripting、Logging 前后端杂糅
@@ -553,11 +553,11 @@
 ## 最终验证入口
 
 ```text
-dotnet run --project tools/Inno.Tooling.Architecture -- .
+dotnet run --project build/cli/Inno.Build.Cli -- verify .
 dotnet build InnoEngine.sln --no-restore --disable-build-servers -m:1 -p:UseSharedCompilation=false
 dotnet test InnoEngine.sln --no-build --no-restore --disable-build-servers -m:1 -p:UseSharedCompilation=false
-dotnet run --project build/support/Inno.Build.SupportPacks -- --target macos-arm64 ...
-dotnet run --project src/composition/editor/host/Inno.Editor.Build.Cli -- game --project <SampleProject> --support-packs <SupportPacks> --output <Output> ...
+dotnet run --project build/cli/Inno.Build.Cli -- support-pack --target macos-arm64 ...
+dotnet run --project build/cli/Inno.Build.Cli -- game --project <SampleProject> --support-packs <SupportPacks> --output <Output> ...
 ```
 
 真实 Player 的导出和启动验证须在对应目标系统执行；CI 定义位于 `.github/workflows/rendering-ci.yml`。

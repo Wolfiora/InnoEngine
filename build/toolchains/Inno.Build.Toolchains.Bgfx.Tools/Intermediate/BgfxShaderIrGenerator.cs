@@ -103,6 +103,7 @@ internal sealed partial class BgfxShaderIrGenerator(ShaderIrStage stage)
         if (outputNames.Count != 0)
             header.Append("$output ").AppendJoin(", ", outputNames.Order(StringComparer.Ordinal)).AppendLine();
         header.AppendLine("#include <bgfx_shader.sh>");
+        DeclareFragmentOutputs(header);
         header.AppendLine("#if BGFX_SHADER_MATRIX_COLUMN_MAJOR\n#define inno_matrix_element(m,c,r) ((m)[c][r])\n#else\n#define inno_matrix_element(m,c,r) ((m)[r][c])\n#endif");
         if (stage.stage == ShaderStage.Compute)
             header.AppendLine("#include <bgfx_compute.sh>");
@@ -123,7 +124,7 @@ internal sealed partial class BgfxShaderIrGenerator(ShaderIrStage stage)
                 ShaderIrOutputKind.Varying => VaryingName(output.semantic, output.location),
                 ShaderIrOutputKind.Depth => "gl_FragDepth",
                 ShaderIrOutputKind.Color => stage.outputs.Count(static value => value.kind == ShaderIrOutputKind.Color) == 1 && output.location == 0
-                    ? "gl_FragColor" : $"gl_FragData[{output.location}]",
+                    ? "gl_FragColor" : $"inno_fragment_color_{output.location}",
                 _ => throw Error("Unsupported stage output.")
             };
             ShaderIrValue value = stage.body.outputs[output.id];
@@ -135,6 +136,26 @@ internal sealed partial class BgfxShaderIrGenerator(ShaderIrStage stage)
             source.Append("NUM_THREADS(").Append(stage.threadsX).Append(", ").Append(stage.threadsY).Append(", ").Append(stage.threadsZ).AppendLine(")");
         source.AppendLine("void main() {").Append(m_body).AppendLine("}");
         return new(source.ToString(), varying.ToString(), m_bindings.AsReadOnly(), m_sourcePositions.AsReadOnly());
+    }
+
+    private void DeclareFragmentOutputs(StringBuilder header)
+    {
+        ShaderIrStageOutput[] colors = stage.outputs.Where(static output => output.kind == ShaderIrOutputKind.Color)
+            .OrderBy(static output => output.location).ToArray();
+        if (colors.Length == 0 || colors.Length == 1 && colors[0].location == 0)
+            return;
+
+        // Shaderc passes modern desktop GLSL through without lowering its deprecated MRT builtins.
+        // Explicit locations also preserve sparse output slots; other dialects retain shaderc's lowering.
+        header.AppendLine("#if BGFX_SHADER_LANGUAGE_GLSL >= 400 && !BGFX_SHADER_LANGUAGE_ESSL");
+        foreach (ShaderIrStageOutput color in colors)
+            header.Append("layout(location = ").Append(color.location).Append(") out vec4 inno_fragment_color_")
+                .Append(color.location).AppendLine(";");
+        header.AppendLine("#else");
+        foreach (ShaderIrStageOutput color in colors)
+            header.Append("#define inno_fragment_color_").Append(color.location).Append(" gl_FragData[")
+                .Append(color.location).AppendLine("]");
+        header.AppendLine("#endif");
     }
 
     private void EmitInstruction(ShaderIrInstruction instruction)

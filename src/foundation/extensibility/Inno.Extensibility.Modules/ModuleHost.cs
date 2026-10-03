@@ -24,6 +24,8 @@ public sealed class ModuleHost : IDisposable
     private readonly Dictionary<AssemblyModuleHandle, AssemblyModuleEntry> m_modules = [];
     private readonly List<AssemblyUnloadMonitor> m_pendingUnloads = [];
     private readonly HashSet<string> m_trustedPlatformAssemblies = GetTrustedPlatformAssemblyNames();
+    private readonly AssemblyLoadContext m_hostLoadContext =
+        AssemblyLoadContext.GetLoadContext(typeof(ModuleHost).Assembly)!;
 
     private ModuleHostOptions m_options = new();
     private AssemblyCatalogSnapshot m_currentCatalog = new(0, []);
@@ -64,7 +66,7 @@ public sealed class ModuleHost : IDisposable
     }
 
     /// <summary>
-    /// Creates a module host, discovers host assemblies, and publishes the first catalog.
+    /// Creates a module host, discovers assemblies in its owning load context, and publishes the first catalog.
     /// </summary>
     /// <param name="options">
     /// The validated configuration that controls this operation.
@@ -945,7 +947,7 @@ public sealed class ModuleHost : IDisposable
     ) {
         IEnumerable<Assembly> host = AppDomain.CurrentDomain.GetAssemblies()
             .Where(static assembly => !assembly.IsDynamic)
-            .Where(static assembly => AssemblyLoadContext.GetLoadContext(assembly) == AssemblyLoadContext.Default)
+            .Where(assembly => AssemblyLoadContext.GetLoadContext(assembly) == m_hostLoadContext)
             .Where(IsDiscoverableHostAssembly);
         IEnumerable<AssemblyModuleEntry> modules = m_modules.Values
             .Where(module => !removed.Contains(module.handle))
@@ -1086,7 +1088,8 @@ public sealed class ModuleHost : IDisposable
     ) {
         var result = AppDomain.CurrentDomain.GetAssemblies()
             .Where(static assembly => !assembly.IsDynamic)
-            .Where(static assembly => AssemblyLoadContext.GetLoadContext(assembly) == AssemblyLoadContext.Default)
+            .Where(assembly => AssemblyLoadContext.GetLoadContext(assembly) == m_hostLoadContext ||
+                               IsTrustedFrameworkAssembly(assembly))
             .GroupBy(static assembly => assembly.GetName().Name!, StringComparer.OrdinalIgnoreCase)
             .ToDictionary(static group => group.Key, static group => group.First(), StringComparer.OrdinalIgnoreCase);
         var owned = new HashSet<string>(ownedNames, StringComparer.OrdinalIgnoreCase);
@@ -1095,7 +1098,7 @@ public sealed class ModuleHost : IDisposable
             if (result.ContainsKey(ownedName))
             {
                 throw new InvalidDataException(
-                    $"Module assembly '{ownedName}' duplicates an assembly already loaded in the default context.");
+                    $"Module assembly '{ownedName}' duplicates an assembly already shared by the host context.");
             }
         }
 
@@ -1561,7 +1564,7 @@ public sealed class ModuleHost : IDisposable
         Assembly? entry = Assembly.GetEntryAssembly();
         Assembly[] roots = AppDomain.CurrentDomain.GetAssemblies()
             .Where(static assembly => !assembly.IsDynamic)
-            .Where(static assembly => AssemblyLoadContext.GetLoadContext(assembly) == AssemblyLoadContext.Default)
+            .Where(assembly => AssemblyLoadContext.GetLoadContext(assembly) == m_hostLoadContext)
             .Where(assembly => ReferenceEquals(assembly, entry) ||
                                (assembly.GetName().Name ?? string.Empty).StartsWith(
                                    "Inno.",
@@ -1601,7 +1604,7 @@ public sealed class ModuleHost : IDisposable
             return;
         try
         {
-            pending.Enqueue(Assembly.Load(assemblyName));
+            pending.Enqueue(m_hostLoadContext.LoadFromAssemblyName(assemblyName));
         }
         catch (FileNotFoundException)
         {
@@ -1625,7 +1628,7 @@ public sealed class ModuleHost : IDisposable
         AssemblyLoadEventArgs args
     ) {
         if (!args.LoadedAssembly.IsDynamic &&
-            AssemblyLoadContext.GetLoadContext(args.LoadedAssembly) == AssemblyLoadContext.Default &&
+            AssemblyLoadContext.GetLoadContext(args.LoadedAssembly) == m_hostLoadContext &&
             IsDiscoverableHostAssembly(args.LoadedAssembly))
             m_hostCatalogDirty = true;
     }

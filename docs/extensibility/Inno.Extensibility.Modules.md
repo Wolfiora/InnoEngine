@@ -58,7 +58,7 @@ ModuleHost.Initialize(new ModuleHostOptions
 ModuleHost.Shutdown();
 ```
 
-`cacheDirectory` 用来存放 generation shadow copy，不能留空。`preloadEntryAssemblyDependencies=true` 会合并 CLR AssemblyRef 图与 `.deps.json` runtime dependency 图，预加载入口及当前 Default ALC host roots 关联的 Inno assembly。即使某个项目只通过 Attribute 提供扩展、没有产生具体类型调用，它仍会进入初始 catalog；由通用 launcher 或 testhost 承载时也使用同一规则。
+`cacheDirectory` 用来存放 generation shadow copy，不能留空。`preloadEntryAssemblyDependencies=true` 会合并 CLR AssemblyRef 图与 `.deps.json` runtime dependency 图，预加载入口及ModuleHost 所在 ALC 的 host roots 关联的 Inno assembly。即使某个项目只通过 Attribute 提供扩展、没有产生具体类型调用，它仍会进入初始 catalog；由通用 launcher 或 testhost 承载时也使用同一规则。
 
 Shadow generation 是可再生缓存，不是序列化状态。collectible ALC 仍可达时目录会保留；`AssemblyUnloadMonitor` 观察到 ALC 不再可达后会协作式删除对应目录，后续 module staging 也会重试。Editor 异常退出或旧 ALC 一直存活时，下一次 `ModuleHost.Initialize` 会清理上次进程遗留的 cache directory。非 collectible module 在当前进程中无法安全回收，只能在下一次进程初始化时清理其文件。
 

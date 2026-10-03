@@ -66,6 +66,7 @@ public sealed class EditorModalExtension
                 m_modal.blocksInteraction,
                 m_modal.canMove,
                 m_modal.canResize,
+                m_modal.allowScrolling,
                 m_modal.initialSize,
                 m_modal.minimumSize);
             return true;
@@ -129,6 +130,9 @@ public sealed class EditorModalExtension
         /// <param name="canResize">
         /// Whether the modal window can be resized.
         /// </param>
+        /// <param name="allowScrolling">
+        /// Whether the modal window owns overflow scrolling.
+        /// </param>
         /// <param name="initialSize">
         /// The initial size in unscaled editor units.
         /// </param>
@@ -140,6 +144,7 @@ public sealed class EditorModalExtension
             bool blocksInteraction,
             bool canMove,
             bool canResize,
+            bool allowScrolling,
             Vector2 initialSize,
             Vector2 minimumSize
         ) {
@@ -147,6 +152,7 @@ public sealed class EditorModalExtension
             this.blocksInteraction = blocksInteraction;
             this.canMove = canMove;
             this.canResize = canResize;
+            this.allowScrolling = allowScrolling;
             this.initialSize = initialSize;
             this.minimumSize = minimumSize;
         }
@@ -170,6 +176,11 @@ public sealed class EditorModalExtension
         /// Gets whether the modal window can be resized.
         /// </summary>
         public bool canResize { get; }
+
+        /// <summary>
+        /// Gets whether overflow scrolling belongs to the modal window.
+        /// </summary>
+        public bool allowScrolling { get; }
 
         /// <summary>
         /// Gets the initial size in unscaled editor units.

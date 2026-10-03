@@ -2,6 +2,9 @@ using System;
 using Inno.Adapter;
 using Inno.Adapter.Default;
 using Inno.Rendering;
+using System.IO;
+using Inno.Player.Runtime;
+using Inno.Shell;
 
 namespace Inno.Player;
 
@@ -13,11 +16,18 @@ internal static class Program
         {
             ParseOptions(arguments, out int? smokeFrameLimit, out GraphicsApi? graphicsApi);
             var adapterCatalog = new DefaultAdapterCatalog();
-            using var host = GamePlayerHost.Create(
-                adapterCatalog,
-                AdapterSelection.defaultValue,
-                graphicsApi);
-            return host.RunGame(smokeFrameLimit);
+            string resources = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "Resources", "Content"));
+            return PlayerApplication.RunAsync(new PlayerLaunchOptions
+            {
+                adapters = adapterCatalog,
+                contentDirectory = Directory.Exists(resources) ? resources : Path.Combine(AppContext.BaseDirectory, "Content"),
+                persistentDataRoot = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                moduleActivator = new CollectiblePlayerModuleActivator(),
+                frameDriver = new PollingShellFrameDriver(),
+                consoleColors = true,
+                graphicsApi = graphicsApi,
+                smokeFrameLimit = smokeFrameLimit
+            }).GetAwaiter().GetResult();
         }
         catch (Exception exception)
         {

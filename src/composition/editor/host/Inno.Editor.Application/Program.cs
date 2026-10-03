@@ -4,6 +4,7 @@ using Inno.Adapter;
 using Inno.Adapter.Authoring.Default;
 using Inno.Adapter.Presentation;
 using Inno.Rendering;
+using Inno.Shell;
 
 namespace Inno.Editor.Application;
 
@@ -30,7 +31,7 @@ internal static class Program
                 PresentationBackend.ImGui,
                 projectDirectory,
                 graphicsApi);
-            int exitCode = host.Run(smokeFrameLimit);
+            int exitCode = host.RunAsync(new PollingShellFrameDriver(), smokeFrameLimit).GetAwaiter().GetResult();
             return exitCode;
         }
         catch (Exception ex)

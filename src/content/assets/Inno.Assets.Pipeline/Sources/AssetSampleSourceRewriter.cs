@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
 using Inno.Assets;
 
 namespace Inno.Assets.Pipeline;
@@ -18,13 +19,15 @@ public sealed class AssetSampleTransformContext
         AssetPath source,
         AssetPath target,
         Dictionary<Guid, Guid> identityMap,
-        IReadOnlyDictionary<string, (Guid oldId, Guid newId)> sourceIdentities
+        IReadOnlyDictionary<string, (Guid oldId, Guid newId)> sourceIdentities,
+        CancellationToken cancellationToken
     ) {
         this.stagedRoot = stagedRoot;
         this.source = source;
         this.target = target;
         m_identityMap = identityMap;
         m_sourceIdentities = sourceIdentities;
+        this.cancellationToken = cancellationToken;
     }
 
     /// <summary>
@@ -41,6 +44,11 @@ public sealed class AssetSampleTransformContext
     /// Gets the writable project destination path.
     /// </summary>
     public AssetPath target { get; }
+
+    /// <summary>
+    /// Gets cancellation for this private, generation-pinned transformation.
+    /// </summary>
+    public CancellationToken cancellationToken { get; }
 
     /// <summary>
     /// Gets cloned source identities, including directory and file metadata.
@@ -111,6 +119,10 @@ public interface IAssetSampleSourceRewriter
     /// <summary>
     /// Rewrites staged source files and registers any changed serialized type identities.
     /// </summary>
+    /// <remarks>
+    /// Runs on a worker with a pinned extension generation. Access only transaction-owned files
+    /// and context data, observe cancellation, and do not access live Assets or Editor state.
+    /// </remarks>
     /// <param name="context">
     /// The transaction-owned staged clone.
     /// </param>

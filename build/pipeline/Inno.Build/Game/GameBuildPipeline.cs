@@ -26,7 +26,6 @@ internal sealed class GameBuildPipeline
     private readonly ScriptCompiler m_compiler;
     private readonly IReadOnlyDictionary<BuildTargetId, IGameBuildTarget> m_targets;
     private readonly PlayerSupportPackCatalog m_supportPacks;
-    private readonly IPlayerSupportPackProvisioner? m_supportPackProvisioner;
 
     internal GameBuildPipeline(
         AssetPipeline assets,
@@ -35,8 +34,7 @@ internal sealed class GameBuildPipeline
         SerializationRegistry serialization,
         ScriptCompiler compiler,
         IReadOnlyDictionary<BuildTargetId, IGameBuildTarget> targets,
-        PlayerSupportPackCatalog supportPacks,
-        IPlayerSupportPackProvisioner? supportPackProvisioner
+        PlayerSupportPackCatalog supportPacks
     ) {
         m_assets = assets;
         m_plugins = plugins;
@@ -45,7 +43,6 @@ internal sealed class GameBuildPipeline
         m_compiler = compiler;
         m_targets = targets;
         m_supportPacks = supportPacks;
-        m_supportPackProvisioner = supportPackProvisioner;
     }
 
     internal async ValueTask<BuildResult> BuildAsync(
@@ -61,9 +58,9 @@ internal sealed class GameBuildPipeline
             throw new InvalidOperationException("Game build requires an active authoring asset database.");
         string outputRoot = Path.GetFullPath(request.outputDirectory);
         ValidateOutputRoot(outputRoot);
-        progress?.Report(new BuildProgress("support-pack", 0.01d, "Checking or preparing the Player Support Pack."));
-        string supportPack = m_supportPacks.ResolveOrProvisionAsync(
-            request.profile.target, m_supportPackProvisioner, cancellationToken).GetAwaiter().GetResult();
+        cancellationToken.ThrowIfCancellationRequested();
+        progress?.Report(new BuildProgress("support-pack", 0.01d, "Checking the prepared Player Support Pack."));
+        string supportPack = m_supportPacks.Resolve(request.profile.target, target);
         m_assets.WaitForIdle();
         AssetPath startupPath = AssetPath.Parse(request.profile.startupScene);
         if (!m_assets.TryGetAssetType(startupPath, out Type? sceneType) || sceneType != typeof(SceneAsset))
@@ -203,7 +200,7 @@ internal sealed class GameBuildPipeline
             Directory.CreateDirectory(platformStaging);
             progress?.Report(new BuildProgress("package", 0.78d, $"Composing {request.profile.target} Player output."));
             string composed = await target.PackageAsync(
-                    new GameBuildPackageContext(request.profile, supportPack, packagedContent, platformStaging),
+                    new GameBuildPackageContext(request.profile, supportPack, packagedContent, managed, platformStaging),
                     stagingToken)
                 .ConfigureAwait(false);
             string normalizedComposed = Path.GetFullPath(composed);
@@ -214,7 +211,7 @@ internal sealed class GameBuildPipeline
             stagingToken.ThrowIfCancellationRequested();
             string final = Path.Combine(outputRoot, Path.GetFileName(normalizedComposed));
             BuildFileSystem.InstallDirectoryAtomically(normalizedComposed, final);
-            progress?.Report(new BuildProgress("commit", 1d, "Game build committed atomically."));
+            progress?.Report(new BuildProgress("commit", 1d, "Game build completed."));
             return BuildResult.Success(
                 final,
                 request.profile.target,

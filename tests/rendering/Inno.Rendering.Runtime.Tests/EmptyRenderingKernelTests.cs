@@ -798,6 +798,81 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
     }
 
     [Fact]
+    public void LinearPresentationReceivesOneTransferAfterAllModelLayers()
+    {
+        IRenderDevice device = TestDeviceProxy.Create(out TestDeviceProxy proxy);
+        proxy.primaryPresentationEncodesSrgb = false;
+        proxy.presentationSize = new RenderPresentationSize(800, 600);
+        FirstTestRenderModel.enabled = true;
+        SecondTestRenderModel.enabled = true;
+        var diagnostics = new TestDiagnosticSink();
+        using var runtime = new RenderRuntime(
+            m_types,
+            device,
+            diagnostics,
+            compositionProgramProvider: new TestCompositionProgramProvider());
+        runtime.SetPrimaryRoute(new RenderOutputRoute(
+            [
+                new RenderOutputLayer(FirstTestRenderModel.extensionId, []),
+                new RenderOutputLayer(SecondTestRenderModel.extensionId, [])
+            ]));
+
+        BeginRenderFrame(runtime, 0f);
+        runtime.Render(default);
+        runtime.AfterRender(default);
+        runtime.EndFrame(default);
+
+        Assert.DoesNotContain(diagnostics.items, item => item.code == "RENDER_OUTPUT_COMPOSITION_FAILED");
+        Assert.NotNull(proxy.lastGraph);
+        Assert.Single(proxy.lastGraph.passes.Where(pass => pass.name.Contains("Output Transfer", StringComparison.Ordinal)));
+        Assert.Contains("Output Transfer", proxy.lastGraph.passes[^1].name, StringComparison.Ordinal);
+        Assert.Contains(proxy.lastGraph.textures, texture =>
+            texture.name.EndsWith("/Composition", StringComparison.Ordinal)
+            && texture.descriptor.width == 800
+            && texture.descriptor.height == 600
+            && texture.descriptor.format == RenderTextureFormat.RGBA8Srgb);
+        runtime.Detach();
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void SingleModelPresentationEncodesColorExactlyOnce(bool presentationEncodesSrgb)
+    {
+        IRenderDevice device = TestDeviceProxy.Create(out TestDeviceProxy proxy);
+        proxy.primaryPresentationEncodesSrgb = presentationEncodesSrgb;
+        proxy.presentationSize = new RenderPresentationSize(800, 600);
+        FirstTestRenderModel.enabled = true;
+        var diagnostics = new TestDiagnosticSink();
+        using var runtime = new RenderRuntime(
+            m_types,
+            device,
+            diagnostics,
+            compositionProgramProvider: new TestCompositionProgramProvider());
+
+        BeginRenderFrame(runtime, 0f);
+        runtime.Render(default);
+        runtime.AfterRender(default);
+        runtime.EndFrame(default);
+
+        Assert.Equal(1, FirstTestRenderModel.buildCount);
+        Assert.DoesNotContain(diagnostics.items, item => item.code == "RENDER_OUTPUT_COMPOSITION_FAILED");
+        Assert.NotNull(proxy.lastGraph);
+        Assert.Equal(presentationEncodesSrgb ? 0 : 1,
+            proxy.lastGraph.passes.Count(pass => pass.name.Contains("Output Transfer", StringComparison.Ordinal)));
+        Assert.DoesNotContain(proxy.lastGraph.textures,
+            texture => texture.name.EndsWith("/Composition", StringComparison.Ordinal));
+        if (!presentationEncodesSrgb)
+        {
+            Assert.Contains("Output Transfer", proxy.lastGraph.passes[^1].name, StringComparison.Ordinal);
+            Assert.Contains(proxy.lastGraph.textures, texture =>
+                texture.name.Contains("Model Layer 1", StringComparison.Ordinal)
+                && texture.descriptor.format == RenderTextureFormat.RGBA8Srgb);
+        }
+        runtime.Detach();
+    }
+
+    [Fact]
     public void EditorOwnedOffscreenOutputsDoNotReportAnUnusedPrimaryModel()
     {
         var diagnostics = new TestDiagnosticSink();
@@ -1459,12 +1534,15 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
         public override void Build(RenderPipelineContext context)
         {
             viewports.Add(context.request.viewport);
-            context.graph.AddRasterPass("Scene Color",
+            RasterPassBuilder pass = context.graph.AddRasterPass("Scene Color",
                     new RenderPhaseId("tests.runtime.composition-layer"), 0,
-                    static (_, _) => { })
-                .UseColorAttachment(context.outputTexture, 0,
+                    static (_, _) => { });
+            if (context.outputTexture.isValid)
+                pass.UseColorAttachment(context.outputTexture, 0,
                     RenderLoadAction.Clear, RenderStoreAction.Store,
                     new RenderClearColor(0f, 0f, 0f, 0f));
+            else
+                pass.ClearPresentationTarget(default).HasSideEffect();
         }
     }
 
@@ -1791,6 +1869,7 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
         public uint generation => 1;
         public RenderPresentationSize presentationSize { get; set; } = new(1, 1);
         public RenderPresentationSize primaryPresentationSize => presentationSize;
+        public bool primaryPresentationEncodesSrgb { get; set; } = true;
 
         public void BeginFrame()
         {
@@ -1992,6 +2071,7 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
         public GraphicsCapabilities capabilities { get; }
 
         public uint generation => 1;
+        public bool primaryPresentationEncodesSrgb => true;
 
         public void BeginFrame() { }
 
@@ -2226,5 +2306,9 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
                     new RenderBindingId("s_tex"), RenderShaderBindingKind.Texture, 0, nativeName: "s_tex")],
                 vertexLayout);
         }
+
+        public GraphicsPipelineDescriptor CreateOutputTransferDescriptor(
+            GraphicsCapabilities capabilities, RenderVertexLayout vertexLayout)
+            => CreateDescriptor(capabilities, vertexLayout);
     }
 }

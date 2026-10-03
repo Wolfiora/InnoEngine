@@ -30,6 +30,7 @@
 | [Issues](issues/README.md) | 唯一问题台账、审查记录与整改规格 |
 
 Build 分类已覆盖新增的 [Inno.Build.SupportPacks.Core](build/Inno.Build.SupportPacks.Core.md) 项目页；源码工作区 Export 的缺包自动发布由该项目提供，发布契约与错误边界见对应页面。
+浏览器导出新增的 [Browser target](build/Inno.Build.Platform.Browser.md)、[Browser Player](runtime/Inno.Player.Browser.md)、[Browser storage](storage/Inno.Adapter.Storage.Browser.md) 以及 [统一 Native 绑定与目标 profile](native/README.md) 文档已纳入各分类索引；正式 FlappyBird 浏览器实测见 [Web Player 验收](architecture/WEB_PLAYER_ACCEPTANCE_2026_10_01.md)。
 
 ## 核心依赖方向
 
@@ -45,7 +46,7 @@ Foundation (Extensibility / Core / Scripting API)
 Native Bindings ← only Adapters / Toolchains / native tests
 ```
 
-Core 不引用业务领域；Build 不引用 Editor；Runtime 不引用 Build/Editor；Player closure 不包含 Compiler、authoring pipeline 或 toolchain。违反关系由 `Inno.Tooling.Architecture` 阻止。引擎长期分层与新系统归属以
+Core 不引用业务领域；Build 库不引用 Editor，Build CLI 作为 composition root 可以组合作者端参考；Runtime 不引用 Build/Editor；Player closure 不包含 Compiler、authoring pipeline 或 toolchain。违反关系由 `Inno.Tooling.Architecture` 阻止。引擎长期分层与新系统归属以
 [完整项目架构 Overview 与本体收口方案](architecture/ENGINE_ARCHITECTURE_OVERVIEW.md)为准。
 所有跨域 live object 索引、可恢复引用、Missing、Undo/Redo 与 collectible generation 的完成语义以
 [Identity、可恢复引用与热重载强制标准](architecture/IDENTITY_REFERENCE_RELOAD_STANDARD.md)为准。
@@ -71,3 +72,8 @@ Core 不引用业务领域；Build 不引用 Editor；Runtime 不引用 Build/Ed
 - `Assets` 是唯一可写创作源；`Plugins` 是只读安装源；`Library` 可完全重建。
 - API 变更必须同步源码 XML、所属项目页和索引。
 - 当前 C01–C18 收口状态在[最新验收报告](architecture/ENGINE_CLOSURE_IMPLEMENTATION_2026_09_08.md)维护；此前编号和历史证据保留于[2026-08-31 台账](issues/2026-08-31-complete-issue-register.md)。
+
+共享 [Player Runtime](runtime/Inno.Player.Runtime.md)、[统一 Build CLI](build/Inno.Build.Cli.md)、[MSBuild Tasks](build/Inno.Build.Tasks.md) 和 [Web 目标工具链](build/Inno.Build.Toolchains.Browser.md) 均已包含独立项目页。
+
+[宿主 Native 构建组合](build/Inno.Build.Toolchains.Host.md) 已加入 Build 分类：所有组件接受显式 checkout/configuration，
+桌面 Support Pack 主动准备 Release 输入，并统一使用可取消的隐藏子进程生命周期。

@@ -8,9 +8,35 @@ namespace Inno.Core.Events;
 /// </summary>
 public abstract class Event
 {
+    private readonly Event m_consumptionOwner;
     private int m_globalHandled;
     [ThreadStatic]
     private static HubFrameStack? t_hubFrames;
+
+    /// <summary>
+    /// Creates an event with an independent global consumption lifetime.
+    /// </summary>
+    protected Event() => m_consumptionOwner = this;
+
+    /// <summary>
+    /// Creates a routed representation that shares global consumption with its source event.
+    /// </summary>
+    /// <param name="source">
+    /// The original event whose consumption lifetime remains authoritative.
+    /// </param>
+    /// <exception cref="ArgumentNullException">
+    /// The source event is null.
+    /// </exception>
+    protected Event(Event source)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+        m_consumptionOwner = source.m_consumptionOwner;
+    }
+
+    /// <summary>
+    /// Gets whether this event or any routed representation has been globally consumed.
+    /// </summary>
+    public bool isGlobalHandled => Volatile.Read(ref m_consumptionOwner.m_globalHandled) == 1;
 
     /// <summary>
     /// Marks this event as globally handled.
@@ -20,7 +46,7 @@ public abstract class Event
     /// </remarks>
     public void HandleInGlobal()
     {
-        Volatile.Write(ref m_globalHandled, 1);
+        Volatile.Write(ref m_consumptionOwner.m_globalHandled, 1);
     }
 
     /// <summary>
@@ -43,8 +69,6 @@ public abstract class Event
 
         frames.MarkHandledCurrent();
     }
-
-    internal bool isGlobalHandled => Volatile.Read(ref m_globalHandled) == 1;
 
     internal HubDispatchScope BeginHubDispatchScope()
     {

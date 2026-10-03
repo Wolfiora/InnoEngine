@@ -36,6 +36,11 @@ internal sealed class InspectorPanel : EditorPanel
     public override bool useWindowPadding => false;
 
     /// <summary>
+    /// Lets the inspector content child own vertical scrolling.
+    /// </summary>
+    public override bool allowScrolling => false;
+
+    /// <summary>
     /// Creates the panel.
     /// </summary>
     /// <param name="inspection">

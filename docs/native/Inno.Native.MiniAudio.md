@@ -6,7 +6,7 @@
 
 ## 职责与边界
 
-- `MiniAudioConfig.AotStaticLink` 必须在首次访问 `MiniAudio` 前设置；默认动态模式从引擎 native 输出或 Player Support Pack 装载当前配置的动态库。
+- `目标 profile` 必须在首次访问 `MiniAudio` 前设置；默认动态模式从引擎 native 输出或 Player Support Pack 装载当前配置的动态库。
 - `MiniAudio.GetLibraryName()` 返回平台无关的 `miniaudio` library stem。
 - Debug 与 Release 分别绑定 `miniaudio-debug`、`miniaudio-release`。macOS 的 `lib` 前缀及扩展名由 `Inno.Native.LibraryLoading` 解析。
 - 该程序集是后端 ABI，不是稳定游戏音频 API。业务、Scene、Asset 与脚本不得直接依赖；未来由 `Inno.Adapter.Audio.MiniAudio` adapter 隔离。
@@ -32,3 +32,7 @@ string version = MiniAudio.VersionStringS();
 ```
 
 生产代码应通过未来的后端中立 Audio API 工作；上述调用仅用于 Native test 与底层 adapter 实现。
+
+## 静态目标
+
+同一项目通过 bindgen.browser-wasm.json 生成 wasm32 的静态符号绑定，继承 common.json 的声明；目标编译使用 INNO_STATIC_NATIVE，不初始化动态 loader。Host profile 仍使用原动态库命名与显式初始化。生成输出分别属于宿主 Generated/Bindings.cs 和目标 obj/browser-wasm/Generated/Bindings.cs，没有 Native Browser 副本。

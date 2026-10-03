@@ -77,7 +77,7 @@ internal sealed partial class ShaderEditorCanvas
                     }
                     finally
                     {
-                        ImGuiApi.EndCombo();
+                        Widget.EndBoundedCombo();
                     }
                 });
                 if (selected != current)

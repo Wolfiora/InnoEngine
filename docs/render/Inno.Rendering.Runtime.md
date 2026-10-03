@@ -90,7 +90,11 @@ Runtime 不把一次请求假定为整个 target 的唯一 owner。请求仍按 
 
 上述保留机制只适用于有意共享目标的显式 `RenderRequest`。多个 `IRenderModel` 需要 `RenderOutputRoute`：每个 `RenderOutputLayer` 指定模型 ID 和只分给这一层的内容源 ID，重复分配会在构造 route 时失败。Runtime 检查模型集合与颜色格式，为每层建立独立可采样目标，再以预乘 Alpha 按 route 顺序合成；Editor GameView 使用同一机制。模型层的视口从 `(0,0)` 开始，最终合成才使用输出视口偏移。图层合成不支持跨模型几何深度交错；需要这类排序的内容应由同一模型接纳。`IViewContentFrameSource.CompleteFrame` 在所有输出收集完输入后、RenderGraph 建图前执行一次。
 
-Host 在 `RenderRuntime` 构造时传入 `IRenderLayerCompositionProgramProvider`。只有实际请求多层合成时才创建程序；缺少供给器时抛出明确错误，由现有输出诊断边界报告。Runtime 只持有后端中立的顶点布局和图层排序，BGFX 编译产物与平台选择由 [BGFX adapter](Inno.Adapter.Rendering.Bgfx.md) 拥有。Editor 和 Player 注入相同适配器，保持原来的画面合成语义。
+Host 在 `RenderRuntime` 构造时传入 `IRenderLayerCompositionProgramProvider`。只有实际请求图层合成或软件输出传递时才创建程序；缺少供给器时抛出明确错误，由现有输出诊断边界报告。Runtime 只持有后端中立的顶点布局、图层排序与主目标颜色传递判断，BGFX 编译产物与平台选择由 [BGFX adapter](Inno.Adapter.Rendering.Bgfx.md) 拥有。Editor 和 Player 注入相同适配器。
+
+主呈现目标若报告 `primaryPresentationEncodesSrgb == false`，单模型输出也必须经过一次最终 sRGB 输出传递，不能直接把线性颜色写到画布。单模型直接读取自身图层，不额外创建合成纹理；多模型先用图层声明的共同格式完成线性空间中的预乘 Alpha 合成，再执行一次输出传递。合成目标保留共同格式（默认 `RGBA8Srgb`），避免转换为线性 `RGBA8` 时量化掉星光等暗部信号。sRGB attachment 的存储编码与采样解码不改变混合所使用的线性空间。自动编码的单模型目标仍直接渲染，多模型目标仍直接合成。离屏输出遵守声明格式，由最终呈现消费者负责显示传递。
+
+`SubmitComposition` 接受一个或多个非 null 图层；空图层集合、目标/viewport 不一致或不受支持的格式会被拒绝。
 
 ## 资源与代际
 

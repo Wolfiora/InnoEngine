@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.20)
 project(inno_ui LANGUAGES C CXX)
+set(INNO_UI_BRIDGE_ROOT "${CMAKE_CURRENT_LIST_DIR}/Generated" CACHE PATH "Generated UI bridge source directory")
 
 set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
 set(FT_DISABLE_BROTLI ON CACHE BOOL "" FORCE)
@@ -44,8 +45,14 @@ set(RMLUI_HARFBUZZ_SOURCES
     ${RMLUI_HARFBUZZ_DIR}/TextureLayoutRow.cpp
     ${RMLUI_HARFBUZZ_DIR}/TextureLayoutTexture.cpp)
 
-add_library(inno-ui SHARED
-    Generated/src/Classes.cpp
+if(EMSCRIPTEN)
+    set(INNO_UI_LIBRARY_TYPE STATIC)
+else()
+    set(INNO_UI_LIBRARY_TYPE SHARED)
+endif()
+
+add_library(inno-ui ${INNO_UI_LIBRARY_TYPE}
+    "${INNO_UI_BRIDGE_ROOT}/src/Classes.cpp"
     src/RmlUiEventListener.cpp
     src/RmlUiProcessHost.cpp
     src/RmlUiRenderInterface.cpp
@@ -53,7 +60,7 @@ add_library(inno-ui SHARED
     ${RMLUI_HARFBUZZ_SOURCES})
 target_compile_features(inno-ui PRIVATE cxx_std_20)
 target_include_directories(inno-ui PRIVATE
-    "${CMAKE_CURRENT_LIST_DIR}/Generated/include"
+    "${INNO_UI_BRIDGE_ROOT}/include"
     "${CMAKE_CURRENT_LIST_DIR}/include"
     "${CMAKE_CURRENT_LIST_DIR}/src"
     "${RMLUI_HARFBUZZ_DIR}"

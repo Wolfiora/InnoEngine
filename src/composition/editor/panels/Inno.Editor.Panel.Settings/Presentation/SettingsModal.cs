@@ -42,6 +42,11 @@ internal sealed class SettingsModal(
     public override bool canResize => true;
 
     /// <summary>
+    /// Lets the navigation tree and current settings page own their scrolling.
+    /// </summary>
+    public override bool allowScrolling => false;
+
+    /// <summary>
     /// Gets the preferred initial window size in logical editor units.
     /// </summary>
     public override Vector2 initialSize => new(1050f, 700f);
@@ -144,7 +149,8 @@ internal sealed class SettingsModal(
         bool visible = NativeImGui.BeginChild(
             "##settings_tree_pane",
             new Vector2(0f, height),
-            ImGuiChildFlags.Borders | ImGuiChildFlags.AlwaysUseWindowPadding);
+            ImGuiChildFlags.Borders | ImGuiChildFlags.AlwaysUseWindowPadding,
+            ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse);
         try
         {
             if (!visible)

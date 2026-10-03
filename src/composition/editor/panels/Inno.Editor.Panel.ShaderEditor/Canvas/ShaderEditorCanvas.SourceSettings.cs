@@ -58,7 +58,7 @@ internal sealed partial class ShaderEditorCanvas
                     }
                     finally
                     {
-                        ImGuiApi.EndCombo();
+                        Inno.Editor.ImGui.ImGuiWidget.ImGuiWidget.EndBoundedCombo();
                     }
                 });
                 string implementation = settings.implementationId;
@@ -144,7 +144,7 @@ internal sealed partial class ShaderEditorCanvas
                             }
                             finally
                             {
-                                ImGuiApi.EndCombo();
+                                Inno.Editor.ImGui.ImGuiWidget.ImGuiWidget.EndBoundedCombo();
                             }
                         }
                         ImGuiApi.SameLine();

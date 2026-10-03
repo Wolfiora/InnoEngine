@@ -28,7 +28,7 @@ internal sealed partial class ShaderEditorCanvas
                 }
                 finally
                 {
-                    ImGuiApi.EndCombo();
+                    Widget.EndBoundedCombo();
                 }
             });
         }

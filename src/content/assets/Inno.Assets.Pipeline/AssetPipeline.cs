@@ -24,13 +24,14 @@ namespace Inno.Assets.Pipeline;
 /// Provides the single application-level entry point for importing, loading, saving and
 /// collecting assets.
 /// </summary>
-public sealed class AssetPipeline : AssetResidencyProvider,
+public sealed partial class AssetPipeline : AssetResidencyProvider,
     IDisposable,
     IAssetLookup,
     IAssetReferenceResolver,
     IAssetPropertyStateResolver,
     IAssetArtifactLookup,
-    IAssetResidency
+    IAssetResidency,
+    IAssetSourceSnapshot
 {
     private readonly Lock m_lifecycleLock = new();
     private readonly AssetCatalogParticipant m_catalogParticipant;
@@ -327,90 +328,13 @@ public sealed class AssetPipeline : AssetResidencyProvider,
     {
         ArgumentNullException.ThrowIfNull(mounts);
         EnsureOwnerThread();
-        using IDisposable operationScope = AcquireOperation();
-        AssetLoader? candidateLoader = null;
-        AssetFileSystem? candidateFileSystem = null;
-        AssetCatalogCandidate? catalogCandidate = null;
-        lock (m_lifecycleLock)
-        {
-            m_generations.EnsureRetirementSafe();
-            if (m_failedPreparation is not null || m_shutdown is not null)
-                throw new InvalidOperationException("The Asset Pipeline is retiring and cannot prepare a source candidate.");
-            if (m_sourceMountCandidate is not null)
-                throw new InvalidOperationException("Another source-mount candidate is already pending.");
-            AssetSourceMount[] snapshot = mounts.ToArray();
-            AssetSourceMount projectMount = snapshot.SingleOrDefault(static mount => mount.id == AssetSourceId.project)
-                ?? throw new ArgumentException("A project asset source mount is required.", nameof(mounts));
-            if (projectMount.isReadOnly)
-                throw new ArgumentException("The project asset source mount must be writable.", nameof(mounts));
-            if (snapshot.Select(static mount => mount.id).Distinct().Count() != snapshot.Length)
-                throw new ArgumentException("Asset source mount IDs must be unique.", nameof(mounts));
-            try
-            {
-                catalogCandidate = GetLoader().PrepareCatalogCandidate(snapshot, m_options.sourcePolicy);
-                candidateLoader = catalogCandidate.loader;
-                candidateFileSystem = new AssetFileSystem(
-                    snapshot,
-                    autoStart: false,
-                    m_options.fileWatcherFlushDelayMs,
-                    m_options.sourcePolicy,
-                    requireWritableProject: true,
-                    m_identities,
-                    persistentIdentityResolver: path =>
-                        candidateLoader.TryGetPersistentId(path, out Guid persistentId)
-                            ? persistentId
-                            : null,
-                    activateIdentities: false);
-                candidateLoader.Rescan();
-                candidateFileSystem.Refresh();
-                var transaction = new AssetSourceMountTransaction(
-                    this, snapshot, catalogCandidate, candidateFileSystem,
-                    GetLoader().CaptureRecoveryStates(), Math.Max(1, m_revision + 1));
-                m_sourceMountCandidate = transaction;
-                return transaction;
-            }
-            catch (Exception failure) when (RetirementPendingException.Find(failure) is not null)
-            {
-                RetainPreparation();
-                m_generations.Fault(failure);
-                throw;
-            }
-            catch (Exception failure)
-            {
-                RetainPreparation();
-                try
-                {
-                    Retire(m_failedPreparation!, new RetirementBarrier("Asset source preparation"));
-                    m_failedPreparation = null;
-                }
-                catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null)
-                {
-                    throw;
-                }
-                catch (Exception cleanup)
-                {
-                    throw new AggregateException("Asset source preparation and retirement failed.", failure, cleanup);
-                }
-                throw;
-            }
-
-            void RetainPreparation()
-            {
-                m_failedPreparation = new LifetimeScope();
-                if (catalogCandidate is not null)
-                    m_failedPreparation.Own(catalogCandidate);
-                if (candidateLoader is not null)
-                    m_failedPreparation.Own(candidateLoader);
-                if (candidateFileSystem is not null)
-                    m_failedPreparation.Own(candidateFileSystem);
-            }
-        }
+        return PrepareSourceMountsCore(mounts);
     }
 
     internal void ActivatePreparedSourceMounts(AssetSourceMountTransaction transaction)
     {
         ArgumentNullException.ThrowIfNull(transaction);
-        EnsureOwnerThread();
+        EnsureInitializationThread();
         using IDisposable operationScope = AcquireOperation();
         lock (m_lifecycleLock)
         {
@@ -442,7 +366,7 @@ public sealed class AssetPipeline : AssetResidencyProvider,
     internal void CompletePreparedSourceMounts(AssetSourceMountTransaction transaction)
     {
         ArgumentNullException.ThrowIfNull(transaction);
-        EnsureOwnerThread();
+        EnsureInitializationThread();
         using IDisposable operationScope = AcquireOperation();
         Action? changed;
         lock (m_lifecycleLock)
@@ -482,7 +406,7 @@ public sealed class AssetPipeline : AssetResidencyProvider,
         ArgumentNullException.ThrowIfNull(transaction);
         if (transaction.isFinished)
             return;
-        EnsureOwnerThread();
+        EnsureInitializationThread();
         using IDisposable operationScope = AcquireOperation();
         lock (m_lifecycleLock)
         {
@@ -1211,148 +1135,6 @@ public sealed class AssetPipeline : AssetResidencyProvider,
     }
 
     /// <summary>
-    /// Imports an installed Plugin sample directory into the writable Assets root.
-    /// </summary>
-    /// <param name="source">
-    /// An indexed read-only Plugin sample directory whose final segment starts with <c>~</c>.
-    /// </param>
-    /// <returns>
-    /// The new writable project path with the original sample directory name preserved.
-    /// </returns>
-    /// <param name="validateCandidate">
-    /// Optional authoring check, such as script compilation, run after the candidate is indexed
-    /// but before observers see it. An exception rolls the entire import back.
-    /// </param>
-    /// <exception cref="ArgumentException">
-    /// Thrown when <paramref name="source"/> is not an indexed sample directory.
-    /// </exception>
-    /// <exception cref="IOException">
-    /// Thrown when the destination exists, the source contains symbolic links, or the source changes
-    /// while its stable import snapshot is being copied.
-    /// </exception>
-    public AssetPath ImportSample(
-        AssetPath source,
-        Action<AssetPath>? validateCandidate = null
-    ) {
-        EnsureOwnerThread();
-        using IDisposable operationScope = AcquireOperation();
-        AssetFileSystem fileSystem = GetFileSystem();
-        AssetLoader loader = GetLoader();
-        DrainPendingChanges(fileSystem);
-        if (!fileSystem.TryGetEntry(source, out AssetFileEntry entry) ||
-            !entry.isDirectory ||
-            !entry.isSample)
-        {
-            throw new ArgumentException(
-                $"Asset source '{source}' is not an installed Plugin sample directory.",
-                nameof(source));
-        }
-
-        AssetSourceMount sourceMount = sourceMounts.Single(mount => mount.id == source.source);
-        string absoluteSource = sourceMount.Resolve(source.localPath);
-        AssetPath target = AssetPath.Project(AssetSample.GetImportName(source));
-        string absoluteTarget = Path.Combine(assetRoot, target.localPath);
-        string targetMeta = absoluteTarget + ".imeta";
-        if (Directory.Exists(absoluteTarget) || System.IO.File.Exists(absoluteTarget) || System.IO.File.Exists(targetMeta))
-            throw new IOException($"Sample import target '{target}' already exists.");
-
-        string transactionRoot = Path.Combine(
-            libraryRoot,
-            "AssetDatabase",
-            "Transactions",
-            Guid.NewGuid().ToString("N"));
-        string stagedSource = Path.Combine(transactionRoot, "sample");
-        string stagedMeta = stagedSource + ".imeta";
-        AssetSourcePolicy sourcePolicy = m_options.sourcePolicy ?? AssetSourcePolicy.defaultPolicy;
-        bool restartWatcher = fileSystem.isWatching;
-        bool sourceCommitted = false;
-        bool metaCommitted = false;
-        fileSystem.Stop();
-        Directory.CreateDirectory(transactionRoot);
-        try
-        {
-            List<string> copiedEntries = AssetSampleSnapshot.Capture(
-                absoluteSource,
-                stagedSource,
-                target.localPath,
-                sourcePolicy);
-            AssetSampleSnapshot.RemapIdentities(stagedSource, source, target, m_serialization,
-                TransformSampleSources);
-
-            Directory.Move(stagedSource, absoluteTarget);
-            sourceCommitted = true;
-            if (System.IO.File.Exists(stagedMeta))
-            {
-                System.IO.File.Move(stagedMeta, targetMeta);
-                metaCommitted = true;
-            }
-
-            var changes = new List<AssetChangedEvent>(copiedEntries.Count + 1)
-            {
-                new(target.localPath, WatcherChangeTypes.Created)
-            };
-            changes.AddRange(copiedEntries.Select(static path =>
-                new AssetChangedEvent(path, WatcherChangeTypes.Created)));
-            loader.Rescan();
-            fileSystem.Refresh();
-            foreach (string localPath in copiedEntries)
-            {
-                AssetPath candidate = AssetPath.Project(localPath);
-                if (!loader.TryGetAssetType(candidate, out Type? assetType)
-                    || assetType is null)
-                    continue;
-                AssetObject? imported = loader.Load(candidate, assetType);
-                if (imported is null || imported.isMissing)
-                    throw new InvalidDataException($"Sample asset '{candidate}' failed pre-publication import validation.");
-            }
-            validateCandidate?.Invoke(target);
-            AssetChange[] committed = CreateCommittedChanges(
-                loader,
-                changes,
-                new Dictionary<string, Guid>(StringComparer.OrdinalIgnoreCase),
-                requiresFullRescan: false);
-            InvokeObservers(
-                Changed,
-                new AssetChangeSet(Interlocked.Increment(ref m_revision), committed));
-            CollectArtifactsIfDue(loader, force: true);
-            return target;
-        }
-        catch
-        {
-            if (metaCommitted && System.IO.File.Exists(targetMeta))
-                System.IO.File.Delete(targetMeta);
-            if (sourceCommitted && Directory.Exists(absoluteTarget))
-                Directory.Delete(absoluteTarget, recursive: true);
-            loader.Rescan();
-            fileSystem.Refresh();
-            throw;
-        }
-        finally
-        {
-            DeleteTransactionDirectorySafely(transactionRoot);
-            if (restartWatcher)
-                fileSystem.Start();
-        }
-    }
-
-    private void TransformSampleSources(AssetSampleTransformContext context)
-    {
-        Type[] transformerTypes = m_types.GetTypesWithAttribute<AssetSampleSourceRewriterAttribute>()
-            .Select(reference => reference.Resolve(m_types))
-            .OrderBy(type => type.GetCustomAttributes(typeof(AssetSampleSourceRewriterAttribute), false)
-                .Cast<AssetSampleSourceRewriterAttribute>().Single().id, StringComparer.Ordinal)
-            .ToArray();
-        foreach (Type type in transformerTypes)
-        {
-            if (type.IsAbstract || !typeof(IAssetSampleSourceRewriter).IsAssignableFrom(type))
-                throw new InvalidOperationException($"Sample transformer '{type.FullName}' is not concrete or does not implement its contract.");
-            if (Activator.CreateInstance(type) is not IAssetSampleSourceRewriter transformer)
-                throw new InvalidOperationException($"Sample transformer '{type.FullName}' could not be created.");
-            transformer.Transform(context);
-        }
-    }
-
-    /// <summary>
     /// Reconciles source files, generated files and the persistent catalog.
     /// </summary>
     public void Rescan()
@@ -1384,11 +1166,18 @@ public sealed class AssetPipeline : AssetResidencyProvider,
     /// </summary>
     public void Update()
     {
-        EnsureOwnerThread();
+        EnsureInitializationThread();
+        if (m_sampleImport is not null)
+            return;
         using IDisposable operationScope = AcquireOperation();
         PruneRetiredObservers();
         AssetFileSystem fileSystem = GetFileSystem();
         IReadOnlyList<AssetChangedEvent> changes = fileSystem.PollChanges(out bool requiresFullRescan);
+        if (m_reconcileSampleImport)
+        {
+            requiresFullRescan = true;
+            m_reconcileSampleImport = false;
+        }
         bool registriesChanged = GetLoader().RefreshRegistries();
         if (changes.Count == 0 && !requiresFullRescan && !registriesChanged)
         {
@@ -1732,7 +1521,10 @@ public sealed class AssetPipeline : AssetResidencyProvider,
         try
         {
             if (requiresFullRescan)
+            {
                 loader.Rescan();
+                GetFileSystem().Refresh();
+            }
             else
                 loader.ApplySourceChanges(changes);
             m_diagnostics.ResolveSourceDatabase();
@@ -1742,6 +1534,7 @@ public sealed class AssetPipeline : AssetResidencyProvider,
             try
             {
                 loader.Rescan();
+                GetFileSystem().Refresh();
                 m_diagnostics.ResolveSourceDatabase();
                 m_log.Write(
                     LogLevel.Warn,
@@ -1962,6 +1755,13 @@ public sealed class AssetPipeline : AssetResidencyProvider,
 
     private void EnsureOwnerThread()
     {
+        EnsureInitializationThread();
+        if (m_sampleImport is not null)
+            throw new InvalidOperationException("Asset mutations are deferred until the pending sample import finishes.");
+    }
+
+    private void EnsureInitializationThread()
+    {
         if (!isInitialized)
             throw new InvalidOperationException("AssetPipeline is not initialized.");
         if (Environment.CurrentManagedThreadId != m_ownerThreadId)
@@ -2048,7 +1848,7 @@ public sealed class AssetPipeline : AssetResidencyProvider,
         System.IO.File.Move(stagedMetaPath, metaPath);
     }
 
-    private void DeleteTransactionDirectorySafely(string transactionRoot)
+    private static void DeleteTransactionDirectorySafely(string transactionRoot)
     {
         try
         {
@@ -2083,6 +1883,7 @@ public sealed class AssetPipeline : AssetResidencyProvider,
     private void ShutdownLocked()
     {
         m_generations.EnsureRetirementSafe();
+        m_sampleImport?.Rollback();
         m_sourceMountCandidate?.Rollback();
         if (m_shutdown is null)
         {
@@ -2129,6 +1930,7 @@ public sealed class AssetPipeline : AssetResidencyProvider,
         sourceMounts = [];
         m_ownerThreadId = 0;
         m_revision = 0;
+        m_reconcileSampleImport = false;
         m_cacheOptions = default;
         m_options = default;
         m_lastArtifactCollectionTimestamp = 0;

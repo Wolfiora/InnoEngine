@@ -13,11 +13,6 @@ internal static class MiniAudioBuildConstants
     public const string MINIAUDIO_DIR_NAME = "miniaudio";
 
     /// <summary>
-    /// Identifies the dependency-local native build directory.
-    /// </summary>
-    public const string BUILD_DIR_NAME = "build";
-
-    /// <summary>
     /// Identifies the upstream CMake project marker.
     /// </summary>
     public const string CMAKE_LISTS_FILE = "CMakeLists.txt";

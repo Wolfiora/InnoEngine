@@ -14,6 +14,7 @@ namespace Inno.Build.SupportPacks;
 public sealed class SourcePlayerSupportPackProvisioner : IPlayerSupportPackProvisioner
 {
     private readonly string m_engineRoot;
+    private readonly PlayerSupportPackPublisher m_publisher;
 
     /// <summary>
     /// Creates a provisioner for a complete engine checkout.
@@ -24,8 +25,15 @@ public sealed class SourcePlayerSupportPackProvisioner : IPlayerSupportPackProvi
     /// <exception cref="DirectoryNotFoundException">
     /// The directory is not an engine checkout.
     /// </exception>
-    public SourcePlayerSupportPackProvisioner(string engineRoot)
-    {
+    /// <param name="publisher">
+    /// The publisher containing the host-selected platform sources.
+    /// </param>
+    public SourcePlayerSupportPackProvisioner(
+        string engineRoot,
+        PlayerSupportPackPublisher publisher
+    ) {
+        ArgumentNullException.ThrowIfNull(publisher);
+        m_publisher = publisher;
         ArgumentException.ThrowIfNullOrWhiteSpace(engineRoot);
         m_engineRoot = Path.GetFullPath(engineRoot);
         if (!IsEngineRoot(m_engineRoot))
@@ -44,18 +52,24 @@ public sealed class SourcePlayerSupportPackProvisioner : IPlayerSupportPackProvi
     /// <exception cref="DirectoryNotFoundException">
     /// An explicit <c>INNO_ENGINE_ROOT</c> does not identify a complete engine checkout.
     /// </exception>
-    public static SourcePlayerSupportPackProvisioner? TryCreateForHost(string startDirectory)
-    {
+    /// <param name="publisher">
+    /// The publisher containing the host-selected platform sources.
+    /// </param>
+    public static SourcePlayerSupportPackProvisioner? TryCreateForHost(
+        string startDirectory,
+        PlayerSupportPackPublisher publisher
+    ) {
+        ArgumentNullException.ThrowIfNull(publisher);
         ArgumentException.ThrowIfNullOrWhiteSpace(startDirectory);
         string? configured = Environment.GetEnvironmentVariable("INNO_ENGINE_ROOT");
         if (!string.IsNullOrWhiteSpace(configured))
-            return new SourcePlayerSupportPackProvisioner(configured);
+            return new SourcePlayerSupportPackProvisioner(configured, publisher);
         for (DirectoryInfo? directory = new(Path.GetFullPath(startDirectory));
              directory is not null;
              directory = directory.Parent)
         {
             if (IsEngineRoot(directory.FullName))
-                return new SourcePlayerSupportPackProvisioner(directory.FullName);
+                return new SourcePlayerSupportPackProvisioner(directory.FullName, publisher);
         }
         return null;
     }
@@ -80,7 +94,7 @@ public sealed class SourcePlayerSupportPackProvisioner : IPlayerSupportPackProvi
         string supportPackRoot,
         CancellationToken cancellationToken = default
     )
-        => _ = await PlayerSupportPackPublisher.PublishAsync(
+        => _ = await m_publisher.PublishAsync(
             m_engineRoot,
             supportPackRoot,
             target,

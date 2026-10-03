@@ -387,16 +387,6 @@ public sealed class EditorStyleMetrics
     public float disclosureButtonInset => Scale(2f);
 
     /// <summary>
-    /// Gets minimum property label width.
-    /// </summary>
-    public float propertyLabelMinimumWidth => Scale(96f);
-
-    /// <summary>
-    /// Gets maximum property label width.
-    /// </summary>
-    public float propertyLabelMaximumWidth => Scale(180f);
-
-    /// <summary>
     /// Gets property label width ratio.
     /// </summary>
     public float propertyLabelRatio => 0.40f;

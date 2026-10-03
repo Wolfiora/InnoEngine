@@ -1,7 +1,10 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Numerics;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -10,15 +13,20 @@ using Inno.Assets.Pipeline;
 using Inno.Build.Platform.MacOS;
 using Inno.Build.Platform.Windows;
 using Inno.Core.Identity;
+using Inno.Core.Execution;
 using Inno.Core.Serialization;
 using Inno.Core.Settings;
 using Inno.Extensibility.Types;
+using Inno.Editor.Core;
+using Inno.Editor.Interactions;
+using Inno.Native.ImGui;
 using Inno.Plugins.Authoring;
 using Inno.Runtime;
 using Inno.Scene;
 using Inno.Scripting.Compiler;
 
 using Xunit;
+using NativeImGui = Inno.Native.ImGui.ImGui;
 
 namespace Inno.Build.Tests;
 
@@ -135,6 +143,16 @@ public sealed class BuildPipelineTests : IDisposable
             target = new BuildTargetId("linux-x64")
         };
         profile.Validate();
+    }
+
+    [Fact]
+    public void BuildTargetInventoryCannotBeMutatedThroughItsCollectionView()
+    {
+        IList<BuildTargetId> targets = Assert.IsAssignableFrom<IList<BuildTargetId>>(m_pipeline.availableGameTargets);
+
+        Assert.True(targets.IsReadOnly);
+        Assert.Throws<NotSupportedException>(() => targets[0] = new BuildTargetId("unknown-target"));
+        Assert.Equal([BuildTargetId.macOSArm64, BuildTargetId.windowsX64], m_pipeline.availableGameTargets);
     }
 
     [Theory]
@@ -495,20 +513,22 @@ public sealed class BuildPipelineTests : IDisposable
         var catalog = new PlayerSupportPackCatalog(m_supportPackRoot);
 
         InvalidDataException exception = Assert.Throws<InvalidDataException>(
-            () => catalog.Resolve(BuildTargetId.macOSArm64));
+            () => catalog.Resolve(BuildTargetId.macOSArm64, new Inno.Build.Platform.MacOS.MacOSSupportPackValidator()));
 
         Assert.Contains("forbidden build-time file", exception.Message, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
-    public async Task MissingSupportPackIsProvisionedBeforeExport()
+    public async Task MissingSupportPackIsPreparedBeforeTheOwnerThreadExport()
     {
         SaveStartupScene();
         Directory.Delete(Path.Combine(m_supportPackRoot, BuildTargetId.macOSArm64.value), recursive: true);
         var provisioner = new TestSupportPackProvisioner(target =>
             CreateSupportPack(target, "Inno.Player"));
 
-        BuildResult result = await CreatePipeline(provisioner).BuildGameAsync(new GameBuildRequest
+        BuildPipeline pipeline = CreatePipeline(provisioner);
+        _ = await pipeline.EnsurePlayerSupportPackAsync(BuildTargetId.macOSArm64);
+        BuildResult result = await pipeline.BuildGameAsync(new GameBuildRequest
         {
             profile = CreateProfile(BuildTargetId.macOSArm64),
             outputDirectory = Path.Combine(m_root, "Builds", "Provisioned")
@@ -517,6 +537,108 @@ public sealed class BuildPipelineTests : IDisposable
         Assert.True(result.succeeded);
         Assert.Equal(1, provisioner.callCount);
         Assert.True(Directory.Exists(Path.Combine(m_supportPackRoot, BuildTargetId.macOSArm64.value)));
+    }
+
+    [Fact]
+    public async Task MissingPackFailsPromptlyWhileAsynchronousPreparationIsPending()
+    {
+        SaveStartupScene();
+        Directory.Delete(Path.Combine(m_supportPackRoot, BuildTargetId.macOSArm64.value), recursive: true);
+        using var cancellation = new CancellationTokenSource();
+        var provisioner = new PendingSupportPackProvisioner();
+        BuildPipeline pipeline = CreatePipeline(provisioner);
+        Task<string> preparation = pipeline.EnsurePlayerSupportPackAsync(
+            BuildTargetId.macOSArm64, cancellation.Token).AsTask();
+        try
+        {
+            Assert.False(preparation.IsCompleted);
+            Task<BuildResult> build = pipeline.BuildGameAsync(new GameBuildRequest
+            {
+                profile = CreateProfile(BuildTargetId.macOSArm64),
+                outputDirectory = Path.Combine(m_root, "Builds", "Pending")
+            }).AsTask();
+
+            Assert.True(build.IsCompleted);
+            await Assert.ThrowsAsync<DirectoryNotFoundException>(() => build);
+            m_engine.generations.EnsureReady("verify the rejected snapshot released its read lease");
+            Assert.False(Directory.Exists(Path.Combine(m_root, "Builds", "Pending")));
+        }
+        finally
+        {
+            cancellation.Cancel();
+            await Assert.ThrowsAnyAsync<OperationCanceledException>(() => preparation);
+        }
+    }
+
+    [Fact]
+    public void EditorShutdownDrainsSupportPackCleanupBeforeReleasingExportServices()
+    {
+        SaveStartupScene();
+        Directory.Delete(Path.Combine(m_supportPackRoot, BuildTargetId.macOSArm64.value), recursive: true);
+        var provisioner = new DrainingSupportPackProvisioner();
+        BuildPipeline pipeline = CreatePipeline(provisioner);
+        var defaults = BuildSettings.CreateDefault("Test Game", "Scenes/Startup.iscene", BuildTargetId.macOSArm64);
+        var buildSettings = new BuildSettingsStore(
+            Path.Combine(m_projectRoot, "Settings.Build.inno"), m_engine.serialization, defaults);
+        m_engine.modules.Register("Tests.Exporting", [Assembly.Load(new AssemblyName("Inno.Editor.Exporting"))]);
+        var context = new EditorContext(m_projectRoot);
+        using var runtime = new EditorInteractionRuntime(
+            context, m_engine.types, m_engine.logs, [pipeline, buildSettings, m_settings]);
+        runtime.Start();
+        Assert.True(runtime.interactions.For("editor/main-menu").Execute("export/game"));
+        EditorModalExtension modal = Assert.Single(runtime.modals.Where(static item => item.id == "export.game"));
+        EditorModalExtension progress = Assert.Single(runtime.modals.Where(static item => item.id == "export.game.progress"));
+        ImGuiContextPtr imgui = NativeImGui.CreateContext();
+        try
+        {
+            ImGuiIOPtr io = NativeImGui.GetIO();
+            io.DisplaySize = new Vector2(1200f, 900f);
+            io.DeltaTime = 1f / 60f;
+            io.BackendFlags |= ImGuiBackendFlags.RendererHasTextures;
+            io.Fonts.RendererHasTextures = true;
+            Vector2 exportCenter = Vector2.Zero;
+            for (int frame = 0; frame < 4; frame++)
+            {
+                if (frame == 2)
+                {
+                    io.AddMousePosEvent(exportCenter.X, exportCenter.Y);
+                    io.AddMouseButtonEvent(0, true);
+                }
+                if (frame == 3)
+                    io.AddMouseButtonEvent(0, false);
+                NativeImGui.NewFrame();
+                NativeImGui.SetNextWindowPos(new Vector2(20f), ImGuiCond.Always);
+                NativeImGui.SetNextWindowSize(new Vector2(1000f, 800f), ImGuiCond.Always);
+                _ = NativeImGui.Begin("Export lifecycle verification", ImGuiWindowFlags.NoSavedSettings);
+                Assert.True(modal.Draw(context));
+                exportCenter = (NativeImGui.GetItemRectMin() + NativeImGui.GetItemRectMax()) * 0.5f;
+                NativeImGui.End();
+                NativeImGui.Render();
+            }
+            Assert.True(provisioner.started);
+            Assert.True(progress.TryGetPresentation(out EditorModalExtension.Presentation presentation));
+            Assert.True(presentation.isVisible);
+            _ = runtime.interactions.For("editor/main-menu").Execute("export/plugin");
+            EditorModalExtension plugin = Assert.Single(runtime.modals.Where(static item => item.id == "export.plugin"));
+            Assert.True(plugin.TryGetPresentation(out EditorModalExtension.Presentation pluginPresentation));
+            Assert.False(pluginPresentation.isVisible);
+
+            Assert.True(runtime.interactions.TryGetModule<EditorModule>(out EditorModule? module));
+            Assert.NotNull(module);
+            Assert.Equal("Inno.Editor.Exporting", module.GetType().Assembly.GetName().Name);
+            Assert.Throws<RetirementPendingException>(() => module.Stop(context));
+            Assert.True(provisioner.canceled.Task.IsCompletedSuccessfully);
+            Assert.False(provisioner.completed);
+            provisioner.cleanup.SetResult();
+            runtime.Dispose();
+            Assert.True(provisioner.completed);
+            m_engine.generations.EnsureReady("verify export retirement drained its services");
+        }
+        finally
+        {
+            provisioner.cleanup.TrySetResult();
+            NativeImGui.DestroyContext(imgui);
+        }
     }
 
     [Fact]
@@ -546,7 +668,7 @@ public sealed class BuildPipelineTests : IDisposable
         var catalog = new PlayerSupportPackCatalog(m_supportPackRoot);
 
         InvalidDataException exception = Assert.Throws<InvalidDataException>(
-            () => catalog.Resolve(BuildTargetId.macOSArm64));
+            () => catalog.Resolve(BuildTargetId.macOSArm64, new Inno.Build.Platform.MacOS.MacOSSupportPackValidator()));
 
         Assert.Contains("libminiaudio-release.dylib", exception.Message, StringComparison.Ordinal);
     }
@@ -559,7 +681,7 @@ public sealed class BuildPipelineTests : IDisposable
         var catalog = new PlayerSupportPackCatalog(m_supportPackRoot);
 
         InvalidDataException exception = Assert.Throws<InvalidDataException>(
-            () => catalog.Resolve(BuildTargetId.macOSArm64));
+            () => catalog.Resolve(BuildTargetId.macOSArm64, new Inno.Build.Platform.MacOS.MacOSSupportPackValidator()));
 
         Assert.Contains("foreign native runtime", exception.Message, StringComparison.Ordinal);
     }
@@ -574,7 +696,7 @@ public sealed class BuildPipelineTests : IDisposable
         var catalog = new PlayerSupportPackCatalog(m_supportPackRoot);
 
         InvalidDataException exception = Assert.Throws<InvalidDataException>(
-            () => catalog.Resolve(BuildTargetId.macOSArm64));
+            () => catalog.Resolve(BuildTargetId.macOSArm64, new Inno.Build.Platform.MacOS.MacOSSupportPackValidator()));
 
         Assert.Contains(nativeRuntime, exception.Message, StringComparison.Ordinal);
     }
@@ -711,6 +833,37 @@ public sealed class BuildPipelineTests : IDisposable
             ],
             provisioner);
 
+    private sealed class PendingSupportPackProvisioner : IPlayerSupportPackProvisioner
+    {
+        private readonly TaskCompletionSource m_completion = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        public ValueTask ProvisionAsync(
+            BuildTargetId target,
+            string supportPackRoot,
+            CancellationToken cancellationToken = default
+        ) => new(m_completion.Task.WaitAsync(cancellationToken));
+    }
+
+    private sealed class DrainingSupportPackProvisioner : IPlayerSupportPackProvisioner
+    {
+        internal TaskCompletionSource canceled { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        internal TaskCompletionSource cleanup { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        internal bool started { get; private set; }
+        internal bool completed { get; private set; }
+
+        public async ValueTask ProvisionAsync(
+            BuildTargetId target,
+            string supportPackRoot,
+            CancellationToken cancellationToken = default
+        ) {
+            started = true;
+            using CancellationTokenRegistration registration = cancellationToken.Register(() => canceled.TrySetResult());
+            await cleanup.Task.ConfigureAwait(false);
+            completed = true;
+            cancellationToken.ThrowIfCancellationRequested();
+        }
+    }
+
     private sealed class TestSupportPackProvisioner(Action<BuildTargetId> provision)
         : IPlayerSupportPackProvisioner
     {
@@ -742,6 +895,8 @@ public sealed class BuildPipelineTests : IDisposable
             TaskCreationOptions.RunContinuationsAsynchronously);
         internal TaskCompletionSource release { get; } = new(
             TaskCreationOptions.RunContinuationsAsynchronously);
+
+        public void Validate(string directory) => new Inno.Build.Platform.MacOS.MacOSSupportPackValidator().Validate(directory);
 
         public BuildTargetId id => BuildTargetId.macOSArm64;
 

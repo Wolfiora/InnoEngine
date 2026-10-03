@@ -14,7 +14,7 @@ Compiler 拥有 Roslyn、裁剪 reference assemblies、logical namespace analyze
 
 ## 公开 API
 
-- `ScriptCompiler`, `ScriptCompilerOptions`：一次 fresh compilation 的入口与 project context；`CompileAuthoringGenerationAsync` 生成 Runtime + Editor 的可激活候选，`CompileRuntimeDeploymentAsync(targetRuntimeDirectory, ...)` 只生成 Player 所需 Runtime closure，并将生成结果绑定到指定 Support Pack 的真实运行时程序集。
+- `ScriptCompiler`, `ScriptCompilerOptions`：一次 fresh compilation 的入口与 project context；`CompileAuthoringGenerationAsync(progress, cancellationToken, sourceSnapshot)` 生成 Runtime + Editor 的可激活候选；可选 `IAssetSourceSnapshot` 是 owner 捕获编译输入的只读候选视图，省略时读取当前 Plugin compilation view，`CompileRuntimeDeploymentAsync(targetRuntimeDirectory, ...)` 只生成 Player 所需 Runtime closure，并将生成结果绑定到指定 Support Pack 的真实运行时程序集。
 - `ScriptCompilationResult`, `ScriptCompilationProgress`, `ScriptCompilationStageTiming`：确定性结果、阶段和 timing。
 - `ScriptDiagnostic`, `ScriptDiagnosticSeverity`：源码定位诊断。
 - `ScriptSourceAsset`, `ScriptAssemblyDefinitionAsset`, `ScriptAssemblyScope`：由 common Asset Pipeline 导入的脚本模型。
@@ -26,10 +26,15 @@ Shader 创作扩展通过 [`InnoEditor.Rendering.Shaders`](../render/Inno.Render
 不在 Compiler 中增加 Shader 类型或程序集白名单。新增集成用例实际编译节点扩展，并读取生成 IDE reference 的公开 metadata：
 Editor 可见 `IShaderNodeCompiler`，Runtime 不可见；Runtime 脚本直接引用该命名空间必须编译失败。
 
-Project `Assets` 的 `~` 目录是普通 authoring content，其中的 `.cs` 与 `.iasmdef` 进入 authoring generation 和 IDE project；runtime deployment 始终剔除该子树。只读 `.iplugin` Mount 中的 `~` 目录是 `.isample`，其脚本编译到独立的作者端临时程序集，供安装态样例场景的 Editor Play 使用，不进入插件运行程序集和 Player。`Import Sample` 后的可写副本进入 Project 普通运行时脚本编译；`CSharpSampleSourceRewriter` 在导入事务里用 Roslyn 重写显式 `StableTypeId`，并登记新旧类型身份供场景引用重映射。
+Project `Assets` 的 `~` 目录是普通 authoring content，其中的 `.cs` 与 `.iasmdef` 进入 authoring generation 和 IDE project；runtime deployment 始终剔除该子树。只读 `.iplugin` Mount 中的 `~` 目录是 `.isample`，其脚本编译到独立的作者端临时程序集，供安装态样例场景的 Editor Play 使用，不进入插件运行程序集和 Player。`Import Sample` 完整保留原目录名和全部前导 `~`，可写副本进入 Project authoring/Play 编译，仍从 runtime deployment 排除；`CSharpSampleSourceRewriter` 在导入事务的后台 stage 内用 Roslyn 重写显式 `StableTypeId`，并登记新旧类型身份供场景引用重映射；逐文件响应共同取消 token，不访问 live Editor state。
 
 Compiler 为每个产物写入 `Inno.AssetSource` assembly metadata。Project assembly 写入 `project`，Plugin assembly 写入 manifest Plugin ID；`Assets.LocalPath` 以此解析同源资源，使业务源码在 Project 开发态和 `.iplugin` 安装态保持完全一致。
 
 脚本编译、generation 激活和 IDE 投影是有顺序但不同的责任。只有完整 Runtime + Editor + Plugin 候选编译成功后才能激活；IDE project 在激活成功后生成。IDE 文件写入失败只发布 `INNO-IDE-PROJECTION` Warning，不允许回滚或阻止已经验证成功的运行 generation。
 
 实现与逻辑 reference 均从公开成员的 nullable metadata 生成可空类型，包括参数、返回值、字段、属性、事件、数组元素与嵌套泛型实参。生成期间的 `NullabilityInfoContext` 在结束时释放，不进入跨代缓存；这些注解属于已有公共契约内容指纹，改变注解会产生新的 API 缓存身份。不能在调用方用 `null!` 掩盖投影遗失的可空契约。
+
+Sample 等输入事务持有共同 generation read lease 时，`ScriptReloadHost.TryCompilePending` 使用 GenerationCoordinator 的非阻塞准入检查：保留请求并返回 false，事务释放后再编译。Compiler 本身不判断 Sample 或平台类型，候选快照与活动快照复用同一个 source discovery / reference / Roslyn 链。
+
+编译入口只在 owner thread 捕获 Asset/Plugin 源快照，随后明确把 API reference 生成、Roslyn、缓存读写与产物写入调度到后台。该边界同时用于 authoring 与 runtime deployment，不依赖 File.ReadAllTextAsync 恰好产生未完成 await；进度 observer 必须接受 owner/worker 回调。取消后调用方仍须等待返回操作 drain，再释放 generation 与源事务。
+Reference 生成的串行准入及 Roslyn parse/emit 也接收本次取消 token；取消或生成失败清理未发布的临时 reference 文件，已完成的不可变 reference cache 可以继续复用。

@@ -8,7 +8,7 @@
     <WarningsAsErrors>$(WarningsAsErrors);CS1572;CS1573;CS1591</WarningsAsErrors>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\native\Inno.Native.MiniAudio\Inno.Native.MiniAudio.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../../../native/Inno.Native.MiniAudio/Inno.Native.MiniAudio.csproj" PrivateAssets="compile" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Inno.Adapter.Audio\Inno.Adapter.Audio.csproj" />

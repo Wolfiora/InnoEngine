@@ -1,0 +1,12 @@
+<Project>
+  <PropertyGroup>
+    <DefaultItemExcludes>$(DefaultItemExcludes);$(MSBuildProjectDirectory)/obj/**;$(MSBuildProjectDirectory)/bin/**</DefaultItemExcludes>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(InnoNativeTarget)' == '' and ('$(MSBuildProjectName)' == 'Inno.Player.Browser' or '$(RuntimeIdentifier)' == 'browser-wasm')">
+    <InnoNativeTarget>browser-wasm</InnoNativeTarget>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(InnoNativeTarget)' != ''">
+    <BaseIntermediateOutputPath>obj/$(InnoNativeTarget)/</BaseIntermediateOutputPath>
+    <BaseOutputPath>bin/$(InnoNativeTarget)/</BaseOutputPath>
+  </PropertyGroup>
+</Project>

@@ -29,10 +29,11 @@ public sealed class EngineHost : IDisposable
 
     internal EngineHost(
         string metadataCacheDirectory,
-        TimeSpan retirementTimeout
+        TimeSpan retirementTimeout,
+        LogDeliveryMode logDeliveryMode
     ) {
         this.retirementTimeout = retirementTimeout;
-        logs = new LogRouter();
+        logs = new LogRouter(deliveryMode: logDeliveryMode);
         diagnostics = new DiagnosticHub();
         try
         {
@@ -54,7 +55,7 @@ public sealed class EngineHost : IDisposable
     }
 
     /// <summary>
-    /// Gets the isolated asynchronous logging router owned by this host.
+    /// Gets the isolated logging router using this host's configured delivery policy.
     /// </summary>
     public LogRouter logs { get; }
 

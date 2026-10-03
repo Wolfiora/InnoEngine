@@ -349,6 +349,12 @@ public sealed class ScriptReloadHost : IDisposable
     public bool TryCompilePending(out Task<ScriptCompilationResult>? compilation)
     {
         ObjectDisposedException.ThrowIf(m_disposed, this);
+        if (!m_modules.generations.TryAcquireChange("start pending script compilation", out IDisposable? admission))
+        {
+            compilation = null;
+            return false;
+        }
+        admission!.Dispose();
         ScriptReloadRequest request;
         lock (m_sync)
         {

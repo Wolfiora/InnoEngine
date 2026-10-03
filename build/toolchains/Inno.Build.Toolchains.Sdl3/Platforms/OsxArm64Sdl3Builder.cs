@@ -1,5 +1,7 @@
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
+using System.Threading;
 using Inno.Build.Toolchains;
 
 namespace Inno.Build.Toolchains.Sdl3.Platforms;
@@ -27,28 +29,37 @@ internal sealed class OsxArm64Sdl3Builder : Sdl3Builder
     }
 
     /// <summary>
-    /// Builds a validated result from the current immutable input snapshot.
+    /// Compiles the component sources using the selected checkout and configuration.
     /// </summary>
     /// <param name="sdlDir">
     /// The sdl dir text validated by the build operation.
     /// </param>
-    /// <param name="config">
-    /// The validated configuration that controls this operation.
+    /// <param name="context">
+    /// The selected checkout and native configuration.
     /// </param>
-    public override void Build(
+    /// <param name="cancellationToken">
+    /// Cancels the native process tree.
+    /// </param>
+    /// <returns>
+    /// Completion after native compilation succeeds; failures and cancellation propagate.
+    /// </returns>
+    public override async Task BuildAsync(
         string sdlDir,
-        string config
+        NativeBuildContext context,
+        CancellationToken cancellationToken
     ) {
-        var buildDir = Path.Combine(sdlDir, Sdl3BuildConstants.BUILD_DIR_NAME, BUILD_DIR_NAME);
+        cancellationToken.ThrowIfCancellationRequested();
+        string config = context.configuration;
+        var buildDir = Path.Combine(context.GetNativeBuildRoot(typeof(Sdl3Toolchain).Assembly), BUILD_DIR_NAME, config);
         var buildType = GetBuildType(config);
 
-        ToolchainEnvironment.Run(
+        await ToolchainEnvironment.RunAsync(
             "cmake",
             $"-S . -B \"{buildDir}\" -DCMAKE_BUILD_TYPE={buildType} -DSDL_SHARED=ON -DSDL_STATIC=OFF -DSDL_TESTS=OFF -DSDL_EXAMPLES=OFF",
-            sdlDir);
-        ToolchainEnvironment.Run(
+            sdlDir, cancellationToken);
+        await ToolchainEnvironment.RunAsync(
             "cmake",
             $"--build \"{buildDir}\" --config {buildType} --target SDL3-shared",
-            sdlDir);
+            sdlDir, cancellationToken);
     }
 }

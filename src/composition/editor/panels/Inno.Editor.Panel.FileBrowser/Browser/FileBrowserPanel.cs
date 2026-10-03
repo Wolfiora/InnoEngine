@@ -59,6 +59,11 @@ internal sealed class FileBrowserPanel : EditorPanel
     #endregion
 
     /// <summary>
+    /// Keeps scrolling inside the tree, entry list, and breadcrumb regions.
+    /// </summary>
+    public override bool allowScrolling => false;
+
+    /// <summary>
     /// Captures an immutable snapshot of the current observable state.
     /// </summary>
     /// <param name="state">
@@ -525,7 +530,7 @@ internal sealed class FileBrowserPanel : EditorPanel
         DrawEntryScopeFilterOption("Current", FileBrowserEntryScopeFilter.CurrentOnly);
         DrawEntryScopeFilterOption("Recursive", FileBrowserEntryScopeFilter.Recursive);
 
-        NativeImGui.EndCombo();
+        EditorWidget.EndBoundedCombo();
     }
 
     private void DrawEntryTypeFilterOption(

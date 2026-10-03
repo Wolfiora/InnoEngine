@@ -50,7 +50,7 @@ public sealed class BgfxGameContentCompiler
     /// Creates the canonical Metal compiler used by Apple Silicon macOS Players.
     /// </summary>
     /// <returns>
-    /// A compiler configured for the complete macOS runtime backend set.
+    /// A compiler configured for the canonical macOS Metal runtime profile.
     /// </returns>
     /// <param name="assets">
     /// The authoring asset pipeline whose committed generation is compiled.
@@ -61,6 +61,9 @@ public sealed class BgfxGameContentCompiler
     /// <param name="types">
     /// The authoring extension generation owner.
     /// </param>
+    /// <exception cref="ArgumentNullException">
+    /// A required authoring service is null.
+    /// </exception>
     public static BgfxGameContentCompiler CreateMacOSArm64(
         AssetPipeline assets,
         SerializationRegistry serialization,
@@ -88,6 +91,9 @@ public sealed class BgfxGameContentCompiler
     /// <param name="types">
     /// The authoring extension generation owner.
     /// </param>
+    /// <exception cref="ArgumentNullException">
+    /// A required authoring service is null.
+    /// </exception>
     public static BgfxGameContentCompiler CreateWindowsX64(
         AssetPipeline assets,
         SerializationRegistry serialization,
@@ -98,7 +104,36 @@ public sealed class BgfxGameContentCompiler
             serialization,
             types,
             BgfxShaderTargetPlatform.WindowsX64,
-            [GraphicsApi.Direct3D11, GraphicsApi.Direct3D12, GraphicsApi.Vulkan]);
+            [GraphicsApi.Direct3D11, GraphicsApi.Direct3D12, GraphicsApi.Vulkan, GraphicsApi.OpenGL]);
+
+    /// <summary>
+    /// Creates the WebGL 2 content compiler for a browser WebAssembly Player.
+    /// </summary>
+    /// <param name="assets">
+    /// The authoring asset pipeline whose committed generation is compiled.
+    /// </param>
+    /// <param name="serialization">
+    /// The serialization registry that owns Shader IR contracts.
+    /// </param>
+    /// <param name="types">
+    /// The authoring extension generation owner.
+    /// </param>
+    /// <returns>
+    /// A compiler that writes browser shader and texture artifacts without compute support.
+    /// </returns>
+    /// <exception cref="ArgumentNullException">
+    /// A required authoring service is null.
+    /// </exception>
+    public static BgfxGameContentCompiler CreateBrowserWasm(
+        AssetPipeline assets,
+        SerializationRegistry serialization,
+        TypeCatalog types
+    ) => new(
+        assets,
+        serialization,
+        types,
+        BgfxShaderTargetPlatform.BrowserWasm,
+        [GraphicsApi.OpenGLES]);
 
     /// <summary>
     /// Captures the active Asset generation and compiles every required runtime variant.
@@ -115,6 +150,9 @@ public sealed class BgfxGameContentCompiler
     /// <exception cref="InvalidOperationException">
     /// Thrown when an asset has no stable identity, source mount, or valid target compilation result.
     /// </exception>
+    /// <exception cref="ArgumentNullException">
+    /// The build context is null.
+    /// </exception>
     public async ValueTask CompileAsync(
         GameBuildContentContext context,
         CancellationToken cancellationToken = default
@@ -126,7 +164,7 @@ public sealed class BgfxGameContentCompiler
         var shaderCompiler = new ShaderCompiler(new BgfxShadercToolchain(m_platform));
         foreach (GraphicsApi backend in m_backends.Order())
         {
-            GraphicsCapabilities capabilities = CreateCapabilities(backend);
+            GraphicsCapabilities capabilities = BgfxTargetCapabilities.Create(m_platform, backend);
             ShaderCompileTarget target = shaderCompiler.CreateTarget(
                 capabilities,
                 optimize: true,
@@ -270,7 +308,8 @@ public sealed class BgfxGameContentCompiler
         Guid id = RequireIdentity(shader);
         if (!shaders.TryGetValue(id, out ShaderInput? input))
         {
-            input = new ShaderInput(shader, GetMount(mounts, shader.assetPath).rootPath);
+            RequireMount(mounts, shader.assetPath);
+            input = new ShaderInput(shader);
             shaders.Add(id, input);
         }
         input.variants.Add(variant);
@@ -284,35 +323,12 @@ public sealed class BgfxGameContentCompiler
         return id;
     }
 
-    private static AssetSourceMount GetMount(
+    private static void RequireMount(
         IReadOnlyDictionary<AssetSourceId, AssetSourceMount> mounts,
         AssetPath path
-    )
-        => mounts.TryGetValue(path.source, out AssetSourceMount? mount)
-            ? mount
-            : throw new InvalidOperationException($"Asset source mount '{path.source}' is not active.");
-
-    private static GraphicsCapabilities CreateCapabilities(GraphicsApi backend)
-    {
-        RenderTextureFormat[] formats = Enum.GetValues<RenderTextureFormat>();
-        GraphicsCapability features = Enum.GetValues<GraphicsCapability>()
-            .Aggregate(GraphicsCapability.None, static (
-                current,
-                value
-            ) => current | value);
-        return new GraphicsCapabilities(
-            backend,
-            features,
-            new GraphicsLimits(256, 8, 16384, 16),
-            formats,
-            formats,
-            formats,
-            formats,
-            originBottomLeft: backend == GraphicsApi.OpenGL,
-            homogeneousDepth: backend == GraphicsApi.OpenGL,
-            formats,
-            formats,
-            formats);
+    ) {
+        if (!mounts.ContainsKey(path.source))
+            throw new InvalidOperationException($"Asset source mount '{path.source}' is not active.");
     }
 
     private static string ResolveOutput(
@@ -336,16 +352,12 @@ public sealed class BgfxGameContentCompiler
 
     private sealed class ShaderInput
     {
-        internal ShaderInput(
-            ShaderAsset asset,
-            string sourceRoot
-        ) {
+        internal ShaderInput(ShaderAsset asset)
+        {
             this.asset = asset;
-            this.sourceRoot = sourceRoot;
         }
 
         internal ShaderAsset asset { get; }
-        internal string sourceRoot { get; }
         internal HashSet<RenderShaderVariant> variants { get; } = [];
     }
 

@@ -168,7 +168,7 @@ public static class EditorMenuRenderer
                 $"context-menu-{popupId}",
                 "Search commands…",
                 ref search,
-                width: EditorWidget.style.searchPopupWidth);
+                width: -1f);
         }
         finally
         {

@@ -26,7 +26,7 @@ GameObject Header 的第二行包含 Active、项目 Tag picker 和 Layer picker
 
 Layer 页面以紧凑表格显示 slot、globally stable ID、name 与 remove action；未使用 slot 收口到 `Add layer...`。Tag 页面提供统一 Add 与定义列表，并与 Layer 表格共享相同的 cell padding、plain-cell frame inset、header background、Action 列宽和 inner borders。GameObject Header 的 Layer/Tag selector 与 Layer 添加 selector 都使用共享 menu popup contract，具有与右键菜单一致的 padding、颜色和 work-area-bounded 滚动行为。Apply 时两者分别由协议 Composer 捕获 sparse layer/interaction operations 与 tag additions/removals，所以多个 Plugin 可以修改同一设置而不互相覆盖整个集合。两者只是普通强类型 Project Setting Drawer，不创建 Asset、metadata 或 feature 专属持久化通道。
 
-Inspector Panel 关闭根 window padding，使外层纵向 scrollbar 贴紧 Dock body 边缘；所有 Target Header、卡片和 Drawer 正文统一放在 `ConstrainedContent` 中，由容器准确恢复一层标准 window padding，不再出现零间距或 Panel/child 双层空隙。该 auto-resize child 的显式 content width 始终等于 viewport 扣除左右 padding 后的宽度，并禁用自身 scrollbar/scroll input；因此 Inspector 在所有 target（包括 GameBehavior/GameSystem）下都不会产生横向 scroll range，也不需要逐帧重置 `scrollX`。长卡片标题会在右侧操作区之前裁剪，属性 label 和多轴数值字段会按真实可用宽度收缩，任何 Drawer 都不能把纵向滚动父级撑宽。
+Inspector Panel 关闭根 window padding 与根窗口滚动，由填满正文的 content child 独占纵向滚动，使 scrollbar 贴紧 Dock body 边缘；所有 Target Header、卡片和 Drawer 正文统一放在 `ConstrainedContent` 中，由容器准确恢复一层标准 window padding，不再出现零间距或 Panel/child 双层空隙。该 auto-resize child 的显式 content width 始终等于 viewport 扣除左右 padding 后的宽度，并禁用自身 scrollbar/scroll input；因此 Inspector 在所有 target（包括 GameBehavior/GameSystem）下都不会产生横向 scroll range，也不需要逐帧重置 `scrollX`。长卡片标题会在右侧操作区之前裁剪，属性 label 在共享 2:3 列内换行，多轴数值字段会按真实可用宽度收缩，任何 Drawer 都不能把纵向滚动父级撑宽。
 
 `GameLayerCatalog` 仍保留对称 interaction matrix API 与 source 数据，因为自定义物理、感知或查询系统可以显式调用 `CanInteract`/`SetInteraction`；当前引擎没有内建系统自动消费这些规则。因此 Inspector 不再显示 `Layer Interactions` 区域，项目只需要 layer 分类时无需配置它。
 

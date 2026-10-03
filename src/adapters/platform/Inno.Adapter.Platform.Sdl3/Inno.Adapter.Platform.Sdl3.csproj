@@ -6,7 +6,7 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\native\Inno.Native.Sdl3\Inno.Native.Sdl3.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../../../native/Inno.Native.Sdl3/Inno.Native.Sdl3.csproj" PrivateAssets="compile" />
     <ProjectReference Include="..\..\..\foundation\core\Inno.Core.Input\Inno.Core.Input.csproj" PrivateAssets="compile" />
   </ItemGroup>
   <ItemGroup>

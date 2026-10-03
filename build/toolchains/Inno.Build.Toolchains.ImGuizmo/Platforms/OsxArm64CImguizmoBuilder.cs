@@ -1,6 +1,8 @@
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
+using System.Threading;
 using Inno.Build.Toolchains;
 
 namespace Inno.Build.Toolchains.ImGuizmo.Platforms;
@@ -29,7 +31,7 @@ internal sealed class OsxArm64CImguizmoBuilder : CImguizmoBuilder
     }
 
     /// <summary>
-    /// Builds a validated result from the current immutable input snapshot.
+    /// Compiles the component sources using the selected checkout and configuration.
     /// </summary>
     /// <param name="cimguizmoDir">
     /// The cimguizmo dir text validated by the build operation.
@@ -43,17 +45,26 @@ internal sealed class OsxArm64CImguizmoBuilder : CImguizmoBuilder
     /// <param name="cimguiOutputDir">
     /// The cimgui output dir text validated by the build operation.
     /// </param>
-    /// <param name="config">
-    /// The validated configuration that controls this operation.
+    /// <param name="context">
+    /// The selected checkout and native configuration.
     /// </param>
-    public override void Build(
+    /// <param name="cancellationToken">
+    /// Cancels the native process tree.
+    /// </param>
+    /// <returns>
+    /// Completion after native compilation succeeds; failures and cancellation propagate.
+    /// </returns>
+    public override async Task BuildAsync(
         string cimguizmoDir,
         string cimguiDir,
         string cimguiBuildDir,
         string cimguiOutputDir,
-        string config
+        NativeBuildContext context,
+        CancellationToken cancellationToken
     ) {
-        var buildDir = Path.Combine(cimguizmoDir, CImguizmoBuildConstants.BUILD_DIR_NAME, BUILD_DIR_NAME);
+        cancellationToken.ThrowIfCancellationRequested();
+        string config = context.configuration;
+        var buildDir = Path.Combine(context.GetNativeBuildRoot(typeof(ImGuizmoToolchain).Assembly), BUILD_DIR_NAME, config);
         Directory.CreateDirectory(buildDir);
 
         var cimguizmoCpp = Path.Combine(cimguizmoDir, CImguizmoBuildConstants.CIMGUIMO_CPP_FILE);
@@ -78,7 +89,7 @@ internal sealed class OsxArm64CImguizmoBuilder : CImguizmoBuilder
         // while treating every other compiler diagnostic enabled by default as an error.
         var args = $"{cflags} {THIRD_PARTY_WARNING_POLICY} -std=c++11 -fPIC -dynamiclib {includeArgs} \"{cimguizmoCpp}\" \"{imguizmoCpp}\" \"{cimguiLib}\" -Wl,-install_name,{installName} -Wl,-rpath,{rpath} -o \"{outputLib}\"";
 
-        ToolchainEnvironment.Run("clang++", args, cimguizmoDir);
+        await ToolchainEnvironment.RunAsync("clang++", args, cimguizmoDir, cancellationToken);
     }
 
     private static string FindCimguiLibrary(

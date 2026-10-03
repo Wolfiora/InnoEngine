@@ -18,3 +18,7 @@ if (!result.succeeded)
 `RunAsync` 接受取消令牌，取消时终止子进程树。工具缺失会抛出 `FileNotFoundException`；工具自身返回非零退出码时不会伪装成异常，调用方应检查 `succeeded` 并转换为适当的构建诊断。Native 层不持有 Shader/Texture 创作状态。
 
 只有 `Inno.Adapter.Rendering.Bgfx`、BGFX toolchain 和 Native tests 可以引用本项目。上层 public/protected API 不得泄漏任一 BGFX 类型或原生指针。
+
+## 静态目标
+
+同一项目通过 bindgen.browser-wasm.json 生成 wasm32 的静态符号绑定，继承 common.json 的声明；目标编译使用 INNO_STATIC_NATIVE，不初始化动态 loader。Host profile 仍使用原动态库命名与显式初始化。生成输出分别属于宿主 Generated/Bindings.cs 和目标 obj/browser-wasm/Generated/Bindings.cs，没有 Native Browser 副本。

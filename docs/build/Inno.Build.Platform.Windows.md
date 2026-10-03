@@ -8,3 +8,7 @@ Target 自己声明稳定 ID `windows-x64`、显示名称与 Windows x64 host pr
 平台事实。
 
 目标只处理 staging 与平台布局，不编译脚本、不扫描 Project、不启动 dotnet。Windows 进程执行验证由 Windows x64 CI runner 完成。
+
+## 发布前校验
+
+公开 `WindowsSupportPackValidator` 实现 IPlayerSupportPackValidator，Validate(directory) 验证所需平台文件；对应 GameBuildTarget.Validate 调用同一规则，源码 Support Pack publisher 也复用它。缺失文件/跨平台 Native 二进制明确失败，没有重复平台闭包规则。

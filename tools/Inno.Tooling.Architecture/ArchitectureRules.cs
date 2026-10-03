@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
 
@@ -59,6 +60,8 @@ internal static partial class ArchitectureRules
         string repositoryRoot,
         ICollection<string> failures
     ) {
+        ValidateHostIsolation(repositoryRoot, failures);
+        ValidateBindingTargetOutputs(repositoryRoot, failures);
         ValidateRepositorySources(repositoryRoot, failures);
         Dictionary<string, ProjectNode> graph = LoadProjectGraph(repositoryRoot, failures);
         ValidateCycles(repositoryRoot, graph, failures);
@@ -66,6 +69,84 @@ internal static partial class ArchitectureRules
         ValidateCompositionShellBoundaries(graph, failures);
         ValidatePlayerClosure(repositoryRoot, graph, failures);
         ValidateRemovedProjects(repositoryRoot, failures);
+    }
+
+    private static void ValidateHostIsolation(
+        string repositoryRoot,
+        ICollection<string> failures
+    ) {
+        var executables = new HashSet<string>(StringComparer.Ordinal)
+        {
+            "Inno.Editor.Application", "Inno.Player", "Inno.Player.Browser", "Inno.Build.Cli"
+        };
+        foreach (string rootName in new[] { "src", "native", "build", "tools" })
+        {
+            foreach (string project in EnumerateFiles(Path.Combine(repositoryRoot, rootName), "*.csproj"))
+            {
+                XDocument document = XDocument.Load(project);
+                if (document.Descendants("OutputType").Any(static value => value.Value == "Exe")
+                    && !executables.Contains(Path.GetFileNameWithoutExtension(project)))
+                    failures.Add($"{Relative(repositoryRoot, project)}: engine utilities must be libraries composed by Inno.Build.Cli.");
+                if (Path.GetFileNameWithoutExtension(project).StartsWith("Inno.Native.", StringComparison.Ordinal)
+                    && Path.GetFileNameWithoutExtension(project).EndsWith(".Browser", StringComparison.Ordinal))
+                    failures.Add($"{Relative(repositoryRoot, project)}: native targets must use binding profiles, not duplicate projects.");
+            }
+        }
+        foreach (string rootName in new[] { "src/foundation", "src/composition/shell", "src/composition/player/Inno.Player.Runtime" })
+        {
+            string root = Path.Combine(repositoryRoot, rootName);
+            if (!Directory.Exists(root))
+                continue;
+            foreach (string sourcePath in EnumerateFiles(root, "*.cs"))
+            {
+                if (File.ReadAllText(sourcePath).Contains("OperatingSystem.IsBrowser", StringComparison.Ordinal))
+                    failures.Add($"{Relative(repositoryRoot, sourcePath)}: shared code must receive host capabilities through contracts.");
+            }
+        }
+        string browserProject = Path.Combine(repositoryRoot, "src/composition/player/Inno.Player.Browser/Inno.Player.Browser.csproj");
+        if (File.Exists(browserProject) &&
+            XDocument.Load(browserProject).Descendants("Compile").Any(static item => item.Attribute("Link") is not null))
+            failures.Add("Inno.Player.Browser: shared Player source must be consumed through Inno.Player.Runtime.");
+    }
+
+    private static void ValidateBindingTargetOutputs(
+        string repositoryRoot,
+        ICollection<string> failures
+    ) {
+        string nativeRoot = Path.Combine(repositoryRoot, "native");
+        if (!Directory.Exists(nativeRoot))
+            return;
+        foreach (string owner in Directory.EnumerateDirectories(nativeRoot))
+        {
+            string bindings = Path.Combine(owner, "Bindings");
+            if (!Directory.Exists(bindings))
+                continue;
+            foreach (string hostConfig in Directory.EnumerateFiles(bindings, "*.json"))
+            {
+                using JsonDocument host = JsonDocument.Parse(File.ReadAllText(hostConfig));
+                if (host.RootElement.ValueKind != JsonValueKind.Object
+                    || !host.RootElement.TryGetProperty("OutputPath", out JsonElement hostOutput))
+                    continue;
+                string hostPath = Path.GetFullPath(Path.Combine(bindings, hostOutput.GetString()!));
+                string profilePattern = Path.GetFileNameWithoutExtension(hostConfig) + ".*.json";
+                foreach (string profileConfig in Directory.EnumerateFiles(bindings, profilePattern))
+                {
+                    using JsonDocument profile = JsonDocument.Parse(File.ReadAllText(profileConfig));
+                    if (!profile.RootElement.TryGetProperty("OutputPath", out JsonElement profileOutput))
+                    {
+                        failures.Add($"{Relative(repositoryRoot, profileConfig)}: target profiles must declare an isolated output root.");
+                        continue;
+                    }
+                    string profilePath = Path.GetFullPath(Path.Combine(bindings, profileOutput.GetString()!));
+                    if (!profilePath.StartsWith(owner + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))
+                        failures.Add($"{Relative(repositoryRoot, profileConfig)}: target output must stay inside its native owner.");
+                    if (string.Equals(hostPath, profilePath, StringComparison.OrdinalIgnoreCase)
+                        || profilePath.StartsWith(hostPath + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase)
+                        || hostPath.StartsWith(profilePath + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))
+                        failures.Add($"{Relative(repositoryRoot, profileConfig)}: host and target generated outputs must not overlap.");
+                }
+            }
+        }
     }
 
     private static void ValidateRepositorySources(
@@ -290,6 +371,7 @@ internal static partial class ArchitectureRules
             failures.Add($"{sourcePath}: Core cannot reference upper-layer project {targetPath}.");
         }
         if (sourcePath.StartsWith("build/", StringComparison.Ordinal) &&
+            !sourcePath.StartsWith("build/cli/", StringComparison.Ordinal) &&
             targetPath.StartsWith("src/composition/editor/", StringComparison.Ordinal))
         {
             failures.Add($"{sourcePath}: Build cannot reference Editor project {targetPath}.");
@@ -397,7 +479,7 @@ internal static partial class ArchitectureRules
         IReadOnlyDictionary<string, ProjectNode> graph,
         ICollection<string> failures
     ) {
-        ProjectNode? player = graph.Values.SingleOrDefault(static value => value.name == "Inno.Player");
+        ProjectNode? player = graph.Values.SingleOrDefault(static value => value.name == "Inno.Player.Runtime");
         if (player is null)
         {
             failures.Add("src/composition/player/Inno.Player: Player composition project is missing.");
@@ -469,7 +551,7 @@ internal static partial class ArchitectureRules
         IReadOnlyDictionary<string, ProjectNode> graph,
         ICollection<string> failures
     ) {
-        ValidateHost("Inno.Player");
+        ValidateHost("Inno.Player.Runtime");
         ValidateHost("Inno.Editor.Application");
 
         void ValidateHost(string projectName)

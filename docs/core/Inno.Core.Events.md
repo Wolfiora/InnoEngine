@@ -16,6 +16,17 @@ Events 系统由一个 `EventDispatcher` 和多个有序 `EventHub` 构成。Dis
 - `HandleInHub()` 停止当前 Hub 剩余 listener，但后续 Hub 仍收到事件。
 - `HandleInGlobal()` 停止当前 Hub 和后续全部 Hub。
 
+### 路由与消费生命周期
+
+`Event.isGlobalHandled` 可供路由边界检查全局消费状态。`Event()` 创建独立事件；
+派生事件可用 protected `Event(source)` 构造同一个事件的路由表示，共享全局消费状态。
+`MouseEvent(source)` 同时保留源窗口 ID，`MouseMovedEvent.WithPosition(x, y)` 改变坐标而不重置消费状态。
+原事件或任一表示调用 `HandleInGlobal()` 后，其他表示均被消费，跨 Dispatcher 也不能再次投递。
+`HandleInHub()` 仍只作用于当前表示的当前 Hub 调用栈，不扩散到其他表示。
+
+Editor Game View 使用这条公共契约转换窗口坐标；已消费事件在路由入口被拒绝，不能启动键盘或鼠标捕获。
+事件只存活于当前输入生命周期，不作为跨 generation 的持久对象定位协议。
+
 ## EventDispatcher
 
 | 方法 | 说明 |
@@ -24,6 +35,13 @@ Events 系统由一个 `EventDispatcher` 和多个有序 `EventHub` 构成。Dis
 | `Enqueue(Event)` | 线程安全地排队，等待 `Flush()`。 |
 | `Flush()` | 排空调用时可见的队列并逐个 `Emit`。 |
 | `Emit(Event)` | 立即按 order 分发到全部有效 Hub。 |
+| `dispatched` | 有序 Hub 派发完成后的同步观察通知，包括全局已消费事件；不参与消费，owner 退场前必须退订。 |
+
+`dispatched` 在 `Emit` 的正常派发结束后调用，`Flush` 通过同一个入口触发。
+它允许边界适配器在消费顺序已经确定后处理未消费输入或释放 capture；不会重新调用 Hub，也不建立第二个队列。
+预先全局消费的事件跳过所有 Hub，仍通知 observer。Hub 派发抛异常时不报告完成；observer 异常直接传播。
+observer 不能修改消费状态或调用 `HandleInHub`，业务消费仍必须通过有序 Hub 完成。
+该公共能力随 `EventDispatcher` 的既有脚本导出进入 `InnoEngine.Events`，没有新增导出清单或平台分支。
 
 ## EventHub
 
@@ -81,3 +99,4 @@ Keyboard/Mouse 枚举详见 [Inno.Core.Input](Inno.Core.Input.md)。
 ## 生命周期与热重载
 
 subscription token、Hub listener delegate 都会强引用处理对象。插件或脚本实例卸载前必须 dispose 订阅；`Layer` 帮助自动处理其通过 protected API 建立的订阅。外部直接注册的 listener 则由调用者负责清理。
+`dispatched` 的 event delegate 同样受 owner 生命周期约束；退订后 Dispatcher 不再保留该 observer。通知在当前派发线程执行，不自动切换线程。

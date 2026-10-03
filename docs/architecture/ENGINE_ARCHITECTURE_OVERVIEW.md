@@ -61,7 +61,7 @@ Runtime Subsystem Pipeline、可撤销 execution scope、统一 DiagnosticReport
 
 - [EngineHost](../../src/runtime/engine/Inno.Runtime/Hosting/EngineHost.cs)
 - [RuntimeSession](../../src/runtime/engine/Inno.Runtime/Hosting/RuntimeSession.cs)
-- [Player composition root](../../src/composition/player/Inno.Player/GamePlayerHost.cs)
+- [Player composition root](../../src/composition/player/Inno.Player.Runtime/GamePlayerHost.cs)
 - [Editor composition root](../../src/composition/editor/host/Inno.Editor.Application/Hosting/EditorHost.cs)
 - [ModuleHost](../../src/foundation/extensibility/Inno.Extensibility.Modules/ModuleHost.cs)
 - [TypeRegistry](../../src/foundation/extensibility/Inno.Extensibility.Types/TypeRegistry.cs)
@@ -383,13 +383,13 @@ InnoEngine
 | `src/adapters/default` | `Inno.Adapter.Default`、`Inno.Adapter.Authoring.Default` |
 | `src/adapters/platform` | `Inno.Adapter.Platform`、`Inno.Adapter.Platform.Sdl3` |
 | `src/adapters/input` | `Inno.Adapter.Input`、`Inno.Adapter.Input.Sdl3` |
-| `src/adapters/storage` | `Inno.Adapter.Storage`、`Inno.Adapter.Storage.FileSystem` |
+| `src/adapters/storage` | `Inno.Adapter.Storage`、`Inno.Adapter.Storage.FileSystem`、`Inno.Adapter.Storage.Browser` |
 | `src/adapters/rendering` | `Inno.Adapter.Rendering`、`Inno.Adapter.Rendering.Authoring`、`Inno.Adapter.Rendering.Bgfx` |
 | `src/adapters/audio` | `Inno.Adapter.Audio`、`Inno.Adapter.Audio.MiniAudio` |
 | `src/adapters/presentation` | `Inno.Adapter.Presentation`、`Inno.Adapter.Presentation.ImGui.Sdl3`、`Inno.Adapter.Presentation.ImGui.Bgfx` |
 | `src/composition/shell` | `Inno.Shell` |
 | `src/composition/default` | `Inno.Engine.Default` |
-| `src/composition/player` | `Inno.Player` |
+| `src/composition/player` | `Inno.Player`、`Inno.Player.Runtime`、`Inno.Player.Browser` |
 | `src/composition/editor/host` | `Inno.Editor.Application` |
 | `src/composition/editor/framework` | `Inno.Editor.Core`、`Inno.Editor.Diagnostics`、`Inno.Editor.Graph`、`Inno.Editor.Inspection`、`Inno.Editor.Interactions`、`Inno.Editor.Settings` |
 | `src/composition/editor/features` | `Inno.Editor.Audio`、`Inno.Editor.Exporting`、`Inno.Editor.PlayMode`、`Inno.Editor.Rendering`、`Inno.Editor.Scene`、`Inno.Editor.Scripting` |
@@ -400,11 +400,20 @@ InnoEngine
 
 | Solution Folder | 项目 |
 | --- | --- |
-| `native` | `Inno.Native.LibraryLoading`、`Inno.Native.Sdl3`、`Inno.Native.Bgfx`、`Inno.Native.MiniAudio`、`Inno.Native.ImGui`、`Inno.Native.ImGuizmo` |
-| `build/pipeline` | `Inno.Build`、`Inno.Build.Platform.MacOS`、`Inno.Build.Platform.Windows` |
-| `build/support` | `Inno.Build.SupportPacks` |
-| `build/toolchains` | `Inno.Build.Toolchains`、`Inno.Build.Toolchains.Sdl3`、`Inno.Build.Toolchains.Bgfx`、`Inno.Build.Toolchains.Bgfx.Tools`、`Inno.Build.Toolchains.ImGui`、`Inno.Build.Toolchains.ImGuizmo`、`Inno.Build.Toolchains.MiniAudio` |
+| `native` | `Inno.Native.LibraryLoading`、`Inno.Native.Sdl3`、`Inno.Native.Bgfx`、`Inno.Native.MiniAudio`、`Inno.Native.Text`、`Inno.Native.UI`、`Inno.Native.ImGui`、`Inno.Native.ImGuizmo` |
+| `build/cli` | `Inno.Build.Cli`（唯一构建程序入口） |
+| `build/pipeline` | `Inno.Build`、`Inno.Build.Platform.MacOS`、`Inno.Build.Platform.Windows`、`Inno.Build.Platform.Browser` |
+| `build/support` | `Inno.Build.SupportPacks.Core`、`Inno.Build.SupportPacks` |
+| `build/tasks` | `Inno.Build.Tasks`（薄 MSBuild Task） |
+| `build/toolchains` | `Inno.Build.Toolchains`、`Inno.Build.Toolchains.Sdl3`、`Inno.Build.Toolchains.Bgfx`、`Inno.Build.Toolchains.Bgfx.Tools`、`Inno.Build.Toolchains.Bgfx.Shaders`、`Inno.Build.Toolchains.ImGui`、`Inno.Build.Toolchains.ImGuizmo`、`Inno.Build.Toolchains.MiniAudio`、`Inno.Build.Toolchains.Text`、`Inno.Build.Toolchains.UI`、`Inno.Build.Toolchains.Browser` |
+| `build/verification` | `Inno.Build.NativeBindings`（验证库） |
 | `tools` | `Inno.Tooling.Architecture` |
+
+2026-10-02 共享宿主调整：Player Runtime 通过策略契约组合模块激活、帧调度、线程、日志与存储；
+共享 Foundation/Shell/Player 不判断 Browser。每组件只有一个 Native 项目，目标 ABI 使用 BGCS
+profile 和独立输出。所有构建、清理、Shader、Support Pack 和架构检查由一个 Build CLI 组合；
+工具链和验证器均为库。当前边界见 [Web 宿主架构](WEB_PLAYER_ARCHITECTURE.md)，
+实际验证结果见 [本轮验收](WEB_HOST_REFACTOR_ACCEPTANCE_2026_10_02.md)。
 
 测试项目完整按领域归属：
 

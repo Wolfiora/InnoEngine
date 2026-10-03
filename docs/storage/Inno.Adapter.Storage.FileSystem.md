@@ -8,6 +8,8 @@
 
 `FileSystemApplicationStorage` 是默认本地 adapter。构造时固定绝对 sandbox root；每次操作重新验证现有路径组件，拒绝 symlink/reparse point 越界。
 
+键的路径解析复用 `Inno.Core.IO.PathBoundary`，也支持宿主明确指定卷根目录；存储层不再维护另一套字符串前缀边界算法。
+
 写入先在目标目录创建唯一临时文件，flush 后执行同目录 replace；失败或取消会清理临时文件。查询与修改通过实例 gate 串行化，列表使用稳定 ordinal key 顺序。Dispose 后全部 API 明确失败。
 
 机器路径只存在于 Composition Root；脚本和 Mechanism 始终只依赖 `StorageKey` 与 `IApplicationStorage`。

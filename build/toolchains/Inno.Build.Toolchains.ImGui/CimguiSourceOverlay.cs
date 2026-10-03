@@ -1,12 +1,15 @@
 using System;
 using System.IO;
+using Inno.Build.Toolchains;
 
 namespace Inno.Build.Toolchains.ImGui;
 
 internal static class CimguiSourceOverlay
 {
-    internal static string Prepare(string cimguiDirectory)
-    {
+    internal static string Prepare(
+        NativeBuildContext context,
+        string cimguiDirectory
+    ) {
         string source = File.ReadAllText(Path.Combine(cimguiDirectory, "imgui", "imgui.cpp"));
         source = ReplaceOnce(source,
             "ImRect bg_rect(window->Pos + ImVec2(0, window->TitleBarHeight), window->Pos + window->Size);",
@@ -16,10 +19,11 @@ internal static class CimguiSourceOverlay
             "bg_rounding_flags = (flags & ImGuiWindowFlags_NoTitleBar) ? ImDrawFlags_RoundCornersAll : ImDrawFlags_RoundCornersBottom;",
             "bg_rounding_flags = ImDrawFlags_RoundCornersAll;");
 
-        string directory = Path.Combine(cimguiDirectory, CimguiBuildConstants.BUILD_DIR_NAME, "inno-source");
+        string directory = Path.Combine(context.GetNativeBuildRoot(typeof(ImGuiToolchain).Assembly), "Source");
         Directory.CreateDirectory(directory);
         File.WriteAllText(Path.Combine(directory, "imgui.cpp"), source);
-        File.Copy(Path.Combine(AppContext.BaseDirectory, "CMakeLists.txt"), Path.Combine(directory, "CMakeLists.txt"), overwrite: true);
+        string toolchainDirectory = Path.Combine(context.engineRoot, "build", "toolchains", "Inno.Build.Toolchains.ImGui");
+        File.Copy(Path.Combine(toolchainDirectory, "CMakeLists.txt"), Path.Combine(directory, "CMakeLists.txt"), overwrite: true);
         return directory;
     }
 

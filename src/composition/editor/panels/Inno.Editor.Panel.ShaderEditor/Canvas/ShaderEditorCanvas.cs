@@ -56,7 +56,8 @@ internal sealed partial class ShaderEditorCanvas(
         _ = ImGuiApi.InvisibleButton("##shader-canvas", m_size, ImGuiButtonFlags.MouseButtonLeft | ImGuiButtonFlags.MouseButtonMiddle | ImGuiButtonFlags.MouseButtonRight);
         bool hovered = ImGuiApi.IsItemHovered(ImGuiHoveredFlags.AllowWhenBlockedByActiveItem);
         Vector2 mouse = ImGuiApi.GetMousePos();
-        if (hovered && ImGuiApi.IsMouseClicked(ImGuiMouseButton.Right))
+        bool miniMapHovered = MiniMapContains(mouse);
+        if (hovered && !miniMapHovered && ImGuiApi.IsMouseClicked(ImGuiMouseButton.Right))
         {
             draft.menuPosition = ToGraph(mouse);
             draft.createFromPort = null;
@@ -81,7 +82,7 @@ internal sealed partial class ShaderEditorCanvas(
                 interaction.Focus();
             _ = EditorMenuRenderer.ContextMenu("##shader-menu", interaction);
         }
-        Navigate(hovered);
+        Navigate(hovered && !miniMapHovered);
         ImDrawListPtr draw = ImGuiApi.GetWindowDrawList();
         draw.PushClipRect(m_origin, m_origin + m_size, true);
         try
@@ -92,7 +93,7 @@ internal sealed partial class ShaderEditorCanvas(
             Edges(draw, points);
             foreach (GraphNodeRecord node in Controller.document.nodes)
                 Node(draw, node, points);
-            Pointer(hovered, points);
+            Pointer(hovered && !miniMapHovered, points);
             if (draft.boxSelecting)
             {
                 Vector2 min = Vector2.Min(draft.pointerStart, mouse), max = Vector2.Max(draft.pointerStart, mouse);
@@ -111,6 +112,7 @@ internal sealed partial class ShaderEditorCanvas(
         {
             draw.PopClipRect();
         }
+        DrawMiniMap();
         // Re-submit the canvas footprint after absolutely positioned node controls. A cursor
         // move alone can exceed ImGui's pixel-rounded item bounds at fractional UI scales.
         ImGuiApi.SetCursorScreenPos(m_origin);
@@ -281,7 +283,7 @@ internal sealed partial class ShaderEditorCanvas(
                 }
                 finally
                 {
-                    ImGuiApi.EndCombo();
+                    Widget.EndBoundedCombo();
                 }
             }
             bool noDocument = draft is null;

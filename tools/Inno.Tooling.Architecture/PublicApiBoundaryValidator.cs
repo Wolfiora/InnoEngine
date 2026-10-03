@@ -149,7 +149,8 @@ internal static class PublicApiBoundaryValidator
             XDocument document = XDocument.Load(path);
             string name = document.Descendants("AssemblyName").FirstOrDefault()?.Value ?? Path.GetFileNameWithoutExtension(path);
             string framework = document.Descendants("TargetFramework").FirstOrDefault()?.Value ?? "net9.0";
-            return new Project(path, name, Path.Combine(Path.GetDirectoryName(path)!, "bin", "Debug", framework, name + ".dll"),
+            return new Project(path, name, Path.Combine(Path.GetDirectoryName(path)!,
+                name == "Inno.Player.Browser" ? "bin/browser-wasm" : "bin", "Debug", framework, name + ".dll"),
                 document.Descendants("ProjectReference").ToArray());
         }
     }

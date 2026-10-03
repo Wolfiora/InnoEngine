@@ -1,22 +1,20 @@
 # Inno.Build.Toolchains.MiniAudio
 
-[Build 索引](README.md) · [MiniAudio Native](../native/Inno.Native.MiniAudio.md) · [Support Packs](Inno.Build.SupportPacks.md)
+[Build 索引](README.md) · [Wiki 首页](../README.md) · [统一 CLI](Inno.Build.Cli.md) · [Native](../native/Inno.Native.MiniAudio.md)
 
-这是 miniaudio 共享库构建 CLI，不提供稳定 library API。它只处理固定的 `extern/miniaudio` checkout，并把规范化产物写入 `.lib/miniaudio/<rid>`。
+## 职责、依赖和公开 API
 
-## 构建范围
+组件的宿主原生构建库，没有 Program。复用 ToolchainEnvironment、现有平台 builder 和产物复制规则，将 pinned extern/Native 源构建为当前宿主目标。唯一公开构建入口是 `MiniAudioToolchain.BuildAsync(NativeBuildContext context, CancellationToken cancellationToken = default)`。context 明确给出源码 checkout 与 debug/release 配置；取消杀死活动进程树，构建失败明确抛出。没有供外部派生者使用的 protected 扩展点；平台 builder 是内部实现。
 
-当前支持 macOS ARM64 与 Windows x64，不提供 Linux builder。构建启用完整标准 miniaudio engine、device I/O、decoder、resource manager 和 node graph；examples、tests、tools 与额外 node libraries 不进入产物。`MA_DLL` 用于导出与 generated function table 对应的 C ABI。
+```csharp
+using Inno.Build.Toolchains;
+using Inno.Build.Toolchains.MiniAudio;
 
-```shell
-/path/to/dotnet run --project build/toolchains/Inno.Build.Toolchains.MiniAudio -- build --config debug
-/path/to/dotnet run --project build/toolchains/Inno.Build.Toolchains.MiniAudio -- build --config release
-/path/to/dotnet run --project build/toolchains/Inno.Build.Toolchains.MiniAudio -- clean
+await MiniAudioToolchain.BuildAsync(new NativeBuildContext(engineRoot, "release"), cancellationToken);
 ```
 
-输出分别为：
+## 常见流程与生命周期
 
-- macOS：`.lib/miniaudio/osx-arm64/libminiaudio-debug.dylib` 与 `libminiaudio-release.dylib`
-- Windows：`.lib/miniaudio/windows-x64/miniaudio-debug.dll` 与 `miniaudio-release.dll`
+通常使用 `Inno.Build.Cli engine` 按依赖顺序构建全部组件，再构建 Editor/Support Pack。库不启动其他组件 Program。产物属于 .lib/<component>/<target>，Debug 和 Release 命名保持独立。升级 Native facade 或 extern 后，先通过统一 bindings 路线生成，再重新构建相关目标。失败不表示可以部署缺失的动态库；最终 closure 必须通过平台 validator。
 
-`clean` 只删除 miniaudio 的 dependency-local build 目录和 `.lib/miniaudio`。源码缺失、host/architecture 不支持、CMake 失败或没有发现共享库时，命令返回非零状态；不会创建静默 fallback。
+具体组件只读取 context.engineRoot，CMake/overlay 与 .lib 不从工具程序集位置选择。取消检查发生在进程启动和产物复制前；已安装的可重建产物不作为成功发布的替代品。

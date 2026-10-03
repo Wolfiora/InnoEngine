@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
+using System.Threading;
 using Inno.Assets;
 using Inno.Core.Serialization;
 
@@ -14,12 +15,13 @@ internal static class AssetSampleSnapshot
         string source,
         string target,
         string targetLocalPath,
-        AssetSourcePolicy sourcePolicy
+        AssetSourcePolicy sourcePolicy,
+        CancellationToken cancellationToken
     ) {
-        List<string> copied = CopyDirectory(source, target, targetLocalPath, sourcePolicy);
+        List<string> copied = CopyDirectory(source, target, targetLocalPath, sourcePolicy, cancellationToken);
         string sourceMeta = source + ".imeta";
         if (File.Exists(sourceMeta))
-            CopyStableFile(sourceMeta, target + ".imeta");
+            CopyStableFile(sourceMeta, target + ".imeta", cancellationToken);
         return copied;
     }
 
@@ -27,8 +29,9 @@ internal static class AssetSampleSnapshot
         string stagedSource,
         AssetPath source,
         AssetPath target,
-        SerializationRegistry serialization,
-        Action<AssetSampleTransformContext> transform
+        SerializationGeneration serialization,
+        Action<AssetSampleTransformContext> transform,
+        CancellationToken cancellationToken
     ) {
         var identities = new Dictionary<Guid, Guid>();
         var paths = new Dictionary<string, string>(StringComparer.Ordinal);
@@ -38,6 +41,7 @@ internal static class AssetSampleSnapshot
             metadata = [.. metadata, stagedSource + ".imeta"];
         foreach (string path in metadata.Order(StringComparer.Ordinal))
         {
+            cancellationToken.ThrowIfCancellationRequested();
             AssetSourceMeta meta = serialization.Deserialize<AssetSourceMeta>(File.ReadAllBytes(path));
             if (meta.persistentId == Guid.Empty)
                 throw new InvalidDataException($"Sample metadata '{path}' has no persistent identity.");
@@ -58,10 +62,14 @@ internal static class AssetSampleSnapshot
             paths[new AssetPath(source.source, oldLocal).ToString()] = newLocal;
             paths[oldLocal] = newLocal;
         }
-        transform(new AssetSampleTransformContext(stagedSource, source, target, identities, sourceIdentities));
-        foreach (string path in Directory.GetFiles(stagedSource, "*", SearchOption.AllDirectories)
-                     .Where(static path => !path.EndsWith(".imeta", StringComparison.OrdinalIgnoreCase)))
+        transform(new AssetSampleTransformContext(
+            stagedSource, source, target, identities, sourceIdentities, cancellationToken));
+        IEnumerable<string> stagedFiles = Directory.GetFiles(stagedSource, "*", SearchOption.AllDirectories);
+        if (File.Exists(stagedSource + ".imeta"))
+            stagedFiles = stagedFiles.Append(stagedSource + ".imeta");
+        foreach (string path in stagedFiles)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             byte[] original = File.ReadAllBytes(path);
             byte[] rewritten = SerializedIdentityRemapper.Rewrite(original, identities, paths);
             if (!original.AsSpan().SequenceEqual(rewritten))
@@ -73,8 +81,10 @@ internal static class AssetSampleSnapshot
         string source,
         string target,
         string targetLocalPath,
-        AssetSourcePolicy sourcePolicy
+        AssetSourcePolicy sourcePolicy,
+        CancellationToken cancellationToken
     ) {
+        cancellationToken.ThrowIfCancellationRequested();
         EnsureRegularDirectory(source);
         Directory.CreateDirectory(target);
         string[] directories = Directory.GetDirectories(source)
@@ -95,12 +105,13 @@ internal static class AssetSampleSnapshot
                 directories[index],
                 Path.Combine(target, name),
                 childLocalPath,
-                sourcePolicy));
+                sourcePolicy,
+                cancellationToken));
         }
         for (int index = 0; index < files.Length; index++)
         {
             string name = Path.GetFileName(files[index]);
-            CopyStableFile(files[index], Path.Combine(target, name));
+            CopyStableFile(files[index], Path.Combine(target, name), cancellationToken);
             if (!AssetSourcePolicy.IsGeneratedPath(name))
                 copied.Add(targetLocalPath + "/" + name);
         }
@@ -135,24 +146,49 @@ internal static class AssetSampleSnapshot
 
     private static void CopyStableFile(
         string source,
-        string target
+        string target,
+        CancellationToken cancellationToken
     ) {
         EnsureRegularFile(source);
         FileInfo before = new(source);
         long beforeLength = before.Length;
         DateTime beforeWriteTime = before.LastWriteTimeUtc;
         Directory.CreateDirectory(Path.GetDirectoryName(target)!);
-        File.Copy(source, target, overwrite: false);
+        using (FileStream input = File.OpenRead(source))
+        using (FileStream output = new(target, FileMode.CreateNew, FileAccess.Write, FileShare.None))
+        {
+            byte[] buffer = new byte[81920];
+            int count;
+            while ((count = input.Read(buffer)) != 0)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                output.Write(buffer, 0, count);
+            }
+        }
         EnsureRegularFile(source);
         FileInfo after = new(source);
         if (after.Length != beforeLength || after.LastWriteTimeUtc != beforeWriteTime)
             throw new IOException($"Sample source file '{source}' changed while it was being imported.");
-        using FileStream sourceStream = File.OpenRead(source);
-        using FileStream targetStream = File.OpenRead(target);
-        byte[] sourceHash = SHA256.HashData(sourceStream);
-        byte[] targetHash = SHA256.HashData(targetStream);
+        byte[] sourceHash = HashFile(source, cancellationToken);
+        byte[] targetHash = HashFile(target, cancellationToken);
         if (!sourceHash.AsSpan().SequenceEqual(targetHash))
             throw new IOException($"Sample source file '{source}' changed while it was being imported.");
+    }
+
+    private static byte[] HashFile(
+        string path,
+        CancellationToken cancellationToken
+    ) {
+        using FileStream stream = File.OpenRead(path);
+        using IncrementalHash hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
+        byte[] buffer = new byte[81920];
+        int count;
+        while ((count = stream.Read(buffer)) != 0)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            hash.AppendData(buffer, 0, count);
+        }
+        return hash.GetHashAndReset();
     }
 
     private static void EnsureRegularDirectory(string path)

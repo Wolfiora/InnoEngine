@@ -383,7 +383,8 @@ public sealed class AssetLoaderTests : IDisposable
         using AssetLoader candidateLoader = candidate.loader;
         candidateLoader.Rescan();
         Directory.CreateDirectory(workspace.SourcePath("z.txt.imeta"));
-        Assert.ThrowsAny<IOException>(candidate.Commit);
+        Exception failure = Assert.ThrowsAny<Exception>(candidate.Commit);
+        Assert.True(failure is IOException or UnauthorizedAccessException, failure.ToString());
         Assert.False(System.IO.File.Exists(workspace.SourcePath("a.txt.imeta")));
         Assert.True(Directory.Exists(workspace.SourcePath("z.txt.imeta")));
     }

@@ -12,7 +12,7 @@ namespace Inno.Assets.Pipeline;
 /// <summary>
 /// Holds an isolated source-mount candidate that can be inspected before it atomically replaces the active Asset Database.
 /// </summary>
-public sealed class AssetSourceMountTransaction : IDisposable
+public sealed class AssetSourceMountTransaction : IDisposable, IAssetSourceSnapshot
 {
     private readonly IReadOnlyList<AssetSourceMount> m_mounts;
     private readonly ReferenceRecoveryTransaction m_recovery;

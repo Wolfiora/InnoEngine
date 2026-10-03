@@ -15,6 +15,32 @@ namespace Inno.Input.Tests;
 public sealed class InputRuntimeTests
 {
     [Fact]
+    public void GloballyConsumedPlatformEventsNeverReachSessionInput()
+    {
+        using var source = new Sdl3InputSource(windowId: 0);
+        using var backend = source.CreateBackend();
+        var consumed = new KeyPressedEvent(42, KeyCode.Space);
+        consumed.HandleInGlobal();
+        source.ProcessEvent(consumed);
+        Assert.False(backend.Capture(1).IsKeyDown(KeyCode.Space));
+        source.ProcessEvent(new KeyPressedEvent(42, KeyCode.Space));
+        Assert.True(backend.Capture(2).IsKeyDown(KeyCode.Space));
+    }
+
+    [Fact]
+    public void DisposingOneSessionDoesNotDisconnectOtherSessionSubscriptions()
+    {
+        using var source = new Sdl3InputSource(windowId: 0);
+        var retired = source.CreateBackend();
+        using var current = source.CreateBackend();
+        retired.Dispose();
+        source.ProcessEvent(new KeyPressedEvent(42, KeyCode.Space));
+        Assert.True(current.Capture(1).IsKeyDown(KeyCode.Space));
+        source.Dispose();
+        Assert.Throws<ObjectDisposedException>(() => source.ProcessEvent(new KeyPressedEvent(42, KeyCode.Enter)));
+    }
+
+    [Fact]
     public void SdlAdapterCapturesTransitionsAndClearsTransientState()
     {
         using var backend = new Sdl3InputBackend(windowId: 7);
@@ -33,6 +59,25 @@ public sealed class InputRuntimeTests
         Assert.False(second.WasKeyPressed(KeyCode.Space));
         Assert.Equal(0f, second.mouseDelta.x);
         Assert.Equal(0f, second.scrollDelta.y);
+    }
+
+    [Fact]
+    public void AllWindowSourceAcceptsDetachedWindowAndClearsItOnFocusLoss()
+    {
+        using var source = new Sdl3InputSource(windowId: 0);
+        using var backend = source.CreateBackend();
+
+        source.ProcessEvent(new KeyPressedEvent(42, KeyCode.Space));
+        source.ProcessEvent(new MouseButtonPressedEvent(42, MouseButton.Left));
+        InputSnapshot pressed = backend.Capture(1);
+        Assert.True(pressed.IsKeyDown(KeyCode.Space));
+        Assert.True(pressed.IsMouseButtonDown(MouseButton.Left));
+
+        source.ProcessEvent(new WindowFocusChangedEvent(42, false));
+        InputSnapshot released = backend.Capture(2);
+        Assert.False(released.IsKeyDown(KeyCode.Space));
+        Assert.True(released.WasKeyReleased(KeyCode.Space));
+        Assert.False(released.IsMouseButtonDown(MouseButton.Left));
     }
 
     [Fact]

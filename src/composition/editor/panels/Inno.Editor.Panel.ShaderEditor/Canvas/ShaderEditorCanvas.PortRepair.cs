@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using Inno.Core.Graphs;
 using Inno.Rendering.Shaders;
+using Widget = Inno.Editor.ImGui.ImGuiWidget.ImGuiWidget;
 using ImGuiApi = Inno.Native.ImGui.ImGui;
 
 namespace Inno.Editor.Panel.ShaderEditor;
@@ -27,7 +28,7 @@ internal sealed partial class ShaderEditorCanvas
                 try
                 {
                     ImGuiApi.TextUnformatted(endpoint.portId.value + " · " + old.type.id);
-                    if (!ImGuiApi.BeginCombo("##replacement", "Reconnect to…"))
+                    if (!Widget.BeginBoundedCombo("##replacement", "Reconnect to…"))
                         continue;
                     foreach (ShaderNodePort replacement in draft.ports[node.id])
                     {
@@ -54,7 +55,7 @@ internal sealed partial class ShaderEditorCanvas
                         owner.Changed(draft);
                         break;
                     }
-                    ImGuiApi.EndCombo();
+                    Widget.EndBoundedCombo();
                 }
                 finally
                 {

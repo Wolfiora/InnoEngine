@@ -62,7 +62,7 @@ public static class PathBoundary
         string root,
         string candidate
     ) {
-        string prefix = root + Path.DirectorySeparatorChar;
+        string prefix = Path.EndsInDirectorySeparator(root) ? root : root + Path.DirectorySeparatorChar;
         StringComparison comparison = OperatingSystem.IsWindows() || OperatingSystem.IsMacOS()
             ? StringComparison.OrdinalIgnoreCase
             : StringComparison.Ordinal;

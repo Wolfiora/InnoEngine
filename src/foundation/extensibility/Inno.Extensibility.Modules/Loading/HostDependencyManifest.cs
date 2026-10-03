@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -24,6 +25,8 @@ internal static class HostDependencyManifest
             .ToArray();
     }
 
+    [UnconditionalSuppressMessage("SingleFile", "IL3000", Justification =
+        "Bundled assemblies have no sidecar manifest; empty locations are skipped and CLR references remain available.")]
     private static IReadOnlyList<string> GetDependencyFiles(IReadOnlyList<Assembly> rootAssemblies)
     {
         var paths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -40,9 +43,10 @@ internal static class HostDependencyManifest
 
         foreach (Assembly rootAssembly in rootAssemblies)
         {
-            if (string.IsNullOrWhiteSpace(rootAssembly.Location))
+            string location = rootAssembly.Location;
+            if (string.IsNullOrWhiteSpace(location))
                 continue;
-            string dependencyFile = Path.ChangeExtension(rootAssembly.Location, ".deps.json");
+            string dependencyFile = Path.ChangeExtension(location, ".deps.json");
             if (File.Exists(dependencyFile))
                 paths.Add(Path.GetFullPath(dependencyFile));
         }

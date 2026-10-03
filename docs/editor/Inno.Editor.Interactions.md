@@ -240,6 +240,8 @@ generation 变化、源注销、domain 不匹配或成功 Drop 会结束当前�
 
 `EditorInteractionRuntime` 从当前 TypeCache snapshot 原子构建 Module、Action、Menu source、Drop、Panel 和 Modal。候选冲突或构造失败会拒绝新 snapshot，旧 generation 继续工作。Host 类型实例会尽量保留；插件类型会 Detach/Stop/Dispose，避免固定旧 ALC。
 
+`EditorModalExtension.Presentation` 捕获 Modal 的移动、缩放、初始尺寸与 `allowScrolling` 布局策略，供表现层决定窗口标志。其值只在当前 generation 的展示快照内有效，不作为持久状态保存。
+
 Editor 同时拥有 Scene、Asset、Graph 等多个 `IdentityAllocator` domain。需要跨帧保留对象身份的通用 UI（例如 Inspector lock）必须保存完整 `RuntimeIdentity`，并通过 `EditorInteractions.TryResolveIdentity` 回到该 identity 自己的 domain；不得使用 `IdentityAllocator.current` 猜测当前 domain，也不得只保存 persistent Guid 后在错误 allocator 中查询。Inspector lock 同时保留原 domain 与 persistent ID，当前 runtime slot 退休后只在原 domain 重绑定同一稳定对象，因此 generation 替换不会锁到同 ID 的其他域。非 identity 的 collectible 插件对象只允许弱引用，避免 lock 阻止旧 ALC 回收。
 
 `IEditorDocumentService` 是无可见 Panel 的共享创作文档所有权服务。它统一管理 Shader、Material、Pipeline 等草稿的单实例身份、dirty 状态、Save/Revert/Close、恢复和 provider generation 重连；Shader Editor 与 Inspector 是各资产的唯一呈现入口。打开文档时 persistent asset ID 与规范化 source path 同时保持唯一：同一路径的干净陈旧上下文会在 provider 回调后安全退休，含未保存修改的上下文则拒绝被替换并要求用户先 Save、Revert 或 Close，不能静默丢弃草稿。

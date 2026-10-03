@@ -20,6 +20,16 @@ public sealed class EventDispatcher
     private int m_pendingCount;
 
     /// <summary>
+    /// Observes an event after its ordered hub dispatch has completed, including globally consumed events.
+    /// </summary>
+    /// <remarks>
+    /// Observers run synchronously on the dispatching thread and do not participate in consumption.
+    /// They must not change consumption or call HandleInHub. Observer failures propagate to the caller.
+    /// Owners must unsubscribe before retiring their callbacks or extensions.
+    /// </remarks>
+    public event Action<Event>? dispatched;
+
+    /// <summary>
     /// Creates a dispatcher with bounded pending work and a finite per-flush budget.
     /// </summary>
     /// <param name="queueCapacity">
@@ -142,7 +152,8 @@ public sealed class EventDispatcher
     /// Immediately dispatches an event to all valid hubs in priority order.
     /// </summary>
     /// <remarks>
-    /// Dispatch stops when the event is marked globally handled.
+    /// Hub dispatch stops when the event is marked globally handled. Completion observers are still notified.
+    /// A failed hub propagates its exception without reporting successful completion.
     /// </remarks>
     /// <param name="e">
     /// The event instance to dispatch.
@@ -150,26 +161,21 @@ public sealed class EventDispatcher
     public void Emit(Event e)
     {
         ArgumentNullException.ThrowIfNull(e);
-        if (e.isGlobalHandled)
+        if (!e.isGlobalHandled)
         {
-            return;
-        }
-
-        EventHub[] hubs = Volatile.Read(ref m_hubsSnapshot);
-        for (int i = 0; i < hubs.Length; i++)
-        {
-            EventHub hub = hubs[i];
-            if (!hub.isValid)
+            EventHub[] hubs = Volatile.Read(ref m_hubsSnapshot);
+            for (int i = 0; i < hubs.Length; i++)
             {
-                continue;
-            }
+                EventHub hub = hubs[i];
+                if (!hub.isValid)
+                    continue;
 
-            hub.Dispatch(e);
-            if (e.isGlobalHandled)
-            {
-                break;
+                hub.Dispatch(e);
+                if (e.isGlobalHandled)
+                    break;
             }
         }
+        dispatched?.Invoke(e);
     }
 
     internal void RemoveHub(EventHub hub)
