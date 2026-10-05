@@ -1,3 +1,4 @@
+using Inno.Adapter.Modules.DotNet;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -43,10 +44,10 @@ public sealed class EditorRuntimeTests : IDisposable
         Directory.CreateDirectory(Path.Combine(m_projectRoot, "Assets"));
         m_diagnosticScope = m_diagnostics.EnterScope();
         m_modules = new ModuleHost(new ModuleHostOptions
-        {
+        { catalogSource = new DotNetAssemblyCatalogSource(typeof(EditorRuntimeTests).Assembly),
             cacheDirectory = Path.Combine(m_projectRoot, "Library", "Assemblies")
         });
-        m_types = new TypeCatalog(m_modules);
+        m_types = new TypeCatalog(m_modules, new ReflectionTypeCatalogSource());
 
         TestModule.startCount = 0;
         TestModule.stopCount = 0;

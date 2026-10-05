@@ -25,6 +25,7 @@ internal sealed class EditorScripting : EditorModule, IEditorScriptCompilation
     private readonly ProjectSettingsStore m_settings;
     private readonly EditorReloadCoordinator m_reloads;
     private readonly ScriptCompiler m_compiler;
+    private readonly Func<ScriptModuleDeployment, IModuleSource> m_moduleSourceFactory;
     private readonly Logger m_log;
     private ScriptReloadHost? m_manager;
     private Task<ScriptCompilationResult>? m_compilation;
@@ -45,13 +46,15 @@ internal sealed class EditorScripting : EditorModule, IEditorScriptCompilation
         ProjectSettingsStore settings,
         ScriptCompiler compiler,
         EditorReloadCoordinator reloads,
-        LogRouter logs
+        LogRouter logs,
+        Func<ScriptModuleDeployment, IModuleSource> moduleSourceFactory
     ) {
         m_assets = assets ?? throw new ArgumentNullException(nameof(assets));
         m_plugins = plugins ?? throw new ArgumentNullException(nameof(plugins));
         m_modules = modules ?? throw new ArgumentNullException(nameof(modules));
         m_settings = settings ?? throw new ArgumentNullException(nameof(settings));
         m_compiler = compiler ?? throw new ArgumentNullException(nameof(compiler));
+        m_moduleSourceFactory = moduleSourceFactory ?? throw new ArgumentNullException(nameof(moduleSourceFactory));
         m_reloads = reloads ?? throw new ArgumentNullException(nameof(reloads));
         ArgumentNullException.ThrowIfNull(logs);
         m_log = logs.CreateLogger<EditorScripting>();
@@ -167,7 +170,8 @@ internal sealed class EditorScripting : EditorModule, IEditorScriptCompilation
             m_plugins,
             m_modules,
             m_settings,
-            m_reloads);
+            m_reloads,
+            m_moduleSourceFactory);
         m_manager.Start();
         if (m_manager.TryCompilePending(out Task<ScriptCompilationResult>? compilation))
         {

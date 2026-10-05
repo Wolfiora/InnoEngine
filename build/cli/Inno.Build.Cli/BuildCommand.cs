@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using Inno.Assets;
 using Inno.Build;
+using Inno.Build.Managed;
 using Inno.Core.Settings;
 
 namespace Inno.Build.Cli;
@@ -81,6 +82,8 @@ internal sealed class BuildCommand
             profile.startupScene = AssetPath.Parse(scene).ToString();
         if (m_values.TryGetValue("target", out string? target))
             profile.target = new BuildTargetId(target);
+        if (m_values.TryGetValue("deployment", out string? deployment))
+            profile.managedDeployment = new ManagedDeploymentId(deployment);
         return new GameBuildRequest
         {
             profile = profile,
@@ -110,7 +113,7 @@ internal sealed class BuildCommand
 
     private static string Usage()
         => "Usage:\n"
-           + "  Inno.Build.Cli game --project <dir> --support-packs <dir> --output <dir> [--profile <BuildProfile.inno>] [--target <target>] [--startup-scene <scene>]\n"
+           + "  Inno.Build.Cli game --project <dir> --support-packs <dir> --output <dir> [--profile <BuildProfile.inno>] [--target <target>] [--deployment <provider-id>] [--startup-scene <scene>]\n"
            + "  Inno.Build.Cli plugin --project <dir> --output <package.iplugin> --display-name <name> [--dependencies <id,id>] [--include-dependencies]\n"
            + "  Inno.Build.Cli import-sample --project <dir> --source <plugin-id::~Sample>\n"
            + "  Inno.Build.Cli scripts --project <dir> --output <dir>";

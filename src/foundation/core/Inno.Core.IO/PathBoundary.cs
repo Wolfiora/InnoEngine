@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Collections.Generic;
 
 namespace Inno.Core.IO;
 
@@ -56,6 +57,52 @@ public static class PathBoundary
         string candidate = Path.GetFullPath(path);
         EnsureContains(normalizedRoot, candidate);
         return candidate;
+    }
+
+    /// <summary>
+    /// Enumerates regular files in an owned tree without following filesystem links.
+    /// </summary>
+    /// <param name="root">
+    /// The existing physical root whose files and subdirectories belong to the caller.
+    /// </param>
+    /// <returns>
+    /// Absolute file paths in unspecified order; enumeration does not retain open file handles.
+    /// </returns>
+    /// <exception cref="IOException">
+    /// The root or any entry is a symbolic link, junction or other reparse point, or cannot be inspected.
+    /// </exception>
+    /// <exception cref="DirectoryNotFoundException">
+    /// The root does not exist.
+    /// </exception>
+    public static IEnumerable<string> EnumerateFiles(string root)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(root);
+        string normalizedRoot = Path.GetFullPath(root);
+        if (!Directory.Exists(normalizedRoot))
+            throw new DirectoryNotFoundException($"Owned directory '{normalizedRoot}' does not exist.");
+        var pending = new Stack<string>();
+        pending.Push(normalizedRoot);
+        while (pending.Count > 0)
+        {
+            string directory = pending.Pop();
+            RequireRegularEntry(directory);
+            foreach (string entry in Directory.EnumerateFileSystemEntries(directory))
+            {
+                FileAttributes attributes = RequireRegularEntry(entry);
+                if ((attributes & FileAttributes.Directory) != 0)
+                    pending.Push(entry);
+                else
+                    yield return entry;
+            }
+        }
+    }
+
+    private static FileAttributes RequireRegularEntry(string path)
+    {
+        FileAttributes attributes = File.GetAttributes(path);
+        if ((attributes & FileAttributes.ReparsePoint) != 0)
+            throw new IOException($"Owned filesystem entry '{path}' cannot be a link or reparse point.");
+        return attributes;
     }
 
     private static void EnsureContains(

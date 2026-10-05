@@ -2,7 +2,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Reflection;
 
 namespace Inno.Core.Serialization;
 
@@ -19,7 +18,7 @@ internal static class ValuePipeline
             ConverterInvoker? converter = operation.ResolveConverter(declaredType);
             if (converter is not null)
                 return converter.Write(operation, "$", declaredType, value);
-            if (declaredType.IsDefined(typeof(RequiresSerializationConverterAttribute), inherit: true))
+            if (operation.GetMetadata(declaredType).requiresConverter)
                 throw new InvalidOperationException(
                     $"Serializable type '{declaredType.FullName}' requires an explicit serialization converter.");
 
@@ -28,7 +27,7 @@ internal static class ValuePipeline
                 throw new InvalidOperationException(
                     $"Default root serialization requires exact type '{declaredType.FullName}', but the runtime value is '{value.GetType().FullName}'. Mark the root type with RequiresSerializationConverter and register a converter for polymorphism.");
             }
-            EnsureDefaultSerializableType(declaredType);
+            EnsureDefaultSerializableType(declaredType, operation);
             var node = new ObjectSerializationNode();
             WriteProperties(value, node, operation, "$");
             return node;
@@ -47,12 +46,12 @@ internal static class ValuePipeline
         ConverterInvoker? converter = operation.ResolveConverter(declaredType);
         if (converter is not null)
             return converter.Read(operation, "$", declaredType, RequireObject(node, declaredType, "$"));
-        if (declaredType.IsDefined(typeof(RequiresSerializationConverterAttribute), inherit: true))
+        if (operation.GetMetadata(declaredType).requiresConverter)
             throw new InvalidOperationException(
                 $"Serializable type '{declaredType.FullName}' requires an explicit serialization converter.");
 
-        EnsureDefaultSerializableType(declaredType);
-        ISerializable instance = CreateSerializable(declaredType);
+        EnsureDefaultSerializableType(declaredType, operation);
+        ISerializable instance = CreateSerializable(declaredType, operation);
         RestoreProperties(instance, RequireObject(node, declaredType, "$"), operation, "$");
         return instance;
     }
@@ -69,11 +68,11 @@ internal static class ValuePipeline
             converter.Restore(operation, "$", targetType, RequireObject(node, targetType, "$"), target);
             return;
         }
-        if (targetType.IsDefined(typeof(RequiresSerializationConverterAttribute), inherit: true))
+        if (operation.GetMetadata(targetType).requiresConverter)
             throw new InvalidOperationException(
                 $"Serializable type '{targetType.FullName}' requires an explicit serialization converter.");
 
-        EnsureDefaultSerializableType(targetType);
+        EnsureDefaultSerializableType(targetType, operation);
         RestoreProperties(target, RequireObject(node, targetType, "$"), operation, "$" );
     }
 
@@ -111,10 +110,10 @@ internal static class ValuePipeline
                 return new BinarySerializationNode((byte[])((byte[])value).Clone());
             if (valueType.IsArray)
                 return WriteArray((Array)value, valueType, operation, path);
-            if (CollectionTypeUtility.TryGetMapTypes(valueType, out Type keyType, out Type mapValueType))
-                return WriteMap(value, valueType, keyType, mapValueType, operation, path);
-            if (CollectionTypeUtility.TryGetSequenceElementType(valueType, out Type elementType))
-                return WriteSequence(value, elementType, operation, path);
+            if (operation.GetMetadata(valueType).collection is { keyType: not null } map)
+                return WriteMap(value, valueType, map.keyType, map.elementType, operation, path);
+            if (operation.GetMetadata(valueType).collection is { keyType: null } sequence)
+                return WriteSequence(value, sequence.elementType, operation, path);
             if (valueType.IsValueType)
                 return WriteStruct(value, valueType, operation, path);
 
@@ -125,7 +124,7 @@ internal static class ValuePipeline
                     throw new InvalidOperationException(
                         $"Default serialization at '{path}' requires exact type '{valueType.FullName}', but the runtime value is '{value.GetType().FullName}'. Register a converter for polymorphic values.");
                 }
-                EnsureDefaultSerializableType(valueType);
+                EnsureDefaultSerializableType(valueType, operation);
                 var node = new ObjectSerializationNode();
                 WriteProperties(serializable, node, operation, path);
                 return node;
@@ -172,17 +171,17 @@ internal static class ValuePipeline
                 : throw TypeMismatch(path, "binary", node);
         if (valueType.IsArray)
             return ReadArray(node, valueType, operation, path);
-        if (CollectionTypeUtility.TryGetMapTypes(valueType, out Type keyType, out Type mapValueType))
-            return ReadMap(node, valueType, keyType, mapValueType, operation, path);
-        if (CollectionTypeUtility.TryGetSequenceElementType(valueType, out Type elementType))
-            return ReadSequence(node, valueType, elementType, operation, path);
+        if (operation.GetMetadata(valueType).collection is { keyType: not null } map)
+            return ReadMap(node, valueType, map.keyType, map.elementType, operation, path);
+        if (operation.GetMetadata(valueType).collection is { keyType: null } sequence)
+            return ReadSequence(node, valueType, sequence.elementType, operation, path);
         if (valueType.IsValueType)
             return ReadStruct(node, valueType, operation, path);
 
         if (allowDefaultObject && typeof(ISerializable).IsAssignableFrom(valueType))
         {
-            EnsureDefaultSerializableType(valueType);
-            ISerializable instance = CreateSerializable(valueType);
+            EnsureDefaultSerializableType(valueType, operation);
+            ISerializable instance = CreateSerializable(valueType, operation);
             RestoreProperties(instance, RequireObject(node, valueType, path), operation, path);
             return instance;
         }
@@ -197,10 +196,10 @@ internal static class ValuePipeline
         SerializationOperation operation,
         string path
     ) {
-        SerializableMember[] members = ReflectionMetadata.GetSerializableMembers(value.GetType());
-        for (int i = 0; i < members.Length; i++)
+        IReadOnlyList<SerializationMemberMetadata> members = operation.GetMetadata(value.GetType()).members;
+        for (int i = 0; i < members.Count; i++)
         {
-            SerializableMember member = members[i];
+            SerializationMemberMetadata member = members[i];
             if ((member.visibility & PropertyVisibility.Serialize) == 0)
                 continue;
             string memberPath = AppendPath(path, member.name);
@@ -221,10 +220,10 @@ internal static class ValuePipeline
         SerializationOperation operation,
         string path
     ) {
-        SerializableMember[] members = ReflectionMetadata.GetSerializableMembers(target.GetType());
-        for (int i = 0; i < members.Length; i++)
+        IReadOnlyList<SerializationMemberMetadata> members = operation.GetMetadata(target.GetType()).members;
+        for (int i = 0; i < members.Count; i++)
         {
-            SerializableMember member = members[i];
+            SerializationMemberMetadata member = members[i];
             if ((member.visibility & PropertyVisibility.Deserialize) == 0 ||
                 !node.values.TryGetValue(member.name, out SerializationNode? memberNode))
             {
@@ -265,10 +264,10 @@ internal static class ValuePipeline
         if (node is not ArraySerializationNode array)
             throw TypeMismatch(path, "array", node);
         Type elementType = arrayType.GetElementType()!;
-        Array result = Array.CreateInstance(elementType, array.values.Count);
-        for (int i = 0; i < array.values.Count; i++)
-            result.SetValue(Read(array.values[i], elementType, operation, $"{path}[{i}]", false), i);
-        return result;
+        var values = new object?[array.values.Count];
+        for (int i = 0; i < values.Length; i++)
+            values[i] = Read(array.values[i], elementType, operation, $"{path}[{i}]", false);
+        return operation.GetMetadata(arrayType).collection!.buildSequence!(values);
     }
 
     private static SerializationNode WriteSequence(
@@ -301,7 +300,7 @@ internal static class ValuePipeline
         var values = new object?[array.values.Count];
         for (int i = 0; i < values.Length; i++)
             values[i] = Read(array.values[i], elementType, operation, $"{path}[{i}]", false);
-        return CollectionTypeUtility.BuildSequence(sequenceType, elementType, values);
+        return operation.GetMetadata(sequenceType).collection!.buildSequence!(values);
     }
 
     private static SerializationNode WriteMap(
@@ -312,8 +311,7 @@ internal static class ValuePipeline
         SerializationOperation operation,
         string path
     ) {
-        if (!CollectionTypeUtility.TryEnumerateMap(value, mapType, out List<KeyValuePair<object?, object?>> entries))
-            throw new InvalidOperationException($"Map value '{path}' cannot be enumerated.");
+        IReadOnlyList<KeyValuePair<object?, object?>> entries = operation.GetMetadata(mapType).collection!.enumerateMap!(value);
         var node = new MapSerializationNode();
         for (int i = 0; i < entries.Count; i++)
         {
@@ -344,7 +342,7 @@ internal static class ValuePipeline
                 Read(map.values[i].Key, keyType, operation, $"{path}[{i}].key", false),
                 Read(map.values[i].Value, mapValueType, operation, $"{path}[{i}].value", false));
         }
-        return CollectionTypeUtility.BuildMap(mapType, keyType, mapValueType, entries);
+        return operation.GetMetadata(mapType).collection!.buildMap!(entries);
     }
 
     private static SerializationNode WriteStruct(
@@ -353,11 +351,11 @@ internal static class ValuePipeline
         SerializationOperation operation,
         string path
     ) {
-        StructMember[] members = StructMetadata.GetMembers(structType);
+        IReadOnlyList<SerializationMemberMetadata> members = operation.GetMetadata(structType).members;
         var node = new ObjectSerializationNode();
-        for (int i = 0; i < members.Length; i++)
+        for (int i = 0; i < members.Count; i++)
         {
-            StructMember member = members[i];
+            SerializationMemberMetadata member = members[i];
             if ((member.visibility & PropertyVisibility.Serialize) == 0)
                 continue;
             node.values.Add(
@@ -374,11 +372,11 @@ internal static class ValuePipeline
         string path
     ) {
         ObjectSerializationNode objectNode = RequireObject(node, structType, path);
-        object result = Activator.CreateInstance(structType)!;
-        StructMember[] members = StructMetadata.GetMembers(structType);
-        for (int i = 0; i < members.Length; i++)
+        object result = operation.GetMetadata(structType).CreateInstance();
+        IReadOnlyList<SerializationMemberMetadata> members = operation.GetMetadata(structType).members;
+        for (int i = 0; i < members.Count; i++)
         {
-            StructMember member = members[i];
+            SerializationMemberMetadata member = members[i];
             if ((member.visibility & PropertyVisibility.Deserialize) == 0 ||
                 !objectNode.values.TryGetValue(member.name, out SerializationNode? memberNode))
             {
@@ -389,39 +387,19 @@ internal static class ValuePipeline
         return result;
     }
 
-    private static ISerializable CreateSerializable(Type valueType)
-    {
-        ConstructorInfo? constructor = valueType.GetConstructor(
-            BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic,
-            binder: null,
-            Type.EmptyTypes,
-            modifiers: null);
-        if (constructor is null)
-        {
-            throw new InvalidOperationException(
-                $"Serializable type '{valueType.FullName}' requires a parameterless constructor or an explicit converter.");
-        }
+    private static ISerializable CreateSerializable(
+        Type valueType,
+        SerializationOperation operation
+    ) => (ISerializable)operation.GetMetadata(valueType).CreateInstance();
 
-        try
-        {
-            return (ISerializable)constructor.Invoke(null);
-        }
-        catch (TargetInvocationException exception)
-        {
-            throw new InvalidOperationException(
-                $"The parameterless constructor for serializable type '{valueType.FullName}' failed.",
-                exception.InnerException ?? exception);
-        }
-    }
-
-    private static void EnsureDefaultSerializableType(Type valueType)
-    {
+    private static void EnsureDefaultSerializableType(
+        Type valueType,
+        SerializationOperation operation
+    ) {
         if (!typeof(ISerializable).IsAssignableFrom(valueType))
             throw new InvalidOperationException($"Type '{valueType.FullName}' does not implement ISerializable.");
-        if (valueType.IsAbstract || valueType.IsInterface)
-            throw new InvalidOperationException($"Serializable type '{valueType.FullName}' requires an explicit converter because it is not concrete.");
-        if (valueType.IsDefined(typeof(RequiresSerializationConverterAttribute), inherit: true))
-            throw new InvalidOperationException($"Serializable type '{valueType.FullName}' requires an explicit serialization converter.");
+        if (valueType.IsAbstract || valueType.IsInterface || operation.GetMetadata(valueType).requiresConverter)
+            throw new InvalidOperationException($"Serializable type '{valueType.FullName}' requires an explicit converter.");
     }
 
     private static ObjectSerializationNode RequireObject(

@@ -4,10 +4,12 @@
     <ImplicitUsings>disable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
+
   <ItemGroup>
     <ProjectReference Include="$(BindGenRoot)/src/BGCS/BGCS.csproj" />
     <ProjectReference Include="$(BindGenRoot)/src/BGCS.Core/BGCS.Core.csproj" />
   </ItemGroup>
+
   <ItemGroup>
     <Content Include="Managed/ImTextureID.cs.txt" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="Managed/ImVector.cs.txt" CopyToOutputDirectory="PreserveNewest" />

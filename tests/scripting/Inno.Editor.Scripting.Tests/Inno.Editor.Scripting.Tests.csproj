@@ -9,6 +9,7 @@
     <DefineConstants>$(DefineConstants);INNO_EDITOR</DefineConstants>
   </PropertyGroup>
   <ItemGroup>
+    <ProjectReference Include="../../../src/composition/editor/contracts/Inno.Editor.Annotations/Inno.Editor.Annotations.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../../src/composition/editor/panels/Inno.Editor.Panel.ShaderEditor/Inno.Editor.Panel.ShaderEditor.csproj" />
     <ProjectReference Include="../../../src/composition/editor/features/Inno.Editor.Shaders/Inno.Editor.Shaders.csproj" />
     <ProjectReference Include="../../../src/composition/editor/panels/Inno.Editor.Panel.FileBrowser/Inno.Editor.Panel.FileBrowser.csproj" />
@@ -51,5 +52,11 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="../../../src/foundation/extensibility/Inno.Extensibility.Reload/Inno.Extensibility.Reload.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../../src/adapters/modules/Inno.Adapter.Modules.DotNet/Inno.Adapter.Modules.DotNet.csproj" PrivateAssets="compile" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../../src/adapters/serialization/Inno.Adapter.Serialization.DotNet/Inno.Adapter.Serialization.DotNet.csproj" PrivateAssets="compile" />
   </ItemGroup>
 </Project>

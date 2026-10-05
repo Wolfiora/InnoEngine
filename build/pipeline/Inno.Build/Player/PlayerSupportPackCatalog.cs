@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using System.Collections.Concurrent;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography;
+using System.Text;
+using Inno.Core.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -38,7 +41,7 @@ public sealed class PlayerSupportPackCatalog
     /// Creates a catalog rooted at the directory containing target-specific Player Support Packs.
     /// </summary>
     /// <param name="root">
-    /// The directory whose child names are stable <see cref="BuildTargetId"/> values.
+    /// The directory whose target children contain immutable fingerprint directories and a current index.
     /// </param>
     /// <exception cref="ArgumentException">
     /// Thrown when <paramref name="root"/> is empty.
@@ -72,14 +75,93 @@ public sealed class PlayerSupportPackCatalog
         IPlayerSupportPackValidator validator
     ) {
         ArgumentNullException.ThrowIfNull(validator);
-        string directory = Path.Combine(m_root, target.value);
-        if (!Directory.Exists(directory))
+        string targetRoot = Path.Combine(m_root, target.value);
+        string index = Path.Combine(targetRoot, "current");
+        if (!File.Exists(index))
         {
             throw new DirectoryNotFoundException(
-                $"Player Support Pack '{target}' is not installed at '{directory}'. " +
+                $"Player Support Pack '{target}' is not installed at '{targetRoot}'. " +
                 "Install or generate the target Support Pack before exporting.");
         }
-        string[] files = Directory.EnumerateFiles(directory, "*", SearchOption.AllDirectories).ToArray();
+        string fingerprint = File.ReadAllText(index);
+        if (fingerprint.Length != 64 || fingerprint.Any(static character => !char.IsAsciiHexDigitLower(character)))
+            throw new InvalidDataException($"Player Support Pack '{target}' has an invalid current fingerprint.");
+        string directory = Path.Combine(targetRoot, fingerprint);
+        ValidateDirectory(directory, target, validator);
+        if (ComputeFingerprint(directory, CancellationToken.None) != fingerprint)
+            throw new InvalidDataException($"Player Support Pack '{target}' no longer matches its immutable fingerprint.");
+        return directory;
+    }
+
+    /// <summary>
+    /// Validates and publishes an immutable pack, then atomically selects it for new readers.
+    /// </summary>
+    /// <param name="target">
+    /// The platform and architecture owning the staged inputs.
+    /// </param>
+    /// <param name="stagingDirectory">
+    /// A complete, exclusively owned staging tree on the same filesystem as this catalog.
+    /// Successful publication consumes this directory unless identical inputs already exist.
+    /// </param>
+    /// <param name="validator">
+    /// The target validator for runtime and linker inputs.
+    /// </param>
+    /// <param name="cancellationToken">
+    /// Cancels validation or lease acquisition before selecting the completed pack.
+    /// </param>
+    /// <returns>
+    /// The immutable directory selected for subsequent builds; earlier reader directories are retained.
+    /// </returns>
+    /// <exception cref="InvalidDataException">
+    /// The candidate is incomplete, contains forbidden inputs or collides with a damaged installed artifact.
+    /// </exception>
+    /// <exception cref="IOException">
+    /// The completed directory or its atomic current index cannot be installed.
+    /// </exception>
+    /// <exception cref="OperationCanceledException">
+    /// Cancellation occurred before the current index was committed.
+    /// </exception>
+    public async ValueTask<string> PublishAsync(
+        BuildTargetId target,
+        string stagingDirectory,
+        IPlayerSupportPackValidator validator,
+        CancellationToken cancellationToken = default
+    ) {
+        ArgumentException.ThrowIfNullOrWhiteSpace(stagingDirectory);
+        ArgumentNullException.ThrowIfNull(validator);
+        cancellationToken.ThrowIfCancellationRequested();
+        string staging = Path.GetFullPath(stagingDirectory);
+        ValidateDirectory(staging, target, validator);
+        string fingerprint = ComputeFingerprint(staging, cancellationToken);
+        string targetRoot = Path.Combine(m_root, target.value);
+        Directory.CreateDirectory(targetRoot);
+        using FileLease ownership = await FileLease.AcquireAsync(
+            Path.Combine(targetRoot, "current.lock"), Timeout.InfiniteTimeSpan, cancellationToken).ConfigureAwait(false);
+        string destination = Path.Combine(targetRoot, fingerprint);
+        if (Directory.Exists(destination))
+        {
+            ValidateDirectory(destination, target, validator);
+            if (ComputeFingerprint(destination, cancellationToken) != fingerprint)
+                throw new InvalidDataException($"Installed Support Pack artifact '{destination}' has been modified.");
+        }
+        else
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            AtomicDirectory.Publish(staging, destination, cancellationToken);
+        }
+        cancellationToken.ThrowIfCancellationRequested();
+        AtomicFile.WriteAllBytes(Path.Combine(targetRoot, "current"), Encoding.UTF8.GetBytes(fingerprint));
+        return destination;
+    }
+
+    private static void ValidateDirectory(
+        string directory,
+        BuildTargetId target,
+        IPlayerSupportPackValidator validator
+    ) {
+        if (!Directory.Exists(directory))
+            throw new InvalidDataException($"Player Support Pack '{target}' points to a missing artifact '{directory}'.");
+        string[] files = PathBoundary.EnumerateFiles(directory).ToArray();
         if (files.Length == 0)
             throw new InvalidDataException($"Player Support Pack '{target}' is empty.");
         foreach (string file in files)
@@ -102,7 +184,6 @@ public sealed class PlayerSupportPackCatalog
             throw new InvalidDataException($"Player Support Pack '{target}' has no target compilation references.");
         }
         validator.Validate(directory);
-        return directory;
     }
 
     internal async ValueTask<string> ResolveOrProvisionAsync(
@@ -111,24 +192,17 @@ public sealed class PlayerSupportPackCatalog
         IPlayerSupportPackProvisioner? provisioner,
         CancellationToken cancellationToken
     ) {
-        try
-        {
-            return Resolve(target, validator);
-        }
-        catch (DirectoryNotFoundException) when (provisioner is not null)
-        {
-            // A missing pack can be produced; an invalid installed pack must remain an explicit failure.
-        }
-
+        cancellationToken.ThrowIfCancellationRequested();
         if (provisioner is null)
             return Resolve(target, validator);
+        if (File.Exists(Path.Combine(m_root, target.value, "current")))
+            _ = Resolve(target, validator);
 
         SemaphoreSlim gate = m_provisionGates.GetOrAdd(target, static _ => new SemaphoreSlim(1, 1));
         await gate.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
-            if (Directory.Exists(Path.Combine(m_root, target.value)))
-                return Resolve(target, validator);
+            // The source provider checks its current SDK, code and native inputs before selecting a pack.
             await provisioner.ProvisionAsync(target, m_root, cancellationToken).ConfigureAwait(false);
             return Resolve(target, validator);
         }
@@ -136,5 +210,26 @@ public sealed class PlayerSupportPackCatalog
         {
             gate.Release();
         }
+    }
+
+    private static string ComputeFingerprint(
+        string directory,
+        CancellationToken cancellationToken
+    ) {
+        using IncrementalHash hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
+        Span<byte> length = stackalloc byte[sizeof(int)];
+        foreach (string file in PathBoundary.EnumerateFiles(directory)
+            .OrderBy(path => Path.GetRelativePath(directory, path).Replace('\\', '/'), StringComparer.Ordinal))
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            string relative = Path.GetRelativePath(directory, file).Replace('\\', '/');
+            byte[] path = Encoding.UTF8.GetBytes(relative);
+            System.Buffers.Binary.BinaryPrimitives.WriteInt32LittleEndian(length, path.Length);
+            hash.AppendData(length);
+            hash.AppendData(path);
+            using FileStream input = File.OpenRead(file);
+            hash.AppendData(SHA256.HashData(input));
+        }
+        return Convert.ToHexStringLower(hash.GetHashAndReset());
     }
 }

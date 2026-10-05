@@ -1,39 +1,45 @@
 {
-  "IncludeTransitivelyReferencedHeaders": false,
-  "GenerateRuntimeSource": false,
-  "MergeGeneratedFilesToSingleFile": true,
-  "SingleFileOutputName": "Bindings.cs",
-  "Namespace": "Inno.Native.Text",
-  "ApiName": "TextNative",
-  "EntryFiles": [
-    "../Native/inno_text.h"
-  ],
-  "AllowedHeaders": [
-    "../Native/inno_text.h"
-  ],
-  "MarshallingMappings": {
-    "inno_text_load_font": {
-      "Parameters": {
+  "includeTransitivelyReferencedHeaders": false,
+  "generateRuntimeSource": false,
+  "mergeGeneratedFilesToSingleFile": true,
+  "singleFileOutputName": "Bindings.cs",
+  "namespace": "Inno.Native.Text",
+  "apiName": "TextNative",
+  "marshallingMappings": {
+    "inno_text_RuntimeCreate": {
+      "return": {
+        "strategy": "Handle",
+        "ownership": "Owned",
+        "allocatorKind": "NativeFunction",
+        "allocatorFunction": "inno_text_RuntimeCreate",
+        "cleanupFunction": "inno_text_RuntimeDestroy",
+        "requiresCleanup": true
+      }
+    },
+    "inno_text_Runtime_LoadFont": {
+      "parameters": {
         "data": {
-          "Strategy": "Span",
-          "Ownership": "Borrowed",
-          "LengthParameter": "length"
+          "strategy": "Span",
+          "ownership": "Borrowed",
+          "lengthParameter": "length"
         }
       }
     },
-    "inno_text_result_message": {
-      "Return": {
-        "Strategy": "String",
-        "Ownership": "Borrowed",
-        "Encoding": "Utf8",
-        "NullTerminated": true
+    "inno_text_Runtime_ResultMessage": {
+      "return": {
+        "strategy": "String",
+        "ownership": "Borrowed",
+        "encoding": "Utf8",
+        "nullTerminated": true
       }
     }
   },
-  "FunctionPrefixes": [
+  "functionPrefixes": [
+    "inno_text_Runtime_",
+    "inno_text_Runtime",
     "inno_text_"
   ],
-  "TypePrefixes": [
+  "typePrefixes": [
     "inno_text_"
   ]
 }

@@ -80,7 +80,7 @@ internal static class PrefabOverrideProcessor
             InstantiateSource(connection.sourceAsset, context);
         try
         {
-            MarkOrphanedOverrides(connection, sourceConnection, sourceScene);
+            MarkOrphanedOverrides(connection, sourceConnection, sourceScene, context);
             RemoveDeletedSourceObjects(connection, sourceConnection, scene, instanceRoot);
             CreateNewSourceObjects(connection, sourceConnection, scene, sourceScene);
             RemoveDeletedSourceComponents(connection, sourceConnection, scene);
@@ -167,11 +167,11 @@ internal static class PrefabOverrideProcessor
                 continue;
             }
 
-            IReadOnlyList<SerializedPropertyValueCodec.PropertyMember> members =
-                SerializedPropertyValueCodec.GetMembers(sourceComponent.GetType());
+            IReadOnlyList<SerializationMemberMetadata> members =
+                SerializedPropertyValueCodec.GetMembers(sourceComponent.GetType(), context);
             for (int memberIndex = 0; memberIndex < members.Count; memberIndex++)
             {
-                SerializedPropertyValueCodec.PropertyMember member = members[memberIndex];
+                SerializationMemberMetadata member = members[memberIndex];
                 byte[] sourceValue;
                 byte[] currentValue;
                 try
@@ -274,7 +274,8 @@ internal static class PrefabOverrideProcessor
     private static void MarkOrphanedOverrides(
         PrefabConnectionRecord connection,
         PrefabConnectionRecord sourceConnection,
-        GameScene sourceScene
+        GameScene sourceScene,
+        SerializationContext context
     ) {
         foreach (PrefabPropertyOverride property in connection.overrides.properties.ToArray())
         {
@@ -284,7 +285,7 @@ internal static class PrefabOverrideProcessor
                     out Guid sourceRuntimeId) &&
                 sourceScene.FindComponent(sourceRuntimeId) is GameComponent sourceComponent)
             {
-                hasProperty = SerializedPropertyValueCodec.GetMembers(sourceComponent.GetType())
+                hasProperty = SerializedPropertyValueCodec.GetMembers(sourceComponent.GetType(), context)
                     .Any(member => string.Equals(
                         member.name,
                         property.propertyName,
@@ -435,11 +436,11 @@ internal static class PrefabOverrideProcessor
                 continue;
             }
 
-            IReadOnlyList<SerializedPropertyValueCodec.PropertyMember> members =
-                SerializedPropertyValueCodec.GetMembers(sourceComponent.GetType());
+            IReadOnlyList<SerializationMemberMetadata> members =
+                SerializedPropertyValueCodec.GetMembers(sourceComponent.GetType(), context);
             for (int memberIndex = 0; memberIndex < members.Count; memberIndex++)
             {
-                SerializedPropertyValueCodec.PropertyMember member = members[memberIndex];
+                SerializationMemberMetadata member = members[memberIndex];
                 if (connection.overrides.IsPropertyOverridden(sourceId, member.name))
                     continue;
                 byte[] value = SerializedPropertyValueCodec.Encode(

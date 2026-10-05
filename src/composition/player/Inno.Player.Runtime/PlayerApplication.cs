@@ -32,6 +32,9 @@ public static class PlayerApplication
         CancellationToken cancellationToken = default
     ) {
         ArgumentNullException.ThrowIfNull(options);
+        ArgumentNullException.ThrowIfNull(options.modules);
+        ArgumentNullException.ThrowIfNull(options.types);
+        ArgumentNullException.ThrowIfNull(options.serializationMetadata);
         ArgumentNullException.ThrowIfNull(options.adapters);
         ArgumentNullException.ThrowIfNull(options.moduleActivator);
         ArgumentNullException.ThrowIfNull(options.frameDriver);

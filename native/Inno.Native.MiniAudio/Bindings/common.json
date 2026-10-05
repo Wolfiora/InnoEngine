@@ -1,46 +1,46 @@
 {
-  "IncludeTransitivelyReferencedHeaders": false,
-  "GenerateRuntimeSource": false,
-  "MergeGeneratedFilesToSingleFile": true,
-  "SingleFileOutputName": "Bindings.cs",
-  "Namespace": "Inno.Native.MiniAudio",
-  "ApiName": "MiniAudio",
-  "EntryFiles": [
+  "includeTransitivelyReferencedHeaders": false,
+  "generateRuntimeSource": false,
+  "mergeGeneratedFilesToSingleFile": true,
+  "singleFileOutputName": "Bindings.cs",
+  "namespace": "Inno.Native.MiniAudio",
+  "apiName": "MiniAudio",
+  "entryFiles": [
     "../../../extern/miniaudio/extras/miniaudio_split/miniaudio.h"
   ],
-  "AllowedHeaders": [
+  "allowedHeaders": [
     "../../../extern/miniaudio/extras/miniaudio_split/miniaudio.h"
   ],
-  "MarshallingMappings": {
+  "marshallingMappings": {
     "ma_version_string": {
-      "Return": {
-        "Strategy": "String",
-        "Ownership": "Borrowed",
-        "Encoding": "Utf8",
-        "NullTerminated": true
+      "return": {
+        "strategy": "String",
+        "ownership": "Borrowed",
+        "encoding": "Utf8",
+        "nullTerminated": true
       }
     },
     "ma_resource_manager_data_source_init": {
-      "Parameters": {
+      "parameters": {
         "pName": {
-          "Strategy": "String",
-          "Ownership": "Borrowed",
-          "Encoding": "Utf8",
-          "NullTerminated": true
+          "strategy": "String",
+          "ownership": "Borrowed",
+          "encoding": "Utf8",
+          "nullTerminated": true
         },
         "pDataSource": {
-          "Ownership": "Borrowed"
+          "ownership": "Borrowed"
         }
       }
     }
   },
-  "FunctionPrefixes": [
+  "functionPrefixes": [
     "ma_"
   ],
-  "TypeMappings": {
+  "typeMappings": {
     "ma_node": "void"
   },
-  "IgnoredTypedefs": [
+  "ignoredTypedefs": [
     "ma_node"
   ]
 }

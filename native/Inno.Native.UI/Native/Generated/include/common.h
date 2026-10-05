@@ -2,7 +2,6 @@
 #ifndef inno_ui_COMMON_H
 #define inno_ui_COMMON_H
 
-#include <stdio.h>
 #include <stdint.h>
 #include <stddef.h>
 /* Calling convention */

@@ -1,21 +1,31 @@
 {
-  "IncludeTransitivelyReferencedHeaders": false,
-  "GenerateRuntimeSource": false,
-  "MergeGeneratedFilesToSingleFile": true,
-  "SingleFileOutputName": "Bindings.cs",
-  "Namespace": "Inno.Native.UI",
-  "ApiName": "UiNative",
-  "MarshallingMappings": {
+  "includeTransitivelyReferencedHeaders": false,
+  "generateRuntimeSource": false,
+  "mergeGeneratedFilesToSingleFile": true,
+  "singleFileOutputName": "Bindings.cs",
+  "namespace": "Inno.Native.UI",
+  "apiName": "UiNative",
+  "marshallingMappings": {
+    "inno_ui_RuntimeCreate": {
+      "return": {
+        "strategy": "Handle",
+        "ownership": "Owned",
+        "allocatorKind": "NativeFunction",
+        "allocatorFunction": "inno_ui_RuntimeCreate",
+        "cleanupFunction": "inno_ui_RuntimeDestroy",
+        "requiresCleanup": true
+      }
+    },
     "inno_ui_GetLastError": {
-      "Return": {
-        "Strategy": "String",
-        "Ownership": "Borrowed",
-        "Encoding": "Utf8",
-        "NullTerminated": true
+      "return": {
+        "strategy": "String",
+        "ownership": "Borrowed",
+        "encoding": "Utf8",
+        "nullTerminated": true
       }
     }
   },
-  "FunctionPrefixes": [
+  "functionPrefixes": [
     "inno_ui_Runtime_",
     "inno_ui_Runtime",
     "inno_ui_"

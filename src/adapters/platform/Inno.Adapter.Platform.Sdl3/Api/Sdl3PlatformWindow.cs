@@ -1,3 +1,4 @@
+using Inno.Adapter.Platform;
 using System;
 using Inno.Platform;
 
@@ -6,7 +7,7 @@ namespace Inno.Adapter.Platform.Sdl3;
 /// <summary>
 /// Represents a native platform window.
 /// </summary>
-public sealed partial class Sdl3PlatformWindow : IPlatformWindow
+public sealed partial class Sdl3PlatformWindow : IPlatformWindow, INativeWindowSurface
 {
     /// <summary>
     /// Gets the platform window identifier.
@@ -51,7 +52,17 @@ public sealed partial class Sdl3PlatformWindow : IPlatformWindow
     /// <summary>
     /// Gets native window handles for graphics backends and platform integration.
     /// </summary>
-    public PlatformNativeHandles nativeHandles => m_nativeHandles;
+    /// <exception cref="ObjectDisposedException">
+    /// The window owner has released its native surface.
+    /// </exception>
+    public PlatformNativeHandles nativeHandles
+    {
+        get
+        {
+            ObjectDisposedException.ThrowIf(m_disposed, this);
+            return m_nativeHandles;
+        }
+    }
 
     /// <summary>
     /// Gets the opaque SDL3 window identity used only by cooperating SDL3 adapter assemblies.

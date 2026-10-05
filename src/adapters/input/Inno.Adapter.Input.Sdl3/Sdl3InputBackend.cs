@@ -30,6 +30,7 @@ public sealed class Sdl3InputBackend : IInputBackend
     private Vector2 m_scrollDelta;
     private KeyModifier m_modifiers;
     private bool m_disposed;
+    private bool m_suspended;
 
     /// <summary>
     /// Creates an event-backed input adapter for one primary SDL3 window.
@@ -70,6 +71,10 @@ public sealed class Sdl3InputBackend : IInputBackend
             return;
         lock (m_sync)
         {
+            if (evnt is ApplicationSuspensionChangedEvent suspension)
+                m_suspended = suspension.isSuspended;
+            if (m_suspended && evnt is KeyEvent or MouseEvent or TextInputEvent)
+                return;
             switch (evnt)
             {
                 case KeyPressedEvent key when !key.repeat:
@@ -102,10 +107,17 @@ public sealed class Sdl3InputBackend : IInputBackend
                     m_scrollDelta += new Vector2(scroll.offsetX, scroll.offsetY);
                     break;
                 case WindowFocusChangedEvent { isFocused: false }:
+                case WindowVisibilityChangedEvent { isVisible: false }:
+                case ApplicationSuspensionChangedEvent { isSuspended: true }:
                     m_keysReleased.UnionWith(m_keysDown);
                     m_mouseButtonsReleased.UnionWith(m_mouseButtonsDown);
                     m_keysDown.Clear();
                     m_mouseButtonsDown.Clear();
+                    m_keysPressed.Clear();
+                    m_mouseButtonsPressed.Clear();
+                    m_textInput.Clear();
+                    m_mouseDelta = Vector2.ZERO;
+                    m_scrollDelta = Vector2.ZERO;
                     m_modifiers = KeyModifier.None;
                     break;
             }
@@ -191,6 +203,7 @@ public sealed class Sdl3InputBackend : IInputBackend
             TextInputEvent text => text.windowId == m_windowId,
             MouseEvent mouse => mouse.windowId == m_windowId,
             WindowEvent window => window.windowId == m_windowId,
+            ApplicationSuspensionChangedEvent => true,
             _ => false
         };
 }

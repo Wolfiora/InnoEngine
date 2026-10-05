@@ -11,7 +11,7 @@ namespace Inno.Adapter.Text.FreeTypeHarfBuzz;
 /// </summary>
 public sealed unsafe class FreeTypeHarfBuzzTextBackend : ITextBackend
 {
-    private InnoTextContext m_context;
+    private InnoTextRuntime m_context;
     private bool m_disposed;
 
     /// <summary>
@@ -19,8 +19,7 @@ public sealed unsafe class FreeTypeHarfBuzzTextBackend : ITextBackend
     /// </summary>
     public FreeTypeHarfBuzzTextBackend()
     {
-        InnoTextContext context = InnoTextContext.Null;
-        ThrowIfFailed(TextNative.Create(&context), "create text context");
+        InnoTextRuntime context = TextNative.Create();
         if (context.IsNull)
             throw new InvalidOperationException("The native text backend returned a null context.");
         m_context = context;
@@ -96,7 +95,7 @@ public sealed unsafe class FreeTypeHarfBuzzTextBackend : ITextBackend
         byte[] textBytes = Utf8(text);
         byte[] languageBytes = Utf8(options.language ?? string.Empty);
         byte[] scriptBytes = Utf8(options.script ?? string.Empty);
-        nuint glyphCount = 0;
+        uint glyphCount = 0;
         fixed (byte* textPointer = textBytes)
         fixed (byte* languagePointer = languageBytes)
         fixed (byte* scriptPointer = scriptBytes)
@@ -105,7 +104,7 @@ public sealed unsafe class FreeTypeHarfBuzzTextBackend : ITextBackend
                 m_context,
                 font.value,
                 textPointer,
-                (nuint)(textBytes.Length - 1),
+                checked((uint)(textBytes.Length - 1)),
                 style.fontSize,
                 (InnoTextDirection)options.direction,
                 languagePointer,
@@ -122,13 +121,13 @@ public sealed unsafe class FreeTypeHarfBuzzTextBackend : ITextBackend
                         m_context,
                         font.value,
                         textPointer,
-                        (nuint)(textBytes.Length - 1),
+                        checked((uint)(textBytes.Length - 1)),
                         style.fontSize,
                         (InnoTextDirection)options.direction,
                         languagePointer,
                         scriptPointer,
                         glyphPointer,
-                        (nuint)nativeGlyphs.Length,
+                        checked((uint)nativeGlyphs.Length),
                         &glyphCount), "shape text");
                 }
             }
@@ -198,7 +197,7 @@ public sealed unsafe class FreeTypeHarfBuzzTextBackend : ITextBackend
         {
             fixed (byte* pixelPointer = pixels)
                 ThrowIfFailed(TextNative.RasterizeGlyph(
-                    m_context, font.value, glyphId, fontSize, pixelPointer, (nuint)pixels.Length, &bitmap),
+                    m_context, font.value, glyphId, fontSize, pixelPointer, checked((uint)pixels.Length), &bitmap),
                     "rasterize glyph");
         }
         return new GlyphBitmap(
@@ -219,7 +218,7 @@ public sealed unsafe class FreeTypeHarfBuzzTextBackend : ITextBackend
             return;
         m_disposed = true;
         TextNative.Destroy(m_context);
-        m_context = InnoTextContext.Null;
+        m_context = InnoTextRuntime.Null;
     }
 
     private static byte[] Utf8(string value)

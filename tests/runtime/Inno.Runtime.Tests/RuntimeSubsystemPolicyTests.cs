@@ -1,3 +1,5 @@
+using Inno.Adapter.Serialization.DotNet;
+using Inno.Adapter.Modules.DotNet;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -16,12 +18,15 @@ public sealed class RuntimeSubsystemPolicyTests : IDisposable
     private readonly EngineHost m_host;
 
     public RuntimeSubsystemPolicyTests()
-        => m_host = new EngineHostBuilder().UseMetadataCache(m_root).Build();
+        => m_host = new EngineHostBuilder()
+                .UseMetadataSources(new DotNetAssemblyCatalogSource(typeof(RuntimeSubsystemPolicyTests).Assembly),
+                    new ReflectionTypeCatalogSource(), new ReflectionSerializationMetadataSource()).UseMetadataCache(m_root).Build();
 
     public void Dispose()
     {
         m_host.Dispose();
-        Directory.Delete(m_root, recursive: true);
+        if (Directory.Exists(m_root))
+            Directory.Delete(m_root, recursive: true);
     }
 
     [Fact]
@@ -125,7 +130,9 @@ public sealed class RuntimeSubsystemPolicyTests : IDisposable
     public void StartupTimeoutKeepsPendingHostPipelineAndPermanentlyFaultsAdmission()
     {
         string root = Path.Combine(m_root, "Timeout");
-        EngineHost host = new EngineHostBuilder().UseMetadataCache(root)
+        EngineHost host = new EngineHostBuilder()
+                .UseMetadataSources(new DotNetAssemblyCatalogSource(typeof(RuntimeSubsystemPolicyTests).Assembly),
+                    new ReflectionTypeCatalogSource(), new ReflectionSerializationMetadataSource()).UseMetadataCache(root)
             .UseRetirementTimeout(TimeSpan.FromTicks(1)).Build();
         var pending = new TaskCompletionSource();
         var factory = Create("test.timeout");

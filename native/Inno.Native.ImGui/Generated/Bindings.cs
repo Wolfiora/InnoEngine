@@ -5,6 +5,7 @@
 //     Changes will be replaced the next time bindings are generated.
 // </auto-generated>
 // ------------------------------------------------------------------------------
+#pragma warning disable CS1591 // Native declarations may omit documentation.
 #nullable enable
 using BGCS.Runtime;
 using ImBitArrayForNamedKeys = global::Inno.Native.ImGui.ImBitArrayImGuiKeyNamedKeyCOUNTLessImGuiKeyNamedKeyBEGIN;
@@ -1795,11 +1796,17 @@ namespace Inno.Native.ImGui
     public partial struct ImFontGlyph
     {
         [FieldOffset(0)]
-        public uint RawBits0;
-        public uint Colored { get => Bitfield.Get(RawBits0, 0, 1); set => Bitfield.Set(ref RawBits0, value, 0, 1); }
-        public uint Visible { get => Bitfield.Get(RawBits0, 1, 1); set => Bitfield.Set(ref RawBits0, value, 1, 1); }
-        public uint SourceIdx { get => Bitfield.Get(RawBits0, 2, 4); set => Bitfield.Set(ref RawBits0, value, 2, 4); }
-        public uint Codepoint { get => Bitfield.Get(RawBits0, 6, 26); set => Bitfield.Set(ref RawBits0, value, 6, 26); }
+        public byte RawBits0_0;
+        [FieldOffset(1)]
+        public byte RawBits0_1;
+        [FieldOffset(2)]
+        public byte RawBits0_2;
+        [FieldOffset(3)]
+        public byte RawBits0_3;
+        public uint Colored { get => unchecked((uint)Bitfield.Get(MemoryMarshal.CreateReadOnlySpan(ref RawBits0_0, 4), 0, 1)); set => Bitfield.Set(MemoryMarshal.CreateSpan(ref RawBits0_0, 4), unchecked((ulong)value), 0, 1); }
+        public uint Visible { get => unchecked((uint)Bitfield.Get(MemoryMarshal.CreateReadOnlySpan(ref RawBits0_0, 4), 1, 1)); set => Bitfield.Set(MemoryMarshal.CreateSpan(ref RawBits0_0, 4), unchecked((ulong)value), 1, 1); }
+        public uint SourceIdx { get => unchecked((uint)Bitfield.Get(MemoryMarshal.CreateReadOnlySpan(ref RawBits0_0, 4), 2, 4)); set => Bitfield.Set(MemoryMarshal.CreateSpan(ref RawBits0_0, 4), unchecked((ulong)value), 2, 4); }
+        public uint Codepoint { get => unchecked((uint)Bitfield.Get(MemoryMarshal.CreateReadOnlySpan(ref RawBits0_0, 4), 6, 26)); set => Bitfield.Set(MemoryMarshal.CreateSpan(ref RawBits0_0, 4), unchecked((ulong)value), 6, 26); }
 
         [FieldOffset(4)]
         public float AdvanceX;
@@ -1865,11 +1872,17 @@ namespace Inno.Native.ImGui
         [FieldOffset(72)]
         public float Descent;
         [FieldOffset(76)]
-        public uint RawBits0;
-        public uint MetricsTotalSurface { get => Bitfield.Get(RawBits0, 0, 26); set => Bitfield.Set(ref RawBits0, value, 0, 26); }
-        public uint WantDestroy { get => Bitfield.Get(RawBits0, 26, 1); set => Bitfield.Set(ref RawBits0, value, 26, 1); }
-        public uint LoadNoFallback { get => Bitfield.Get(RawBits0, 27, 1); set => Bitfield.Set(ref RawBits0, value, 27, 1); }
-        public uint LoadNoRenderOnLayout { get => Bitfield.Get(RawBits0, 28, 1); set => Bitfield.Set(ref RawBits0, value, 28, 1); }
+        public byte RawBits0_0;
+        [FieldOffset(77)]
+        public byte RawBits0_1;
+        [FieldOffset(78)]
+        public byte RawBits0_2;
+        [FieldOffset(79)]
+        public byte RawBits0_3;
+        public uint MetricsTotalSurface { get => unchecked((uint)Bitfield.Get(MemoryMarshal.CreateReadOnlySpan(ref RawBits0_0, 4), 0, 26)); set => Bitfield.Set(MemoryMarshal.CreateSpan(ref RawBits0_0, 4), unchecked((ulong)value), 0, 26); }
+        public uint WantDestroy { get => unchecked((uint)Bitfield.Get(MemoryMarshal.CreateReadOnlySpan(ref RawBits0_0, 4), 26, 1)); set => Bitfield.Set(MemoryMarshal.CreateSpan(ref RawBits0_0, 4), unchecked((ulong)value), 26, 1); }
+        public uint LoadNoFallback { get => unchecked((uint)Bitfield.Get(MemoryMarshal.CreateReadOnlySpan(ref RawBits0_0, 4), 27, 1)); set => Bitfield.Set(MemoryMarshal.CreateSpan(ref RawBits0_0, 4), unchecked((ulong)value), 27, 1); }
+        public uint LoadNoRenderOnLayout { get => unchecked((uint)Bitfield.Get(MemoryMarshal.CreateReadOnlySpan(ref RawBits0_0, 4), 28, 1)); set => Bitfield.Set(MemoryMarshal.CreateSpan(ref RawBits0_0, 4), unchecked((ulong)value), 28, 1); }
 
         [FieldOffset(80)]
         public int LastUsedFrame;
@@ -2356,6 +2369,32 @@ namespace Inno.Native.ImGui
         public override bool Equals(object? obj) => obj is StbrpNode other && Equals(other);
         public override int GetHashCode() => Handle.GetHashCode();
         private string DebuggerDisplay => string.Format("StbrpNode [0x{0}]", Handle.ToString("X"));
+    }
+
+    /// <summary>
+    /// To be documented.
+    /// </summary>
+    [StructLayout(LayoutKind.Explicit, Size = 4, Pack = 4)]
+    public partial struct ImFontAtlasRectEntry
+    {
+        [FieldOffset(0)]
+        public byte RawBits0_0;
+        [FieldOffset(1)]
+        public byte RawBits0_1;
+        [FieldOffset(2)]
+        public byte RawBits0_2;
+        [FieldOffset(3)]
+        public byte RawBits0_3;
+        public int TargetIndex { get => unchecked((int)Bitfield.GetSigned(MemoryMarshal.CreateReadOnlySpan(ref RawBits0_0, 4), 0, 20)); set => Bitfield.Set(MemoryMarshal.CreateSpan(ref RawBits0_0, 4), unchecked((ulong)value), 0, 20); }
+        public uint Generation { get => unchecked((uint)Bitfield.Get(MemoryMarshal.CreateReadOnlySpan(ref RawBits0_0, 4), 20, 10)); set => Bitfield.Set(MemoryMarshal.CreateSpan(ref RawBits0_0, 4), unchecked((ulong)value), 20, 10); }
+        public uint IsUsed { get => unchecked((uint)Bitfield.Get(MemoryMarshal.CreateReadOnlySpan(ref RawBits0_0, 4), 30, 1)); set => Bitfield.Set(MemoryMarshal.CreateSpan(ref RawBits0_0, 4), unchecked((ulong)value), 30, 1); }
+
+        public unsafe ImFontAtlasRectEntry(int targetIndex = default, uint generation = default, uint isUsed = default)
+        {
+            this.TargetIndex = targetIndex;
+            this.Generation = generation;
+            this.IsUsed = isUsed;
+        }
     }
 
     /// <summary>
@@ -4489,27 +4528,31 @@ namespace Inno.Native.ImGui
         [FieldOffset(196)]
         public uint RefViewportId;
         [FieldOffset(200)]
-        public ImGuiDataAuthority RawBits0;
-        public ImGuiDataAuthority AuthorityForPos { get => Bitfield.GetSigned(RawBits0, 0, 3); set => Bitfield.Set(ref RawBits0, value, 0, 3); }
-        public ImGuiDataAuthority AuthorityForSize { get => Bitfield.GetSigned(RawBits0, 3, 3); set => Bitfield.Set(ref RawBits0, value, 3, 3); }
-        public ImGuiDataAuthority AuthorityForViewport { get => Bitfield.GetSigned(RawBits0, 6, 3); set => Bitfield.Set(ref RawBits0, value, 6, 3); }
-
+        public byte RawBits0_0;
+        [FieldOffset(201)]
+        public byte RawBits0_1;
+        [FieldOffset(202)]
+        public byte RawBits0_2;
+        [FieldOffset(203)]
+        public byte RawBits0_3;
         [FieldOffset(204)]
-        public byte RawBits1;
-        public byte IsVisible { get => Bitfield.Get(RawBits1, 0, 1); set => Bitfield.Set(ref RawBits1, value, 0, 1); }
-        public byte IsFocused { get => Bitfield.Get(RawBits1, 1, 1); set => Bitfield.Set(ref RawBits1, value, 1, 1); }
-        public byte IsBgDrawnThisFrame { get => Bitfield.Get(RawBits1, 2, 1); set => Bitfield.Set(ref RawBits1, value, 2, 1); }
-        public byte HasCloseButton { get => Bitfield.Get(RawBits1, 3, 1); set => Bitfield.Set(ref RawBits1, value, 3, 1); }
-        public byte HasWindowMenuButton { get => Bitfield.Get(RawBits1, 4, 1); set => Bitfield.Set(ref RawBits1, value, 4, 1); }
-        public byte HasCentralNodeChild { get => Bitfield.Get(RawBits1, 5, 1); set => Bitfield.Set(ref RawBits1, value, 5, 1); }
-        public byte WantCloseAll { get => Bitfield.Get(RawBits1, 6, 1); set => Bitfield.Set(ref RawBits1, value, 6, 1); }
-        public byte WantLockSizeOnce { get => Bitfield.Get(RawBits1, 7, 1); set => Bitfield.Set(ref RawBits1, value, 7, 1); }
-
+        public byte RawBits0_4;
         [FieldOffset(205)]
-        public byte RawBits2;
-        public byte WantMouseMove { get => Bitfield.Get(RawBits2, 0, 1); set => Bitfield.Set(ref RawBits2, value, 0, 1); }
-        public byte WantHiddenTabBarUpdate { get => Bitfield.Get(RawBits2, 1, 1); set => Bitfield.Set(ref RawBits2, value, 1, 1); }
-        public byte WantHiddenTabBarToggle { get => Bitfield.Get(RawBits2, 2, 1); set => Bitfield.Set(ref RawBits2, value, 2, 1); }
+        public byte RawBits0_5;
+        public ImGuiDataAuthority AuthorityForPos { get => unchecked((ImGuiDataAuthority)Bitfield.GetSigned(MemoryMarshal.CreateReadOnlySpan(ref RawBits0_0, 6), 0, 3)); set => Bitfield.Set(MemoryMarshal.CreateSpan(ref RawBits0_0, 6), unchecked((ulong)value), 0, 3); }
+        public ImGuiDataAuthority AuthorityForSize { get => unchecked((ImGuiDataAuthority)Bitfield.GetSigned(MemoryMarshal.CreateReadOnlySpan(ref RawBits0_0, 6), 3, 3)); set => Bitfield.Set(MemoryMarshal.CreateSpan(ref RawBits0_0, 6), unchecked((ulong)value), 3, 3); }
+        public ImGuiDataAuthority AuthorityForViewport { get => unchecked((ImGuiDataAuthority)Bitfield.GetSigned(MemoryMarshal.CreateReadOnlySpan(ref RawBits0_0, 6), 6, 3)); set => Bitfield.Set(MemoryMarshal.CreateSpan(ref RawBits0_0, 6), unchecked((ulong)value), 6, 3); }
+        public byte IsVisible { get => unchecked((byte)Bitfield.Get(MemoryMarshal.CreateReadOnlySpan(ref RawBits0_0, 6), 32, 1)); set => Bitfield.Set(MemoryMarshal.CreateSpan(ref RawBits0_0, 6), unchecked((ulong)value), 32, 1); }
+        public byte IsFocused { get => unchecked((byte)Bitfield.Get(MemoryMarshal.CreateReadOnlySpan(ref RawBits0_0, 6), 33, 1)); set => Bitfield.Set(MemoryMarshal.CreateSpan(ref RawBits0_0, 6), unchecked((ulong)value), 33, 1); }
+        public byte IsBgDrawnThisFrame { get => unchecked((byte)Bitfield.Get(MemoryMarshal.CreateReadOnlySpan(ref RawBits0_0, 6), 34, 1)); set => Bitfield.Set(MemoryMarshal.CreateSpan(ref RawBits0_0, 6), unchecked((ulong)value), 34, 1); }
+        public byte HasCloseButton { get => unchecked((byte)Bitfield.Get(MemoryMarshal.CreateReadOnlySpan(ref RawBits0_0, 6), 35, 1)); set => Bitfield.Set(MemoryMarshal.CreateSpan(ref RawBits0_0, 6), unchecked((ulong)value), 35, 1); }
+        public byte HasWindowMenuButton { get => unchecked((byte)Bitfield.Get(MemoryMarshal.CreateReadOnlySpan(ref RawBits0_0, 6), 36, 1)); set => Bitfield.Set(MemoryMarshal.CreateSpan(ref RawBits0_0, 6), unchecked((ulong)value), 36, 1); }
+        public byte HasCentralNodeChild { get => unchecked((byte)Bitfield.Get(MemoryMarshal.CreateReadOnlySpan(ref RawBits0_0, 6), 37, 1)); set => Bitfield.Set(MemoryMarshal.CreateSpan(ref RawBits0_0, 6), unchecked((ulong)value), 37, 1); }
+        public byte WantCloseAll { get => unchecked((byte)Bitfield.Get(MemoryMarshal.CreateReadOnlySpan(ref RawBits0_0, 6), 38, 1)); set => Bitfield.Set(MemoryMarshal.CreateSpan(ref RawBits0_0, 6), unchecked((ulong)value), 38, 1); }
+        public byte WantLockSizeOnce { get => unchecked((byte)Bitfield.Get(MemoryMarshal.CreateReadOnlySpan(ref RawBits0_0, 6), 39, 1)); set => Bitfield.Set(MemoryMarshal.CreateSpan(ref RawBits0_0, 6), unchecked((ulong)value), 39, 1); }
+        public byte WantMouseMove { get => unchecked((byte)Bitfield.Get(MemoryMarshal.CreateReadOnlySpan(ref RawBits0_0, 6), 40, 1)); set => Bitfield.Set(MemoryMarshal.CreateSpan(ref RawBits0_0, 6), unchecked((ulong)value), 40, 1); }
+        public byte WantHiddenTabBarUpdate { get => unchecked((byte)Bitfield.Get(MemoryMarshal.CreateReadOnlySpan(ref RawBits0_0, 6), 41, 1)); set => Bitfield.Set(MemoryMarshal.CreateSpan(ref RawBits0_0, 6), unchecked((ulong)value), 41, 1); }
+        public byte WantHiddenTabBarToggle { get => unchecked((byte)Bitfield.Get(MemoryMarshal.CreateReadOnlySpan(ref RawBits0_0, 6), 42, 1)); set => Bitfield.Set(MemoryMarshal.CreateSpan(ref RawBits0_0, 6), unchecked((ulong)value), 42, 1); }
 
         public unsafe ImGuiDockNode(uint iD = default, ImGuiDockNodeFlags sharedFlags = default, ImGuiDockNodeFlags localFlags = default, ImGuiDockNodeFlags localFlagsInWindows = default, ImGuiDockNodeFlags mergedFlags = default, ImGuiDockNodeState state = default, ImGuiDockNode* parentNode = default, ImGuiDockNode** childNodes = default, ImVector<ImGuiWindowPtr> windows = default, ImGuiTabBar* tabBar = default, Vector2 pos = default, Vector2 size = default, Vector2 sizeRef = default, ImGuiAxis splitAxis = default, ImGuiWindowClass windowClass = default, uint lastBgColor = default, ImGuiWindow* hostWindow = default, ImGuiWindow* visibleWindow = default, ImGuiDockNode* centralNode = default, ImGuiDockNode* onlyNodeWithWindows = default, int countNodeWithWindows = default, int lastFrameAlive = default, int lastFrameActive = default, int lastFrameFocused = default, uint lastFocusedNodeId = default, uint selectedTabId = default, uint wantCloseTabId = default, uint refViewportId = default, ImGuiDataAuthority authorityForPos = default, ImGuiDataAuthority authorityForSize = default, ImGuiDataAuthority authorityForViewport = default, byte isVisible = default, byte isFocused = default, byte isBgDrawnThisFrame = default, byte hasCloseButton = default, byte hasWindowMenuButton = default, byte hasCentralNodeChild = default, byte wantCloseAll = default, byte wantLockSizeOnce = default, byte wantMouseMove = default, byte wantHiddenTabBarUpdate = default, byte wantHiddenTabBarToggle = default)
         {
@@ -4712,15 +4755,20 @@ namespace Inno.Native.ImGui
         [FieldOffset(294)]
         public byte DisableInputsFrames;
         [FieldOffset(296)]
-        public ImGuiWindowBgClickFlags RawBits0;
-        public ImGuiWindowBgClickFlags BgClickFlags { get => Bitfield.GetSigned(RawBits0, 0, 8); set => Bitfield.Set(ref RawBits0, value, 0, 8); }
-
+        public byte RawBits0_0;
         [FieldOffset(297)]
-        public ImGuiCond RawBits1;
-        public ImGuiCond SetWindowPosAllowFlags { get => Bitfield.GetSigned(RawBits1, 0, 8); set => Bitfield.Set(ref RawBits1, value, 0, 8); }
-        public ImGuiCond SetWindowSizeAllowFlags { get => Bitfield.GetSigned(RawBits1, 8, 8); set => Bitfield.Set(ref RawBits1, value, 8, 8); }
-        public ImGuiCond SetWindowCollapsedAllowFlags { get => Bitfield.GetSigned(RawBits1, 16, 8); set => Bitfield.Set(ref RawBits1, value, 16, 8); }
-        public ImGuiCond SetWindowDockAllowFlags { get => Bitfield.GetSigned(RawBits1, 24, 8); set => Bitfield.Set(ref RawBits1, value, 24, 8); }
+        public byte RawBits0_1;
+        [FieldOffset(298)]
+        public byte RawBits0_2;
+        [FieldOffset(299)]
+        public byte RawBits0_3;
+        [FieldOffset(300)]
+        public byte RawBits0_4;
+        public ImGuiWindowBgClickFlags BgClickFlags { get => unchecked((ImGuiWindowBgClickFlags)Bitfield.GetSigned(MemoryMarshal.CreateReadOnlySpan(ref RawBits0_0, 5), 0, 8)); set => Bitfield.Set(MemoryMarshal.CreateSpan(ref RawBits0_0, 5), unchecked((ulong)value), 0, 8); }
+        public ImGuiCond SetWindowPosAllowFlags { get => unchecked((ImGuiCond)Bitfield.GetSigned(MemoryMarshal.CreateReadOnlySpan(ref RawBits0_0, 5), 8, 8)); set => Bitfield.Set(MemoryMarshal.CreateSpan(ref RawBits0_0, 5), unchecked((ulong)value), 8, 8); }
+        public ImGuiCond SetWindowSizeAllowFlags { get => unchecked((ImGuiCond)Bitfield.GetSigned(MemoryMarshal.CreateReadOnlySpan(ref RawBits0_0, 5), 16, 8)); set => Bitfield.Set(MemoryMarshal.CreateSpan(ref RawBits0_0, 5), unchecked((ulong)value), 16, 8); }
+        public ImGuiCond SetWindowCollapsedAllowFlags { get => unchecked((ImGuiCond)Bitfield.GetSigned(MemoryMarshal.CreateReadOnlySpan(ref RawBits0_0, 5), 24, 8)); set => Bitfield.Set(MemoryMarshal.CreateSpan(ref RawBits0_0, 5), unchecked((ulong)value), 24, 8); }
+        public ImGuiCond SetWindowDockAllowFlags { get => unchecked((ImGuiCond)Bitfield.GetSigned(MemoryMarshal.CreateReadOnlySpan(ref RawBits0_0, 5), 32, 8)); set => Bitfield.Set(MemoryMarshal.CreateSpan(ref RawBits0_0, 5), unchecked((ulong)value), 32, 8); }
 
         [FieldOffset(304)]
         public Vector2 SetWindowPosVal;
@@ -4815,11 +4863,11 @@ namespace Inno.Native.ImGui
         [FieldOffset(1164)]
         public byte MemoryCompacted;
         [FieldOffset(1165)]
-        public byte RawBits2;
-        public byte DockIsActive { get => Bitfield.Get(RawBits2, 0, 1); set => Bitfield.Set(ref RawBits2, value, 0, 1); }
-        public byte DockNodeIsVisible { get => Bitfield.Get(RawBits2, 1, 1); set => Bitfield.Set(ref RawBits2, value, 1, 1); }
-        public byte DockTabIsVisible { get => Bitfield.Get(RawBits2, 2, 1); set => Bitfield.Set(ref RawBits2, value, 2, 1); }
-        public byte DockTabWantClose { get => Bitfield.Get(RawBits2, 3, 1); set => Bitfield.Set(ref RawBits2, value, 3, 1); }
+        public byte RawBits1_0;
+        public byte DockIsActive { get => unchecked((byte)Bitfield.Get(MemoryMarshal.CreateReadOnlySpan(ref RawBits1_0, 1), 0, 1)); set => Bitfield.Set(MemoryMarshal.CreateSpan(ref RawBits1_0, 1), unchecked((ulong)value), 0, 1); }
+        public byte DockNodeIsVisible { get => unchecked((byte)Bitfield.Get(MemoryMarshal.CreateReadOnlySpan(ref RawBits1_0, 1), 1, 1)); set => Bitfield.Set(MemoryMarshal.CreateSpan(ref RawBits1_0, 1), unchecked((ulong)value), 1, 1); }
+        public byte DockTabIsVisible { get => unchecked((byte)Bitfield.Get(MemoryMarshal.CreateReadOnlySpan(ref RawBits1_0, 1), 2, 1)); set => Bitfield.Set(MemoryMarshal.CreateSpan(ref RawBits1_0, 1), unchecked((ulong)value), 2, 1); }
+        public byte DockTabWantClose { get => unchecked((byte)Bitfield.Get(MemoryMarshal.CreateReadOnlySpan(ref RawBits1_0, 1), 3, 1)); set => Bitfield.Set(MemoryMarshal.CreateSpan(ref RawBits1_0, 1), unchecked((ulong)value), 3, 1); }
 
         [FieldOffset(1166)]
         public short DockOrder;
@@ -6130,10 +6178,10 @@ namespace Inno.Native.ImGui
         [FieldOffset(112)]
         public byte CannotSkipItemsQueue;
         [FieldOffset(113)]
-        public byte RawBits0;
-        public byte SortDirection { get => Bitfield.Get(RawBits0, 0, 2); set => Bitfield.Set(ref RawBits0, value, 0, 2); }
-        public byte SortDirectionsAvailCount { get => Bitfield.Get(RawBits0, 2, 2); set => Bitfield.Set(ref RawBits0, value, 2, 2); }
-        public byte SortDirectionsAvailMask { get => Bitfield.Get(RawBits0, 4, 4); set => Bitfield.Set(ref RawBits0, value, 4, 4); }
+        public byte RawBits0_0;
+        public byte SortDirection { get => unchecked((byte)Bitfield.Get(MemoryMarshal.CreateReadOnlySpan(ref RawBits0_0, 1), 0, 2)); set => Bitfield.Set(MemoryMarshal.CreateSpan(ref RawBits0_0, 1), unchecked((ulong)value), 0, 2); }
+        public byte SortDirectionsAvailCount { get => unchecked((byte)Bitfield.Get(MemoryMarshal.CreateReadOnlySpan(ref RawBits0_0, 1), 2, 2)); set => Bitfield.Set(MemoryMarshal.CreateSpan(ref RawBits0_0, 1), unchecked((ulong)value), 2, 2); }
+        public byte SortDirectionsAvailMask { get => unchecked((byte)Bitfield.Get(MemoryMarshal.CreateReadOnlySpan(ref RawBits0_0, 1), 4, 4)); set => Bitfield.Set(MemoryMarshal.CreateSpan(ref RawBits0_0, 1), unchecked((ulong)value), 4, 4); }
 
         [FieldOffset(114)]
         public byte SortDirectionsAvailList;
@@ -6358,9 +6406,15 @@ namespace Inno.Native.ImGui
         [FieldOffset(144)]
         public float RowIndentOffsetX;
         [FieldOffset(148)]
-        public ImGuiTableRowFlags RawBits0;
-        public ImGuiTableRowFlags RowFlags { get => Bitfield.GetSigned(RawBits0, 0, 16); set => Bitfield.Set(ref RawBits0, value, 0, 16); }
-        public ImGuiTableRowFlags LastRowFlags { get => Bitfield.GetSigned(RawBits0, 16, 16); set => Bitfield.Set(ref RawBits0, value, 16, 16); }
+        public byte RawBits0_0;
+        [FieldOffset(149)]
+        public byte RawBits0_1;
+        [FieldOffset(150)]
+        public byte RawBits0_2;
+        [FieldOffset(151)]
+        public byte RawBits0_3;
+        public ImGuiTableRowFlags RowFlags { get => unchecked((ImGuiTableRowFlags)Bitfield.GetSigned(MemoryMarshal.CreateReadOnlySpan(ref RawBits0_0, 4), 0, 16)); set => Bitfield.Set(MemoryMarshal.CreateSpan(ref RawBits0_0, 4), unchecked((ulong)value), 0, 16); }
+        public ImGuiTableRowFlags LastRowFlags { get => unchecked((ImGuiTableRowFlags)Bitfield.GetSigned(MemoryMarshal.CreateReadOnlySpan(ref RawBits0_0, 4), 16, 16)); set => Bitfield.Set(MemoryMarshal.CreateSpan(ref RawBits0_0, 4), unchecked((ulong)value), 16, 16); }
 
         [FieldOffset(152)]
         public int RowBgColorCounter;
@@ -6752,8 +6806,10 @@ namespace Inno.Native.ImGui
         [FieldOffset(8)]
         public byte RequestClear;
         [FieldOffset(12)]
-        public int RawBits0;
-        public int KeyMods { get => Bitfield.GetSigned(RawBits0, 0, 16); set => Bitfield.Set(ref RawBits0, value, 0, 16); }
+        public byte RawBits0_0;
+        [FieldOffset(13)]
+        public byte RawBits0_1;
+        public int KeyMods { get => unchecked((int)Bitfield.GetSigned(MemoryMarshal.CreateReadOnlySpan(ref RawBits0_0, 2), 0, 16)); set => Bitfield.Set(MemoryMarshal.CreateSpan(ref RawBits0_0, 2), unchecked((ulong)value), 0, 16); }
 
         [FieldOffset(16)]
         public Vector2 StartPosRel;
@@ -10179,6 +10235,32 @@ namespace Inno.Native.ImGui
     /// <summary>
     /// To be documented.
     /// </summary>
+    [StructLayout(LayoutKind.Explicit, Size = 4, Pack = 4)]
+    public partial struct ImGuiStyleVarInfo
+    {
+        [FieldOffset(0)]
+        public byte RawBits0_0;
+        [FieldOffset(1)]
+        public byte RawBits0_1;
+        [FieldOffset(2)]
+        public byte RawBits0_2;
+        [FieldOffset(3)]
+        public byte RawBits0_3;
+        public uint Count { get => unchecked((uint)Bitfield.Get(MemoryMarshal.CreateReadOnlySpan(ref RawBits0_0, 4), 0, 8)); set => Bitfield.Set(MemoryMarshal.CreateSpan(ref RawBits0_0, 4), unchecked((ulong)value), 0, 8); }
+        public ImGuiDataType DataType { get => unchecked((ImGuiDataType)Bitfield.GetSigned(MemoryMarshal.CreateReadOnlySpan(ref RawBits0_0, 4), 8, 8)); set => Bitfield.Set(MemoryMarshal.CreateSpan(ref RawBits0_0, 4), unchecked((ulong)value), 8, 8); }
+        public uint Offset { get => unchecked((uint)Bitfield.Get(MemoryMarshal.CreateReadOnlySpan(ref RawBits0_0, 4), 16, 16)); set => Bitfield.Set(MemoryMarshal.CreateSpan(ref RawBits0_0, 4), unchecked((ulong)value), 16, 16); }
+
+        public unsafe ImGuiStyleVarInfo(uint count = default, ImGuiDataType dataType = default, uint offset = default)
+        {
+            this.Count = count;
+            this.DataType = dataType;
+            this.Offset = offset;
+        }
+    }
+
+    /// <summary>
+    /// To be documented.
+    /// </summary>
     [StructLayout(LayoutKind.Sequential, Size = 20, Pack = 4)]
     public partial struct ImGuiTableSettings
     {
@@ -10275,16 +10357,10 @@ namespace Inno.Native.ImGui
         [FieldOffset(12)]
         public short SortOrder;
         [FieldOffset(14)]
-        public byte RawBits0;
-        public byte SortDirection { get => Bitfield.Get(RawBits0, 0, 2); set => Bitfield.Set(ref RawBits0, value, 0, 2); }
-
-        [FieldOffset(14)]
-        public byte RawBits1;
-        public byte IsEnabled { get => Bitfield.GetSigned(RawBits1, 0, 2); set => Bitfield.Set(ref RawBits1, value, 0, 2); }
-
-        [FieldOffset(14)]
-        public byte RawBits2;
-        public byte IsStretch { get => Bitfield.Get(RawBits2, 0, 1); set => Bitfield.Set(ref RawBits2, value, 0, 1); }
+        public byte RawBits0_0;
+        public byte SortDirection { get => unchecked((byte)Bitfield.Get(MemoryMarshal.CreateReadOnlySpan(ref RawBits0_0, 1), 0, 2)); set => Bitfield.Set(MemoryMarshal.CreateSpan(ref RawBits0_0, 1), unchecked((ulong)value), 0, 2); }
+        public byte IsEnabled { get => unchecked((byte)Bitfield.GetSigned(MemoryMarshal.CreateReadOnlySpan(ref RawBits0_0, 1), 2, 2)); set => Bitfield.Set(MemoryMarshal.CreateSpan(ref RawBits0_0, 1), unchecked((ulong)value), 2, 2); }
+        public byte IsStretch { get => unchecked((byte)Bitfield.Get(MemoryMarshal.CreateReadOnlySpan(ref RawBits0_0, 1), 4, 1)); set => Bitfield.Set(MemoryMarshal.CreateSpan(ref RawBits0_0, 1), unchecked((ulong)value), 4, 1); }
 
         public unsafe ImGuiTableColumnSettings(float widthOrWeight = default, uint userID = default, short index = default, short displayOrder = default, short sortOrder = default, byte sortDirection = default, byte isEnabled = default, byte isStretch = default)
         {
@@ -10307,28 +10383,6 @@ namespace Inno.Native.ImGui
     {
 #pragma warning disable CS0169
         private ulong _opaque;
-#pragma warning restore CS0169
-    }
-
-    /// <summary>
-    /// To be documented.
-    /// </summary>
-    [StructLayout(LayoutKind.Sequential, Size = 4, Pack = 4)]
-    public partial struct ImFontAtlasRectEntry
-    {
-#pragma warning disable CS0169
-        private uint _opaque;
-#pragma warning restore CS0169
-    }
-
-    /// <summary>
-    /// To be documented.
-    /// </summary>
-    [StructLayout(LayoutKind.Sequential, Size = 4, Pack = 4)]
-    public partial struct ImGuiStyleVarInfo
-    {
-#pragma warning disable CS0169
-        private uint _opaque;
 #pragma warning restore CS0169
     }
 
@@ -12647,6 +12701,33 @@ namespace Inno.Native.ImGui
         {
             return ImGui.GetCustomRect(this, id, outR);
         }
+    }
+
+    [DebuggerDisplay("{DebuggerDisplay,nq}")]
+    public unsafe struct ImFontAtlasRectEntryPtr : IEquatable<ImFontAtlasRectEntryPtr>
+    {
+        public ImFontAtlasRectEntryPtr(ImFontAtlasRectEntry* handle)
+        {
+            Handle = handle;
+        }
+
+        public ImFontAtlasRectEntry* Handle;
+        public bool IsNull => Handle == null;
+        public static ImFontAtlasRectEntryPtr Null => new ImFontAtlasRectEntryPtr(null);
+
+        public ImFontAtlasRectEntry this[int index] { get => Handle[index]; set => Handle[index] = value; }
+
+        public static implicit operator ImFontAtlasRectEntryPtr(ImFontAtlasRectEntry* handle) => new ImFontAtlasRectEntryPtr(handle);
+        public static implicit operator ImFontAtlasRectEntry*(ImFontAtlasRectEntryPtr handle) => handle.Handle;
+        public static bool operator ==(ImFontAtlasRectEntryPtr left, ImFontAtlasRectEntryPtr right) => left.Handle == right.Handle;
+        public static bool operator !=(ImFontAtlasRectEntryPtr left, ImFontAtlasRectEntryPtr right) => left.Handle != right.Handle;
+        public bool Equals(ImFontAtlasRectEntryPtr other) => Handle == other.Handle;
+        public override bool Equals(object? obj) => obj is ImFontAtlasRectEntryPtr other && Equals(other);
+        public override int GetHashCode() => ((nuint)Handle).GetHashCode();
+        private string DebuggerDisplay => string.Format("ImFontAtlasRectEntryPtr [0x{0}]", ((nuint)Handle).ToString("X"));
+        public int TargetIndex { get => Handle->TargetIndex; set => Handle->TargetIndex = value; }
+        public uint Generation { get => Handle->Generation; set => Handle->Generation = value; }
+        public uint IsUsed { get => Handle->IsUsed; set => Handle->IsUsed = value; }
     }
 
     [DebuggerDisplay("{DebuggerDisplay,nq}")]
@@ -16498,6 +16579,41 @@ namespace Inno.Native.ImGui
     }
 
     [DebuggerDisplay("{DebuggerDisplay,nq}")]
+    public unsafe struct ImGuiStyleVarInfoPtr : IEquatable<ImGuiStyleVarInfoPtr>
+    {
+        public ImGuiStyleVarInfoPtr(ImGuiStyleVarInfo* handle)
+        {
+            Handle = handle;
+        }
+
+        public ImGuiStyleVarInfo* Handle;
+        public bool IsNull => Handle == null;
+        public static ImGuiStyleVarInfoPtr Null => new ImGuiStyleVarInfoPtr(null);
+
+        public ImGuiStyleVarInfo this[int index] { get => Handle[index]; set => Handle[index] = value; }
+
+        public static implicit operator ImGuiStyleVarInfoPtr(ImGuiStyleVarInfo* handle) => new ImGuiStyleVarInfoPtr(handle);
+        public static implicit operator ImGuiStyleVarInfo*(ImGuiStyleVarInfoPtr handle) => handle.Handle;
+        public static bool operator ==(ImGuiStyleVarInfoPtr left, ImGuiStyleVarInfoPtr right) => left.Handle == right.Handle;
+        public static bool operator !=(ImGuiStyleVarInfoPtr left, ImGuiStyleVarInfoPtr right) => left.Handle != right.Handle;
+        public bool Equals(ImGuiStyleVarInfoPtr other) => Handle == other.Handle;
+        public override bool Equals(object? obj) => obj is ImGuiStyleVarInfoPtr other && Equals(other);
+        public override int GetHashCode() => ((nuint)Handle).GetHashCode();
+        private string DebuggerDisplay => string.Format("ImGuiStyleVarInfoPtr [0x{0}]", ((nuint)Handle).ToString("X"));
+        public uint Count { get => Handle->Count; set => Handle->Count = value; }
+        public ImGuiDataType DataType { get => Handle->DataType; set => Handle->DataType = value; }
+        public uint Offset { get => Handle->Offset; set => Handle->Offset = value; }
+
+        /// <summary>
+        /// To be documented.
+        /// </summary>
+        public void* GetVarPtr(void* parent)
+        {
+            return ImGui.GetVarPtr(this, parent);
+        }
+    }
+
+    [DebuggerDisplay("{DebuggerDisplay,nq}")]
     public unsafe struct ImGuiTabBarPtr : IEquatable<ImGuiTabBarPtr>
     {
         public ImGuiTabBarPtr(ImGuiTabBar* handle)
@@ -18903,9 +19019,14 @@ namespace Inno.Native.ImGui
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte BeginInterop(byte* name, byte* pOpen, int flags)
+        {
+            return ((delegate* unmanaged[Cdecl]<byte*, byte*, int, byte>)funcTable[34])(name, pOpen, flags);
+        }
+
         internal static byte BeginNative(byte* name, byte* pOpen, ImGuiWindowFlags flags)
         {
-            return ((delegate* unmanaged[Cdecl]<byte*, byte*, ImGuiWindowFlags, byte>)funcTable[34])(name, pOpen, flags);
+            return BeginInterop(name, pOpen, (int)flags);
         }
 
         /// <summary>
@@ -18919,17 +19040,27 @@ namespace Inno.Native.ImGui
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte BeginChildInterop(byte* strId, Vector2 size, int childFlags, int windowFlags)
+        {
+            return ((delegate* unmanaged[Cdecl]<byte*, Vector2, int, int, byte>)funcTable[36])(strId, size, childFlags, windowFlags);
+        }
+
         internal static byte BeginChildNative(byte* strId, Vector2 size, ImGuiChildFlags childFlags, ImGuiWindowFlags windowFlags)
         {
-            return ((delegate* unmanaged[Cdecl]<byte*, Vector2, ImGuiChildFlags, ImGuiWindowFlags, byte>)funcTable[36])(strId, size, childFlags, windowFlags);
+            return BeginChildInterop(strId, size, (int)childFlags, (int)windowFlags);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte BeginChildInterop(uint id, Vector2 size, int childFlags, int windowFlags)
+        {
+            return ((delegate* unmanaged[Cdecl]<uint, Vector2, int, int, byte>)funcTable[37])(id, size, childFlags, windowFlags);
+        }
+
         internal static byte BeginChildNative(uint id, Vector2 size, ImGuiChildFlags childFlags, ImGuiWindowFlags windowFlags)
         {
-            return ((delegate* unmanaged[Cdecl]<uint, Vector2, ImGuiChildFlags, ImGuiWindowFlags, byte>)funcTable[37])(id, size, childFlags, windowFlags);
+            return BeginChildInterop(id, size, (int)childFlags, (int)windowFlags);
         }
 
         /// <summary>
@@ -18959,17 +19090,27 @@ namespace Inno.Native.ImGui
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte IsWindowFocusedInterop(int flags)
+        {
+            return ((delegate* unmanaged[Cdecl]<int, byte>)funcTable[41])(flags);
+        }
+
         internal static byte IsWindowFocusedNative(ImGuiFocusedFlags flags)
         {
-            return ((delegate* unmanaged[Cdecl]<ImGuiFocusedFlags, byte>)funcTable[41])(flags);
+            return IsWindowFocusedInterop((int)flags);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte IsWindowHoveredInterop(int flags)
+        {
+            return ((delegate* unmanaged[Cdecl]<int, byte>)funcTable[42])(flags);
+        }
+
         internal static byte IsWindowHoveredNative(ImGuiHoveredFlags flags)
         {
-            return ((delegate* unmanaged[Cdecl]<ImGuiHoveredFlags, byte>)funcTable[42])(flags);
+            return IsWindowHoveredInterop((int)flags);
         }
 
         /// <summary>
@@ -19031,17 +19172,27 @@ namespace Inno.Native.ImGui
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void SetNextWindowPosInterop(Vector2 pos, int cond, Vector2 pivot)
+        {
+            ((delegate* unmanaged[Cdecl]<Vector2, int, Vector2, void>)funcTable[50])(pos, cond, pivot);
+        }
+
         internal static void SetNextWindowPosNative(Vector2 pos, ImGuiCond cond, Vector2 pivot)
         {
-            ((delegate* unmanaged[Cdecl]<Vector2, ImGuiCond, Vector2, void>)funcTable[50])(pos, cond, pivot);
+            SetNextWindowPosInterop(pos, (int)cond, pivot);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void SetNextWindowSizeInterop(Vector2 size, int cond)
+        {
+            ((delegate* unmanaged[Cdecl]<Vector2, int, void>)funcTable[51])(size, cond);
+        }
+
         internal static void SetNextWindowSizeNative(Vector2 size, ImGuiCond cond)
         {
-            ((delegate* unmanaged[Cdecl]<Vector2, ImGuiCond, void>)funcTable[51])(size, cond);
+            SetNextWindowSizeInterop(size, (int)cond);
         }
 
         /// <summary>
@@ -19063,9 +19214,14 @@ namespace Inno.Native.ImGui
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void SetNextWindowCollapsedInterop(byte collapsed, int cond)
+        {
+            ((delegate* unmanaged[Cdecl]<byte, int, void>)funcTable[54])(collapsed, cond);
+        }
+
         internal static void SetNextWindowCollapsedNative(byte collapsed, ImGuiCond cond)
         {
-            ((delegate* unmanaged[Cdecl]<byte, ImGuiCond, void>)funcTable[54])(collapsed, cond);
+            SetNextWindowCollapsedInterop(collapsed, (int)cond);
         }
 
         /// <summary>
@@ -19103,25 +19259,40 @@ namespace Inno.Native.ImGui
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void SetWindowPosInterop(Vector2 pos, int cond)
+        {
+            ((delegate* unmanaged[Cdecl]<Vector2, int, void>)funcTable[59])(pos, cond);
+        }
+
         internal static void SetWindowPosNative(Vector2 pos, ImGuiCond cond)
         {
-            ((delegate* unmanaged[Cdecl]<Vector2, ImGuiCond, void>)funcTable[59])(pos, cond);
+            SetWindowPosInterop(pos, (int)cond);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void SetWindowSizeInterop(Vector2 size, int cond)
+        {
+            ((delegate* unmanaged[Cdecl]<Vector2, int, void>)funcTable[60])(size, cond);
+        }
+
         internal static void SetWindowSizeNative(Vector2 size, ImGuiCond cond)
         {
-            ((delegate* unmanaged[Cdecl]<Vector2, ImGuiCond, void>)funcTable[60])(size, cond);
+            SetWindowSizeInterop(size, (int)cond);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void SetWindowCollapsedInterop(byte collapsed, int cond)
+        {
+            ((delegate* unmanaged[Cdecl]<byte, int, void>)funcTable[61])(collapsed, cond);
+        }
+
         internal static void SetWindowCollapsedNative(byte collapsed, ImGuiCond cond)
         {
-            ((delegate* unmanaged[Cdecl]<byte, ImGuiCond, void>)funcTable[61])(collapsed, cond);
+            SetWindowCollapsedInterop(collapsed, (int)cond);
         }
 
         /// <summary>
@@ -19135,25 +19306,40 @@ namespace Inno.Native.ImGui
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void SetWindowPosInterop(byte* name, Vector2 pos, int cond)
+        {
+            ((delegate* unmanaged[Cdecl]<byte*, Vector2, int, void>)funcTable[63])(name, pos, cond);
+        }
+
         internal static void SetWindowPosNative(byte* name, Vector2 pos, ImGuiCond cond)
         {
-            ((delegate* unmanaged[Cdecl]<byte*, Vector2, ImGuiCond, void>)funcTable[63])(name, pos, cond);
+            SetWindowPosInterop(name, pos, (int)cond);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void SetWindowSizeInterop(byte* name, Vector2 size, int cond)
+        {
+            ((delegate* unmanaged[Cdecl]<byte*, Vector2, int, void>)funcTable[64])(name, size, cond);
+        }
+
         internal static void SetWindowSizeNative(byte* name, Vector2 size, ImGuiCond cond)
         {
-            ((delegate* unmanaged[Cdecl]<byte*, Vector2, ImGuiCond, void>)funcTable[64])(name, size, cond);
+            SetWindowSizeInterop(name, size, (int)cond);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void SetWindowCollapsedInterop(byte* name, byte collapsed, int cond)
+        {
+            ((delegate* unmanaged[Cdecl]<byte*, byte, int, void>)funcTable[65])(name, collapsed, cond);
+        }
+
         internal static void SetWindowCollapsedNative(byte* name, byte collapsed, ImGuiCond cond)
         {
-            ((delegate* unmanaged[Cdecl]<byte*, byte, ImGuiCond, void>)funcTable[65])(name, collapsed, cond);
+            SetWindowCollapsedInterop(name, collapsed, (int)cond);
         }
 
         /// <summary>
@@ -19287,17 +19473,27 @@ namespace Inno.Native.ImGui
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void PushStyleColorInterop(int idx, uint col)
+        {
+            ((delegate* unmanaged[Cdecl]<int, uint, void>)funcTable[82])(idx, col);
+        }
+
         internal static void PushStyleColorNative(ImGuiCol idx, uint col)
         {
-            ((delegate* unmanaged[Cdecl]<ImGuiCol, uint, void>)funcTable[82])(idx, col);
+            PushStyleColorInterop((int)idx, col);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void PushStyleColorInterop(int idx, Vector4 col)
+        {
+            ((delegate* unmanaged[Cdecl]<int, Vector4, void>)funcTable[83])(idx, col);
+        }
+
         internal static void PushStyleColorNative(ImGuiCol idx, Vector4 col)
         {
-            ((delegate* unmanaged[Cdecl]<ImGuiCol, Vector4, void>)funcTable[83])(idx, col);
+            PushStyleColorInterop((int)idx, col);
         }
 
         /// <summary>
@@ -19311,33 +19507,53 @@ namespace Inno.Native.ImGui
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void PushStyleVarInterop(int idx, float val)
+        {
+            ((delegate* unmanaged[Cdecl]<int, float, void>)funcTable[85])(idx, val);
+        }
+
         internal static void PushStyleVarNative(ImGuiStyleVar idx, float val)
         {
-            ((delegate* unmanaged[Cdecl]<ImGuiStyleVar, float, void>)funcTable[85])(idx, val);
+            PushStyleVarInterop((int)idx, val);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void PushStyleVarInterop(int idx, Vector2 val)
+        {
+            ((delegate* unmanaged[Cdecl]<int, Vector2, void>)funcTable[86])(idx, val);
+        }
+
         internal static void PushStyleVarNative(ImGuiStyleVar idx, Vector2 val)
         {
-            ((delegate* unmanaged[Cdecl]<ImGuiStyleVar, Vector2, void>)funcTable[86])(idx, val);
+            PushStyleVarInterop((int)idx, val);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void PushStyleVarXInterop(int idx, float valX)
+        {
+            ((delegate* unmanaged[Cdecl]<int, float, void>)funcTable[87])(idx, valX);
+        }
+
         internal static void PushStyleVarXNative(ImGuiStyleVar idx, float valX)
         {
-            ((delegate* unmanaged[Cdecl]<ImGuiStyleVar, float, void>)funcTable[87])(idx, valX);
+            PushStyleVarXInterop((int)idx, valX);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void PushStyleVarYInterop(int idx, float valY)
+        {
+            ((delegate* unmanaged[Cdecl]<int, float, void>)funcTable[88])(idx, valY);
+        }
+
         internal static void PushStyleVarYNative(ImGuiStyleVar idx, float valY)
         {
-            ((delegate* unmanaged[Cdecl]<ImGuiStyleVar, float, void>)funcTable[88])(idx, valY);
+            PushStyleVarYInterop((int)idx, valY);
         }
 
         /// <summary>
@@ -19351,9 +19567,14 @@ namespace Inno.Native.ImGui
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void PushItemFlagInterop(int option, byte enabled)
+        {
+            ((delegate* unmanaged[Cdecl]<int, byte, void>)funcTable[90])(option, enabled);
+        }
+
         internal static void PushItemFlagNative(ImGuiItemFlags option, byte enabled)
         {
-            ((delegate* unmanaged[Cdecl]<ImGuiItemFlags, byte, void>)funcTable[90])(option, enabled);
+            PushItemFlagInterop((int)option, enabled);
         }
 
         /// <summary>
@@ -19423,9 +19644,14 @@ namespace Inno.Native.ImGui
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static uint GetColorU32Interop(int idx, float alphaMul)
+        {
+            return ((delegate* unmanaged[Cdecl]<int, float, uint>)funcTable[99])(idx, alphaMul);
+        }
+
         internal static uint GetColorU32Native(ImGuiCol idx, float alphaMul)
         {
-            return ((delegate* unmanaged[Cdecl]<ImGuiCol, float, uint>)funcTable[99])(idx, alphaMul);
+            return GetColorU32Interop((int)idx, alphaMul);
         }
 
         /// <summary>
@@ -19447,9 +19673,14 @@ namespace Inno.Native.ImGui
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static Vector4* GetStyleColorVec4Interop(int idx)
+        {
+            return ((delegate* unmanaged[Cdecl]<int, Vector4*>)funcTable[102])(idx);
+        }
+
         internal static Vector4* GetStyleColorVec4Native(ImGuiCol idx)
         {
-            return ((delegate* unmanaged[Cdecl]<ImGuiCol, Vector4*>)funcTable[102])(idx);
+            return GetStyleColorVec4Interop((int)idx);
         }
 
         /// <summary>
@@ -19847,17 +20078,27 @@ namespace Inno.Native.ImGui
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte InvisibleButtonInterop(byte* strId, Vector2 size, int flags)
+        {
+            return ((delegate* unmanaged[Cdecl]<byte*, Vector2, int, byte>)funcTable[152])(strId, size, flags);
+        }
+
         internal static byte InvisibleButtonNative(byte* strId, Vector2 size, ImGuiButtonFlags flags)
         {
-            return ((delegate* unmanaged[Cdecl]<byte*, Vector2, ImGuiButtonFlags, byte>)funcTable[152])(strId, size, flags);
+            return InvisibleButtonInterop(strId, size, (int)flags);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte ArrowButtonInterop(byte* strId, int dir)
+        {
+            return ((delegate* unmanaged[Cdecl]<byte*, int, byte>)funcTable[153])(strId, dir);
+        }
+
         internal static byte ArrowButtonNative(byte* strId, ImGuiDir dir)
         {
-            return ((delegate* unmanaged[Cdecl]<byte*, ImGuiDir, byte>)funcTable[153])(strId, dir);
+            return ArrowButtonInterop(strId, (int)dir);
         }
 
         /// <summary>
@@ -19959,9 +20200,14 @@ namespace Inno.Native.ImGui
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte BeginComboInterop(byte* label, byte* previewValue, int flags)
+        {
+            return ((delegate* unmanaged[Cdecl]<byte*, byte*, int, byte>)funcTable[166])(label, previewValue, flags);
+        }
+
         internal static byte BeginComboNative(byte* label, byte* previewValue, ImGuiComboFlags flags)
         {
-            return ((delegate* unmanaged[Cdecl]<byte*, byte*, ImGuiComboFlags, byte>)funcTable[166])(label, previewValue, flags);
+            return BeginComboInterop(label, previewValue, (int)flags);
         }
 
         /// <summary>
@@ -19999,369 +20245,599 @@ namespace Inno.Native.ImGui
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte DragFloatInterop(byte* label, float* v, float vSpeed, float vMin, float vMax, byte* format, int flags)
+        {
+            return ((delegate* unmanaged[Cdecl]<byte*, float*, float, float, float, byte*, int, byte>)funcTable[171])(label, v, vSpeed, vMin, vMax, format, flags);
+        }
+
         internal static byte DragFloatNative(byte* label, float* v, float vSpeed, float vMin, float vMax, byte* format, ImGuiSliderFlags flags)
         {
-            return ((delegate* unmanaged[Cdecl]<byte*, float*, float, float, float, byte*, ImGuiSliderFlags, byte>)funcTable[171])(label, v, vSpeed, vMin, vMax, format, flags);
+            return DragFloatInterop(label, v, vSpeed, vMin, vMax, format, (int)flags);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte DragFloat2Interop(byte* label, float* v, float vSpeed, float vMin, float vMax, byte* format, int flags)
+        {
+            return ((delegate* unmanaged[Cdecl]<byte*, float*, float, float, float, byte*, int, byte>)funcTable[172])(label, v, vSpeed, vMin, vMax, format, flags);
+        }
+
         internal static byte DragFloat2Native(byte* label, float* v, float vSpeed, float vMin, float vMax, byte* format, ImGuiSliderFlags flags)
         {
-            return ((delegate* unmanaged[Cdecl]<byte*, float*, float, float, float, byte*, ImGuiSliderFlags, byte>)funcTable[172])(label, v, vSpeed, vMin, vMax, format, flags);
+            return DragFloat2Interop(label, v, vSpeed, vMin, vMax, format, (int)flags);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte DragFloat3Interop(byte* label, float* v, float vSpeed, float vMin, float vMax, byte* format, int flags)
+        {
+            return ((delegate* unmanaged[Cdecl]<byte*, float*, float, float, float, byte*, int, byte>)funcTable[173])(label, v, vSpeed, vMin, vMax, format, flags);
+        }
+
         internal static byte DragFloat3Native(byte* label, float* v, float vSpeed, float vMin, float vMax, byte* format, ImGuiSliderFlags flags)
         {
-            return ((delegate* unmanaged[Cdecl]<byte*, float*, float, float, float, byte*, ImGuiSliderFlags, byte>)funcTable[173])(label, v, vSpeed, vMin, vMax, format, flags);
+            return DragFloat3Interop(label, v, vSpeed, vMin, vMax, format, (int)flags);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte DragFloat4Interop(byte* label, float* v, float vSpeed, float vMin, float vMax, byte* format, int flags)
+        {
+            return ((delegate* unmanaged[Cdecl]<byte*, float*, float, float, float, byte*, int, byte>)funcTable[174])(label, v, vSpeed, vMin, vMax, format, flags);
+        }
+
         internal static byte DragFloat4Native(byte* label, float* v, float vSpeed, float vMin, float vMax, byte* format, ImGuiSliderFlags flags)
         {
-            return ((delegate* unmanaged[Cdecl]<byte*, float*, float, float, float, byte*, ImGuiSliderFlags, byte>)funcTable[174])(label, v, vSpeed, vMin, vMax, format, flags);
+            return DragFloat4Interop(label, v, vSpeed, vMin, vMax, format, (int)flags);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte DragFloatRange2Interop(byte* label, float* vCurrentMin, float* vCurrentMax, float vSpeed, float vMin, float vMax, byte* format, byte* formatMax, int flags)
+        {
+            return ((delegate* unmanaged[Cdecl]<byte*, float*, float*, float, float, float, byte*, byte*, int, byte>)funcTable[175])(label, vCurrentMin, vCurrentMax, vSpeed, vMin, vMax, format, formatMax, flags);
+        }
+
         internal static byte DragFloatRange2Native(byte* label, float* vCurrentMin, float* vCurrentMax, float vSpeed, float vMin, float vMax, byte* format, byte* formatMax, ImGuiSliderFlags flags)
         {
-            return ((delegate* unmanaged[Cdecl]<byte*, float*, float*, float, float, float, byte*, byte*, ImGuiSliderFlags, byte>)funcTable[175])(label, vCurrentMin, vCurrentMax, vSpeed, vMin, vMax, format, formatMax, flags);
+            return DragFloatRange2Interop(label, vCurrentMin, vCurrentMax, vSpeed, vMin, vMax, format, formatMax, (int)flags);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte DragIntInterop(byte* label, int* v, float vSpeed, int vMin, int vMax, byte* format, int flags)
+        {
+            return ((delegate* unmanaged[Cdecl]<byte*, int*, float, int, int, byte*, int, byte>)funcTable[176])(label, v, vSpeed, vMin, vMax, format, flags);
+        }
+
         internal static byte DragIntNative(byte* label, int* v, float vSpeed, int vMin, int vMax, byte* format, ImGuiSliderFlags flags)
         {
-            return ((delegate* unmanaged[Cdecl]<byte*, int*, float, int, int, byte*, ImGuiSliderFlags, byte>)funcTable[176])(label, v, vSpeed, vMin, vMax, format, flags);
+            return DragIntInterop(label, v, vSpeed, vMin, vMax, format, (int)flags);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte DragInt2Interop(byte* label, int* v, float vSpeed, int vMin, int vMax, byte* format, int flags)
+        {
+            return ((delegate* unmanaged[Cdecl]<byte*, int*, float, int, int, byte*, int, byte>)funcTable[177])(label, v, vSpeed, vMin, vMax, format, flags);
+        }
+
         internal static byte DragInt2Native(byte* label, int* v, float vSpeed, int vMin, int vMax, byte* format, ImGuiSliderFlags flags)
         {
-            return ((delegate* unmanaged[Cdecl]<byte*, int*, float, int, int, byte*, ImGuiSliderFlags, byte>)funcTable[177])(label, v, vSpeed, vMin, vMax, format, flags);
+            return DragInt2Interop(label, v, vSpeed, vMin, vMax, format, (int)flags);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte DragInt3Interop(byte* label, int* v, float vSpeed, int vMin, int vMax, byte* format, int flags)
+        {
+            return ((delegate* unmanaged[Cdecl]<byte*, int*, float, int, int, byte*, int, byte>)funcTable[178])(label, v, vSpeed, vMin, vMax, format, flags);
+        }
+
         internal static byte DragInt3Native(byte* label, int* v, float vSpeed, int vMin, int vMax, byte* format, ImGuiSliderFlags flags)
         {
-            return ((delegate* unmanaged[Cdecl]<byte*, int*, float, int, int, byte*, ImGuiSliderFlags, byte>)funcTable[178])(label, v, vSpeed, vMin, vMax, format, flags);
+            return DragInt3Interop(label, v, vSpeed, vMin, vMax, format, (int)flags);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte DragInt4Interop(byte* label, int* v, float vSpeed, int vMin, int vMax, byte* format, int flags)
+        {
+            return ((delegate* unmanaged[Cdecl]<byte*, int*, float, int, int, byte*, int, byte>)funcTable[179])(label, v, vSpeed, vMin, vMax, format, flags);
+        }
+
         internal static byte DragInt4Native(byte* label, int* v, float vSpeed, int vMin, int vMax, byte* format, ImGuiSliderFlags flags)
         {
-            return ((delegate* unmanaged[Cdecl]<byte*, int*, float, int, int, byte*, ImGuiSliderFlags, byte>)funcTable[179])(label, v, vSpeed, vMin, vMax, format, flags);
+            return DragInt4Interop(label, v, vSpeed, vMin, vMax, format, (int)flags);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte DragIntRange2Interop(byte* label, int* vCurrentMin, int* vCurrentMax, float vSpeed, int vMin, int vMax, byte* format, byte* formatMax, int flags)
+        {
+            return ((delegate* unmanaged[Cdecl]<byte*, int*, int*, float, int, int, byte*, byte*, int, byte>)funcTable[180])(label, vCurrentMin, vCurrentMax, vSpeed, vMin, vMax, format, formatMax, flags);
+        }
+
         internal static byte DragIntRange2Native(byte* label, int* vCurrentMin, int* vCurrentMax, float vSpeed, int vMin, int vMax, byte* format, byte* formatMax, ImGuiSliderFlags flags)
         {
-            return ((delegate* unmanaged[Cdecl]<byte*, int*, int*, float, int, int, byte*, byte*, ImGuiSliderFlags, byte>)funcTable[180])(label, vCurrentMin, vCurrentMax, vSpeed, vMin, vMax, format, formatMax, flags);
+            return DragIntRange2Interop(label, vCurrentMin, vCurrentMax, vSpeed, vMin, vMax, format, formatMax, (int)flags);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte DragScalarInterop(byte* label, int dataType, void* pData, float vSpeed, void* pMin, void* pMax, byte* format, int flags)
+        {
+            return ((delegate* unmanaged[Cdecl]<byte*, int, void*, float, void*, void*, byte*, int, byte>)funcTable[181])(label, dataType, pData, vSpeed, pMin, pMax, format, flags);
+        }
+
         internal static byte DragScalarNative(byte* label, ImGuiDataType dataType, void* pData, float vSpeed, void* pMin, void* pMax, byte* format, ImGuiSliderFlags flags)
         {
-            return ((delegate* unmanaged[Cdecl]<byte*, ImGuiDataType, void*, float, void*, void*, byte*, ImGuiSliderFlags, byte>)funcTable[181])(label, dataType, pData, vSpeed, pMin, pMax, format, flags);
+            return DragScalarInterop(label, (int)dataType, pData, vSpeed, pMin, pMax, format, (int)flags);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte DragScalarNInterop(byte* label, int dataType, void* pData, int components, float vSpeed, void* pMin, void* pMax, byte* format, int flags)
+        {
+            return ((delegate* unmanaged[Cdecl]<byte*, int, void*, int, float, void*, void*, byte*, int, byte>)funcTable[182])(label, dataType, pData, components, vSpeed, pMin, pMax, format, flags);
+        }
+
         internal static byte DragScalarNNative(byte* label, ImGuiDataType dataType, void* pData, int components, float vSpeed, void* pMin, void* pMax, byte* format, ImGuiSliderFlags flags)
         {
-            return ((delegate* unmanaged[Cdecl]<byte*, ImGuiDataType, void*, int, float, void*, void*, byte*, ImGuiSliderFlags, byte>)funcTable[182])(label, dataType, pData, components, vSpeed, pMin, pMax, format, flags);
+            return DragScalarNInterop(label, (int)dataType, pData, components, vSpeed, pMin, pMax, format, (int)flags);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte SliderFloatInterop(byte* label, float* v, float vMin, float vMax, byte* format, int flags)
+        {
+            return ((delegate* unmanaged[Cdecl]<byte*, float*, float, float, byte*, int, byte>)funcTable[183])(label, v, vMin, vMax, format, flags);
+        }
+
         internal static byte SliderFloatNative(byte* label, float* v, float vMin, float vMax, byte* format, ImGuiSliderFlags flags)
         {
-            return ((delegate* unmanaged[Cdecl]<byte*, float*, float, float, byte*, ImGuiSliderFlags, byte>)funcTable[183])(label, v, vMin, vMax, format, flags);
+            return SliderFloatInterop(label, v, vMin, vMax, format, (int)flags);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte SliderFloat2Interop(byte* label, float* v, float vMin, float vMax, byte* format, int flags)
+        {
+            return ((delegate* unmanaged[Cdecl]<byte*, float*, float, float, byte*, int, byte>)funcTable[184])(label, v, vMin, vMax, format, flags);
+        }
+
         internal static byte SliderFloat2Native(byte* label, float* v, float vMin, float vMax, byte* format, ImGuiSliderFlags flags)
         {
-            return ((delegate* unmanaged[Cdecl]<byte*, float*, float, float, byte*, ImGuiSliderFlags, byte>)funcTable[184])(label, v, vMin, vMax, format, flags);
+            return SliderFloat2Interop(label, v, vMin, vMax, format, (int)flags);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte SliderFloat3Interop(byte* label, float* v, float vMin, float vMax, byte* format, int flags)
+        {
+            return ((delegate* unmanaged[Cdecl]<byte*, float*, float, float, byte*, int, byte>)funcTable[185])(label, v, vMin, vMax, format, flags);
+        }
+
         internal static byte SliderFloat3Native(byte* label, float* v, float vMin, float vMax, byte* format, ImGuiSliderFlags flags)
         {
-            return ((delegate* unmanaged[Cdecl]<byte*, float*, float, float, byte*, ImGuiSliderFlags, byte>)funcTable[185])(label, v, vMin, vMax, format, flags);
+            return SliderFloat3Interop(label, v, vMin, vMax, format, (int)flags);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte SliderFloat4Interop(byte* label, float* v, float vMin, float vMax, byte* format, int flags)
+        {
+            return ((delegate* unmanaged[Cdecl]<byte*, float*, float, float, byte*, int, byte>)funcTable[186])(label, v, vMin, vMax, format, flags);
+        }
+
         internal static byte SliderFloat4Native(byte* label, float* v, float vMin, float vMax, byte* format, ImGuiSliderFlags flags)
         {
-            return ((delegate* unmanaged[Cdecl]<byte*, float*, float, float, byte*, ImGuiSliderFlags, byte>)funcTable[186])(label, v, vMin, vMax, format, flags);
+            return SliderFloat4Interop(label, v, vMin, vMax, format, (int)flags);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte SliderAngleInterop(byte* label, float* vRad, float vDegreesMin, float vDegreesMax, byte* format, int flags)
+        {
+            return ((delegate* unmanaged[Cdecl]<byte*, float*, float, float, byte*, int, byte>)funcTable[187])(label, vRad, vDegreesMin, vDegreesMax, format, flags);
+        }
+
         internal static byte SliderAngleNative(byte* label, float* vRad, float vDegreesMin, float vDegreesMax, byte* format, ImGuiSliderFlags flags)
         {
-            return ((delegate* unmanaged[Cdecl]<byte*, float*, float, float, byte*, ImGuiSliderFlags, byte>)funcTable[187])(label, vRad, vDegreesMin, vDegreesMax, format, flags);
+            return SliderAngleInterop(label, vRad, vDegreesMin, vDegreesMax, format, (int)flags);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte SliderIntInterop(byte* label, int* v, int vMin, int vMax, byte* format, int flags)
+        {
+            return ((delegate* unmanaged[Cdecl]<byte*, int*, int, int, byte*, int, byte>)funcTable[188])(label, v, vMin, vMax, format, flags);
+        }
+
         internal static byte SliderIntNative(byte* label, int* v, int vMin, int vMax, byte* format, ImGuiSliderFlags flags)
         {
-            return ((delegate* unmanaged[Cdecl]<byte*, int*, int, int, byte*, ImGuiSliderFlags, byte>)funcTable[188])(label, v, vMin, vMax, format, flags);
+            return SliderIntInterop(label, v, vMin, vMax, format, (int)flags);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte SliderInt2Interop(byte* label, int* v, int vMin, int vMax, byte* format, int flags)
+        {
+            return ((delegate* unmanaged[Cdecl]<byte*, int*, int, int, byte*, int, byte>)funcTable[189])(label, v, vMin, vMax, format, flags);
+        }
+
         internal static byte SliderInt2Native(byte* label, int* v, int vMin, int vMax, byte* format, ImGuiSliderFlags flags)
         {
-            return ((delegate* unmanaged[Cdecl]<byte*, int*, int, int, byte*, ImGuiSliderFlags, byte>)funcTable[189])(label, v, vMin, vMax, format, flags);
+            return SliderInt2Interop(label, v, vMin, vMax, format, (int)flags);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte SliderInt3Interop(byte* label, int* v, int vMin, int vMax, byte* format, int flags)
+        {
+            return ((delegate* unmanaged[Cdecl]<byte*, int*, int, int, byte*, int, byte>)funcTable[190])(label, v, vMin, vMax, format, flags);
+        }
+
         internal static byte SliderInt3Native(byte* label, int* v, int vMin, int vMax, byte* format, ImGuiSliderFlags flags)
         {
-            return ((delegate* unmanaged[Cdecl]<byte*, int*, int, int, byte*, ImGuiSliderFlags, byte>)funcTable[190])(label, v, vMin, vMax, format, flags);
+            return SliderInt3Interop(label, v, vMin, vMax, format, (int)flags);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte SliderInt4Interop(byte* label, int* v, int vMin, int vMax, byte* format, int flags)
+        {
+            return ((delegate* unmanaged[Cdecl]<byte*, int*, int, int, byte*, int, byte>)funcTable[191])(label, v, vMin, vMax, format, flags);
+        }
+
         internal static byte SliderInt4Native(byte* label, int* v, int vMin, int vMax, byte* format, ImGuiSliderFlags flags)
         {
-            return ((delegate* unmanaged[Cdecl]<byte*, int*, int, int, byte*, ImGuiSliderFlags, byte>)funcTable[191])(label, v, vMin, vMax, format, flags);
+            return SliderInt4Interop(label, v, vMin, vMax, format, (int)flags);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte SliderScalarInterop(byte* label, int dataType, void* pData, void* pMin, void* pMax, byte* format, int flags)
+        {
+            return ((delegate* unmanaged[Cdecl]<byte*, int, void*, void*, void*, byte*, int, byte>)funcTable[192])(label, dataType, pData, pMin, pMax, format, flags);
+        }
+
         internal static byte SliderScalarNative(byte* label, ImGuiDataType dataType, void* pData, void* pMin, void* pMax, byte* format, ImGuiSliderFlags flags)
         {
-            return ((delegate* unmanaged[Cdecl]<byte*, ImGuiDataType, void*, void*, void*, byte*, ImGuiSliderFlags, byte>)funcTable[192])(label, dataType, pData, pMin, pMax, format, flags);
+            return SliderScalarInterop(label, (int)dataType, pData, pMin, pMax, format, (int)flags);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte SliderScalarNInterop(byte* label, int dataType, void* pData, int components, void* pMin, void* pMax, byte* format, int flags)
+        {
+            return ((delegate* unmanaged[Cdecl]<byte*, int, void*, int, void*, void*, byte*, int, byte>)funcTable[193])(label, dataType, pData, components, pMin, pMax, format, flags);
+        }
+
         internal static byte SliderScalarNNative(byte* label, ImGuiDataType dataType, void* pData, int components, void* pMin, void* pMax, byte* format, ImGuiSliderFlags flags)
         {
-            return ((delegate* unmanaged[Cdecl]<byte*, ImGuiDataType, void*, int, void*, void*, byte*, ImGuiSliderFlags, byte>)funcTable[193])(label, dataType, pData, components, pMin, pMax, format, flags);
+            return SliderScalarNInterop(label, (int)dataType, pData, components, pMin, pMax, format, (int)flags);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte VSliderFloatInterop(byte* label, Vector2 size, float* v, float vMin, float vMax, byte* format, int flags)
+        {
+            return ((delegate* unmanaged[Cdecl]<byte*, Vector2, float*, float, float, byte*, int, byte>)funcTable[194])(label, size, v, vMin, vMax, format, flags);
+        }
+
         internal static byte VSliderFloatNative(byte* label, Vector2 size, float* v, float vMin, float vMax, byte* format, ImGuiSliderFlags flags)
         {
-            return ((delegate* unmanaged[Cdecl]<byte*, Vector2, float*, float, float, byte*, ImGuiSliderFlags, byte>)funcTable[194])(label, size, v, vMin, vMax, format, flags);
+            return VSliderFloatInterop(label, size, v, vMin, vMax, format, (int)flags);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte VSliderIntInterop(byte* label, Vector2 size, int* v, int vMin, int vMax, byte* format, int flags)
+        {
+            return ((delegate* unmanaged[Cdecl]<byte*, Vector2, int*, int, int, byte*, int, byte>)funcTable[195])(label, size, v, vMin, vMax, format, flags);
+        }
+
         internal static byte VSliderIntNative(byte* label, Vector2 size, int* v, int vMin, int vMax, byte* format, ImGuiSliderFlags flags)
         {
-            return ((delegate* unmanaged[Cdecl]<byte*, Vector2, int*, int, int, byte*, ImGuiSliderFlags, byte>)funcTable[195])(label, size, v, vMin, vMax, format, flags);
+            return VSliderIntInterop(label, size, v, vMin, vMax, format, (int)flags);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte VSliderScalarInterop(byte* label, Vector2 size, int dataType, void* pData, void* pMin, void* pMax, byte* format, int flags)
+        {
+            return ((delegate* unmanaged[Cdecl]<byte*, Vector2, int, void*, void*, void*, byte*, int, byte>)funcTable[196])(label, size, dataType, pData, pMin, pMax, format, flags);
+        }
+
         internal static byte VSliderScalarNative(byte* label, Vector2 size, ImGuiDataType dataType, void* pData, void* pMin, void* pMax, byte* format, ImGuiSliderFlags flags)
         {
-            return ((delegate* unmanaged[Cdecl]<byte*, Vector2, ImGuiDataType, void*, void*, void*, byte*, ImGuiSliderFlags, byte>)funcTable[196])(label, size, dataType, pData, pMin, pMax, format, flags);
+            return VSliderScalarInterop(label, size, (int)dataType, pData, pMin, pMax, format, (int)flags);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte InputTextInterop(byte* label, byte* buf, nuint bufSize, int flags, delegate* unmanaged[Cdecl]<ImGuiInputTextCallbackData*, int> callback, void* userData)
+        {
+            return ((delegate* unmanaged[Cdecl]<byte*, byte*, nuint, int, delegate* unmanaged[Cdecl]<ImGuiInputTextCallbackData*, int> , void*, byte>)funcTable[197])(label, buf, bufSize, flags, callback, userData);
+        }
+
         internal static byte InputTextNative(byte* label, byte* buf, nuint bufSize, ImGuiInputTextFlags flags, delegate* unmanaged[Cdecl]<ImGuiInputTextCallbackData*, int> callback, void* userData)
         {
-            return ((delegate* unmanaged[Cdecl]<byte*, byte*, nuint, ImGuiInputTextFlags, delegate* unmanaged[Cdecl]<ImGuiInputTextCallbackData*, int> , void*, byte>)funcTable[197])(label, buf, bufSize, flags, callback, userData);
+            return InputTextInterop(label, buf, bufSize, (int)flags, callback, userData);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte InputTextMultilineInterop(byte* label, byte* buf, nuint bufSize, Vector2 size, int flags, delegate* unmanaged[Cdecl]<ImGuiInputTextCallbackData*, int> callback, void* userData)
+        {
+            return ((delegate* unmanaged[Cdecl]<byte*, byte*, nuint, Vector2, int, delegate* unmanaged[Cdecl]<ImGuiInputTextCallbackData*, int> , void*, byte>)funcTable[198])(label, buf, bufSize, size, flags, callback, userData);
+        }
+
         internal static byte InputTextMultilineNative(byte* label, byte* buf, nuint bufSize, Vector2 size, ImGuiInputTextFlags flags, delegate* unmanaged[Cdecl]<ImGuiInputTextCallbackData*, int> callback, void* userData)
         {
-            return ((delegate* unmanaged[Cdecl]<byte*, byte*, nuint, Vector2, ImGuiInputTextFlags, delegate* unmanaged[Cdecl]<ImGuiInputTextCallbackData*, int> , void*, byte>)funcTable[198])(label, buf, bufSize, size, flags, callback, userData);
+            return InputTextMultilineInterop(label, buf, bufSize, size, (int)flags, callback, userData);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte InputTextWithHintInterop(byte* label, byte* hint, byte* buf, nuint bufSize, int flags, delegate* unmanaged[Cdecl]<ImGuiInputTextCallbackData*, int> callback, void* userData)
+        {
+            return ((delegate* unmanaged[Cdecl]<byte*, byte*, byte*, nuint, int, delegate* unmanaged[Cdecl]<ImGuiInputTextCallbackData*, int> , void*, byte>)funcTable[199])(label, hint, buf, bufSize, flags, callback, userData);
+        }
+
         internal static byte InputTextWithHintNative(byte* label, byte* hint, byte* buf, nuint bufSize, ImGuiInputTextFlags flags, delegate* unmanaged[Cdecl]<ImGuiInputTextCallbackData*, int> callback, void* userData)
         {
-            return ((delegate* unmanaged[Cdecl]<byte*, byte*, byte*, nuint, ImGuiInputTextFlags, delegate* unmanaged[Cdecl]<ImGuiInputTextCallbackData*, int> , void*, byte>)funcTable[199])(label, hint, buf, bufSize, flags, callback, userData);
+            return InputTextWithHintInterop(label, hint, buf, bufSize, (int)flags, callback, userData);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte InputFloatInterop(byte* label, float* v, float step, float stepFast, byte* format, int flags)
+        {
+            return ((delegate* unmanaged[Cdecl]<byte*, float*, float, float, byte*, int, byte>)funcTable[200])(label, v, step, stepFast, format, flags);
+        }
+
         internal static byte InputFloatNative(byte* label, float* v, float step, float stepFast, byte* format, ImGuiInputTextFlags flags)
         {
-            return ((delegate* unmanaged[Cdecl]<byte*, float*, float, float, byte*, ImGuiInputTextFlags, byte>)funcTable[200])(label, v, step, stepFast, format, flags);
+            return InputFloatInterop(label, v, step, stepFast, format, (int)flags);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte InputFloat2Interop(byte* label, float* v, byte* format, int flags)
+        {
+            return ((delegate* unmanaged[Cdecl]<byte*, float*, byte*, int, byte>)funcTable[201])(label, v, format, flags);
+        }
+
         internal static byte InputFloat2Native(byte* label, float* v, byte* format, ImGuiInputTextFlags flags)
         {
-            return ((delegate* unmanaged[Cdecl]<byte*, float*, byte*, ImGuiInputTextFlags, byte>)funcTable[201])(label, v, format, flags);
+            return InputFloat2Interop(label, v, format, (int)flags);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte InputFloat3Interop(byte* label, float* v, byte* format, int flags)
+        {
+            return ((delegate* unmanaged[Cdecl]<byte*, float*, byte*, int, byte>)funcTable[202])(label, v, format, flags);
+        }
+
         internal static byte InputFloat3Native(byte* label, float* v, byte* format, ImGuiInputTextFlags flags)
         {
-            return ((delegate* unmanaged[Cdecl]<byte*, float*, byte*, ImGuiInputTextFlags, byte>)funcTable[202])(label, v, format, flags);
+            return InputFloat3Interop(label, v, format, (int)flags);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte InputFloat4Interop(byte* label, float* v, byte* format, int flags)
+        {
+            return ((delegate* unmanaged[Cdecl]<byte*, float*, byte*, int, byte>)funcTable[203])(label, v, format, flags);
+        }
+
         internal static byte InputFloat4Native(byte* label, float* v, byte* format, ImGuiInputTextFlags flags)
         {
-            return ((delegate* unmanaged[Cdecl]<byte*, float*, byte*, ImGuiInputTextFlags, byte>)funcTable[203])(label, v, format, flags);
+            return InputFloat4Interop(label, v, format, (int)flags);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte InputIntInterop(byte* label, int* v, int step, int stepFast, int flags)
+        {
+            return ((delegate* unmanaged[Cdecl]<byte*, int*, int, int, int, byte>)funcTable[204])(label, v, step, stepFast, flags);
+        }
+
         internal static byte InputIntNative(byte* label, int* v, int step, int stepFast, ImGuiInputTextFlags flags)
         {
-            return ((delegate* unmanaged[Cdecl]<byte*, int*, int, int, ImGuiInputTextFlags, byte>)funcTable[204])(label, v, step, stepFast, flags);
+            return InputIntInterop(label, v, step, stepFast, (int)flags);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte InputInt2Interop(byte* label, int* v, int flags)
+        {
+            return ((delegate* unmanaged[Cdecl]<byte*, int*, int, byte>)funcTable[205])(label, v, flags);
+        }
+
         internal static byte InputInt2Native(byte* label, int* v, ImGuiInputTextFlags flags)
         {
-            return ((delegate* unmanaged[Cdecl]<byte*, int*, ImGuiInputTextFlags, byte>)funcTable[205])(label, v, flags);
+            return InputInt2Interop(label, v, (int)flags);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte InputInt3Interop(byte* label, int* v, int flags)
+        {
+            return ((delegate* unmanaged[Cdecl]<byte*, int*, int, byte>)funcTable[206])(label, v, flags);
+        }
+
         internal static byte InputInt3Native(byte* label, int* v, ImGuiInputTextFlags flags)
         {
-            return ((delegate* unmanaged[Cdecl]<byte*, int*, ImGuiInputTextFlags, byte>)funcTable[206])(label, v, flags);
+            return InputInt3Interop(label, v, (int)flags);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte InputInt4Interop(byte* label, int* v, int flags)
+        {
+            return ((delegate* unmanaged[Cdecl]<byte*, int*, int, byte>)funcTable[207])(label, v, flags);
+        }
+
         internal static byte InputInt4Native(byte* label, int* v, ImGuiInputTextFlags flags)
         {
-            return ((delegate* unmanaged[Cdecl]<byte*, int*, ImGuiInputTextFlags, byte>)funcTable[207])(label, v, flags);
+            return InputInt4Interop(label, v, (int)flags);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte InputDoubleInterop(byte* label, double* v, double step, double stepFast, byte* format, int flags)
+        {
+            return ((delegate* unmanaged[Cdecl]<byte*, double*, double, double, byte*, int, byte>)funcTable[208])(label, v, step, stepFast, format, flags);
+        }
+
         internal static byte InputDoubleNative(byte* label, double* v, double step, double stepFast, byte* format, ImGuiInputTextFlags flags)
         {
-            return ((delegate* unmanaged[Cdecl]<byte*, double*, double, double, byte*, ImGuiInputTextFlags, byte>)funcTable[208])(label, v, step, stepFast, format, flags);
+            return InputDoubleInterop(label, v, step, stepFast, format, (int)flags);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte InputScalarInterop(byte* label, int dataType, void* pData, void* pStep, void* pStepFast, byte* format, int flags)
+        {
+            return ((delegate* unmanaged[Cdecl]<byte*, int, void*, void*, void*, byte*, int, byte>)funcTable[209])(label, dataType, pData, pStep, pStepFast, format, flags);
+        }
+
         internal static byte InputScalarNative(byte* label, ImGuiDataType dataType, void* pData, void* pStep, void* pStepFast, byte* format, ImGuiInputTextFlags flags)
         {
-            return ((delegate* unmanaged[Cdecl]<byte*, ImGuiDataType, void*, void*, void*, byte*, ImGuiInputTextFlags, byte>)funcTable[209])(label, dataType, pData, pStep, pStepFast, format, flags);
+            return InputScalarInterop(label, (int)dataType, pData, pStep, pStepFast, format, (int)flags);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte InputScalarNInterop(byte* label, int dataType, void* pData, int components, void* pStep, void* pStepFast, byte* format, int flags)
+        {
+            return ((delegate* unmanaged[Cdecl]<byte*, int, void*, int, void*, void*, byte*, int, byte>)funcTable[210])(label, dataType, pData, components, pStep, pStepFast, format, flags);
+        }
+
         internal static byte InputScalarNNative(byte* label, ImGuiDataType dataType, void* pData, int components, void* pStep, void* pStepFast, byte* format, ImGuiInputTextFlags flags)
         {
-            return ((delegate* unmanaged[Cdecl]<byte*, ImGuiDataType, void*, int, void*, void*, byte*, ImGuiInputTextFlags, byte>)funcTable[210])(label, dataType, pData, components, pStep, pStepFast, format, flags);
+            return InputScalarNInterop(label, (int)dataType, pData, components, pStep, pStepFast, format, (int)flags);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte ColorEdit3Interop(byte* label, float* col, int flags)
+        {
+            return ((delegate* unmanaged[Cdecl]<byte*, float*, int, byte>)funcTable[211])(label, col, flags);
+        }
+
         internal static byte ColorEdit3Native(byte* label, float* col, ImGuiColorEditFlags flags)
         {
-            return ((delegate* unmanaged[Cdecl]<byte*, float*, ImGuiColorEditFlags, byte>)funcTable[211])(label, col, flags);
+            return ColorEdit3Interop(label, col, (int)flags);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte ColorEdit4Interop(byte* label, float* col, int flags)
+        {
+            return ((delegate* unmanaged[Cdecl]<byte*, float*, int, byte>)funcTable[212])(label, col, flags);
+        }
+
         internal static byte ColorEdit4Native(byte* label, float* col, ImGuiColorEditFlags flags)
         {
-            return ((delegate* unmanaged[Cdecl]<byte*, float*, ImGuiColorEditFlags, byte>)funcTable[212])(label, col, flags);
+            return ColorEdit4Interop(label, col, (int)flags);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte ColorPicker3Interop(byte* label, float* col, int flags)
+        {
+            return ((delegate* unmanaged[Cdecl]<byte*, float*, int, byte>)funcTable[213])(label, col, flags);
+        }
+
         internal static byte ColorPicker3Native(byte* label, float* col, ImGuiColorEditFlags flags)
         {
-            return ((delegate* unmanaged[Cdecl]<byte*, float*, ImGuiColorEditFlags, byte>)funcTable[213])(label, col, flags);
+            return ColorPicker3Interop(label, col, (int)flags);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte ColorPicker4Interop(byte* label, float* col, int flags, float* refCol)
+        {
+            return ((delegate* unmanaged[Cdecl]<byte*, float*, int, float*, byte>)funcTable[214])(label, col, flags, refCol);
+        }
+
         internal static byte ColorPicker4Native(byte* label, float* col, ImGuiColorEditFlags flags, float* refCol)
         {
-            return ((delegate* unmanaged[Cdecl]<byte*, float*, ImGuiColorEditFlags, float*, byte>)funcTable[214])(label, col, flags, refCol);
+            return ColorPicker4Interop(label, col, (int)flags, refCol);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte ColorButtonInterop(byte* descId, Vector4 col, int flags, Vector2 size)
+        {
+            return ((delegate* unmanaged[Cdecl]<byte*, Vector4, int, Vector2, byte>)funcTable[215])(descId, col, flags, size);
+        }
+
         internal static byte ColorButtonNative(byte* descId, Vector4 col, ImGuiColorEditFlags flags, Vector2 size)
         {
-            return ((delegate* unmanaged[Cdecl]<byte*, Vector4, ImGuiColorEditFlags, Vector2, byte>)funcTable[215])(descId, col, flags, size);
+            return ColorButtonInterop(descId, col, (int)flags, size);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void SetColorEditOptionsInterop(int flags)
+        {
+            ((delegate* unmanaged[Cdecl]<int, void>)funcTable[216])(flags);
+        }
+
         internal static void SetColorEditOptionsNative(ImGuiColorEditFlags flags)
         {
-            ((delegate* unmanaged[Cdecl]<ImGuiColorEditFlags, void>)funcTable[216])(flags);
+            SetColorEditOptionsInterop((int)flags);
         }
 
         /// <summary>
@@ -20407,41 +20883,66 @@ namespace Inno.Native.ImGui
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte TreeNodeExInterop(byte* label, int flags)
+        {
+            return ((delegate* unmanaged[Cdecl]<byte*, int, byte>)funcTable[222])(label, flags);
+        }
+
         internal static byte TreeNodeExNative(byte* label, ImGuiTreeNodeFlags flags)
         {
-            return ((delegate* unmanaged[Cdecl]<byte*, ImGuiTreeNodeFlags, byte>)funcTable[222])(label, flags);
+            return TreeNodeExInterop(label, (int)flags);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte TreeNodeExInterop(byte* strId, int flags, byte* fmt)
+        {
+            return ((delegate* unmanaged[Cdecl]<byte*, int, byte*, byte>)funcTable[223])(strId, flags, fmt);
+        }
+
         internal static byte TreeNodeExNative(byte* strId, ImGuiTreeNodeFlags flags, byte* fmt)
         {
-            return ((delegate* unmanaged[Cdecl]<byte*, ImGuiTreeNodeFlags, byte*, byte>)funcTable[223])(strId, flags, fmt);
+            return TreeNodeExInterop(strId, (int)flags, fmt);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte TreeNodeExInterop(void* ptrId, int flags, byte* fmt)
+        {
+            return ((delegate* unmanaged[Cdecl]<void*, int, byte*, byte>)funcTable[224])(ptrId, flags, fmt);
+        }
+
         internal static byte TreeNodeExNative(void* ptrId, ImGuiTreeNodeFlags flags, byte* fmt)
         {
-            return ((delegate* unmanaged[Cdecl]<void*, ImGuiTreeNodeFlags, byte*, byte>)funcTable[224])(ptrId, flags, fmt);
+            return TreeNodeExInterop(ptrId, (int)flags, fmt);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte TreeNodeExVInterop(byte* strId, int flags, byte* fmt, byte* args)
+        {
+            return ((delegate* unmanaged[Cdecl]<byte*, int, byte*, byte*, byte>)funcTable[225])(strId, flags, fmt, args);
+        }
+
         internal static byte TreeNodeExVNative(byte* strId, ImGuiTreeNodeFlags flags, byte* fmt, byte* args)
         {
-            return ((delegate* unmanaged[Cdecl]<byte*, ImGuiTreeNodeFlags, byte*, byte*, byte>)funcTable[225])(strId, flags, fmt, args);
+            return TreeNodeExVInterop(strId, (int)flags, fmt, args);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte TreeNodeExVInterop(void* ptrId, int flags, byte* fmt, byte* args)
+        {
+            return ((delegate* unmanaged[Cdecl]<void*, int, byte*, byte*, byte>)funcTable[226])(ptrId, flags, fmt, args);
+        }
+
         internal static byte TreeNodeExVNative(void* ptrId, ImGuiTreeNodeFlags flags, byte* fmt, byte* args)
         {
-            return ((delegate* unmanaged[Cdecl]<void*, ImGuiTreeNodeFlags, byte*, byte*, byte>)funcTable[226])(ptrId, flags, fmt, args);
+            return TreeNodeExVInterop(ptrId, (int)flags, fmt, args);
         }
 
         /// <summary>
@@ -20479,25 +20980,40 @@ namespace Inno.Native.ImGui
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte CollapsingHeaderInterop(byte* label, int flags)
+        {
+            return ((delegate* unmanaged[Cdecl]<byte*, int, byte>)funcTable[231])(label, flags);
+        }
+
         internal static byte CollapsingHeaderNative(byte* label, ImGuiTreeNodeFlags flags)
         {
-            return ((delegate* unmanaged[Cdecl]<byte*, ImGuiTreeNodeFlags, byte>)funcTable[231])(label, flags);
+            return CollapsingHeaderInterop(label, (int)flags);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte CollapsingHeaderInterop(byte* label, byte* pVisible, int flags)
+        {
+            return ((delegate* unmanaged[Cdecl]<byte*, byte*, int, byte>)funcTable[232])(label, pVisible, flags);
+        }
+
         internal static byte CollapsingHeaderNative(byte* label, byte* pVisible, ImGuiTreeNodeFlags flags)
         {
-            return ((delegate* unmanaged[Cdecl]<byte*, byte*, ImGuiTreeNodeFlags, byte>)funcTable[232])(label, pVisible, flags);
+            return CollapsingHeaderInterop(label, pVisible, (int)flags);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void SetNextItemOpenInterop(byte isOpen, int cond)
+        {
+            ((delegate* unmanaged[Cdecl]<byte, int, void>)funcTable[233])(isOpen, cond);
+        }
+
         internal static void SetNextItemOpenNative(byte isOpen, ImGuiCond cond)
         {
-            ((delegate* unmanaged[Cdecl]<byte, ImGuiCond, void>)funcTable[233])(isOpen, cond);
+            SetNextItemOpenInterop(isOpen, (int)cond);
         }
 
         /// <summary>
@@ -20511,25 +21027,40 @@ namespace Inno.Native.ImGui
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte SelectableInterop(byte* label, byte selected, int flags, Vector2 size)
+        {
+            return ((delegate* unmanaged[Cdecl]<byte*, byte, int, Vector2, byte>)funcTable[235])(label, selected, flags, size);
+        }
+
         internal static byte SelectableNative(byte* label, byte selected, ImGuiSelectableFlags flags, Vector2 size)
         {
-            return ((delegate* unmanaged[Cdecl]<byte*, byte, ImGuiSelectableFlags, Vector2, byte>)funcTable[235])(label, selected, flags, size);
+            return SelectableInterop(label, selected, (int)flags, size);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte SelectableInterop(byte* label, byte* pSelected, int flags, Vector2 size)
+        {
+            return ((delegate* unmanaged[Cdecl]<byte*, byte*, int, Vector2, byte>)funcTable[236])(label, pSelected, flags, size);
+        }
+
         internal static byte SelectableNative(byte* label, byte* pSelected, ImGuiSelectableFlags flags, Vector2 size)
         {
-            return ((delegate* unmanaged[Cdecl]<byte*, byte*, ImGuiSelectableFlags, Vector2, byte>)funcTable[236])(label, pSelected, flags, size);
+            return SelectableInterop(label, pSelected, (int)flags, size);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static ImGuiMultiSelectIO* BeginMultiSelectInterop(int flags, int selectionSize, int itemsCount)
+        {
+            return ((delegate* unmanaged[Cdecl]<int, int, int, ImGuiMultiSelectIO*>)funcTable[237])(flags, selectionSize, itemsCount);
+        }
+
         internal static ImGuiMultiSelectIO* BeginMultiSelectNative(ImGuiMultiSelectFlags flags, int selectionSize, int itemsCount)
         {
-            return ((delegate* unmanaged[Cdecl]<ImGuiMultiSelectFlags, int, int, ImGuiMultiSelectIO*>)funcTable[237])(flags, selectionSize, itemsCount);
+            return BeginMultiSelectInterop((int)flags, selectionSize, itemsCount);
         }
 
         /// <summary>
@@ -20775,17 +21306,27 @@ namespace Inno.Native.ImGui
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte BeginPopupInterop(byte* strId, int flags)
+        {
+            return ((delegate* unmanaged[Cdecl]<byte*, int, byte>)funcTable[268])(strId, flags);
+        }
+
         internal static byte BeginPopupNative(byte* strId, ImGuiWindowFlags flags)
         {
-            return ((delegate* unmanaged[Cdecl]<byte*, ImGuiWindowFlags, byte>)funcTable[268])(strId, flags);
+            return BeginPopupInterop(strId, (int)flags);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte BeginPopupModalInterop(byte* name, byte* pOpen, int flags)
+        {
+            return ((delegate* unmanaged[Cdecl]<byte*, byte*, int, byte>)funcTable[269])(name, pOpen, flags);
+        }
+
         internal static byte BeginPopupModalNative(byte* name, byte* pOpen, ImGuiWindowFlags flags)
         {
-            return ((delegate* unmanaged[Cdecl]<byte*, byte*, ImGuiWindowFlags, byte>)funcTable[269])(name, pOpen, flags);
+            return BeginPopupModalInterop(name, pOpen, (int)flags);
         }
 
         /// <summary>
@@ -20799,25 +21340,40 @@ namespace Inno.Native.ImGui
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void OpenPopupInterop(byte* strId, int popupFlags)
+        {
+            ((delegate* unmanaged[Cdecl]<byte*, int, void>)funcTable[271])(strId, popupFlags);
+        }
+
         internal static void OpenPopupNative(byte* strId, ImGuiPopupFlags popupFlags)
         {
-            ((delegate* unmanaged[Cdecl]<byte*, ImGuiPopupFlags, void>)funcTable[271])(strId, popupFlags);
+            OpenPopupInterop(strId, (int)popupFlags);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void OpenPopupInterop(uint id, int popupFlags)
+        {
+            ((delegate* unmanaged[Cdecl]<uint, int, void>)funcTable[272])(id, popupFlags);
+        }
+
         internal static void OpenPopupNative(uint id, ImGuiPopupFlags popupFlags)
         {
-            ((delegate* unmanaged[Cdecl]<uint, ImGuiPopupFlags, void>)funcTable[272])(id, popupFlags);
+            OpenPopupInterop(id, (int)popupFlags);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void OpenPopupOnItemClickInterop(byte* strId, int popupFlags)
+        {
+            ((delegate* unmanaged[Cdecl]<byte*, int, void>)funcTable[273])(strId, popupFlags);
+        }
+
         internal static void OpenPopupOnItemClickNative(byte* strId, ImGuiPopupFlags popupFlags)
         {
-            ((delegate* unmanaged[Cdecl]<byte*, ImGuiPopupFlags, void>)funcTable[273])(strId, popupFlags);
+            OpenPopupOnItemClickInterop(strId, (int)popupFlags);
         }
 
         /// <summary>
@@ -20831,41 +21387,66 @@ namespace Inno.Native.ImGui
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte BeginPopupContextItemInterop(byte* strId, int popupFlags)
+        {
+            return ((delegate* unmanaged[Cdecl]<byte*, int, byte>)funcTable[275])(strId, popupFlags);
+        }
+
         internal static byte BeginPopupContextItemNative(byte* strId, ImGuiPopupFlags popupFlags)
         {
-            return ((delegate* unmanaged[Cdecl]<byte*, ImGuiPopupFlags, byte>)funcTable[275])(strId, popupFlags);
+            return BeginPopupContextItemInterop(strId, (int)popupFlags);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte BeginPopupContextWindowInterop(byte* strId, int popupFlags)
+        {
+            return ((delegate* unmanaged[Cdecl]<byte*, int, byte>)funcTable[276])(strId, popupFlags);
+        }
+
         internal static byte BeginPopupContextWindowNative(byte* strId, ImGuiPopupFlags popupFlags)
         {
-            return ((delegate* unmanaged[Cdecl]<byte*, ImGuiPopupFlags, byte>)funcTable[276])(strId, popupFlags);
+            return BeginPopupContextWindowInterop(strId, (int)popupFlags);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte BeginPopupContextVoidInterop(byte* strId, int popupFlags)
+        {
+            return ((delegate* unmanaged[Cdecl]<byte*, int, byte>)funcTable[277])(strId, popupFlags);
+        }
+
         internal static byte BeginPopupContextVoidNative(byte* strId, ImGuiPopupFlags popupFlags)
         {
-            return ((delegate* unmanaged[Cdecl]<byte*, ImGuiPopupFlags, byte>)funcTable[277])(strId, popupFlags);
+            return BeginPopupContextVoidInterop(strId, (int)popupFlags);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte IsPopupOpenInterop(byte* strId, int flags)
+        {
+            return ((delegate* unmanaged[Cdecl]<byte*, int, byte>)funcTable[278])(strId, flags);
+        }
+
         internal static byte IsPopupOpenNative(byte* strId, ImGuiPopupFlags flags)
         {
-            return ((delegate* unmanaged[Cdecl]<byte*, ImGuiPopupFlags, byte>)funcTable[278])(strId, flags);
+            return IsPopupOpenInterop(strId, (int)flags);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte BeginTableInterop(byte* strId, int columns, int flags, Vector2 outerSize, float innerWidth)
+        {
+            return ((delegate* unmanaged[Cdecl]<byte*, int, int, Vector2, float, byte>)funcTable[279])(strId, columns, flags, outerSize, innerWidth);
+        }
+
         internal static byte BeginTableNative(byte* strId, int columns, ImGuiTableFlags flags, Vector2 outerSize, float innerWidth)
         {
-            return ((delegate* unmanaged[Cdecl]<byte*, int, ImGuiTableFlags, Vector2, float, byte>)funcTable[279])(strId, columns, flags, outerSize, innerWidth);
+            return BeginTableInterop(strId, columns, (int)flags, outerSize, innerWidth);
         }
 
         /// <summary>
@@ -20879,9 +21460,14 @@ namespace Inno.Native.ImGui
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void TableNextRowInterop(int rowFlags, float minRowHeight)
+        {
+            ((delegate* unmanaged[Cdecl]<int, float, void>)funcTable[281])(rowFlags, minRowHeight);
+        }
+
         internal static void TableNextRowNative(ImGuiTableRowFlags rowFlags, float minRowHeight)
         {
-            ((delegate* unmanaged[Cdecl]<ImGuiTableRowFlags, float, void>)funcTable[281])(rowFlags, minRowHeight);
+            TableNextRowInterop((int)rowFlags, minRowHeight);
         }
 
         /// <summary>
@@ -20903,9 +21489,14 @@ namespace Inno.Native.ImGui
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void TableSetupColumnInterop(byte* label, int flags, float initWidthOrWeight, uint userId)
+        {
+            ((delegate* unmanaged[Cdecl]<byte*, int, float, uint, void>)funcTable[284])(label, flags, initWidthOrWeight, userId);
+        }
+
         internal static void TableSetupColumnNative(byte* label, ImGuiTableColumnFlags flags, float initWidthOrWeight, uint userId)
         {
-            ((delegate* unmanaged[Cdecl]<byte*, ImGuiTableColumnFlags, float, uint, void>)funcTable[284])(label, flags, initWidthOrWeight, userId);
+            TableSetupColumnInterop(label, (int)flags, initWidthOrWeight, userId);
         }
 
         /// <summary>
@@ -20983,9 +21574,14 @@ namespace Inno.Native.ImGui
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int TableGetColumnFlagsInterop(int columnN)
+        {
+            return ((delegate* unmanaged[Cdecl]<int, int>)funcTable[294])(columnN);
+        }
+
         internal static ImGuiTableColumnFlags TableGetColumnFlagsNative(int columnN)
         {
-            return ((delegate* unmanaged[Cdecl]<int, ImGuiTableColumnFlags>)funcTable[294])(columnN);
+            return (ImGuiTableColumnFlags)TableGetColumnFlagsInterop(columnN);
         }
 
         /// <summary>
@@ -21007,9 +21603,14 @@ namespace Inno.Native.ImGui
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void TableSetBgColorInterop(int target, uint color, int columnN)
+        {
+            ((delegate* unmanaged[Cdecl]<int, uint, int, void>)funcTable[297])(target, color, columnN);
+        }
+
         internal static void TableSetBgColorNative(ImGuiTableBgTarget target, uint color, int columnN)
         {
-            ((delegate* unmanaged[Cdecl]<ImGuiTableBgTarget, uint, int, void>)funcTable[297])(target, color, columnN);
+            TableSetBgColorInterop((int)target, color, columnN);
         }
 
         /// <summary>
@@ -21079,9 +21680,14 @@ namespace Inno.Native.ImGui
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte BeginTabBarInterop(byte* strId, int flags)
+        {
+            return ((delegate* unmanaged[Cdecl]<byte*, int, byte>)funcTable[306])(strId, flags);
+        }
+
         internal static byte BeginTabBarNative(byte* strId, ImGuiTabBarFlags flags)
         {
-            return ((delegate* unmanaged[Cdecl]<byte*, ImGuiTabBarFlags, byte>)funcTable[306])(strId, flags);
+            return BeginTabBarInterop(strId, (int)flags);
         }
 
         /// <summary>
@@ -21095,9 +21701,14 @@ namespace Inno.Native.ImGui
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte BeginTabItemInterop(byte* label, byte* pOpen, int flags)
+        {
+            return ((delegate* unmanaged[Cdecl]<byte*, byte*, int, byte>)funcTable[308])(label, pOpen, flags);
+        }
+
         internal static byte BeginTabItemNative(byte* label, byte* pOpen, ImGuiTabItemFlags flags)
         {
-            return ((delegate* unmanaged[Cdecl]<byte*, byte*, ImGuiTabItemFlags, byte>)funcTable[308])(label, pOpen, flags);
+            return BeginTabItemInterop(label, pOpen, (int)flags);
         }
 
         /// <summary>
@@ -21111,9 +21722,14 @@ namespace Inno.Native.ImGui
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte TabItemButtonInterop(byte* label, int flags)
+        {
+            return ((delegate* unmanaged[Cdecl]<byte*, int, byte>)funcTable[310])(label, flags);
+        }
+
         internal static byte TabItemButtonNative(byte* label, ImGuiTabItemFlags flags)
         {
-            return ((delegate* unmanaged[Cdecl]<byte*, ImGuiTabItemFlags, byte>)funcTable[310])(label, flags);
+            return TabItemButtonInterop(label, (int)flags);
         }
 
         /// <summary>
@@ -21127,25 +21743,40 @@ namespace Inno.Native.ImGui
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static uint DockSpaceInterop(uint dockspaceId, Vector2 size, int flags, ImGuiWindowClass* windowClass)
+        {
+            return ((delegate* unmanaged[Cdecl]<uint, Vector2, int, ImGuiWindowClass*, uint>)funcTable[312])(dockspaceId, size, flags, windowClass);
+        }
+
         internal static uint DockSpaceNative(uint dockspaceId, Vector2 size, ImGuiDockNodeFlags flags, ImGuiWindowClass* windowClass)
         {
-            return ((delegate* unmanaged[Cdecl]<uint, Vector2, ImGuiDockNodeFlags, ImGuiWindowClass*, uint>)funcTable[312])(dockspaceId, size, flags, windowClass);
+            return DockSpaceInterop(dockspaceId, size, (int)flags, windowClass);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static uint DockSpaceOverViewportInterop(uint dockspaceId, ImGuiViewport* viewport, int flags, ImGuiWindowClass* windowClass)
+        {
+            return ((delegate* unmanaged[Cdecl]<uint, ImGuiViewport*, int, ImGuiWindowClass*, uint>)funcTable[313])(dockspaceId, viewport, flags, windowClass);
+        }
+
         internal static uint DockSpaceOverViewportNative(uint dockspaceId, ImGuiViewport* viewport, ImGuiDockNodeFlags flags, ImGuiWindowClass* windowClass)
         {
-            return ((delegate* unmanaged[Cdecl]<uint, ImGuiViewport*, ImGuiDockNodeFlags, ImGuiWindowClass*, uint>)funcTable[313])(dockspaceId, viewport, flags, windowClass);
+            return DockSpaceOverViewportInterop(dockspaceId, viewport, (int)flags, windowClass);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void SetNextWindowDockIDInterop(uint dockId, int cond)
+        {
+            ((delegate* unmanaged[Cdecl]<uint, int, void>)funcTable[314])(dockId, cond);
+        }
+
         internal static void SetNextWindowDockIDNative(uint dockId, ImGuiCond cond)
         {
-            ((delegate* unmanaged[Cdecl]<uint, ImGuiCond, void>)funcTable[314])(dockId, cond);
+            SetNextWindowDockIDInterop(dockId, (int)cond);
         }
 
         /// <summary>
@@ -21231,17 +21862,27 @@ namespace Inno.Native.ImGui
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte BeginDragDropSourceInterop(int flags)
+        {
+            return ((delegate* unmanaged[Cdecl]<int, byte>)funcTable[325])(flags);
+        }
+
         internal static byte BeginDragDropSourceNative(ImGuiDragDropFlags flags)
         {
-            return ((delegate* unmanaged[Cdecl]<ImGuiDragDropFlags, byte>)funcTable[325])(flags);
+            return BeginDragDropSourceInterop((int)flags);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte SetDragDropPayloadInterop(byte* type, void* data, nuint sz, int cond)
+        {
+            return ((delegate* unmanaged[Cdecl]<byte*, void*, nuint, int, byte>)funcTable[326])(type, data, sz, cond);
+        }
+
         internal static byte SetDragDropPayloadNative(byte* type, void* data, nuint sz, ImGuiCond cond)
         {
-            return ((delegate* unmanaged[Cdecl]<byte*, void*, nuint, ImGuiCond, byte>)funcTable[326])(type, data, sz, cond);
+            return SetDragDropPayloadInterop(type, data, sz, (int)cond);
         }
 
         /// <summary>
@@ -21263,9 +21904,14 @@ namespace Inno.Native.ImGui
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static ImGuiPayload* AcceptDragDropPayloadInterop(byte* type, int flags)
+        {
+            return ((delegate* unmanaged[Cdecl]<byte*, int, ImGuiPayload*>)funcTable[329])(type, flags);
+        }
+
         internal static ImGuiPayload* AcceptDragDropPayloadNative(byte* type, ImGuiDragDropFlags flags)
         {
-            return ((delegate* unmanaged[Cdecl]<byte*, ImGuiDragDropFlags, ImGuiPayload*>)funcTable[329])(type, flags);
+            return AcceptDragDropPayloadInterop(type, (int)flags);
         }
 
         /// <summary>
@@ -21351,9 +21997,14 @@ namespace Inno.Native.ImGui
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte IsItemHoveredInterop(int flags)
+        {
+            return ((delegate* unmanaged[Cdecl]<int, byte>)funcTable[340])(flags);
+        }
+
         internal static byte IsItemHoveredNative(ImGuiHoveredFlags flags)
         {
-            return ((delegate* unmanaged[Cdecl]<ImGuiHoveredFlags, byte>)funcTable[340])(flags);
+            return IsItemHoveredInterop((int)flags);
         }
 
         /// <summary>
@@ -21375,9 +22026,14 @@ namespace Inno.Native.ImGui
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte IsItemClickedInterop(int mouseButton)
+        {
+            return ((delegate* unmanaged[Cdecl]<int, byte>)funcTable[343])(mouseButton);
+        }
+
         internal static byte IsItemClickedNative(ImGuiMouseButton mouseButton)
         {
-            return ((delegate* unmanaged[Cdecl]<ImGuiMouseButton, byte>)funcTable[343])(mouseButton);
+            return IsItemClickedInterop((int)mouseButton);
         }
 
         /// <summary>
@@ -21487,9 +22143,14 @@ namespace Inno.Native.ImGui
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int GetItemFlagsInterop()
+        {
+            return ((delegate* unmanaged[Cdecl]<int>)funcTable[357])();
+        }
+
         internal static ImGuiItemFlags GetItemFlagsNative()
         {
-            return ((delegate* unmanaged[Cdecl]<ImGuiItemFlags>)funcTable[357])();
+            return (ImGuiItemFlags)GetItemFlagsInterop();
         }
 
         /// <summary>
@@ -21559,9 +22220,14 @@ namespace Inno.Native.ImGui
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte* GetStyleColorNameInterop(int idx)
+        {
+            return ((delegate* unmanaged[Cdecl]<int, byte*>)funcTable[366])(idx);
+        }
+
         internal static byte* GetStyleColorNameNative(ImGuiCol idx)
         {
-            return ((delegate* unmanaged[Cdecl]<ImGuiCol, byte*>)funcTable[366])(idx);
+            return GetStyleColorNameInterop((int)idx);
         }
 
         /// <summary>
@@ -21623,25 +22289,40 @@ namespace Inno.Native.ImGui
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte IsKeyDownInterop(int key)
+        {
+            return ((delegate* unmanaged[Cdecl]<int, byte>)funcTable[374])(key);
+        }
+
         internal static byte IsKeyDownNative(ImGuiKey key)
         {
-            return ((delegate* unmanaged[Cdecl]<ImGuiKey, byte>)funcTable[374])(key);
+            return IsKeyDownInterop((int)key);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte IsKeyPressedInterop(int key, byte repeat)
+        {
+            return ((delegate* unmanaged[Cdecl]<int, byte, byte>)funcTable[375])(key, repeat);
+        }
+
         internal static byte IsKeyPressedNative(ImGuiKey key, byte repeat)
         {
-            return ((delegate* unmanaged[Cdecl]<ImGuiKey, byte, byte>)funcTable[375])(key, repeat);
+            return IsKeyPressedInterop((int)key, repeat);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte IsKeyReleasedInterop(int key)
+        {
+            return ((delegate* unmanaged[Cdecl]<int, byte>)funcTable[376])(key);
+        }
+
         internal static byte IsKeyReleasedNative(ImGuiKey key)
         {
-            return ((delegate* unmanaged[Cdecl]<ImGuiKey, byte>)funcTable[376])(key);
+            return IsKeyReleasedInterop((int)key);
         }
 
         /// <summary>
@@ -21655,17 +22336,27 @@ namespace Inno.Native.ImGui
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int GetKeyPressedAmountInterop(int key, float repeatDelay, float rate)
+        {
+            return ((delegate* unmanaged[Cdecl]<int, float, float, int>)funcTable[378])(key, repeatDelay, rate);
+        }
+
         internal static int GetKeyPressedAmountNative(ImGuiKey key, float repeatDelay, float rate)
         {
-            return ((delegate* unmanaged[Cdecl]<ImGuiKey, float, float, int>)funcTable[378])(key, repeatDelay, rate);
+            return GetKeyPressedAmountInterop((int)key, repeatDelay, rate);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte* GetKeyNameInterop(int key)
+        {
+            return ((delegate* unmanaged[Cdecl]<int, byte*>)funcTable[379])(key);
+        }
+
         internal static byte* GetKeyNameNative(ImGuiKey key)
         {
-            return ((delegate* unmanaged[Cdecl]<ImGuiKey, byte*>)funcTable[379])(key);
+            return GetKeyNameInterop((int)key);
         }
 
         /// <summary>
@@ -21679,73 +22370,118 @@ namespace Inno.Native.ImGui
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte ShortcutInterop(int keyChord, int flags)
+        {
+            return ((delegate* unmanaged[Cdecl]<int, int, byte>)funcTable[381])(keyChord, flags);
+        }
+
         internal static byte ShortcutNative(int keyChord, ImGuiInputFlags flags)
         {
-            return ((delegate* unmanaged[Cdecl]<int, ImGuiInputFlags, byte>)funcTable[381])(keyChord, flags);
+            return ShortcutInterop(keyChord, (int)flags);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void SetNextItemShortcutInterop(int keyChord, int flags)
+        {
+            ((delegate* unmanaged[Cdecl]<int, int, void>)funcTable[382])(keyChord, flags);
+        }
+
         internal static void SetNextItemShortcutNative(int keyChord, ImGuiInputFlags flags)
         {
-            ((delegate* unmanaged[Cdecl]<int, ImGuiInputFlags, void>)funcTable[382])(keyChord, flags);
+            SetNextItemShortcutInterop(keyChord, (int)flags);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void SetItemKeyOwnerInterop(int key)
+        {
+            ((delegate* unmanaged[Cdecl]<int, void>)funcTable[383])(key);
+        }
+
         internal static void SetItemKeyOwnerNative(ImGuiKey key)
         {
-            ((delegate* unmanaged[Cdecl]<ImGuiKey, void>)funcTable[383])(key);
+            SetItemKeyOwnerInterop((int)key);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte IsMouseDownInterop(int button)
+        {
+            return ((delegate* unmanaged[Cdecl]<int, byte>)funcTable[384])(button);
+        }
+
         internal static byte IsMouseDownNative(ImGuiMouseButton button)
         {
-            return ((delegate* unmanaged[Cdecl]<ImGuiMouseButton, byte>)funcTable[384])(button);
+            return IsMouseDownInterop((int)button);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte IsMouseClickedInterop(int button, byte repeat)
+        {
+            return ((delegate* unmanaged[Cdecl]<int, byte, byte>)funcTable[385])(button, repeat);
+        }
+
         internal static byte IsMouseClickedNative(ImGuiMouseButton button, byte repeat)
         {
-            return ((delegate* unmanaged[Cdecl]<ImGuiMouseButton, byte, byte>)funcTable[385])(button, repeat);
+            return IsMouseClickedInterop((int)button, repeat);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte IsMouseReleasedInterop(int button)
+        {
+            return ((delegate* unmanaged[Cdecl]<int, byte>)funcTable[386])(button);
+        }
+
         internal static byte IsMouseReleasedNative(ImGuiMouseButton button)
         {
-            return ((delegate* unmanaged[Cdecl]<ImGuiMouseButton, byte>)funcTable[386])(button);
+            return IsMouseReleasedInterop((int)button);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte IsMouseDoubleClickedInterop(int button)
+        {
+            return ((delegate* unmanaged[Cdecl]<int, byte>)funcTable[387])(button);
+        }
+
         internal static byte IsMouseDoubleClickedNative(ImGuiMouseButton button)
         {
-            return ((delegate* unmanaged[Cdecl]<ImGuiMouseButton, byte>)funcTable[387])(button);
+            return IsMouseDoubleClickedInterop((int)button);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte IsMouseReleasedWithDelayInterop(int button, float delay)
+        {
+            return ((delegate* unmanaged[Cdecl]<int, float, byte>)funcTable[388])(button, delay);
+        }
+
         internal static byte IsMouseReleasedWithDelayNative(ImGuiMouseButton button, float delay)
         {
-            return ((delegate* unmanaged[Cdecl]<ImGuiMouseButton, float, byte>)funcTable[388])(button, delay);
+            return IsMouseReleasedWithDelayInterop((int)button, delay);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int GetMouseClickedCountInterop(int button)
+        {
+            return ((delegate* unmanaged[Cdecl]<int, int>)funcTable[389])(button);
+        }
+
         internal static int GetMouseClickedCountNative(ImGuiMouseButton button)
         {
-            return ((delegate* unmanaged[Cdecl]<ImGuiMouseButton, int>)funcTable[389])(button);
+            return GetMouseClickedCountInterop((int)button);
         }
 
         /// <summary>
@@ -21791,41 +22527,66 @@ namespace Inno.Native.ImGui
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte IsMouseDraggingInterop(int button, float lockThreshold)
+        {
+            return ((delegate* unmanaged[Cdecl]<int, float, byte>)funcTable[395])(button, lockThreshold);
+        }
+
         internal static byte IsMouseDraggingNative(ImGuiMouseButton button, float lockThreshold)
         {
-            return ((delegate* unmanaged[Cdecl]<ImGuiMouseButton, float, byte>)funcTable[395])(button, lockThreshold);
+            return IsMouseDraggingInterop((int)button, lockThreshold);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static Vector2 GetMouseDragDeltaInterop(int button, float lockThreshold)
+        {
+            return ((delegate* unmanaged[Cdecl]<int, float, Vector2>)funcTable[396])(button, lockThreshold);
+        }
+
         internal static Vector2 GetMouseDragDeltaNative(ImGuiMouseButton button, float lockThreshold)
         {
-            return ((delegate* unmanaged[Cdecl]<ImGuiMouseButton, float, Vector2>)funcTable[396])(button, lockThreshold);
+            return GetMouseDragDeltaInterop((int)button, lockThreshold);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void ResetMouseDragDeltaInterop(int button)
+        {
+            ((delegate* unmanaged[Cdecl]<int, void>)funcTable[397])(button);
+        }
+
         internal static void ResetMouseDragDeltaNative(ImGuiMouseButton button)
         {
-            ((delegate* unmanaged[Cdecl]<ImGuiMouseButton, void>)funcTable[397])(button);
+            ResetMouseDragDeltaInterop((int)button);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int GetMouseCursorInterop()
+        {
+            return ((delegate* unmanaged[Cdecl]<int>)funcTable[398])();
+        }
+
         internal static ImGuiMouseCursor GetMouseCursorNative()
         {
-            return ((delegate* unmanaged[Cdecl]<ImGuiMouseCursor>)funcTable[398])();
+            return (ImGuiMouseCursor)GetMouseCursorInterop();
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void SetMouseCursorInterop(int cursorType)
+        {
+            ((delegate* unmanaged[Cdecl]<int, void>)funcTable[399])(cursorType);
+        }
+
         internal static void SetMouseCursorNative(ImGuiMouseCursor cursorType)
         {
-            ((delegate* unmanaged[Cdecl]<ImGuiMouseCursor, void>)funcTable[399])(cursorType);
+            SetMouseCursorInterop((int)cursorType);
         }
 
         /// <summary>
@@ -21895,9 +22656,14 @@ namespace Inno.Native.ImGui
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void DebugFlashStyleColorInterop(int idx)
+        {
+            ((delegate* unmanaged[Cdecl]<int, void>)funcTable[408])(idx);
+        }
+
         internal static void DebugFlashStyleColorNative(ImGuiCol idx)
         {
-            ((delegate* unmanaged[Cdecl]<ImGuiCol, void>)funcTable[408])(idx);
+            DebugFlashStyleColorInterop((int)idx);
         }
 
         /// <summary>
@@ -22063,17 +22829,27 @@ namespace Inno.Native.ImGui
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void AddKeyEventInterop(ImGuiIO* self, int key, byte down)
+        {
+            ((delegate* unmanaged[Cdecl]<ImGuiIO*, int, byte, void>)funcTable[429])(self, key, down);
+        }
+
         internal static void AddKeyEventNative(ImGuiIO* self, ImGuiKey key, byte down)
         {
-            ((delegate* unmanaged[Cdecl]<ImGuiIO*, ImGuiKey, byte, void>)funcTable[429])(self, key, down);
+            AddKeyEventInterop(self, (int)key, down);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void AddKeyAnalogEventInterop(ImGuiIO* self, int key, byte down, float v)
+        {
+            ((delegate* unmanaged[Cdecl]<ImGuiIO*, int, byte, float, void>)funcTable[430])(self, key, down, v);
+        }
+
         internal static void AddKeyAnalogEventNative(ImGuiIO* self, ImGuiKey key, byte down, float v)
         {
-            ((delegate* unmanaged[Cdecl]<ImGuiIO*, ImGuiKey, byte, float, void>)funcTable[430])(self, key, down, v);
+            AddKeyAnalogEventInterop(self, (int)key, down, v);
         }
 
         /// <summary>
@@ -22103,9 +22879,14 @@ namespace Inno.Native.ImGui
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void AddMouseSourceEventInterop(ImGuiIO* self, int source)
+        {
+            ((delegate* unmanaged[Cdecl]<ImGuiIO*, int, void>)funcTable[434])(self, source);
+        }
+
         internal static void AddMouseSourceEventNative(ImGuiIO* self, ImGuiMouseSource source)
         {
-            ((delegate* unmanaged[Cdecl]<ImGuiIO*, ImGuiMouseSource, void>)funcTable[434])(self, source);
+            AddMouseSourceEventInterop(self, (int)source);
         }
 
         /// <summary>
@@ -22151,9 +22932,14 @@ namespace Inno.Native.ImGui
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void SetKeyEventNativeDataInterop(ImGuiIO* self, int key, int nativeKeycode, int nativeScancode, int nativeLegacyIndex)
+        {
+            ((delegate* unmanaged[Cdecl]<ImGuiIO*, int, int, int, int, void>)funcTable[440])(self, key, nativeKeycode, nativeScancode, nativeLegacyIndex);
+        }
+
         internal static void SetKeyEventNativeDataNative(ImGuiIO* self, ImGuiKey key, int nativeKeycode, int nativeScancode, int nativeLegacyIndex)
         {
-            ((delegate* unmanaged[Cdecl]<ImGuiIO*, ImGuiKey, int, int, int, void>)funcTable[440])(self, key, nativeKeycode, nativeScancode, nativeLegacyIndex);
+            SetKeyEventNativeDataInterop(self, (int)key, nativeKeycode, nativeScancode, nativeLegacyIndex);
         }
 
         /// <summary>
@@ -23079,17 +23865,27 @@ namespace Inno.Native.ImGui
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void AddRectInterop(ImDrawList* self, Vector2 pMin, Vector2 pMax, uint col, float rounding, int flags, float thickness)
+        {
+            ((delegate* unmanaged[Cdecl]<ImDrawList*, Vector2, Vector2, uint, float, int, float, void>)funcTable[556])(self, pMin, pMax, col, rounding, flags, thickness);
+        }
+
         internal static void AddRectNative(ImDrawList* self, Vector2 pMin, Vector2 pMax, uint col, float rounding, ImDrawFlags flags, float thickness)
         {
-            ((delegate* unmanaged[Cdecl]<ImDrawList*, Vector2, Vector2, uint, float, ImDrawFlags, float, void>)funcTable[556])(self, pMin, pMax, col, rounding, flags, thickness);
+            AddRectInterop(self, pMin, pMax, col, rounding, (int)flags, thickness);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void AddRectFilledInterop(ImDrawList* self, Vector2 pMin, Vector2 pMax, uint col, float rounding, int flags)
+        {
+            ((delegate* unmanaged[Cdecl]<ImDrawList*, Vector2, Vector2, uint, float, int, void>)funcTable[557])(self, pMin, pMax, col, rounding, flags);
+        }
+
         internal static void AddRectFilledNative(ImDrawList* self, Vector2 pMin, Vector2 pMax, uint col, float rounding, ImDrawFlags flags)
         {
-            ((delegate* unmanaged[Cdecl]<ImDrawList*, Vector2, Vector2, uint, float, ImDrawFlags, void>)funcTable[557])(self, pMin, pMax, col, rounding, flags);
+            AddRectFilledInterop(self, pMin, pMax, col, rounding, (int)flags);
         }
 
         /// <summary>
@@ -23215,9 +24011,14 @@ namespace Inno.Native.ImGui
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void AddPolylineInterop(ImDrawList* self, Vector2* points, int numPoints, uint col, int flags, float thickness)
+        {
+            ((delegate* unmanaged[Cdecl]<ImDrawList*, Vector2*, int, uint, int, float, void>)funcTable[573])(self, points, numPoints, col, flags, thickness);
+        }
+
         internal static void AddPolylineNative(ImDrawList* self, Vector2* points, int numPoints, uint col, ImDrawFlags flags, float thickness)
         {
-            ((delegate* unmanaged[Cdecl]<ImDrawList*, Vector2*, int, uint, ImDrawFlags, float, void>)funcTable[573])(self, points, numPoints, col, flags, thickness);
+            AddPolylineInterop(self, points, numPoints, col, (int)flags, thickness);
         }
 
         /// <summary>
@@ -23255,9 +24056,14 @@ namespace Inno.Native.ImGui
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void AddImageRoundedInterop(ImDrawList* self, ImTextureRef texRef, Vector2 pMin, Vector2 pMax, Vector2 uvMin, Vector2 uvMax, uint col, float rounding, int flags)
+        {
+            ((delegate* unmanaged[Cdecl]<ImDrawList*, ImTextureRef, Vector2, Vector2, Vector2, Vector2, uint, float, int, void>)funcTable[578])(self, texRef, pMin, pMax, uvMin, uvMax, col, rounding, flags);
+        }
+
         internal static void AddImageRoundedNative(ImDrawList* self, ImTextureRef texRef, Vector2 pMin, Vector2 pMax, Vector2 uvMin, Vector2 uvMax, uint col, float rounding, ImDrawFlags flags)
         {
-            ((delegate* unmanaged[Cdecl]<ImDrawList*, ImTextureRef, Vector2, Vector2, Vector2, Vector2, uint, float, ImDrawFlags, void>)funcTable[578])(self, texRef, pMin, pMax, uvMin, uvMax, col, rounding, flags);
+            AddImageRoundedInterop(self, texRef, pMin, pMax, uvMin, uvMax, col, rounding, (int)flags);
         }
 
         /// <summary>
@@ -23303,9 +24109,14 @@ namespace Inno.Native.ImGui
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void PathStrokeInterop(ImDrawList* self, uint col, int flags, float thickness)
+        {
+            ((delegate* unmanaged[Cdecl]<ImDrawList*, uint, int, float, void>)funcTable[584])(self, col, flags, thickness);
+        }
+
         internal static void PathStrokeNative(ImDrawList* self, uint col, ImDrawFlags flags, float thickness)
         {
-            ((delegate* unmanaged[Cdecl]<ImDrawList*, uint, ImDrawFlags, float, void>)funcTable[584])(self, col, flags, thickness);
+            PathStrokeInterop(self, col, (int)flags, thickness);
         }
 
         /// <summary>
@@ -23351,9 +24162,14 @@ namespace Inno.Native.ImGui
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void PathRectInterop(ImDrawList* self, Vector2 rectMin, Vector2 rectMax, float rounding, int flags)
+        {
+            ((delegate* unmanaged[Cdecl]<ImDrawList*, Vector2, Vector2, float, int, void>)funcTable[590])(self, rectMin, rectMax, rounding, flags);
+        }
+
         internal static void PathRectNative(ImDrawList* self, Vector2 rectMin, Vector2 rectMax, float rounding, ImDrawFlags flags)
         {
-            ((delegate* unmanaged[Cdecl]<ImDrawList*, Vector2, Vector2, float, ImDrawFlags, void>)funcTable[590])(self, rectMin, rectMax, rounding, flags);
+            PathRectInterop(self, rectMin, rectMax, rounding, (int)flags);
         }
 
         /// <summary>
@@ -23631,9 +24447,14 @@ namespace Inno.Native.ImGui
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void CreateInterop(ImTextureData* self, int format, int w, int h)
+        {
+            ((delegate* unmanaged[Cdecl]<ImTextureData*, int, int, int, void>)funcTable[625])(self, format, w, h);
+        }
+
         internal static void CreateNative(ImTextureData* self, ImTextureFormat format, int w, int h)
         {
-            ((delegate* unmanaged[Cdecl]<ImTextureData*, ImTextureFormat, int, int, void>)funcTable[625])(self, format, w, h);
+            CreateInterop(self, (int)format, w, h);
         }
 
         /// <summary>
@@ -23703,9 +24524,14 @@ namespace Inno.Native.ImGui
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void SetStatusInterop(ImTextureData* self, int status)
+        {
+            ((delegate* unmanaged[Cdecl]<ImTextureData*, int, void>)funcTable[634])(self, status);
+        }
+
         internal static void SetStatusNative(ImTextureData* self, ImTextureStatus status)
         {
-            ((delegate* unmanaged[Cdecl]<ImTextureData*, ImTextureStatus, void>)funcTable[634])(self, status);
+            SetStatusInterop(self, (int)status);
         }
 
         /// <summary>
@@ -24127,9 +24953,14 @@ namespace Inno.Native.ImGui
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void RenderTextInterop(ImFont* self, ImDrawList* drawList, float size, Vector2 pos, uint col, Vector4 clipRect, byte* textBegin, byte* textEnd, float wrapWidth, int flags)
+        {
+            ((delegate* unmanaged[Cdecl]<ImFont*, ImDrawList*, float, Vector2, uint, Vector4, byte*, byte*, float, int, void>)funcTable[687])(self, drawList, size, pos, col, clipRect, textBegin, textEnd, wrapWidth, flags);
+        }
+
         internal static void RenderTextNative(ImFont* self, ImDrawList* drawList, float size, Vector2 pos, uint col, Vector4 clipRect, byte* textBegin, byte* textEnd, float wrapWidth, ImDrawTextFlags flags)
         {
-            ((delegate* unmanaged[Cdecl]<ImFont*, ImDrawList*, float, Vector2, uint, Vector4, byte*, byte*, float, ImDrawTextFlags, void>)funcTable[687])(self, drawList, size, pos, col, clipRect, textBegin, textEnd, wrapWidth, flags);
+            RenderTextInterop(self, drawList, size, pos, col, clipRect, textBegin, textEnd, wrapWidth, (int)flags);
         }
 
         /// <summary>
@@ -24623,25 +25454,40 @@ namespace Inno.Native.ImGui
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static Vector2 ImFontCalcTextSizeExInterop(ImFont* font, float size, float maxWidth, float wrapWidth, byte* textBegin, byte* textEndDisplay, byte* textEnd, byte** outRemaining, Vector2* outOffset, int flags)
+        {
+            return ((delegate* unmanaged[Cdecl]<ImFont*, float, float, float, byte*, byte*, byte*, byte**, Vector2*, int, Vector2>)funcTable[749])(font, size, maxWidth, wrapWidth, textBegin, textEndDisplay, textEnd, outRemaining, outOffset, flags);
+        }
+
         internal static Vector2 ImFontCalcTextSizeExNative(ImFont* font, float size, float maxWidth, float wrapWidth, byte* textBegin, byte* textEndDisplay, byte* textEnd, byte** outRemaining, Vector2* outOffset, ImDrawTextFlags flags)
         {
-            return ((delegate* unmanaged[Cdecl]<ImFont*, float, float, float, byte*, byte*, byte*, byte**, Vector2*, ImDrawTextFlags, Vector2>)funcTable[749])(font, size, maxWidth, wrapWidth, textBegin, textEndDisplay, textEnd, outRemaining, outOffset, flags);
+            return ImFontCalcTextSizeExInterop(font, size, maxWidth, wrapWidth, textBegin, textEndDisplay, textEnd, outRemaining, outOffset, (int)flags);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte* ImFontCalcWordWrapPositionExInterop(ImFont* font, float size, byte* text, byte* textEnd, float wrapWidth, int flags)
+        {
+            return ((delegate* unmanaged[Cdecl]<ImFont*, float, byte*, byte*, float, int, byte*>)funcTable[750])(font, size, text, textEnd, wrapWidth, flags);
+        }
+
         internal static byte* ImFontCalcWordWrapPositionExNative(ImFont* font, float size, byte* text, byte* textEnd, float wrapWidth, ImDrawTextFlags flags)
         {
-            return ((delegate* unmanaged[Cdecl]<ImFont*, float, byte*, byte*, float, ImDrawTextFlags, byte*>)funcTable[750])(font, size, text, textEnd, wrapWidth, flags);
+            return ImFontCalcWordWrapPositionExInterop(font, size, text, textEnd, wrapWidth, (int)flags);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte* ImTextCalcWordWrapNextLineStartInterop(byte* text, byte* textEnd, int flags)
+        {
+            return ((delegate* unmanaged[Cdecl]<byte*, byte*, int, byte*>)funcTable[751])(text, textEnd, flags);
+        }
+
         internal static byte* ImTextCalcWordWrapNextLineStartNative(byte* text, byte* textEnd, ImDrawTextFlags flags)
         {
-            return ((delegate* unmanaged[Cdecl]<byte*, byte*, ImDrawTextFlags, byte*>)funcTable[751])(text, textEnd, flags);
+            return ImTextCalcWordWrapNextLineStartInterop(text, textEnd, (int)flags);
         }
 
         /// <summary>
@@ -24655,25 +25501,40 @@ namespace Inno.Native.ImGui
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void ImTextClassifierClearInterop(uint* bits, uint codepointMin, uint codepointEnd, int charClass)
+        {
+            ((delegate* unmanaged[Cdecl]<uint*, uint, uint, int, void>)funcTable[753])(bits, codepointMin, codepointEnd, charClass);
+        }
+
         internal static void ImTextClassifierClearNative(uint* bits, uint codepointMin, uint codepointEnd, ImWcharClass charClass)
         {
-            ((delegate* unmanaged[Cdecl]<uint*, uint, uint, ImWcharClass, void>)funcTable[753])(bits, codepointMin, codepointEnd, charClass);
+            ImTextClassifierClearInterop(bits, codepointMin, codepointEnd, (int)charClass);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void ImTextClassifierSetCharClassInterop(uint* bits, uint codepointMin, uint codepointEnd, int charClass, uint c)
+        {
+            ((delegate* unmanaged[Cdecl]<uint*, uint, uint, int, uint, void>)funcTable[754])(bits, codepointMin, codepointEnd, charClass, c);
+        }
+
         internal static void ImTextClassifierSetCharClassNative(uint* bits, uint codepointMin, uint codepointEnd, ImWcharClass charClass, uint c)
         {
-            ((delegate* unmanaged[Cdecl]<uint*, uint, uint, ImWcharClass, uint, void>)funcTable[754])(bits, codepointMin, codepointEnd, charClass, c);
+            ImTextClassifierSetCharClassInterop(bits, codepointMin, codepointEnd, (int)charClass, c);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void ImTextClassifierSetCharClassFromStrInterop(uint* bits, uint codepointMin, uint codepointEnd, int charClass, byte* s)
+        {
+            ((delegate* unmanaged[Cdecl]<uint*, uint, uint, int, byte*, void>)funcTable[755])(bits, codepointMin, codepointEnd, charClass, s);
+        }
+
         internal static void ImTextClassifierSetCharClassFromStrNative(uint* bits, uint codepointMin, uint codepointEnd, ImWcharClass charClass, byte* s)
         {
-            ((delegate* unmanaged[Cdecl]<uint*, uint, uint, ImWcharClass, byte*, void>)funcTable[755])(bits, codepointMin, codepointEnd, charClass, s);
+            ImTextClassifierSetCharClassFromStrInterop(bits, codepointMin, codepointEnd, (int)charClass, s);
         }
 
         /// <summary>
@@ -25591,9 +26452,14 @@ namespace Inno.Native.ImGui
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static ImGuiStyleMod* ImGuiStyleModInterop(int idx, int v)
+        {
+            return ((delegate* unmanaged[Cdecl]<int, int, ImGuiStyleMod*>)funcTable[870])(idx, v);
+        }
+
         internal static ImGuiStyleMod* ImGuiStyleModNative(ImGuiStyleVar idx, int v)
         {
-            return ((delegate* unmanaged[Cdecl]<ImGuiStyleVar, int, ImGuiStyleMod*>)funcTable[870])(idx, v);
+            return ImGuiStyleModInterop((int)idx, v);
         }
 
         /// <summary>
@@ -25607,17 +26473,27 @@ namespace Inno.Native.ImGui
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static ImGuiStyleMod* ImGuiStyleModInterop(int idx, float v)
+        {
+            return ((delegate* unmanaged[Cdecl]<int, float, ImGuiStyleMod*>)funcTable[872])(idx, v);
+        }
+
         internal static ImGuiStyleMod* ImGuiStyleModNative(ImGuiStyleVar idx, float v)
         {
-            return ((delegate* unmanaged[Cdecl]<ImGuiStyleVar, float, ImGuiStyleMod*>)funcTable[872])(idx, v);
+            return ImGuiStyleModInterop((int)idx, v);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static ImGuiStyleMod* ImGuiStyleModInterop(int idx, Vector2 v)
+        {
+            return ((delegate* unmanaged[Cdecl]<int, Vector2, ImGuiStyleMod*>)funcTable[873])(idx, v);
+        }
+
         internal static ImGuiStyleMod* ImGuiStyleModNative(ImGuiStyleVar idx, Vector2 v)
         {
-            return ((delegate* unmanaged[Cdecl]<ImGuiStyleVar, Vector2, ImGuiStyleMod*>)funcTable[873])(idx, v);
+            return ImGuiStyleModInterop((int)idx, v);
         }
 
         /// <summary>
@@ -26327,9 +27203,14 @@ namespace Inno.Native.ImGui
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void SetLocalFlagsInterop(ImGuiDockNode* self, int flags)
+        {
+            ((delegate* unmanaged[Cdecl]<ImGuiDockNode*, int, void>)funcTable[962])(self, flags);
+        }
+
         internal static void SetLocalFlagsNative(ImGuiDockNode* self, ImGuiDockNodeFlags flags)
         {
-            ((delegate* unmanaged[Cdecl]<ImGuiDockNode*, ImGuiDockNodeFlags, void>)funcTable[962])(self, flags);
+            SetLocalFlagsInterop(self, (int)flags);
         }
 
         /// <summary>
@@ -26839,9 +27720,14 @@ namespace Inno.Native.ImGui
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void UpdateWindowParentAndRootLinksInterop(ImGuiWindow* window, int flags, ImGuiWindow* parentWindow)
+        {
+            ((delegate* unmanaged[Cdecl]<ImGuiWindow*, int, ImGuiWindow*, void>)funcTable[1026])(window, flags, parentWindow);
+        }
+
         internal static void UpdateWindowParentAndRootLinksNative(ImGuiWindow* window, ImGuiWindowFlags flags, ImGuiWindow* parentWindow)
         {
-            ((delegate* unmanaged[Cdecl]<ImGuiWindow*, ImGuiWindowFlags, ImGuiWindow*, void>)funcTable[1026])(window, flags, parentWindow);
+            UpdateWindowParentAndRootLinksInterop(window, (int)flags, parentWindow);
         }
 
         /// <summary>
@@ -26903,25 +27789,40 @@ namespace Inno.Native.ImGui
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void SetWindowPosInterop(ImGuiWindow* window, Vector2 pos, int cond)
+        {
+            ((delegate* unmanaged[Cdecl]<ImGuiWindow*, Vector2, int, void>)funcTable[1034])(window, pos, cond);
+        }
+
         internal static void SetWindowPosNative(ImGuiWindow* window, Vector2 pos, ImGuiCond cond)
         {
-            ((delegate* unmanaged[Cdecl]<ImGuiWindow*, Vector2, ImGuiCond, void>)funcTable[1034])(window, pos, cond);
+            SetWindowPosInterop(window, pos, (int)cond);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void SetWindowSizeInterop(ImGuiWindow* window, Vector2 size, int cond)
+        {
+            ((delegate* unmanaged[Cdecl]<ImGuiWindow*, Vector2, int, void>)funcTable[1035])(window, size, cond);
+        }
+
         internal static void SetWindowSizeNative(ImGuiWindow* window, Vector2 size, ImGuiCond cond)
         {
-            ((delegate* unmanaged[Cdecl]<ImGuiWindow*, Vector2, ImGuiCond, void>)funcTable[1035])(window, size, cond);
+            SetWindowSizeInterop(window, size, (int)cond);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void SetWindowCollapsedInterop(ImGuiWindow* window, byte collapsed, int cond)
+        {
+            ((delegate* unmanaged[Cdecl]<ImGuiWindow*, byte, int, void>)funcTable[1036])(window, collapsed, cond);
+        }
+
         internal static void SetWindowCollapsedNative(ImGuiWindow* window, byte collapsed, ImGuiCond cond)
         {
-            ((delegate* unmanaged[Cdecl]<ImGuiWindow*, byte, ImGuiCond, void>)funcTable[1036])(window, collapsed, cond);
+            SetWindowCollapsedInterop(window, collapsed, (int)cond);
         }
 
         /// <summary>
@@ -26983,17 +27884,27 @@ namespace Inno.Native.ImGui
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void FocusWindowInterop(ImGuiWindow* window, int flags)
+        {
+            ((delegate* unmanaged[Cdecl]<ImGuiWindow*, int, void>)funcTable[1044])(window, flags);
+        }
+
         internal static void FocusWindowNative(ImGuiWindow* window, ImGuiFocusRequestFlags flags)
         {
-            ((delegate* unmanaged[Cdecl]<ImGuiWindow*, ImGuiFocusRequestFlags, void>)funcTable[1044])(window, flags);
+            FocusWindowInterop(window, (int)flags);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void FocusTopMostWindowUnderOneInterop(ImGuiWindow* underThisWindow, ImGuiWindow* ignoreWindow, ImGuiViewport* filterViewport, int flags)
+        {
+            ((delegate* unmanaged[Cdecl]<ImGuiWindow*, ImGuiWindow*, ImGuiViewport*, int, void>)funcTable[1045])(underThisWindow, ignoreWindow, filterViewport, flags);
+        }
+
         internal static void FocusTopMostWindowUnderOneNative(ImGuiWindow* underThisWindow, ImGuiWindow* ignoreWindow, ImGuiViewport* filterViewport, ImGuiFocusRequestFlags flags)
         {
-            ((delegate* unmanaged[Cdecl]<ImGuiWindow*, ImGuiWindow*, ImGuiViewport*, ImGuiFocusRequestFlags, void>)funcTable[1045])(underThisWindow, ignoreWindow, filterViewport, flags);
+            FocusTopMostWindowUnderOneInterop(underThisWindow, ignoreWindow, filterViewport, (int)flags);
         }
 
         /// <summary>
@@ -27047,9 +27958,14 @@ namespace Inno.Native.ImGui
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void SetNextWindowRefreshPolicyInterop(int flags)
+        {
+            ((delegate* unmanaged[Cdecl]<int, void>)funcTable[1052])(flags);
+        }
+
         internal static void SetNextWindowRefreshPolicyNative(ImGuiWindowRefreshFlags flags)
         {
-            ((delegate* unmanaged[Cdecl]<ImGuiWindowRefreshFlags, void>)funcTable[1052])(flags);
+            SetNextWindowRefreshPolicyInterop((int)flags);
         }
 
         /// <summary>
@@ -27207,9 +28123,14 @@ namespace Inno.Native.ImGui
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void CallContextHooksInterop(ImGuiContext* ctx, int type)
+        {
+            ((delegate* unmanaged[Cdecl]<ImGuiContext*, int, void>)funcTable[1072])(ctx, type);
+        }
+
         internal static void CallContextHooksNative(ImGuiContext* ctx, ImGuiContextHookType type)
         {
-            ((delegate* unmanaged[Cdecl]<ImGuiContext*, ImGuiContextHookType, void>)funcTable[1072])(ctx, type);
+            CallContextHooksInterop(ctx, (int)type);
         }
 
         /// <summary>
@@ -27423,9 +28344,14 @@ namespace Inno.Native.ImGui
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte* LocalizeGetMsgInterop(int key)
+        {
+            return ((delegate* unmanaged[Cdecl]<int, byte*>)funcTable[1099])(key);
+        }
+
         internal static byte* LocalizeGetMsgNative(ImGuiLocKey key)
         {
-            return ((delegate* unmanaged[Cdecl]<ImGuiLocKey, byte*>)funcTable[1099])(key);
+            return LocalizeGetMsgInterop((int)key);
         }
 
         /// <summary>
@@ -27463,25 +28389,40 @@ namespace Inno.Native.ImGui
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void ScrollToItemInterop(int flags)
+        {
+            ((delegate* unmanaged[Cdecl]<int, void>)funcTable[1104])(flags);
+        }
+
         internal static void ScrollToItemNative(ImGuiScrollFlags flags)
         {
-            ((delegate* unmanaged[Cdecl]<ImGuiScrollFlags, void>)funcTable[1104])(flags);
+            ScrollToItemInterop((int)flags);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void ScrollToRectInterop(ImGuiWindow* window, ImRect rect, int flags)
+        {
+            ((delegate* unmanaged[Cdecl]<ImGuiWindow*, ImRect, int, void>)funcTable[1105])(window, rect, flags);
+        }
+
         internal static void ScrollToRectNative(ImGuiWindow* window, ImRect rect, ImGuiScrollFlags flags)
         {
-            ((delegate* unmanaged[Cdecl]<ImGuiWindow*, ImRect, ImGuiScrollFlags, void>)funcTable[1105])(window, rect, flags);
+            ScrollToRectInterop(window, rect, (int)flags);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static Vector2 ScrollToRectExInterop(ImGuiWindow* window, ImRect rect, int flags)
+        {
+            return ((delegate* unmanaged[Cdecl]<ImGuiWindow*, ImRect, int, Vector2>)funcTable[1106])(window, rect, flags);
+        }
+
         internal static Vector2 ScrollToRectExNative(ImGuiWindow* window, ImRect rect, ImGuiScrollFlags flags)
         {
-            return ((delegate* unmanaged[Cdecl]<ImGuiWindow*, ImRect, ImGuiScrollFlags, Vector2>)funcTable[1106])(window, rect, flags);
+            return ScrollToRectExInterop(window, rect, (int)flags);
         }
 
         /// <summary>
@@ -27495,9 +28436,14 @@ namespace Inno.Native.ImGui
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int GetItemStatusFlagsInterop()
+        {
+            return ((delegate* unmanaged[Cdecl]<int>)funcTable[1108])();
+        }
+
         internal static ImGuiItemStatusFlags GetItemStatusFlagsNative()
         {
-            return ((delegate* unmanaged[Cdecl]<ImGuiItemStatusFlags>)funcTable[1108])();
+            return (ImGuiItemStatusFlags)GetItemStatusFlagsInterop();
         }
 
         /// <summary>
@@ -27615,25 +28561,40 @@ namespace Inno.Native.ImGui
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte ItemAddInterop(ImRect bb, uint id, ImRect* navBb, int extraFlags)
+        {
+            return ((delegate* unmanaged[Cdecl]<ImRect, uint, ImRect*, int, byte>)funcTable[1123])(bb, id, navBb, extraFlags);
+        }
+
         internal static byte ItemAddNative(ImRect bb, uint id, ImRect* navBb, ImGuiItemFlags extraFlags)
         {
-            return ((delegate* unmanaged[Cdecl]<ImRect, uint, ImRect*, ImGuiItemFlags, byte>)funcTable[1123])(bb, id, navBb, extraFlags);
+            return ItemAddInterop(bb, id, navBb, (int)extraFlags);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte ItemHoverableInterop(ImRect bb, uint id, int itemFlags)
+        {
+            return ((delegate* unmanaged[Cdecl]<ImRect, uint, int, byte>)funcTable[1124])(bb, id, itemFlags);
+        }
+
         internal static byte ItemHoverableNative(ImRect bb, uint id, ImGuiItemFlags itemFlags)
         {
-            return ((delegate* unmanaged[Cdecl]<ImRect, uint, ImGuiItemFlags, byte>)funcTable[1124])(bb, id, itemFlags);
+            return ItemHoverableInterop(bb, id, (int)itemFlags);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte IsWindowContentHoverableInterop(ImGuiWindow* window, int flags)
+        {
+            return ((delegate* unmanaged[Cdecl]<ImGuiWindow*, int, byte>)funcTable[1125])(window, flags);
+        }
+
         internal static byte IsWindowContentHoverableNative(ImGuiWindow* window, ImGuiHoveredFlags flags)
         {
-            return ((delegate* unmanaged[Cdecl]<ImGuiWindow*, ImGuiHoveredFlags, byte>)funcTable[1125])(window, flags);
+            return IsWindowContentHoverableInterop(window, (int)flags);
         }
 
         /// <summary>
@@ -27647,9 +28608,14 @@ namespace Inno.Native.ImGui
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void SetLastItemDataInterop(uint itemId, int itemFlags, int statusFlags, ImRect itemRect)
+        {
+            ((delegate* unmanaged[Cdecl]<uint, int, int, ImRect, void>)funcTable[1127])(itemId, itemFlags, statusFlags, itemRect);
+        }
+
         internal static void SetLastItemDataNative(uint itemId, ImGuiItemFlags itemFlags, ImGuiItemStatusFlags statusFlags, ImRect itemRect)
         {
-            ((delegate* unmanaged[Cdecl]<uint, ImGuiItemFlags, ImGuiItemStatusFlags, ImRect, void>)funcTable[1127])(itemId, itemFlags, statusFlags, itemRect);
+            SetLastItemDataInterop(itemId, (int)itemFlags, (int)statusFlags, itemRect);
         }
 
         /// <summary>
@@ -27695,9 +28661,14 @@ namespace Inno.Native.ImGui
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static ImGuiStyleVarInfo* GetStyleVarInfoInterop(int idx)
+        {
+            return ((delegate* unmanaged[Cdecl]<int, ImGuiStyleVarInfo*>)funcTable[1133])(idx);
+        }
+
         internal static ImGuiStyleVarInfo* GetStyleVarInfoNative(ImGuiStyleVar idx)
         {
-            return ((delegate* unmanaged[Cdecl]<ImGuiStyleVar, ImGuiStyleVarInfo*>)funcTable[1133])(idx);
+            return GetStyleVarInfoInterop((int)idx);
         }
 
         /// <summary>
@@ -27719,9 +28690,14 @@ namespace Inno.Native.ImGui
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void LogBeginInterop(int flags, int autoOpenDepth)
+        {
+            ((delegate* unmanaged[Cdecl]<int, int, void>)funcTable[1136])(flags, autoOpenDepth);
+        }
+
         internal static void LogBeginNative(ImGuiLogFlags flags, int autoOpenDepth)
         {
-            ((delegate* unmanaged[Cdecl]<ImGuiLogFlags, int, void>)funcTable[1136])(flags, autoOpenDepth);
+            LogBeginInterop((int)flags, autoOpenDepth);
         }
 
         /// <summary>
@@ -27751,33 +28727,53 @@ namespace Inno.Native.ImGui
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte BeginChildExInterop(byte* name, uint id, Vector2 sizeArg, int childFlags, int windowFlags)
+        {
+            return ((delegate* unmanaged[Cdecl]<byte*, uint, Vector2, int, int, byte>)funcTable[1140])(name, id, sizeArg, childFlags, windowFlags);
+        }
+
         internal static byte BeginChildExNative(byte* name, uint id, Vector2 sizeArg, ImGuiChildFlags childFlags, ImGuiWindowFlags windowFlags)
         {
-            return ((delegate* unmanaged[Cdecl]<byte*, uint, Vector2, ImGuiChildFlags, ImGuiWindowFlags, byte>)funcTable[1140])(name, id, sizeArg, childFlags, windowFlags);
+            return BeginChildExInterop(name, id, sizeArg, (int)childFlags, (int)windowFlags);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte BeginPopupExInterop(uint id, int extraWindowFlags)
+        {
+            return ((delegate* unmanaged[Cdecl]<uint, int, byte>)funcTable[1141])(id, extraWindowFlags);
+        }
+
         internal static byte BeginPopupExNative(uint id, ImGuiWindowFlags extraWindowFlags)
         {
-            return ((delegate* unmanaged[Cdecl]<uint, ImGuiWindowFlags, byte>)funcTable[1141])(id, extraWindowFlags);
+            return BeginPopupExInterop(id, (int)extraWindowFlags);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte BeginPopupMenuExInterop(uint id, byte* label, int extraWindowFlags)
+        {
+            return ((delegate* unmanaged[Cdecl]<uint, byte*, int, byte>)funcTable[1142])(id, label, extraWindowFlags);
+        }
+
         internal static byte BeginPopupMenuExNative(uint id, byte* label, ImGuiWindowFlags extraWindowFlags)
         {
-            return ((delegate* unmanaged[Cdecl]<uint, byte*, ImGuiWindowFlags, byte>)funcTable[1142])(id, label, extraWindowFlags);
+            return BeginPopupMenuExInterop(id, label, (int)extraWindowFlags);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void OpenPopupExInterop(uint id, int popupFlags)
+        {
+            ((delegate* unmanaged[Cdecl]<uint, int, void>)funcTable[1143])(id, popupFlags);
+        }
+
         internal static void OpenPopupExNative(uint id, ImGuiPopupFlags popupFlags)
         {
-            ((delegate* unmanaged[Cdecl]<uint, ImGuiPopupFlags, void>)funcTable[1143])(id, popupFlags);
+            OpenPopupExInterop(id, (int)popupFlags);
         }
 
         /// <summary>
@@ -27807,9 +28803,14 @@ namespace Inno.Native.ImGui
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte IsPopupOpenInterop(uint id, int popupFlags)
+        {
+            return ((delegate* unmanaged[Cdecl]<uint, int, byte>)funcTable[1147])(id, popupFlags);
+        }
+
         internal static byte IsPopupOpenNative(uint id, ImGuiPopupFlags popupFlags)
         {
-            return ((delegate* unmanaged[Cdecl]<uint, ImGuiPopupFlags, byte>)funcTable[1147])(id, popupFlags);
+            return IsPopupOpenInterop(id, (int)popupFlags);
         }
 
         /// <summary>
@@ -27855,25 +28856,40 @@ namespace Inno.Native.ImGui
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static Vector2 FindBestWindowPosForPopupExInterop(Vector2 refPos, Vector2 size, ImGuiDir* lastDir, ImRect rOuter, ImRect rAvoid, int policy)
+        {
+            return ((delegate* unmanaged[Cdecl]<Vector2, Vector2, ImGuiDir*, ImRect, ImRect, int, Vector2>)funcTable[1153])(refPos, size, lastDir, rOuter, rAvoid, policy);
+        }
+
         internal static Vector2 FindBestWindowPosForPopupExNative(Vector2 refPos, Vector2 size, ImGuiDir* lastDir, ImRect rOuter, ImRect rAvoid, ImGuiPopupPositionPolicy policy)
         {
-            return ((delegate* unmanaged[Cdecl]<Vector2, Vector2, ImGuiDir*, ImRect, ImRect, ImGuiPopupPositionPolicy, Vector2>)funcTable[1153])(refPos, size, lastDir, rOuter, rAvoid, policy);
+            return FindBestWindowPosForPopupExInterop(refPos, size, lastDir, rOuter, rAvoid, (int)policy);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int GetMouseButtonFromPopupFlagsInterop(int flags)
+        {
+            return ((delegate* unmanaged[Cdecl]<int, int>)funcTable[1154])(flags);
+        }
+
         internal static ImGuiMouseButton GetMouseButtonFromPopupFlagsNative(ImGuiPopupFlags flags)
         {
-            return ((delegate* unmanaged[Cdecl]<ImGuiPopupFlags, ImGuiMouseButton>)funcTable[1154])(flags);
+            return (ImGuiMouseButton)GetMouseButtonFromPopupFlagsInterop((int)flags);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte BeginTooltipExInterop(int tooltipFlags, int extraWindowFlags)
+        {
+            return ((delegate* unmanaged[Cdecl]<int, int, byte>)funcTable[1155])(tooltipFlags, extraWindowFlags);
+        }
+
         internal static byte BeginTooltipExNative(ImGuiTooltipFlags tooltipFlags, ImGuiWindowFlags extraWindowFlags)
         {
-            return ((delegate* unmanaged[Cdecl]<ImGuiTooltipFlags, ImGuiWindowFlags, byte>)funcTable[1155])(tooltipFlags, extraWindowFlags);
+            return BeginTooltipExInterop((int)tooltipFlags, (int)extraWindowFlags);
         }
 
         /// <summary>
@@ -27887,9 +28903,14 @@ namespace Inno.Native.ImGui
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte BeginViewportSideBarInterop(byte* name, ImGuiViewport* viewport, int dir, float size, int windowFlags)
+        {
+            return ((delegate* unmanaged[Cdecl]<byte*, ImGuiViewport*, int, float, int, byte>)funcTable[1157])(name, viewport, dir, size, windowFlags);
+        }
+
         internal static byte BeginViewportSideBarNative(byte* name, ImGuiViewport* viewport, ImGuiDir dir, float size, ImGuiWindowFlags windowFlags)
         {
-            return ((delegate* unmanaged[Cdecl]<byte*, ImGuiViewport*, ImGuiDir, float, ImGuiWindowFlags, byte>)funcTable[1157])(name, viewport, dir, size, windowFlags);
+            return BeginViewportSideBarInterop(name, viewport, (int)dir, size, (int)windowFlags);
         }
 
         /// <summary>
@@ -27911,9 +28932,14 @@ namespace Inno.Native.ImGui
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte BeginComboPopupInterop(uint popupId, ImRect bb, int flags)
+        {
+            return ((delegate* unmanaged[Cdecl]<uint, ImRect, int, byte>)funcTable[1160])(popupId, bb, flags);
+        }
+
         internal static byte BeginComboPopupNative(uint popupId, ImRect bb, ImGuiComboFlags flags)
         {
-            return ((delegate* unmanaged[Cdecl]<uint, ImRect, ImGuiComboFlags, byte>)funcTable[1160])(popupId, bb, flags);
+            return BeginComboPopupInterop(popupId, bb, (int)flags);
         }
 
         /// <summary>
@@ -27959,17 +28985,27 @@ namespace Inno.Native.ImGui
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void NavMoveRequestSubmitInterop(int moveDir, int clipDir, int moveFlags, int scrollFlags)
+        {
+            ((delegate* unmanaged[Cdecl]<int, int, int, int, void>)funcTable[1166])(moveDir, clipDir, moveFlags, scrollFlags);
+        }
+
         internal static void NavMoveRequestSubmitNative(ImGuiDir moveDir, ImGuiDir clipDir, ImGuiNavMoveFlags moveFlags, ImGuiScrollFlags scrollFlags)
         {
-            ((delegate* unmanaged[Cdecl]<ImGuiDir, ImGuiDir, ImGuiNavMoveFlags, ImGuiScrollFlags, void>)funcTable[1166])(moveDir, clipDir, moveFlags, scrollFlags);
+            NavMoveRequestSubmitInterop((int)moveDir, (int)clipDir, (int)moveFlags, (int)scrollFlags);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void NavMoveRequestForwardInterop(int moveDir, int clipDir, int moveFlags, int scrollFlags)
+        {
+            ((delegate* unmanaged[Cdecl]<int, int, int, int, void>)funcTable[1167])(moveDir, clipDir, moveFlags, scrollFlags);
+        }
+
         internal static void NavMoveRequestForwardNative(ImGuiDir moveDir, ImGuiDir clipDir, ImGuiNavMoveFlags moveFlags, ImGuiScrollFlags scrollFlags)
         {
-            ((delegate* unmanaged[Cdecl]<ImGuiDir, ImGuiDir, ImGuiNavMoveFlags, ImGuiScrollFlags, void>)funcTable[1167])(moveDir, clipDir, moveFlags, scrollFlags);
+            NavMoveRequestForwardInterop((int)moveDir, (int)clipDir, (int)moveFlags, (int)scrollFlags);
         }
 
         /// <summary>
@@ -28007,9 +29043,14 @@ namespace Inno.Native.ImGui
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void NavMoveRequestTryWrappingInterop(ImGuiWindow* window, int moveFlags)
+        {
+            ((delegate* unmanaged[Cdecl]<ImGuiWindow*, int, void>)funcTable[1172])(window, moveFlags);
+        }
+
         internal static void NavMoveRequestTryWrappingNative(ImGuiWindow* window, ImGuiNavMoveFlags moveFlags)
         {
-            ((delegate* unmanaged[Cdecl]<ImGuiWindow*, ImGuiNavMoveFlags, void>)funcTable[1172])(window, moveFlags);
+            NavMoveRequestTryWrappingInterop(window, (int)moveFlags);
         }
 
         /// <summary>
@@ -28023,9 +29064,14 @@ namespace Inno.Native.ImGui
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void NavClearPreferredPosForAxisInterop(int axis)
+        {
+            ((delegate* unmanaged[Cdecl]<int, void>)funcTable[1174])(axis);
+        }
+
         internal static void NavClearPreferredPosForAxisNative(ImGuiAxis axis)
         {
-            ((delegate* unmanaged[Cdecl]<ImGuiAxis, void>)funcTable[1174])(axis);
+            NavClearPreferredPosForAxisInterop((int)axis);
         }
 
         /// <summary>
@@ -28055,9 +29101,14 @@ namespace Inno.Native.ImGui
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void SetNavIDInterop(uint id, int navLayer, uint focusScopeId, ImRect rectRel)
+        {
+            ((delegate* unmanaged[Cdecl]<uint, int, uint, ImRect, void>)funcTable[1178])(id, navLayer, focusScopeId, rectRel);
+        }
+
         internal static void SetNavIDNative(uint id, ImGuiNavLayer navLayer, uint focusScopeId, ImRect rectRel)
         {
-            ((delegate* unmanaged[Cdecl]<uint, ImGuiNavLayer, uint, ImRect, void>)funcTable[1178])(id, navLayer, focusScopeId, rectRel);
+            SetNavIDInterop(id, (int)navLayer, focusScopeId, rectRel);
         }
 
         /// <summary>
@@ -28087,65 +29138,105 @@ namespace Inno.Native.ImGui
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte IsNamedKeyInterop(int key)
+        {
+            return ((delegate* unmanaged[Cdecl]<int, byte>)funcTable[1182])(key);
+        }
+
         internal static byte IsNamedKeyNative(ImGuiKey key)
         {
-            return ((delegate* unmanaged[Cdecl]<ImGuiKey, byte>)funcTable[1182])(key);
+            return IsNamedKeyInterop((int)key);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte IsNamedKeyOrModInterop(int key)
+        {
+            return ((delegate* unmanaged[Cdecl]<int, byte>)funcTable[1183])(key);
+        }
+
         internal static byte IsNamedKeyOrModNative(ImGuiKey key)
         {
-            return ((delegate* unmanaged[Cdecl]<ImGuiKey, byte>)funcTable[1183])(key);
+            return IsNamedKeyOrModInterop((int)key);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte IsLegacyKeyInterop(int key)
+        {
+            return ((delegate* unmanaged[Cdecl]<int, byte>)funcTable[1184])(key);
+        }
+
         internal static byte IsLegacyKeyNative(ImGuiKey key)
         {
-            return ((delegate* unmanaged[Cdecl]<ImGuiKey, byte>)funcTable[1184])(key);
+            return IsLegacyKeyInterop((int)key);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte IsKeyboardKeyInterop(int key)
+        {
+            return ((delegate* unmanaged[Cdecl]<int, byte>)funcTable[1185])(key);
+        }
+
         internal static byte IsKeyboardKeyNative(ImGuiKey key)
         {
-            return ((delegate* unmanaged[Cdecl]<ImGuiKey, byte>)funcTable[1185])(key);
+            return IsKeyboardKeyInterop((int)key);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte IsGamepadKeyInterop(int key)
+        {
+            return ((delegate* unmanaged[Cdecl]<int, byte>)funcTable[1186])(key);
+        }
+
         internal static byte IsGamepadKeyNative(ImGuiKey key)
         {
-            return ((delegate* unmanaged[Cdecl]<ImGuiKey, byte>)funcTable[1186])(key);
+            return IsGamepadKeyInterop((int)key);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte IsMouseKeyInterop(int key)
+        {
+            return ((delegate* unmanaged[Cdecl]<int, byte>)funcTable[1187])(key);
+        }
+
         internal static byte IsMouseKeyNative(ImGuiKey key)
         {
-            return ((delegate* unmanaged[Cdecl]<ImGuiKey, byte>)funcTable[1187])(key);
+            return IsMouseKeyInterop((int)key);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte IsAliasKeyInterop(int key)
+        {
+            return ((delegate* unmanaged[Cdecl]<int, byte>)funcTable[1188])(key);
+        }
+
         internal static byte IsAliasKeyNative(ImGuiKey key)
         {
-            return ((delegate* unmanaged[Cdecl]<ImGuiKey, byte>)funcTable[1188])(key);
+            return IsAliasKeyInterop((int)key);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte IsLRModKeyInterop(int key)
+        {
+            return ((delegate* unmanaged[Cdecl]<int, byte>)funcTable[1189])(key);
+        }
+
         internal static byte IsLRModKeyNative(ImGuiKey key)
         {
-            return ((delegate* unmanaged[Cdecl]<ImGuiKey, byte>)funcTable[1189])(key);
+            return IsLRModKeyInterop((int)key);
         }
 
         /// <summary>
@@ -28159,25 +29250,40 @@ namespace Inno.Native.ImGui
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int ConvertSingleModFlagToKeyInterop(int key)
+        {
+            return ((delegate* unmanaged[Cdecl]<int, int>)funcTable[1191])(key);
+        }
+
         internal static ImGuiKey ConvertSingleModFlagToKeyNative(ImGuiKey key)
         {
-            return ((delegate* unmanaged[Cdecl]<ImGuiKey, ImGuiKey>)funcTable[1191])(key);
+            return (ImGuiKey)ConvertSingleModFlagToKeyInterop((int)key);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static ImGuiKeyData* GetKeyDataInterop(ImGuiContext* ctx, int key)
+        {
+            return ((delegate* unmanaged[Cdecl]<ImGuiContext*, int, ImGuiKeyData*>)funcTable[1192])(ctx, key);
+        }
+
         internal static ImGuiKeyData* GetKeyDataNative(ImGuiContext* ctx, ImGuiKey key)
         {
-            return ((delegate* unmanaged[Cdecl]<ImGuiContext*, ImGuiKey, ImGuiKeyData*>)funcTable[1192])(ctx, key);
+            return GetKeyDataInterop(ctx, (int)key);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static ImGuiKeyData* GetKeyDataInterop(int key)
+        {
+            return ((delegate* unmanaged[Cdecl]<int, ImGuiKeyData*>)funcTable[1193])(key);
+        }
+
         internal static ImGuiKeyData* GetKeyDataNative(ImGuiKey key)
         {
-            return ((delegate* unmanaged[Cdecl]<ImGuiKey, ImGuiKeyData*>)funcTable[1193])(key);
+            return GetKeyDataInterop((int)key);
         }
 
         /// <summary>
@@ -28191,33 +29297,53 @@ namespace Inno.Native.ImGui
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int MouseButtonToKeyInterop(int button)
+        {
+            return ((delegate* unmanaged[Cdecl]<int, int>)funcTable[1195])(button);
+        }
+
         internal static ImGuiKey MouseButtonToKeyNative(ImGuiMouseButton button)
         {
-            return ((delegate* unmanaged[Cdecl]<ImGuiMouseButton, ImGuiKey>)funcTable[1195])(button);
+            return (ImGuiKey)MouseButtonToKeyInterop((int)button);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte IsMouseDragPastThresholdInterop(int button, float lockThreshold)
+        {
+            return ((delegate* unmanaged[Cdecl]<int, float, byte>)funcTable[1196])(button, lockThreshold);
+        }
+
         internal static byte IsMouseDragPastThresholdNative(ImGuiMouseButton button, float lockThreshold)
         {
-            return ((delegate* unmanaged[Cdecl]<ImGuiMouseButton, float, byte>)funcTable[1196])(button, lockThreshold);
+            return IsMouseDragPastThresholdInterop((int)button, lockThreshold);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static Vector2 GetKeyMagnitude2dInterop(int keyLeft, int keyRight, int keyUp, int keyDown)
+        {
+            return ((delegate* unmanaged[Cdecl]<int, int, int, int, Vector2>)funcTable[1197])(keyLeft, keyRight, keyUp, keyDown);
+        }
+
         internal static Vector2 GetKeyMagnitude2dNative(ImGuiKey keyLeft, ImGuiKey keyRight, ImGuiKey keyUp, ImGuiKey keyDown)
         {
-            return ((delegate* unmanaged[Cdecl]<ImGuiKey, ImGuiKey, ImGuiKey, ImGuiKey, Vector2>)funcTable[1197])(keyLeft, keyRight, keyUp, keyDown);
+            return GetKeyMagnitude2dInterop((int)keyLeft, (int)keyRight, (int)keyUp, (int)keyDown);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static float GetNavTweakPressedAmountInterop(int axis)
+        {
+            return ((delegate* unmanaged[Cdecl]<int, float>)funcTable[1198])(axis);
+        }
+
         internal static float GetNavTweakPressedAmountNative(ImGuiAxis axis)
         {
-            return ((delegate* unmanaged[Cdecl]<ImGuiAxis, float>)funcTable[1198])(axis);
+            return GetNavTweakPressedAmountInterop((int)axis);
         }
 
         /// <summary>
@@ -28231,9 +29357,14 @@ namespace Inno.Native.ImGui
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void GetTypematicRepeatRateInterop(int flags, float* repeatDelay, float* repeatRate)
+        {
+            ((delegate* unmanaged[Cdecl]<int, float*, float*, void>)funcTable[1200])(flags, repeatDelay, repeatRate);
+        }
+
         internal static void GetTypematicRepeatRateNative(ImGuiInputFlags flags, float* repeatDelay, float* repeatRate)
         {
-            ((delegate* unmanaged[Cdecl]<ImGuiInputFlags, float*, float*, void>)funcTable[1200])(flags, repeatDelay, repeatRate);
+            GetTypematicRepeatRateInterop((int)flags, repeatDelay, repeatRate);
         }
 
         /// <summary>
@@ -28255,137 +29386,222 @@ namespace Inno.Native.ImGui
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte IsActiveIdUsingNavDirInterop(int dir)
+        {
+            return ((delegate* unmanaged[Cdecl]<int, byte>)funcTable[1203])(dir);
+        }
+
         internal static byte IsActiveIdUsingNavDirNative(ImGuiDir dir)
         {
-            return ((delegate* unmanaged[Cdecl]<ImGuiDir, byte>)funcTable[1203])(dir);
+            return IsActiveIdUsingNavDirInterop((int)dir);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static uint GetKeyOwnerInterop(int key)
+        {
+            return ((delegate* unmanaged[Cdecl]<int, uint>)funcTable[1204])(key);
+        }
+
         internal static uint GetKeyOwnerNative(ImGuiKey key)
         {
-            return ((delegate* unmanaged[Cdecl]<ImGuiKey, uint>)funcTable[1204])(key);
+            return GetKeyOwnerInterop((int)key);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void SetKeyOwnerInterop(int key, uint ownerId, int flags)
+        {
+            ((delegate* unmanaged[Cdecl]<int, uint, int, void>)funcTable[1205])(key, ownerId, flags);
+        }
+
         internal static void SetKeyOwnerNative(ImGuiKey key, uint ownerId, ImGuiInputFlags flags)
         {
-            ((delegate* unmanaged[Cdecl]<ImGuiKey, uint, ImGuiInputFlags, void>)funcTable[1205])(key, ownerId, flags);
+            SetKeyOwnerInterop((int)key, ownerId, (int)flags);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void SetKeyOwnersForKeyChordInterop(int key, uint ownerId, int flags)
+        {
+            ((delegate* unmanaged[Cdecl]<int, uint, int, void>)funcTable[1206])(key, ownerId, flags);
+        }
+
         internal static void SetKeyOwnersForKeyChordNative(int key, uint ownerId, ImGuiInputFlags flags)
         {
-            ((delegate* unmanaged[Cdecl]<int, uint, ImGuiInputFlags, void>)funcTable[1206])(key, ownerId, flags);
+            SetKeyOwnersForKeyChordInterop(key, ownerId, (int)flags);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void SetItemKeyOwnerInterop(int key, int flags)
+        {
+            ((delegate* unmanaged[Cdecl]<int, int, void>)funcTable[1207])(key, flags);
+        }
+
         internal static void SetItemKeyOwnerNative(ImGuiKey key, ImGuiInputFlags flags)
         {
-            ((delegate* unmanaged[Cdecl]<ImGuiKey, ImGuiInputFlags, void>)funcTable[1207])(key, flags);
+            SetItemKeyOwnerInterop((int)key, (int)flags);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte TestKeyOwnerInterop(int key, uint ownerId)
+        {
+            return ((delegate* unmanaged[Cdecl]<int, uint, byte>)funcTable[1208])(key, ownerId);
+        }
+
         internal static byte TestKeyOwnerNative(ImGuiKey key, uint ownerId)
         {
-            return ((delegate* unmanaged[Cdecl]<ImGuiKey, uint, byte>)funcTable[1208])(key, ownerId);
+            return TestKeyOwnerInterop((int)key, ownerId);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static ImGuiKeyOwnerData* GetKeyOwnerDataInterop(ImGuiContext* ctx, int key)
+        {
+            return ((delegate* unmanaged[Cdecl]<ImGuiContext*, int, ImGuiKeyOwnerData*>)funcTable[1209])(ctx, key);
+        }
+
         internal static ImGuiKeyOwnerData* GetKeyOwnerDataNative(ImGuiContext* ctx, ImGuiKey key)
         {
-            return ((delegate* unmanaged[Cdecl]<ImGuiContext*, ImGuiKey, ImGuiKeyOwnerData*>)funcTable[1209])(ctx, key);
+            return GetKeyOwnerDataInterop(ctx, (int)key);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte IsKeyDownInterop(int key, uint ownerId)
+        {
+            return ((delegate* unmanaged[Cdecl]<int, uint, byte>)funcTable[1210])(key, ownerId);
+        }
+
         internal static byte IsKeyDownNative(ImGuiKey key, uint ownerId)
         {
-            return ((delegate* unmanaged[Cdecl]<ImGuiKey, uint, byte>)funcTable[1210])(key, ownerId);
+            return IsKeyDownInterop((int)key, ownerId);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte IsKeyPressedInterop(int key, int flags, uint ownerId)
+        {
+            return ((delegate* unmanaged[Cdecl]<int, int, uint, byte>)funcTable[1211])(key, flags, ownerId);
+        }
+
         internal static byte IsKeyPressedNative(ImGuiKey key, ImGuiInputFlags flags, uint ownerId)
         {
-            return ((delegate* unmanaged[Cdecl]<ImGuiKey, ImGuiInputFlags, uint, byte>)funcTable[1211])(key, flags, ownerId);
+            return IsKeyPressedInterop((int)key, (int)flags, ownerId);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte IsKeyReleasedInterop(int key, uint ownerId)
+        {
+            return ((delegate* unmanaged[Cdecl]<int, uint, byte>)funcTable[1212])(key, ownerId);
+        }
+
         internal static byte IsKeyReleasedNative(ImGuiKey key, uint ownerId)
         {
-            return ((delegate* unmanaged[Cdecl]<ImGuiKey, uint, byte>)funcTable[1212])(key, ownerId);
+            return IsKeyReleasedInterop((int)key, ownerId);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte IsKeyChordPressedInterop(int keyChord, int flags, uint ownerId)
+        {
+            return ((delegate* unmanaged[Cdecl]<int, int, uint, byte>)funcTable[1213])(keyChord, flags, ownerId);
+        }
+
         internal static byte IsKeyChordPressedNative(int keyChord, ImGuiInputFlags flags, uint ownerId)
         {
-            return ((delegate* unmanaged[Cdecl]<int, ImGuiInputFlags, uint, byte>)funcTable[1213])(keyChord, flags, ownerId);
+            return IsKeyChordPressedInterop(keyChord, (int)flags, ownerId);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte IsMouseDownInterop(int button, uint ownerId)
+        {
+            return ((delegate* unmanaged[Cdecl]<int, uint, byte>)funcTable[1214])(button, ownerId);
+        }
+
         internal static byte IsMouseDownNative(ImGuiMouseButton button, uint ownerId)
         {
-            return ((delegate* unmanaged[Cdecl]<ImGuiMouseButton, uint, byte>)funcTable[1214])(button, ownerId);
+            return IsMouseDownInterop((int)button, ownerId);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte IsMouseClickedInterop(int button, int flags, uint ownerId)
+        {
+            return ((delegate* unmanaged[Cdecl]<int, int, uint, byte>)funcTable[1215])(button, flags, ownerId);
+        }
+
         internal static byte IsMouseClickedNative(ImGuiMouseButton button, ImGuiInputFlags flags, uint ownerId)
         {
-            return ((delegate* unmanaged[Cdecl]<ImGuiMouseButton, ImGuiInputFlags, uint, byte>)funcTable[1215])(button, flags, ownerId);
+            return IsMouseClickedInterop((int)button, (int)flags, ownerId);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte IsMouseReleasedInterop(int button, uint ownerId)
+        {
+            return ((delegate* unmanaged[Cdecl]<int, uint, byte>)funcTable[1216])(button, ownerId);
+        }
+
         internal static byte IsMouseReleasedNative(ImGuiMouseButton button, uint ownerId)
         {
-            return ((delegate* unmanaged[Cdecl]<ImGuiMouseButton, uint, byte>)funcTable[1216])(button, ownerId);
+            return IsMouseReleasedInterop((int)button, ownerId);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte IsMouseDoubleClickedInterop(int button, uint ownerId)
+        {
+            return ((delegate* unmanaged[Cdecl]<int, uint, byte>)funcTable[1217])(button, ownerId);
+        }
+
         internal static byte IsMouseDoubleClickedNative(ImGuiMouseButton button, uint ownerId)
         {
-            return ((delegate* unmanaged[Cdecl]<ImGuiMouseButton, uint, byte>)funcTable[1217])(button, ownerId);
+            return IsMouseDoubleClickedInterop((int)button, ownerId);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte ShortcutInterop(int keyChord, int flags, uint ownerId)
+        {
+            return ((delegate* unmanaged[Cdecl]<int, int, uint, byte>)funcTable[1218])(keyChord, flags, ownerId);
+        }
+
         internal static byte ShortcutNative(int keyChord, ImGuiInputFlags flags, uint ownerId)
         {
-            return ((delegate* unmanaged[Cdecl]<int, ImGuiInputFlags, uint, byte>)funcTable[1218])(keyChord, flags, ownerId);
+            return ShortcutInterop(keyChord, (int)flags, ownerId);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte SetShortcutRoutingInterop(int keyChord, int flags, uint ownerId)
+        {
+            return ((delegate* unmanaged[Cdecl]<int, int, uint, byte>)funcTable[1219])(keyChord, flags, ownerId);
+        }
+
         internal static byte SetShortcutRoutingNative(int keyChord, ImGuiInputFlags flags, uint ownerId)
         {
-            return ((delegate* unmanaged[Cdecl]<int, ImGuiInputFlags, uint, byte>)funcTable[1219])(keyChord, flags, ownerId);
+            return SetShortcutRoutingInterop(keyChord, (int)flags, ownerId);
         }
 
         /// <summary>
@@ -28471,9 +29687,14 @@ namespace Inno.Native.ImGui
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void DockContextQueueDockInterop(ImGuiContext* ctx, ImGuiWindow* target, ImGuiDockNode* targetNode, ImGuiWindow* payload, int splitDir, float splitRatio, byte splitOuter)
+        {
+            ((delegate* unmanaged[Cdecl]<ImGuiContext*, ImGuiWindow*, ImGuiDockNode*, ImGuiWindow*, int, float, byte, void>)funcTable[1230])(ctx, target, targetNode, payload, splitDir, splitRatio, splitOuter);
+        }
+
         internal static void DockContextQueueDockNative(ImGuiContext* ctx, ImGuiWindow* target, ImGuiDockNode* targetNode, ImGuiWindow* payload, ImGuiDir splitDir, float splitRatio, byte splitOuter)
         {
-            ((delegate* unmanaged[Cdecl]<ImGuiContext*, ImGuiWindow*, ImGuiDockNode*, ImGuiWindow*, ImGuiDir, float, byte, void>)funcTable[1230])(ctx, target, targetNode, payload, splitDir, splitRatio, splitOuter);
+            DockContextQueueDockInterop(ctx, target, targetNode, payload, (int)splitDir, splitRatio, splitOuter);
         }
 
         /// <summary>
@@ -28511,9 +29732,14 @@ namespace Inno.Native.ImGui
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte DockContextCalcDropPosForDockingInterop(ImGuiWindow* target, ImGuiDockNode* targetNode, ImGuiWindow* payloadWindow, ImGuiDockNode* payloadNode, int splitDir, byte splitOuter, Vector2* outPos)
+        {
+            return ((delegate* unmanaged[Cdecl]<ImGuiWindow*, ImGuiDockNode*, ImGuiWindow*, ImGuiDockNode*, int, byte, Vector2*, byte>)funcTable[1235])(target, targetNode, payloadWindow, payloadNode, splitDir, splitOuter, outPos);
+        }
+
         internal static byte DockContextCalcDropPosForDockingNative(ImGuiWindow* target, ImGuiDockNode* targetNode, ImGuiWindow* payloadWindow, ImGuiDockNode* payloadNode, ImGuiDir splitDir, byte splitOuter, Vector2* outPos)
         {
-            return ((delegate* unmanaged[Cdecl]<ImGuiWindow*, ImGuiDockNode*, ImGuiWindow*, ImGuiDockNode*, ImGuiDir, byte, Vector2*, byte>)funcTable[1235])(target, targetNode, payloadWindow, payloadNode, splitDir, splitOuter, outPos);
+            return DockContextCalcDropPosForDockingInterop(target, targetNode, payloadWindow, payloadNode, (int)splitDir, splitOuter, outPos);
         }
 
         /// <summary>
@@ -28623,9 +29849,14 @@ namespace Inno.Native.ImGui
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void SetWindowDockInterop(ImGuiWindow* window, uint dockId, int cond)
+        {
+            ((delegate* unmanaged[Cdecl]<ImGuiWindow*, uint, int, void>)funcTable[1249])(window, dockId, cond);
+        }
+
         internal static void SetWindowDockNative(ImGuiWindow* window, uint dockId, ImGuiCond cond)
         {
-            ((delegate* unmanaged[Cdecl]<ImGuiWindow*, uint, ImGuiCond, void>)funcTable[1249])(window, dockId, cond);
+            SetWindowDockInterop(window, dockId, (int)cond);
         }
 
         /// <summary>
@@ -28655,9 +29886,14 @@ namespace Inno.Native.ImGui
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static uint DockBuilderAddNodeInterop(uint nodeId, int flags)
+        {
+            return ((delegate* unmanaged[Cdecl]<uint, int, uint>)funcTable[1253])(nodeId, flags);
+        }
+
         internal static uint DockBuilderAddNodeNative(uint nodeId, ImGuiDockNodeFlags flags)
         {
-            return ((delegate* unmanaged[Cdecl]<uint, ImGuiDockNodeFlags, uint>)funcTable[1253])(nodeId, flags);
+            return DockBuilderAddNodeInterop(nodeId, (int)flags);
         }
 
         /// <summary>
@@ -28703,9 +29939,14 @@ namespace Inno.Native.ImGui
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static uint DockBuilderSplitNodeInterop(uint nodeId, int splitDir, float sizeRatioForNodeAtDir, uint* outIdAtDir, uint* outIdAtOppositeDir)
+        {
+            return ((delegate* unmanaged[Cdecl]<uint, int, float, uint*, uint*, uint>)funcTable[1259])(nodeId, splitDir, sizeRatioForNodeAtDir, outIdAtDir, outIdAtOppositeDir);
+        }
+
         internal static uint DockBuilderSplitNodeNative(uint nodeId, ImGuiDir splitDir, float sizeRatioForNodeAtDir, uint* outIdAtDir, uint* outIdAtOppositeDir)
         {
-            return ((delegate* unmanaged[Cdecl]<uint, ImGuiDir, float, uint*, uint*, uint>)funcTable[1259])(nodeId, splitDir, sizeRatioForNodeAtDir, outIdAtDir, outIdAtOppositeDir);
+            return DockBuilderSplitNodeInterop(nodeId, (int)splitDir, sizeRatioForNodeAtDir, outIdAtDir, outIdAtOppositeDir);
         }
 
         /// <summary>
@@ -28823,9 +30064,14 @@ namespace Inno.Native.ImGui
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static ImGuiTypingSelectRequest* GetTypingSelectRequestInterop(int flags)
+        {
+            return ((delegate* unmanaged[Cdecl]<int, ImGuiTypingSelectRequest*>)funcTable[1274])(flags);
+        }
+
         internal static ImGuiTypingSelectRequest* GetTypingSelectRequestNative(ImGuiTypingSelectFlags flags)
         {
-            return ((delegate* unmanaged[Cdecl]<ImGuiTypingSelectFlags, ImGuiTypingSelectRequest*>)funcTable[1274])(flags);
+            return GetTypingSelectRequestInterop((int)flags);
         }
 
         /// <summary>
@@ -28855,17 +30101,27 @@ namespace Inno.Native.ImGui
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte BeginBoxSelectInterop(ImRect scopeRect, ImGuiWindow* window, uint boxSelectId, int msFlags)
+        {
+            return ((delegate* unmanaged[Cdecl]<ImRect, ImGuiWindow*, uint, int, byte>)funcTable[1278])(scopeRect, window, boxSelectId, msFlags);
+        }
+
         internal static byte BeginBoxSelectNative(ImRect scopeRect, ImGuiWindow* window, uint boxSelectId, ImGuiMultiSelectFlags msFlags)
         {
-            return ((delegate* unmanaged[Cdecl]<ImRect, ImGuiWindow*, uint, ImGuiMultiSelectFlags, byte>)funcTable[1278])(scopeRect, window, boxSelectId, msFlags);
+            return BeginBoxSelectInterop(scopeRect, window, boxSelectId, (int)msFlags);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void EndBoxSelectInterop(ImRect scopeRect, int msFlags)
+        {
+            ((delegate* unmanaged[Cdecl]<ImRect, int, void>)funcTable[1279])(scopeRect, msFlags);
+        }
+
         internal static void EndBoxSelectNative(ImRect scopeRect, ImGuiMultiSelectFlags msFlags)
         {
-            ((delegate* unmanaged[Cdecl]<ImRect, ImGuiMultiSelectFlags, void>)funcTable[1279])(scopeRect, msFlags);
+            EndBoxSelectInterop(scopeRect, (int)msFlags);
         }
 
         /// <summary>
@@ -28927,9 +30183,14 @@ namespace Inno.Native.ImGui
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void BeginColumnsInterop(byte* strId, int count, int flags)
+        {
+            ((delegate* unmanaged[Cdecl]<byte*, int, int, void>)funcTable[1287])(strId, count, flags);
+        }
+
         internal static void BeginColumnsNative(byte* strId, int count, ImGuiOldColumnFlags flags)
         {
-            ((delegate* unmanaged[Cdecl]<byte*, int, ImGuiOldColumnFlags, void>)funcTable[1287])(strId, count, flags);
+            BeginColumnsInterop(strId, count, (int)flags);
         }
 
         /// <summary>
@@ -29015,9 +30276,14 @@ namespace Inno.Native.ImGui
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void TableSetColumnSortDirectionInterop(int columnN, int sortDirection, byte appendToSortSpecs)
+        {
+            ((delegate* unmanaged[Cdecl]<int, int, byte, void>)funcTable[1298])(columnN, sortDirection, appendToSortSpecs);
+        }
+
         internal static void TableSetColumnSortDirectionNative(int columnN, ImGuiSortDirection sortDirection, byte appendToSortSpecs)
         {
-            ((delegate* unmanaged[Cdecl]<int, ImGuiSortDirection, byte, void>)funcTable[1298])(columnN, sortDirection, appendToSortSpecs);
+            TableSetColumnSortDirectionInterop(columnN, (int)sortDirection, appendToSortSpecs);
         }
 
         /// <summary>
@@ -29103,9 +30369,14 @@ namespace Inno.Native.ImGui
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte BeginTableExInterop(byte* name, uint id, int columnsCount, int flags, Vector2 outerSize, float innerWidth)
+        {
+            return ((delegate* unmanaged[Cdecl]<byte*, uint, int, int, Vector2, float, byte>)funcTable[1309])(name, id, columnsCount, flags, outerSize, innerWidth);
+        }
+
         internal static byte BeginTableExNative(byte* name, uint id, int columnsCount, ImGuiTableFlags flags, Vector2 outerSize, float innerWidth)
         {
-            return ((delegate* unmanaged[Cdecl]<byte*, uint, int, ImGuiTableFlags, Vector2, float, byte>)funcTable[1309])(name, id, columnsCount, flags, outerSize, innerWidth);
+            return BeginTableExInterop(name, id, columnsCount, (int)flags, outerSize, innerWidth);
         }
 
         /// <summary>
@@ -29167,9 +30438,14 @@ namespace Inno.Native.ImGui
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void TableDrawDefaultContextMenuInterop(ImGuiTable* table, int flagsForSectionToDisplay)
+        {
+            ((delegate* unmanaged[Cdecl]<ImGuiTable*, int, void>)funcTable[1317])(table, flagsForSectionToDisplay);
+        }
+
         internal static void TableDrawDefaultContextMenuNative(ImGuiTable* table, ImGuiTableFlags flagsForSectionToDisplay)
         {
-            ((delegate* unmanaged[Cdecl]<ImGuiTable*, ImGuiTableFlags, void>)funcTable[1317])(table, flagsForSectionToDisplay);
+            TableDrawDefaultContextMenuInterop(table, (int)flagsForSectionToDisplay);
         }
 
         /// <summary>
@@ -29231,9 +30507,14 @@ namespace Inno.Native.ImGui
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int TableGetColumnNextSortDirectionInterop(ImGuiTableColumn* column)
+        {
+            return ((delegate* unmanaged[Cdecl]<ImGuiTableColumn*, int>)funcTable[1325])(column);
+        }
+
         internal static ImGuiSortDirection TableGetColumnNextSortDirectionNative(ImGuiTableColumn* column)
         {
-            return ((delegate* unmanaged[Cdecl]<ImGuiTableColumn*, ImGuiSortDirection>)funcTable[1325])(column);
+            return (ImGuiSortDirection)TableGetColumnNextSortDirectionInterop(column);
         }
 
         /// <summary>
@@ -29455,9 +30736,14 @@ namespace Inno.Native.ImGui
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte BeginTabBarExInterop(ImGuiTabBar* tabBar, ImRect bb, int flags)
+        {
+            return ((delegate* unmanaged[Cdecl]<ImGuiTabBar*, ImRect, int, byte>)funcTable[1353])(tabBar, bb, flags);
+        }
+
         internal static byte BeginTabBarExNative(ImGuiTabBar* tabBar, ImRect bb, ImGuiTabBarFlags flags)
         {
-            return ((delegate* unmanaged[Cdecl]<ImGuiTabBar*, ImRect, ImGuiTabBarFlags, byte>)funcTable[1353])(tabBar, bb, flags);
+            return BeginTabBarExInterop(tabBar, bb, (int)flags);
         }
 
         /// <summary>
@@ -29511,9 +30797,14 @@ namespace Inno.Native.ImGui
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void TabBarAddTabInterop(ImGuiTabBar* tabBar, int tabFlags, ImGuiWindow* window)
+        {
+            ((delegate* unmanaged[Cdecl]<ImGuiTabBar*, int, ImGuiWindow*, void>)funcTable[1360])(tabBar, tabFlags, window);
+        }
+
         internal static void TabBarAddTabNative(ImGuiTabBar* tabBar, ImGuiTabItemFlags tabFlags, ImGuiWindow* window)
         {
-            ((delegate* unmanaged[Cdecl]<ImGuiTabBar*, ImGuiTabItemFlags, ImGuiWindow*, void>)funcTable[1360])(tabBar, tabFlags, window);
+            TabBarAddTabInterop(tabBar, (int)tabFlags, window);
         }
 
         /// <summary>
@@ -29575,17 +30866,27 @@ namespace Inno.Native.ImGui
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte TabItemExInterop(ImGuiTabBar* tabBar, byte* label, byte* pOpen, int flags, ImGuiWindow* dockedWindow)
+        {
+            return ((delegate* unmanaged[Cdecl]<ImGuiTabBar*, byte*, byte*, int, ImGuiWindow*, byte>)funcTable[1368])(tabBar, label, pOpen, flags, dockedWindow);
+        }
+
         internal static byte TabItemExNative(ImGuiTabBar* tabBar, byte* label, byte* pOpen, ImGuiTabItemFlags flags, ImGuiWindow* dockedWindow)
         {
-            return ((delegate* unmanaged[Cdecl]<ImGuiTabBar*, byte*, byte*, ImGuiTabItemFlags, ImGuiWindow*, byte>)funcTable[1368])(tabBar, label, pOpen, flags, dockedWindow);
+            return TabItemExInterop(tabBar, label, pOpen, (int)flags, dockedWindow);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void TabItemSpacingInterop(byte* strId, int flags, float width)
+        {
+            ((delegate* unmanaged[Cdecl]<byte*, int, float, void>)funcTable[1369])(strId, flags, width);
+        }
+
         internal static void TabItemSpacingNative(byte* strId, ImGuiTabItemFlags flags, float width)
         {
-            ((delegate* unmanaged[Cdecl]<byte*, ImGuiTabItemFlags, float, void>)funcTable[1369])(strId, flags, width);
+            TabItemSpacingInterop(strId, (int)flags, width);
         }
 
         /// <summary>
@@ -29607,17 +30908,27 @@ namespace Inno.Native.ImGui
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void TabItemBackgroundInterop(ImDrawList* drawList, ImRect bb, int flags, uint col)
+        {
+            ((delegate* unmanaged[Cdecl]<ImDrawList*, ImRect, int, uint, void>)funcTable[1372])(drawList, bb, flags, col);
+        }
+
         internal static void TabItemBackgroundNative(ImDrawList* drawList, ImRect bb, ImGuiTabItemFlags flags, uint col)
         {
-            ((delegate* unmanaged[Cdecl]<ImDrawList*, ImRect, ImGuiTabItemFlags, uint, void>)funcTable[1372])(drawList, bb, flags, col);
+            TabItemBackgroundInterop(drawList, bb, (int)flags, col);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void TabItemLabelAndCloseButtonInterop(ImDrawList* drawList, ImRect bb, int flags, Vector2 framePadding, byte* label, uint tabId, uint closeButtonId, byte isContentsVisible, byte* outJustClosed, byte* outTextClipped)
+        {
+            ((delegate* unmanaged[Cdecl]<ImDrawList*, ImRect, int, Vector2, byte*, uint, uint, byte, byte*, byte*, void>)funcTable[1373])(drawList, bb, flags, framePadding, label, tabId, closeButtonId, isContentsVisible, outJustClosed, outTextClipped);
+        }
+
         internal static void TabItemLabelAndCloseButtonNative(ImDrawList* drawList, ImRect bb, ImGuiTabItemFlags flags, Vector2 framePadding, byte* label, uint tabId, uint closeButtonId, byte isContentsVisible, byte* outJustClosed, byte* outTextClipped)
         {
-            ((delegate* unmanaged[Cdecl]<ImDrawList*, ImRect, ImGuiTabItemFlags, Vector2, byte*, uint, uint, byte, byte*, byte*, void>)funcTable[1373])(drawList, bb, flags, framePadding, label, tabId, closeButtonId, isContentsVisible, outJustClosed, outTextClipped);
+            TabItemLabelAndCloseButtonInterop(drawList, bb, (int)flags, framePadding, label, tabId, closeButtonId, isContentsVisible, outJustClosed, outTextClipped);
         }
 
         /// <summary>
@@ -29687,17 +30998,27 @@ namespace Inno.Native.ImGui
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void RenderColorRectWithAlphaCheckerboardInterop(ImDrawList* drawList, Vector2 pMin, Vector2 pMax, uint fillCol, float gridStep, Vector2 gridOff, float rounding, int flags)
+        {
+            ((delegate* unmanaged[Cdecl]<ImDrawList*, Vector2, Vector2, uint, float, Vector2, float, int, void>)funcTable[1382])(drawList, pMin, pMax, fillCol, gridStep, gridOff, rounding, flags);
+        }
+
         internal static void RenderColorRectWithAlphaCheckerboardNative(ImDrawList* drawList, Vector2 pMin, Vector2 pMax, uint fillCol, float gridStep, Vector2 gridOff, float rounding, ImDrawFlags flags)
         {
-            ((delegate* unmanaged[Cdecl]<ImDrawList*, Vector2, Vector2, uint, float, Vector2, float, ImDrawFlags, void>)funcTable[1382])(drawList, pMin, pMax, fillCol, gridStep, gridOff, rounding, flags);
+            RenderColorRectWithAlphaCheckerboardInterop(drawList, pMin, pMax, fillCol, gridStep, gridOff, rounding, (int)flags);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void RenderNavCursorInterop(ImRect bb, uint id, int flags)
+        {
+            ((delegate* unmanaged[Cdecl]<ImRect, uint, int, void>)funcTable[1383])(bb, id, flags);
+        }
+
         internal static void RenderNavCursorNative(ImRect bb, uint id, ImGuiNavRenderCursorFlags flags)
         {
-            ((delegate* unmanaged[Cdecl]<ImRect, uint, ImGuiNavRenderCursorFlags, void>)funcTable[1383])(bb, id, flags);
+            RenderNavCursorInterop(bb, id, (int)flags);
         }
 
         /// <summary>
@@ -29711,17 +31032,27 @@ namespace Inno.Native.ImGui
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void RenderMouseCursorInterop(Vector2 pos, float scale, int mouseCursor, uint colFill, uint colBorder, uint colShadow)
+        {
+            ((delegate* unmanaged[Cdecl]<Vector2, float, int, uint, uint, uint, void>)funcTable[1385])(pos, scale, mouseCursor, colFill, colBorder, colShadow);
+        }
+
         internal static void RenderMouseCursorNative(Vector2 pos, float scale, ImGuiMouseCursor mouseCursor, uint colFill, uint colBorder, uint colShadow)
         {
-            ((delegate* unmanaged[Cdecl]<Vector2, float, ImGuiMouseCursor, uint, uint, uint, void>)funcTable[1385])(pos, scale, mouseCursor, colFill, colBorder, colShadow);
+            RenderMouseCursorInterop(pos, scale, (int)mouseCursor, colFill, colBorder, colShadow);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void RenderArrowInterop(ImDrawList* drawList, Vector2 pos, uint col, int dir, float scale)
+        {
+            ((delegate* unmanaged[Cdecl]<ImDrawList*, Vector2, uint, int, float, void>)funcTable[1386])(drawList, pos, col, dir, scale);
+        }
+
         internal static void RenderArrowNative(ImDrawList* drawList, Vector2 pos, uint col, ImGuiDir dir, float scale)
         {
-            ((delegate* unmanaged[Cdecl]<ImDrawList*, Vector2, uint, ImGuiDir, float, void>)funcTable[1386])(drawList, pos, col, dir, scale);
+            RenderArrowInterop(drawList, pos, col, (int)dir, scale);
         }
 
         /// <summary>
@@ -29743,9 +31074,14 @@ namespace Inno.Native.ImGui
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void RenderArrowPointingAtInterop(ImDrawList* drawList, Vector2 pos, Vector2 halfSz, int direction, uint col)
+        {
+            ((delegate* unmanaged[Cdecl]<ImDrawList*, Vector2, Vector2, int, uint, void>)funcTable[1389])(drawList, pos, halfSz, direction, col);
+        }
+
         internal static void RenderArrowPointingAtNative(ImDrawList* drawList, Vector2 pos, Vector2 halfSz, ImGuiDir direction, uint col)
         {
-            ((delegate* unmanaged[Cdecl]<ImDrawList*, Vector2, Vector2, ImGuiDir, uint, void>)funcTable[1389])(drawList, pos, halfSz, direction, col);
+            RenderArrowPointingAtInterop(drawList, pos, halfSz, (int)direction, col);
         }
 
         /// <summary>
@@ -29775,17 +31111,27 @@ namespace Inno.Native.ImGui
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int CalcRoundingFlagsForRectInRectInterop(ImRect rIn, ImRect rOuter, float threshold)
+        {
+            return ((delegate* unmanaged[Cdecl]<ImRect, ImRect, float, int>)funcTable[1393])(rIn, rOuter, threshold);
+        }
+
         internal static ImDrawFlags CalcRoundingFlagsForRectInRectNative(ImRect rIn, ImRect rOuter, float threshold)
         {
-            return ((delegate* unmanaged[Cdecl]<ImRect, ImRect, float, ImDrawFlags>)funcTable[1393])(rIn, rOuter, threshold);
+            return (ImDrawFlags)CalcRoundingFlagsForRectInRectInterop(rIn, rOuter, threshold);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void TextExInterop(byte* text, byte* textEnd, int flags)
+        {
+            ((delegate* unmanaged[Cdecl]<byte*, byte*, int, void>)funcTable[1394])(text, textEnd, flags);
+        }
+
         internal static void TextExNative(byte* text, byte* textEnd, ImGuiTextFlags flags)
         {
-            ((delegate* unmanaged[Cdecl]<byte*, byte*, ImGuiTextFlags, void>)funcTable[1394])(text, textEnd, flags);
+            TextExInterop(text, textEnd, (int)flags);
         }
 
         /// <summary>
@@ -29807,33 +31153,53 @@ namespace Inno.Native.ImGui
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte ButtonExInterop(byte* label, Vector2 sizeArg, int flags)
+        {
+            return ((delegate* unmanaged[Cdecl]<byte*, Vector2, int, byte>)funcTable[1397])(label, sizeArg, flags);
+        }
+
         internal static byte ButtonExNative(byte* label, Vector2 sizeArg, ImGuiButtonFlags flags)
         {
-            return ((delegate* unmanaged[Cdecl]<byte*, Vector2, ImGuiButtonFlags, byte>)funcTable[1397])(label, sizeArg, flags);
+            return ButtonExInterop(label, sizeArg, (int)flags);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte ArrowButtonExInterop(byte* strId, int dir, Vector2 sizeArg, int flags)
+        {
+            return ((delegate* unmanaged[Cdecl]<byte*, int, Vector2, int, byte>)funcTable[1398])(strId, dir, sizeArg, flags);
+        }
+
         internal static byte ArrowButtonExNative(byte* strId, ImGuiDir dir, Vector2 sizeArg, ImGuiButtonFlags flags)
         {
-            return ((delegate* unmanaged[Cdecl]<byte*, ImGuiDir, Vector2, ImGuiButtonFlags, byte>)funcTable[1398])(strId, dir, sizeArg, flags);
+            return ArrowButtonExInterop(strId, (int)dir, sizeArg, (int)flags);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte ImageButtonExInterop(uint id, ImTextureRef texRef, Vector2 imageSize, Vector2 uv0, Vector2 uv1, Vector4 bgCol, Vector4 tintCol, int flags)
+        {
+            return ((delegate* unmanaged[Cdecl]<uint, ImTextureRef, Vector2, Vector2, Vector2, Vector4, Vector4, int, byte>)funcTable[1399])(id, texRef, imageSize, uv0, uv1, bgCol, tintCol, flags);
+        }
+
         internal static byte ImageButtonExNative(uint id, ImTextureRef texRef, Vector2 imageSize, Vector2 uv0, Vector2 uv1, Vector4 bgCol, Vector4 tintCol, ImGuiButtonFlags flags)
         {
-            return ((delegate* unmanaged[Cdecl]<uint, ImTextureRef, Vector2, Vector2, Vector2, Vector4, Vector4, ImGuiButtonFlags, byte>)funcTable[1399])(id, texRef, imageSize, uv0, uv1, bgCol, tintCol, flags);
+            return ImageButtonExInterop(id, texRef, imageSize, uv0, uv1, bgCol, tintCol, (int)flags);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void SeparatorExInterop(int flags, float thickness)
+        {
+            ((delegate* unmanaged[Cdecl]<int, float, void>)funcTable[1400])(flags, thickness);
+        }
+
         internal static void SeparatorExNative(ImGuiSeparatorFlags flags, float thickness)
         {
-            ((delegate* unmanaged[Cdecl]<ImGuiSeparatorFlags, float, void>)funcTable[1400])(flags, thickness);
+            SeparatorExInterop((int)flags, thickness);
         }
 
         /// <summary>
@@ -29879,33 +31245,53 @@ namespace Inno.Native.ImGui
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void ScrollbarInterop(int axis)
+        {
+            ((delegate* unmanaged[Cdecl]<int, void>)funcTable[1406])(axis);
+        }
+
         internal static void ScrollbarNative(ImGuiAxis axis)
         {
-            ((delegate* unmanaged[Cdecl]<ImGuiAxis, void>)funcTable[1406])(axis);
+            ScrollbarInterop((int)axis);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte ScrollbarExInterop(ImRect bb, uint id, int axis, long* pScrollV, long availV, long contentsV, int drawRoundingFlags)
+        {
+            return ((delegate* unmanaged[Cdecl]<ImRect, uint, int, long*, long, long, int, byte>)funcTable[1407])(bb, id, axis, pScrollV, availV, contentsV, drawRoundingFlags);
+        }
+
         internal static byte ScrollbarExNative(ImRect bb, uint id, ImGuiAxis axis, long* pScrollV, long availV, long contentsV, ImDrawFlags drawRoundingFlags)
         {
-            return ((delegate* unmanaged[Cdecl]<ImRect, uint, ImGuiAxis, long*, long, long, ImDrawFlags, byte>)funcTable[1407])(bb, id, axis, pScrollV, availV, contentsV, drawRoundingFlags);
+            return ScrollbarExInterop(bb, id, (int)axis, pScrollV, availV, contentsV, (int)drawRoundingFlags);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static ImRect GetWindowScrollbarRectInterop(ImGuiWindow* window, int axis)
+        {
+            return ((delegate* unmanaged[Cdecl]<ImGuiWindow*, int, ImRect>)funcTable[1408])(window, axis);
+        }
+
         internal static ImRect GetWindowScrollbarRectNative(ImGuiWindow* window, ImGuiAxis axis)
         {
-            return ((delegate* unmanaged[Cdecl]<ImGuiWindow*, ImGuiAxis, ImRect>)funcTable[1408])(window, axis);
+            return GetWindowScrollbarRectInterop(window, (int)axis);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static uint GetWindowScrollbarIDInterop(ImGuiWindow* window, int axis)
+        {
+            return ((delegate* unmanaged[Cdecl]<ImGuiWindow*, int, uint>)funcTable[1409])(window, axis);
+        }
+
         internal static uint GetWindowScrollbarIDNative(ImGuiWindow* window, ImGuiAxis axis)
         {
-            return ((delegate* unmanaged[Cdecl]<ImGuiWindow*, ImGuiAxis, uint>)funcTable[1409])(window, axis);
+            return GetWindowScrollbarIDInterop(window, (int)axis);
         }
 
         /// <summary>
@@ -29919,49 +31305,79 @@ namespace Inno.Native.ImGui
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static uint GetWindowResizeBorderIDInterop(ImGuiWindow* window, int dir)
+        {
+            return ((delegate* unmanaged[Cdecl]<ImGuiWindow*, int, uint>)funcTable[1411])(window, dir);
+        }
+
         internal static uint GetWindowResizeBorderIDNative(ImGuiWindow* window, ImGuiDir dir)
         {
-            return ((delegate* unmanaged[Cdecl]<ImGuiWindow*, ImGuiDir, uint>)funcTable[1411])(window, dir);
+            return GetWindowResizeBorderIDInterop(window, (int)dir);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte ButtonBehaviorInterop(ImRect bb, uint id, byte* outHovered, byte* outHeld, int flags)
+        {
+            return ((delegate* unmanaged[Cdecl]<ImRect, uint, byte*, byte*, int, byte>)funcTable[1412])(bb, id, outHovered, outHeld, flags);
+        }
+
         internal static byte ButtonBehaviorNative(ImRect bb, uint id, byte* outHovered, byte* outHeld, ImGuiButtonFlags flags)
         {
-            return ((delegate* unmanaged[Cdecl]<ImRect, uint, byte*, byte*, ImGuiButtonFlags, byte>)funcTable[1412])(bb, id, outHovered, outHeld, flags);
+            return ButtonBehaviorInterop(bb, id, outHovered, outHeld, (int)flags);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte DragBehaviorInterop(uint id, int dataType, void* pV, float vSpeed, void* pMin, void* pMax, byte* format, int flags)
+        {
+            return ((delegate* unmanaged[Cdecl]<uint, int, void*, float, void*, void*, byte*, int, byte>)funcTable[1413])(id, dataType, pV, vSpeed, pMin, pMax, format, flags);
+        }
+
         internal static byte DragBehaviorNative(uint id, ImGuiDataType dataType, void* pV, float vSpeed, void* pMin, void* pMax, byte* format, ImGuiSliderFlags flags)
         {
-            return ((delegate* unmanaged[Cdecl]<uint, ImGuiDataType, void*, float, void*, void*, byte*, ImGuiSliderFlags, byte>)funcTable[1413])(id, dataType, pV, vSpeed, pMin, pMax, format, flags);
+            return DragBehaviorInterop(id, (int)dataType, pV, vSpeed, pMin, pMax, format, (int)flags);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte SliderBehaviorInterop(ImRect bb, uint id, int dataType, void* pV, void* pMin, void* pMax, byte* format, int flags, ImRect* outGrabBb)
+        {
+            return ((delegate* unmanaged[Cdecl]<ImRect, uint, int, void*, void*, void*, byte*, int, ImRect*, byte>)funcTable[1414])(bb, id, dataType, pV, pMin, pMax, format, flags, outGrabBb);
+        }
+
         internal static byte SliderBehaviorNative(ImRect bb, uint id, ImGuiDataType dataType, void* pV, void* pMin, void* pMax, byte* format, ImGuiSliderFlags flags, ImRect* outGrabBb)
         {
-            return ((delegate* unmanaged[Cdecl]<ImRect, uint, ImGuiDataType, void*, void*, void*, byte*, ImGuiSliderFlags, ImRect*, byte>)funcTable[1414])(bb, id, dataType, pV, pMin, pMax, format, flags, outGrabBb);
+            return SliderBehaviorInterop(bb, id, (int)dataType, pV, pMin, pMax, format, (int)flags, outGrabBb);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte SplitterBehaviorInterop(ImRect bb, uint id, int axis, float* size1, float* size2, float minsize1, float minsize2, float hoverExtend, float hoverVisibilityDelay, uint bgCol)
+        {
+            return ((delegate* unmanaged[Cdecl]<ImRect, uint, int, float*, float*, float, float, float, float, uint, byte>)funcTable[1415])(bb, id, axis, size1, size2, minsize1, minsize2, hoverExtend, hoverVisibilityDelay, bgCol);
+        }
+
         internal static byte SplitterBehaviorNative(ImRect bb, uint id, ImGuiAxis axis, float* size1, float* size2, float minsize1, float minsize2, float hoverExtend, float hoverVisibilityDelay, uint bgCol)
         {
-            return ((delegate* unmanaged[Cdecl]<ImRect, uint, ImGuiAxis, float*, float*, float, float, float, float, uint, byte>)funcTable[1415])(bb, id, axis, size1, size2, minsize1, minsize2, hoverExtend, hoverVisibilityDelay, bgCol);
+            return SplitterBehaviorInterop(bb, id, (int)axis, size1, size2, minsize1, minsize2, hoverExtend, hoverVisibilityDelay, bgCol);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte TreeNodeBehaviorInterop(uint id, int flags, byte* label, byte* labelEnd)
+        {
+            return ((delegate* unmanaged[Cdecl]<uint, int, byte*, byte*, byte>)funcTable[1416])(id, flags, label, labelEnd);
+        }
+
         internal static byte TreeNodeBehaviorNative(uint id, ImGuiTreeNodeFlags flags, byte* label, byte* labelEnd)
         {
-            return ((delegate* unmanaged[Cdecl]<uint, ImGuiTreeNodeFlags, byte*, byte*, byte>)funcTable[1416])(id, flags, label, labelEnd);
+            return TreeNodeBehaviorInterop(id, (int)flags, label, labelEnd);
         }
 
         /// <summary>
@@ -30007,73 +31423,118 @@ namespace Inno.Native.ImGui
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte TreeNodeUpdateNextOpenInterop(uint storageId, int flags)
+        {
+            return ((delegate* unmanaged[Cdecl]<uint, int, byte>)funcTable[1422])(storageId, flags);
+        }
+
         internal static byte TreeNodeUpdateNextOpenNative(uint storageId, ImGuiTreeNodeFlags flags)
         {
-            return ((delegate* unmanaged[Cdecl]<uint, ImGuiTreeNodeFlags, byte>)funcTable[1422])(storageId, flags);
+            return TreeNodeUpdateNextOpenInterop(storageId, (int)flags);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static ImGuiDataTypeInfo* DataTypeGetInfoInterop(int dataType)
+        {
+            return ((delegate* unmanaged[Cdecl]<int, ImGuiDataTypeInfo*>)funcTable[1423])(dataType);
+        }
+
         internal static ImGuiDataTypeInfo* DataTypeGetInfoNative(ImGuiDataType dataType)
         {
-            return ((delegate* unmanaged[Cdecl]<ImGuiDataType, ImGuiDataTypeInfo*>)funcTable[1423])(dataType);
+            return DataTypeGetInfoInterop((int)dataType);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int DataTypeFormatStringInterop(byte* buf, int bufSize, int dataType, void* pData, byte* format)
+        {
+            return ((delegate* unmanaged[Cdecl]<byte*, int, int, void*, byte*, int>)funcTable[1424])(buf, bufSize, dataType, pData, format);
+        }
+
         internal static int DataTypeFormatStringNative(byte* buf, int bufSize, ImGuiDataType dataType, void* pData, byte* format)
         {
-            return ((delegate* unmanaged[Cdecl]<byte*, int, ImGuiDataType, void*, byte*, int>)funcTable[1424])(buf, bufSize, dataType, pData, format);
+            return DataTypeFormatStringInterop(buf, bufSize, (int)dataType, pData, format);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void DataTypeApplyOpInterop(int dataType, int op, void* output, void* arg1, void* arg2)
+        {
+            ((delegate* unmanaged[Cdecl]<int, int, void*, void*, void*, void>)funcTable[1425])(dataType, op, output, arg1, arg2);
+        }
+
         internal static void DataTypeApplyOpNative(ImGuiDataType dataType, int op, void* output, void* arg1, void* arg2)
         {
-            ((delegate* unmanaged[Cdecl]<ImGuiDataType, int, void*, void*, void*, void>)funcTable[1425])(dataType, op, output, arg1, arg2);
+            DataTypeApplyOpInterop((int)dataType, op, output, arg1, arg2);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte DataTypeApplyFromTextInterop(byte* buf, int dataType, void* pData, byte* format, void* pDataWhenEmpty)
+        {
+            return ((delegate* unmanaged[Cdecl]<byte*, int, void*, byte*, void*, byte>)funcTable[1426])(buf, dataType, pData, format, pDataWhenEmpty);
+        }
+
         internal static byte DataTypeApplyFromTextNative(byte* buf, ImGuiDataType dataType, void* pData, byte* format, void* pDataWhenEmpty)
         {
-            return ((delegate* unmanaged[Cdecl]<byte*, ImGuiDataType, void*, byte*, void*, byte>)funcTable[1426])(buf, dataType, pData, format, pDataWhenEmpty);
+            return DataTypeApplyFromTextInterop(buf, (int)dataType, pData, format, pDataWhenEmpty);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int DataTypeCompareInterop(int dataType, void* arg1, void* arg2)
+        {
+            return ((delegate* unmanaged[Cdecl]<int, void*, void*, int>)funcTable[1427])(dataType, arg1, arg2);
+        }
+
         internal static int DataTypeCompareNative(ImGuiDataType dataType, void* arg1, void* arg2)
         {
-            return ((delegate* unmanaged[Cdecl]<ImGuiDataType, void*, void*, int>)funcTable[1427])(dataType, arg1, arg2);
+            return DataTypeCompareInterop((int)dataType, arg1, arg2);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte DataTypeClampInterop(int dataType, void* pData, void* pMin, void* pMax)
+        {
+            return ((delegate* unmanaged[Cdecl]<int, void*, void*, void*, byte>)funcTable[1428])(dataType, pData, pMin, pMax);
+        }
+
         internal static byte DataTypeClampNative(ImGuiDataType dataType, void* pData, void* pMin, void* pMax)
         {
-            return ((delegate* unmanaged[Cdecl]<ImGuiDataType, void*, void*, void*, byte>)funcTable[1428])(dataType, pData, pMin, pMax);
+            return DataTypeClampInterop((int)dataType, pData, pMin, pMax);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte DataTypeIsZeroInterop(int dataType, void* pData)
+        {
+            return ((delegate* unmanaged[Cdecl]<int, void*, byte>)funcTable[1429])(dataType, pData);
+        }
+
         internal static byte DataTypeIsZeroNative(ImGuiDataType dataType, void* pData)
         {
-            return ((delegate* unmanaged[Cdecl]<ImGuiDataType, void*, byte>)funcTable[1429])(dataType, pData);
+            return DataTypeIsZeroInterop((int)dataType, pData);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte InputTextExInterop(byte* label, byte* hint, byte* buf, int bufSize, Vector2 sizeArg, int flags, delegate* unmanaged[Cdecl]<ImGuiInputTextCallbackData*, int> callback, void* userData)
+        {
+            return ((delegate* unmanaged[Cdecl]<byte*, byte*, byte*, int, Vector2, int, delegate* unmanaged[Cdecl]<ImGuiInputTextCallbackData*, int> , void*, byte>)funcTable[1430])(label, hint, buf, bufSize, sizeArg, flags, callback, userData);
+        }
+
         internal static byte InputTextExNative(byte* label, byte* hint, byte* buf, int bufSize, Vector2 sizeArg, ImGuiInputTextFlags flags, delegate* unmanaged[Cdecl]<ImGuiInputTextCallbackData*, int> callback, void* userData)
         {
-            return ((delegate* unmanaged[Cdecl]<byte*, byte*, byte*, int, Vector2, ImGuiInputTextFlags, delegate* unmanaged[Cdecl]<ImGuiInputTextCallbackData*, int> , void*, byte>)funcTable[1430])(label, hint, buf, bufSize, sizeArg, flags, callback, userData);
+            return InputTextExInterop(label, hint, buf, bufSize, sizeArg, (int)flags, callback, userData);
         }
 
         /// <summary>
@@ -30087,17 +31548,27 @@ namespace Inno.Native.ImGui
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte TempInputTextInterop(ImRect bb, uint id, byte* label, byte* buf, int bufSize, int flags)
+        {
+            return ((delegate* unmanaged[Cdecl]<ImRect, uint, byte*, byte*, int, int, byte>)funcTable[1432])(bb, id, label, buf, bufSize, flags);
+        }
+
         internal static byte TempInputTextNative(ImRect bb, uint id, byte* label, byte* buf, int bufSize, ImGuiInputTextFlags flags)
         {
-            return ((delegate* unmanaged[Cdecl]<ImRect, uint, byte*, byte*, int, ImGuiInputTextFlags, byte>)funcTable[1432])(bb, id, label, buf, bufSize, flags);
+            return TempInputTextInterop(bb, id, label, buf, bufSize, (int)flags);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte TempInputScalarInterop(ImRect bb, uint id, byte* label, int dataType, void* pData, byte* format, void* pClampMin, void* pClampMax)
+        {
+            return ((delegate* unmanaged[Cdecl]<ImRect, uint, byte*, int, void*, byte*, void*, void*, byte>)funcTable[1433])(bb, id, label, dataType, pData, format, pClampMin, pClampMax);
+        }
+
         internal static byte TempInputScalarNative(ImRect bb, uint id, byte* label, ImGuiDataType dataType, void* pData, byte* format, void* pClampMin, void* pClampMax)
         {
-            return ((delegate* unmanaged[Cdecl]<ImRect, uint, byte*, ImGuiDataType, void*, byte*, void*, void*, byte>)funcTable[1433])(bb, id, label, dataType, pData, format, pClampMin, pClampMax);
+            return TempInputScalarInterop(bb, id, label, (int)dataType, pData, format, pClampMin, pClampMax);
         }
 
         /// <summary>
@@ -30119,9 +31590,14 @@ namespace Inno.Native.ImGui
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void SetNextItemRefValInterop(int dataType, void* pData)
+        {
+            ((delegate* unmanaged[Cdecl]<int, void*, void>)funcTable[1436])(dataType, pData);
+        }
+
         internal static void SetNextItemRefValNative(ImGuiDataType dataType, void* pData)
         {
-            ((delegate* unmanaged[Cdecl]<ImGuiDataType, void*, void>)funcTable[1436])(dataType, pData);
+            SetNextItemRefValInterop((int)dataType, pData);
         }
 
         /// <summary>
@@ -30135,25 +31611,40 @@ namespace Inno.Native.ImGui
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void ColorTooltipInterop(byte* text, float* col, int flags)
+        {
+            ((delegate* unmanaged[Cdecl]<byte*, float*, int, void>)funcTable[1438])(text, col, flags);
+        }
+
         internal static void ColorTooltipNative(byte* text, float* col, ImGuiColorEditFlags flags)
         {
-            ((delegate* unmanaged[Cdecl]<byte*, float*, ImGuiColorEditFlags, void>)funcTable[1438])(text, col, flags);
+            ColorTooltipInterop(text, col, (int)flags);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void ColorEditOptionsPopupInterop(float* col, int flags)
+        {
+            ((delegate* unmanaged[Cdecl]<float*, int, void>)funcTable[1439])(col, flags);
+        }
+
         internal static void ColorEditOptionsPopupNative(float* col, ImGuiColorEditFlags flags)
         {
-            ((delegate* unmanaged[Cdecl]<float*, ImGuiColorEditFlags, void>)funcTable[1439])(col, flags);
+            ColorEditOptionsPopupInterop(col, (int)flags);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void ColorPickerOptionsPopupInterop(float* refCol, int flags)
+        {
+            ((delegate* unmanaged[Cdecl]<float*, int, void>)funcTable[1440])(refCol, flags);
+        }
+
         internal static void ColorPickerOptionsPopupNative(float* refCol, ImGuiColorEditFlags flags)
         {
-            ((delegate* unmanaged[Cdecl]<float*, ImGuiColorEditFlags, void>)funcTable[1440])(refCol, flags);
+            ColorPickerOptionsPopupInterop(refCol, (int)flags);
         }
 
         /// <summary>
@@ -30167,9 +31658,14 @@ namespace Inno.Native.ImGui
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int PlotExInterop(int plotType, byte* label, delegate* unmanaged[Cdecl]<void*, int, float> valuesGetter, void* data, int valuesCount, int valuesOffset, byte* overlayText, float scaleMin, float scaleMax, Vector2 sizeArg)
+        {
+            return ((delegate* unmanaged[Cdecl]<int, byte*, delegate* unmanaged[Cdecl]<void*, int, float> , void*, int, int, byte*, float, float, Vector2, int>)funcTable[1442])(plotType, label, valuesGetter, data, valuesCount, valuesOffset, overlayText, scaleMin, scaleMax, sizeArg);
+        }
+
         internal static int PlotExNative(ImGuiPlotType plotType, byte* label, delegate* unmanaged[Cdecl]<void*, int, float> valuesGetter, void* data, int valuesCount, int valuesOffset, byte* overlayText, float scaleMin, float scaleMax, Vector2 sizeArg)
         {
-            return ((delegate* unmanaged[Cdecl]<ImGuiPlotType, byte*, delegate* unmanaged[Cdecl]<void*, int, float> , void*, int, int, byte*, float, float, Vector2, int>)funcTable[1442])(plotType, label, valuesGetter, data, valuesCount, valuesOffset, overlayText, scaleMin, scaleMax, sizeArg);
+            return PlotExInterop((int)plotType, label, valuesGetter, data, valuesCount, valuesOffset, overlayText, scaleMin, scaleMax, sizeArg);
         }
 
         /// <summary>
@@ -30391,9 +31887,14 @@ namespace Inno.Native.ImGui
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void DebugHookIdInfoInterop(uint id, int dataType, void* dataId, void* dataIdEnd)
+        {
+            ((delegate* unmanaged[Cdecl]<uint, int, void*, void*, void>)funcTable[1470])(id, dataType, dataId, dataIdEnd);
+        }
+
         internal static void DebugHookIdInfoNative(uint id, ImGuiDataType dataType, void* dataId, void* dataIdEnd)
         {
-            ((delegate* unmanaged[Cdecl]<uint, ImGuiDataType, void*, void*, void>)funcTable[1470])(id, dataType, dataId, dataIdEnd);
+            DebugHookIdInfoInterop(id, (int)dataType, dataId, dataIdEnd);
         }
 
         /// <summary>
@@ -30911,9 +32412,14 @@ namespace Inno.Native.ImGui
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void ImFontAtlasBakedSetFontGlyphBitmapInterop(ImFontAtlas* atlas, ImFontBaked* baked, ImFontConfig* src, ImFontGlyph* glyph, ImTextureRect* r, byte* srcPixels, int srcFmt, int srcPitch)
+        {
+            ((delegate* unmanaged[Cdecl]<ImFontAtlas*, ImFontBaked*, ImFontConfig*, ImFontGlyph*, ImTextureRect*, byte*, int, int, void>)funcTable[1535])(atlas, baked, src, glyph, r, srcPixels, srcFmt, srcPitch);
+        }
+
         internal static void ImFontAtlasBakedSetFontGlyphBitmapNative(ImFontAtlas* atlas, ImFontBaked* baked, ImFontConfig* src, ImFontGlyph* glyph, ImTextureRect* r, byte* srcPixels, ImTextureFormat srcFmt, int srcPitch)
         {
-            ((delegate* unmanaged[Cdecl]<ImFontAtlas*, ImFontBaked*, ImFontConfig*, ImFontGlyph*, ImTextureRect*, byte*, ImTextureFormat, int, void>)funcTable[1535])(atlas, baked, src, glyph, r, srcPixels, srcFmt, srcPitch);
+            ImFontAtlasBakedSetFontGlyphBitmapInterop(atlas, baked, src, glyph, r, srcPixels, (int)srcFmt, srcPitch);
         }
 
         /// <summary>
@@ -30999,9 +32505,14 @@ namespace Inno.Native.ImGui
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void ImFontAtlasTextureBlockConvertInterop(byte* srcPixels, int srcFmt, int srcPitch, byte* dstPixels, int dstFmt, int dstPitch, int w, int h)
+        {
+            ((delegate* unmanaged[Cdecl]<byte*, int, int, byte*, int, int, int, int, void>)funcTable[1546])(srcPixels, srcFmt, srcPitch, dstPixels, dstFmt, dstPitch, w, h);
+        }
+
         internal static void ImFontAtlasTextureBlockConvertNative(byte* srcPixels, ImTextureFormat srcFmt, int srcPitch, byte* dstPixels, ImTextureFormat dstFmt, int dstPitch, int w, int h)
         {
-            ((delegate* unmanaged[Cdecl]<byte*, ImTextureFormat, int, byte*, ImTextureFormat, int, int, int, void>)funcTable[1546])(srcPixels, srcFmt, srcPitch, dstPixels, dstFmt, dstPitch, w, h);
+            ImFontAtlasTextureBlockConvertInterop(srcPixels, (int)srcFmt, srcPitch, dstPixels, (int)dstFmt, dstPitch, w, h);
         }
 
         /// <summary>
@@ -31047,25 +32558,40 @@ namespace Inno.Native.ImGui
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int ImTextureDataGetFormatBytesPerPixelInterop(int format)
+        {
+            return ((delegate* unmanaged[Cdecl]<int, int>)funcTable[1552])(format);
+        }
+
         internal static int ImTextureDataGetFormatBytesPerPixelNative(ImTextureFormat format)
         {
-            return ((delegate* unmanaged[Cdecl]<ImTextureFormat, int>)funcTable[1552])(format);
+            return ImTextureDataGetFormatBytesPerPixelInterop((int)format);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte* ImTextureDataGetStatusNameInterop(int status)
+        {
+            return ((delegate* unmanaged[Cdecl]<int, byte*>)funcTable[1553])(status);
+        }
+
         internal static byte* ImTextureDataGetStatusNameNative(ImTextureStatus status)
         {
-            return ((delegate* unmanaged[Cdecl]<ImTextureStatus, byte*>)funcTable[1553])(status);
+            return ImTextureDataGetStatusNameInterop((int)status);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte* ImTextureDataGetFormatNameInterop(int format)
+        {
+            return ((delegate* unmanaged[Cdecl]<int, byte*>)funcTable[1554])(format);
+        }
+
         internal static byte* ImTextureDataGetFormatNameNative(ImTextureFormat format)
         {
-            return ((delegate* unmanaged[Cdecl]<ImTextureFormat, byte*>)funcTable[1554])(format);
+            return ImTextureDataGetFormatNameInterop((int)format);
         }
 
         /// <summary>
@@ -31079,9 +32605,14 @@ namespace Inno.Native.ImGui
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte ImFontAtlasGetMouseCursorTexDataInterop(ImFontAtlas* atlas, int cursorType, Vector2* outOffset, Vector2* outSize, Vector2* outUvBorder, Vector2* outUvFill)
+        {
+            return ((delegate* unmanaged[Cdecl]<ImFontAtlas*, int, Vector2*, Vector2*, Vector2*, Vector2*, byte>)funcTable[1556])(atlas, cursorType, outOffset, outSize, outUvBorder, outUvFill);
+        }
+
         internal static byte ImFontAtlasGetMouseCursorTexDataNative(ImFontAtlas* atlas, ImGuiMouseCursor cursorType, Vector2* outOffset, Vector2* outSize, Vector2* outUvBorder, Vector2* outUvFill)
         {
-            return ((delegate* unmanaged[Cdecl]<ImFontAtlas*, ImGuiMouseCursor, Vector2*, Vector2*, Vector2*, Vector2*, byte>)funcTable[1556])(atlas, cursorType, outOffset, outSize, outUvBorder, outUvFill);
+            return ImFontAtlasGetMouseCursorTexDataInterop(atlas, (int)cursorType, outOffset, outSize, outUvBorder, outUvFill);
         }
 
         /// <summary>
@@ -49350,9 +50881,9 @@ namespace Inno.Native.ImGui
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void* GetVarPtr(ImGuiStyleVarInfo* self, void* parent)
+        public static void* GetVarPtr(ImGuiStyleVarInfoPtr self, void* parent)
         {
-            void* ret = GetVarPtrNative(self, parent);
+            void* ret = GetVarPtrNative(self.Handle, parent);
             return ret;
         }
 
@@ -49361,7 +50892,8 @@ namespace Inno.Native.ImGui
         {
             fixed (ImGuiStyleVarInfo* p_self = &self)
             {
-                return GetVarPtrNative((ImGuiStyleVarInfo*)p_self, parent);
+                void* ret = GetVarPtrNative(p_self, parent);
+                return ret;
             }
         }
 
@@ -54821,10 +56353,10 @@ namespace Inno.Native.ImGui
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static ImGuiStyleVarInfo* GetStyleVarInfo(ImGuiStyleVar idx)
+        public static ImGuiStyleVarInfoPtr GetStyleVarInfo(ImGuiStyleVar idx)
         {
             ImGuiStyleVarInfo* ret = ImGui.GetStyleVarInfoNative(idx);
-            return ret;
+            return new ImGuiStyleVarInfoPtr(ret);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -61234,19 +62766,22 @@ namespace Inno.Native.ImGui
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int ImFontAtlasPackAddRect(ImFontAtlasPtr atlas, int w, int h, ImFontAtlasRectEntry* overwriteEntry)
+        public static int ImFontAtlasPackAddRect(ImFontAtlasPtr atlas, int w, int h, ImFontAtlasRectEntryPtr overwriteEntry)
         {
-            int ret = ImGui.ImFontAtlasPackAddRectNative(atlas.Handle, w, h, overwriteEntry);
+            int ret = ImGui.ImFontAtlasPackAddRectNative(atlas.Handle, w, h, overwriteEntry.Handle);
             return ret;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int ImFontAtlasPackAddRect(ref ImFontAtlas atlas, int w, int h, ImFontAtlasRectEntry* overwriteEntry)
+        public static int ImFontAtlasPackAddRect(ref ImFontAtlas atlas, int w, int h, ref ImFontAtlasRectEntry overwriteEntry)
         {
             fixed (ImFontAtlas* p_atlas = &atlas)
             {
-                int ret = ImGui.ImFontAtlasPackAddRectNative(p_atlas, w, h, overwriteEntry);
-                return ret;
+                fixed (ImFontAtlasRectEntry* p_overwriteEntry = &overwriteEntry)
+                {
+                    int ret = ImGui.ImFontAtlasPackAddRectNative(p_atlas, w, h, p_overwriteEntry);
+                    return ret;
+                }
             }
         }
 
@@ -61255,7 +62790,7 @@ namespace Inno.Native.ImGui
         /// </summary>
         public static int ImFontAtlasPackAddRect(ImFontAtlasPtr atlas, int w, int h)
         {
-            return ImFontAtlasPackAddRect(atlas, w, h, (ImFontAtlasRectEntry*)(default));
+            return ImFontAtlasPackAddRect(atlas, w, h, (ImFontAtlasRectEntryPtr)(default));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -66157,1582 +67692,1594 @@ namespace Inno.Native.ImGui
 
     public unsafe partial class ImGui
     {
-        internal static FunctionTable funcTable = null !;
-        public static void InitApi(INativeContext context)
+        internal static global::BGCS.Runtime.FunctionTable funcTable = null !;
+        public static void InitApi(global::BGCS.Runtime.INativeContext context)
         {
-            funcTable = new FunctionTable(context, 1565);
-            funcTable.Load(0, "ImVec2_ImVec2_Nil");
-            funcTable.Load(1, "ImVec2_destroy");
-            funcTable.Load(2, "ImVec2_ImVec2_Float");
-            funcTable.Load(3, "ImVec4_ImVec4_Nil");
-            funcTable.Load(4, "ImVec4_destroy");
-            funcTable.Load(5, "ImVec4_ImVec4_Float");
-            funcTable.Load(6, "ImTextureRef_ImTextureRef_Nil");
-            funcTable.Load(7, "ImTextureRef_destroy");
-            funcTable.Load(8, "ImTextureRef_ImTextureRef_TextureID");
-            funcTable.Load(9, "ImTextureRef_GetTexID");
-            funcTable.Load(10, "igCreateContext");
-            funcTable.Load(11, "igDestroyContext");
-            funcTable.Load(12, "igGetCurrentContext");
-            funcTable.Load(13, "igSetCurrentContext");
-            funcTable.Load(14, "igGetIO_Nil");
-            funcTable.Load(15, "igGetPlatformIO_Nil");
-            funcTable.Load(16, "igGetStyle");
-            funcTable.Load(17, "igNewFrame");
-            funcTable.Load(18, "igEndFrame");
-            funcTable.Load(19, "igRender");
-            funcTable.Load(20, "igGetDrawData");
-            funcTable.Load(21, "igShowDemoWindow");
-            funcTable.Load(22, "igShowMetricsWindow");
-            funcTable.Load(23, "igShowDebugLogWindow");
-            funcTable.Load(24, "igShowIDStackToolWindow");
-            funcTable.Load(25, "igShowAboutWindow");
-            funcTable.Load(26, "igShowStyleEditor");
-            funcTable.Load(27, "igShowStyleSelector");
-            funcTable.Load(28, "igShowFontSelector");
-            funcTable.Load(29, "igShowUserGuide");
-            funcTable.Load(30, "igGetVersion");
-            funcTable.Load(31, "igStyleColorsDark");
-            funcTable.Load(32, "igStyleColorsLight");
-            funcTable.Load(33, "igStyleColorsClassic");
-            funcTable.Load(34, "igBegin");
-            funcTable.Load(35, "igEnd");
-            funcTable.Load(36, "igBeginChild_Str");
-            funcTable.Load(37, "igBeginChild_ID");
-            funcTable.Load(38, "igEndChild");
-            funcTable.Load(39, "igIsWindowAppearing");
-            funcTable.Load(40, "igIsWindowCollapsed");
-            funcTable.Load(41, "igIsWindowFocused");
-            funcTable.Load(42, "igIsWindowHovered");
-            funcTable.Load(43, "igGetWindowDrawList");
-            funcTable.Load(44, "igGetWindowDpiScale");
-            funcTable.Load(45, "igGetWindowPos");
-            funcTable.Load(46, "igGetWindowSize");
-            funcTable.Load(47, "igGetWindowWidth");
-            funcTable.Load(48, "igGetWindowHeight");
-            funcTable.Load(49, "igGetWindowViewport");
-            funcTable.Load(50, "igSetNextWindowPos");
-            funcTable.Load(51, "igSetNextWindowSize");
-            funcTable.Load(52, "igSetNextWindowSizeConstraints");
-            funcTable.Load(53, "igSetNextWindowContentSize");
-            funcTable.Load(54, "igSetNextWindowCollapsed");
-            funcTable.Load(55, "igSetNextWindowFocus");
-            funcTable.Load(56, "igSetNextWindowScroll");
-            funcTable.Load(57, "igSetNextWindowBgAlpha");
-            funcTable.Load(58, "igSetNextWindowViewport");
-            funcTable.Load(59, "igSetWindowPos_Vec2");
-            funcTable.Load(60, "igSetWindowSize_Vec2");
-            funcTable.Load(61, "igSetWindowCollapsed_Bool");
-            funcTable.Load(62, "igSetWindowFocus_Nil");
-            funcTable.Load(63, "igSetWindowPos_Str");
-            funcTable.Load(64, "igSetWindowSize_Str");
-            funcTable.Load(65, "igSetWindowCollapsed_Str");
-            funcTable.Load(66, "igSetWindowFocus_Str");
-            funcTable.Load(67, "igGetScrollX");
-            funcTable.Load(68, "igGetScrollY");
-            funcTable.Load(69, "igSetScrollX_Float");
-            funcTable.Load(70, "igSetScrollY_Float");
-            funcTable.Load(71, "igGetScrollMaxX");
-            funcTable.Load(72, "igGetScrollMaxY");
-            funcTable.Load(73, "igSetScrollHereX");
-            funcTable.Load(74, "igSetScrollHereY");
-            funcTable.Load(75, "igSetScrollFromPosX_Float");
-            funcTable.Load(76, "igSetScrollFromPosY_Float");
-            funcTable.Load(77, "igPushFont");
-            funcTable.Load(78, "igPopFont");
-            funcTable.Load(79, "igGetFont");
-            funcTable.Load(80, "igGetFontSize");
-            funcTable.Load(81, "igGetFontBaked");
-            funcTable.Load(82, "igPushStyleColor_U32");
-            funcTable.Load(83, "igPushStyleColor_Vec4");
-            funcTable.Load(84, "igPopStyleColor");
-            funcTable.Load(85, "igPushStyleVar_Float");
-            funcTable.Load(86, "igPushStyleVar_Vec2");
-            funcTable.Load(87, "igPushStyleVarX");
-            funcTable.Load(88, "igPushStyleVarY");
-            funcTable.Load(89, "igPopStyleVar");
-            funcTable.Load(90, "igPushItemFlag");
-            funcTable.Load(91, "igPopItemFlag");
-            funcTable.Load(92, "igPushItemWidth");
-            funcTable.Load(93, "igPopItemWidth");
-            funcTable.Load(94, "igSetNextItemWidth");
-            funcTable.Load(95, "igCalcItemWidth");
-            funcTable.Load(96, "igPushTextWrapPos");
-            funcTable.Load(97, "igPopTextWrapPos");
-            funcTable.Load(98, "igGetFontTexUvWhitePixel");
-            funcTable.Load(99, "igGetColorU32_Col");
-            funcTable.Load(100, "igGetColorU32_Vec4");
-            funcTable.Load(101, "igGetColorU32_U32");
-            funcTable.Load(102, "igGetStyleColorVec4");
-            funcTable.Load(103, "igGetCursorScreenPos");
-            funcTable.Load(104, "igSetCursorScreenPos");
-            funcTable.Load(105, "igGetContentRegionAvail");
-            funcTable.Load(106, "igGetCursorPos");
-            funcTable.Load(107, "igGetCursorPosX");
-            funcTable.Load(108, "igGetCursorPosY");
-            funcTable.Load(109, "igSetCursorPos");
-            funcTable.Load(110, "igSetCursorPosX");
-            funcTable.Load(111, "igSetCursorPosY");
-            funcTable.Load(112, "igGetCursorStartPos");
-            funcTable.Load(113, "igSeparator");
-            funcTable.Load(114, "igSameLine");
-            funcTable.Load(115, "igNewLine");
-            funcTable.Load(116, "igSpacing");
-            funcTable.Load(117, "igDummy");
-            funcTable.Load(118, "igIndent");
-            funcTable.Load(119, "igUnindent");
-            funcTable.Load(120, "igBeginGroup");
-            funcTable.Load(121, "igEndGroup");
-            funcTable.Load(122, "igAlignTextToFramePadding");
-            funcTable.Load(123, "igGetTextLineHeight");
-            funcTable.Load(124, "igGetTextLineHeightWithSpacing");
-            funcTable.Load(125, "igGetFrameHeight");
-            funcTable.Load(126, "igGetFrameHeightWithSpacing");
-            funcTable.Load(127, "igPushID_Str");
-            funcTable.Load(128, "igPushID_StrStr");
-            funcTable.Load(129, "igPushID_Ptr");
-            funcTable.Load(130, "igPushID_Int");
-            funcTable.Load(131, "igPopID");
-            funcTable.Load(132, "igGetID_Str");
-            funcTable.Load(133, "igGetID_StrStr");
-            funcTable.Load(134, "igGetID_Ptr");
-            funcTable.Load(135, "igGetID_Int");
-            funcTable.Load(136, "igTextUnformatted");
-            funcTable.Load(137, "igText0");
-            funcTable.Load(138, "igTextV");
-            funcTable.Load(139, "igTextColored0");
-            funcTable.Load(140, "igTextColoredV");
-            funcTable.Load(141, "igTextDisabled0");
-            funcTable.Load(142, "igTextDisabledV");
-            funcTable.Load(143, "igTextWrapped0");
-            funcTable.Load(144, "igTextWrappedV");
-            funcTable.Load(145, "igLabelText0");
-            funcTable.Load(146, "igLabelTextV");
-            funcTable.Load(147, "igBulletText0");
-            funcTable.Load(148, "igBulletTextV");
-            funcTable.Load(149, "igSeparatorText");
-            funcTable.Load(150, "igButton");
-            funcTable.Load(151, "igSmallButton");
-            funcTable.Load(152, "igInvisibleButton");
-            funcTable.Load(153, "igArrowButton");
-            funcTable.Load(154, "igCheckbox");
-            funcTable.Load(155, "igCheckboxFlags_IntPtr");
-            funcTable.Load(156, "igCheckboxFlags_UintPtr");
-            funcTable.Load(157, "igRadioButton_Bool");
-            funcTable.Load(158, "igRadioButton_IntPtr");
-            funcTable.Load(159, "igProgressBar");
-            funcTable.Load(160, "igBullet");
-            funcTable.Load(161, "igTextLink");
-            funcTable.Load(162, "igTextLinkOpenURL");
-            funcTable.Load(163, "igImage");
-            funcTable.Load(164, "igImageWithBg");
-            funcTable.Load(165, "igImageButton");
-            funcTable.Load(166, "igBeginCombo");
-            funcTable.Load(167, "igEndCombo");
-            funcTable.Load(168, "igCombo_Str_arr");
-            funcTable.Load(169, "igCombo_Str");
-            funcTable.Load(170, "igCombo_FnStrPtr");
-            funcTable.Load(171, "igDragFloat");
-            funcTable.Load(172, "igDragFloat2");
-            funcTable.Load(173, "igDragFloat3");
-            funcTable.Load(174, "igDragFloat4");
-            funcTable.Load(175, "igDragFloatRange2");
-            funcTable.Load(176, "igDragInt");
-            funcTable.Load(177, "igDragInt2");
-            funcTable.Load(178, "igDragInt3");
-            funcTable.Load(179, "igDragInt4");
-            funcTable.Load(180, "igDragIntRange2");
-            funcTable.Load(181, "igDragScalar");
-            funcTable.Load(182, "igDragScalarN");
-            funcTable.Load(183, "igSliderFloat");
-            funcTable.Load(184, "igSliderFloat2");
-            funcTable.Load(185, "igSliderFloat3");
-            funcTable.Load(186, "igSliderFloat4");
-            funcTable.Load(187, "igSliderAngle");
-            funcTable.Load(188, "igSliderInt");
-            funcTable.Load(189, "igSliderInt2");
-            funcTable.Load(190, "igSliderInt3");
-            funcTable.Load(191, "igSliderInt4");
-            funcTable.Load(192, "igSliderScalar");
-            funcTable.Load(193, "igSliderScalarN");
-            funcTable.Load(194, "igVSliderFloat");
-            funcTable.Load(195, "igVSliderInt");
-            funcTable.Load(196, "igVSliderScalar");
-            funcTable.Load(197, "igInputText");
-            funcTable.Load(198, "igInputTextMultiline");
-            funcTable.Load(199, "igInputTextWithHint");
-            funcTable.Load(200, "igInputFloat");
-            funcTable.Load(201, "igInputFloat2");
-            funcTable.Load(202, "igInputFloat3");
-            funcTable.Load(203, "igInputFloat4");
-            funcTable.Load(204, "igInputInt");
-            funcTable.Load(205, "igInputInt2");
-            funcTable.Load(206, "igInputInt3");
-            funcTable.Load(207, "igInputInt4");
-            funcTable.Load(208, "igInputDouble");
-            funcTable.Load(209, "igInputScalar");
-            funcTable.Load(210, "igInputScalarN");
-            funcTable.Load(211, "igColorEdit3");
-            funcTable.Load(212, "igColorEdit4");
-            funcTable.Load(213, "igColorPicker3");
-            funcTable.Load(214, "igColorPicker4");
-            funcTable.Load(215, "igColorButton");
-            funcTable.Load(216, "igSetColorEditOptions");
-            funcTable.Load(217, "igTreeNode_Str");
-            funcTable.Load(218, "igTreeNode_StrStr0");
-            funcTable.Load(219, "igTreeNode_Ptr0");
-            funcTable.Load(220, "igTreeNodeV_Str");
-            funcTable.Load(221, "igTreeNodeV_Ptr");
-            funcTable.Load(222, "igTreeNodeEx_Str");
-            funcTable.Load(223, "igTreeNodeEx_StrStr0");
-            funcTable.Load(224, "igTreeNodeEx_Ptr0");
-            funcTable.Load(225, "igTreeNodeExV_Str");
-            funcTable.Load(226, "igTreeNodeExV_Ptr");
-            funcTable.Load(227, "igTreePush_Str");
-            funcTable.Load(228, "igTreePush_Ptr");
-            funcTable.Load(229, "igTreePop");
-            funcTable.Load(230, "igGetTreeNodeToLabelSpacing");
-            funcTable.Load(231, "igCollapsingHeader_TreeNodeFlags");
-            funcTable.Load(232, "igCollapsingHeader_BoolPtr");
-            funcTable.Load(233, "igSetNextItemOpen");
-            funcTable.Load(234, "igSetNextItemStorageID");
-            funcTable.Load(235, "igSelectable_Bool");
-            funcTable.Load(236, "igSelectable_BoolPtr");
-            funcTable.Load(237, "igBeginMultiSelect");
-            funcTable.Load(238, "igEndMultiSelect");
-            funcTable.Load(239, "igSetNextItemSelectionUserData");
-            funcTable.Load(240, "igIsItemToggledSelection");
-            funcTable.Load(241, "igBeginListBox");
-            funcTable.Load(242, "igEndListBox");
-            funcTable.Load(243, "igListBox_Str_arr");
-            funcTable.Load(244, "igListBox_FnStrPtr");
-            funcTable.Load(245, "igPlotLines_FloatPtr");
-            funcTable.Load(246, "igPlotLines_FnFloatPtr");
-            funcTable.Load(247, "igPlotHistogram_FloatPtr");
-            funcTable.Load(248, "igPlotHistogram_FnFloatPtr");
-            funcTable.Load(249, "igValue_Bool");
-            funcTable.Load(250, "igValue_Int");
-            funcTable.Load(251, "igValue_Uint");
-            funcTable.Load(252, "igValue_Float");
-            funcTable.Load(253, "igBeginMenuBar");
-            funcTable.Load(254, "igEndMenuBar");
-            funcTable.Load(255, "igBeginMainMenuBar");
-            funcTable.Load(256, "igEndMainMenuBar");
-            funcTable.Load(257, "igBeginMenu");
-            funcTable.Load(258, "igEndMenu");
-            funcTable.Load(259, "igMenuItem_Bool");
-            funcTable.Load(260, "igMenuItem_BoolPtr");
-            funcTable.Load(261, "igBeginTooltip");
-            funcTable.Load(262, "igEndTooltip");
-            funcTable.Load(263, "igSetTooltip0");
-            funcTable.Load(264, "igSetTooltipV");
-            funcTable.Load(265, "igBeginItemTooltip");
-            funcTable.Load(266, "igSetItemTooltip0");
-            funcTable.Load(267, "igSetItemTooltipV");
-            funcTable.Load(268, "igBeginPopup");
-            funcTable.Load(269, "igBeginPopupModal");
-            funcTable.Load(270, "igEndPopup");
-            funcTable.Load(271, "igOpenPopup_Str");
-            funcTable.Load(272, "igOpenPopup_ID");
-            funcTable.Load(273, "igOpenPopupOnItemClick");
-            funcTable.Load(274, "igCloseCurrentPopup");
-            funcTable.Load(275, "igBeginPopupContextItem");
-            funcTable.Load(276, "igBeginPopupContextWindow");
-            funcTable.Load(277, "igBeginPopupContextVoid");
-            funcTable.Load(278, "igIsPopupOpen_Str");
-            funcTable.Load(279, "igBeginTable");
-            funcTable.Load(280, "igEndTable");
-            funcTable.Load(281, "igTableNextRow");
-            funcTable.Load(282, "igTableNextColumn");
-            funcTable.Load(283, "igTableSetColumnIndex");
-            funcTable.Load(284, "igTableSetupColumn");
-            funcTable.Load(285, "igTableSetupScrollFreeze");
-            funcTable.Load(286, "igTableHeader");
-            funcTable.Load(287, "igTableHeadersRow");
-            funcTable.Load(288, "igTableAngledHeadersRow");
-            funcTable.Load(289, "igTableGetSortSpecs");
-            funcTable.Load(290, "igTableGetColumnCount");
-            funcTable.Load(291, "igTableGetColumnIndex");
-            funcTable.Load(292, "igTableGetRowIndex");
-            funcTable.Load(293, "igTableGetColumnName_Int");
-            funcTable.Load(294, "igTableGetColumnFlags");
-            funcTable.Load(295, "igTableSetColumnEnabled");
-            funcTable.Load(296, "igTableGetHoveredColumn");
-            funcTable.Load(297, "igTableSetBgColor");
-            funcTable.Load(298, "igColumns");
-            funcTable.Load(299, "igNextColumn");
-            funcTable.Load(300, "igGetColumnIndex");
-            funcTable.Load(301, "igGetColumnWidth");
-            funcTable.Load(302, "igSetColumnWidth");
-            funcTable.Load(303, "igGetColumnOffset");
-            funcTable.Load(304, "igSetColumnOffset");
-            funcTable.Load(305, "igGetColumnsCount");
-            funcTable.Load(306, "igBeginTabBar");
-            funcTable.Load(307, "igEndTabBar");
-            funcTable.Load(308, "igBeginTabItem");
-            funcTable.Load(309, "igEndTabItem");
-            funcTable.Load(310, "igTabItemButton");
-            funcTable.Load(311, "igSetTabItemClosed");
-            funcTable.Load(312, "igDockSpace");
-            funcTable.Load(313, "igDockSpaceOverViewport");
-            funcTable.Load(314, "igSetNextWindowDockID");
-            funcTable.Load(315, "igSetNextWindowClass");
-            funcTable.Load(316, "igGetWindowDockID");
-            funcTable.Load(317, "igIsWindowDocked");
-            funcTable.Load(318, "igLogToTTY");
-            funcTable.Load(319, "igLogToFile");
-            funcTable.Load(320, "igLogToClipboard");
-            funcTable.Load(321, "igLogFinish");
-            funcTable.Load(322, "igLogButtons");
-            funcTable.Load(323, "igLogText0");
-            funcTable.Load(324, "igLogTextV");
-            funcTable.Load(325, "igBeginDragDropSource");
-            funcTable.Load(326, "igSetDragDropPayload");
-            funcTable.Load(327, "igEndDragDropSource");
-            funcTable.Load(328, "igBeginDragDropTarget");
-            funcTable.Load(329, "igAcceptDragDropPayload");
-            funcTable.Load(330, "igEndDragDropTarget");
-            funcTable.Load(331, "igGetDragDropPayload");
-            funcTable.Load(332, "igBeginDisabled");
-            funcTable.Load(333, "igEndDisabled");
-            funcTable.Load(334, "igPushClipRect");
-            funcTable.Load(335, "igPopClipRect");
-            funcTable.Load(336, "igSetItemDefaultFocus");
-            funcTable.Load(337, "igSetKeyboardFocusHere");
-            funcTable.Load(338, "igSetNavCursorVisible");
-            funcTable.Load(339, "igSetNextItemAllowOverlap");
-            funcTable.Load(340, "igIsItemHovered");
-            funcTable.Load(341, "igIsItemActive");
-            funcTable.Load(342, "igIsItemFocused");
-            funcTable.Load(343, "igIsItemClicked");
-            funcTable.Load(344, "igIsItemVisible");
-            funcTable.Load(345, "igIsItemEdited");
-            funcTable.Load(346, "igIsItemActivated");
-            funcTable.Load(347, "igIsItemDeactivated");
-            funcTable.Load(348, "igIsItemDeactivatedAfterEdit");
-            funcTable.Load(349, "igIsItemToggledOpen");
-            funcTable.Load(350, "igIsAnyItemHovered");
-            funcTable.Load(351, "igIsAnyItemActive");
-            funcTable.Load(352, "igIsAnyItemFocused");
-            funcTable.Load(353, "igGetItemID");
-            funcTable.Load(354, "igGetItemRectMin");
-            funcTable.Load(355, "igGetItemRectMax");
-            funcTable.Load(356, "igGetItemRectSize");
-            funcTable.Load(357, "igGetItemFlags");
-            funcTable.Load(358, "igGetMainViewport");
-            funcTable.Load(359, "igGetBackgroundDrawList");
-            funcTable.Load(360, "igGetForegroundDrawList_ViewportPtr");
-            funcTable.Load(361, "igIsRectVisible_Nil");
-            funcTable.Load(362, "igIsRectVisible_Vec2");
-            funcTable.Load(363, "igGetTime");
-            funcTable.Load(364, "igGetFrameCount");
-            funcTable.Load(365, "igGetDrawListSharedData");
-            funcTable.Load(366, "igGetStyleColorName");
-            funcTable.Load(367, "igSetStateStorage");
-            funcTable.Load(368, "igGetStateStorage");
-            funcTable.Load(369, "igCalcTextSize");
-            funcTable.Load(370, "igColorConvertU32ToFloat4");
-            funcTable.Load(371, "igColorConvertFloat4ToU32");
-            funcTable.Load(372, "igColorConvertRGBtoHSV");
-            funcTable.Load(373, "igColorConvertHSVtoRGB");
-            funcTable.Load(374, "igIsKeyDown_Nil");
-            funcTable.Load(375, "igIsKeyPressed_Bool");
-            funcTable.Load(376, "igIsKeyReleased_Nil");
-            funcTable.Load(377, "igIsKeyChordPressed_Nil");
-            funcTable.Load(378, "igGetKeyPressedAmount");
-            funcTable.Load(379, "igGetKeyName");
-            funcTable.Load(380, "igSetNextFrameWantCaptureKeyboard");
-            funcTable.Load(381, "igShortcut_Nil");
-            funcTable.Load(382, "igSetNextItemShortcut");
-            funcTable.Load(383, "igSetItemKeyOwner_Nil");
-            funcTable.Load(384, "igIsMouseDown_Nil");
-            funcTable.Load(385, "igIsMouseClicked_Bool");
-            funcTable.Load(386, "igIsMouseReleased_Nil");
-            funcTable.Load(387, "igIsMouseDoubleClicked_Nil");
-            funcTable.Load(388, "igIsMouseReleasedWithDelay");
-            funcTable.Load(389, "igGetMouseClickedCount");
-            funcTable.Load(390, "igIsMouseHoveringRect");
-            funcTable.Load(391, "igIsMousePosValid");
-            funcTable.Load(392, "igIsAnyMouseDown");
-            funcTable.Load(393, "igGetMousePos");
-            funcTable.Load(394, "igGetMousePosOnOpeningCurrentPopup");
-            funcTable.Load(395, "igIsMouseDragging");
-            funcTable.Load(396, "igGetMouseDragDelta");
-            funcTable.Load(397, "igResetMouseDragDelta");
-            funcTable.Load(398, "igGetMouseCursor");
-            funcTable.Load(399, "igSetMouseCursor");
-            funcTable.Load(400, "igSetNextFrameWantCaptureMouse");
-            funcTable.Load(401, "igGetClipboardText");
-            funcTable.Load(402, "igSetClipboardText");
-            funcTable.Load(403, "igLoadIniSettingsFromDisk");
-            funcTable.Load(404, "igLoadIniSettingsFromMemory");
-            funcTable.Load(405, "igSaveIniSettingsToDisk");
-            funcTable.Load(406, "igSaveIniSettingsToMemory");
-            funcTable.Load(407, "igDebugTextEncoding");
-            funcTable.Load(408, "igDebugFlashStyleColor");
-            funcTable.Load(409, "igDebugStartItemPicker");
-            funcTable.Load(410, "igDebugCheckVersionAndDataLayout");
-            funcTable.Load(411, "igDebugLog0");
-            funcTable.Load(412, "igDebugLogV");
-            funcTable.Load(413, "igSetAllocatorFunctions");
-            funcTable.Load(414, "igGetAllocatorFunctions");
-            funcTable.Load(415, "igMemAlloc");
-            funcTable.Load(416, "igMemFree");
-            funcTable.Load(417, "igUpdatePlatformWindows");
-            funcTable.Load(418, "igRenderPlatformWindowsDefault");
-            funcTable.Load(419, "igDestroyPlatformWindows");
-            funcTable.Load(420, "igFindViewportByID");
-            funcTable.Load(421, "igFindViewportByPlatformHandle");
-            funcTable.Load(422, "ImGuiTableSortSpecs_ImGuiTableSortSpecs");
-            funcTable.Load(423, "ImGuiTableSortSpecs_destroy");
-            funcTable.Load(424, "ImGuiTableColumnSortSpecs_ImGuiTableColumnSortSpecs");
-            funcTable.Load(425, "ImGuiTableColumnSortSpecs_destroy");
-            funcTable.Load(426, "ImGuiStyle_ImGuiStyle");
-            funcTable.Load(427, "ImGuiStyle_destroy");
-            funcTable.Load(428, "ImGuiStyle_ScaleAllSizes");
-            funcTable.Load(429, "ImGuiIO_AddKeyEvent");
-            funcTable.Load(430, "ImGuiIO_AddKeyAnalogEvent");
-            funcTable.Load(431, "ImGuiIO_AddMousePosEvent");
-            funcTable.Load(432, "ImGuiIO_AddMouseButtonEvent");
-            funcTable.Load(433, "ImGuiIO_AddMouseWheelEvent");
-            funcTable.Load(434, "ImGuiIO_AddMouseSourceEvent");
-            funcTable.Load(435, "ImGuiIO_AddMouseViewportEvent");
-            funcTable.Load(436, "ImGuiIO_AddFocusEvent");
-            funcTable.Load(437, "ImGuiIO_AddInputCharacter");
-            funcTable.Load(438, "ImGuiIO_AddInputCharacterUTF16");
-            funcTable.Load(439, "ImGuiIO_AddInputCharactersUTF8");
-            funcTable.Load(440, "ImGuiIO_SetKeyEventNativeData");
-            funcTable.Load(441, "ImGuiIO_SetAppAcceptingEvents");
-            funcTable.Load(442, "ImGuiIO_ClearEventsQueue");
-            funcTable.Load(443, "ImGuiIO_ClearInputKeys");
-            funcTable.Load(444, "ImGuiIO_ClearInputMouse");
-            funcTable.Load(445, "ImGuiIO_ImGuiIO");
-            funcTable.Load(446, "ImGuiIO_destroy");
-            funcTable.Load(447, "ImGuiInputTextCallbackData_ImGuiInputTextCallbackData");
-            funcTable.Load(448, "ImGuiInputTextCallbackData_destroy");
-            funcTable.Load(449, "ImGuiInputTextCallbackData_DeleteChars");
-            funcTable.Load(450, "ImGuiInputTextCallbackData_InsertChars");
-            funcTable.Load(451, "ImGuiInputTextCallbackData_SelectAll");
-            funcTable.Load(452, "ImGuiInputTextCallbackData_SetSelection");
-            funcTable.Load(453, "ImGuiInputTextCallbackData_ClearSelection");
-            funcTable.Load(454, "ImGuiInputTextCallbackData_HasSelection");
-            funcTable.Load(455, "ImGuiWindowClass_ImGuiWindowClass");
-            funcTable.Load(456, "ImGuiWindowClass_destroy");
-            funcTable.Load(457, "ImGuiPayload_ImGuiPayload");
-            funcTable.Load(458, "ImGuiPayload_destroy");
-            funcTable.Load(459, "ImGuiPayload_Clear");
-            funcTable.Load(460, "ImGuiPayload_IsDataType");
-            funcTable.Load(461, "ImGuiPayload_IsPreview");
-            funcTable.Load(462, "ImGuiPayload_IsDelivery");
-            funcTable.Load(463, "ImGuiOnceUponAFrame_ImGuiOnceUponAFrame");
-            funcTable.Load(464, "ImGuiOnceUponAFrame_destroy");
-            funcTable.Load(465, "ImGuiTextFilter_ImGuiTextFilter");
-            funcTable.Load(466, "ImGuiTextFilter_destroy");
-            funcTable.Load(467, "ImGuiTextFilter_Draw");
-            funcTable.Load(468, "ImGuiTextFilter_PassFilter");
-            funcTable.Load(469, "ImGuiTextFilter_Build");
-            funcTable.Load(470, "ImGuiTextFilter_Clear");
-            funcTable.Load(471, "ImGuiTextFilter_IsActive");
-            funcTable.Load(472, "ImGuiTextRange_ImGuiTextRange_Nil");
-            funcTable.Load(473, "ImGuiTextRange_destroy");
-            funcTable.Load(474, "ImGuiTextRange_ImGuiTextRange_Str");
-            funcTable.Load(475, "ImGuiTextRange_empty");
-            funcTable.Load(476, "ImGuiTextRange_split");
-            funcTable.Load(477, "ImGuiTextBuffer_ImGuiTextBuffer");
-            funcTable.Load(478, "ImGuiTextBuffer_destroy");
-            funcTable.Load(479, "ImGuiTextBuffer_begin");
-            funcTable.Load(480, "ImGuiTextBuffer_end");
-            funcTable.Load(481, "ImGuiTextBuffer_size");
-            funcTable.Load(482, "ImGuiTextBuffer_empty");
-            funcTable.Load(483, "ImGuiTextBuffer_clear");
-            funcTable.Load(484, "ImGuiTextBuffer_resize");
-            funcTable.Load(485, "ImGuiTextBuffer_reserve");
-            funcTable.Load(486, "ImGuiTextBuffer_c_str");
-            funcTable.Load(487, "ImGuiTextBuffer_append");
-            funcTable.Load(488, "ImGuiTextBuffer_appendfv");
-            funcTable.Load(489, "ImGuiStoragePair_ImGuiStoragePair_Int");
-            funcTable.Load(490, "ImGuiStoragePair_destroy");
-            funcTable.Load(491, "ImGuiStoragePair_ImGuiStoragePair_Float");
-            funcTable.Load(492, "ImGuiStoragePair_ImGuiStoragePair_Ptr");
-            funcTable.Load(493, "ImGuiStorage_Clear");
-            funcTable.Load(494, "ImGuiStorage_GetInt");
-            funcTable.Load(495, "ImGuiStorage_SetInt");
-            funcTable.Load(496, "ImGuiStorage_GetBool");
-            funcTable.Load(497, "ImGuiStorage_SetBool");
-            funcTable.Load(498, "ImGuiStorage_GetFloat");
-            funcTable.Load(499, "ImGuiStorage_SetFloat");
-            funcTable.Load(500, "ImGuiStorage_GetVoidPtr");
-            funcTable.Load(501, "ImGuiStorage_SetVoidPtr");
-            funcTable.Load(502, "ImGuiStorage_GetIntRef");
-            funcTable.Load(503, "ImGuiStorage_GetBoolRef");
-            funcTable.Load(504, "ImGuiStorage_GetFloatRef");
-            funcTable.Load(505, "ImGuiStorage_GetVoidPtrRef");
-            funcTable.Load(506, "ImGuiStorage_BuildSortByKey");
-            funcTable.Load(507, "ImGuiStorage_SetAllInt");
-            funcTable.Load(508, "ImGuiListClipper_ImGuiListClipper");
-            funcTable.Load(509, "ImGuiListClipper_destroy");
-            funcTable.Load(510, "ImGuiListClipper_Begin");
-            funcTable.Load(511, "ImGuiListClipper_End");
-            funcTable.Load(512, "ImGuiListClipper_Step");
-            funcTable.Load(513, "ImGuiListClipper_IncludeItemByIndex");
-            funcTable.Load(514, "ImGuiListClipper_IncludeItemsByIndex");
-            funcTable.Load(515, "ImGuiListClipper_SeekCursorForItem");
-            funcTable.Load(516, "ImColor_ImColor_Nil");
-            funcTable.Load(517, "ImColor_destroy");
-            funcTable.Load(518, "ImColor_ImColor_Float");
-            funcTable.Load(519, "ImColor_ImColor_Vec4");
-            funcTable.Load(520, "ImColor_ImColor_Int");
-            funcTable.Load(521, "ImColor_ImColor_U32");
-            funcTable.Load(522, "ImColor_SetHSV");
-            funcTable.Load(523, "ImColor_HSV");
-            funcTable.Load(524, "ImGuiSelectionBasicStorage_ImGuiSelectionBasicStorage");
-            funcTable.Load(525, "ImGuiSelectionBasicStorage_destroy");
-            funcTable.Load(526, "ImGuiSelectionBasicStorage_ApplyRequests");
-            funcTable.Load(527, "ImGuiSelectionBasicStorage_Contains");
-            funcTable.Load(528, "ImGuiSelectionBasicStorage_Clear");
-            funcTable.Load(529, "ImGuiSelectionBasicStorage_Swap");
-            funcTable.Load(530, "ImGuiSelectionBasicStorage_SetItemSelected");
-            funcTable.Load(531, "ImGuiSelectionBasicStorage_GetNextSelectedItem");
-            funcTable.Load(532, "ImGuiSelectionBasicStorage_GetStorageIdFromIndex");
-            funcTable.Load(533, "ImGuiSelectionExternalStorage_ImGuiSelectionExternalStorage");
-            funcTable.Load(534, "ImGuiSelectionExternalStorage_destroy");
-            funcTable.Load(535, "ImGuiSelectionExternalStorage_ApplyRequests");
-            funcTable.Load(536, "ImDrawCmd_ImDrawCmd");
-            funcTable.Load(537, "ImDrawCmd_destroy");
-            funcTable.Load(538, "ImDrawCmd_GetTexID");
-            funcTable.Load(539, "ImDrawListSplitter_ImDrawListSplitter");
-            funcTable.Load(540, "ImDrawListSplitter_destroy");
-            funcTable.Load(541, "ImDrawListSplitter_Clear");
-            funcTable.Load(542, "ImDrawListSplitter_ClearFreeMemory");
-            funcTable.Load(543, "ImDrawListSplitter_Split");
-            funcTable.Load(544, "ImDrawListSplitter_Merge");
-            funcTable.Load(545, "ImDrawListSplitter_SetCurrentChannel");
-            funcTable.Load(546, "ImDrawList_ImDrawList");
-            funcTable.Load(547, "ImDrawList_destroy");
-            funcTable.Load(548, "ImDrawList_PushClipRect");
-            funcTable.Load(549, "ImDrawList_PushClipRectFullScreen");
-            funcTable.Load(550, "ImDrawList_PopClipRect");
-            funcTable.Load(551, "ImDrawList_PushTexture");
-            funcTable.Load(552, "ImDrawList_PopTexture");
-            funcTable.Load(553, "ImDrawList_GetClipRectMin");
-            funcTable.Load(554, "ImDrawList_GetClipRectMax");
-            funcTable.Load(555, "ImDrawList_AddLine");
-            funcTable.Load(556, "ImDrawList_AddRect");
-            funcTable.Load(557, "ImDrawList_AddRectFilled");
-            funcTable.Load(558, "ImDrawList_AddRectFilledMultiColor");
-            funcTable.Load(559, "ImDrawList_AddQuad");
-            funcTable.Load(560, "ImDrawList_AddQuadFilled");
-            funcTable.Load(561, "ImDrawList_AddTriangle");
-            funcTable.Load(562, "ImDrawList_AddTriangleFilled");
-            funcTable.Load(563, "ImDrawList_AddCircle");
-            funcTable.Load(564, "ImDrawList_AddCircleFilled");
-            funcTable.Load(565, "ImDrawList_AddNgon");
-            funcTable.Load(566, "ImDrawList_AddNgonFilled");
-            funcTable.Load(567, "ImDrawList_AddEllipse");
-            funcTable.Load(568, "ImDrawList_AddEllipseFilled");
-            funcTable.Load(569, "ImDrawList_AddText_Vec2");
-            funcTable.Load(570, "ImDrawList_AddText_FontPtr");
-            funcTable.Load(571, "ImDrawList_AddBezierCubic");
-            funcTable.Load(572, "ImDrawList_AddBezierQuadratic");
-            funcTable.Load(573, "ImDrawList_AddPolyline");
-            funcTable.Load(574, "ImDrawList_AddConvexPolyFilled");
-            funcTable.Load(575, "ImDrawList_AddConcavePolyFilled");
-            funcTable.Load(576, "ImDrawList_AddImage");
-            funcTable.Load(577, "ImDrawList_AddImageQuad");
-            funcTable.Load(578, "ImDrawList_AddImageRounded");
-            funcTable.Load(579, "ImDrawList_PathClear");
-            funcTable.Load(580, "ImDrawList_PathLineTo");
-            funcTable.Load(581, "ImDrawList_PathLineToMergeDuplicate");
-            funcTable.Load(582, "ImDrawList_PathFillConvex");
-            funcTable.Load(583, "ImDrawList_PathFillConcave");
-            funcTable.Load(584, "ImDrawList_PathStroke");
-            funcTable.Load(585, "ImDrawList_PathArcTo");
-            funcTable.Load(586, "ImDrawList_PathArcToFast");
-            funcTable.Load(587, "ImDrawList_PathEllipticalArcTo");
-            funcTable.Load(588, "ImDrawList_PathBezierCubicCurveTo");
-            funcTable.Load(589, "ImDrawList_PathBezierQuadraticCurveTo");
-            funcTable.Load(590, "ImDrawList_PathRect");
-            funcTable.Load(591, "ImDrawList_AddCallback");
-            funcTable.Load(592, "ImDrawList_AddDrawCmd");
-            funcTable.Load(593, "ImDrawList_CloneOutput");
-            funcTable.Load(594, "ImDrawList_ChannelsSplit");
-            funcTable.Load(595, "ImDrawList_ChannelsMerge");
-            funcTable.Load(596, "ImDrawList_ChannelsSetCurrent");
-            funcTable.Load(597, "ImDrawList_PrimReserve");
-            funcTable.Load(598, "ImDrawList_PrimUnreserve");
-            funcTable.Load(599, "ImDrawList_PrimRect");
-            funcTable.Load(600, "ImDrawList_PrimRectUV");
-            funcTable.Load(601, "ImDrawList_PrimQuadUV");
-            funcTable.Load(602, "ImDrawList_PrimWriteVtx");
-            funcTable.Load(603, "ImDrawList_PrimWriteIdx");
-            funcTable.Load(604, "ImDrawList_PrimVtx");
-            funcTable.Load(605, "ImDrawList__SetDrawListSharedData");
-            funcTable.Load(606, "ImDrawList__ResetForNewFrame");
-            funcTable.Load(607, "ImDrawList__ClearFreeMemory");
-            funcTable.Load(608, "ImDrawList__PopUnusedDrawCmd");
-            funcTable.Load(609, "ImDrawList__TryMergeDrawCmds");
-            funcTable.Load(610, "ImDrawList__OnChangedClipRect");
-            funcTable.Load(611, "ImDrawList__OnChangedTexture");
-            funcTable.Load(612, "ImDrawList__OnChangedVtxOffset");
-            funcTable.Load(613, "ImDrawList__SetTexture");
-            funcTable.Load(614, "ImDrawList__CalcCircleAutoSegmentCount");
-            funcTable.Load(615, "ImDrawList__PathArcToFastEx");
-            funcTable.Load(616, "ImDrawList__PathArcToN");
-            funcTable.Load(617, "ImDrawData_ImDrawData");
-            funcTable.Load(618, "ImDrawData_destroy");
-            funcTable.Load(619, "ImDrawData_Clear");
-            funcTable.Load(620, "ImDrawData_AddDrawList");
-            funcTable.Load(621, "ImDrawData_DeIndexAllBuffers");
-            funcTable.Load(622, "ImDrawData_ScaleClipRects");
-            funcTable.Load(623, "ImTextureData_ImTextureData");
-            funcTable.Load(624, "ImTextureData_destroy");
-            funcTable.Load(625, "ImTextureData_Create");
-            funcTable.Load(626, "ImTextureData_DestroyPixels");
-            funcTable.Load(627, "ImTextureData_GetPixels");
-            funcTable.Load(628, "ImTextureData_GetPixelsAt");
-            funcTable.Load(629, "ImTextureData_GetSizeInBytes");
-            funcTable.Load(630, "ImTextureData_GetPitch");
-            funcTable.Load(631, "ImTextureData_GetTexRef");
-            funcTable.Load(632, "ImTextureData_GetTexID");
-            funcTable.Load(633, "ImTextureData_SetTexID");
-            funcTable.Load(634, "ImTextureData_SetStatus");
-            funcTable.Load(635, "ImFontConfig_ImFontConfig");
-            funcTable.Load(636, "ImFontConfig_destroy");
-            funcTable.Load(637, "ImFontGlyph_ImFontGlyph");
-            funcTable.Load(638, "ImFontGlyph_destroy");
-            funcTable.Load(639, "ImFontGlyphRangesBuilder_ImFontGlyphRangesBuilder");
-            funcTable.Load(640, "ImFontGlyphRangesBuilder_destroy");
-            funcTable.Load(641, "ImFontGlyphRangesBuilder_Clear");
-            funcTable.Load(642, "ImFontGlyphRangesBuilder_GetBit");
-            funcTable.Load(643, "ImFontGlyphRangesBuilder_SetBit");
-            funcTable.Load(644, "ImFontGlyphRangesBuilder_AddChar");
-            funcTable.Load(645, "ImFontGlyphRangesBuilder_AddText");
-            funcTable.Load(646, "ImFontGlyphRangesBuilder_AddRanges");
-            funcTable.Load(647, "ImFontGlyphRangesBuilder_BuildRanges");
-            funcTable.Load(648, "ImFontAtlasRect_ImFontAtlasRect");
-            funcTable.Load(649, "ImFontAtlasRect_destroy");
-            funcTable.Load(650, "ImFontAtlas_ImFontAtlas");
-            funcTable.Load(651, "ImFontAtlas_destroy");
-            funcTable.Load(652, "ImFontAtlas_AddFont");
-            funcTable.Load(653, "ImFontAtlas_AddFontDefault");
-            funcTable.Load(654, "ImFontAtlas_AddFontDefaultVector");
-            funcTable.Load(655, "ImFontAtlas_AddFontDefaultBitmap");
-            funcTable.Load(656, "ImFontAtlas_AddFontFromFileTTF");
-            funcTable.Load(657, "ImFontAtlas_AddFontFromMemoryTTF");
-            funcTable.Load(658, "ImFontAtlas_AddFontFromMemoryCompressedTTF");
-            funcTable.Load(659, "ImFontAtlas_AddFontFromMemoryCompressedBase85TTF");
-            funcTable.Load(660, "ImFontAtlas_RemoveFont");
-            funcTable.Load(661, "ImFontAtlas_Clear");
-            funcTable.Load(662, "ImFontAtlas_CompactCache");
-            funcTable.Load(663, "ImFontAtlas_SetFontLoader");
-            funcTable.Load(664, "ImFontAtlas_ClearInputData");
-            funcTable.Load(665, "ImFontAtlas_ClearFonts");
-            funcTable.Load(666, "ImFontAtlas_ClearTexData");
-            funcTable.Load(667, "ImFontAtlas_GetGlyphRangesDefault");
-            funcTable.Load(668, "ImFontAtlas_AddCustomRect");
-            funcTable.Load(669, "ImFontAtlas_RemoveCustomRect");
-            funcTable.Load(670, "ImFontAtlas_GetCustomRect");
-            funcTable.Load(671, "ImFontBaked_ImFontBaked");
-            funcTable.Load(672, "ImFontBaked_destroy");
-            funcTable.Load(673, "ImFontBaked_ClearOutputData");
-            funcTable.Load(674, "ImFontBaked_FindGlyph");
-            funcTable.Load(675, "ImFontBaked_FindGlyphNoFallback");
-            funcTable.Load(676, "ImFontBaked_GetCharAdvance");
-            funcTable.Load(677, "ImFontBaked_IsGlyphLoaded");
-            funcTable.Load(678, "ImFont_ImFont");
-            funcTable.Load(679, "ImFont_destroy");
-            funcTable.Load(680, "ImFont_IsGlyphInFont");
-            funcTable.Load(681, "ImFont_IsLoaded");
-            funcTable.Load(682, "ImFont_GetDebugName");
-            funcTable.Load(683, "ImFont_GetFontBaked");
-            funcTable.Load(684, "ImFont_CalcTextSizeA");
-            funcTable.Load(685, "ImFont_CalcWordWrapPosition");
-            funcTable.Load(686, "ImFont_RenderChar");
-            funcTable.Load(687, "ImFont_RenderText");
-            funcTable.Load(688, "ImFont_ClearOutputData");
-            funcTable.Load(689, "ImFont_AddRemapChar");
-            funcTable.Load(690, "ImFont_IsGlyphRangeUnused");
-            funcTable.Load(691, "ImGuiViewport_ImGuiViewport");
-            funcTable.Load(692, "ImGuiViewport_destroy");
-            funcTable.Load(693, "ImGuiViewport_GetCenter");
-            funcTable.Load(694, "ImGuiViewport_GetWorkCenter");
-            funcTable.Load(695, "ImGuiPlatformIO_ImGuiPlatformIO");
-            funcTable.Load(696, "ImGuiPlatformIO_destroy");
-            funcTable.Load(697, "ImGuiPlatformIO_ClearPlatformHandlers");
-            funcTable.Load(698, "ImGuiPlatformIO_ClearRendererHandlers");
-            funcTable.Load(699, "ImGuiPlatformMonitor_ImGuiPlatformMonitor");
-            funcTable.Load(700, "ImGuiPlatformMonitor_destroy");
-            funcTable.Load(701, "ImGuiPlatformImeData_ImGuiPlatformImeData");
-            funcTable.Load(702, "ImGuiPlatformImeData_destroy");
-            funcTable.Load(703, "igImHashData");
-            funcTable.Load(704, "igImHashStr");
-            funcTable.Load(705, "igImHashSkipUncontributingPrefix");
-            funcTable.Load(706, "igImQsort");
-            funcTable.Load(707, "igImAlphaBlendColors");
-            funcTable.Load(708, "igImIsPowerOfTwo_Int");
-            funcTable.Load(709, "igImIsPowerOfTwo_U64");
-            funcTable.Load(710, "igImUpperPowerOfTwo");
-            funcTable.Load(711, "igImCountSetBits");
-            funcTable.Load(712, "igImStricmp");
-            funcTable.Load(713, "igImStrnicmp");
-            funcTable.Load(714, "igImStrncpy");
-            funcTable.Load(715, "igImStrdup");
-            funcTable.Load(716, "igImMemdup");
-            funcTable.Load(717, "igImStrdupcpy");
-            funcTable.Load(718, "igImStrchrRange");
-            funcTable.Load(719, "igImStreolRange");
-            funcTable.Load(720, "igImStristr");
-            funcTable.Load(721, "igImStrTrimBlanks");
-            funcTable.Load(722, "igImStrSkipBlank");
-            funcTable.Load(723, "igImStrlenW");
-            funcTable.Load(724, "igImStrbol");
-            funcTable.Load(725, "igImToUpper");
-            funcTable.Load(726, "igImCharIsBlankA");
-            funcTable.Load(727, "igImCharIsBlankW");
-            funcTable.Load(728, "igImCharIsXdigitA");
-            funcTable.Load(729, "igImFormatString0");
-            funcTable.Load(730, "igImFormatStringV");
-            funcTable.Load(731, "igImFormatStringToTempBuffer0");
-            funcTable.Load(732, "igImFormatStringToTempBufferV");
-            funcTable.Load(733, "igImParseFormatFindStart");
-            funcTable.Load(734, "igImParseFormatFindEnd");
-            funcTable.Load(735, "igImParseFormatTrimDecorations");
-            funcTable.Load(736, "igImParseFormatSanitizeForPrinting");
-            funcTable.Load(737, "igImParseFormatSanitizeForScanning");
-            funcTable.Load(738, "igImParseFormatPrecision");
-            funcTable.Load(739, "igImTextCharToUtf8");
-            funcTable.Load(740, "igImTextStrToUtf8");
-            funcTable.Load(741, "igImTextCharFromUtf8");
-            funcTable.Load(742, "igImTextStrFromUtf8");
-            funcTable.Load(743, "igImTextCountCharsFromUtf8");
-            funcTable.Load(744, "igImTextCountUtf8BytesFromChar");
-            funcTable.Load(745, "igImTextCountUtf8BytesFromStr");
-            funcTable.Load(746, "igImTextFindPreviousUtf8Codepoint");
-            funcTable.Load(747, "igImTextFindValidUtf8CodepointEnd");
-            funcTable.Load(748, "igImTextCountLines");
-            funcTable.Load(749, "igImFontCalcTextSizeEx");
-            funcTable.Load(750, "igImFontCalcWordWrapPositionEx");
-            funcTable.Load(751, "igImTextCalcWordWrapNextLineStart");
-            funcTable.Load(752, "igImTextInitClassifiers");
-            funcTable.Load(753, "igImTextClassifierClear");
-            funcTable.Load(754, "igImTextClassifierSetCharClass");
-            funcTable.Load(755, "igImTextClassifierSetCharClassFromStr");
-            funcTable.Load(756, "igImFileOpen");
-            funcTable.Load(757, "igImFileClose");
-            funcTable.Load(758, "igImFileGetSize");
-            funcTable.Load(759, "igImFileRead");
-            funcTable.Load(760, "igImFileWrite");
-            funcTable.Load(761, "igImFileLoadToMemory");
-            funcTable.Load(762, "igImPow_Float");
-            funcTable.Load(763, "igImPow_double");
-            funcTable.Load(764, "igImLog_Float");
-            funcTable.Load(765, "igImLog_double");
-            funcTable.Load(766, "igImAbs_Int");
-            funcTable.Load(767, "igImAbs_Float");
-            funcTable.Load(768, "igImAbs_double");
-            funcTable.Load(769, "igImSign_Float");
-            funcTable.Load(770, "igImSign_double");
-            funcTable.Load(771, "igImRsqrt_Float");
-            funcTable.Load(772, "igImRsqrt_double");
-            funcTable.Load(773, "igImMin");
-            funcTable.Load(774, "igImMax");
-            funcTable.Load(775, "igImClamp");
-            funcTable.Load(776, "igImLerp_Vec2Float");
-            funcTable.Load(777, "igImLerp_Vec2Vec2");
-            funcTable.Load(778, "igImLerp_Vec4");
-            funcTable.Load(779, "igImSaturate");
-            funcTable.Load(780, "igImLengthSqr_Vec2");
-            funcTable.Load(781, "igImLengthSqr_Vec4");
-            funcTable.Load(782, "igImInvLength");
-            funcTable.Load(783, "igImTrunc_Float");
-            funcTable.Load(784, "igImTrunc_Vec2");
-            funcTable.Load(785, "igImFloor_Float");
-            funcTable.Load(786, "igImFloor_Vec2");
-            funcTable.Load(787, "igImTrunc64");
-            funcTable.Load(788, "igImRound64");
-            funcTable.Load(789, "igImModPositive");
-            funcTable.Load(790, "igImDot");
-            funcTable.Load(791, "igImRotate");
-            funcTable.Load(792, "igImLinearSweep");
-            funcTable.Load(793, "igImLinearRemapClamp");
-            funcTable.Load(794, "igImMul");
-            funcTable.Load(795, "igImIsFloatAboveGuaranteedIntegerPrecision");
-            funcTable.Load(796, "igImExponentialMovingAverage");
-            funcTable.Load(797, "igImBezierCubicCalc");
-            funcTable.Load(798, "igImBezierCubicClosestPoint");
-            funcTable.Load(799, "igImBezierCubicClosestPointCasteljau");
-            funcTable.Load(800, "igImBezierQuadraticCalc");
-            funcTable.Load(801, "igImLineClosestPoint");
-            funcTable.Load(802, "igImTriangleContainsPoint");
-            funcTable.Load(803, "igImTriangleClosestPoint");
-            funcTable.Load(804, "igImTriangleBarycentricCoords");
-            funcTable.Load(805, "igImTriangleArea");
-            funcTable.Load(806, "igImTriangleIsClockwise");
-            funcTable.Load(807, "ImVec1_ImVec1_Nil");
-            funcTable.Load(808, "ImVec1_destroy");
-            funcTable.Load(809, "ImVec1_ImVec1_Float");
-            funcTable.Load(810, "ImVec2i_ImVec2i_Nil");
-            funcTable.Load(811, "ImVec2i_destroy");
-            funcTable.Load(812, "ImVec2i_ImVec2i_Int");
-            funcTable.Load(813, "ImVec2ih_ImVec2ih_Nil");
-            funcTable.Load(814, "ImVec2ih_destroy");
-            funcTable.Load(815, "ImVec2ih_ImVec2ih_short");
-            funcTable.Load(816, "ImVec2ih_ImVec2ih_Vec2");
-            funcTable.Load(817, "ImRect_ImRect_Nil");
-            funcTable.Load(818, "ImRect_destroy");
-            funcTable.Load(819, "ImRect_ImRect_Vec2");
-            funcTable.Load(820, "ImRect_ImRect_Vec4");
-            funcTable.Load(821, "ImRect_ImRect_Float");
-            funcTable.Load(822, "ImRect_GetCenter");
-            funcTable.Load(823, "ImRect_GetSize");
-            funcTable.Load(824, "ImRect_GetWidth");
-            funcTable.Load(825, "ImRect_GetHeight");
-            funcTable.Load(826, "ImRect_GetArea");
-            funcTable.Load(827, "ImRect_GetTL");
-            funcTable.Load(828, "ImRect_GetTR");
-            funcTable.Load(829, "ImRect_GetBL");
-            funcTable.Load(830, "ImRect_GetBR");
-            funcTable.Load(831, "ImRect_Contains_Vec2");
-            funcTable.Load(832, "ImRect_Contains_Rect");
-            funcTable.Load(833, "ImRect_ContainsWithPad");
-            funcTable.Load(834, "ImRect_Overlaps");
-            funcTable.Load(835, "ImRect_Add_Vec2");
-            funcTable.Load(836, "ImRect_Add_Rect");
-            funcTable.Load(837, "ImRect_Expand_Float");
-            funcTable.Load(838, "ImRect_Expand_Vec2");
-            funcTable.Load(839, "ImRect_Translate");
-            funcTable.Load(840, "ImRect_TranslateX");
-            funcTable.Load(841, "ImRect_TranslateY");
-            funcTable.Load(842, "ImRect_ClipWith");
-            funcTable.Load(843, "ImRect_ClipWithFull");
-            funcTable.Load(844, "ImRect_IsInverted");
-            funcTable.Load(845, "ImRect_ToVec4");
-            funcTable.Load(846, "ImRect_AsVec4");
-            funcTable.Load(847, "igImBitArrayGetStorageSizeInBytes");
-            funcTable.Load(848, "igImBitArrayClearAllBits");
-            funcTable.Load(849, "igImBitArrayTestBit");
-            funcTable.Load(850, "igImBitArrayClearBit");
-            funcTable.Load(851, "igImBitArraySetBit");
-            funcTable.Load(852, "igImBitArraySetBitRange");
-            funcTable.Load(853, "ImBitVector_Create");
-            funcTable.Load(854, "ImBitVector_Clear");
-            funcTable.Load(855, "ImBitVector_TestBit");
-            funcTable.Load(856, "ImBitVector_SetBit");
-            funcTable.Load(857, "ImBitVector_ClearBit");
-            funcTable.Load(858, "ImGuiTextIndex_clear");
-            funcTable.Load(859, "ImGuiTextIndex_size");
-            funcTable.Load(860, "ImGuiTextIndex_get_line_begin");
-            funcTable.Load(861, "ImGuiTextIndex_get_line_end");
-            funcTable.Load(862, "ImGuiTextIndex_append");
-            funcTable.Load(863, "igImLowerBound");
-            funcTable.Load(864, "ImDrawListSharedData_ImDrawListSharedData");
-            funcTable.Load(865, "ImDrawListSharedData_destroy");
-            funcTable.Load(866, "ImDrawListSharedData_SetCircleTessellationMaxError");
-            funcTable.Load(867, "ImDrawDataBuilder_ImDrawDataBuilder");
-            funcTable.Load(868, "ImDrawDataBuilder_destroy");
-            funcTable.Load(869, "ImGuiStyleVarInfo_GetVarPtr");
-            funcTable.Load(870, "ImGuiStyleMod_ImGuiStyleMod_Int");
-            funcTable.Load(871, "ImGuiStyleMod_destroy");
-            funcTable.Load(872, "ImGuiStyleMod_ImGuiStyleMod_Float");
-            funcTable.Load(873, "ImGuiStyleMod_ImGuiStyleMod_Vec2");
-            funcTable.Load(874, "ImGuiComboPreviewData_ImGuiComboPreviewData");
-            funcTable.Load(875, "ImGuiComboPreviewData_destroy");
-            funcTable.Load(876, "ImGuiMenuColumns_ImGuiMenuColumns");
-            funcTable.Load(877, "ImGuiMenuColumns_destroy");
-            funcTable.Load(878, "ImGuiMenuColumns_Update");
-            funcTable.Load(879, "ImGuiMenuColumns_DeclColumns");
-            funcTable.Load(880, "ImGuiMenuColumns_CalcNextTotalWidth");
-            funcTable.Load(881, "ImGuiInputTextDeactivatedState_ImGuiInputTextDeactivatedState");
-            funcTable.Load(882, "ImGuiInputTextDeactivatedState_destroy");
-            funcTable.Load(883, "ImGuiInputTextDeactivatedState_ClearFreeMemory");
-            funcTable.Load(884, "ImGuiInputTextState_ImGuiInputTextState");
-            funcTable.Load(885, "ImGuiInputTextState_destroy");
-            funcTable.Load(886, "ImGuiInputTextState_ClearText");
-            funcTable.Load(887, "ImGuiInputTextState_ClearFreeMemory");
-            funcTable.Load(888, "ImGuiInputTextState_OnKeyPressed");
-            funcTable.Load(889, "ImGuiInputTextState_OnCharPressed");
-            funcTable.Load(890, "ImGuiInputTextState_GetPreferredOffsetX");
-            funcTable.Load(891, "ImGuiInputTextState_CursorAnimReset");
-            funcTable.Load(892, "ImGuiInputTextState_CursorClamp");
-            funcTable.Load(893, "ImGuiInputTextState_HasSelection");
-            funcTable.Load(894, "ImGuiInputTextState_ClearSelection");
-            funcTable.Load(895, "ImGuiInputTextState_GetCursorPos");
-            funcTable.Load(896, "ImGuiInputTextState_GetSelectionStart");
-            funcTable.Load(897, "ImGuiInputTextState_GetSelectionEnd");
-            funcTable.Load(898, "ImGuiInputTextState_SetSelection");
-            funcTable.Load(899, "ImGuiInputTextState_SelectAll");
-            funcTable.Load(900, "ImGuiInputTextState_ReloadUserBufAndSelectAll");
-            funcTable.Load(901, "ImGuiInputTextState_ReloadUserBufAndKeepSelection");
-            funcTable.Load(902, "ImGuiInputTextState_ReloadUserBufAndMoveToEnd");
-            funcTable.Load(903, "ImGuiNextWindowData_ImGuiNextWindowData");
-            funcTable.Load(904, "ImGuiNextWindowData_destroy");
-            funcTable.Load(905, "ImGuiNextWindowData_ClearFlags");
-            funcTable.Load(906, "ImGuiNextItemData_ImGuiNextItemData");
-            funcTable.Load(907, "ImGuiNextItemData_destroy");
-            funcTable.Load(908, "ImGuiNextItemData_ClearFlags");
-            funcTable.Load(909, "ImGuiLastItemData_ImGuiLastItemData");
-            funcTable.Load(910, "ImGuiLastItemData_destroy");
-            funcTable.Load(911, "ImGuiErrorRecoveryState_ImGuiErrorRecoveryState");
-            funcTable.Load(912, "ImGuiErrorRecoveryState_destroy");
-            funcTable.Load(913, "ImGuiPtrOrIndex_ImGuiPtrOrIndex_Ptr");
-            funcTable.Load(914, "ImGuiPtrOrIndex_destroy");
-            funcTable.Load(915, "ImGuiPtrOrIndex_ImGuiPtrOrIndex_Int");
-            funcTable.Load(916, "ImGuiPopupData_ImGuiPopupData");
-            funcTable.Load(917, "ImGuiPopupData_destroy");
-            funcTable.Load(918, "ImGuiInputEvent_ImGuiInputEvent");
-            funcTable.Load(919, "ImGuiInputEvent_destroy");
-            funcTable.Load(920, "ImGuiKeyRoutingData_ImGuiKeyRoutingData");
-            funcTable.Load(921, "ImGuiKeyRoutingData_destroy");
-            funcTable.Load(922, "ImGuiKeyRoutingTable_ImGuiKeyRoutingTable");
-            funcTable.Load(923, "ImGuiKeyRoutingTable_destroy");
-            funcTable.Load(924, "ImGuiKeyRoutingTable_Clear");
-            funcTable.Load(925, "ImGuiKeyOwnerData_ImGuiKeyOwnerData");
-            funcTable.Load(926, "ImGuiKeyOwnerData_destroy");
-            funcTable.Load(927, "ImGuiListClipperRange_FromIndices");
-            funcTable.Load(928, "ImGuiListClipperRange_FromPositions");
-            funcTable.Load(929, "ImGuiListClipperData_ImGuiListClipperData");
-            funcTable.Load(930, "ImGuiListClipperData_destroy");
-            funcTable.Load(931, "ImGuiListClipperData_Reset");
-            funcTable.Load(932, "ImGuiNavItemData_ImGuiNavItemData");
-            funcTable.Load(933, "ImGuiNavItemData_destroy");
-            funcTable.Load(934, "ImGuiNavItemData_Clear");
-            funcTable.Load(935, "ImGuiTypingSelectState_ImGuiTypingSelectState");
-            funcTable.Load(936, "ImGuiTypingSelectState_destroy");
-            funcTable.Load(937, "ImGuiTypingSelectState_Clear");
-            funcTable.Load(938, "ImGuiOldColumnData_ImGuiOldColumnData");
-            funcTable.Load(939, "ImGuiOldColumnData_destroy");
-            funcTable.Load(940, "ImGuiOldColumns_ImGuiOldColumns");
-            funcTable.Load(941, "ImGuiOldColumns_destroy");
-            funcTable.Load(942, "ImGuiBoxSelectState_ImGuiBoxSelectState");
-            funcTable.Load(943, "ImGuiBoxSelectState_destroy");
-            funcTable.Load(944, "ImGuiMultiSelectTempData_ImGuiMultiSelectTempData");
-            funcTable.Load(945, "ImGuiMultiSelectTempData_destroy");
-            funcTable.Load(946, "ImGuiMultiSelectTempData_Clear");
-            funcTable.Load(947, "ImGuiMultiSelectTempData_ClearIO");
-            funcTable.Load(948, "ImGuiMultiSelectState_ImGuiMultiSelectState");
-            funcTable.Load(949, "ImGuiMultiSelectState_destroy");
-            funcTable.Load(950, "ImGuiDockNode_ImGuiDockNode");
-            funcTable.Load(951, "ImGuiDockNode_destroy");
-            funcTable.Load(952, "ImGuiDockNode_IsRootNode");
-            funcTable.Load(953, "ImGuiDockNode_IsDockSpace");
-            funcTable.Load(954, "ImGuiDockNode_IsFloatingNode");
-            funcTable.Load(955, "ImGuiDockNode_IsCentralNode");
-            funcTable.Load(956, "ImGuiDockNode_IsHiddenTabBar");
-            funcTable.Load(957, "ImGuiDockNode_IsNoTabBar");
-            funcTable.Load(958, "ImGuiDockNode_IsSplitNode");
-            funcTable.Load(959, "ImGuiDockNode_IsLeafNode");
-            funcTable.Load(960, "ImGuiDockNode_IsEmpty");
-            funcTable.Load(961, "ImGuiDockNode_Rect");
-            funcTable.Load(962, "ImGuiDockNode_SetLocalFlags");
-            funcTable.Load(963, "ImGuiDockNode_UpdateMergedFlags");
-            funcTable.Load(964, "ImGuiDockContext_ImGuiDockContext");
-            funcTable.Load(965, "ImGuiDockContext_destroy");
-            funcTable.Load(966, "ImGuiViewportP_ImGuiViewportP");
-            funcTable.Load(967, "ImGuiViewportP_destroy");
-            funcTable.Load(968, "ImGuiViewportP_ClearRequestFlags");
-            funcTable.Load(969, "ImGuiViewportP_CalcWorkRectPos");
-            funcTable.Load(970, "ImGuiViewportP_CalcWorkRectSize");
-            funcTable.Load(971, "ImGuiViewportP_UpdateWorkRect");
-            funcTable.Load(972, "ImGuiViewportP_GetMainRect");
-            funcTable.Load(973, "ImGuiViewportP_GetWorkRect");
-            funcTable.Load(974, "ImGuiViewportP_GetBuildWorkRect");
-            funcTable.Load(975, "ImGuiWindowSettings_ImGuiWindowSettings");
-            funcTable.Load(976, "ImGuiWindowSettings_destroy");
-            funcTable.Load(977, "ImGuiWindowSettings_GetName");
-            funcTable.Load(978, "ImGuiSettingsHandler_ImGuiSettingsHandler");
-            funcTable.Load(979, "ImGuiSettingsHandler_destroy");
-            funcTable.Load(980, "ImGuiDebugAllocInfo_ImGuiDebugAllocInfo");
-            funcTable.Load(981, "ImGuiDebugAllocInfo_destroy");
-            funcTable.Load(982, "ImGuiStackLevelInfo_ImGuiStackLevelInfo");
-            funcTable.Load(983, "ImGuiStackLevelInfo_destroy");
-            funcTable.Load(984, "ImGuiDebugItemPathQuery_ImGuiDebugItemPathQuery");
-            funcTable.Load(985, "ImGuiDebugItemPathQuery_destroy");
-            funcTable.Load(986, "ImGuiIDStackTool_ImGuiIDStackTool");
-            funcTable.Load(987, "ImGuiIDStackTool_destroy");
-            funcTable.Load(988, "ImGuiContextHook_ImGuiContextHook");
-            funcTable.Load(989, "ImGuiContextHook_destroy");
-            funcTable.Load(990, "ImGuiContext_ImGuiContext");
-            funcTable.Load(991, "ImGuiContext_destroy");
-            funcTable.Load(992, "ImGuiWindow_ImGuiWindow");
-            funcTable.Load(993, "ImGuiWindow_destroy");
-            funcTable.Load(994, "ImGuiWindow_GetID_Str");
-            funcTable.Load(995, "ImGuiWindow_GetID_Ptr");
-            funcTable.Load(996, "ImGuiWindow_GetID_Int");
-            funcTable.Load(997, "ImGuiWindow_GetIDFromPos");
-            funcTable.Load(998, "ImGuiWindow_GetIDFromRectangle");
-            funcTable.Load(999, "ImGuiWindow_Rect");
-            funcTable.Load(1000, "ImGuiWindow_TitleBarRect");
-            funcTable.Load(1001, "ImGuiWindow_MenuBarRect");
-            funcTable.Load(1002, "ImGuiTabItem_ImGuiTabItem");
-            funcTable.Load(1003, "ImGuiTabItem_destroy");
-            funcTable.Load(1004, "ImGuiTabBar_ImGuiTabBar");
-            funcTable.Load(1005, "ImGuiTabBar_destroy");
-            funcTable.Load(1006, "ImGuiTableColumn_ImGuiTableColumn");
-            funcTable.Load(1007, "ImGuiTableColumn_destroy");
-            funcTable.Load(1008, "ImGuiTableInstanceData_ImGuiTableInstanceData");
-            funcTable.Load(1009, "ImGuiTableInstanceData_destroy");
-            funcTable.Load(1010, "ImGuiTable_ImGuiTable");
-            funcTable.Load(1011, "ImGuiTable_destroy");
-            funcTable.Load(1012, "ImGuiTableTempData_ImGuiTableTempData");
-            funcTable.Load(1013, "ImGuiTableTempData_destroy");
-            funcTable.Load(1014, "ImGuiTableColumnSettings_ImGuiTableColumnSettings");
-            funcTable.Load(1015, "ImGuiTableColumnSettings_destroy");
-            funcTable.Load(1016, "ImGuiTableSettings_ImGuiTableSettings");
-            funcTable.Load(1017, "ImGuiTableSettings_destroy");
-            funcTable.Load(1018, "ImGuiTableSettings_GetColumnSettings");
-            funcTable.Load(1019, "igGetIO_ContextPtr");
-            funcTable.Load(1020, "igGetPlatformIO_ContextPtr");
-            funcTable.Load(1021, "igGetScale");
-            funcTable.Load(1022, "igGetCurrentWindowRead");
-            funcTable.Load(1023, "igGetCurrentWindow");
-            funcTable.Load(1024, "igFindWindowByID");
-            funcTable.Load(1025, "igFindWindowByName");
-            funcTable.Load(1026, "igUpdateWindowParentAndRootLinks");
-            funcTable.Load(1027, "igUpdateWindowSkipRefresh");
-            funcTable.Load(1028, "igCalcWindowNextAutoFitSize");
-            funcTable.Load(1029, "igIsWindowChildOf");
-            funcTable.Load(1030, "igIsWindowInBeginStack");
-            funcTable.Load(1031, "igIsWindowWithinBeginStackOf");
-            funcTable.Load(1032, "igIsWindowAbove");
-            funcTable.Load(1033, "igIsWindowNavFocusable");
-            funcTable.Load(1034, "igSetWindowPos_WindowPtr");
-            funcTable.Load(1035, "igSetWindowSize_WindowPtr");
-            funcTable.Load(1036, "igSetWindowCollapsed_WindowPtr");
-            funcTable.Load(1037, "igSetWindowHitTestHole");
-            funcTable.Load(1038, "igSetWindowHiddenAndSkipItemsForCurrentFrame");
-            funcTable.Load(1039, "igSetWindowParentWindowForFocusRoute");
-            funcTable.Load(1040, "igWindowRectAbsToRel");
-            funcTable.Load(1041, "igWindowRectRelToAbs");
-            funcTable.Load(1042, "igWindowPosAbsToRel");
-            funcTable.Load(1043, "igWindowPosRelToAbs");
-            funcTable.Load(1044, "igFocusWindow");
-            funcTable.Load(1045, "igFocusTopMostWindowUnderOne");
-            funcTable.Load(1046, "igBringWindowToFocusFront");
-            funcTable.Load(1047, "igBringWindowToDisplayFront");
-            funcTable.Load(1048, "igBringWindowToDisplayBack");
-            funcTable.Load(1049, "igBringWindowToDisplayBehind");
-            funcTable.Load(1050, "igFindWindowDisplayIndex");
-            funcTable.Load(1051, "igFindBottomMostVisibleWindowWithinBeginStack");
-            funcTable.Load(1052, "igSetNextWindowRefreshPolicy");
-            funcTable.Load(1053, "igRegisterUserTexture");
-            funcTable.Load(1054, "igUnregisterUserTexture");
-            funcTable.Load(1055, "igRegisterFontAtlas");
-            funcTable.Load(1056, "igUnregisterFontAtlas");
-            funcTable.Load(1057, "igSetCurrentFont");
-            funcTable.Load(1058, "igUpdateCurrentFontSize");
-            funcTable.Load(1059, "igSetFontRasterizerDensity");
-            funcTable.Load(1060, "igGetFontRasterizerDensity");
-            funcTable.Load(1061, "igGetRoundedFontSize");
-            funcTable.Load(1062, "igGetDefaultFont");
-            funcTable.Load(1063, "igPushPasswordFont");
-            funcTable.Load(1064, "igPopPasswordFont");
-            funcTable.Load(1065, "igGetForegroundDrawList_WindowPtr");
-            funcTable.Load(1066, "igAddDrawListToDrawDataEx");
-            funcTable.Load(1067, "igInitialize");
-            funcTable.Load(1068, "igShutdown");
-            funcTable.Load(1069, "igSetContextName");
-            funcTable.Load(1070, "igAddContextHook");
-            funcTable.Load(1071, "igRemoveContextHook");
-            funcTable.Load(1072, "igCallContextHooks");
-            funcTable.Load(1073, "igUpdateInputEvents");
-            funcTable.Load(1074, "igUpdateHoveredWindowAndCaptureFlags");
-            funcTable.Load(1075, "igFindHoveredWindowEx");
-            funcTable.Load(1076, "igStartMouseMovingWindow");
-            funcTable.Load(1077, "igStartMouseMovingWindowOrNode");
-            funcTable.Load(1078, "igStopMouseMovingWindow");
-            funcTable.Load(1079, "igUpdateMouseMovingWindowNewFrame");
-            funcTable.Load(1080, "igUpdateMouseMovingWindowEndFrame");
-            funcTable.Load(1081, "igTranslateWindowsInViewport");
-            funcTable.Load(1082, "igScaleWindowsInViewport");
-            funcTable.Load(1083, "igDestroyPlatformWindow");
-            funcTable.Load(1084, "igSetWindowViewport");
-            funcTable.Load(1085, "igSetCurrentViewport");
-            funcTable.Load(1086, "igGetViewportPlatformMonitor");
-            funcTable.Load(1087, "igFindHoveredViewportFromPlatformWindowStack");
-            funcTable.Load(1088, "igMarkIniSettingsDirty_Nil");
-            funcTable.Load(1089, "igMarkIniSettingsDirty_WindowPtr");
-            funcTable.Load(1090, "igClearIniSettings");
-            funcTable.Load(1091, "igAddSettingsHandler");
-            funcTable.Load(1092, "igRemoveSettingsHandler");
-            funcTable.Load(1093, "igFindSettingsHandler");
-            funcTable.Load(1094, "igCreateNewWindowSettings");
-            funcTable.Load(1095, "igFindWindowSettingsByID");
-            funcTable.Load(1096, "igFindWindowSettingsByWindow");
-            funcTable.Load(1097, "igClearWindowSettings");
-            funcTable.Load(1098, "igLocalizeRegisterEntries");
-            funcTable.Load(1099, "igLocalizeGetMsg");
-            funcTable.Load(1100, "igSetScrollX_WindowPtr");
-            funcTable.Load(1101, "igSetScrollY_WindowPtr");
-            funcTable.Load(1102, "igSetScrollFromPosX_WindowPtr");
-            funcTable.Load(1103, "igSetScrollFromPosY_WindowPtr");
-            funcTable.Load(1104, "igScrollToItem");
-            funcTable.Load(1105, "igScrollToRect");
-            funcTable.Load(1106, "igScrollToRectEx");
-            funcTable.Load(1107, "igScrollToBringRectIntoView");
-            funcTable.Load(1108, "igGetItemStatusFlags");
-            funcTable.Load(1109, "igGetActiveID");
-            funcTable.Load(1110, "igGetFocusID");
-            funcTable.Load(1111, "igSetActiveID");
-            funcTable.Load(1112, "igSetFocusID");
-            funcTable.Load(1113, "igClearActiveID");
-            funcTable.Load(1114, "igGetHoveredID");
-            funcTable.Load(1115, "igSetHoveredID");
-            funcTable.Load(1116, "igKeepAliveID");
-            funcTable.Load(1117, "igMarkItemEdited");
-            funcTable.Load(1118, "igPushOverrideID");
-            funcTable.Load(1119, "igGetIDWithSeed_Str");
-            funcTable.Load(1120, "igGetIDWithSeed_Int");
-            funcTable.Load(1121, "igItemSize_Vec2");
-            funcTable.Load(1122, "igItemSize_Rect");
-            funcTable.Load(1123, "igItemAdd");
-            funcTable.Load(1124, "igItemHoverable");
-            funcTable.Load(1125, "igIsWindowContentHoverable");
-            funcTable.Load(1126, "igIsClippedEx");
-            funcTable.Load(1127, "igSetLastItemData");
-            funcTable.Load(1128, "igCalcItemSize");
-            funcTable.Load(1129, "igCalcWrapWidthForPos");
-            funcTable.Load(1130, "igPushMultiItemsWidths");
-            funcTable.Load(1131, "igShrinkWidths");
-            funcTable.Load(1132, "igCalcClipRectVisibleItemsY");
-            funcTable.Load(1133, "igGetStyleVarInfo");
-            funcTable.Load(1134, "igBeginDisabledOverrideReenable");
-            funcTable.Load(1135, "igEndDisabledOverrideReenable");
-            funcTable.Load(1136, "igLogBegin");
-            funcTable.Load(1137, "igLogToBuffer");
-            funcTable.Load(1138, "igLogRenderedText");
-            funcTable.Load(1139, "igLogSetNextTextDecoration");
-            funcTable.Load(1140, "igBeginChildEx");
-            funcTable.Load(1141, "igBeginPopupEx");
-            funcTable.Load(1142, "igBeginPopupMenuEx");
-            funcTable.Load(1143, "igOpenPopupEx");
-            funcTable.Load(1144, "igClosePopupToLevel");
-            funcTable.Load(1145, "igClosePopupsOverWindow");
-            funcTable.Load(1146, "igClosePopupsExceptModals");
-            funcTable.Load(1147, "igIsPopupOpen_ID");
-            funcTable.Load(1148, "igGetPopupAllowedExtentRect");
-            funcTable.Load(1149, "igGetTopMostPopupModal");
-            funcTable.Load(1150, "igGetTopMostAndVisiblePopupModal");
-            funcTable.Load(1151, "igFindBlockingModal");
-            funcTable.Load(1152, "igFindBestWindowPosForPopup");
-            funcTable.Load(1153, "igFindBestWindowPosForPopupEx");
-            funcTable.Load(1154, "igGetMouseButtonFromPopupFlags");
-            funcTable.Load(1155, "igBeginTooltipEx");
-            funcTable.Load(1156, "igBeginTooltipHidden");
-            funcTable.Load(1157, "igBeginViewportSideBar");
-            funcTable.Load(1158, "igBeginMenuEx");
-            funcTable.Load(1159, "igMenuItemEx");
-            funcTable.Load(1160, "igBeginComboPopup");
-            funcTable.Load(1161, "igBeginComboPreview");
-            funcTable.Load(1162, "igEndComboPreview");
-            funcTable.Load(1163, "igNavInitWindow");
-            funcTable.Load(1164, "igNavInitRequestApplyResult");
-            funcTable.Load(1165, "igNavMoveRequestButNoResultYet");
-            funcTable.Load(1166, "igNavMoveRequestSubmit");
-            funcTable.Load(1167, "igNavMoveRequestForward");
-            funcTable.Load(1168, "igNavMoveRequestResolveWithLastItem");
-            funcTable.Load(1169, "igNavMoveRequestResolveWithPastTreeNode");
-            funcTable.Load(1170, "igNavMoveRequestCancel");
-            funcTable.Load(1171, "igNavMoveRequestApplyResult");
-            funcTable.Load(1172, "igNavMoveRequestTryWrapping");
-            funcTable.Load(1173, "igNavHighlightActivated");
-            funcTable.Load(1174, "igNavClearPreferredPosForAxis");
-            funcTable.Load(1175, "igSetNavCursorVisibleAfterMove");
-            funcTable.Load(1176, "igNavUpdateCurrentWindowIsScrollPushableX");
-            funcTable.Load(1177, "igSetNavWindow");
-            funcTable.Load(1178, "igSetNavID");
-            funcTable.Load(1179, "igSetNavFocusScope");
-            funcTable.Load(1180, "igFocusItem");
-            funcTable.Load(1181, "igActivateItemByID");
-            funcTable.Load(1182, "igIsNamedKey");
-            funcTable.Load(1183, "igIsNamedKeyOrMod");
-            funcTable.Load(1184, "igIsLegacyKey");
-            funcTable.Load(1185, "igIsKeyboardKey");
-            funcTable.Load(1186, "igIsGamepadKey");
-            funcTable.Load(1187, "igIsMouseKey");
-            funcTable.Load(1188, "igIsAliasKey");
-            funcTable.Load(1189, "igIsLRModKey");
-            funcTable.Load(1190, "igFixupKeyChord");
-            funcTable.Load(1191, "igConvertSingleModFlagToKey");
-            funcTable.Load(1192, "igGetKeyData_ContextPtr");
-            funcTable.Load(1193, "igGetKeyData_Key");
-            funcTable.Load(1194, "igGetKeyChordName");
-            funcTable.Load(1195, "igMouseButtonToKey");
-            funcTable.Load(1196, "igIsMouseDragPastThreshold");
-            funcTable.Load(1197, "igGetKeyMagnitude2d");
-            funcTable.Load(1198, "igGetNavTweakPressedAmount");
-            funcTable.Load(1199, "igCalcTypematicRepeatAmount");
-            funcTable.Load(1200, "igGetTypematicRepeatRate");
-            funcTable.Load(1201, "igTeleportMousePos");
-            funcTable.Load(1202, "igSetActiveIdUsingAllKeyboardKeys");
-            funcTable.Load(1203, "igIsActiveIdUsingNavDir");
-            funcTable.Load(1204, "igGetKeyOwner");
-            funcTable.Load(1205, "igSetKeyOwner");
-            funcTable.Load(1206, "igSetKeyOwnersForKeyChord");
-            funcTable.Load(1207, "igSetItemKeyOwner_InputFlags");
-            funcTable.Load(1208, "igTestKeyOwner");
-            funcTable.Load(1209, "igGetKeyOwnerData");
-            funcTable.Load(1210, "igIsKeyDown_ID");
-            funcTable.Load(1211, "igIsKeyPressed_InputFlags");
-            funcTable.Load(1212, "igIsKeyReleased_ID");
-            funcTable.Load(1213, "igIsKeyChordPressed_InputFlags");
-            funcTable.Load(1214, "igIsMouseDown_ID");
-            funcTable.Load(1215, "igIsMouseClicked_InputFlags");
-            funcTable.Load(1216, "igIsMouseReleased_ID");
-            funcTable.Load(1217, "igIsMouseDoubleClicked_ID");
-            funcTable.Load(1218, "igShortcut_ID");
-            funcTable.Load(1219, "igSetShortcutRouting");
-            funcTable.Load(1220, "igTestShortcutRouting");
-            funcTable.Load(1221, "igGetShortcutRoutingData");
-            funcTable.Load(1222, "igDockContextInitialize");
-            funcTable.Load(1223, "igDockContextShutdown");
-            funcTable.Load(1224, "igDockContextClearNodes");
-            funcTable.Load(1225, "igDockContextRebuildNodes");
-            funcTable.Load(1226, "igDockContextNewFrameUpdateUndocking");
-            funcTable.Load(1227, "igDockContextNewFrameUpdateDocking");
-            funcTable.Load(1228, "igDockContextEndFrame");
-            funcTable.Load(1229, "igDockContextGenNodeID");
-            funcTable.Load(1230, "igDockContextQueueDock");
-            funcTable.Load(1231, "igDockContextQueueUndockWindow");
-            funcTable.Load(1232, "igDockContextQueueUndockNode");
-            funcTable.Load(1233, "igDockContextProcessUndockWindow");
-            funcTable.Load(1234, "igDockContextProcessUndockNode");
-            funcTable.Load(1235, "igDockContextCalcDropPosForDocking");
-            funcTable.Load(1236, "igDockContextFindNodeByID");
-            funcTable.Load(1237, "igDockNodeWindowMenuHandler_Default");
-            funcTable.Load(1238, "igDockNodeBeginAmendTabBar");
-            funcTable.Load(1239, "igDockNodeEndAmendTabBar");
-            funcTable.Load(1240, "igDockNodeGetRootNode");
-            funcTable.Load(1241, "igDockNodeIsInHierarchyOf");
-            funcTable.Load(1242, "igDockNodeGetDepth");
-            funcTable.Load(1243, "igDockNodeGetWindowMenuButtonId");
-            funcTable.Load(1244, "igGetWindowDockNode");
-            funcTable.Load(1245, "igGetWindowAlwaysWantOwnTabBar");
-            funcTable.Load(1246, "igBeginDocked");
-            funcTable.Load(1247, "igBeginDockableDragDropSource");
-            funcTable.Load(1248, "igBeginDockableDragDropTarget");
-            funcTable.Load(1249, "igSetWindowDock");
-            funcTable.Load(1250, "igDockBuilderDockWindow");
-            funcTable.Load(1251, "igDockBuilderGetNode");
-            funcTable.Load(1252, "igDockBuilderGetCentralNode");
-            funcTable.Load(1253, "igDockBuilderAddNode");
-            funcTable.Load(1254, "igDockBuilderRemoveNode");
-            funcTable.Load(1255, "igDockBuilderRemoveNodeDockedWindows");
-            funcTable.Load(1256, "igDockBuilderRemoveNodeChildNodes");
-            funcTable.Load(1257, "igDockBuilderSetNodePos");
-            funcTable.Load(1258, "igDockBuilderSetNodeSize");
-            funcTable.Load(1259, "igDockBuilderSplitNode");
-            funcTable.Load(1260, "igDockBuilderCopyDockSpace");
-            funcTable.Load(1261, "igDockBuilderCopyNode");
-            funcTable.Load(1262, "igDockBuilderCopyWindowSettings");
-            funcTable.Load(1263, "igDockBuilderFinish");
-            funcTable.Load(1264, "igPushFocusScope");
-            funcTable.Load(1265, "igPopFocusScope");
-            funcTable.Load(1266, "igGetCurrentFocusScope");
-            funcTable.Load(1267, "igIsDragDropActive");
-            funcTable.Load(1268, "igBeginDragDropTargetCustom");
-            funcTable.Load(1269, "igBeginDragDropTargetViewport");
-            funcTable.Load(1270, "igClearDragDrop");
-            funcTable.Load(1271, "igIsDragDropPayloadBeingAccepted");
-            funcTable.Load(1272, "igRenderDragDropTargetRectForItem");
-            funcTable.Load(1273, "igRenderDragDropTargetRectEx");
-            funcTable.Load(1274, "igGetTypingSelectRequest");
-            funcTable.Load(1275, "igTypingSelectFindMatch");
-            funcTable.Load(1276, "igTypingSelectFindNextSingleCharMatch");
-            funcTable.Load(1277, "igTypingSelectFindBestLeadingMatch");
-            funcTable.Load(1278, "igBeginBoxSelect");
-            funcTable.Load(1279, "igEndBoxSelect");
-            funcTable.Load(1280, "igMultiSelectItemHeader");
-            funcTable.Load(1281, "igMultiSelectItemFooter");
-            funcTable.Load(1282, "igMultiSelectAddSetAll");
-            funcTable.Load(1283, "igMultiSelectAddSetRange");
-            funcTable.Load(1284, "igGetBoxSelectState");
-            funcTable.Load(1285, "igGetMultiSelectState");
-            funcTable.Load(1286, "igSetWindowClipRectBeforeSetChannel");
-            funcTable.Load(1287, "igBeginColumns");
-            funcTable.Load(1288, "igEndColumns");
-            funcTable.Load(1289, "igPushColumnClipRect");
-            funcTable.Load(1290, "igPushColumnsBackground");
-            funcTable.Load(1291, "igPopColumnsBackground");
-            funcTable.Load(1292, "igGetColumnsID");
-            funcTable.Load(1293, "igFindOrCreateColumns");
-            funcTable.Load(1294, "igGetColumnOffsetFromNorm");
-            funcTable.Load(1295, "igGetColumnNormFromOffset");
-            funcTable.Load(1296, "igTableOpenContextMenu");
-            funcTable.Load(1297, "igTableSetColumnWidth");
-            funcTable.Load(1298, "igTableSetColumnSortDirection");
-            funcTable.Load(1299, "igTableGetHoveredRow");
-            funcTable.Load(1300, "igTableGetHeaderRowHeight");
-            funcTable.Load(1301, "igTableGetHeaderAngledMaxLabelWidth");
-            funcTable.Load(1302, "igTablePushBackgroundChannel");
-            funcTable.Load(1303, "igTablePopBackgroundChannel");
-            funcTable.Load(1304, "igTablePushColumnChannel");
-            funcTable.Load(1305, "igTablePopColumnChannel");
-            funcTable.Load(1306, "igTableAngledHeadersRowEx");
-            funcTable.Load(1307, "igGetCurrentTable");
-            funcTable.Load(1308, "igTableFindByID");
-            funcTable.Load(1309, "igBeginTableEx");
-            funcTable.Load(1310, "igTableBeginInitMemory");
-            funcTable.Load(1311, "igTableBeginApplyRequests");
-            funcTable.Load(1312, "igTableSetupDrawChannels");
-            funcTable.Load(1313, "igTableUpdateLayout");
-            funcTable.Load(1314, "igTableUpdateBorders");
-            funcTable.Load(1315, "igTableUpdateColumnsWeightFromWidth");
-            funcTable.Load(1316, "igTableDrawBorders");
-            funcTable.Load(1317, "igTableDrawDefaultContextMenu");
-            funcTable.Load(1318, "igTableBeginContextMenuPopup");
-            funcTable.Load(1319, "igTableMergeDrawChannels");
-            funcTable.Load(1320, "igTableGetInstanceData");
-            funcTable.Load(1321, "igTableGetInstanceID");
-            funcTable.Load(1322, "igTableFixDisplayOrder");
-            funcTable.Load(1323, "igTableSortSpecsSanitize");
-            funcTable.Load(1324, "igTableSortSpecsBuild");
-            funcTable.Load(1325, "igTableGetColumnNextSortDirection");
-            funcTable.Load(1326, "igTableFixColumnSortDirection");
-            funcTable.Load(1327, "igTableGetColumnWidthAuto");
-            funcTable.Load(1328, "igTableBeginRow");
-            funcTable.Load(1329, "igTableEndRow");
-            funcTable.Load(1330, "igTableBeginCell");
-            funcTable.Load(1331, "igTableEndCell");
-            funcTable.Load(1332, "igTableGetCellBgRect");
-            funcTable.Load(1333, "igTableGetColumnName_TablePtr");
-            funcTable.Load(1334, "igTableGetColumnResizeID");
-            funcTable.Load(1335, "igTableCalcMaxColumnWidth");
-            funcTable.Load(1336, "igTableSetColumnWidthAutoSingle");
-            funcTable.Load(1337, "igTableSetColumnWidthAutoAll");
-            funcTable.Load(1338, "igTableSetColumnDisplayOrder");
-            funcTable.Load(1339, "igTableRemove");
-            funcTable.Load(1340, "igTableGcCompactTransientBuffers_TablePtr");
-            funcTable.Load(1341, "igTableGcCompactTransientBuffers_TableTempDataPtr");
-            funcTable.Load(1342, "igTableGcCompactSettings");
-            funcTable.Load(1343, "igTableLoadSettings");
-            funcTable.Load(1344, "igTableSaveSettings");
-            funcTable.Load(1345, "igTableResetSettings");
-            funcTable.Load(1346, "igTableGetBoundSettings");
-            funcTable.Load(1347, "igTableSettingsAddSettingsHandler");
-            funcTable.Load(1348, "igTableSettingsCreate");
-            funcTable.Load(1349, "igTableSettingsFindByID");
-            funcTable.Load(1350, "igGetCurrentTabBar");
-            funcTable.Load(1351, "igTabBarFindByID");
-            funcTable.Load(1352, "igTabBarRemove");
-            funcTable.Load(1353, "igBeginTabBarEx");
-            funcTable.Load(1354, "igTabBarFindTabByID");
-            funcTable.Load(1355, "igTabBarFindTabByOrder");
-            funcTable.Load(1356, "igTabBarFindMostRecentlySelectedTabForActiveWindow");
-            funcTable.Load(1357, "igTabBarGetCurrentTab");
-            funcTable.Load(1358, "igTabBarGetTabOrder");
-            funcTable.Load(1359, "igTabBarGetTabName");
-            funcTable.Load(1360, "igTabBarAddTab");
-            funcTable.Load(1361, "igTabBarRemoveTab");
-            funcTable.Load(1362, "igTabBarCloseTab");
-            funcTable.Load(1363, "igTabBarQueueFocus_TabItemPtr");
-            funcTable.Load(1364, "igTabBarQueueFocus_Str");
-            funcTable.Load(1365, "igTabBarQueueReorder");
-            funcTable.Load(1366, "igTabBarQueueReorderFromMousePos");
-            funcTable.Load(1367, "igTabBarProcessReorder");
-            funcTable.Load(1368, "igTabItemEx");
-            funcTable.Load(1369, "igTabItemSpacing");
-            funcTable.Load(1370, "igTabItemCalcSize_Str");
-            funcTable.Load(1371, "igTabItemCalcSize_WindowPtr");
-            funcTable.Load(1372, "igTabItemBackground");
-            funcTable.Load(1373, "igTabItemLabelAndCloseButton");
-            funcTable.Load(1374, "igRenderText");
-            funcTable.Load(1375, "igRenderTextWrapped");
-            funcTable.Load(1376, "igRenderTextClipped");
-            funcTable.Load(1377, "igRenderTextClippedEx");
-            funcTable.Load(1378, "igRenderTextEllipsis");
-            funcTable.Load(1379, "igRenderFrame");
-            funcTable.Load(1380, "igRenderFrameBorder");
-            funcTable.Load(1381, "igRenderColorComponentMarker");
-            funcTable.Load(1382, "igRenderColorRectWithAlphaCheckerboard");
-            funcTable.Load(1383, "igRenderNavCursor");
-            funcTable.Load(1384, "igFindRenderedTextEnd");
-            funcTable.Load(1385, "igRenderMouseCursor");
-            funcTable.Load(1386, "igRenderArrow");
-            funcTable.Load(1387, "igRenderBullet");
-            funcTable.Load(1388, "igRenderCheckMark");
-            funcTable.Load(1389, "igRenderArrowPointingAt");
-            funcTable.Load(1390, "igRenderArrowDockMenu");
-            funcTable.Load(1391, "igRenderRectFilledInRangeH");
-            funcTable.Load(1392, "igRenderRectFilledWithHole");
-            funcTable.Load(1393, "igCalcRoundingFlagsForRectInRect");
-            funcTable.Load(1394, "igTextEx");
-            funcTable.Load(1395, "igTextAligned0");
-            funcTable.Load(1396, "igTextAlignedV");
-            funcTable.Load(1397, "igButtonEx");
-            funcTable.Load(1398, "igArrowButtonEx");
-            funcTable.Load(1399, "igImageButtonEx");
-            funcTable.Load(1400, "igSeparatorEx");
-            funcTable.Load(1401, "igSeparatorTextEx");
-            funcTable.Load(1402, "igCheckboxFlags_S64Ptr");
-            funcTable.Load(1403, "igCheckboxFlags_U64Ptr");
-            funcTable.Load(1404, "igCloseButton");
-            funcTable.Load(1405, "igCollapseButton");
-            funcTable.Load(1406, "igScrollbar");
-            funcTable.Load(1407, "igScrollbarEx");
-            funcTable.Load(1408, "igGetWindowScrollbarRect");
-            funcTable.Load(1409, "igGetWindowScrollbarID");
-            funcTable.Load(1410, "igGetWindowResizeCornerID");
-            funcTable.Load(1411, "igGetWindowResizeBorderID");
-            funcTable.Load(1412, "igButtonBehavior");
-            funcTable.Load(1413, "igDragBehavior");
-            funcTable.Load(1414, "igSliderBehavior");
-            funcTable.Load(1415, "igSplitterBehavior");
-            funcTable.Load(1416, "igTreeNodeBehavior");
-            funcTable.Load(1417, "igTreeNodeDrawLineToChildNode");
-            funcTable.Load(1418, "igTreeNodeDrawLineToTreePop");
-            funcTable.Load(1419, "igTreePushOverrideID");
-            funcTable.Load(1420, "igTreeNodeGetOpen");
-            funcTable.Load(1421, "igTreeNodeSetOpen");
-            funcTable.Load(1422, "igTreeNodeUpdateNextOpen");
-            funcTable.Load(1423, "igDataTypeGetInfo");
-            funcTable.Load(1424, "igDataTypeFormatString");
-            funcTable.Load(1425, "igDataTypeApplyOp");
-            funcTable.Load(1426, "igDataTypeApplyFromText");
-            funcTable.Load(1427, "igDataTypeCompare");
-            funcTable.Load(1428, "igDataTypeClamp");
-            funcTable.Load(1429, "igDataTypeIsZero");
-            funcTable.Load(1430, "igInputTextEx");
-            funcTable.Load(1431, "igInputTextDeactivateHook");
-            funcTable.Load(1432, "igTempInputText");
-            funcTable.Load(1433, "igTempInputScalar");
-            funcTable.Load(1434, "igTempInputIsActive");
-            funcTable.Load(1435, "igGetInputTextState");
-            funcTable.Load(1436, "igSetNextItemRefVal");
-            funcTable.Load(1437, "igIsItemActiveAsInputText");
-            funcTable.Load(1438, "igColorTooltip");
-            funcTable.Load(1439, "igColorEditOptionsPopup");
-            funcTable.Load(1440, "igColorPickerOptionsPopup");
-            funcTable.Load(1441, "igSetNextItemColorMarker");
-            funcTable.Load(1442, "igPlotEx");
-            funcTable.Load(1443, "igShadeVertsLinearColorGradientKeepAlpha");
-            funcTable.Load(1444, "igShadeVertsLinearUV");
-            funcTable.Load(1445, "igShadeVertsTransformPos");
-            funcTable.Load(1446, "igGcCompactTransientMiscBuffers");
-            funcTable.Load(1447, "igGcCompactTransientWindowBuffers");
-            funcTable.Load(1448, "igGcAwakeTransientWindowBuffers");
-            funcTable.Load(1449, "igErrorLog");
-            funcTable.Load(1450, "igErrorRecoveryStoreState");
-            funcTable.Load(1451, "igErrorRecoveryTryToRecoverState");
-            funcTable.Load(1452, "igErrorRecoveryTryToRecoverWindowState");
-            funcTable.Load(1453, "igErrorCheckUsingSetCursorPosToExtendParentBoundaries");
-            funcTable.Load(1454, "igErrorCheckEndFrameFinalizeErrorTooltip");
-            funcTable.Load(1455, "igBeginErrorTooltip");
-            funcTable.Load(1456, "igEndErrorTooltip");
-            funcTable.Load(1457, "igDebugAllocHook");
-            funcTable.Load(1458, "igDebugDrawCursorPos");
-            funcTable.Load(1459, "igDebugDrawLineExtents");
-            funcTable.Load(1460, "igDebugDrawItemRect");
-            funcTable.Load(1461, "igDebugTextUnformattedWithLocateItem");
-            funcTable.Load(1462, "igDebugLocateItem");
-            funcTable.Load(1463, "igDebugLocateItemOnHover");
-            funcTable.Load(1464, "igDebugLocateItemResolveWithLastItem");
-            funcTable.Load(1465, "igDebugBreakClearData");
-            funcTable.Load(1466, "igDebugBreakButton");
-            funcTable.Load(1467, "igDebugBreakButtonTooltip");
-            funcTable.Load(1468, "igShowFontAtlas");
-            funcTable.Load(1469, "igDebugTextureIDToU64");
-            funcTable.Load(1470, "igDebugHookIdInfo");
-            funcTable.Load(1471, "igDebugNodeColumns");
-            funcTable.Load(1472, "igDebugNodeDockNode");
-            funcTable.Load(1473, "igDebugNodeDrawList");
-            funcTable.Load(1474, "igDebugNodeDrawCmdShowMeshAndBoundingBox");
-            funcTable.Load(1475, "igDebugNodeFont");
-            funcTable.Load(1476, "igDebugNodeFontGlyphesForSrcMask");
-            funcTable.Load(1477, "igDebugNodeFontGlyph");
-            funcTable.Load(1478, "igDebugNodeTexture");
-            funcTable.Load(1479, "igDebugNodeStorage");
-            funcTable.Load(1480, "igDebugNodeTabBar");
-            funcTable.Load(1481, "igDebugNodeTable");
-            funcTable.Load(1482, "igDebugNodeTableSettings");
-            funcTable.Load(1483, "igDebugNodeInputTextState");
-            funcTable.Load(1484, "igDebugNodeTypingSelectState");
-            funcTable.Load(1485, "igDebugNodeMultiSelectState");
-            funcTable.Load(1486, "igDebugNodeWindow");
-            funcTable.Load(1487, "igDebugNodeWindowSettings");
-            funcTable.Load(1488, "igDebugNodeWindowsList");
-            funcTable.Load(1489, "igDebugNodeWindowsListByBeginStackParent");
-            funcTable.Load(1490, "igDebugNodeViewport");
-            funcTable.Load(1491, "igDebugNodePlatformMonitor");
-            funcTable.Load(1492, "igDebugRenderKeyboardPreview");
-            funcTable.Load(1493, "igDebugRenderViewportThumbnail");
-            funcTable.Load(1494, "ImFontLoader_ImFontLoader");
-            funcTable.Load(1495, "ImFontLoader_destroy");
-            funcTable.Load(1496, "igImFontAtlasGetFontLoaderForStbTruetype");
-            funcTable.Load(1497, "igImFontAtlasRectId_GetIndex");
-            funcTable.Load(1498, "igImFontAtlasRectId_GetGeneration");
-            funcTable.Load(1499, "igImFontAtlasRectId_Make");
-            funcTable.Load(1500, "ImFontAtlasBuilder_ImFontAtlasBuilder");
-            funcTable.Load(1501, "ImFontAtlasBuilder_destroy");
-            funcTable.Load(1502, "igImFontAtlasBuildInit");
-            funcTable.Load(1503, "igImFontAtlasBuildDestroy");
-            funcTable.Load(1504, "igImFontAtlasBuildMain");
-            funcTable.Load(1505, "igImFontAtlasBuildSetupFontLoader");
-            funcTable.Load(1506, "igImFontAtlasBuildNotifySetFont");
-            funcTable.Load(1507, "igImFontAtlasBuildUpdatePointers");
-            funcTable.Load(1508, "igImFontAtlasBuildRenderBitmapFromString");
-            funcTable.Load(1509, "igImFontAtlasBuildClear");
-            funcTable.Load(1510, "igImFontAtlasTextureAdd");
-            funcTable.Load(1511, "igImFontAtlasTextureMakeSpace");
-            funcTable.Load(1512, "igImFontAtlasTextureRepack");
-            funcTable.Load(1513, "igImFontAtlasTextureGrow");
-            funcTable.Load(1514, "igImFontAtlasTextureCompact");
-            funcTable.Load(1515, "igImFontAtlasTextureGetSizeEstimate");
-            funcTable.Load(1516, "igImFontAtlasBuildSetupFontSpecialGlyphs");
-            funcTable.Load(1517, "igImFontAtlasBuildLegacyPreloadAllGlyphRanges");
-            funcTable.Load(1518, "igImFontAtlasBuildGetOversampleFactors");
-            funcTable.Load(1519, "igImFontAtlasBuildDiscardBakes");
-            funcTable.Load(1520, "igImFontAtlasFontSourceInit");
-            funcTable.Load(1521, "igImFontAtlasFontSourceAddToFont");
-            funcTable.Load(1522, "igImFontAtlasFontDestroySourceData");
-            funcTable.Load(1523, "igImFontAtlasFontInitOutput");
-            funcTable.Load(1524, "igImFontAtlasFontDestroyOutput");
-            funcTable.Load(1525, "igImFontAtlasFontRebuildOutput");
-            funcTable.Load(1526, "igImFontAtlasFontDiscardBakes");
-            funcTable.Load(1527, "igImFontAtlasBakedGetId");
-            funcTable.Load(1528, "igImFontAtlasBakedGetOrAdd");
-            funcTable.Load(1529, "igImFontAtlasBakedGetClosestMatch");
-            funcTable.Load(1530, "igImFontAtlasBakedAdd");
-            funcTable.Load(1531, "igImFontAtlasBakedDiscard");
-            funcTable.Load(1532, "igImFontAtlasBakedAddFontGlyph");
-            funcTable.Load(1533, "igImFontAtlasBakedAddFontGlyphAdvancedX");
-            funcTable.Load(1534, "igImFontAtlasBakedDiscardFontGlyph");
-            funcTable.Load(1535, "igImFontAtlasBakedSetFontGlyphBitmap");
-            funcTable.Load(1536, "igImFontAtlasPackInit");
-            funcTable.Load(1537, "igImFontAtlasPackAddRect");
-            funcTable.Load(1538, "igImFontAtlasPackGetRect");
-            funcTable.Load(1539, "igImFontAtlasPackGetRectSafe");
-            funcTable.Load(1540, "igImFontAtlasPackDiscardRect");
-            funcTable.Load(1541, "igImFontAtlasUpdateNewFrame");
-            funcTable.Load(1542, "igImFontAtlasAddDrawListSharedData");
-            funcTable.Load(1543, "igImFontAtlasRemoveDrawListSharedData");
-            funcTable.Load(1544, "igImFontAtlasUpdateDrawListsTextures");
-            funcTable.Load(1545, "igImFontAtlasUpdateDrawListsSharedData");
-            funcTable.Load(1546, "igImFontAtlasTextureBlockConvert");
-            funcTable.Load(1547, "igImFontAtlasTextureBlockPostProcess");
-            funcTable.Load(1548, "igImFontAtlasTextureBlockPostProcessMultiply");
-            funcTable.Load(1549, "igImFontAtlasTextureBlockFill");
-            funcTable.Load(1550, "igImFontAtlasTextureBlockCopy");
-            funcTable.Load(1551, "igImFontAtlasTextureBlockQueueUpload");
-            funcTable.Load(1552, "igImTextureDataGetFormatBytesPerPixel");
-            funcTable.Load(1553, "igImTextureDataGetStatusName");
-            funcTable.Load(1554, "igImTextureDataGetFormatName");
-            funcTable.Load(1555, "igImFontAtlasDebugLogTextureRequests");
-            funcTable.Load(1556, "igImFontAtlasGetMouseCursorTexData");
-            funcTable.Load(1557, "igGET_FLT_MAX");
-            funcTable.Load(1558, "igGET_FLT_MIN");
-            funcTable.Load(1559, "ImVector_ImWchar_create");
-            funcTable.Load(1560, "ImVector_ImWchar_destroy");
-            funcTable.Load(1561, "ImVector_ImWchar_Init");
-            funcTable.Load(1562, "ImVector_ImWchar_UnInit");
-            funcTable.Load(1563, "ImGuiPlatformIO_Set_Platform_GetWindowPos");
-            funcTable.Load(1564, "ImGuiPlatformIO_Set_Platform_GetWindowSize");
+            var candidate = new global::BGCS.Runtime.FunctionTable(context, 1565);
+            try
+            {
+                candidate.LoadRequired(0, "ImVec2_ImVec2_Nil");
+                candidate.LoadRequired(1, "ImVec2_destroy");
+                candidate.LoadRequired(2, "ImVec2_ImVec2_Float");
+                candidate.LoadRequired(3, "ImVec4_ImVec4_Nil");
+                candidate.LoadRequired(4, "ImVec4_destroy");
+                candidate.LoadRequired(5, "ImVec4_ImVec4_Float");
+                candidate.LoadRequired(6, "ImTextureRef_ImTextureRef_Nil");
+                candidate.LoadRequired(7, "ImTextureRef_destroy");
+                candidate.LoadRequired(8, "ImTextureRef_ImTextureRef_TextureID");
+                candidate.LoadRequired(9, "ImTextureRef_GetTexID");
+                candidate.LoadRequired(10, "igCreateContext");
+                candidate.LoadRequired(11, "igDestroyContext");
+                candidate.LoadRequired(12, "igGetCurrentContext");
+                candidate.LoadRequired(13, "igSetCurrentContext");
+                candidate.LoadRequired(14, "igGetIO_Nil");
+                candidate.LoadRequired(15, "igGetPlatformIO_Nil");
+                candidate.LoadRequired(16, "igGetStyle");
+                candidate.LoadRequired(17, "igNewFrame");
+                candidate.LoadRequired(18, "igEndFrame");
+                candidate.LoadRequired(19, "igRender");
+                candidate.LoadRequired(20, "igGetDrawData");
+                candidate.LoadRequired(21, "igShowDemoWindow");
+                candidate.LoadRequired(22, "igShowMetricsWindow");
+                candidate.LoadRequired(23, "igShowDebugLogWindow");
+                candidate.LoadRequired(24, "igShowIDStackToolWindow");
+                candidate.LoadRequired(25, "igShowAboutWindow");
+                candidate.LoadRequired(26, "igShowStyleEditor");
+                candidate.LoadRequired(27, "igShowStyleSelector");
+                candidate.LoadRequired(28, "igShowFontSelector");
+                candidate.LoadRequired(29, "igShowUserGuide");
+                candidate.LoadRequired(30, "igGetVersion");
+                candidate.LoadRequired(31, "igStyleColorsDark");
+                candidate.LoadRequired(32, "igStyleColorsLight");
+                candidate.LoadRequired(33, "igStyleColorsClassic");
+                candidate.LoadRequired(34, "igBegin");
+                candidate.LoadRequired(35, "igEnd");
+                candidate.LoadRequired(36, "igBeginChild_Str");
+                candidate.LoadRequired(37, "igBeginChild_ID");
+                candidate.LoadRequired(38, "igEndChild");
+                candidate.LoadRequired(39, "igIsWindowAppearing");
+                candidate.LoadRequired(40, "igIsWindowCollapsed");
+                candidate.LoadRequired(41, "igIsWindowFocused");
+                candidate.LoadRequired(42, "igIsWindowHovered");
+                candidate.LoadRequired(43, "igGetWindowDrawList");
+                candidate.LoadRequired(44, "igGetWindowDpiScale");
+                candidate.LoadRequired(45, "igGetWindowPos");
+                candidate.LoadRequired(46, "igGetWindowSize");
+                candidate.LoadRequired(47, "igGetWindowWidth");
+                candidate.LoadRequired(48, "igGetWindowHeight");
+                candidate.LoadRequired(49, "igGetWindowViewport");
+                candidate.LoadRequired(50, "igSetNextWindowPos");
+                candidate.LoadRequired(51, "igSetNextWindowSize");
+                candidate.LoadRequired(52, "igSetNextWindowSizeConstraints");
+                candidate.LoadRequired(53, "igSetNextWindowContentSize");
+                candidate.LoadRequired(54, "igSetNextWindowCollapsed");
+                candidate.LoadRequired(55, "igSetNextWindowFocus");
+                candidate.LoadRequired(56, "igSetNextWindowScroll");
+                candidate.LoadRequired(57, "igSetNextWindowBgAlpha");
+                candidate.LoadRequired(58, "igSetNextWindowViewport");
+                candidate.LoadRequired(59, "igSetWindowPos_Vec2");
+                candidate.LoadRequired(60, "igSetWindowSize_Vec2");
+                candidate.LoadRequired(61, "igSetWindowCollapsed_Bool");
+                candidate.LoadRequired(62, "igSetWindowFocus_Nil");
+                candidate.LoadRequired(63, "igSetWindowPos_Str");
+                candidate.LoadRequired(64, "igSetWindowSize_Str");
+                candidate.LoadRequired(65, "igSetWindowCollapsed_Str");
+                candidate.LoadRequired(66, "igSetWindowFocus_Str");
+                candidate.LoadRequired(67, "igGetScrollX");
+                candidate.LoadRequired(68, "igGetScrollY");
+                candidate.LoadRequired(69, "igSetScrollX_Float");
+                candidate.LoadRequired(70, "igSetScrollY_Float");
+                candidate.LoadRequired(71, "igGetScrollMaxX");
+                candidate.LoadRequired(72, "igGetScrollMaxY");
+                candidate.LoadRequired(73, "igSetScrollHereX");
+                candidate.LoadRequired(74, "igSetScrollHereY");
+                candidate.LoadRequired(75, "igSetScrollFromPosX_Float");
+                candidate.LoadRequired(76, "igSetScrollFromPosY_Float");
+                candidate.LoadRequired(77, "igPushFont");
+                candidate.LoadRequired(78, "igPopFont");
+                candidate.LoadRequired(79, "igGetFont");
+                candidate.LoadRequired(80, "igGetFontSize");
+                candidate.LoadRequired(81, "igGetFontBaked");
+                candidate.LoadRequired(82, "igPushStyleColor_U32");
+                candidate.LoadRequired(83, "igPushStyleColor_Vec4");
+                candidate.LoadRequired(84, "igPopStyleColor");
+                candidate.LoadRequired(85, "igPushStyleVar_Float");
+                candidate.LoadRequired(86, "igPushStyleVar_Vec2");
+                candidate.LoadRequired(87, "igPushStyleVarX");
+                candidate.LoadRequired(88, "igPushStyleVarY");
+                candidate.LoadRequired(89, "igPopStyleVar");
+                candidate.LoadRequired(90, "igPushItemFlag");
+                candidate.LoadRequired(91, "igPopItemFlag");
+                candidate.LoadRequired(92, "igPushItemWidth");
+                candidate.LoadRequired(93, "igPopItemWidth");
+                candidate.LoadRequired(94, "igSetNextItemWidth");
+                candidate.LoadRequired(95, "igCalcItemWidth");
+                candidate.LoadRequired(96, "igPushTextWrapPos");
+                candidate.LoadRequired(97, "igPopTextWrapPos");
+                candidate.LoadRequired(98, "igGetFontTexUvWhitePixel");
+                candidate.LoadRequired(99, "igGetColorU32_Col");
+                candidate.LoadRequired(100, "igGetColorU32_Vec4");
+                candidate.LoadRequired(101, "igGetColorU32_U32");
+                candidate.LoadRequired(102, "igGetStyleColorVec4");
+                candidate.LoadRequired(103, "igGetCursorScreenPos");
+                candidate.LoadRequired(104, "igSetCursorScreenPos");
+                candidate.LoadRequired(105, "igGetContentRegionAvail");
+                candidate.LoadRequired(106, "igGetCursorPos");
+                candidate.LoadRequired(107, "igGetCursorPosX");
+                candidate.LoadRequired(108, "igGetCursorPosY");
+                candidate.LoadRequired(109, "igSetCursorPos");
+                candidate.LoadRequired(110, "igSetCursorPosX");
+                candidate.LoadRequired(111, "igSetCursorPosY");
+                candidate.LoadRequired(112, "igGetCursorStartPos");
+                candidate.LoadRequired(113, "igSeparator");
+                candidate.LoadRequired(114, "igSameLine");
+                candidate.LoadRequired(115, "igNewLine");
+                candidate.LoadRequired(116, "igSpacing");
+                candidate.LoadRequired(117, "igDummy");
+                candidate.LoadRequired(118, "igIndent");
+                candidate.LoadRequired(119, "igUnindent");
+                candidate.LoadRequired(120, "igBeginGroup");
+                candidate.LoadRequired(121, "igEndGroup");
+                candidate.LoadRequired(122, "igAlignTextToFramePadding");
+                candidate.LoadRequired(123, "igGetTextLineHeight");
+                candidate.LoadRequired(124, "igGetTextLineHeightWithSpacing");
+                candidate.LoadRequired(125, "igGetFrameHeight");
+                candidate.LoadRequired(126, "igGetFrameHeightWithSpacing");
+                candidate.LoadRequired(127, "igPushID_Str");
+                candidate.LoadRequired(128, "igPushID_StrStr");
+                candidate.LoadRequired(129, "igPushID_Ptr");
+                candidate.LoadRequired(130, "igPushID_Int");
+                candidate.LoadRequired(131, "igPopID");
+                candidate.LoadRequired(132, "igGetID_Str");
+                candidate.LoadRequired(133, "igGetID_StrStr");
+                candidate.LoadRequired(134, "igGetID_Ptr");
+                candidate.LoadRequired(135, "igGetID_Int");
+                candidate.LoadRequired(136, "igTextUnformatted");
+                candidate.LoadRequired(137, "igText0");
+                candidate.LoadRequired(138, "igTextV");
+                candidate.LoadRequired(139, "igTextColored0");
+                candidate.LoadRequired(140, "igTextColoredV");
+                candidate.LoadRequired(141, "igTextDisabled0");
+                candidate.LoadRequired(142, "igTextDisabledV");
+                candidate.LoadRequired(143, "igTextWrapped0");
+                candidate.LoadRequired(144, "igTextWrappedV");
+                candidate.LoadRequired(145, "igLabelText0");
+                candidate.LoadRequired(146, "igLabelTextV");
+                candidate.LoadRequired(147, "igBulletText0");
+                candidate.LoadRequired(148, "igBulletTextV");
+                candidate.LoadRequired(149, "igSeparatorText");
+                candidate.LoadRequired(150, "igButton");
+                candidate.LoadRequired(151, "igSmallButton");
+                candidate.LoadRequired(152, "igInvisibleButton");
+                candidate.LoadRequired(153, "igArrowButton");
+                candidate.LoadRequired(154, "igCheckbox");
+                candidate.LoadRequired(155, "igCheckboxFlags_IntPtr");
+                candidate.LoadRequired(156, "igCheckboxFlags_UintPtr");
+                candidate.LoadRequired(157, "igRadioButton_Bool");
+                candidate.LoadRequired(158, "igRadioButton_IntPtr");
+                candidate.LoadRequired(159, "igProgressBar");
+                candidate.LoadRequired(160, "igBullet");
+                candidate.LoadRequired(161, "igTextLink");
+                candidate.LoadRequired(162, "igTextLinkOpenURL");
+                candidate.LoadRequired(163, "igImage");
+                candidate.LoadRequired(164, "igImageWithBg");
+                candidate.LoadRequired(165, "igImageButton");
+                candidate.LoadRequired(166, "igBeginCombo");
+                candidate.LoadRequired(167, "igEndCombo");
+                candidate.LoadRequired(168, "igCombo_Str_arr");
+                candidate.LoadRequired(169, "igCombo_Str");
+                candidate.LoadRequired(170, "igCombo_FnStrPtr");
+                candidate.LoadRequired(171, "igDragFloat");
+                candidate.LoadRequired(172, "igDragFloat2");
+                candidate.LoadRequired(173, "igDragFloat3");
+                candidate.LoadRequired(174, "igDragFloat4");
+                candidate.LoadRequired(175, "igDragFloatRange2");
+                candidate.LoadRequired(176, "igDragInt");
+                candidate.LoadRequired(177, "igDragInt2");
+                candidate.LoadRequired(178, "igDragInt3");
+                candidate.LoadRequired(179, "igDragInt4");
+                candidate.LoadRequired(180, "igDragIntRange2");
+                candidate.LoadRequired(181, "igDragScalar");
+                candidate.LoadRequired(182, "igDragScalarN");
+                candidate.LoadRequired(183, "igSliderFloat");
+                candidate.LoadRequired(184, "igSliderFloat2");
+                candidate.LoadRequired(185, "igSliderFloat3");
+                candidate.LoadRequired(186, "igSliderFloat4");
+                candidate.LoadRequired(187, "igSliderAngle");
+                candidate.LoadRequired(188, "igSliderInt");
+                candidate.LoadRequired(189, "igSliderInt2");
+                candidate.LoadRequired(190, "igSliderInt3");
+                candidate.LoadRequired(191, "igSliderInt4");
+                candidate.LoadRequired(192, "igSliderScalar");
+                candidate.LoadRequired(193, "igSliderScalarN");
+                candidate.LoadRequired(194, "igVSliderFloat");
+                candidate.LoadRequired(195, "igVSliderInt");
+                candidate.LoadRequired(196, "igVSliderScalar");
+                candidate.LoadRequired(197, "igInputText");
+                candidate.LoadRequired(198, "igInputTextMultiline");
+                candidate.LoadRequired(199, "igInputTextWithHint");
+                candidate.LoadRequired(200, "igInputFloat");
+                candidate.LoadRequired(201, "igInputFloat2");
+                candidate.LoadRequired(202, "igInputFloat3");
+                candidate.LoadRequired(203, "igInputFloat4");
+                candidate.LoadRequired(204, "igInputInt");
+                candidate.LoadRequired(205, "igInputInt2");
+                candidate.LoadRequired(206, "igInputInt3");
+                candidate.LoadRequired(207, "igInputInt4");
+                candidate.LoadRequired(208, "igInputDouble");
+                candidate.LoadRequired(209, "igInputScalar");
+                candidate.LoadRequired(210, "igInputScalarN");
+                candidate.LoadRequired(211, "igColorEdit3");
+                candidate.LoadRequired(212, "igColorEdit4");
+                candidate.LoadRequired(213, "igColorPicker3");
+                candidate.LoadRequired(214, "igColorPicker4");
+                candidate.LoadRequired(215, "igColorButton");
+                candidate.LoadRequired(216, "igSetColorEditOptions");
+                candidate.LoadRequired(217, "igTreeNode_Str");
+                candidate.LoadRequired(218, "igTreeNode_StrStr0");
+                candidate.LoadRequired(219, "igTreeNode_Ptr0");
+                candidate.LoadRequired(220, "igTreeNodeV_Str");
+                candidate.LoadRequired(221, "igTreeNodeV_Ptr");
+                candidate.LoadRequired(222, "igTreeNodeEx_Str");
+                candidate.LoadRequired(223, "igTreeNodeEx_StrStr0");
+                candidate.LoadRequired(224, "igTreeNodeEx_Ptr0");
+                candidate.LoadRequired(225, "igTreeNodeExV_Str");
+                candidate.LoadRequired(226, "igTreeNodeExV_Ptr");
+                candidate.LoadRequired(227, "igTreePush_Str");
+                candidate.LoadRequired(228, "igTreePush_Ptr");
+                candidate.LoadRequired(229, "igTreePop");
+                candidate.LoadRequired(230, "igGetTreeNodeToLabelSpacing");
+                candidate.LoadRequired(231, "igCollapsingHeader_TreeNodeFlags");
+                candidate.LoadRequired(232, "igCollapsingHeader_BoolPtr");
+                candidate.LoadRequired(233, "igSetNextItemOpen");
+                candidate.LoadRequired(234, "igSetNextItemStorageID");
+                candidate.LoadRequired(235, "igSelectable_Bool");
+                candidate.LoadRequired(236, "igSelectable_BoolPtr");
+                candidate.LoadRequired(237, "igBeginMultiSelect");
+                candidate.LoadRequired(238, "igEndMultiSelect");
+                candidate.LoadRequired(239, "igSetNextItemSelectionUserData");
+                candidate.LoadRequired(240, "igIsItemToggledSelection");
+                candidate.LoadRequired(241, "igBeginListBox");
+                candidate.LoadRequired(242, "igEndListBox");
+                candidate.LoadRequired(243, "igListBox_Str_arr");
+                candidate.LoadRequired(244, "igListBox_FnStrPtr");
+                candidate.LoadRequired(245, "igPlotLines_FloatPtr");
+                candidate.LoadRequired(246, "igPlotLines_FnFloatPtr");
+                candidate.LoadRequired(247, "igPlotHistogram_FloatPtr");
+                candidate.LoadRequired(248, "igPlotHistogram_FnFloatPtr");
+                candidate.LoadRequired(249, "igValue_Bool");
+                candidate.LoadRequired(250, "igValue_Int");
+                candidate.LoadRequired(251, "igValue_Uint");
+                candidate.LoadRequired(252, "igValue_Float");
+                candidate.LoadRequired(253, "igBeginMenuBar");
+                candidate.LoadRequired(254, "igEndMenuBar");
+                candidate.LoadRequired(255, "igBeginMainMenuBar");
+                candidate.LoadRequired(256, "igEndMainMenuBar");
+                candidate.LoadRequired(257, "igBeginMenu");
+                candidate.LoadRequired(258, "igEndMenu");
+                candidate.LoadRequired(259, "igMenuItem_Bool");
+                candidate.LoadRequired(260, "igMenuItem_BoolPtr");
+                candidate.LoadRequired(261, "igBeginTooltip");
+                candidate.LoadRequired(262, "igEndTooltip");
+                candidate.LoadRequired(263, "igSetTooltip0");
+                candidate.LoadRequired(264, "igSetTooltipV");
+                candidate.LoadRequired(265, "igBeginItemTooltip");
+                candidate.LoadRequired(266, "igSetItemTooltip0");
+                candidate.LoadRequired(267, "igSetItemTooltipV");
+                candidate.LoadRequired(268, "igBeginPopup");
+                candidate.LoadRequired(269, "igBeginPopupModal");
+                candidate.LoadRequired(270, "igEndPopup");
+                candidate.LoadRequired(271, "igOpenPopup_Str");
+                candidate.LoadRequired(272, "igOpenPopup_ID");
+                candidate.LoadRequired(273, "igOpenPopupOnItemClick");
+                candidate.LoadRequired(274, "igCloseCurrentPopup");
+                candidate.LoadRequired(275, "igBeginPopupContextItem");
+                candidate.LoadRequired(276, "igBeginPopupContextWindow");
+                candidate.LoadRequired(277, "igBeginPopupContextVoid");
+                candidate.LoadRequired(278, "igIsPopupOpen_Str");
+                candidate.LoadRequired(279, "igBeginTable");
+                candidate.LoadRequired(280, "igEndTable");
+                candidate.LoadRequired(281, "igTableNextRow");
+                candidate.LoadRequired(282, "igTableNextColumn");
+                candidate.LoadRequired(283, "igTableSetColumnIndex");
+                candidate.LoadRequired(284, "igTableSetupColumn");
+                candidate.LoadRequired(285, "igTableSetupScrollFreeze");
+                candidate.LoadRequired(286, "igTableHeader");
+                candidate.LoadRequired(287, "igTableHeadersRow");
+                candidate.LoadRequired(288, "igTableAngledHeadersRow");
+                candidate.LoadRequired(289, "igTableGetSortSpecs");
+                candidate.LoadRequired(290, "igTableGetColumnCount");
+                candidate.LoadRequired(291, "igTableGetColumnIndex");
+                candidate.LoadRequired(292, "igTableGetRowIndex");
+                candidate.LoadRequired(293, "igTableGetColumnName_Int");
+                candidate.LoadRequired(294, "igTableGetColumnFlags");
+                candidate.LoadRequired(295, "igTableSetColumnEnabled");
+                candidate.LoadRequired(296, "igTableGetHoveredColumn");
+                candidate.LoadRequired(297, "igTableSetBgColor");
+                candidate.LoadRequired(298, "igColumns");
+                candidate.LoadRequired(299, "igNextColumn");
+                candidate.LoadRequired(300, "igGetColumnIndex");
+                candidate.LoadRequired(301, "igGetColumnWidth");
+                candidate.LoadRequired(302, "igSetColumnWidth");
+                candidate.LoadRequired(303, "igGetColumnOffset");
+                candidate.LoadRequired(304, "igSetColumnOffset");
+                candidate.LoadRequired(305, "igGetColumnsCount");
+                candidate.LoadRequired(306, "igBeginTabBar");
+                candidate.LoadRequired(307, "igEndTabBar");
+                candidate.LoadRequired(308, "igBeginTabItem");
+                candidate.LoadRequired(309, "igEndTabItem");
+                candidate.LoadRequired(310, "igTabItemButton");
+                candidate.LoadRequired(311, "igSetTabItemClosed");
+                candidate.LoadRequired(312, "igDockSpace");
+                candidate.LoadRequired(313, "igDockSpaceOverViewport");
+                candidate.LoadRequired(314, "igSetNextWindowDockID");
+                candidate.LoadRequired(315, "igSetNextWindowClass");
+                candidate.LoadRequired(316, "igGetWindowDockID");
+                candidate.LoadRequired(317, "igIsWindowDocked");
+                candidate.LoadRequired(318, "igLogToTTY");
+                candidate.LoadRequired(319, "igLogToFile");
+                candidate.LoadRequired(320, "igLogToClipboard");
+                candidate.LoadRequired(321, "igLogFinish");
+                candidate.LoadRequired(322, "igLogButtons");
+                candidate.LoadRequired(323, "igLogText0");
+                candidate.LoadRequired(324, "igLogTextV");
+                candidate.LoadRequired(325, "igBeginDragDropSource");
+                candidate.LoadRequired(326, "igSetDragDropPayload");
+                candidate.LoadRequired(327, "igEndDragDropSource");
+                candidate.LoadRequired(328, "igBeginDragDropTarget");
+                candidate.LoadRequired(329, "igAcceptDragDropPayload");
+                candidate.LoadRequired(330, "igEndDragDropTarget");
+                candidate.LoadRequired(331, "igGetDragDropPayload");
+                candidate.LoadRequired(332, "igBeginDisabled");
+                candidate.LoadRequired(333, "igEndDisabled");
+                candidate.LoadRequired(334, "igPushClipRect");
+                candidate.LoadRequired(335, "igPopClipRect");
+                candidate.LoadRequired(336, "igSetItemDefaultFocus");
+                candidate.LoadRequired(337, "igSetKeyboardFocusHere");
+                candidate.LoadRequired(338, "igSetNavCursorVisible");
+                candidate.LoadRequired(339, "igSetNextItemAllowOverlap");
+                candidate.LoadRequired(340, "igIsItemHovered");
+                candidate.LoadRequired(341, "igIsItemActive");
+                candidate.LoadRequired(342, "igIsItemFocused");
+                candidate.LoadRequired(343, "igIsItemClicked");
+                candidate.LoadRequired(344, "igIsItemVisible");
+                candidate.LoadRequired(345, "igIsItemEdited");
+                candidate.LoadRequired(346, "igIsItemActivated");
+                candidate.LoadRequired(347, "igIsItemDeactivated");
+                candidate.LoadRequired(348, "igIsItemDeactivatedAfterEdit");
+                candidate.LoadRequired(349, "igIsItemToggledOpen");
+                candidate.LoadRequired(350, "igIsAnyItemHovered");
+                candidate.LoadRequired(351, "igIsAnyItemActive");
+                candidate.LoadRequired(352, "igIsAnyItemFocused");
+                candidate.LoadRequired(353, "igGetItemID");
+                candidate.LoadRequired(354, "igGetItemRectMin");
+                candidate.LoadRequired(355, "igGetItemRectMax");
+                candidate.LoadRequired(356, "igGetItemRectSize");
+                candidate.LoadRequired(357, "igGetItemFlags");
+                candidate.LoadRequired(358, "igGetMainViewport");
+                candidate.LoadRequired(359, "igGetBackgroundDrawList");
+                candidate.LoadRequired(360, "igGetForegroundDrawList_ViewportPtr");
+                candidate.LoadRequired(361, "igIsRectVisible_Nil");
+                candidate.LoadRequired(362, "igIsRectVisible_Vec2");
+                candidate.LoadRequired(363, "igGetTime");
+                candidate.LoadRequired(364, "igGetFrameCount");
+                candidate.LoadRequired(365, "igGetDrawListSharedData");
+                candidate.LoadRequired(366, "igGetStyleColorName");
+                candidate.LoadRequired(367, "igSetStateStorage");
+                candidate.LoadRequired(368, "igGetStateStorage");
+                candidate.LoadRequired(369, "igCalcTextSize");
+                candidate.LoadRequired(370, "igColorConvertU32ToFloat4");
+                candidate.LoadRequired(371, "igColorConvertFloat4ToU32");
+                candidate.LoadRequired(372, "igColorConvertRGBtoHSV");
+                candidate.LoadRequired(373, "igColorConvertHSVtoRGB");
+                candidate.LoadRequired(374, "igIsKeyDown_Nil");
+                candidate.LoadRequired(375, "igIsKeyPressed_Bool");
+                candidate.LoadRequired(376, "igIsKeyReleased_Nil");
+                candidate.LoadRequired(377, "igIsKeyChordPressed_Nil");
+                candidate.LoadRequired(378, "igGetKeyPressedAmount");
+                candidate.LoadRequired(379, "igGetKeyName");
+                candidate.LoadRequired(380, "igSetNextFrameWantCaptureKeyboard");
+                candidate.LoadRequired(381, "igShortcut_Nil");
+                candidate.LoadRequired(382, "igSetNextItemShortcut");
+                candidate.LoadRequired(383, "igSetItemKeyOwner_Nil");
+                candidate.LoadRequired(384, "igIsMouseDown_Nil");
+                candidate.LoadRequired(385, "igIsMouseClicked_Bool");
+                candidate.LoadRequired(386, "igIsMouseReleased_Nil");
+                candidate.LoadRequired(387, "igIsMouseDoubleClicked_Nil");
+                candidate.LoadRequired(388, "igIsMouseReleasedWithDelay");
+                candidate.LoadRequired(389, "igGetMouseClickedCount");
+                candidate.LoadRequired(390, "igIsMouseHoveringRect");
+                candidate.LoadRequired(391, "igIsMousePosValid");
+                candidate.LoadRequired(392, "igIsAnyMouseDown");
+                candidate.LoadRequired(393, "igGetMousePos");
+                candidate.LoadRequired(394, "igGetMousePosOnOpeningCurrentPopup");
+                candidate.LoadRequired(395, "igIsMouseDragging");
+                candidate.LoadRequired(396, "igGetMouseDragDelta");
+                candidate.LoadRequired(397, "igResetMouseDragDelta");
+                candidate.LoadRequired(398, "igGetMouseCursor");
+                candidate.LoadRequired(399, "igSetMouseCursor");
+                candidate.LoadRequired(400, "igSetNextFrameWantCaptureMouse");
+                candidate.LoadRequired(401, "igGetClipboardText");
+                candidate.LoadRequired(402, "igSetClipboardText");
+                candidate.LoadRequired(403, "igLoadIniSettingsFromDisk");
+                candidate.LoadRequired(404, "igLoadIniSettingsFromMemory");
+                candidate.LoadRequired(405, "igSaveIniSettingsToDisk");
+                candidate.LoadRequired(406, "igSaveIniSettingsToMemory");
+                candidate.LoadRequired(407, "igDebugTextEncoding");
+                candidate.LoadRequired(408, "igDebugFlashStyleColor");
+                candidate.LoadRequired(409, "igDebugStartItemPicker");
+                candidate.LoadRequired(410, "igDebugCheckVersionAndDataLayout");
+                candidate.LoadRequired(411, "igDebugLog0");
+                candidate.LoadRequired(412, "igDebugLogV");
+                candidate.LoadRequired(413, "igSetAllocatorFunctions");
+                candidate.LoadRequired(414, "igGetAllocatorFunctions");
+                candidate.LoadRequired(415, "igMemAlloc");
+                candidate.LoadRequired(416, "igMemFree");
+                candidate.LoadRequired(417, "igUpdatePlatformWindows");
+                candidate.LoadRequired(418, "igRenderPlatformWindowsDefault");
+                candidate.LoadRequired(419, "igDestroyPlatformWindows");
+                candidate.LoadRequired(420, "igFindViewportByID");
+                candidate.LoadRequired(421, "igFindViewportByPlatformHandle");
+                candidate.LoadRequired(422, "ImGuiTableSortSpecs_ImGuiTableSortSpecs");
+                candidate.LoadRequired(423, "ImGuiTableSortSpecs_destroy");
+                candidate.LoadRequired(424, "ImGuiTableColumnSortSpecs_ImGuiTableColumnSortSpecs");
+                candidate.LoadRequired(425, "ImGuiTableColumnSortSpecs_destroy");
+                candidate.LoadRequired(426, "ImGuiStyle_ImGuiStyle");
+                candidate.LoadRequired(427, "ImGuiStyle_destroy");
+                candidate.LoadRequired(428, "ImGuiStyle_ScaleAllSizes");
+                candidate.LoadRequired(429, "ImGuiIO_AddKeyEvent");
+                candidate.LoadRequired(430, "ImGuiIO_AddKeyAnalogEvent");
+                candidate.LoadRequired(431, "ImGuiIO_AddMousePosEvent");
+                candidate.LoadRequired(432, "ImGuiIO_AddMouseButtonEvent");
+                candidate.LoadRequired(433, "ImGuiIO_AddMouseWheelEvent");
+                candidate.LoadRequired(434, "ImGuiIO_AddMouseSourceEvent");
+                candidate.LoadRequired(435, "ImGuiIO_AddMouseViewportEvent");
+                candidate.LoadRequired(436, "ImGuiIO_AddFocusEvent");
+                candidate.LoadRequired(437, "ImGuiIO_AddInputCharacter");
+                candidate.LoadRequired(438, "ImGuiIO_AddInputCharacterUTF16");
+                candidate.LoadRequired(439, "ImGuiIO_AddInputCharactersUTF8");
+                candidate.LoadRequired(440, "ImGuiIO_SetKeyEventNativeData");
+                candidate.LoadRequired(441, "ImGuiIO_SetAppAcceptingEvents");
+                candidate.LoadRequired(442, "ImGuiIO_ClearEventsQueue");
+                candidate.LoadRequired(443, "ImGuiIO_ClearInputKeys");
+                candidate.LoadRequired(444, "ImGuiIO_ClearInputMouse");
+                candidate.LoadRequired(445, "ImGuiIO_ImGuiIO");
+                candidate.LoadRequired(446, "ImGuiIO_destroy");
+                candidate.LoadRequired(447, "ImGuiInputTextCallbackData_ImGuiInputTextCallbackData");
+                candidate.LoadRequired(448, "ImGuiInputTextCallbackData_destroy");
+                candidate.LoadRequired(449, "ImGuiInputTextCallbackData_DeleteChars");
+                candidate.LoadRequired(450, "ImGuiInputTextCallbackData_InsertChars");
+                candidate.LoadRequired(451, "ImGuiInputTextCallbackData_SelectAll");
+                candidate.LoadRequired(452, "ImGuiInputTextCallbackData_SetSelection");
+                candidate.LoadRequired(453, "ImGuiInputTextCallbackData_ClearSelection");
+                candidate.LoadRequired(454, "ImGuiInputTextCallbackData_HasSelection");
+                candidate.LoadRequired(455, "ImGuiWindowClass_ImGuiWindowClass");
+                candidate.LoadRequired(456, "ImGuiWindowClass_destroy");
+                candidate.LoadRequired(457, "ImGuiPayload_ImGuiPayload");
+                candidate.LoadRequired(458, "ImGuiPayload_destroy");
+                candidate.LoadRequired(459, "ImGuiPayload_Clear");
+                candidate.LoadRequired(460, "ImGuiPayload_IsDataType");
+                candidate.LoadRequired(461, "ImGuiPayload_IsPreview");
+                candidate.LoadRequired(462, "ImGuiPayload_IsDelivery");
+                candidate.LoadRequired(463, "ImGuiOnceUponAFrame_ImGuiOnceUponAFrame");
+                candidate.LoadRequired(464, "ImGuiOnceUponAFrame_destroy");
+                candidate.LoadRequired(465, "ImGuiTextFilter_ImGuiTextFilter");
+                candidate.LoadRequired(466, "ImGuiTextFilter_destroy");
+                candidate.LoadRequired(467, "ImGuiTextFilter_Draw");
+                candidate.LoadRequired(468, "ImGuiTextFilter_PassFilter");
+                candidate.LoadRequired(469, "ImGuiTextFilter_Build");
+                candidate.LoadRequired(470, "ImGuiTextFilter_Clear");
+                candidate.LoadRequired(471, "ImGuiTextFilter_IsActive");
+                candidate.LoadRequired(472, "ImGuiTextRange_ImGuiTextRange_Nil");
+                candidate.LoadRequired(473, "ImGuiTextRange_destroy");
+                candidate.LoadRequired(474, "ImGuiTextRange_ImGuiTextRange_Str");
+                candidate.LoadRequired(475, "ImGuiTextRange_empty");
+                candidate.LoadRequired(476, "ImGuiTextRange_split");
+                candidate.LoadRequired(477, "ImGuiTextBuffer_ImGuiTextBuffer");
+                candidate.LoadRequired(478, "ImGuiTextBuffer_destroy");
+                candidate.LoadRequired(479, "ImGuiTextBuffer_begin");
+                candidate.LoadRequired(480, "ImGuiTextBuffer_end");
+                candidate.LoadRequired(481, "ImGuiTextBuffer_size");
+                candidate.LoadRequired(482, "ImGuiTextBuffer_empty");
+                candidate.LoadRequired(483, "ImGuiTextBuffer_clear");
+                candidate.LoadRequired(484, "ImGuiTextBuffer_resize");
+                candidate.LoadRequired(485, "ImGuiTextBuffer_reserve");
+                candidate.LoadRequired(486, "ImGuiTextBuffer_c_str");
+                candidate.LoadRequired(487, "ImGuiTextBuffer_append");
+                candidate.LoadRequired(488, "ImGuiTextBuffer_appendfv");
+                candidate.LoadRequired(489, "ImGuiStoragePair_ImGuiStoragePair_Int");
+                candidate.LoadRequired(490, "ImGuiStoragePair_destroy");
+                candidate.LoadRequired(491, "ImGuiStoragePair_ImGuiStoragePair_Float");
+                candidate.LoadRequired(492, "ImGuiStoragePair_ImGuiStoragePair_Ptr");
+                candidate.LoadRequired(493, "ImGuiStorage_Clear");
+                candidate.LoadRequired(494, "ImGuiStorage_GetInt");
+                candidate.LoadRequired(495, "ImGuiStorage_SetInt");
+                candidate.LoadRequired(496, "ImGuiStorage_GetBool");
+                candidate.LoadRequired(497, "ImGuiStorage_SetBool");
+                candidate.LoadRequired(498, "ImGuiStorage_GetFloat");
+                candidate.LoadRequired(499, "ImGuiStorage_SetFloat");
+                candidate.LoadRequired(500, "ImGuiStorage_GetVoidPtr");
+                candidate.LoadRequired(501, "ImGuiStorage_SetVoidPtr");
+                candidate.LoadRequired(502, "ImGuiStorage_GetIntRef");
+                candidate.LoadRequired(503, "ImGuiStorage_GetBoolRef");
+                candidate.LoadRequired(504, "ImGuiStorage_GetFloatRef");
+                candidate.LoadRequired(505, "ImGuiStorage_GetVoidPtrRef");
+                candidate.LoadRequired(506, "ImGuiStorage_BuildSortByKey");
+                candidate.LoadRequired(507, "ImGuiStorage_SetAllInt");
+                candidate.LoadRequired(508, "ImGuiListClipper_ImGuiListClipper");
+                candidate.LoadRequired(509, "ImGuiListClipper_destroy");
+                candidate.LoadRequired(510, "ImGuiListClipper_Begin");
+                candidate.LoadRequired(511, "ImGuiListClipper_End");
+                candidate.LoadRequired(512, "ImGuiListClipper_Step");
+                candidate.LoadRequired(513, "ImGuiListClipper_IncludeItemByIndex");
+                candidate.LoadRequired(514, "ImGuiListClipper_IncludeItemsByIndex");
+                candidate.LoadRequired(515, "ImGuiListClipper_SeekCursorForItem");
+                candidate.LoadRequired(516, "ImColor_ImColor_Nil");
+                candidate.LoadRequired(517, "ImColor_destroy");
+                candidate.LoadRequired(518, "ImColor_ImColor_Float");
+                candidate.LoadRequired(519, "ImColor_ImColor_Vec4");
+                candidate.LoadRequired(520, "ImColor_ImColor_Int");
+                candidate.LoadRequired(521, "ImColor_ImColor_U32");
+                candidate.LoadRequired(522, "ImColor_SetHSV");
+                candidate.LoadRequired(523, "ImColor_HSV");
+                candidate.LoadRequired(524, "ImGuiSelectionBasicStorage_ImGuiSelectionBasicStorage");
+                candidate.LoadRequired(525, "ImGuiSelectionBasicStorage_destroy");
+                candidate.LoadRequired(526, "ImGuiSelectionBasicStorage_ApplyRequests");
+                candidate.LoadRequired(527, "ImGuiSelectionBasicStorage_Contains");
+                candidate.LoadRequired(528, "ImGuiSelectionBasicStorage_Clear");
+                candidate.LoadRequired(529, "ImGuiSelectionBasicStorage_Swap");
+                candidate.LoadRequired(530, "ImGuiSelectionBasicStorage_SetItemSelected");
+                candidate.LoadRequired(531, "ImGuiSelectionBasicStorage_GetNextSelectedItem");
+                candidate.LoadRequired(532, "ImGuiSelectionBasicStorage_GetStorageIdFromIndex");
+                candidate.LoadRequired(533, "ImGuiSelectionExternalStorage_ImGuiSelectionExternalStorage");
+                candidate.LoadRequired(534, "ImGuiSelectionExternalStorage_destroy");
+                candidate.LoadRequired(535, "ImGuiSelectionExternalStorage_ApplyRequests");
+                candidate.LoadRequired(536, "ImDrawCmd_ImDrawCmd");
+                candidate.LoadRequired(537, "ImDrawCmd_destroy");
+                candidate.LoadRequired(538, "ImDrawCmd_GetTexID");
+                candidate.LoadRequired(539, "ImDrawListSplitter_ImDrawListSplitter");
+                candidate.LoadRequired(540, "ImDrawListSplitter_destroy");
+                candidate.LoadRequired(541, "ImDrawListSplitter_Clear");
+                candidate.LoadRequired(542, "ImDrawListSplitter_ClearFreeMemory");
+                candidate.LoadRequired(543, "ImDrawListSplitter_Split");
+                candidate.LoadRequired(544, "ImDrawListSplitter_Merge");
+                candidate.LoadRequired(545, "ImDrawListSplitter_SetCurrentChannel");
+                candidate.LoadRequired(546, "ImDrawList_ImDrawList");
+                candidate.LoadRequired(547, "ImDrawList_destroy");
+                candidate.LoadRequired(548, "ImDrawList_PushClipRect");
+                candidate.LoadRequired(549, "ImDrawList_PushClipRectFullScreen");
+                candidate.LoadRequired(550, "ImDrawList_PopClipRect");
+                candidate.LoadRequired(551, "ImDrawList_PushTexture");
+                candidate.LoadRequired(552, "ImDrawList_PopTexture");
+                candidate.LoadRequired(553, "ImDrawList_GetClipRectMin");
+                candidate.LoadRequired(554, "ImDrawList_GetClipRectMax");
+                candidate.LoadRequired(555, "ImDrawList_AddLine");
+                candidate.LoadRequired(556, "ImDrawList_AddRect");
+                candidate.LoadRequired(557, "ImDrawList_AddRectFilled");
+                candidate.LoadRequired(558, "ImDrawList_AddRectFilledMultiColor");
+                candidate.LoadRequired(559, "ImDrawList_AddQuad");
+                candidate.LoadRequired(560, "ImDrawList_AddQuadFilled");
+                candidate.LoadRequired(561, "ImDrawList_AddTriangle");
+                candidate.LoadRequired(562, "ImDrawList_AddTriangleFilled");
+                candidate.LoadRequired(563, "ImDrawList_AddCircle");
+                candidate.LoadRequired(564, "ImDrawList_AddCircleFilled");
+                candidate.LoadRequired(565, "ImDrawList_AddNgon");
+                candidate.LoadRequired(566, "ImDrawList_AddNgonFilled");
+                candidate.LoadRequired(567, "ImDrawList_AddEllipse");
+                candidate.LoadRequired(568, "ImDrawList_AddEllipseFilled");
+                candidate.LoadRequired(569, "ImDrawList_AddText_Vec2");
+                candidate.LoadRequired(570, "ImDrawList_AddText_FontPtr");
+                candidate.LoadRequired(571, "ImDrawList_AddBezierCubic");
+                candidate.LoadRequired(572, "ImDrawList_AddBezierQuadratic");
+                candidate.LoadRequired(573, "ImDrawList_AddPolyline");
+                candidate.LoadRequired(574, "ImDrawList_AddConvexPolyFilled");
+                candidate.LoadRequired(575, "ImDrawList_AddConcavePolyFilled");
+                candidate.LoadRequired(576, "ImDrawList_AddImage");
+                candidate.LoadRequired(577, "ImDrawList_AddImageQuad");
+                candidate.LoadRequired(578, "ImDrawList_AddImageRounded");
+                candidate.LoadRequired(579, "ImDrawList_PathClear");
+                candidate.LoadRequired(580, "ImDrawList_PathLineTo");
+                candidate.LoadRequired(581, "ImDrawList_PathLineToMergeDuplicate");
+                candidate.LoadRequired(582, "ImDrawList_PathFillConvex");
+                candidate.LoadRequired(583, "ImDrawList_PathFillConcave");
+                candidate.LoadRequired(584, "ImDrawList_PathStroke");
+                candidate.LoadRequired(585, "ImDrawList_PathArcTo");
+                candidate.LoadRequired(586, "ImDrawList_PathArcToFast");
+                candidate.LoadRequired(587, "ImDrawList_PathEllipticalArcTo");
+                candidate.LoadRequired(588, "ImDrawList_PathBezierCubicCurveTo");
+                candidate.LoadRequired(589, "ImDrawList_PathBezierQuadraticCurveTo");
+                candidate.LoadRequired(590, "ImDrawList_PathRect");
+                candidate.LoadRequired(591, "ImDrawList_AddCallback");
+                candidate.LoadRequired(592, "ImDrawList_AddDrawCmd");
+                candidate.LoadRequired(593, "ImDrawList_CloneOutput");
+                candidate.LoadRequired(594, "ImDrawList_ChannelsSplit");
+                candidate.LoadRequired(595, "ImDrawList_ChannelsMerge");
+                candidate.LoadRequired(596, "ImDrawList_ChannelsSetCurrent");
+                candidate.LoadRequired(597, "ImDrawList_PrimReserve");
+                candidate.LoadRequired(598, "ImDrawList_PrimUnreserve");
+                candidate.LoadRequired(599, "ImDrawList_PrimRect");
+                candidate.LoadRequired(600, "ImDrawList_PrimRectUV");
+                candidate.LoadRequired(601, "ImDrawList_PrimQuadUV");
+                candidate.LoadRequired(602, "ImDrawList_PrimWriteVtx");
+                candidate.LoadRequired(603, "ImDrawList_PrimWriteIdx");
+                candidate.LoadRequired(604, "ImDrawList_PrimVtx");
+                candidate.LoadRequired(605, "ImDrawList__SetDrawListSharedData");
+                candidate.LoadRequired(606, "ImDrawList__ResetForNewFrame");
+                candidate.LoadRequired(607, "ImDrawList__ClearFreeMemory");
+                candidate.LoadRequired(608, "ImDrawList__PopUnusedDrawCmd");
+                candidate.LoadRequired(609, "ImDrawList__TryMergeDrawCmds");
+                candidate.LoadRequired(610, "ImDrawList__OnChangedClipRect");
+                candidate.LoadRequired(611, "ImDrawList__OnChangedTexture");
+                candidate.LoadRequired(612, "ImDrawList__OnChangedVtxOffset");
+                candidate.LoadRequired(613, "ImDrawList__SetTexture");
+                candidate.LoadRequired(614, "ImDrawList__CalcCircleAutoSegmentCount");
+                candidate.LoadRequired(615, "ImDrawList__PathArcToFastEx");
+                candidate.LoadRequired(616, "ImDrawList__PathArcToN");
+                candidate.LoadRequired(617, "ImDrawData_ImDrawData");
+                candidate.LoadRequired(618, "ImDrawData_destroy");
+                candidate.LoadRequired(619, "ImDrawData_Clear");
+                candidate.LoadRequired(620, "ImDrawData_AddDrawList");
+                candidate.LoadRequired(621, "ImDrawData_DeIndexAllBuffers");
+                candidate.LoadRequired(622, "ImDrawData_ScaleClipRects");
+                candidate.LoadRequired(623, "ImTextureData_ImTextureData");
+                candidate.LoadRequired(624, "ImTextureData_destroy");
+                candidate.LoadRequired(625, "ImTextureData_Create");
+                candidate.LoadRequired(626, "ImTextureData_DestroyPixels");
+                candidate.LoadRequired(627, "ImTextureData_GetPixels");
+                candidate.LoadRequired(628, "ImTextureData_GetPixelsAt");
+                candidate.LoadRequired(629, "ImTextureData_GetSizeInBytes");
+                candidate.LoadRequired(630, "ImTextureData_GetPitch");
+                candidate.LoadRequired(631, "ImTextureData_GetTexRef");
+                candidate.LoadRequired(632, "ImTextureData_GetTexID");
+                candidate.LoadRequired(633, "ImTextureData_SetTexID");
+                candidate.LoadRequired(634, "ImTextureData_SetStatus");
+                candidate.LoadRequired(635, "ImFontConfig_ImFontConfig");
+                candidate.LoadRequired(636, "ImFontConfig_destroy");
+                candidate.LoadRequired(637, "ImFontGlyph_ImFontGlyph");
+                candidate.LoadRequired(638, "ImFontGlyph_destroy");
+                candidate.LoadRequired(639, "ImFontGlyphRangesBuilder_ImFontGlyphRangesBuilder");
+                candidate.LoadRequired(640, "ImFontGlyphRangesBuilder_destroy");
+                candidate.LoadRequired(641, "ImFontGlyphRangesBuilder_Clear");
+                candidate.LoadRequired(642, "ImFontGlyphRangesBuilder_GetBit");
+                candidate.LoadRequired(643, "ImFontGlyphRangesBuilder_SetBit");
+                candidate.LoadRequired(644, "ImFontGlyphRangesBuilder_AddChar");
+                candidate.LoadRequired(645, "ImFontGlyphRangesBuilder_AddText");
+                candidate.LoadRequired(646, "ImFontGlyphRangesBuilder_AddRanges");
+                candidate.LoadRequired(647, "ImFontGlyphRangesBuilder_BuildRanges");
+                candidate.LoadRequired(648, "ImFontAtlasRect_ImFontAtlasRect");
+                candidate.LoadRequired(649, "ImFontAtlasRect_destroy");
+                candidate.LoadRequired(650, "ImFontAtlas_ImFontAtlas");
+                candidate.LoadRequired(651, "ImFontAtlas_destroy");
+                candidate.LoadRequired(652, "ImFontAtlas_AddFont");
+                candidate.LoadRequired(653, "ImFontAtlas_AddFontDefault");
+                candidate.LoadRequired(654, "ImFontAtlas_AddFontDefaultVector");
+                candidate.LoadRequired(655, "ImFontAtlas_AddFontDefaultBitmap");
+                candidate.LoadRequired(656, "ImFontAtlas_AddFontFromFileTTF");
+                candidate.LoadRequired(657, "ImFontAtlas_AddFontFromMemoryTTF");
+                candidate.LoadRequired(658, "ImFontAtlas_AddFontFromMemoryCompressedTTF");
+                candidate.LoadRequired(659, "ImFontAtlas_AddFontFromMemoryCompressedBase85TTF");
+                candidate.LoadRequired(660, "ImFontAtlas_RemoveFont");
+                candidate.LoadRequired(661, "ImFontAtlas_Clear");
+                candidate.LoadRequired(662, "ImFontAtlas_CompactCache");
+                candidate.LoadRequired(663, "ImFontAtlas_SetFontLoader");
+                candidate.LoadRequired(664, "ImFontAtlas_ClearInputData");
+                candidate.LoadRequired(665, "ImFontAtlas_ClearFonts");
+                candidate.LoadRequired(666, "ImFontAtlas_ClearTexData");
+                candidate.LoadRequired(667, "ImFontAtlas_GetGlyphRangesDefault");
+                candidate.LoadRequired(668, "ImFontAtlas_AddCustomRect");
+                candidate.LoadRequired(669, "ImFontAtlas_RemoveCustomRect");
+                candidate.LoadRequired(670, "ImFontAtlas_GetCustomRect");
+                candidate.LoadRequired(671, "ImFontBaked_ImFontBaked");
+                candidate.LoadRequired(672, "ImFontBaked_destroy");
+                candidate.LoadRequired(673, "ImFontBaked_ClearOutputData");
+                candidate.LoadRequired(674, "ImFontBaked_FindGlyph");
+                candidate.LoadRequired(675, "ImFontBaked_FindGlyphNoFallback");
+                candidate.LoadRequired(676, "ImFontBaked_GetCharAdvance");
+                candidate.LoadRequired(677, "ImFontBaked_IsGlyphLoaded");
+                candidate.LoadRequired(678, "ImFont_ImFont");
+                candidate.LoadRequired(679, "ImFont_destroy");
+                candidate.LoadRequired(680, "ImFont_IsGlyphInFont");
+                candidate.LoadRequired(681, "ImFont_IsLoaded");
+                candidate.LoadRequired(682, "ImFont_GetDebugName");
+                candidate.LoadRequired(683, "ImFont_GetFontBaked");
+                candidate.LoadRequired(684, "ImFont_CalcTextSizeA");
+                candidate.LoadRequired(685, "ImFont_CalcWordWrapPosition");
+                candidate.LoadRequired(686, "ImFont_RenderChar");
+                candidate.LoadRequired(687, "ImFont_RenderText");
+                candidate.LoadRequired(688, "ImFont_ClearOutputData");
+                candidate.LoadRequired(689, "ImFont_AddRemapChar");
+                candidate.LoadRequired(690, "ImFont_IsGlyphRangeUnused");
+                candidate.LoadRequired(691, "ImGuiViewport_ImGuiViewport");
+                candidate.LoadRequired(692, "ImGuiViewport_destroy");
+                candidate.LoadRequired(693, "ImGuiViewport_GetCenter");
+                candidate.LoadRequired(694, "ImGuiViewport_GetWorkCenter");
+                candidate.LoadRequired(695, "ImGuiPlatformIO_ImGuiPlatformIO");
+                candidate.LoadRequired(696, "ImGuiPlatformIO_destroy");
+                candidate.LoadRequired(697, "ImGuiPlatformIO_ClearPlatformHandlers");
+                candidate.LoadRequired(698, "ImGuiPlatformIO_ClearRendererHandlers");
+                candidate.LoadRequired(699, "ImGuiPlatformMonitor_ImGuiPlatformMonitor");
+                candidate.LoadRequired(700, "ImGuiPlatformMonitor_destroy");
+                candidate.LoadRequired(701, "ImGuiPlatformImeData_ImGuiPlatformImeData");
+                candidate.LoadRequired(702, "ImGuiPlatformImeData_destroy");
+                candidate.LoadRequired(703, "igImHashData");
+                candidate.LoadRequired(704, "igImHashStr");
+                candidate.LoadRequired(705, "igImHashSkipUncontributingPrefix");
+                candidate.LoadRequired(706, "igImQsort");
+                candidate.LoadRequired(707, "igImAlphaBlendColors");
+                candidate.LoadRequired(708, "igImIsPowerOfTwo_Int");
+                candidate.LoadRequired(709, "igImIsPowerOfTwo_U64");
+                candidate.LoadRequired(710, "igImUpperPowerOfTwo");
+                candidate.LoadRequired(711, "igImCountSetBits");
+                candidate.LoadRequired(712, "igImStricmp");
+                candidate.LoadRequired(713, "igImStrnicmp");
+                candidate.LoadRequired(714, "igImStrncpy");
+                candidate.LoadRequired(715, "igImStrdup");
+                candidate.LoadRequired(716, "igImMemdup");
+                candidate.LoadRequired(717, "igImStrdupcpy");
+                candidate.LoadRequired(718, "igImStrchrRange");
+                candidate.LoadRequired(719, "igImStreolRange");
+                candidate.LoadRequired(720, "igImStristr");
+                candidate.LoadRequired(721, "igImStrTrimBlanks");
+                candidate.LoadRequired(722, "igImStrSkipBlank");
+                candidate.LoadRequired(723, "igImStrlenW");
+                candidate.LoadRequired(724, "igImStrbol");
+                candidate.LoadRequired(725, "igImToUpper");
+                candidate.LoadRequired(726, "igImCharIsBlankA");
+                candidate.LoadRequired(727, "igImCharIsBlankW");
+                candidate.LoadRequired(728, "igImCharIsXdigitA");
+                candidate.LoadRequired(729, "igImFormatString0");
+                candidate.LoadRequired(730, "igImFormatStringV");
+                candidate.LoadRequired(731, "igImFormatStringToTempBuffer0");
+                candidate.LoadRequired(732, "igImFormatStringToTempBufferV");
+                candidate.LoadRequired(733, "igImParseFormatFindStart");
+                candidate.LoadRequired(734, "igImParseFormatFindEnd");
+                candidate.LoadRequired(735, "igImParseFormatTrimDecorations");
+                candidate.LoadRequired(736, "igImParseFormatSanitizeForPrinting");
+                candidate.LoadRequired(737, "igImParseFormatSanitizeForScanning");
+                candidate.LoadRequired(738, "igImParseFormatPrecision");
+                candidate.LoadRequired(739, "igImTextCharToUtf8");
+                candidate.LoadRequired(740, "igImTextStrToUtf8");
+                candidate.LoadRequired(741, "igImTextCharFromUtf8");
+                candidate.LoadRequired(742, "igImTextStrFromUtf8");
+                candidate.LoadRequired(743, "igImTextCountCharsFromUtf8");
+                candidate.LoadRequired(744, "igImTextCountUtf8BytesFromChar");
+                candidate.LoadRequired(745, "igImTextCountUtf8BytesFromStr");
+                candidate.LoadRequired(746, "igImTextFindPreviousUtf8Codepoint");
+                candidate.LoadRequired(747, "igImTextFindValidUtf8CodepointEnd");
+                candidate.LoadRequired(748, "igImTextCountLines");
+                candidate.LoadRequired(749, "igImFontCalcTextSizeEx");
+                candidate.LoadRequired(750, "igImFontCalcWordWrapPositionEx");
+                candidate.LoadRequired(751, "igImTextCalcWordWrapNextLineStart");
+                candidate.LoadRequired(752, "igImTextInitClassifiers");
+                candidate.LoadRequired(753, "igImTextClassifierClear");
+                candidate.LoadRequired(754, "igImTextClassifierSetCharClass");
+                candidate.LoadRequired(755, "igImTextClassifierSetCharClassFromStr");
+                candidate.LoadRequired(756, "igImFileOpen");
+                candidate.LoadRequired(757, "igImFileClose");
+                candidate.LoadRequired(758, "igImFileGetSize");
+                candidate.LoadRequired(759, "igImFileRead");
+                candidate.LoadRequired(760, "igImFileWrite");
+                candidate.LoadRequired(761, "igImFileLoadToMemory");
+                candidate.LoadRequired(762, "igImPow_Float");
+                candidate.LoadRequired(763, "igImPow_double");
+                candidate.LoadRequired(764, "igImLog_Float");
+                candidate.LoadRequired(765, "igImLog_double");
+                candidate.LoadRequired(766, "igImAbs_Int");
+                candidate.LoadRequired(767, "igImAbs_Float");
+                candidate.LoadRequired(768, "igImAbs_double");
+                candidate.LoadRequired(769, "igImSign_Float");
+                candidate.LoadRequired(770, "igImSign_double");
+                candidate.LoadRequired(771, "igImRsqrt_Float");
+                candidate.LoadRequired(772, "igImRsqrt_double");
+                candidate.LoadRequired(773, "igImMin");
+                candidate.LoadRequired(774, "igImMax");
+                candidate.LoadRequired(775, "igImClamp");
+                candidate.LoadRequired(776, "igImLerp_Vec2Float");
+                candidate.LoadRequired(777, "igImLerp_Vec2Vec2");
+                candidate.LoadRequired(778, "igImLerp_Vec4");
+                candidate.LoadRequired(779, "igImSaturate");
+                candidate.LoadRequired(780, "igImLengthSqr_Vec2");
+                candidate.LoadRequired(781, "igImLengthSqr_Vec4");
+                candidate.LoadRequired(782, "igImInvLength");
+                candidate.LoadRequired(783, "igImTrunc_Float");
+                candidate.LoadRequired(784, "igImTrunc_Vec2");
+                candidate.LoadRequired(785, "igImFloor_Float");
+                candidate.LoadRequired(786, "igImFloor_Vec2");
+                candidate.LoadRequired(787, "igImTrunc64");
+                candidate.LoadRequired(788, "igImRound64");
+                candidate.LoadRequired(789, "igImModPositive");
+                candidate.LoadRequired(790, "igImDot");
+                candidate.LoadRequired(791, "igImRotate");
+                candidate.LoadRequired(792, "igImLinearSweep");
+                candidate.LoadRequired(793, "igImLinearRemapClamp");
+                candidate.LoadRequired(794, "igImMul");
+                candidate.LoadRequired(795, "igImIsFloatAboveGuaranteedIntegerPrecision");
+                candidate.LoadRequired(796, "igImExponentialMovingAverage");
+                candidate.LoadRequired(797, "igImBezierCubicCalc");
+                candidate.LoadRequired(798, "igImBezierCubicClosestPoint");
+                candidate.LoadRequired(799, "igImBezierCubicClosestPointCasteljau");
+                candidate.LoadRequired(800, "igImBezierQuadraticCalc");
+                candidate.LoadRequired(801, "igImLineClosestPoint");
+                candidate.LoadRequired(802, "igImTriangleContainsPoint");
+                candidate.LoadRequired(803, "igImTriangleClosestPoint");
+                candidate.LoadRequired(804, "igImTriangleBarycentricCoords");
+                candidate.LoadRequired(805, "igImTriangleArea");
+                candidate.LoadRequired(806, "igImTriangleIsClockwise");
+                candidate.LoadRequired(807, "ImVec1_ImVec1_Nil");
+                candidate.LoadRequired(808, "ImVec1_destroy");
+                candidate.LoadRequired(809, "ImVec1_ImVec1_Float");
+                candidate.LoadRequired(810, "ImVec2i_ImVec2i_Nil");
+                candidate.LoadRequired(811, "ImVec2i_destroy");
+                candidate.LoadRequired(812, "ImVec2i_ImVec2i_Int");
+                candidate.LoadRequired(813, "ImVec2ih_ImVec2ih_Nil");
+                candidate.LoadRequired(814, "ImVec2ih_destroy");
+                candidate.LoadRequired(815, "ImVec2ih_ImVec2ih_short");
+                candidate.LoadRequired(816, "ImVec2ih_ImVec2ih_Vec2");
+                candidate.LoadRequired(817, "ImRect_ImRect_Nil");
+                candidate.LoadRequired(818, "ImRect_destroy");
+                candidate.LoadRequired(819, "ImRect_ImRect_Vec2");
+                candidate.LoadRequired(820, "ImRect_ImRect_Vec4");
+                candidate.LoadRequired(821, "ImRect_ImRect_Float");
+                candidate.LoadRequired(822, "ImRect_GetCenter");
+                candidate.LoadRequired(823, "ImRect_GetSize");
+                candidate.LoadRequired(824, "ImRect_GetWidth");
+                candidate.LoadRequired(825, "ImRect_GetHeight");
+                candidate.LoadRequired(826, "ImRect_GetArea");
+                candidate.LoadRequired(827, "ImRect_GetTL");
+                candidate.LoadRequired(828, "ImRect_GetTR");
+                candidate.LoadRequired(829, "ImRect_GetBL");
+                candidate.LoadRequired(830, "ImRect_GetBR");
+                candidate.LoadRequired(831, "ImRect_Contains_Vec2");
+                candidate.LoadRequired(832, "ImRect_Contains_Rect");
+                candidate.LoadRequired(833, "ImRect_ContainsWithPad");
+                candidate.LoadRequired(834, "ImRect_Overlaps");
+                candidate.LoadRequired(835, "ImRect_Add_Vec2");
+                candidate.LoadRequired(836, "ImRect_Add_Rect");
+                candidate.LoadRequired(837, "ImRect_Expand_Float");
+                candidate.LoadRequired(838, "ImRect_Expand_Vec2");
+                candidate.LoadRequired(839, "ImRect_Translate");
+                candidate.LoadRequired(840, "ImRect_TranslateX");
+                candidate.LoadRequired(841, "ImRect_TranslateY");
+                candidate.LoadRequired(842, "ImRect_ClipWith");
+                candidate.LoadRequired(843, "ImRect_ClipWithFull");
+                candidate.LoadRequired(844, "ImRect_IsInverted");
+                candidate.LoadRequired(845, "ImRect_ToVec4");
+                candidate.LoadRequired(846, "ImRect_AsVec4");
+                candidate.LoadRequired(847, "igImBitArrayGetStorageSizeInBytes");
+                candidate.LoadRequired(848, "igImBitArrayClearAllBits");
+                candidate.LoadRequired(849, "igImBitArrayTestBit");
+                candidate.LoadRequired(850, "igImBitArrayClearBit");
+                candidate.LoadRequired(851, "igImBitArraySetBit");
+                candidate.LoadRequired(852, "igImBitArraySetBitRange");
+                candidate.LoadRequired(853, "ImBitVector_Create");
+                candidate.LoadRequired(854, "ImBitVector_Clear");
+                candidate.LoadRequired(855, "ImBitVector_TestBit");
+                candidate.LoadRequired(856, "ImBitVector_SetBit");
+                candidate.LoadRequired(857, "ImBitVector_ClearBit");
+                candidate.LoadRequired(858, "ImGuiTextIndex_clear");
+                candidate.LoadRequired(859, "ImGuiTextIndex_size");
+                candidate.LoadRequired(860, "ImGuiTextIndex_get_line_begin");
+                candidate.LoadRequired(861, "ImGuiTextIndex_get_line_end");
+                candidate.LoadRequired(862, "ImGuiTextIndex_append");
+                candidate.LoadRequired(863, "igImLowerBound");
+                candidate.LoadRequired(864, "ImDrawListSharedData_ImDrawListSharedData");
+                candidate.LoadRequired(865, "ImDrawListSharedData_destroy");
+                candidate.LoadRequired(866, "ImDrawListSharedData_SetCircleTessellationMaxError");
+                candidate.LoadRequired(867, "ImDrawDataBuilder_ImDrawDataBuilder");
+                candidate.LoadRequired(868, "ImDrawDataBuilder_destroy");
+                candidate.LoadRequired(869, "ImGuiStyleVarInfo_GetVarPtr");
+                candidate.LoadRequired(870, "ImGuiStyleMod_ImGuiStyleMod_Int");
+                candidate.LoadRequired(871, "ImGuiStyleMod_destroy");
+                candidate.LoadRequired(872, "ImGuiStyleMod_ImGuiStyleMod_Float");
+                candidate.LoadRequired(873, "ImGuiStyleMod_ImGuiStyleMod_Vec2");
+                candidate.LoadRequired(874, "ImGuiComboPreviewData_ImGuiComboPreviewData");
+                candidate.LoadRequired(875, "ImGuiComboPreviewData_destroy");
+                candidate.LoadRequired(876, "ImGuiMenuColumns_ImGuiMenuColumns");
+                candidate.LoadRequired(877, "ImGuiMenuColumns_destroy");
+                candidate.LoadRequired(878, "ImGuiMenuColumns_Update");
+                candidate.LoadRequired(879, "ImGuiMenuColumns_DeclColumns");
+                candidate.LoadRequired(880, "ImGuiMenuColumns_CalcNextTotalWidth");
+                candidate.LoadRequired(881, "ImGuiInputTextDeactivatedState_ImGuiInputTextDeactivatedState");
+                candidate.LoadRequired(882, "ImGuiInputTextDeactivatedState_destroy");
+                candidate.LoadRequired(883, "ImGuiInputTextDeactivatedState_ClearFreeMemory");
+                candidate.LoadRequired(884, "ImGuiInputTextState_ImGuiInputTextState");
+                candidate.LoadRequired(885, "ImGuiInputTextState_destroy");
+                candidate.LoadRequired(886, "ImGuiInputTextState_ClearText");
+                candidate.LoadRequired(887, "ImGuiInputTextState_ClearFreeMemory");
+                candidate.LoadRequired(888, "ImGuiInputTextState_OnKeyPressed");
+                candidate.LoadRequired(889, "ImGuiInputTextState_OnCharPressed");
+                candidate.LoadRequired(890, "ImGuiInputTextState_GetPreferredOffsetX");
+                candidate.LoadRequired(891, "ImGuiInputTextState_CursorAnimReset");
+                candidate.LoadRequired(892, "ImGuiInputTextState_CursorClamp");
+                candidate.LoadRequired(893, "ImGuiInputTextState_HasSelection");
+                candidate.LoadRequired(894, "ImGuiInputTextState_ClearSelection");
+                candidate.LoadRequired(895, "ImGuiInputTextState_GetCursorPos");
+                candidate.LoadRequired(896, "ImGuiInputTextState_GetSelectionStart");
+                candidate.LoadRequired(897, "ImGuiInputTextState_GetSelectionEnd");
+                candidate.LoadRequired(898, "ImGuiInputTextState_SetSelection");
+                candidate.LoadRequired(899, "ImGuiInputTextState_SelectAll");
+                candidate.LoadRequired(900, "ImGuiInputTextState_ReloadUserBufAndSelectAll");
+                candidate.LoadRequired(901, "ImGuiInputTextState_ReloadUserBufAndKeepSelection");
+                candidate.LoadRequired(902, "ImGuiInputTextState_ReloadUserBufAndMoveToEnd");
+                candidate.LoadRequired(903, "ImGuiNextWindowData_ImGuiNextWindowData");
+                candidate.LoadRequired(904, "ImGuiNextWindowData_destroy");
+                candidate.LoadRequired(905, "ImGuiNextWindowData_ClearFlags");
+                candidate.LoadRequired(906, "ImGuiNextItemData_ImGuiNextItemData");
+                candidate.LoadRequired(907, "ImGuiNextItemData_destroy");
+                candidate.LoadRequired(908, "ImGuiNextItemData_ClearFlags");
+                candidate.LoadRequired(909, "ImGuiLastItemData_ImGuiLastItemData");
+                candidate.LoadRequired(910, "ImGuiLastItemData_destroy");
+                candidate.LoadRequired(911, "ImGuiErrorRecoveryState_ImGuiErrorRecoveryState");
+                candidate.LoadRequired(912, "ImGuiErrorRecoveryState_destroy");
+                candidate.LoadRequired(913, "ImGuiPtrOrIndex_ImGuiPtrOrIndex_Ptr");
+                candidate.LoadRequired(914, "ImGuiPtrOrIndex_destroy");
+                candidate.LoadRequired(915, "ImGuiPtrOrIndex_ImGuiPtrOrIndex_Int");
+                candidate.LoadRequired(916, "ImGuiPopupData_ImGuiPopupData");
+                candidate.LoadRequired(917, "ImGuiPopupData_destroy");
+                candidate.LoadRequired(918, "ImGuiInputEvent_ImGuiInputEvent");
+                candidate.LoadRequired(919, "ImGuiInputEvent_destroy");
+                candidate.LoadRequired(920, "ImGuiKeyRoutingData_ImGuiKeyRoutingData");
+                candidate.LoadRequired(921, "ImGuiKeyRoutingData_destroy");
+                candidate.LoadRequired(922, "ImGuiKeyRoutingTable_ImGuiKeyRoutingTable");
+                candidate.LoadRequired(923, "ImGuiKeyRoutingTable_destroy");
+                candidate.LoadRequired(924, "ImGuiKeyRoutingTable_Clear");
+                candidate.LoadRequired(925, "ImGuiKeyOwnerData_ImGuiKeyOwnerData");
+                candidate.LoadRequired(926, "ImGuiKeyOwnerData_destroy");
+                candidate.LoadRequired(927, "ImGuiListClipperRange_FromIndices");
+                candidate.LoadRequired(928, "ImGuiListClipperRange_FromPositions");
+                candidate.LoadRequired(929, "ImGuiListClipperData_ImGuiListClipperData");
+                candidate.LoadRequired(930, "ImGuiListClipperData_destroy");
+                candidate.LoadRequired(931, "ImGuiListClipperData_Reset");
+                candidate.LoadRequired(932, "ImGuiNavItemData_ImGuiNavItemData");
+                candidate.LoadRequired(933, "ImGuiNavItemData_destroy");
+                candidate.LoadRequired(934, "ImGuiNavItemData_Clear");
+                candidate.LoadRequired(935, "ImGuiTypingSelectState_ImGuiTypingSelectState");
+                candidate.LoadRequired(936, "ImGuiTypingSelectState_destroy");
+                candidate.LoadRequired(937, "ImGuiTypingSelectState_Clear");
+                candidate.LoadRequired(938, "ImGuiOldColumnData_ImGuiOldColumnData");
+                candidate.LoadRequired(939, "ImGuiOldColumnData_destroy");
+                candidate.LoadRequired(940, "ImGuiOldColumns_ImGuiOldColumns");
+                candidate.LoadRequired(941, "ImGuiOldColumns_destroy");
+                candidate.LoadRequired(942, "ImGuiBoxSelectState_ImGuiBoxSelectState");
+                candidate.LoadRequired(943, "ImGuiBoxSelectState_destroy");
+                candidate.LoadRequired(944, "ImGuiMultiSelectTempData_ImGuiMultiSelectTempData");
+                candidate.LoadRequired(945, "ImGuiMultiSelectTempData_destroy");
+                candidate.LoadRequired(946, "ImGuiMultiSelectTempData_Clear");
+                candidate.LoadRequired(947, "ImGuiMultiSelectTempData_ClearIO");
+                candidate.LoadRequired(948, "ImGuiMultiSelectState_ImGuiMultiSelectState");
+                candidate.LoadRequired(949, "ImGuiMultiSelectState_destroy");
+                candidate.LoadRequired(950, "ImGuiDockNode_ImGuiDockNode");
+                candidate.LoadRequired(951, "ImGuiDockNode_destroy");
+                candidate.LoadRequired(952, "ImGuiDockNode_IsRootNode");
+                candidate.LoadRequired(953, "ImGuiDockNode_IsDockSpace");
+                candidate.LoadRequired(954, "ImGuiDockNode_IsFloatingNode");
+                candidate.LoadRequired(955, "ImGuiDockNode_IsCentralNode");
+                candidate.LoadRequired(956, "ImGuiDockNode_IsHiddenTabBar");
+                candidate.LoadRequired(957, "ImGuiDockNode_IsNoTabBar");
+                candidate.LoadRequired(958, "ImGuiDockNode_IsSplitNode");
+                candidate.LoadRequired(959, "ImGuiDockNode_IsLeafNode");
+                candidate.LoadRequired(960, "ImGuiDockNode_IsEmpty");
+                candidate.LoadRequired(961, "ImGuiDockNode_Rect");
+                candidate.LoadRequired(962, "ImGuiDockNode_SetLocalFlags");
+                candidate.LoadRequired(963, "ImGuiDockNode_UpdateMergedFlags");
+                candidate.LoadRequired(964, "ImGuiDockContext_ImGuiDockContext");
+                candidate.LoadRequired(965, "ImGuiDockContext_destroy");
+                candidate.LoadRequired(966, "ImGuiViewportP_ImGuiViewportP");
+                candidate.LoadRequired(967, "ImGuiViewportP_destroy");
+                candidate.LoadRequired(968, "ImGuiViewportP_ClearRequestFlags");
+                candidate.LoadRequired(969, "ImGuiViewportP_CalcWorkRectPos");
+                candidate.LoadRequired(970, "ImGuiViewportP_CalcWorkRectSize");
+                candidate.LoadRequired(971, "ImGuiViewportP_UpdateWorkRect");
+                candidate.LoadRequired(972, "ImGuiViewportP_GetMainRect");
+                candidate.LoadRequired(973, "ImGuiViewportP_GetWorkRect");
+                candidate.LoadRequired(974, "ImGuiViewportP_GetBuildWorkRect");
+                candidate.LoadRequired(975, "ImGuiWindowSettings_ImGuiWindowSettings");
+                candidate.LoadRequired(976, "ImGuiWindowSettings_destroy");
+                candidate.LoadRequired(977, "ImGuiWindowSettings_GetName");
+                candidate.LoadRequired(978, "ImGuiSettingsHandler_ImGuiSettingsHandler");
+                candidate.LoadRequired(979, "ImGuiSettingsHandler_destroy");
+                candidate.LoadRequired(980, "ImGuiDebugAllocInfo_ImGuiDebugAllocInfo");
+                candidate.LoadRequired(981, "ImGuiDebugAllocInfo_destroy");
+                candidate.LoadRequired(982, "ImGuiStackLevelInfo_ImGuiStackLevelInfo");
+                candidate.LoadRequired(983, "ImGuiStackLevelInfo_destroy");
+                candidate.LoadRequired(984, "ImGuiDebugItemPathQuery_ImGuiDebugItemPathQuery");
+                candidate.LoadRequired(985, "ImGuiDebugItemPathQuery_destroy");
+                candidate.LoadRequired(986, "ImGuiIDStackTool_ImGuiIDStackTool");
+                candidate.LoadRequired(987, "ImGuiIDStackTool_destroy");
+                candidate.LoadRequired(988, "ImGuiContextHook_ImGuiContextHook");
+                candidate.LoadRequired(989, "ImGuiContextHook_destroy");
+                candidate.LoadRequired(990, "ImGuiContext_ImGuiContext");
+                candidate.LoadRequired(991, "ImGuiContext_destroy");
+                candidate.LoadRequired(992, "ImGuiWindow_ImGuiWindow");
+                candidate.LoadRequired(993, "ImGuiWindow_destroy");
+                candidate.LoadRequired(994, "ImGuiWindow_GetID_Str");
+                candidate.LoadRequired(995, "ImGuiWindow_GetID_Ptr");
+                candidate.LoadRequired(996, "ImGuiWindow_GetID_Int");
+                candidate.LoadRequired(997, "ImGuiWindow_GetIDFromPos");
+                candidate.LoadRequired(998, "ImGuiWindow_GetIDFromRectangle");
+                candidate.LoadRequired(999, "ImGuiWindow_Rect");
+                candidate.LoadRequired(1000, "ImGuiWindow_TitleBarRect");
+                candidate.LoadRequired(1001, "ImGuiWindow_MenuBarRect");
+                candidate.LoadRequired(1002, "ImGuiTabItem_ImGuiTabItem");
+                candidate.LoadRequired(1003, "ImGuiTabItem_destroy");
+                candidate.LoadRequired(1004, "ImGuiTabBar_ImGuiTabBar");
+                candidate.LoadRequired(1005, "ImGuiTabBar_destroy");
+                candidate.LoadRequired(1006, "ImGuiTableColumn_ImGuiTableColumn");
+                candidate.LoadRequired(1007, "ImGuiTableColumn_destroy");
+                candidate.LoadRequired(1008, "ImGuiTableInstanceData_ImGuiTableInstanceData");
+                candidate.LoadRequired(1009, "ImGuiTableInstanceData_destroy");
+                candidate.LoadRequired(1010, "ImGuiTable_ImGuiTable");
+                candidate.LoadRequired(1011, "ImGuiTable_destroy");
+                candidate.LoadRequired(1012, "ImGuiTableTempData_ImGuiTableTempData");
+                candidate.LoadRequired(1013, "ImGuiTableTempData_destroy");
+                candidate.LoadRequired(1014, "ImGuiTableColumnSettings_ImGuiTableColumnSettings");
+                candidate.LoadRequired(1015, "ImGuiTableColumnSettings_destroy");
+                candidate.LoadRequired(1016, "ImGuiTableSettings_ImGuiTableSettings");
+                candidate.LoadRequired(1017, "ImGuiTableSettings_destroy");
+                candidate.LoadRequired(1018, "ImGuiTableSettings_GetColumnSettings");
+                candidate.LoadRequired(1019, "igGetIO_ContextPtr");
+                candidate.LoadRequired(1020, "igGetPlatformIO_ContextPtr");
+                candidate.LoadRequired(1021, "igGetScale");
+                candidate.LoadRequired(1022, "igGetCurrentWindowRead");
+                candidate.LoadRequired(1023, "igGetCurrentWindow");
+                candidate.LoadRequired(1024, "igFindWindowByID");
+                candidate.LoadRequired(1025, "igFindWindowByName");
+                candidate.LoadRequired(1026, "igUpdateWindowParentAndRootLinks");
+                candidate.LoadRequired(1027, "igUpdateWindowSkipRefresh");
+                candidate.LoadRequired(1028, "igCalcWindowNextAutoFitSize");
+                candidate.LoadRequired(1029, "igIsWindowChildOf");
+                candidate.LoadRequired(1030, "igIsWindowInBeginStack");
+                candidate.LoadRequired(1031, "igIsWindowWithinBeginStackOf");
+                candidate.LoadRequired(1032, "igIsWindowAbove");
+                candidate.LoadRequired(1033, "igIsWindowNavFocusable");
+                candidate.LoadRequired(1034, "igSetWindowPos_WindowPtr");
+                candidate.LoadRequired(1035, "igSetWindowSize_WindowPtr");
+                candidate.LoadRequired(1036, "igSetWindowCollapsed_WindowPtr");
+                candidate.LoadRequired(1037, "igSetWindowHitTestHole");
+                candidate.LoadRequired(1038, "igSetWindowHiddenAndSkipItemsForCurrentFrame");
+                candidate.LoadRequired(1039, "igSetWindowParentWindowForFocusRoute");
+                candidate.LoadRequired(1040, "igWindowRectAbsToRel");
+                candidate.LoadRequired(1041, "igWindowRectRelToAbs");
+                candidate.LoadRequired(1042, "igWindowPosAbsToRel");
+                candidate.LoadRequired(1043, "igWindowPosRelToAbs");
+                candidate.LoadRequired(1044, "igFocusWindow");
+                candidate.LoadRequired(1045, "igFocusTopMostWindowUnderOne");
+                candidate.LoadRequired(1046, "igBringWindowToFocusFront");
+                candidate.LoadRequired(1047, "igBringWindowToDisplayFront");
+                candidate.LoadRequired(1048, "igBringWindowToDisplayBack");
+                candidate.LoadRequired(1049, "igBringWindowToDisplayBehind");
+                candidate.LoadRequired(1050, "igFindWindowDisplayIndex");
+                candidate.LoadRequired(1051, "igFindBottomMostVisibleWindowWithinBeginStack");
+                candidate.LoadRequired(1052, "igSetNextWindowRefreshPolicy");
+                candidate.LoadRequired(1053, "igRegisterUserTexture");
+                candidate.LoadRequired(1054, "igUnregisterUserTexture");
+                candidate.LoadRequired(1055, "igRegisterFontAtlas");
+                candidate.LoadRequired(1056, "igUnregisterFontAtlas");
+                candidate.LoadRequired(1057, "igSetCurrentFont");
+                candidate.LoadRequired(1058, "igUpdateCurrentFontSize");
+                candidate.LoadRequired(1059, "igSetFontRasterizerDensity");
+                candidate.LoadRequired(1060, "igGetFontRasterizerDensity");
+                candidate.LoadRequired(1061, "igGetRoundedFontSize");
+                candidate.LoadRequired(1062, "igGetDefaultFont");
+                candidate.LoadRequired(1063, "igPushPasswordFont");
+                candidate.LoadRequired(1064, "igPopPasswordFont");
+                candidate.LoadRequired(1065, "igGetForegroundDrawList_WindowPtr");
+                candidate.LoadRequired(1066, "igAddDrawListToDrawDataEx");
+                candidate.LoadRequired(1067, "igInitialize");
+                candidate.LoadRequired(1068, "igShutdown");
+                candidate.LoadRequired(1069, "igSetContextName");
+                candidate.LoadRequired(1070, "igAddContextHook");
+                candidate.LoadRequired(1071, "igRemoveContextHook");
+                candidate.LoadRequired(1072, "igCallContextHooks");
+                candidate.LoadRequired(1073, "igUpdateInputEvents");
+                candidate.LoadRequired(1074, "igUpdateHoveredWindowAndCaptureFlags");
+                candidate.LoadRequired(1075, "igFindHoveredWindowEx");
+                candidate.LoadRequired(1076, "igStartMouseMovingWindow");
+                candidate.LoadRequired(1077, "igStartMouseMovingWindowOrNode");
+                candidate.LoadRequired(1078, "igStopMouseMovingWindow");
+                candidate.LoadRequired(1079, "igUpdateMouseMovingWindowNewFrame");
+                candidate.LoadRequired(1080, "igUpdateMouseMovingWindowEndFrame");
+                candidate.LoadRequired(1081, "igTranslateWindowsInViewport");
+                candidate.LoadRequired(1082, "igScaleWindowsInViewport");
+                candidate.LoadRequired(1083, "igDestroyPlatformWindow");
+                candidate.LoadRequired(1084, "igSetWindowViewport");
+                candidate.LoadRequired(1085, "igSetCurrentViewport");
+                candidate.LoadRequired(1086, "igGetViewportPlatformMonitor");
+                candidate.LoadRequired(1087, "igFindHoveredViewportFromPlatformWindowStack");
+                candidate.LoadRequired(1088, "igMarkIniSettingsDirty_Nil");
+                candidate.LoadRequired(1089, "igMarkIniSettingsDirty_WindowPtr");
+                candidate.LoadRequired(1090, "igClearIniSettings");
+                candidate.LoadRequired(1091, "igAddSettingsHandler");
+                candidate.LoadRequired(1092, "igRemoveSettingsHandler");
+                candidate.LoadRequired(1093, "igFindSettingsHandler");
+                candidate.LoadRequired(1094, "igCreateNewWindowSettings");
+                candidate.LoadRequired(1095, "igFindWindowSettingsByID");
+                candidate.LoadRequired(1096, "igFindWindowSettingsByWindow");
+                candidate.LoadRequired(1097, "igClearWindowSettings");
+                candidate.LoadRequired(1098, "igLocalizeRegisterEntries");
+                candidate.LoadRequired(1099, "igLocalizeGetMsg");
+                candidate.LoadRequired(1100, "igSetScrollX_WindowPtr");
+                candidate.LoadRequired(1101, "igSetScrollY_WindowPtr");
+                candidate.LoadRequired(1102, "igSetScrollFromPosX_WindowPtr");
+                candidate.LoadRequired(1103, "igSetScrollFromPosY_WindowPtr");
+                candidate.LoadRequired(1104, "igScrollToItem");
+                candidate.LoadRequired(1105, "igScrollToRect");
+                candidate.LoadRequired(1106, "igScrollToRectEx");
+                candidate.LoadRequired(1107, "igScrollToBringRectIntoView");
+                candidate.LoadRequired(1108, "igGetItemStatusFlags");
+                candidate.LoadRequired(1109, "igGetActiveID");
+                candidate.LoadRequired(1110, "igGetFocusID");
+                candidate.LoadRequired(1111, "igSetActiveID");
+                candidate.LoadRequired(1112, "igSetFocusID");
+                candidate.LoadRequired(1113, "igClearActiveID");
+                candidate.LoadRequired(1114, "igGetHoveredID");
+                candidate.LoadRequired(1115, "igSetHoveredID");
+                candidate.LoadRequired(1116, "igKeepAliveID");
+                candidate.LoadRequired(1117, "igMarkItemEdited");
+                candidate.LoadRequired(1118, "igPushOverrideID");
+                candidate.LoadRequired(1119, "igGetIDWithSeed_Str");
+                candidate.LoadRequired(1120, "igGetIDWithSeed_Int");
+                candidate.LoadRequired(1121, "igItemSize_Vec2");
+                candidate.LoadRequired(1122, "igItemSize_Rect");
+                candidate.LoadRequired(1123, "igItemAdd");
+                candidate.LoadRequired(1124, "igItemHoverable");
+                candidate.LoadRequired(1125, "igIsWindowContentHoverable");
+                candidate.LoadRequired(1126, "igIsClippedEx");
+                candidate.LoadRequired(1127, "igSetLastItemData");
+                candidate.LoadRequired(1128, "igCalcItemSize");
+                candidate.LoadRequired(1129, "igCalcWrapWidthForPos");
+                candidate.LoadRequired(1130, "igPushMultiItemsWidths");
+                candidate.LoadRequired(1131, "igShrinkWidths");
+                candidate.LoadRequired(1132, "igCalcClipRectVisibleItemsY");
+                candidate.LoadRequired(1133, "igGetStyleVarInfo");
+                candidate.LoadRequired(1134, "igBeginDisabledOverrideReenable");
+                candidate.LoadRequired(1135, "igEndDisabledOverrideReenable");
+                candidate.LoadRequired(1136, "igLogBegin");
+                candidate.LoadRequired(1137, "igLogToBuffer");
+                candidate.LoadRequired(1138, "igLogRenderedText");
+                candidate.LoadRequired(1139, "igLogSetNextTextDecoration");
+                candidate.LoadRequired(1140, "igBeginChildEx");
+                candidate.LoadRequired(1141, "igBeginPopupEx");
+                candidate.LoadRequired(1142, "igBeginPopupMenuEx");
+                candidate.LoadRequired(1143, "igOpenPopupEx");
+                candidate.LoadRequired(1144, "igClosePopupToLevel");
+                candidate.LoadRequired(1145, "igClosePopupsOverWindow");
+                candidate.LoadRequired(1146, "igClosePopupsExceptModals");
+                candidate.LoadRequired(1147, "igIsPopupOpen_ID");
+                candidate.LoadRequired(1148, "igGetPopupAllowedExtentRect");
+                candidate.LoadRequired(1149, "igGetTopMostPopupModal");
+                candidate.LoadRequired(1150, "igGetTopMostAndVisiblePopupModal");
+                candidate.LoadRequired(1151, "igFindBlockingModal");
+                candidate.LoadRequired(1152, "igFindBestWindowPosForPopup");
+                candidate.LoadRequired(1153, "igFindBestWindowPosForPopupEx");
+                candidate.LoadRequired(1154, "igGetMouseButtonFromPopupFlags");
+                candidate.LoadRequired(1155, "igBeginTooltipEx");
+                candidate.LoadRequired(1156, "igBeginTooltipHidden");
+                candidate.LoadRequired(1157, "igBeginViewportSideBar");
+                candidate.LoadRequired(1158, "igBeginMenuEx");
+                candidate.LoadRequired(1159, "igMenuItemEx");
+                candidate.LoadRequired(1160, "igBeginComboPopup");
+                candidate.LoadRequired(1161, "igBeginComboPreview");
+                candidate.LoadRequired(1162, "igEndComboPreview");
+                candidate.LoadRequired(1163, "igNavInitWindow");
+                candidate.LoadRequired(1164, "igNavInitRequestApplyResult");
+                candidate.LoadRequired(1165, "igNavMoveRequestButNoResultYet");
+                candidate.LoadRequired(1166, "igNavMoveRequestSubmit");
+                candidate.LoadRequired(1167, "igNavMoveRequestForward");
+                candidate.LoadRequired(1168, "igNavMoveRequestResolveWithLastItem");
+                candidate.LoadRequired(1169, "igNavMoveRequestResolveWithPastTreeNode");
+                candidate.LoadRequired(1170, "igNavMoveRequestCancel");
+                candidate.LoadRequired(1171, "igNavMoveRequestApplyResult");
+                candidate.LoadRequired(1172, "igNavMoveRequestTryWrapping");
+                candidate.LoadRequired(1173, "igNavHighlightActivated");
+                candidate.LoadRequired(1174, "igNavClearPreferredPosForAxis");
+                candidate.LoadRequired(1175, "igSetNavCursorVisibleAfterMove");
+                candidate.LoadRequired(1176, "igNavUpdateCurrentWindowIsScrollPushableX");
+                candidate.LoadRequired(1177, "igSetNavWindow");
+                candidate.LoadRequired(1178, "igSetNavID");
+                candidate.LoadRequired(1179, "igSetNavFocusScope");
+                candidate.LoadRequired(1180, "igFocusItem");
+                candidate.LoadRequired(1181, "igActivateItemByID");
+                candidate.LoadRequired(1182, "igIsNamedKey");
+                candidate.LoadRequired(1183, "igIsNamedKeyOrMod");
+                candidate.LoadRequired(1184, "igIsLegacyKey");
+                candidate.LoadRequired(1185, "igIsKeyboardKey");
+                candidate.LoadRequired(1186, "igIsGamepadKey");
+                candidate.LoadRequired(1187, "igIsMouseKey");
+                candidate.LoadRequired(1188, "igIsAliasKey");
+                candidate.LoadRequired(1189, "igIsLRModKey");
+                candidate.LoadRequired(1190, "igFixupKeyChord");
+                candidate.LoadRequired(1191, "igConvertSingleModFlagToKey");
+                candidate.LoadRequired(1192, "igGetKeyData_ContextPtr");
+                candidate.LoadRequired(1193, "igGetKeyData_Key");
+                candidate.LoadRequired(1194, "igGetKeyChordName");
+                candidate.LoadRequired(1195, "igMouseButtonToKey");
+                candidate.LoadRequired(1196, "igIsMouseDragPastThreshold");
+                candidate.LoadRequired(1197, "igGetKeyMagnitude2d");
+                candidate.LoadRequired(1198, "igGetNavTweakPressedAmount");
+                candidate.LoadRequired(1199, "igCalcTypematicRepeatAmount");
+                candidate.LoadRequired(1200, "igGetTypematicRepeatRate");
+                candidate.LoadRequired(1201, "igTeleportMousePos");
+                candidate.LoadRequired(1202, "igSetActiveIdUsingAllKeyboardKeys");
+                candidate.LoadRequired(1203, "igIsActiveIdUsingNavDir");
+                candidate.LoadRequired(1204, "igGetKeyOwner");
+                candidate.LoadRequired(1205, "igSetKeyOwner");
+                candidate.LoadRequired(1206, "igSetKeyOwnersForKeyChord");
+                candidate.LoadRequired(1207, "igSetItemKeyOwner_InputFlags");
+                candidate.LoadRequired(1208, "igTestKeyOwner");
+                candidate.LoadRequired(1209, "igGetKeyOwnerData");
+                candidate.LoadRequired(1210, "igIsKeyDown_ID");
+                candidate.LoadRequired(1211, "igIsKeyPressed_InputFlags");
+                candidate.LoadRequired(1212, "igIsKeyReleased_ID");
+                candidate.LoadRequired(1213, "igIsKeyChordPressed_InputFlags");
+                candidate.LoadRequired(1214, "igIsMouseDown_ID");
+                candidate.LoadRequired(1215, "igIsMouseClicked_InputFlags");
+                candidate.LoadRequired(1216, "igIsMouseReleased_ID");
+                candidate.LoadRequired(1217, "igIsMouseDoubleClicked_ID");
+                candidate.LoadRequired(1218, "igShortcut_ID");
+                candidate.LoadRequired(1219, "igSetShortcutRouting");
+                candidate.LoadRequired(1220, "igTestShortcutRouting");
+                candidate.LoadRequired(1221, "igGetShortcutRoutingData");
+                candidate.LoadRequired(1222, "igDockContextInitialize");
+                candidate.LoadRequired(1223, "igDockContextShutdown");
+                candidate.LoadRequired(1224, "igDockContextClearNodes");
+                candidate.LoadRequired(1225, "igDockContextRebuildNodes");
+                candidate.LoadRequired(1226, "igDockContextNewFrameUpdateUndocking");
+                candidate.LoadRequired(1227, "igDockContextNewFrameUpdateDocking");
+                candidate.LoadRequired(1228, "igDockContextEndFrame");
+                candidate.LoadRequired(1229, "igDockContextGenNodeID");
+                candidate.LoadRequired(1230, "igDockContextQueueDock");
+                candidate.LoadRequired(1231, "igDockContextQueueUndockWindow");
+                candidate.LoadRequired(1232, "igDockContextQueueUndockNode");
+                candidate.LoadRequired(1233, "igDockContextProcessUndockWindow");
+                candidate.LoadRequired(1234, "igDockContextProcessUndockNode");
+                candidate.LoadRequired(1235, "igDockContextCalcDropPosForDocking");
+                candidate.LoadRequired(1236, "igDockContextFindNodeByID");
+                candidate.LoadRequired(1237, "igDockNodeWindowMenuHandler_Default");
+                candidate.LoadRequired(1238, "igDockNodeBeginAmendTabBar");
+                candidate.LoadRequired(1239, "igDockNodeEndAmendTabBar");
+                candidate.LoadRequired(1240, "igDockNodeGetRootNode");
+                candidate.LoadRequired(1241, "igDockNodeIsInHierarchyOf");
+                candidate.LoadRequired(1242, "igDockNodeGetDepth");
+                candidate.LoadRequired(1243, "igDockNodeGetWindowMenuButtonId");
+                candidate.LoadRequired(1244, "igGetWindowDockNode");
+                candidate.LoadRequired(1245, "igGetWindowAlwaysWantOwnTabBar");
+                candidate.LoadRequired(1246, "igBeginDocked");
+                candidate.LoadRequired(1247, "igBeginDockableDragDropSource");
+                candidate.LoadRequired(1248, "igBeginDockableDragDropTarget");
+                candidate.LoadRequired(1249, "igSetWindowDock");
+                candidate.LoadRequired(1250, "igDockBuilderDockWindow");
+                candidate.LoadRequired(1251, "igDockBuilderGetNode");
+                candidate.LoadRequired(1252, "igDockBuilderGetCentralNode");
+                candidate.LoadRequired(1253, "igDockBuilderAddNode");
+                candidate.LoadRequired(1254, "igDockBuilderRemoveNode");
+                candidate.LoadRequired(1255, "igDockBuilderRemoveNodeDockedWindows");
+                candidate.LoadRequired(1256, "igDockBuilderRemoveNodeChildNodes");
+                candidate.LoadRequired(1257, "igDockBuilderSetNodePos");
+                candidate.LoadRequired(1258, "igDockBuilderSetNodeSize");
+                candidate.LoadRequired(1259, "igDockBuilderSplitNode");
+                candidate.LoadRequired(1260, "igDockBuilderCopyDockSpace");
+                candidate.LoadRequired(1261, "igDockBuilderCopyNode");
+                candidate.LoadRequired(1262, "igDockBuilderCopyWindowSettings");
+                candidate.LoadRequired(1263, "igDockBuilderFinish");
+                candidate.LoadRequired(1264, "igPushFocusScope");
+                candidate.LoadRequired(1265, "igPopFocusScope");
+                candidate.LoadRequired(1266, "igGetCurrentFocusScope");
+                candidate.LoadRequired(1267, "igIsDragDropActive");
+                candidate.LoadRequired(1268, "igBeginDragDropTargetCustom");
+                candidate.LoadRequired(1269, "igBeginDragDropTargetViewport");
+                candidate.LoadRequired(1270, "igClearDragDrop");
+                candidate.LoadRequired(1271, "igIsDragDropPayloadBeingAccepted");
+                candidate.LoadRequired(1272, "igRenderDragDropTargetRectForItem");
+                candidate.LoadRequired(1273, "igRenderDragDropTargetRectEx");
+                candidate.LoadRequired(1274, "igGetTypingSelectRequest");
+                candidate.LoadRequired(1275, "igTypingSelectFindMatch");
+                candidate.LoadRequired(1276, "igTypingSelectFindNextSingleCharMatch");
+                candidate.LoadRequired(1277, "igTypingSelectFindBestLeadingMatch");
+                candidate.LoadRequired(1278, "igBeginBoxSelect");
+                candidate.LoadRequired(1279, "igEndBoxSelect");
+                candidate.LoadRequired(1280, "igMultiSelectItemHeader");
+                candidate.LoadRequired(1281, "igMultiSelectItemFooter");
+                candidate.LoadRequired(1282, "igMultiSelectAddSetAll");
+                candidate.LoadRequired(1283, "igMultiSelectAddSetRange");
+                candidate.LoadRequired(1284, "igGetBoxSelectState");
+                candidate.LoadRequired(1285, "igGetMultiSelectState");
+                candidate.LoadRequired(1286, "igSetWindowClipRectBeforeSetChannel");
+                candidate.LoadRequired(1287, "igBeginColumns");
+                candidate.LoadRequired(1288, "igEndColumns");
+                candidate.LoadRequired(1289, "igPushColumnClipRect");
+                candidate.LoadRequired(1290, "igPushColumnsBackground");
+                candidate.LoadRequired(1291, "igPopColumnsBackground");
+                candidate.LoadRequired(1292, "igGetColumnsID");
+                candidate.LoadRequired(1293, "igFindOrCreateColumns");
+                candidate.LoadRequired(1294, "igGetColumnOffsetFromNorm");
+                candidate.LoadRequired(1295, "igGetColumnNormFromOffset");
+                candidate.LoadRequired(1296, "igTableOpenContextMenu");
+                candidate.LoadRequired(1297, "igTableSetColumnWidth");
+                candidate.LoadRequired(1298, "igTableSetColumnSortDirection");
+                candidate.LoadRequired(1299, "igTableGetHoveredRow");
+                candidate.LoadRequired(1300, "igTableGetHeaderRowHeight");
+                candidate.LoadRequired(1301, "igTableGetHeaderAngledMaxLabelWidth");
+                candidate.LoadRequired(1302, "igTablePushBackgroundChannel");
+                candidate.LoadRequired(1303, "igTablePopBackgroundChannel");
+                candidate.LoadRequired(1304, "igTablePushColumnChannel");
+                candidate.LoadRequired(1305, "igTablePopColumnChannel");
+                candidate.LoadRequired(1306, "igTableAngledHeadersRowEx");
+                candidate.LoadRequired(1307, "igGetCurrentTable");
+                candidate.LoadRequired(1308, "igTableFindByID");
+                candidate.LoadRequired(1309, "igBeginTableEx");
+                candidate.LoadRequired(1310, "igTableBeginInitMemory");
+                candidate.LoadRequired(1311, "igTableBeginApplyRequests");
+                candidate.LoadRequired(1312, "igTableSetupDrawChannels");
+                candidate.LoadRequired(1313, "igTableUpdateLayout");
+                candidate.LoadRequired(1314, "igTableUpdateBorders");
+                candidate.LoadRequired(1315, "igTableUpdateColumnsWeightFromWidth");
+                candidate.LoadRequired(1316, "igTableDrawBorders");
+                candidate.LoadRequired(1317, "igTableDrawDefaultContextMenu");
+                candidate.LoadRequired(1318, "igTableBeginContextMenuPopup");
+                candidate.LoadRequired(1319, "igTableMergeDrawChannels");
+                candidate.LoadRequired(1320, "igTableGetInstanceData");
+                candidate.LoadRequired(1321, "igTableGetInstanceID");
+                candidate.LoadRequired(1322, "igTableFixDisplayOrder");
+                candidate.LoadRequired(1323, "igTableSortSpecsSanitize");
+                candidate.LoadRequired(1324, "igTableSortSpecsBuild");
+                candidate.LoadRequired(1325, "igTableGetColumnNextSortDirection");
+                candidate.LoadRequired(1326, "igTableFixColumnSortDirection");
+                candidate.LoadRequired(1327, "igTableGetColumnWidthAuto");
+                candidate.LoadRequired(1328, "igTableBeginRow");
+                candidate.LoadRequired(1329, "igTableEndRow");
+                candidate.LoadRequired(1330, "igTableBeginCell");
+                candidate.LoadRequired(1331, "igTableEndCell");
+                candidate.LoadRequired(1332, "igTableGetCellBgRect");
+                candidate.LoadRequired(1333, "igTableGetColumnName_TablePtr");
+                candidate.LoadRequired(1334, "igTableGetColumnResizeID");
+                candidate.LoadRequired(1335, "igTableCalcMaxColumnWidth");
+                candidate.LoadRequired(1336, "igTableSetColumnWidthAutoSingle");
+                candidate.LoadRequired(1337, "igTableSetColumnWidthAutoAll");
+                candidate.LoadRequired(1338, "igTableSetColumnDisplayOrder");
+                candidate.LoadRequired(1339, "igTableRemove");
+                candidate.LoadRequired(1340, "igTableGcCompactTransientBuffers_TablePtr");
+                candidate.LoadRequired(1341, "igTableGcCompactTransientBuffers_TableTempDataPtr");
+                candidate.LoadRequired(1342, "igTableGcCompactSettings");
+                candidate.LoadRequired(1343, "igTableLoadSettings");
+                candidate.LoadRequired(1344, "igTableSaveSettings");
+                candidate.LoadRequired(1345, "igTableResetSettings");
+                candidate.LoadRequired(1346, "igTableGetBoundSettings");
+                candidate.LoadRequired(1347, "igTableSettingsAddSettingsHandler");
+                candidate.LoadRequired(1348, "igTableSettingsCreate");
+                candidate.LoadRequired(1349, "igTableSettingsFindByID");
+                candidate.LoadRequired(1350, "igGetCurrentTabBar");
+                candidate.LoadRequired(1351, "igTabBarFindByID");
+                candidate.LoadRequired(1352, "igTabBarRemove");
+                candidate.LoadRequired(1353, "igBeginTabBarEx");
+                candidate.LoadRequired(1354, "igTabBarFindTabByID");
+                candidate.LoadRequired(1355, "igTabBarFindTabByOrder");
+                candidate.LoadRequired(1356, "igTabBarFindMostRecentlySelectedTabForActiveWindow");
+                candidate.LoadRequired(1357, "igTabBarGetCurrentTab");
+                candidate.LoadRequired(1358, "igTabBarGetTabOrder");
+                candidate.LoadRequired(1359, "igTabBarGetTabName");
+                candidate.LoadRequired(1360, "igTabBarAddTab");
+                candidate.LoadRequired(1361, "igTabBarRemoveTab");
+                candidate.LoadRequired(1362, "igTabBarCloseTab");
+                candidate.LoadRequired(1363, "igTabBarQueueFocus_TabItemPtr");
+                candidate.LoadRequired(1364, "igTabBarQueueFocus_Str");
+                candidate.LoadRequired(1365, "igTabBarQueueReorder");
+                candidate.LoadRequired(1366, "igTabBarQueueReorderFromMousePos");
+                candidate.LoadRequired(1367, "igTabBarProcessReorder");
+                candidate.LoadRequired(1368, "igTabItemEx");
+                candidate.LoadRequired(1369, "igTabItemSpacing");
+                candidate.LoadRequired(1370, "igTabItemCalcSize_Str");
+                candidate.LoadRequired(1371, "igTabItemCalcSize_WindowPtr");
+                candidate.LoadRequired(1372, "igTabItemBackground");
+                candidate.LoadRequired(1373, "igTabItemLabelAndCloseButton");
+                candidate.LoadRequired(1374, "igRenderText");
+                candidate.LoadRequired(1375, "igRenderTextWrapped");
+                candidate.LoadRequired(1376, "igRenderTextClipped");
+                candidate.LoadRequired(1377, "igRenderTextClippedEx");
+                candidate.LoadRequired(1378, "igRenderTextEllipsis");
+                candidate.LoadRequired(1379, "igRenderFrame");
+                candidate.LoadRequired(1380, "igRenderFrameBorder");
+                candidate.LoadRequired(1381, "igRenderColorComponentMarker");
+                candidate.LoadRequired(1382, "igRenderColorRectWithAlphaCheckerboard");
+                candidate.LoadRequired(1383, "igRenderNavCursor");
+                candidate.LoadRequired(1384, "igFindRenderedTextEnd");
+                candidate.LoadRequired(1385, "igRenderMouseCursor");
+                candidate.LoadRequired(1386, "igRenderArrow");
+                candidate.LoadRequired(1387, "igRenderBullet");
+                candidate.LoadRequired(1388, "igRenderCheckMark");
+                candidate.LoadRequired(1389, "igRenderArrowPointingAt");
+                candidate.LoadRequired(1390, "igRenderArrowDockMenu");
+                candidate.LoadRequired(1391, "igRenderRectFilledInRangeH");
+                candidate.LoadRequired(1392, "igRenderRectFilledWithHole");
+                candidate.LoadRequired(1393, "igCalcRoundingFlagsForRectInRect");
+                candidate.LoadRequired(1394, "igTextEx");
+                candidate.LoadRequired(1395, "igTextAligned0");
+                candidate.LoadRequired(1396, "igTextAlignedV");
+                candidate.LoadRequired(1397, "igButtonEx");
+                candidate.LoadRequired(1398, "igArrowButtonEx");
+                candidate.LoadRequired(1399, "igImageButtonEx");
+                candidate.LoadRequired(1400, "igSeparatorEx");
+                candidate.LoadRequired(1401, "igSeparatorTextEx");
+                candidate.LoadRequired(1402, "igCheckboxFlags_S64Ptr");
+                candidate.LoadRequired(1403, "igCheckboxFlags_U64Ptr");
+                candidate.LoadRequired(1404, "igCloseButton");
+                candidate.LoadRequired(1405, "igCollapseButton");
+                candidate.LoadRequired(1406, "igScrollbar");
+                candidate.LoadRequired(1407, "igScrollbarEx");
+                candidate.LoadRequired(1408, "igGetWindowScrollbarRect");
+                candidate.LoadRequired(1409, "igGetWindowScrollbarID");
+                candidate.LoadRequired(1410, "igGetWindowResizeCornerID");
+                candidate.LoadRequired(1411, "igGetWindowResizeBorderID");
+                candidate.LoadRequired(1412, "igButtonBehavior");
+                candidate.LoadRequired(1413, "igDragBehavior");
+                candidate.LoadRequired(1414, "igSliderBehavior");
+                candidate.LoadRequired(1415, "igSplitterBehavior");
+                candidate.LoadRequired(1416, "igTreeNodeBehavior");
+                candidate.LoadRequired(1417, "igTreeNodeDrawLineToChildNode");
+                candidate.LoadRequired(1418, "igTreeNodeDrawLineToTreePop");
+                candidate.LoadRequired(1419, "igTreePushOverrideID");
+                candidate.LoadRequired(1420, "igTreeNodeGetOpen");
+                candidate.LoadRequired(1421, "igTreeNodeSetOpen");
+                candidate.LoadRequired(1422, "igTreeNodeUpdateNextOpen");
+                candidate.LoadRequired(1423, "igDataTypeGetInfo");
+                candidate.LoadRequired(1424, "igDataTypeFormatString");
+                candidate.LoadRequired(1425, "igDataTypeApplyOp");
+                candidate.LoadRequired(1426, "igDataTypeApplyFromText");
+                candidate.LoadRequired(1427, "igDataTypeCompare");
+                candidate.LoadRequired(1428, "igDataTypeClamp");
+                candidate.LoadRequired(1429, "igDataTypeIsZero");
+                candidate.LoadRequired(1430, "igInputTextEx");
+                candidate.LoadRequired(1431, "igInputTextDeactivateHook");
+                candidate.LoadRequired(1432, "igTempInputText");
+                candidate.LoadRequired(1433, "igTempInputScalar");
+                candidate.LoadRequired(1434, "igTempInputIsActive");
+                candidate.LoadRequired(1435, "igGetInputTextState");
+                candidate.LoadRequired(1436, "igSetNextItemRefVal");
+                candidate.LoadRequired(1437, "igIsItemActiveAsInputText");
+                candidate.LoadRequired(1438, "igColorTooltip");
+                candidate.LoadRequired(1439, "igColorEditOptionsPopup");
+                candidate.LoadRequired(1440, "igColorPickerOptionsPopup");
+                candidate.LoadRequired(1441, "igSetNextItemColorMarker");
+                candidate.LoadRequired(1442, "igPlotEx");
+                candidate.LoadRequired(1443, "igShadeVertsLinearColorGradientKeepAlpha");
+                candidate.LoadRequired(1444, "igShadeVertsLinearUV");
+                candidate.LoadRequired(1445, "igShadeVertsTransformPos");
+                candidate.LoadRequired(1446, "igGcCompactTransientMiscBuffers");
+                candidate.LoadRequired(1447, "igGcCompactTransientWindowBuffers");
+                candidate.LoadRequired(1448, "igGcAwakeTransientWindowBuffers");
+                candidate.LoadRequired(1449, "igErrorLog");
+                candidate.LoadRequired(1450, "igErrorRecoveryStoreState");
+                candidate.LoadRequired(1451, "igErrorRecoveryTryToRecoverState");
+                candidate.LoadRequired(1452, "igErrorRecoveryTryToRecoverWindowState");
+                candidate.LoadRequired(1453, "igErrorCheckUsingSetCursorPosToExtendParentBoundaries");
+                candidate.LoadRequired(1454, "igErrorCheckEndFrameFinalizeErrorTooltip");
+                candidate.LoadRequired(1455, "igBeginErrorTooltip");
+                candidate.LoadRequired(1456, "igEndErrorTooltip");
+                candidate.LoadRequired(1457, "igDebugAllocHook");
+                candidate.LoadRequired(1458, "igDebugDrawCursorPos");
+                candidate.LoadRequired(1459, "igDebugDrawLineExtents");
+                candidate.LoadRequired(1460, "igDebugDrawItemRect");
+                candidate.LoadRequired(1461, "igDebugTextUnformattedWithLocateItem");
+                candidate.LoadRequired(1462, "igDebugLocateItem");
+                candidate.LoadRequired(1463, "igDebugLocateItemOnHover");
+                candidate.LoadRequired(1464, "igDebugLocateItemResolveWithLastItem");
+                candidate.LoadRequired(1465, "igDebugBreakClearData");
+                candidate.LoadRequired(1466, "igDebugBreakButton");
+                candidate.LoadRequired(1467, "igDebugBreakButtonTooltip");
+                candidate.LoadRequired(1468, "igShowFontAtlas");
+                candidate.LoadRequired(1469, "igDebugTextureIDToU64");
+                candidate.LoadRequired(1470, "igDebugHookIdInfo");
+                candidate.LoadRequired(1471, "igDebugNodeColumns");
+                candidate.LoadRequired(1472, "igDebugNodeDockNode");
+                candidate.LoadRequired(1473, "igDebugNodeDrawList");
+                candidate.LoadRequired(1474, "igDebugNodeDrawCmdShowMeshAndBoundingBox");
+                candidate.LoadRequired(1475, "igDebugNodeFont");
+                candidate.LoadRequired(1476, "igDebugNodeFontGlyphesForSrcMask");
+                candidate.LoadRequired(1477, "igDebugNodeFontGlyph");
+                candidate.LoadRequired(1478, "igDebugNodeTexture");
+                candidate.LoadRequired(1479, "igDebugNodeStorage");
+                candidate.LoadRequired(1480, "igDebugNodeTabBar");
+                candidate.LoadRequired(1481, "igDebugNodeTable");
+                candidate.LoadRequired(1482, "igDebugNodeTableSettings");
+                candidate.LoadRequired(1483, "igDebugNodeInputTextState");
+                candidate.LoadRequired(1484, "igDebugNodeTypingSelectState");
+                candidate.LoadRequired(1485, "igDebugNodeMultiSelectState");
+                candidate.LoadRequired(1486, "igDebugNodeWindow");
+                candidate.LoadRequired(1487, "igDebugNodeWindowSettings");
+                candidate.LoadRequired(1488, "igDebugNodeWindowsList");
+                candidate.LoadRequired(1489, "igDebugNodeWindowsListByBeginStackParent");
+                candidate.LoadRequired(1490, "igDebugNodeViewport");
+                candidate.LoadRequired(1491, "igDebugNodePlatformMonitor");
+                candidate.LoadRequired(1492, "igDebugRenderKeyboardPreview");
+                candidate.LoadRequired(1493, "igDebugRenderViewportThumbnail");
+                candidate.LoadRequired(1494, "ImFontLoader_ImFontLoader");
+                candidate.LoadRequired(1495, "ImFontLoader_destroy");
+                candidate.LoadRequired(1496, "igImFontAtlasGetFontLoaderForStbTruetype");
+                candidate.LoadRequired(1497, "igImFontAtlasRectId_GetIndex");
+                candidate.LoadRequired(1498, "igImFontAtlasRectId_GetGeneration");
+                candidate.LoadRequired(1499, "igImFontAtlasRectId_Make");
+                candidate.LoadRequired(1500, "ImFontAtlasBuilder_ImFontAtlasBuilder");
+                candidate.LoadRequired(1501, "ImFontAtlasBuilder_destroy");
+                candidate.LoadRequired(1502, "igImFontAtlasBuildInit");
+                candidate.LoadRequired(1503, "igImFontAtlasBuildDestroy");
+                candidate.LoadRequired(1504, "igImFontAtlasBuildMain");
+                candidate.LoadRequired(1505, "igImFontAtlasBuildSetupFontLoader");
+                candidate.LoadRequired(1506, "igImFontAtlasBuildNotifySetFont");
+                candidate.LoadRequired(1507, "igImFontAtlasBuildUpdatePointers");
+                candidate.LoadRequired(1508, "igImFontAtlasBuildRenderBitmapFromString");
+                candidate.LoadRequired(1509, "igImFontAtlasBuildClear");
+                candidate.LoadRequired(1510, "igImFontAtlasTextureAdd");
+                candidate.LoadRequired(1511, "igImFontAtlasTextureMakeSpace");
+                candidate.LoadRequired(1512, "igImFontAtlasTextureRepack");
+                candidate.LoadRequired(1513, "igImFontAtlasTextureGrow");
+                candidate.LoadRequired(1514, "igImFontAtlasTextureCompact");
+                candidate.LoadRequired(1515, "igImFontAtlasTextureGetSizeEstimate");
+                candidate.LoadRequired(1516, "igImFontAtlasBuildSetupFontSpecialGlyphs");
+                candidate.LoadRequired(1517, "igImFontAtlasBuildLegacyPreloadAllGlyphRanges");
+                candidate.LoadRequired(1518, "igImFontAtlasBuildGetOversampleFactors");
+                candidate.LoadRequired(1519, "igImFontAtlasBuildDiscardBakes");
+                candidate.LoadRequired(1520, "igImFontAtlasFontSourceInit");
+                candidate.LoadRequired(1521, "igImFontAtlasFontSourceAddToFont");
+                candidate.LoadRequired(1522, "igImFontAtlasFontDestroySourceData");
+                candidate.LoadRequired(1523, "igImFontAtlasFontInitOutput");
+                candidate.LoadRequired(1524, "igImFontAtlasFontDestroyOutput");
+                candidate.LoadRequired(1525, "igImFontAtlasFontRebuildOutput");
+                candidate.LoadRequired(1526, "igImFontAtlasFontDiscardBakes");
+                candidate.LoadRequired(1527, "igImFontAtlasBakedGetId");
+                candidate.LoadRequired(1528, "igImFontAtlasBakedGetOrAdd");
+                candidate.LoadRequired(1529, "igImFontAtlasBakedGetClosestMatch");
+                candidate.LoadRequired(1530, "igImFontAtlasBakedAdd");
+                candidate.LoadRequired(1531, "igImFontAtlasBakedDiscard");
+                candidate.LoadRequired(1532, "igImFontAtlasBakedAddFontGlyph");
+                candidate.LoadRequired(1533, "igImFontAtlasBakedAddFontGlyphAdvancedX");
+                candidate.LoadRequired(1534, "igImFontAtlasBakedDiscardFontGlyph");
+                candidate.LoadRequired(1535, "igImFontAtlasBakedSetFontGlyphBitmap");
+                candidate.LoadRequired(1536, "igImFontAtlasPackInit");
+                candidate.LoadRequired(1537, "igImFontAtlasPackAddRect");
+                candidate.LoadRequired(1538, "igImFontAtlasPackGetRect");
+                candidate.LoadRequired(1539, "igImFontAtlasPackGetRectSafe");
+                candidate.LoadRequired(1540, "igImFontAtlasPackDiscardRect");
+                candidate.LoadRequired(1541, "igImFontAtlasUpdateNewFrame");
+                candidate.LoadRequired(1542, "igImFontAtlasAddDrawListSharedData");
+                candidate.LoadRequired(1543, "igImFontAtlasRemoveDrawListSharedData");
+                candidate.LoadRequired(1544, "igImFontAtlasUpdateDrawListsTextures");
+                candidate.LoadRequired(1545, "igImFontAtlasUpdateDrawListsSharedData");
+                candidate.LoadRequired(1546, "igImFontAtlasTextureBlockConvert");
+                candidate.LoadRequired(1547, "igImFontAtlasTextureBlockPostProcess");
+                candidate.LoadRequired(1548, "igImFontAtlasTextureBlockPostProcessMultiply");
+                candidate.LoadRequired(1549, "igImFontAtlasTextureBlockFill");
+                candidate.LoadRequired(1550, "igImFontAtlasTextureBlockCopy");
+                candidate.LoadRequired(1551, "igImFontAtlasTextureBlockQueueUpload");
+                candidate.LoadRequired(1552, "igImTextureDataGetFormatBytesPerPixel");
+                candidate.LoadRequired(1553, "igImTextureDataGetStatusName");
+                candidate.LoadRequired(1554, "igImTextureDataGetFormatName");
+                candidate.LoadRequired(1555, "igImFontAtlasDebugLogTextureRequests");
+                candidate.LoadRequired(1556, "igImFontAtlasGetMouseCursorTexData");
+                candidate.LoadRequired(1557, "igGET_FLT_MAX");
+                candidate.LoadRequired(1558, "igGET_FLT_MIN");
+                candidate.LoadRequired(1559, "ImVector_ImWchar_create");
+                candidate.LoadRequired(1560, "ImVector_ImWchar_destroy");
+                candidate.LoadRequired(1561, "ImVector_ImWchar_Init");
+                candidate.LoadRequired(1562, "ImVector_ImWchar_UnInit");
+                candidate.LoadRequired(1563, "ImGuiPlatformIO_Set_Platform_GetWindowPos");
+                candidate.LoadRequired(1564, "ImGuiPlatformIO_Set_Platform_GetWindowSize");
+            }
+            catch
+            {
+                candidate.Free();
+                throw;
+            }
+
+            var previous = funcTable;
+            funcTable = candidate;
+            previous?.Free();
         }
 
-        public static void FreeApi() => funcTable.Free();
+        public static void FreeApi() => funcTable?.Free();
     }
 
     /// <summary>
-    /// Represents a texture handle passed to ImGui functions like <see cref = "ImGui.Image(ImTextureID, Vector2)"/>.
+    /// Represents a texture identity wrapped by <see cref = "ImTextureRef"/> for image drawing.
     /// </summary>
     [DebuggerDisplay("{DebuggerDisplay,nq}")]
     public readonly partial struct ImTextureID : IEquatable<ImTextureID>

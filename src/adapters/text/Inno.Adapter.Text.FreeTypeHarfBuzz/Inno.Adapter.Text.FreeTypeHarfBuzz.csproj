@@ -7,9 +7,14 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <WarningsAsErrors>$(WarningsAsErrors);CS1572;CS1573;CS1591</WarningsAsErrors>
   </PropertyGroup>
+
   <ItemGroup>
-    <ProjectReference Include="..\Inno.Adapter.Text\Inno.Adapter.Text.csproj" />
-    <ProjectReference Include="..\..\..\services\text\Inno.Text\Inno.Text.csproj" />
+    <ProjectReference Include="../Inno.Adapter.Text/Inno.Adapter.Text.csproj" />
+    <ProjectReference Include="../../../services/text/Inno.Text/Inno.Text.csproj" />
     <ProjectReference Include="../../../../native/Inno.Native.Text/Inno.Native.Text.csproj" PrivateAssets="compile" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../../../foundation/extensibility/Inno.Extensibility.Catalogs/Inno.Extensibility.Catalogs.csproj" />
   </ItemGroup>
 </Project>

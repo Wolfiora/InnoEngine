@@ -24,7 +24,9 @@ public sealed class BrowserSupportPackValidator : IPlayerSupportPackValidator
         string linker = Path.Combine(directory, "PlayerLink");
         foreach (string input in new[]
         {
-            "BrowserPlayer.csproj", "Program.cs",
+            "Player.csproj", "Program.cs", "BrowserPlayerComposition.cs", "BrowserContentLoader.cs", "BrowserBridge.cs", "global.json",
+            Path.Combine("Analyzers", "Inno.Runtime.Generators.dll"),
+            Path.Combine("Analyzers", "Inno.Core.Serialization.Generators.dll"),
             Path.Combine("wwwroot", "index.html"), Path.Combine("wwwroot", "main.js"),
             Path.Combine("Native", "wasm_sjlj_shim.c"),
             Path.Combine("References", "BGCS.Runtime.dll"),

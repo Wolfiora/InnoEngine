@@ -183,7 +183,7 @@ public sealed class PlayerController : GameBehavior
 
     protected override void Update()
     {
-        Log.Debug("Speed: {0}", m_speed);
+        Log.Debug("Speed: {0}", [m_speed]);
     }
 }
 ```

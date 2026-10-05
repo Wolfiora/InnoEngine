@@ -13,14 +13,15 @@ Game Build 在内容打包前把已验证 Support Pack 作为目标运行时交�
 | API | 语义 |
 | --- | --- |
 | `BuildSettings`, `BuildSettingsStore` | 项目拥有的 Game/Plugin 导出默认值；使用当前 Inno Serialization 原子保存为 `Settings.Build.inno` |
-| `BuildProfile`, `BuildProfileStore`, `BuildTargetId` | 一次 Game 构建所需的可验证 profile 与目标身份；显式 profile 文件可供 headless one-off 构建使用 |
+| `BuildProfile`, `BuildProfileStore`, `BuildTargetId` | 一次 Game 构建所需的可验证 profile 与目标身份；`managedDeployment` 独立选择托管运行时，`Copy()` 创建隔离请求输入 |
 | `GameBuildRequest`, `PluginBuildRequest` | 一次不可变构建请求 |
 | `BuildProgress`, `BuildDiagnostic`, `BuildDiagnosticSeverity`, `BuildResult` | 进度、结构化诊断与最终结果 |
 | `BuildPipeline` | Game/Plugin 的最小异步入口，并公开当前注册目标、adapter-selected 默认目标、显示名称查询与 `EnsurePlayerSupportPackAsync` 预备入口 |
-| `IGameBuildTarget` | 真正可替换的平台目标 contract；目标自己声明稳定 ID、显示名称和当前 Host preference |
-| `GameBuildContentContext`, `GameBuildPackageContext` | 平台目标获得的隔离 staging context；Package context 提供冻结的 runtime 程序集目录，供需要静态链接游戏代码的目标使用 |
-| `PlayerSupportPackCatalog` | 验证并解析部署 closure；只将不存在的目标交给可选供给器 |
-| `IPlayerSupportPackProvisioner` | Host 注入的异步缺包供给边界；独立发行可不安装 SDK |
+| `IGameBuildTarget` | 可替换的平台目标，声明稳定 ID、显示名称、Host preference、runtimeIdentifier 和默认 managed deployment |
+| `GameBuildContentContext`, `GameBuildPackageContext` | 隔离 staging context；Package context 提供已经校验的 `ManagedDeploymentResult`，packager 只组织平台布局 |
+| `BuildPipeline.GetManagedDeployments(target)` | 返回所选平台可用的托管 provider ID，不通过封闭平台 switch 选择运行时 |
+| `PlayerSupportPackCatalog` | 验证并解析不可变部署 closure；PublishAsync 发布完整候选并原子切换 current 索引 |
+| `IPlayerSupportPackProvisioner` | Host 注入的当前源码与 SDK 异步准备边界；独立发行可不安装 SDK |
 
 Content writer、`.iplugin` archive writer、snapshot fingerprint、script stage、staging transaction 与 player composer 全部 internal。
 
@@ -39,7 +40,7 @@ BuildResult result = await pipeline.BuildGameAsync(
     cancellationToken);
 ```
 
-构建开始后会捕获 Assets/Plugins/Settings revision 与 Serialization generation。任一代际变化、取消或 stage 失败都会清理 staging，不覆盖已提交产品。
+BuildPipeline 构造时注入独立 `ManagedDeploymentCatalog`。BuildGameAsync 首先复制 profile 并冻结输出路径，然后捕获 Assets/Plugins/Settings revision 与 Serialization generation。内容和逻辑代码闭包冻结后，生成静态注册组合、调用托管 compiler、验证输出身份与文件清单，最后交给平台 packager。任一代际变化、取消或 stage 失败都会清理 staging，不覆盖已提交产品。
 
 `BuildProfile.Validate()` 只验证 target 是合法的 portable `BuildTargetId`，不维护 macOS/Windows 支持名单。
 `BuildPipeline` 从 Composition Root 注册的 `IGameBuildTarget` 集合解析支持性：重复 ID、空显示名或多个
@@ -56,7 +57,7 @@ target 作为默认值。Editor Export 与 Settings UI 枚举 `availableGameTarg
 
 ## 错误与生命周期
 
-调用者拥有 cancellation 和 progress；`BuildPipeline` 使用注入服务但不拥有其生命周期。源码工作区的 Editor/CLI 注入 [SourcePlayerSupportPackProvisioner](Inno.Build.SupportPacks.Core.md)：`EnsurePlayerSupportPackAsync` 在目标 Pack 缺失时运行隔离发布与验证；已有有效 Pack 直接使用，已有损坏 Pack 明确失败。
+调用者拥有 cancellation 和 progress；`BuildPipeline` 使用注入服务但不拥有其生命周期。源码工作区的 Editor/CLI 注入 [SourcePlayerSupportPackProvisioner](Inno.Build.SupportPacks.Core.md)：`EnsurePlayerSupportPackAsync` 在 owner-thread 构建前检查当前源码、SDK 和原生输入，并运行隔离准备与验证；已有损坏 Pack 明确失败。没有 provisioner 的发行 Host 使用已安装的不可变 Pack。
 `BuildGameAsync` 要求 Pack 已准备，缺失时立即失败，不在资产快照阶段同步等待异步供给器。Editor 先异步准备，再在完成后的主线程帧启动构建，避免跨线程访问资产或冻结 UI。CLI 没有 UI 调度器，由宿主入口协调等待并保持资产 owner 线程，再启动异步构建。其他宿主同样必须在自己的 owner 安全点启动快照；普通 `await` 不自动保证切回原线程。
 
 游戏目录安装复用 `AtomicDirectory.Install`；调用方协调两次目录移动期间同一目标的读写。
@@ -67,3 +68,9 @@ target 作为默认值。Editor Export 与 Settings UI 枚举 `availableGameTarg
 ## 平台校验契约
 
 `IPlayerSupportPackValidator.Validate(directory)` 由平台拥有，拒绝缺失/不兼容输入。IGameBuildTarget 继承该接口；`PlayerSupportPackCatalog.Resolve(target, validator)` 只做共有目录与部署输入约束，然后调用注册平台的 validator。Catalog 不维护封闭的平台名单，第三方目标不必修改 Core Build。Pack 中 PlayerLink 专门保存链接输入，最终游戏部署由平台 PackageAsync 决定。
+
+`PlayerSupportPackCatalog.PublishAsync(target, stagingDirectory, validator, cancellationToken)` 是 Pack 的共同发布边界：
+校验部署闭包，计算按规范化相对路径与文件 bytes 排序的 SHA-256，安装 `<target>/<fingerprint>`，
+以 `AtomicFile` 替换 `<target>/current`。`Resolve` 只返回与索引和内容哈希一致的完整目录。
+每次导出保留这个具体目录路径，后续发布不修改它；构建代码不跟随变化中的 current 索引。
+Pack 是可重建的链接输入，CoreCLR/AOT 的最终部署仍由独立 managed compiler 选择。

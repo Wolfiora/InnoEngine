@@ -139,7 +139,7 @@ Observer 按订阅顺序在 owner thread 调用。某个 observer 抛异常会�
 | `Assets.AcquireAsync<T>` | 异步取得 canonical asset 与显式强驻留 `AssetLease<T>`；释放 lease 后对象才可参与预算回收。 |
 | `Assets.AcquireArtifact` | 取得 named immutable Artifact 的 `ArtifactLease`，并通过 `OpenRead()` 打开只读流。 |
 | `RetentionScope` | 组合多个 lease，并按加入顺序的逆序统一释放。 |
-| `Assets.LocalPath(localPath)` | 根据调用脚本 assembly 的 `Inno.AssetSource` metadata 创建 source-local 路径；同一代码在 Project 开发态与 `.iplugin` 安装态自动指向各自 Assets 根。 |
+| `Assets.LocalPath(localPath, sourceFile = compiler caller location)` | 根据编译器提供的 canonical source location 创建 source-local 路径；正常脚本只传 `localPath`。相同代码在 Project 开发态与 `.iplugin` 安装态自动指向各自 Assets 根。 |
 | `Load<T>(AssetPath/id)` | 返回跨 mount canonical instance；缺失或类型不兼容时抛异常。字符串重载表示 Project mount。 |
 | `TryLoad<T>(path/id,out asset)` | 安全失败。 |
 | `LoadAsync<T>(path/id,token)` | 在 worker 上执行真实加载/导入等待；相同 path 或 ID 的并发请求共享任务并返回同一 canonical instance。取消只终止当前调用者的等待，不取消其他调用者共享的加载。 |
@@ -150,6 +150,8 @@ Observer 按订阅顺序在 owner thread 调用。某个 observer 抛异常会�
 | `Delete(path)` | 事务式删除 file/directory source 与 sidecar；释放路径并保留 ID tombstone。 |
 | `CreateDirectory(path)` | 创建带稳定 `.imeta` 的 source folder；folder 不生成 artifact。 |
 | `Rescan()` | 对账全部 source/meta/catalog/artifact。 |
+
+`LocalPath` 的可选参数带 `CallerFilePath`。统一脚本编译器将物理源目录映射为 mount-qualified Asset 路径，IDE reference 保留同一 caller attribute。编译结果包含固定来源，CoreCLR、NativeAOT 与 Web 都无需调用栈反射，也不需要脚本填写 Plugin ID。非脚本基础设施应显式创建 `AssetPath`；未映射的调用位置会明确失败。
 
 初始化会自动 `Rescan`，无需为已有文件逐个调用 `Import`。
 

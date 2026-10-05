@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using Inno.Adapter.Audio;
 using Inno.Adapter.Input;
 using Inno.Adapter.Platform;
@@ -21,17 +24,17 @@ public readonly struct AdapterSelection()
     /// <summary>
     /// Gets the selected platform backend.
     /// </summary>
-    public PlatformBackend platform { get; init; } = PlatformBackend.Sdl3;
+    public PlatformBackendId platform { get; init; } = PlatformBackendId.sdl3;
 
     /// <summary>
     /// Gets the selected input backend.
     /// </summary>
-    public InputBackend input { get; init; } = InputBackend.Sdl3;
+    public InputBackendId input { get; init; } = InputBackendId.sdl3;
 
     /// <summary>
     /// Gets the selected storage backend.
     /// </summary>
-    public StorageBackend storage { get; init; } = StorageBackend.FileSystem;
+    public StorageBackendId storage { get; init; } = StorageBackendId.fileSystem;
 
     /// <summary>
     /// Gets the selected rendering backend.
@@ -41,15 +44,48 @@ public readonly struct AdapterSelection()
     /// <summary>
     /// Gets the selected audio backend.
     /// </summary>
-    public AudioBackend audio { get; init; } = AudioBackend.MiniAudio;
+    public AudioBackendId audio { get; init; } = AudioBackendId.miniAudio;
 
     /// <summary>
     /// Gets the selected Unicode text backend.
     /// </summary>
-    public TextBackend text { get; init; } = TextBackend.FreeTypeHarfBuzz;
+    public TextBackendId text { get; init; } = TextBackendId.freeTypeHarfBuzz;
 
     /// <summary>
     /// Gets the selected retained-mode UI backend.
     /// </summary>
     public UiBackendId ui { get; init; } = UiBackendId.rmlUi;
+
+    /// <summary>
+    /// Validates every selected registration before the composition creates any service.
+    /// </summary>
+    /// <param name="catalog">
+    /// The complete, composition-owned factory snapshot.
+    /// </param>
+    /// <exception cref="ArgumentNullException">
+    /// The catalog is null.
+    /// </exception>
+    /// <exception cref="NotSupportedException">
+    /// A selected implementation is unassigned or absent from its domain catalog.
+    /// </exception>
+    public void Validate(IAdapterCatalog catalog)
+    {
+        ArgumentNullException.ThrowIfNull(catalog);
+        Require(platform, catalog.platform.supportedBackends, "Platform");
+        Require(input, catalog.input.supportedBackends, "Input");
+        Require(storage, catalog.storage.supportedBackends, "Storage");
+        Require(rendering, catalog.rendering.supportedBackends, "Rendering");
+        Require(audio, catalog.audio.supportedBackends, "Audio");
+        Require(text, catalog.text.supportedBackends, "Text");
+        Require(ui, catalog.ui.supportedBackends, "UI");
+    }
+
+    private static void Require<TBackend>(
+        TBackend backend,
+        IReadOnlyList<TBackend> available,
+        string domain
+    ) where TBackend : struct, IEquatable<TBackend> {
+        if (backend.Equals(default) || !available.Contains(backend))
+            throw new NotSupportedException(domain + " backend '" + backend + "' is not registered.");
+    }
 }

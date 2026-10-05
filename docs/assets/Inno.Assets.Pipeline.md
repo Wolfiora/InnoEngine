@@ -70,6 +70,11 @@ TextAsset value = assets.Load<TextAsset>(AssetPath.Project("Config/value.txt"));
 
 所有 mutation 必须在构造线程执行。Save、Import、Sample Commit、Move、Delete、CreateDirectory 和 source candidate commit 各自发布一个 revision；后台 `ExportRuntimeArtifactsAsync` 使用 owner thread 捕获的 immutable Serialization generation，并在 worker 完成、失败或取消之前持续持有严格的 generation read lease。不能在提交 Task 后提前释放租约；Pending/Faulted generation 不允许开始导出。
 
+Artifact key 使用完整的 64 位十六进制 SHA-256；空值表示尚未分配，其他不完整或含路径字符的值在构造时失败。
+缓存 manifest 的输出名称和文件名必须唯一，文件名必须为 bundle 内的叶文件名，内容指纹和长度必须有效。
+`TryGetArtifact` 检查 manifest 和文件长度；读取 payload 与导出时检查实际 SHA-256。
+损坏缓存报告 `InvalidDataException`，不会返回未经验证的 payload 或把损坏产物写入 Player。
+
 `Save(path, detachedAsset)` 替换已有 source 内容时以目标 `.imeta` / Catalog 的 persistent ID 为权威，并原位更新已加载的 canonical asset；草稿对象自身的临时 identity 不会把同一路径保存成一个新资产。因此 Scene、Camera、Material 等现有引用在 Inspector 保存后仍指向同一个资产。只有目标路径尚未拥有 identity 时，保存才采用待保存对象的 identity 或创建新的 identity。
 
 Authoring 启动与 Rescan 时，当前 source 的 `.imeta` 是“路径属于哪个 persistent ID”的唯一权威；Catalog 是可重建的索引与 artifact cache。若 Catalog 在同一路径保留历史 live ID，而 sidecar 已声明另一个 ID，Loader 会把历史记录退休为 tombstone，并以 sidecar ID 建立当前记录；合并 tombstone 时也只移除它自己拥有的 path mapping，不能误删后来建立的 live 记录。这样 Save、崩溃恢复、候选 Catalog 提升或历史重复记录都不会在下一次启动反向改写 source ID，已保存的 Camera/Material/Scene 引用也不会因启动顺序变成 Missing。

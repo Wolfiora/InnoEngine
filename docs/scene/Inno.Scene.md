@@ -24,6 +24,9 @@ Hierarchy 的 Scene context menu 和 Delete hotkey 会关闭该内存 Scene，�
 
 ## 运行时实例化 Prefab
 
+Prefab 单属性差异复用 Host 的 `SerializationRegistry.GetMetadata` 及声明类型 Reader/Writer。
+静态 Player 与动态 Editor 使用同一编解码流程；Scene 不再自行扫描属性或用 `MakeGenericMethod` 构造属性转换入口。
+
 脚本可在已加载的 Scene 中实例化序列化引用的 prefab，并把实例放入同一 Scene 的父物体下：
 
 ```csharp

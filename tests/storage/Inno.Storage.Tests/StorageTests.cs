@@ -1,3 +1,5 @@
+using Inno.Adapter.Serialization.DotNet;
+using Inno.Adapter.Modules.DotNet;
 using Inno.Runtime.Contracts;
 using System;
 using System.IO;
@@ -144,6 +146,8 @@ public sealed class StorageTests
         try
         {
             using EngineHost host = new EngineHostBuilder()
+                .UseMetadataSources(new DotNetAssemblyCatalogSource(typeof(StorageTests).Assembly),
+                    new ReflectionTypeCatalogSource(), new ReflectionSerializationMetadataSource())
                 .UseMetadataCache(Path.Combine(root, "Metadata"))
                 .Build();
             var options = new RuntimeSessionOptions

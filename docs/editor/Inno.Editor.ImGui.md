@@ -163,4 +163,8 @@ Scripting facade 同时导出 `TreeNodeDrawContext`、`TreeNodeOptions`、`TreeN
 
 `DragDropTarget(..., drawDefaultHighlight: false)` 可关闭 ImGui 默认目标框，适合需要按鼠标在行内位置绘制互斥反馈的复合目标。
 
-`EditorDragDropRenderer` 只向 native payload 写入固定 session token；业务对象保留在 Interactions 的 managed session 中。Panel 与 Widget 的公开调用不要求 `unsafe`，FileBrowser 的 Grid 文本和搜索框也只使用安全的 Widget/ImGui API。
+`EditorDragDropRenderer` 向 native payload 写入源对象的 runtime identity。Preview 与 Delivery 从所属 `IdentityAllocator` 重新解析并检查 generation，落盘及 History 使用 persistent identity。Panel 与 Widget 的公开调用不要求 `unsafe`，FileBrowser 的 Grid 文本和搜索框也只使用安全的 Widget/ImGui API。
+
+## 原生布局回归测试
+
+[`Inno.Editor.ImGui.Tests`](../../tests/editor/Inno.Editor.ImGui.Tests/WidgetLayoutTests.cs) 使用真实 ImGui context 和公开 Widget API，通过鼠标事件打开弹层并测量稳定后的布局。覆盖三档缩放下的 2:3 列、长标签换行、短列表无滚动、长列表高度边界、菜单搜索填满内容宽度，以及重叠窗口仅前景控件接收点击。测试宿主必须部署与当前绑定一致的 native 目录；测试不依赖桌面解锁或截图推测内部布局。

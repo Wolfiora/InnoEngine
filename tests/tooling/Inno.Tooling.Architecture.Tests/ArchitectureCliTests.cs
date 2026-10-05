@@ -11,6 +11,34 @@ namespace Inno.Tooling.Architecture.Tests;
 public sealed class ArchitectureCliTests
 {
     [Theory]
+    [InlineData("internal sealed class Probe { void Apply(int first, int second) { } }", true)]
+    [InlineData("internal sealed class Probe(int first, int second) { }", true)]
+    [InlineData("internal sealed class Probe { System.Func<int,int,int> factory = (first, second) => first + second; }", true)]
+    [InlineData("internal sealed class Probe\n{\n    void Apply(\n        int first,\n        int second\n    ) { }\n}", false)]
+    public async Task CliChecksHandwrittenMultiParameterDeclarations(
+        string source,
+        bool rejected
+    ) {
+        string root = Path.Combine(Path.GetTempPath(), "InnoDeclarationStyleTests", Guid.NewGuid().ToString("N"));
+        try
+        {
+            foreach (string folder in new[] { "src", "native", "build", "tools", "tests" })
+                Directory.CreateDirectory(Path.Combine(root, folder));
+            File.WriteAllText(Path.Combine(root, "InnoEngine.sln"), "Microsoft Visual Studio Solution File, Format Version 12.00");
+            File.WriteAllText(Path.Combine(root, "src", "Probe.cs"), source);
+
+            (_, string output) = await Run(root);
+
+            Assert.Equal(rejected, output.Contains("place each parameter", StringComparison.Ordinal));
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+                Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [Theory]
     [InlineData("src/services/audio/Probe.cs", "global using System;", "global using", true)]
     [InlineData("src/composition/player/Inno.Player/Probe.cs", "internal class Probe { private BgfxDevice device; }", "backend-neutral", true)]
     [InlineData("src/content/assets/Probe.cs", "internal class Probe { void Read() { context.With<IAssetReferenceResolver>(resolver); } }", "owner-complete", true)]
@@ -86,8 +114,8 @@ public sealed class ArchitectureCliTests
                 """);
             string bindings = Path.Combine(root, "native", "Inno.Native.Probe", "Bindings");
             Directory.CreateDirectory(bindings);
-            File.WriteAllText(Path.Combine(bindings, "bindgen.json"), JsonSerializer.Serialize(new { OutputPath = "../Generated" }));
-            File.WriteAllText(Path.Combine(bindings, "bindgen.browser-wasm.json"), JsonSerializer.Serialize(new { OutputPath = targetOutput }));
+            File.WriteAllText(Path.Combine(bindings, "bindgen.json"), JsonSerializer.Serialize(new { outputPath = "../Generated" }));
+            File.WriteAllText(Path.Combine(bindings, "bindgen.browser-wasm.json"), JsonSerializer.Serialize(new { outputPath = targetOutput }));
 
             (int code, string output) = await Run(root);
 
@@ -101,8 +129,10 @@ public sealed class ArchitectureCliTests
         }
     }
 
-    private static async Task<(int, string)> Run(string root)
-    {
+    private static async Task<(int, string)> Run(
+        string root,
+        params string[] arguments
+    ) {
         DirectoryInfo? repository = new(AppContext.BaseDirectory);
         while (repository is not null && !File.Exists(Path.Combine(repository.FullName, "InnoEngine.sln")))
             repository = repository.Parent;
@@ -120,6 +150,8 @@ public sealed class ArchitectureCliTests
         start.ArgumentList.Add(Path.Combine(repository!.FullName, "build/cli/Inno.Build.Cli/bin/Debug/net9.0/Inno.Build.Cli.dll"));
         start.ArgumentList.Add("verify");
         start.ArgumentList.Add(root);
+        foreach (string argument in arguments)
+            start.ArgumentList.Add(argument);
         using Process process = Process.Start(start)!;
         Task<string> output = process.StandardOutput.ReadToEndAsync();
         Task<string> error = process.StandardError.ReadToEndAsync();

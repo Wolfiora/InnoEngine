@@ -1,4 +1,5 @@
 using System;
+using Inno.Build.Managed;
 using Inno.Extensibility.Reload;
 using System.Collections.Generic;
 using System.IO;
@@ -27,6 +28,7 @@ public sealed class BuildPipeline
     private readonly PlayerSupportPackCatalog m_supportPacks;
     private readonly IPlayerSupportPackProvisioner? m_supportPackProvisioner;
     private readonly GenerationCoordinator m_generations;
+    private readonly ManagedDeploymentCatalog m_managedDeployments;
 
     /// <summary>
     /// Creates a build pipeline from installed Player Support Packs and platform packagers.
@@ -55,8 +57,11 @@ public sealed class BuildPipeline
     /// <param name="gameTargets">
     /// The complete set of replaceable platform package implementations available to this host.
     /// </param>
+    /// <param name="managedDeployments">
+    /// Explicit managed publishers selected independently of the platform packagers.
+    /// </param>
     /// <param name="supportPackProvisioner">
-    /// Optional build-time provider used only when the selected target pack is absent.
+    /// Optional build-time provider that checks current source and SDK inputs during explicit pack preparation.
     /// </param>
     /// <exception cref="ArgumentException">
     /// Thrown when the Support Pack root is empty, no target is provided, a target identity is duplicated,
@@ -71,6 +76,7 @@ public sealed class BuildPipeline
         ScriptCompiler compiler,
         string supportPackRoot,
         IEnumerable<IGameBuildTarget> gameTargets,
+        ManagedDeploymentCatalog managedDeployments,
         IPlayerSupportPackProvisioner? supportPackProvisioner = null
     ) {
         ArgumentNullException.ThrowIfNull(assets);
@@ -81,6 +87,8 @@ public sealed class BuildPipeline
         ArgumentNullException.ThrowIfNull(compiler);
         ArgumentException.ThrowIfNullOrWhiteSpace(supportPackRoot);
         ArgumentNullException.ThrowIfNull(gameTargets);
+        ArgumentNullException.ThrowIfNull(managedDeployments);
+        m_managedDeployments = managedDeployments;
         IGameBuildTarget[] targets = gameTargets.ToArray();
         if (targets.Any(static value => value is null))
             throw new ArgumentException("Game target collection cannot contain null values.", nameof(gameTargets));
@@ -122,7 +130,8 @@ public sealed class BuildPipeline
             serialization,
             compiler,
             m_gameTargets,
-            m_supportPacks);
+            m_supportPacks,
+            managedDeployments);
         m_plugins = new PluginPackageBuilder(
             assets,
             plugins,
@@ -139,6 +148,23 @@ public sealed class BuildPipeline
     /// Gets the single adapter-selected target preferred for new build settings on this host.
     /// </summary>
     public BuildTargetId defaultGameTarget => m_defaultGameTarget;
+
+    /// <summary>
+    /// Gets the managed deployment choices supported by a registered publication platform.
+    /// </summary>
+    /// <param name="target">
+    /// The registered publication target whose managed runtime requirements are queried.
+    /// </param>
+    /// <returns>
+    /// Immutable deployment identities in stable order; an unknown target throws explicitly.
+    /// </returns>
+    /// <exception cref="ArgumentException">
+    /// The publication target is not registered in this build composition.
+    /// </exception>
+    public IReadOnlyList<ManagedDeploymentId> GetManagedDeployments(BuildTargetId target)
+        => m_gameTargets.TryGetValue(target, out IGameBuildTarget? gameTarget)
+            ? m_managedDeployments.GetSupportedDeployments(gameTarget.runtimeIdentifier)
+            : throw new ArgumentException($"Game target '{target}' is not registered.", nameof(target));
 
     /// <summary>
     /// Tries to get the adapter-owned display name for a registered game target.
@@ -200,7 +226,7 @@ public sealed class BuildPipeline
     /// Builds and installs one complete source-free game deployment with rollback protection.
     /// </summary>
     /// <remarks>
-    /// Prepare missing packs with EnsurePlayerSupportPackAsync before invoking this method on the
+    /// Prepare current packs with EnsurePlayerSupportPackAsync before invoking this method on the
     /// authoring owner's thread. The synchronous snapshot phase never waits for asynchronous provisioning.
     /// Coordinate readers and writers of the output directory during its two installation moves.
     /// Backup cleanup failures preserve the installed candidate and report its remaining backup.
@@ -237,8 +263,15 @@ public sealed class BuildPipeline
         IProgress<BuildProgress>? progress = null,
         CancellationToken cancellationToken = default
     ) {
+        ArgumentNullException.ThrowIfNull(request);
+        request.Validate();
+        var snapshot = new GameBuildRequest
+        {
+            profile = request.profile.Copy(),
+            outputDirectory = Path.GetFullPath(request.outputDirectory)
+        };
         using IDisposable admission = m_generations.AcquireRead("build a Player");
-        return await m_game.BuildAsync(request, progress, cancellationToken).ConfigureAwait(false);
+        return await m_game.BuildAsync(snapshot, progress, cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>

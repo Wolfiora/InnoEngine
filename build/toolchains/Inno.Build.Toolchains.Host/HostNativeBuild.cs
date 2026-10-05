@@ -1,4 +1,7 @@
 using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -27,7 +30,7 @@ public static class HostNativeBuild
     /// Cancels active process trees and subsequent component stages.
     /// </param>
     /// <returns>
-    /// Completion after graphics, input, audio, text and product UI outputs are available.
+    /// The exact graphics, input, audio, text and product UI products published by this operation.
     /// </returns>
     /// <exception cref="ArgumentNullException">
     /// The context is null.
@@ -38,17 +41,25 @@ public static class HostNativeBuild
     /// <exception cref="InvalidOperationException">
     /// A component process fails or a required output is missing.
     /// </exception>
-    public static async Task BuildRuntimeAsync(
+    public static async Task<IReadOnlyList<NativeBuildProduct>> BuildRuntimeAsync(
         NativeBuildContext context,
         CancellationToken cancellationToken = default
     ) {
         ArgumentNullException.ThrowIfNull(context);
         cancellationToken.ThrowIfCancellationRequested();
-        await BgfxNativeBuild.BuildAsync(context, cancellationToken).ConfigureAwait(false);
-        await Sdl3Toolchain.BuildAsync(context, cancellationToken).ConfigureAwait(false);
-        await MiniAudioToolchain.BuildAsync(context, cancellationToken).ConfigureAwait(false);
-        await TextToolchain.BuildAsync(context, cancellationToken).ConfigureAwait(false);
-        await UiToolchain.BuildAsync(context, cancellationToken).ConfigureAwait(false);
+        string sources = Path.Combine(context.engineRoot, "extern");
+        if (!Directory.Exists(sources))
+            throw new DirectoryNotFoundException($"Native source checkout is unavailable at '{sources}'.");
+        context = await HostNativeToolchain.ResolveAsync(context, cancellationToken).ConfigureAwait(false);
+        var products = new List<NativeBuildProduct>
+        {
+            await BgfxNativeBuild.BuildAsync(context, cancellationToken).ConfigureAwait(false),
+            await Sdl3Toolchain.BuildAsync(context, cancellationToken).ConfigureAwait(false),
+            await MiniAudioToolchain.BuildAsync(context, cancellationToken).ConfigureAwait(false),
+            await TextToolchain.BuildAsync(context, cancellationToken).ConfigureAwait(false),
+            await UiToolchain.BuildAsync(context, cancellationToken).ConfigureAwait(false)
+        };
+        return products.AsReadOnly();
     }
 
     /// <summary>
@@ -61,7 +72,7 @@ public static class HostNativeBuild
     /// Cancels active process trees and subsequent component stages.
     /// </param>
     /// <returns>
-    /// Completion after all native inputs for the Editor and its authoring tools are available.
+    /// The exact runtime and authoring products published by this operation, including native link dependencies.
     /// </returns>
     /// <exception cref="ArgumentNullException">
     /// The context is null.
@@ -72,13 +83,17 @@ public static class HostNativeBuild
     /// <exception cref="InvalidOperationException">
     /// A component process fails or a required output is missing.
     /// </exception>
-    public static async Task BuildEditorAsync(
+    public static async Task<IReadOnlyList<NativeBuildProduct>> BuildEditorAsync(
         NativeBuildContext context,
         CancellationToken cancellationToken = default
     ) {
-        await BuildRuntimeAsync(context, cancellationToken).ConfigureAwait(false);
-        await BgfxToolsBuild.BuildAsync(context, cancellationToken).ConfigureAwait(false);
-        await ImGuiToolchain.BuildAsync(context, cancellationToken).ConfigureAwait(false);
-        await ImGuizmoToolchain.BuildAsync(context, cancellationToken).ConfigureAwait(false);
+        cancellationToken.ThrowIfCancellationRequested();
+        context = await HostNativeToolchain.ResolveAsync(context, cancellationToken).ConfigureAwait(false);
+        var products = (await BuildRuntimeAsync(context, cancellationToken).ConfigureAwait(false)).ToList();
+        products.Add(await BgfxToolsBuild.BuildAsync(context, cancellationToken).ConfigureAwait(false));
+        NativeBuildProduct imGui = await ImGuiToolchain.BuildAsync(context, cancellationToken).ConfigureAwait(false);
+        products.Add(imGui);
+        products.Add(await ImGuizmoToolchain.BuildAsync(context, imGui, cancellationToken).ConfigureAwait(false));
+        return products.AsReadOnly();
     }
 }

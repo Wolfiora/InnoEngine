@@ -7,18 +7,24 @@
     <WarningsAsErrors>$(WarningsAsErrors);CS1572;CS1573;CS1591</WarningsAsErrors>
     <InnoAssemblyScope>Editor</InnoAssemblyScope>
   </PropertyGroup>
+
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\services\audio\Inno.Audio.Runtime\Inno.Audio.Runtime.csproj" />
-    <ProjectReference Include="..\..\..\..\services\audio\Inno.Audio\Inno.Audio.csproj" />
-    <ProjectReference Include="..\..\..\..\content\assets\Inno.Assets\Inno.Assets.csproj" />
-    <ProjectReference Include="..\..\..\..\foundation\core\Inno.Core.Logging\Inno.Core.Logging.csproj" />
-    <ProjectReference Include="..\..\..\..\foundation\extensibility\Inno.Extensibility.Types\Inno.Extensibility.Types.csproj" />
-    <ProjectReference Include="..\..\..\..\runtime\engine\Inno.Runtime\Inno.Runtime.csproj" />
+    <ProjectReference
+      Include="../../../../services/audio/Inno.Audio.Runtime/Inno.Audio.Runtime.csproj"
+      PrivateAssets="compile" />
+    <ProjectReference
+      Include="../../../../foundation/core/Inno.Core.Logging/Inno.Core.Logging.csproj"
+      PrivateAssets="compile" />
   </ItemGroup>
+
   <ItemGroup>
+    <ProjectReference Include="../../../../services/audio/Inno.Audio/Inno.Audio.csproj" />
+    <ProjectReference Include="../../../../content/assets/Inno.Assets/Inno.Assets.csproj" />
+    <ProjectReference Include="../../../../foundation/extensibility/Inno.Extensibility.Types/Inno.Extensibility.Types.csproj" />
+    <ProjectReference Include="../../../../runtime/engine/Inno.Runtime/Inno.Runtime.csproj" />
     <ProjectReference Include="../../../../foundation/core/Inno.Core.Diagnostics/Inno.Core.Diagnostics.csproj" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="../../../../runtime/contracts/Inno.Runtime.Contracts/Inno.Runtime.Contracts.csproj" />
+    <ProjectReference Include="../../../../foundation/core/Inno.Core.Serialization/Inno.Core.Serialization.csproj" />
+    <ProjectReference Include="../../../../foundation/extensibility/Inno.Extensibility.Catalogs/Inno.Extensibility.Catalogs.csproj" />
   </ItemGroup>
 </Project>

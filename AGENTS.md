@@ -7,7 +7,7 @@
 
 ## 2. 命名规范
 - 文件名与主类型名保持一致。
-- 默认命名空间与目录层级保持一致；`src/editor` 使用第 13 节定义的项目级命名空间规则。
+- 默认命名空间与目录层级保持一致；`src/composition/editor` 使用第 13 节定义的项目级命名空间规则。
 - 类型名使用 `PascalCase`。
 - 接口以 `I` 前缀。
 - 成员参数使用语义化 `camelCase`。
@@ -62,7 +62,13 @@
 - 发现潜在编译风险时，要在提交说明中显式标注。
 
 ## 10. 目录边界
-- `src/core`, `src/engine`, `src/assets`, `src/render`, `src/editor`, `src/platform`, `build`, `tests`
+- `src/foundation`：Core、扩展目录、类型及代际契约。
+- `src/content`：Assets、References、Scene、Animation。
+- `src/services`：后端中立的领域契约与运行服务。
+- `src/runtime`：Runtime、部署、生成器、Plugin 与创作态脚本流程。
+- `src/adapters`：具体后端、动态模块及反射序列化实现。
+- `src/composition`：默认引擎、Shell、Player 与 Editor 组合入口。
+- `native`、`build`、`tools`、`tests`：原生边界、统一构建、验证库和契约测试。
 - 新文件尽量放置在匹配现有分层与职责目录。
 
 ## 11. Wiki 文档维护
@@ -87,7 +93,7 @@
 - 脚本必须使用逻辑 namespace（如 `using InnoEngine.Scene;`），不得直接使用实现侧 `Inno.*` namespace。
 
 ## 13. Editor 项目组织与引用边界
-- `src/editor` 中每个项目的业务源码统一使用与 `.csproj`/程序集名称完全相同的命名空间；功能目录只负责组织文件，不追加到命名空间。例如 `Inno.Editor.Inspection/PropertyDrawing` 中的类型仍使用 `namespace Inno.Editor.Inspection;`。
+- `src/composition/editor` 中每个项目的业务源码统一使用与 `.csproj`/程序集名称完全相同的命名空间；功能目录只负责组织文件，不追加到命名空间。例如 `Inno.Editor.Inspection/PropertyDrawing` 中的类型仍使用 `namespace Inno.Editor.Inspection;`。
 - 可复用的 InspectionDrawer、PropertyDrawer、Registry 与 serialized property renderer 统一属于 `Inno.Editor.Inspection`；业务 Panel 只在自身项目中实现具体 Drawer，不得为了扩展检查显示而引用 `Inno.Editor.Panel.Inspector`。
 - 唯一命名空间例外是 `Inno.Editor.ImGui/Widgets`：其中所有类型使用 `namespace Inno.Editor.ImGui.ImGuiWidget;`。
 - `Inno.Editor.ImGui/Widgets` 只允许 `ImGuiWidget.*.cs` 文件。Widget 的 presentation、options、result 与私有状态应收口到对应的 `ImGuiWidget.<Feature>.cs`，不得创建独立的 Widget helper 文件。
@@ -128,7 +134,7 @@
 ## 17. Rendering 强制边界
 - Rendering 的公开设计必须同时满足：跨平台、API 易用、扩展灵活和低耦合。不得以实现便利为由破坏其中任一项。
 - 只有 `Inno.Adapter.Rendering.Bgfx`、BGFX build toolchains 与对应 native tests 可以引用 `Inno.Native.Bgfx`。BGFX handle、View ID、原生指针和 BGFX 枚举不得出现在其他项目的 public/protected API 中。
-- `Inno.Rendering.Core` 必须保持后端中立，且不得引用 Scene、Assets、Editor 或任何具体图形后端。上层模块通过资源描述、能力集合、RenderGraph 和命令编码接口工作。
+- `Inno.Rendering` 必须保持后端中立，且不得引用 Scene、Assets、Editor 或任何具体图形后端。上层模块通过资源描述、能力集合、RenderGraph 和命令编码接口工作。
 - 通用 Graph 不得引用 Rendering 或 ImGui；Rendering 也不得反向引用 Shader 创作层或 Editor Graph。Shader 图与源码函数模块属于内置创作层，Material 只保存 Shader 引用与参数，不保存图。
 - 所有 Shader 通过图创作，并经统一的 Shader IR、编译、反射、验证和产物缓存链进入运行时；源码语言解析和后端生成由对应 provider 实现，不得建立第二套完整源码 Shader 创作路径。
 - Pipeline、Feature、Pass、Shader Node、GPU 资源与编译产物必须 capability-aware、generation-scoped 且 reload-safe。持久状态只保存 Stable ID 与中立数据，禁止长期保存 collectible ALC 的 `Type`、delegate 或 runtime 对象。
@@ -215,7 +221,15 @@ public void AAA(
 ## 25. 宿主、平台目标与统一构建
 
 - 共享 Foundation、Shell、Player Runtime 不通过 OperatingSystem.IsBrowser 判断能力。平台入口注入帧调度、模块激活、存储、日志和线程策略；Input 使用同一 Core Events 入口。
-- Native 每组件只有一个项目，共同 BGCS 声明与 target profile 分开。Host 单文件位于 Generated/Bindings.cs，目标 managed 单文件位于所属项目 obj/<target>/Generated/Bindings.cs；CMake 中间产物仍归对应 toolchain 的 obj/native。不同目标不能覆盖彼此输出。
-- Cpp2C 目标桥同样使用所属 Native 项目 obj/<target>/Native，不能覆盖宿主 Native/Generated。目标工具链通过 CMake 参数选择桥；Emscripten SDK/Cache/Node/Python 必须以目标项目的 MSBuild workload 选择为准，不从已安装包中猜测最高版本。
+- Native 每组件只有一个项目，共同 BGCS 声明与 target profile 分开。Host 单文件位于 Generated/Bindings.cs，目标 managed 单文件位于所属项目 obj/<target>/<generationFingerprint>/Generated/Bindings.cs；CMake 中间产物仍归对应 toolchain 的 obj/native。不同目标与生成身份不能覆盖彼此输出。
+- BGCS 生成的 ABI carrier 已明确封送；所有绑定组件通过共同 MSBuild 规则启用 DisableRuntimeMarshalling，禁止让运行时重复解释声明或在各组件重复 assembly attribute。验收检查实际参数、返回与回调，不能仅检查 sizeof。
+- Cpp2C 目标桥使用同一 obj/<target>/<generationFingerprint>/Native，与 managed 单文件经过共同 staging 验证和原子提交，不能覆盖宿主 Native/Generated。目标工具链读取当前请求的生成描述，通过 CMake 参数选择桥；Emscripten SDK/Cache/Node/Python 必须以目标项目的 MSBuild workload 选择为准，不从已安装包中猜测最高版本。
 - 构建工具只保留 Inno.Build.Cli 一个 Program。组件工具链、Shader 编译、Support Pack 事务和架构验证作为库组合，MSBuild 使用薄 Task 适配。
 - Support Pack 核心通过 IPlayerSupportPackSource 与 IPlayerSupportPackValidator 注册目标，不维护具体平台分支。Build CLI 是 composition root；通用 Build 库仍禁止引用 Editor。
+
+## 26. Solution 与项目文件整理
+
+- Solution Folder 与实际架构职责对应，删除没有有效项目或 Solution Items 的空分组；小型项目集合避免无必要的单项目包装层。
+- `.csproj`、`.props`、`.targets` 使用两空格缩进，顶层职责块以空行分隔，长属性列表逐属性换行，ProjectReference 相对路径使用 `/`。
+- 只合并条件和引用可见性一致的相邻引用分组。不得重排 Import、Property、Target 或改变条件、metadata 和求值顺序；Editor 公开与实现引用边界必须保留。
+- 详细规则见 `docs/architecture/CSHARP_DEVELOPMENT_STANDARD.md`；整理后核对有效 XML、Solution 项目身份与配置，并运行受影响构建及架构验证。

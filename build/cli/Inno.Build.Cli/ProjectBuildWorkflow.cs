@@ -12,6 +12,7 @@ internal static class ProjectBuildWorkflow
         CancellationToken cancellationToken
     ) {
         BuildCommand command = BuildCommand.Parse(arguments);
+        await BuildComposition.PrepareNativeAsync(cancellationToken).ConfigureAwait(false);
         using BuildWorkspace workspace = BuildWorkspace.Open(command.projectDirectory, command.supportPackRoot);
         if (command.kind == BuildCommandKind.ImportSample)
         {

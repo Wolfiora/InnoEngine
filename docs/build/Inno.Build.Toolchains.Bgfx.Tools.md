@@ -1,6 +1,6 @@
 # Inno.Build.Toolchains.Bgfx.Tools
 
-[Build 索引](README.md) · [Rendering Assets](../render/Inno.Rendering.Assets.md)
+[Build 索引](README.md) · [Rendering Assets](../rendering/Inno.Rendering.Assets.md)
 
 ## 公开 API
 
@@ -11,7 +11,7 @@
 - `BgfxShaderSourceFrontend`：实现 `IShaderSourceFrontend`；`languageId` 为
   `inno.shader-language.bgfx-sc`，`Analyze(ShaderSourceRequest)` 返回函数接口、原始 include 依赖和定位诊断。
 
-这些类型只在 authoring/build 路径使用。工具进程执行器 `BgfxTool`、`ToolRunner` 和 `ToolRunResult` 归属 `Inno.Native.Bgfx/Tools/`，本项目只负责 Shader/Texture 的离线编译策略。Player 通过 `FileRenderTargetArtifactProvider` 读取结果，不引用本项目或 BGFX tools。
+这些类型只在 authoring/build 路径使用。工具进程执行器 `BgfxTool`、`ToolRunner` 和 `ToolRunResult` 归属本项目 `Execution/`，与 Shader/Texture 离线编译策略一起留在构建层。Player 通过 `FileRenderTargetArtifactProvider` 读取结果，不引用本项目或 BGFX tools。
 
 `BgfxGameContentCompiler.CreateMacOSArm64` / `CreateWindowsX64` / `CreateBrowserWasm` 接收
 `AssetPipeline`、`SerializationRegistry` 和 `TypeCatalog`；`CompileAsync(GameBuildContentContext, cancellationToken)`
@@ -26,7 +26,7 @@ Windows 游戏闭包同时编译 Direct3D11、Direct3D12、Vulkan 和 OpenGL，�
 ## 源码函数前端
 
 定义和原型都禁止 `main()`；resolver 的共同 retirement barrier 原样传播，不能降格成普通 include 诊断。
-跨实现/变体接口一致性与完整输入快照由 [`ShaderSourceFrontendCatalog.AnalyzeModule`](../render/Inno.Rendering.Shaders.md)
+跨实现/变体接口一致性与完整输入快照由 [`ShaderSourceFrontendCatalog.AnalyzeModule`](../rendering/Inno.Rendering.Shaders.md)
 负责，BGFX 前端只分析其明确给定的一个配置。
 
 前端包含词法、条件预处理与声明分析，不使用正则匹配函数签名。当前已覆盖注释、宏替换和别名重扫描、
@@ -35,7 +35,7 @@ token 拼接、include guard/pragma once、常量表达式、结构体、typedef
 
 函数体作边界与隐式阶段访问检查，完整合法性由 shaderc 检查；前端已接到新的 typed stage 编译，但资产替换尚未完成。
 完整 BGFX 原生头文件、所有 storage/image 类型和语言扩展的覆盖仍待后续集成验证，不能把接口单元测试
-当作真实 GPU 编译结果。扩展接口见 [Inno.Rendering.Shaders](../render/Inno.Rendering.Shaders.md)。
+当作真实 GPU 编译结果。扩展接口见 [Inno.Rendering.Shaders](../rendering/Inno.Rendering.Shaders.md)。
 
 源码模块禁止非 const 全局绑定；阶段输入、varying 和实际资源槽由图目标/后端拥有。
 源码不得隐式读取 `gl_*`、默认阶段 attribute/varying、预定义矩阵或生成绑定名，必须通过公开函数参数传入。
@@ -64,3 +64,18 @@ token 拼接、include guard/pragma once、常量表达式、结构体、typedef
 - 当前 BGFX uniform storage 为 vec4/mat3/mat4 及固定数组，标量参数须由 Target 做显式 packing/component lowering。
 - 现代桌面 GLSL 多颜色输出由 IR 生成器声明显式 attachment location，包含稀疏槽位；避免 shaderc 原样保留已移除的 `gl_FragData` 而触发 GPU 编译失败。ESSL、HLSL、Metal 和 SPIR-V 继续使用 shaderc 的对应输出 lowering，公共 Shader IR 不依赖这些语言差异。
 - 数组 typedef、全部原生语法/高级资源及完整反射覆盖仍待补齐；明确错误不是兼容旁路，也不代表完整计划已完成。
+
+## 工具进程入口
+
+`ToolRunner.Run(tool, arguments, workingDirectory)` 和
+`RunAsync(tool, arguments, workingDirectory, cancellationToken)` 使用参数数组启动明确部署的工具。
+取消先停止子进程树，再等待退出并观察两条输出读取任务。
+`ToolRunResult` 保存 `exitCode`、`standardOutput`、`standardError` 与 `succeeded`。
+非零退出码交给调用方转换为构建诊断；工具缺失抛出 `FileNotFoundException`。
+原生加载器不搜索仓库或隐式部署工具。
+
+```csharp
+using Inno.Build.Toolchains.Bgfx.Tools;
+
+ToolRunResult result = ToolRunner.Run(BgfxTool.Shaderc, ["--help"]);
+```

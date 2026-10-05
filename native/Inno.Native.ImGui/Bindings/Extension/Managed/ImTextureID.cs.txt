@@ -16,7 +16,7 @@ using System.Numerics;
 namespace Inno.Native.ImGui
 {
     /// <summary>
-    /// Represents a texture handle passed to ImGui functions like <see cref="ImGui.Image(ImTextureID, Vector2)"/>.
+    /// Represents a texture identity wrapped by <see cref="ImTextureRef"/> for image drawing.
     /// </summary>
     [DebuggerDisplay("{DebuggerDisplay,nq}")]
 	public readonly partial struct ImTextureID : IEquatable<ImTextureID>

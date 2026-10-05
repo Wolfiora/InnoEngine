@@ -1,3 +1,5 @@
+using Inno.Adapter.Serialization.DotNet;
+using Inno.Adapter.Modules.DotNet;
 using System;
 using System.IO;
 using System.Collections.Generic;
@@ -19,7 +21,9 @@ public sealed class RuntimeRetirementTests
     public void FailedStartupDrainsBeforeReleasingFactoryResources(bool hostLifetime, bool failAttach)
     {
         string root = Path.Combine(Path.GetTempPath(), "InnoStartupTests", Guid.NewGuid().ToString("N"));
-        using EngineHost host = new EngineHostBuilder().UseMetadataCache(Path.Combine(root, "Metadata")).Build();
+        using EngineHost host = new EngineHostBuilder()
+                .UseMetadataSources(new DotNetAssemblyCatalogSource(typeof(RuntimeRetirementTests).Assembly),
+                    new ReflectionTypeCatalogSource(), new ReflectionSerializationMetadataSource()).UseMetadataCache(Path.Combine(root, "Metadata")).Build();
         var resource = new Resource();
         var factory = new FailingFactory(resource, hostLifetime, failAttach);
         try
@@ -54,7 +58,9 @@ public sealed class RuntimeRetirementTests
     public void StopHookPendingRetainsDependenciesWithoutRepeatingCompletedOwners()
     {
         string root = Path.Combine(Path.GetTempPath(), "InnoStopTests", Guid.NewGuid().ToString("N"));
-        using EngineHost host = new EngineHostBuilder().UseMetadataCache(Path.Combine(root, "Metadata")).Build();
+        using EngineHost host = new EngineHostBuilder()
+                .UseMetadataSources(new DotNetAssemblyCatalogSource(typeof(RuntimeRetirementTests).Assembly),
+                    new ReflectionTypeCatalogSource(), new ReflectionSerializationMetadataSource()).UseMetadataCache(Path.Combine(root, "Metadata")).Build();
         var pending = new StopPendingSubsystem();
         var resource = new Resource();
         RuntimeSession session = host.CreateSession(new RuntimeSessionOptions
@@ -81,7 +87,9 @@ public sealed class RuntimeRetirementTests
         string root = Path.Combine(Path.GetTempPath(), "InnoRetirementTests", Guid.NewGuid().ToString("N"));
         var pending = new PendingSubsystem();
         var resource = new Resource();
-        using EngineHost host = new EngineHostBuilder().UseMetadataCache(Path.Combine(root, "Metadata")).Build();
+        using EngineHost host = new EngineHostBuilder()
+                .UseMetadataSources(new DotNetAssemblyCatalogSource(typeof(RuntimeRetirementTests).Assembly),
+                    new ReflectionTypeCatalogSource(), new ReflectionSerializationMetadataSource()).UseMetadataCache(Path.Combine(root, "Metadata")).Build();
         try
         {
             RuntimeSession session = host.CreateSession(new RuntimeSessionOptions

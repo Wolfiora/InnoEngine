@@ -13,7 +13,7 @@ namespace Inno.Rendering.Assets;
 /// <summary>
 /// Persists graph and frozen function inputs as an authoring artifact; Player export removes this payload.
 /// </summary>
-public static class ShaderGraphArtifact
+public static partial class ShaderGraphArtifact
 {
     /// <summary>
     /// Identifies the authoring-only graph and frozen source output.

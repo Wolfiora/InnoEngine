@@ -56,7 +56,7 @@ internal sealed class WindowsX64CimguiBuilder : CimguiBuilder
         var buildType = GetBuildType(config);
         string sourceDir = CimguiSourceOverlay.Prepare(context, cimguiDir);
 
-        await ToolchainEnvironment.RunAsync("cmake", $"-S \"{sourceDir}\" -B \"{buildDir}\" -DINNO_CIMGUI_SOURCE_DIR=\"{cimguiDir}\" -G \"{GENERATOR}\" -A {PLATFORM} -DBUILD_SHARED_LIBS=ON -DCIMGUI_VARGS0=ON", cimguiDir, cancellationToken);
-        await ToolchainEnvironment.RunAsync("cmake", $"--build \"{buildDir}\" --config {buildType}", cimguiDir, cancellationToken);
+        await ToolchainEnvironment.RunAsync(context, "cmake", $"-S \"{sourceDir}\" -B \"{buildDir}\" -DINNO_CIMGUI_SOURCE_DIR=\"{cimguiDir}\" -G \"{GENERATOR}\" -A {PLATFORM} -DBUILD_SHARED_LIBS=ON -DCIMGUI_VARGS0=ON", cimguiDir, cancellationToken);
+        await ToolchainEnvironment.RunAsync(context, "cmake", $"--build \"{buildDir}\" --config {buildType}", cimguiDir, cancellationToken);
     }
 }

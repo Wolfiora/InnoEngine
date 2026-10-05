@@ -1,3 +1,5 @@
+using Inno.Adapter.Serialization.DotNet;
+using Inno.Adapter.Modules.DotNet;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -170,9 +172,9 @@ public sealed class SettingsReferenceTests
             assetRoot = Path.Combine(root, "Assets");
             Directory.CreateDirectory(assetRoot);
             m_identityScope = m_identities.EnterScope();
-            m_modules = new ModuleHost(new ModuleHostOptions { cacheDirectory = Path.Combine(root, "Modules") });
-            types = new TypeCatalog(m_modules);
-            serialization = new SerializationRegistry(types);
+            m_modules = new ModuleHost(new ModuleHostOptions { catalogSource = new DotNetAssemblyCatalogSource(typeof(SettingsReferenceTests).Assembly), cacheDirectory = Path.Combine(root, "Modules") });
+            types = new TypeCatalog(m_modules, new ReflectionTypeCatalogSource());
+            serialization = new SerializationRegistry(types, new ReflectionSerializationMetadataSource());
             assets = new AssetPipeline(m_modules, types, serialization, m_identities, m_diagnostics, m_logs,
                 AssetPipelineOptions.Create(assetRoot, Path.Combine(root, "Library")) with { enableFileSystemWatcher = false });
             context = AssetSerializationContext.Create(assets);

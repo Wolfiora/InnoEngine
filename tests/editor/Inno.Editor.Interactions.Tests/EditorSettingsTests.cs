@@ -1,3 +1,5 @@
+using Inno.Adapter.Serialization.DotNet;
+using Inno.Adapter.Modules.DotNet;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -37,13 +39,13 @@ public sealed class EditorSettingsTests : IDisposable
     {
         Directory.CreateDirectory(m_projectRoot);
         m_modules = new ModuleHost(new ModuleHostOptions
-        {
+        { catalogSource = new DotNetAssemblyCatalogSource(typeof(EditorSettingsTests).Assembly),
             cacheDirectory = Path.Combine(m_projectRoot, "Library", "Assemblies")
         });
         _ = typeof(EditorSettings);
         _ = System.Reflection.Assembly.Load("Inno.Editor.Panel.Logging");
-        m_types = new TypeCatalog(m_modules);
-        m_serialization = new SerializationRegistry(m_types);
+        m_types = new TypeCatalog(m_modules, new ReflectionTypeCatalogSource());
+        m_serialization = new SerializationRegistry(m_types, new ReflectionSerializationMetadataSource());
         SettingsCaptureModule.current = null;
         SettingsCaptureModule.console = null;
         m_runtime = new EditorInteractionRuntime(

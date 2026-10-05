@@ -1,4 +1,4 @@
-using System;
+using Inno.Build.Managed;
 
 namespace Inno.Build;
 
@@ -11,13 +11,13 @@ public sealed class GameBuildPackageContext
         BuildProfile profile,
         string supportPackDirectory,
         string contentDirectory,
-        string runtimeAssemblyDirectory,
+        ManagedDeploymentResult managedDeployment,
         string outputDirectory
     ) {
         this.profile = profile;
         this.supportPackDirectory = supportPackDirectory;
         this.contentDirectory = contentDirectory;
-        this.runtimeAssemblyDirectory = runtimeAssemblyDirectory;
+        this.managedDeployment = managedDeployment;
         this.outputDirectory = outputDirectory;
     }
 
@@ -37,9 +37,9 @@ public sealed class GameBuildPackageContext
     public string contentDirectory { get; }
 
     /// <summary>
-    /// Gets the frozen, source-free runtime assemblies for platform linkers that require static inclusion.
+    /// Gets the verified managed publication produced independently of platform packaging.
     /// </summary>
-    public string runtimeAssemblyDirectory { get; }
+    public ManagedDeploymentResult managedDeployment { get; }
 
     /// <summary>
     /// Gets the empty staging parent where the target must create exactly one output.

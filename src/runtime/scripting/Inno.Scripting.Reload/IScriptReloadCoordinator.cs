@@ -21,7 +21,7 @@ public interface IScriptReloadCoordinator
     /// <returns>
     /// A monitor observing cooperative unload of assemblies retired by the committed generation.
     /// </returns>
-    AssemblyUnloadMonitor Execute(
+    IAssemblyUnloadProbe Execute(
         AssemblyReloadSession reload,
         IGenerationChange? externalChange = null
     );

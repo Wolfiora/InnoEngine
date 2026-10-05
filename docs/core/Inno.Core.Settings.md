@@ -33,7 +33,7 @@ SampleRenderingSettings settings =
     Settings.Get<SampleRenderingSettings>(SampleRenderingSettings.settingId);
 ```
 
-设置类型必须是带无参构造函数的非抽象 `ISerializable` class，并拥有 `StableTypeId`。`Get`/`TryGet` 每次返回隔离快照，调用方不能通过修改返回对象绕过 Apply，也不会把 Plugin generation 实例固定在 Host cache 中。
+设置类型必须是非抽象 `ISerializable` class，拥有 `StableTypeId`，并可由当前 Type Catalog 的构造工厂创建。普通脚本的可访问无参构造函数由生成注册自动提供工厂；显式 catalog provider 也可提供自己的构造方式。Definition 和 Composer 的 Attribute 元数据与构造都经过同一 Type Catalog，Core 不直接扫描反射或构造函数，因此动态 Editor 与静态 Player 使用同一协议。缺失工厂会在候选准备阶段失败。`Get`/`TryGet` 每次返回隔离快照，调用方不能通过修改返回对象绕过 Apply，也不会把 Plugin generation 实例固定在 Host cache 中。
 
 有效值缓存实际只保存 `ProjectSettingId`、Stable Type ID 和独立 property bytes；读取时用当前 definition
 构造对象，并使用 owner context 恢复。缓存不保存 `ISerializable` 扩展实例，不能延长其 collectible ALC

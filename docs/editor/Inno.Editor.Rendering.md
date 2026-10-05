@@ -10,7 +10,7 @@
 `ReadDefinition(artifact)` 使用 owner 引用上下文读取该产物携带的精确接口。Shader 草稿仍通过 `RequestDraft` 独立缓存编译；预览错误和正式保存状态互不冒充。
 交互式 `Check` 在工具链编译完成后还会通过 `IEditorShaderArtifactValidator` 把不可变候选排入下一次渲染帧安全点；Host 使用正式 `IRenderResourceService.ValidateShaderArtifact` 为每个 Pass 创建并立即退休真实 Pipeline。只有二进制加载、Program link 和 Reflection 合同全部成功，当前 revision 才进入可预览状态。设备校验失败只产生本次 Check 诊断，不发布候选，也不回退显示旧预览。
 
-[Editor 索引](README.md) · [Rendering](../render/README.md) · [Scene View](Inno.Editor.Panel.SceneView.md) · [Game View](Inno.Editor.Panel.GameView.md)
+[Editor 索引](README.md) · [Rendering](../rendering/README.md) · [Scene View](Inno.Editor.Panel.SceneView.md) · [Game View](Inno.Editor.Panel.GameView.md)
 
 `Inno.Editor.Rendering` 是 Editor viewport 与任意 Plugin 渲染模型之间的后端中立合成边界。Viewport kind 只表示“Scene View”“Game View”或自定义预览等用途，不再等同于某一种 2D/3D 渲染器。Editor 不知道 Camera、Scene snapshot、Picking buffer、Render Path 或材质世界观。
 

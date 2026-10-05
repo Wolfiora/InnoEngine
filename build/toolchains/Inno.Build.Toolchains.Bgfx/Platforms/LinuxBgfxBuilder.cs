@@ -1,214 +1,37 @@
-using System.IO;
-using System.Runtime.InteropServices;
-using System.Threading.Tasks;
-using System.Threading;
 using System;
-using Inno.Build.Toolchains;
+using System.Collections.Generic;
+using System.Runtime.InteropServices;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Inno.Build.Toolchains.Bgfx.Platforms;
 
 internal sealed class LinuxBgfxBuilder : BgfxBuilder
 {
-    private const string LINUX_X64_OUTPUT_PLATFORM = "linux-x64";
-    private const string LINUX_ARM64_OUTPUT_PLATFORM = "linux-arm64";
-    private const string LINUX_X64_DEBUG_TARGET = "linux-gcc-debug64";
-    private const string LINUX_X64_RELEASE_TARGET = "linux-gcc-release64";
-    private const string LINUX_ARM_GCC_PROJECT = ".build/projects/gmake-linux-arm-gcc";
-    private const string HOST_GENIE_ENVIRONMENT_VARIABLE = "BGFX_GENIE";
+    internal override string outputPlatform => RuntimeInformation.ProcessArchitecture == Architecture.X64
+        ? "linux-x64" : "linux-arm64";
+    internal override string artifactPathToken => RuntimeInformation.ProcessArchitecture == Architecture.X64
+        ? "/linux64_gcc/bin/" : "/linux32_arm_gcc/bin/";
+    internal override bool IsSupported() => OperatingSystem.IsLinux()
+        && RuntimeInformation.ProcessArchitecture is Architecture.X64 or Architecture.Arm64;
 
-    private static string ParallelMakeOption => $"-j{Math.Max(1, Environment.ProcessorCount)}";
-
-    /// <summary>
-    /// Gets the native platform identifier produced by this builder.
-    /// </summary>
-    public override string outputPlatform => RuntimeInformation.ProcessArchitecture switch
-    {
-        Architecture.X64 => LINUX_X64_OUTPUT_PLATFORM,
-        Architecture.Arm64 => LINUX_ARM64_OUTPUT_PLATFORM,
-        _ => throw new PlatformNotSupportedException(
-            $"Unsupported Linux architecture: {RuntimeInformation.ProcessArchitecture}.")
-    };
-
-    /// <summary>
-    /// Gets the artifact path token text used by the current instance.
-    /// </summary>
-    public override string artifactPathToken => RuntimeInformation.ProcessArchitecture switch
-    {
-        Architecture.X64 => "/linux64_gcc/bin/",
-        Architecture.Arm64 => "/linux32_arm_gcc/bin/",
-        _ => throw new PlatformNotSupportedException(
-            $"Unsupported Linux architecture: {RuntimeInformation.ProcessArchitecture}.")
-    };
-
-    /// <summary>
-    /// Gets the native make target used for debug output.
-    /// </summary>
-    protected override string debugMakeTarget => LINUX_X64_DEBUG_TARGET;
-
-    /// <summary>
-    /// Gets the native make target used for optimized output.
-    /// </summary>
-    protected override string releaseMakeTarget => LINUX_X64_RELEASE_TARGET;
-
-    /// <summary>
-    /// Determines whether the current host can execute this implementation.
-    /// </summary>
-    /// <returns>
-    /// <see langword="true"/> when the documented condition is satisfied; otherwise, <see langword="false"/>.
-    /// </returns>
-    public override bool IsSupported()
-    {
-        return RuntimeInformation.IsOSPlatform(OSPlatform.Linux)
-            && RuntimeInformation.ProcessArchitecture is Architecture.X64 or Architecture.Arm64;
-    }
-
-    /// <summary>
-    /// Compiles the component sources using the selected checkout and configuration.
-    /// </summary>
-    /// <param name="bgfxDir">
-    /// The bgfx dir text validated by the build operation.
-    /// </param>
-    /// <param name="context">
-    /// The selected checkout and native configuration.
-    /// </param>
-    /// <param name="makeTargetOverride">
-    /// The make target override text validated by the build operation.
-    /// </param>
-    /// <param name="cancellationToken">
-    /// Cancels the native process tree.
-    /// </param>
-    /// <returns>
-    /// Completion after native compilation succeeds; failures and cancellation propagate.
-    /// </returns>
-    public override async Task BuildAsync(
-        string bgfxDir,
+    internal override async Task BuildAsync(
+        string source,
+        string genie,
         NativeBuildContext context,
-        string? makeTargetOverride,
-        CancellationToken cancellationToken
-    ) {
-        cancellationToken.ThrowIfCancellationRequested();
-        string config = context.configuration;
-        if (!string.IsNullOrWhiteSpace(makeTargetOverride))
-        {
-            await ToolchainEnvironment.RunAsync("make", $"{ParallelMakeOption} {makeTargetOverride}", bgfxDir, cancellationToken);
-            return;
-        }
-
-        if (RuntimeInformation.ProcessArchitecture == Architecture.X64)
-        {
-            await ToolchainEnvironment.RunAsync("make", $"{ParallelMakeOption} {GetMakeTarget(config)}", bgfxDir, cancellationToken);
-            return;
-        }
-
-        await GenerateArmProjectsAsync(bgfxDir, includeTools: false, cancellationToken);
-        await ToolchainEnvironment.RunAsync(
-            "make",
-            $"{ParallelMakeOption} -R -C {LINUX_ARM_GCC_PROJECT} config={config}",
-            bgfxDir, cancellationToken);
-    }
-
-    /// <summary>
-    /// Builds the native offline tools required by the selected configuration.
-    /// </summary>
-    /// <param name="bgfxDir">
-    /// The bgfx dir text validated by the build tools operation.
-    /// </param>
-    /// <param name="context">
-    /// The selected checkout and native configuration.
-    /// </param>
-    /// <param name="cancellationToken">
-    /// Cancels the native process tree.
-    /// </param>
-    /// <returns>
-    /// Completion after native compilation succeeds; failures and cancellation propagate.
-    /// </returns>
-    public override async Task BuildToolsAsync(
-        string bgfxDir,
-        NativeBuildContext context,
-        CancellationToken cancellationToken
-    ) {
-        cancellationToken.ThrowIfCancellationRequested();
-        string config = context.configuration;
-        if (RuntimeInformation.ProcessArchitecture == Architecture.X64)
-        {
-            await ToolchainEnvironment.RunAsync("make", $"{ParallelMakeOption} tools config={config}", bgfxDir, cancellationToken);
-            return;
-        }
-
-        await GenerateArmProjectsAsync(bgfxDir, includeTools: true, cancellationToken);
-        await ToolchainEnvironment.RunAsync(
-            "make",
-            $"{ParallelMakeOption} -R -C {LINUX_ARM_GCC_PROJECT} "
-                + $"geometryc geometryv shaderc texturec texturev config={config}",
-            bgfxDir, cancellationToken);
-    }
-
-    private static async Task GenerateArmProjectsAsync(
-        string bgfxDir,
         bool includeTools,
         CancellationToken cancellationToken
     ) {
-        var genie = ResolveHostGenie(bgfxDir);
-        var toolsOption = includeTools ? "--with-tools " : string.Empty;
-        await ToolchainEnvironment.RunAsync(
-            genie,
-            $"{toolsOption}--with-shared-lib --gcc=linux-arm-gcc gmake",
-            bgfxDir, cancellationToken);
-    }
-
-    private static string ResolveHostGenie(string bgfxDir)
-    {
-        var configured = Environment.GetEnvironmentVariable(HOST_GENIE_ENVIRONMENT_VARIABLE);
-        if (!string.IsNullOrWhiteSpace(configured))
-        {
-            return configured;
-        }
-
-        var repoRoot = Path.GetFullPath(Path.Combine(bgfxDir, "..", ".."));
-        var localHostBuild = Path.Combine(repoRoot, "artifacts", "genie-src", "bin", "linux", "genie");
-        if (File.Exists(localHostBuild))
-        {
-            return localHostBuild;
-        }
-
-        if (RuntimeInformation.ProcessArchitecture == Architecture.X64)
-        {
-            var bundled = Path.GetFullPath(Path.Combine(bgfxDir, "..", "bx", "tools", "bin", "linux", "genie"));
-            if (File.Exists(bundled))
-            {
-                return bundled;
-            }
-        }
-
-        var pathCandidate = FindOnPath("genie");
-        if (pathCandidate != null)
-        {
-            return pathCandidate;
-        }
-
-        throw new FileNotFoundException(
-            "A host-native GENie executable is required to generate bgfx projects. "
-            + $"Set {HOST_GENIE_ENVIRONMENT_VARIABLE} to its absolute path. "
-            + "The bgfx/bx bundled Linux binary only supports x86_64.");
-    }
-
-    private static string? FindOnPath(string executableName)
-    {
-        var path = Environment.GetEnvironmentVariable("PATH");
-        if (string.IsNullOrWhiteSpace(path))
-        {
-            return null;
-        }
-
-        foreach (var directory in path.Split(Path.PathSeparator, StringSplitOptions.RemoveEmptyEntries))
-        {
-            var candidate = Path.Combine(directory, executableName);
-            if (File.Exists(candidate))
-            {
-                return candidate;
-            }
-        }
-
-        return null;
+        bool x64 = RuntimeInformation.ProcessArchitecture == Architecture.X64;
+        string compiler = x64 ? "linux-gcc" : "linux-arm-gcc";
+        var generate = new List<string> { "--with-shared-lib", "--gcc=" + compiler, "gmake" };
+        if (includeTools)
+            generate.Insert(0, "--with-tools");
+        await ToolchainEnvironment.RunAsync(context, genie, generate, source, cancellationToken).ConfigureAwait(false);
+        var compile = new List<string> { "-R", "-C", ".build/projects/gmake-" + compiler,
+            "config=" + context.configuration + (x64 ? "64" : string.Empty) };
+        if (includeTools)
+            compile.AddRange(["shaderc", "texturec", "geometryc", "geometryv", "texturev"]);
+        await ToolchainEnvironment.RunAsync(context, "make", compile, source, cancellationToken).ConfigureAwait(false);
     }
 }

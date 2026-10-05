@@ -1,5 +1,4 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
     <ImplicitUsings>disable</ImplicitUsings>
@@ -10,6 +9,10 @@
 
   <ItemGroup>
     <ProjectReference Include="../../scripting/Inno.Scripting.Api/Inno.Scripting.Api.csproj" PrivateAssets="compile" />
-    <ProjectReference Include="..\Inno.Core.Execution\Inno.Core.Execution.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../Inno.Core.Execution/Inno.Core.Execution.csproj" PrivateAssets="compile" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../../extensibility/Inno.Extensibility.Catalogs/Inno.Extensibility.Catalogs.csproj" />
   </ItemGroup>
 </Project>

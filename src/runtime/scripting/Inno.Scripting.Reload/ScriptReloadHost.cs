@@ -36,6 +36,7 @@ public sealed class ScriptReloadHost : IDisposable
     private readonly PluginEnvironment m_plugins;
     private readonly ProjectSettingsStore m_settings;
     private readonly IScriptReloadCoordinator m_reloads;
+    private readonly Func<ScriptModuleDeployment, IModuleSource> m_moduleSourceFactory;
     private readonly SemaphoreSlim m_compileGate = new(1, 1);
     private readonly CancellationTokenSource m_lifetimeCancellation = new();
     private readonly TaskCompletionSource<Exception?> m_disposalCompleted = new(
@@ -87,8 +88,12 @@ public sealed class ScriptReloadHost : IDisposable
     /// <param name="reloads">
     /// The host-owned coordinator that commits dependent state together with script generations.
     /// </param>
+    /// <param name="moduleSourceFactory">
+    /// The composition-owned factory that chooses the loading policy for each immutable script module.
+    /// It must return a fresh source without activating or publishing the module.
+    /// </param>
     /// <exception cref="ArgumentNullException">
-    /// Thrown when <paramref name="options"/> is <see langword="null"/>.
+    /// Thrown when any required dependency is null.
     /// </exception>
     /// <exception cref="ArgumentOutOfRangeException">
     /// Thrown when the configured debounce duration is negative.
@@ -100,7 +105,8 @@ public sealed class ScriptReloadHost : IDisposable
         PluginEnvironment plugins,
         ModuleHost modules,
         ProjectSettingsStore settings,
-        IScriptReloadCoordinator reloads
+        IScriptReloadCoordinator reloads,
+        Func<ScriptModuleDeployment, IModuleSource> moduleSourceFactory
     ) {
         ArgumentNullException.ThrowIfNull(options);
         ArgumentNullException.ThrowIfNull(compiler);
@@ -109,6 +115,7 @@ public sealed class ScriptReloadHost : IDisposable
         ArgumentNullException.ThrowIfNull(modules);
         ArgumentNullException.ThrowIfNull(settings);
         ArgumentNullException.ThrowIfNull(reloads);
+        ArgumentNullException.ThrowIfNull(moduleSourceFactory);
         if (options.debounceMilliseconds < 0)
             throw new ArgumentOutOfRangeException(nameof(options), "Debounce duration cannot be negative.");
         if (options.compilationWarningTimeout <= TimeSpan.Zero &&
@@ -133,6 +140,7 @@ public sealed class ScriptReloadHost : IDisposable
         m_modules = modules;
         m_settings = settings;
         m_reloads = reloads;
+        m_moduleSourceFactory = moduleSourceFactory;
         m_options = new ScriptReloadOptions
         {
             autoCompile = options.autoCompile,
@@ -527,10 +535,10 @@ public sealed class ScriptReloadHost : IDisposable
 
         SetCompilationProgress(C_STAGING_PROGRESS, "Staging script reload candidates...");
         using AssemblyReloadSession reload = m_modules.BeginReload(
-            plan.requests,
+            plan.requests.Select(m_moduleSourceFactory).ToArray(),
             plan.removedModuleNames);
         SetCompilationProgress(C_MIGRATION_PROGRESS, "Migrating active editor state...");
-        AssemblyUnloadMonitor unload = PublishGeneration(reload);
+        IAssemblyUnloadProbe unload = PublishGeneration(reload);
         m_modules.generations.TrackRetirement(unload);
         m_activeCompilationDirectory = pending.unavailability is null
             ? pending.compilation.outputDirectory
@@ -705,7 +713,7 @@ public sealed class ScriptReloadHost : IDisposable
         QueueReload(ScriptReloadRequest.ReloadPlugins);
     }
 
-    private AssemblyUnloadMonitor PublishGeneration(AssemblyReloadSession reload)
+    private IAssemblyUnloadProbe PublishGeneration(AssemblyReloadSession reload)
     {
         // Catalog republication belongs to this candidate, not to a new source edit. Only this
         // synchronous notification is suppressed; actual source edits and explicit requests stay queued.
@@ -758,11 +766,11 @@ public sealed class ScriptReloadHost : IDisposable
         if (pending.unavailability is not null)
         {
             return new ReloadPlan(
-                Array.Empty<AssemblyLoadRequest>(),
+                Array.Empty<ScriptModuleDeployment>(),
                 pending.unavailability.removedModuleNames);
         }
 
-        IReadOnlyList<AssemblyLoadRequest> requests = pending.compilation.activationRequests;
+        IReadOnlyList<ScriptModuleDeployment> requests = pending.compilation.moduleDeployments;
         string[] candidatePlugins = requests
             .Where(static request => request.domain == AssemblyDomain.InnoPlugin)
             .Select(static request => request.moduleName)
@@ -811,7 +819,7 @@ public sealed class ScriptReloadHost : IDisposable
             do
             {
                 changed = false;
-                foreach (AssemblyLoadRequest request in requests.Where(static request =>
+                foreach (ScriptModuleDeployment request in requests.Where(static request =>
                              request.domain == AssemblyDomain.InnoPlugin))
                 {
                     if (!selected.Contains(request.moduleName) && request.upstreamModuleNames.Any(selected.Contains))
@@ -859,16 +867,16 @@ public sealed class ScriptReloadHost : IDisposable
     {
         foreach (string removed in plan.removedModuleNames)
             m_activeModuleFingerprints.Remove(removed);
-        foreach (AssemblyLoadRequest request in plan.requests)
+        foreach (ScriptModuleDeployment request in plan.requests)
             m_activeModuleFingerprints[request.moduleName] = ComputeRequestFingerprint(request);
     }
 
-    private static IEnumerable<string> GetOwnedAssemblyNames(AssemblyLoadRequest request)
+    private static IEnumerable<string> GetOwnedAssemblyNames(ScriptModuleDeployment request)
         => new[] { request.mainAssemblyPath }
             .Concat(request.preloadAssemblyPaths)
             .Select(static path => System.Reflection.AssemblyName.GetAssemblyName(path).Name ?? string.Empty);
 
-    private static string ComputeRequestFingerprint(AssemblyLoadRequest request)
+    private static string ComputeRequestFingerprint(ScriptModuleDeployment request)
     {
         using var hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
         foreach (string path in new[] { request.mainAssemblyPath }
@@ -976,7 +984,7 @@ public sealed class ScriptReloadHost : IDisposable
     private sealed record PluginUnavailabilityPlan(IReadOnlyList<string> removedModuleNames);
 
     private sealed record ReloadPlan(
-        IReadOnlyList<AssemblyLoadRequest> requests,
+        IReadOnlyList<ScriptModuleDeployment> requests,
         IReadOnlyList<string> removedModuleNames
     );
 

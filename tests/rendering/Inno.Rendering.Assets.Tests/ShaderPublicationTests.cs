@@ -1,3 +1,5 @@
+using Inno.Adapter.Serialization.DotNet;
+using Inno.Adapter.Modules.DotNet;
 using System;
 using System.IO;
 using System.Collections.Generic;
@@ -21,11 +23,11 @@ public sealed class ShaderPublicationTests : IDisposable
     public ShaderPublicationTests()
     {
         m_modules = new ModuleHost(new ModuleHostOptions
-        {
+        { catalogSource = new DotNetAssemblyCatalogSource(typeof(ShaderPublicationTests).Assembly),
             cacheDirectory = Path.Combine(Path.GetTempPath(), "InnoShaderPublication", Guid.NewGuid().ToString("N"))
         });
-        m_types = new TypeCatalog(m_modules);
-        m_serialization = new SerializationRegistry(m_types);
+        m_types = new TypeCatalog(m_modules, new ReflectionTypeCatalogSource());
+        m_serialization = new SerializationRegistry(m_types, new ReflectionSerializationMetadataSource());
     }
 
     public void Dispose()

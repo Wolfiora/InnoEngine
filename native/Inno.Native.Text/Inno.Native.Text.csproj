@@ -5,11 +5,16 @@
     <Nullable>enable</Nullable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <BindGenGeneratedBindings>true</BindGenGeneratedBindings>
+    <BindGenBridgeConfig>$(MSBuildProjectDirectory)/Bindings/text.bridge.json</BindGenBridgeConfig>
   </PropertyGroup>
+
   <ItemGroup>
-    <ProjectReference Include="..\Inno.Native.LibraryLoading\Inno.Native.LibraryLoading.csproj" PrivateAssets="compile" />
+    <ProjectReference
+      Include="../Inno.Native.LibraryLoading/Inno.Native.LibraryLoading.csproj"
+      PrivateAssets="compile" />
     <ProjectReference Include="$(BGCSRuntimeProject)" Condition="'$(BGCSRuntimeProject)' != ''" />
   </ItemGroup>
+
   <ItemGroup>
     <PackageReference Include="BGCS.Runtime" Version="1.0.1" Condition="'$(BGCSRuntimeProject)' == ''" />
   </ItemGroup>

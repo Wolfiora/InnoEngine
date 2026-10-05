@@ -34,3 +34,7 @@ using IAudioDevice device = new MiniAudioDevice(new MiniAudioDeviceOptions
 初始化任一步失败都会逆序回滚 native allocation；运行中会在控制线程检查 native output device state，并把无法重新启动的 generation 标记为 Lost，交由 Runtime 候选恢复。Dispose 先停止 Voice，再释放 Clip、processor、Bus、Listener 和 engine。native library 与 binding 必须来自同一固定 miniaudio commit，不混用动态 ABI。
 
 `MiniAudioDeviceOptions.limits` 接收 `AudioDeviceLimits`，创建时验证非 null。Clip、Bus 与 Voice 分配在 native 入口前检查预算；未排空 completion 仍占 Voice 容量，TryDequeueCompletion 后才可重新接纳。容量不足返回 invalid handle，不发起 native operation。
+
+## Composition provider
+
+`MiniAudioBackendProvider()` 只创建注册描述，不初始化原生服务。`CreateDevice(AudioBackendOptions)` 是继承的 provider 创建扩展点，返回调用方拥有的服务。`id` 来自所属领域的内置稳定 ID；同一 provider 可在 composition 生命周期内创建独立服务，具体线程及进程 owner 约束仍由该实现执行。

@@ -5,7 +5,10 @@ namespace Inno.Core.Serialization.Converters;
 /// <summary>
 /// Identifies a concrete serialization converter for generation-scoped type discovery.
 /// </summary>
-public abstract class SerializationConverter;
+public abstract class SerializationConverter
+{
+    internal abstract ConverterInvoker CreateInvoker();
+}
 
 /// <summary>
 /// Defines the single advanced extension contract for serializing a specific value type.
@@ -58,4 +61,6 @@ public abstract class SerializationConverter<T> : SerializationConverter
     )
         => throw new NotSupportedException(
             $"Serialization converter '{GetType().FullName}' does not support restoring existing '{typeof(T).FullName}' values.");
+
+    internal sealed override ConverterInvoker CreateInvoker() => new ConverterInvoker<T>(this, GetType());
 }

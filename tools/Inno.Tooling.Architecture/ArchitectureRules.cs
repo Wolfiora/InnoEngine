@@ -19,6 +19,8 @@ internal static partial class ArchitectureRules
         "Inno.Scripting.Reload",
         "Inno.Assets.Pipeline",
         "Inno.Plugins.Authoring",
+        "Inno.Adapter.Modules.DotNet",
+        "Inno.Adapter.Serialization.DotNet",
         "Toolchains"
     ];
     private static readonly string[] S_FORBIDDEN_IMPLEMENTATION_WORDS =
@@ -125,14 +127,14 @@ internal static partial class ArchitectureRules
             {
                 using JsonDocument host = JsonDocument.Parse(File.ReadAllText(hostConfig));
                 if (host.RootElement.ValueKind != JsonValueKind.Object
-                    || !host.RootElement.TryGetProperty("OutputPath", out JsonElement hostOutput))
+                    || !host.RootElement.TryGetProperty("outputPath", out JsonElement hostOutput))
                     continue;
                 string hostPath = Path.GetFullPath(Path.Combine(bindings, hostOutput.GetString()!));
                 string profilePattern = Path.GetFileNameWithoutExtension(hostConfig) + ".*.json";
                 foreach (string profileConfig in Directory.EnumerateFiles(bindings, profilePattern))
                 {
                     using JsonDocument profile = JsonDocument.Parse(File.ReadAllText(profileConfig));
-                    if (!profile.RootElement.TryGetProperty("OutputPath", out JsonElement profileOutput))
+                    if (!profile.RootElement.TryGetProperty("outputPath", out JsonElement profileOutput))
                     {
                         failures.Add($"{Relative(repositoryRoot, profileConfig)}: target profiles must declare an isolated output root.");
                         continue;
@@ -202,6 +204,13 @@ internal static partial class ArchitectureRules
     ) {
         if (relative.StartsWith("tools/Inno.Tooling.Architecture/", StringComparison.Ordinal))
             return;
+        if (relative.StartsWith("src/services/platform/", StringComparison.Ordinal) &&
+            (source.Contains("PlatformNativeHandles", StringComparison.Ordinal) ||
+             source.Contains("PlatformNativeHandleId", StringComparison.Ordinal) ||
+             source.Contains("INativeWindowSurface", StringComparison.Ordinal)))
+        {
+            failures.Add($"{relative}: native surface ABI belongs to platform adapters, not the shared platform service.");
+        }
         if (source.Contains(".With<IAssetReferenceResolver>", StringComparison.Ordinal) &&
             !relative.EndsWith(
                 "src/content/assets/Inno.Assets/Serialization/AssetSerializationContext.cs",
@@ -309,9 +318,24 @@ internal static partial class ArchitectureRules
                 string? include = reference.Attribute("Include")?.Value;
                 if (string.IsNullOrWhiteSpace(include))
                     continue;
-                if (node.relative == "native/Inno.Native.ImGui/Bindings/Extension/Inno.Native.ImGui.BindingExtension.csproj" &&
-                    (include is "$(BindGenRoot)/src/BGCS/BGCS.csproj" or "$(BindGenRoot)/src/BGCS.Core/BGCS.Core.csproj"))
+                if (include.StartsWith("$(BindGenRoot)/", StringComparison.Ordinal))
+                {
+                    bool permitted = node.relative switch
+                    {
+                        "native/Inno.Native.ImGui/Bindings/Extension/Inno.Native.ImGui.BindingExtension.csproj"
+                            => include is "$(BindGenRoot)/src/BGCS/BGCS.csproj"
+                                or "$(BindGenRoot)/src/BGCS.Core/BGCS.Core.csproj",
+                        "build/tasks/Inno.Build.Tasks/Inno.Build.Tasks.csproj"
+                            => include is "$(BindGenRoot)/src/BGCS/BGCS.csproj"
+                                or "$(BindGenRoot)/src/BGCS.Cpp2C/BGCS.Cpp2C.csproj",
+                        _ => false
+                    };
+                    string bindingProject = Path.Combine(Path.GetDirectoryName(repositoryRoot)!, "BindGen-CS",
+                        include["$(BindGenRoot)/".Length..]);
+                    if (!permitted || !File.Exists(bindingProject))
+                        failures.Add($"{node.relative}: external binding dependency '{include}' is unavailable or outside its generation boundary.");
                     continue;
+                }
                 if (include == "$(BGCSRuntimeProject)" &&
                     (string?)reference.Attribute("Condition") == "'$(BGCSRuntimeProject)' != ''")
                     continue;

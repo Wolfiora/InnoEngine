@@ -1,6 +1,6 @@
 # Inno.Adapter.Presentation.ImGui.Sdl3
 
-[Platform 索引](README.md) · [Editor ImGui](../editor/Inno.Editor.ImGui.md) · [BGFX ImGui](../render/Inno.Adapter.Presentation.ImGui.Bgfx.md)
+[Platform 索引](README.md) · [Editor ImGui](../editor/Inno.Editor.ImGui.md) · [BGFX ImGui](../rendering/Inno.Adapter.Presentation.ImGui.Bgfx.md)
 
 ## 公开 API
 

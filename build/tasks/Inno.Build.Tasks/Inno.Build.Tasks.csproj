@@ -3,13 +3,41 @@
     <TargetFramework>net9.0</TargetFramework>
     <ImplicitUsings>disable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    <BindGenRoot Condition="'$(BindGenRoot)' == ''">$(MSBuildProjectDirectory)/../../../../BindGen-CS</BindGenRoot>
   </PropertyGroup>
+
   <ItemGroup>
-    <ProjectReference Include="../../toolchains/Inno.Build.Toolchains.Bgfx.Shaders/Inno.Build.Toolchains.Bgfx.Shaders.csproj" PrivateAssets="compile" />
-    <ProjectReference Include="../../support/Inno.Build.SupportPacks/Inno.Build.SupportPacks.csproj" PrivateAssets="compile" />
+    <ProjectReference
+      Include="../../toolchains/Inno.Build.Toolchains.Host/Inno.Build.Toolchains.Host.csproj"
+      PrivateAssets="compile" />
+    <ProjectReference
+      Include="../../toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj"
+      PrivateAssets="compile" />
+    <ProjectReference Include="$(BindGenRoot)/src/BGCS/BGCS.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="$(BindGenRoot)/src/BGCS.Cpp2C/BGCS.Cpp2C.csproj" PrivateAssets="compile" />
+    <ProjectReference
+      Include="../../toolchains/Inno.Build.Toolchains.Bgfx.Shaders/Inno.Build.Toolchains.Bgfx.Shaders.csproj"
+      PrivateAssets="compile" />
+    <ProjectReference
+      Include="../../support/Inno.Build.SupportPacks/Inno.Build.SupportPacks.csproj"
+      PrivateAssets="compile" />
   </ItemGroup>
+
   <ItemGroup>
-    <PackageReference Include="Microsoft.Build.Framework" Version="17.12.50" PrivateAssets="all" ExcludeAssets="runtime" />
-    <PackageReference Include="Microsoft.Build.Utilities.Core" Version="17.12.50" PrivateAssets="all" ExcludeAssets="runtime" />
+    <PackageReference
+      Include="Microsoft.Build.Framework"
+      Version="17.12.50"
+      PrivateAssets="all"
+      ExcludeAssets="runtime" />
+    <PackageReference
+      Include="Microsoft.Build.Utilities.Core"
+      Version="17.12.50"
+      PrivateAssets="all"
+      ExcludeAssets="runtime" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../../../src/foundation/extensibility/Inno.Extensibility.Catalogs/Inno.Extensibility.Catalogs.csproj" />
   </ItemGroup>
 </Project>

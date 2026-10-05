@@ -29,7 +29,7 @@ public sealed class BrowserToolchainTests : IDisposable
         string? parentCompiler = Environment.GetEnvironmentVariable("BGCS_CC");
         string? parentCppCompiler = Environment.GetEnvironmentVariable("BGCS_CPP2C_CXX");
 
-        IReadOnlyDictionary<string, string> environment = await BrowserToolchain.ResolveEnvironmentAsync("dotnet", project);
+        IReadOnlyDictionary<string, string> environment = await EmscriptenToolchainResolver.ResolveAsync("dotnet", project);
 
         Assert.Equal(Path.Combine(m_root, "selected-sdk", "bin"), environment["DOTNET_EMSCRIPTEN_LLVM_ROOT"]);
         Assert.Equal(Path.Combine(m_root, "selected-sdk", "bin", OperatingSystem.IsWindows() ? "clang.exe" : "clang"), environment["BGCS_CC"]);
@@ -51,7 +51,7 @@ public sealed class BrowserToolchainTests : IDisposable
         File.Delete(Path.Combine(m_root, "selected-node", "bin", NodeFileName()));
 
         FileNotFoundException failure = await Assert.ThrowsAsync<FileNotFoundException>(
-            () => BrowserToolchain.ResolveEnvironmentAsync("dotnet", project));
+            () => EmscriptenToolchainResolver.ResolveAsync("dotnet", project));
 
         Assert.EndsWith(NodeFileName(), failure.FileName);
     }
@@ -64,7 +64,7 @@ public sealed class BrowserToolchainTests : IDisposable
         new XDocument(new XElement("Project")).Save(project);
 
         InvalidOperationException failure = await Assert.ThrowsAsync<InvalidOperationException>(
-            () => BrowserToolchain.ResolveEnvironmentAsync("dotnet", project));
+            () => EmscriptenToolchainResolver.ResolveAsync("dotnet", project));
 
         Assert.Contains("EmscriptenSdkToolsPath", failure.Message, StringComparison.Ordinal);
     }

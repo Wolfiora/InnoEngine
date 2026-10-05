@@ -1,38 +1,38 @@
 {
-  "BaseConfig": {
-    "Url": "file://cimgui-api-shape.json"
+  "baseConfig": {
+    "url": "file://cimgui-api-shape.json"
   },
-  "Namespace": "Inno.Native.ImGui",
-  "ApiName": "ImGui",
-  "LibName": "cimgui",
-  "BoolType": "Byte",
-  "DelegatesAsVoidPointer": false,
-  "GenerateExtensions": true,
-  "StrictSafetySeverity": "Warning",
-  "EntryFiles": [
+  "namespace": "Inno.Native.ImGui",
+  "apiName": "ImGui",
+  "libName": "cimgui",
+  "boolType": "Byte",
+  "delegatesAsVoidPointer": false,
+  "generateExtensions": true,
+  "strictSafetySeverity": "Warning",
+  "entryFiles": [
     "../../../extern/cimgui/cimgui.h"
   ],
-  "AllowedHeaders": [
+  "allowedHeaders": [
     "../../../extern/cimgui/cimgui.h"
   ],
-  "IncludeFolders": [
+  "includeFolders": [
     "../../../extern/cimgui"
   ],
-  "Defines": [
+  "defines": [
     "CIMGUI_DEFINE_ENUMS_AND_STRUCTS",
     "CIMGUI_VARGS0"
   ],
-  "OutputPath": "../Generated",
-  "PluginAssemblies": [
-    "Extension/bin/Release/net9.0/Inno.Native.ImGui.BindingExtension.dll"
+  "outputPath": "../Generated",
+  "pluginAssemblies": [
+    "../../../artifacts/build-tools/bindings/bin/Inno.Native.ImGui.BindingExtension/release/Inno.Native.ImGui.BindingExtension.dll"
   ],
-  "Usings": [
+  "usings": [
     "System.Numerics"
   ],
-  "FunctionPrefixes": [
+  "functionPrefixes": [
     "ig"
   ],
-  "IgnoredFunctions": [
+  "ignoredFunctions": [
     "igText",
     "igTextColored",
     "igTextDisabled",
@@ -52,7 +52,7 @@
     "igTextAligned",
     "ImGuiTextBuffer_appendf"
   ],
-  "TypeMappings": {
+  "typeMappings": {
     "ImVec2": "Vector2",
     "ImVec2_c": "Vector2",
     "ImVec4": "Vector4",
@@ -61,7 +61,7 @@
     "ImRect_c": "ImRect",
     "ImColor_c": "ImColor"
   },
-  "KnownDefaultValueNames": {
+  "knownDefaultValueNames": {
     "ImVec2(-FLT_MIN,0)": "new Vector2(-1.17549435E-38f, 0f)",
     "ImVec2(0,0)": "new Vector2(0f, 0f)",
     "ImVec2(0,1)": "new Vector2(0f, 1f)",
@@ -71,34 +71,48 @@
     "ImVec4(0,0,0,0)": "new Vector4(0f, 0f, 0f, 0f)",
     "ImVec4(1,1,1,1)": "new Vector4(1f, 1f, 1f, 1f)"
   },
-  "ExternalTypeContracts": [
+  "externalTypeContracts": [
     {
-      "NativeTypes": ["ImVec2", "ImVec2_c"],
-      "ManagedTypes": ["Vector2"],
-      "Size": 8,
-      "Alignment": 4,
-      "ByValuePolicy": "RequireLayoutMatch"
+      "nativeTypes": [
+        "ImVec2",
+        "ImVec2_c"
+      ],
+      "managedTypes": [
+        "Vector2"
+      ],
+      "size": 8,
+      "alignment": 4,
+      "byValuePolicy": "RequireLayoutMatch"
     },
     {
-      "NativeTypes": ["ImVec4", "ImVec4_c"],
-      "ManagedTypes": ["Vector4"],
-      "Size": 16,
-      "Alignment": 4,
-      "ByValuePolicy": "RequireLayoutMatch"
+      "nativeTypes": [
+        "ImVec4",
+        "ImVec4_c"
+      ],
+      "managedTypes": [
+        "Vector4"
+      ],
+      "size": 16,
+      "alignment": 4,
+      "byValuePolicy": "RequireLayoutMatch"
     },
     {
-      "NativeTypes": ["ImVector_*"],
-      "ManagedTypes": ["ImVector<*>"],
-      "Size": 16,
-      "Alignment": 8,
-      "ByValuePolicy": "RequireLayoutMatch"
+      "nativeTypes": [
+        "ImVector_*"
+      ],
+      "managedTypes": [
+        "ImVector<*>"
+      ],
+      "size": 16,
+      "alignment": 8,
+      "byValuePolicy": "RequireLayoutMatch"
     }
   ],
-  "IgnoredTypes": [
+  "ignoredTypes": [
     "ImVec2_c",
     "ImVec4_c"
   ],
-  "IgnoredTypedefs": [
+  "ignoredTypedefs": [
     "ImVec2",
     "ImVec2_c",
     "ImVec4",

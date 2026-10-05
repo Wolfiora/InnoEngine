@@ -1,3 +1,5 @@
+using Inno.Adapter.Modules.DotNet;
+using Inno.Adapter.Serialization.DotNet;
 using System;
 using System.IO;
 using Inno.Assets;
@@ -64,9 +66,9 @@ public static class ShaderArtifactBuilder
             using IDisposable diagnosticScope = diagnostics.EnterScope();
             diagnostics.RegisterSink(new DiagnosticOutput());
             using var logs = new LogRouter();
-            using var modules = new ModuleHost(new() { cacheDirectory = Path.Combine(scratch, "Modules") });
-            using var types = new TypeCatalog(modules);
-            using var serialization = new SerializationRegistry(types);
+            using var modules = new ModuleHost(new() { catalogSource = new DotNetAssemblyCatalogSource(typeof(ShaderArtifactBuilder).Assembly), cacheDirectory = Path.Combine(scratch, "Modules") });
+            using var types = new TypeCatalog(modules, new ReflectionTypeCatalogSource());
+            using var serialization = new SerializationRegistry(types, new ReflectionSerializationMetadataSource());
             using var assets = new AssetPipeline(modules, types, serialization, identities, diagnostics, logs,
                 new() { assetRoot = Path.GetFullPath(assetRoot), libraryRoot = Path.Combine(scratch, "Library") });
             AssetPath path = AssetPath.Project(shaderPath);

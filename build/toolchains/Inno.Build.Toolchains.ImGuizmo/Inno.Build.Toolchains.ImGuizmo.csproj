@@ -4,8 +4,9 @@
     <ImplicitUsings>disable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
+
   <ItemGroup>
-    <ProjectReference Include="..\Inno.Build.Toolchains\Inno.Build.Toolchains.csproj" />
-    <ProjectReference Include="..\Inno.Build.Toolchains.ImGui\Inno.Build.Toolchains.ImGui.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../Inno.Build.Toolchains/Inno.Build.Toolchains.csproj" />
+    <ProjectReference Include="../../../src/foundation/extensibility/Inno.Extensibility.Catalogs/Inno.Extensibility.Catalogs.csproj" />
   </ItemGroup>
 </Project>

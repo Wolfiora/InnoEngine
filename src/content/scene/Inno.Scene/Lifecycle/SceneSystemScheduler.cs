@@ -56,15 +56,7 @@ internal sealed class SceneSystemScheduler
                 nameof(systemType));
         }
 
-        ConstructorInfo? constructor = systemType.GetConstructor(
-            BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic,
-            binder: null,
-            Type.EmptyTypes,
-            modifiers: null);
-        if (constructor is null)
-            throw new InvalidOperationException($"GameSystem '{descriptor.displayName}' requires a parameterless constructor.");
-        var system = (GameSystem)(constructor.Invoke(null)
-            ?? throw new InvalidOperationException($"Could not create GameSystem '{descriptor.displayName}'."));
+        var system = (GameSystem)m_types.snapshot.CreateInstance(systemType);
         Add(system, descriptor, persistentId, invokeReset);
         return system;
     }

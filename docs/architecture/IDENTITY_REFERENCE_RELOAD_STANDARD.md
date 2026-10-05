@@ -878,3 +878,7 @@ Sample 后台快照复用 generation read lease、Serialization generation 和 C
 
 取消 / Editor stop 必须先 drain，再 rollback、完成后台私有目录清理并释放租约。Sample Module 的 stop 先于 Scripting，读租约期间自动编译保留请求并延后；Faulted 或退休 timeout 不能清空仍被任务使用的 dependency。History 只保存 remap 后的目录、sidecar 和中立 archive bytes。
 已经完成但报告 Pending ownership 的后台任务必须保留为 Core lifetime 的失败任务并 Fault Host，不能转换成普通业务失败后释放其 generation。普通验证失败与取消只在后台消费者已经结束时进入可恢复 rollback。
+
+## 2026-10-04 编译产物与加载策略
+
+Compiler 只发布不可变 `ScriptModuleDeployment`，不创建 ALC 或引用 DotNet Adapter。Reload 的组合工厂将产物转换为 `IModuleSource`，共同 ModuleHost/GenerationCoordinator 继续拥有候选、原子发布和 Full GC → finalizers → Full GC 退休屏障。工厂不能提前激活模块，也不能在 Faulted gate 外开启新的加载事务。

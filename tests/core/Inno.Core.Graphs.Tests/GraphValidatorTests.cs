@@ -1,3 +1,5 @@
+using Inno.Adapter.Serialization.DotNet;
+using Inno.Adapter.Modules.DotNet;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -22,11 +24,11 @@ public sealed class GraphValidatorTests : IDisposable
     public GraphValidatorTests()
     {
         m_modules = new ModuleHost(new ModuleHostOptions
-        {
+        { catalogSource = new DotNetAssemblyCatalogSource(typeof(GraphValidatorTests).Assembly),
             cacheDirectory = Path.Combine(m_testRoot, "Assemblies")
         });
-        m_types = new TypeCatalog(m_modules);
-        m_serialization = new SerializationRegistry(m_types);
+        m_types = new TypeCatalog(m_modules, new ReflectionTypeCatalogSource());
+        m_serialization = new SerializationRegistry(m_types, new ReflectionSerializationMetadataSource());
     }
 
     public void Dispose()

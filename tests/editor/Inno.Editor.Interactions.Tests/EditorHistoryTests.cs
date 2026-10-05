@@ -1,3 +1,4 @@
+using Inno.Adapter.Modules.DotNet;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -266,10 +267,10 @@ public sealed class EditorHistoryTests
             Directory.CreateDirectory(Path.Combine(m_projectRoot, "Assets"));
             NeutralValueHistoryHandler.Reset();
             m_modules = new ModuleHost(new ModuleHostOptions
-            {
+            { catalogSource = new DotNetAssemblyCatalogSource(typeof(EditorHistoryTests).Assembly),
                 cacheDirectory = Path.Combine(m_projectRoot, "Library", "Assemblies")
             });
-            types = new TypeCatalog(m_modules);
+            types = new TypeCatalog(m_modules, new ReflectionTypeCatalogSource());
             runtime = new EditorInteractionRuntime(
                 new EditorContext(m_projectRoot),
                 types,

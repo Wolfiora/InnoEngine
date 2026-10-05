@@ -1,3 +1,5 @@
+using Inno.Adapter.Serialization.DotNet;
+using Inno.Adapter.Modules.DotNet;
 using Inno.Runtime.Contracts;
 using System;
 using System.Collections.Generic;
@@ -14,6 +16,28 @@ namespace Inno.Input.Tests;
 
 public sealed class InputRuntimeTests
 {
+    [Fact]
+    public void ApplicationSuspensionClearsTransientInputAndRejectsBackgroundPresses()
+    {
+        using var source = new Sdl3InputSource(windowId: 7);
+        using var backend = source.CreateBackend();
+        source.ProcessEvent(new KeyPressedEvent(7, KeyCode.Space));
+        source.ProcessEvent(new MouseButtonPressedEvent(7, MouseButton.Left));
+        source.ProcessEvent(new TextInputEvent(7, "x"));
+        source.ProcessEvent(new ApplicationSuspensionChangedEvent(true));
+        source.ProcessEvent(new KeyPressedEvent(7, KeyCode.Enter));
+        InputSnapshot suspended = backend.Capture(1);
+        Assert.False(suspended.IsKeyDown(KeyCode.Space));
+        Assert.False(suspended.WasKeyPressed(KeyCode.Space));
+        Assert.True(suspended.WasKeyReleased(KeyCode.Space));
+        Assert.False(suspended.IsMouseButtonDown(MouseButton.Left));
+        Assert.False(suspended.IsKeyDown(KeyCode.Enter));
+        Assert.Empty(suspended.textInput);
+        source.ProcessEvent(new ApplicationSuspensionChangedEvent(false));
+        source.ProcessEvent(new KeyPressedEvent(7, KeyCode.Enter));
+        Assert.True(backend.Capture(2).WasKeyPressed(KeyCode.Enter));
+    }
+
     [Fact]
     public void GloballyConsumedPlatformEventsNeverReachSessionInput()
     {
@@ -87,6 +111,8 @@ public sealed class InputRuntimeTests
         using var source = new Sdl3InputSource(windowId: 1);
         var observations = new List<bool>();
         using EngineHost host = new EngineHostBuilder()
+                .UseMetadataSources(new DotNetAssemblyCatalogSource(typeof(InputRuntimeTests).Assembly),
+                    new ReflectionTypeCatalogSource(), new ReflectionSerializationMetadataSource())
             .UseMetadataCache(Path.Combine(root, "Metadata"))
             .Build();
         var options = new RuntimeSessionOptions

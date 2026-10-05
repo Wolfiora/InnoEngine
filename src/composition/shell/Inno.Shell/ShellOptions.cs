@@ -38,4 +38,10 @@ public sealed class ShellOptions
     /// Gets or sets whether rendering must execute on the calling thread.
     /// </summary>
     public bool forceSingleThreadedRendering { get; set; }
+
+    /// <summary>
+    /// Gets or sets whether hiding or minimizing the primary window suspends product frames.
+    /// Application suspension always stops frames independently of this window policy.
+    /// </summary>
+    public bool suspendWhenHidden { get; set; }
 }

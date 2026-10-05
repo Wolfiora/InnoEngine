@@ -6,18 +6,26 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <WarningsAsErrors>$(WarningsAsErrors);CS1572;CS1573;CS1591</WarningsAsErrors>
   </PropertyGroup>
+
   <ItemGroup>
-    <ProjectReference Include="../../../src/foundation/core/Inno.Core.Execution/Inno.Core.Execution.csproj" PrivateAssets="compile" />
-    <ProjectReference Include="..\..\..\native\Inno.Native.Bgfx\Inno.Native.Bgfx.csproj" PrivateAssets="compile" />
-    <ProjectReference Include="..\..\..\src\content\assets\Inno.Assets\Inno.Assets.csproj" PrivateAssets="compile" />
+    <ProjectReference
+      Include="../../../native/Inno.Native.LibraryLoading/Inno.Native.LibraryLoading.csproj"
+      PrivateAssets="compile" />
+    <ProjectReference
+      Include="../../../src/foundation/core/Inno.Core.Execution/Inno.Core.Execution.csproj"
+      PrivateAssets="compile" />
+    <ProjectReference Include="../../../native/Inno.Native.Bgfx/Inno.Native.Bgfx.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../../src/content/assets/Inno.Assets/Inno.Assets.csproj" PrivateAssets="compile" />
   </ItemGroup>
+
   <ItemGroup>
     <ProjectReference Include="../../pipeline/Inno.Build/Inno.Build.csproj" />
     <ProjectReference Include="../../../src/content/assets/Inno.Assets.Pipeline/Inno.Assets.Pipeline.csproj" />
     <ProjectReference Include="../../../src/foundation/core/Inno.Core.Serialization/Inno.Core.Serialization.csproj" />
     <ProjectReference Include="../../../src/foundation/extensibility/Inno.Extensibility.Types/Inno.Extensibility.Types.csproj" />
     <ProjectReference Include="../../../src/services/rendering/Inno.Rendering.Shaders/Inno.Rendering.Shaders.csproj" />
-    <ProjectReference Include="..\..\..\src\services\rendering\Inno.Rendering\Inno.Rendering.csproj" />
-    <ProjectReference Include="..\..\..\src\services\rendering\Inno.Rendering.Assets\Inno.Rendering.Assets.csproj" />
+    <ProjectReference Include="../../../src/services/rendering/Inno.Rendering/Inno.Rendering.csproj" />
+    <ProjectReference Include="../../../src/services/rendering/Inno.Rendering.Assets/Inno.Rendering.Assets.csproj" />
+    <ProjectReference Include="../../../src/foundation/extensibility/Inno.Extensibility.Catalogs/Inno.Extensibility.Catalogs.csproj" />
   </ItemGroup>
 </Project>

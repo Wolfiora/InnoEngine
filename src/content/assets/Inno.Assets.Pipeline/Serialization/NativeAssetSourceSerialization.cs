@@ -10,7 +10,7 @@ namespace Inno.Assets.Pipeline;
 /// <summary>
 /// Imports and exports editable asset source state through the common native serializer.
 /// </summary>
-public static class NativeAssetSourceSerialization
+public static partial class NativeAssetSourceSerialization
 {
     /// <summary>
     /// Serializes one asset's editable properties and direct asset dependencies.

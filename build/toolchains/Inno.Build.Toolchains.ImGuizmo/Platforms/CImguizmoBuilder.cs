@@ -28,11 +28,8 @@ internal abstract class CImguizmoBuilder
     /// <param name="cimguiDir">
     /// The cimgui dir text validated by the build operation.
     /// </param>
-    /// <param name="cimguiBuildDir">
-    /// The cimgui build dir text validated by the build operation.
-    /// </param>
-    /// <param name="cimguiOutputDir">
-    /// The cimgui output dir text validated by the build operation.
+    /// <param name="cimguiLibraryFile">
+    /// The exact published import or shared library selected by the parent operation.
     /// </param>
     /// <param name="context">
     /// The selected checkout and native configuration.
@@ -46,8 +43,7 @@ internal abstract class CImguizmoBuilder
     public abstract Task BuildAsync(
         string cimguizmoDir,
         string cimguiDir,
-        string cimguiBuildDir,
-        string cimguiOutputDir,
+        string cimguiLibraryFile,
         NativeBuildContext context,
         CancellationToken cancellationToken
     );

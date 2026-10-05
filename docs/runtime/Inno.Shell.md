@@ -30,9 +30,10 @@ Shell 在控制线程重试 product retirement，最多等待 30 秒。收到 `R
 - `ShellOptions`：Adapter selection、window 和中立 rendering policy。
 - `ShellFrame`：frame index、total time 与 delta time 的不可变值。
 - `Shell`：拥有 application、primary window、input event source、render device 与公共 run loop。
+- `ShellState` / `Shell.state`：`Created → Ready → Running ↔ Suspended → Stopping → Stopped`；初始化、执行或退休失败进入 `Faulted`，成功释放进入 `Disposed`。
 - `InitializeAdapterResources`：派生产品完成非窗口 bootstrap 后显式创建公共 Adapter 资源。
 - `RunAsync(IShellFrameDriver, smokeFrameLimit, cancellationToken)` / `RequestExit`：执行一次事件与 frame 生命周期。
-- `OnStarting`、`ShouldExit`、`OnEvent`、`OnFrame`、`OnSmokeCompleted`、`OnStopping`：产品行为 hook。
+- `OnStarting`、`ShouldExit`、`OnEvent`、`OnSuspensionChanged`、`OnFrame`、`OnSmokeCompleted`、`OnStopping`：产品行为 hook。
 - `DisposeProductResources`：在公共 Adapter 逆序销毁前释放产品资源。
 
 ```csharp
@@ -66,3 +67,16 @@ await shell.RunAsync(new PollingShellFrameDriver(), smokeFrameLimit: 60);
 `shell` 是调用方已经初始化的派生 Shell。异步调度器构造函数拒绝 null；frame callback 的 false 结束调度，异常传播；取消检查在等待前与帧执行前，未达到 smoke 上限不能报告成功。
 
 用户提前关闭窗口或产品 `RequestExit` 仍按正常生命周期清理，但不能打印 smoke 成功标记；验收调用方必须同时检查完成标记和退出码。
+
+## 暂停与恢复
+
+平台通过 Core Events 的 `ApplicationSuspensionChangedEvent(isSuspended)` 通知应用暂停；
+`ShellOptions.suspendWhenHidden` 可以额外选择主窗口的 `WindowVisibilityChangedEvent` 策略。
+两个原因独立保存，次窗口隐藏不改变主窗口策略，重复通知不会重复调用 hook。
+暂停期间继续处理平台事件及退出请求，但不执行产品、presentation 或 resize redraw 帧。
+Shell 时钟停止，恢复时不补跑后台停留时间；允许阻塞的轮询驱动在暂停时有限等待，避免忙循环。
+
+暂停入口释放 Input backend 的 held 与 transient 状态，并拒绝后台输入。
+`OnSuspensionChanged(bool)` 在 owner-thread event-pump 安全点执行，派生产品可用同一 Core Events
+通知 Session 的领域服务。取消仍传播 `OperationCanceledException`，正常 stopping 后状态为 `Stopped`；
+执行和 stopping 同时失败时保留两个异常。所有 run 结果都会退订平台 redraw callback。

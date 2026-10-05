@@ -17,3 +17,7 @@ Source Dispose 会断开全部 backend；backend Dispose 会从 Source 注销。
 
 Source 拥有 `EventDispatcher` / `EventHub`，backend 持有可释放订阅；不建立另一套事件队列或监听器注册表。
 已消费的事件不更新 Input 状态。桌面和 Web 都使用 SDL3 翻译后的同一入口。
+
+## Composition provider
+
+`Sdl3InputBackendProvider()` 只创建注册描述，不初始化原生服务。`CreateEventSource(IPlatformWindow, bool)` 是继承的 provider 创建扩展点，返回调用方拥有的服务。`id` 来自所属领域的内置稳定 ID；同一 provider 可在 composition 生命周期内创建独立服务，具体线程及进程 owner 约束仍由该实现执行。

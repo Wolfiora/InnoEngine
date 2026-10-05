@@ -47,7 +47,7 @@
 
 已有证据：
 
-- [Shader 草稿与 Console 修复记录](/Users/aaronliao/Dev/GameEngineDev/InnoEngine/docs/issues/2026-09-12-shader-drafts-and-console.md)
+- [Shader 草稿与 Console 修复记录](2026-09-12-shader-drafts-and-console.md)
 - 早期只读审查报告位于 `/private/tmp/inno-shader-audit.sxGyJ4/AUDIT.md`；正式存档时将其结论和证据摘要纳入计划文档，不能只依赖临时目录。
 
 ---

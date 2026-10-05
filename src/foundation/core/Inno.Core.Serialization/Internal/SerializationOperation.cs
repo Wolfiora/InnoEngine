@@ -24,6 +24,9 @@ internal sealed class SerializationOperation
 
     internal SerializationContext context { get; }
 
+    internal SerializationTypeMetadata GetMetadata(Type type)
+        => context.GetRequired<ISerializationMetadataSource>().GetMetadata(type);
+
     internal ConverterInvoker? ResolveConverter(Type valueType)
     {
         EnsureActive();
@@ -50,9 +53,9 @@ internal sealed class SerializationOperation
             return;
         m_scheduledObjectOrder.Add(value);
 
-        Action? callback = ReflectionMetadata.CreateRestoreCallback(value, context);
+        Action<object, SerializationContext>? callback = GetMetadata(value.GetType()).restored;
         if (callback is not null)
-            m_completionCallbacks.Add(callback);
+            m_completionCallbacks.Add(() => callback(value, context));
     }
 
     internal void EnterCapture(

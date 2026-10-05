@@ -606,8 +606,7 @@ public sealed partial class AssetDatabase : AssetResidencyProvider,
         AssetObject asset;
         try
         {
-            asset = (AssetObject)(Activator.CreateInstance(type, nonPublic: true)
-                ?? throw new InvalidOperationException("Activator returned null."));
+            asset = (AssetObject)m_types!.CreateInstance(type);
         }
         catch (Exception exception)
         {

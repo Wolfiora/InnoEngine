@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Xml.Linq;
 
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -13,9 +14,12 @@ internal static class PublicApiDocumentationValidator
     internal static void Validate(
         string relativePath,
         string source,
-        ICollection<string> failures
+        ICollection<string> failures,
+        SemanticModel? model,
+        DocumentationSourceModels models
     ) {
-        SyntaxNode root = CSharpSyntaxTree.ParseText(source, path: relativePath).GetRoot();
+        SyntaxNode root = model?.SyntaxTree.GetRoot()
+            ?? CSharpSyntaxTree.ParseText(source, path: relativePath).GetRoot();
         foreach (MemberDeclarationSyntax member in root.DescendantNodes().OfType<MemberDeclarationSyntax>())
         {
             if (!RequiresDocumentation(member))
@@ -34,10 +38,23 @@ internal static class PublicApiDocumentationValidator
             }
             if (documentation.ContainsDiagnostics)
                 failures.Add($"{location}: public or protected XML documentation is malformed.");
-            if (documentation.Content.OfType<XmlEmptyElementSyntax>().Any(static element =>
-                    element.Name.LocalName.Text == "inheritdoc"))
+            XmlEmptyElementSyntax? inherited = documentation.Content.OfType<XmlEmptyElementSyntax>()
+                .FirstOrDefault(static element => element.Name.LocalName.Text == "inheritdoc");
+            if (inherited is not null)
             {
-                failures.Add($"{location}: inheritdoc cannot replace an explicit public API contract.");
+                SyntaxNode declaration = member is EventFieldDeclarationSyntax signal
+                    ? signal.Declaration.Variables[0]
+                    : member;
+                ISymbol? symbol = model?.GetDeclaredSymbol(declaration);
+                XmlCrefAttributeSyntax? reference = inherited.Attributes.OfType<XmlCrefAttributeSyntax>().FirstOrDefault();
+                ISymbol? selected = reference is null ? null : model?.GetSymbolInfo(reference.Cref).Symbol;
+                bool validReference = reference is null || symbol is not null && selected is not null
+                    && InheritedMembers(symbol).Any(target => SymbolEqualityComparer.Default.Equals(
+                        target.OriginalDefinition, selected.OriginalDefinition));
+                if (!validReference || symbol is null
+                    || !HasInheritedContract(symbol, models, new HashSet<ISymbol>(SymbolEqualityComparer.Default)))
+                    failures.Add($"{location}: inheritdoc requires a documented overridden or implemented contract.");
+                continue;
             }
 
             XmlElementSyntax? summary = FindElement(documentation, "summary");
@@ -48,6 +65,83 @@ internal static class PublicApiDocumentationValidator
             ValidateParameters(location, member, documentation, failures);
             if (RequiresReturns(member) && FindElement(documentation, "returns") is null)
                 failures.Add($"{location}: non-void public or protected operation requires a returns contract.");
+        }
+    }
+
+    private static bool HasInheritedContract(
+        ISymbol symbol,
+        DocumentationSourceModels models,
+        ISet<ISymbol> visited
+    ) {
+        if (!visited.Add(symbol))
+            return false;
+        foreach (ISymbol target in InheritedMembers(symbol))
+        {
+            string xml = target.GetDocumentationCommentXml() ?? string.Empty;
+            if (string.IsNullOrWhiteSpace(xml))
+            {
+                // The repository owns its contracts; external framework documentation is supplied by its publisher.
+                if (!models.OwnsAssembly(target.ContainingAssembly))
+                    return true;
+                continue;
+            }
+            XElement document;
+            try
+            {
+                document = XElement.Parse(xml);
+            }
+            catch (System.Xml.XmlException)
+            {
+                continue;
+            }
+            if (document.Element("inheritdoc") is not null && HasInheritedContract(target, models, visited))
+                return true;
+            if (string.IsNullOrWhiteSpace(document.Element("summary")?.Value))
+                continue;
+            IEnumerable<IParameterSymbol> parameters = target switch
+            {
+                IMethodSymbol method => method.Parameters,
+                IPropertySymbol property => property.Parameters,
+                _ => []
+            };
+            var documented = document.Elements("param").Select(static element => (string?)element.Attribute("name"))
+                .ToHashSet(StringComparer.Ordinal);
+            if (parameters.Any(parameter => !documented.Contains(parameter.Name)))
+                continue;
+            if (target is IMethodSymbol generic)
+            {
+                var typeParameters = document.Elements("typeparam")
+                    .Select(static element => (string?)element.Attribute("name")).ToHashSet(StringComparer.Ordinal);
+                if (generic.TypeParameters.Any(parameter => !typeParameters.Contains(parameter.Name)))
+                    continue;
+            }
+            if (target is IMethodSymbol { ReturnsVoid: false } && document.Element("returns") is null)
+                continue;
+            return true;
+        }
+        return false;
+    }
+
+    private static IEnumerable<ISymbol> InheritedMembers(ISymbol symbol)
+    {
+        ISymbol? overridden = symbol switch
+        {
+            IMethodSymbol method => method.OverriddenMethod,
+            IPropertySymbol property => property.OverriddenProperty,
+            IEventSymbol signal => signal.OverriddenEvent,
+            _ => null
+        };
+        if (overridden is not null)
+            yield return overridden;
+        if (symbol.ContainingType is not INamedTypeSymbol owner)
+            yield break;
+        foreach (INamedTypeSymbol contract in owner.AllInterfaces)
+        {
+            foreach (ISymbol member in contract.GetMembers())
+            {
+                if (SymbolEqualityComparer.Default.Equals(owner.FindImplementationForInterfaceMember(member), symbol))
+                    yield return member;
+            }
         }
     }
 

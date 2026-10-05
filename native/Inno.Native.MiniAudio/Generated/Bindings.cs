@@ -5,6 +5,7 @@
 //     Changes will be replaced the next time bindings are generated.
 // </auto-generated>
 // ------------------------------------------------------------------------------
+#pragma warning disable CS1591 // Native declarations may omit documentation.
 #nullable enable
 using BGCS.Runtime;
 using MaBool32 = uint;
@@ -5476,7 +5477,7 @@ namespace Inno.Native.MiniAudio
         public MaFormat Format;
         public uint Channels;
         public MaBiquadCoefficient A;
-        public unsafe MaBiquadCoefficient* Pr1;
+        public unsafe MaBiquadCoefficient* PR1;
         public unsafe void* Pheap;
         public uint Ownsheap;
         public unsafe MaLpf1(MaFormat format = default, uint channels = default, MaBiquadCoefficient a = default, MaBiquadCoefficient* pR1 = default, void* pHeap = default, uint ownsHeap = default)
@@ -5484,7 +5485,7 @@ namespace Inno.Native.MiniAudio
             this.Format = format;
             this.Channels = channels;
             this.A = a;
-            this.Pr1 = pR1;
+            this.PR1 = pR1;
             this.Pheap = pHeap;
             this.Ownsheap = ownsHeap;
         }
@@ -5503,8 +5504,8 @@ namespace Inno.Native.MiniAudio
         public MaBiquadCoefficient B2;
         public MaBiquadCoefficient A1;
         public MaBiquadCoefficient A2;
-        public unsafe MaBiquadCoefficient* Pr1;
-        public unsafe MaBiquadCoefficient* Pr2;
+        public unsafe MaBiquadCoefficient* PR1;
+        public unsafe MaBiquadCoefficient* PR2;
         public unsafe void* Pheap;
         public uint Ownsheap;
         public unsafe MaBiquad(MaFormat format = default, uint channels = default, MaBiquadCoefficient b0 = default, MaBiquadCoefficient b1 = default, MaBiquadCoefficient b2 = default, MaBiquadCoefficient a1 = default, MaBiquadCoefficient a2 = default, MaBiquadCoefficient* pR1 = default, MaBiquadCoefficient* pR2 = default, void* pHeap = default, uint ownsHeap = default)
@@ -5516,8 +5517,8 @@ namespace Inno.Native.MiniAudio
             this.B2 = b2;
             this.A1 = a1;
             this.A2 = a2;
-            this.Pr1 = pR1;
-            this.Pr2 = pR2;
+            this.PR1 = pR1;
+            this.PR2 = pR2;
             this.Pheap = pHeap;
             this.Ownsheap = ownsHeap;
         }
@@ -5547,8 +5548,8 @@ namespace Inno.Native.MiniAudio
         public uint SampleRate;
         public uint Lpf1Count;
         public uint Lpf2Count;
-        public unsafe MaLpf1* PlPf1;
-        public unsafe MaLpf2* PlPf2;
+        public unsafe MaLpf1* PLpf1;
+        public unsafe MaLpf2* PLpf2;
         public unsafe void* Pheap;
         public uint Ownsheap;
         public unsafe MaLpf(MaFormat format = default, uint channels = default, uint sampleRate = default, uint lpf1Count = default, uint lpf2Count = default, MaLpf1* pLPF1 = default, MaLpf2* pLPF2 = default, void* pHeap = default, uint ownsHeap = default)
@@ -5558,8 +5559,8 @@ namespace Inno.Native.MiniAudio
             this.SampleRate = sampleRate;
             this.Lpf1Count = lpf1Count;
             this.Lpf2Count = lpf2Count;
-            this.PlPf1 = pLPF1;
-            this.PlPf2 = pLPF2;
+            this.PLpf1 = pLPF1;
+            this.PLpf2 = pLPF2;
             this.Pheap = pHeap;
             this.Ownsheap = ownsHeap;
         }
@@ -5792,7 +5793,7 @@ namespace Inno.Native.MiniAudio
         [StructLayout(LayoutKind.Sequential, Size = 1432, Pack = 8)]
         public partial struct PlaybackAnonymous
         {
-            public unsafe MaDeviceId* PiD;
+            public unsafe MaDeviceId* PId;
             public MaDeviceId Id;
             public byte Name_0;
             public byte Name_1;
@@ -6584,7 +6585,7 @@ namespace Inno.Native.MiniAudio
             public ulong InputCacheRemaining;
             public unsafe PlaybackAnonymous(MaDeviceId* pID = default, MaDeviceId id = default, byte* name = default, MaShareMode shareMode = default, MaFormat format = default, uint channels = default, byte* channelMap = default, MaFormat internalFormat = default, uint internalChannels = default, uint internalSampleRate = default, byte* internalChannelMap = default, uint internalPeriodSizeInFrames = default, uint internalPeriods = default, MaChannelMixMode channelMixMode = default, uint calculateLFEFromSpatialChannels = default, MaDataConverter converter = default, void* pIntermediaryBuffer = default, uint intermediaryBufferCap = default, uint intermediaryBufferLen = default, void* pInputCache = default, ulong inputCacheCap = default, ulong inputCacheConsumed = default, ulong inputCacheRemaining = default)
             {
-                this.PiD = pID;
+                this.PId = pID;
                 this.Id = id;
                 if (name != null)
                 {
@@ -7389,7 +7390,7 @@ namespace Inno.Native.MiniAudio
         [StructLayout(LayoutKind.Sequential, Size = 1400, Pack = 8)]
         public partial struct CaptureAnonymous
         {
-            public unsafe MaDeviceId* PiD;
+            public unsafe MaDeviceId* PId;
             public MaDeviceId Id;
             public byte Name_0;
             public byte Name_1;
@@ -8177,7 +8178,7 @@ namespace Inno.Native.MiniAudio
             public uint IntermediaryBufferLen;
             public unsafe CaptureAnonymous(MaDeviceId* pID = default, MaDeviceId id = default, byte* name = default, MaShareMode shareMode = default, MaFormat format = default, uint channels = default, byte* channelMap = default, MaFormat internalFormat = default, uint internalChannels = default, uint internalSampleRate = default, byte* internalChannelMap = default, uint internalPeriodSizeInFrames = default, uint internalPeriods = default, MaChannelMixMode channelMixMode = default, uint calculateLFEFromSpatialChannels = default, MaDataConverter converter = default, void* pIntermediaryBuffer = default, uint intermediaryBufferCap = default, uint intermediaryBufferLen = default)
             {
-                this.PiD = pID;
+                this.PId = pID;
                 this.Id = id;
                 if (name != null)
                 {
@@ -10569,7 +10570,7 @@ namespace Inno.Native.MiniAudio
         public MaFormat Format;
         public uint Channels;
         public MaBiquadCoefficient A;
-        public unsafe MaBiquadCoefficient* Pr1;
+        public unsafe MaBiquadCoefficient* PR1;
         public unsafe void* Pheap;
         public uint Ownsheap;
         public unsafe MaHpf1(MaFormat format = default, uint channels = default, MaBiquadCoefficient a = default, MaBiquadCoefficient* pR1 = default, void* pHeap = default, uint ownsHeap = default)
@@ -10577,7 +10578,7 @@ namespace Inno.Native.MiniAudio
             this.Format = format;
             this.Channels = channels;
             this.A = a;
-            this.Pr1 = pR1;
+            this.PR1 = pR1;
             this.Pheap = pHeap;
             this.Ownsheap = ownsHeap;
         }
@@ -10628,8 +10629,8 @@ namespace Inno.Native.MiniAudio
         public uint SampleRate;
         public uint Hpf1Count;
         public uint Hpf2Count;
-        public unsafe MaHpf1* PhPf1;
-        public unsafe MaHpf2* PhPf2;
+        public unsafe MaHpf1* PHpf1;
+        public unsafe MaHpf2* PHpf2;
         public unsafe void* Pheap;
         public uint Ownsheap;
         public unsafe MaHpf(MaFormat format = default, uint channels = default, uint sampleRate = default, uint hpf1Count = default, uint hpf2Count = default, MaHpf1* pHPF1 = default, MaHpf2* pHPF2 = default, void* pHeap = default, uint ownsHeap = default)
@@ -10639,8 +10640,8 @@ namespace Inno.Native.MiniAudio
             this.SampleRate = sampleRate;
             this.Hpf1Count = hpf1Count;
             this.Hpf2Count = hpf2Count;
-            this.PhPf1 = pHPF1;
-            this.PhPf2 = pHPF2;
+            this.PHpf1 = pHPF1;
+            this.PHpf2 = pHPF2;
             this.Pheap = pHeap;
             this.Ownsheap = ownsHeap;
         }
@@ -10710,7 +10711,7 @@ namespace Inno.Native.MiniAudio
         public MaFormat Format;
         public uint Channels;
         public uint Bpf2Count;
-        public unsafe MaBpf2* PBpF2;
+        public unsafe MaBpf2* PBpf2;
         public unsafe void* Pheap;
         public uint Ownsheap;
         public unsafe MaBpf(MaFormat format = default, uint channels = default, uint bpf2Count = default, MaBpf2* pBPF2 = default, void* pHeap = default, uint ownsHeap = default)
@@ -10718,7 +10719,7 @@ namespace Inno.Native.MiniAudio
             this.Format = format;
             this.Channels = channels;
             this.Bpf2Count = bpf2Count;
-            this.PBpF2 = pBPF2;
+            this.PBpf2 = pBPF2;
             this.Pheap = pHeap;
             this.Ownsheap = ownsHeap;
         }
@@ -12098,11 +12099,11 @@ namespace Inno.Native.MiniAudio
             [StructLayout(LayoutKind.Sequential, Size = 16, Pack = 8)]
             public partial struct VfsAnonymous
             {
-                public unsafe MaVfs* PVFs;
+                public unsafe MaVfs* PVfs;
                 public nint File;
                 public unsafe VfsAnonymous(MaVfs* pVFS = default, nint file = default)
                 {
-                    this.PVFs = pVFS;
+                    this.PVfs = pVFS;
                     this.File = file;
                 }
             }
@@ -12249,11 +12250,11 @@ namespace Inno.Native.MiniAudio
             [StructLayout(LayoutKind.Sequential, Size = 16, Pack = 8)]
             public partial struct VfsAnonymous
             {
-                public unsafe MaVfs* PVFs;
+                public unsafe MaVfs* PVfs;
                 public nint File;
                 public unsafe VfsAnonymous(MaVfs* pVFS = default, nint file = default)
                 {
-                    this.PVFs = pVFS;
+                    this.PVfs = pVFS;
                     this.File = file;
                 }
             }
@@ -12468,7 +12469,7 @@ namespace Inno.Native.MiniAudio
         public nuint JobThreadStackSize;
         public uint JobQueueCapacity;
         public uint Flags;
-        public unsafe MaVfs* PVFs;
+        public unsafe MaVfs* PVfs;
         public unsafe MaDecodingBackendVtable** PpCustomDecodingBackendVTables;
         public uint CustomDecodingBackendCount;
         public unsafe void* PCustomDecodingBackendUserData;
@@ -12484,7 +12485,7 @@ namespace Inno.Native.MiniAudio
             this.JobThreadStackSize = jobThreadStackSize;
             this.JobQueueCapacity = jobQueueCapacity;
             this.Flags = flags;
-            this.PVFs = pVFS;
+            this.PVfs = pVFS;
             this.PpCustomDecodingBackendVTables = ppCustomDecodingBackendVTables;
             this.CustomDecodingBackendCount = customDecodingBackendCount;
             this.PCustomDecodingBackendUserData = pCustomDecodingBackendUserData;
@@ -14112,42 +14113,42 @@ namespace Inno.Native.MiniAudio
     /// To be documented.
     /// </summary>
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public unsafe delegate MaResult OnOpen(MaVfs* pVFs, byte* pFilePath, uint openMode, nint* pFile);
+    public unsafe delegate MaResult OnOpen(MaVfs* pVFS, byte* pFilePath, uint openMode, nint* pFile);
     /// <summary>
     /// To be documented.
     /// </summary>
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public unsafe delegate MaResult OnOpenW(MaVfs* pVFs, ushort* pFilePath, uint openMode, nint* pFile);
+    public unsafe delegate MaResult OnOpenW(MaVfs* pVFS, ushort* pFilePath, uint openMode, nint* pFile);
     /// <summary>
     /// To be documented.
     /// </summary>
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public unsafe delegate MaResult OnClose(MaVfs* pVFs, nint file);
+    public unsafe delegate MaResult OnClose(MaVfs* pVFS, nint file);
     /// <summary>
     /// To be documented.
     /// </summary>
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public unsafe delegate MaResult OnRead1(MaVfs* pVFs, nint file, void* pDst, nuint sizeInBytes, nuint* pBytesRead);
+    public unsafe delegate MaResult OnRead1(MaVfs* pVFS, nint file, void* pDst, nuint sizeInBytes, nuint* pBytesRead);
     /// <summary>
     /// To be documented.
     /// </summary>
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public unsafe delegate MaResult OnWrite(MaVfs* pVFs, nint file, void* pSrc, nuint sizeInBytes, nuint* pBytesWritten);
+    public unsafe delegate MaResult OnWrite(MaVfs* pVFS, nint file, void* pSrc, nuint sizeInBytes, nuint* pBytesWritten);
     /// <summary>
     /// To be documented.
     /// </summary>
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public unsafe delegate MaResult OnSeek1(MaVfs* pVFs, nint file, long offset, MaSeekOrigin origin);
+    public unsafe delegate MaResult OnSeek1(MaVfs* pVFS, nint file, long offset, MaSeekOrigin origin);
     /// <summary>
     /// To be documented.
     /// </summary>
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public unsafe delegate MaResult OnTell(MaVfs* pVFs, nint file, long* pCursor);
+    public unsafe delegate MaResult OnTell(MaVfs* pVFS, nint file, long* pCursor);
     /// <summary>
     /// To be documented.
     /// </summary>
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public unsafe delegate MaResult OnInfo(MaVfs* pVFs, nint file, MaFileInfo* pInfo);
+    public unsafe delegate MaResult OnInfo(MaVfs* pVFS, nint file, MaFileInfo* pInfo);
     /// <summary>
     /// To be documented.
     /// </summary>
@@ -14680,8 +14681,8 @@ namespace Inno.Native.MiniAudio
         public ref MaBiquadCoefficient B2 => ref Unsafe.AsRef<MaBiquadCoefficient>(&Handle->B2);
         public ref MaBiquadCoefficient A1 => ref Unsafe.AsRef<MaBiquadCoefficient>(&Handle->A1);
         public ref MaBiquadCoefficient A2 => ref Unsafe.AsRef<MaBiquadCoefficient>(&Handle->A2);
-        public ref MaBiquadCoefficientPtr Pr1 => ref Unsafe.AsRef<MaBiquadCoefficientPtr>(&Handle->Pr1);
-        public ref MaBiquadCoefficientPtr Pr2 => ref Unsafe.AsRef<MaBiquadCoefficientPtr>(&Handle->Pr2);
+        public ref MaBiquadCoefficientPtr PR1 => ref Unsafe.AsRef<MaBiquadCoefficientPtr>(&Handle->PR1);
+        public ref MaBiquadCoefficientPtr PR2 => ref Unsafe.AsRef<MaBiquadCoefficientPtr>(&Handle->PR2);
         public void* Pheap { get => Handle->Pheap; set => Handle->Pheap = value; }
         public ref uint Ownsheap => ref Unsafe.AsRef<uint>(&Handle->Ownsheap);
     }
@@ -14846,7 +14847,7 @@ namespace Inno.Native.MiniAudio
         public ref MaFormat Format => ref Unsafe.AsRef<MaFormat>(&Handle->Format);
         public ref uint Channels => ref Unsafe.AsRef<uint>(&Handle->Channels);
         public ref uint Bpf2Count => ref Unsafe.AsRef<uint>(&Handle->Bpf2Count);
-        public ref MaBpf2Ptr PBpF2 => ref Unsafe.AsRef<MaBpf2Ptr>(&Handle->PBpF2);
+        public ref MaBpf2Ptr PBpf2 => ref Unsafe.AsRef<MaBpf2Ptr>(&Handle->PBpf2);
         public void* Pheap { get => Handle->Pheap; set => Handle->Pheap = value; }
         public ref uint Ownsheap => ref Unsafe.AsRef<uint>(&Handle->Ownsheap);
     }
@@ -16308,7 +16309,7 @@ namespace Inno.Native.MiniAudio
         public ref MaFormat Format => ref Unsafe.AsRef<MaFormat>(&Handle->Format);
         public ref uint Channels => ref Unsafe.AsRef<uint>(&Handle->Channels);
         public ref MaBiquadCoefficient A => ref Unsafe.AsRef<MaBiquadCoefficient>(&Handle->A);
-        public ref MaBiquadCoefficientPtr Pr1 => ref Unsafe.AsRef<MaBiquadCoefficientPtr>(&Handle->Pr1);
+        public ref MaBiquadCoefficientPtr PR1 => ref Unsafe.AsRef<MaBiquadCoefficientPtr>(&Handle->PR1);
         public void* Pheap { get => Handle->Pheap; set => Handle->Pheap = value; }
         public ref uint Ownsheap => ref Unsafe.AsRef<uint>(&Handle->Ownsheap);
     }
@@ -16446,8 +16447,8 @@ namespace Inno.Native.MiniAudio
         public ref uint SampleRate => ref Unsafe.AsRef<uint>(&Handle->SampleRate);
         public ref uint Hpf1Count => ref Unsafe.AsRef<uint>(&Handle->Hpf1Count);
         public ref uint Hpf2Count => ref Unsafe.AsRef<uint>(&Handle->Hpf2Count);
-        public ref MaHpf1Ptr PhPf1 => ref Unsafe.AsRef<MaHpf1Ptr>(&Handle->PhPf1);
-        public ref MaHpf2Ptr PhPf2 => ref Unsafe.AsRef<MaHpf2Ptr>(&Handle->PhPf2);
+        public ref MaHpf1Ptr PHpf1 => ref Unsafe.AsRef<MaHpf1Ptr>(&Handle->PHpf1);
+        public ref MaHpf2Ptr PHpf2 => ref Unsafe.AsRef<MaHpf2Ptr>(&Handle->PHpf2);
         public void* Pheap { get => Handle->Pheap; set => Handle->Pheap = value; }
         public ref uint Ownsheap => ref Unsafe.AsRef<uint>(&Handle->Ownsheap);
     }
@@ -16793,7 +16794,7 @@ namespace Inno.Native.MiniAudio
         public ref MaFormat Format => ref Unsafe.AsRef<MaFormat>(&Handle->Format);
         public ref uint Channels => ref Unsafe.AsRef<uint>(&Handle->Channels);
         public ref MaBiquadCoefficient A => ref Unsafe.AsRef<MaBiquadCoefficient>(&Handle->A);
-        public ref MaBiquadCoefficientPtr Pr1 => ref Unsafe.AsRef<MaBiquadCoefficientPtr>(&Handle->Pr1);
+        public ref MaBiquadCoefficientPtr PR1 => ref Unsafe.AsRef<MaBiquadCoefficientPtr>(&Handle->PR1);
         public void* Pheap { get => Handle->Pheap; set => Handle->Pheap = value; }
         public ref uint Ownsheap => ref Unsafe.AsRef<uint>(&Handle->Ownsheap);
     }
@@ -16931,8 +16932,8 @@ namespace Inno.Native.MiniAudio
         public ref uint SampleRate => ref Unsafe.AsRef<uint>(&Handle->SampleRate);
         public ref uint Lpf1Count => ref Unsafe.AsRef<uint>(&Handle->Lpf1Count);
         public ref uint Lpf2Count => ref Unsafe.AsRef<uint>(&Handle->Lpf2Count);
-        public ref MaLpf1Ptr PlPf1 => ref Unsafe.AsRef<MaLpf1Ptr>(&Handle->PlPf1);
-        public ref MaLpf2Ptr PlPf2 => ref Unsafe.AsRef<MaLpf2Ptr>(&Handle->PlPf2);
+        public ref MaLpf1Ptr PLpf1 => ref Unsafe.AsRef<MaLpf1Ptr>(&Handle->PLpf1);
+        public ref MaLpf2Ptr PLpf2 => ref Unsafe.AsRef<MaLpf2Ptr>(&Handle->PLpf2);
         public void* Pheap { get => Handle->Pheap; set => Handle->Pheap = value; }
         public ref uint Ownsheap => ref Unsafe.AsRef<uint>(&Handle->Ownsheap);
     }
@@ -17829,7 +17830,7 @@ namespace Inno.Native.MiniAudio
         public ref nuint JobThreadStackSize => ref Unsafe.AsRef<nuint>(&Handle->JobThreadStackSize);
         public ref uint JobQueueCapacity => ref Unsafe.AsRef<uint>(&Handle->JobQueueCapacity);
         public ref uint Flags => ref Unsafe.AsRef<uint>(&Handle->Flags);
-        public MaVfs* PVFs { get => Handle->PVFs; set => Handle->PVFs = value; }
+        public MaVfs* PVfs { get => Handle->PVfs; set => Handle->PVfs = value; }
         public ref MaDecodingBackendVtablePtrPtr PpCustomDecodingBackendVTables => ref Unsafe.AsRef<MaDecodingBackendVtablePtrPtr>(&Handle->PpCustomDecodingBackendVTables);
         public ref uint CustomDecodingBackendCount => ref Unsafe.AsRef<uint>(&Handle->CustomDecodingBackendCount);
         public void* PCustomDecodingBackendUserData { get => Handle->PCustomDecodingBackendUserData; set => Handle->PCustomDecodingBackendUserData = value; }
@@ -18602,9 +18603,14 @@ namespace Inno.Native.MiniAudio
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int LogInitInterop(MaAllocationCallbacks* pAllocationCallbacks, MaLog* pLog)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaAllocationCallbacks*, MaLog*, int>)funcTable[3])(pAllocationCallbacks, pLog);
+        }
+
         internal static MaResult LogInitNative(MaAllocationCallbacks* pAllocationCallbacks, MaLog* pLog)
         {
-            return ((delegate* unmanaged[Cdecl]<MaAllocationCallbacks*, MaLog*, MaResult>)funcTable[3])(pAllocationCallbacks, pLog);
+            return (MaResult)LogInitInterop(pAllocationCallbacks, pLog);
         }
 
         /// <summary>
@@ -18618,65 +18624,105 @@ namespace Inno.Native.MiniAudio
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int LogRegisterCallbackInterop(MaLog* pLog, MaLogCallback callback)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaLog*, MaLogCallback, int>)funcTable[5])(pLog, callback);
+        }
+
         internal static MaResult LogRegisterCallbackNative(MaLog* pLog, MaLogCallback callback)
         {
-            return ((delegate* unmanaged[Cdecl]<MaLog*, MaLogCallback, MaResult>)funcTable[5])(pLog, callback);
+            return (MaResult)LogRegisterCallbackInterop(pLog, callback);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int LogUnregisterCallbackInterop(MaLog* pLog, MaLogCallback callback)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaLog*, MaLogCallback, int>)funcTable[6])(pLog, callback);
+        }
+
         internal static MaResult LogUnregisterCallbackNative(MaLog* pLog, MaLogCallback callback)
         {
-            return ((delegate* unmanaged[Cdecl]<MaLog*, MaLogCallback, MaResult>)funcTable[6])(pLog, callback);
+            return (MaResult)LogUnregisterCallbackInterop(pLog, callback);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int LogPostInterop(MaLog* pLog, uint level, byte* pMessage)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaLog*, uint, byte*, int>)funcTable[7])(pLog, level, pMessage);
+        }
+
         internal static MaResult LogPostNative(MaLog* pLog, uint level, byte* pMessage)
         {
-            return ((delegate* unmanaged[Cdecl]<MaLog*, uint, byte*, MaResult>)funcTable[7])(pLog, level, pMessage);
+            return (MaResult)LogPostInterop(pLog, level, pMessage);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int LogPostvInterop(MaLog* pLog, uint level, byte* pFormat, byte* args)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaLog*, uint, byte*, byte*, int>)funcTable[8])(pLog, level, pFormat, args);
+        }
+
         internal static MaResult LogPostvNative(MaLog* pLog, uint level, byte* pFormat, byte* args)
         {
-            return ((delegate* unmanaged[Cdecl]<MaLog*, uint, byte*, byte*, MaResult>)funcTable[8])(pLog, level, pFormat, args);
+            return (MaResult)LogPostvInterop(pLog, level, pFormat, args);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static MaBiquadConfig BiquadConfigInitInterop(int format, uint channels, double b0, double b1, double b2, double a0, double a1, double a2)
+        {
+            return ((delegate* unmanaged[Cdecl]<int, uint, double, double, double, double, double, double, MaBiquadConfig>)funcTable[9])(format, channels, b0, b1, b2, a0, a1, a2);
+        }
+
         internal static MaBiquadConfig BiquadConfigInitNative(MaFormat format, uint channels, double b0, double b1, double b2, double a0, double a1, double a2)
         {
-            return ((delegate* unmanaged[Cdecl]<MaFormat, uint, double, double, double, double, double, double, MaBiquadConfig>)funcTable[9])(format, channels, b0, b1, b2, a0, a1, a2);
+            return BiquadConfigInitInterop((int)format, channels, b0, b1, b2, a0, a1, a2);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int BiquadGetHeapSizeInterop(MaBiquadConfig* pConfig, nuint* pHeapSizeInBytes)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaBiquadConfig*, nuint*, int>)funcTable[10])(pConfig, pHeapSizeInBytes);
+        }
+
         internal static MaResult BiquadGetHeapSizeNative(MaBiquadConfig* pConfig, nuint* pHeapSizeInBytes)
         {
-            return ((delegate* unmanaged[Cdecl]<MaBiquadConfig*, nuint*, MaResult>)funcTable[10])(pConfig, pHeapSizeInBytes);
+            return (MaResult)BiquadGetHeapSizeInterop(pConfig, pHeapSizeInBytes);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int BiquadInitPreallocatedInterop(MaBiquadConfig* pConfig, void* pHeap, MaBiquad* pBQ)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaBiquadConfig*, void*, MaBiquad*, int>)funcTable[11])(pConfig, pHeap, pBQ);
+        }
+
         internal static MaResult BiquadInitPreallocatedNative(MaBiquadConfig* pConfig, void* pHeap, MaBiquad* pBQ)
         {
-            return ((delegate* unmanaged[Cdecl]<MaBiquadConfig*, void*, MaBiquad*, MaResult>)funcTable[11])(pConfig, pHeap, pBQ);
+            return (MaResult)BiquadInitPreallocatedInterop(pConfig, pHeap, pBQ);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int BiquadInitInterop(MaBiquadConfig* pConfig, MaAllocationCallbacks* pAllocationCallbacks, MaBiquad* pBQ)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaBiquadConfig*, MaAllocationCallbacks*, MaBiquad*, int>)funcTable[12])(pConfig, pAllocationCallbacks, pBQ);
+        }
+
         internal static MaResult BiquadInitNative(MaBiquadConfig* pConfig, MaAllocationCallbacks* pAllocationCallbacks, MaBiquad* pBQ)
         {
-            return ((delegate* unmanaged[Cdecl]<MaBiquadConfig*, MaAllocationCallbacks*, MaBiquad*, MaResult>)funcTable[12])(pConfig, pAllocationCallbacks, pBQ);
+            return (MaResult)BiquadInitInterop(pConfig, pAllocationCallbacks, pBQ);
         }
 
         /// <summary>
@@ -18690,25 +18736,40 @@ namespace Inno.Native.MiniAudio
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int BiquadReinitInterop(MaBiquadConfig* pConfig, MaBiquad* pBQ)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaBiquadConfig*, MaBiquad*, int>)funcTable[14])(pConfig, pBQ);
+        }
+
         internal static MaResult BiquadReinitNative(MaBiquadConfig* pConfig, MaBiquad* pBQ)
         {
-            return ((delegate* unmanaged[Cdecl]<MaBiquadConfig*, MaBiquad*, MaResult>)funcTable[14])(pConfig, pBQ);
+            return (MaResult)BiquadReinitInterop(pConfig, pBQ);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int BiquadClearCacheInterop(MaBiquad* pBQ)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaBiquad*, int>)funcTable[15])(pBQ);
+        }
+
         internal static MaResult BiquadClearCacheNative(MaBiquad* pBQ)
         {
-            return ((delegate* unmanaged[Cdecl]<MaBiquad*, MaResult>)funcTable[15])(pBQ);
+            return (MaResult)BiquadClearCacheInterop(pBQ);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int BiquadProcessPcmFramesInterop(MaBiquad* pBQ, void* pFramesOut, void* pFramesIn, ulong frameCount)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaBiquad*, void*, void*, ulong, int>)funcTable[16])(pBQ, pFramesOut, pFramesIn, frameCount);
+        }
+
         internal static MaResult BiquadProcessPcmFramesNative(MaBiquad* pBQ, void* pFramesOut, void* pFramesIn, ulong frameCount)
         {
-            return ((delegate* unmanaged[Cdecl]<MaBiquad*, void*, void*, ulong, MaResult>)funcTable[16])(pBQ, pFramesOut, pFramesIn, frameCount);
+            return (MaResult)BiquadProcessPcmFramesInterop(pBQ, pFramesOut, pFramesIn, frameCount);
         }
 
         /// <summary>
@@ -18722,569 +18783,844 @@ namespace Inno.Native.MiniAudio
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static MaLpf1Config Lpf1ConfigInitInterop(int format, uint channels, uint sampleRate, double cutoffFrequency)
+        {
+            return ((delegate* unmanaged[Cdecl]<int, uint, uint, double, MaLpf1Config>)funcTable[18])(format, channels, sampleRate, cutoffFrequency);
+        }
+
         internal static MaLpf1Config Lpf1ConfigInitNative(MaFormat format, uint channels, uint sampleRate, double cutoffFrequency)
         {
-            return ((delegate* unmanaged[Cdecl]<MaFormat, uint, uint, double, MaLpf1Config>)funcTable[18])(format, channels, sampleRate, cutoffFrequency);
+            return Lpf1ConfigInitInterop((int)format, channels, sampleRate, cutoffFrequency);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static MaLpf1Config Lpf2ConfigInitInterop(int format, uint channels, uint sampleRate, double cutoffFrequency, double q)
+        {
+            return ((delegate* unmanaged[Cdecl]<int, uint, uint, double, double, MaLpf1Config>)funcTable[19])(format, channels, sampleRate, cutoffFrequency, q);
+        }
+
         internal static MaLpf1Config Lpf2ConfigInitNative(MaFormat format, uint channels, uint sampleRate, double cutoffFrequency, double q)
         {
-            return ((delegate* unmanaged[Cdecl]<MaFormat, uint, uint, double, double, MaLpf1Config>)funcTable[19])(format, channels, sampleRate, cutoffFrequency, q);
+            return Lpf2ConfigInitInterop((int)format, channels, sampleRate, cutoffFrequency, q);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int Lpf1GetHeapSizeInterop(MaLpf1Config* pConfig, nuint* pHeapSizeInBytes)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaLpf1Config*, nuint*, int>)funcTable[20])(pConfig, pHeapSizeInBytes);
+        }
+
         internal static MaResult Lpf1GetHeapSizeNative(MaLpf1Config* pConfig, nuint* pHeapSizeInBytes)
         {
-            return ((delegate* unmanaged[Cdecl]<MaLpf1Config*, nuint*, MaResult>)funcTable[20])(pConfig, pHeapSizeInBytes);
+            return (MaResult)Lpf1GetHeapSizeInterop(pConfig, pHeapSizeInBytes);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
-        internal static MaResult Lpf1InitPreallocatedNative(MaLpf1Config* pConfig, void* pHeap, MaLpf1* plPf)
+        internal static int Lpf1InitPreallocatedInterop(MaLpf1Config* pConfig, void* pHeap, MaLpf1* pLPF)
         {
-            return ((delegate* unmanaged[Cdecl]<MaLpf1Config*, void*, MaLpf1*, MaResult>)funcTable[21])(pConfig, pHeap, plPf);
+            return ((delegate* unmanaged[Cdecl]<MaLpf1Config*, void*, MaLpf1*, int>)funcTable[21])(pConfig, pHeap, pLPF);
         }
 
-        /// <summary>
-        /// To be documented.
-        /// </summary>
-        internal static MaResult Lpf1InitNative(MaLpf1Config* pConfig, MaAllocationCallbacks* pAllocationCallbacks, MaLpf1* plPf)
+        internal static MaResult Lpf1InitPreallocatedNative(MaLpf1Config* pConfig, void* pHeap, MaLpf1* pLPF)
         {
-            return ((delegate* unmanaged[Cdecl]<MaLpf1Config*, MaAllocationCallbacks*, MaLpf1*, MaResult>)funcTable[22])(pConfig, pAllocationCallbacks, plPf);
+            return (MaResult)Lpf1InitPreallocatedInterop(pConfig, pHeap, pLPF);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
-        internal static void Lpf1UninitNative(MaLpf1* plPf, MaAllocationCallbacks* pAllocationCallbacks)
+        internal static int Lpf1InitInterop(MaLpf1Config* pConfig, MaAllocationCallbacks* pAllocationCallbacks, MaLpf1* pLPF)
         {
-            ((delegate* unmanaged[Cdecl]<MaLpf1*, MaAllocationCallbacks*, void>)funcTable[23])(plPf, pAllocationCallbacks);
+            return ((delegate* unmanaged[Cdecl]<MaLpf1Config*, MaAllocationCallbacks*, MaLpf1*, int>)funcTable[22])(pConfig, pAllocationCallbacks, pLPF);
         }
 
-        /// <summary>
-        /// To be documented.
-        /// </summary>
-        internal static MaResult Lpf1ReinitNative(MaLpf1Config* pConfig, MaLpf1* plPf)
+        internal static MaResult Lpf1InitNative(MaLpf1Config* pConfig, MaAllocationCallbacks* pAllocationCallbacks, MaLpf1* pLPF)
         {
-            return ((delegate* unmanaged[Cdecl]<MaLpf1Config*, MaLpf1*, MaResult>)funcTable[24])(pConfig, plPf);
+            return (MaResult)Lpf1InitInterop(pConfig, pAllocationCallbacks, pLPF);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
-        internal static MaResult Lpf1ClearCacheNative(MaLpf1* plPf)
+        internal static void Lpf1UninitNative(MaLpf1* pLPF, MaAllocationCallbacks* pAllocationCallbacks)
         {
-            return ((delegate* unmanaged[Cdecl]<MaLpf1*, MaResult>)funcTable[25])(plPf);
+            ((delegate* unmanaged[Cdecl]<MaLpf1*, MaAllocationCallbacks*, void>)funcTable[23])(pLPF, pAllocationCallbacks);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
-        internal static MaResult Lpf1ProcessPcmFramesNative(MaLpf1* plPf, void* pFramesOut, void* pFramesIn, ulong frameCount)
+        internal static int Lpf1ReinitInterop(MaLpf1Config* pConfig, MaLpf1* pLPF)
         {
-            return ((delegate* unmanaged[Cdecl]<MaLpf1*, void*, void*, ulong, MaResult>)funcTable[26])(plPf, pFramesOut, pFramesIn, frameCount);
+            return ((delegate* unmanaged[Cdecl]<MaLpf1Config*, MaLpf1*, int>)funcTable[24])(pConfig, pLPF);
         }
 
-        /// <summary>
-        /// To be documented.
-        /// </summary>
-        internal static uint Lpf1GetLatencyNative(MaLpf1* plPf)
+        internal static MaResult Lpf1ReinitNative(MaLpf1Config* pConfig, MaLpf1* pLPF)
         {
-            return ((delegate* unmanaged[Cdecl]<MaLpf1*, uint>)funcTable[27])(plPf);
+            return (MaResult)Lpf1ReinitInterop(pConfig, pLPF);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int Lpf1ClearCacheInterop(MaLpf1* pLPF)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaLpf1*, int>)funcTable[25])(pLPF);
+        }
+
+        internal static MaResult Lpf1ClearCacheNative(MaLpf1* pLPF)
+        {
+            return (MaResult)Lpf1ClearCacheInterop(pLPF);
+        }
+
+        /// <summary>
+        /// To be documented.
+        /// </summary>
+        internal static int Lpf1ProcessPcmFramesInterop(MaLpf1* pLPF, void* pFramesOut, void* pFramesIn, ulong frameCount)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaLpf1*, void*, void*, ulong, int>)funcTable[26])(pLPF, pFramesOut, pFramesIn, frameCount);
+        }
+
+        internal static MaResult Lpf1ProcessPcmFramesNative(MaLpf1* pLPF, void* pFramesOut, void* pFramesIn, ulong frameCount)
+        {
+            return (MaResult)Lpf1ProcessPcmFramesInterop(pLPF, pFramesOut, pFramesIn, frameCount);
+        }
+
+        /// <summary>
+        /// To be documented.
+        /// </summary>
+        internal static uint Lpf1GetLatencyNative(MaLpf1* pLPF)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaLpf1*, uint>)funcTable[27])(pLPF);
+        }
+
+        /// <summary>
+        /// To be documented.
+        /// </summary>
+        internal static int Lpf2GetHeapSizeInterop(MaLpf1Config* pConfig, nuint* pHeapSizeInBytes)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaLpf1Config*, nuint*, int>)funcTable[28])(pConfig, pHeapSizeInBytes);
+        }
+
         internal static MaResult Lpf2GetHeapSizeNative(MaLpf1Config* pConfig, nuint* pHeapSizeInBytes)
         {
-            return ((delegate* unmanaged[Cdecl]<MaLpf1Config*, nuint*, MaResult>)funcTable[28])(pConfig, pHeapSizeInBytes);
+            return (MaResult)Lpf2GetHeapSizeInterop(pConfig, pHeapSizeInBytes);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
-        internal static MaResult Lpf2InitPreallocatedNative(MaLpf1Config* pConfig, void* pHeap, MaLpf2* phPf)
+        internal static int Lpf2InitPreallocatedInterop(MaLpf1Config* pConfig, void* pHeap, MaLpf2* pHPF)
         {
-            return ((delegate* unmanaged[Cdecl]<MaLpf1Config*, void*, MaLpf2*, MaResult>)funcTable[29])(pConfig, pHeap, phPf);
+            return ((delegate* unmanaged[Cdecl]<MaLpf1Config*, void*, MaLpf2*, int>)funcTable[29])(pConfig, pHeap, pHPF);
         }
 
-        /// <summary>
-        /// To be documented.
-        /// </summary>
-        internal static MaResult Lpf2InitNative(MaLpf1Config* pConfig, MaAllocationCallbacks* pAllocationCallbacks, MaLpf2* plPf)
+        internal static MaResult Lpf2InitPreallocatedNative(MaLpf1Config* pConfig, void* pHeap, MaLpf2* pHPF)
         {
-            return ((delegate* unmanaged[Cdecl]<MaLpf1Config*, MaAllocationCallbacks*, MaLpf2*, MaResult>)funcTable[30])(pConfig, pAllocationCallbacks, plPf);
+            return (MaResult)Lpf2InitPreallocatedInterop(pConfig, pHeap, pHPF);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
-        internal static void Lpf2UninitNative(MaLpf2* plPf, MaAllocationCallbacks* pAllocationCallbacks)
+        internal static int Lpf2InitInterop(MaLpf1Config* pConfig, MaAllocationCallbacks* pAllocationCallbacks, MaLpf2* pLPF)
         {
-            ((delegate* unmanaged[Cdecl]<MaLpf2*, MaAllocationCallbacks*, void>)funcTable[31])(plPf, pAllocationCallbacks);
+            return ((delegate* unmanaged[Cdecl]<MaLpf1Config*, MaAllocationCallbacks*, MaLpf2*, int>)funcTable[30])(pConfig, pAllocationCallbacks, pLPF);
         }
 
-        /// <summary>
-        /// To be documented.
-        /// </summary>
-        internal static MaResult Lpf2ReinitNative(MaLpf1Config* pConfig, MaLpf2* plPf)
+        internal static MaResult Lpf2InitNative(MaLpf1Config* pConfig, MaAllocationCallbacks* pAllocationCallbacks, MaLpf2* pLPF)
         {
-            return ((delegate* unmanaged[Cdecl]<MaLpf1Config*, MaLpf2*, MaResult>)funcTable[32])(pConfig, plPf);
+            return (MaResult)Lpf2InitInterop(pConfig, pAllocationCallbacks, pLPF);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
-        internal static MaResult Lpf2ClearCacheNative(MaLpf2* plPf)
+        internal static void Lpf2UninitNative(MaLpf2* pLPF, MaAllocationCallbacks* pAllocationCallbacks)
         {
-            return ((delegate* unmanaged[Cdecl]<MaLpf2*, MaResult>)funcTable[33])(plPf);
+            ((delegate* unmanaged[Cdecl]<MaLpf2*, MaAllocationCallbacks*, void>)funcTable[31])(pLPF, pAllocationCallbacks);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
-        internal static MaResult Lpf2ProcessPcmFramesNative(MaLpf2* plPf, void* pFramesOut, void* pFramesIn, ulong frameCount)
+        internal static int Lpf2ReinitInterop(MaLpf1Config* pConfig, MaLpf2* pLPF)
         {
-            return ((delegate* unmanaged[Cdecl]<MaLpf2*, void*, void*, ulong, MaResult>)funcTable[34])(plPf, pFramesOut, pFramesIn, frameCount);
+            return ((delegate* unmanaged[Cdecl]<MaLpf1Config*, MaLpf2*, int>)funcTable[32])(pConfig, pLPF);
         }
 
-        /// <summary>
-        /// To be documented.
-        /// </summary>
-        internal static uint Lpf2GetLatencyNative(MaLpf2* plPf)
+        internal static MaResult Lpf2ReinitNative(MaLpf1Config* pConfig, MaLpf2* pLPF)
         {
-            return ((delegate* unmanaged[Cdecl]<MaLpf2*, uint>)funcTable[35])(plPf);
+            return (MaResult)Lpf2ReinitInterop(pConfig, pLPF);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int Lpf2ClearCacheInterop(MaLpf2* pLPF)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaLpf2*, int>)funcTable[33])(pLPF);
+        }
+
+        internal static MaResult Lpf2ClearCacheNative(MaLpf2* pLPF)
+        {
+            return (MaResult)Lpf2ClearCacheInterop(pLPF);
+        }
+
+        /// <summary>
+        /// To be documented.
+        /// </summary>
+        internal static int Lpf2ProcessPcmFramesInterop(MaLpf2* pLPF, void* pFramesOut, void* pFramesIn, ulong frameCount)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaLpf2*, void*, void*, ulong, int>)funcTable[34])(pLPF, pFramesOut, pFramesIn, frameCount);
+        }
+
+        internal static MaResult Lpf2ProcessPcmFramesNative(MaLpf2* pLPF, void* pFramesOut, void* pFramesIn, ulong frameCount)
+        {
+            return (MaResult)Lpf2ProcessPcmFramesInterop(pLPF, pFramesOut, pFramesIn, frameCount);
+        }
+
+        /// <summary>
+        /// To be documented.
+        /// </summary>
+        internal static uint Lpf2GetLatencyNative(MaLpf2* pLPF)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaLpf2*, uint>)funcTable[35])(pLPF);
+        }
+
+        /// <summary>
+        /// To be documented.
+        /// </summary>
+        internal static MaLpfConfig LpfConfigInitInterop(int format, uint channels, uint sampleRate, double cutoffFrequency, uint order)
+        {
+            return ((delegate* unmanaged[Cdecl]<int, uint, uint, double, uint, MaLpfConfig>)funcTable[36])(format, channels, sampleRate, cutoffFrequency, order);
+        }
+
         internal static MaLpfConfig LpfConfigInitNative(MaFormat format, uint channels, uint sampleRate, double cutoffFrequency, uint order)
         {
-            return ((delegate* unmanaged[Cdecl]<MaFormat, uint, uint, double, uint, MaLpfConfig>)funcTable[36])(format, channels, sampleRate, cutoffFrequency, order);
+            return LpfConfigInitInterop((int)format, channels, sampleRate, cutoffFrequency, order);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int LpfGetHeapSizeInterop(MaLpfConfig* pConfig, nuint* pHeapSizeInBytes)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaLpfConfig*, nuint*, int>)funcTable[37])(pConfig, pHeapSizeInBytes);
+        }
+
         internal static MaResult LpfGetHeapSizeNative(MaLpfConfig* pConfig, nuint* pHeapSizeInBytes)
         {
-            return ((delegate* unmanaged[Cdecl]<MaLpfConfig*, nuint*, MaResult>)funcTable[37])(pConfig, pHeapSizeInBytes);
+            return (MaResult)LpfGetHeapSizeInterop(pConfig, pHeapSizeInBytes);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
-        internal static MaResult LpfInitPreallocatedNative(MaLpfConfig* pConfig, void* pHeap, MaLpf* plPf)
+        internal static int LpfInitPreallocatedInterop(MaLpfConfig* pConfig, void* pHeap, MaLpf* pLPF)
         {
-            return ((delegate* unmanaged[Cdecl]<MaLpfConfig*, void*, MaLpf*, MaResult>)funcTable[38])(pConfig, pHeap, plPf);
+            return ((delegate* unmanaged[Cdecl]<MaLpfConfig*, void*, MaLpf*, int>)funcTable[38])(pConfig, pHeap, pLPF);
         }
 
-        /// <summary>
-        /// To be documented.
-        /// </summary>
-        internal static MaResult LpfInitNative(MaLpfConfig* pConfig, MaAllocationCallbacks* pAllocationCallbacks, MaLpf* plPf)
+        internal static MaResult LpfInitPreallocatedNative(MaLpfConfig* pConfig, void* pHeap, MaLpf* pLPF)
         {
-            return ((delegate* unmanaged[Cdecl]<MaLpfConfig*, MaAllocationCallbacks*, MaLpf*, MaResult>)funcTable[39])(pConfig, pAllocationCallbacks, plPf);
+            return (MaResult)LpfInitPreallocatedInterop(pConfig, pHeap, pLPF);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
-        internal static void LpfUninitNative(MaLpf* plPf, MaAllocationCallbacks* pAllocationCallbacks)
+        internal static int LpfInitInterop(MaLpfConfig* pConfig, MaAllocationCallbacks* pAllocationCallbacks, MaLpf* pLPF)
         {
-            ((delegate* unmanaged[Cdecl]<MaLpf*, MaAllocationCallbacks*, void>)funcTable[40])(plPf, pAllocationCallbacks);
+            return ((delegate* unmanaged[Cdecl]<MaLpfConfig*, MaAllocationCallbacks*, MaLpf*, int>)funcTable[39])(pConfig, pAllocationCallbacks, pLPF);
         }
 
-        /// <summary>
-        /// To be documented.
-        /// </summary>
-        internal static MaResult LpfReinitNative(MaLpfConfig* pConfig, MaLpf* plPf)
+        internal static MaResult LpfInitNative(MaLpfConfig* pConfig, MaAllocationCallbacks* pAllocationCallbacks, MaLpf* pLPF)
         {
-            return ((delegate* unmanaged[Cdecl]<MaLpfConfig*, MaLpf*, MaResult>)funcTable[41])(pConfig, plPf);
+            return (MaResult)LpfInitInterop(pConfig, pAllocationCallbacks, pLPF);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
-        internal static MaResult LpfClearCacheNative(MaLpf* plPf)
+        internal static void LpfUninitNative(MaLpf* pLPF, MaAllocationCallbacks* pAllocationCallbacks)
         {
-            return ((delegate* unmanaged[Cdecl]<MaLpf*, MaResult>)funcTable[42])(plPf);
+            ((delegate* unmanaged[Cdecl]<MaLpf*, MaAllocationCallbacks*, void>)funcTable[40])(pLPF, pAllocationCallbacks);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
-        internal static MaResult LpfProcessPcmFramesNative(MaLpf* plPf, void* pFramesOut, void* pFramesIn, ulong frameCount)
+        internal static int LpfReinitInterop(MaLpfConfig* pConfig, MaLpf* pLPF)
         {
-            return ((delegate* unmanaged[Cdecl]<MaLpf*, void*, void*, ulong, MaResult>)funcTable[43])(plPf, pFramesOut, pFramesIn, frameCount);
+            return ((delegate* unmanaged[Cdecl]<MaLpfConfig*, MaLpf*, int>)funcTable[41])(pConfig, pLPF);
         }
 
-        /// <summary>
-        /// To be documented.
-        /// </summary>
-        internal static uint LpfGetLatencyNative(MaLpf* plPf)
+        internal static MaResult LpfReinitNative(MaLpfConfig* pConfig, MaLpf* pLPF)
         {
-            return ((delegate* unmanaged[Cdecl]<MaLpf*, uint>)funcTable[44])(plPf);
+            return (MaResult)LpfReinitInterop(pConfig, pLPF);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int LpfClearCacheInterop(MaLpf* pLPF)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaLpf*, int>)funcTable[42])(pLPF);
+        }
+
+        internal static MaResult LpfClearCacheNative(MaLpf* pLPF)
+        {
+            return (MaResult)LpfClearCacheInterop(pLPF);
+        }
+
+        /// <summary>
+        /// To be documented.
+        /// </summary>
+        internal static int LpfProcessPcmFramesInterop(MaLpf* pLPF, void* pFramesOut, void* pFramesIn, ulong frameCount)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaLpf*, void*, void*, ulong, int>)funcTable[43])(pLPF, pFramesOut, pFramesIn, frameCount);
+        }
+
+        internal static MaResult LpfProcessPcmFramesNative(MaLpf* pLPF, void* pFramesOut, void* pFramesIn, ulong frameCount)
+        {
+            return (MaResult)LpfProcessPcmFramesInterop(pLPF, pFramesOut, pFramesIn, frameCount);
+        }
+
+        /// <summary>
+        /// To be documented.
+        /// </summary>
+        internal static uint LpfGetLatencyNative(MaLpf* pLPF)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaLpf*, uint>)funcTable[44])(pLPF);
+        }
+
+        /// <summary>
+        /// To be documented.
+        /// </summary>
+        internal static MaHpf1Config Hpf1ConfigInitInterop(int format, uint channels, uint sampleRate, double cutoffFrequency)
+        {
+            return ((delegate* unmanaged[Cdecl]<int, uint, uint, double, MaHpf1Config>)funcTable[45])(format, channels, sampleRate, cutoffFrequency);
+        }
+
         internal static MaHpf1Config Hpf1ConfigInitNative(MaFormat format, uint channels, uint sampleRate, double cutoffFrequency)
         {
-            return ((delegate* unmanaged[Cdecl]<MaFormat, uint, uint, double, MaHpf1Config>)funcTable[45])(format, channels, sampleRate, cutoffFrequency);
+            return Hpf1ConfigInitInterop((int)format, channels, sampleRate, cutoffFrequency);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static MaHpf1Config Hpf2ConfigInitInterop(int format, uint channels, uint sampleRate, double cutoffFrequency, double q)
+        {
+            return ((delegate* unmanaged[Cdecl]<int, uint, uint, double, double, MaHpf1Config>)funcTable[46])(format, channels, sampleRate, cutoffFrequency, q);
+        }
+
         internal static MaHpf1Config Hpf2ConfigInitNative(MaFormat format, uint channels, uint sampleRate, double cutoffFrequency, double q)
         {
-            return ((delegate* unmanaged[Cdecl]<MaFormat, uint, uint, double, double, MaHpf1Config>)funcTable[46])(format, channels, sampleRate, cutoffFrequency, q);
+            return Hpf2ConfigInitInterop((int)format, channels, sampleRate, cutoffFrequency, q);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int Hpf1GetHeapSizeInterop(MaHpf1Config* pConfig, nuint* pHeapSizeInBytes)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaHpf1Config*, nuint*, int>)funcTable[47])(pConfig, pHeapSizeInBytes);
+        }
+
         internal static MaResult Hpf1GetHeapSizeNative(MaHpf1Config* pConfig, nuint* pHeapSizeInBytes)
         {
-            return ((delegate* unmanaged[Cdecl]<MaHpf1Config*, nuint*, MaResult>)funcTable[47])(pConfig, pHeapSizeInBytes);
+            return (MaResult)Hpf1GetHeapSizeInterop(pConfig, pHeapSizeInBytes);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
-        internal static MaResult Hpf1InitPreallocatedNative(MaHpf1Config* pConfig, void* pHeap, MaHpf1* plPf)
+        internal static int Hpf1InitPreallocatedInterop(MaHpf1Config* pConfig, void* pHeap, MaHpf1* pLPF)
         {
-            return ((delegate* unmanaged[Cdecl]<MaHpf1Config*, void*, MaHpf1*, MaResult>)funcTable[48])(pConfig, pHeap, plPf);
+            return ((delegate* unmanaged[Cdecl]<MaHpf1Config*, void*, MaHpf1*, int>)funcTable[48])(pConfig, pHeap, pLPF);
         }
 
-        /// <summary>
-        /// To be documented.
-        /// </summary>
-        internal static MaResult Hpf1InitNative(MaHpf1Config* pConfig, MaAllocationCallbacks* pAllocationCallbacks, MaHpf1* phPf)
+        internal static MaResult Hpf1InitPreallocatedNative(MaHpf1Config* pConfig, void* pHeap, MaHpf1* pLPF)
         {
-            return ((delegate* unmanaged[Cdecl]<MaHpf1Config*, MaAllocationCallbacks*, MaHpf1*, MaResult>)funcTable[49])(pConfig, pAllocationCallbacks, phPf);
+            return (MaResult)Hpf1InitPreallocatedInterop(pConfig, pHeap, pLPF);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
-        internal static void Hpf1UninitNative(MaHpf1* phPf, MaAllocationCallbacks* pAllocationCallbacks)
+        internal static int Hpf1InitInterop(MaHpf1Config* pConfig, MaAllocationCallbacks* pAllocationCallbacks, MaHpf1* pHPF)
         {
-            ((delegate* unmanaged[Cdecl]<MaHpf1*, MaAllocationCallbacks*, void>)funcTable[50])(phPf, pAllocationCallbacks);
+            return ((delegate* unmanaged[Cdecl]<MaHpf1Config*, MaAllocationCallbacks*, MaHpf1*, int>)funcTable[49])(pConfig, pAllocationCallbacks, pHPF);
         }
 
-        /// <summary>
-        /// To be documented.
-        /// </summary>
-        internal static MaResult Hpf1ReinitNative(MaHpf1Config* pConfig, MaHpf1* phPf)
+        internal static MaResult Hpf1InitNative(MaHpf1Config* pConfig, MaAllocationCallbacks* pAllocationCallbacks, MaHpf1* pHPF)
         {
-            return ((delegate* unmanaged[Cdecl]<MaHpf1Config*, MaHpf1*, MaResult>)funcTable[51])(pConfig, phPf);
+            return (MaResult)Hpf1InitInterop(pConfig, pAllocationCallbacks, pHPF);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
-        internal static MaResult Hpf1ProcessPcmFramesNative(MaHpf1* phPf, void* pFramesOut, void* pFramesIn, ulong frameCount)
+        internal static void Hpf1UninitNative(MaHpf1* pHPF, MaAllocationCallbacks* pAllocationCallbacks)
         {
-            return ((delegate* unmanaged[Cdecl]<MaHpf1*, void*, void*, ulong, MaResult>)funcTable[52])(phPf, pFramesOut, pFramesIn, frameCount);
+            ((delegate* unmanaged[Cdecl]<MaHpf1*, MaAllocationCallbacks*, void>)funcTable[50])(pHPF, pAllocationCallbacks);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
-        internal static uint Hpf1GetLatencyNative(MaHpf1* phPf)
+        internal static int Hpf1ReinitInterop(MaHpf1Config* pConfig, MaHpf1* pHPF)
         {
-            return ((delegate* unmanaged[Cdecl]<MaHpf1*, uint>)funcTable[53])(phPf);
+            return ((delegate* unmanaged[Cdecl]<MaHpf1Config*, MaHpf1*, int>)funcTable[51])(pConfig, pHPF);
+        }
+
+        internal static MaResult Hpf1ReinitNative(MaHpf1Config* pConfig, MaHpf1* pHPF)
+        {
+            return (MaResult)Hpf1ReinitInterop(pConfig, pHPF);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int Hpf1ProcessPcmFramesInterop(MaHpf1* pHPF, void* pFramesOut, void* pFramesIn, ulong frameCount)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaHpf1*, void*, void*, ulong, int>)funcTable[52])(pHPF, pFramesOut, pFramesIn, frameCount);
+        }
+
+        internal static MaResult Hpf1ProcessPcmFramesNative(MaHpf1* pHPF, void* pFramesOut, void* pFramesIn, ulong frameCount)
+        {
+            return (MaResult)Hpf1ProcessPcmFramesInterop(pHPF, pFramesOut, pFramesIn, frameCount);
+        }
+
+        /// <summary>
+        /// To be documented.
+        /// </summary>
+        internal static uint Hpf1GetLatencyNative(MaHpf1* pHPF)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaHpf1*, uint>)funcTable[53])(pHPF);
+        }
+
+        /// <summary>
+        /// To be documented.
+        /// </summary>
+        internal static int Hpf2GetHeapSizeInterop(MaHpf1Config* pConfig, nuint* pHeapSizeInBytes)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaHpf1Config*, nuint*, int>)funcTable[54])(pConfig, pHeapSizeInBytes);
+        }
+
         internal static MaResult Hpf2GetHeapSizeNative(MaHpf1Config* pConfig, nuint* pHeapSizeInBytes)
         {
-            return ((delegate* unmanaged[Cdecl]<MaHpf1Config*, nuint*, MaResult>)funcTable[54])(pConfig, pHeapSizeInBytes);
+            return (MaResult)Hpf2GetHeapSizeInterop(pConfig, pHeapSizeInBytes);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
-        internal static MaResult Hpf2InitPreallocatedNative(MaHpf1Config* pConfig, void* pHeap, MaHpf2* phPf)
+        internal static int Hpf2InitPreallocatedInterop(MaHpf1Config* pConfig, void* pHeap, MaHpf2* pHPF)
         {
-            return ((delegate* unmanaged[Cdecl]<MaHpf1Config*, void*, MaHpf2*, MaResult>)funcTable[55])(pConfig, pHeap, phPf);
+            return ((delegate* unmanaged[Cdecl]<MaHpf1Config*, void*, MaHpf2*, int>)funcTable[55])(pConfig, pHeap, pHPF);
         }
 
-        /// <summary>
-        /// To be documented.
-        /// </summary>
-        internal static MaResult Hpf2InitNative(MaHpf1Config* pConfig, MaAllocationCallbacks* pAllocationCallbacks, MaHpf2* phPf)
+        internal static MaResult Hpf2InitPreallocatedNative(MaHpf1Config* pConfig, void* pHeap, MaHpf2* pHPF)
         {
-            return ((delegate* unmanaged[Cdecl]<MaHpf1Config*, MaAllocationCallbacks*, MaHpf2*, MaResult>)funcTable[56])(pConfig, pAllocationCallbacks, phPf);
+            return (MaResult)Hpf2InitPreallocatedInterop(pConfig, pHeap, pHPF);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
-        internal static void Hpf2UninitNative(MaHpf2* phPf, MaAllocationCallbacks* pAllocationCallbacks)
+        internal static int Hpf2InitInterop(MaHpf1Config* pConfig, MaAllocationCallbacks* pAllocationCallbacks, MaHpf2* pHPF)
         {
-            ((delegate* unmanaged[Cdecl]<MaHpf2*, MaAllocationCallbacks*, void>)funcTable[57])(phPf, pAllocationCallbacks);
+            return ((delegate* unmanaged[Cdecl]<MaHpf1Config*, MaAllocationCallbacks*, MaHpf2*, int>)funcTable[56])(pConfig, pAllocationCallbacks, pHPF);
         }
 
-        /// <summary>
-        /// To be documented.
-        /// </summary>
-        internal static MaResult Hpf2ReinitNative(MaHpf1Config* pConfig, MaHpf2* phPf)
+        internal static MaResult Hpf2InitNative(MaHpf1Config* pConfig, MaAllocationCallbacks* pAllocationCallbacks, MaHpf2* pHPF)
         {
-            return ((delegate* unmanaged[Cdecl]<MaHpf1Config*, MaHpf2*, MaResult>)funcTable[58])(pConfig, phPf);
+            return (MaResult)Hpf2InitInterop(pConfig, pAllocationCallbacks, pHPF);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
-        internal static MaResult Hpf2ProcessPcmFramesNative(MaHpf2* phPf, void* pFramesOut, void* pFramesIn, ulong frameCount)
+        internal static void Hpf2UninitNative(MaHpf2* pHPF, MaAllocationCallbacks* pAllocationCallbacks)
         {
-            return ((delegate* unmanaged[Cdecl]<MaHpf2*, void*, void*, ulong, MaResult>)funcTable[59])(phPf, pFramesOut, pFramesIn, frameCount);
+            ((delegate* unmanaged[Cdecl]<MaHpf2*, MaAllocationCallbacks*, void>)funcTable[57])(pHPF, pAllocationCallbacks);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
-        internal static uint Hpf2GetLatencyNative(MaHpf2* phPf)
+        internal static int Hpf2ReinitInterop(MaHpf1Config* pConfig, MaHpf2* pHPF)
         {
-            return ((delegate* unmanaged[Cdecl]<MaHpf2*, uint>)funcTable[60])(phPf);
+            return ((delegate* unmanaged[Cdecl]<MaHpf1Config*, MaHpf2*, int>)funcTable[58])(pConfig, pHPF);
+        }
+
+        internal static MaResult Hpf2ReinitNative(MaHpf1Config* pConfig, MaHpf2* pHPF)
+        {
+            return (MaResult)Hpf2ReinitInterop(pConfig, pHPF);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int Hpf2ProcessPcmFramesInterop(MaHpf2* pHPF, void* pFramesOut, void* pFramesIn, ulong frameCount)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaHpf2*, void*, void*, ulong, int>)funcTable[59])(pHPF, pFramesOut, pFramesIn, frameCount);
+        }
+
+        internal static MaResult Hpf2ProcessPcmFramesNative(MaHpf2* pHPF, void* pFramesOut, void* pFramesIn, ulong frameCount)
+        {
+            return (MaResult)Hpf2ProcessPcmFramesInterop(pHPF, pFramesOut, pFramesIn, frameCount);
+        }
+
+        /// <summary>
+        /// To be documented.
+        /// </summary>
+        internal static uint Hpf2GetLatencyNative(MaHpf2* pHPF)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaHpf2*, uint>)funcTable[60])(pHPF);
+        }
+
+        /// <summary>
+        /// To be documented.
+        /// </summary>
+        internal static MaHpfConfig HpfConfigInitInterop(int format, uint channels, uint sampleRate, double cutoffFrequency, uint order)
+        {
+            return ((delegate* unmanaged[Cdecl]<int, uint, uint, double, uint, MaHpfConfig>)funcTable[61])(format, channels, sampleRate, cutoffFrequency, order);
+        }
+
         internal static MaHpfConfig HpfConfigInitNative(MaFormat format, uint channels, uint sampleRate, double cutoffFrequency, uint order)
         {
-            return ((delegate* unmanaged[Cdecl]<MaFormat, uint, uint, double, uint, MaHpfConfig>)funcTable[61])(format, channels, sampleRate, cutoffFrequency, order);
+            return HpfConfigInitInterop((int)format, channels, sampleRate, cutoffFrequency, order);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int HpfGetHeapSizeInterop(MaHpfConfig* pConfig, nuint* pHeapSizeInBytes)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaHpfConfig*, nuint*, int>)funcTable[62])(pConfig, pHeapSizeInBytes);
+        }
+
         internal static MaResult HpfGetHeapSizeNative(MaHpfConfig* pConfig, nuint* pHeapSizeInBytes)
         {
-            return ((delegate* unmanaged[Cdecl]<MaHpfConfig*, nuint*, MaResult>)funcTable[62])(pConfig, pHeapSizeInBytes);
+            return (MaResult)HpfGetHeapSizeInterop(pConfig, pHeapSizeInBytes);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
-        internal static MaResult HpfInitPreallocatedNative(MaHpfConfig* pConfig, void* pHeap, MaHpf* plPf)
+        internal static int HpfInitPreallocatedInterop(MaHpfConfig* pConfig, void* pHeap, MaHpf* pLPF)
         {
-            return ((delegate* unmanaged[Cdecl]<MaHpfConfig*, void*, MaHpf*, MaResult>)funcTable[63])(pConfig, pHeap, plPf);
+            return ((delegate* unmanaged[Cdecl]<MaHpfConfig*, void*, MaHpf*, int>)funcTable[63])(pConfig, pHeap, pLPF);
         }
 
-        /// <summary>
-        /// To be documented.
-        /// </summary>
-        internal static MaResult HpfInitNative(MaHpfConfig* pConfig, MaAllocationCallbacks* pAllocationCallbacks, MaHpf* phPf)
+        internal static MaResult HpfInitPreallocatedNative(MaHpfConfig* pConfig, void* pHeap, MaHpf* pLPF)
         {
-            return ((delegate* unmanaged[Cdecl]<MaHpfConfig*, MaAllocationCallbacks*, MaHpf*, MaResult>)funcTable[64])(pConfig, pAllocationCallbacks, phPf);
+            return (MaResult)HpfInitPreallocatedInterop(pConfig, pHeap, pLPF);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
-        internal static void HpfUninitNative(MaHpf* phPf, MaAllocationCallbacks* pAllocationCallbacks)
+        internal static int HpfInitInterop(MaHpfConfig* pConfig, MaAllocationCallbacks* pAllocationCallbacks, MaHpf* pHPF)
         {
-            ((delegate* unmanaged[Cdecl]<MaHpf*, MaAllocationCallbacks*, void>)funcTable[65])(phPf, pAllocationCallbacks);
+            return ((delegate* unmanaged[Cdecl]<MaHpfConfig*, MaAllocationCallbacks*, MaHpf*, int>)funcTable[64])(pConfig, pAllocationCallbacks, pHPF);
         }
 
-        /// <summary>
-        /// To be documented.
-        /// </summary>
-        internal static MaResult HpfReinitNative(MaHpfConfig* pConfig, MaHpf* phPf)
+        internal static MaResult HpfInitNative(MaHpfConfig* pConfig, MaAllocationCallbacks* pAllocationCallbacks, MaHpf* pHPF)
         {
-            return ((delegate* unmanaged[Cdecl]<MaHpfConfig*, MaHpf*, MaResult>)funcTable[66])(pConfig, phPf);
+            return (MaResult)HpfInitInterop(pConfig, pAllocationCallbacks, pHPF);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
-        internal static MaResult HpfProcessPcmFramesNative(MaHpf* phPf, void* pFramesOut, void* pFramesIn, ulong frameCount)
+        internal static void HpfUninitNative(MaHpf* pHPF, MaAllocationCallbacks* pAllocationCallbacks)
         {
-            return ((delegate* unmanaged[Cdecl]<MaHpf*, void*, void*, ulong, MaResult>)funcTable[67])(phPf, pFramesOut, pFramesIn, frameCount);
+            ((delegate* unmanaged[Cdecl]<MaHpf*, MaAllocationCallbacks*, void>)funcTable[65])(pHPF, pAllocationCallbacks);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
-        internal static uint HpfGetLatencyNative(MaHpf* phPf)
+        internal static int HpfReinitInterop(MaHpfConfig* pConfig, MaHpf* pHPF)
         {
-            return ((delegate* unmanaged[Cdecl]<MaHpf*, uint>)funcTable[68])(phPf);
+            return ((delegate* unmanaged[Cdecl]<MaHpfConfig*, MaHpf*, int>)funcTable[66])(pConfig, pHPF);
+        }
+
+        internal static MaResult HpfReinitNative(MaHpfConfig* pConfig, MaHpf* pHPF)
+        {
+            return (MaResult)HpfReinitInterop(pConfig, pHPF);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int HpfProcessPcmFramesInterop(MaHpf* pHPF, void* pFramesOut, void* pFramesIn, ulong frameCount)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaHpf*, void*, void*, ulong, int>)funcTable[67])(pHPF, pFramesOut, pFramesIn, frameCount);
+        }
+
+        internal static MaResult HpfProcessPcmFramesNative(MaHpf* pHPF, void* pFramesOut, void* pFramesIn, ulong frameCount)
+        {
+            return (MaResult)HpfProcessPcmFramesInterop(pHPF, pFramesOut, pFramesIn, frameCount);
+        }
+
+        /// <summary>
+        /// To be documented.
+        /// </summary>
+        internal static uint HpfGetLatencyNative(MaHpf* pHPF)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaHpf*, uint>)funcTable[68])(pHPF);
+        }
+
+        /// <summary>
+        /// To be documented.
+        /// </summary>
+        internal static MaBpf2Config Bpf2ConfigInitInterop(int format, uint channels, uint sampleRate, double cutoffFrequency, double q)
+        {
+            return ((delegate* unmanaged[Cdecl]<int, uint, uint, double, double, MaBpf2Config>)funcTable[69])(format, channels, sampleRate, cutoffFrequency, q);
+        }
+
         internal static MaBpf2Config Bpf2ConfigInitNative(MaFormat format, uint channels, uint sampleRate, double cutoffFrequency, double q)
         {
-            return ((delegate* unmanaged[Cdecl]<MaFormat, uint, uint, double, double, MaBpf2Config>)funcTable[69])(format, channels, sampleRate, cutoffFrequency, q);
+            return Bpf2ConfigInitInterop((int)format, channels, sampleRate, cutoffFrequency, q);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int Bpf2GetHeapSizeInterop(MaBpf2Config* pConfig, nuint* pHeapSizeInBytes)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaBpf2Config*, nuint*, int>)funcTable[70])(pConfig, pHeapSizeInBytes);
+        }
+
         internal static MaResult Bpf2GetHeapSizeNative(MaBpf2Config* pConfig, nuint* pHeapSizeInBytes)
         {
-            return ((delegate* unmanaged[Cdecl]<MaBpf2Config*, nuint*, MaResult>)funcTable[70])(pConfig, pHeapSizeInBytes);
+            return (MaResult)Bpf2GetHeapSizeInterop(pConfig, pHeapSizeInBytes);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
-        internal static MaResult Bpf2InitPreallocatedNative(MaBpf2Config* pConfig, void* pHeap, MaBpf2* pBpF)
+        internal static int Bpf2InitPreallocatedInterop(MaBpf2Config* pConfig, void* pHeap, MaBpf2* pBPF)
         {
-            return ((delegate* unmanaged[Cdecl]<MaBpf2Config*, void*, MaBpf2*, MaResult>)funcTable[71])(pConfig, pHeap, pBpF);
+            return ((delegate* unmanaged[Cdecl]<MaBpf2Config*, void*, MaBpf2*, int>)funcTable[71])(pConfig, pHeap, pBPF);
         }
 
-        /// <summary>
-        /// To be documented.
-        /// </summary>
-        internal static MaResult Bpf2InitNative(MaBpf2Config* pConfig, MaAllocationCallbacks* pAllocationCallbacks, MaBpf2* pBpF)
+        internal static MaResult Bpf2InitPreallocatedNative(MaBpf2Config* pConfig, void* pHeap, MaBpf2* pBPF)
         {
-            return ((delegate* unmanaged[Cdecl]<MaBpf2Config*, MaAllocationCallbacks*, MaBpf2*, MaResult>)funcTable[72])(pConfig, pAllocationCallbacks, pBpF);
+            return (MaResult)Bpf2InitPreallocatedInterop(pConfig, pHeap, pBPF);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
-        internal static void Bpf2UninitNative(MaBpf2* pBpF, MaAllocationCallbacks* pAllocationCallbacks)
+        internal static int Bpf2InitInterop(MaBpf2Config* pConfig, MaAllocationCallbacks* pAllocationCallbacks, MaBpf2* pBPF)
         {
-            ((delegate* unmanaged[Cdecl]<MaBpf2*, MaAllocationCallbacks*, void>)funcTable[73])(pBpF, pAllocationCallbacks);
+            return ((delegate* unmanaged[Cdecl]<MaBpf2Config*, MaAllocationCallbacks*, MaBpf2*, int>)funcTable[72])(pConfig, pAllocationCallbacks, pBPF);
         }
 
-        /// <summary>
-        /// To be documented.
-        /// </summary>
-        internal static MaResult Bpf2ReinitNative(MaBpf2Config* pConfig, MaBpf2* pBpF)
+        internal static MaResult Bpf2InitNative(MaBpf2Config* pConfig, MaAllocationCallbacks* pAllocationCallbacks, MaBpf2* pBPF)
         {
-            return ((delegate* unmanaged[Cdecl]<MaBpf2Config*, MaBpf2*, MaResult>)funcTable[74])(pConfig, pBpF);
+            return (MaResult)Bpf2InitInterop(pConfig, pAllocationCallbacks, pBPF);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
-        internal static MaResult Bpf2ProcessPcmFramesNative(MaBpf2* pBpF, void* pFramesOut, void* pFramesIn, ulong frameCount)
+        internal static void Bpf2UninitNative(MaBpf2* pBPF, MaAllocationCallbacks* pAllocationCallbacks)
         {
-            return ((delegate* unmanaged[Cdecl]<MaBpf2*, void*, void*, ulong, MaResult>)funcTable[75])(pBpF, pFramesOut, pFramesIn, frameCount);
+            ((delegate* unmanaged[Cdecl]<MaBpf2*, MaAllocationCallbacks*, void>)funcTable[73])(pBPF, pAllocationCallbacks);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
-        internal static uint Bpf2GetLatencyNative(MaBpf2* pBpF)
+        internal static int Bpf2ReinitInterop(MaBpf2Config* pConfig, MaBpf2* pBPF)
         {
-            return ((delegate* unmanaged[Cdecl]<MaBpf2*, uint>)funcTable[76])(pBpF);
+            return ((delegate* unmanaged[Cdecl]<MaBpf2Config*, MaBpf2*, int>)funcTable[74])(pConfig, pBPF);
+        }
+
+        internal static MaResult Bpf2ReinitNative(MaBpf2Config* pConfig, MaBpf2* pBPF)
+        {
+            return (MaResult)Bpf2ReinitInterop(pConfig, pBPF);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int Bpf2ProcessPcmFramesInterop(MaBpf2* pBPF, void* pFramesOut, void* pFramesIn, ulong frameCount)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaBpf2*, void*, void*, ulong, int>)funcTable[75])(pBPF, pFramesOut, pFramesIn, frameCount);
+        }
+
+        internal static MaResult Bpf2ProcessPcmFramesNative(MaBpf2* pBPF, void* pFramesOut, void* pFramesIn, ulong frameCount)
+        {
+            return (MaResult)Bpf2ProcessPcmFramesInterop(pBPF, pFramesOut, pFramesIn, frameCount);
+        }
+
+        /// <summary>
+        /// To be documented.
+        /// </summary>
+        internal static uint Bpf2GetLatencyNative(MaBpf2* pBPF)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaBpf2*, uint>)funcTable[76])(pBPF);
+        }
+
+        /// <summary>
+        /// To be documented.
+        /// </summary>
+        internal static MaBpfConfig BpfConfigInitInterop(int format, uint channels, uint sampleRate, double cutoffFrequency, uint order)
+        {
+            return ((delegate* unmanaged[Cdecl]<int, uint, uint, double, uint, MaBpfConfig>)funcTable[77])(format, channels, sampleRate, cutoffFrequency, order);
+        }
+
         internal static MaBpfConfig BpfConfigInitNative(MaFormat format, uint channels, uint sampleRate, double cutoffFrequency, uint order)
         {
-            return ((delegate* unmanaged[Cdecl]<MaFormat, uint, uint, double, uint, MaBpfConfig>)funcTable[77])(format, channels, sampleRate, cutoffFrequency, order);
+            return BpfConfigInitInterop((int)format, channels, sampleRate, cutoffFrequency, order);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int BpfGetHeapSizeInterop(MaBpfConfig* pConfig, nuint* pHeapSizeInBytes)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaBpfConfig*, nuint*, int>)funcTable[78])(pConfig, pHeapSizeInBytes);
+        }
+
         internal static MaResult BpfGetHeapSizeNative(MaBpfConfig* pConfig, nuint* pHeapSizeInBytes)
         {
-            return ((delegate* unmanaged[Cdecl]<MaBpfConfig*, nuint*, MaResult>)funcTable[78])(pConfig, pHeapSizeInBytes);
+            return (MaResult)BpfGetHeapSizeInterop(pConfig, pHeapSizeInBytes);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
-        internal static MaResult BpfInitPreallocatedNative(MaBpfConfig* pConfig, void* pHeap, MaBpf* pBpF)
+        internal static int BpfInitPreallocatedInterop(MaBpfConfig* pConfig, void* pHeap, MaBpf* pBPF)
         {
-            return ((delegate* unmanaged[Cdecl]<MaBpfConfig*, void*, MaBpf*, MaResult>)funcTable[79])(pConfig, pHeap, pBpF);
+            return ((delegate* unmanaged[Cdecl]<MaBpfConfig*, void*, MaBpf*, int>)funcTable[79])(pConfig, pHeap, pBPF);
         }
 
-        /// <summary>
-        /// To be documented.
-        /// </summary>
-        internal static MaResult BpfInitNative(MaBpfConfig* pConfig, MaAllocationCallbacks* pAllocationCallbacks, MaBpf* pBpF)
+        internal static MaResult BpfInitPreallocatedNative(MaBpfConfig* pConfig, void* pHeap, MaBpf* pBPF)
         {
-            return ((delegate* unmanaged[Cdecl]<MaBpfConfig*, MaAllocationCallbacks*, MaBpf*, MaResult>)funcTable[80])(pConfig, pAllocationCallbacks, pBpF);
+            return (MaResult)BpfInitPreallocatedInterop(pConfig, pHeap, pBPF);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
-        internal static void BpfUninitNative(MaBpf* pBpF, MaAllocationCallbacks* pAllocationCallbacks)
+        internal static int BpfInitInterop(MaBpfConfig* pConfig, MaAllocationCallbacks* pAllocationCallbacks, MaBpf* pBPF)
         {
-            ((delegate* unmanaged[Cdecl]<MaBpf*, MaAllocationCallbacks*, void>)funcTable[81])(pBpF, pAllocationCallbacks);
+            return ((delegate* unmanaged[Cdecl]<MaBpfConfig*, MaAllocationCallbacks*, MaBpf*, int>)funcTable[80])(pConfig, pAllocationCallbacks, pBPF);
         }
 
-        /// <summary>
-        /// To be documented.
-        /// </summary>
-        internal static MaResult BpfReinitNative(MaBpfConfig* pConfig, MaBpf* pBpF)
+        internal static MaResult BpfInitNative(MaBpfConfig* pConfig, MaAllocationCallbacks* pAllocationCallbacks, MaBpf* pBPF)
         {
-            return ((delegate* unmanaged[Cdecl]<MaBpfConfig*, MaBpf*, MaResult>)funcTable[82])(pConfig, pBpF);
+            return (MaResult)BpfInitInterop(pConfig, pAllocationCallbacks, pBPF);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
-        internal static MaResult BpfProcessPcmFramesNative(MaBpf* pBpF, void* pFramesOut, void* pFramesIn, ulong frameCount)
+        internal static void BpfUninitNative(MaBpf* pBPF, MaAllocationCallbacks* pAllocationCallbacks)
         {
-            return ((delegate* unmanaged[Cdecl]<MaBpf*, void*, void*, ulong, MaResult>)funcTable[83])(pBpF, pFramesOut, pFramesIn, frameCount);
+            ((delegate* unmanaged[Cdecl]<MaBpf*, MaAllocationCallbacks*, void>)funcTable[81])(pBPF, pAllocationCallbacks);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
-        internal static uint BpfGetLatencyNative(MaBpf* pBpF)
+        internal static int BpfReinitInterop(MaBpfConfig* pConfig, MaBpf* pBPF)
         {
-            return ((delegate* unmanaged[Cdecl]<MaBpf*, uint>)funcTable[84])(pBpF);
+            return ((delegate* unmanaged[Cdecl]<MaBpfConfig*, MaBpf*, int>)funcTable[82])(pConfig, pBPF);
+        }
+
+        internal static MaResult BpfReinitNative(MaBpfConfig* pConfig, MaBpf* pBPF)
+        {
+            return (MaResult)BpfReinitInterop(pConfig, pBPF);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int BpfProcessPcmFramesInterop(MaBpf* pBPF, void* pFramesOut, void* pFramesIn, ulong frameCount)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaBpf*, void*, void*, ulong, int>)funcTable[83])(pBPF, pFramesOut, pFramesIn, frameCount);
+        }
+
+        internal static MaResult BpfProcessPcmFramesNative(MaBpf* pBPF, void* pFramesOut, void* pFramesIn, ulong frameCount)
+        {
+            return (MaResult)BpfProcessPcmFramesInterop(pBPF, pFramesOut, pFramesIn, frameCount);
+        }
+
+        /// <summary>
+        /// To be documented.
+        /// </summary>
+        internal static uint BpfGetLatencyNative(MaBpf* pBPF)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaBpf*, uint>)funcTable[84])(pBPF);
+        }
+
+        /// <summary>
+        /// To be documented.
+        /// </summary>
+        internal static MaNotch2Config Notch2ConfigInitInterop(int format, uint channels, uint sampleRate, double q, double frequency)
+        {
+            return ((delegate* unmanaged[Cdecl]<int, uint, uint, double, double, MaNotch2Config>)funcTable[85])(format, channels, sampleRate, q, frequency);
+        }
+
         internal static MaNotch2Config Notch2ConfigInitNative(MaFormat format, uint channels, uint sampleRate, double q, double frequency)
         {
-            return ((delegate* unmanaged[Cdecl]<MaFormat, uint, uint, double, double, MaNotch2Config>)funcTable[85])(format, channels, sampleRate, q, frequency);
+            return Notch2ConfigInitInterop((int)format, channels, sampleRate, q, frequency);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int Notch2GetHeapSizeInterop(MaNotch2Config* pConfig, nuint* pHeapSizeInBytes)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaNotch2Config*, nuint*, int>)funcTable[86])(pConfig, pHeapSizeInBytes);
+        }
+
         internal static MaResult Notch2GetHeapSizeNative(MaNotch2Config* pConfig, nuint* pHeapSizeInBytes)
         {
-            return ((delegate* unmanaged[Cdecl]<MaNotch2Config*, nuint*, MaResult>)funcTable[86])(pConfig, pHeapSizeInBytes);
+            return (MaResult)Notch2GetHeapSizeInterop(pConfig, pHeapSizeInBytes);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int Notch2InitPreallocatedInterop(MaNotch2Config* pConfig, void* pHeap, MaNotch2* pFilter)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaNotch2Config*, void*, MaNotch2*, int>)funcTable[87])(pConfig, pHeap, pFilter);
+        }
+
         internal static MaResult Notch2InitPreallocatedNative(MaNotch2Config* pConfig, void* pHeap, MaNotch2* pFilter)
         {
-            return ((delegate* unmanaged[Cdecl]<MaNotch2Config*, void*, MaNotch2*, MaResult>)funcTable[87])(pConfig, pHeap, pFilter);
+            return (MaResult)Notch2InitPreallocatedInterop(pConfig, pHeap, pFilter);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int Notch2InitInterop(MaNotch2Config* pConfig, MaAllocationCallbacks* pAllocationCallbacks, MaNotch2* pFilter)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaNotch2Config*, MaAllocationCallbacks*, MaNotch2*, int>)funcTable[88])(pConfig, pAllocationCallbacks, pFilter);
+        }
+
         internal static MaResult Notch2InitNative(MaNotch2Config* pConfig, MaAllocationCallbacks* pAllocationCallbacks, MaNotch2* pFilter)
         {
-            return ((delegate* unmanaged[Cdecl]<MaNotch2Config*, MaAllocationCallbacks*, MaNotch2*, MaResult>)funcTable[88])(pConfig, pAllocationCallbacks, pFilter);
+            return (MaResult)Notch2InitInterop(pConfig, pAllocationCallbacks, pFilter);
         }
 
         /// <summary>
@@ -19298,17 +19634,27 @@ namespace Inno.Native.MiniAudio
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int Notch2ReinitInterop(MaNotch2Config* pConfig, MaNotch2* pFilter)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaNotch2Config*, MaNotch2*, int>)funcTable[90])(pConfig, pFilter);
+        }
+
         internal static MaResult Notch2ReinitNative(MaNotch2Config* pConfig, MaNotch2* pFilter)
         {
-            return ((delegate* unmanaged[Cdecl]<MaNotch2Config*, MaNotch2*, MaResult>)funcTable[90])(pConfig, pFilter);
+            return (MaResult)Notch2ReinitInterop(pConfig, pFilter);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int Notch2ProcessPcmFramesInterop(MaNotch2* pFilter, void* pFramesOut, void* pFramesIn, ulong frameCount)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaNotch2*, void*, void*, ulong, int>)funcTable[91])(pFilter, pFramesOut, pFramesIn, frameCount);
+        }
+
         internal static MaResult Notch2ProcessPcmFramesNative(MaNotch2* pFilter, void* pFramesOut, void* pFramesIn, ulong frameCount)
         {
-            return ((delegate* unmanaged[Cdecl]<MaNotch2*, void*, void*, ulong, MaResult>)funcTable[91])(pFilter, pFramesOut, pFramesIn, frameCount);
+            return (MaResult)Notch2ProcessPcmFramesInterop(pFilter, pFramesOut, pFramesIn, frameCount);
         }
 
         /// <summary>
@@ -19322,33 +19668,53 @@ namespace Inno.Native.MiniAudio
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static MaPeak2Config Peak2ConfigInitInterop(int format, uint channels, uint sampleRate, double gainDB, double q, double frequency)
+        {
+            return ((delegate* unmanaged[Cdecl]<int, uint, uint, double, double, double, MaPeak2Config>)funcTable[93])(format, channels, sampleRate, gainDB, q, frequency);
+        }
+
         internal static MaPeak2Config Peak2ConfigInitNative(MaFormat format, uint channels, uint sampleRate, double gainDB, double q, double frequency)
         {
-            return ((delegate* unmanaged[Cdecl]<MaFormat, uint, uint, double, double, double, MaPeak2Config>)funcTable[93])(format, channels, sampleRate, gainDB, q, frequency);
+            return Peak2ConfigInitInterop((int)format, channels, sampleRate, gainDB, q, frequency);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int Peak2GetHeapSizeInterop(MaPeak2Config* pConfig, nuint* pHeapSizeInBytes)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaPeak2Config*, nuint*, int>)funcTable[94])(pConfig, pHeapSizeInBytes);
+        }
+
         internal static MaResult Peak2GetHeapSizeNative(MaPeak2Config* pConfig, nuint* pHeapSizeInBytes)
         {
-            return ((delegate* unmanaged[Cdecl]<MaPeak2Config*, nuint*, MaResult>)funcTable[94])(pConfig, pHeapSizeInBytes);
+            return (MaResult)Peak2GetHeapSizeInterop(pConfig, pHeapSizeInBytes);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int Peak2InitPreallocatedInterop(MaPeak2Config* pConfig, void* pHeap, MaPeak2* pFilter)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaPeak2Config*, void*, MaPeak2*, int>)funcTable[95])(pConfig, pHeap, pFilter);
+        }
+
         internal static MaResult Peak2InitPreallocatedNative(MaPeak2Config* pConfig, void* pHeap, MaPeak2* pFilter)
         {
-            return ((delegate* unmanaged[Cdecl]<MaPeak2Config*, void*, MaPeak2*, MaResult>)funcTable[95])(pConfig, pHeap, pFilter);
+            return (MaResult)Peak2InitPreallocatedInterop(pConfig, pHeap, pFilter);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int Peak2InitInterop(MaPeak2Config* pConfig, MaAllocationCallbacks* pAllocationCallbacks, MaPeak2* pFilter)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaPeak2Config*, MaAllocationCallbacks*, MaPeak2*, int>)funcTable[96])(pConfig, pAllocationCallbacks, pFilter);
+        }
+
         internal static MaResult Peak2InitNative(MaPeak2Config* pConfig, MaAllocationCallbacks* pAllocationCallbacks, MaPeak2* pFilter)
         {
-            return ((delegate* unmanaged[Cdecl]<MaPeak2Config*, MaAllocationCallbacks*, MaPeak2*, MaResult>)funcTable[96])(pConfig, pAllocationCallbacks, pFilter);
+            return (MaResult)Peak2InitInterop(pConfig, pAllocationCallbacks, pFilter);
         }
 
         /// <summary>
@@ -19362,17 +19728,27 @@ namespace Inno.Native.MiniAudio
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int Peak2ReinitInterop(MaPeak2Config* pConfig, MaPeak2* pFilter)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaPeak2Config*, MaPeak2*, int>)funcTable[98])(pConfig, pFilter);
+        }
+
         internal static MaResult Peak2ReinitNative(MaPeak2Config* pConfig, MaPeak2* pFilter)
         {
-            return ((delegate* unmanaged[Cdecl]<MaPeak2Config*, MaPeak2*, MaResult>)funcTable[98])(pConfig, pFilter);
+            return (MaResult)Peak2ReinitInterop(pConfig, pFilter);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int Peak2ProcessPcmFramesInterop(MaPeak2* pFilter, void* pFramesOut, void* pFramesIn, ulong frameCount)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaPeak2*, void*, void*, ulong, int>)funcTable[99])(pFilter, pFramesOut, pFramesIn, frameCount);
+        }
+
         internal static MaResult Peak2ProcessPcmFramesNative(MaPeak2* pFilter, void* pFramesOut, void* pFramesIn, ulong frameCount)
         {
-            return ((delegate* unmanaged[Cdecl]<MaPeak2*, void*, void*, ulong, MaResult>)funcTable[99])(pFilter, pFramesOut, pFramesIn, frameCount);
+            return (MaResult)Peak2ProcessPcmFramesInterop(pFilter, pFramesOut, pFramesIn, frameCount);
         }
 
         /// <summary>
@@ -19386,33 +19762,53 @@ namespace Inno.Native.MiniAudio
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static MaLoshelf2Config Loshelf2ConfigInitInterop(int format, uint channels, uint sampleRate, double gainDB, double shelfSlope, double frequency)
+        {
+            return ((delegate* unmanaged[Cdecl]<int, uint, uint, double, double, double, MaLoshelf2Config>)funcTable[101])(format, channels, sampleRate, gainDB, shelfSlope, frequency);
+        }
+
         internal static MaLoshelf2Config Loshelf2ConfigInitNative(MaFormat format, uint channels, uint sampleRate, double gainDB, double shelfSlope, double frequency)
         {
-            return ((delegate* unmanaged[Cdecl]<MaFormat, uint, uint, double, double, double, MaLoshelf2Config>)funcTable[101])(format, channels, sampleRate, gainDB, shelfSlope, frequency);
+            return Loshelf2ConfigInitInterop((int)format, channels, sampleRate, gainDB, shelfSlope, frequency);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int Loshelf2GetHeapSizeInterop(MaLoshelf2Config* pConfig, nuint* pHeapSizeInBytes)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaLoshelf2Config*, nuint*, int>)funcTable[102])(pConfig, pHeapSizeInBytes);
+        }
+
         internal static MaResult Loshelf2GetHeapSizeNative(MaLoshelf2Config* pConfig, nuint* pHeapSizeInBytes)
         {
-            return ((delegate* unmanaged[Cdecl]<MaLoshelf2Config*, nuint*, MaResult>)funcTable[102])(pConfig, pHeapSizeInBytes);
+            return (MaResult)Loshelf2GetHeapSizeInterop(pConfig, pHeapSizeInBytes);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int Loshelf2InitPreallocatedInterop(MaLoshelf2Config* pConfig, void* pHeap, MaLoshelf2* pFilter)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaLoshelf2Config*, void*, MaLoshelf2*, int>)funcTable[103])(pConfig, pHeap, pFilter);
+        }
+
         internal static MaResult Loshelf2InitPreallocatedNative(MaLoshelf2Config* pConfig, void* pHeap, MaLoshelf2* pFilter)
         {
-            return ((delegate* unmanaged[Cdecl]<MaLoshelf2Config*, void*, MaLoshelf2*, MaResult>)funcTable[103])(pConfig, pHeap, pFilter);
+            return (MaResult)Loshelf2InitPreallocatedInterop(pConfig, pHeap, pFilter);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int Loshelf2InitInterop(MaLoshelf2Config* pConfig, MaAllocationCallbacks* pAllocationCallbacks, MaLoshelf2* pFilter)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaLoshelf2Config*, MaAllocationCallbacks*, MaLoshelf2*, int>)funcTable[104])(pConfig, pAllocationCallbacks, pFilter);
+        }
+
         internal static MaResult Loshelf2InitNative(MaLoshelf2Config* pConfig, MaAllocationCallbacks* pAllocationCallbacks, MaLoshelf2* pFilter)
         {
-            return ((delegate* unmanaged[Cdecl]<MaLoshelf2Config*, MaAllocationCallbacks*, MaLoshelf2*, MaResult>)funcTable[104])(pConfig, pAllocationCallbacks, pFilter);
+            return (MaResult)Loshelf2InitInterop(pConfig, pAllocationCallbacks, pFilter);
         }
 
         /// <summary>
@@ -19426,17 +19822,27 @@ namespace Inno.Native.MiniAudio
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int Loshelf2ReinitInterop(MaLoshelf2Config* pConfig, MaLoshelf2* pFilter)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaLoshelf2Config*, MaLoshelf2*, int>)funcTable[106])(pConfig, pFilter);
+        }
+
         internal static MaResult Loshelf2ReinitNative(MaLoshelf2Config* pConfig, MaLoshelf2* pFilter)
         {
-            return ((delegate* unmanaged[Cdecl]<MaLoshelf2Config*, MaLoshelf2*, MaResult>)funcTable[106])(pConfig, pFilter);
+            return (MaResult)Loshelf2ReinitInterop(pConfig, pFilter);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int Loshelf2ProcessPcmFramesInterop(MaLoshelf2* pFilter, void* pFramesOut, void* pFramesIn, ulong frameCount)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaLoshelf2*, void*, void*, ulong, int>)funcTable[107])(pFilter, pFramesOut, pFramesIn, frameCount);
+        }
+
         internal static MaResult Loshelf2ProcessPcmFramesNative(MaLoshelf2* pFilter, void* pFramesOut, void* pFramesIn, ulong frameCount)
         {
-            return ((delegate* unmanaged[Cdecl]<MaLoshelf2*, void*, void*, ulong, MaResult>)funcTable[107])(pFilter, pFramesOut, pFramesIn, frameCount);
+            return (MaResult)Loshelf2ProcessPcmFramesInterop(pFilter, pFramesOut, pFramesIn, frameCount);
         }
 
         /// <summary>
@@ -19450,33 +19856,53 @@ namespace Inno.Native.MiniAudio
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static MaHishelf2Config Hishelf2ConfigInitInterop(int format, uint channels, uint sampleRate, double gainDB, double shelfSlope, double frequency)
+        {
+            return ((delegate* unmanaged[Cdecl]<int, uint, uint, double, double, double, MaHishelf2Config>)funcTable[109])(format, channels, sampleRate, gainDB, shelfSlope, frequency);
+        }
+
         internal static MaHishelf2Config Hishelf2ConfigInitNative(MaFormat format, uint channels, uint sampleRate, double gainDB, double shelfSlope, double frequency)
         {
-            return ((delegate* unmanaged[Cdecl]<MaFormat, uint, uint, double, double, double, MaHishelf2Config>)funcTable[109])(format, channels, sampleRate, gainDB, shelfSlope, frequency);
+            return Hishelf2ConfigInitInterop((int)format, channels, sampleRate, gainDB, shelfSlope, frequency);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int Hishelf2GetHeapSizeInterop(MaHishelf2Config* pConfig, nuint* pHeapSizeInBytes)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaHishelf2Config*, nuint*, int>)funcTable[110])(pConfig, pHeapSizeInBytes);
+        }
+
         internal static MaResult Hishelf2GetHeapSizeNative(MaHishelf2Config* pConfig, nuint* pHeapSizeInBytes)
         {
-            return ((delegate* unmanaged[Cdecl]<MaHishelf2Config*, nuint*, MaResult>)funcTable[110])(pConfig, pHeapSizeInBytes);
+            return (MaResult)Hishelf2GetHeapSizeInterop(pConfig, pHeapSizeInBytes);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int Hishelf2InitPreallocatedInterop(MaHishelf2Config* pConfig, void* pHeap, MaHishelf2* pFilter)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaHishelf2Config*, void*, MaHishelf2*, int>)funcTable[111])(pConfig, pHeap, pFilter);
+        }
+
         internal static MaResult Hishelf2InitPreallocatedNative(MaHishelf2Config* pConfig, void* pHeap, MaHishelf2* pFilter)
         {
-            return ((delegate* unmanaged[Cdecl]<MaHishelf2Config*, void*, MaHishelf2*, MaResult>)funcTable[111])(pConfig, pHeap, pFilter);
+            return (MaResult)Hishelf2InitPreallocatedInterop(pConfig, pHeap, pFilter);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int Hishelf2InitInterop(MaHishelf2Config* pConfig, MaAllocationCallbacks* pAllocationCallbacks, MaHishelf2* pFilter)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaHishelf2Config*, MaAllocationCallbacks*, MaHishelf2*, int>)funcTable[112])(pConfig, pAllocationCallbacks, pFilter);
+        }
+
         internal static MaResult Hishelf2InitNative(MaHishelf2Config* pConfig, MaAllocationCallbacks* pAllocationCallbacks, MaHishelf2* pFilter)
         {
-            return ((delegate* unmanaged[Cdecl]<MaHishelf2Config*, MaAllocationCallbacks*, MaHishelf2*, MaResult>)funcTable[112])(pConfig, pAllocationCallbacks, pFilter);
+            return (MaResult)Hishelf2InitInterop(pConfig, pAllocationCallbacks, pFilter);
         }
 
         /// <summary>
@@ -19490,17 +19916,27 @@ namespace Inno.Native.MiniAudio
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int Hishelf2ReinitInterop(MaHishelf2Config* pConfig, MaHishelf2* pFilter)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaHishelf2Config*, MaHishelf2*, int>)funcTable[114])(pConfig, pFilter);
+        }
+
         internal static MaResult Hishelf2ReinitNative(MaHishelf2Config* pConfig, MaHishelf2* pFilter)
         {
-            return ((delegate* unmanaged[Cdecl]<MaHishelf2Config*, MaHishelf2*, MaResult>)funcTable[114])(pConfig, pFilter);
+            return (MaResult)Hishelf2ReinitInterop(pConfig, pFilter);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int Hishelf2ProcessPcmFramesInterop(MaHishelf2* pFilter, void* pFramesOut, void* pFramesIn, ulong frameCount)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaHishelf2*, void*, void*, ulong, int>)funcTable[115])(pFilter, pFramesOut, pFramesIn, frameCount);
+        }
+
         internal static MaResult Hishelf2ProcessPcmFramesNative(MaHishelf2* pFilter, void* pFramesOut, void* pFramesIn, ulong frameCount)
         {
-            return ((delegate* unmanaged[Cdecl]<MaHishelf2*, void*, void*, ulong, MaResult>)funcTable[115])(pFilter, pFramesOut, pFramesIn, frameCount);
+            return (MaResult)Hishelf2ProcessPcmFramesInterop(pFilter, pFramesOut, pFramesIn, frameCount);
         }
 
         /// <summary>
@@ -19522,9 +19958,14 @@ namespace Inno.Native.MiniAudio
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int DelayInitInterop(MaDelayConfig* pConfig, MaAllocationCallbacks* pAllocationCallbacks, MaDelay* pDelay)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaDelayConfig*, MaAllocationCallbacks*, MaDelay*, int>)funcTable[118])(pConfig, pAllocationCallbacks, pDelay);
+        }
+
         internal static MaResult DelayInitNative(MaDelayConfig* pConfig, MaAllocationCallbacks* pAllocationCallbacks, MaDelay* pDelay)
         {
-            return ((delegate* unmanaged[Cdecl]<MaDelayConfig*, MaAllocationCallbacks*, MaDelay*, MaResult>)funcTable[118])(pConfig, pAllocationCallbacks, pDelay);
+            return (MaResult)DelayInitInterop(pConfig, pAllocationCallbacks, pDelay);
         }
 
         /// <summary>
@@ -19538,9 +19979,14 @@ namespace Inno.Native.MiniAudio
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int DelayProcessPcmFramesInterop(MaDelay* pDelay, void* pFramesOut, void* pFramesIn, uint frameCount)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaDelay*, void*, void*, uint, int>)funcTable[120])(pDelay, pFramesOut, pFramesIn, frameCount);
+        }
+
         internal static MaResult DelayProcessPcmFramesNative(MaDelay* pDelay, void* pFramesOut, void* pFramesIn, uint frameCount)
         {
-            return ((delegate* unmanaged[Cdecl]<MaDelay*, void*, void*, uint, MaResult>)funcTable[120])(pDelay, pFramesOut, pFramesIn, frameCount);
+            return (MaResult)DelayProcessPcmFramesInterop(pDelay, pFramesOut, pFramesIn, frameCount);
         }
 
         /// <summary>
@@ -19602,25 +20048,40 @@ namespace Inno.Native.MiniAudio
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int GainerGetHeapSizeInterop(MaGainerConfig* pConfig, nuint* pHeapSizeInBytes)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaGainerConfig*, nuint*, int>)funcTable[128])(pConfig, pHeapSizeInBytes);
+        }
+
         internal static MaResult GainerGetHeapSizeNative(MaGainerConfig* pConfig, nuint* pHeapSizeInBytes)
         {
-            return ((delegate* unmanaged[Cdecl]<MaGainerConfig*, nuint*, MaResult>)funcTable[128])(pConfig, pHeapSizeInBytes);
+            return (MaResult)GainerGetHeapSizeInterop(pConfig, pHeapSizeInBytes);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int GainerInitPreallocatedInterop(MaGainerConfig* pConfig, void* pHeap, MaGainer* pGainer)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaGainerConfig*, void*, MaGainer*, int>)funcTable[129])(pConfig, pHeap, pGainer);
+        }
+
         internal static MaResult GainerInitPreallocatedNative(MaGainerConfig* pConfig, void* pHeap, MaGainer* pGainer)
         {
-            return ((delegate* unmanaged[Cdecl]<MaGainerConfig*, void*, MaGainer*, MaResult>)funcTable[129])(pConfig, pHeap, pGainer);
+            return (MaResult)GainerInitPreallocatedInterop(pConfig, pHeap, pGainer);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int GainerInitInterop(MaGainerConfig* pConfig, MaAllocationCallbacks* pAllocationCallbacks, MaGainer* pGainer)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaGainerConfig*, MaAllocationCallbacks*, MaGainer*, int>)funcTable[130])(pConfig, pAllocationCallbacks, pGainer);
+        }
+
         internal static MaResult GainerInitNative(MaGainerConfig* pConfig, MaAllocationCallbacks* pAllocationCallbacks, MaGainer* pGainer)
         {
-            return ((delegate* unmanaged[Cdecl]<MaGainerConfig*, MaAllocationCallbacks*, MaGainer*, MaResult>)funcTable[130])(pConfig, pAllocationCallbacks, pGainer);
+            return (MaResult)GainerInitInterop(pConfig, pAllocationCallbacks, pGainer);
         }
 
         /// <summary>
@@ -19634,81 +20095,131 @@ namespace Inno.Native.MiniAudio
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int GainerProcessPcmFramesInterop(MaGainer* pGainer, void* pFramesOut, void* pFramesIn, ulong frameCount)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaGainer*, void*, void*, ulong, int>)funcTable[132])(pGainer, pFramesOut, pFramesIn, frameCount);
+        }
+
         internal static MaResult GainerProcessPcmFramesNative(MaGainer* pGainer, void* pFramesOut, void* pFramesIn, ulong frameCount)
         {
-            return ((delegate* unmanaged[Cdecl]<MaGainer*, void*, void*, ulong, MaResult>)funcTable[132])(pGainer, pFramesOut, pFramesIn, frameCount);
+            return (MaResult)GainerProcessPcmFramesInterop(pGainer, pFramesOut, pFramesIn, frameCount);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int GainerSetGainInterop(MaGainer* pGainer, float newGain)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaGainer*, float, int>)funcTable[133])(pGainer, newGain);
+        }
+
         internal static MaResult GainerSetGainNative(MaGainer* pGainer, float newGain)
         {
-            return ((delegate* unmanaged[Cdecl]<MaGainer*, float, MaResult>)funcTable[133])(pGainer, newGain);
+            return (MaResult)GainerSetGainInterop(pGainer, newGain);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int GainerSetGainsInterop(MaGainer* pGainer, float* pNewGains)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaGainer*, float*, int>)funcTable[134])(pGainer, pNewGains);
+        }
+
         internal static MaResult GainerSetGainsNative(MaGainer* pGainer, float* pNewGains)
         {
-            return ((delegate* unmanaged[Cdecl]<MaGainer*, float*, MaResult>)funcTable[134])(pGainer, pNewGains);
+            return (MaResult)GainerSetGainsInterop(pGainer, pNewGains);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int GainerSetMasterVolumeInterop(MaGainer* pGainer, float volume)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaGainer*, float, int>)funcTable[135])(pGainer, volume);
+        }
+
         internal static MaResult GainerSetMasterVolumeNative(MaGainer* pGainer, float volume)
         {
-            return ((delegate* unmanaged[Cdecl]<MaGainer*, float, MaResult>)funcTable[135])(pGainer, volume);
+            return (MaResult)GainerSetMasterVolumeInterop(pGainer, volume);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int GainerGetMasterVolumeInterop(MaGainer* pGainer, float* pVolume)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaGainer*, float*, int>)funcTable[136])(pGainer, pVolume);
+        }
+
         internal static MaResult GainerGetMasterVolumeNative(MaGainer* pGainer, float* pVolume)
         {
-            return ((delegate* unmanaged[Cdecl]<MaGainer*, float*, MaResult>)funcTable[136])(pGainer, pVolume);
+            return (MaResult)GainerGetMasterVolumeInterop(pGainer, pVolume);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static MaPannerConfig PannerConfigInitInterop(int format, uint channels)
+        {
+            return ((delegate* unmanaged[Cdecl]<int, uint, MaPannerConfig>)funcTable[137])(format, channels);
+        }
+
         internal static MaPannerConfig PannerConfigInitNative(MaFormat format, uint channels)
         {
-            return ((delegate* unmanaged[Cdecl]<MaFormat, uint, MaPannerConfig>)funcTable[137])(format, channels);
+            return PannerConfigInitInterop((int)format, channels);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int PannerInitInterop(MaPannerConfig* pConfig, MaPanner* pPanner)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaPannerConfig*, MaPanner*, int>)funcTable[138])(pConfig, pPanner);
+        }
+
         internal static MaResult PannerInitNative(MaPannerConfig* pConfig, MaPanner* pPanner)
         {
-            return ((delegate* unmanaged[Cdecl]<MaPannerConfig*, MaPanner*, MaResult>)funcTable[138])(pConfig, pPanner);
+            return (MaResult)PannerInitInterop(pConfig, pPanner);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int PannerProcessPcmFramesInterop(MaPanner* pPanner, void* pFramesOut, void* pFramesIn, ulong frameCount)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaPanner*, void*, void*, ulong, int>)funcTable[139])(pPanner, pFramesOut, pFramesIn, frameCount);
+        }
+
         internal static MaResult PannerProcessPcmFramesNative(MaPanner* pPanner, void* pFramesOut, void* pFramesIn, ulong frameCount)
         {
-            return ((delegate* unmanaged[Cdecl]<MaPanner*, void*, void*, ulong, MaResult>)funcTable[139])(pPanner, pFramesOut, pFramesIn, frameCount);
+            return (MaResult)PannerProcessPcmFramesInterop(pPanner, pFramesOut, pFramesIn, frameCount);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void PannerSetModeInterop(MaPanner* pPanner, int mode)
+        {
+            ((delegate* unmanaged[Cdecl]<MaPanner*, int, void>)funcTable[140])(pPanner, mode);
+        }
+
         internal static void PannerSetModeNative(MaPanner* pPanner, MaPanMode mode)
         {
-            ((delegate* unmanaged[Cdecl]<MaPanner*, MaPanMode, void>)funcTable[140])(pPanner, mode);
+            PannerSetModeInterop(pPanner, (int)mode);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int PannerGetModeInterop(MaPanner* pPanner)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaPanner*, int>)funcTable[141])(pPanner);
+        }
+
         internal static MaPanMode PannerGetModeNative(MaPanner* pPanner)
         {
-            return ((delegate* unmanaged[Cdecl]<MaPanner*, MaPanMode>)funcTable[141])(pPanner);
+            return (MaPanMode)PannerGetModeInterop(pPanner);
         }
 
         /// <summary>
@@ -19730,25 +20241,40 @@ namespace Inno.Native.MiniAudio
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static MaFaderConfig FaderConfigInitInterop(int format, uint channels, uint sampleRate)
+        {
+            return ((delegate* unmanaged[Cdecl]<int, uint, uint, MaFaderConfig>)funcTable[144])(format, channels, sampleRate);
+        }
+
         internal static MaFaderConfig FaderConfigInitNative(MaFormat format, uint channels, uint sampleRate)
         {
-            return ((delegate* unmanaged[Cdecl]<MaFormat, uint, uint, MaFaderConfig>)funcTable[144])(format, channels, sampleRate);
+            return FaderConfigInitInterop((int)format, channels, sampleRate);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int FaderInitInterop(MaFaderConfig* pConfig, MaFader* pFader)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaFaderConfig*, MaFader*, int>)funcTable[145])(pConfig, pFader);
+        }
+
         internal static MaResult FaderInitNative(MaFaderConfig* pConfig, MaFader* pFader)
         {
-            return ((delegate* unmanaged[Cdecl]<MaFaderConfig*, MaFader*, MaResult>)funcTable[145])(pConfig, pFader);
+            return (MaResult)FaderInitInterop(pConfig, pFader);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int FaderProcessPcmFramesInterop(MaFader* pFader, void* pFramesOut, void* pFramesIn, ulong frameCount)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaFader*, void*, void*, ulong, int>)funcTable[146])(pFader, pFramesOut, pFramesIn, frameCount);
+        }
+
         internal static MaResult FaderProcessPcmFramesNative(MaFader* pFader, void* pFramesOut, void* pFramesIn, ulong frameCount)
         {
-            return ((delegate* unmanaged[Cdecl]<MaFader*, void*, void*, ulong, MaResult>)funcTable[146])(pFader, pFramesOut, pFramesIn, frameCount);
+            return (MaResult)FaderProcessPcmFramesInterop(pFader, pFramesOut, pFramesIn, frameCount);
         }
 
         /// <summary>
@@ -19794,25 +20320,40 @@ namespace Inno.Native.MiniAudio
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int SpatializerListenerGetHeapSizeInterop(MaSpatializerListenerConfig* pConfig, nuint* pHeapSizeInBytes)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaSpatializerListenerConfig*, nuint*, int>)funcTable[152])(pConfig, pHeapSizeInBytes);
+        }
+
         internal static MaResult SpatializerListenerGetHeapSizeNative(MaSpatializerListenerConfig* pConfig, nuint* pHeapSizeInBytes)
         {
-            return ((delegate* unmanaged[Cdecl]<MaSpatializerListenerConfig*, nuint*, MaResult>)funcTable[152])(pConfig, pHeapSizeInBytes);
+            return (MaResult)SpatializerListenerGetHeapSizeInterop(pConfig, pHeapSizeInBytes);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int SpatializerListenerInitPreallocatedInterop(MaSpatializerListenerConfig* pConfig, void* pHeap, MaSpatializerListener* pListener)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaSpatializerListenerConfig*, void*, MaSpatializerListener*, int>)funcTable[153])(pConfig, pHeap, pListener);
+        }
+
         internal static MaResult SpatializerListenerInitPreallocatedNative(MaSpatializerListenerConfig* pConfig, void* pHeap, MaSpatializerListener* pListener)
         {
-            return ((delegate* unmanaged[Cdecl]<MaSpatializerListenerConfig*, void*, MaSpatializerListener*, MaResult>)funcTable[153])(pConfig, pHeap, pListener);
+            return (MaResult)SpatializerListenerInitPreallocatedInterop(pConfig, pHeap, pListener);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int SpatializerListenerInitInterop(MaSpatializerListenerConfig* pConfig, MaAllocationCallbacks* pAllocationCallbacks, MaSpatializerListener* pListener)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaSpatializerListenerConfig*, MaAllocationCallbacks*, MaSpatializerListener*, int>)funcTable[154])(pConfig, pAllocationCallbacks, pListener);
+        }
+
         internal static MaResult SpatializerListenerInitNative(MaSpatializerListenerConfig* pConfig, MaAllocationCallbacks* pAllocationCallbacks, MaSpatializerListener* pListener)
         {
-            return ((delegate* unmanaged[Cdecl]<MaSpatializerListenerConfig*, MaAllocationCallbacks*, MaSpatializerListener*, MaResult>)funcTable[154])(pConfig, pAllocationCallbacks, pListener);
+            return (MaResult)SpatializerListenerInitInterop(pConfig, pAllocationCallbacks, pListener);
         }
 
         /// <summary>
@@ -19954,25 +20495,40 @@ namespace Inno.Native.MiniAudio
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int SpatializerGetHeapSizeInterop(MaSpatializerConfig* pConfig, nuint* pHeapSizeInBytes)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaSpatializerConfig*, nuint*, int>)funcTable[172])(pConfig, pHeapSizeInBytes);
+        }
+
         internal static MaResult SpatializerGetHeapSizeNative(MaSpatializerConfig* pConfig, nuint* pHeapSizeInBytes)
         {
-            return ((delegate* unmanaged[Cdecl]<MaSpatializerConfig*, nuint*, MaResult>)funcTable[172])(pConfig, pHeapSizeInBytes);
+            return (MaResult)SpatializerGetHeapSizeInterop(pConfig, pHeapSizeInBytes);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int SpatializerInitPreallocatedInterop(MaSpatializerConfig* pConfig, void* pHeap, MaSpatializer* pSpatializer)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaSpatializerConfig*, void*, MaSpatializer*, int>)funcTable[173])(pConfig, pHeap, pSpatializer);
+        }
+
         internal static MaResult SpatializerInitPreallocatedNative(MaSpatializerConfig* pConfig, void* pHeap, MaSpatializer* pSpatializer)
         {
-            return ((delegate* unmanaged[Cdecl]<MaSpatializerConfig*, void*, MaSpatializer*, MaResult>)funcTable[173])(pConfig, pHeap, pSpatializer);
+            return (MaResult)SpatializerInitPreallocatedInterop(pConfig, pHeap, pSpatializer);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int SpatializerInitInterop(MaSpatializerConfig* pConfig, MaAllocationCallbacks* pAllocationCallbacks, MaSpatializer* pSpatializer)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaSpatializerConfig*, MaAllocationCallbacks*, MaSpatializer*, int>)funcTable[174])(pConfig, pAllocationCallbacks, pSpatializer);
+        }
+
         internal static MaResult SpatializerInitNative(MaSpatializerConfig* pConfig, MaAllocationCallbacks* pAllocationCallbacks, MaSpatializer* pSpatializer)
         {
-            return ((delegate* unmanaged[Cdecl]<MaSpatializerConfig*, MaAllocationCallbacks*, MaSpatializer*, MaResult>)funcTable[174])(pConfig, pAllocationCallbacks, pSpatializer);
+            return (MaResult)SpatializerInitInterop(pConfig, pAllocationCallbacks, pSpatializer);
         }
 
         /// <summary>
@@ -19986,25 +20542,40 @@ namespace Inno.Native.MiniAudio
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int SpatializerProcessPcmFramesInterop(MaSpatializer* pSpatializer, MaSpatializerListener* pListener, void* pFramesOut, void* pFramesIn, ulong frameCount)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaSpatializer*, MaSpatializerListener*, void*, void*, ulong, int>)funcTable[176])(pSpatializer, pListener, pFramesOut, pFramesIn, frameCount);
+        }
+
         internal static MaResult SpatializerProcessPcmFramesNative(MaSpatializer* pSpatializer, MaSpatializerListener* pListener, void* pFramesOut, void* pFramesIn, ulong frameCount)
         {
-            return ((delegate* unmanaged[Cdecl]<MaSpatializer*, MaSpatializerListener*, void*, void*, ulong, MaResult>)funcTable[176])(pSpatializer, pListener, pFramesOut, pFramesIn, frameCount);
+            return (MaResult)SpatializerProcessPcmFramesInterop(pSpatializer, pListener, pFramesOut, pFramesIn, frameCount);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int SpatializerSetMasterVolumeInterop(MaSpatializer* pSpatializer, float volume)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaSpatializer*, float, int>)funcTable[177])(pSpatializer, volume);
+        }
+
         internal static MaResult SpatializerSetMasterVolumeNative(MaSpatializer* pSpatializer, float volume)
         {
-            return ((delegate* unmanaged[Cdecl]<MaSpatializer*, float, MaResult>)funcTable[177])(pSpatializer, volume);
+            return (MaResult)SpatializerSetMasterVolumeInterop(pSpatializer, volume);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int SpatializerGetMasterVolumeInterop(MaSpatializer* pSpatializer, float* pVolume)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaSpatializer*, float*, int>)funcTable[178])(pSpatializer, pVolume);
+        }
+
         internal static MaResult SpatializerGetMasterVolumeNative(MaSpatializer* pSpatializer, float* pVolume)
         {
-            return ((delegate* unmanaged[Cdecl]<MaSpatializer*, float*, MaResult>)funcTable[178])(pSpatializer, pVolume);
+            return (MaResult)SpatializerGetMasterVolumeInterop(pSpatializer, pVolume);
         }
 
         /// <summary>
@@ -20026,33 +20597,53 @@ namespace Inno.Native.MiniAudio
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void SpatializerSetAttenuationModelInterop(MaSpatializer* pSpatializer, int attenuationModel)
+        {
+            ((delegate* unmanaged[Cdecl]<MaSpatializer*, int, void>)funcTable[181])(pSpatializer, attenuationModel);
+        }
+
         internal static void SpatializerSetAttenuationModelNative(MaSpatializer* pSpatializer, MaAttenuationModel attenuationModel)
         {
-            ((delegate* unmanaged[Cdecl]<MaSpatializer*, MaAttenuationModel, void>)funcTable[181])(pSpatializer, attenuationModel);
+            SpatializerSetAttenuationModelInterop(pSpatializer, (int)attenuationModel);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int SpatializerGetAttenuationModelInterop(MaSpatializer* pSpatializer)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaSpatializer*, int>)funcTable[182])(pSpatializer);
+        }
+
         internal static MaAttenuationModel SpatializerGetAttenuationModelNative(MaSpatializer* pSpatializer)
         {
-            return ((delegate* unmanaged[Cdecl]<MaSpatializer*, MaAttenuationModel>)funcTable[182])(pSpatializer);
+            return (MaAttenuationModel)SpatializerGetAttenuationModelInterop(pSpatializer);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void SpatializerSetPositioningInterop(MaSpatializer* pSpatializer, int positioning)
+        {
+            ((delegate* unmanaged[Cdecl]<MaSpatializer*, int, void>)funcTable[183])(pSpatializer, positioning);
+        }
+
         internal static void SpatializerSetPositioningNative(MaSpatializer* pSpatializer, MaPositioning positioning)
         {
-            ((delegate* unmanaged[Cdecl]<MaSpatializer*, MaPositioning, void>)funcTable[183])(pSpatializer, positioning);
+            SpatializerSetPositioningInterop(pSpatializer, (int)positioning);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int SpatializerGetPositioningInterop(MaSpatializer* pSpatializer)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaSpatializer*, int>)funcTable[184])(pSpatializer);
+        }
+
         internal static MaPositioning SpatializerGetPositioningNative(MaSpatializer* pSpatializer)
         {
-            return ((delegate* unmanaged[Cdecl]<MaSpatializer*, MaPositioning>)funcTable[184])(pSpatializer);
+            return (MaPositioning)SpatializerGetPositioningInterop(pSpatializer);
         }
 
         /// <summary>
@@ -20242,33 +20833,53 @@ namespace Inno.Native.MiniAudio
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static MaLinearResamplerConfig LinearResamplerConfigInitInterop(int format, uint channels, uint sampleRateIn, uint sampleRateOut)
+        {
+            return ((delegate* unmanaged[Cdecl]<int, uint, uint, uint, MaLinearResamplerConfig>)funcTable[208])(format, channels, sampleRateIn, sampleRateOut);
+        }
+
         internal static MaLinearResamplerConfig LinearResamplerConfigInitNative(MaFormat format, uint channels, uint sampleRateIn, uint sampleRateOut)
         {
-            return ((delegate* unmanaged[Cdecl]<MaFormat, uint, uint, uint, MaLinearResamplerConfig>)funcTable[208])(format, channels, sampleRateIn, sampleRateOut);
+            return LinearResamplerConfigInitInterop((int)format, channels, sampleRateIn, sampleRateOut);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int LinearResamplerGetHeapSizeInterop(MaLinearResamplerConfig* pConfig, nuint* pHeapSizeInBytes)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaLinearResamplerConfig*, nuint*, int>)funcTable[209])(pConfig, pHeapSizeInBytes);
+        }
+
         internal static MaResult LinearResamplerGetHeapSizeNative(MaLinearResamplerConfig* pConfig, nuint* pHeapSizeInBytes)
         {
-            return ((delegate* unmanaged[Cdecl]<MaLinearResamplerConfig*, nuint*, MaResult>)funcTable[209])(pConfig, pHeapSizeInBytes);
+            return (MaResult)LinearResamplerGetHeapSizeInterop(pConfig, pHeapSizeInBytes);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int LinearResamplerInitPreallocatedInterop(MaLinearResamplerConfig* pConfig, void* pHeap, MaLinearResampler* pResampler)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaLinearResamplerConfig*, void*, MaLinearResampler*, int>)funcTable[210])(pConfig, pHeap, pResampler);
+        }
+
         internal static MaResult LinearResamplerInitPreallocatedNative(MaLinearResamplerConfig* pConfig, void* pHeap, MaLinearResampler* pResampler)
         {
-            return ((delegate* unmanaged[Cdecl]<MaLinearResamplerConfig*, void*, MaLinearResampler*, MaResult>)funcTable[210])(pConfig, pHeap, pResampler);
+            return (MaResult)LinearResamplerInitPreallocatedInterop(pConfig, pHeap, pResampler);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int LinearResamplerInitInterop(MaLinearResamplerConfig* pConfig, MaAllocationCallbacks* pAllocationCallbacks, MaLinearResampler* pResampler)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaLinearResamplerConfig*, MaAllocationCallbacks*, MaLinearResampler*, int>)funcTable[211])(pConfig, pAllocationCallbacks, pResampler);
+        }
+
         internal static MaResult LinearResamplerInitNative(MaLinearResamplerConfig* pConfig, MaAllocationCallbacks* pAllocationCallbacks, MaLinearResampler* pResampler)
         {
-            return ((delegate* unmanaged[Cdecl]<MaLinearResamplerConfig*, MaAllocationCallbacks*, MaLinearResampler*, MaResult>)funcTable[211])(pConfig, pAllocationCallbacks, pResampler);
+            return (MaResult)LinearResamplerInitInterop(pConfig, pAllocationCallbacks, pResampler);
         }
 
         /// <summary>
@@ -20282,25 +20893,40 @@ namespace Inno.Native.MiniAudio
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int LinearResamplerProcessPcmFramesInterop(MaLinearResampler* pResampler, void* pFramesIn, ulong* pFrameCountIn, void* pFramesOut, ulong* pFrameCountOut)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaLinearResampler*, void*, ulong*, void*, ulong*, int>)funcTable[213])(pResampler, pFramesIn, pFrameCountIn, pFramesOut, pFrameCountOut);
+        }
+
         internal static MaResult LinearResamplerProcessPcmFramesNative(MaLinearResampler* pResampler, void* pFramesIn, ulong* pFrameCountIn, void* pFramesOut, ulong* pFrameCountOut)
         {
-            return ((delegate* unmanaged[Cdecl]<MaLinearResampler*, void*, ulong*, void*, ulong*, MaResult>)funcTable[213])(pResampler, pFramesIn, pFrameCountIn, pFramesOut, pFrameCountOut);
+            return (MaResult)LinearResamplerProcessPcmFramesInterop(pResampler, pFramesIn, pFrameCountIn, pFramesOut, pFrameCountOut);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int LinearResamplerSetRateInterop(MaLinearResampler* pResampler, uint sampleRateIn, uint sampleRateOut)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaLinearResampler*, uint, uint, int>)funcTable[214])(pResampler, sampleRateIn, sampleRateOut);
+        }
+
         internal static MaResult LinearResamplerSetRateNative(MaLinearResampler* pResampler, uint sampleRateIn, uint sampleRateOut)
         {
-            return ((delegate* unmanaged[Cdecl]<MaLinearResampler*, uint, uint, MaResult>)funcTable[214])(pResampler, sampleRateIn, sampleRateOut);
+            return (MaResult)LinearResamplerSetRateInterop(pResampler, sampleRateIn, sampleRateOut);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int LinearResamplerSetRateRatioInterop(MaLinearResampler* pResampler, float ratioInOut)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaLinearResampler*, float, int>)funcTable[215])(pResampler, ratioInOut);
+        }
+
         internal static MaResult LinearResamplerSetRateRatioNative(MaLinearResampler* pResampler, float ratioInOut)
         {
-            return ((delegate* unmanaged[Cdecl]<MaLinearResampler*, float, MaResult>)funcTable[215])(pResampler, ratioInOut);
+            return (MaResult)LinearResamplerSetRateRatioInterop(pResampler, ratioInOut);
         }
 
         /// <summary>
@@ -20322,57 +20948,92 @@ namespace Inno.Native.MiniAudio
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int LinearResamplerGetRequiredInputFrameCountInterop(MaLinearResampler* pResampler, ulong outputFrameCount, ulong* pInputFrameCount)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaLinearResampler*, ulong, ulong*, int>)funcTable[218])(pResampler, outputFrameCount, pInputFrameCount);
+        }
+
         internal static MaResult LinearResamplerGetRequiredInputFrameCountNative(MaLinearResampler* pResampler, ulong outputFrameCount, ulong* pInputFrameCount)
         {
-            return ((delegate* unmanaged[Cdecl]<MaLinearResampler*, ulong, ulong*, MaResult>)funcTable[218])(pResampler, outputFrameCount, pInputFrameCount);
+            return (MaResult)LinearResamplerGetRequiredInputFrameCountInterop(pResampler, outputFrameCount, pInputFrameCount);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int LinearResamplerGetExpectedOutputFrameCountInterop(MaLinearResampler* pResampler, ulong inputFrameCount, ulong* pOutputFrameCount)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaLinearResampler*, ulong, ulong*, int>)funcTable[219])(pResampler, inputFrameCount, pOutputFrameCount);
+        }
+
         internal static MaResult LinearResamplerGetExpectedOutputFrameCountNative(MaLinearResampler* pResampler, ulong inputFrameCount, ulong* pOutputFrameCount)
         {
-            return ((delegate* unmanaged[Cdecl]<MaLinearResampler*, ulong, ulong*, MaResult>)funcTable[219])(pResampler, inputFrameCount, pOutputFrameCount);
+            return (MaResult)LinearResamplerGetExpectedOutputFrameCountInterop(pResampler, inputFrameCount, pOutputFrameCount);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int LinearResamplerResetInterop(MaLinearResampler* pResampler)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaLinearResampler*, int>)funcTable[220])(pResampler);
+        }
+
         internal static MaResult LinearResamplerResetNative(MaLinearResampler* pResampler)
         {
-            return ((delegate* unmanaged[Cdecl]<MaLinearResampler*, MaResult>)funcTable[220])(pResampler);
+            return (MaResult)LinearResamplerResetInterop(pResampler);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static MaResamplerConfig ResamplerConfigInitInterop(int format, uint channels, uint sampleRateIn, uint sampleRateOut, int algorithm)
+        {
+            return ((delegate* unmanaged[Cdecl]<int, uint, uint, uint, int, MaResamplerConfig>)funcTable[221])(format, channels, sampleRateIn, sampleRateOut, algorithm);
+        }
+
         internal static MaResamplerConfig ResamplerConfigInitNative(MaFormat format, uint channels, uint sampleRateIn, uint sampleRateOut, MaResampleAlgorithm algorithm)
         {
-            return ((delegate* unmanaged[Cdecl]<MaFormat, uint, uint, uint, MaResampleAlgorithm, MaResamplerConfig>)funcTable[221])(format, channels, sampleRateIn, sampleRateOut, algorithm);
+            return ResamplerConfigInitInterop((int)format, channels, sampleRateIn, sampleRateOut, (int)algorithm);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int ResamplerGetHeapSizeInterop(MaResamplerConfig* pConfig, nuint* pHeapSizeInBytes)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaResamplerConfig*, nuint*, int>)funcTable[222])(pConfig, pHeapSizeInBytes);
+        }
+
         internal static MaResult ResamplerGetHeapSizeNative(MaResamplerConfig* pConfig, nuint* pHeapSizeInBytes)
         {
-            return ((delegate* unmanaged[Cdecl]<MaResamplerConfig*, nuint*, MaResult>)funcTable[222])(pConfig, pHeapSizeInBytes);
+            return (MaResult)ResamplerGetHeapSizeInterop(pConfig, pHeapSizeInBytes);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int ResamplerInitPreallocatedInterop(MaResamplerConfig* pConfig, void* pHeap, MaResampler* pResampler)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaResamplerConfig*, void*, MaResampler*, int>)funcTable[223])(pConfig, pHeap, pResampler);
+        }
+
         internal static MaResult ResamplerInitPreallocatedNative(MaResamplerConfig* pConfig, void* pHeap, MaResampler* pResampler)
         {
-            return ((delegate* unmanaged[Cdecl]<MaResamplerConfig*, void*, MaResampler*, MaResult>)funcTable[223])(pConfig, pHeap, pResampler);
+            return (MaResult)ResamplerInitPreallocatedInterop(pConfig, pHeap, pResampler);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int ResamplerInitInterop(MaResamplerConfig* pConfig, MaAllocationCallbacks* pAllocationCallbacks, MaResampler* pResampler)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaResamplerConfig*, MaAllocationCallbacks*, MaResampler*, int>)funcTable[224])(pConfig, pAllocationCallbacks, pResampler);
+        }
+
         internal static MaResult ResamplerInitNative(MaResamplerConfig* pConfig, MaAllocationCallbacks* pAllocationCallbacks, MaResampler* pResampler)
         {
-            return ((delegate* unmanaged[Cdecl]<MaResamplerConfig*, MaAllocationCallbacks*, MaResampler*, MaResult>)funcTable[224])(pConfig, pAllocationCallbacks, pResampler);
+            return (MaResult)ResamplerInitInterop(pConfig, pAllocationCallbacks, pResampler);
         }
 
         /// <summary>
@@ -20386,25 +21047,40 @@ namespace Inno.Native.MiniAudio
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int ResamplerProcessPcmFramesInterop(MaResampler* pResampler, void* pFramesIn, ulong* pFrameCountIn, void* pFramesOut, ulong* pFrameCountOut)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaResampler*, void*, ulong*, void*, ulong*, int>)funcTable[226])(pResampler, pFramesIn, pFrameCountIn, pFramesOut, pFrameCountOut);
+        }
+
         internal static MaResult ResamplerProcessPcmFramesNative(MaResampler* pResampler, void* pFramesIn, ulong* pFrameCountIn, void* pFramesOut, ulong* pFrameCountOut)
         {
-            return ((delegate* unmanaged[Cdecl]<MaResampler*, void*, ulong*, void*, ulong*, MaResult>)funcTable[226])(pResampler, pFramesIn, pFrameCountIn, pFramesOut, pFrameCountOut);
+            return (MaResult)ResamplerProcessPcmFramesInterop(pResampler, pFramesIn, pFrameCountIn, pFramesOut, pFrameCountOut);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int ResamplerSetRateInterop(MaResampler* pResampler, uint sampleRateIn, uint sampleRateOut)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaResampler*, uint, uint, int>)funcTable[227])(pResampler, sampleRateIn, sampleRateOut);
+        }
+
         internal static MaResult ResamplerSetRateNative(MaResampler* pResampler, uint sampleRateIn, uint sampleRateOut)
         {
-            return ((delegate* unmanaged[Cdecl]<MaResampler*, uint, uint, MaResult>)funcTable[227])(pResampler, sampleRateIn, sampleRateOut);
+            return (MaResult)ResamplerSetRateInterop(pResampler, sampleRateIn, sampleRateOut);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int ResamplerSetRateRatioInterop(MaResampler* pResampler, float ratio)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaResampler*, float, int>)funcTable[228])(pResampler, ratio);
+        }
+
         internal static MaResult ResamplerSetRateRatioNative(MaResampler* pResampler, float ratio)
         {
-            return ((delegate* unmanaged[Cdecl]<MaResampler*, float, MaResult>)funcTable[228])(pResampler, ratio);
+            return (MaResult)ResamplerSetRateRatioInterop(pResampler, ratio);
         }
 
         /// <summary>
@@ -20426,57 +21102,92 @@ namespace Inno.Native.MiniAudio
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int ResamplerGetRequiredInputFrameCountInterop(MaResampler* pResampler, ulong outputFrameCount, ulong* pInputFrameCount)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaResampler*, ulong, ulong*, int>)funcTable[231])(pResampler, outputFrameCount, pInputFrameCount);
+        }
+
         internal static MaResult ResamplerGetRequiredInputFrameCountNative(MaResampler* pResampler, ulong outputFrameCount, ulong* pInputFrameCount)
         {
-            return ((delegate* unmanaged[Cdecl]<MaResampler*, ulong, ulong*, MaResult>)funcTable[231])(pResampler, outputFrameCount, pInputFrameCount);
+            return (MaResult)ResamplerGetRequiredInputFrameCountInterop(pResampler, outputFrameCount, pInputFrameCount);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int ResamplerGetExpectedOutputFrameCountInterop(MaResampler* pResampler, ulong inputFrameCount, ulong* pOutputFrameCount)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaResampler*, ulong, ulong*, int>)funcTable[232])(pResampler, inputFrameCount, pOutputFrameCount);
+        }
+
         internal static MaResult ResamplerGetExpectedOutputFrameCountNative(MaResampler* pResampler, ulong inputFrameCount, ulong* pOutputFrameCount)
         {
-            return ((delegate* unmanaged[Cdecl]<MaResampler*, ulong, ulong*, MaResult>)funcTable[232])(pResampler, inputFrameCount, pOutputFrameCount);
+            return (MaResult)ResamplerGetExpectedOutputFrameCountInterop(pResampler, inputFrameCount, pOutputFrameCount);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int ResamplerResetInterop(MaResampler* pResampler)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaResampler*, int>)funcTable[233])(pResampler);
+        }
+
         internal static MaResult ResamplerResetNative(MaResampler* pResampler)
         {
-            return ((delegate* unmanaged[Cdecl]<MaResampler*, MaResult>)funcTable[233])(pResampler);
+            return (MaResult)ResamplerResetInterop(pResampler);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static MaChannelConverterConfig ChannelConverterConfigInitInterop(int format, uint channelsIn, byte* pChannelMapIn, uint channelsOut, byte* pChannelMapOut, int mixingMode)
+        {
+            return ((delegate* unmanaged[Cdecl]<int, uint, byte*, uint, byte*, int, MaChannelConverterConfig>)funcTable[234])(format, channelsIn, pChannelMapIn, channelsOut, pChannelMapOut, mixingMode);
+        }
+
         internal static MaChannelConverterConfig ChannelConverterConfigInitNative(MaFormat format, uint channelsIn, byte* pChannelMapIn, uint channelsOut, byte* pChannelMapOut, MaChannelMixMode mixingMode)
         {
-            return ((delegate* unmanaged[Cdecl]<MaFormat, uint, byte*, uint, byte*, MaChannelMixMode, MaChannelConverterConfig>)funcTable[234])(format, channelsIn, pChannelMapIn, channelsOut, pChannelMapOut, mixingMode);
+            return ChannelConverterConfigInitInterop((int)format, channelsIn, pChannelMapIn, channelsOut, pChannelMapOut, (int)mixingMode);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int ChannelConverterGetHeapSizeInterop(MaChannelConverterConfig* pConfig, nuint* pHeapSizeInBytes)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaChannelConverterConfig*, nuint*, int>)funcTable[235])(pConfig, pHeapSizeInBytes);
+        }
+
         internal static MaResult ChannelConverterGetHeapSizeNative(MaChannelConverterConfig* pConfig, nuint* pHeapSizeInBytes)
         {
-            return ((delegate* unmanaged[Cdecl]<MaChannelConverterConfig*, nuint*, MaResult>)funcTable[235])(pConfig, pHeapSizeInBytes);
+            return (MaResult)ChannelConverterGetHeapSizeInterop(pConfig, pHeapSizeInBytes);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int ChannelConverterInitPreallocatedInterop(MaChannelConverterConfig* pConfig, void* pHeap, MaChannelConverter* pConverter)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaChannelConverterConfig*, void*, MaChannelConverter*, int>)funcTable[236])(pConfig, pHeap, pConverter);
+        }
+
         internal static MaResult ChannelConverterInitPreallocatedNative(MaChannelConverterConfig* pConfig, void* pHeap, MaChannelConverter* pConverter)
         {
-            return ((delegate* unmanaged[Cdecl]<MaChannelConverterConfig*, void*, MaChannelConverter*, MaResult>)funcTable[236])(pConfig, pHeap, pConverter);
+            return (MaResult)ChannelConverterInitPreallocatedInterop(pConfig, pHeap, pConverter);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int ChannelConverterInitInterop(MaChannelConverterConfig* pConfig, MaAllocationCallbacks* pAllocationCallbacks, MaChannelConverter* pConverter)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaChannelConverterConfig*, MaAllocationCallbacks*, MaChannelConverter*, int>)funcTable[237])(pConfig, pAllocationCallbacks, pConverter);
+        }
+
         internal static MaResult ChannelConverterInitNative(MaChannelConverterConfig* pConfig, MaAllocationCallbacks* pAllocationCallbacks, MaChannelConverter* pConverter)
         {
-            return ((delegate* unmanaged[Cdecl]<MaChannelConverterConfig*, MaAllocationCallbacks*, MaChannelConverter*, MaResult>)funcTable[237])(pConfig, pAllocationCallbacks, pConverter);
+            return (MaResult)ChannelConverterInitInterop(pConfig, pAllocationCallbacks, pConverter);
         }
 
         /// <summary>
@@ -20490,25 +21201,40 @@ namespace Inno.Native.MiniAudio
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int ChannelConverterProcessPcmFramesInterop(MaChannelConverter* pConverter, void* pFramesOut, void* pFramesIn, ulong frameCount)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaChannelConverter*, void*, void*, ulong, int>)funcTable[239])(pConverter, pFramesOut, pFramesIn, frameCount);
+        }
+
         internal static MaResult ChannelConverterProcessPcmFramesNative(MaChannelConverter* pConverter, void* pFramesOut, void* pFramesIn, ulong frameCount)
         {
-            return ((delegate* unmanaged[Cdecl]<MaChannelConverter*, void*, void*, ulong, MaResult>)funcTable[239])(pConverter, pFramesOut, pFramesIn, frameCount);
+            return (MaResult)ChannelConverterProcessPcmFramesInterop(pConverter, pFramesOut, pFramesIn, frameCount);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int ChannelConverterGetInputChannelMapInterop(MaChannelConverter* pConverter, byte* pChannelMap, nuint channelMapCap)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaChannelConverter*, byte*, nuint, int>)funcTable[240])(pConverter, pChannelMap, channelMapCap);
+        }
+
         internal static MaResult ChannelConverterGetInputChannelMapNative(MaChannelConverter* pConverter, byte* pChannelMap, nuint channelMapCap)
         {
-            return ((delegate* unmanaged[Cdecl]<MaChannelConverter*, byte*, nuint, MaResult>)funcTable[240])(pConverter, pChannelMap, channelMapCap);
+            return (MaResult)ChannelConverterGetInputChannelMapInterop(pConverter, pChannelMap, channelMapCap);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int ChannelConverterGetOutputChannelMapInterop(MaChannelConverter* pConverter, byte* pChannelMap, nuint channelMapCap)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaChannelConverter*, byte*, nuint, int>)funcTable[241])(pConverter, pChannelMap, channelMapCap);
+        }
+
         internal static MaResult ChannelConverterGetOutputChannelMapNative(MaChannelConverter* pConverter, byte* pChannelMap, nuint channelMapCap)
         {
-            return ((delegate* unmanaged[Cdecl]<MaChannelConverter*, byte*, nuint, MaResult>)funcTable[241])(pConverter, pChannelMap, channelMapCap);
+            return (MaResult)ChannelConverterGetOutputChannelMapInterop(pConverter, pChannelMap, channelMapCap);
         }
 
         /// <summary>
@@ -20522,33 +21248,53 @@ namespace Inno.Native.MiniAudio
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static MaDataConverterConfig DataConverterConfigInitInterop(int formatIn, int formatOut, uint channelsIn, uint channelsOut, uint sampleRateIn, uint sampleRateOut)
+        {
+            return ((delegate* unmanaged[Cdecl]<int, int, uint, uint, uint, uint, MaDataConverterConfig>)funcTable[243])(formatIn, formatOut, channelsIn, channelsOut, sampleRateIn, sampleRateOut);
+        }
+
         internal static MaDataConverterConfig DataConverterConfigInitNative(MaFormat formatIn, MaFormat formatOut, uint channelsIn, uint channelsOut, uint sampleRateIn, uint sampleRateOut)
         {
-            return ((delegate* unmanaged[Cdecl]<MaFormat, MaFormat, uint, uint, uint, uint, MaDataConverterConfig>)funcTable[243])(formatIn, formatOut, channelsIn, channelsOut, sampleRateIn, sampleRateOut);
+            return DataConverterConfigInitInterop((int)formatIn, (int)formatOut, channelsIn, channelsOut, sampleRateIn, sampleRateOut);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int DataConverterGetHeapSizeInterop(MaDataConverterConfig* pConfig, nuint* pHeapSizeInBytes)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaDataConverterConfig*, nuint*, int>)funcTable[244])(pConfig, pHeapSizeInBytes);
+        }
+
         internal static MaResult DataConverterGetHeapSizeNative(MaDataConverterConfig* pConfig, nuint* pHeapSizeInBytes)
         {
-            return ((delegate* unmanaged[Cdecl]<MaDataConverterConfig*, nuint*, MaResult>)funcTable[244])(pConfig, pHeapSizeInBytes);
+            return (MaResult)DataConverterGetHeapSizeInterop(pConfig, pHeapSizeInBytes);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int DataConverterInitPreallocatedInterop(MaDataConverterConfig* pConfig, void* pHeap, MaDataConverter* pConverter)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaDataConverterConfig*, void*, MaDataConverter*, int>)funcTable[245])(pConfig, pHeap, pConverter);
+        }
+
         internal static MaResult DataConverterInitPreallocatedNative(MaDataConverterConfig* pConfig, void* pHeap, MaDataConverter* pConverter)
         {
-            return ((delegate* unmanaged[Cdecl]<MaDataConverterConfig*, void*, MaDataConverter*, MaResult>)funcTable[245])(pConfig, pHeap, pConverter);
+            return (MaResult)DataConverterInitPreallocatedInterop(pConfig, pHeap, pConverter);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int DataConverterInitInterop(MaDataConverterConfig* pConfig, MaAllocationCallbacks* pAllocationCallbacks, MaDataConverter* pConverter)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaDataConverterConfig*, MaAllocationCallbacks*, MaDataConverter*, int>)funcTable[246])(pConfig, pAllocationCallbacks, pConverter);
+        }
+
         internal static MaResult DataConverterInitNative(MaDataConverterConfig* pConfig, MaAllocationCallbacks* pAllocationCallbacks, MaDataConverter* pConverter)
         {
-            return ((delegate* unmanaged[Cdecl]<MaDataConverterConfig*, MaAllocationCallbacks*, MaDataConverter*, MaResult>)funcTable[246])(pConfig, pAllocationCallbacks, pConverter);
+            return (MaResult)DataConverterInitInterop(pConfig, pAllocationCallbacks, pConverter);
         }
 
         /// <summary>
@@ -20562,25 +21308,40 @@ namespace Inno.Native.MiniAudio
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int DataConverterProcessPcmFramesInterop(MaDataConverter* pConverter, void* pFramesIn, ulong* pFrameCountIn, void* pFramesOut, ulong* pFrameCountOut)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaDataConverter*, void*, ulong*, void*, ulong*, int>)funcTable[248])(pConverter, pFramesIn, pFrameCountIn, pFramesOut, pFrameCountOut);
+        }
+
         internal static MaResult DataConverterProcessPcmFramesNative(MaDataConverter* pConverter, void* pFramesIn, ulong* pFrameCountIn, void* pFramesOut, ulong* pFrameCountOut)
         {
-            return ((delegate* unmanaged[Cdecl]<MaDataConverter*, void*, ulong*, void*, ulong*, MaResult>)funcTable[248])(pConverter, pFramesIn, pFrameCountIn, pFramesOut, pFrameCountOut);
+            return (MaResult)DataConverterProcessPcmFramesInterop(pConverter, pFramesIn, pFrameCountIn, pFramesOut, pFrameCountOut);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int DataConverterSetRateInterop(MaDataConverter* pConverter, uint sampleRateIn, uint sampleRateOut)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaDataConverter*, uint, uint, int>)funcTable[249])(pConverter, sampleRateIn, sampleRateOut);
+        }
+
         internal static MaResult DataConverterSetRateNative(MaDataConverter* pConverter, uint sampleRateIn, uint sampleRateOut)
         {
-            return ((delegate* unmanaged[Cdecl]<MaDataConverter*, uint, uint, MaResult>)funcTable[249])(pConverter, sampleRateIn, sampleRateOut);
+            return (MaResult)DataConverterSetRateInterop(pConverter, sampleRateIn, sampleRateOut);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int DataConverterSetRateRatioInterop(MaDataConverter* pConverter, float ratioInOut)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaDataConverter*, float, int>)funcTable[250])(pConverter, ratioInOut);
+        }
+
         internal static MaResult DataConverterSetRateRatioNative(MaDataConverter* pConverter, float ratioInOut)
         {
-            return ((delegate* unmanaged[Cdecl]<MaDataConverter*, float, MaResult>)funcTable[250])(pConverter, ratioInOut);
+            return (MaResult)DataConverterSetRateRatioInterop(pConverter, ratioInOut);
         }
 
         /// <summary>
@@ -20602,233 +21363,378 @@ namespace Inno.Native.MiniAudio
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int DataConverterGetRequiredInputFrameCountInterop(MaDataConverter* pConverter, ulong outputFrameCount, ulong* pInputFrameCount)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaDataConverter*, ulong, ulong*, int>)funcTable[253])(pConverter, outputFrameCount, pInputFrameCount);
+        }
+
         internal static MaResult DataConverterGetRequiredInputFrameCountNative(MaDataConverter* pConverter, ulong outputFrameCount, ulong* pInputFrameCount)
         {
-            return ((delegate* unmanaged[Cdecl]<MaDataConverter*, ulong, ulong*, MaResult>)funcTable[253])(pConverter, outputFrameCount, pInputFrameCount);
+            return (MaResult)DataConverterGetRequiredInputFrameCountInterop(pConverter, outputFrameCount, pInputFrameCount);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int DataConverterGetExpectedOutputFrameCountInterop(MaDataConverter* pConverter, ulong inputFrameCount, ulong* pOutputFrameCount)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaDataConverter*, ulong, ulong*, int>)funcTable[254])(pConverter, inputFrameCount, pOutputFrameCount);
+        }
+
         internal static MaResult DataConverterGetExpectedOutputFrameCountNative(MaDataConverter* pConverter, ulong inputFrameCount, ulong* pOutputFrameCount)
         {
-            return ((delegate* unmanaged[Cdecl]<MaDataConverter*, ulong, ulong*, MaResult>)funcTable[254])(pConverter, inputFrameCount, pOutputFrameCount);
+            return (MaResult)DataConverterGetExpectedOutputFrameCountInterop(pConverter, inputFrameCount, pOutputFrameCount);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int DataConverterGetInputChannelMapInterop(MaDataConverter* pConverter, byte* pChannelMap, nuint channelMapCap)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaDataConverter*, byte*, nuint, int>)funcTable[255])(pConverter, pChannelMap, channelMapCap);
+        }
+
         internal static MaResult DataConverterGetInputChannelMapNative(MaDataConverter* pConverter, byte* pChannelMap, nuint channelMapCap)
         {
-            return ((delegate* unmanaged[Cdecl]<MaDataConverter*, byte*, nuint, MaResult>)funcTable[255])(pConverter, pChannelMap, channelMapCap);
+            return (MaResult)DataConverterGetInputChannelMapInterop(pConverter, pChannelMap, channelMapCap);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int DataConverterGetOutputChannelMapInterop(MaDataConverter* pConverter, byte* pChannelMap, nuint channelMapCap)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaDataConverter*, byte*, nuint, int>)funcTable[256])(pConverter, pChannelMap, channelMapCap);
+        }
+
         internal static MaResult DataConverterGetOutputChannelMapNative(MaDataConverter* pConverter, byte* pChannelMap, nuint channelMapCap)
         {
-            return ((delegate* unmanaged[Cdecl]<MaDataConverter*, byte*, nuint, MaResult>)funcTable[256])(pConverter, pChannelMap, channelMapCap);
+            return (MaResult)DataConverterGetOutputChannelMapInterop(pConverter, pChannelMap, channelMapCap);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int DataConverterResetInterop(MaDataConverter* pConverter)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaDataConverter*, int>)funcTable[257])(pConverter);
+        }
+
         internal static MaResult DataConverterResetNative(MaDataConverter* pConverter)
         {
-            return ((delegate* unmanaged[Cdecl]<MaDataConverter*, MaResult>)funcTable[257])(pConverter);
+            return (MaResult)DataConverterResetInterop(pConverter);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void PcmU8ToS16Interop(void* pOut, void* pIn, ulong count, int ditherMode)
+        {
+            ((delegate* unmanaged[Cdecl]<void*, void*, ulong, int, void>)funcTable[258])(pOut, pIn, count, ditherMode);
+        }
+
         internal static void PcmU8ToS16Native(void* pOut, void* pIn, ulong count, MaDitherMode ditherMode)
         {
-            ((delegate* unmanaged[Cdecl]<void*, void*, ulong, MaDitherMode, void>)funcTable[258])(pOut, pIn, count, ditherMode);
+            PcmU8ToS16Interop(pOut, pIn, count, (int)ditherMode);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void PcmU8ToS24Interop(void* pOut, void* pIn, ulong count, int ditherMode)
+        {
+            ((delegate* unmanaged[Cdecl]<void*, void*, ulong, int, void>)funcTable[259])(pOut, pIn, count, ditherMode);
+        }
+
         internal static void PcmU8ToS24Native(void* pOut, void* pIn, ulong count, MaDitherMode ditherMode)
         {
-            ((delegate* unmanaged[Cdecl]<void*, void*, ulong, MaDitherMode, void>)funcTable[259])(pOut, pIn, count, ditherMode);
+            PcmU8ToS24Interop(pOut, pIn, count, (int)ditherMode);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void PcmU8ToS32Interop(void* pOut, void* pIn, ulong count, int ditherMode)
+        {
+            ((delegate* unmanaged[Cdecl]<void*, void*, ulong, int, void>)funcTable[260])(pOut, pIn, count, ditherMode);
+        }
+
         internal static void PcmU8ToS32Native(void* pOut, void* pIn, ulong count, MaDitherMode ditherMode)
         {
-            ((delegate* unmanaged[Cdecl]<void*, void*, ulong, MaDitherMode, void>)funcTable[260])(pOut, pIn, count, ditherMode);
+            PcmU8ToS32Interop(pOut, pIn, count, (int)ditherMode);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void PcmU8ToF32Interop(void* pOut, void* pIn, ulong count, int ditherMode)
+        {
+            ((delegate* unmanaged[Cdecl]<void*, void*, ulong, int, void>)funcTable[261])(pOut, pIn, count, ditherMode);
+        }
+
         internal static void PcmU8ToF32Native(void* pOut, void* pIn, ulong count, MaDitherMode ditherMode)
         {
-            ((delegate* unmanaged[Cdecl]<void*, void*, ulong, MaDitherMode, void>)funcTable[261])(pOut, pIn, count, ditherMode);
+            PcmU8ToF32Interop(pOut, pIn, count, (int)ditherMode);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void PcmS16ToU8Interop(void* pOut, void* pIn, ulong count, int ditherMode)
+        {
+            ((delegate* unmanaged[Cdecl]<void*, void*, ulong, int, void>)funcTable[262])(pOut, pIn, count, ditherMode);
+        }
+
         internal static void PcmS16ToU8Native(void* pOut, void* pIn, ulong count, MaDitherMode ditherMode)
         {
-            ((delegate* unmanaged[Cdecl]<void*, void*, ulong, MaDitherMode, void>)funcTable[262])(pOut, pIn, count, ditherMode);
+            PcmS16ToU8Interop(pOut, pIn, count, (int)ditherMode);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void PcmS16ToS24Interop(void* pOut, void* pIn, ulong count, int ditherMode)
+        {
+            ((delegate* unmanaged[Cdecl]<void*, void*, ulong, int, void>)funcTable[263])(pOut, pIn, count, ditherMode);
+        }
+
         internal static void PcmS16ToS24Native(void* pOut, void* pIn, ulong count, MaDitherMode ditherMode)
         {
-            ((delegate* unmanaged[Cdecl]<void*, void*, ulong, MaDitherMode, void>)funcTable[263])(pOut, pIn, count, ditherMode);
+            PcmS16ToS24Interop(pOut, pIn, count, (int)ditherMode);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void PcmS16ToS32Interop(void* pOut, void* pIn, ulong count, int ditherMode)
+        {
+            ((delegate* unmanaged[Cdecl]<void*, void*, ulong, int, void>)funcTable[264])(pOut, pIn, count, ditherMode);
+        }
+
         internal static void PcmS16ToS32Native(void* pOut, void* pIn, ulong count, MaDitherMode ditherMode)
         {
-            ((delegate* unmanaged[Cdecl]<void*, void*, ulong, MaDitherMode, void>)funcTable[264])(pOut, pIn, count, ditherMode);
+            PcmS16ToS32Interop(pOut, pIn, count, (int)ditherMode);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void PcmS16ToF32Interop(void* pOut, void* pIn, ulong count, int ditherMode)
+        {
+            ((delegate* unmanaged[Cdecl]<void*, void*, ulong, int, void>)funcTable[265])(pOut, pIn, count, ditherMode);
+        }
+
         internal static void PcmS16ToF32Native(void* pOut, void* pIn, ulong count, MaDitherMode ditherMode)
         {
-            ((delegate* unmanaged[Cdecl]<void*, void*, ulong, MaDitherMode, void>)funcTable[265])(pOut, pIn, count, ditherMode);
+            PcmS16ToF32Interop(pOut, pIn, count, (int)ditherMode);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void PcmS24ToU8Interop(void* pOut, void* pIn, ulong count, int ditherMode)
+        {
+            ((delegate* unmanaged[Cdecl]<void*, void*, ulong, int, void>)funcTable[266])(pOut, pIn, count, ditherMode);
+        }
+
         internal static void PcmS24ToU8Native(void* pOut, void* pIn, ulong count, MaDitherMode ditherMode)
         {
-            ((delegate* unmanaged[Cdecl]<void*, void*, ulong, MaDitherMode, void>)funcTable[266])(pOut, pIn, count, ditherMode);
+            PcmS24ToU8Interop(pOut, pIn, count, (int)ditherMode);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void PcmS24ToS16Interop(void* pOut, void* pIn, ulong count, int ditherMode)
+        {
+            ((delegate* unmanaged[Cdecl]<void*, void*, ulong, int, void>)funcTable[267])(pOut, pIn, count, ditherMode);
+        }
+
         internal static void PcmS24ToS16Native(void* pOut, void* pIn, ulong count, MaDitherMode ditherMode)
         {
-            ((delegate* unmanaged[Cdecl]<void*, void*, ulong, MaDitherMode, void>)funcTable[267])(pOut, pIn, count, ditherMode);
+            PcmS24ToS16Interop(pOut, pIn, count, (int)ditherMode);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void PcmS24ToS32Interop(void* pOut, void* pIn, ulong count, int ditherMode)
+        {
+            ((delegate* unmanaged[Cdecl]<void*, void*, ulong, int, void>)funcTable[268])(pOut, pIn, count, ditherMode);
+        }
+
         internal static void PcmS24ToS32Native(void* pOut, void* pIn, ulong count, MaDitherMode ditherMode)
         {
-            ((delegate* unmanaged[Cdecl]<void*, void*, ulong, MaDitherMode, void>)funcTable[268])(pOut, pIn, count, ditherMode);
+            PcmS24ToS32Interop(pOut, pIn, count, (int)ditherMode);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void PcmS24ToF32Interop(void* pOut, void* pIn, ulong count, int ditherMode)
+        {
+            ((delegate* unmanaged[Cdecl]<void*, void*, ulong, int, void>)funcTable[269])(pOut, pIn, count, ditherMode);
+        }
+
         internal static void PcmS24ToF32Native(void* pOut, void* pIn, ulong count, MaDitherMode ditherMode)
         {
-            ((delegate* unmanaged[Cdecl]<void*, void*, ulong, MaDitherMode, void>)funcTable[269])(pOut, pIn, count, ditherMode);
+            PcmS24ToF32Interop(pOut, pIn, count, (int)ditherMode);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void PcmS32ToU8Interop(void* pOut, void* pIn, ulong count, int ditherMode)
+        {
+            ((delegate* unmanaged[Cdecl]<void*, void*, ulong, int, void>)funcTable[270])(pOut, pIn, count, ditherMode);
+        }
+
         internal static void PcmS32ToU8Native(void* pOut, void* pIn, ulong count, MaDitherMode ditherMode)
         {
-            ((delegate* unmanaged[Cdecl]<void*, void*, ulong, MaDitherMode, void>)funcTable[270])(pOut, pIn, count, ditherMode);
+            PcmS32ToU8Interop(pOut, pIn, count, (int)ditherMode);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void PcmS32ToS16Interop(void* pOut, void* pIn, ulong count, int ditherMode)
+        {
+            ((delegate* unmanaged[Cdecl]<void*, void*, ulong, int, void>)funcTable[271])(pOut, pIn, count, ditherMode);
+        }
+
         internal static void PcmS32ToS16Native(void* pOut, void* pIn, ulong count, MaDitherMode ditherMode)
         {
-            ((delegate* unmanaged[Cdecl]<void*, void*, ulong, MaDitherMode, void>)funcTable[271])(pOut, pIn, count, ditherMode);
+            PcmS32ToS16Interop(pOut, pIn, count, (int)ditherMode);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void PcmS32ToS24Interop(void* pOut, void* pIn, ulong count, int ditherMode)
+        {
+            ((delegate* unmanaged[Cdecl]<void*, void*, ulong, int, void>)funcTable[272])(pOut, pIn, count, ditherMode);
+        }
+
         internal static void PcmS32ToS24Native(void* pOut, void* pIn, ulong count, MaDitherMode ditherMode)
         {
-            ((delegate* unmanaged[Cdecl]<void*, void*, ulong, MaDitherMode, void>)funcTable[272])(pOut, pIn, count, ditherMode);
+            PcmS32ToS24Interop(pOut, pIn, count, (int)ditherMode);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void PcmS32ToF32Interop(void* pOut, void* pIn, ulong count, int ditherMode)
+        {
+            ((delegate* unmanaged[Cdecl]<void*, void*, ulong, int, void>)funcTable[273])(pOut, pIn, count, ditherMode);
+        }
+
         internal static void PcmS32ToF32Native(void* pOut, void* pIn, ulong count, MaDitherMode ditherMode)
         {
-            ((delegate* unmanaged[Cdecl]<void*, void*, ulong, MaDitherMode, void>)funcTable[273])(pOut, pIn, count, ditherMode);
+            PcmS32ToF32Interop(pOut, pIn, count, (int)ditherMode);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void PcmF32ToU8Interop(void* pOut, void* pIn, ulong count, int ditherMode)
+        {
+            ((delegate* unmanaged[Cdecl]<void*, void*, ulong, int, void>)funcTable[274])(pOut, pIn, count, ditherMode);
+        }
+
         internal static void PcmF32ToU8Native(void* pOut, void* pIn, ulong count, MaDitherMode ditherMode)
         {
-            ((delegate* unmanaged[Cdecl]<void*, void*, ulong, MaDitherMode, void>)funcTable[274])(pOut, pIn, count, ditherMode);
+            PcmF32ToU8Interop(pOut, pIn, count, (int)ditherMode);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void PcmF32ToS16Interop(void* pOut, void* pIn, ulong count, int ditherMode)
+        {
+            ((delegate* unmanaged[Cdecl]<void*, void*, ulong, int, void>)funcTable[275])(pOut, pIn, count, ditherMode);
+        }
+
         internal static void PcmF32ToS16Native(void* pOut, void* pIn, ulong count, MaDitherMode ditherMode)
         {
-            ((delegate* unmanaged[Cdecl]<void*, void*, ulong, MaDitherMode, void>)funcTable[275])(pOut, pIn, count, ditherMode);
+            PcmF32ToS16Interop(pOut, pIn, count, (int)ditherMode);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void PcmF32ToS24Interop(void* pOut, void* pIn, ulong count, int ditherMode)
+        {
+            ((delegate* unmanaged[Cdecl]<void*, void*, ulong, int, void>)funcTable[276])(pOut, pIn, count, ditherMode);
+        }
+
         internal static void PcmF32ToS24Native(void* pOut, void* pIn, ulong count, MaDitherMode ditherMode)
         {
-            ((delegate* unmanaged[Cdecl]<void*, void*, ulong, MaDitherMode, void>)funcTable[276])(pOut, pIn, count, ditherMode);
+            PcmF32ToS24Interop(pOut, pIn, count, (int)ditherMode);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void PcmF32ToS32Interop(void* pOut, void* pIn, ulong count, int ditherMode)
+        {
+            ((delegate* unmanaged[Cdecl]<void*, void*, ulong, int, void>)funcTable[277])(pOut, pIn, count, ditherMode);
+        }
+
         internal static void PcmF32ToS32Native(void* pOut, void* pIn, ulong count, MaDitherMode ditherMode)
         {
-            ((delegate* unmanaged[Cdecl]<void*, void*, ulong, MaDitherMode, void>)funcTable[277])(pOut, pIn, count, ditherMode);
+            PcmF32ToS32Interop(pOut, pIn, count, (int)ditherMode);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void PcmConvertInterop(void* pOut, int formatOut, void* pIn, int formatIn, ulong sampleCount, int ditherMode)
+        {
+            ((delegate* unmanaged[Cdecl]<void*, int, void*, int, ulong, int, void>)funcTable[278])(pOut, formatOut, pIn, formatIn, sampleCount, ditherMode);
+        }
+
         internal static void PcmConvertNative(void* pOut, MaFormat formatOut, void* pIn, MaFormat formatIn, ulong sampleCount, MaDitherMode ditherMode)
         {
-            ((delegate* unmanaged[Cdecl]<void*, MaFormat, void*, MaFormat, ulong, MaDitherMode, void>)funcTable[278])(pOut, formatOut, pIn, formatIn, sampleCount, ditherMode);
+            PcmConvertInterop(pOut, (int)formatOut, pIn, (int)formatIn, sampleCount, (int)ditherMode);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void ConvertPcmFramesFormatInterop(void* pOut, int formatOut, void* pIn, int formatIn, ulong frameCount, uint channels, int ditherMode)
+        {
+            ((delegate* unmanaged[Cdecl]<void*, int, void*, int, ulong, uint, int, void>)funcTable[279])(pOut, formatOut, pIn, formatIn, frameCount, channels, ditherMode);
+        }
+
         internal static void ConvertPcmFramesFormatNative(void* pOut, MaFormat formatOut, void* pIn, MaFormat formatIn, ulong frameCount, uint channels, MaDitherMode ditherMode)
         {
-            ((delegate* unmanaged[Cdecl]<void*, MaFormat, void*, MaFormat, ulong, uint, MaDitherMode, void>)funcTable[279])(pOut, formatOut, pIn, formatIn, frameCount, channels, ditherMode);
+            ConvertPcmFramesFormatInterop(pOut, (int)formatOut, pIn, (int)formatIn, frameCount, channels, (int)ditherMode);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void DeinterleavePcmFramesInterop(int format, uint channels, ulong frameCount, void* pInterleavedPCMFrames, void** ppDeinterleavedPCMFrames)
+        {
+            ((delegate* unmanaged[Cdecl]<int, uint, ulong, void*, void**, void>)funcTable[280])(format, channels, frameCount, pInterleavedPCMFrames, ppDeinterleavedPCMFrames);
+        }
+
         internal static void DeinterleavePcmFramesNative(MaFormat format, uint channels, ulong frameCount, void* pInterleavedPCMFrames, void** ppDeinterleavedPCMFrames)
         {
-            ((delegate* unmanaged[Cdecl]<MaFormat, uint, ulong, void*, void**, void>)funcTable[280])(format, channels, frameCount, pInterleavedPCMFrames, ppDeinterleavedPCMFrames);
+            DeinterleavePcmFramesInterop((int)format, channels, frameCount, pInterleavedPCMFrames, ppDeinterleavedPCMFrames);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void InterleavePcmFramesInterop(int format, uint channels, ulong frameCount, void** ppDeinterleavedPCMFrames, void* pInterleavedPCMFrames)
+        {
+            ((delegate* unmanaged[Cdecl]<int, uint, ulong, void**, void*, void>)funcTable[281])(format, channels, frameCount, ppDeinterleavedPCMFrames, pInterleavedPCMFrames);
+        }
+
         internal static void InterleavePcmFramesNative(MaFormat format, uint channels, ulong frameCount, void** ppDeinterleavedPCMFrames, void* pInterleavedPCMFrames)
         {
-            ((delegate* unmanaged[Cdecl]<MaFormat, uint, ulong, void**, void*, void>)funcTable[281])(format, channels, frameCount, ppDeinterleavedPCMFrames, pInterleavedPCMFrames);
+            InterleavePcmFramesInterop((int)format, channels, frameCount, ppDeinterleavedPCMFrames, pInterleavedPCMFrames);
         }
 
         /// <summary>
@@ -20850,9 +21756,14 @@ namespace Inno.Native.MiniAudio
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void ChannelMapInitStandardInterop(int standardChannelMap, byte* pChannelMap, nuint channelMapCap, uint channels)
+        {
+            ((delegate* unmanaged[Cdecl]<int, byte*, nuint, uint, void>)funcTable[284])(standardChannelMap, pChannelMap, channelMapCap, channels);
+        }
+
         internal static void ChannelMapInitStandardNative(MaStandardChannelMap standardChannelMap, byte* pChannelMap, nuint channelMapCap, uint channels)
         {
-            ((delegate* unmanaged[Cdecl]<MaStandardChannelMap, byte*, nuint, uint, void>)funcTable[284])(standardChannelMap, pChannelMap, channelMapCap, channels);
+            ChannelMapInitStandardInterop((int)standardChannelMap, pChannelMap, channelMapCap, channels);
         }
 
         /// <summary>
@@ -20930,9 +21841,14 @@ namespace Inno.Native.MiniAudio
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static ulong ConvertFramesInterop(void* pOut, ulong frameCountOut, int formatOut, uint channelsOut, uint sampleRateOut, void* pIn, ulong frameCountIn, int formatIn, uint channelsIn, uint sampleRateIn)
+        {
+            return ((delegate* unmanaged[Cdecl]<void*, ulong, int, uint, uint, void*, ulong, int, uint, uint, ulong>)funcTable[294])(pOut, frameCountOut, formatOut, channelsOut, sampleRateOut, pIn, frameCountIn, formatIn, channelsIn, sampleRateIn);
+        }
+
         internal static ulong ConvertFramesNative(void* pOut, ulong frameCountOut, MaFormat formatOut, uint channelsOut, uint sampleRateOut, void* pIn, ulong frameCountIn, MaFormat formatIn, uint channelsIn, uint sampleRateIn)
         {
-            return ((delegate* unmanaged[Cdecl]<void*, ulong, MaFormat, uint, uint, void*, ulong, MaFormat, uint, uint, ulong>)funcTable[294])(pOut, frameCountOut, formatOut, channelsOut, sampleRateOut, pIn, frameCountIn, formatIn, channelsIn, sampleRateIn);
+            return ConvertFramesInterop(pOut, frameCountOut, (int)formatOut, channelsOut, sampleRateOut, pIn, frameCountIn, (int)formatIn, channelsIn, sampleRateIn);
         }
 
         /// <summary>
@@ -20954,9 +21870,14 @@ namespace Inno.Native.MiniAudio
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int DataSourceInitInterop(MaDataSourceConfig* pConfig, MaDataSource* pDataSource)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaDataSourceConfig*, MaDataSource*, int>)funcTable[297])(pConfig, pDataSource);
+        }
+
         internal static MaResult DataSourceInitNative(MaDataSourceConfig* pConfig, MaDataSource* pDataSource)
         {
-            return ((delegate* unmanaged[Cdecl]<MaDataSourceConfig*, MaDataSource*, MaResult>)funcTable[297])(pConfig, pDataSource);
+            return (MaResult)DataSourceInitInterop(pConfig, pDataSource);
         }
 
         /// <summary>
@@ -20970,89 +21891,144 @@ namespace Inno.Native.MiniAudio
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int DataSourceReadPcmFramesInterop(MaDataSource* pDataSource, void* pFramesOut, ulong frameCount, ulong* pFramesRead)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaDataSource*, void*, ulong, ulong*, int>)funcTable[299])(pDataSource, pFramesOut, frameCount, pFramesRead);
+        }
+
         internal static MaResult DataSourceReadPcmFramesNative(MaDataSource* pDataSource, void* pFramesOut, ulong frameCount, ulong* pFramesRead)
         {
-            return ((delegate* unmanaged[Cdecl]<MaDataSource*, void*, ulong, ulong*, MaResult>)funcTable[299])(pDataSource, pFramesOut, frameCount, pFramesRead);
+            return (MaResult)DataSourceReadPcmFramesInterop(pDataSource, pFramesOut, frameCount, pFramesRead);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int DataSourceSeekPcmFramesInterop(MaDataSource* pDataSource, ulong frameCount, ulong* pFramesSeeked)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaDataSource*, ulong, ulong*, int>)funcTable[300])(pDataSource, frameCount, pFramesSeeked);
+        }
+
         internal static MaResult DataSourceSeekPcmFramesNative(MaDataSource* pDataSource, ulong frameCount, ulong* pFramesSeeked)
         {
-            return ((delegate* unmanaged[Cdecl]<MaDataSource*, ulong, ulong*, MaResult>)funcTable[300])(pDataSource, frameCount, pFramesSeeked);
+            return (MaResult)DataSourceSeekPcmFramesInterop(pDataSource, frameCount, pFramesSeeked);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int DataSourceSeekToPcmFrameInterop(MaDataSource* pDataSource, ulong frameIndex)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaDataSource*, ulong, int>)funcTable[301])(pDataSource, frameIndex);
+        }
+
         internal static MaResult DataSourceSeekToPcmFrameNative(MaDataSource* pDataSource, ulong frameIndex)
         {
-            return ((delegate* unmanaged[Cdecl]<MaDataSource*, ulong, MaResult>)funcTable[301])(pDataSource, frameIndex);
+            return (MaResult)DataSourceSeekToPcmFrameInterop(pDataSource, frameIndex);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int DataSourceSeekSecondsInterop(MaDataSource* pDataSource, float secondCount, float* pSecondsSeeked)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaDataSource*, float, float*, int>)funcTable[302])(pDataSource, secondCount, pSecondsSeeked);
+        }
+
         internal static MaResult DataSourceSeekSecondsNative(MaDataSource* pDataSource, float secondCount, float* pSecondsSeeked)
         {
-            return ((delegate* unmanaged[Cdecl]<MaDataSource*, float, float*, MaResult>)funcTable[302])(pDataSource, secondCount, pSecondsSeeked);
+            return (MaResult)DataSourceSeekSecondsInterop(pDataSource, secondCount, pSecondsSeeked);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int DataSourceSeekToSecondInterop(MaDataSource* pDataSource, float seekPointInSeconds)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaDataSource*, float, int>)funcTable[303])(pDataSource, seekPointInSeconds);
+        }
+
         internal static MaResult DataSourceSeekToSecondNative(MaDataSource* pDataSource, float seekPointInSeconds)
         {
-            return ((delegate* unmanaged[Cdecl]<MaDataSource*, float, MaResult>)funcTable[303])(pDataSource, seekPointInSeconds);
+            return (MaResult)DataSourceSeekToSecondInterop(pDataSource, seekPointInSeconds);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int DataSourceGetDataFormatInterop(MaDataSource* pDataSource, MaFormat* pFormat, uint* pChannels, uint* pSampleRate, byte* pChannelMap, nuint channelMapCap)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaDataSource*, MaFormat*, uint*, uint*, byte*, nuint, int>)funcTable[304])(pDataSource, pFormat, pChannels, pSampleRate, pChannelMap, channelMapCap);
+        }
+
         internal static MaResult DataSourceGetDataFormatNative(MaDataSource* pDataSource, MaFormat* pFormat, uint* pChannels, uint* pSampleRate, byte* pChannelMap, nuint channelMapCap)
         {
-            return ((delegate* unmanaged[Cdecl]<MaDataSource*, MaFormat*, uint*, uint*, byte*, nuint, MaResult>)funcTable[304])(pDataSource, pFormat, pChannels, pSampleRate, pChannelMap, channelMapCap);
+            return (MaResult)DataSourceGetDataFormatInterop(pDataSource, pFormat, pChannels, pSampleRate, pChannelMap, channelMapCap);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int DataSourceGetCursorInPcmFramesInterop(MaDataSource* pDataSource, ulong* pCursor)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaDataSource*, ulong*, int>)funcTable[305])(pDataSource, pCursor);
+        }
+
         internal static MaResult DataSourceGetCursorInPcmFramesNative(MaDataSource* pDataSource, ulong* pCursor)
         {
-            return ((delegate* unmanaged[Cdecl]<MaDataSource*, ulong*, MaResult>)funcTable[305])(pDataSource, pCursor);
+            return (MaResult)DataSourceGetCursorInPcmFramesInterop(pDataSource, pCursor);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int DataSourceGetLengthInPcmFramesInterop(MaDataSource* pDataSource, ulong* pLength)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaDataSource*, ulong*, int>)funcTable[306])(pDataSource, pLength);
+        }
+
         internal static MaResult DataSourceGetLengthInPcmFramesNative(MaDataSource* pDataSource, ulong* pLength)
         {
-            return ((delegate* unmanaged[Cdecl]<MaDataSource*, ulong*, MaResult>)funcTable[306])(pDataSource, pLength);
+            return (MaResult)DataSourceGetLengthInPcmFramesInterop(pDataSource, pLength);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int DataSourceGetCursorInSecondsInterop(MaDataSource* pDataSource, float* pCursor)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaDataSource*, float*, int>)funcTable[307])(pDataSource, pCursor);
+        }
+
         internal static MaResult DataSourceGetCursorInSecondsNative(MaDataSource* pDataSource, float* pCursor)
         {
-            return ((delegate* unmanaged[Cdecl]<MaDataSource*, float*, MaResult>)funcTable[307])(pDataSource, pCursor);
+            return (MaResult)DataSourceGetCursorInSecondsInterop(pDataSource, pCursor);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int DataSourceGetLengthInSecondsInterop(MaDataSource* pDataSource, float* pLength)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaDataSource*, float*, int>)funcTable[308])(pDataSource, pLength);
+        }
+
         internal static MaResult DataSourceGetLengthInSecondsNative(MaDataSource* pDataSource, float* pLength)
         {
-            return ((delegate* unmanaged[Cdecl]<MaDataSource*, float*, MaResult>)funcTable[308])(pDataSource, pLength);
+            return (MaResult)DataSourceGetLengthInSecondsInterop(pDataSource, pLength);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int DataSourceSetLoopingInterop(MaDataSource* pDataSource, uint isLooping)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaDataSource*, uint, int>)funcTable[309])(pDataSource, isLooping);
+        }
+
         internal static MaResult DataSourceSetLoopingNative(MaDataSource* pDataSource, uint isLooping)
         {
-            return ((delegate* unmanaged[Cdecl]<MaDataSource*, uint, MaResult>)funcTable[309])(pDataSource, isLooping);
+            return (MaResult)DataSourceSetLoopingInterop(pDataSource, isLooping);
         }
 
         /// <summary>
@@ -21066,9 +22042,14 @@ namespace Inno.Native.MiniAudio
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int DataSourceSetRangeInPcmFramesInterop(MaDataSource* pDataSource, ulong rangeBegInFrames, ulong rangeEndInFrames)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaDataSource*, ulong, ulong, int>)funcTable[311])(pDataSource, rangeBegInFrames, rangeEndInFrames);
+        }
+
         internal static MaResult DataSourceSetRangeInPcmFramesNative(MaDataSource* pDataSource, ulong rangeBegInFrames, ulong rangeEndInFrames)
         {
-            return ((delegate* unmanaged[Cdecl]<MaDataSource*, ulong, ulong, MaResult>)funcTable[311])(pDataSource, rangeBegInFrames, rangeEndInFrames);
+            return (MaResult)DataSourceSetRangeInPcmFramesInterop(pDataSource, rangeBegInFrames, rangeEndInFrames);
         }
 
         /// <summary>
@@ -21082,9 +22063,14 @@ namespace Inno.Native.MiniAudio
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int DataSourceSetLoopPointInPcmFramesInterop(MaDataSource* pDataSource, ulong loopBegInFrames, ulong loopEndInFrames)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaDataSource*, ulong, ulong, int>)funcTable[313])(pDataSource, loopBegInFrames, loopEndInFrames);
+        }
+
         internal static MaResult DataSourceSetLoopPointInPcmFramesNative(MaDataSource* pDataSource, ulong loopBegInFrames, ulong loopEndInFrames)
         {
-            return ((delegate* unmanaged[Cdecl]<MaDataSource*, ulong, ulong, MaResult>)funcTable[313])(pDataSource, loopBegInFrames, loopEndInFrames);
+            return (MaResult)DataSourceSetLoopPointInPcmFramesInterop(pDataSource, loopBegInFrames, loopEndInFrames);
         }
 
         /// <summary>
@@ -21098,9 +22084,14 @@ namespace Inno.Native.MiniAudio
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int DataSourceSetCurrentInterop(MaDataSource* pDataSource, MaDataSource* pCurrentDataSource)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaDataSource*, MaDataSource*, int>)funcTable[315])(pDataSource, pCurrentDataSource);
+        }
+
         internal static MaResult DataSourceSetCurrentNative(MaDataSource* pDataSource, MaDataSource* pCurrentDataSource)
         {
-            return ((delegate* unmanaged[Cdecl]<MaDataSource*, MaDataSource*, MaResult>)funcTable[315])(pDataSource, pCurrentDataSource);
+            return (MaResult)DataSourceSetCurrentInterop(pDataSource, pCurrentDataSource);
         }
 
         /// <summary>
@@ -21114,9 +22105,14 @@ namespace Inno.Native.MiniAudio
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int DataSourceSetNextInterop(MaDataSource* pDataSource, MaDataSource* pNextDataSource)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaDataSource*, MaDataSource*, int>)funcTable[317])(pDataSource, pNextDataSource);
+        }
+
         internal static MaResult DataSourceSetNextNative(MaDataSource* pDataSource, MaDataSource* pNextDataSource)
         {
-            return ((delegate* unmanaged[Cdecl]<MaDataSource*, MaDataSource*, MaResult>)funcTable[317])(pDataSource, pNextDataSource);
+            return (MaResult)DataSourceSetNextInterop(pDataSource, pNextDataSource);
         }
 
         /// <summary>
@@ -21130,9 +22126,14 @@ namespace Inno.Native.MiniAudio
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int DataSourceSetNextCallbackInterop(MaDataSource* pDataSource, void* onGetNext)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaDataSource*, void*, int>)funcTable[319])(pDataSource, onGetNext);
+        }
+
         internal static MaResult DataSourceSetNextCallbackNative(MaDataSource* pDataSource, void* onGetNext)
         {
-            return ((delegate* unmanaged[Cdecl]<MaDataSource*, void*, MaResult>)funcTable[319])(pDataSource, onGetNext);
+            return (MaResult)DataSourceSetNextCallbackInterop(pDataSource, onGetNext);
         }
 
         /// <summary>
@@ -21146,9 +22147,14 @@ namespace Inno.Native.MiniAudio
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int AudioBufferRefInitInterop(int format, uint channels, void* pData, ulong sizeInFrames, MaAudioBufferRef* pAudioBufferRef)
+        {
+            return ((delegate* unmanaged[Cdecl]<int, uint, void*, ulong, MaAudioBufferRef*, int>)funcTable[321])(format, channels, pData, sizeInFrames, pAudioBufferRef);
+        }
+
         internal static MaResult AudioBufferRefInitNative(MaFormat format, uint channels, void* pData, ulong sizeInFrames, MaAudioBufferRef* pAudioBufferRef)
         {
-            return ((delegate* unmanaged[Cdecl]<MaFormat, uint, void*, ulong, MaAudioBufferRef*, MaResult>)funcTable[321])(format, channels, pData, sizeInFrames, pAudioBufferRef);
+            return (MaResult)AudioBufferRefInitInterop((int)format, channels, pData, sizeInFrames, pAudioBufferRef);
         }
 
         /// <summary>
@@ -21162,9 +22168,14 @@ namespace Inno.Native.MiniAudio
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int AudioBufferRefSetDataInterop(MaAudioBufferRef* pAudioBufferRef, void* pData, ulong sizeInFrames)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaAudioBufferRef*, void*, ulong, int>)funcTable[323])(pAudioBufferRef, pData, sizeInFrames);
+        }
+
         internal static MaResult AudioBufferRefSetDataNative(MaAudioBufferRef* pAudioBufferRef, void* pData, ulong sizeInFrames)
         {
-            return ((delegate* unmanaged[Cdecl]<MaAudioBufferRef*, void*, ulong, MaResult>)funcTable[323])(pAudioBufferRef, pData, sizeInFrames);
+            return (MaResult)AudioBufferRefSetDataInterop(pAudioBufferRef, pData, sizeInFrames);
         }
 
         /// <summary>
@@ -21178,25 +22189,40 @@ namespace Inno.Native.MiniAudio
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int AudioBufferRefSeekToPcmFrameInterop(MaAudioBufferRef* pAudioBufferRef, ulong frameIndex)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaAudioBufferRef*, ulong, int>)funcTable[325])(pAudioBufferRef, frameIndex);
+        }
+
         internal static MaResult AudioBufferRefSeekToPcmFrameNative(MaAudioBufferRef* pAudioBufferRef, ulong frameIndex)
         {
-            return ((delegate* unmanaged[Cdecl]<MaAudioBufferRef*, ulong, MaResult>)funcTable[325])(pAudioBufferRef, frameIndex);
+            return (MaResult)AudioBufferRefSeekToPcmFrameInterop(pAudioBufferRef, frameIndex);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int AudioBufferRefMapInterop(MaAudioBufferRef* pAudioBufferRef, void** ppFramesOut, ulong* pFrameCount)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaAudioBufferRef*, void**, ulong*, int>)funcTable[326])(pAudioBufferRef, ppFramesOut, pFrameCount);
+        }
+
         internal static MaResult AudioBufferRefMapNative(MaAudioBufferRef* pAudioBufferRef, void** ppFramesOut, ulong* pFrameCount)
         {
-            return ((delegate* unmanaged[Cdecl]<MaAudioBufferRef*, void**, ulong*, MaResult>)funcTable[326])(pAudioBufferRef, ppFramesOut, pFrameCount);
+            return (MaResult)AudioBufferRefMapInterop(pAudioBufferRef, ppFramesOut, pFrameCount);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int AudioBufferRefUnmapInterop(MaAudioBufferRef* pAudioBufferRef, ulong frameCount)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaAudioBufferRef*, ulong, int>)funcTable[327])(pAudioBufferRef, frameCount);
+        }
+
         internal static MaResult AudioBufferRefUnmapNative(MaAudioBufferRef* pAudioBufferRef, ulong frameCount)
         {
-            return ((delegate* unmanaged[Cdecl]<MaAudioBufferRef*, ulong, MaResult>)funcTable[327])(pAudioBufferRef, frameCount);
+            return (MaResult)AudioBufferRefUnmapInterop(pAudioBufferRef, frameCount);
         }
 
         /// <summary>
@@ -21210,57 +22236,92 @@ namespace Inno.Native.MiniAudio
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int AudioBufferRefGetCursorInPcmFramesInterop(MaAudioBufferRef* pAudioBufferRef, ulong* pCursor)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaAudioBufferRef*, ulong*, int>)funcTable[329])(pAudioBufferRef, pCursor);
+        }
+
         internal static MaResult AudioBufferRefGetCursorInPcmFramesNative(MaAudioBufferRef* pAudioBufferRef, ulong* pCursor)
         {
-            return ((delegate* unmanaged[Cdecl]<MaAudioBufferRef*, ulong*, MaResult>)funcTable[329])(pAudioBufferRef, pCursor);
+            return (MaResult)AudioBufferRefGetCursorInPcmFramesInterop(pAudioBufferRef, pCursor);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int AudioBufferRefGetLengthInPcmFramesInterop(MaAudioBufferRef* pAudioBufferRef, ulong* pLength)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaAudioBufferRef*, ulong*, int>)funcTable[330])(pAudioBufferRef, pLength);
+        }
+
         internal static MaResult AudioBufferRefGetLengthInPcmFramesNative(MaAudioBufferRef* pAudioBufferRef, ulong* pLength)
         {
-            return ((delegate* unmanaged[Cdecl]<MaAudioBufferRef*, ulong*, MaResult>)funcTable[330])(pAudioBufferRef, pLength);
+            return (MaResult)AudioBufferRefGetLengthInPcmFramesInterop(pAudioBufferRef, pLength);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int AudioBufferRefGetAvailableFramesInterop(MaAudioBufferRef* pAudioBufferRef, ulong* pAvailableFrames)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaAudioBufferRef*, ulong*, int>)funcTable[331])(pAudioBufferRef, pAvailableFrames);
+        }
+
         internal static MaResult AudioBufferRefGetAvailableFramesNative(MaAudioBufferRef* pAudioBufferRef, ulong* pAvailableFrames)
         {
-            return ((delegate* unmanaged[Cdecl]<MaAudioBufferRef*, ulong*, MaResult>)funcTable[331])(pAudioBufferRef, pAvailableFrames);
+            return (MaResult)AudioBufferRefGetAvailableFramesInterop(pAudioBufferRef, pAvailableFrames);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static MaAudioBufferConfig AudioBufferConfigInitInterop(int format, uint channels, ulong sizeInFrames, void* pData, MaAllocationCallbacks* pAllocationCallbacks)
+        {
+            return ((delegate* unmanaged[Cdecl]<int, uint, ulong, void*, MaAllocationCallbacks*, MaAudioBufferConfig>)funcTable[332])(format, channels, sizeInFrames, pData, pAllocationCallbacks);
+        }
+
         internal static MaAudioBufferConfig AudioBufferConfigInitNative(MaFormat format, uint channels, ulong sizeInFrames, void* pData, MaAllocationCallbacks* pAllocationCallbacks)
         {
-            return ((delegate* unmanaged[Cdecl]<MaFormat, uint, ulong, void*, MaAllocationCallbacks*, MaAudioBufferConfig>)funcTable[332])(format, channels, sizeInFrames, pData, pAllocationCallbacks);
+            return AudioBufferConfigInitInterop((int)format, channels, sizeInFrames, pData, pAllocationCallbacks);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int AudioBufferInitInterop(MaAudioBufferConfig* pConfig, MaAudioBuffer* pAudioBuffer)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaAudioBufferConfig*, MaAudioBuffer*, int>)funcTable[333])(pConfig, pAudioBuffer);
+        }
+
         internal static MaResult AudioBufferInitNative(MaAudioBufferConfig* pConfig, MaAudioBuffer* pAudioBuffer)
         {
-            return ((delegate* unmanaged[Cdecl]<MaAudioBufferConfig*, MaAudioBuffer*, MaResult>)funcTable[333])(pConfig, pAudioBuffer);
+            return (MaResult)AudioBufferInitInterop(pConfig, pAudioBuffer);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int AudioBufferInitCopyInterop(MaAudioBufferConfig* pConfig, MaAudioBuffer* pAudioBuffer)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaAudioBufferConfig*, MaAudioBuffer*, int>)funcTable[334])(pConfig, pAudioBuffer);
+        }
+
         internal static MaResult AudioBufferInitCopyNative(MaAudioBufferConfig* pConfig, MaAudioBuffer* pAudioBuffer)
         {
-            return ((delegate* unmanaged[Cdecl]<MaAudioBufferConfig*, MaAudioBuffer*, MaResult>)funcTable[334])(pConfig, pAudioBuffer);
+            return (MaResult)AudioBufferInitCopyInterop(pConfig, pAudioBuffer);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int AudioBufferAllocAndInitInterop(MaAudioBufferConfig* pConfig, MaAudioBuffer** ppAudioBuffer)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaAudioBufferConfig*, MaAudioBuffer**, int>)funcTable[335])(pConfig, ppAudioBuffer);
+        }
+
         internal static MaResult AudioBufferAllocAndInitNative(MaAudioBufferConfig* pConfig, MaAudioBuffer** ppAudioBuffer)
         {
-            return ((delegate* unmanaged[Cdecl]<MaAudioBufferConfig*, MaAudioBuffer**, MaResult>)funcTable[335])(pConfig, ppAudioBuffer);
+            return (MaResult)AudioBufferAllocAndInitInterop(pConfig, ppAudioBuffer);
         }
 
         /// <summary>
@@ -21290,25 +22351,40 @@ namespace Inno.Native.MiniAudio
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int AudioBufferSeekToPcmFrameInterop(MaAudioBuffer* pAudioBuffer, ulong frameIndex)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaAudioBuffer*, ulong, int>)funcTable[339])(pAudioBuffer, frameIndex);
+        }
+
         internal static MaResult AudioBufferSeekToPcmFrameNative(MaAudioBuffer* pAudioBuffer, ulong frameIndex)
         {
-            return ((delegate* unmanaged[Cdecl]<MaAudioBuffer*, ulong, MaResult>)funcTable[339])(pAudioBuffer, frameIndex);
+            return (MaResult)AudioBufferSeekToPcmFrameInterop(pAudioBuffer, frameIndex);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int AudioBufferMapInterop(MaAudioBuffer* pAudioBuffer, void** ppFramesOut, ulong* pFrameCount)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaAudioBuffer*, void**, ulong*, int>)funcTable[340])(pAudioBuffer, ppFramesOut, pFrameCount);
+        }
+
         internal static MaResult AudioBufferMapNative(MaAudioBuffer* pAudioBuffer, void** ppFramesOut, ulong* pFrameCount)
         {
-            return ((delegate* unmanaged[Cdecl]<MaAudioBuffer*, void**, ulong*, MaResult>)funcTable[340])(pAudioBuffer, ppFramesOut, pFrameCount);
+            return (MaResult)AudioBufferMapInterop(pAudioBuffer, ppFramesOut, pFrameCount);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int AudioBufferUnmapInterop(MaAudioBuffer* pAudioBuffer, ulong frameCount)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaAudioBuffer*, ulong, int>)funcTable[341])(pAudioBuffer, frameCount);
+        }
+
         internal static MaResult AudioBufferUnmapNative(MaAudioBuffer* pAudioBuffer, ulong frameCount)
         {
-            return ((delegate* unmanaged[Cdecl]<MaAudioBuffer*, ulong, MaResult>)funcTable[341])(pAudioBuffer, frameCount);
+            return (MaResult)AudioBufferUnmapInterop(pAudioBuffer, frameCount);
         }
 
         /// <summary>
@@ -21322,33 +22398,53 @@ namespace Inno.Native.MiniAudio
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int AudioBufferGetCursorInPcmFramesInterop(MaAudioBuffer* pAudioBuffer, ulong* pCursor)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaAudioBuffer*, ulong*, int>)funcTable[343])(pAudioBuffer, pCursor);
+        }
+
         internal static MaResult AudioBufferGetCursorInPcmFramesNative(MaAudioBuffer* pAudioBuffer, ulong* pCursor)
         {
-            return ((delegate* unmanaged[Cdecl]<MaAudioBuffer*, ulong*, MaResult>)funcTable[343])(pAudioBuffer, pCursor);
+            return (MaResult)AudioBufferGetCursorInPcmFramesInterop(pAudioBuffer, pCursor);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int AudioBufferGetLengthInPcmFramesInterop(MaAudioBuffer* pAudioBuffer, ulong* pLength)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaAudioBuffer*, ulong*, int>)funcTable[344])(pAudioBuffer, pLength);
+        }
+
         internal static MaResult AudioBufferGetLengthInPcmFramesNative(MaAudioBuffer* pAudioBuffer, ulong* pLength)
         {
-            return ((delegate* unmanaged[Cdecl]<MaAudioBuffer*, ulong*, MaResult>)funcTable[344])(pAudioBuffer, pLength);
+            return (MaResult)AudioBufferGetLengthInPcmFramesInterop(pAudioBuffer, pLength);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int AudioBufferGetAvailableFramesInterop(MaAudioBuffer* pAudioBuffer, ulong* pAvailableFrames)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaAudioBuffer*, ulong*, int>)funcTable[345])(pAudioBuffer, pAvailableFrames);
+        }
+
         internal static MaResult AudioBufferGetAvailableFramesNative(MaAudioBuffer* pAudioBuffer, ulong* pAvailableFrames)
         {
-            return ((delegate* unmanaged[Cdecl]<MaAudioBuffer*, ulong*, MaResult>)funcTable[345])(pAudioBuffer, pAvailableFrames);
+            return (MaResult)AudioBufferGetAvailableFramesInterop(pAudioBuffer, pAvailableFrames);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int PagedAudioBufferDataInitInterop(int format, uint channels, MaPagedAudioBufferData* pData)
+        {
+            return ((delegate* unmanaged[Cdecl]<int, uint, MaPagedAudioBufferData*, int>)funcTable[346])(format, channels, pData);
+        }
+
         internal static MaResult PagedAudioBufferDataInitNative(MaFormat format, uint channels, MaPagedAudioBufferData* pData)
         {
-            return ((delegate* unmanaged[Cdecl]<MaFormat, uint, MaPagedAudioBufferData*, MaResult>)funcTable[346])(format, channels, pData);
+            return (MaResult)PagedAudioBufferDataInitInterop((int)format, channels, pData);
         }
 
         /// <summary>
@@ -21378,41 +22474,66 @@ namespace Inno.Native.MiniAudio
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int PagedAudioBufferDataGetLengthInPcmFramesInterop(MaPagedAudioBufferData* pData, ulong* pLength)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaPagedAudioBufferData*, ulong*, int>)funcTable[350])(pData, pLength);
+        }
+
         internal static MaResult PagedAudioBufferDataGetLengthInPcmFramesNative(MaPagedAudioBufferData* pData, ulong* pLength)
         {
-            return ((delegate* unmanaged[Cdecl]<MaPagedAudioBufferData*, ulong*, MaResult>)funcTable[350])(pData, pLength);
+            return (MaResult)PagedAudioBufferDataGetLengthInPcmFramesInterop(pData, pLength);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int PagedAudioBufferDataAllocatePageInterop(MaPagedAudioBufferData* pData, ulong pageSizeInFrames, void* pInitialData, MaAllocationCallbacks* pAllocationCallbacks, MaPagedAudioBufferPage** ppPage)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaPagedAudioBufferData*, ulong, void*, MaAllocationCallbacks*, MaPagedAudioBufferPage**, int>)funcTable[351])(pData, pageSizeInFrames, pInitialData, pAllocationCallbacks, ppPage);
+        }
+
         internal static MaResult PagedAudioBufferDataAllocatePageNative(MaPagedAudioBufferData* pData, ulong pageSizeInFrames, void* pInitialData, MaAllocationCallbacks* pAllocationCallbacks, MaPagedAudioBufferPage** ppPage)
         {
-            return ((delegate* unmanaged[Cdecl]<MaPagedAudioBufferData*, ulong, void*, MaAllocationCallbacks*, MaPagedAudioBufferPage**, MaResult>)funcTable[351])(pData, pageSizeInFrames, pInitialData, pAllocationCallbacks, ppPage);
+            return (MaResult)PagedAudioBufferDataAllocatePageInterop(pData, pageSizeInFrames, pInitialData, pAllocationCallbacks, ppPage);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int PagedAudioBufferDataFreePageInterop(MaPagedAudioBufferData* pData, MaPagedAudioBufferPage* pPage, MaAllocationCallbacks* pAllocationCallbacks)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaPagedAudioBufferData*, MaPagedAudioBufferPage*, MaAllocationCallbacks*, int>)funcTable[352])(pData, pPage, pAllocationCallbacks);
+        }
+
         internal static MaResult PagedAudioBufferDataFreePageNative(MaPagedAudioBufferData* pData, MaPagedAudioBufferPage* pPage, MaAllocationCallbacks* pAllocationCallbacks)
         {
-            return ((delegate* unmanaged[Cdecl]<MaPagedAudioBufferData*, MaPagedAudioBufferPage*, MaAllocationCallbacks*, MaResult>)funcTable[352])(pData, pPage, pAllocationCallbacks);
+            return (MaResult)PagedAudioBufferDataFreePageInterop(pData, pPage, pAllocationCallbacks);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int PagedAudioBufferDataAppendPageInterop(MaPagedAudioBufferData* pData, MaPagedAudioBufferPage* pPage)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaPagedAudioBufferData*, MaPagedAudioBufferPage*, int>)funcTable[353])(pData, pPage);
+        }
+
         internal static MaResult PagedAudioBufferDataAppendPageNative(MaPagedAudioBufferData* pData, MaPagedAudioBufferPage* pPage)
         {
-            return ((delegate* unmanaged[Cdecl]<MaPagedAudioBufferData*, MaPagedAudioBufferPage*, MaResult>)funcTable[353])(pData, pPage);
+            return (MaResult)PagedAudioBufferDataAppendPageInterop(pData, pPage);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int PagedAudioBufferDataAllocateAndAppendPageInterop(MaPagedAudioBufferData* pData, uint pageSizeInFrames, void* pInitialData, MaAllocationCallbacks* pAllocationCallbacks)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaPagedAudioBufferData*, uint, void*, MaAllocationCallbacks*, int>)funcTable[354])(pData, pageSizeInFrames, pInitialData, pAllocationCallbacks);
+        }
+
         internal static MaResult PagedAudioBufferDataAllocateAndAppendPageNative(MaPagedAudioBufferData* pData, uint pageSizeInFrames, void* pInitialData, MaAllocationCallbacks* pAllocationCallbacks)
         {
-            return ((delegate* unmanaged[Cdecl]<MaPagedAudioBufferData*, uint, void*, MaAllocationCallbacks*, MaResult>)funcTable[354])(pData, pageSizeInFrames, pInitialData, pAllocationCallbacks);
+            return (MaResult)PagedAudioBufferDataAllocateAndAppendPageInterop(pData, pageSizeInFrames, pInitialData, pAllocationCallbacks);
         }
 
         /// <summary>
@@ -21426,9 +22547,14 @@ namespace Inno.Native.MiniAudio
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int PagedAudioBufferInitInterop(MaPagedAudioBufferConfig* pConfig, MaPagedAudioBuffer* pPagedAudioBuffer)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaPagedAudioBufferConfig*, MaPagedAudioBuffer*, int>)funcTable[356])(pConfig, pPagedAudioBuffer);
+        }
+
         internal static MaResult PagedAudioBufferInitNative(MaPagedAudioBufferConfig* pConfig, MaPagedAudioBuffer* pPagedAudioBuffer)
         {
-            return ((delegate* unmanaged[Cdecl]<MaPagedAudioBufferConfig*, MaPagedAudioBuffer*, MaResult>)funcTable[356])(pConfig, pPagedAudioBuffer);
+            return (MaResult)PagedAudioBufferInitInterop(pConfig, pPagedAudioBuffer);
         }
 
         /// <summary>
@@ -21442,361 +22568,481 @@ namespace Inno.Native.MiniAudio
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int PagedAudioBufferReadPcmFramesInterop(MaPagedAudioBuffer* pPagedAudioBuffer, void* pFramesOut, ulong frameCount, ulong* pFramesRead)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaPagedAudioBuffer*, void*, ulong, ulong*, int>)funcTable[358])(pPagedAudioBuffer, pFramesOut, frameCount, pFramesRead);
+        }
+
         internal static MaResult PagedAudioBufferReadPcmFramesNative(MaPagedAudioBuffer* pPagedAudioBuffer, void* pFramesOut, ulong frameCount, ulong* pFramesRead)
         {
-            return ((delegate* unmanaged[Cdecl]<MaPagedAudioBuffer*, void*, ulong, ulong*, MaResult>)funcTable[358])(pPagedAudioBuffer, pFramesOut, frameCount, pFramesRead);
+            return (MaResult)PagedAudioBufferReadPcmFramesInterop(pPagedAudioBuffer, pFramesOut, frameCount, pFramesRead);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int PagedAudioBufferSeekToPcmFrameInterop(MaPagedAudioBuffer* pPagedAudioBuffer, ulong frameIndex)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaPagedAudioBuffer*, ulong, int>)funcTable[359])(pPagedAudioBuffer, frameIndex);
+        }
+
         internal static MaResult PagedAudioBufferSeekToPcmFrameNative(MaPagedAudioBuffer* pPagedAudioBuffer, ulong frameIndex)
         {
-            return ((delegate* unmanaged[Cdecl]<MaPagedAudioBuffer*, ulong, MaResult>)funcTable[359])(pPagedAudioBuffer, frameIndex);
+            return (MaResult)PagedAudioBufferSeekToPcmFrameInterop(pPagedAudioBuffer, frameIndex);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int PagedAudioBufferGetCursorInPcmFramesInterop(MaPagedAudioBuffer* pPagedAudioBuffer, ulong* pCursor)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaPagedAudioBuffer*, ulong*, int>)funcTable[360])(pPagedAudioBuffer, pCursor);
+        }
+
         internal static MaResult PagedAudioBufferGetCursorInPcmFramesNative(MaPagedAudioBuffer* pPagedAudioBuffer, ulong* pCursor)
         {
-            return ((delegate* unmanaged[Cdecl]<MaPagedAudioBuffer*, ulong*, MaResult>)funcTable[360])(pPagedAudioBuffer, pCursor);
+            return (MaResult)PagedAudioBufferGetCursorInPcmFramesInterop(pPagedAudioBuffer, pCursor);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int PagedAudioBufferGetLengthInPcmFramesInterop(MaPagedAudioBuffer* pPagedAudioBuffer, ulong* pLength)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaPagedAudioBuffer*, ulong*, int>)funcTable[361])(pPagedAudioBuffer, pLength);
+        }
+
         internal static MaResult PagedAudioBufferGetLengthInPcmFramesNative(MaPagedAudioBuffer* pPagedAudioBuffer, ulong* pLength)
         {
-            return ((delegate* unmanaged[Cdecl]<MaPagedAudioBuffer*, ulong*, MaResult>)funcTable[361])(pPagedAudioBuffer, pLength);
+            return (MaResult)PagedAudioBufferGetLengthInPcmFramesInterop(pPagedAudioBuffer, pLength);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
-        internal static MaResult RbInitExNative(nuint subbufferSizeInBytes, nuint subbufferCount, nuint subbufferStrideInBytes, void* pOptionalPreallocatedBuffer, MaAllocationCallbacks* pAllocationCallbacks, MaRb* prB)
+        internal static int RbInitExInterop(nuint subbufferSizeInBytes, nuint subbufferCount, nuint subbufferStrideInBytes, void* pOptionalPreallocatedBuffer, MaAllocationCallbacks* pAllocationCallbacks, MaRb* pRB)
         {
-            return ((delegate* unmanaged[Cdecl]<nuint, nuint, nuint, void*, MaAllocationCallbacks*, MaRb*, MaResult>)funcTable[362])(subbufferSizeInBytes, subbufferCount, subbufferStrideInBytes, pOptionalPreallocatedBuffer, pAllocationCallbacks, prB);
+            return ((delegate* unmanaged[Cdecl]<nuint, nuint, nuint, void*, MaAllocationCallbacks*, MaRb*, int>)funcTable[362])(subbufferSizeInBytes, subbufferCount, subbufferStrideInBytes, pOptionalPreallocatedBuffer, pAllocationCallbacks, pRB);
         }
 
-        /// <summary>
-        /// To be documented.
-        /// </summary>
-        internal static MaResult RbInitNative(nuint bufferSizeInBytes, void* pOptionalPreallocatedBuffer, MaAllocationCallbacks* pAllocationCallbacks, MaRb* prB)
+        internal static MaResult RbInitExNative(nuint subbufferSizeInBytes, nuint subbufferCount, nuint subbufferStrideInBytes, void* pOptionalPreallocatedBuffer, MaAllocationCallbacks* pAllocationCallbacks, MaRb* pRB)
         {
-            return ((delegate* unmanaged[Cdecl]<nuint, void*, MaAllocationCallbacks*, MaRb*, MaResult>)funcTable[363])(bufferSizeInBytes, pOptionalPreallocatedBuffer, pAllocationCallbacks, prB);
+            return (MaResult)RbInitExInterop(subbufferSizeInBytes, subbufferCount, subbufferStrideInBytes, pOptionalPreallocatedBuffer, pAllocationCallbacks, pRB);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
-        internal static void RbUninitNative(MaRb* prB)
+        internal static int RbInitInterop(nuint bufferSizeInBytes, void* pOptionalPreallocatedBuffer, MaAllocationCallbacks* pAllocationCallbacks, MaRb* pRB)
         {
-            ((delegate* unmanaged[Cdecl]<MaRb*, void>)funcTable[364])(prB);
+            return ((delegate* unmanaged[Cdecl]<nuint, void*, MaAllocationCallbacks*, MaRb*, int>)funcTable[363])(bufferSizeInBytes, pOptionalPreallocatedBuffer, pAllocationCallbacks, pRB);
         }
 
-        /// <summary>
-        /// To be documented.
-        /// </summary>
-        internal static void RbResetNative(MaRb* prB)
+        internal static MaResult RbInitNative(nuint bufferSizeInBytes, void* pOptionalPreallocatedBuffer, MaAllocationCallbacks* pAllocationCallbacks, MaRb* pRB)
         {
-            ((delegate* unmanaged[Cdecl]<MaRb*, void>)funcTable[365])(prB);
+            return (MaResult)RbInitInterop(bufferSizeInBytes, pOptionalPreallocatedBuffer, pAllocationCallbacks, pRB);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
-        internal static MaResult RbAcquireReadNative(MaRb* prB, nuint* pSizeInBytes, void** ppBufferOut)
+        internal static void RbUninitNative(MaRb* pRB)
         {
-            return ((delegate* unmanaged[Cdecl]<MaRb*, nuint*, void**, MaResult>)funcTable[366])(prB, pSizeInBytes, ppBufferOut);
+            ((delegate* unmanaged[Cdecl]<MaRb*, void>)funcTable[364])(pRB);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
-        internal static MaResult RbCommitReadNative(MaRb* prB, nuint sizeInBytes)
+        internal static void RbResetNative(MaRb* pRB)
         {
-            return ((delegate* unmanaged[Cdecl]<MaRb*, nuint, MaResult>)funcTable[367])(prB, sizeInBytes);
+            ((delegate* unmanaged[Cdecl]<MaRb*, void>)funcTable[365])(pRB);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
-        internal static MaResult RbAcquireWriteNative(MaRb* prB, nuint* pSizeInBytes, void** ppBufferOut)
+        internal static int RbAcquireReadInterop(MaRb* pRB, nuint* pSizeInBytes, void** ppBufferOut)
         {
-            return ((delegate* unmanaged[Cdecl]<MaRb*, nuint*, void**, MaResult>)funcTable[368])(prB, pSizeInBytes, ppBufferOut);
+            return ((delegate* unmanaged[Cdecl]<MaRb*, nuint*, void**, int>)funcTable[366])(pRB, pSizeInBytes, ppBufferOut);
         }
 
-        /// <summary>
-        /// To be documented.
-        /// </summary>
-        internal static MaResult RbCommitWriteNative(MaRb* prB, nuint sizeInBytes)
+        internal static MaResult RbAcquireReadNative(MaRb* pRB, nuint* pSizeInBytes, void** ppBufferOut)
         {
-            return ((delegate* unmanaged[Cdecl]<MaRb*, nuint, MaResult>)funcTable[369])(prB, sizeInBytes);
+            return (MaResult)RbAcquireReadInterop(pRB, pSizeInBytes, ppBufferOut);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
-        internal static MaResult RbSeekReadNative(MaRb* prB, nuint offsetInBytes)
+        internal static int RbCommitReadInterop(MaRb* pRB, nuint sizeInBytes)
         {
-            return ((delegate* unmanaged[Cdecl]<MaRb*, nuint, MaResult>)funcTable[370])(prB, offsetInBytes);
+            return ((delegate* unmanaged[Cdecl]<MaRb*, nuint, int>)funcTable[367])(pRB, sizeInBytes);
         }
 
-        /// <summary>
-        /// To be documented.
-        /// </summary>
-        internal static MaResult RbSeekWriteNative(MaRb* prB, nuint offsetInBytes)
+        internal static MaResult RbCommitReadNative(MaRb* pRB, nuint sizeInBytes)
         {
-            return ((delegate* unmanaged[Cdecl]<MaRb*, nuint, MaResult>)funcTable[371])(prB, offsetInBytes);
+            return (MaResult)RbCommitReadInterop(pRB, sizeInBytes);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
-        internal static int RbPointerDistanceNative(MaRb* prB)
+        internal static int RbAcquireWriteInterop(MaRb* pRB, nuint* pSizeInBytes, void** ppBufferOut)
         {
-            return ((delegate* unmanaged[Cdecl]<MaRb*, int>)funcTable[372])(prB);
+            return ((delegate* unmanaged[Cdecl]<MaRb*, nuint*, void**, int>)funcTable[368])(pRB, pSizeInBytes, ppBufferOut);
         }
 
-        /// <summary>
-        /// To be documented.
-        /// </summary>
-        internal static uint RbAvailableReadNative(MaRb* prB)
+        internal static MaResult RbAcquireWriteNative(MaRb* pRB, nuint* pSizeInBytes, void** ppBufferOut)
         {
-            return ((delegate* unmanaged[Cdecl]<MaRb*, uint>)funcTable[373])(prB);
+            return (MaResult)RbAcquireWriteInterop(pRB, pSizeInBytes, ppBufferOut);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
-        internal static uint RbAvailableWriteNative(MaRb* prB)
+        internal static int RbCommitWriteInterop(MaRb* pRB, nuint sizeInBytes)
         {
-            return ((delegate* unmanaged[Cdecl]<MaRb*, uint>)funcTable[374])(prB);
+            return ((delegate* unmanaged[Cdecl]<MaRb*, nuint, int>)funcTable[369])(pRB, sizeInBytes);
         }
 
-        /// <summary>
-        /// To be documented.
-        /// </summary>
-        internal static nuint RbGetSubbufferSizeNative(MaRb* prB)
+        internal static MaResult RbCommitWriteNative(MaRb* pRB, nuint sizeInBytes)
         {
-            return ((delegate* unmanaged[Cdecl]<MaRb*, nuint>)funcTable[375])(prB);
+            return (MaResult)RbCommitWriteInterop(pRB, sizeInBytes);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
-        internal static nuint RbGetSubbufferStrideNative(MaRb* prB)
+        internal static int RbSeekReadInterop(MaRb* pRB, nuint offsetInBytes)
         {
-            return ((delegate* unmanaged[Cdecl]<MaRb*, nuint>)funcTable[376])(prB);
+            return ((delegate* unmanaged[Cdecl]<MaRb*, nuint, int>)funcTable[370])(pRB, offsetInBytes);
         }
 
-        /// <summary>
-        /// To be documented.
-        /// </summary>
-        internal static nuint RbGetSubbufferOffsetNative(MaRb* prB, nuint subbufferIndex)
+        internal static MaResult RbSeekReadNative(MaRb* pRB, nuint offsetInBytes)
         {
-            return ((delegate* unmanaged[Cdecl]<MaRb*, nuint, nuint>)funcTable[377])(prB, subbufferIndex);
+            return (MaResult)RbSeekReadInterop(pRB, offsetInBytes);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
-        internal static void* RbGetSubbufferPtrNative(MaRb* prB, nuint subbufferIndex, void* pBuffer)
+        internal static int RbSeekWriteInterop(MaRb* pRB, nuint offsetInBytes)
         {
-            return ((delegate* unmanaged[Cdecl]<MaRb*, nuint, void*, void*>)funcTable[378])(prB, subbufferIndex, pBuffer);
+            return ((delegate* unmanaged[Cdecl]<MaRb*, nuint, int>)funcTable[371])(pRB, offsetInBytes);
         }
 
-        /// <summary>
-        /// To be documented.
-        /// </summary>
-        internal static MaResult PcmRbInitExNative(MaFormat format, uint channels, uint subbufferSizeInFrames, uint subbufferCount, uint subbufferStrideInFrames, void* pOptionalPreallocatedBuffer, MaAllocationCallbacks* pAllocationCallbacks, MaPcmRb* prB)
+        internal static MaResult RbSeekWriteNative(MaRb* pRB, nuint offsetInBytes)
         {
-            return ((delegate* unmanaged[Cdecl]<MaFormat, uint, uint, uint, uint, void*, MaAllocationCallbacks*, MaPcmRb*, MaResult>)funcTable[379])(format, channels, subbufferSizeInFrames, subbufferCount, subbufferStrideInFrames, pOptionalPreallocatedBuffer, pAllocationCallbacks, prB);
+            return (MaResult)RbSeekWriteInterop(pRB, offsetInBytes);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
-        internal static MaResult PcmRbInitNative(MaFormat format, uint channels, uint bufferSizeInFrames, void* pOptionalPreallocatedBuffer, MaAllocationCallbacks* pAllocationCallbacks, MaPcmRb* prB)
+        internal static int RbPointerDistanceNative(MaRb* pRB)
         {
-            return ((delegate* unmanaged[Cdecl]<MaFormat, uint, uint, void*, MaAllocationCallbacks*, MaPcmRb*, MaResult>)funcTable[380])(format, channels, bufferSizeInFrames, pOptionalPreallocatedBuffer, pAllocationCallbacks, prB);
+            return ((delegate* unmanaged[Cdecl]<MaRb*, int>)funcTable[372])(pRB);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
-        internal static void PcmRbUninitNative(MaPcmRb* prB)
+        internal static uint RbAvailableReadNative(MaRb* pRB)
         {
-            ((delegate* unmanaged[Cdecl]<MaPcmRb*, void>)funcTable[381])(prB);
+            return ((delegate* unmanaged[Cdecl]<MaRb*, uint>)funcTable[373])(pRB);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
-        internal static void PcmRbResetNative(MaPcmRb* prB)
+        internal static uint RbAvailableWriteNative(MaRb* pRB)
         {
-            ((delegate* unmanaged[Cdecl]<MaPcmRb*, void>)funcTable[382])(prB);
+            return ((delegate* unmanaged[Cdecl]<MaRb*, uint>)funcTable[374])(pRB);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
-        internal static MaResult PcmRbAcquireReadNative(MaPcmRb* prB, uint* pSizeInFrames, void** ppBufferOut)
+        internal static nuint RbGetSubbufferSizeNative(MaRb* pRB)
         {
-            return ((delegate* unmanaged[Cdecl]<MaPcmRb*, uint*, void**, MaResult>)funcTable[383])(prB, pSizeInFrames, ppBufferOut);
+            return ((delegate* unmanaged[Cdecl]<MaRb*, nuint>)funcTable[375])(pRB);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
-        internal static MaResult PcmRbCommitReadNative(MaPcmRb* prB, uint sizeInFrames)
+        internal static nuint RbGetSubbufferStrideNative(MaRb* pRB)
         {
-            return ((delegate* unmanaged[Cdecl]<MaPcmRb*, uint, MaResult>)funcTable[384])(prB, sizeInFrames);
+            return ((delegate* unmanaged[Cdecl]<MaRb*, nuint>)funcTable[376])(pRB);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
-        internal static MaResult PcmRbAcquireWriteNative(MaPcmRb* prB, uint* pSizeInFrames, void** ppBufferOut)
+        internal static nuint RbGetSubbufferOffsetNative(MaRb* pRB, nuint subbufferIndex)
         {
-            return ((delegate* unmanaged[Cdecl]<MaPcmRb*, uint*, void**, MaResult>)funcTable[385])(prB, pSizeInFrames, ppBufferOut);
+            return ((delegate* unmanaged[Cdecl]<MaRb*, nuint, nuint>)funcTable[377])(pRB, subbufferIndex);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
-        internal static MaResult PcmRbCommitWriteNative(MaPcmRb* prB, uint sizeInFrames)
+        internal static void* RbGetSubbufferPtrNative(MaRb* pRB, nuint subbufferIndex, void* pBuffer)
         {
-            return ((delegate* unmanaged[Cdecl]<MaPcmRb*, uint, MaResult>)funcTable[386])(prB, sizeInFrames);
+            return ((delegate* unmanaged[Cdecl]<MaRb*, nuint, void*, void*>)funcTable[378])(pRB, subbufferIndex, pBuffer);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
-        internal static MaResult PcmRbSeekReadNative(MaPcmRb* prB, uint offsetInFrames)
+        internal static int PcmRbInitExInterop(int format, uint channels, uint subbufferSizeInFrames, uint subbufferCount, uint subbufferStrideInFrames, void* pOptionalPreallocatedBuffer, MaAllocationCallbacks* pAllocationCallbacks, MaPcmRb* pRB)
         {
-            return ((delegate* unmanaged[Cdecl]<MaPcmRb*, uint, MaResult>)funcTable[387])(prB, offsetInFrames);
+            return ((delegate* unmanaged[Cdecl]<int, uint, uint, uint, uint, void*, MaAllocationCallbacks*, MaPcmRb*, int>)funcTable[379])(format, channels, subbufferSizeInFrames, subbufferCount, subbufferStrideInFrames, pOptionalPreallocatedBuffer, pAllocationCallbacks, pRB);
         }
 
-        /// <summary>
-        /// To be documented.
-        /// </summary>
-        internal static MaResult PcmRbSeekWriteNative(MaPcmRb* prB, uint offsetInFrames)
+        internal static MaResult PcmRbInitExNative(MaFormat format, uint channels, uint subbufferSizeInFrames, uint subbufferCount, uint subbufferStrideInFrames, void* pOptionalPreallocatedBuffer, MaAllocationCallbacks* pAllocationCallbacks, MaPcmRb* pRB)
         {
-            return ((delegate* unmanaged[Cdecl]<MaPcmRb*, uint, MaResult>)funcTable[388])(prB, offsetInFrames);
+            return (MaResult)PcmRbInitExInterop((int)format, channels, subbufferSizeInFrames, subbufferCount, subbufferStrideInFrames, pOptionalPreallocatedBuffer, pAllocationCallbacks, pRB);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
-        internal static int PcmRbPointerDistanceNative(MaPcmRb* prB)
+        internal static int PcmRbInitInterop(int format, uint channels, uint bufferSizeInFrames, void* pOptionalPreallocatedBuffer, MaAllocationCallbacks* pAllocationCallbacks, MaPcmRb* pRB)
         {
-            return ((delegate* unmanaged[Cdecl]<MaPcmRb*, int>)funcTable[389])(prB);
+            return ((delegate* unmanaged[Cdecl]<int, uint, uint, void*, MaAllocationCallbacks*, MaPcmRb*, int>)funcTable[380])(format, channels, bufferSizeInFrames, pOptionalPreallocatedBuffer, pAllocationCallbacks, pRB);
         }
 
-        /// <summary>
-        /// To be documented.
-        /// </summary>
-        internal static uint PcmRbAvailableReadNative(MaPcmRb* prB)
+        internal static MaResult PcmRbInitNative(MaFormat format, uint channels, uint bufferSizeInFrames, void* pOptionalPreallocatedBuffer, MaAllocationCallbacks* pAllocationCallbacks, MaPcmRb* pRB)
         {
-            return ((delegate* unmanaged[Cdecl]<MaPcmRb*, uint>)funcTable[390])(prB);
+            return (MaResult)PcmRbInitInterop((int)format, channels, bufferSizeInFrames, pOptionalPreallocatedBuffer, pAllocationCallbacks, pRB);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
-        internal static uint PcmRbAvailableWriteNative(MaPcmRb* prB)
+        internal static void PcmRbUninitNative(MaPcmRb* pRB)
         {
-            return ((delegate* unmanaged[Cdecl]<MaPcmRb*, uint>)funcTable[391])(prB);
+            ((delegate* unmanaged[Cdecl]<MaPcmRb*, void>)funcTable[381])(pRB);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
-        internal static uint PcmRbGetSubbufferSizeNative(MaPcmRb* prB)
+        internal static void PcmRbResetNative(MaPcmRb* pRB)
         {
-            return ((delegate* unmanaged[Cdecl]<MaPcmRb*, uint>)funcTable[392])(prB);
+            ((delegate* unmanaged[Cdecl]<MaPcmRb*, void>)funcTable[382])(pRB);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
-        internal static uint PcmRbGetSubbufferStrideNative(MaPcmRb* prB)
+        internal static int PcmRbAcquireReadInterop(MaPcmRb* pRB, uint* pSizeInFrames, void** ppBufferOut)
         {
-            return ((delegate* unmanaged[Cdecl]<MaPcmRb*, uint>)funcTable[393])(prB);
+            return ((delegate* unmanaged[Cdecl]<MaPcmRb*, uint*, void**, int>)funcTable[383])(pRB, pSizeInFrames, ppBufferOut);
         }
 
-        /// <summary>
-        /// To be documented.
-        /// </summary>
-        internal static uint PcmRbGetSubbufferOffsetNative(MaPcmRb* prB, uint subbufferIndex)
+        internal static MaResult PcmRbAcquireReadNative(MaPcmRb* pRB, uint* pSizeInFrames, void** ppBufferOut)
         {
-            return ((delegate* unmanaged[Cdecl]<MaPcmRb*, uint, uint>)funcTable[394])(prB, subbufferIndex);
+            return (MaResult)PcmRbAcquireReadInterop(pRB, pSizeInFrames, ppBufferOut);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
-        internal static void* PcmRbGetSubbufferPtrNative(MaPcmRb* prB, uint subbufferIndex, void* pBuffer)
+        internal static int PcmRbCommitReadInterop(MaPcmRb* pRB, uint sizeInFrames)
         {
-            return ((delegate* unmanaged[Cdecl]<MaPcmRb*, uint, void*, void*>)funcTable[395])(prB, subbufferIndex, pBuffer);
+            return ((delegate* unmanaged[Cdecl]<MaPcmRb*, uint, int>)funcTable[384])(pRB, sizeInFrames);
         }
 
-        /// <summary>
-        /// To be documented.
-        /// </summary>
-        internal static MaFormat PcmRbGetFormatNative(MaPcmRb* prB)
+        internal static MaResult PcmRbCommitReadNative(MaPcmRb* pRB, uint sizeInFrames)
         {
-            return ((delegate* unmanaged[Cdecl]<MaPcmRb*, MaFormat>)funcTable[396])(prB);
+            return (MaResult)PcmRbCommitReadInterop(pRB, sizeInFrames);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
-        internal static uint PcmRbGetChannelsNative(MaPcmRb* prB)
+        internal static int PcmRbAcquireWriteInterop(MaPcmRb* pRB, uint* pSizeInFrames, void** ppBufferOut)
         {
-            return ((delegate* unmanaged[Cdecl]<MaPcmRb*, uint>)funcTable[397])(prB);
+            return ((delegate* unmanaged[Cdecl]<MaPcmRb*, uint*, void**, int>)funcTable[385])(pRB, pSizeInFrames, ppBufferOut);
         }
 
-        /// <summary>
-        /// To be documented.
-        /// </summary>
-        internal static uint PcmRbGetSampleRateNative(MaPcmRb* prB)
+        internal static MaResult PcmRbAcquireWriteNative(MaPcmRb* pRB, uint* pSizeInFrames, void** ppBufferOut)
         {
-            return ((delegate* unmanaged[Cdecl]<MaPcmRb*, uint>)funcTable[398])(prB);
+            return (MaResult)PcmRbAcquireWriteInterop(pRB, pSizeInFrames, ppBufferOut);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
-        internal static void PcmRbSetSampleRateNative(MaPcmRb* prB, uint sampleRate)
+        internal static int PcmRbCommitWriteInterop(MaPcmRb* pRB, uint sizeInFrames)
         {
-            ((delegate* unmanaged[Cdecl]<MaPcmRb*, uint, void>)funcTable[399])(prB, sampleRate);
+            return ((delegate* unmanaged[Cdecl]<MaPcmRb*, uint, int>)funcTable[386])(pRB, sizeInFrames);
         }
 
-        /// <summary>
-        /// To be documented.
-        /// </summary>
-        internal static MaResult DuplexRbInitNative(MaFormat captureFormat, uint captureChannels, uint sampleRate, uint captureInternalSampleRate, uint captureInternalPeriodSizeInFrames, MaAllocationCallbacks* pAllocationCallbacks, MaDuplexRb* prB)
+        internal static MaResult PcmRbCommitWriteNative(MaPcmRb* pRB, uint sizeInFrames)
         {
-            return ((delegate* unmanaged[Cdecl]<MaFormat, uint, uint, uint, uint, MaAllocationCallbacks*, MaDuplexRb*, MaResult>)funcTable[400])(captureFormat, captureChannels, sampleRate, captureInternalSampleRate, captureInternalPeriodSizeInFrames, pAllocationCallbacks, prB);
+            return (MaResult)PcmRbCommitWriteInterop(pRB, sizeInFrames);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
-        internal static MaResult DuplexRbUninitNative(MaDuplexRb* prB)
+        internal static int PcmRbSeekReadInterop(MaPcmRb* pRB, uint offsetInFrames)
         {
-            return ((delegate* unmanaged[Cdecl]<MaDuplexRb*, MaResult>)funcTable[401])(prB);
+            return ((delegate* unmanaged[Cdecl]<MaPcmRb*, uint, int>)funcTable[387])(pRB, offsetInFrames);
+        }
+
+        internal static MaResult PcmRbSeekReadNative(MaPcmRb* pRB, uint offsetInFrames)
+        {
+            return (MaResult)PcmRbSeekReadInterop(pRB, offsetInFrames);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int PcmRbSeekWriteInterop(MaPcmRb* pRB, uint offsetInFrames)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaPcmRb*, uint, int>)funcTable[388])(pRB, offsetInFrames);
+        }
+
+        internal static MaResult PcmRbSeekWriteNative(MaPcmRb* pRB, uint offsetInFrames)
+        {
+            return (MaResult)PcmRbSeekWriteInterop(pRB, offsetInFrames);
+        }
+
+        /// <summary>
+        /// To be documented.
+        /// </summary>
+        internal static int PcmRbPointerDistanceNative(MaPcmRb* pRB)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaPcmRb*, int>)funcTable[389])(pRB);
+        }
+
+        /// <summary>
+        /// To be documented.
+        /// </summary>
+        internal static uint PcmRbAvailableReadNative(MaPcmRb* pRB)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaPcmRb*, uint>)funcTable[390])(pRB);
+        }
+
+        /// <summary>
+        /// To be documented.
+        /// </summary>
+        internal static uint PcmRbAvailableWriteNative(MaPcmRb* pRB)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaPcmRb*, uint>)funcTable[391])(pRB);
+        }
+
+        /// <summary>
+        /// To be documented.
+        /// </summary>
+        internal static uint PcmRbGetSubbufferSizeNative(MaPcmRb* pRB)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaPcmRb*, uint>)funcTable[392])(pRB);
+        }
+
+        /// <summary>
+        /// To be documented.
+        /// </summary>
+        internal static uint PcmRbGetSubbufferStrideNative(MaPcmRb* pRB)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaPcmRb*, uint>)funcTable[393])(pRB);
+        }
+
+        /// <summary>
+        /// To be documented.
+        /// </summary>
+        internal static uint PcmRbGetSubbufferOffsetNative(MaPcmRb* pRB, uint subbufferIndex)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaPcmRb*, uint, uint>)funcTable[394])(pRB, subbufferIndex);
+        }
+
+        /// <summary>
+        /// To be documented.
+        /// </summary>
+        internal static void* PcmRbGetSubbufferPtrNative(MaPcmRb* pRB, uint subbufferIndex, void* pBuffer)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaPcmRb*, uint, void*, void*>)funcTable[395])(pRB, subbufferIndex, pBuffer);
+        }
+
+        /// <summary>
+        /// To be documented.
+        /// </summary>
+        internal static int PcmRbGetFormatInterop(MaPcmRb* pRB)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaPcmRb*, int>)funcTable[396])(pRB);
+        }
+
+        internal static MaFormat PcmRbGetFormatNative(MaPcmRb* pRB)
+        {
+            return (MaFormat)PcmRbGetFormatInterop(pRB);
+        }
+
+        /// <summary>
+        /// To be documented.
+        /// </summary>
+        internal static uint PcmRbGetChannelsNative(MaPcmRb* pRB)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaPcmRb*, uint>)funcTable[397])(pRB);
+        }
+
+        /// <summary>
+        /// To be documented.
+        /// </summary>
+        internal static uint PcmRbGetSampleRateNative(MaPcmRb* pRB)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaPcmRb*, uint>)funcTable[398])(pRB);
+        }
+
+        /// <summary>
+        /// To be documented.
+        /// </summary>
+        internal static void PcmRbSetSampleRateNative(MaPcmRb* pRB, uint sampleRate)
+        {
+            ((delegate* unmanaged[Cdecl]<MaPcmRb*, uint, void>)funcTable[399])(pRB, sampleRate);
+        }
+
+        /// <summary>
+        /// To be documented.
+        /// </summary>
+        internal static int DuplexRbInitInterop(int captureFormat, uint captureChannels, uint sampleRate, uint captureInternalSampleRate, uint captureInternalPeriodSizeInFrames, MaAllocationCallbacks* pAllocationCallbacks, MaDuplexRb* pRB)
+        {
+            return ((delegate* unmanaged[Cdecl]<int, uint, uint, uint, uint, MaAllocationCallbacks*, MaDuplexRb*, int>)funcTable[400])(captureFormat, captureChannels, sampleRate, captureInternalSampleRate, captureInternalPeriodSizeInFrames, pAllocationCallbacks, pRB);
+        }
+
+        internal static MaResult DuplexRbInitNative(MaFormat captureFormat, uint captureChannels, uint sampleRate, uint captureInternalSampleRate, uint captureInternalPeriodSizeInFrames, MaAllocationCallbacks* pAllocationCallbacks, MaDuplexRb* pRB)
+        {
+            return (MaResult)DuplexRbInitInterop((int)captureFormat, captureChannels, sampleRate, captureInternalSampleRate, captureInternalPeriodSizeInFrames, pAllocationCallbacks, pRB);
+        }
+
+        /// <summary>
+        /// To be documented.
+        /// </summary>
+        internal static int DuplexRbUninitInterop(MaDuplexRb* pRB)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaDuplexRb*, int>)funcTable[401])(pRB);
+        }
+
+        internal static MaResult DuplexRbUninitNative(MaDuplexRb* pRB)
+        {
+            return (MaResult)DuplexRbUninitInterop(pRB);
+        }
+
+        /// <summary>
+        /// To be documented.
+        /// </summary>
+        internal static byte* ResultDescriptionInterop(int result)
+        {
+            return ((delegate* unmanaged[Cdecl]<int, byte*>)funcTable[402])(result);
+        }
+
         internal static byte* ResultDescriptionNative(MaResult result)
         {
-            return ((delegate* unmanaged[Cdecl]<MaResult, byte*>)funcTable[402])(result);
+            return ResultDescriptionInterop((int)result);
         }
 
         /// <summary>
@@ -21850,9 +23096,14 @@ namespace Inno.Native.MiniAudio
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte* GetFormatNameInterop(int format)
+        {
+            return ((delegate* unmanaged[Cdecl]<int, byte*>)funcTable[409])(format);
+        }
+
         internal static byte* GetFormatNameNative(MaFormat format)
         {
-            return ((delegate* unmanaged[Cdecl]<MaFormat, byte*>)funcTable[409])(format);
+            return GetFormatNameInterop((int)format);
         }
 
         /// <summary>
@@ -21866,9 +23117,14 @@ namespace Inno.Native.MiniAudio
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static uint GetBytesPerSampleInterop(int format)
+        {
+            return ((delegate* unmanaged[Cdecl]<int, uint>)funcTable[411])(format);
+        }
+
         internal static uint GetBytesPerSampleNative(MaFormat format)
         {
-            return ((delegate* unmanaged[Cdecl]<MaFormat, uint>)funcTable[411])(format);
+            return GetBytesPerSampleInterop((int)format);
         }
 
         /// <summary>
@@ -21882,33 +23138,53 @@ namespace Inno.Native.MiniAudio
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int SpinlockLockInterop(uint* pSpinlock)
+        {
+            return ((delegate* unmanaged[Cdecl]<uint*, int>)funcTable[413])(pSpinlock);
+        }
+
         internal static MaResult SpinlockLockNative(uint* pSpinlock)
         {
-            return ((delegate* unmanaged[Cdecl]<uint*, MaResult>)funcTable[413])(pSpinlock);
+            return (MaResult)SpinlockLockInterop(pSpinlock);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int SpinlockLockNoyieldInterop(uint* pSpinlock)
+        {
+            return ((delegate* unmanaged[Cdecl]<uint*, int>)funcTable[414])(pSpinlock);
+        }
+
         internal static MaResult SpinlockLockNoyieldNative(uint* pSpinlock)
         {
-            return ((delegate* unmanaged[Cdecl]<uint*, MaResult>)funcTable[414])(pSpinlock);
+            return (MaResult)SpinlockLockNoyieldInterop(pSpinlock);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int SpinlockUnlockInterop(uint* pSpinlock)
+        {
+            return ((delegate* unmanaged[Cdecl]<uint*, int>)funcTable[415])(pSpinlock);
+        }
+
         internal static MaResult SpinlockUnlockNative(uint* pSpinlock)
         {
-            return ((delegate* unmanaged[Cdecl]<uint*, MaResult>)funcTable[415])(pSpinlock);
+            return (MaResult)SpinlockUnlockInterop(pSpinlock);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int MutexInitInterop(nint* pMutex)
+        {
+            return ((delegate* unmanaged[Cdecl]<nint*, int>)funcTable[416])(pMutex);
+        }
+
         internal static MaResult MutexInitNative(nint* pMutex)
         {
-            return ((delegate* unmanaged[Cdecl]<nint*, MaResult>)funcTable[416])(pMutex);
+            return (MaResult)MutexInitInterop(pMutex);
         }
 
         /// <summary>
@@ -21938,9 +23214,14 @@ namespace Inno.Native.MiniAudio
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int EventInitInterop(nint* pEvent)
+        {
+            return ((delegate* unmanaged[Cdecl]<nint*, int>)funcTable[420])(pEvent);
+        }
+
         internal static MaResult EventInitNative(nint* pEvent)
         {
-            return ((delegate* unmanaged[Cdecl]<nint*, MaResult>)funcTable[420])(pEvent);
+            return (MaResult)EventInitInterop(pEvent);
         }
 
         /// <summary>
@@ -21954,25 +23235,40 @@ namespace Inno.Native.MiniAudio
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int EventWaitInterop(nint* pEvent)
+        {
+            return ((delegate* unmanaged[Cdecl]<nint*, int>)funcTable[422])(pEvent);
+        }
+
         internal static MaResult EventWaitNative(nint* pEvent)
         {
-            return ((delegate* unmanaged[Cdecl]<nint*, MaResult>)funcTable[422])(pEvent);
+            return (MaResult)EventWaitInterop(pEvent);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int EventSignalInterop(nint* pEvent)
+        {
+            return ((delegate* unmanaged[Cdecl]<nint*, int>)funcTable[423])(pEvent);
+        }
+
         internal static MaResult EventSignalNative(nint* pEvent)
         {
-            return ((delegate* unmanaged[Cdecl]<nint*, MaResult>)funcTable[423])(pEvent);
+            return (MaResult)EventSignalInterop(pEvent);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int SemaphoreInitInterop(int initialValue, nint* pSemaphore)
+        {
+            return ((delegate* unmanaged[Cdecl]<int, nint*, int>)funcTable[424])(initialValue, pSemaphore);
+        }
+
         internal static MaResult SemaphoreInitNative(int initialValue, nint* pSemaphore)
         {
-            return ((delegate* unmanaged[Cdecl]<int, nint*, MaResult>)funcTable[424])(initialValue, pSemaphore);
+            return (MaResult)SemaphoreInitInterop(initialValue, pSemaphore);
         }
 
         /// <summary>
@@ -21986,25 +23282,40 @@ namespace Inno.Native.MiniAudio
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int SemaphoreWaitInterop(nint* pSemaphore)
+        {
+            return ((delegate* unmanaged[Cdecl]<nint*, int>)funcTable[426])(pSemaphore);
+        }
+
         internal static MaResult SemaphoreWaitNative(nint* pSemaphore)
         {
-            return ((delegate* unmanaged[Cdecl]<nint*, MaResult>)funcTable[426])(pSemaphore);
+            return (MaResult)SemaphoreWaitInterop(pSemaphore);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int SemaphoreReleaseInterop(nint* pSemaphore)
+        {
+            return ((delegate* unmanaged[Cdecl]<nint*, int>)funcTable[427])(pSemaphore);
+        }
+
         internal static MaResult SemaphoreReleaseNative(nint* pSemaphore)
         {
-            return ((delegate* unmanaged[Cdecl]<nint*, MaResult>)funcTable[427])(pSemaphore);
+            return (MaResult)SemaphoreReleaseInterop(pSemaphore);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int FenceInitInterop(MaFence* pFence)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaFence*, int>)funcTable[428])(pFence);
+        }
+
         internal static MaResult FenceInitNative(MaFence* pFence)
         {
-            return ((delegate* unmanaged[Cdecl]<MaFence*, MaResult>)funcTable[428])(pFence);
+            return (MaResult)FenceInitInterop(pFence);
         }
 
         /// <summary>
@@ -22018,41 +23329,66 @@ namespace Inno.Native.MiniAudio
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int FenceAcquireInterop(MaFence* pFence)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaFence*, int>)funcTable[430])(pFence);
+        }
+
         internal static MaResult FenceAcquireNative(MaFence* pFence)
         {
-            return ((delegate* unmanaged[Cdecl]<MaFence*, MaResult>)funcTable[430])(pFence);
+            return (MaResult)FenceAcquireInterop(pFence);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int FenceReleaseInterop(MaFence* pFence)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaFence*, int>)funcTable[431])(pFence);
+        }
+
         internal static MaResult FenceReleaseNative(MaFence* pFence)
         {
-            return ((delegate* unmanaged[Cdecl]<MaFence*, MaResult>)funcTable[431])(pFence);
+            return (MaResult)FenceReleaseInterop(pFence);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int FenceWaitInterop(MaFence* pFence)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaFence*, int>)funcTable[432])(pFence);
+        }
+
         internal static MaResult FenceWaitNative(MaFence* pFence)
         {
-            return ((delegate* unmanaged[Cdecl]<MaFence*, MaResult>)funcTable[432])(pFence);
+            return (MaResult)FenceWaitInterop(pFence);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int AsyncNotificationSignalInterop(MaAsyncNotification* pNotification)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaAsyncNotification*, int>)funcTable[433])(pNotification);
+        }
+
         internal static MaResult AsyncNotificationSignalNative(MaAsyncNotification* pNotification)
         {
-            return ((delegate* unmanaged[Cdecl]<MaAsyncNotification*, MaResult>)funcTable[433])(pNotification);
+            return (MaResult)AsyncNotificationSignalInterop(pNotification);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int AsyncNotificationPollInitInterop(MaAsyncNotificationPoll* pNotificationPoll)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaAsyncNotificationPoll*, int>)funcTable[434])(pNotificationPoll);
+        }
+
         internal static MaResult AsyncNotificationPollInitNative(MaAsyncNotificationPoll* pNotificationPoll)
         {
-            return ((delegate* unmanaged[Cdecl]<MaAsyncNotificationPoll*, MaResult>)funcTable[434])(pNotificationPoll);
+            return (MaResult)AsyncNotificationPollInitInterop(pNotificationPoll);
         }
 
         /// <summary>
@@ -22066,33 +23402,53 @@ namespace Inno.Native.MiniAudio
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int AsyncNotificationEventInitInterop(MaAsyncNotificationEvent* pNotificationEvent)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaAsyncNotificationEvent*, int>)funcTable[436])(pNotificationEvent);
+        }
+
         internal static MaResult AsyncNotificationEventInitNative(MaAsyncNotificationEvent* pNotificationEvent)
         {
-            return ((delegate* unmanaged[Cdecl]<MaAsyncNotificationEvent*, MaResult>)funcTable[436])(pNotificationEvent);
+            return (MaResult)AsyncNotificationEventInitInterop(pNotificationEvent);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int AsyncNotificationEventUninitInterop(MaAsyncNotificationEvent* pNotificationEvent)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaAsyncNotificationEvent*, int>)funcTable[437])(pNotificationEvent);
+        }
+
         internal static MaResult AsyncNotificationEventUninitNative(MaAsyncNotificationEvent* pNotificationEvent)
         {
-            return ((delegate* unmanaged[Cdecl]<MaAsyncNotificationEvent*, MaResult>)funcTable[437])(pNotificationEvent);
+            return (MaResult)AsyncNotificationEventUninitInterop(pNotificationEvent);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int AsyncNotificationEventWaitInterop(MaAsyncNotificationEvent* pNotificationEvent)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaAsyncNotificationEvent*, int>)funcTable[438])(pNotificationEvent);
+        }
+
         internal static MaResult AsyncNotificationEventWaitNative(MaAsyncNotificationEvent* pNotificationEvent)
         {
-            return ((delegate* unmanaged[Cdecl]<MaAsyncNotificationEvent*, MaResult>)funcTable[438])(pNotificationEvent);
+            return (MaResult)AsyncNotificationEventWaitInterop(pNotificationEvent);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int AsyncNotificationEventSignalInterop(MaAsyncNotificationEvent* pNotificationEvent)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaAsyncNotificationEvent*, int>)funcTable[439])(pNotificationEvent);
+        }
+
         internal static MaResult AsyncNotificationEventSignalNative(MaAsyncNotificationEvent* pNotificationEvent)
         {
-            return ((delegate* unmanaged[Cdecl]<MaAsyncNotificationEvent*, MaResult>)funcTable[439])(pNotificationEvent);
+            return (MaResult)AsyncNotificationEventSignalInterop(pNotificationEvent);
         }
 
         /// <summary>
@@ -22106,25 +23462,40 @@ namespace Inno.Native.MiniAudio
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int SlotAllocatorGetHeapSizeInterop(MaSlotAllocatorConfig* pConfig, nuint* pHeapSizeInBytes)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaSlotAllocatorConfig*, nuint*, int>)funcTable[441])(pConfig, pHeapSizeInBytes);
+        }
+
         internal static MaResult SlotAllocatorGetHeapSizeNative(MaSlotAllocatorConfig* pConfig, nuint* pHeapSizeInBytes)
         {
-            return ((delegate* unmanaged[Cdecl]<MaSlotAllocatorConfig*, nuint*, MaResult>)funcTable[441])(pConfig, pHeapSizeInBytes);
+            return (MaResult)SlotAllocatorGetHeapSizeInterop(pConfig, pHeapSizeInBytes);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int SlotAllocatorInitPreallocatedInterop(MaSlotAllocatorConfig* pConfig, void* pHeap, MaSlotAllocator* pAllocator)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaSlotAllocatorConfig*, void*, MaSlotAllocator*, int>)funcTable[442])(pConfig, pHeap, pAllocator);
+        }
+
         internal static MaResult SlotAllocatorInitPreallocatedNative(MaSlotAllocatorConfig* pConfig, void* pHeap, MaSlotAllocator* pAllocator)
         {
-            return ((delegate* unmanaged[Cdecl]<MaSlotAllocatorConfig*, void*, MaSlotAllocator*, MaResult>)funcTable[442])(pConfig, pHeap, pAllocator);
+            return (MaResult)SlotAllocatorInitPreallocatedInterop(pConfig, pHeap, pAllocator);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int SlotAllocatorInitInterop(MaSlotAllocatorConfig* pConfig, MaAllocationCallbacks* pAllocationCallbacks, MaSlotAllocator* pAllocator)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaSlotAllocatorConfig*, MaAllocationCallbacks*, MaSlotAllocator*, int>)funcTable[443])(pConfig, pAllocationCallbacks, pAllocator);
+        }
+
         internal static MaResult SlotAllocatorInitNative(MaSlotAllocatorConfig* pConfig, MaAllocationCallbacks* pAllocationCallbacks, MaSlotAllocator* pAllocator)
         {
-            return ((delegate* unmanaged[Cdecl]<MaSlotAllocatorConfig*, MaAllocationCallbacks*, MaSlotAllocator*, MaResult>)funcTable[443])(pConfig, pAllocationCallbacks, pAllocator);
+            return (MaResult)SlotAllocatorInitInterop(pConfig, pAllocationCallbacks, pAllocator);
         }
 
         /// <summary>
@@ -22138,17 +23509,27 @@ namespace Inno.Native.MiniAudio
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int SlotAllocatorAllocInterop(MaSlotAllocator* pAllocator, ulong* pSlot)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaSlotAllocator*, ulong*, int>)funcTable[445])(pAllocator, pSlot);
+        }
+
         internal static MaResult SlotAllocatorAllocNative(MaSlotAllocator* pAllocator, ulong* pSlot)
         {
-            return ((delegate* unmanaged[Cdecl]<MaSlotAllocator*, ulong*, MaResult>)funcTable[445])(pAllocator, pSlot);
+            return (MaResult)SlotAllocatorAllocInterop(pAllocator, pSlot);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int SlotAllocatorFreeInterop(MaSlotAllocator* pAllocator, ulong slot)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaSlotAllocator*, ulong, int>)funcTable[446])(pAllocator, slot);
+        }
+
         internal static MaResult SlotAllocatorFreeNative(MaSlotAllocator* pAllocator, ulong slot)
         {
-            return ((delegate* unmanaged[Cdecl]<MaSlotAllocator*, ulong, MaResult>)funcTable[446])(pAllocator, slot);
+            return (MaResult)SlotAllocatorFreeInterop(pAllocator, slot);
         }
 
         /// <summary>
@@ -22162,9 +23543,22 @@ namespace Inno.Native.MiniAudio
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static MaJob ResourceManagerJobInitNative(ushort code)
+        {
+            return ((delegate* unmanaged[Cdecl]<ushort, MaJob>)funcTable[447])(code);
+        }
+
+        /// <summary>
+        /// To be documented.
+        /// </summary>
+        internal static int JobProcessInterop(MaJob* pJob)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaJob*, int>)funcTable[448])(pJob);
+        }
+
         internal static MaResult JobProcessNative(MaJob* pJob)
         {
-            return ((delegate* unmanaged[Cdecl]<MaJob*, MaResult>)funcTable[448])(pJob);
+            return (MaResult)JobProcessInterop(pJob);
         }
 
         /// <summary>
@@ -22178,25 +23572,87 @@ namespace Inno.Native.MiniAudio
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static MaJobQueueConfig ResourceManagerJobQueueConfigInitNative(uint flags, uint capacity)
+        {
+            return ((delegate* unmanaged[Cdecl]<uint, uint, MaJobQueueConfig>)funcTable[449])(flags, capacity);
+        }
+
+        /// <summary>
+        /// To be documented.
+        /// </summary>
+        internal static int JobQueueGetHeapSizeInterop(MaJobQueueConfig* pConfig, nuint* pHeapSizeInBytes)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaJobQueueConfig*, nuint*, int>)funcTable[450])(pConfig, pHeapSizeInBytes);
+        }
+
         internal static MaResult JobQueueGetHeapSizeNative(MaJobQueueConfig* pConfig, nuint* pHeapSizeInBytes)
         {
-            return ((delegate* unmanaged[Cdecl]<MaJobQueueConfig*, nuint*, MaResult>)funcTable[450])(pConfig, pHeapSizeInBytes);
+            return (MaResult)JobQueueGetHeapSizeInterop(pConfig, pHeapSizeInBytes);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int ResourceManagerJobQueueGetHeapSizeInterop(MaJobQueueConfig* pConfig, nuint* pHeapSizeInBytes)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaJobQueueConfig*, nuint*, int>)funcTable[450])(pConfig, pHeapSizeInBytes);
+        }
+
+        internal static MaResult ResourceManagerJobQueueGetHeapSizeNative(MaJobQueueConfig* pConfig, nuint* pHeapSizeInBytes)
+        {
+            return (MaResult)ResourceManagerJobQueueGetHeapSizeInterop(pConfig, pHeapSizeInBytes);
+        }
+
+        /// <summary>
+        /// To be documented.
+        /// </summary>
+        internal static int JobQueueInitPreallocatedInterop(MaJobQueueConfig* pConfig, void* pHeap, MaJobQueue* pQueue)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaJobQueueConfig*, void*, MaJobQueue*, int>)funcTable[451])(pConfig, pHeap, pQueue);
+        }
+
         internal static MaResult JobQueueInitPreallocatedNative(MaJobQueueConfig* pConfig, void* pHeap, MaJobQueue* pQueue)
         {
-            return ((delegate* unmanaged[Cdecl]<MaJobQueueConfig*, void*, MaJobQueue*, MaResult>)funcTable[451])(pConfig, pHeap, pQueue);
+            return (MaResult)JobQueueInitPreallocatedInterop(pConfig, pHeap, pQueue);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int ResourceManagerJobQueueInitPreallocatedInterop(MaJobQueueConfig* pConfig, void* pHeap, MaJobQueue* pQueue)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaJobQueueConfig*, void*, MaJobQueue*, int>)funcTable[451])(pConfig, pHeap, pQueue);
+        }
+
+        internal static MaResult ResourceManagerJobQueueInitPreallocatedNative(MaJobQueueConfig* pConfig, void* pHeap, MaJobQueue* pQueue)
+        {
+            return (MaResult)ResourceManagerJobQueueInitPreallocatedInterop(pConfig, pHeap, pQueue);
+        }
+
+        /// <summary>
+        /// To be documented.
+        /// </summary>
+        internal static int JobQueueInitInterop(MaJobQueueConfig* pConfig, MaAllocationCallbacks* pAllocationCallbacks, MaJobQueue* pQueue)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaJobQueueConfig*, MaAllocationCallbacks*, MaJobQueue*, int>)funcTable[452])(pConfig, pAllocationCallbacks, pQueue);
+        }
+
         internal static MaResult JobQueueInitNative(MaJobQueueConfig* pConfig, MaAllocationCallbacks* pAllocationCallbacks, MaJobQueue* pQueue)
         {
-            return ((delegate* unmanaged[Cdecl]<MaJobQueueConfig*, MaAllocationCallbacks*, MaJobQueue*, MaResult>)funcTable[452])(pConfig, pAllocationCallbacks, pQueue);
+            return (MaResult)JobQueueInitInterop(pConfig, pAllocationCallbacks, pQueue);
+        }
+
+        /// <summary>
+        /// To be documented.
+        /// </summary>
+        internal static int ResourceManagerJobQueueInitInterop(MaJobQueueConfig* pConfig, MaAllocationCallbacks* pAllocationCallbacks, MaJobQueue* pQueue)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaJobQueueConfig*, MaAllocationCallbacks*, MaJobQueue*, int>)funcTable[452])(pConfig, pAllocationCallbacks, pQueue);
+        }
+
+        internal static MaResult ResourceManagerJobQueueInitNative(MaJobQueueConfig* pConfig, MaAllocationCallbacks* pAllocationCallbacks, MaJobQueue* pQueue)
+        {
+            return (MaResult)ResourceManagerJobQueueInitInterop(pConfig, pAllocationCallbacks, pQueue);
         }
 
         /// <summary>
@@ -22210,17 +23666,61 @@ namespace Inno.Native.MiniAudio
         /// <summary>
         /// To be documented.
         /// </summary>
-        internal static MaResult JobQueuePostNative(MaJobQueue* pQueue, MaJob* pJob)
+        internal static void ResourceManagerJobQueueUninitNative(MaJobQueue* pQueue, MaAllocationCallbacks* pAllocationCallbacks)
         {
-            return ((delegate* unmanaged[Cdecl]<MaJobQueue*, MaJob*, MaResult>)funcTable[454])(pQueue, pJob);
+            ((delegate* unmanaged[Cdecl]<MaJobQueue*, MaAllocationCallbacks*, void>)funcTable[453])(pQueue, pAllocationCallbacks);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int JobQueuePostInterop(MaJobQueue* pQueue, MaJob* pJob)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaJobQueue*, MaJob*, int>)funcTable[454])(pQueue, pJob);
+        }
+
+        internal static MaResult JobQueuePostNative(MaJobQueue* pQueue, MaJob* pJob)
+        {
+            return (MaResult)JobQueuePostInterop(pQueue, pJob);
+        }
+
+        /// <summary>
+        /// To be documented.
+        /// </summary>
+        internal static int ResourceManagerJobQueuePostInterop(MaJobQueue* pQueue, MaJob* pJob)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaJobQueue*, MaJob*, int>)funcTable[454])(pQueue, pJob);
+        }
+
+        internal static MaResult ResourceManagerJobQueuePostNative(MaJobQueue* pQueue, MaJob* pJob)
+        {
+            return (MaResult)ResourceManagerJobQueuePostInterop(pQueue, pJob);
+        }
+
+        /// <summary>
+        /// To be documented.
+        /// </summary>
+        internal static int JobQueueNextInterop(MaJobQueue* pQueue, MaJob* pJob)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaJobQueue*, MaJob*, int>)funcTable[455])(pQueue, pJob);
+        }
+
         internal static MaResult JobQueueNextNative(MaJobQueue* pQueue, MaJob* pJob)
         {
-            return ((delegate* unmanaged[Cdecl]<MaJobQueue*, MaJob*, MaResult>)funcTable[455])(pQueue, pJob);
+            return (MaResult)JobQueueNextInterop(pQueue, pJob);
+        }
+
+        /// <summary>
+        /// To be documented.
+        /// </summary>
+        internal static int ResourceManagerJobQueueNextInterop(MaJobQueue* pQueue, MaJob* pJob)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaJobQueue*, MaJob*, int>)funcTable[455])(pQueue, pJob);
+        }
+
+        internal static MaResult ResourceManagerJobQueueNextNative(MaJobQueue* pQueue, MaJob* pJob)
+        {
+            return (MaResult)ResourceManagerJobQueueNextInterop(pQueue, pJob);
         }
 
         /// <summary>
@@ -22234,9 +23734,14 @@ namespace Inno.Native.MiniAudio
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int DeviceJobThreadInitInterop(MaDeviceJobThreadConfig* pConfig, MaAllocationCallbacks* pAllocationCallbacks, MaDeviceJobThread* pJobThread)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaDeviceJobThreadConfig*, MaAllocationCallbacks*, MaDeviceJobThread*, int>)funcTable[457])(pConfig, pAllocationCallbacks, pJobThread);
+        }
+
         internal static MaResult DeviceJobThreadInitNative(MaDeviceJobThreadConfig* pConfig, MaAllocationCallbacks* pAllocationCallbacks, MaDeviceJobThread* pJobThread)
         {
-            return ((delegate* unmanaged[Cdecl]<MaDeviceJobThreadConfig*, MaAllocationCallbacks*, MaDeviceJobThread*, MaResult>)funcTable[457])(pConfig, pAllocationCallbacks, pJobThread);
+            return (MaResult)DeviceJobThreadInitInterop(pConfig, pAllocationCallbacks, pJobThread);
         }
 
         /// <summary>
@@ -22250,25 +23755,35 @@ namespace Inno.Native.MiniAudio
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int DeviceJobThreadPostInterop(MaDeviceJobThread* pJobThread, MaJob* pJob)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaDeviceJobThread*, MaJob*, int>)funcTable[459])(pJobThread, pJob);
+        }
+
         internal static MaResult DeviceJobThreadPostNative(MaDeviceJobThread* pJobThread, MaJob* pJob)
         {
-            return ((delegate* unmanaged[Cdecl]<MaDeviceJobThread*, MaJob*, MaResult>)funcTable[459])(pJobThread, pJob);
+            return (MaResult)DeviceJobThreadPostInterop(pJobThread, pJob);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int DeviceJobThreadNextInterop(MaDeviceJobThread* pJobThread, MaJob* pJob)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaDeviceJobThread*, MaJob*, int>)funcTable[460])(pJobThread, pJob);
+        }
+
         internal static MaResult DeviceJobThreadNextNative(MaDeviceJobThread* pJobThread, MaJob* pJob)
         {
-            return ((delegate* unmanaged[Cdecl]<MaDeviceJobThread*, MaJob*, MaResult>)funcTable[460])(pJobThread, pJob);
+            return (MaResult)DeviceJobThreadNextInterop(pJobThread, pJob);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
-        internal static uint DeviceIdEqualNative(MaDeviceId* pa, MaDeviceId* pB)
+        internal static uint DeviceIdEqualNative(MaDeviceId* pA, MaDeviceId* pB)
         {
-            return ((delegate* unmanaged[Cdecl]<MaDeviceId*, MaDeviceId*, uint>)funcTable[461])(pa, pB);
+            return ((delegate* unmanaged[Cdecl]<MaDeviceId*, MaDeviceId*, uint>)funcTable[461])(pA, pB);
         }
 
         /// <summary>
@@ -22282,17 +23797,27 @@ namespace Inno.Native.MiniAudio
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int ContextInitInterop(MaBackend* backends, uint backendCount, MaContextConfig* pConfig, MaContext* pContext)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaBackend*, uint, MaContextConfig*, MaContext*, int>)funcTable[463])(backends, backendCount, pConfig, pContext);
+        }
+
         internal static MaResult ContextInitNative(MaBackend* backends, uint backendCount, MaContextConfig* pConfig, MaContext* pContext)
         {
-            return ((delegate* unmanaged[Cdecl]<MaBackend*, uint, MaContextConfig*, MaContext*, MaResult>)funcTable[463])(backends, backendCount, pConfig, pContext);
+            return (MaResult)ContextInitInterop(backends, backendCount, pConfig, pContext);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int ContextUninitInterop(MaContext* pContext)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaContext*, int>)funcTable[464])(pContext);
+        }
+
         internal static MaResult ContextUninitNative(MaContext* pContext)
         {
-            return ((delegate* unmanaged[Cdecl]<MaContext*, MaResult>)funcTable[464])(pContext);
+            return (MaResult)ContextUninitInterop(pContext);
         }
 
         /// <summary>
@@ -22314,25 +23839,40 @@ namespace Inno.Native.MiniAudio
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int ContextEnumerateDevicesInterop(MaContext* pContext, void* callback, void* pUserData)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaContext*, void*, void*, int>)funcTable[467])(pContext, callback, pUserData);
+        }
+
         internal static MaResult ContextEnumerateDevicesNative(MaContext* pContext, void* callback, void* pUserData)
         {
-            return ((delegate* unmanaged[Cdecl]<MaContext*, void*, void*, MaResult>)funcTable[467])(pContext, callback, pUserData);
+            return (MaResult)ContextEnumerateDevicesInterop(pContext, callback, pUserData);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int ContextGetDevicesInterop(MaContext* pContext, MaDeviceInfo** ppPlaybackDeviceInfos, uint* pPlaybackDeviceCount, MaDeviceInfo** ppCaptureDeviceInfos, uint* pCaptureDeviceCount)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaContext*, MaDeviceInfo**, uint*, MaDeviceInfo**, uint*, int>)funcTable[468])(pContext, ppPlaybackDeviceInfos, pPlaybackDeviceCount, ppCaptureDeviceInfos, pCaptureDeviceCount);
+        }
+
         internal static MaResult ContextGetDevicesNative(MaContext* pContext, MaDeviceInfo** ppPlaybackDeviceInfos, uint* pPlaybackDeviceCount, MaDeviceInfo** ppCaptureDeviceInfos, uint* pCaptureDeviceCount)
         {
-            return ((delegate* unmanaged[Cdecl]<MaContext*, MaDeviceInfo**, uint*, MaDeviceInfo**, uint*, MaResult>)funcTable[468])(pContext, ppPlaybackDeviceInfos, pPlaybackDeviceCount, ppCaptureDeviceInfos, pCaptureDeviceCount);
+            return (MaResult)ContextGetDevicesInterop(pContext, ppPlaybackDeviceInfos, pPlaybackDeviceCount, ppCaptureDeviceInfos, pCaptureDeviceCount);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int ContextGetDeviceInfoInterop(MaContext* pContext, int deviceType, MaDeviceId* pDeviceID, MaDeviceInfo* pDeviceInfo)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaContext*, int, MaDeviceId*, MaDeviceInfo*, int>)funcTable[469])(pContext, deviceType, pDeviceID, pDeviceInfo);
+        }
+
         internal static MaResult ContextGetDeviceInfoNative(MaContext* pContext, MaDeviceType deviceType, MaDeviceId* pDeviceID, MaDeviceInfo* pDeviceInfo)
         {
-            return ((delegate* unmanaged[Cdecl]<MaContext*, MaDeviceType, MaDeviceId*, MaDeviceInfo*, MaResult>)funcTable[469])(pContext, deviceType, pDeviceID, pDeviceInfo);
+            return (MaResult)ContextGetDeviceInfoInterop(pContext, (int)deviceType, pDeviceID, pDeviceInfo);
         }
 
         /// <summary>
@@ -22346,25 +23886,40 @@ namespace Inno.Native.MiniAudio
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static MaDeviceConfig DeviceConfigInitInterop(int deviceType)
+        {
+            return ((delegate* unmanaged[Cdecl]<int, MaDeviceConfig>)funcTable[471])(deviceType);
+        }
+
         internal static MaDeviceConfig DeviceConfigInitNative(MaDeviceType deviceType)
         {
-            return ((delegate* unmanaged[Cdecl]<MaDeviceType, MaDeviceConfig>)funcTable[471])(deviceType);
+            return DeviceConfigInitInterop((int)deviceType);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int DeviceInitInterop(MaContext* pContext, MaDeviceConfig* pConfig, MaDevice* pDevice)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaContext*, MaDeviceConfig*, MaDevice*, int>)funcTable[472])(pContext, pConfig, pDevice);
+        }
+
         internal static MaResult DeviceInitNative(MaContext* pContext, MaDeviceConfig* pConfig, MaDevice* pDevice)
         {
-            return ((delegate* unmanaged[Cdecl]<MaContext*, MaDeviceConfig*, MaDevice*, MaResult>)funcTable[472])(pContext, pConfig, pDevice);
+            return (MaResult)DeviceInitInterop(pContext, pConfig, pDevice);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int DeviceInitExInterop(MaBackend* backends, uint backendCount, MaContextConfig* pContextConfig, MaDeviceConfig* pConfig, MaDevice* pDevice)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaBackend*, uint, MaContextConfig*, MaDeviceConfig*, MaDevice*, int>)funcTable[473])(backends, backendCount, pContextConfig, pConfig, pDevice);
+        }
+
         internal static MaResult DeviceInitExNative(MaBackend* backends, uint backendCount, MaContextConfig* pContextConfig, MaDeviceConfig* pConfig, MaDevice* pDevice)
         {
-            return ((delegate* unmanaged[Cdecl]<MaBackend*, uint, MaContextConfig*, MaDeviceConfig*, MaDevice*, MaResult>)funcTable[473])(backends, backendCount, pContextConfig, pConfig, pDevice);
+            return (MaResult)DeviceInitExInterop(backends, backendCount, pContextConfig, pConfig, pDevice);
         }
 
         /// <summary>
@@ -22394,33 +23949,53 @@ namespace Inno.Native.MiniAudio
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int DeviceGetInfoInterop(MaDevice* pDevice, int type, MaDeviceInfo* pDeviceInfo)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaDevice*, int, MaDeviceInfo*, int>)funcTable[477])(pDevice, type, pDeviceInfo);
+        }
+
         internal static MaResult DeviceGetInfoNative(MaDevice* pDevice, MaDeviceType type, MaDeviceInfo* pDeviceInfo)
         {
-            return ((delegate* unmanaged[Cdecl]<MaDevice*, MaDeviceType, MaDeviceInfo*, MaResult>)funcTable[477])(pDevice, type, pDeviceInfo);
+            return (MaResult)DeviceGetInfoInterop(pDevice, (int)type, pDeviceInfo);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int DeviceGetNameInterop(MaDevice* pDevice, int type, byte* pName, nuint nameCap, nuint* pLengthNotIncludingNullTerminator)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaDevice*, int, byte*, nuint, nuint*, int>)funcTable[478])(pDevice, type, pName, nameCap, pLengthNotIncludingNullTerminator);
+        }
+
         internal static MaResult DeviceGetNameNative(MaDevice* pDevice, MaDeviceType type, byte* pName, nuint nameCap, nuint* pLengthNotIncludingNullTerminator)
         {
-            return ((delegate* unmanaged[Cdecl]<MaDevice*, MaDeviceType, byte*, nuint, nuint*, MaResult>)funcTable[478])(pDevice, type, pName, nameCap, pLengthNotIncludingNullTerminator);
+            return (MaResult)DeviceGetNameInterop(pDevice, (int)type, pName, nameCap, pLengthNotIncludingNullTerminator);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int DeviceStartInterop(MaDevice* pDevice)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaDevice*, int>)funcTable[479])(pDevice);
+        }
+
         internal static MaResult DeviceStartNative(MaDevice* pDevice)
         {
-            return ((delegate* unmanaged[Cdecl]<MaDevice*, MaResult>)funcTable[479])(pDevice);
+            return (MaResult)DeviceStartInterop(pDevice);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int DeviceStopInterop(MaDevice* pDevice)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaDevice*, int>)funcTable[480])(pDevice);
+        }
+
         internal static MaResult DeviceStopNative(MaDevice* pDevice)
         {
-            return ((delegate* unmanaged[Cdecl]<MaDevice*, MaResult>)funcTable[480])(pDevice);
+            return (MaResult)DeviceStopInterop(pDevice);
         }
 
         /// <summary>
@@ -22434,105 +24009,170 @@ namespace Inno.Native.MiniAudio
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int DeviceGetStateInterop(MaDevice* pDevice)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaDevice*, int>)funcTable[482])(pDevice);
+        }
+
         internal static MaDeviceState DeviceGetStateNative(MaDevice* pDevice)
         {
-            return ((delegate* unmanaged[Cdecl]<MaDevice*, MaDeviceState>)funcTable[482])(pDevice);
+            return (MaDeviceState)DeviceGetStateInterop(pDevice);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int DevicePostInitInterop(MaDevice* pDevice, int deviceType, MaDeviceDescriptor* pPlaybackDescriptor, MaDeviceDescriptor* pCaptureDescriptor)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaDevice*, int, MaDeviceDescriptor*, MaDeviceDescriptor*, int>)funcTable[483])(pDevice, deviceType, pPlaybackDescriptor, pCaptureDescriptor);
+        }
+
         internal static MaResult DevicePostInitNative(MaDevice* pDevice, MaDeviceType deviceType, MaDeviceDescriptor* pPlaybackDescriptor, MaDeviceDescriptor* pCaptureDescriptor)
         {
-            return ((delegate* unmanaged[Cdecl]<MaDevice*, MaDeviceType, MaDeviceDescriptor*, MaDeviceDescriptor*, MaResult>)funcTable[483])(pDevice, deviceType, pPlaybackDescriptor, pCaptureDescriptor);
+            return (MaResult)DevicePostInitInterop(pDevice, (int)deviceType, pPlaybackDescriptor, pCaptureDescriptor);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int DeviceSetMasterVolumeInterop(MaDevice* pDevice, float volume)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaDevice*, float, int>)funcTable[484])(pDevice, volume);
+        }
+
         internal static MaResult DeviceSetMasterVolumeNative(MaDevice* pDevice, float volume)
         {
-            return ((delegate* unmanaged[Cdecl]<MaDevice*, float, MaResult>)funcTable[484])(pDevice, volume);
+            return (MaResult)DeviceSetMasterVolumeInterop(pDevice, volume);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int DeviceGetMasterVolumeInterop(MaDevice* pDevice, float* pVolume)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaDevice*, float*, int>)funcTable[485])(pDevice, pVolume);
+        }
+
         internal static MaResult DeviceGetMasterVolumeNative(MaDevice* pDevice, float* pVolume)
         {
-            return ((delegate* unmanaged[Cdecl]<MaDevice*, float*, MaResult>)funcTable[485])(pDevice, pVolume);
+            return (MaResult)DeviceGetMasterVolumeInterop(pDevice, pVolume);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int DeviceSetMasterVolumeDbInterop(MaDevice* pDevice, float gainDB)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaDevice*, float, int>)funcTable[486])(pDevice, gainDB);
+        }
+
         internal static MaResult DeviceSetMasterVolumeDbNative(MaDevice* pDevice, float gainDB)
         {
-            return ((delegate* unmanaged[Cdecl]<MaDevice*, float, MaResult>)funcTable[486])(pDevice, gainDB);
+            return (MaResult)DeviceSetMasterVolumeDbInterop(pDevice, gainDB);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int DeviceGetMasterVolumeDbInterop(MaDevice* pDevice, float* pGainDB)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaDevice*, float*, int>)funcTable[487])(pDevice, pGainDB);
+        }
+
         internal static MaResult DeviceGetMasterVolumeDbNative(MaDevice* pDevice, float* pGainDB)
         {
-            return ((delegate* unmanaged[Cdecl]<MaDevice*, float*, MaResult>)funcTable[487])(pDevice, pGainDB);
+            return (MaResult)DeviceGetMasterVolumeDbInterop(pDevice, pGainDB);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int DeviceHandleBackendDataCallbackInterop(MaDevice* pDevice, void* pOutput, void* pInput, uint frameCount)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaDevice*, void*, void*, uint, int>)funcTable[488])(pDevice, pOutput, pInput, frameCount);
+        }
+
         internal static MaResult DeviceHandleBackendDataCallbackNative(MaDevice* pDevice, void* pOutput, void* pInput, uint frameCount)
         {
-            return ((delegate* unmanaged[Cdecl]<MaDevice*, void*, void*, uint, MaResult>)funcTable[488])(pDevice, pOutput, pInput, frameCount);
+            return (MaResult)DeviceHandleBackendDataCallbackInterop(pDevice, pOutput, pInput, frameCount);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static uint CalculateBufferSizeInFramesFromDescriptorInterop(MaDeviceDescriptor* pDescriptor, uint nativeSampleRate, int performanceProfile)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaDeviceDescriptor*, uint, int, uint>)funcTable[489])(pDescriptor, nativeSampleRate, performanceProfile);
+        }
+
         internal static uint CalculateBufferSizeInFramesFromDescriptorNative(MaDeviceDescriptor* pDescriptor, uint nativeSampleRate, MaPerformanceProfile performanceProfile)
         {
-            return ((delegate* unmanaged[Cdecl]<MaDeviceDescriptor*, uint, MaPerformanceProfile, uint>)funcTable[489])(pDescriptor, nativeSampleRate, performanceProfile);
+            return CalculateBufferSizeInFramesFromDescriptorInterop(pDescriptor, nativeSampleRate, (int)performanceProfile);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte* GetBackendNameInterop(int backend)
+        {
+            return ((delegate* unmanaged[Cdecl]<int, byte*>)funcTable[490])(backend);
+        }
+
         internal static byte* GetBackendNameNative(MaBackend backend)
         {
-            return ((delegate* unmanaged[Cdecl]<MaBackend, byte*>)funcTable[490])(backend);
+            return GetBackendNameInterop((int)backend);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int GetBackendFromNameInterop(byte* pBackendName, MaBackend* pBackend)
+        {
+            return ((delegate* unmanaged[Cdecl]<byte*, MaBackend*, int>)funcTable[491])(pBackendName, pBackend);
+        }
+
         internal static MaResult GetBackendFromNameNative(byte* pBackendName, MaBackend* pBackend)
         {
-            return ((delegate* unmanaged[Cdecl]<byte*, MaBackend*, MaResult>)funcTable[491])(pBackendName, pBackend);
+            return (MaResult)GetBackendFromNameInterop(pBackendName, pBackend);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static uint IsBackendEnabledInterop(int backend)
+        {
+            return ((delegate* unmanaged[Cdecl]<int, uint>)funcTable[492])(backend);
+        }
+
         internal static uint IsBackendEnabledNative(MaBackend backend)
         {
-            return ((delegate* unmanaged[Cdecl]<MaBackend, uint>)funcTable[492])(backend);
+            return IsBackendEnabledInterop((int)backend);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int GetEnabledBackendsInterop(MaBackend* pBackends, nuint backendCap, nuint* pBackendCount)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaBackend*, nuint, nuint*, int>)funcTable[493])(pBackends, backendCap, pBackendCount);
+        }
+
         internal static MaResult GetEnabledBackendsNative(MaBackend* pBackends, nuint backendCap, nuint* pBackendCount)
         {
-            return ((delegate* unmanaged[Cdecl]<MaBackend*, nuint, nuint*, MaResult>)funcTable[493])(pBackends, backendCap, pBackendCount);
+            return (MaResult)GetEnabledBackendsInterop(pBackends, backendCap, pBackendCount);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static uint IsLoopbackSupportedInterop(int backend)
+        {
+            return ((delegate* unmanaged[Cdecl]<int, uint>)funcTable[494])(backend);
+        }
+
         internal static uint IsLoopbackSupportedNative(MaBackend backend)
         {
-            return ((delegate* unmanaged[Cdecl]<MaBackend, uint>)funcTable[494])(backend);
+            return IsLoopbackSupportedInterop((int)backend);
         }
 
         /// <summary>
@@ -22554,33 +24194,53 @@ namespace Inno.Native.MiniAudio
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void CopyPcmFramesInterop(void* dst, void* src, ulong frameCount, int format, uint channels)
+        {
+            ((delegate* unmanaged[Cdecl]<void*, void*, ulong, int, uint, void>)funcTable[497])(dst, src, frameCount, format, channels);
+        }
+
         internal static void CopyPcmFramesNative(void* dst, void* src, ulong frameCount, MaFormat format, uint channels)
         {
-            ((delegate* unmanaged[Cdecl]<void*, void*, ulong, MaFormat, uint, void>)funcTable[497])(dst, src, frameCount, format, channels);
+            CopyPcmFramesInterop(dst, src, frameCount, (int)format, channels);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void SilencePcmFramesInterop(void* p, ulong frameCount, int format, uint channels)
+        {
+            ((delegate* unmanaged[Cdecl]<void*, ulong, int, uint, void>)funcTable[498])(p, frameCount, format, channels);
+        }
+
         internal static void SilencePcmFramesNative(void* p, ulong frameCount, MaFormat format, uint channels)
         {
-            ((delegate* unmanaged[Cdecl]<void*, ulong, MaFormat, uint, void>)funcTable[498])(p, frameCount, format, channels);
+            SilencePcmFramesInterop(p, frameCount, (int)format, channels);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void* OffsetPcmFramesPtrInterop(void* p, ulong offsetInFrames, int format, uint channels)
+        {
+            return ((delegate* unmanaged[Cdecl]<void*, ulong, int, uint, void*>)funcTable[499])(p, offsetInFrames, format, channels);
+        }
+
         internal static void* OffsetPcmFramesPtrNative(void* p, ulong offsetInFrames, MaFormat format, uint channels)
         {
-            return ((delegate* unmanaged[Cdecl]<void*, ulong, MaFormat, uint, void*>)funcTable[499])(p, offsetInFrames, format, channels);
+            return OffsetPcmFramesPtrInterop(p, offsetInFrames, (int)format, channels);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void* OffsetPcmFramesConstPtrInterop(void* p, ulong offsetInFrames, int format, uint channels)
+        {
+            return ((delegate* unmanaged[Cdecl]<void*, ulong, int, uint, void*>)funcTable[500])(p, offsetInFrames, format, channels);
+        }
+
         internal static void* OffsetPcmFramesConstPtrNative(void* p, ulong offsetInFrames, MaFormat format, uint channels)
         {
-            return ((delegate* unmanaged[Cdecl]<void*, ulong, MaFormat, uint, void*>)funcTable[500])(p, offsetInFrames, format, channels);
+            return OffsetPcmFramesConstPtrInterop(p, offsetInFrames, (int)format, channels);
         }
 
         /// <summary>
@@ -22626,9 +24286,14 @@ namespace Inno.Native.MiniAudio
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void ClipPcmFramesInterop(void* pDst, void* pSrc, ulong frameCount, int format, uint channels)
+        {
+            ((delegate* unmanaged[Cdecl]<void*, void*, ulong, int, uint, void>)funcTable[506])(pDst, pSrc, frameCount, format, channels);
+        }
+
         internal static void ClipPcmFramesNative(void* pDst, void* pSrc, ulong frameCount, MaFormat format, uint channels)
         {
-            ((delegate* unmanaged[Cdecl]<void*, void*, ulong, MaFormat, uint, void>)funcTable[506])(pDst, pSrc, frameCount, format, channels);
+            ClipPcmFramesInterop(pDst, pSrc, frameCount, (int)format, channels);
         }
 
         /// <summary>
@@ -22754,9 +24419,14 @@ namespace Inno.Native.MiniAudio
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void CopyAndApplyVolumeFactorPcmFramesInterop(void* pFramesOut, void* pFramesIn, ulong frameCount, int format, uint channels, float factor)
+        {
+            ((delegate* unmanaged[Cdecl]<void*, void*, ulong, int, uint, float, void>)funcTable[522])(pFramesOut, pFramesIn, frameCount, format, channels, factor);
+        }
+
         internal static void CopyAndApplyVolumeFactorPcmFramesNative(void* pFramesOut, void* pFramesIn, ulong frameCount, MaFormat format, uint channels, float factor)
         {
-            ((delegate* unmanaged[Cdecl]<void*, void*, ulong, MaFormat, uint, float, void>)funcTable[522])(pFramesOut, pFramesIn, frameCount, format, channels, factor);
+            CopyAndApplyVolumeFactorPcmFramesInterop(pFramesOut, pFramesIn, frameCount, (int)format, channels, factor);
         }
 
         /// <summary>
@@ -22802,9 +24472,14 @@ namespace Inno.Native.MiniAudio
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void ApplyVolumeFactorPcmFramesInterop(void* pFrames, ulong frameCount, int format, uint channels, float factor)
+        {
+            ((delegate* unmanaged[Cdecl]<void*, ulong, int, uint, float, void>)funcTable[528])(pFrames, frameCount, format, channels, factor);
+        }
+
         internal static void ApplyVolumeFactorPcmFramesNative(void* pFrames, ulong frameCount, MaFormat format, uint channels, float factor)
         {
-            ((delegate* unmanaged[Cdecl]<void*, ulong, MaFormat, uint, float, void>)funcTable[528])(pFrames, frameCount, format, channels, factor);
+            ApplyVolumeFactorPcmFramesInterop(pFrames, frameCount, (int)format, channels, factor);
         }
 
         /// <summary>
@@ -22858,9 +24533,14 @@ namespace Inno.Native.MiniAudio
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void CopyAndApplyVolumeAndClipPcmFramesInterop(void* pDst, void* pSrc, ulong frameCount, int format, uint channels, float volume)
+        {
+            ((delegate* unmanaged[Cdecl]<void*, void*, ulong, int, uint, float, void>)funcTable[535])(pDst, pSrc, frameCount, format, channels, volume);
+        }
+
         internal static void CopyAndApplyVolumeAndClipPcmFramesNative(void* pDst, void* pSrc, ulong frameCount, MaFormat format, uint channels, float volume)
         {
-            ((delegate* unmanaged[Cdecl]<void*, void*, ulong, MaFormat, uint, float, void>)funcTable[535])(pDst, pSrc, frameCount, format, channels, volume);
+            CopyAndApplyVolumeAndClipPcmFramesInterop(pDst, pSrc, frameCount, (int)format, channels, volume);
         }
 
         /// <summary>
@@ -22882,105 +24562,170 @@ namespace Inno.Native.MiniAudio
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int MixPcmFramesF32Interop(float* pDst, float* pSrc, ulong frameCount, uint channels, float volume)
+        {
+            return ((delegate* unmanaged[Cdecl]<float*, float*, ulong, uint, float, int>)funcTable[538])(pDst, pSrc, frameCount, channels, volume);
+        }
+
         internal static MaResult MixPcmFramesF32Native(float* pDst, float* pSrc, ulong frameCount, uint channels, float volume)
         {
-            return ((delegate* unmanaged[Cdecl]<float*, float*, ulong, uint, float, MaResult>)funcTable[538])(pDst, pSrc, frameCount, channels, volume);
+            return (MaResult)MixPcmFramesF32Interop(pDst, pSrc, frameCount, channels, volume);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
-        internal static MaResult VfsOpenNative(MaVfs* pVFs, byte* pFilePath, uint openMode, nint* pFile)
+        internal static int VfsOpenInterop(MaVfs* pVFS, byte* pFilePath, uint openMode, nint* pFile)
         {
-            return ((delegate* unmanaged[Cdecl]<MaVfs*, byte*, uint, nint*, MaResult>)funcTable[539])(pVFs, pFilePath, openMode, pFile);
+            return ((delegate* unmanaged[Cdecl]<MaVfs*, byte*, uint, nint*, int>)funcTable[539])(pVFS, pFilePath, openMode, pFile);
         }
 
-        /// <summary>
-        /// To be documented.
-        /// </summary>
-        internal static MaResult VfsOpenWNative(MaVfs* pVFs, ushort* pFilePath, uint openMode, nint* pFile)
+        internal static MaResult VfsOpenNative(MaVfs* pVFS, byte* pFilePath, uint openMode, nint* pFile)
         {
-            return ((delegate* unmanaged[Cdecl]<MaVfs*, ushort*, uint, nint*, MaResult>)funcTable[540])(pVFs, pFilePath, openMode, pFile);
+            return (MaResult)VfsOpenInterop(pVFS, pFilePath, openMode, pFile);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
-        internal static MaResult VfsCloseNative(MaVfs* pVFs, nint file)
+        internal static int VfsOpenWInterop(MaVfs* pVFS, ushort* pFilePath, uint openMode, nint* pFile)
         {
-            return ((delegate* unmanaged[Cdecl]<MaVfs*, nint, MaResult>)funcTable[541])(pVFs, file);
+            return ((delegate* unmanaged[Cdecl]<MaVfs*, ushort*, uint, nint*, int>)funcTable[540])(pVFS, pFilePath, openMode, pFile);
         }
 
-        /// <summary>
-        /// To be documented.
-        /// </summary>
-        internal static MaResult VfsReadNative(MaVfs* pVFs, nint file, void* pDst, nuint sizeInBytes, nuint* pBytesRead)
+        internal static MaResult VfsOpenWNative(MaVfs* pVFS, ushort* pFilePath, uint openMode, nint* pFile)
         {
-            return ((delegate* unmanaged[Cdecl]<MaVfs*, nint, void*, nuint, nuint*, MaResult>)funcTable[542])(pVFs, file, pDst, sizeInBytes, pBytesRead);
+            return (MaResult)VfsOpenWInterop(pVFS, pFilePath, openMode, pFile);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
-        internal static MaResult VfsWriteNative(MaVfs* pVFs, nint file, void* pSrc, nuint sizeInBytes, nuint* pBytesWritten)
+        internal static int VfsCloseInterop(MaVfs* pVFS, nint file)
         {
-            return ((delegate* unmanaged[Cdecl]<MaVfs*, nint, void*, nuint, nuint*, MaResult>)funcTable[543])(pVFs, file, pSrc, sizeInBytes, pBytesWritten);
+            return ((delegate* unmanaged[Cdecl]<MaVfs*, nint, int>)funcTable[541])(pVFS, file);
         }
 
-        /// <summary>
-        /// To be documented.
-        /// </summary>
-        internal static MaResult VfsSeekNative(MaVfs* pVFs, nint file, long offset, MaSeekOrigin origin)
+        internal static MaResult VfsCloseNative(MaVfs* pVFS, nint file)
         {
-            return ((delegate* unmanaged[Cdecl]<MaVfs*, nint, long, MaSeekOrigin, MaResult>)funcTable[544])(pVFs, file, offset, origin);
+            return (MaResult)VfsCloseInterop(pVFS, file);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
-        internal static MaResult VfsTellNative(MaVfs* pVFs, nint file, long* pCursor)
+        internal static int VfsReadInterop(MaVfs* pVFS, nint file, void* pDst, nuint sizeInBytes, nuint* pBytesRead)
         {
-            return ((delegate* unmanaged[Cdecl]<MaVfs*, nint, long*, MaResult>)funcTable[545])(pVFs, file, pCursor);
+            return ((delegate* unmanaged[Cdecl]<MaVfs*, nint, void*, nuint, nuint*, int>)funcTable[542])(pVFS, file, pDst, sizeInBytes, pBytesRead);
         }
 
-        /// <summary>
-        /// To be documented.
-        /// </summary>
-        internal static MaResult VfsInfoNative(MaVfs* pVFs, nint file, MaFileInfo* pInfo)
+        internal static MaResult VfsReadNative(MaVfs* pVFS, nint file, void* pDst, nuint sizeInBytes, nuint* pBytesRead)
         {
-            return ((delegate* unmanaged[Cdecl]<MaVfs*, nint, MaFileInfo*, MaResult>)funcTable[546])(pVFs, file, pInfo);
+            return (MaResult)VfsReadInterop(pVFS, file, pDst, sizeInBytes, pBytesRead);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
-        internal static MaResult VfsOpenAndReadFileNative(MaVfs* pVFs, byte* pFilePath, void** ppData, nuint* pSize, MaAllocationCallbacks* pAllocationCallbacks)
+        internal static int VfsWriteInterop(MaVfs* pVFS, nint file, void* pSrc, nuint sizeInBytes, nuint* pBytesWritten)
         {
-            return ((delegate* unmanaged[Cdecl]<MaVfs*, byte*, void**, nuint*, MaAllocationCallbacks*, MaResult>)funcTable[547])(pVFs, pFilePath, ppData, pSize, pAllocationCallbacks);
+            return ((delegate* unmanaged[Cdecl]<MaVfs*, nint, void*, nuint, nuint*, int>)funcTable[543])(pVFS, file, pSrc, sizeInBytes, pBytesWritten);
         }
 
-        /// <summary>
-        /// To be documented.
-        /// </summary>
-        internal static MaResult DefaultVfsInitNative(MaDefaultVfs* pVFs, MaAllocationCallbacks* pAllocationCallbacks)
+        internal static MaResult VfsWriteNative(MaVfs* pVFS, nint file, void* pSrc, nuint sizeInBytes, nuint* pBytesWritten)
         {
-            return ((delegate* unmanaged[Cdecl]<MaDefaultVfs*, MaAllocationCallbacks*, MaResult>)funcTable[548])(pVFs, pAllocationCallbacks);
+            return (MaResult)VfsWriteInterop(pVFS, file, pSrc, sizeInBytes, pBytesWritten);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int VfsSeekInterop(MaVfs* pVFS, nint file, long offset, int origin)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaVfs*, nint, long, int, int>)funcTable[544])(pVFS, file, offset, origin);
+        }
+
+        internal static MaResult VfsSeekNative(MaVfs* pVFS, nint file, long offset, MaSeekOrigin origin)
+        {
+            return (MaResult)VfsSeekInterop(pVFS, file, offset, (int)origin);
+        }
+
+        /// <summary>
+        /// To be documented.
+        /// </summary>
+        internal static int VfsTellInterop(MaVfs* pVFS, nint file, long* pCursor)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaVfs*, nint, long*, int>)funcTable[545])(pVFS, file, pCursor);
+        }
+
+        internal static MaResult VfsTellNative(MaVfs* pVFS, nint file, long* pCursor)
+        {
+            return (MaResult)VfsTellInterop(pVFS, file, pCursor);
+        }
+
+        /// <summary>
+        /// To be documented.
+        /// </summary>
+        internal static int VfsInfoInterop(MaVfs* pVFS, nint file, MaFileInfo* pInfo)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaVfs*, nint, MaFileInfo*, int>)funcTable[546])(pVFS, file, pInfo);
+        }
+
+        internal static MaResult VfsInfoNative(MaVfs* pVFS, nint file, MaFileInfo* pInfo)
+        {
+            return (MaResult)VfsInfoInterop(pVFS, file, pInfo);
+        }
+
+        /// <summary>
+        /// To be documented.
+        /// </summary>
+        internal static int VfsOpenAndReadFileInterop(MaVfs* pVFS, byte* pFilePath, void** ppData, nuint* pSize, MaAllocationCallbacks* pAllocationCallbacks)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaVfs*, byte*, void**, nuint*, MaAllocationCallbacks*, int>)funcTable[547])(pVFS, pFilePath, ppData, pSize, pAllocationCallbacks);
+        }
+
+        internal static MaResult VfsOpenAndReadFileNative(MaVfs* pVFS, byte* pFilePath, void** ppData, nuint* pSize, MaAllocationCallbacks* pAllocationCallbacks)
+        {
+            return (MaResult)VfsOpenAndReadFileInterop(pVFS, pFilePath, ppData, pSize, pAllocationCallbacks);
+        }
+
+        /// <summary>
+        /// To be documented.
+        /// </summary>
+        internal static int DefaultVfsInitInterop(MaDefaultVfs* pVFS, MaAllocationCallbacks* pAllocationCallbacks)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaDefaultVfs*, MaAllocationCallbacks*, int>)funcTable[548])(pVFS, pAllocationCallbacks);
+        }
+
+        internal static MaResult DefaultVfsInitNative(MaDefaultVfs* pVFS, MaAllocationCallbacks* pAllocationCallbacks)
+        {
+            return (MaResult)DefaultVfsInitInterop(pVFS, pAllocationCallbacks);
+        }
+
+        /// <summary>
+        /// To be documented.
+        /// </summary>
+        internal static MaDecodingBackendConfig DecodingBackendConfigInitInterop(int preferredFormat, uint seekPointCount)
+        {
+            return ((delegate* unmanaged[Cdecl]<int, uint, MaDecodingBackendConfig>)funcTable[549])(preferredFormat, seekPointCount);
+        }
+
         internal static MaDecodingBackendConfig DecodingBackendConfigInitNative(MaFormat preferredFormat, uint seekPointCount)
         {
-            return ((delegate* unmanaged[Cdecl]<MaFormat, uint, MaDecodingBackendConfig>)funcTable[549])(preferredFormat, seekPointCount);
+            return DecodingBackendConfigInitInterop((int)preferredFormat, seekPointCount);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static MaDecoderConfig DecoderConfigInitInterop(int outputFormat, uint outputChannels, uint outputSampleRate)
+        {
+            return ((delegate* unmanaged[Cdecl]<int, uint, uint, MaDecoderConfig>)funcTable[550])(outputFormat, outputChannels, outputSampleRate);
+        }
+
         internal static MaDecoderConfig DecoderConfigInitNative(MaFormat outputFormat, uint outputChannels, uint outputSampleRate)
         {
-            return ((delegate* unmanaged[Cdecl]<MaFormat, uint, uint, MaDecoderConfig>)funcTable[550])(outputFormat, outputChannels, outputSampleRate);
+            return DecoderConfigInitInterop((int)outputFormat, outputChannels, outputSampleRate);
         }
 
         /// <summary>
@@ -22994,177 +24739,287 @@ namespace Inno.Native.MiniAudio
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int DecoderInitInterop(void* onRead, void* onSeek, void* pUserData, MaDecoderConfig* pConfig, MaDecoder* pDecoder)
+        {
+            return ((delegate* unmanaged[Cdecl]<void*, void*, void*, MaDecoderConfig*, MaDecoder*, int>)funcTable[552])(onRead, onSeek, pUserData, pConfig, pDecoder);
+        }
+
         internal static MaResult DecoderInitNative(void* onRead, void* onSeek, void* pUserData, MaDecoderConfig* pConfig, MaDecoder* pDecoder)
         {
-            return ((delegate* unmanaged[Cdecl]<void*, void*, void*, MaDecoderConfig*, MaDecoder*, MaResult>)funcTable[552])(onRead, onSeek, pUserData, pConfig, pDecoder);
+            return (MaResult)DecoderInitInterop(onRead, onSeek, pUserData, pConfig, pDecoder);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int DecoderInitMemoryInterop(void* pData, nuint dataSize, MaDecoderConfig* pConfig, MaDecoder* pDecoder)
+        {
+            return ((delegate* unmanaged[Cdecl]<void*, nuint, MaDecoderConfig*, MaDecoder*, int>)funcTable[553])(pData, dataSize, pConfig, pDecoder);
+        }
+
         internal static MaResult DecoderInitMemoryNative(void* pData, nuint dataSize, MaDecoderConfig* pConfig, MaDecoder* pDecoder)
         {
-            return ((delegate* unmanaged[Cdecl]<void*, nuint, MaDecoderConfig*, MaDecoder*, MaResult>)funcTable[553])(pData, dataSize, pConfig, pDecoder);
+            return (MaResult)DecoderInitMemoryInterop(pData, dataSize, pConfig, pDecoder);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
-        internal static MaResult DecoderInitVfsNative(MaVfs* pVFs, byte* pFilePath, MaDecoderConfig* pConfig, MaDecoder* pDecoder)
+        internal static int DecoderInitVfsInterop(MaVfs* pVFS, byte* pFilePath, MaDecoderConfig* pConfig, MaDecoder* pDecoder)
         {
-            return ((delegate* unmanaged[Cdecl]<MaVfs*, byte*, MaDecoderConfig*, MaDecoder*, MaResult>)funcTable[554])(pVFs, pFilePath, pConfig, pDecoder);
+            return ((delegate* unmanaged[Cdecl]<MaVfs*, byte*, MaDecoderConfig*, MaDecoder*, int>)funcTable[554])(pVFS, pFilePath, pConfig, pDecoder);
         }
 
-        /// <summary>
-        /// To be documented.
-        /// </summary>
-        internal static MaResult DecoderInitVfsWNative(MaVfs* pVFs, ushort* pFilePath, MaDecoderConfig* pConfig, MaDecoder* pDecoder)
+        internal static MaResult DecoderInitVfsNative(MaVfs* pVFS, byte* pFilePath, MaDecoderConfig* pConfig, MaDecoder* pDecoder)
         {
-            return ((delegate* unmanaged[Cdecl]<MaVfs*, ushort*, MaDecoderConfig*, MaDecoder*, MaResult>)funcTable[555])(pVFs, pFilePath, pConfig, pDecoder);
+            return (MaResult)DecoderInitVfsInterop(pVFS, pFilePath, pConfig, pDecoder);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int DecoderInitVfsWInterop(MaVfs* pVFS, ushort* pFilePath, MaDecoderConfig* pConfig, MaDecoder* pDecoder)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaVfs*, ushort*, MaDecoderConfig*, MaDecoder*, int>)funcTable[555])(pVFS, pFilePath, pConfig, pDecoder);
+        }
+
+        internal static MaResult DecoderInitVfsWNative(MaVfs* pVFS, ushort* pFilePath, MaDecoderConfig* pConfig, MaDecoder* pDecoder)
+        {
+            return (MaResult)DecoderInitVfsWInterop(pVFS, pFilePath, pConfig, pDecoder);
+        }
+
+        /// <summary>
+        /// To be documented.
+        /// </summary>
+        internal static int DecoderInitFileInterop(byte* pFilePath, MaDecoderConfig* pConfig, MaDecoder* pDecoder)
+        {
+            return ((delegate* unmanaged[Cdecl]<byte*, MaDecoderConfig*, MaDecoder*, int>)funcTable[556])(pFilePath, pConfig, pDecoder);
+        }
+
         internal static MaResult DecoderInitFileNative(byte* pFilePath, MaDecoderConfig* pConfig, MaDecoder* pDecoder)
         {
-            return ((delegate* unmanaged[Cdecl]<byte*, MaDecoderConfig*, MaDecoder*, MaResult>)funcTable[556])(pFilePath, pConfig, pDecoder);
+            return (MaResult)DecoderInitFileInterop(pFilePath, pConfig, pDecoder);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int DecoderInitFileWInterop(ushort* pFilePath, MaDecoderConfig* pConfig, MaDecoder* pDecoder)
+        {
+            return ((delegate* unmanaged[Cdecl]<ushort*, MaDecoderConfig*, MaDecoder*, int>)funcTable[557])(pFilePath, pConfig, pDecoder);
+        }
+
         internal static MaResult DecoderInitFileWNative(ushort* pFilePath, MaDecoderConfig* pConfig, MaDecoder* pDecoder)
         {
-            return ((delegate* unmanaged[Cdecl]<ushort*, MaDecoderConfig*, MaDecoder*, MaResult>)funcTable[557])(pFilePath, pConfig, pDecoder);
+            return (MaResult)DecoderInitFileWInterop(pFilePath, pConfig, pDecoder);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int DecoderUninitInterop(MaDecoder* pDecoder)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaDecoder*, int>)funcTable[558])(pDecoder);
+        }
+
         internal static MaResult DecoderUninitNative(MaDecoder* pDecoder)
         {
-            return ((delegate* unmanaged[Cdecl]<MaDecoder*, MaResult>)funcTable[558])(pDecoder);
+            return (MaResult)DecoderUninitInterop(pDecoder);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int DecoderReadPcmFramesInterop(MaDecoder* pDecoder, void* pFramesOut, ulong frameCount, ulong* pFramesRead)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaDecoder*, void*, ulong, ulong*, int>)funcTable[559])(pDecoder, pFramesOut, frameCount, pFramesRead);
+        }
+
         internal static MaResult DecoderReadPcmFramesNative(MaDecoder* pDecoder, void* pFramesOut, ulong frameCount, ulong* pFramesRead)
         {
-            return ((delegate* unmanaged[Cdecl]<MaDecoder*, void*, ulong, ulong*, MaResult>)funcTable[559])(pDecoder, pFramesOut, frameCount, pFramesRead);
+            return (MaResult)DecoderReadPcmFramesInterop(pDecoder, pFramesOut, frameCount, pFramesRead);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int DecoderSeekToPcmFrameInterop(MaDecoder* pDecoder, ulong frameIndex)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaDecoder*, ulong, int>)funcTable[560])(pDecoder, frameIndex);
+        }
+
         internal static MaResult DecoderSeekToPcmFrameNative(MaDecoder* pDecoder, ulong frameIndex)
         {
-            return ((delegate* unmanaged[Cdecl]<MaDecoder*, ulong, MaResult>)funcTable[560])(pDecoder, frameIndex);
+            return (MaResult)DecoderSeekToPcmFrameInterop(pDecoder, frameIndex);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int DecoderGetDataFormatInterop(MaDecoder* pDecoder, MaFormat* pFormat, uint* pChannels, uint* pSampleRate, byte* pChannelMap, nuint channelMapCap)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaDecoder*, MaFormat*, uint*, uint*, byte*, nuint, int>)funcTable[561])(pDecoder, pFormat, pChannels, pSampleRate, pChannelMap, channelMapCap);
+        }
+
         internal static MaResult DecoderGetDataFormatNative(MaDecoder* pDecoder, MaFormat* pFormat, uint* pChannels, uint* pSampleRate, byte* pChannelMap, nuint channelMapCap)
         {
-            return ((delegate* unmanaged[Cdecl]<MaDecoder*, MaFormat*, uint*, uint*, byte*, nuint, MaResult>)funcTable[561])(pDecoder, pFormat, pChannels, pSampleRate, pChannelMap, channelMapCap);
+            return (MaResult)DecoderGetDataFormatInterop(pDecoder, pFormat, pChannels, pSampleRate, pChannelMap, channelMapCap);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int DecoderGetCursorInPcmFramesInterop(MaDecoder* pDecoder, ulong* pCursor)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaDecoder*, ulong*, int>)funcTable[562])(pDecoder, pCursor);
+        }
+
         internal static MaResult DecoderGetCursorInPcmFramesNative(MaDecoder* pDecoder, ulong* pCursor)
         {
-            return ((delegate* unmanaged[Cdecl]<MaDecoder*, ulong*, MaResult>)funcTable[562])(pDecoder, pCursor);
+            return (MaResult)DecoderGetCursorInPcmFramesInterop(pDecoder, pCursor);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int DecoderGetLengthInPcmFramesInterop(MaDecoder* pDecoder, ulong* pLength)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaDecoder*, ulong*, int>)funcTable[563])(pDecoder, pLength);
+        }
+
         internal static MaResult DecoderGetLengthInPcmFramesNative(MaDecoder* pDecoder, ulong* pLength)
         {
-            return ((delegate* unmanaged[Cdecl]<MaDecoder*, ulong*, MaResult>)funcTable[563])(pDecoder, pLength);
+            return (MaResult)DecoderGetLengthInPcmFramesInterop(pDecoder, pLength);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int DecoderGetAvailableFramesInterop(MaDecoder* pDecoder, ulong* pAvailableFrames)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaDecoder*, ulong*, int>)funcTable[564])(pDecoder, pAvailableFrames);
+        }
+
         internal static MaResult DecoderGetAvailableFramesNative(MaDecoder* pDecoder, ulong* pAvailableFrames)
         {
-            return ((delegate* unmanaged[Cdecl]<MaDecoder*, ulong*, MaResult>)funcTable[564])(pDecoder, pAvailableFrames);
+            return (MaResult)DecoderGetAvailableFramesInterop(pDecoder, pAvailableFrames);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
-        internal static MaResult DecodeFromVfsNative(MaVfs* pVFs, byte* pFilePath, MaDecoderConfig* pConfig, ulong* pFrameCountOut, void** ppPCMFramesOut)
+        internal static int DecodeFromVfsInterop(MaVfs* pVFS, byte* pFilePath, MaDecoderConfig* pConfig, ulong* pFrameCountOut, void** ppPCMFramesOut)
         {
-            return ((delegate* unmanaged[Cdecl]<MaVfs*, byte*, MaDecoderConfig*, ulong*, void**, MaResult>)funcTable[565])(pVFs, pFilePath, pConfig, pFrameCountOut, ppPCMFramesOut);
+            return ((delegate* unmanaged[Cdecl]<MaVfs*, byte*, MaDecoderConfig*, ulong*, void**, int>)funcTable[565])(pVFS, pFilePath, pConfig, pFrameCountOut, ppPCMFramesOut);
+        }
+
+        internal static MaResult DecodeFromVfsNative(MaVfs* pVFS, byte* pFilePath, MaDecoderConfig* pConfig, ulong* pFrameCountOut, void** ppPCMFramesOut)
+        {
+            return (MaResult)DecodeFromVfsInterop(pVFS, pFilePath, pConfig, pFrameCountOut, ppPCMFramesOut);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int DecodeFileInterop(byte* pFilePath, MaDecoderConfig* pConfig, ulong* pFrameCountOut, void** ppPCMFramesOut)
+        {
+            return ((delegate* unmanaged[Cdecl]<byte*, MaDecoderConfig*, ulong*, void**, int>)funcTable[566])(pFilePath, pConfig, pFrameCountOut, ppPCMFramesOut);
+        }
+
         internal static MaResult DecodeFileNative(byte* pFilePath, MaDecoderConfig* pConfig, ulong* pFrameCountOut, void** ppPCMFramesOut)
         {
-            return ((delegate* unmanaged[Cdecl]<byte*, MaDecoderConfig*, ulong*, void**, MaResult>)funcTable[566])(pFilePath, pConfig, pFrameCountOut, ppPCMFramesOut);
+            return (MaResult)DecodeFileInterop(pFilePath, pConfig, pFrameCountOut, ppPCMFramesOut);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int DecodeMemoryInterop(void* pData, nuint dataSize, MaDecoderConfig* pConfig, ulong* pFrameCountOut, void** ppPCMFramesOut)
+        {
+            return ((delegate* unmanaged[Cdecl]<void*, nuint, MaDecoderConfig*, ulong*, void**, int>)funcTable[567])(pData, dataSize, pConfig, pFrameCountOut, ppPCMFramesOut);
+        }
+
         internal static MaResult DecodeMemoryNative(void* pData, nuint dataSize, MaDecoderConfig* pConfig, ulong* pFrameCountOut, void** ppPCMFramesOut)
         {
-            return ((delegate* unmanaged[Cdecl]<void*, nuint, MaDecoderConfig*, ulong*, void**, MaResult>)funcTable[567])(pData, dataSize, pConfig, pFrameCountOut, ppPCMFramesOut);
+            return (MaResult)DecodeMemoryInterop(pData, dataSize, pConfig, pFrameCountOut, ppPCMFramesOut);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static MaEncoderConfig EncoderConfigInitInterop(int encodingFormat, int format, uint channels, uint sampleRate)
+        {
+            return ((delegate* unmanaged[Cdecl]<int, int, uint, uint, MaEncoderConfig>)funcTable[568])(encodingFormat, format, channels, sampleRate);
+        }
+
         internal static MaEncoderConfig EncoderConfigInitNative(MaEncodingFormat encodingFormat, MaFormat format, uint channels, uint sampleRate)
         {
-            return ((delegate* unmanaged[Cdecl]<MaEncodingFormat, MaFormat, uint, uint, MaEncoderConfig>)funcTable[568])(encodingFormat, format, channels, sampleRate);
+            return EncoderConfigInitInterop((int)encodingFormat, (int)format, channels, sampleRate);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int EncoderInitInterop(void* onWrite, void* onSeek, void* pUserData, MaEncoderConfig* pConfig, MaEncoder* pEncoder)
+        {
+            return ((delegate* unmanaged[Cdecl]<void*, void*, void*, MaEncoderConfig*, MaEncoder*, int>)funcTable[569])(onWrite, onSeek, pUserData, pConfig, pEncoder);
+        }
+
         internal static MaResult EncoderInitNative(void* onWrite, void* onSeek, void* pUserData, MaEncoderConfig* pConfig, MaEncoder* pEncoder)
         {
-            return ((delegate* unmanaged[Cdecl]<void*, void*, void*, MaEncoderConfig*, MaEncoder*, MaResult>)funcTable[569])(onWrite, onSeek, pUserData, pConfig, pEncoder);
+            return (MaResult)EncoderInitInterop(onWrite, onSeek, pUserData, pConfig, pEncoder);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
-        internal static MaResult EncoderInitVfsNative(MaVfs* pVFs, byte* pFilePath, MaEncoderConfig* pConfig, MaEncoder* pEncoder)
+        internal static int EncoderInitVfsInterop(MaVfs* pVFS, byte* pFilePath, MaEncoderConfig* pConfig, MaEncoder* pEncoder)
         {
-            return ((delegate* unmanaged[Cdecl]<MaVfs*, byte*, MaEncoderConfig*, MaEncoder*, MaResult>)funcTable[570])(pVFs, pFilePath, pConfig, pEncoder);
+            return ((delegate* unmanaged[Cdecl]<MaVfs*, byte*, MaEncoderConfig*, MaEncoder*, int>)funcTable[570])(pVFS, pFilePath, pConfig, pEncoder);
         }
 
-        /// <summary>
-        /// To be documented.
-        /// </summary>
-        internal static MaResult EncoderInitVfsWNative(MaVfs* pVFs, ushort* pFilePath, MaEncoderConfig* pConfig, MaEncoder* pEncoder)
+        internal static MaResult EncoderInitVfsNative(MaVfs* pVFS, byte* pFilePath, MaEncoderConfig* pConfig, MaEncoder* pEncoder)
         {
-            return ((delegate* unmanaged[Cdecl]<MaVfs*, ushort*, MaEncoderConfig*, MaEncoder*, MaResult>)funcTable[571])(pVFs, pFilePath, pConfig, pEncoder);
+            return (MaResult)EncoderInitVfsInterop(pVFS, pFilePath, pConfig, pEncoder);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int EncoderInitVfsWInterop(MaVfs* pVFS, ushort* pFilePath, MaEncoderConfig* pConfig, MaEncoder* pEncoder)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaVfs*, ushort*, MaEncoderConfig*, MaEncoder*, int>)funcTable[571])(pVFS, pFilePath, pConfig, pEncoder);
+        }
+
+        internal static MaResult EncoderInitVfsWNative(MaVfs* pVFS, ushort* pFilePath, MaEncoderConfig* pConfig, MaEncoder* pEncoder)
+        {
+            return (MaResult)EncoderInitVfsWInterop(pVFS, pFilePath, pConfig, pEncoder);
+        }
+
+        /// <summary>
+        /// To be documented.
+        /// </summary>
+        internal static int EncoderInitFileInterop(byte* pFilePath, MaEncoderConfig* pConfig, MaEncoder* pEncoder)
+        {
+            return ((delegate* unmanaged[Cdecl]<byte*, MaEncoderConfig*, MaEncoder*, int>)funcTable[572])(pFilePath, pConfig, pEncoder);
+        }
+
         internal static MaResult EncoderInitFileNative(byte* pFilePath, MaEncoderConfig* pConfig, MaEncoder* pEncoder)
         {
-            return ((delegate* unmanaged[Cdecl]<byte*, MaEncoderConfig*, MaEncoder*, MaResult>)funcTable[572])(pFilePath, pConfig, pEncoder);
+            return (MaResult)EncoderInitFileInterop(pFilePath, pConfig, pEncoder);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int EncoderInitFileWInterop(ushort* pFilePath, MaEncoderConfig* pConfig, MaEncoder* pEncoder)
+        {
+            return ((delegate* unmanaged[Cdecl]<ushort*, MaEncoderConfig*, MaEncoder*, int>)funcTable[573])(pFilePath, pConfig, pEncoder);
+        }
+
         internal static MaResult EncoderInitFileWNative(ushort* pFilePath, MaEncoderConfig* pConfig, MaEncoder* pEncoder)
         {
-            return ((delegate* unmanaged[Cdecl]<ushort*, MaEncoderConfig*, MaEncoder*, MaResult>)funcTable[573])(pFilePath, pConfig, pEncoder);
+            return (MaResult)EncoderInitFileWInterop(pFilePath, pConfig, pEncoder);
         }
 
         /// <summary>
@@ -23178,25 +25033,40 @@ namespace Inno.Native.MiniAudio
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int EncoderWritePcmFramesInterop(MaEncoder* pEncoder, void* pFramesIn, ulong frameCount, ulong* pFramesWritten)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaEncoder*, void*, ulong, ulong*, int>)funcTable[575])(pEncoder, pFramesIn, frameCount, pFramesWritten);
+        }
+
         internal static MaResult EncoderWritePcmFramesNative(MaEncoder* pEncoder, void* pFramesIn, ulong frameCount, ulong* pFramesWritten)
         {
-            return ((delegate* unmanaged[Cdecl]<MaEncoder*, void*, ulong, ulong*, MaResult>)funcTable[575])(pEncoder, pFramesIn, frameCount, pFramesWritten);
+            return (MaResult)EncoderWritePcmFramesInterop(pEncoder, pFramesIn, frameCount, pFramesWritten);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static MaWaveformConfig WaveformConfigInitInterop(int format, uint channels, uint sampleRate, int type, double amplitude, double frequency)
+        {
+            return ((delegate* unmanaged[Cdecl]<int, uint, uint, int, double, double, MaWaveformConfig>)funcTable[576])(format, channels, sampleRate, type, amplitude, frequency);
+        }
+
         internal static MaWaveformConfig WaveformConfigInitNative(MaFormat format, uint channels, uint sampleRate, MaWaveformType type, double amplitude, double frequency)
         {
-            return ((delegate* unmanaged[Cdecl]<MaFormat, uint, uint, MaWaveformType, double, double, MaWaveformConfig>)funcTable[576])(format, channels, sampleRate, type, amplitude, frequency);
+            return WaveformConfigInitInterop((int)format, channels, sampleRate, (int)type, amplitude, frequency);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int WaveformInitInterop(MaWaveformConfig* pConfig, MaWaveform* pWaveform)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaWaveformConfig*, MaWaveform*, int>)funcTable[577])(pConfig, pWaveform);
+        }
+
         internal static MaResult WaveformInitNative(MaWaveformConfig* pConfig, MaWaveform* pWaveform)
         {
-            return ((delegate* unmanaged[Cdecl]<MaWaveformConfig*, MaWaveform*, MaResult>)funcTable[577])(pConfig, pWaveform);
+            return (MaResult)WaveformInitInterop(pConfig, pWaveform);
         }
 
         /// <summary>
@@ -23210,65 +25080,105 @@ namespace Inno.Native.MiniAudio
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int WaveformReadPcmFramesInterop(MaWaveform* pWaveform, void* pFramesOut, ulong frameCount, ulong* pFramesRead)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaWaveform*, void*, ulong, ulong*, int>)funcTable[579])(pWaveform, pFramesOut, frameCount, pFramesRead);
+        }
+
         internal static MaResult WaveformReadPcmFramesNative(MaWaveform* pWaveform, void* pFramesOut, ulong frameCount, ulong* pFramesRead)
         {
-            return ((delegate* unmanaged[Cdecl]<MaWaveform*, void*, ulong, ulong*, MaResult>)funcTable[579])(pWaveform, pFramesOut, frameCount, pFramesRead);
+            return (MaResult)WaveformReadPcmFramesInterop(pWaveform, pFramesOut, frameCount, pFramesRead);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int WaveformSeekToPcmFrameInterop(MaWaveform* pWaveform, ulong frameIndex)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaWaveform*, ulong, int>)funcTable[580])(pWaveform, frameIndex);
+        }
+
         internal static MaResult WaveformSeekToPcmFrameNative(MaWaveform* pWaveform, ulong frameIndex)
         {
-            return ((delegate* unmanaged[Cdecl]<MaWaveform*, ulong, MaResult>)funcTable[580])(pWaveform, frameIndex);
+            return (MaResult)WaveformSeekToPcmFrameInterop(pWaveform, frameIndex);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int WaveformSetAmplitudeInterop(MaWaveform* pWaveform, double amplitude)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaWaveform*, double, int>)funcTable[581])(pWaveform, amplitude);
+        }
+
         internal static MaResult WaveformSetAmplitudeNative(MaWaveform* pWaveform, double amplitude)
         {
-            return ((delegate* unmanaged[Cdecl]<MaWaveform*, double, MaResult>)funcTable[581])(pWaveform, amplitude);
+            return (MaResult)WaveformSetAmplitudeInterop(pWaveform, amplitude);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int WaveformSetFrequencyInterop(MaWaveform* pWaveform, double frequency)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaWaveform*, double, int>)funcTable[582])(pWaveform, frequency);
+        }
+
         internal static MaResult WaveformSetFrequencyNative(MaWaveform* pWaveform, double frequency)
         {
-            return ((delegate* unmanaged[Cdecl]<MaWaveform*, double, MaResult>)funcTable[582])(pWaveform, frequency);
+            return (MaResult)WaveformSetFrequencyInterop(pWaveform, frequency);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int WaveformSetTypeInterop(MaWaveform* pWaveform, int type)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaWaveform*, int, int>)funcTable[583])(pWaveform, type);
+        }
+
         internal static MaResult WaveformSetTypeNative(MaWaveform* pWaveform, MaWaveformType type)
         {
-            return ((delegate* unmanaged[Cdecl]<MaWaveform*, MaWaveformType, MaResult>)funcTable[583])(pWaveform, type);
+            return (MaResult)WaveformSetTypeInterop(pWaveform, (int)type);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int WaveformSetSampleRateInterop(MaWaveform* pWaveform, uint sampleRate)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaWaveform*, uint, int>)funcTable[584])(pWaveform, sampleRate);
+        }
+
         internal static MaResult WaveformSetSampleRateNative(MaWaveform* pWaveform, uint sampleRate)
         {
-            return ((delegate* unmanaged[Cdecl]<MaWaveform*, uint, MaResult>)funcTable[584])(pWaveform, sampleRate);
+            return (MaResult)WaveformSetSampleRateInterop(pWaveform, sampleRate);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static MaPulsewaveConfig PulsewaveConfigInitInterop(int format, uint channels, uint sampleRate, double dutyCycle, double amplitude, double frequency)
+        {
+            return ((delegate* unmanaged[Cdecl]<int, uint, uint, double, double, double, MaPulsewaveConfig>)funcTable[585])(format, channels, sampleRate, dutyCycle, amplitude, frequency);
+        }
+
         internal static MaPulsewaveConfig PulsewaveConfigInitNative(MaFormat format, uint channels, uint sampleRate, double dutyCycle, double amplitude, double frequency)
         {
-            return ((delegate* unmanaged[Cdecl]<MaFormat, uint, uint, double, double, double, MaPulsewaveConfig>)funcTable[585])(format, channels, sampleRate, dutyCycle, amplitude, frequency);
+            return PulsewaveConfigInitInterop((int)format, channels, sampleRate, dutyCycle, amplitude, frequency);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int PulsewaveInitInterop(MaPulsewaveConfig* pConfig, MaPulsewave* pWaveform)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaPulsewaveConfig*, MaPulsewave*, int>)funcTable[586])(pConfig, pWaveform);
+        }
+
         internal static MaResult PulsewaveInitNative(MaPulsewaveConfig* pConfig, MaPulsewave* pWaveform)
         {
-            return ((delegate* unmanaged[Cdecl]<MaPulsewaveConfig*, MaPulsewave*, MaResult>)funcTable[586])(pConfig, pWaveform);
+            return (MaResult)PulsewaveInitInterop(pConfig, pWaveform);
         }
 
         /// <summary>
@@ -23282,81 +25192,131 @@ namespace Inno.Native.MiniAudio
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int PulsewaveReadPcmFramesInterop(MaPulsewave* pWaveform, void* pFramesOut, ulong frameCount, ulong* pFramesRead)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaPulsewave*, void*, ulong, ulong*, int>)funcTable[588])(pWaveform, pFramesOut, frameCount, pFramesRead);
+        }
+
         internal static MaResult PulsewaveReadPcmFramesNative(MaPulsewave* pWaveform, void* pFramesOut, ulong frameCount, ulong* pFramesRead)
         {
-            return ((delegate* unmanaged[Cdecl]<MaPulsewave*, void*, ulong, ulong*, MaResult>)funcTable[588])(pWaveform, pFramesOut, frameCount, pFramesRead);
+            return (MaResult)PulsewaveReadPcmFramesInterop(pWaveform, pFramesOut, frameCount, pFramesRead);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int PulsewaveSeekToPcmFrameInterop(MaPulsewave* pWaveform, ulong frameIndex)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaPulsewave*, ulong, int>)funcTable[589])(pWaveform, frameIndex);
+        }
+
         internal static MaResult PulsewaveSeekToPcmFrameNative(MaPulsewave* pWaveform, ulong frameIndex)
         {
-            return ((delegate* unmanaged[Cdecl]<MaPulsewave*, ulong, MaResult>)funcTable[589])(pWaveform, frameIndex);
+            return (MaResult)PulsewaveSeekToPcmFrameInterop(pWaveform, frameIndex);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int PulsewaveSetAmplitudeInterop(MaPulsewave* pWaveform, double amplitude)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaPulsewave*, double, int>)funcTable[590])(pWaveform, amplitude);
+        }
+
         internal static MaResult PulsewaveSetAmplitudeNative(MaPulsewave* pWaveform, double amplitude)
         {
-            return ((delegate* unmanaged[Cdecl]<MaPulsewave*, double, MaResult>)funcTable[590])(pWaveform, amplitude);
+            return (MaResult)PulsewaveSetAmplitudeInterop(pWaveform, amplitude);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int PulsewaveSetFrequencyInterop(MaPulsewave* pWaveform, double frequency)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaPulsewave*, double, int>)funcTable[591])(pWaveform, frequency);
+        }
+
         internal static MaResult PulsewaveSetFrequencyNative(MaPulsewave* pWaveform, double frequency)
         {
-            return ((delegate* unmanaged[Cdecl]<MaPulsewave*, double, MaResult>)funcTable[591])(pWaveform, frequency);
+            return (MaResult)PulsewaveSetFrequencyInterop(pWaveform, frequency);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int PulsewaveSetSampleRateInterop(MaPulsewave* pWaveform, uint sampleRate)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaPulsewave*, uint, int>)funcTable[592])(pWaveform, sampleRate);
+        }
+
         internal static MaResult PulsewaveSetSampleRateNative(MaPulsewave* pWaveform, uint sampleRate)
         {
-            return ((delegate* unmanaged[Cdecl]<MaPulsewave*, uint, MaResult>)funcTable[592])(pWaveform, sampleRate);
+            return (MaResult)PulsewaveSetSampleRateInterop(pWaveform, sampleRate);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int PulsewaveSetDutyCycleInterop(MaPulsewave* pWaveform, double dutyCycle)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaPulsewave*, double, int>)funcTable[593])(pWaveform, dutyCycle);
+        }
+
         internal static MaResult PulsewaveSetDutyCycleNative(MaPulsewave* pWaveform, double dutyCycle)
         {
-            return ((delegate* unmanaged[Cdecl]<MaPulsewave*, double, MaResult>)funcTable[593])(pWaveform, dutyCycle);
+            return (MaResult)PulsewaveSetDutyCycleInterop(pWaveform, dutyCycle);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static MaNoiseConfig NoiseConfigInitInterop(int format, uint channels, int type, int seed, double amplitude)
+        {
+            return ((delegate* unmanaged[Cdecl]<int, uint, int, int, double, MaNoiseConfig>)funcTable[594])(format, channels, type, seed, amplitude);
+        }
+
         internal static MaNoiseConfig NoiseConfigInitNative(MaFormat format, uint channels, MaNoiseType type, int seed, double amplitude)
         {
-            return ((delegate* unmanaged[Cdecl]<MaFormat, uint, MaNoiseType, int, double, MaNoiseConfig>)funcTable[594])(format, channels, type, seed, amplitude);
+            return NoiseConfigInitInterop((int)format, channels, (int)type, seed, amplitude);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int NoiseGetHeapSizeInterop(MaNoiseConfig* pConfig, nuint* pHeapSizeInBytes)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaNoiseConfig*, nuint*, int>)funcTable[595])(pConfig, pHeapSizeInBytes);
+        }
+
         internal static MaResult NoiseGetHeapSizeNative(MaNoiseConfig* pConfig, nuint* pHeapSizeInBytes)
         {
-            return ((delegate* unmanaged[Cdecl]<MaNoiseConfig*, nuint*, MaResult>)funcTable[595])(pConfig, pHeapSizeInBytes);
+            return (MaResult)NoiseGetHeapSizeInterop(pConfig, pHeapSizeInBytes);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int NoiseInitPreallocatedInterop(MaNoiseConfig* pConfig, void* pHeap, MaNoise* pNoise)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaNoiseConfig*, void*, MaNoise*, int>)funcTable[596])(pConfig, pHeap, pNoise);
+        }
+
         internal static MaResult NoiseInitPreallocatedNative(MaNoiseConfig* pConfig, void* pHeap, MaNoise* pNoise)
         {
-            return ((delegate* unmanaged[Cdecl]<MaNoiseConfig*, void*, MaNoise*, MaResult>)funcTable[596])(pConfig, pHeap, pNoise);
+            return (MaResult)NoiseInitPreallocatedInterop(pConfig, pHeap, pNoise);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int NoiseInitInterop(MaNoiseConfig* pConfig, MaAllocationCallbacks* pAllocationCallbacks, MaNoise* pNoise)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaNoiseConfig*, MaAllocationCallbacks*, MaNoise*, int>)funcTable[597])(pConfig, pAllocationCallbacks, pNoise);
+        }
+
         internal static MaResult NoiseInitNative(MaNoiseConfig* pConfig, MaAllocationCallbacks* pAllocationCallbacks, MaNoise* pNoise)
         {
-            return ((delegate* unmanaged[Cdecl]<MaNoiseConfig*, MaAllocationCallbacks*, MaNoise*, MaResult>)funcTable[597])(pConfig, pAllocationCallbacks, pNoise);
+            return (MaResult)NoiseInitInterop(pConfig, pAllocationCallbacks, pNoise);
         }
 
         /// <summary>
@@ -23370,33 +25330,53 @@ namespace Inno.Native.MiniAudio
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int NoiseReadPcmFramesInterop(MaNoise* pNoise, void* pFramesOut, ulong frameCount, ulong* pFramesRead)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaNoise*, void*, ulong, ulong*, int>)funcTable[599])(pNoise, pFramesOut, frameCount, pFramesRead);
+        }
+
         internal static MaResult NoiseReadPcmFramesNative(MaNoise* pNoise, void* pFramesOut, ulong frameCount, ulong* pFramesRead)
         {
-            return ((delegate* unmanaged[Cdecl]<MaNoise*, void*, ulong, ulong*, MaResult>)funcTable[599])(pNoise, pFramesOut, frameCount, pFramesRead);
+            return (MaResult)NoiseReadPcmFramesInterop(pNoise, pFramesOut, frameCount, pFramesRead);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int NoiseSetAmplitudeInterop(MaNoise* pNoise, double amplitude)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaNoise*, double, int>)funcTable[600])(pNoise, amplitude);
+        }
+
         internal static MaResult NoiseSetAmplitudeNative(MaNoise* pNoise, double amplitude)
         {
-            return ((delegate* unmanaged[Cdecl]<MaNoise*, double, MaResult>)funcTable[600])(pNoise, amplitude);
+            return (MaResult)NoiseSetAmplitudeInterop(pNoise, amplitude);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int NoiseSetSeedInterop(MaNoise* pNoise, int seed)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaNoise*, int, int>)funcTable[601])(pNoise, seed);
+        }
+
         internal static MaResult NoiseSetSeedNative(MaNoise* pNoise, int seed)
         {
-            return ((delegate* unmanaged[Cdecl]<MaNoise*, int, MaResult>)funcTable[601])(pNoise, seed);
+            return (MaResult)NoiseSetSeedInterop(pNoise, seed);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int NoiseSetTypeInterop(MaNoise* pNoise, int type)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaNoise*, int, int>)funcTable[602])(pNoise, type);
+        }
+
         internal static MaResult NoiseSetTypeNative(MaNoise* pNoise, MaNoiseType type)
         {
-            return ((delegate* unmanaged[Cdecl]<MaNoise*, MaNoiseType, MaResult>)funcTable[602])(pNoise, type);
+            return (MaResult)NoiseSetTypeInterop(pNoise, (int)type);
         }
 
         /// <summary>
@@ -23426,9 +25406,14 @@ namespace Inno.Native.MiniAudio
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int ResourceManagerInitInterop(MaResourceManagerConfig* pConfig, MaResourceManager* pResourceManager)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaResourceManagerConfig*, MaResourceManager*, int>)funcTable[606])(pConfig, pResourceManager);
+        }
+
         internal static MaResult ResourceManagerInitNative(MaResourceManagerConfig* pConfig, MaResourceManager* pResourceManager)
         {
-            return ((delegate* unmanaged[Cdecl]<MaResourceManagerConfig*, MaResourceManager*, MaResult>)funcTable[606])(pConfig, pResourceManager);
+            return (MaResult)ResourceManagerInitInterop(pConfig, pResourceManager);
         }
 
         /// <summary>
@@ -23450,177 +25435,287 @@ namespace Inno.Native.MiniAudio
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int ResourceManagerRegisterFileInterop(MaResourceManager* pResourceManager, byte* pFilePath, uint flags)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaResourceManager*, byte*, uint, int>)funcTable[609])(pResourceManager, pFilePath, flags);
+        }
+
         internal static MaResult ResourceManagerRegisterFileNative(MaResourceManager* pResourceManager, byte* pFilePath, uint flags)
         {
-            return ((delegate* unmanaged[Cdecl]<MaResourceManager*, byte*, uint, MaResult>)funcTable[609])(pResourceManager, pFilePath, flags);
+            return (MaResult)ResourceManagerRegisterFileInterop(pResourceManager, pFilePath, flags);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int ResourceManagerRegisterFileWInterop(MaResourceManager* pResourceManager, ushort* pFilePath, uint flags)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaResourceManager*, ushort*, uint, int>)funcTable[610])(pResourceManager, pFilePath, flags);
+        }
+
         internal static MaResult ResourceManagerRegisterFileWNative(MaResourceManager* pResourceManager, ushort* pFilePath, uint flags)
         {
-            return ((delegate* unmanaged[Cdecl]<MaResourceManager*, ushort*, uint, MaResult>)funcTable[610])(pResourceManager, pFilePath, flags);
+            return (MaResult)ResourceManagerRegisterFileWInterop(pResourceManager, pFilePath, flags);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int ResourceManagerRegisterDecodedDataInterop(MaResourceManager* pResourceManager, byte* pName, void* pData, ulong frameCount, int format, uint channels, uint sampleRate)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaResourceManager*, byte*, void*, ulong, int, uint, uint, int>)funcTable[611])(pResourceManager, pName, pData, frameCount, format, channels, sampleRate);
+        }
+
         internal static MaResult ResourceManagerRegisterDecodedDataNative(MaResourceManager* pResourceManager, byte* pName, void* pData, ulong frameCount, MaFormat format, uint channels, uint sampleRate)
         {
-            return ((delegate* unmanaged[Cdecl]<MaResourceManager*, byte*, void*, ulong, MaFormat, uint, uint, MaResult>)funcTable[611])(pResourceManager, pName, pData, frameCount, format, channels, sampleRate);
+            return (MaResult)ResourceManagerRegisterDecodedDataInterop(pResourceManager, pName, pData, frameCount, (int)format, channels, sampleRate);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int ResourceManagerRegisterDecodedDataWInterop(MaResourceManager* pResourceManager, ushort* pName, void* pData, ulong frameCount, int format, uint channels, uint sampleRate)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaResourceManager*, ushort*, void*, ulong, int, uint, uint, int>)funcTable[612])(pResourceManager, pName, pData, frameCount, format, channels, sampleRate);
+        }
+
         internal static MaResult ResourceManagerRegisterDecodedDataWNative(MaResourceManager* pResourceManager, ushort* pName, void* pData, ulong frameCount, MaFormat format, uint channels, uint sampleRate)
         {
-            return ((delegate* unmanaged[Cdecl]<MaResourceManager*, ushort*, void*, ulong, MaFormat, uint, uint, MaResult>)funcTable[612])(pResourceManager, pName, pData, frameCount, format, channels, sampleRate);
+            return (MaResult)ResourceManagerRegisterDecodedDataWInterop(pResourceManager, pName, pData, frameCount, (int)format, channels, sampleRate);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int ResourceManagerRegisterEncodedDataInterop(MaResourceManager* pResourceManager, byte* pName, void* pData, nuint sizeInBytes)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaResourceManager*, byte*, void*, nuint, int>)funcTable[613])(pResourceManager, pName, pData, sizeInBytes);
+        }
+
         internal static MaResult ResourceManagerRegisterEncodedDataNative(MaResourceManager* pResourceManager, byte* pName, void* pData, nuint sizeInBytes)
         {
-            return ((delegate* unmanaged[Cdecl]<MaResourceManager*, byte*, void*, nuint, MaResult>)funcTable[613])(pResourceManager, pName, pData, sizeInBytes);
+            return (MaResult)ResourceManagerRegisterEncodedDataInterop(pResourceManager, pName, pData, sizeInBytes);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int ResourceManagerRegisterEncodedDataWInterop(MaResourceManager* pResourceManager, ushort* pName, void* pData, nuint sizeInBytes)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaResourceManager*, ushort*, void*, nuint, int>)funcTable[614])(pResourceManager, pName, pData, sizeInBytes);
+        }
+
         internal static MaResult ResourceManagerRegisterEncodedDataWNative(MaResourceManager* pResourceManager, ushort* pName, void* pData, nuint sizeInBytes)
         {
-            return ((delegate* unmanaged[Cdecl]<MaResourceManager*, ushort*, void*, nuint, MaResult>)funcTable[614])(pResourceManager, pName, pData, sizeInBytes);
+            return (MaResult)ResourceManagerRegisterEncodedDataWInterop(pResourceManager, pName, pData, sizeInBytes);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int ResourceManagerUnregisterFileInterop(MaResourceManager* pResourceManager, byte* pFilePath)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaResourceManager*, byte*, int>)funcTable[615])(pResourceManager, pFilePath);
+        }
+
         internal static MaResult ResourceManagerUnregisterFileNative(MaResourceManager* pResourceManager, byte* pFilePath)
         {
-            return ((delegate* unmanaged[Cdecl]<MaResourceManager*, byte*, MaResult>)funcTable[615])(pResourceManager, pFilePath);
+            return (MaResult)ResourceManagerUnregisterFileInterop(pResourceManager, pFilePath);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int ResourceManagerUnregisterFileWInterop(MaResourceManager* pResourceManager, ushort* pFilePath)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaResourceManager*, ushort*, int>)funcTable[616])(pResourceManager, pFilePath);
+        }
+
         internal static MaResult ResourceManagerUnregisterFileWNative(MaResourceManager* pResourceManager, ushort* pFilePath)
         {
-            return ((delegate* unmanaged[Cdecl]<MaResourceManager*, ushort*, MaResult>)funcTable[616])(pResourceManager, pFilePath);
+            return (MaResult)ResourceManagerUnregisterFileWInterop(pResourceManager, pFilePath);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int ResourceManagerUnregisterDataInterop(MaResourceManager* pResourceManager, byte* pName)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaResourceManager*, byte*, int>)funcTable[617])(pResourceManager, pName);
+        }
+
         internal static MaResult ResourceManagerUnregisterDataNative(MaResourceManager* pResourceManager, byte* pName)
         {
-            return ((delegate* unmanaged[Cdecl]<MaResourceManager*, byte*, MaResult>)funcTable[617])(pResourceManager, pName);
+            return (MaResult)ResourceManagerUnregisterDataInterop(pResourceManager, pName);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int ResourceManagerUnregisterDataWInterop(MaResourceManager* pResourceManager, ushort* pName)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaResourceManager*, ushort*, int>)funcTable[618])(pResourceManager, pName);
+        }
+
         internal static MaResult ResourceManagerUnregisterDataWNative(MaResourceManager* pResourceManager, ushort* pName)
         {
-            return ((delegate* unmanaged[Cdecl]<MaResourceManager*, ushort*, MaResult>)funcTable[618])(pResourceManager, pName);
+            return (MaResult)ResourceManagerUnregisterDataWInterop(pResourceManager, pName);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int ResourceManagerDataBufferInitExInterop(MaResourceManager* pResourceManager, MaResourceManagerDataSourceConfig* pConfig, MaResourceManagerDataBuffer* pDataBuffer)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaResourceManager*, MaResourceManagerDataSourceConfig*, MaResourceManagerDataBuffer*, int>)funcTable[619])(pResourceManager, pConfig, pDataBuffer);
+        }
+
         internal static MaResult ResourceManagerDataBufferInitExNative(MaResourceManager* pResourceManager, MaResourceManagerDataSourceConfig* pConfig, MaResourceManagerDataBuffer* pDataBuffer)
         {
-            return ((delegate* unmanaged[Cdecl]<MaResourceManager*, MaResourceManagerDataSourceConfig*, MaResourceManagerDataBuffer*, MaResult>)funcTable[619])(pResourceManager, pConfig, pDataBuffer);
+            return (MaResult)ResourceManagerDataBufferInitExInterop(pResourceManager, pConfig, pDataBuffer);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int ResourceManagerDataBufferInitInterop(MaResourceManager* pResourceManager, byte* pFilePath, uint flags, MaResourceManagerPipelineNotifications* pNotifications, MaResourceManagerDataBuffer* pDataBuffer)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaResourceManager*, byte*, uint, MaResourceManagerPipelineNotifications*, MaResourceManagerDataBuffer*, int>)funcTable[620])(pResourceManager, pFilePath, flags, pNotifications, pDataBuffer);
+        }
+
         internal static MaResult ResourceManagerDataBufferInitNative(MaResourceManager* pResourceManager, byte* pFilePath, uint flags, MaResourceManagerPipelineNotifications* pNotifications, MaResourceManagerDataBuffer* pDataBuffer)
         {
-            return ((delegate* unmanaged[Cdecl]<MaResourceManager*, byte*, uint, MaResourceManagerPipelineNotifications*, MaResourceManagerDataBuffer*, MaResult>)funcTable[620])(pResourceManager, pFilePath, flags, pNotifications, pDataBuffer);
+            return (MaResult)ResourceManagerDataBufferInitInterop(pResourceManager, pFilePath, flags, pNotifications, pDataBuffer);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int ResourceManagerDataBufferInitWInterop(MaResourceManager* pResourceManager, ushort* pFilePath, uint flags, MaResourceManagerPipelineNotifications* pNotifications, MaResourceManagerDataBuffer* pDataBuffer)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaResourceManager*, ushort*, uint, MaResourceManagerPipelineNotifications*, MaResourceManagerDataBuffer*, int>)funcTable[621])(pResourceManager, pFilePath, flags, pNotifications, pDataBuffer);
+        }
+
         internal static MaResult ResourceManagerDataBufferInitWNative(MaResourceManager* pResourceManager, ushort* pFilePath, uint flags, MaResourceManagerPipelineNotifications* pNotifications, MaResourceManagerDataBuffer* pDataBuffer)
         {
-            return ((delegate* unmanaged[Cdecl]<MaResourceManager*, ushort*, uint, MaResourceManagerPipelineNotifications*, MaResourceManagerDataBuffer*, MaResult>)funcTable[621])(pResourceManager, pFilePath, flags, pNotifications, pDataBuffer);
+            return (MaResult)ResourceManagerDataBufferInitWInterop(pResourceManager, pFilePath, flags, pNotifications, pDataBuffer);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int ResourceManagerDataBufferInitCopyInterop(MaResourceManager* pResourceManager, MaResourceManagerDataBuffer* pExistingDataBuffer, MaResourceManagerDataBuffer* pDataBuffer)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaResourceManager*, MaResourceManagerDataBuffer*, MaResourceManagerDataBuffer*, int>)funcTable[622])(pResourceManager, pExistingDataBuffer, pDataBuffer);
+        }
+
         internal static MaResult ResourceManagerDataBufferInitCopyNative(MaResourceManager* pResourceManager, MaResourceManagerDataBuffer* pExistingDataBuffer, MaResourceManagerDataBuffer* pDataBuffer)
         {
-            return ((delegate* unmanaged[Cdecl]<MaResourceManager*, MaResourceManagerDataBuffer*, MaResourceManagerDataBuffer*, MaResult>)funcTable[622])(pResourceManager, pExistingDataBuffer, pDataBuffer);
+            return (MaResult)ResourceManagerDataBufferInitCopyInterop(pResourceManager, pExistingDataBuffer, pDataBuffer);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int ResourceManagerDataBufferUninitInterop(MaResourceManagerDataBuffer* pDataBuffer)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaResourceManagerDataBuffer*, int>)funcTable[623])(pDataBuffer);
+        }
+
         internal static MaResult ResourceManagerDataBufferUninitNative(MaResourceManagerDataBuffer* pDataBuffer)
         {
-            return ((delegate* unmanaged[Cdecl]<MaResourceManagerDataBuffer*, MaResult>)funcTable[623])(pDataBuffer);
+            return (MaResult)ResourceManagerDataBufferUninitInterop(pDataBuffer);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int ResourceManagerDataBufferReadPcmFramesInterop(MaResourceManagerDataBuffer* pDataBuffer, void* pFramesOut, ulong frameCount, ulong* pFramesRead)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaResourceManagerDataBuffer*, void*, ulong, ulong*, int>)funcTable[624])(pDataBuffer, pFramesOut, frameCount, pFramesRead);
+        }
+
         internal static MaResult ResourceManagerDataBufferReadPcmFramesNative(MaResourceManagerDataBuffer* pDataBuffer, void* pFramesOut, ulong frameCount, ulong* pFramesRead)
         {
-            return ((delegate* unmanaged[Cdecl]<MaResourceManagerDataBuffer*, void*, ulong, ulong*, MaResult>)funcTable[624])(pDataBuffer, pFramesOut, frameCount, pFramesRead);
+            return (MaResult)ResourceManagerDataBufferReadPcmFramesInterop(pDataBuffer, pFramesOut, frameCount, pFramesRead);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int ResourceManagerDataBufferSeekToPcmFrameInterop(MaResourceManagerDataBuffer* pDataBuffer, ulong frameIndex)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaResourceManagerDataBuffer*, ulong, int>)funcTable[625])(pDataBuffer, frameIndex);
+        }
+
         internal static MaResult ResourceManagerDataBufferSeekToPcmFrameNative(MaResourceManagerDataBuffer* pDataBuffer, ulong frameIndex)
         {
-            return ((delegate* unmanaged[Cdecl]<MaResourceManagerDataBuffer*, ulong, MaResult>)funcTable[625])(pDataBuffer, frameIndex);
+            return (MaResult)ResourceManagerDataBufferSeekToPcmFrameInterop(pDataBuffer, frameIndex);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int ResourceManagerDataBufferGetDataFormatInterop(MaResourceManagerDataBuffer* pDataBuffer, MaFormat* pFormat, uint* pChannels, uint* pSampleRate, byte* pChannelMap, nuint channelMapCap)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaResourceManagerDataBuffer*, MaFormat*, uint*, uint*, byte*, nuint, int>)funcTable[626])(pDataBuffer, pFormat, pChannels, pSampleRate, pChannelMap, channelMapCap);
+        }
+
         internal static MaResult ResourceManagerDataBufferGetDataFormatNative(MaResourceManagerDataBuffer* pDataBuffer, MaFormat* pFormat, uint* pChannels, uint* pSampleRate, byte* pChannelMap, nuint channelMapCap)
         {
-            return ((delegate* unmanaged[Cdecl]<MaResourceManagerDataBuffer*, MaFormat*, uint*, uint*, byte*, nuint, MaResult>)funcTable[626])(pDataBuffer, pFormat, pChannels, pSampleRate, pChannelMap, channelMapCap);
+            return (MaResult)ResourceManagerDataBufferGetDataFormatInterop(pDataBuffer, pFormat, pChannels, pSampleRate, pChannelMap, channelMapCap);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int ResourceManagerDataBufferGetCursorInPcmFramesInterop(MaResourceManagerDataBuffer* pDataBuffer, ulong* pCursor)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaResourceManagerDataBuffer*, ulong*, int>)funcTable[627])(pDataBuffer, pCursor);
+        }
+
         internal static MaResult ResourceManagerDataBufferGetCursorInPcmFramesNative(MaResourceManagerDataBuffer* pDataBuffer, ulong* pCursor)
         {
-            return ((delegate* unmanaged[Cdecl]<MaResourceManagerDataBuffer*, ulong*, MaResult>)funcTable[627])(pDataBuffer, pCursor);
+            return (MaResult)ResourceManagerDataBufferGetCursorInPcmFramesInterop(pDataBuffer, pCursor);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int ResourceManagerDataBufferGetLengthInPcmFramesInterop(MaResourceManagerDataBuffer* pDataBuffer, ulong* pLength)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaResourceManagerDataBuffer*, ulong*, int>)funcTable[628])(pDataBuffer, pLength);
+        }
+
         internal static MaResult ResourceManagerDataBufferGetLengthInPcmFramesNative(MaResourceManagerDataBuffer* pDataBuffer, ulong* pLength)
         {
-            return ((delegate* unmanaged[Cdecl]<MaResourceManagerDataBuffer*, ulong*, MaResult>)funcTable[628])(pDataBuffer, pLength);
+            return (MaResult)ResourceManagerDataBufferGetLengthInPcmFramesInterop(pDataBuffer, pLength);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int ResourceManagerDataBufferResultInterop(MaResourceManagerDataBuffer* pDataBuffer)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaResourceManagerDataBuffer*, int>)funcTable[629])(pDataBuffer);
+        }
+
         internal static MaResult ResourceManagerDataBufferResultNative(MaResourceManagerDataBuffer* pDataBuffer)
         {
-            return ((delegate* unmanaged[Cdecl]<MaResourceManagerDataBuffer*, MaResult>)funcTable[629])(pDataBuffer);
+            return (MaResult)ResourceManagerDataBufferResultInterop(pDataBuffer);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int ResourceManagerDataBufferSetLoopingInterop(MaResourceManagerDataBuffer* pDataBuffer, uint isLooping)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaResourceManagerDataBuffer*, uint, int>)funcTable[630])(pDataBuffer, isLooping);
+        }
+
         internal static MaResult ResourceManagerDataBufferSetLoopingNative(MaResourceManagerDataBuffer* pDataBuffer, uint isLooping)
         {
-            return ((delegate* unmanaged[Cdecl]<MaResourceManagerDataBuffer*, uint, MaResult>)funcTable[630])(pDataBuffer, isLooping);
+            return (MaResult)ResourceManagerDataBufferSetLoopingInterop(pDataBuffer, isLooping);
         }
 
         /// <summary>
@@ -23634,97 +25729,157 @@ namespace Inno.Native.MiniAudio
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int ResourceManagerDataBufferGetAvailableFramesInterop(MaResourceManagerDataBuffer* pDataBuffer, ulong* pAvailableFrames)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaResourceManagerDataBuffer*, ulong*, int>)funcTable[632])(pDataBuffer, pAvailableFrames);
+        }
+
         internal static MaResult ResourceManagerDataBufferGetAvailableFramesNative(MaResourceManagerDataBuffer* pDataBuffer, ulong* pAvailableFrames)
         {
-            return ((delegate* unmanaged[Cdecl]<MaResourceManagerDataBuffer*, ulong*, MaResult>)funcTable[632])(pDataBuffer, pAvailableFrames);
+            return (MaResult)ResourceManagerDataBufferGetAvailableFramesInterop(pDataBuffer, pAvailableFrames);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int ResourceManagerDataStreamInitExInterop(MaResourceManager* pResourceManager, MaResourceManagerDataSourceConfig* pConfig, MaResourceManagerDataStream* pDataStream)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaResourceManager*, MaResourceManagerDataSourceConfig*, MaResourceManagerDataStream*, int>)funcTable[633])(pResourceManager, pConfig, pDataStream);
+        }
+
         internal static MaResult ResourceManagerDataStreamInitExNative(MaResourceManager* pResourceManager, MaResourceManagerDataSourceConfig* pConfig, MaResourceManagerDataStream* pDataStream)
         {
-            return ((delegate* unmanaged[Cdecl]<MaResourceManager*, MaResourceManagerDataSourceConfig*, MaResourceManagerDataStream*, MaResult>)funcTable[633])(pResourceManager, pConfig, pDataStream);
+            return (MaResult)ResourceManagerDataStreamInitExInterop(pResourceManager, pConfig, pDataStream);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int ResourceManagerDataStreamInitInterop(MaResourceManager* pResourceManager, byte* pFilePath, uint flags, MaResourceManagerPipelineNotifications* pNotifications, MaResourceManagerDataStream* pDataStream)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaResourceManager*, byte*, uint, MaResourceManagerPipelineNotifications*, MaResourceManagerDataStream*, int>)funcTable[634])(pResourceManager, pFilePath, flags, pNotifications, pDataStream);
+        }
+
         internal static MaResult ResourceManagerDataStreamInitNative(MaResourceManager* pResourceManager, byte* pFilePath, uint flags, MaResourceManagerPipelineNotifications* pNotifications, MaResourceManagerDataStream* pDataStream)
         {
-            return ((delegate* unmanaged[Cdecl]<MaResourceManager*, byte*, uint, MaResourceManagerPipelineNotifications*, MaResourceManagerDataStream*, MaResult>)funcTable[634])(pResourceManager, pFilePath, flags, pNotifications, pDataStream);
+            return (MaResult)ResourceManagerDataStreamInitInterop(pResourceManager, pFilePath, flags, pNotifications, pDataStream);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int ResourceManagerDataStreamInitWInterop(MaResourceManager* pResourceManager, ushort* pFilePath, uint flags, MaResourceManagerPipelineNotifications* pNotifications, MaResourceManagerDataStream* pDataStream)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaResourceManager*, ushort*, uint, MaResourceManagerPipelineNotifications*, MaResourceManagerDataStream*, int>)funcTable[635])(pResourceManager, pFilePath, flags, pNotifications, pDataStream);
+        }
+
         internal static MaResult ResourceManagerDataStreamInitWNative(MaResourceManager* pResourceManager, ushort* pFilePath, uint flags, MaResourceManagerPipelineNotifications* pNotifications, MaResourceManagerDataStream* pDataStream)
         {
-            return ((delegate* unmanaged[Cdecl]<MaResourceManager*, ushort*, uint, MaResourceManagerPipelineNotifications*, MaResourceManagerDataStream*, MaResult>)funcTable[635])(pResourceManager, pFilePath, flags, pNotifications, pDataStream);
+            return (MaResult)ResourceManagerDataStreamInitWInterop(pResourceManager, pFilePath, flags, pNotifications, pDataStream);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int ResourceManagerDataStreamUninitInterop(MaResourceManagerDataStream* pDataStream)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaResourceManagerDataStream*, int>)funcTable[636])(pDataStream);
+        }
+
         internal static MaResult ResourceManagerDataStreamUninitNative(MaResourceManagerDataStream* pDataStream)
         {
-            return ((delegate* unmanaged[Cdecl]<MaResourceManagerDataStream*, MaResult>)funcTable[636])(pDataStream);
+            return (MaResult)ResourceManagerDataStreamUninitInterop(pDataStream);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int ResourceManagerDataStreamReadPcmFramesInterop(MaResourceManagerDataStream* pDataStream, void* pFramesOut, ulong frameCount, ulong* pFramesRead)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaResourceManagerDataStream*, void*, ulong, ulong*, int>)funcTable[637])(pDataStream, pFramesOut, frameCount, pFramesRead);
+        }
+
         internal static MaResult ResourceManagerDataStreamReadPcmFramesNative(MaResourceManagerDataStream* pDataStream, void* pFramesOut, ulong frameCount, ulong* pFramesRead)
         {
-            return ((delegate* unmanaged[Cdecl]<MaResourceManagerDataStream*, void*, ulong, ulong*, MaResult>)funcTable[637])(pDataStream, pFramesOut, frameCount, pFramesRead);
+            return (MaResult)ResourceManagerDataStreamReadPcmFramesInterop(pDataStream, pFramesOut, frameCount, pFramesRead);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int ResourceManagerDataStreamSeekToPcmFrameInterop(MaResourceManagerDataStream* pDataStream, ulong frameIndex)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaResourceManagerDataStream*, ulong, int>)funcTable[638])(pDataStream, frameIndex);
+        }
+
         internal static MaResult ResourceManagerDataStreamSeekToPcmFrameNative(MaResourceManagerDataStream* pDataStream, ulong frameIndex)
         {
-            return ((delegate* unmanaged[Cdecl]<MaResourceManagerDataStream*, ulong, MaResult>)funcTable[638])(pDataStream, frameIndex);
+            return (MaResult)ResourceManagerDataStreamSeekToPcmFrameInterop(pDataStream, frameIndex);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int ResourceManagerDataStreamGetDataFormatInterop(MaResourceManagerDataStream* pDataStream, MaFormat* pFormat, uint* pChannels, uint* pSampleRate, byte* pChannelMap, nuint channelMapCap)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaResourceManagerDataStream*, MaFormat*, uint*, uint*, byte*, nuint, int>)funcTable[639])(pDataStream, pFormat, pChannels, pSampleRate, pChannelMap, channelMapCap);
+        }
+
         internal static MaResult ResourceManagerDataStreamGetDataFormatNative(MaResourceManagerDataStream* pDataStream, MaFormat* pFormat, uint* pChannels, uint* pSampleRate, byte* pChannelMap, nuint channelMapCap)
         {
-            return ((delegate* unmanaged[Cdecl]<MaResourceManagerDataStream*, MaFormat*, uint*, uint*, byte*, nuint, MaResult>)funcTable[639])(pDataStream, pFormat, pChannels, pSampleRate, pChannelMap, channelMapCap);
+            return (MaResult)ResourceManagerDataStreamGetDataFormatInterop(pDataStream, pFormat, pChannels, pSampleRate, pChannelMap, channelMapCap);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int ResourceManagerDataStreamGetCursorInPcmFramesInterop(MaResourceManagerDataStream* pDataStream, ulong* pCursor)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaResourceManagerDataStream*, ulong*, int>)funcTable[640])(pDataStream, pCursor);
+        }
+
         internal static MaResult ResourceManagerDataStreamGetCursorInPcmFramesNative(MaResourceManagerDataStream* pDataStream, ulong* pCursor)
         {
-            return ((delegate* unmanaged[Cdecl]<MaResourceManagerDataStream*, ulong*, MaResult>)funcTable[640])(pDataStream, pCursor);
+            return (MaResult)ResourceManagerDataStreamGetCursorInPcmFramesInterop(pDataStream, pCursor);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int ResourceManagerDataStreamGetLengthInPcmFramesInterop(MaResourceManagerDataStream* pDataStream, ulong* pLength)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaResourceManagerDataStream*, ulong*, int>)funcTable[641])(pDataStream, pLength);
+        }
+
         internal static MaResult ResourceManagerDataStreamGetLengthInPcmFramesNative(MaResourceManagerDataStream* pDataStream, ulong* pLength)
         {
-            return ((delegate* unmanaged[Cdecl]<MaResourceManagerDataStream*, ulong*, MaResult>)funcTable[641])(pDataStream, pLength);
+            return (MaResult)ResourceManagerDataStreamGetLengthInPcmFramesInterop(pDataStream, pLength);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int ResourceManagerDataStreamResultInterop(MaResourceManagerDataStream* pDataStream)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaResourceManagerDataStream*, int>)funcTable[642])(pDataStream);
+        }
+
         internal static MaResult ResourceManagerDataStreamResultNative(MaResourceManagerDataStream* pDataStream)
         {
-            return ((delegate* unmanaged[Cdecl]<MaResourceManagerDataStream*, MaResult>)funcTable[642])(pDataStream);
+            return (MaResult)ResourceManagerDataStreamResultInterop(pDataStream);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int ResourceManagerDataStreamSetLoopingInterop(MaResourceManagerDataStream* pDataStream, uint isLooping)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaResourceManagerDataStream*, uint, int>)funcTable[643])(pDataStream, isLooping);
+        }
+
         internal static MaResult ResourceManagerDataStreamSetLoopingNative(MaResourceManagerDataStream* pDataStream, uint isLooping)
         {
-            return ((delegate* unmanaged[Cdecl]<MaResourceManagerDataStream*, uint, MaResult>)funcTable[643])(pDataStream, isLooping);
+            return (MaResult)ResourceManagerDataStreamSetLoopingInterop(pDataStream, isLooping);
         }
 
         /// <summary>
@@ -23738,105 +25893,170 @@ namespace Inno.Native.MiniAudio
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int ResourceManagerDataStreamGetAvailableFramesInterop(MaResourceManagerDataStream* pDataStream, ulong* pAvailableFrames)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaResourceManagerDataStream*, ulong*, int>)funcTable[645])(pDataStream, pAvailableFrames);
+        }
+
         internal static MaResult ResourceManagerDataStreamGetAvailableFramesNative(MaResourceManagerDataStream* pDataStream, ulong* pAvailableFrames)
         {
-            return ((delegate* unmanaged[Cdecl]<MaResourceManagerDataStream*, ulong*, MaResult>)funcTable[645])(pDataStream, pAvailableFrames);
+            return (MaResult)ResourceManagerDataStreamGetAvailableFramesInterop(pDataStream, pAvailableFrames);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int ResourceManagerDataSourceInitExInterop(MaResourceManager* pResourceManager, MaResourceManagerDataSourceConfig* pConfig, MaResourceManagerDataSource* pDataSource)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaResourceManager*, MaResourceManagerDataSourceConfig*, MaResourceManagerDataSource*, int>)funcTable[646])(pResourceManager, pConfig, pDataSource);
+        }
+
         internal static MaResult ResourceManagerDataSourceInitExNative(MaResourceManager* pResourceManager, MaResourceManagerDataSourceConfig* pConfig, MaResourceManagerDataSource* pDataSource)
         {
-            return ((delegate* unmanaged[Cdecl]<MaResourceManager*, MaResourceManagerDataSourceConfig*, MaResourceManagerDataSource*, MaResult>)funcTable[646])(pResourceManager, pConfig, pDataSource);
+            return (MaResult)ResourceManagerDataSourceInitExInterop(pResourceManager, pConfig, pDataSource);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int ResourceManagerDataSourceInitInterop(MaResourceManager* pResourceManager, byte* pName, uint flags, MaResourceManagerPipelineNotifications* pNotifications, MaResourceManagerDataSource* pDataSource)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaResourceManager*, byte*, uint, MaResourceManagerPipelineNotifications*, MaResourceManagerDataSource*, int>)funcTable[647])(pResourceManager, pName, flags, pNotifications, pDataSource);
+        }
+
         internal static MaResult ResourceManagerDataSourceInitNative(MaResourceManager* pResourceManager, byte* pName, uint flags, MaResourceManagerPipelineNotifications* pNotifications, MaResourceManagerDataSource* pDataSource)
         {
-            return ((delegate* unmanaged[Cdecl]<MaResourceManager*, byte*, uint, MaResourceManagerPipelineNotifications*, MaResourceManagerDataSource*, MaResult>)funcTable[647])(pResourceManager, pName, flags, pNotifications, pDataSource);
+            return (MaResult)ResourceManagerDataSourceInitInterop(pResourceManager, pName, flags, pNotifications, pDataSource);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int ResourceManagerDataSourceInitWInterop(MaResourceManager* pResourceManager, ushort* pName, uint flags, MaResourceManagerPipelineNotifications* pNotifications, MaResourceManagerDataSource* pDataSource)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaResourceManager*, ushort*, uint, MaResourceManagerPipelineNotifications*, MaResourceManagerDataSource*, int>)funcTable[648])(pResourceManager, pName, flags, pNotifications, pDataSource);
+        }
+
         internal static MaResult ResourceManagerDataSourceInitWNative(MaResourceManager* pResourceManager, ushort* pName, uint flags, MaResourceManagerPipelineNotifications* pNotifications, MaResourceManagerDataSource* pDataSource)
         {
-            return ((delegate* unmanaged[Cdecl]<MaResourceManager*, ushort*, uint, MaResourceManagerPipelineNotifications*, MaResourceManagerDataSource*, MaResult>)funcTable[648])(pResourceManager, pName, flags, pNotifications, pDataSource);
+            return (MaResult)ResourceManagerDataSourceInitWInterop(pResourceManager, pName, flags, pNotifications, pDataSource);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int ResourceManagerDataSourceInitCopyInterop(MaResourceManager* pResourceManager, MaResourceManagerDataSource* pExistingDataSource, MaResourceManagerDataSource* pDataSource)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaResourceManager*, MaResourceManagerDataSource*, MaResourceManagerDataSource*, int>)funcTable[649])(pResourceManager, pExistingDataSource, pDataSource);
+        }
+
         internal static MaResult ResourceManagerDataSourceInitCopyNative(MaResourceManager* pResourceManager, MaResourceManagerDataSource* pExistingDataSource, MaResourceManagerDataSource* pDataSource)
         {
-            return ((delegate* unmanaged[Cdecl]<MaResourceManager*, MaResourceManagerDataSource*, MaResourceManagerDataSource*, MaResult>)funcTable[649])(pResourceManager, pExistingDataSource, pDataSource);
+            return (MaResult)ResourceManagerDataSourceInitCopyInterop(pResourceManager, pExistingDataSource, pDataSource);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int ResourceManagerDataSourceUninitInterop(MaResourceManagerDataSource* pDataSource)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaResourceManagerDataSource*, int>)funcTable[650])(pDataSource);
+        }
+
         internal static MaResult ResourceManagerDataSourceUninitNative(MaResourceManagerDataSource* pDataSource)
         {
-            return ((delegate* unmanaged[Cdecl]<MaResourceManagerDataSource*, MaResult>)funcTable[650])(pDataSource);
+            return (MaResult)ResourceManagerDataSourceUninitInterop(pDataSource);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int ResourceManagerDataSourceReadPcmFramesInterop(MaResourceManagerDataSource* pDataSource, void* pFramesOut, ulong frameCount, ulong* pFramesRead)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaResourceManagerDataSource*, void*, ulong, ulong*, int>)funcTable[651])(pDataSource, pFramesOut, frameCount, pFramesRead);
+        }
+
         internal static MaResult ResourceManagerDataSourceReadPcmFramesNative(MaResourceManagerDataSource* pDataSource, void* pFramesOut, ulong frameCount, ulong* pFramesRead)
         {
-            return ((delegate* unmanaged[Cdecl]<MaResourceManagerDataSource*, void*, ulong, ulong*, MaResult>)funcTable[651])(pDataSource, pFramesOut, frameCount, pFramesRead);
+            return (MaResult)ResourceManagerDataSourceReadPcmFramesInterop(pDataSource, pFramesOut, frameCount, pFramesRead);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int ResourceManagerDataSourceSeekToPcmFrameInterop(MaResourceManagerDataSource* pDataSource, ulong frameIndex)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaResourceManagerDataSource*, ulong, int>)funcTable[652])(pDataSource, frameIndex);
+        }
+
         internal static MaResult ResourceManagerDataSourceSeekToPcmFrameNative(MaResourceManagerDataSource* pDataSource, ulong frameIndex)
         {
-            return ((delegate* unmanaged[Cdecl]<MaResourceManagerDataSource*, ulong, MaResult>)funcTable[652])(pDataSource, frameIndex);
+            return (MaResult)ResourceManagerDataSourceSeekToPcmFrameInterop(pDataSource, frameIndex);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int ResourceManagerDataSourceGetDataFormatInterop(MaResourceManagerDataSource* pDataSource, MaFormat* pFormat, uint* pChannels, uint* pSampleRate, byte* pChannelMap, nuint channelMapCap)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaResourceManagerDataSource*, MaFormat*, uint*, uint*, byte*, nuint, int>)funcTable[653])(pDataSource, pFormat, pChannels, pSampleRate, pChannelMap, channelMapCap);
+        }
+
         internal static MaResult ResourceManagerDataSourceGetDataFormatNative(MaResourceManagerDataSource* pDataSource, MaFormat* pFormat, uint* pChannels, uint* pSampleRate, byte* pChannelMap, nuint channelMapCap)
         {
-            return ((delegate* unmanaged[Cdecl]<MaResourceManagerDataSource*, MaFormat*, uint*, uint*, byte*, nuint, MaResult>)funcTable[653])(pDataSource, pFormat, pChannels, pSampleRate, pChannelMap, channelMapCap);
+            return (MaResult)ResourceManagerDataSourceGetDataFormatInterop(pDataSource, pFormat, pChannels, pSampleRate, pChannelMap, channelMapCap);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int ResourceManagerDataSourceGetCursorInPcmFramesInterop(MaResourceManagerDataSource* pDataSource, ulong* pCursor)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaResourceManagerDataSource*, ulong*, int>)funcTable[654])(pDataSource, pCursor);
+        }
+
         internal static MaResult ResourceManagerDataSourceGetCursorInPcmFramesNative(MaResourceManagerDataSource* pDataSource, ulong* pCursor)
         {
-            return ((delegate* unmanaged[Cdecl]<MaResourceManagerDataSource*, ulong*, MaResult>)funcTable[654])(pDataSource, pCursor);
+            return (MaResult)ResourceManagerDataSourceGetCursorInPcmFramesInterop(pDataSource, pCursor);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int ResourceManagerDataSourceGetLengthInPcmFramesInterop(MaResourceManagerDataSource* pDataSource, ulong* pLength)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaResourceManagerDataSource*, ulong*, int>)funcTable[655])(pDataSource, pLength);
+        }
+
         internal static MaResult ResourceManagerDataSourceGetLengthInPcmFramesNative(MaResourceManagerDataSource* pDataSource, ulong* pLength)
         {
-            return ((delegate* unmanaged[Cdecl]<MaResourceManagerDataSource*, ulong*, MaResult>)funcTable[655])(pDataSource, pLength);
+            return (MaResult)ResourceManagerDataSourceGetLengthInPcmFramesInterop(pDataSource, pLength);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int ResourceManagerDataSourceResultInterop(MaResourceManagerDataSource* pDataSource)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaResourceManagerDataSource*, int>)funcTable[656])(pDataSource);
+        }
+
         internal static MaResult ResourceManagerDataSourceResultNative(MaResourceManagerDataSource* pDataSource)
         {
-            return ((delegate* unmanaged[Cdecl]<MaResourceManagerDataSource*, MaResult>)funcTable[656])(pDataSource);
+            return (MaResult)ResourceManagerDataSourceResultInterop(pDataSource);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int ResourceManagerDataSourceSetLoopingInterop(MaResourceManagerDataSource* pDataSource, uint isLooping)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaResourceManagerDataSource*, uint, int>)funcTable[657])(pDataSource, isLooping);
+        }
+
         internal static MaResult ResourceManagerDataSourceSetLoopingNative(MaResourceManagerDataSource* pDataSource, uint isLooping)
         {
-            return ((delegate* unmanaged[Cdecl]<MaResourceManagerDataSource*, uint, MaResult>)funcTable[657])(pDataSource, isLooping);
+            return (MaResult)ResourceManagerDataSourceSetLoopingInterop(pDataSource, isLooping);
         }
 
         /// <summary>
@@ -23850,49 +26070,79 @@ namespace Inno.Native.MiniAudio
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int ResourceManagerDataSourceGetAvailableFramesInterop(MaResourceManagerDataSource* pDataSource, ulong* pAvailableFrames)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaResourceManagerDataSource*, ulong*, int>)funcTable[659])(pDataSource, pAvailableFrames);
+        }
+
         internal static MaResult ResourceManagerDataSourceGetAvailableFramesNative(MaResourceManagerDataSource* pDataSource, ulong* pAvailableFrames)
         {
-            return ((delegate* unmanaged[Cdecl]<MaResourceManagerDataSource*, ulong*, MaResult>)funcTable[659])(pDataSource, pAvailableFrames);
+            return (MaResult)ResourceManagerDataSourceGetAvailableFramesInterop(pDataSource, pAvailableFrames);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int ResourceManagerPostJobInterop(MaResourceManager* pResourceManager, MaJob* pJob)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaResourceManager*, MaJob*, int>)funcTable[660])(pResourceManager, pJob);
+        }
+
         internal static MaResult ResourceManagerPostJobNative(MaResourceManager* pResourceManager, MaJob* pJob)
         {
-            return ((delegate* unmanaged[Cdecl]<MaResourceManager*, MaJob*, MaResult>)funcTable[660])(pResourceManager, pJob);
+            return (MaResult)ResourceManagerPostJobInterop(pResourceManager, pJob);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int ResourceManagerPostJobQuitInterop(MaResourceManager* pResourceManager)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaResourceManager*, int>)funcTable[661])(pResourceManager);
+        }
+
         internal static MaResult ResourceManagerPostJobQuitNative(MaResourceManager* pResourceManager)
         {
-            return ((delegate* unmanaged[Cdecl]<MaResourceManager*, MaResult>)funcTable[661])(pResourceManager);
+            return (MaResult)ResourceManagerPostJobQuitInterop(pResourceManager);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int ResourceManagerNextJobInterop(MaResourceManager* pResourceManager, MaJob* pJob)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaResourceManager*, MaJob*, int>)funcTable[662])(pResourceManager, pJob);
+        }
+
         internal static MaResult ResourceManagerNextJobNative(MaResourceManager* pResourceManager, MaJob* pJob)
         {
-            return ((delegate* unmanaged[Cdecl]<MaResourceManager*, MaJob*, MaResult>)funcTable[662])(pResourceManager, pJob);
+            return (MaResult)ResourceManagerNextJobInterop(pResourceManager, pJob);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int ResourceManagerProcessJobInterop(MaResourceManager* pResourceManager, MaJob* pJob)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaResourceManager*, MaJob*, int>)funcTable[663])(pResourceManager, pJob);
+        }
+
         internal static MaResult ResourceManagerProcessJobNative(MaResourceManager* pResourceManager, MaJob* pJob)
         {
-            return ((delegate* unmanaged[Cdecl]<MaResourceManager*, MaJob*, MaResult>)funcTable[663])(pResourceManager, pJob);
+            return (MaResult)ResourceManagerProcessJobInterop(pResourceManager, pJob);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int ResourceManagerProcessNextJobInterop(MaResourceManager* pResourceManager)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaResourceManager*, int>)funcTable[664])(pResourceManager);
+        }
+
         internal static MaResult ResourceManagerProcessNextJobNative(MaResourceManager* pResourceManager)
         {
-            return ((delegate* unmanaged[Cdecl]<MaResourceManager*, MaResult>)funcTable[664])(pResourceManager);
+            return (MaResult)ResourceManagerProcessNextJobInterop(pResourceManager);
         }
 
         /// <summary>
@@ -23906,25 +26156,40 @@ namespace Inno.Native.MiniAudio
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int NodeGetHeapSizeInterop(MaNodeGraph* pNodeGraph, MaNodeConfig* pConfig, nuint* pHeapSizeInBytes)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaNodeGraph*, MaNodeConfig*, nuint*, int>)funcTable[666])(pNodeGraph, pConfig, pHeapSizeInBytes);
+        }
+
         internal static MaResult NodeGetHeapSizeNative(MaNodeGraph* pNodeGraph, MaNodeConfig* pConfig, nuint* pHeapSizeInBytes)
         {
-            return ((delegate* unmanaged[Cdecl]<MaNodeGraph*, MaNodeConfig*, nuint*, MaResult>)funcTable[666])(pNodeGraph, pConfig, pHeapSizeInBytes);
+            return (MaResult)NodeGetHeapSizeInterop(pNodeGraph, pConfig, pHeapSizeInBytes);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int NodeInitPreallocatedInterop(MaNodeGraph* pNodeGraph, MaNodeConfig* pConfig, void* pHeap, void* pNode)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaNodeGraph*, MaNodeConfig*, void*, void*, int>)funcTable[667])(pNodeGraph, pConfig, pHeap, pNode);
+        }
+
         internal static MaResult NodeInitPreallocatedNative(MaNodeGraph* pNodeGraph, MaNodeConfig* pConfig, void* pHeap, void* pNode)
         {
-            return ((delegate* unmanaged[Cdecl]<MaNodeGraph*, MaNodeConfig*, void*, void*, MaResult>)funcTable[667])(pNodeGraph, pConfig, pHeap, pNode);
+            return (MaResult)NodeInitPreallocatedInterop(pNodeGraph, pConfig, pHeap, pNode);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int NodeInitInterop(MaNodeGraph* pNodeGraph, MaNodeConfig* pConfig, MaAllocationCallbacks* pAllocationCallbacks, void* pNode)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaNodeGraph*, MaNodeConfig*, MaAllocationCallbacks*, void*, int>)funcTable[668])(pNodeGraph, pConfig, pAllocationCallbacks, pNode);
+        }
+
         internal static MaResult NodeInitNative(MaNodeGraph* pNodeGraph, MaNodeConfig* pConfig, MaAllocationCallbacks* pAllocationCallbacks, void* pNode)
         {
-            return ((delegate* unmanaged[Cdecl]<MaNodeGraph*, MaNodeConfig*, MaAllocationCallbacks*, void*, MaResult>)funcTable[668])(pNodeGraph, pConfig, pAllocationCallbacks, pNode);
+            return (MaResult)NodeInitInterop(pNodeGraph, pConfig, pAllocationCallbacks, pNode);
         }
 
         /// <summary>
@@ -23978,33 +26243,53 @@ namespace Inno.Native.MiniAudio
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int NodeAttachOutputBusInterop(void* pNode, uint outputBusIndex, void* pOtherNode, uint otherNodeInputBusIndex)
+        {
+            return ((delegate* unmanaged[Cdecl]<void*, uint, void*, uint, int>)funcTable[675])(pNode, outputBusIndex, pOtherNode, otherNodeInputBusIndex);
+        }
+
         internal static MaResult NodeAttachOutputBusNative(void* pNode, uint outputBusIndex, void* pOtherNode, uint otherNodeInputBusIndex)
         {
-            return ((delegate* unmanaged[Cdecl]<void*, uint, void*, uint, MaResult>)funcTable[675])(pNode, outputBusIndex, pOtherNode, otherNodeInputBusIndex);
+            return (MaResult)NodeAttachOutputBusInterop(pNode, outputBusIndex, pOtherNode, otherNodeInputBusIndex);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int NodeDetachOutputBusInterop(void* pNode, uint outputBusIndex)
+        {
+            return ((delegate* unmanaged[Cdecl]<void*, uint, int>)funcTable[676])(pNode, outputBusIndex);
+        }
+
         internal static MaResult NodeDetachOutputBusNative(void* pNode, uint outputBusIndex)
         {
-            return ((delegate* unmanaged[Cdecl]<void*, uint, MaResult>)funcTable[676])(pNode, outputBusIndex);
+            return (MaResult)NodeDetachOutputBusInterop(pNode, outputBusIndex);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int NodeDetachAllOutputBusesInterop(void* pNode)
+        {
+            return ((delegate* unmanaged[Cdecl]<void*, int>)funcTable[677])(pNode);
+        }
+
         internal static MaResult NodeDetachAllOutputBusesNative(void* pNode)
         {
-            return ((delegate* unmanaged[Cdecl]<void*, MaResult>)funcTable[677])(pNode);
+            return (MaResult)NodeDetachAllOutputBusesInterop(pNode);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int NodeSetOutputBusVolumeInterop(void* pNode, uint outputBusIndex, float volume)
+        {
+            return ((delegate* unmanaged[Cdecl]<void*, uint, float, int>)funcTable[678])(pNode, outputBusIndex, volume);
+        }
+
         internal static MaResult NodeSetOutputBusVolumeNative(void* pNode, uint outputBusIndex, float volume)
         {
-            return ((delegate* unmanaged[Cdecl]<void*, uint, float, MaResult>)funcTable[678])(pNode, outputBusIndex, volume);
+            return (MaResult)NodeSetOutputBusVolumeInterop(pNode, outputBusIndex, volume);
         }
 
         /// <summary>
@@ -24018,49 +26303,79 @@ namespace Inno.Native.MiniAudio
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int NodeSetStateInterop(void* pNode, int state)
+        {
+            return ((delegate* unmanaged[Cdecl]<void*, int, int>)funcTable[680])(pNode, state);
+        }
+
         internal static MaResult NodeSetStateNative(void* pNode, MaNodeState state)
         {
-            return ((delegate* unmanaged[Cdecl]<void*, MaNodeState, MaResult>)funcTable[680])(pNode, state);
+            return (MaResult)NodeSetStateInterop(pNode, (int)state);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int NodeGetStateInterop(void* pNode)
+        {
+            return ((delegate* unmanaged[Cdecl]<void*, int>)funcTable[681])(pNode);
+        }
+
         internal static MaNodeState NodeGetStateNative(void* pNode)
         {
-            return ((delegate* unmanaged[Cdecl]<void*, MaNodeState>)funcTable[681])(pNode);
+            return (MaNodeState)NodeGetStateInterop(pNode);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int NodeSetStateTimeInterop(void* pNode, int state, ulong globalTime)
+        {
+            return ((delegate* unmanaged[Cdecl]<void*, int, ulong, int>)funcTable[682])(pNode, state, globalTime);
+        }
+
         internal static MaResult NodeSetStateTimeNative(void* pNode, MaNodeState state, ulong globalTime)
         {
-            return ((delegate* unmanaged[Cdecl]<void*, MaNodeState, ulong, MaResult>)funcTable[682])(pNode, state, globalTime);
+            return (MaResult)NodeSetStateTimeInterop(pNode, (int)state, globalTime);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static ulong NodeGetStateTimeInterop(void* pNode, int state)
+        {
+            return ((delegate* unmanaged[Cdecl]<void*, int, ulong>)funcTable[683])(pNode, state);
+        }
+
         internal static ulong NodeGetStateTimeNative(void* pNode, MaNodeState state)
         {
-            return ((delegate* unmanaged[Cdecl]<void*, MaNodeState, ulong>)funcTable[683])(pNode, state);
+            return NodeGetStateTimeInterop(pNode, (int)state);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int NodeGetStateByTimeInterop(void* pNode, ulong globalTime)
+        {
+            return ((delegate* unmanaged[Cdecl]<void*, ulong, int>)funcTable[684])(pNode, globalTime);
+        }
+
         internal static MaNodeState NodeGetStateByTimeNative(void* pNode, ulong globalTime)
         {
-            return ((delegate* unmanaged[Cdecl]<void*, ulong, MaNodeState>)funcTable[684])(pNode, globalTime);
+            return (MaNodeState)NodeGetStateByTimeInterop(pNode, globalTime);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int NodeGetStateByTimeRangeInterop(void* pNode, ulong globalTimeBeg, ulong globalTimeEnd)
+        {
+            return ((delegate* unmanaged[Cdecl]<void*, ulong, ulong, int>)funcTable[685])(pNode, globalTimeBeg, globalTimeEnd);
+        }
+
         internal static MaNodeState NodeGetStateByTimeRangeNative(void* pNode, ulong globalTimeBeg, ulong globalTimeEnd)
         {
-            return ((delegate* unmanaged[Cdecl]<void*, ulong, ulong, MaNodeState>)funcTable[685])(pNode, globalTimeBeg, globalTimeEnd);
+            return (MaNodeState)NodeGetStateByTimeRangeInterop(pNode, globalTimeBeg, globalTimeEnd);
         }
 
         /// <summary>
@@ -24074,9 +26389,14 @@ namespace Inno.Native.MiniAudio
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int NodeSetTimeInterop(void* pNode, ulong localTime)
+        {
+            return ((delegate* unmanaged[Cdecl]<void*, ulong, int>)funcTable[687])(pNode, localTime);
+        }
+
         internal static MaResult NodeSetTimeNative(void* pNode, ulong localTime)
         {
-            return ((delegate* unmanaged[Cdecl]<void*, ulong, MaResult>)funcTable[687])(pNode, localTime);
+            return (MaResult)NodeSetTimeInterop(pNode, localTime);
         }
 
         /// <summary>
@@ -24090,9 +26410,14 @@ namespace Inno.Native.MiniAudio
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int NodeGraphInitInterop(MaNodeGraphConfig* pConfig, MaAllocationCallbacks* pAllocationCallbacks, MaNodeGraph* pNodeGraph)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaNodeGraphConfig*, MaAllocationCallbacks*, MaNodeGraph*, int>)funcTable[689])(pConfig, pAllocationCallbacks, pNodeGraph);
+        }
+
         internal static MaResult NodeGraphInitNative(MaNodeGraphConfig* pConfig, MaAllocationCallbacks* pAllocationCallbacks, MaNodeGraph* pNodeGraph)
         {
-            return ((delegate* unmanaged[Cdecl]<MaNodeGraphConfig*, MaAllocationCallbacks*, MaNodeGraph*, MaResult>)funcTable[689])(pConfig, pAllocationCallbacks, pNodeGraph);
+            return (MaResult)NodeGraphInitInterop(pConfig, pAllocationCallbacks, pNodeGraph);
         }
 
         /// <summary>
@@ -24114,9 +26439,14 @@ namespace Inno.Native.MiniAudio
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int NodeGraphReadPcmFramesInterop(MaNodeGraph* pNodeGraph, void* pFramesOut, ulong frameCount, ulong* pFramesRead)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaNodeGraph*, void*, ulong, ulong*, int>)funcTable[692])(pNodeGraph, pFramesOut, frameCount, pFramesRead);
+        }
+
         internal static MaResult NodeGraphReadPcmFramesNative(MaNodeGraph* pNodeGraph, void* pFramesOut, ulong frameCount, ulong* pFramesRead)
         {
-            return ((delegate* unmanaged[Cdecl]<MaNodeGraph*, void*, ulong, ulong*, MaResult>)funcTable[692])(pNodeGraph, pFramesOut, frameCount, pFramesRead);
+            return (MaResult)NodeGraphReadPcmFramesInterop(pNodeGraph, pFramesOut, frameCount, pFramesRead);
         }
 
         /// <summary>
@@ -24138,9 +26468,14 @@ namespace Inno.Native.MiniAudio
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int NodeGraphSetTimeInterop(MaNodeGraph* pNodeGraph, ulong globalTime)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaNodeGraph*, ulong, int>)funcTable[695])(pNodeGraph, globalTime);
+        }
+
         internal static MaResult NodeGraphSetTimeNative(MaNodeGraph* pNodeGraph, ulong globalTime)
         {
-            return ((delegate* unmanaged[Cdecl]<MaNodeGraph*, ulong, MaResult>)funcTable[695])(pNodeGraph, globalTime);
+            return (MaResult)NodeGraphSetTimeInterop(pNodeGraph, globalTime);
         }
 
         /// <summary>
@@ -24162,9 +26497,14 @@ namespace Inno.Native.MiniAudio
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int DataSourceNodeInitInterop(MaNodeGraph* pNodeGraph, MaDataSourceNodeConfig* pConfig, MaAllocationCallbacks* pAllocationCallbacks, MaDataSourceNode* pDataSourceNode)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaNodeGraph*, MaDataSourceNodeConfig*, MaAllocationCallbacks*, MaDataSourceNode*, int>)funcTable[698])(pNodeGraph, pConfig, pAllocationCallbacks, pDataSourceNode);
+        }
+
         internal static MaResult DataSourceNodeInitNative(MaNodeGraph* pNodeGraph, MaDataSourceNodeConfig* pConfig, MaAllocationCallbacks* pAllocationCallbacks, MaDataSourceNode* pDataSourceNode)
         {
-            return ((delegate* unmanaged[Cdecl]<MaNodeGraph*, MaDataSourceNodeConfig*, MaAllocationCallbacks*, MaDataSourceNode*, MaResult>)funcTable[698])(pNodeGraph, pConfig, pAllocationCallbacks, pDataSourceNode);
+            return (MaResult)DataSourceNodeInitInterop(pNodeGraph, pConfig, pAllocationCallbacks, pDataSourceNode);
         }
 
         /// <summary>
@@ -24178,9 +26518,14 @@ namespace Inno.Native.MiniAudio
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int DataSourceNodeSetLoopingInterop(MaDataSourceNode* pDataSourceNode, uint isLooping)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaDataSourceNode*, uint, int>)funcTable[700])(pDataSourceNode, isLooping);
+        }
+
         internal static MaResult DataSourceNodeSetLoopingNative(MaDataSourceNode* pDataSourceNode, uint isLooping)
         {
-            return ((delegate* unmanaged[Cdecl]<MaDataSourceNode*, uint, MaResult>)funcTable[700])(pDataSourceNode, isLooping);
+            return (MaResult)DataSourceNodeSetLoopingInterop(pDataSourceNode, isLooping);
         }
 
         /// <summary>
@@ -24202,9 +26547,14 @@ namespace Inno.Native.MiniAudio
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int SplitterNodeInitInterop(MaNodeGraph* pNodeGraph, MaSplitterNodeConfig* pConfig, MaAllocationCallbacks* pAllocationCallbacks, MaSplitterNode* pSplitterNode)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaNodeGraph*, MaSplitterNodeConfig*, MaAllocationCallbacks*, MaSplitterNode*, int>)funcTable[703])(pNodeGraph, pConfig, pAllocationCallbacks, pSplitterNode);
+        }
+
         internal static MaResult SplitterNodeInitNative(MaNodeGraph* pNodeGraph, MaSplitterNodeConfig* pConfig, MaAllocationCallbacks* pAllocationCallbacks, MaSplitterNode* pSplitterNode)
         {
-            return ((delegate* unmanaged[Cdecl]<MaNodeGraph*, MaSplitterNodeConfig*, MaAllocationCallbacks*, MaSplitterNode*, MaResult>)funcTable[703])(pNodeGraph, pConfig, pAllocationCallbacks, pSplitterNode);
+            return (MaResult)SplitterNodeInitInterop(pNodeGraph, pConfig, pAllocationCallbacks, pSplitterNode);
         }
 
         /// <summary>
@@ -24226,17 +26576,27 @@ namespace Inno.Native.MiniAudio
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int BiquadNodeInitInterop(MaNodeGraph* pNodeGraph, MaBiquadNodeConfig* pConfig, MaAllocationCallbacks* pAllocationCallbacks, MaBiquadNode* pNode)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaNodeGraph*, MaBiquadNodeConfig*, MaAllocationCallbacks*, MaBiquadNode*, int>)funcTable[706])(pNodeGraph, pConfig, pAllocationCallbacks, pNode);
+        }
+
         internal static MaResult BiquadNodeInitNative(MaNodeGraph* pNodeGraph, MaBiquadNodeConfig* pConfig, MaAllocationCallbacks* pAllocationCallbacks, MaBiquadNode* pNode)
         {
-            return ((delegate* unmanaged[Cdecl]<MaNodeGraph*, MaBiquadNodeConfig*, MaAllocationCallbacks*, MaBiquadNode*, MaResult>)funcTable[706])(pNodeGraph, pConfig, pAllocationCallbacks, pNode);
+            return (MaResult)BiquadNodeInitInterop(pNodeGraph, pConfig, pAllocationCallbacks, pNode);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int BiquadNodeReinitInterop(MaBiquadConfig* pConfig, MaBiquadNode* pNode)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaBiquadConfig*, MaBiquadNode*, int>)funcTable[707])(pConfig, pNode);
+        }
+
         internal static MaResult BiquadNodeReinitNative(MaBiquadConfig* pConfig, MaBiquadNode* pNode)
         {
-            return ((delegate* unmanaged[Cdecl]<MaBiquadConfig*, MaBiquadNode*, MaResult>)funcTable[707])(pConfig, pNode);
+            return (MaResult)BiquadNodeReinitInterop(pConfig, pNode);
         }
 
         /// <summary>
@@ -24258,17 +26618,27 @@ namespace Inno.Native.MiniAudio
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int LpfNodeInitInterop(MaNodeGraph* pNodeGraph, MaLpfNodeConfig* pConfig, MaAllocationCallbacks* pAllocationCallbacks, MaLpfNode* pNode)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaNodeGraph*, MaLpfNodeConfig*, MaAllocationCallbacks*, MaLpfNode*, int>)funcTable[710])(pNodeGraph, pConfig, pAllocationCallbacks, pNode);
+        }
+
         internal static MaResult LpfNodeInitNative(MaNodeGraph* pNodeGraph, MaLpfNodeConfig* pConfig, MaAllocationCallbacks* pAllocationCallbacks, MaLpfNode* pNode)
         {
-            return ((delegate* unmanaged[Cdecl]<MaNodeGraph*, MaLpfNodeConfig*, MaAllocationCallbacks*, MaLpfNode*, MaResult>)funcTable[710])(pNodeGraph, pConfig, pAllocationCallbacks, pNode);
+            return (MaResult)LpfNodeInitInterop(pNodeGraph, pConfig, pAllocationCallbacks, pNode);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int LpfNodeReinitInterop(MaLpfConfig* pConfig, MaLpfNode* pNode)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaLpfConfig*, MaLpfNode*, int>)funcTable[711])(pConfig, pNode);
+        }
+
         internal static MaResult LpfNodeReinitNative(MaLpfConfig* pConfig, MaLpfNode* pNode)
         {
-            return ((delegate* unmanaged[Cdecl]<MaLpfConfig*, MaLpfNode*, MaResult>)funcTable[711])(pConfig, pNode);
+            return (MaResult)LpfNodeReinitInterop(pConfig, pNode);
         }
 
         /// <summary>
@@ -24290,17 +26660,27 @@ namespace Inno.Native.MiniAudio
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int HpfNodeInitInterop(MaNodeGraph* pNodeGraph, MaHpfNodeConfig* pConfig, MaAllocationCallbacks* pAllocationCallbacks, MaHpfNode* pNode)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaNodeGraph*, MaHpfNodeConfig*, MaAllocationCallbacks*, MaHpfNode*, int>)funcTable[714])(pNodeGraph, pConfig, pAllocationCallbacks, pNode);
+        }
+
         internal static MaResult HpfNodeInitNative(MaNodeGraph* pNodeGraph, MaHpfNodeConfig* pConfig, MaAllocationCallbacks* pAllocationCallbacks, MaHpfNode* pNode)
         {
-            return ((delegate* unmanaged[Cdecl]<MaNodeGraph*, MaHpfNodeConfig*, MaAllocationCallbacks*, MaHpfNode*, MaResult>)funcTable[714])(pNodeGraph, pConfig, pAllocationCallbacks, pNode);
+            return (MaResult)HpfNodeInitInterop(pNodeGraph, pConfig, pAllocationCallbacks, pNode);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int HpfNodeReinitInterop(MaHpfConfig* pConfig, MaHpfNode* pNode)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaHpfConfig*, MaHpfNode*, int>)funcTable[715])(pConfig, pNode);
+        }
+
         internal static MaResult HpfNodeReinitNative(MaHpfConfig* pConfig, MaHpfNode* pNode)
         {
-            return ((delegate* unmanaged[Cdecl]<MaHpfConfig*, MaHpfNode*, MaResult>)funcTable[715])(pConfig, pNode);
+            return (MaResult)HpfNodeReinitInterop(pConfig, pNode);
         }
 
         /// <summary>
@@ -24322,17 +26702,27 @@ namespace Inno.Native.MiniAudio
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int BpfNodeInitInterop(MaNodeGraph* pNodeGraph, MaBpfNodeConfig* pConfig, MaAllocationCallbacks* pAllocationCallbacks, MaBpfNode* pNode)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaNodeGraph*, MaBpfNodeConfig*, MaAllocationCallbacks*, MaBpfNode*, int>)funcTable[718])(pNodeGraph, pConfig, pAllocationCallbacks, pNode);
+        }
+
         internal static MaResult BpfNodeInitNative(MaNodeGraph* pNodeGraph, MaBpfNodeConfig* pConfig, MaAllocationCallbacks* pAllocationCallbacks, MaBpfNode* pNode)
         {
-            return ((delegate* unmanaged[Cdecl]<MaNodeGraph*, MaBpfNodeConfig*, MaAllocationCallbacks*, MaBpfNode*, MaResult>)funcTable[718])(pNodeGraph, pConfig, pAllocationCallbacks, pNode);
+            return (MaResult)BpfNodeInitInterop(pNodeGraph, pConfig, pAllocationCallbacks, pNode);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int BpfNodeReinitInterop(MaBpfConfig* pConfig, MaBpfNode* pNode)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaBpfConfig*, MaBpfNode*, int>)funcTable[719])(pConfig, pNode);
+        }
+
         internal static MaResult BpfNodeReinitNative(MaBpfConfig* pConfig, MaBpfNode* pNode)
         {
-            return ((delegate* unmanaged[Cdecl]<MaBpfConfig*, MaBpfNode*, MaResult>)funcTable[719])(pConfig, pNode);
+            return (MaResult)BpfNodeReinitInterop(pConfig, pNode);
         }
 
         /// <summary>
@@ -24354,17 +26744,27 @@ namespace Inno.Native.MiniAudio
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int NotchNodeInitInterop(MaNodeGraph* pNodeGraph, MaNotchNodeConfig* pConfig, MaAllocationCallbacks* pAllocationCallbacks, MaNotchNode* pNode)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaNodeGraph*, MaNotchNodeConfig*, MaAllocationCallbacks*, MaNotchNode*, int>)funcTable[722])(pNodeGraph, pConfig, pAllocationCallbacks, pNode);
+        }
+
         internal static MaResult NotchNodeInitNative(MaNodeGraph* pNodeGraph, MaNotchNodeConfig* pConfig, MaAllocationCallbacks* pAllocationCallbacks, MaNotchNode* pNode)
         {
-            return ((delegate* unmanaged[Cdecl]<MaNodeGraph*, MaNotchNodeConfig*, MaAllocationCallbacks*, MaNotchNode*, MaResult>)funcTable[722])(pNodeGraph, pConfig, pAllocationCallbacks, pNode);
+            return (MaResult)NotchNodeInitInterop(pNodeGraph, pConfig, pAllocationCallbacks, pNode);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int NotchNodeReinitInterop(MaNotch2Config* pConfig, MaNotchNode* pNode)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaNotch2Config*, MaNotchNode*, int>)funcTable[723])(pConfig, pNode);
+        }
+
         internal static MaResult NotchNodeReinitNative(MaNotch2Config* pConfig, MaNotchNode* pNode)
         {
-            return ((delegate* unmanaged[Cdecl]<MaNotch2Config*, MaNotchNode*, MaResult>)funcTable[723])(pConfig, pNode);
+            return (MaResult)NotchNodeReinitInterop(pConfig, pNode);
         }
 
         /// <summary>
@@ -24386,17 +26786,27 @@ namespace Inno.Native.MiniAudio
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int PeakNodeInitInterop(MaNodeGraph* pNodeGraph, MaPeakNodeConfig* pConfig, MaAllocationCallbacks* pAllocationCallbacks, MaPeakNode* pNode)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaNodeGraph*, MaPeakNodeConfig*, MaAllocationCallbacks*, MaPeakNode*, int>)funcTable[726])(pNodeGraph, pConfig, pAllocationCallbacks, pNode);
+        }
+
         internal static MaResult PeakNodeInitNative(MaNodeGraph* pNodeGraph, MaPeakNodeConfig* pConfig, MaAllocationCallbacks* pAllocationCallbacks, MaPeakNode* pNode)
         {
-            return ((delegate* unmanaged[Cdecl]<MaNodeGraph*, MaPeakNodeConfig*, MaAllocationCallbacks*, MaPeakNode*, MaResult>)funcTable[726])(pNodeGraph, pConfig, pAllocationCallbacks, pNode);
+            return (MaResult)PeakNodeInitInterop(pNodeGraph, pConfig, pAllocationCallbacks, pNode);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int PeakNodeReinitInterop(MaPeak2Config* pConfig, MaPeakNode* pNode)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaPeak2Config*, MaPeakNode*, int>)funcTable[727])(pConfig, pNode);
+        }
+
         internal static MaResult PeakNodeReinitNative(MaPeak2Config* pConfig, MaPeakNode* pNode)
         {
-            return ((delegate* unmanaged[Cdecl]<MaPeak2Config*, MaPeakNode*, MaResult>)funcTable[727])(pConfig, pNode);
+            return (MaResult)PeakNodeReinitInterop(pConfig, pNode);
         }
 
         /// <summary>
@@ -24418,17 +26828,27 @@ namespace Inno.Native.MiniAudio
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int LoshelfNodeInitInterop(MaNodeGraph* pNodeGraph, MaLoshelfNodeConfig* pConfig, MaAllocationCallbacks* pAllocationCallbacks, MaLoshelfNode* pNode)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaNodeGraph*, MaLoshelfNodeConfig*, MaAllocationCallbacks*, MaLoshelfNode*, int>)funcTable[730])(pNodeGraph, pConfig, pAllocationCallbacks, pNode);
+        }
+
         internal static MaResult LoshelfNodeInitNative(MaNodeGraph* pNodeGraph, MaLoshelfNodeConfig* pConfig, MaAllocationCallbacks* pAllocationCallbacks, MaLoshelfNode* pNode)
         {
-            return ((delegate* unmanaged[Cdecl]<MaNodeGraph*, MaLoshelfNodeConfig*, MaAllocationCallbacks*, MaLoshelfNode*, MaResult>)funcTable[730])(pNodeGraph, pConfig, pAllocationCallbacks, pNode);
+            return (MaResult)LoshelfNodeInitInterop(pNodeGraph, pConfig, pAllocationCallbacks, pNode);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int LoshelfNodeReinitInterop(MaLoshelf2Config* pConfig, MaLoshelfNode* pNode)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaLoshelf2Config*, MaLoshelfNode*, int>)funcTable[731])(pConfig, pNode);
+        }
+
         internal static MaResult LoshelfNodeReinitNative(MaLoshelf2Config* pConfig, MaLoshelfNode* pNode)
         {
-            return ((delegate* unmanaged[Cdecl]<MaLoshelf2Config*, MaLoshelfNode*, MaResult>)funcTable[731])(pConfig, pNode);
+            return (MaResult)LoshelfNodeReinitInterop(pConfig, pNode);
         }
 
         /// <summary>
@@ -24450,17 +26870,27 @@ namespace Inno.Native.MiniAudio
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int HishelfNodeInitInterop(MaNodeGraph* pNodeGraph, MaHishelfNodeConfig* pConfig, MaAllocationCallbacks* pAllocationCallbacks, MaHishelfNode* pNode)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaNodeGraph*, MaHishelfNodeConfig*, MaAllocationCallbacks*, MaHishelfNode*, int>)funcTable[734])(pNodeGraph, pConfig, pAllocationCallbacks, pNode);
+        }
+
         internal static MaResult HishelfNodeInitNative(MaNodeGraph* pNodeGraph, MaHishelfNodeConfig* pConfig, MaAllocationCallbacks* pAllocationCallbacks, MaHishelfNode* pNode)
         {
-            return ((delegate* unmanaged[Cdecl]<MaNodeGraph*, MaHishelfNodeConfig*, MaAllocationCallbacks*, MaHishelfNode*, MaResult>)funcTable[734])(pNodeGraph, pConfig, pAllocationCallbacks, pNode);
+            return (MaResult)HishelfNodeInitInterop(pNodeGraph, pConfig, pAllocationCallbacks, pNode);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int HishelfNodeReinitInterop(MaHishelf2Config* pConfig, MaHishelfNode* pNode)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaHishelf2Config*, MaHishelfNode*, int>)funcTable[735])(pConfig, pNode);
+        }
+
         internal static MaResult HishelfNodeReinitNative(MaHishelf2Config* pConfig, MaHishelfNode* pNode)
         {
-            return ((delegate* unmanaged[Cdecl]<MaHishelf2Config*, MaHishelfNode*, MaResult>)funcTable[735])(pConfig, pNode);
+            return (MaResult)HishelfNodeReinitInterop(pConfig, pNode);
         }
 
         /// <summary>
@@ -24482,9 +26912,14 @@ namespace Inno.Native.MiniAudio
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int DelayNodeInitInterop(MaNodeGraph* pNodeGraph, MaDelayNodeConfig* pConfig, MaAllocationCallbacks* pAllocationCallbacks, MaDelayNode* pDelayNode)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaNodeGraph*, MaDelayNodeConfig*, MaAllocationCallbacks*, MaDelayNode*, int>)funcTable[738])(pNodeGraph, pConfig, pAllocationCallbacks, pDelayNode);
+        }
+
         internal static MaResult DelayNodeInitNative(MaNodeGraph* pNodeGraph, MaDelayNodeConfig* pConfig, MaAllocationCallbacks* pAllocationCallbacks, MaDelayNode* pDelayNode)
         {
-            return ((delegate* unmanaged[Cdecl]<MaNodeGraph*, MaDelayNodeConfig*, MaAllocationCallbacks*, MaDelayNode*, MaResult>)funcTable[738])(pNodeGraph, pConfig, pAllocationCallbacks, pDelayNode);
+            return (MaResult)DelayNodeInitInterop(pNodeGraph, pConfig, pAllocationCallbacks, pDelayNode);
         }
 
         /// <summary>
@@ -24546,33 +26981,53 @@ namespace Inno.Native.MiniAudio
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static MaEngineNodeConfig EngineNodeConfigInitInterop(MaEngine* pEngine, int type, uint flags)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaEngine*, int, uint, MaEngineNodeConfig>)funcTable[746])(pEngine, type, flags);
+        }
+
         internal static MaEngineNodeConfig EngineNodeConfigInitNative(MaEngine* pEngine, MaEngineNodeType type, uint flags)
         {
-            return ((delegate* unmanaged[Cdecl]<MaEngine*, MaEngineNodeType, uint, MaEngineNodeConfig>)funcTable[746])(pEngine, type, flags);
+            return EngineNodeConfigInitInterop(pEngine, (int)type, flags);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int EngineNodeGetHeapSizeInterop(MaEngineNodeConfig* pConfig, nuint* pHeapSizeInBytes)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaEngineNodeConfig*, nuint*, int>)funcTable[747])(pConfig, pHeapSizeInBytes);
+        }
+
         internal static MaResult EngineNodeGetHeapSizeNative(MaEngineNodeConfig* pConfig, nuint* pHeapSizeInBytes)
         {
-            return ((delegate* unmanaged[Cdecl]<MaEngineNodeConfig*, nuint*, MaResult>)funcTable[747])(pConfig, pHeapSizeInBytes);
+            return (MaResult)EngineNodeGetHeapSizeInterop(pConfig, pHeapSizeInBytes);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int EngineNodeInitPreallocatedInterop(MaEngineNodeConfig* pConfig, void* pHeap, MaEngineNode* pEngineNode)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaEngineNodeConfig*, void*, MaEngineNode*, int>)funcTable[748])(pConfig, pHeap, pEngineNode);
+        }
+
         internal static MaResult EngineNodeInitPreallocatedNative(MaEngineNodeConfig* pConfig, void* pHeap, MaEngineNode* pEngineNode)
         {
-            return ((delegate* unmanaged[Cdecl]<MaEngineNodeConfig*, void*, MaEngineNode*, MaResult>)funcTable[748])(pConfig, pHeap, pEngineNode);
+            return (MaResult)EngineNodeInitPreallocatedInterop(pConfig, pHeap, pEngineNode);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int EngineNodeInitInterop(MaEngineNodeConfig* pConfig, MaAllocationCallbacks* pAllocationCallbacks, MaEngineNode* pEngineNode)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaEngineNodeConfig*, MaAllocationCallbacks*, MaEngineNode*, int>)funcTable[749])(pConfig, pAllocationCallbacks, pEngineNode);
+        }
+
         internal static MaResult EngineNodeInitNative(MaEngineNodeConfig* pConfig, MaAllocationCallbacks* pAllocationCallbacks, MaEngineNode* pEngineNode)
         {
-            return ((delegate* unmanaged[Cdecl]<MaEngineNodeConfig*, MaAllocationCallbacks*, MaEngineNode*, MaResult>)funcTable[749])(pConfig, pAllocationCallbacks, pEngineNode);
+            return (MaResult)EngineNodeInitInterop(pConfig, pAllocationCallbacks, pEngineNode);
         }
 
         /// <summary>
@@ -24626,9 +27081,14 @@ namespace Inno.Native.MiniAudio
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int EngineInitInterop(MaEngineConfig* pConfig, MaEngine* pEngine)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaEngineConfig*, MaEngine*, int>)funcTable[756])(pConfig, pEngine);
+        }
+
         internal static MaResult EngineInitNative(MaEngineConfig* pConfig, MaEngine* pEngine)
         {
-            return ((delegate* unmanaged[Cdecl]<MaEngineConfig*, MaEngine*, MaResult>)funcTable[756])(pConfig, pEngine);
+            return (MaResult)EngineInitInterop(pConfig, pEngine);
         }
 
         /// <summary>
@@ -24642,9 +27102,14 @@ namespace Inno.Native.MiniAudio
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int EngineReadPcmFramesInterop(MaEngine* pEngine, void* pFramesOut, ulong frameCount, ulong* pFramesRead)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaEngine*, void*, ulong, ulong*, int>)funcTable[758])(pEngine, pFramesOut, frameCount, pFramesRead);
+        }
+
         internal static MaResult EngineReadPcmFramesNative(MaEngine* pEngine, void* pFramesOut, ulong frameCount, ulong* pFramesRead)
         {
-            return ((delegate* unmanaged[Cdecl]<MaEngine*, void*, ulong, ulong*, MaResult>)funcTable[758])(pEngine, pFramesOut, frameCount, pFramesRead);
+            return (MaResult)EngineReadPcmFramesInterop(pEngine, pFramesOut, frameCount, pFramesRead);
         }
 
         /// <summary>
@@ -24706,17 +27171,27 @@ namespace Inno.Native.MiniAudio
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int EngineSetTimeInPcmFramesInterop(MaEngine* pEngine, ulong globalTime)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaEngine*, ulong, int>)funcTable[766])(pEngine, globalTime);
+        }
+
         internal static MaResult EngineSetTimeInPcmFramesNative(MaEngine* pEngine, ulong globalTime)
         {
-            return ((delegate* unmanaged[Cdecl]<MaEngine*, ulong, MaResult>)funcTable[766])(pEngine, globalTime);
+            return (MaResult)EngineSetTimeInPcmFramesInterop(pEngine, globalTime);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int EngineSetTimeInMillisecondsInterop(MaEngine* pEngine, ulong globalTime)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaEngine*, ulong, int>)funcTable[767])(pEngine, globalTime);
+        }
+
         internal static MaResult EngineSetTimeInMillisecondsNative(MaEngine* pEngine, ulong globalTime)
         {
-            return ((delegate* unmanaged[Cdecl]<MaEngine*, ulong, MaResult>)funcTable[767])(pEngine, globalTime);
+            return (MaResult)EngineSetTimeInMillisecondsInterop(pEngine, globalTime);
         }
 
         /// <summary>
@@ -24730,9 +27205,14 @@ namespace Inno.Native.MiniAudio
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int EngineSetTimeInterop(MaEngine* pEngine, ulong globalTime)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaEngine*, ulong, int>)funcTable[769])(pEngine, globalTime);
+        }
+
         internal static MaResult EngineSetTimeNative(MaEngine* pEngine, ulong globalTime)
         {
-            return ((delegate* unmanaged[Cdecl]<MaEngine*, ulong, MaResult>)funcTable[769])(pEngine, globalTime);
+            return (MaResult)EngineSetTimeInterop(pEngine, globalTime);
         }
 
         /// <summary>
@@ -24754,25 +27234,40 @@ namespace Inno.Native.MiniAudio
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int EngineStartInterop(MaEngine* pEngine)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaEngine*, int>)funcTable[772])(pEngine);
+        }
+
         internal static MaResult EngineStartNative(MaEngine* pEngine)
         {
-            return ((delegate* unmanaged[Cdecl]<MaEngine*, MaResult>)funcTable[772])(pEngine);
+            return (MaResult)EngineStartInterop(pEngine);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int EngineStopInterop(MaEngine* pEngine)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaEngine*, int>)funcTable[773])(pEngine);
+        }
+
         internal static MaResult EngineStopNative(MaEngine* pEngine)
         {
-            return ((delegate* unmanaged[Cdecl]<MaEngine*, MaResult>)funcTable[773])(pEngine);
+            return (MaResult)EngineStopInterop(pEngine);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int EngineSetVolumeInterop(MaEngine* pEngine, float volume)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaEngine*, float, int>)funcTable[774])(pEngine, volume);
+        }
+
         internal static MaResult EngineSetVolumeNative(MaEngine* pEngine, float volume)
         {
-            return ((delegate* unmanaged[Cdecl]<MaEngine*, float, MaResult>)funcTable[774])(pEngine, volume);
+            return (MaResult)EngineSetVolumeInterop(pEngine, volume);
         }
 
         /// <summary>
@@ -24786,9 +27281,14 @@ namespace Inno.Native.MiniAudio
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int EngineSetGainDbInterop(MaEngine* pEngine, float gainDB)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaEngine*, float, int>)funcTable[776])(pEngine, gainDB);
+        }
+
         internal static MaResult EngineSetGainDbNative(MaEngine* pEngine, float gainDB)
         {
-            return ((delegate* unmanaged[Cdecl]<MaEngine*, float, MaResult>)funcTable[776])(pEngine, gainDB);
+            return (MaResult)EngineSetGainDbInterop(pEngine, gainDB);
         }
 
         /// <summary>
@@ -24914,57 +27414,92 @@ namespace Inno.Native.MiniAudio
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int EnginePlaySoundExInterop(MaEngine* pEngine, byte* pFilePath, void* pNode, uint nodeInputBusIndex)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaEngine*, byte*, void*, uint, int>)funcTable[792])(pEngine, pFilePath, pNode, nodeInputBusIndex);
+        }
+
         internal static MaResult EnginePlaySoundExNative(MaEngine* pEngine, byte* pFilePath, void* pNode, uint nodeInputBusIndex)
         {
-            return ((delegate* unmanaged[Cdecl]<MaEngine*, byte*, void*, uint, MaResult>)funcTable[792])(pEngine, pFilePath, pNode, nodeInputBusIndex);
+            return (MaResult)EnginePlaySoundExInterop(pEngine, pFilePath, pNode, nodeInputBusIndex);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int EnginePlaySoundInterop(MaEngine* pEngine, byte* pFilePath, MaSound* pGroup)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaEngine*, byte*, MaSound*, int>)funcTable[793])(pEngine, pFilePath, pGroup);
+        }
+
         internal static MaResult EnginePlaySoundNative(MaEngine* pEngine, byte* pFilePath, MaSound* pGroup)
         {
-            return ((delegate* unmanaged[Cdecl]<MaEngine*, byte*, MaSound*, MaResult>)funcTable[793])(pEngine, pFilePath, pGroup);
+            return (MaResult)EnginePlaySoundInterop(pEngine, pFilePath, pGroup);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int SoundInitFromFileInterop(MaEngine* pEngine, byte* pFilePath, uint flags, MaSound* pGroup, MaFence* pDoneFence, MaSound* pSound)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaEngine*, byte*, uint, MaSound*, MaFence*, MaSound*, int>)funcTable[794])(pEngine, pFilePath, flags, pGroup, pDoneFence, pSound);
+        }
+
         internal static MaResult SoundInitFromFileNative(MaEngine* pEngine, byte* pFilePath, uint flags, MaSound* pGroup, MaFence* pDoneFence, MaSound* pSound)
         {
-            return ((delegate* unmanaged[Cdecl]<MaEngine*, byte*, uint, MaSound*, MaFence*, MaSound*, MaResult>)funcTable[794])(pEngine, pFilePath, flags, pGroup, pDoneFence, pSound);
+            return (MaResult)SoundInitFromFileInterop(pEngine, pFilePath, flags, pGroup, pDoneFence, pSound);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int SoundInitFromFileWInterop(MaEngine* pEngine, ushort* pFilePath, uint flags, MaSound* pGroup, MaFence* pDoneFence, MaSound* pSound)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaEngine*, ushort*, uint, MaSound*, MaFence*, MaSound*, int>)funcTable[795])(pEngine, pFilePath, flags, pGroup, pDoneFence, pSound);
+        }
+
         internal static MaResult SoundInitFromFileWNative(MaEngine* pEngine, ushort* pFilePath, uint flags, MaSound* pGroup, MaFence* pDoneFence, MaSound* pSound)
         {
-            return ((delegate* unmanaged[Cdecl]<MaEngine*, ushort*, uint, MaSound*, MaFence*, MaSound*, MaResult>)funcTable[795])(pEngine, pFilePath, flags, pGroup, pDoneFence, pSound);
+            return (MaResult)SoundInitFromFileWInterop(pEngine, pFilePath, flags, pGroup, pDoneFence, pSound);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int SoundInitCopyInterop(MaEngine* pEngine, MaSound* pExistingSound, uint flags, MaSound* pGroup, MaSound* pSound)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaEngine*, MaSound*, uint, MaSound*, MaSound*, int>)funcTable[796])(pEngine, pExistingSound, flags, pGroup, pSound);
+        }
+
         internal static MaResult SoundInitCopyNative(MaEngine* pEngine, MaSound* pExistingSound, uint flags, MaSound* pGroup, MaSound* pSound)
         {
-            return ((delegate* unmanaged[Cdecl]<MaEngine*, MaSound*, uint, MaSound*, MaSound*, MaResult>)funcTable[796])(pEngine, pExistingSound, flags, pGroup, pSound);
+            return (MaResult)SoundInitCopyInterop(pEngine, pExistingSound, flags, pGroup, pSound);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int SoundInitFromDataSourceInterop(MaEngine* pEngine, MaDataSource* pDataSource, uint flags, MaSound* pGroup, MaSound* pSound)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaEngine*, MaDataSource*, uint, MaSound*, MaSound*, int>)funcTable[797])(pEngine, pDataSource, flags, pGroup, pSound);
+        }
+
         internal static MaResult SoundInitFromDataSourceNative(MaEngine* pEngine, MaDataSource* pDataSource, uint flags, MaSound* pGroup, MaSound* pSound)
         {
-            return ((delegate* unmanaged[Cdecl]<MaEngine*, MaDataSource*, uint, MaSound*, MaSound*, MaResult>)funcTable[797])(pEngine, pDataSource, flags, pGroup, pSound);
+            return (MaResult)SoundInitFromDataSourceInterop(pEngine, pDataSource, flags, pGroup, pSound);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int SoundInitExInterop(MaEngine* pEngine, MaSoundConfig* pConfig, MaSound* pSound)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaEngine*, MaSoundConfig*, MaSound*, int>)funcTable[798])(pEngine, pConfig, pSound);
+        }
+
         internal static MaResult SoundInitExNative(MaEngine* pEngine, MaSoundConfig* pConfig, MaSound* pSound)
         {
-            return ((delegate* unmanaged[Cdecl]<MaEngine*, MaSoundConfig*, MaSound*, MaResult>)funcTable[798])(pEngine, pConfig, pSound);
+            return (MaResult)SoundInitExInterop(pEngine, pConfig, pSound);
         }
 
         /// <summary>
@@ -24994,33 +27529,53 @@ namespace Inno.Native.MiniAudio
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int SoundStartInterop(MaSound* pSound)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaSound*, int>)funcTable[802])(pSound);
+        }
+
         internal static MaResult SoundStartNative(MaSound* pSound)
         {
-            return ((delegate* unmanaged[Cdecl]<MaSound*, MaResult>)funcTable[802])(pSound);
+            return (MaResult)SoundStartInterop(pSound);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int SoundStopInterop(MaSound* pSound)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaSound*, int>)funcTable[803])(pSound);
+        }
+
         internal static MaResult SoundStopNative(MaSound* pSound)
         {
-            return ((delegate* unmanaged[Cdecl]<MaSound*, MaResult>)funcTable[803])(pSound);
+            return (MaResult)SoundStopInterop(pSound);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int SoundStopWithFadeInPcmFramesInterop(MaSound* pSound, ulong fadeLengthInFrames)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaSound*, ulong, int>)funcTable[804])(pSound, fadeLengthInFrames);
+        }
+
         internal static MaResult SoundStopWithFadeInPcmFramesNative(MaSound* pSound, ulong fadeLengthInFrames)
         {
-            return ((delegate* unmanaged[Cdecl]<MaSound*, ulong, MaResult>)funcTable[804])(pSound, fadeLengthInFrames);
+            return (MaResult)SoundStopWithFadeInPcmFramesInterop(pSound, fadeLengthInFrames);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int SoundStopWithFadeInMillisecondsInterop(MaSound* pSound, ulong fadeLengthInFrames)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaSound*, ulong, int>)funcTable[805])(pSound, fadeLengthInFrames);
+        }
+
         internal static MaResult SoundStopWithFadeInMillisecondsNative(MaSound* pSound, ulong fadeLengthInFrames)
         {
-            return ((delegate* unmanaged[Cdecl]<MaSound*, ulong, MaResult>)funcTable[805])(pSound, fadeLengthInFrames);
+            return (MaResult)SoundStopWithFadeInMillisecondsInterop(pSound, fadeLengthInFrames);
         }
 
         /// <summary>
@@ -25090,17 +27645,27 @@ namespace Inno.Native.MiniAudio
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void SoundSetPanModeInterop(MaSound* pSound, int panMode)
+        {
+            ((delegate* unmanaged[Cdecl]<MaSound*, int, void>)funcTable[814])(pSound, panMode);
+        }
+
         internal static void SoundSetPanModeNative(MaSound* pSound, MaPanMode panMode)
         {
-            ((delegate* unmanaged[Cdecl]<MaSound*, MaPanMode, void>)funcTable[814])(pSound, panMode);
+            SoundSetPanModeInterop(pSound, (int)panMode);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int SoundGetPanModeInterop(MaSound* pSound)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaSound*, int>)funcTable[815])(pSound);
+        }
+
         internal static MaPanMode SoundGetPanModeNative(MaSound* pSound)
         {
-            return ((delegate* unmanaged[Cdecl]<MaSound*, MaPanMode>)funcTable[815])(pSound);
+            return (MaPanMode)SoundGetPanModeInterop(pSound);
         }
 
         /// <summary>
@@ -25218,33 +27783,53 @@ namespace Inno.Native.MiniAudio
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void SoundSetAttenuationModelInterop(MaSound* pSound, int attenuationModel)
+        {
+            ((delegate* unmanaged[Cdecl]<MaSound*, int, void>)funcTable[830])(pSound, attenuationModel);
+        }
+
         internal static void SoundSetAttenuationModelNative(MaSound* pSound, MaAttenuationModel attenuationModel)
         {
-            ((delegate* unmanaged[Cdecl]<MaSound*, MaAttenuationModel, void>)funcTable[830])(pSound, attenuationModel);
+            SoundSetAttenuationModelInterop(pSound, (int)attenuationModel);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int SoundGetAttenuationModelInterop(MaSound* pSound)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaSound*, int>)funcTable[831])(pSound);
+        }
+
         internal static MaAttenuationModel SoundGetAttenuationModelNative(MaSound* pSound)
         {
-            return ((delegate* unmanaged[Cdecl]<MaSound*, MaAttenuationModel>)funcTable[831])(pSound);
+            return (MaAttenuationModel)SoundGetAttenuationModelInterop(pSound);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void SoundSetPositioningInterop(MaSound* pSound, int positioning)
+        {
+            ((delegate* unmanaged[Cdecl]<MaSound*, int, void>)funcTable[832])(pSound, positioning);
+        }
+
         internal static void SoundSetPositioningNative(MaSound* pSound, MaPositioning positioning)
         {
-            ((delegate* unmanaged[Cdecl]<MaSound*, MaPositioning, void>)funcTable[832])(pSound, positioning);
+            SoundSetPositioningInterop(pSound, (int)positioning);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int SoundGetPositioningInterop(MaSound* pSound)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaSound*, int>)funcTable[833])(pSound);
+        }
+
         internal static MaPositioning SoundGetPositioningNative(MaSound* pSound)
         {
-            return ((delegate* unmanaged[Cdecl]<MaSound*, MaPositioning>)funcTable[833])(pSound);
+            return (MaPositioning)SoundGetPositioningInterop(pSound);
         }
 
         /// <summary>
@@ -25514,81 +28099,131 @@ namespace Inno.Native.MiniAudio
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int SoundSeekToPcmFrameInterop(MaSound* pSound, ulong frameIndex)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaSound*, ulong, int>)funcTable[867])(pSound, frameIndex);
+        }
+
         internal static MaResult SoundSeekToPcmFrameNative(MaSound* pSound, ulong frameIndex)
         {
-            return ((delegate* unmanaged[Cdecl]<MaSound*, ulong, MaResult>)funcTable[867])(pSound, frameIndex);
+            return (MaResult)SoundSeekToPcmFrameInterop(pSound, frameIndex);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int SoundSeekToSecondInterop(MaSound* pSound, float seekPointInSeconds)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaSound*, float, int>)funcTable[868])(pSound, seekPointInSeconds);
+        }
+
         internal static MaResult SoundSeekToSecondNative(MaSound* pSound, float seekPointInSeconds)
         {
-            return ((delegate* unmanaged[Cdecl]<MaSound*, float, MaResult>)funcTable[868])(pSound, seekPointInSeconds);
+            return (MaResult)SoundSeekToSecondInterop(pSound, seekPointInSeconds);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int SoundGetDataFormatInterop(MaSound* pSound, MaFormat* pFormat, uint* pChannels, uint* pSampleRate, byte* pChannelMap, nuint channelMapCap)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaSound*, MaFormat*, uint*, uint*, byte*, nuint, int>)funcTable[869])(pSound, pFormat, pChannels, pSampleRate, pChannelMap, channelMapCap);
+        }
+
         internal static MaResult SoundGetDataFormatNative(MaSound* pSound, MaFormat* pFormat, uint* pChannels, uint* pSampleRate, byte* pChannelMap, nuint channelMapCap)
         {
-            return ((delegate* unmanaged[Cdecl]<MaSound*, MaFormat*, uint*, uint*, byte*, nuint, MaResult>)funcTable[869])(pSound, pFormat, pChannels, pSampleRate, pChannelMap, channelMapCap);
+            return (MaResult)SoundGetDataFormatInterop(pSound, pFormat, pChannels, pSampleRate, pChannelMap, channelMapCap);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int SoundGetCursorInPcmFramesInterop(MaSound* pSound, ulong* pCursor)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaSound*, ulong*, int>)funcTable[870])(pSound, pCursor);
+        }
+
         internal static MaResult SoundGetCursorInPcmFramesNative(MaSound* pSound, ulong* pCursor)
         {
-            return ((delegate* unmanaged[Cdecl]<MaSound*, ulong*, MaResult>)funcTable[870])(pSound, pCursor);
+            return (MaResult)SoundGetCursorInPcmFramesInterop(pSound, pCursor);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int SoundGetLengthInPcmFramesInterop(MaSound* pSound, ulong* pLength)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaSound*, ulong*, int>)funcTable[871])(pSound, pLength);
+        }
+
         internal static MaResult SoundGetLengthInPcmFramesNative(MaSound* pSound, ulong* pLength)
         {
-            return ((delegate* unmanaged[Cdecl]<MaSound*, ulong*, MaResult>)funcTable[871])(pSound, pLength);
+            return (MaResult)SoundGetLengthInPcmFramesInterop(pSound, pLength);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int SoundGetCursorInSecondsInterop(MaSound* pSound, float* pCursor)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaSound*, float*, int>)funcTable[872])(pSound, pCursor);
+        }
+
         internal static MaResult SoundGetCursorInSecondsNative(MaSound* pSound, float* pCursor)
         {
-            return ((delegate* unmanaged[Cdecl]<MaSound*, float*, MaResult>)funcTable[872])(pSound, pCursor);
+            return (MaResult)SoundGetCursorInSecondsInterop(pSound, pCursor);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int SoundGetLengthInSecondsInterop(MaSound* pSound, float* pLength)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaSound*, float*, int>)funcTable[873])(pSound, pLength);
+        }
+
         internal static MaResult SoundGetLengthInSecondsNative(MaSound* pSound, float* pLength)
         {
-            return ((delegate* unmanaged[Cdecl]<MaSound*, float*, MaResult>)funcTable[873])(pSound, pLength);
+            return (MaResult)SoundGetLengthInSecondsInterop(pSound, pLength);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int SoundSetEndCallbackInterop(MaSound* pSound, void* callback, void* pUserData)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaSound*, void*, void*, int>)funcTable[874])(pSound, callback, pUserData);
+        }
+
         internal static MaResult SoundSetEndCallbackNative(MaSound* pSound, void* callback, void* pUserData)
         {
-            return ((delegate* unmanaged[Cdecl]<MaSound*, void*, void*, MaResult>)funcTable[874])(pSound, callback, pUserData);
+            return (MaResult)SoundSetEndCallbackInterop(pSound, callback, pUserData);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int SoundGroupInitInterop(MaEngine* pEngine, uint flags, MaSound* pParentGroup, MaSound* pGroup)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaEngine*, uint, MaSound*, MaSound*, int>)funcTable[875])(pEngine, flags, pParentGroup, pGroup);
+        }
+
         internal static MaResult SoundGroupInitNative(MaEngine* pEngine, uint flags, MaSound* pParentGroup, MaSound* pGroup)
         {
-            return ((delegate* unmanaged[Cdecl]<MaEngine*, uint, MaSound*, MaSound*, MaResult>)funcTable[875])(pEngine, flags, pParentGroup, pGroup);
+            return (MaResult)SoundGroupInitInterop(pEngine, flags, pParentGroup, pGroup);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int SoundGroupInitExInterop(MaEngine* pEngine, MaSoundConfig* pConfig, MaSound* pGroup)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaEngine*, MaSoundConfig*, MaSound*, int>)funcTable[876])(pEngine, pConfig, pGroup);
+        }
+
         internal static MaResult SoundGroupInitExNative(MaEngine* pEngine, MaSoundConfig* pConfig, MaSound* pGroup)
         {
-            return ((delegate* unmanaged[Cdecl]<MaEngine*, MaSoundConfig*, MaSound*, MaResult>)funcTable[876])(pEngine, pConfig, pGroup);
+            return (MaResult)SoundGroupInitExInterop(pEngine, pConfig, pGroup);
         }
 
         /// <summary>
@@ -25610,17 +28245,27 @@ namespace Inno.Native.MiniAudio
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int SoundGroupStartInterop(MaSound* pGroup)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaSound*, int>)funcTable[879])(pGroup);
+        }
+
         internal static MaResult SoundGroupStartNative(MaSound* pGroup)
         {
-            return ((delegate* unmanaged[Cdecl]<MaSound*, MaResult>)funcTable[879])(pGroup);
+            return (MaResult)SoundGroupStartInterop(pGroup);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int SoundGroupStopInterop(MaSound* pGroup)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaSound*, int>)funcTable[880])(pGroup);
+        }
+
         internal static MaResult SoundGroupStopNative(MaSound* pGroup)
         {
-            return ((delegate* unmanaged[Cdecl]<MaSound*, MaResult>)funcTable[880])(pGroup);
+            return (MaResult)SoundGroupStopInterop(pGroup);
         }
 
         /// <summary>
@@ -25658,17 +28303,27 @@ namespace Inno.Native.MiniAudio
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void SoundGroupSetPanModeInterop(MaSound* pGroup, int panMode)
+        {
+            ((delegate* unmanaged[Cdecl]<MaSound*, int, void>)funcTable[885])(pGroup, panMode);
+        }
+
         internal static void SoundGroupSetPanModeNative(MaSound* pGroup, MaPanMode panMode)
         {
-            ((delegate* unmanaged[Cdecl]<MaSound*, MaPanMode, void>)funcTable[885])(pGroup, panMode);
+            SoundGroupSetPanModeInterop(pGroup, (int)panMode);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int SoundGroupGetPanModeInterop(MaSound* pGroup)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaSound*, int>)funcTable[886])(pGroup);
+        }
+
         internal static MaPanMode SoundGroupGetPanModeNative(MaSound* pGroup)
         {
-            return ((delegate* unmanaged[Cdecl]<MaSound*, MaPanMode>)funcTable[886])(pGroup);
+            return (MaPanMode)SoundGroupGetPanModeInterop(pGroup);
         }
 
         /// <summary>
@@ -25786,33 +28441,53 @@ namespace Inno.Native.MiniAudio
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void SoundGroupSetAttenuationModelInterop(MaSound* pGroup, int attenuationModel)
+        {
+            ((delegate* unmanaged[Cdecl]<MaSound*, int, void>)funcTable[901])(pGroup, attenuationModel);
+        }
+
         internal static void SoundGroupSetAttenuationModelNative(MaSound* pGroup, MaAttenuationModel attenuationModel)
         {
-            ((delegate* unmanaged[Cdecl]<MaSound*, MaAttenuationModel, void>)funcTable[901])(pGroup, attenuationModel);
+            SoundGroupSetAttenuationModelInterop(pGroup, (int)attenuationModel);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int SoundGroupGetAttenuationModelInterop(MaSound* pGroup)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaSound*, int>)funcTable[902])(pGroup);
+        }
+
         internal static MaAttenuationModel SoundGroupGetAttenuationModelNative(MaSound* pGroup)
         {
-            return ((delegate* unmanaged[Cdecl]<MaSound*, MaAttenuationModel>)funcTable[902])(pGroup);
+            return (MaAttenuationModel)SoundGroupGetAttenuationModelInterop(pGroup);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void SoundGroupSetPositioningInterop(MaSound* pGroup, int positioning)
+        {
+            ((delegate* unmanaged[Cdecl]<MaSound*, int, void>)funcTable[903])(pGroup, positioning);
+        }
+
         internal static void SoundGroupSetPositioningNative(MaSound* pGroup, MaPositioning positioning)
         {
-            ((delegate* unmanaged[Cdecl]<MaSound*, MaPositioning, void>)funcTable[903])(pGroup, positioning);
+            SoundGroupSetPositioningInterop(pGroup, (int)positioning);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int SoundGroupGetPositioningInterop(MaSound* pGroup)
+        {
+            return ((delegate* unmanaged[Cdecl]<MaSound*, int>)funcTable[904])(pGroup);
+        }
+
         internal static MaPositioning SoundGroupGetPositioningNative(MaSound* pGroup)
         {
-            return ((delegate* unmanaged[Cdecl]<MaSound*, MaPositioning>)funcTable[904])(pGroup);
+            return (MaPositioning)SoundGroupGetPositioningInterop(pGroup);
         }
 
         /// <summary>
@@ -26368,42 +29043,42 @@ namespace Inno.Native.MiniAudio
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaResult Lpf1InitPreallocated(MaLpf1ConfigPtr pConfig, void* pHeap, MaLpf1Ptr plPf)
+        public static MaResult Lpf1InitPreallocated(MaLpf1ConfigPtr pConfig, void* pHeap, MaLpf1Ptr pLPF)
         {
-            MaResult ret = Lpf1InitPreallocatedNative(pConfig.Handle, pHeap, plPf.Handle);
+            MaResult ret = Lpf1InitPreallocatedNative(pConfig.Handle, pHeap, pLPF.Handle);
             return ret;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaResult Lpf1InitPreallocated(ref MaLpf1Config pConfig, void* pHeap, ref MaLpf1 plPf)
+        public static MaResult Lpf1InitPreallocated(ref MaLpf1Config pConfig, void* pHeap, ref MaLpf1 pLPF)
         {
             fixed (MaLpf1Config* p_pConfig = &pConfig)
             {
-                fixed (MaLpf1* p_plPf = &plPf)
+                fixed (MaLpf1* p_pLPF = &pLPF)
                 {
-                    MaResult ret = Lpf1InitPreallocatedNative(p_pConfig, pHeap, p_plPf);
+                    MaResult ret = Lpf1InitPreallocatedNative(p_pConfig, pHeap, p_pLPF);
                     return ret;
                 }
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaResult Lpf1Init(MaLpf1ConfigPtr pConfig, MaAllocationCallbacksPtr pAllocationCallbacks, MaLpf1Ptr plPf)
+        public static MaResult Lpf1Init(MaLpf1ConfigPtr pConfig, MaAllocationCallbacksPtr pAllocationCallbacks, MaLpf1Ptr pLPF)
         {
-            MaResult ret = Lpf1InitNative(pConfig.Handle, pAllocationCallbacks.Handle, plPf.Handle);
+            MaResult ret = Lpf1InitNative(pConfig.Handle, pAllocationCallbacks.Handle, pLPF.Handle);
             return ret;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaResult Lpf1Init(ref MaLpf1Config pConfig, ref MaAllocationCallbacks pAllocationCallbacks, ref MaLpf1 plPf)
+        public static MaResult Lpf1Init(ref MaLpf1Config pConfig, ref MaAllocationCallbacks pAllocationCallbacks, ref MaLpf1 pLPF)
         {
             fixed (MaLpf1Config* p_pConfig = &pConfig)
             {
                 fixed (MaAllocationCallbacks* p_pAllocationCallbacks = &pAllocationCallbacks)
                 {
-                    fixed (MaLpf1* p_plPf = &plPf)
+                    fixed (MaLpf1* p_pLPF = &pLPF)
                     {
-                        MaResult ret = Lpf1InitNative(p_pConfig, p_pAllocationCallbacks, p_plPf);
+                        MaResult ret = Lpf1InitNative(p_pConfig, p_pAllocationCallbacks, p_pLPF);
                         return ret;
                     }
                 }
@@ -26411,90 +29086,90 @@ namespace Inno.Native.MiniAudio
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void Lpf1Uninit(MaLpf1Ptr plPf, MaAllocationCallbacksPtr pAllocationCallbacks)
+        public static void Lpf1Uninit(MaLpf1Ptr pLPF, MaAllocationCallbacksPtr pAllocationCallbacks)
         {
-            Lpf1UninitNative(plPf.Handle, pAllocationCallbacks.Handle);
+            Lpf1UninitNative(pLPF.Handle, pAllocationCallbacks.Handle);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void Lpf1Uninit(ref MaLpf1 plPf, ref MaAllocationCallbacks pAllocationCallbacks)
+        public static void Lpf1Uninit(ref MaLpf1 pLPF, ref MaAllocationCallbacks pAllocationCallbacks)
         {
-            fixed (MaLpf1* p_plPf = &plPf)
+            fixed (MaLpf1* p_pLPF = &pLPF)
             {
                 fixed (MaAllocationCallbacks* p_pAllocationCallbacks = &pAllocationCallbacks)
                 {
-                    Lpf1UninitNative(p_plPf, p_pAllocationCallbacks);
+                    Lpf1UninitNative(p_pLPF, p_pAllocationCallbacks);
                 }
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaResult Lpf1Reinit(MaLpf1ConfigPtr pConfig, MaLpf1Ptr plPf)
+        public static MaResult Lpf1Reinit(MaLpf1ConfigPtr pConfig, MaLpf1Ptr pLPF)
         {
-            MaResult ret = Lpf1ReinitNative(pConfig.Handle, plPf.Handle);
+            MaResult ret = Lpf1ReinitNative(pConfig.Handle, pLPF.Handle);
             return ret;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaResult Lpf1Reinit(ref MaLpf1Config pConfig, ref MaLpf1 plPf)
+        public static MaResult Lpf1Reinit(ref MaLpf1Config pConfig, ref MaLpf1 pLPF)
         {
             fixed (MaLpf1Config* p_pConfig = &pConfig)
             {
-                fixed (MaLpf1* p_plPf = &plPf)
+                fixed (MaLpf1* p_pLPF = &pLPF)
                 {
-                    MaResult ret = Lpf1ReinitNative(p_pConfig, p_plPf);
+                    MaResult ret = Lpf1ReinitNative(p_pConfig, p_pLPF);
                     return ret;
                 }
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaResult Lpf1ClearCache(MaLpf1Ptr plPf)
+        public static MaResult Lpf1ClearCache(MaLpf1Ptr pLPF)
         {
-            MaResult ret = Lpf1ClearCacheNative(plPf.Handle);
+            MaResult ret = Lpf1ClearCacheNative(pLPF.Handle);
             return ret;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaResult Lpf1ClearCache(ref MaLpf1 plPf)
+        public static MaResult Lpf1ClearCache(ref MaLpf1 pLPF)
         {
-            fixed (MaLpf1* p_plPf = &plPf)
+            fixed (MaLpf1* p_pLPF = &pLPF)
             {
-                MaResult ret = Lpf1ClearCacheNative(p_plPf);
+                MaResult ret = Lpf1ClearCacheNative(p_pLPF);
                 return ret;
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaResult Lpf1ProcessPcmFrames(MaLpf1Ptr plPf, void* pFramesOut, void* pFramesIn, ulong frameCount)
+        public static MaResult Lpf1ProcessPcmFrames(MaLpf1Ptr pLPF, void* pFramesOut, void* pFramesIn, ulong frameCount)
         {
-            MaResult ret = Lpf1ProcessPcmFramesNative(plPf.Handle, pFramesOut, pFramesIn, frameCount);
+            MaResult ret = Lpf1ProcessPcmFramesNative(pLPF.Handle, pFramesOut, pFramesIn, frameCount);
             return ret;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaResult Lpf1ProcessPcmFrames(ref MaLpf1 plPf, void* pFramesOut, void* pFramesIn, ulong frameCount)
+        public static MaResult Lpf1ProcessPcmFrames(ref MaLpf1 pLPF, void* pFramesOut, void* pFramesIn, ulong frameCount)
         {
-            fixed (MaLpf1* p_plPf = &plPf)
+            fixed (MaLpf1* p_pLPF = &pLPF)
             {
-                MaResult ret = Lpf1ProcessPcmFramesNative(p_plPf, pFramesOut, pFramesIn, frameCount);
+                MaResult ret = Lpf1ProcessPcmFramesNative(p_pLPF, pFramesOut, pFramesIn, frameCount);
                 return ret;
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static uint Lpf1GetLatency(MaLpf1Ptr plPf)
+        public static uint Lpf1GetLatency(MaLpf1Ptr pLPF)
         {
-            uint ret = Lpf1GetLatencyNative(plPf.Handle);
+            uint ret = Lpf1GetLatencyNative(pLPF.Handle);
             return ret;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static uint Lpf1GetLatency(ref MaLpf1 plPf)
+        public static uint Lpf1GetLatency(ref MaLpf1 pLPF)
         {
-            fixed (MaLpf1* p_plPf = &plPf)
+            fixed (MaLpf1* p_pLPF = &pLPF)
             {
-                uint ret = Lpf1GetLatencyNative(p_plPf);
+                uint ret = Lpf1GetLatencyNative(p_pLPF);
                 return ret;
             }
         }
@@ -26526,42 +29201,42 @@ namespace Inno.Native.MiniAudio
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaResult Lpf2InitPreallocated(MaLpf1ConfigPtr pConfig, void* pHeap, MaLpf2Ptr phPf)
+        public static MaResult Lpf2InitPreallocated(MaLpf1ConfigPtr pConfig, void* pHeap, MaLpf2Ptr pHPF)
         {
-            MaResult ret = Lpf2InitPreallocatedNative(pConfig.Handle, pHeap, phPf.Handle);
+            MaResult ret = Lpf2InitPreallocatedNative(pConfig.Handle, pHeap, pHPF.Handle);
             return ret;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaResult Lpf2InitPreallocated(ref MaLpf1Config pConfig, void* pHeap, ref MaLpf2 phPf)
+        public static MaResult Lpf2InitPreallocated(ref MaLpf1Config pConfig, void* pHeap, ref MaLpf2 pHPF)
         {
             fixed (MaLpf1Config* p_pConfig = &pConfig)
             {
-                fixed (MaLpf2* p_phPf = &phPf)
+                fixed (MaLpf2* p_pHPF = &pHPF)
                 {
-                    MaResult ret = Lpf2InitPreallocatedNative(p_pConfig, pHeap, p_phPf);
+                    MaResult ret = Lpf2InitPreallocatedNative(p_pConfig, pHeap, p_pHPF);
                     return ret;
                 }
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaResult Lpf2Init(MaLpf1ConfigPtr pConfig, MaAllocationCallbacksPtr pAllocationCallbacks, MaLpf2Ptr plPf)
+        public static MaResult Lpf2Init(MaLpf1ConfigPtr pConfig, MaAllocationCallbacksPtr pAllocationCallbacks, MaLpf2Ptr pLPF)
         {
-            MaResult ret = Lpf2InitNative(pConfig.Handle, pAllocationCallbacks.Handle, plPf.Handle);
+            MaResult ret = Lpf2InitNative(pConfig.Handle, pAllocationCallbacks.Handle, pLPF.Handle);
             return ret;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaResult Lpf2Init(ref MaLpf1Config pConfig, ref MaAllocationCallbacks pAllocationCallbacks, ref MaLpf2 plPf)
+        public static MaResult Lpf2Init(ref MaLpf1Config pConfig, ref MaAllocationCallbacks pAllocationCallbacks, ref MaLpf2 pLPF)
         {
             fixed (MaLpf1Config* p_pConfig = &pConfig)
             {
                 fixed (MaAllocationCallbacks* p_pAllocationCallbacks = &pAllocationCallbacks)
                 {
-                    fixed (MaLpf2* p_plPf = &plPf)
+                    fixed (MaLpf2* p_pLPF = &pLPF)
                     {
-                        MaResult ret = Lpf2InitNative(p_pConfig, p_pAllocationCallbacks, p_plPf);
+                        MaResult ret = Lpf2InitNative(p_pConfig, p_pAllocationCallbacks, p_pLPF);
                         return ret;
                     }
                 }
@@ -26569,90 +29244,90 @@ namespace Inno.Native.MiniAudio
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void Lpf2Uninit(MaLpf2Ptr plPf, MaAllocationCallbacksPtr pAllocationCallbacks)
+        public static void Lpf2Uninit(MaLpf2Ptr pLPF, MaAllocationCallbacksPtr pAllocationCallbacks)
         {
-            Lpf2UninitNative(plPf.Handle, pAllocationCallbacks.Handle);
+            Lpf2UninitNative(pLPF.Handle, pAllocationCallbacks.Handle);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void Lpf2Uninit(ref MaLpf2 plPf, ref MaAllocationCallbacks pAllocationCallbacks)
+        public static void Lpf2Uninit(ref MaLpf2 pLPF, ref MaAllocationCallbacks pAllocationCallbacks)
         {
-            fixed (MaLpf2* p_plPf = &plPf)
+            fixed (MaLpf2* p_pLPF = &pLPF)
             {
                 fixed (MaAllocationCallbacks* p_pAllocationCallbacks = &pAllocationCallbacks)
                 {
-                    Lpf2UninitNative(p_plPf, p_pAllocationCallbacks);
+                    Lpf2UninitNative(p_pLPF, p_pAllocationCallbacks);
                 }
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaResult Lpf2Reinit(MaLpf1ConfigPtr pConfig, MaLpf2Ptr plPf)
+        public static MaResult Lpf2Reinit(MaLpf1ConfigPtr pConfig, MaLpf2Ptr pLPF)
         {
-            MaResult ret = Lpf2ReinitNative(pConfig.Handle, plPf.Handle);
+            MaResult ret = Lpf2ReinitNative(pConfig.Handle, pLPF.Handle);
             return ret;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaResult Lpf2Reinit(ref MaLpf1Config pConfig, ref MaLpf2 plPf)
+        public static MaResult Lpf2Reinit(ref MaLpf1Config pConfig, ref MaLpf2 pLPF)
         {
             fixed (MaLpf1Config* p_pConfig = &pConfig)
             {
-                fixed (MaLpf2* p_plPf = &plPf)
+                fixed (MaLpf2* p_pLPF = &pLPF)
                 {
-                    MaResult ret = Lpf2ReinitNative(p_pConfig, p_plPf);
+                    MaResult ret = Lpf2ReinitNative(p_pConfig, p_pLPF);
                     return ret;
                 }
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaResult Lpf2ClearCache(MaLpf2Ptr plPf)
+        public static MaResult Lpf2ClearCache(MaLpf2Ptr pLPF)
         {
-            MaResult ret = Lpf2ClearCacheNative(plPf.Handle);
+            MaResult ret = Lpf2ClearCacheNative(pLPF.Handle);
             return ret;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaResult Lpf2ClearCache(ref MaLpf2 plPf)
+        public static MaResult Lpf2ClearCache(ref MaLpf2 pLPF)
         {
-            fixed (MaLpf2* p_plPf = &plPf)
+            fixed (MaLpf2* p_pLPF = &pLPF)
             {
-                MaResult ret = Lpf2ClearCacheNative(p_plPf);
+                MaResult ret = Lpf2ClearCacheNative(p_pLPF);
                 return ret;
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaResult Lpf2ProcessPcmFrames(MaLpf2Ptr plPf, void* pFramesOut, void* pFramesIn, ulong frameCount)
+        public static MaResult Lpf2ProcessPcmFrames(MaLpf2Ptr pLPF, void* pFramesOut, void* pFramesIn, ulong frameCount)
         {
-            MaResult ret = Lpf2ProcessPcmFramesNative(plPf.Handle, pFramesOut, pFramesIn, frameCount);
+            MaResult ret = Lpf2ProcessPcmFramesNative(pLPF.Handle, pFramesOut, pFramesIn, frameCount);
             return ret;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaResult Lpf2ProcessPcmFrames(ref MaLpf2 plPf, void* pFramesOut, void* pFramesIn, ulong frameCount)
+        public static MaResult Lpf2ProcessPcmFrames(ref MaLpf2 pLPF, void* pFramesOut, void* pFramesIn, ulong frameCount)
         {
-            fixed (MaLpf2* p_plPf = &plPf)
+            fixed (MaLpf2* p_pLPF = &pLPF)
             {
-                MaResult ret = Lpf2ProcessPcmFramesNative(p_plPf, pFramesOut, pFramesIn, frameCount);
+                MaResult ret = Lpf2ProcessPcmFramesNative(p_pLPF, pFramesOut, pFramesIn, frameCount);
                 return ret;
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static uint Lpf2GetLatency(MaLpf2Ptr plPf)
+        public static uint Lpf2GetLatency(MaLpf2Ptr pLPF)
         {
-            uint ret = Lpf2GetLatencyNative(plPf.Handle);
+            uint ret = Lpf2GetLatencyNative(pLPF.Handle);
             return ret;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static uint Lpf2GetLatency(ref MaLpf2 plPf)
+        public static uint Lpf2GetLatency(ref MaLpf2 pLPF)
         {
-            fixed (MaLpf2* p_plPf = &plPf)
+            fixed (MaLpf2* p_pLPF = &pLPF)
             {
-                uint ret = Lpf2GetLatencyNative(p_plPf);
+                uint ret = Lpf2GetLatencyNative(p_pLPF);
                 return ret;
             }
         }
@@ -26691,42 +29366,42 @@ namespace Inno.Native.MiniAudio
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaResult LpfInitPreallocated(MaLpfConfigPtr pConfig, void* pHeap, MaLpfPtr plPf)
+        public static MaResult LpfInitPreallocated(MaLpfConfigPtr pConfig, void* pHeap, MaLpfPtr pLPF)
         {
-            MaResult ret = LpfInitPreallocatedNative(pConfig.Handle, pHeap, plPf.Handle);
+            MaResult ret = LpfInitPreallocatedNative(pConfig.Handle, pHeap, pLPF.Handle);
             return ret;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaResult LpfInitPreallocated(ref MaLpfConfig pConfig, void* pHeap, ref MaLpf plPf)
+        public static MaResult LpfInitPreallocated(ref MaLpfConfig pConfig, void* pHeap, ref MaLpf pLPF)
         {
             fixed (MaLpfConfig* p_pConfig = &pConfig)
             {
-                fixed (MaLpf* p_plPf = &plPf)
+                fixed (MaLpf* p_pLPF = &pLPF)
                 {
-                    MaResult ret = LpfInitPreallocatedNative(p_pConfig, pHeap, p_plPf);
+                    MaResult ret = LpfInitPreallocatedNative(p_pConfig, pHeap, p_pLPF);
                     return ret;
                 }
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaResult LpfInit(MaLpfConfigPtr pConfig, MaAllocationCallbacksPtr pAllocationCallbacks, MaLpfPtr plPf)
+        public static MaResult LpfInit(MaLpfConfigPtr pConfig, MaAllocationCallbacksPtr pAllocationCallbacks, MaLpfPtr pLPF)
         {
-            MaResult ret = LpfInitNative(pConfig.Handle, pAllocationCallbacks.Handle, plPf.Handle);
+            MaResult ret = LpfInitNative(pConfig.Handle, pAllocationCallbacks.Handle, pLPF.Handle);
             return ret;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaResult LpfInit(ref MaLpfConfig pConfig, ref MaAllocationCallbacks pAllocationCallbacks, ref MaLpf plPf)
+        public static MaResult LpfInit(ref MaLpfConfig pConfig, ref MaAllocationCallbacks pAllocationCallbacks, ref MaLpf pLPF)
         {
             fixed (MaLpfConfig* p_pConfig = &pConfig)
             {
                 fixed (MaAllocationCallbacks* p_pAllocationCallbacks = &pAllocationCallbacks)
                 {
-                    fixed (MaLpf* p_plPf = &plPf)
+                    fixed (MaLpf* p_pLPF = &pLPF)
                     {
-                        MaResult ret = LpfInitNative(p_pConfig, p_pAllocationCallbacks, p_plPf);
+                        MaResult ret = LpfInitNative(p_pConfig, p_pAllocationCallbacks, p_pLPF);
                         return ret;
                     }
                 }
@@ -26734,90 +29409,90 @@ namespace Inno.Native.MiniAudio
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void LpfUninit(MaLpfPtr plPf, MaAllocationCallbacksPtr pAllocationCallbacks)
+        public static void LpfUninit(MaLpfPtr pLPF, MaAllocationCallbacksPtr pAllocationCallbacks)
         {
-            LpfUninitNative(plPf.Handle, pAllocationCallbacks.Handle);
+            LpfUninitNative(pLPF.Handle, pAllocationCallbacks.Handle);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void LpfUninit(ref MaLpf plPf, ref MaAllocationCallbacks pAllocationCallbacks)
+        public static void LpfUninit(ref MaLpf pLPF, ref MaAllocationCallbacks pAllocationCallbacks)
         {
-            fixed (MaLpf* p_plPf = &plPf)
+            fixed (MaLpf* p_pLPF = &pLPF)
             {
                 fixed (MaAllocationCallbacks* p_pAllocationCallbacks = &pAllocationCallbacks)
                 {
-                    LpfUninitNative(p_plPf, p_pAllocationCallbacks);
+                    LpfUninitNative(p_pLPF, p_pAllocationCallbacks);
                 }
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaResult LpfReinit(MaLpfConfigPtr pConfig, MaLpfPtr plPf)
+        public static MaResult LpfReinit(MaLpfConfigPtr pConfig, MaLpfPtr pLPF)
         {
-            MaResult ret = LpfReinitNative(pConfig.Handle, plPf.Handle);
+            MaResult ret = LpfReinitNative(pConfig.Handle, pLPF.Handle);
             return ret;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaResult LpfReinit(ref MaLpfConfig pConfig, ref MaLpf plPf)
+        public static MaResult LpfReinit(ref MaLpfConfig pConfig, ref MaLpf pLPF)
         {
             fixed (MaLpfConfig* p_pConfig = &pConfig)
             {
-                fixed (MaLpf* p_plPf = &plPf)
+                fixed (MaLpf* p_pLPF = &pLPF)
                 {
-                    MaResult ret = LpfReinitNative(p_pConfig, p_plPf);
+                    MaResult ret = LpfReinitNative(p_pConfig, p_pLPF);
                     return ret;
                 }
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaResult LpfClearCache(MaLpfPtr plPf)
+        public static MaResult LpfClearCache(MaLpfPtr pLPF)
         {
-            MaResult ret = LpfClearCacheNative(plPf.Handle);
+            MaResult ret = LpfClearCacheNative(pLPF.Handle);
             return ret;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaResult LpfClearCache(ref MaLpf plPf)
+        public static MaResult LpfClearCache(ref MaLpf pLPF)
         {
-            fixed (MaLpf* p_plPf = &plPf)
+            fixed (MaLpf* p_pLPF = &pLPF)
             {
-                MaResult ret = LpfClearCacheNative(p_plPf);
+                MaResult ret = LpfClearCacheNative(p_pLPF);
                 return ret;
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaResult LpfProcessPcmFrames(MaLpfPtr plPf, void* pFramesOut, void* pFramesIn, ulong frameCount)
+        public static MaResult LpfProcessPcmFrames(MaLpfPtr pLPF, void* pFramesOut, void* pFramesIn, ulong frameCount)
         {
-            MaResult ret = LpfProcessPcmFramesNative(plPf.Handle, pFramesOut, pFramesIn, frameCount);
+            MaResult ret = LpfProcessPcmFramesNative(pLPF.Handle, pFramesOut, pFramesIn, frameCount);
             return ret;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaResult LpfProcessPcmFrames(ref MaLpf plPf, void* pFramesOut, void* pFramesIn, ulong frameCount)
+        public static MaResult LpfProcessPcmFrames(ref MaLpf pLPF, void* pFramesOut, void* pFramesIn, ulong frameCount)
         {
-            fixed (MaLpf* p_plPf = &plPf)
+            fixed (MaLpf* p_pLPF = &pLPF)
             {
-                MaResult ret = LpfProcessPcmFramesNative(p_plPf, pFramesOut, pFramesIn, frameCount);
+                MaResult ret = LpfProcessPcmFramesNative(p_pLPF, pFramesOut, pFramesIn, frameCount);
                 return ret;
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static uint LpfGetLatency(MaLpfPtr plPf)
+        public static uint LpfGetLatency(MaLpfPtr pLPF)
         {
-            uint ret = LpfGetLatencyNative(plPf.Handle);
+            uint ret = LpfGetLatencyNative(pLPF.Handle);
             return ret;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static uint LpfGetLatency(ref MaLpf plPf)
+        public static uint LpfGetLatency(ref MaLpf pLPF)
         {
-            fixed (MaLpf* p_plPf = &plPf)
+            fixed (MaLpf* p_pLPF = &pLPF)
             {
-                uint ret = LpfGetLatencyNative(p_plPf);
+                uint ret = LpfGetLatencyNative(p_pLPF);
                 return ret;
             }
         }
@@ -26863,42 +29538,42 @@ namespace Inno.Native.MiniAudio
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaResult Hpf1InitPreallocated(MaHpf1ConfigPtr pConfig, void* pHeap, MaHpf1Ptr plPf)
+        public static MaResult Hpf1InitPreallocated(MaHpf1ConfigPtr pConfig, void* pHeap, MaHpf1Ptr pLPF)
         {
-            MaResult ret = Hpf1InitPreallocatedNative(pConfig.Handle, pHeap, plPf.Handle);
+            MaResult ret = Hpf1InitPreallocatedNative(pConfig.Handle, pHeap, pLPF.Handle);
             return ret;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaResult Hpf1InitPreallocated(ref MaHpf1Config pConfig, void* pHeap, ref MaHpf1 plPf)
+        public static MaResult Hpf1InitPreallocated(ref MaHpf1Config pConfig, void* pHeap, ref MaHpf1 pLPF)
         {
             fixed (MaHpf1Config* p_pConfig = &pConfig)
             {
-                fixed (MaHpf1* p_plPf = &plPf)
+                fixed (MaHpf1* p_pLPF = &pLPF)
                 {
-                    MaResult ret = Hpf1InitPreallocatedNative(p_pConfig, pHeap, p_plPf);
+                    MaResult ret = Hpf1InitPreallocatedNative(p_pConfig, pHeap, p_pLPF);
                     return ret;
                 }
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaResult Hpf1Init(MaHpf1ConfigPtr pConfig, MaAllocationCallbacksPtr pAllocationCallbacks, MaHpf1Ptr phPf)
+        public static MaResult Hpf1Init(MaHpf1ConfigPtr pConfig, MaAllocationCallbacksPtr pAllocationCallbacks, MaHpf1Ptr pHPF)
         {
-            MaResult ret = Hpf1InitNative(pConfig.Handle, pAllocationCallbacks.Handle, phPf.Handle);
+            MaResult ret = Hpf1InitNative(pConfig.Handle, pAllocationCallbacks.Handle, pHPF.Handle);
             return ret;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaResult Hpf1Init(ref MaHpf1Config pConfig, ref MaAllocationCallbacks pAllocationCallbacks, ref MaHpf1 phPf)
+        public static MaResult Hpf1Init(ref MaHpf1Config pConfig, ref MaAllocationCallbacks pAllocationCallbacks, ref MaHpf1 pHPF)
         {
             fixed (MaHpf1Config* p_pConfig = &pConfig)
             {
                 fixed (MaAllocationCallbacks* p_pAllocationCallbacks = &pAllocationCallbacks)
                 {
-                    fixed (MaHpf1* p_phPf = &phPf)
+                    fixed (MaHpf1* p_pHPF = &pHPF)
                     {
-                        MaResult ret = Hpf1InitNative(p_pConfig, p_pAllocationCallbacks, p_phPf);
+                        MaResult ret = Hpf1InitNative(p_pConfig, p_pAllocationCallbacks, p_pHPF);
                         return ret;
                     }
                 }
@@ -26906,73 +29581,73 @@ namespace Inno.Native.MiniAudio
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void Hpf1Uninit(MaHpf1Ptr phPf, MaAllocationCallbacksPtr pAllocationCallbacks)
+        public static void Hpf1Uninit(MaHpf1Ptr pHPF, MaAllocationCallbacksPtr pAllocationCallbacks)
         {
-            Hpf1UninitNative(phPf.Handle, pAllocationCallbacks.Handle);
+            Hpf1UninitNative(pHPF.Handle, pAllocationCallbacks.Handle);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void Hpf1Uninit(ref MaHpf1 phPf, ref MaAllocationCallbacks pAllocationCallbacks)
+        public static void Hpf1Uninit(ref MaHpf1 pHPF, ref MaAllocationCallbacks pAllocationCallbacks)
         {
-            fixed (MaHpf1* p_phPf = &phPf)
+            fixed (MaHpf1* p_pHPF = &pHPF)
             {
                 fixed (MaAllocationCallbacks* p_pAllocationCallbacks = &pAllocationCallbacks)
                 {
-                    Hpf1UninitNative(p_phPf, p_pAllocationCallbacks);
+                    Hpf1UninitNative(p_pHPF, p_pAllocationCallbacks);
                 }
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaResult Hpf1Reinit(MaHpf1ConfigPtr pConfig, MaHpf1Ptr phPf)
+        public static MaResult Hpf1Reinit(MaHpf1ConfigPtr pConfig, MaHpf1Ptr pHPF)
         {
-            MaResult ret = Hpf1ReinitNative(pConfig.Handle, phPf.Handle);
+            MaResult ret = Hpf1ReinitNative(pConfig.Handle, pHPF.Handle);
             return ret;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaResult Hpf1Reinit(ref MaHpf1Config pConfig, ref MaHpf1 phPf)
+        public static MaResult Hpf1Reinit(ref MaHpf1Config pConfig, ref MaHpf1 pHPF)
         {
             fixed (MaHpf1Config* p_pConfig = &pConfig)
             {
-                fixed (MaHpf1* p_phPf = &phPf)
+                fixed (MaHpf1* p_pHPF = &pHPF)
                 {
-                    MaResult ret = Hpf1ReinitNative(p_pConfig, p_phPf);
+                    MaResult ret = Hpf1ReinitNative(p_pConfig, p_pHPF);
                     return ret;
                 }
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaResult Hpf1ProcessPcmFrames(MaHpf1Ptr phPf, void* pFramesOut, void* pFramesIn, ulong frameCount)
+        public static MaResult Hpf1ProcessPcmFrames(MaHpf1Ptr pHPF, void* pFramesOut, void* pFramesIn, ulong frameCount)
         {
-            MaResult ret = Hpf1ProcessPcmFramesNative(phPf.Handle, pFramesOut, pFramesIn, frameCount);
+            MaResult ret = Hpf1ProcessPcmFramesNative(pHPF.Handle, pFramesOut, pFramesIn, frameCount);
             return ret;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaResult Hpf1ProcessPcmFrames(ref MaHpf1 phPf, void* pFramesOut, void* pFramesIn, ulong frameCount)
+        public static MaResult Hpf1ProcessPcmFrames(ref MaHpf1 pHPF, void* pFramesOut, void* pFramesIn, ulong frameCount)
         {
-            fixed (MaHpf1* p_phPf = &phPf)
+            fixed (MaHpf1* p_pHPF = &pHPF)
             {
-                MaResult ret = Hpf1ProcessPcmFramesNative(p_phPf, pFramesOut, pFramesIn, frameCount);
+                MaResult ret = Hpf1ProcessPcmFramesNative(p_pHPF, pFramesOut, pFramesIn, frameCount);
                 return ret;
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static uint Hpf1GetLatency(MaHpf1Ptr phPf)
+        public static uint Hpf1GetLatency(MaHpf1Ptr pHPF)
         {
-            uint ret = Hpf1GetLatencyNative(phPf.Handle);
+            uint ret = Hpf1GetLatencyNative(pHPF.Handle);
             return ret;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static uint Hpf1GetLatency(ref MaHpf1 phPf)
+        public static uint Hpf1GetLatency(ref MaHpf1 pHPF)
         {
-            fixed (MaHpf1* p_phPf = &phPf)
+            fixed (MaHpf1* p_pHPF = &pHPF)
             {
-                uint ret = Hpf1GetLatencyNative(p_phPf);
+                uint ret = Hpf1GetLatencyNative(p_pHPF);
                 return ret;
             }
         }
@@ -27004,42 +29679,42 @@ namespace Inno.Native.MiniAudio
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaResult Hpf2InitPreallocated(MaHpf1ConfigPtr pConfig, void* pHeap, MaHpf2Ptr phPf)
+        public static MaResult Hpf2InitPreallocated(MaHpf1ConfigPtr pConfig, void* pHeap, MaHpf2Ptr pHPF)
         {
-            MaResult ret = Hpf2InitPreallocatedNative(pConfig.Handle, pHeap, phPf.Handle);
+            MaResult ret = Hpf2InitPreallocatedNative(pConfig.Handle, pHeap, pHPF.Handle);
             return ret;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaResult Hpf2InitPreallocated(ref MaHpf1Config pConfig, void* pHeap, ref MaHpf2 phPf)
+        public static MaResult Hpf2InitPreallocated(ref MaHpf1Config pConfig, void* pHeap, ref MaHpf2 pHPF)
         {
             fixed (MaHpf1Config* p_pConfig = &pConfig)
             {
-                fixed (MaHpf2* p_phPf = &phPf)
+                fixed (MaHpf2* p_pHPF = &pHPF)
                 {
-                    MaResult ret = Hpf2InitPreallocatedNative(p_pConfig, pHeap, p_phPf);
+                    MaResult ret = Hpf2InitPreallocatedNative(p_pConfig, pHeap, p_pHPF);
                     return ret;
                 }
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaResult Hpf2Init(MaHpf1ConfigPtr pConfig, MaAllocationCallbacksPtr pAllocationCallbacks, MaHpf2Ptr phPf)
+        public static MaResult Hpf2Init(MaHpf1ConfigPtr pConfig, MaAllocationCallbacksPtr pAllocationCallbacks, MaHpf2Ptr pHPF)
         {
-            MaResult ret = Hpf2InitNative(pConfig.Handle, pAllocationCallbacks.Handle, phPf.Handle);
+            MaResult ret = Hpf2InitNative(pConfig.Handle, pAllocationCallbacks.Handle, pHPF.Handle);
             return ret;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaResult Hpf2Init(ref MaHpf1Config pConfig, ref MaAllocationCallbacks pAllocationCallbacks, ref MaHpf2 phPf)
+        public static MaResult Hpf2Init(ref MaHpf1Config pConfig, ref MaAllocationCallbacks pAllocationCallbacks, ref MaHpf2 pHPF)
         {
             fixed (MaHpf1Config* p_pConfig = &pConfig)
             {
                 fixed (MaAllocationCallbacks* p_pAllocationCallbacks = &pAllocationCallbacks)
                 {
-                    fixed (MaHpf2* p_phPf = &phPf)
+                    fixed (MaHpf2* p_pHPF = &pHPF)
                     {
-                        MaResult ret = Hpf2InitNative(p_pConfig, p_pAllocationCallbacks, p_phPf);
+                        MaResult ret = Hpf2InitNative(p_pConfig, p_pAllocationCallbacks, p_pHPF);
                         return ret;
                     }
                 }
@@ -27047,73 +29722,73 @@ namespace Inno.Native.MiniAudio
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void Hpf2Uninit(MaHpf2Ptr phPf, MaAllocationCallbacksPtr pAllocationCallbacks)
+        public static void Hpf2Uninit(MaHpf2Ptr pHPF, MaAllocationCallbacksPtr pAllocationCallbacks)
         {
-            Hpf2UninitNative(phPf.Handle, pAllocationCallbacks.Handle);
+            Hpf2UninitNative(pHPF.Handle, pAllocationCallbacks.Handle);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void Hpf2Uninit(ref MaHpf2 phPf, ref MaAllocationCallbacks pAllocationCallbacks)
+        public static void Hpf2Uninit(ref MaHpf2 pHPF, ref MaAllocationCallbacks pAllocationCallbacks)
         {
-            fixed (MaHpf2* p_phPf = &phPf)
+            fixed (MaHpf2* p_pHPF = &pHPF)
             {
                 fixed (MaAllocationCallbacks* p_pAllocationCallbacks = &pAllocationCallbacks)
                 {
-                    Hpf2UninitNative(p_phPf, p_pAllocationCallbacks);
+                    Hpf2UninitNative(p_pHPF, p_pAllocationCallbacks);
                 }
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaResult Hpf2Reinit(MaHpf1ConfigPtr pConfig, MaHpf2Ptr phPf)
+        public static MaResult Hpf2Reinit(MaHpf1ConfigPtr pConfig, MaHpf2Ptr pHPF)
         {
-            MaResult ret = Hpf2ReinitNative(pConfig.Handle, phPf.Handle);
+            MaResult ret = Hpf2ReinitNative(pConfig.Handle, pHPF.Handle);
             return ret;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaResult Hpf2Reinit(ref MaHpf1Config pConfig, ref MaHpf2 phPf)
+        public static MaResult Hpf2Reinit(ref MaHpf1Config pConfig, ref MaHpf2 pHPF)
         {
             fixed (MaHpf1Config* p_pConfig = &pConfig)
             {
-                fixed (MaHpf2* p_phPf = &phPf)
+                fixed (MaHpf2* p_pHPF = &pHPF)
                 {
-                    MaResult ret = Hpf2ReinitNative(p_pConfig, p_phPf);
+                    MaResult ret = Hpf2ReinitNative(p_pConfig, p_pHPF);
                     return ret;
                 }
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaResult Hpf2ProcessPcmFrames(MaHpf2Ptr phPf, void* pFramesOut, void* pFramesIn, ulong frameCount)
+        public static MaResult Hpf2ProcessPcmFrames(MaHpf2Ptr pHPF, void* pFramesOut, void* pFramesIn, ulong frameCount)
         {
-            MaResult ret = Hpf2ProcessPcmFramesNative(phPf.Handle, pFramesOut, pFramesIn, frameCount);
+            MaResult ret = Hpf2ProcessPcmFramesNative(pHPF.Handle, pFramesOut, pFramesIn, frameCount);
             return ret;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaResult Hpf2ProcessPcmFrames(ref MaHpf2 phPf, void* pFramesOut, void* pFramesIn, ulong frameCount)
+        public static MaResult Hpf2ProcessPcmFrames(ref MaHpf2 pHPF, void* pFramesOut, void* pFramesIn, ulong frameCount)
         {
-            fixed (MaHpf2* p_phPf = &phPf)
+            fixed (MaHpf2* p_pHPF = &pHPF)
             {
-                MaResult ret = Hpf2ProcessPcmFramesNative(p_phPf, pFramesOut, pFramesIn, frameCount);
+                MaResult ret = Hpf2ProcessPcmFramesNative(p_pHPF, pFramesOut, pFramesIn, frameCount);
                 return ret;
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static uint Hpf2GetLatency(MaHpf2Ptr phPf)
+        public static uint Hpf2GetLatency(MaHpf2Ptr pHPF)
         {
-            uint ret = Hpf2GetLatencyNative(phPf.Handle);
+            uint ret = Hpf2GetLatencyNative(pHPF.Handle);
             return ret;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static uint Hpf2GetLatency(ref MaHpf2 phPf)
+        public static uint Hpf2GetLatency(ref MaHpf2 pHPF)
         {
-            fixed (MaHpf2* p_phPf = &phPf)
+            fixed (MaHpf2* p_pHPF = &pHPF)
             {
-                uint ret = Hpf2GetLatencyNative(p_phPf);
+                uint ret = Hpf2GetLatencyNative(p_pHPF);
                 return ret;
             }
         }
@@ -27152,42 +29827,42 @@ namespace Inno.Native.MiniAudio
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaResult HpfInitPreallocated(MaHpfConfigPtr pConfig, void* pHeap, MaHpfPtr plPf)
+        public static MaResult HpfInitPreallocated(MaHpfConfigPtr pConfig, void* pHeap, MaHpfPtr pLPF)
         {
-            MaResult ret = HpfInitPreallocatedNative(pConfig.Handle, pHeap, plPf.Handle);
+            MaResult ret = HpfInitPreallocatedNative(pConfig.Handle, pHeap, pLPF.Handle);
             return ret;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaResult HpfInitPreallocated(ref MaHpfConfig pConfig, void* pHeap, ref MaHpf plPf)
+        public static MaResult HpfInitPreallocated(ref MaHpfConfig pConfig, void* pHeap, ref MaHpf pLPF)
         {
             fixed (MaHpfConfig* p_pConfig = &pConfig)
             {
-                fixed (MaHpf* p_plPf = &plPf)
+                fixed (MaHpf* p_pLPF = &pLPF)
                 {
-                    MaResult ret = HpfInitPreallocatedNative(p_pConfig, pHeap, p_plPf);
+                    MaResult ret = HpfInitPreallocatedNative(p_pConfig, pHeap, p_pLPF);
                     return ret;
                 }
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaResult HpfInit(MaHpfConfigPtr pConfig, MaAllocationCallbacksPtr pAllocationCallbacks, MaHpfPtr phPf)
+        public static MaResult HpfInit(MaHpfConfigPtr pConfig, MaAllocationCallbacksPtr pAllocationCallbacks, MaHpfPtr pHPF)
         {
-            MaResult ret = HpfInitNative(pConfig.Handle, pAllocationCallbacks.Handle, phPf.Handle);
+            MaResult ret = HpfInitNative(pConfig.Handle, pAllocationCallbacks.Handle, pHPF.Handle);
             return ret;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaResult HpfInit(ref MaHpfConfig pConfig, ref MaAllocationCallbacks pAllocationCallbacks, ref MaHpf phPf)
+        public static MaResult HpfInit(ref MaHpfConfig pConfig, ref MaAllocationCallbacks pAllocationCallbacks, ref MaHpf pHPF)
         {
             fixed (MaHpfConfig* p_pConfig = &pConfig)
             {
                 fixed (MaAllocationCallbacks* p_pAllocationCallbacks = &pAllocationCallbacks)
                 {
-                    fixed (MaHpf* p_phPf = &phPf)
+                    fixed (MaHpf* p_pHPF = &pHPF)
                     {
-                        MaResult ret = HpfInitNative(p_pConfig, p_pAllocationCallbacks, p_phPf);
+                        MaResult ret = HpfInitNative(p_pConfig, p_pAllocationCallbacks, p_pHPF);
                         return ret;
                     }
                 }
@@ -27195,73 +29870,73 @@ namespace Inno.Native.MiniAudio
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void HpfUninit(MaHpfPtr phPf, MaAllocationCallbacksPtr pAllocationCallbacks)
+        public static void HpfUninit(MaHpfPtr pHPF, MaAllocationCallbacksPtr pAllocationCallbacks)
         {
-            HpfUninitNative(phPf.Handle, pAllocationCallbacks.Handle);
+            HpfUninitNative(pHPF.Handle, pAllocationCallbacks.Handle);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void HpfUninit(ref MaHpf phPf, ref MaAllocationCallbacks pAllocationCallbacks)
+        public static void HpfUninit(ref MaHpf pHPF, ref MaAllocationCallbacks pAllocationCallbacks)
         {
-            fixed (MaHpf* p_phPf = &phPf)
+            fixed (MaHpf* p_pHPF = &pHPF)
             {
                 fixed (MaAllocationCallbacks* p_pAllocationCallbacks = &pAllocationCallbacks)
                 {
-                    HpfUninitNative(p_phPf, p_pAllocationCallbacks);
+                    HpfUninitNative(p_pHPF, p_pAllocationCallbacks);
                 }
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaResult HpfReinit(MaHpfConfigPtr pConfig, MaHpfPtr phPf)
+        public static MaResult HpfReinit(MaHpfConfigPtr pConfig, MaHpfPtr pHPF)
         {
-            MaResult ret = HpfReinitNative(pConfig.Handle, phPf.Handle);
+            MaResult ret = HpfReinitNative(pConfig.Handle, pHPF.Handle);
             return ret;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaResult HpfReinit(ref MaHpfConfig pConfig, ref MaHpf phPf)
+        public static MaResult HpfReinit(ref MaHpfConfig pConfig, ref MaHpf pHPF)
         {
             fixed (MaHpfConfig* p_pConfig = &pConfig)
             {
-                fixed (MaHpf* p_phPf = &phPf)
+                fixed (MaHpf* p_pHPF = &pHPF)
                 {
-                    MaResult ret = HpfReinitNative(p_pConfig, p_phPf);
+                    MaResult ret = HpfReinitNative(p_pConfig, p_pHPF);
                     return ret;
                 }
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaResult HpfProcessPcmFrames(MaHpfPtr phPf, void* pFramesOut, void* pFramesIn, ulong frameCount)
+        public static MaResult HpfProcessPcmFrames(MaHpfPtr pHPF, void* pFramesOut, void* pFramesIn, ulong frameCount)
         {
-            MaResult ret = HpfProcessPcmFramesNative(phPf.Handle, pFramesOut, pFramesIn, frameCount);
+            MaResult ret = HpfProcessPcmFramesNative(pHPF.Handle, pFramesOut, pFramesIn, frameCount);
             return ret;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaResult HpfProcessPcmFrames(ref MaHpf phPf, void* pFramesOut, void* pFramesIn, ulong frameCount)
+        public static MaResult HpfProcessPcmFrames(ref MaHpf pHPF, void* pFramesOut, void* pFramesIn, ulong frameCount)
         {
-            fixed (MaHpf* p_phPf = &phPf)
+            fixed (MaHpf* p_pHPF = &pHPF)
             {
-                MaResult ret = HpfProcessPcmFramesNative(p_phPf, pFramesOut, pFramesIn, frameCount);
+                MaResult ret = HpfProcessPcmFramesNative(p_pHPF, pFramesOut, pFramesIn, frameCount);
                 return ret;
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static uint HpfGetLatency(MaHpfPtr phPf)
+        public static uint HpfGetLatency(MaHpfPtr pHPF)
         {
-            uint ret = HpfGetLatencyNative(phPf.Handle);
+            uint ret = HpfGetLatencyNative(pHPF.Handle);
             return ret;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static uint HpfGetLatency(ref MaHpf phPf)
+        public static uint HpfGetLatency(ref MaHpf pHPF)
         {
-            fixed (MaHpf* p_phPf = &phPf)
+            fixed (MaHpf* p_pHPF = &pHPF)
             {
-                uint ret = HpfGetLatencyNative(p_phPf);
+                uint ret = HpfGetLatencyNative(p_pHPF);
                 return ret;
             }
         }
@@ -27300,42 +29975,42 @@ namespace Inno.Native.MiniAudio
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaResult Bpf2InitPreallocated(MaBpf2ConfigPtr pConfig, void* pHeap, MaBpf2Ptr pBpF)
+        public static MaResult Bpf2InitPreallocated(MaBpf2ConfigPtr pConfig, void* pHeap, MaBpf2Ptr pBPF)
         {
-            MaResult ret = Bpf2InitPreallocatedNative(pConfig.Handle, pHeap, pBpF.Handle);
+            MaResult ret = Bpf2InitPreallocatedNative(pConfig.Handle, pHeap, pBPF.Handle);
             return ret;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaResult Bpf2InitPreallocated(ref MaBpf2Config pConfig, void* pHeap, ref MaBpf2 pBpF)
+        public static MaResult Bpf2InitPreallocated(ref MaBpf2Config pConfig, void* pHeap, ref MaBpf2 pBPF)
         {
             fixed (MaBpf2Config* p_pConfig = &pConfig)
             {
-                fixed (MaBpf2* p_pBpF = &pBpF)
+                fixed (MaBpf2* p_pBPF = &pBPF)
                 {
-                    MaResult ret = Bpf2InitPreallocatedNative(p_pConfig, pHeap, p_pBpF);
+                    MaResult ret = Bpf2InitPreallocatedNative(p_pConfig, pHeap, p_pBPF);
                     return ret;
                 }
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaResult Bpf2Init(MaBpf2ConfigPtr pConfig, MaAllocationCallbacksPtr pAllocationCallbacks, MaBpf2Ptr pBpF)
+        public static MaResult Bpf2Init(MaBpf2ConfigPtr pConfig, MaAllocationCallbacksPtr pAllocationCallbacks, MaBpf2Ptr pBPF)
         {
-            MaResult ret = Bpf2InitNative(pConfig.Handle, pAllocationCallbacks.Handle, pBpF.Handle);
+            MaResult ret = Bpf2InitNative(pConfig.Handle, pAllocationCallbacks.Handle, pBPF.Handle);
             return ret;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaResult Bpf2Init(ref MaBpf2Config pConfig, ref MaAllocationCallbacks pAllocationCallbacks, ref MaBpf2 pBpF)
+        public static MaResult Bpf2Init(ref MaBpf2Config pConfig, ref MaAllocationCallbacks pAllocationCallbacks, ref MaBpf2 pBPF)
         {
             fixed (MaBpf2Config* p_pConfig = &pConfig)
             {
                 fixed (MaAllocationCallbacks* p_pAllocationCallbacks = &pAllocationCallbacks)
                 {
-                    fixed (MaBpf2* p_pBpF = &pBpF)
+                    fixed (MaBpf2* p_pBPF = &pBPF)
                     {
-                        MaResult ret = Bpf2InitNative(p_pConfig, p_pAllocationCallbacks, p_pBpF);
+                        MaResult ret = Bpf2InitNative(p_pConfig, p_pAllocationCallbacks, p_pBPF);
                         return ret;
                     }
                 }
@@ -27343,73 +30018,73 @@ namespace Inno.Native.MiniAudio
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void Bpf2Uninit(MaBpf2Ptr pBpF, MaAllocationCallbacksPtr pAllocationCallbacks)
+        public static void Bpf2Uninit(MaBpf2Ptr pBPF, MaAllocationCallbacksPtr pAllocationCallbacks)
         {
-            Bpf2UninitNative(pBpF.Handle, pAllocationCallbacks.Handle);
+            Bpf2UninitNative(pBPF.Handle, pAllocationCallbacks.Handle);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void Bpf2Uninit(ref MaBpf2 pBpF, ref MaAllocationCallbacks pAllocationCallbacks)
+        public static void Bpf2Uninit(ref MaBpf2 pBPF, ref MaAllocationCallbacks pAllocationCallbacks)
         {
-            fixed (MaBpf2* p_pBpF = &pBpF)
+            fixed (MaBpf2* p_pBPF = &pBPF)
             {
                 fixed (MaAllocationCallbacks* p_pAllocationCallbacks = &pAllocationCallbacks)
                 {
-                    Bpf2UninitNative(p_pBpF, p_pAllocationCallbacks);
+                    Bpf2UninitNative(p_pBPF, p_pAllocationCallbacks);
                 }
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaResult Bpf2Reinit(MaBpf2ConfigPtr pConfig, MaBpf2Ptr pBpF)
+        public static MaResult Bpf2Reinit(MaBpf2ConfigPtr pConfig, MaBpf2Ptr pBPF)
         {
-            MaResult ret = Bpf2ReinitNative(pConfig.Handle, pBpF.Handle);
+            MaResult ret = Bpf2ReinitNative(pConfig.Handle, pBPF.Handle);
             return ret;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaResult Bpf2Reinit(ref MaBpf2Config pConfig, ref MaBpf2 pBpF)
+        public static MaResult Bpf2Reinit(ref MaBpf2Config pConfig, ref MaBpf2 pBPF)
         {
             fixed (MaBpf2Config* p_pConfig = &pConfig)
             {
-                fixed (MaBpf2* p_pBpF = &pBpF)
+                fixed (MaBpf2* p_pBPF = &pBPF)
                 {
-                    MaResult ret = Bpf2ReinitNative(p_pConfig, p_pBpF);
+                    MaResult ret = Bpf2ReinitNative(p_pConfig, p_pBPF);
                     return ret;
                 }
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaResult Bpf2ProcessPcmFrames(MaBpf2Ptr pBpF, void* pFramesOut, void* pFramesIn, ulong frameCount)
+        public static MaResult Bpf2ProcessPcmFrames(MaBpf2Ptr pBPF, void* pFramesOut, void* pFramesIn, ulong frameCount)
         {
-            MaResult ret = Bpf2ProcessPcmFramesNative(pBpF.Handle, pFramesOut, pFramesIn, frameCount);
+            MaResult ret = Bpf2ProcessPcmFramesNative(pBPF.Handle, pFramesOut, pFramesIn, frameCount);
             return ret;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaResult Bpf2ProcessPcmFrames(ref MaBpf2 pBpF, void* pFramesOut, void* pFramesIn, ulong frameCount)
+        public static MaResult Bpf2ProcessPcmFrames(ref MaBpf2 pBPF, void* pFramesOut, void* pFramesIn, ulong frameCount)
         {
-            fixed (MaBpf2* p_pBpF = &pBpF)
+            fixed (MaBpf2* p_pBPF = &pBPF)
             {
-                MaResult ret = Bpf2ProcessPcmFramesNative(p_pBpF, pFramesOut, pFramesIn, frameCount);
+                MaResult ret = Bpf2ProcessPcmFramesNative(p_pBPF, pFramesOut, pFramesIn, frameCount);
                 return ret;
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static uint Bpf2GetLatency(MaBpf2Ptr pBpF)
+        public static uint Bpf2GetLatency(MaBpf2Ptr pBPF)
         {
-            uint ret = Bpf2GetLatencyNative(pBpF.Handle);
+            uint ret = Bpf2GetLatencyNative(pBPF.Handle);
             return ret;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static uint Bpf2GetLatency(ref MaBpf2 pBpF)
+        public static uint Bpf2GetLatency(ref MaBpf2 pBPF)
         {
-            fixed (MaBpf2* p_pBpF = &pBpF)
+            fixed (MaBpf2* p_pBPF = &pBPF)
             {
-                uint ret = Bpf2GetLatencyNative(p_pBpF);
+                uint ret = Bpf2GetLatencyNative(p_pBPF);
                 return ret;
             }
         }
@@ -27448,42 +30123,42 @@ namespace Inno.Native.MiniAudio
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaResult BpfInitPreallocated(MaBpfConfigPtr pConfig, void* pHeap, MaBpfPtr pBpF)
+        public static MaResult BpfInitPreallocated(MaBpfConfigPtr pConfig, void* pHeap, MaBpfPtr pBPF)
         {
-            MaResult ret = BpfInitPreallocatedNative(pConfig.Handle, pHeap, pBpF.Handle);
+            MaResult ret = BpfInitPreallocatedNative(pConfig.Handle, pHeap, pBPF.Handle);
             return ret;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaResult BpfInitPreallocated(ref MaBpfConfig pConfig, void* pHeap, ref MaBpf pBpF)
+        public static MaResult BpfInitPreallocated(ref MaBpfConfig pConfig, void* pHeap, ref MaBpf pBPF)
         {
             fixed (MaBpfConfig* p_pConfig = &pConfig)
             {
-                fixed (MaBpf* p_pBpF = &pBpF)
+                fixed (MaBpf* p_pBPF = &pBPF)
                 {
-                    MaResult ret = BpfInitPreallocatedNative(p_pConfig, pHeap, p_pBpF);
+                    MaResult ret = BpfInitPreallocatedNative(p_pConfig, pHeap, p_pBPF);
                     return ret;
                 }
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaResult BpfInit(MaBpfConfigPtr pConfig, MaAllocationCallbacksPtr pAllocationCallbacks, MaBpfPtr pBpF)
+        public static MaResult BpfInit(MaBpfConfigPtr pConfig, MaAllocationCallbacksPtr pAllocationCallbacks, MaBpfPtr pBPF)
         {
-            MaResult ret = BpfInitNative(pConfig.Handle, pAllocationCallbacks.Handle, pBpF.Handle);
+            MaResult ret = BpfInitNative(pConfig.Handle, pAllocationCallbacks.Handle, pBPF.Handle);
             return ret;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaResult BpfInit(ref MaBpfConfig pConfig, ref MaAllocationCallbacks pAllocationCallbacks, ref MaBpf pBpF)
+        public static MaResult BpfInit(ref MaBpfConfig pConfig, ref MaAllocationCallbacks pAllocationCallbacks, ref MaBpf pBPF)
         {
             fixed (MaBpfConfig* p_pConfig = &pConfig)
             {
                 fixed (MaAllocationCallbacks* p_pAllocationCallbacks = &pAllocationCallbacks)
                 {
-                    fixed (MaBpf* p_pBpF = &pBpF)
+                    fixed (MaBpf* p_pBPF = &pBPF)
                     {
-                        MaResult ret = BpfInitNative(p_pConfig, p_pAllocationCallbacks, p_pBpF);
+                        MaResult ret = BpfInitNative(p_pConfig, p_pAllocationCallbacks, p_pBPF);
                         return ret;
                     }
                 }
@@ -27491,73 +30166,73 @@ namespace Inno.Native.MiniAudio
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void BpfUninit(MaBpfPtr pBpF, MaAllocationCallbacksPtr pAllocationCallbacks)
+        public static void BpfUninit(MaBpfPtr pBPF, MaAllocationCallbacksPtr pAllocationCallbacks)
         {
-            BpfUninitNative(pBpF.Handle, pAllocationCallbacks.Handle);
+            BpfUninitNative(pBPF.Handle, pAllocationCallbacks.Handle);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void BpfUninit(ref MaBpf pBpF, ref MaAllocationCallbacks pAllocationCallbacks)
+        public static void BpfUninit(ref MaBpf pBPF, ref MaAllocationCallbacks pAllocationCallbacks)
         {
-            fixed (MaBpf* p_pBpF = &pBpF)
+            fixed (MaBpf* p_pBPF = &pBPF)
             {
                 fixed (MaAllocationCallbacks* p_pAllocationCallbacks = &pAllocationCallbacks)
                 {
-                    BpfUninitNative(p_pBpF, p_pAllocationCallbacks);
+                    BpfUninitNative(p_pBPF, p_pAllocationCallbacks);
                 }
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaResult BpfReinit(MaBpfConfigPtr pConfig, MaBpfPtr pBpF)
+        public static MaResult BpfReinit(MaBpfConfigPtr pConfig, MaBpfPtr pBPF)
         {
-            MaResult ret = BpfReinitNative(pConfig.Handle, pBpF.Handle);
+            MaResult ret = BpfReinitNative(pConfig.Handle, pBPF.Handle);
             return ret;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaResult BpfReinit(ref MaBpfConfig pConfig, ref MaBpf pBpF)
+        public static MaResult BpfReinit(ref MaBpfConfig pConfig, ref MaBpf pBPF)
         {
             fixed (MaBpfConfig* p_pConfig = &pConfig)
             {
-                fixed (MaBpf* p_pBpF = &pBpF)
+                fixed (MaBpf* p_pBPF = &pBPF)
                 {
-                    MaResult ret = BpfReinitNative(p_pConfig, p_pBpF);
+                    MaResult ret = BpfReinitNative(p_pConfig, p_pBPF);
                     return ret;
                 }
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaResult BpfProcessPcmFrames(MaBpfPtr pBpF, void* pFramesOut, void* pFramesIn, ulong frameCount)
+        public static MaResult BpfProcessPcmFrames(MaBpfPtr pBPF, void* pFramesOut, void* pFramesIn, ulong frameCount)
         {
-            MaResult ret = BpfProcessPcmFramesNative(pBpF.Handle, pFramesOut, pFramesIn, frameCount);
+            MaResult ret = BpfProcessPcmFramesNative(pBPF.Handle, pFramesOut, pFramesIn, frameCount);
             return ret;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaResult BpfProcessPcmFrames(ref MaBpf pBpF, void* pFramesOut, void* pFramesIn, ulong frameCount)
+        public static MaResult BpfProcessPcmFrames(ref MaBpf pBPF, void* pFramesOut, void* pFramesIn, ulong frameCount)
         {
-            fixed (MaBpf* p_pBpF = &pBpF)
+            fixed (MaBpf* p_pBPF = &pBPF)
             {
-                MaResult ret = BpfProcessPcmFramesNative(p_pBpF, pFramesOut, pFramesIn, frameCount);
+                MaResult ret = BpfProcessPcmFramesNative(p_pBPF, pFramesOut, pFramesIn, frameCount);
                 return ret;
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static uint BpfGetLatency(MaBpfPtr pBpF)
+        public static uint BpfGetLatency(MaBpfPtr pBPF)
         {
-            uint ret = BpfGetLatencyNative(pBpF.Handle);
+            uint ret = BpfGetLatencyNative(pBPF.Handle);
             return ret;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static uint BpfGetLatency(ref MaBpf pBpF)
+        public static uint BpfGetLatency(ref MaBpf pBPF)
         {
-            fixed (MaBpf* p_pBpF = &pBpF)
+            fixed (MaBpf* p_pBPF = &pBPF)
             {
-                uint ret = BpfGetLatencyNative(p_pBpF);
+                uint ret = BpfGetLatencyNative(p_pBPF);
                 return ret;
             }
         }
@@ -31520,636 +34195,636 @@ namespace Inno.Native.MiniAudio
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaResult RbInitEx(nuint subbufferSizeInBytes, nuint subbufferCount, nuint subbufferStrideInBytes, void* pOptionalPreallocatedBuffer, MaAllocationCallbacks* pAllocationCallbacks, MaRb* prB)
+        public static MaResult RbInitEx(nuint subbufferSizeInBytes, nuint subbufferCount, nuint subbufferStrideInBytes, void* pOptionalPreallocatedBuffer, MaAllocationCallbacks* pAllocationCallbacks, MaRb* pRB)
         {
-            MaResult ret = RbInitExNative(subbufferSizeInBytes, subbufferCount, subbufferStrideInBytes, pOptionalPreallocatedBuffer, pAllocationCallbacks, prB);
+            MaResult ret = RbInitExNative(subbufferSizeInBytes, subbufferCount, subbufferStrideInBytes, pOptionalPreallocatedBuffer, pAllocationCallbacks, pRB);
             return ret;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaResult RbInit(nuint bufferSizeInBytes, void* pOptionalPreallocatedBuffer, MaAllocationCallbacksPtr pAllocationCallbacks, MaRbPtr prB)
+        public static MaResult RbInit(nuint bufferSizeInBytes, void* pOptionalPreallocatedBuffer, MaAllocationCallbacksPtr pAllocationCallbacks, MaRbPtr pRB)
         {
-            MaResult ret = RbInitNative(bufferSizeInBytes, pOptionalPreallocatedBuffer, pAllocationCallbacks.Handle, prB.Handle);
+            MaResult ret = RbInitNative(bufferSizeInBytes, pOptionalPreallocatedBuffer, pAllocationCallbacks.Handle, pRB.Handle);
             return ret;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaResult RbInit(nuint bufferSizeInBytes, void* pOptionalPreallocatedBuffer, ref MaAllocationCallbacks pAllocationCallbacks, ref MaRb prB)
+        public static MaResult RbInit(nuint bufferSizeInBytes, void* pOptionalPreallocatedBuffer, ref MaAllocationCallbacks pAllocationCallbacks, ref MaRb pRB)
         {
             fixed (MaAllocationCallbacks* p_pAllocationCallbacks = &pAllocationCallbacks)
             {
-                fixed (MaRb* p_prB = &prB)
+                fixed (MaRb* p_pRB = &pRB)
                 {
-                    MaResult ret = RbInitNative(bufferSizeInBytes, pOptionalPreallocatedBuffer, p_pAllocationCallbacks, p_prB);
+                    MaResult ret = RbInitNative(bufferSizeInBytes, pOptionalPreallocatedBuffer, p_pAllocationCallbacks, p_pRB);
                     return ret;
                 }
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void RbUninit(MaRbPtr prB)
+        public static void RbUninit(MaRbPtr pRB)
         {
-            RbUninitNative(prB.Handle);
+            RbUninitNative(pRB.Handle);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void RbUninit(ref MaRb prB)
+        public static void RbUninit(ref MaRb pRB)
         {
-            fixed (MaRb* p_prB = &prB)
+            fixed (MaRb* p_pRB = &pRB)
             {
-                RbUninitNative(p_prB);
+                RbUninitNative(p_pRB);
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void RbReset(MaRbPtr prB)
+        public static void RbReset(MaRbPtr pRB)
         {
-            RbResetNative(prB.Handle);
+            RbResetNative(pRB.Handle);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void RbReset(ref MaRb prB)
+        public static void RbReset(ref MaRb pRB)
         {
-            fixed (MaRb* p_prB = &prB)
+            fixed (MaRb* p_pRB = &pRB)
             {
-                RbResetNative(p_prB);
+                RbResetNative(p_pRB);
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaResult RbAcquireRead(MaRb* prB, nuint* pSizeInBytes, void** ppBufferOut)
+        public static MaResult RbAcquireRead(MaRb* pRB, nuint* pSizeInBytes, void** ppBufferOut)
         {
-            MaResult ret = RbAcquireReadNative(prB, pSizeInBytes, ppBufferOut);
+            MaResult ret = RbAcquireReadNative(pRB, pSizeInBytes, ppBufferOut);
             return ret;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaResult RbCommitRead(MaRbPtr prB, nuint sizeInBytes)
+        public static MaResult RbCommitRead(MaRbPtr pRB, nuint sizeInBytes)
         {
-            MaResult ret = RbCommitReadNative(prB.Handle, sizeInBytes);
+            MaResult ret = RbCommitReadNative(pRB.Handle, sizeInBytes);
             return ret;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaResult RbCommitRead(ref MaRb prB, nuint sizeInBytes)
+        public static MaResult RbCommitRead(ref MaRb pRB, nuint sizeInBytes)
         {
-            fixed (MaRb* p_prB = &prB)
+            fixed (MaRb* p_pRB = &pRB)
             {
-                MaResult ret = RbCommitReadNative(p_prB, sizeInBytes);
+                MaResult ret = RbCommitReadNative(p_pRB, sizeInBytes);
                 return ret;
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaResult RbCommitRead(Span<MaRb> prB)
+        public static MaResult RbCommitRead(Span<MaRb> pRB)
         {
-            fixed (MaRb* p_prB = prB)
+            fixed (MaRb* p_pRB = pRB)
             {
-                return RbCommitReadNative((MaRb*)p_prB, (nuint)prB.Length);
+                return RbCommitReadNative((MaRb*)p_pRB, (nuint)pRB.Length);
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaResult RbAcquireWrite(MaRb* prB, nuint* pSizeInBytes, void** ppBufferOut)
+        public static MaResult RbAcquireWrite(MaRb* pRB, nuint* pSizeInBytes, void** ppBufferOut)
         {
-            MaResult ret = RbAcquireWriteNative(prB, pSizeInBytes, ppBufferOut);
+            MaResult ret = RbAcquireWriteNative(pRB, pSizeInBytes, ppBufferOut);
             return ret;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaResult RbCommitWrite(MaRbPtr prB, nuint sizeInBytes)
+        public static MaResult RbCommitWrite(MaRbPtr pRB, nuint sizeInBytes)
         {
-            MaResult ret = RbCommitWriteNative(prB.Handle, sizeInBytes);
+            MaResult ret = RbCommitWriteNative(pRB.Handle, sizeInBytes);
             return ret;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaResult RbCommitWrite(ref MaRb prB, nuint sizeInBytes)
+        public static MaResult RbCommitWrite(ref MaRb pRB, nuint sizeInBytes)
         {
-            fixed (MaRb* p_prB = &prB)
+            fixed (MaRb* p_pRB = &pRB)
             {
-                MaResult ret = RbCommitWriteNative(p_prB, sizeInBytes);
+                MaResult ret = RbCommitWriteNative(p_pRB, sizeInBytes);
                 return ret;
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaResult RbCommitWrite(Span<MaRb> prB)
+        public static MaResult RbCommitWrite(Span<MaRb> pRB)
         {
-            fixed (MaRb* p_prB = prB)
+            fixed (MaRb* p_pRB = pRB)
             {
-                return RbCommitWriteNative((MaRb*)p_prB, (nuint)prB.Length);
+                return RbCommitWriteNative((MaRb*)p_pRB, (nuint)pRB.Length);
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaResult RbSeekRead(MaRbPtr prB, nuint offsetInBytes)
+        public static MaResult RbSeekRead(MaRbPtr pRB, nuint offsetInBytes)
         {
-            MaResult ret = RbSeekReadNative(prB.Handle, offsetInBytes);
+            MaResult ret = RbSeekReadNative(pRB.Handle, offsetInBytes);
             return ret;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaResult RbSeekRead(ref MaRb prB, nuint offsetInBytes)
+        public static MaResult RbSeekRead(ref MaRb pRB, nuint offsetInBytes)
         {
-            fixed (MaRb* p_prB = &prB)
+            fixed (MaRb* p_pRB = &pRB)
             {
-                MaResult ret = RbSeekReadNative(p_prB, offsetInBytes);
+                MaResult ret = RbSeekReadNative(p_pRB, offsetInBytes);
                 return ret;
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaResult RbSeekWrite(MaRbPtr prB, nuint offsetInBytes)
+        public static MaResult RbSeekWrite(MaRbPtr pRB, nuint offsetInBytes)
         {
-            MaResult ret = RbSeekWriteNative(prB.Handle, offsetInBytes);
+            MaResult ret = RbSeekWriteNative(pRB.Handle, offsetInBytes);
             return ret;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaResult RbSeekWrite(ref MaRb prB, nuint offsetInBytes)
+        public static MaResult RbSeekWrite(ref MaRb pRB, nuint offsetInBytes)
         {
-            fixed (MaRb* p_prB = &prB)
+            fixed (MaRb* p_pRB = &pRB)
             {
-                MaResult ret = RbSeekWriteNative(p_prB, offsetInBytes);
+                MaResult ret = RbSeekWriteNative(p_pRB, offsetInBytes);
                 return ret;
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int RbPointerDistance(MaRbPtr prB)
+        public static int RbPointerDistance(MaRbPtr pRB)
         {
-            int ret = RbPointerDistanceNative(prB.Handle);
+            int ret = RbPointerDistanceNative(pRB.Handle);
             return ret;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int RbPointerDistance(ref MaRb prB)
+        public static int RbPointerDistance(ref MaRb pRB)
         {
-            fixed (MaRb* p_prB = &prB)
+            fixed (MaRb* p_pRB = &pRB)
             {
-                int ret = RbPointerDistanceNative(p_prB);
+                int ret = RbPointerDistanceNative(p_pRB);
                 return ret;
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static uint RbAvailableRead(MaRbPtr prB)
+        public static uint RbAvailableRead(MaRbPtr pRB)
         {
-            uint ret = RbAvailableReadNative(prB.Handle);
+            uint ret = RbAvailableReadNative(pRB.Handle);
             return ret;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static uint RbAvailableRead(ref MaRb prB)
+        public static uint RbAvailableRead(ref MaRb pRB)
         {
-            fixed (MaRb* p_prB = &prB)
+            fixed (MaRb* p_pRB = &pRB)
             {
-                uint ret = RbAvailableReadNative(p_prB);
+                uint ret = RbAvailableReadNative(p_pRB);
                 return ret;
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static uint RbAvailableWrite(MaRbPtr prB)
+        public static uint RbAvailableWrite(MaRbPtr pRB)
         {
-            uint ret = RbAvailableWriteNative(prB.Handle);
+            uint ret = RbAvailableWriteNative(pRB.Handle);
             return ret;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static uint RbAvailableWrite(ref MaRb prB)
+        public static uint RbAvailableWrite(ref MaRb pRB)
         {
-            fixed (MaRb* p_prB = &prB)
+            fixed (MaRb* p_pRB = &pRB)
             {
-                uint ret = RbAvailableWriteNative(p_prB);
+                uint ret = RbAvailableWriteNative(p_pRB);
                 return ret;
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static nuint RbGetSubbufferSize(MaRbPtr prB)
+        public static nuint RbGetSubbufferSize(MaRbPtr pRB)
         {
-            nuint ret = RbGetSubbufferSizeNative(prB.Handle);
+            nuint ret = RbGetSubbufferSizeNative(pRB.Handle);
             return ret;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static nuint RbGetSubbufferSize(ref MaRb prB)
+        public static nuint RbGetSubbufferSize(ref MaRb pRB)
         {
-            fixed (MaRb* p_prB = &prB)
+            fixed (MaRb* p_pRB = &pRB)
             {
-                nuint ret = RbGetSubbufferSizeNative(p_prB);
+                nuint ret = RbGetSubbufferSizeNative(p_pRB);
                 return ret;
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static nuint RbGetSubbufferStride(MaRbPtr prB)
+        public static nuint RbGetSubbufferStride(MaRbPtr pRB)
         {
-            nuint ret = RbGetSubbufferStrideNative(prB.Handle);
+            nuint ret = RbGetSubbufferStrideNative(pRB.Handle);
             return ret;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static nuint RbGetSubbufferStride(ref MaRb prB)
+        public static nuint RbGetSubbufferStride(ref MaRb pRB)
         {
-            fixed (MaRb* p_prB = &prB)
+            fixed (MaRb* p_pRB = &pRB)
             {
-                nuint ret = RbGetSubbufferStrideNative(p_prB);
+                nuint ret = RbGetSubbufferStrideNative(p_pRB);
                 return ret;
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static nuint RbGetSubbufferOffset(MaRbPtr prB, nuint subbufferIndex)
+        public static nuint RbGetSubbufferOffset(MaRbPtr pRB, nuint subbufferIndex)
         {
-            nuint ret = RbGetSubbufferOffsetNative(prB.Handle, subbufferIndex);
+            nuint ret = RbGetSubbufferOffsetNative(pRB.Handle, subbufferIndex);
             return ret;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static nuint RbGetSubbufferOffset(ref MaRb prB, nuint subbufferIndex)
+        public static nuint RbGetSubbufferOffset(ref MaRb pRB, nuint subbufferIndex)
         {
-            fixed (MaRb* p_prB = &prB)
+            fixed (MaRb* p_pRB = &pRB)
             {
-                nuint ret = RbGetSubbufferOffsetNative(p_prB, subbufferIndex);
+                nuint ret = RbGetSubbufferOffsetNative(p_pRB, subbufferIndex);
                 return ret;
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void* RbGetSubbufferPtr(MaRb* prB, nuint subbufferIndex, void* pBuffer)
+        public static void* RbGetSubbufferPtr(MaRb* pRB, nuint subbufferIndex, void* pBuffer)
         {
-            void* ret = RbGetSubbufferPtrNative(prB, subbufferIndex, pBuffer);
+            void* ret = RbGetSubbufferPtrNative(pRB, subbufferIndex, pBuffer);
             return ret;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaResult PcmRbInitEx(MaFormat format, uint channels, uint subbufferSizeInFrames, uint subbufferCount, uint subbufferStrideInFrames, void* pOptionalPreallocatedBuffer, MaAllocationCallbacks* pAllocationCallbacks, MaPcmRb* prB)
+        public static MaResult PcmRbInitEx(MaFormat format, uint channels, uint subbufferSizeInFrames, uint subbufferCount, uint subbufferStrideInFrames, void* pOptionalPreallocatedBuffer, MaAllocationCallbacks* pAllocationCallbacks, MaPcmRb* pRB)
         {
-            MaResult ret = PcmRbInitExNative(format, channels, subbufferSizeInFrames, subbufferCount, subbufferStrideInFrames, pOptionalPreallocatedBuffer, pAllocationCallbacks, prB);
+            MaResult ret = PcmRbInitExNative(format, channels, subbufferSizeInFrames, subbufferCount, subbufferStrideInFrames, pOptionalPreallocatedBuffer, pAllocationCallbacks, pRB);
             return ret;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaResult PcmRbInit(MaFormat format, uint channels, uint bufferSizeInFrames, void* pOptionalPreallocatedBuffer, MaAllocationCallbacksPtr pAllocationCallbacks, MaPcmRbPtr prB)
+        public static MaResult PcmRbInit(MaFormat format, uint channels, uint bufferSizeInFrames, void* pOptionalPreallocatedBuffer, MaAllocationCallbacksPtr pAllocationCallbacks, MaPcmRbPtr pRB)
         {
-            MaResult ret = PcmRbInitNative(format, channels, bufferSizeInFrames, pOptionalPreallocatedBuffer, pAllocationCallbacks.Handle, prB.Handle);
+            MaResult ret = PcmRbInitNative(format, channels, bufferSizeInFrames, pOptionalPreallocatedBuffer, pAllocationCallbacks.Handle, pRB.Handle);
             return ret;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaResult PcmRbInit(MaFormat format, uint channels, uint bufferSizeInFrames, void* pOptionalPreallocatedBuffer, ref MaAllocationCallbacks pAllocationCallbacks, ref MaPcmRb prB)
+        public static MaResult PcmRbInit(MaFormat format, uint channels, uint bufferSizeInFrames, void* pOptionalPreallocatedBuffer, ref MaAllocationCallbacks pAllocationCallbacks, ref MaPcmRb pRB)
         {
             fixed (MaAllocationCallbacks* p_pAllocationCallbacks = &pAllocationCallbacks)
             {
-                fixed (MaPcmRb* p_prB = &prB)
+                fixed (MaPcmRb* p_pRB = &pRB)
                 {
-                    MaResult ret = PcmRbInitNative(format, channels, bufferSizeInFrames, pOptionalPreallocatedBuffer, p_pAllocationCallbacks, p_prB);
+                    MaResult ret = PcmRbInitNative(format, channels, bufferSizeInFrames, pOptionalPreallocatedBuffer, p_pAllocationCallbacks, p_pRB);
                     return ret;
                 }
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void PcmRbUninit(MaPcmRbPtr prB)
+        public static void PcmRbUninit(MaPcmRbPtr pRB)
         {
-            PcmRbUninitNative(prB.Handle);
+            PcmRbUninitNative(pRB.Handle);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void PcmRbUninit(ref MaPcmRb prB)
+        public static void PcmRbUninit(ref MaPcmRb pRB)
         {
-            fixed (MaPcmRb* p_prB = &prB)
+            fixed (MaPcmRb* p_pRB = &pRB)
             {
-                PcmRbUninitNative(p_prB);
+                PcmRbUninitNative(p_pRB);
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void PcmRbReset(MaPcmRbPtr prB)
+        public static void PcmRbReset(MaPcmRbPtr pRB)
         {
-            PcmRbResetNative(prB.Handle);
+            PcmRbResetNative(pRB.Handle);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void PcmRbReset(ref MaPcmRb prB)
+        public static void PcmRbReset(ref MaPcmRb pRB)
         {
-            fixed (MaPcmRb* p_prB = &prB)
+            fixed (MaPcmRb* p_pRB = &pRB)
             {
-                PcmRbResetNative(p_prB);
+                PcmRbResetNative(p_pRB);
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaResult PcmRbAcquireRead(MaPcmRb* prB, uint* pSizeInFrames, void** ppBufferOut)
+        public static MaResult PcmRbAcquireRead(MaPcmRb* pRB, uint* pSizeInFrames, void** ppBufferOut)
         {
-            MaResult ret = PcmRbAcquireReadNative(prB, pSizeInFrames, ppBufferOut);
+            MaResult ret = PcmRbAcquireReadNative(pRB, pSizeInFrames, ppBufferOut);
             return ret;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaResult PcmRbCommitRead(MaPcmRbPtr prB, uint sizeInFrames)
+        public static MaResult PcmRbCommitRead(MaPcmRbPtr pRB, uint sizeInFrames)
         {
-            MaResult ret = PcmRbCommitReadNative(prB.Handle, sizeInFrames);
+            MaResult ret = PcmRbCommitReadNative(pRB.Handle, sizeInFrames);
             return ret;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaResult PcmRbCommitRead(ref MaPcmRb prB, uint sizeInFrames)
+        public static MaResult PcmRbCommitRead(ref MaPcmRb pRB, uint sizeInFrames)
         {
-            fixed (MaPcmRb* p_prB = &prB)
+            fixed (MaPcmRb* p_pRB = &pRB)
             {
-                MaResult ret = PcmRbCommitReadNative(p_prB, sizeInFrames);
+                MaResult ret = PcmRbCommitReadNative(p_pRB, sizeInFrames);
                 return ret;
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaResult PcmRbCommitRead(Span<MaPcmRb> prB)
+        public static MaResult PcmRbCommitRead(Span<MaPcmRb> pRB)
         {
-            fixed (MaPcmRb* p_prB = prB)
+            fixed (MaPcmRb* p_pRB = pRB)
             {
-                return PcmRbCommitReadNative((MaPcmRb*)p_prB, (uint)prB.Length);
+                return PcmRbCommitReadNative((MaPcmRb*)p_pRB, (uint)pRB.Length);
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaResult PcmRbAcquireWrite(MaPcmRb* prB, uint* pSizeInFrames, void** ppBufferOut)
+        public static MaResult PcmRbAcquireWrite(MaPcmRb* pRB, uint* pSizeInFrames, void** ppBufferOut)
         {
-            MaResult ret = PcmRbAcquireWriteNative(prB, pSizeInFrames, ppBufferOut);
+            MaResult ret = PcmRbAcquireWriteNative(pRB, pSizeInFrames, ppBufferOut);
             return ret;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaResult PcmRbCommitWrite(MaPcmRbPtr prB, uint sizeInFrames)
+        public static MaResult PcmRbCommitWrite(MaPcmRbPtr pRB, uint sizeInFrames)
         {
-            MaResult ret = PcmRbCommitWriteNative(prB.Handle, sizeInFrames);
+            MaResult ret = PcmRbCommitWriteNative(pRB.Handle, sizeInFrames);
             return ret;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaResult PcmRbCommitWrite(ref MaPcmRb prB, uint sizeInFrames)
+        public static MaResult PcmRbCommitWrite(ref MaPcmRb pRB, uint sizeInFrames)
         {
-            fixed (MaPcmRb* p_prB = &prB)
+            fixed (MaPcmRb* p_pRB = &pRB)
             {
-                MaResult ret = PcmRbCommitWriteNative(p_prB, sizeInFrames);
+                MaResult ret = PcmRbCommitWriteNative(p_pRB, sizeInFrames);
                 return ret;
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaResult PcmRbCommitWrite(Span<MaPcmRb> prB)
+        public static MaResult PcmRbCommitWrite(Span<MaPcmRb> pRB)
         {
-            fixed (MaPcmRb* p_prB = prB)
+            fixed (MaPcmRb* p_pRB = pRB)
             {
-                return PcmRbCommitWriteNative((MaPcmRb*)p_prB, (uint)prB.Length);
+                return PcmRbCommitWriteNative((MaPcmRb*)p_pRB, (uint)pRB.Length);
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaResult PcmRbSeekRead(MaPcmRbPtr prB, uint offsetInFrames)
+        public static MaResult PcmRbSeekRead(MaPcmRbPtr pRB, uint offsetInFrames)
         {
-            MaResult ret = PcmRbSeekReadNative(prB.Handle, offsetInFrames);
+            MaResult ret = PcmRbSeekReadNative(pRB.Handle, offsetInFrames);
             return ret;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaResult PcmRbSeekRead(ref MaPcmRb prB, uint offsetInFrames)
+        public static MaResult PcmRbSeekRead(ref MaPcmRb pRB, uint offsetInFrames)
         {
-            fixed (MaPcmRb* p_prB = &prB)
+            fixed (MaPcmRb* p_pRB = &pRB)
             {
-                MaResult ret = PcmRbSeekReadNative(p_prB, offsetInFrames);
+                MaResult ret = PcmRbSeekReadNative(p_pRB, offsetInFrames);
                 return ret;
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaResult PcmRbSeekWrite(MaPcmRbPtr prB, uint offsetInFrames)
+        public static MaResult PcmRbSeekWrite(MaPcmRbPtr pRB, uint offsetInFrames)
         {
-            MaResult ret = PcmRbSeekWriteNative(prB.Handle, offsetInFrames);
+            MaResult ret = PcmRbSeekWriteNative(pRB.Handle, offsetInFrames);
             return ret;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaResult PcmRbSeekWrite(ref MaPcmRb prB, uint offsetInFrames)
+        public static MaResult PcmRbSeekWrite(ref MaPcmRb pRB, uint offsetInFrames)
         {
-            fixed (MaPcmRb* p_prB = &prB)
+            fixed (MaPcmRb* p_pRB = &pRB)
             {
-                MaResult ret = PcmRbSeekWriteNative(p_prB, offsetInFrames);
+                MaResult ret = PcmRbSeekWriteNative(p_pRB, offsetInFrames);
                 return ret;
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int PcmRbPointerDistance(MaPcmRbPtr prB)
+        public static int PcmRbPointerDistance(MaPcmRbPtr pRB)
         {
-            int ret = PcmRbPointerDistanceNative(prB.Handle);
+            int ret = PcmRbPointerDistanceNative(pRB.Handle);
             return ret;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int PcmRbPointerDistance(ref MaPcmRb prB)
+        public static int PcmRbPointerDistance(ref MaPcmRb pRB)
         {
-            fixed (MaPcmRb* p_prB = &prB)
+            fixed (MaPcmRb* p_pRB = &pRB)
             {
-                int ret = PcmRbPointerDistanceNative(p_prB);
+                int ret = PcmRbPointerDistanceNative(p_pRB);
                 return ret;
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static uint PcmRbAvailableRead(MaPcmRbPtr prB)
+        public static uint PcmRbAvailableRead(MaPcmRbPtr pRB)
         {
-            uint ret = PcmRbAvailableReadNative(prB.Handle);
+            uint ret = PcmRbAvailableReadNative(pRB.Handle);
             return ret;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static uint PcmRbAvailableRead(ref MaPcmRb prB)
+        public static uint PcmRbAvailableRead(ref MaPcmRb pRB)
         {
-            fixed (MaPcmRb* p_prB = &prB)
+            fixed (MaPcmRb* p_pRB = &pRB)
             {
-                uint ret = PcmRbAvailableReadNative(p_prB);
+                uint ret = PcmRbAvailableReadNative(p_pRB);
                 return ret;
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static uint PcmRbAvailableWrite(MaPcmRbPtr prB)
+        public static uint PcmRbAvailableWrite(MaPcmRbPtr pRB)
         {
-            uint ret = PcmRbAvailableWriteNative(prB.Handle);
+            uint ret = PcmRbAvailableWriteNative(pRB.Handle);
             return ret;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static uint PcmRbAvailableWrite(ref MaPcmRb prB)
+        public static uint PcmRbAvailableWrite(ref MaPcmRb pRB)
         {
-            fixed (MaPcmRb* p_prB = &prB)
+            fixed (MaPcmRb* p_pRB = &pRB)
             {
-                uint ret = PcmRbAvailableWriteNative(p_prB);
+                uint ret = PcmRbAvailableWriteNative(p_pRB);
                 return ret;
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static uint PcmRbGetSubbufferSize(MaPcmRbPtr prB)
+        public static uint PcmRbGetSubbufferSize(MaPcmRbPtr pRB)
         {
-            uint ret = PcmRbGetSubbufferSizeNative(prB.Handle);
+            uint ret = PcmRbGetSubbufferSizeNative(pRB.Handle);
             return ret;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static uint PcmRbGetSubbufferSize(ref MaPcmRb prB)
+        public static uint PcmRbGetSubbufferSize(ref MaPcmRb pRB)
         {
-            fixed (MaPcmRb* p_prB = &prB)
+            fixed (MaPcmRb* p_pRB = &pRB)
             {
-                uint ret = PcmRbGetSubbufferSizeNative(p_prB);
+                uint ret = PcmRbGetSubbufferSizeNative(p_pRB);
                 return ret;
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static uint PcmRbGetSubbufferStride(MaPcmRbPtr prB)
+        public static uint PcmRbGetSubbufferStride(MaPcmRbPtr pRB)
         {
-            uint ret = PcmRbGetSubbufferStrideNative(prB.Handle);
+            uint ret = PcmRbGetSubbufferStrideNative(pRB.Handle);
             return ret;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static uint PcmRbGetSubbufferStride(ref MaPcmRb prB)
+        public static uint PcmRbGetSubbufferStride(ref MaPcmRb pRB)
         {
-            fixed (MaPcmRb* p_prB = &prB)
+            fixed (MaPcmRb* p_pRB = &pRB)
             {
-                uint ret = PcmRbGetSubbufferStrideNative(p_prB);
+                uint ret = PcmRbGetSubbufferStrideNative(p_pRB);
                 return ret;
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static uint PcmRbGetSubbufferOffset(MaPcmRbPtr prB, uint subbufferIndex)
+        public static uint PcmRbGetSubbufferOffset(MaPcmRbPtr pRB, uint subbufferIndex)
         {
-            uint ret = PcmRbGetSubbufferOffsetNative(prB.Handle, subbufferIndex);
+            uint ret = PcmRbGetSubbufferOffsetNative(pRB.Handle, subbufferIndex);
             return ret;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static uint PcmRbGetSubbufferOffset(ref MaPcmRb prB, uint subbufferIndex)
+        public static uint PcmRbGetSubbufferOffset(ref MaPcmRb pRB, uint subbufferIndex)
         {
-            fixed (MaPcmRb* p_prB = &prB)
+            fixed (MaPcmRb* p_pRB = &pRB)
             {
-                uint ret = PcmRbGetSubbufferOffsetNative(p_prB, subbufferIndex);
+                uint ret = PcmRbGetSubbufferOffsetNative(p_pRB, subbufferIndex);
                 return ret;
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void* PcmRbGetSubbufferPtr(MaPcmRb* prB, uint subbufferIndex, void* pBuffer)
+        public static void* PcmRbGetSubbufferPtr(MaPcmRb* pRB, uint subbufferIndex, void* pBuffer)
         {
-            void* ret = PcmRbGetSubbufferPtrNative(prB, subbufferIndex, pBuffer);
+            void* ret = PcmRbGetSubbufferPtrNative(pRB, subbufferIndex, pBuffer);
             return ret;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaFormat PcmRbGetFormat(MaPcmRbPtr prB)
+        public static MaFormat PcmRbGetFormat(MaPcmRbPtr pRB)
         {
-            MaFormat ret = PcmRbGetFormatNative(prB.Handle);
+            MaFormat ret = PcmRbGetFormatNative(pRB.Handle);
             return ret;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaFormat PcmRbGetFormat(ref MaPcmRb prB)
+        public static MaFormat PcmRbGetFormat(ref MaPcmRb pRB)
         {
-            fixed (MaPcmRb* p_prB = &prB)
+            fixed (MaPcmRb* p_pRB = &pRB)
             {
-                MaFormat ret = PcmRbGetFormatNative(p_prB);
+                MaFormat ret = PcmRbGetFormatNative(p_pRB);
                 return ret;
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static uint PcmRbGetChannels(MaPcmRbPtr prB)
+        public static uint PcmRbGetChannels(MaPcmRbPtr pRB)
         {
-            uint ret = PcmRbGetChannelsNative(prB.Handle);
+            uint ret = PcmRbGetChannelsNative(pRB.Handle);
             return ret;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static uint PcmRbGetChannels(ref MaPcmRb prB)
+        public static uint PcmRbGetChannels(ref MaPcmRb pRB)
         {
-            fixed (MaPcmRb* p_prB = &prB)
+            fixed (MaPcmRb* p_pRB = &pRB)
             {
-                uint ret = PcmRbGetChannelsNative(p_prB);
+                uint ret = PcmRbGetChannelsNative(p_pRB);
                 return ret;
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static uint PcmRbGetSampleRate(MaPcmRbPtr prB)
+        public static uint PcmRbGetSampleRate(MaPcmRbPtr pRB)
         {
-            uint ret = PcmRbGetSampleRateNative(prB.Handle);
+            uint ret = PcmRbGetSampleRateNative(pRB.Handle);
             return ret;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static uint PcmRbGetSampleRate(ref MaPcmRb prB)
+        public static uint PcmRbGetSampleRate(ref MaPcmRb pRB)
         {
-            fixed (MaPcmRb* p_prB = &prB)
+            fixed (MaPcmRb* p_pRB = &pRB)
             {
-                uint ret = PcmRbGetSampleRateNative(p_prB);
+                uint ret = PcmRbGetSampleRateNative(p_pRB);
                 return ret;
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void PcmRbSetSampleRate(MaPcmRbPtr prB, uint sampleRate)
+        public static void PcmRbSetSampleRate(MaPcmRbPtr pRB, uint sampleRate)
         {
-            PcmRbSetSampleRateNative(prB.Handle, sampleRate);
+            PcmRbSetSampleRateNative(pRB.Handle, sampleRate);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void PcmRbSetSampleRate(ref MaPcmRb prB, uint sampleRate)
+        public static void PcmRbSetSampleRate(ref MaPcmRb pRB, uint sampleRate)
         {
-            fixed (MaPcmRb* p_prB = &prB)
+            fixed (MaPcmRb* p_pRB = &pRB)
             {
-                PcmRbSetSampleRateNative(p_prB, sampleRate);
+                PcmRbSetSampleRateNative(p_pRB, sampleRate);
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaResult DuplexRbInit(MaFormat captureFormat, uint captureChannels, uint sampleRate, uint captureInternalSampleRate, uint captureInternalPeriodSizeInFrames, MaAllocationCallbacksPtr pAllocationCallbacks, MaDuplexRbPtr prB)
+        public static MaResult DuplexRbInit(MaFormat captureFormat, uint captureChannels, uint sampleRate, uint captureInternalSampleRate, uint captureInternalPeriodSizeInFrames, MaAllocationCallbacksPtr pAllocationCallbacks, MaDuplexRbPtr pRB)
         {
-            MaResult ret = DuplexRbInitNative(captureFormat, captureChannels, sampleRate, captureInternalSampleRate, captureInternalPeriodSizeInFrames, pAllocationCallbacks.Handle, prB.Handle);
+            MaResult ret = DuplexRbInitNative(captureFormat, captureChannels, sampleRate, captureInternalSampleRate, captureInternalPeriodSizeInFrames, pAllocationCallbacks.Handle, pRB.Handle);
             return ret;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaResult DuplexRbInit(MaFormat captureFormat, uint captureChannels, uint sampleRate, uint captureInternalSampleRate, uint captureInternalPeriodSizeInFrames, ref MaAllocationCallbacks pAllocationCallbacks, ref MaDuplexRb prB)
+        public static MaResult DuplexRbInit(MaFormat captureFormat, uint captureChannels, uint sampleRate, uint captureInternalSampleRate, uint captureInternalPeriodSizeInFrames, ref MaAllocationCallbacks pAllocationCallbacks, ref MaDuplexRb pRB)
         {
             fixed (MaAllocationCallbacks* p_pAllocationCallbacks = &pAllocationCallbacks)
             {
-                fixed (MaDuplexRb* p_prB = &prB)
+                fixed (MaDuplexRb* p_pRB = &pRB)
                 {
-                    MaResult ret = DuplexRbInitNative(captureFormat, captureChannels, sampleRate, captureInternalSampleRate, captureInternalPeriodSizeInFrames, p_pAllocationCallbacks, p_prB);
+                    MaResult ret = DuplexRbInitNative(captureFormat, captureChannels, sampleRate, captureInternalSampleRate, captureInternalPeriodSizeInFrames, p_pAllocationCallbacks, p_pRB);
                     return ret;
                 }
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaResult DuplexRbUninit(MaDuplexRbPtr prB)
+        public static MaResult DuplexRbUninit(MaDuplexRbPtr pRB)
         {
-            MaResult ret = DuplexRbUninitNative(prB.Handle);
+            MaResult ret = DuplexRbUninitNative(pRB.Handle);
             return ret;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaResult DuplexRbUninit(ref MaDuplexRb prB)
+        public static MaResult DuplexRbUninit(ref MaDuplexRb pRB)
         {
-            fixed (MaDuplexRb* p_prB = &prB)
+            fixed (MaDuplexRb* p_pRB = &pRB)
             {
-                MaResult ret = DuplexRbUninitNative(p_prB);
+                MaResult ret = DuplexRbUninitNative(p_pRB);
                 return ret;
             }
         }
@@ -32842,6 +35517,13 @@ namespace Inno.Native.MiniAudio
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static MaJob ResourceManagerJobInit(ushort code)
+        {
+            MaJob ret = ResourceManagerJobInitNative(code);
+            return ret;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static MaResult JobProcess(MaJobPtr pJob)
         {
             MaResult ret = JobProcessNative(pJob.Handle);
@@ -32862,6 +35544,13 @@ namespace Inno.Native.MiniAudio
         public static MaJobQueueConfig JobQueueConfigInit(uint flags, uint capacity)
         {
             MaJobQueueConfig ret = JobQueueConfigInitNative(flags, capacity);
+            return ret;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static MaJobQueueConfig ResourceManagerJobQueueConfigInit(uint flags, uint capacity)
+        {
+            MaJobQueueConfig ret = ResourceManagerJobQueueConfigInitNative(flags, capacity);
             return ret;
         }
 
@@ -32892,6 +35581,32 @@ namespace Inno.Native.MiniAudio
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static MaResult ResourceManagerJobQueueGetHeapSize(MaJobQueueConfigPtr pConfig, nuint* pHeapSizeInBytes)
+        {
+            MaResult ret = ResourceManagerJobQueueGetHeapSizeNative(pConfig.Handle, pHeapSizeInBytes);
+            return ret;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static MaResult ResourceManagerJobQueueGetHeapSize(ref MaJobQueueConfig pConfig, nuint* pHeapSizeInBytes)
+        {
+            fixed (MaJobQueueConfig* p_pConfig = &pConfig)
+            {
+                MaResult ret = ResourceManagerJobQueueGetHeapSizeNative(p_pConfig, pHeapSizeInBytes);
+                return ret;
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static MaResult ResourceManagerJobQueueGetHeapSize(MaJobQueueConfigPtr pConfig, ref nuint pHeapSizeInBytes)
+        {
+            fixed (nuint* p_pHeapSizeInBytes = &pHeapSizeInBytes)
+            {
+                return ResourceManagerJobQueueGetHeapSizeNative((MaJobQueueConfig*)pConfig.Handle, (nuint*)p_pHeapSizeInBytes);
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static MaResult JobQueueInitPreallocated(MaJobQueueConfigPtr pConfig, void* pHeap, MaJobQueuePtr pQueue)
         {
             MaResult ret = JobQueueInitPreallocatedNative(pConfig.Handle, pHeap, pQueue.Handle);
@@ -32906,6 +35621,26 @@ namespace Inno.Native.MiniAudio
                 fixed (MaJobQueue* p_pQueue = &pQueue)
                 {
                     MaResult ret = JobQueueInitPreallocatedNative(p_pConfig, pHeap, p_pQueue);
+                    return ret;
+                }
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static MaResult ResourceManagerJobQueueInitPreallocated(MaJobQueueConfigPtr pConfig, void* pHeap, MaJobQueuePtr pQueue)
+        {
+            MaResult ret = ResourceManagerJobQueueInitPreallocatedNative(pConfig.Handle, pHeap, pQueue.Handle);
+            return ret;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static MaResult ResourceManagerJobQueueInitPreallocated(ref MaJobQueueConfig pConfig, void* pHeap, ref MaJobQueue pQueue)
+        {
+            fixed (MaJobQueueConfig* p_pConfig = &pConfig)
+            {
+                fixed (MaJobQueue* p_pQueue = &pQueue)
+                {
+                    MaResult ret = ResourceManagerJobQueueInitPreallocatedNative(p_pConfig, pHeap, p_pQueue);
                     return ret;
                 }
             }
@@ -32935,6 +35670,29 @@ namespace Inno.Native.MiniAudio
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static MaResult ResourceManagerJobQueueInit(MaJobQueueConfigPtr pConfig, MaAllocationCallbacksPtr pAllocationCallbacks, MaJobQueuePtr pQueue)
+        {
+            MaResult ret = ResourceManagerJobQueueInitNative(pConfig.Handle, pAllocationCallbacks.Handle, pQueue.Handle);
+            return ret;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static MaResult ResourceManagerJobQueueInit(ref MaJobQueueConfig pConfig, ref MaAllocationCallbacks pAllocationCallbacks, ref MaJobQueue pQueue)
+        {
+            fixed (MaJobQueueConfig* p_pConfig = &pConfig)
+            {
+                fixed (MaAllocationCallbacks* p_pAllocationCallbacks = &pAllocationCallbacks)
+                {
+                    fixed (MaJobQueue* p_pQueue = &pQueue)
+                    {
+                        MaResult ret = ResourceManagerJobQueueInitNative(p_pConfig, p_pAllocationCallbacks, p_pQueue);
+                        return ret;
+                    }
+                }
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void JobQueueUninit(MaJobQueuePtr pQueue, MaAllocationCallbacksPtr pAllocationCallbacks)
         {
             JobQueueUninitNative(pQueue.Handle, pAllocationCallbacks.Handle);
@@ -32948,6 +35706,24 @@ namespace Inno.Native.MiniAudio
                 fixed (MaAllocationCallbacks* p_pAllocationCallbacks = &pAllocationCallbacks)
                 {
                     JobQueueUninitNative(p_pQueue, p_pAllocationCallbacks);
+                }
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void ResourceManagerJobQueueUninit(MaJobQueuePtr pQueue, MaAllocationCallbacksPtr pAllocationCallbacks)
+        {
+            ResourceManagerJobQueueUninitNative(pQueue.Handle, pAllocationCallbacks.Handle);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void ResourceManagerJobQueueUninit(ref MaJobQueue pQueue, ref MaAllocationCallbacks pAllocationCallbacks)
+        {
+            fixed (MaJobQueue* p_pQueue = &pQueue)
+            {
+                fixed (MaAllocationCallbacks* p_pAllocationCallbacks = &pAllocationCallbacks)
+                {
+                    ResourceManagerJobQueueUninitNative(p_pQueue, p_pAllocationCallbacks);
                 }
             }
         }
@@ -32973,6 +35749,26 @@ namespace Inno.Native.MiniAudio
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static MaResult ResourceManagerJobQueuePost(MaJobQueuePtr pQueue, MaJobPtr pJob)
+        {
+            MaResult ret = ResourceManagerJobQueuePostNative(pQueue.Handle, pJob.Handle);
+            return ret;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static MaResult ResourceManagerJobQueuePost(ref MaJobQueue pQueue, ref MaJob pJob)
+        {
+            fixed (MaJobQueue* p_pQueue = &pQueue)
+            {
+                fixed (MaJob* p_pJob = &pJob)
+                {
+                    MaResult ret = ResourceManagerJobQueuePostNative(p_pQueue, p_pJob);
+                    return ret;
+                }
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static MaResult JobQueueNext(MaJobQueuePtr pQueue, MaJobPtr pJob)
         {
             MaResult ret = JobQueueNextNative(pQueue.Handle, pJob.Handle);
@@ -32987,6 +35783,26 @@ namespace Inno.Native.MiniAudio
                 fixed (MaJob* p_pJob = &pJob)
                 {
                     MaResult ret = JobQueueNextNative(p_pQueue, p_pJob);
+                    return ret;
+                }
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static MaResult ResourceManagerJobQueueNext(MaJobQueuePtr pQueue, MaJobPtr pJob)
+        {
+            MaResult ret = ResourceManagerJobQueueNextNative(pQueue.Handle, pJob.Handle);
+            return ret;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static MaResult ResourceManagerJobQueueNext(ref MaJobQueue pQueue, ref MaJob pJob)
+        {
+            fixed (MaJobQueue* p_pQueue = &pQueue)
+            {
+                fixed (MaJob* p_pJob = &pJob)
+                {
+                    MaResult ret = ResourceManagerJobQueueNextNative(p_pQueue, p_pJob);
                     return ret;
                 }
             }
@@ -33081,20 +35897,20 @@ namespace Inno.Native.MiniAudio
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static uint DeviceIdEqual(MaDeviceIdPtr pa, MaDeviceIdPtr pB)
+        public static uint DeviceIdEqual(MaDeviceIdPtr pA, MaDeviceIdPtr pB)
         {
-            uint ret = DeviceIdEqualNative(pa.Handle, pB.Handle);
+            uint ret = DeviceIdEqualNative(pA.Handle, pB.Handle);
             return ret;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static uint DeviceIdEqual(ref MaDeviceId pa, ref MaDeviceId pB)
+        public static uint DeviceIdEqual(ref MaDeviceId pA, ref MaDeviceId pB)
         {
-            fixed (MaDeviceId* p_pa = &pa)
+            fixed (MaDeviceId* p_pA = &pA)
             {
                 fixed (MaDeviceId* p_pB = &pB)
                 {
-                    uint ret = DeviceIdEqualNative(p_pa, p_pB);
+                    uint ret = DeviceIdEqualNative(p_pA, p_pB);
                     return ret;
                 }
             }
@@ -34154,24 +36970,24 @@ namespace Inno.Native.MiniAudio
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaResult VfsOpen(MaVfs* pVFs, byte* pFilePath, uint openMode, nint* pFile)
+        public static MaResult VfsOpen(MaVfs* pVFS, byte* pFilePath, uint openMode, nint* pFile)
         {
-            MaResult ret = VfsOpenNative(pVFs, pFilePath, openMode, pFile);
+            MaResult ret = VfsOpenNative(pVFS, pFilePath, openMode, pFile);
             return ret;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaResult VfsOpen(ref MaVfs pVFs, string pFilePath, uint openMode, ref nint pFile)
+        public static MaResult VfsOpen(ref MaVfs pVFS, string pFilePath, uint openMode, ref nint pFile)
         {
             nint p_pFilePath = 0;
             try
             {
                 p_pFilePath = pFilePath is null ? 0 : Marshal.StringToCoTaskMemUTF8(pFilePath);
-                fixed (MaVfs* p_pVFs = &pVFs)
+                fixed (MaVfs* p_pVFS = &pVFS)
                 {
                     fixed (nint* p_pFile = &pFile)
                     {
-                        return VfsOpenNative((MaVfs*)p_pVFs, (byte*)p_pFilePath, openMode, (nint*)p_pFile);
+                        return VfsOpenNative((MaVfs*)p_pVFS, (byte*)p_pFilePath, openMode, (nint*)p_pFile);
                     }
                 }
             }
@@ -34183,161 +36999,161 @@ namespace Inno.Native.MiniAudio
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaResult VfsOpenW(MaVfs* pVFs, ushort* pFilePath, uint openMode, nint* pFile)
+        public static MaResult VfsOpenW(MaVfs* pVFS, ushort* pFilePath, uint openMode, nint* pFile)
         {
-            MaResult ret = VfsOpenWNative(pVFs, pFilePath, openMode, pFile);
+            MaResult ret = VfsOpenWNative(pVFS, pFilePath, openMode, pFile);
             return ret;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaResult VfsOpenW(ref MaVfs pVFs, ushort* pFilePath, uint openMode, ref nint pFile)
+        public static MaResult VfsOpenW(ref MaVfs pVFS, ushort* pFilePath, uint openMode, ref nint pFile)
         {
-            fixed (MaVfs* p_pVFs = &pVFs)
+            fixed (MaVfs* p_pVFS = &pVFS)
             {
                 fixed (nint* p_pFile = &pFile)
                 {
-                    return VfsOpenWNative((MaVfs*)p_pVFs, pFilePath, openMode, (nint*)p_pFile);
+                    return VfsOpenWNative((MaVfs*)p_pVFS, pFilePath, openMode, (nint*)p_pFile);
                 }
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaResult VfsClose(MaVfs* pVFs, nint file)
+        public static MaResult VfsClose(MaVfs* pVFS, nint file)
         {
-            MaResult ret = VfsCloseNative(pVFs, file);
+            MaResult ret = VfsCloseNative(pVFS, file);
             return ret;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaResult VfsClose(ref MaVfs pVFs, nint file)
+        public static MaResult VfsClose(ref MaVfs pVFS, nint file)
         {
-            fixed (MaVfs* p_pVFs = &pVFs)
+            fixed (MaVfs* p_pVFS = &pVFS)
             {
-                return VfsCloseNative((MaVfs*)p_pVFs, file);
+                return VfsCloseNative((MaVfs*)p_pVFS, file);
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaResult VfsRead(MaVfs* pVFs, nint file, void* pDst, nuint sizeInBytes, nuint* pBytesRead)
+        public static MaResult VfsRead(MaVfs* pVFS, nint file, void* pDst, nuint sizeInBytes, nuint* pBytesRead)
         {
-            MaResult ret = VfsReadNative(pVFs, file, pDst, sizeInBytes, pBytesRead);
+            MaResult ret = VfsReadNative(pVFS, file, pDst, sizeInBytes, pBytesRead);
             return ret;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaResult VfsRead(ref MaVfs pVFs, nint file, void* pDst, Span<nuint> pBytesRead)
+        public static MaResult VfsRead(ref MaVfs pVFS, nint file, void* pDst, Span<nuint> pBytesRead)
         {
-            fixed (MaVfs* p_pVFs = &pVFs)
+            fixed (MaVfs* p_pVFS = &pVFS)
             {
                 fixed (nuint* p_pBytesRead = pBytesRead)
                 {
-                    return VfsReadNative((MaVfs*)p_pVFs, file, pDst, (nuint)pBytesRead.Length, (nuint*)p_pBytesRead);
+                    return VfsReadNative((MaVfs*)p_pVFS, file, pDst, (nuint)pBytesRead.Length, (nuint*)p_pBytesRead);
                 }
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaResult VfsWrite(MaVfs* pVFs, nint file, void* pSrc, nuint sizeInBytes, nuint* pBytesWritten)
+        public static MaResult VfsWrite(MaVfs* pVFS, nint file, void* pSrc, nuint sizeInBytes, nuint* pBytesWritten)
         {
-            MaResult ret = VfsWriteNative(pVFs, file, pSrc, sizeInBytes, pBytesWritten);
+            MaResult ret = VfsWriteNative(pVFS, file, pSrc, sizeInBytes, pBytesWritten);
             return ret;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaResult VfsWrite(ref MaVfs pVFs, nint file, void* pSrc, Span<nuint> pBytesWritten)
+        public static MaResult VfsWrite(ref MaVfs pVFS, nint file, void* pSrc, Span<nuint> pBytesWritten)
         {
-            fixed (MaVfs* p_pVFs = &pVFs)
+            fixed (MaVfs* p_pVFS = &pVFS)
             {
                 fixed (nuint* p_pBytesWritten = pBytesWritten)
                 {
-                    return VfsWriteNative((MaVfs*)p_pVFs, file, pSrc, (nuint)pBytesWritten.Length, (nuint*)p_pBytesWritten);
+                    return VfsWriteNative((MaVfs*)p_pVFS, file, pSrc, (nuint)pBytesWritten.Length, (nuint*)p_pBytesWritten);
                 }
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaResult VfsSeek(MaVfs* pVFs, nint file, long offset, MaSeekOrigin origin)
+        public static MaResult VfsSeek(MaVfs* pVFS, nint file, long offset, MaSeekOrigin origin)
         {
-            MaResult ret = VfsSeekNative(pVFs, file, offset, origin);
+            MaResult ret = VfsSeekNative(pVFS, file, offset, origin);
             return ret;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaResult VfsSeek(ref MaVfs pVFs, nint file, long offset, MaSeekOrigin origin)
+        public static MaResult VfsSeek(ref MaVfs pVFS, nint file, long offset, MaSeekOrigin origin)
         {
-            fixed (MaVfs* p_pVFs = &pVFs)
+            fixed (MaVfs* p_pVFS = &pVFS)
             {
-                return VfsSeekNative((MaVfs*)p_pVFs, file, offset, origin);
+                return VfsSeekNative((MaVfs*)p_pVFS, file, offset, origin);
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaResult VfsTell(MaVfs* pVFs, nint file, long* pCursor)
+        public static MaResult VfsTell(MaVfs* pVFS, nint file, long* pCursor)
         {
-            MaResult ret = VfsTellNative(pVFs, file, pCursor);
+            MaResult ret = VfsTellNative(pVFS, file, pCursor);
             return ret;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaResult VfsTell(ref MaVfs pVFs, nint file, ref long pCursor)
+        public static MaResult VfsTell(ref MaVfs pVFS, nint file, ref long pCursor)
         {
-            fixed (MaVfs* p_pVFs = &pVFs)
+            fixed (MaVfs* p_pVFS = &pVFS)
             {
                 fixed (long* p_pCursor = &pCursor)
                 {
-                    return VfsTellNative((MaVfs*)p_pVFs, file, (long*)p_pCursor);
+                    return VfsTellNative((MaVfs*)p_pVFS, file, (long*)p_pCursor);
                 }
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaResult VfsInfo(MaVfs* pVFs, nint file, MaFileInfoPtr pInfo)
+        public static MaResult VfsInfo(MaVfs* pVFS, nint file, MaFileInfoPtr pInfo)
         {
-            MaResult ret = VfsInfoNative(pVFs, file, pInfo.Handle);
+            MaResult ret = VfsInfoNative(pVFS, file, pInfo.Handle);
             return ret;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaResult VfsInfo(MaVfs* pVFs, nint file, ref MaFileInfo pInfo)
+        public static MaResult VfsInfo(MaVfs* pVFS, nint file, ref MaFileInfo pInfo)
         {
             fixed (MaFileInfo* p_pInfo = &pInfo)
             {
-                MaResult ret = VfsInfoNative(pVFs, file, p_pInfo);
+                MaResult ret = VfsInfoNative(pVFS, file, p_pInfo);
                 return ret;
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaResult VfsInfo(ref MaVfs pVFs, nint file, MaFileInfoPtr pInfo)
+        public static MaResult VfsInfo(ref MaVfs pVFS, nint file, MaFileInfoPtr pInfo)
         {
-            fixed (MaVfs* p_pVFs = &pVFs)
+            fixed (MaVfs* p_pVFS = &pVFS)
             {
-                return VfsInfoNative((MaVfs*)p_pVFs, file, (MaFileInfo*)pInfo.Handle);
+                return VfsInfoNative((MaVfs*)p_pVFS, file, (MaFileInfo*)pInfo.Handle);
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaResult VfsOpenAndReadFile(MaVfs* pVFs, byte* pFilePath, void** ppData, nuint* pSize, MaAllocationCallbacks* pAllocationCallbacks)
+        public static MaResult VfsOpenAndReadFile(MaVfs* pVFS, byte* pFilePath, void** ppData, nuint* pSize, MaAllocationCallbacks* pAllocationCallbacks)
         {
-            MaResult ret = VfsOpenAndReadFileNative(pVFs, pFilePath, ppData, pSize, pAllocationCallbacks);
+            MaResult ret = VfsOpenAndReadFileNative(pVFS, pFilePath, ppData, pSize, pAllocationCallbacks);
             return ret;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaResult DefaultVfsInit(MaDefaultVfsPtr pVFs, MaAllocationCallbacksPtr pAllocationCallbacks)
+        public static MaResult DefaultVfsInit(MaDefaultVfsPtr pVFS, MaAllocationCallbacksPtr pAllocationCallbacks)
         {
-            MaResult ret = DefaultVfsInitNative(pVFs.Handle, pAllocationCallbacks.Handle);
+            MaResult ret = DefaultVfsInitNative(pVFS.Handle, pAllocationCallbacks.Handle);
             return ret;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaResult DefaultVfsInit(ref MaDefaultVfs pVFs, ref MaAllocationCallbacks pAllocationCallbacks)
+        public static MaResult DefaultVfsInit(ref MaDefaultVfs pVFS, ref MaAllocationCallbacks pAllocationCallbacks)
         {
-            fixed (MaDefaultVfs* p_pVFs = &pVFs)
+            fixed (MaDefaultVfs* p_pVFS = &pVFS)
             {
                 fixed (MaAllocationCallbacks* p_pAllocationCallbacks = &pAllocationCallbacks)
                 {
-                    MaResult ret = DefaultVfsInitNative(p_pVFs, p_pAllocationCallbacks);
+                    MaResult ret = DefaultVfsInitNative(p_pVFS, p_pAllocationCallbacks);
                     return ret;
                 }
             }
@@ -34392,35 +37208,35 @@ namespace Inno.Native.MiniAudio
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaResult DecoderInitVfs(MaVfs* pVFs, byte* pFilePath, MaDecoderConfigPtr pConfig, MaDecoderPtr pDecoder)
+        public static MaResult DecoderInitVfs(MaVfs* pVFS, byte* pFilePath, MaDecoderConfigPtr pConfig, MaDecoderPtr pDecoder)
         {
-            MaResult ret = DecoderInitVfsNative(pVFs, pFilePath, pConfig.Handle, pDecoder.Handle);
+            MaResult ret = DecoderInitVfsNative(pVFS, pFilePath, pConfig.Handle, pDecoder.Handle);
             return ret;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaResult DecoderInitVfs(MaVfs* pVFs, byte* pFilePath, ref MaDecoderConfig pConfig, ref MaDecoder pDecoder)
+        public static MaResult DecoderInitVfs(MaVfs* pVFS, byte* pFilePath, ref MaDecoderConfig pConfig, ref MaDecoder pDecoder)
         {
             fixed (MaDecoderConfig* p_pConfig = &pConfig)
             {
                 fixed (MaDecoder* p_pDecoder = &pDecoder)
                 {
-                    MaResult ret = DecoderInitVfsNative(pVFs, pFilePath, p_pConfig, p_pDecoder);
+                    MaResult ret = DecoderInitVfsNative(pVFS, pFilePath, p_pConfig, p_pDecoder);
                     return ret;
                 }
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaResult DecoderInitVfs(ref MaVfs pVFs, string pFilePath, MaDecoderConfigPtr pConfig, MaDecoderPtr pDecoder)
+        public static MaResult DecoderInitVfs(ref MaVfs pVFS, string pFilePath, MaDecoderConfigPtr pConfig, MaDecoderPtr pDecoder)
         {
             nint p_pFilePath = 0;
             try
             {
                 p_pFilePath = pFilePath is null ? 0 : Marshal.StringToCoTaskMemUTF8(pFilePath);
-                fixed (MaVfs* p_pVFs = &pVFs)
+                fixed (MaVfs* p_pVFS = &pVFS)
                 {
-                    return DecoderInitVfsNative((MaVfs*)p_pVFs, (byte*)p_pFilePath, (MaDecoderConfig*)pConfig.Handle, (MaDecoder*)pDecoder.Handle);
+                    return DecoderInitVfsNative((MaVfs*)p_pVFS, (byte*)p_pFilePath, (MaDecoderConfig*)pConfig.Handle, (MaDecoder*)pDecoder.Handle);
                 }
             }
             finally
@@ -34431,31 +37247,31 @@ namespace Inno.Native.MiniAudio
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaResult DecoderInitVfsW(MaVfs* pVFs, ushort* pFilePath, MaDecoderConfigPtr pConfig, MaDecoderPtr pDecoder)
+        public static MaResult DecoderInitVfsW(MaVfs* pVFS, ushort* pFilePath, MaDecoderConfigPtr pConfig, MaDecoderPtr pDecoder)
         {
-            MaResult ret = DecoderInitVfsWNative(pVFs, pFilePath, pConfig.Handle, pDecoder.Handle);
+            MaResult ret = DecoderInitVfsWNative(pVFS, pFilePath, pConfig.Handle, pDecoder.Handle);
             return ret;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaResult DecoderInitVfsW(MaVfs* pVFs, ushort* pFilePath, ref MaDecoderConfig pConfig, ref MaDecoder pDecoder)
+        public static MaResult DecoderInitVfsW(MaVfs* pVFS, ushort* pFilePath, ref MaDecoderConfig pConfig, ref MaDecoder pDecoder)
         {
             fixed (MaDecoderConfig* p_pConfig = &pConfig)
             {
                 fixed (MaDecoder* p_pDecoder = &pDecoder)
                 {
-                    MaResult ret = DecoderInitVfsWNative(pVFs, pFilePath, p_pConfig, p_pDecoder);
+                    MaResult ret = DecoderInitVfsWNative(pVFS, pFilePath, p_pConfig, p_pDecoder);
                     return ret;
                 }
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaResult DecoderInitVfsW(ref MaVfs pVFs, ushort* pFilePath, MaDecoderConfigPtr pConfig, MaDecoderPtr pDecoder)
+        public static MaResult DecoderInitVfsW(ref MaVfs pVFS, ushort* pFilePath, MaDecoderConfigPtr pConfig, MaDecoderPtr pDecoder)
         {
-            fixed (MaVfs* p_pVFs = &pVFs)
+            fixed (MaVfs* p_pVFS = &pVFS)
             {
-                return DecoderInitVfsWNative((MaVfs*)p_pVFs, pFilePath, (MaDecoderConfig*)pConfig.Handle, (MaDecoder*)pDecoder.Handle);
+                return DecoderInitVfsWNative((MaVfs*)p_pVFS, pFilePath, (MaDecoderConfig*)pConfig.Handle, (MaDecoder*)pDecoder.Handle);
             }
         }
 
@@ -34689,34 +37505,34 @@ namespace Inno.Native.MiniAudio
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaResult DecodeFromVfs(MaVfs* pVFs, byte* pFilePath, MaDecoderConfigPtr pConfig, ulong* pFrameCountOut, void** ppPCMFramesOut)
+        public static MaResult DecodeFromVfs(MaVfs* pVFS, byte* pFilePath, MaDecoderConfigPtr pConfig, ulong* pFrameCountOut, void** ppPCMFramesOut)
         {
-            MaResult ret = DecodeFromVfsNative(pVFs, pFilePath, pConfig.Handle, pFrameCountOut, ppPCMFramesOut);
+            MaResult ret = DecodeFromVfsNative(pVFS, pFilePath, pConfig.Handle, pFrameCountOut, ppPCMFramesOut);
             return ret;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaResult DecodeFromVfs(MaVfs* pVFs, byte* pFilePath, ref MaDecoderConfig pConfig, ulong* pFrameCountOut, void** ppPCMFramesOut)
+        public static MaResult DecodeFromVfs(MaVfs* pVFS, byte* pFilePath, ref MaDecoderConfig pConfig, ulong* pFrameCountOut, void** ppPCMFramesOut)
         {
             fixed (MaDecoderConfig* p_pConfig = &pConfig)
             {
-                MaResult ret = DecodeFromVfsNative(pVFs, pFilePath, p_pConfig, pFrameCountOut, ppPCMFramesOut);
+                MaResult ret = DecodeFromVfsNative(pVFS, pFilePath, p_pConfig, pFrameCountOut, ppPCMFramesOut);
                 return ret;
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaResult DecodeFromVfs(ref MaVfs pVFs, string pFilePath, MaDecoderConfigPtr pConfig, ref ulong pFrameCountOut, void** ppPCMFramesOut)
+        public static MaResult DecodeFromVfs(ref MaVfs pVFS, string pFilePath, MaDecoderConfigPtr pConfig, ref ulong pFrameCountOut, void** ppPCMFramesOut)
         {
             nint p_pFilePath = 0;
             try
             {
                 p_pFilePath = pFilePath is null ? 0 : Marshal.StringToCoTaskMemUTF8(pFilePath);
-                fixed (MaVfs* p_pVFs = &pVFs)
+                fixed (MaVfs* p_pVFS = &pVFS)
                 {
                     fixed (ulong* p_pFrameCountOut = &pFrameCountOut)
                     {
-                        return DecodeFromVfsNative((MaVfs*)p_pVFs, (byte*)p_pFilePath, (MaDecoderConfig*)pConfig.Handle, (ulong*)p_pFrameCountOut, ppPCMFramesOut);
+                        return DecodeFromVfsNative((MaVfs*)p_pVFS, (byte*)p_pFilePath, (MaDecoderConfig*)pConfig.Handle, (ulong*)p_pFrameCountOut, ppPCMFramesOut);
                     }
                 }
             }
@@ -34804,35 +37620,35 @@ namespace Inno.Native.MiniAudio
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaResult EncoderInitVfs(MaVfs* pVFs, byte* pFilePath, MaEncoderConfigPtr pConfig, MaEncoderPtr pEncoder)
+        public static MaResult EncoderInitVfs(MaVfs* pVFS, byte* pFilePath, MaEncoderConfigPtr pConfig, MaEncoderPtr pEncoder)
         {
-            MaResult ret = EncoderInitVfsNative(pVFs, pFilePath, pConfig.Handle, pEncoder.Handle);
+            MaResult ret = EncoderInitVfsNative(pVFS, pFilePath, pConfig.Handle, pEncoder.Handle);
             return ret;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaResult EncoderInitVfs(MaVfs* pVFs, byte* pFilePath, ref MaEncoderConfig pConfig, ref MaEncoder pEncoder)
+        public static MaResult EncoderInitVfs(MaVfs* pVFS, byte* pFilePath, ref MaEncoderConfig pConfig, ref MaEncoder pEncoder)
         {
             fixed (MaEncoderConfig* p_pConfig = &pConfig)
             {
                 fixed (MaEncoder* p_pEncoder = &pEncoder)
                 {
-                    MaResult ret = EncoderInitVfsNative(pVFs, pFilePath, p_pConfig, p_pEncoder);
+                    MaResult ret = EncoderInitVfsNative(pVFS, pFilePath, p_pConfig, p_pEncoder);
                     return ret;
                 }
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaResult EncoderInitVfs(ref MaVfs pVFs, string pFilePath, MaEncoderConfigPtr pConfig, MaEncoderPtr pEncoder)
+        public static MaResult EncoderInitVfs(ref MaVfs pVFS, string pFilePath, MaEncoderConfigPtr pConfig, MaEncoderPtr pEncoder)
         {
             nint p_pFilePath = 0;
             try
             {
                 p_pFilePath = pFilePath is null ? 0 : Marshal.StringToCoTaskMemUTF8(pFilePath);
-                fixed (MaVfs* p_pVFs = &pVFs)
+                fixed (MaVfs* p_pVFS = &pVFS)
                 {
-                    return EncoderInitVfsNative((MaVfs*)p_pVFs, (byte*)p_pFilePath, (MaEncoderConfig*)pConfig.Handle, (MaEncoder*)pEncoder.Handle);
+                    return EncoderInitVfsNative((MaVfs*)p_pVFS, (byte*)p_pFilePath, (MaEncoderConfig*)pConfig.Handle, (MaEncoder*)pEncoder.Handle);
                 }
             }
             finally
@@ -34843,31 +37659,31 @@ namespace Inno.Native.MiniAudio
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaResult EncoderInitVfsW(MaVfs* pVFs, ushort* pFilePath, MaEncoderConfigPtr pConfig, MaEncoderPtr pEncoder)
+        public static MaResult EncoderInitVfsW(MaVfs* pVFS, ushort* pFilePath, MaEncoderConfigPtr pConfig, MaEncoderPtr pEncoder)
         {
-            MaResult ret = EncoderInitVfsWNative(pVFs, pFilePath, pConfig.Handle, pEncoder.Handle);
+            MaResult ret = EncoderInitVfsWNative(pVFS, pFilePath, pConfig.Handle, pEncoder.Handle);
             return ret;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaResult EncoderInitVfsW(MaVfs* pVFs, ushort* pFilePath, ref MaEncoderConfig pConfig, ref MaEncoder pEncoder)
+        public static MaResult EncoderInitVfsW(MaVfs* pVFS, ushort* pFilePath, ref MaEncoderConfig pConfig, ref MaEncoder pEncoder)
         {
             fixed (MaEncoderConfig* p_pConfig = &pConfig)
             {
                 fixed (MaEncoder* p_pEncoder = &pEncoder)
                 {
-                    MaResult ret = EncoderInitVfsWNative(pVFs, pFilePath, p_pConfig, p_pEncoder);
+                    MaResult ret = EncoderInitVfsWNative(pVFS, pFilePath, p_pConfig, p_pEncoder);
                     return ret;
                 }
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MaResult EncoderInitVfsW(ref MaVfs pVFs, ushort* pFilePath, MaEncoderConfigPtr pConfig, MaEncoderPtr pEncoder)
+        public static MaResult EncoderInitVfsW(ref MaVfs pVFS, ushort* pFilePath, MaEncoderConfigPtr pConfig, MaEncoderPtr pEncoder)
         {
-            fixed (MaVfs* p_pVFs = &pVFs)
+            fixed (MaVfs* p_pVFS = &pVFS)
             {
-                return EncoderInitVfsWNative((MaVfs*)p_pVFs, pFilePath, (MaEncoderConfig*)pConfig.Handle, (MaEncoder*)pEncoder.Handle);
+                return EncoderInitVfsWNative((MaVfs*)p_pVFS, pFilePath, (MaEncoderConfig*)pConfig.Handle, (MaEncoder*)pEncoder.Handle);
             }
         }
 
@@ -40371,942 +43187,954 @@ namespace Inno.Native.MiniAudio
 
     public unsafe partial class MiniAudio
     {
-        internal static FunctionTable funcTable = null !;
-        public static void InitApi(INativeContext context)
+        internal static global::BGCS.Runtime.FunctionTable funcTable = null !;
+        public static void InitApi(global::BGCS.Runtime.INativeContext context)
         {
-            funcTable = new FunctionTable(context, 930);
-            funcTable.Load(0, "ma_version");
-            funcTable.Load(1, "ma_version_string");
-            funcTable.Load(2, "ma_log_callback_init");
-            funcTable.Load(3, "ma_log_init");
-            funcTable.Load(4, "ma_log_uninit");
-            funcTable.Load(5, "ma_log_register_callback");
-            funcTable.Load(6, "ma_log_unregister_callback");
-            funcTable.Load(7, "ma_log_post");
-            funcTable.Load(8, "ma_log_postv");
-            funcTable.Load(9, "ma_biquad_config_init");
-            funcTable.Load(10, "ma_biquad_get_heap_size");
-            funcTable.Load(11, "ma_biquad_init_preallocated");
-            funcTable.Load(12, "ma_biquad_init");
-            funcTable.Load(13, "ma_biquad_uninit");
-            funcTable.Load(14, "ma_biquad_reinit");
-            funcTable.Load(15, "ma_biquad_clear_cache");
-            funcTable.Load(16, "ma_biquad_process_pcm_frames");
-            funcTable.Load(17, "ma_biquad_get_latency");
-            funcTable.Load(18, "ma_lpf1_config_init");
-            funcTable.Load(19, "ma_lpf2_config_init");
-            funcTable.Load(20, "ma_lpf1_get_heap_size");
-            funcTable.Load(21, "ma_lpf1_init_preallocated");
-            funcTable.Load(22, "ma_lpf1_init");
-            funcTable.Load(23, "ma_lpf1_uninit");
-            funcTable.Load(24, "ma_lpf1_reinit");
-            funcTable.Load(25, "ma_lpf1_clear_cache");
-            funcTable.Load(26, "ma_lpf1_process_pcm_frames");
-            funcTable.Load(27, "ma_lpf1_get_latency");
-            funcTable.Load(28, "ma_lpf2_get_heap_size");
-            funcTable.Load(29, "ma_lpf2_init_preallocated");
-            funcTable.Load(30, "ma_lpf2_init");
-            funcTable.Load(31, "ma_lpf2_uninit");
-            funcTable.Load(32, "ma_lpf2_reinit");
-            funcTable.Load(33, "ma_lpf2_clear_cache");
-            funcTable.Load(34, "ma_lpf2_process_pcm_frames");
-            funcTable.Load(35, "ma_lpf2_get_latency");
-            funcTable.Load(36, "ma_lpf_config_init");
-            funcTable.Load(37, "ma_lpf_get_heap_size");
-            funcTable.Load(38, "ma_lpf_init_preallocated");
-            funcTable.Load(39, "ma_lpf_init");
-            funcTable.Load(40, "ma_lpf_uninit");
-            funcTable.Load(41, "ma_lpf_reinit");
-            funcTable.Load(42, "ma_lpf_clear_cache");
-            funcTable.Load(43, "ma_lpf_process_pcm_frames");
-            funcTable.Load(44, "ma_lpf_get_latency");
-            funcTable.Load(45, "ma_hpf1_config_init");
-            funcTable.Load(46, "ma_hpf2_config_init");
-            funcTable.Load(47, "ma_hpf1_get_heap_size");
-            funcTable.Load(48, "ma_hpf1_init_preallocated");
-            funcTable.Load(49, "ma_hpf1_init");
-            funcTable.Load(50, "ma_hpf1_uninit");
-            funcTable.Load(51, "ma_hpf1_reinit");
-            funcTable.Load(52, "ma_hpf1_process_pcm_frames");
-            funcTable.Load(53, "ma_hpf1_get_latency");
-            funcTable.Load(54, "ma_hpf2_get_heap_size");
-            funcTable.Load(55, "ma_hpf2_init_preallocated");
-            funcTable.Load(56, "ma_hpf2_init");
-            funcTable.Load(57, "ma_hpf2_uninit");
-            funcTable.Load(58, "ma_hpf2_reinit");
-            funcTable.Load(59, "ma_hpf2_process_pcm_frames");
-            funcTable.Load(60, "ma_hpf2_get_latency");
-            funcTable.Load(61, "ma_hpf_config_init");
-            funcTable.Load(62, "ma_hpf_get_heap_size");
-            funcTable.Load(63, "ma_hpf_init_preallocated");
-            funcTable.Load(64, "ma_hpf_init");
-            funcTable.Load(65, "ma_hpf_uninit");
-            funcTable.Load(66, "ma_hpf_reinit");
-            funcTable.Load(67, "ma_hpf_process_pcm_frames");
-            funcTable.Load(68, "ma_hpf_get_latency");
-            funcTable.Load(69, "ma_bpf2_config_init");
-            funcTable.Load(70, "ma_bpf2_get_heap_size");
-            funcTable.Load(71, "ma_bpf2_init_preallocated");
-            funcTable.Load(72, "ma_bpf2_init");
-            funcTable.Load(73, "ma_bpf2_uninit");
-            funcTable.Load(74, "ma_bpf2_reinit");
-            funcTable.Load(75, "ma_bpf2_process_pcm_frames");
-            funcTable.Load(76, "ma_bpf2_get_latency");
-            funcTable.Load(77, "ma_bpf_config_init");
-            funcTable.Load(78, "ma_bpf_get_heap_size");
-            funcTable.Load(79, "ma_bpf_init_preallocated");
-            funcTable.Load(80, "ma_bpf_init");
-            funcTable.Load(81, "ma_bpf_uninit");
-            funcTable.Load(82, "ma_bpf_reinit");
-            funcTable.Load(83, "ma_bpf_process_pcm_frames");
-            funcTable.Load(84, "ma_bpf_get_latency");
-            funcTable.Load(85, "ma_notch2_config_init");
-            funcTable.Load(86, "ma_notch2_get_heap_size");
-            funcTable.Load(87, "ma_notch2_init_preallocated");
-            funcTable.Load(88, "ma_notch2_init");
-            funcTable.Load(89, "ma_notch2_uninit");
-            funcTable.Load(90, "ma_notch2_reinit");
-            funcTable.Load(91, "ma_notch2_process_pcm_frames");
-            funcTable.Load(92, "ma_notch2_get_latency");
-            funcTable.Load(93, "ma_peak2_config_init");
-            funcTable.Load(94, "ma_peak2_get_heap_size");
-            funcTable.Load(95, "ma_peak2_init_preallocated");
-            funcTable.Load(96, "ma_peak2_init");
-            funcTable.Load(97, "ma_peak2_uninit");
-            funcTable.Load(98, "ma_peak2_reinit");
-            funcTable.Load(99, "ma_peak2_process_pcm_frames");
-            funcTable.Load(100, "ma_peak2_get_latency");
-            funcTable.Load(101, "ma_loshelf2_config_init");
-            funcTable.Load(102, "ma_loshelf2_get_heap_size");
-            funcTable.Load(103, "ma_loshelf2_init_preallocated");
-            funcTable.Load(104, "ma_loshelf2_init");
-            funcTable.Load(105, "ma_loshelf2_uninit");
-            funcTable.Load(106, "ma_loshelf2_reinit");
-            funcTable.Load(107, "ma_loshelf2_process_pcm_frames");
-            funcTable.Load(108, "ma_loshelf2_get_latency");
-            funcTable.Load(109, "ma_hishelf2_config_init");
-            funcTable.Load(110, "ma_hishelf2_get_heap_size");
-            funcTable.Load(111, "ma_hishelf2_init_preallocated");
-            funcTable.Load(112, "ma_hishelf2_init");
-            funcTable.Load(113, "ma_hishelf2_uninit");
-            funcTable.Load(114, "ma_hishelf2_reinit");
-            funcTable.Load(115, "ma_hishelf2_process_pcm_frames");
-            funcTable.Load(116, "ma_hishelf2_get_latency");
-            funcTable.Load(117, "ma_delay_config_init");
-            funcTable.Load(118, "ma_delay_init");
-            funcTable.Load(119, "ma_delay_uninit");
-            funcTable.Load(120, "ma_delay_process_pcm_frames");
-            funcTable.Load(121, "ma_delay_set_wet");
-            funcTable.Load(122, "ma_delay_get_wet");
-            funcTable.Load(123, "ma_delay_set_dry");
-            funcTable.Load(124, "ma_delay_get_dry");
-            funcTable.Load(125, "ma_delay_set_decay");
-            funcTable.Load(126, "ma_delay_get_decay");
-            funcTable.Load(127, "ma_gainer_config_init");
-            funcTable.Load(128, "ma_gainer_get_heap_size");
-            funcTable.Load(129, "ma_gainer_init_preallocated");
-            funcTable.Load(130, "ma_gainer_init");
-            funcTable.Load(131, "ma_gainer_uninit");
-            funcTable.Load(132, "ma_gainer_process_pcm_frames");
-            funcTable.Load(133, "ma_gainer_set_gain");
-            funcTable.Load(134, "ma_gainer_set_gains");
-            funcTable.Load(135, "ma_gainer_set_master_volume");
-            funcTable.Load(136, "ma_gainer_get_master_volume");
-            funcTable.Load(137, "ma_panner_config_init");
-            funcTable.Load(138, "ma_panner_init");
-            funcTable.Load(139, "ma_panner_process_pcm_frames");
-            funcTable.Load(140, "ma_panner_set_mode");
-            funcTable.Load(141, "ma_panner_get_mode");
-            funcTable.Load(142, "ma_panner_set_pan");
-            funcTable.Load(143, "ma_panner_get_pan");
-            funcTable.Load(144, "ma_fader_config_init");
-            funcTable.Load(145, "ma_fader_init");
-            funcTable.Load(146, "ma_fader_process_pcm_frames");
-            funcTable.Load(147, "ma_fader_get_data_format");
-            funcTable.Load(148, "ma_fader_set_fade");
-            funcTable.Load(149, "ma_fader_set_fade_ex");
-            funcTable.Load(150, "ma_fader_get_current_volume");
-            funcTable.Load(151, "ma_spatializer_listener_config_init");
-            funcTable.Load(152, "ma_spatializer_listener_get_heap_size");
-            funcTable.Load(153, "ma_spatializer_listener_init_preallocated");
-            funcTable.Load(154, "ma_spatializer_listener_init");
-            funcTable.Load(155, "ma_spatializer_listener_uninit");
-            funcTable.Load(156, "ma_spatializer_listener_get_channel_map");
-            funcTable.Load(157, "ma_spatializer_listener_set_cone");
-            funcTable.Load(158, "ma_spatializer_listener_get_cone");
-            funcTable.Load(159, "ma_spatializer_listener_set_position");
-            funcTable.Load(160, "ma_spatializer_listener_get_position");
-            funcTable.Load(161, "ma_spatializer_listener_set_direction");
-            funcTable.Load(162, "ma_spatializer_listener_get_direction");
-            funcTable.Load(163, "ma_spatializer_listener_set_velocity");
-            funcTable.Load(164, "ma_spatializer_listener_get_velocity");
-            funcTable.Load(165, "ma_spatializer_listener_set_speed_of_sound");
-            funcTable.Load(166, "ma_spatializer_listener_get_speed_of_sound");
-            funcTable.Load(167, "ma_spatializer_listener_set_world_up");
-            funcTable.Load(168, "ma_spatializer_listener_get_world_up");
-            funcTable.Load(169, "ma_spatializer_listener_set_enabled");
-            funcTable.Load(170, "ma_spatializer_listener_is_enabled");
-            funcTable.Load(171, "ma_spatializer_config_init");
-            funcTable.Load(172, "ma_spatializer_get_heap_size");
-            funcTable.Load(173, "ma_spatializer_init_preallocated");
-            funcTable.Load(174, "ma_spatializer_init");
-            funcTable.Load(175, "ma_spatializer_uninit");
-            funcTable.Load(176, "ma_spatializer_process_pcm_frames");
-            funcTable.Load(177, "ma_spatializer_set_master_volume");
-            funcTable.Load(178, "ma_spatializer_get_master_volume");
-            funcTable.Load(179, "ma_spatializer_get_input_channels");
-            funcTable.Load(180, "ma_spatializer_get_output_channels");
-            funcTable.Load(181, "ma_spatializer_set_attenuation_model");
-            funcTable.Load(182, "ma_spatializer_get_attenuation_model");
-            funcTable.Load(183, "ma_spatializer_set_positioning");
-            funcTable.Load(184, "ma_spatializer_get_positioning");
-            funcTable.Load(185, "ma_spatializer_set_rolloff");
-            funcTable.Load(186, "ma_spatializer_get_rolloff");
-            funcTable.Load(187, "ma_spatializer_set_min_gain");
-            funcTable.Load(188, "ma_spatializer_get_min_gain");
-            funcTable.Load(189, "ma_spatializer_set_max_gain");
-            funcTable.Load(190, "ma_spatializer_get_max_gain");
-            funcTable.Load(191, "ma_spatializer_set_min_distance");
-            funcTable.Load(192, "ma_spatializer_get_min_distance");
-            funcTable.Load(193, "ma_spatializer_set_max_distance");
-            funcTable.Load(194, "ma_spatializer_get_max_distance");
-            funcTable.Load(195, "ma_spatializer_set_cone");
-            funcTable.Load(196, "ma_spatializer_get_cone");
-            funcTable.Load(197, "ma_spatializer_set_doppler_factor");
-            funcTable.Load(198, "ma_spatializer_get_doppler_factor");
-            funcTable.Load(199, "ma_spatializer_set_directional_attenuation_factor");
-            funcTable.Load(200, "ma_spatializer_get_directional_attenuation_factor");
-            funcTable.Load(201, "ma_spatializer_set_position");
-            funcTable.Load(202, "ma_spatializer_get_position");
-            funcTable.Load(203, "ma_spatializer_set_direction");
-            funcTable.Load(204, "ma_spatializer_get_direction");
-            funcTable.Load(205, "ma_spatializer_set_velocity");
-            funcTable.Load(206, "ma_spatializer_get_velocity");
-            funcTable.Load(207, "ma_spatializer_get_relative_position_and_direction");
-            funcTable.Load(208, "ma_linear_resampler_config_init");
-            funcTable.Load(209, "ma_linear_resampler_get_heap_size");
-            funcTable.Load(210, "ma_linear_resampler_init_preallocated");
-            funcTable.Load(211, "ma_linear_resampler_init");
-            funcTable.Load(212, "ma_linear_resampler_uninit");
-            funcTable.Load(213, "ma_linear_resampler_process_pcm_frames");
-            funcTable.Load(214, "ma_linear_resampler_set_rate");
-            funcTable.Load(215, "ma_linear_resampler_set_rate_ratio");
-            funcTable.Load(216, "ma_linear_resampler_get_input_latency");
-            funcTable.Load(217, "ma_linear_resampler_get_output_latency");
-            funcTable.Load(218, "ma_linear_resampler_get_required_input_frame_count");
-            funcTable.Load(219, "ma_linear_resampler_get_expected_output_frame_count");
-            funcTable.Load(220, "ma_linear_resampler_reset");
-            funcTable.Load(221, "ma_resampler_config_init");
-            funcTable.Load(222, "ma_resampler_get_heap_size");
-            funcTable.Load(223, "ma_resampler_init_preallocated");
-            funcTable.Load(224, "ma_resampler_init");
-            funcTable.Load(225, "ma_resampler_uninit");
-            funcTable.Load(226, "ma_resampler_process_pcm_frames");
-            funcTable.Load(227, "ma_resampler_set_rate");
-            funcTable.Load(228, "ma_resampler_set_rate_ratio");
-            funcTable.Load(229, "ma_resampler_get_input_latency");
-            funcTable.Load(230, "ma_resampler_get_output_latency");
-            funcTable.Load(231, "ma_resampler_get_required_input_frame_count");
-            funcTable.Load(232, "ma_resampler_get_expected_output_frame_count");
-            funcTable.Load(233, "ma_resampler_reset");
-            funcTable.Load(234, "ma_channel_converter_config_init");
-            funcTable.Load(235, "ma_channel_converter_get_heap_size");
-            funcTable.Load(236, "ma_channel_converter_init_preallocated");
-            funcTable.Load(237, "ma_channel_converter_init");
-            funcTable.Load(238, "ma_channel_converter_uninit");
-            funcTable.Load(239, "ma_channel_converter_process_pcm_frames");
-            funcTable.Load(240, "ma_channel_converter_get_input_channel_map");
-            funcTable.Load(241, "ma_channel_converter_get_output_channel_map");
-            funcTable.Load(242, "ma_data_converter_config_init_default");
-            funcTable.Load(243, "ma_data_converter_config_init");
-            funcTable.Load(244, "ma_data_converter_get_heap_size");
-            funcTable.Load(245, "ma_data_converter_init_preallocated");
-            funcTable.Load(246, "ma_data_converter_init");
-            funcTable.Load(247, "ma_data_converter_uninit");
-            funcTable.Load(248, "ma_data_converter_process_pcm_frames");
-            funcTable.Load(249, "ma_data_converter_set_rate");
-            funcTable.Load(250, "ma_data_converter_set_rate_ratio");
-            funcTable.Load(251, "ma_data_converter_get_input_latency");
-            funcTable.Load(252, "ma_data_converter_get_output_latency");
-            funcTable.Load(253, "ma_data_converter_get_required_input_frame_count");
-            funcTable.Load(254, "ma_data_converter_get_expected_output_frame_count");
-            funcTable.Load(255, "ma_data_converter_get_input_channel_map");
-            funcTable.Load(256, "ma_data_converter_get_output_channel_map");
-            funcTable.Load(257, "ma_data_converter_reset");
-            funcTable.Load(258, "ma_pcm_u8_to_s16");
-            funcTable.Load(259, "ma_pcm_u8_to_s24");
-            funcTable.Load(260, "ma_pcm_u8_to_s32");
-            funcTable.Load(261, "ma_pcm_u8_to_f32");
-            funcTable.Load(262, "ma_pcm_s16_to_u8");
-            funcTable.Load(263, "ma_pcm_s16_to_s24");
-            funcTable.Load(264, "ma_pcm_s16_to_s32");
-            funcTable.Load(265, "ma_pcm_s16_to_f32");
-            funcTable.Load(266, "ma_pcm_s24_to_u8");
-            funcTable.Load(267, "ma_pcm_s24_to_s16");
-            funcTable.Load(268, "ma_pcm_s24_to_s32");
-            funcTable.Load(269, "ma_pcm_s24_to_f32");
-            funcTable.Load(270, "ma_pcm_s32_to_u8");
-            funcTable.Load(271, "ma_pcm_s32_to_s16");
-            funcTable.Load(272, "ma_pcm_s32_to_s24");
-            funcTable.Load(273, "ma_pcm_s32_to_f32");
-            funcTable.Load(274, "ma_pcm_f32_to_u8");
-            funcTable.Load(275, "ma_pcm_f32_to_s16");
-            funcTable.Load(276, "ma_pcm_f32_to_s24");
-            funcTable.Load(277, "ma_pcm_f32_to_s32");
-            funcTable.Load(278, "ma_pcm_convert");
-            funcTable.Load(279, "ma_convert_pcm_frames_format");
-            funcTable.Load(280, "ma_deinterleave_pcm_frames");
-            funcTable.Load(281, "ma_interleave_pcm_frames");
-            funcTable.Load(282, "ma_channel_map_get_channel");
-            funcTable.Load(283, "ma_channel_map_init_blank");
-            funcTable.Load(284, "ma_channel_map_init_standard");
-            funcTable.Load(285, "ma_channel_map_copy");
-            funcTable.Load(286, "ma_channel_map_copy_or_default");
-            funcTable.Load(287, "ma_channel_map_is_valid");
-            funcTable.Load(288, "ma_channel_map_is_equal");
-            funcTable.Load(289, "ma_channel_map_is_blank");
-            funcTable.Load(290, "ma_channel_map_contains_channel_position");
-            funcTable.Load(291, "ma_channel_map_find_channel_position");
-            funcTable.Load(292, "ma_channel_map_to_string");
-            funcTable.Load(293, "ma_channel_position_to_string");
-            funcTable.Load(294, "ma_convert_frames");
-            funcTable.Load(295, "ma_convert_frames_ex");
-            funcTable.Load(296, "ma_data_source_config_init");
-            funcTable.Load(297, "ma_data_source_init");
-            funcTable.Load(298, "ma_data_source_uninit");
-            funcTable.Load(299, "ma_data_source_read_pcm_frames");
-            funcTable.Load(300, "ma_data_source_seek_pcm_frames");
-            funcTable.Load(301, "ma_data_source_seek_to_pcm_frame");
-            funcTable.Load(302, "ma_data_source_seek_seconds");
-            funcTable.Load(303, "ma_data_source_seek_to_second");
-            funcTable.Load(304, "ma_data_source_get_data_format");
-            funcTable.Load(305, "ma_data_source_get_cursor_in_pcm_frames");
-            funcTable.Load(306, "ma_data_source_get_length_in_pcm_frames");
-            funcTable.Load(307, "ma_data_source_get_cursor_in_seconds");
-            funcTable.Load(308, "ma_data_source_get_length_in_seconds");
-            funcTable.Load(309, "ma_data_source_set_looping");
-            funcTable.Load(310, "ma_data_source_is_looping");
-            funcTable.Load(311, "ma_data_source_set_range_in_pcm_frames");
-            funcTable.Load(312, "ma_data_source_get_range_in_pcm_frames");
-            funcTable.Load(313, "ma_data_source_set_loop_point_in_pcm_frames");
-            funcTable.Load(314, "ma_data_source_get_loop_point_in_pcm_frames");
-            funcTable.Load(315, "ma_data_source_set_current");
-            funcTable.Load(316, "ma_data_source_get_current");
-            funcTable.Load(317, "ma_data_source_set_next");
-            funcTable.Load(318, "ma_data_source_get_next");
-            funcTable.Load(319, "ma_data_source_set_next_callback");
-            funcTable.Load(320, "ma_data_source_get_next_callback");
-            funcTable.Load(321, "ma_audio_buffer_ref_init");
-            funcTable.Load(322, "ma_audio_buffer_ref_uninit");
-            funcTable.Load(323, "ma_audio_buffer_ref_set_data");
-            funcTable.Load(324, "ma_audio_buffer_ref_read_pcm_frames");
-            funcTable.Load(325, "ma_audio_buffer_ref_seek_to_pcm_frame");
-            funcTable.Load(326, "ma_audio_buffer_ref_map");
-            funcTable.Load(327, "ma_audio_buffer_ref_unmap");
-            funcTable.Load(328, "ma_audio_buffer_ref_at_end");
-            funcTable.Load(329, "ma_audio_buffer_ref_get_cursor_in_pcm_frames");
-            funcTable.Load(330, "ma_audio_buffer_ref_get_length_in_pcm_frames");
-            funcTable.Load(331, "ma_audio_buffer_ref_get_available_frames");
-            funcTable.Load(332, "ma_audio_buffer_config_init");
-            funcTable.Load(333, "ma_audio_buffer_init");
-            funcTable.Load(334, "ma_audio_buffer_init_copy");
-            funcTable.Load(335, "ma_audio_buffer_alloc_and_init");
-            funcTable.Load(336, "ma_audio_buffer_uninit");
-            funcTable.Load(337, "ma_audio_buffer_uninit_and_free");
-            funcTable.Load(338, "ma_audio_buffer_read_pcm_frames");
-            funcTable.Load(339, "ma_audio_buffer_seek_to_pcm_frame");
-            funcTable.Load(340, "ma_audio_buffer_map");
-            funcTable.Load(341, "ma_audio_buffer_unmap");
-            funcTable.Load(342, "ma_audio_buffer_at_end");
-            funcTable.Load(343, "ma_audio_buffer_get_cursor_in_pcm_frames");
-            funcTable.Load(344, "ma_audio_buffer_get_length_in_pcm_frames");
-            funcTable.Load(345, "ma_audio_buffer_get_available_frames");
-            funcTable.Load(346, "ma_paged_audio_buffer_data_init");
-            funcTable.Load(347, "ma_paged_audio_buffer_data_uninit");
-            funcTable.Load(348, "ma_paged_audio_buffer_data_get_head");
-            funcTable.Load(349, "ma_paged_audio_buffer_data_get_tail");
-            funcTable.Load(350, "ma_paged_audio_buffer_data_get_length_in_pcm_frames");
-            funcTable.Load(351, "ma_paged_audio_buffer_data_allocate_page");
-            funcTable.Load(352, "ma_paged_audio_buffer_data_free_page");
-            funcTable.Load(353, "ma_paged_audio_buffer_data_append_page");
-            funcTable.Load(354, "ma_paged_audio_buffer_data_allocate_and_append_page");
-            funcTable.Load(355, "ma_paged_audio_buffer_config_init");
-            funcTable.Load(356, "ma_paged_audio_buffer_init");
-            funcTable.Load(357, "ma_paged_audio_buffer_uninit");
-            funcTable.Load(358, "ma_paged_audio_buffer_read_pcm_frames");
-            funcTable.Load(359, "ma_paged_audio_buffer_seek_to_pcm_frame");
-            funcTable.Load(360, "ma_paged_audio_buffer_get_cursor_in_pcm_frames");
-            funcTable.Load(361, "ma_paged_audio_buffer_get_length_in_pcm_frames");
-            funcTable.Load(362, "ma_rb_init_ex");
-            funcTable.Load(363, "ma_rb_init");
-            funcTable.Load(364, "ma_rb_uninit");
-            funcTable.Load(365, "ma_rb_reset");
-            funcTable.Load(366, "ma_rb_acquire_read");
-            funcTable.Load(367, "ma_rb_commit_read");
-            funcTable.Load(368, "ma_rb_acquire_write");
-            funcTable.Load(369, "ma_rb_commit_write");
-            funcTable.Load(370, "ma_rb_seek_read");
-            funcTable.Load(371, "ma_rb_seek_write");
-            funcTable.Load(372, "ma_rb_pointer_distance");
-            funcTable.Load(373, "ma_rb_available_read");
-            funcTable.Load(374, "ma_rb_available_write");
-            funcTable.Load(375, "ma_rb_get_subbuffer_size");
-            funcTable.Load(376, "ma_rb_get_subbuffer_stride");
-            funcTable.Load(377, "ma_rb_get_subbuffer_offset");
-            funcTable.Load(378, "ma_rb_get_subbuffer_ptr");
-            funcTable.Load(379, "ma_pcm_rb_init_ex");
-            funcTable.Load(380, "ma_pcm_rb_init");
-            funcTable.Load(381, "ma_pcm_rb_uninit");
-            funcTable.Load(382, "ma_pcm_rb_reset");
-            funcTable.Load(383, "ma_pcm_rb_acquire_read");
-            funcTable.Load(384, "ma_pcm_rb_commit_read");
-            funcTable.Load(385, "ma_pcm_rb_acquire_write");
-            funcTable.Load(386, "ma_pcm_rb_commit_write");
-            funcTable.Load(387, "ma_pcm_rb_seek_read");
-            funcTable.Load(388, "ma_pcm_rb_seek_write");
-            funcTable.Load(389, "ma_pcm_rb_pointer_distance");
-            funcTable.Load(390, "ma_pcm_rb_available_read");
-            funcTable.Load(391, "ma_pcm_rb_available_write");
-            funcTable.Load(392, "ma_pcm_rb_get_subbuffer_size");
-            funcTable.Load(393, "ma_pcm_rb_get_subbuffer_stride");
-            funcTable.Load(394, "ma_pcm_rb_get_subbuffer_offset");
-            funcTable.Load(395, "ma_pcm_rb_get_subbuffer_ptr");
-            funcTable.Load(396, "ma_pcm_rb_get_format");
-            funcTable.Load(397, "ma_pcm_rb_get_channels");
-            funcTable.Load(398, "ma_pcm_rb_get_sample_rate");
-            funcTable.Load(399, "ma_pcm_rb_set_sample_rate");
-            funcTable.Load(400, "ma_duplex_rb_init");
-            funcTable.Load(401, "ma_duplex_rb_uninit");
-            funcTable.Load(402, "ma_result_description");
-            funcTable.Load(403, "ma_malloc");
-            funcTable.Load(404, "ma_calloc");
-            funcTable.Load(405, "ma_realloc");
-            funcTable.Load(406, "ma_free");
-            funcTable.Load(407, "ma_aligned_malloc");
-            funcTable.Load(408, "ma_aligned_free");
-            funcTable.Load(409, "ma_get_format_name");
-            funcTable.Load(410, "ma_blend_f32");
-            funcTable.Load(411, "ma_get_bytes_per_sample");
-            funcTable.Load(412, "ma_log_level_to_string");
-            funcTable.Load(413, "ma_spinlock_lock");
-            funcTable.Load(414, "ma_spinlock_lock_noyield");
-            funcTable.Load(415, "ma_spinlock_unlock");
-            funcTable.Load(416, "ma_mutex_init");
-            funcTable.Load(417, "ma_mutex_uninit");
-            funcTable.Load(418, "ma_mutex_lock");
-            funcTable.Load(419, "ma_mutex_unlock");
-            funcTable.Load(420, "ma_event_init");
-            funcTable.Load(421, "ma_event_uninit");
-            funcTable.Load(422, "ma_event_wait");
-            funcTable.Load(423, "ma_event_signal");
-            funcTable.Load(424, "ma_semaphore_init");
-            funcTable.Load(425, "ma_semaphore_uninit");
-            funcTable.Load(426, "ma_semaphore_wait");
-            funcTable.Load(427, "ma_semaphore_release");
-            funcTable.Load(428, "ma_fence_init");
-            funcTable.Load(429, "ma_fence_uninit");
-            funcTable.Load(430, "ma_fence_acquire");
-            funcTable.Load(431, "ma_fence_release");
-            funcTable.Load(432, "ma_fence_wait");
-            funcTable.Load(433, "ma_async_notification_signal");
-            funcTable.Load(434, "ma_async_notification_poll_init");
-            funcTable.Load(435, "ma_async_notification_poll_is_signalled");
-            funcTable.Load(436, "ma_async_notification_event_init");
-            funcTable.Load(437, "ma_async_notification_event_uninit");
-            funcTable.Load(438, "ma_async_notification_event_wait");
-            funcTable.Load(439, "ma_async_notification_event_signal");
-            funcTable.Load(440, "ma_slot_allocator_config_init");
-            funcTable.Load(441, "ma_slot_allocator_get_heap_size");
-            funcTable.Load(442, "ma_slot_allocator_init_preallocated");
-            funcTable.Load(443, "ma_slot_allocator_init");
-            funcTable.Load(444, "ma_slot_allocator_uninit");
-            funcTable.Load(445, "ma_slot_allocator_alloc");
-            funcTable.Load(446, "ma_slot_allocator_free");
-            funcTable.Load(447, "ma_job_init");
-            funcTable.Load(448, "ma_job_process");
-            funcTable.Load(449, "ma_job_queue_config_init");
-            funcTable.Load(450, "ma_job_queue_get_heap_size");
-            funcTable.Load(451, "ma_job_queue_init_preallocated");
-            funcTable.Load(452, "ma_job_queue_init");
-            funcTable.Load(453, "ma_job_queue_uninit");
-            funcTable.Load(454, "ma_job_queue_post");
-            funcTable.Load(455, "ma_job_queue_next");
-            funcTable.Load(456, "ma_device_job_thread_config_init");
-            funcTable.Load(457, "ma_device_job_thread_init");
-            funcTable.Load(458, "ma_device_job_thread_uninit");
-            funcTable.Load(459, "ma_device_job_thread_post");
-            funcTable.Load(460, "ma_device_job_thread_next");
-            funcTable.Load(461, "ma_device_id_equal");
-            funcTable.Load(462, "ma_context_config_init");
-            funcTable.Load(463, "ma_context_init");
-            funcTable.Load(464, "ma_context_uninit");
-            funcTable.Load(465, "ma_context_sizeof");
-            funcTable.Load(466, "ma_context_get_log");
-            funcTable.Load(467, "ma_context_enumerate_devices");
-            funcTable.Load(468, "ma_context_get_devices");
-            funcTable.Load(469, "ma_context_get_device_info");
-            funcTable.Load(470, "ma_context_is_loopback_supported");
-            funcTable.Load(471, "ma_device_config_init");
-            funcTable.Load(472, "ma_device_init");
-            funcTable.Load(473, "ma_device_init_ex");
-            funcTable.Load(474, "ma_device_uninit");
-            funcTable.Load(475, "ma_device_get_context");
-            funcTable.Load(476, "ma_device_get_log");
-            funcTable.Load(477, "ma_device_get_info");
-            funcTable.Load(478, "ma_device_get_name");
-            funcTable.Load(479, "ma_device_start");
-            funcTable.Load(480, "ma_device_stop");
-            funcTable.Load(481, "ma_device_is_started");
-            funcTable.Load(482, "ma_device_get_state");
-            funcTable.Load(483, "ma_device_post_init");
-            funcTable.Load(484, "ma_device_set_master_volume");
-            funcTable.Load(485, "ma_device_get_master_volume");
-            funcTable.Load(486, "ma_device_set_master_volume_db");
-            funcTable.Load(487, "ma_device_get_master_volume_db");
-            funcTable.Load(488, "ma_device_handle_backend_data_callback");
-            funcTable.Load(489, "ma_calculate_buffer_size_in_frames_from_descriptor");
-            funcTable.Load(490, "ma_get_backend_name");
-            funcTable.Load(491, "ma_get_backend_from_name");
-            funcTable.Load(492, "ma_is_backend_enabled");
-            funcTable.Load(493, "ma_get_enabled_backends");
-            funcTable.Load(494, "ma_is_loopback_supported");
-            funcTable.Load(495, "ma_calculate_buffer_size_in_milliseconds_from_frames");
-            funcTable.Load(496, "ma_calculate_buffer_size_in_frames_from_milliseconds");
-            funcTable.Load(497, "ma_copy_pcm_frames");
-            funcTable.Load(498, "ma_silence_pcm_frames");
-            funcTable.Load(499, "ma_offset_pcm_frames_ptr");
-            funcTable.Load(500, "ma_offset_pcm_frames_const_ptr");
-            funcTable.Load(501, "ma_clip_samples_u8");
-            funcTable.Load(502, "ma_clip_samples_s16");
-            funcTable.Load(503, "ma_clip_samples_s24");
-            funcTable.Load(504, "ma_clip_samples_s32");
-            funcTable.Load(505, "ma_clip_samples_f32");
-            funcTable.Load(506, "ma_clip_pcm_frames");
-            funcTable.Load(507, "ma_copy_and_apply_volume_factor_u8");
-            funcTable.Load(508, "ma_copy_and_apply_volume_factor_s16");
-            funcTable.Load(509, "ma_copy_and_apply_volume_factor_s24");
-            funcTable.Load(510, "ma_copy_and_apply_volume_factor_s32");
-            funcTable.Load(511, "ma_copy_and_apply_volume_factor_f32");
-            funcTable.Load(512, "ma_apply_volume_factor_u8");
-            funcTable.Load(513, "ma_apply_volume_factor_s16");
-            funcTable.Load(514, "ma_apply_volume_factor_s24");
-            funcTable.Load(515, "ma_apply_volume_factor_s32");
-            funcTable.Load(516, "ma_apply_volume_factor_f32");
-            funcTable.Load(517, "ma_copy_and_apply_volume_factor_pcm_frames_u8");
-            funcTable.Load(518, "ma_copy_and_apply_volume_factor_pcm_frames_s16");
-            funcTable.Load(519, "ma_copy_and_apply_volume_factor_pcm_frames_s24");
-            funcTable.Load(520, "ma_copy_and_apply_volume_factor_pcm_frames_s32");
-            funcTable.Load(521, "ma_copy_and_apply_volume_factor_pcm_frames_f32");
-            funcTable.Load(522, "ma_copy_and_apply_volume_factor_pcm_frames");
-            funcTable.Load(523, "ma_apply_volume_factor_pcm_frames_u8");
-            funcTable.Load(524, "ma_apply_volume_factor_pcm_frames_s16");
-            funcTable.Load(525, "ma_apply_volume_factor_pcm_frames_s24");
-            funcTable.Load(526, "ma_apply_volume_factor_pcm_frames_s32");
-            funcTable.Load(527, "ma_apply_volume_factor_pcm_frames_f32");
-            funcTable.Load(528, "ma_apply_volume_factor_pcm_frames");
-            funcTable.Load(529, "ma_copy_and_apply_volume_factor_per_channel_f32");
-            funcTable.Load(530, "ma_copy_and_apply_volume_and_clip_samples_u8");
-            funcTable.Load(531, "ma_copy_and_apply_volume_and_clip_samples_s16");
-            funcTable.Load(532, "ma_copy_and_apply_volume_and_clip_samples_s24");
-            funcTable.Load(533, "ma_copy_and_apply_volume_and_clip_samples_s32");
-            funcTable.Load(534, "ma_copy_and_apply_volume_and_clip_samples_f32");
-            funcTable.Load(535, "ma_copy_and_apply_volume_and_clip_pcm_frames");
-            funcTable.Load(536, "ma_volume_linear_to_db");
-            funcTable.Load(537, "ma_volume_db_to_linear");
-            funcTable.Load(538, "ma_mix_pcm_frames_f32");
-            funcTable.Load(539, "ma_vfs_open");
-            funcTable.Load(540, "ma_vfs_open_w");
-            funcTable.Load(541, "ma_vfs_close");
-            funcTable.Load(542, "ma_vfs_read");
-            funcTable.Load(543, "ma_vfs_write");
-            funcTable.Load(544, "ma_vfs_seek");
-            funcTable.Load(545, "ma_vfs_tell");
-            funcTable.Load(546, "ma_vfs_info");
-            funcTable.Load(547, "ma_vfs_open_and_read_file");
-            funcTable.Load(548, "ma_default_vfs_init");
-            funcTable.Load(549, "ma_decoding_backend_config_init");
-            funcTable.Load(550, "ma_decoder_config_init");
-            funcTable.Load(551, "ma_decoder_config_init_default");
-            funcTable.Load(552, "ma_decoder_init");
-            funcTable.Load(553, "ma_decoder_init_memory");
-            funcTable.Load(554, "ma_decoder_init_vfs");
-            funcTable.Load(555, "ma_decoder_init_vfs_w");
-            funcTable.Load(556, "ma_decoder_init_file");
-            funcTable.Load(557, "ma_decoder_init_file_w");
-            funcTable.Load(558, "ma_decoder_uninit");
-            funcTable.Load(559, "ma_decoder_read_pcm_frames");
-            funcTable.Load(560, "ma_decoder_seek_to_pcm_frame");
-            funcTable.Load(561, "ma_decoder_get_data_format");
-            funcTable.Load(562, "ma_decoder_get_cursor_in_pcm_frames");
-            funcTable.Load(563, "ma_decoder_get_length_in_pcm_frames");
-            funcTable.Load(564, "ma_decoder_get_available_frames");
-            funcTable.Load(565, "ma_decode_from_vfs");
-            funcTable.Load(566, "ma_decode_file");
-            funcTable.Load(567, "ma_decode_memory");
-            funcTable.Load(568, "ma_encoder_config_init");
-            funcTable.Load(569, "ma_encoder_init");
-            funcTable.Load(570, "ma_encoder_init_vfs");
-            funcTable.Load(571, "ma_encoder_init_vfs_w");
-            funcTable.Load(572, "ma_encoder_init_file");
-            funcTable.Load(573, "ma_encoder_init_file_w");
-            funcTable.Load(574, "ma_encoder_uninit");
-            funcTable.Load(575, "ma_encoder_write_pcm_frames");
-            funcTable.Load(576, "ma_waveform_config_init");
-            funcTable.Load(577, "ma_waveform_init");
-            funcTable.Load(578, "ma_waveform_uninit");
-            funcTable.Load(579, "ma_waveform_read_pcm_frames");
-            funcTable.Load(580, "ma_waveform_seek_to_pcm_frame");
-            funcTable.Load(581, "ma_waveform_set_amplitude");
-            funcTable.Load(582, "ma_waveform_set_frequency");
-            funcTable.Load(583, "ma_waveform_set_type");
-            funcTable.Load(584, "ma_waveform_set_sample_rate");
-            funcTable.Load(585, "ma_pulsewave_config_init");
-            funcTable.Load(586, "ma_pulsewave_init");
-            funcTable.Load(587, "ma_pulsewave_uninit");
-            funcTable.Load(588, "ma_pulsewave_read_pcm_frames");
-            funcTable.Load(589, "ma_pulsewave_seek_to_pcm_frame");
-            funcTable.Load(590, "ma_pulsewave_set_amplitude");
-            funcTable.Load(591, "ma_pulsewave_set_frequency");
-            funcTable.Load(592, "ma_pulsewave_set_sample_rate");
-            funcTable.Load(593, "ma_pulsewave_set_duty_cycle");
-            funcTable.Load(594, "ma_noise_config_init");
-            funcTable.Load(595, "ma_noise_get_heap_size");
-            funcTable.Load(596, "ma_noise_init_preallocated");
-            funcTable.Load(597, "ma_noise_init");
-            funcTable.Load(598, "ma_noise_uninit");
-            funcTable.Load(599, "ma_noise_read_pcm_frames");
-            funcTable.Load(600, "ma_noise_set_amplitude");
-            funcTable.Load(601, "ma_noise_set_seed");
-            funcTable.Load(602, "ma_noise_set_type");
-            funcTable.Load(603, "ma_resource_manager_pipeline_notifications_init");
-            funcTable.Load(604, "ma_resource_manager_data_source_config_init");
-            funcTable.Load(605, "ma_resource_manager_config_init");
-            funcTable.Load(606, "ma_resource_manager_init");
-            funcTable.Load(607, "ma_resource_manager_uninit");
-            funcTable.Load(608, "ma_resource_manager_get_log");
-            funcTable.Load(609, "ma_resource_manager_register_file");
-            funcTable.Load(610, "ma_resource_manager_register_file_w");
-            funcTable.Load(611, "ma_resource_manager_register_decoded_data");
-            funcTable.Load(612, "ma_resource_manager_register_decoded_data_w");
-            funcTable.Load(613, "ma_resource_manager_register_encoded_data");
-            funcTable.Load(614, "ma_resource_manager_register_encoded_data_w");
-            funcTable.Load(615, "ma_resource_manager_unregister_file");
-            funcTable.Load(616, "ma_resource_manager_unregister_file_w");
-            funcTable.Load(617, "ma_resource_manager_unregister_data");
-            funcTable.Load(618, "ma_resource_manager_unregister_data_w");
-            funcTable.Load(619, "ma_resource_manager_data_buffer_init_ex");
-            funcTable.Load(620, "ma_resource_manager_data_buffer_init");
-            funcTable.Load(621, "ma_resource_manager_data_buffer_init_w");
-            funcTable.Load(622, "ma_resource_manager_data_buffer_init_copy");
-            funcTable.Load(623, "ma_resource_manager_data_buffer_uninit");
-            funcTable.Load(624, "ma_resource_manager_data_buffer_read_pcm_frames");
-            funcTable.Load(625, "ma_resource_manager_data_buffer_seek_to_pcm_frame");
-            funcTable.Load(626, "ma_resource_manager_data_buffer_get_data_format");
-            funcTable.Load(627, "ma_resource_manager_data_buffer_get_cursor_in_pcm_frames");
-            funcTable.Load(628, "ma_resource_manager_data_buffer_get_length_in_pcm_frames");
-            funcTable.Load(629, "ma_resource_manager_data_buffer_result");
-            funcTable.Load(630, "ma_resource_manager_data_buffer_set_looping");
-            funcTable.Load(631, "ma_resource_manager_data_buffer_is_looping");
-            funcTable.Load(632, "ma_resource_manager_data_buffer_get_available_frames");
-            funcTable.Load(633, "ma_resource_manager_data_stream_init_ex");
-            funcTable.Load(634, "ma_resource_manager_data_stream_init");
-            funcTable.Load(635, "ma_resource_manager_data_stream_init_w");
-            funcTable.Load(636, "ma_resource_manager_data_stream_uninit");
-            funcTable.Load(637, "ma_resource_manager_data_stream_read_pcm_frames");
-            funcTable.Load(638, "ma_resource_manager_data_stream_seek_to_pcm_frame");
-            funcTable.Load(639, "ma_resource_manager_data_stream_get_data_format");
-            funcTable.Load(640, "ma_resource_manager_data_stream_get_cursor_in_pcm_frames");
-            funcTable.Load(641, "ma_resource_manager_data_stream_get_length_in_pcm_frames");
-            funcTable.Load(642, "ma_resource_manager_data_stream_result");
-            funcTable.Load(643, "ma_resource_manager_data_stream_set_looping");
-            funcTable.Load(644, "ma_resource_manager_data_stream_is_looping");
-            funcTable.Load(645, "ma_resource_manager_data_stream_get_available_frames");
-            funcTable.Load(646, "ma_resource_manager_data_source_init_ex");
-            funcTable.Load(647, "ma_resource_manager_data_source_init");
-            funcTable.Load(648, "ma_resource_manager_data_source_init_w");
-            funcTable.Load(649, "ma_resource_manager_data_source_init_copy");
-            funcTable.Load(650, "ma_resource_manager_data_source_uninit");
-            funcTable.Load(651, "ma_resource_manager_data_source_read_pcm_frames");
-            funcTable.Load(652, "ma_resource_manager_data_source_seek_to_pcm_frame");
-            funcTable.Load(653, "ma_resource_manager_data_source_get_data_format");
-            funcTable.Load(654, "ma_resource_manager_data_source_get_cursor_in_pcm_frames");
-            funcTable.Load(655, "ma_resource_manager_data_source_get_length_in_pcm_frames");
-            funcTable.Load(656, "ma_resource_manager_data_source_result");
-            funcTable.Load(657, "ma_resource_manager_data_source_set_looping");
-            funcTable.Load(658, "ma_resource_manager_data_source_is_looping");
-            funcTable.Load(659, "ma_resource_manager_data_source_get_available_frames");
-            funcTable.Load(660, "ma_resource_manager_post_job");
-            funcTable.Load(661, "ma_resource_manager_post_job_quit");
-            funcTable.Load(662, "ma_resource_manager_next_job");
-            funcTable.Load(663, "ma_resource_manager_process_job");
-            funcTable.Load(664, "ma_resource_manager_process_next_job");
-            funcTable.Load(665, "ma_node_config_init");
-            funcTable.Load(666, "ma_node_get_heap_size");
-            funcTable.Load(667, "ma_node_init_preallocated");
-            funcTable.Load(668, "ma_node_init");
-            funcTable.Load(669, "ma_node_uninit");
-            funcTable.Load(670, "ma_node_get_node_graph");
-            funcTable.Load(671, "ma_node_get_input_bus_count");
-            funcTable.Load(672, "ma_node_get_output_bus_count");
-            funcTable.Load(673, "ma_node_get_input_channels");
-            funcTable.Load(674, "ma_node_get_output_channels");
-            funcTable.Load(675, "ma_node_attach_output_bus");
-            funcTable.Load(676, "ma_node_detach_output_bus");
-            funcTable.Load(677, "ma_node_detach_all_output_buses");
-            funcTable.Load(678, "ma_node_set_output_bus_volume");
-            funcTable.Load(679, "ma_node_get_output_bus_volume");
-            funcTable.Load(680, "ma_node_set_state");
-            funcTable.Load(681, "ma_node_get_state");
-            funcTable.Load(682, "ma_node_set_state_time");
-            funcTable.Load(683, "ma_node_get_state_time");
-            funcTable.Load(684, "ma_node_get_state_by_time");
-            funcTable.Load(685, "ma_node_get_state_by_time_range");
-            funcTable.Load(686, "ma_node_get_time");
-            funcTable.Load(687, "ma_node_set_time");
-            funcTable.Load(688, "ma_node_graph_config_init");
-            funcTable.Load(689, "ma_node_graph_init");
-            funcTable.Load(690, "ma_node_graph_uninit");
-            funcTable.Load(691, "ma_node_graph_get_endpoint");
-            funcTable.Load(692, "ma_node_graph_read_pcm_frames");
-            funcTable.Load(693, "ma_node_graph_get_channels");
-            funcTable.Load(694, "ma_node_graph_get_time");
-            funcTable.Load(695, "ma_node_graph_set_time");
-            funcTable.Load(696, "ma_node_graph_get_processing_size_in_frames");
-            funcTable.Load(697, "ma_data_source_node_config_init");
-            funcTable.Load(698, "ma_data_source_node_init");
-            funcTable.Load(699, "ma_data_source_node_uninit");
-            funcTable.Load(700, "ma_data_source_node_set_looping");
-            funcTable.Load(701, "ma_data_source_node_is_looping");
-            funcTable.Load(702, "ma_splitter_node_config_init");
-            funcTable.Load(703, "ma_splitter_node_init");
-            funcTable.Load(704, "ma_splitter_node_uninit");
-            funcTable.Load(705, "ma_biquad_node_config_init");
-            funcTable.Load(706, "ma_biquad_node_init");
-            funcTable.Load(707, "ma_biquad_node_reinit");
-            funcTable.Load(708, "ma_biquad_node_uninit");
-            funcTable.Load(709, "ma_lpf_node_config_init");
-            funcTable.Load(710, "ma_lpf_node_init");
-            funcTable.Load(711, "ma_lpf_node_reinit");
-            funcTable.Load(712, "ma_lpf_node_uninit");
-            funcTable.Load(713, "ma_hpf_node_config_init");
-            funcTable.Load(714, "ma_hpf_node_init");
-            funcTable.Load(715, "ma_hpf_node_reinit");
-            funcTable.Load(716, "ma_hpf_node_uninit");
-            funcTable.Load(717, "ma_bpf_node_config_init");
-            funcTable.Load(718, "ma_bpf_node_init");
-            funcTable.Load(719, "ma_bpf_node_reinit");
-            funcTable.Load(720, "ma_bpf_node_uninit");
-            funcTable.Load(721, "ma_notch_node_config_init");
-            funcTable.Load(722, "ma_notch_node_init");
-            funcTable.Load(723, "ma_notch_node_reinit");
-            funcTable.Load(724, "ma_notch_node_uninit");
-            funcTable.Load(725, "ma_peak_node_config_init");
-            funcTable.Load(726, "ma_peak_node_init");
-            funcTable.Load(727, "ma_peak_node_reinit");
-            funcTable.Load(728, "ma_peak_node_uninit");
-            funcTable.Load(729, "ma_loshelf_node_config_init");
-            funcTable.Load(730, "ma_loshelf_node_init");
-            funcTable.Load(731, "ma_loshelf_node_reinit");
-            funcTable.Load(732, "ma_loshelf_node_uninit");
-            funcTable.Load(733, "ma_hishelf_node_config_init");
-            funcTable.Load(734, "ma_hishelf_node_init");
-            funcTable.Load(735, "ma_hishelf_node_reinit");
-            funcTable.Load(736, "ma_hishelf_node_uninit");
-            funcTable.Load(737, "ma_delay_node_config_init");
-            funcTable.Load(738, "ma_delay_node_init");
-            funcTable.Load(739, "ma_delay_node_uninit");
-            funcTable.Load(740, "ma_delay_node_set_wet");
-            funcTable.Load(741, "ma_delay_node_get_wet");
-            funcTable.Load(742, "ma_delay_node_set_dry");
-            funcTable.Load(743, "ma_delay_node_get_dry");
-            funcTable.Load(744, "ma_delay_node_set_decay");
-            funcTable.Load(745, "ma_delay_node_get_decay");
-            funcTable.Load(746, "ma_engine_node_config_init");
-            funcTable.Load(747, "ma_engine_node_get_heap_size");
-            funcTable.Load(748, "ma_engine_node_init_preallocated");
-            funcTable.Load(749, "ma_engine_node_init");
-            funcTable.Load(750, "ma_engine_node_uninit");
-            funcTable.Load(751, "ma_sound_config_init");
-            funcTable.Load(752, "ma_sound_config_init_2");
-            funcTable.Load(753, "ma_sound_group_config_init");
-            funcTable.Load(754, "ma_sound_group_config_init_2");
-            funcTable.Load(755, "ma_engine_config_init");
-            funcTable.Load(756, "ma_engine_init");
-            funcTable.Load(757, "ma_engine_uninit");
-            funcTable.Load(758, "ma_engine_read_pcm_frames");
-            funcTable.Load(759, "ma_engine_get_node_graph");
-            funcTable.Load(760, "ma_engine_get_resource_manager");
-            funcTable.Load(761, "ma_engine_get_device");
-            funcTable.Load(762, "ma_engine_get_log");
-            funcTable.Load(763, "ma_engine_get_endpoint");
-            funcTable.Load(764, "ma_engine_get_time_in_pcm_frames");
-            funcTable.Load(765, "ma_engine_get_time_in_milliseconds");
-            funcTable.Load(766, "ma_engine_set_time_in_pcm_frames");
-            funcTable.Load(767, "ma_engine_set_time_in_milliseconds");
-            funcTable.Load(768, "ma_engine_get_time");
-            funcTable.Load(769, "ma_engine_set_time");
-            funcTable.Load(770, "ma_engine_get_channels");
-            funcTable.Load(771, "ma_engine_get_sample_rate");
-            funcTable.Load(772, "ma_engine_start");
-            funcTable.Load(773, "ma_engine_stop");
-            funcTable.Load(774, "ma_engine_set_volume");
-            funcTable.Load(775, "ma_engine_get_volume");
-            funcTable.Load(776, "ma_engine_set_gain_db");
-            funcTable.Load(777, "ma_engine_get_gain_db");
-            funcTable.Load(778, "ma_engine_get_listener_count");
-            funcTable.Load(779, "ma_engine_find_closest_listener");
-            funcTable.Load(780, "ma_engine_listener_set_position");
-            funcTable.Load(781, "ma_engine_listener_get_position");
-            funcTable.Load(782, "ma_engine_listener_set_direction");
-            funcTable.Load(783, "ma_engine_listener_get_direction");
-            funcTable.Load(784, "ma_engine_listener_set_velocity");
-            funcTable.Load(785, "ma_engine_listener_get_velocity");
-            funcTable.Load(786, "ma_engine_listener_set_cone");
-            funcTable.Load(787, "ma_engine_listener_get_cone");
-            funcTable.Load(788, "ma_engine_listener_set_world_up");
-            funcTable.Load(789, "ma_engine_listener_get_world_up");
-            funcTable.Load(790, "ma_engine_listener_set_enabled");
-            funcTable.Load(791, "ma_engine_listener_is_enabled");
-            funcTable.Load(792, "ma_engine_play_sound_ex");
-            funcTable.Load(793, "ma_engine_play_sound");
-            funcTable.Load(794, "ma_sound_init_from_file");
-            funcTable.Load(795, "ma_sound_init_from_file_w");
-            funcTable.Load(796, "ma_sound_init_copy");
-            funcTable.Load(797, "ma_sound_init_from_data_source");
-            funcTable.Load(798, "ma_sound_init_ex");
-            funcTable.Load(799, "ma_sound_uninit");
-            funcTable.Load(800, "ma_sound_get_engine");
-            funcTable.Load(801, "ma_sound_get_data_source");
-            funcTable.Load(802, "ma_sound_start");
-            funcTable.Load(803, "ma_sound_stop");
-            funcTable.Load(804, "ma_sound_stop_with_fade_in_pcm_frames");
-            funcTable.Load(805, "ma_sound_stop_with_fade_in_milliseconds");
-            funcTable.Load(806, "ma_sound_reset_start_time");
-            funcTable.Load(807, "ma_sound_reset_stop_time");
-            funcTable.Load(808, "ma_sound_reset_fade");
-            funcTable.Load(809, "ma_sound_reset_stop_time_and_fade");
-            funcTable.Load(810, "ma_sound_set_volume");
-            funcTable.Load(811, "ma_sound_get_volume");
-            funcTable.Load(812, "ma_sound_set_pan");
-            funcTable.Load(813, "ma_sound_get_pan");
-            funcTable.Load(814, "ma_sound_set_pan_mode");
-            funcTable.Load(815, "ma_sound_get_pan_mode");
-            funcTable.Load(816, "ma_sound_set_pitch");
-            funcTable.Load(817, "ma_sound_get_pitch");
-            funcTable.Load(818, "ma_sound_set_spatialization_enabled");
-            funcTable.Load(819, "ma_sound_is_spatialization_enabled");
-            funcTable.Load(820, "ma_sound_set_pinned_listener_index");
-            funcTable.Load(821, "ma_sound_get_pinned_listener_index");
-            funcTable.Load(822, "ma_sound_get_listener_index");
-            funcTable.Load(823, "ma_sound_get_direction_to_listener");
-            funcTable.Load(824, "ma_sound_set_position");
-            funcTable.Load(825, "ma_sound_get_position");
-            funcTable.Load(826, "ma_sound_set_direction");
-            funcTable.Load(827, "ma_sound_get_direction");
-            funcTable.Load(828, "ma_sound_set_velocity");
-            funcTable.Load(829, "ma_sound_get_velocity");
-            funcTable.Load(830, "ma_sound_set_attenuation_model");
-            funcTable.Load(831, "ma_sound_get_attenuation_model");
-            funcTable.Load(832, "ma_sound_set_positioning");
-            funcTable.Load(833, "ma_sound_get_positioning");
-            funcTable.Load(834, "ma_sound_set_rolloff");
-            funcTable.Load(835, "ma_sound_get_rolloff");
-            funcTable.Load(836, "ma_sound_set_min_gain");
-            funcTable.Load(837, "ma_sound_get_min_gain");
-            funcTable.Load(838, "ma_sound_set_max_gain");
-            funcTable.Load(839, "ma_sound_get_max_gain");
-            funcTable.Load(840, "ma_sound_set_min_distance");
-            funcTable.Load(841, "ma_sound_get_min_distance");
-            funcTable.Load(842, "ma_sound_set_max_distance");
-            funcTable.Load(843, "ma_sound_get_max_distance");
-            funcTable.Load(844, "ma_sound_set_cone");
-            funcTable.Load(845, "ma_sound_get_cone");
-            funcTable.Load(846, "ma_sound_set_doppler_factor");
-            funcTable.Load(847, "ma_sound_get_doppler_factor");
-            funcTable.Load(848, "ma_sound_set_directional_attenuation_factor");
-            funcTable.Load(849, "ma_sound_get_directional_attenuation_factor");
-            funcTable.Load(850, "ma_sound_set_fade_in_pcm_frames");
-            funcTable.Load(851, "ma_sound_set_fade_in_milliseconds");
-            funcTable.Load(852, "ma_sound_set_fade_start_in_pcm_frames");
-            funcTable.Load(853, "ma_sound_set_fade_start_in_milliseconds");
-            funcTable.Load(854, "ma_sound_get_current_fade_volume");
-            funcTable.Load(855, "ma_sound_set_start_time_in_pcm_frames");
-            funcTable.Load(856, "ma_sound_set_start_time_in_milliseconds");
-            funcTable.Load(857, "ma_sound_set_stop_time_in_pcm_frames");
-            funcTable.Load(858, "ma_sound_set_stop_time_in_milliseconds");
-            funcTable.Load(859, "ma_sound_set_stop_time_with_fade_in_pcm_frames");
-            funcTable.Load(860, "ma_sound_set_stop_time_with_fade_in_milliseconds");
-            funcTable.Load(861, "ma_sound_is_playing");
-            funcTable.Load(862, "ma_sound_get_time_in_pcm_frames");
-            funcTable.Load(863, "ma_sound_get_time_in_milliseconds");
-            funcTable.Load(864, "ma_sound_set_looping");
-            funcTable.Load(865, "ma_sound_is_looping");
-            funcTable.Load(866, "ma_sound_at_end");
-            funcTable.Load(867, "ma_sound_seek_to_pcm_frame");
-            funcTable.Load(868, "ma_sound_seek_to_second");
-            funcTable.Load(869, "ma_sound_get_data_format");
-            funcTable.Load(870, "ma_sound_get_cursor_in_pcm_frames");
-            funcTable.Load(871, "ma_sound_get_length_in_pcm_frames");
-            funcTable.Load(872, "ma_sound_get_cursor_in_seconds");
-            funcTable.Load(873, "ma_sound_get_length_in_seconds");
-            funcTable.Load(874, "ma_sound_set_end_callback");
-            funcTable.Load(875, "ma_sound_group_init");
-            funcTable.Load(876, "ma_sound_group_init_ex");
-            funcTable.Load(877, "ma_sound_group_uninit");
-            funcTable.Load(878, "ma_sound_group_get_engine");
-            funcTable.Load(879, "ma_sound_group_start");
-            funcTable.Load(880, "ma_sound_group_stop");
-            funcTable.Load(881, "ma_sound_group_set_volume");
-            funcTable.Load(882, "ma_sound_group_get_volume");
-            funcTable.Load(883, "ma_sound_group_set_pan");
-            funcTable.Load(884, "ma_sound_group_get_pan");
-            funcTable.Load(885, "ma_sound_group_set_pan_mode");
-            funcTable.Load(886, "ma_sound_group_get_pan_mode");
-            funcTable.Load(887, "ma_sound_group_set_pitch");
-            funcTable.Load(888, "ma_sound_group_get_pitch");
-            funcTable.Load(889, "ma_sound_group_set_spatialization_enabled");
-            funcTable.Load(890, "ma_sound_group_is_spatialization_enabled");
-            funcTable.Load(891, "ma_sound_group_set_pinned_listener_index");
-            funcTable.Load(892, "ma_sound_group_get_pinned_listener_index");
-            funcTable.Load(893, "ma_sound_group_get_listener_index");
-            funcTable.Load(894, "ma_sound_group_get_direction_to_listener");
-            funcTable.Load(895, "ma_sound_group_set_position");
-            funcTable.Load(896, "ma_sound_group_get_position");
-            funcTable.Load(897, "ma_sound_group_set_direction");
-            funcTable.Load(898, "ma_sound_group_get_direction");
-            funcTable.Load(899, "ma_sound_group_set_velocity");
-            funcTable.Load(900, "ma_sound_group_get_velocity");
-            funcTable.Load(901, "ma_sound_group_set_attenuation_model");
-            funcTable.Load(902, "ma_sound_group_get_attenuation_model");
-            funcTable.Load(903, "ma_sound_group_set_positioning");
-            funcTable.Load(904, "ma_sound_group_get_positioning");
-            funcTable.Load(905, "ma_sound_group_set_rolloff");
-            funcTable.Load(906, "ma_sound_group_get_rolloff");
-            funcTable.Load(907, "ma_sound_group_set_min_gain");
-            funcTable.Load(908, "ma_sound_group_get_min_gain");
-            funcTable.Load(909, "ma_sound_group_set_max_gain");
-            funcTable.Load(910, "ma_sound_group_get_max_gain");
-            funcTable.Load(911, "ma_sound_group_set_min_distance");
-            funcTable.Load(912, "ma_sound_group_get_min_distance");
-            funcTable.Load(913, "ma_sound_group_set_max_distance");
-            funcTable.Load(914, "ma_sound_group_get_max_distance");
-            funcTable.Load(915, "ma_sound_group_set_cone");
-            funcTable.Load(916, "ma_sound_group_get_cone");
-            funcTable.Load(917, "ma_sound_group_set_doppler_factor");
-            funcTable.Load(918, "ma_sound_group_get_doppler_factor");
-            funcTable.Load(919, "ma_sound_group_set_directional_attenuation_factor");
-            funcTable.Load(920, "ma_sound_group_get_directional_attenuation_factor");
-            funcTable.Load(921, "ma_sound_group_set_fade_in_pcm_frames");
-            funcTable.Load(922, "ma_sound_group_set_fade_in_milliseconds");
-            funcTable.Load(923, "ma_sound_group_get_current_fade_volume");
-            funcTable.Load(924, "ma_sound_group_set_start_time_in_pcm_frames");
-            funcTable.Load(925, "ma_sound_group_set_start_time_in_milliseconds");
-            funcTable.Load(926, "ma_sound_group_set_stop_time_in_pcm_frames");
-            funcTable.Load(927, "ma_sound_group_set_stop_time_in_milliseconds");
-            funcTable.Load(928, "ma_sound_group_is_playing");
-            funcTable.Load(929, "ma_sound_group_get_time_in_pcm_frames");
+            var candidate = new global::BGCS.Runtime.FunctionTable(context, 930);
+            try
+            {
+                candidate.LoadRequired(0, "ma_version");
+                candidate.LoadRequired(1, "ma_version_string");
+                candidate.LoadRequired(2, "ma_log_callback_init");
+                candidate.LoadRequired(3, "ma_log_init");
+                candidate.LoadRequired(4, "ma_log_uninit");
+                candidate.LoadRequired(5, "ma_log_register_callback");
+                candidate.LoadRequired(6, "ma_log_unregister_callback");
+                candidate.LoadRequired(7, "ma_log_post");
+                candidate.LoadRequired(8, "ma_log_postv");
+                candidate.LoadRequired(9, "ma_biquad_config_init");
+                candidate.LoadRequired(10, "ma_biquad_get_heap_size");
+                candidate.LoadRequired(11, "ma_biquad_init_preallocated");
+                candidate.LoadRequired(12, "ma_biquad_init");
+                candidate.LoadRequired(13, "ma_biquad_uninit");
+                candidate.LoadRequired(14, "ma_biquad_reinit");
+                candidate.LoadRequired(15, "ma_biquad_clear_cache");
+                candidate.LoadRequired(16, "ma_biquad_process_pcm_frames");
+                candidate.LoadRequired(17, "ma_biquad_get_latency");
+                candidate.LoadRequired(18, "ma_lpf1_config_init");
+                candidate.LoadRequired(19, "ma_lpf2_config_init");
+                candidate.LoadRequired(20, "ma_lpf1_get_heap_size");
+                candidate.LoadRequired(21, "ma_lpf1_init_preallocated");
+                candidate.LoadRequired(22, "ma_lpf1_init");
+                candidate.LoadRequired(23, "ma_lpf1_uninit");
+                candidate.LoadRequired(24, "ma_lpf1_reinit");
+                candidate.LoadRequired(25, "ma_lpf1_clear_cache");
+                candidate.LoadRequired(26, "ma_lpf1_process_pcm_frames");
+                candidate.LoadRequired(27, "ma_lpf1_get_latency");
+                candidate.LoadRequired(28, "ma_lpf2_get_heap_size");
+                candidate.LoadRequired(29, "ma_lpf2_init_preallocated");
+                candidate.LoadRequired(30, "ma_lpf2_init");
+                candidate.LoadRequired(31, "ma_lpf2_uninit");
+                candidate.LoadRequired(32, "ma_lpf2_reinit");
+                candidate.LoadRequired(33, "ma_lpf2_clear_cache");
+                candidate.LoadRequired(34, "ma_lpf2_process_pcm_frames");
+                candidate.LoadRequired(35, "ma_lpf2_get_latency");
+                candidate.LoadRequired(36, "ma_lpf_config_init");
+                candidate.LoadRequired(37, "ma_lpf_get_heap_size");
+                candidate.LoadRequired(38, "ma_lpf_init_preallocated");
+                candidate.LoadRequired(39, "ma_lpf_init");
+                candidate.LoadRequired(40, "ma_lpf_uninit");
+                candidate.LoadRequired(41, "ma_lpf_reinit");
+                candidate.LoadRequired(42, "ma_lpf_clear_cache");
+                candidate.LoadRequired(43, "ma_lpf_process_pcm_frames");
+                candidate.LoadRequired(44, "ma_lpf_get_latency");
+                candidate.LoadRequired(45, "ma_hpf1_config_init");
+                candidate.LoadRequired(46, "ma_hpf2_config_init");
+                candidate.LoadRequired(47, "ma_hpf1_get_heap_size");
+                candidate.LoadRequired(48, "ma_hpf1_init_preallocated");
+                candidate.LoadRequired(49, "ma_hpf1_init");
+                candidate.LoadRequired(50, "ma_hpf1_uninit");
+                candidate.LoadRequired(51, "ma_hpf1_reinit");
+                candidate.LoadRequired(52, "ma_hpf1_process_pcm_frames");
+                candidate.LoadRequired(53, "ma_hpf1_get_latency");
+                candidate.LoadRequired(54, "ma_hpf2_get_heap_size");
+                candidate.LoadRequired(55, "ma_hpf2_init_preallocated");
+                candidate.LoadRequired(56, "ma_hpf2_init");
+                candidate.LoadRequired(57, "ma_hpf2_uninit");
+                candidate.LoadRequired(58, "ma_hpf2_reinit");
+                candidate.LoadRequired(59, "ma_hpf2_process_pcm_frames");
+                candidate.LoadRequired(60, "ma_hpf2_get_latency");
+                candidate.LoadRequired(61, "ma_hpf_config_init");
+                candidate.LoadRequired(62, "ma_hpf_get_heap_size");
+                candidate.LoadRequired(63, "ma_hpf_init_preallocated");
+                candidate.LoadRequired(64, "ma_hpf_init");
+                candidate.LoadRequired(65, "ma_hpf_uninit");
+                candidate.LoadRequired(66, "ma_hpf_reinit");
+                candidate.LoadRequired(67, "ma_hpf_process_pcm_frames");
+                candidate.LoadRequired(68, "ma_hpf_get_latency");
+                candidate.LoadRequired(69, "ma_bpf2_config_init");
+                candidate.LoadRequired(70, "ma_bpf2_get_heap_size");
+                candidate.LoadRequired(71, "ma_bpf2_init_preallocated");
+                candidate.LoadRequired(72, "ma_bpf2_init");
+                candidate.LoadRequired(73, "ma_bpf2_uninit");
+                candidate.LoadRequired(74, "ma_bpf2_reinit");
+                candidate.LoadRequired(75, "ma_bpf2_process_pcm_frames");
+                candidate.LoadRequired(76, "ma_bpf2_get_latency");
+                candidate.LoadRequired(77, "ma_bpf_config_init");
+                candidate.LoadRequired(78, "ma_bpf_get_heap_size");
+                candidate.LoadRequired(79, "ma_bpf_init_preallocated");
+                candidate.LoadRequired(80, "ma_bpf_init");
+                candidate.LoadRequired(81, "ma_bpf_uninit");
+                candidate.LoadRequired(82, "ma_bpf_reinit");
+                candidate.LoadRequired(83, "ma_bpf_process_pcm_frames");
+                candidate.LoadRequired(84, "ma_bpf_get_latency");
+                candidate.LoadRequired(85, "ma_notch2_config_init");
+                candidate.LoadRequired(86, "ma_notch2_get_heap_size");
+                candidate.LoadRequired(87, "ma_notch2_init_preallocated");
+                candidate.LoadRequired(88, "ma_notch2_init");
+                candidate.LoadRequired(89, "ma_notch2_uninit");
+                candidate.LoadRequired(90, "ma_notch2_reinit");
+                candidate.LoadRequired(91, "ma_notch2_process_pcm_frames");
+                candidate.LoadRequired(92, "ma_notch2_get_latency");
+                candidate.LoadRequired(93, "ma_peak2_config_init");
+                candidate.LoadRequired(94, "ma_peak2_get_heap_size");
+                candidate.LoadRequired(95, "ma_peak2_init_preallocated");
+                candidate.LoadRequired(96, "ma_peak2_init");
+                candidate.LoadRequired(97, "ma_peak2_uninit");
+                candidate.LoadRequired(98, "ma_peak2_reinit");
+                candidate.LoadRequired(99, "ma_peak2_process_pcm_frames");
+                candidate.LoadRequired(100, "ma_peak2_get_latency");
+                candidate.LoadRequired(101, "ma_loshelf2_config_init");
+                candidate.LoadRequired(102, "ma_loshelf2_get_heap_size");
+                candidate.LoadRequired(103, "ma_loshelf2_init_preallocated");
+                candidate.LoadRequired(104, "ma_loshelf2_init");
+                candidate.LoadRequired(105, "ma_loshelf2_uninit");
+                candidate.LoadRequired(106, "ma_loshelf2_reinit");
+                candidate.LoadRequired(107, "ma_loshelf2_process_pcm_frames");
+                candidate.LoadRequired(108, "ma_loshelf2_get_latency");
+                candidate.LoadRequired(109, "ma_hishelf2_config_init");
+                candidate.LoadRequired(110, "ma_hishelf2_get_heap_size");
+                candidate.LoadRequired(111, "ma_hishelf2_init_preallocated");
+                candidate.LoadRequired(112, "ma_hishelf2_init");
+                candidate.LoadRequired(113, "ma_hishelf2_uninit");
+                candidate.LoadRequired(114, "ma_hishelf2_reinit");
+                candidate.LoadRequired(115, "ma_hishelf2_process_pcm_frames");
+                candidate.LoadRequired(116, "ma_hishelf2_get_latency");
+                candidate.LoadRequired(117, "ma_delay_config_init");
+                candidate.LoadRequired(118, "ma_delay_init");
+                candidate.LoadRequired(119, "ma_delay_uninit");
+                candidate.LoadRequired(120, "ma_delay_process_pcm_frames");
+                candidate.LoadRequired(121, "ma_delay_set_wet");
+                candidate.LoadRequired(122, "ma_delay_get_wet");
+                candidate.LoadRequired(123, "ma_delay_set_dry");
+                candidate.LoadRequired(124, "ma_delay_get_dry");
+                candidate.LoadRequired(125, "ma_delay_set_decay");
+                candidate.LoadRequired(126, "ma_delay_get_decay");
+                candidate.LoadRequired(127, "ma_gainer_config_init");
+                candidate.LoadRequired(128, "ma_gainer_get_heap_size");
+                candidate.LoadRequired(129, "ma_gainer_init_preallocated");
+                candidate.LoadRequired(130, "ma_gainer_init");
+                candidate.LoadRequired(131, "ma_gainer_uninit");
+                candidate.LoadRequired(132, "ma_gainer_process_pcm_frames");
+                candidate.LoadRequired(133, "ma_gainer_set_gain");
+                candidate.LoadRequired(134, "ma_gainer_set_gains");
+                candidate.LoadRequired(135, "ma_gainer_set_master_volume");
+                candidate.LoadRequired(136, "ma_gainer_get_master_volume");
+                candidate.LoadRequired(137, "ma_panner_config_init");
+                candidate.LoadRequired(138, "ma_panner_init");
+                candidate.LoadRequired(139, "ma_panner_process_pcm_frames");
+                candidate.LoadRequired(140, "ma_panner_set_mode");
+                candidate.LoadRequired(141, "ma_panner_get_mode");
+                candidate.LoadRequired(142, "ma_panner_set_pan");
+                candidate.LoadRequired(143, "ma_panner_get_pan");
+                candidate.LoadRequired(144, "ma_fader_config_init");
+                candidate.LoadRequired(145, "ma_fader_init");
+                candidate.LoadRequired(146, "ma_fader_process_pcm_frames");
+                candidate.LoadRequired(147, "ma_fader_get_data_format");
+                candidate.LoadRequired(148, "ma_fader_set_fade");
+                candidate.LoadRequired(149, "ma_fader_set_fade_ex");
+                candidate.LoadRequired(150, "ma_fader_get_current_volume");
+                candidate.LoadRequired(151, "ma_spatializer_listener_config_init");
+                candidate.LoadRequired(152, "ma_spatializer_listener_get_heap_size");
+                candidate.LoadRequired(153, "ma_spatializer_listener_init_preallocated");
+                candidate.LoadRequired(154, "ma_spatializer_listener_init");
+                candidate.LoadRequired(155, "ma_spatializer_listener_uninit");
+                candidate.LoadRequired(156, "ma_spatializer_listener_get_channel_map");
+                candidate.LoadRequired(157, "ma_spatializer_listener_set_cone");
+                candidate.LoadRequired(158, "ma_spatializer_listener_get_cone");
+                candidate.LoadRequired(159, "ma_spatializer_listener_set_position");
+                candidate.LoadRequired(160, "ma_spatializer_listener_get_position");
+                candidate.LoadRequired(161, "ma_spatializer_listener_set_direction");
+                candidate.LoadRequired(162, "ma_spatializer_listener_get_direction");
+                candidate.LoadRequired(163, "ma_spatializer_listener_set_velocity");
+                candidate.LoadRequired(164, "ma_spatializer_listener_get_velocity");
+                candidate.LoadRequired(165, "ma_spatializer_listener_set_speed_of_sound");
+                candidate.LoadRequired(166, "ma_spatializer_listener_get_speed_of_sound");
+                candidate.LoadRequired(167, "ma_spatializer_listener_set_world_up");
+                candidate.LoadRequired(168, "ma_spatializer_listener_get_world_up");
+                candidate.LoadRequired(169, "ma_spatializer_listener_set_enabled");
+                candidate.LoadRequired(170, "ma_spatializer_listener_is_enabled");
+                candidate.LoadRequired(171, "ma_spatializer_config_init");
+                candidate.LoadRequired(172, "ma_spatializer_get_heap_size");
+                candidate.LoadRequired(173, "ma_spatializer_init_preallocated");
+                candidate.LoadRequired(174, "ma_spatializer_init");
+                candidate.LoadRequired(175, "ma_spatializer_uninit");
+                candidate.LoadRequired(176, "ma_spatializer_process_pcm_frames");
+                candidate.LoadRequired(177, "ma_spatializer_set_master_volume");
+                candidate.LoadRequired(178, "ma_spatializer_get_master_volume");
+                candidate.LoadRequired(179, "ma_spatializer_get_input_channels");
+                candidate.LoadRequired(180, "ma_spatializer_get_output_channels");
+                candidate.LoadRequired(181, "ma_spatializer_set_attenuation_model");
+                candidate.LoadRequired(182, "ma_spatializer_get_attenuation_model");
+                candidate.LoadRequired(183, "ma_spatializer_set_positioning");
+                candidate.LoadRequired(184, "ma_spatializer_get_positioning");
+                candidate.LoadRequired(185, "ma_spatializer_set_rolloff");
+                candidate.LoadRequired(186, "ma_spatializer_get_rolloff");
+                candidate.LoadRequired(187, "ma_spatializer_set_min_gain");
+                candidate.LoadRequired(188, "ma_spatializer_get_min_gain");
+                candidate.LoadRequired(189, "ma_spatializer_set_max_gain");
+                candidate.LoadRequired(190, "ma_spatializer_get_max_gain");
+                candidate.LoadRequired(191, "ma_spatializer_set_min_distance");
+                candidate.LoadRequired(192, "ma_spatializer_get_min_distance");
+                candidate.LoadRequired(193, "ma_spatializer_set_max_distance");
+                candidate.LoadRequired(194, "ma_spatializer_get_max_distance");
+                candidate.LoadRequired(195, "ma_spatializer_set_cone");
+                candidate.LoadRequired(196, "ma_spatializer_get_cone");
+                candidate.LoadRequired(197, "ma_spatializer_set_doppler_factor");
+                candidate.LoadRequired(198, "ma_spatializer_get_doppler_factor");
+                candidate.LoadRequired(199, "ma_spatializer_set_directional_attenuation_factor");
+                candidate.LoadRequired(200, "ma_spatializer_get_directional_attenuation_factor");
+                candidate.LoadRequired(201, "ma_spatializer_set_position");
+                candidate.LoadRequired(202, "ma_spatializer_get_position");
+                candidate.LoadRequired(203, "ma_spatializer_set_direction");
+                candidate.LoadRequired(204, "ma_spatializer_get_direction");
+                candidate.LoadRequired(205, "ma_spatializer_set_velocity");
+                candidate.LoadRequired(206, "ma_spatializer_get_velocity");
+                candidate.LoadRequired(207, "ma_spatializer_get_relative_position_and_direction");
+                candidate.LoadRequired(208, "ma_linear_resampler_config_init");
+                candidate.LoadRequired(209, "ma_linear_resampler_get_heap_size");
+                candidate.LoadRequired(210, "ma_linear_resampler_init_preallocated");
+                candidate.LoadRequired(211, "ma_linear_resampler_init");
+                candidate.LoadRequired(212, "ma_linear_resampler_uninit");
+                candidate.LoadRequired(213, "ma_linear_resampler_process_pcm_frames");
+                candidate.LoadRequired(214, "ma_linear_resampler_set_rate");
+                candidate.LoadRequired(215, "ma_linear_resampler_set_rate_ratio");
+                candidate.LoadRequired(216, "ma_linear_resampler_get_input_latency");
+                candidate.LoadRequired(217, "ma_linear_resampler_get_output_latency");
+                candidate.LoadRequired(218, "ma_linear_resampler_get_required_input_frame_count");
+                candidate.LoadRequired(219, "ma_linear_resampler_get_expected_output_frame_count");
+                candidate.LoadRequired(220, "ma_linear_resampler_reset");
+                candidate.LoadRequired(221, "ma_resampler_config_init");
+                candidate.LoadRequired(222, "ma_resampler_get_heap_size");
+                candidate.LoadRequired(223, "ma_resampler_init_preallocated");
+                candidate.LoadRequired(224, "ma_resampler_init");
+                candidate.LoadRequired(225, "ma_resampler_uninit");
+                candidate.LoadRequired(226, "ma_resampler_process_pcm_frames");
+                candidate.LoadRequired(227, "ma_resampler_set_rate");
+                candidate.LoadRequired(228, "ma_resampler_set_rate_ratio");
+                candidate.LoadRequired(229, "ma_resampler_get_input_latency");
+                candidate.LoadRequired(230, "ma_resampler_get_output_latency");
+                candidate.LoadRequired(231, "ma_resampler_get_required_input_frame_count");
+                candidate.LoadRequired(232, "ma_resampler_get_expected_output_frame_count");
+                candidate.LoadRequired(233, "ma_resampler_reset");
+                candidate.LoadRequired(234, "ma_channel_converter_config_init");
+                candidate.LoadRequired(235, "ma_channel_converter_get_heap_size");
+                candidate.LoadRequired(236, "ma_channel_converter_init_preallocated");
+                candidate.LoadRequired(237, "ma_channel_converter_init");
+                candidate.LoadRequired(238, "ma_channel_converter_uninit");
+                candidate.LoadRequired(239, "ma_channel_converter_process_pcm_frames");
+                candidate.LoadRequired(240, "ma_channel_converter_get_input_channel_map");
+                candidate.LoadRequired(241, "ma_channel_converter_get_output_channel_map");
+                candidate.LoadRequired(242, "ma_data_converter_config_init_default");
+                candidate.LoadRequired(243, "ma_data_converter_config_init");
+                candidate.LoadRequired(244, "ma_data_converter_get_heap_size");
+                candidate.LoadRequired(245, "ma_data_converter_init_preallocated");
+                candidate.LoadRequired(246, "ma_data_converter_init");
+                candidate.LoadRequired(247, "ma_data_converter_uninit");
+                candidate.LoadRequired(248, "ma_data_converter_process_pcm_frames");
+                candidate.LoadRequired(249, "ma_data_converter_set_rate");
+                candidate.LoadRequired(250, "ma_data_converter_set_rate_ratio");
+                candidate.LoadRequired(251, "ma_data_converter_get_input_latency");
+                candidate.LoadRequired(252, "ma_data_converter_get_output_latency");
+                candidate.LoadRequired(253, "ma_data_converter_get_required_input_frame_count");
+                candidate.LoadRequired(254, "ma_data_converter_get_expected_output_frame_count");
+                candidate.LoadRequired(255, "ma_data_converter_get_input_channel_map");
+                candidate.LoadRequired(256, "ma_data_converter_get_output_channel_map");
+                candidate.LoadRequired(257, "ma_data_converter_reset");
+                candidate.LoadRequired(258, "ma_pcm_u8_to_s16");
+                candidate.LoadRequired(259, "ma_pcm_u8_to_s24");
+                candidate.LoadRequired(260, "ma_pcm_u8_to_s32");
+                candidate.LoadRequired(261, "ma_pcm_u8_to_f32");
+                candidate.LoadRequired(262, "ma_pcm_s16_to_u8");
+                candidate.LoadRequired(263, "ma_pcm_s16_to_s24");
+                candidate.LoadRequired(264, "ma_pcm_s16_to_s32");
+                candidate.LoadRequired(265, "ma_pcm_s16_to_f32");
+                candidate.LoadRequired(266, "ma_pcm_s24_to_u8");
+                candidate.LoadRequired(267, "ma_pcm_s24_to_s16");
+                candidate.LoadRequired(268, "ma_pcm_s24_to_s32");
+                candidate.LoadRequired(269, "ma_pcm_s24_to_f32");
+                candidate.LoadRequired(270, "ma_pcm_s32_to_u8");
+                candidate.LoadRequired(271, "ma_pcm_s32_to_s16");
+                candidate.LoadRequired(272, "ma_pcm_s32_to_s24");
+                candidate.LoadRequired(273, "ma_pcm_s32_to_f32");
+                candidate.LoadRequired(274, "ma_pcm_f32_to_u8");
+                candidate.LoadRequired(275, "ma_pcm_f32_to_s16");
+                candidate.LoadRequired(276, "ma_pcm_f32_to_s24");
+                candidate.LoadRequired(277, "ma_pcm_f32_to_s32");
+                candidate.LoadRequired(278, "ma_pcm_convert");
+                candidate.LoadRequired(279, "ma_convert_pcm_frames_format");
+                candidate.LoadRequired(280, "ma_deinterleave_pcm_frames");
+                candidate.LoadRequired(281, "ma_interleave_pcm_frames");
+                candidate.LoadRequired(282, "ma_channel_map_get_channel");
+                candidate.LoadRequired(283, "ma_channel_map_init_blank");
+                candidate.LoadRequired(284, "ma_channel_map_init_standard");
+                candidate.LoadRequired(285, "ma_channel_map_copy");
+                candidate.LoadRequired(286, "ma_channel_map_copy_or_default");
+                candidate.LoadRequired(287, "ma_channel_map_is_valid");
+                candidate.LoadRequired(288, "ma_channel_map_is_equal");
+                candidate.LoadRequired(289, "ma_channel_map_is_blank");
+                candidate.LoadRequired(290, "ma_channel_map_contains_channel_position");
+                candidate.LoadRequired(291, "ma_channel_map_find_channel_position");
+                candidate.LoadRequired(292, "ma_channel_map_to_string");
+                candidate.LoadRequired(293, "ma_channel_position_to_string");
+                candidate.LoadRequired(294, "ma_convert_frames");
+                candidate.LoadRequired(295, "ma_convert_frames_ex");
+                candidate.LoadRequired(296, "ma_data_source_config_init");
+                candidate.LoadRequired(297, "ma_data_source_init");
+                candidate.LoadRequired(298, "ma_data_source_uninit");
+                candidate.LoadRequired(299, "ma_data_source_read_pcm_frames");
+                candidate.LoadRequired(300, "ma_data_source_seek_pcm_frames");
+                candidate.LoadRequired(301, "ma_data_source_seek_to_pcm_frame");
+                candidate.LoadRequired(302, "ma_data_source_seek_seconds");
+                candidate.LoadRequired(303, "ma_data_source_seek_to_second");
+                candidate.LoadRequired(304, "ma_data_source_get_data_format");
+                candidate.LoadRequired(305, "ma_data_source_get_cursor_in_pcm_frames");
+                candidate.LoadRequired(306, "ma_data_source_get_length_in_pcm_frames");
+                candidate.LoadRequired(307, "ma_data_source_get_cursor_in_seconds");
+                candidate.LoadRequired(308, "ma_data_source_get_length_in_seconds");
+                candidate.LoadRequired(309, "ma_data_source_set_looping");
+                candidate.LoadRequired(310, "ma_data_source_is_looping");
+                candidate.LoadRequired(311, "ma_data_source_set_range_in_pcm_frames");
+                candidate.LoadRequired(312, "ma_data_source_get_range_in_pcm_frames");
+                candidate.LoadRequired(313, "ma_data_source_set_loop_point_in_pcm_frames");
+                candidate.LoadRequired(314, "ma_data_source_get_loop_point_in_pcm_frames");
+                candidate.LoadRequired(315, "ma_data_source_set_current");
+                candidate.LoadRequired(316, "ma_data_source_get_current");
+                candidate.LoadRequired(317, "ma_data_source_set_next");
+                candidate.LoadRequired(318, "ma_data_source_get_next");
+                candidate.LoadRequired(319, "ma_data_source_set_next_callback");
+                candidate.LoadRequired(320, "ma_data_source_get_next_callback");
+                candidate.LoadRequired(321, "ma_audio_buffer_ref_init");
+                candidate.LoadRequired(322, "ma_audio_buffer_ref_uninit");
+                candidate.LoadRequired(323, "ma_audio_buffer_ref_set_data");
+                candidate.LoadRequired(324, "ma_audio_buffer_ref_read_pcm_frames");
+                candidate.LoadRequired(325, "ma_audio_buffer_ref_seek_to_pcm_frame");
+                candidate.LoadRequired(326, "ma_audio_buffer_ref_map");
+                candidate.LoadRequired(327, "ma_audio_buffer_ref_unmap");
+                candidate.LoadRequired(328, "ma_audio_buffer_ref_at_end");
+                candidate.LoadRequired(329, "ma_audio_buffer_ref_get_cursor_in_pcm_frames");
+                candidate.LoadRequired(330, "ma_audio_buffer_ref_get_length_in_pcm_frames");
+                candidate.LoadRequired(331, "ma_audio_buffer_ref_get_available_frames");
+                candidate.LoadRequired(332, "ma_audio_buffer_config_init");
+                candidate.LoadRequired(333, "ma_audio_buffer_init");
+                candidate.LoadRequired(334, "ma_audio_buffer_init_copy");
+                candidate.LoadRequired(335, "ma_audio_buffer_alloc_and_init");
+                candidate.LoadRequired(336, "ma_audio_buffer_uninit");
+                candidate.LoadRequired(337, "ma_audio_buffer_uninit_and_free");
+                candidate.LoadRequired(338, "ma_audio_buffer_read_pcm_frames");
+                candidate.LoadRequired(339, "ma_audio_buffer_seek_to_pcm_frame");
+                candidate.LoadRequired(340, "ma_audio_buffer_map");
+                candidate.LoadRequired(341, "ma_audio_buffer_unmap");
+                candidate.LoadRequired(342, "ma_audio_buffer_at_end");
+                candidate.LoadRequired(343, "ma_audio_buffer_get_cursor_in_pcm_frames");
+                candidate.LoadRequired(344, "ma_audio_buffer_get_length_in_pcm_frames");
+                candidate.LoadRequired(345, "ma_audio_buffer_get_available_frames");
+                candidate.LoadRequired(346, "ma_paged_audio_buffer_data_init");
+                candidate.LoadRequired(347, "ma_paged_audio_buffer_data_uninit");
+                candidate.LoadRequired(348, "ma_paged_audio_buffer_data_get_head");
+                candidate.LoadRequired(349, "ma_paged_audio_buffer_data_get_tail");
+                candidate.LoadRequired(350, "ma_paged_audio_buffer_data_get_length_in_pcm_frames");
+                candidate.LoadRequired(351, "ma_paged_audio_buffer_data_allocate_page");
+                candidate.LoadRequired(352, "ma_paged_audio_buffer_data_free_page");
+                candidate.LoadRequired(353, "ma_paged_audio_buffer_data_append_page");
+                candidate.LoadRequired(354, "ma_paged_audio_buffer_data_allocate_and_append_page");
+                candidate.LoadRequired(355, "ma_paged_audio_buffer_config_init");
+                candidate.LoadRequired(356, "ma_paged_audio_buffer_init");
+                candidate.LoadRequired(357, "ma_paged_audio_buffer_uninit");
+                candidate.LoadRequired(358, "ma_paged_audio_buffer_read_pcm_frames");
+                candidate.LoadRequired(359, "ma_paged_audio_buffer_seek_to_pcm_frame");
+                candidate.LoadRequired(360, "ma_paged_audio_buffer_get_cursor_in_pcm_frames");
+                candidate.LoadRequired(361, "ma_paged_audio_buffer_get_length_in_pcm_frames");
+                candidate.LoadRequired(362, "ma_rb_init_ex");
+                candidate.LoadRequired(363, "ma_rb_init");
+                candidate.LoadRequired(364, "ma_rb_uninit");
+                candidate.LoadRequired(365, "ma_rb_reset");
+                candidate.LoadRequired(366, "ma_rb_acquire_read");
+                candidate.LoadRequired(367, "ma_rb_commit_read");
+                candidate.LoadRequired(368, "ma_rb_acquire_write");
+                candidate.LoadRequired(369, "ma_rb_commit_write");
+                candidate.LoadRequired(370, "ma_rb_seek_read");
+                candidate.LoadRequired(371, "ma_rb_seek_write");
+                candidate.LoadRequired(372, "ma_rb_pointer_distance");
+                candidate.LoadRequired(373, "ma_rb_available_read");
+                candidate.LoadRequired(374, "ma_rb_available_write");
+                candidate.LoadRequired(375, "ma_rb_get_subbuffer_size");
+                candidate.LoadRequired(376, "ma_rb_get_subbuffer_stride");
+                candidate.LoadRequired(377, "ma_rb_get_subbuffer_offset");
+                candidate.LoadRequired(378, "ma_rb_get_subbuffer_ptr");
+                candidate.LoadRequired(379, "ma_pcm_rb_init_ex");
+                candidate.LoadRequired(380, "ma_pcm_rb_init");
+                candidate.LoadRequired(381, "ma_pcm_rb_uninit");
+                candidate.LoadRequired(382, "ma_pcm_rb_reset");
+                candidate.LoadRequired(383, "ma_pcm_rb_acquire_read");
+                candidate.LoadRequired(384, "ma_pcm_rb_commit_read");
+                candidate.LoadRequired(385, "ma_pcm_rb_acquire_write");
+                candidate.LoadRequired(386, "ma_pcm_rb_commit_write");
+                candidate.LoadRequired(387, "ma_pcm_rb_seek_read");
+                candidate.LoadRequired(388, "ma_pcm_rb_seek_write");
+                candidate.LoadRequired(389, "ma_pcm_rb_pointer_distance");
+                candidate.LoadRequired(390, "ma_pcm_rb_available_read");
+                candidate.LoadRequired(391, "ma_pcm_rb_available_write");
+                candidate.LoadRequired(392, "ma_pcm_rb_get_subbuffer_size");
+                candidate.LoadRequired(393, "ma_pcm_rb_get_subbuffer_stride");
+                candidate.LoadRequired(394, "ma_pcm_rb_get_subbuffer_offset");
+                candidate.LoadRequired(395, "ma_pcm_rb_get_subbuffer_ptr");
+                candidate.LoadRequired(396, "ma_pcm_rb_get_format");
+                candidate.LoadRequired(397, "ma_pcm_rb_get_channels");
+                candidate.LoadRequired(398, "ma_pcm_rb_get_sample_rate");
+                candidate.LoadRequired(399, "ma_pcm_rb_set_sample_rate");
+                candidate.LoadRequired(400, "ma_duplex_rb_init");
+                candidate.LoadRequired(401, "ma_duplex_rb_uninit");
+                candidate.LoadRequired(402, "ma_result_description");
+                candidate.LoadRequired(403, "ma_malloc");
+                candidate.LoadRequired(404, "ma_calloc");
+                candidate.LoadRequired(405, "ma_realloc");
+                candidate.LoadRequired(406, "ma_free");
+                candidate.LoadRequired(407, "ma_aligned_malloc");
+                candidate.LoadRequired(408, "ma_aligned_free");
+                candidate.LoadRequired(409, "ma_get_format_name");
+                candidate.LoadRequired(410, "ma_blend_f32");
+                candidate.LoadRequired(411, "ma_get_bytes_per_sample");
+                candidate.LoadRequired(412, "ma_log_level_to_string");
+                candidate.LoadRequired(413, "ma_spinlock_lock");
+                candidate.LoadRequired(414, "ma_spinlock_lock_noyield");
+                candidate.LoadRequired(415, "ma_spinlock_unlock");
+                candidate.LoadRequired(416, "ma_mutex_init");
+                candidate.LoadRequired(417, "ma_mutex_uninit");
+                candidate.LoadRequired(418, "ma_mutex_lock");
+                candidate.LoadRequired(419, "ma_mutex_unlock");
+                candidate.LoadRequired(420, "ma_event_init");
+                candidate.LoadRequired(421, "ma_event_uninit");
+                candidate.LoadRequired(422, "ma_event_wait");
+                candidate.LoadRequired(423, "ma_event_signal");
+                candidate.LoadRequired(424, "ma_semaphore_init");
+                candidate.LoadRequired(425, "ma_semaphore_uninit");
+                candidate.LoadRequired(426, "ma_semaphore_wait");
+                candidate.LoadRequired(427, "ma_semaphore_release");
+                candidate.LoadRequired(428, "ma_fence_init");
+                candidate.LoadRequired(429, "ma_fence_uninit");
+                candidate.LoadRequired(430, "ma_fence_acquire");
+                candidate.LoadRequired(431, "ma_fence_release");
+                candidate.LoadRequired(432, "ma_fence_wait");
+                candidate.LoadRequired(433, "ma_async_notification_signal");
+                candidate.LoadRequired(434, "ma_async_notification_poll_init");
+                candidate.LoadRequired(435, "ma_async_notification_poll_is_signalled");
+                candidate.LoadRequired(436, "ma_async_notification_event_init");
+                candidate.LoadRequired(437, "ma_async_notification_event_uninit");
+                candidate.LoadRequired(438, "ma_async_notification_event_wait");
+                candidate.LoadRequired(439, "ma_async_notification_event_signal");
+                candidate.LoadRequired(440, "ma_slot_allocator_config_init");
+                candidate.LoadRequired(441, "ma_slot_allocator_get_heap_size");
+                candidate.LoadRequired(442, "ma_slot_allocator_init_preallocated");
+                candidate.LoadRequired(443, "ma_slot_allocator_init");
+                candidate.LoadRequired(444, "ma_slot_allocator_uninit");
+                candidate.LoadRequired(445, "ma_slot_allocator_alloc");
+                candidate.LoadRequired(446, "ma_slot_allocator_free");
+                candidate.LoadRequired(447, "ma_job_init");
+                candidate.LoadRequired(448, "ma_job_process");
+                candidate.LoadRequired(449, "ma_job_queue_config_init");
+                candidate.LoadRequired(450, "ma_job_queue_get_heap_size");
+                candidate.LoadRequired(451, "ma_job_queue_init_preallocated");
+                candidate.LoadRequired(452, "ma_job_queue_init");
+                candidate.LoadRequired(453, "ma_job_queue_uninit");
+                candidate.LoadRequired(454, "ma_job_queue_post");
+                candidate.LoadRequired(455, "ma_job_queue_next");
+                candidate.LoadRequired(456, "ma_device_job_thread_config_init");
+                candidate.LoadRequired(457, "ma_device_job_thread_init");
+                candidate.LoadRequired(458, "ma_device_job_thread_uninit");
+                candidate.LoadRequired(459, "ma_device_job_thread_post");
+                candidate.LoadRequired(460, "ma_device_job_thread_next");
+                candidate.LoadRequired(461, "ma_device_id_equal");
+                candidate.LoadRequired(462, "ma_context_config_init");
+                candidate.LoadRequired(463, "ma_context_init");
+                candidate.LoadRequired(464, "ma_context_uninit");
+                candidate.LoadRequired(465, "ma_context_sizeof");
+                candidate.LoadRequired(466, "ma_context_get_log");
+                candidate.LoadRequired(467, "ma_context_enumerate_devices");
+                candidate.LoadRequired(468, "ma_context_get_devices");
+                candidate.LoadRequired(469, "ma_context_get_device_info");
+                candidate.LoadRequired(470, "ma_context_is_loopback_supported");
+                candidate.LoadRequired(471, "ma_device_config_init");
+                candidate.LoadRequired(472, "ma_device_init");
+                candidate.LoadRequired(473, "ma_device_init_ex");
+                candidate.LoadRequired(474, "ma_device_uninit");
+                candidate.LoadRequired(475, "ma_device_get_context");
+                candidate.LoadRequired(476, "ma_device_get_log");
+                candidate.LoadRequired(477, "ma_device_get_info");
+                candidate.LoadRequired(478, "ma_device_get_name");
+                candidate.LoadRequired(479, "ma_device_start");
+                candidate.LoadRequired(480, "ma_device_stop");
+                candidate.LoadRequired(481, "ma_device_is_started");
+                candidate.LoadRequired(482, "ma_device_get_state");
+                candidate.LoadRequired(483, "ma_device_post_init");
+                candidate.LoadRequired(484, "ma_device_set_master_volume");
+                candidate.LoadRequired(485, "ma_device_get_master_volume");
+                candidate.LoadRequired(486, "ma_device_set_master_volume_db");
+                candidate.LoadRequired(487, "ma_device_get_master_volume_db");
+                candidate.LoadRequired(488, "ma_device_handle_backend_data_callback");
+                candidate.LoadRequired(489, "ma_calculate_buffer_size_in_frames_from_descriptor");
+                candidate.LoadRequired(490, "ma_get_backend_name");
+                candidate.LoadRequired(491, "ma_get_backend_from_name");
+                candidate.LoadRequired(492, "ma_is_backend_enabled");
+                candidate.LoadRequired(493, "ma_get_enabled_backends");
+                candidate.LoadRequired(494, "ma_is_loopback_supported");
+                candidate.LoadRequired(495, "ma_calculate_buffer_size_in_milliseconds_from_frames");
+                candidate.LoadRequired(496, "ma_calculate_buffer_size_in_frames_from_milliseconds");
+                candidate.LoadRequired(497, "ma_copy_pcm_frames");
+                candidate.LoadRequired(498, "ma_silence_pcm_frames");
+                candidate.LoadRequired(499, "ma_offset_pcm_frames_ptr");
+                candidate.LoadRequired(500, "ma_offset_pcm_frames_const_ptr");
+                candidate.LoadRequired(501, "ma_clip_samples_u8");
+                candidate.LoadRequired(502, "ma_clip_samples_s16");
+                candidate.LoadRequired(503, "ma_clip_samples_s24");
+                candidate.LoadRequired(504, "ma_clip_samples_s32");
+                candidate.LoadRequired(505, "ma_clip_samples_f32");
+                candidate.LoadRequired(506, "ma_clip_pcm_frames");
+                candidate.LoadRequired(507, "ma_copy_and_apply_volume_factor_u8");
+                candidate.LoadRequired(508, "ma_copy_and_apply_volume_factor_s16");
+                candidate.LoadRequired(509, "ma_copy_and_apply_volume_factor_s24");
+                candidate.LoadRequired(510, "ma_copy_and_apply_volume_factor_s32");
+                candidate.LoadRequired(511, "ma_copy_and_apply_volume_factor_f32");
+                candidate.LoadRequired(512, "ma_apply_volume_factor_u8");
+                candidate.LoadRequired(513, "ma_apply_volume_factor_s16");
+                candidate.LoadRequired(514, "ma_apply_volume_factor_s24");
+                candidate.LoadRequired(515, "ma_apply_volume_factor_s32");
+                candidate.LoadRequired(516, "ma_apply_volume_factor_f32");
+                candidate.LoadRequired(517, "ma_copy_and_apply_volume_factor_pcm_frames_u8");
+                candidate.LoadRequired(518, "ma_copy_and_apply_volume_factor_pcm_frames_s16");
+                candidate.LoadRequired(519, "ma_copy_and_apply_volume_factor_pcm_frames_s24");
+                candidate.LoadRequired(520, "ma_copy_and_apply_volume_factor_pcm_frames_s32");
+                candidate.LoadRequired(521, "ma_copy_and_apply_volume_factor_pcm_frames_f32");
+                candidate.LoadRequired(522, "ma_copy_and_apply_volume_factor_pcm_frames");
+                candidate.LoadRequired(523, "ma_apply_volume_factor_pcm_frames_u8");
+                candidate.LoadRequired(524, "ma_apply_volume_factor_pcm_frames_s16");
+                candidate.LoadRequired(525, "ma_apply_volume_factor_pcm_frames_s24");
+                candidate.LoadRequired(526, "ma_apply_volume_factor_pcm_frames_s32");
+                candidate.LoadRequired(527, "ma_apply_volume_factor_pcm_frames_f32");
+                candidate.LoadRequired(528, "ma_apply_volume_factor_pcm_frames");
+                candidate.LoadRequired(529, "ma_copy_and_apply_volume_factor_per_channel_f32");
+                candidate.LoadRequired(530, "ma_copy_and_apply_volume_and_clip_samples_u8");
+                candidate.LoadRequired(531, "ma_copy_and_apply_volume_and_clip_samples_s16");
+                candidate.LoadRequired(532, "ma_copy_and_apply_volume_and_clip_samples_s24");
+                candidate.LoadRequired(533, "ma_copy_and_apply_volume_and_clip_samples_s32");
+                candidate.LoadRequired(534, "ma_copy_and_apply_volume_and_clip_samples_f32");
+                candidate.LoadRequired(535, "ma_copy_and_apply_volume_and_clip_pcm_frames");
+                candidate.LoadRequired(536, "ma_volume_linear_to_db");
+                candidate.LoadRequired(537, "ma_volume_db_to_linear");
+                candidate.LoadRequired(538, "ma_mix_pcm_frames_f32");
+                candidate.LoadRequired(539, "ma_vfs_open");
+                candidate.LoadRequired(540, "ma_vfs_open_w");
+                candidate.LoadRequired(541, "ma_vfs_close");
+                candidate.LoadRequired(542, "ma_vfs_read");
+                candidate.LoadRequired(543, "ma_vfs_write");
+                candidate.LoadRequired(544, "ma_vfs_seek");
+                candidate.LoadRequired(545, "ma_vfs_tell");
+                candidate.LoadRequired(546, "ma_vfs_info");
+                candidate.LoadRequired(547, "ma_vfs_open_and_read_file");
+                candidate.LoadRequired(548, "ma_default_vfs_init");
+                candidate.LoadRequired(549, "ma_decoding_backend_config_init");
+                candidate.LoadRequired(550, "ma_decoder_config_init");
+                candidate.LoadRequired(551, "ma_decoder_config_init_default");
+                candidate.LoadRequired(552, "ma_decoder_init");
+                candidate.LoadRequired(553, "ma_decoder_init_memory");
+                candidate.LoadRequired(554, "ma_decoder_init_vfs");
+                candidate.LoadRequired(555, "ma_decoder_init_vfs_w");
+                candidate.LoadRequired(556, "ma_decoder_init_file");
+                candidate.LoadRequired(557, "ma_decoder_init_file_w");
+                candidate.LoadRequired(558, "ma_decoder_uninit");
+                candidate.LoadRequired(559, "ma_decoder_read_pcm_frames");
+                candidate.LoadRequired(560, "ma_decoder_seek_to_pcm_frame");
+                candidate.LoadRequired(561, "ma_decoder_get_data_format");
+                candidate.LoadRequired(562, "ma_decoder_get_cursor_in_pcm_frames");
+                candidate.LoadRequired(563, "ma_decoder_get_length_in_pcm_frames");
+                candidate.LoadRequired(564, "ma_decoder_get_available_frames");
+                candidate.LoadRequired(565, "ma_decode_from_vfs");
+                candidate.LoadRequired(566, "ma_decode_file");
+                candidate.LoadRequired(567, "ma_decode_memory");
+                candidate.LoadRequired(568, "ma_encoder_config_init");
+                candidate.LoadRequired(569, "ma_encoder_init");
+                candidate.LoadRequired(570, "ma_encoder_init_vfs");
+                candidate.LoadRequired(571, "ma_encoder_init_vfs_w");
+                candidate.LoadRequired(572, "ma_encoder_init_file");
+                candidate.LoadRequired(573, "ma_encoder_init_file_w");
+                candidate.LoadRequired(574, "ma_encoder_uninit");
+                candidate.LoadRequired(575, "ma_encoder_write_pcm_frames");
+                candidate.LoadRequired(576, "ma_waveform_config_init");
+                candidate.LoadRequired(577, "ma_waveform_init");
+                candidate.LoadRequired(578, "ma_waveform_uninit");
+                candidate.LoadRequired(579, "ma_waveform_read_pcm_frames");
+                candidate.LoadRequired(580, "ma_waveform_seek_to_pcm_frame");
+                candidate.LoadRequired(581, "ma_waveform_set_amplitude");
+                candidate.LoadRequired(582, "ma_waveform_set_frequency");
+                candidate.LoadRequired(583, "ma_waveform_set_type");
+                candidate.LoadRequired(584, "ma_waveform_set_sample_rate");
+                candidate.LoadRequired(585, "ma_pulsewave_config_init");
+                candidate.LoadRequired(586, "ma_pulsewave_init");
+                candidate.LoadRequired(587, "ma_pulsewave_uninit");
+                candidate.LoadRequired(588, "ma_pulsewave_read_pcm_frames");
+                candidate.LoadRequired(589, "ma_pulsewave_seek_to_pcm_frame");
+                candidate.LoadRequired(590, "ma_pulsewave_set_amplitude");
+                candidate.LoadRequired(591, "ma_pulsewave_set_frequency");
+                candidate.LoadRequired(592, "ma_pulsewave_set_sample_rate");
+                candidate.LoadRequired(593, "ma_pulsewave_set_duty_cycle");
+                candidate.LoadRequired(594, "ma_noise_config_init");
+                candidate.LoadRequired(595, "ma_noise_get_heap_size");
+                candidate.LoadRequired(596, "ma_noise_init_preallocated");
+                candidate.LoadRequired(597, "ma_noise_init");
+                candidate.LoadRequired(598, "ma_noise_uninit");
+                candidate.LoadRequired(599, "ma_noise_read_pcm_frames");
+                candidate.LoadRequired(600, "ma_noise_set_amplitude");
+                candidate.LoadRequired(601, "ma_noise_set_seed");
+                candidate.LoadRequired(602, "ma_noise_set_type");
+                candidate.LoadRequired(603, "ma_resource_manager_pipeline_notifications_init");
+                candidate.LoadRequired(604, "ma_resource_manager_data_source_config_init");
+                candidate.LoadRequired(605, "ma_resource_manager_config_init");
+                candidate.LoadRequired(606, "ma_resource_manager_init");
+                candidate.LoadRequired(607, "ma_resource_manager_uninit");
+                candidate.LoadRequired(608, "ma_resource_manager_get_log");
+                candidate.LoadRequired(609, "ma_resource_manager_register_file");
+                candidate.LoadRequired(610, "ma_resource_manager_register_file_w");
+                candidate.LoadRequired(611, "ma_resource_manager_register_decoded_data");
+                candidate.LoadRequired(612, "ma_resource_manager_register_decoded_data_w");
+                candidate.LoadRequired(613, "ma_resource_manager_register_encoded_data");
+                candidate.LoadRequired(614, "ma_resource_manager_register_encoded_data_w");
+                candidate.LoadRequired(615, "ma_resource_manager_unregister_file");
+                candidate.LoadRequired(616, "ma_resource_manager_unregister_file_w");
+                candidate.LoadRequired(617, "ma_resource_manager_unregister_data");
+                candidate.LoadRequired(618, "ma_resource_manager_unregister_data_w");
+                candidate.LoadRequired(619, "ma_resource_manager_data_buffer_init_ex");
+                candidate.LoadRequired(620, "ma_resource_manager_data_buffer_init");
+                candidate.LoadRequired(621, "ma_resource_manager_data_buffer_init_w");
+                candidate.LoadRequired(622, "ma_resource_manager_data_buffer_init_copy");
+                candidate.LoadRequired(623, "ma_resource_manager_data_buffer_uninit");
+                candidate.LoadRequired(624, "ma_resource_manager_data_buffer_read_pcm_frames");
+                candidate.LoadRequired(625, "ma_resource_manager_data_buffer_seek_to_pcm_frame");
+                candidate.LoadRequired(626, "ma_resource_manager_data_buffer_get_data_format");
+                candidate.LoadRequired(627, "ma_resource_manager_data_buffer_get_cursor_in_pcm_frames");
+                candidate.LoadRequired(628, "ma_resource_manager_data_buffer_get_length_in_pcm_frames");
+                candidate.LoadRequired(629, "ma_resource_manager_data_buffer_result");
+                candidate.LoadRequired(630, "ma_resource_manager_data_buffer_set_looping");
+                candidate.LoadRequired(631, "ma_resource_manager_data_buffer_is_looping");
+                candidate.LoadRequired(632, "ma_resource_manager_data_buffer_get_available_frames");
+                candidate.LoadRequired(633, "ma_resource_manager_data_stream_init_ex");
+                candidate.LoadRequired(634, "ma_resource_manager_data_stream_init");
+                candidate.LoadRequired(635, "ma_resource_manager_data_stream_init_w");
+                candidate.LoadRequired(636, "ma_resource_manager_data_stream_uninit");
+                candidate.LoadRequired(637, "ma_resource_manager_data_stream_read_pcm_frames");
+                candidate.LoadRequired(638, "ma_resource_manager_data_stream_seek_to_pcm_frame");
+                candidate.LoadRequired(639, "ma_resource_manager_data_stream_get_data_format");
+                candidate.LoadRequired(640, "ma_resource_manager_data_stream_get_cursor_in_pcm_frames");
+                candidate.LoadRequired(641, "ma_resource_manager_data_stream_get_length_in_pcm_frames");
+                candidate.LoadRequired(642, "ma_resource_manager_data_stream_result");
+                candidate.LoadRequired(643, "ma_resource_manager_data_stream_set_looping");
+                candidate.LoadRequired(644, "ma_resource_manager_data_stream_is_looping");
+                candidate.LoadRequired(645, "ma_resource_manager_data_stream_get_available_frames");
+                candidate.LoadRequired(646, "ma_resource_manager_data_source_init_ex");
+                candidate.LoadRequired(647, "ma_resource_manager_data_source_init");
+                candidate.LoadRequired(648, "ma_resource_manager_data_source_init_w");
+                candidate.LoadRequired(649, "ma_resource_manager_data_source_init_copy");
+                candidate.LoadRequired(650, "ma_resource_manager_data_source_uninit");
+                candidate.LoadRequired(651, "ma_resource_manager_data_source_read_pcm_frames");
+                candidate.LoadRequired(652, "ma_resource_manager_data_source_seek_to_pcm_frame");
+                candidate.LoadRequired(653, "ma_resource_manager_data_source_get_data_format");
+                candidate.LoadRequired(654, "ma_resource_manager_data_source_get_cursor_in_pcm_frames");
+                candidate.LoadRequired(655, "ma_resource_manager_data_source_get_length_in_pcm_frames");
+                candidate.LoadRequired(656, "ma_resource_manager_data_source_result");
+                candidate.LoadRequired(657, "ma_resource_manager_data_source_set_looping");
+                candidate.LoadRequired(658, "ma_resource_manager_data_source_is_looping");
+                candidate.LoadRequired(659, "ma_resource_manager_data_source_get_available_frames");
+                candidate.LoadRequired(660, "ma_resource_manager_post_job");
+                candidate.LoadRequired(661, "ma_resource_manager_post_job_quit");
+                candidate.LoadRequired(662, "ma_resource_manager_next_job");
+                candidate.LoadRequired(663, "ma_resource_manager_process_job");
+                candidate.LoadRequired(664, "ma_resource_manager_process_next_job");
+                candidate.LoadRequired(665, "ma_node_config_init");
+                candidate.LoadRequired(666, "ma_node_get_heap_size");
+                candidate.LoadRequired(667, "ma_node_init_preallocated");
+                candidate.LoadRequired(668, "ma_node_init");
+                candidate.LoadRequired(669, "ma_node_uninit");
+                candidate.LoadRequired(670, "ma_node_get_node_graph");
+                candidate.LoadRequired(671, "ma_node_get_input_bus_count");
+                candidate.LoadRequired(672, "ma_node_get_output_bus_count");
+                candidate.LoadRequired(673, "ma_node_get_input_channels");
+                candidate.LoadRequired(674, "ma_node_get_output_channels");
+                candidate.LoadRequired(675, "ma_node_attach_output_bus");
+                candidate.LoadRequired(676, "ma_node_detach_output_bus");
+                candidate.LoadRequired(677, "ma_node_detach_all_output_buses");
+                candidate.LoadRequired(678, "ma_node_set_output_bus_volume");
+                candidate.LoadRequired(679, "ma_node_get_output_bus_volume");
+                candidate.LoadRequired(680, "ma_node_set_state");
+                candidate.LoadRequired(681, "ma_node_get_state");
+                candidate.LoadRequired(682, "ma_node_set_state_time");
+                candidate.LoadRequired(683, "ma_node_get_state_time");
+                candidate.LoadRequired(684, "ma_node_get_state_by_time");
+                candidate.LoadRequired(685, "ma_node_get_state_by_time_range");
+                candidate.LoadRequired(686, "ma_node_get_time");
+                candidate.LoadRequired(687, "ma_node_set_time");
+                candidate.LoadRequired(688, "ma_node_graph_config_init");
+                candidate.LoadRequired(689, "ma_node_graph_init");
+                candidate.LoadRequired(690, "ma_node_graph_uninit");
+                candidate.LoadRequired(691, "ma_node_graph_get_endpoint");
+                candidate.LoadRequired(692, "ma_node_graph_read_pcm_frames");
+                candidate.LoadRequired(693, "ma_node_graph_get_channels");
+                candidate.LoadRequired(694, "ma_node_graph_get_time");
+                candidate.LoadRequired(695, "ma_node_graph_set_time");
+                candidate.LoadRequired(696, "ma_node_graph_get_processing_size_in_frames");
+                candidate.LoadRequired(697, "ma_data_source_node_config_init");
+                candidate.LoadRequired(698, "ma_data_source_node_init");
+                candidate.LoadRequired(699, "ma_data_source_node_uninit");
+                candidate.LoadRequired(700, "ma_data_source_node_set_looping");
+                candidate.LoadRequired(701, "ma_data_source_node_is_looping");
+                candidate.LoadRequired(702, "ma_splitter_node_config_init");
+                candidate.LoadRequired(703, "ma_splitter_node_init");
+                candidate.LoadRequired(704, "ma_splitter_node_uninit");
+                candidate.LoadRequired(705, "ma_biquad_node_config_init");
+                candidate.LoadRequired(706, "ma_biquad_node_init");
+                candidate.LoadRequired(707, "ma_biquad_node_reinit");
+                candidate.LoadRequired(708, "ma_biquad_node_uninit");
+                candidate.LoadRequired(709, "ma_lpf_node_config_init");
+                candidate.LoadRequired(710, "ma_lpf_node_init");
+                candidate.LoadRequired(711, "ma_lpf_node_reinit");
+                candidate.LoadRequired(712, "ma_lpf_node_uninit");
+                candidate.LoadRequired(713, "ma_hpf_node_config_init");
+                candidate.LoadRequired(714, "ma_hpf_node_init");
+                candidate.LoadRequired(715, "ma_hpf_node_reinit");
+                candidate.LoadRequired(716, "ma_hpf_node_uninit");
+                candidate.LoadRequired(717, "ma_bpf_node_config_init");
+                candidate.LoadRequired(718, "ma_bpf_node_init");
+                candidate.LoadRequired(719, "ma_bpf_node_reinit");
+                candidate.LoadRequired(720, "ma_bpf_node_uninit");
+                candidate.LoadRequired(721, "ma_notch_node_config_init");
+                candidate.LoadRequired(722, "ma_notch_node_init");
+                candidate.LoadRequired(723, "ma_notch_node_reinit");
+                candidate.LoadRequired(724, "ma_notch_node_uninit");
+                candidate.LoadRequired(725, "ma_peak_node_config_init");
+                candidate.LoadRequired(726, "ma_peak_node_init");
+                candidate.LoadRequired(727, "ma_peak_node_reinit");
+                candidate.LoadRequired(728, "ma_peak_node_uninit");
+                candidate.LoadRequired(729, "ma_loshelf_node_config_init");
+                candidate.LoadRequired(730, "ma_loshelf_node_init");
+                candidate.LoadRequired(731, "ma_loshelf_node_reinit");
+                candidate.LoadRequired(732, "ma_loshelf_node_uninit");
+                candidate.LoadRequired(733, "ma_hishelf_node_config_init");
+                candidate.LoadRequired(734, "ma_hishelf_node_init");
+                candidate.LoadRequired(735, "ma_hishelf_node_reinit");
+                candidate.LoadRequired(736, "ma_hishelf_node_uninit");
+                candidate.LoadRequired(737, "ma_delay_node_config_init");
+                candidate.LoadRequired(738, "ma_delay_node_init");
+                candidate.LoadRequired(739, "ma_delay_node_uninit");
+                candidate.LoadRequired(740, "ma_delay_node_set_wet");
+                candidate.LoadRequired(741, "ma_delay_node_get_wet");
+                candidate.LoadRequired(742, "ma_delay_node_set_dry");
+                candidate.LoadRequired(743, "ma_delay_node_get_dry");
+                candidate.LoadRequired(744, "ma_delay_node_set_decay");
+                candidate.LoadRequired(745, "ma_delay_node_get_decay");
+                candidate.LoadRequired(746, "ma_engine_node_config_init");
+                candidate.LoadRequired(747, "ma_engine_node_get_heap_size");
+                candidate.LoadRequired(748, "ma_engine_node_init_preallocated");
+                candidate.LoadRequired(749, "ma_engine_node_init");
+                candidate.LoadRequired(750, "ma_engine_node_uninit");
+                candidate.LoadRequired(751, "ma_sound_config_init");
+                candidate.LoadRequired(752, "ma_sound_config_init_2");
+                candidate.LoadRequired(753, "ma_sound_group_config_init");
+                candidate.LoadRequired(754, "ma_sound_group_config_init_2");
+                candidate.LoadRequired(755, "ma_engine_config_init");
+                candidate.LoadRequired(756, "ma_engine_init");
+                candidate.LoadRequired(757, "ma_engine_uninit");
+                candidate.LoadRequired(758, "ma_engine_read_pcm_frames");
+                candidate.LoadRequired(759, "ma_engine_get_node_graph");
+                candidate.LoadRequired(760, "ma_engine_get_resource_manager");
+                candidate.LoadRequired(761, "ma_engine_get_device");
+                candidate.LoadRequired(762, "ma_engine_get_log");
+                candidate.LoadRequired(763, "ma_engine_get_endpoint");
+                candidate.LoadRequired(764, "ma_engine_get_time_in_pcm_frames");
+                candidate.LoadRequired(765, "ma_engine_get_time_in_milliseconds");
+                candidate.LoadRequired(766, "ma_engine_set_time_in_pcm_frames");
+                candidate.LoadRequired(767, "ma_engine_set_time_in_milliseconds");
+                candidate.LoadRequired(768, "ma_engine_get_time");
+                candidate.LoadRequired(769, "ma_engine_set_time");
+                candidate.LoadRequired(770, "ma_engine_get_channels");
+                candidate.LoadRequired(771, "ma_engine_get_sample_rate");
+                candidate.LoadRequired(772, "ma_engine_start");
+                candidate.LoadRequired(773, "ma_engine_stop");
+                candidate.LoadRequired(774, "ma_engine_set_volume");
+                candidate.LoadRequired(775, "ma_engine_get_volume");
+                candidate.LoadRequired(776, "ma_engine_set_gain_db");
+                candidate.LoadRequired(777, "ma_engine_get_gain_db");
+                candidate.LoadRequired(778, "ma_engine_get_listener_count");
+                candidate.LoadRequired(779, "ma_engine_find_closest_listener");
+                candidate.LoadRequired(780, "ma_engine_listener_set_position");
+                candidate.LoadRequired(781, "ma_engine_listener_get_position");
+                candidate.LoadRequired(782, "ma_engine_listener_set_direction");
+                candidate.LoadRequired(783, "ma_engine_listener_get_direction");
+                candidate.LoadRequired(784, "ma_engine_listener_set_velocity");
+                candidate.LoadRequired(785, "ma_engine_listener_get_velocity");
+                candidate.LoadRequired(786, "ma_engine_listener_set_cone");
+                candidate.LoadRequired(787, "ma_engine_listener_get_cone");
+                candidate.LoadRequired(788, "ma_engine_listener_set_world_up");
+                candidate.LoadRequired(789, "ma_engine_listener_get_world_up");
+                candidate.LoadRequired(790, "ma_engine_listener_set_enabled");
+                candidate.LoadRequired(791, "ma_engine_listener_is_enabled");
+                candidate.LoadRequired(792, "ma_engine_play_sound_ex");
+                candidate.LoadRequired(793, "ma_engine_play_sound");
+                candidate.LoadRequired(794, "ma_sound_init_from_file");
+                candidate.LoadRequired(795, "ma_sound_init_from_file_w");
+                candidate.LoadRequired(796, "ma_sound_init_copy");
+                candidate.LoadRequired(797, "ma_sound_init_from_data_source");
+                candidate.LoadRequired(798, "ma_sound_init_ex");
+                candidate.LoadRequired(799, "ma_sound_uninit");
+                candidate.LoadRequired(800, "ma_sound_get_engine");
+                candidate.LoadRequired(801, "ma_sound_get_data_source");
+                candidate.LoadRequired(802, "ma_sound_start");
+                candidate.LoadRequired(803, "ma_sound_stop");
+                candidate.LoadRequired(804, "ma_sound_stop_with_fade_in_pcm_frames");
+                candidate.LoadRequired(805, "ma_sound_stop_with_fade_in_milliseconds");
+                candidate.LoadRequired(806, "ma_sound_reset_start_time");
+                candidate.LoadRequired(807, "ma_sound_reset_stop_time");
+                candidate.LoadRequired(808, "ma_sound_reset_fade");
+                candidate.LoadRequired(809, "ma_sound_reset_stop_time_and_fade");
+                candidate.LoadRequired(810, "ma_sound_set_volume");
+                candidate.LoadRequired(811, "ma_sound_get_volume");
+                candidate.LoadRequired(812, "ma_sound_set_pan");
+                candidate.LoadRequired(813, "ma_sound_get_pan");
+                candidate.LoadRequired(814, "ma_sound_set_pan_mode");
+                candidate.LoadRequired(815, "ma_sound_get_pan_mode");
+                candidate.LoadRequired(816, "ma_sound_set_pitch");
+                candidate.LoadRequired(817, "ma_sound_get_pitch");
+                candidate.LoadRequired(818, "ma_sound_set_spatialization_enabled");
+                candidate.LoadRequired(819, "ma_sound_is_spatialization_enabled");
+                candidate.LoadRequired(820, "ma_sound_set_pinned_listener_index");
+                candidate.LoadRequired(821, "ma_sound_get_pinned_listener_index");
+                candidate.LoadRequired(822, "ma_sound_get_listener_index");
+                candidate.LoadRequired(823, "ma_sound_get_direction_to_listener");
+                candidate.LoadRequired(824, "ma_sound_set_position");
+                candidate.LoadRequired(825, "ma_sound_get_position");
+                candidate.LoadRequired(826, "ma_sound_set_direction");
+                candidate.LoadRequired(827, "ma_sound_get_direction");
+                candidate.LoadRequired(828, "ma_sound_set_velocity");
+                candidate.LoadRequired(829, "ma_sound_get_velocity");
+                candidate.LoadRequired(830, "ma_sound_set_attenuation_model");
+                candidate.LoadRequired(831, "ma_sound_get_attenuation_model");
+                candidate.LoadRequired(832, "ma_sound_set_positioning");
+                candidate.LoadRequired(833, "ma_sound_get_positioning");
+                candidate.LoadRequired(834, "ma_sound_set_rolloff");
+                candidate.LoadRequired(835, "ma_sound_get_rolloff");
+                candidate.LoadRequired(836, "ma_sound_set_min_gain");
+                candidate.LoadRequired(837, "ma_sound_get_min_gain");
+                candidate.LoadRequired(838, "ma_sound_set_max_gain");
+                candidate.LoadRequired(839, "ma_sound_get_max_gain");
+                candidate.LoadRequired(840, "ma_sound_set_min_distance");
+                candidate.LoadRequired(841, "ma_sound_get_min_distance");
+                candidate.LoadRequired(842, "ma_sound_set_max_distance");
+                candidate.LoadRequired(843, "ma_sound_get_max_distance");
+                candidate.LoadRequired(844, "ma_sound_set_cone");
+                candidate.LoadRequired(845, "ma_sound_get_cone");
+                candidate.LoadRequired(846, "ma_sound_set_doppler_factor");
+                candidate.LoadRequired(847, "ma_sound_get_doppler_factor");
+                candidate.LoadRequired(848, "ma_sound_set_directional_attenuation_factor");
+                candidate.LoadRequired(849, "ma_sound_get_directional_attenuation_factor");
+                candidate.LoadRequired(850, "ma_sound_set_fade_in_pcm_frames");
+                candidate.LoadRequired(851, "ma_sound_set_fade_in_milliseconds");
+                candidate.LoadRequired(852, "ma_sound_set_fade_start_in_pcm_frames");
+                candidate.LoadRequired(853, "ma_sound_set_fade_start_in_milliseconds");
+                candidate.LoadRequired(854, "ma_sound_get_current_fade_volume");
+                candidate.LoadRequired(855, "ma_sound_set_start_time_in_pcm_frames");
+                candidate.LoadRequired(856, "ma_sound_set_start_time_in_milliseconds");
+                candidate.LoadRequired(857, "ma_sound_set_stop_time_in_pcm_frames");
+                candidate.LoadRequired(858, "ma_sound_set_stop_time_in_milliseconds");
+                candidate.LoadRequired(859, "ma_sound_set_stop_time_with_fade_in_pcm_frames");
+                candidate.LoadRequired(860, "ma_sound_set_stop_time_with_fade_in_milliseconds");
+                candidate.LoadRequired(861, "ma_sound_is_playing");
+                candidate.LoadRequired(862, "ma_sound_get_time_in_pcm_frames");
+                candidate.LoadRequired(863, "ma_sound_get_time_in_milliseconds");
+                candidate.LoadRequired(864, "ma_sound_set_looping");
+                candidate.LoadRequired(865, "ma_sound_is_looping");
+                candidate.LoadRequired(866, "ma_sound_at_end");
+                candidate.LoadRequired(867, "ma_sound_seek_to_pcm_frame");
+                candidate.LoadRequired(868, "ma_sound_seek_to_second");
+                candidate.LoadRequired(869, "ma_sound_get_data_format");
+                candidate.LoadRequired(870, "ma_sound_get_cursor_in_pcm_frames");
+                candidate.LoadRequired(871, "ma_sound_get_length_in_pcm_frames");
+                candidate.LoadRequired(872, "ma_sound_get_cursor_in_seconds");
+                candidate.LoadRequired(873, "ma_sound_get_length_in_seconds");
+                candidate.LoadRequired(874, "ma_sound_set_end_callback");
+                candidate.LoadRequired(875, "ma_sound_group_init");
+                candidate.LoadRequired(876, "ma_sound_group_init_ex");
+                candidate.LoadRequired(877, "ma_sound_group_uninit");
+                candidate.LoadRequired(878, "ma_sound_group_get_engine");
+                candidate.LoadRequired(879, "ma_sound_group_start");
+                candidate.LoadRequired(880, "ma_sound_group_stop");
+                candidate.LoadRequired(881, "ma_sound_group_set_volume");
+                candidate.LoadRequired(882, "ma_sound_group_get_volume");
+                candidate.LoadRequired(883, "ma_sound_group_set_pan");
+                candidate.LoadRequired(884, "ma_sound_group_get_pan");
+                candidate.LoadRequired(885, "ma_sound_group_set_pan_mode");
+                candidate.LoadRequired(886, "ma_sound_group_get_pan_mode");
+                candidate.LoadRequired(887, "ma_sound_group_set_pitch");
+                candidate.LoadRequired(888, "ma_sound_group_get_pitch");
+                candidate.LoadRequired(889, "ma_sound_group_set_spatialization_enabled");
+                candidate.LoadRequired(890, "ma_sound_group_is_spatialization_enabled");
+                candidate.LoadRequired(891, "ma_sound_group_set_pinned_listener_index");
+                candidate.LoadRequired(892, "ma_sound_group_get_pinned_listener_index");
+                candidate.LoadRequired(893, "ma_sound_group_get_listener_index");
+                candidate.LoadRequired(894, "ma_sound_group_get_direction_to_listener");
+                candidate.LoadRequired(895, "ma_sound_group_set_position");
+                candidate.LoadRequired(896, "ma_sound_group_get_position");
+                candidate.LoadRequired(897, "ma_sound_group_set_direction");
+                candidate.LoadRequired(898, "ma_sound_group_get_direction");
+                candidate.LoadRequired(899, "ma_sound_group_set_velocity");
+                candidate.LoadRequired(900, "ma_sound_group_get_velocity");
+                candidate.LoadRequired(901, "ma_sound_group_set_attenuation_model");
+                candidate.LoadRequired(902, "ma_sound_group_get_attenuation_model");
+                candidate.LoadRequired(903, "ma_sound_group_set_positioning");
+                candidate.LoadRequired(904, "ma_sound_group_get_positioning");
+                candidate.LoadRequired(905, "ma_sound_group_set_rolloff");
+                candidate.LoadRequired(906, "ma_sound_group_get_rolloff");
+                candidate.LoadRequired(907, "ma_sound_group_set_min_gain");
+                candidate.LoadRequired(908, "ma_sound_group_get_min_gain");
+                candidate.LoadRequired(909, "ma_sound_group_set_max_gain");
+                candidate.LoadRequired(910, "ma_sound_group_get_max_gain");
+                candidate.LoadRequired(911, "ma_sound_group_set_min_distance");
+                candidate.LoadRequired(912, "ma_sound_group_get_min_distance");
+                candidate.LoadRequired(913, "ma_sound_group_set_max_distance");
+                candidate.LoadRequired(914, "ma_sound_group_get_max_distance");
+                candidate.LoadRequired(915, "ma_sound_group_set_cone");
+                candidate.LoadRequired(916, "ma_sound_group_get_cone");
+                candidate.LoadRequired(917, "ma_sound_group_set_doppler_factor");
+                candidate.LoadRequired(918, "ma_sound_group_get_doppler_factor");
+                candidate.LoadRequired(919, "ma_sound_group_set_directional_attenuation_factor");
+                candidate.LoadRequired(920, "ma_sound_group_get_directional_attenuation_factor");
+                candidate.LoadRequired(921, "ma_sound_group_set_fade_in_pcm_frames");
+                candidate.LoadRequired(922, "ma_sound_group_set_fade_in_milliseconds");
+                candidate.LoadRequired(923, "ma_sound_group_get_current_fade_volume");
+                candidate.LoadRequired(924, "ma_sound_group_set_start_time_in_pcm_frames");
+                candidate.LoadRequired(925, "ma_sound_group_set_start_time_in_milliseconds");
+                candidate.LoadRequired(926, "ma_sound_group_set_stop_time_in_pcm_frames");
+                candidate.LoadRequired(927, "ma_sound_group_set_stop_time_in_milliseconds");
+                candidate.LoadRequired(928, "ma_sound_group_is_playing");
+                candidate.LoadRequired(929, "ma_sound_group_get_time_in_pcm_frames");
+            }
+            catch
+            {
+                candidate.Free();
+                throw;
+            }
+
+            var previous = funcTable;
+            funcTable = candidate;
+            previous?.Free();
         }
 
-        public static void FreeApi() => funcTable.Free();
+        public static void FreeApi() => funcTable?.Free();
     }
 }

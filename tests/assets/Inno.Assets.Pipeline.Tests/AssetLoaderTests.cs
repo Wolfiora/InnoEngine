@@ -1,3 +1,5 @@
+using Inno.Adapter.Serialization.DotNet;
+using Inno.Adapter.Modules.DotNet;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -44,11 +46,11 @@ public sealed class AssetLoaderTests : IDisposable
         m_identityScope = m_identities.EnterScope();
         m_diagnosticScope = m_diagnostics.EnterScope();
         m_modules = new ModuleHost(new ModuleHostOptions
-        {
+        { catalogSource = new DotNetAssemblyCatalogSource(typeof(AssetLoaderTests).Assembly),
             cacheDirectory = Path.Combine(Path.GetTempPath(), "InnoAssetLoaderTests", "Assemblies")
         });
-        m_types = new TypeCatalog(m_modules);
-        m_serialization = new SerializationRegistry(m_types);
+        m_types = new TypeCatalog(m_modules, new ReflectionTypeCatalogSource());
+        m_serialization = new SerializationRegistry(m_types, new ReflectionSerializationMetadataSource());
         SlowAssetImporter.Reset();
         ImporterConflictProbe.duplicateExtension = false;
         MutableAssetImporter.attempts = 0;
@@ -738,9 +740,9 @@ public sealed class AssetLoaderTests : IDisposable
         using TestWorkspace workspace = new();
         workspace.WriteText("value.hookasset", "previous");
         var modules = new ModuleHost(new ModuleHostOptions
-        { cacheDirectory = Path.Combine(workspace.libraryRoot, "FaultedModules") });
-        var types = new TypeCatalog(modules);
-        var serialization = new SerializationRegistry(types);
+        { catalogSource = new DotNetAssemblyCatalogSource(typeof(AssetLoaderTests).Assembly), cacheDirectory = Path.Combine(workspace.libraryRoot, "FaultedModules") });
+        var types = new TypeCatalog(modules, new ReflectionTypeCatalogSource());
+        var serialization = new SerializationRegistry(types, new ReflectionSerializationMetadataSource());
         var pipeline = new AssetPipeline(modules, types, serialization, m_identities,
             m_diagnostics, m_logs, new AssetPipelineOptions
             { assetRoot = workspace.assetRoot, libraryRoot = workspace.libraryRoot });
@@ -947,7 +949,7 @@ public sealed class AssetLoaderTests : IDisposable
         using var loader = workspace.CreateLoader(m_types, m_serialization, m_identities, m_diagnostics, m_logs);
         Assert.True(loader.Import(AssetPath.Project("Conflict/initialize.txt")));
         InvalidOperationException exception = Assert.Throws<InvalidOperationException>(
-            () => m_modules.Load(new AssemblyLoadRequest
+            () => m_modules.Load(new DotNetModuleSource
             {
                 moduleName = "DuplicateAssetImporters",
                 mainAssemblyPath = Path.Combine(
@@ -1954,6 +1956,30 @@ public sealed class AssetLoaderTests : IDisposable
         Assert.True(loader.CollectArtifacts(TimeSpan.Zero, maximumSizeBytes: 0) >= 1);
         Assert.False(System.IO.File.Exists(oldArtifact.absolutePath));
         Assert.True(System.IO.File.Exists(currentArtifact.absolutePath));
+    }
+
+    [Fact]
+    public void ArtifactLookupRejectsWrongLengthAndExportRejectsSameLengthCorruption()
+    {
+        using TestWorkspace workspace = new();
+        workspace.WriteText("Text/value.txt", "value");
+        using var loader = workspace.CreateLoader(m_types, m_serialization, m_identities, m_diagnostics, m_logs);
+        loader.Rescan();
+        Assert.True(loader.TryGetInfo(AssetPath.Project("Text/value.txt"), out AssetInfo? info));
+        Assert.True(loader.TryGetArtifact(info!.persistentId, "runtime", out AssetArtifactInfo? artifact));
+        string path = artifact!.absolutePath;
+        byte[] original = System.IO.File.ReadAllBytes(path);
+
+        System.IO.File.WriteAllBytes(path, [1]);
+        Assert.Throws<InvalidDataException>(() => loader.TryGetArtifact(info.persistentId, "runtime", out _));
+        byte[] changed = (byte[])original.Clone();
+        changed[0] ^= 0x01;
+        System.IO.File.WriteAllBytes(path, changed);
+        Assert.True(loader.TryGetArtifact(info.persistentId, "runtime", out _));
+        Assert.Throws<InvalidDataException>(() => loader.ExportRuntimeArtifacts(Path.Combine(workspace.libraryRoot, "CorruptedRuntime")));
+        System.IO.File.WriteAllBytes(path, original);
+        Assert.True(loader.TryGetArtifact(info.persistentId, "runtime", out _));
+        loader.ExportRuntimeArtifacts(Path.Combine(workspace.libraryRoot, "ValidRuntime"));
     }
 
     [Fact]

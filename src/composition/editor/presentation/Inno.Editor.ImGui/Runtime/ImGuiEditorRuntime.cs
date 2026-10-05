@@ -198,8 +198,8 @@ public sealed class ImGuiEditorRuntime : EditorRuntime
         float separator,
         Vector2 minimumWindowSize
     ) {
-        ImGuiDockNodePtr first = new(node.ChildNodes[0].Handle);
-        ImGuiDockNodePtr second = new(node.ChildNodes[1].Handle);
+        ImGuiDockNodePtr first = new(node.ChildNodes[0].handle);
+        ImGuiDockNodePtr second = new(node.ChildNodes[1].handle);
         if (first == ImGuiDockNodePtr.Null || second == ImGuiDockNodePtr.Null
             || node.SplitAxis is not (ImGuiAxis.X or ImGuiAxis.Y))
             return;

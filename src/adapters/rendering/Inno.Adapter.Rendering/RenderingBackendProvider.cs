@@ -1,3 +1,4 @@
+using System;
 using Inno.Rendering;
 
 namespace Inno.Adapter.Rendering;
@@ -8,9 +9,25 @@ namespace Inno.Adapter.Rendering;
 public abstract class RenderingBackendProvider
 {
     /// <summary>
+    /// Captures the registration identity assigned by the composition owner.
+    /// </summary>
+    /// <param name="id">
+    /// The assigned implementation identity.
+    /// </param>
+    /// <exception cref="ArgumentException">
+    /// The identity is unassigned.
+    /// </exception>
+    protected RenderingBackendProvider(RenderingBackendId id)
+    {
+        if (!id.isValid)
+            throw new ArgumentException("A provider requires an assigned backend ID.", nameof(id));
+        this.id = id;
+    }
+
+    /// <summary>
     /// Gets the stable implementation identity paired with its authoring tools.
     /// </summary>
-    public abstract RenderingBackendId id { get; }
+    public RenderingBackendId id { get; }
 
     /// <summary>
     /// Creates a caller-owned device using backend-neutral surface options.

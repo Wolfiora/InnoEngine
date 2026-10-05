@@ -41,7 +41,7 @@ public sealed class AssetRuntimeOwnerTests
     public void ArtifactRetentionCountsIndependentIdempotentLeases()
     {
         var retention = new ArtifactRetention();
-        var artifact = new AssetArtifactInfo(new AssetArtifactKey("AABB"), "runtime", "/tmp/value", "HASH", 0);
+        var artifact = new AssetArtifactInfo(new AssetArtifactKey(new string('A', 64)), "runtime", "/tmp/value", "HASH", 0);
         using ArtifactLease first = retention.Retain(artifact);
         using ArtifactLease second = retention.Retain(artifact);
         Assert.Single(retention.GetRetainedKeys());

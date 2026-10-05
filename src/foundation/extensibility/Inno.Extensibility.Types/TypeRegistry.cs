@@ -26,6 +26,7 @@ public abstract class TypeRegistry<TSnapshot> : IDisposable
     private bool m_activationInProgress;
     private bool m_disposed;
     private List<object>? m_candidateResources;
+    private TypeCacheSnapshot? m_candidateTypes;
     private readonly TimeSpan m_retirementTimeout;
     private Exception? m_retirementFailure;
     private object? m_retainedRetirement;
@@ -356,8 +357,8 @@ public abstract class TypeRegistry<TSnapshot> : IDisposable
 
         try
         {
-            return OwnCandidateExtension((TExtension)(Activator.CreateInstance(type, nonPublic: true)
-                ?? throw new InvalidOperationException("Activator returned null.")));
+            TypeCacheSnapshot snapshot = m_candidateTypes ?? m_types.current;
+            return OwnCandidateExtension((TExtension)snapshot.CreateInstance(type));
         }
         catch (Exception exception)
         {
@@ -463,6 +464,7 @@ public abstract class TypeRegistry<TSnapshot> : IDisposable
 
             m_activationInProgress = true;
             m_candidateResources = [];
+            m_candidateTypes = types;
             try
             {
                 TSnapshot candidate = Build(types);
@@ -495,6 +497,7 @@ public abstract class TypeRegistry<TSnapshot> : IDisposable
             {
                 m_candidateResources.Clear();
                 m_candidateResources = null;
+                m_candidateTypes = null;
             }
         }
     }

@@ -30,7 +30,10 @@ public sealed class EngineHost : IDisposable
     internal EngineHost(
         string metadataCacheDirectory,
         TimeSpan retirementTimeout,
-        LogDeliveryMode logDeliveryMode
+        LogDeliveryMode logDeliveryMode,
+        IAssemblyCatalogSource moduleSource,
+        ITypeCatalogSource typeSource,
+        ISerializationMetadataSource serializationMetadata
     ) {
         this.retirementTimeout = retirementTimeout;
         logs = new LogRouter(deliveryMode: logDeliveryMode);
@@ -39,10 +42,11 @@ public sealed class EngineHost : IDisposable
         {
             modules = new ModuleHost(new ModuleHostOptions
             {
-                cacheDirectory = metadataCacheDirectory
+                cacheDirectory = metadataCacheDirectory,
+                catalogSource = moduleSource
             });
-            types = new TypeCatalog(modules);
-            serialization = new SerializationRegistry(types);
+            types = new TypeCatalog(modules, typeSource);
+            serialization = new SerializationRegistry(types, serializationMetadata);
         }
         catch
         {

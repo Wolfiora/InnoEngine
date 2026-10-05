@@ -7,57 +7,92 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <WarningsAsErrors>$(WarningsAsErrors);CS1572;CS1573;CS1591</WarningsAsErrors>
   </PropertyGroup>
+
   <ItemGroup>
     <ProjectReference Include="../../../../native/Inno.Native.Bgfx/Inno.Native.Bgfx.csproj" PrivateAssets="compile" />
   </ItemGroup>
+
   <ItemGroup>
-    <ProjectReference Include="..\Inno.Adapter.Rendering\Inno.Adapter.Rendering.csproj" />
-    <ProjectReference Include="..\..\..\services\platform\Inno.Platform\Inno.Platform.csproj" />
-    <ProjectReference Include="..\..\..\services\rendering\Inno.Rendering\Inno.Rendering.csproj" />
+    <ProjectReference Include="../../platform/Inno.Adapter.Platform/Inno.Adapter.Platform.csproj" />
+    <ProjectReference Include="../Inno.Adapter.Rendering/Inno.Adapter.Rendering.csproj" />
+    <ProjectReference Include="../../../services/platform/Inno.Platform/Inno.Platform.csproj" />
+    <ProjectReference Include="../../../services/rendering/Inno.Rendering/Inno.Rendering.csproj" />
   </ItemGroup>
+
   <ItemGroup>
     <_CompositionShaderSource Include="Shaders/**/*" />
     <_CompositionShaderApi Include="OpenGLES" Condition="'$(InnoNativeTarget)' == 'browser-wasm'" />
-    <_CompositionShaderApi Include="Metal;Vulkan;OpenGL" Condition="'$(InnoNativeTarget)' != 'browser-wasm' and $([MSBuild]::IsOSPlatform('OSX'))" />
-    <_CompositionShaderApi Include="Direct3D11;Direct3D12;Vulkan;OpenGL" Condition="'$(InnoNativeTarget)' != 'browser-wasm' and $([MSBuild]::IsOSPlatform('Windows'))" />
+    <_CompositionShaderApi
+      Include="Metal;Vulkan;OpenGL"
+      Condition="'$(InnoNativeTarget)' != 'browser-wasm' and $([MSBuild]::IsOSPlatform('OSX'))" />
+    <_CompositionShaderApi
+      Include="Direct3D11;Direct3D12;Vulkan;OpenGL"
+      Condition="'$(InnoNativeTarget)' != 'browser-wasm' and $([MSBuild]::IsOSPlatform('Windows'))" />
   </ItemGroup>
+
   <PropertyGroup>
     <_CompositionShaderPlatform Condition="'$(InnoNativeTarget)' == 'browser-wasm'">BrowserWasm</_CompositionShaderPlatform>
-    <_CompositionShaderPlatform Condition="'$(InnoNativeTarget)' != 'browser-wasm' and $([MSBuild]::IsOSPlatform('OSX'))">MacOSArm64</_CompositionShaderPlatform>
-    <_CompositionShaderPlatform Condition="'$(InnoNativeTarget)' != 'browser-wasm' and $([MSBuild]::IsOSPlatform('Windows'))">WindowsX64</_CompositionShaderPlatform>
+    <_CompositionShaderPlatform
+      Condition="'$(InnoNativeTarget)' != 'browser-wasm' and $([MSBuild]::IsOSPlatform('OSX'))">MacOSArm64</_CompositionShaderPlatform>
+    <_CompositionShaderPlatform
+      Condition="'$(InnoNativeTarget)' != 'browser-wasm' and $([MSBuild]::IsOSPlatform('Windows'))">WindowsX64</_CompositionShaderPlatform>
     <_CompositionCompiler>$([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)/../../../../build/tasks/Inno.Build.Tasks/bin/$(Configuration)/net9.0/Inno.Build.Tasks.dll'))</_CompositionCompiler>
   </PropertyGroup>
+
   <UsingTask TaskName="Inno.Build.Tasks.CompileShaderTask" AssemblyFile="$(_CompositionCompiler)" />
+
   <Target Name="BuildCompositionShaderCompiler">
-    <MSBuild Projects="../../../../build/tasks/Inno.Build.Tasks/Inno.Build.Tasks.csproj"
-             Targets="Restore;Build" Properties="Configuration=$(Configuration)"
-             RemoveProperties="InnoNativeTarget;RuntimeIdentifier;SelfContained;PublishSingleFile;BaseOutputPath;BaseIntermediateOutputPath" />
+    <MSBuild
+      Projects="../../../../build/tasks/Inno.Build.Tasks/Inno.Build.Tasks.csproj"
+      Targets="Restore;Build"
+      Properties="Configuration=$(Configuration)"
+      RemoveProperties="InnoNativeTarget;RuntimeIdentifier;SelfContained;PublishSingleFile;BaseOutputPath;BaseIntermediateOutputPath" />
   </Target>
+
   <Target Name="CollectCompositionShaderCompilerInputs" DependsOnTargets="BuildCompositionShaderCompiler">
     <ItemGroup>
       <_CompositionShaderCompilerInput Include="$([System.IO.Path]::GetDirectoryName('$(_CompositionCompiler)'))/*.dll" />
       <_CompositionShaderCompilerInput Include="../../../../extern/bgfx/src/*.sh;../../../../extern/bgfx/tools/bin/**/*" />
     </ItemGroup>
   </Target>
-  <Target Name="CompileCompositionShaderGraphs" DependsOnTargets="CollectCompositionShaderCompilerInputs"
-          Inputs="@(_CompositionShaderSource);@(_CompositionShaderCompilerInput);$(_CompositionCompiler);$(MSBuildProjectFullPath)"
-          Outputs="@(_CompositionShaderApi->'$(IntermediateOutputPath)Shaders/Composition.%(Identity).bin');@(_CompositionShaderApi->'$(IntermediateOutputPath)Shaders/OutputTransfer.%(Identity).bin')">
-    <Error Condition="'$(_CompositionShaderPlatform)' == ''" Text="No BGFX composition shader distribution target exists for this host." />
-    <CompileShaderTask AssetRoot="$(MSBuildProjectDirectory)/Shaders" ShaderPath="Composition.ishader"
-                       Platform="$(_CompositionShaderPlatform)" Renderer="%(_CompositionShaderApi.Identity)"
-                       OutputFile="$(MSBuildProjectDirectory)/$(IntermediateOutputPath)Shaders/Composition.%(_CompositionShaderApi.Identity).bin" />
-    <CompileShaderTask AssetRoot="$(MSBuildProjectDirectory)/Shaders" ShaderPath="OutputTransfer.ishader"
-                       Platform="$(_CompositionShaderPlatform)" Renderer="%(_CompositionShaderApi.Identity)"
-                       OutputFile="$(MSBuildProjectDirectory)/$(IntermediateOutputPath)Shaders/OutputTransfer.%(_CompositionShaderApi.Identity).bin" />
+
+  <Target
+    Name="CompileCompositionShaderGraphs"
+    DependsOnTargets="CollectCompositionShaderCompilerInputs"
+    Inputs="@(_CompositionShaderSource);@(_CompositionShaderCompilerInput);$(_CompositionCompiler);$(MSBuildProjectFullPath)"
+    Outputs="@(_CompositionShaderApi-&gt;'$(IntermediateOutputPath)Shaders/Composition.%(Identity).bin');@(_CompositionShaderApi-&gt;'$(IntermediateOutputPath)Shaders/OutputTransfer.%(Identity).bin')">
+    <Error
+      Condition="'$(_CompositionShaderPlatform)' == ''"
+      Text="No BGFX composition shader distribution target exists for this host." />
+    <CompileShaderTask
+      AssetRoot="$(MSBuildProjectDirectory)/Shaders"
+      ShaderPath="Composition.ishader"
+      Platform="$(_CompositionShaderPlatform)"
+      Renderer="%(_CompositionShaderApi.Identity)"
+      OutputFile="$(MSBuildProjectDirectory)/$(IntermediateOutputPath)Shaders/Composition.%(_CompositionShaderApi.Identity).bin" />
+    <CompileShaderTask
+      AssetRoot="$(MSBuildProjectDirectory)/Shaders"
+      ShaderPath="OutputTransfer.ishader"
+      Platform="$(_CompositionShaderPlatform)"
+      Renderer="%(_CompositionShaderApi.Identity)"
+      OutputFile="$(MSBuildProjectDirectory)/$(IntermediateOutputPath)Shaders/OutputTransfer.%(_CompositionShaderApi.Identity).bin" />
   </Target>
-  <Target Name="IncludeCompositionShaderArtifacts" BeforeTargets="AssignTargetPaths" DependsOnTargets="CompileCompositionShaderGraphs">
+
+  <Target
+    Name="IncludeCompositionShaderArtifacts"
+    BeforeTargets="AssignTargetPaths"
+    DependsOnTargets="CompileCompositionShaderGraphs">
     <ItemGroup>
-      <EmbeddedResource Include="@(_CompositionShaderApi->'$(IntermediateOutputPath)Shaders/Composition.%(Identity).bin')">
+      <EmbeddedResource Include="@(_CompositionShaderApi-&gt;'$(IntermediateOutputPath)Shaders/Composition.%(Identity).bin')">
         <LogicalName>Inno.BgfxShaders.Composition.$(_CompositionShaderPlatform).%(Filename)</LogicalName>
       </EmbeddedResource>
-      <EmbeddedResource Include="@(_CompositionShaderApi->'$(IntermediateOutputPath)Shaders/OutputTransfer.%(Identity).bin')">
+      <EmbeddedResource Include="@(_CompositionShaderApi-&gt;'$(IntermediateOutputPath)Shaders/OutputTransfer.%(Identity).bin')">
         <LogicalName>Inno.BgfxShaders.OutputTransfer.$(_CompositionShaderPlatform).%(Filename)</LogicalName>
       </EmbeddedResource>
     </ItemGroup>
   </Target>
+
+  <ItemGroup>
+    <ProjectReference Include="../../../foundation/extensibility/Inno.Extensibility.Catalogs/Inno.Extensibility.Catalogs.csproj" />
+  </ItemGroup>
 </Project>

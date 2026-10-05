@@ -2,7 +2,7 @@
 
 本记录区分已经实现的行为与尚未完成的计划，不作为完成验收报告。
 
-[问题索引](README.md) · [Shader 创作 API](../render/Inno.Rendering.Shaders.md)
+[问题索引](README.md) · [Shader 创作 API](../rendering/Inno.Rendering.Shaders.md)
 
 ## 2026-09-12：显式保存取代自动保存
 

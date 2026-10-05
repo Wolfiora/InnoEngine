@@ -1,3 +1,4 @@
+using Inno.Build.Managed;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -12,6 +13,16 @@ public interface IGameBuildTarget : IPlayerSupportPackValidator
     /// Gets the stable target identity implemented by this packager.
     /// </summary>
     BuildTargetId id { get; }
+
+    /// <summary>
+    /// Gets the managed publisher selected when the profile does not specify an override.
+    /// </summary>
+    ManagedDeploymentId defaultManagedDeployment { get; }
+
+    /// <summary>
+    /// Gets the managed toolchain target identifier required by this platform composition.
+    /// </summary>
+    string runtimeIdentifier { get; }
 
     /// <summary>
     /// Gets the user-facing target name presented by authoring hosts.

@@ -1,3 +1,4 @@
+using Inno.Adapter.Modules.DotNet;
 using System;
 using System.IO;
 using System.Linq;
@@ -94,7 +95,7 @@ public sealed class PluginSceneReloadTests : IDisposable
         Assert.Equal(recovered.identity.runtimeIdentity, recoveredChange.resolution.runtimeIdentity);
     }
 
-    private static AssemblyLoadRequest CreateRequest()
+    private static DotNetModuleSource CreateRequest()
         => new()
         {
             moduleName = "SceneReloadPluginTests",

@@ -28,7 +28,7 @@ internal static class Program
             using EditorHost host = EditorHost.Create(
                 adapterCatalog,
                 AdapterSelection.defaultValue,
-                PresentationBackend.ImGui,
+                PresentationBackendId.imGui,
                 projectDirectory,
                 graphicsApi);
             int exitCode = host.RunAsync(new PollingShellFrameDriver(), smokeFrameLimit).GetAwaiter().GetResult();

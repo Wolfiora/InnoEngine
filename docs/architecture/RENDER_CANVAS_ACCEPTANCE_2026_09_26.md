@@ -1,6 +1,6 @@
 # 渲染、Canvas 与插件样例验收记录（2026-09-26）
 
-[架构治理](README.md) · [渲染运行时](../render/Inno.Rendering.Runtime.md) · [样例导入](../assets/Inno.Assets.Pipeline.md)
+[架构治理](README.md) · [渲染运行时](../rendering/Inno.Rendering.Runtime.md) · [样例导入](../assets/Inno.Assets.Pipeline.md)
 
 ## 结论
 

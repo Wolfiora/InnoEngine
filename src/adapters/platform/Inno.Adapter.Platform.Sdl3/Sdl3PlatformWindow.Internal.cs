@@ -1,3 +1,4 @@
+using Inno.Adapter.Platform;
 using System;
 using System.Text;
 using Inno.Native.Sdl3;
@@ -20,10 +21,13 @@ public sealed partial class Sdl3PlatformWindow
     private int m_pixelHeight;
     private bool m_isClosed;
     private bool m_isFocused;
+    private bool m_hidden;
+    private bool m_minimized;
     private readonly PlatformNativeHandles m_nativeHandles;
     private readonly nint m_sdlWindowHandle;
     private bool m_disposed;
     internal SDLWindow sdlWindow => m_window;
+    internal bool isVisible => !m_hidden && !m_minimized;
 
     internal unsafe Sdl3PlatformWindow(
         SDLWindow window,
@@ -50,8 +54,10 @@ public sealed partial class Sdl3PlatformWindow
         m_width = currentWidth;
         m_height = currentHeight;
         RefreshPixelSize();
-        m_isFocused = !OperatingSystem.IsBrowser() &&
-            ((SDLWindowFlags)SDL.GetWindowFlags(m_window) & SDLWindowFlags.InputFocus) != 0;
+        var flags = (SDLWindowFlags)SDL.GetWindowFlags(m_window);
+        m_isFocused = !OperatingSystem.IsBrowser() && (flags & SDLWindowFlags.InputFocus) != 0;
+        m_hidden = (flags & SDLWindowFlags.Hidden) != 0;
+        m_minimized = (flags & SDLWindowFlags.Minimized) != 0;
         m_nativeHandles = GetNativeHandles(m_window);
     }
 
@@ -80,6 +86,25 @@ public sealed partial class Sdl3PlatformWindow
     internal void UpdateFocus(bool isFocused)
     {
         m_isFocused = isFocused;
+    }
+
+    internal void UpdateVisibility(SDLEventType eventType)
+    {
+        switch (eventType)
+        {
+            case SDLEventType.WindowHidden:
+                m_hidden = true;
+                break;
+            case SDLEventType.WindowShown:
+                m_hidden = false;
+                break;
+            case SDLEventType.WindowMinimized:
+                m_minimized = true;
+                break;
+            case SDLEventType.WindowRestored:
+                m_minimized = false;
+                break;
+        }
     }
 
     private void RefreshPixelSize()
@@ -123,23 +148,23 @@ public sealed partial class Sdl3PlatformWindow
     private static unsafe PlatformNativeHandles GetNativeHandles(SDLWindow window)
     {
         var props = SDL.GetWindowProperties(window);
-        var kind = PlatformNativeHandleKind.Unknown;
+        var kind = default(PlatformNativeHandleId);
         IntPtr windowHandle = IntPtr.Zero;
         IntPtr displayHandle = IntPtr.Zero;
 
         if (OperatingSystem.IsWindows())
         {
-            kind = PlatformNativeHandleKind.Win32;
+            kind = PlatformNativeHandleId.win32;
             windowHandle = (IntPtr)SDL.GetPointerProperty(props, SDL.SDL_PROP_WINDOW_WIN32_HWND_POINTER, (void*)0);
         }
         else if (OperatingSystem.IsMacOS())
         {
-            kind = PlatformNativeHandleKind.Cocoa;
+            kind = PlatformNativeHandleId.cocoa;
             windowHandle = (IntPtr)SDL.GetPointerProperty(props, SDL.SDL_PROP_WINDOW_COCOA_WINDOW_POINTER, (void*)0);
         }
         else if (OperatingSystem.IsBrowser())
         {
-            kind = PlatformNativeHandleKind.BrowserCanvas;
+            kind = PlatformNativeHandleId.browserCanvas;
             byte[] propertyName = Encoding.UTF8.GetBytes(SDL.SDL_PROP_WINDOW_EMSCRIPTEN_CANVAS_ID_STRING + '\0');
             fixed (byte* name = propertyName)
             {

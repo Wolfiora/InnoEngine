@@ -68,15 +68,41 @@ public sealed class SerializationReader
     /// <exception cref="InvalidOperationException">
     /// Thrown when the member is missing or invalid.
     /// </exception>
-    public TValue Read<TValue>(string name)
-    {
+    public TValue Read<TValue>(string name) => (TValue)Read(name, typeof(TValue))!;
+
+    /// <summary>
+    /// Reads a value using its declared metadata type without constructing a generic method at runtime.
+    /// </summary>
+    /// <param name="name">
+    /// The required non-empty member name.
+    /// </param>
+    /// <param name="declaredType">
+    /// The exact declaration whose converter and value semantics apply.
+    /// </param>
+    /// <returns>
+    /// The restored value, including null when the declaration permits it; invalid or missing data throws.
+    /// </returns>
+    /// <exception cref="ArgumentNullException">
+    /// The declared type is null.
+    /// </exception>
+    /// <exception cref="ArgumentException">
+    /// The member name is empty.
+    /// </exception>
+    /// <exception cref="InvalidOperationException">
+    /// The operation has ended or the member is missing, incompatible or unsupported.
+    /// </exception>
+    public object? Read(
+        string name,
+        Type declaredType
+    ) {
+        ArgumentNullException.ThrowIfNull(declaredType);
         SerializationNode node = GetRequiredNode(name);
-        return (TValue)ValuePipeline.Read(
+        return ValuePipeline.Read(
             node,
-            typeof(TValue),
+            declaredType,
             m_operation,
             AppendPath(name),
-            allowDefaultObject: false)!;
+            allowDefaultObject: false);
     }
 
     /// <summary>

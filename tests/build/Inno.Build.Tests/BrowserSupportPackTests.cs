@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Threading.Tasks;
 using Inno.Build;
 using Xunit;
 
@@ -17,12 +18,18 @@ public sealed class BrowserSupportPackTests : IDisposable
     }
 
     [Fact]
-    public void BrowserPackRequiresItsGameLinkerAndBindingRuntime()
+    public async Task BrowserPackRequiresItsGameLinkerAndBindingRuntime()
     {
-        string pack = Path.Combine(m_root, BuildTargetId.browserWasm.value);
+        string pack = Path.Combine(m_root, "candidate");
         Write(pack, "References/Inno.Runtime.dll");
-        Write(pack, "PlayerLink/BrowserPlayer.csproj");
+        Write(pack, "PlayerLink/Player.csproj");
         Write(pack, "PlayerLink/Program.cs");
+        Write(pack, "PlayerLink/BrowserPlayerComposition.cs");
+        Write(pack, "PlayerLink/BrowserContentLoader.cs");
+        Write(pack, "PlayerLink/BrowserBridge.cs");
+        Write(pack, "PlayerLink/global.json");
+        Write(pack, "PlayerLink/Analyzers/Inno.Runtime.Generators.dll");
+        Write(pack, "PlayerLink/Analyzers/Inno.Core.Serialization.Generators.dll");
         Write(pack, "PlayerLink/References/Inno.Player.Runtime.dll");
         Write(pack, "PlayerLink/wwwroot/index.html");
         Write(pack, "PlayerLink/wwwroot/main.js");
@@ -42,9 +49,12 @@ public sealed class BrowserSupportPackTests : IDisposable
             Write(pack, "PlayerLink/Native/" + archive);
         var catalog = new PlayerSupportPackCatalog(m_root);
 
-        Assert.Throws<InvalidDataException>(() => catalog.Resolve(BuildTargetId.browserWasm, new Inno.Build.Platform.Browser.BrowserSupportPackValidator()));
+        await Assert.ThrowsAsync<InvalidDataException>(() => catalog.PublishAsync(
+            BuildTargetId.browserWasm, pack, new Inno.Build.Platform.Browser.BrowserSupportPackValidator()).AsTask());
 
         Write(pack, "PlayerLink/References/BGCS.Runtime.dll");
+        pack = await catalog.PublishAsync(BuildTargetId.browserWasm, pack,
+            new Inno.Build.Platform.Browser.BrowserSupportPackValidator());
         Assert.Equal(pack, catalog.Resolve(BuildTargetId.browserWasm, new Inno.Build.Platform.Browser.BrowserSupportPackValidator()));
 
         File.Delete(Path.Combine(pack, "PlayerLink", "Native", "libSDL3.a"));

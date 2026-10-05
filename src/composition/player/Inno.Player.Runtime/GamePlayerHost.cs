@@ -65,6 +65,7 @@ internal sealed class GamePlayerHost : ShellHost
             packagedContentRoot,
             persistentRoot);
         EngineHost engine = new EngineHostBuilder()
+            .UseMetadataSources(options.modules, options.types, options.serializationMetadata)
             .UseMetadataCache(Path.Combine(persistentRoot, "Library", "RuntimeMetadata"))
             .UseLogDelivery(options.logDeliveryMode)
             .Build();
@@ -76,8 +77,7 @@ internal sealed class GamePlayerHost : ShellHost
             ActivateRuntimeModules(
                 options.moduleActivator,
                 engine.modules,
-                manifest.modules,
-                Path.Combine(runtimeContentRoot, "Managed"));
+                GameCodeDeployment.FromManifest(manifest.modules));
             host = new GamePlayerHost(
                 options.adapters,
                 new ShellOptions
@@ -89,12 +89,14 @@ internal sealed class GamePlayerHost : ShellHost
                         width = manifest.windowWidth,
                         height = manifest.windowHeight,
                         resizable = true,
-                        highPixelDensity = true
+                        highPixelDensity = true,
+                        visible = options.windowVisible
                     },
                     preferredGraphicsApi = options.graphicsApi,
                     verticalSync = true,
                     sRgbBackbuffer = true,
-                    forceSingleThreadedRendering = options.renderOnCallingThread
+                    forceSingleThreadedRendering = options.renderOnCallingThread,
+                    suspendWhenHidden = options.windowVisible
                 },
                 engine, options);
             host.InitializeRuntime(
@@ -134,7 +136,15 @@ internal sealed class GamePlayerHost : ShellHost
     /// <param name="evnt">
     /// Event produced by the common shell.
     /// </param>
-    protected override void OnEvent(Event evnt) => session.events.Enqueue(evnt);
+    protected override void OnEvent(Event evnt)
+    {
+        if (evnt is not ApplicationSuspensionChangedEvent)
+            session.events.Enqueue(evnt);
+    }
+
+    /// <inheritdoc />
+    protected override void OnSuspensionChanged(bool isSuspended)
+        => session.events.Emit(new ApplicationSuspensionChangedEvent(isSuspended));
 
     /// <summary>
     /// Advances the active game runtime session for one common shell frame.
@@ -286,42 +296,18 @@ internal sealed class GamePlayerHost : ShellHost
     private static void ActivateRuntimeModules(
         IPlayerModuleActivator activator,
         ModuleHost modules,
-        IReadOnlyList<GameRuntimeModule> deployedModules,
-        string managedRoot
+        GameCodeDeployment deployment
     ) {
+        ArgumentNullException.ThrowIfNull(activator);
         ArgumentNullException.ThrowIfNull(modules);
-        ArgumentNullException.ThrowIfNull(deployedModules);
-        string root = Path.GetFullPath(managedRoot);
-        if (!Directory.Exists(root))
-            throw new DirectoryNotFoundException($"Deployed managed content root '{root}' does not exist.");
-
-        string[] declaredFiles = deployedModules
-            .SelectMany(static module => module.preloadAssemblies.Prepend(module.mainAssembly))
-            .ToArray();
-        string[] actualFiles = Directory.EnumerateFiles(root, "*.dll", SearchOption.TopDirectoryOnly)
-            .Select(Path.GetFileName)
-            .Order(StringComparer.OrdinalIgnoreCase)
-            .ToArray()!;
-        if (!declaredFiles.Order(StringComparer.OrdinalIgnoreCase).SequenceEqual(
-                actualFiles,
-                StringComparer.OrdinalIgnoreCase))
-        {
-            throw new InvalidDataException(
-                "Deployed managed assemblies do not exactly match the frozen runtime module manifest.");
-        }
-
-        activator.Activate(modules, deployedModules, root);
-
-        string[] activeNames = modules.modules
-            .Select(static module => module.moduleName)
-            .Order(StringComparer.Ordinal)
-            .ToArray();
-        string[] expectedNames = deployedModules
-            .Select(static module => module.name)
-            .Order(StringComparer.Ordinal)
-            .ToArray();
+        ArgumentNullException.ThrowIfNull(deployment);
+        activator.Activate(modules, deployment);
+        string[] activeNames = modules.modules.Select(static module => module.moduleName)
+            .Order(StringComparer.Ordinal).ToArray();
+        string[] expectedNames = deployment.modules.Select(static module => module.name)
+            .Order(StringComparer.Ordinal).ToArray();
         if (!activeNames.SequenceEqual(expectedNames, StringComparer.Ordinal))
-            throw new InvalidOperationException("The frozen runtime module generation was not activated completely.");
+            throw new InvalidOperationException("The frozen runtime code generation was not activated completely.");
     }
 
     private sealed class SmokeDiagnostics : IDiagnosticSink

@@ -97,7 +97,7 @@ public sealed class AssetResidencyTests
         public ArtifactLease AcquireArtifact(Guid persistentId, string outputName)
             => CreateArtifactLease(
                 new AssetArtifactInfo(
-                    new AssetArtifactKey("AA"),
+                    new AssetArtifactKey(new string('A', 64)),
                     outputName,
                     m_artifactPath,
                     "HASH",

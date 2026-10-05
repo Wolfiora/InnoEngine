@@ -74,7 +74,7 @@ internal sealed class AssetArtifactStore
             Directory.CreateDirectory(Path.GetDirectoryName(finalPath)!);
             try
             {
-                Directory.Move(stagingPath, finalPath);
+                AtomicDirectory.Publish(stagingPath, finalPath);
             }
             catch (IOException) when (Directory.Exists(finalPath))
             {
@@ -111,9 +111,11 @@ internal sealed class AssetArtifactStore
             string.Equals(value.name, outputName, StringComparison.Ordinal)) ?? default;
         if (string.IsNullOrEmpty(output.fileName))
             return false;
-        string path = Path.Combine(GetBundlePath(key), "outputs", output.fileName);
+        string path = PathBoundary.Resolve(Path.Combine(GetBundlePath(key), "outputs"), output.fileName);
         if (!IOFile.Exists(path))
             return false;
+        if (new FileInfo(path).Length != output.length)
+            throw new InvalidDataException($"Artifact '{key}/{output.name}' has an invalid output length.");
         artifact = new AssetArtifactInfo(key, output.name, path, output.contentHash, output.length);
         return true;
     }
@@ -123,7 +125,7 @@ internal sealed class AssetArtifactStore
         string outputName
     ) {
         return TryGet(key, outputName, out AssetArtifactInfo? artifact) && artifact is not null
-            ? IOFile.ReadAllBytes(artifact.absolutePath)
+            ? ReadOutputBytes(artifact)
             : [];
     }
 
@@ -179,11 +181,16 @@ internal sealed class AssetArtifactStore
                 || manifest.outputs.Any(static output =>
                     string.IsNullOrWhiteSpace(output.name)
                     || string.IsNullOrWhiteSpace(output.fileName)
-                    || string.IsNullOrWhiteSpace(output.contentHash)
+                    || output.fileName is "." or ".."
+                    || output.fileName.IndexOfAny(['/', '\\', ':']) >= 0
+                    || !IsContentHash(output.contentHash)
                     || output.length < 0 || !Enum.IsDefined(output.deploymentScope)))
             {
                 throw new InvalidDataException($"Artifact bundle '{key}' has an invalid manifest contract.");
             }
+            if (manifest.outputs.Select(static output => output.name).Distinct(StringComparer.Ordinal).Count() != manifest.outputs.Length
+                || manifest.outputs.Select(static output => output.fileName).Distinct(StringComparer.Ordinal).Count() != manifest.outputs.Length)
+                throw new InvalidDataException($"Artifact bundle '{key}' contains duplicate output identities.");
             return manifest;
         }
         catch (Exception exception) when (exception is IOException
@@ -227,7 +234,7 @@ internal sealed class AssetArtifactStore
     private string GetBundlePath(AssetArtifactKey key)
     {
         string value = key.value;
-        if (value.Length < 4)
+        if (key.isEmpty)
             throw new ArgumentException("Artifact keys must contain a SHA-256 value.", nameof(key));
         return Path.Combine(m_root, value[..2].ToLowerInvariant(), value[2..4].ToLowerInvariant(), value);
     }
@@ -284,14 +291,29 @@ internal sealed class AssetArtifactStore
             cancellationToken.ThrowIfCancellationRequested();
             if (output.deploymentScope == AssetDeploymentScope.AuthoringOnly)
                 continue;
-            if (Path.GetFileName(output.fileName) != output.fileName)
-                throw new InvalidDataException("An artifact output must be a bundle-local file.");
-            byte[] bytes = IOFile.ReadAllBytes(Path.Combine(GetBundlePath(key), "outputs", output.fileName));
-            if (bytes.LongLength != output.length || Convert.ToHexString(SHA256.HashData(bytes)) != output.contentHash)
-                throw new InvalidDataException($"Artifact '{key}/{output.name}' failed integrity validation during deployment.");
+            string path = PathBoundary.Resolve(Path.Combine(GetBundlePath(key), "outputs"), output.fileName);
+            byte[] bytes = ReadOutputBytes(new AssetArtifactInfo(key, output.name, path, output.contentHash, output.length));
             outputs.Add(output.name, bytes);
         }
-        return destination.Commit("Inno.RuntimeProjection/v1:" + key.value, outputs, serialization: serialization);
+        return destination.Commit("Inno.RuntimeProjection:" + key.value, outputs, serialization: serialization);
+    }
+
+    private static bool IsContentHash(string value)
+    {
+        if (string.IsNullOrEmpty(value) || value.Length != C_SHA256_HEX_LENGTH)
+            return false;
+        foreach (char digit in value)
+            if (digit is not (>= '0' and <= '9') and not (>= 'A' and <= 'F'))
+                return false;
+        return true;
+    }
+
+    private static byte[] ReadOutputBytes(AssetArtifactInfo artifact)
+    {
+        byte[] bytes = IOFile.ReadAllBytes(artifact.absolutePath);
+        if (bytes.LongLength != artifact.length || Convert.ToHexString(SHA256.HashData(bytes)) != artifact.contentHash)
+            throw new InvalidDataException($"Artifact '{artifact.key}/{artifact.outputName}' failed integrity validation.");
+        return bytes;
     }
 
     private static void Append(

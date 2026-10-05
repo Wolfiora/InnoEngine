@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
+using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Inno.Adapter;
@@ -23,6 +23,7 @@ public abstract class Shell : IDisposable
 {
     private readonly IAdapterCatalog m_adapterCatalog;
     private readonly AdapterSelection m_adapterSelection;
+    private readonly bool m_suspendWhenHidden;
     private readonly RetirementBarrier m_retirement = new("Composition Shell");
     private IPlatformApplication? m_platformApplication;
     private IPlatformWindow? m_primaryWindow;
@@ -40,6 +41,8 @@ public abstract class Shell : IDisposable
     private int? m_smokeFrameLimit;
     private bool? m_appliedVerticalSync;
     private bool m_allowBlockingPacing;
+    private bool m_applicationSuspended;
+    private bool m_primaryWindowHidden;
 
     /// <summary>
     /// Creates the backend-neutral host resources shared by Player and Editor products.
@@ -60,6 +63,7 @@ public abstract class Shell : IDisposable
         m_adapterCatalog = adapterCatalog ?? throw new ArgumentNullException(nameof(adapterCatalog));
         ArgumentNullException.ThrowIfNull(options);
         m_adapterSelection = options.adapters;
+        m_suspendWhenHidden = options.suspendWhenHidden;
         this.options = options;
         framePacing = new FramePacingOptions { verticalSync = options.verticalSync };
     }
@@ -69,6 +73,11 @@ public abstract class Shell : IDisposable
     /// Zero maximum frame rate means no software frame limit.
     /// </summary>
     public FramePacingOptions framePacing { get; }
+
+    /// <summary>
+    /// Gets the current owner-thread lifecycle state, including suspension and failed retirement.
+    /// </summary>
+    public ShellState state { get; private set; }
 
     /// <summary>
     /// Runs one shell lifecycle using an explicitly selected owner-thread frame driver.
@@ -105,18 +114,41 @@ public abstract class Shell : IDisposable
         ArgumentNullException.ThrowIfNull(driver);
         PrepareRun(smokeFrameLimit, driver.allowsBlockingPacing);
         platformApplication.redrawRequested += Redraw;
+        Exception? failure = null;
         try
         {
+            state = ShellState.Running;
             OnStarting();
             await driver.RunAsync(AdvanceFrame, cancellationToken);
             CompleteSmokeRun();
-            return 0;
+        }
+        catch (OperationCanceledException canceled) when (cancellationToken.IsCancellationRequested)
+        {
+            failure = canceled;
+        }
+        catch (Exception executionFailure)
+        {
+            state = ShellState.Faulted;
+            failure = executionFailure;
         }
         finally
         {
             platformApplication.redrawRequested -= Redraw;
-            NotifyStopping();
+            try
+            {
+                NotifyStopping();
+            }
+            catch (Exception stoppingFailure)
+            {
+                state = ShellState.Faulted;
+                failure = failure is null
+                    ? stoppingFailure
+                    : new AggregateException("Shell execution and stopping both failed.", failure, stoppingFailure);
+            }
         }
+        if (failure is not null)
+            ExceptionDispatchInfo.Capture(failure).Throw();
+        return 0;
     }
 
     /// <summary>
@@ -139,7 +171,11 @@ public abstract class Shell : IDisposable
             Release(m_platformApplication.Dispose, ref failures);
         m_disposed = true;
         if (failures is not null)
+        {
+            state = ShellState.Faulted;
             throw new AggregateException("One or more composition-shell resources could not be released.", failures);
+        }
+        state = ShellState.Disposed;
         GC.SuppressFinalize(this);
     }
 
@@ -217,11 +253,9 @@ public abstract class Shell : IDisposable
     protected void InitializeAdapterResources()
     {
         ObjectDisposedException.ThrowIf(m_disposed, this);
-        if (m_platformApplication is not null)
-            throw new InvalidOperationException("The composition shell adapter resources are already initialized.");
-        if (!m_adapterSelection.rendering.isValid ||
-            !m_adapterCatalog.rendering.supportedBackends.Contains(m_adapterSelection.rendering))
-            throw new NotSupportedException($"Rendering backend '{m_adapterSelection.rendering}' is not registered.");
+        if (state != ShellState.Created)
+            throw new InvalidOperationException("The composition shell cannot initialize adapter resources in its current state.");
+        m_adapterSelection.Validate(m_adapterCatalog);
 
         try
         {
@@ -241,9 +275,11 @@ public abstract class Shell : IDisposable
                     sRgbBackbuffer = options.sRgbBackbuffer,
                     forceSingleThreaded = options.forceSingleThreadedRendering
                 });
+            state = ShellState.Ready;
         }
         catch (Exception failure)
         {
+            state = ShellState.Faulted;
             List<Exception>? failures = null;
             if (m_renderDevice is not null)
                 Release(m_renderDevice.Dispose, ref failures);
@@ -287,6 +323,15 @@ public abstract class Shell : IDisposable
     protected virtual void OnEvent(Event evnt)
     {
     }
+
+    /// <summary>
+    /// Receives an effective application suspension change at an event-pump safety point.
+    /// Repeated notifications and changes that leave another suspension reason active do not invoke this hook.
+    /// </summary>
+    /// <param name="isSuspended">
+    /// Whether product frames and their clock are suspended after the change.
+    /// </param>
+    protected virtual void OnSuspensionChanged(bool isSuspended) { }
 
     /// <summary>
     /// Determines whether one event requests orderly product shutdown.
@@ -349,7 +394,10 @@ public abstract class Shell : IDisposable
         PumpEvents();
         if (m_exitRequested || primaryWindow.isClosed)
             return false;
-        DrawFrame();
+        if (state == ShellState.Running)
+            DrawFrame();
+        else if (m_allowBlockingPacing)
+            Thread.Sleep(10);
         return !m_exitRequested && !primaryWindow.isClosed;
     }
 
@@ -365,7 +413,7 @@ public abstract class Shell : IDisposable
         }
         if (smokeFrameLimit is <= 0)
             throw new ArgumentOutOfRangeException(nameof(smokeFrameLimit));
-        if (m_hasRun)
+        if (m_hasRun || state != ShellState.Ready)
             throw new InvalidOperationException("A composition shell can run only once.");
         m_hasRun = true;
         m_timer = Stopwatch.StartNew();
@@ -375,7 +423,7 @@ public abstract class Shell : IDisposable
 
     private void Redraw(uint windowId)
     {
-        if (!hasCompletedFrame || m_frameActive || m_exitRequested || primaryWindow.isClosed)
+        if (state != ShellState.Running || !hasCompletedFrame || m_frameActive || m_exitRequested || primaryWindow.isClosed)
             return;
         if (windowId == primaryWindow.windowId && primaryWindow.pixelWidth > 0 && primaryWindow.pixelHeight > 0)
             renderDevice.ResizeBackbuffer(primaryWindow.pixelWidth, primaryWindow.pixelHeight);
@@ -444,7 +492,11 @@ public abstract class Shell : IDisposable
         {
             if (evnt is null)
                 continue;
-            inputSource.ProcessEvent(evnt);
+            ApplySuspension(evnt);
+            if (state == ShellState.Suspended && evnt is KeyEvent or MouseEvent or TextInputEvent)
+                continue;
+            if (evnt is not ApplicationSuspensionChangedEvent)
+                inputSource.ProcessEvent(evnt);
             if (evnt is WindowResizeEvent resize && resize.windowId == primaryWindow.windowId)
                 renderDevice.ResizeBackbuffer(primaryWindow.pixelWidth, primaryWindow.pixelHeight);
             if (ShouldExit(evnt))
@@ -458,7 +510,46 @@ public abstract class Shell : IDisposable
 
     private void RetireProductResources()
     {
-        m_retirement.Wait(DisposeProductResources);
+        try
+        {
+            m_retirement.Wait(DisposeProductResources);
+        }
+        catch
+        {
+            state = ShellState.Faulted;
+            throw;
+        }
+    }
+
+    private void ApplySuspension(Event evnt)
+    {
+        switch (evnt)
+        {
+            case ApplicationSuspensionChangedEvent application:
+                m_applicationSuspended = application.isSuspended;
+                break;
+            case WindowVisibilityChangedEvent window when
+                m_suspendWhenHidden && window.windowId == primaryWindow.windowId:
+                m_primaryWindowHidden = !window.isVisible;
+                break;
+            default:
+                return;
+        }
+        bool suspended = m_applicationSuspended || m_primaryWindowHidden;
+        if (suspended == (state == ShellState.Suspended))
+            return;
+        if (suspended)
+        {
+            m_timer!.Stop();
+            state = ShellState.Suspended;
+        }
+        else
+        {
+            m_timer!.Start();
+            state = ShellState.Running;
+        }
+        inputSource.ProcessEvent(new ApplicationSuspensionChangedEvent(suspended));
+        OnSuspensionChanged(suspended);
     }
 
     private void NotifyStopping()
@@ -466,7 +557,18 @@ public abstract class Shell : IDisposable
         if (m_stoppingNotified)
             return;
         m_stoppingNotified = true;
-        OnStopping();
+        bool faulted = state == ShellState.Faulted;
+        state = ShellState.Stopping;
+        try
+        {
+            OnStopping();
+            state = faulted ? ShellState.Faulted : ShellState.Stopped;
+        }
+        catch
+        {
+            state = ShellState.Faulted;
+            throw;
+        }
     }
 
     private static void Release(

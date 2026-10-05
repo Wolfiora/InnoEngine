@@ -48,16 +48,19 @@ internal static class EngineBuildWorkflow
             return;
         }
         BuildTargetId target = new(options.Require("target"));
-        string output = options.Read("output", Path.Combine(root, ".lib", "SupportPacks"));
+        string output = options.Read("output", Path.Combine(root, "artifacts", "support-packs"));
         if (command == "engine")
         {
             await GenerateBindingsAsync(root, dotnet, configuration, cancellationToken);
-            await HostNativeBuild.BuildEditorAsync(
+            var products = await HostNativeBuild.BuildEditorAsync(
                 new NativeBuildContext(root, configuration.ToLowerInvariant()), cancellationToken);
             await ToolchainEnvironment.RunAsync(dotnet,
                 ["build", Path.Combine(root, "src/composition/editor/host/Inno.Editor.Application/Inno.Editor.Application.csproj"),
                     "--configuration", configuration, "--disable-build-servers", "-m:1", "-nodeReuse:false"],
                 root, cancellationToken);
+            string editor = Path.Combine(root, "src", "composition", "editor", "host", "Inno.Editor.Application",
+                "bin", configuration, "net9.0");
+            await HostNativeDeployment.InstallAsync(products, editor, cancellationToken).ConfigureAwait(false);
         }
         Console.WriteLine(await BuiltInPlayerSupportPacks.CreatePublisher().PublishAsync(root, output, target, dotnet, cancellationToken));
     }
@@ -99,6 +102,7 @@ internal static class EngineBuildWorkflow
                 }
             }
         }
-        ToolchainEnvironment.DeleteDirectory(Path.Combine(root, ".lib"));
+        foreach (string category in new[] { "native", "managed", "support-packs", "builds" })
+            ToolchainEnvironment.DeleteDirectory(Path.Combine(root, "artifacts", category));
     }
 }

@@ -80,6 +80,7 @@ dispatcher.Flush();
 | --- | --- | --- |
 | Application | `ApplicationEvent` | 抽象基类 |
 | Application | `ApplicationQuitEvent` | 无附加数据 |
+| Application | `ApplicationSuspensionChangedEvent` | `isSuspended`，平台或有效宿主暂停通知 |
 | Keyboard | `KeyEvent` | `windowId`、`key`、`modifiers` |
 | Keyboard | `KeyPressedEvent` | 另有 `repeat` |
 | Keyboard | `KeyReleasedEvent` | 基类数据 |
@@ -93,6 +94,7 @@ dispatcher.Flush();
 | Window | `WindowResizeEvent` | `width`、`height` |
 | Window | `WindowCloseEvent` | 基类数据 |
 | Window | `WindowFocusChangedEvent` | `isFocused` |
+| Window | `WindowVisibilityChangedEvent` | `isVisible`，显示与最小化共同决定 |
 
 Keyboard/Mouse 枚举详见 [Inno.Core.Input](Inno.Core.Input.md)。
 

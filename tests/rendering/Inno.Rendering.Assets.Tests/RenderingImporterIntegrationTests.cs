@@ -1,3 +1,5 @@
+using Inno.Adapter.Serialization.DotNet;
+using Inno.Adapter.Modules.DotNet;
 using System;
 using System.Buffers.Binary;
 using System.Collections.Generic;
@@ -41,12 +43,12 @@ public sealed class RenderingImporterIntegrationTests : IDisposable
         Directory.CreateDirectory(m_assets);
         m_identityScope = m_identities.EnterScope();
         m_modules = new ModuleHost(new ModuleHostOptions
-        {
+        { catalogSource = new DotNetAssemblyCatalogSource(typeof(RenderingImporterIntegrationTests).Assembly),
             cacheDirectory = Path.Combine(m_root, "Assemblies")
         });
         _ = typeof(AssetSerializationServices);
-        m_types = new TypeCatalog(m_modules);
-        m_serialization = new SerializationRegistry(m_types);
+        m_types = new TypeCatalog(m_modules, new ReflectionTypeCatalogSource());
+        m_serialization = new SerializationRegistry(m_types, new ReflectionSerializationMetadataSource());
         _ = new BgfxShadercToolchain(BgfxShaderTargetPlatform.MacOSArm64);
         m_types.Rebuild();
     }

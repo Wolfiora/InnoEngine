@@ -1,6 +1,6 @@
 # Scene View System 失效与 Play 后插件退休失败
 
-[Issues 索引](README.md) · [Rendering Runtime](../render/Inno.Rendering.Runtime.md) · [Scripting](../editor/Inno.Editor.Scripting.md)
+[Issues 索引](README.md) · [Rendering Runtime](../rendering/Inno.Rendering.Runtime.md) · [Scripting](../editor/Inno.Editor.Scripting.md)
 
 ## 结论
 

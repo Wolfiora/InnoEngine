@@ -1,3 +1,5 @@
+using Inno.Adapter.Serialization.DotNet;
+using Inno.Adapter.Modules.DotNet;
 using System;
 using System.IO;
 using System.Text;
@@ -29,11 +31,11 @@ public sealed class ImporterIntegrationTests : IDisposable
     {
         m_identityScope = m_identities.EnterScope();
         m_modules = new ModuleHost(new ModuleHostOptions
-        {
+        { catalogSource = new DotNetAssemblyCatalogSource(typeof(ImporterIntegrationTests).Assembly),
             cacheDirectory = Path.Combine(Path.GetTempPath(), "InnoImporterTests", "Assemblies")
         });
-        m_types = new TypeCatalog(m_modules);
-        m_serialization = new SerializationRegistry(m_types);
+        m_types = new TypeCatalog(m_modules, new ReflectionTypeCatalogSource());
+        m_serialization = new SerializationRegistry(m_types, new ReflectionSerializationMetadataSource());
     }
 
     public void Dispose()

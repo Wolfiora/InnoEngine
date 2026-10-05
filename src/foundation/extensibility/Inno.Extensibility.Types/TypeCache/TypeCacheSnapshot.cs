@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
+using Inno.Extensibility.Catalogs;
+
 namespace Inno.Extensibility.Types;
 
 /// <summary>
@@ -17,6 +19,8 @@ public sealed class TypeCacheSnapshot
 {
     internal static TypeCacheSnapshot empty { get; } = CreateEmpty();
 
+    private readonly ITypeCatalogSource? m_source;
+    private readonly Dictionary<Type, TypeCatalogMetadata> m_metadata;
     private readonly Type[] m_types;
     private readonly IReadOnlyList<TypeRef> m_typeRefs;
     private readonly Dictionary<Assembly, Type[]> m_typesByAssembly;
@@ -25,12 +29,16 @@ public sealed class TypeCacheSnapshot
 
     private TypeCacheSnapshot(
         long version,
+        ITypeCatalogSource? source,
+        Dictionary<Type, TypeCatalogMetadata> metadata,
         Type[] types,
         Dictionary<Assembly, Type[]> typesByAssembly,
         TypeIdentityRegistry identityRegistry,
         TypeQueryRegistry queryRegistry
     ) {
         this.version = version;
+        m_source = source;
+        m_metadata = metadata;
         m_types = types;
         m_typeRefs = Array.AsReadOnly(types.Select(identityRegistry.GetTypeRef).ToArray());
         m_typesByAssembly = typesByAssembly;
@@ -117,6 +125,104 @@ public sealed class TypeCacheSnapshot
         out TypeRef typeRef
     ) => m_identityRegistry.TryGetTypeRef(type, out typeRef);
 
+    /// <summary>
+    /// Determines whether the current deployment can construct a type in this exact generation.
+    /// </summary>
+    /// <param name="type">
+    /// The type reference to resolve against this snapshot.
+    /// </param>
+    /// <returns>
+    /// Whether a declared type resolves and has an available parameterless factory.
+    /// </returns>
+    public bool CanCreateInstance(TypeRef type)
+        => TryResolve(type, out Type? runtimeType) && m_source!.CanCreateInstance(runtimeType!);
+
+    /// <summary>
+    /// Constructs a declared type through this generation's selected metadata source.
+    /// </summary>
+    /// <param name="type">
+    /// A declaration in this snapshot, or a closed construction of its registered generic declaration.
+    /// </param>
+    /// <returns>
+    /// The new instance owned by the caller.
+    /// </returns>
+    /// <exception cref="InvalidOperationException">
+    /// The reference does not resolve or its deployment does not provide a factory.
+    /// </exception>
+    public object CreateInstance(Type type)
+    {
+        ArgumentNullException.ThrowIfNull(type);
+        Type declaration = type.IsConstructedGenericType ? type.GetGenericTypeDefinition() : type;
+        if (!m_identityRegistry.TryGetTypeRef(declaration, out _))
+            throw new InvalidOperationException($"Type '{type}' does not belong to this generation.");
+        return m_source!.CreateInstance(type);
+    }
+
+    /// <summary>
+    /// Resolves a generic construction belonging to this exact generation.
+    /// </summary>
+    /// <param name="definition">
+    /// A registered generic declaration.
+    /// </param>
+    /// <param name="arguments">
+    /// Ordered closed type arguments.
+    /// </param>
+    /// <returns>
+    /// The resolved closed type, or null when generic constraints reject the arguments.
+    /// </returns>
+    /// <exception cref="InvalidOperationException">
+    /// The declaration does not belong to this generation.
+    /// </exception>
+    /// <exception cref="NotSupportedException">
+    /// This deployment has not linked the requested construction.
+    /// </exception>
+    public Type? ConstructGenericType(
+        Type definition,
+        IReadOnlyList<Type> arguments
+    ) {
+        ArgumentNullException.ThrowIfNull(definition);
+        ArgumentNullException.ThrowIfNull(arguments);
+        if (!m_identityRegistry.TryGetTypeRef(definition, out _))
+            throw new InvalidOperationException($"Type '{definition}' does not belong to this generation.");
+        return m_source!.ConstructGenericType(definition, arguments);
+    }
+
+    /// <summary>
+    /// Reads the immutable discovery facts for a declaration in this exact generation.
+    /// </summary>
+    /// <param name="type">
+    /// The logical declaration to resolve against this snapshot.
+    /// </param>
+    /// <returns>
+    /// Complete metadata; stale or unregistered declarations fail during resolution.
+    /// </returns>
+    public TypeCatalogMetadata GetMetadata(TypeRef type) => m_metadata[type.Resolve(this)];
+
+    /// <summary>
+    /// Reads a single extension attribute without requiring runtime reflection.
+    /// </summary>
+    /// <typeparam name="TAttribute">
+    /// The attribute contract requested by the caller.
+    /// </typeparam>
+    /// <param name="type">
+    /// A declaration in this snapshot.
+    /// </param>
+    /// <param name="inherit">
+    /// Whether effective inherited attributes participate.
+    /// </param>
+    /// <returns>
+    /// The matching attribute, or null when absent; duplicate singleton attributes throw.
+    /// </returns>
+    public TAttribute? GetAttribute<TAttribute>(
+        TypeRef type,
+        bool inherit = true
+    ) where TAttribute : Attribute
+    {
+        TypeCatalogMetadata metadata = GetMetadata(type);
+        return (inherit ? metadata.inheritedAttributes : metadata.declaredAttributes)
+            .OfType<TAttribute>().SingleOrDefault();
+    }
+
     internal IReadOnlyList<Type> runtimeTypes => m_types;
 
     internal bool TryResolve(
@@ -126,6 +232,7 @@ public sealed class TypeCacheSnapshot
 
     internal static TypeCacheSnapshot Build(
         IEnumerable<Assembly> assemblies,
+        ITypeCatalogSource source,
         TypeCacheSnapshot? previous,
         long version
     ) {
@@ -147,7 +254,7 @@ public sealed class TypeCacheSnapshot
 
             try
             {
-                Type[] assemblyTypes = assembly.GetTypes();
+                Type[] assemblyTypes = source.GetTypes(assembly).ToArray();
                 typesByAssembly.Add(assembly, assemblyTypes);
                 discoveredTypes.AddRange(assemblyTypes);
             }
@@ -177,10 +284,13 @@ public sealed class TypeCacheSnapshot
             .ThenBy(static type => type.FullName, StringComparer.Ordinal)
             .ToArray();
         var identities = new TypeIdentityRegistry();
-        identities.Rebuild(types, previous?.m_identityRegistry);
+        Dictionary<Type, TypeCatalogMetadata> metadata = types.ToDictionary(static type => type,
+            type => previous is not null && previous.m_metadata.TryGetValue(type, out TypeCatalogMetadata? existing)
+                ? existing : source.GetMetadata(type));
+        identities.Rebuild(metadata.Values, previous?.m_identityRegistry);
         var queries = new TypeQueryRegistry();
-        queries.Rebuild(types, identities);
-        return new TypeCacheSnapshot(version, types, typesByAssembly, identities, queries);
+        queries.Rebuild(metadata.Values, identities);
+        return new TypeCacheSnapshot(version, source, metadata, types, typesByAssembly, identities, queries);
     }
 
     private static TypeCacheSnapshot CreateEmpty()
@@ -189,6 +299,6 @@ public sealed class TypeCacheSnapshot
         identities.Rebuild([], previous: null);
         var queries = new TypeQueryRegistry();
         queries.Rebuild([], identities);
-        return new TypeCacheSnapshot(0, [], new Dictionary<Assembly, Type[]>(), identities, queries);
+        return new TypeCacheSnapshot(0, null, [], [], new Dictionary<Assembly, Type[]>(), identities, queries);
     }
 }

@@ -32,34 +32,39 @@ public static class ImGuiToolchain
     /// Cancels child processes and prevents artifact installation after cancellation.
     /// </param>
     /// <returns>
-    /// Completion after the component has been built and installed in the selected checkout.
+    /// The validated product containing the exact runtime and link inputs for this operation.
     /// </returns>
     /// <exception cref="OperationCanceledException">
     /// The operation was canceled.
     /// </exception>
-    public static async Task BuildAsync(
+    public static async Task<NativeBuildProduct> BuildAsync(
         NativeBuildContext context,
         CancellationToken cancellationToken = default
     ) {
         ArgumentNullException.ThrowIfNull(context);
-        cancellationToken.ThrowIfCancellationRequested();
-        string configuration = context.configuration;
+        context = await HostNativeToolchain.ResolveAsync(context, cancellationToken).ConfigureAwait(false);
         var builder = CimguiBuilderFactory.CreateForCurrentPlatform();
-        var repoRoot = context.engineRoot;
-        var externDir = Path.Combine(repoRoot, ToolchainLayout.C_EXTERNAL_DIRECTORY_NAME);
-        var cimguiDir = Path.Combine(externDir, CimguiBuildConstants.CIMGUI_DIR_NAME);
-        var outputDir = Path.Combine(repoRoot, ToolchainLayout.C_OUTPUT_DIRECTORY_NAME, CimguiBuildConstants.OUTPUT_PRODUCT_DIR_NAME, builder.outputPlatform);
-
-        Directory.CreateDirectory(externDir);
-        Directory.CreateDirectory(outputDir);
-
+        string cimguiDir = Path.Combine(context.engineRoot, "extern", "cimgui");
         CimguiBuildUtils.ValidateSource(cimguiDir);
-
-        await builder.BuildAsync(cimguiDir, context, cancellationToken);
-        cancellationToken.ThrowIfCancellationRequested();
-        CopyArtifacts(outputDir, builder.outputPlatform, context);
-
-        Console.WriteLine($"cimgui build complete. Output: {outputDir}");
+        return await NativeArtifactPublisher.PublishAsync(context, typeof(ImGuiToolchain).Assembly,
+            "cimgui", builder.outputPlatform, [cimguiDir, Path.Combine(context.engineRoot, "build", "toolchains", "Inno.Build.Toolchains.ImGui", "CMakeLists.txt")], [], async (
+                scoped,
+                output,
+                token
+            ) => {
+                await builder.BuildAsync(cimguiDir, scoped, token).ConfigureAwait(false);
+                token.ThrowIfCancellationRequested();
+                CopyArtifacts(output, builder.outputPlatform, scoped);
+                if (OperatingSystem.IsWindows())
+                {
+                    string buildType = scoped.configuration == "debug" ? "Debug" : "Release";
+                    string library = Path.Combine(scoped.GetNativeBuildRoot(typeof(ImGuiToolchain).Assembly),
+                        builder.outputPlatform, scoped.configuration, "upstream", buildType, $"libcimgui-{scoped.configuration}.lib");
+                    string link = Path.Combine(output, "Link");
+                    Directory.CreateDirectory(link);
+                    File.Copy(library, Path.Combine(link, Path.GetFileName(library)));
+                }
+            }, cancellationToken).ConfigureAwait(false);
     }
 
     private static void CopyArtifacts(

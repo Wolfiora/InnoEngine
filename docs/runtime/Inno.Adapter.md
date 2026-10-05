@@ -15,3 +15,7 @@ IAdapterCatalog catalog = new DefaultAdapterCatalog();
 ```
 
 `AdapterSelection` 只保存选择，不保存 native handle、实例或可热重载对象。Presentation 和 compiler 不属于 runtime catalog；它们由 [authoring catalog](Inno.Adapter.Authoring.Default.md) 独立扩展。
+
+## Composition 预检
+
+`AdapterSelection.Validate(IAdapterCatalog)` 在创建任何领域服务前校验 platform/input/storage/rendering/audio/text/ui 的完整选择；无效或缺失注册抛出 `NotSupportedException`。所有选择为开放的领域 backend ID，默认值未赋值，内置静态 ID 只表示默认实现。

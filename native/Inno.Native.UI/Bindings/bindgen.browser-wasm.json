@@ -1,22 +1,22 @@
 {
-  "BaseConfig": {
-    "Url": "file://common.json"
+  "baseConfig": {
+    "url": "file://common.json"
   },
-  "Preset": "emscripten-c,c-library",
-  "LibName": "libinno-ui",
-  "EntryFiles": [
+  "preset": "emscripten-c,c-library",
+  "libName": "libinno-ui",
+  "entryFiles": [
     "../obj/browser-wasm/Native/include/Classes.h"
   ],
-  "AllowedHeaders": [
+  "allowedHeaders": [
     "../obj/browser-wasm/Native/include/Classes.h",
     "../obj/browser-wasm/Native/include/common.h",
     "../obj/browser-wasm/Native/include/enums.h"
   ],
-  "IncludeFolders": [
+  "includeFolders": [
     "../obj/browser-wasm/Native/include",
     "%EM_CACHE%/sysroot/include"
   ],
-  "OutputPath": "../obj/browser-wasm/Generated",
-  "TargetSysRoot": "%EM_CACHE%/sysroot",
-  "WrapPointersAsHandle": true
+  "outputPath": "../obj/browser-wasm/Generated",
+  "targetSysRoot": "%EM_CACHE%/sysroot",
+  "wrapPointersAsHandle": true
 }

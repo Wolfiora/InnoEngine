@@ -28,6 +28,7 @@ Fault 共享 generation gate；普通启动失败在完整补偿后可以重试�
 
 ```csharp
 using EngineHost host = new EngineHostBuilder()
+    .UseMetadataSources(moduleSource, typeSource, serializationMetadataSource)
     .UseMetadataCache(metadataCacheDirectory)
     .Build();
 
@@ -51,7 +52,8 @@ play.Tick(deltaTime);
 
 | API | 作用 |
 | --- | --- |
-| `EngineHostBuilder` | 配置 Host metadata cache 并构建实例。 |
+| `EngineHostBuilder` | 配置显式模块、类型、序列化元数据来源与 Host 生命周期，并构建实例。 |
+| `UseMetadataSources(modules, types, serialization)` | 必填的来源组合；Editor 选择动态 Adapter，Player 选择生成目录。缺失来源在 Build 时失败。 |
 | `UseRetirementTimeout(timeout)` | 配置启动补偿、Session 和 Host 退休的正值 deadline；不是允许跳过清理的超时 |
 | `EngineHost` | 拥有应用级实例服务并创建隔离 Session。 |
 | `RuntimeSessionOptions` | 定义 Session 角色、持久目录、运行内容、资产驻留预算、固定步长、Job、Subsystem factory 与 owner-provided reference resolvers。 |
@@ -66,7 +68,8 @@ play.Tick(deltaTime);
 | `GameRuntimeManifest` | 描述当前 Player 的应用 ID、持久数据子目录、产品名、启动 Scene、窗口、Plugin 设置贡献和冻结模块 generation。 |
 | `RuntimeManifestEnvelope.ReadPersistentDataPath` | 在初始化序列化服务前读取并严格验证可移植的 Player 数据目录，与完整 manifest 解码时的值必须一致。 |
 | `GameRuntimePlugin` | 保存依赖有序的中立 Plugin 设置贡献，不保存 Plugin `Type`、实例或 delegate。 |
-| `GameRuntimeModule` | 保存依赖有序的 runtime module 名称、domain 与部署 DLL 文件名，不保存运行时 `Assembly`。 |
+| `GameRuntimeModule` / `GameRuntimeAssembly` | 保存依赖有序的逻辑模块、domain、程序集名称和内容指纹，不保存运行时 `Assembly`。 |
+| `GameCodeDeployment` / `GameCodeModule` / `GameCodeAssembly` | 校验并冻结逻辑代码部署；静态激活器核对它与实际链接代码闭包的一致性。 |
 | `GamePresentationSettings`, `GamePresentationViewport` | 定义 Game View 与 Player 共用的参考帧、aspect-preserving 策略及确定性居中内容区域。 |
 
 ## 脚本执行上下文
@@ -92,7 +95,15 @@ Runtime Subsystem 类型是 Host/Composition 的公开装配契约，但故意�
 
 ## 部署内容
 
-Player 的 Runtime Session 使用 `AssetDatabase` 读取物化后的 Catalog 和 Artifact Bundle，不扫描 Source Mount、不运行 Importer，也不从源码补建缺失内容。Build 将编译器产生的 runtime-only `AssemblyLoadRequest` 拓扑固化为 `GameRuntimeModule`；Player 对 Managed closure 做精确匹配后，通过同一个 `ModuleHost` 候选事务原子激活 Plugin 与 Game Scripts，使 TypeCache、Serialization 和 Rendering Registry 共享同一 generation。`RuntimeManifestEnvelope` 对当前格式执行严格 magic 和内容校验；不存在旧格式 fallback 或 schema migration。
+`StaticTypeCatalogSource(IReadOnlyList<Action<ITypeCatalogRegistrar>>)` 执行各程序集的生成目录，
+随后冻结声明、发现事实及工厂。`GetTypes` 只返回声明，`GetMetadata` 返回 Catalogs 契约的事实；
+`ConstructGenericType` 解析已经链接的封闭构造；编译期确认不满足约束的组合返回 null，
+合法但缺失的构造抛出 NotSupportedException；
+`CanCreateInstance` 和 `CreateInstance` 使用同一工厂表。
+工厂按需执行，返回类型错误明确失败；泛型构造缺少所属定义时在组合阶段失败。
+重复声明失败，同一封闭工厂重复贡献幂等。注册器不能跨线程使用或在组合结束后继续写入。
+
+Player 的 Runtime Session 使用 `AssetDatabase` 读取物化后的 Catalog 和 Artifact Bundle。Build 将运行时代码闭包固化为逻辑模块和程序集指纹，由所选托管 compiler 完成最终链接。Player 校验 `GameCodeDeployment` 与生成目录，通过同一个 `ModuleHost` 候选事务激活 Plugin 和 Game Scripts，使 TypeCache、Serialization 和 Rendering Registry 共享同一 generation。内容只从部署产物读取；`RuntimeManifestEnvelope` 严格检查当前格式的 magic 和内容。
 
 `FileRenderTargetArtifactProvider` 只读取部署内容，返回 `Ready` 或 `Unavailable`，不会伪造 Editor 的异步 `Pending` 状态。损坏的 Shader envelope 或空 Texture artifact 会抛出严格数据异常；Player 不调用编译器进行运行时补救。
 

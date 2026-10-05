@@ -72,7 +72,7 @@ internal sealed class AudioExtensionRegistry : TypeRegistry<AudioExtensionRegist
     {
         ArgumentNullException.ThrowIfNull(types);
         return new Snapshot(
-            types.version,
+            types,
             Discover<AudioMixerExtensionAttribute, AudioMixerExtension>(types, static value => value.id, "mixer"),
             Discover<AudioMixerFeatureExtensionAttribute, AudioMixerFeature>(types, static value => value.id, "mixer feature"),
             Discover<AudioContentProviderExtensionAttribute, AudioContentProvider>(types, static value => value.id, "content provider"),
@@ -95,15 +95,11 @@ internal sealed class AudioExtensionRegistry : TypeRegistry<AudioExtensionRegist
                 throw new InvalidOperationException(
                     $"Audio {kind} '{type.FullName}' must be a non-abstract {typeof(TContract).FullName}.");
             }
-            if (type.GetConstructor(
-                    BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic,
-                    binder: null,
-                    Type.EmptyTypes,
-                    modifiers: null) is null)
+            if (!types.CanCreateInstance(typeRef))
             {
                 throw new InvalidOperationException($"Audio {kind} '{type.FullName}' requires a parameterless constructor.");
             }
-            TAttribute attribute = type.GetCustomAttribute<TAttribute>(inherit: false)!;
+            TAttribute attribute = types.GetAttribute<TAttribute>(typeRef, inherit: false)!;
             string id = getId(attribute);
             if (!result.TryAdd(id, type))
             {
@@ -116,18 +112,20 @@ internal sealed class AudioExtensionRegistry : TypeRegistry<AudioExtensionRegist
 
     internal sealed class Snapshot : IDisposable
     {
+        private TypeCacheSnapshot? m_types;
         private readonly IReadOnlyDictionary<string, Type> m_features;
         private readonly IReadOnlyDictionary<string, Type> m_mixers;
         private readonly IReadOnlyDictionary<string, Type> m_providers;
 
         internal Snapshot(
-            long typeCacheVersion,
+            TypeCacheSnapshot types,
             IReadOnlyDictionary<string, Type> mixers,
             IReadOnlyDictionary<string, Type> features,
             IReadOnlyDictionary<string, Type> providers,
             Func<Type, AudioContentProvider> createProvider
         ) {
-            this.typeCacheVersion = typeCacheVersion;
+            m_types = types;
+            typeCacheVersion = types.version;
             m_mixers = mixers;
             m_features = features;
             m_providers = providers;
@@ -141,7 +139,11 @@ internal sealed class AudioExtensionRegistry : TypeRegistry<AudioExtensionRegist
         /// <summary>
         /// Retires the provider instances with their owning type-catalog snapshot.
         /// </summary>
-        public void Dispose() => providers.Dispose();
+        public void Dispose()
+        {
+            providers.Dispose();
+            m_types = null;
+        }
 
         private ProviderGeneration CreateProviders(Func<Type, AudioContentProvider> createProvider)
         {
@@ -149,7 +151,7 @@ internal sealed class AudioExtensionRegistry : TypeRegistry<AudioExtensionRegist
             foreach ((string id, Type type) in m_providers)
             {
                 AudioContentProviderExtensionAttribute attribute =
-                    type.GetCustomAttribute<AudioContentProviderExtensionAttribute>(inherit: false)!;
+                    m_types!.GetAttribute<AudioContentProviderExtensionAttribute>(m_types.GetTypeRef(type), inherit: false)!;
                 entries.Add(new ProviderEntry(id, attribute.priority, createProvider(type)));
             }
             entries.Sort(static (
@@ -197,12 +199,11 @@ internal sealed class AudioExtensionRegistry : TypeRegistry<AudioExtensionRegist
             return true;
         }
 
-        private static TContract Create<TContract>(Type type) where TContract : class
+        private TContract Create<TContract>(Type type) where TContract : class
         {
             try
             {
-                return (TContract)(Activator.CreateInstance(type, nonPublic: true)
-                    ?? throw new InvalidOperationException("Activator returned null."));
+                return (TContract)(m_types ?? throw new ObjectDisposedException(nameof(Snapshot))).CreateInstance(type);
             }
             catch (Exception exception)
             {

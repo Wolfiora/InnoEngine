@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -11,7 +12,6 @@ namespace Inno.Build.SupportPacks;
 
 internal sealed class DesktopPlayerSupportPackSource : IPlayerSupportPackSource
 {
-    private static readonly string[] S_METADATA_EXTENSIONS = [".dbg", ".map", ".pdb", ".xml"];
     private readonly BuildTargetId m_target;
     private readonly IPlayerSupportPackValidator m_validator;
     private readonly string m_runtimeIdentifier;
@@ -53,24 +53,37 @@ internal sealed class DesktopPlayerSupportPackSource : IPlayerSupportPackSource
         PlayerSupportPackBuildContext context,
         CancellationToken cancellationToken
     ) {
-        await HostNativeBuild.BuildRuntimeAsync(
-            new NativeBuildContext(context.engineRoot, ToolchainLayout.C_RELEASE_CONFIGURATION),
+        NativeBuildContext native = await HostNativeToolchain.ResolveAsync(
+            new NativeBuildContext(context.engineRoot, ToolchainLayout.C_RELEASE_CONFIGURATION), cancellationToken)
+            .ConfigureAwait(false);
+        if (native.hostToolchain!.targetId != m_nativePlatform)
+            throw new PlatformNotSupportedException($"Target '{m_target}' requires a native '{m_nativePlatform}' host toolchain.");
+        IReadOnlyList<NativeBuildProduct> products = await HostNativeBuild.BuildRuntimeAsync(native,
             cancellationToken).ConfigureAwait(false);
         string project = Path.Combine(context.engineRoot, "src", "composition", "player", "Inno.Player", "Inno.Player.csproj");
-        string published = Path.Combine(context.stagingDirectory, ".runtime");
         await ToolchainEnvironment.RunAsync(context.dotnetHost,
-            ["publish", project, "--disable-build-servers", "-m:1", "-nodeReuse:false", "--configuration", "Release",
-                "--runtime", m_runtimeIdentifier, "--self-contained", "true", "--output", published, "--nologo",
-                "-p:PublishSingleFile=true", "-p:IncludeNativeLibrariesForSelfExtract=true", "-p:DebugType=None",
-                "-p:DebugSymbols=false", "-p:CopyOutputSymbolsToPublishDirectory=false",
-                "-p:CopyDebugSymbolFilesFromPackages=false", "-p:AllowedReferenceRelatedFileExtensions="],
+            ["build", project, "--disable-build-servers", "-m:1", "-nodeReuse:false", "--configuration", "Release",
+                "--runtime", m_runtimeIdentifier, "--nologo", "-p:DebugType=None", "-p:DebugSymbols=false"],
             context.engineRoot, cancellationToken).ConfigureAwait(false);
-        ComposeRuntimeClosure(published, context.stagingDirectory, cancellationToken);
-        Directory.Delete(published, recursive: true);
         PlayerSupportPackFiles.CopyReferences(
             Path.Combine(Path.GetDirectoryName(project)!, "bin", "Release", "net9.0", m_runtimeIdentifier),
             Path.Combine(context.stagingDirectory, "References"));
-        CopyNativeRuntime(context, context.stagingDirectory);
+        CopyNativeRuntime(products, context.stagingDirectory);
+        string link = Path.Combine(context.stagingDirectory, "PlayerLink");
+        Directory.CreateDirectory(link);
+        File.Copy(Path.Combine(context.engineRoot, "build", "support", "Inno.Build.SupportPacks",
+            "Templates", "Desktop", "DesktopPlayer.project.xml"), Path.Combine(link, "Player.csproj"));
+        string sources = Path.GetDirectoryName(project)!;
+        foreach (string source in new[] { "Program.cs", "DesktopPlayerComposition.cs" })
+            File.Copy(Path.Combine(sources, source), Path.Combine(link, source));
+        PlayerSupportPackFiles.CopyCompositionInputs(context.engineRoot, link);
+        string references = Path.Combine(link, "References");
+        Directory.CreateDirectory(references);
+        foreach (string reference in Directory.EnumerateFiles(Path.Combine(context.stagingDirectory, "References"), "*.dll"))
+            File.Copy(reference, Path.Combine(references, Path.GetFileName(reference)));
+        string runtime = Path.Combine(Path.GetDirectoryName(project)!, "bin", "Release", "net9.0", m_runtimeIdentifier, "BGCS.Runtime.dll");
+        File.Copy(runtime, Path.Combine(references, "BGCS.Runtime.dll"));
+        await CopyNativeToTemplateAsync(context.stagingDirectory, link, cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -82,57 +95,45 @@ internal sealed class DesktopPlayerSupportPackSource : IPlayerSupportPackSource
     public void Validate(string directory) => m_validator.Validate(directory);
 
     private void CopyNativeRuntime(
-        PlayerSupportPackBuildContext context,
+        IReadOnlyList<NativeBuildProduct> products,
         string staging
     ) {
-        string nativeProducts = Path.Combine(context.engineRoot, ".lib");
-        string[] components = ["bgfx", "sdl3", "miniaudio", "text", "ui"];
         string destination = Path.Combine(staging, "native");
-        foreach (string component in components)
+        foreach (NativeBuildProduct product in products)
         {
-            string source = Path.Combine(nativeProducts, component, m_nativePlatform);
-            if (!Directory.Exists(source))
-            {
-                throw new DirectoryNotFoundException(
-                    $"Release native runtime output for '{component}' and '{m_target}' does not exist at '{source}'.");
-            }
-            string[] files = Directory.EnumerateFiles(source, "*release*", SearchOption.TopDirectoryOnly)
+            if (product.targetId != m_nativePlatform)
+                throw new InvalidDataException($"Native product '{product.component}' targets '{product.targetId}', not '{m_nativePlatform}'.");
+            string[] files = product.files
                 .Where(file => string.Equals(Path.GetExtension(file), m_nativeExtension, StringComparison.OrdinalIgnoreCase))
                 .ToArray();
             if (files.Length == 0)
             {
                 throw new InvalidDataException(
-                    $"Release native runtime output for '{component}' and '{m_target}' is empty.");
+                    $"Native runtime product '{product.component}' and '{m_target}' is empty.");
             }
-            string componentDestination = Path.Combine(destination, component, m_target.value);
+            string componentDestination = Path.Combine(destination, product.component, m_target.value);
             Directory.CreateDirectory(componentDestination);
             foreach (string file in files.Order(StringComparer.Ordinal))
                 File.Copy(file, Path.Combine(componentDestination, Path.GetFileName(file)));
         }
     }
 
-    private static void ComposeRuntimeClosure(
-        string publishedRuntime,
+    private static async ValueTask CopyNativeToTemplateAsync(
         string staging,
+        string playerDirectory,
         CancellationToken cancellationToken
     ) {
-        if (!Directory.Exists(publishedRuntime))
-            throw new DirectoryNotFoundException("The Player publish stage produced no runtime directory.");
-
-        Directory.CreateDirectory(staging);
-        foreach (string source in Directory.EnumerateFiles(publishedRuntime, "*", SearchOption.AllDirectories))
+        string nativeRoot = Path.Combine(staging, "native");
+        foreach (string input in Directory.EnumerateFiles(nativeRoot, "*", SearchOption.AllDirectories))
         {
             cancellationToken.ThrowIfCancellationRequested();
-            if (S_METADATA_EXTENSIONS.Contains(Path.GetExtension(source)))
-                continue;
-            string relativePath = Path.GetRelativePath(publishedRuntime, source);
-            string destination = Path.Combine(staging, relativePath);
-            string? destinationDirectory = Path.GetDirectoryName(destination);
-            if (!string.IsNullOrEmpty(destinationDirectory))
-                Directory.CreateDirectory(destinationDirectory);
-            File.Copy(source, destination);
+            string destination = Path.Combine(playerDirectory, "native", Path.GetRelativePath(nativeRoot, input));
+            Directory.CreateDirectory(Path.GetDirectoryName(destination)!);
+            await using FileStream source = File.OpenRead(input);
+            await using FileStream output = new(destination, FileMode.CreateNew);
+            await source.CopyToAsync(output, cancellationToken).ConfigureAwait(false);
             if (!OperatingSystem.IsWindows())
-                File.SetUnixFileMode(destination, File.GetUnixFileMode(source));
+                File.SetUnixFileMode(destination, File.GetUnixFileMode(input));
         }
     }
 }

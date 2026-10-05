@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Inno.Platform;
 
 namespace Inno.Adapter.Input;
@@ -8,10 +9,15 @@ namespace Inno.Adapter.Input;
 public interface IInputBackendFactory
 {
     /// <summary>
+    /// Gets the exact registrations available in this composition snapshot.
+    /// </summary>
+    IReadOnlyList<InputBackendId> supportedBackends { get; }
+
+    /// <summary>
     /// Creates an input event source for one window or for the entire application.
     /// </summary>
     /// <param name="backend">
-    /// Built-in input backend selected by the composition root.
+    /// input implementation selected by the composition root.
     /// </param>
     /// <param name="window">
     /// Primary platform window whose input is accepted by the source.
@@ -26,7 +32,7 @@ public interface IInputBackendFactory
     /// Thrown when the catalog does not contain the selected backend or the platform is incompatible.
     /// </exception>
     IInputEventSource CreateEventSource(
-        InputBackend backend,
+        InputBackendId backend,
         IPlatformWindow window,
         bool acceptAllWindows
     );

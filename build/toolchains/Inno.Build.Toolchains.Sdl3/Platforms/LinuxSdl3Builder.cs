@@ -53,11 +53,11 @@ internal sealed class LinuxSdl3Builder : Sdl3Builder
         string config = context.configuration;
         string buildDir = Path.Combine(context.GetNativeBuildRoot(typeof(Sdl3Toolchain).Assembly), OutputPlatform, config);
         string buildType = GetBuildType(config);
-        await ToolchainEnvironment.RunAsync(
+        await ToolchainEnvironment.RunAsync(context,
             "cmake",
             $"-S . -B \"{buildDir}\" -DCMAKE_BUILD_TYPE={buildType} -DSDL_SHARED=ON -DSDL_STATIC=OFF -DSDL_TESTS=OFF -DSDL_EXAMPLES=OFF",
             sdlDir, cancellationToken);
-        await ToolchainEnvironment.RunAsync(
+        await ToolchainEnvironment.RunAsync(context,
             "cmake",
             $"--build \"{buildDir}\" --config {buildType} --target SDL3-shared",
             sdlDir, cancellationToken);

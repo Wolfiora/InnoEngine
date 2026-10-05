@@ -358,7 +358,7 @@ internal static class ScriptApiReferenceBuilder
         return Convert.ToHexString(hash).ToLowerInvariant();
     }
 
-    private static string[] GetImplementationPaths(ScriptApiProfile profile)
+    internal static string[] GetImplementationPaths(ScriptApiProfile profile)
     {
         IReadOnlySet<string> frameworkAssemblyNames = FrameworkReferenceResolver.GetFrameworkAssemblyNames();
         return profile.implementationAssemblies

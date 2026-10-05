@@ -17,8 +17,7 @@ public static unsafe partial class TextNative
 
     static TextNative()
     {
-        NativeDllLoader.EnsureNativeDll(C_LIBRARY_NAME);
-        nint handle = NativeDllLoader.LoadNativeDll(C_LIBRARY_NAME);
+        nint handle = NativeDllLoader.LoadNativeDll(C_LIBRARY_NAME, typeof(TextNative).Assembly);
         InitApi(new NativeLibraryContext(handle));
     }
 }

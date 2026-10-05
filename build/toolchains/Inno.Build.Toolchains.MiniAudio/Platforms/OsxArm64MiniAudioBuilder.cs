@@ -57,11 +57,11 @@ internal sealed class OsxArm64MiniAudioBuilder : MiniAudioBuilder
         string buildType = GetBuildType(config);
         string commonOptions = GetCommonCMakeOptions("-DMA_DLL");
 
-        await ToolchainEnvironment.RunAsync(
+        await ToolchainEnvironment.RunAsync(context,
             "cmake",
             $"-S . -B \"{buildDirectory}\" -DCMAKE_BUILD_TYPE={buildType} -DCMAKE_OSX_ARCHITECTURES=arm64 {commonOptions}",
             miniAudioDirectory, cancellationToken);
-        await ToolchainEnvironment.RunAsync(
+        await ToolchainEnvironment.RunAsync(context,
             "cmake",
             $"--build \"{buildDirectory}\" --config {buildType}",
             miniAudioDirectory, cancellationToken);

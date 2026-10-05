@@ -39,11 +39,8 @@ internal sealed class OsxArm64CImguizmoBuilder : CImguizmoBuilder
     /// <param name="cimguiDir">
     /// The cimgui dir text validated by the build operation.
     /// </param>
-    /// <param name="cimguiBuildDir">
-    /// The cimgui build dir text validated by the build operation.
-    /// </param>
-    /// <param name="cimguiOutputDir">
-    /// The cimgui output dir text validated by the build operation.
+    /// <param name="cimguiLibraryFile">
+    /// The exact published import or shared library selected by the parent operation.
     /// </param>
     /// <param name="context">
     /// The selected checkout and native configuration.
@@ -57,8 +54,7 @@ internal sealed class OsxArm64CImguizmoBuilder : CImguizmoBuilder
     public override async Task BuildAsync(
         string cimguizmoDir,
         string cimguiDir,
-        string cimguiBuildDir,
-        string cimguiOutputDir,
+        string cimguiLibraryFile,
         NativeBuildContext context,
         CancellationToken cancellationToken
     ) {
@@ -69,7 +65,7 @@ internal sealed class OsxArm64CImguizmoBuilder : CImguizmoBuilder
 
         var cimguizmoCpp = Path.Combine(cimguizmoDir, CImguizmoBuildConstants.CIMGUIMO_CPP_FILE);
         var imguizmoCpp = Path.Combine(cimguizmoDir, CImguizmoBuildConstants.IMGUIZMO_DIR_NAME, CImguizmoBuildConstants.IMGUIZMO_CPP_FILE);
-        var cimguiLib = FindCimguiLibrary(cimguiOutputDir, config);
+        var cimguiLib = cimguiLibraryFile;
         var outputLib = Path.Combine(buildDir, $"{CImguizmoBuildConstants.OUTPUT_DLL_NAME}.dylib");
 
         var includes = new[]
@@ -82,29 +78,14 @@ internal sealed class OsxArm64CImguizmoBuilder : CImguizmoBuilder
 
         var includeArgs = string.Join(" ", includes.Select(path => $"-I\"{path}\""));
         var cflags = config == ToolchainLayout.C_DEBUG_CONFIGURATION ? "-O0 -g" : "-O3";
-        var rpath = "@loader_path/../cimgui/osx-arm64";
+        var rpath = "@loader_path/../../cimgui/osx-arm64";
         var installName = $"@rpath/{CImguizmoBuildConstants.OUTPUT_DLL_NAME}.dylib";
         // The published C wrapper intentionally retains ImGuizmo_SetID for ABI compatibility even though
         // upstream marks the underlying C++ member deprecated. Keep that single third-party diagnostic quiet
         // while treating every other compiler diagnostic enabled by default as an error.
         var args = $"{cflags} {THIRD_PARTY_WARNING_POLICY} -std=c++11 -fPIC -dynamiclib {includeArgs} \"{cimguizmoCpp}\" \"{imguizmoCpp}\" \"{cimguiLib}\" -Wl,-install_name,{installName} -Wl,-rpath,{rpath} -o \"{outputLib}\"";
 
-        await ToolchainEnvironment.RunAsync("clang++", args, cimguizmoDir, cancellationToken);
+        await ToolchainEnvironment.RunAsync(context, "clang++", args, cimguizmoDir, cancellationToken);
     }
 
-    private static string FindCimguiLibrary(
-        string cimguiOutputDir,
-        string config
-    ) {
-        var name = config == ToolchainLayout.C_DEBUG_CONFIGURATION
-            ? "libcimgui-debug.dylib"
-            : "libcimgui-release.dylib";
-        var path = Path.Combine(cimguiOutputDir, name);
-        if (!File.Exists(path))
-        {
-            throw new FileNotFoundException($"cimgui shared library not found: {path}");
-        }
-
-        return path;
-    }
 }

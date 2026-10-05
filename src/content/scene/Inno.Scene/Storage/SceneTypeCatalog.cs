@@ -6,6 +6,8 @@ using System.Reflection;
 
 using Inno.Extensibility.Types;
 
+using Inno.Extensibility.Catalogs;
+
 namespace Inno.Scene;
 
 internal sealed class SceneTypeCatalog : IDisposable
@@ -70,6 +72,7 @@ internal sealed class SceneTypeCatalog : IDisposable
 
     internal Type Resolve(TypeRef typeRef) => m_types.Resolve(typeRef);
     internal TypeRef GetTypeRef(Type type) => m_types.GetTypeRef(type);
+    internal TypeCacheSnapshot snapshot => m_types.current;
 
     internal long generation => m_registry.snapshot.generation;
 
@@ -120,8 +123,8 @@ internal sealed class SceneTypeCatalog : IDisposable
                     componentTypeRef.runtimeId,
                     componentType.FullName ?? componentType.Name,
                     componentType.IsClass && !componentType.IsAbstract,
-                    componentType.IsDefined(typeof(AllowMultipleComponentAttribute), inherit: true),
-                    GetBehaviorPhases(componentType),
+                    types.GetAttribute<AllowMultipleComponentAttribute>(componentTypeRef, inherit: true) is not null,
+                    GetBehaviorPhases(types.GetMetadata(componentTypeRef)),
                     assignableConcreteRuntimeTypeIds,
                     assignableConcreteRuntimeTypeIds.ToFrozenSet());
                 componentsByRuntimeId.Add(descriptor.runtimeTypeId, descriptor);
@@ -139,7 +142,7 @@ internal sealed class SceneTypeCatalog : IDisposable
                     systemTypeRef.runtimeId,
                     systemType.FullName ?? systemType.Name,
                     systemType.IsClass && !systemType.IsAbstract,
-                    systemType.IsDefined(typeof(AllowMultipleSystemAttribute), inherit: false));
+                    types.GetAttribute<AllowMultipleSystemAttribute>(systemTypeRef, inherit: false) is not null);
                 systemsByRuntimeId.Add(descriptor.runtimeTypeId, descriptor);
             }
 
@@ -179,9 +182,9 @@ internal sealed class SceneTypeCatalog : IDisposable
         )
             => SceneStore.InvalidateAllTypeCaches();
 
-        private static GameBehaviorLifecyclePhase GetBehaviorPhases(Type componentType)
+        private static GameBehaviorLifecyclePhase GetBehaviorPhases(TypeCatalogMetadata metadata)
         {
-            if (!typeof(GameBehavior).IsAssignableFrom(componentType))
+            if (!typeof(GameBehavior).IsAssignableFrom(metadata.type))
                 return GameBehaviorLifecyclePhase.None;
 
             GameBehaviorLifecyclePhase phases = GameBehaviorLifecyclePhase.None;
@@ -199,15 +202,7 @@ internal sealed class SceneTypeCatalog : IDisposable
                 string callbackName,
                 GameBehaviorLifecyclePhase phase
             ) {
-                MethodInfo? callback = componentType.GetMethod(
-                    callbackName,
-                    BindingFlags.Instance | BindingFlags.NonPublic,
-                    binder: null,
-                    Type.EmptyTypes,
-                    modifiers: null);
-                if (callback is not null &&
-                    callback.DeclaringType != typeof(GameBehavior) &&
-                    callback.GetBaseDefinition().DeclaringType == typeof(GameBehavior))
+                if (metadata.parameterlessOverrides.Contains((callbackName, typeof(GameBehavior))))
                 {
                     phases |= phase;
                 }

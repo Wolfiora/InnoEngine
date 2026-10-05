@@ -1,5 +1,5 @@
 {
-  "KnownEnumValueNames": {
+  "knownEnumValueNames": {
     "BGFX_ACCESS_READWRITE": "ReadWrite",
     "BGFX_ATTRIB_TEXCOORD0": "TexCoord0",
     "BGFX_ATTRIB_TEXCOORD1": "TexCoord1",
@@ -96,66 +96,114 @@
     "BGFX_TEXTURE_FORMAT_RG11B10F": "RG11B10F",
     "BGFX_TEXTURE_FORMAT_UNKNOWNDEPTH": "UnknownDepth"
   },
-  "ClassMappings": [
+  "classMappings": [
     {
-      "ExportedName": "bgfx_dynamic_index_buffer_handle_s",
-      "FriendlyName": "DynamicIndexBufferHandle",
-      "Validity": { "FieldName": "idx", "InvalidValue": "ushort.MaxValue", "PropertyName": "Valid" }
+      "exportedName": "bgfx_dynamic_index_buffer_handle_s",
+      "friendlyName": "DynamicIndexBufferHandle",
+      "validity": {
+        "fieldName": "idx",
+        "invalidValue": "ushort.MaxValue",
+        "propertyName": "Valid"
+      }
     },
     {
-      "ExportedName": "bgfx_dynamic_vertex_buffer_handle_s",
-      "FriendlyName": "DynamicVertexBufferHandle",
-      "Validity": { "FieldName": "idx", "InvalidValue": "ushort.MaxValue", "PropertyName": "Valid" }
+      "exportedName": "bgfx_dynamic_vertex_buffer_handle_s",
+      "friendlyName": "DynamicVertexBufferHandle",
+      "validity": {
+        "fieldName": "idx",
+        "invalidValue": "ushort.MaxValue",
+        "propertyName": "Valid"
+      }
     },
     {
-      "ExportedName": "bgfx_frame_buffer_handle_s",
-      "FriendlyName": "FrameBufferHandle",
-      "Validity": { "FieldName": "idx", "InvalidValue": "ushort.MaxValue", "PropertyName": "Valid" }
+      "exportedName": "bgfx_frame_buffer_handle_s",
+      "friendlyName": "FrameBufferHandle",
+      "validity": {
+        "fieldName": "idx",
+        "invalidValue": "ushort.MaxValue",
+        "propertyName": "Valid"
+      }
     },
     {
-      "ExportedName": "bgfx_index_buffer_handle_s",
-      "FriendlyName": "IndexBufferHandle",
-      "Validity": { "FieldName": "idx", "InvalidValue": "ushort.MaxValue", "PropertyName": "Valid" }
+      "exportedName": "bgfx_index_buffer_handle_s",
+      "friendlyName": "IndexBufferHandle",
+      "validity": {
+        "fieldName": "idx",
+        "invalidValue": "ushort.MaxValue",
+        "propertyName": "Valid"
+      }
     },
     {
-      "ExportedName": "bgfx_indirect_buffer_handle_s",
-      "FriendlyName": "IndirectBufferHandle",
-      "Validity": { "FieldName": "idx", "InvalidValue": "ushort.MaxValue", "PropertyName": "Valid" }
+      "exportedName": "bgfx_indirect_buffer_handle_s",
+      "friendlyName": "IndirectBufferHandle",
+      "validity": {
+        "fieldName": "idx",
+        "invalidValue": "ushort.MaxValue",
+        "propertyName": "Valid"
+      }
     },
     {
-      "ExportedName": "bgfx_occlusion_query_handle_s",
-      "FriendlyName": "OcclusionQueryHandle",
-      "Validity": { "FieldName": "idx", "InvalidValue": "ushort.MaxValue", "PropertyName": "Valid" }
+      "exportedName": "bgfx_occlusion_query_handle_s",
+      "friendlyName": "OcclusionQueryHandle",
+      "validity": {
+        "fieldName": "idx",
+        "invalidValue": "ushort.MaxValue",
+        "propertyName": "Valid"
+      }
     },
     {
-      "ExportedName": "bgfx_program_handle_s",
-      "FriendlyName": "ProgramHandle",
-      "Validity": { "FieldName": "idx", "InvalidValue": "ushort.MaxValue", "PropertyName": "Valid" }
+      "exportedName": "bgfx_program_handle_s",
+      "friendlyName": "ProgramHandle",
+      "validity": {
+        "fieldName": "idx",
+        "invalidValue": "ushort.MaxValue",
+        "propertyName": "Valid"
+      }
     },
     {
-      "ExportedName": "bgfx_shader_handle_s",
-      "FriendlyName": "ShaderHandle",
-      "Validity": { "FieldName": "idx", "InvalidValue": "ushort.MaxValue", "PropertyName": "Valid" }
+      "exportedName": "bgfx_shader_handle_s",
+      "friendlyName": "ShaderHandle",
+      "validity": {
+        "fieldName": "idx",
+        "invalidValue": "ushort.MaxValue",
+        "propertyName": "Valid"
+      }
     },
     {
-      "ExportedName": "bgfx_texture_handle_s",
-      "FriendlyName": "TextureHandle",
-      "Validity": { "FieldName": "idx", "InvalidValue": "ushort.MaxValue", "PropertyName": "Valid" }
+      "exportedName": "bgfx_texture_handle_s",
+      "friendlyName": "TextureHandle",
+      "validity": {
+        "fieldName": "idx",
+        "invalidValue": "ushort.MaxValue",
+        "propertyName": "Valid"
+      }
     },
     {
-      "ExportedName": "bgfx_uniform_handle_s",
-      "FriendlyName": "UniformHandle",
-      "Validity": { "FieldName": "idx", "InvalidValue": "ushort.MaxValue", "PropertyName": "Valid" }
+      "exportedName": "bgfx_uniform_handle_s",
+      "friendlyName": "UniformHandle",
+      "validity": {
+        "fieldName": "idx",
+        "invalidValue": "ushort.MaxValue",
+        "propertyName": "Valid"
+      }
     },
     {
-      "ExportedName": "bgfx_vertex_buffer_handle_s",
-      "FriendlyName": "VertexBufferHandle",
-      "Validity": { "FieldName": "idx", "InvalidValue": "ushort.MaxValue", "PropertyName": "Valid" }
+      "exportedName": "bgfx_vertex_buffer_handle_s",
+      "friendlyName": "VertexBufferHandle",
+      "validity": {
+        "fieldName": "idx",
+        "invalidValue": "ushort.MaxValue",
+        "propertyName": "Valid"
+      }
     },
     {
-      "ExportedName": "bgfx_vertex_layout_handle_s",
-      "FriendlyName": "VertexLayoutHandle",
-      "Validity": { "FieldName": "idx", "InvalidValue": "ushort.MaxValue", "PropertyName": "Valid" }
+      "exportedName": "bgfx_vertex_layout_handle_s",
+      "friendlyName": "VertexLayoutHandle",
+      "validity": {
+        "fieldName": "idx",
+        "invalidValue": "ushort.MaxValue",
+        "propertyName": "Valid"
+      }
     }
   ]
 }

@@ -17,8 +17,7 @@ public static unsafe partial class SDL
 
     static SDL()
     {
-        NativeDllLoader.EnsureNativeDll(C_LIBRARY_NAME);
-        nint handle = NativeDllLoader.LoadNativeDll(C_LIBRARY_NAME);
+        nint handle = NativeDllLoader.LoadNativeDll(C_LIBRARY_NAME, typeof(SDL).Assembly);
         InitApi(new NativeLibraryContext(handle));
     }
 }

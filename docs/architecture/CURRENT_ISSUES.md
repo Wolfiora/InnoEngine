@@ -2,6 +2,12 @@
 
 [架构治理](README.md) · [Wiki 首页](../README.md) · [正式问题台账](../issues/2026-08-31-complete-issue-register.md)
 
+2026-10-05 当前入口：[完整平台/运行时重构验收](PLATFORM_RUNTIME_ACCEPTANCE.md)与
+[Plan 逐项核对](PLATFORM_RUNTIME_PLAN_AUDIT.md)记录此次结构、静态注册、四条实际 Player 路径及独立 BGCS 验收。
+Windows 临时目录 rename 的共享/访问拒绝现由共同 IO 边界有界处理；持续拒绝仍明确失败并保留旧输出。
+有真实占用、恢复、并发和回滚回归，未把重试视为外部占用进程已被确定。
+下列旧轮次的测试数和 staging 风险属于历史证据；当前结果与 macOS/GUI/设备限制以本次报告为准。
+
 2026-10-03 更新：[Sample 导入修复与 BGCS 独立性复核](PRECOMMIT_SAMPLE_AUDIT_2026_10_03.md)记录后台复制/身份重写、候选 Catalog/Importer、统一编译器后台 reference/Roslyn、History、取消和退出退休。下述 Sample 主线程同步 preflight 的 P2 已修复；同时移除索引前 watcher 静默等待，并补齐完整对账的 FileSystem 索引刷新。
 真实 watcher 的成功/取消及外部文件对账回归通过。最终引擎 50 项目汇总为 1434 passed、0 failed、16 skipped；Solution、Release CLI 和架构验证通过，FlappyBird 最终 Windows/Web 导出与 Web 运行回归通过。汇总采用最终矩阵的 49 个项目与完整 Scripting 成功重跑，原失败证据保留，详见本轮报告。BGCS 文档已移除引擎专属验收描述，独立 11 项目 710 passed。
 本轮 Windows FlappyBird 导出仍出现 staging 访问拒绝，重试及独立冷缓存副本成功；尚未定位根因，属于保留风险，不能称为已修复。macOS/Linux 与可见 GUI/高 DPI/音频证据缺口仍保留。

@@ -20,11 +20,11 @@ namespace Inno.Adapter.Authoring.Default;
 /// </summary>
 public sealed class DefaultAuthoringAdapterCatalog :
     IAuthoringAdapterCatalog,
-    IRenderingAuthoringBackendFactory,
-    IPresentationBackendFactory
+    IRenderingAuthoringBackendFactory
 {
     private readonly DefaultAdapterCatalog m_runtime;
     private readonly RenderingAuthoringBackendCatalog m_renderingAuthoring;
+    private readonly PresentationBackendCatalog m_presentation;
 
     /// <summary>
     /// Creates paired runtime and authoring registrations before any native device is initialized.
@@ -35,14 +35,19 @@ public sealed class DefaultAuthoringAdapterCatalog :
     /// <param name="authoringProviders">
     /// Complete matching authoring registrations, or null for bundled BGFX.
     /// </param>
+    /// <param name="presentationProviders">
+    /// Complete presentation registrations, or null for bundled ImGui. An empty sequence registers none.
+    /// </param>
     /// <exception cref="ArgumentException">
     /// The runtime and authoring backend registrations do not match.
     /// </exception>
     public DefaultAuthoringAdapterCatalog(
         IEnumerable<RenderingBackendProvider>? renderingProviders = null,
-        IEnumerable<RenderingAuthoringBackendProvider>? authoringProviders = null
+        IEnumerable<RenderingAuthoringBackendProvider>? authoringProviders = null,
+        IEnumerable<PresentationBackendProvider>? presentationProviders = null
     ) {
         m_runtime = new DefaultAdapterCatalog(renderingProviders);
+        m_presentation = new PresentationBackendCatalog(presentationProviders ?? [new ImGuiPresentationProvider()]);
         m_renderingAuthoring = new RenderingAuthoringBackendCatalog(
             m_runtime.rendering,
             authoringProviders ?? [new BgfxAuthoringProvider()]);
@@ -94,7 +99,7 @@ public sealed class DefaultAuthoringAdapterCatalog :
     /// <summary>
     /// Gets the built-in graphical host-presentation factory.
     /// </summary>
-    public IPresentationBackendFactory presentation => this;
+    public IPresentationBackendFactory presentation => m_presentation;
 
     IShaderCompilerToolchain IRenderingAuthoringBackendFactory.CreateShaderCompilerToolchain(
         RenderingBackendId backend)
@@ -107,41 +112,26 @@ public sealed class DefaultAuthoringAdapterCatalog :
     private sealed class BgfxAuthoringProvider : RenderingAuthoringBackendProvider
     {
         /// <summary>
-        /// Gets the stable identity used to reference this value across subsystem boundaries.
+        /// Registers the bundled rendering authoring tools without initializing a compiler.
         /// </summary>
-public override RenderingBackendId id => RenderingBackendId.bgfx;
-        /// <summary>
-        /// Creates and validates a caller-owned shader compiler toolchain value.
-        /// </summary>
-        /// <returns>
-        /// The validated ishader compiler toolchain that represents the completed operation.
-        /// </returns>
-public override IShaderCompilerToolchain CreateShaderCompilerToolchain() => new BgfxShadercToolchain();
-        /// <summary>
-        /// Creates and validates a caller-owned texture target compiler value.
-        /// </summary>
-        /// <returns>
-        /// The validated itexture target compiler that represents the completed operation.
-        /// </returns>
-public override ITextureTargetCompiler CreateTextureTargetCompiler() => new BgfxTextureTargetCompiler();
+        public BgfxAuthoringProvider() : base(RenderingBackendId.bgfx) { }
+
+        /// <inheritdoc />
+        public override IShaderCompilerToolchain CreateShaderCompilerToolchain() => new BgfxShadercToolchain();
+
+        /// <inheritdoc />
+        public override ITextureTargetCompiler CreateTextureTargetCompiler() => new BgfxTextureTargetCompiler();
     }
 
-    IPresentationContext IPresentationBackendFactory.CreateContext(
-        PresentationBackend backend,
-        PresentationBackendOptions options
-    ) {
-        ArgumentNullException.ThrowIfNull(options);
-        return backend switch
-        {
-            PresentationBackend.ImGui => new ImGuiPresentationContext(options),
-            _ => throw Unsupported(nameof(backend), backend)
-        };
-    }
+    private sealed class ImGuiPresentationProvider : PresentationBackendProvider
+    {
+        /// <summary>
+        /// Registers the bundled presentation implementation without creating a native context.
+        /// </summary>
+        public ImGuiPresentationProvider() : base(PresentationBackendId.imGui) { }
 
-    private static NotSupportedException Unsupported<TBackend>(
-        string parameterName,
-        TBackend backend
-    )
-        where TBackend : struct, Enum
-        => new($"The {parameterName} selection '{backend}' is not available in the default authoring adapter catalog.");
+        /// <inheritdoc />
+        public override IPresentationContext CreateContext(PresentationBackendOptions options)
+            => new ImGuiPresentationContext(options);
+    }
 }

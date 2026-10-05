@@ -47,6 +47,7 @@ internal static partial class NativeBindingsVerification
 
             string target = DetectTarget();
             string nativeConfiguration = options.configuration.ToLowerInvariant();
+            string cliOutput = Path.Combine(repositoryRoot, "artifacts", "build-tools", "verification", Guid.NewGuid().ToString("N"));
             Console.WriteLine($"[inno-bindings] Verify deterministic generation for {target}.");
             await VerifyCppBridgeAsync(
                 repositoryRoot,
@@ -70,6 +71,7 @@ internal static partial class NativeBindingsVerification
                 [
                     "restore", Path.Combine(repositoryRoot, "InnoEngine.sln"),
                     $"-p:BGCSRuntimeProject={bindGenRuntimeProject}",
+                    $"-p:InnoBuildCliOutputPath={cliOutput}",
                     "-p:BuildInParallel=false",
                     "/m:1",
                     "/nodeReuse:false",
@@ -77,7 +79,7 @@ internal static partial class NativeBindingsVerification
                 ],
                 repositoryRoot, cancellationToken);
 
-            await BuildNativeDependenciesAsync(repositoryRoot, nativeConfiguration, cancellationToken);
+            var nativeProducts = await BuildNativeDependenciesAsync(repositoryRoot, nativeConfiguration, cancellationToken);
 
             Console.WriteLine("[inno-bindings] Build the complete InnoEngine solution.");
             await ToolchainEnvironment.RunAsync(
@@ -86,15 +88,16 @@ internal static partial class NativeBindingsVerification
                     "build", Path.Combine(repositoryRoot, "InnoEngine.sln"),
                     "--configuration", options.configuration,
                     "--no-restore",
-                "-m:1", "-nodeReuse:false",
+                    "-m:1", "-nodeReuse:false", "--disable-build-servers",
                     $"-p:BGCSRuntimeProject={bindGenRuntimeProject}",
+                    $"-p:InnoBuildCliOutputPath={cliOutput}",
                     "-p:TreatWarningsAsErrors=true",
                     "--nologo"
                 ],
                 repositoryRoot, cancellationToken);
 
             IReadOnlyList<string> testProjects = DiscoverTestProjects(repositoryRoot);
-            await RunTestsAsync(repositoryRoot, options, testProjects, cancellationToken);
+            await RunTestsAsync(repositoryRoot, options, testProjects, nativeProducts, cancellationToken);
             string reportPath = await WriteReportAsync(
                 repositoryRoot,
                 bindGenRoot,
@@ -158,8 +161,8 @@ internal static partial class NativeBindingsVerification
         CancellationToken cancellationToken
     ) {
         using JsonDocument bridgeConfig = JsonDocument.Parse(File.ReadAllText(uiBridgeConfig));
-        string outputPath = bridgeConfig.RootElement.GetProperty("OutputPath").GetString()
-            ?? throw new InvalidOperationException("RmlUi Cpp2C OutputPath must be a directory.");
+        string outputPath = bridgeConfig.RootElement.GetProperty("outputPath").GetString()
+            ?? throw new InvalidOperationException("RmlUi Cpp2C outputPath must be a directory.");
         string outputRoot = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(uiBridgeConfig)!, outputPath));
         IReadOnlyDictionary<string, string> before = SnapshotDirectory(outputRoot);
         await ToolchainEnvironment.RunAsync(
@@ -236,13 +239,13 @@ internal static partial class NativeBindingsVerification
         Console.WriteLine("[inno-bindings] No hand-authored native imports exist outside generated binding roots.");
     }
 
-    private static async Task BuildNativeDependenciesAsync(
+    private static async Task<IReadOnlyList<NativeBuildProduct>> BuildNativeDependenciesAsync(
         string repositoryRoot,
         string nativeConfiguration,
         CancellationToken cancellationToken
     ) {
         Console.WriteLine("[inno-bindings] Build every native dependency required by generated bindings.");
-        await HostNativeBuild.BuildEditorAsync(
+        return await HostNativeBuild.BuildEditorAsync(
             new NativeBuildContext(repositoryRoot, nativeConfiguration), cancellationToken);
     }
 
@@ -269,11 +272,15 @@ internal static partial class NativeBindingsVerification
         string repositoryRoot,
         NativeVerificationOptions options,
         IReadOnlyList<string> testProjects,
+        IReadOnlyList<NativeBuildProduct> nativeProducts,
         CancellationToken cancellationToken
     ) {
         Console.WriteLine("[inno-bindings] Run every native binding, Text, and UI test project.");
         foreach (string project in testProjects)
         {
+            await HostNativeDeployment.InstallAsync(nativeProducts,
+                Path.Combine(Path.GetDirectoryName(project)!, "bin", options.configuration, "net9.0"), cancellationToken)
+                .ConfigureAwait(false);
             await ToolchainEnvironment.RunAsync(
                 options.dotnet,
                 [

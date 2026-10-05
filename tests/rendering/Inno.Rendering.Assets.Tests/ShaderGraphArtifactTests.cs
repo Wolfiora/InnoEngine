@@ -1,3 +1,5 @@
+using Inno.Adapter.Serialization.DotNet;
+using Inno.Adapter.Modules.DotNet;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -16,10 +18,10 @@ namespace Inno.Rendering.Assets.Tests;
 [Collection("Rendering assets serialization")]
 public sealed class ShaderGraphArtifactTests : IDisposable
 {
-    private readonly ModuleHost m_modules = new(new() { cacheDirectory = Path.Combine(Path.GetTempPath(), "ShaderGraphArtifactTests", Guid.NewGuid().ToString("N")) });
+    private readonly ModuleHost m_modules = new(new() { catalogSource = new DotNetAssemblyCatalogSource(typeof(ShaderGraphArtifactTests).Assembly), cacheDirectory = Path.Combine(Path.GetTempPath(), "ShaderGraphArtifactTests", Guid.NewGuid().ToString("N")) });
     private readonly TypeCatalog m_types;
     private readonly SerializationRegistry m_serialization;
-    public ShaderGraphArtifactTests() { m_types = new(m_modules); m_serialization = new(m_types); }
+    public ShaderGraphArtifactTests() { m_types = new(m_modules, new ReflectionTypeCatalogSource()); m_serialization = new(m_types, new ReflectionSerializationMetadataSource()); }
 
     [Fact]
     public void SemanticFingerprintIgnoresLayoutButIncludesPropertiesAndFrozenDependencies()

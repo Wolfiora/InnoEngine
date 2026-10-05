@@ -31,49 +31,33 @@ public static class MiniAudioToolchain
     /// Cancels child processes and prevents artifact installation after cancellation.
     /// </param>
     /// <returns>
-    /// Completion after the component has been built and installed in the selected checkout.
+    /// The validated product containing the exact runtime and link inputs for this operation.
     /// </returns>
     /// <exception cref="OperationCanceledException">
     /// The operation was canceled.
     /// </exception>
-    public static async Task BuildAsync(
+    public static async Task<NativeBuildProduct> BuildAsync(
         NativeBuildContext context,
         CancellationToken cancellationToken = default
     ) {
         ArgumentNullException.ThrowIfNull(context);
-        cancellationToken.ThrowIfCancellationRequested();
-        string configuration = context.configuration;
-        MiniAudioBuilder builder = MiniAudioBuilderFactory.CreateForCurrentPlatform();
-        string repositoryRoot = context.engineRoot;
-        string miniAudioDirectory = Path.Combine(
-            repositoryRoot,
-            ToolchainLayout.C_EXTERNAL_DIRECTORY_NAME,
-            MiniAudioBuildConstants.MINIAUDIO_DIR_NAME);
-        string outputDirectory = Path.Combine(
-            repositoryRoot,
-            ToolchainLayout.C_OUTPUT_DIRECTORY_NAME,
-            MiniAudioBuildConstants.OUTPUT_PRODUCT_DIR_NAME,
-            builder.OutputPlatform);
-
+        context = await HostNativeToolchain.ResolveAsync(context, cancellationToken).ConfigureAwait(false);
+        var builder = MiniAudioBuilderFactory.CreateForCurrentPlatform();
+        string miniAudioDirectory = Path.Combine(context.engineRoot, "extern", "miniaudio");
         MiniAudioBuildUtils.ValidateSource(miniAudioDirectory);
-        Directory.CreateDirectory(outputDirectory);
-        string expectedOutput = Path.Combine(
-            outputDirectory,
-            GetExpectedOutputFileName(builder.OutputPlatform, configuration));
-        await builder.BuildAsync(miniAudioDirectory, context, cancellationToken);
-        cancellationToken.ThrowIfCancellationRequested();
-        CopyArtifacts(
-            outputDirectory,
-            builder.OutputPlatform,
-            context);
-        if (!File.Exists(expectedOutput))
-        {
-            throw new FileNotFoundException(
-                "The miniaudio build completed without producing the required shared library.",
-                expectedOutput);
-        }
-
-        Console.WriteLine($"miniaudio build complete. Output: {outputDirectory}");
+        return await NativeArtifactPublisher.PublishAsync(context, typeof(MiniAudioToolchain).Assembly,
+            "miniaudio", builder.OutputPlatform, [miniAudioDirectory], [], async (
+                scoped,
+                output,
+                token
+            ) => {
+                await builder.BuildAsync(miniAudioDirectory, scoped, token).ConfigureAwait(false);
+                token.ThrowIfCancellationRequested();
+                CopyArtifacts(output, builder.OutputPlatform, scoped);
+                string expected = Path.Combine(output, GetExpectedOutputFileName(builder.OutputPlatform, scoped.configuration));
+                if (!File.Exists(expected))
+                    throw new FileNotFoundException("The audio build did not produce its required shared library.", expected);
+            }, cancellationToken).ConfigureAwait(false);
     }
 
     private static void CopyArtifacts(

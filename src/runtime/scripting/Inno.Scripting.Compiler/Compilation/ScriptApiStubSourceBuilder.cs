@@ -633,6 +633,16 @@ internal static class ScriptApiStubSourceBuilder
     ) {
         foreach (CustomAttributeData attribute in attributes)
         {
+            if (attribute.AttributeType.Namespace == "System.Runtime.CompilerServices"
+                && attribute.AttributeType.Name is "CallerFilePathAttribute" or "CallerLineNumberAttribute"
+                    or "CallerMemberNameAttribute" or "CallerArgumentExpressionAttribute")
+            {
+                builder.Append("[global::").Append(attribute.AttributeType.FullName).Append('(')
+                    .Append(string.Join(", ", attribute.ConstructorArguments.Select(static argument =>
+                        FormatConstant(argument.Value, argument.ArgumentType))))
+                    .Append(")] ");
+                continue;
+            }
             if (attribute.AttributeType.Namespace != "System.Diagnostics.CodeAnalysis"
                 || attribute.AttributeType.Name is not ("AllowNullAttribute" or "DisallowNullAttribute"
                     or "MaybeNullAttribute" or "NotNullAttribute" or "NotNullWhenAttribute"

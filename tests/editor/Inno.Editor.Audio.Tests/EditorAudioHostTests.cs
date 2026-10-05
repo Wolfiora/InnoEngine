@@ -1,3 +1,5 @@
+using Inno.Adapter.Serialization.DotNet;
+using Inno.Adapter.Modules.DotNet;
 using Inno.Runtime.Contracts;
 using System;
 using System.Collections.Generic;
@@ -21,6 +23,8 @@ public sealed class EditorAudioHostTests : IDisposable
         m_root = Path.Combine(Path.GetTempPath(), "InnoEditorAudioTests", Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(m_root);
         m_engine = new EngineHostBuilder()
+                .UseMetadataSources(new DotNetAssemblyCatalogSource(typeof(EditorAudioHostTests).Assembly),
+                    new ReflectionTypeCatalogSource(), new ReflectionSerializationMetadataSource())
             .UseMetadataCache(Path.Combine(m_root, "Assemblies"))
             .Build();
     }
@@ -122,7 +126,7 @@ public sealed class EditorAudioHostTests : IDisposable
         internal void Add(Guid id, string path)
             => m_artifacts.Add(
                 id,
-                new AssetArtifactInfo(new AssetArtifactKey("AABB"), "audio-data", path, "TEST", 128));
+                new AssetArtifactInfo(new AssetArtifactKey(new string('A', 64)), "audio-data", path, "TEST", 128));
 
         public bool TryGetArtifact(Guid persistentId, string outputName, out AssetArtifactInfo? artifact)
         {

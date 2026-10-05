@@ -41,11 +41,8 @@ internal sealed class LinuxCImguizmoBuilder : CImguizmoBuilder
     /// <param name="cimguiDir">
     /// The cimgui dir text validated by the build operation.
     /// </param>
-    /// <param name="cimguiBuildDir">
-    /// The cimgui build dir text validated by the build operation.
-    /// </param>
-    /// <param name="cimguiOutputDir">
-    /// The cimgui output dir text validated by the build operation.
+    /// <param name="cimguiLibraryFile">
+    /// The exact published import or shared library selected by the parent operation.
     /// </param>
     /// <param name="context">
     /// The selected checkout and native configuration.
@@ -59,8 +56,7 @@ internal sealed class LinuxCImguizmoBuilder : CImguizmoBuilder
     public override async Task BuildAsync(
         string cimguizmoDir,
         string cimguiDir,
-        string cimguiBuildDir,
-        string cimguiOutputDir,
+        string cimguiLibraryFile,
         NativeBuildContext context,
         CancellationToken cancellationToken
     ) {
@@ -71,7 +67,7 @@ internal sealed class LinuxCImguizmoBuilder : CImguizmoBuilder
 
         string cimguizmoCpp = Path.Combine(cimguizmoDir, CImguizmoBuildConstants.CIMGUIMO_CPP_FILE);
         string imguizmoCpp = Path.Combine(cimguizmoDir, CImguizmoBuildConstants.IMGUIZMO_DIR_NAME, CImguizmoBuildConstants.IMGUIZMO_CPP_FILE);
-        string cimguiLib = FindCimguiLibrary(cimguiOutputDir, config);
+        string cimguiLib = cimguiLibraryFile;
         string outputLib = Path.Combine(buildDir, $"{CImguizmoBuildConstants.OUTPUT_DLL_NAME}.so");
         string[] includes =
         [
@@ -84,16 +80,7 @@ internal sealed class LinuxCImguizmoBuilder : CImguizmoBuilder
         string cflags = config == ToolchainLayout.C_DEBUG_CONFIGURATION ? "-O0 -g" : "-O3";
         string relativeRPath = $"$ORIGIN/../../cimgui/{outputPlatform}";
         string args = $"{cflags} {THIRD_PARTY_WARNING_POLICY} -std=c++11 -fPIC -shared {includeArgs} \"{cimguizmoCpp}\" \"{imguizmoCpp}\" \"{cimguiLib}\" -Wl,-soname,{CImguizmoBuildConstants.OUTPUT_DLL_NAME}.so -Wl,-rpath,{relativeRPath} -o \"{outputLib}\"";
-        await ToolchainEnvironment.RunAsync("clang++", args, cimguizmoDir, cancellationToken);
+        await ToolchainEnvironment.RunAsync(context, "clang++", args, cimguizmoDir, cancellationToken);
     }
 
-    private static string FindCimguiLibrary(
-        string cimguiOutputDir,
-        string config
-    ) {
-        string path = Path.Combine(cimguiOutputDir, $"libcimgui-{config}.so");
-        if (!File.Exists(path))
-            throw new FileNotFoundException($"cimgui shared library not found: {path}", path);
-        return path;
-    }
 }

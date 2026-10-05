@@ -1,3 +1,5 @@
+using Inno.Adapter.Serialization.DotNet;
+using Inno.Adapter.Modules.DotNet;
 using System;
 using System.IO;
 using Inno.Core.Serialization;
@@ -22,9 +24,13 @@ public sealed class FileRenderTargetArtifactProviderTests : IDisposable
 
     public FileRenderTargetArtifactProviderTests()
     {
-        m_modules = new(new() { cacheDirectory = Path.Combine(m_root, "Modules") });
-        m_types = new(m_modules);
-        m_serialization = new(m_types);
+        m_modules = new(new()
+        {
+            catalogSource = new DotNetAssemblyCatalogSource(typeof(FileRenderTargetArtifactProviderTests).Assembly),
+            cacheDirectory = Path.Combine(m_root, "Modules")
+        });
+        m_types = new(m_modules, new ReflectionTypeCatalogSource());
+        m_serialization = new(m_types, new ReflectionSerializationMetadataSource());
     }
 
     [Fact]

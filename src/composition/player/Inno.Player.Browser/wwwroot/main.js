@@ -3,11 +3,29 @@ import { dotnet } from './_framework/dotnet.js';
 const canvas = document.getElementById('canvas');
 const status = document.getElementById('status');
 const error = document.getElementById('error');
+let pendingFrame;
 
 function showError(message) {
     error.textContent = message;
     error.style.display = 'block';
     status.textContent = '';
+}
+
+function nextFrame() {
+    if (pendingFrame) {
+        throw new Error('A presentation opportunity is already pending.');
+    }
+    return new Promise(resolve => {
+        const complete = () => {
+            cancelAnimationFrame(frame);
+            document.removeEventListener('visibilitychange', complete);
+            pendingFrame = undefined;
+            resolve();
+        };
+        const frame = requestAnimationFrame(complete);
+        pendingFrame = complete;
+        document.addEventListener('visibilitychange', complete, { once: true });
+    });
 }
 
 try {
@@ -21,7 +39,8 @@ try {
     setModuleImports('browser-player.js', {
         host: {
             baseUrl: () => new URL('./', document.baseURI).href,
-            nextFrame: () => new Promise(resolve => requestAnimationFrame(resolve)),
+            nextFrame,
+            cancelFrame: () => pendingFrame?.(),
             status: message => { status.textContent = message; },
             error: showError
         },

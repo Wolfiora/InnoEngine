@@ -1,5 +1,13 @@
 # Inno.Audio.Runtime
 
+## 宿主暂停
+
+Attach 后，Runtime 通过 Core Events 的 `EventDispatcher.dispatched` 完成观察入口监听 `ApplicationSuspensionChangedEvent`，即使事件被全局消费也会收到系统生命周期通知。
+暂停作用于 active 和仍被 voice 使用的 retired mixer master bus；用户设置的 paused 值独立保留，
+恢复不会清除它。设备替换与 mixer 替换继承当前宿主暂停状态。
+Backend 拒绝暂停时回滚已经改变的 master bus 并抛出；回滚失败使 generation Faulted。
+停止时先退订完成观察回调，再退休输出资源；没有额外平台事件总线或平台判断。
+
 ## Provider 所有权与恢复诊断
 
 Provider 实例在 `AudioExtensionRegistry` 的 TypeCatalog 候选快照构造阶段创建，由该快照独占释放；Runtime 不再维护第二套延迟创建/释放的 Provider generation。所有 Provider 都尝试退休，清理失败经 TypeRegistry 将共享 generation gate 置为 Faulted。它不是可回滚的普通候选失败。

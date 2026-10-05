@@ -71,7 +71,9 @@ Native bindings expose foreign APIs; adapters translate them into engine contrac
 
 ## Explore and build
 
-The Editor and Player target **.NET 9**. Native toolchains and CI are configured for **macOS ARM64** and **Windows x64**; Linux is not currently a build target.
+The Editor and Player target **.NET 9**. Game exports currently target **Windows x64**, **macOS ARM64**, and **WebAssembly browsers with WebGL 2**. Desktop exports can use CoreCLR or NativeAOT; browser exports use the selected .NET Mono Wasm interpreter or AOT compiler. Platform packaging, managed deployment, native toolchains, and domain adapters are separate choices. Linux is not currently a game export target.
+
+See the [platform and runtime architecture](docs/architecture/PLATFORM_RUNTIME_ARCHITECTURE.md) for these boundaries and the [refactor acceptance report](docs/architecture/PLATFORM_RUNTIME_ACCEPTANCE.md) for actual verification on each host. iOS, consoles, and a future CoreCLR WebAssembly deployment remain documented extension points.
 
 Native dependencies need to be built before running the Editor. Start with:
 

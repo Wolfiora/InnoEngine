@@ -3,7 +3,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Threading;
 using System;
-using Inno.Build.Toolchains.ImGui;
 using Inno.Build.Toolchains.ImGuizmo.Platforms;
 using Inno.Build.Toolchains;
 
@@ -23,6 +22,9 @@ public static class ImGuizmoToolchain
     /// <param name="context">
     /// The checkout and configuration whose sources and outputs belong to this operation.
     /// </param>
+    /// <param name="imGui">
+    /// The matching published ImGui product providing the native link dependency.
+    /// </param>
     /// <exception cref="ArgumentException">
     /// The configuration is invalid.
     /// </exception>
@@ -33,37 +35,40 @@ public static class ImGuizmoToolchain
     /// Cancels child processes and prevents artifact installation after cancellation.
     /// </param>
     /// <returns>
-    /// Completion after the component has been built and installed in the selected checkout.
+    /// The validated gizmo library linked against the explicitly supplied ImGui product.
     /// </returns>
     /// <exception cref="OperationCanceledException">
     /// The operation was canceled.
     /// </exception>
-    public static async Task BuildAsync(
+    public static async Task<NativeBuildProduct> BuildAsync(
         NativeBuildContext context,
+        NativeBuildProduct imGui,
         CancellationToken cancellationToken = default
     ) {
         ArgumentNullException.ThrowIfNull(context);
-        cancellationToken.ThrowIfCancellationRequested();
-        string configuration = context.configuration;
+        ArgumentNullException.ThrowIfNull(imGui);
+        context = await HostNativeToolchain.ResolveAsync(context, cancellationToken).ConfigureAwait(false);
         var builder = CImguizmoBuilderFactory.CreateForCurrentPlatform();
-        var repoRoot = context.engineRoot;
-        var externDir = Path.Combine(repoRoot, ToolchainLayout.C_EXTERNAL_DIRECTORY_NAME);
-        var cimguiDir = Path.Combine(externDir, CImguizmoBuildConstants.CIMGUI_DIR_NAME);
-        var cimguizmoDir = Path.Combine(externDir, CImguizmoBuildConstants.CIMGUIZMO_DIR_NAME);
-        var outputDir = Path.Combine(repoRoot, ToolchainLayout.C_OUTPUT_DIRECTORY_NAME, CImguizmoBuildConstants.OUTPUT_PRODUCT_DIR_NAME, builder.outputPlatform);
-        var cimguiOutputDir = Path.Combine(repoRoot, ToolchainLayout.C_OUTPUT_DIRECTORY_NAME, "cimgui", builder.outputPlatform);
-        var cimguiBuildDir = Path.Combine(context.GetNativeBuildRoot(typeof(ImGuiToolchain).Assembly), builder.outputPlatform, configuration, "upstream");
-
-        Directory.CreateDirectory(externDir);
-        Directory.CreateDirectory(outputDir);
-
+        if (imGui.component != "cimgui" || imGui.targetId != builder.outputPlatform)
+            throw new ArgumentException("The supplied ImGui product does not match this gizmo target.", nameof(imGui));
+        string extension = OperatingSystem.IsWindows() ? ".lib" : OperatingSystem.IsMacOS() ? ".dylib" : ".so";
+        string[] libraries = imGui.files.Where(file => Path.GetExtension(file) == extension).ToArray();
+        if (libraries.Length != 1)
+            throw new InvalidOperationException("The ImGui product must provide exactly one link library.");
+        string cimguizmoDir = Path.Combine(context.engineRoot, "extern", "cimguizmo");
+        string cimguiDir = Path.Combine(context.engineRoot, "extern", "cimgui");
         CImguizmoBuildUtils.ValidateSource(cimguizmoDir, cimguiDir);
-
-        await builder.BuildAsync(cimguizmoDir, cimguiDir, cimguiBuildDir, cimguiOutputDir, context, cancellationToken);
-        cancellationToken.ThrowIfCancellationRequested();
-        CopyArtifacts(outputDir, builder.outputPlatform, context);
-
-        Console.WriteLine($"cimguizmo build complete. Output: {outputDir}");
+        return await NativeArtifactPublisher.PublishAsync(context, typeof(ImGuizmoToolchain).Assembly,
+            "cimguizmo", builder.outputPlatform, [cimguizmoDir, cimguiDir, libraries[0]],
+            [imGui.fingerprint], async (
+                scoped,
+                output,
+                token
+            ) => {
+                await builder.BuildAsync(cimguizmoDir, cimguiDir, libraries[0], scoped, token).ConfigureAwait(false);
+                token.ThrowIfCancellationRequested();
+                CopyArtifacts(output, builder.outputPlatform, scoped);
+            }, cancellationToken).ConfigureAwait(false);
     }
 
     private static void CopyArtifacts(

@@ -1,3 +1,4 @@
+using Inno.Adapter.Modules.DotNet;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -30,7 +31,7 @@ public sealed class ModuleHostTests : IDisposable
         AssemblyModuleHandle handle = LoadVersion("V1");
         for (int index = 0; index < 12; index++)
         {
-            AssemblyUnloadMonitor monitor = CompleteReload(handle);
+            IAssemblyUnloadProbe monitor = CompleteReload(handle);
             ForceCollection();
             Assert.True(monitor.isCompleted);
             m_modules.generations.Wait();
@@ -50,7 +51,7 @@ public sealed class ModuleHostTests : IDisposable
     {
         AssemblyModuleHandle handle = LoadVersion("V1");
         using IDisposable retention = CreateRetention(kind);
-        AssemblyUnloadMonitor monitor = CompleteReload(handle);
+        IAssemblyUnloadProbe monitor = CompleteReload(handle);
         var barrier = new AssemblyUnloadBarrier([monitor], new AssemblyUnloadBarrierOptions
         {
             collectionInterval = TimeSpan.Zero,
@@ -132,8 +133,8 @@ public sealed class ModuleHostTests : IDisposable
 
     public ModuleHostTests()
     {
-        m_modules = new ModuleHost(new ModuleHostOptions { cacheDirectory = m_cacheDirectory });
-        m_types = new TypeCatalog(m_modules);
+        m_modules = new ModuleHost(new ModuleHostOptions { catalogSource = new DotNetAssemblyCatalogSource(typeof(ModuleHostTests).Assembly), cacheDirectory = m_cacheDirectory });
+        m_types = new TypeCatalog(m_modules, new ReflectionTypeCatalogSource());
     }
 
     public void Dispose()
@@ -222,7 +223,7 @@ public sealed class ModuleHostTests : IDisposable
     {
         string directory = Path.Combine(AppContext.BaseDirectory, "Modules", "V1");
         string dependency = Path.Combine(directory, "Reloadable.PrivateDependency.dll");
-        var request = new AssemblyLoadRequest
+        var request = new DotNetModuleSource
         {
             moduleName = "InvalidPluginScope",
             mainAssemblyPath = Path.Combine(directory, "Inno.Extensibility.Modules.TestModule.dll"),
@@ -243,14 +244,14 @@ public sealed class ModuleHostTests : IDisposable
     public void ExplicitPluginDependenciesUseSeparateContextsAndRemoveAtomically()
     {
         string directory = Path.Combine(AppContext.BaseDirectory, "Modules", "V1");
-        var dependency = new AssemblyLoadRequest
+        var dependency = new DotNetModuleSource
         {
             moduleName = "Plugin.Dependency",
             mainAssemblyPath = Path.Combine(directory, "Reloadable.PrivateDependency.dll"),
             domain = AssemblyDomain.InnoPlugin,
             scope = AssemblyScope.Runtime
         };
-        var consumer = new AssemblyLoadRequest
+        var consumer = new DotNetModuleSource
         {
             moduleName = "Plugin.Consumer",
             mainAssemblyPath = Path.Combine(directory, "Inno.Extensibility.Modules.TestModule.dll"),
@@ -298,7 +299,7 @@ public sealed class ModuleHostTests : IDisposable
     {
         AssemblyModuleHandle handle = LoadVersion("V1");
 
-        AssemblyUnloadMonitor monitor = CompleteReload(handle);
+        IAssemblyUnloadProbe monitor = CompleteReload(handle);
         ForceCollection();
 
         Assert.True(monitor.isCompleted);
@@ -311,7 +312,7 @@ public sealed class ModuleHostTests : IDisposable
         AssemblyModuleHandle handle = LoadVersion("V1");
         var retained = new List<TypeRef> { new(S_RELOADABLE_TYPE_ID) };
 
-        AssemblyUnloadMonitor monitor = CompleteReload(handle);
+        IAssemblyUnloadProbe monitor = CompleteReload(handle);
         ForceCollection();
 
         Assert.True(monitor.isCompleted);
@@ -325,13 +326,13 @@ public sealed class ModuleHostTests : IDisposable
         AssemblyModuleHandle handle = LoadVersion("V1");
         StrongTypeHolder holder = CreateStrongTypeHolder();
 
-        AssemblyUnloadMonitor monitor = CompleteReload(handle);
+        IAssemblyUnloadProbe monitor = CompleteReload(handle);
         ForceCollection();
 
-        Assert.Equal(AssemblyUnloadStatus.Pending, monitor.status);
+        Assert.False(monitor.isCompleted);
         ClearStrongTypeHolder(holder);
         ForceCollection();
-        Assert.Equal(AssemblyUnloadStatus.Completed, monitor.status);
+        Assert.True(monitor.isCompleted);
         GC.KeepAlive(holder);
     }
 
@@ -441,13 +442,13 @@ public sealed class ModuleHostTests : IDisposable
         Assert.True(info.externallyOwned);
         Assert.False(info.collectible);
 
-        AssemblyUnloadMonitor monitor = m_modules.Unload(handle);
+        IAssemblyUnloadProbe monitor = m_modules.Unload(handle);
         Assert.True(monitor.isCompleted);
         Assert.Empty(m_modules.modules);
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
-    private AssemblyUnloadMonitor CompleteReload(AssemblyModuleHandle handle)
+    private IAssemblyUnloadProbe CompleteReload(AssemblyModuleHandle handle)
     {
         using AssemblyReloadSession reload = m_modules.BeginReload(handle, CreateRequest("V2"));
         reload.Activate();
@@ -492,11 +493,11 @@ public sealed class ModuleHostTests : IDisposable
             "The rejected candidate load context was not observed.");
     }
 
-    private static AssemblyLoadRequest CreateRequest(string version)
+    private static DotNetModuleSource CreateRequest(string version)
     {
         string directory = Path.Combine(AppContext.BaseDirectory, "Modules", version);
         string dependency = Path.Combine(directory, "Reloadable.PrivateDependency.dll");
-        return new AssemblyLoadRequest
+        return new DotNetModuleSource
         {
             moduleName = "ReloadableTests",
             mainAssemblyPath = Path.Combine(directory, "Inno.Extensibility.Modules.TestModule.dll"),

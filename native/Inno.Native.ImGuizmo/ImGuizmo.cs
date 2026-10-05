@@ -1,51 +1,41 @@
-using System.Runtime.CompilerServices;
+using BGCS.Runtime;
+using Inno.Native.LibraryLoading;
 
-[assembly: DisableRuntimeMarshalling]
+namespace Inno.Native.ImGuizmo;
 
-namespace Inno.Native.ImGuizmo
-{
-    using BGCS.Runtime;
-    using Inno.Native.LibraryLoading;
-    using System.Diagnostics;
-
-    /// <summary>
-    /// Provides the generated native ImGuizmo ABI surface used exclusively by the editor adapter.
-    /// </summary>
-public static class ImGuizmoConfig
-    {
-        /// <summary>
-        /// The aot static link value used as part of this type's public representation.
-        /// </summary>
-public static bool AotStaticLink;
-    }
-
-    /// <summary>
-    /// Provides the generated native ImGuizmo ABI surface used exclusively by the editor adapter.
-    /// </summary>
+/// <summary>
+/// Initializes generated imports against the component's dynamic native library.
+/// </summary>
 public static unsafe partial class ImGuizmo
-    {
+{
 #if DEBUG
-        private const string DLL_NAME = "libcimguizmo-debug";
-        private const string CIMGUI_DLL_NAME = "libcimgui-debug";
+    private const string C_LIBRARY_NAME = "libcimguizmo-debug";
+    private const string C_DEPENDENCY_NAME = "libcimgui-debug";
 #else
-        private const string DLL_NAME = "libcimguizmo-release";
-        private const string CIMGUI_DLL_NAME = "libcimgui-release";
+    private const string C_LIBRARY_NAME = "libcimguizmo-release";
+    private const string C_DEPENDENCY_NAME = "libcimgui-release";
 #endif
 
-        static ImGuizmo()
+    static ImGuizmo()
+    {
+        NativeLibraryContext dependency = new(NativeDllLoader.LoadNativeDll(C_DEPENDENCY_NAME, typeof(ImGuizmo).Assembly));
+        NativeLibraryContext? api = null;
+        try
         {
-            if (ImGuizmoConfig.AotStaticLink)
-            {
-                InitApi(new NativeLibraryContext(Process.GetCurrentProcess().MainModule!.BaseAddress));
-                return;
-            }
-
-            NativeDllLoader.EnsureNativeDll(CIMGUI_DLL_NAME);
-            NativeDllLoader.LoadNativeDll(CIMGUI_DLL_NAME);
-            NativeDllLoader.EnsureNativeDll(DLL_NAME);
-            var handle = NativeDllLoader.LoadNativeDll(DLL_NAME);
-            InitApi(new NativeLibraryContext(handle));
+            api = new NativeLibraryContext(NativeDllLoader.LoadNativeDll(C_LIBRARY_NAME, typeof(ImGuizmo).Assembly));
+            InitApi(new ImGuizmoNativeContext(api, dependency));
         }
-
+        catch
+        {
+            try
+            {
+                api?.Dispose();
+            }
+            finally
+            {
+                dependency.Dispose();
+            }
+            throw;
+        }
     }
 }

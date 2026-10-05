@@ -1,6 +1,7 @@
 using System;
 using System.Numerics;
 using Inno.Build;
+using Inno.Build.Managed;
 using Inno.Editor.Core;
 using Inno.Editor.ImGui;
 using Inno.Native.ImGui;
@@ -66,6 +67,7 @@ internal sealed class GameExportModal(ExportWindowModule window) : EditorModal
         {
             DrawWindowSize();
             DrawTarget();
+            DrawManagedDeployment();
             NativeImGui.EndTable();
         }
         NativeImGui.SeparatorText("Output");
@@ -136,6 +138,26 @@ internal sealed class GameExportModal(ExportWindowModule window) : EditorModal
         NativeImGui.SetNextItemWidth(-1f);
         if (NativeImGui.InputInt("##game_window_height", ref height))
             window.gameWindowHeight = Math.Max(1, height);
+    }
+
+    private void DrawManagedDeployment()
+    {
+        BeginField("Managed Deployment");
+        NativeImGui.SetNextItemWidth(-1f);
+        if (!EditorWidget.BeginBoundedCombo("##game_deployment", window.gameManagedDeployment?.value ?? "Platform default"))
+            return;
+        try
+        {
+            if (NativeImGui.Selectable("Platform default", window.gameManagedDeployment is null))
+                window.gameManagedDeployment = null;
+            foreach (ManagedDeploymentId deployment in window.availableManagedDeployments)
+                if (NativeImGui.Selectable(deployment.value, window.gameManagedDeployment == deployment))
+                    window.gameManagedDeployment = deployment;
+        }
+        finally
+        {
+            EditorWidget.EndBoundedCombo();
+        }
     }
 
     private void DrawTarget()

@@ -13,7 +13,7 @@ namespace Inno.Editor.Panel.FileBrowser;
 /// Applies importer configuration through the common sidecar pipeline and stable-identity Editor history.
 /// </summary>
 [EditorModule("assets.import-settings-edits", order: 60)]
-public sealed class AssetImportSettingsEdits : EditorModule
+public sealed partial class AssetImportSettingsEdits : EditorModule
 {
     internal const string C_HISTORY = "inno.assets/import-settings";
     private readonly AssetPipeline m_assets;

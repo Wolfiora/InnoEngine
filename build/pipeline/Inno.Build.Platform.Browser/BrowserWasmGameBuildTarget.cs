@@ -1,6 +1,5 @@
 using System;
-using System.ComponentModel;
-using System.Diagnostics;
+using Inno.Build.Managed;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -55,6 +54,12 @@ public sealed class BrowserWasmGameBuildTarget : IGameBuildTarget
     /// </summary>
     public BuildTargetId id => BuildTargetId.browserWasm;
 
+    /// <inheritdoc />
+    public ManagedDeploymentId defaultManagedDeployment => ManagedDeploymentId.monoWasm;
+
+    /// <inheritdoc />
+    public string runtimeIdentifier => "browser-wasm";
+
     /// <summary>
     /// Gets the name shown by authoring hosts.
     /// </summary>
@@ -103,19 +108,8 @@ public sealed class BrowserWasmGameBuildTarget : IGameBuildTarget
     ) {
         ArgumentNullException.ThrowIfNull(context);
         string site = Path.Combine(context.outputDirectory, context.profile.productName + "-Web");
-        string link = Path.Combine(context.outputDirectory, "PlayerLink");
         await CopyDirectoryAsync(
-            Path.Combine(context.supportPackDirectory, "PlayerLink"),
-            link,
-            cancellationToken);
-        string published = Path.Combine(context.outputDirectory, "Published");
-        await PublishGameAsync(
-            link,
-            context.runtimeAssemblyDirectory,
-            published,
-            cancellationToken);
-        await CopyDirectoryAsync(
-            Path.Combine(published, "wwwroot"),
+            Path.Combine(context.managedDeployment.outputDirectory, "wwwroot"),
             site,
             cancellationToken);
         if (!File.Exists(Path.Combine(site, "index.html")))
@@ -130,76 +124,6 @@ public sealed class BrowserWasmGameBuildTarget : IGameBuildTarget
             Path.GetFileName(packs[0]),
             cancellationToken);
         return site;
-    }
-
-    private static async ValueTask PublishGameAsync(
-        string linkDirectory,
-        string runtimeAssemblyDirectory,
-        string outputDirectory,
-        CancellationToken cancellationToken
-    ) {
-        string project = Path.Combine(linkDirectory, "BrowserPlayer.csproj");
-        if (!File.Exists(project))
-            throw new FileNotFoundException("The browser Support Pack has no game linker project.", project);
-        string host = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH") ?? "dotnet";
-        if (string.IsNullOrWhiteSpace(host))
-            throw new InvalidOperationException("Browser export requires a .NET SDK host with wasm-tools installed.");
-        var startInfo = new ProcessStartInfo
-        {
-            FileName = host,
-            WorkingDirectory = linkDirectory,
-            UseShellExecute = false,
-            RedirectStandardOutput = true,
-            RedirectStandardError = true,
-            CreateNoWindow = true
-        };
-        foreach (string argument in new[]
-        {
-            "publish", project, "--disable-build-servers", "-m:1", "-nodeReuse:false",
-            "--configuration", "Release", "--output", outputDirectory, "--nologo",
-            "-p:DebugType=None", "-p:DebugSymbols=false",
-            "-p:InnoBrowserGameManagedRoot=" + Path.GetFullPath(runtimeAssemblyDirectory)
-        })
-        {
-            startInfo.ArgumentList.Add(argument);
-        }
-        using var process = new Process { StartInfo = startInfo };
-        try
-        {
-            if (!process.Start())
-                throw new InvalidOperationException("The browser game linker could not start the .NET SDK.");
-        }
-        catch (Win32Exception exception)
-        {
-            throw new InvalidOperationException(
-                "Browser export requires a .NET SDK host with wasm-tools installed. " +
-                "Set DOTNET_HOST_PATH to its executable if it is not on PATH.", exception);
-        }
-        Task<string> output = process.StandardOutput.ReadToEndAsync();
-        Task<string> error = process.StandardError.ReadToEndAsync();
-        try
-        {
-            await process.WaitForExitAsync(cancellationToken);
-        }
-        catch (OperationCanceledException)
-        {
-            if (!process.HasExited)
-                process.Kill(entireProcessTree: true);
-            await process.WaitForExitAsync(CancellationToken.None);
-            throw;
-        }
-        finally
-        {
-            await Task.WhenAll(output, error);
-        }
-        string standardOutput = await output;
-        string standardError = await error;
-        if (process.ExitCode != 0)
-        {
-            throw new InvalidOperationException(
-                $"Browser game link failed with exit code {process.ExitCode}." +
-                Environment.NewLine + standardOutput + Environment.NewLine + standardError);
-        }
     }
 
     private static async ValueTask CopyDirectoryAsync(

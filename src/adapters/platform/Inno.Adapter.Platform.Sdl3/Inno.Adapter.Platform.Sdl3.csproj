@@ -5,13 +5,18 @@
     <Nullable>enable</Nullable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
+
   <ItemGroup>
     <ProjectReference Include="../../../../native/Inno.Native.Sdl3/Inno.Native.Sdl3.csproj" PrivateAssets="compile" />
-    <ProjectReference Include="..\..\..\foundation\core\Inno.Core.Input\Inno.Core.Input.csproj" PrivateAssets="compile" />
+    <ProjectReference
+      Include="../../../foundation/core/Inno.Core.Input/Inno.Core.Input.csproj"
+      PrivateAssets="compile" />
   </ItemGroup>
+
   <ItemGroup>
-    <ProjectReference Include="..\Inno.Adapter.Platform\Inno.Adapter.Platform.csproj" />
-    <ProjectReference Include="..\..\..\services\platform\Inno.Platform\Inno.Platform.csproj" />
-    <ProjectReference Include="..\..\..\foundation\core\Inno.Core.Events\Inno.Core.Events.csproj" />
+    <ProjectReference Include="../Inno.Adapter.Platform/Inno.Adapter.Platform.csproj" />
+    <ProjectReference Include="../../../services/platform/Inno.Platform/Inno.Platform.csproj" />
+    <ProjectReference Include="../../../foundation/core/Inno.Core.Events/Inno.Core.Events.csproj" />
+    <ProjectReference Include="../../../foundation/extensibility/Inno.Extensibility.Catalogs/Inno.Extensibility.Catalogs.csproj" />
   </ItemGroup>
 </Project>

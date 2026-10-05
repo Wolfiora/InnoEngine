@@ -1,8 +1,8 @@
 {
-  "BaseConfig": {
-    "Url": "file://common.json"
+  "baseConfig": {
+    "url": "file://common.json"
   },
-  "Preset": "host-c,c-library,function-table",
-  "LibName": "SDL3",
-  "OutputPath": "../Generated"
+  "preset": "host-c,c-library,function-table",
+  "libName": "SDL3",
+  "outputPath": "../Generated"
 }

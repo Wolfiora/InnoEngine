@@ -1,3 +1,4 @@
+using Inno.Adapter.Platform;
 using System;
 using Inno.Rendering;
 using Inno.Platform;
@@ -53,7 +54,7 @@ public sealed class BgfxDeviceTests
         m_device.BeginFrame();
 
         Assert.Throws<PlatformNotSupportedException>(() => m_device.CreateWindowSurface(
-            new PlatformNativeHandles(new IntPtr(1), handleKind: PlatformNativeHandleKind.Unknown),
+            new PlatformNativeHandles(new IntPtr(1), handleKind: default(PlatformNativeHandleId)),
             32,
             32,
             "Unsupported"));

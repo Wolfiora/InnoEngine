@@ -6,19 +6,24 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <NoWarn>$(NoWarn);CS0108</NoWarn>
   </PropertyGroup>
+
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\native\Inno.Native.Sdl3\Inno.Native.Sdl3.csproj" />
-    <ProjectReference Include="..\..\..\..\native\Inno.Native.ImGui\Inno.Native.ImGui.csproj" />
+    <ProjectReference Include="../../../../native/Inno.Native.Sdl3/Inno.Native.Sdl3.csproj" />
+    <ProjectReference Include="../../../../native/Inno.Native.ImGui/Inno.Native.ImGui.csproj" />
     <ProjectReference Include="$(BGCSRuntimeProject)" Condition="'$(BGCSRuntimeProject)' != ''" />
   </ItemGroup>
+
   <ItemGroup Condition="'$(BGCSRuntimeProject)' == ''">
     <PackageReference Include="BGCS.Runtime" Version="1.0.1" />
   </ItemGroup>
+
   <ItemGroup>
-    <ProjectReference Include="..\Inno.Adapter.Presentation\Inno.Adapter.Presentation.csproj" />
-    <ProjectReference Include="..\..\..\services\platform\Inno.Platform\Inno.Platform.csproj" />
-    <ProjectReference Include="..\..\platform\Inno.Adapter.Platform.Sdl3\Inno.Adapter.Platform.Sdl3.csproj" />
+    <ProjectReference Include="../../platform/Inno.Adapter.Platform/Inno.Adapter.Platform.csproj" />
+    <ProjectReference Include="../Inno.Adapter.Presentation/Inno.Adapter.Presentation.csproj" />
+    <ProjectReference Include="../../../services/platform/Inno.Platform/Inno.Platform.csproj" />
+    <ProjectReference Include="../../platform/Inno.Adapter.Platform.Sdl3/Inno.Adapter.Platform.Sdl3.csproj" />
   </ItemGroup>
+
   <ItemGroup>
     <None Include="BuiltIn\**\*.*" CopyToOutputDirectory="PreserveNewest" />
     <None Update="BuiltIn\Icons\FA-Regular-400.ttf">
@@ -27,5 +32,9 @@
     <None Update="BuiltIn\Icons\FA-Solid-900.ttf">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../../../foundation/extensibility/Inno.Extensibility.Catalogs/Inno.Extensibility.Catalogs.csproj" />
   </ItemGroup>
 </Project>

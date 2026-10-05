@@ -5,6 +5,7 @@
 //     Changes will be replaced the next time bindings are generated.
 // </auto-generated>
 // ------------------------------------------------------------------------------
+#pragma warning disable CS1591 // Native declarations may omit documentation.
 #nullable enable
 using BGCS.Runtime;
 using System.Diagnostics;
@@ -19,13 +20,14 @@ namespace Inno.Native.Text
     /// </summary>
     public enum InnoTextResult : int
     {
-        Success = unchecked(0),
-        InvalidArgument = unchecked(1),
-        OutOfMemory = unchecked(2),
-        InvalidFont = unchecked(3),
-        InvalidHandle = unchecked(4),
-        BackendError = unchecked(5),
-        BufferTooSmall = unchecked(6),
+        UnknownError = unchecked(0),
+        Success = unchecked(1),
+        InvalidArgument = unchecked(2),
+        OutOfMemory = unchecked(3),
+        InvalidFont = unchecked(4),
+        InvalidHandle = unchecked(5),
+        BackendError = unchecked(6),
+        BufferTooSmall = unchecked(7),
     }
 
     /// <summary>
@@ -44,24 +46,24 @@ namespace Inno.Native.Text
     /// To be documented.
     /// </summary>
     [DebuggerDisplay("{DebuggerDisplay,nq}")]
-    public readonly partial struct InnoTextContext : IEquatable<InnoTextContext>
+    public readonly partial struct InnoTextRuntime : IEquatable<InnoTextRuntime>
     {
-        public InnoTextContext(nint handle)
+        public InnoTextRuntime(nint handle)
         {
             Handle = handle;
         }
 
         public nint Handle { get; }
         public bool IsNull => Handle == 0;
-        public static InnoTextContext Null => new InnoTextContext(0);
+        public static InnoTextRuntime Null => new InnoTextRuntime(0);
 
-        public static implicit operator InnoTextContext(nint handle) => new InnoTextContext(handle);
-        public static bool operator ==(InnoTextContext left, InnoTextContext right) => left.Handle == right.Handle;
-        public static bool operator !=(InnoTextContext left, InnoTextContext right) => left.Handle != right.Handle;
-        public bool Equals(InnoTextContext other) => Handle == other.Handle;
-        public override bool Equals(object? obj) => obj is InnoTextContext other && Equals(other);
+        public static implicit operator InnoTextRuntime(nint handle) => new InnoTextRuntime(handle);
+        public static bool operator ==(InnoTextRuntime left, InnoTextRuntime right) => left.Handle == right.Handle;
+        public static bool operator !=(InnoTextRuntime left, InnoTextRuntime right) => left.Handle != right.Handle;
+        public bool Equals(InnoTextRuntime other) => Handle == other.Handle;
+        public override bool Equals(object? obj) => obj is InnoTextRuntime other && Equals(other);
         public override int GetHashCode() => Handle.GetHashCode();
-        private string DebuggerDisplay => string.Format("InnoTextContext [0x{0}]", Handle.ToString("X"));
+        private string DebuggerDisplay => string.Format("InnoTextRuntime [0x{0}]", Handle.ToString("X"));
     }
 
     /// <summary>
@@ -111,7 +113,7 @@ namespace Inno.Native.Text
     /// <summary>
     /// To be documented.
     /// </summary>
-    [StructLayout(LayoutKind.Sequential, Size = 32, Pack = 8)]
+    [StructLayout(LayoutKind.Sequential, Size = 24, Pack = 4)]
     public partial struct InnoTextBitmap
     {
         public int Width;
@@ -119,8 +121,8 @@ namespace Inno.Native.Text
         public int BearingX;
         public int BearingY;
         public float AdvanceX;
-        public nuint ByteLength;
-        public unsafe InnoTextBitmap(int width = default, int height = default, int bearing_x = default, int bearing_y = default, float advance_x = default, nuint byte_length = default)
+        public uint ByteLength;
+        public unsafe InnoTextBitmap(int width = default, int height = default, int bearing_x = default, int bearing_y = default, float advance_x = default, uint byte_length = default)
         {
             this.Width = width;
             this.Height = height;
@@ -158,7 +160,7 @@ namespace Inno.Native.Text
         public ref int BearingX => ref Unsafe.AsRef<int>(&Handle->BearingX);
         public ref int BearingY => ref Unsafe.AsRef<int>(&Handle->BearingY);
         public ref float AdvanceX => ref Unsafe.AsRef<float>(&Handle->AdvanceX);
-        public ref nuint ByteLength => ref Unsafe.AsRef<nuint>(&Handle->ByteLength);
+        public ref uint ByteLength => ref Unsafe.AsRef<uint>(&Handle->ByteLength);
     }
 
     [DebuggerDisplay("{DebuggerDisplay,nq}")]
@@ -225,175 +227,214 @@ namespace Inno.Native.Text
         /// <summary>
         /// To be documented.
         /// </summary>
-        internal static InnoTextResult CreateNative(InnoTextContext* context)
+        internal static byte* GetLastErrorNative()
         {
-            return ((delegate* unmanaged[Cdecl]<InnoTextContext*, InnoTextResult>)funcTable[0])(context);
+            return ((delegate* unmanaged[Cdecl]<byte*>)funcTable[0])();
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
-        internal static void DestroyInterop(nint context)
+        internal static void ClearLastErrorNative()
         {
-            ((delegate* unmanaged[Cdecl]<nint, void>)funcTable[1])(context);
-        }
-
-        internal static void DestroyNative(InnoTextContext context)
-        {
-            DestroyInterop(context.Handle);
+            ((delegate* unmanaged[Cdecl]<void>)funcTable[1])();
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
-        internal static InnoTextResult LoadFontInterop(nint context, byte* data, nuint length, int faceIndex, ulong* fontHandle)
+        internal static nint CreateInterop()
         {
-            return ((delegate* unmanaged[Cdecl]<nint, byte*, nuint, int, ulong*, InnoTextResult>)funcTable[2])(context, data, length, faceIndex, fontHandle);
+            return ((delegate* unmanaged[Cdecl]<nint>)funcTable[2])();
         }
 
-        internal static InnoTextResult LoadFontNative(InnoTextContext context, byte* data, nuint length, int faceIndex, ulong* fontHandle)
+        internal static InnoTextRuntime CreateNative()
         {
-            return LoadFontInterop(context.Handle, data, length, faceIndex, fontHandle);
-        }
-
-        /// <summary>
-        /// To be documented.
-        /// </summary>
-        internal static InnoTextResult ReleaseFontInterop(nint context, ulong fontHandle)
-        {
-            return ((delegate* unmanaged[Cdecl]<nint, ulong, InnoTextResult>)funcTable[3])(context, fontHandle);
-        }
-
-        internal static InnoTextResult ReleaseFontNative(InnoTextContext context, ulong fontHandle)
-        {
-            return ReleaseFontInterop(context.Handle, fontHandle);
+            return new InnoTextRuntime(CreateInterop());
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
-        internal static InnoTextResult GetMetricsInterop(nint context, ulong fontHandle, float fontSize, InnoTextMetrics* metrics)
+        internal static void DestroyInterop(nint self)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, ulong, float, InnoTextMetrics*, InnoTextResult>)funcTable[4])(context, fontHandle, fontSize, metrics);
+            ((delegate* unmanaged[Cdecl]<nint, void>)funcTable[3])(self);
         }
 
-        internal static InnoTextResult GetMetricsNative(InnoTextContext context, ulong fontHandle, float fontSize, InnoTextMetrics* metrics)
+        internal static void DestroyNative(InnoTextRuntime self)
         {
-            return GetMetricsInterop(context.Handle, fontHandle, fontSize, metrics);
-        }
-
-        /// <summary>
-        /// To be documented.
-        /// </summary>
-        internal static InnoTextResult ShapeUtf8Interop(nint context, ulong fontHandle, byte* text, nuint textLength, float fontSize, InnoTextDirection direction, byte* language, byte* script, InnoTextGlyph* glyphs, nuint glyphCapacity, nuint* glyphCount)
-        {
-            return ((delegate* unmanaged[Cdecl]<nint, ulong, byte*, nuint, float, InnoTextDirection, byte*, byte*, InnoTextGlyph*, nuint, nuint*, InnoTextResult>)funcTable[5])(context, fontHandle, text, textLength, fontSize, direction, language, script, glyphs, glyphCapacity, glyphCount);
-        }
-
-        internal static InnoTextResult ShapeUtf8Native(InnoTextContext context, ulong fontHandle, byte* text, nuint textLength, float fontSize, InnoTextDirection direction, byte* language, byte* script, InnoTextGlyph* glyphs, nuint glyphCapacity, nuint* glyphCount)
-        {
-            return ShapeUtf8Interop(context.Handle, fontHandle, text, textLength, fontSize, direction, language, script, glyphs, glyphCapacity, glyphCount);
+            DestroyInterop(self.Handle);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
-        internal static InnoTextResult RasterizeGlyphInterop(nint context, ulong fontHandle, uint glyphId, float fontSize, byte* pixels, nuint pixelCapacity, InnoTextBitmap* bitmap)
+        internal static int LoadFontInterop(nint self, byte* data, uint length, int faceIndex, ulong* fontHandle)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, ulong, uint, float, byte*, nuint, InnoTextBitmap*, InnoTextResult>)funcTable[6])(context, fontHandle, glyphId, fontSize, pixels, pixelCapacity, bitmap);
+            return ((delegate* unmanaged[Cdecl]<nint, byte*, uint, int, ulong*, int>)funcTable[4])(self, data, length, faceIndex, fontHandle);
         }
 
-        internal static InnoTextResult RasterizeGlyphNative(InnoTextContext context, ulong fontHandle, uint glyphId, float fontSize, byte* pixels, nuint pixelCapacity, InnoTextBitmap* bitmap)
+        internal static InnoTextResult LoadFontNative(InnoTextRuntime self, byte* data, uint length, int faceIndex, ulong* fontHandle)
         {
-            return RasterizeGlyphInterop(context.Handle, fontHandle, glyphId, fontSize, pixels, pixelCapacity, bitmap);
+            return (InnoTextResult)LoadFontInterop(self.Handle, data, length, faceIndex, fontHandle);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int ReleaseFontInterop(nint self, ulong fontHandle)
+        {
+            return ((delegate* unmanaged[Cdecl]<nint, ulong, int>)funcTable[5])(self, fontHandle);
+        }
+
+        internal static InnoTextResult ReleaseFontNative(InnoTextRuntime self, ulong fontHandle)
+        {
+            return (InnoTextResult)ReleaseFontInterop(self.Handle, fontHandle);
+        }
+
+        /// <summary>
+        /// To be documented.
+        /// </summary>
+        internal static int GetMetricsInterop(nint self, ulong fontHandle, float fontSize, InnoTextMetrics* metrics)
+        {
+            return ((delegate* unmanaged[Cdecl]<nint, ulong, float, InnoTextMetrics*, int>)funcTable[6])(self, fontHandle, fontSize, metrics);
+        }
+
+        internal static InnoTextResult GetMetricsNative(InnoTextRuntime self, ulong fontHandle, float fontSize, InnoTextMetrics* metrics)
+        {
+            return (InnoTextResult)GetMetricsInterop(self.Handle, fontHandle, fontSize, metrics);
+        }
+
+        /// <summary>
+        /// To be documented.
+        /// </summary>
+        internal static int ShapeUtf8Interop(nint self, ulong fontHandle, byte* text, uint textLength, float fontSize, int direction, byte* language, byte* script, InnoTextGlyph* glyphs, uint glyphCapacity, uint* glyphCount)
+        {
+            return ((delegate* unmanaged[Cdecl]<nint, ulong, byte*, uint, float, int, byte*, byte*, InnoTextGlyph*, uint, uint*, int>)funcTable[7])(self, fontHandle, text, textLength, fontSize, direction, language, script, glyphs, glyphCapacity, glyphCount);
+        }
+
+        internal static InnoTextResult ShapeUtf8Native(InnoTextRuntime self, ulong fontHandle, byte* text, uint textLength, float fontSize, InnoTextDirection direction, byte* language, byte* script, InnoTextGlyph* glyphs, uint glyphCapacity, uint* glyphCount)
+        {
+            return (InnoTextResult)ShapeUtf8Interop(self.Handle, fontHandle, text, textLength, fontSize, (int)direction, language, script, glyphs, glyphCapacity, glyphCount);
+        }
+
+        /// <summary>
+        /// To be documented.
+        /// </summary>
+        internal static int RasterizeGlyphInterop(nint self, ulong fontHandle, uint glyphId, float fontSize, byte* pixels, uint pixelCapacity, InnoTextBitmap* bitmap)
+        {
+            return ((delegate* unmanaged[Cdecl]<nint, ulong, uint, float, byte*, uint, InnoTextBitmap*, int>)funcTable[8])(self, fontHandle, glyphId, fontSize, pixels, pixelCapacity, bitmap);
+        }
+
+        internal static InnoTextResult RasterizeGlyphNative(InnoTextRuntime self, ulong fontHandle, uint glyphId, float fontSize, byte* pixels, uint pixelCapacity, InnoTextBitmap* bitmap)
+        {
+            return (InnoTextResult)RasterizeGlyphInterop(self.Handle, fontHandle, glyphId, fontSize, pixels, pixelCapacity, bitmap);
+        }
+
+        /// <summary>
+        /// To be documented.
+        /// </summary>
+        internal static byte* ResultMessageInterop(int result)
+        {
+            return ((delegate* unmanaged[Cdecl]<int, byte*>)funcTable[9])(result);
+        }
+
         internal static byte* ResultMessageNative(InnoTextResult result)
         {
-            return ((delegate* unmanaged[Cdecl]<InnoTextResult, byte*>)funcTable[7])(result);
+            return ResultMessageInterop((int)result);
         }
     }
 
     public unsafe partial class TextNative
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static InnoTextResult Create(InnoTextContext* context)
+        public static byte* GetLastError()
         {
-            InnoTextResult ret = CreateNative(context);
+            byte* ret = GetLastErrorNative();
             return ret;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void Destroy(InnoTextContext context)
+        public static void ClearLastError()
         {
-            DestroyNative(context);
+            ClearLastErrorNative();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static InnoTextResult LoadFont(InnoTextContext context, byte* data, nuint length, int faceIndex, ulong* fontHandle)
+        public static InnoTextRuntime Create()
         {
-            InnoTextResult ret = LoadFontNative(context, data, length, faceIndex, fontHandle);
+            InnoTextRuntime ret = CreateNative();
             return ret;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static InnoTextResult LoadFont(InnoTextContext context, ReadOnlySpan<byte> data, int faceIndex, ref ulong fontHandle)
+        public static void Destroy(InnoTextRuntime self)
+        {
+            DestroyNative(self);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static InnoTextResult LoadFont(InnoTextRuntime self, byte* data, uint length, int faceIndex, ulong* fontHandle)
+        {
+            InnoTextResult ret = LoadFontNative(self, data, length, faceIndex, fontHandle);
+            return ret;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static InnoTextResult LoadFont(InnoTextRuntime self, ReadOnlySpan<byte> data, int faceIndex, ref ulong fontHandle)
         {
             fixed (byte* p_data = data)
             {
                 fixed (ulong* p_fontHandle = &fontHandle)
                 {
-                    return LoadFontNative(context, (byte*)p_data, (nuint)data.Length, faceIndex, (ulong*)p_fontHandle);
+                    return LoadFontNative(self, (byte*)p_data, (uint)data.Length, faceIndex, (ulong*)p_fontHandle);
                 }
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static InnoTextResult ReleaseFont(InnoTextContext context, ulong fontHandle)
+        public static InnoTextResult ReleaseFont(InnoTextRuntime self, ulong fontHandle)
         {
-            InnoTextResult ret = ReleaseFontNative(context, fontHandle);
+            InnoTextResult ret = ReleaseFontNative(self, fontHandle);
             return ret;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static InnoTextResult GetMetrics(InnoTextContext context, ulong fontHandle, float fontSize, InnoTextMetricsPtr metrics)
+        public static InnoTextResult GetMetrics(InnoTextRuntime self, ulong fontHandle, float fontSize, InnoTextMetricsPtr metrics)
         {
-            InnoTextResult ret = GetMetricsNative(context, fontHandle, fontSize, metrics.Handle);
+            InnoTextResult ret = GetMetricsNative(self, fontHandle, fontSize, metrics.Handle);
             return ret;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static InnoTextResult GetMetrics(InnoTextContext context, ulong fontHandle, float fontSize, ref InnoTextMetrics metrics)
+        public static InnoTextResult GetMetrics(InnoTextRuntime self, ulong fontHandle, float fontSize, ref InnoTextMetrics metrics)
         {
             fixed (InnoTextMetrics* p_metrics = &metrics)
             {
-                InnoTextResult ret = GetMetricsNative(context, fontHandle, fontSize, p_metrics);
+                InnoTextResult ret = GetMetricsNative(self, fontHandle, fontSize, p_metrics);
                 return ret;
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static InnoTextResult ShapeUtf8(InnoTextContext context, ulong fontHandle, byte* text, nuint textLength, float fontSize, InnoTextDirection direction, byte* language, byte* script, InnoTextGlyphPtr glyphs, nuint glyphCapacity, nuint* glyphCount)
+        public static InnoTextResult ShapeUtf8(InnoTextRuntime self, ulong fontHandle, byte* text, uint textLength, float fontSize, InnoTextDirection direction, byte* language, byte* script, InnoTextGlyphPtr glyphs, uint glyphCapacity, uint* glyphCount)
         {
-            InnoTextResult ret = ShapeUtf8Native(context, fontHandle, text, textLength, fontSize, direction, language, script, glyphs.Handle, glyphCapacity, glyphCount);
+            InnoTextResult ret = ShapeUtf8Native(self, fontHandle, text, textLength, fontSize, direction, language, script, glyphs.Handle, glyphCapacity, glyphCount);
             return ret;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static InnoTextResult ShapeUtf8(InnoTextContext context, ulong fontHandle, byte* text, nuint textLength, float fontSize, InnoTextDirection direction, byte* language, byte* script, ref InnoTextGlyph glyphs, nuint glyphCapacity, nuint* glyphCount)
+        public static InnoTextResult ShapeUtf8(InnoTextRuntime self, ulong fontHandle, byte* text, uint textLength, float fontSize, InnoTextDirection direction, byte* language, byte* script, ref InnoTextGlyph glyphs, uint glyphCapacity, uint* glyphCount)
         {
             fixed (InnoTextGlyph* p_glyphs = &glyphs)
             {
-                InnoTextResult ret = ShapeUtf8Native(context, fontHandle, text, textLength, fontSize, direction, language, script, p_glyphs, glyphCapacity, glyphCount);
+                InnoTextResult ret = ShapeUtf8Native(self, fontHandle, text, textLength, fontSize, direction, language, script, p_glyphs, glyphCapacity, glyphCount);
                 return ret;
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static InnoTextResult ShapeUtf8(InnoTextContext context, ulong fontHandle, string text, nuint textLength, float fontSize, InnoTextDirection direction, string language, string script, InnoTextGlyphPtr glyphs, nuint glyphCapacity, ref nuint glyphCount)
+        public static InnoTextResult ShapeUtf8(InnoTextRuntime self, ulong fontHandle, string text, uint textLength, float fontSize, InnoTextDirection direction, string language, string script, InnoTextGlyphPtr glyphs, uint glyphCapacity, ref uint glyphCount)
         {
             nint p_text = 0;
             nint p_language = 0;
@@ -403,9 +444,9 @@ namespace Inno.Native.Text
                 p_text = text is null ? 0 : Marshal.StringToCoTaskMemUTF8(text);
                 p_language = language is null ? 0 : Marshal.StringToCoTaskMemUTF8(language);
                 p_script = script is null ? 0 : Marshal.StringToCoTaskMemUTF8(script);
-                fixed (nuint* p_glyphCount = &glyphCount)
+                fixed (uint* p_glyphCount = &glyphCount)
                 {
-                    return ShapeUtf8Native(context, fontHandle, (byte*)p_text, textLength, fontSize, direction, (byte*)p_language, (byte*)p_script, (InnoTextGlyph*)glyphs.Handle, glyphCapacity, (nuint*)p_glyphCount);
+                    return ShapeUtf8Native(self, fontHandle, (byte*)p_text, textLength, fontSize, direction, (byte*)p_language, (byte*)p_script, (InnoTextGlyph*)glyphs.Handle, glyphCapacity, (uint*)p_glyphCount);
                 }
             }
             finally
@@ -420,28 +461,28 @@ namespace Inno.Native.Text
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static InnoTextResult RasterizeGlyph(InnoTextContext context, ulong fontHandle, uint glyphId, float fontSize, byte* pixels, nuint pixelCapacity, InnoTextBitmapPtr bitmap)
+        public static InnoTextResult RasterizeGlyph(InnoTextRuntime self, ulong fontHandle, uint glyphId, float fontSize, byte* pixels, uint pixelCapacity, InnoTextBitmapPtr bitmap)
         {
-            InnoTextResult ret = RasterizeGlyphNative(context, fontHandle, glyphId, fontSize, pixels, pixelCapacity, bitmap.Handle);
+            InnoTextResult ret = RasterizeGlyphNative(self, fontHandle, glyphId, fontSize, pixels, pixelCapacity, bitmap.Handle);
             return ret;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static InnoTextResult RasterizeGlyph(InnoTextContext context, ulong fontHandle, uint glyphId, float fontSize, byte* pixels, nuint pixelCapacity, ref InnoTextBitmap bitmap)
+        public static InnoTextResult RasterizeGlyph(InnoTextRuntime self, ulong fontHandle, uint glyphId, float fontSize, byte* pixels, uint pixelCapacity, ref InnoTextBitmap bitmap)
         {
             fixed (InnoTextBitmap* p_bitmap = &bitmap)
             {
-                InnoTextResult ret = RasterizeGlyphNative(context, fontHandle, glyphId, fontSize, pixels, pixelCapacity, p_bitmap);
+                InnoTextResult ret = RasterizeGlyphNative(self, fontHandle, glyphId, fontSize, pixels, pixelCapacity, p_bitmap);
                 return ret;
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static InnoTextResult RasterizeGlyph(InnoTextContext context, ulong fontHandle, uint glyphId, float fontSize, ref byte pixels, nuint pixelCapacity, InnoTextBitmapPtr bitmap)
+        public static InnoTextResult RasterizeGlyph(InnoTextRuntime self, ulong fontHandle, uint glyphId, float fontSize, ref byte pixels, uint pixelCapacity, InnoTextBitmapPtr bitmap)
         {
             fixed (byte* p_pixels = &pixels)
             {
-                return RasterizeGlyphNative(context, fontHandle, glyphId, fontSize, (byte*)p_pixels, pixelCapacity, (InnoTextBitmap*)bitmap.Handle);
+                return RasterizeGlyphNative(self, fontHandle, glyphId, fontSize, (byte*)p_pixels, pixelCapacity, (InnoTextBitmap*)bitmap.Handle);
             }
         }
 
@@ -455,20 +496,34 @@ namespace Inno.Native.Text
 
     public unsafe partial class TextNative
     {
-        internal static FunctionTable funcTable = null !;
-        public static void InitApi(INativeContext context)
+        internal static global::BGCS.Runtime.FunctionTable funcTable = null !;
+        public static void InitApi(global::BGCS.Runtime.INativeContext context)
         {
-            funcTable = new FunctionTable(context, 8);
-            funcTable.Load(0, "inno_text_create");
-            funcTable.Load(1, "inno_text_destroy");
-            funcTable.Load(2, "inno_text_load_font");
-            funcTable.Load(3, "inno_text_release_font");
-            funcTable.Load(4, "inno_text_get_metrics");
-            funcTable.Load(5, "inno_text_shape_utf8");
-            funcTable.Load(6, "inno_text_rasterize_glyph");
-            funcTable.Load(7, "inno_text_result_message");
+            var candidate = new global::BGCS.Runtime.FunctionTable(context, 10);
+            try
+            {
+                candidate.LoadRequired(0, "inno_text_GetLastError");
+                candidate.LoadRequired(1, "inno_text_ClearLastError");
+                candidate.LoadRequired(2, "inno_text_RuntimeCreate");
+                candidate.LoadRequired(3, "inno_text_RuntimeDestroy");
+                candidate.LoadRequired(4, "inno_text_Runtime_LoadFont");
+                candidate.LoadRequired(5, "inno_text_Runtime_ReleaseFont");
+                candidate.LoadRequired(6, "inno_text_Runtime_GetMetrics");
+                candidate.LoadRequired(7, "inno_text_Runtime_ShapeUtf8");
+                candidate.LoadRequired(8, "inno_text_Runtime_RasterizeGlyph");
+                candidate.LoadRequired(9, "inno_text_Runtime_ResultMessage");
+            }
+            catch
+            {
+                candidate.Free();
+                throw;
+            }
+
+            var previous = funcTable;
+            funcTable = candidate;
+            previous?.Free();
         }
 
-        public static void FreeApi() => funcTable.Free();
+        public static void FreeApi() => funcTable?.Free();
     }
 }

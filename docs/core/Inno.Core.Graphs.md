@@ -1,6 +1,6 @@
 # Inno.Core.Graphs
 
-[上一页：Storage](Inno.Core.Collections.md) · [Core 索引](README.md) · [Wiki 首页](../README.md) · [下一页：Rendering](../render/README.md)
+[上一页：Storage](Inno.Core.Collections.md) · [Core 索引](README.md) · [Wiki 首页](../README.md) · [下一页：Rendering](../rendering/README.md)
 
 `Inno.Core.Graphs` 是不依赖 Rendering、Scene、Assets、Editor 或 ImGui 的通用图模型。它只持久化稳定 ID、Inno Serialization 中立 bytes、节点位置和连接，不保存 CLR `Type`、extension 实例或 runtime delegate。因此节点插件卸载后，文档及连线仍能完整保留。
 

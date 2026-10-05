@@ -1,4 +1,5 @@
 <Project>
+  <Import Project="$(InnoNativeBindingSelection)" Condition="'$(InnoNativeBindingSelection)' != '' and Exists('$(InnoNativeBindingSelection)')" />
   <PropertyGroup>
     <DefaultItemExcludes>$(DefaultItemExcludes);$(MSBuildProjectDirectory)/obj/**;$(MSBuildProjectDirectory)/bin/**</DefaultItemExcludes>
   </PropertyGroup>
@@ -8,5 +9,9 @@
   <PropertyGroup Condition="'$(InnoNativeTarget)' != ''">
     <BaseIntermediateOutputPath>obj/$(InnoNativeTarget)/</BaseIntermediateOutputPath>
     <BaseOutputPath>bin/$(InnoNativeTarget)/</BaseOutputPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(InnoNativeTarget)' != '' and '$(InnoNativeBuildFingerprint)' != ''">
+    <BaseIntermediateOutputPath>obj/$(InnoNativeTarget)/$(InnoNativeBuildFingerprint)/</BaseIntermediateOutputPath>
+    <BaseOutputPath>bin/$(InnoNativeTarget)/$(InnoNativeBuildFingerprint)/</BaseOutputPath>
   </PropertyGroup>
 </Project>

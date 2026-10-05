@@ -1,10 +1,7 @@
-using System.Runtime.CompilerServices;
 #if !INNO_STATIC_NATIVE
 using BGCS.Runtime;
 using Inno.Native.LibraryLoading;
 #endif
-
-[assembly: DisableRuntimeMarshalling]
 
 #if !INNO_STATIC_NATIVE
 
@@ -23,8 +20,7 @@ public static unsafe partial class MiniAudio
 
     static MiniAudio()
     {
-        NativeDllLoader.EnsureNativeDll(C_LIBRARY_NAME);
-        nint handle = NativeDllLoader.LoadNativeDll(C_LIBRARY_NAME);
+        nint handle = NativeDllLoader.LoadNativeDll(C_LIBRARY_NAME, typeof(MiniAudio).Assembly);
         InitApi(new NativeLibraryContext(handle));
     }
 }

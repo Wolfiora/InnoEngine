@@ -6,12 +6,16 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <BindGenGeneratedBindings>true</BindGenGeneratedBindings>
   </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="BGCS.Runtime" Version="1.0.1" Condition="'$(BGCSRuntimeProject)' == ''" />
   </ItemGroup>
+
   <ItemGroup>
-    <ProjectReference Include="..\Inno.Native.LibraryLoading\Inno.Native.LibraryLoading.csproj" PrivateAssets="compile" />
-    <ProjectReference Include="..\Inno.Native.ImGui\Inno.Native.ImGui.csproj" PrivateAssets="compile" />
+    <ProjectReference
+      Include="../Inno.Native.LibraryLoading/Inno.Native.LibraryLoading.csproj"
+      PrivateAssets="compile" />
+    <ProjectReference Include="../Inno.Native.ImGui/Inno.Native.ImGui.csproj" PrivateAssets="compile" />
     <ProjectReference Include="$(BGCSRuntimeProject)" Condition="'$(BGCSRuntimeProject)' != ''" />
   </ItemGroup>
 </Project>

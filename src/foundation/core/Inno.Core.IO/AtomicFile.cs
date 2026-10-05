@@ -81,7 +81,7 @@ public static class AtomicFile
                 "Atomic file installation requires the candidate and destination to share a directory.",
                 nameof(source));
 
-        File.Move(candidate, target, overwrite);
+        FileSystemRename.MoveFile(candidate, target, overwrite);
     }
 
     private static string NormalizeDestination(string path)

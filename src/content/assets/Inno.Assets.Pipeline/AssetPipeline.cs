@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Runtime.Loader;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -1649,7 +1648,7 @@ public sealed partial class AssetPipeline : AssetResidencyProvider,
     private bool IsRetiredCollectibleType(Type? type)
     {
         if (type is null ||
-            AssemblyLoadContext.GetLoadContext(type.Assembly) is not { IsCollectible: true })
+            !type.Assembly.IsCollectible)
         {
             return false;
         }

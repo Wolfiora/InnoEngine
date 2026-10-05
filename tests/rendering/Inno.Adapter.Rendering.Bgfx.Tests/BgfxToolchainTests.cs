@@ -1,3 +1,5 @@
+using Inno.Adapter.Serialization.DotNet;
+using Inno.Adapter.Modules.DotNet;
 using System;
 using System.Buffers.Binary;
 using System.IO;
@@ -80,9 +82,13 @@ public sealed class BgfxToolchainTests : IDisposable
     {
         if (!OperatingSystem.IsWindows())
             return;
-        using var modules = new ModuleHost(new() { cacheDirectory = Path.Combine(m_root, "Modules") });
-        using var types = new TypeCatalog(modules);
-        using var serialization = new SerializationRegistry(types);
+        using var modules = new ModuleHost(new()
+        {
+            cacheDirectory = Path.Combine(m_root, "Modules"),
+            catalogSource = new DotNetAssemblyCatalogSource(typeof(ShaderNodeCompilerRegistry).Assembly)
+        });
+        using var types = new TypeCatalog(modules, new ReflectionTypeCatalogSource());
+        using var serialization = new SerializationRegistry(types, new ReflectionSerializationMetadataSource());
         using var nodes = new ShaderNodeCompilerRegistry(types);
         GraphDocument graph = ShaderGraphTemplates.CreateRaster(serialization, SerializationContext.empty);
         ShaderGraphProgramResult program = new ShaderGraphProgramCompiler(nodes).Lower(graph, "bgfx",
@@ -107,9 +113,13 @@ public sealed class BgfxToolchainTests : IDisposable
     {
         if (!OperatingSystem.IsWindows())
             return;
-        using var modules = new ModuleHost(new() { cacheDirectory = Path.Combine(m_root, "Modules") });
-        using var types = new TypeCatalog(modules);
-        using var serialization = new SerializationRegistry(types);
+        using var modules = new ModuleHost(new()
+        {
+            cacheDirectory = Path.Combine(m_root, "Modules"),
+            catalogSource = new DotNetAssemblyCatalogSource(typeof(ShaderNodeCompilerRegistry).Assembly)
+        });
+        using var types = new TypeCatalog(modules, new ReflectionTypeCatalogSource());
+        using var serialization = new SerializationRegistry(types, new ReflectionSerializationMetadataSource());
         using var nodes = new ShaderNodeCompilerRegistry(types);
         GraphDocument graph = ShaderGraphTemplates.CreateRaster(serialization, SerializationContext.empty);
         ShaderGraphProgramResult program = new ShaderGraphProgramCompiler(nodes).Lower(graph, "bgfx",

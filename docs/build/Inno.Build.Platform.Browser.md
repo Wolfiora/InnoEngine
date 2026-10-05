@@ -4,7 +4,7 @@
 
 ## 职责与边界
 
-该项目提供浏览器平台的内容编译、每游戏 WASM 链接和静态站点布局。它只依赖通用 `Inno.Build` 契约与离线 BGFX 内容编译器，不负责脚本编译、浏览器宿主运行或 Support Pack 生产。Editor 和 Build CLI 均注册 `browser-wasm` target。
+该项目提供浏览器平台的内容约束、内容编译与静态站点布局。它只依赖通用 `Inno.Build` 契约与离线 BGFX 内容编译器，不负责托管运行时发布、脚本编译、浏览器宿主运行或 Support Pack 生产。Editor 和 Build CLI 均注册 `browser-wasm` target。
 
 ## 依赖与初始化顺序
 
@@ -16,10 +16,11 @@
 | --- | --- |
 | `BrowserWasmGameBuildTarget(AssetPipeline, SerializationRegistry, TypeCatalog)` | 绑定一组作者端服务，创建 WebGL 2 内容编译器。 |
 | `id` | 固定返回 `BuildTargetId.browserWasm`。 |
+| `runtimeIdentifier` / `defaultManagedDeployment` | 分别为 `browser-wasm` 与 `mono-wasm`；托管 compiler 由独立 catalog 解析，profile 可选择 AOT。 |
 | `displayName` | 返回 `Web (WebGL 2)`。 |
 | `isPreferredOnCurrentHost` | 返回 `false`，不替换 Windows/macOS 原生默认目标。 |
 | `BuildContentAsync(GameBuildContentContext, CancellationToken)` | 在隔离 staging 中编译浏览器 Shader 与纹理产物。 |
-| `PackageAsync(GameBuildPackageContext, CancellationToken)` | 使用 Support Pack 中的引擎引用和原生 WASM 库，将当前游戏程序集静态链接到 Player，再生成 `<Product>-Web` 静态目录；缺少链接输入或页面入口时失败。 |
+| `PackageAsync(GameBuildPackageContext, CancellationToken)` | 将已验证托管发布的 `wwwroot`、内容包和内容目录标识组织为 `<Product>-Web`；缺少页面入口时失败。 |
 
 没有额外的 `protected` 扩展点。`IGameBuildTarget` 的公开契约见 [Inno.Build](Inno.Build.md)。
 
@@ -37,7 +38,7 @@ IGameBuildTarget target = new BrowserWasmGameBuildTarget(
     types);
 ```
 
-target 不持有运行时脚本实例。Browser linker 只读取已冻结的 `runtimeAssemblyDirectory`，将脚本与 Plugin 程序集纳入同一次 .NET WebAssembly 发布；最终站点只包含浏览器运行时、Webcil、Content Pack 和页面文件。取消发生在 staging 时会终止链接子进程并由 `BuildPipeline` 清理；目录只有在完整生成后才由通用构建事务提交。缺少浏览器入口或复制失败会明确抛出异常。浏览器 Player 的运行时 Missing 处理归 [Runtime](../runtime/README.md) 所有，target 不创建平行机制。
+target 不持有运行时脚本实例，也不运行 dotnet 子进程。通用 pipeline 将冻结代码输入交给 [托管 compiler](Inno.Build.Managed.DotNet.md)，验证其产物后再调用平台打包。最终站点只包含浏览器运行时、Webcil、Content Pack 和页面文件。取消由公共 process runner 终止发布子进程，再由 BuildPipeline 清理 staging；完整产物才可提交。浏览器 Player 的 Missing 处理归 [Runtime](../runtime/README.md) 所有。
 
 ## 相邻页面
 

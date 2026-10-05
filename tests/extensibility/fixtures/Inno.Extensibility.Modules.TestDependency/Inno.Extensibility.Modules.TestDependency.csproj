@@ -5,4 +5,7 @@
     <Nullable>enable</Nullable>
     <AssemblyName>Reloadable.PrivateDependency</AssemblyName>
   </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../../../src/foundation/extensibility/Inno.Extensibility.Catalogs/Inno.Extensibility.Catalogs.csproj" />
+  </ItemGroup>
 </Project>

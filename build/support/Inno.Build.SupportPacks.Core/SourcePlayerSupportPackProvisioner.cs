@@ -9,7 +9,7 @@ using Inno.Build;
 namespace Inno.Build.SupportPacks;
 
 /// <summary>
-/// Builds an absent Player Support Pack from the current engine checkout using the installed .NET SDK.
+/// Prepares current checkout and SDK inputs and selects a verified, immutable Player Support Pack.
 /// </summary>
 public sealed class SourcePlayerSupportPackProvisioner : IPlayerSupportPackProvisioner
 {
@@ -75,7 +75,7 @@ public sealed class SourcePlayerSupportPackProvisioner : IPlayerSupportPackProvi
     }
 
     /// <summary>
-    /// Builds and installs the missing target Support Pack from the owning engine checkout.
+    /// Prepares current target inputs and atomically selects their immutable Support Pack.
     /// </summary>
     /// <param name="target">
     /// The target platform and architecture identity.
@@ -84,7 +84,7 @@ public sealed class SourcePlayerSupportPackProvisioner : IPlayerSupportPackProvi
     /// The directory that owns the installed target directories.
     /// </param>
     /// <param name="cancellationToken">
-    /// Cancels the publish process before the replacement commits.
+    /// Cancels preparation or publication before a new current fingerprint is selected.
     /// </param>
     /// <returns>
     /// An operation that completes after the target Pack has been installed and verified.

@@ -1,6 +1,6 @@
 # Native API
 
-[Wiki 首页](../README.md) · [Platform](../platform/README.md) · [Rendering](../render/README.md)
+[Wiki 首页](../README.md) · [Platform](../platform/README.md) · [Rendering](../rendering/README.md)
 
 | 项目 | 职责 |
 | --- | --- |
@@ -9,6 +9,7 @@
 | [Inno.Native.MiniAudio](Inno.Native.MiniAudio.md) | miniaudio generated bindings |
 | [Inno.Native.Bgfx](Inno.Native.Bgfx.md) | BGFX generated bindings, DLL loader and command-line tool invocation |
 | [Inno.Native.ImGui](Inno.Native.ImGui.md) | cimgui bindings |
+| [Inno.Native.ImGui.BindingExtension](Inno.Native.ImGui.BindingExtension.md) | 组件自己的 BGCS managed layout 扩展 |
 | [Inno.Native.ImGuizmo](Inno.Native.ImGuizmo.md) | cimguizmo bindings |
 | [Inno.Native.Text](Inno.Native.Text.md) | FreeType/HarfBuzz Text bridge generated bindings |
 | [Inno.Native.UI](Inno.Native.UI.md) | RmlUi bridge generated bindings |

@@ -1,3 +1,5 @@
+using Inno.Adapter.Serialization.DotNet;
+using Inno.Adapter.Modules.DotNet;
 using System;
 using System.Collections.Generic;
 using System.Collections.Concurrent;
@@ -65,9 +67,9 @@ public sealed class ShaderEditorWorkflowTests : IDisposable
         _ = typeof(ShaderNodeDrawer);
         _ = typeof(ShaderGraphSourceStore);
         _ = typeof(GraphEditorModule);
-        m_modules = new(new() { cacheDirectory = Path.Combine(m_root, "Library", "Assemblies") });
-        m_types = new(m_modules);
-        m_serialization = new(m_types);
+        m_modules = new(new() { catalogSource = new DotNetAssemblyCatalogSource(typeof(ShaderEditorWorkflowTests).Assembly), cacheDirectory = Path.Combine(m_root, "Library", "Assemblies") });
+        m_types = new(m_modules, new ReflectionTypeCatalogSource());
+        m_serialization = new(m_types, new ReflectionSerializationMetadataSource());
         m_diagnostics = new DiagnosticHub();
         m_diagnosticScope = m_diagnostics.EnterScope();
         m_reporter = m_diagnostics.CreateReporter(new("tests.shader-editor", "Shader Editor workflow"));

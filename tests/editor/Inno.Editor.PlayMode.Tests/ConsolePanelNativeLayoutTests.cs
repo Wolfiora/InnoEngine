@@ -1,3 +1,4 @@
+using Inno.Adapter.Modules.DotNet;
 using System;
 using System.IO;
 using System.Linq;
@@ -37,8 +38,8 @@ public sealed class ConsolePanelNativeLayoutTests
             ImGuiApi.GetIO().BackendFlags |= ImGuiBackendFlags.RendererHasTextures;
             ImGuiApi.GetIO().Fonts.RendererHasTextures = true;
             ImGuiApi.GetStyle().ScaleAllSizes(scale);
-            using var modules = new ModuleHost(new() { cacheDirectory = Path.Combine(root, "Library", "Assemblies") });
-            using var types = new TypeCatalog(modules);
+            using var modules = new ModuleHost(new() { catalogSource = new DotNetAssemblyCatalogSource(typeof(ConsolePanelNativeLayoutTests).Assembly), cacheDirectory = Path.Combine(root, "Library", "Assemblies") });
+            using var types = new TypeCatalog(modules, new ReflectionTypeCatalogSource());
             using var logs = new LogRouter();
             var hub = new DiagnosticHub();
             using var console = new EditorConsole(logs, hub, new InactivePlayMode());

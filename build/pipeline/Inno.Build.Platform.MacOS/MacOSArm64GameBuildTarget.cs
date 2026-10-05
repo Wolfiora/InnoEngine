@@ -1,4 +1,5 @@
 using System;
+using Inno.Build.Managed;
 using System.IO;
 using System.Security;
 using System.Threading;
@@ -55,6 +56,12 @@ public sealed class MacOSArm64GameBuildTarget : IGameBuildTarget
     /// </summary>
     public BuildTargetId id => BuildTargetId.macOSArm64;
 
+    /// <inheritdoc />
+    public ManagedDeploymentId defaultManagedDeployment => ManagedDeploymentId.coreClr;
+
+    /// <inheritdoc />
+    public string runtimeIdentifier => "osx-arm64";
+
     /// <summary>
     /// Gets the target name presented by authoring hosts.
     /// </summary>
@@ -106,12 +113,12 @@ public sealed class MacOSArm64GameBuildTarget : IGameBuildTarget
         string contents = Path.Combine(application, "Contents");
         string executableRoot = Path.Combine(contents, "MacOS");
         string resources = Path.Combine(contents, "Resources");
-        await CopyDirectoryAsync(context.supportPackDirectory, executableRoot, cancellationToken,
+        await CopyDirectoryAsync(context.managedDeployment.outputDirectory, executableRoot, cancellationToken,
                 excludeCompilerReferences: true)
             .ConfigureAwait(false);
         string player = Path.Combine(executableRoot, "Inno.Player");
         if (!File.Exists(player))
-            throw new InvalidDataException("The macOS Support Pack does not contain Inno.Player.");
+            throw new InvalidDataException("The macOS managed publication does not contain Inno.Player.");
         File.Move(player, Path.Combine(executableRoot, context.profile.productName));
         await CopyDirectoryAsync(context.contentDirectory, Path.Combine(resources, "Content"), cancellationToken,
                 excludeCompilerReferences: false)

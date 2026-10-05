@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Inno.Build;
+using Inno.Build.Managed;
 using Inno.Core.Logging;
 using Inno.Core.Execution;
 using Inno.Core.Settings;
@@ -75,6 +76,10 @@ internal sealed class ExportWindowModule : EditorModule
 
     internal BuildTargetId gameTarget { get; set; }
 
+    internal ManagedDeploymentId? gameManagedDeployment { get; set; }
+
+    internal IReadOnlyList<ManagedDeploymentId> availableManagedDeployments => m_buildPipeline.GetManagedDeployments(gameTarget);
+
     internal IReadOnlyList<BuildTargetId> availableGameTargets => m_buildPipeline.availableGameTargets;
 
     internal string status { get; private set; } = string.Empty;
@@ -120,6 +125,7 @@ internal sealed class ExportWindowModule : EditorModule
         gameWindowWidth = defaults.gameWindowWidth;
         gameWindowHeight = defaults.gameWindowHeight;
         gameTarget = defaults.gameTarget;
+        gameManagedDeployment = defaults.gameManagedDeployment;
         isGameVisible = true;
     }
 
@@ -161,6 +167,7 @@ internal sealed class ExportWindowModule : EditorModule
             persistentDataPath = gamePersistentDataPath,
             startupScene = gameStartupScene,
             target = gameTarget,
+            managedDeployment = gameManagedDeployment,
             windowWidth = gameWindowWidth,
             windowHeight = gameWindowHeight
         };

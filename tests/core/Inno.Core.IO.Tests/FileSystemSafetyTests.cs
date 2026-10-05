@@ -2,6 +2,8 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 
 using Xunit;
 
@@ -70,6 +72,18 @@ public sealed class FileSystemSafetyTests : IDisposable
     }
 
     [Fact]
+    public void OwnedTreeEnumerationIncludesNestedFilesAndRejectsMissingRoots()
+    {
+        string nested = Path.Combine(m_root, "nested");
+        Directory.CreateDirectory(nested);
+        string file = Path.Combine(nested, "value.txt");
+        File.WriteAllText(file, "owned");
+
+        Assert.Equal(file, Assert.Single(PathBoundary.EnumerateFiles(m_root)));
+        Assert.Throws<DirectoryNotFoundException>(() => PathBoundary.EnumerateFiles(Path.Combine(m_root, "missing")).ToArray());
+    }
+
+    [Fact]
     public void DirectoryInstallReplacesACompleteTreeWithoutLeavingBackupDirectories()
     {
         string candidate = Path.Combine(m_root, "candidate");
@@ -85,6 +99,54 @@ public sealed class FileSystemSafetyTests : IDisposable
         Assert.False(File.Exists(Path.Combine(destination, "previous.txt")));
         Assert.Equal("current", File.ReadAllText(Path.Combine(destination, "current.txt"), Encoding.UTF8));
         Assert.Empty(Directory.EnumerateDirectories(m_root).Where(path => path.Contains(".backup-", StringComparison.Ordinal)));
+    }
+
+    [Fact]
+    public async Task DirectoryPublicationToleratesATemporaryWindowsReaderWithoutDeleteSharing()
+    {
+        if (!OperatingSystem.IsWindows())
+            return;
+        string candidate = Path.Combine(m_root, "candidate");
+        string destination = Path.Combine(m_root, "published");
+        Directory.CreateDirectory(candidate);
+        string file = Path.Combine(candidate, "value.txt");
+        File.WriteAllText(file, "complete");
+        using var reader = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.Read);
+        Task publication = Task.Run(() => AtomicDirectory.Publish(candidate, destination));
+        await Task.Delay(150);
+        Assert.False(publication.IsCompleted);
+        reader.Dispose();
+        await publication;
+
+        Assert.Equal("complete", File.ReadAllText(Path.Combine(destination, "value.txt")));
+        Assert.False(Directory.Exists(candidate));
+    }
+
+    [Fact]
+    public async Task DirectoryPublicationCancellationPreservesTheCandidateAndDoesNotReplaceAnExistingOwner()
+    {
+        if (!OperatingSystem.IsWindows())
+            return;
+        string candidate = Path.Combine(m_root, "candidate");
+        string destination = Path.Combine(m_root, "published");
+        Directory.CreateDirectory(candidate);
+        string file = Path.Combine(candidate, "value.txt");
+        File.WriteAllText(file, "complete");
+        using var reader = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.Read);
+        using var cancellation = new CancellationTokenSource();
+        Task publication = Task.Run(() => AtomicDirectory.Publish(candidate, destination, cancellation.Token));
+        await Task.Delay(100);
+        cancellation.Cancel();
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => publication);
+
+        Assert.True(Directory.Exists(candidate));
+        Assert.False(Directory.Exists(destination));
+        reader.Dispose();
+        Directory.CreateDirectory(destination);
+        File.WriteAllText(Path.Combine(destination, "previous.txt"), "previous");
+        Assert.Throws<IOException>(() => AtomicDirectory.Publish(candidate, destination));
+        Assert.Equal("previous", File.ReadAllText(Path.Combine(destination, "previous.txt")));
+        Assert.Equal("complete", File.ReadAllText(file));
     }
 
     [Fact]

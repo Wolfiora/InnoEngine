@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Inno.Build;
 using Inno.Build.Toolchains;
+using Inno.Core.IO;
 
 using Inno.Build.Toolchains.Browser;
 
@@ -33,18 +34,24 @@ internal sealed class BrowserPlayerSupportPackSource : IPlayerSupportPackSource
         PlayerSupportPackBuildContext context,
         CancellationToken cancellationToken
     ) {
-        await BrowserToolchain.BuildAsync(context.engineRoot, context.dotnetHost, cancellationToken).ConfigureAwait(false);
+        BrowserNativeArtifacts artifacts = await BrowserToolchain.BuildAsync(
+            context.engineRoot, context.dotnetHost, cancellationToken).ConfigureAwait(false);
         string project = Path.Combine(context.engineRoot, "src", "composition", "player", "Inno.Player.Browser", "Inno.Player.Browser.csproj");
-        var environment = await BrowserToolchain.ResolveEnvironmentAsync(
+        var environment = await EmscriptenToolchainResolver.ResolveAsync(
             context.dotnetHost, project, cancellationToken).ConfigureAwait(false);
+        string profileRoot = Path.Combine(context.engineRoot, "artifacts", "managed", "browser-references", artifacts.fingerprint);
+        using FileLease ownership = await FileLease.AcquireAsync(
+            profileRoot + ".lock", Timeout.InfiniteTimeSpan, cancellationToken).ConfigureAwait(false);
         await ToolchainEnvironment.RunAsync(context.dotnetHost,
             ["build", project, "--disable-build-servers", "-m:1", "-nodeReuse:false", "--configuration", "Release",
-                "--nologo", "-p:InnoNativeTarget=browser-wasm", "-p:DebugType=None", "-p:DebugSymbols=false"],
+                "--nologo", "-p:InnoNativeTarget=browser-wasm", "-p:InnoNativeBuildFingerprint=" + artifacts.fingerprint,
+                "-p:InnoNativeBindingSelection=" + artifacts.bindingSelectionPath,
+                "-p:DebugType=None", "-p:DebugSymbols=false"],
             context.engineRoot, cancellationToken, environment).ConfigureAwait(false);
         PlayerSupportPackFiles.CopyReferences(
-            Path.Combine(Path.GetDirectoryName(project)!, "bin", "browser-wasm", "Release", "net9.0-browser"),
+            Path.Combine(Path.GetDirectoryName(project)!, "bin", "browser-wasm", artifacts.fingerprint, "Release", "net9.0-browser"),
             Path.Combine(context.stagingDirectory, "References"));
-        CopyLinkTemplate(context.engineRoot, context.stagingDirectory);
+        CopyLinkTemplate(context.engineRoot, context.stagingDirectory, artifacts);
     }
 
     /// <summary>
@@ -67,7 +74,8 @@ internal sealed class BrowserPlayerSupportPackSource : IPlayerSupportPackSource
 
     private static void CopyLinkTemplate(
         string engineRoot,
-        string staging
+        string staging,
+        BrowserNativeArtifacts artifacts
     ) {
         string template = Path.Combine(staging, "PlayerLink");
         string native = Path.Combine(template, "Native");
@@ -77,16 +85,16 @@ internal sealed class BrowserPlayerSupportPackSource : IPlayerSupportPackSource
         Directory.CreateDirectory(references);
         Directory.CreateDirectory(webRoot);
         CopyRequired(
-            Path.Combine(engineRoot, "build", "support", "Inno.Build.SupportPacks", "BrowserLink", "BrowserPlayer.project.xml"),
-            Path.Combine(template, "BrowserPlayer.csproj"));
+            Path.Combine(engineRoot, "build", "support", "Inno.Build.SupportPacks", "Templates", "Browser", "BrowserPlayer.project.xml"),
+            Path.Combine(template, "Player.csproj"));
+        PlayerSupportPackFiles.CopyCompositionInputs(engineRoot, template);
         string browserSource = Path.Combine(engineRoot, "src", "composition", "player", "Inno.Player.Browser");
-        foreach (string sourceName in new[] { "Program.cs" })
+        foreach (string sourceName in new[] { "Program.cs", "BrowserPlayerComposition.cs", "BrowserContentLoader.cs", "BrowserBridge.cs" })
             CopyRequired(Path.Combine(browserSource, sourceName), Path.Combine(template, sourceName));
         foreach (string assetName in new[] { "index.html", "main.js" })
             CopyRequired(Path.Combine(browserSource, "wwwroot", assetName), Path.Combine(webRoot, assetName));
 
-        string browserNative = Path.Combine(
-            engineRoot, ".lib");
+        string browserNative = artifacts.directory;
         foreach (string archiveName in new[]
         {
             "bgfxRelease.a", "bxRelease.a", "bimgRelease.a", "bimg_decodeRelease.a",
@@ -102,7 +110,7 @@ internal sealed class BrowserPlayerSupportPackSource : IPlayerSupportPackSource
         foreach (string file in Directory.EnumerateFiles(Path.Combine(staging, "References"), "*.dll"))
             File.Copy(file, Path.Combine(references, Path.GetFileName(file)));
         string runtime = Path.Combine(
-            engineRoot, "native", "Inno.Native.Bgfx", "bin", "browser-wasm", "Release", "net9.0", "BGCS.Runtime.dll");
+            engineRoot, "native", "Inno.Native.Bgfx", "bin", "browser-wasm", artifacts.fingerprint, "Release", "net9.0", "BGCS.Runtime.dll");
         CopyRequired(runtime, Path.Combine(references, "BGCS.Runtime.dll"));
         foreach (string nativeName in new[]
         {
@@ -111,7 +119,7 @@ internal sealed class BrowserPlayerSupportPackSource : IPlayerSupportPackSource
         })
         {
             string binding = Path.Combine(
-                engineRoot, "native", nativeName == "Inno.Native.Sdl3" ? "Inno.Native.SDL3" : nativeName, "bin", "browser-wasm", "Release", "net9.0", nativeName + ".dll");
+                engineRoot, "native", nativeName, "bin", "browser-wasm", artifacts.fingerprint, "Release", "net9.0", nativeName + ".dll");
             CopyRequired(binding, Path.Combine(references, nativeName + ".dll"));
         }
     }

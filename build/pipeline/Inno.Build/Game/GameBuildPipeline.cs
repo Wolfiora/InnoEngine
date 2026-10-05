@@ -1,8 +1,11 @@
+using Inno.Build.Managed;
 using Inno.Core.Diagnostics;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Inno.Assets;
@@ -26,6 +29,7 @@ internal sealed class GameBuildPipeline
     private readonly ScriptCompiler m_compiler;
     private readonly IReadOnlyDictionary<BuildTargetId, IGameBuildTarget> m_targets;
     private readonly PlayerSupportPackCatalog m_supportPacks;
+    private readonly ManagedDeploymentCatalog m_managedDeployments;
 
     internal GameBuildPipeline(
         AssetPipeline assets,
@@ -34,7 +38,8 @@ internal sealed class GameBuildPipeline
         SerializationRegistry serialization,
         ScriptCompiler compiler,
         IReadOnlyDictionary<BuildTargetId, IGameBuildTarget> targets,
-        PlayerSupportPackCatalog supportPacks
+        PlayerSupportPackCatalog supportPacks,
+        ManagedDeploymentCatalog managedDeployments
     ) {
         m_assets = assets;
         m_plugins = plugins;
@@ -43,6 +48,7 @@ internal sealed class GameBuildPipeline
         m_compiler = compiler;
         m_targets = targets;
         m_supportPacks = supportPacks;
+        m_managedDeployments = managedDeployments;
     }
 
     internal async ValueTask<BuildResult> BuildAsync(
@@ -54,6 +60,8 @@ internal sealed class GameBuildPipeline
         request.Validate();
         if (!m_targets.TryGetValue(request.profile.target, out IGameBuildTarget? target))
             throw new InvalidOperationException($"No game packager is registered for '{request.profile.target}'.");
+        IManagedDeploymentCompiler managedCompiler = m_managedDeployments.Resolve(
+            request.profile.managedDeployment ?? target.defaultManagedDeployment, target.runtimeIdentifier);
         if (!m_assets.isInitialized)
             throw new InvalidOperationException("Game build requires an active authoring asset database.");
         string outputRoot = Path.GetFullPath(request.outputDirectory);
@@ -128,7 +136,7 @@ internal sealed class GameBuildPipeline
                         "INNOBUILD1001",
                         "Runtime script compilation did not produce a complete assembly generation.")]);
             }
-            GameRuntimeModule[] runtimeModules = CreateRuntimeModules(compilation.activationRequests);
+            GameRuntimeModule[] runtimeModules = CreateRuntimeModules(compilation.moduleDeployments);
             byte[] runtimeManifest = RuntimeManifestEnvelope.Encode(
                 CreateManifest(request.profile, plugins, runtimeModules),
                 serialization);
@@ -146,7 +154,7 @@ internal sealed class GameBuildPipeline
                     settings,
                     stagingToken)
                 .ConfigureAwait(false);
-            string managed = Path.Combine(rawContent, "Managed");
+            string managed = Path.Combine(staging, "CodeInputs");
             Directory.CreateDirectory(managed);
             for (int index = 0; index < assemblies.Length; index++)
             {
@@ -196,11 +204,25 @@ internal sealed class GameBuildPipeline
                 .ConfigureAwait(false);
             EnsureGenerationUnchanged(assetRevision, pluginRevision, settingsRevision);
 
+            string playerLink = Path.Combine(staging, "PlayerLink");
+            await BuildFileSystem.CopyDirectoryAsync(Path.Combine(supportPack, "PlayerLink"),
+                playerLink, stagingToken).ConfigureAwait(false);
+            await PlayerCodeCompositionWriter.WriteAsync(playerLink,
+                GameCodeDeployment.FromManifest(runtimeModules), stagingToken).ConfigureAwait(false);
+            progress?.Report(new BuildProgress("managed", 0.62d, "Publishing the frozen game code deployment."));
+            string managedStaging = Path.Combine(staging, "ManagedDeployment");
+            ManagedDeploymentResult managedDeployment = await managedCompiler.CompileAsync(
+                new ManagedDeploymentRequest(Path.Combine(playerLink, "Player.csproj"),
+                    target.runtimeIdentifier, managed, managedStaging,
+                    Path.Combine(outputRoot, ".build-logs", Path.GetFileName(staging))), stagingToken).ConfigureAwait(false);
+            ValidateManagedPublication(managedCompiler.id, managedStaging, managedDeployment);
+            EnsureGenerationUnchanged(assetRevision, pluginRevision, settingsRevision);
+
             string platformStaging = Path.Combine(staging, "Platform");
             Directory.CreateDirectory(platformStaging);
             progress?.Report(new BuildProgress("package", 0.78d, $"Composing {request.profile.target} Player output."));
             string composed = await target.PackageAsync(
-                    new GameBuildPackageContext(request.profile, supportPack, packagedContent, managed, platformStaging),
+                    new GameBuildPackageContext(request.profile, supportPack, packagedContent, managedDeployment, platformStaging),
                     stagingToken)
                 .ConfigureAwait(false);
             string normalizedComposed = Path.GetFullPath(composed);
@@ -245,6 +267,23 @@ internal sealed class GameBuildPipeline
         }
     }
 
+    private static void ValidateManagedPublication(
+        ManagedDeploymentId deployment,
+        string staging,
+        ManagedDeploymentResult result
+    ) {
+        ArgumentNullException.ThrowIfNull(result);
+        StringComparison comparison = OperatingSystem.IsWindows()
+            ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
+        if (result.deployment != deployment || !string.Equals(Path.GetFullPath(staging), result.outputDirectory, comparison)
+            || !Directory.Exists(result.outputDirectory))
+            throw new InvalidDataException("The managed publisher returned foreign or absent staging output.");
+        string[] actualFiles = Directory.EnumerateFiles(result.outputDirectory, "*", SearchOption.AllDirectories)
+            .Select(file => Path.GetRelativePath(result.outputDirectory, file)).Order(StringComparer.Ordinal).ToArray();
+        if (!actualFiles.SequenceEqual(result.files.Order(StringComparer.Ordinal), StringComparer.Ordinal))
+            throw new InvalidDataException("The managed publication evidence differs from its staged output.");
+    }
+
     private static BuildDiagnostic ToBuildDiagnostic(ScriptDiagnostic diagnostic)
     {
         BuildDiagnosticSeverity severity = diagnostic.severity switch
@@ -285,7 +324,7 @@ internal sealed class GameBuildPipeline
         return manifest;
     }
 
-    private static GameRuntimeModule[] CreateRuntimeModules(IReadOnlyList<AssemblyLoadRequest> requests)
+    private static GameRuntimeModule[] CreateRuntimeModules(IReadOnlyList<ScriptModuleDeployment> requests)
     {
         var selected = requests
             .Select(request => new
@@ -309,8 +348,11 @@ internal sealed class GameBuildPipeline
         {
             name = candidate.request.moduleName,
             domain = candidate.request.domain,
-            mainAssembly = Path.GetFileName(candidate.assemblies[0]),
-            preloadAssemblies = candidate.assemblies.Skip(1).Select(Path.GetFileName).ToArray()!,
+            assemblies = candidate.assemblies.Select(static path => new GameRuntimeAssembly
+            {
+                name = AssemblyName.GetAssemblyName(path).Name!,
+                contentFingerprint = Convert.ToHexStringLower(SHA256.HashData(File.ReadAllBytes(path)))
+            }).ToArray(),
             dependencies = candidate.request.upstreamModuleNames
                 .Where(includedNames.Contains)
                 .ToArray()

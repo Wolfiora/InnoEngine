@@ -345,7 +345,7 @@ internal sealed class SceneReloadStateTransfer : IReferenceRecoveryParticipant
         }
     }
 
-    private static EngineObject CreateReplacement(
+    private EngineObject CreateReplacement(
         ObjectState state,
         Type replacementType
     ) {
@@ -364,9 +364,8 @@ internal sealed class SceneReloadStateTransfer : IReferenceRecoveryParticipant
         try
         {
             return state.target is GameComponent
-                ? ComponentFactory.Create(replacementType)
-                : (EngineObject)(Activator.CreateInstance(replacementType, nonPublic: true)
-                    ?? throw new InvalidOperationException("Activator returned null."));
+                ? ComponentFactory.Create(replacementType, m_context.candidate)
+                : (EngineObject)m_context.candidate.CreateInstance(replacementType);
         }
         catch (Exception exception)
         {

@@ -151,7 +151,7 @@ public sealed class ResidencyRetirementTests
         });
     }
 
-    private static AssetArtifactInfo Artifact() => new(new AssetArtifactKey("AABB"), "audio-data",
+    private static AssetArtifactInfo Artifact() => new(new AssetArtifactKey(new string('A', 64)), "audio-data",
         Path.Combine(Path.GetTempPath(), "inno-retirement-fixture.wav"), "TEST", 0);
 
     private static void Collect()

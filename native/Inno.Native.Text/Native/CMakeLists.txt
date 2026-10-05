@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.20)
 project(inno_text LANGUAGES C CXX)
+set(INNO_TEXT_BRIDGE_ROOT "${CMAKE_CURRENT_LIST_DIR}/Generated" CACHE PATH "Generated text bridge source directory")
 
 set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
 set(FT_DISABLE_BROTLI ON CACHE BOOL "" FORCE)
@@ -28,10 +29,11 @@ else()
     set(INNO_TEXT_LIBRARY_TYPE SHARED)
 endif()
 
-add_library(inno-text ${INNO_TEXT_LIBRARY_TYPE} inno_text.cpp inno_text.h)
+add_library(inno-text ${INNO_TEXT_LIBRARY_TYPE}
+    "${INNO_TEXT_BRIDGE_ROOT}/src/Classes.cpp" src/TextRuntime.cpp)
 target_compile_features(inno-text PRIVATE cxx_std_17)
-target_compile_definitions(inno-text PRIVATE INNO_TEXT_BUILD)
-target_include_directories(inno-text PUBLIC "${CMAKE_CURRENT_LIST_DIR}")
+target_include_directories(inno-text PRIVATE
+    "${INNO_TEXT_BRIDGE_ROOT}/include" "${CMAKE_CURRENT_LIST_DIR}/include")
 target_link_libraries(inno-text PRIVATE freetype harfbuzz)
 set_target_properties(inno-text PROPERTIES
     CXX_VISIBILITY_PRESET hidden

@@ -1,3 +1,5 @@
+using System.Reflection;
+using System.Runtime.CompilerServices;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -5,6 +7,12 @@ namespace Inno.Native.Sdl3.Tests;
 
 public sealed class Sdl3InitTests
 {
+    [Fact]
+    public void GeneratedImportsOwnTheirAbiWithoutRuntimeMarshalling()
+    {
+        Assert.NotNull(typeof(SDL).Assembly.GetCustomAttribute<DisableRuntimeMarshallingAttribute>());
+    }
+
     [Fact]
     public unsafe void GeneratedFlagWidthsMatchSdlHeaders()
     {

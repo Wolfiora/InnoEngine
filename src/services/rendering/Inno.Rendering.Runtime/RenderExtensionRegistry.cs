@@ -92,7 +92,7 @@ internal sealed class RenderExtensionRegistry : TypeRegistry<RenderExtensionRegi
         Dictionary<string, Type> renderModels = Discover<
             RenderModelExtensionAttribute, IRenderModel>(types,
             static attribute => attribute.id, "render model");
-        return new Snapshot(types.version, pipelines, features, requestProviders, contentSources, renderModels,
+        return new Snapshot(types, pipelines, features, requestProviders, contentSources, renderModels,
             CreateExtension<RenderRequestProvider>, CreateExtension<IViewContentSource>,
             CreateExtension<IRenderModel>, Retire);
     }
@@ -141,17 +141,13 @@ internal sealed class RenderExtensionRegistry : TypeRegistry<RenderExtensionRegi
                     $"Reloadable {kind} '{type.FullName}' must be a non-abstract {typeof(TContract).FullName}.");
             }
 
-            if (type.GetConstructor(
-                    BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic,
-                    binder: null,
-                    Type.EmptyTypes,
-                    modifiers: null) is null)
+            if (!types.CanCreateInstance(typeRef))
             {
                 throw new InvalidOperationException(
                     $"Reloadable {kind} '{type.FullName}' requires a parameterless constructor.");
             }
 
-            TAttribute attribute = type.GetCustomAttribute<TAttribute>(inherit: false)!;
+            TAttribute attribute = types.GetAttribute<TAttribute>(typeRef, inherit: false)!;
             string id = getId(attribute);
             if (!result.TryAdd(id, type))
             {
@@ -166,6 +162,7 @@ internal sealed class RenderExtensionRegistry : TypeRegistry<RenderExtensionRegi
 
     internal sealed class Snapshot : IDisposable
     {
+        private TypeCacheSnapshot? m_types;
         private readonly IReadOnlyDictionary<string, Type> m_pipelines;
         private readonly IReadOnlyDictionary<string, Type> m_features;
         private readonly IReadOnlyDictionary<string, Type> m_requestProviders;
@@ -174,7 +171,7 @@ internal sealed class RenderExtensionRegistry : TypeRegistry<RenderExtensionRegi
         private readonly Action<IDisposable> m_retire;
 
         internal Snapshot(
-            long typeCacheVersion,
+            TypeCacheSnapshot types,
             IReadOnlyDictionary<string, Type> pipelines,
             IReadOnlyDictionary<string, Type> features,
             IReadOnlyDictionary<string, Type> requestProviders,
@@ -185,7 +182,8 @@ internal sealed class RenderExtensionRegistry : TypeRegistry<RenderExtensionRegi
             Func<Type, IRenderModel> createModel,
             Action<IDisposable> retire
         ) {
-            this.typeCacheVersion = typeCacheVersion;
+            m_types = types;
+            typeCacheVersion = types.version;
             m_pipelines = pipelines;
             m_features = features;
             m_requestProviders = requestProviders;
@@ -212,6 +210,7 @@ internal sealed class RenderExtensionRegistry : TypeRegistry<RenderExtensionRegi
             models.Dispose();
             sources.Dispose();
             providers.Dispose();
+            m_types = null;
         }
 
         private ContentSourceGeneration CreateContentSources(Func<Type, IViewContentSource> createSource)
@@ -236,7 +235,7 @@ internal sealed class RenderExtensionRegistry : TypeRegistry<RenderExtensionRegi
             foreach ((string id, Type type) in m_requestProviders)
             {
                 RenderRequestProviderExtensionAttribute attribute =
-                    type.GetCustomAttribute<RenderRequestProviderExtensionAttribute>(inherit: false)!;
+                    m_types!.GetAttribute<RenderRequestProviderExtensionAttribute>(m_types.GetTypeRef(type), inherit: false)!;
                 providers.Add(new RequestProviderEntry(id, attribute.priority, createProvider(type)));
             }
             providers.Sort(static (
@@ -318,12 +317,11 @@ internal sealed class RenderExtensionRegistry : TypeRegistry<RenderExtensionRegi
             }
         }
 
-        private static TContract Create<TContract>(Type type) where TContract : class
+        private TContract Create<TContract>(Type type) where TContract : class
         {
             try
             {
-                return (TContract)(Activator.CreateInstance(type, nonPublic: true)
-                    ?? throw new InvalidOperationException("Activator returned null."));
+                return (TContract)(m_types ?? throw new ObjectDisposedException(nameof(Snapshot))).CreateInstance(type);
             }
             catch (Exception exception)
             {

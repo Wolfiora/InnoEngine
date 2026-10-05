@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
 
@@ -33,26 +32,44 @@ public static partial class ArchitectureValidator
     /// Executes repository validation or an explicitly requested documentation maintenance operation.
     /// </summary>
     /// <param name="arguments">
-    /// The repository path and optional documentation maintenance flags.
+    /// The optional repository path, selected build configuration and whitespace-only XML expansion flag.
     /// </param>
     /// <returns>
     /// Zero when validation succeeds, or one when any invariant is violated.
     /// </returns>
+    /// <exception cref="ArgumentException">
+    /// An option is unknown or more than one repository path is supplied.
+    /// </exception>
     /// <exception cref="DirectoryNotFoundException">
     /// The requested path is not inside an engine checkout.
     /// </exception>
     public static int Execute(string[] arguments)
     {
-        bool expandXml = arguments.Contains("--expand-xml", StringComparer.Ordinal);
-        bool materializeInheritDoc = arguments.Contains("--materialize-inheritdoc", StringComparer.Ordinal);
-        bool repairXmlContracts = arguments.Contains("--repair-xml-contracts", StringComparer.Ordinal);
-        bool documentPublicApi = arguments.Contains("--document-public-api", StringComparer.Ordinal);
-        string[] paths = arguments
-            .Where(static argument => argument is not "--expand-xml"
-                and not "--materialize-inheritdoc"
-                and not "--repair-xml-contracts"
-                and not "--document-public-api")
-            .ToArray();
+        ArgumentNullException.ThrowIfNull(arguments);
+        bool expandXml = false;
+        string configuration = "Debug";
+        bool selectedConfiguration = false;
+        var paths = new List<string>();
+        for (int index = 0; index < arguments.Length; index++)
+        {
+            string argument = arguments[index];
+            if (argument == "--expand-xml" && !expandXml)
+                expandXml = true;
+            else if (argument == "--configuration" && !selectedConfiguration && index + 1 < arguments.Length)
+            {
+                configuration = arguments[++index] switch
+                {
+                    "Debug" => "Debug",
+                    "Release" => "Release",
+                    _ => throw new ArgumentException("Architecture configuration must be Debug or Release.", nameof(arguments))
+                };
+                selectedConfiguration = true;
+            }
+            else if (!argument.StartsWith("--", StringComparison.Ordinal) && paths.Count == 0)
+                paths.Add(argument);
+            else
+                throw new ArgumentException("Usage: verify [engine-root] [--configuration Debug|Release] [--expand-xml]", nameof(arguments));
+        }
         string repositoryRoot = ResolveRepositoryRoot(paths);
         if (expandXml)
         {
@@ -60,34 +77,16 @@ public static partial class ArchitectureValidator
             Console.WriteLine($"Expanded XML documentation in {changedFileCount} file(s).");
             return 0;
         }
-        if (materializeInheritDoc)
-        {
-            int changedFileCount = MaterializeInheritDoc(repositoryRoot);
-            Console.WriteLine($"Materialized inherited XML documentation in {changedFileCount} file(s).");
-            return 0;
-        }
-        if (repairXmlContracts)
-        {
-            int changedFileCount = RepairXmlContracts(repositoryRoot);
-            Console.WriteLine($"Repaired XML contract tags in {changedFileCount} file(s).");
-            return 0;
-        }
-        if (documentPublicApi)
-        {
-            int changedFileCount = PublicApiDocumenter.Document(repositoryRoot, S_PRODUCTION_ROOTS);
-            Console.WriteLine($"Documented public API declarations in {changedFileCount} file(s).");
-            return 0;
-        }
-
         List<string> failures = [];
 
+        var documentationModels = new DocumentationSourceModels(repositoryRoot, configuration);
         foreach (string rootName in S_PRODUCTION_ROOTS)
         {
             string root = Path.Combine(repositoryRoot, rootName);
             if (!Directory.Exists(root))
                 continue;
             ValidateDirectories(repositoryRoot, root, failures);
-            ValidateSources(repositoryRoot, root, failures);
+            ValidateSources(repositoryRoot, root, failures, documentationModels);
             ValidateProjects(repositoryRoot, root, failures);
         }
 
@@ -95,7 +94,7 @@ public static partial class ArchitectureValidator
         ValidateSourceSolutionFolders(repositoryRoot, failures);
         ValidateTestSolutionFolders(repositoryRoot, failures);
         ArchitectureRules.Validate(repositoryRoot, failures);
-        PublicApiBoundaryValidator.Validate(repositoryRoot, failures);
+        PublicApiBoundaryValidator.Validate(repositoryRoot, configuration, failures);
         if (failures.Count == 0)
         {
             Console.WriteLine("InnoEngine architecture validation passed.");
@@ -141,7 +140,8 @@ public static partial class ArchitectureValidator
     private static void ValidateSources(
         string repositoryRoot,
         string root,
-        ICollection<string> failures
+        ICollection<string> failures,
+        DocumentationSourceModels documentationModels
     ) {
         foreach (string path in EnumerateFiles(root, "*.cs"))
         {
@@ -149,9 +149,12 @@ public static partial class ArchitectureValidator
             if (IsGenerated(source))
                 continue;
             string relative = Relative(repositoryRoot, path);
+            CSharpStyleValidator.Validate(relative, source, failures);
             if (relative.StartsWith("tools/Inno.Tooling.Architecture/", StringComparison.Ordinal))
                 continue;
-            PublicApiDocumentationValidator.Validate(relative, source, failures);
+            PublicApiDocumentationValidator.Validate(relative, source, failures,
+                source.Contains("<inheritdoc", StringComparison.Ordinal) ? documentationModels.GetModel(path) : null,
+                documentationModels);
             GenerationCleanupValidator.Validate(relative, source, failures);
             AddSourceFailure(source.Contains("InternalsVisibleTo", StringComparison.Ordinal), relative,
                 "friend assemblies are forbidden", failures);
@@ -175,10 +178,6 @@ public static partial class ArchitectureValidator
                 if (SingleLineXmlPattern().IsMatch(line))
                 {
                     failures.Add($"{relative}:{lineNumber}: XML documentation elements must use expanded multi-line form.");
-                }
-                if (SelfClosingInheritDocPattern().IsMatch(line))
-                {
-                    failures.Add($"{relative}:{lineNumber}: inheritdoc cannot replace an explicit public API contract.");
                 }
             }
         }
@@ -217,381 +216,6 @@ public static partial class ArchitectureValidator
             }
         }
         return changedFileCount;
-    }
-
-    private static int MaterializeInheritDoc(string repositoryRoot)
-    {
-        int changedFileCount = 0;
-        foreach (string rootName in S_PRODUCTION_ROOTS)
-        {
-            string root = Path.Combine(repositoryRoot, rootName);
-            if (!Directory.Exists(root))
-                continue;
-            foreach (string path in EnumerateFiles(root, "*.cs"))
-            {
-                string source = File.ReadAllText(path);
-                if (IsGenerated(source) || !source.Contains("<inheritdoc", StringComparison.Ordinal))
-                    continue;
-                string newline = source.Contains("\r\n", StringComparison.Ordinal) ? "\r\n" : "\n";
-                string[] lines = source.Replace("\r\n", "\n", StringComparison.Ordinal).Split('\n');
-                bool changed = false;
-                for (int i = 0; i < lines.Length; i++)
-                {
-                    if (!SelfClosingInheritDocPattern().IsMatch(lines[i]))
-                        continue;
-                    string indentation = lines[i][..lines[i].IndexOf("///", StringComparison.Ordinal)];
-                    string declaration = ReadFollowingDeclaration(lines, i + 1);
-                    lines[i] = CreateExplicitDocumentation(indentation, declaration);
-                    changed = true;
-                }
-                if (!changed)
-                    continue;
-                File.WriteAllText(path, string.Join(newline, lines));
-                changedFileCount++;
-            }
-        }
-        return changedFileCount;
-    }
-
-    private static string ReadFollowingDeclaration(
-        IReadOnlyList<string> lines,
-        int start
-    ) {
-        var builder = new StringBuilder();
-        bool inAttribute = false;
-        int parenthesisDepth = 0;
-        bool sawParenthesis = false;
-        for (int i = start; i < lines.Count; i++)
-        {
-            string trimmed = lines[i].Trim();
-            if (trimmed.Length == 0)
-                continue;
-            if (trimmed.StartsWith("[", StringComparison.Ordinal) || inAttribute)
-            {
-                inAttribute = !trimmed.Contains(']');
-                continue;
-            }
-            if (trimmed.StartsWith("///", StringComparison.Ordinal))
-                continue;
-            if (builder.Length > 0)
-                builder.Append(' ');
-            builder.Append(trimmed);
-            sawParenthesis |= trimmed.Contains('(');
-            parenthesisDepth += trimmed.Count(static character => character == '(');
-            parenthesisDepth -= trimmed.Count(static character => character == ')');
-            if (sawParenthesis && parenthesisDepth <= 0 ||
-                !sawParenthesis && parenthesisDepth <= 0 &&
-                (trimmed.Contains("=>", StringComparison.Ordinal) ||
-                 trimmed.EndsWith(';') ||
-                 trimmed.EndsWith('{') ||
-                 trimmed.Contains(" where ", StringComparison.Ordinal)))
-            {
-                break;
-            }
-        }
-        string declaration = builder.ToString();
-        if (!sawParenthesis)
-            return declaration;
-        int opening = declaration.IndexOf('(');
-        int depth = 0;
-        for (int i = opening; i < declaration.Length; i++)
-        {
-            if (declaration[i] == '(')
-                depth++;
-            else if (declaration[i] == ')' && --depth == 0)
-                return declaration[..(i + 1)];
-        }
-        return declaration;
-    }
-
-    private static int RepairXmlContracts(string repositoryRoot)
-    {
-        int changedFileCount = 0;
-        foreach (string rootName in S_PRODUCTION_ROOTS)
-        {
-            string root = Path.Combine(repositoryRoot, rootName);
-            if (!Directory.Exists(root))
-                continue;
-            foreach (string path in EnumerateFiles(root, "*.cs"))
-            {
-                string source = File.ReadAllText(path);
-                if (IsGenerated(source))
-                    continue;
-                string newline = source.Contains("\r\n", StringComparison.Ordinal) ? "\r\n" : "\n";
-                var lines = source.Replace("\r\n", "\n", StringComparison.Ordinal).Split('\n').ToList();
-                bool changed = false;
-                for (int i = 0; i < lines.Count; i++)
-                {
-                    if (!lines[i].Contains("/// <summary>", StringComparison.Ordinal))
-                        continue;
-                    int documentationEnd = i;
-                    while (documentationEnd + 1 < lines.Count &&
-                           lines[documentationEnd + 1].TrimStart().StartsWith("///", StringComparison.Ordinal))
-                    {
-                        documentationEnd++;
-                    }
-                    string declaration = ReadFollowingDeclaration(lines, documentationEnd + 1);
-                    Match method = MethodDeclarationPattern().Match(declaration);
-                    if (!method.Success)
-                    {
-                        i = documentationEnd;
-                        continue;
-                    }
-                    List<string> documentationLines = lines.Skip(i).Take(documentationEnd - i + 1).ToList();
-                    string returnType = method.Groups[1].Value.Trim();
-                    string[] parameterNames = ParseParameterNames(method.Groups[3].Value).ToArray();
-                    var parameterSet = parameterNames.ToHashSet(StringComparer.Ordinal);
-                    var seenParameters = new HashSet<string>(StringComparer.Ordinal);
-                    bool seenReturns = false;
-                    for (int lineIndex = 0; lineIndex < documentationLines.Count; lineIndex++)
-                    {
-                        Match parameterTag = ParameterTagPattern().Match(documentationLines[lineIndex]);
-                        bool removeBlock = false;
-                        string closingTag = string.Empty;
-                        if (parameterTag.Success)
-                        {
-                            string parameterName = parameterTag.Groups[1].Value;
-                            removeBlock = !parameterSet.Contains(parameterName) || !seenParameters.Add(parameterName);
-                            closingTag = "</param>";
-                        }
-                        else if (documentationLines[lineIndex].Contains("<returns>", StringComparison.Ordinal))
-                        {
-                            removeBlock = string.Equals(returnType, "void", StringComparison.Ordinal) || seenReturns;
-                            seenReturns = true;
-                            closingTag = "</returns>";
-                        }
-                        if (!removeBlock)
-                            continue;
-                        int blockEnd = lineIndex;
-                        while (blockEnd < documentationLines.Count &&
-                               !documentationLines[blockEnd].Contains(closingTag, StringComparison.Ordinal))
-                        {
-                            blockEnd++;
-                        }
-                        documentationLines.RemoveRange(lineIndex, Math.Min(
-                            documentationLines.Count - lineIndex,
-                            blockEnd - lineIndex + 1));
-                        lineIndex--;
-                        changed = true;
-                    }
-                    int originalDocumentationCount = documentationEnd - i + 1;
-                    if (documentationLines.Count != originalDocumentationCount)
-                    {
-                        lines.RemoveRange(i, originalDocumentationCount);
-                        lines.InsertRange(i, documentationLines);
-                        documentationEnd = i + documentationLines.Count - 1;
-                    }
-                    string documentation = string.Join('\n', documentationLines);
-                    string indentation = lines[i][..lines[i].IndexOf("///", StringComparison.Ordinal)];
-                    var additions = new List<string>();
-                    foreach (string parameter in parameterNames)
-                    {
-                        if (documentation.Contains($"<param name=\"{parameter}\">", StringComparison.Ordinal))
-                            continue;
-                        additions.Add($"{indentation}/// <param name=\"{parameter}\">");
-                        additions.Add($"{indentation}/// {DescribeParameter(parameter)}");
-                        additions.Add($"{indentation}/// </param>");
-                    }
-                    if (!string.Equals(returnType, "void", StringComparison.Ordinal) &&
-                        !documentation.Contains("<returns>", StringComparison.Ordinal))
-                    {
-                        additions.Add($"{indentation}/// <returns>");
-                        additions.Add($"{indentation}/// {DescribeReturn(method.Groups[2].Value, returnType)}");
-                        additions.Add($"{indentation}/// </returns>");
-                    }
-                    if (additions.Count == 0)
-                    {
-                        i = documentationEnd;
-                        continue;
-                    }
-                    lines.InsertRange(documentationEnd + 1, additions);
-                    changed = true;
-                    i = documentationEnd + additions.Count;
-                }
-                if (!changed)
-                    continue;
-                File.WriteAllText(path, string.Join(newline, lines));
-                changedFileCount++;
-            }
-        }
-        return changedFileCount;
-    }
-
-    private static string CreateExplicitDocumentation(
-        string indentation,
-        string declaration
-    ) {
-        Match method = MethodDeclarationPattern().Match(declaration);
-        string summary;
-        string returns = string.Empty;
-        List<string> parameters = [];
-        if (method.Success)
-        {
-            string returnType = method.Groups[1].Value.Trim();
-            string methodName = method.Groups[2].Value;
-            summary = DescribeMethod(methodName);
-            parameters.AddRange(ParseParameterNames(method.Groups[3].Value));
-            if (!string.Equals(returnType, "void", StringComparison.Ordinal))
-                returns = DescribeReturn(methodName, returnType);
-        }
-        else
-        {
-            Match property = PropertyDeclarationPattern().Match(declaration);
-            string propertyName = property.Success ? property.Groups[2].Value : "contract value";
-            string propertyType = property.Success ? property.Groups[1].Value : string.Empty;
-            summary = DescribeProperty(propertyName, propertyType, declaration.Contains(" set", StringComparison.Ordinal));
-        }
-
-        var documentation = new List<string>
-        {
-            $"{indentation}/// <summary>",
-            $"{indentation}/// {summary}",
-            $"{indentation}/// </summary>"
-        };
-        foreach (string parameter in parameters)
-        {
-            documentation.Add($"{indentation}/// <param name=\"{parameter}\">");
-            documentation.Add($"{indentation}/// {DescribeParameter(parameter)}");
-            documentation.Add($"{indentation}/// </param>");
-        }
-        if (!string.IsNullOrEmpty(returns))
-        {
-            documentation.Add($"{indentation}/// <returns>");
-            documentation.Add($"{indentation}/// {returns}");
-            documentation.Add($"{indentation}/// </returns>");
-        }
-        return string.Join('\n', documentation);
-    }
-
-    private static IEnumerable<string> ParseParameterNames(string parameters)
-    {
-        var current = new StringBuilder();
-        int nesting = 0;
-        foreach (char character in parameters)
-        {
-            if (character is '<' or '(' or '[')
-                nesting++;
-            else if (character is '>' or ')' or ']')
-                nesting--;
-            if (character == ',' && nesting == 0)
-            {
-                string? name = ParseParameterName(current.ToString());
-                if (name is not null)
-                    yield return name;
-                current.Clear();
-                continue;
-            }
-            current.Append(character);
-        }
-        string? finalName = ParseParameterName(current.ToString());
-        if (finalName is not null)
-            yield return finalName;
-    }
-
-    private static string? ParseParameterName(string parameter)
-    {
-        string withoutDefault = parameter.Split('=')[0].Trim();
-        Match match = ParameterNamePattern().Match(withoutDefault);
-        return match.Success ? match.Groups[1].Value : null;
-    }
-
-    private static string DescribeMethod(string name)
-    {
-        return name switch
-        {
-            "Equals" => "Determines whether this instance and the supplied value represent the same logical state.",
-            "GetHashCode" => "Computes a hash code from the fields that participate in logical equality.",
-            "ToString" => "Formats this value as a human-readable representation.",
-            "CompareTo" => "Compares this value with another value using the contract's stable ordering.",
-            "Dispose" => "Releases the resources owned by this implementation.",
-            "OnStart" => "Initializes this feature when its owning runtime becomes active.",
-            "OnStop" => "Stops this feature before its owning runtime releases the active generation.",
-            "OnUpdate" => "Advances this feature using the current runtime state.",
-            "OnDraw" => "Draws this feature using the current editor presentation context.",
-            "Write" => "Writes the complete value through the configured serialization contract.",
-            "Read" => "Reconstructs a complete value through the configured serialization contract.",
-            "Query" => "Evaluates the operation's current availability and presentation state.",
-            "Execute" => "Performs the requested operation against the supplied context.",
-            "Receive" => "Consumes the supplied message through this implementation.",
-            "Replace" => "Replaces the current state represented by the supplied value.",
-            "Clear" => "Removes the state identified by the supplied value.",
-            "Prepare" or "PrepareForActivation" => "Prepares candidate state without changing the active generation.",
-            "Apply" => "Applies the prepared state at the caller-controlled commit point.",
-            "Complete" => "Completes the committed operation and releases temporary state.",
-            "Rollback" or "RollbackStructure" or "RestorePreviousState" =>
-                "Restores the state that existed before candidate activation began.",
-            _ when name.StartsWith("Try", StringComparison.Ordinal) =>
-                $"Attempts to {Humanize(name[3..])} without changing state when the operation cannot complete.",
-            _ when name.StartsWith("Create", StringComparison.Ordinal) =>
-                $"Creates {WithArticle(Humanize(name[6..]))} using this implementation's validated inputs.",
-            _ when name.StartsWith("Get", StringComparison.Ordinal) =>
-                $"Gets {WithArticle(Humanize(name[3..]))} required by the implemented contract.",
-            _ => $"Performs the {Humanize(name)} operation required by the implemented contract."
-        };
-    }
-
-    private static string DescribeProperty(
-        string name,
-        string type,
-        bool hasSetter
-    ) {
-        string access = hasSetter ? "Gets or sets" : "Gets";
-        if (name.StartsWith("is", StringComparison.Ordinal) && name.Length > 2)
-            return $"{access} whether this implementation is {Humanize(name[2..])}.";
-        if (name.StartsWith("has", StringComparison.Ordinal) && name.Length > 3)
-            return $"{access} whether this implementation has {Humanize(name[3..])}.";
-        if (name.StartsWith("can", StringComparison.Ordinal) && name.Length > 3)
-            return $"{access} whether this implementation can {Humanize(name[3..])}.";
-        if (string.Equals(type, "bool", StringComparison.Ordinal))
-            return $"{access} whether {Humanize(name)} is enabled for this implementation.";
-        return $"{access} the {Humanize(name)} exposed by this implementation.";
-    }
-
-    private static string DescribeParameter(string name)
-    {
-        return name switch
-        {
-            "context" => "The context that supplies state and services for this operation.",
-            "other" => "The value to compare with this instance.",
-            "obj" => "The object to compare with this instance.",
-            "writer" => "The writer that receives the serialized representation.",
-            "reader" => "The reader that supplies the serialized representation.",
-            "value" => "The value processed by this operation.",
-            "cancellationToken" => "The token that cancels the operation before it commits.",
-            "deltaTime" => "The elapsed frame time in seconds.",
-            "fixedDeltaTime" => "The fixed simulation step in seconds.",
-            _ => $"The {Humanize(name)} supplied to this operation."
-        };
-    }
-
-    private static string DescribeReturn(
-        string name,
-        string returnType
-    ) {
-        if (name == "Equals")
-            return "<see langword=\"true\"/> when both values represent the same logical state; otherwise, <see langword=\"false\"/>.";
-        if (name == "GetHashCode")
-            return "A hash code consistent with the implemented equality contract.";
-        if (name == "ToString")
-            return "The human-readable representation of this value.";
-        if (returnType == "bool")
-            return "<see langword=\"true\"/> when the operation succeeds or its condition is satisfied; otherwise, <see langword=\"false\"/>.";
-        return "The value produced by this implementation of the contract.";
-    }
-
-    private static string Humanize(string value)
-    {
-        if (string.IsNullOrWhiteSpace(value))
-            return "value";
-        string spaced = HumanizePattern().Replace(value.Replace('_', ' '), " $1");
-        return spaced.Trim().ToLowerInvariant();
-    }
-
-    private static string WithArticle(string value)
-    {
-        char first = value.Length == 0 ? 'v' : value[0];
-        string article = "aeiou".Contains(first) ? "an" : "a";
-        return $"{article} {value}";
     }
 
     private static void ValidateProjects(
@@ -906,6 +530,10 @@ public static partial class ArchitectureValidator
             return "src/adapters/default";
         if (projectName.StartsWith("Inno.Adapter.Presentation", StringComparison.Ordinal))
             return "src/adapters/presentation";
+        if (projectName.StartsWith("Inno.Adapter.Modules", StringComparison.Ordinal))
+            return "src/adapters/modules";
+        if (projectName.StartsWith("Inno.Adapter.Serialization", StringComparison.Ordinal))
+            return "src/adapters/serialization";
         if (projectName.StartsWith("Inno.Adapter.Platform", StringComparison.Ordinal))
             return "src/adapters/platform";
         if (projectName.StartsWith("Inno.Adapter.Input", StringComparison.Ordinal))
@@ -1090,26 +718,8 @@ public static partial class ArchitectureValidator
     [GeneratedRegex(@"^\s*///\s*<(summary|param|typeparam|returns|exception|remarks)\b[^>]*>.+</\1>\s*$")]
     private static partial Regex SingleLineXmlPattern();
 
-    [GeneratedRegex(@"^\s*///\s*<inheritdoc\b[^>]*/>\s*$")]
-    private static partial Regex SelfClosingInheritDocPattern();
-
     [GeneratedRegex(@"(?m)^([ \t]*)///[ \t]*<(summary|param|typeparam|returns|exception|remarks)([^>]*)>(.+)</\2>[ \t]*\r?$")]
     private static partial Regex ExpandableXmlPattern();
-
-    [GeneratedRegex(@"^(?:(?:public|protected|internal|private|static|virtual|override|abstract|sealed|readonly|async|unsafe|new|partial)\s+)*(?:[\w.<>?,\[\]]+\s+)+([\w.<>?,\[\]]+)\s+(?:[\w.]+\.)?(\w+)(?:<[^>]+>)?\s*\((.*)\)")]
-    private static partial Regex MethodDeclarationPattern();
-
-    [GeneratedRegex(@"^(?:(?:public|protected|internal|private|static|virtual|override|abstract|sealed|readonly|unsafe|new|partial)\s+)*([\w.<>?,\[\]]+)\s+(\w+)\s*(?:=>|\{|;)")]
-    private static partial Regex PropertyDeclarationPattern();
-
-    [GeneratedRegex(@"([A-Za-z_]\w*)$")]
-    private static partial Regex ParameterNamePattern();
-
-    [GeneratedRegex(@"<param name=""([^""]+)"">")]
-    private static partial Regex ParameterTagPattern();
-
-    [GeneratedRegex(@"(?<=[a-z0-9])([A-Z])")]
-    private static partial Regex HumanizePattern();
 
     [GeneratedRegex("""^Project\("(?<type>\{[^}]+\})"\) = "(?<name>[^"]+)", "(?<path>[^"]+)", "(?<id>\{[^}]+\})"$""")]
     private static partial Regex SolutionProjectPattern();

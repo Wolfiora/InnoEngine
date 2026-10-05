@@ -1,106 +1,31 @@
-using System.Runtime.InteropServices;
-using System.Threading.Tasks;
+using System;
 using System.Threading;
-using Inno.Build.Toolchains;
+using System.Threading.Tasks;
+using System.Runtime.InteropServices;
 
 namespace Inno.Build.Toolchains.Bgfx.Platforms;
 
 internal sealed class OsxArm64BgfxBuilder : BgfxBuilder
 {
-    /// <summary>
-    /// The output platform value used as part of this type's public representation.
-    /// </summary>
-    public const string OUTPUT_PLATFORM = "osx-arm64";
-    private const string DEBUG_TARGET = "osx-arm64-debug";
-    private const string RELEASE_TARGET = "osx-arm64-release";
+    internal override string outputPlatform => "osx-arm64";
+    internal override string artifactPathToken => "/osx-arm64/bin/";
+    internal override bool IsSupported() => OperatingSystem.IsMacOS()
+        && RuntimeInformation.ProcessArchitecture == Architecture.Arm64;
 
-    /// <summary>
-    /// Gets the native platform identifier produced by this builder.
-    /// </summary>
-    public override string outputPlatform => OUTPUT_PLATFORM;
-    /// <summary>
-    /// Gets the artifact path token text used by the current instance.
-    /// </summary>
-    public override string artifactPathToken => "/osx-arm64/bin/";
-    /// <summary>
-    /// Gets the native make target used for debug output.
-    /// </summary>
-    protected override string debugMakeTarget => DEBUG_TARGET;
-    /// <summary>
-    /// Gets the native make target used for optimized output.
-    /// </summary>
-    protected override string releaseMakeTarget => RELEASE_TARGET;
-
-    /// <summary>
-    /// Determines whether the current host can execute this implementation.
-    /// </summary>
-    /// <returns>
-    /// <see langword="true"/> when the requested condition is satisfied; otherwise, <see langword="false"/>.
-    /// </returns>
-    public override bool IsSupported()
-    {
-        return RuntimeInformation.IsOSPlatform(OSPlatform.OSX)
-            && RuntimeInformation.ProcessArchitecture == Architecture.Arm64;
-    }
-
-    /// <summary>
-    /// Compiles the component sources using the selected checkout and configuration.
-    /// </summary>
-    /// <param name="bgfxDir">
-    /// The bgfx dir text validated by the build operation.
-    /// </param>
-    /// <param name="context">
-    /// The selected checkout and native configuration.
-    /// </param>
-    /// <param name="makeTargetOverride">
-    /// The make target override text validated by the build operation.
-    /// </param>
-    /// <param name="cancellationToken">
-    /// Cancels the native process tree.
-    /// </param>
-    /// <returns>
-    /// Completion after native compilation succeeds; failures and cancellation propagate.
-    /// </returns>
-    public override async Task BuildAsync(
-        string bgfxDir,
+    internal override async Task BuildAsync(
+        string source,
+        string genie,
         NativeBuildContext context,
-        string? makeTargetOverride,
+        bool includeTools,
         CancellationToken cancellationToken
     ) {
-        cancellationToken.ThrowIfCancellationRequested();
-        string config = context.configuration;
-        if (!string.IsNullOrWhiteSpace(makeTargetOverride))
-        {
-            await ToolchainEnvironment.RunAsync("make", makeTargetOverride, bgfxDir, cancellationToken);
-            return;
-        }
-
-        var target = GetMakeTarget(config);
-        await ToolchainEnvironment.RunAsync("make", target, bgfxDir, cancellationToken);
-    }
-
-    /// <summary>
-    /// Builds the native offline tools required by the selected configuration.
-    /// </summary>
-    /// <param name="bgfxDir">
-    /// The bgfx dir text validated by the build tools operation.
-    /// </param>
-    /// <param name="context">
-    /// The selected checkout and native configuration.
-    /// </param>
-    /// <param name="cancellationToken">
-    /// Cancels the native process tree.
-    /// </param>
-    /// <returns>
-    /// Completion after native compilation succeeds; failures and cancellation propagate.
-    /// </returns>
-    public override async Task BuildToolsAsync(
-        string bgfxDir,
-        NativeBuildContext context,
-        CancellationToken cancellationToken
-    ) {
-        cancellationToken.ThrowIfCancellationRequested();
-        string config = context.configuration;
-        await ToolchainEnvironment.RunAsync("make", $"tools config={config}", bgfxDir, cancellationToken);
+        string[] generate = includeTools ? ["--with-shared-lib", "--with-tools", "--gcc=osx-arm64", "gmake"]
+            : ["--with-shared-lib", "--gcc=osx-arm64", "gmake"];
+        await ToolchainEnvironment.RunAsync(context, genie, generate, source, cancellationToken).ConfigureAwait(false);
+        string[] compile = includeTools
+            ? ["-C", ".build/projects/gmake-osx-arm64", "config=" + context.configuration,
+                "shaderc", "texturec", "geometryc", "geometryv", "texturev"]
+            : ["-C", ".build/projects/gmake-osx-arm64", "config=" + context.configuration];
+        await ToolchainEnvironment.RunAsync(context, "make", compile, source, cancellationToken).ConfigureAwait(false);
     }
 }

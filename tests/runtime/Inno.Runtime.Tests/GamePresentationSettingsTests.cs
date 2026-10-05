@@ -1,3 +1,5 @@
+using Inno.Adapter.Serialization.DotNet;
+using Inno.Adapter.Modules.DotNet;
 using System;
 using System.IO;
 
@@ -54,6 +56,8 @@ public sealed class GamePresentationSettingsTests
         try
         {
             using EngineHost host = new EngineHostBuilder()
+                .UseMetadataSources(new DotNetAssemblyCatalogSource(typeof(GamePresentationSettingsTests).Assembly),
+                    new ReflectionTypeCatalogSource(), new ReflectionSerializationMetadataSource())
                 .UseMetadataCache(Path.Combine(directory, "Metadata"))
                 .Build();
             using var settings = new ProjectSettingsStore(

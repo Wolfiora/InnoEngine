@@ -1,3 +1,5 @@
+using Inno.Adapter.Serialization.DotNet;
+using Inno.Adapter.Modules.DotNet;
 using System;
 using System.Buffers.Binary;
 using System.Collections.Generic;
@@ -23,11 +25,11 @@ public sealed class MeshAndStateTests : IDisposable
     public MeshAndStateTests()
     {
         m_modules = new ModuleHost(new ModuleHostOptions
-        {
+        { catalogSource = new DotNetAssemblyCatalogSource(typeof(MeshAndStateTests).Assembly),
             cacheDirectory = Path.Combine(Path.GetTempPath(), "InnoRenderingAssetsTests", "Assemblies")
         });
-        m_types = new TypeCatalog(m_modules);
-        m_serialization = new SerializationRegistry(m_types);
+        m_types = new TypeCatalog(m_modules, new ReflectionTypeCatalogSource());
+        m_serialization = new SerializationRegistry(m_types, new ReflectionSerializationMetadataSource());
     }
 
     public void Dispose()

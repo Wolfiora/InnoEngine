@@ -17,7 +17,7 @@ router.RegisterSink(new FileLogSink(Path.Combine(projectRoot, "Logs")));
 router.SetMinimumLevel(LogLevel.Info);
 
 using (router.EnterScope())
-    Log.Info("Loaded {0} assets", count);
+    Log.Info("Loaded {0} assets", [count]);
 
 router.Flush();
 ```
@@ -26,7 +26,7 @@ router.Flush();
 
 ## Log
 
-每个等级都有 `object?` 与 `(string message, params object[]? args)` overload：
+每个等级都有 `object?` 与 `(string message, IReadOnlyList<object?>? arguments)` overload。格式参数通过集合传入；两个入口均由编译器补充 `CallerFilePath` 与 `CallerLineNumber`：
 
 - `Debug`：仅在 `DEBUG` 条件编译存在调用。
 - `Info`
@@ -34,15 +34,15 @@ router.Flush();
 - `Error`
 - `Fatal`
 
-格式化采用 `string.Format`。调用方类型名作为 `category`；调用程序集的当前分类解析为 `domain` 与 `scope`。分类使用弱缓存，不固定热重载 ALC；日志 entry 只复制 enum、字符串、时间与行号，不保存调用方 `Type`/`Assembly`。
+格式化采用 `string.Format`。调用源文件名（去掉扩展名）作为 `category`；调用程序集的当前分类解析为 `domain` 与 `scope`。程序集分类使用弱缓存，不固定热重载 ALC；日志 entry 只复制 enum、字符串、时间与行号，不保存调用方 `Type`/`Assembly`。源文件和行号不依赖调试符号或反射方法元数据，因此相同入口适用于 JIT、裁剪和 AOT。`stackTrace` 是可用运行时栈的文本，完整程度由运行时与发布符号决定。
 
 `Log` 已作为 Runtime Scripting API 导出到逻辑 namespace `InnoEngine.Logging`。Project 脚本不引用真实的 `Inno.Core.Logging` namespace：
 
 ```csharp
 using InnoEngine.Logging;
 
-Log.Info("Player spawned at {0}", transform.localPosition);
-Log.Warn("Health is low: {0}", health);
+Log.Info("Player spawned at {0}", [transform.localPosition]);
+Log.Warn("Health is low: {0}", [health]);
 ```
 
 只导出便捷门面 `Log`；`LogRouter`、sink 和日志分发配置仍由 Host 管理，不向游戏脚本开放。
@@ -83,10 +83,10 @@ Inline 的并发 producer 串行交付；sink callback 中新写的日志先排�
 | `level` | `LogLevel` | 严重程度。 |
 | `domain` | `AssemblyDomain` | InnoInternal/InnoScripting/InnoPlugin 所有权。 |
 | `scope` | `AssemblyScope` | Runtime/Editor 依赖范围。 |
-| `category` | `string` | 通常是调用类型名。 |
+| `category` | `string` | 脚本门面使用调用源文件名；显式 logger 使用所属类型名。 |
 | `message` | `string` | 已渲染文本。 |
 | `time` | `DateTime` | 构造时本地时间。 |
-| `file` | `string` | 调试符号可用时的调用文件。 |
+| `file` | `string` | 编译器提供的调用源文件，不要求发布调试符号。 |
 | `line` | `int` | 调用行号。 |
 
 ## Sink API

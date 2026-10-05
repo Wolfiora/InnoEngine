@@ -1,3 +1,5 @@
+using Inno.Adapter.Serialization.DotNet;
+using Inno.Adapter.Modules.DotNet;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -36,11 +38,11 @@ public sealed class InspectionPipelineTests : IDisposable
     {
         Directory.CreateDirectory(m_projectRoot);
         m_modules = new ModuleHost(new ModuleHostOptions
-        {
+        { catalogSource = new DotNetAssemblyCatalogSource(typeof(InspectionPipelineTests).Assembly),
             cacheDirectory = Path.Combine(m_projectRoot, "Library", "Assemblies")
         });
-        m_types = new TypeCatalog(m_modules);
-        m_serialization = new SerializationRegistry(m_types);
+        m_types = new TypeCatalog(m_modules, new ReflectionTypeCatalogSource());
+        m_serialization = new SerializationRegistry(m_types, new ReflectionSerializationMetadataSource());
         m_runtime = new EditorInteractionRuntime(
             new EditorContext(m_projectRoot),
             m_types,

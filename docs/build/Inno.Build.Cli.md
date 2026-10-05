@@ -18,7 +18,7 @@ dotnet run --project build/cli/Inno.Build.Cli -- verify .
 | 命令 | 功能 |
 | --- | --- |
 | `engine` | 先生成当前宿主绑定，再顺序构建 Native/工具、Editor 与请求目标 Support Pack。 |
-| `clean` | 清理工作区各项目的 bin/obj 和 .lib，保留正在执行 CLI 的输出。 |
+| `clean` | 清理工作区各项目的 bin/obj 和 artifacts 下的 native/managed/support-packs/builds，保留正在执行 CLI 的输出。 |
 | `bindings` | 通过各组件 BGCS 配置生成绑定。 |
 | `support-pack` | 通过与 Editor 相同的发布器准备、校验并以带回滚的事务安装目标 Pack。 |
 | `game` | 先准备目标 Support Pack，再冻结脚本与内容并通过注册平台输出游戏。 |
@@ -26,8 +26,12 @@ dotnet run --project build/cli/Inno.Build.Cli -- verify .
 | `shader` | 调用统一 Shader 图编译库。 |
 | `verify` / `verify-native` | 架构检查及 Native 完整性验收。 |
 
+`verify-native` 将本次完整 solution 构建的 CLI 输出写入独立的 `artifacts/build-tools/verification/<runId>`，保持正在运行的验证入口可用。它不覆盖自身 DLL，也不跳过 CLI 编译；这避免 Windows 文件锁导致验证器不能构建完整 solution。
+
+solution 的默认 Debug/Release 构建覆盖宿主源码与测试；Browser 项目保留在 solution 中用于编辑，由 `support-pack` / `game` 的目标请求构建和实际发布。直接编译 Browser 而未提供 native 绑定选择及指纹会明确失败。Web 解释执行和 AOT 的导出验收独立执行，不把宿主 solution 成功当作 Web 成功。
+
 `--engine-root`、`--dotnet`、`--configuration`、`--output` 用于引擎流程；`verify-native` 也接受显式 `--engine-root`。
-全部组件通过 `NativeBuildContext` 使用选中 checkout 的源码、overlay、中间产物和 `.lib`。
+全部组件通过 `NativeBuildContext` 使用选中 checkout 的源码、overlay、按指纹隔离的中间态与原生产物。
 显式根目录不会再触发对 CLI 程序集所在仓库的隐式解析；未指定时才发现默认 checkout。
 项目命令的详细参数由 `help` 输出和源码解析器定义。Ctrl+C 取消当前 Native/managed 子进程树，
 等待退出并排空输出，再以退出码 2 结束；不进入后续阶段或发布未完成的 staging。
@@ -46,3 +50,9 @@ Web 源码构建需要同一 .NET 9 SDK 的 wasm-tools，以及 PATH 上可用�
 
 `import-sample` 驱动同一个 AssetSampleImportTransaction：owner 捕获与发布、后台准备与 preflight，完整保留 `~` 目录名。CLI 入口轮询已完成 phase；成功或异常退出前使用 Core RetirementBarrier 等待 Rollback/Dispose，包括取消后的私有目录清理。不保留旧的同步 AssetPipeline.ImportSample 接口。
 CLI 的 Ctrl+C token 在准备、preflight 等待和最终发布前检查；取消后先排空事务，再返回取消退出码。
+
+
+项目命令先由 `BuildComposition` 准备 CLI 自己的宿主 Native 和离线工具，再创建 authoring workspace。
+CLI 的原生配置与其实际编译配置一致；游戏目标与 managed deployment 独立选择。
+`engine` 将返回的确切 product 部署到 Editor 输出。默认 Support Pack 根为 `artifacts/support-packs`。
+运行时加载器只读取部署树，项目命令不依赖隐式的 Native 复制或仓库 fallback。

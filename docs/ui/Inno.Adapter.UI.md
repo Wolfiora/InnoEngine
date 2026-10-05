@@ -14,3 +14,7 @@
 | `IUiBackendFactory.CreateBackend` | Composition 在创建 Session 时取得独占 backend。 |
 
 扩展实现只需符合 [IUiService](Inno.UI.md) 下方的后端中立帧与事件协议。它不可将 native context、RmlUi 元素或 GPU handle 写入资产或 Scene。Host 在 Session 停止时关闭 backend；后端创建失败应阻止 Session 启动，而非回退到空 UI。
+
+## 注册身份
+
+`UiBackendProvider` 的 protected 构造函数接收对应领域的 backend ID，并公开只读 `id`。ID 由 composition 分配，不能 override 或从临时创建的设备推导；构造拒绝未赋值 ID。此 provider 是显式 composition 注册，不进行类型发现。

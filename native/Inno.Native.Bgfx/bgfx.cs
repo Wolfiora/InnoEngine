@@ -19,8 +19,7 @@ public static partial class bgfx
     
     static bgfx()
     {
-        NativeDllLoader.EnsureNativeDll(LibName);
-        NativeDllLoader.LoadNativeDll(LibName);
+        NativeDllLoader.LoadNativeDll(LibName, typeof(bgfx).Assembly);
     }
 #endif
 }

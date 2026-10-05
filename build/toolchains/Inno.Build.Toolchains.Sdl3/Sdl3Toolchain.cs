@@ -32,34 +32,30 @@ public static class Sdl3Toolchain
     /// Cancels child processes and prevents artifact installation after cancellation.
     /// </param>
     /// <returns>
-    /// Completion after the component has been built and installed in the selected checkout.
+    /// The validated product containing the exact runtime and link inputs for this operation.
     /// </returns>
     /// <exception cref="OperationCanceledException">
     /// The operation was canceled.
     /// </exception>
-    public static async Task BuildAsync(
+    public static async Task<NativeBuildProduct> BuildAsync(
         NativeBuildContext context,
         CancellationToken cancellationToken = default
     ) {
         ArgumentNullException.ThrowIfNull(context);
-        cancellationToken.ThrowIfCancellationRequested();
-        string configuration = context.configuration;
+        context = await HostNativeToolchain.ResolveAsync(context, cancellationToken).ConfigureAwait(false);
         var builder = Sdl3BuilderFactory.CreateForCurrentPlatform();
-        var repoRoot = context.engineRoot;
-        var externDir = Path.Combine(repoRoot, ToolchainLayout.C_EXTERNAL_DIRECTORY_NAME);
-        var sdlDir = Path.Combine(externDir, Sdl3BuildConstants.SDL_DIR_NAME);
-        var outputDir = Path.Combine(repoRoot, ToolchainLayout.C_OUTPUT_DIRECTORY_NAME, Sdl3BuildConstants.OUTPUT_PRODUCT_DIR_NAME, builder.OutputPlatform);
-
-        Directory.CreateDirectory(externDir);
-        Directory.CreateDirectory(outputDir);
-
+        string sdlDir = Path.Combine(context.engineRoot, "extern", "SDL");
         Sdl3BuildUtils.ValidateSource(sdlDir);
-
-        await builder.BuildAsync(sdlDir, context, cancellationToken);
-        cancellationToken.ThrowIfCancellationRequested();
-        CopyArtifacts(outputDir, builder.OutputPlatform, context);
-
-        Console.WriteLine($"SDL3 build complete. Output: {outputDir}");
+        return await NativeArtifactPublisher.PublishAsync(context, typeof(Sdl3Toolchain).Assembly,
+            "sdl3", builder.OutputPlatform, [sdlDir], [], async (
+                scoped,
+                output,
+                token
+            ) => {
+                await builder.BuildAsync(sdlDir, scoped, token).ConfigureAwait(false);
+                token.ThrowIfCancellationRequested();
+                CopyArtifacts(output, builder.OutputPlatform, scoped);
+            }, cancellationToken).ConfigureAwait(false);
     }
 
     private static void CopyArtifacts(

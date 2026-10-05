@@ -1,4 +1,9 @@
+using Inno.Extensibility.Modules;
+using Inno.Adapter.Modules.DotNet;
+using Inno.Adapter.Serialization.DotNet;
 using System;
+using Inno.Build.Managed;
+using Inno.Build.Managed.DotNet;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -101,7 +106,7 @@ internal sealed class BuildWorkspace : IDisposable
             throw new InvalidOperationException("Project script compilation failed:" + Environment.NewLine
                 + string.Join(Environment.NewLine,
                     result.diagnostics.Select(static diagnostic => diagnostic.message)));
-        string[] assemblies = result.activationRequests
+        string[] assemblies = result.moduleDeployments
             .Where(static request => request.domain == Inno.Extensibility.Modules.AssemblyDomain.InnoScripting)
             .SelectMany(static request => new[] { request.mainAssemblyPath }
                 .Concat(request.preloadAssemblyPaths))
@@ -164,6 +169,8 @@ internal sealed class BuildWorkspace : IDisposable
         try
         {
             engine = new EngineHostBuilder()
+                .UseMetadataSources(new DotNetAssemblyCatalogSource(typeof(BuildWorkspace).Assembly),
+                    new ReflectionTypeCatalogSource(), new ReflectionSerializationMetadataSource())
                 .UseMetadataCache(Path.Combine(libraryRoot, "Build", "Metadata"))
                 .Build();
             var sources = new PluginSourceService(engine.serialization, pluginsRoot, libraryRoot);
@@ -220,21 +227,7 @@ internal sealed class BuildWorkspace : IDisposable
             engine.generations.Wait();
             assets.CompleteExtensionDiscovery();
             assets.Rescan();
-            var pipeline = new BuildPipeline(
-                assets,
-                plugins,
-                settings,
-                engine.serialization,
-                engine.generations,
-                compiler,
-                supportPackRoot,
-                [
-                    new MacOSArm64GameBuildTarget(assets, engine.serialization, engine.types),
-                    new WindowsX64GameBuildTarget(assets, engine.serialization, engine.types),
-                    new BrowserWasmGameBuildTarget(assets, engine.serialization, engine.types)
-                ],
-                SourcePlayerSupportPackProvisioner.TryCreateForHost(
-                AppContext.BaseDirectory, BuiltInPlayerSupportPacks.CreatePublisher()));
+            BuildPipeline pipeline = BuildComposition.CreatePipeline(engine, assets, plugins, settings, compiler, supportPackRoot);
             return new BuildWorkspace(engine, settings, assets, plugins, compiler, projectRoot, pipeline);
         }
         catch
@@ -247,6 +240,19 @@ internal sealed class BuildWorkspace : IDisposable
         }
     }
 
+    private static IModuleSource CreateScriptModuleSource(ScriptModuleDeployment deployment)
+        => new DotNetModuleSource
+        {
+            moduleName = deployment.moduleName,
+            mainAssemblyPath = deployment.mainAssemblyPath,
+            domain = deployment.domain,
+            scope = deployment.scope,
+            preloadAssemblyPaths = deployment.preloadAssemblyPaths,
+            upstreamModuleNames = deployment.upstreamModuleNames,
+            assemblyScopes = deployment.assemblyScopes,
+            collectible = true
+        };
+
     private static void ActivateAuthoring(
         EngineHost engine,
         PluginEnvironment plugins,
@@ -258,7 +264,8 @@ internal sealed class BuildWorkspace : IDisposable
         if (!result.success)
             throw new InvalidOperationException("Build authoring compilation failed:" + Environment.NewLine
                 + string.Join(Environment.NewLine, result.diagnostics.Select(static diagnostic => diagnostic.message)));
-        using Inno.Extensibility.Modules.AssemblyReloadSession reload = engine.modules.BeginReload(result.activationRequests);
+        using Inno.Extensibility.Modules.AssemblyReloadSession reload = engine.modules.BeginReload(
+            result.moduleDeployments.Select(CreateScriptModuleSource).ToArray());
         _ = engine.generations.Execute("Build authoring generation", reload, [plugins.CreateReloadChange()]);
     }
 

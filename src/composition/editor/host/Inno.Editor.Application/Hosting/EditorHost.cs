@@ -1,6 +1,12 @@
+using Inno.Adapter.Serialization.DotNet;
+using Inno.Adapter.Modules.DotNet;
+using Inno.Extensibility.Modules;
+using Inno.Scripting.Compiler;
 using Inno.Engine.Default;
 using Inno.Runtime.Contracts;
 using System;
+using Inno.Build.Managed;
+using Inno.Build.Managed.DotNet;
 using Inno.Core.Diagnostics;
 using System.Collections.Generic;
 using System.IO;
@@ -46,12 +52,23 @@ namespace Inno.Editor.Application;
 /// </summary>
 internal sealed class EditorHost : ShellHost
 {
+    private static ManagedDeploymentCatalog CreateManagedDeployments()
+    {
+        string host = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH") ?? "dotnet";
+        return new ManagedDeploymentCatalog([
+            new CoreClrDeploymentCompiler(host),
+            new MonoWasmDeploymentCompiler(host, aheadOfTime: false),
+            new MonoWasmDeploymentCompiler(host, aheadOfTime: true),
+            new NativeAotDeploymentCompiler(host)
+        ]);
+    }
+
     private const string C_LOG_DIRECTORY_NAME = "Logs";
     private const string C_BOOT_LOG_FILE_NAME = "EditorBoot.log";
 
     private readonly IAuthoringAdapterCatalog m_authoringAdapters;
     private readonly HashSet<uint> m_focusedWindowIds = [];
-    private readonly PresentationBackend m_presentationBackend;
+    private readonly PresentationBackendId m_presentationBackend;
     private readonly EditorHostResourceStack m_resources;
     private readonly string m_bootLogPath;
     private RuntimeSession? m_editSession;
@@ -68,7 +85,7 @@ internal sealed class EditorHost : ShellHost
     private EditorHost(
         IAuthoringAdapterCatalog adapterCatalog,
         AdapterSelection adapterSelection,
-        PresentationBackend presentationBackend,
+        PresentationBackendId presentationBackend,
         string projectDirectory,
         string bootLogPath,
         GraphicsApi? preferredGraphicsApi
@@ -107,7 +124,7 @@ internal sealed class EditorHost : ShellHost
     internal static EditorHost Create(
         IAuthoringAdapterCatalog adapterCatalog,
         AdapterSelection adapterSelection,
-        PresentationBackend presentationBackend,
+        PresentationBackendId presentationBackend,
         string projectDirectory,
         GraphicsApi? preferredGraphicsApi = null
     ) {
@@ -310,6 +327,8 @@ internal sealed class EditorHost : ShellHost
 
         EngineHost engineHost = m_resources.Acquire(
             () => new EngineHostBuilder()
+                .UseMetadataSources(new DotNetAssemblyCatalogSource(typeof(EditorHost).Assembly),
+                    new ReflectionTypeCatalogSource(), new ReflectionSerializationMetadataSource())
                 .UseMetadataCache(Path.Combine(projectDirectory, "Library", "Assemblies"))
                 .Build(),
             static host => host.Dispose());
@@ -376,6 +395,7 @@ internal sealed class EditorHost : ShellHost
                 new WindowsX64GameBuildTarget(activeAuthoring.assets, engineHost.serialization, engineHost.types),
                 new BrowserWasmGameBuildTarget(activeAuthoring.assets, engineHost.serialization, engineHost.types)
             ],
+            CreateManagedDeployments(),
             SourcePlayerSupportPackProvisioner.TryCreateForHost(
                 AppContext.BaseDirectory, BuiltInPlayerSupportPacks.CreatePublisher()));
         BuildSettings defaultBuildSettings = BuildSettings.CreateDefault(
@@ -503,6 +523,7 @@ internal sealed class EditorHost : ShellHost
                 activeAuthoring.plugins,
                 activeAuthoring.settings,
                 activeAuthoring.compiler,
+                new Func<ScriptModuleDeployment, IModuleSource>(CreateScriptModuleSource),
                 buildPipeline,
                 buildSettings,
                 engineHost.types,
@@ -535,6 +556,19 @@ internal sealed class EditorHost : ShellHost
             $"AssetPipeline initialized={activeAuthoring.assets.isInitialized} "
             + $"root='{activeAuthoring.assets.assetRoot}'.");
     }
+
+    private static IModuleSource CreateScriptModuleSource(ScriptModuleDeployment deployment)
+        => new DotNetModuleSource
+        {
+            moduleName = deployment.moduleName,
+            mainAssemblyPath = deployment.mainAssemblyPath,
+            domain = deployment.domain,
+            scope = deployment.scope,
+            preloadAssemblyPaths = deployment.preloadAssemblyPaths,
+            upstreamModuleNames = deployment.upstreamModuleNames,
+            assemblyScopes = deployment.assemblyScopes,
+            collectible = true
+        };
 
     private IReadOnlyList<IRuntimeSubsystemFactory> CreateStandardRuntimeSubsystems(
         IEditorAudioHost activeAudio,

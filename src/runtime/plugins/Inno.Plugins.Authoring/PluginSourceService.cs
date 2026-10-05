@@ -179,6 +179,7 @@ public sealed class PluginSourceService
         string contentRoot = Path.Combine(destinationRoot, "Assets");
         if (!Directory.Exists(contentRoot))
             ExtractAtomically(archive, entries, destinationRoot);
+        ValidateMaterializedSnapshot(entries, destinationRoot);
 
         bool containsCode = ContainsCode(entries.Select(static entry => entry.path));
         var candidates = new List<PluginCandidate>
@@ -508,12 +509,51 @@ public sealed class PluginSourceService
 
             Directory.CreateDirectory(Path.GetDirectoryName(destinationRoot)!);
             if (!Directory.Exists(destinationRoot))
-                Directory.Move(stagingRoot, destinationRoot);
+            {
+                try
+                {
+                    AtomicDirectory.Publish(stagingRoot, destinationRoot);
+                }
+                catch (IOException) when (Directory.Exists(destinationRoot))
+                {
+                    // A concurrent publisher may have committed the same immutable snapshot.
+                    // Accept it only after checking its exact files and bytes against this archive.
+                    ValidateMaterializedSnapshot(entries, destinationRoot);
+                }
+            }
         }
         finally
         {
             if (Directory.Exists(stagingRoot))
                 Directory.Delete(stagingRoot, recursive: true);
+        }
+    }
+
+    private static void ValidateMaterializedSnapshot(
+        IReadOnlyList<ValidatedPackageEntry> entries,
+        string destinationRoot
+    ) {
+        ValidatedPackageEntry[] files = entries.Where(static item => !item.path.EndsWith("/", StringComparison.Ordinal))
+            .OrderBy(static item => item.path, StringComparer.Ordinal).ToArray();
+        string[] actual = PathBoundary.EnumerateFiles(destinationRoot)
+            .Select(path => Path.GetRelativePath(destinationRoot, path).Replace('\\', '/'))
+            .Order(StringComparer.Ordinal).ToArray();
+        if (!actual.SequenceEqual(files.Select(static item => item.path), StringComparer.Ordinal))
+            throw new InvalidDataException($"Plugin cache snapshot '{destinationRoot}' has an incomplete or unexpected file set.");
+        foreach (ValidatedPackageEntry item in entries.Where(static item => item.path.EndsWith("/", StringComparison.Ordinal)))
+        {
+            if (!Directory.Exists(ResolveContainedPath(destinationRoot, item.path.TrimEnd('/'))))
+                throw new InvalidDataException($"Plugin cache snapshot '{destinationRoot}' is missing directory '{item.path}'.");
+        }
+        foreach (ValidatedPackageEntry item in files)
+        {
+            string physical = ResolveContainedPath(destinationRoot, item.path);
+            if (new FileInfo(physical).Length != item.entry.Length)
+                throw new InvalidDataException($"Plugin cache snapshot '{destinationRoot}' has an invalid length for '{item.path}'.");
+            using Stream expected = item.entry.Open();
+            using FileStream materialized = new(physical, FileMode.Open, FileAccess.Read, FileShare.Read | FileShare.Delete);
+            if (!SHA256.HashData(materialized).AsSpan().SequenceEqual(SHA256.HashData(expected)))
+                throw new InvalidDataException($"Plugin cache snapshot '{destinationRoot}' has invalid bytes for '{item.path}'.");
         }
     }
 

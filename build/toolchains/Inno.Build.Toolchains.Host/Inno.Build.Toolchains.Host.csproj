@@ -4,16 +4,32 @@
     <ImplicitUsings>disable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
+
   <ItemGroup>
-    <ProjectReference Include="../Inno.Build.Toolchains.Bgfx/Inno.Build.Toolchains.Bgfx.csproj" PrivateAssets="compile" />
-    <ProjectReference Include="../Inno.Build.Toolchains.Sdl3/Inno.Build.Toolchains.Sdl3.csproj" PrivateAssets="compile" />
-    <ProjectReference Include="../Inno.Build.Toolchains.MiniAudio/Inno.Build.Toolchains.MiniAudio.csproj" PrivateAssets="compile" />
-    <ProjectReference Include="../Inno.Build.Toolchains.Text/Inno.Build.Toolchains.Text.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../../src/foundation/core/Inno.Core.IO/Inno.Core.IO.csproj" PrivateAssets="compile" />
+    <ProjectReference
+      Include="../Inno.Build.Toolchains.Bgfx/Inno.Build.Toolchains.Bgfx.csproj"
+      PrivateAssets="compile" />
+    <ProjectReference
+      Include="../Inno.Build.Toolchains.Sdl3/Inno.Build.Toolchains.Sdl3.csproj"
+      PrivateAssets="compile" />
+    <ProjectReference
+      Include="../Inno.Build.Toolchains.MiniAudio/Inno.Build.Toolchains.MiniAudio.csproj"
+      PrivateAssets="compile" />
+    <ProjectReference
+      Include="../Inno.Build.Toolchains.Text/Inno.Build.Toolchains.Text.csproj"
+      PrivateAssets="compile" />
     <ProjectReference Include="../Inno.Build.Toolchains.UI/Inno.Build.Toolchains.UI.csproj" PrivateAssets="compile" />
-    <ProjectReference Include="../Inno.Build.Toolchains.ImGui/Inno.Build.Toolchains.ImGui.csproj" PrivateAssets="compile" />
-    <ProjectReference Include="../Inno.Build.Toolchains.ImGuizmo/Inno.Build.Toolchains.ImGuizmo.csproj" PrivateAssets="compile" />
+    <ProjectReference
+      Include="../Inno.Build.Toolchains.ImGui/Inno.Build.Toolchains.ImGui.csproj"
+      PrivateAssets="compile" />
+    <ProjectReference
+      Include="../Inno.Build.Toolchains.ImGuizmo/Inno.Build.Toolchains.ImGuizmo.csproj"
+      PrivateAssets="compile" />
   </ItemGroup>
+
   <ItemGroup>
     <ProjectReference Include="../Inno.Build.Toolchains/Inno.Build.Toolchains.csproj" />
+    <ProjectReference Include="../../../src/foundation/extensibility/Inno.Extensibility.Catalogs/Inno.Extensibility.Catalogs.csproj" />
   </ItemGroup>
 </Project>

@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using Inno.Native.Bgfx;
 using Inno.Rendering;
 using Inno.Rendering.Assets;
 

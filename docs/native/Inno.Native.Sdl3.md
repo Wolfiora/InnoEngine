@@ -8,4 +8,8 @@
 
 ## 静态目标
 
-同一项目通过 bindgen.browser-wasm.json 生成 wasm32 的静态符号绑定，继承 common.json 的声明；目标编译使用 INNO_STATIC_NATIVE，不初始化动态 loader。Host profile 仍使用原动态库命名与显式初始化。生成输出分别属于宿主 Generated/Bindings.cs 和目标 obj/browser-wasm/Generated/Bindings.cs，没有 Native Browser 副本。
+同一项目通过 `Bindings/bindgen.browser-wasm.json` 生成 wasm32 的静态符号绑定，继承 `common.json` 的声明；目标编译使用 `INNO_STATIC_NATIVE`，不初始化动态 loader。Host profile 使用动态库命名与显式初始化。宿主生成输出位于 `Generated/Bindings.cs`，目标输出位于 `obj/browser-wasm/<generationFingerprint>/Generated/Bindings.cs`。
+
+## 声明与实际导出
+
+共同定义排除 SDL 头文件中声明的编译器内建函数 `__debugbreak`。它属于 MSVC 的断言实现，不是 SDL DLL 的导出。该规则属于 SDL 的绑定定义，BGCS 不包含 SDL 专用识别逻辑。动态函数表初始化要求全部已选择符号存在；Native 测试通过实际初始化和调用检查部署闭包。

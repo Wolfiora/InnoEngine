@@ -19,7 +19,7 @@
 | [UI](ui/README.md) | RML 文档、交互、后端中立帧与 RmlUi adapter |
 | [Plugins](plugins/README.md) | Plugin manifest、安装源、只读 mount 与候选激活 |
 | [Scene](scene/README.md) | SceneWorld、GameBehavior、GameSystem、Scene/Prefab asset integration |
-| [Rendering](render/README.md) | 后端中立 Rendering、目标资产、BGFX 与实施中的统一 Shader 创作层 |
+| [Rendering](rendering/README.md) | 后端中立 Rendering、目标资产、BGFX 与实施中的统一 Shader 创作层 |
 | [Platform](platform/README.md) | 中立窗口契约与 SDL3 adapter |
 | [Runtime](runtime/README.md) | Subsystem Contracts、声明生成器、默认装配、EngineHost、RuntimeSession 与 Player |
 | [Editor](editor/README.md) | Editor feature、Panel、Play Mode、Diagnostics 与 Export UI |
@@ -52,7 +52,9 @@ Core 不引用业务领域；Build 库不引用 Editor，Build CLI 作为 compos
 [Identity、可恢复引用与热重载强制标准](architecture/IDENTITY_REFERENCE_RELOAD_STANDARD.md)为准。
 本轮代码、公开边界和逐项验证见[统一收口实施记录](architecture/ENGINE_CONSOLIDATION_IMPLEMENTATION.md)；
 新增 Core.Execution、Runtime.Contracts、Runtime.Generators 和 Engine.Default 均有独立项目页。
-最新本轮结果见[2026-09-08 实现交付与集中验收](architecture/ENGINE_CLOSURE_IMPLEMENTATION_2026_09_08.md)；
+当前完整重构的执行状态见[平台与运行时验收](architecture/PLATFORM_RUNTIME_ACCEPTANCE.md)；
+新增 [Inno.Extensibility.Catalogs](extensibility/Inno.Extensibility.Catalogs.md) 叶契约项目已纳入源码、Solution 与 Extensibility 索引。
+历史结果见[2026-09-08 实现交付与集中验收](architecture/ENGINE_CLOSURE_IMPLEMENTATION_2026_09_08.md)；
 新增 [Architecture CLI 测试项目](tooling/Inno.Tooling.Architecture.Tests.md)已纳入 `tests/tooling`、Solution 和项目文档。
 
 ## 当前格式与状态
@@ -60,7 +62,7 @@ Core 不引用业务领域；Build 库不引用 Editor，Build CLI 作为 compos
 新增 [Text](text/README.md) 与 [UI](ui/README.md) 内建 Service 分类，分别覆盖契约、资产导入、Session Runtime、adapter、原生桥与测试项目页；Inno.Canvas 是独立 Project Plugin，提供 Scene 组件、完整默认 Shader/Material/Pipeline 与 Editor 模板。macOS ARM64 的七套 BGCS 绑定、八个原生依赖/工具构建及相关 Release 验收通过；Linux/Windows Text/UI 目标仍需分别生成绑定并验收，不视为已完成跨平台发行。
 
 新增 [Inno.Editor.Annotations](editor/Inno.Editor.Annotations.md) 已包含独立项目页与 Editor 索引；展示标注不再归属 Core.Serialization。
-新增 [Inno.Rendering.Shaders](render/Inno.Rendering.Shaders.md) 已包含独立项目页与 Rendering 索引；
+新增 [Inno.Rendering.Shaders](rendering/Inno.Rendering.Shaders.md) 已包含独立项目页与 Rendering 索引；
 当前实现源码接口、多实现快照、节点降低与 typed stage/资源/分支/循环，完整 Shader 图替换的未完成项单独记录，不以单元测试或原生编译通过代替产品验收。
 新增 [Shader Editor](editor/Inno.Editor.Panel.ShaderEditor.md) 与
 独立的 [Editor Shader 功能层](editor/Inno.Editor.Shaders.md)，以及
@@ -77,3 +79,8 @@ Core 不引用业务领域；Build 库不引用 Editor，Build CLI 作为 compos
 
 [宿主 Native 构建组合](build/Inno.Build.Toolchains.Host.md) 已加入 Build 分类：所有组件接受显式 checkout/configuration，
 桌面 Support Pack 主动准备 Release 输入，并统一使用可取消的隐藏子进程生命周期。
+
+本轮新增 [DotNet 模块来源](platform/Inno.Adapter.Modules.DotNet.md)、[DotNet 序列化来源](platform/Inno.Adapter.Serialization.DotNet.md)、[Managed 部署契约](build/Inno.Build.Managed.md) 与 [DotNet publishers](build/Inno.Build.Managed.DotNet.md)，均有独立项目页；执行与验收继续在 [平台重构计划](architecture/PLATFORM_RUNTIME_REFACTOR_PLAN.md) 记录。
+
+[RML 创作前端](ui/Inno.Adapter.UI.RmlUi.Authoring.md) 与组件内的
+[ImGui binding extension](native/Inno.Native.ImGui.BindingExtension.md) 已补齐独立项目页及分类索引。

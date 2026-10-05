@@ -1,3 +1,5 @@
+using Inno.Adapter.Serialization.DotNet;
+using Inno.Adapter.Modules.DotNet;
 using Inno.Runtime.Contracts;
 using System;
 using System.IO;
@@ -23,6 +25,8 @@ public sealed class RuntimeSessionTests : IDisposable
     public void InlineHostDeliveryPersistsSessionLogsBeforeTheProducerReturns()
     {
         using EngineHost host = new EngineHostBuilder()
+                .UseMetadataSources(new DotNetAssemblyCatalogSource(typeof(RuntimeSessionTests).Assembly),
+                    new ReflectionTypeCatalogSource(), new ReflectionSerializationMetadataSource())
             .UseMetadataCache(Path.Combine(m_root, "Inline", "Metadata"))
             .UseLogDelivery(LogDeliveryMode.Inline)
             .Build();
@@ -193,6 +197,8 @@ public sealed class RuntimeSessionTests : IDisposable
 
     private EngineHost CreateHost(string name)
         => new EngineHostBuilder()
+                .UseMetadataSources(new DotNetAssemblyCatalogSource(typeof(RuntimeSessionTests).Assembly),
+                    new ReflectionTypeCatalogSource(), new ReflectionSerializationMetadataSource())
             .UseMetadataCache(Path.Combine(m_root, name, "Metadata"))
             .Build();
 

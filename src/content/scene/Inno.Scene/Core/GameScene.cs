@@ -456,7 +456,7 @@ public sealed class GameScene : EngineObject, ISerializable
         }
 
         bool allowsMultiple = descriptor.allowsMultiple;
-        GameComponent component = ComponentFactory.Create(componentType);
+        GameComponent component = ComponentFactory.Create(componentType, m_types.snapshot);
         if (component is GameBehavior createdBehavior)
             createdBehavior.lifecyclePhases = descriptor.behaviorPhases;
         component.Attach(owner);

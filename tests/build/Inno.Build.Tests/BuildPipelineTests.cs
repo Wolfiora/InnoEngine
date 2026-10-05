@@ -1,4 +1,7 @@
+using Inno.Adapter.Serialization.DotNet;
+using Inno.Adapter.Modules.DotNet;
 using System;
+using Inno.Build.Managed;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
@@ -60,6 +63,8 @@ public sealed class BuildPipelineTests : IDisposable
         CreateSupportPack(BuildTargetId.windowsX64, "Inno.Player.exe");
 
         m_engine = new EngineHostBuilder()
+                .UseMetadataSources(new DotNetAssemblyCatalogSource(typeof(BuildPipelineTests).Assembly),
+                    new ReflectionTypeCatalogSource(), new ReflectionSerializationMetadataSource())
             .UseMetadataCache(Path.Combine(libraryRoot, "Build", "Metadata"))
             .Build();
         m_sceneWorld = new SceneWorld(m_identities, m_engine.types);
@@ -221,7 +226,7 @@ public sealed class BuildPipelineTests : IDisposable
         Assert.Equal("Scenes/Startup.iscene", manifest.startupScene);
         GameRuntimeModule runtimeModule = Assert.Single(manifest.modules);
         Assert.Equal("RuntimeScripts", runtimeModule.name);
-        Assert.Equal("Inno.GameScripts.dll", runtimeModule.mainAssembly);
+        Assert.Equal("Inno.GameScripts", Assert.Single(runtimeModule.assemblies).name);
         Assert.Equal(Inno.Extensibility.Modules.AssemblyDomain.InnoScripting, runtimeModule.domain);
 
         string persistentRoot = Path.Combine(m_root, "Persistent", manifest.applicationId);
@@ -270,7 +275,7 @@ public sealed class BuildPipelineTests : IDisposable
         }, TimeSpan.FromSeconds(5)));
         Assert.True(canceledLoad.IsCanceled);
         Assert.True(File.Exists(Path.Combine(materialized, "AssetDatabase", "Catalog.snapshot")));
-        Assert.True(File.Exists(Path.Combine(materialized, "Managed", "Inno.GameScripts.dll")));
+        Assert.False(Directory.Exists(Path.Combine(materialized, "Managed")));
         Assert.StartsWith(Path.GetFullPath(persistentRoot), materialized, StringComparison.Ordinal);
         Assert.DoesNotContain(
             Directory.EnumerateFiles(materialized, "*", SearchOption.AllDirectories),
@@ -349,7 +354,8 @@ public sealed class BuildPipelineTests : IDisposable
             m_engine.generations,
             m_compiler,
             m_supportPackRoot,
-            [target]);
+            [target],
+            CreateManagedDeployments());
         string outputRoot = Path.Combine(m_root, "Builds", "MixedGeneration");
 
         Task<BuildResult> build = pipeline.BuildGameAsync(new GameBuildRequest
@@ -508,7 +514,7 @@ public sealed class BuildPipelineTests : IDisposable
     [Fact]
     public void SupportPackRejectsAuthoringAssetPipelineAssemblies()
     {
-        string supportPack = Path.Combine(m_supportPackRoot, BuildTargetId.macOSArm64.value);
+        string supportPack = GetSupportPackDirectory(BuildTargetId.macOSArm64);
         File.WriteAllBytes(Path.Combine(supportPack, "Inno.Assets.Pipeline.dll"), [0x49, 0x4E, 0x4E, 0x4F]);
         var catalog = new PlayerSupportPackCatalog(m_supportPackRoot);
 
@@ -645,7 +651,7 @@ public sealed class BuildPipelineTests : IDisposable
     public async Task InvalidInstalledSupportPackDoesNotTriggerProvisioning()
     {
         SaveStartupScene();
-        File.Delete(Path.Combine(m_supportPackRoot, BuildTargetId.macOSArm64.value,
+        File.Delete(Path.Combine(GetSupportPackDirectory(BuildTargetId.macOSArm64),
             "native", "libminiaudio-release.dylib"));
         var provisioner = new TestSupportPackProvisioner(target =>
             CreateSupportPack(target, "Inno.Player"));
@@ -663,7 +669,7 @@ public sealed class BuildPipelineTests : IDisposable
     [Fact]
     public void SupportPackRejectsMissingMiniAudioRuntime()
     {
-        string supportPack = Path.Combine(m_supportPackRoot, BuildTargetId.macOSArm64.value);
+        string supportPack = GetSupportPackDirectory(BuildTargetId.macOSArm64);
         File.Delete(Path.Combine(supportPack, "native", "libminiaudio-release.dylib"));
         var catalog = new PlayerSupportPackCatalog(m_supportPackRoot);
 
@@ -676,7 +682,7 @@ public sealed class BuildPipelineTests : IDisposable
     [Fact]
     public void SupportPackRejectsForeignNativeRuntime()
     {
-        string supportPack = Path.Combine(m_supportPackRoot, BuildTargetId.macOSArm64.value);
+        string supportPack = GetSupportPackDirectory(BuildTargetId.macOSArm64);
         File.WriteAllBytes(Path.Combine(supportPack, "native", "SDL3-release.so"), [0x49, 0x4E, 0x4E, 0x4F]);
         var catalog = new PlayerSupportPackCatalog(m_supportPackRoot);
 
@@ -691,7 +697,7 @@ public sealed class BuildPipelineTests : IDisposable
     [InlineData("libinno-ui-release.dylib")]
     public void SupportPackRejectsMissingTextOrUiRuntime(string nativeRuntime)
     {
-        string supportPack = Path.Combine(m_supportPackRoot, BuildTargetId.macOSArm64.value);
+        string supportPack = GetSupportPackDirectory(BuildTargetId.macOSArm64);
         File.Delete(Path.Combine(supportPack, "native", nativeRuntime));
         var catalog = new PlayerSupportPackCatalog(m_supportPackRoot);
 
@@ -796,7 +802,7 @@ public sealed class BuildPipelineTests : IDisposable
 
     private void CreateSupportPack(BuildTargetId target, string executable)
     {
-        string directory = Path.Combine(m_supportPackRoot, target.value);
+        string directory = Path.Combine(m_root, "pack-candidate-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(directory);
         string references = Path.Combine(directory, "References");
         Directory.CreateDirectory(references);
@@ -807,6 +813,22 @@ public sealed class BuildPipelineTests : IDisposable
             File.Copy(assembly, Path.Combine(references, Path.GetFileName(assembly)));
         }
         File.WriteAllBytes(Path.Combine(directory, executable), [0x49, 0x4E, 0x4E, 0x4F]);
+        string link = Path.Combine(directory, "PlayerLink");
+        Directory.CreateDirectory(link);
+        File.WriteAllText(Path.Combine(link, "Player.csproj"), "<Project><PropertyGroup><AssemblyName>Inno.Player</AssemblyName></PropertyGroup></Project>");
+        foreach (string source in new[] { "Program.cs", "DesktopPlayerComposition.cs", "global.json" })
+            File.WriteAllText(Path.Combine(link, source), "fixture input");
+        string analyzers = Path.Combine(link, "Analyzers");
+        Directory.CreateDirectory(analyzers);
+        File.WriteAllText(Path.Combine(analyzers, "Inno.Runtime.Generators.dll"), "fixture analyzer");
+        File.WriteAllText(Path.Combine(analyzers, "Inno.Core.Serialization.Generators.dll"), "fixture analyzer");
+        string linkReferences = Path.Combine(link, "References");
+        Directory.CreateDirectory(linkReferences);
+        foreach (string source in Directory.EnumerateFiles(references, "*.dll"))
+            File.Copy(source, Path.Combine(linkReferences, Path.GetFileName(source)));
+        File.WriteAllText(Path.Combine(linkReferences, "Inno.Player.Runtime.dll"), "fixture runtime");
+        File.WriteAllText(Path.Combine(linkReferences, "BGCS.Runtime.dll"), "fixture interop");
+        File.WriteAllBytes(Path.Combine(link, executable), [0x49, 0x4E, 0x4E, 0x4F]);
         string native = Path.Combine(directory, "native");
         Directory.CreateDirectory(native);
         string[] required = target == BuildTargetId.macOSArm64
@@ -814,8 +836,24 @@ public sealed class BuildPipelineTests : IDisposable
                 "libinno-text-release.dylib", "libinno-ui-release.dylib"]
             : ["bgfx-shared-lib-release.dll", "SDL3-release.dll", "miniaudio-release.dll",
                 "inno-text-release.dll", "inno-ui-release.dll"];
+        string linkNative = Path.Combine(link, "native");
+        Directory.CreateDirectory(linkNative);
         foreach (string file in required)
+        {
             File.WriteAllBytes(Path.Combine(native, file), [0x49, 0x4E, 0x4E, 0x4F]);
+            File.WriteAllBytes(Path.Combine(linkNative, file), [0x49, 0x4E, 0x4E, 0x4F]);
+        }
+        IPlayerSupportPackValidator validator = target == BuildTargetId.macOSArm64
+            ? new Inno.Build.Platform.MacOS.MacOSSupportPackValidator()
+            : new Inno.Build.Platform.Windows.WindowsSupportPackValidator();
+        _ = new PlayerSupportPackCatalog(m_supportPackRoot).PublishAsync(
+            target, directory, validator).AsTask().GetAwaiter().GetResult();
+    }
+
+    private string GetSupportPackDirectory(BuildTargetId target)
+    {
+        string targetRoot = Path.Combine(m_supportPackRoot, target.value);
+        return Path.Combine(targetRoot, File.ReadAllText(Path.Combine(targetRoot, "current")));
     }
 
     private BuildPipeline CreatePipeline(IPlayerSupportPackProvisioner? provisioner = null)
@@ -831,7 +869,41 @@ public sealed class BuildPipelineTests : IDisposable
                 new MacOSArm64GameBuildTarget(m_assets, m_engine.serialization, m_engine.types),
                 new WindowsX64GameBuildTarget(m_assets, m_engine.serialization, m_engine.types)
             ],
+            CreateManagedDeployments(),
             provisioner);
+
+    private static ManagedDeploymentCatalog CreateManagedDeployments()
+        => new([new FixtureManagedDeploymentCompiler()]);
+
+    private sealed class FixtureManagedDeploymentCompiler : IManagedDeploymentCompiler
+    {
+        public ManagedDeploymentId id => ManagedDeploymentId.coreClr;
+
+        public ManagedDeploymentCapabilities capabilities { get; } = new(
+            ["win-x64", "osx-arm64"], dynamicCode: true, aheadOfTime: false, nativeStaticLinking: false);
+
+        public ValueTask<ManagedDeploymentResult> CompileAsync(
+            ManagedDeploymentRequest request,
+            CancellationToken cancellationToken = default
+        ) {
+            cancellationToken.ThrowIfCancellationRequested();
+            string projectRoot = Path.GetDirectoryName(request.projectPath)!;
+            Assert.True(File.Exists(Path.Combine(projectRoot, "PlayerDeploymentDefinition.g.cs")));
+            Assert.NotEmpty(Directory.EnumerateFiles(request.codeInputDirectory, "*.dll"));
+            Directory.CreateDirectory(request.outputDirectory);
+            string executable = request.runtimeIdentifier == "win-x64" ? "Inno.Player.exe" : "Inno.Player";
+            File.Copy(Path.Combine(projectRoot, executable), Path.Combine(request.outputDirectory, executable));
+            foreach (string native in Directory.EnumerateFiles(Path.Combine(projectRoot, "native")))
+            {
+                string destination = Path.Combine(request.outputDirectory, "native", Path.GetFileName(native));
+                Directory.CreateDirectory(Path.GetDirectoryName(destination)!);
+                File.Copy(native, destination);
+            }
+            return ValueTask.FromResult(new ManagedDeploymentResult(id, request.outputDirectory, "fixture-sdk",
+                Directory.EnumerateFiles(request.outputDirectory, "*", SearchOption.AllDirectories)
+                    .Select(file => Path.GetRelativePath(request.outputDirectory, file)).ToArray()));
+        }
+    }
 
     private sealed class PendingSupportPackProvisioner : IPlayerSupportPackProvisioner
     {
@@ -899,6 +971,10 @@ public sealed class BuildPipelineTests : IDisposable
         public void Validate(string directory) => new Inno.Build.Platform.MacOS.MacOSSupportPackValidator().Validate(directory);
 
         public BuildTargetId id => BuildTargetId.macOSArm64;
+
+        public ManagedDeploymentId defaultManagedDeployment => ManagedDeploymentId.coreClr;
+
+        public string runtimeIdentifier => "osx-arm64";
 
         public string displayName => "Blocking test target";
 

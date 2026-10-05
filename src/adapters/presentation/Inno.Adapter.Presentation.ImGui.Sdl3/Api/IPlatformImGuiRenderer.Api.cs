@@ -1,3 +1,4 @@
+using Inno.Adapter.Platform;
 using System;
 using Inno.Platform;
 

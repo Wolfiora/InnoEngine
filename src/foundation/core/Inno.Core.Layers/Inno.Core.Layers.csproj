@@ -6,8 +6,10 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <WarningsAsErrors>$(WarningsAsErrors);CS1572;CS1573;CS1591</WarningsAsErrors>
   </PropertyGroup>
+
   <ItemGroup>
-    <ProjectReference Include="..\Inno.Core.Execution\Inno.Core.Execution.csproj" />
-    <ProjectReference Include="..\Inno.Core.Events\Inno.Core.Events.csproj" />
+    <ProjectReference Include="../Inno.Core.Execution/Inno.Core.Execution.csproj" />
+    <ProjectReference Include="../Inno.Core.Events/Inno.Core.Events.csproj" />
+    <ProjectReference Include="../../extensibility/Inno.Extensibility.Catalogs/Inno.Extensibility.Catalogs.csproj" />
   </ItemGroup>
 </Project>

@@ -17,8 +17,7 @@ public static unsafe partial class UiNative
 
     static UiNative()
     {
-        NativeDllLoader.EnsureNativeDll(C_LIBRARY_NAME);
-        nint handle = NativeDllLoader.LoadNativeDll(C_LIBRARY_NAME);
+        nint handle = NativeDllLoader.LoadNativeDll(C_LIBRARY_NAME, typeof(UiNative).Assembly);
         InitApi(new NativeLibraryContext(handle));
     }
 }

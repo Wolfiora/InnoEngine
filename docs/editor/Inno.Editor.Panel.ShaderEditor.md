@@ -1,6 +1,6 @@
 # Inno.Editor.Panel.ShaderEditor
 
-[Editor 索引](README.md) · [Wiki 首页](../README.md) · [Graph 控制层](Inno.Editor.Graph.md) · [Shader 模型](../render/Inno.Rendering.Shaders.md)
+[Editor 索引](README.md) · [Wiki 首页](../README.md) · [Graph 控制层](Inno.Editor.Graph.md) · [Shader 模型](../rendering/Inno.Rendering.Shaders.md)
 
 ## 职责与边界
 

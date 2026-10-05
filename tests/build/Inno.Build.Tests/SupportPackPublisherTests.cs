@@ -33,12 +33,11 @@ public sealed class SupportPackPublisherTests : IDisposable
     public async Task FailedPreparationPreservesInstalledPackAndRemovesStaging()
     {
         string output = Path.Combine(m_root, "Packs");
-        string installed = Path.Combine(output, S_TARGET.value);
-        Directory.CreateDirectory(installed);
-        File.WriteAllText(Path.Combine(installed, "last-good"), "preserve");
+        string installed = await new PlayerSupportPackPublisher([new TestSource(null)]).PublishAsync(
+            m_root, output, S_TARGET, "unused");
         var publisher = new PlayerSupportPackPublisher([new TestSource(new InvalidDataException("invalid candidate"))]);
         await Assert.ThrowsAsync<InvalidDataException>(() => publisher.PublishAsync(m_root, output, S_TARGET, "unused").AsTask());
-        Assert.Equal("preserve", File.ReadAllText(Path.Combine(installed, "last-good")));
+        Assert.Equal("candidate", File.ReadAllText(Path.Combine(installed, "References", "Inno.Test.dll")));
         Assert.Single(Directory.EnumerateDirectories(output));
     }
 
@@ -63,68 +62,112 @@ public sealed class SupportPackPublisherTests : IDisposable
     {
         using var cancellation = new CancellationTokenSource();
         string output = Path.Combine(m_root, "Packs");
-        string installed = Path.Combine(output, S_TARGET.value);
-        Directory.CreateDirectory(installed);
-        File.WriteAllText(Path.Combine(installed, "last-good"), "preserve");
+        string installed = await new PlayerSupportPackPublisher([new TestSource(null)]).PublishAsync(
+            m_root, output, S_TARGET, "unused");
         var publisher = new PlayerSupportPackPublisher([new TestSource(null, cancellation.Cancel)]);
 
         await Assert.ThrowsAnyAsync<OperationCanceledException>(
             () => publisher.PublishAsync(m_root, output, S_TARGET, "unused", cancellation.Token).AsTask());
 
-        Assert.Equal("preserve", File.ReadAllText(Path.Combine(installed, "last-good")));
-        Assert.Single(Directory.EnumerateDirectories(output));
-    }
-
-    [Fact]
-    public async Task SuccessfulReplacementUsesTheSharedDirectoryCommitAndRemovesItsBackup()
-    {
-        string output = Path.Combine(m_root, "Packs");
-        string installed = Path.Combine(output, S_TARGET.value);
-        Directory.CreateDirectory(installed);
-        File.WriteAllText(Path.Combine(installed, "last-good"), "previous");
-        var publisher = new PlayerSupportPackPublisher([new TestSource(null)]);
-
-        Assert.Equal(installed, await publisher.PublishAsync(m_root, output, S_TARGET, "unused"));
-
-        Assert.False(File.Exists(Path.Combine(installed, "last-good")));
         Assert.Equal("candidate", File.ReadAllText(Path.Combine(installed, "References", "Inno.Test.dll")));
         Assert.Single(Directory.EnumerateDirectories(output));
     }
 
     [Fact]
-    public async Task BackupCleanupFailureExplicitlyPreservesTheInstalledSupportPack()
+    public async Task NewPublicationRetainsTheImmutableInputsHeldByEarlierReaders()
     {
-        if (!OperatingSystem.IsWindows())
-            return;
-
         string output = Path.Combine(m_root, "Packs");
-        string installed = Path.Combine(output, S_TARGET.value);
-        Directory.CreateDirectory(installed);
-        string retained = Path.Combine(installed, "locked.txt");
-        File.WriteAllText(retained, "previous");
-        File.SetAttributes(retained, FileAttributes.ReadOnly);
+        string previous = await new PlayerSupportPackPublisher([new TestSource(null)]).PublishAsync(
+            m_root, output, S_TARGET, "unused");
+        using FileStream reader = File.OpenRead(Path.Combine(previous, "References", "Inno.Test.dll"));
+
+        string current = await new PlayerSupportPackPublisher([new TestSource(null, payload: "updated")]).PublishAsync(
+            m_root, output, S_TARGET, "unused");
+
+        Assert.NotEqual(previous, current);
+        Assert.Equal("candidate", File.ReadAllText(Path.Combine(previous, "References", "Inno.Test.dll")));
+        Assert.Equal("updated", File.ReadAllText(Path.Combine(current, "References", "Inno.Test.dll")));
+        Assert.Equal(current, new PlayerSupportPackCatalog(output).Resolve(S_TARGET, new TestSource(null)));
+        Assert.Empty(Directory.EnumerateDirectories(output, ".support-pack-*"));
+    }
+
+    [Fact]
+    public async Task IdenticalPublicationReusesTheExistingImmutableDirectory()
+    {
+        string output = Path.Combine(m_root, "Packs");
         var publisher = new PlayerSupportPackPublisher([new TestSource(null)]);
+        string first = await publisher.PublishAsync(m_root, output, S_TARGET, "unused");
+
+        Assert.Equal(first, await publisher.PublishAsync(m_root, output, S_TARGET, "unused"));
+        Assert.Single(Directory.EnumerateDirectories(Path.Combine(output, S_TARGET.value)));
+        Assert.Empty(Directory.EnumerateDirectories(output, ".support-pack-*"));
+    }
+
+    [Fact]
+    public async Task DamagedInstalledArtifactCannotBeSilentlyReplacedWhileReadersHoldIt()
+    {
+        string output = Path.Combine(m_root, "Packs");
+        var publisher = new PlayerSupportPackPublisher([new TestSource(null)]);
+        string installed = await publisher.PublishAsync(m_root, output, S_TARGET, "unused");
+        string file = Path.Combine(installed, "References", "Inno.Test.dll");
+        File.WriteAllText(file, "changed externally");
+
+        await Assert.ThrowsAsync<InvalidDataException>(() => publisher.PublishAsync(
+            m_root, output, S_TARGET, "unused").AsTask());
+
+        Assert.Equal("changed externally", File.ReadAllText(file));
+        Assert.Throws<InvalidDataException>(() => new PlayerSupportPackCatalog(output).Resolve(S_TARGET, new TestSource(null)));
+        Assert.Empty(Directory.EnumerateDirectories(output, ".support-pack-*"));
+    }
+
+    [Fact]
+    public async Task WaitingWriterCanCancelWithoutEnteringPreparationOrDisturbingTheCurrentWriter()
+    {
+        string output = Path.Combine(m_root, "Packs");
+        var entered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var release = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var first = new PlayerSupportPackPublisher([new PendingSource(entered, release)]);
+        Task<string> publishing = first.PublishAsync(m_root, output, S_TARGET, "unused").AsTask();
+        await entered.Task.WaitAsync(TimeSpan.FromSeconds(5));
+        using var cancellation = new CancellationTokenSource();
+        var second = new PlayerSupportPackPublisher([new TestSource(new InvalidOperationException("Preparation must not run."))]);
+        Task<string> waiting = second.PublishAsync(m_root, output, S_TARGET, "unused", cancellation.Token).AsTask();
         try
         {
-            IOException failure = await Assert.ThrowsAsync<IOException>(
-                () => publisher.PublishAsync(m_root, output, S_TARGET, "unused").AsTask());
-
-            Assert.Contains("installed", failure.Message, StringComparison.OrdinalIgnoreCase);
-            Assert.Equal("candidate", File.ReadAllText(Path.Combine(installed, "References", "Inno.Test.dll")));
-            string backup = Assert.Single(Directory.EnumerateDirectories(output, S_TARGET.value + ".backup-*"));
-            Assert.Equal("previous", File.ReadAllText(Path.Combine(backup, "locked.txt")));
-            Assert.Empty(Directory.EnumerateDirectories(output, ".support-pack-*"));
+            cancellation.Cancel();
+            await Assert.ThrowsAnyAsync<OperationCanceledException>(() => waiting);
         }
         finally
         {
-            foreach (string file in Directory.EnumerateFiles(output, "locked.txt", SearchOption.AllDirectories))
-                File.SetAttributes(file, FileAttributes.Normal);
+            release.SetResult();
         }
+        string installed = await publishing;
+        Assert.Equal(installed, new PlayerSupportPackCatalog(output).Resolve(S_TARGET, new TestSource(null)));
+        Assert.Empty(Directory.EnumerateDirectories(output, ".support-pack-*"));
+    }
+
+    private sealed class PendingSource(
+        TaskCompletionSource entered,
+        TaskCompletionSource release
+    ) : IPlayerSupportPackSource {
+        public BuildTargetId target => S_TARGET;
+
+        public async ValueTask PrepareAsync(
+            PlayerSupportPackBuildContext context,
+            CancellationToken cancellationToken
+        ) {
+            entered.SetResult();
+            await release.Task.WaitAsync(cancellationToken);
+            await new TestSource(null).PrepareAsync(context, cancellationToken);
+        }
+
+        public void Validate(string directory) => new TestSource(null).Validate(directory);
     }
 
     private sealed class TestSource(
         Exception? failure,
-        Action? afterValidation = null
+        Action? afterValidation = null,
+        string payload = "candidate"
     ) : IPlayerSupportPackSource {
         public BuildTargetId target => S_TARGET;
 
@@ -135,7 +178,7 @@ public sealed class SupportPackPublisherTests : IDisposable
             cancellationToken.ThrowIfCancellationRequested();
             string references = Path.Combine(context.stagingDirectory, "References");
             Directory.CreateDirectory(references);
-            File.WriteAllText(Path.Combine(references, "Inno.Test.dll"), "candidate");
+            File.WriteAllText(Path.Combine(references, "Inno.Test.dll"), payload);
             if (failure is not null)
                 throw failure;
             return ValueTask.CompletedTask;

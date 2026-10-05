@@ -37,7 +37,7 @@ public sealed class PlayerSupportPackPublisher
     }
 
     /// <summary>
-    /// Prepares a target closure in isolation, validates it and replaces the installed pack.
+    /// Prepares a target closure in isolation and publishes its immutable deployment inputs.
     /// </summary>
     /// <param name="engineRoot">
     /// The source checkout containing InnoEngine.sln.
@@ -58,8 +58,8 @@ public sealed class PlayerSupportPackPublisher
     /// The absolute installed pack directory after successful validation.
     /// </returns>
     /// <remarks>
-    /// The host must coordinate readers and writers targeting the same installed pack.
-    /// Installation uses two directory moves; backup cleanup failures preserve the committed candidate.
+    /// Writers targeting the same pack share an exclusive, cancelable preparation lease.
+    /// Publication atomically selects a fingerprint directory; previous generations remain valid for readers.
     /// </remarks>
     /// <exception cref="ArgumentException">
     /// A required path is blank or the target has no registered source.
@@ -71,11 +71,7 @@ public sealed class PlayerSupportPackPublisher
     /// The prepared closure is incomplete or invalid.
     /// </exception>
     /// <exception cref="IOException">
-    /// Installation fails, or the installed candidate's old backup cannot be removed.
-    /// A cleanup failure preserves the complete installed pack and identifies the remaining backup.
-    /// </exception>
-    /// <exception cref="AggregateException">
-    /// Installation and backup restoration both fail; retained directories are identified by the shared IO primitive.
+    /// The staging tree, immutable artifact or atomic current index cannot be installed.
     /// </exception>
     /// <exception cref="OperationCanceledException">
     /// Preparation was canceled; the installed pack is unchanged.
@@ -97,9 +93,11 @@ public sealed class PlayerSupportPackPublisher
             throw new DirectoryNotFoundException($"Engine root '{root}' has no InnoEngine.sln.");
         string output = Path.GetFullPath(outputRoot);
         Directory.CreateDirectory(output);
+        using FileLease ownership = await FileLease.AcquireAsync(
+            Path.Combine(output, target.value + ".lock"), Timeout.InfiniteTimeSpan, cancellationToken)
+            .ConfigureAwait(false);
         string transaction = Path.Combine(output, ".support-pack-" + Guid.NewGuid().ToString("N"));
         string staging = Path.Combine(transaction, target.value);
-        string destination = Path.Combine(output, target.value);
         Directory.CreateDirectory(staging);
         try
         {
@@ -107,10 +105,8 @@ public sealed class PlayerSupportPackPublisher
             await source.PrepareAsync(new PlayerSupportPackBuildContext(root, staging, dotnetHost), cancellationToken)
                 .ConfigureAwait(false);
             cancellationToken.ThrowIfCancellationRequested();
-            _ = new PlayerSupportPackCatalog(transaction).Resolve(target, source);
-            cancellationToken.ThrowIfCancellationRequested();
-            AtomicDirectory.Install(staging, destination);
-            return destination;
+            return await new PlayerSupportPackCatalog(output).PublishAsync(
+                target, staging, source, cancellationToken).ConfigureAwait(false);
         }
         finally
         {

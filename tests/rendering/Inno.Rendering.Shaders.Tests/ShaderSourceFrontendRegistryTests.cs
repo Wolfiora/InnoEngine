@@ -1,3 +1,4 @@
+using Inno.Adapter.Modules.DotNet;
 using System;
 using System.IO;
 using Inno.Build.Toolchains.Bgfx.Tools;
@@ -58,8 +59,8 @@ public sealed class ShaderSourceFrontendRegistryTests
             RegistryFrontendProbe.created = 0;
             RegistryFrontendProbe.disposed = 0;
             RegistryFrontendProbe.conflict = false;
-            modules = new ModuleHost(new ModuleHostOptions { cacheDirectory = m_root });
-            types = new TypeCatalog(modules);
+            modules = new ModuleHost(new ModuleHostOptions { catalogSource = new DotNetAssemblyCatalogSource(typeof(ShaderSourceFrontendRegistryTests).Assembly), cacheDirectory = m_root });
+            types = new TypeCatalog(modules, new ReflectionTypeCatalogSource());
         }
         public void Dispose()
         {

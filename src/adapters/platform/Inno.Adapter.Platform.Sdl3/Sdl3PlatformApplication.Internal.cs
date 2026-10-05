@@ -89,6 +89,8 @@ public sealed partial class Sdl3PlatformApplication
         ObjectDisposedException.ThrowIf(m_disposed, this);
 
         var flags = options.highPixelDensity ? SDLWindowFlags.HighPixelDensity : 0;
+        if (!options.visible)
+            flags |= SDLWindowFlags.Hidden;
         if (options.resizable)
         {
             flags |= SDLWindowFlags.Resizable;
@@ -118,6 +120,7 @@ public sealed partial class Sdl3PlatformApplication
                 || !SDL.SetNumberProperty(properties, SDL.SDL_PROP_WINDOW_CREATE_WIDTH_NUMBER, options.width)
                 || !SDL.SetNumberProperty(properties, SDL.SDL_PROP_WINDOW_CREATE_HEIGHT_NUMBER, options.height)
                 || !SDL.SetBooleanProperty(properties, SDL.SDL_PROP_WINDOW_CREATE_OPENGL_BOOLEAN, true)
+                || !SDL.SetBooleanProperty(properties, SDL.SDL_PROP_WINDOW_CREATE_HIDDEN_BOOLEAN, !options.visible)
                 || !SDL.SetBooleanProperty(properties, SDL.SDL_PROP_WINDOW_CREATE_RESIZABLE_BOOLEAN, options.resizable)
                 || !SDL.SetBooleanProperty(properties, SDL.SDL_PROP_WINDOW_CREATE_HIGH_PIXEL_DENSITY_BOOLEAN, options.highPixelDensity))
             {
@@ -454,6 +457,27 @@ public sealed partial class Sdl3PlatformApplication
             case SDLEventType.Quit:
                 evnt = new ApplicationQuitEvent();
                 return true;
+
+            case SDLEventType.WillEnterBackground:
+                evnt = new ApplicationSuspensionChangedEvent(isSuspended: true);
+                return true;
+
+            case SDLEventType.DidEnterForeground:
+                evnt = new ApplicationSuspensionChangedEvent(isSuspended: false);
+                return true;
+
+            case SDLEventType.WindowHidden:
+            case SDLEventType.WindowMinimized:
+            case SDLEventType.WindowShown:
+            case SDLEventType.WindowRestored:
+                if (m_windows.TryGetValue(sdlEvent.Window.WindowID, out Sdl3PlatformWindow? visibleWindow))
+                {
+                    visibleWindow.UpdateVisibility(eventType);
+                    evnt = new WindowVisibilityChangedEvent(visibleWindow.windowId, visibleWindow.isVisible);
+                    return true;
+                }
+                evnt = null;
+                return false;
 
             case SDLEventType.WindowResized:
                 if (m_windows.TryGetValue(sdlEvent.Window.WindowID, out var resizedWindow))

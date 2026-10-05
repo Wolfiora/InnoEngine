@@ -1,13 +1,12 @@
 {
-  "BaseConfig": {
-    "Url": "file://rmlui.bridge.json"
+  "baseConfig": {
+    "url": "file://rmlui.bridge.json"
   },
-  "TargetPlatform": "Emscripten",
-  "TargetArchitecture": "Wasm32",
-  "OutputPath": "../obj/browser-wasm/Native",
-  "TargetSysRoot": "%EM_CACHE%/sysroot",
-  "SystemIncludeFolders": [
+  "outputPath": "../obj/browser-wasm/Native",
+  "targetSysRoot": "%EM_CACHE%/sysroot",
+  "systemIncludeFolders": [
     "%EM_CACHE%/sysroot/include/c++/v1",
     "%EM_CACHE%/sysroot/include"
-  ]
+  ],
+  "targetId": "emscripten-wasm32-emscripten"
 }

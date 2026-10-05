@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Threading;
 
 namespace Inno.Core.IO;
 
@@ -8,6 +9,59 @@ namespace Inno.Core.IO;
 /// </summary>
 public static class AtomicDirectory
 {
+    /// <summary>
+    /// Publishes a complete directory at an unoccupied path without replacing an existing destination.
+    /// </summary>
+    /// <param name="source">
+    /// The complete candidate directory, disjoint from the destination.
+    /// </param>
+    /// <param name="destination">
+    /// The unoccupied publication path on the same filesystem.
+    /// </param>
+    /// <param name="cancellationToken">
+    /// Cancels preparation or bounded waits before the rename commits.
+    /// </param>
+    /// <remarks>
+    /// Windows access and sharing failures are retried for at most two seconds to tolerate temporary readers.
+    /// Failure preserves the candidate and any existing destination. A committed rename is not canceled afterward.
+    /// </remarks>
+    /// <exception cref="ArgumentException">
+    /// A path is blank or the two directory trees overlap.
+    /// </exception>
+    /// <exception cref="DirectoryNotFoundException">
+    /// The source directory does not exist.
+    /// </exception>
+    /// <exception cref="IOException">
+    /// The destination exists, the filesystem cannot rename the tree, or a transient block persists.
+    /// </exception>
+    /// <exception cref="UnauthorizedAccessException">
+    /// The operating system continues denying access after the bounded retry window.
+    /// </exception>
+    /// <exception cref="OperationCanceledException">
+    /// Cancellation is requested before the directory is published.
+    /// </exception>
+    public static void Publish(
+        string source,
+        string destination,
+        CancellationToken cancellationToken = default
+    ) {
+        cancellationToken.ThrowIfCancellationRequested();
+        ArgumentException.ThrowIfNullOrWhiteSpace(source);
+        ArgumentException.ThrowIfNullOrWhiteSpace(destination);
+        string candidate = Path.GetFullPath(source);
+        string target = Path.GetFullPath(destination);
+        if (IsContained(Path.GetRelativePath(candidate, target))
+            || IsContained(Path.GetRelativePath(target, candidate)))
+            throw new ArgumentException("The candidate and destination directory trees must be disjoint.", nameof(destination));
+        if (!Directory.Exists(candidate))
+            throw new DirectoryNotFoundException($"Directory candidate '{candidate}' does not exist.");
+        string? parent = Path.GetDirectoryName(target);
+        if (string.IsNullOrEmpty(parent))
+            throw new IOException($"Directory path '{target}' has no owning directory.");
+        Directory.CreateDirectory(parent);
+        FileSystemRename.MoveDirectory(candidate, target, cancellationToken);
+    }
+
     /// <summary>
     /// Installs a disjoint candidate tree and restores the previous destination if installation fails.
     /// </summary>
@@ -58,10 +112,10 @@ public static class AtomicDirectory
 
         string backup = target + ".backup-" + Guid.NewGuid().ToString("N");
         if (Directory.Exists(target))
-            Directory.Move(target, backup);
+            FileSystemRename.MoveDirectory(target, backup);
         try
         {
-            Directory.Move(candidate, target);
+            FileSystemRename.MoveDirectory(candidate, target);
         }
         catch (Exception installationFailure)
         {
@@ -69,7 +123,7 @@ public static class AtomicDirectory
             {
                 try
                 {
-                    Directory.Move(backup, target);
+                    FileSystemRename.MoveDirectory(backup, target);
                 }
                 catch (Exception restorationFailure)
                 {

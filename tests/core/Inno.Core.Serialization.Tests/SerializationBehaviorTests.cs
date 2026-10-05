@@ -1,3 +1,5 @@
+using Inno.Adapter.Serialization.DotNet;
+using Inno.Adapter.Modules.DotNet;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -25,11 +27,11 @@ public sealed class SerializationBehaviorTests : IDisposable
     public SerializationBehaviorTests()
     {
         m_modules = new ModuleHost(new ModuleHostOptions
-        {
+        { catalogSource = new DotNetAssemblyCatalogSource(typeof(SerializationBehaviorTests).Assembly),
             cacheDirectory = Path.Combine(m_testRoot, "Assemblies")
         });
-        m_types = new TypeCatalog(m_modules);
-        m_serialization = new SerializationRegistry(m_types);
+        m_types = new TypeCatalog(m_modules, new ReflectionTypeCatalogSource());
+        m_serialization = new SerializationRegistry(m_types, new ReflectionSerializationMetadataSource());
     }
 
     public void Dispose()
@@ -85,7 +87,7 @@ public sealed class SerializationBehaviorTests : IDisposable
         Assert.Throws<ObjectDisposedException>(
             () => m_serialization.Serialize(new DefaultSample()));
 
-        m_serialization = new SerializationRegistry(m_types);
+        m_serialization = new SerializationRegistry(m_types, new ReflectionSerializationMetadataSource());
         Assert.NotEmpty(m_serialization.Serialize(new DefaultSample()));
     }
 
@@ -112,14 +114,14 @@ public sealed class SerializationBehaviorTests : IDisposable
         m_types.Dispose();
         m_modules.Dispose();
 
-        Assert.Throws<InvalidOperationException>(() => new TypeCatalog(m_modules));
+        Assert.Throws<InvalidOperationException>(() => new TypeCatalog(m_modules, new ReflectionTypeCatalogSource()));
 
         m_modules = new ModuleHost(new ModuleHostOptions
-        {
+        { catalogSource = new DotNetAssemblyCatalogSource(typeof(SerializationBehaviorTests).Assembly),
             cacheDirectory = Path.Combine(m_testRoot, "ReplacementAssemblies")
         });
-        m_types = new TypeCatalog(m_modules);
-        m_serialization = new SerializationRegistry(m_types);
+        m_types = new TypeCatalog(m_modules, new ReflectionTypeCatalogSource());
+        m_serialization = new SerializationRegistry(m_types, new ReflectionSerializationMetadataSource());
     }
 
     [Fact]
@@ -475,6 +477,46 @@ public sealed class SerializationBehaviorTests : IDisposable
     }
 
     [Fact]
+    public void DeclaredTypeValueOperationsMatchGenericBytesAndPreserveNullableValues()
+    {
+        byte[] generic = m_serialization.Encode(writer =>
+        {
+            writer.Write("number", 42);
+            writer.Write<int?>("optional", null);
+            writer.Write("box", new GenericBox<int>(73));
+        });
+        byte[] declared = m_serialization.Encode(writer =>
+        {
+            writer.Write("number", 42, typeof(int));
+            writer.Write("optional", null, typeof(int?));
+            writer.Write("box", new GenericBox<int>(73), typeof(GenericBox<int>));
+        });
+
+        Assert.Equal(generic, declared);
+        m_serialization.Decode(declared, reader =>
+        {
+            Assert.Equal(42, reader.Read("number", typeof(int)));
+            Assert.Null(reader.Read("optional", typeof(int?)));
+            Assert.Equal(73, Assert.IsType<GenericBox<int>>(reader.Read("box", typeof(GenericBox<int>))).value);
+            Assert.Throws<ArgumentNullException>(() => reader.Read("number", null!));
+            return true;
+        });
+        Assert.Throws<ArgumentNullException>(() =>
+            m_serialization.Encode(writer => writer.Write("value", 1, null!)));
+    }
+
+    [Fact]
+    public void MetadataLookupExposesTheCurrentGenerationAndRejectsInvalidOwners()
+    {
+        SerializationTypeMetadata metadata = m_serialization.GetMetadata(typeof(DefaultSample));
+        Assert.Equal(typeof(DefaultSample), metadata.type);
+        Assert.Contains(metadata.members, member => member.name == "count" && member.type == typeof(int));
+        Assert.Throws<ArgumentNullException>(() => m_serialization.GetMetadata(null!));
+        m_serialization.Dispose();
+        Assert.Throws<ObjectDisposedException>(() => m_serialization.GetMetadata(typeof(DefaultSample)));
+    }
+
+    [Fact]
     public void ConverterSelection_PrefersNearestBaseThenExactType()
     {
         var nearestSource = new NearestHost { item = new NearestLeaf { value = 21 } };
@@ -498,6 +540,14 @@ public sealed class SerializationBehaviorTests : IDisposable
 
         Assert.Contains("ambiguous converters", exception.Message);
         Assert.Contains(typeof(AmbiguousValue).FullName!, exception.Message);
+    }
+
+    [Fact]
+    public void ConverterSelectionRanksVariantInterfacesAsAssignableInterfaces()
+    {
+        byte[] bytes = m_serialization.Encode(writer => writer.Write("value", new VariantValue("variant")));
+        VariantValue restored = m_serialization.Decode(bytes, reader => reader.Read<VariantValue>("value"));
+        Assert.Equal("variant", restored.value);
     }
 
     [Fact]
@@ -947,6 +997,27 @@ internal sealed class GenericBoxConverter<T> : SerializationConverter<GenericBox
 
     public override GenericBox<T> Read(SerializationReader reader)
         => new(reader.Read<T>("value"));
+}
+
+internal interface IVariantValue<out T>
+{
+    T value { get; }
+}
+
+internal sealed class VariantValue(string value) : IVariantValue<string>
+{
+    public string value { get; } = value;
+}
+
+internal sealed class VariantValueConverter : SerializationConverter<IVariantValue<object>>
+{
+    public override void Write(
+        SerializationWriter writer,
+        IVariantValue<object> value
+    ) => writer.Write("value", (string)value.value);
+
+    public override IVariantValue<object> Read(SerializationReader reader)
+        => new VariantValue(reader.Read<string>("value"));
 }
 
 internal interface ISampleContext;

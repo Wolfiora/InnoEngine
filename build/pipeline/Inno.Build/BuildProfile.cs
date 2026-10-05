@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 
 using Inno.Core.Serialization;
+using Inno.Build.Managed;
 
 namespace Inno.Build;
 
@@ -55,6 +56,18 @@ public sealed class BuildProfile : ISerializable
     }
 
     /// <summary>
+    /// Gets or sets an explicit managed publisher; null uses the platform composition's default.
+    /// </summary>
+    public ManagedDeploymentId? managedDeployment
+    {
+        get => m_managedDeploymentId.Length == 0 ? null : new ManagedDeploymentId(m_managedDeploymentId);
+        set => m_managedDeploymentId = value?.value ?? string.Empty;
+    }
+
+    [SerializableProperty]
+    internal string m_managedDeploymentId = string.Empty;
+
+    /// <summary>
     /// Gets or sets the initial logical window width.
     /// </summary>
     [SerializableProperty]
@@ -68,6 +81,24 @@ public sealed class BuildProfile : ISerializable
 
     [SerializableProperty]
     internal string m_targetId = string.Empty;
+
+    /// <summary>
+    /// Copies product and deployment settings before an asynchronous build retains the request.
+    /// </summary>
+    /// <returns>
+    /// A newly owned profile with the same current-format scalar settings and stable selections.
+    /// </returns>
+    public BuildProfile Copy() => new()
+    {
+        applicationId = applicationId,
+        productName = productName,
+        persistentDataPath = persistentDataPath,
+        startupScene = startupScene,
+        windowWidth = windowWidth,
+        windowHeight = windowHeight,
+        m_targetId = m_targetId,
+        m_managedDeploymentId = m_managedDeploymentId
+    };
 
     /// <summary>
     /// Validates product identity, startup content, target, and window dimensions.
@@ -93,6 +124,16 @@ public sealed class BuildProfile : ISerializable
         catch (ArgumentException exception)
         {
             throw new InvalidDataException("A game build target is required and must use a portable target ID.", exception);
+        }
+        if (m_managedDeploymentId is null)
+            throw new InvalidDataException("Managed deployment selection cannot be null.");
+        if (m_managedDeploymentId.Length > 0)
+        {
+            try { _ = new ManagedDeploymentId(m_managedDeploymentId); }
+            catch (ArgumentException exception)
+            {
+                throw new InvalidDataException("Managed deployment selection must use a portable provider ID.", exception);
+            }
         }
         if (windowWidth <= 0 || windowHeight <= 0)
             throw new InvalidDataException("Window dimensions must be positive.");

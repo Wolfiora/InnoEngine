@@ -1,4 +1,5 @@
 using System;
+using Inno.Build.Managed;
 using System.IO;
 
 using Inno.Core.Serialization;
@@ -80,6 +81,18 @@ public sealed class BuildSettings : ISerializable
     internal string m_gameTargetId = string.Empty;
 
     /// <summary>
+    /// Gets or sets the default managed publisher; null follows the selected platform's default.
+    /// </summary>
+    public ManagedDeploymentId? gameManagedDeployment
+    {
+        get => m_gameManagedDeploymentId.Length == 0 ? null : new ManagedDeploymentId(m_gameManagedDeploymentId);
+        set => m_gameManagedDeploymentId = value?.value ?? string.Empty;
+    }
+
+    [SerializableProperty]
+    internal string m_gameManagedDeploymentId = string.Empty;
+
+    /// <summary>
     /// Creates canonical defaults for a new project.
     /// </summary>
     /// <param name="projectName">
@@ -138,6 +151,7 @@ public sealed class BuildSettings : ISerializable
             persistentDataPath = gamePersistentDataPath,
             startupScene = gameStartupScene,
             target = gameTarget,
+            managedDeployment = gameManagedDeployment,
             windowWidth = gameWindowWidth,
             windowHeight = gameWindowHeight
         };
@@ -160,7 +174,8 @@ public sealed class BuildSettings : ISerializable
             gameOutputDirectory = gameOutputDirectory,
             gameWindowWidth = gameWindowWidth,
             gameWindowHeight = gameWindowHeight,
-            m_gameTargetId = m_gameTargetId
+            m_gameTargetId = m_gameTargetId,
+            m_gameManagedDeploymentId = m_gameManagedDeploymentId
         };
 
     internal void ValidateDocument()
@@ -171,7 +186,8 @@ public sealed class BuildSettings : ISerializable
             || gamePersistentDataPath is null
             || gameStartupScene is null
             || gameOutputDirectory is null
-            || m_gameTargetId is null)
+            || m_gameTargetId is null
+            || m_gameManagedDeploymentId is null)
         {
             throw new InvalidDataException("Build Settings contains a null string.");
         }
@@ -180,6 +196,7 @@ public sealed class BuildSettings : ISerializable
         try
         {
             _ = gameTarget;
+            _ = gameManagedDeployment;
         }
         catch (ArgumentException exception)
         {

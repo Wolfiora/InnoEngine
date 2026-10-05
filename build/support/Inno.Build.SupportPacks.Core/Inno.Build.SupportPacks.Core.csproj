@@ -6,10 +6,13 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <WarningsAsErrors>$(WarningsAsErrors);CS1572;CS1573;CS1591</WarningsAsErrors>
   </PropertyGroup>
+
   <ItemGroup>
-    <ProjectReference Include="..\..\..\src\foundation\core\Inno.Core.IO\Inno.Core.IO.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../../src/foundation/core/Inno.Core.IO/Inno.Core.IO.csproj" PrivateAssets="compile" />
   </ItemGroup>
+
   <ItemGroup>
-    <ProjectReference Include="..\..\pipeline\Inno.Build\Inno.Build.csproj" />
+    <ProjectReference Include="../../pipeline/Inno.Build/Inno.Build.csproj" />
+    <ProjectReference Include="../../../src/foundation/extensibility/Inno.Extensibility.Catalogs/Inno.Extensibility.Catalogs.csproj" />
   </ItemGroup>
 </Project>

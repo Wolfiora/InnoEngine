@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using BGCS.Core.Extensibility;
-using BGCS.Emission;
+using BGCS.Intermediate.Emission;
 using BGCS.Intermediate;
 
 namespace Inno.Native.ImGui.Bindings.Extension;
@@ -19,17 +19,17 @@ public sealed class ImGuiBindingPlugin : IBindingPlugin, ICacheFingerprintProvid
     /// <summary>
     /// Identifies the InnoEngine cimgui layout extension.
     /// </summary>
-    public string Id => "inno.imgui.managed-layouts";
+    public string id => "inno.imgui.managed-layouts";
 
     /// <summary>
     /// Gets the extension implementation version.
     /// </summary>
-    public string Version => "1.0.0";
+    public string version => "1.0.0";
 
     /// <summary>
     /// Gets the BGCS plugin protocol version implemented by this extension.
     /// </summary>
-    public int ContractVersion => BindingPluginContract.CurrentVersion;
+    public int contractVersion => BindingPluginContract.C_CURRENT_VERSION;
 
     /// <summary>
     /// Registers the managed-layout emitter with the BGCS host.
@@ -62,7 +62,7 @@ public sealed class ImGuiBindingPlugin : IBindingPlugin, ICacheFingerprintProvid
         /// <summary>
         /// Identifies the emitted ABI layout contribution.
         /// </summary>
-        public string Name => "Inno ImGui managed ABI layouts";
+        public string name => "Inno ImGui managed ABI layouts";
 
         /// <summary>
         /// Copies the two managed ABI layouts into BGCS's staging directory for single-file composition.
@@ -76,19 +76,21 @@ public sealed class ImGuiBindingPlugin : IBindingPlugin, ICacheFingerprintProvid
         /// <returns>
         /// The staged source paths supplied to the BGCS composer.
         /// </returns>
-        public IReadOnlyList<string> Emit(BindingModule module, EmissionContext context)
-        {
+        public IReadOnlyList<string> Emit(
+            BindingModule module,
+            EmissionContext context
+        ) {
             ArgumentNullException.ThrowIfNull(module);
             ArgumentNullException.ThrowIfNull(context);
-            if (!context.SingleFile)
+            if (!context.singleFile)
                 throw new InvalidOperationException("Inno ImGui bindings require a single-file output.");
 
-            Directory.CreateDirectory(context.OutputPath);
+            Directory.CreateDirectory(context.outputPath);
             List<string> emitted = [];
             foreach (string source in s_sources)
             {
                 string sourcePath = GetLayoutPath(source);
-                string path = Path.Combine(context.OutputPath, $".inno-imgui-{source}.cs");
+                string path = Path.Combine(context.outputPath, $".inno-imgui-{source}.cs");
                 File.Copy(sourcePath, path, overwrite: true);
                 emitted.Add(path);
             }

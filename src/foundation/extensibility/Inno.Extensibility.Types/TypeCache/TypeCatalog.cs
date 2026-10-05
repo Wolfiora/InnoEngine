@@ -14,6 +14,7 @@ public sealed class TypeCatalog : IDisposable
 {
     private readonly object m_sync = new();
     private readonly ModuleHost m_modules;
+    private readonly ITypeCatalogSource m_source;
     private readonly TypeRegistryCoordinator m_registries = new();
     private readonly TypeCacheCatalogParticipant m_participant;
     private readonly IDisposable m_participantRegistration;
@@ -36,12 +37,19 @@ public sealed class TypeCatalog : IDisposable
     /// <exception cref="InvalidOperationException">
     /// Thrown when <paramref name="modules"/> has already been disposed.
     /// </exception>
-    public TypeCatalog(ModuleHost modules)
-    {
+    /// <param name="source">
+    /// The metadata provider selected by the composition root for every contributed assembly.
+    /// </param>
+    public TypeCatalog(
+        ModuleHost modules,
+        ITypeCatalogSource source
+    ) {
         ArgumentNullException.ThrowIfNull(modules);
+        ArgumentNullException.ThrowIfNull(source);
         if (!modules.isInitialized)
             throw new InvalidOperationException("The module host must be active before creating a type catalog.");
         m_modules = modules;
+        m_source = source;
         m_participant = new TypeCacheCatalogParticipant(this);
         m_participantRegistration = modules.RegisterCatalogParticipant(m_participant);
     }
@@ -294,6 +302,7 @@ public sealed class TypeCatalog : IDisposable
                 previous = owner.m_current;
             TypeCacheSnapshot candidate = TypeCacheSnapshot.Build(
                 catalog.assemblies,
+                owner.m_source,
                 previous,
                 Interlocked.Increment(ref owner.m_nextVersion));
             TypeRegistryRefreshSet registries = owner.m_registries.Prepare(candidate);

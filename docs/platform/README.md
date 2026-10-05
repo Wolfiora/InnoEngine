@@ -1,9 +1,11 @@
 # Platform API
 
-[Wiki 首页](../README.md) · [Native](../native/README.md) · [Rendering](../render/README.md)
+[Wiki 首页](../README.md) · [Native](../native/README.md) · [Rendering](../rendering/README.md)
 
 | 项目 | 职责 |
 | --- | --- |
+| [Inno.Adapter.Modules.DotNet](Inno.Adapter.Modules.DotNet.md) | Editor 动态 ALC、shadow copy、依赖与反射来源 |
+| [Inno.Adapter.Serialization.DotNet](Inno.Adapter.Serialization.DotNet.md) | Editor 动态序列化访问、构造、集合和恢复元数据 |
 | [Inno.Platform](Inno.Platform.md) | 后端中立 application/window/options/native-handle contract |
 | [Inno.Adapter.Platform](Inno.Adapter.Platform.md) | 平台 backend 选择与 factory contract |
 | [Inno.Adapter.Platform.Sdl3](Inno.Adapter.Platform.Sdl3.md) | SDL3 application 与 window adapter |

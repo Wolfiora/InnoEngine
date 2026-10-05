@@ -5,6 +5,7 @@
 //     Changes will be replaced the next time bindings are generated.
 // </auto-generated>
 // ------------------------------------------------------------------------------
+#pragma warning disable CS1591 // Native declarations may omit documentation.
 #nullable enable
 using BGCS.Runtime;
 using SDLAudioDeviceID = uint;
@@ -11193,17 +11194,14 @@ namespace Inno.Native.Sdl3
         /// <summary>
         /// To be documented.
         /// </summary>
-        internal static void DebugbreakNative()
+        internal static int ReportAssertionInterop(SDLAssertData* data, byte* func, byte* file, int line)
         {
-            ((delegate* unmanaged[Cdecl]<void>)funcTable[162])();
+            return ((delegate* unmanaged[Cdecl]<SDLAssertData*, byte*, byte*, int, int>)funcTable[162])(data, func, file, line);
         }
 
-        /// <summary>
-        /// To be documented.
-        /// </summary>
         internal static SDLAssertState ReportAssertionNative(SDLAssertData* data, byte* func, byte* file, int line)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLAssertData*, byte*, byte*, int, SDLAssertState>)funcTable[163])(data, func, file, line);
+            return (SDLAssertState)ReportAssertionInterop(data, func, file, line);
         }
 
         /// <summary>
@@ -11211,7 +11209,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void SetAssertionHandlerNative(delegate* unmanaged[Cdecl]<SDLAssertData*, void*, SDLAssertState> handler, void* userdata)
         {
-            ((delegate* unmanaged[Cdecl]<delegate* unmanaged[Cdecl]<SDLAssertData*, void*, SDLAssertState> , void*, void>)funcTable[164])(handler, userdata);
+            ((delegate* unmanaged[Cdecl]<delegate* unmanaged[Cdecl]<SDLAssertData*, void*, SDLAssertState> , void*, void>)funcTable[163])(handler, userdata);
         }
 
         /// <summary>
@@ -11219,7 +11217,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static delegate* unmanaged[Cdecl]<SDLAssertData*, void*, SDLAssertState> GetDefaultAssertionHandlerNative()
         {
-            return ((delegate* unmanaged[Cdecl]<delegate* unmanaged[Cdecl]<SDLAssertData*, void*, SDLAssertState> >)funcTable[165])();
+            return ((delegate* unmanaged[Cdecl]<delegate* unmanaged[Cdecl]<SDLAssertData*, void*, SDLAssertState> >)funcTable[164])();
         }
 
         /// <summary>
@@ -11227,7 +11225,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static delegate* unmanaged[Cdecl]<SDLAssertData*, void*, SDLAssertState> GetAssertionHandlerNative(void** puserdata)
         {
-            return ((delegate* unmanaged[Cdecl]<void**, delegate* unmanaged[Cdecl]<SDLAssertData*, void*, SDLAssertState> >)funcTable[166])(puserdata);
+            return ((delegate* unmanaged[Cdecl]<void**, delegate* unmanaged[Cdecl]<SDLAssertData*, void*, SDLAssertState> >)funcTable[165])(puserdata);
         }
 
         /// <summary>
@@ -11235,7 +11233,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static SDLAssertData* GetAssertionReportNative()
         {
-            return ((delegate* unmanaged[Cdecl]<SDLAssertData*>)funcTable[167])();
+            return ((delegate* unmanaged[Cdecl]<SDLAssertData*>)funcTable[166])();
         }
 
         /// <summary>
@@ -11243,7 +11241,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void ResetAssertionReportNative()
         {
-            ((delegate* unmanaged[Cdecl]<void>)funcTable[168])();
+            ((delegate* unmanaged[Cdecl]<void>)funcTable[167])();
         }
 
         /// <summary>
@@ -11251,7 +11249,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static nint AsyncIOFromFileInterop(byte* file, byte* mode)
         {
-            return ((delegate* unmanaged[Cdecl]<byte*, byte*, nint>)funcTable[169])(file, mode);
+            return ((delegate* unmanaged[Cdecl]<byte*, byte*, nint>)funcTable[168])(file, mode);
         }
 
         internal static SDLAsyncIO AsyncIOFromFileNative(byte* file, byte* mode)
@@ -11264,7 +11262,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static long GetAsyncIOSizeInterop(nint asyncio)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, long>)funcTable[170])(asyncio);
+            return ((delegate* unmanaged[Cdecl]<nint, long>)funcTable[169])(asyncio);
         }
 
         internal static long GetAsyncIOSizeNative(SDLAsyncIO asyncio)
@@ -11277,7 +11275,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte ReadAsyncIOInterop(nint asyncio, void* ptr, ulong offset, ulong size, nint queue, void* userdata)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, void*, ulong, ulong, nint, void*, byte>)funcTable[171])(asyncio, ptr, offset, size, queue, userdata);
+            return ((delegate* unmanaged[Cdecl]<nint, void*, ulong, ulong, nint, void*, byte>)funcTable[170])(asyncio, ptr, offset, size, queue, userdata);
         }
 
         internal static byte ReadAsyncIONative(SDLAsyncIO asyncio, void* ptr, ulong offset, ulong size, SDLAsyncIOQueue queue, void* userdata)
@@ -11290,7 +11288,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte WriteAsyncIOInterop(nint asyncio, void* ptr, ulong offset, ulong size, nint queue, void* userdata)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, void*, ulong, ulong, nint, void*, byte>)funcTable[172])(asyncio, ptr, offset, size, queue, userdata);
+            return ((delegate* unmanaged[Cdecl]<nint, void*, ulong, ulong, nint, void*, byte>)funcTable[171])(asyncio, ptr, offset, size, queue, userdata);
         }
 
         internal static byte WriteAsyncIONative(SDLAsyncIO asyncio, void* ptr, ulong offset, ulong size, SDLAsyncIOQueue queue, void* userdata)
@@ -11303,7 +11301,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte CloseAsyncIOInterop(nint asyncio, byte flush, nint queue, void* userdata)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, byte, nint, void*, byte>)funcTable[173])(asyncio, flush, queue, userdata);
+            return ((delegate* unmanaged[Cdecl]<nint, byte, nint, void*, byte>)funcTable[172])(asyncio, flush, queue, userdata);
         }
 
         internal static byte CloseAsyncIONative(SDLAsyncIO asyncio, byte flush, SDLAsyncIOQueue queue, void* userdata)
@@ -11316,7 +11314,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static nint CreateAsyncIOQueueInterop()
         {
-            return ((delegate* unmanaged[Cdecl]<nint>)funcTable[174])();
+            return ((delegate* unmanaged[Cdecl]<nint>)funcTable[173])();
         }
 
         internal static SDLAsyncIOQueue CreateAsyncIOQueueNative()
@@ -11329,7 +11327,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void DestroyAsyncIOQueueInterop(nint queue)
         {
-            ((delegate* unmanaged[Cdecl]<nint, void>)funcTable[175])(queue);
+            ((delegate* unmanaged[Cdecl]<nint, void>)funcTable[174])(queue);
         }
 
         internal static void DestroyAsyncIOQueueNative(SDLAsyncIOQueue queue)
@@ -11342,7 +11340,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte GetAsyncIOResultInterop(nint queue, SDLAsyncIOOutcome* outcome)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, SDLAsyncIOOutcome*, byte>)funcTable[176])(queue, outcome);
+            return ((delegate* unmanaged[Cdecl]<nint, SDLAsyncIOOutcome*, byte>)funcTable[175])(queue, outcome);
         }
 
         internal static byte GetAsyncIOResultNative(SDLAsyncIOQueue queue, SDLAsyncIOOutcome* outcome)
@@ -11355,7 +11353,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte WaitAsyncIOResultInterop(nint queue, SDLAsyncIOOutcome* outcome, int timeoutMS)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, SDLAsyncIOOutcome*, int, byte>)funcTable[177])(queue, outcome, timeoutMS);
+            return ((delegate* unmanaged[Cdecl]<nint, SDLAsyncIOOutcome*, int, byte>)funcTable[176])(queue, outcome, timeoutMS);
         }
 
         internal static byte WaitAsyncIOResultNative(SDLAsyncIOQueue queue, SDLAsyncIOOutcome* outcome, int timeoutMS)
@@ -11368,7 +11366,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void SignalAsyncIOQueueInterop(nint queue)
         {
-            ((delegate* unmanaged[Cdecl]<nint, void>)funcTable[178])(queue);
+            ((delegate* unmanaged[Cdecl]<nint, void>)funcTable[177])(queue);
         }
 
         internal static void SignalAsyncIOQueueNative(SDLAsyncIOQueue queue)
@@ -11381,7 +11379,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte LoadFileAsyncInterop(byte* file, nint queue, void* userdata)
         {
-            return ((delegate* unmanaged[Cdecl]<byte*, nint, void*, byte>)funcTable[179])(file, queue, userdata);
+            return ((delegate* unmanaged[Cdecl]<byte*, nint, void*, byte>)funcTable[178])(file, queue, userdata);
         }
 
         internal static byte LoadFileAsyncNative(byte* file, SDLAsyncIOQueue queue, void* userdata)
@@ -11394,7 +11392,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte TryLockSpinlockNative(int* lock0)
         {
-            return ((delegate* unmanaged[Cdecl]<int*, byte>)funcTable[180])(lock0);
+            return ((delegate* unmanaged[Cdecl]<int*, byte>)funcTable[179])(lock0);
         }
 
         /// <summary>
@@ -11402,7 +11400,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void LockSpinlockNative(int* lock0)
         {
-            ((delegate* unmanaged[Cdecl]<int*, void>)funcTable[181])(lock0);
+            ((delegate* unmanaged[Cdecl]<int*, void>)funcTable[180])(lock0);
         }
 
         /// <summary>
@@ -11410,7 +11408,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void UnlockSpinlockNative(int* lock0)
         {
-            ((delegate* unmanaged[Cdecl]<int*, void>)funcTable[182])(lock0);
+            ((delegate* unmanaged[Cdecl]<int*, void>)funcTable[181])(lock0);
         }
 
         /// <summary>
@@ -11418,7 +11416,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void MemoryBarrierReleaseFunctionNative()
         {
-            ((delegate* unmanaged[Cdecl]<void>)funcTable[183])();
+            ((delegate* unmanaged[Cdecl]<void>)funcTable[182])();
         }
 
         /// <summary>
@@ -11426,7 +11424,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void MemoryBarrierAcquireFunctionNative()
         {
-            ((delegate* unmanaged[Cdecl]<void>)funcTable[184])();
+            ((delegate* unmanaged[Cdecl]<void>)funcTable[183])();
         }
 
         /// <summary>
@@ -11434,7 +11432,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte CompareAndSwapAtomicIntNative(SDLAtomicInt* a, int oldval, int newval)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLAtomicInt*, int, int, byte>)funcTable[185])(a, oldval, newval);
+            return ((delegate* unmanaged[Cdecl]<SDLAtomicInt*, int, int, byte>)funcTable[184])(a, oldval, newval);
         }
 
         /// <summary>
@@ -11442,7 +11440,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static int SetAtomicIntNative(SDLAtomicInt* a, int v)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLAtomicInt*, int, int>)funcTable[186])(a, v);
+            return ((delegate* unmanaged[Cdecl]<SDLAtomicInt*, int, int>)funcTable[185])(a, v);
         }
 
         /// <summary>
@@ -11450,7 +11448,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static int GetAtomicIntNative(SDLAtomicInt* a)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLAtomicInt*, int>)funcTable[187])(a);
+            return ((delegate* unmanaged[Cdecl]<SDLAtomicInt*, int>)funcTable[186])(a);
         }
 
         /// <summary>
@@ -11458,7 +11456,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static int AddAtomicIntNative(SDLAtomicInt* a, int v)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLAtomicInt*, int, int>)funcTable[188])(a, v);
+            return ((delegate* unmanaged[Cdecl]<SDLAtomicInt*, int, int>)funcTable[187])(a, v);
         }
 
         /// <summary>
@@ -11466,7 +11464,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte CompareAndSwapAtomicU32Native(SDLAtomicU32* a, uint oldval, uint newval)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLAtomicU32*, uint, uint, byte>)funcTable[189])(a, oldval, newval);
+            return ((delegate* unmanaged[Cdecl]<SDLAtomicU32*, uint, uint, byte>)funcTable[188])(a, oldval, newval);
         }
 
         /// <summary>
@@ -11474,7 +11472,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static uint SetAtomicU32Native(SDLAtomicU32* a, uint v)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLAtomicU32*, uint, uint>)funcTable[190])(a, v);
+            return ((delegate* unmanaged[Cdecl]<SDLAtomicU32*, uint, uint>)funcTable[189])(a, v);
         }
 
         /// <summary>
@@ -11482,7 +11480,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static uint GetAtomicU32Native(SDLAtomicU32* a)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLAtomicU32*, uint>)funcTable[191])(a);
+            return ((delegate* unmanaged[Cdecl]<SDLAtomicU32*, uint>)funcTable[190])(a);
         }
 
         /// <summary>
@@ -11490,7 +11488,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static uint AddAtomicU32Native(SDLAtomicU32* a, int v)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLAtomicU32*, int, uint>)funcTable[192])(a, v);
+            return ((delegate* unmanaged[Cdecl]<SDLAtomicU32*, int, uint>)funcTable[191])(a, v);
         }
 
         /// <summary>
@@ -11498,7 +11496,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte CompareAndSwapAtomicPointerNative(void** a, void* oldval, void* newval)
         {
-            return ((delegate* unmanaged[Cdecl]<void**, void*, void*, byte>)funcTable[193])(a, oldval, newval);
+            return ((delegate* unmanaged[Cdecl]<void**, void*, void*, byte>)funcTable[192])(a, oldval, newval);
         }
 
         /// <summary>
@@ -11506,7 +11504,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void* SetAtomicPointerNative(void** a, void* v)
         {
-            return ((delegate* unmanaged[Cdecl]<void**, void*, void*>)funcTable[194])(a, v);
+            return ((delegate* unmanaged[Cdecl]<void**, void*, void*>)funcTable[193])(a, v);
         }
 
         /// <summary>
@@ -11514,7 +11512,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void* GetAtomicPointerNative(void** a)
         {
-            return ((delegate* unmanaged[Cdecl]<void**, void*>)funcTable[195])(a);
+            return ((delegate* unmanaged[Cdecl]<void**, void*>)funcTable[194])(a);
         }
 
         /// <summary>
@@ -11522,7 +11520,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte SetErrorVNative(byte* fmt, byte* ap)
         {
-            return ((delegate* unmanaged[Cdecl]<byte*, byte*, byte>)funcTable[196])(fmt, ap);
+            return ((delegate* unmanaged[Cdecl]<byte*, byte*, byte>)funcTable[195])(fmt, ap);
         }
 
         /// <summary>
@@ -11530,7 +11528,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte OutOfMemoryNative()
         {
-            return ((delegate* unmanaged[Cdecl]<byte>)funcTable[197])();
+            return ((delegate* unmanaged[Cdecl]<byte>)funcTable[196])();
         }
 
         /// <summary>
@@ -11538,7 +11536,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte* GetErrorNative()
         {
-            return ((delegate* unmanaged[Cdecl]<byte*>)funcTable[198])();
+            return ((delegate* unmanaged[Cdecl]<byte*>)funcTable[197])();
         }
 
         /// <summary>
@@ -11546,7 +11544,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte ClearErrorNative()
         {
-            return ((delegate* unmanaged[Cdecl]<byte>)funcTable[199])();
+            return ((delegate* unmanaged[Cdecl]<byte>)funcTable[198])();
         }
 
         /// <summary>
@@ -11554,7 +11552,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static uint GetGlobalPropertiesNative()
         {
-            return ((delegate* unmanaged[Cdecl]<uint>)funcTable[200])();
+            return ((delegate* unmanaged[Cdecl]<uint>)funcTable[199])();
         }
 
         /// <summary>
@@ -11562,7 +11560,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static uint CreatePropertiesNative()
         {
-            return ((delegate* unmanaged[Cdecl]<uint>)funcTable[201])();
+            return ((delegate* unmanaged[Cdecl]<uint>)funcTable[200])();
         }
 
         /// <summary>
@@ -11570,7 +11568,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte CopyPropertiesNative(uint src, uint dst)
         {
-            return ((delegate* unmanaged[Cdecl]<uint, uint, byte>)funcTable[202])(src, dst);
+            return ((delegate* unmanaged[Cdecl]<uint, uint, byte>)funcTable[201])(src, dst);
         }
 
         /// <summary>
@@ -11578,7 +11576,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte LockPropertiesNative(uint props)
         {
-            return ((delegate* unmanaged[Cdecl]<uint, byte>)funcTable[203])(props);
+            return ((delegate* unmanaged[Cdecl]<uint, byte>)funcTable[202])(props);
         }
 
         /// <summary>
@@ -11586,7 +11584,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void UnlockPropertiesNative(uint props)
         {
-            ((delegate* unmanaged[Cdecl]<uint, void>)funcTable[204])(props);
+            ((delegate* unmanaged[Cdecl]<uint, void>)funcTable[203])(props);
         }
 
         /// <summary>
@@ -11594,7 +11592,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte SetPointerPropertyWithCleanupNative(uint props, byte* name, void* value, delegate* unmanaged[Cdecl]<void*, void*, void> cleanup, void* userdata)
         {
-            return ((delegate* unmanaged[Cdecl]<uint, byte*, void*, delegate* unmanaged[Cdecl]<void*, void*, void> , void*, byte>)funcTable[205])(props, name, value, cleanup, userdata);
+            return ((delegate* unmanaged[Cdecl]<uint, byte*, void*, delegate* unmanaged[Cdecl]<void*, void*, void> , void*, byte>)funcTable[204])(props, name, value, cleanup, userdata);
         }
 
         /// <summary>
@@ -11602,7 +11600,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte SetPointerPropertyNative(uint props, byte* name, void* value)
         {
-            return ((delegate* unmanaged[Cdecl]<uint, byte*, void*, byte>)funcTable[206])(props, name, value);
+            return ((delegate* unmanaged[Cdecl]<uint, byte*, void*, byte>)funcTable[205])(props, name, value);
         }
 
         /// <summary>
@@ -11610,7 +11608,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte SetStringPropertyNative(uint props, byte* name, byte* value)
         {
-            return ((delegate* unmanaged[Cdecl]<uint, byte*, byte*, byte>)funcTable[207])(props, name, value);
+            return ((delegate* unmanaged[Cdecl]<uint, byte*, byte*, byte>)funcTable[206])(props, name, value);
         }
 
         /// <summary>
@@ -11618,7 +11616,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte SetNumberPropertyNative(uint props, byte* name, long value)
         {
-            return ((delegate* unmanaged[Cdecl]<uint, byte*, long, byte>)funcTable[208])(props, name, value);
+            return ((delegate* unmanaged[Cdecl]<uint, byte*, long, byte>)funcTable[207])(props, name, value);
         }
 
         /// <summary>
@@ -11626,7 +11624,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte SetFloatPropertyNative(uint props, byte* name, float value)
         {
-            return ((delegate* unmanaged[Cdecl]<uint, byte*, float, byte>)funcTable[209])(props, name, value);
+            return ((delegate* unmanaged[Cdecl]<uint, byte*, float, byte>)funcTable[208])(props, name, value);
         }
 
         /// <summary>
@@ -11634,7 +11632,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte SetBooleanPropertyNative(uint props, byte* name, byte value)
         {
-            return ((delegate* unmanaged[Cdecl]<uint, byte*, byte, byte>)funcTable[210])(props, name, value);
+            return ((delegate* unmanaged[Cdecl]<uint, byte*, byte, byte>)funcTable[209])(props, name, value);
         }
 
         /// <summary>
@@ -11642,15 +11640,20 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte HasPropertyNative(uint props, byte* name)
         {
-            return ((delegate* unmanaged[Cdecl]<uint, byte*, byte>)funcTable[211])(props, name);
+            return ((delegate* unmanaged[Cdecl]<uint, byte*, byte>)funcTable[210])(props, name);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int GetPropertyTypeInterop(uint props, byte* name)
+        {
+            return ((delegate* unmanaged[Cdecl]<uint, byte*, int>)funcTable[211])(props, name);
+        }
+
         internal static SDLPropertyType GetPropertyTypeNative(uint props, byte* name)
         {
-            return ((delegate* unmanaged[Cdecl]<uint, byte*, SDLPropertyType>)funcTable[212])(props, name);
+            return (SDLPropertyType)GetPropertyTypeInterop(props, name);
         }
 
         /// <summary>
@@ -11658,7 +11661,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void* GetPointerPropertyNative(uint props, byte* name, void* defaultValue)
         {
-            return ((delegate* unmanaged[Cdecl]<uint, byte*, void*, void*>)funcTable[213])(props, name, defaultValue);
+            return ((delegate* unmanaged[Cdecl]<uint, byte*, void*, void*>)funcTable[212])(props, name, defaultValue);
         }
 
         /// <summary>
@@ -11666,7 +11669,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte* GetStringPropertyNative(uint props, byte* name, byte* defaultValue)
         {
-            return ((delegate* unmanaged[Cdecl]<uint, byte*, byte*, byte*>)funcTable[214])(props, name, defaultValue);
+            return ((delegate* unmanaged[Cdecl]<uint, byte*, byte*, byte*>)funcTable[213])(props, name, defaultValue);
         }
 
         /// <summary>
@@ -11674,7 +11677,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static long GetNumberPropertyNative(uint props, byte* name, long defaultValue)
         {
-            return ((delegate* unmanaged[Cdecl]<uint, byte*, long, long>)funcTable[215])(props, name, defaultValue);
+            return ((delegate* unmanaged[Cdecl]<uint, byte*, long, long>)funcTable[214])(props, name, defaultValue);
         }
 
         /// <summary>
@@ -11682,7 +11685,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static float GetFloatPropertyNative(uint props, byte* name, float defaultValue)
         {
-            return ((delegate* unmanaged[Cdecl]<uint, byte*, float, float>)funcTable[216])(props, name, defaultValue);
+            return ((delegate* unmanaged[Cdecl]<uint, byte*, float, float>)funcTable[215])(props, name, defaultValue);
         }
 
         /// <summary>
@@ -11690,7 +11693,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte GetBooleanPropertyNative(uint props, byte* name, byte defaultValue)
         {
-            return ((delegate* unmanaged[Cdecl]<uint, byte*, byte, byte>)funcTable[217])(props, name, defaultValue);
+            return ((delegate* unmanaged[Cdecl]<uint, byte*, byte, byte>)funcTable[216])(props, name, defaultValue);
         }
 
         /// <summary>
@@ -11698,7 +11701,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte ClearPropertyNative(uint props, byte* name)
         {
-            return ((delegate* unmanaged[Cdecl]<uint, byte*, byte>)funcTable[218])(props, name);
+            return ((delegate* unmanaged[Cdecl]<uint, byte*, byte>)funcTable[217])(props, name);
         }
 
         /// <summary>
@@ -11706,7 +11709,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte EnumeratePropertiesNative(uint props, delegate* unmanaged[Cdecl]<void*, uint, byte*, void> callback, void* userdata)
         {
-            return ((delegate* unmanaged[Cdecl]<uint, delegate* unmanaged[Cdecl]<void*, uint, byte*, void> , void*, byte>)funcTable[219])(props, callback, userdata);
+            return ((delegate* unmanaged[Cdecl]<uint, delegate* unmanaged[Cdecl]<void*, uint, byte*, void> , void*, byte>)funcTable[218])(props, callback, userdata);
         }
 
         /// <summary>
@@ -11714,7 +11717,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void DestroyPropertiesNative(uint props)
         {
-            ((delegate* unmanaged[Cdecl]<uint, void>)funcTable[220])(props);
+            ((delegate* unmanaged[Cdecl]<uint, void>)funcTable[219])(props);
         }
 
         /// <summary>
@@ -11722,7 +11725,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static nint CreateThreadRuntimeInterop(delegate* unmanaged[Cdecl]<void*, int> fn, byte* name, void* data, delegate* unmanaged[Cdecl]<void> pfnBeginThread, delegate* unmanaged[Cdecl]<void> pfnEndThread)
         {
-            return ((delegate* unmanaged[Cdecl]<delegate* unmanaged[Cdecl]<void*, int> , byte*, void*, delegate* unmanaged[Cdecl]<void> , delegate* unmanaged[Cdecl]<void> , nint>)funcTable[221])(fn, name, data, pfnBeginThread, pfnEndThread);
+            return ((delegate* unmanaged[Cdecl]<delegate* unmanaged[Cdecl]<void*, int> , byte*, void*, delegate* unmanaged[Cdecl]<void> , delegate* unmanaged[Cdecl]<void> , nint>)funcTable[220])(fn, name, data, pfnBeginThread, pfnEndThread);
         }
 
         internal static SDLThread CreateThreadRuntimeNative(delegate* unmanaged[Cdecl]<void*, int> fn, byte* name, void* data, delegate* unmanaged[Cdecl]<void> pfnBeginThread, delegate* unmanaged[Cdecl]<void> pfnEndThread)
@@ -11735,7 +11738,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static nint CreateThreadWithPropertiesRuntimeInterop(uint props, delegate* unmanaged[Cdecl]<void> pfnBeginThread, delegate* unmanaged[Cdecl]<void> pfnEndThread)
         {
-            return ((delegate* unmanaged[Cdecl]<uint, delegate* unmanaged[Cdecl]<void> , delegate* unmanaged[Cdecl]<void> , nint>)funcTable[222])(props, pfnBeginThread, pfnEndThread);
+            return ((delegate* unmanaged[Cdecl]<uint, delegate* unmanaged[Cdecl]<void> , delegate* unmanaged[Cdecl]<void> , nint>)funcTable[221])(props, pfnBeginThread, pfnEndThread);
         }
 
         internal static SDLThread CreateThreadWithPropertiesRuntimeNative(uint props, delegate* unmanaged[Cdecl]<void> pfnBeginThread, delegate* unmanaged[Cdecl]<void> pfnEndThread)
@@ -11748,7 +11751,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte* GetThreadNameInterop(nint thread)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, byte*>)funcTable[223])(thread);
+            return ((delegate* unmanaged[Cdecl]<nint, byte*>)funcTable[222])(thread);
         }
 
         internal static byte* GetThreadNameNative(SDLThread thread)
@@ -11761,7 +11764,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static ulong GetCurrentThreadIDNative()
         {
-            return ((delegate* unmanaged[Cdecl]<ulong>)funcTable[224])();
+            return ((delegate* unmanaged[Cdecl]<ulong>)funcTable[223])();
         }
 
         /// <summary>
@@ -11769,7 +11772,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static ulong GetThreadIDInterop(nint thread)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, ulong>)funcTable[225])(thread);
+            return ((delegate* unmanaged[Cdecl]<nint, ulong>)funcTable[224])(thread);
         }
 
         internal static ulong GetThreadIDNative(SDLThread thread)
@@ -11780,9 +11783,14 @@ namespace Inno.Native.Sdl3
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte SetCurrentThreadPriorityInterop(int priority)
+        {
+            return ((delegate* unmanaged[Cdecl]<int, byte>)funcTable[225])(priority);
+        }
+
         internal static byte SetCurrentThreadPriorityNative(SDLThreadPriority priority)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLThreadPriority, byte>)funcTable[226])(priority);
+            return SetCurrentThreadPriorityInterop((int)priority);
         }
 
         /// <summary>
@@ -11790,7 +11798,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void WaitThreadInterop(nint thread, int* status)
         {
-            ((delegate* unmanaged[Cdecl]<nint, int*, void>)funcTable[227])(thread, status);
+            ((delegate* unmanaged[Cdecl]<nint, int*, void>)funcTable[226])(thread, status);
         }
 
         internal static void WaitThreadNative(SDLThread thread, int* status)
@@ -11801,14 +11809,14 @@ namespace Inno.Native.Sdl3
         /// <summary>
         /// To be documented.
         /// </summary>
-        internal static SDLThreadState GetThreadStateInterop(nint thread)
+        internal static int GetThreadStateInterop(nint thread)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, SDLThreadState>)funcTable[228])(thread);
+            return ((delegate* unmanaged[Cdecl]<nint, int>)funcTable[227])(thread);
         }
 
         internal static SDLThreadState GetThreadStateNative(SDLThread thread)
         {
-            return GetThreadStateInterop(thread.Handle);
+            return (SDLThreadState)GetThreadStateInterop(thread.Handle);
         }
 
         /// <summary>
@@ -11816,7 +11824,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void DetachThreadInterop(nint thread)
         {
-            ((delegate* unmanaged[Cdecl]<nint, void>)funcTable[229])(thread);
+            ((delegate* unmanaged[Cdecl]<nint, void>)funcTable[228])(thread);
         }
 
         internal static void DetachThreadNative(SDLThread thread)
@@ -11829,7 +11837,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void* GetTLSNative(SDLAtomicInt* id)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLAtomicInt*, void*>)funcTable[230])(id);
+            return ((delegate* unmanaged[Cdecl]<SDLAtomicInt*, void*>)funcTable[229])(id);
         }
 
         /// <summary>
@@ -11837,7 +11845,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte SetTLSNative(SDLAtomicInt* id, void* value, delegate* unmanaged[Cdecl]<void*, void> destructor)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLAtomicInt*, void*, delegate* unmanaged[Cdecl]<void*, void> , byte>)funcTable[231])(id, value, destructor);
+            return ((delegate* unmanaged[Cdecl]<SDLAtomicInt*, void*, delegate* unmanaged[Cdecl]<void*, void> , byte>)funcTable[230])(id, value, destructor);
         }
 
         /// <summary>
@@ -11845,7 +11853,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void CleanupTLSNative()
         {
-            ((delegate* unmanaged[Cdecl]<void>)funcTable[232])();
+            ((delegate* unmanaged[Cdecl]<void>)funcTable[231])();
         }
 
         /// <summary>
@@ -11853,7 +11861,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static nint CreateMutexInterop()
         {
-            return ((delegate* unmanaged[Cdecl]<nint>)funcTable[233])();
+            return ((delegate* unmanaged[Cdecl]<nint>)funcTable[232])();
         }
 
         internal static SDLMutex CreateMutexNative()
@@ -11866,7 +11874,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void LockMutexInterop(nint mutex)
         {
-            ((delegate* unmanaged[Cdecl]<nint, void>)funcTable[234])(mutex);
+            ((delegate* unmanaged[Cdecl]<nint, void>)funcTable[233])(mutex);
         }
 
         internal static void LockMutexNative(SDLMutex mutex)
@@ -11879,7 +11887,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte TryLockMutexInterop(nint mutex)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, byte>)funcTable[235])(mutex);
+            return ((delegate* unmanaged[Cdecl]<nint, byte>)funcTable[234])(mutex);
         }
 
         internal static byte TryLockMutexNative(SDLMutex mutex)
@@ -11892,7 +11900,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void UnlockMutexInterop(nint mutex)
         {
-            ((delegate* unmanaged[Cdecl]<nint, void>)funcTable[236])(mutex);
+            ((delegate* unmanaged[Cdecl]<nint, void>)funcTable[235])(mutex);
         }
 
         internal static void UnlockMutexNative(SDLMutex mutex)
@@ -11905,7 +11913,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void DestroyMutexInterop(nint mutex)
         {
-            ((delegate* unmanaged[Cdecl]<nint, void>)funcTable[237])(mutex);
+            ((delegate* unmanaged[Cdecl]<nint, void>)funcTable[236])(mutex);
         }
 
         internal static void DestroyMutexNative(SDLMutex mutex)
@@ -11918,7 +11926,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static nint CreateRWLockInterop()
         {
-            return ((delegate* unmanaged[Cdecl]<nint>)funcTable[238])();
+            return ((delegate* unmanaged[Cdecl]<nint>)funcTable[237])();
         }
 
         internal static SDLRWLock CreateRWLockNative()
@@ -11931,7 +11939,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void LockRWLockForReadingInterop(nint rwlock)
         {
-            ((delegate* unmanaged[Cdecl]<nint, void>)funcTable[239])(rwlock);
+            ((delegate* unmanaged[Cdecl]<nint, void>)funcTable[238])(rwlock);
         }
 
         internal static void LockRWLockForReadingNative(SDLRWLock rwlock)
@@ -11944,7 +11952,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void LockRWLockForWritingInterop(nint rwlock)
         {
-            ((delegate* unmanaged[Cdecl]<nint, void>)funcTable[240])(rwlock);
+            ((delegate* unmanaged[Cdecl]<nint, void>)funcTable[239])(rwlock);
         }
 
         internal static void LockRWLockForWritingNative(SDLRWLock rwlock)
@@ -11957,7 +11965,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte TryLockRWLockForReadingInterop(nint rwlock)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, byte>)funcTable[241])(rwlock);
+            return ((delegate* unmanaged[Cdecl]<nint, byte>)funcTable[240])(rwlock);
         }
 
         internal static byte TryLockRWLockForReadingNative(SDLRWLock rwlock)
@@ -11970,7 +11978,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte TryLockRWLockForWritingInterop(nint rwlock)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, byte>)funcTable[242])(rwlock);
+            return ((delegate* unmanaged[Cdecl]<nint, byte>)funcTable[241])(rwlock);
         }
 
         internal static byte TryLockRWLockForWritingNative(SDLRWLock rwlock)
@@ -11983,7 +11991,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void UnlockRWLockInterop(nint rwlock)
         {
-            ((delegate* unmanaged[Cdecl]<nint, void>)funcTable[243])(rwlock);
+            ((delegate* unmanaged[Cdecl]<nint, void>)funcTable[242])(rwlock);
         }
 
         internal static void UnlockRWLockNative(SDLRWLock rwlock)
@@ -11996,7 +12004,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void DestroyRWLockInterop(nint rwlock)
         {
-            ((delegate* unmanaged[Cdecl]<nint, void>)funcTable[244])(rwlock);
+            ((delegate* unmanaged[Cdecl]<nint, void>)funcTable[243])(rwlock);
         }
 
         internal static void DestroyRWLockNative(SDLRWLock rwlock)
@@ -12009,7 +12017,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static nint CreateSemaphoreInterop(uint initialValue)
         {
-            return ((delegate* unmanaged[Cdecl]<uint, nint>)funcTable[245])(initialValue);
+            return ((delegate* unmanaged[Cdecl]<uint, nint>)funcTable[244])(initialValue);
         }
 
         internal static SDLSemaphore CreateSemaphoreNative(uint initialValue)
@@ -12022,7 +12030,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void DestroySemaphoreInterop(nint sem)
         {
-            ((delegate* unmanaged[Cdecl]<nint, void>)funcTable[246])(sem);
+            ((delegate* unmanaged[Cdecl]<nint, void>)funcTable[245])(sem);
         }
 
         internal static void DestroySemaphoreNative(SDLSemaphore sem)
@@ -12035,7 +12043,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void WaitSemaphoreInterop(nint sem)
         {
-            ((delegate* unmanaged[Cdecl]<nint, void>)funcTable[247])(sem);
+            ((delegate* unmanaged[Cdecl]<nint, void>)funcTable[246])(sem);
         }
 
         internal static void WaitSemaphoreNative(SDLSemaphore sem)
@@ -12048,7 +12056,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte TryWaitSemaphoreInterop(nint sem)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, byte>)funcTable[248])(sem);
+            return ((delegate* unmanaged[Cdecl]<nint, byte>)funcTable[247])(sem);
         }
 
         internal static byte TryWaitSemaphoreNative(SDLSemaphore sem)
@@ -12061,7 +12069,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte WaitSemaphoreTimeoutInterop(nint sem, int timeoutMS)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, int, byte>)funcTable[249])(sem, timeoutMS);
+            return ((delegate* unmanaged[Cdecl]<nint, int, byte>)funcTable[248])(sem, timeoutMS);
         }
 
         internal static byte WaitSemaphoreTimeoutNative(SDLSemaphore sem, int timeoutMS)
@@ -12074,7 +12082,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void SignalSemaphoreInterop(nint sem)
         {
-            ((delegate* unmanaged[Cdecl]<nint, void>)funcTable[250])(sem);
+            ((delegate* unmanaged[Cdecl]<nint, void>)funcTable[249])(sem);
         }
 
         internal static void SignalSemaphoreNative(SDLSemaphore sem)
@@ -12087,7 +12095,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static uint GetSemaphoreValueInterop(nint sem)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, uint>)funcTable[251])(sem);
+            return ((delegate* unmanaged[Cdecl]<nint, uint>)funcTable[250])(sem);
         }
 
         internal static uint GetSemaphoreValueNative(SDLSemaphore sem)
@@ -12100,7 +12108,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static nint CreateConditionInterop()
         {
-            return ((delegate* unmanaged[Cdecl]<nint>)funcTable[252])();
+            return ((delegate* unmanaged[Cdecl]<nint>)funcTable[251])();
         }
 
         internal static SDLCondition CreateConditionNative()
@@ -12113,7 +12121,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void DestroyConditionInterop(nint cond)
         {
-            ((delegate* unmanaged[Cdecl]<nint, void>)funcTable[253])(cond);
+            ((delegate* unmanaged[Cdecl]<nint, void>)funcTable[252])(cond);
         }
 
         internal static void DestroyConditionNative(SDLCondition cond)
@@ -12126,7 +12134,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void SignalConditionInterop(nint cond)
         {
-            ((delegate* unmanaged[Cdecl]<nint, void>)funcTable[254])(cond);
+            ((delegate* unmanaged[Cdecl]<nint, void>)funcTable[253])(cond);
         }
 
         internal static void SignalConditionNative(SDLCondition cond)
@@ -12139,7 +12147,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void BroadcastConditionInterop(nint cond)
         {
-            ((delegate* unmanaged[Cdecl]<nint, void>)funcTable[255])(cond);
+            ((delegate* unmanaged[Cdecl]<nint, void>)funcTable[254])(cond);
         }
 
         internal static void BroadcastConditionNative(SDLCondition cond)
@@ -12152,7 +12160,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void WaitConditionInterop(nint cond, nint mutex)
         {
-            ((delegate* unmanaged[Cdecl]<nint, nint, void>)funcTable[256])(cond, mutex);
+            ((delegate* unmanaged[Cdecl]<nint, nint, void>)funcTable[255])(cond, mutex);
         }
 
         internal static void WaitConditionNative(SDLCondition cond, SDLMutex mutex)
@@ -12165,7 +12173,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte WaitConditionTimeoutInterop(nint cond, nint mutex, int timeoutMS)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, nint, int, byte>)funcTable[257])(cond, mutex, timeoutMS);
+            return ((delegate* unmanaged[Cdecl]<nint, nint, int, byte>)funcTable[256])(cond, mutex, timeoutMS);
         }
 
         internal static byte WaitConditionTimeoutNative(SDLCondition cond, SDLMutex mutex, int timeoutMS)
@@ -12178,7 +12186,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte ShouldInitNative(SDLInitState* state)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLInitState*, byte>)funcTable[258])(state);
+            return ((delegate* unmanaged[Cdecl]<SDLInitState*, byte>)funcTable[257])(state);
         }
 
         /// <summary>
@@ -12186,7 +12194,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte ShouldQuitNative(SDLInitState* state)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLInitState*, byte>)funcTable[259])(state);
+            return ((delegate* unmanaged[Cdecl]<SDLInitState*, byte>)funcTable[258])(state);
         }
 
         /// <summary>
@@ -12194,7 +12202,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void SetInitializedNative(SDLInitState* state, byte initialized)
         {
-            ((delegate* unmanaged[Cdecl]<SDLInitState*, byte, void>)funcTable[260])(state, initialized);
+            ((delegate* unmanaged[Cdecl]<SDLInitState*, byte, void>)funcTable[259])(state, initialized);
         }
 
         /// <summary>
@@ -12202,7 +12210,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static nint IOFromFileInterop(byte* file, byte* mode)
         {
-            return ((delegate* unmanaged[Cdecl]<byte*, byte*, nint>)funcTable[261])(file, mode);
+            return ((delegate* unmanaged[Cdecl]<byte*, byte*, nint>)funcTable[260])(file, mode);
         }
 
         internal static SDLIOStream IOFromFileNative(byte* file, byte* mode)
@@ -12215,7 +12223,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static nint IOFromMemInterop(void* mem, ulong size)
         {
-            return ((delegate* unmanaged[Cdecl]<void*, ulong, nint>)funcTable[262])(mem, size);
+            return ((delegate* unmanaged[Cdecl]<void*, ulong, nint>)funcTable[261])(mem, size);
         }
 
         internal static SDLIOStream IOFromMemNative(void* mem, ulong size)
@@ -12228,7 +12236,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static nint IOFromConstMemInterop(void* mem, ulong size)
         {
-            return ((delegate* unmanaged[Cdecl]<void*, ulong, nint>)funcTable[263])(mem, size);
+            return ((delegate* unmanaged[Cdecl]<void*, ulong, nint>)funcTable[262])(mem, size);
         }
 
         internal static SDLIOStream IOFromConstMemNative(void* mem, ulong size)
@@ -12241,7 +12249,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static nint IOFromDynamicMemInterop()
         {
-            return ((delegate* unmanaged[Cdecl]<nint>)funcTable[264])();
+            return ((delegate* unmanaged[Cdecl]<nint>)funcTable[263])();
         }
 
         internal static SDLIOStream IOFromDynamicMemNative()
@@ -12254,7 +12262,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static nint OpenIOInterop(SDLIOStreamInterface* iface, void* userdata)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLIOStreamInterface*, void*, nint>)funcTable[265])(iface, userdata);
+            return ((delegate* unmanaged[Cdecl]<SDLIOStreamInterface*, void*, nint>)funcTable[264])(iface, userdata);
         }
 
         internal static SDLIOStream OpenIONative(SDLIOStreamInterface* iface, void* userdata)
@@ -12267,7 +12275,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte CloseIOInterop(nint context)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, byte>)funcTable[266])(context);
+            return ((delegate* unmanaged[Cdecl]<nint, byte>)funcTable[265])(context);
         }
 
         internal static byte CloseIONative(SDLIOStream context)
@@ -12280,7 +12288,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static uint GetIOPropertiesInterop(nint context)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, uint>)funcTable[267])(context);
+            return ((delegate* unmanaged[Cdecl]<nint, uint>)funcTable[266])(context);
         }
 
         internal static uint GetIOPropertiesNative(SDLIOStream context)
@@ -12291,14 +12299,14 @@ namespace Inno.Native.Sdl3
         /// <summary>
         /// To be documented.
         /// </summary>
-        internal static SDLIOStatus GetIOStatusInterop(nint context)
+        internal static int GetIOStatusInterop(nint context)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, SDLIOStatus>)funcTable[268])(context);
+            return ((delegate* unmanaged[Cdecl]<nint, int>)funcTable[267])(context);
         }
 
         internal static SDLIOStatus GetIOStatusNative(SDLIOStream context)
         {
-            return GetIOStatusInterop(context.Handle);
+            return (SDLIOStatus)GetIOStatusInterop(context.Handle);
         }
 
         /// <summary>
@@ -12306,7 +12314,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static long GetIOSizeInterop(nint context)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, long>)funcTable[269])(context);
+            return ((delegate* unmanaged[Cdecl]<nint, long>)funcTable[268])(context);
         }
 
         internal static long GetIOSizeNative(SDLIOStream context)
@@ -12317,14 +12325,14 @@ namespace Inno.Native.Sdl3
         /// <summary>
         /// To be documented.
         /// </summary>
-        internal static long SeekIOInterop(nint context, long offset, SDLIOWhence whence)
+        internal static long SeekIOInterop(nint context, long offset, int whence)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, long, SDLIOWhence, long>)funcTable[270])(context, offset, whence);
+            return ((delegate* unmanaged[Cdecl]<nint, long, int, long>)funcTable[269])(context, offset, whence);
         }
 
         internal static long SeekIONative(SDLIOStream context, long offset, SDLIOWhence whence)
         {
-            return SeekIOInterop(context.Handle, offset, whence);
+            return SeekIOInterop(context.Handle, offset, (int)whence);
         }
 
         /// <summary>
@@ -12332,7 +12340,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static long TellIOInterop(nint context)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, long>)funcTable[271])(context);
+            return ((delegate* unmanaged[Cdecl]<nint, long>)funcTable[270])(context);
         }
 
         internal static long TellIONative(SDLIOStream context)
@@ -12345,7 +12353,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static ulong ReadIOInterop(nint context, void* ptr, ulong size)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, void*, ulong, ulong>)funcTable[272])(context, ptr, size);
+            return ((delegate* unmanaged[Cdecl]<nint, void*, ulong, ulong>)funcTable[271])(context, ptr, size);
         }
 
         internal static ulong ReadIONative(SDLIOStream context, void* ptr, ulong size)
@@ -12358,7 +12366,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static ulong WriteIOInterop(nint context, void* ptr, ulong size)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, void*, ulong, ulong>)funcTable[273])(context, ptr, size);
+            return ((delegate* unmanaged[Cdecl]<nint, void*, ulong, ulong>)funcTable[272])(context, ptr, size);
         }
 
         internal static ulong WriteIONative(SDLIOStream context, void* ptr, ulong size)
@@ -12371,7 +12379,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static ulong IOvprintfInterop(nint context, byte* fmt, byte* ap)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, byte*, byte*, ulong>)funcTable[274])(context, fmt, ap);
+            return ((delegate* unmanaged[Cdecl]<nint, byte*, byte*, ulong>)funcTable[273])(context, fmt, ap);
         }
 
         internal static ulong IOvprintfNative(SDLIOStream context, byte* fmt, byte* ap)
@@ -12384,7 +12392,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte FlushIOInterop(nint context)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, byte>)funcTable[275])(context);
+            return ((delegate* unmanaged[Cdecl]<nint, byte>)funcTable[274])(context);
         }
 
         internal static byte FlushIONative(SDLIOStream context)
@@ -12397,7 +12405,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void* LoadFileIOInterop(nint src, ulong* datasize, byte closeio)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, ulong*, byte, void*>)funcTable[276])(src, datasize, closeio);
+            return ((delegate* unmanaged[Cdecl]<nint, ulong*, byte, void*>)funcTable[275])(src, datasize, closeio);
         }
 
         internal static void* LoadFileIONative(SDLIOStream src, ulong* datasize, byte closeio)
@@ -12410,7 +12418,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void* LoadFileNative(byte* file, ulong* datasize)
         {
-            return ((delegate* unmanaged[Cdecl]<byte*, ulong*, void*>)funcTable[277])(file, datasize);
+            return ((delegate* unmanaged[Cdecl]<byte*, ulong*, void*>)funcTable[276])(file, datasize);
         }
 
         /// <summary>
@@ -12418,7 +12426,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte SaveFileIOInterop(nint src, void* data, ulong datasize, byte closeio)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, void*, ulong, byte, byte>)funcTable[278])(src, data, datasize, closeio);
+            return ((delegate* unmanaged[Cdecl]<nint, void*, ulong, byte, byte>)funcTable[277])(src, data, datasize, closeio);
         }
 
         internal static byte SaveFileIONative(SDLIOStream src, void* data, ulong datasize, byte closeio)
@@ -12431,7 +12439,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte SaveFileNative(byte* file, void* data, ulong datasize)
         {
-            return ((delegate* unmanaged[Cdecl]<byte*, void*, ulong, byte>)funcTable[279])(file, data, datasize);
+            return ((delegate* unmanaged[Cdecl]<byte*, void*, ulong, byte>)funcTable[278])(file, data, datasize);
         }
 
         /// <summary>
@@ -12439,7 +12447,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte ReadU8Interop(nint src, byte* value)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, byte*, byte>)funcTable[280])(src, value);
+            return ((delegate* unmanaged[Cdecl]<nint, byte*, byte>)funcTable[279])(src, value);
         }
 
         internal static byte ReadU8Native(SDLIOStream src, byte* value)
@@ -12452,7 +12460,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte ReadS8Interop(nint src, byte* value)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, byte*, byte>)funcTable[281])(src, value);
+            return ((delegate* unmanaged[Cdecl]<nint, byte*, byte>)funcTable[280])(src, value);
         }
 
         internal static byte ReadS8Native(SDLIOStream src, byte* value)
@@ -12465,7 +12473,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte ReadU16LEInterop(nint src, ushort* value)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, ushort*, byte>)funcTable[282])(src, value);
+            return ((delegate* unmanaged[Cdecl]<nint, ushort*, byte>)funcTable[281])(src, value);
         }
 
         internal static byte ReadU16LENative(SDLIOStream src, ushort* value)
@@ -12478,7 +12486,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte ReadS16LEInterop(nint src, short* value)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, short*, byte>)funcTable[283])(src, value);
+            return ((delegate* unmanaged[Cdecl]<nint, short*, byte>)funcTable[282])(src, value);
         }
 
         internal static byte ReadS16LENative(SDLIOStream src, short* value)
@@ -12491,7 +12499,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte ReadU16BEInterop(nint src, ushort* value)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, ushort*, byte>)funcTable[284])(src, value);
+            return ((delegate* unmanaged[Cdecl]<nint, ushort*, byte>)funcTable[283])(src, value);
         }
 
         internal static byte ReadU16BENative(SDLIOStream src, ushort* value)
@@ -12504,7 +12512,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte ReadS16BEInterop(nint src, short* value)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, short*, byte>)funcTable[285])(src, value);
+            return ((delegate* unmanaged[Cdecl]<nint, short*, byte>)funcTable[284])(src, value);
         }
 
         internal static byte ReadS16BENative(SDLIOStream src, short* value)
@@ -12517,7 +12525,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte ReadU32LEInterop(nint src, uint* value)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, uint*, byte>)funcTable[286])(src, value);
+            return ((delegate* unmanaged[Cdecl]<nint, uint*, byte>)funcTable[285])(src, value);
         }
 
         internal static byte ReadU32LENative(SDLIOStream src, uint* value)
@@ -12530,7 +12538,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte ReadS32LEInterop(nint src, int* value)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, int*, byte>)funcTable[287])(src, value);
+            return ((delegate* unmanaged[Cdecl]<nint, int*, byte>)funcTable[286])(src, value);
         }
 
         internal static byte ReadS32LENative(SDLIOStream src, int* value)
@@ -12543,7 +12551,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte ReadU32BEInterop(nint src, uint* value)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, uint*, byte>)funcTable[288])(src, value);
+            return ((delegate* unmanaged[Cdecl]<nint, uint*, byte>)funcTable[287])(src, value);
         }
 
         internal static byte ReadU32BENative(SDLIOStream src, uint* value)
@@ -12556,7 +12564,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte ReadS32BEInterop(nint src, int* value)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, int*, byte>)funcTable[289])(src, value);
+            return ((delegate* unmanaged[Cdecl]<nint, int*, byte>)funcTable[288])(src, value);
         }
 
         internal static byte ReadS32BENative(SDLIOStream src, int* value)
@@ -12569,7 +12577,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte ReadU64LEInterop(nint src, ulong* value)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, ulong*, byte>)funcTable[290])(src, value);
+            return ((delegate* unmanaged[Cdecl]<nint, ulong*, byte>)funcTable[289])(src, value);
         }
 
         internal static byte ReadU64LENative(SDLIOStream src, ulong* value)
@@ -12582,7 +12590,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte ReadS64LEInterop(nint src, long* value)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, long*, byte>)funcTable[291])(src, value);
+            return ((delegate* unmanaged[Cdecl]<nint, long*, byte>)funcTable[290])(src, value);
         }
 
         internal static byte ReadS64LENative(SDLIOStream src, long* value)
@@ -12595,7 +12603,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte ReadU64BEInterop(nint src, ulong* value)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, ulong*, byte>)funcTable[292])(src, value);
+            return ((delegate* unmanaged[Cdecl]<nint, ulong*, byte>)funcTable[291])(src, value);
         }
 
         internal static byte ReadU64BENative(SDLIOStream src, ulong* value)
@@ -12608,7 +12616,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte ReadS64BEInterop(nint src, long* value)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, long*, byte>)funcTable[293])(src, value);
+            return ((delegate* unmanaged[Cdecl]<nint, long*, byte>)funcTable[292])(src, value);
         }
 
         internal static byte ReadS64BENative(SDLIOStream src, long* value)
@@ -12621,7 +12629,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte WriteU8Interop(nint dst, byte value)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, byte, byte>)funcTable[294])(dst, value);
+            return ((delegate* unmanaged[Cdecl]<nint, byte, byte>)funcTable[293])(dst, value);
         }
 
         internal static byte WriteU8Native(SDLIOStream dst, byte value)
@@ -12634,7 +12642,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte WriteS8Interop(nint dst, byte value)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, byte, byte>)funcTable[295])(dst, value);
+            return ((delegate* unmanaged[Cdecl]<nint, byte, byte>)funcTable[294])(dst, value);
         }
 
         internal static byte WriteS8Native(SDLIOStream dst, byte value)
@@ -12647,7 +12655,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte WriteU16LEInterop(nint dst, ushort value)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, ushort, byte>)funcTable[296])(dst, value);
+            return ((delegate* unmanaged[Cdecl]<nint, ushort, byte>)funcTable[295])(dst, value);
         }
 
         internal static byte WriteU16LENative(SDLIOStream dst, ushort value)
@@ -12660,7 +12668,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte WriteS16LEInterop(nint dst, short value)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, short, byte>)funcTable[297])(dst, value);
+            return ((delegate* unmanaged[Cdecl]<nint, short, byte>)funcTable[296])(dst, value);
         }
 
         internal static byte WriteS16LENative(SDLIOStream dst, short value)
@@ -12673,7 +12681,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte WriteU16BEInterop(nint dst, ushort value)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, ushort, byte>)funcTable[298])(dst, value);
+            return ((delegate* unmanaged[Cdecl]<nint, ushort, byte>)funcTable[297])(dst, value);
         }
 
         internal static byte WriteU16BENative(SDLIOStream dst, ushort value)
@@ -12686,7 +12694,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte WriteS16BEInterop(nint dst, short value)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, short, byte>)funcTable[299])(dst, value);
+            return ((delegate* unmanaged[Cdecl]<nint, short, byte>)funcTable[298])(dst, value);
         }
 
         internal static byte WriteS16BENative(SDLIOStream dst, short value)
@@ -12699,7 +12707,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte WriteU32LEInterop(nint dst, uint value)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, uint, byte>)funcTable[300])(dst, value);
+            return ((delegate* unmanaged[Cdecl]<nint, uint, byte>)funcTable[299])(dst, value);
         }
 
         internal static byte WriteU32LENative(SDLIOStream dst, uint value)
@@ -12712,7 +12720,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte WriteS32LEInterop(nint dst, int value)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, int, byte>)funcTable[301])(dst, value);
+            return ((delegate* unmanaged[Cdecl]<nint, int, byte>)funcTable[300])(dst, value);
         }
 
         internal static byte WriteS32LENative(SDLIOStream dst, int value)
@@ -12725,7 +12733,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte WriteU32BEInterop(nint dst, uint value)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, uint, byte>)funcTable[302])(dst, value);
+            return ((delegate* unmanaged[Cdecl]<nint, uint, byte>)funcTable[301])(dst, value);
         }
 
         internal static byte WriteU32BENative(SDLIOStream dst, uint value)
@@ -12738,7 +12746,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte WriteS32BEInterop(nint dst, int value)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, int, byte>)funcTable[303])(dst, value);
+            return ((delegate* unmanaged[Cdecl]<nint, int, byte>)funcTable[302])(dst, value);
         }
 
         internal static byte WriteS32BENative(SDLIOStream dst, int value)
@@ -12751,7 +12759,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte WriteU64LEInterop(nint dst, ulong value)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, ulong, byte>)funcTable[304])(dst, value);
+            return ((delegate* unmanaged[Cdecl]<nint, ulong, byte>)funcTable[303])(dst, value);
         }
 
         internal static byte WriteU64LENative(SDLIOStream dst, ulong value)
@@ -12764,7 +12772,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte WriteS64LEInterop(nint dst, long value)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, long, byte>)funcTable[305])(dst, value);
+            return ((delegate* unmanaged[Cdecl]<nint, long, byte>)funcTable[304])(dst, value);
         }
 
         internal static byte WriteS64LENative(SDLIOStream dst, long value)
@@ -12777,7 +12785,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte WriteU64BEInterop(nint dst, ulong value)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, ulong, byte>)funcTable[306])(dst, value);
+            return ((delegate* unmanaged[Cdecl]<nint, ulong, byte>)funcTable[305])(dst, value);
         }
 
         internal static byte WriteU64BENative(SDLIOStream dst, ulong value)
@@ -12790,7 +12798,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte WriteS64BEInterop(nint dst, long value)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, long, byte>)funcTable[307])(dst, value);
+            return ((delegate* unmanaged[Cdecl]<nint, long, byte>)funcTable[306])(dst, value);
         }
 
         internal static byte WriteS64BENative(SDLIOStream dst, long value)
@@ -12803,7 +12811,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static int GetNumAudioDriversNative()
         {
-            return ((delegate* unmanaged[Cdecl]<int>)funcTable[308])();
+            return ((delegate* unmanaged[Cdecl]<int>)funcTable[307])();
         }
 
         /// <summary>
@@ -12811,7 +12819,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte* GetAudioDriverNative(int index)
         {
-            return ((delegate* unmanaged[Cdecl]<int, byte*>)funcTable[309])(index);
+            return ((delegate* unmanaged[Cdecl]<int, byte*>)funcTable[308])(index);
         }
 
         /// <summary>
@@ -12819,7 +12827,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte* GetCurrentAudioDriverNative()
         {
-            return ((delegate* unmanaged[Cdecl]<byte*>)funcTable[310])();
+            return ((delegate* unmanaged[Cdecl]<byte*>)funcTable[309])();
         }
 
         /// <summary>
@@ -12827,7 +12835,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static uint* GetAudioPlaybackDevicesNative(int* count)
         {
-            return ((delegate* unmanaged[Cdecl]<int*, uint*>)funcTable[311])(count);
+            return ((delegate* unmanaged[Cdecl]<int*, uint*>)funcTable[310])(count);
         }
 
         /// <summary>
@@ -12835,7 +12843,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static uint* GetAudioRecordingDevicesNative(int* count)
         {
-            return ((delegate* unmanaged[Cdecl]<int*, uint*>)funcTable[312])(count);
+            return ((delegate* unmanaged[Cdecl]<int*, uint*>)funcTable[311])(count);
         }
 
         /// <summary>
@@ -12843,7 +12851,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte* GetAudioDeviceNameNative(uint devid)
         {
-            return ((delegate* unmanaged[Cdecl]<uint, byte*>)funcTable[313])(devid);
+            return ((delegate* unmanaged[Cdecl]<uint, byte*>)funcTable[312])(devid);
         }
 
         /// <summary>
@@ -12851,7 +12859,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte GetAudioDeviceFormatNative(uint devid, SDLAudioSpec* spec, int* sampleFrames)
         {
-            return ((delegate* unmanaged[Cdecl]<uint, SDLAudioSpec*, int*, byte>)funcTable[314])(devid, spec, sampleFrames);
+            return ((delegate* unmanaged[Cdecl]<uint, SDLAudioSpec*, int*, byte>)funcTable[313])(devid, spec, sampleFrames);
         }
 
         /// <summary>
@@ -12859,7 +12867,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static int* GetAudioDeviceChannelMapNative(uint devid, int* count)
         {
-            return ((delegate* unmanaged[Cdecl]<uint, int*, int*>)funcTable[315])(devid, count);
+            return ((delegate* unmanaged[Cdecl]<uint, int*, int*>)funcTable[314])(devid, count);
         }
 
         /// <summary>
@@ -12867,7 +12875,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static uint OpenAudioDeviceNative(uint devid, SDLAudioSpec* spec)
         {
-            return ((delegate* unmanaged[Cdecl]<uint, SDLAudioSpec*, uint>)funcTable[316])(devid, spec);
+            return ((delegate* unmanaged[Cdecl]<uint, SDLAudioSpec*, uint>)funcTable[315])(devid, spec);
         }
 
         /// <summary>
@@ -12875,7 +12883,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte IsAudioDevicePhysicalNative(uint devid)
         {
-            return ((delegate* unmanaged[Cdecl]<uint, byte>)funcTable[317])(devid);
+            return ((delegate* unmanaged[Cdecl]<uint, byte>)funcTable[316])(devid);
         }
 
         /// <summary>
@@ -12883,7 +12891,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte IsAudioDevicePlaybackNative(uint devid)
         {
-            return ((delegate* unmanaged[Cdecl]<uint, byte>)funcTable[318])(devid);
+            return ((delegate* unmanaged[Cdecl]<uint, byte>)funcTable[317])(devid);
         }
 
         /// <summary>
@@ -12891,7 +12899,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte PauseAudioDeviceNative(uint devid)
         {
-            return ((delegate* unmanaged[Cdecl]<uint, byte>)funcTable[319])(devid);
+            return ((delegate* unmanaged[Cdecl]<uint, byte>)funcTable[318])(devid);
         }
 
         /// <summary>
@@ -12899,7 +12907,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte ResumeAudioDeviceNative(uint devid)
         {
-            return ((delegate* unmanaged[Cdecl]<uint, byte>)funcTable[320])(devid);
+            return ((delegate* unmanaged[Cdecl]<uint, byte>)funcTable[319])(devid);
         }
 
         /// <summary>
@@ -12907,7 +12915,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte AudioDevicePausedNative(uint devid)
         {
-            return ((delegate* unmanaged[Cdecl]<uint, byte>)funcTable[321])(devid);
+            return ((delegate* unmanaged[Cdecl]<uint, byte>)funcTable[320])(devid);
         }
 
         /// <summary>
@@ -12915,7 +12923,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static float GetAudioDeviceGainNative(uint devid)
         {
-            return ((delegate* unmanaged[Cdecl]<uint, float>)funcTable[322])(devid);
+            return ((delegate* unmanaged[Cdecl]<uint, float>)funcTable[321])(devid);
         }
 
         /// <summary>
@@ -12923,7 +12931,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte SetAudioDeviceGainNative(uint devid, float gain)
         {
-            return ((delegate* unmanaged[Cdecl]<uint, float, byte>)funcTable[323])(devid, gain);
+            return ((delegate* unmanaged[Cdecl]<uint, float, byte>)funcTable[322])(devid, gain);
         }
 
         /// <summary>
@@ -12931,7 +12939,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void CloseAudioDeviceNative(uint devid)
         {
-            ((delegate* unmanaged[Cdecl]<uint, void>)funcTable[324])(devid);
+            ((delegate* unmanaged[Cdecl]<uint, void>)funcTable[323])(devid);
         }
 
         /// <summary>
@@ -12939,7 +12947,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte BindAudioStreamsNative(uint devid, SDLAudioStream* streams, int numStreams)
         {
-            return ((delegate* unmanaged[Cdecl]<uint, SDLAudioStream*, int, byte>)funcTable[325])(devid, streams, numStreams);
+            return ((delegate* unmanaged[Cdecl]<uint, SDLAudioStream*, int, byte>)funcTable[324])(devid, streams, numStreams);
         }
 
         /// <summary>
@@ -12947,7 +12955,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte BindAudioStreamInterop(uint devid, nint stream)
         {
-            return ((delegate* unmanaged[Cdecl]<uint, nint, byte>)funcTable[326])(devid, stream);
+            return ((delegate* unmanaged[Cdecl]<uint, nint, byte>)funcTable[325])(devid, stream);
         }
 
         internal static byte BindAudioStreamNative(uint devid, SDLAudioStream stream)
@@ -12960,7 +12968,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void UnbindAudioStreamsNative(SDLAudioStream* streams, int numStreams)
         {
-            ((delegate* unmanaged[Cdecl]<SDLAudioStream*, int, void>)funcTable[327])(streams, numStreams);
+            ((delegate* unmanaged[Cdecl]<SDLAudioStream*, int, void>)funcTable[326])(streams, numStreams);
         }
 
         /// <summary>
@@ -12968,7 +12976,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void UnbindAudioStreamInterop(nint stream)
         {
-            ((delegate* unmanaged[Cdecl]<nint, void>)funcTable[328])(stream);
+            ((delegate* unmanaged[Cdecl]<nint, void>)funcTable[327])(stream);
         }
 
         internal static void UnbindAudioStreamNative(SDLAudioStream stream)
@@ -12981,7 +12989,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static uint GetAudioStreamDeviceInterop(nint stream)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, uint>)funcTable[329])(stream);
+            return ((delegate* unmanaged[Cdecl]<nint, uint>)funcTable[328])(stream);
         }
 
         internal static uint GetAudioStreamDeviceNative(SDLAudioStream stream)
@@ -12994,7 +13002,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static nint CreateAudioStreamInterop(SDLAudioSpec* srcSpec, SDLAudioSpec* dstSpec)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLAudioSpec*, SDLAudioSpec*, nint>)funcTable[330])(srcSpec, dstSpec);
+            return ((delegate* unmanaged[Cdecl]<SDLAudioSpec*, SDLAudioSpec*, nint>)funcTable[329])(srcSpec, dstSpec);
         }
 
         internal static SDLAudioStream CreateAudioStreamNative(SDLAudioSpec* srcSpec, SDLAudioSpec* dstSpec)
@@ -13007,7 +13015,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static uint GetAudioStreamPropertiesInterop(nint stream)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, uint>)funcTable[331])(stream);
+            return ((delegate* unmanaged[Cdecl]<nint, uint>)funcTable[330])(stream);
         }
 
         internal static uint GetAudioStreamPropertiesNative(SDLAudioStream stream)
@@ -13020,7 +13028,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte GetAudioStreamFormatInterop(nint stream, SDLAudioSpec* srcSpec, SDLAudioSpec* dstSpec)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, SDLAudioSpec*, SDLAudioSpec*, byte>)funcTable[332])(stream, srcSpec, dstSpec);
+            return ((delegate* unmanaged[Cdecl]<nint, SDLAudioSpec*, SDLAudioSpec*, byte>)funcTable[331])(stream, srcSpec, dstSpec);
         }
 
         internal static byte GetAudioStreamFormatNative(SDLAudioStream stream, SDLAudioSpec* srcSpec, SDLAudioSpec* dstSpec)
@@ -13033,7 +13041,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte SetAudioStreamFormatInterop(nint stream, SDLAudioSpec* srcSpec, SDLAudioSpec* dstSpec)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, SDLAudioSpec*, SDLAudioSpec*, byte>)funcTable[333])(stream, srcSpec, dstSpec);
+            return ((delegate* unmanaged[Cdecl]<nint, SDLAudioSpec*, SDLAudioSpec*, byte>)funcTable[332])(stream, srcSpec, dstSpec);
         }
 
         internal static byte SetAudioStreamFormatNative(SDLAudioStream stream, SDLAudioSpec* srcSpec, SDLAudioSpec* dstSpec)
@@ -13046,7 +13054,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static float GetAudioStreamFrequencyRatioInterop(nint stream)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, float>)funcTable[334])(stream);
+            return ((delegate* unmanaged[Cdecl]<nint, float>)funcTable[333])(stream);
         }
 
         internal static float GetAudioStreamFrequencyRatioNative(SDLAudioStream stream)
@@ -13059,7 +13067,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte SetAudioStreamFrequencyRatioInterop(nint stream, float ratio)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, float, byte>)funcTable[335])(stream, ratio);
+            return ((delegate* unmanaged[Cdecl]<nint, float, byte>)funcTable[334])(stream, ratio);
         }
 
         internal static byte SetAudioStreamFrequencyRatioNative(SDLAudioStream stream, float ratio)
@@ -13072,7 +13080,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static float GetAudioStreamGainInterop(nint stream)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, float>)funcTable[336])(stream);
+            return ((delegate* unmanaged[Cdecl]<nint, float>)funcTable[335])(stream);
         }
 
         internal static float GetAudioStreamGainNative(SDLAudioStream stream)
@@ -13085,7 +13093,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte SetAudioStreamGainInterop(nint stream, float gain)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, float, byte>)funcTable[337])(stream, gain);
+            return ((delegate* unmanaged[Cdecl]<nint, float, byte>)funcTable[336])(stream, gain);
         }
 
         internal static byte SetAudioStreamGainNative(SDLAudioStream stream, float gain)
@@ -13098,7 +13106,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static int* GetAudioStreamInputChannelMapInterop(nint stream, int* count)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, int*, int*>)funcTable[338])(stream, count);
+            return ((delegate* unmanaged[Cdecl]<nint, int*, int*>)funcTable[337])(stream, count);
         }
 
         internal static int* GetAudioStreamInputChannelMapNative(SDLAudioStream stream, int* count)
@@ -13111,7 +13119,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static int* GetAudioStreamOutputChannelMapInterop(nint stream, int* count)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, int*, int*>)funcTable[339])(stream, count);
+            return ((delegate* unmanaged[Cdecl]<nint, int*, int*>)funcTable[338])(stream, count);
         }
 
         internal static int* GetAudioStreamOutputChannelMapNative(SDLAudioStream stream, int* count)
@@ -13124,7 +13132,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte SetAudioStreamInputChannelMapInterop(nint stream, int* chmap, int count)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, int*, int, byte>)funcTable[340])(stream, chmap, count);
+            return ((delegate* unmanaged[Cdecl]<nint, int*, int, byte>)funcTable[339])(stream, chmap, count);
         }
 
         internal static byte SetAudioStreamInputChannelMapNative(SDLAudioStream stream, int* chmap, int count)
@@ -13137,7 +13145,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte SetAudioStreamOutputChannelMapInterop(nint stream, int* chmap, int count)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, int*, int, byte>)funcTable[341])(stream, chmap, count);
+            return ((delegate* unmanaged[Cdecl]<nint, int*, int, byte>)funcTable[340])(stream, chmap, count);
         }
 
         internal static byte SetAudioStreamOutputChannelMapNative(SDLAudioStream stream, int* chmap, int count)
@@ -13150,7 +13158,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte PutAudioStreamDataInterop(nint stream, void* buf, int len)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, void*, int, byte>)funcTable[342])(stream, buf, len);
+            return ((delegate* unmanaged[Cdecl]<nint, void*, int, byte>)funcTable[341])(stream, buf, len);
         }
 
         internal static byte PutAudioStreamDataNative(SDLAudioStream stream, void* buf, int len)
@@ -13163,7 +13171,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte PutAudioStreamDataNoCopyInterop(nint stream, void* buf, int len, delegate* unmanaged[Cdecl]<void*, void*, int, void> callback, void* userdata)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, void*, int, delegate* unmanaged[Cdecl]<void*, void*, int, void> , void*, byte>)funcTable[343])(stream, buf, len, callback, userdata);
+            return ((delegate* unmanaged[Cdecl]<nint, void*, int, delegate* unmanaged[Cdecl]<void*, void*, int, void> , void*, byte>)funcTable[342])(stream, buf, len, callback, userdata);
         }
 
         internal static byte PutAudioStreamDataNoCopyNative(SDLAudioStream stream, void* buf, int len, delegate* unmanaged[Cdecl]<void*, void*, int, void> callback, void* userdata)
@@ -13176,7 +13184,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte PutAudioStreamPlanarDataInterop(nint stream, void** channelBuffers, int numChannels, int numSamples)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, void**, int, int, byte>)funcTable[344])(stream, channelBuffers, numChannels, numSamples);
+            return ((delegate* unmanaged[Cdecl]<nint, void**, int, int, byte>)funcTable[343])(stream, channelBuffers, numChannels, numSamples);
         }
 
         internal static byte PutAudioStreamPlanarDataNative(SDLAudioStream stream, void** channelBuffers, int numChannels, int numSamples)
@@ -13189,7 +13197,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static int GetAudioStreamDataInterop(nint stream, void* buf, int len)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, void*, int, int>)funcTable[345])(stream, buf, len);
+            return ((delegate* unmanaged[Cdecl]<nint, void*, int, int>)funcTable[344])(stream, buf, len);
         }
 
         internal static int GetAudioStreamDataNative(SDLAudioStream stream, void* buf, int len)
@@ -13202,7 +13210,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static int GetAudioStreamAvailableInterop(nint stream)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, int>)funcTable[346])(stream);
+            return ((delegate* unmanaged[Cdecl]<nint, int>)funcTable[345])(stream);
         }
 
         internal static int GetAudioStreamAvailableNative(SDLAudioStream stream)
@@ -13215,7 +13223,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static int GetAudioStreamQueuedInterop(nint stream)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, int>)funcTable[347])(stream);
+            return ((delegate* unmanaged[Cdecl]<nint, int>)funcTable[346])(stream);
         }
 
         internal static int GetAudioStreamQueuedNative(SDLAudioStream stream)
@@ -13228,7 +13236,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte FlushAudioStreamInterop(nint stream)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, byte>)funcTable[348])(stream);
+            return ((delegate* unmanaged[Cdecl]<nint, byte>)funcTable[347])(stream);
         }
 
         internal static byte FlushAudioStreamNative(SDLAudioStream stream)
@@ -13241,7 +13249,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte ClearAudioStreamInterop(nint stream)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, byte>)funcTable[349])(stream);
+            return ((delegate* unmanaged[Cdecl]<nint, byte>)funcTable[348])(stream);
         }
 
         internal static byte ClearAudioStreamNative(SDLAudioStream stream)
@@ -13254,7 +13262,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte PauseAudioStreamDeviceInterop(nint stream)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, byte>)funcTable[350])(stream);
+            return ((delegate* unmanaged[Cdecl]<nint, byte>)funcTable[349])(stream);
         }
 
         internal static byte PauseAudioStreamDeviceNative(SDLAudioStream stream)
@@ -13267,7 +13275,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte ResumeAudioStreamDeviceInterop(nint stream)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, byte>)funcTable[351])(stream);
+            return ((delegate* unmanaged[Cdecl]<nint, byte>)funcTable[350])(stream);
         }
 
         internal static byte ResumeAudioStreamDeviceNative(SDLAudioStream stream)
@@ -13280,7 +13288,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte AudioStreamDevicePausedInterop(nint stream)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, byte>)funcTable[352])(stream);
+            return ((delegate* unmanaged[Cdecl]<nint, byte>)funcTable[351])(stream);
         }
 
         internal static byte AudioStreamDevicePausedNative(SDLAudioStream stream)
@@ -13293,7 +13301,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte LockAudioStreamInterop(nint stream)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, byte>)funcTable[353])(stream);
+            return ((delegate* unmanaged[Cdecl]<nint, byte>)funcTable[352])(stream);
         }
 
         internal static byte LockAudioStreamNative(SDLAudioStream stream)
@@ -13306,7 +13314,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte UnlockAudioStreamInterop(nint stream)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, byte>)funcTable[354])(stream);
+            return ((delegate* unmanaged[Cdecl]<nint, byte>)funcTable[353])(stream);
         }
 
         internal static byte UnlockAudioStreamNative(SDLAudioStream stream)
@@ -13319,7 +13327,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte SetAudioStreamGetCallbackInterop(nint stream, delegate* unmanaged[Cdecl]<void*, nint, int, int, void> callback, void* userdata)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, delegate* unmanaged[Cdecl]<void*, nint, int, int, void> , void*, byte>)funcTable[355])(stream, callback, userdata);
+            return ((delegate* unmanaged[Cdecl]<nint, delegate* unmanaged[Cdecl]<void*, nint, int, int, void> , void*, byte>)funcTable[354])(stream, callback, userdata);
         }
 
         internal static byte SetAudioStreamGetCallbackNative(SDLAudioStream stream, delegate* unmanaged[Cdecl]<void*, nint, int, int, void> callback, void* userdata)
@@ -13332,7 +13340,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte SetAudioStreamPutCallbackInterop(nint stream, delegate* unmanaged[Cdecl]<void*, nint, int, int, void> callback, void* userdata)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, delegate* unmanaged[Cdecl]<void*, nint, int, int, void> , void*, byte>)funcTable[356])(stream, callback, userdata);
+            return ((delegate* unmanaged[Cdecl]<nint, delegate* unmanaged[Cdecl]<void*, nint, int, int, void> , void*, byte>)funcTable[355])(stream, callback, userdata);
         }
 
         internal static byte SetAudioStreamPutCallbackNative(SDLAudioStream stream, delegate* unmanaged[Cdecl]<void*, nint, int, int, void> callback, void* userdata)
@@ -13345,7 +13353,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void DestroyAudioStreamInterop(nint stream)
         {
-            ((delegate* unmanaged[Cdecl]<nint, void>)funcTable[357])(stream);
+            ((delegate* unmanaged[Cdecl]<nint, void>)funcTable[356])(stream);
         }
 
         internal static void DestroyAudioStreamNative(SDLAudioStream stream)
@@ -13358,7 +13366,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static nint OpenAudioDeviceStreamInterop(uint devid, SDLAudioSpec* spec, delegate* unmanaged[Cdecl]<void*, nint, int, int, void> callback, void* userdata)
         {
-            return ((delegate* unmanaged[Cdecl]<uint, SDLAudioSpec*, delegate* unmanaged[Cdecl]<void*, nint, int, int, void> , void*, nint>)funcTable[358])(devid, spec, callback, userdata);
+            return ((delegate* unmanaged[Cdecl]<uint, SDLAudioSpec*, delegate* unmanaged[Cdecl]<void*, nint, int, int, void> , void*, nint>)funcTable[357])(devid, spec, callback, userdata);
         }
 
         internal static SDLAudioStream OpenAudioDeviceStreamNative(uint devid, SDLAudioSpec* spec, delegate* unmanaged[Cdecl]<void*, nint, int, int, void> callback, void* userdata)
@@ -13371,7 +13379,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte SetAudioPostmixCallbackNative(uint devid, delegate* unmanaged[Cdecl]<void*, SDLAudioSpec*, float*, int, void> callback, void* userdata)
         {
-            return ((delegate* unmanaged[Cdecl]<uint, delegate* unmanaged[Cdecl]<void*, SDLAudioSpec*, float*, int, void> , void*, byte>)funcTable[359])(devid, callback, userdata);
+            return ((delegate* unmanaged[Cdecl]<uint, delegate* unmanaged[Cdecl]<void*, SDLAudioSpec*, float*, int, void> , void*, byte>)funcTable[358])(devid, callback, userdata);
         }
 
         /// <summary>
@@ -13379,7 +13387,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte LoadWAVIOInterop(nint src, byte closeio, SDLAudioSpec* spec, byte** audioBuf, uint* audioLen)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, byte, SDLAudioSpec*, byte**, uint*, byte>)funcTable[360])(src, closeio, spec, audioBuf, audioLen);
+            return ((delegate* unmanaged[Cdecl]<nint, byte, SDLAudioSpec*, byte**, uint*, byte>)funcTable[359])(src, closeio, spec, audioBuf, audioLen);
         }
 
         internal static byte LoadWAVIONative(SDLIOStream src, byte closeio, SDLAudioSpec* spec, byte** audioBuf, uint* audioLen)
@@ -13392,15 +13400,20 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte LoadWAVNative(byte* path, SDLAudioSpec* spec, byte** audioBuf, uint* audioLen)
         {
-            return ((delegate* unmanaged[Cdecl]<byte*, SDLAudioSpec*, byte**, uint*, byte>)funcTable[361])(path, spec, audioBuf, audioLen);
+            return ((delegate* unmanaged[Cdecl]<byte*, SDLAudioSpec*, byte**, uint*, byte>)funcTable[360])(path, spec, audioBuf, audioLen);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte MixAudioInterop(byte* dst, byte* src, int format, uint len, float volume)
+        {
+            return ((delegate* unmanaged[Cdecl]<byte*, byte*, int, uint, float, byte>)funcTable[361])(dst, src, format, len, volume);
+        }
+
         internal static byte MixAudioNative(byte* dst, byte* src, SDLAudioFormat format, uint len, float volume)
         {
-            return ((delegate* unmanaged[Cdecl]<byte*, byte*, SDLAudioFormat, uint, float, byte>)funcTable[362])(dst, src, format, len, volume);
+            return MixAudioInterop(dst, src, (int)format, len, volume);
         }
 
         /// <summary>
@@ -13408,63 +13421,98 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte ConvertAudioSamplesNative(SDLAudioSpec* srcSpec, byte* srcData, int srcLen, SDLAudioSpec* dstSpec, byte** dstData, int* dstLen)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLAudioSpec*, byte*, int, SDLAudioSpec*, byte**, int*, byte>)funcTable[363])(srcSpec, srcData, srcLen, dstSpec, dstData, dstLen);
+            return ((delegate* unmanaged[Cdecl]<SDLAudioSpec*, byte*, int, SDLAudioSpec*, byte**, int*, byte>)funcTable[362])(srcSpec, srcData, srcLen, dstSpec, dstData, dstLen);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte* GetAudioFormatNameInterop(int format)
+        {
+            return ((delegate* unmanaged[Cdecl]<int, byte*>)funcTable[363])(format);
+        }
+
         internal static byte* GetAudioFormatNameNative(SDLAudioFormat format)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLAudioFormat, byte*>)funcTable[364])(format);
+            return GetAudioFormatNameInterop((int)format);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int GetSilenceValueForFormatInterop(int format)
+        {
+            return ((delegate* unmanaged[Cdecl]<int, int>)funcTable[364])(format);
+        }
+
         internal static int GetSilenceValueForFormatNative(SDLAudioFormat format)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLAudioFormat, int>)funcTable[365])(format);
+            return GetSilenceValueForFormatInterop((int)format);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static uint ComposeCustomBlendModeInterop(int srcColorFactor, int dstColorFactor, int colorOperation, int srcAlphaFactor, int dstAlphaFactor, int alphaOperation)
+        {
+            return ((delegate* unmanaged[Cdecl]<int, int, int, int, int, int, uint>)funcTable[365])(srcColorFactor, dstColorFactor, colorOperation, srcAlphaFactor, dstAlphaFactor, alphaOperation);
+        }
+
         internal static uint ComposeCustomBlendModeNative(SDLBlendFactor srcColorFactor, SDLBlendFactor dstColorFactor, SDLBlendOperation colorOperation, SDLBlendFactor srcAlphaFactor, SDLBlendFactor dstAlphaFactor, SDLBlendOperation alphaOperation)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLBlendFactor, SDLBlendFactor, SDLBlendOperation, SDLBlendFactor, SDLBlendFactor, SDLBlendOperation, uint>)funcTable[366])(srcColorFactor, dstColorFactor, colorOperation, srcAlphaFactor, dstAlphaFactor, alphaOperation);
+            return ComposeCustomBlendModeInterop((int)srcColorFactor, (int)dstColorFactor, (int)colorOperation, (int)srcAlphaFactor, (int)dstAlphaFactor, (int)alphaOperation);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte* GetPixelFormatNameInterop(int format)
+        {
+            return ((delegate* unmanaged[Cdecl]<int, byte*>)funcTable[366])(format);
+        }
+
         internal static byte* GetPixelFormatNameNative(SDLPixelFormat format)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLPixelFormat, byte*>)funcTable[367])(format);
+            return GetPixelFormatNameInterop((int)format);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte GetMasksForPixelFormatInterop(int format, int* bpp, uint* rmask, uint* gmask, uint* bmask, uint* amask)
+        {
+            return ((delegate* unmanaged[Cdecl]<int, int*, uint*, uint*, uint*, uint*, byte>)funcTable[367])(format, bpp, rmask, gmask, bmask, amask);
+        }
+
         internal static byte GetMasksForPixelFormatNative(SDLPixelFormat format, int* bpp, uint* rmask, uint* gmask, uint* bmask, uint* amask)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLPixelFormat, int*, uint*, uint*, uint*, uint*, byte>)funcTable[368])(format, bpp, rmask, gmask, bmask, amask);
+            return GetMasksForPixelFormatInterop((int)format, bpp, rmask, gmask, bmask, amask);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int GetPixelFormatForMasksInterop(int bpp, uint rmask, uint gmask, uint bmask, uint amask)
+        {
+            return ((delegate* unmanaged[Cdecl]<int, uint, uint, uint, uint, int>)funcTable[368])(bpp, rmask, gmask, bmask, amask);
+        }
+
         internal static SDLPixelFormat GetPixelFormatForMasksNative(int bpp, uint rmask, uint gmask, uint bmask, uint amask)
         {
-            return ((delegate* unmanaged[Cdecl]<int, uint, uint, uint, uint, SDLPixelFormat>)funcTable[369])(bpp, rmask, gmask, bmask, amask);
+            return (SDLPixelFormat)GetPixelFormatForMasksInterop(bpp, rmask, gmask, bmask, amask);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static SDLPixelFormatDetails* GetPixelFormatDetailsInterop(int format)
+        {
+            return ((delegate* unmanaged[Cdecl]<int, SDLPixelFormatDetails*>)funcTable[369])(format);
+        }
+
         internal static SDLPixelFormatDetails* GetPixelFormatDetailsNative(SDLPixelFormat format)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLPixelFormat, SDLPixelFormatDetails*>)funcTable[370])(format);
+            return GetPixelFormatDetailsInterop((int)format);
         }
 
         /// <summary>
@@ -13472,7 +13520,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static SDLPalette* CreatePaletteNative(int ncolors)
         {
-            return ((delegate* unmanaged[Cdecl]<int, SDLPalette*>)funcTable[371])(ncolors);
+            return ((delegate* unmanaged[Cdecl]<int, SDLPalette*>)funcTable[370])(ncolors);
         }
 
         /// <summary>
@@ -13480,7 +13528,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte SetPaletteColorsNative(SDLPalette* palette, SDLColor* colors, int firstcolor, int ncolors)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLPalette*, SDLColor*, int, int, byte>)funcTable[372])(palette, colors, firstcolor, ncolors);
+            return ((delegate* unmanaged[Cdecl]<SDLPalette*, SDLColor*, int, int, byte>)funcTable[371])(palette, colors, firstcolor, ncolors);
         }
 
         /// <summary>
@@ -13488,7 +13536,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void DestroyPaletteNative(SDLPalette* palette)
         {
-            ((delegate* unmanaged[Cdecl]<SDLPalette*, void>)funcTable[373])(palette);
+            ((delegate* unmanaged[Cdecl]<SDLPalette*, void>)funcTable[372])(palette);
         }
 
         /// <summary>
@@ -13496,7 +13544,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static uint MapRGBNative(SDLPixelFormatDetails* format, SDLPalette* palette, byte r, byte g, byte b)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLPixelFormatDetails*, SDLPalette*, byte, byte, byte, uint>)funcTable[374])(format, palette, r, g, b);
+            return ((delegate* unmanaged[Cdecl]<SDLPixelFormatDetails*, SDLPalette*, byte, byte, byte, uint>)funcTable[373])(format, palette, r, g, b);
         }
 
         /// <summary>
@@ -13504,7 +13552,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static uint MapRGBANative(SDLPixelFormatDetails* format, SDLPalette* palette, byte r, byte g, byte b, byte a)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLPixelFormatDetails*, SDLPalette*, byte, byte, byte, byte, uint>)funcTable[375])(format, palette, r, g, b, a);
+            return ((delegate* unmanaged[Cdecl]<SDLPixelFormatDetails*, SDLPalette*, byte, byte, byte, byte, uint>)funcTable[374])(format, palette, r, g, b, a);
         }
 
         /// <summary>
@@ -13512,7 +13560,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void GetRGBNative(uint pixelvalue, SDLPixelFormatDetails* format, SDLPalette* palette, byte* r, byte* g, byte* b)
         {
-            ((delegate* unmanaged[Cdecl]<uint, SDLPixelFormatDetails*, SDLPalette*, byte*, byte*, byte*, void>)funcTable[376])(pixelvalue, format, palette, r, g, b);
+            ((delegate* unmanaged[Cdecl]<uint, SDLPixelFormatDetails*, SDLPalette*, byte*, byte*, byte*, void>)funcTable[375])(pixelvalue, format, palette, r, g, b);
         }
 
         /// <summary>
@@ -13520,7 +13568,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void GetRGBANative(uint pixelvalue, SDLPixelFormatDetails* format, SDLPalette* palette, byte* r, byte* g, byte* b, byte* a)
         {
-            ((delegate* unmanaged[Cdecl]<uint, SDLPixelFormatDetails*, SDLPalette*, byte*, byte*, byte*, byte*, void>)funcTable[377])(pixelvalue, format, palette, r, g, b, a);
+            ((delegate* unmanaged[Cdecl]<uint, SDLPixelFormatDetails*, SDLPalette*, byte*, byte*, byte*, byte*, void>)funcTable[376])(pixelvalue, format, palette, r, g, b, a);
         }
 
         /// <summary>
@@ -13528,7 +13576,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte HasRectIntersectionNative(SDLRect* a, SDLRect* b)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLRect*, SDLRect*, byte>)funcTable[378])(a, b);
+            return ((delegate* unmanaged[Cdecl]<SDLRect*, SDLRect*, byte>)funcTable[377])(a, b);
         }
 
         /// <summary>
@@ -13536,7 +13584,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte GetRectIntersectionNative(SDLRect* a, SDLRect* b, SDLRect* result)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLRect*, SDLRect*, SDLRect*, byte>)funcTable[379])(a, b, result);
+            return ((delegate* unmanaged[Cdecl]<SDLRect*, SDLRect*, SDLRect*, byte>)funcTable[378])(a, b, result);
         }
 
         /// <summary>
@@ -13544,7 +13592,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte GetRectUnionNative(SDLRect* a, SDLRect* b, SDLRect* result)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLRect*, SDLRect*, SDLRect*, byte>)funcTable[380])(a, b, result);
+            return ((delegate* unmanaged[Cdecl]<SDLRect*, SDLRect*, SDLRect*, byte>)funcTable[379])(a, b, result);
         }
 
         /// <summary>
@@ -13552,7 +13600,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte GetRectEnclosingPointsNative(SDLPoint* points, int count, SDLRect* clip, SDLRect* result)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLPoint*, int, SDLRect*, SDLRect*, byte>)funcTable[381])(points, count, clip, result);
+            return ((delegate* unmanaged[Cdecl]<SDLPoint*, int, SDLRect*, SDLRect*, byte>)funcTable[380])(points, count, clip, result);
         }
 
         /// <summary>
@@ -13560,7 +13608,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte GetRectAndLineIntersectionNative(SDLRect* rect, int* x1, int* y1, int* x2, int* y2)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLRect*, int*, int*, int*, int*, byte>)funcTable[382])(rect, x1, y1, x2, y2);
+            return ((delegate* unmanaged[Cdecl]<SDLRect*, int*, int*, int*, int*, byte>)funcTable[381])(rect, x1, y1, x2, y2);
         }
 
         /// <summary>
@@ -13568,7 +13616,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte HasRectIntersectionFloatNative(SDLFRect* a, SDLFRect* b)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLFRect*, SDLFRect*, byte>)funcTable[383])(a, b);
+            return ((delegate* unmanaged[Cdecl]<SDLFRect*, SDLFRect*, byte>)funcTable[382])(a, b);
         }
 
         /// <summary>
@@ -13576,7 +13624,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte GetRectIntersectionFloatNative(SDLFRect* a, SDLFRect* b, SDLFRect* result)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLFRect*, SDLFRect*, SDLFRect*, byte>)funcTable[384])(a, b, result);
+            return ((delegate* unmanaged[Cdecl]<SDLFRect*, SDLFRect*, SDLFRect*, byte>)funcTable[383])(a, b, result);
         }
 
         /// <summary>
@@ -13584,7 +13632,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte GetRectUnionFloatNative(SDLFRect* a, SDLFRect* b, SDLFRect* result)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLFRect*, SDLFRect*, SDLFRect*, byte>)funcTable[385])(a, b, result);
+            return ((delegate* unmanaged[Cdecl]<SDLFRect*, SDLFRect*, SDLFRect*, byte>)funcTable[384])(a, b, result);
         }
 
         /// <summary>
@@ -13592,7 +13640,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte GetRectEnclosingPointsFloatNative(SDLFPoint* points, int count, SDLFRect* clip, SDLFRect* result)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLFPoint*, int, SDLFRect*, SDLFRect*, byte>)funcTable[386])(points, count, clip, result);
+            return ((delegate* unmanaged[Cdecl]<SDLFPoint*, int, SDLFRect*, SDLFRect*, byte>)funcTable[385])(points, count, clip, result);
         }
 
         /// <summary>
@@ -13600,23 +13648,33 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte GetRectAndLineIntersectionFloatNative(SDLFRect* rect, float* x1, float* y1, float* x2, float* y2)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLFRect*, float*, float*, float*, float*, byte>)funcTable[387])(rect, x1, y1, x2, y2);
+            return ((delegate* unmanaged[Cdecl]<SDLFRect*, float*, float*, float*, float*, byte>)funcTable[386])(rect, x1, y1, x2, y2);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static SDLSurface* CreateSurfaceInterop(int width, int height, int format)
+        {
+            return ((delegate* unmanaged[Cdecl]<int, int, int, SDLSurface*>)funcTable[387])(width, height, format);
+        }
+
         internal static SDLSurface* CreateSurfaceNative(int width, int height, SDLPixelFormat format)
         {
-            return ((delegate* unmanaged[Cdecl]<int, int, SDLPixelFormat, SDLSurface*>)funcTable[388])(width, height, format);
+            return CreateSurfaceInterop(width, height, (int)format);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static SDLSurface* CreateSurfaceFromInterop(int width, int height, int format, void* pixels, int pitch)
+        {
+            return ((delegate* unmanaged[Cdecl]<int, int, int, void*, int, SDLSurface*>)funcTable[388])(width, height, format, pixels, pitch);
+        }
+
         internal static SDLSurface* CreateSurfaceFromNative(int width, int height, SDLPixelFormat format, void* pixels, int pitch)
         {
-            return ((delegate* unmanaged[Cdecl]<int, int, SDLPixelFormat, void*, int, SDLSurface*>)funcTable[389])(width, height, format, pixels, pitch);
+            return CreateSurfaceFromInterop(width, height, (int)format, pixels, pitch);
         }
 
         /// <summary>
@@ -13624,7 +13682,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void DestroySurfaceNative(SDLSurface* surface)
         {
-            ((delegate* unmanaged[Cdecl]<SDLSurface*, void>)funcTable[390])(surface);
+            ((delegate* unmanaged[Cdecl]<SDLSurface*, void>)funcTable[389])(surface);
         }
 
         /// <summary>
@@ -13632,23 +13690,33 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static uint GetSurfacePropertiesNative(SDLSurface* surface)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLSurface*, uint>)funcTable[391])(surface);
+            return ((delegate* unmanaged[Cdecl]<SDLSurface*, uint>)funcTable[390])(surface);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte SetSurfaceColorspaceInterop(SDLSurface* surface, int colorspace)
+        {
+            return ((delegate* unmanaged[Cdecl]<SDLSurface*, int, byte>)funcTable[391])(surface, colorspace);
+        }
+
         internal static byte SetSurfaceColorspaceNative(SDLSurface* surface, SDLColorspace colorspace)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLSurface*, SDLColorspace, byte>)funcTable[392])(surface, colorspace);
+            return SetSurfaceColorspaceInterop(surface, (int)colorspace);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int GetSurfaceColorspaceInterop(SDLSurface* surface)
+        {
+            return ((delegate* unmanaged[Cdecl]<SDLSurface*, int>)funcTable[392])(surface);
+        }
+
         internal static SDLColorspace GetSurfaceColorspaceNative(SDLSurface* surface)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLSurface*, SDLColorspace>)funcTable[393])(surface);
+            return (SDLColorspace)GetSurfaceColorspaceInterop(surface);
         }
 
         /// <summary>
@@ -13656,7 +13724,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static SDLPalette* CreateSurfacePaletteNative(SDLSurface* surface)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLSurface*, SDLPalette*>)funcTable[394])(surface);
+            return ((delegate* unmanaged[Cdecl]<SDLSurface*, SDLPalette*>)funcTable[393])(surface);
         }
 
         /// <summary>
@@ -13664,7 +13732,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte SetSurfacePaletteNative(SDLSurface* surface, SDLPalette* palette)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLSurface*, SDLPalette*, byte>)funcTable[395])(surface, palette);
+            return ((delegate* unmanaged[Cdecl]<SDLSurface*, SDLPalette*, byte>)funcTable[394])(surface, palette);
         }
 
         /// <summary>
@@ -13672,7 +13740,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static SDLPalette* GetSurfacePaletteNative(SDLSurface* surface)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLSurface*, SDLPalette*>)funcTable[396])(surface);
+            return ((delegate* unmanaged[Cdecl]<SDLSurface*, SDLPalette*>)funcTable[395])(surface);
         }
 
         /// <summary>
@@ -13680,7 +13748,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte AddSurfaceAlternateImageNative(SDLSurface* surface, SDLSurface* image)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLSurface*, SDLSurface*, byte>)funcTable[397])(surface, image);
+            return ((delegate* unmanaged[Cdecl]<SDLSurface*, SDLSurface*, byte>)funcTable[396])(surface, image);
         }
 
         /// <summary>
@@ -13688,7 +13756,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte SurfaceHasAlternateImagesNative(SDLSurface* surface)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLSurface*, byte>)funcTable[398])(surface);
+            return ((delegate* unmanaged[Cdecl]<SDLSurface*, byte>)funcTable[397])(surface);
         }
 
         /// <summary>
@@ -13696,7 +13764,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static SDLSurface** GetSurfaceImagesNative(SDLSurface* surface, int* count)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLSurface*, int*, SDLSurface**>)funcTable[399])(surface, count);
+            return ((delegate* unmanaged[Cdecl]<SDLSurface*, int*, SDLSurface**>)funcTable[398])(surface, count);
         }
 
         /// <summary>
@@ -13704,7 +13772,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void RemoveSurfaceAlternateImagesNative(SDLSurface* surface)
         {
-            ((delegate* unmanaged[Cdecl]<SDLSurface*, void>)funcTable[400])(surface);
+            ((delegate* unmanaged[Cdecl]<SDLSurface*, void>)funcTable[399])(surface);
         }
 
         /// <summary>
@@ -13712,7 +13780,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte LockSurfaceNative(SDLSurface* surface)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLSurface*, byte>)funcTable[401])(surface);
+            return ((delegate* unmanaged[Cdecl]<SDLSurface*, byte>)funcTable[400])(surface);
         }
 
         /// <summary>
@@ -13720,7 +13788,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void UnlockSurfaceNative(SDLSurface* surface)
         {
-            ((delegate* unmanaged[Cdecl]<SDLSurface*, void>)funcTable[402])(surface);
+            ((delegate* unmanaged[Cdecl]<SDLSurface*, void>)funcTable[401])(surface);
         }
 
         /// <summary>
@@ -13728,7 +13796,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static SDLSurface* LoadSurfaceIOInterop(nint src, byte closeio)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, byte, SDLSurface*>)funcTable[403])(src, closeio);
+            return ((delegate* unmanaged[Cdecl]<nint, byte, SDLSurface*>)funcTable[402])(src, closeio);
         }
 
         internal static SDLSurface* LoadSurfaceIONative(SDLIOStream src, byte closeio)
@@ -13741,7 +13809,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static SDLSurface* LoadSurfaceNative(byte* file)
         {
-            return ((delegate* unmanaged[Cdecl]<byte*, SDLSurface*>)funcTable[404])(file);
+            return ((delegate* unmanaged[Cdecl]<byte*, SDLSurface*>)funcTable[403])(file);
         }
 
         /// <summary>
@@ -13749,7 +13817,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static SDLSurface* LoadBMPIOInterop(nint src, byte closeio)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, byte, SDLSurface*>)funcTable[405])(src, closeio);
+            return ((delegate* unmanaged[Cdecl]<nint, byte, SDLSurface*>)funcTable[404])(src, closeio);
         }
 
         internal static SDLSurface* LoadBMPIONative(SDLIOStream src, byte closeio)
@@ -13762,7 +13830,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static SDLSurface* LoadBMPNative(byte* file)
         {
-            return ((delegate* unmanaged[Cdecl]<byte*, SDLSurface*>)funcTable[406])(file);
+            return ((delegate* unmanaged[Cdecl]<byte*, SDLSurface*>)funcTable[405])(file);
         }
 
         /// <summary>
@@ -13770,7 +13838,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte SaveBMPIOInterop(SDLSurface* surface, nint dst, byte closeio)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLSurface*, nint, byte, byte>)funcTable[407])(surface, dst, closeio);
+            return ((delegate* unmanaged[Cdecl]<SDLSurface*, nint, byte, byte>)funcTable[406])(surface, dst, closeio);
         }
 
         internal static byte SaveBMPIONative(SDLSurface* surface, SDLIOStream dst, byte closeio)
@@ -13783,7 +13851,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte SaveBMPNative(SDLSurface* surface, byte* file)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLSurface*, byte*, byte>)funcTable[408])(surface, file);
+            return ((delegate* unmanaged[Cdecl]<SDLSurface*, byte*, byte>)funcTable[407])(surface, file);
         }
 
         /// <summary>
@@ -13791,7 +13859,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static SDLSurface* LoadPNGIOInterop(nint src, byte closeio)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, byte, SDLSurface*>)funcTable[409])(src, closeio);
+            return ((delegate* unmanaged[Cdecl]<nint, byte, SDLSurface*>)funcTable[408])(src, closeio);
         }
 
         internal static SDLSurface* LoadPNGIONative(SDLIOStream src, byte closeio)
@@ -13804,7 +13872,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static SDLSurface* LoadPNGNative(byte* file)
         {
-            return ((delegate* unmanaged[Cdecl]<byte*, SDLSurface*>)funcTable[410])(file);
+            return ((delegate* unmanaged[Cdecl]<byte*, SDLSurface*>)funcTable[409])(file);
         }
 
         /// <summary>
@@ -13812,7 +13880,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte SavePNGIOInterop(SDLSurface* surface, nint dst, byte closeio)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLSurface*, nint, byte, byte>)funcTable[411])(surface, dst, closeio);
+            return ((delegate* unmanaged[Cdecl]<SDLSurface*, nint, byte, byte>)funcTable[410])(surface, dst, closeio);
         }
 
         internal static byte SavePNGIONative(SDLSurface* surface, SDLIOStream dst, byte closeio)
@@ -13825,7 +13893,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte SavePNGNative(SDLSurface* surface, byte* file)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLSurface*, byte*, byte>)funcTable[412])(surface, file);
+            return ((delegate* unmanaged[Cdecl]<SDLSurface*, byte*, byte>)funcTable[411])(surface, file);
         }
 
         /// <summary>
@@ -13833,7 +13901,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte SetSurfaceRLENative(SDLSurface* surface, byte enabled)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLSurface*, byte, byte>)funcTable[413])(surface, enabled);
+            return ((delegate* unmanaged[Cdecl]<SDLSurface*, byte, byte>)funcTable[412])(surface, enabled);
         }
 
         /// <summary>
@@ -13841,7 +13909,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte SurfaceHasRLENative(SDLSurface* surface)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLSurface*, byte>)funcTable[414])(surface);
+            return ((delegate* unmanaged[Cdecl]<SDLSurface*, byte>)funcTable[413])(surface);
         }
 
         /// <summary>
@@ -13849,7 +13917,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte SetSurfaceColorKeyNative(SDLSurface* surface, byte enabled, uint key)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLSurface*, byte, uint, byte>)funcTable[415])(surface, enabled, key);
+            return ((delegate* unmanaged[Cdecl]<SDLSurface*, byte, uint, byte>)funcTable[414])(surface, enabled, key);
         }
 
         /// <summary>
@@ -13857,7 +13925,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte SurfaceHasColorKeyNative(SDLSurface* surface)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLSurface*, byte>)funcTable[416])(surface);
+            return ((delegate* unmanaged[Cdecl]<SDLSurface*, byte>)funcTable[415])(surface);
         }
 
         /// <summary>
@@ -13865,7 +13933,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte GetSurfaceColorKeyNative(SDLSurface* surface, uint* key)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLSurface*, uint*, byte>)funcTable[417])(surface, key);
+            return ((delegate* unmanaged[Cdecl]<SDLSurface*, uint*, byte>)funcTable[416])(surface, key);
         }
 
         /// <summary>
@@ -13873,7 +13941,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte SetSurfaceColorModNative(SDLSurface* surface, byte r, byte g, byte b)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLSurface*, byte, byte, byte, byte>)funcTable[418])(surface, r, g, b);
+            return ((delegate* unmanaged[Cdecl]<SDLSurface*, byte, byte, byte, byte>)funcTable[417])(surface, r, g, b);
         }
 
         /// <summary>
@@ -13881,7 +13949,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte GetSurfaceColorModNative(SDLSurface* surface, byte* r, byte* g, byte* b)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLSurface*, byte*, byte*, byte*, byte>)funcTable[419])(surface, r, g, b);
+            return ((delegate* unmanaged[Cdecl]<SDLSurface*, byte*, byte*, byte*, byte>)funcTable[418])(surface, r, g, b);
         }
 
         /// <summary>
@@ -13889,7 +13957,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte SetSurfaceAlphaModNative(SDLSurface* surface, byte alpha)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLSurface*, byte, byte>)funcTable[420])(surface, alpha);
+            return ((delegate* unmanaged[Cdecl]<SDLSurface*, byte, byte>)funcTable[419])(surface, alpha);
         }
 
         /// <summary>
@@ -13897,7 +13965,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte GetSurfaceAlphaModNative(SDLSurface* surface, byte* alpha)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLSurface*, byte*, byte>)funcTable[421])(surface, alpha);
+            return ((delegate* unmanaged[Cdecl]<SDLSurface*, byte*, byte>)funcTable[420])(surface, alpha);
         }
 
         /// <summary>
@@ -13905,7 +13973,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte SetSurfaceBlendModeNative(SDLSurface* surface, uint blendMode)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLSurface*, uint, byte>)funcTable[422])(surface, blendMode);
+            return ((delegate* unmanaged[Cdecl]<SDLSurface*, uint, byte>)funcTable[421])(surface, blendMode);
         }
 
         /// <summary>
@@ -13913,7 +13981,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte GetSurfaceBlendModeNative(SDLSurface* surface, uint* blendMode)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLSurface*, uint*, byte>)funcTable[423])(surface, blendMode);
+            return ((delegate* unmanaged[Cdecl]<SDLSurface*, uint*, byte>)funcTable[422])(surface, blendMode);
         }
 
         /// <summary>
@@ -13921,7 +13989,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte SetSurfaceClipRectNative(SDLSurface* surface, SDLRect* rect)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLSurface*, SDLRect*, byte>)funcTable[424])(surface, rect);
+            return ((delegate* unmanaged[Cdecl]<SDLSurface*, SDLRect*, byte>)funcTable[423])(surface, rect);
         }
 
         /// <summary>
@@ -13929,15 +13997,20 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte GetSurfaceClipRectNative(SDLSurface* surface, SDLRect* rect)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLSurface*, SDLRect*, byte>)funcTable[425])(surface, rect);
+            return ((delegate* unmanaged[Cdecl]<SDLSurface*, SDLRect*, byte>)funcTable[424])(surface, rect);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte FlipSurfaceInterop(SDLSurface* surface, int flip)
+        {
+            return ((delegate* unmanaged[Cdecl]<SDLSurface*, int, byte>)funcTable[425])(surface, flip);
+        }
+
         internal static byte FlipSurfaceNative(SDLSurface* surface, SDLFlipMode flip)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLSurface*, SDLFlipMode, byte>)funcTable[426])(surface, flip);
+            return FlipSurfaceInterop(surface, (int)flip);
         }
 
         /// <summary>
@@ -13945,7 +14018,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static SDLSurface* RotateSurfaceNative(SDLSurface* surface, float angle)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLSurface*, float, SDLSurface*>)funcTable[427])(surface, angle);
+            return ((delegate* unmanaged[Cdecl]<SDLSurface*, float, SDLSurface*>)funcTable[426])(surface, angle);
         }
 
         /// <summary>
@@ -13953,55 +14026,85 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static SDLSurface* DuplicateSurfaceNative(SDLSurface* surface)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLSurface*, SDLSurface*>)funcTable[428])(surface);
+            return ((delegate* unmanaged[Cdecl]<SDLSurface*, SDLSurface*>)funcTable[427])(surface);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static SDLSurface* ScaleSurfaceInterop(SDLSurface* surface, int width, int height, int scaleMode)
+        {
+            return ((delegate* unmanaged[Cdecl]<SDLSurface*, int, int, int, SDLSurface*>)funcTable[428])(surface, width, height, scaleMode);
+        }
+
         internal static SDLSurface* ScaleSurfaceNative(SDLSurface* surface, int width, int height, SDLScaleMode scaleMode)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLSurface*, int, int, SDLScaleMode, SDLSurface*>)funcTable[429])(surface, width, height, scaleMode);
+            return ScaleSurfaceInterop(surface, width, height, (int)scaleMode);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static SDLSurface* ConvertSurfaceInterop(SDLSurface* surface, int format)
+        {
+            return ((delegate* unmanaged[Cdecl]<SDLSurface*, int, SDLSurface*>)funcTable[429])(surface, format);
+        }
+
         internal static SDLSurface* ConvertSurfaceNative(SDLSurface* surface, SDLPixelFormat format)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLSurface*, SDLPixelFormat, SDLSurface*>)funcTable[430])(surface, format);
+            return ConvertSurfaceInterop(surface, (int)format);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static SDLSurface* ConvertSurfaceAndColorspaceInterop(SDLSurface* surface, int format, SDLPalette* palette, int colorspace, uint props)
+        {
+            return ((delegate* unmanaged[Cdecl]<SDLSurface*, int, SDLPalette*, int, uint, SDLSurface*>)funcTable[430])(surface, format, palette, colorspace, props);
+        }
+
         internal static SDLSurface* ConvertSurfaceAndColorspaceNative(SDLSurface* surface, SDLPixelFormat format, SDLPalette* palette, SDLColorspace colorspace, uint props)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLSurface*, SDLPixelFormat, SDLPalette*, SDLColorspace, uint, SDLSurface*>)funcTable[431])(surface, format, palette, colorspace, props);
+            return ConvertSurfaceAndColorspaceInterop(surface, (int)format, palette, (int)colorspace, props);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte ConvertPixelsInterop(int width, int height, int srcFormat, void* src, int srcPitch, int dstFormat, void* dst, int dstPitch)
+        {
+            return ((delegate* unmanaged[Cdecl]<int, int, int, void*, int, int, void*, int, byte>)funcTable[431])(width, height, srcFormat, src, srcPitch, dstFormat, dst, dstPitch);
+        }
+
         internal static byte ConvertPixelsNative(int width, int height, SDLPixelFormat srcFormat, void* src, int srcPitch, SDLPixelFormat dstFormat, void* dst, int dstPitch)
         {
-            return ((delegate* unmanaged[Cdecl]<int, int, SDLPixelFormat, void*, int, SDLPixelFormat, void*, int, byte>)funcTable[432])(width, height, srcFormat, src, srcPitch, dstFormat, dst, dstPitch);
+            return ConvertPixelsInterop(width, height, (int)srcFormat, src, srcPitch, (int)dstFormat, dst, dstPitch);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte ConvertPixelsAndColorspaceInterop(int width, int height, int srcFormat, int srcColorspace, uint srcProperties, void* src, int srcPitch, int dstFormat, int dstColorspace, uint dstProperties, void* dst, int dstPitch)
+        {
+            return ((delegate* unmanaged[Cdecl]<int, int, int, int, uint, void*, int, int, int, uint, void*, int, byte>)funcTable[432])(width, height, srcFormat, srcColorspace, srcProperties, src, srcPitch, dstFormat, dstColorspace, dstProperties, dst, dstPitch);
+        }
+
         internal static byte ConvertPixelsAndColorspaceNative(int width, int height, SDLPixelFormat srcFormat, SDLColorspace srcColorspace, uint srcProperties, void* src, int srcPitch, SDLPixelFormat dstFormat, SDLColorspace dstColorspace, uint dstProperties, void* dst, int dstPitch)
         {
-            return ((delegate* unmanaged[Cdecl]<int, int, SDLPixelFormat, SDLColorspace, uint, void*, int, SDLPixelFormat, SDLColorspace, uint, void*, int, byte>)funcTable[433])(width, height, srcFormat, srcColorspace, srcProperties, src, srcPitch, dstFormat, dstColorspace, dstProperties, dst, dstPitch);
+            return ConvertPixelsAndColorspaceInterop(width, height, (int)srcFormat, (int)srcColorspace, srcProperties, src, srcPitch, (int)dstFormat, (int)dstColorspace, dstProperties, dst, dstPitch);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte PremultiplyAlphaInterop(int width, int height, int srcFormat, void* src, int srcPitch, int dstFormat, void* dst, int dstPitch, byte linear)
+        {
+            return ((delegate* unmanaged[Cdecl]<int, int, int, void*, int, int, void*, int, byte, byte>)funcTable[433])(width, height, srcFormat, src, srcPitch, dstFormat, dst, dstPitch, linear);
+        }
+
         internal static byte PremultiplyAlphaNative(int width, int height, SDLPixelFormat srcFormat, void* src, int srcPitch, SDLPixelFormat dstFormat, void* dst, int dstPitch, byte linear)
         {
-            return ((delegate* unmanaged[Cdecl]<int, int, SDLPixelFormat, void*, int, SDLPixelFormat, void*, int, byte, byte>)funcTable[434])(width, height, srcFormat, src, srcPitch, dstFormat, dst, dstPitch, linear);
+            return PremultiplyAlphaInterop(width, height, (int)srcFormat, src, srcPitch, (int)dstFormat, dst, dstPitch, linear);
         }
 
         /// <summary>
@@ -14009,7 +14112,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte PremultiplySurfaceAlphaNative(SDLSurface* surface, byte linear)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLSurface*, byte, byte>)funcTable[435])(surface, linear);
+            return ((delegate* unmanaged[Cdecl]<SDLSurface*, byte, byte>)funcTable[434])(surface, linear);
         }
 
         /// <summary>
@@ -14017,7 +14120,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte ClearSurfaceNative(SDLSurface* surface, float r, float g, float b, float a)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLSurface*, float, float, float, float, byte>)funcTable[436])(surface, r, g, b, a);
+            return ((delegate* unmanaged[Cdecl]<SDLSurface*, float, float, float, float, byte>)funcTable[435])(surface, r, g, b, a);
         }
 
         /// <summary>
@@ -14025,7 +14128,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte FillSurfaceRectNative(SDLSurface* dst, SDLRect* rect, uint color)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLSurface*, SDLRect*, uint, byte>)funcTable[437])(dst, rect, color);
+            return ((delegate* unmanaged[Cdecl]<SDLSurface*, SDLRect*, uint, byte>)funcTable[436])(dst, rect, color);
         }
 
         /// <summary>
@@ -14033,7 +14136,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte FillSurfaceRectsNative(SDLSurface* dst, SDLRect* rects, int count, uint color)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLSurface*, SDLRect*, int, uint, byte>)funcTable[438])(dst, rects, count, color);
+            return ((delegate* unmanaged[Cdecl]<SDLSurface*, SDLRect*, int, uint, byte>)funcTable[437])(dst, rects, count, color);
         }
 
         /// <summary>
@@ -14041,7 +14144,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte BlitSurfaceNative(SDLSurface* src, SDLRect* srcrect, SDLSurface* dst, SDLRect* dstrect)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLSurface*, SDLRect*, SDLSurface*, SDLRect*, byte>)funcTable[439])(src, srcrect, dst, dstrect);
+            return ((delegate* unmanaged[Cdecl]<SDLSurface*, SDLRect*, SDLSurface*, SDLRect*, byte>)funcTable[438])(src, srcrect, dst, dstrect);
         }
 
         /// <summary>
@@ -14049,31 +14152,46 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte BlitSurfaceUncheckedNative(SDLSurface* src, SDLRect* srcrect, SDLSurface* dst, SDLRect* dstrect)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLSurface*, SDLRect*, SDLSurface*, SDLRect*, byte>)funcTable[440])(src, srcrect, dst, dstrect);
+            return ((delegate* unmanaged[Cdecl]<SDLSurface*, SDLRect*, SDLSurface*, SDLRect*, byte>)funcTable[439])(src, srcrect, dst, dstrect);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte BlitSurfaceScaledInterop(SDLSurface* src, SDLRect* srcrect, SDLSurface* dst, SDLRect* dstrect, int scaleMode)
+        {
+            return ((delegate* unmanaged[Cdecl]<SDLSurface*, SDLRect*, SDLSurface*, SDLRect*, int, byte>)funcTable[440])(src, srcrect, dst, dstrect, scaleMode);
+        }
+
         internal static byte BlitSurfaceScaledNative(SDLSurface* src, SDLRect* srcrect, SDLSurface* dst, SDLRect* dstrect, SDLScaleMode scaleMode)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLSurface*, SDLRect*, SDLSurface*, SDLRect*, SDLScaleMode, byte>)funcTable[441])(src, srcrect, dst, dstrect, scaleMode);
+            return BlitSurfaceScaledInterop(src, srcrect, dst, dstrect, (int)scaleMode);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte BlitSurfaceUncheckedScaledInterop(SDLSurface* src, SDLRect* srcrect, SDLSurface* dst, SDLRect* dstrect, int scaleMode)
+        {
+            return ((delegate* unmanaged[Cdecl]<SDLSurface*, SDLRect*, SDLSurface*, SDLRect*, int, byte>)funcTable[441])(src, srcrect, dst, dstrect, scaleMode);
+        }
+
         internal static byte BlitSurfaceUncheckedScaledNative(SDLSurface* src, SDLRect* srcrect, SDLSurface* dst, SDLRect* dstrect, SDLScaleMode scaleMode)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLSurface*, SDLRect*, SDLSurface*, SDLRect*, SDLScaleMode, byte>)funcTable[442])(src, srcrect, dst, dstrect, scaleMode);
+            return BlitSurfaceUncheckedScaledInterop(src, srcrect, dst, dstrect, (int)scaleMode);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte StretchSurfaceInterop(SDLSurface* src, SDLRect* srcrect, SDLSurface* dst, SDLRect* dstrect, int scaleMode)
+        {
+            return ((delegate* unmanaged[Cdecl]<SDLSurface*, SDLRect*, SDLSurface*, SDLRect*, int, byte>)funcTable[442])(src, srcrect, dst, dstrect, scaleMode);
+        }
+
         internal static byte StretchSurfaceNative(SDLSurface* src, SDLRect* srcrect, SDLSurface* dst, SDLRect* dstrect, SDLScaleMode scaleMode)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLSurface*, SDLRect*, SDLSurface*, SDLRect*, SDLScaleMode, byte>)funcTable[443])(src, srcrect, dst, dstrect, scaleMode);
+            return StretchSurfaceInterop(src, srcrect, dst, dstrect, (int)scaleMode);
         }
 
         /// <summary>
@@ -14081,23 +14199,33 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte BlitSurfaceTiledNative(SDLSurface* src, SDLRect* srcrect, SDLSurface* dst, SDLRect* dstrect)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLSurface*, SDLRect*, SDLSurface*, SDLRect*, byte>)funcTable[444])(src, srcrect, dst, dstrect);
+            return ((delegate* unmanaged[Cdecl]<SDLSurface*, SDLRect*, SDLSurface*, SDLRect*, byte>)funcTable[443])(src, srcrect, dst, dstrect);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte BlitSurfaceTiledWithScaleInterop(SDLSurface* src, SDLRect* srcrect, float scale, int scaleMode, SDLSurface* dst, SDLRect* dstrect)
+        {
+            return ((delegate* unmanaged[Cdecl]<SDLSurface*, SDLRect*, float, int, SDLSurface*, SDLRect*, byte>)funcTable[444])(src, srcrect, scale, scaleMode, dst, dstrect);
+        }
+
         internal static byte BlitSurfaceTiledWithScaleNative(SDLSurface* src, SDLRect* srcrect, float scale, SDLScaleMode scaleMode, SDLSurface* dst, SDLRect* dstrect)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLSurface*, SDLRect*, float, SDLScaleMode, SDLSurface*, SDLRect*, byte>)funcTable[445])(src, srcrect, scale, scaleMode, dst, dstrect);
+            return BlitSurfaceTiledWithScaleInterop(src, srcrect, scale, (int)scaleMode, dst, dstrect);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte BlitSurface9GridInterop(SDLSurface* src, SDLRect* srcrect, int leftWidth, int rightWidth, int topHeight, int bottomHeight, float scale, int scaleMode, SDLSurface* dst, SDLRect* dstrect)
+        {
+            return ((delegate* unmanaged[Cdecl]<SDLSurface*, SDLRect*, int, int, int, int, float, int, SDLSurface*, SDLRect*, byte>)funcTable[445])(src, srcrect, leftWidth, rightWidth, topHeight, bottomHeight, scale, scaleMode, dst, dstrect);
+        }
+
         internal static byte BlitSurface9GridNative(SDLSurface* src, SDLRect* srcrect, int leftWidth, int rightWidth, int topHeight, int bottomHeight, float scale, SDLScaleMode scaleMode, SDLSurface* dst, SDLRect* dstrect)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLSurface*, SDLRect*, int, int, int, int, float, SDLScaleMode, SDLSurface*, SDLRect*, byte>)funcTable[446])(src, srcrect, leftWidth, rightWidth, topHeight, bottomHeight, scale, scaleMode, dst, dstrect);
+            return BlitSurface9GridInterop(src, srcrect, leftWidth, rightWidth, topHeight, bottomHeight, scale, (int)scaleMode, dst, dstrect);
         }
 
         /// <summary>
@@ -14105,7 +14233,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static uint MapSurfaceRGBNative(SDLSurface* surface, byte r, byte g, byte b)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLSurface*, byte, byte, byte, uint>)funcTable[447])(surface, r, g, b);
+            return ((delegate* unmanaged[Cdecl]<SDLSurface*, byte, byte, byte, uint>)funcTable[446])(surface, r, g, b);
         }
 
         /// <summary>
@@ -14113,7 +14241,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static uint MapSurfaceRGBANative(SDLSurface* surface, byte r, byte g, byte b, byte a)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLSurface*, byte, byte, byte, byte, uint>)funcTable[448])(surface, r, g, b, a);
+            return ((delegate* unmanaged[Cdecl]<SDLSurface*, byte, byte, byte, byte, uint>)funcTable[447])(surface, r, g, b, a);
         }
 
         /// <summary>
@@ -14121,7 +14249,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte ReadSurfacePixelNative(SDLSurface* surface, int x, int y, byte* r, byte* g, byte* b, byte* a)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLSurface*, int, int, byte*, byte*, byte*, byte*, byte>)funcTable[449])(surface, x, y, r, g, b, a);
+            return ((delegate* unmanaged[Cdecl]<SDLSurface*, int, int, byte*, byte*, byte*, byte*, byte>)funcTable[448])(surface, x, y, r, g, b, a);
         }
 
         /// <summary>
@@ -14129,7 +14257,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte ReadSurfacePixelFloatNative(SDLSurface* surface, int x, int y, float* r, float* g, float* b, float* a)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLSurface*, int, int, float*, float*, float*, float*, byte>)funcTable[450])(surface, x, y, r, g, b, a);
+            return ((delegate* unmanaged[Cdecl]<SDLSurface*, int, int, float*, float*, float*, float*, byte>)funcTable[449])(surface, x, y, r, g, b, a);
         }
 
         /// <summary>
@@ -14137,7 +14265,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte WriteSurfacePixelNative(SDLSurface* surface, int x, int y, byte r, byte g, byte b, byte a)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLSurface*, int, int, byte, byte, byte, byte, byte>)funcTable[451])(surface, x, y, r, g, b, a);
+            return ((delegate* unmanaged[Cdecl]<SDLSurface*, int, int, byte, byte, byte, byte, byte>)funcTable[450])(surface, x, y, r, g, b, a);
         }
 
         /// <summary>
@@ -14145,7 +14273,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte WriteSurfacePixelFloatNative(SDLSurface* surface, int x, int y, float r, float g, float b, float a)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLSurface*, int, int, float, float, float, float, byte>)funcTable[452])(surface, x, y, r, g, b, a);
+            return ((delegate* unmanaged[Cdecl]<SDLSurface*, int, int, float, float, float, float, byte>)funcTable[451])(surface, x, y, r, g, b, a);
         }
 
         /// <summary>
@@ -14153,7 +14281,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static int GetNumCameraDriversNative()
         {
-            return ((delegate* unmanaged[Cdecl]<int>)funcTable[453])();
+            return ((delegate* unmanaged[Cdecl]<int>)funcTable[452])();
         }
 
         /// <summary>
@@ -14161,7 +14289,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte* GetCameraDriverNative(int index)
         {
-            return ((delegate* unmanaged[Cdecl]<int, byte*>)funcTable[454])(index);
+            return ((delegate* unmanaged[Cdecl]<int, byte*>)funcTable[453])(index);
         }
 
         /// <summary>
@@ -14169,7 +14297,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte* GetCurrentCameraDriverNative()
         {
-            return ((delegate* unmanaged[Cdecl]<byte*>)funcTable[455])();
+            return ((delegate* unmanaged[Cdecl]<byte*>)funcTable[454])();
         }
 
         /// <summary>
@@ -14177,7 +14305,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static uint* GetCamerasNative(int* count)
         {
-            return ((delegate* unmanaged[Cdecl]<int*, uint*>)funcTable[456])(count);
+            return ((delegate* unmanaged[Cdecl]<int*, uint*>)funcTable[455])(count);
         }
 
         /// <summary>
@@ -14185,7 +14313,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static SDLCameraSpec** GetCameraSupportedFormatsNative(uint instanceId, int* count)
         {
-            return ((delegate* unmanaged[Cdecl]<uint, int*, SDLCameraSpec**>)funcTable[457])(instanceId, count);
+            return ((delegate* unmanaged[Cdecl]<uint, int*, SDLCameraSpec**>)funcTable[456])(instanceId, count);
         }
 
         /// <summary>
@@ -14193,15 +14321,20 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte* GetCameraNameNative(uint instanceId)
         {
-            return ((delegate* unmanaged[Cdecl]<uint, byte*>)funcTable[458])(instanceId);
+            return ((delegate* unmanaged[Cdecl]<uint, byte*>)funcTable[457])(instanceId);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int GetCameraPositionInterop(uint instanceId)
+        {
+            return ((delegate* unmanaged[Cdecl]<uint, int>)funcTable[458])(instanceId);
+        }
+
         internal static SDLCameraPosition GetCameraPositionNative(uint instanceId)
         {
-            return ((delegate* unmanaged[Cdecl]<uint, SDLCameraPosition>)funcTable[459])(instanceId);
+            return (SDLCameraPosition)GetCameraPositionInterop(instanceId);
         }
 
         /// <summary>
@@ -14209,7 +14342,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static nint OpenCameraInterop(uint instanceId, SDLCameraSpec* spec)
         {
-            return ((delegate* unmanaged[Cdecl]<uint, SDLCameraSpec*, nint>)funcTable[460])(instanceId, spec);
+            return ((delegate* unmanaged[Cdecl]<uint, SDLCameraSpec*, nint>)funcTable[459])(instanceId, spec);
         }
 
         internal static SDLCamera OpenCameraNative(uint instanceId, SDLCameraSpec* spec)
@@ -14220,14 +14353,14 @@ namespace Inno.Native.Sdl3
         /// <summary>
         /// To be documented.
         /// </summary>
-        internal static SDLCameraPermissionState GetCameraPermissionStateInterop(nint camera)
+        internal static int GetCameraPermissionStateInterop(nint camera)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, SDLCameraPermissionState>)funcTable[461])(camera);
+            return ((delegate* unmanaged[Cdecl]<nint, int>)funcTable[460])(camera);
         }
 
         internal static SDLCameraPermissionState GetCameraPermissionStateNative(SDLCamera camera)
         {
-            return GetCameraPermissionStateInterop(camera.Handle);
+            return (SDLCameraPermissionState)GetCameraPermissionStateInterop(camera.Handle);
         }
 
         /// <summary>
@@ -14235,7 +14368,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static uint GetCameraIDInterop(nint camera)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, uint>)funcTable[462])(camera);
+            return ((delegate* unmanaged[Cdecl]<nint, uint>)funcTable[461])(camera);
         }
 
         internal static uint GetCameraIDNative(SDLCamera camera)
@@ -14248,7 +14381,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static uint GetCameraPropertiesInterop(nint camera)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, uint>)funcTable[463])(camera);
+            return ((delegate* unmanaged[Cdecl]<nint, uint>)funcTable[462])(camera);
         }
 
         internal static uint GetCameraPropertiesNative(SDLCamera camera)
@@ -14261,7 +14394,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte GetCameraFormatInterop(nint camera, SDLCameraSpec* spec)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, SDLCameraSpec*, byte>)funcTable[464])(camera, spec);
+            return ((delegate* unmanaged[Cdecl]<nint, SDLCameraSpec*, byte>)funcTable[463])(camera, spec);
         }
 
         internal static byte GetCameraFormatNative(SDLCamera camera, SDLCameraSpec* spec)
@@ -14274,7 +14407,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static SDLSurface* AcquireCameraFrameInterop(nint camera, ulong* timestampNS)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, ulong*, SDLSurface*>)funcTable[465])(camera, timestampNS);
+            return ((delegate* unmanaged[Cdecl]<nint, ulong*, SDLSurface*>)funcTable[464])(camera, timestampNS);
         }
 
         internal static SDLSurface* AcquireCameraFrameNative(SDLCamera camera, ulong* timestampNS)
@@ -14287,7 +14420,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void ReleaseCameraFrameInterop(nint camera, SDLSurface* frame)
         {
-            ((delegate* unmanaged[Cdecl]<nint, SDLSurface*, void>)funcTable[466])(camera, frame);
+            ((delegate* unmanaged[Cdecl]<nint, SDLSurface*, void>)funcTable[465])(camera, frame);
         }
 
         internal static void ReleaseCameraFrameNative(SDLCamera camera, SDLSurface* frame)
@@ -14300,7 +14433,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void CloseCameraInterop(nint camera)
         {
-            ((delegate* unmanaged[Cdecl]<nint, void>)funcTable[467])(camera);
+            ((delegate* unmanaged[Cdecl]<nint, void>)funcTable[466])(camera);
         }
 
         internal static void CloseCameraNative(SDLCamera camera)
@@ -14313,7 +14446,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte SetClipboardTextNative(byte* text)
         {
-            return ((delegate* unmanaged[Cdecl]<byte*, byte>)funcTable[468])(text);
+            return ((delegate* unmanaged[Cdecl]<byte*, byte>)funcTable[467])(text);
         }
 
         /// <summary>
@@ -14321,7 +14454,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte* GetClipboardTextNative()
         {
-            return ((delegate* unmanaged[Cdecl]<byte*>)funcTable[469])();
+            return ((delegate* unmanaged[Cdecl]<byte*>)funcTable[468])();
         }
 
         /// <summary>
@@ -14329,7 +14462,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte HasClipboardTextNative()
         {
-            return ((delegate* unmanaged[Cdecl]<byte>)funcTable[470])();
+            return ((delegate* unmanaged[Cdecl]<byte>)funcTable[469])();
         }
 
         /// <summary>
@@ -14337,7 +14470,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte SetPrimarySelectionTextNative(byte* text)
         {
-            return ((delegate* unmanaged[Cdecl]<byte*, byte>)funcTable[471])(text);
+            return ((delegate* unmanaged[Cdecl]<byte*, byte>)funcTable[470])(text);
         }
 
         /// <summary>
@@ -14345,7 +14478,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte* GetPrimarySelectionTextNative()
         {
-            return ((delegate* unmanaged[Cdecl]<byte*>)funcTable[472])();
+            return ((delegate* unmanaged[Cdecl]<byte*>)funcTable[471])();
         }
 
         /// <summary>
@@ -14353,7 +14486,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte HasPrimarySelectionTextNative()
         {
-            return ((delegate* unmanaged[Cdecl]<byte>)funcTable[473])();
+            return ((delegate* unmanaged[Cdecl]<byte>)funcTable[472])();
         }
 
         /// <summary>
@@ -14361,7 +14494,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte SetClipboardDataNative(delegate* unmanaged[Cdecl]<void*, byte*, ulong*, void*> callback, delegate* unmanaged[Cdecl]<void*, void> cleanup, void* userdata, byte** mimeTypes, ulong numMimeTypes)
         {
-            return ((delegate* unmanaged[Cdecl]<delegate* unmanaged[Cdecl]<void*, byte*, ulong*, void*> , delegate* unmanaged[Cdecl]<void*, void> , void*, byte**, ulong, byte>)funcTable[474])(callback, cleanup, userdata, mimeTypes, numMimeTypes);
+            return ((delegate* unmanaged[Cdecl]<delegate* unmanaged[Cdecl]<void*, byte*, ulong*, void*> , delegate* unmanaged[Cdecl]<void*, void> , void*, byte**, ulong, byte>)funcTable[473])(callback, cleanup, userdata, mimeTypes, numMimeTypes);
         }
 
         /// <summary>
@@ -14369,7 +14502,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte ClearClipboardDataNative()
         {
-            return ((delegate* unmanaged[Cdecl]<byte>)funcTable[475])();
+            return ((delegate* unmanaged[Cdecl]<byte>)funcTable[474])();
         }
 
         /// <summary>
@@ -14377,7 +14510,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void* GetClipboardDataNative(byte* mimeType, ulong* size)
         {
-            return ((delegate* unmanaged[Cdecl]<byte*, ulong*, void*>)funcTable[476])(mimeType, size);
+            return ((delegate* unmanaged[Cdecl]<byte*, ulong*, void*>)funcTable[475])(mimeType, size);
         }
 
         /// <summary>
@@ -14385,7 +14518,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte HasClipboardDataNative(byte* mimeType)
         {
-            return ((delegate* unmanaged[Cdecl]<byte*, byte>)funcTable[477])(mimeType);
+            return ((delegate* unmanaged[Cdecl]<byte*, byte>)funcTable[476])(mimeType);
         }
 
         /// <summary>
@@ -14393,7 +14526,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte** GetClipboardMimeTypesNative(ulong* numMimeTypes)
         {
-            return ((delegate* unmanaged[Cdecl]<ulong*, byte**>)funcTable[478])(numMimeTypes);
+            return ((delegate* unmanaged[Cdecl]<ulong*, byte**>)funcTable[477])(numMimeTypes);
         }
 
         /// <summary>
@@ -14401,7 +14534,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static int GetNumLogicalCPUCoresNative()
         {
-            return ((delegate* unmanaged[Cdecl]<int>)funcTable[479])();
+            return ((delegate* unmanaged[Cdecl]<int>)funcTable[478])();
         }
 
         /// <summary>
@@ -14409,7 +14542,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static int GetCPUCacheLineSizeNative()
         {
-            return ((delegate* unmanaged[Cdecl]<int>)funcTable[480])();
+            return ((delegate* unmanaged[Cdecl]<int>)funcTable[479])();
         }
 
         /// <summary>
@@ -14417,7 +14550,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte HasAltiVecNative()
         {
-            return ((delegate* unmanaged[Cdecl]<byte>)funcTable[481])();
+            return ((delegate* unmanaged[Cdecl]<byte>)funcTable[480])();
         }
 
         /// <summary>
@@ -14425,7 +14558,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte HasMMXNative()
         {
-            return ((delegate* unmanaged[Cdecl]<byte>)funcTable[482])();
+            return ((delegate* unmanaged[Cdecl]<byte>)funcTable[481])();
         }
 
         /// <summary>
@@ -14433,7 +14566,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte HasSSENative()
         {
-            return ((delegate* unmanaged[Cdecl]<byte>)funcTable[483])();
+            return ((delegate* unmanaged[Cdecl]<byte>)funcTable[482])();
         }
 
         /// <summary>
@@ -14441,7 +14574,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte HasSSE2Native()
         {
-            return ((delegate* unmanaged[Cdecl]<byte>)funcTable[484])();
+            return ((delegate* unmanaged[Cdecl]<byte>)funcTable[483])();
         }
 
         /// <summary>
@@ -14449,7 +14582,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte HasSSE3Native()
         {
-            return ((delegate* unmanaged[Cdecl]<byte>)funcTable[485])();
+            return ((delegate* unmanaged[Cdecl]<byte>)funcTable[484])();
         }
 
         /// <summary>
@@ -14457,7 +14590,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte HasSSE41Native()
         {
-            return ((delegate* unmanaged[Cdecl]<byte>)funcTable[486])();
+            return ((delegate* unmanaged[Cdecl]<byte>)funcTable[485])();
         }
 
         /// <summary>
@@ -14465,7 +14598,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte HasSSE42Native()
         {
-            return ((delegate* unmanaged[Cdecl]<byte>)funcTable[487])();
+            return ((delegate* unmanaged[Cdecl]<byte>)funcTable[486])();
         }
 
         /// <summary>
@@ -14473,7 +14606,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte HasAVXNative()
         {
-            return ((delegate* unmanaged[Cdecl]<byte>)funcTable[488])();
+            return ((delegate* unmanaged[Cdecl]<byte>)funcTable[487])();
         }
 
         /// <summary>
@@ -14481,7 +14614,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte HasAVX2Native()
         {
-            return ((delegate* unmanaged[Cdecl]<byte>)funcTable[489])();
+            return ((delegate* unmanaged[Cdecl]<byte>)funcTable[488])();
         }
 
         /// <summary>
@@ -14489,7 +14622,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte HasAVX512FNative()
         {
-            return ((delegate* unmanaged[Cdecl]<byte>)funcTable[490])();
+            return ((delegate* unmanaged[Cdecl]<byte>)funcTable[489])();
         }
 
         /// <summary>
@@ -14497,7 +14630,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte HasARMSIMDNative()
         {
-            return ((delegate* unmanaged[Cdecl]<byte>)funcTable[491])();
+            return ((delegate* unmanaged[Cdecl]<byte>)funcTable[490])();
         }
 
         /// <summary>
@@ -14505,7 +14638,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte HasNEONNative()
         {
-            return ((delegate* unmanaged[Cdecl]<byte>)funcTable[492])();
+            return ((delegate* unmanaged[Cdecl]<byte>)funcTable[491])();
         }
 
         /// <summary>
@@ -14513,7 +14646,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte HasLSXNative()
         {
-            return ((delegate* unmanaged[Cdecl]<byte>)funcTable[493])();
+            return ((delegate* unmanaged[Cdecl]<byte>)funcTable[492])();
         }
 
         /// <summary>
@@ -14521,7 +14654,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte HasLASXNative()
         {
-            return ((delegate* unmanaged[Cdecl]<byte>)funcTable[494])();
+            return ((delegate* unmanaged[Cdecl]<byte>)funcTable[493])();
         }
 
         /// <summary>
@@ -14529,7 +14662,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static int GetSystemRAMNative()
         {
-            return ((delegate* unmanaged[Cdecl]<int>)funcTable[495])();
+            return ((delegate* unmanaged[Cdecl]<int>)funcTable[494])();
         }
 
         /// <summary>
@@ -14537,7 +14670,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static ulong GetSIMDAlignmentNative()
         {
-            return ((delegate* unmanaged[Cdecl]<ulong>)funcTable[496])();
+            return ((delegate* unmanaged[Cdecl]<ulong>)funcTable[495])();
         }
 
         /// <summary>
@@ -14545,7 +14678,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static int GetSystemPageSizeNative()
         {
-            return ((delegate* unmanaged[Cdecl]<int>)funcTable[497])();
+            return ((delegate* unmanaged[Cdecl]<int>)funcTable[496])();
         }
 
         /// <summary>
@@ -14553,7 +14686,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static int GetNumVideoDriversNative()
         {
-            return ((delegate* unmanaged[Cdecl]<int>)funcTable[498])();
+            return ((delegate* unmanaged[Cdecl]<int>)funcTable[497])();
         }
 
         /// <summary>
@@ -14561,7 +14694,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte* GetVideoDriverNative(int index)
         {
-            return ((delegate* unmanaged[Cdecl]<int, byte*>)funcTable[499])(index);
+            return ((delegate* unmanaged[Cdecl]<int, byte*>)funcTable[498])(index);
         }
 
         /// <summary>
@@ -14569,15 +14702,20 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte* GetCurrentVideoDriverNative()
         {
-            return ((delegate* unmanaged[Cdecl]<byte*>)funcTable[500])();
+            return ((delegate* unmanaged[Cdecl]<byte*>)funcTable[499])();
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int GetSystemThemeInterop()
+        {
+            return ((delegate* unmanaged[Cdecl]<int>)funcTable[500])();
+        }
+
         internal static SDLSystemTheme GetSystemThemeNative()
         {
-            return ((delegate* unmanaged[Cdecl]<SDLSystemTheme>)funcTable[501])();
+            return (SDLSystemTheme)GetSystemThemeInterop();
         }
 
         /// <summary>
@@ -14585,7 +14723,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static uint* GetDisplaysNative(int* count)
         {
-            return ((delegate* unmanaged[Cdecl]<int*, uint*>)funcTable[502])(count);
+            return ((delegate* unmanaged[Cdecl]<int*, uint*>)funcTable[501])(count);
         }
 
         /// <summary>
@@ -14593,7 +14731,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static uint GetPrimaryDisplayNative()
         {
-            return ((delegate* unmanaged[Cdecl]<uint>)funcTable[503])();
+            return ((delegate* unmanaged[Cdecl]<uint>)funcTable[502])();
         }
 
         /// <summary>
@@ -14601,7 +14739,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static uint GetDisplayPropertiesNative(uint displayID)
         {
-            return ((delegate* unmanaged[Cdecl]<uint, uint>)funcTable[504])(displayID);
+            return ((delegate* unmanaged[Cdecl]<uint, uint>)funcTable[503])(displayID);
         }
 
         /// <summary>
@@ -14609,7 +14747,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte* GetDisplayNameNative(uint displayID)
         {
-            return ((delegate* unmanaged[Cdecl]<uint, byte*>)funcTable[505])(displayID);
+            return ((delegate* unmanaged[Cdecl]<uint, byte*>)funcTable[504])(displayID);
         }
 
         /// <summary>
@@ -14617,7 +14755,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte GetDisplayBoundsNative(uint displayID, SDLRect* rect)
         {
-            return ((delegate* unmanaged[Cdecl]<uint, SDLRect*, byte>)funcTable[506])(displayID, rect);
+            return ((delegate* unmanaged[Cdecl]<uint, SDLRect*, byte>)funcTable[505])(displayID, rect);
         }
 
         /// <summary>
@@ -14625,23 +14763,33 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte GetDisplayUsableBoundsNative(uint displayID, SDLRect* rect)
         {
-            return ((delegate* unmanaged[Cdecl]<uint, SDLRect*, byte>)funcTable[507])(displayID, rect);
+            return ((delegate* unmanaged[Cdecl]<uint, SDLRect*, byte>)funcTable[506])(displayID, rect);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int GetNaturalDisplayOrientationInterop(uint displayID)
+        {
+            return ((delegate* unmanaged[Cdecl]<uint, int>)funcTable[507])(displayID);
+        }
+
         internal static SDLDisplayOrientation GetNaturalDisplayOrientationNative(uint displayID)
         {
-            return ((delegate* unmanaged[Cdecl]<uint, SDLDisplayOrientation>)funcTable[508])(displayID);
+            return (SDLDisplayOrientation)GetNaturalDisplayOrientationInterop(displayID);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int GetCurrentDisplayOrientationInterop(uint displayID)
+        {
+            return ((delegate* unmanaged[Cdecl]<uint, int>)funcTable[508])(displayID);
+        }
+
         internal static SDLDisplayOrientation GetCurrentDisplayOrientationNative(uint displayID)
         {
-            return ((delegate* unmanaged[Cdecl]<uint, SDLDisplayOrientation>)funcTable[509])(displayID);
+            return (SDLDisplayOrientation)GetCurrentDisplayOrientationInterop(displayID);
         }
 
         /// <summary>
@@ -14649,7 +14797,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static float GetDisplayContentScaleNative(uint displayID)
         {
-            return ((delegate* unmanaged[Cdecl]<uint, float>)funcTable[510])(displayID);
+            return ((delegate* unmanaged[Cdecl]<uint, float>)funcTable[509])(displayID);
         }
 
         /// <summary>
@@ -14657,7 +14805,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static SDLDisplayMode** GetFullscreenDisplayModesNative(uint displayID, int* count)
         {
-            return ((delegate* unmanaged[Cdecl]<uint, int*, SDLDisplayMode**>)funcTable[511])(displayID, count);
+            return ((delegate* unmanaged[Cdecl]<uint, int*, SDLDisplayMode**>)funcTable[510])(displayID, count);
         }
 
         /// <summary>
@@ -14665,7 +14813,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte GetClosestFullscreenDisplayModeNative(uint displayID, int w, int h, float refreshRate, byte includeHighDensityModes, SDLDisplayMode* closest)
         {
-            return ((delegate* unmanaged[Cdecl]<uint, int, int, float, byte, SDLDisplayMode*, byte>)funcTable[512])(displayID, w, h, refreshRate, includeHighDensityModes, closest);
+            return ((delegate* unmanaged[Cdecl]<uint, int, int, float, byte, SDLDisplayMode*, byte>)funcTable[511])(displayID, w, h, refreshRate, includeHighDensityModes, closest);
         }
 
         /// <summary>
@@ -14673,7 +14821,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static SDLDisplayMode* GetDesktopDisplayModeNative(uint displayID)
         {
-            return ((delegate* unmanaged[Cdecl]<uint, SDLDisplayMode*>)funcTable[513])(displayID);
+            return ((delegate* unmanaged[Cdecl]<uint, SDLDisplayMode*>)funcTable[512])(displayID);
         }
 
         /// <summary>
@@ -14681,7 +14829,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static SDLDisplayMode* GetCurrentDisplayModeNative(uint displayID)
         {
-            return ((delegate* unmanaged[Cdecl]<uint, SDLDisplayMode*>)funcTable[514])(displayID);
+            return ((delegate* unmanaged[Cdecl]<uint, SDLDisplayMode*>)funcTable[513])(displayID);
         }
 
         /// <summary>
@@ -14689,7 +14837,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static uint GetDisplayForPointNative(SDLPoint* point)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLPoint*, uint>)funcTable[515])(point);
+            return ((delegate* unmanaged[Cdecl]<SDLPoint*, uint>)funcTable[514])(point);
         }
 
         /// <summary>
@@ -14697,7 +14845,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static uint GetDisplayForRectNative(SDLRect* rect)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLRect*, uint>)funcTable[516])(rect);
+            return ((delegate* unmanaged[Cdecl]<SDLRect*, uint>)funcTable[515])(rect);
         }
 
         /// <summary>
@@ -14705,7 +14853,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static uint GetDisplayForWindowInterop(nint window)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, uint>)funcTable[517])(window);
+            return ((delegate* unmanaged[Cdecl]<nint, uint>)funcTable[516])(window);
         }
 
         internal static uint GetDisplayForWindowNative(SDLWindow window)
@@ -14718,7 +14866,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static float GetWindowPixelDensityInterop(nint window)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, float>)funcTable[518])(window);
+            return ((delegate* unmanaged[Cdecl]<nint, float>)funcTable[517])(window);
         }
 
         internal static float GetWindowPixelDensityNative(SDLWindow window)
@@ -14731,7 +14879,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static float GetWindowDisplayScaleInterop(nint window)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, float>)funcTable[519])(window);
+            return ((delegate* unmanaged[Cdecl]<nint, float>)funcTable[518])(window);
         }
 
         internal static float GetWindowDisplayScaleNative(SDLWindow window)
@@ -14744,7 +14892,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte SetWindowFullscreenModeInterop(nint window, SDLDisplayMode* mode)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, SDLDisplayMode*, byte>)funcTable[520])(window, mode);
+            return ((delegate* unmanaged[Cdecl]<nint, SDLDisplayMode*, byte>)funcTable[519])(window, mode);
         }
 
         internal static byte SetWindowFullscreenModeNative(SDLWindow window, SDLDisplayMode* mode)
@@ -14757,7 +14905,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static SDLDisplayMode* GetWindowFullscreenModeInterop(nint window)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, SDLDisplayMode*>)funcTable[521])(window);
+            return ((delegate* unmanaged[Cdecl]<nint, SDLDisplayMode*>)funcTable[520])(window);
         }
 
         internal static SDLDisplayMode* GetWindowFullscreenModeNative(SDLWindow window)
@@ -14770,7 +14918,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void* GetWindowICCProfileInterop(nint window, ulong* size)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, ulong*, void*>)funcTable[522])(window, size);
+            return ((delegate* unmanaged[Cdecl]<nint, ulong*, void*>)funcTable[521])(window, size);
         }
 
         internal static void* GetWindowICCProfileNative(SDLWindow window, ulong* size)
@@ -14781,14 +14929,14 @@ namespace Inno.Native.Sdl3
         /// <summary>
         /// To be documented.
         /// </summary>
-        internal static SDLPixelFormat GetWindowPixelFormatInterop(nint window)
+        internal static int GetWindowPixelFormatInterop(nint window)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, SDLPixelFormat>)funcTable[523])(window);
+            return ((delegate* unmanaged[Cdecl]<nint, int>)funcTable[522])(window);
         }
 
         internal static SDLPixelFormat GetWindowPixelFormatNative(SDLWindow window)
         {
-            return GetWindowPixelFormatInterop(window.Handle);
+            return (SDLPixelFormat)GetWindowPixelFormatInterop(window.Handle);
         }
 
         /// <summary>
@@ -14796,33 +14944,33 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static SDLWindow* GetWindowsNative(int* count)
         {
-            return ((delegate* unmanaged[Cdecl]<int*, SDLWindow*>)funcTable[524])(count);
+            return ((delegate* unmanaged[Cdecl]<int*, SDLWindow*>)funcTable[523])(count);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
-        internal static nint CreateWindowInterop(byte* title, int w, int h, SDLWindowFlags flags)
+        internal static nint CreateWindowInterop(byte* title, int w, int h, ulong flags)
         {
-            return ((delegate* unmanaged[Cdecl]<byte*, int, int, SDLWindowFlags, nint>)funcTable[525])(title, w, h, flags);
+            return ((delegate* unmanaged[Cdecl]<byte*, int, int, ulong, nint>)funcTable[524])(title, w, h, flags);
         }
 
         internal static SDLWindow CreateWindowNative(byte* title, int w, int h, SDLWindowFlags flags)
         {
-            return new SDLWindow(CreateWindowInterop(title, w, h, flags));
+            return new SDLWindow(CreateWindowInterop(title, w, h, (ulong)flags));
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
-        internal static nint CreatePopupWindowInterop(nint parent, int offsetX, int offsetY, int w, int h, SDLWindowFlags flags)
+        internal static nint CreatePopupWindowInterop(nint parent, int offsetX, int offsetY, int w, int h, ulong flags)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, int, int, int, int, SDLWindowFlags, nint>)funcTable[526])(parent, offsetX, offsetY, w, h, flags);
+            return ((delegate* unmanaged[Cdecl]<nint, int, int, int, int, ulong, nint>)funcTable[525])(parent, offsetX, offsetY, w, h, flags);
         }
 
         internal static SDLWindow CreatePopupWindowNative(SDLWindow parent, int offsetX, int offsetY, int w, int h, SDLWindowFlags flags)
         {
-            return new SDLWindow(CreatePopupWindowInterop(parent.Handle, offsetX, offsetY, w, h, flags));
+            return new SDLWindow(CreatePopupWindowInterop(parent.Handle, offsetX, offsetY, w, h, (ulong)flags));
         }
 
         /// <summary>
@@ -14830,7 +14978,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static nint CreateWindowWithPropertiesInterop(uint props)
         {
-            return ((delegate* unmanaged[Cdecl]<uint, nint>)funcTable[527])(props);
+            return ((delegate* unmanaged[Cdecl]<uint, nint>)funcTable[526])(props);
         }
 
         internal static SDLWindow CreateWindowWithPropertiesNative(uint props)
@@ -14843,7 +14991,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static uint GetWindowIDInterop(nint window)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, uint>)funcTable[528])(window);
+            return ((delegate* unmanaged[Cdecl]<nint, uint>)funcTable[527])(window);
         }
 
         internal static uint GetWindowIDNative(SDLWindow window)
@@ -14856,7 +15004,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static nint GetWindowFromIDInterop(uint id)
         {
-            return ((delegate* unmanaged[Cdecl]<uint, nint>)funcTable[529])(id);
+            return ((delegate* unmanaged[Cdecl]<uint, nint>)funcTable[528])(id);
         }
 
         internal static SDLWindow GetWindowFromIDNative(uint id)
@@ -14869,7 +15017,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static nint GetWindowParentInterop(nint window)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, nint>)funcTable[530])(window);
+            return ((delegate* unmanaged[Cdecl]<nint, nint>)funcTable[529])(window);
         }
 
         internal static SDLWindow GetWindowParentNative(SDLWindow window)
@@ -14882,7 +15030,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static uint GetWindowPropertiesInterop(nint window)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, uint>)funcTable[531])(window);
+            return ((delegate* unmanaged[Cdecl]<nint, uint>)funcTable[530])(window);
         }
 
         internal static uint GetWindowPropertiesNative(SDLWindow window)
@@ -14893,14 +15041,14 @@ namespace Inno.Native.Sdl3
         /// <summary>
         /// To be documented.
         /// </summary>
-        internal static SDLWindowFlags GetWindowFlagsInterop(nint window)
+        internal static ulong GetWindowFlagsInterop(nint window)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, SDLWindowFlags>)funcTable[532])(window);
+            return ((delegate* unmanaged[Cdecl]<nint, ulong>)funcTable[531])(window);
         }
 
         internal static SDLWindowFlags GetWindowFlagsNative(SDLWindow window)
         {
-            return GetWindowFlagsInterop(window.Handle);
+            return (SDLWindowFlags)GetWindowFlagsInterop(window.Handle);
         }
 
         /// <summary>
@@ -14908,7 +15056,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte SetWindowTitleInterop(nint window, byte* title)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, byte*, byte>)funcTable[533])(window, title);
+            return ((delegate* unmanaged[Cdecl]<nint, byte*, byte>)funcTable[532])(window, title);
         }
 
         internal static byte SetWindowTitleNative(SDLWindow window, byte* title)
@@ -14921,7 +15069,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte* GetWindowTitleInterop(nint window)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, byte*>)funcTable[534])(window);
+            return ((delegate* unmanaged[Cdecl]<nint, byte*>)funcTable[533])(window);
         }
 
         internal static byte* GetWindowTitleNative(SDLWindow window)
@@ -14934,7 +15082,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte SetWindowIconInterop(nint window, SDLSurface* icon)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, SDLSurface*, byte>)funcTable[535])(window, icon);
+            return ((delegate* unmanaged[Cdecl]<nint, SDLSurface*, byte>)funcTable[534])(window, icon);
         }
 
         internal static byte SetWindowIconNative(SDLWindow window, SDLSurface* icon)
@@ -14947,7 +15095,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte SetWindowPositionInterop(nint window, int x, int y)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, int, int, byte>)funcTable[536])(window, x, y);
+            return ((delegate* unmanaged[Cdecl]<nint, int, int, byte>)funcTable[535])(window, x, y);
         }
 
         internal static byte SetWindowPositionNative(SDLWindow window, int x, int y)
@@ -14960,7 +15108,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte GetWindowPositionInterop(nint window, int* x, int* y)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, int*, int*, byte>)funcTable[537])(window, x, y);
+            return ((delegate* unmanaged[Cdecl]<nint, int*, int*, byte>)funcTable[536])(window, x, y);
         }
 
         internal static byte GetWindowPositionNative(SDLWindow window, int* x, int* y)
@@ -14973,7 +15121,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte SetWindowSizeInterop(nint window, int w, int h)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, int, int, byte>)funcTable[538])(window, w, h);
+            return ((delegate* unmanaged[Cdecl]<nint, int, int, byte>)funcTable[537])(window, w, h);
         }
 
         internal static byte SetWindowSizeNative(SDLWindow window, int w, int h)
@@ -14986,7 +15134,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte GetWindowSizeInterop(nint window, int* w, int* h)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, int*, int*, byte>)funcTable[539])(window, w, h);
+            return ((delegate* unmanaged[Cdecl]<nint, int*, int*, byte>)funcTable[538])(window, w, h);
         }
 
         internal static byte GetWindowSizeNative(SDLWindow window, int* w, int* h)
@@ -14999,7 +15147,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte GetWindowSafeAreaInterop(nint window, SDLRect* rect)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, SDLRect*, byte>)funcTable[540])(window, rect);
+            return ((delegate* unmanaged[Cdecl]<nint, SDLRect*, byte>)funcTable[539])(window, rect);
         }
 
         internal static byte GetWindowSafeAreaNative(SDLWindow window, SDLRect* rect)
@@ -15012,7 +15160,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte SetWindowAspectRatioInterop(nint window, float minAspect, float maxAspect)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, float, float, byte>)funcTable[541])(window, minAspect, maxAspect);
+            return ((delegate* unmanaged[Cdecl]<nint, float, float, byte>)funcTable[540])(window, minAspect, maxAspect);
         }
 
         internal static byte SetWindowAspectRatioNative(SDLWindow window, float minAspect, float maxAspect)
@@ -15025,7 +15173,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte GetWindowAspectRatioInterop(nint window, float* minAspect, float* maxAspect)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, float*, float*, byte>)funcTable[542])(window, minAspect, maxAspect);
+            return ((delegate* unmanaged[Cdecl]<nint, float*, float*, byte>)funcTable[541])(window, minAspect, maxAspect);
         }
 
         internal static byte GetWindowAspectRatioNative(SDLWindow window, float* minAspect, float* maxAspect)
@@ -15038,7 +15186,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte GetWindowBordersSizeInterop(nint window, int* top, int* left, int* bottom, int* right)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, int*, int*, int*, int*, byte>)funcTable[543])(window, top, left, bottom, right);
+            return ((delegate* unmanaged[Cdecl]<nint, int*, int*, int*, int*, byte>)funcTable[542])(window, top, left, bottom, right);
         }
 
         internal static byte GetWindowBordersSizeNative(SDLWindow window, int* top, int* left, int* bottom, int* right)
@@ -15051,7 +15199,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte GetWindowSizeInPixelsInterop(nint window, int* w, int* h)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, int*, int*, byte>)funcTable[544])(window, w, h);
+            return ((delegate* unmanaged[Cdecl]<nint, int*, int*, byte>)funcTable[543])(window, w, h);
         }
 
         internal static byte GetWindowSizeInPixelsNative(SDLWindow window, int* w, int* h)
@@ -15064,7 +15212,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte SetWindowMinimumSizeInterop(nint window, int minW, int minH)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, int, int, byte>)funcTable[545])(window, minW, minH);
+            return ((delegate* unmanaged[Cdecl]<nint, int, int, byte>)funcTable[544])(window, minW, minH);
         }
 
         internal static byte SetWindowMinimumSizeNative(SDLWindow window, int minW, int minH)
@@ -15077,7 +15225,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte GetWindowMinimumSizeInterop(nint window, int* w, int* h)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, int*, int*, byte>)funcTable[546])(window, w, h);
+            return ((delegate* unmanaged[Cdecl]<nint, int*, int*, byte>)funcTable[545])(window, w, h);
         }
 
         internal static byte GetWindowMinimumSizeNative(SDLWindow window, int* w, int* h)
@@ -15090,7 +15238,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte SetWindowMaximumSizeInterop(nint window, int maxW, int maxH)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, int, int, byte>)funcTable[547])(window, maxW, maxH);
+            return ((delegate* unmanaged[Cdecl]<nint, int, int, byte>)funcTable[546])(window, maxW, maxH);
         }
 
         internal static byte SetWindowMaximumSizeNative(SDLWindow window, int maxW, int maxH)
@@ -15103,7 +15251,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte GetWindowMaximumSizeInterop(nint window, int* w, int* h)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, int*, int*, byte>)funcTable[548])(window, w, h);
+            return ((delegate* unmanaged[Cdecl]<nint, int*, int*, byte>)funcTable[547])(window, w, h);
         }
 
         internal static byte GetWindowMaximumSizeNative(SDLWindow window, int* w, int* h)
@@ -15116,7 +15264,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte SetWindowBorderedInterop(nint window, byte bordered)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, byte, byte>)funcTable[549])(window, bordered);
+            return ((delegate* unmanaged[Cdecl]<nint, byte, byte>)funcTable[548])(window, bordered);
         }
 
         internal static byte SetWindowBorderedNative(SDLWindow window, byte bordered)
@@ -15129,7 +15277,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte SetWindowResizableInterop(nint window, byte resizable)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, byte, byte>)funcTable[550])(window, resizable);
+            return ((delegate* unmanaged[Cdecl]<nint, byte, byte>)funcTable[549])(window, resizable);
         }
 
         internal static byte SetWindowResizableNative(SDLWindow window, byte resizable)
@@ -15142,7 +15290,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte SetWindowAlwaysOnTopInterop(nint window, byte onTop)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, byte, byte>)funcTable[551])(window, onTop);
+            return ((delegate* unmanaged[Cdecl]<nint, byte, byte>)funcTable[550])(window, onTop);
         }
 
         internal static byte SetWindowAlwaysOnTopNative(SDLWindow window, byte onTop)
@@ -15155,7 +15303,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte SetWindowFillDocumentInterop(nint window, byte fill)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, byte, byte>)funcTable[552])(window, fill);
+            return ((delegate* unmanaged[Cdecl]<nint, byte, byte>)funcTable[551])(window, fill);
         }
 
         internal static byte SetWindowFillDocumentNative(SDLWindow window, byte fill)
@@ -15168,7 +15316,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte ShowWindowInterop(nint window)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, byte>)funcTable[553])(window);
+            return ((delegate* unmanaged[Cdecl]<nint, byte>)funcTable[552])(window);
         }
 
         internal static byte ShowWindowNative(SDLWindow window)
@@ -15181,7 +15329,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte HideWindowInterop(nint window)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, byte>)funcTable[554])(window);
+            return ((delegate* unmanaged[Cdecl]<nint, byte>)funcTable[553])(window);
         }
 
         internal static byte HideWindowNative(SDLWindow window)
@@ -15194,7 +15342,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte RaiseWindowInterop(nint window)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, byte>)funcTable[555])(window);
+            return ((delegate* unmanaged[Cdecl]<nint, byte>)funcTable[554])(window);
         }
 
         internal static byte RaiseWindowNative(SDLWindow window)
@@ -15207,7 +15355,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte MaximizeWindowInterop(nint window)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, byte>)funcTable[556])(window);
+            return ((delegate* unmanaged[Cdecl]<nint, byte>)funcTable[555])(window);
         }
 
         internal static byte MaximizeWindowNative(SDLWindow window)
@@ -15220,7 +15368,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte MinimizeWindowInterop(nint window)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, byte>)funcTable[557])(window);
+            return ((delegate* unmanaged[Cdecl]<nint, byte>)funcTable[556])(window);
         }
 
         internal static byte MinimizeWindowNative(SDLWindow window)
@@ -15233,7 +15381,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte RestoreWindowInterop(nint window)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, byte>)funcTable[558])(window);
+            return ((delegate* unmanaged[Cdecl]<nint, byte>)funcTable[557])(window);
         }
 
         internal static byte RestoreWindowNative(SDLWindow window)
@@ -15246,7 +15394,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte SetWindowFullscreenInterop(nint window, byte fullscreen)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, byte, byte>)funcTable[559])(window, fullscreen);
+            return ((delegate* unmanaged[Cdecl]<nint, byte, byte>)funcTable[558])(window, fullscreen);
         }
 
         internal static byte SetWindowFullscreenNative(SDLWindow window, byte fullscreen)
@@ -15259,7 +15407,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte SyncWindowInterop(nint window)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, byte>)funcTable[560])(window);
+            return ((delegate* unmanaged[Cdecl]<nint, byte>)funcTable[559])(window);
         }
 
         internal static byte SyncWindowNative(SDLWindow window)
@@ -15272,7 +15420,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte WindowHasSurfaceInterop(nint window)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, byte>)funcTable[561])(window);
+            return ((delegate* unmanaged[Cdecl]<nint, byte>)funcTable[560])(window);
         }
 
         internal static byte WindowHasSurfaceNative(SDLWindow window)
@@ -15285,7 +15433,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static SDLSurface* GetWindowSurfaceInterop(nint window)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, SDLSurface*>)funcTable[562])(window);
+            return ((delegate* unmanaged[Cdecl]<nint, SDLSurface*>)funcTable[561])(window);
         }
 
         internal static SDLSurface* GetWindowSurfaceNative(SDLWindow window)
@@ -15298,7 +15446,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte SetWindowSurfaceVSyncInterop(nint window, int vsync)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, int, byte>)funcTable[563])(window, vsync);
+            return ((delegate* unmanaged[Cdecl]<nint, int, byte>)funcTable[562])(window, vsync);
         }
 
         internal static byte SetWindowSurfaceVSyncNative(SDLWindow window, int vsync)
@@ -15311,7 +15459,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte GetWindowSurfaceVSyncInterop(nint window, int* vsync)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, int*, byte>)funcTable[564])(window, vsync);
+            return ((delegate* unmanaged[Cdecl]<nint, int*, byte>)funcTable[563])(window, vsync);
         }
 
         internal static byte GetWindowSurfaceVSyncNative(SDLWindow window, int* vsync)
@@ -15324,7 +15472,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte UpdateWindowSurfaceInterop(nint window)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, byte>)funcTable[565])(window);
+            return ((delegate* unmanaged[Cdecl]<nint, byte>)funcTable[564])(window);
         }
 
         internal static byte UpdateWindowSurfaceNative(SDLWindow window)
@@ -15337,7 +15485,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte UpdateWindowSurfaceRectsInterop(nint window, SDLRect* rects, int numrects)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, SDLRect*, int, byte>)funcTable[566])(window, rects, numrects);
+            return ((delegate* unmanaged[Cdecl]<nint, SDLRect*, int, byte>)funcTable[565])(window, rects, numrects);
         }
 
         internal static byte UpdateWindowSurfaceRectsNative(SDLWindow window, SDLRect* rects, int numrects)
@@ -15350,7 +15498,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte DestroyWindowSurfaceInterop(nint window)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, byte>)funcTable[567])(window);
+            return ((delegate* unmanaged[Cdecl]<nint, byte>)funcTable[566])(window);
         }
 
         internal static byte DestroyWindowSurfaceNative(SDLWindow window)
@@ -15363,7 +15511,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte SetWindowKeyboardGrabInterop(nint window, byte grabbed)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, byte, byte>)funcTable[568])(window, grabbed);
+            return ((delegate* unmanaged[Cdecl]<nint, byte, byte>)funcTable[567])(window, grabbed);
         }
 
         internal static byte SetWindowKeyboardGrabNative(SDLWindow window, byte grabbed)
@@ -15376,7 +15524,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte SetWindowMouseGrabInterop(nint window, byte grabbed)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, byte, byte>)funcTable[569])(window, grabbed);
+            return ((delegate* unmanaged[Cdecl]<nint, byte, byte>)funcTable[568])(window, grabbed);
         }
 
         internal static byte SetWindowMouseGrabNative(SDLWindow window, byte grabbed)
@@ -15389,7 +15537,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte GetWindowKeyboardGrabInterop(nint window)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, byte>)funcTable[570])(window);
+            return ((delegate* unmanaged[Cdecl]<nint, byte>)funcTable[569])(window);
         }
 
         internal static byte GetWindowKeyboardGrabNative(SDLWindow window)
@@ -15402,7 +15550,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte GetWindowMouseGrabInterop(nint window)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, byte>)funcTable[571])(window);
+            return ((delegate* unmanaged[Cdecl]<nint, byte>)funcTable[570])(window);
         }
 
         internal static byte GetWindowMouseGrabNative(SDLWindow window)
@@ -15415,7 +15563,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static nint GetGrabbedWindowInterop()
         {
-            return ((delegate* unmanaged[Cdecl]<nint>)funcTable[572])();
+            return ((delegate* unmanaged[Cdecl]<nint>)funcTable[571])();
         }
 
         internal static SDLWindow GetGrabbedWindowNative()
@@ -15428,7 +15576,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte SetWindowMouseRectInterop(nint window, SDLRect* rect)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, SDLRect*, byte>)funcTable[573])(window, rect);
+            return ((delegate* unmanaged[Cdecl]<nint, SDLRect*, byte>)funcTable[572])(window, rect);
         }
 
         internal static byte SetWindowMouseRectNative(SDLWindow window, SDLRect* rect)
@@ -15441,7 +15589,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static SDLRect* GetWindowMouseRectInterop(nint window)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, SDLRect*>)funcTable[574])(window);
+            return ((delegate* unmanaged[Cdecl]<nint, SDLRect*>)funcTable[573])(window);
         }
 
         internal static SDLRect* GetWindowMouseRectNative(SDLWindow window)
@@ -15454,7 +15602,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte SetWindowOpacityInterop(nint window, float opacity)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, float, byte>)funcTable[575])(window, opacity);
+            return ((delegate* unmanaged[Cdecl]<nint, float, byte>)funcTable[574])(window, opacity);
         }
 
         internal static byte SetWindowOpacityNative(SDLWindow window, float opacity)
@@ -15467,7 +15615,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static float GetWindowOpacityInterop(nint window)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, float>)funcTable[576])(window);
+            return ((delegate* unmanaged[Cdecl]<nint, float>)funcTable[575])(window);
         }
 
         internal static float GetWindowOpacityNative(SDLWindow window)
@@ -15480,7 +15628,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte SetWindowParentInterop(nint window, nint parent)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, nint, byte>)funcTable[577])(window, parent);
+            return ((delegate* unmanaged[Cdecl]<nint, nint, byte>)funcTable[576])(window, parent);
         }
 
         internal static byte SetWindowParentNative(SDLWindow window, SDLWindow parent)
@@ -15493,7 +15641,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte SetWindowModalInterop(nint window, byte modal)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, byte, byte>)funcTable[578])(window, modal);
+            return ((delegate* unmanaged[Cdecl]<nint, byte, byte>)funcTable[577])(window, modal);
         }
 
         internal static byte SetWindowModalNative(SDLWindow window, byte modal)
@@ -15506,7 +15654,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte SetWindowFocusableInterop(nint window, byte focusable)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, byte, byte>)funcTable[579])(window, focusable);
+            return ((delegate* unmanaged[Cdecl]<nint, byte, byte>)funcTable[578])(window, focusable);
         }
 
         internal static byte SetWindowFocusableNative(SDLWindow window, byte focusable)
@@ -15519,7 +15667,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte ShowWindowSystemMenuInterop(nint window, int x, int y)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, int, int, byte>)funcTable[580])(window, x, y);
+            return ((delegate* unmanaged[Cdecl]<nint, int, int, byte>)funcTable[579])(window, x, y);
         }
 
         internal static byte ShowWindowSystemMenuNative(SDLWindow window, int x, int y)
@@ -15532,7 +15680,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte SetWindowHitTestInterop(nint window, delegate* unmanaged[Cdecl]<nint, SDLPoint*, void*, SDLHitTestResult> callback, void* callbackData)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, delegate* unmanaged[Cdecl]<nint, SDLPoint*, void*, SDLHitTestResult> , void*, byte>)funcTable[581])(window, callback, callbackData);
+            return ((delegate* unmanaged[Cdecl]<nint, delegate* unmanaged[Cdecl]<nint, SDLPoint*, void*, SDLHitTestResult> , void*, byte>)funcTable[580])(window, callback, callbackData);
         }
 
         internal static byte SetWindowHitTestNative(SDLWindow window, delegate* unmanaged[Cdecl]<nint, SDLPoint*, void*, SDLHitTestResult> callback, void* callbackData)
@@ -15545,7 +15693,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte SetWindowShapeInterop(nint window, SDLSurface* shape)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, SDLSurface*, byte>)funcTable[582])(window, shape);
+            return ((delegate* unmanaged[Cdecl]<nint, SDLSurface*, byte>)funcTable[581])(window, shape);
         }
 
         internal static byte SetWindowShapeNative(SDLWindow window, SDLSurface* shape)
@@ -15556,40 +15704,40 @@ namespace Inno.Native.Sdl3
         /// <summary>
         /// To be documented.
         /// </summary>
-        internal static byte FlashWindowInterop(nint window, SDLFlashOperation operation)
+        internal static byte FlashWindowInterop(nint window, int operation)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, SDLFlashOperation, byte>)funcTable[583])(window, operation);
+            return ((delegate* unmanaged[Cdecl]<nint, int, byte>)funcTable[582])(window, operation);
         }
 
         internal static byte FlashWindowNative(SDLWindow window, SDLFlashOperation operation)
         {
-            return FlashWindowInterop(window.Handle, operation);
+            return FlashWindowInterop(window.Handle, (int)operation);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
-        internal static byte SetWindowProgressStateInterop(nint window, SDLProgressState state)
+        internal static byte SetWindowProgressStateInterop(nint window, int state)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, SDLProgressState, byte>)funcTable[584])(window, state);
+            return ((delegate* unmanaged[Cdecl]<nint, int, byte>)funcTable[583])(window, state);
         }
 
         internal static byte SetWindowProgressStateNative(SDLWindow window, SDLProgressState state)
         {
-            return SetWindowProgressStateInterop(window.Handle, state);
+            return SetWindowProgressStateInterop(window.Handle, (int)state);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
-        internal static SDLProgressState GetWindowProgressStateInterop(nint window)
+        internal static int GetWindowProgressStateInterop(nint window)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, SDLProgressState>)funcTable[585])(window);
+            return ((delegate* unmanaged[Cdecl]<nint, int>)funcTable[584])(window);
         }
 
         internal static SDLProgressState GetWindowProgressStateNative(SDLWindow window)
         {
-            return GetWindowProgressStateInterop(window.Handle);
+            return (SDLProgressState)GetWindowProgressStateInterop(window.Handle);
         }
 
         /// <summary>
@@ -15597,7 +15745,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte SetWindowProgressValueInterop(nint window, float value)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, float, byte>)funcTable[586])(window, value);
+            return ((delegate* unmanaged[Cdecl]<nint, float, byte>)funcTable[585])(window, value);
         }
 
         internal static byte SetWindowProgressValueNative(SDLWindow window, float value)
@@ -15610,7 +15758,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static float GetWindowProgressValueInterop(nint window)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, float>)funcTable[587])(window);
+            return ((delegate* unmanaged[Cdecl]<nint, float>)funcTable[586])(window);
         }
 
         internal static float GetWindowProgressValueNative(SDLWindow window)
@@ -15623,7 +15771,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void DestroyWindowInterop(nint window)
         {
-            ((delegate* unmanaged[Cdecl]<nint, void>)funcTable[588])(window);
+            ((delegate* unmanaged[Cdecl]<nint, void>)funcTable[587])(window);
         }
 
         internal static void DestroyWindowNative(SDLWindow window)
@@ -15636,7 +15784,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte ScreenSaverEnabledNative()
         {
-            return ((delegate* unmanaged[Cdecl]<byte>)funcTable[589])();
+            return ((delegate* unmanaged[Cdecl]<byte>)funcTable[588])();
         }
 
         /// <summary>
@@ -15644,7 +15792,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte EnableScreenSaverNative()
         {
-            return ((delegate* unmanaged[Cdecl]<byte>)funcTable[590])();
+            return ((delegate* unmanaged[Cdecl]<byte>)funcTable[589])();
         }
 
         /// <summary>
@@ -15652,7 +15800,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte DisableScreenSaverNative()
         {
-            return ((delegate* unmanaged[Cdecl]<byte>)funcTable[591])();
+            return ((delegate* unmanaged[Cdecl]<byte>)funcTable[590])();
         }
 
         /// <summary>
@@ -15660,7 +15808,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte GLLoadLibraryNative(byte* path)
         {
-            return ((delegate* unmanaged[Cdecl]<byte*, byte>)funcTable[592])(path);
+            return ((delegate* unmanaged[Cdecl]<byte*, byte>)funcTable[591])(path);
         }
 
         /// <summary>
@@ -15668,7 +15816,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static delegate* unmanaged[Cdecl]<void> GLGetProcAddressNative(byte* proc)
         {
-            return ((delegate* unmanaged[Cdecl]<byte*, delegate* unmanaged[Cdecl]<void> >)funcTable[593])(proc);
+            return ((delegate* unmanaged[Cdecl]<byte*, delegate* unmanaged[Cdecl]<void> >)funcTable[592])(proc);
         }
 
         /// <summary>
@@ -15676,7 +15824,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static delegate* unmanaged[Cdecl]<void> EGLGetProcAddressNative(byte* proc)
         {
-            return ((delegate* unmanaged[Cdecl]<byte*, delegate* unmanaged[Cdecl]<void> >)funcTable[594])(proc);
+            return ((delegate* unmanaged[Cdecl]<byte*, delegate* unmanaged[Cdecl]<void> >)funcTable[593])(proc);
         }
 
         /// <summary>
@@ -15684,7 +15832,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void GLUnloadLibraryNative()
         {
-            ((delegate* unmanaged[Cdecl]<void>)funcTable[595])();
+            ((delegate* unmanaged[Cdecl]<void>)funcTable[594])();
         }
 
         /// <summary>
@@ -15692,7 +15840,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte GLExtensionSupportedNative(byte* extension)
         {
-            return ((delegate* unmanaged[Cdecl]<byte*, byte>)funcTable[596])(extension);
+            return ((delegate* unmanaged[Cdecl]<byte*, byte>)funcTable[595])(extension);
         }
 
         /// <summary>
@@ -15700,23 +15848,33 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void GLResetAttributesNative()
         {
-            ((delegate* unmanaged[Cdecl]<void>)funcTable[597])();
+            ((delegate* unmanaged[Cdecl]<void>)funcTable[596])();
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte GLSetAttributeInterop(int attr, int value)
+        {
+            return ((delegate* unmanaged[Cdecl]<int, int, byte>)funcTable[597])(attr, value);
+        }
+
         internal static byte GLSetAttributeNative(SDLGLAttr attr, int value)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLGLAttr, int, byte>)funcTable[598])(attr, value);
+            return GLSetAttributeInterop((int)attr, value);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte GLGetAttributeInterop(int attr, int* value)
+        {
+            return ((delegate* unmanaged[Cdecl]<int, int*, byte>)funcTable[598])(attr, value);
+        }
+
         internal static byte GLGetAttributeNative(SDLGLAttr attr, int* value)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLGLAttr, int*, byte>)funcTable[599])(attr, value);
+            return GLGetAttributeInterop((int)attr, value);
         }
 
         /// <summary>
@@ -15724,7 +15882,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static nint GLCreateContextInterop(nint window)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, nint>)funcTable[600])(window);
+            return ((delegate* unmanaged[Cdecl]<nint, nint>)funcTable[599])(window);
         }
 
         internal static SDLGLContext GLCreateContextNative(SDLWindow window)
@@ -15737,7 +15895,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte GLMakeCurrentInterop(nint window, nint context)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, nint, byte>)funcTable[601])(window, context);
+            return ((delegate* unmanaged[Cdecl]<nint, nint, byte>)funcTable[600])(window, context);
         }
 
         internal static byte GLMakeCurrentNative(SDLWindow window, SDLGLContext context)
@@ -15750,7 +15908,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static nint GLGetCurrentWindowInterop()
         {
-            return ((delegate* unmanaged[Cdecl]<nint>)funcTable[602])();
+            return ((delegate* unmanaged[Cdecl]<nint>)funcTable[601])();
         }
 
         internal static SDLWindow GLGetCurrentWindowNative()
@@ -15763,7 +15921,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static nint GLGetCurrentContextInterop()
         {
-            return ((delegate* unmanaged[Cdecl]<nint>)funcTable[603])();
+            return ((delegate* unmanaged[Cdecl]<nint>)funcTable[602])();
         }
 
         internal static SDLGLContext GLGetCurrentContextNative()
@@ -15776,7 +15934,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static nint EGLGetCurrentDisplayNative()
         {
-            return ((delegate* unmanaged[Cdecl]<nint>)funcTable[604])();
+            return ((delegate* unmanaged[Cdecl]<nint>)funcTable[603])();
         }
 
         /// <summary>
@@ -15784,7 +15942,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static nint EGLGetCurrentConfigNative()
         {
-            return ((delegate* unmanaged[Cdecl]<nint>)funcTable[605])();
+            return ((delegate* unmanaged[Cdecl]<nint>)funcTable[604])();
         }
 
         /// <summary>
@@ -15792,7 +15950,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static nint EGLGetWindowSurfaceInterop(nint window)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, nint>)funcTable[606])(window);
+            return ((delegate* unmanaged[Cdecl]<nint, nint>)funcTable[605])(window);
         }
 
         internal static nint EGLGetWindowSurfaceNative(SDLWindow window)
@@ -15805,7 +15963,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void EGLSetAttributeCallbacksNative(delegate* unmanaged[Cdecl]<void*, long*> platformAttribCallback, delegate* unmanaged[Cdecl]<void*, nint, nint, int*> surfaceAttribCallback, delegate* unmanaged[Cdecl]<void*, nint, nint, int*> contextAttribCallback, void* userdata)
         {
-            ((delegate* unmanaged[Cdecl]<delegate* unmanaged[Cdecl]<void*, long*> , delegate* unmanaged[Cdecl]<void*, nint, nint, int*> , delegate* unmanaged[Cdecl]<void*, nint, nint, int*> , void*, void>)funcTable[607])(platformAttribCallback, surfaceAttribCallback, contextAttribCallback, userdata);
+            ((delegate* unmanaged[Cdecl]<delegate* unmanaged[Cdecl]<void*, long*> , delegate* unmanaged[Cdecl]<void*, nint, nint, int*> , delegate* unmanaged[Cdecl]<void*, nint, nint, int*> , void*, void>)funcTable[606])(platformAttribCallback, surfaceAttribCallback, contextAttribCallback, userdata);
         }
 
         /// <summary>
@@ -15813,7 +15971,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte GLSetSwapIntervalNative(int interval)
         {
-            return ((delegate* unmanaged[Cdecl]<int, byte>)funcTable[608])(interval);
+            return ((delegate* unmanaged[Cdecl]<int, byte>)funcTable[607])(interval);
         }
 
         /// <summary>
@@ -15821,7 +15979,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte GLGetSwapIntervalNative(int* interval)
         {
-            return ((delegate* unmanaged[Cdecl]<int*, byte>)funcTable[609])(interval);
+            return ((delegate* unmanaged[Cdecl]<int*, byte>)funcTable[608])(interval);
         }
 
         /// <summary>
@@ -15829,7 +15987,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte GLSwapWindowInterop(nint window)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, byte>)funcTable[610])(window);
+            return ((delegate* unmanaged[Cdecl]<nint, byte>)funcTable[609])(window);
         }
 
         internal static byte GLSwapWindowNative(SDLWindow window)
@@ -15842,7 +16000,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte GLDestroyContextInterop(nint context)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, byte>)funcTable[611])(context);
+            return ((delegate* unmanaged[Cdecl]<nint, byte>)funcTable[610])(context);
         }
 
         internal static byte GLDestroyContextNative(SDLGLContext context)
@@ -15855,7 +16013,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void ShowOpenFileDialogInterop(delegate* unmanaged[Cdecl]<void*, byte**, int, void> callback, void* userdata, nint window, SDLDialogFileFilter* filters, int nfilters, byte* defaultLocation, byte allowMany)
         {
-            ((delegate* unmanaged[Cdecl]<delegate* unmanaged[Cdecl]<void*, byte**, int, void> , void*, nint, SDLDialogFileFilter*, int, byte*, byte, void>)funcTable[612])(callback, userdata, window, filters, nfilters, defaultLocation, allowMany);
+            ((delegate* unmanaged[Cdecl]<delegate* unmanaged[Cdecl]<void*, byte**, int, void> , void*, nint, SDLDialogFileFilter*, int, byte*, byte, void>)funcTable[611])(callback, userdata, window, filters, nfilters, defaultLocation, allowMany);
         }
 
         internal static void ShowOpenFileDialogNative(delegate* unmanaged[Cdecl]<void*, byte**, int, void> callback, void* userdata, SDLWindow window, SDLDialogFileFilter* filters, int nfilters, byte* defaultLocation, byte allowMany)
@@ -15868,7 +16026,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void ShowSaveFileDialogInterop(delegate* unmanaged[Cdecl]<void*, byte**, int, void> callback, void* userdata, nint window, SDLDialogFileFilter* filters, int nfilters, byte* defaultLocation)
         {
-            ((delegate* unmanaged[Cdecl]<delegate* unmanaged[Cdecl]<void*, byte**, int, void> , void*, nint, SDLDialogFileFilter*, int, byte*, void>)funcTable[613])(callback, userdata, window, filters, nfilters, defaultLocation);
+            ((delegate* unmanaged[Cdecl]<delegate* unmanaged[Cdecl]<void*, byte**, int, void> , void*, nint, SDLDialogFileFilter*, int, byte*, void>)funcTable[612])(callback, userdata, window, filters, nfilters, defaultLocation);
         }
 
         internal static void ShowSaveFileDialogNative(delegate* unmanaged[Cdecl]<void*, byte**, int, void> callback, void* userdata, SDLWindow window, SDLDialogFileFilter* filters, int nfilters, byte* defaultLocation)
@@ -15881,7 +16039,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void ShowOpenFolderDialogInterop(delegate* unmanaged[Cdecl]<void*, byte**, int, void> callback, void* userdata, nint window, byte* defaultLocation, byte allowMany)
         {
-            ((delegate* unmanaged[Cdecl]<delegate* unmanaged[Cdecl]<void*, byte**, int, void> , void*, nint, byte*, byte, void>)funcTable[614])(callback, userdata, window, defaultLocation, allowMany);
+            ((delegate* unmanaged[Cdecl]<delegate* unmanaged[Cdecl]<void*, byte**, int, void> , void*, nint, byte*, byte, void>)funcTable[613])(callback, userdata, window, defaultLocation, allowMany);
         }
 
         internal static void ShowOpenFolderDialogNative(delegate* unmanaged[Cdecl]<void*, byte**, int, void> callback, void* userdata, SDLWindow window, byte* defaultLocation, byte allowMany)
@@ -15892,9 +16050,14 @@ namespace Inno.Native.Sdl3
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void ShowFileDialogWithPropertiesInterop(int type, delegate* unmanaged[Cdecl]<void*, byte**, int, void> callback, void* userdata, uint props)
+        {
+            ((delegate* unmanaged[Cdecl]<int, delegate* unmanaged[Cdecl]<void*, byte**, int, void> , void*, uint, void>)funcTable[614])(type, callback, userdata, props);
+        }
+
         internal static void ShowFileDialogWithPropertiesNative(SDLFileDialogType type, delegate* unmanaged[Cdecl]<void*, byte**, int, void> callback, void* userdata, uint props)
         {
-            ((delegate* unmanaged[Cdecl]<SDLFileDialogType, delegate* unmanaged[Cdecl]<void*, byte**, int, void> , void*, uint, void>)funcTable[615])(type, callback, userdata, props);
+            ShowFileDialogWithPropertiesInterop((int)type, callback, userdata, props);
         }
 
         /// <summary>
@@ -15902,7 +16065,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void GUIDToStringNative(SdlGuid guid, byte* pszGUID, int cbGUID)
         {
-            ((delegate* unmanaged[Cdecl]<SdlGuid, byte*, int, void>)funcTable[616])(guid, pszGUID, cbGUID);
+            ((delegate* unmanaged[Cdecl]<SdlGuid, byte*, int, void>)funcTable[615])(guid, pszGUID, cbGUID);
         }
 
         /// <summary>
@@ -15910,15 +16073,20 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static SdlGuid StringToGUIDNative(byte* pchGUID)
         {
-            return ((delegate* unmanaged[Cdecl]<byte*, SdlGuid>)funcTable[617])(pchGUID);
+            return ((delegate* unmanaged[Cdecl]<byte*, SdlGuid>)funcTable[616])(pchGUID);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int GetPowerInfoInterop(int* seconds, int* percent)
+        {
+            return ((delegate* unmanaged[Cdecl]<int*, int*, int>)funcTable[617])(seconds, percent);
+        }
+
         internal static SDLPowerState GetPowerInfoNative(int* seconds, int* percent)
         {
-            return ((delegate* unmanaged[Cdecl]<int*, int*, SDLPowerState>)funcTable[618])(seconds, percent);
+            return (SDLPowerState)GetPowerInfoInterop(seconds, percent);
         }
 
         /// <summary>
@@ -15926,7 +16094,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static uint* GetSensorsNative(int* count)
         {
-            return ((delegate* unmanaged[Cdecl]<int*, uint*>)funcTable[619])(count);
+            return ((delegate* unmanaged[Cdecl]<int*, uint*>)funcTable[618])(count);
         }
 
         /// <summary>
@@ -15934,15 +16102,20 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte* GetSensorNameForIDNative(uint instanceId)
         {
-            return ((delegate* unmanaged[Cdecl]<uint, byte*>)funcTable[620])(instanceId);
+            return ((delegate* unmanaged[Cdecl]<uint, byte*>)funcTable[619])(instanceId);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int GetSensorTypeForIDInterop(uint instanceId)
+        {
+            return ((delegate* unmanaged[Cdecl]<uint, int>)funcTable[620])(instanceId);
+        }
+
         internal static SDLSensorType GetSensorTypeForIDNative(uint instanceId)
         {
-            return ((delegate* unmanaged[Cdecl]<uint, SDLSensorType>)funcTable[621])(instanceId);
+            return (SDLSensorType)GetSensorTypeForIDInterop(instanceId);
         }
 
         /// <summary>
@@ -15950,7 +16123,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static int GetSensorNonPortableTypeForIDNative(uint instanceId)
         {
-            return ((delegate* unmanaged[Cdecl]<uint, int>)funcTable[622])(instanceId);
+            return ((delegate* unmanaged[Cdecl]<uint, int>)funcTable[621])(instanceId);
         }
 
         /// <summary>
@@ -15958,7 +16131,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static nint OpenSensorInterop(uint instanceId)
         {
-            return ((delegate* unmanaged[Cdecl]<uint, nint>)funcTable[623])(instanceId);
+            return ((delegate* unmanaged[Cdecl]<uint, nint>)funcTable[622])(instanceId);
         }
 
         internal static SDLSensor OpenSensorNative(uint instanceId)
@@ -15971,7 +16144,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static nint GetSensorFromIDInterop(uint instanceId)
         {
-            return ((delegate* unmanaged[Cdecl]<uint, nint>)funcTable[624])(instanceId);
+            return ((delegate* unmanaged[Cdecl]<uint, nint>)funcTable[623])(instanceId);
         }
 
         internal static SDLSensor GetSensorFromIDNative(uint instanceId)
@@ -15984,7 +16157,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static uint GetSensorPropertiesInterop(nint sensor)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, uint>)funcTable[625])(sensor);
+            return ((delegate* unmanaged[Cdecl]<nint, uint>)funcTable[624])(sensor);
         }
 
         internal static uint GetSensorPropertiesNative(SDLSensor sensor)
@@ -15997,7 +16170,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte* GetSensorNameInterop(nint sensor)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, byte*>)funcTable[626])(sensor);
+            return ((delegate* unmanaged[Cdecl]<nint, byte*>)funcTable[625])(sensor);
         }
 
         internal static byte* GetSensorNameNative(SDLSensor sensor)
@@ -16008,14 +16181,14 @@ namespace Inno.Native.Sdl3
         /// <summary>
         /// To be documented.
         /// </summary>
-        internal static SDLSensorType GetSensorTypeInterop(nint sensor)
+        internal static int GetSensorTypeInterop(nint sensor)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, SDLSensorType>)funcTable[627])(sensor);
+            return ((delegate* unmanaged[Cdecl]<nint, int>)funcTable[626])(sensor);
         }
 
         internal static SDLSensorType GetSensorTypeNative(SDLSensor sensor)
         {
-            return GetSensorTypeInterop(sensor.Handle);
+            return (SDLSensorType)GetSensorTypeInterop(sensor.Handle);
         }
 
         /// <summary>
@@ -16023,7 +16196,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static int GetSensorNonPortableTypeInterop(nint sensor)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, int>)funcTable[628])(sensor);
+            return ((delegate* unmanaged[Cdecl]<nint, int>)funcTable[627])(sensor);
         }
 
         internal static int GetSensorNonPortableTypeNative(SDLSensor sensor)
@@ -16036,7 +16209,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static uint GetSensorIDInterop(nint sensor)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, uint>)funcTable[629])(sensor);
+            return ((delegate* unmanaged[Cdecl]<nint, uint>)funcTable[628])(sensor);
         }
 
         internal static uint GetSensorIDNative(SDLSensor sensor)
@@ -16049,7 +16222,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte GetSensorDataInterop(nint sensor, float* data, int numValues)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, float*, int, byte>)funcTable[630])(sensor, data, numValues);
+            return ((delegate* unmanaged[Cdecl]<nint, float*, int, byte>)funcTable[629])(sensor, data, numValues);
         }
 
         internal static byte GetSensorDataNative(SDLSensor sensor, float* data, int numValues)
@@ -16062,7 +16235,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void CloseSensorInterop(nint sensor)
         {
-            ((delegate* unmanaged[Cdecl]<nint, void>)funcTable[631])(sensor);
+            ((delegate* unmanaged[Cdecl]<nint, void>)funcTable[630])(sensor);
         }
 
         internal static void CloseSensorNative(SDLSensor sensor)
@@ -16075,7 +16248,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void UpdateSensorsNative()
         {
-            ((delegate* unmanaged[Cdecl]<void>)funcTable[632])();
+            ((delegate* unmanaged[Cdecl]<void>)funcTable[631])();
         }
 
         /// <summary>
@@ -16083,7 +16256,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void LockJoysticksNative()
         {
-            ((delegate* unmanaged[Cdecl]<void>)funcTable[633])();
+            ((delegate* unmanaged[Cdecl]<void>)funcTable[632])();
         }
 
         /// <summary>
@@ -16091,7 +16264,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte TryLockJoysticksNative()
         {
-            return ((delegate* unmanaged[Cdecl]<byte>)funcTable[634])();
+            return ((delegate* unmanaged[Cdecl]<byte>)funcTable[633])();
         }
 
         /// <summary>
@@ -16099,7 +16272,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void UnlockJoysticksNative()
         {
-            ((delegate* unmanaged[Cdecl]<void>)funcTable[635])();
+            ((delegate* unmanaged[Cdecl]<void>)funcTable[634])();
         }
 
         /// <summary>
@@ -16107,7 +16280,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte HasJoystickNative()
         {
-            return ((delegate* unmanaged[Cdecl]<byte>)funcTable[636])();
+            return ((delegate* unmanaged[Cdecl]<byte>)funcTable[635])();
         }
 
         /// <summary>
@@ -16115,7 +16288,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static uint* GetJoysticksNative(int* count)
         {
-            return ((delegate* unmanaged[Cdecl]<int*, uint*>)funcTable[637])(count);
+            return ((delegate* unmanaged[Cdecl]<int*, uint*>)funcTable[636])(count);
         }
 
         /// <summary>
@@ -16123,7 +16296,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte* GetJoystickNameForIDNative(uint instanceId)
         {
-            return ((delegate* unmanaged[Cdecl]<uint, byte*>)funcTable[638])(instanceId);
+            return ((delegate* unmanaged[Cdecl]<uint, byte*>)funcTable[637])(instanceId);
         }
 
         /// <summary>
@@ -16131,7 +16304,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte* GetJoystickPathForIDNative(uint instanceId)
         {
-            return ((delegate* unmanaged[Cdecl]<uint, byte*>)funcTable[639])(instanceId);
+            return ((delegate* unmanaged[Cdecl]<uint, byte*>)funcTable[638])(instanceId);
         }
 
         /// <summary>
@@ -16139,7 +16312,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static int GetJoystickPlayerIndexForIDNative(uint instanceId)
         {
-            return ((delegate* unmanaged[Cdecl]<uint, int>)funcTable[640])(instanceId);
+            return ((delegate* unmanaged[Cdecl]<uint, int>)funcTable[639])(instanceId);
         }
 
         /// <summary>
@@ -16147,7 +16320,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static SdlGuid GetJoystickGUIDForIDNative(uint instanceId)
         {
-            return ((delegate* unmanaged[Cdecl]<uint, SdlGuid>)funcTable[641])(instanceId);
+            return ((delegate* unmanaged[Cdecl]<uint, SdlGuid>)funcTable[640])(instanceId);
         }
 
         /// <summary>
@@ -16155,7 +16328,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static ushort GetJoystickVendorForIDNative(uint instanceId)
         {
-            return ((delegate* unmanaged[Cdecl]<uint, ushort>)funcTable[642])(instanceId);
+            return ((delegate* unmanaged[Cdecl]<uint, ushort>)funcTable[641])(instanceId);
         }
 
         /// <summary>
@@ -16163,7 +16336,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static ushort GetJoystickProductForIDNative(uint instanceId)
         {
-            return ((delegate* unmanaged[Cdecl]<uint, ushort>)funcTable[643])(instanceId);
+            return ((delegate* unmanaged[Cdecl]<uint, ushort>)funcTable[642])(instanceId);
         }
 
         /// <summary>
@@ -16171,15 +16344,20 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static ushort GetJoystickProductVersionForIDNative(uint instanceId)
         {
-            return ((delegate* unmanaged[Cdecl]<uint, ushort>)funcTable[644])(instanceId);
+            return ((delegate* unmanaged[Cdecl]<uint, ushort>)funcTable[643])(instanceId);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int GetJoystickTypeForIDInterop(uint instanceId)
+        {
+            return ((delegate* unmanaged[Cdecl]<uint, int>)funcTable[644])(instanceId);
+        }
+
         internal static SDLJoystickType GetJoystickTypeForIDNative(uint instanceId)
         {
-            return ((delegate* unmanaged[Cdecl]<uint, SDLJoystickType>)funcTable[645])(instanceId);
+            return (SDLJoystickType)GetJoystickTypeForIDInterop(instanceId);
         }
 
         /// <summary>
@@ -16187,7 +16365,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static nint OpenJoystickInterop(uint instanceId)
         {
-            return ((delegate* unmanaged[Cdecl]<uint, nint>)funcTable[646])(instanceId);
+            return ((delegate* unmanaged[Cdecl]<uint, nint>)funcTable[645])(instanceId);
         }
 
         internal static SDLJoystick OpenJoystickNative(uint instanceId)
@@ -16200,7 +16378,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static nint GetJoystickFromIDInterop(uint instanceId)
         {
-            return ((delegate* unmanaged[Cdecl]<uint, nint>)funcTable[647])(instanceId);
+            return ((delegate* unmanaged[Cdecl]<uint, nint>)funcTable[646])(instanceId);
         }
 
         internal static SDLJoystick GetJoystickFromIDNative(uint instanceId)
@@ -16213,7 +16391,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static nint GetJoystickFromPlayerIndexInterop(int playerIndex)
         {
-            return ((delegate* unmanaged[Cdecl]<int, nint>)funcTable[648])(playerIndex);
+            return ((delegate* unmanaged[Cdecl]<int, nint>)funcTable[647])(playerIndex);
         }
 
         internal static SDLJoystick GetJoystickFromPlayerIndexNative(int playerIndex)
@@ -16226,7 +16404,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static uint AttachVirtualJoystickNative(SDLVirtualJoystickDesc* desc)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLVirtualJoystickDesc*, uint>)funcTable[649])(desc);
+            return ((delegate* unmanaged[Cdecl]<SDLVirtualJoystickDesc*, uint>)funcTable[648])(desc);
         }
 
         /// <summary>
@@ -16234,7 +16412,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte DetachVirtualJoystickNative(uint instanceId)
         {
-            return ((delegate* unmanaged[Cdecl]<uint, byte>)funcTable[650])(instanceId);
+            return ((delegate* unmanaged[Cdecl]<uint, byte>)funcTable[649])(instanceId);
         }
 
         /// <summary>
@@ -16242,7 +16420,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte IsJoystickVirtualNative(uint instanceId)
         {
-            return ((delegate* unmanaged[Cdecl]<uint, byte>)funcTable[651])(instanceId);
+            return ((delegate* unmanaged[Cdecl]<uint, byte>)funcTable[650])(instanceId);
         }
 
         /// <summary>
@@ -16250,7 +16428,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte SetJoystickVirtualAxisInterop(nint joystick, int axis, short value)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, int, short, byte>)funcTable[652])(joystick, axis, value);
+            return ((delegate* unmanaged[Cdecl]<nint, int, short, byte>)funcTable[651])(joystick, axis, value);
         }
 
         internal static byte SetJoystickVirtualAxisNative(SDLJoystick joystick, int axis, short value)
@@ -16263,7 +16441,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte SetJoystickVirtualBallInterop(nint joystick, int ball, short xrel, short yrel)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, int, short, short, byte>)funcTable[653])(joystick, ball, xrel, yrel);
+            return ((delegate* unmanaged[Cdecl]<nint, int, short, short, byte>)funcTable[652])(joystick, ball, xrel, yrel);
         }
 
         internal static byte SetJoystickVirtualBallNative(SDLJoystick joystick, int ball, short xrel, short yrel)
@@ -16276,7 +16454,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte SetJoystickVirtualButtonInterop(nint joystick, int button, byte down)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, int, byte, byte>)funcTable[654])(joystick, button, down);
+            return ((delegate* unmanaged[Cdecl]<nint, int, byte, byte>)funcTable[653])(joystick, button, down);
         }
 
         internal static byte SetJoystickVirtualButtonNative(SDLJoystick joystick, int button, byte down)
@@ -16289,7 +16467,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte SetJoystickVirtualHatInterop(nint joystick, int hat, byte value)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, int, byte, byte>)funcTable[655])(joystick, hat, value);
+            return ((delegate* unmanaged[Cdecl]<nint, int, byte, byte>)funcTable[654])(joystick, hat, value);
         }
 
         internal static byte SetJoystickVirtualHatNative(SDLJoystick joystick, int hat, byte value)
@@ -16302,7 +16480,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte SetJoystickVirtualTouchpadInterop(nint joystick, int touchpad, int finger, byte down, float x, float y, float pressure)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, int, int, byte, float, float, float, byte>)funcTable[656])(joystick, touchpad, finger, down, x, y, pressure);
+            return ((delegate* unmanaged[Cdecl]<nint, int, int, byte, float, float, float, byte>)funcTable[655])(joystick, touchpad, finger, down, x, y, pressure);
         }
 
         internal static byte SetJoystickVirtualTouchpadNative(SDLJoystick joystick, int touchpad, int finger, byte down, float x, float y, float pressure)
@@ -16313,14 +16491,14 @@ namespace Inno.Native.Sdl3
         /// <summary>
         /// To be documented.
         /// </summary>
-        internal static byte SendJoystickVirtualSensorDataInterop(nint joystick, SDLSensorType type, ulong sensorTimestamp, float* data, int numValues)
+        internal static byte SendJoystickVirtualSensorDataInterop(nint joystick, int type, ulong sensorTimestamp, float* data, int numValues)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, SDLSensorType, ulong, float*, int, byte>)funcTable[657])(joystick, type, sensorTimestamp, data, numValues);
+            return ((delegate* unmanaged[Cdecl]<nint, int, ulong, float*, int, byte>)funcTable[656])(joystick, type, sensorTimestamp, data, numValues);
         }
 
         internal static byte SendJoystickVirtualSensorDataNative(SDLJoystick joystick, SDLSensorType type, ulong sensorTimestamp, float* data, int numValues)
         {
-            return SendJoystickVirtualSensorDataInterop(joystick.Handle, type, sensorTimestamp, data, numValues);
+            return SendJoystickVirtualSensorDataInterop(joystick.Handle, (int)type, sensorTimestamp, data, numValues);
         }
 
         /// <summary>
@@ -16328,7 +16506,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static uint GetJoystickPropertiesInterop(nint joystick)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, uint>)funcTable[658])(joystick);
+            return ((delegate* unmanaged[Cdecl]<nint, uint>)funcTable[657])(joystick);
         }
 
         internal static uint GetJoystickPropertiesNative(SDLJoystick joystick)
@@ -16341,7 +16519,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte* GetJoystickNameInterop(nint joystick)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, byte*>)funcTable[659])(joystick);
+            return ((delegate* unmanaged[Cdecl]<nint, byte*>)funcTable[658])(joystick);
         }
 
         internal static byte* GetJoystickNameNative(SDLJoystick joystick)
@@ -16354,7 +16532,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte* GetJoystickPathInterop(nint joystick)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, byte*>)funcTable[660])(joystick);
+            return ((delegate* unmanaged[Cdecl]<nint, byte*>)funcTable[659])(joystick);
         }
 
         internal static byte* GetJoystickPathNative(SDLJoystick joystick)
@@ -16367,7 +16545,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static int GetJoystickPlayerIndexInterop(nint joystick)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, int>)funcTable[661])(joystick);
+            return ((delegate* unmanaged[Cdecl]<nint, int>)funcTable[660])(joystick);
         }
 
         internal static int GetJoystickPlayerIndexNative(SDLJoystick joystick)
@@ -16380,7 +16558,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte SetJoystickPlayerIndexInterop(nint joystick, int playerIndex)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, int, byte>)funcTable[662])(joystick, playerIndex);
+            return ((delegate* unmanaged[Cdecl]<nint, int, byte>)funcTable[661])(joystick, playerIndex);
         }
 
         internal static byte SetJoystickPlayerIndexNative(SDLJoystick joystick, int playerIndex)
@@ -16393,7 +16571,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static SdlGuid GetJoystickGUIDInterop(nint joystick)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, SdlGuid>)funcTable[663])(joystick);
+            return ((delegate* unmanaged[Cdecl]<nint, SdlGuid>)funcTable[662])(joystick);
         }
 
         internal static SdlGuid GetJoystickGUIDNative(SDLJoystick joystick)
@@ -16406,7 +16584,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static ushort GetJoystickVendorInterop(nint joystick)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, ushort>)funcTable[664])(joystick);
+            return ((delegate* unmanaged[Cdecl]<nint, ushort>)funcTable[663])(joystick);
         }
 
         internal static ushort GetJoystickVendorNative(SDLJoystick joystick)
@@ -16419,7 +16597,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static ushort GetJoystickProductInterop(nint joystick)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, ushort>)funcTable[665])(joystick);
+            return ((delegate* unmanaged[Cdecl]<nint, ushort>)funcTable[664])(joystick);
         }
 
         internal static ushort GetJoystickProductNative(SDLJoystick joystick)
@@ -16432,7 +16610,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static ushort GetJoystickProductVersionInterop(nint joystick)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, ushort>)funcTable[666])(joystick);
+            return ((delegate* unmanaged[Cdecl]<nint, ushort>)funcTable[665])(joystick);
         }
 
         internal static ushort GetJoystickProductVersionNative(SDLJoystick joystick)
@@ -16445,7 +16623,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static ushort GetJoystickFirmwareVersionInterop(nint joystick)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, ushort>)funcTable[667])(joystick);
+            return ((delegate* unmanaged[Cdecl]<nint, ushort>)funcTable[666])(joystick);
         }
 
         internal static ushort GetJoystickFirmwareVersionNative(SDLJoystick joystick)
@@ -16458,7 +16636,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte* GetJoystickSerialInterop(nint joystick)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, byte*>)funcTable[668])(joystick);
+            return ((delegate* unmanaged[Cdecl]<nint, byte*>)funcTable[667])(joystick);
         }
 
         internal static byte* GetJoystickSerialNative(SDLJoystick joystick)
@@ -16469,14 +16647,14 @@ namespace Inno.Native.Sdl3
         /// <summary>
         /// To be documented.
         /// </summary>
-        internal static SDLJoystickType GetJoystickTypeInterop(nint joystick)
+        internal static int GetJoystickTypeInterop(nint joystick)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, SDLJoystickType>)funcTable[669])(joystick);
+            return ((delegate* unmanaged[Cdecl]<nint, int>)funcTable[668])(joystick);
         }
 
         internal static SDLJoystickType GetJoystickTypeNative(SDLJoystick joystick)
         {
-            return GetJoystickTypeInterop(joystick.Handle);
+            return (SDLJoystickType)GetJoystickTypeInterop(joystick.Handle);
         }
 
         /// <summary>
@@ -16484,7 +16662,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void GetJoystickGUIDInfoNative(SdlGuid guid, ushort* vendor, ushort* product, ushort* version, ushort* crc16)
         {
-            ((delegate* unmanaged[Cdecl]<SdlGuid, ushort*, ushort*, ushort*, ushort*, void>)funcTable[670])(guid, vendor, product, version, crc16);
+            ((delegate* unmanaged[Cdecl]<SdlGuid, ushort*, ushort*, ushort*, ushort*, void>)funcTable[669])(guid, vendor, product, version, crc16);
         }
 
         /// <summary>
@@ -16492,7 +16670,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte JoystickConnectedInterop(nint joystick)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, byte>)funcTable[671])(joystick);
+            return ((delegate* unmanaged[Cdecl]<nint, byte>)funcTable[670])(joystick);
         }
 
         internal static byte JoystickConnectedNative(SDLJoystick joystick)
@@ -16505,7 +16683,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static uint GetJoystickIDInterop(nint joystick)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, uint>)funcTable[672])(joystick);
+            return ((delegate* unmanaged[Cdecl]<nint, uint>)funcTable[671])(joystick);
         }
 
         internal static uint GetJoystickIDNative(SDLJoystick joystick)
@@ -16518,7 +16696,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static int GetNumJoystickAxesInterop(nint joystick)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, int>)funcTable[673])(joystick);
+            return ((delegate* unmanaged[Cdecl]<nint, int>)funcTable[672])(joystick);
         }
 
         internal static int GetNumJoystickAxesNative(SDLJoystick joystick)
@@ -16531,7 +16709,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static int GetNumJoystickBallsInterop(nint joystick)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, int>)funcTable[674])(joystick);
+            return ((delegate* unmanaged[Cdecl]<nint, int>)funcTable[673])(joystick);
         }
 
         internal static int GetNumJoystickBallsNative(SDLJoystick joystick)
@@ -16544,7 +16722,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static int GetNumJoystickHatsInterop(nint joystick)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, int>)funcTable[675])(joystick);
+            return ((delegate* unmanaged[Cdecl]<nint, int>)funcTable[674])(joystick);
         }
 
         internal static int GetNumJoystickHatsNative(SDLJoystick joystick)
@@ -16557,7 +16735,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static int GetNumJoystickButtonsInterop(nint joystick)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, int>)funcTable[676])(joystick);
+            return ((delegate* unmanaged[Cdecl]<nint, int>)funcTable[675])(joystick);
         }
 
         internal static int GetNumJoystickButtonsNative(SDLJoystick joystick)
@@ -16570,7 +16748,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void SetJoystickEventsEnabledNative(byte enabled)
         {
-            ((delegate* unmanaged[Cdecl]<byte, void>)funcTable[677])(enabled);
+            ((delegate* unmanaged[Cdecl]<byte, void>)funcTable[676])(enabled);
         }
 
         /// <summary>
@@ -16578,7 +16756,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte JoystickEventsEnabledNative()
         {
-            return ((delegate* unmanaged[Cdecl]<byte>)funcTable[678])();
+            return ((delegate* unmanaged[Cdecl]<byte>)funcTable[677])();
         }
 
         /// <summary>
@@ -16586,7 +16764,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void UpdateJoysticksNative()
         {
-            ((delegate* unmanaged[Cdecl]<void>)funcTable[679])();
+            ((delegate* unmanaged[Cdecl]<void>)funcTable[678])();
         }
 
         /// <summary>
@@ -16594,7 +16772,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static short GetJoystickAxisInterop(nint joystick, int axis)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, int, short>)funcTable[680])(joystick, axis);
+            return ((delegate* unmanaged[Cdecl]<nint, int, short>)funcTable[679])(joystick, axis);
         }
 
         internal static short GetJoystickAxisNative(SDLJoystick joystick, int axis)
@@ -16607,7 +16785,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte GetJoystickAxisInitialStateInterop(nint joystick, int axis, short* state)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, int, short*, byte>)funcTable[681])(joystick, axis, state);
+            return ((delegate* unmanaged[Cdecl]<nint, int, short*, byte>)funcTable[680])(joystick, axis, state);
         }
 
         internal static byte GetJoystickAxisInitialStateNative(SDLJoystick joystick, int axis, short* state)
@@ -16620,7 +16798,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte GetJoystickBallInterop(nint joystick, int ball, int* dx, int* dy)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, int, int*, int*, byte>)funcTable[682])(joystick, ball, dx, dy);
+            return ((delegate* unmanaged[Cdecl]<nint, int, int*, int*, byte>)funcTable[681])(joystick, ball, dx, dy);
         }
 
         internal static byte GetJoystickBallNative(SDLJoystick joystick, int ball, int* dx, int* dy)
@@ -16633,7 +16811,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte GetJoystickHatInterop(nint joystick, int hat)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, int, byte>)funcTable[683])(joystick, hat);
+            return ((delegate* unmanaged[Cdecl]<nint, int, byte>)funcTable[682])(joystick, hat);
         }
 
         internal static byte GetJoystickHatNative(SDLJoystick joystick, int hat)
@@ -16646,7 +16824,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte GetJoystickButtonInterop(nint joystick, int button)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, int, byte>)funcTable[684])(joystick, button);
+            return ((delegate* unmanaged[Cdecl]<nint, int, byte>)funcTable[683])(joystick, button);
         }
 
         internal static byte GetJoystickButtonNative(SDLJoystick joystick, int button)
@@ -16659,7 +16837,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte RumbleJoystickInterop(nint joystick, ushort lowFrequencyRumble, ushort highFrequencyRumble, uint durationMs)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, ushort, ushort, uint, byte>)funcTable[685])(joystick, lowFrequencyRumble, highFrequencyRumble, durationMs);
+            return ((delegate* unmanaged[Cdecl]<nint, ushort, ushort, uint, byte>)funcTable[684])(joystick, lowFrequencyRumble, highFrequencyRumble, durationMs);
         }
 
         internal static byte RumbleJoystickNative(SDLJoystick joystick, ushort lowFrequencyRumble, ushort highFrequencyRumble, uint durationMs)
@@ -16672,7 +16850,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte RumbleJoystickTriggersInterop(nint joystick, ushort leftRumble, ushort rightRumble, uint durationMs)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, ushort, ushort, uint, byte>)funcTable[686])(joystick, leftRumble, rightRumble, durationMs);
+            return ((delegate* unmanaged[Cdecl]<nint, ushort, ushort, uint, byte>)funcTable[685])(joystick, leftRumble, rightRumble, durationMs);
         }
 
         internal static byte RumbleJoystickTriggersNative(SDLJoystick joystick, ushort leftRumble, ushort rightRumble, uint durationMs)
@@ -16685,7 +16863,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte SetJoystickLEDInterop(nint joystick, byte red, byte green, byte blue)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, byte, byte, byte, byte>)funcTable[687])(joystick, red, green, blue);
+            return ((delegate* unmanaged[Cdecl]<nint, byte, byte, byte, byte>)funcTable[686])(joystick, red, green, blue);
         }
 
         internal static byte SetJoystickLEDNative(SDLJoystick joystick, byte red, byte green, byte blue)
@@ -16698,7 +16876,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte SendJoystickEffectInterop(nint joystick, void* data, int size)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, void*, int, byte>)funcTable[688])(joystick, data, size);
+            return ((delegate* unmanaged[Cdecl]<nint, void*, int, byte>)funcTable[687])(joystick, data, size);
         }
 
         internal static byte SendJoystickEffectNative(SDLJoystick joystick, void* data, int size)
@@ -16711,7 +16889,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void CloseJoystickInterop(nint joystick)
         {
-            ((delegate* unmanaged[Cdecl]<nint, void>)funcTable[689])(joystick);
+            ((delegate* unmanaged[Cdecl]<nint, void>)funcTable[688])(joystick);
         }
 
         internal static void CloseJoystickNative(SDLJoystick joystick)
@@ -16722,27 +16900,27 @@ namespace Inno.Native.Sdl3
         /// <summary>
         /// To be documented.
         /// </summary>
-        internal static SDLJoystickConnectionState GetJoystickConnectionStateInterop(nint joystick)
+        internal static int GetJoystickConnectionStateInterop(nint joystick)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, SDLJoystickConnectionState>)funcTable[690])(joystick);
+            return ((delegate* unmanaged[Cdecl]<nint, int>)funcTable[689])(joystick);
         }
 
         internal static SDLJoystickConnectionState GetJoystickConnectionStateNative(SDLJoystick joystick)
         {
-            return GetJoystickConnectionStateInterop(joystick.Handle);
+            return (SDLJoystickConnectionState)GetJoystickConnectionStateInterop(joystick.Handle);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
-        internal static SDLPowerState GetJoystickPowerInfoInterop(nint joystick, int* percent)
+        internal static int GetJoystickPowerInfoInterop(nint joystick, int* percent)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, int*, SDLPowerState>)funcTable[691])(joystick, percent);
+            return ((delegate* unmanaged[Cdecl]<nint, int*, int>)funcTable[690])(joystick, percent);
         }
 
         internal static SDLPowerState GetJoystickPowerInfoNative(SDLJoystick joystick, int* percent)
         {
-            return GetJoystickPowerInfoInterop(joystick.Handle, percent);
+            return (SDLPowerState)GetJoystickPowerInfoInterop(joystick.Handle, percent);
         }
 
         /// <summary>
@@ -16750,7 +16928,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static int AddGamepadMappingNative(byte* mapping)
         {
-            return ((delegate* unmanaged[Cdecl]<byte*, int>)funcTable[692])(mapping);
+            return ((delegate* unmanaged[Cdecl]<byte*, int>)funcTable[691])(mapping);
         }
 
         /// <summary>
@@ -16758,7 +16936,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static int AddGamepadMappingsFromIOInterop(nint src, byte closeio)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, byte, int>)funcTable[693])(src, closeio);
+            return ((delegate* unmanaged[Cdecl]<nint, byte, int>)funcTable[692])(src, closeio);
         }
 
         internal static int AddGamepadMappingsFromIONative(SDLIOStream src, byte closeio)
@@ -16771,7 +16949,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static int AddGamepadMappingsFromFileNative(byte* file)
         {
-            return ((delegate* unmanaged[Cdecl]<byte*, int>)funcTable[694])(file);
+            return ((delegate* unmanaged[Cdecl]<byte*, int>)funcTable[693])(file);
         }
 
         /// <summary>
@@ -16779,7 +16957,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte ReloadGamepadMappingsNative()
         {
-            return ((delegate* unmanaged[Cdecl]<byte>)funcTable[695])();
+            return ((delegate* unmanaged[Cdecl]<byte>)funcTable[694])();
         }
 
         /// <summary>
@@ -16787,7 +16965,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte** GetGamepadMappingsNative(int* count)
         {
-            return ((delegate* unmanaged[Cdecl]<int*, byte**>)funcTable[696])(count);
+            return ((delegate* unmanaged[Cdecl]<int*, byte**>)funcTable[695])(count);
         }
 
         /// <summary>
@@ -16795,7 +16973,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte* GetGamepadMappingForGUIDNative(SdlGuid guid)
         {
-            return ((delegate* unmanaged[Cdecl]<SdlGuid, byte*>)funcTable[697])(guid);
+            return ((delegate* unmanaged[Cdecl]<SdlGuid, byte*>)funcTable[696])(guid);
         }
 
         /// <summary>
@@ -16803,7 +16981,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte* GetGamepadMappingInterop(nint gamepad)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, byte*>)funcTable[698])(gamepad);
+            return ((delegate* unmanaged[Cdecl]<nint, byte*>)funcTable[697])(gamepad);
         }
 
         internal static byte* GetGamepadMappingNative(SDLGamepad gamepad)
@@ -16816,7 +16994,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte SetGamepadMappingNative(uint instanceId, byte* mapping)
         {
-            return ((delegate* unmanaged[Cdecl]<uint, byte*, byte>)funcTable[699])(instanceId, mapping);
+            return ((delegate* unmanaged[Cdecl]<uint, byte*, byte>)funcTable[698])(instanceId, mapping);
         }
 
         /// <summary>
@@ -16824,7 +17002,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte HasGamepadNative()
         {
-            return ((delegate* unmanaged[Cdecl]<byte>)funcTable[700])();
+            return ((delegate* unmanaged[Cdecl]<byte>)funcTable[699])();
         }
 
         /// <summary>
@@ -16832,7 +17010,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static uint* GetGamepadsNative(int* count)
         {
-            return ((delegate* unmanaged[Cdecl]<int*, uint*>)funcTable[701])(count);
+            return ((delegate* unmanaged[Cdecl]<int*, uint*>)funcTable[700])(count);
         }
 
         /// <summary>
@@ -16840,7 +17018,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte IsGamepadNative(uint instanceId)
         {
-            return ((delegate* unmanaged[Cdecl]<uint, byte>)funcTable[702])(instanceId);
+            return ((delegate* unmanaged[Cdecl]<uint, byte>)funcTable[701])(instanceId);
         }
 
         /// <summary>
@@ -16848,7 +17026,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte* GetGamepadNameForIDNative(uint instanceId)
         {
-            return ((delegate* unmanaged[Cdecl]<uint, byte*>)funcTable[703])(instanceId);
+            return ((delegate* unmanaged[Cdecl]<uint, byte*>)funcTable[702])(instanceId);
         }
 
         /// <summary>
@@ -16856,7 +17034,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte* GetGamepadPathForIDNative(uint instanceId)
         {
-            return ((delegate* unmanaged[Cdecl]<uint, byte*>)funcTable[704])(instanceId);
+            return ((delegate* unmanaged[Cdecl]<uint, byte*>)funcTable[703])(instanceId);
         }
 
         /// <summary>
@@ -16864,7 +17042,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static int GetGamepadPlayerIndexForIDNative(uint instanceId)
         {
-            return ((delegate* unmanaged[Cdecl]<uint, int>)funcTable[705])(instanceId);
+            return ((delegate* unmanaged[Cdecl]<uint, int>)funcTable[704])(instanceId);
         }
 
         /// <summary>
@@ -16872,7 +17050,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static SdlGuid GetGamepadGUIDForIDNative(uint instanceId)
         {
-            return ((delegate* unmanaged[Cdecl]<uint, SdlGuid>)funcTable[706])(instanceId);
+            return ((delegate* unmanaged[Cdecl]<uint, SdlGuid>)funcTable[705])(instanceId);
         }
 
         /// <summary>
@@ -16880,7 +17058,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static ushort GetGamepadVendorForIDNative(uint instanceId)
         {
-            return ((delegate* unmanaged[Cdecl]<uint, ushort>)funcTable[707])(instanceId);
+            return ((delegate* unmanaged[Cdecl]<uint, ushort>)funcTable[706])(instanceId);
         }
 
         /// <summary>
@@ -16888,7 +17066,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static ushort GetGamepadProductForIDNative(uint instanceId)
         {
-            return ((delegate* unmanaged[Cdecl]<uint, ushort>)funcTable[708])(instanceId);
+            return ((delegate* unmanaged[Cdecl]<uint, ushort>)funcTable[707])(instanceId);
         }
 
         /// <summary>
@@ -16896,23 +17074,33 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static ushort GetGamepadProductVersionForIDNative(uint instanceId)
         {
-            return ((delegate* unmanaged[Cdecl]<uint, ushort>)funcTable[709])(instanceId);
+            return ((delegate* unmanaged[Cdecl]<uint, ushort>)funcTable[708])(instanceId);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int GetGamepadTypeForIDInterop(uint instanceId)
+        {
+            return ((delegate* unmanaged[Cdecl]<uint, int>)funcTable[709])(instanceId);
+        }
+
         internal static SDLGamepadType GetGamepadTypeForIDNative(uint instanceId)
         {
-            return ((delegate* unmanaged[Cdecl]<uint, SDLGamepadType>)funcTable[710])(instanceId);
+            return (SDLGamepadType)GetGamepadTypeForIDInterop(instanceId);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int GetRealGamepadTypeForIDInterop(uint instanceId)
+        {
+            return ((delegate* unmanaged[Cdecl]<uint, int>)funcTable[710])(instanceId);
+        }
+
         internal static SDLGamepadType GetRealGamepadTypeForIDNative(uint instanceId)
         {
-            return ((delegate* unmanaged[Cdecl]<uint, SDLGamepadType>)funcTable[711])(instanceId);
+            return (SDLGamepadType)GetRealGamepadTypeForIDInterop(instanceId);
         }
 
         /// <summary>
@@ -16920,7 +17108,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte* GetGamepadMappingForIDNative(uint instanceId)
         {
-            return ((delegate* unmanaged[Cdecl]<uint, byte*>)funcTable[712])(instanceId);
+            return ((delegate* unmanaged[Cdecl]<uint, byte*>)funcTable[711])(instanceId);
         }
 
         /// <summary>
@@ -16928,7 +17116,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static nint OpenGamepadInterop(uint instanceId)
         {
-            return ((delegate* unmanaged[Cdecl]<uint, nint>)funcTable[713])(instanceId);
+            return ((delegate* unmanaged[Cdecl]<uint, nint>)funcTable[712])(instanceId);
         }
 
         internal static SDLGamepad OpenGamepadNative(uint instanceId)
@@ -16941,7 +17129,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static nint GetGamepadFromIDInterop(uint instanceId)
         {
-            return ((delegate* unmanaged[Cdecl]<uint, nint>)funcTable[714])(instanceId);
+            return ((delegate* unmanaged[Cdecl]<uint, nint>)funcTable[713])(instanceId);
         }
 
         internal static SDLGamepad GetGamepadFromIDNative(uint instanceId)
@@ -16954,7 +17142,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static nint GetGamepadFromPlayerIndexInterop(int playerIndex)
         {
-            return ((delegate* unmanaged[Cdecl]<int, nint>)funcTable[715])(playerIndex);
+            return ((delegate* unmanaged[Cdecl]<int, nint>)funcTable[714])(playerIndex);
         }
 
         internal static SDLGamepad GetGamepadFromPlayerIndexNative(int playerIndex)
@@ -16967,7 +17155,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static uint GetGamepadPropertiesInterop(nint gamepad)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, uint>)funcTable[716])(gamepad);
+            return ((delegate* unmanaged[Cdecl]<nint, uint>)funcTable[715])(gamepad);
         }
 
         internal static uint GetGamepadPropertiesNative(SDLGamepad gamepad)
@@ -16980,7 +17168,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static uint GetGamepadIDInterop(nint gamepad)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, uint>)funcTable[717])(gamepad);
+            return ((delegate* unmanaged[Cdecl]<nint, uint>)funcTable[716])(gamepad);
         }
 
         internal static uint GetGamepadIDNative(SDLGamepad gamepad)
@@ -16993,7 +17181,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte* GetGamepadNameInterop(nint gamepad)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, byte*>)funcTable[718])(gamepad);
+            return ((delegate* unmanaged[Cdecl]<nint, byte*>)funcTable[717])(gamepad);
         }
 
         internal static byte* GetGamepadNameNative(SDLGamepad gamepad)
@@ -17006,7 +17194,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte* GetGamepadPathInterop(nint gamepad)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, byte*>)funcTable[719])(gamepad);
+            return ((delegate* unmanaged[Cdecl]<nint, byte*>)funcTable[718])(gamepad);
         }
 
         internal static byte* GetGamepadPathNative(SDLGamepad gamepad)
@@ -17017,27 +17205,27 @@ namespace Inno.Native.Sdl3
         /// <summary>
         /// To be documented.
         /// </summary>
-        internal static SDLGamepadType GetGamepadTypeInterop(nint gamepad)
+        internal static int GetGamepadTypeInterop(nint gamepad)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, SDLGamepadType>)funcTable[720])(gamepad);
+            return ((delegate* unmanaged[Cdecl]<nint, int>)funcTable[719])(gamepad);
         }
 
         internal static SDLGamepadType GetGamepadTypeNative(SDLGamepad gamepad)
         {
-            return GetGamepadTypeInterop(gamepad.Handle);
+            return (SDLGamepadType)GetGamepadTypeInterop(gamepad.Handle);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
-        internal static SDLGamepadType GetRealGamepadTypeInterop(nint gamepad)
+        internal static int GetRealGamepadTypeInterop(nint gamepad)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, SDLGamepadType>)funcTable[721])(gamepad);
+            return ((delegate* unmanaged[Cdecl]<nint, int>)funcTable[720])(gamepad);
         }
 
         internal static SDLGamepadType GetRealGamepadTypeNative(SDLGamepad gamepad)
         {
-            return GetRealGamepadTypeInterop(gamepad.Handle);
+            return (SDLGamepadType)GetRealGamepadTypeInterop(gamepad.Handle);
         }
 
         /// <summary>
@@ -17045,7 +17233,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static int GetGamepadPlayerIndexInterop(nint gamepad)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, int>)funcTable[722])(gamepad);
+            return ((delegate* unmanaged[Cdecl]<nint, int>)funcTable[721])(gamepad);
         }
 
         internal static int GetGamepadPlayerIndexNative(SDLGamepad gamepad)
@@ -17058,7 +17246,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte SetGamepadPlayerIndexInterop(nint gamepad, int playerIndex)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, int, byte>)funcTable[723])(gamepad, playerIndex);
+            return ((delegate* unmanaged[Cdecl]<nint, int, byte>)funcTable[722])(gamepad, playerIndex);
         }
 
         internal static byte SetGamepadPlayerIndexNative(SDLGamepad gamepad, int playerIndex)
@@ -17071,7 +17259,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static ushort GetGamepadVendorInterop(nint gamepad)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, ushort>)funcTable[724])(gamepad);
+            return ((delegate* unmanaged[Cdecl]<nint, ushort>)funcTable[723])(gamepad);
         }
 
         internal static ushort GetGamepadVendorNative(SDLGamepad gamepad)
@@ -17084,7 +17272,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static ushort GetGamepadProductInterop(nint gamepad)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, ushort>)funcTable[725])(gamepad);
+            return ((delegate* unmanaged[Cdecl]<nint, ushort>)funcTable[724])(gamepad);
         }
 
         internal static ushort GetGamepadProductNative(SDLGamepad gamepad)
@@ -17097,7 +17285,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static ushort GetGamepadProductVersionInterop(nint gamepad)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, ushort>)funcTable[726])(gamepad);
+            return ((delegate* unmanaged[Cdecl]<nint, ushort>)funcTable[725])(gamepad);
         }
 
         internal static ushort GetGamepadProductVersionNative(SDLGamepad gamepad)
@@ -17110,7 +17298,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static ushort GetGamepadFirmwareVersionInterop(nint gamepad)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, ushort>)funcTable[727])(gamepad);
+            return ((delegate* unmanaged[Cdecl]<nint, ushort>)funcTable[726])(gamepad);
         }
 
         internal static ushort GetGamepadFirmwareVersionNative(SDLGamepad gamepad)
@@ -17123,7 +17311,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte* GetGamepadSerialInterop(nint gamepad)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, byte*>)funcTable[728])(gamepad);
+            return ((delegate* unmanaged[Cdecl]<nint, byte*>)funcTable[727])(gamepad);
         }
 
         internal static byte* GetGamepadSerialNative(SDLGamepad gamepad)
@@ -17136,7 +17324,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static ulong GetGamepadSteamHandleInterop(nint gamepad)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, ulong>)funcTable[729])(gamepad);
+            return ((delegate* unmanaged[Cdecl]<nint, ulong>)funcTable[728])(gamepad);
         }
 
         internal static ulong GetGamepadSteamHandleNative(SDLGamepad gamepad)
@@ -17147,27 +17335,27 @@ namespace Inno.Native.Sdl3
         /// <summary>
         /// To be documented.
         /// </summary>
-        internal static SDLJoystickConnectionState GetGamepadConnectionStateInterop(nint gamepad)
+        internal static int GetGamepadConnectionStateInterop(nint gamepad)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, SDLJoystickConnectionState>)funcTable[730])(gamepad);
+            return ((delegate* unmanaged[Cdecl]<nint, int>)funcTable[729])(gamepad);
         }
 
         internal static SDLJoystickConnectionState GetGamepadConnectionStateNative(SDLGamepad gamepad)
         {
-            return GetGamepadConnectionStateInterop(gamepad.Handle);
+            return (SDLJoystickConnectionState)GetGamepadConnectionStateInterop(gamepad.Handle);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
-        internal static SDLPowerState GetGamepadPowerInfoInterop(nint gamepad, int* percent)
+        internal static int GetGamepadPowerInfoInterop(nint gamepad, int* percent)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, int*, SDLPowerState>)funcTable[731])(gamepad, percent);
+            return ((delegate* unmanaged[Cdecl]<nint, int*, int>)funcTable[730])(gamepad, percent);
         }
 
         internal static SDLPowerState GetGamepadPowerInfoNative(SDLGamepad gamepad, int* percent)
         {
-            return GetGamepadPowerInfoInterop(gamepad.Handle, percent);
+            return (SDLPowerState)GetGamepadPowerInfoInterop(gamepad.Handle, percent);
         }
 
         /// <summary>
@@ -17175,7 +17363,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte GamepadConnectedInterop(nint gamepad)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, byte>)funcTable[732])(gamepad);
+            return ((delegate* unmanaged[Cdecl]<nint, byte>)funcTable[731])(gamepad);
         }
 
         internal static byte GamepadConnectedNative(SDLGamepad gamepad)
@@ -17188,7 +17376,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static nint GetGamepadJoystickInterop(nint gamepad)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, nint>)funcTable[733])(gamepad);
+            return ((delegate* unmanaged[Cdecl]<nint, nint>)funcTable[732])(gamepad);
         }
 
         internal static SDLJoystick GetGamepadJoystickNative(SDLGamepad gamepad)
@@ -17201,7 +17389,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void SetGamepadEventsEnabledNative(byte enabled)
         {
-            ((delegate* unmanaged[Cdecl]<byte, void>)funcTable[734])(enabled);
+            ((delegate* unmanaged[Cdecl]<byte, void>)funcTable[733])(enabled);
         }
 
         /// <summary>
@@ -17209,7 +17397,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte GamepadEventsEnabledNative()
         {
-            return ((delegate* unmanaged[Cdecl]<byte>)funcTable[735])();
+            return ((delegate* unmanaged[Cdecl]<byte>)funcTable[734])();
         }
 
         /// <summary>
@@ -17217,7 +17405,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static SDLGamepadBinding** GetGamepadBindingsInterop(nint gamepad, int* count)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, int*, SDLGamepadBinding**>)funcTable[736])(gamepad, count);
+            return ((delegate* unmanaged[Cdecl]<nint, int*, SDLGamepadBinding**>)funcTable[735])(gamepad, count);
         }
 
         internal static SDLGamepadBinding** GetGamepadBindingsNative(SDLGamepad gamepad, int* count)
@@ -17230,128 +17418,163 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void UpdateGamepadsNative()
         {
-            ((delegate* unmanaged[Cdecl]<void>)funcTable[737])();
+            ((delegate* unmanaged[Cdecl]<void>)funcTable[736])();
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int GetGamepadTypeFromStringInterop(byte* str)
+        {
+            return ((delegate* unmanaged[Cdecl]<byte*, int>)funcTable[737])(str);
+        }
+
         internal static SDLGamepadType GetGamepadTypeFromStringNative(byte* str)
         {
-            return ((delegate* unmanaged[Cdecl]<byte*, SDLGamepadType>)funcTable[738])(str);
+            return (SDLGamepadType)GetGamepadTypeFromStringInterop(str);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte* GetGamepadStringForTypeInterop(int type)
+        {
+            return ((delegate* unmanaged[Cdecl]<int, byte*>)funcTable[738])(type);
+        }
+
         internal static byte* GetGamepadStringForTypeNative(SDLGamepadType type)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLGamepadType, byte*>)funcTable[739])(type);
+            return GetGamepadStringForTypeInterop((int)type);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int GetGamepadAxisFromStringInterop(byte* str)
+        {
+            return ((delegate* unmanaged[Cdecl]<byte*, int>)funcTable[739])(str);
+        }
+
         internal static SDLGamepadAxis GetGamepadAxisFromStringNative(byte* str)
         {
-            return ((delegate* unmanaged[Cdecl]<byte*, SDLGamepadAxis>)funcTable[740])(str);
+            return (SDLGamepadAxis)GetGamepadAxisFromStringInterop(str);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte* GetGamepadStringForAxisInterop(int axis)
+        {
+            return ((delegate* unmanaged[Cdecl]<int, byte*>)funcTable[740])(axis);
+        }
+
         internal static byte* GetGamepadStringForAxisNative(SDLGamepadAxis axis)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLGamepadAxis, byte*>)funcTable[741])(axis);
+            return GetGamepadStringForAxisInterop((int)axis);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
-        internal static byte GamepadHasAxisInterop(nint gamepad, SDLGamepadAxis axis)
+        internal static byte GamepadHasAxisInterop(nint gamepad, int axis)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, SDLGamepadAxis, byte>)funcTable[742])(gamepad, axis);
+            return ((delegate* unmanaged[Cdecl]<nint, int, byte>)funcTable[741])(gamepad, axis);
         }
 
         internal static byte GamepadHasAxisNative(SDLGamepad gamepad, SDLGamepadAxis axis)
         {
-            return GamepadHasAxisInterop(gamepad.Handle, axis);
+            return GamepadHasAxisInterop(gamepad.Handle, (int)axis);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
-        internal static short GetGamepadAxisInterop(nint gamepad, SDLGamepadAxis axis)
+        internal static short GetGamepadAxisInterop(nint gamepad, int axis)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, SDLGamepadAxis, short>)funcTable[743])(gamepad, axis);
+            return ((delegate* unmanaged[Cdecl]<nint, int, short>)funcTable[742])(gamepad, axis);
         }
 
         internal static short GetGamepadAxisNative(SDLGamepad gamepad, SDLGamepadAxis axis)
         {
-            return GetGamepadAxisInterop(gamepad.Handle, axis);
+            return GetGamepadAxisInterop(gamepad.Handle, (int)axis);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int GetGamepadButtonFromStringInterop(byte* str)
+        {
+            return ((delegate* unmanaged[Cdecl]<byte*, int>)funcTable[743])(str);
+        }
+
         internal static SDLGamepadButton GetGamepadButtonFromStringNative(byte* str)
         {
-            return ((delegate* unmanaged[Cdecl]<byte*, SDLGamepadButton>)funcTable[744])(str);
+            return (SDLGamepadButton)GetGamepadButtonFromStringInterop(str);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte* GetGamepadStringForButtonInterop(int button)
+        {
+            return ((delegate* unmanaged[Cdecl]<int, byte*>)funcTable[744])(button);
+        }
+
         internal static byte* GetGamepadStringForButtonNative(SDLGamepadButton button)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLGamepadButton, byte*>)funcTable[745])(button);
+            return GetGamepadStringForButtonInterop((int)button);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
-        internal static byte GamepadHasButtonInterop(nint gamepad, SDLGamepadButton button)
+        internal static byte GamepadHasButtonInterop(nint gamepad, int button)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, SDLGamepadButton, byte>)funcTable[746])(gamepad, button);
+            return ((delegate* unmanaged[Cdecl]<nint, int, byte>)funcTable[745])(gamepad, button);
         }
 
         internal static byte GamepadHasButtonNative(SDLGamepad gamepad, SDLGamepadButton button)
         {
-            return GamepadHasButtonInterop(gamepad.Handle, button);
+            return GamepadHasButtonInterop(gamepad.Handle, (int)button);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
-        internal static byte GetGamepadButtonInterop(nint gamepad, SDLGamepadButton button)
+        internal static byte GetGamepadButtonInterop(nint gamepad, int button)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, SDLGamepadButton, byte>)funcTable[747])(gamepad, button);
+            return ((delegate* unmanaged[Cdecl]<nint, int, byte>)funcTable[746])(gamepad, button);
         }
 
         internal static byte GetGamepadButtonNative(SDLGamepad gamepad, SDLGamepadButton button)
         {
-            return GetGamepadButtonInterop(gamepad.Handle, button);
+            return GetGamepadButtonInterop(gamepad.Handle, (int)button);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int GetGamepadButtonLabelForTypeInterop(int type, int button)
+        {
+            return ((delegate* unmanaged[Cdecl]<int, int, int>)funcTable[747])(type, button);
+        }
+
         internal static SDLGamepadButtonLabel GetGamepadButtonLabelForTypeNative(SDLGamepadType type, SDLGamepadButton button)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLGamepadType, SDLGamepadButton, SDLGamepadButtonLabel>)funcTable[748])(type, button);
+            return (SDLGamepadButtonLabel)GetGamepadButtonLabelForTypeInterop((int)type, (int)button);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
-        internal static SDLGamepadButtonLabel GetGamepadButtonLabelInterop(nint gamepad, SDLGamepadButton button)
+        internal static int GetGamepadButtonLabelInterop(nint gamepad, int button)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, SDLGamepadButton, SDLGamepadButtonLabel>)funcTable[749])(gamepad, button);
+            return ((delegate* unmanaged[Cdecl]<nint, int, int>)funcTable[748])(gamepad, button);
         }
 
         internal static SDLGamepadButtonLabel GetGamepadButtonLabelNative(SDLGamepad gamepad, SDLGamepadButton button)
         {
-            return GetGamepadButtonLabelInterop(gamepad.Handle, button);
+            return (SDLGamepadButtonLabel)GetGamepadButtonLabelInterop(gamepad.Handle, (int)button);
         }
 
         /// <summary>
@@ -17359,7 +17582,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static int GetNumGamepadTouchpadsInterop(nint gamepad)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, int>)funcTable[750])(gamepad);
+            return ((delegate* unmanaged[Cdecl]<nint, int>)funcTable[749])(gamepad);
         }
 
         internal static int GetNumGamepadTouchpadsNative(SDLGamepad gamepad)
@@ -17372,7 +17595,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static int GetNumGamepadTouchpadFingersInterop(nint gamepad, int touchpad)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, int, int>)funcTable[751])(gamepad, touchpad);
+            return ((delegate* unmanaged[Cdecl]<nint, int, int>)funcTable[750])(gamepad, touchpad);
         }
 
         internal static int GetNumGamepadTouchpadFingersNative(SDLGamepad gamepad, int touchpad)
@@ -17385,7 +17608,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte GetGamepadTouchpadFingerInterop(nint gamepad, int touchpad, int finger, byte* down, float* x, float* y, float* pressure)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, int, int, byte*, float*, float*, float*, byte>)funcTable[752])(gamepad, touchpad, finger, down, x, y, pressure);
+            return ((delegate* unmanaged[Cdecl]<nint, int, int, byte*, float*, float*, float*, byte>)funcTable[751])(gamepad, touchpad, finger, down, x, y, pressure);
         }
 
         internal static byte GetGamepadTouchpadFingerNative(SDLGamepad gamepad, int touchpad, int finger, byte* down, float* x, float* y, float* pressure)
@@ -17396,66 +17619,66 @@ namespace Inno.Native.Sdl3
         /// <summary>
         /// To be documented.
         /// </summary>
-        internal static byte GamepadHasSensorInterop(nint gamepad, SDLSensorType type)
+        internal static byte GamepadHasSensorInterop(nint gamepad, int type)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, SDLSensorType, byte>)funcTable[753])(gamepad, type);
+            return ((delegate* unmanaged[Cdecl]<nint, int, byte>)funcTable[752])(gamepad, type);
         }
 
         internal static byte GamepadHasSensorNative(SDLGamepad gamepad, SDLSensorType type)
         {
-            return GamepadHasSensorInterop(gamepad.Handle, type);
+            return GamepadHasSensorInterop(gamepad.Handle, (int)type);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
-        internal static byte SetGamepadSensorEnabledInterop(nint gamepad, SDLSensorType type, byte enabled)
+        internal static byte SetGamepadSensorEnabledInterop(nint gamepad, int type, byte enabled)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, SDLSensorType, byte, byte>)funcTable[754])(gamepad, type, enabled);
+            return ((delegate* unmanaged[Cdecl]<nint, int, byte, byte>)funcTable[753])(gamepad, type, enabled);
         }
 
         internal static byte SetGamepadSensorEnabledNative(SDLGamepad gamepad, SDLSensorType type, byte enabled)
         {
-            return SetGamepadSensorEnabledInterop(gamepad.Handle, type, enabled);
+            return SetGamepadSensorEnabledInterop(gamepad.Handle, (int)type, enabled);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
-        internal static byte GamepadSensorEnabledInterop(nint gamepad, SDLSensorType type)
+        internal static byte GamepadSensorEnabledInterop(nint gamepad, int type)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, SDLSensorType, byte>)funcTable[755])(gamepad, type);
+            return ((delegate* unmanaged[Cdecl]<nint, int, byte>)funcTable[754])(gamepad, type);
         }
 
         internal static byte GamepadSensorEnabledNative(SDLGamepad gamepad, SDLSensorType type)
         {
-            return GamepadSensorEnabledInterop(gamepad.Handle, type);
+            return GamepadSensorEnabledInterop(gamepad.Handle, (int)type);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
-        internal static float GetGamepadSensorDataRateInterop(nint gamepad, SDLSensorType type)
+        internal static float GetGamepadSensorDataRateInterop(nint gamepad, int type)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, SDLSensorType, float>)funcTable[756])(gamepad, type);
+            return ((delegate* unmanaged[Cdecl]<nint, int, float>)funcTable[755])(gamepad, type);
         }
 
         internal static float GetGamepadSensorDataRateNative(SDLGamepad gamepad, SDLSensorType type)
         {
-            return GetGamepadSensorDataRateInterop(gamepad.Handle, type);
+            return GetGamepadSensorDataRateInterop(gamepad.Handle, (int)type);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
-        internal static byte GetGamepadSensorDataInterop(nint gamepad, SDLSensorType type, float* data, int numValues)
+        internal static byte GetGamepadSensorDataInterop(nint gamepad, int type, float* data, int numValues)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, SDLSensorType, float*, int, byte>)funcTable[757])(gamepad, type, data, numValues);
+            return ((delegate* unmanaged[Cdecl]<nint, int, float*, int, byte>)funcTable[756])(gamepad, type, data, numValues);
         }
 
         internal static byte GetGamepadSensorDataNative(SDLGamepad gamepad, SDLSensorType type, float* data, int numValues)
         {
-            return GetGamepadSensorDataInterop(gamepad.Handle, type, data, numValues);
+            return GetGamepadSensorDataInterop(gamepad.Handle, (int)type, data, numValues);
         }
 
         /// <summary>
@@ -17463,7 +17686,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte RumbleGamepadInterop(nint gamepad, ushort lowFrequencyRumble, ushort highFrequencyRumble, uint durationMs)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, ushort, ushort, uint, byte>)funcTable[758])(gamepad, lowFrequencyRumble, highFrequencyRumble, durationMs);
+            return ((delegate* unmanaged[Cdecl]<nint, ushort, ushort, uint, byte>)funcTable[757])(gamepad, lowFrequencyRumble, highFrequencyRumble, durationMs);
         }
 
         internal static byte RumbleGamepadNative(SDLGamepad gamepad, ushort lowFrequencyRumble, ushort highFrequencyRumble, uint durationMs)
@@ -17476,7 +17699,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte RumbleGamepadTriggersInterop(nint gamepad, ushort leftRumble, ushort rightRumble, uint durationMs)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, ushort, ushort, uint, byte>)funcTable[759])(gamepad, leftRumble, rightRumble, durationMs);
+            return ((delegate* unmanaged[Cdecl]<nint, ushort, ushort, uint, byte>)funcTable[758])(gamepad, leftRumble, rightRumble, durationMs);
         }
 
         internal static byte RumbleGamepadTriggersNative(SDLGamepad gamepad, ushort leftRumble, ushort rightRumble, uint durationMs)
@@ -17489,7 +17712,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte SetGamepadLEDInterop(nint gamepad, byte red, byte green, byte blue)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, byte, byte, byte, byte>)funcTable[760])(gamepad, red, green, blue);
+            return ((delegate* unmanaged[Cdecl]<nint, byte, byte, byte, byte>)funcTable[759])(gamepad, red, green, blue);
         }
 
         internal static byte SetGamepadLEDNative(SDLGamepad gamepad, byte red, byte green, byte blue)
@@ -17502,7 +17725,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte SendGamepadEffectInterop(nint gamepad, void* data, int size)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, void*, int, byte>)funcTable[761])(gamepad, data, size);
+            return ((delegate* unmanaged[Cdecl]<nint, void*, int, byte>)funcTable[760])(gamepad, data, size);
         }
 
         internal static byte SendGamepadEffectNative(SDLGamepad gamepad, void* data, int size)
@@ -17515,7 +17738,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void CloseGamepadInterop(nint gamepad)
         {
-            ((delegate* unmanaged[Cdecl]<nint, void>)funcTable[762])(gamepad);
+            ((delegate* unmanaged[Cdecl]<nint, void>)funcTable[761])(gamepad);
         }
 
         internal static void CloseGamepadNative(SDLGamepad gamepad)
@@ -17526,27 +17749,27 @@ namespace Inno.Native.Sdl3
         /// <summary>
         /// To be documented.
         /// </summary>
-        internal static byte* GetGamepadAppleSFSymbolsNameForButtonInterop(nint gamepad, SDLGamepadButton button)
+        internal static byte* GetGamepadAppleSFSymbolsNameForButtonInterop(nint gamepad, int button)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, SDLGamepadButton, byte*>)funcTable[763])(gamepad, button);
+            return ((delegate* unmanaged[Cdecl]<nint, int, byte*>)funcTable[762])(gamepad, button);
         }
 
         internal static byte* GetGamepadAppleSFSymbolsNameForButtonNative(SDLGamepad gamepad, SDLGamepadButton button)
         {
-            return GetGamepadAppleSFSymbolsNameForButtonInterop(gamepad.Handle, button);
+            return GetGamepadAppleSFSymbolsNameForButtonInterop(gamepad.Handle, (int)button);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
-        internal static byte* GetGamepadAppleSFSymbolsNameForAxisInterop(nint gamepad, SDLGamepadAxis axis)
+        internal static byte* GetGamepadAppleSFSymbolsNameForAxisInterop(nint gamepad, int axis)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, SDLGamepadAxis, byte*>)funcTable[764])(gamepad, axis);
+            return ((delegate* unmanaged[Cdecl]<nint, int, byte*>)funcTable[763])(gamepad, axis);
         }
 
         internal static byte* GetGamepadAppleSFSymbolsNameForAxisNative(SDLGamepad gamepad, SDLGamepadAxis axis)
         {
-            return GetGamepadAppleSFSymbolsNameForAxisInterop(gamepad.Handle, axis);
+            return GetGamepadAppleSFSymbolsNameForAxisInterop(gamepad.Handle, (int)axis);
         }
 
         /// <summary>
@@ -17554,7 +17777,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte HasKeyboardNative()
         {
-            return ((delegate* unmanaged[Cdecl]<byte>)funcTable[765])();
+            return ((delegate* unmanaged[Cdecl]<byte>)funcTable[764])();
         }
 
         /// <summary>
@@ -17562,7 +17785,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static uint* GetKeyboardsNative(int* count)
         {
-            return ((delegate* unmanaged[Cdecl]<int*, uint*>)funcTable[766])(count);
+            return ((delegate* unmanaged[Cdecl]<int*, uint*>)funcTable[765])(count);
         }
 
         /// <summary>
@@ -17570,7 +17793,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte* GetKeyboardNameForIDNative(uint instanceId)
         {
-            return ((delegate* unmanaged[Cdecl]<uint, byte*>)funcTable[767])(instanceId);
+            return ((delegate* unmanaged[Cdecl]<uint, byte*>)funcTable[766])(instanceId);
         }
 
         /// <summary>
@@ -17578,7 +17801,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static nint GetKeyboardFocusInterop()
         {
-            return ((delegate* unmanaged[Cdecl]<nint>)funcTable[768])();
+            return ((delegate* unmanaged[Cdecl]<nint>)funcTable[767])();
         }
 
         internal static SDLWindow GetKeyboardFocusNative()
@@ -17591,7 +17814,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte* GetKeyboardStateNative(int* numkeys)
         {
-            return ((delegate* unmanaged[Cdecl]<int*, byte*>)funcTable[769])(numkeys);
+            return ((delegate* unmanaged[Cdecl]<int*, byte*>)funcTable[768])(numkeys);
         }
 
         /// <summary>
@@ -17599,63 +17822,98 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void ResetKeyboardNative()
         {
-            ((delegate* unmanaged[Cdecl]<void>)funcTable[770])();
+            ((delegate* unmanaged[Cdecl]<void>)funcTable[769])();
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static ushort GetModStateInterop()
+        {
+            return ((delegate* unmanaged[Cdecl]<ushort>)funcTable[770])();
+        }
+
         internal static SDLKeymod GetModStateNative()
         {
-            return ((delegate* unmanaged[Cdecl]<SDLKeymod>)funcTable[771])();
+            return (SDLKeymod)GetModStateInterop();
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void SetModStateInterop(ushort modstate)
+        {
+            ((delegate* unmanaged[Cdecl]<ushort, void>)funcTable[771])(modstate);
+        }
+
         internal static void SetModStateNative(SDLKeymod modstate)
         {
-            ((delegate* unmanaged[Cdecl]<SDLKeymod, void>)funcTable[772])(modstate);
+            SetModStateInterop((ushort)modstate);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static uint GetKeyFromScancodeInterop(int scancode, ushort modstate, byte keyEvent)
+        {
+            return ((delegate* unmanaged[Cdecl]<int, ushort, byte, uint>)funcTable[772])(scancode, modstate, keyEvent);
+        }
+
         internal static uint GetKeyFromScancodeNative(SDLScancode scancode, SDLKeymod modstate, byte keyEvent)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLScancode, SDLKeymod, byte, uint>)funcTable[773])(scancode, modstate, keyEvent);
+            return GetKeyFromScancodeInterop((int)scancode, (ushort)modstate, keyEvent);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int GetScancodeFromKeyInterop(uint key, SDLKeymod* modstate)
+        {
+            return ((delegate* unmanaged[Cdecl]<uint, SDLKeymod*, int>)funcTable[773])(key, modstate);
+        }
+
         internal static SDLScancode GetScancodeFromKeyNative(uint key, SDLKeymod* modstate)
         {
-            return ((delegate* unmanaged[Cdecl]<uint, SDLKeymod*, SDLScancode>)funcTable[774])(key, modstate);
+            return (SDLScancode)GetScancodeFromKeyInterop(key, modstate);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte SetScancodeNameInterop(int scancode, byte* name)
+        {
+            return ((delegate* unmanaged[Cdecl]<int, byte*, byte>)funcTable[774])(scancode, name);
+        }
+
         internal static byte SetScancodeNameNative(SDLScancode scancode, byte* name)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLScancode, byte*, byte>)funcTable[775])(scancode, name);
+            return SetScancodeNameInterop((int)scancode, name);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte* GetScancodeNameInterop(int scancode)
+        {
+            return ((delegate* unmanaged[Cdecl]<int, byte*>)funcTable[775])(scancode);
+        }
+
         internal static byte* GetScancodeNameNative(SDLScancode scancode)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLScancode, byte*>)funcTable[776])(scancode);
+            return GetScancodeNameInterop((int)scancode);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int GetScancodeFromNameInterop(byte* name)
+        {
+            return ((delegate* unmanaged[Cdecl]<byte*, int>)funcTable[776])(name);
+        }
+
         internal static SDLScancode GetScancodeFromNameNative(byte* name)
         {
-            return ((delegate* unmanaged[Cdecl]<byte*, SDLScancode>)funcTable[777])(name);
+            return (SDLScancode)GetScancodeFromNameInterop(name);
         }
 
         /// <summary>
@@ -17663,7 +17921,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte* GetKeyNameNative(uint key)
         {
-            return ((delegate* unmanaged[Cdecl]<uint, byte*>)funcTable[778])(key);
+            return ((delegate* unmanaged[Cdecl]<uint, byte*>)funcTable[777])(key);
         }
 
         /// <summary>
@@ -17671,7 +17929,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static uint GetKeyFromNameNative(byte* name)
         {
-            return ((delegate* unmanaged[Cdecl]<byte*, uint>)funcTable[779])(name);
+            return ((delegate* unmanaged[Cdecl]<byte*, uint>)funcTable[778])(name);
         }
 
         /// <summary>
@@ -17679,7 +17937,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte StartTextInputInterop(nint window)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, byte>)funcTable[780])(window);
+            return ((delegate* unmanaged[Cdecl]<nint, byte>)funcTable[779])(window);
         }
 
         internal static byte StartTextInputNative(SDLWindow window)
@@ -17692,7 +17950,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte StartTextInputWithPropertiesInterop(nint window, uint props)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, uint, byte>)funcTable[781])(window, props);
+            return ((delegate* unmanaged[Cdecl]<nint, uint, byte>)funcTable[780])(window, props);
         }
 
         internal static byte StartTextInputWithPropertiesNative(SDLWindow window, uint props)
@@ -17705,7 +17963,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte TextInputActiveInterop(nint window)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, byte>)funcTable[782])(window);
+            return ((delegate* unmanaged[Cdecl]<nint, byte>)funcTable[781])(window);
         }
 
         internal static byte TextInputActiveNative(SDLWindow window)
@@ -17718,7 +17976,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte StopTextInputInterop(nint window)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, byte>)funcTable[783])(window);
+            return ((delegate* unmanaged[Cdecl]<nint, byte>)funcTable[782])(window);
         }
 
         internal static byte StopTextInputNative(SDLWindow window)
@@ -17731,7 +17989,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte ClearCompositionInterop(nint window)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, byte>)funcTable[784])(window);
+            return ((delegate* unmanaged[Cdecl]<nint, byte>)funcTable[783])(window);
         }
 
         internal static byte ClearCompositionNative(SDLWindow window)
@@ -17744,7 +18002,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte SetTextInputAreaInterop(nint window, SDLRect* rect, int cursor)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, SDLRect*, int, byte>)funcTable[785])(window, rect, cursor);
+            return ((delegate* unmanaged[Cdecl]<nint, SDLRect*, int, byte>)funcTable[784])(window, rect, cursor);
         }
 
         internal static byte SetTextInputAreaNative(SDLWindow window, SDLRect* rect, int cursor)
@@ -17757,7 +18015,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte GetTextInputAreaInterop(nint window, SDLRect* rect, int* cursor)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, SDLRect*, int*, byte>)funcTable[786])(window, rect, cursor);
+            return ((delegate* unmanaged[Cdecl]<nint, SDLRect*, int*, byte>)funcTable[785])(window, rect, cursor);
         }
 
         internal static byte GetTextInputAreaNative(SDLWindow window, SDLRect* rect, int* cursor)
@@ -17770,7 +18028,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte HasScreenKeyboardSupportNative()
         {
-            return ((delegate* unmanaged[Cdecl]<byte>)funcTable[787])();
+            return ((delegate* unmanaged[Cdecl]<byte>)funcTable[786])();
         }
 
         /// <summary>
@@ -17778,7 +18036,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte ScreenKeyboardShownInterop(nint window)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, byte>)funcTable[788])(window);
+            return ((delegate* unmanaged[Cdecl]<nint, byte>)funcTable[787])(window);
         }
 
         internal static byte ScreenKeyboardShownNative(SDLWindow window)
@@ -17791,7 +18049,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte HasMouseNative()
         {
-            return ((delegate* unmanaged[Cdecl]<byte>)funcTable[789])();
+            return ((delegate* unmanaged[Cdecl]<byte>)funcTable[788])();
         }
 
         /// <summary>
@@ -17799,7 +18057,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static uint* GetMiceNative(int* count)
         {
-            return ((delegate* unmanaged[Cdecl]<int*, uint*>)funcTable[790])(count);
+            return ((delegate* unmanaged[Cdecl]<int*, uint*>)funcTable[789])(count);
         }
 
         /// <summary>
@@ -17807,7 +18065,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte* GetMouseNameForIDNative(uint instanceId)
         {
-            return ((delegate* unmanaged[Cdecl]<uint, byte*>)funcTable[791])(instanceId);
+            return ((delegate* unmanaged[Cdecl]<uint, byte*>)funcTable[790])(instanceId);
         }
 
         /// <summary>
@@ -17815,7 +18073,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static nint GetMouseFocusInterop()
         {
-            return ((delegate* unmanaged[Cdecl]<nint>)funcTable[792])();
+            return ((delegate* unmanaged[Cdecl]<nint>)funcTable[791])();
         }
 
         internal static SDLWindow GetMouseFocusNative()
@@ -17826,25 +18084,40 @@ namespace Inno.Native.Sdl3
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static uint GetMouseStateInterop(float* x, float* y)
+        {
+            return ((delegate* unmanaged[Cdecl]<float*, float*, uint>)funcTable[792])(x, y);
+        }
+
         internal static SDLMouseButtonFlags GetMouseStateNative(float* x, float* y)
         {
-            return ((delegate* unmanaged[Cdecl]<float*, float*, SDLMouseButtonFlags>)funcTable[793])(x, y);
+            return (SDLMouseButtonFlags)GetMouseStateInterop(x, y);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static uint GetGlobalMouseStateInterop(float* x, float* y)
+        {
+            return ((delegate* unmanaged[Cdecl]<float*, float*, uint>)funcTable[793])(x, y);
+        }
+
         internal static SDLMouseButtonFlags GetGlobalMouseStateNative(float* x, float* y)
         {
-            return ((delegate* unmanaged[Cdecl]<float*, float*, SDLMouseButtonFlags>)funcTable[794])(x, y);
+            return (SDLMouseButtonFlags)GetGlobalMouseStateInterop(x, y);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static uint GetRelativeMouseStateInterop(float* x, float* y)
+        {
+            return ((delegate* unmanaged[Cdecl]<float*, float*, uint>)funcTable[794])(x, y);
+        }
+
         internal static SDLMouseButtonFlags GetRelativeMouseStateNative(float* x, float* y)
         {
-            return ((delegate* unmanaged[Cdecl]<float*, float*, SDLMouseButtonFlags>)funcTable[795])(x, y);
+            return (SDLMouseButtonFlags)GetRelativeMouseStateInterop(x, y);
         }
 
         /// <summary>
@@ -17852,7 +18125,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void WarpMouseInWindowInterop(nint window, float x, float y)
         {
-            ((delegate* unmanaged[Cdecl]<nint, float, float, void>)funcTable[796])(window, x, y);
+            ((delegate* unmanaged[Cdecl]<nint, float, float, void>)funcTable[795])(window, x, y);
         }
 
         internal static void WarpMouseInWindowNative(SDLWindow window, float x, float y)
@@ -17865,7 +18138,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte WarpMouseGlobalNative(float x, float y)
         {
-            return ((delegate* unmanaged[Cdecl]<float, float, byte>)funcTable[797])(x, y);
+            return ((delegate* unmanaged[Cdecl]<float, float, byte>)funcTable[796])(x, y);
         }
 
         /// <summary>
@@ -17873,7 +18146,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte SetRelativeMouseTransformNative(delegate* unmanaged[Cdecl]<void*, ulong, nint, uint, float*, float*, void> callback, void* userdata)
         {
-            return ((delegate* unmanaged[Cdecl]<delegate* unmanaged[Cdecl]<void*, ulong, nint, uint, float*, float*, void> , void*, byte>)funcTable[798])(callback, userdata);
+            return ((delegate* unmanaged[Cdecl]<delegate* unmanaged[Cdecl]<void*, ulong, nint, uint, float*, float*, void> , void*, byte>)funcTable[797])(callback, userdata);
         }
 
         /// <summary>
@@ -17881,7 +18154,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte SetWindowRelativeMouseModeInterop(nint window, byte enabled)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, byte, byte>)funcTable[799])(window, enabled);
+            return ((delegate* unmanaged[Cdecl]<nint, byte, byte>)funcTable[798])(window, enabled);
         }
 
         internal static byte SetWindowRelativeMouseModeNative(SDLWindow window, byte enabled)
@@ -17894,7 +18167,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte GetWindowRelativeMouseModeInterop(nint window)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, byte>)funcTable[800])(window);
+            return ((delegate* unmanaged[Cdecl]<nint, byte>)funcTable[799])(window);
         }
 
         internal static byte GetWindowRelativeMouseModeNative(SDLWindow window)
@@ -17907,7 +18180,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte CaptureMouseNative(byte enabled)
         {
-            return ((delegate* unmanaged[Cdecl]<byte, byte>)funcTable[801])(enabled);
+            return ((delegate* unmanaged[Cdecl]<byte, byte>)funcTable[800])(enabled);
         }
 
         /// <summary>
@@ -17915,7 +18188,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static nint CreateCursorInterop(byte* data, byte* mask, int w, int h, int hotX, int hotY)
         {
-            return ((delegate* unmanaged[Cdecl]<byte*, byte*, int, int, int, int, nint>)funcTable[802])(data, mask, w, h, hotX, hotY);
+            return ((delegate* unmanaged[Cdecl]<byte*, byte*, int, int, int, int, nint>)funcTable[801])(data, mask, w, h, hotX, hotY);
         }
 
         internal static SDLCursor CreateCursorNative(byte* data, byte* mask, int w, int h, int hotX, int hotY)
@@ -17928,7 +18201,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static nint CreateColorCursorInterop(SDLSurface* surface, int hotX, int hotY)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLSurface*, int, int, nint>)funcTable[803])(surface, hotX, hotY);
+            return ((delegate* unmanaged[Cdecl]<SDLSurface*, int, int, nint>)funcTable[802])(surface, hotX, hotY);
         }
 
         internal static SDLCursor CreateColorCursorNative(SDLSurface* surface, int hotX, int hotY)
@@ -17941,7 +18214,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static nint CreateAnimatedCursorInterop(SDLCursorFrameInfo* frames, int frameCount, int hotX, int hotY)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLCursorFrameInfo*, int, int, int, nint>)funcTable[804])(frames, frameCount, hotX, hotY);
+            return ((delegate* unmanaged[Cdecl]<SDLCursorFrameInfo*, int, int, int, nint>)funcTable[803])(frames, frameCount, hotX, hotY);
         }
 
         internal static SDLCursor CreateAnimatedCursorNative(SDLCursorFrameInfo* frames, int frameCount, int hotX, int hotY)
@@ -17952,14 +18225,14 @@ namespace Inno.Native.Sdl3
         /// <summary>
         /// To be documented.
         /// </summary>
-        internal static nint CreateSystemCursorInterop(SDLSystemCursor id)
+        internal static nint CreateSystemCursorInterop(int id)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLSystemCursor, nint>)funcTable[805])(id);
+            return ((delegate* unmanaged[Cdecl]<int, nint>)funcTable[804])(id);
         }
 
         internal static SDLCursor CreateSystemCursorNative(SDLSystemCursor id)
         {
-            return new SDLCursor(CreateSystemCursorInterop(id));
+            return new SDLCursor(CreateSystemCursorInterop((int)id));
         }
 
         /// <summary>
@@ -17967,7 +18240,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte SetCursorInterop(nint cursor)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, byte>)funcTable[806])(cursor);
+            return ((delegate* unmanaged[Cdecl]<nint, byte>)funcTable[805])(cursor);
         }
 
         internal static byte SetCursorNative(SDLCursor cursor)
@@ -17980,7 +18253,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static nint GetCursorInterop()
         {
-            return ((delegate* unmanaged[Cdecl]<nint>)funcTable[807])();
+            return ((delegate* unmanaged[Cdecl]<nint>)funcTable[806])();
         }
 
         internal static SDLCursor GetCursorNative()
@@ -17993,7 +18266,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static nint GetDefaultCursorInterop()
         {
-            return ((delegate* unmanaged[Cdecl]<nint>)funcTable[808])();
+            return ((delegate* unmanaged[Cdecl]<nint>)funcTable[807])();
         }
 
         internal static SDLCursor GetDefaultCursorNative()
@@ -18006,7 +18279,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void DestroyCursorInterop(nint cursor)
         {
-            ((delegate* unmanaged[Cdecl]<nint, void>)funcTable[809])(cursor);
+            ((delegate* unmanaged[Cdecl]<nint, void>)funcTable[808])(cursor);
         }
 
         internal static void DestroyCursorNative(SDLCursor cursor)
@@ -18019,7 +18292,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte ShowCursorNative()
         {
-            return ((delegate* unmanaged[Cdecl]<byte>)funcTable[810])();
+            return ((delegate* unmanaged[Cdecl]<byte>)funcTable[809])();
         }
 
         /// <summary>
@@ -18027,7 +18300,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte HideCursorNative()
         {
-            return ((delegate* unmanaged[Cdecl]<byte>)funcTable[811])();
+            return ((delegate* unmanaged[Cdecl]<byte>)funcTable[810])();
         }
 
         /// <summary>
@@ -18035,7 +18308,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte CursorVisibleNative()
         {
-            return ((delegate* unmanaged[Cdecl]<byte>)funcTable[812])();
+            return ((delegate* unmanaged[Cdecl]<byte>)funcTable[811])();
         }
 
         /// <summary>
@@ -18043,7 +18316,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static ulong* GetTouchDevicesNative(int* count)
         {
-            return ((delegate* unmanaged[Cdecl]<int*, ulong*>)funcTable[813])(count);
+            return ((delegate* unmanaged[Cdecl]<int*, ulong*>)funcTable[812])(count);
         }
 
         /// <summary>
@@ -18051,15 +18324,20 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte* GetTouchDeviceNameNative(ulong touchID)
         {
-            return ((delegate* unmanaged[Cdecl]<ulong, byte*>)funcTable[814])(touchID);
+            return ((delegate* unmanaged[Cdecl]<ulong, byte*>)funcTable[813])(touchID);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int GetTouchDeviceTypeInterop(ulong touchID)
+        {
+            return ((delegate* unmanaged[Cdecl]<ulong, int>)funcTable[814])(touchID);
+        }
+
         internal static SDLTouchDeviceType GetTouchDeviceTypeNative(ulong touchID)
         {
-            return ((delegate* unmanaged[Cdecl]<ulong, SDLTouchDeviceType>)funcTable[815])(touchID);
+            return (SDLTouchDeviceType)GetTouchDeviceTypeInterop(touchID);
         }
 
         /// <summary>
@@ -18067,15 +18345,20 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static SDLFinger** GetTouchFingersNative(ulong touchID, int* count)
         {
-            return ((delegate* unmanaged[Cdecl]<ulong, int*, SDLFinger**>)funcTable[816])(touchID, count);
+            return ((delegate* unmanaged[Cdecl]<ulong, int*, SDLFinger**>)funcTable[815])(touchID, count);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int GetPenDeviceTypeInterop(uint instanceId)
+        {
+            return ((delegate* unmanaged[Cdecl]<uint, int>)funcTable[816])(instanceId);
+        }
+
         internal static SDLPenDeviceType GetPenDeviceTypeNative(uint instanceId)
         {
-            return ((delegate* unmanaged[Cdecl]<uint, SDLPenDeviceType>)funcTable[817])(instanceId);
+            return (SDLPenDeviceType)GetPenDeviceTypeInterop(instanceId);
         }
 
         /// <summary>
@@ -18083,15 +18366,20 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void PumpEventsNative()
         {
-            ((delegate* unmanaged[Cdecl]<void>)funcTable[818])();
+            ((delegate* unmanaged[Cdecl]<void>)funcTable[817])();
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int PeepEventsInterop(SDLEvent* events, int numevents, int action, uint minType, uint maxType)
+        {
+            return ((delegate* unmanaged[Cdecl]<SDLEvent*, int, int, uint, uint, int>)funcTable[818])(events, numevents, action, minType, maxType);
+        }
+
         internal static int PeepEventsNative(SDLEvent* events, int numevents, SDLEventAction action, uint minType, uint maxType)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLEvent*, int, SDLEventAction, uint, uint, int>)funcTable[819])(events, numevents, action, minType, maxType);
+            return PeepEventsInterop(events, numevents, (int)action, minType, maxType);
         }
 
         /// <summary>
@@ -18099,7 +18387,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte HasEventNative(uint type)
         {
-            return ((delegate* unmanaged[Cdecl]<uint, byte>)funcTable[820])(type);
+            return ((delegate* unmanaged[Cdecl]<uint, byte>)funcTable[819])(type);
         }
 
         /// <summary>
@@ -18107,7 +18395,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte HasEventsNative(uint minType, uint maxType)
         {
-            return ((delegate* unmanaged[Cdecl]<uint, uint, byte>)funcTable[821])(minType, maxType);
+            return ((delegate* unmanaged[Cdecl]<uint, uint, byte>)funcTable[820])(minType, maxType);
         }
 
         /// <summary>
@@ -18115,7 +18403,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void FlushEventNative(uint type)
         {
-            ((delegate* unmanaged[Cdecl]<uint, void>)funcTable[822])(type);
+            ((delegate* unmanaged[Cdecl]<uint, void>)funcTable[821])(type);
         }
 
         /// <summary>
@@ -18123,7 +18411,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void FlushEventsNative(uint minType, uint maxType)
         {
-            ((delegate* unmanaged[Cdecl]<uint, uint, void>)funcTable[823])(minType, maxType);
+            ((delegate* unmanaged[Cdecl]<uint, uint, void>)funcTable[822])(minType, maxType);
         }
 
         /// <summary>
@@ -18131,7 +18419,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte PollEventNative(SDLEvent* evnt)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLEvent*, byte>)funcTable[824])(evnt);
+            return ((delegate* unmanaged[Cdecl]<SDLEvent*, byte>)funcTable[823])(evnt);
         }
 
         /// <summary>
@@ -18139,7 +18427,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte WaitEventNative(SDLEvent* evnt)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLEvent*, byte>)funcTable[825])(evnt);
+            return ((delegate* unmanaged[Cdecl]<SDLEvent*, byte>)funcTable[824])(evnt);
         }
 
         /// <summary>
@@ -18147,7 +18435,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte WaitEventTimeoutNative(SDLEvent* evnt, int timeoutMS)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLEvent*, int, byte>)funcTable[826])(evnt, timeoutMS);
+            return ((delegate* unmanaged[Cdecl]<SDLEvent*, int, byte>)funcTable[825])(evnt, timeoutMS);
         }
 
         /// <summary>
@@ -18155,7 +18443,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte PushEventNative(SDLEvent* evnt)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLEvent*, byte>)funcTable[827])(evnt);
+            return ((delegate* unmanaged[Cdecl]<SDLEvent*, byte>)funcTable[826])(evnt);
         }
 
         /// <summary>
@@ -18163,7 +18451,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void SetEventFilterNative(delegate* unmanaged[Cdecl]<void*, SDLEvent*, byte> filter, void* userdata)
         {
-            ((delegate* unmanaged[Cdecl]<delegate* unmanaged[Cdecl]<void*, SDLEvent*, byte> , void*, void>)funcTable[828])(filter, userdata);
+            ((delegate* unmanaged[Cdecl]<delegate* unmanaged[Cdecl]<void*, SDLEvent*, byte> , void*, void>)funcTable[827])(filter, userdata);
         }
 
         /// <summary>
@@ -18171,7 +18459,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte GetEventFilterNative(delegate* unmanaged[Cdecl]<void*, SDLEvent*, byte> filter, void** userdata)
         {
-            return ((delegate* unmanaged[Cdecl]<delegate* unmanaged[Cdecl]<void*, SDLEvent*, byte> , void**, byte>)funcTable[829])(filter, userdata);
+            return ((delegate* unmanaged[Cdecl]<delegate* unmanaged[Cdecl]<void*, SDLEvent*, byte> , void**, byte>)funcTable[828])(filter, userdata);
         }
 
         /// <summary>
@@ -18179,7 +18467,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte AddEventWatchNative(delegate* unmanaged[Cdecl]<void*, SDLEvent*, byte> filter, void* userdata)
         {
-            return ((delegate* unmanaged[Cdecl]<delegate* unmanaged[Cdecl]<void*, SDLEvent*, byte> , void*, byte>)funcTable[830])(filter, userdata);
+            return ((delegate* unmanaged[Cdecl]<delegate* unmanaged[Cdecl]<void*, SDLEvent*, byte> , void*, byte>)funcTable[829])(filter, userdata);
         }
 
         /// <summary>
@@ -18187,7 +18475,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void RemoveEventWatchNative(delegate* unmanaged[Cdecl]<void*, SDLEvent*, byte> filter, void* userdata)
         {
-            ((delegate* unmanaged[Cdecl]<delegate* unmanaged[Cdecl]<void*, SDLEvent*, byte> , void*, void>)funcTable[831])(filter, userdata);
+            ((delegate* unmanaged[Cdecl]<delegate* unmanaged[Cdecl]<void*, SDLEvent*, byte> , void*, void>)funcTable[830])(filter, userdata);
         }
 
         /// <summary>
@@ -18195,7 +18483,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void FilterEventsNative(delegate* unmanaged[Cdecl]<void*, SDLEvent*, byte> filter, void* userdata)
         {
-            ((delegate* unmanaged[Cdecl]<delegate* unmanaged[Cdecl]<void*, SDLEvent*, byte> , void*, void>)funcTable[832])(filter, userdata);
+            ((delegate* unmanaged[Cdecl]<delegate* unmanaged[Cdecl]<void*, SDLEvent*, byte> , void*, void>)funcTable[831])(filter, userdata);
         }
 
         /// <summary>
@@ -18203,7 +18491,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void SetEventEnabledNative(uint type, byte enabled)
         {
-            ((delegate* unmanaged[Cdecl]<uint, byte, void>)funcTable[833])(type, enabled);
+            ((delegate* unmanaged[Cdecl]<uint, byte, void>)funcTable[832])(type, enabled);
         }
 
         /// <summary>
@@ -18211,7 +18499,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte EventEnabledNative(uint type)
         {
-            return ((delegate* unmanaged[Cdecl]<uint, byte>)funcTable[834])(type);
+            return ((delegate* unmanaged[Cdecl]<uint, byte>)funcTable[833])(type);
         }
 
         /// <summary>
@@ -18219,7 +18507,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static uint RegisterEventsNative(int numevents)
         {
-            return ((delegate* unmanaged[Cdecl]<int, uint>)funcTable[835])(numevents);
+            return ((delegate* unmanaged[Cdecl]<int, uint>)funcTable[834])(numevents);
         }
 
         /// <summary>
@@ -18227,7 +18515,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static nint GetWindowFromEventInterop(SDLEvent* evnt)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLEvent*, nint>)funcTable[836])(evnt);
+            return ((delegate* unmanaged[Cdecl]<SDLEvent*, nint>)funcTable[835])(evnt);
         }
 
         internal static SDLWindow GetWindowFromEventNative(SDLEvent* evnt)
@@ -18240,7 +18528,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static int GetEventDescriptionNative(SDLEvent* evnt, byte* buf, int buflen)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLEvent*, byte*, int, int>)funcTable[837])(evnt, buf, buflen);
+            return ((delegate* unmanaged[Cdecl]<SDLEvent*, byte*, int, int>)funcTable[836])(evnt, buf, buflen);
         }
 
         /// <summary>
@@ -18248,7 +18536,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte* GetBasePathNative()
         {
-            return ((delegate* unmanaged[Cdecl]<byte*>)funcTable[838])();
+            return ((delegate* unmanaged[Cdecl]<byte*>)funcTable[837])();
         }
 
         /// <summary>
@@ -18256,15 +18544,20 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte* GetPrefPathNative(byte* org, byte* app)
         {
-            return ((delegate* unmanaged[Cdecl]<byte*, byte*, byte*>)funcTable[839])(org, app);
+            return ((delegate* unmanaged[Cdecl]<byte*, byte*, byte*>)funcTable[838])(org, app);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte* GetUserFolderInterop(int folder)
+        {
+            return ((delegate* unmanaged[Cdecl]<int, byte*>)funcTable[839])(folder);
+        }
+
         internal static byte* GetUserFolderNative(SDLFolder folder)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLFolder, byte*>)funcTable[840])(folder);
+            return GetUserFolderInterop((int)folder);
         }
 
         /// <summary>
@@ -18272,7 +18565,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte CreateDirectoryNative(byte* path)
         {
-            return ((delegate* unmanaged[Cdecl]<byte*, byte>)funcTable[841])(path);
+            return ((delegate* unmanaged[Cdecl]<byte*, byte>)funcTable[840])(path);
         }
 
         /// <summary>
@@ -18280,7 +18573,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte EnumerateDirectoryNative(byte* path, delegate* unmanaged[Cdecl]<void*, byte*, byte*, SDLEnumerationResult> callback, void* userdata)
         {
-            return ((delegate* unmanaged[Cdecl]<byte*, delegate* unmanaged[Cdecl]<void*, byte*, byte*, SDLEnumerationResult> , void*, byte>)funcTable[842])(path, callback, userdata);
+            return ((delegate* unmanaged[Cdecl]<byte*, delegate* unmanaged[Cdecl]<void*, byte*, byte*, SDLEnumerationResult> , void*, byte>)funcTable[841])(path, callback, userdata);
         }
 
         /// <summary>
@@ -18288,7 +18581,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte RemovePathNative(byte* path)
         {
-            return ((delegate* unmanaged[Cdecl]<byte*, byte>)funcTable[843])(path);
+            return ((delegate* unmanaged[Cdecl]<byte*, byte>)funcTable[842])(path);
         }
 
         /// <summary>
@@ -18296,7 +18589,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte RenamePathNative(byte* oldpath, byte* newpath)
         {
-            return ((delegate* unmanaged[Cdecl]<byte*, byte*, byte>)funcTable[844])(oldpath, newpath);
+            return ((delegate* unmanaged[Cdecl]<byte*, byte*, byte>)funcTable[843])(oldpath, newpath);
         }
 
         /// <summary>
@@ -18304,7 +18597,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte CopyFileNative(byte* oldpath, byte* newpath)
         {
-            return ((delegate* unmanaged[Cdecl]<byte*, byte*, byte>)funcTable[845])(oldpath, newpath);
+            return ((delegate* unmanaged[Cdecl]<byte*, byte*, byte>)funcTable[844])(oldpath, newpath);
         }
 
         /// <summary>
@@ -18312,7 +18605,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte GetPathInfoNative(byte* path, SDLPathInfo* info)
         {
-            return ((delegate* unmanaged[Cdecl]<byte*, SDLPathInfo*, byte>)funcTable[846])(path, info);
+            return ((delegate* unmanaged[Cdecl]<byte*, SDLPathInfo*, byte>)funcTable[845])(path, info);
         }
 
         /// <summary>
@@ -18320,7 +18613,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte** GlobDirectoryNative(byte* path, byte* pattern, uint flags, int* count)
         {
-            return ((delegate* unmanaged[Cdecl]<byte*, byte*, uint, int*, byte**>)funcTable[847])(path, pattern, flags, count);
+            return ((delegate* unmanaged[Cdecl]<byte*, byte*, uint, int*, byte**>)funcTable[846])(path, pattern, flags, count);
         }
 
         /// <summary>
@@ -18328,7 +18621,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte* GetCurrentDirectoryNative()
         {
-            return ((delegate* unmanaged[Cdecl]<byte*>)funcTable[848])();
+            return ((delegate* unmanaged[Cdecl]<byte*>)funcTable[847])();
         }
 
         /// <summary>
@@ -18336,7 +18629,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte GPUSupportsShaderFormatsNative(uint formatFlags, byte* name)
         {
-            return ((delegate* unmanaged[Cdecl]<uint, byte*, byte>)funcTable[849])(formatFlags, name);
+            return ((delegate* unmanaged[Cdecl]<uint, byte*, byte>)funcTable[848])(formatFlags, name);
         }
 
         /// <summary>
@@ -18344,7 +18637,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte GPUSupportsPropertiesNative(uint props)
         {
-            return ((delegate* unmanaged[Cdecl]<uint, byte>)funcTable[850])(props);
+            return ((delegate* unmanaged[Cdecl]<uint, byte>)funcTable[849])(props);
         }
 
         /// <summary>
@@ -18352,7 +18645,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static nint CreateGPUDeviceInterop(uint formatFlags, byte debugMode, byte* name)
         {
-            return ((delegate* unmanaged[Cdecl]<uint, byte, byte*, nint>)funcTable[851])(formatFlags, debugMode, name);
+            return ((delegate* unmanaged[Cdecl]<uint, byte, byte*, nint>)funcTable[850])(formatFlags, debugMode, name);
         }
 
         internal static SDLGPUDevice CreateGPUDeviceNative(uint formatFlags, byte debugMode, byte* name)
@@ -18365,7 +18658,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static nint CreateGPUDeviceWithPropertiesInterop(uint props)
         {
-            return ((delegate* unmanaged[Cdecl]<uint, nint>)funcTable[852])(props);
+            return ((delegate* unmanaged[Cdecl]<uint, nint>)funcTable[851])(props);
         }
 
         internal static SDLGPUDevice CreateGPUDeviceWithPropertiesNative(uint props)
@@ -18378,7 +18671,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void DestroyGPUDeviceInterop(nint device)
         {
-            ((delegate* unmanaged[Cdecl]<nint, void>)funcTable[853])(device);
+            ((delegate* unmanaged[Cdecl]<nint, void>)funcTable[852])(device);
         }
 
         internal static void DestroyGPUDeviceNative(SDLGPUDevice device)
@@ -18391,7 +18684,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static int GetNumGPUDriversNative()
         {
-            return ((delegate* unmanaged[Cdecl]<int>)funcTable[854])();
+            return ((delegate* unmanaged[Cdecl]<int>)funcTable[853])();
         }
 
         /// <summary>
@@ -18399,7 +18692,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte* GetGPUDriverNative(int index)
         {
-            return ((delegate* unmanaged[Cdecl]<int, byte*>)funcTable[855])(index);
+            return ((delegate* unmanaged[Cdecl]<int, byte*>)funcTable[854])(index);
         }
 
         /// <summary>
@@ -18407,7 +18700,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte* GetGPUDeviceDriverInterop(nint device)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, byte*>)funcTable[856])(device);
+            return ((delegate* unmanaged[Cdecl]<nint, byte*>)funcTable[855])(device);
         }
 
         internal static byte* GetGPUDeviceDriverNative(SDLGPUDevice device)
@@ -18420,7 +18713,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static uint GetGPUShaderFormatsInterop(nint device)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, uint>)funcTable[857])(device);
+            return ((delegate* unmanaged[Cdecl]<nint, uint>)funcTable[856])(device);
         }
 
         internal static uint GetGPUShaderFormatsNative(SDLGPUDevice device)
@@ -18433,7 +18726,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static uint GetGPUDevicePropertiesInterop(nint device)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, uint>)funcTable[858])(device);
+            return ((delegate* unmanaged[Cdecl]<nint, uint>)funcTable[857])(device);
         }
 
         internal static uint GetGPUDevicePropertiesNative(SDLGPUDevice device)
@@ -18446,7 +18739,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static nint CreateGPUComputePipelineInterop(nint device, SDLGPUComputePipelineCreateInfo* createinfo)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, SDLGPUComputePipelineCreateInfo*, nint>)funcTable[859])(device, createinfo);
+            return ((delegate* unmanaged[Cdecl]<nint, SDLGPUComputePipelineCreateInfo*, nint>)funcTable[858])(device, createinfo);
         }
 
         internal static SDLGPUComputePipeline CreateGPUComputePipelineNative(SDLGPUDevice device, SDLGPUComputePipelineCreateInfo* createinfo)
@@ -18459,7 +18752,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static nint CreateGPUGraphicsPipelineInterop(nint device, SDLGPUGraphicsPipelineCreateInfo* createinfo)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, SDLGPUGraphicsPipelineCreateInfo*, nint>)funcTable[860])(device, createinfo);
+            return ((delegate* unmanaged[Cdecl]<nint, SDLGPUGraphicsPipelineCreateInfo*, nint>)funcTable[859])(device, createinfo);
         }
 
         internal static SDLGPUGraphicsPipeline CreateGPUGraphicsPipelineNative(SDLGPUDevice device, SDLGPUGraphicsPipelineCreateInfo* createinfo)
@@ -18472,7 +18765,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static nint CreateGPUSamplerInterop(nint device, SDLGPUSamplerCreateInfo* createinfo)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, SDLGPUSamplerCreateInfo*, nint>)funcTable[861])(device, createinfo);
+            return ((delegate* unmanaged[Cdecl]<nint, SDLGPUSamplerCreateInfo*, nint>)funcTable[860])(device, createinfo);
         }
 
         internal static SDLGPUSampler CreateGPUSamplerNative(SDLGPUDevice device, SDLGPUSamplerCreateInfo* createinfo)
@@ -18485,7 +18778,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static nint CreateGPUShaderInterop(nint device, SDLGPUShaderCreateInfo* createinfo)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, SDLGPUShaderCreateInfo*, nint>)funcTable[862])(device, createinfo);
+            return ((delegate* unmanaged[Cdecl]<nint, SDLGPUShaderCreateInfo*, nint>)funcTable[861])(device, createinfo);
         }
 
         internal static SDLGPUShader CreateGPUShaderNative(SDLGPUDevice device, SDLGPUShaderCreateInfo* createinfo)
@@ -18498,7 +18791,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static nint CreateGPUTextureInterop(nint device, SDLGPUTextureCreateInfo* createinfo)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, SDLGPUTextureCreateInfo*, nint>)funcTable[863])(device, createinfo);
+            return ((delegate* unmanaged[Cdecl]<nint, SDLGPUTextureCreateInfo*, nint>)funcTable[862])(device, createinfo);
         }
 
         internal static SDLGPUTexture CreateGPUTextureNative(SDLGPUDevice device, SDLGPUTextureCreateInfo* createinfo)
@@ -18511,7 +18804,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static nint CreateGPUBufferInterop(nint device, SDLGPUBufferCreateInfo* createinfo)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, SDLGPUBufferCreateInfo*, nint>)funcTable[864])(device, createinfo);
+            return ((delegate* unmanaged[Cdecl]<nint, SDLGPUBufferCreateInfo*, nint>)funcTable[863])(device, createinfo);
         }
 
         internal static SDLGPUBuffer CreateGPUBufferNative(SDLGPUDevice device, SDLGPUBufferCreateInfo* createinfo)
@@ -18524,7 +18817,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static nint CreateGPUTransferBufferInterop(nint device, SDLGPUTransferBufferCreateInfo* createinfo)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, SDLGPUTransferBufferCreateInfo*, nint>)funcTable[865])(device, createinfo);
+            return ((delegate* unmanaged[Cdecl]<nint, SDLGPUTransferBufferCreateInfo*, nint>)funcTable[864])(device, createinfo);
         }
 
         internal static SDLGPUTransferBuffer CreateGPUTransferBufferNative(SDLGPUDevice device, SDLGPUTransferBufferCreateInfo* createinfo)
@@ -18537,7 +18830,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void SetGPUBufferNameInterop(nint device, nint buffer, byte* text)
         {
-            ((delegate* unmanaged[Cdecl]<nint, nint, byte*, void>)funcTable[866])(device, buffer, text);
+            ((delegate* unmanaged[Cdecl]<nint, nint, byte*, void>)funcTable[865])(device, buffer, text);
         }
 
         internal static void SetGPUBufferNameNative(SDLGPUDevice device, SDLGPUBuffer buffer, byte* text)
@@ -18550,7 +18843,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void SetGPUTextureNameInterop(nint device, nint texture, byte* text)
         {
-            ((delegate* unmanaged[Cdecl]<nint, nint, byte*, void>)funcTable[867])(device, texture, text);
+            ((delegate* unmanaged[Cdecl]<nint, nint, byte*, void>)funcTable[866])(device, texture, text);
         }
 
         internal static void SetGPUTextureNameNative(SDLGPUDevice device, SDLGPUTexture texture, byte* text)
@@ -18563,7 +18856,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void InsertGPUDebugLabelInterop(nint commandBuffer, byte* text)
         {
-            ((delegate* unmanaged[Cdecl]<nint, byte*, void>)funcTable[868])(commandBuffer, text);
+            ((delegate* unmanaged[Cdecl]<nint, byte*, void>)funcTable[867])(commandBuffer, text);
         }
 
         internal static void InsertGPUDebugLabelNative(SDLGPUCommandBuffer commandBuffer, byte* text)
@@ -18576,7 +18869,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void PushGPUDebugGroupInterop(nint commandBuffer, byte* name)
         {
-            ((delegate* unmanaged[Cdecl]<nint, byte*, void>)funcTable[869])(commandBuffer, name);
+            ((delegate* unmanaged[Cdecl]<nint, byte*, void>)funcTable[868])(commandBuffer, name);
         }
 
         internal static void PushGPUDebugGroupNative(SDLGPUCommandBuffer commandBuffer, byte* name)
@@ -18589,7 +18882,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void PopGPUDebugGroupInterop(nint commandBuffer)
         {
-            ((delegate* unmanaged[Cdecl]<nint, void>)funcTable[870])(commandBuffer);
+            ((delegate* unmanaged[Cdecl]<nint, void>)funcTable[869])(commandBuffer);
         }
 
         internal static void PopGPUDebugGroupNative(SDLGPUCommandBuffer commandBuffer)
@@ -18602,7 +18895,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void ReleaseGPUTextureInterop(nint device, nint texture)
         {
-            ((delegate* unmanaged[Cdecl]<nint, nint, void>)funcTable[871])(device, texture);
+            ((delegate* unmanaged[Cdecl]<nint, nint, void>)funcTable[870])(device, texture);
         }
 
         internal static void ReleaseGPUTextureNative(SDLGPUDevice device, SDLGPUTexture texture)
@@ -18615,7 +18908,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void ReleaseGPUSamplerInterop(nint device, nint sampler)
         {
-            ((delegate* unmanaged[Cdecl]<nint, nint, void>)funcTable[872])(device, sampler);
+            ((delegate* unmanaged[Cdecl]<nint, nint, void>)funcTable[871])(device, sampler);
         }
 
         internal static void ReleaseGPUSamplerNative(SDLGPUDevice device, SDLGPUSampler sampler)
@@ -18628,7 +18921,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void ReleaseGPUBufferInterop(nint device, nint buffer)
         {
-            ((delegate* unmanaged[Cdecl]<nint, nint, void>)funcTable[873])(device, buffer);
+            ((delegate* unmanaged[Cdecl]<nint, nint, void>)funcTable[872])(device, buffer);
         }
 
         internal static void ReleaseGPUBufferNative(SDLGPUDevice device, SDLGPUBuffer buffer)
@@ -18641,7 +18934,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void ReleaseGPUTransferBufferInterop(nint device, nint transferBuffer)
         {
-            ((delegate* unmanaged[Cdecl]<nint, nint, void>)funcTable[874])(device, transferBuffer);
+            ((delegate* unmanaged[Cdecl]<nint, nint, void>)funcTable[873])(device, transferBuffer);
         }
 
         internal static void ReleaseGPUTransferBufferNative(SDLGPUDevice device, SDLGPUTransferBuffer transferBuffer)
@@ -18654,7 +18947,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void ReleaseGPUComputePipelineInterop(nint device, nint computePipeline)
         {
-            ((delegate* unmanaged[Cdecl]<nint, nint, void>)funcTable[875])(device, computePipeline);
+            ((delegate* unmanaged[Cdecl]<nint, nint, void>)funcTable[874])(device, computePipeline);
         }
 
         internal static void ReleaseGPUComputePipelineNative(SDLGPUDevice device, SDLGPUComputePipeline computePipeline)
@@ -18667,7 +18960,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void ReleaseGPUShaderInterop(nint device, nint shader)
         {
-            ((delegate* unmanaged[Cdecl]<nint, nint, void>)funcTable[876])(device, shader);
+            ((delegate* unmanaged[Cdecl]<nint, nint, void>)funcTable[875])(device, shader);
         }
 
         internal static void ReleaseGPUShaderNative(SDLGPUDevice device, SDLGPUShader shader)
@@ -18680,7 +18973,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void ReleaseGPUGraphicsPipelineInterop(nint device, nint graphicsPipeline)
         {
-            ((delegate* unmanaged[Cdecl]<nint, nint, void>)funcTable[877])(device, graphicsPipeline);
+            ((delegate* unmanaged[Cdecl]<nint, nint, void>)funcTable[876])(device, graphicsPipeline);
         }
 
         internal static void ReleaseGPUGraphicsPipelineNative(SDLGPUDevice device, SDLGPUGraphicsPipeline graphicsPipeline)
@@ -18693,7 +18986,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static nint AcquireGPUCommandBufferInterop(nint device)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, nint>)funcTable[878])(device);
+            return ((delegate* unmanaged[Cdecl]<nint, nint>)funcTable[877])(device);
         }
 
         internal static SDLGPUCommandBuffer AcquireGPUCommandBufferNative(SDLGPUDevice device)
@@ -18706,7 +18999,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void PushGPUVertexUniformDataInterop(nint commandBuffer, uint slotIndex, void* data, uint length)
         {
-            ((delegate* unmanaged[Cdecl]<nint, uint, void*, uint, void>)funcTable[879])(commandBuffer, slotIndex, data, length);
+            ((delegate* unmanaged[Cdecl]<nint, uint, void*, uint, void>)funcTable[878])(commandBuffer, slotIndex, data, length);
         }
 
         internal static void PushGPUVertexUniformDataNative(SDLGPUCommandBuffer commandBuffer, uint slotIndex, void* data, uint length)
@@ -18719,7 +19012,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void PushGPUFragmentUniformDataInterop(nint commandBuffer, uint slotIndex, void* data, uint length)
         {
-            ((delegate* unmanaged[Cdecl]<nint, uint, void*, uint, void>)funcTable[880])(commandBuffer, slotIndex, data, length);
+            ((delegate* unmanaged[Cdecl]<nint, uint, void*, uint, void>)funcTable[879])(commandBuffer, slotIndex, data, length);
         }
 
         internal static void PushGPUFragmentUniformDataNative(SDLGPUCommandBuffer commandBuffer, uint slotIndex, void* data, uint length)
@@ -18732,7 +19025,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void PushGPUComputeUniformDataInterop(nint commandBuffer, uint slotIndex, void* data, uint length)
         {
-            ((delegate* unmanaged[Cdecl]<nint, uint, void*, uint, void>)funcTable[881])(commandBuffer, slotIndex, data, length);
+            ((delegate* unmanaged[Cdecl]<nint, uint, void*, uint, void>)funcTable[880])(commandBuffer, slotIndex, data, length);
         }
 
         internal static void PushGPUComputeUniformDataNative(SDLGPUCommandBuffer commandBuffer, uint slotIndex, void* data, uint length)
@@ -18745,7 +19038,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static nint BeginGPURenderPassInterop(nint commandBuffer, SDLGPUColorTargetInfo* colorTargetInfos, uint numColorTargets, SDLGPUDepthStencilTargetInfo* depthStencilTargetInfo)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, SDLGPUColorTargetInfo*, uint, SDLGPUDepthStencilTargetInfo*, nint>)funcTable[882])(commandBuffer, colorTargetInfos, numColorTargets, depthStencilTargetInfo);
+            return ((delegate* unmanaged[Cdecl]<nint, SDLGPUColorTargetInfo*, uint, SDLGPUDepthStencilTargetInfo*, nint>)funcTable[881])(commandBuffer, colorTargetInfos, numColorTargets, depthStencilTargetInfo);
         }
 
         internal static SDLGPURenderPass BeginGPURenderPassNative(SDLGPUCommandBuffer commandBuffer, SDLGPUColorTargetInfo* colorTargetInfos, uint numColorTargets, SDLGPUDepthStencilTargetInfo* depthStencilTargetInfo)
@@ -18758,7 +19051,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void BindGPUGraphicsPipelineInterop(nint renderPass, nint graphicsPipeline)
         {
-            ((delegate* unmanaged[Cdecl]<nint, nint, void>)funcTable[883])(renderPass, graphicsPipeline);
+            ((delegate* unmanaged[Cdecl]<nint, nint, void>)funcTable[882])(renderPass, graphicsPipeline);
         }
 
         internal static void BindGPUGraphicsPipelineNative(SDLGPURenderPass renderPass, SDLGPUGraphicsPipeline graphicsPipeline)
@@ -18771,7 +19064,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void SetGPUViewportInterop(nint renderPass, SDLGPUViewport* viewport)
         {
-            ((delegate* unmanaged[Cdecl]<nint, SDLGPUViewport*, void>)funcTable[884])(renderPass, viewport);
+            ((delegate* unmanaged[Cdecl]<nint, SDLGPUViewport*, void>)funcTable[883])(renderPass, viewport);
         }
 
         internal static void SetGPUViewportNative(SDLGPURenderPass renderPass, SDLGPUViewport* viewport)
@@ -18784,7 +19077,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void SetGPUScissorInterop(nint renderPass, SDLRect* scissor)
         {
-            ((delegate* unmanaged[Cdecl]<nint, SDLRect*, void>)funcTable[885])(renderPass, scissor);
+            ((delegate* unmanaged[Cdecl]<nint, SDLRect*, void>)funcTable[884])(renderPass, scissor);
         }
 
         internal static void SetGPUScissorNative(SDLGPURenderPass renderPass, SDLRect* scissor)
@@ -18797,7 +19090,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void SetGPUBlendConstantsInterop(nint renderPass, SDLFColor blendConstants)
         {
-            ((delegate* unmanaged[Cdecl]<nint, SDLFColor, void>)funcTable[886])(renderPass, blendConstants);
+            ((delegate* unmanaged[Cdecl]<nint, SDLFColor, void>)funcTable[885])(renderPass, blendConstants);
         }
 
         internal static void SetGPUBlendConstantsNative(SDLGPURenderPass renderPass, SDLFColor blendConstants)
@@ -18810,7 +19103,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void SetGPUStencilReferenceInterop(nint renderPass, byte reference)
         {
-            ((delegate* unmanaged[Cdecl]<nint, byte, void>)funcTable[887])(renderPass, reference);
+            ((delegate* unmanaged[Cdecl]<nint, byte, void>)funcTable[886])(renderPass, reference);
         }
 
         internal static void SetGPUStencilReferenceNative(SDLGPURenderPass renderPass, byte reference)
@@ -18823,7 +19116,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void BindGPUVertexBuffersInterop(nint renderPass, uint firstSlot, SDLGPUBufferBinding* bindings, uint numBindings)
         {
-            ((delegate* unmanaged[Cdecl]<nint, uint, SDLGPUBufferBinding*, uint, void>)funcTable[888])(renderPass, firstSlot, bindings, numBindings);
+            ((delegate* unmanaged[Cdecl]<nint, uint, SDLGPUBufferBinding*, uint, void>)funcTable[887])(renderPass, firstSlot, bindings, numBindings);
         }
 
         internal static void BindGPUVertexBuffersNative(SDLGPURenderPass renderPass, uint firstSlot, SDLGPUBufferBinding* bindings, uint numBindings)
@@ -18834,14 +19127,14 @@ namespace Inno.Native.Sdl3
         /// <summary>
         /// To be documented.
         /// </summary>
-        internal static void BindGPUIndexBufferInterop(nint renderPass, SDLGPUBufferBinding* binding, SDLGPUIndexElementSize indexElementSize)
+        internal static void BindGPUIndexBufferInterop(nint renderPass, SDLGPUBufferBinding* binding, int indexElementSize)
         {
-            ((delegate* unmanaged[Cdecl]<nint, SDLGPUBufferBinding*, SDLGPUIndexElementSize, void>)funcTable[889])(renderPass, binding, indexElementSize);
+            ((delegate* unmanaged[Cdecl]<nint, SDLGPUBufferBinding*, int, void>)funcTable[888])(renderPass, binding, indexElementSize);
         }
 
         internal static void BindGPUIndexBufferNative(SDLGPURenderPass renderPass, SDLGPUBufferBinding* binding, SDLGPUIndexElementSize indexElementSize)
         {
-            BindGPUIndexBufferInterop(renderPass.Handle, binding, indexElementSize);
+            BindGPUIndexBufferInterop(renderPass.Handle, binding, (int)indexElementSize);
         }
 
         /// <summary>
@@ -18849,7 +19142,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void BindGPUVertexSamplersInterop(nint renderPass, uint firstSlot, SDLGPUTextureSamplerBinding* textureSamplerBindings, uint numBindings)
         {
-            ((delegate* unmanaged[Cdecl]<nint, uint, SDLGPUTextureSamplerBinding*, uint, void>)funcTable[890])(renderPass, firstSlot, textureSamplerBindings, numBindings);
+            ((delegate* unmanaged[Cdecl]<nint, uint, SDLGPUTextureSamplerBinding*, uint, void>)funcTable[889])(renderPass, firstSlot, textureSamplerBindings, numBindings);
         }
 
         internal static void BindGPUVertexSamplersNative(SDLGPURenderPass renderPass, uint firstSlot, SDLGPUTextureSamplerBinding* textureSamplerBindings, uint numBindings)
@@ -18862,7 +19155,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void BindGPUVertexStorageTexturesInterop(nint renderPass, uint firstSlot, SDLGPUTexture* storageTextures, uint numBindings)
         {
-            ((delegate* unmanaged[Cdecl]<nint, uint, SDLGPUTexture*, uint, void>)funcTable[891])(renderPass, firstSlot, storageTextures, numBindings);
+            ((delegate* unmanaged[Cdecl]<nint, uint, SDLGPUTexture*, uint, void>)funcTable[890])(renderPass, firstSlot, storageTextures, numBindings);
         }
 
         internal static void BindGPUVertexStorageTexturesNative(SDLGPURenderPass renderPass, uint firstSlot, SDLGPUTexture* storageTextures, uint numBindings)
@@ -18875,7 +19168,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void BindGPUVertexStorageBuffersInterop(nint renderPass, uint firstSlot, SDLGPUBuffer* storageBuffers, uint numBindings)
         {
-            ((delegate* unmanaged[Cdecl]<nint, uint, SDLGPUBuffer*, uint, void>)funcTable[892])(renderPass, firstSlot, storageBuffers, numBindings);
+            ((delegate* unmanaged[Cdecl]<nint, uint, SDLGPUBuffer*, uint, void>)funcTable[891])(renderPass, firstSlot, storageBuffers, numBindings);
         }
 
         internal static void BindGPUVertexStorageBuffersNative(SDLGPURenderPass renderPass, uint firstSlot, SDLGPUBuffer* storageBuffers, uint numBindings)
@@ -18888,7 +19181,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void BindGPUFragmentSamplersInterop(nint renderPass, uint firstSlot, SDLGPUTextureSamplerBinding* textureSamplerBindings, uint numBindings)
         {
-            ((delegate* unmanaged[Cdecl]<nint, uint, SDLGPUTextureSamplerBinding*, uint, void>)funcTable[893])(renderPass, firstSlot, textureSamplerBindings, numBindings);
+            ((delegate* unmanaged[Cdecl]<nint, uint, SDLGPUTextureSamplerBinding*, uint, void>)funcTable[892])(renderPass, firstSlot, textureSamplerBindings, numBindings);
         }
 
         internal static void BindGPUFragmentSamplersNative(SDLGPURenderPass renderPass, uint firstSlot, SDLGPUTextureSamplerBinding* textureSamplerBindings, uint numBindings)
@@ -18901,7 +19194,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void BindGPUFragmentStorageTexturesInterop(nint renderPass, uint firstSlot, SDLGPUTexture* storageTextures, uint numBindings)
         {
-            ((delegate* unmanaged[Cdecl]<nint, uint, SDLGPUTexture*, uint, void>)funcTable[894])(renderPass, firstSlot, storageTextures, numBindings);
+            ((delegate* unmanaged[Cdecl]<nint, uint, SDLGPUTexture*, uint, void>)funcTable[893])(renderPass, firstSlot, storageTextures, numBindings);
         }
 
         internal static void BindGPUFragmentStorageTexturesNative(SDLGPURenderPass renderPass, uint firstSlot, SDLGPUTexture* storageTextures, uint numBindings)
@@ -18914,7 +19207,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void BindGPUFragmentStorageBuffersInterop(nint renderPass, uint firstSlot, SDLGPUBuffer* storageBuffers, uint numBindings)
         {
-            ((delegate* unmanaged[Cdecl]<nint, uint, SDLGPUBuffer*, uint, void>)funcTable[895])(renderPass, firstSlot, storageBuffers, numBindings);
+            ((delegate* unmanaged[Cdecl]<nint, uint, SDLGPUBuffer*, uint, void>)funcTable[894])(renderPass, firstSlot, storageBuffers, numBindings);
         }
 
         internal static void BindGPUFragmentStorageBuffersNative(SDLGPURenderPass renderPass, uint firstSlot, SDLGPUBuffer* storageBuffers, uint numBindings)
@@ -18927,7 +19220,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void DrawGPUIndexedPrimitivesInterop(nint renderPass, uint numIndices, uint numInstances, uint firstIndex, int vertexOffset, uint firstInstance)
         {
-            ((delegate* unmanaged[Cdecl]<nint, uint, uint, uint, int, uint, void>)funcTable[896])(renderPass, numIndices, numInstances, firstIndex, vertexOffset, firstInstance);
+            ((delegate* unmanaged[Cdecl]<nint, uint, uint, uint, int, uint, void>)funcTable[895])(renderPass, numIndices, numInstances, firstIndex, vertexOffset, firstInstance);
         }
 
         internal static void DrawGPUIndexedPrimitivesNative(SDLGPURenderPass renderPass, uint numIndices, uint numInstances, uint firstIndex, int vertexOffset, uint firstInstance)
@@ -18940,7 +19233,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void DrawGPUPrimitivesInterop(nint renderPass, uint numVertices, uint numInstances, uint firstVertex, uint firstInstance)
         {
-            ((delegate* unmanaged[Cdecl]<nint, uint, uint, uint, uint, void>)funcTable[897])(renderPass, numVertices, numInstances, firstVertex, firstInstance);
+            ((delegate* unmanaged[Cdecl]<nint, uint, uint, uint, uint, void>)funcTable[896])(renderPass, numVertices, numInstances, firstVertex, firstInstance);
         }
 
         internal static void DrawGPUPrimitivesNative(SDLGPURenderPass renderPass, uint numVertices, uint numInstances, uint firstVertex, uint firstInstance)
@@ -18953,7 +19246,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void DrawGPUPrimitivesIndirectInterop(nint renderPass, nint buffer, uint offset, uint drawCount)
         {
-            ((delegate* unmanaged[Cdecl]<nint, nint, uint, uint, void>)funcTable[898])(renderPass, buffer, offset, drawCount);
+            ((delegate* unmanaged[Cdecl]<nint, nint, uint, uint, void>)funcTable[897])(renderPass, buffer, offset, drawCount);
         }
 
         internal static void DrawGPUPrimitivesIndirectNative(SDLGPURenderPass renderPass, SDLGPUBuffer buffer, uint offset, uint drawCount)
@@ -18966,7 +19259,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void DrawGPUIndexedPrimitivesIndirectInterop(nint renderPass, nint buffer, uint offset, uint drawCount)
         {
-            ((delegate* unmanaged[Cdecl]<nint, nint, uint, uint, void>)funcTable[899])(renderPass, buffer, offset, drawCount);
+            ((delegate* unmanaged[Cdecl]<nint, nint, uint, uint, void>)funcTable[898])(renderPass, buffer, offset, drawCount);
         }
 
         internal static void DrawGPUIndexedPrimitivesIndirectNative(SDLGPURenderPass renderPass, SDLGPUBuffer buffer, uint offset, uint drawCount)
@@ -18979,7 +19272,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void EndGPURenderPassInterop(nint renderPass)
         {
-            ((delegate* unmanaged[Cdecl]<nint, void>)funcTable[900])(renderPass);
+            ((delegate* unmanaged[Cdecl]<nint, void>)funcTable[899])(renderPass);
         }
 
         internal static void EndGPURenderPassNative(SDLGPURenderPass renderPass)
@@ -18992,7 +19285,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static nint BeginGPUComputePassInterop(nint commandBuffer, SDLGPUStorageTextureReadWriteBinding* storageTextureBindings, uint numStorageTextureBindings, SDLGPUStorageBufferReadWriteBinding* storageBufferBindings, uint numStorageBufferBindings)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, SDLGPUStorageTextureReadWriteBinding*, uint, SDLGPUStorageBufferReadWriteBinding*, uint, nint>)funcTable[901])(commandBuffer, storageTextureBindings, numStorageTextureBindings, storageBufferBindings, numStorageBufferBindings);
+            return ((delegate* unmanaged[Cdecl]<nint, SDLGPUStorageTextureReadWriteBinding*, uint, SDLGPUStorageBufferReadWriteBinding*, uint, nint>)funcTable[900])(commandBuffer, storageTextureBindings, numStorageTextureBindings, storageBufferBindings, numStorageBufferBindings);
         }
 
         internal static SDLGPUComputePass BeginGPUComputePassNative(SDLGPUCommandBuffer commandBuffer, SDLGPUStorageTextureReadWriteBinding* storageTextureBindings, uint numStorageTextureBindings, SDLGPUStorageBufferReadWriteBinding* storageBufferBindings, uint numStorageBufferBindings)
@@ -19005,7 +19298,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void BindGPUComputePipelineInterop(nint computePass, nint computePipeline)
         {
-            ((delegate* unmanaged[Cdecl]<nint, nint, void>)funcTable[902])(computePass, computePipeline);
+            ((delegate* unmanaged[Cdecl]<nint, nint, void>)funcTable[901])(computePass, computePipeline);
         }
 
         internal static void BindGPUComputePipelineNative(SDLGPUComputePass computePass, SDLGPUComputePipeline computePipeline)
@@ -19018,7 +19311,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void BindGPUComputeSamplersInterop(nint computePass, uint firstSlot, SDLGPUTextureSamplerBinding* textureSamplerBindings, uint numBindings)
         {
-            ((delegate* unmanaged[Cdecl]<nint, uint, SDLGPUTextureSamplerBinding*, uint, void>)funcTable[903])(computePass, firstSlot, textureSamplerBindings, numBindings);
+            ((delegate* unmanaged[Cdecl]<nint, uint, SDLGPUTextureSamplerBinding*, uint, void>)funcTable[902])(computePass, firstSlot, textureSamplerBindings, numBindings);
         }
 
         internal static void BindGPUComputeSamplersNative(SDLGPUComputePass computePass, uint firstSlot, SDLGPUTextureSamplerBinding* textureSamplerBindings, uint numBindings)
@@ -19031,7 +19324,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void BindGPUComputeStorageTexturesInterop(nint computePass, uint firstSlot, SDLGPUTexture* storageTextures, uint numBindings)
         {
-            ((delegate* unmanaged[Cdecl]<nint, uint, SDLGPUTexture*, uint, void>)funcTable[904])(computePass, firstSlot, storageTextures, numBindings);
+            ((delegate* unmanaged[Cdecl]<nint, uint, SDLGPUTexture*, uint, void>)funcTable[903])(computePass, firstSlot, storageTextures, numBindings);
         }
 
         internal static void BindGPUComputeStorageTexturesNative(SDLGPUComputePass computePass, uint firstSlot, SDLGPUTexture* storageTextures, uint numBindings)
@@ -19044,7 +19337,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void BindGPUComputeStorageBuffersInterop(nint computePass, uint firstSlot, SDLGPUBuffer* storageBuffers, uint numBindings)
         {
-            ((delegate* unmanaged[Cdecl]<nint, uint, SDLGPUBuffer*, uint, void>)funcTable[905])(computePass, firstSlot, storageBuffers, numBindings);
+            ((delegate* unmanaged[Cdecl]<nint, uint, SDLGPUBuffer*, uint, void>)funcTable[904])(computePass, firstSlot, storageBuffers, numBindings);
         }
 
         internal static void BindGPUComputeStorageBuffersNative(SDLGPUComputePass computePass, uint firstSlot, SDLGPUBuffer* storageBuffers, uint numBindings)
@@ -19057,7 +19350,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void DispatchGPUComputeInterop(nint computePass, uint groupcountX, uint groupcountY, uint groupcountZ)
         {
-            ((delegate* unmanaged[Cdecl]<nint, uint, uint, uint, void>)funcTable[906])(computePass, groupcountX, groupcountY, groupcountZ);
+            ((delegate* unmanaged[Cdecl]<nint, uint, uint, uint, void>)funcTable[905])(computePass, groupcountX, groupcountY, groupcountZ);
         }
 
         internal static void DispatchGPUComputeNative(SDLGPUComputePass computePass, uint groupcountX, uint groupcountY, uint groupcountZ)
@@ -19070,7 +19363,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void DispatchGPUComputeIndirectInterop(nint computePass, nint buffer, uint offset)
         {
-            ((delegate* unmanaged[Cdecl]<nint, nint, uint, void>)funcTable[907])(computePass, buffer, offset);
+            ((delegate* unmanaged[Cdecl]<nint, nint, uint, void>)funcTable[906])(computePass, buffer, offset);
         }
 
         internal static void DispatchGPUComputeIndirectNative(SDLGPUComputePass computePass, SDLGPUBuffer buffer, uint offset)
@@ -19083,7 +19376,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void EndGPUComputePassInterop(nint computePass)
         {
-            ((delegate* unmanaged[Cdecl]<nint, void>)funcTable[908])(computePass);
+            ((delegate* unmanaged[Cdecl]<nint, void>)funcTable[907])(computePass);
         }
 
         internal static void EndGPUComputePassNative(SDLGPUComputePass computePass)
@@ -19096,7 +19389,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void* MapGPUTransferBufferInterop(nint device, nint transferBuffer, byte cycle)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, nint, byte, void*>)funcTable[909])(device, transferBuffer, cycle);
+            return ((delegate* unmanaged[Cdecl]<nint, nint, byte, void*>)funcTable[908])(device, transferBuffer, cycle);
         }
 
         internal static void* MapGPUTransferBufferNative(SDLGPUDevice device, SDLGPUTransferBuffer transferBuffer, byte cycle)
@@ -19109,7 +19402,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void UnmapGPUTransferBufferInterop(nint device, nint transferBuffer)
         {
-            ((delegate* unmanaged[Cdecl]<nint, nint, void>)funcTable[910])(device, transferBuffer);
+            ((delegate* unmanaged[Cdecl]<nint, nint, void>)funcTable[909])(device, transferBuffer);
         }
 
         internal static void UnmapGPUTransferBufferNative(SDLGPUDevice device, SDLGPUTransferBuffer transferBuffer)
@@ -19122,7 +19415,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static nint BeginGPUCopyPassInterop(nint commandBuffer)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, nint>)funcTable[911])(commandBuffer);
+            return ((delegate* unmanaged[Cdecl]<nint, nint>)funcTable[910])(commandBuffer);
         }
 
         internal static SDLGPUCopyPass BeginGPUCopyPassNative(SDLGPUCommandBuffer commandBuffer)
@@ -19135,7 +19428,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void UploadToGPUTextureInterop(nint copyPass, SDLGPUTextureTransferInfo* source, SDLGPUTextureRegion* destination, byte cycle)
         {
-            ((delegate* unmanaged[Cdecl]<nint, SDLGPUTextureTransferInfo*, SDLGPUTextureRegion*, byte, void>)funcTable[912])(copyPass, source, destination, cycle);
+            ((delegate* unmanaged[Cdecl]<nint, SDLGPUTextureTransferInfo*, SDLGPUTextureRegion*, byte, void>)funcTable[911])(copyPass, source, destination, cycle);
         }
 
         internal static void UploadToGPUTextureNative(SDLGPUCopyPass copyPass, SDLGPUTextureTransferInfo* source, SDLGPUTextureRegion* destination, byte cycle)
@@ -19148,7 +19441,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void UploadToGPUBufferInterop(nint copyPass, SDLGPUTransferBufferLocation* source, SDLGPUBufferRegion* destination, byte cycle)
         {
-            ((delegate* unmanaged[Cdecl]<nint, SDLGPUTransferBufferLocation*, SDLGPUBufferRegion*, byte, void>)funcTable[913])(copyPass, source, destination, cycle);
+            ((delegate* unmanaged[Cdecl]<nint, SDLGPUTransferBufferLocation*, SDLGPUBufferRegion*, byte, void>)funcTable[912])(copyPass, source, destination, cycle);
         }
 
         internal static void UploadToGPUBufferNative(SDLGPUCopyPass copyPass, SDLGPUTransferBufferLocation* source, SDLGPUBufferRegion* destination, byte cycle)
@@ -19161,7 +19454,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void CopyGPUTextureToTextureInterop(nint copyPass, SDLGPUTextureLocation* source, SDLGPUTextureLocation* destination, uint w, uint h, uint d, byte cycle)
         {
-            ((delegate* unmanaged[Cdecl]<nint, SDLGPUTextureLocation*, SDLGPUTextureLocation*, uint, uint, uint, byte, void>)funcTable[914])(copyPass, source, destination, w, h, d, cycle);
+            ((delegate* unmanaged[Cdecl]<nint, SDLGPUTextureLocation*, SDLGPUTextureLocation*, uint, uint, uint, byte, void>)funcTable[913])(copyPass, source, destination, w, h, d, cycle);
         }
 
         internal static void CopyGPUTextureToTextureNative(SDLGPUCopyPass copyPass, SDLGPUTextureLocation* source, SDLGPUTextureLocation* destination, uint w, uint h, uint d, byte cycle)
@@ -19174,7 +19467,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void CopyGPUBufferToBufferInterop(nint copyPass, SDLGPUBufferLocation* source, SDLGPUBufferLocation* destination, uint size, byte cycle)
         {
-            ((delegate* unmanaged[Cdecl]<nint, SDLGPUBufferLocation*, SDLGPUBufferLocation*, uint, byte, void>)funcTable[915])(copyPass, source, destination, size, cycle);
+            ((delegate* unmanaged[Cdecl]<nint, SDLGPUBufferLocation*, SDLGPUBufferLocation*, uint, byte, void>)funcTable[914])(copyPass, source, destination, size, cycle);
         }
 
         internal static void CopyGPUBufferToBufferNative(SDLGPUCopyPass copyPass, SDLGPUBufferLocation* source, SDLGPUBufferLocation* destination, uint size, byte cycle)
@@ -19187,7 +19480,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void DownloadFromGPUTextureInterop(nint copyPass, SDLGPUTextureRegion* source, SDLGPUTextureTransferInfo* destination)
         {
-            ((delegate* unmanaged[Cdecl]<nint, SDLGPUTextureRegion*, SDLGPUTextureTransferInfo*, void>)funcTable[916])(copyPass, source, destination);
+            ((delegate* unmanaged[Cdecl]<nint, SDLGPUTextureRegion*, SDLGPUTextureTransferInfo*, void>)funcTable[915])(copyPass, source, destination);
         }
 
         internal static void DownloadFromGPUTextureNative(SDLGPUCopyPass copyPass, SDLGPUTextureRegion* source, SDLGPUTextureTransferInfo* destination)
@@ -19200,7 +19493,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void DownloadFromGPUBufferInterop(nint copyPass, SDLGPUBufferRegion* source, SDLGPUTransferBufferLocation* destination)
         {
-            ((delegate* unmanaged[Cdecl]<nint, SDLGPUBufferRegion*, SDLGPUTransferBufferLocation*, void>)funcTable[917])(copyPass, source, destination);
+            ((delegate* unmanaged[Cdecl]<nint, SDLGPUBufferRegion*, SDLGPUTransferBufferLocation*, void>)funcTable[916])(copyPass, source, destination);
         }
 
         internal static void DownloadFromGPUBufferNative(SDLGPUCopyPass copyPass, SDLGPUBufferRegion* source, SDLGPUTransferBufferLocation* destination)
@@ -19213,7 +19506,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void EndGPUCopyPassInterop(nint copyPass)
         {
-            ((delegate* unmanaged[Cdecl]<nint, void>)funcTable[918])(copyPass);
+            ((delegate* unmanaged[Cdecl]<nint, void>)funcTable[917])(copyPass);
         }
 
         internal static void EndGPUCopyPassNative(SDLGPUCopyPass copyPass)
@@ -19226,7 +19519,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void GenerateMipmapsForGPUTextureInterop(nint commandBuffer, nint texture)
         {
-            ((delegate* unmanaged[Cdecl]<nint, nint, void>)funcTable[919])(commandBuffer, texture);
+            ((delegate* unmanaged[Cdecl]<nint, nint, void>)funcTable[918])(commandBuffer, texture);
         }
 
         internal static void GenerateMipmapsForGPUTextureNative(SDLGPUCommandBuffer commandBuffer, SDLGPUTexture texture)
@@ -19239,7 +19532,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void BlitGPUTextureInterop(nint commandBuffer, SDLGPUBlitInfo* info)
         {
-            ((delegate* unmanaged[Cdecl]<nint, SDLGPUBlitInfo*, void>)funcTable[920])(commandBuffer, info);
+            ((delegate* unmanaged[Cdecl]<nint, SDLGPUBlitInfo*, void>)funcTable[919])(commandBuffer, info);
         }
 
         internal static void BlitGPUTextureNative(SDLGPUCommandBuffer commandBuffer, SDLGPUBlitInfo* info)
@@ -19250,27 +19543,27 @@ namespace Inno.Native.Sdl3
         /// <summary>
         /// To be documented.
         /// </summary>
-        internal static byte WindowSupportsGPUSwapchainCompositionInterop(nint device, nint window, SDLGPUSwapchainComposition swapchainComposition)
+        internal static byte WindowSupportsGPUSwapchainCompositionInterop(nint device, nint window, int swapchainComposition)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, nint, SDLGPUSwapchainComposition, byte>)funcTable[921])(device, window, swapchainComposition);
+            return ((delegate* unmanaged[Cdecl]<nint, nint, int, byte>)funcTable[920])(device, window, swapchainComposition);
         }
 
         internal static byte WindowSupportsGPUSwapchainCompositionNative(SDLGPUDevice device, SDLWindow window, SDLGPUSwapchainComposition swapchainComposition)
         {
-            return WindowSupportsGPUSwapchainCompositionInterop(device.Handle, window.Handle, swapchainComposition);
+            return WindowSupportsGPUSwapchainCompositionInterop(device.Handle, window.Handle, (int)swapchainComposition);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
-        internal static byte WindowSupportsGPUPresentModeInterop(nint device, nint window, SDLGPUPresentMode presentMode)
+        internal static byte WindowSupportsGPUPresentModeInterop(nint device, nint window, int presentMode)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, nint, SDLGPUPresentMode, byte>)funcTable[922])(device, window, presentMode);
+            return ((delegate* unmanaged[Cdecl]<nint, nint, int, byte>)funcTable[921])(device, window, presentMode);
         }
 
         internal static byte WindowSupportsGPUPresentModeNative(SDLGPUDevice device, SDLWindow window, SDLGPUPresentMode presentMode)
         {
-            return WindowSupportsGPUPresentModeInterop(device.Handle, window.Handle, presentMode);
+            return WindowSupportsGPUPresentModeInterop(device.Handle, window.Handle, (int)presentMode);
         }
 
         /// <summary>
@@ -19278,7 +19571,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte ClaimWindowForGPUDeviceInterop(nint device, nint window)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, nint, byte>)funcTable[923])(device, window);
+            return ((delegate* unmanaged[Cdecl]<nint, nint, byte>)funcTable[922])(device, window);
         }
 
         internal static byte ClaimWindowForGPUDeviceNative(SDLGPUDevice device, SDLWindow window)
@@ -19291,7 +19584,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void ReleaseWindowFromGPUDeviceInterop(nint device, nint window)
         {
-            ((delegate* unmanaged[Cdecl]<nint, nint, void>)funcTable[924])(device, window);
+            ((delegate* unmanaged[Cdecl]<nint, nint, void>)funcTable[923])(device, window);
         }
 
         internal static void ReleaseWindowFromGPUDeviceNative(SDLGPUDevice device, SDLWindow window)
@@ -19302,14 +19595,14 @@ namespace Inno.Native.Sdl3
         /// <summary>
         /// To be documented.
         /// </summary>
-        internal static byte SetGPUSwapchainParametersInterop(nint device, nint window, SDLGPUSwapchainComposition swapchainComposition, SDLGPUPresentMode presentMode)
+        internal static byte SetGPUSwapchainParametersInterop(nint device, nint window, int swapchainComposition, int presentMode)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, nint, SDLGPUSwapchainComposition, SDLGPUPresentMode, byte>)funcTable[925])(device, window, swapchainComposition, presentMode);
+            return ((delegate* unmanaged[Cdecl]<nint, nint, int, int, byte>)funcTable[924])(device, window, swapchainComposition, presentMode);
         }
 
         internal static byte SetGPUSwapchainParametersNative(SDLGPUDevice device, SDLWindow window, SDLGPUSwapchainComposition swapchainComposition, SDLGPUPresentMode presentMode)
         {
-            return SetGPUSwapchainParametersInterop(device.Handle, window.Handle, swapchainComposition, presentMode);
+            return SetGPUSwapchainParametersInterop(device.Handle, window.Handle, (int)swapchainComposition, (int)presentMode);
         }
 
         /// <summary>
@@ -19317,7 +19610,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte SetGPUAllowedFramesInFlightInterop(nint device, uint allowedFramesInFlight)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, uint, byte>)funcTable[926])(device, allowedFramesInFlight);
+            return ((delegate* unmanaged[Cdecl]<nint, uint, byte>)funcTable[925])(device, allowedFramesInFlight);
         }
 
         internal static byte SetGPUAllowedFramesInFlightNative(SDLGPUDevice device, uint allowedFramesInFlight)
@@ -19328,14 +19621,14 @@ namespace Inno.Native.Sdl3
         /// <summary>
         /// To be documented.
         /// </summary>
-        internal static SDLGPUTextureFormat GetGPUSwapchainTextureFormatInterop(nint device, nint window)
+        internal static int GetGPUSwapchainTextureFormatInterop(nint device, nint window)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, nint, SDLGPUTextureFormat>)funcTable[927])(device, window);
+            return ((delegate* unmanaged[Cdecl]<nint, nint, int>)funcTable[926])(device, window);
         }
 
         internal static SDLGPUTextureFormat GetGPUSwapchainTextureFormatNative(SDLGPUDevice device, SDLWindow window)
         {
-            return GetGPUSwapchainTextureFormatInterop(device.Handle, window.Handle);
+            return (SDLGPUTextureFormat)GetGPUSwapchainTextureFormatInterop(device.Handle, window.Handle);
         }
 
         /// <summary>
@@ -19343,7 +19636,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte AcquireGPUSwapchainTextureInterop(nint commandBuffer, nint window, SDLGPUTexture* swapchainTexture, uint* swapchainTextureWidth, uint* swapchainTextureHeight)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, nint, SDLGPUTexture*, uint*, uint*, byte>)funcTable[928])(commandBuffer, window, swapchainTexture, swapchainTextureWidth, swapchainTextureHeight);
+            return ((delegate* unmanaged[Cdecl]<nint, nint, SDLGPUTexture*, uint*, uint*, byte>)funcTable[927])(commandBuffer, window, swapchainTexture, swapchainTextureWidth, swapchainTextureHeight);
         }
 
         internal static byte AcquireGPUSwapchainTextureNative(SDLGPUCommandBuffer commandBuffer, SDLWindow window, SDLGPUTexture* swapchainTexture, uint* swapchainTextureWidth, uint* swapchainTextureHeight)
@@ -19356,7 +19649,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte WaitForGPUSwapchainInterop(nint device, nint window)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, nint, byte>)funcTable[929])(device, window);
+            return ((delegate* unmanaged[Cdecl]<nint, nint, byte>)funcTable[928])(device, window);
         }
 
         internal static byte WaitForGPUSwapchainNative(SDLGPUDevice device, SDLWindow window)
@@ -19369,7 +19662,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte WaitAndAcquireGPUSwapchainTextureInterop(nint commandBuffer, nint window, SDLGPUTexture* swapchainTexture, uint* swapchainTextureWidth, uint* swapchainTextureHeight)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, nint, SDLGPUTexture*, uint*, uint*, byte>)funcTable[930])(commandBuffer, window, swapchainTexture, swapchainTextureWidth, swapchainTextureHeight);
+            return ((delegate* unmanaged[Cdecl]<nint, nint, SDLGPUTexture*, uint*, uint*, byte>)funcTable[929])(commandBuffer, window, swapchainTexture, swapchainTextureWidth, swapchainTextureHeight);
         }
 
         internal static byte WaitAndAcquireGPUSwapchainTextureNative(SDLGPUCommandBuffer commandBuffer, SDLWindow window, SDLGPUTexture* swapchainTexture, uint* swapchainTextureWidth, uint* swapchainTextureHeight)
@@ -19382,7 +19675,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte SubmitGPUCommandBufferInterop(nint commandBuffer)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, byte>)funcTable[931])(commandBuffer);
+            return ((delegate* unmanaged[Cdecl]<nint, byte>)funcTable[930])(commandBuffer);
         }
 
         internal static byte SubmitGPUCommandBufferNative(SDLGPUCommandBuffer commandBuffer)
@@ -19395,7 +19688,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static nint SubmitGPUCommandBufferAndAcquireFenceInterop(nint commandBuffer)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, nint>)funcTable[932])(commandBuffer);
+            return ((delegate* unmanaged[Cdecl]<nint, nint>)funcTable[931])(commandBuffer);
         }
 
         internal static SDLGPUFence SubmitGPUCommandBufferAndAcquireFenceNative(SDLGPUCommandBuffer commandBuffer)
@@ -19408,7 +19701,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte CancelGPUCommandBufferInterop(nint commandBuffer)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, byte>)funcTable[933])(commandBuffer);
+            return ((delegate* unmanaged[Cdecl]<nint, byte>)funcTable[932])(commandBuffer);
         }
 
         internal static byte CancelGPUCommandBufferNative(SDLGPUCommandBuffer commandBuffer)
@@ -19421,7 +19714,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte WaitForGPUIdleInterop(nint device)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, byte>)funcTable[934])(device);
+            return ((delegate* unmanaged[Cdecl]<nint, byte>)funcTable[933])(device);
         }
 
         internal static byte WaitForGPUIdleNative(SDLGPUDevice device)
@@ -19434,7 +19727,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte WaitForGPUFencesInterop(nint device, byte waitAll, SDLGPUFence* fences, uint numFences)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, byte, SDLGPUFence*, uint, byte>)funcTable[935])(device, waitAll, fences, numFences);
+            return ((delegate* unmanaged[Cdecl]<nint, byte, SDLGPUFence*, uint, byte>)funcTable[934])(device, waitAll, fences, numFences);
         }
 
         internal static byte WaitForGPUFencesNative(SDLGPUDevice device, byte waitAll, SDLGPUFence* fences, uint numFences)
@@ -19447,7 +19740,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte QueryGPUFenceInterop(nint device, nint fence)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, nint, byte>)funcTable[936])(device, fence);
+            return ((delegate* unmanaged[Cdecl]<nint, nint, byte>)funcTable[935])(device, fence);
         }
 
         internal static byte QueryGPUFenceNative(SDLGPUDevice device, SDLGPUFence fence)
@@ -19460,7 +19753,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void ReleaseGPUFenceInterop(nint device, nint fence)
         {
-            ((delegate* unmanaged[Cdecl]<nint, nint, void>)funcTable[937])(device, fence);
+            ((delegate* unmanaged[Cdecl]<nint, nint, void>)funcTable[936])(device, fence);
         }
 
         internal static void ReleaseGPUFenceNative(SDLGPUDevice device, SDLGPUFence fence)
@@ -19471,59 +19764,79 @@ namespace Inno.Native.Sdl3
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static uint GPUTextureFormatTexelBlockSizeInterop(int format)
+        {
+            return ((delegate* unmanaged[Cdecl]<int, uint>)funcTable[937])(format);
+        }
+
         internal static uint GPUTextureFormatTexelBlockSizeNative(SDLGPUTextureFormat format)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLGPUTextureFormat, uint>)funcTable[938])(format);
+            return GPUTextureFormatTexelBlockSizeInterop((int)format);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
-        internal static byte GPUTextureSupportsFormatInterop(nint device, SDLGPUTextureFormat format, SDLGPUTextureType type, uint usage)
+        internal static byte GPUTextureSupportsFormatInterop(nint device, int format, int type, uint usage)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, SDLGPUTextureFormat, SDLGPUTextureType, uint, byte>)funcTable[939])(device, format, type, usage);
+            return ((delegate* unmanaged[Cdecl]<nint, int, int, uint, byte>)funcTable[938])(device, format, type, usage);
         }
 
         internal static byte GPUTextureSupportsFormatNative(SDLGPUDevice device, SDLGPUTextureFormat format, SDLGPUTextureType type, uint usage)
         {
-            return GPUTextureSupportsFormatInterop(device.Handle, format, type, usage);
+            return GPUTextureSupportsFormatInterop(device.Handle, (int)format, (int)type, usage);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
-        internal static byte GPUTextureSupportsSampleCountInterop(nint device, SDLGPUTextureFormat format, SDLGPUSampleCount sampleCount)
+        internal static byte GPUTextureSupportsSampleCountInterop(nint device, int format, int sampleCount)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, SDLGPUTextureFormat, SDLGPUSampleCount, byte>)funcTable[940])(device, format, sampleCount);
+            return ((delegate* unmanaged[Cdecl]<nint, int, int, byte>)funcTable[939])(device, format, sampleCount);
         }
 
         internal static byte GPUTextureSupportsSampleCountNative(SDLGPUDevice device, SDLGPUTextureFormat format, SDLGPUSampleCount sampleCount)
         {
-            return GPUTextureSupportsSampleCountInterop(device.Handle, format, sampleCount);
+            return GPUTextureSupportsSampleCountInterop(device.Handle, (int)format, (int)sampleCount);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static uint CalculateGPUTextureFormatSizeInterop(int format, uint width, uint height, uint depthOrLayerCount)
+        {
+            return ((delegate* unmanaged[Cdecl]<int, uint, uint, uint, uint>)funcTable[940])(format, width, height, depthOrLayerCount);
+        }
+
         internal static uint CalculateGPUTextureFormatSizeNative(SDLGPUTextureFormat format, uint width, uint height, uint depthOrLayerCount)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLGPUTextureFormat, uint, uint, uint, uint>)funcTable[941])(format, width, height, depthOrLayerCount);
+            return CalculateGPUTextureFormatSizeInterop((int)format, width, height, depthOrLayerCount);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int GetPixelFormatFromGPUTextureFormatInterop(int format)
+        {
+            return ((delegate* unmanaged[Cdecl]<int, int>)funcTable[941])(format);
+        }
+
         internal static SDLPixelFormat GetPixelFormatFromGPUTextureFormatNative(SDLGPUTextureFormat format)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLGPUTextureFormat, SDLPixelFormat>)funcTable[942])(format);
+            return (SDLPixelFormat)GetPixelFormatFromGPUTextureFormatInterop((int)format);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int GetGPUTextureFormatFromPixelFormatInterop(int format)
+        {
+            return ((delegate* unmanaged[Cdecl]<int, int>)funcTable[942])(format);
+        }
+
         internal static SDLGPUTextureFormat GetGPUTextureFormatFromPixelFormatNative(SDLPixelFormat format)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLPixelFormat, SDLGPUTextureFormat>)funcTable[943])(format);
+            return (SDLGPUTextureFormat)GetGPUTextureFormatFromPixelFormatInterop((int)format);
         }
 
         /// <summary>
@@ -19531,7 +19844,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static uint* GetHapticsNative(int* count)
         {
-            return ((delegate* unmanaged[Cdecl]<int*, uint*>)funcTable[944])(count);
+            return ((delegate* unmanaged[Cdecl]<int*, uint*>)funcTable[943])(count);
         }
 
         /// <summary>
@@ -19539,7 +19852,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte* GetHapticNameForIDNative(uint instanceId)
         {
-            return ((delegate* unmanaged[Cdecl]<uint, byte*>)funcTable[945])(instanceId);
+            return ((delegate* unmanaged[Cdecl]<uint, byte*>)funcTable[944])(instanceId);
         }
 
         /// <summary>
@@ -19547,7 +19860,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static nint OpenHapticInterop(uint instanceId)
         {
-            return ((delegate* unmanaged[Cdecl]<uint, nint>)funcTable[946])(instanceId);
+            return ((delegate* unmanaged[Cdecl]<uint, nint>)funcTable[945])(instanceId);
         }
 
         internal static SDLHaptic OpenHapticNative(uint instanceId)
@@ -19560,7 +19873,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static nint GetHapticFromIDInterop(uint instanceId)
         {
-            return ((delegate* unmanaged[Cdecl]<uint, nint>)funcTable[947])(instanceId);
+            return ((delegate* unmanaged[Cdecl]<uint, nint>)funcTable[946])(instanceId);
         }
 
         internal static SDLHaptic GetHapticFromIDNative(uint instanceId)
@@ -19573,7 +19886,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static uint GetHapticIDInterop(nint haptic)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, uint>)funcTable[948])(haptic);
+            return ((delegate* unmanaged[Cdecl]<nint, uint>)funcTable[947])(haptic);
         }
 
         internal static uint GetHapticIDNative(SDLHaptic haptic)
@@ -19586,7 +19899,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte* GetHapticNameInterop(nint haptic)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, byte*>)funcTable[949])(haptic);
+            return ((delegate* unmanaged[Cdecl]<nint, byte*>)funcTable[948])(haptic);
         }
 
         internal static byte* GetHapticNameNative(SDLHaptic haptic)
@@ -19599,7 +19912,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte IsMouseHapticNative()
         {
-            return ((delegate* unmanaged[Cdecl]<byte>)funcTable[950])();
+            return ((delegate* unmanaged[Cdecl]<byte>)funcTable[949])();
         }
 
         /// <summary>
@@ -19607,7 +19920,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static nint OpenHapticFromMouseInterop()
         {
-            return ((delegate* unmanaged[Cdecl]<nint>)funcTable[951])();
+            return ((delegate* unmanaged[Cdecl]<nint>)funcTable[950])();
         }
 
         internal static SDLHaptic OpenHapticFromMouseNative()
@@ -19620,7 +19933,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte IsJoystickHapticInterop(nint joystick)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, byte>)funcTable[952])(joystick);
+            return ((delegate* unmanaged[Cdecl]<nint, byte>)funcTable[951])(joystick);
         }
 
         internal static byte IsJoystickHapticNative(SDLJoystick joystick)
@@ -19633,7 +19946,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static nint OpenHapticFromJoystickInterop(nint joystick)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, nint>)funcTable[953])(joystick);
+            return ((delegate* unmanaged[Cdecl]<nint, nint>)funcTable[952])(joystick);
         }
 
         internal static SDLHaptic OpenHapticFromJoystickNative(SDLJoystick joystick)
@@ -19646,7 +19959,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void CloseHapticInterop(nint haptic)
         {
-            ((delegate* unmanaged[Cdecl]<nint, void>)funcTable[954])(haptic);
+            ((delegate* unmanaged[Cdecl]<nint, void>)funcTable[953])(haptic);
         }
 
         internal static void CloseHapticNative(SDLHaptic haptic)
@@ -19659,7 +19972,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static int GetMaxHapticEffectsInterop(nint haptic)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, int>)funcTable[955])(haptic);
+            return ((delegate* unmanaged[Cdecl]<nint, int>)funcTable[954])(haptic);
         }
 
         internal static int GetMaxHapticEffectsNative(SDLHaptic haptic)
@@ -19672,7 +19985,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static int GetMaxHapticEffectsPlayingInterop(nint haptic)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, int>)funcTable[956])(haptic);
+            return ((delegate* unmanaged[Cdecl]<nint, int>)funcTable[955])(haptic);
         }
 
         internal static int GetMaxHapticEffectsPlayingNative(SDLHaptic haptic)
@@ -19685,7 +19998,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static uint GetHapticFeaturesInterop(nint haptic)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, uint>)funcTable[957])(haptic);
+            return ((delegate* unmanaged[Cdecl]<nint, uint>)funcTable[956])(haptic);
         }
 
         internal static uint GetHapticFeaturesNative(SDLHaptic haptic)
@@ -19698,7 +20011,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static int GetNumHapticAxesInterop(nint haptic)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, int>)funcTable[958])(haptic);
+            return ((delegate* unmanaged[Cdecl]<nint, int>)funcTable[957])(haptic);
         }
 
         internal static int GetNumHapticAxesNative(SDLHaptic haptic)
@@ -19711,7 +20024,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte HapticEffectSupportedInterop(nint haptic, SDLHapticEffect* effect)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, SDLHapticEffect*, byte>)funcTable[959])(haptic, effect);
+            return ((delegate* unmanaged[Cdecl]<nint, SDLHapticEffect*, byte>)funcTable[958])(haptic, effect);
         }
 
         internal static byte HapticEffectSupportedNative(SDLHaptic haptic, SDLHapticEffect* effect)
@@ -19724,7 +20037,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static int CreateHapticEffectInterop(nint haptic, SDLHapticEffect* effect)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, SDLHapticEffect*, int>)funcTable[960])(haptic, effect);
+            return ((delegate* unmanaged[Cdecl]<nint, SDLHapticEffect*, int>)funcTable[959])(haptic, effect);
         }
 
         internal static int CreateHapticEffectNative(SDLHaptic haptic, SDLHapticEffect* effect)
@@ -19737,7 +20050,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte UpdateHapticEffectInterop(nint haptic, int effect, SDLHapticEffect* data)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, int, SDLHapticEffect*, byte>)funcTable[961])(haptic, effect, data);
+            return ((delegate* unmanaged[Cdecl]<nint, int, SDLHapticEffect*, byte>)funcTable[960])(haptic, effect, data);
         }
 
         internal static byte UpdateHapticEffectNative(SDLHaptic haptic, int effect, SDLHapticEffect* data)
@@ -19750,7 +20063,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte RunHapticEffectInterop(nint haptic, int effect, uint iterations)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, int, uint, byte>)funcTable[962])(haptic, effect, iterations);
+            return ((delegate* unmanaged[Cdecl]<nint, int, uint, byte>)funcTable[961])(haptic, effect, iterations);
         }
 
         internal static byte RunHapticEffectNative(SDLHaptic haptic, int effect, uint iterations)
@@ -19763,7 +20076,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte StopHapticEffectInterop(nint haptic, int effect)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, int, byte>)funcTable[963])(haptic, effect);
+            return ((delegate* unmanaged[Cdecl]<nint, int, byte>)funcTable[962])(haptic, effect);
         }
 
         internal static byte StopHapticEffectNative(SDLHaptic haptic, int effect)
@@ -19776,7 +20089,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void DestroyHapticEffectInterop(nint haptic, int effect)
         {
-            ((delegate* unmanaged[Cdecl]<nint, int, void>)funcTable[964])(haptic, effect);
+            ((delegate* unmanaged[Cdecl]<nint, int, void>)funcTable[963])(haptic, effect);
         }
 
         internal static void DestroyHapticEffectNative(SDLHaptic haptic, int effect)
@@ -19789,7 +20102,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte GetHapticEffectStatusInterop(nint haptic, int effect)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, int, byte>)funcTable[965])(haptic, effect);
+            return ((delegate* unmanaged[Cdecl]<nint, int, byte>)funcTable[964])(haptic, effect);
         }
 
         internal static byte GetHapticEffectStatusNative(SDLHaptic haptic, int effect)
@@ -19802,7 +20115,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte SetHapticGainInterop(nint haptic, int gain)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, int, byte>)funcTable[966])(haptic, gain);
+            return ((delegate* unmanaged[Cdecl]<nint, int, byte>)funcTable[965])(haptic, gain);
         }
 
         internal static byte SetHapticGainNative(SDLHaptic haptic, int gain)
@@ -19815,7 +20128,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte SetHapticAutocenterInterop(nint haptic, int autocenter)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, int, byte>)funcTable[967])(haptic, autocenter);
+            return ((delegate* unmanaged[Cdecl]<nint, int, byte>)funcTable[966])(haptic, autocenter);
         }
 
         internal static byte SetHapticAutocenterNative(SDLHaptic haptic, int autocenter)
@@ -19828,7 +20141,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte PauseHapticInterop(nint haptic)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, byte>)funcTable[968])(haptic);
+            return ((delegate* unmanaged[Cdecl]<nint, byte>)funcTable[967])(haptic);
         }
 
         internal static byte PauseHapticNative(SDLHaptic haptic)
@@ -19841,7 +20154,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte ResumeHapticInterop(nint haptic)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, byte>)funcTable[969])(haptic);
+            return ((delegate* unmanaged[Cdecl]<nint, byte>)funcTable[968])(haptic);
         }
 
         internal static byte ResumeHapticNative(SDLHaptic haptic)
@@ -19854,7 +20167,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte StopHapticEffectsInterop(nint haptic)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, byte>)funcTable[970])(haptic);
+            return ((delegate* unmanaged[Cdecl]<nint, byte>)funcTable[969])(haptic);
         }
 
         internal static byte StopHapticEffectsNative(SDLHaptic haptic)
@@ -19867,7 +20180,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte HapticRumbleSupportedInterop(nint haptic)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, byte>)funcTable[971])(haptic);
+            return ((delegate* unmanaged[Cdecl]<nint, byte>)funcTable[970])(haptic);
         }
 
         internal static byte HapticRumbleSupportedNative(SDLHaptic haptic)
@@ -19880,7 +20193,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte InitHapticRumbleInterop(nint haptic)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, byte>)funcTable[972])(haptic);
+            return ((delegate* unmanaged[Cdecl]<nint, byte>)funcTable[971])(haptic);
         }
 
         internal static byte InitHapticRumbleNative(SDLHaptic haptic)
@@ -19893,7 +20206,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte PlayHapticRumbleInterop(nint haptic, float strength, uint length)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, float, uint, byte>)funcTable[973])(haptic, strength, length);
+            return ((delegate* unmanaged[Cdecl]<nint, float, uint, byte>)funcTable[972])(haptic, strength, length);
         }
 
         internal static byte PlayHapticRumbleNative(SDLHaptic haptic, float strength, uint length)
@@ -19906,7 +20219,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte StopHapticRumbleInterop(nint haptic)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, byte>)funcTable[974])(haptic);
+            return ((delegate* unmanaged[Cdecl]<nint, byte>)funcTable[973])(haptic);
         }
 
         internal static byte StopHapticRumbleNative(SDLHaptic haptic)
@@ -19919,7 +20232,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static int HidInitNative()
         {
-            return ((delegate* unmanaged[Cdecl]<int>)funcTable[975])();
+            return ((delegate* unmanaged[Cdecl]<int>)funcTable[974])();
         }
 
         /// <summary>
@@ -19927,7 +20240,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static int HidExitNative()
         {
-            return ((delegate* unmanaged[Cdecl]<int>)funcTable[976])();
+            return ((delegate* unmanaged[Cdecl]<int>)funcTable[975])();
         }
 
         /// <summary>
@@ -19935,7 +20248,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static uint HidDeviceChangeCountNative()
         {
-            return ((delegate* unmanaged[Cdecl]<uint>)funcTable[977])();
+            return ((delegate* unmanaged[Cdecl]<uint>)funcTable[976])();
         }
 
         /// <summary>
@@ -19943,7 +20256,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static SDLHidDeviceInfo* HidEnumerateNative(ushort vendorId, ushort productId)
         {
-            return ((delegate* unmanaged[Cdecl]<ushort, ushort, SDLHidDeviceInfo*>)funcTable[978])(vendorId, productId);
+            return ((delegate* unmanaged[Cdecl]<ushort, ushort, SDLHidDeviceInfo*>)funcTable[977])(vendorId, productId);
         }
 
         /// <summary>
@@ -19951,7 +20264,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void HidFreeEnumerationNative(SDLHidDeviceInfo* devs)
         {
-            ((delegate* unmanaged[Cdecl]<SDLHidDeviceInfo*, void>)funcTable[979])(devs);
+            ((delegate* unmanaged[Cdecl]<SDLHidDeviceInfo*, void>)funcTable[978])(devs);
         }
 
         /// <summary>
@@ -19959,7 +20272,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static nint HidOpenInterop(ushort vendorId, ushort productId, ushort* serialNumber)
         {
-            return ((delegate* unmanaged[Cdecl]<ushort, ushort, ushort*, nint>)funcTable[980])(vendorId, productId, serialNumber);
+            return ((delegate* unmanaged[Cdecl]<ushort, ushort, ushort*, nint>)funcTable[979])(vendorId, productId, serialNumber);
         }
 
         internal static SDLHidDevice HidOpenNative(ushort vendorId, ushort productId, ushort* serialNumber)
@@ -19972,7 +20285,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static nint HidOpenPathInterop(byte* path)
         {
-            return ((delegate* unmanaged[Cdecl]<byte*, nint>)funcTable[981])(path);
+            return ((delegate* unmanaged[Cdecl]<byte*, nint>)funcTable[980])(path);
         }
 
         internal static SDLHidDevice HidOpenPathNative(byte* path)
@@ -19985,7 +20298,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static uint HidGetPropertiesInterop(nint dev)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, uint>)funcTable[982])(dev);
+            return ((delegate* unmanaged[Cdecl]<nint, uint>)funcTable[981])(dev);
         }
 
         internal static uint HidGetPropertiesNative(SDLHidDevice dev)
@@ -19998,7 +20311,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static int HidWriteInterop(nint dev, byte* data, nuint length)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, byte*, nuint, int>)funcTable[983])(dev, data, length);
+            return ((delegate* unmanaged[Cdecl]<nint, byte*, nuint, int>)funcTable[982])(dev, data, length);
         }
 
         internal static int HidWriteNative(SDLHidDevice dev, byte* data, nuint length)
@@ -20011,7 +20324,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static int HidReadTimeoutInterop(nint dev, byte* data, nuint length, int milliseconds)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, byte*, nuint, int, int>)funcTable[984])(dev, data, length, milliseconds);
+            return ((delegate* unmanaged[Cdecl]<nint, byte*, nuint, int, int>)funcTable[983])(dev, data, length, milliseconds);
         }
 
         internal static int HidReadTimeoutNative(SDLHidDevice dev, byte* data, nuint length, int milliseconds)
@@ -20024,7 +20337,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static int HidReadInterop(nint dev, byte* data, nuint length)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, byte*, nuint, int>)funcTable[985])(dev, data, length);
+            return ((delegate* unmanaged[Cdecl]<nint, byte*, nuint, int>)funcTable[984])(dev, data, length);
         }
 
         internal static int HidReadNative(SDLHidDevice dev, byte* data, nuint length)
@@ -20037,7 +20350,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static int HidSetNonblockingInterop(nint dev, int nonblock)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, int, int>)funcTable[986])(dev, nonblock);
+            return ((delegate* unmanaged[Cdecl]<nint, int, int>)funcTable[985])(dev, nonblock);
         }
 
         internal static int HidSetNonblockingNative(SDLHidDevice dev, int nonblock)
@@ -20050,7 +20363,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static int HidSendFeatureReportInterop(nint dev, byte* data, nuint length)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, byte*, nuint, int>)funcTable[987])(dev, data, length);
+            return ((delegate* unmanaged[Cdecl]<nint, byte*, nuint, int>)funcTable[986])(dev, data, length);
         }
 
         internal static int HidSendFeatureReportNative(SDLHidDevice dev, byte* data, nuint length)
@@ -20063,7 +20376,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static int HidGetFeatureReportInterop(nint dev, byte* data, nuint length)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, byte*, nuint, int>)funcTable[988])(dev, data, length);
+            return ((delegate* unmanaged[Cdecl]<nint, byte*, nuint, int>)funcTable[987])(dev, data, length);
         }
 
         internal static int HidGetFeatureReportNative(SDLHidDevice dev, byte* data, nuint length)
@@ -20076,7 +20389,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static int HidGetInputReportInterop(nint dev, byte* data, nuint length)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, byte*, nuint, int>)funcTable[989])(dev, data, length);
+            return ((delegate* unmanaged[Cdecl]<nint, byte*, nuint, int>)funcTable[988])(dev, data, length);
         }
 
         internal static int HidGetInputReportNative(SDLHidDevice dev, byte* data, nuint length)
@@ -20089,7 +20402,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static int HidCloseInterop(nint dev)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, int>)funcTable[990])(dev);
+            return ((delegate* unmanaged[Cdecl]<nint, int>)funcTable[989])(dev);
         }
 
         internal static int HidCloseNative(SDLHidDevice dev)
@@ -20102,7 +20415,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static int HidGetManufacturerStringInterop(nint dev, ushort* str, nuint maxlen)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, ushort*, nuint, int>)funcTable[991])(dev, str, maxlen);
+            return ((delegate* unmanaged[Cdecl]<nint, ushort*, nuint, int>)funcTable[990])(dev, str, maxlen);
         }
 
         internal static int HidGetManufacturerStringNative(SDLHidDevice dev, ushort* str, nuint maxlen)
@@ -20115,7 +20428,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static int HidGetProductStringInterop(nint dev, ushort* str, nuint maxlen)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, ushort*, nuint, int>)funcTable[992])(dev, str, maxlen);
+            return ((delegate* unmanaged[Cdecl]<nint, ushort*, nuint, int>)funcTable[991])(dev, str, maxlen);
         }
 
         internal static int HidGetProductStringNative(SDLHidDevice dev, ushort* str, nuint maxlen)
@@ -20128,7 +20441,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static int HidGetSerialNumberStringInterop(nint dev, ushort* str, nuint maxlen)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, ushort*, nuint, int>)funcTable[993])(dev, str, maxlen);
+            return ((delegate* unmanaged[Cdecl]<nint, ushort*, nuint, int>)funcTable[992])(dev, str, maxlen);
         }
 
         internal static int HidGetSerialNumberStringNative(SDLHidDevice dev, ushort* str, nuint maxlen)
@@ -20141,7 +20454,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static int HidGetIndexedStringInterop(nint dev, int stringIndex, ushort* str, nuint maxlen)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, int, ushort*, nuint, int>)funcTable[994])(dev, stringIndex, str, maxlen);
+            return ((delegate* unmanaged[Cdecl]<nint, int, ushort*, nuint, int>)funcTable[993])(dev, stringIndex, str, maxlen);
         }
 
         internal static int HidGetIndexedStringNative(SDLHidDevice dev, int stringIndex, ushort* str, nuint maxlen)
@@ -20154,7 +20467,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static SDLHidDeviceInfo* HidGetDeviceInfoInterop(nint dev)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, SDLHidDeviceInfo*>)funcTable[995])(dev);
+            return ((delegate* unmanaged[Cdecl]<nint, SDLHidDeviceInfo*>)funcTable[994])(dev);
         }
 
         internal static SDLHidDeviceInfo* HidGetDeviceInfoNative(SDLHidDevice dev)
@@ -20167,7 +20480,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static int HidGetReportDescriptorInterop(nint dev, byte* buf, nuint bufSize)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, byte*, nuint, int>)funcTable[996])(dev, buf, bufSize);
+            return ((delegate* unmanaged[Cdecl]<nint, byte*, nuint, int>)funcTable[995])(dev, buf, bufSize);
         }
 
         internal static int HidGetReportDescriptorNative(SDLHidDevice dev, byte* buf, nuint bufSize)
@@ -20180,15 +20493,20 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void HidBleScanNative(byte active)
         {
-            ((delegate* unmanaged[Cdecl]<byte, void>)funcTable[997])(active);
+            ((delegate* unmanaged[Cdecl]<byte, void>)funcTable[996])(active);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte SetHintWithPriorityInterop(byte* name, byte* value, int priority)
+        {
+            return ((delegate* unmanaged[Cdecl]<byte*, byte*, int, byte>)funcTable[997])(name, value, priority);
+        }
+
         internal static byte SetHintWithPriorityNative(byte* name, byte* value, SDLHintPriority priority)
         {
-            return ((delegate* unmanaged[Cdecl]<byte*, byte*, SDLHintPriority, byte>)funcTable[998])(name, value, priority);
+            return SetHintWithPriorityInterop(name, value, (int)priority);
         }
 
         /// <summary>
@@ -20196,7 +20514,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte SetHintNative(byte* name, byte* value)
         {
-            return ((delegate* unmanaged[Cdecl]<byte*, byte*, byte>)funcTable[999])(name, value);
+            return ((delegate* unmanaged[Cdecl]<byte*, byte*, byte>)funcTable[998])(name, value);
         }
 
         /// <summary>
@@ -20204,7 +20522,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte ResetHintNative(byte* name)
         {
-            return ((delegate* unmanaged[Cdecl]<byte*, byte>)funcTable[1000])(name);
+            return ((delegate* unmanaged[Cdecl]<byte*, byte>)funcTable[999])(name);
         }
 
         /// <summary>
@@ -20212,7 +20530,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void ResetHintsNative()
         {
-            ((delegate* unmanaged[Cdecl]<void>)funcTable[1001])();
+            ((delegate* unmanaged[Cdecl]<void>)funcTable[1000])();
         }
 
         /// <summary>
@@ -20220,7 +20538,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte* GetHintNative(byte* name)
         {
-            return ((delegate* unmanaged[Cdecl]<byte*, byte*>)funcTable[1002])(name);
+            return ((delegate* unmanaged[Cdecl]<byte*, byte*>)funcTable[1001])(name);
         }
 
         /// <summary>
@@ -20228,7 +20546,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte GetHintBooleanNative(byte* name, byte defaultValue)
         {
-            return ((delegate* unmanaged[Cdecl]<byte*, byte, byte>)funcTable[1003])(name, defaultValue);
+            return ((delegate* unmanaged[Cdecl]<byte*, byte, byte>)funcTable[1002])(name, defaultValue);
         }
 
         /// <summary>
@@ -20236,7 +20554,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte AddHintCallbackNative(byte* name, delegate* unmanaged[Cdecl]<void*, byte*, byte*, byte*, void> callback, void* userdata)
         {
-            return ((delegate* unmanaged[Cdecl]<byte*, delegate* unmanaged[Cdecl]<void*, byte*, byte*, byte*, void> , void*, byte>)funcTable[1004])(name, callback, userdata);
+            return ((delegate* unmanaged[Cdecl]<byte*, delegate* unmanaged[Cdecl]<void*, byte*, byte*, byte*, void> , void*, byte>)funcTable[1003])(name, callback, userdata);
         }
 
         /// <summary>
@@ -20244,39 +20562,59 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void RemoveHintCallbackNative(byte* name, delegate* unmanaged[Cdecl]<void*, byte*, byte*, byte*, void> callback, void* userdata)
         {
-            ((delegate* unmanaged[Cdecl]<byte*, delegate* unmanaged[Cdecl]<void*, byte*, byte*, byte*, void> , void*, void>)funcTable[1005])(name, callback, userdata);
+            ((delegate* unmanaged[Cdecl]<byte*, delegate* unmanaged[Cdecl]<void*, byte*, byte*, byte*, void> , void*, void>)funcTable[1004])(name, callback, userdata);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte InitInterop(uint flags)
+        {
+            return ((delegate* unmanaged[Cdecl]<uint, byte>)funcTable[1005])(flags);
+        }
+
         internal static byte InitNative(SDLInitFlags flags)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLInitFlags, byte>)funcTable[1006])(flags);
+            return InitInterop((uint)flags);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte InitSubSystemInterop(uint flags)
+        {
+            return ((delegate* unmanaged[Cdecl]<uint, byte>)funcTable[1006])(flags);
+        }
+
         internal static byte InitSubSystemNative(SDLInitFlags flags)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLInitFlags, byte>)funcTable[1007])(flags);
+            return InitSubSystemInterop((uint)flags);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void QuitSubSystemInterop(uint flags)
+        {
+            ((delegate* unmanaged[Cdecl]<uint, void>)funcTable[1007])(flags);
+        }
+
         internal static void QuitSubSystemNative(SDLInitFlags flags)
         {
-            ((delegate* unmanaged[Cdecl]<SDLInitFlags, void>)funcTable[1008])(flags);
+            QuitSubSystemInterop((uint)flags);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static uint WasInitInterop(uint flags)
+        {
+            return ((delegate* unmanaged[Cdecl]<uint, uint>)funcTable[1008])(flags);
+        }
+
         internal static SDLInitFlags WasInitNative(SDLInitFlags flags)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLInitFlags, SDLInitFlags>)funcTable[1009])(flags);
+            return (SDLInitFlags)WasInitInterop((uint)flags);
         }
 
         /// <summary>
@@ -20284,7 +20622,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void QuitNative()
         {
-            ((delegate* unmanaged[Cdecl]<void>)funcTable[1010])();
+            ((delegate* unmanaged[Cdecl]<void>)funcTable[1009])();
         }
 
         /// <summary>
@@ -20292,7 +20630,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte IsMainThreadNative()
         {
-            return ((delegate* unmanaged[Cdecl]<byte>)funcTable[1011])();
+            return ((delegate* unmanaged[Cdecl]<byte>)funcTable[1010])();
         }
 
         /// <summary>
@@ -20300,7 +20638,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte RunOnMainThreadNative(delegate* unmanaged[Cdecl]<void*, void> callback, void* userdata, byte waitComplete)
         {
-            return ((delegate* unmanaged[Cdecl]<delegate* unmanaged[Cdecl]<void*, void> , void*, byte, byte>)funcTable[1012])(callback, userdata, waitComplete);
+            return ((delegate* unmanaged[Cdecl]<delegate* unmanaged[Cdecl]<void*, void> , void*, byte, byte>)funcTable[1011])(callback, userdata, waitComplete);
         }
 
         /// <summary>
@@ -20308,7 +20646,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte SetAppMetadataNative(byte* appname, byte* appversion, byte* appidentifier)
         {
-            return ((delegate* unmanaged[Cdecl]<byte*, byte*, byte*, byte>)funcTable[1013])(appname, appversion, appidentifier);
+            return ((delegate* unmanaged[Cdecl]<byte*, byte*, byte*, byte>)funcTable[1012])(appname, appversion, appidentifier);
         }
 
         /// <summary>
@@ -20316,7 +20654,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte SetAppMetadataPropertyNative(byte* name, byte* value)
         {
-            return ((delegate* unmanaged[Cdecl]<byte*, byte*, byte>)funcTable[1014])(name, value);
+            return ((delegate* unmanaged[Cdecl]<byte*, byte*, byte>)funcTable[1013])(name, value);
         }
 
         /// <summary>
@@ -20324,7 +20662,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte* GetAppMetadataPropertyNative(byte* name)
         {
-            return ((delegate* unmanaged[Cdecl]<byte*, byte*>)funcTable[1015])(name);
+            return ((delegate* unmanaged[Cdecl]<byte*, byte*>)funcTable[1014])(name);
         }
 
         /// <summary>
@@ -20332,7 +20670,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static nint LoadObjectInterop(byte* sofile)
         {
-            return ((delegate* unmanaged[Cdecl]<byte*, nint>)funcTable[1016])(sofile);
+            return ((delegate* unmanaged[Cdecl]<byte*, nint>)funcTable[1015])(sofile);
         }
 
         internal static SDLSharedObject LoadObjectNative(byte* sofile)
@@ -20345,7 +20683,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static delegate* unmanaged[Cdecl]<void> LoadFunctionInterop(nint handle, byte* name)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, byte*, delegate* unmanaged[Cdecl]<void> >)funcTable[1017])(handle, name);
+            return ((delegate* unmanaged[Cdecl]<nint, byte*, delegate* unmanaged[Cdecl]<void> >)funcTable[1016])(handle, name);
         }
 
         internal static delegate* unmanaged[Cdecl]<void> LoadFunctionNative(SDLSharedObject handle, byte* name)
@@ -20358,7 +20696,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void UnloadObjectInterop(nint handle)
         {
-            ((delegate* unmanaged[Cdecl]<nint, void>)funcTable[1018])(handle);
+            ((delegate* unmanaged[Cdecl]<nint, void>)funcTable[1017])(handle);
         }
 
         internal static void UnloadObjectNative(SDLSharedObject handle)
@@ -20371,31 +20709,46 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static SDLLocale** GetPreferredLocalesNative(int* count)
         {
-            return ((delegate* unmanaged[Cdecl]<int*, SDLLocale**>)funcTable[1019])(count);
+            return ((delegate* unmanaged[Cdecl]<int*, SDLLocale**>)funcTable[1018])(count);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void SetLogPrioritiesInterop(int priority)
+        {
+            ((delegate* unmanaged[Cdecl]<int, void>)funcTable[1019])(priority);
+        }
+
         internal static void SetLogPrioritiesNative(SDLLogPriority priority)
         {
-            ((delegate* unmanaged[Cdecl]<SDLLogPriority, void>)funcTable[1020])(priority);
+            SetLogPrioritiesInterop((int)priority);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void SetLogPriorityInterop(int category, int priority)
+        {
+            ((delegate* unmanaged[Cdecl]<int, int, void>)funcTable[1020])(category, priority);
+        }
+
         internal static void SetLogPriorityNative(int category, SDLLogPriority priority)
         {
-            ((delegate* unmanaged[Cdecl]<int, SDLLogPriority, void>)funcTable[1021])(category, priority);
+            SetLogPriorityInterop(category, (int)priority);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int GetLogPriorityInterop(int category)
+        {
+            return ((delegate* unmanaged[Cdecl]<int, int>)funcTable[1021])(category);
+        }
+
         internal static SDLLogPriority GetLogPriorityNative(int category)
         {
-            return ((delegate* unmanaged[Cdecl]<int, SDLLogPriority>)funcTable[1022])(category);
+            return (SDLLogPriority)GetLogPriorityInterop(category);
         }
 
         /// <summary>
@@ -20403,23 +20756,33 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void ResetLogPrioritiesNative()
         {
-            ((delegate* unmanaged[Cdecl]<void>)funcTable[1023])();
+            ((delegate* unmanaged[Cdecl]<void>)funcTable[1022])();
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte SetLogPriorityPrefixInterop(int priority, byte* prefix)
+        {
+            return ((delegate* unmanaged[Cdecl]<int, byte*, byte>)funcTable[1023])(priority, prefix);
+        }
+
         internal static byte SetLogPriorityPrefixNative(SDLLogPriority priority, byte* prefix)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLLogPriority, byte*, byte>)funcTable[1024])(priority, prefix);
+            return SetLogPriorityPrefixInterop((int)priority, prefix);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void LogMessageVInterop(int category, int priority, byte* fmt, byte* ap)
+        {
+            ((delegate* unmanaged[Cdecl]<int, int, byte*, byte*, void>)funcTable[1024])(category, priority, fmt, ap);
+        }
+
         internal static void LogMessageVNative(int category, SDLLogPriority priority, byte* fmt, byte* ap)
         {
-            ((delegate* unmanaged[Cdecl]<int, SDLLogPriority, byte*, byte*, void>)funcTable[1025])(category, priority, fmt, ap);
+            LogMessageVInterop(category, (int)priority, fmt, ap);
         }
 
         /// <summary>
@@ -20427,7 +20790,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static delegate* unmanaged[Cdecl]<void*, int, SDLLogPriority, byte*, void> GetDefaultLogOutputFunctionNative()
         {
-            return ((delegate* unmanaged[Cdecl]<delegate* unmanaged[Cdecl]<void*, int, SDLLogPriority, byte*, void> >)funcTable[1026])();
+            return ((delegate* unmanaged[Cdecl]<delegate* unmanaged[Cdecl]<void*, int, SDLLogPriority, byte*, void> >)funcTable[1025])();
         }
 
         /// <summary>
@@ -20435,7 +20798,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void GetLogOutputFunctionNative(delegate* unmanaged[Cdecl]<void*, int, SDLLogPriority, byte*, void> callback, void** userdata)
         {
-            ((delegate* unmanaged[Cdecl]<delegate* unmanaged[Cdecl]<void*, int, SDLLogPriority, byte*, void> , void**, void>)funcTable[1027])(callback, userdata);
+            ((delegate* unmanaged[Cdecl]<delegate* unmanaged[Cdecl]<void*, int, SDLLogPriority, byte*, void> , void**, void>)funcTable[1026])(callback, userdata);
         }
 
         /// <summary>
@@ -20443,7 +20806,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void SetLogOutputFunctionNative(delegate* unmanaged[Cdecl]<void*, int, SDLLogPriority, byte*, void> callback, void* userdata)
         {
-            ((delegate* unmanaged[Cdecl]<delegate* unmanaged[Cdecl]<void*, int, SDLLogPriority, byte*, void> , void*, void>)funcTable[1028])(callback, userdata);
+            ((delegate* unmanaged[Cdecl]<delegate* unmanaged[Cdecl]<void*, int, SDLLogPriority, byte*, void> , void*, void>)funcTable[1027])(callback, userdata);
         }
 
         /// <summary>
@@ -20451,20 +20814,20 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte ShowMessageBoxNative(SDLMessageBoxData* messageboxdata, int* buttonid)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLMessageBoxData*, int*, byte>)funcTable[1029])(messageboxdata, buttonid);
+            return ((delegate* unmanaged[Cdecl]<SDLMessageBoxData*, int*, byte>)funcTable[1028])(messageboxdata, buttonid);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
-        internal static byte ShowSimpleMessageBoxInterop(SDLMessageBoxFlags flags, byte* title, byte* message, nint window)
+        internal static byte ShowSimpleMessageBoxInterop(uint flags, byte* title, byte* message, nint window)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLMessageBoxFlags, byte*, byte*, nint, byte>)funcTable[1030])(flags, title, message, window);
+            return ((delegate* unmanaged[Cdecl]<uint, byte*, byte*, nint, byte>)funcTable[1029])(flags, title, message, window);
         }
 
         internal static byte ShowSimpleMessageBoxNative(SDLMessageBoxFlags flags, byte* title, byte* message, SDLWindow window)
         {
-            return ShowSimpleMessageBoxInterop(flags, title, message, window.Handle);
+            return ShowSimpleMessageBoxInterop((uint)flags, title, message, window.Handle);
         }
 
         /// <summary>
@@ -20472,7 +20835,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static nint MetalCreateViewInterop(nint window)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, nint>)funcTable[1031])(window);
+            return ((delegate* unmanaged[Cdecl]<nint, nint>)funcTable[1030])(window);
         }
 
         internal static nint MetalCreateViewNative(SDLWindow window)
@@ -20485,7 +20848,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void MetalDestroyViewNative(nint view)
         {
-            ((delegate* unmanaged[Cdecl]<nint, void>)funcTable[1032])(view);
+            ((delegate* unmanaged[Cdecl]<nint, void>)funcTable[1031])(view);
         }
 
         /// <summary>
@@ -20493,7 +20856,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void* MetalGetLayerNative(nint view)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, void*>)funcTable[1033])(view);
+            return ((delegate* unmanaged[Cdecl]<nint, void*>)funcTable[1032])(view);
         }
 
         /// <summary>
@@ -20501,7 +20864,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte OpenURLNative(byte* url)
         {
-            return ((delegate* unmanaged[Cdecl]<byte*, byte>)funcTable[1034])(url);
+            return ((delegate* unmanaged[Cdecl]<byte*, byte>)funcTable[1033])(url);
         }
 
         /// <summary>
@@ -20509,7 +20872,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte* GetPlatformNative()
         {
-            return ((delegate* unmanaged[Cdecl]<byte*>)funcTable[1035])();
+            return ((delegate* unmanaged[Cdecl]<byte*>)funcTable[1034])();
         }
 
         /// <summary>
@@ -20517,7 +20880,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static nint CreateProcessInterop(byte** args, byte pipeStdio)
         {
-            return ((delegate* unmanaged[Cdecl]<byte**, byte, nint>)funcTable[1036])(args, pipeStdio);
+            return ((delegate* unmanaged[Cdecl]<byte**, byte, nint>)funcTable[1035])(args, pipeStdio);
         }
 
         internal static SDLProcess CreateProcessNative(byte** args, byte pipeStdio)
@@ -20530,7 +20893,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static nint CreateProcessWithPropertiesInterop(uint props)
         {
-            return ((delegate* unmanaged[Cdecl]<uint, nint>)funcTable[1037])(props);
+            return ((delegate* unmanaged[Cdecl]<uint, nint>)funcTable[1036])(props);
         }
 
         internal static SDLProcess CreateProcessWithPropertiesNative(uint props)
@@ -20543,7 +20906,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static uint GetProcessPropertiesInterop(nint process)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, uint>)funcTable[1038])(process);
+            return ((delegate* unmanaged[Cdecl]<nint, uint>)funcTable[1037])(process);
         }
 
         internal static uint GetProcessPropertiesNative(SDLProcess process)
@@ -20556,7 +20919,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void* ReadProcessInterop(nint process, nuint* datasize, int* exitcode)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, nuint*, int*, void*>)funcTable[1039])(process, datasize, exitcode);
+            return ((delegate* unmanaged[Cdecl]<nint, nuint*, int*, void*>)funcTable[1038])(process, datasize, exitcode);
         }
 
         internal static void* ReadProcessNative(SDLProcess process, nuint* datasize, int* exitcode)
@@ -20569,7 +20932,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static nint GetProcessInputInterop(nint process)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, nint>)funcTable[1040])(process);
+            return ((delegate* unmanaged[Cdecl]<nint, nint>)funcTable[1039])(process);
         }
 
         internal static SDLIOStream GetProcessInputNative(SDLProcess process)
@@ -20582,7 +20945,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static nint GetProcessOutputInterop(nint process)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, nint>)funcTable[1041])(process);
+            return ((delegate* unmanaged[Cdecl]<nint, nint>)funcTable[1040])(process);
         }
 
         internal static SDLIOStream GetProcessOutputNative(SDLProcess process)
@@ -20595,7 +20958,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte KillProcessInterop(nint process, byte force)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, byte, byte>)funcTable[1042])(process, force);
+            return ((delegate* unmanaged[Cdecl]<nint, byte, byte>)funcTable[1041])(process, force);
         }
 
         internal static byte KillProcessNative(SDLProcess process, byte force)
@@ -20608,7 +20971,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte WaitProcessInterop(nint process, byte block, int* exitcode)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, byte, int*, byte>)funcTable[1043])(process, block, exitcode);
+            return ((delegate* unmanaged[Cdecl]<nint, byte, int*, byte>)funcTable[1042])(process, block, exitcode);
         }
 
         internal static byte WaitProcessNative(SDLProcess process, byte block, int* exitcode)
@@ -20621,7 +20984,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void DestroyProcessInterop(nint process)
         {
-            ((delegate* unmanaged[Cdecl]<nint, void>)funcTable[1044])(process);
+            ((delegate* unmanaged[Cdecl]<nint, void>)funcTable[1043])(process);
         }
 
         internal static void DestroyProcessNative(SDLProcess process)
@@ -20634,7 +20997,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static int GetNumRenderDriversNative()
         {
-            return ((delegate* unmanaged[Cdecl]<int>)funcTable[1045])();
+            return ((delegate* unmanaged[Cdecl]<int>)funcTable[1044])();
         }
 
         /// <summary>
@@ -20642,15 +21005,20 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte* GetRenderDriverNative(int index)
         {
-            return ((delegate* unmanaged[Cdecl]<int, byte*>)funcTable[1046])(index);
+            return ((delegate* unmanaged[Cdecl]<int, byte*>)funcTable[1045])(index);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte CreateWindowAndRendererInterop(byte* title, int width, int height, ulong windowFlags, SDLWindow* window, SDLRenderer* renderer)
+        {
+            return ((delegate* unmanaged[Cdecl]<byte*, int, int, ulong, SDLWindow*, SDLRenderer*, byte>)funcTable[1046])(title, width, height, windowFlags, window, renderer);
+        }
+
         internal static byte CreateWindowAndRendererNative(byte* title, int width, int height, SDLWindowFlags windowFlags, SDLWindow* window, SDLRenderer* renderer)
         {
-            return ((delegate* unmanaged[Cdecl]<byte*, int, int, SDLWindowFlags, SDLWindow*, SDLRenderer*, byte>)funcTable[1047])(title, width, height, windowFlags, window, renderer);
+            return CreateWindowAndRendererInterop(title, width, height, (ulong)windowFlags, window, renderer);
         }
 
         /// <summary>
@@ -20658,7 +21026,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static nint CreateRendererInterop(nint window, byte* name)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, byte*, nint>)funcTable[1048])(window, name);
+            return ((delegate* unmanaged[Cdecl]<nint, byte*, nint>)funcTable[1047])(window, name);
         }
 
         internal static SDLRenderer CreateRendererNative(SDLWindow window, byte* name)
@@ -20671,7 +21039,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static nint CreateRendererWithPropertiesInterop(uint props)
         {
-            return ((delegate* unmanaged[Cdecl]<uint, nint>)funcTable[1049])(props);
+            return ((delegate* unmanaged[Cdecl]<uint, nint>)funcTable[1048])(props);
         }
 
         internal static SDLRenderer CreateRendererWithPropertiesNative(uint props)
@@ -20684,7 +21052,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static nint CreateGPURendererInterop(nint device, nint window)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, nint, nint>)funcTable[1050])(device, window);
+            return ((delegate* unmanaged[Cdecl]<nint, nint, nint>)funcTable[1049])(device, window);
         }
 
         internal static SDLRenderer CreateGPURendererNative(SDLGPUDevice device, SDLWindow window)
@@ -20697,7 +21065,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static nint GetGPURendererDeviceInterop(nint renderer)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, nint>)funcTable[1051])(renderer);
+            return ((delegate* unmanaged[Cdecl]<nint, nint>)funcTable[1050])(renderer);
         }
 
         internal static SDLGPUDevice GetGPURendererDeviceNative(SDLRenderer renderer)
@@ -20710,7 +21078,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static nint CreateSoftwareRendererInterop(SDLSurface* surface)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLSurface*, nint>)funcTable[1052])(surface);
+            return ((delegate* unmanaged[Cdecl]<SDLSurface*, nint>)funcTable[1051])(surface);
         }
 
         internal static SDLRenderer CreateSoftwareRendererNative(SDLSurface* surface)
@@ -20723,7 +21091,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static nint GetRendererInterop(nint window)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, nint>)funcTable[1053])(window);
+            return ((delegate* unmanaged[Cdecl]<nint, nint>)funcTable[1052])(window);
         }
 
         internal static SDLRenderer GetRendererNative(SDLWindow window)
@@ -20736,7 +21104,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static nint GetRenderWindowInterop(nint renderer)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, nint>)funcTable[1054])(renderer);
+            return ((delegate* unmanaged[Cdecl]<nint, nint>)funcTable[1053])(renderer);
         }
 
         internal static SDLWindow GetRenderWindowNative(SDLRenderer renderer)
@@ -20749,7 +21117,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte* GetRendererNameInterop(nint renderer)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, byte*>)funcTable[1055])(renderer);
+            return ((delegate* unmanaged[Cdecl]<nint, byte*>)funcTable[1054])(renderer);
         }
 
         internal static byte* GetRendererNameNative(SDLRenderer renderer)
@@ -20762,7 +21130,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static uint GetRendererPropertiesInterop(nint renderer)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, uint>)funcTable[1056])(renderer);
+            return ((delegate* unmanaged[Cdecl]<nint, uint>)funcTable[1055])(renderer);
         }
 
         internal static uint GetRendererPropertiesNative(SDLRenderer renderer)
@@ -20775,7 +21143,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte GetRenderOutputSizeInterop(nint renderer, int* w, int* h)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, int*, int*, byte>)funcTable[1057])(renderer, w, h);
+            return ((delegate* unmanaged[Cdecl]<nint, int*, int*, byte>)funcTable[1056])(renderer, w, h);
         }
 
         internal static byte GetRenderOutputSizeNative(SDLRenderer renderer, int* w, int* h)
@@ -20788,7 +21156,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte GetCurrentRenderOutputSizeInterop(nint renderer, int* w, int* h)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, int*, int*, byte>)funcTable[1058])(renderer, w, h);
+            return ((delegate* unmanaged[Cdecl]<nint, int*, int*, byte>)funcTable[1057])(renderer, w, h);
         }
 
         internal static byte GetCurrentRenderOutputSizeNative(SDLRenderer renderer, int* w, int* h)
@@ -20799,14 +21167,14 @@ namespace Inno.Native.Sdl3
         /// <summary>
         /// To be documented.
         /// </summary>
-        internal static SDLTexture* CreateTextureInterop(nint renderer, SDLPixelFormat format, SDLTextureAccess access, int w, int h)
+        internal static SDLTexture* CreateTextureInterop(nint renderer, int format, int access, int w, int h)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, SDLPixelFormat, SDLTextureAccess, int, int, SDLTexture*>)funcTable[1059])(renderer, format, access, w, h);
+            return ((delegate* unmanaged[Cdecl]<nint, int, int, int, int, SDLTexture*>)funcTable[1058])(renderer, format, access, w, h);
         }
 
         internal static SDLTexture* CreateTextureNative(SDLRenderer renderer, SDLPixelFormat format, SDLTextureAccess access, int w, int h)
         {
-            return CreateTextureInterop(renderer.Handle, format, access, w, h);
+            return CreateTextureInterop(renderer.Handle, (int)format, (int)access, w, h);
         }
 
         /// <summary>
@@ -20814,7 +21182,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static SDLTexture* CreateTextureFromSurfaceInterop(nint renderer, SDLSurface* surface)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, SDLSurface*, SDLTexture*>)funcTable[1060])(renderer, surface);
+            return ((delegate* unmanaged[Cdecl]<nint, SDLSurface*, SDLTexture*>)funcTable[1059])(renderer, surface);
         }
 
         internal static SDLTexture* CreateTextureFromSurfaceNative(SDLRenderer renderer, SDLSurface* surface)
@@ -20827,7 +21195,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static SDLTexture* CreateTextureWithPropertiesInterop(nint renderer, uint props)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, uint, SDLTexture*>)funcTable[1061])(renderer, props);
+            return ((delegate* unmanaged[Cdecl]<nint, uint, SDLTexture*>)funcTable[1060])(renderer, props);
         }
 
         internal static SDLTexture* CreateTextureWithPropertiesNative(SDLRenderer renderer, uint props)
@@ -20840,7 +21208,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static uint GetTexturePropertiesNative(SDLTexture* texture)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLTexture*, uint>)funcTable[1062])(texture);
+            return ((delegate* unmanaged[Cdecl]<SDLTexture*, uint>)funcTable[1061])(texture);
         }
 
         /// <summary>
@@ -20848,7 +21216,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static nint GetRendererFromTextureInterop(SDLTexture* texture)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLTexture*, nint>)funcTable[1063])(texture);
+            return ((delegate* unmanaged[Cdecl]<SDLTexture*, nint>)funcTable[1062])(texture);
         }
 
         internal static SDLRenderer GetRendererFromTextureNative(SDLTexture* texture)
@@ -20861,7 +21229,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte GetTextureSizeNative(SDLTexture* texture, float* w, float* h)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLTexture*, float*, float*, byte>)funcTable[1064])(texture, w, h);
+            return ((delegate* unmanaged[Cdecl]<SDLTexture*, float*, float*, byte>)funcTable[1063])(texture, w, h);
         }
 
         /// <summary>
@@ -20869,7 +21237,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte SetTexturePaletteNative(SDLTexture* texture, SDLPalette* palette)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLTexture*, SDLPalette*, byte>)funcTable[1065])(texture, palette);
+            return ((delegate* unmanaged[Cdecl]<SDLTexture*, SDLPalette*, byte>)funcTable[1064])(texture, palette);
         }
 
         /// <summary>
@@ -20877,7 +21245,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static SDLPalette* GetTexturePaletteNative(SDLTexture* texture)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLTexture*, SDLPalette*>)funcTable[1066])(texture);
+            return ((delegate* unmanaged[Cdecl]<SDLTexture*, SDLPalette*>)funcTable[1065])(texture);
         }
 
         /// <summary>
@@ -20885,7 +21253,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte SetTextureColorModNative(SDLTexture* texture, byte r, byte g, byte b)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLTexture*, byte, byte, byte, byte>)funcTable[1067])(texture, r, g, b);
+            return ((delegate* unmanaged[Cdecl]<SDLTexture*, byte, byte, byte, byte>)funcTable[1066])(texture, r, g, b);
         }
 
         /// <summary>
@@ -20893,7 +21261,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte SetTextureColorModFloatNative(SDLTexture* texture, float r, float g, float b)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLTexture*, float, float, float, byte>)funcTable[1068])(texture, r, g, b);
+            return ((delegate* unmanaged[Cdecl]<SDLTexture*, float, float, float, byte>)funcTable[1067])(texture, r, g, b);
         }
 
         /// <summary>
@@ -20901,7 +21269,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte GetTextureColorModNative(SDLTexture* texture, byte* r, byte* g, byte* b)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLTexture*, byte*, byte*, byte*, byte>)funcTable[1069])(texture, r, g, b);
+            return ((delegate* unmanaged[Cdecl]<SDLTexture*, byte*, byte*, byte*, byte>)funcTable[1068])(texture, r, g, b);
         }
 
         /// <summary>
@@ -20909,7 +21277,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte GetTextureColorModFloatNative(SDLTexture* texture, float* r, float* g, float* b)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLTexture*, float*, float*, float*, byte>)funcTable[1070])(texture, r, g, b);
+            return ((delegate* unmanaged[Cdecl]<SDLTexture*, float*, float*, float*, byte>)funcTable[1069])(texture, r, g, b);
         }
 
         /// <summary>
@@ -20917,7 +21285,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte SetTextureAlphaModNative(SDLTexture* texture, byte alpha)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLTexture*, byte, byte>)funcTable[1071])(texture, alpha);
+            return ((delegate* unmanaged[Cdecl]<SDLTexture*, byte, byte>)funcTable[1070])(texture, alpha);
         }
 
         /// <summary>
@@ -20925,7 +21293,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte SetTextureAlphaModFloatNative(SDLTexture* texture, float alpha)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLTexture*, float, byte>)funcTable[1072])(texture, alpha);
+            return ((delegate* unmanaged[Cdecl]<SDLTexture*, float, byte>)funcTable[1071])(texture, alpha);
         }
 
         /// <summary>
@@ -20933,7 +21301,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte GetTextureAlphaModNative(SDLTexture* texture, byte* alpha)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLTexture*, byte*, byte>)funcTable[1073])(texture, alpha);
+            return ((delegate* unmanaged[Cdecl]<SDLTexture*, byte*, byte>)funcTable[1072])(texture, alpha);
         }
 
         /// <summary>
@@ -20941,7 +21309,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte GetTextureAlphaModFloatNative(SDLTexture* texture, float* alpha)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLTexture*, float*, byte>)funcTable[1074])(texture, alpha);
+            return ((delegate* unmanaged[Cdecl]<SDLTexture*, float*, byte>)funcTable[1073])(texture, alpha);
         }
 
         /// <summary>
@@ -20949,7 +21317,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte SetTextureBlendModeNative(SDLTexture* texture, uint blendMode)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLTexture*, uint, byte>)funcTable[1075])(texture, blendMode);
+            return ((delegate* unmanaged[Cdecl]<SDLTexture*, uint, byte>)funcTable[1074])(texture, blendMode);
         }
 
         /// <summary>
@@ -20957,15 +21325,20 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte GetTextureBlendModeNative(SDLTexture* texture, uint* blendMode)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLTexture*, uint*, byte>)funcTable[1076])(texture, blendMode);
+            return ((delegate* unmanaged[Cdecl]<SDLTexture*, uint*, byte>)funcTable[1075])(texture, blendMode);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static byte SetTextureScaleModeInterop(SDLTexture* texture, int scaleMode)
+        {
+            return ((delegate* unmanaged[Cdecl]<SDLTexture*, int, byte>)funcTable[1076])(texture, scaleMode);
+        }
+
         internal static byte SetTextureScaleModeNative(SDLTexture* texture, SDLScaleMode scaleMode)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLTexture*, SDLScaleMode, byte>)funcTable[1077])(texture, scaleMode);
+            return SetTextureScaleModeInterop(texture, (int)scaleMode);
         }
 
         /// <summary>
@@ -20973,7 +21346,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte GetTextureScaleModeNative(SDLTexture* texture, SDLScaleMode* scaleMode)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLTexture*, SDLScaleMode*, byte>)funcTable[1078])(texture, scaleMode);
+            return ((delegate* unmanaged[Cdecl]<SDLTexture*, SDLScaleMode*, byte>)funcTable[1077])(texture, scaleMode);
         }
 
         /// <summary>
@@ -20981,7 +21354,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte UpdateTextureNative(SDLTexture* texture, SDLRect* rect, void* pixels, int pitch)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLTexture*, SDLRect*, void*, int, byte>)funcTable[1079])(texture, rect, pixels, pitch);
+            return ((delegate* unmanaged[Cdecl]<SDLTexture*, SDLRect*, void*, int, byte>)funcTable[1078])(texture, rect, pixels, pitch);
         }
 
         /// <summary>
@@ -20989,7 +21362,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte UpdateYUVTextureNative(SDLTexture* texture, SDLRect* rect, byte* yplane, int ypitch, byte* uplane, int upitch, byte* vplane, int vpitch)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLTexture*, SDLRect*, byte*, int, byte*, int, byte*, int, byte>)funcTable[1080])(texture, rect, yplane, ypitch, uplane, upitch, vplane, vpitch);
+            return ((delegate* unmanaged[Cdecl]<SDLTexture*, SDLRect*, byte*, int, byte*, int, byte*, int, byte>)funcTable[1079])(texture, rect, yplane, ypitch, uplane, upitch, vplane, vpitch);
         }
 
         /// <summary>
@@ -20997,7 +21370,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte UpdateNVTextureNative(SDLTexture* texture, SDLRect* rect, byte* yplane, int ypitch, byte* uVplane, int uVpitch)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLTexture*, SDLRect*, byte*, int, byte*, int, byte>)funcTable[1081])(texture, rect, yplane, ypitch, uVplane, uVpitch);
+            return ((delegate* unmanaged[Cdecl]<SDLTexture*, SDLRect*, byte*, int, byte*, int, byte>)funcTable[1080])(texture, rect, yplane, ypitch, uVplane, uVpitch);
         }
 
         /// <summary>
@@ -21005,7 +21378,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte LockTextureNative(SDLTexture* texture, SDLRect* rect, void** pixels, int* pitch)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLTexture*, SDLRect*, void**, int*, byte>)funcTable[1082])(texture, rect, pixels, pitch);
+            return ((delegate* unmanaged[Cdecl]<SDLTexture*, SDLRect*, void**, int*, byte>)funcTable[1081])(texture, rect, pixels, pitch);
         }
 
         /// <summary>
@@ -21013,7 +21386,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte LockTextureToSurfaceNative(SDLTexture* texture, SDLRect* rect, SDLSurface** surface)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLTexture*, SDLRect*, SDLSurface**, byte>)funcTable[1083])(texture, rect, surface);
+            return ((delegate* unmanaged[Cdecl]<SDLTexture*, SDLRect*, SDLSurface**, byte>)funcTable[1082])(texture, rect, surface);
         }
 
         /// <summary>
@@ -21021,7 +21394,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void UnlockTextureNative(SDLTexture* texture)
         {
-            ((delegate* unmanaged[Cdecl]<SDLTexture*, void>)funcTable[1084])(texture);
+            ((delegate* unmanaged[Cdecl]<SDLTexture*, void>)funcTable[1083])(texture);
         }
 
         /// <summary>
@@ -21029,7 +21402,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte SetRenderTargetInterop(nint renderer, SDLTexture* texture)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, SDLTexture*, byte>)funcTable[1085])(renderer, texture);
+            return ((delegate* unmanaged[Cdecl]<nint, SDLTexture*, byte>)funcTable[1084])(renderer, texture);
         }
 
         internal static byte SetRenderTargetNative(SDLRenderer renderer, SDLTexture* texture)
@@ -21042,7 +21415,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static SDLTexture* GetRenderTargetInterop(nint renderer)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, SDLTexture*>)funcTable[1086])(renderer);
+            return ((delegate* unmanaged[Cdecl]<nint, SDLTexture*>)funcTable[1085])(renderer);
         }
 
         internal static SDLTexture* GetRenderTargetNative(SDLRenderer renderer)
@@ -21053,14 +21426,14 @@ namespace Inno.Native.Sdl3
         /// <summary>
         /// To be documented.
         /// </summary>
-        internal static byte SetRenderLogicalPresentationInterop(nint renderer, int w, int h, SDLRendererLogicalPresentation mode)
+        internal static byte SetRenderLogicalPresentationInterop(nint renderer, int w, int h, int mode)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, int, int, SDLRendererLogicalPresentation, byte>)funcTable[1087])(renderer, w, h, mode);
+            return ((delegate* unmanaged[Cdecl]<nint, int, int, int, byte>)funcTable[1086])(renderer, w, h, mode);
         }
 
         internal static byte SetRenderLogicalPresentationNative(SDLRenderer renderer, int w, int h, SDLRendererLogicalPresentation mode)
         {
-            return SetRenderLogicalPresentationInterop(renderer.Handle, w, h, mode);
+            return SetRenderLogicalPresentationInterop(renderer.Handle, w, h, (int)mode);
         }
 
         /// <summary>
@@ -21068,7 +21441,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte GetRenderLogicalPresentationInterop(nint renderer, int* w, int* h, SDLRendererLogicalPresentation* mode)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, int*, int*, SDLRendererLogicalPresentation*, byte>)funcTable[1088])(renderer, w, h, mode);
+            return ((delegate* unmanaged[Cdecl]<nint, int*, int*, SDLRendererLogicalPresentation*, byte>)funcTable[1087])(renderer, w, h, mode);
         }
 
         internal static byte GetRenderLogicalPresentationNative(SDLRenderer renderer, int* w, int* h, SDLRendererLogicalPresentation* mode)
@@ -21081,7 +21454,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte GetRenderLogicalPresentationRectInterop(nint renderer, SDLFRect* rect)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, SDLFRect*, byte>)funcTable[1089])(renderer, rect);
+            return ((delegate* unmanaged[Cdecl]<nint, SDLFRect*, byte>)funcTable[1088])(renderer, rect);
         }
 
         internal static byte GetRenderLogicalPresentationRectNative(SDLRenderer renderer, SDLFRect* rect)
@@ -21094,7 +21467,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte RenderCoordinatesFromWindowInterop(nint renderer, float windowX, float windowY, float* x, float* y)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, float, float, float*, float*, byte>)funcTable[1090])(renderer, windowX, windowY, x, y);
+            return ((delegate* unmanaged[Cdecl]<nint, float, float, float*, float*, byte>)funcTable[1089])(renderer, windowX, windowY, x, y);
         }
 
         internal static byte RenderCoordinatesFromWindowNative(SDLRenderer renderer, float windowX, float windowY, float* x, float* y)
@@ -21107,7 +21480,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte RenderCoordinatesToWindowInterop(nint renderer, float x, float y, float* windowX, float* windowY)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, float, float, float*, float*, byte>)funcTable[1091])(renderer, x, y, windowX, windowY);
+            return ((delegate* unmanaged[Cdecl]<nint, float, float, float*, float*, byte>)funcTable[1090])(renderer, x, y, windowX, windowY);
         }
 
         internal static byte RenderCoordinatesToWindowNative(SDLRenderer renderer, float x, float y, float* windowX, float* windowY)
@@ -21120,7 +21493,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte ConvertEventToRenderCoordinatesInterop(nint renderer, SDLEvent* evnt)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, SDLEvent*, byte>)funcTable[1092])(renderer, evnt);
+            return ((delegate* unmanaged[Cdecl]<nint, SDLEvent*, byte>)funcTable[1091])(renderer, evnt);
         }
 
         internal static byte ConvertEventToRenderCoordinatesNative(SDLRenderer renderer, SDLEvent* evnt)
@@ -21133,7 +21506,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte SetRenderViewportInterop(nint renderer, SDLRect* rect)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, SDLRect*, byte>)funcTable[1093])(renderer, rect);
+            return ((delegate* unmanaged[Cdecl]<nint, SDLRect*, byte>)funcTable[1092])(renderer, rect);
         }
 
         internal static byte SetRenderViewportNative(SDLRenderer renderer, SDLRect* rect)
@@ -21146,7 +21519,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte GetRenderViewportInterop(nint renderer, SDLRect* rect)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, SDLRect*, byte>)funcTable[1094])(renderer, rect);
+            return ((delegate* unmanaged[Cdecl]<nint, SDLRect*, byte>)funcTable[1093])(renderer, rect);
         }
 
         internal static byte GetRenderViewportNative(SDLRenderer renderer, SDLRect* rect)
@@ -21159,7 +21532,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte RenderViewportSetInterop(nint renderer)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, byte>)funcTable[1095])(renderer);
+            return ((delegate* unmanaged[Cdecl]<nint, byte>)funcTable[1094])(renderer);
         }
 
         internal static byte RenderViewportSetNative(SDLRenderer renderer)
@@ -21172,7 +21545,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte GetRenderSafeAreaInterop(nint renderer, SDLRect* rect)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, SDLRect*, byte>)funcTable[1096])(renderer, rect);
+            return ((delegate* unmanaged[Cdecl]<nint, SDLRect*, byte>)funcTable[1095])(renderer, rect);
         }
 
         internal static byte GetRenderSafeAreaNative(SDLRenderer renderer, SDLRect* rect)
@@ -21185,7 +21558,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte SetRenderClipRectInterop(nint renderer, SDLRect* rect)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, SDLRect*, byte>)funcTable[1097])(renderer, rect);
+            return ((delegate* unmanaged[Cdecl]<nint, SDLRect*, byte>)funcTable[1096])(renderer, rect);
         }
 
         internal static byte SetRenderClipRectNative(SDLRenderer renderer, SDLRect* rect)
@@ -21198,7 +21571,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte GetRenderClipRectInterop(nint renderer, SDLRect* rect)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, SDLRect*, byte>)funcTable[1098])(renderer, rect);
+            return ((delegate* unmanaged[Cdecl]<nint, SDLRect*, byte>)funcTable[1097])(renderer, rect);
         }
 
         internal static byte GetRenderClipRectNative(SDLRenderer renderer, SDLRect* rect)
@@ -21211,7 +21584,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte RenderClipEnabledInterop(nint renderer)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, byte>)funcTable[1099])(renderer);
+            return ((delegate* unmanaged[Cdecl]<nint, byte>)funcTable[1098])(renderer);
         }
 
         internal static byte RenderClipEnabledNative(SDLRenderer renderer)
@@ -21224,7 +21597,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte SetRenderScaleInterop(nint renderer, float scaleX, float scaleY)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, float, float, byte>)funcTable[1100])(renderer, scaleX, scaleY);
+            return ((delegate* unmanaged[Cdecl]<nint, float, float, byte>)funcTable[1099])(renderer, scaleX, scaleY);
         }
 
         internal static byte SetRenderScaleNative(SDLRenderer renderer, float scaleX, float scaleY)
@@ -21237,7 +21610,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte GetRenderScaleInterop(nint renderer, float* scaleX, float* scaleY)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, float*, float*, byte>)funcTable[1101])(renderer, scaleX, scaleY);
+            return ((delegate* unmanaged[Cdecl]<nint, float*, float*, byte>)funcTable[1100])(renderer, scaleX, scaleY);
         }
 
         internal static byte GetRenderScaleNative(SDLRenderer renderer, float* scaleX, float* scaleY)
@@ -21250,7 +21623,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte SetRenderDrawColorInterop(nint renderer, byte r, byte g, byte b, byte a)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, byte, byte, byte, byte, byte>)funcTable[1102])(renderer, r, g, b, a);
+            return ((delegate* unmanaged[Cdecl]<nint, byte, byte, byte, byte, byte>)funcTable[1101])(renderer, r, g, b, a);
         }
 
         internal static byte SetRenderDrawColorNative(SDLRenderer renderer, byte r, byte g, byte b, byte a)
@@ -21263,7 +21636,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte SetRenderDrawColorFloatInterop(nint renderer, float r, float g, float b, float a)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, float, float, float, float, byte>)funcTable[1103])(renderer, r, g, b, a);
+            return ((delegate* unmanaged[Cdecl]<nint, float, float, float, float, byte>)funcTable[1102])(renderer, r, g, b, a);
         }
 
         internal static byte SetRenderDrawColorFloatNative(SDLRenderer renderer, float r, float g, float b, float a)
@@ -21276,7 +21649,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte GetRenderDrawColorInterop(nint renderer, byte* r, byte* g, byte* b, byte* a)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, byte*, byte*, byte*, byte*, byte>)funcTable[1104])(renderer, r, g, b, a);
+            return ((delegate* unmanaged[Cdecl]<nint, byte*, byte*, byte*, byte*, byte>)funcTable[1103])(renderer, r, g, b, a);
         }
 
         internal static byte GetRenderDrawColorNative(SDLRenderer renderer, byte* r, byte* g, byte* b, byte* a)
@@ -21289,7 +21662,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte GetRenderDrawColorFloatInterop(nint renderer, float* r, float* g, float* b, float* a)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, float*, float*, float*, float*, byte>)funcTable[1105])(renderer, r, g, b, a);
+            return ((delegate* unmanaged[Cdecl]<nint, float*, float*, float*, float*, byte>)funcTable[1104])(renderer, r, g, b, a);
         }
 
         internal static byte GetRenderDrawColorFloatNative(SDLRenderer renderer, float* r, float* g, float* b, float* a)
@@ -21302,7 +21675,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte SetRenderColorScaleInterop(nint renderer, float scale)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, float, byte>)funcTable[1106])(renderer, scale);
+            return ((delegate* unmanaged[Cdecl]<nint, float, byte>)funcTable[1105])(renderer, scale);
         }
 
         internal static byte SetRenderColorScaleNative(SDLRenderer renderer, float scale)
@@ -21315,7 +21688,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte GetRenderColorScaleInterop(nint renderer, float* scale)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, float*, byte>)funcTable[1107])(renderer, scale);
+            return ((delegate* unmanaged[Cdecl]<nint, float*, byte>)funcTable[1106])(renderer, scale);
         }
 
         internal static byte GetRenderColorScaleNative(SDLRenderer renderer, float* scale)
@@ -21328,7 +21701,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte SetRenderDrawBlendModeInterop(nint renderer, uint blendMode)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, uint, byte>)funcTable[1108])(renderer, blendMode);
+            return ((delegate* unmanaged[Cdecl]<nint, uint, byte>)funcTable[1107])(renderer, blendMode);
         }
 
         internal static byte SetRenderDrawBlendModeNative(SDLRenderer renderer, uint blendMode)
@@ -21341,7 +21714,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte GetRenderDrawBlendModeInterop(nint renderer, uint* blendMode)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, uint*, byte>)funcTable[1109])(renderer, blendMode);
+            return ((delegate* unmanaged[Cdecl]<nint, uint*, byte>)funcTable[1108])(renderer, blendMode);
         }
 
         internal static byte GetRenderDrawBlendModeNative(SDLRenderer renderer, uint* blendMode)
@@ -21354,7 +21727,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte RenderClearInterop(nint renderer)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, byte>)funcTable[1110])(renderer);
+            return ((delegate* unmanaged[Cdecl]<nint, byte>)funcTable[1109])(renderer);
         }
 
         internal static byte RenderClearNative(SDLRenderer renderer)
@@ -21367,7 +21740,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte RenderPointInterop(nint renderer, float x, float y)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, float, float, byte>)funcTable[1111])(renderer, x, y);
+            return ((delegate* unmanaged[Cdecl]<nint, float, float, byte>)funcTable[1110])(renderer, x, y);
         }
 
         internal static byte RenderPointNative(SDLRenderer renderer, float x, float y)
@@ -21380,7 +21753,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte RenderPointsInterop(nint renderer, SDLFPoint* points, int count)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, SDLFPoint*, int, byte>)funcTable[1112])(renderer, points, count);
+            return ((delegate* unmanaged[Cdecl]<nint, SDLFPoint*, int, byte>)funcTable[1111])(renderer, points, count);
         }
 
         internal static byte RenderPointsNative(SDLRenderer renderer, SDLFPoint* points, int count)
@@ -21393,7 +21766,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte RenderLineInterop(nint renderer, float x1, float y1, float x2, float y2)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, float, float, float, float, byte>)funcTable[1113])(renderer, x1, y1, x2, y2);
+            return ((delegate* unmanaged[Cdecl]<nint, float, float, float, float, byte>)funcTable[1112])(renderer, x1, y1, x2, y2);
         }
 
         internal static byte RenderLineNative(SDLRenderer renderer, float x1, float y1, float x2, float y2)
@@ -21406,7 +21779,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte RenderLinesInterop(nint renderer, SDLFPoint* points, int count)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, SDLFPoint*, int, byte>)funcTable[1114])(renderer, points, count);
+            return ((delegate* unmanaged[Cdecl]<nint, SDLFPoint*, int, byte>)funcTable[1113])(renderer, points, count);
         }
 
         internal static byte RenderLinesNative(SDLRenderer renderer, SDLFPoint* points, int count)
@@ -21419,7 +21792,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte RenderRectInterop(nint renderer, SDLFRect* rect)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, SDLFRect*, byte>)funcTable[1115])(renderer, rect);
+            return ((delegate* unmanaged[Cdecl]<nint, SDLFRect*, byte>)funcTable[1114])(renderer, rect);
         }
 
         internal static byte RenderRectNative(SDLRenderer renderer, SDLFRect* rect)
@@ -21432,7 +21805,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte RenderRectsInterop(nint renderer, SDLFRect* rects, int count)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, SDLFRect*, int, byte>)funcTable[1116])(renderer, rects, count);
+            return ((delegate* unmanaged[Cdecl]<nint, SDLFRect*, int, byte>)funcTable[1115])(renderer, rects, count);
         }
 
         internal static byte RenderRectsNative(SDLRenderer renderer, SDLFRect* rects, int count)
@@ -21445,7 +21818,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte RenderFillRectInterop(nint renderer, SDLFRect* rect)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, SDLFRect*, byte>)funcTable[1117])(renderer, rect);
+            return ((delegate* unmanaged[Cdecl]<nint, SDLFRect*, byte>)funcTable[1116])(renderer, rect);
         }
 
         internal static byte RenderFillRectNative(SDLRenderer renderer, SDLFRect* rect)
@@ -21458,7 +21831,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte RenderFillRectsInterop(nint renderer, SDLFRect* rects, int count)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, SDLFRect*, int, byte>)funcTable[1118])(renderer, rects, count);
+            return ((delegate* unmanaged[Cdecl]<nint, SDLFRect*, int, byte>)funcTable[1117])(renderer, rects, count);
         }
 
         internal static byte RenderFillRectsNative(SDLRenderer renderer, SDLFRect* rects, int count)
@@ -21471,7 +21844,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte RenderTextureInterop(nint renderer, SDLTexture* texture, SDLFRect* srcrect, SDLFRect* dstrect)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, SDLTexture*, SDLFRect*, SDLFRect*, byte>)funcTable[1119])(renderer, texture, srcrect, dstrect);
+            return ((delegate* unmanaged[Cdecl]<nint, SDLTexture*, SDLFRect*, SDLFRect*, byte>)funcTable[1118])(renderer, texture, srcrect, dstrect);
         }
 
         internal static byte RenderTextureNative(SDLRenderer renderer, SDLTexture* texture, SDLFRect* srcrect, SDLFRect* dstrect)
@@ -21482,14 +21855,14 @@ namespace Inno.Native.Sdl3
         /// <summary>
         /// To be documented.
         /// </summary>
-        internal static byte RenderTextureRotatedInterop(nint renderer, SDLTexture* texture, SDLFRect* srcrect, SDLFRect* dstrect, double angle, SDLFPoint* center, SDLFlipMode flip)
+        internal static byte RenderTextureRotatedInterop(nint renderer, SDLTexture* texture, SDLFRect* srcrect, SDLFRect* dstrect, double angle, SDLFPoint* center, int flip)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, SDLTexture*, SDLFRect*, SDLFRect*, double, SDLFPoint*, SDLFlipMode, byte>)funcTable[1120])(renderer, texture, srcrect, dstrect, angle, center, flip);
+            return ((delegate* unmanaged[Cdecl]<nint, SDLTexture*, SDLFRect*, SDLFRect*, double, SDLFPoint*, int, byte>)funcTable[1119])(renderer, texture, srcrect, dstrect, angle, center, flip);
         }
 
         internal static byte RenderTextureRotatedNative(SDLRenderer renderer, SDLTexture* texture, SDLFRect* srcrect, SDLFRect* dstrect, double angle, SDLFPoint* center, SDLFlipMode flip)
         {
-            return RenderTextureRotatedInterop(renderer.Handle, texture, srcrect, dstrect, angle, center, flip);
+            return RenderTextureRotatedInterop(renderer.Handle, texture, srcrect, dstrect, angle, center, (int)flip);
         }
 
         /// <summary>
@@ -21497,7 +21870,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte RenderTextureAffineInterop(nint renderer, SDLTexture* texture, SDLFRect* srcrect, SDLFPoint* origin, SDLFPoint* right, SDLFPoint* down)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, SDLTexture*, SDLFRect*, SDLFPoint*, SDLFPoint*, SDLFPoint*, byte>)funcTable[1121])(renderer, texture, srcrect, origin, right, down);
+            return ((delegate* unmanaged[Cdecl]<nint, SDLTexture*, SDLFRect*, SDLFPoint*, SDLFPoint*, SDLFPoint*, byte>)funcTable[1120])(renderer, texture, srcrect, origin, right, down);
         }
 
         internal static byte RenderTextureAffineNative(SDLRenderer renderer, SDLTexture* texture, SDLFRect* srcrect, SDLFPoint* origin, SDLFPoint* right, SDLFPoint* down)
@@ -21510,7 +21883,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte RenderTextureTiledInterop(nint renderer, SDLTexture* texture, SDLFRect* srcrect, float scale, SDLFRect* dstrect)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, SDLTexture*, SDLFRect*, float, SDLFRect*, byte>)funcTable[1122])(renderer, texture, srcrect, scale, dstrect);
+            return ((delegate* unmanaged[Cdecl]<nint, SDLTexture*, SDLFRect*, float, SDLFRect*, byte>)funcTable[1121])(renderer, texture, srcrect, scale, dstrect);
         }
 
         internal static byte RenderTextureTiledNative(SDLRenderer renderer, SDLTexture* texture, SDLFRect* srcrect, float scale, SDLFRect* dstrect)
@@ -21523,7 +21896,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte RenderTexture9GridInterop(nint renderer, SDLTexture* texture, SDLFRect* srcrect, float leftWidth, float rightWidth, float topHeight, float bottomHeight, float scale, SDLFRect* dstrect)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, SDLTexture*, SDLFRect*, float, float, float, float, float, SDLFRect*, byte>)funcTable[1123])(renderer, texture, srcrect, leftWidth, rightWidth, topHeight, bottomHeight, scale, dstrect);
+            return ((delegate* unmanaged[Cdecl]<nint, SDLTexture*, SDLFRect*, float, float, float, float, float, SDLFRect*, byte>)funcTable[1122])(renderer, texture, srcrect, leftWidth, rightWidth, topHeight, bottomHeight, scale, dstrect);
         }
 
         internal static byte RenderTexture9GridNative(SDLRenderer renderer, SDLTexture* texture, SDLFRect* srcrect, float leftWidth, float rightWidth, float topHeight, float bottomHeight, float scale, SDLFRect* dstrect)
@@ -21536,7 +21909,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte RenderTexture9GridTiledInterop(nint renderer, SDLTexture* texture, SDLFRect* srcrect, float leftWidth, float rightWidth, float topHeight, float bottomHeight, float scale, SDLFRect* dstrect, float tileScale)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, SDLTexture*, SDLFRect*, float, float, float, float, float, SDLFRect*, float, byte>)funcTable[1124])(renderer, texture, srcrect, leftWidth, rightWidth, topHeight, bottomHeight, scale, dstrect, tileScale);
+            return ((delegate* unmanaged[Cdecl]<nint, SDLTexture*, SDLFRect*, float, float, float, float, float, SDLFRect*, float, byte>)funcTable[1123])(renderer, texture, srcrect, leftWidth, rightWidth, topHeight, bottomHeight, scale, dstrect, tileScale);
         }
 
         internal static byte RenderTexture9GridTiledNative(SDLRenderer renderer, SDLTexture* texture, SDLFRect* srcrect, float leftWidth, float rightWidth, float topHeight, float bottomHeight, float scale, SDLFRect* dstrect, float tileScale)
@@ -21549,7 +21922,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte RenderGeometryInterop(nint renderer, SDLTexture* texture, SDLVertex* vertices, int numVertices, int* indices, int numIndices)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, SDLTexture*, SDLVertex*, int, int*, int, byte>)funcTable[1125])(renderer, texture, vertices, numVertices, indices, numIndices);
+            return ((delegate* unmanaged[Cdecl]<nint, SDLTexture*, SDLVertex*, int, int*, int, byte>)funcTable[1124])(renderer, texture, vertices, numVertices, indices, numIndices);
         }
 
         internal static byte RenderGeometryNative(SDLRenderer renderer, SDLTexture* texture, SDLVertex* vertices, int numVertices, int* indices, int numIndices)
@@ -21562,7 +21935,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte RenderGeometryRawInterop(nint renderer, SDLTexture* texture, float* xy, int xyStride, SDLFColor* color, int colorStride, float* uv, int uvStride, int numVertices, void* indices, int numIndices, int sizeIndices)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, SDLTexture*, float*, int, SDLFColor*, int, float*, int, int, void*, int, int, byte>)funcTable[1126])(renderer, texture, xy, xyStride, color, colorStride, uv, uvStride, numVertices, indices, numIndices, sizeIndices);
+            return ((delegate* unmanaged[Cdecl]<nint, SDLTexture*, float*, int, SDLFColor*, int, float*, int, int, void*, int, int, byte>)funcTable[1125])(renderer, texture, xy, xyStride, color, colorStride, uv, uvStride, numVertices, indices, numIndices, sizeIndices);
         }
 
         internal static byte RenderGeometryRawNative(SDLRenderer renderer, SDLTexture* texture, float* xy, int xyStride, SDLFColor* color, int colorStride, float* uv, int uvStride, int numVertices, void* indices, int numIndices, int sizeIndices)
@@ -21573,14 +21946,14 @@ namespace Inno.Native.Sdl3
         /// <summary>
         /// To be documented.
         /// </summary>
-        internal static byte SetRenderTextureAddressModeInterop(nint renderer, SDLTextureAddressMode uMode, SDLTextureAddressMode vMode)
+        internal static byte SetRenderTextureAddressModeInterop(nint renderer, int uMode, int vMode)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, SDLTextureAddressMode, SDLTextureAddressMode, byte>)funcTable[1127])(renderer, uMode, vMode);
+            return ((delegate* unmanaged[Cdecl]<nint, int, int, byte>)funcTable[1126])(renderer, uMode, vMode);
         }
 
         internal static byte SetRenderTextureAddressModeNative(SDLRenderer renderer, SDLTextureAddressMode uMode, SDLTextureAddressMode vMode)
         {
-            return SetRenderTextureAddressModeInterop(renderer.Handle, uMode, vMode);
+            return SetRenderTextureAddressModeInterop(renderer.Handle, (int)uMode, (int)vMode);
         }
 
         /// <summary>
@@ -21588,7 +21961,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte GetRenderTextureAddressModeInterop(nint renderer, SDLTextureAddressMode* uMode, SDLTextureAddressMode* vMode)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, SDLTextureAddressMode*, SDLTextureAddressMode*, byte>)funcTable[1128])(renderer, uMode, vMode);
+            return ((delegate* unmanaged[Cdecl]<nint, SDLTextureAddressMode*, SDLTextureAddressMode*, byte>)funcTable[1127])(renderer, uMode, vMode);
         }
 
         internal static byte GetRenderTextureAddressModeNative(SDLRenderer renderer, SDLTextureAddressMode* uMode, SDLTextureAddressMode* vMode)
@@ -21601,7 +21974,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static SDLSurface* RenderReadPixelsInterop(nint renderer, SDLRect* rect)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, SDLRect*, SDLSurface*>)funcTable[1129])(renderer, rect);
+            return ((delegate* unmanaged[Cdecl]<nint, SDLRect*, SDLSurface*>)funcTable[1128])(renderer, rect);
         }
 
         internal static SDLSurface* RenderReadPixelsNative(SDLRenderer renderer, SDLRect* rect)
@@ -21614,7 +21987,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte RenderPresentInterop(nint renderer)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, byte>)funcTable[1130])(renderer);
+            return ((delegate* unmanaged[Cdecl]<nint, byte>)funcTable[1129])(renderer);
         }
 
         internal static byte RenderPresentNative(SDLRenderer renderer)
@@ -21627,7 +22000,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void DestroyTextureNative(SDLTexture* texture)
         {
-            ((delegate* unmanaged[Cdecl]<SDLTexture*, void>)funcTable[1131])(texture);
+            ((delegate* unmanaged[Cdecl]<SDLTexture*, void>)funcTable[1130])(texture);
         }
 
         /// <summary>
@@ -21635,7 +22008,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void DestroyRendererInterop(nint renderer)
         {
-            ((delegate* unmanaged[Cdecl]<nint, void>)funcTable[1132])(renderer);
+            ((delegate* unmanaged[Cdecl]<nint, void>)funcTable[1131])(renderer);
         }
 
         internal static void DestroyRendererNative(SDLRenderer renderer)
@@ -21648,7 +22021,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte FlushRendererInterop(nint renderer)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, byte>)funcTable[1133])(renderer);
+            return ((delegate* unmanaged[Cdecl]<nint, byte>)funcTable[1132])(renderer);
         }
 
         internal static byte FlushRendererNative(SDLRenderer renderer)
@@ -21661,7 +22034,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void* GetRenderMetalLayerInterop(nint renderer)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, void*>)funcTable[1134])(renderer);
+            return ((delegate* unmanaged[Cdecl]<nint, void*>)funcTable[1133])(renderer);
         }
 
         internal static void* GetRenderMetalLayerNative(SDLRenderer renderer)
@@ -21674,7 +22047,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void* GetRenderMetalCommandEncoderInterop(nint renderer)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, void*>)funcTable[1135])(renderer);
+            return ((delegate* unmanaged[Cdecl]<nint, void*>)funcTable[1134])(renderer);
         }
 
         internal static void* GetRenderMetalCommandEncoderNative(SDLRenderer renderer)
@@ -21687,7 +22060,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte AddVulkanRenderSemaphoresInterop(nint renderer, uint waitStageMask, long waitSemaphore, long signalSemaphore)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, uint, long, long, byte>)funcTable[1136])(renderer, waitStageMask, waitSemaphore, signalSemaphore);
+            return ((delegate* unmanaged[Cdecl]<nint, uint, long, long, byte>)funcTable[1135])(renderer, waitStageMask, waitSemaphore, signalSemaphore);
         }
 
         internal static byte AddVulkanRenderSemaphoresNative(SDLRenderer renderer, uint waitStageMask, long waitSemaphore, long signalSemaphore)
@@ -21700,7 +22073,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte SetRenderVSyncInterop(nint renderer, int vsync)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, int, byte>)funcTable[1137])(renderer, vsync);
+            return ((delegate* unmanaged[Cdecl]<nint, int, byte>)funcTable[1136])(renderer, vsync);
         }
 
         internal static byte SetRenderVSyncNative(SDLRenderer renderer, int vsync)
@@ -21713,7 +22086,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte GetRenderVSyncInterop(nint renderer, int* vsync)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, int*, byte>)funcTable[1138])(renderer, vsync);
+            return ((delegate* unmanaged[Cdecl]<nint, int*, byte>)funcTable[1137])(renderer, vsync);
         }
 
         internal static byte GetRenderVSyncNative(SDLRenderer renderer, int* vsync)
@@ -21726,7 +22099,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte RenderDebugTextInterop(nint renderer, float x, float y, byte* str)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, float, float, byte*, byte>)funcTable[1139])(renderer, x, y, str);
+            return ((delegate* unmanaged[Cdecl]<nint, float, float, byte*, byte>)funcTable[1138])(renderer, x, y, str);
         }
 
         internal static byte RenderDebugTextNative(SDLRenderer renderer, float x, float y, byte* str)
@@ -21737,14 +22110,14 @@ namespace Inno.Native.Sdl3
         /// <summary>
         /// To be documented.
         /// </summary>
-        internal static byte SetDefaultTextureScaleModeInterop(nint renderer, SDLScaleMode scaleMode)
+        internal static byte SetDefaultTextureScaleModeInterop(nint renderer, int scaleMode)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, SDLScaleMode, byte>)funcTable[1140])(renderer, scaleMode);
+            return ((delegate* unmanaged[Cdecl]<nint, int, byte>)funcTable[1139])(renderer, scaleMode);
         }
 
         internal static byte SetDefaultTextureScaleModeNative(SDLRenderer renderer, SDLScaleMode scaleMode)
         {
-            return SetDefaultTextureScaleModeInterop(renderer.Handle, scaleMode);
+            return SetDefaultTextureScaleModeInterop(renderer.Handle, (int)scaleMode);
         }
 
         /// <summary>
@@ -21752,7 +22125,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte GetDefaultTextureScaleModeInterop(nint renderer, SDLScaleMode* scaleMode)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, SDLScaleMode*, byte>)funcTable[1141])(renderer, scaleMode);
+            return ((delegate* unmanaged[Cdecl]<nint, SDLScaleMode*, byte>)funcTable[1140])(renderer, scaleMode);
         }
 
         internal static byte GetDefaultTextureScaleModeNative(SDLRenderer renderer, SDLScaleMode* scaleMode)
@@ -21765,7 +22138,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static nint CreateGPURenderStateInterop(nint renderer, SDLGPURenderStateCreateInfo* createinfo)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, SDLGPURenderStateCreateInfo*, nint>)funcTable[1142])(renderer, createinfo);
+            return ((delegate* unmanaged[Cdecl]<nint, SDLGPURenderStateCreateInfo*, nint>)funcTable[1141])(renderer, createinfo);
         }
 
         internal static SDLGPURenderState CreateGPURenderStateNative(SDLRenderer renderer, SDLGPURenderStateCreateInfo* createinfo)
@@ -21778,7 +22151,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte SetGPURenderStateSamplerBindingsInterop(nint state, int numSamplerBindings, SDLGPUTextureSamplerBinding* samplerBindings)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, int, SDLGPUTextureSamplerBinding*, byte>)funcTable[1143])(state, numSamplerBindings, samplerBindings);
+            return ((delegate* unmanaged[Cdecl]<nint, int, SDLGPUTextureSamplerBinding*, byte>)funcTable[1142])(state, numSamplerBindings, samplerBindings);
         }
 
         internal static byte SetGPURenderStateSamplerBindingsNative(SDLGPURenderState state, int numSamplerBindings, SDLGPUTextureSamplerBinding* samplerBindings)
@@ -21791,7 +22164,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte SetGPURenderStateStorageTexturesInterop(nint state, int numStorageTextures, SDLGPUTexture* storageTextures)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, int, SDLGPUTexture*, byte>)funcTable[1144])(state, numStorageTextures, storageTextures);
+            return ((delegate* unmanaged[Cdecl]<nint, int, SDLGPUTexture*, byte>)funcTable[1143])(state, numStorageTextures, storageTextures);
         }
 
         internal static byte SetGPURenderStateStorageTexturesNative(SDLGPURenderState state, int numStorageTextures, SDLGPUTexture* storageTextures)
@@ -21804,7 +22177,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte SetGPURenderStateStorageBuffersInterop(nint state, int numStorageBuffers, SDLGPUBuffer* storageBuffers)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, int, SDLGPUBuffer*, byte>)funcTable[1145])(state, numStorageBuffers, storageBuffers);
+            return ((delegate* unmanaged[Cdecl]<nint, int, SDLGPUBuffer*, byte>)funcTable[1144])(state, numStorageBuffers, storageBuffers);
         }
 
         internal static byte SetGPURenderStateStorageBuffersNative(SDLGPURenderState state, int numStorageBuffers, SDLGPUBuffer* storageBuffers)
@@ -21817,7 +22190,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte SetGPURenderStateFragmentUniformsInterop(nint state, uint slotIndex, void* data, uint length)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, uint, void*, uint, byte>)funcTable[1146])(state, slotIndex, data, length);
+            return ((delegate* unmanaged[Cdecl]<nint, uint, void*, uint, byte>)funcTable[1145])(state, slotIndex, data, length);
         }
 
         internal static byte SetGPURenderStateFragmentUniformsNative(SDLGPURenderState state, uint slotIndex, void* data, uint length)
@@ -21830,7 +22203,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte SetGPURenderStateInterop(nint renderer, nint state)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, nint, byte>)funcTable[1147])(renderer, state);
+            return ((delegate* unmanaged[Cdecl]<nint, nint, byte>)funcTable[1146])(renderer, state);
         }
 
         internal static byte SetGPURenderStateNative(SDLRenderer renderer, SDLGPURenderState state)
@@ -21843,7 +22216,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void DestroyGPURenderStateInterop(nint state)
         {
-            ((delegate* unmanaged[Cdecl]<nint, void>)funcTable[1148])(state);
+            ((delegate* unmanaged[Cdecl]<nint, void>)funcTable[1147])(state);
         }
 
         internal static void DestroyGPURenderStateNative(SDLGPURenderState state)
@@ -21856,7 +22229,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static nint OpenTitleStorageInterop(byte* @override, uint props)
         {
-            return ((delegate* unmanaged[Cdecl]<byte*, uint, nint>)funcTable[1149])(@override, props);
+            return ((delegate* unmanaged[Cdecl]<byte*, uint, nint>)funcTable[1148])(@override, props);
         }
 
         internal static SDLStorage OpenTitleStorageNative(byte* @override, uint props)
@@ -21869,7 +22242,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static nint OpenUserStorageInterop(byte* org, byte* app, uint props)
         {
-            return ((delegate* unmanaged[Cdecl]<byte*, byte*, uint, nint>)funcTable[1150])(org, app, props);
+            return ((delegate* unmanaged[Cdecl]<byte*, byte*, uint, nint>)funcTable[1149])(org, app, props);
         }
 
         internal static SDLStorage OpenUserStorageNative(byte* org, byte* app, uint props)
@@ -21882,7 +22255,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static nint OpenFileStorageInterop(byte* path)
         {
-            return ((delegate* unmanaged[Cdecl]<byte*, nint>)funcTable[1151])(path);
+            return ((delegate* unmanaged[Cdecl]<byte*, nint>)funcTable[1150])(path);
         }
 
         internal static SDLStorage OpenFileStorageNative(byte* path)
@@ -21895,7 +22268,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static nint OpenStorageInterop(SDLStorageInterface* iface, void* userdata)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLStorageInterface*, void*, nint>)funcTable[1152])(iface, userdata);
+            return ((delegate* unmanaged[Cdecl]<SDLStorageInterface*, void*, nint>)funcTable[1151])(iface, userdata);
         }
 
         internal static SDLStorage OpenStorageNative(SDLStorageInterface* iface, void* userdata)
@@ -21908,7 +22281,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte CloseStorageInterop(nint storage)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, byte>)funcTable[1153])(storage);
+            return ((delegate* unmanaged[Cdecl]<nint, byte>)funcTable[1152])(storage);
         }
 
         internal static byte CloseStorageNative(SDLStorage storage)
@@ -21921,7 +22294,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte StorageReadyInterop(nint storage)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, byte>)funcTable[1154])(storage);
+            return ((delegate* unmanaged[Cdecl]<nint, byte>)funcTable[1153])(storage);
         }
 
         internal static byte StorageReadyNative(SDLStorage storage)
@@ -21934,7 +22307,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte GetStorageFileSizeInterop(nint storage, byte* path, ulong* length)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, byte*, ulong*, byte>)funcTable[1155])(storage, path, length);
+            return ((delegate* unmanaged[Cdecl]<nint, byte*, ulong*, byte>)funcTable[1154])(storage, path, length);
         }
 
         internal static byte GetStorageFileSizeNative(SDLStorage storage, byte* path, ulong* length)
@@ -21947,7 +22320,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte ReadStorageFileInterop(nint storage, byte* path, void* destination, ulong length)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, byte*, void*, ulong, byte>)funcTable[1156])(storage, path, destination, length);
+            return ((delegate* unmanaged[Cdecl]<nint, byte*, void*, ulong, byte>)funcTable[1155])(storage, path, destination, length);
         }
 
         internal static byte ReadStorageFileNative(SDLStorage storage, byte* path, void* destination, ulong length)
@@ -21960,7 +22333,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte WriteStorageFileInterop(nint storage, byte* path, void* source, ulong length)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, byte*, void*, ulong, byte>)funcTable[1157])(storage, path, source, length);
+            return ((delegate* unmanaged[Cdecl]<nint, byte*, void*, ulong, byte>)funcTable[1156])(storage, path, source, length);
         }
 
         internal static byte WriteStorageFileNative(SDLStorage storage, byte* path, void* source, ulong length)
@@ -21973,7 +22346,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte CreateStorageDirectoryInterop(nint storage, byte* path)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, byte*, byte>)funcTable[1158])(storage, path);
+            return ((delegate* unmanaged[Cdecl]<nint, byte*, byte>)funcTable[1157])(storage, path);
         }
 
         internal static byte CreateStorageDirectoryNative(SDLStorage storage, byte* path)
@@ -21986,7 +22359,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte EnumerateStorageDirectoryInterop(nint storage, byte* path, delegate* unmanaged[Cdecl]<void*, byte*, byte*, SDLEnumerationResult> callback, void* userdata)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, byte*, delegate* unmanaged[Cdecl]<void*, byte*, byte*, SDLEnumerationResult> , void*, byte>)funcTable[1159])(storage, path, callback, userdata);
+            return ((delegate* unmanaged[Cdecl]<nint, byte*, delegate* unmanaged[Cdecl]<void*, byte*, byte*, SDLEnumerationResult> , void*, byte>)funcTable[1158])(storage, path, callback, userdata);
         }
 
         internal static byte EnumerateStorageDirectoryNative(SDLStorage storage, byte* path, delegate* unmanaged[Cdecl]<void*, byte*, byte*, SDLEnumerationResult> callback, void* userdata)
@@ -21999,7 +22372,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte RemoveStoragePathInterop(nint storage, byte* path)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, byte*, byte>)funcTable[1160])(storage, path);
+            return ((delegate* unmanaged[Cdecl]<nint, byte*, byte>)funcTable[1159])(storage, path);
         }
 
         internal static byte RemoveStoragePathNative(SDLStorage storage, byte* path)
@@ -22012,7 +22385,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte RenameStoragePathInterop(nint storage, byte* oldpath, byte* newpath)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, byte*, byte*, byte>)funcTable[1161])(storage, oldpath, newpath);
+            return ((delegate* unmanaged[Cdecl]<nint, byte*, byte*, byte>)funcTable[1160])(storage, oldpath, newpath);
         }
 
         internal static byte RenameStoragePathNative(SDLStorage storage, byte* oldpath, byte* newpath)
@@ -22025,7 +22398,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte CopyStorageFileInterop(nint storage, byte* oldpath, byte* newpath)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, byte*, byte*, byte>)funcTable[1162])(storage, oldpath, newpath);
+            return ((delegate* unmanaged[Cdecl]<nint, byte*, byte*, byte>)funcTable[1161])(storage, oldpath, newpath);
         }
 
         internal static byte CopyStorageFileNative(SDLStorage storage, byte* oldpath, byte* newpath)
@@ -22038,7 +22411,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte GetStoragePathInfoInterop(nint storage, byte* path, SDLPathInfo* info)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, byte*, SDLPathInfo*, byte>)funcTable[1163])(storage, path, info);
+            return ((delegate* unmanaged[Cdecl]<nint, byte*, SDLPathInfo*, byte>)funcTable[1162])(storage, path, info);
         }
 
         internal static byte GetStoragePathInfoNative(SDLStorage storage, byte* path, SDLPathInfo* info)
@@ -22051,7 +22424,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static ulong GetStorageSpaceRemainingInterop(nint storage)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, ulong>)funcTable[1164])(storage);
+            return ((delegate* unmanaged[Cdecl]<nint, ulong>)funcTable[1163])(storage);
         }
 
         internal static ulong GetStorageSpaceRemainingNative(SDLStorage storage)
@@ -22064,7 +22437,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte** GlobStorageDirectoryInterop(nint storage, byte* path, byte* pattern, uint flags, int* count)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, byte*, byte*, uint, int*, byte**>)funcTable[1165])(storage, path, pattern, flags, count);
+            return ((delegate* unmanaged[Cdecl]<nint, byte*, byte*, uint, int*, byte**>)funcTable[1164])(storage, path, pattern, flags, count);
         }
 
         internal static byte** GlobStorageDirectoryNative(SDLStorage storage, byte* path, byte* pattern, uint flags, int* count)
@@ -22077,7 +22450,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void SetWindowsMessageHookNative(delegate* unmanaged[Cdecl]<void*, nint, byte> callback, void* userdata)
         {
-            ((delegate* unmanaged[Cdecl]<delegate* unmanaged[Cdecl]<void*, nint, byte> , void*, void>)funcTable[1166])(callback, userdata);
+            ((delegate* unmanaged[Cdecl]<delegate* unmanaged[Cdecl]<void*, nint, byte> , void*, void>)funcTable[1165])(callback, userdata);
         }
 
         /// <summary>
@@ -22085,7 +22458,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static int GetDirect3D9AdapterIndexNative(uint displayID)
         {
-            return ((delegate* unmanaged[Cdecl]<uint, int>)funcTable[1167])(displayID);
+            return ((delegate* unmanaged[Cdecl]<uint, int>)funcTable[1166])(displayID);
         }
 
         /// <summary>
@@ -22093,7 +22466,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte GetDXGIOutputInfoNative(uint displayID, int* adapterIndex, int* outputIndex)
         {
-            return ((delegate* unmanaged[Cdecl]<uint, int*, int*, byte>)funcTable[1168])(displayID, adapterIndex, outputIndex);
+            return ((delegate* unmanaged[Cdecl]<uint, int*, int*, byte>)funcTable[1167])(displayID, adapterIndex, outputIndex);
         }
 
         /// <summary>
@@ -22101,7 +22474,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void SetX11EventHookNative(delegate* unmanaged[Cdecl]<void*, nint, byte> callback, void* userdata)
         {
-            ((delegate* unmanaged[Cdecl]<delegate* unmanaged[Cdecl]<void*, nint, byte> , void*, void>)funcTable[1169])(callback, userdata);
+            ((delegate* unmanaged[Cdecl]<delegate* unmanaged[Cdecl]<void*, nint, byte> , void*, void>)funcTable[1168])(callback, userdata);
         }
 
         /// <summary>
@@ -22109,7 +22482,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte IsTabletNative()
         {
-            return ((delegate* unmanaged[Cdecl]<byte>)funcTable[1170])();
+            return ((delegate* unmanaged[Cdecl]<byte>)funcTable[1169])();
         }
 
         /// <summary>
@@ -22117,15 +22490,20 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte IsTVNative()
         {
-            return ((delegate* unmanaged[Cdecl]<byte>)funcTable[1171])();
+            return ((delegate* unmanaged[Cdecl]<byte>)funcTable[1170])();
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static int GetSandboxInterop()
+        {
+            return ((delegate* unmanaged[Cdecl]<int>)funcTable[1171])();
+        }
+
         internal static SDLSandbox GetSandboxNative()
         {
-            return ((delegate* unmanaged[Cdecl]<SDLSandbox>)funcTable[1172])();
+            return (SDLSandbox)GetSandboxInterop();
         }
 
         /// <summary>
@@ -22133,7 +22511,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void OnApplicationWillTerminateNative()
         {
-            ((delegate* unmanaged[Cdecl]<void>)funcTable[1173])();
+            ((delegate* unmanaged[Cdecl]<void>)funcTable[1172])();
         }
 
         /// <summary>
@@ -22141,7 +22519,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void OnApplicationDidReceiveMemoryWarningNative()
         {
-            ((delegate* unmanaged[Cdecl]<void>)funcTable[1174])();
+            ((delegate* unmanaged[Cdecl]<void>)funcTable[1173])();
         }
 
         /// <summary>
@@ -22149,7 +22527,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void OnApplicationWillEnterBackgroundNative()
         {
-            ((delegate* unmanaged[Cdecl]<void>)funcTable[1175])();
+            ((delegate* unmanaged[Cdecl]<void>)funcTable[1174])();
         }
 
         /// <summary>
@@ -22157,7 +22535,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void OnApplicationDidEnterBackgroundNative()
         {
-            ((delegate* unmanaged[Cdecl]<void>)funcTable[1176])();
+            ((delegate* unmanaged[Cdecl]<void>)funcTable[1175])();
         }
 
         /// <summary>
@@ -22165,7 +22543,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void OnApplicationWillEnterForegroundNative()
         {
-            ((delegate* unmanaged[Cdecl]<void>)funcTable[1177])();
+            ((delegate* unmanaged[Cdecl]<void>)funcTable[1176])();
         }
 
         /// <summary>
@@ -22173,7 +22551,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void OnApplicationDidEnterForegroundNative()
         {
-            ((delegate* unmanaged[Cdecl]<void>)funcTable[1178])();
+            ((delegate* unmanaged[Cdecl]<void>)funcTable[1177])();
         }
 
         /// <summary>
@@ -22181,7 +22559,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte GetDateTimeLocalePreferencesNative(SDLDateFormat* dateFormat, SDLTimeFormat* timeFormat)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLDateFormat*, SDLTimeFormat*, byte>)funcTable[1179])(dateFormat, timeFormat);
+            return ((delegate* unmanaged[Cdecl]<SDLDateFormat*, SDLTimeFormat*, byte>)funcTable[1178])(dateFormat, timeFormat);
         }
 
         /// <summary>
@@ -22189,7 +22567,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte GetCurrentTimeNative(long* ticks)
         {
-            return ((delegate* unmanaged[Cdecl]<long*, byte>)funcTable[1180])(ticks);
+            return ((delegate* unmanaged[Cdecl]<long*, byte>)funcTable[1179])(ticks);
         }
 
         /// <summary>
@@ -22197,7 +22575,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte TimeToDateTimeNative(long ticks, SDLDateTime* dt, byte localTime)
         {
-            return ((delegate* unmanaged[Cdecl]<long, SDLDateTime*, byte, byte>)funcTable[1181])(ticks, dt, localTime);
+            return ((delegate* unmanaged[Cdecl]<long, SDLDateTime*, byte, byte>)funcTable[1180])(ticks, dt, localTime);
         }
 
         /// <summary>
@@ -22205,7 +22583,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte DateTimeToTimeNative(SDLDateTime* dt, long* ticks)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLDateTime*, long*, byte>)funcTable[1182])(dt, ticks);
+            return ((delegate* unmanaged[Cdecl]<SDLDateTime*, long*, byte>)funcTable[1181])(dt, ticks);
         }
 
         /// <summary>
@@ -22213,7 +22591,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void TimeToWindowsNative(long ticks, uint* dwLowDateTime, uint* dwHighDateTime)
         {
-            ((delegate* unmanaged[Cdecl]<long, uint*, uint*, void>)funcTable[1183])(ticks, dwLowDateTime, dwHighDateTime);
+            ((delegate* unmanaged[Cdecl]<long, uint*, uint*, void>)funcTable[1182])(ticks, dwLowDateTime, dwHighDateTime);
         }
 
         /// <summary>
@@ -22221,7 +22599,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static long TimeFromWindowsNative(uint dwLowDateTime, uint dwHighDateTime)
         {
-            return ((delegate* unmanaged[Cdecl]<uint, uint, long>)funcTable[1184])(dwLowDateTime, dwHighDateTime);
+            return ((delegate* unmanaged[Cdecl]<uint, uint, long>)funcTable[1183])(dwLowDateTime, dwHighDateTime);
         }
 
         /// <summary>
@@ -22229,7 +22607,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static int GetDaysInMonthNative(int year, int month)
         {
-            return ((delegate* unmanaged[Cdecl]<int, int, int>)funcTable[1185])(year, month);
+            return ((delegate* unmanaged[Cdecl]<int, int, int>)funcTable[1184])(year, month);
         }
 
         /// <summary>
@@ -22237,7 +22615,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static int GetDayOfYearNative(int year, int month, int day)
         {
-            return ((delegate* unmanaged[Cdecl]<int, int, int, int>)funcTable[1186])(year, month, day);
+            return ((delegate* unmanaged[Cdecl]<int, int, int, int>)funcTable[1185])(year, month, day);
         }
 
         /// <summary>
@@ -22245,7 +22623,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static int GetDayOfWeekNative(int year, int month, int day)
         {
-            return ((delegate* unmanaged[Cdecl]<int, int, int, int>)funcTable[1187])(year, month, day);
+            return ((delegate* unmanaged[Cdecl]<int, int, int, int>)funcTable[1186])(year, month, day);
         }
 
         /// <summary>
@@ -22253,7 +22631,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static ulong GetTicksNative()
         {
-            return ((delegate* unmanaged[Cdecl]<ulong>)funcTable[1188])();
+            return ((delegate* unmanaged[Cdecl]<ulong>)funcTable[1187])();
         }
 
         /// <summary>
@@ -22261,7 +22639,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static ulong GetTicksNSNative()
         {
-            return ((delegate* unmanaged[Cdecl]<ulong>)funcTable[1189])();
+            return ((delegate* unmanaged[Cdecl]<ulong>)funcTable[1188])();
         }
 
         /// <summary>
@@ -22269,7 +22647,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static ulong GetPerformanceCounterNative()
         {
-            return ((delegate* unmanaged[Cdecl]<ulong>)funcTable[1190])();
+            return ((delegate* unmanaged[Cdecl]<ulong>)funcTable[1189])();
         }
 
         /// <summary>
@@ -22277,7 +22655,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static ulong GetPerformanceFrequencyNative()
         {
-            return ((delegate* unmanaged[Cdecl]<ulong>)funcTable[1191])();
+            return ((delegate* unmanaged[Cdecl]<ulong>)funcTable[1190])();
         }
 
         /// <summary>
@@ -22285,7 +22663,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void DelayNative(uint ms)
         {
-            ((delegate* unmanaged[Cdecl]<uint, void>)funcTable[1192])(ms);
+            ((delegate* unmanaged[Cdecl]<uint, void>)funcTable[1191])(ms);
         }
 
         /// <summary>
@@ -22293,7 +22671,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void DelayNSNative(ulong ns)
         {
-            ((delegate* unmanaged[Cdecl]<ulong, void>)funcTable[1193])(ns);
+            ((delegate* unmanaged[Cdecl]<ulong, void>)funcTable[1192])(ns);
         }
 
         /// <summary>
@@ -22301,7 +22679,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void DelayPreciseNative(ulong ns)
         {
-            ((delegate* unmanaged[Cdecl]<ulong, void>)funcTable[1194])(ns);
+            ((delegate* unmanaged[Cdecl]<ulong, void>)funcTable[1193])(ns);
         }
 
         /// <summary>
@@ -22309,7 +22687,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static uint AddTimerNative(uint interval, delegate* unmanaged[Cdecl]<void*, uint, uint, uint> callback, void* userdata)
         {
-            return ((delegate* unmanaged[Cdecl]<uint, delegate* unmanaged[Cdecl]<void*, uint, uint, uint> , void*, uint>)funcTable[1195])(interval, callback, userdata);
+            return ((delegate* unmanaged[Cdecl]<uint, delegate* unmanaged[Cdecl]<void*, uint, uint, uint> , void*, uint>)funcTable[1194])(interval, callback, userdata);
         }
 
         /// <summary>
@@ -22317,7 +22695,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static uint AddTimerNSNative(ulong interval, delegate* unmanaged[Cdecl]<void*, uint, ulong, ulong> callback, void* userdata)
         {
-            return ((delegate* unmanaged[Cdecl]<ulong, delegate* unmanaged[Cdecl]<void*, uint, ulong, ulong> , void*, uint>)funcTable[1196])(interval, callback, userdata);
+            return ((delegate* unmanaged[Cdecl]<ulong, delegate* unmanaged[Cdecl]<void*, uint, ulong, ulong> , void*, uint>)funcTable[1195])(interval, callback, userdata);
         }
 
         /// <summary>
@@ -22325,7 +22703,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte RemoveTimerNative(uint id)
         {
-            return ((delegate* unmanaged[Cdecl]<uint, byte>)funcTable[1197])(id);
+            return ((delegate* unmanaged[Cdecl]<uint, byte>)funcTable[1196])(id);
         }
 
         /// <summary>
@@ -22333,7 +22711,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static nint CreateTrayInterop(SDLSurface* icon, byte* tooltip)
         {
-            return ((delegate* unmanaged[Cdecl]<SDLSurface*, byte*, nint>)funcTable[1198])(icon, tooltip);
+            return ((delegate* unmanaged[Cdecl]<SDLSurface*, byte*, nint>)funcTable[1197])(icon, tooltip);
         }
 
         internal static SDLTray CreateTrayNative(SDLSurface* icon, byte* tooltip)
@@ -22346,7 +22724,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static nint CreateTrayWithPropertiesInterop(uint props)
         {
-            return ((delegate* unmanaged[Cdecl]<uint, nint>)funcTable[1199])(props);
+            return ((delegate* unmanaged[Cdecl]<uint, nint>)funcTable[1198])(props);
         }
 
         internal static SDLTray CreateTrayWithPropertiesNative(uint props)
@@ -22359,7 +22737,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void SetTrayIconInterop(nint tray, SDLSurface* icon)
         {
-            ((delegate* unmanaged[Cdecl]<nint, SDLSurface*, void>)funcTable[1200])(tray, icon);
+            ((delegate* unmanaged[Cdecl]<nint, SDLSurface*, void>)funcTable[1199])(tray, icon);
         }
 
         internal static void SetTrayIconNative(SDLTray tray, SDLSurface* icon)
@@ -22372,7 +22750,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void SetTrayTooltipInterop(nint tray, byte* tooltip)
         {
-            ((delegate* unmanaged[Cdecl]<nint, byte*, void>)funcTable[1201])(tray, tooltip);
+            ((delegate* unmanaged[Cdecl]<nint, byte*, void>)funcTable[1200])(tray, tooltip);
         }
 
         internal static void SetTrayTooltipNative(SDLTray tray, byte* tooltip)
@@ -22385,7 +22763,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static nint CreateTrayMenuInterop(nint tray)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, nint>)funcTable[1202])(tray);
+            return ((delegate* unmanaged[Cdecl]<nint, nint>)funcTable[1201])(tray);
         }
 
         internal static SDLTrayMenu CreateTrayMenuNative(SDLTray tray)
@@ -22398,7 +22776,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static nint CreateTraySubmenuInterop(nint entry)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, nint>)funcTable[1203])(entry);
+            return ((delegate* unmanaged[Cdecl]<nint, nint>)funcTable[1202])(entry);
         }
 
         internal static SDLTrayMenu CreateTraySubmenuNative(SDLTrayEntry entry)
@@ -22411,7 +22789,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static nint GetTrayMenuInterop(nint tray)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, nint>)funcTable[1204])(tray);
+            return ((delegate* unmanaged[Cdecl]<nint, nint>)funcTable[1203])(tray);
         }
 
         internal static SDLTrayMenu GetTrayMenuNative(SDLTray tray)
@@ -22424,7 +22802,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static nint GetTraySubmenuInterop(nint entry)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, nint>)funcTable[1205])(entry);
+            return ((delegate* unmanaged[Cdecl]<nint, nint>)funcTable[1204])(entry);
         }
 
         internal static SDLTrayMenu GetTraySubmenuNative(SDLTrayEntry entry)
@@ -22437,7 +22815,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static SDLTrayEntry* GetTrayEntriesInterop(nint menu, int* count)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, int*, SDLTrayEntry*>)funcTable[1206])(menu, count);
+            return ((delegate* unmanaged[Cdecl]<nint, int*, SDLTrayEntry*>)funcTable[1205])(menu, count);
         }
 
         internal static SDLTrayEntry* GetTrayEntriesNative(SDLTrayMenu menu, int* count)
@@ -22450,7 +22828,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void RemoveTrayEntryInterop(nint entry)
         {
-            ((delegate* unmanaged[Cdecl]<nint, void>)funcTable[1207])(entry);
+            ((delegate* unmanaged[Cdecl]<nint, void>)funcTable[1206])(entry);
         }
 
         internal static void RemoveTrayEntryNative(SDLTrayEntry entry)
@@ -22463,7 +22841,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static nint InsertTrayEntryAtInterop(nint menu, int pos, byte* label, uint flags)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, int, byte*, uint, nint>)funcTable[1208])(menu, pos, label, flags);
+            return ((delegate* unmanaged[Cdecl]<nint, int, byte*, uint, nint>)funcTable[1207])(menu, pos, label, flags);
         }
 
         internal static SDLTrayEntry InsertTrayEntryAtNative(SDLTrayMenu menu, int pos, byte* label, uint flags)
@@ -22476,7 +22854,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void SetTrayEntryLabelInterop(nint entry, byte* label)
         {
-            ((delegate* unmanaged[Cdecl]<nint, byte*, void>)funcTable[1209])(entry, label);
+            ((delegate* unmanaged[Cdecl]<nint, byte*, void>)funcTable[1208])(entry, label);
         }
 
         internal static void SetTrayEntryLabelNative(SDLTrayEntry entry, byte* label)
@@ -22489,7 +22867,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte* GetTrayEntryLabelInterop(nint entry)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, byte*>)funcTable[1210])(entry);
+            return ((delegate* unmanaged[Cdecl]<nint, byte*>)funcTable[1209])(entry);
         }
 
         internal static byte* GetTrayEntryLabelNative(SDLTrayEntry entry)
@@ -22502,7 +22880,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void SetTrayEntryCheckedInterop(nint entry, byte @checked)
         {
-            ((delegate* unmanaged[Cdecl]<nint, byte, void>)funcTable[1211])(entry, @checked);
+            ((delegate* unmanaged[Cdecl]<nint, byte, void>)funcTable[1210])(entry, @checked);
         }
 
         internal static void SetTrayEntryCheckedNative(SDLTrayEntry entry, byte @checked)
@@ -22515,7 +22893,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte GetTrayEntryCheckedInterop(nint entry)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, byte>)funcTable[1212])(entry);
+            return ((delegate* unmanaged[Cdecl]<nint, byte>)funcTable[1211])(entry);
         }
 
         internal static byte GetTrayEntryCheckedNative(SDLTrayEntry entry)
@@ -22528,7 +22906,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void SetTrayEntryEnabledInterop(nint entry, byte enabled)
         {
-            ((delegate* unmanaged[Cdecl]<nint, byte, void>)funcTable[1213])(entry, enabled);
+            ((delegate* unmanaged[Cdecl]<nint, byte, void>)funcTable[1212])(entry, enabled);
         }
 
         internal static void SetTrayEntryEnabledNative(SDLTrayEntry entry, byte enabled)
@@ -22541,7 +22919,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte GetTrayEntryEnabledInterop(nint entry)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, byte>)funcTable[1214])(entry);
+            return ((delegate* unmanaged[Cdecl]<nint, byte>)funcTable[1213])(entry);
         }
 
         internal static byte GetTrayEntryEnabledNative(SDLTrayEntry entry)
@@ -22554,7 +22932,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void SetTrayEntryCallbackInterop(nint entry, delegate* unmanaged[Cdecl]<void*, nint, void> callback, void* userdata)
         {
-            ((delegate* unmanaged[Cdecl]<nint, delegate* unmanaged[Cdecl]<void*, nint, void> , void*, void>)funcTable[1215])(entry, callback, userdata);
+            ((delegate* unmanaged[Cdecl]<nint, delegate* unmanaged[Cdecl]<void*, nint, void> , void*, void>)funcTable[1214])(entry, callback, userdata);
         }
 
         internal static void SetTrayEntryCallbackNative(SDLTrayEntry entry, delegate* unmanaged[Cdecl]<void*, nint, void> callback, void* userdata)
@@ -22567,7 +22945,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void ClickTrayEntryInterop(nint entry)
         {
-            ((delegate* unmanaged[Cdecl]<nint, void>)funcTable[1216])(entry);
+            ((delegate* unmanaged[Cdecl]<nint, void>)funcTable[1215])(entry);
         }
 
         internal static void ClickTrayEntryNative(SDLTrayEntry entry)
@@ -22580,7 +22958,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void DestroyTrayInterop(nint tray)
         {
-            ((delegate* unmanaged[Cdecl]<nint, void>)funcTable[1217])(tray);
+            ((delegate* unmanaged[Cdecl]<nint, void>)funcTable[1216])(tray);
         }
 
         internal static void DestroyTrayNative(SDLTray tray)
@@ -22593,7 +22971,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static nint GetTrayEntryParentInterop(nint entry)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, nint>)funcTable[1218])(entry);
+            return ((delegate* unmanaged[Cdecl]<nint, nint>)funcTable[1217])(entry);
         }
 
         internal static SDLTrayMenu GetTrayEntryParentNative(SDLTrayEntry entry)
@@ -22606,7 +22984,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static nint GetTrayMenuParentEntryInterop(nint menu)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, nint>)funcTable[1219])(menu);
+            return ((delegate* unmanaged[Cdecl]<nint, nint>)funcTable[1218])(menu);
         }
 
         internal static SDLTrayEntry GetTrayMenuParentEntryNative(SDLTrayMenu menu)
@@ -22619,7 +22997,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static nint GetTrayMenuParentTrayInterop(nint menu)
         {
-            return ((delegate* unmanaged[Cdecl]<nint, nint>)funcTable[1220])(menu);
+            return ((delegate* unmanaged[Cdecl]<nint, nint>)funcTable[1219])(menu);
         }
 
         internal static SDLTray GetTrayMenuParentTrayNative(SDLTrayMenu menu)
@@ -22632,7 +23010,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static void UpdateTraysNative()
         {
-            ((delegate* unmanaged[Cdecl]<void>)funcTable[1221])();
+            ((delegate* unmanaged[Cdecl]<void>)funcTable[1220])();
         }
 
         /// <summary>
@@ -22640,7 +23018,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static int GetVersionNative()
         {
-            return ((delegate* unmanaged[Cdecl]<int>)funcTable[1222])();
+            return ((delegate* unmanaged[Cdecl]<int>)funcTable[1221])();
         }
 
         /// <summary>
@@ -22648,7 +23026,7 @@ namespace Inno.Native.Sdl3
         /// </summary>
         internal static byte* GetRevisionNative()
         {
-            return ((delegate* unmanaged[Cdecl]<byte*>)funcTable[1223])();
+            return ((delegate* unmanaged[Cdecl]<byte*>)funcTable[1222])();
         }
     }
 
@@ -24228,12 +24606,6 @@ namespace Inno.Native.Sdl3
         {
             byte* ret = IconvStringNative(tocode, fromcode, inbuf, inbytesleft);
             return ret;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void Debugbreak()
-        {
-            DebugbreakNative();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -35766,1236 +36138,1247 @@ namespace Inno.Native.Sdl3
 
     public unsafe partial class SDL
     {
-        internal static FunctionTable funcTable = null !;
-        public static void InitApi(INativeContext context)
+        internal static global::BGCS.Runtime.FunctionTable funcTable = null !;
+        public static void InitApi(global::BGCS.Runtime.INativeContext context)
         {
-            funcTable = new FunctionTable(context, 1224);
-            funcTable.Load(0, "SDL_malloc");
-            funcTable.Load(1, "SDL_calloc");
-            funcTable.Load(2, "SDL_realloc");
-            funcTable.Load(3, "SDL_free");
-            funcTable.Load(4, "SDL_GetOriginalMemoryFunctions");
-            funcTable.Load(5, "SDL_GetMemoryFunctions");
-            funcTable.Load(6, "SDL_SetMemoryFunctions");
-            funcTable.Load(7, "SDL_aligned_alloc");
-            funcTable.Load(8, "SDL_aligned_free");
-            funcTable.Load(9, "SDL_GetNumAllocations");
-            funcTable.Load(10, "SDL_GetEnvironment");
-            funcTable.Load(11, "SDL_CreateEnvironment");
-            funcTable.Load(12, "SDL_GetEnvironmentVariable");
-            funcTable.Load(13, "SDL_GetEnvironmentVariables");
-            funcTable.Load(14, "SDL_SetEnvironmentVariable");
-            funcTable.Load(15, "SDL_UnsetEnvironmentVariable");
-            funcTable.Load(16, "SDL_DestroyEnvironment");
-            funcTable.Load(17, "SDL_getenv");
-            funcTable.Load(18, "SDL_getenv_unsafe");
-            funcTable.Load(19, "SDL_setenv_unsafe");
-            funcTable.Load(20, "SDL_unsetenv_unsafe");
-            funcTable.Load(21, "SDL_qsort");
-            funcTable.Load(22, "SDL_bsearch");
-            funcTable.Load(23, "SDL_qsort_r");
-            funcTable.Load(24, "SDL_bsearch_r");
-            funcTable.Load(25, "SDL_abs");
-            funcTable.Load(26, "SDL_isalpha");
-            funcTable.Load(27, "SDL_isalnum");
-            funcTable.Load(28, "SDL_isblank");
-            funcTable.Load(29, "SDL_iscntrl");
-            funcTable.Load(30, "SDL_isdigit");
-            funcTable.Load(31, "SDL_isxdigit");
-            funcTable.Load(32, "SDL_ispunct");
-            funcTable.Load(33, "SDL_isspace");
-            funcTable.Load(34, "SDL_isupper");
-            funcTable.Load(35, "SDL_islower");
-            funcTable.Load(36, "SDL_isprint");
-            funcTable.Load(37, "SDL_isgraph");
-            funcTable.Load(38, "SDL_toupper");
-            funcTable.Load(39, "SDL_tolower");
-            funcTable.Load(40, "SDL_crc16");
-            funcTable.Load(41, "SDL_crc32");
-            funcTable.Load(42, "SDL_murmur3_32");
-            funcTable.Load(43, "SDL_memcpy");
-            funcTable.Load(44, "SDL_memmove");
-            funcTable.Load(45, "SDL_memset");
-            funcTable.Load(46, "SDL_memset4");
-            funcTable.Load(47, "SDL_memcmp");
-            funcTable.Load(48, "SDL_wcslen");
-            funcTable.Load(49, "SDL_wcsnlen");
-            funcTable.Load(50, "SDL_wcslcpy");
-            funcTable.Load(51, "SDL_wcslcat");
-            funcTable.Load(52, "SDL_wcsdup");
-            funcTable.Load(53, "SDL_wcsstr");
-            funcTable.Load(54, "SDL_wcsnstr");
-            funcTable.Load(55, "SDL_wcscmp");
-            funcTable.Load(56, "SDL_wcsncmp");
-            funcTable.Load(57, "SDL_wcscasecmp");
-            funcTable.Load(58, "SDL_wcsncasecmp");
-            funcTable.Load(59, "SDL_wcstol");
-            funcTable.Load(60, "SDL_strlen");
-            funcTable.Load(61, "SDL_strnlen");
-            funcTable.Load(62, "SDL_strlcpy");
-            funcTable.Load(63, "SDL_utf8strlcpy");
-            funcTable.Load(64, "SDL_strlcat");
-            funcTable.Load(65, "SDL_strdup");
-            funcTable.Load(66, "SDL_strndup");
-            funcTable.Load(67, "SDL_strrev");
-            funcTable.Load(68, "SDL_strupr");
-            funcTable.Load(69, "SDL_strlwr");
-            funcTable.Load(70, "SDL_strchr");
-            funcTable.Load(71, "SDL_strrchr");
-            funcTable.Load(72, "SDL_strstr");
-            funcTable.Load(73, "SDL_strnstr");
-            funcTable.Load(74, "SDL_strcasestr");
-            funcTable.Load(75, "SDL_strtok_r");
-            funcTable.Load(76, "SDL_utf8strlen");
-            funcTable.Load(77, "SDL_utf8strnlen");
-            funcTable.Load(78, "SDL_itoa");
-            funcTable.Load(79, "SDL_uitoa");
-            funcTable.Load(80, "SDL_ltoa");
-            funcTable.Load(81, "SDL_ultoa");
-            funcTable.Load(82, "SDL_lltoa");
-            funcTable.Load(83, "SDL_ulltoa");
-            funcTable.Load(84, "SDL_atoi");
-            funcTable.Load(85, "SDL_atof");
-            funcTable.Load(86, "SDL_strtol");
-            funcTable.Load(87, "SDL_strtoul");
-            funcTable.Load(88, "SDL_strtoll");
-            funcTable.Load(89, "SDL_strtoull");
-            funcTable.Load(90, "SDL_strtod");
-            funcTable.Load(91, "SDL_strcmp");
-            funcTable.Load(92, "SDL_strncmp");
-            funcTable.Load(93, "SDL_strcasecmp");
-            funcTable.Load(94, "SDL_strncasecmp");
-            funcTable.Load(95, "SDL_strpbrk");
-            funcTable.Load(96, "SDL_StepUTF8");
-            funcTable.Load(97, "SDL_StepBackUTF8");
-            funcTable.Load(98, "SDL_UCS4ToUTF8");
-            funcTable.Load(99, "SDL_vsscanf");
-            funcTable.Load(100, "SDL_vsnprintf");
-            funcTable.Load(101, "SDL_vswprintf");
-            funcTable.Load(102, "SDL_vasprintf");
-            funcTable.Load(103, "SDL_srand");
-            funcTable.Load(104, "SDL_rand");
-            funcTable.Load(105, "SDL_randf");
-            funcTable.Load(106, "SDL_rand_bits");
-            funcTable.Load(107, "SDL_rand_r");
-            funcTable.Load(108, "SDL_randf_r");
-            funcTable.Load(109, "SDL_rand_bits_r");
-            funcTable.Load(110, "SDL_acos");
-            funcTable.Load(111, "SDL_acosf");
-            funcTable.Load(112, "SDL_asin");
-            funcTable.Load(113, "SDL_asinf");
-            funcTable.Load(114, "SDL_atan");
-            funcTable.Load(115, "SDL_atanf");
-            funcTable.Load(116, "SDL_atan2");
-            funcTable.Load(117, "SDL_atan2f");
-            funcTable.Load(118, "SDL_ceil");
-            funcTable.Load(119, "SDL_ceilf");
-            funcTable.Load(120, "SDL_copysign");
-            funcTable.Load(121, "SDL_copysignf");
-            funcTable.Load(122, "SDL_cos");
-            funcTable.Load(123, "SDL_cosf");
-            funcTable.Load(124, "SDL_exp");
-            funcTable.Load(125, "SDL_expf");
-            funcTable.Load(126, "SDL_fabs");
-            funcTable.Load(127, "SDL_fabsf");
-            funcTable.Load(128, "SDL_floor");
-            funcTable.Load(129, "SDL_floorf");
-            funcTable.Load(130, "SDL_trunc");
-            funcTable.Load(131, "SDL_truncf");
-            funcTable.Load(132, "SDL_fmod");
-            funcTable.Load(133, "SDL_fmodf");
-            funcTable.Load(134, "SDL_isinf");
-            funcTable.Load(135, "SDL_isinff");
-            funcTable.Load(136, "SDL_isnan");
-            funcTable.Load(137, "SDL_isnanf");
-            funcTable.Load(138, "SDL_log");
-            funcTable.Load(139, "SDL_logf");
-            funcTable.Load(140, "SDL_log10");
-            funcTable.Load(141, "SDL_log10f");
-            funcTable.Load(142, "SDL_modf");
-            funcTable.Load(143, "SDL_modff");
-            funcTable.Load(144, "SDL_pow");
-            funcTable.Load(145, "SDL_powf");
-            funcTable.Load(146, "SDL_round");
-            funcTable.Load(147, "SDL_roundf");
-            funcTable.Load(148, "SDL_lround");
-            funcTable.Load(149, "SDL_lroundf");
-            funcTable.Load(150, "SDL_scalbn");
-            funcTable.Load(151, "SDL_scalbnf");
-            funcTable.Load(152, "SDL_sin");
-            funcTable.Load(153, "SDL_sinf");
-            funcTable.Load(154, "SDL_sqrt");
-            funcTable.Load(155, "SDL_sqrtf");
-            funcTable.Load(156, "SDL_tan");
-            funcTable.Load(157, "SDL_tanf");
-            funcTable.Load(158, "SDL_iconv_open");
-            funcTable.Load(159, "SDL_iconv_close");
-            funcTable.Load(160, "SDL_iconv");
-            funcTable.Load(161, "SDL_iconv_string");
-            funcTable.Load(162, "__debugbreak");
-            funcTable.Load(163, "SDL_ReportAssertion");
-            funcTable.Load(164, "SDL_SetAssertionHandler");
-            funcTable.Load(165, "SDL_GetDefaultAssertionHandler");
-            funcTable.Load(166, "SDL_GetAssertionHandler");
-            funcTable.Load(167, "SDL_GetAssertionReport");
-            funcTable.Load(168, "SDL_ResetAssertionReport");
-            funcTable.Load(169, "SDL_AsyncIOFromFile");
-            funcTable.Load(170, "SDL_GetAsyncIOSize");
-            funcTable.Load(171, "SDL_ReadAsyncIO");
-            funcTable.Load(172, "SDL_WriteAsyncIO");
-            funcTable.Load(173, "SDL_CloseAsyncIO");
-            funcTable.Load(174, "SDL_CreateAsyncIOQueue");
-            funcTable.Load(175, "SDL_DestroyAsyncIOQueue");
-            funcTable.Load(176, "SDL_GetAsyncIOResult");
-            funcTable.Load(177, "SDL_WaitAsyncIOResult");
-            funcTable.Load(178, "SDL_SignalAsyncIOQueue");
-            funcTable.Load(179, "SDL_LoadFileAsync");
-            funcTable.Load(180, "SDL_TryLockSpinlock");
-            funcTable.Load(181, "SDL_LockSpinlock");
-            funcTable.Load(182, "SDL_UnlockSpinlock");
-            funcTable.Load(183, "SDL_MemoryBarrierReleaseFunction");
-            funcTable.Load(184, "SDL_MemoryBarrierAcquireFunction");
-            funcTable.Load(185, "SDL_CompareAndSwapAtomicInt");
-            funcTable.Load(186, "SDL_SetAtomicInt");
-            funcTable.Load(187, "SDL_GetAtomicInt");
-            funcTable.Load(188, "SDL_AddAtomicInt");
-            funcTable.Load(189, "SDL_CompareAndSwapAtomicU32");
-            funcTable.Load(190, "SDL_SetAtomicU32");
-            funcTable.Load(191, "SDL_GetAtomicU32");
-            funcTable.Load(192, "SDL_AddAtomicU32");
-            funcTable.Load(193, "SDL_CompareAndSwapAtomicPointer");
-            funcTable.Load(194, "SDL_SetAtomicPointer");
-            funcTable.Load(195, "SDL_GetAtomicPointer");
-            funcTable.Load(196, "SDL_SetErrorV");
-            funcTable.Load(197, "SDL_OutOfMemory");
-            funcTable.Load(198, "SDL_GetError");
-            funcTable.Load(199, "SDL_ClearError");
-            funcTable.Load(200, "SDL_GetGlobalProperties");
-            funcTable.Load(201, "SDL_CreateProperties");
-            funcTable.Load(202, "SDL_CopyProperties");
-            funcTable.Load(203, "SDL_LockProperties");
-            funcTable.Load(204, "SDL_UnlockProperties");
-            funcTable.Load(205, "SDL_SetPointerPropertyWithCleanup");
-            funcTable.Load(206, "SDL_SetPointerProperty");
-            funcTable.Load(207, "SDL_SetStringProperty");
-            funcTable.Load(208, "SDL_SetNumberProperty");
-            funcTable.Load(209, "SDL_SetFloatProperty");
-            funcTable.Load(210, "SDL_SetBooleanProperty");
-            funcTable.Load(211, "SDL_HasProperty");
-            funcTable.Load(212, "SDL_GetPropertyType");
-            funcTable.Load(213, "SDL_GetPointerProperty");
-            funcTable.Load(214, "SDL_GetStringProperty");
-            funcTable.Load(215, "SDL_GetNumberProperty");
-            funcTable.Load(216, "SDL_GetFloatProperty");
-            funcTable.Load(217, "SDL_GetBooleanProperty");
-            funcTable.Load(218, "SDL_ClearProperty");
-            funcTable.Load(219, "SDL_EnumerateProperties");
-            funcTable.Load(220, "SDL_DestroyProperties");
-            funcTable.Load(221, "SDL_CreateThreadRuntime");
-            funcTable.Load(222, "SDL_CreateThreadWithPropertiesRuntime");
-            funcTable.Load(223, "SDL_GetThreadName");
-            funcTable.Load(224, "SDL_GetCurrentThreadID");
-            funcTable.Load(225, "SDL_GetThreadID");
-            funcTable.Load(226, "SDL_SetCurrentThreadPriority");
-            funcTable.Load(227, "SDL_WaitThread");
-            funcTable.Load(228, "SDL_GetThreadState");
-            funcTable.Load(229, "SDL_DetachThread");
-            funcTable.Load(230, "SDL_GetTLS");
-            funcTable.Load(231, "SDL_SetTLS");
-            funcTable.Load(232, "SDL_CleanupTLS");
-            funcTable.Load(233, "SDL_CreateMutex");
-            funcTable.Load(234, "SDL_LockMutex");
-            funcTable.Load(235, "SDL_TryLockMutex");
-            funcTable.Load(236, "SDL_UnlockMutex");
-            funcTable.Load(237, "SDL_DestroyMutex");
-            funcTable.Load(238, "SDL_CreateRWLock");
-            funcTable.Load(239, "SDL_LockRWLockForReading");
-            funcTable.Load(240, "SDL_LockRWLockForWriting");
-            funcTable.Load(241, "SDL_TryLockRWLockForReading");
-            funcTable.Load(242, "SDL_TryLockRWLockForWriting");
-            funcTable.Load(243, "SDL_UnlockRWLock");
-            funcTable.Load(244, "SDL_DestroyRWLock");
-            funcTable.Load(245, "SDL_CreateSemaphore");
-            funcTable.Load(246, "SDL_DestroySemaphore");
-            funcTable.Load(247, "SDL_WaitSemaphore");
-            funcTable.Load(248, "SDL_TryWaitSemaphore");
-            funcTable.Load(249, "SDL_WaitSemaphoreTimeout");
-            funcTable.Load(250, "SDL_SignalSemaphore");
-            funcTable.Load(251, "SDL_GetSemaphoreValue");
-            funcTable.Load(252, "SDL_CreateCondition");
-            funcTable.Load(253, "SDL_DestroyCondition");
-            funcTable.Load(254, "SDL_SignalCondition");
-            funcTable.Load(255, "SDL_BroadcastCondition");
-            funcTable.Load(256, "SDL_WaitCondition");
-            funcTable.Load(257, "SDL_WaitConditionTimeout");
-            funcTable.Load(258, "SDL_ShouldInit");
-            funcTable.Load(259, "SDL_ShouldQuit");
-            funcTable.Load(260, "SDL_SetInitialized");
-            funcTable.Load(261, "SDL_IOFromFile");
-            funcTable.Load(262, "SDL_IOFromMem");
-            funcTable.Load(263, "SDL_IOFromConstMem");
-            funcTable.Load(264, "SDL_IOFromDynamicMem");
-            funcTable.Load(265, "SDL_OpenIO");
-            funcTable.Load(266, "SDL_CloseIO");
-            funcTable.Load(267, "SDL_GetIOProperties");
-            funcTable.Load(268, "SDL_GetIOStatus");
-            funcTable.Load(269, "SDL_GetIOSize");
-            funcTable.Load(270, "SDL_SeekIO");
-            funcTable.Load(271, "SDL_TellIO");
-            funcTable.Load(272, "SDL_ReadIO");
-            funcTable.Load(273, "SDL_WriteIO");
-            funcTable.Load(274, "SDL_IOvprintf");
-            funcTable.Load(275, "SDL_FlushIO");
-            funcTable.Load(276, "SDL_LoadFile_IO");
-            funcTable.Load(277, "SDL_LoadFile");
-            funcTable.Load(278, "SDL_SaveFile_IO");
-            funcTable.Load(279, "SDL_SaveFile");
-            funcTable.Load(280, "SDL_ReadU8");
-            funcTable.Load(281, "SDL_ReadS8");
-            funcTable.Load(282, "SDL_ReadU16LE");
-            funcTable.Load(283, "SDL_ReadS16LE");
-            funcTable.Load(284, "SDL_ReadU16BE");
-            funcTable.Load(285, "SDL_ReadS16BE");
-            funcTable.Load(286, "SDL_ReadU32LE");
-            funcTable.Load(287, "SDL_ReadS32LE");
-            funcTable.Load(288, "SDL_ReadU32BE");
-            funcTable.Load(289, "SDL_ReadS32BE");
-            funcTable.Load(290, "SDL_ReadU64LE");
-            funcTable.Load(291, "SDL_ReadS64LE");
-            funcTable.Load(292, "SDL_ReadU64BE");
-            funcTable.Load(293, "SDL_ReadS64BE");
-            funcTable.Load(294, "SDL_WriteU8");
-            funcTable.Load(295, "SDL_WriteS8");
-            funcTable.Load(296, "SDL_WriteU16LE");
-            funcTable.Load(297, "SDL_WriteS16LE");
-            funcTable.Load(298, "SDL_WriteU16BE");
-            funcTable.Load(299, "SDL_WriteS16BE");
-            funcTable.Load(300, "SDL_WriteU32LE");
-            funcTable.Load(301, "SDL_WriteS32LE");
-            funcTable.Load(302, "SDL_WriteU32BE");
-            funcTable.Load(303, "SDL_WriteS32BE");
-            funcTable.Load(304, "SDL_WriteU64LE");
-            funcTable.Load(305, "SDL_WriteS64LE");
-            funcTable.Load(306, "SDL_WriteU64BE");
-            funcTable.Load(307, "SDL_WriteS64BE");
-            funcTable.Load(308, "SDL_GetNumAudioDrivers");
-            funcTable.Load(309, "SDL_GetAudioDriver");
-            funcTable.Load(310, "SDL_GetCurrentAudioDriver");
-            funcTable.Load(311, "SDL_GetAudioPlaybackDevices");
-            funcTable.Load(312, "SDL_GetAudioRecordingDevices");
-            funcTable.Load(313, "SDL_GetAudioDeviceName");
-            funcTable.Load(314, "SDL_GetAudioDeviceFormat");
-            funcTable.Load(315, "SDL_GetAudioDeviceChannelMap");
-            funcTable.Load(316, "SDL_OpenAudioDevice");
-            funcTable.Load(317, "SDL_IsAudioDevicePhysical");
-            funcTable.Load(318, "SDL_IsAudioDevicePlayback");
-            funcTable.Load(319, "SDL_PauseAudioDevice");
-            funcTable.Load(320, "SDL_ResumeAudioDevice");
-            funcTable.Load(321, "SDL_AudioDevicePaused");
-            funcTable.Load(322, "SDL_GetAudioDeviceGain");
-            funcTable.Load(323, "SDL_SetAudioDeviceGain");
-            funcTable.Load(324, "SDL_CloseAudioDevice");
-            funcTable.Load(325, "SDL_BindAudioStreams");
-            funcTable.Load(326, "SDL_BindAudioStream");
-            funcTable.Load(327, "SDL_UnbindAudioStreams");
-            funcTable.Load(328, "SDL_UnbindAudioStream");
-            funcTable.Load(329, "SDL_GetAudioStreamDevice");
-            funcTable.Load(330, "SDL_CreateAudioStream");
-            funcTable.Load(331, "SDL_GetAudioStreamProperties");
-            funcTable.Load(332, "SDL_GetAudioStreamFormat");
-            funcTable.Load(333, "SDL_SetAudioStreamFormat");
-            funcTable.Load(334, "SDL_GetAudioStreamFrequencyRatio");
-            funcTable.Load(335, "SDL_SetAudioStreamFrequencyRatio");
-            funcTable.Load(336, "SDL_GetAudioStreamGain");
-            funcTable.Load(337, "SDL_SetAudioStreamGain");
-            funcTable.Load(338, "SDL_GetAudioStreamInputChannelMap");
-            funcTable.Load(339, "SDL_GetAudioStreamOutputChannelMap");
-            funcTable.Load(340, "SDL_SetAudioStreamInputChannelMap");
-            funcTable.Load(341, "SDL_SetAudioStreamOutputChannelMap");
-            funcTable.Load(342, "SDL_PutAudioStreamData");
-            funcTable.Load(343, "SDL_PutAudioStreamDataNoCopy");
-            funcTable.Load(344, "SDL_PutAudioStreamPlanarData");
-            funcTable.Load(345, "SDL_GetAudioStreamData");
-            funcTable.Load(346, "SDL_GetAudioStreamAvailable");
-            funcTable.Load(347, "SDL_GetAudioStreamQueued");
-            funcTable.Load(348, "SDL_FlushAudioStream");
-            funcTable.Load(349, "SDL_ClearAudioStream");
-            funcTable.Load(350, "SDL_PauseAudioStreamDevice");
-            funcTable.Load(351, "SDL_ResumeAudioStreamDevice");
-            funcTable.Load(352, "SDL_AudioStreamDevicePaused");
-            funcTable.Load(353, "SDL_LockAudioStream");
-            funcTable.Load(354, "SDL_UnlockAudioStream");
-            funcTable.Load(355, "SDL_SetAudioStreamGetCallback");
-            funcTable.Load(356, "SDL_SetAudioStreamPutCallback");
-            funcTable.Load(357, "SDL_DestroyAudioStream");
-            funcTable.Load(358, "SDL_OpenAudioDeviceStream");
-            funcTable.Load(359, "SDL_SetAudioPostmixCallback");
-            funcTable.Load(360, "SDL_LoadWAV_IO");
-            funcTable.Load(361, "SDL_LoadWAV");
-            funcTable.Load(362, "SDL_MixAudio");
-            funcTable.Load(363, "SDL_ConvertAudioSamples");
-            funcTable.Load(364, "SDL_GetAudioFormatName");
-            funcTable.Load(365, "SDL_GetSilenceValueForFormat");
-            funcTable.Load(366, "SDL_ComposeCustomBlendMode");
-            funcTable.Load(367, "SDL_GetPixelFormatName");
-            funcTable.Load(368, "SDL_GetMasksForPixelFormat");
-            funcTable.Load(369, "SDL_GetPixelFormatForMasks");
-            funcTable.Load(370, "SDL_GetPixelFormatDetails");
-            funcTable.Load(371, "SDL_CreatePalette");
-            funcTable.Load(372, "SDL_SetPaletteColors");
-            funcTable.Load(373, "SDL_DestroyPalette");
-            funcTable.Load(374, "SDL_MapRGB");
-            funcTable.Load(375, "SDL_MapRGBA");
-            funcTable.Load(376, "SDL_GetRGB");
-            funcTable.Load(377, "SDL_GetRGBA");
-            funcTable.Load(378, "SDL_HasRectIntersection");
-            funcTable.Load(379, "SDL_GetRectIntersection");
-            funcTable.Load(380, "SDL_GetRectUnion");
-            funcTable.Load(381, "SDL_GetRectEnclosingPoints");
-            funcTable.Load(382, "SDL_GetRectAndLineIntersection");
-            funcTable.Load(383, "SDL_HasRectIntersectionFloat");
-            funcTable.Load(384, "SDL_GetRectIntersectionFloat");
-            funcTable.Load(385, "SDL_GetRectUnionFloat");
-            funcTable.Load(386, "SDL_GetRectEnclosingPointsFloat");
-            funcTable.Load(387, "SDL_GetRectAndLineIntersectionFloat");
-            funcTable.Load(388, "SDL_CreateSurface");
-            funcTable.Load(389, "SDL_CreateSurfaceFrom");
-            funcTable.Load(390, "SDL_DestroySurface");
-            funcTable.Load(391, "SDL_GetSurfaceProperties");
-            funcTable.Load(392, "SDL_SetSurfaceColorspace");
-            funcTable.Load(393, "SDL_GetSurfaceColorspace");
-            funcTable.Load(394, "SDL_CreateSurfacePalette");
-            funcTable.Load(395, "SDL_SetSurfacePalette");
-            funcTable.Load(396, "SDL_GetSurfacePalette");
-            funcTable.Load(397, "SDL_AddSurfaceAlternateImage");
-            funcTable.Load(398, "SDL_SurfaceHasAlternateImages");
-            funcTable.Load(399, "SDL_GetSurfaceImages");
-            funcTable.Load(400, "SDL_RemoveSurfaceAlternateImages");
-            funcTable.Load(401, "SDL_LockSurface");
-            funcTable.Load(402, "SDL_UnlockSurface");
-            funcTable.Load(403, "SDL_LoadSurface_IO");
-            funcTable.Load(404, "SDL_LoadSurface");
-            funcTable.Load(405, "SDL_LoadBMP_IO");
-            funcTable.Load(406, "SDL_LoadBMP");
-            funcTable.Load(407, "SDL_SaveBMP_IO");
-            funcTable.Load(408, "SDL_SaveBMP");
-            funcTable.Load(409, "SDL_LoadPNG_IO");
-            funcTable.Load(410, "SDL_LoadPNG");
-            funcTable.Load(411, "SDL_SavePNG_IO");
-            funcTable.Load(412, "SDL_SavePNG");
-            funcTable.Load(413, "SDL_SetSurfaceRLE");
-            funcTable.Load(414, "SDL_SurfaceHasRLE");
-            funcTable.Load(415, "SDL_SetSurfaceColorKey");
-            funcTable.Load(416, "SDL_SurfaceHasColorKey");
-            funcTable.Load(417, "SDL_GetSurfaceColorKey");
-            funcTable.Load(418, "SDL_SetSurfaceColorMod");
-            funcTable.Load(419, "SDL_GetSurfaceColorMod");
-            funcTable.Load(420, "SDL_SetSurfaceAlphaMod");
-            funcTable.Load(421, "SDL_GetSurfaceAlphaMod");
-            funcTable.Load(422, "SDL_SetSurfaceBlendMode");
-            funcTable.Load(423, "SDL_GetSurfaceBlendMode");
-            funcTable.Load(424, "SDL_SetSurfaceClipRect");
-            funcTable.Load(425, "SDL_GetSurfaceClipRect");
-            funcTable.Load(426, "SDL_FlipSurface");
-            funcTable.Load(427, "SDL_RotateSurface");
-            funcTable.Load(428, "SDL_DuplicateSurface");
-            funcTable.Load(429, "SDL_ScaleSurface");
-            funcTable.Load(430, "SDL_ConvertSurface");
-            funcTable.Load(431, "SDL_ConvertSurfaceAndColorspace");
-            funcTable.Load(432, "SDL_ConvertPixels");
-            funcTable.Load(433, "SDL_ConvertPixelsAndColorspace");
-            funcTable.Load(434, "SDL_PremultiplyAlpha");
-            funcTable.Load(435, "SDL_PremultiplySurfaceAlpha");
-            funcTable.Load(436, "SDL_ClearSurface");
-            funcTable.Load(437, "SDL_FillSurfaceRect");
-            funcTable.Load(438, "SDL_FillSurfaceRects");
-            funcTable.Load(439, "SDL_BlitSurface");
-            funcTable.Load(440, "SDL_BlitSurfaceUnchecked");
-            funcTable.Load(441, "SDL_BlitSurfaceScaled");
-            funcTable.Load(442, "SDL_BlitSurfaceUncheckedScaled");
-            funcTable.Load(443, "SDL_StretchSurface");
-            funcTable.Load(444, "SDL_BlitSurfaceTiled");
-            funcTable.Load(445, "SDL_BlitSurfaceTiledWithScale");
-            funcTable.Load(446, "SDL_BlitSurface9Grid");
-            funcTable.Load(447, "SDL_MapSurfaceRGB");
-            funcTable.Load(448, "SDL_MapSurfaceRGBA");
-            funcTable.Load(449, "SDL_ReadSurfacePixel");
-            funcTable.Load(450, "SDL_ReadSurfacePixelFloat");
-            funcTable.Load(451, "SDL_WriteSurfacePixel");
-            funcTable.Load(452, "SDL_WriteSurfacePixelFloat");
-            funcTable.Load(453, "SDL_GetNumCameraDrivers");
-            funcTable.Load(454, "SDL_GetCameraDriver");
-            funcTable.Load(455, "SDL_GetCurrentCameraDriver");
-            funcTable.Load(456, "SDL_GetCameras");
-            funcTable.Load(457, "SDL_GetCameraSupportedFormats");
-            funcTable.Load(458, "SDL_GetCameraName");
-            funcTable.Load(459, "SDL_GetCameraPosition");
-            funcTable.Load(460, "SDL_OpenCamera");
-            funcTable.Load(461, "SDL_GetCameraPermissionState");
-            funcTable.Load(462, "SDL_GetCameraID");
-            funcTable.Load(463, "SDL_GetCameraProperties");
-            funcTable.Load(464, "SDL_GetCameraFormat");
-            funcTable.Load(465, "SDL_AcquireCameraFrame");
-            funcTable.Load(466, "SDL_ReleaseCameraFrame");
-            funcTable.Load(467, "SDL_CloseCamera");
-            funcTable.Load(468, "SDL_SetClipboardText");
-            funcTable.Load(469, "SDL_GetClipboardText");
-            funcTable.Load(470, "SDL_HasClipboardText");
-            funcTable.Load(471, "SDL_SetPrimarySelectionText");
-            funcTable.Load(472, "SDL_GetPrimarySelectionText");
-            funcTable.Load(473, "SDL_HasPrimarySelectionText");
-            funcTable.Load(474, "SDL_SetClipboardData");
-            funcTable.Load(475, "SDL_ClearClipboardData");
-            funcTable.Load(476, "SDL_GetClipboardData");
-            funcTable.Load(477, "SDL_HasClipboardData");
-            funcTable.Load(478, "SDL_GetClipboardMimeTypes");
-            funcTable.Load(479, "SDL_GetNumLogicalCPUCores");
-            funcTable.Load(480, "SDL_GetCPUCacheLineSize");
-            funcTable.Load(481, "SDL_HasAltiVec");
-            funcTable.Load(482, "SDL_HasMMX");
-            funcTable.Load(483, "SDL_HasSSE");
-            funcTable.Load(484, "SDL_HasSSE2");
-            funcTable.Load(485, "SDL_HasSSE3");
-            funcTable.Load(486, "SDL_HasSSE41");
-            funcTable.Load(487, "SDL_HasSSE42");
-            funcTable.Load(488, "SDL_HasAVX");
-            funcTable.Load(489, "SDL_HasAVX2");
-            funcTable.Load(490, "SDL_HasAVX512F");
-            funcTable.Load(491, "SDL_HasARMSIMD");
-            funcTable.Load(492, "SDL_HasNEON");
-            funcTable.Load(493, "SDL_HasLSX");
-            funcTable.Load(494, "SDL_HasLASX");
-            funcTable.Load(495, "SDL_GetSystemRAM");
-            funcTable.Load(496, "SDL_GetSIMDAlignment");
-            funcTable.Load(497, "SDL_GetSystemPageSize");
-            funcTable.Load(498, "SDL_GetNumVideoDrivers");
-            funcTable.Load(499, "SDL_GetVideoDriver");
-            funcTable.Load(500, "SDL_GetCurrentVideoDriver");
-            funcTable.Load(501, "SDL_GetSystemTheme");
-            funcTable.Load(502, "SDL_GetDisplays");
-            funcTable.Load(503, "SDL_GetPrimaryDisplay");
-            funcTable.Load(504, "SDL_GetDisplayProperties");
-            funcTable.Load(505, "SDL_GetDisplayName");
-            funcTable.Load(506, "SDL_GetDisplayBounds");
-            funcTable.Load(507, "SDL_GetDisplayUsableBounds");
-            funcTable.Load(508, "SDL_GetNaturalDisplayOrientation");
-            funcTable.Load(509, "SDL_GetCurrentDisplayOrientation");
-            funcTable.Load(510, "SDL_GetDisplayContentScale");
-            funcTable.Load(511, "SDL_GetFullscreenDisplayModes");
-            funcTable.Load(512, "SDL_GetClosestFullscreenDisplayMode");
-            funcTable.Load(513, "SDL_GetDesktopDisplayMode");
-            funcTable.Load(514, "SDL_GetCurrentDisplayMode");
-            funcTable.Load(515, "SDL_GetDisplayForPoint");
-            funcTable.Load(516, "SDL_GetDisplayForRect");
-            funcTable.Load(517, "SDL_GetDisplayForWindow");
-            funcTable.Load(518, "SDL_GetWindowPixelDensity");
-            funcTable.Load(519, "SDL_GetWindowDisplayScale");
-            funcTable.Load(520, "SDL_SetWindowFullscreenMode");
-            funcTable.Load(521, "SDL_GetWindowFullscreenMode");
-            funcTable.Load(522, "SDL_GetWindowICCProfile");
-            funcTable.Load(523, "SDL_GetWindowPixelFormat");
-            funcTable.Load(524, "SDL_GetWindows");
-            funcTable.Load(525, "SDL_CreateWindow");
-            funcTable.Load(526, "SDL_CreatePopupWindow");
-            funcTable.Load(527, "SDL_CreateWindowWithProperties");
-            funcTable.Load(528, "SDL_GetWindowID");
-            funcTable.Load(529, "SDL_GetWindowFromID");
-            funcTable.Load(530, "SDL_GetWindowParent");
-            funcTable.Load(531, "SDL_GetWindowProperties");
-            funcTable.Load(532, "SDL_GetWindowFlags");
-            funcTable.Load(533, "SDL_SetWindowTitle");
-            funcTable.Load(534, "SDL_GetWindowTitle");
-            funcTable.Load(535, "SDL_SetWindowIcon");
-            funcTable.Load(536, "SDL_SetWindowPosition");
-            funcTable.Load(537, "SDL_GetWindowPosition");
-            funcTable.Load(538, "SDL_SetWindowSize");
-            funcTable.Load(539, "SDL_GetWindowSize");
-            funcTable.Load(540, "SDL_GetWindowSafeArea");
-            funcTable.Load(541, "SDL_SetWindowAspectRatio");
-            funcTable.Load(542, "SDL_GetWindowAspectRatio");
-            funcTable.Load(543, "SDL_GetWindowBordersSize");
-            funcTable.Load(544, "SDL_GetWindowSizeInPixels");
-            funcTable.Load(545, "SDL_SetWindowMinimumSize");
-            funcTable.Load(546, "SDL_GetWindowMinimumSize");
-            funcTable.Load(547, "SDL_SetWindowMaximumSize");
-            funcTable.Load(548, "SDL_GetWindowMaximumSize");
-            funcTable.Load(549, "SDL_SetWindowBordered");
-            funcTable.Load(550, "SDL_SetWindowResizable");
-            funcTable.Load(551, "SDL_SetWindowAlwaysOnTop");
-            funcTable.Load(552, "SDL_SetWindowFillDocument");
-            funcTable.Load(553, "SDL_ShowWindow");
-            funcTable.Load(554, "SDL_HideWindow");
-            funcTable.Load(555, "SDL_RaiseWindow");
-            funcTable.Load(556, "SDL_MaximizeWindow");
-            funcTable.Load(557, "SDL_MinimizeWindow");
-            funcTable.Load(558, "SDL_RestoreWindow");
-            funcTable.Load(559, "SDL_SetWindowFullscreen");
-            funcTable.Load(560, "SDL_SyncWindow");
-            funcTable.Load(561, "SDL_WindowHasSurface");
-            funcTable.Load(562, "SDL_GetWindowSurface");
-            funcTable.Load(563, "SDL_SetWindowSurfaceVSync");
-            funcTable.Load(564, "SDL_GetWindowSurfaceVSync");
-            funcTable.Load(565, "SDL_UpdateWindowSurface");
-            funcTable.Load(566, "SDL_UpdateWindowSurfaceRects");
-            funcTable.Load(567, "SDL_DestroyWindowSurface");
-            funcTable.Load(568, "SDL_SetWindowKeyboardGrab");
-            funcTable.Load(569, "SDL_SetWindowMouseGrab");
-            funcTable.Load(570, "SDL_GetWindowKeyboardGrab");
-            funcTable.Load(571, "SDL_GetWindowMouseGrab");
-            funcTable.Load(572, "SDL_GetGrabbedWindow");
-            funcTable.Load(573, "SDL_SetWindowMouseRect");
-            funcTable.Load(574, "SDL_GetWindowMouseRect");
-            funcTable.Load(575, "SDL_SetWindowOpacity");
-            funcTable.Load(576, "SDL_GetWindowOpacity");
-            funcTable.Load(577, "SDL_SetWindowParent");
-            funcTable.Load(578, "SDL_SetWindowModal");
-            funcTable.Load(579, "SDL_SetWindowFocusable");
-            funcTable.Load(580, "SDL_ShowWindowSystemMenu");
-            funcTable.Load(581, "SDL_SetWindowHitTest");
-            funcTable.Load(582, "SDL_SetWindowShape");
-            funcTable.Load(583, "SDL_FlashWindow");
-            funcTable.Load(584, "SDL_SetWindowProgressState");
-            funcTable.Load(585, "SDL_GetWindowProgressState");
-            funcTable.Load(586, "SDL_SetWindowProgressValue");
-            funcTable.Load(587, "SDL_GetWindowProgressValue");
-            funcTable.Load(588, "SDL_DestroyWindow");
-            funcTable.Load(589, "SDL_ScreenSaverEnabled");
-            funcTable.Load(590, "SDL_EnableScreenSaver");
-            funcTable.Load(591, "SDL_DisableScreenSaver");
-            funcTable.Load(592, "SDL_GL_LoadLibrary");
-            funcTable.Load(593, "SDL_GL_GetProcAddress");
-            funcTable.Load(594, "SDL_EGL_GetProcAddress");
-            funcTable.Load(595, "SDL_GL_UnloadLibrary");
-            funcTable.Load(596, "SDL_GL_ExtensionSupported");
-            funcTable.Load(597, "SDL_GL_ResetAttributes");
-            funcTable.Load(598, "SDL_GL_SetAttribute");
-            funcTable.Load(599, "SDL_GL_GetAttribute");
-            funcTable.Load(600, "SDL_GL_CreateContext");
-            funcTable.Load(601, "SDL_GL_MakeCurrent");
-            funcTable.Load(602, "SDL_GL_GetCurrentWindow");
-            funcTable.Load(603, "SDL_GL_GetCurrentContext");
-            funcTable.Load(604, "SDL_EGL_GetCurrentDisplay");
-            funcTable.Load(605, "SDL_EGL_GetCurrentConfig");
-            funcTable.Load(606, "SDL_EGL_GetWindowSurface");
-            funcTable.Load(607, "SDL_EGL_SetAttributeCallbacks");
-            funcTable.Load(608, "SDL_GL_SetSwapInterval");
-            funcTable.Load(609, "SDL_GL_GetSwapInterval");
-            funcTable.Load(610, "SDL_GL_SwapWindow");
-            funcTable.Load(611, "SDL_GL_DestroyContext");
-            funcTable.Load(612, "SDL_ShowOpenFileDialog");
-            funcTable.Load(613, "SDL_ShowSaveFileDialog");
-            funcTable.Load(614, "SDL_ShowOpenFolderDialog");
-            funcTable.Load(615, "SDL_ShowFileDialogWithProperties");
-            funcTable.Load(616, "SDL_GUIDToString");
-            funcTable.Load(617, "SDL_StringToGUID");
-            funcTable.Load(618, "SDL_GetPowerInfo");
-            funcTable.Load(619, "SDL_GetSensors");
-            funcTable.Load(620, "SDL_GetSensorNameForID");
-            funcTable.Load(621, "SDL_GetSensorTypeForID");
-            funcTable.Load(622, "SDL_GetSensorNonPortableTypeForID");
-            funcTable.Load(623, "SDL_OpenSensor");
-            funcTable.Load(624, "SDL_GetSensorFromID");
-            funcTable.Load(625, "SDL_GetSensorProperties");
-            funcTable.Load(626, "SDL_GetSensorName");
-            funcTable.Load(627, "SDL_GetSensorType");
-            funcTable.Load(628, "SDL_GetSensorNonPortableType");
-            funcTable.Load(629, "SDL_GetSensorID");
-            funcTable.Load(630, "SDL_GetSensorData");
-            funcTable.Load(631, "SDL_CloseSensor");
-            funcTable.Load(632, "SDL_UpdateSensors");
-            funcTable.Load(633, "SDL_LockJoysticks");
-            funcTable.Load(634, "SDL_TryLockJoysticks");
-            funcTable.Load(635, "SDL_UnlockJoysticks");
-            funcTable.Load(636, "SDL_HasJoystick");
-            funcTable.Load(637, "SDL_GetJoysticks");
-            funcTable.Load(638, "SDL_GetJoystickNameForID");
-            funcTable.Load(639, "SDL_GetJoystickPathForID");
-            funcTable.Load(640, "SDL_GetJoystickPlayerIndexForID");
-            funcTable.Load(641, "SDL_GetJoystickGUIDForID");
-            funcTable.Load(642, "SDL_GetJoystickVendorForID");
-            funcTable.Load(643, "SDL_GetJoystickProductForID");
-            funcTable.Load(644, "SDL_GetJoystickProductVersionForID");
-            funcTable.Load(645, "SDL_GetJoystickTypeForID");
-            funcTable.Load(646, "SDL_OpenJoystick");
-            funcTable.Load(647, "SDL_GetJoystickFromID");
-            funcTable.Load(648, "SDL_GetJoystickFromPlayerIndex");
-            funcTable.Load(649, "SDL_AttachVirtualJoystick");
-            funcTable.Load(650, "SDL_DetachVirtualJoystick");
-            funcTable.Load(651, "SDL_IsJoystickVirtual");
-            funcTable.Load(652, "SDL_SetJoystickVirtualAxis");
-            funcTable.Load(653, "SDL_SetJoystickVirtualBall");
-            funcTable.Load(654, "SDL_SetJoystickVirtualButton");
-            funcTable.Load(655, "SDL_SetJoystickVirtualHat");
-            funcTable.Load(656, "SDL_SetJoystickVirtualTouchpad");
-            funcTable.Load(657, "SDL_SendJoystickVirtualSensorData");
-            funcTable.Load(658, "SDL_GetJoystickProperties");
-            funcTable.Load(659, "SDL_GetJoystickName");
-            funcTable.Load(660, "SDL_GetJoystickPath");
-            funcTable.Load(661, "SDL_GetJoystickPlayerIndex");
-            funcTable.Load(662, "SDL_SetJoystickPlayerIndex");
-            funcTable.Load(663, "SDL_GetJoystickGUID");
-            funcTable.Load(664, "SDL_GetJoystickVendor");
-            funcTable.Load(665, "SDL_GetJoystickProduct");
-            funcTable.Load(666, "SDL_GetJoystickProductVersion");
-            funcTable.Load(667, "SDL_GetJoystickFirmwareVersion");
-            funcTable.Load(668, "SDL_GetJoystickSerial");
-            funcTable.Load(669, "SDL_GetJoystickType");
-            funcTable.Load(670, "SDL_GetJoystickGUIDInfo");
-            funcTable.Load(671, "SDL_JoystickConnected");
-            funcTable.Load(672, "SDL_GetJoystickID");
-            funcTable.Load(673, "SDL_GetNumJoystickAxes");
-            funcTable.Load(674, "SDL_GetNumJoystickBalls");
-            funcTable.Load(675, "SDL_GetNumJoystickHats");
-            funcTable.Load(676, "SDL_GetNumJoystickButtons");
-            funcTable.Load(677, "SDL_SetJoystickEventsEnabled");
-            funcTable.Load(678, "SDL_JoystickEventsEnabled");
-            funcTable.Load(679, "SDL_UpdateJoysticks");
-            funcTable.Load(680, "SDL_GetJoystickAxis");
-            funcTable.Load(681, "SDL_GetJoystickAxisInitialState");
-            funcTable.Load(682, "SDL_GetJoystickBall");
-            funcTable.Load(683, "SDL_GetJoystickHat");
-            funcTable.Load(684, "SDL_GetJoystickButton");
-            funcTable.Load(685, "SDL_RumbleJoystick");
-            funcTable.Load(686, "SDL_RumbleJoystickTriggers");
-            funcTable.Load(687, "SDL_SetJoystickLED");
-            funcTable.Load(688, "SDL_SendJoystickEffect");
-            funcTable.Load(689, "SDL_CloseJoystick");
-            funcTable.Load(690, "SDL_GetJoystickConnectionState");
-            funcTable.Load(691, "SDL_GetJoystickPowerInfo");
-            funcTable.Load(692, "SDL_AddGamepadMapping");
-            funcTable.Load(693, "SDL_AddGamepadMappingsFromIO");
-            funcTable.Load(694, "SDL_AddGamepadMappingsFromFile");
-            funcTable.Load(695, "SDL_ReloadGamepadMappings");
-            funcTable.Load(696, "SDL_GetGamepadMappings");
-            funcTable.Load(697, "SDL_GetGamepadMappingForGUID");
-            funcTable.Load(698, "SDL_GetGamepadMapping");
-            funcTable.Load(699, "SDL_SetGamepadMapping");
-            funcTable.Load(700, "SDL_HasGamepad");
-            funcTable.Load(701, "SDL_GetGamepads");
-            funcTable.Load(702, "SDL_IsGamepad");
-            funcTable.Load(703, "SDL_GetGamepadNameForID");
-            funcTable.Load(704, "SDL_GetGamepadPathForID");
-            funcTable.Load(705, "SDL_GetGamepadPlayerIndexForID");
-            funcTable.Load(706, "SDL_GetGamepadGUIDForID");
-            funcTable.Load(707, "SDL_GetGamepadVendorForID");
-            funcTable.Load(708, "SDL_GetGamepadProductForID");
-            funcTable.Load(709, "SDL_GetGamepadProductVersionForID");
-            funcTable.Load(710, "SDL_GetGamepadTypeForID");
-            funcTable.Load(711, "SDL_GetRealGamepadTypeForID");
-            funcTable.Load(712, "SDL_GetGamepadMappingForID");
-            funcTable.Load(713, "SDL_OpenGamepad");
-            funcTable.Load(714, "SDL_GetGamepadFromID");
-            funcTable.Load(715, "SDL_GetGamepadFromPlayerIndex");
-            funcTable.Load(716, "SDL_GetGamepadProperties");
-            funcTable.Load(717, "SDL_GetGamepadID");
-            funcTable.Load(718, "SDL_GetGamepadName");
-            funcTable.Load(719, "SDL_GetGamepadPath");
-            funcTable.Load(720, "SDL_GetGamepadType");
-            funcTable.Load(721, "SDL_GetRealGamepadType");
-            funcTable.Load(722, "SDL_GetGamepadPlayerIndex");
-            funcTable.Load(723, "SDL_SetGamepadPlayerIndex");
-            funcTable.Load(724, "SDL_GetGamepadVendor");
-            funcTable.Load(725, "SDL_GetGamepadProduct");
-            funcTable.Load(726, "SDL_GetGamepadProductVersion");
-            funcTable.Load(727, "SDL_GetGamepadFirmwareVersion");
-            funcTable.Load(728, "SDL_GetGamepadSerial");
-            funcTable.Load(729, "SDL_GetGamepadSteamHandle");
-            funcTable.Load(730, "SDL_GetGamepadConnectionState");
-            funcTable.Load(731, "SDL_GetGamepadPowerInfo");
-            funcTable.Load(732, "SDL_GamepadConnected");
-            funcTable.Load(733, "SDL_GetGamepadJoystick");
-            funcTable.Load(734, "SDL_SetGamepadEventsEnabled");
-            funcTable.Load(735, "SDL_GamepadEventsEnabled");
-            funcTable.Load(736, "SDL_GetGamepadBindings");
-            funcTable.Load(737, "SDL_UpdateGamepads");
-            funcTable.Load(738, "SDL_GetGamepadTypeFromString");
-            funcTable.Load(739, "SDL_GetGamepadStringForType");
-            funcTable.Load(740, "SDL_GetGamepadAxisFromString");
-            funcTable.Load(741, "SDL_GetGamepadStringForAxis");
-            funcTable.Load(742, "SDL_GamepadHasAxis");
-            funcTable.Load(743, "SDL_GetGamepadAxis");
-            funcTable.Load(744, "SDL_GetGamepadButtonFromString");
-            funcTable.Load(745, "SDL_GetGamepadStringForButton");
-            funcTable.Load(746, "SDL_GamepadHasButton");
-            funcTable.Load(747, "SDL_GetGamepadButton");
-            funcTable.Load(748, "SDL_GetGamepadButtonLabelForType");
-            funcTable.Load(749, "SDL_GetGamepadButtonLabel");
-            funcTable.Load(750, "SDL_GetNumGamepadTouchpads");
-            funcTable.Load(751, "SDL_GetNumGamepadTouchpadFingers");
-            funcTable.Load(752, "SDL_GetGamepadTouchpadFinger");
-            funcTable.Load(753, "SDL_GamepadHasSensor");
-            funcTable.Load(754, "SDL_SetGamepadSensorEnabled");
-            funcTable.Load(755, "SDL_GamepadSensorEnabled");
-            funcTable.Load(756, "SDL_GetGamepadSensorDataRate");
-            funcTable.Load(757, "SDL_GetGamepadSensorData");
-            funcTable.Load(758, "SDL_RumbleGamepad");
-            funcTable.Load(759, "SDL_RumbleGamepadTriggers");
-            funcTable.Load(760, "SDL_SetGamepadLED");
-            funcTable.Load(761, "SDL_SendGamepadEffect");
-            funcTable.Load(762, "SDL_CloseGamepad");
-            funcTable.Load(763, "SDL_GetGamepadAppleSFSymbolsNameForButton");
-            funcTable.Load(764, "SDL_GetGamepadAppleSFSymbolsNameForAxis");
-            funcTable.Load(765, "SDL_HasKeyboard");
-            funcTable.Load(766, "SDL_GetKeyboards");
-            funcTable.Load(767, "SDL_GetKeyboardNameForID");
-            funcTable.Load(768, "SDL_GetKeyboardFocus");
-            funcTable.Load(769, "SDL_GetKeyboardState");
-            funcTable.Load(770, "SDL_ResetKeyboard");
-            funcTable.Load(771, "SDL_GetModState");
-            funcTable.Load(772, "SDL_SetModState");
-            funcTable.Load(773, "SDL_GetKeyFromScancode");
-            funcTable.Load(774, "SDL_GetScancodeFromKey");
-            funcTable.Load(775, "SDL_SetScancodeName");
-            funcTable.Load(776, "SDL_GetScancodeName");
-            funcTable.Load(777, "SDL_GetScancodeFromName");
-            funcTable.Load(778, "SDL_GetKeyName");
-            funcTable.Load(779, "SDL_GetKeyFromName");
-            funcTable.Load(780, "SDL_StartTextInput");
-            funcTable.Load(781, "SDL_StartTextInputWithProperties");
-            funcTable.Load(782, "SDL_TextInputActive");
-            funcTable.Load(783, "SDL_StopTextInput");
-            funcTable.Load(784, "SDL_ClearComposition");
-            funcTable.Load(785, "SDL_SetTextInputArea");
-            funcTable.Load(786, "SDL_GetTextInputArea");
-            funcTable.Load(787, "SDL_HasScreenKeyboardSupport");
-            funcTable.Load(788, "SDL_ScreenKeyboardShown");
-            funcTable.Load(789, "SDL_HasMouse");
-            funcTable.Load(790, "SDL_GetMice");
-            funcTable.Load(791, "SDL_GetMouseNameForID");
-            funcTable.Load(792, "SDL_GetMouseFocus");
-            funcTable.Load(793, "SDL_GetMouseState");
-            funcTable.Load(794, "SDL_GetGlobalMouseState");
-            funcTable.Load(795, "SDL_GetRelativeMouseState");
-            funcTable.Load(796, "SDL_WarpMouseInWindow");
-            funcTable.Load(797, "SDL_WarpMouseGlobal");
-            funcTable.Load(798, "SDL_SetRelativeMouseTransform");
-            funcTable.Load(799, "SDL_SetWindowRelativeMouseMode");
-            funcTable.Load(800, "SDL_GetWindowRelativeMouseMode");
-            funcTable.Load(801, "SDL_CaptureMouse");
-            funcTable.Load(802, "SDL_CreateCursor");
-            funcTable.Load(803, "SDL_CreateColorCursor");
-            funcTable.Load(804, "SDL_CreateAnimatedCursor");
-            funcTable.Load(805, "SDL_CreateSystemCursor");
-            funcTable.Load(806, "SDL_SetCursor");
-            funcTable.Load(807, "SDL_GetCursor");
-            funcTable.Load(808, "SDL_GetDefaultCursor");
-            funcTable.Load(809, "SDL_DestroyCursor");
-            funcTable.Load(810, "SDL_ShowCursor");
-            funcTable.Load(811, "SDL_HideCursor");
-            funcTable.Load(812, "SDL_CursorVisible");
-            funcTable.Load(813, "SDL_GetTouchDevices");
-            funcTable.Load(814, "SDL_GetTouchDeviceName");
-            funcTable.Load(815, "SDL_GetTouchDeviceType");
-            funcTable.Load(816, "SDL_GetTouchFingers");
-            funcTable.Load(817, "SDL_GetPenDeviceType");
-            funcTable.Load(818, "SDL_PumpEvents");
-            funcTable.Load(819, "SDL_PeepEvents");
-            funcTable.Load(820, "SDL_HasEvent");
-            funcTable.Load(821, "SDL_HasEvents");
-            funcTable.Load(822, "SDL_FlushEvent");
-            funcTable.Load(823, "SDL_FlushEvents");
-            funcTable.Load(824, "SDL_PollEvent");
-            funcTable.Load(825, "SDL_WaitEvent");
-            funcTable.Load(826, "SDL_WaitEventTimeout");
-            funcTable.Load(827, "SDL_PushEvent");
-            funcTable.Load(828, "SDL_SetEventFilter");
-            funcTable.Load(829, "SDL_GetEventFilter");
-            funcTable.Load(830, "SDL_AddEventWatch");
-            funcTable.Load(831, "SDL_RemoveEventWatch");
-            funcTable.Load(832, "SDL_FilterEvents");
-            funcTable.Load(833, "SDL_SetEventEnabled");
-            funcTable.Load(834, "SDL_EventEnabled");
-            funcTable.Load(835, "SDL_RegisterEvents");
-            funcTable.Load(836, "SDL_GetWindowFromEvent");
-            funcTable.Load(837, "SDL_GetEventDescription");
-            funcTable.Load(838, "SDL_GetBasePath");
-            funcTable.Load(839, "SDL_GetPrefPath");
-            funcTable.Load(840, "SDL_GetUserFolder");
-            funcTable.Load(841, "SDL_CreateDirectory");
-            funcTable.Load(842, "SDL_EnumerateDirectory");
-            funcTable.Load(843, "SDL_RemovePath");
-            funcTable.Load(844, "SDL_RenamePath");
-            funcTable.Load(845, "SDL_CopyFile");
-            funcTable.Load(846, "SDL_GetPathInfo");
-            funcTable.Load(847, "SDL_GlobDirectory");
-            funcTable.Load(848, "SDL_GetCurrentDirectory");
-            funcTable.Load(849, "SDL_GPUSupportsShaderFormats");
-            funcTable.Load(850, "SDL_GPUSupportsProperties");
-            funcTable.Load(851, "SDL_CreateGPUDevice");
-            funcTable.Load(852, "SDL_CreateGPUDeviceWithProperties");
-            funcTable.Load(853, "SDL_DestroyGPUDevice");
-            funcTable.Load(854, "SDL_GetNumGPUDrivers");
-            funcTable.Load(855, "SDL_GetGPUDriver");
-            funcTable.Load(856, "SDL_GetGPUDeviceDriver");
-            funcTable.Load(857, "SDL_GetGPUShaderFormats");
-            funcTable.Load(858, "SDL_GetGPUDeviceProperties");
-            funcTable.Load(859, "SDL_CreateGPUComputePipeline");
-            funcTable.Load(860, "SDL_CreateGPUGraphicsPipeline");
-            funcTable.Load(861, "SDL_CreateGPUSampler");
-            funcTable.Load(862, "SDL_CreateGPUShader");
-            funcTable.Load(863, "SDL_CreateGPUTexture");
-            funcTable.Load(864, "SDL_CreateGPUBuffer");
-            funcTable.Load(865, "SDL_CreateGPUTransferBuffer");
-            funcTable.Load(866, "SDL_SetGPUBufferName");
-            funcTable.Load(867, "SDL_SetGPUTextureName");
-            funcTable.Load(868, "SDL_InsertGPUDebugLabel");
-            funcTable.Load(869, "SDL_PushGPUDebugGroup");
-            funcTable.Load(870, "SDL_PopGPUDebugGroup");
-            funcTable.Load(871, "SDL_ReleaseGPUTexture");
-            funcTable.Load(872, "SDL_ReleaseGPUSampler");
-            funcTable.Load(873, "SDL_ReleaseGPUBuffer");
-            funcTable.Load(874, "SDL_ReleaseGPUTransferBuffer");
-            funcTable.Load(875, "SDL_ReleaseGPUComputePipeline");
-            funcTable.Load(876, "SDL_ReleaseGPUShader");
-            funcTable.Load(877, "SDL_ReleaseGPUGraphicsPipeline");
-            funcTable.Load(878, "SDL_AcquireGPUCommandBuffer");
-            funcTable.Load(879, "SDL_PushGPUVertexUniformData");
-            funcTable.Load(880, "SDL_PushGPUFragmentUniformData");
-            funcTable.Load(881, "SDL_PushGPUComputeUniformData");
-            funcTable.Load(882, "SDL_BeginGPURenderPass");
-            funcTable.Load(883, "SDL_BindGPUGraphicsPipeline");
-            funcTable.Load(884, "SDL_SetGPUViewport");
-            funcTable.Load(885, "SDL_SetGPUScissor");
-            funcTable.Load(886, "SDL_SetGPUBlendConstants");
-            funcTable.Load(887, "SDL_SetGPUStencilReference");
-            funcTable.Load(888, "SDL_BindGPUVertexBuffers");
-            funcTable.Load(889, "SDL_BindGPUIndexBuffer");
-            funcTable.Load(890, "SDL_BindGPUVertexSamplers");
-            funcTable.Load(891, "SDL_BindGPUVertexStorageTextures");
-            funcTable.Load(892, "SDL_BindGPUVertexStorageBuffers");
-            funcTable.Load(893, "SDL_BindGPUFragmentSamplers");
-            funcTable.Load(894, "SDL_BindGPUFragmentStorageTextures");
-            funcTable.Load(895, "SDL_BindGPUFragmentStorageBuffers");
-            funcTable.Load(896, "SDL_DrawGPUIndexedPrimitives");
-            funcTable.Load(897, "SDL_DrawGPUPrimitives");
-            funcTable.Load(898, "SDL_DrawGPUPrimitivesIndirect");
-            funcTable.Load(899, "SDL_DrawGPUIndexedPrimitivesIndirect");
-            funcTable.Load(900, "SDL_EndGPURenderPass");
-            funcTable.Load(901, "SDL_BeginGPUComputePass");
-            funcTable.Load(902, "SDL_BindGPUComputePipeline");
-            funcTable.Load(903, "SDL_BindGPUComputeSamplers");
-            funcTable.Load(904, "SDL_BindGPUComputeStorageTextures");
-            funcTable.Load(905, "SDL_BindGPUComputeStorageBuffers");
-            funcTable.Load(906, "SDL_DispatchGPUCompute");
-            funcTable.Load(907, "SDL_DispatchGPUComputeIndirect");
-            funcTable.Load(908, "SDL_EndGPUComputePass");
-            funcTable.Load(909, "SDL_MapGPUTransferBuffer");
-            funcTable.Load(910, "SDL_UnmapGPUTransferBuffer");
-            funcTable.Load(911, "SDL_BeginGPUCopyPass");
-            funcTable.Load(912, "SDL_UploadToGPUTexture");
-            funcTable.Load(913, "SDL_UploadToGPUBuffer");
-            funcTable.Load(914, "SDL_CopyGPUTextureToTexture");
-            funcTable.Load(915, "SDL_CopyGPUBufferToBuffer");
-            funcTable.Load(916, "SDL_DownloadFromGPUTexture");
-            funcTable.Load(917, "SDL_DownloadFromGPUBuffer");
-            funcTable.Load(918, "SDL_EndGPUCopyPass");
-            funcTable.Load(919, "SDL_GenerateMipmapsForGPUTexture");
-            funcTable.Load(920, "SDL_BlitGPUTexture");
-            funcTable.Load(921, "SDL_WindowSupportsGPUSwapchainComposition");
-            funcTable.Load(922, "SDL_WindowSupportsGPUPresentMode");
-            funcTable.Load(923, "SDL_ClaimWindowForGPUDevice");
-            funcTable.Load(924, "SDL_ReleaseWindowFromGPUDevice");
-            funcTable.Load(925, "SDL_SetGPUSwapchainParameters");
-            funcTable.Load(926, "SDL_SetGPUAllowedFramesInFlight");
-            funcTable.Load(927, "SDL_GetGPUSwapchainTextureFormat");
-            funcTable.Load(928, "SDL_AcquireGPUSwapchainTexture");
-            funcTable.Load(929, "SDL_WaitForGPUSwapchain");
-            funcTable.Load(930, "SDL_WaitAndAcquireGPUSwapchainTexture");
-            funcTable.Load(931, "SDL_SubmitGPUCommandBuffer");
-            funcTable.Load(932, "SDL_SubmitGPUCommandBufferAndAcquireFence");
-            funcTable.Load(933, "SDL_CancelGPUCommandBuffer");
-            funcTable.Load(934, "SDL_WaitForGPUIdle");
-            funcTable.Load(935, "SDL_WaitForGPUFences");
-            funcTable.Load(936, "SDL_QueryGPUFence");
-            funcTable.Load(937, "SDL_ReleaseGPUFence");
-            funcTable.Load(938, "SDL_GPUTextureFormatTexelBlockSize");
-            funcTable.Load(939, "SDL_GPUTextureSupportsFormat");
-            funcTable.Load(940, "SDL_GPUTextureSupportsSampleCount");
-            funcTable.Load(941, "SDL_CalculateGPUTextureFormatSize");
-            funcTable.Load(942, "SDL_GetPixelFormatFromGPUTextureFormat");
-            funcTable.Load(943, "SDL_GetGPUTextureFormatFromPixelFormat");
-            funcTable.Load(944, "SDL_GetHaptics");
-            funcTable.Load(945, "SDL_GetHapticNameForID");
-            funcTable.Load(946, "SDL_OpenHaptic");
-            funcTable.Load(947, "SDL_GetHapticFromID");
-            funcTable.Load(948, "SDL_GetHapticID");
-            funcTable.Load(949, "SDL_GetHapticName");
-            funcTable.Load(950, "SDL_IsMouseHaptic");
-            funcTable.Load(951, "SDL_OpenHapticFromMouse");
-            funcTable.Load(952, "SDL_IsJoystickHaptic");
-            funcTable.Load(953, "SDL_OpenHapticFromJoystick");
-            funcTable.Load(954, "SDL_CloseHaptic");
-            funcTable.Load(955, "SDL_GetMaxHapticEffects");
-            funcTable.Load(956, "SDL_GetMaxHapticEffectsPlaying");
-            funcTable.Load(957, "SDL_GetHapticFeatures");
-            funcTable.Load(958, "SDL_GetNumHapticAxes");
-            funcTable.Load(959, "SDL_HapticEffectSupported");
-            funcTable.Load(960, "SDL_CreateHapticEffect");
-            funcTable.Load(961, "SDL_UpdateHapticEffect");
-            funcTable.Load(962, "SDL_RunHapticEffect");
-            funcTable.Load(963, "SDL_StopHapticEffect");
-            funcTable.Load(964, "SDL_DestroyHapticEffect");
-            funcTable.Load(965, "SDL_GetHapticEffectStatus");
-            funcTable.Load(966, "SDL_SetHapticGain");
-            funcTable.Load(967, "SDL_SetHapticAutocenter");
-            funcTable.Load(968, "SDL_PauseHaptic");
-            funcTable.Load(969, "SDL_ResumeHaptic");
-            funcTable.Load(970, "SDL_StopHapticEffects");
-            funcTable.Load(971, "SDL_HapticRumbleSupported");
-            funcTable.Load(972, "SDL_InitHapticRumble");
-            funcTable.Load(973, "SDL_PlayHapticRumble");
-            funcTable.Load(974, "SDL_StopHapticRumble");
-            funcTable.Load(975, "SDL_hid_init");
-            funcTable.Load(976, "SDL_hid_exit");
-            funcTable.Load(977, "SDL_hid_device_change_count");
-            funcTable.Load(978, "SDL_hid_enumerate");
-            funcTable.Load(979, "SDL_hid_free_enumeration");
-            funcTable.Load(980, "SDL_hid_open");
-            funcTable.Load(981, "SDL_hid_open_path");
-            funcTable.Load(982, "SDL_hid_get_properties");
-            funcTable.Load(983, "SDL_hid_write");
-            funcTable.Load(984, "SDL_hid_read_timeout");
-            funcTable.Load(985, "SDL_hid_read");
-            funcTable.Load(986, "SDL_hid_set_nonblocking");
-            funcTable.Load(987, "SDL_hid_send_feature_report");
-            funcTable.Load(988, "SDL_hid_get_feature_report");
-            funcTable.Load(989, "SDL_hid_get_input_report");
-            funcTable.Load(990, "SDL_hid_close");
-            funcTable.Load(991, "SDL_hid_get_manufacturer_string");
-            funcTable.Load(992, "SDL_hid_get_product_string");
-            funcTable.Load(993, "SDL_hid_get_serial_number_string");
-            funcTable.Load(994, "SDL_hid_get_indexed_string");
-            funcTable.Load(995, "SDL_hid_get_device_info");
-            funcTable.Load(996, "SDL_hid_get_report_descriptor");
-            funcTable.Load(997, "SDL_hid_ble_scan");
-            funcTable.Load(998, "SDL_SetHintWithPriority");
-            funcTable.Load(999, "SDL_SetHint");
-            funcTable.Load(1000, "SDL_ResetHint");
-            funcTable.Load(1001, "SDL_ResetHints");
-            funcTable.Load(1002, "SDL_GetHint");
-            funcTable.Load(1003, "SDL_GetHintBoolean");
-            funcTable.Load(1004, "SDL_AddHintCallback");
-            funcTable.Load(1005, "SDL_RemoveHintCallback");
-            funcTable.Load(1006, "SDL_Init");
-            funcTable.Load(1007, "SDL_InitSubSystem");
-            funcTable.Load(1008, "SDL_QuitSubSystem");
-            funcTable.Load(1009, "SDL_WasInit");
-            funcTable.Load(1010, "SDL_Quit");
-            funcTable.Load(1011, "SDL_IsMainThread");
-            funcTable.Load(1012, "SDL_RunOnMainThread");
-            funcTable.Load(1013, "SDL_SetAppMetadata");
-            funcTable.Load(1014, "SDL_SetAppMetadataProperty");
-            funcTable.Load(1015, "SDL_GetAppMetadataProperty");
-            funcTable.Load(1016, "SDL_LoadObject");
-            funcTable.Load(1017, "SDL_LoadFunction");
-            funcTable.Load(1018, "SDL_UnloadObject");
-            funcTable.Load(1019, "SDL_GetPreferredLocales");
-            funcTable.Load(1020, "SDL_SetLogPriorities");
-            funcTable.Load(1021, "SDL_SetLogPriority");
-            funcTable.Load(1022, "SDL_GetLogPriority");
-            funcTable.Load(1023, "SDL_ResetLogPriorities");
-            funcTable.Load(1024, "SDL_SetLogPriorityPrefix");
-            funcTable.Load(1025, "SDL_LogMessageV");
-            funcTable.Load(1026, "SDL_GetDefaultLogOutputFunction");
-            funcTable.Load(1027, "SDL_GetLogOutputFunction");
-            funcTable.Load(1028, "SDL_SetLogOutputFunction");
-            funcTable.Load(1029, "SDL_ShowMessageBox");
-            funcTable.Load(1030, "SDL_ShowSimpleMessageBox");
-            funcTable.Load(1031, "SDL_Metal_CreateView");
-            funcTable.Load(1032, "SDL_Metal_DestroyView");
-            funcTable.Load(1033, "SDL_Metal_GetLayer");
-            funcTable.Load(1034, "SDL_OpenURL");
-            funcTable.Load(1035, "SDL_GetPlatform");
-            funcTable.Load(1036, "SDL_CreateProcess");
-            funcTable.Load(1037, "SDL_CreateProcessWithProperties");
-            funcTable.Load(1038, "SDL_GetProcessProperties");
-            funcTable.Load(1039, "SDL_ReadProcess");
-            funcTable.Load(1040, "SDL_GetProcessInput");
-            funcTable.Load(1041, "SDL_GetProcessOutput");
-            funcTable.Load(1042, "SDL_KillProcess");
-            funcTable.Load(1043, "SDL_WaitProcess");
-            funcTable.Load(1044, "SDL_DestroyProcess");
-            funcTable.Load(1045, "SDL_GetNumRenderDrivers");
-            funcTable.Load(1046, "SDL_GetRenderDriver");
-            funcTable.Load(1047, "SDL_CreateWindowAndRenderer");
-            funcTable.Load(1048, "SDL_CreateRenderer");
-            funcTable.Load(1049, "SDL_CreateRendererWithProperties");
-            funcTable.Load(1050, "SDL_CreateGPURenderer");
-            funcTable.Load(1051, "SDL_GetGPURendererDevice");
-            funcTable.Load(1052, "SDL_CreateSoftwareRenderer");
-            funcTable.Load(1053, "SDL_GetRenderer");
-            funcTable.Load(1054, "SDL_GetRenderWindow");
-            funcTable.Load(1055, "SDL_GetRendererName");
-            funcTable.Load(1056, "SDL_GetRendererProperties");
-            funcTable.Load(1057, "SDL_GetRenderOutputSize");
-            funcTable.Load(1058, "SDL_GetCurrentRenderOutputSize");
-            funcTable.Load(1059, "SDL_CreateTexture");
-            funcTable.Load(1060, "SDL_CreateTextureFromSurface");
-            funcTable.Load(1061, "SDL_CreateTextureWithProperties");
-            funcTable.Load(1062, "SDL_GetTextureProperties");
-            funcTable.Load(1063, "SDL_GetRendererFromTexture");
-            funcTable.Load(1064, "SDL_GetTextureSize");
-            funcTable.Load(1065, "SDL_SetTexturePalette");
-            funcTable.Load(1066, "SDL_GetTexturePalette");
-            funcTable.Load(1067, "SDL_SetTextureColorMod");
-            funcTable.Load(1068, "SDL_SetTextureColorModFloat");
-            funcTable.Load(1069, "SDL_GetTextureColorMod");
-            funcTable.Load(1070, "SDL_GetTextureColorModFloat");
-            funcTable.Load(1071, "SDL_SetTextureAlphaMod");
-            funcTable.Load(1072, "SDL_SetTextureAlphaModFloat");
-            funcTable.Load(1073, "SDL_GetTextureAlphaMod");
-            funcTable.Load(1074, "SDL_GetTextureAlphaModFloat");
-            funcTable.Load(1075, "SDL_SetTextureBlendMode");
-            funcTable.Load(1076, "SDL_GetTextureBlendMode");
-            funcTable.Load(1077, "SDL_SetTextureScaleMode");
-            funcTable.Load(1078, "SDL_GetTextureScaleMode");
-            funcTable.Load(1079, "SDL_UpdateTexture");
-            funcTable.Load(1080, "SDL_UpdateYUVTexture");
-            funcTable.Load(1081, "SDL_UpdateNVTexture");
-            funcTable.Load(1082, "SDL_LockTexture");
-            funcTable.Load(1083, "SDL_LockTextureToSurface");
-            funcTable.Load(1084, "SDL_UnlockTexture");
-            funcTable.Load(1085, "SDL_SetRenderTarget");
-            funcTable.Load(1086, "SDL_GetRenderTarget");
-            funcTable.Load(1087, "SDL_SetRenderLogicalPresentation");
-            funcTable.Load(1088, "SDL_GetRenderLogicalPresentation");
-            funcTable.Load(1089, "SDL_GetRenderLogicalPresentationRect");
-            funcTable.Load(1090, "SDL_RenderCoordinatesFromWindow");
-            funcTable.Load(1091, "SDL_RenderCoordinatesToWindow");
-            funcTable.Load(1092, "SDL_ConvertEventToRenderCoordinates");
-            funcTable.Load(1093, "SDL_SetRenderViewport");
-            funcTable.Load(1094, "SDL_GetRenderViewport");
-            funcTable.Load(1095, "SDL_RenderViewportSet");
-            funcTable.Load(1096, "SDL_GetRenderSafeArea");
-            funcTable.Load(1097, "SDL_SetRenderClipRect");
-            funcTable.Load(1098, "SDL_GetRenderClipRect");
-            funcTable.Load(1099, "SDL_RenderClipEnabled");
-            funcTable.Load(1100, "SDL_SetRenderScale");
-            funcTable.Load(1101, "SDL_GetRenderScale");
-            funcTable.Load(1102, "SDL_SetRenderDrawColor");
-            funcTable.Load(1103, "SDL_SetRenderDrawColorFloat");
-            funcTable.Load(1104, "SDL_GetRenderDrawColor");
-            funcTable.Load(1105, "SDL_GetRenderDrawColorFloat");
-            funcTable.Load(1106, "SDL_SetRenderColorScale");
-            funcTable.Load(1107, "SDL_GetRenderColorScale");
-            funcTable.Load(1108, "SDL_SetRenderDrawBlendMode");
-            funcTable.Load(1109, "SDL_GetRenderDrawBlendMode");
-            funcTable.Load(1110, "SDL_RenderClear");
-            funcTable.Load(1111, "SDL_RenderPoint");
-            funcTable.Load(1112, "SDL_RenderPoints");
-            funcTable.Load(1113, "SDL_RenderLine");
-            funcTable.Load(1114, "SDL_RenderLines");
-            funcTable.Load(1115, "SDL_RenderRect");
-            funcTable.Load(1116, "SDL_RenderRects");
-            funcTable.Load(1117, "SDL_RenderFillRect");
-            funcTable.Load(1118, "SDL_RenderFillRects");
-            funcTable.Load(1119, "SDL_RenderTexture");
-            funcTable.Load(1120, "SDL_RenderTextureRotated");
-            funcTable.Load(1121, "SDL_RenderTextureAffine");
-            funcTable.Load(1122, "SDL_RenderTextureTiled");
-            funcTable.Load(1123, "SDL_RenderTexture9Grid");
-            funcTable.Load(1124, "SDL_RenderTexture9GridTiled");
-            funcTable.Load(1125, "SDL_RenderGeometry");
-            funcTable.Load(1126, "SDL_RenderGeometryRaw");
-            funcTable.Load(1127, "SDL_SetRenderTextureAddressMode");
-            funcTable.Load(1128, "SDL_GetRenderTextureAddressMode");
-            funcTable.Load(1129, "SDL_RenderReadPixels");
-            funcTable.Load(1130, "SDL_RenderPresent");
-            funcTable.Load(1131, "SDL_DestroyTexture");
-            funcTable.Load(1132, "SDL_DestroyRenderer");
-            funcTable.Load(1133, "SDL_FlushRenderer");
-            funcTable.Load(1134, "SDL_GetRenderMetalLayer");
-            funcTable.Load(1135, "SDL_GetRenderMetalCommandEncoder");
-            funcTable.Load(1136, "SDL_AddVulkanRenderSemaphores");
-            funcTable.Load(1137, "SDL_SetRenderVSync");
-            funcTable.Load(1138, "SDL_GetRenderVSync");
-            funcTable.Load(1139, "SDL_RenderDebugText");
-            funcTable.Load(1140, "SDL_SetDefaultTextureScaleMode");
-            funcTable.Load(1141, "SDL_GetDefaultTextureScaleMode");
-            funcTable.Load(1142, "SDL_CreateGPURenderState");
-            funcTable.Load(1143, "SDL_SetGPURenderStateSamplerBindings");
-            funcTable.Load(1144, "SDL_SetGPURenderStateStorageTextures");
-            funcTable.Load(1145, "SDL_SetGPURenderStateStorageBuffers");
-            funcTable.Load(1146, "SDL_SetGPURenderStateFragmentUniforms");
-            funcTable.Load(1147, "SDL_SetGPURenderState");
-            funcTable.Load(1148, "SDL_DestroyGPURenderState");
-            funcTable.Load(1149, "SDL_OpenTitleStorage");
-            funcTable.Load(1150, "SDL_OpenUserStorage");
-            funcTable.Load(1151, "SDL_OpenFileStorage");
-            funcTable.Load(1152, "SDL_OpenStorage");
-            funcTable.Load(1153, "SDL_CloseStorage");
-            funcTable.Load(1154, "SDL_StorageReady");
-            funcTable.Load(1155, "SDL_GetStorageFileSize");
-            funcTable.Load(1156, "SDL_ReadStorageFile");
-            funcTable.Load(1157, "SDL_WriteStorageFile");
-            funcTable.Load(1158, "SDL_CreateStorageDirectory");
-            funcTable.Load(1159, "SDL_EnumerateStorageDirectory");
-            funcTable.Load(1160, "SDL_RemoveStoragePath");
-            funcTable.Load(1161, "SDL_RenameStoragePath");
-            funcTable.Load(1162, "SDL_CopyStorageFile");
-            funcTable.Load(1163, "SDL_GetStoragePathInfo");
-            funcTable.Load(1164, "SDL_GetStorageSpaceRemaining");
-            funcTable.Load(1165, "SDL_GlobStorageDirectory");
-            funcTable.Load(1166, "SDL_SetWindowsMessageHook");
-            funcTable.Load(1167, "SDL_GetDirect3D9AdapterIndex");
-            funcTable.Load(1168, "SDL_GetDXGIOutputInfo");
-            funcTable.Load(1169, "SDL_SetX11EventHook");
-            funcTable.Load(1170, "SDL_IsTablet");
-            funcTable.Load(1171, "SDL_IsTV");
-            funcTable.Load(1172, "SDL_GetSandbox");
-            funcTable.Load(1173, "SDL_OnApplicationWillTerminate");
-            funcTable.Load(1174, "SDL_OnApplicationDidReceiveMemoryWarning");
-            funcTable.Load(1175, "SDL_OnApplicationWillEnterBackground");
-            funcTable.Load(1176, "SDL_OnApplicationDidEnterBackground");
-            funcTable.Load(1177, "SDL_OnApplicationWillEnterForeground");
-            funcTable.Load(1178, "SDL_OnApplicationDidEnterForeground");
-            funcTable.Load(1179, "SDL_GetDateTimeLocalePreferences");
-            funcTable.Load(1180, "SDL_GetCurrentTime");
-            funcTable.Load(1181, "SDL_TimeToDateTime");
-            funcTable.Load(1182, "SDL_DateTimeToTime");
-            funcTable.Load(1183, "SDL_TimeToWindows");
-            funcTable.Load(1184, "SDL_TimeFromWindows");
-            funcTable.Load(1185, "SDL_GetDaysInMonth");
-            funcTable.Load(1186, "SDL_GetDayOfYear");
-            funcTable.Load(1187, "SDL_GetDayOfWeek");
-            funcTable.Load(1188, "SDL_GetTicks");
-            funcTable.Load(1189, "SDL_GetTicksNS");
-            funcTable.Load(1190, "SDL_GetPerformanceCounter");
-            funcTable.Load(1191, "SDL_GetPerformanceFrequency");
-            funcTable.Load(1192, "SDL_Delay");
-            funcTable.Load(1193, "SDL_DelayNS");
-            funcTable.Load(1194, "SDL_DelayPrecise");
-            funcTable.Load(1195, "SDL_AddTimer");
-            funcTable.Load(1196, "SDL_AddTimerNS");
-            funcTable.Load(1197, "SDL_RemoveTimer");
-            funcTable.Load(1198, "SDL_CreateTray");
-            funcTable.Load(1199, "SDL_CreateTrayWithProperties");
-            funcTable.Load(1200, "SDL_SetTrayIcon");
-            funcTable.Load(1201, "SDL_SetTrayTooltip");
-            funcTable.Load(1202, "SDL_CreateTrayMenu");
-            funcTable.Load(1203, "SDL_CreateTraySubmenu");
-            funcTable.Load(1204, "SDL_GetTrayMenu");
-            funcTable.Load(1205, "SDL_GetTraySubmenu");
-            funcTable.Load(1206, "SDL_GetTrayEntries");
-            funcTable.Load(1207, "SDL_RemoveTrayEntry");
-            funcTable.Load(1208, "SDL_InsertTrayEntryAt");
-            funcTable.Load(1209, "SDL_SetTrayEntryLabel");
-            funcTable.Load(1210, "SDL_GetTrayEntryLabel");
-            funcTable.Load(1211, "SDL_SetTrayEntryChecked");
-            funcTable.Load(1212, "SDL_GetTrayEntryChecked");
-            funcTable.Load(1213, "SDL_SetTrayEntryEnabled");
-            funcTable.Load(1214, "SDL_GetTrayEntryEnabled");
-            funcTable.Load(1215, "SDL_SetTrayEntryCallback");
-            funcTable.Load(1216, "SDL_ClickTrayEntry");
-            funcTable.Load(1217, "SDL_DestroyTray");
-            funcTable.Load(1218, "SDL_GetTrayEntryParent");
-            funcTable.Load(1219, "SDL_GetTrayMenuParentEntry");
-            funcTable.Load(1220, "SDL_GetTrayMenuParentTray");
-            funcTable.Load(1221, "SDL_UpdateTrays");
-            funcTable.Load(1222, "SDL_GetVersion");
-            funcTable.Load(1223, "SDL_GetRevision");
+            var candidate = new global::BGCS.Runtime.FunctionTable(context, 1223);
+            try
+            {
+                candidate.LoadRequired(0, "SDL_malloc");
+                candidate.LoadRequired(1, "SDL_calloc");
+                candidate.LoadRequired(2, "SDL_realloc");
+                candidate.LoadRequired(3, "SDL_free");
+                candidate.LoadRequired(4, "SDL_GetOriginalMemoryFunctions");
+                candidate.LoadRequired(5, "SDL_GetMemoryFunctions");
+                candidate.LoadRequired(6, "SDL_SetMemoryFunctions");
+                candidate.LoadRequired(7, "SDL_aligned_alloc");
+                candidate.LoadRequired(8, "SDL_aligned_free");
+                candidate.LoadRequired(9, "SDL_GetNumAllocations");
+                candidate.LoadRequired(10, "SDL_GetEnvironment");
+                candidate.LoadRequired(11, "SDL_CreateEnvironment");
+                candidate.LoadRequired(12, "SDL_GetEnvironmentVariable");
+                candidate.LoadRequired(13, "SDL_GetEnvironmentVariables");
+                candidate.LoadRequired(14, "SDL_SetEnvironmentVariable");
+                candidate.LoadRequired(15, "SDL_UnsetEnvironmentVariable");
+                candidate.LoadRequired(16, "SDL_DestroyEnvironment");
+                candidate.LoadRequired(17, "SDL_getenv");
+                candidate.LoadRequired(18, "SDL_getenv_unsafe");
+                candidate.LoadRequired(19, "SDL_setenv_unsafe");
+                candidate.LoadRequired(20, "SDL_unsetenv_unsafe");
+                candidate.LoadRequired(21, "SDL_qsort");
+                candidate.LoadRequired(22, "SDL_bsearch");
+                candidate.LoadRequired(23, "SDL_qsort_r");
+                candidate.LoadRequired(24, "SDL_bsearch_r");
+                candidate.LoadRequired(25, "SDL_abs");
+                candidate.LoadRequired(26, "SDL_isalpha");
+                candidate.LoadRequired(27, "SDL_isalnum");
+                candidate.LoadRequired(28, "SDL_isblank");
+                candidate.LoadRequired(29, "SDL_iscntrl");
+                candidate.LoadRequired(30, "SDL_isdigit");
+                candidate.LoadRequired(31, "SDL_isxdigit");
+                candidate.LoadRequired(32, "SDL_ispunct");
+                candidate.LoadRequired(33, "SDL_isspace");
+                candidate.LoadRequired(34, "SDL_isupper");
+                candidate.LoadRequired(35, "SDL_islower");
+                candidate.LoadRequired(36, "SDL_isprint");
+                candidate.LoadRequired(37, "SDL_isgraph");
+                candidate.LoadRequired(38, "SDL_toupper");
+                candidate.LoadRequired(39, "SDL_tolower");
+                candidate.LoadRequired(40, "SDL_crc16");
+                candidate.LoadRequired(41, "SDL_crc32");
+                candidate.LoadRequired(42, "SDL_murmur3_32");
+                candidate.LoadRequired(43, "SDL_memcpy");
+                candidate.LoadRequired(44, "SDL_memmove");
+                candidate.LoadRequired(45, "SDL_memset");
+                candidate.LoadRequired(46, "SDL_memset4");
+                candidate.LoadRequired(47, "SDL_memcmp");
+                candidate.LoadRequired(48, "SDL_wcslen");
+                candidate.LoadRequired(49, "SDL_wcsnlen");
+                candidate.LoadRequired(50, "SDL_wcslcpy");
+                candidate.LoadRequired(51, "SDL_wcslcat");
+                candidate.LoadRequired(52, "SDL_wcsdup");
+                candidate.LoadRequired(53, "SDL_wcsstr");
+                candidate.LoadRequired(54, "SDL_wcsnstr");
+                candidate.LoadRequired(55, "SDL_wcscmp");
+                candidate.LoadRequired(56, "SDL_wcsncmp");
+                candidate.LoadRequired(57, "SDL_wcscasecmp");
+                candidate.LoadRequired(58, "SDL_wcsncasecmp");
+                candidate.LoadRequired(59, "SDL_wcstol");
+                candidate.LoadRequired(60, "SDL_strlen");
+                candidate.LoadRequired(61, "SDL_strnlen");
+                candidate.LoadRequired(62, "SDL_strlcpy");
+                candidate.LoadRequired(63, "SDL_utf8strlcpy");
+                candidate.LoadRequired(64, "SDL_strlcat");
+                candidate.LoadRequired(65, "SDL_strdup");
+                candidate.LoadRequired(66, "SDL_strndup");
+                candidate.LoadRequired(67, "SDL_strrev");
+                candidate.LoadRequired(68, "SDL_strupr");
+                candidate.LoadRequired(69, "SDL_strlwr");
+                candidate.LoadRequired(70, "SDL_strchr");
+                candidate.LoadRequired(71, "SDL_strrchr");
+                candidate.LoadRequired(72, "SDL_strstr");
+                candidate.LoadRequired(73, "SDL_strnstr");
+                candidate.LoadRequired(74, "SDL_strcasestr");
+                candidate.LoadRequired(75, "SDL_strtok_r");
+                candidate.LoadRequired(76, "SDL_utf8strlen");
+                candidate.LoadRequired(77, "SDL_utf8strnlen");
+                candidate.LoadRequired(78, "SDL_itoa");
+                candidate.LoadRequired(79, "SDL_uitoa");
+                candidate.LoadRequired(80, "SDL_ltoa");
+                candidate.LoadRequired(81, "SDL_ultoa");
+                candidate.LoadRequired(82, "SDL_lltoa");
+                candidate.LoadRequired(83, "SDL_ulltoa");
+                candidate.LoadRequired(84, "SDL_atoi");
+                candidate.LoadRequired(85, "SDL_atof");
+                candidate.LoadRequired(86, "SDL_strtol");
+                candidate.LoadRequired(87, "SDL_strtoul");
+                candidate.LoadRequired(88, "SDL_strtoll");
+                candidate.LoadRequired(89, "SDL_strtoull");
+                candidate.LoadRequired(90, "SDL_strtod");
+                candidate.LoadRequired(91, "SDL_strcmp");
+                candidate.LoadRequired(92, "SDL_strncmp");
+                candidate.LoadRequired(93, "SDL_strcasecmp");
+                candidate.LoadRequired(94, "SDL_strncasecmp");
+                candidate.LoadRequired(95, "SDL_strpbrk");
+                candidate.LoadRequired(96, "SDL_StepUTF8");
+                candidate.LoadRequired(97, "SDL_StepBackUTF8");
+                candidate.LoadRequired(98, "SDL_UCS4ToUTF8");
+                candidate.LoadRequired(99, "SDL_vsscanf");
+                candidate.LoadRequired(100, "SDL_vsnprintf");
+                candidate.LoadRequired(101, "SDL_vswprintf");
+                candidate.LoadRequired(102, "SDL_vasprintf");
+                candidate.LoadRequired(103, "SDL_srand");
+                candidate.LoadRequired(104, "SDL_rand");
+                candidate.LoadRequired(105, "SDL_randf");
+                candidate.LoadRequired(106, "SDL_rand_bits");
+                candidate.LoadRequired(107, "SDL_rand_r");
+                candidate.LoadRequired(108, "SDL_randf_r");
+                candidate.LoadRequired(109, "SDL_rand_bits_r");
+                candidate.LoadRequired(110, "SDL_acos");
+                candidate.LoadRequired(111, "SDL_acosf");
+                candidate.LoadRequired(112, "SDL_asin");
+                candidate.LoadRequired(113, "SDL_asinf");
+                candidate.LoadRequired(114, "SDL_atan");
+                candidate.LoadRequired(115, "SDL_atanf");
+                candidate.LoadRequired(116, "SDL_atan2");
+                candidate.LoadRequired(117, "SDL_atan2f");
+                candidate.LoadRequired(118, "SDL_ceil");
+                candidate.LoadRequired(119, "SDL_ceilf");
+                candidate.LoadRequired(120, "SDL_copysign");
+                candidate.LoadRequired(121, "SDL_copysignf");
+                candidate.LoadRequired(122, "SDL_cos");
+                candidate.LoadRequired(123, "SDL_cosf");
+                candidate.LoadRequired(124, "SDL_exp");
+                candidate.LoadRequired(125, "SDL_expf");
+                candidate.LoadRequired(126, "SDL_fabs");
+                candidate.LoadRequired(127, "SDL_fabsf");
+                candidate.LoadRequired(128, "SDL_floor");
+                candidate.LoadRequired(129, "SDL_floorf");
+                candidate.LoadRequired(130, "SDL_trunc");
+                candidate.LoadRequired(131, "SDL_truncf");
+                candidate.LoadRequired(132, "SDL_fmod");
+                candidate.LoadRequired(133, "SDL_fmodf");
+                candidate.LoadRequired(134, "SDL_isinf");
+                candidate.LoadRequired(135, "SDL_isinff");
+                candidate.LoadRequired(136, "SDL_isnan");
+                candidate.LoadRequired(137, "SDL_isnanf");
+                candidate.LoadRequired(138, "SDL_log");
+                candidate.LoadRequired(139, "SDL_logf");
+                candidate.LoadRequired(140, "SDL_log10");
+                candidate.LoadRequired(141, "SDL_log10f");
+                candidate.LoadRequired(142, "SDL_modf");
+                candidate.LoadRequired(143, "SDL_modff");
+                candidate.LoadRequired(144, "SDL_pow");
+                candidate.LoadRequired(145, "SDL_powf");
+                candidate.LoadRequired(146, "SDL_round");
+                candidate.LoadRequired(147, "SDL_roundf");
+                candidate.LoadRequired(148, "SDL_lround");
+                candidate.LoadRequired(149, "SDL_lroundf");
+                candidate.LoadRequired(150, "SDL_scalbn");
+                candidate.LoadRequired(151, "SDL_scalbnf");
+                candidate.LoadRequired(152, "SDL_sin");
+                candidate.LoadRequired(153, "SDL_sinf");
+                candidate.LoadRequired(154, "SDL_sqrt");
+                candidate.LoadRequired(155, "SDL_sqrtf");
+                candidate.LoadRequired(156, "SDL_tan");
+                candidate.LoadRequired(157, "SDL_tanf");
+                candidate.LoadRequired(158, "SDL_iconv_open");
+                candidate.LoadRequired(159, "SDL_iconv_close");
+                candidate.LoadRequired(160, "SDL_iconv");
+                candidate.LoadRequired(161, "SDL_iconv_string");
+                candidate.LoadRequired(162, "SDL_ReportAssertion");
+                candidate.LoadRequired(163, "SDL_SetAssertionHandler");
+                candidate.LoadRequired(164, "SDL_GetDefaultAssertionHandler");
+                candidate.LoadRequired(165, "SDL_GetAssertionHandler");
+                candidate.LoadRequired(166, "SDL_GetAssertionReport");
+                candidate.LoadRequired(167, "SDL_ResetAssertionReport");
+                candidate.LoadRequired(168, "SDL_AsyncIOFromFile");
+                candidate.LoadRequired(169, "SDL_GetAsyncIOSize");
+                candidate.LoadRequired(170, "SDL_ReadAsyncIO");
+                candidate.LoadRequired(171, "SDL_WriteAsyncIO");
+                candidate.LoadRequired(172, "SDL_CloseAsyncIO");
+                candidate.LoadRequired(173, "SDL_CreateAsyncIOQueue");
+                candidate.LoadRequired(174, "SDL_DestroyAsyncIOQueue");
+                candidate.LoadRequired(175, "SDL_GetAsyncIOResult");
+                candidate.LoadRequired(176, "SDL_WaitAsyncIOResult");
+                candidate.LoadRequired(177, "SDL_SignalAsyncIOQueue");
+                candidate.LoadRequired(178, "SDL_LoadFileAsync");
+                candidate.LoadRequired(179, "SDL_TryLockSpinlock");
+                candidate.LoadRequired(180, "SDL_LockSpinlock");
+                candidate.LoadRequired(181, "SDL_UnlockSpinlock");
+                candidate.LoadRequired(182, "SDL_MemoryBarrierReleaseFunction");
+                candidate.LoadRequired(183, "SDL_MemoryBarrierAcquireFunction");
+                candidate.LoadRequired(184, "SDL_CompareAndSwapAtomicInt");
+                candidate.LoadRequired(185, "SDL_SetAtomicInt");
+                candidate.LoadRequired(186, "SDL_GetAtomicInt");
+                candidate.LoadRequired(187, "SDL_AddAtomicInt");
+                candidate.LoadRequired(188, "SDL_CompareAndSwapAtomicU32");
+                candidate.LoadRequired(189, "SDL_SetAtomicU32");
+                candidate.LoadRequired(190, "SDL_GetAtomicU32");
+                candidate.LoadRequired(191, "SDL_AddAtomicU32");
+                candidate.LoadRequired(192, "SDL_CompareAndSwapAtomicPointer");
+                candidate.LoadRequired(193, "SDL_SetAtomicPointer");
+                candidate.LoadRequired(194, "SDL_GetAtomicPointer");
+                candidate.LoadRequired(195, "SDL_SetErrorV");
+                candidate.LoadRequired(196, "SDL_OutOfMemory");
+                candidate.LoadRequired(197, "SDL_GetError");
+                candidate.LoadRequired(198, "SDL_ClearError");
+                candidate.LoadRequired(199, "SDL_GetGlobalProperties");
+                candidate.LoadRequired(200, "SDL_CreateProperties");
+                candidate.LoadRequired(201, "SDL_CopyProperties");
+                candidate.LoadRequired(202, "SDL_LockProperties");
+                candidate.LoadRequired(203, "SDL_UnlockProperties");
+                candidate.LoadRequired(204, "SDL_SetPointerPropertyWithCleanup");
+                candidate.LoadRequired(205, "SDL_SetPointerProperty");
+                candidate.LoadRequired(206, "SDL_SetStringProperty");
+                candidate.LoadRequired(207, "SDL_SetNumberProperty");
+                candidate.LoadRequired(208, "SDL_SetFloatProperty");
+                candidate.LoadRequired(209, "SDL_SetBooleanProperty");
+                candidate.LoadRequired(210, "SDL_HasProperty");
+                candidate.LoadRequired(211, "SDL_GetPropertyType");
+                candidate.LoadRequired(212, "SDL_GetPointerProperty");
+                candidate.LoadRequired(213, "SDL_GetStringProperty");
+                candidate.LoadRequired(214, "SDL_GetNumberProperty");
+                candidate.LoadRequired(215, "SDL_GetFloatProperty");
+                candidate.LoadRequired(216, "SDL_GetBooleanProperty");
+                candidate.LoadRequired(217, "SDL_ClearProperty");
+                candidate.LoadRequired(218, "SDL_EnumerateProperties");
+                candidate.LoadRequired(219, "SDL_DestroyProperties");
+                candidate.LoadRequired(220, "SDL_CreateThreadRuntime");
+                candidate.LoadRequired(221, "SDL_CreateThreadWithPropertiesRuntime");
+                candidate.LoadRequired(222, "SDL_GetThreadName");
+                candidate.LoadRequired(223, "SDL_GetCurrentThreadID");
+                candidate.LoadRequired(224, "SDL_GetThreadID");
+                candidate.LoadRequired(225, "SDL_SetCurrentThreadPriority");
+                candidate.LoadRequired(226, "SDL_WaitThread");
+                candidate.LoadRequired(227, "SDL_GetThreadState");
+                candidate.LoadRequired(228, "SDL_DetachThread");
+                candidate.LoadRequired(229, "SDL_GetTLS");
+                candidate.LoadRequired(230, "SDL_SetTLS");
+                candidate.LoadRequired(231, "SDL_CleanupTLS");
+                candidate.LoadRequired(232, "SDL_CreateMutex");
+                candidate.LoadRequired(233, "SDL_LockMutex");
+                candidate.LoadRequired(234, "SDL_TryLockMutex");
+                candidate.LoadRequired(235, "SDL_UnlockMutex");
+                candidate.LoadRequired(236, "SDL_DestroyMutex");
+                candidate.LoadRequired(237, "SDL_CreateRWLock");
+                candidate.LoadRequired(238, "SDL_LockRWLockForReading");
+                candidate.LoadRequired(239, "SDL_LockRWLockForWriting");
+                candidate.LoadRequired(240, "SDL_TryLockRWLockForReading");
+                candidate.LoadRequired(241, "SDL_TryLockRWLockForWriting");
+                candidate.LoadRequired(242, "SDL_UnlockRWLock");
+                candidate.LoadRequired(243, "SDL_DestroyRWLock");
+                candidate.LoadRequired(244, "SDL_CreateSemaphore");
+                candidate.LoadRequired(245, "SDL_DestroySemaphore");
+                candidate.LoadRequired(246, "SDL_WaitSemaphore");
+                candidate.LoadRequired(247, "SDL_TryWaitSemaphore");
+                candidate.LoadRequired(248, "SDL_WaitSemaphoreTimeout");
+                candidate.LoadRequired(249, "SDL_SignalSemaphore");
+                candidate.LoadRequired(250, "SDL_GetSemaphoreValue");
+                candidate.LoadRequired(251, "SDL_CreateCondition");
+                candidate.LoadRequired(252, "SDL_DestroyCondition");
+                candidate.LoadRequired(253, "SDL_SignalCondition");
+                candidate.LoadRequired(254, "SDL_BroadcastCondition");
+                candidate.LoadRequired(255, "SDL_WaitCondition");
+                candidate.LoadRequired(256, "SDL_WaitConditionTimeout");
+                candidate.LoadRequired(257, "SDL_ShouldInit");
+                candidate.LoadRequired(258, "SDL_ShouldQuit");
+                candidate.LoadRequired(259, "SDL_SetInitialized");
+                candidate.LoadRequired(260, "SDL_IOFromFile");
+                candidate.LoadRequired(261, "SDL_IOFromMem");
+                candidate.LoadRequired(262, "SDL_IOFromConstMem");
+                candidate.LoadRequired(263, "SDL_IOFromDynamicMem");
+                candidate.LoadRequired(264, "SDL_OpenIO");
+                candidate.LoadRequired(265, "SDL_CloseIO");
+                candidate.LoadRequired(266, "SDL_GetIOProperties");
+                candidate.LoadRequired(267, "SDL_GetIOStatus");
+                candidate.LoadRequired(268, "SDL_GetIOSize");
+                candidate.LoadRequired(269, "SDL_SeekIO");
+                candidate.LoadRequired(270, "SDL_TellIO");
+                candidate.LoadRequired(271, "SDL_ReadIO");
+                candidate.LoadRequired(272, "SDL_WriteIO");
+                candidate.LoadRequired(273, "SDL_IOvprintf");
+                candidate.LoadRequired(274, "SDL_FlushIO");
+                candidate.LoadRequired(275, "SDL_LoadFile_IO");
+                candidate.LoadRequired(276, "SDL_LoadFile");
+                candidate.LoadRequired(277, "SDL_SaveFile_IO");
+                candidate.LoadRequired(278, "SDL_SaveFile");
+                candidate.LoadRequired(279, "SDL_ReadU8");
+                candidate.LoadRequired(280, "SDL_ReadS8");
+                candidate.LoadRequired(281, "SDL_ReadU16LE");
+                candidate.LoadRequired(282, "SDL_ReadS16LE");
+                candidate.LoadRequired(283, "SDL_ReadU16BE");
+                candidate.LoadRequired(284, "SDL_ReadS16BE");
+                candidate.LoadRequired(285, "SDL_ReadU32LE");
+                candidate.LoadRequired(286, "SDL_ReadS32LE");
+                candidate.LoadRequired(287, "SDL_ReadU32BE");
+                candidate.LoadRequired(288, "SDL_ReadS32BE");
+                candidate.LoadRequired(289, "SDL_ReadU64LE");
+                candidate.LoadRequired(290, "SDL_ReadS64LE");
+                candidate.LoadRequired(291, "SDL_ReadU64BE");
+                candidate.LoadRequired(292, "SDL_ReadS64BE");
+                candidate.LoadRequired(293, "SDL_WriteU8");
+                candidate.LoadRequired(294, "SDL_WriteS8");
+                candidate.LoadRequired(295, "SDL_WriteU16LE");
+                candidate.LoadRequired(296, "SDL_WriteS16LE");
+                candidate.LoadRequired(297, "SDL_WriteU16BE");
+                candidate.LoadRequired(298, "SDL_WriteS16BE");
+                candidate.LoadRequired(299, "SDL_WriteU32LE");
+                candidate.LoadRequired(300, "SDL_WriteS32LE");
+                candidate.LoadRequired(301, "SDL_WriteU32BE");
+                candidate.LoadRequired(302, "SDL_WriteS32BE");
+                candidate.LoadRequired(303, "SDL_WriteU64LE");
+                candidate.LoadRequired(304, "SDL_WriteS64LE");
+                candidate.LoadRequired(305, "SDL_WriteU64BE");
+                candidate.LoadRequired(306, "SDL_WriteS64BE");
+                candidate.LoadRequired(307, "SDL_GetNumAudioDrivers");
+                candidate.LoadRequired(308, "SDL_GetAudioDriver");
+                candidate.LoadRequired(309, "SDL_GetCurrentAudioDriver");
+                candidate.LoadRequired(310, "SDL_GetAudioPlaybackDevices");
+                candidate.LoadRequired(311, "SDL_GetAudioRecordingDevices");
+                candidate.LoadRequired(312, "SDL_GetAudioDeviceName");
+                candidate.LoadRequired(313, "SDL_GetAudioDeviceFormat");
+                candidate.LoadRequired(314, "SDL_GetAudioDeviceChannelMap");
+                candidate.LoadRequired(315, "SDL_OpenAudioDevice");
+                candidate.LoadRequired(316, "SDL_IsAudioDevicePhysical");
+                candidate.LoadRequired(317, "SDL_IsAudioDevicePlayback");
+                candidate.LoadRequired(318, "SDL_PauseAudioDevice");
+                candidate.LoadRequired(319, "SDL_ResumeAudioDevice");
+                candidate.LoadRequired(320, "SDL_AudioDevicePaused");
+                candidate.LoadRequired(321, "SDL_GetAudioDeviceGain");
+                candidate.LoadRequired(322, "SDL_SetAudioDeviceGain");
+                candidate.LoadRequired(323, "SDL_CloseAudioDevice");
+                candidate.LoadRequired(324, "SDL_BindAudioStreams");
+                candidate.LoadRequired(325, "SDL_BindAudioStream");
+                candidate.LoadRequired(326, "SDL_UnbindAudioStreams");
+                candidate.LoadRequired(327, "SDL_UnbindAudioStream");
+                candidate.LoadRequired(328, "SDL_GetAudioStreamDevice");
+                candidate.LoadRequired(329, "SDL_CreateAudioStream");
+                candidate.LoadRequired(330, "SDL_GetAudioStreamProperties");
+                candidate.LoadRequired(331, "SDL_GetAudioStreamFormat");
+                candidate.LoadRequired(332, "SDL_SetAudioStreamFormat");
+                candidate.LoadRequired(333, "SDL_GetAudioStreamFrequencyRatio");
+                candidate.LoadRequired(334, "SDL_SetAudioStreamFrequencyRatio");
+                candidate.LoadRequired(335, "SDL_GetAudioStreamGain");
+                candidate.LoadRequired(336, "SDL_SetAudioStreamGain");
+                candidate.LoadRequired(337, "SDL_GetAudioStreamInputChannelMap");
+                candidate.LoadRequired(338, "SDL_GetAudioStreamOutputChannelMap");
+                candidate.LoadRequired(339, "SDL_SetAudioStreamInputChannelMap");
+                candidate.LoadRequired(340, "SDL_SetAudioStreamOutputChannelMap");
+                candidate.LoadRequired(341, "SDL_PutAudioStreamData");
+                candidate.LoadRequired(342, "SDL_PutAudioStreamDataNoCopy");
+                candidate.LoadRequired(343, "SDL_PutAudioStreamPlanarData");
+                candidate.LoadRequired(344, "SDL_GetAudioStreamData");
+                candidate.LoadRequired(345, "SDL_GetAudioStreamAvailable");
+                candidate.LoadRequired(346, "SDL_GetAudioStreamQueued");
+                candidate.LoadRequired(347, "SDL_FlushAudioStream");
+                candidate.LoadRequired(348, "SDL_ClearAudioStream");
+                candidate.LoadRequired(349, "SDL_PauseAudioStreamDevice");
+                candidate.LoadRequired(350, "SDL_ResumeAudioStreamDevice");
+                candidate.LoadRequired(351, "SDL_AudioStreamDevicePaused");
+                candidate.LoadRequired(352, "SDL_LockAudioStream");
+                candidate.LoadRequired(353, "SDL_UnlockAudioStream");
+                candidate.LoadRequired(354, "SDL_SetAudioStreamGetCallback");
+                candidate.LoadRequired(355, "SDL_SetAudioStreamPutCallback");
+                candidate.LoadRequired(356, "SDL_DestroyAudioStream");
+                candidate.LoadRequired(357, "SDL_OpenAudioDeviceStream");
+                candidate.LoadRequired(358, "SDL_SetAudioPostmixCallback");
+                candidate.LoadRequired(359, "SDL_LoadWAV_IO");
+                candidate.LoadRequired(360, "SDL_LoadWAV");
+                candidate.LoadRequired(361, "SDL_MixAudio");
+                candidate.LoadRequired(362, "SDL_ConvertAudioSamples");
+                candidate.LoadRequired(363, "SDL_GetAudioFormatName");
+                candidate.LoadRequired(364, "SDL_GetSilenceValueForFormat");
+                candidate.LoadRequired(365, "SDL_ComposeCustomBlendMode");
+                candidate.LoadRequired(366, "SDL_GetPixelFormatName");
+                candidate.LoadRequired(367, "SDL_GetMasksForPixelFormat");
+                candidate.LoadRequired(368, "SDL_GetPixelFormatForMasks");
+                candidate.LoadRequired(369, "SDL_GetPixelFormatDetails");
+                candidate.LoadRequired(370, "SDL_CreatePalette");
+                candidate.LoadRequired(371, "SDL_SetPaletteColors");
+                candidate.LoadRequired(372, "SDL_DestroyPalette");
+                candidate.LoadRequired(373, "SDL_MapRGB");
+                candidate.LoadRequired(374, "SDL_MapRGBA");
+                candidate.LoadRequired(375, "SDL_GetRGB");
+                candidate.LoadRequired(376, "SDL_GetRGBA");
+                candidate.LoadRequired(377, "SDL_HasRectIntersection");
+                candidate.LoadRequired(378, "SDL_GetRectIntersection");
+                candidate.LoadRequired(379, "SDL_GetRectUnion");
+                candidate.LoadRequired(380, "SDL_GetRectEnclosingPoints");
+                candidate.LoadRequired(381, "SDL_GetRectAndLineIntersection");
+                candidate.LoadRequired(382, "SDL_HasRectIntersectionFloat");
+                candidate.LoadRequired(383, "SDL_GetRectIntersectionFloat");
+                candidate.LoadRequired(384, "SDL_GetRectUnionFloat");
+                candidate.LoadRequired(385, "SDL_GetRectEnclosingPointsFloat");
+                candidate.LoadRequired(386, "SDL_GetRectAndLineIntersectionFloat");
+                candidate.LoadRequired(387, "SDL_CreateSurface");
+                candidate.LoadRequired(388, "SDL_CreateSurfaceFrom");
+                candidate.LoadRequired(389, "SDL_DestroySurface");
+                candidate.LoadRequired(390, "SDL_GetSurfaceProperties");
+                candidate.LoadRequired(391, "SDL_SetSurfaceColorspace");
+                candidate.LoadRequired(392, "SDL_GetSurfaceColorspace");
+                candidate.LoadRequired(393, "SDL_CreateSurfacePalette");
+                candidate.LoadRequired(394, "SDL_SetSurfacePalette");
+                candidate.LoadRequired(395, "SDL_GetSurfacePalette");
+                candidate.LoadRequired(396, "SDL_AddSurfaceAlternateImage");
+                candidate.LoadRequired(397, "SDL_SurfaceHasAlternateImages");
+                candidate.LoadRequired(398, "SDL_GetSurfaceImages");
+                candidate.LoadRequired(399, "SDL_RemoveSurfaceAlternateImages");
+                candidate.LoadRequired(400, "SDL_LockSurface");
+                candidate.LoadRequired(401, "SDL_UnlockSurface");
+                candidate.LoadRequired(402, "SDL_LoadSurface_IO");
+                candidate.LoadRequired(403, "SDL_LoadSurface");
+                candidate.LoadRequired(404, "SDL_LoadBMP_IO");
+                candidate.LoadRequired(405, "SDL_LoadBMP");
+                candidate.LoadRequired(406, "SDL_SaveBMP_IO");
+                candidate.LoadRequired(407, "SDL_SaveBMP");
+                candidate.LoadRequired(408, "SDL_LoadPNG_IO");
+                candidate.LoadRequired(409, "SDL_LoadPNG");
+                candidate.LoadRequired(410, "SDL_SavePNG_IO");
+                candidate.LoadRequired(411, "SDL_SavePNG");
+                candidate.LoadRequired(412, "SDL_SetSurfaceRLE");
+                candidate.LoadRequired(413, "SDL_SurfaceHasRLE");
+                candidate.LoadRequired(414, "SDL_SetSurfaceColorKey");
+                candidate.LoadRequired(415, "SDL_SurfaceHasColorKey");
+                candidate.LoadRequired(416, "SDL_GetSurfaceColorKey");
+                candidate.LoadRequired(417, "SDL_SetSurfaceColorMod");
+                candidate.LoadRequired(418, "SDL_GetSurfaceColorMod");
+                candidate.LoadRequired(419, "SDL_SetSurfaceAlphaMod");
+                candidate.LoadRequired(420, "SDL_GetSurfaceAlphaMod");
+                candidate.LoadRequired(421, "SDL_SetSurfaceBlendMode");
+                candidate.LoadRequired(422, "SDL_GetSurfaceBlendMode");
+                candidate.LoadRequired(423, "SDL_SetSurfaceClipRect");
+                candidate.LoadRequired(424, "SDL_GetSurfaceClipRect");
+                candidate.LoadRequired(425, "SDL_FlipSurface");
+                candidate.LoadRequired(426, "SDL_RotateSurface");
+                candidate.LoadRequired(427, "SDL_DuplicateSurface");
+                candidate.LoadRequired(428, "SDL_ScaleSurface");
+                candidate.LoadRequired(429, "SDL_ConvertSurface");
+                candidate.LoadRequired(430, "SDL_ConvertSurfaceAndColorspace");
+                candidate.LoadRequired(431, "SDL_ConvertPixels");
+                candidate.LoadRequired(432, "SDL_ConvertPixelsAndColorspace");
+                candidate.LoadRequired(433, "SDL_PremultiplyAlpha");
+                candidate.LoadRequired(434, "SDL_PremultiplySurfaceAlpha");
+                candidate.LoadRequired(435, "SDL_ClearSurface");
+                candidate.LoadRequired(436, "SDL_FillSurfaceRect");
+                candidate.LoadRequired(437, "SDL_FillSurfaceRects");
+                candidate.LoadRequired(438, "SDL_BlitSurface");
+                candidate.LoadRequired(439, "SDL_BlitSurfaceUnchecked");
+                candidate.LoadRequired(440, "SDL_BlitSurfaceScaled");
+                candidate.LoadRequired(441, "SDL_BlitSurfaceUncheckedScaled");
+                candidate.LoadRequired(442, "SDL_StretchSurface");
+                candidate.LoadRequired(443, "SDL_BlitSurfaceTiled");
+                candidate.LoadRequired(444, "SDL_BlitSurfaceTiledWithScale");
+                candidate.LoadRequired(445, "SDL_BlitSurface9Grid");
+                candidate.LoadRequired(446, "SDL_MapSurfaceRGB");
+                candidate.LoadRequired(447, "SDL_MapSurfaceRGBA");
+                candidate.LoadRequired(448, "SDL_ReadSurfacePixel");
+                candidate.LoadRequired(449, "SDL_ReadSurfacePixelFloat");
+                candidate.LoadRequired(450, "SDL_WriteSurfacePixel");
+                candidate.LoadRequired(451, "SDL_WriteSurfacePixelFloat");
+                candidate.LoadRequired(452, "SDL_GetNumCameraDrivers");
+                candidate.LoadRequired(453, "SDL_GetCameraDriver");
+                candidate.LoadRequired(454, "SDL_GetCurrentCameraDriver");
+                candidate.LoadRequired(455, "SDL_GetCameras");
+                candidate.LoadRequired(456, "SDL_GetCameraSupportedFormats");
+                candidate.LoadRequired(457, "SDL_GetCameraName");
+                candidate.LoadRequired(458, "SDL_GetCameraPosition");
+                candidate.LoadRequired(459, "SDL_OpenCamera");
+                candidate.LoadRequired(460, "SDL_GetCameraPermissionState");
+                candidate.LoadRequired(461, "SDL_GetCameraID");
+                candidate.LoadRequired(462, "SDL_GetCameraProperties");
+                candidate.LoadRequired(463, "SDL_GetCameraFormat");
+                candidate.LoadRequired(464, "SDL_AcquireCameraFrame");
+                candidate.LoadRequired(465, "SDL_ReleaseCameraFrame");
+                candidate.LoadRequired(466, "SDL_CloseCamera");
+                candidate.LoadRequired(467, "SDL_SetClipboardText");
+                candidate.LoadRequired(468, "SDL_GetClipboardText");
+                candidate.LoadRequired(469, "SDL_HasClipboardText");
+                candidate.LoadRequired(470, "SDL_SetPrimarySelectionText");
+                candidate.LoadRequired(471, "SDL_GetPrimarySelectionText");
+                candidate.LoadRequired(472, "SDL_HasPrimarySelectionText");
+                candidate.LoadRequired(473, "SDL_SetClipboardData");
+                candidate.LoadRequired(474, "SDL_ClearClipboardData");
+                candidate.LoadRequired(475, "SDL_GetClipboardData");
+                candidate.LoadRequired(476, "SDL_HasClipboardData");
+                candidate.LoadRequired(477, "SDL_GetClipboardMimeTypes");
+                candidate.LoadRequired(478, "SDL_GetNumLogicalCPUCores");
+                candidate.LoadRequired(479, "SDL_GetCPUCacheLineSize");
+                candidate.LoadRequired(480, "SDL_HasAltiVec");
+                candidate.LoadRequired(481, "SDL_HasMMX");
+                candidate.LoadRequired(482, "SDL_HasSSE");
+                candidate.LoadRequired(483, "SDL_HasSSE2");
+                candidate.LoadRequired(484, "SDL_HasSSE3");
+                candidate.LoadRequired(485, "SDL_HasSSE41");
+                candidate.LoadRequired(486, "SDL_HasSSE42");
+                candidate.LoadRequired(487, "SDL_HasAVX");
+                candidate.LoadRequired(488, "SDL_HasAVX2");
+                candidate.LoadRequired(489, "SDL_HasAVX512F");
+                candidate.LoadRequired(490, "SDL_HasARMSIMD");
+                candidate.LoadRequired(491, "SDL_HasNEON");
+                candidate.LoadRequired(492, "SDL_HasLSX");
+                candidate.LoadRequired(493, "SDL_HasLASX");
+                candidate.LoadRequired(494, "SDL_GetSystemRAM");
+                candidate.LoadRequired(495, "SDL_GetSIMDAlignment");
+                candidate.LoadRequired(496, "SDL_GetSystemPageSize");
+                candidate.LoadRequired(497, "SDL_GetNumVideoDrivers");
+                candidate.LoadRequired(498, "SDL_GetVideoDriver");
+                candidate.LoadRequired(499, "SDL_GetCurrentVideoDriver");
+                candidate.LoadRequired(500, "SDL_GetSystemTheme");
+                candidate.LoadRequired(501, "SDL_GetDisplays");
+                candidate.LoadRequired(502, "SDL_GetPrimaryDisplay");
+                candidate.LoadRequired(503, "SDL_GetDisplayProperties");
+                candidate.LoadRequired(504, "SDL_GetDisplayName");
+                candidate.LoadRequired(505, "SDL_GetDisplayBounds");
+                candidate.LoadRequired(506, "SDL_GetDisplayUsableBounds");
+                candidate.LoadRequired(507, "SDL_GetNaturalDisplayOrientation");
+                candidate.LoadRequired(508, "SDL_GetCurrentDisplayOrientation");
+                candidate.LoadRequired(509, "SDL_GetDisplayContentScale");
+                candidate.LoadRequired(510, "SDL_GetFullscreenDisplayModes");
+                candidate.LoadRequired(511, "SDL_GetClosestFullscreenDisplayMode");
+                candidate.LoadRequired(512, "SDL_GetDesktopDisplayMode");
+                candidate.LoadRequired(513, "SDL_GetCurrentDisplayMode");
+                candidate.LoadRequired(514, "SDL_GetDisplayForPoint");
+                candidate.LoadRequired(515, "SDL_GetDisplayForRect");
+                candidate.LoadRequired(516, "SDL_GetDisplayForWindow");
+                candidate.LoadRequired(517, "SDL_GetWindowPixelDensity");
+                candidate.LoadRequired(518, "SDL_GetWindowDisplayScale");
+                candidate.LoadRequired(519, "SDL_SetWindowFullscreenMode");
+                candidate.LoadRequired(520, "SDL_GetWindowFullscreenMode");
+                candidate.LoadRequired(521, "SDL_GetWindowICCProfile");
+                candidate.LoadRequired(522, "SDL_GetWindowPixelFormat");
+                candidate.LoadRequired(523, "SDL_GetWindows");
+                candidate.LoadRequired(524, "SDL_CreateWindow");
+                candidate.LoadRequired(525, "SDL_CreatePopupWindow");
+                candidate.LoadRequired(526, "SDL_CreateWindowWithProperties");
+                candidate.LoadRequired(527, "SDL_GetWindowID");
+                candidate.LoadRequired(528, "SDL_GetWindowFromID");
+                candidate.LoadRequired(529, "SDL_GetWindowParent");
+                candidate.LoadRequired(530, "SDL_GetWindowProperties");
+                candidate.LoadRequired(531, "SDL_GetWindowFlags");
+                candidate.LoadRequired(532, "SDL_SetWindowTitle");
+                candidate.LoadRequired(533, "SDL_GetWindowTitle");
+                candidate.LoadRequired(534, "SDL_SetWindowIcon");
+                candidate.LoadRequired(535, "SDL_SetWindowPosition");
+                candidate.LoadRequired(536, "SDL_GetWindowPosition");
+                candidate.LoadRequired(537, "SDL_SetWindowSize");
+                candidate.LoadRequired(538, "SDL_GetWindowSize");
+                candidate.LoadRequired(539, "SDL_GetWindowSafeArea");
+                candidate.LoadRequired(540, "SDL_SetWindowAspectRatio");
+                candidate.LoadRequired(541, "SDL_GetWindowAspectRatio");
+                candidate.LoadRequired(542, "SDL_GetWindowBordersSize");
+                candidate.LoadRequired(543, "SDL_GetWindowSizeInPixels");
+                candidate.LoadRequired(544, "SDL_SetWindowMinimumSize");
+                candidate.LoadRequired(545, "SDL_GetWindowMinimumSize");
+                candidate.LoadRequired(546, "SDL_SetWindowMaximumSize");
+                candidate.LoadRequired(547, "SDL_GetWindowMaximumSize");
+                candidate.LoadRequired(548, "SDL_SetWindowBordered");
+                candidate.LoadRequired(549, "SDL_SetWindowResizable");
+                candidate.LoadRequired(550, "SDL_SetWindowAlwaysOnTop");
+                candidate.LoadRequired(551, "SDL_SetWindowFillDocument");
+                candidate.LoadRequired(552, "SDL_ShowWindow");
+                candidate.LoadRequired(553, "SDL_HideWindow");
+                candidate.LoadRequired(554, "SDL_RaiseWindow");
+                candidate.LoadRequired(555, "SDL_MaximizeWindow");
+                candidate.LoadRequired(556, "SDL_MinimizeWindow");
+                candidate.LoadRequired(557, "SDL_RestoreWindow");
+                candidate.LoadRequired(558, "SDL_SetWindowFullscreen");
+                candidate.LoadRequired(559, "SDL_SyncWindow");
+                candidate.LoadRequired(560, "SDL_WindowHasSurface");
+                candidate.LoadRequired(561, "SDL_GetWindowSurface");
+                candidate.LoadRequired(562, "SDL_SetWindowSurfaceVSync");
+                candidate.LoadRequired(563, "SDL_GetWindowSurfaceVSync");
+                candidate.LoadRequired(564, "SDL_UpdateWindowSurface");
+                candidate.LoadRequired(565, "SDL_UpdateWindowSurfaceRects");
+                candidate.LoadRequired(566, "SDL_DestroyWindowSurface");
+                candidate.LoadRequired(567, "SDL_SetWindowKeyboardGrab");
+                candidate.LoadRequired(568, "SDL_SetWindowMouseGrab");
+                candidate.LoadRequired(569, "SDL_GetWindowKeyboardGrab");
+                candidate.LoadRequired(570, "SDL_GetWindowMouseGrab");
+                candidate.LoadRequired(571, "SDL_GetGrabbedWindow");
+                candidate.LoadRequired(572, "SDL_SetWindowMouseRect");
+                candidate.LoadRequired(573, "SDL_GetWindowMouseRect");
+                candidate.LoadRequired(574, "SDL_SetWindowOpacity");
+                candidate.LoadRequired(575, "SDL_GetWindowOpacity");
+                candidate.LoadRequired(576, "SDL_SetWindowParent");
+                candidate.LoadRequired(577, "SDL_SetWindowModal");
+                candidate.LoadRequired(578, "SDL_SetWindowFocusable");
+                candidate.LoadRequired(579, "SDL_ShowWindowSystemMenu");
+                candidate.LoadRequired(580, "SDL_SetWindowHitTest");
+                candidate.LoadRequired(581, "SDL_SetWindowShape");
+                candidate.LoadRequired(582, "SDL_FlashWindow");
+                candidate.LoadRequired(583, "SDL_SetWindowProgressState");
+                candidate.LoadRequired(584, "SDL_GetWindowProgressState");
+                candidate.LoadRequired(585, "SDL_SetWindowProgressValue");
+                candidate.LoadRequired(586, "SDL_GetWindowProgressValue");
+                candidate.LoadRequired(587, "SDL_DestroyWindow");
+                candidate.LoadRequired(588, "SDL_ScreenSaverEnabled");
+                candidate.LoadRequired(589, "SDL_EnableScreenSaver");
+                candidate.LoadRequired(590, "SDL_DisableScreenSaver");
+                candidate.LoadRequired(591, "SDL_GL_LoadLibrary");
+                candidate.LoadRequired(592, "SDL_GL_GetProcAddress");
+                candidate.LoadRequired(593, "SDL_EGL_GetProcAddress");
+                candidate.LoadRequired(594, "SDL_GL_UnloadLibrary");
+                candidate.LoadRequired(595, "SDL_GL_ExtensionSupported");
+                candidate.LoadRequired(596, "SDL_GL_ResetAttributes");
+                candidate.LoadRequired(597, "SDL_GL_SetAttribute");
+                candidate.LoadRequired(598, "SDL_GL_GetAttribute");
+                candidate.LoadRequired(599, "SDL_GL_CreateContext");
+                candidate.LoadRequired(600, "SDL_GL_MakeCurrent");
+                candidate.LoadRequired(601, "SDL_GL_GetCurrentWindow");
+                candidate.LoadRequired(602, "SDL_GL_GetCurrentContext");
+                candidate.LoadRequired(603, "SDL_EGL_GetCurrentDisplay");
+                candidate.LoadRequired(604, "SDL_EGL_GetCurrentConfig");
+                candidate.LoadRequired(605, "SDL_EGL_GetWindowSurface");
+                candidate.LoadRequired(606, "SDL_EGL_SetAttributeCallbacks");
+                candidate.LoadRequired(607, "SDL_GL_SetSwapInterval");
+                candidate.LoadRequired(608, "SDL_GL_GetSwapInterval");
+                candidate.LoadRequired(609, "SDL_GL_SwapWindow");
+                candidate.LoadRequired(610, "SDL_GL_DestroyContext");
+                candidate.LoadRequired(611, "SDL_ShowOpenFileDialog");
+                candidate.LoadRequired(612, "SDL_ShowSaveFileDialog");
+                candidate.LoadRequired(613, "SDL_ShowOpenFolderDialog");
+                candidate.LoadRequired(614, "SDL_ShowFileDialogWithProperties");
+                candidate.LoadRequired(615, "SDL_GUIDToString");
+                candidate.LoadRequired(616, "SDL_StringToGUID");
+                candidate.LoadRequired(617, "SDL_GetPowerInfo");
+                candidate.LoadRequired(618, "SDL_GetSensors");
+                candidate.LoadRequired(619, "SDL_GetSensorNameForID");
+                candidate.LoadRequired(620, "SDL_GetSensorTypeForID");
+                candidate.LoadRequired(621, "SDL_GetSensorNonPortableTypeForID");
+                candidate.LoadRequired(622, "SDL_OpenSensor");
+                candidate.LoadRequired(623, "SDL_GetSensorFromID");
+                candidate.LoadRequired(624, "SDL_GetSensorProperties");
+                candidate.LoadRequired(625, "SDL_GetSensorName");
+                candidate.LoadRequired(626, "SDL_GetSensorType");
+                candidate.LoadRequired(627, "SDL_GetSensorNonPortableType");
+                candidate.LoadRequired(628, "SDL_GetSensorID");
+                candidate.LoadRequired(629, "SDL_GetSensorData");
+                candidate.LoadRequired(630, "SDL_CloseSensor");
+                candidate.LoadRequired(631, "SDL_UpdateSensors");
+                candidate.LoadRequired(632, "SDL_LockJoysticks");
+                candidate.LoadRequired(633, "SDL_TryLockJoysticks");
+                candidate.LoadRequired(634, "SDL_UnlockJoysticks");
+                candidate.LoadRequired(635, "SDL_HasJoystick");
+                candidate.LoadRequired(636, "SDL_GetJoysticks");
+                candidate.LoadRequired(637, "SDL_GetJoystickNameForID");
+                candidate.LoadRequired(638, "SDL_GetJoystickPathForID");
+                candidate.LoadRequired(639, "SDL_GetJoystickPlayerIndexForID");
+                candidate.LoadRequired(640, "SDL_GetJoystickGUIDForID");
+                candidate.LoadRequired(641, "SDL_GetJoystickVendorForID");
+                candidate.LoadRequired(642, "SDL_GetJoystickProductForID");
+                candidate.LoadRequired(643, "SDL_GetJoystickProductVersionForID");
+                candidate.LoadRequired(644, "SDL_GetJoystickTypeForID");
+                candidate.LoadRequired(645, "SDL_OpenJoystick");
+                candidate.LoadRequired(646, "SDL_GetJoystickFromID");
+                candidate.LoadRequired(647, "SDL_GetJoystickFromPlayerIndex");
+                candidate.LoadRequired(648, "SDL_AttachVirtualJoystick");
+                candidate.LoadRequired(649, "SDL_DetachVirtualJoystick");
+                candidate.LoadRequired(650, "SDL_IsJoystickVirtual");
+                candidate.LoadRequired(651, "SDL_SetJoystickVirtualAxis");
+                candidate.LoadRequired(652, "SDL_SetJoystickVirtualBall");
+                candidate.LoadRequired(653, "SDL_SetJoystickVirtualButton");
+                candidate.LoadRequired(654, "SDL_SetJoystickVirtualHat");
+                candidate.LoadRequired(655, "SDL_SetJoystickVirtualTouchpad");
+                candidate.LoadRequired(656, "SDL_SendJoystickVirtualSensorData");
+                candidate.LoadRequired(657, "SDL_GetJoystickProperties");
+                candidate.LoadRequired(658, "SDL_GetJoystickName");
+                candidate.LoadRequired(659, "SDL_GetJoystickPath");
+                candidate.LoadRequired(660, "SDL_GetJoystickPlayerIndex");
+                candidate.LoadRequired(661, "SDL_SetJoystickPlayerIndex");
+                candidate.LoadRequired(662, "SDL_GetJoystickGUID");
+                candidate.LoadRequired(663, "SDL_GetJoystickVendor");
+                candidate.LoadRequired(664, "SDL_GetJoystickProduct");
+                candidate.LoadRequired(665, "SDL_GetJoystickProductVersion");
+                candidate.LoadRequired(666, "SDL_GetJoystickFirmwareVersion");
+                candidate.LoadRequired(667, "SDL_GetJoystickSerial");
+                candidate.LoadRequired(668, "SDL_GetJoystickType");
+                candidate.LoadRequired(669, "SDL_GetJoystickGUIDInfo");
+                candidate.LoadRequired(670, "SDL_JoystickConnected");
+                candidate.LoadRequired(671, "SDL_GetJoystickID");
+                candidate.LoadRequired(672, "SDL_GetNumJoystickAxes");
+                candidate.LoadRequired(673, "SDL_GetNumJoystickBalls");
+                candidate.LoadRequired(674, "SDL_GetNumJoystickHats");
+                candidate.LoadRequired(675, "SDL_GetNumJoystickButtons");
+                candidate.LoadRequired(676, "SDL_SetJoystickEventsEnabled");
+                candidate.LoadRequired(677, "SDL_JoystickEventsEnabled");
+                candidate.LoadRequired(678, "SDL_UpdateJoysticks");
+                candidate.LoadRequired(679, "SDL_GetJoystickAxis");
+                candidate.LoadRequired(680, "SDL_GetJoystickAxisInitialState");
+                candidate.LoadRequired(681, "SDL_GetJoystickBall");
+                candidate.LoadRequired(682, "SDL_GetJoystickHat");
+                candidate.LoadRequired(683, "SDL_GetJoystickButton");
+                candidate.LoadRequired(684, "SDL_RumbleJoystick");
+                candidate.LoadRequired(685, "SDL_RumbleJoystickTriggers");
+                candidate.LoadRequired(686, "SDL_SetJoystickLED");
+                candidate.LoadRequired(687, "SDL_SendJoystickEffect");
+                candidate.LoadRequired(688, "SDL_CloseJoystick");
+                candidate.LoadRequired(689, "SDL_GetJoystickConnectionState");
+                candidate.LoadRequired(690, "SDL_GetJoystickPowerInfo");
+                candidate.LoadRequired(691, "SDL_AddGamepadMapping");
+                candidate.LoadRequired(692, "SDL_AddGamepadMappingsFromIO");
+                candidate.LoadRequired(693, "SDL_AddGamepadMappingsFromFile");
+                candidate.LoadRequired(694, "SDL_ReloadGamepadMappings");
+                candidate.LoadRequired(695, "SDL_GetGamepadMappings");
+                candidate.LoadRequired(696, "SDL_GetGamepadMappingForGUID");
+                candidate.LoadRequired(697, "SDL_GetGamepadMapping");
+                candidate.LoadRequired(698, "SDL_SetGamepadMapping");
+                candidate.LoadRequired(699, "SDL_HasGamepad");
+                candidate.LoadRequired(700, "SDL_GetGamepads");
+                candidate.LoadRequired(701, "SDL_IsGamepad");
+                candidate.LoadRequired(702, "SDL_GetGamepadNameForID");
+                candidate.LoadRequired(703, "SDL_GetGamepadPathForID");
+                candidate.LoadRequired(704, "SDL_GetGamepadPlayerIndexForID");
+                candidate.LoadRequired(705, "SDL_GetGamepadGUIDForID");
+                candidate.LoadRequired(706, "SDL_GetGamepadVendorForID");
+                candidate.LoadRequired(707, "SDL_GetGamepadProductForID");
+                candidate.LoadRequired(708, "SDL_GetGamepadProductVersionForID");
+                candidate.LoadRequired(709, "SDL_GetGamepadTypeForID");
+                candidate.LoadRequired(710, "SDL_GetRealGamepadTypeForID");
+                candidate.LoadRequired(711, "SDL_GetGamepadMappingForID");
+                candidate.LoadRequired(712, "SDL_OpenGamepad");
+                candidate.LoadRequired(713, "SDL_GetGamepadFromID");
+                candidate.LoadRequired(714, "SDL_GetGamepadFromPlayerIndex");
+                candidate.LoadRequired(715, "SDL_GetGamepadProperties");
+                candidate.LoadRequired(716, "SDL_GetGamepadID");
+                candidate.LoadRequired(717, "SDL_GetGamepadName");
+                candidate.LoadRequired(718, "SDL_GetGamepadPath");
+                candidate.LoadRequired(719, "SDL_GetGamepadType");
+                candidate.LoadRequired(720, "SDL_GetRealGamepadType");
+                candidate.LoadRequired(721, "SDL_GetGamepadPlayerIndex");
+                candidate.LoadRequired(722, "SDL_SetGamepadPlayerIndex");
+                candidate.LoadRequired(723, "SDL_GetGamepadVendor");
+                candidate.LoadRequired(724, "SDL_GetGamepadProduct");
+                candidate.LoadRequired(725, "SDL_GetGamepadProductVersion");
+                candidate.LoadRequired(726, "SDL_GetGamepadFirmwareVersion");
+                candidate.LoadRequired(727, "SDL_GetGamepadSerial");
+                candidate.LoadRequired(728, "SDL_GetGamepadSteamHandle");
+                candidate.LoadRequired(729, "SDL_GetGamepadConnectionState");
+                candidate.LoadRequired(730, "SDL_GetGamepadPowerInfo");
+                candidate.LoadRequired(731, "SDL_GamepadConnected");
+                candidate.LoadRequired(732, "SDL_GetGamepadJoystick");
+                candidate.LoadRequired(733, "SDL_SetGamepadEventsEnabled");
+                candidate.LoadRequired(734, "SDL_GamepadEventsEnabled");
+                candidate.LoadRequired(735, "SDL_GetGamepadBindings");
+                candidate.LoadRequired(736, "SDL_UpdateGamepads");
+                candidate.LoadRequired(737, "SDL_GetGamepadTypeFromString");
+                candidate.LoadRequired(738, "SDL_GetGamepadStringForType");
+                candidate.LoadRequired(739, "SDL_GetGamepadAxisFromString");
+                candidate.LoadRequired(740, "SDL_GetGamepadStringForAxis");
+                candidate.LoadRequired(741, "SDL_GamepadHasAxis");
+                candidate.LoadRequired(742, "SDL_GetGamepadAxis");
+                candidate.LoadRequired(743, "SDL_GetGamepadButtonFromString");
+                candidate.LoadRequired(744, "SDL_GetGamepadStringForButton");
+                candidate.LoadRequired(745, "SDL_GamepadHasButton");
+                candidate.LoadRequired(746, "SDL_GetGamepadButton");
+                candidate.LoadRequired(747, "SDL_GetGamepadButtonLabelForType");
+                candidate.LoadRequired(748, "SDL_GetGamepadButtonLabel");
+                candidate.LoadRequired(749, "SDL_GetNumGamepadTouchpads");
+                candidate.LoadRequired(750, "SDL_GetNumGamepadTouchpadFingers");
+                candidate.LoadRequired(751, "SDL_GetGamepadTouchpadFinger");
+                candidate.LoadRequired(752, "SDL_GamepadHasSensor");
+                candidate.LoadRequired(753, "SDL_SetGamepadSensorEnabled");
+                candidate.LoadRequired(754, "SDL_GamepadSensorEnabled");
+                candidate.LoadRequired(755, "SDL_GetGamepadSensorDataRate");
+                candidate.LoadRequired(756, "SDL_GetGamepadSensorData");
+                candidate.LoadRequired(757, "SDL_RumbleGamepad");
+                candidate.LoadRequired(758, "SDL_RumbleGamepadTriggers");
+                candidate.LoadRequired(759, "SDL_SetGamepadLED");
+                candidate.LoadRequired(760, "SDL_SendGamepadEffect");
+                candidate.LoadRequired(761, "SDL_CloseGamepad");
+                candidate.LoadRequired(762, "SDL_GetGamepadAppleSFSymbolsNameForButton");
+                candidate.LoadRequired(763, "SDL_GetGamepadAppleSFSymbolsNameForAxis");
+                candidate.LoadRequired(764, "SDL_HasKeyboard");
+                candidate.LoadRequired(765, "SDL_GetKeyboards");
+                candidate.LoadRequired(766, "SDL_GetKeyboardNameForID");
+                candidate.LoadRequired(767, "SDL_GetKeyboardFocus");
+                candidate.LoadRequired(768, "SDL_GetKeyboardState");
+                candidate.LoadRequired(769, "SDL_ResetKeyboard");
+                candidate.LoadRequired(770, "SDL_GetModState");
+                candidate.LoadRequired(771, "SDL_SetModState");
+                candidate.LoadRequired(772, "SDL_GetKeyFromScancode");
+                candidate.LoadRequired(773, "SDL_GetScancodeFromKey");
+                candidate.LoadRequired(774, "SDL_SetScancodeName");
+                candidate.LoadRequired(775, "SDL_GetScancodeName");
+                candidate.LoadRequired(776, "SDL_GetScancodeFromName");
+                candidate.LoadRequired(777, "SDL_GetKeyName");
+                candidate.LoadRequired(778, "SDL_GetKeyFromName");
+                candidate.LoadRequired(779, "SDL_StartTextInput");
+                candidate.LoadRequired(780, "SDL_StartTextInputWithProperties");
+                candidate.LoadRequired(781, "SDL_TextInputActive");
+                candidate.LoadRequired(782, "SDL_StopTextInput");
+                candidate.LoadRequired(783, "SDL_ClearComposition");
+                candidate.LoadRequired(784, "SDL_SetTextInputArea");
+                candidate.LoadRequired(785, "SDL_GetTextInputArea");
+                candidate.LoadRequired(786, "SDL_HasScreenKeyboardSupport");
+                candidate.LoadRequired(787, "SDL_ScreenKeyboardShown");
+                candidate.LoadRequired(788, "SDL_HasMouse");
+                candidate.LoadRequired(789, "SDL_GetMice");
+                candidate.LoadRequired(790, "SDL_GetMouseNameForID");
+                candidate.LoadRequired(791, "SDL_GetMouseFocus");
+                candidate.LoadRequired(792, "SDL_GetMouseState");
+                candidate.LoadRequired(793, "SDL_GetGlobalMouseState");
+                candidate.LoadRequired(794, "SDL_GetRelativeMouseState");
+                candidate.LoadRequired(795, "SDL_WarpMouseInWindow");
+                candidate.LoadRequired(796, "SDL_WarpMouseGlobal");
+                candidate.LoadRequired(797, "SDL_SetRelativeMouseTransform");
+                candidate.LoadRequired(798, "SDL_SetWindowRelativeMouseMode");
+                candidate.LoadRequired(799, "SDL_GetWindowRelativeMouseMode");
+                candidate.LoadRequired(800, "SDL_CaptureMouse");
+                candidate.LoadRequired(801, "SDL_CreateCursor");
+                candidate.LoadRequired(802, "SDL_CreateColorCursor");
+                candidate.LoadRequired(803, "SDL_CreateAnimatedCursor");
+                candidate.LoadRequired(804, "SDL_CreateSystemCursor");
+                candidate.LoadRequired(805, "SDL_SetCursor");
+                candidate.LoadRequired(806, "SDL_GetCursor");
+                candidate.LoadRequired(807, "SDL_GetDefaultCursor");
+                candidate.LoadRequired(808, "SDL_DestroyCursor");
+                candidate.LoadRequired(809, "SDL_ShowCursor");
+                candidate.LoadRequired(810, "SDL_HideCursor");
+                candidate.LoadRequired(811, "SDL_CursorVisible");
+                candidate.LoadRequired(812, "SDL_GetTouchDevices");
+                candidate.LoadRequired(813, "SDL_GetTouchDeviceName");
+                candidate.LoadRequired(814, "SDL_GetTouchDeviceType");
+                candidate.LoadRequired(815, "SDL_GetTouchFingers");
+                candidate.LoadRequired(816, "SDL_GetPenDeviceType");
+                candidate.LoadRequired(817, "SDL_PumpEvents");
+                candidate.LoadRequired(818, "SDL_PeepEvents");
+                candidate.LoadRequired(819, "SDL_HasEvent");
+                candidate.LoadRequired(820, "SDL_HasEvents");
+                candidate.LoadRequired(821, "SDL_FlushEvent");
+                candidate.LoadRequired(822, "SDL_FlushEvents");
+                candidate.LoadRequired(823, "SDL_PollEvent");
+                candidate.LoadRequired(824, "SDL_WaitEvent");
+                candidate.LoadRequired(825, "SDL_WaitEventTimeout");
+                candidate.LoadRequired(826, "SDL_PushEvent");
+                candidate.LoadRequired(827, "SDL_SetEventFilter");
+                candidate.LoadRequired(828, "SDL_GetEventFilter");
+                candidate.LoadRequired(829, "SDL_AddEventWatch");
+                candidate.LoadRequired(830, "SDL_RemoveEventWatch");
+                candidate.LoadRequired(831, "SDL_FilterEvents");
+                candidate.LoadRequired(832, "SDL_SetEventEnabled");
+                candidate.LoadRequired(833, "SDL_EventEnabled");
+                candidate.LoadRequired(834, "SDL_RegisterEvents");
+                candidate.LoadRequired(835, "SDL_GetWindowFromEvent");
+                candidate.LoadRequired(836, "SDL_GetEventDescription");
+                candidate.LoadRequired(837, "SDL_GetBasePath");
+                candidate.LoadRequired(838, "SDL_GetPrefPath");
+                candidate.LoadRequired(839, "SDL_GetUserFolder");
+                candidate.LoadRequired(840, "SDL_CreateDirectory");
+                candidate.LoadRequired(841, "SDL_EnumerateDirectory");
+                candidate.LoadRequired(842, "SDL_RemovePath");
+                candidate.LoadRequired(843, "SDL_RenamePath");
+                candidate.LoadRequired(844, "SDL_CopyFile");
+                candidate.LoadRequired(845, "SDL_GetPathInfo");
+                candidate.LoadRequired(846, "SDL_GlobDirectory");
+                candidate.LoadRequired(847, "SDL_GetCurrentDirectory");
+                candidate.LoadRequired(848, "SDL_GPUSupportsShaderFormats");
+                candidate.LoadRequired(849, "SDL_GPUSupportsProperties");
+                candidate.LoadRequired(850, "SDL_CreateGPUDevice");
+                candidate.LoadRequired(851, "SDL_CreateGPUDeviceWithProperties");
+                candidate.LoadRequired(852, "SDL_DestroyGPUDevice");
+                candidate.LoadRequired(853, "SDL_GetNumGPUDrivers");
+                candidate.LoadRequired(854, "SDL_GetGPUDriver");
+                candidate.LoadRequired(855, "SDL_GetGPUDeviceDriver");
+                candidate.LoadRequired(856, "SDL_GetGPUShaderFormats");
+                candidate.LoadRequired(857, "SDL_GetGPUDeviceProperties");
+                candidate.LoadRequired(858, "SDL_CreateGPUComputePipeline");
+                candidate.LoadRequired(859, "SDL_CreateGPUGraphicsPipeline");
+                candidate.LoadRequired(860, "SDL_CreateGPUSampler");
+                candidate.LoadRequired(861, "SDL_CreateGPUShader");
+                candidate.LoadRequired(862, "SDL_CreateGPUTexture");
+                candidate.LoadRequired(863, "SDL_CreateGPUBuffer");
+                candidate.LoadRequired(864, "SDL_CreateGPUTransferBuffer");
+                candidate.LoadRequired(865, "SDL_SetGPUBufferName");
+                candidate.LoadRequired(866, "SDL_SetGPUTextureName");
+                candidate.LoadRequired(867, "SDL_InsertGPUDebugLabel");
+                candidate.LoadRequired(868, "SDL_PushGPUDebugGroup");
+                candidate.LoadRequired(869, "SDL_PopGPUDebugGroup");
+                candidate.LoadRequired(870, "SDL_ReleaseGPUTexture");
+                candidate.LoadRequired(871, "SDL_ReleaseGPUSampler");
+                candidate.LoadRequired(872, "SDL_ReleaseGPUBuffer");
+                candidate.LoadRequired(873, "SDL_ReleaseGPUTransferBuffer");
+                candidate.LoadRequired(874, "SDL_ReleaseGPUComputePipeline");
+                candidate.LoadRequired(875, "SDL_ReleaseGPUShader");
+                candidate.LoadRequired(876, "SDL_ReleaseGPUGraphicsPipeline");
+                candidate.LoadRequired(877, "SDL_AcquireGPUCommandBuffer");
+                candidate.LoadRequired(878, "SDL_PushGPUVertexUniformData");
+                candidate.LoadRequired(879, "SDL_PushGPUFragmentUniformData");
+                candidate.LoadRequired(880, "SDL_PushGPUComputeUniformData");
+                candidate.LoadRequired(881, "SDL_BeginGPURenderPass");
+                candidate.LoadRequired(882, "SDL_BindGPUGraphicsPipeline");
+                candidate.LoadRequired(883, "SDL_SetGPUViewport");
+                candidate.LoadRequired(884, "SDL_SetGPUScissor");
+                candidate.LoadRequired(885, "SDL_SetGPUBlendConstants");
+                candidate.LoadRequired(886, "SDL_SetGPUStencilReference");
+                candidate.LoadRequired(887, "SDL_BindGPUVertexBuffers");
+                candidate.LoadRequired(888, "SDL_BindGPUIndexBuffer");
+                candidate.LoadRequired(889, "SDL_BindGPUVertexSamplers");
+                candidate.LoadRequired(890, "SDL_BindGPUVertexStorageTextures");
+                candidate.LoadRequired(891, "SDL_BindGPUVertexStorageBuffers");
+                candidate.LoadRequired(892, "SDL_BindGPUFragmentSamplers");
+                candidate.LoadRequired(893, "SDL_BindGPUFragmentStorageTextures");
+                candidate.LoadRequired(894, "SDL_BindGPUFragmentStorageBuffers");
+                candidate.LoadRequired(895, "SDL_DrawGPUIndexedPrimitives");
+                candidate.LoadRequired(896, "SDL_DrawGPUPrimitives");
+                candidate.LoadRequired(897, "SDL_DrawGPUPrimitivesIndirect");
+                candidate.LoadRequired(898, "SDL_DrawGPUIndexedPrimitivesIndirect");
+                candidate.LoadRequired(899, "SDL_EndGPURenderPass");
+                candidate.LoadRequired(900, "SDL_BeginGPUComputePass");
+                candidate.LoadRequired(901, "SDL_BindGPUComputePipeline");
+                candidate.LoadRequired(902, "SDL_BindGPUComputeSamplers");
+                candidate.LoadRequired(903, "SDL_BindGPUComputeStorageTextures");
+                candidate.LoadRequired(904, "SDL_BindGPUComputeStorageBuffers");
+                candidate.LoadRequired(905, "SDL_DispatchGPUCompute");
+                candidate.LoadRequired(906, "SDL_DispatchGPUComputeIndirect");
+                candidate.LoadRequired(907, "SDL_EndGPUComputePass");
+                candidate.LoadRequired(908, "SDL_MapGPUTransferBuffer");
+                candidate.LoadRequired(909, "SDL_UnmapGPUTransferBuffer");
+                candidate.LoadRequired(910, "SDL_BeginGPUCopyPass");
+                candidate.LoadRequired(911, "SDL_UploadToGPUTexture");
+                candidate.LoadRequired(912, "SDL_UploadToGPUBuffer");
+                candidate.LoadRequired(913, "SDL_CopyGPUTextureToTexture");
+                candidate.LoadRequired(914, "SDL_CopyGPUBufferToBuffer");
+                candidate.LoadRequired(915, "SDL_DownloadFromGPUTexture");
+                candidate.LoadRequired(916, "SDL_DownloadFromGPUBuffer");
+                candidate.LoadRequired(917, "SDL_EndGPUCopyPass");
+                candidate.LoadRequired(918, "SDL_GenerateMipmapsForGPUTexture");
+                candidate.LoadRequired(919, "SDL_BlitGPUTexture");
+                candidate.LoadRequired(920, "SDL_WindowSupportsGPUSwapchainComposition");
+                candidate.LoadRequired(921, "SDL_WindowSupportsGPUPresentMode");
+                candidate.LoadRequired(922, "SDL_ClaimWindowForGPUDevice");
+                candidate.LoadRequired(923, "SDL_ReleaseWindowFromGPUDevice");
+                candidate.LoadRequired(924, "SDL_SetGPUSwapchainParameters");
+                candidate.LoadRequired(925, "SDL_SetGPUAllowedFramesInFlight");
+                candidate.LoadRequired(926, "SDL_GetGPUSwapchainTextureFormat");
+                candidate.LoadRequired(927, "SDL_AcquireGPUSwapchainTexture");
+                candidate.LoadRequired(928, "SDL_WaitForGPUSwapchain");
+                candidate.LoadRequired(929, "SDL_WaitAndAcquireGPUSwapchainTexture");
+                candidate.LoadRequired(930, "SDL_SubmitGPUCommandBuffer");
+                candidate.LoadRequired(931, "SDL_SubmitGPUCommandBufferAndAcquireFence");
+                candidate.LoadRequired(932, "SDL_CancelGPUCommandBuffer");
+                candidate.LoadRequired(933, "SDL_WaitForGPUIdle");
+                candidate.LoadRequired(934, "SDL_WaitForGPUFences");
+                candidate.LoadRequired(935, "SDL_QueryGPUFence");
+                candidate.LoadRequired(936, "SDL_ReleaseGPUFence");
+                candidate.LoadRequired(937, "SDL_GPUTextureFormatTexelBlockSize");
+                candidate.LoadRequired(938, "SDL_GPUTextureSupportsFormat");
+                candidate.LoadRequired(939, "SDL_GPUTextureSupportsSampleCount");
+                candidate.LoadRequired(940, "SDL_CalculateGPUTextureFormatSize");
+                candidate.LoadRequired(941, "SDL_GetPixelFormatFromGPUTextureFormat");
+                candidate.LoadRequired(942, "SDL_GetGPUTextureFormatFromPixelFormat");
+                candidate.LoadRequired(943, "SDL_GetHaptics");
+                candidate.LoadRequired(944, "SDL_GetHapticNameForID");
+                candidate.LoadRequired(945, "SDL_OpenHaptic");
+                candidate.LoadRequired(946, "SDL_GetHapticFromID");
+                candidate.LoadRequired(947, "SDL_GetHapticID");
+                candidate.LoadRequired(948, "SDL_GetHapticName");
+                candidate.LoadRequired(949, "SDL_IsMouseHaptic");
+                candidate.LoadRequired(950, "SDL_OpenHapticFromMouse");
+                candidate.LoadRequired(951, "SDL_IsJoystickHaptic");
+                candidate.LoadRequired(952, "SDL_OpenHapticFromJoystick");
+                candidate.LoadRequired(953, "SDL_CloseHaptic");
+                candidate.LoadRequired(954, "SDL_GetMaxHapticEffects");
+                candidate.LoadRequired(955, "SDL_GetMaxHapticEffectsPlaying");
+                candidate.LoadRequired(956, "SDL_GetHapticFeatures");
+                candidate.LoadRequired(957, "SDL_GetNumHapticAxes");
+                candidate.LoadRequired(958, "SDL_HapticEffectSupported");
+                candidate.LoadRequired(959, "SDL_CreateHapticEffect");
+                candidate.LoadRequired(960, "SDL_UpdateHapticEffect");
+                candidate.LoadRequired(961, "SDL_RunHapticEffect");
+                candidate.LoadRequired(962, "SDL_StopHapticEffect");
+                candidate.LoadRequired(963, "SDL_DestroyHapticEffect");
+                candidate.LoadRequired(964, "SDL_GetHapticEffectStatus");
+                candidate.LoadRequired(965, "SDL_SetHapticGain");
+                candidate.LoadRequired(966, "SDL_SetHapticAutocenter");
+                candidate.LoadRequired(967, "SDL_PauseHaptic");
+                candidate.LoadRequired(968, "SDL_ResumeHaptic");
+                candidate.LoadRequired(969, "SDL_StopHapticEffects");
+                candidate.LoadRequired(970, "SDL_HapticRumbleSupported");
+                candidate.LoadRequired(971, "SDL_InitHapticRumble");
+                candidate.LoadRequired(972, "SDL_PlayHapticRumble");
+                candidate.LoadRequired(973, "SDL_StopHapticRumble");
+                candidate.LoadRequired(974, "SDL_hid_init");
+                candidate.LoadRequired(975, "SDL_hid_exit");
+                candidate.LoadRequired(976, "SDL_hid_device_change_count");
+                candidate.LoadRequired(977, "SDL_hid_enumerate");
+                candidate.LoadRequired(978, "SDL_hid_free_enumeration");
+                candidate.LoadRequired(979, "SDL_hid_open");
+                candidate.LoadRequired(980, "SDL_hid_open_path");
+                candidate.LoadRequired(981, "SDL_hid_get_properties");
+                candidate.LoadRequired(982, "SDL_hid_write");
+                candidate.LoadRequired(983, "SDL_hid_read_timeout");
+                candidate.LoadRequired(984, "SDL_hid_read");
+                candidate.LoadRequired(985, "SDL_hid_set_nonblocking");
+                candidate.LoadRequired(986, "SDL_hid_send_feature_report");
+                candidate.LoadRequired(987, "SDL_hid_get_feature_report");
+                candidate.LoadRequired(988, "SDL_hid_get_input_report");
+                candidate.LoadRequired(989, "SDL_hid_close");
+                candidate.LoadRequired(990, "SDL_hid_get_manufacturer_string");
+                candidate.LoadRequired(991, "SDL_hid_get_product_string");
+                candidate.LoadRequired(992, "SDL_hid_get_serial_number_string");
+                candidate.LoadRequired(993, "SDL_hid_get_indexed_string");
+                candidate.LoadRequired(994, "SDL_hid_get_device_info");
+                candidate.LoadRequired(995, "SDL_hid_get_report_descriptor");
+                candidate.LoadRequired(996, "SDL_hid_ble_scan");
+                candidate.LoadRequired(997, "SDL_SetHintWithPriority");
+                candidate.LoadRequired(998, "SDL_SetHint");
+                candidate.LoadRequired(999, "SDL_ResetHint");
+                candidate.LoadRequired(1000, "SDL_ResetHints");
+                candidate.LoadRequired(1001, "SDL_GetHint");
+                candidate.LoadRequired(1002, "SDL_GetHintBoolean");
+                candidate.LoadRequired(1003, "SDL_AddHintCallback");
+                candidate.LoadRequired(1004, "SDL_RemoveHintCallback");
+                candidate.LoadRequired(1005, "SDL_Init");
+                candidate.LoadRequired(1006, "SDL_InitSubSystem");
+                candidate.LoadRequired(1007, "SDL_QuitSubSystem");
+                candidate.LoadRequired(1008, "SDL_WasInit");
+                candidate.LoadRequired(1009, "SDL_Quit");
+                candidate.LoadRequired(1010, "SDL_IsMainThread");
+                candidate.LoadRequired(1011, "SDL_RunOnMainThread");
+                candidate.LoadRequired(1012, "SDL_SetAppMetadata");
+                candidate.LoadRequired(1013, "SDL_SetAppMetadataProperty");
+                candidate.LoadRequired(1014, "SDL_GetAppMetadataProperty");
+                candidate.LoadRequired(1015, "SDL_LoadObject");
+                candidate.LoadRequired(1016, "SDL_LoadFunction");
+                candidate.LoadRequired(1017, "SDL_UnloadObject");
+                candidate.LoadRequired(1018, "SDL_GetPreferredLocales");
+                candidate.LoadRequired(1019, "SDL_SetLogPriorities");
+                candidate.LoadRequired(1020, "SDL_SetLogPriority");
+                candidate.LoadRequired(1021, "SDL_GetLogPriority");
+                candidate.LoadRequired(1022, "SDL_ResetLogPriorities");
+                candidate.LoadRequired(1023, "SDL_SetLogPriorityPrefix");
+                candidate.LoadRequired(1024, "SDL_LogMessageV");
+                candidate.LoadRequired(1025, "SDL_GetDefaultLogOutputFunction");
+                candidate.LoadRequired(1026, "SDL_GetLogOutputFunction");
+                candidate.LoadRequired(1027, "SDL_SetLogOutputFunction");
+                candidate.LoadRequired(1028, "SDL_ShowMessageBox");
+                candidate.LoadRequired(1029, "SDL_ShowSimpleMessageBox");
+                candidate.LoadRequired(1030, "SDL_Metal_CreateView");
+                candidate.LoadRequired(1031, "SDL_Metal_DestroyView");
+                candidate.LoadRequired(1032, "SDL_Metal_GetLayer");
+                candidate.LoadRequired(1033, "SDL_OpenURL");
+                candidate.LoadRequired(1034, "SDL_GetPlatform");
+                candidate.LoadRequired(1035, "SDL_CreateProcess");
+                candidate.LoadRequired(1036, "SDL_CreateProcessWithProperties");
+                candidate.LoadRequired(1037, "SDL_GetProcessProperties");
+                candidate.LoadRequired(1038, "SDL_ReadProcess");
+                candidate.LoadRequired(1039, "SDL_GetProcessInput");
+                candidate.LoadRequired(1040, "SDL_GetProcessOutput");
+                candidate.LoadRequired(1041, "SDL_KillProcess");
+                candidate.LoadRequired(1042, "SDL_WaitProcess");
+                candidate.LoadRequired(1043, "SDL_DestroyProcess");
+                candidate.LoadRequired(1044, "SDL_GetNumRenderDrivers");
+                candidate.LoadRequired(1045, "SDL_GetRenderDriver");
+                candidate.LoadRequired(1046, "SDL_CreateWindowAndRenderer");
+                candidate.LoadRequired(1047, "SDL_CreateRenderer");
+                candidate.LoadRequired(1048, "SDL_CreateRendererWithProperties");
+                candidate.LoadRequired(1049, "SDL_CreateGPURenderer");
+                candidate.LoadRequired(1050, "SDL_GetGPURendererDevice");
+                candidate.LoadRequired(1051, "SDL_CreateSoftwareRenderer");
+                candidate.LoadRequired(1052, "SDL_GetRenderer");
+                candidate.LoadRequired(1053, "SDL_GetRenderWindow");
+                candidate.LoadRequired(1054, "SDL_GetRendererName");
+                candidate.LoadRequired(1055, "SDL_GetRendererProperties");
+                candidate.LoadRequired(1056, "SDL_GetRenderOutputSize");
+                candidate.LoadRequired(1057, "SDL_GetCurrentRenderOutputSize");
+                candidate.LoadRequired(1058, "SDL_CreateTexture");
+                candidate.LoadRequired(1059, "SDL_CreateTextureFromSurface");
+                candidate.LoadRequired(1060, "SDL_CreateTextureWithProperties");
+                candidate.LoadRequired(1061, "SDL_GetTextureProperties");
+                candidate.LoadRequired(1062, "SDL_GetRendererFromTexture");
+                candidate.LoadRequired(1063, "SDL_GetTextureSize");
+                candidate.LoadRequired(1064, "SDL_SetTexturePalette");
+                candidate.LoadRequired(1065, "SDL_GetTexturePalette");
+                candidate.LoadRequired(1066, "SDL_SetTextureColorMod");
+                candidate.LoadRequired(1067, "SDL_SetTextureColorModFloat");
+                candidate.LoadRequired(1068, "SDL_GetTextureColorMod");
+                candidate.LoadRequired(1069, "SDL_GetTextureColorModFloat");
+                candidate.LoadRequired(1070, "SDL_SetTextureAlphaMod");
+                candidate.LoadRequired(1071, "SDL_SetTextureAlphaModFloat");
+                candidate.LoadRequired(1072, "SDL_GetTextureAlphaMod");
+                candidate.LoadRequired(1073, "SDL_GetTextureAlphaModFloat");
+                candidate.LoadRequired(1074, "SDL_SetTextureBlendMode");
+                candidate.LoadRequired(1075, "SDL_GetTextureBlendMode");
+                candidate.LoadRequired(1076, "SDL_SetTextureScaleMode");
+                candidate.LoadRequired(1077, "SDL_GetTextureScaleMode");
+                candidate.LoadRequired(1078, "SDL_UpdateTexture");
+                candidate.LoadRequired(1079, "SDL_UpdateYUVTexture");
+                candidate.LoadRequired(1080, "SDL_UpdateNVTexture");
+                candidate.LoadRequired(1081, "SDL_LockTexture");
+                candidate.LoadRequired(1082, "SDL_LockTextureToSurface");
+                candidate.LoadRequired(1083, "SDL_UnlockTexture");
+                candidate.LoadRequired(1084, "SDL_SetRenderTarget");
+                candidate.LoadRequired(1085, "SDL_GetRenderTarget");
+                candidate.LoadRequired(1086, "SDL_SetRenderLogicalPresentation");
+                candidate.LoadRequired(1087, "SDL_GetRenderLogicalPresentation");
+                candidate.LoadRequired(1088, "SDL_GetRenderLogicalPresentationRect");
+                candidate.LoadRequired(1089, "SDL_RenderCoordinatesFromWindow");
+                candidate.LoadRequired(1090, "SDL_RenderCoordinatesToWindow");
+                candidate.LoadRequired(1091, "SDL_ConvertEventToRenderCoordinates");
+                candidate.LoadRequired(1092, "SDL_SetRenderViewport");
+                candidate.LoadRequired(1093, "SDL_GetRenderViewport");
+                candidate.LoadRequired(1094, "SDL_RenderViewportSet");
+                candidate.LoadRequired(1095, "SDL_GetRenderSafeArea");
+                candidate.LoadRequired(1096, "SDL_SetRenderClipRect");
+                candidate.LoadRequired(1097, "SDL_GetRenderClipRect");
+                candidate.LoadRequired(1098, "SDL_RenderClipEnabled");
+                candidate.LoadRequired(1099, "SDL_SetRenderScale");
+                candidate.LoadRequired(1100, "SDL_GetRenderScale");
+                candidate.LoadRequired(1101, "SDL_SetRenderDrawColor");
+                candidate.LoadRequired(1102, "SDL_SetRenderDrawColorFloat");
+                candidate.LoadRequired(1103, "SDL_GetRenderDrawColor");
+                candidate.LoadRequired(1104, "SDL_GetRenderDrawColorFloat");
+                candidate.LoadRequired(1105, "SDL_SetRenderColorScale");
+                candidate.LoadRequired(1106, "SDL_GetRenderColorScale");
+                candidate.LoadRequired(1107, "SDL_SetRenderDrawBlendMode");
+                candidate.LoadRequired(1108, "SDL_GetRenderDrawBlendMode");
+                candidate.LoadRequired(1109, "SDL_RenderClear");
+                candidate.LoadRequired(1110, "SDL_RenderPoint");
+                candidate.LoadRequired(1111, "SDL_RenderPoints");
+                candidate.LoadRequired(1112, "SDL_RenderLine");
+                candidate.LoadRequired(1113, "SDL_RenderLines");
+                candidate.LoadRequired(1114, "SDL_RenderRect");
+                candidate.LoadRequired(1115, "SDL_RenderRects");
+                candidate.LoadRequired(1116, "SDL_RenderFillRect");
+                candidate.LoadRequired(1117, "SDL_RenderFillRects");
+                candidate.LoadRequired(1118, "SDL_RenderTexture");
+                candidate.LoadRequired(1119, "SDL_RenderTextureRotated");
+                candidate.LoadRequired(1120, "SDL_RenderTextureAffine");
+                candidate.LoadRequired(1121, "SDL_RenderTextureTiled");
+                candidate.LoadRequired(1122, "SDL_RenderTexture9Grid");
+                candidate.LoadRequired(1123, "SDL_RenderTexture9GridTiled");
+                candidate.LoadRequired(1124, "SDL_RenderGeometry");
+                candidate.LoadRequired(1125, "SDL_RenderGeometryRaw");
+                candidate.LoadRequired(1126, "SDL_SetRenderTextureAddressMode");
+                candidate.LoadRequired(1127, "SDL_GetRenderTextureAddressMode");
+                candidate.LoadRequired(1128, "SDL_RenderReadPixels");
+                candidate.LoadRequired(1129, "SDL_RenderPresent");
+                candidate.LoadRequired(1130, "SDL_DestroyTexture");
+                candidate.LoadRequired(1131, "SDL_DestroyRenderer");
+                candidate.LoadRequired(1132, "SDL_FlushRenderer");
+                candidate.LoadRequired(1133, "SDL_GetRenderMetalLayer");
+                candidate.LoadRequired(1134, "SDL_GetRenderMetalCommandEncoder");
+                candidate.LoadRequired(1135, "SDL_AddVulkanRenderSemaphores");
+                candidate.LoadRequired(1136, "SDL_SetRenderVSync");
+                candidate.LoadRequired(1137, "SDL_GetRenderVSync");
+                candidate.LoadRequired(1138, "SDL_RenderDebugText");
+                candidate.LoadRequired(1139, "SDL_SetDefaultTextureScaleMode");
+                candidate.LoadRequired(1140, "SDL_GetDefaultTextureScaleMode");
+                candidate.LoadRequired(1141, "SDL_CreateGPURenderState");
+                candidate.LoadRequired(1142, "SDL_SetGPURenderStateSamplerBindings");
+                candidate.LoadRequired(1143, "SDL_SetGPURenderStateStorageTextures");
+                candidate.LoadRequired(1144, "SDL_SetGPURenderStateStorageBuffers");
+                candidate.LoadRequired(1145, "SDL_SetGPURenderStateFragmentUniforms");
+                candidate.LoadRequired(1146, "SDL_SetGPURenderState");
+                candidate.LoadRequired(1147, "SDL_DestroyGPURenderState");
+                candidate.LoadRequired(1148, "SDL_OpenTitleStorage");
+                candidate.LoadRequired(1149, "SDL_OpenUserStorage");
+                candidate.LoadRequired(1150, "SDL_OpenFileStorage");
+                candidate.LoadRequired(1151, "SDL_OpenStorage");
+                candidate.LoadRequired(1152, "SDL_CloseStorage");
+                candidate.LoadRequired(1153, "SDL_StorageReady");
+                candidate.LoadRequired(1154, "SDL_GetStorageFileSize");
+                candidate.LoadRequired(1155, "SDL_ReadStorageFile");
+                candidate.LoadRequired(1156, "SDL_WriteStorageFile");
+                candidate.LoadRequired(1157, "SDL_CreateStorageDirectory");
+                candidate.LoadRequired(1158, "SDL_EnumerateStorageDirectory");
+                candidate.LoadRequired(1159, "SDL_RemoveStoragePath");
+                candidate.LoadRequired(1160, "SDL_RenameStoragePath");
+                candidate.LoadRequired(1161, "SDL_CopyStorageFile");
+                candidate.LoadRequired(1162, "SDL_GetStoragePathInfo");
+                candidate.LoadRequired(1163, "SDL_GetStorageSpaceRemaining");
+                candidate.LoadRequired(1164, "SDL_GlobStorageDirectory");
+                candidate.LoadRequired(1165, "SDL_SetWindowsMessageHook");
+                candidate.LoadRequired(1166, "SDL_GetDirect3D9AdapterIndex");
+                candidate.LoadRequired(1167, "SDL_GetDXGIOutputInfo");
+                candidate.LoadRequired(1168, "SDL_SetX11EventHook");
+                candidate.LoadRequired(1169, "SDL_IsTablet");
+                candidate.LoadRequired(1170, "SDL_IsTV");
+                candidate.LoadRequired(1171, "SDL_GetSandbox");
+                candidate.LoadRequired(1172, "SDL_OnApplicationWillTerminate");
+                candidate.LoadRequired(1173, "SDL_OnApplicationDidReceiveMemoryWarning");
+                candidate.LoadRequired(1174, "SDL_OnApplicationWillEnterBackground");
+                candidate.LoadRequired(1175, "SDL_OnApplicationDidEnterBackground");
+                candidate.LoadRequired(1176, "SDL_OnApplicationWillEnterForeground");
+                candidate.LoadRequired(1177, "SDL_OnApplicationDidEnterForeground");
+                candidate.LoadRequired(1178, "SDL_GetDateTimeLocalePreferences");
+                candidate.LoadRequired(1179, "SDL_GetCurrentTime");
+                candidate.LoadRequired(1180, "SDL_TimeToDateTime");
+                candidate.LoadRequired(1181, "SDL_DateTimeToTime");
+                candidate.LoadRequired(1182, "SDL_TimeToWindows");
+                candidate.LoadRequired(1183, "SDL_TimeFromWindows");
+                candidate.LoadRequired(1184, "SDL_GetDaysInMonth");
+                candidate.LoadRequired(1185, "SDL_GetDayOfYear");
+                candidate.LoadRequired(1186, "SDL_GetDayOfWeek");
+                candidate.LoadRequired(1187, "SDL_GetTicks");
+                candidate.LoadRequired(1188, "SDL_GetTicksNS");
+                candidate.LoadRequired(1189, "SDL_GetPerformanceCounter");
+                candidate.LoadRequired(1190, "SDL_GetPerformanceFrequency");
+                candidate.LoadRequired(1191, "SDL_Delay");
+                candidate.LoadRequired(1192, "SDL_DelayNS");
+                candidate.LoadRequired(1193, "SDL_DelayPrecise");
+                candidate.LoadRequired(1194, "SDL_AddTimer");
+                candidate.LoadRequired(1195, "SDL_AddTimerNS");
+                candidate.LoadRequired(1196, "SDL_RemoveTimer");
+                candidate.LoadRequired(1197, "SDL_CreateTray");
+                candidate.LoadRequired(1198, "SDL_CreateTrayWithProperties");
+                candidate.LoadRequired(1199, "SDL_SetTrayIcon");
+                candidate.LoadRequired(1200, "SDL_SetTrayTooltip");
+                candidate.LoadRequired(1201, "SDL_CreateTrayMenu");
+                candidate.LoadRequired(1202, "SDL_CreateTraySubmenu");
+                candidate.LoadRequired(1203, "SDL_GetTrayMenu");
+                candidate.LoadRequired(1204, "SDL_GetTraySubmenu");
+                candidate.LoadRequired(1205, "SDL_GetTrayEntries");
+                candidate.LoadRequired(1206, "SDL_RemoveTrayEntry");
+                candidate.LoadRequired(1207, "SDL_InsertTrayEntryAt");
+                candidate.LoadRequired(1208, "SDL_SetTrayEntryLabel");
+                candidate.LoadRequired(1209, "SDL_GetTrayEntryLabel");
+                candidate.LoadRequired(1210, "SDL_SetTrayEntryChecked");
+                candidate.LoadRequired(1211, "SDL_GetTrayEntryChecked");
+                candidate.LoadRequired(1212, "SDL_SetTrayEntryEnabled");
+                candidate.LoadRequired(1213, "SDL_GetTrayEntryEnabled");
+                candidate.LoadRequired(1214, "SDL_SetTrayEntryCallback");
+                candidate.LoadRequired(1215, "SDL_ClickTrayEntry");
+                candidate.LoadRequired(1216, "SDL_DestroyTray");
+                candidate.LoadRequired(1217, "SDL_GetTrayEntryParent");
+                candidate.LoadRequired(1218, "SDL_GetTrayMenuParentEntry");
+                candidate.LoadRequired(1219, "SDL_GetTrayMenuParentTray");
+                candidate.LoadRequired(1220, "SDL_UpdateTrays");
+                candidate.LoadRequired(1221, "SDL_GetVersion");
+                candidate.LoadRequired(1222, "SDL_GetRevision");
+            }
+            catch
+            {
+                candidate.Free();
+                throw;
+            }
+
+            var previous = funcTable;
+            funcTable = candidate;
+            previous?.Free();
         }
 
-        public static void FreeApi() => funcTable.Free();
+        public static void FreeApi() => funcTable?.Free();
     }
 }

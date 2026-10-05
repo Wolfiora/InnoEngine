@@ -2,7 +2,6 @@ using System;
 using System.Linq;
 
 using Inno.Core.Execution;
-using Inno.Extensibility.Modules.Internal;
 using Inno.Extensibility.Reload;
 
 namespace Inno.Extensibility.Modules;
@@ -10,7 +9,7 @@ namespace Inno.Extensibility.Modules;
 /// <summary>
 /// Controls activation, completion, and rollback of one prepared module generation.
 /// </summary>
-public sealed class AssemblyReloadSession : IDisposable, IGenerationPublication<AssemblyUnloadMonitor>
+public sealed class AssemblyReloadSession : IDisposable, IGenerationPublication<IAssemblyUnloadProbe>
 {
     private readonly ModuleHost m_owner;
     private ReloadState? m_state;
@@ -62,7 +61,7 @@ public sealed class AssemblyReloadSession : IDisposable, IGenerationPublication<
     /// <exception cref="RetirementPendingException">
     /// A participant still uses its dependencies. Contexts remain owned and no unload monitor is issued.
     /// </exception>
-    public AssemblyUnloadMonitor Complete()
+    public IAssemblyUnloadProbe Complete()
     {
         EnsureRetirementSafe();
         ObjectDisposedException.ThrowIf(m_disposed, this);

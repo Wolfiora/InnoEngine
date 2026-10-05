@@ -1,3 +1,5 @@
+using Inno.Adapter.Serialization.DotNet;
+using Inno.Adapter.Modules.DotNet;
 using System;
 using System.IO;
 using System.Linq;
@@ -39,6 +41,8 @@ public sealed class SceneHistoryTests : IDisposable
         Directory.CreateDirectory(Path.Combine(m_projectRoot, "Assets"));
         SceneHistoryProbe.Reset();
         m_host = new EngineHostBuilder()
+                .UseMetadataSources(new DotNetAssemblyCatalogSource(typeof(SceneHistoryTests).Assembly),
+                    new ReflectionTypeCatalogSource(), new ReflectionSerializationMetadataSource())
             .UseMetadataCache(Path.Combine(m_projectRoot, "Library", "Assemblies"))
             .Build();
         m_session = m_host.CreateSession(new RuntimeSessionOptions
@@ -447,14 +451,14 @@ public sealed class SceneHistoryTests : IDisposable
     [MethodImpl(MethodImplOptions.NoInlining)]
     private void ReloadHistoryModule(bool install)
     {
-        AssemblyLoadRequest request = CreateHistoryRequest();
+        DotNetModuleSource request = CreateHistoryRequest();
         using AssemblyReloadSession reload = install
             ? m_host.modules.BeginReload([request])
             : m_host.modules.BeginReload([], [request.moduleName]);
         _ = m_reloads.Execute(reload);
     }
 
-    private static AssemblyLoadRequest CreateHistoryRequest()
+    private static DotNetModuleSource CreateHistoryRequest()
         => new()
         {
             moduleName = "SceneHistoryRecovery",

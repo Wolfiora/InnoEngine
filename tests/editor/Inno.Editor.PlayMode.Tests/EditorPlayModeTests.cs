@@ -1,3 +1,5 @@
+using Inno.Adapter.Serialization.DotNet;
+using Inno.Adapter.Modules.DotNet;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -37,6 +39,8 @@ public sealed class EditorPlayModeTests : IDisposable
     {
         Directory.CreateDirectory(Path.Combine(m_projectRoot, "Assets"));
         m_engineHost = new EngineHostBuilder()
+                .UseMetadataSources(new DotNetAssemblyCatalogSource(typeof(EditorPlayModeTests).Assembly),
+                    new ReflectionTypeCatalogSource(), new ReflectionSerializationMetadataSource())
             .UseMetadataCache(Path.Combine(m_projectRoot, "Library", "Assemblies"))
             .Build();
         m_editSession = m_engineHost.CreateSession(CreateSessionOptions(RuntimeSessionKind.Edit));

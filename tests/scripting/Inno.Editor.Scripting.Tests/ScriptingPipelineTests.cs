@@ -1,3 +1,5 @@
+using Inno.Adapter.Serialization.DotNet;
+using Inno.Adapter.Modules.DotNet;
 using Inno.Core.Diagnostics;
 using Inno.Extensibility.Reload;
 using System;
@@ -42,6 +44,141 @@ public sealed class ScriptingPipelineTests : IDisposable
     private readonly ScriptingFixture m_fixture = new();
 
     public void Dispose() => m_fixture.Dispose();
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void SourceLocalAssetPathsUseCompileTimeOwnershipAcrossDeployments(bool runtimeDeployment)
+    {
+        m_fixture.Write("Nested,=Folder/SourceLocalPathProbe.cs", """
+            using InnoEngine.Assets;
+            public static class SourceLocalPathProbe
+            {
+                public static AssetPath Resolve() => Assets.LocalPath("Materials/Default.imaterial");
+            }
+            """);
+        ScriptCompilationResult result = runtimeDeployment ? m_fixture.CompileRuntimeDeployment() : m_fixture.Compile();
+        Assert.True(result.success, FormatDiagnostics(result));
+        AssetPath path = InvokePublicPathProbe(Path.Combine(result.outputDirectory!, "Inno.GameScripts.dll"));
+        Assert.Equal(AssetSourceId.project, path.source);
+        Assert.Equal("Materials/Default.imaterial", path.localPath);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void SourceLocalAssetPathsFollowInstalledPluginOwnership(bool runtimeDeployment)
+    {
+        using var fixture = new ScriptingFixture((
+            root,
+            serialization
+        ) => WritePluginPackage(root, "local-path.iplugin", serialization,
+            new PluginManifest { pluginId = "tests.local-path", displayName = "Source Ownership Fixture" },
+            new Dictionary<string, byte[]>
+            {
+                ["Assets/Nested.imeta"] = serialization.Serialize(new ScriptingAssetSourceMeta
+                {
+                    persistentId = Guid.NewGuid(),
+                    sourceKind = (int)AssetSourceKind.Directory
+                }),
+                ["Assets/Nested/SourceLocalPathProbe.cs"] = System.Text.Encoding.UTF8.GetBytes("""
+                    using InnoEngine.Assets;
+                    public static class SourceLocalPathProbe
+                    {
+                        public static AssetPath Resolve() => Assets.LocalPath("Materials/Default.imaterial");
+                    }
+                    """),
+                ["Assets/Nested/SourceLocalPathProbe.cs.imeta"] = CreateScriptSourceMeta(serialization, Guid.NewGuid())
+            }));
+        ScriptCompilationResult result = runtimeDeployment ? fixture.CompileRuntimeDeployment() : fixture.Compile();
+        Assert.True(result.success, FormatDiagnostics(result));
+        string assemblyPath = Assert.Single(result.runtimeAssemblyPaths.Where(static path =>
+            Path.GetFileName(path).StartsWith("Inno.Plugin.", StringComparison.Ordinal)));
+
+        AssetPath path = InvokePublicPathProbe(assemblyPath);
+
+        Assert.Equal(new AssetSourceId("tests.local-path"), path.source);
+        Assert.Equal("Materials/Default.imaterial", path.localPath);
+    }
+
+    [Fact]
+    public void SourceLocalAssetPathsPreserveCallerSemanticsInIdeReferencesAndProjectMapping()
+    {
+        m_fixture.Write("Nested,=Folder/SourceLocalPathProbe.cs", """
+            using InnoEngine.Assets;
+            public static class SourceLocalPathProbe
+            {
+                public static AssetPath Resolve() => Assets.LocalPath("Materials/Default.imaterial");
+            }
+            """);
+        m_fixture.Rescan();
+        m_fixture.compiler.GenerateProjectFiles();
+        XDocument project = XDocument.Load(Path.Combine(m_fixture.projectRoot, "Inno.GameScripts.csproj"));
+        string map = Assert.Single(project.Descendants("PathMap")).Value;
+        Assert.Contains("Nested,,==Folder", map, StringComparison.Ordinal);
+        Assert.Contains("project::./Nested,,==Folder", map, StringComparison.Ordinal);
+        Assert.Contains(project.Descendants("HintPath"), reference => ContainsCustomAttribute(
+            Path.GetFullPath(reference.Value, m_fixture.projectRoot), "CallerFilePathAttribute"));
+    }
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static AssetPath InvokePublicPathProbe(string assemblyPath)
+    {
+        var lifetime = new System.Runtime.Loader.AssemblyLoadContext("source-local-path-test", isCollectible: true);
+        try
+        {
+            using var stream = new MemoryStream(File.ReadAllBytes(assemblyPath));
+            var assembly = lifetime.LoadFromStream(stream);
+            Func<AssetPath> resolve = assembly.GetType("SourceLocalPathProbe", throwOnError: true)!
+                .GetMethod("Resolve", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static)!
+                .CreateDelegate<Func<AssetPath>>();
+            return resolve();
+        }
+        finally
+        {
+            lifetime.Unload();
+        }
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void GeneratedRegistrationUsesTargetFrameworkReferenceContracts(bool runtimeDeployment)
+    {
+        m_fixture.Write("FrameworkReferenceProbe.cs", """
+            using InnoEngine.Mathematics;
+            using InnoEngine.Scene;
+            public sealed class FrameworkReferenceProbe : GameBehavior
+            {
+                public Vector2 point { get; set; }
+            }
+            """);
+        ScriptCompilationResult result = runtimeDeployment ? m_fixture.CompileRuntimeDeployment() : m_fixture.Compile();
+        Assert.True(result.success, FormatDiagnostics(result));
+        using FileStream stream = File.OpenRead(Path.Combine(result.outputDirectory!, "Inno.GameScripts.dll"));
+        using var executable = new PEReader(stream);
+        MetadataReader metadata = executable.GetMetadataReader();
+        Assert.DoesNotContain(metadata.AssemblyReferences, handle =>
+            metadata.GetString(metadata.GetAssemblyReference(handle).Name) == "System.Private.CoreLib");
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void RegistrationImplementationReferencesDoNotExposeIgnoredApi(bool runtimeDeployment)
+    {
+        m_fixture.Write("IgnoredApiProbe.cs", """
+            using InnoEngine.Scene;
+            public static class IgnoredApiProbe
+            {
+                public static void Capture(SceneAsset value) => value.CaptureFrom(null!, null!, null!);
+            }
+            """);
+        ScriptCompilationResult result = runtimeDeployment ? m_fixture.CompileRuntimeDeployment() : m_fixture.Compile();
+        Assert.False(result.success);
+        Assert.Contains(result.diagnostics, static diagnostic => diagnostic.id == "CS1061"
+            && diagnostic.message.Contains("CaptureFrom", StringComparison.Ordinal));
+    }
 
     [Fact]
     public void DispatchObservationIsAvailableInRuntimeCompilationAndIdeReferences()
@@ -196,7 +333,7 @@ public sealed class ScriptingPipelineTests : IDisposable
             """);
         ScriptCompilationResult result = m_fixture.Compile();
         Assert.True(result.success, FormatDiagnostics(result));
-        Assert.Contains(result.activationRequests, static request => request.scope == AssemblyScope.Editor);
+        Assert.Contains(result.moduleDeployments, static request => request.scope == AssemblyScope.Editor);
         m_fixture.compiler.GenerateProjectFiles();
         Assert.True(ContainsShaderApi("Inno.EditorScripts.csproj"));
         Assert.False(ContainsShaderApi("Inno.GameScripts.csproj"));
@@ -285,8 +422,8 @@ public sealed class ScriptingPipelineTests : IDisposable
         Assert.True(File.Exists(Path.Combine(result.outputDirectory!, "Inno.GameScripts.dll")));
         Assert.True(File.Exists(Path.Combine(result.outputDirectory!, "Inno.EditorScripts.dll")));
         Assert.NotEmpty(result.runtimeAssemblyPaths);
-        Assert.Contains(result.activationRequests, static request => request.scope == AssemblyScope.Runtime);
-        Assert.Contains(result.activationRequests, static request => request.scope == AssemblyScope.Editor);
+        Assert.Contains(result.moduleDeployments, static request => request.scope == AssemblyScope.Runtime);
+        Assert.Contains(result.moduleDeployments, static request => request.scope == AssemblyScope.Editor);
     }
 
     [Fact]
@@ -349,7 +486,7 @@ public sealed class ScriptingPipelineTests : IDisposable
         Assert.True(File.Exists(Path.Combine(result.outputDirectory!, "Inno.GameScripts.dll")));
         Assert.False(File.Exists(Path.Combine(result.outputDirectory!, "Inno.EditorScripts.dll")));
         Assert.DoesNotContain(
-            result.activationRequests,
+            result.moduleDeployments,
             static request => request.scope == AssemblyScope.Editor);
         Assert.DoesNotContain(
             result.compiledAssemblyNames.Concat(result.reusedAssemblyNames),
@@ -1799,7 +1936,7 @@ public sealed class ScriptingPipelineTests : IDisposable
 
         Assert.False(result.success);
         Assert.Null(result.outputDirectory);
-        Assert.Empty(result.activationRequests);
+        Assert.Empty(result.moduleDeployments);
         Assert.Empty(result.runtimeAssemblyPaths);
         Assert.Empty(result.compiledAssemblyNames);
         Assert.Empty(result.reusedAssemblyNames);
@@ -1875,9 +2012,9 @@ public sealed class ScriptingPipelineTests : IDisposable
         Assert.True(fixture.RefreshPlugins());
         ScriptCompilationResult unavailable = fixture.CompilePendingPluginReload(reload);
         Assert.True(unavailable.success, FormatDiagnostics(unavailable));
-        Assert.DoesNotContain(unavailable.activationRequests, static request =>
+        Assert.DoesNotContain(unavailable.moduleDeployments, static request =>
             request.domain == AssemblyDomain.InnoPlugin);
-        Assert.DoesNotContain(unavailable.activationRequests.SelectMany(static request => request.upstreamModuleNames),
+        Assert.DoesNotContain(unavailable.moduleDeployments.SelectMany(static request => request.upstreamModuleNames),
             static moduleName => string.Equals(
                 moduleName,
                 "Plugin.tests.unavailability",
@@ -2281,6 +2418,8 @@ internal sealed class ScriptingFixture : IDisposable
         Directory.CreateDirectory(libraryRoot);
         m_identityScope = m_identities.EnterScope();
         host = new EngineHostBuilder()
+                .UseMetadataSources(new DotNetAssemblyCatalogSource(typeof(ScriptingPipelineTests).Assembly),
+                    new ReflectionTypeCatalogSource(), new ReflectionSerializationMetadataSource())
             .UseMetadataCache(Path.Combine(libraryRoot, "Assemblies"))
             .Build();
         m_diagnosticScope = host.diagnostics.EnterScope();
@@ -2404,6 +2543,19 @@ internal sealed class ScriptingFixture : IDisposable
         return directory;
     }
 
+    private static IModuleSource CreateScriptModuleSource(ScriptModuleDeployment deployment)
+        => new DotNetModuleSource
+        {
+            moduleName = deployment.moduleName,
+            mainAssemblyPath = deployment.mainAssemblyPath,
+            domain = deployment.domain,
+            scope = deployment.scope,
+            preloadAssemblyPaths = deployment.preloadAssemblyPaths,
+            upstreamModuleNames = deployment.upstreamModuleNames,
+            assemblyScopes = deployment.assemblyScopes,
+            collectible = true
+        };
+
     internal ScriptReloadHost CreateReloadHost(EditorReloadCoordinator? reloads = null, bool autoCompile = false)
         => new(
             new ScriptReloadOptions
@@ -2417,7 +2569,8 @@ internal sealed class ScriptingFixture : IDisposable
             m_plugins,
             host.modules,
             m_settings,
-            reloads ?? new EditorReloadCoordinator());
+            reloads ?? new EditorReloadCoordinator(),
+            CreateScriptModuleSource);
 
     internal ScriptCompilationResult CompilePending(ScriptReloadHost reload)
     {
@@ -2467,6 +2620,7 @@ internal sealed class ScriptingFixture : IDisposable
                 m_plugins,
                 m_settings,
                 compiler,
+                new Func<ScriptModuleDeployment, IModuleSource>(CreateScriptModuleSource),
                 editorSession,
                 reloads
             ]);

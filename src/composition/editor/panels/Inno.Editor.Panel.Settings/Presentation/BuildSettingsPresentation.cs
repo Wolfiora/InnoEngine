@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 
 using Inno.Build;
+using Inno.Build.Managed;
 using EditorImGui = Inno.Editor.ImGui.ImGui;
 using EditorWidget = Inno.Editor.ImGui.ImGuiWidget.ImGuiWidget;
 using Inno.Native.ImGui;
@@ -17,6 +18,7 @@ internal enum BuildSettingsKey
     GameWindowWidth,
     GameWindowHeight,
     GameTarget,
+    GameManagedDeployment,
     GameOutputDirectory,
     PluginDisplayName,
     PluginOutputPath,
@@ -70,6 +72,7 @@ internal sealed class BuildSettingsField
                 settings.gameWindowHeight,
                 value => settings.gameWindowHeight = value),
             BuildSettingsKey.GameTarget => DrawTarget(settings, buildPipeline),
+            BuildSettingsKey.GameManagedDeployment => DrawManagedDeployment(settings, buildPipeline),
             BuildSettingsKey.GameOutputDirectory => DrawTextValue(
                 settings.gameOutputDirectory,
                 value => settings.gameOutputDirectory = value),
@@ -95,6 +98,7 @@ internal sealed class BuildSettingsField
             BuildSettingsKey.GameWindowWidth => settings.gameWindowWidth == defaults.gameWindowWidth,
             BuildSettingsKey.GameWindowHeight => settings.gameWindowHeight == defaults.gameWindowHeight,
             BuildSettingsKey.GameTarget => settings.gameTarget == defaults.gameTarget,
+            BuildSettingsKey.GameManagedDeployment => settings.gameManagedDeployment == defaults.gameManagedDeployment,
             BuildSettingsKey.GameOutputDirectory => settings.gameOutputDirectory == defaults.gameOutputDirectory,
             BuildSettingsKey.PluginDisplayName => settings.pluginDisplayName == defaults.pluginDisplayName,
             BuildSettingsKey.PluginOutputPath => settings.pluginOutputPath == defaults.pluginOutputPath,
@@ -123,6 +127,9 @@ internal sealed class BuildSettingsField
                 break;
             case BuildSettingsKey.GameWindowHeight:
                 settings.gameWindowHeight = defaults.gameWindowHeight;
+                break;
+            case BuildSettingsKey.GameManagedDeployment:
+                settings.gameManagedDeployment = defaults.gameManagedDeployment;
                 break;
             case BuildSettingsKey.GameTarget:
                 settings.gameTarget = defaults.gameTarget;
@@ -155,6 +162,7 @@ internal sealed class BuildSettingsField
            && left.gameWindowWidth == right.gameWindowWidth
            && left.gameWindowHeight == right.gameWindowHeight
            && left.gameTarget == right.gameTarget
+           && left.gameManagedDeployment == right.gameManagedDeployment
            && string.Equals(left.pluginDisplayName, right.pluginDisplayName, StringComparison.Ordinal)
            && string.Equals(left.pluginOutputPath, right.pluginOutputPath, StringComparison.Ordinal)
            && left.includePluginDependencies == right.includePluginDependencies;
@@ -181,6 +189,36 @@ internal sealed class BuildSettingsField
 
         apply(Math.Max(1, value));
         return true;
+    }
+
+    private static bool DrawManagedDeployment(
+        BuildSettings settings,
+        BuildPipeline buildPipeline
+    ) {
+        bool changed = false;
+        NativeImGui.SetNextItemWidth(-1f);
+        if (!EditorWidget.BeginBoundedCombo("##value", settings.gameManagedDeployment?.value ?? "Platform default"))
+            return false;
+        try
+        {
+            if (NativeImGui.Selectable("Platform default", settings.gameManagedDeployment is null))
+            {
+                settings.gameManagedDeployment = null;
+                changed = true;
+            }
+            foreach (ManagedDeploymentId deployment in buildPipeline.GetManagedDeployments(settings.gameTarget))
+            {
+                if (!NativeImGui.Selectable(deployment.value, settings.gameManagedDeployment == deployment))
+                    continue;
+                settings.gameManagedDeployment = deployment;
+                changed = true;
+            }
+        }
+        finally
+        {
+            EditorWidget.EndBoundedCombo();
+        }
+        return changed;
     }
 
     private static bool DrawTarget(
@@ -275,6 +313,11 @@ internal static class BuildSettingsPresentation
             "Build/Game/Target",
             "Game Export Defaults",
             "Platform target selected when the game export window opens."),
+        new BuildSettingsField(
+            BuildSettingsKey.GameManagedDeployment,
+            "Build/Game/Managed Deployment",
+            "Game Export Defaults",
+            "Selects the managed publisher independently of the platform. AOT compiles code before execution."),
         new BuildSettingsField(
             BuildSettingsKey.GameOutputDirectory,
             "Build/Game/Output Directory",

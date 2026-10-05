@@ -1,3 +1,4 @@
+using Inno.Adapter.Modules.DotNet;
 using System;
 using System.IO;
 using System.Linq;
@@ -21,8 +22,8 @@ public sealed class ModuleRetirementTests
     public void PendingParticipantDoesNotBeginUnloadingEitherLiveGeneration(string phase)
     {
         string cache = Path.Combine(Path.GetTempPath(), "InnoModuleRetirement", Guid.NewGuid().ToString("N"));
-        var modules = new ModuleHost(new ModuleHostOptions { cacheDirectory = cache });
-        var types = new TypeCatalog(modules);
+        var modules = new ModuleHost(new ModuleHostOptions { catalogSource = new DotNetAssemblyCatalogSource(typeof(ModuleRetirementTests).Assembly), cacheDirectory = cache });
+        var types = new TypeCatalog(modules, new ReflectionTypeCatalogSource());
         AssemblyModuleHandle handle = modules.Load(Request("V1"));
         var participant = new Participant();
         using IDisposable registration = modules.RegisterCatalogParticipant(participant);
@@ -64,8 +65,8 @@ public sealed class ModuleRetirementTests
     public void WrappedPendingKeepsBothCollectibleContextsAndPreservesTheOriginalFailure(string phase)
     {
         string cache = Path.Combine(Path.GetTempPath(), "InnoWrappedRetirement", Guid.NewGuid().ToString("N"));
-        var modules = new ModuleHost(new ModuleHostOptions { cacheDirectory = cache });
-        var types = new TypeCatalog(modules);
+        var modules = new ModuleHost(new ModuleHostOptions { catalogSource = new DotNetAssemblyCatalogSource(typeof(ModuleRetirementTests).Assembly), cacheDirectory = cache });
+        var types = new TypeCatalog(modules, new ReflectionTypeCatalogSource());
         AssemblyModuleHandle handle = modules.Load(Request("V1"));
         var participant = new Participant();
         using IDisposable registration = modules.RegisterCatalogParticipant(participant);
@@ -102,8 +103,8 @@ public sealed class ModuleRetirementTests
     public void CatalogParticipantErrorsBeforePendingDoNotDisappearOrUnloadEitherContext(string phase)
     {
         string cache = Path.Combine(Path.GetTempPath(), "InnoCatalogRetirement", Guid.NewGuid().ToString("N"));
-        var modules = new ModuleHost(new ModuleHostOptions { cacheDirectory = cache });
-        var types = new TypeCatalog(modules);
+        var modules = new ModuleHost(new ModuleHostOptions { catalogSource = new DotNetAssemblyCatalogSource(typeof(ModuleRetirementTests).Assembly), cacheDirectory = cache });
+        var types = new TypeCatalog(modules, new ReflectionTypeCatalogSource());
         AssemblyModuleHandle handle = modules.Load(Request("V1"));
         var ordinary = new Participant { failure = new InvalidOperationException("earlier catalog cleanup") };
         var pending = new Participant();
@@ -134,8 +135,8 @@ public sealed class ModuleRetirementTests
     public void RejectedCatalogActivationRemainsVisibleWhenItsRollbackIsPending()
     {
         string cache = Path.Combine(Path.GetTempPath(), "InnoRejectedRetirement", Guid.NewGuid().ToString("N"));
-        var modules = new ModuleHost(new ModuleHostOptions { cacheDirectory = cache });
-        var types = new TypeCatalog(modules);
+        var modules = new ModuleHost(new ModuleHostOptions { catalogSource = new DotNetAssemblyCatalogSource(typeof(ModuleRetirementTests).Assembly), cacheDirectory = cache });
+        var types = new TypeCatalog(modules, new ReflectionTypeCatalogSource());
         AssemblyModuleHandle handle = modules.Load(Request("V1"));
         var participant = new Participant();
         using IDisposable registration = modules.RegisterCatalogParticipant(participant);
@@ -154,10 +155,10 @@ public sealed class ModuleRetirementTests
         Assert.NotNull(RetirementPendingException.Find(Assert.ThrowsAny<Exception>(modules.Dispose)));
     }
 
-    private static AssemblyLoadRequest Request(string variant)
+    private static DotNetModuleSource Request(string variant)
     {
         string directory = Path.Combine(AppContext.BaseDirectory, "Modules", variant);
-        return new AssemblyLoadRequest
+        return new DotNetModuleSource
         {
             moduleName = "RetirementTests",
             mainAssemblyPath = Path.Combine(directory, "Inno.Extensibility.Modules.TestModule.dll"),

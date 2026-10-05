@@ -56,6 +56,24 @@ public sealed class LoggingBehaviorTests : IDisposable
     }
 
     [Theory]
+    [InlineData("/build/Game/PlayerBehavior.cs")]
+    [InlineData("C:/build/Game/PlayerBehavior.cs")]
+    [InlineData("C:\\build\\Game\\PlayerBehavior.cs")]
+    public void CompilerSourceCategoriesAreIndependentOfRuntimePathSeparators(string sourcePath)
+    {
+        using var sink = new ProbeSink();
+        m_router.RegisterSink(sink);
+        Log.Info("Portable source", filePath: sourcePath, lineNumber: 42);
+        m_router.Flush();
+
+        LogEntry entry = Assert.Single(sink.entries);
+        Assert.Equal("PlayerBehavior", entry.category);
+        Assert.Equal(sourcePath, entry.file);
+        Assert.Equal(42, entry.line);
+        m_router.UnregisterSink(sink);
+    }
+
+    [Theory]
     [InlineData(LogDeliveryMode.Inline, false)]
     [InlineData(LogDeliveryMode.Inline, true)]
     [InlineData(LogDeliveryMode.Background, false)]
@@ -102,10 +120,34 @@ public sealed class LoggingBehaviorTests : IDisposable
         using var sink = new ProbeSink();
         m_router.RegisterSink(sink);
 
-        Log.Info("message-{0}", 42);
+        Log.Info("message-{0}", [42]);
 
         Assert.True(sink.WaitForCount(1, TimeSpan.FromSeconds(2)));
         Assert.Contains(sink.entries, e => e.message == "message-42" && e.level == LogLevel.Info);
+        m_router.UnregisterSink(sink);
+    }
+
+    [Fact]
+    public void CallSiteIsCapturedForPlainAndFormattedMessagesWithoutMethodReflection()
+    {
+        using var sink = new ProbeSink();
+        m_router.RegisterSink(sink);
+
+        Log.Info("plain");
+        Log.Warn("formatted-{0}", [73]);
+        m_router.Flush();
+
+        Assert.Equal(2, sink.entries.Length);
+        Assert.All(sink.entries, entry =>
+        {
+            Assert.Equal(nameof(LoggingBehaviorTests), entry.category);
+            Assert.Equal("LoggingBehaviorTests.cs", Path.GetFileName(entry.file));
+            Assert.True(entry.line > 0);
+            Assert.Equal(Inno.Extensibility.Modules.AssemblyDomain.InnoInternal, entry.domain);
+        });
+        Assert.Equal("plain", sink.entries[0].message);
+        Assert.Equal("formatted-73", sink.entries[1].message);
+        Assert.Equal(sink.entries[0].line + 1, sink.entries[1].line);
         m_router.UnregisterSink(sink);
     }
 
@@ -215,7 +257,7 @@ public sealed class LoggingBehaviorTests : IDisposable
         m_router.RegisterSink(sink);
 
         for (var i = 0; i < 80; i++)
-            Log.Warn("line-{0}", i);
+            Log.Warn("line-{0}", [i]);
 
         m_router.Flush();
         m_router.UnregisterSink(sink);

@@ -10,15 +10,21 @@ Registry 派生实现不得直接调用 `OnCleanupFailed` 代替退休失败传�
 
 本项目是架构验证库，由统一 Build CLI 调用。`ArchitectureValidator.Execute(arguments)` 从包含
 `InnoEngine.sln` 的根目录加载源码与 `.csproj` 图，返回 0 表示通过，1 表示违反项；源码根缺失时抛出
-`DirectoryNotFoundException`。首个参数可指定根，维护参数只用于明确请求的文档修复操作。
+`DirectoryNotFoundException`。可指定源码根与 `--configuration Debug|Release`，默认 Debug。
+未知选项、重复配置和多个根抛出 `ArgumentException`。
+默认检查手写源码的多参数声明：逐参数换行、右括号对齐，以及紧随参数列表的 `) {`。
+检查基于 C# 语法节点，覆盖方法、构造函数、委托、主构造函数、局部函数和 Lambda，不改写源码。
 
 ## 检查范围
 
-源码检查之外，工具通过 Roslyn 读取刚构建的 Debug 程序集元数据，递归检查 public/protected
+源码检查之外，工具通过 Roslyn 读取明确选定配置的程序集元数据，递归检查 public/protected
 基类、接口、返回值、参数、泛型约束与外层封闭泛型、数组、tuple、指针及 unmanaged function pointer 中的依赖。
 它能识别类型别名和多行签名，不依赖名称正则。有效可见性同时考虑外层容器，internal/private 容器中的 public
 成员不被误判为对外 API；private-protected 成员不形成程序集外扩展契约。对应正反例由真实编译 DLL 驱动的 CLI 测试覆盖。
-Editor 公开签名中实际需要的项目不得标为 PrivateAssets=compile；Host/Shell 不得公开具体 Adapter。
+Editor 公开签名中实际需要的项目不得标为 PrivateAssets=compile；只用于实现的项目必须声明 PrivateAssets=compile。
+ProjectReference 收口为前置实现组和后置公开 API 组，禁止混合分组、重复类别分组或颠倒顺序。
+这两项判断基于实际程序集的公开签名；只看运行时会不会加载某个程序集不能决定其传递性。
+Host/Shell 不得公开具体 Adapter。
 Native 符号检查目前覆盖 BGFX、SDL3、MiniAudio；ImGui presentation 的边界仍由专项规则约束，
 不宣称已经通过统一规则证明所有 ImGui 类型均不可见。
 
@@ -40,7 +46,8 @@ dotnet build InnoEngine.sln -m:1 -p:UseSharedCompilation=false
 dotnet run --no-build --project build/cli/Inno.Build.Cli -- verify .
 ```
 
-修复工具参数只用于机械展开/补全 XML，不改变领域行为；正常 CI 运行不使用修复参数。
+`--expand-xml` 只机械展开已有 XML 标签，不改变说明内容。缺失说明由作者补齐，
+工具不根据方法名称猜测语义，也不把继承契约替换为占位文本。正常 CI 不使用写入参数。
 
 ## 库入口与 Host 隔离检查
 

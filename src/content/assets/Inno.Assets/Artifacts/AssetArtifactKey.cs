@@ -7,17 +7,31 @@ namespace Inno.Assets;
 /// </summary>
 public readonly struct AssetArtifactKey : IEquatable<AssetArtifactKey>
 {
+    private const int C_SHA256_HEX_LENGTH = 64;
+
     /// <summary>
     /// Creates an artifact key from a hexadecimal content fingerprint.
     /// </summary>
     /// <param name="value">
     /// The hexadecimal content fingerprint.
     /// </param>
+    /// <exception cref="ArgumentException">
+    /// A non-empty value is not exactly 64 hexadecimal digits.
+    /// </exception>
     public AssetArtifactKey(string value)
     {
-        this.value = string.IsNullOrWhiteSpace(value)
+        string normalized = string.IsNullOrWhiteSpace(value)
             ? string.Empty
             : value.Trim().ToUpperInvariant();
+        if (normalized.Length != 0)
+        {
+            if (normalized.Length != C_SHA256_HEX_LENGTH)
+                throw new ArgumentException("An artifact key must be a complete SHA-256 hexadecimal fingerprint.", nameof(value));
+            foreach (char digit in normalized)
+                if (digit is not (>= '0' and <= '9') and not (>= 'A' and <= 'F'))
+                    throw new ArgumentException("An artifact key cannot contain non-hexadecimal characters.", nameof(value));
+        }
+        this.value = normalized;
     }
 
     /// <summary>
@@ -26,7 +40,7 @@ public readonly struct AssetArtifactKey : IEquatable<AssetArtifactKey>
     public static AssetArtifactKey empty => default;
 
     /// <summary>
-    /// Gets the normalized hexadecimal value.
+    /// Gets the normalized SHA-256 hexadecimal fingerprint, or an empty value for an unassigned key.
     /// </summary>
     public string value { get; } = string.Empty;
 

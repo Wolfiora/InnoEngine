@@ -21,3 +21,7 @@ backend.ReleaseFont(face);
 ```
 
 此代码属于 Host/adapter 测试层；游戏脚本应使用 `InnoEngine.Text.Text`。详情参见 [Text Runtime](Inno.Text.Runtime.md)。
+
+## Composition provider
+
+`FreeTypeHarfBuzzTextBackendProvider()` 只创建注册描述，不初始化原生服务。`CreateBackend()` 是继承的 provider 创建扩展点，返回调用方拥有的服务。`id` 来自所属领域的内置稳定 ID；同一 provider 可在 composition 生命周期内创建独立服务，具体线程及进程 owner 约束仍由该实现执行。

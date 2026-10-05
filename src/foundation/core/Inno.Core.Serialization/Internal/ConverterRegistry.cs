@@ -102,14 +102,10 @@ internal sealed class ConverterRegistry : IDisposable
                 arguments[i] = argument;
             }
 
-            try
-            {
-                closedConverterType = registeredType.MakeGenericType(arguments);
-            }
-            catch
-            {
+            Type? construction = snapshot.ConstructGenericType(registeredType, arguments);
+            if (construction is null)
                 return false;
-            }
+            closedConverterType = construction;
         }
 
         if (!TryGetConverterTargetPattern(closedConverterType, out Type targetType) || targetType.ContainsGenericParameters)
@@ -117,15 +113,8 @@ internal sealed class ConverterRegistry : IDisposable
         if (!targetType.IsAssignableFrom(valueType))
             return false;
 
-        object converter = GetOrCreateConverter(snapshot, closedConverterType);
-
-        Type invokerType = typeof(ConverterInvoker<>).MakeGenericType(targetType);
-        var invoker = (ConverterInvoker)Activator.CreateInstance(
-            invokerType,
-            BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic,
-            binder: null,
-            args: [converter, closedConverterType],
-            culture: null)!;
+        var converter = (SerializationConverter)GetOrCreateConverter(snapshot, closedConverterType);
+        ConverterInvoker invoker = converter.CreateInvoker();
         candidate = new ConverterCandidate(
             closedConverterType,
             GetTypeDistance(valueType, targetType),
@@ -142,8 +131,7 @@ internal sealed class ConverterRegistry : IDisposable
 
         try
         {
-            converter = Activator.CreateInstance(converterType, nonPublic: true)
-                ?? throw new InvalidOperationException("Activator returned null.");
+            converter = snapshot.CreateInstance(converterType);
         }
         catch (Exception exception)
         {
@@ -215,24 +203,17 @@ internal sealed class ConverterRegistry : IDisposable
     ) {
         if (derivedType == targetType)
             return 0;
+        // Assignability was validated by the caller. Implemented interfaces share one rank,
+        // including variant constructions; class inheritance retains its exact depth.
+        if (targetType.IsInterface)
+            return 1;
 
-        var visited = new HashSet<Type> { derivedType };
-        var queue = new Queue<(Type type, int distance)>();
-        queue.Enqueue((derivedType, 0));
-        while (queue.Count > 0)
+        int distance = 1;
+        for (Type? current = derivedType.BaseType; current is not null; current = current.BaseType)
         {
-            (Type current, int distance) = queue.Dequeue();
-            IEnumerable<Type> nextTypes = current.BaseType is Type baseType
-                ? current.GetInterfaces().Append(baseType)
-                : current.GetInterfaces();
-            foreach (Type next in nextTypes)
-            {
-                if (!visited.Add(next))
-                    continue;
-                if (next == targetType)
-                    return distance + 1;
-                queue.Enqueue((next, distance + 1));
-            }
+            if (current == targetType)
+                return distance;
+            distance++;
         }
 
         return int.MaxValue;
@@ -299,7 +280,7 @@ internal sealed class ConverterRegistry : IDisposable
                 }
             }
 
-            return new ConverterRegistrySnapshot(registrations);
+            return new ConverterRegistrySnapshot(registrations, types);
         }
 
         /// <summary>
@@ -316,13 +297,26 @@ internal sealed class ConverterRegistry : IDisposable
             ? m_registry
             : throw new ObjectDisposedException(nameof(ConverterRegistry));
 
-    internal sealed class ConverterRegistrySnapshot(IReadOnlyList<Type> registrations)
+    internal sealed class ConverterRegistrySnapshot(
+        IReadOnlyList<Type> registrations,
+        TypeCacheSnapshot types
+    )
     {
+        private TypeCacheSnapshot? m_types = types;
         internal readonly object sync = new();
         internal readonly Dictionary<Type, ConverterInvoker?> cache = [];
         internal readonly Dictionary<Type, object> converterInstances = [];
         internal IReadOnlyList<Type> registrations = registrations;
         private int m_referenceCount = 1;
+
+        internal object CreateInstance(Type type)
+            => (m_types ?? throw new ObjectDisposedException(nameof(ConverterRegistrySnapshot))).CreateInstance(type);
+
+        internal Type? ConstructGenericType(
+            Type definition,
+            Type[] arguments
+        ) => (m_types ?? throw new ObjectDisposedException(nameof(ConverterRegistrySnapshot)))
+            .ConstructGenericType(definition, arguments);
 
         internal bool TryAcquire()
         {
@@ -370,6 +364,7 @@ internal sealed class ConverterRegistry : IDisposable
                 cache.Clear();
                 converterInstances.Clear();
                 registrations = Array.Empty<Type>();
+                m_types = null;
             }
         }
     }
@@ -462,12 +457,12 @@ internal sealed class ConverterInvoker<T> : ConverterInvoker
     private readonly SerializationConverter<T> m_converter;
 
     internal ConverterInvoker(
-        object converter,
+        SerializationConverter<T> converter,
         Type converterType
     )
         : base(typeof(T), converterType)
     {
-        m_converter = (SerializationConverter<T>)converter;
+        m_converter = converter;
     }
 
     internal override SerializationNode Write(

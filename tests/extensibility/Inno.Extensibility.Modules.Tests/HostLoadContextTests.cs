@@ -5,6 +5,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.Loader;
 using Inno.Extensibility.Modules;
 using Inno.Extensibility.Types;
+using Inno.Adapter.Modules.DotNet;
 using Xunit;
 
 namespace Inno.Extensibility.Modules.Tests;
@@ -43,13 +44,19 @@ public sealed class HostLoadContextTests
         {
             Assembly modules = context.LoadFromAssemblyPath(typeof(ModuleHost).Assembly.Location);
             Assembly types = context.LoadFromAssemblyPath(typeof(TypeCatalog).Assembly.Location);
+            Assembly adapter = context.LoadFromAssemblyPath(typeof(DotNetAssemblyCatalogSource).Assembly.Location);
+            Type sourceType = adapter.GetType(typeof(DotNetAssemblyCatalogSource).FullName!, throwOnError: true)!;
+            object source = Activator.CreateInstance(sourceType, [new[] { modules, types }])!;
             Type optionsType = modules.GetType(typeof(ModuleHostOptions).FullName!, throwOnError: true)!;
             object options = Activator.CreateInstance(optionsType)!;
             optionsType.GetProperty(nameof(ModuleHostOptions.cacheDirectory))!.SetValue(options, cache);
+            optionsType.GetProperty(nameof(ModuleHostOptions.catalogSource))!.SetValue(options, source);
             Type hostType = modules.GetType(typeof(ModuleHost).FullName!, throwOnError: true)!;
             using var host = (IDisposable)Activator.CreateInstance(hostType, options)!;
             Type catalogType = types.GetType(typeof(TypeCatalog).FullName!, throwOnError: true)!;
-            using var catalog = (IDisposable)Activator.CreateInstance(catalogType, host)!;
+            Type metadataType = adapter.GetType(typeof(ReflectionTypeCatalogSource).FullName!, throwOnError: true)!;
+            object metadata = Activator.CreateInstance(metadataType)!;
+            using var catalog = (IDisposable)Activator.CreateInstance(catalogType, host, metadata)!;
             object snapshot = catalogType.GetProperty(nameof(TypeCatalog.current))!.GetValue(catalog)!;
             MethodInfo query = snapshot.GetType().GetMethod(nameof(TypeCacheSnapshot.TryGetTypeRef))!;
             Assert.True((bool)query.Invoke(snapshot, [hostType, null])!);

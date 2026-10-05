@@ -1,14 +1,22 @@
 {
-  "BaseConfig": {
-    "Url": "file://common.json"
+  "baseConfig": {
+    "url": "file://common.json"
   },
-  "Preset": "emscripten-c,c-library",
-  "LibName": "libinno-text",
-  "IncludeFolders": [
-    "../Native",
+  "preset": "emscripten-c,c-library",
+  "libName": "libinno-text",
+  "entryFiles": [
+    "../obj/browser-wasm/Native/include/Classes.h"
+  ],
+  "allowedHeaders": [
+    "../obj/browser-wasm/Native/include/Classes.h",
+    "../obj/browser-wasm/Native/include/common.h",
+    "../obj/browser-wasm/Native/include/enums.h"
+  ],
+  "includeFolders": [
+    "../obj/browser-wasm/Native/include",
     "%EM_CACHE%/sysroot/include"
   ],
-  "OutputPath": "../obj/browser-wasm/Generated",
-  "TargetSysRoot": "%EM_CACHE%/sysroot",
-  "WrapPointersAsHandle": true
+  "outputPath": "../obj/browser-wasm/Generated",
+  "targetSysRoot": "%EM_CACHE%/sysroot",
+  "wrapPointersAsHandle": true
 }

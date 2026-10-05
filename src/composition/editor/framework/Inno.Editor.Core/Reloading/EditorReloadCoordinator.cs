@@ -63,7 +63,7 @@ public sealed class EditorReloadCoordinator : IScriptReloadCoordinator
     /// <exception cref="AggregateException">
     /// Thrown when activation fails and one or more feature or assembly rollback stages also fail.
     /// </exception>
-    public AssemblyUnloadMonitor Execute(
+    public IAssemblyUnloadProbe Execute(
         AssemblyReloadSession reload,
         IGenerationChange? externalChange = null
     ) {
@@ -130,7 +130,7 @@ public sealed class EditorReloadCoordinator : IScriptReloadCoordinator
         AssemblyReloadSession reload,
         IGenerationChange? external
     )
-        : IGenerationPublication<AssemblyUnloadMonitor>, IGenerationChange
+        : IGenerationPublication<IAssemblyUnloadProbe>, IGenerationChange
     {
         /// <summary>
         /// Publishes candidate assemblies before their external asset and settings generation.
@@ -147,7 +147,7 @@ public sealed class EditorReloadCoordinator : IScriptReloadCoordinator
         /// <returns>
         /// The weak monitor for the retired assembly generation.
         /// </returns>
-        public AssemblyUnloadMonitor Complete() => reload.Complete();
+        public IAssemblyUnloadProbe Complete() => reload.Complete();
 
         void IGenerationChange.PrepareForActivation() => external?.PrepareForActivation();
         void IGenerationChange.Apply() { }

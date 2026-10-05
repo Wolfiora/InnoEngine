@@ -6,6 +6,8 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 
+using Inno.Extensibility.Catalogs;
+
 namespace Inno.Extensibility.Types;
 
 /// <summary>
@@ -63,15 +65,13 @@ internal sealed class TypeIdentityRegistry
     /// The previous consumed by rebuild; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
     public void Rebuild(
-        IEnumerable<Type> types,
+        IEnumerable<TypeCatalogMetadata> types,
         TypeIdentityRegistry? previous
     ) {
         ArgumentNullException.ThrowIfNull(types);
 
-        Type[] sourceTypes = types
-            .Where(static t => t is not null)
-            .Distinct()
-            .ToArray();
+        Dictionary<Type, TypeCatalogMetadata> metadata = types.ToDictionary(static declaration => declaration.type);
+        Type[] sourceTypes = metadata.Keys.ToArray();
 
         var stableByType = new Dictionary<Type, Guid>();
         var typeByStable = new Dictionary<Guid, Type>();
@@ -80,7 +80,7 @@ internal sealed class TypeIdentityRegistry
 
         foreach (Type type in sourceTypes)
         {
-            StableTypeIdAttribute? attr = type.GetCustomAttribute<StableTypeIdAttribute>(inherit: false);
+            StableTypeIdAttribute? attr = metadata[type].declaredAttributes.OfType<StableTypeIdAttribute>().SingleOrDefault();
             GeneratedStableTypeMapping? mapping = null;
             Guid stableId;
             if (attr is not null)

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Inno.Audio;
 
 namespace Inno.Adapter.Audio;
@@ -8,10 +9,15 @@ namespace Inno.Adapter.Audio;
 public interface IAudioBackendFactory
 {
     /// <summary>
+    /// Gets the exact registrations available in this composition snapshot.
+    /// </summary>
+    IReadOnlyList<AudioBackendId> supportedBackends { get; }
+
+    /// <summary>
     /// Creates a new audio device for one runtime audio generation.
     /// </summary>
     /// <param name="backend">
-    /// Built-in audio backend selected by the composition root.
+    /// audio implementation selected by the composition root.
     /// </param>
     /// <param name="options">
     /// Backend-neutral device options.
@@ -23,7 +29,7 @@ public interface IAudioBackendFactory
     /// Thrown when the catalog does not contain the selected backend.
     /// </exception>
     IAudioDevice CreateDevice(
-        AudioBackend backend,
+        AudioBackendId backend,
         AudioBackendOptions options = default
     );
 }

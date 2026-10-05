@@ -6,18 +6,17 @@
 
 ## 职责与边界
 
-- `目标 profile` 必须在首次访问 `MiniAudio` 前设置；默认动态模式从引擎 native 输出或 Player Support Pack 装载当前配置的动态库。
-- `MiniAudio.GetLibraryName()` 返回平台无关的 `miniaudio` library stem。
+- 目标 profile 是构建输入，不是运行时可切换属性；动态 profile 从应用已部署的 `native` 树装载当前配置动态库。
 - Debug 与 Release 分别绑定 `miniaudio-debug`、`miniaudio-release`。macOS 的 `lib` 前缀及扩展名由 `Inno.Native.LibraryLoading` 解析。
-- 该程序集是后端 ABI，不是稳定游戏音频 API。业务、Scene、Asset 与脚本不得直接依赖；未来由 `Inno.Adapter.Audio.MiniAudio` adapter 隔离。
+- 该程序集是后端 ABI，不是稳定游戏音频 API。业务、Scene、Asset 与脚本不得直接依赖；由 `Inno.Adapter.Audio.MiniAudio` adapter 隔离。
 
 ## 生成来源与生命周期
 
-Binding 由 BindGen-CS commit `3e4bf6a` 从 `extern/miniaudio/miniaudio.h` 生成，native library 与 managed binding 必须始终来自同一个 miniaudio commit。当前 vendor 固定为 tag `0.11.25`、commit `9634bedb5b5a2ca38c1ee7108a9358a4e233f14d`；升级时直接重新生成当前 API，不保留旧 ABI 兼容层。
+Binding 由当前 BGCS 和本项目配置从 `extern/miniaudio/miniaudio.h` 生成，native library 与 managed binding 必须始终来自同一份头文件和 native source。当前 vendor 固定为 tag `0.11.25`；升级时直接重新生成当前 API，不保留旧 ABI 兼容层。
 
-当前 generated function table 固定包含 931 个 C ABI symbol，并与同一版本的参考 binding API 集合一致。首次调用任一 generated 函数会装载整个 function table；缺失任何 native export 都会立即失败。调用方必须遵守 miniaudio 原生的 init/uninit、线程与 callback 生命周期，不得跨插件代际持有 native pointer、delegate 或运行时对象。
+当前 generated function table 的精确符号集合以生成文件为准，并由独立 native tests 检查。首次调用任一 generated 函数会装载整个 function table；缺失任何 required export 都会立即失败。调用方必须遵守 miniaudio 原生的 init/uninit、线程与 callback 生命周期，不得跨插件代际持有 native pointer、delegate 或运行时对象。
 
-当前发行目标只有 macOS ARM64 与 Windows x64；Linux 不在支持范围内。
+当前发行目标包括 macOS ARM64、Windows x64 与 Browser Wasm；实机验收范围见 [本次报告](../architecture/PLATFORM_RUNTIME_ACCEPTANCE.md)。Linux 不在当前发行范围内。
 
 ## 基本验证
 
@@ -28,11 +27,11 @@ uint major = 0;
 uint minor = 0;
 uint revision = 0;
 MiniAudio.Version(ref major, ref minor, ref revision);
-string version = MiniAudio.VersionStringS();
+string? version = MiniAudio.VersionString();
 ```
 
-生产代码应通过未来的后端中立 Audio API 工作；上述调用仅用于 Native test 与底层 adapter 实现。
+生产代码通过 [中立 Audio API](../audio/Inno.Audio.md) 工作；上述调用仅用于 Native test 与底层 adapter 实现。
 
 ## 静态目标
 
-同一项目通过 bindgen.browser-wasm.json 生成 wasm32 的静态符号绑定，继承 common.json 的声明；目标编译使用 INNO_STATIC_NATIVE，不初始化动态 loader。Host profile 仍使用原动态库命名与显式初始化。生成输出分别属于宿主 Generated/Bindings.cs 和目标 obj/browser-wasm/Generated/Bindings.cs，没有 Native Browser 副本。
+同一项目通过 bindgen.browser-wasm.json 生成 wasm32 的静态符号绑定，继承 common.json 的声明；目标编译使用 INNO_STATIC_NATIVE，不初始化动态 loader。Host profile 通过类型初始化装载对应配置的库。生成输出分别属于宿主 Generated/Bindings.cs 和目标 obj/browser-wasm/<generationFingerprint>/Generated/Bindings.cs，没有 Native Browser 副本。

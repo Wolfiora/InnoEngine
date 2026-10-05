@@ -55,11 +55,11 @@ internal sealed class WindowsX64Sdl3Builder : Sdl3Builder
         var buildDir = Path.Combine(context.GetNativeBuildRoot(typeof(Sdl3Toolchain).Assembly), BUILD_DIR_NAME, config);
         var buildType = GetBuildType(config);
 
-        await ToolchainEnvironment.RunAsync(
+        await ToolchainEnvironment.RunAsync(context,
             "cmake",
             $"-S . -B \"{buildDir}\" -G \"{GENERATOR}\" -A {PLATFORM} -DSDL_SHARED=ON -DSDL_STATIC=OFF -DSDL_TESTS=OFF -DSDL_EXAMPLES=OFF",
             sdlDir, cancellationToken);
-        await ToolchainEnvironment.RunAsync(
+        await ToolchainEnvironment.RunAsync(context,
             "cmake",
             $"--build \"{buildDir}\" --config {buildType} --target SDL3-shared",
             sdlDir, cancellationToken);

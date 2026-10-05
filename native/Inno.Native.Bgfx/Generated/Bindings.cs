@@ -5,6 +5,7 @@
 //     Changes will be replaced the next time bindings are generated.
 // </auto-generated>
 // ------------------------------------------------------------------------------
+#pragma warning disable CS1591 // Native declarations may omit documentation.
 #nullable enable
 using BGCS.Runtime;
 using System.Diagnostics;
@@ -3839,27 +3840,52 @@ namespace Inno.Native.Bgfx
         /// To be documented.
         /// </summary>
         [DllImport(LibName, CallingConvention = CallingConvention.Cdecl, EntryPoint = "bgfx_attachment_init")]
-        internal static extern void attachment_initNative(Attachment* @this, TextureHandle handle, Access access, ushort layer, ushort numLayers, ushort mip, byte resolve);
+        internal static extern void attachment_initInterop(Attachment* @this, TextureHandle handle, int access, ushort layer, ushort numLayers, ushort mip, byte resolve);
+        internal static void attachment_initNative(Attachment* @this, TextureHandle handle, Access access, ushort layer, ushort numLayers, ushort mip, byte resolve)
+        {
+            attachment_initInterop(@this, handle, (int)access, layer, numLayers, mip, resolve);
+        }
+
         /// <summary>
         /// To be documented.
         /// </summary>
         [DllImport(LibName, CallingConvention = CallingConvention.Cdecl, EntryPoint = "bgfx_vertex_layout_begin")]
-        internal static extern VertexLayout* vertex_layout_beginNative(VertexLayout* @this, RendererType rendererType);
+        internal static extern VertexLayout* vertex_layout_beginInterop(VertexLayout* @this, int rendererType);
+        internal static VertexLayout* vertex_layout_beginNative(VertexLayout* @this, RendererType rendererType)
+        {
+            return vertex_layout_beginInterop(@this, (int)rendererType);
+        }
+
         /// <summary>
         /// To be documented.
         /// </summary>
         [DllImport(LibName, CallingConvention = CallingConvention.Cdecl, EntryPoint = "bgfx_vertex_layout_add")]
-        internal static extern VertexLayout* vertex_layout_addNative(VertexLayout* @this, Attrib attrib, byte num, AttribType type, byte normalized, byte asInt);
+        internal static extern VertexLayout* vertex_layout_addInterop(VertexLayout* @this, int attrib, byte num, int type, byte normalized, byte asInt);
+        internal static VertexLayout* vertex_layout_addNative(VertexLayout* @this, Attrib attrib, byte num, AttribType type, byte normalized, byte asInt)
+        {
+            return vertex_layout_addInterop(@this, (int)attrib, num, (int)type, normalized, asInt);
+        }
+
         /// <summary>
         /// To be documented.
         /// </summary>
         [DllImport(LibName, CallingConvention = CallingConvention.Cdecl, EntryPoint = "bgfx_vertex_layout_decode")]
-        internal static extern void vertex_layout_decodeNative(VertexLayout* @this, Attrib attrib, byte* num, AttribType* type, byte* normalized, byte* asInt);
+        internal static extern void vertex_layout_decodeInterop(VertexLayout* @this, int attrib, byte* num, AttribType* type, byte* normalized, byte* asInt);
+        internal static void vertex_layout_decodeNative(VertexLayout* @this, Attrib attrib, byte* num, AttribType* type, byte* normalized, byte* asInt)
+        {
+            vertex_layout_decodeInterop(@this, (int)attrib, num, type, normalized, asInt);
+        }
+
         /// <summary>
         /// To be documented.
         /// </summary>
         [DllImport(LibName, CallingConvention = CallingConvention.Cdecl, EntryPoint = "bgfx_vertex_layout_has")]
-        internal static extern byte vertex_layout_hasNative(VertexLayout* @this, Attrib attrib);
+        internal static extern byte vertex_layout_hasInterop(VertexLayout* @this, int attrib);
+        internal static byte vertex_layout_hasNative(VertexLayout* @this, Attrib attrib)
+        {
+            return vertex_layout_hasInterop(@this, (int)attrib);
+        }
+
         /// <summary>
         /// To be documented.
         /// </summary>
@@ -3874,7 +3900,12 @@ namespace Inno.Native.Bgfx
         /// To be documented.
         /// </summary>
         [DllImport(LibName, CallingConvention = CallingConvention.Cdecl, EntryPoint = "bgfx_vertex_layout_get_offset")]
-        internal static extern ushort vertex_layout_get_offsetNative(VertexLayout* @this, Attrib attrib);
+        internal static extern ushort vertex_layout_get_offsetInterop(VertexLayout* @this, int attrib);
+        internal static ushort vertex_layout_get_offsetNative(VertexLayout* @this, Attrib attrib)
+        {
+            return vertex_layout_get_offsetInterop(@this, (int)attrib);
+        }
+
         /// <summary>
         /// To be documented.
         /// </summary>
@@ -3889,12 +3920,22 @@ namespace Inno.Native.Bgfx
         /// To be documented.
         /// </summary>
         [DllImport(LibName, CallingConvention = CallingConvention.Cdecl, EntryPoint = "bgfx_vertex_pack")]
-        internal static extern void vertex_packNative(float* input, byte inputNormalized, Attrib attr, VertexLayout* layout, void* data, uint index);
+        internal static extern void vertex_packInterop(float* input, byte inputNormalized, int attr, VertexLayout* layout, void* data, uint index);
+        internal static void vertex_packNative(float* input, byte inputNormalized, Attrib attr, VertexLayout* layout, void* data, uint index)
+        {
+            vertex_packInterop(input, inputNormalized, (int)attr, layout, data, index);
+        }
+
         /// <summary>
         /// To be documented.
         /// </summary>
         [DllImport(LibName, CallingConvention = CallingConvention.Cdecl, EntryPoint = "bgfx_vertex_unpack")]
-        internal static extern void vertex_unpackNative(float* output, Attrib attr, VertexLayout* layout, void* data, uint index);
+        internal static extern void vertex_unpackInterop(float* output, int attr, VertexLayout* layout, void* data, uint index);
+        internal static void vertex_unpackNative(float* output, Attrib attr, VertexLayout* layout, void* data, uint index)
+        {
+            vertex_unpackInterop(output, (int)attr, layout, data, index);
+        }
+
         /// <summary>
         /// To be documented.
         /// </summary>
@@ -3909,12 +3950,22 @@ namespace Inno.Native.Bgfx
         /// To be documented.
         /// </summary>
         [DllImport(LibName, CallingConvention = CallingConvention.Cdecl, EntryPoint = "bgfx_topology_convert")]
-        internal static extern uint topology_convertNative(TopologyConvert conversion, void* dst, uint dstSize, void* indices, uint numIndices, byte index32);
+        internal static extern uint topology_convertInterop(int conversion, void* dst, uint dstSize, void* indices, uint numIndices, byte index32);
+        internal static uint topology_convertNative(TopologyConvert conversion, void* dst, uint dstSize, void* indices, uint numIndices, byte index32)
+        {
+            return topology_convertInterop((int)conversion, dst, dstSize, indices, numIndices, index32);
+        }
+
         /// <summary>
         /// To be documented.
         /// </summary>
         [DllImport(LibName, CallingConvention = CallingConvention.Cdecl, EntryPoint = "bgfx_topology_sort_tri_list")]
-        internal static extern void topology_sort_tri_listNative(TopologySort sort, void* dst, uint dstSize, float* dir, float* pos, void* vertices, uint stride, void* indices, uint numIndices, byte index32);
+        internal static extern void topology_sort_tri_listInterop(int sort, void* dst, uint dstSize, float* dir, float* pos, void* vertices, uint stride, void* indices, uint numIndices, byte index32);
+        internal static void topology_sort_tri_listNative(TopologySort sort, void* dst, uint dstSize, float* dir, float* pos, void* vertices, uint stride, void* indices, uint numIndices, byte index32)
+        {
+            topology_sort_tri_listInterop((int)sort, dst, dstSize, dir, pos, vertices, stride, indices, numIndices, index32);
+        }
+
         /// <summary>
         /// To be documented.
         /// </summary>
@@ -3924,7 +3975,12 @@ namespace Inno.Native.Bgfx
         /// To be documented.
         /// </summary>
         [DllImport(LibName, CallingConvention = CallingConvention.Cdecl, EntryPoint = "bgfx_get_renderer_name")]
-        internal static extern byte* get_renderer_nameNative(RendererType type);
+        internal static extern byte* get_renderer_nameInterop(int type);
+        internal static byte* get_renderer_nameNative(RendererType type)
+        {
+            return get_renderer_nameInterop((int)type);
+        }
+
         /// <summary>
         /// To be documented.
         /// </summary>
@@ -3944,7 +4000,12 @@ namespace Inno.Native.Bgfx
         /// To be documented.
         /// </summary>
         [DllImport(LibName, CallingConvention = CallingConvention.Cdecl, EntryPoint = "bgfx_reset")]
-        internal static extern void resetNative(uint width, uint height, uint flags, TextureFormat format);
+        internal static extern void resetInterop(uint width, uint height, uint flags, int format);
+        internal static void resetNative(uint width, uint height, uint flags, TextureFormat format)
+        {
+            resetInterop(width, height, flags, (int)format);
+        }
+
         /// <summary>
         /// To be documented.
         /// </summary>
@@ -3954,7 +4015,12 @@ namespace Inno.Native.Bgfx
         /// To be documented.
         /// </summary>
         [DllImport(LibName, CallingConvention = CallingConvention.Cdecl, EntryPoint = "bgfx_get_renderer_type")]
-        internal static extern RendererType get_renderer_typeNative();
+        internal static extern int get_renderer_typeInterop();
+        internal static RendererType get_renderer_typeNative()
+        {
+            return (RendererType)get_renderer_typeInterop();
+        }
+
         /// <summary>
         /// To be documented.
         /// </summary>
@@ -4169,7 +4235,12 @@ namespace Inno.Native.Bgfx
         /// To be documented.
         /// </summary>
         [DllImport(LibName, CallingConvention = CallingConvention.Cdecl, EntryPoint = "bgfx_is_texture_valid")]
-        internal static extern byte is_texture_validNative(ushort depth, byte cubeMap, ushort numLayers, TextureFormat format, ulong flags);
+        internal static extern byte is_texture_validInterop(ushort depth, byte cubeMap, ushort numLayers, int format, ulong flags);
+        internal static byte is_texture_validNative(ushort depth, byte cubeMap, ushort numLayers, TextureFormat format, ulong flags)
+        {
+            return is_texture_validInterop(depth, cubeMap, numLayers, (int)format, flags);
+        }
+
         /// <summary>
         /// To be documented.
         /// </summary>
@@ -4179,7 +4250,12 @@ namespace Inno.Native.Bgfx
         /// To be documented.
         /// </summary>
         [DllImport(LibName, CallingConvention = CallingConvention.Cdecl, EntryPoint = "bgfx_calc_texture_size")]
-        internal static extern void calc_texture_sizeNative(TextureInfo* info, ushort width, ushort height, ushort depth, byte cubeMap, byte hasMips, ushort numLayers, TextureFormat format);
+        internal static extern void calc_texture_sizeInterop(TextureInfo* info, ushort width, ushort height, ushort depth, byte cubeMap, byte hasMips, ushort numLayers, int format);
+        internal static void calc_texture_sizeNative(TextureInfo* info, ushort width, ushort height, ushort depth, byte cubeMap, byte hasMips, ushort numLayers, TextureFormat format)
+        {
+            calc_texture_sizeInterop(info, width, height, depth, cubeMap, hasMips, numLayers, (int)format);
+        }
+
         /// <summary>
         /// To be documented.
         /// </summary>
@@ -4189,22 +4265,42 @@ namespace Inno.Native.Bgfx
         /// To be documented.
         /// </summary>
         [DllImport(LibName, CallingConvention = CallingConvention.Cdecl, EntryPoint = "bgfx_create_texture_2d")]
-        internal static extern TextureHandle create_texture_2dNative(ushort width, ushort height, byte hasMips, ushort numLayers, TextureFormat format, ulong flags, Memory* mem, ulong external);
+        internal static extern TextureHandle create_texture_2dInterop(ushort width, ushort height, byte hasMips, ushort numLayers, int format, ulong flags, Memory* mem, ulong external);
+        internal static TextureHandle create_texture_2dNative(ushort width, ushort height, byte hasMips, ushort numLayers, TextureFormat format, ulong flags, Memory* mem, ulong external)
+        {
+            return create_texture_2dInterop(width, height, hasMips, numLayers, (int)format, flags, mem, external);
+        }
+
         /// <summary>
         /// To be documented.
         /// </summary>
         [DllImport(LibName, CallingConvention = CallingConvention.Cdecl, EntryPoint = "bgfx_create_texture_2d_scaled")]
-        internal static extern TextureHandle create_texture_2d_scaledNative(BackbufferRatio ratio, byte hasMips, ushort numLayers, TextureFormat format, ulong flags);
+        internal static extern TextureHandle create_texture_2d_scaledInterop(int ratio, byte hasMips, ushort numLayers, int format, ulong flags);
+        internal static TextureHandle create_texture_2d_scaledNative(BackbufferRatio ratio, byte hasMips, ushort numLayers, TextureFormat format, ulong flags)
+        {
+            return create_texture_2d_scaledInterop((int)ratio, hasMips, numLayers, (int)format, flags);
+        }
+
         /// <summary>
         /// To be documented.
         /// </summary>
         [DllImport(LibName, CallingConvention = CallingConvention.Cdecl, EntryPoint = "bgfx_create_texture_3d")]
-        internal static extern TextureHandle create_texture_3dNative(ushort width, ushort height, ushort depth, byte hasMips, TextureFormat format, ulong flags, Memory* mem, ulong external);
+        internal static extern TextureHandle create_texture_3dInterop(ushort width, ushort height, ushort depth, byte hasMips, int format, ulong flags, Memory* mem, ulong external);
+        internal static TextureHandle create_texture_3dNative(ushort width, ushort height, ushort depth, byte hasMips, TextureFormat format, ulong flags, Memory* mem, ulong external)
+        {
+            return create_texture_3dInterop(width, height, depth, hasMips, (int)format, flags, mem, external);
+        }
+
         /// <summary>
         /// To be documented.
         /// </summary>
         [DllImport(LibName, CallingConvention = CallingConvention.Cdecl, EntryPoint = "bgfx_create_texture_cube")]
-        internal static extern TextureHandle create_texture_cubeNative(ushort size, byte hasMips, ushort numLayers, TextureFormat format, ulong flags, Memory* mem, ulong external);
+        internal static extern TextureHandle create_texture_cubeInterop(ushort size, byte hasMips, ushort numLayers, int format, ulong flags, Memory* mem, ulong external);
+        internal static TextureHandle create_texture_cubeNative(ushort size, byte hasMips, ushort numLayers, TextureFormat format, ulong flags, Memory* mem, ulong external)
+        {
+            return create_texture_cubeInterop(size, hasMips, numLayers, (int)format, flags, mem, external);
+        }
+
         /// <summary>
         /// To be documented.
         /// </summary>
@@ -4244,12 +4340,22 @@ namespace Inno.Native.Bgfx
         /// To be documented.
         /// </summary>
         [DllImport(LibName, CallingConvention = CallingConvention.Cdecl, EntryPoint = "bgfx_create_frame_buffer")]
-        internal static extern FrameBufferHandle create_frame_bufferNative(ushort width, ushort height, TextureFormat format, ulong textureFlags);
+        internal static extern FrameBufferHandle create_frame_bufferInterop(ushort width, ushort height, int format, ulong textureFlags);
+        internal static FrameBufferHandle create_frame_bufferNative(ushort width, ushort height, TextureFormat format, ulong textureFlags)
+        {
+            return create_frame_bufferInterop(width, height, (int)format, textureFlags);
+        }
+
         /// <summary>
         /// To be documented.
         /// </summary>
         [DllImport(LibName, CallingConvention = CallingConvention.Cdecl, EntryPoint = "bgfx_create_frame_buffer_scaled")]
-        internal static extern FrameBufferHandle create_frame_buffer_scaledNative(BackbufferRatio ratio, TextureFormat format, ulong textureFlags);
+        internal static extern FrameBufferHandle create_frame_buffer_scaledInterop(int ratio, int format, ulong textureFlags);
+        internal static FrameBufferHandle create_frame_buffer_scaledNative(BackbufferRatio ratio, TextureFormat format, ulong textureFlags)
+        {
+            return create_frame_buffer_scaledInterop((int)ratio, (int)format, textureFlags);
+        }
+
         /// <summary>
         /// To be documented.
         /// </summary>
@@ -4264,7 +4370,12 @@ namespace Inno.Native.Bgfx
         /// To be documented.
         /// </summary>
         [DllImport(LibName, CallingConvention = CallingConvention.Cdecl, EntryPoint = "bgfx_create_frame_buffer_from_nwh")]
-        internal static extern FrameBufferHandle create_frame_buffer_from_nwhNative(void* nwh, ushort width, ushort height, TextureFormat format, TextureFormat depthFormat);
+        internal static extern FrameBufferHandle create_frame_buffer_from_nwhInterop(void* nwh, ushort width, ushort height, int format, int depthFormat);
+        internal static FrameBufferHandle create_frame_buffer_from_nwhNative(void* nwh, ushort width, ushort height, TextureFormat format, TextureFormat depthFormat)
+        {
+            return create_frame_buffer_from_nwhInterop(nwh, width, height, (int)format, (int)depthFormat);
+        }
+
         /// <summary>
         /// To be documented.
         /// </summary>
@@ -4284,12 +4395,22 @@ namespace Inno.Native.Bgfx
         /// To be documented.
         /// </summary>
         [DllImport(LibName, CallingConvention = CallingConvention.Cdecl, EntryPoint = "bgfx_create_uniform")]
-        internal static extern UniformHandle create_uniformNative(byte* name, UniformType type, ushort num);
+        internal static extern UniformHandle create_uniformInterop(byte* name, int type, ushort num);
+        internal static UniformHandle create_uniformNative(byte* name, UniformType type, ushort num)
+        {
+            return create_uniformInterop(name, (int)type, num);
+        }
+
         /// <summary>
         /// To be documented.
         /// </summary>
         [DllImport(LibName, CallingConvention = CallingConvention.Cdecl, EntryPoint = "bgfx_create_uniform_with_freq")]
-        internal static extern UniformHandle create_uniform_with_freqNative(byte* name, UniformFreq freq, UniformType type, ushort num);
+        internal static extern UniformHandle create_uniform_with_freqInterop(byte* name, int freq, int type, ushort num);
+        internal static UniformHandle create_uniform_with_freqNative(byte* name, UniformFreq freq, UniformType type, ushort num)
+        {
+            return create_uniform_with_freqInterop(name, (int)freq, (int)type, num);
+        }
+
         /// <summary>
         /// To be documented.
         /// </summary>
@@ -4309,7 +4430,12 @@ namespace Inno.Native.Bgfx
         /// To be documented.
         /// </summary>
         [DllImport(LibName, CallingConvention = CallingConvention.Cdecl, EntryPoint = "bgfx_get_result")]
-        internal static extern OcclusionQueryResult get_resultNative(OcclusionQueryHandle handle, int* result);
+        internal static extern int get_resultInterop(OcclusionQueryHandle handle, int* result);
+        internal static OcclusionQueryResult get_resultNative(OcclusionQueryHandle handle, int* result)
+        {
+            return (OcclusionQueryResult)get_resultInterop(handle, result);
+        }
+
         /// <summary>
         /// To be documented.
         /// </summary>
@@ -4344,7 +4470,12 @@ namespace Inno.Native.Bgfx
         /// To be documented.
         /// </summary>
         [DllImport(LibName, CallingConvention = CallingConvention.Cdecl, EntryPoint = "bgfx_set_view_rect_ratio")]
-        internal static extern void set_view_rect_ratioNative(ushort id, ushort x, ushort y, BackbufferRatio ratio);
+        internal static extern void set_view_rect_ratioInterop(ushort id, ushort x, ushort y, int ratio);
+        internal static void set_view_rect_ratioNative(ushort id, ushort x, ushort y, BackbufferRatio ratio)
+        {
+            set_view_rect_ratioInterop(id, x, y, (int)ratio);
+        }
+
         /// <summary>
         /// To be documented.
         /// </summary>
@@ -4364,7 +4495,12 @@ namespace Inno.Native.Bgfx
         /// To be documented.
         /// </summary>
         [DllImport(LibName, CallingConvention = CallingConvention.Cdecl, EntryPoint = "bgfx_set_view_mode")]
-        internal static extern void set_view_modeNative(ushort id, ViewMode mode);
+        internal static extern void set_view_modeInterop(ushort id, int mode);
+        internal static void set_view_modeNative(ushort id, ViewMode mode)
+        {
+            set_view_modeInterop(id, (int)mode);
+        }
+
         /// <summary>
         /// To be documented.
         /// </summary>
@@ -4384,7 +4520,12 @@ namespace Inno.Native.Bgfx
         /// To be documented.
         /// </summary>
         [DllImport(LibName, CallingConvention = CallingConvention.Cdecl, EntryPoint = "bgfx_set_view_shading_rate")]
-        internal static extern void set_view_shading_rateNative(ushort id, ShadingRate shadingRate);
+        internal static extern void set_view_shading_rateInterop(ushort id, int shadingRate);
+        internal static void set_view_shading_rateNative(ushort id, ShadingRate shadingRate)
+        {
+            set_view_shading_rateInterop(id, (int)shadingRate);
+        }
+
         /// <summary>
         /// To be documented.
         /// </summary>
@@ -4724,60 +4865,60 @@ namespace Inno.Native.Bgfx
         /// To be documented.
         /// </summary>
         [DllImport(LibName, CallingConvention = CallingConvention.Cdecl, EntryPoint = "bgfx_encoder_set_compute_index_buffer")]
-        internal static extern void encoder_set_compute_index_bufferInterop(nint @this, byte stage, IndexBufferHandle handle, Access access);
+        internal static extern void encoder_set_compute_index_bufferInterop(nint @this, byte stage, IndexBufferHandle handle, int access);
         internal static void encoder_set_compute_index_bufferNative(Encoder @this, byte stage, IndexBufferHandle handle, Access access)
         {
-            encoder_set_compute_index_bufferInterop(@this.Handle, stage, handle, access);
+            encoder_set_compute_index_bufferInterop(@this.Handle, stage, handle, (int)access);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
         [DllImport(LibName, CallingConvention = CallingConvention.Cdecl, EntryPoint = "bgfx_encoder_set_compute_vertex_buffer")]
-        internal static extern void encoder_set_compute_vertex_bufferInterop(nint @this, byte stage, VertexBufferHandle handle, Access access);
+        internal static extern void encoder_set_compute_vertex_bufferInterop(nint @this, byte stage, VertexBufferHandle handle, int access);
         internal static void encoder_set_compute_vertex_bufferNative(Encoder @this, byte stage, VertexBufferHandle handle, Access access)
         {
-            encoder_set_compute_vertex_bufferInterop(@this.Handle, stage, handle, access);
+            encoder_set_compute_vertex_bufferInterop(@this.Handle, stage, handle, (int)access);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
         [DllImport(LibName, CallingConvention = CallingConvention.Cdecl, EntryPoint = "bgfx_encoder_set_compute_dynamic_index_buffer")]
-        internal static extern void encoder_set_compute_dynamic_index_bufferInterop(nint @this, byte stage, DynamicIndexBufferHandle handle, Access access);
+        internal static extern void encoder_set_compute_dynamic_index_bufferInterop(nint @this, byte stage, DynamicIndexBufferHandle handle, int access);
         internal static void encoder_set_compute_dynamic_index_bufferNative(Encoder @this, byte stage, DynamicIndexBufferHandle handle, Access access)
         {
-            encoder_set_compute_dynamic_index_bufferInterop(@this.Handle, stage, handle, access);
+            encoder_set_compute_dynamic_index_bufferInterop(@this.Handle, stage, handle, (int)access);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
         [DllImport(LibName, CallingConvention = CallingConvention.Cdecl, EntryPoint = "bgfx_encoder_set_compute_dynamic_vertex_buffer")]
-        internal static extern void encoder_set_compute_dynamic_vertex_bufferInterop(nint @this, byte stage, DynamicVertexBufferHandle handle, Access access);
+        internal static extern void encoder_set_compute_dynamic_vertex_bufferInterop(nint @this, byte stage, DynamicVertexBufferHandle handle, int access);
         internal static void encoder_set_compute_dynamic_vertex_bufferNative(Encoder @this, byte stage, DynamicVertexBufferHandle handle, Access access)
         {
-            encoder_set_compute_dynamic_vertex_bufferInterop(@this.Handle, stage, handle, access);
+            encoder_set_compute_dynamic_vertex_bufferInterop(@this.Handle, stage, handle, (int)access);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
         [DllImport(LibName, CallingConvention = CallingConvention.Cdecl, EntryPoint = "bgfx_encoder_set_compute_indirect_buffer")]
-        internal static extern void encoder_set_compute_indirect_bufferInterop(nint @this, byte stage, IndirectBufferHandle handle, Access access);
+        internal static extern void encoder_set_compute_indirect_bufferInterop(nint @this, byte stage, IndirectBufferHandle handle, int access);
         internal static void encoder_set_compute_indirect_bufferNative(Encoder @this, byte stage, IndirectBufferHandle handle, Access access)
         {
-            encoder_set_compute_indirect_bufferInterop(@this.Handle, stage, handle, access);
+            encoder_set_compute_indirect_bufferInterop(@this.Handle, stage, handle, (int)access);
         }
 
         /// <summary>
         /// To be documented.
         /// </summary>
         [DllImport(LibName, CallingConvention = CallingConvention.Cdecl, EntryPoint = "bgfx_encoder_set_image")]
-        internal static extern void encoder_set_imageInterop(nint @this, byte stage, TextureHandle handle, byte mip, Access access, TextureFormat format);
+        internal static extern void encoder_set_imageInterop(nint @this, byte stage, TextureHandle handle, byte mip, int access, int format);
         internal static void encoder_set_imageNative(Encoder @this, byte stage, TextureHandle handle, byte mip, Access access, TextureFormat format)
         {
-            encoder_set_imageInterop(@this.Handle, stage, handle, mip, access, format);
+            encoder_set_imageInterop(@this.Handle, stage, handle, mip, (int)access, (int)format);
         }
 
         /// <summary>
@@ -4829,7 +4970,12 @@ namespace Inno.Native.Bgfx
         /// To be documented.
         /// </summary>
         [DllImport(LibName, CallingConvention = CallingConvention.Cdecl, EntryPoint = "bgfx_render_frame")]
-        internal static extern RenderFrame render_frameNative(int msecs);
+        internal static extern int render_frameInterop(int msecs);
+        internal static RenderFrame render_frameNative(int msecs)
+        {
+            return (RenderFrame)render_frameInterop(msecs);
+        }
+
         /// <summary>
         /// To be documented.
         /// </summary>
@@ -4849,7 +4995,12 @@ namespace Inno.Native.Bgfx
         /// To be documented.
         /// </summary>
         [DllImport(LibName, CallingConvention = CallingConvention.Cdecl, EntryPoint = "bgfx_override_internal_texture")]
-        internal static extern ulong override_internal_textureNative(TextureHandle handle, ushort width, ushort height, byte numMips, TextureFormat format, ulong flags);
+        internal static extern ulong override_internal_textureInterop(TextureHandle handle, ushort width, ushort height, byte numMips, int format, ulong flags);
+        internal static ulong override_internal_textureNative(TextureHandle handle, ushort width, ushort height, byte numMips, TextureFormat format, ulong flags)
+        {
+            return override_internal_textureInterop(handle, width, height, numMips, (int)format, flags);
+        }
+
         /// <summary>
         /// To be documented.
         /// </summary>
@@ -5004,32 +5155,62 @@ namespace Inno.Native.Bgfx
         /// To be documented.
         /// </summary>
         [DllImport(LibName, CallingConvention = CallingConvention.Cdecl, EntryPoint = "bgfx_set_compute_index_buffer")]
-        internal static extern void set_compute_index_bufferNative(byte stage, IndexBufferHandle handle, Access access);
+        internal static extern void set_compute_index_bufferInterop(byte stage, IndexBufferHandle handle, int access);
+        internal static void set_compute_index_bufferNative(byte stage, IndexBufferHandle handle, Access access)
+        {
+            set_compute_index_bufferInterop(stage, handle, (int)access);
+        }
+
         /// <summary>
         /// To be documented.
         /// </summary>
         [DllImport(LibName, CallingConvention = CallingConvention.Cdecl, EntryPoint = "bgfx_set_compute_vertex_buffer")]
-        internal static extern void set_compute_vertex_bufferNative(byte stage, VertexBufferHandle handle, Access access);
+        internal static extern void set_compute_vertex_bufferInterop(byte stage, VertexBufferHandle handle, int access);
+        internal static void set_compute_vertex_bufferNative(byte stage, VertexBufferHandle handle, Access access)
+        {
+            set_compute_vertex_bufferInterop(stage, handle, (int)access);
+        }
+
         /// <summary>
         /// To be documented.
         /// </summary>
         [DllImport(LibName, CallingConvention = CallingConvention.Cdecl, EntryPoint = "bgfx_set_compute_dynamic_index_buffer")]
-        internal static extern void set_compute_dynamic_index_bufferNative(byte stage, DynamicIndexBufferHandle handle, Access access);
+        internal static extern void set_compute_dynamic_index_bufferInterop(byte stage, DynamicIndexBufferHandle handle, int access);
+        internal static void set_compute_dynamic_index_bufferNative(byte stage, DynamicIndexBufferHandle handle, Access access)
+        {
+            set_compute_dynamic_index_bufferInterop(stage, handle, (int)access);
+        }
+
         /// <summary>
         /// To be documented.
         /// </summary>
         [DllImport(LibName, CallingConvention = CallingConvention.Cdecl, EntryPoint = "bgfx_set_compute_dynamic_vertex_buffer")]
-        internal static extern void set_compute_dynamic_vertex_bufferNative(byte stage, DynamicVertexBufferHandle handle, Access access);
+        internal static extern void set_compute_dynamic_vertex_bufferInterop(byte stage, DynamicVertexBufferHandle handle, int access);
+        internal static void set_compute_dynamic_vertex_bufferNative(byte stage, DynamicVertexBufferHandle handle, Access access)
+        {
+            set_compute_dynamic_vertex_bufferInterop(stage, handle, (int)access);
+        }
+
         /// <summary>
         /// To be documented.
         /// </summary>
         [DllImport(LibName, CallingConvention = CallingConvention.Cdecl, EntryPoint = "bgfx_set_compute_indirect_buffer")]
-        internal static extern void set_compute_indirect_bufferNative(byte stage, IndirectBufferHandle handle, Access access);
+        internal static extern void set_compute_indirect_bufferInterop(byte stage, IndirectBufferHandle handle, int access);
+        internal static void set_compute_indirect_bufferNative(byte stage, IndirectBufferHandle handle, Access access)
+        {
+            set_compute_indirect_bufferInterop(stage, handle, (int)access);
+        }
+
         /// <summary>
         /// To be documented.
         /// </summary>
         [DllImport(LibName, CallingConvention = CallingConvention.Cdecl, EntryPoint = "bgfx_set_image")]
-        internal static extern void set_imageNative(byte stage, TextureHandle handle, byte mip, Access access, TextureFormat format);
+        internal static extern void set_imageInterop(byte stage, TextureHandle handle, byte mip, int access, int format);
+        internal static void set_imageNative(byte stage, TextureHandle handle, byte mip, Access access, TextureFormat format)
+        {
+            set_imageInterop(stage, handle, mip, (int)access, (int)format);
+        }
+
         /// <summary>
         /// To be documented.
         /// </summary>

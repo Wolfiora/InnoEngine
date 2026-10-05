@@ -1,3 +1,4 @@
+using Inno.Adapter.Platform;
 using System;
 using System.Collections.Generic;
 using Inno.Native.Bgfx;
@@ -178,7 +179,7 @@ public sealed unsafe partial class BgfxDevice
             throw new ArgumentException("A native window handle is required.", nameof(handles));
         }
 
-        if (handles.handleKind is not (PlatformNativeHandleKind.Win32 or PlatformNativeHandleKind.Cocoa))
+        if (handles.handleKind != PlatformNativeHandleId.win32 && handles.handleKind != PlatformNativeHandleId.cocoa)
         {
             throw new PlatformNotSupportedException(
                 $"BGFX window surfaces do not support native handle kind '{handles.handleKind}'.");

@@ -1,3 +1,5 @@
+using Inno.Adapter.Serialization.DotNet;
+using Inno.Adapter.Modules.DotNet;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -32,11 +34,11 @@ public sealed class GraphDocumentControllerTests : IDisposable
     {
         _ = typeof(GraphEditorModule);
         m_modules = new ModuleHost(new ModuleHostOptions
-        {
+        { catalogSource = new DotNetAssemblyCatalogSource(typeof(GraphDocumentControllerTests).Assembly),
             cacheDirectory = Path.Combine(m_testRoot, "Assemblies")
         });
-        m_types = new TypeCatalog(m_modules);
-        m_serialization = new SerializationRegistry(m_types);
+        m_types = new TypeCatalog(m_modules, new ReflectionTypeCatalogSource());
+        m_serialization = new SerializationRegistry(m_types, new ReflectionSerializationMetadataSource());
         m_runtime = new EditorInteractionRuntime(
             new EditorContext(m_testRoot),
             m_types,
@@ -73,7 +75,7 @@ public sealed class GraphDocumentControllerTests : IDisposable
         var rejection = new RejectionParticipant(reject);
         using IDisposable registration = m_reloads.Register(rejection);
         string directory = Path.Combine(AppContext.BaseDirectory, "Modules");
-        using (AssemblyReloadSession reload = m_modules.BeginReload([new AssemblyLoadRequest
+        using (AssemblyReloadSession reload = m_modules.BeginReload([new DotNetModuleSource
         {
             moduleName = "GraphRecovery", domain = AssemblyDomain.InnoPlugin, scope = AssemblyScope.Runtime,
             mainAssemblyPath = Path.Combine(directory, "Inno.Extensibility.Modules.TestModule.dll"),

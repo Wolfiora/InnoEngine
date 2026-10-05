@@ -16,7 +16,7 @@ public sealed class ScriptCompilationResult
         bool success,
         IReadOnlyList<ScriptDiagnostic> diagnostics,
         string? outputDirectory,
-        IReadOnlyList<AssemblyLoadRequest>? reloadRequests,
+        IReadOnlyList<ScriptModuleDeployment>? moduleDeployments,
         IReadOnlyList<string>? compiledAssemblies = null,
         IReadOnlyList<string>? reusedAssemblies = null,
         IReadOnlyList<ScriptCompilationStageTiming>? stageTimings = null
@@ -24,8 +24,8 @@ public sealed class ScriptCompilationResult
         this.success = success;
         this.diagnostics = diagnostics;
         this.outputDirectory = outputDirectory;
-        this.reloadRequests = reloadRequests ?? [];
-        runtimeAssemblyPaths = this.reloadRequests
+        this.moduleDeployments = Array.AsReadOnly((moduleDeployments ?? []).ToArray());
+        runtimeAssemblyPaths = this.moduleDeployments
             .SelectMany(static request =>
                 new[] { request.mainAssemblyPath }.Concat(request.preloadAssemblyPaths)
                     .Where(path => request.assemblyScopes.TryGetValue(
@@ -67,9 +67,9 @@ public sealed class ScriptCompilationResult
     public IReadOnlyList<string> runtimeAssemblyPaths { get; }
 
     /// <summary>
-    /// Gets the validated module activation requests associated with this artifact generation.
+    /// Gets the immutable module artifacts and dependency topology produced by this compilation.
     /// </summary>
-    public IReadOnlyList<AssemblyLoadRequest> activationRequests => reloadRequests;
+    public IReadOnlyList<ScriptModuleDeployment> moduleDeployments { get; }
 
     /// <summary>
     /// Gets assembly names compiled during this request instead of reused from the artifact cache.
@@ -88,7 +88,7 @@ public sealed class ScriptCompilationResult
     /// The diagnostic describing why no candidate generation was produced.
     /// </param>
     /// <returns>
-    /// A failed immutable result with no output directory or activation requests.
+    /// A failed immutable result with no output directory or module deployments.
     /// </returns>
     public static ScriptCompilationResult Failure(ScriptDiagnostic diagnostic)
     {
@@ -97,10 +97,8 @@ public sealed class ScriptCompilationResult
             success: false,
             [diagnostic],
             outputDirectory: null,
-            reloadRequests: null);
+            moduleDeployments: null);
     }
-
-    internal IReadOnlyList<AssemblyLoadRequest> reloadRequests { get; }
 
     internal IReadOnlyList<string> compiledAssemblies { get; }
 

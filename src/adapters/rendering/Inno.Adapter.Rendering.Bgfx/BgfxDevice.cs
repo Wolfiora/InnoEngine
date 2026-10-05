@@ -1,3 +1,4 @@
+using Inno.Adapter.Platform;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -62,9 +63,15 @@ public sealed unsafe partial class BgfxDevice : RenderDevice, IRenderDevice, IRe
     /// <exception cref="InvalidOperationException">
     /// Thrown when another BGFX device is active or initialization fails.
     /// </exception>
+    /// <exception cref="NotSupportedException">
+    /// The selected window does not expose the native surface SPI required by BGFX.
+    /// </exception>
     public BgfxDevice(BgfxDeviceOptions options)
     {
         ArgumentNullException.ThrowIfNull(options);
+        PlatformNativeHandles nativeHandles = options.window is null ? default
+            : options.window is INativeWindowSurface surface ? surface.nativeHandles
+            : throw new NotSupportedException("BGFX requires a window that implements INativeWindowSurface.");
         m_processLease = BgfxProcessDeviceLease.Acquire(options.forceSingleThreaded);
 
         m_apiThreadId = Environment.CurrentManagedThreadId;
@@ -73,7 +80,7 @@ public sealed unsafe partial class BgfxDevice : RenderDevice, IRenderDevice, IRe
         m_backbufferHeight = options.backbufferHeight;
         m_resetFlags = (uint)(
             (options.verticalSync ? bgfx.ResetFlags.Vsync : bgfx.ResetFlags.None)
-            | (options.sRgbBackbuffer && options.window?.nativeHandles.handleKind != PlatformNativeHandleKind.BrowserCanvas
+            | (options.sRgbBackbuffer && nativeHandles.handleKind != PlatformNativeHandleId.browserCanvas
                 ? bgfx.ResetFlags.SrgbBackbuffer
                 : bgfx.ResetFlags.None));
 
@@ -92,7 +99,8 @@ public sealed unsafe partial class BgfxDevice : RenderDevice, IRenderDevice, IRe
                 init.type = BgfxCapabilityMapper.ToNativeRenderer(options.preferredBackend.Value);
             }
 
-            ApplyPlatformData(ref init, options.window);
+            if (options.window is not null)
+                ApplyPlatformData(ref init, nativeHandles);
             init.resolution.width = checked((uint)m_backbufferWidth);
             init.resolution.height = checked((uint)m_backbufferHeight);
             init.resolution.reset = m_resetFlags;
@@ -1631,21 +1639,15 @@ public sealed unsafe partial class BgfxDevice : RenderDevice, IRenderDevice, IRe
 
     private static void ApplyPlatformData(
         ref bgfx.Init init,
-        IPlatformWindow? window
+        PlatformNativeHandles handles
     ) {
-        if (window is null)
-        {
-            return;
-        }
-
-        PlatformNativeHandles handles = window.nativeHandles;
-        if (handles.handleKind == PlatformNativeHandleKind.BrowserCanvas)
+        if (handles.handleKind == PlatformNativeHandleId.browserCanvas)
         {
             init.platformData.nwh = handles.windowHandle.ToPointer();
             return;
         }
 
-        if (handles.handleKind is not (PlatformNativeHandleKind.Win32 or PlatformNativeHandleKind.Cocoa))
+        if (handles.handleKind != PlatformNativeHandleId.win32 && handles.handleKind != PlatformNativeHandleId.cocoa)
         {
             throw new PlatformNotSupportedException(
                 $"BGFX window surfaces do not support native handle kind '{handles.handleKind}'.");

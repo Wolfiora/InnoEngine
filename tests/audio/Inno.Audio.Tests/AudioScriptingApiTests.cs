@@ -1,3 +1,5 @@
+using Inno.Adapter.Serialization.DotNet;
+using Inno.Adapter.Modules.DotNet;
 using System;
 using Inno.Assets;
 using System.IO;
@@ -34,6 +36,8 @@ public sealed class AudioScriptingApiTests
             var identities = new IdentityAllocator();
             using IDisposable identityScope = identities.EnterScope();
             using EngineHost host = new EngineHostBuilder()
+                .UseMetadataSources(new DotNetAssemblyCatalogSource(typeof(AudioScriptingApiTests).Assembly),
+                    new ReflectionTypeCatalogSource(), new ReflectionSerializationMetadataSource())
                 .UseMetadataCache(Path.Combine(projectRoot, "Library", "Assemblies"))
                 .Build();
             var pluginSources = new PluginSourceService(

@@ -76,7 +76,8 @@ internal static class ScriptProjectGenerator
                         .OrderBy(static value => value, StringComparer.Ordinal)
                         .ToArray(),
                     assembly.nullable,
-                    assembly.allowUnsafe)
+                    assembly.allowUnsafe,
+                    ScriptSourceLocations.CreateProjectPathMap(assembly.sources))
                 .Save(Path.Combine(options.projectRootDirectory, assembly.name + ".csproj"));
         }
         File.WriteAllText(
@@ -156,7 +157,8 @@ internal static class ScriptProjectGenerator
         IReadOnlyList<string> projectReferences,
         IReadOnlyList<string> defines,
         bool nullable,
-        bool allowUnsafe
+        bool allowUnsafe,
+        string sourcePathMap
     ) {
         var earlyPropertyGroup = new XElement("PropertyGroup",
             new XElement("BaseOutputPath", "Library/IDE/bin/" + assemblyName + "/"),
@@ -173,6 +175,7 @@ internal static class ScriptProjectGenerator
             new XElement("Nullable", nullable ? "enable" : "disable"),
             new XElement("AllowUnsafeBlocks", allowUnsafe ? "true" : "false"),
             new XElement("DefineConstants", string.Join(";", defines)),
+            new XElement("PathMap", sourcePathMap),
             new XElement("LangVersion", "latest"));
         var compileGroup = new XElement(
             "ItemGroup",

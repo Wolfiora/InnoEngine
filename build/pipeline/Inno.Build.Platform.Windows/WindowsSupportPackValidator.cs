@@ -32,9 +32,15 @@ public sealed class WindowsSupportPackValidator : IPlayerSupportPackValidator
                     $"Player Support Pack '{BuildTargetId.windowsX64}' contains foreign native runtime '{Path.GetFileName(file)}'.");
             }
         }
-        string executable = Path.Combine(directory, "Inno.Player.exe");
-        if (!File.Exists(executable))
-            throw new InvalidDataException($"Player Support Pack '{BuildTargetId.windowsX64}' has no Player executable.");
+        foreach (string input in new[]
+        {
+            "Player.csproj", "Program.cs", "DesktopPlayerComposition.cs", "global.json",
+            Path.Combine("Analyzers", "Inno.Runtime.Generators.dll"),
+            Path.Combine("Analyzers", "Inno.Core.Serialization.Generators.dll"),
+            Path.Combine("References", "Inno.Player.Runtime.dll"), Path.Combine("References", "BGCS.Runtime.dll")
+        })
+            if (!File.Exists(Path.Combine(directory, "PlayerLink", input)))
+                throw new InvalidDataException($"The desktop Support Pack lacks publication input '{input}'.");
         string[] requiredNativeFiles = [
                 "bgfx-shared-lib-release.dll",
                 "SDL3-release.dll",
@@ -44,7 +50,7 @@ public sealed class WindowsSupportPackValidator : IPlayerSupportPackValidator
             ];
         foreach (string requiredNativeFile in requiredNativeFiles)
         {
-            if (!files.Any(file => string.Equals(
+            if (!files.Where(file => file.StartsWith(nativeRoot, StringComparison.Ordinal)).Any(file => string.Equals(
                     Path.GetFileName(file),
                     requiredNativeFile,
                     StringComparison.OrdinalIgnoreCase)))

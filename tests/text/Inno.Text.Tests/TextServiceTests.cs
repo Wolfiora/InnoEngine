@@ -1,3 +1,5 @@
+using Inno.Adapter.Serialization.DotNet;
+using Inno.Adapter.Modules.DotNet;
 using System;
 using System.IO;
 using System.Reflection;
@@ -37,12 +39,12 @@ public sealed class TextServiceTests : IDisposable
         Directory.CreateDirectory(m_assets);
         m_identityScope = m_identities.EnterScope();
         m_modules = new ModuleHost(new ModuleHostOptions
-        {
+        { catalogSource = new DotNetAssemblyCatalogSource(typeof(TextServiceTests).Assembly),
             cacheDirectory = Path.Combine(m_root, "Assemblies")
         });
         _ = Assembly.Load("Inno.Text.Assets");
-        m_types = new TypeCatalog(m_modules);
-        m_serialization = new SerializationRegistry(m_types);
+        m_types = new TypeCatalog(m_modules, new ReflectionTypeCatalogSource());
+        m_serialization = new SerializationRegistry(m_types, new ReflectionSerializationMetadataSource());
         m_types.Rebuild();
     }
 

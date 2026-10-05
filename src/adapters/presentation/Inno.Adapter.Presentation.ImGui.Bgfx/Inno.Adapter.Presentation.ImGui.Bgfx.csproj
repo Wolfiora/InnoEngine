@@ -7,50 +7,77 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <WarningsAsErrors>$(WarningsAsErrors);CS1572;CS1573;CS1591</WarningsAsErrors>
   </PropertyGroup>
+
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\native\Inno.Native.ImGui\Inno.Native.ImGui.csproj" PrivateAssets="compile" />
-    <ProjectReference Include="..\..\rendering\Inno.Adapter.Rendering.Bgfx\Inno.Adapter.Rendering.Bgfx.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../../../native/Inno.Native.ImGui/Inno.Native.ImGui.csproj" PrivateAssets="compile" />
+    <ProjectReference
+      Include="../../rendering/Inno.Adapter.Rendering.Bgfx/Inno.Adapter.Rendering.Bgfx.csproj"
+      PrivateAssets="compile" />
   </ItemGroup>
+
   <ItemGroup>
-    <ProjectReference Include="..\Inno.Adapter.Presentation\Inno.Adapter.Presentation.csproj" />
-    <ProjectReference Include="..\Inno.Adapter.Presentation.ImGui.Sdl3\Inno.Adapter.Presentation.ImGui.Sdl3.csproj" />
-    <ProjectReference Include="..\..\..\services\rendering\Inno.Rendering\Inno.Rendering.csproj" />
+    <ProjectReference Include="../Inno.Adapter.Presentation/Inno.Adapter.Presentation.csproj" />
+    <ProjectReference Include="../Inno.Adapter.Presentation.ImGui.Sdl3/Inno.Adapter.Presentation.ImGui.Sdl3.csproj" />
+    <ProjectReference Include="../../../services/rendering/Inno.Rendering/Inno.Rendering.csproj" />
   </ItemGroup>
+
   <ItemGroup>
     <_ImGuiShaderSource Include="Shaders/**/*" />
     <_ImGuiShaderApi Include="Metal;Vulkan;OpenGL" Condition="$([MSBuild]::IsOSPlatform('OSX'))" />
     <_ImGuiShaderApi Include="Direct3D11;Direct3D12;Vulkan;OpenGL" Condition="$([MSBuild]::IsOSPlatform('Windows'))" />
   </ItemGroup>
+
   <PropertyGroup>
     <_ImGuiShaderPlatform Condition="$([MSBuild]::IsOSPlatform('OSX'))">MacOSArm64</_ImGuiShaderPlatform>
     <_ImGuiShaderPlatform Condition="$([MSBuild]::IsOSPlatform('Windows'))">WindowsX64</_ImGuiShaderPlatform>
     <_ShaderCompiler>$([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)/../../../../build/tasks/Inno.Build.Tasks/bin/$(Configuration)/net9.0/Inno.Build.Tasks.dll'))</_ShaderCompiler>
   </PropertyGroup>
+
   <UsingTask TaskName="Inno.Build.Tasks.CompileShaderTask" AssemblyFile="$(_ShaderCompiler)" />
+
   <Target Name="BuildImGuiShaderCompiler">
-    <MSBuild Projects="../../../../build/tasks/Inno.Build.Tasks/Inno.Build.Tasks.csproj"
-             Targets="Restore;Build" Properties="Configuration=$(Configuration)"
-             RemoveProperties="InnoNativeTarget;RuntimeIdentifier;SelfContained;PublishSingleFile;BaseOutputPath;BaseIntermediateOutputPath" />
+    <MSBuild
+      Projects="../../../../build/tasks/Inno.Build.Tasks/Inno.Build.Tasks.csproj"
+      Targets="Restore;Build"
+      Properties="Configuration=$(Configuration)"
+      RemoveProperties="InnoNativeTarget;RuntimeIdentifier;SelfContained;PublishSingleFile;BaseOutputPath;BaseIntermediateOutputPath" />
   </Target>
+
   <Target Name="CollectImGuiShaderCompilerInputs" DependsOnTargets="BuildImGuiShaderCompiler">
     <ItemGroup>
       <_ImGuiShaderCompilerInput Include="$([System.IO.Path]::GetDirectoryName('$(_ShaderCompiler)'))/*.dll" />
       <_ImGuiShaderCompilerInput Include="../../../../extern/bgfx/src/*.sh;../../../../extern/bgfx/tools/bin/**/*" />
     </ItemGroup>
   </Target>
-  <Target Name="CompileImGuiShaderGraphs" DependsOnTargets="CollectImGuiShaderCompilerInputs"
-          Inputs="@(_ImGuiShaderSource);@(_ImGuiShaderCompilerInput);$(_ShaderCompiler);$(MSBuildProjectFullPath)"
-          Outputs="@(_ImGuiShaderApi->'$(IntermediateOutputPath)Shaders/%(Identity).bin')">
-    <Error Condition="'$(_ImGuiShaderPlatform)' == ''" Text="No built-in ImGui shader distribution target exists for this host." />
-    <CompileShaderTask AssetRoot="$(MSBuildProjectDirectory)/Shaders" ShaderPath="ImGui.ishader"
-                       Platform="$(_ImGuiShaderPlatform)" Renderer="%(_ImGuiShaderApi.Identity)"
-                       OutputFile="$(MSBuildProjectDirectory)/$(IntermediateOutputPath)Shaders/%(_ImGuiShaderApi.Identity).bin" />
+
+  <Target
+    Name="CompileImGuiShaderGraphs"
+    DependsOnTargets="CollectImGuiShaderCompilerInputs"
+    Inputs="@(_ImGuiShaderSource);@(_ImGuiShaderCompilerInput);$(_ShaderCompiler);$(MSBuildProjectFullPath)"
+    Outputs="@(_ImGuiShaderApi-&gt;'$(IntermediateOutputPath)Shaders/%(Identity).bin')">
+    <Error
+      Condition="'$(_ImGuiShaderPlatform)' == ''"
+      Text="No built-in ImGui shader distribution target exists for this host." />
+    <CompileShaderTask
+      AssetRoot="$(MSBuildProjectDirectory)/Shaders"
+      ShaderPath="ImGui.ishader"
+      Platform="$(_ImGuiShaderPlatform)"
+      Renderer="%(_ImGuiShaderApi.Identity)"
+      OutputFile="$(MSBuildProjectDirectory)/$(IntermediateOutputPath)Shaders/%(_ImGuiShaderApi.Identity).bin" />
   </Target>
-  <Target Name="IncludeImGuiShaderArtifacts" BeforeTargets="AssignTargetPaths" DependsOnTargets="CompileImGuiShaderGraphs">
+
+  <Target
+    Name="IncludeImGuiShaderArtifacts"
+    BeforeTargets="AssignTargetPaths"
+    DependsOnTargets="CompileImGuiShaderGraphs">
     <ItemGroup>
-      <EmbeddedResource Include="@(_ImGuiShaderApi->'$(IntermediateOutputPath)Shaders/%(Identity).bin')">
+      <EmbeddedResource Include="@(_ImGuiShaderApi-&gt;'$(IntermediateOutputPath)Shaders/%(Identity).bin')">
         <LogicalName>Inno.BuiltInShaders.ImGui.$(_ImGuiShaderPlatform).%(Filename)</LogicalName>
       </EmbeddedResource>
     </ItemGroup>
   </Target>
+
+  <ItemGroup>
+    <ProjectReference Include="../../../foundation/extensibility/Inno.Extensibility.Catalogs/Inno.Extensibility.Catalogs.csproj" />
+  </ItemGroup>
 </Project>

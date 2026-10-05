@@ -1,3 +1,4 @@
+using Inno.Adapter.Modules.DotNet;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -19,8 +20,8 @@ public sealed class AnimationBindingTests
         string cache = Path.Combine(Path.GetTempPath(), "InnoAnimationBindings", Guid.NewGuid().ToString("N"));
         try
         {
-            using var modules = new ModuleHost(new ModuleHostOptions { cacheDirectory = cache });
-            using var types = new TypeCatalog(modules);
+            using var modules = new ModuleHost(new ModuleHostOptions { catalogSource = new DotNetAssemblyCatalogSource(typeof(AnimationBindingTests).Assembly), cacheDirectory = cache });
+            using var types = new TypeCatalog(modules, new ReflectionTypeCatalogSource());
             var reporter = new Reporter();
             using var bindings = new AnimationBindingRuntime(types, reporter);
             var owner = new IdentityAllocator();

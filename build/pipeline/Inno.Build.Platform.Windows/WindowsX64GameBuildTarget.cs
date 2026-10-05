@@ -1,4 +1,5 @@
 using System;
+using Inno.Build.Managed;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -54,6 +55,12 @@ public sealed class WindowsX64GameBuildTarget : IGameBuildTarget
     /// </summary>
     public BuildTargetId id => BuildTargetId.windowsX64;
 
+    /// <inheritdoc />
+    public ManagedDeploymentId defaultManagedDeployment => ManagedDeploymentId.coreClr;
+
+    /// <inheritdoc />
+    public string runtimeIdentifier => "win-x64";
+
     /// <summary>
     /// Gets the target name presented by authoring hosts.
     /// </summary>
@@ -102,11 +109,11 @@ public sealed class WindowsX64GameBuildTarget : IGameBuildTarget
     ) {
         ArgumentNullException.ThrowIfNull(context);
         string application = Path.Combine(context.outputDirectory, context.profile.productName + "-Windows-x64");
-        await CopyDirectoryAsync(context.supportPackDirectory, application, cancellationToken,
+        await CopyDirectoryAsync(context.managedDeployment.outputDirectory, application, cancellationToken,
             excludeCompilerReferences: true).ConfigureAwait(false);
         string player = Path.Combine(application, "Inno.Player.exe");
         if (!File.Exists(player))
-            throw new InvalidDataException("The Windows Support Pack does not contain Inno.Player.exe.");
+            throw new InvalidDataException("The Windows managed publication does not contain Inno.Player.exe.");
         File.Move(player, Path.Combine(application, context.profile.productName + ".exe"));
         await CopyDirectoryAsync(context.contentDirectory, Path.Combine(application, "Content"), cancellationToken,
                 excludeCompilerReferences: false)

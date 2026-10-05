@@ -59,9 +59,37 @@ public sealed class SerializationWriter
     public void Write<TValue>(
         string name,
         TValue value
+    ) => Write(name, value, typeof(TValue));
+
+    /// <summary>
+    /// Writes a value using its declared metadata type without constructing a generic method at runtime.
+    /// </summary>
+    /// <param name="name">
+    /// The unique non-empty member name.
+    /// </param>
+    /// <param name="value">
+    /// The value to encode, including null when permitted by the declared type.
+    /// </param>
+    /// <param name="declaredType">
+    /// The exact declaration whose converter and value semantics apply.
+    /// </param>
+    /// <exception cref="ArgumentNullException">
+    /// The declared type is null.
+    /// </exception>
+    /// <exception cref="ArgumentException">
+    /// The member name is empty.
+    /// </exception>
+    /// <exception cref="InvalidOperationException">
+    /// The operation has ended, the name is duplicated, or the value is unsupported.
+    /// </exception>
+    public void Write(
+        string name,
+        object? value,
+        Type declaredType
     ) {
+        ArgumentNullException.ThrowIfNull(declaredType);
         ValidateName(name);
-        AddNode(name, ValuePipeline.Write(value, typeof(TValue), m_operation, AppendPath(name), allowDefaultObject: false));
+        AddNode(name, ValuePipeline.Write(value, declaredType, m_operation, AppendPath(name), allowDefaultObject: false));
     }
 
     /// <summary>

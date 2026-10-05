@@ -4,8 +4,10 @@
 
 | 项目 | 职责 |
 | --- | --- |
+| [Inno.Build.Managed](Inno.Build.Managed.md) | 独立托管部署契约与开放 publisher catalog |
+| [Inno.Build.Managed.DotNet](Inno.Build.Managed.DotNet.md) | CoreCLR、Mono Wasm/ AOT、NativeAOT 发布 |
 | [Inno.Build](Inno.Build.md) | Profile、request/result、Plugin/Game pipeline 与内部 staging stages |
-| [Inno.Build.Platform.Browser](Inno.Build.Platform.Browser.md) | WebGL 2 内容编译、每游戏 WASM 链接与静态站点布局 |
+| [Inno.Build.Platform.Browser](Inno.Build.Platform.Browser.md) | WebGL 2 内容编译与静态站点布局 |
 | [Inno.Build.Platform.MacOS](Inno.Build.Platform.MacOS.md) | macOS ARM64 target artifact 与 app bundle |
 | [Inno.Build.Platform.Windows](Inno.Build.Platform.Windows.md) | Windows x64 target artifact 与 portable application directory |
 | [Inno.Build.Cli](Inno.Build.Cli.md) | 唯一工具进程入口，组合构建、清理、生成、发布与验证 |
@@ -26,4 +28,4 @@
 | [Inno.Build.Toolchains.Text](Inno.Build.Toolchains.Text.md) | FreeType/HarfBuzz Text bridge 原生构建库 |
 | [Inno.Build.Toolchains.UI](Inno.Build.Toolchains.UI.md) | RmlUi bridge 原生构建库 |
 
-Game Build 固定执行 Validate → Support Pack 供给与校验 → Combined Snapshot → Scripts/Target Artifacts → Content Pack → Platform Package → Atomic Commit。Editor Exporting 只调用该 API，不拥有构建机制。
+Game Build 固定执行 Validate → Support Pack 供给与校验 → Combined Snapshot → Scripts/Target Artifacts → Content Pack → Managed Deployment → Platform Package → Atomic Commit。Editor Exporting 只调用该 API，不拥有构建机制。

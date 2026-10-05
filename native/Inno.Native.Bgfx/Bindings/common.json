@@ -1,48 +1,48 @@
 {
-  "BaseConfig": {
-    "Url": "file://bgfx-macro-enums.json"
+  "baseConfig": {
+    "url": "file://bgfx-macro-enums.json"
   },
-  "Namespace": "Inno.Native.Bgfx",
-  "ApiName": "bgfx",
-  "BoolType": "Byte",
-  "ParseMacros": true,
-  "GenerateDelegates": false,
-  "NestGeneratedTypesInApi": true,
-  "EmitLibraryNameConstant": false,
-  "EntryFiles": [
+  "namespace": "Inno.Native.Bgfx",
+  "apiName": "bgfx",
+  "boolType": "Byte",
+  "parseMacros": true,
+  "generateDelegates": false,
+  "nestGeneratedTypesInApi": true,
+  "emitLibraryNameConstant": false,
+  "entryFiles": [
     "../../../extern/bgfx/include/bgfx/c99/bgfx.h"
   ],
-  "AllowedHeaders": [
+  "allowedHeaders": [
     "../../../extern/bgfx/include/bgfx/c99/bgfx.h",
     "../../../extern/bgfx/include/bgfx/defines.h"
   ],
-  "MarshallingMappings": {
+  "marshallingMappings": {
     "bgfx_encoder_begin": {
-      "Return": {
-        "Ownership": "Owned",
-        "AllocatorKind": "NativeFunction",
-        "AllocatorFunction": "bgfx_encoder_begin",
-        "CleanupFunction": "bgfx_encoder_end"
+      "return": {
+        "ownership": "Owned",
+        "allocatorKind": "NativeFunction",
+        "allocatorFunction": "bgfx_encoder_begin",
+        "cleanupFunction": "bgfx_encoder_end"
       }
     },
     "bgfx_vertex_layout_add": {
-      "Return": {
-        "Ownership": "Borrowed"
+      "return": {
+        "ownership": "Borrowed"
       }
     }
   },
-  "FunctionPrefixes": [
+  "functionPrefixes": [
     "bgfx_"
   ],
-  "IgnoredFunctions": [
+  "ignoredFunctions": [
     "bgfx_dbg_text_printf"
   ],
-  "FunctionNamingConvention": "Unknown",
-  "MemberNamingConvention": "Unknown",
-  "NameMappings": {
+  "functionNamingConvention": "Unknown",
+  "memberNamingConvention": "Unknown",
+  "nameMappings": {
     "Bgfx": ""
   },
-  "TypeMappings": {
+  "typeMappings": {
     "bgfx_allocator_interface_s": "AllocatorInterface",
     "bgfx_allocator_vtbl_s": "AllocatorVtbl",
     "bgfx_attachment_s": "Attachment",

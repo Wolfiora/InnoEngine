@@ -5,10 +5,13 @@
     <Nullable>enable</Nullable>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
+
   <ItemGroup>
-    <ProjectReference Include="..\..\scripting\Inno.Scripting.Api\Inno.Scripting.Api.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../scripting/Inno.Scripting.Api/Inno.Scripting.Api.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../Inno.Core.Execution/Inno.Core.Execution.csproj" PrivateAssets="compile" />
   </ItemGroup>
+
   <ItemGroup>
-    <ProjectReference Include="..\Inno.Core.Execution\Inno.Core.Execution.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../extensibility/Inno.Extensibility.Catalogs/Inno.Extensibility.Catalogs.csproj" />
   </ItemGroup>
 </Project>

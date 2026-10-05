@@ -1,3 +1,6 @@
+using Inno.Adapter.Serialization.DotNet;
+using Inno.Extensibility.Reload;
+using Inno.Adapter.Modules.DotNet;
 using Inno.References;
 using Inno.Runtime.Contracts;
 using Inno.Core.Diagnostics;
@@ -74,9 +77,9 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
         _ = typeof(TextureAsset);
         m_identities = new IdentityAllocator();
         m_identityScope = m_identities.EnterScope();
-        m_modules = new ModuleHost(new ModuleHostOptions { cacheDirectory = m_cacheDirectory });
-        m_types = new TypeCatalog(m_modules);
-        m_serialization = new SerializationRegistry(m_types);
+        m_modules = new ModuleHost(new ModuleHostOptions { catalogSource = new DotNetAssemblyCatalogSource(typeof(EmptyRenderingKernelTests).Assembly), cacheDirectory = m_cacheDirectory });
+        m_types = new TypeCatalog(m_modules, new ReflectionTypeCatalogSource());
+        m_serialization = new SerializationRegistry(m_types, new ReflectionSerializationMetadataSource());
         ResourceProbePipeline.action = null;
         DisposablePipeline.Reset();
         PendingFeature.Reset();
@@ -396,10 +399,10 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
     public void TerminalPipelineRetirementBlocksAdmissionAndPreservesLowerOwners(bool duringFrame)
     {
         var modules = new ModuleHost(new ModuleHostOptions
-        {
+        { catalogSource = new DotNetAssemblyCatalogSource(typeof(EmptyRenderingKernelTests).Assembly),
             cacheDirectory = Path.Combine(m_cacheDirectory, "FaultedRendering")
         });
-        var types = new TypeCatalog(modules);
+        var types = new TypeCatalog(modules, new ReflectionTypeCatalogSource());
         var runtime = new RenderRuntime(types, TestDeviceProxy.Create(out TestDeviceProxy device), new TestDiagnosticSink());
         var asset = new RenderPipelineAsset { pipelineTypeId = DisposablePipeline.extensionId };
         Assert.True(runtime.TryActivateDefaultPipeline(asset));
@@ -465,7 +468,7 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
     public void RemovingAndRestoringPluginRenderingCommitsTheSameUnavailableStateAsColdStart()
     {
         const string extensionId = "tests.runtime.reloadable-plugin";
-        AssemblyLoadRequest plugin = CreateRenderingPluginRequest();
+        DotNetModuleSource plugin = CreateRenderingPluginRequest();
         AssemblyModuleHandle activeModule = m_modules.Load(plugin);
         IRenderDevice device = TestDeviceProxy.Create(out TestDeviceProxy proxy);
         var diagnostics = new TestDiagnosticSink();
@@ -486,7 +489,7 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
         proxy.ReleaseRecordedGraph();
 
         QueueCollectiblePayload(runtime, m_types, asset);
-        (AssemblyUnloadMonitor removalMonitor, IRenderRuntimeReloadTransaction renderingRemoval) =
+        (IAssemblyUnloadProbe removalMonitor, IRenderRuntimeReloadTransaction renderingRemoval) =
             RemoveRenderingPlugin(runtime, m_modules, plugin);
 
         ForceCollection();
@@ -523,7 +526,7 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
 
         proxy.ReleaseRecordedGraph();
         runtime.Detach();
-        AssemblyUnloadMonitor recoveryMonitor = m_modules.Unload(activeModule);
+        IAssemblyUnloadProbe recoveryMonitor = m_modules.Unload(activeModule);
         ForceCollection();
         Assert.True(recoveryMonitor.isCompleted);
     }
@@ -531,9 +534,9 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
     [Fact]
     public void RemovingUnusedRenderingPluginReleasesItsAssemblyContext()
     {
-        AssemblyLoadRequest plugin = CreateRenderingPluginRequest();
+        DotNetModuleSource plugin = CreateRenderingPluginRequest();
         _ = m_modules.Load(plugin);
-        AssemblyUnloadMonitor monitor = RemoveUnusedPlugin(m_modules, plugin);
+        IAssemblyUnloadProbe monitor = RemoveUnusedPlugin(m_modules, plugin);
 
         ForceCollection();
 
@@ -1304,7 +1307,7 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
             pipeline,
             priority: priority);
 
-    private static AssemblyLoadRequest CreateRenderingPluginRequest()
+    private static DotNetModuleSource CreateRenderingPluginRequest()
         => new()
         {
             moduleName = "RenderingRuntimeReloadTests",
@@ -1319,31 +1322,31 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
 
     [MethodImpl(MethodImplOptions.NoInlining)]
     private static (
-        AssemblyUnloadMonitor monitor,
+        IAssemblyUnloadProbe monitor,
         IRenderRuntimeReloadTransaction transaction) RemoveRenderingPlugin(
         RenderRuntime runtime,
         ModuleHost modules,
-        AssemblyLoadRequest plugin)
+        DotNetModuleSource plugin)
     {
         IRenderRuntimeReloadTransaction rendering = runtime.BeginExtensionReload();
         using AssemblyReloadSession removal = modules.BeginReload(
-            Array.Empty<AssemblyLoadRequest>(),
+            Array.Empty<DotNetModuleSource>(),
             [plugin.moduleName]);
         removal.Activate();
         rendering.Prepare();
         rendering.Activate();
-        AssemblyUnloadMonitor monitor = removal.Complete();
+        IAssemblyUnloadProbe monitor = removal.Complete();
         rendering.Complete();
         return (monitor, rendering);
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
-    private static AssemblyUnloadMonitor RemoveUnusedPlugin(
+    private static IAssemblyUnloadProbe RemoveUnusedPlugin(
         ModuleHost modules,
-        AssemblyLoadRequest plugin)
+        DotNetModuleSource plugin)
     {
         using AssemblyReloadSession removal = modules.BeginReload(
-            Array.Empty<AssemblyLoadRequest>(),
+            Array.Empty<DotNetModuleSource>(),
             [plugin.moduleName]);
         removal.Activate();
         return removal.Complete();

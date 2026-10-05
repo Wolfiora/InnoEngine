@@ -16,7 +16,7 @@ public sealed class ModuleHostOptions
         "AssemblyCache");
 
     /// <summary>
-    /// Gets or sets whether referenced Inno host assemblies are loaded during initialization.
+    /// Gets the host source whose ownership transfers to the module host during construction.
     /// </summary>
-    public bool preloadEntryAssemblyDependencies { get; set; } = true;
+    public required IAssemblyCatalogSource catalogSource { get; init; }
 }

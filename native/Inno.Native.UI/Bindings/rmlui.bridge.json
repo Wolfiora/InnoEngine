@@ -1,19 +1,18 @@
 {
-  "ConfigVersion": 1,
-  "EntryFiles": [
+  "entryFiles": [
     "../Native/include/RmlUiRuntime.hpp"
   ],
-  "AllowedHeaders": [
+  "allowedHeaders": [
     "../Native/include/RmlUiRuntime.hpp"
   ],
-  "IncludeFolders": [
+  "includeFolders": [
     "../Native/include"
   ],
-  "OutputPath": "../Native/Generated",
-  "LanguageStandard": "c++20",
-  "GenerateBuildManifest": false,
-  "GenerateCSharpBindings": false,
-  "NamePrefix": "inno_ui_",
-  "ParseSystemIncludes": false,
-  "ParseComments": false
+  "outputPath": "../Native/Generated",
+  "languageStandard": "c++20",
+  "generateBuildManifest": false,
+  "generateCSharpBindings": false,
+  "namePrefix": "inno_ui_",
+  "parseSystemIncludes": false,
+  "parseComments": false
 }

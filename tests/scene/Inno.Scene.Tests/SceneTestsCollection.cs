@@ -1,3 +1,5 @@
+using Inno.Adapter.Serialization.DotNet;
+using Inno.Adapter.Modules.DotNet;
 using System;
 using System.IO;
 
@@ -40,11 +42,11 @@ public sealed class SceneTestsFixture : IDisposable
     {
         _ = typeof(Inno.Scene.SceneAsset);
         modules = new ModuleHost(new ModuleHostOptions
-        {
+        { catalogSource = new DotNetAssemblyCatalogSource(typeof(SceneTestsCollection).Assembly),
             cacheDirectory = m_cacheDirectory
         });
-        types = new TypeCatalog(modules);
-        serialization = new SerializationRegistry(types);
+        types = new TypeCatalog(modules, new ReflectionTypeCatalogSource());
+        serialization = new SerializationRegistry(types, new ReflectionSerializationMetadataSource());
         world = new Inno.Scene.SceneWorld(identities, types);
         assets = new RejectingAssetReferenceResolver();
         serializationContext = AssetSerializationContext.Create(assets);

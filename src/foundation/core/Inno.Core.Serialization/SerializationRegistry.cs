@@ -13,6 +13,7 @@ public sealed class SerializationRegistry : IDisposable
 {
     private readonly ConverterRegistry m_converters;
     private readonly TypeCatalog m_types;
+    private readonly ISerializationMetadataSource m_metadata;
     private bool m_disposed;
 
     /// <summary>
@@ -24,11 +25,17 @@ public sealed class SerializationRegistry : IDisposable
     /// <exception cref="ArgumentNullException">
     /// Thrown when <paramref name="types"/> is null.
     /// </exception>
+    /// <param name="metadata">
+    /// The declaration access provider selected by the same composition root.
+    /// </param>
     [ScriptingApiIgnore]
-    public SerializationRegistry(TypeCatalog types)
-    {
+    public SerializationRegistry(
+        TypeCatalog types,
+        ISerializationMetadataSource metadata
+    ) {
         ArgumentNullException.ThrowIfNull(types);
         m_types = types;
+        m_metadata = metadata ?? throw new ArgumentNullException(nameof(metadata));
         m_converters = new ConverterRegistry(types);
     }
 
@@ -62,6 +69,30 @@ public sealed class SerializationRegistry : IDisposable
     }
 
     /// <summary>
+    /// Reads the current provider's declaration metadata for domain operations such as prefab overrides.
+    /// </summary>
+    /// <param name="type">
+    /// The exact declaration owned by the current serialization generation.
+    /// </param>
+    /// <returns>
+    /// Immutable declaration accessors owned by this generation; unsupported declarations throw.
+    /// The caller must not retain the result across generation retirement.
+    /// </returns>
+    /// <exception cref="ArgumentNullException">
+    /// The declaration is null.
+    /// </exception>
+    /// <exception cref="ObjectDisposedException">
+    /// The registry has been disposed.
+    /// </exception>
+    [ScriptingApiIgnore]
+    public SerializationTypeMetadata GetMetadata(Type type)
+    {
+        EnsureInitialized();
+        ArgumentNullException.ThrowIfNull(type);
+        return m_metadata.GetMetadata(type);
+    }
+
+    /// <summary>
     /// Gets the stable ordered runtime-visible properties for a serializable object.
     /// </summary>
     /// <param name="value">
@@ -80,7 +111,17 @@ public sealed class SerializationRegistry : IDisposable
     {
         EnsureInitialized();
         ArgumentNullException.ThrowIfNull(value);
-        return ReflectionMetadata.GetRuntimeProperties(value);
+        IReadOnlyList<SerializationMemberMetadata> members = m_metadata.GetMetadata(value.GetType()).members;
+        var properties = new List<SerializedProperty>(members.Count);
+        foreach (SerializationMemberMetadata member in members)
+        {
+            if ((member.visibility & PropertyVisibility.RuntimeGet) == 0)
+                continue;
+            properties.Add(new SerializedProperty(member.name, member.type,
+                () => member.GetValue(value), propertyValue => member.SetValue(value, propertyValue),
+                member.visibility, true, (member.visibility & PropertyVisibility.RuntimeSet) != 0));
+        }
+        return properties;
     }
 
     /// <summary>
@@ -568,5 +609,5 @@ public sealed class SerializationRegistry : IDisposable
     }
 
     private SerializationContext CreateContext(SerializationContext? context)
-        => (context ?? SerializationContext.empty).With(m_types).With(this);
+        => (context ?? SerializationContext.empty).With(m_types).With(this).With<ISerializationMetadataSource>(m_metadata);
 }

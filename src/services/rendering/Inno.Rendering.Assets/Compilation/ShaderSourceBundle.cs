@@ -9,7 +9,7 @@ namespace Inno.Rendering.Assets;
 /// <summary>
 /// Persists only frozen function compilation inputs, never a parser, live asset, resolver or generated main function.
 /// </summary>
-public static class ShaderSourceBundle
+public static partial class ShaderSourceBundle
 {
     /// <summary>
     /// Identifies the authoring-only frozen function module output.

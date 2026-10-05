@@ -58,11 +58,11 @@ internal sealed class LinuxMiniAudioBuilder : MiniAudioBuilder
         string buildType = GetBuildType(config);
         string commonOptions = GetCommonCMakeOptions("-DMA_DLL");
 
-        await ToolchainEnvironment.RunAsync(
+        await ToolchainEnvironment.RunAsync(context,
             "cmake",
             $"-S . -B \"{buildDirectory}\" -DCMAKE_BUILD_TYPE={buildType} {commonOptions}",
             miniAudioDirectory, cancellationToken);
-        await ToolchainEnvironment.RunAsync(
+        await ToolchainEnvironment.RunAsync(context,
             "cmake",
             $"--build \"{buildDirectory}\" --config {buildType}",
             miniAudioDirectory, cancellationToken);

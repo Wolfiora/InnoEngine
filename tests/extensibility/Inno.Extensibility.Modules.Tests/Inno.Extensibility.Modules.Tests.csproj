@@ -38,4 +38,7 @@
     <Copy SourceFiles="@(TestModuleDependency)" DestinationFolder="$(OutDir)Modules\V1" />
     <Copy SourceFiles="@(TestModuleDependency)" DestinationFolder="$(OutDir)Modules\V2" />
   </Target>
+  <ItemGroup>
+    <ProjectReference Include="../../../src/adapters/modules/Inno.Adapter.Modules.DotNet/Inno.Adapter.Modules.DotNet.csproj" PrivateAssets="compile" />
+  </ItemGroup>
 </Project>

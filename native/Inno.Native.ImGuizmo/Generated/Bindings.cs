@@ -5,6 +5,7 @@
 //     Changes will be replaced the next time bindings are generated.
 // </auto-generated>
 // ------------------------------------------------------------------------------
+#pragma warning disable CS1591 // Native declarations may omit documentation.
 #nullable enable
 using BGCS.Runtime;
 using Color = global::Inno.Native.ImGuizmo.ImGuizmoColor;
@@ -330,9 +331,14 @@ namespace Inno.Native.ImGuizmo
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static Bool8 ManipulateInterop(float* view, float* projection, int operation, int mode, float* matrix, float* deltaMatrix, float* snap, float* localBounds, float* boundsSnap)
+        {
+            return ((delegate* unmanaged[Cdecl]<float*, float*, int, int, float*, float*, float*, float*, float*, Bool8>)funcTable[15])(view, projection, operation, mode, matrix, deltaMatrix, snap, localBounds, boundsSnap);
+        }
+
         internal static Bool8 ManipulateNative(float* view, float* projection, ImGuizmoOperation operation, ImGuizmoMode mode, float* matrix, float* deltaMatrix, float* snap, float* localBounds, float* boundsSnap)
         {
-            return ((delegate* unmanaged[Cdecl]<float*, float*, ImGuizmoOperation, ImGuizmoMode, float*, float*, float*, float*, float*, Bool8>)funcTable[15])(view, projection, operation, mode, matrix, deltaMatrix, snap, localBounds, boundsSnap);
+            return ManipulateInterop(view, projection, (int)operation, (int)mode, matrix, deltaMatrix, snap, localBounds, boundsSnap);
         }
 
         /// <summary>
@@ -346,9 +352,14 @@ namespace Inno.Native.ImGuizmo
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static void ViewManipulateInterop(float* view, float* projection, int operation, int mode, float* matrix, float length, Vector2 position, Vector2 size, uint backgroundColor)
+        {
+            ((delegate* unmanaged[Cdecl]<float*, float*, int, int, float*, float, Vector2, Vector2, uint, void>)funcTable[17])(view, projection, operation, mode, matrix, length, position, size, backgroundColor);
+        }
+
         internal static void ViewManipulateNative(float* view, float* projection, ImGuizmoOperation operation, ImGuizmoMode mode, float* matrix, float length, Vector2 position, Vector2 size, uint backgroundColor)
         {
-            ((delegate* unmanaged[Cdecl]<float*, float*, ImGuizmoOperation, ImGuizmoMode, float*, float, Vector2, Vector2, uint, void>)funcTable[17])(view, projection, operation, mode, matrix, length, position, size, backgroundColor);
+            ViewManipulateInterop(view, projection, (int)operation, (int)mode, matrix, length, position, size, backgroundColor);
         }
 
         /// <summary>
@@ -434,9 +445,14 @@ namespace Inno.Native.ImGuizmo
         /// <summary>
         /// To be documented.
         /// </summary>
+        internal static Bool8 IsOverInterop(int op)
+        {
+            return ((delegate* unmanaged[Cdecl]<int, Bool8>)funcTable[28])(op);
+        }
+
         internal static Bool8 IsOverNative(ImGuizmoOperation op)
         {
-            return ((delegate* unmanaged[Cdecl]<ImGuizmoOperation, Bool8>)funcTable[28])(op);
+            return IsOverInterop((int)op);
         }
 
         /// <summary>
@@ -982,50 +998,62 @@ namespace Inno.Native.ImGuizmo
 
     public unsafe partial class ImGuizmo
     {
-        internal static FunctionTable funcTable = null !;
-        public static void InitApi(INativeContext context)
+        internal static global::BGCS.Runtime.FunctionTable funcTable = null !;
+        public static void InitApi(global::BGCS.Runtime.INativeContext context)
         {
-            funcTable = new FunctionTable(context, 38);
-            funcTable.Load(0, "ImGuizmo_SetDrawlist");
-            funcTable.Load(1, "ImGuizmo_BeginFrame");
-            funcTable.Load(2, "ImGuizmo_SetImGuiContext");
-            funcTable.Load(3, "ImGuizmo_IsOver_Nil");
-            funcTable.Load(4, "ImGuizmo_IsUsing");
-            funcTable.Load(5, "ImGuizmo_IsUsingViewManipulate");
-            funcTable.Load(6, "ImGuizmo_IsViewManipulateHovered");
-            funcTable.Load(7, "ImGuizmo_IsUsingAny");
-            funcTable.Load(8, "ImGuizmo_Enable");
-            funcTable.Load(9, "ImGuizmo_DecomposeMatrixToComponents");
-            funcTable.Load(10, "ImGuizmo_RecomposeMatrixFromComponents");
-            funcTable.Load(11, "ImGuizmo_SetRect");
-            funcTable.Load(12, "ImGuizmo_SetOrthographic");
-            funcTable.Load(13, "ImGuizmo_DrawCubes");
-            funcTable.Load(14, "ImGuizmo_DrawGrid");
-            funcTable.Load(15, "ImGuizmo_Manipulate");
-            funcTable.Load(16, "ImGuizmo_ViewManipulate_Float");
-            funcTable.Load(17, "ImGuizmo_ViewManipulate_FloatPtr");
-            funcTable.Load(18, "ImGuizmo_SetAlternativeWindow");
-            funcTable.Load(19, "ImGuizmo_SetID");
-            funcTable.Load(20, "ImGuizmo_PushID_Str");
-            funcTable.Load(21, "ImGuizmo_PushID_StrStr");
-            funcTable.Load(22, "ImGuizmo_PushID_Ptr");
-            funcTable.Load(23, "ImGuizmo_PushID_Int");
-            funcTable.Load(24, "ImGuizmo_PopID");
-            funcTable.Load(25, "ImGuizmo_GetID_Str");
-            funcTable.Load(26, "ImGuizmo_GetID_StrStr");
-            funcTable.Load(27, "ImGuizmo_GetID_Ptr");
-            funcTable.Load(28, "ImGuizmo_IsOver_OPERATION");
-            funcTable.Load(29, "ImGuizmo_SetGizmoSizeClipSpace");
-            funcTable.Load(30, "ImGuizmo_AllowAxisFlip");
-            funcTable.Load(31, "ImGuizmo_SetAxisLimit");
-            funcTable.Load(32, "ImGuizmo_SetAxisMask");
-            funcTable.Load(33, "ImGuizmo_SetPlaneLimit");
-            funcTable.Load(34, "ImGuizmo_IsOver_FloatPtr");
-            funcTable.Load(35, "Style_Style");
-            funcTable.Load(36, "Style_destroy");
-            funcTable.Load(37, "ImGuizmo_GetStyle");
+            var candidate = new global::BGCS.Runtime.FunctionTable(context, 38);
+            try
+            {
+                candidate.LoadRequired(0, "ImGuizmo_SetDrawlist");
+                candidate.LoadRequired(1, "ImGuizmo_BeginFrame");
+                candidate.LoadRequired(2, "ImGuizmo_SetImGuiContext");
+                candidate.LoadRequired(3, "ImGuizmo_IsOver_Nil");
+                candidate.LoadRequired(4, "ImGuizmo_IsUsing");
+                candidate.LoadRequired(5, "ImGuizmo_IsUsingViewManipulate");
+                candidate.LoadRequired(6, "ImGuizmo_IsViewManipulateHovered");
+                candidate.LoadRequired(7, "ImGuizmo_IsUsingAny");
+                candidate.LoadRequired(8, "ImGuizmo_Enable");
+                candidate.LoadRequired(9, "ImGuizmo_DecomposeMatrixToComponents");
+                candidate.LoadRequired(10, "ImGuizmo_RecomposeMatrixFromComponents");
+                candidate.LoadRequired(11, "ImGuizmo_SetRect");
+                candidate.LoadRequired(12, "ImGuizmo_SetOrthographic");
+                candidate.LoadRequired(13, "ImGuizmo_DrawCubes");
+                candidate.LoadRequired(14, "ImGuizmo_DrawGrid");
+                candidate.LoadRequired(15, "ImGuizmo_Manipulate");
+                candidate.LoadRequired(16, "ImGuizmo_ViewManipulate_Float");
+                candidate.LoadRequired(17, "ImGuizmo_ViewManipulate_FloatPtr");
+                candidate.LoadRequired(18, "ImGuizmo_SetAlternativeWindow");
+                candidate.LoadRequired(19, "ImGuizmo_SetID");
+                candidate.LoadRequired(20, "ImGuizmo_PushID_Str");
+                candidate.LoadRequired(21, "ImGuizmo_PushID_StrStr");
+                candidate.LoadRequired(22, "ImGuizmo_PushID_Ptr");
+                candidate.LoadRequired(23, "ImGuizmo_PushID_Int");
+                candidate.LoadRequired(24, "ImGuizmo_PopID");
+                candidate.LoadRequired(25, "ImGuizmo_GetID_Str");
+                candidate.LoadRequired(26, "ImGuizmo_GetID_StrStr");
+                candidate.LoadRequired(27, "ImGuizmo_GetID_Ptr");
+                candidate.LoadRequired(28, "ImGuizmo_IsOver_OPERATION");
+                candidate.LoadRequired(29, "ImGuizmo_SetGizmoSizeClipSpace");
+                candidate.LoadRequired(30, "ImGuizmo_AllowAxisFlip");
+                candidate.LoadRequired(31, "ImGuizmo_SetAxisLimit");
+                candidate.LoadRequired(32, "ImGuizmo_SetAxisMask");
+                candidate.LoadRequired(33, "ImGuizmo_SetPlaneLimit");
+                candidate.LoadRequired(34, "ImGuizmo_IsOver_FloatPtr");
+                candidate.LoadRequired(35, "Style_Style");
+                candidate.LoadRequired(36, "Style_destroy");
+                candidate.LoadRequired(37, "ImGuizmo_GetStyle");
+            }
+            catch
+            {
+                candidate.Free();
+                throw;
+            }
+
+            var previous = funcTable;
+            funcTable = candidate;
+            previous?.Free();
         }
 
-        public static void FreeApi() => funcTable.Free();
+        public static void FreeApi() => funcTable?.Free();
     }
 }

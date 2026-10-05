@@ -4,7 +4,11 @@
 
 ## 职责与边界
 
-WebAssembly 构建目标库，没有 Program，不包含游戏、Scene、渲染算法或另一套 Native 实现。使用 .NET wasm-tools 的 Emscripten 编译稳定 Native 项目和相同第三方源码。所有 CMake 中间产物归本项目 obj/native/browser-wasm，各组件发布 archive 位于 .lib/component/browser-wasm。
+WebAssembly 构建目标库，没有 Program，不包含游戏、Scene、渲染算法或另一套 Native 实现。使用 .NET wasm-tools 的 Emscripten 编译稳定 Native 项目和相同第三方源码。
+CMake 中间产物归本项目 `obj/native/browser-wasm/<fingerprint>`，完成的原生闭包位于
+`artifacts/native/browser/browser-wasm/<fingerprint>/<component>/browser-wasm`。
+指纹包含所选 SDK 的可执行工具与脚本、CMake/Ninja、原生源、工具链实现与五个组件的生成身份；完成后记录精确文件集合和 SHA-256。
+读取缓存前验证内容，不从 `.lib` 或其他请求的固定桥目录选择产物。
 
 ## 编译并行度
 
@@ -16,15 +20,17 @@ Web 运行时的单线程能力不限制编译并行度。工具链不覆盖 `EM
 
 | API | 语义 |
 | --- | --- |
-| `BrowserToolchain.ResolveEnvironmentAsync(dotnetHost, projectPath, cancellationToken)` | 查询目标项目的 MSBuild workload 选择，返回该项目实际使用的 SDK、Cache、Node 和 Python 路径；不猜测已安装包的最高版本，不修改父进程环境。 |
-| `BrowserToolchain.BuildAsync(engineRoot, dotnetHost, cancellationToken)` | 生成五套目标 binding、顺序编译并安装静态 archive，失败及取消传播。 |
+| `EmscriptenToolchainResolver.ResolveAsync(dotnetHost, projectPath, cancellationToken)` | 查询目标项目的 MSBuild workload 选择，返回该项目实际使用的 SDK、Cache、Node 和 Python 路径；不猜测已安装包的最高版本，不修改父进程环境。 |
+| `BrowserToolchain.BuildAsync(engineRoot, dotnetHost, cancellationToken)` | 返回 `Task<BrowserNativeArtifacts>`，生成五套目标 binding，编译并验证静态 archive，失败及取消传播。 |
+| `BrowserNativeArtifacts.fingerprint` / `directory` | 本次成功请求的不可变输入身份和完整原生闭包绝对路径；由工具链创建，无公开构造函数。 |
+| `BrowserNativeArtifacts.bindingSelectionPath` | 不可变 MSBuild 选择文件，按组件声明已冻结的绑定指纹；托管构建校验当前输入匹配，否则中止 Support Pack。 |
 
 没有 protected 扩展点。
 
 ```csharp
 using Inno.Build.Toolchains.Browser;
 
-await BrowserToolchain.BuildAsync(engineRoot, dotnetHost, cancellationToken);
+BrowserNativeArtifacts artifacts = await BrowserToolchain.BuildAsync(engineRoot, dotnetHost, cancellationToken);
 ```
 
 需要 .NET 9 wasm-tools、CMake 和 Ninja。macOS/Linux 使用本机 python3；Windows 使用 workload 携带的 Python。工具链不保存开发机器的绝对路径。
@@ -36,7 +42,10 @@ BGCS 解析器自己的 Clang builtin resource headers 由解析器包提供，S
 
 ## 约束与失败
 
-SDK、sysroot 或工具缺失立即失败。BGFX 使用 SDK 的版本头获取编译宏，明确构建 GLES 3.0 对应 WebGL 2；不修改 extern。wasm_sjlj_shim.c 是已记录的 LLVM/Emscripten lowering shim，属于目标工具链；没有第二套业务 ABI。编译一次只启动一个 Native 编译进程，取消杀死子进程树。
+SDK、sysroot 或工具缺失立即失败。BGFX 使用 SDK 的版本头获取编译宏，明确构建 GLES 3.0 对应 WebGL 2；不修改 extern。wasm_sjlj_shim.c 是已记录的 LLVM/Emscripten lowering shim，属于目标工具链；没有第二套业务 ABI。
+同一指纹由 `Inno.Core.IO.FileLease` 串行拥有中间树与发布；取消杀死子进程树、删除本次 staging，保留已完成产物。
+提交前必须存在全部 11 个非空 archive，并重新验证输入指纹；编译期间输入变化会使候选失败，不能发布为原来的身份。
+Support Pack 以返回的路径复制原生库，托管引用的 bin/obj 也包含该指纹，不混用其他 SDK 的程序集。
 
 ## SDK 的 SjLj 链接补足
 

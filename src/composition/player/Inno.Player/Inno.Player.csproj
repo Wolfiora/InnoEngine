@@ -1,13 +1,23 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
+    <InnoGeneratePlayerComposition>true</InnoGeneratePlayerComposition>
     <TargetFramework>net9.0</TargetFramework>
     <ImplicitUsings>disable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <AssemblyName>Inno.Player</AssemblyName>
   </PropertyGroup>
+
   <ItemGroup>
     <ProjectReference Include="../Inno.Player.Runtime/Inno.Player.Runtime.csproj" />
     <ProjectReference Include="../../../adapters/default/Inno.Adapter.Default/Inno.Adapter.Default.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <CompilerVisibleProperty Include="InnoGeneratePlayerComposition" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../../../foundation/extensibility/Inno.Extensibility.Catalogs/Inno.Extensibility.Catalogs.csproj" />
   </ItemGroup>
 </Project>

@@ -1,3 +1,4 @@
+using Inno.Adapter.Platform;
 using System;
 using System.Collections.Generic;
 using System.Numerics;
@@ -748,11 +749,11 @@ internal sealed unsafe class PlatformImGuiViewportBackend : IDisposable
     private static PlatformNativeHandles GetNativeHandles(SDLWindow window)
     {
         uint properties = SDL.GetWindowProperties(window);
-        PlatformNativeHandleKind kind = PlatformNativeHandleKind.Unknown;
+        PlatformNativeHandleId kind = default(PlatformNativeHandleId);
         IntPtr windowHandle = IntPtr.Zero;
         if (OperatingSystem.IsWindows())
         {
-            kind = PlatformNativeHandleKind.Win32;
+            kind = PlatformNativeHandleId.win32;
             windowHandle = (IntPtr)SDL.GetPointerProperty(
                 properties,
                 SDL.SDL_PROP_WINDOW_WIN32_HWND_POINTER,
@@ -760,7 +761,7 @@ internal sealed unsafe class PlatformImGuiViewportBackend : IDisposable
         }
         else if (OperatingSystem.IsMacOS())
         {
-            kind = PlatformNativeHandleKind.Cocoa;
+            kind = PlatformNativeHandleId.cocoa;
             windowHandle = (IntPtr)SDL.GetPointerProperty(
                 properties,
                 SDL.SDL_PROP_WINDOW_COCOA_WINDOW_POINTER,

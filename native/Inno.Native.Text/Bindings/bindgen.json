@@ -1,11 +1,19 @@
 {
-  "BaseConfig": {
-    "Url": "file://common.json"
+  "baseConfig": {
+    "url": "file://common.json"
   },
-  "Preset": "host-c,c-library,function-table",
-  "LibName": "inno-text",
-  "IncludeFolders": [
-    "../Native"
+  "preset": "host-c,c-library,function-table",
+  "libName": "inno-text",
+  "entryFiles": [
+    "../Native/Generated/include/Classes.h"
   ],
-  "OutputPath": "../Generated"
+  "allowedHeaders": [
+    "../Native/Generated/include/Classes.h",
+    "../Native/Generated/include/common.h",
+    "../Native/Generated/include/enums.h"
+  ],
+  "includeFolders": [
+    "../Native/Generated/include"
+  ],
+  "outputPath": "../Generated"
 }

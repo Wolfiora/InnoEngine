@@ -1,6 +1,9 @@
 using System;
 using Inno.Adapter;
 using Inno.Core.Logging;
+using Inno.Core.Serialization;
+using Inno.Extensibility.Modules;
+using Inno.Extensibility.Types;
 using Inno.Rendering;
 using Inno.Runtime;
 using Inno.Shell;
@@ -12,6 +15,21 @@ namespace Inno.Player.Runtime;
 /// </summary>
 public sealed class PlayerLaunchOptions
 {
+    /// <summary>
+    /// Gets the code catalog selected by the platform composition; ownership transfers to the application.
+    /// </summary>
+    public required IAssemblyCatalogSource modules { get; init; }
+
+    /// <summary>
+    /// Gets the metadata implementation corresponding to the selected code deployment.
+    /// </summary>
+    public required ITypeCatalogSource types { get; init; }
+
+    /// <summary>
+    /// Gets generated declaration access and collection construction for the linked code closure.
+    /// </summary>
+    public required ISerializationMetadataSource serializationMetadata { get; init; }
+
     /// <summary>
     /// Gets the host-owned factories used to create isolated runtime adapters.
     /// </summary>
@@ -66,6 +84,11 @@ public sealed class PlayerLaunchOptions
     /// Gets an optional rendering API preference; null selects the adapter default.
     /// </summary>
     public GraphicsApi? graphicsApi { get; init; }
+
+    /// <summary>
+    /// Gets whether the primary window is initially shown; false preserves rendering without taking focus.
+    /// </summary>
+    public bool windowVisible { get; init; } = true;
 
     /// <summary>
     /// Gets an optional positive frame count for a bounded verification run.

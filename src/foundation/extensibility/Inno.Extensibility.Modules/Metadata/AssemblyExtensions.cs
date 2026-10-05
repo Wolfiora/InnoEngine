@@ -60,7 +60,22 @@ public static class AssemblyExtensions
             $"Assembly '{assembly.GetName().Name}' has no valid {C_ASSEMBLY_SCOPE_KEY} metadata.");
     }
 
-    internal static bool TryGetInnoAssemblyClassification(
+    /// <summary>
+    /// Reads ownership metadata without treating an unrelated assembly as an extension.
+    /// </summary>
+    /// <param name="assembly">
+    /// The assembly whose declared classification is inspected.
+    /// </param>
+    /// <param name="domain">
+    /// Receives the declared domain when metadata is complete.
+    /// </param>
+    /// <param name="scope">
+    /// Receives the declared dependency scope when metadata is complete.
+    /// </param>
+    /// <returns>
+    /// Whether both classifications are present and valid; outputs are default values on failure.
+    /// </returns>
+    public static bool TryGetInnoAssemblyClassification(
         this Assembly assembly,
         out AssemblyDomain domain,
         out AssemblyScope scope

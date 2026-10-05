@@ -1,3 +1,5 @@
+using Inno.Adapter.Serialization.DotNet;
+using Inno.Adapter.Modules.DotNet;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -44,14 +46,14 @@ public sealed class UiServiceTests : IDisposable
         Directory.CreateDirectory(m_assets);
         m_identityScope = m_identities.EnterScope();
         m_modules = new ModuleHost(new ModuleHostOptions
-        {
+        { catalogSource = new DotNetAssemblyCatalogSource(typeof(UiServiceTests).Assembly),
             cacheDirectory = Path.Combine(m_root, "Assemblies")
         });
         _ = Assembly.Load("Inno.UI.Assets");
         _ = Assembly.Load("Inno.Text.Assets");
         _ = Assembly.Load("Inno.Adapter.UI.RmlUi.Authoring");
-        m_types = new TypeCatalog(m_modules);
-        m_serialization = new SerializationRegistry(m_types);
+        m_types = new TypeCatalog(m_modules, new ReflectionTypeCatalogSource());
+        m_serialization = new SerializationRegistry(m_types, new ReflectionSerializationMetadataSource());
         m_types.Rebuild();
     }
 

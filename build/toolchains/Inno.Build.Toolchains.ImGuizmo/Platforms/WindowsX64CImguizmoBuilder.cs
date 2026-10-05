@@ -40,11 +40,8 @@ internal sealed class WindowsX64CImguizmoBuilder : CImguizmoBuilder
     /// <param name="cimguiDir">
     /// The cimgui dir text validated by the build operation.
     /// </param>
-    /// <param name="cimguiBuildDir">
-    /// The cimgui build dir text validated by the build operation.
-    /// </param>
-    /// <param name="cimguiOutputDir">
-    /// The cimgui output dir text validated by the build operation.
+    /// <param name="cimguiLibraryFile">
+    /// The exact published import or shared library selected by the parent operation.
     /// </param>
     /// <param name="context">
     /// The selected checkout and native configuration.
@@ -58,8 +55,7 @@ internal sealed class WindowsX64CImguizmoBuilder : CImguizmoBuilder
     public override async Task BuildAsync(
         string cimguizmoDir,
         string cimguiDir,
-        string cimguiBuildDir,
-        string cimguiOutputDir,
+        string cimguiLibraryFile,
         NativeBuildContext context,
         CancellationToken cancellationToken
     ) {
@@ -70,7 +66,7 @@ internal sealed class WindowsX64CImguizmoBuilder : CImguizmoBuilder
 
         var cimguizmoCpp = Path.Combine(cimguizmoDir, CImguizmoBuildConstants.CIMGUIMO_CPP_FILE);
         var imguizmoCpp = Path.Combine(cimguizmoDir, CImguizmoBuildConstants.IMGUIZMO_DIR_NAME, CImguizmoBuildConstants.IMGUIZMO_CPP_FILE);
-        var cimguiLib = FindCimguiImportLibrary(cimguiBuildDir, config);
+        var cimguiLib = cimguiLibraryFile;
         var outputLib = Path.Combine(buildDir, $"{CImguizmoBuildConstants.OUTPUT_DLL_NAME}.dll");
 
         var includes = new[]
@@ -88,22 +84,7 @@ internal sealed class WindowsX64CImguizmoBuilder : CImguizmoBuilder
         // Ignore these two third-party diagnostics while treating other compiler warnings as errors.
         var args = $"/LD {cflags} {THIRD_PARTY_WARNING_POLICY} /DIMGUI_API=__declspec(dllimport) {includeArgs} \"{cimguizmoCpp}\" \"{imguizmoCpp}\" /link /OUT:\"{outputLib}\" \"{cimguiLib}\"";
 
-        await ToolchainEnvironment.RunAsync("cl", args, buildDir, cancellationToken);
+        await ToolchainEnvironment.RunAsync(context, "cl", args, buildDir, cancellationToken);
     }
 
-    private static string FindCimguiImportLibrary(
-        string cimguiBuildDir,
-        string config
-    ) {
-        if (!Directory.Exists(cimguiBuildDir))
-        {
-            throw new DirectoryNotFoundException($"cimgui build directory not found: {cimguiBuildDir}");
-        }
-
-        string buildType = config == ToolchainLayout.C_DEBUG_CONFIGURATION ? "Debug" : "Release";
-        string importLibrary = Path.Combine(cimguiBuildDir, buildType, $"libcimgui-{config}.lib");
-        return File.Exists(importLibrary)
-            ? importLibrary
-            : throw new FileNotFoundException($"cimgui {config} import library not found: {importLibrary}", importLibrary);
-    }
 }

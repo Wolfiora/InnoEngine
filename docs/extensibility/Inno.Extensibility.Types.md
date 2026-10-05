@@ -20,13 +20,21 @@ Registry、TypeCatalog、ModuleHost 保留原始外层异常与 owner，而非�
 ## 初始化关系
 
 ```csharp
-using var modules = new ModuleHost(new ModuleHostOptions { cacheDirectory = cachePath });
-using var types = new TypeCatalog(modules);
+using Inno.Adapter.Modules.DotNet;
+using Inno.Extensibility.Modules;
+using Inno.Extensibility.Types;
+
+using var modules = new ModuleHost(new ModuleHostOptions
+{
+    cacheDirectory = cachePath,
+    catalogSource = new DotNetAssemblyCatalogSource(typeof(Application).Assembly)
+});
+using var types = new TypeCatalog(modules, new ReflectionTypeCatalogSource());
 types.Rebuild();
 // Registries must retire before types and modules.
 ```
 
-Reflection 引用 Assemblies 并注册一个 catalog participant。Assemblies 不引用 Reflection，也不存在 `InternalsVisibleTo` 耦合。
+Types 引用中立 Modules 并注册一个 catalog participant。动态反射由组合入口注入的 DotNet Adapter 提供；Modules 不反向引用 Types 或 Adapter，也不存在 `InternalsVisibleTo` 耦合。
 
 ## TypeCatalog
 
@@ -34,7 +42,7 @@ Reflection 引用 Assemblies 并注册一个 catalog participant。Assemblies �
 | --- | --- |
 | `bool isInitialized` | TypeCache participant 已注册且 ModuleHost 仍有效。 |
 | `TypeCacheSnapshot current` | 当前不可变快照；读取前会先处理 dirty Host catalog。 |
-| `TypeCatalog(ModuleHost)` | 创建实例并注册类型/Registry 统一事务参与者。 |
+| `TypeCatalog(ModuleHost, ITypeCatalogSource)` | 借用已启动的模块宿主和明确的元数据来源，注册类型/Registry 统一事务参与者。 |
 | `Rebuild()` | 通过 ModuleHost 强制重建 assembly、type 与 registry 快照。 |
 | `AcquireOperation(string)` | 同步领域操作期间保护捕获的 generation，延后自动刷新；发布线程内部可借用，其他发布并发访问拒绝。 |
 | `Dispose()` | 注销 participant 并释放 Registry 状态。 |
@@ -81,6 +89,18 @@ Console.WriteLine(player.Resolve(types).FullName);
 | `GetTypesImplementing<TInterface>()` | 快照内的具体接口实现。 |
 | `GetTypesWithAttribute<TAttribute>()` | 快照内带 attribute 的类型。 |
 | `GetTypeRef(Type)` / `TryGetTypeRef` | 把属于该快照的 CLR Type 转成 `TypeRef`。 |
+| `CanCreateInstance(TypeRef)` | 判断当前部署是否提供该声明的无参构造工厂；不存在的类型返回 false。 |
+| `CreateInstance(Type)` | 通过所属来源构造声明或其封闭泛型；返回的新实例由调用者拥有。 |
+| `ConstructGenericType(Type, IReadOnlyList<Type>)` | 在本 generation 内解析封闭泛型；约束不成立返回 null，静态部署未链接该构造时明确抛异常。 |
+| `GetMetadata(TypeRef)` | 读取本 generation 的不可变发现事实，缺失或过期引用在解析时失败。 |
+| `GetAttribute<TAttribute>(TypeRef, bool inherit = true)` | 从已提供的元数据中取得单一 attribute；缺失返回 null，重复声明失败。 |
+
+## ITypeCatalogSource
+
+来源提供 `GetTypes(Assembly)`、`GetMetadata(Type)`、`ConstructGenericType(definition, arguments)`、
+`CanCreateInstance(Type)` 和 `CreateInstance(Type)`。这些行为必须对应同一个模块闭包与 generation。
+动态来源通过反射取得事实；静态来源消费程序集生成目录。Types 不根据操作系统选择来源，也不隐式补做动态反射。
+基础元数据与生成 registrar 契约属于 [Inno.Extensibility.Catalogs](Inno.Extensibility.Catalogs.md)。
 
 不要长期缓存旧 snapshot：其内部为了 generation 一致性强持有 `Type` 和反射发现 slice，即使公开查询只返回 `TypeRef`。Registry 在 `Complete/Rollback` 中及时释放旧快照；外部调用方若自行保留旧 snapshot 或 `Resolve` 的结果，则 ALC 延迟卸载属于该引用的预期结果。
 
@@ -90,7 +110,7 @@ Snapshot 构建会按 `Assembly` 引用身份复用上一代的内部 Type slice
 
 普通 Host/Plugin 类型在没有 attribute 时，Stable ID 由 `程序集简单名 + 完整类型名` 生成确定性 UUIDv5。脚本编译器可以通过 assembly metadata 提供 source-based canonical ID；TypeCache 只验证并消费当前映射，不依赖 Asset/Scripting 项目。类型级 `[StableTypeId]` 始终优先于编译器映射。
 
-需要重命名兼容时显式固定：
+需要让语义身份独立于类型名称时显式固定：
 
 ```csharp
 [StableTypeId("c5db9123-9768-4e34-a346-22981ee4b4da")]
@@ -199,3 +219,11 @@ TypeCache 不再静默吞掉 `ReflectionTypeLoadException`。这对热重载很�
 - 同一程序集名与完整类型名通常保持 Stable ID，但运行时 `Type` 对象不是同一个。
 - Registry snapshot 不应跨代际缓存旧 `Type`、delegate 或 extension instance。
 - `TypeCatalog.Rebuild()` 适合“活动程序集集合未重新载入，但需要重算类型/Registry”的场景；读取新 DLL 仍由 Assemblies 的 Reload API 完成。
+
+## 显式类型元数据来源
+
+`ITypeCatalogSource.GetTypes(Assembly)`、`GetMetadata(Type)`、`ConstructGenericType(Type, IReadOnlyList<Type>)`、`CanCreateInstance(Type)` 和 `CreateInstance(Type)` 是动态反射与编译目录共用的边界。`TypeCatalog(ModuleHost, ITypeCatalogSource)` 接收组合入口选择的来源；Types 不调用 Assembly.GetTypes、MakeGenericType 或负责 ALC。
+
+[`TypeCatalogMetadata`](Inno.Extensibility.Catalogs.md) 属于独立的 Catalogs 契约项目，构造时防御性复制 `type / baseTypes / interfaces / declaredAttributes / inheritedAttributes / parameterlessOverrides`。TypeCacheSnapshot 的 `GetMetadata(TypeRef)`、`GetAttribute<TAttribute>(TypeRef, inherit=true)`、`CanCreateInstance(TypeRef)`、`ConstructGenericType(Type, IReadOnlyList<Type>)` 与 `CreateInstance(Type)` 将 registry 查询和构造统一到当前 generation。过期 TypeRef 或缺失 factory 明确失败。无返回语义的 marker 不作为发现条件；Attribute 只携带真实元数据。
+
+Reflection 来源属于 [DotNet Adapter](../platform/Inno.Adapter.Modules.DotNet.md)。静态来源属于 [Runtime](../runtime/Inno.Runtime.md)，通过 generated catalogs 提供相同事实。旧 snapshot 清理时释放 source、metadata、Type 和 factory 的 generation 引用。

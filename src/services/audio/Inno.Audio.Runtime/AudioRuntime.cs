@@ -134,6 +134,12 @@ public sealed class AudioRuntime : RuntimeSubsystem, IAudioService
     /// Gets the monotonic backend audio clock in seconds.
     /// </summary>
     public double dspTime => m_device.dspTime;
+
+    /// <inheritdoc />
+    protected override void OnStart()
+    {
+        m_events.dispatched += OnEventDispatched;
+    }
     /// <summary>
     /// Captures snapshots and binds service façades.
     /// </summary>
@@ -699,6 +705,7 @@ public sealed class AudioRuntime : RuntimeSubsystem, IAudioService
         if (m_disposed)
             return;
         m_stopping = true;
+        m_events.dispatched -= OnEventDispatched;
         if (!m_extensionsRetired)
         {
             try
@@ -732,6 +739,12 @@ public sealed class AudioRuntime : RuntimeSubsystem, IAudioService
         m_disposed = true;
         if (failures.Count > 0)
             throw new AggregateException("Audio retirement failed after all resource owners were attempted.", failures);
+    }
+
+    private void OnEventDispatched(Event e)
+    {
+        if (e is ApplicationSuspensionChangedEvent suspension)
+            m_mixer.SetSuspended(suspension.isSuspended);
     }
 
     private List<Exception> RetireBackend(AudioCompletionReason reason)

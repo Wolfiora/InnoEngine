@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 
 using Inno.Adapter.Audio;
@@ -15,211 +14,100 @@ using Inno.Adapter.Text;
 using Inno.Adapter.Text.FreeTypeHarfBuzz;
 using Inno.Adapter.UI;
 using Inno.Adapter.UI.RmlUi;
-using Inno.Audio;
-using Inno.Platform;
-using Inno.Rendering;
-using Inno.Storage;
-using Inno.Text;
-using Inno.UI;
 
 namespace Inno.Adapter.Default;
 
 /// <summary>
-/// Supplies the coherent built-in runtime backend set shipped by the standard engine distribution.
+/// Composes independent, open provider catalogs for the standard engine distribution.
 /// </summary>
-public sealed class DefaultAdapterCatalog :
-    IAdapterCatalog,
-    IPlatformBackendFactory,
-    IInputBackendFactory,
-    IStorageBackendFactory,
-    IRenderingBackendFactory,
-    IAudioBackendFactory,
-    ITextBackendFactory,
-    IUiBackendFactory
+/// <remarks>
+/// Replacement sequences define the complete registrations for their domain.
+/// The composition owns providers; service creation and disposal remain with each caller.
+/// </remarks>
+public sealed class DefaultAdapterCatalog : IAdapterCatalog
 {
-    private readonly IStorageBackendFactory? m_storage;
+    private readonly PlatformBackendCatalog m_platform;
+    private readonly InputBackendCatalog m_input;
+    private readonly StorageBackendCatalog m_storage;
     private readonly RenderingBackendCatalog m_rendering;
+    private readonly AudioBackendCatalog m_audio;
+    private readonly TextBackendCatalog m_text;
     private readonly UiBackendCatalog m_ui;
 
     /// <summary>
-    /// Creates the standard adapters with optional complete provider sets.
+    /// Captures each domain registration snapshot without initializing native services.
     /// </summary>
     /// <param name="renderingProviders">
-    /// Replacement rendering providers, or null to use bundled BGFX.
+    /// Complete rendering registrations, or null to use the bundled implementation.
     /// </param>
     /// <param name="uiProviders">
-    /// Replacement UI providers, or null to use bundled RmlUi.
+    /// Complete ui registrations, or null to use the bundled implementation.
     /// </param>
-    /// <param name="storageFactory">
-    /// A host-selected storage factory, or null to use local files.
+    /// <param name="storageProviders">
+    /// Complete storage registrations, or null to use the bundled implementation.
+    /// </param>
+    /// <param name="platformProviders">
+    /// Complete platform registrations, or null to use the bundled implementation.
+    /// </param>
+    /// <param name="inputProviders">
+    /// Complete input registrations, or null to use the bundled implementation.
+    /// </param>
+    /// <param name="audioProviders">
+    /// Complete audio registrations, or null to use the bundled implementation.
+    /// </param>
+    /// <param name="textProviders">
+    /// Complete text registrations, or null to use the bundled implementation.
     /// </param>
     public DefaultAdapterCatalog(
         IEnumerable<RenderingBackendProvider>? renderingProviders = null,
         IEnumerable<UiBackendProvider>? uiProviders = null,
-        IStorageBackendFactory? storageFactory = null
+        IEnumerable<StorageBackendProvider>? storageProviders = null,
+        IEnumerable<PlatformBackendProvider>? platformProviders = null,
+        IEnumerable<InputBackendProvider>? inputProviders = null,
+        IEnumerable<AudioBackendProvider>? audioProviders = null,
+        IEnumerable<TextBackendProvider>? textProviders = null
     ) {
-        m_storage = storageFactory;
-        m_rendering = new RenderingBackendCatalog(renderingProviders ?? [new BgfxRenderingProvider()]);
-        m_ui = new UiBackendCatalog(uiProviders ?? [new RmlUiProvider()]);
+        m_platform = new PlatformBackendCatalog(platformProviders ?? [new Sdl3PlatformBackendProvider()]);
+        m_input = new InputBackendCatalog(inputProviders ?? [new Sdl3InputBackendProvider()]);
+        m_storage = new StorageBackendCatalog(storageProviders ?? [new FileSystemStorageBackendProvider()]);
+        m_rendering = new RenderingBackendCatalog(renderingProviders ?? [new BgfxRenderingBackendProvider()]);
+        m_audio = new AudioBackendCatalog(audioProviders ?? [new MiniAudioBackendProvider()]);
+        m_text = new TextBackendCatalog(textProviders ?? [new FreeTypeHarfBuzzTextBackendProvider()]);
+        m_ui = new UiBackendCatalog(uiProviders ?? [new RmlUiBackendProvider()]);
     }
 
-    IReadOnlyList<RenderingBackendId> IRenderingBackendFactory.supportedBackends => m_rendering.supportedBackends;
-    IReadOnlyList<UiBackendId> IUiBackendFactory.supportedBackends => m_ui.supportedBackends;
+    /// <summary>
+    /// Gets the composition-owned platform factory snapshot.
+    /// </summary>
+    public IPlatformBackendFactory platform => m_platform;
 
     /// <summary>
-    /// Gets the built-in platform backend factory.
+    /// Gets the composition-owned input factory snapshot.
     /// </summary>
-    public IPlatformBackendFactory platform => this;
+    public IInputBackendFactory input => m_input;
 
     /// <summary>
-    /// Gets the built-in input backend factory.
+    /// Gets the composition-owned storage factory snapshot.
     /// </summary>
-    public IInputBackendFactory input => this;
+    public IStorageBackendFactory storage => m_storage;
 
     /// <summary>
-    /// Gets the built-in application-storage backend factory.
+    /// Gets the composition-owned rendering factory snapshot.
     /// </summary>
-    public IStorageBackendFactory storage => m_storage ?? this;
+    public IRenderingBackendFactory rendering => m_rendering;
 
     /// <summary>
-    /// Gets the built-in runtime rendering backend factory.
+    /// Gets the composition-owned audio factory snapshot.
     /// </summary>
-    public IRenderingBackendFactory rendering => this;
+    public IAudioBackendFactory audio => m_audio;
 
     /// <summary>
-    /// Gets the built-in audio backend factory.
+    /// Gets the composition-owned text factory snapshot.
     /// </summary>
-    public IAudioBackendFactory audio => this;
+    public ITextBackendFactory text => m_text;
 
     /// <summary>
-    /// Gets the built-in Unicode text backend factory.
+    /// Gets the composition-owned ui factory snapshot.
     /// </summary>
-    public ITextBackendFactory text => this;
-
-    /// <summary>
-    /// Gets the built-in retained-mode UI backend factory.
-    /// </summary>
-    public IUiBackendFactory ui => this;
-
-    IPlatformApplication IPlatformBackendFactory.CreateApplication(PlatformBackend backend)
-        => backend switch
-        {
-            PlatformBackend.Sdl3 => new Sdl3PlatformApplication(),
-            _ => throw Unsupported(nameof(backend), backend)
-        };
-
-    IInputEventSource IInputBackendFactory.CreateEventSource(
-        InputBackend backend,
-        IPlatformWindow window,
-        bool acceptAllWindows
-    ) {
-        ArgumentNullException.ThrowIfNull(window);
-        return backend switch
-        {
-            InputBackend.Sdl3 => new Sdl3InputSource(acceptAllWindows ? 0 : window.windowId),
-            _ => throw Unsupported(nameof(backend), backend)
-        };
-    }
-
-    IApplicationStorage IStorageBackendFactory.CreateStorage(
-        StorageBackend backend,
-        string rootDirectory
-    ) {
-        ArgumentException.ThrowIfNullOrWhiteSpace(rootDirectory);
-        return backend switch
-        {
-            StorageBackend.FileSystem => new FileSystemApplicationStorage(rootDirectory),
-            _ => throw Unsupported(nameof(backend), backend)
-        };
-    }
-
-    IRenderDevice IRenderingBackendFactory.CreateDevice(
-        RenderingBackendId backend,
-        RenderingBackendOptions options
-    )
-        => m_rendering.CreateDevice(backend, options);
-
-    IRenderLayerCompositionProgramProvider IRenderingBackendFactory.CreateCompositionProgramProvider(
-        RenderingBackendId backend)
-        => m_rendering.CreateCompositionProgramProvider(backend);
-
-    private sealed class BgfxRenderingProvider : RenderingBackendProvider
-    {
-        /// <summary>
-        /// Gets the stable identity used to reference this value across subsystem boundaries.
-        /// </summary>
-public override RenderingBackendId id => RenderingBackendId.bgfx;
-
-        /// <summary>
-        /// Creates and validates a caller-owned device value.
-        /// </summary>
-        /// <param name="options">
-        /// The validated configuration that controls this operation.
-        /// </param>
-        /// <returns>
-        /// The validated irender device that represents the completed operation.
-        /// </returns>
-public override IRenderDevice CreateDevice(RenderingBackendOptions options)
-            => new BgfxDevice(new BgfxDeviceOptions
-            {
-                window = options.window,
-                preferredBackend = options.preferredGraphicsApi,
-                verticalSync = options.verticalSync,
-                sRgbBackbuffer = options.sRgbBackbuffer,
-                forceSingleThreaded = options.forceSingleThreaded
-            });
-
-        /// <summary>
-        /// Creates the BGFX program provider for ordered model output layers.
-        /// </summary>
-        /// <returns>
-        /// A provider for BGFX target shader artifacts.
-        /// </returns>
-        public override IRenderLayerCompositionProgramProvider CreateCompositionProgramProvider() => new BgfxCompositionProgramProvider();
-    }
-
-    IAudioDevice IAudioBackendFactory.CreateDevice(
-        AudioBackend backend,
-        AudioBackendOptions options
-    )
-        => backend switch
-        {
-            AudioBackend.MiniAudio => new MiniAudioDevice(new MiniAudioDeviceOptions
-            {
-                noDevice = options.noDevice
-            }),
-            _ => throw Unsupported(nameof(backend), backend)
-        };
-
-    ITextBackend ITextBackendFactory.CreateBackend(TextBackend backend)
-        => backend switch
-        {
-            TextBackend.FreeTypeHarfBuzz => new FreeTypeHarfBuzzTextBackend(),
-            _ => throw Unsupported(nameof(backend), backend)
-        };
-
-    IUiBackend IUiBackendFactory.CreateBackend(UiBackendId backend) => m_ui.CreateBackend(backend);
-
-    private sealed class RmlUiProvider : UiBackendProvider
-    {
-        /// <summary>
-        /// Gets the stable identity used to reference this value across subsystem boundaries.
-        /// </summary>
-public override UiBackendId id => UiBackendId.rmlUi;
-
-        /// <summary>
-        /// Creates and validates a caller-owned backend value.
-        /// </summary>
-        /// <returns>
-        /// The validated iui backend that represents the completed operation.
-        /// </returns>
-public override IUiBackend CreateBackend() => new RmlUiBackend();
-    }
-
-    private static NotSupportedException Unsupported<TBackend>(
-        string parameterName,
-        TBackend backend
-    )
-        where TBackend : struct, Enum
-        => new($"The {parameterName} selection '{backend}' is not available in the default adapter catalog.");
+    public IUiBackendFactory ui => m_ui;
 }

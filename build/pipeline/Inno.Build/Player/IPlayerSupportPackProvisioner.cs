@@ -4,15 +4,15 @@ using System.Threading.Tasks;
 namespace Inno.Build;
 
 /// <summary>
-/// Supplies a missing Player Support Pack without making the game build depend on a particular SDK or platform toolchain.
+/// Prepares current Player Support Pack inputs without coupling game builds to an SDK or platform toolchain.
 /// </summary>
 public interface IPlayerSupportPackProvisioner
 {
     /// <summary>
-    /// Installs one target pack into the catalog root before the build resumes.
+    /// Checks current source inputs and selects a complete immutable pack before the build resumes.
     /// </summary>
     /// <param name="target">
-    /// The missing platform and architecture target.
+    /// The platform and architecture target whose current inputs are required.
     /// </param>
     /// <param name="supportPackRoot">
     /// The catalog directory where the verified pack must be installed.
