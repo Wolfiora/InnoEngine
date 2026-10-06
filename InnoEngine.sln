@@ -595,6 +595,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inno.Content.Tests", "tests
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inno.Rendering.Assets.Authoring.Tests", "tests\rendering\Inno.Rendering.Assets.Authoring.Tests\Inno.Rendering.Assets.Authoring.Tests.csproj", "{79DCB4E2-F1DA-4947-B171-CC970F6DF782}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inno.Native.ImGui.BindingExtension", "native\Inno.Native.ImGui\Bindings\Extension\Inno.Native.ImGui.BindingExtension.csproj", "{5357604F-BA02-4CEB-852E-AF68DB2A7A3B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -3119,6 +3121,18 @@ Global
 		{79DCB4E2-F1DA-4947-B171-CC970F6DF782}.Release|x64.Build.0 = Release|Any CPU
 		{79DCB4E2-F1DA-4947-B171-CC970F6DF782}.Release|x86.ActiveCfg = Release|Any CPU
 		{79DCB4E2-F1DA-4947-B171-CC970F6DF782}.Release|x86.Build.0 = Release|Any CPU
+		{5357604F-BA02-4CEB-852E-AF68DB2A7A3B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5357604F-BA02-4CEB-852E-AF68DB2A7A3B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5357604F-BA02-4CEB-852E-AF68DB2A7A3B}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{5357604F-BA02-4CEB-852E-AF68DB2A7A3B}.Debug|x64.Build.0 = Debug|Any CPU
+		{5357604F-BA02-4CEB-852E-AF68DB2A7A3B}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{5357604F-BA02-4CEB-852E-AF68DB2A7A3B}.Debug|x86.Build.0 = Debug|Any CPU
+		{5357604F-BA02-4CEB-852E-AF68DB2A7A3B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5357604F-BA02-4CEB-852E-AF68DB2A7A3B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5357604F-BA02-4CEB-852E-AF68DB2A7A3B}.Release|x64.ActiveCfg = Release|Any CPU
+		{5357604F-BA02-4CEB-852E-AF68DB2A7A3B}.Release|x64.Build.0 = Release|Any CPU
+		{5357604F-BA02-4CEB-852E-AF68DB2A7A3B}.Release|x86.ActiveCfg = Release|Any CPU
+		{5357604F-BA02-4CEB-852E-AF68DB2A7A3B}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -3415,5 +3429,6 @@ Global
 		{F4D5A9D5-A060-4EA4-99F5-54CEB5FB72EA} = {803BD693-D74A-4E84-8C9B-A1BA4B561A2F}
 		{AD596CEA-236B-463C-8479-5016C4C90FF6} = {803BD693-D74A-4E84-8C9B-A1BA4B561A2F}
 		{79DCB4E2-F1DA-4947-B171-CC970F6DF782} = {784BD946-C173-49A9-A6F7-429A2EA0B336}
+		{5357604F-BA02-4CEB-852E-AF68DB2A7A3B} = {304A48B8-A137-4877-AADE-FA93686D1127}
 	EndGlobalSection
 EndGlobal

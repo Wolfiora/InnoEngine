@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
@@ -90,6 +91,11 @@ internal static class BuildTaskHostRetirement
         catch (InvalidOperationException)
         {
             return false;
+        }
+        catch (Win32Exception)
+        {
+            // Keep the host directory when its owner cannot be inspected safely.
+            return true;
         }
     }
 }

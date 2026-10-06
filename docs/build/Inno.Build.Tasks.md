@@ -53,6 +53,9 @@ Task 的取消、编译、产物校验和部署失败都使 MSBuild 失败；内
 
 唯一 MSBuild 引导位于 build/msbuild/Inno.Build.Tasks.targets。host 工具隔离目标 RID、AOT、Wasm 与 IDE 全局属性，显式构建依赖。一次闭包中同一配置/工具身份只准备一次 immutable host，再为各 evaluation 提供私有加载目录。普通 Build 与 Publish 都准备完整 Editor native 闭包；Design-time 不执行 native 工作。PrepareEditorNativeTask 输出输入扫描、进程与耗时指标。
 
+内部加载目录清理只在全部 owner 进程已确认退出时删除旧缓存。系统拒绝查询进程状态时保留目录，
+不能因此使有效构建失败；编译、完整性校验和部署失败仍按正常 Task 错误处理。
+
 ## 当前源码公开 API 清单
 
 以下仅列出当前程序集自己声明的 public/protected 契约；继承成员遵循所属基类页面。internal/private 实现不作为稳定公开 API。签名依据当前源码语义模型生成，行为、参数、异常与所有权说明同时以对应英文 XML 为准。

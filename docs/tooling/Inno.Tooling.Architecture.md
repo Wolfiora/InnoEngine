@@ -36,6 +36,7 @@ Native 符号检查目前覆盖 BGFX、SDL3、MiniAudio；ImGui presentation 的
 - Player dependency closure；
 - Native 类型泄漏和 Engine 内部脚本 Log facade；
 - tests 的 non-public reflection；
+- `src`、`native`、`build`、`tools` 的全部创作源码项目必须进入 Solution；`src`/`build` 按职责层次归类，Native 组件及绑定生成扩展共用 `native`，验证工具共用 `tools`；
 - 全部 test project 必须进入 solution，并位于 `tests/<domain>` 虚拟 Solution Folder；TestModule/TestAssembly/TestDependency 必须继续位于二级 `fixtures`；
 - `Inno.Audio` 不得引用 Runtime、Scene、Editor、Platform、Native 或具体 backend；只有 MiniAudio adapter/toolchain/native/tests 可直接引用 native binding；
 - Audio scripting 清单不得导出设备、native binding 或 backend，MiniAudio 实时适配源码不得持有托管 extension generation/reflection 对象；

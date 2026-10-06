@@ -2,6 +2,10 @@
 
 [架构治理](README.md) · [Wiki 首页](../README.md) · [正式问题台账](../issues/2026-08-31-complete-issue-register.md)
 
+2026-10-07：[Solution 与架构边界复核](SOLUTION_CLEANUP_ACCEPTANCE_2026_10_07.md)补齐遗漏的 ImGui 绑定生成扩展归属，
+并修复 Windows 无法查询旧 Task owner 时缓存退休使构建失败的问题。项目覆盖门禁现包含 Native 与 Tooling；
+本轮结构、有效引用图和构建结果与下方历史运行证据分别记录。
+
 2026-10-06 本轮 A01–A08：源码整改、当前消费者和本机必需验收已完成，见[架构整改验收](ARCHITECTURE_CLEANUP_ACCEPTANCE_2026_10_06.md)。最终 Release Solution/Debug Editor 零警告错误，架构门禁通过；汇总 2727 passed、0 failed、16 macOS Metal skipped，四条 FlappyBird 发布/运行及可见 Editor UI 有当前证据。macOS/iOS/主机实机、任意多屏 DPI 和声学听音未实测；Native 热构建的完整哈希 IO 成本与帧测量方法明确保留，不宣称零 IO/零分配。本轮与下方历史证据分别记录。
 
 2026-10-06：[Editor 普通构建与原生部署修复](EDITOR_NATIVE_BUILD_ACCEPTANCE_2026_10_06.md)确认并修复 Debug 输出残留旧 Text DLL 的启动失败。

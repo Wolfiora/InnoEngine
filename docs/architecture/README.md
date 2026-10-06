@@ -9,6 +9,7 @@ Wiki，也不把未来规划描述为当前能力。
 
 | 页面 | 内容 | 维护要求 |
 | --- | --- | --- |
+| [2026-10-07 Solution 与架构边界复核](SOLUTION_CLEANUP_ACCEPTANCE_2026_10_07.md) | 全项目归属、有效引用、遗漏生成扩展与 Task 缓存退休修复 | 本轮实际构建与门禁证据 |
 | [2026-10-06 架构整改计划](ARCHITECTURE_CLEANUP_PLAN_2026_10_06.md) | A01–A08 文件级实施规格 | 所有消费者与本机验收 |
 | [2026-10-06 架构整改验收](ARCHITECTURE_CLEANUP_ACCEPTANCE_2026_10_06.md) | 本轮实际结构、正确性、性能和限制 | 区分历史证据与当前执行 |
 | [通用 C# 开发规范](CSHARP_DEVELOPMENT_STANDARD.md) | 命名、排版、公开 API、所有权和验证规范 | InnoEngine 与 BGCS 独立采用 |

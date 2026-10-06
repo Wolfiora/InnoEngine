@@ -7,6 +7,7 @@
 此库属于 Inno.Native.ImGui 的 `Bindings/Extension`，提供消费方自己的 managed ABI layout。
 它引用独立 BGCS 生成契约，不要求 BGCS 了解引擎。其宿主输出属于 `artifacts/build-tools/bindings`，
 不会作为运行时 Player 依赖。两个模板属于同一组件的 `Managed` 目录并随扩展库部署。
+此项目在 Solution 的 `native` 分组中，与其所属原生组件一起维护；没有运行时入站引用并不代表它是废弃项目。
 
 ## 全部公开 API
 

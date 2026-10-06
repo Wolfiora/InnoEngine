@@ -91,7 +91,7 @@ public static partial class ArchitectureValidator
         }
 
         ValidateProjectReferences(repositoryRoot, failures);
-        ValidateSourceSolutionFolders(repositoryRoot, failures);
+        ValidateProductionSolutionFolders(repositoryRoot, failures);
         ValidateTestSolutionFolders(repositoryRoot, failures);
         ArchitectureRules.Validate(repositoryRoot, failures);
         PublicApiBoundaryValidator.Validate(repositoryRoot, configuration, failures);
@@ -401,7 +401,7 @@ public static partial class ArchitectureValidator
         }
     }
 
-    private static void ValidateSourceSolutionFolders(
+    private static void ValidateProductionSolutionFolders(
         string repositoryRoot,
         ICollection<string> failures
     ) {
@@ -448,16 +448,14 @@ public static partial class ArchitectureValidator
         }
 
         var declaredSourceProjects = paths
-            .Where(static pair => (pair.Value.StartsWith("src/", StringComparison.Ordinal) ||
-                                   pair.Value.StartsWith("build/", StringComparison.Ordinal)) &&
+            .Where(static pair => S_PRODUCTION_ROOTS.Any(root =>
+                                      pair.Value.StartsWith(root + "/", StringComparison.Ordinal)) &&
                                   pair.Value.EndsWith(".csproj", StringComparison.OrdinalIgnoreCase))
             .ToDictionary(static pair => pair.Value, static pair => pair.Key, StringComparer.OrdinalIgnoreCase);
-        string sourceDirectory = Path.Combine(repositoryRoot, "src");
-        string supportDirectory = Path.Combine(repositoryRoot, "build");
-        foreach (string projectPath in EnumerateFiles(sourceDirectory, "*.csproj")
-                     .Concat(Directory.Exists(supportDirectory)
-                         ? EnumerateFiles(supportDirectory, "*.csproj")
-                         : []))
+        foreach (string projectPath in S_PRODUCTION_ROOTS
+                     .Select(root => Path.Combine(repositoryRoot, root))
+                     .Where(Directory.Exists)
+                     .SelectMany(root => EnumerateFiles(root, "*.csproj")))
         {
             string relative = Relative(repositoryRoot, projectPath);
             if (!declaredSourceProjects.ContainsKey(relative))
@@ -467,9 +465,13 @@ public static partial class ArchitectureValidator
         foreach ((string projectPath, string projectId) in declaredSourceProjects)
         {
             string projectName = names[projectId];
-            string? expectedPath = projectPath.StartsWith("build/", StringComparison.Ordinal)
-                ? Path.GetDirectoryName(Path.GetDirectoryName(projectPath))?.Replace('\\', '/')
-                : ClassifySourceSolutionPath(projectName);
+            string sourceRoot = projectPath[..projectPath.IndexOf('/')];
+            string? expectedPath = sourceRoot switch
+            {
+                "native" or "tools" => sourceRoot,
+                "build" => Path.GetDirectoryName(Path.GetDirectoryName(projectPath))?.Replace('\\', '/'),
+                _ => ClassifySourceSolutionPath(projectName)
+            };
             if (expectedPath is null)
             {
                 failures.Add($"{projectPath}: source project '{projectName}' has no conceptual Solution Folder classification.");
@@ -480,8 +482,10 @@ public static partial class ArchitectureValidator
             if (!string.Equals(actualPath, expectedPath, StringComparison.Ordinal))
                 failures.Add($"{projectPath}: expected Solution Folder '{expectedPath}', found '{actualPath}'.");
 
-            string physicalGroup = Path.GetDirectoryName(Path.GetDirectoryName(projectPath))?
-                .Replace('\\', '/').TrimEnd('/') ?? string.Empty;
+            string physicalGroup = sourceRoot is "native" or "tools"
+                ? sourceRoot
+                : Path.GetDirectoryName(Path.GetDirectoryName(projectPath))?
+                    .Replace('\\', '/').TrimEnd('/') ?? string.Empty;
             if (!string.Equals(physicalGroup, expectedPath, StringComparison.Ordinal))
             {
                 failures.Add(

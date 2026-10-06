@@ -232,6 +232,7 @@ public void AAA(
 ## 26. Solution 与项目文件整理
 
 - Solution Folder 与实际架构职责对应，删除没有有效项目或 Solution Items 的空分组；小型项目集合避免无必要的单项目包装层。
+- `src`、`native`、`build`、`tools` 与 `tests` 中的创作源码项目必须纳入 Solution，包括绑定生成扩展和测试 fixture；`obj`、`artifacts` 及第三方生成项目不纳入。没有入站 ProjectReference 不代表项目无用，清理前必须核对宿主入口、MSBuild 工具调用与生成配置。
 - `.csproj`、`.props`、`.targets` 使用两空格缩进，顶层职责块以空行分隔，长属性列表逐属性换行，ProjectReference 相对路径使用 `/`。
 - 只合并条件和引用可见性一致的相邻引用分组。不得重排 Import、Property、Target 或改变条件、metadata 和求值顺序；Editor 公开与实现引用边界必须保留。
 - 详细规则见 `docs/architecture/CSHARP_DEVELOPMENT_STANDARD.md`；整理后核对有效 XML、Solution 项目身份与配置，并运行受影响构建及架构验证。
