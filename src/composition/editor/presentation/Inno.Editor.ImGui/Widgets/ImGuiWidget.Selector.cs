@@ -145,7 +145,7 @@ public static partial class ImGuiWidget
         float maximumHeight = MathF.Min(availableHeight, containingWindow.Size.Y * 0.45f);
         float availableWidth = MathF.Max(1f, MathF.Min(windowMaximum.X, viewportMaximum.X) - popupOrigin.X);
         float popupWidth = Math.Clamp(requestedWidth, 1f, availableWidth);
-        NativeImGui.SetNextWindowSizeConstraints(
+        SetMenuPopupSizeConstraints(
             new Vector2(popupWidth, 0f),
             new Vector2(popupWidth, MathF.Max(1f, maximumHeight)));
     }

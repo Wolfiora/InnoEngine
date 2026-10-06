@@ -22,3 +22,21 @@ await TextToolchain.BuildAsync(new NativeBuildContext(engineRoot, "release"), ca
 组件输入明确包含 `Native/CMakeLists.txt`、`Native/include`、`Native/src` 和 `Native/Generated`，
 加上 pinned 第三方源与已解析 SDK。生成事务的锁文件不属于编译源码；重新生成相同桥代码时，
 产物身份保持一致。增加新的 CMake 输入时，必须同时声明其来源，不能依赖扫描输出父目录。
+
+## 当前源码公开 API 清单
+
+以下仅列出当前程序集自己声明的 public/protected 契约；继承成员遵循所属基类页面。internal/private 实现不作为稳定公开 API。签名依据当前源码语义模型生成，行为、参数、异常与所有权说明同时以对应英文 XML 为准。
+
+### `Inno.Build.Toolchains.Text.TextToolchain`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`static System.Threading.Tasks.Task<Inno.Build.Toolchains.NativeBuildProduct> Inno.Build.Toolchains.Text.TextToolchain.BuildAsync(Inno.Build.Toolchains.NativeBuildContext context, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))`](../../build/toolchains/Inno.Build.Toolchains.Text/TextToolchain.cs#L36) | Builds and installs the component for the current native host. |
+| [`Inno.Build.Toolchains.Text.TextToolchain`](../../build/toolchains/Inno.Build.Toolchains.Text/TextToolchain.cs#L13) | Builds and installs this component through the shared native process lifecycle. |
+
+## 项目依赖
+
+- [Inno.Build.Toolchains](Inno.Build.Toolchains.md)：项目引用；公开签名可见性由语义边界检查确认。
+- [Inno.Extensibility.Catalogs](../extensibility/Inno.Extensibility.Catalogs.md)：项目引用；公开签名可见性由语义边界检查确认。
+
+共同 MSBuild 注入的 analyzer 与编译规则属于构建依赖，完整有效项目图记录在本轮验收证据中。

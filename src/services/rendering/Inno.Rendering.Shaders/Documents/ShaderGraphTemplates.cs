@@ -2,6 +2,7 @@ using System;
 using Inno.Core.Graphs;
 using Inno.Core.Mathematics;
 using Inno.Core.Serialization;
+using Inno.Rendering.Assets;
 
 namespace Inno.Rendering.Shaders;
 

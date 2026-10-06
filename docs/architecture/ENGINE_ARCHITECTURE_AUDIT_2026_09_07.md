@@ -393,7 +393,7 @@ InnoEngine
 | `src/adapters/common` | `Inno.Adapter` |
 | `src/adapters/default` | `Inno.Adapter.Default`、`Inno.Adapter.Authoring.Default` |
 | `src/adapters/platform` | `Inno.Adapter.Platform`、`Inno.Adapter.Platform.Sdl3` |
-| `src/adapters/input` | `Inno.Adapter.Input`、`Inno.Adapter.Input.Sdl3` |
+| `src/adapters/input` | `Inno.Adapter.Input`、`Inno.Adapter.Input` |
 | `src/adapters/storage` | `Inno.Adapter.Storage`、`Inno.Adapter.Storage.FileSystem`、`Inno.Adapter.Storage.Browser` |
 | `src/adapters/rendering` | `Inno.Adapter.Rendering`、`Inno.Adapter.Rendering.Authoring`、`Inno.Adapter.Rendering.Bgfx` |
 | `src/adapters/audio` | `Inno.Adapter.Audio`、`Inno.Adapter.Audio.MiniAudio` |
@@ -713,7 +713,7 @@ Authoring AssetPipeline 与 Player `AssetDatabase` 当前共同实现 `IAssetRes
 | --- | --- |
 | `Inno.Input` | `IInputService`、`InputSnapshot`、device handle、脚本 `Input` façade |
 | `Inno.Input.Runtime` | 每 Session 状态、pressed/released/down、mouse delta/wheel、focus 与 device generation |
-| `Inno.Adapter.Input.Sdl3` | keyboard/mouse/focus 的事件累积与 Session backend 隔离 |
+| `Inno.Adapter.Input` | keyboard/mouse/focus 的事件累积与 Session backend 隔离 |
 | Bundled Input Actions Plugin | action map、binding、rebinding、player assignment、UI navigation |
 
 当前 Physical Input Service 覆盖：
@@ -1226,5 +1226,3 @@ Wiki 中描述为已完成能力。
 - Windows x64：项目、Support Pack、native build 与 E2E matrix 已配置；真实进程验收仍由 Windows runner 完成。
 
 本记录只证明上述当前平台与测试输入；未勾选的后续能力不会因本次 build 成功而自动视为完成。
-
-

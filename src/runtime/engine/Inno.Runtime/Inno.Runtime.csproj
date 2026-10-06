@@ -24,6 +24,7 @@
 
   <ItemGroup>
     <ProjectReference Include="../../../content/assets/Inno.Assets/Inno.Assets.csproj" />
+    <ProjectReference Include="../../../content/deployment/Inno.Content/Inno.Content.csproj" />
     <ProjectReference Include="../../../foundation/core/Inno.Core.Events/Inno.Core.Events.csproj" />
     <ProjectReference Include="../../../foundation/core/Inno.Core.Identity/Inno.Core.Identity.csproj" />
     <ProjectReference Include="../../../foundation/core/Inno.Core.Logging/Inno.Core.Logging.csproj" />

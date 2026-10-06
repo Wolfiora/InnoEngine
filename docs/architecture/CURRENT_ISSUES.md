@@ -2,6 +2,12 @@
 
 [架构治理](README.md) · [Wiki 首页](../README.md) · [正式问题台账](../issues/2026-08-31-complete-issue-register.md)
 
+2026-10-06 本轮 A01–A08：源码整改、当前消费者和本机必需验收已完成，见[架构整改验收](ARCHITECTURE_CLEANUP_ACCEPTANCE_2026_10_06.md)。最终 Release Solution/Debug Editor 零警告错误，架构门禁通过；汇总 2727 passed、0 failed、16 macOS Metal skipped，四条 FlappyBird 发布/运行及可见 Editor UI 有当前证据。macOS/iOS/主机实机、任意多屏 DPI 和声学听音未实测；Native 热构建的完整哈希 IO 成本与帧测量方法明确保留，不宣称零 IO/零分配。本轮与下方历史证据分别记录。
+
+2026-10-06：[Editor 普通构建与原生部署修复](EDITOR_NATIVE_BUILD_ACCEPTANCE_2026_10_06.md)确认并修复 Debug 输出残留旧 Text DLL 的启动失败。
+普通 IDE/MSBuild 与 Publish 复用同一 Native Task，CLI 删除重复安装入口。FlappyBird Debug/Release Editor 各完成 120 帧并正常退出，
+34 项现有回归和 10 项部署验收通过。首次原生准备及完整指纹校验的耗时、第三方 warning 与 macOS 实机验证边界在报告中分别记录。
+
 2026-10-05 当前入口：[完整平台/运行时重构验收](PLATFORM_RUNTIME_ACCEPTANCE.md)与
 [Plan 逐项核对](PLATFORM_RUNTIME_PLAN_AUDIT.md)记录此次结构、静态注册、四条实际 Player 路径及独立 BGCS 验收。
 Windows 临时目录 rename 的共享/访问拒绝现由共同 IO 边界有界处理；持续拒绝仍明确失败并保留旧输出。

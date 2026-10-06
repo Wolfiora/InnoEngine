@@ -46,9 +46,7 @@ public sealed class UiServiceTests : IDisposable
         Directory.CreateDirectory(m_assets);
         m_identityScope = m_identities.EnterScope();
         m_modules = new ModuleHost(new ModuleHostOptions
-        { catalogSource = new DotNetAssemblyCatalogSource(typeof(UiServiceTests).Assembly),
-            cacheDirectory = Path.Combine(m_root, "Assemblies")
-        });
+        { catalogSource = new DotNetAssemblyCatalogSource(typeof(UiServiceTests).Assembly)        });
         _ = Assembly.Load("Inno.UI.Assets");
         _ = Assembly.Load("Inno.Text.Assets");
         _ = Assembly.Load("Inno.Adapter.UI.RmlUi.Authoring");
@@ -352,18 +350,31 @@ public sealed class UiServiceTests : IDisposable
     private static string FontPath()
         => Path.Combine(AppContext.BaseDirectory, "TestData", "LatoLatin-Regular.ttf");
 
-    private sealed class RetainingArtifactLookup(AssetLoader loader) : IAssetArtifactLookup
+    private sealed class RetainingArtifactLookup(AssetLoader loader) : AssetResidencyProvider, IAssetArtifactLookup
     {
         private readonly ArtifactRetention m_retention = new();
 
         internal IReadOnlyList<AssetArtifactKey> retainedKeys => m_retention.GetRetainedKeys();
 
-        public ArtifactLease AcquireArtifact(Guid persistentId, string outputName)
-        {
-            if (!TryGetArtifact(persistentId, outputName, out AssetArtifactInfo? artifact)
-                || artifact is null)
-                throw new InvalidOperationException("The requested test font artifact is unavailable.");
-            return m_retention.Retain(artifact);
+        public ArtifactLease AcquireArtifact(
+            Guid persistentId,
+            string outputName
+        ) {
+            ArtifactLease source = loader.AcquireArtifact(persistentId, outputName);
+            try
+            {
+                ArtifactLease retained = m_retention.Retain(source.info, source.OpenRead);
+                return CreateArtifactLease(source.info, retained.OpenRead, () =>
+                {
+                    retained.Dispose();
+                    source.Dispose();
+                });
+            }
+            catch
+            {
+                source.Dispose();
+                throw;
+            }
         }
 
         public bool TryGetArtifact(Guid persistentId, string outputName,

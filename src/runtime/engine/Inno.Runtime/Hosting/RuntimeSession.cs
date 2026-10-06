@@ -1,7 +1,6 @@
 using Inno.Runtime.Contracts;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using Inno.Assets;
 using Inno.Core.Coroutines;
@@ -29,7 +28,7 @@ public sealed class RuntimeSession : IDisposable
     private readonly RuntimeClock m_clock = new();
     private RuntimeSubsystemPipeline? m_subsystems;
     private SerializationGeneration? m_serialization;
-    private SessionFileLogSink m_fileLog = null!;
+    private SessionLogSink? m_sessionLog;
     private AssetDatabase? m_assets;
     private ReferenceCatalog m_references = ReferenceCatalog.empty;
     private readonly RetirementBarrier m_retirement;
@@ -67,17 +66,19 @@ public sealed class RuntimeSession : IDisposable
                 workerCount = options.jobWorkerCount
             });
         scenes = new SceneWorld(m_identities, m_host.types);
-        Directory.CreateDirectory(this.options.persistentDataDirectory);
-        m_fileLog = new SessionFileLogSink(
-            sessionId,
-            new FileLogSink(Path.Combine(this.options.persistentDataDirectory, "Logs")));
-        m_host.logs.RegisterSink(m_fileLog);
+        if (options.createLogSink is not null)
+        {
+            ILogSink sink = options.createLogSink(sessionId)
+                ?? throw new InvalidOperationException("The session log factory returned no sink.");
+            m_sessionLog = new SessionLogSink(sessionId, sink);
+            m_host.logs.RegisterSink(m_sessionLog);
+        }
         using IDisposable scope = EnterExecutionScope();
-        if (!string.IsNullOrWhiteSpace(options.runtimeContentDirectory))
+        if (options.contentStore is not null)
         {
             m_serialization = m_host.serialization.CaptureGeneration();
             m_assets = new AssetDatabase(
-                options.runtimeContentDirectory,
+                options.contentStore,
                 m_serialization,
                 m_host.types.current,
                 m_identities,
@@ -95,7 +96,7 @@ public sealed class RuntimeSession : IDisposable
             ? ReferenceCatalog.empty
             : ReferenceCatalog.Create(1, referenceResolvers);
         var context = new RuntimeSubsystemContext(events, m_host.diagnostics, m_identities, m_host.types,
-            new LifetimeScope(), RuntimeSubsystemLifetime.Session, options.persistentDataDirectory,
+            new LifetimeScope(), RuntimeSubsystemLifetime.Session,
             options.kind == RuntimeSessionKind.Edit, options.capabilities);
         m_subsystems = new RuntimeSubsystemPipeline(context, m_host.retirementTimeout, m_host.generations);
         m_subsystems.Start([new SceneRuntimeSubsystemFactory(scenes, options.kind), .. options.createSubsystems(this)]);
@@ -365,10 +366,10 @@ public sealed class RuntimeSession : IDisposable
             DisposeStage(m_jobs, ref m_retirementFailures);
         if (m_serialization is not null)
             DisposeStage(m_serialization, ref m_retirementFailures);
-        if (m_fileLog is not null)
+        if (m_sessionLog is not null)
         {
-            m_host.logs.UnregisterSink(m_fileLog);
-            DisposeStage(m_fileLog, ref m_retirementFailures);
+            m_host.logs.UnregisterSink(m_sessionLog);
+            DisposeStage(m_sessionLog, ref m_retirementFailures);
         }
         if (m_retirementFailures is not null)
         {
@@ -382,33 +383,26 @@ public sealed class RuntimeSession : IDisposable
     {
         ArgumentNullException.ThrowIfNull(options);
         ArgumentException.ThrowIfNullOrWhiteSpace(options.applicationId);
-        ArgumentException.ThrowIfNullOrWhiteSpace(options.persistentDataDirectory);
-        if (options.fixedDeltaTime <= 0f)
+        if (!float.IsFinite(options.fixedDeltaTime) || options.fixedDeltaTime <= 0f)
             throw new ArgumentOutOfRangeException(nameof(options), "Fixed delta time must be positive.");
         if (options.assetResidencyBudgetBytes < 0)
             throw new ArgumentOutOfRangeException(nameof(options), "Asset residency budget cannot be negative.");
         if (options.assetPreparationBudgetBytes <= 0)
             throw new ArgumentOutOfRangeException(nameof(options), "Asset preparation budget must be positive.");
-        if (options.maxFrameDeltaTime <= 0f)
+        if (!float.IsFinite(options.maxFrameDeltaTime) || options.maxFrameDeltaTime <= 0f)
             throw new ArgumentOutOfRangeException(nameof(options), "Maximum frame delta time must be positive.");
         if (options.maxFixedStepsPerFrame <= 0)
             throw new ArgumentOutOfRangeException(nameof(options), "Maximum fixed steps must be positive.");
-        string persistentRoot = Path.GetFullPath(options.persistentDataDirectory);
-        string? contentRoot = string.IsNullOrWhiteSpace(options.runtimeContentDirectory)
-            ? null
-            : Path.GetFullPath(options.runtimeContentDirectory);
-        if (options.kind == RuntimeSessionKind.Player
-            && (contentRoot is null || !Directory.Exists(contentRoot)))
+        if (options.kind == RuntimeSessionKind.Player && options.contentStore is null)
         {
-            throw new DirectoryNotFoundException(
-                "A Player session requires an existing materialized runtime content directory.");
+            throw new ArgumentException("A Player session requires an immutable content store.", nameof(options));
         }
         return new RuntimeSessionOptions
         {
             kind = options.kind,
             applicationId = options.applicationId,
-            runtimeContentDirectory = contentRoot,
-            persistentDataDirectory = persistentRoot,
+            contentStore = options.contentStore,
+            createLogSink = options.createLogSink,
             assetResidencyBudgetBytes = options.assetResidencyBudgetBytes,
             assetPreparationBudgetBytes = options.assetPreparationBudgetBytes,
             fixedDeltaTime = options.fixedDeltaTime,
@@ -461,27 +455,4 @@ public sealed class RuntimeSession : IDisposable
         }
     }
 
-    private sealed class SessionFileLogSink(
-        LogSessionId sessionId,
-        FileLogSink sink
-    )
-        : ILogSink, IDisposable
-    {
-        /// <summary>
-        /// Receives one immutable entry and routes it through the active sink policy.
-        /// </summary>
-        /// <param name="entry">
-        /// The entry consumed by receive; ownership remains with the caller unless explicitly stated otherwise.
-        /// </param>
-        public void Receive(LogEntry entry)
-        {
-            if (entry.sessionId == sessionId)
-                sink.Receive(entry);
-        }
-
-        /// <summary>
-        /// Releases the resources owned by this instance.
-        /// </summary>
-        public void Dispose() => sink.Dispose();
-    }
 }

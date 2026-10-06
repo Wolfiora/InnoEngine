@@ -100,9 +100,9 @@ public sealed class AdapterCatalogTests
         providers.Clear();
         providers.Add(second);
         Assert.Equal(first.id, Assert.Single(catalog.supportedBackends));
-        Assert.Throws<NotSupportedException>(() => catalog.CreateStorage(second.id, "application"));
+        Assert.Throws<NotSupportedException>(() => catalog.CreateStorage(second.id, new StorageScope("application")));
         Assert.Equal(0, first.creationCount);
-        Assert.Throws<InvalidOperationException>(() => catalog.CreateStorage(first.id, "application"));
+        Assert.Throws<InvalidOperationException>(() => catalog.CreateStorage(first.id, new StorageScope("application")));
         Assert.Equal(1, first.creationCount);
         Assert.Equal(0, second.creationCount);
         Assert.Throws<NotSupportedException>(() =>
@@ -206,7 +206,7 @@ public sealed class AdapterCatalogTests
 
         public int creationCount { get; private set; }
 
-        public override IApplicationStorage CreateStorage(string rootDirectory)
+        public override IApplicationStorage CreateStorage(StorageScope scope)
         {
             creationCount++;
             return null!;

@@ -33,12 +33,12 @@
     <ProjectReference
       Include="../../../../services/rendering/Inno.Rendering.Shaders/Inno.Rendering.Shaders.csproj"
       PrivateAssets="compile" />
-    <ProjectReference
-      Include="../../../../services/rendering/Inno.Rendering.Assets/Inno.Rendering.Assets.csproj"
-      PrivateAssets="compile" />
+    <ProjectReference Include="../../../../services/rendering/Inno.Rendering.Assets.Authoring/Inno.Rendering.Assets.Authoring.csproj" PrivateAssets="compile" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference
+      Include="../../../../services/rendering/Inno.Rendering.Assets/Inno.Rendering.Assets.csproj" />
     <ProjectReference Include="../../../../foundation/core/Inno.Core.Diagnostics/Inno.Core.Diagnostics.csproj" />
     <ProjectReference Include="../../framework/Inno.Editor.Inspection/Inno.Editor.Inspection.csproj" />
     <ProjectReference Include="../../../../content/assets/Inno.Assets/Inno.Assets.csproj" />
@@ -49,5 +49,7 @@
     <ProjectReference Include="../Inno.Editor.Rendering/Inno.Editor.Rendering.csproj" />
     <ProjectReference Include="../../../../foundation/extensibility/Inno.Extensibility.Types/Inno.Extensibility.Types.csproj" />
     <ProjectReference Include="../../../../foundation/extensibility/Inno.Extensibility.Catalogs/Inno.Extensibility.Catalogs.csproj" />
+    <ProjectReference Include="../../../../services/rendering/Inno.Rendering.Runtime/Inno.Rendering.Runtime.csproj" />
   </ItemGroup>
+
 </Project>

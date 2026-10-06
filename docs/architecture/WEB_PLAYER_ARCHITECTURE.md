@@ -59,7 +59,7 @@ Emscripten、wasm32、静态链接和浏览器存储需要平台实现。共享�
 
 仓库生产代码只保留四个程序入口：Editor、桌面 Player、Web Player、`Inno.Build.Cli`。原生组件构建、Shader 编译、Support Pack 与架构验证都是库，MSBuild 使用薄 Task 调用相同实现。
 
-Support Pack 核心通过 `IPlayerSupportPackSource` 注册准备流程，通过 `IPlayerSupportPackValidator` 验证目标闭包，不维护平台 switch。`BuiltInPlayerSupportPacks` 是内置目标组合点。准备失败或取消不替换已有 pack；游戏发布在隔离 staging 中完成后再提交输出。
+Support Pack 核心通过 `IPlayerSupportPackSource` 注册准备流程，通过 `IPlayerSupportPackValidator` 验证目标闭包，不维护平台 switch。`BuiltInBuildDistribution` 是 Editor/CLI/MSBuild 共用的内置目标组合点。准备失败或取消不替换已有 pack；游戏发布在隔离 staging 中完成后再提交输出。
 
 Support Pack 保存最终游戏发布所需的模板、注册 Analyzer、编译引用和原生输入。每次游戏 Build 冻结实际代码闭包，生成 `PlayerDeploymentDefinition`，再调用独立的托管 compiler 完成发行；平台 target 消费发布结果并打包。`--deployment coreclr`、`nativeaot`、`mono-wasm`、`mono-wasm-aot` 明确选择部署方式，平台默认项可以省略。
 
@@ -81,3 +81,17 @@ Support Pack 保存最终游戏发布所需的模板、注册 Analyzer、编译�
 构建成功不等于全部平台实际运行通过。Windows 构建、后台 Edge/WebGL 运行、macOS 主机和 Safari 的实测结果分别记录。
 本次结果见[平台与运行时重构验收](PLATFORM_RUNTIME_ACCEPTANCE.md)；
 [前轮 Web 验收](WEB_PLAYER_ACCEPTANCE_2026_10_01.md)和[前轮共享宿主验收](WEB_HOST_REFACTOR_ACCEPTANCE_2026_10_02.md)只保留为历史证据。
+
+
+## 2026-10-06 当前启动与内容流程
+
+
+BrowserPlayerComposition 选择生成的静态模块/类型/序列化目录、HTTP 内容来源、浏览器存储和外部帧回调。HttpPlayerContentSource 取得 manifest 与 catalog；共享 Player 解码并核对，随后来源下载 catalog 指定的唯一 Pack，交出 owned seekable stream。Reader 完成完整哈希、目录、预算和 payload 验证后，PackContentStore 直接供运行消费者读取。
+
+没有 /Content 写入加二次解压流程，也不再生成 content-pack.txt。浏览器 SDK 自身的虚拟文件系统需求仍由具体工具链/Adapter 管理。MiniAudio 的文件型编码缓存属于其 Adapter，Stream 继续 native 流式解码。共同 Input、Scene、Rendering、Assets 和 Runtime 不因此增加浏览器副本。
+
+Browser 原生闭包使用同一 NativeArtifactPublisher、NativeBuildRecipe 和完整生成描述。五个目标 binding 请求批量生成，SDK/tool 由所选 workload 一次解析；当前 target 桥与 managed bindings 通过独立 target/fingerprint 目录及 metadata-selection.props 进入链接，不能覆盖宿主生成物。
+
+当前 managed compiler 可选 mono-wasm 或 mono-wasm-aot。未来 CoreCLR WebAssembly 需新增 deployment compiler 与对应 SDK/link resolver，并重新验收 interop、回调和启动；浏览器内容来源、共同 Player 和玩法不需要改成另一套。
+
+颜色空间、主输出真实可用性、光照坐标与星光均沿同一 Rendering Core/Runtime 契约处理；浏览器实际结果单独记录在本轮验收中。

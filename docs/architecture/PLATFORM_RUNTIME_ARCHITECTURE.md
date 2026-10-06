@@ -177,3 +177,46 @@ Windows 工具链使用短 junction 路径运行编译器；物理 owner 仍是�
 托管发布与原生 producer 共用 `ToolchainWorkingDirectory`，避免 Windows Mono AOT 等工具的传统长路径限制。
 SDK 从原始工程解析；`FileLease` 串行化同一执行路径，取消等待不删除另一操作的 alias。
 工具进程全部退出并排空输出后才释放 alias；代码输入、日志、staging 和最终安装位置仍由原 owner 管理。
+
+
+## 2026-10-06 内容与职责收口
+
+
+### 内容、文档、日志与存储
+
+`Inno.Content` 保存可移植 ContentKey、完整目录、长度/哈希与只读读取 lease，只依赖 Foundation。Desktop 与 HTTP 来源共用 Pack reader。Content.index 是唯一保留条目，索引不包含自身；catalog 保存唯一完整 Pack 身份。FileSystem 缓存实际核对全部文件和 SHA-256，不信任完成标记或 mtime。
+
+共享 Player 先读取 owned metadata，再核对代码和内容描述，通过 IPlayerContentSource 准备 store；AssetDatabase、Runtime Session 与运行服务只通过 lease 读取。打开的 artifact/content stream 独立持有读取 pin。修复缓存时发布新 generation，旧 reader 固定旧 generation，最后一个读者退出后才退休旧目录。
+
+Settings 使用 IByteDocumentStore。Editor/Build 注入文件实现，Player 注入从内容 store 捕获的只读 bytes；Player 写 Settings 明确失败。Session 的日志 sink 由宿主 factory 交付并由该 Session 释放。StorageScope 只表示 namespace，FileSystem 的物理根由宿主配置，Browser 将 namespace 映射到 origin。
+
+退出顺序为停止接收工作 → 取消并完成准备任务 → Session 子系统与资源 → Settings → content store → Engine → 外围诊断。内容来源为借用服务，返回的 store 转移给 Player；已打开的 lease/stream 仍可完成读取。
+
+### Rendering 四层
+
+```text
+Rendering Core → 必要 Foundation
+Rendering Assets → Core + Assets / References
+Rendering Shaders → Core + Rendering Assets + 通用 Graph
+Rendering Assets.Authoring → Assets + Shaders + Assets Pipeline
+Rendering Runtime → Core + Rendering Assets + Runtime Contracts + 中立内容/引用
+具体图形 Adapter → Core + Adapter SPI + Native
+```
+
+Core 只含图形机制；Material 默认值、Asset reference 和开放 Shader/Technique/Pass 资产协议属于 Assets。创作导入、源码冻结和目标编译属于 Authoring。输出模型、请求、Pipeline/Feature、GPU 解析/缓存/退休属于 Runtime。Player 闭包不包含 Authoring、Assets Pipeline、Shader 创作或编译工具。脚本逻辑 namespace 保持 InnoEngine.Rendering，各程序集自己的唯一清单映射当前 CLR namespace。
+
+### 输入、Presentation 与帧状态
+
+通用事件输入位于 Inno.Adapter.Input，内置 ID 为 inno.input.events；SDL 只负责产生中立平台事件。所有 Session 使用同一 Core Events 管理机制，GameView presentation 负责焦点筛选与前景命中。
+
+设备必须报告真实 nullable primaryPresentationSize：null 是没有可用主输出。无主输出时跳过对应建图和输入坐标换算，离屏请求继续。SDK 内部最小资源不能冒充有效 surface。
+
+Contributor 注册变化时发布 immutable snapshot，帧开始固定；帧中注册/注销对下一帧生效。RenderFrameScratch 保留私有容量，每帧、异常与退休路径清空 extension 引用。Graph Validate 只分析；最终 Compile 复用 revision 分析并完成资源分配，每帧一次。mutation 失败同时回滚图、output、name 和验证状态，已接受 pass 冻结。
+
+### 构建组合与原生身份
+
+Inno.Build.Composition 是内置 target、managed deployment 和 Support Pack source 的唯一组合库。Editor、CLI 和 MSBuild Task 注入各自上下文后消费相同 distribution；通用 Build 不反向引用组合库。
+
+共同 Task 引导隔离 RID/AOT/Wasm/IDE 属性，一次闭包同一工具身份只准备一次宿主。Native recipe 覆盖实际组件源码、SDK/tool、参数、BGCS 定义/实现和必需 exports；operation 共用初始输入扫描，等锁后及发布前重新验证稳定性。热命中仍校验完整产物内容，内容相同的部署保持 DLL 字节和 mtime。
+
+本轮结构和 API 已按上述职责调整；实际 gate 的当前状态见 [本轮验收](ARCHITECTURE_CLEANUP_ACCEPTANCE_2026_10_06.md)，不使用历史结果替代本轮实测。

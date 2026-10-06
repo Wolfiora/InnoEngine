@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Inno.Core.Graphs;
 using Inno.Core.Serialization;
+using Inno.Rendering.Assets;
 
 namespace Inno.Rendering.Shaders;
 

@@ -8,6 +8,7 @@ using Inno.Editor.Shaders;
 using Inno.Editor.ImGui.ImGuiWidget;
 using Inno.Rendering;
 using NativeImGui = Inno.Native.ImGui.ImGui;
+using Inno.Rendering.Assets;
 
 namespace Inno.Editor.Panel.ShaderEditor;
 

@@ -15,6 +15,7 @@ using Inno.Extensibility.Types;
 using Inno.Rendering;
 using Inno.Rendering.Assets;
 using Xunit;
+using Inno.Rendering.Assets.Authoring;
 
 namespace Inno.Rendering.Shaders.Tests;
 
@@ -28,7 +29,7 @@ public sealed partial class ShaderGraphLoweringTests : IDisposable
 
     public ShaderGraphLoweringTests()
     {
-        m_modules = new(new ModuleHostOptions { catalogSource = new DotNetAssemblyCatalogSource(typeof(ShaderGraphLoweringTests).Assembly), cacheDirectory = m_root });
+        m_modules = new(new ModuleHostOptions { catalogSource = new DotNetAssemblyCatalogSource(typeof(ShaderGraphLoweringTests).Assembly)});
         m_types = new(m_modules, new ReflectionTypeCatalogSource());
         m_serialization = new(m_types, new ReflectionSerializationMetadataSource());
     }

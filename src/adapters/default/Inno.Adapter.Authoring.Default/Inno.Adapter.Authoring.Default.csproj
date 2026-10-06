@@ -37,4 +37,8 @@
   <ItemGroup>
     <ProjectReference Include="../../../foundation/extensibility/Inno.Extensibility.Catalogs/Inno.Extensibility.Catalogs.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../../../services/rendering/Inno.Rendering.Assets.Authoring/Inno.Rendering.Assets.Authoring.csproj" />
+  </ItemGroup>
 </Project>

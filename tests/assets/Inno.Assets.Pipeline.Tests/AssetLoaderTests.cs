@@ -1,3 +1,5 @@
+using Inno.Content.Testing;
+using Inno.Content;
 using Inno.Adapter.Serialization.DotNet;
 using Inno.Adapter.Modules.DotNet;
 using System;
@@ -26,6 +28,8 @@ namespace Inno.Assets.Pipeline.Tests;
 
 public sealed class AssetLoaderTests : IDisposable
 {
+    private readonly string m_moduleArtifacts = Path.Combine(Path.GetTempPath(),
+        "AssetImporterModules-" + Guid.NewGuid().ToString("N"));
     private readonly ModuleHost m_modules;
     private readonly TypeCatalog m_types;
     private readonly SerializationRegistry m_serialization;
@@ -46,9 +50,7 @@ public sealed class AssetLoaderTests : IDisposable
         m_identityScope = m_identities.EnterScope();
         m_diagnosticScope = m_diagnostics.EnterScope();
         m_modules = new ModuleHost(new ModuleHostOptions
-        { catalogSource = new DotNetAssemblyCatalogSource(typeof(AssetLoaderTests).Assembly),
-            cacheDirectory = Path.Combine(Path.GetTempPath(), "InnoAssetLoaderTests", "Assemblies")
-        });
+        { catalogSource = new DotNetAssemblyCatalogSource(typeof(AssetLoaderTests).Assembly)        });
         m_types = new TypeCatalog(m_modules, new ReflectionTypeCatalogSource());
         m_serialization = new SerializationRegistry(m_types, new ReflectionSerializationMetadataSource());
         SlowAssetImporter.Reset();
@@ -64,6 +66,11 @@ public sealed class AssetLoaderTests : IDisposable
         m_logs.Dispose();
         m_diagnosticScope.Dispose();
         m_identityScope.Dispose();
+        GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced, blocking: true, compacting: true);
+        GC.WaitForPendingFinalizers();
+        GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced, blocking: true, compacting: true);
+        if (Directory.Exists(m_moduleArtifacts))
+            Directory.Delete(m_moduleArtifacts, recursive: true);
     }
 
     [Fact]
@@ -740,7 +747,7 @@ public sealed class AssetLoaderTests : IDisposable
         using TestWorkspace workspace = new();
         workspace.WriteText("value.hookasset", "previous");
         var modules = new ModuleHost(new ModuleHostOptions
-        { catalogSource = new DotNetAssemblyCatalogSource(typeof(AssetLoaderTests).Assembly), cacheDirectory = Path.Combine(workspace.libraryRoot, "FaultedModules") });
+        { catalogSource = new DotNetAssemblyCatalogSource(typeof(AssetLoaderTests).Assembly)});
         var types = new TypeCatalog(modules, new ReflectionTypeCatalogSource());
         var serialization = new SerializationRegistry(types, new ReflectionSerializationMetadataSource());
         var pipeline = new AssetPipeline(modules, types, serialization, m_identities,
@@ -783,7 +790,8 @@ public sealed class AssetLoaderTests : IDisposable
         loader.ExportRuntimeArtifacts(contentRoot);
         using SerializationGeneration serialization = m_serialization.CaptureGeneration();
         var identities = new IdentityAllocator();
-        var database = new AssetDatabase(contentRoot, serialization, m_types.current, identities);
+        using ContentTestStore contentStore = ContentTestStore.FromDirectory(contentRoot);
+        var database = new AssetDatabase(contentStore, serialization, m_types.current, identities);
         HookAsset asset = database.Load<HookAsset>(AssetPath.Project("value.hookasset"));
         RuntimeIdentity identity = asset.identity.runtimeIdentity!.Value;
         asset.pendingUnloads = 1;
@@ -811,7 +819,8 @@ public sealed class AssetLoaderTests : IDisposable
         string contentRoot = Path.Combine(workspace.libraryRoot, "Runtime");
         loader.ExportRuntimeArtifacts(contentRoot);
         using SerializationGeneration serialization = m_serialization.CaptureGeneration();
-        using var database = new AssetDatabase(contentRoot, serialization, m_types.current, new IdentityAllocator());
+        using ContentTestStore contentStore = ContentTestStore.FromDirectory(contentRoot);
+        using var database = new AssetDatabase(contentStore, serialization, m_types.current, new IdentityAllocator());
         Assert.True(database.TryLoad(AssetPath.Project("shader.mixedscope"), out DependencyAsset? shader));
         Assert.NotNull(shader);
         Assert.False(database.TryLoad(AssetPath.Project("node.mixedscope"), out DependencyAsset? node));
@@ -829,7 +838,8 @@ public sealed class AssetLoaderTests : IDisposable
         loader.ExportRuntimeArtifacts(contentRoot);
         using SerializationGeneration serialization = m_serialization.CaptureGeneration();
         var identities = new IdentityAllocator();
-        using var database = new AssetDatabase(contentRoot, serialization, m_types.current, identities,
+        using ContentTestStore contentStore = ContentTestStore.FromDirectory(contentRoot);
+        using var database = new AssetDatabase(contentStore, serialization, m_types.current, identities,
             residencyBudgetBytes: 0);
         Task<AssetLease<HookAsset>> pending = database.AcquireAsync<HookAsset>(
             AssetPath.Project("value.hookasset")).AsTask();
@@ -908,7 +918,8 @@ public sealed class AssetLoaderTests : IDisposable
         Assert.NotEqual(Guid.Empty, persistentId);
         Assert.True(loader.TryGetArtifact(persistentId, "runtime", out AssetArtifactInfo? artifact));
         Assert.NotNull(artifact);
-        Assert.True(System.IO.File.Exists(artifact.absolutePath));
+        using ArtifactLease imported = loader.AcquireArtifact(persistentId, "runtime");
+        Assert.NotEmpty(imported.ReadAllBytes());
         Assert.True(loader.TryGetAssetType(AssetPath.Project("Config/game.txt"), out Type? assetType));
         Assert.Equal(typeof(TextAsset), assetType);
         Assert.Empty(loader.GetLoadedPaths());
@@ -951,6 +962,7 @@ public sealed class AssetLoaderTests : IDisposable
         InvalidOperationException exception = Assert.Throws<InvalidOperationException>(
             () => m_modules.Load(new DotNetModuleSource
             {
+                artifactRootDirectory = m_moduleArtifacts,
                 moduleName = "DuplicateAssetImporters",
                 mainAssemblyPath = Path.Combine(
                     AppContext.BaseDirectory,
@@ -1165,7 +1177,7 @@ public sealed class AssetLoaderTests : IDisposable
         if (importChange)
             Assert.False(loader.Import(AssetPath.Project("leaf.buildinput")));
         using (ArtifactLease lastGood = loader.AcquireArtifact(leaf.identity.persistentId, "authoring"))
-            Assert.Equal("original", System.IO.File.ReadAllText(lastGood.info.absolutePath));
+            Assert.Equal("original", Encoding.UTF8.GetString(lastGood.ReadAllBytes()));
         string invalidDestination = Path.Combine(workspace.libraryRoot, "InvalidRuntime");
         InvalidOperationException error = Assert.Throws<InvalidOperationException>(() => loader.ExportRuntimeArtifacts(invalidDestination));
         Assert.Contains("root.buildconsumer -> middle.buildinput -> leaf.buildinput", error.Message);
@@ -1197,7 +1209,8 @@ public sealed class AssetLoaderTests : IDisposable
         string contentRoot = Path.Combine(workspace.libraryRoot, "Runtime");
         loader.ExportRuntimeArtifacts(contentRoot);
         using SerializationGeneration serialization = m_serialization.CaptureGeneration();
-        using var database = new AssetDatabase(contentRoot, serialization, m_types.current,
+        using ContentTestStore contentStore = ContentTestStore.FromDirectory(contentRoot);
+        using var database = new AssetDatabase(contentStore, serialization, m_types.current,
             new IdentityAllocator(), residencyBudgetBytes: 0, preparationBudgetBytes: 100000);
         for (int cycle = 0; cycle < 32; cycle++)
         {
@@ -1244,7 +1257,8 @@ public sealed class AssetLoaderTests : IDisposable
         string contentRoot = Path.Combine(workspace.libraryRoot, "Runtime");
         loader.ExportRuntimeArtifacts(contentRoot);
         using SerializationGeneration serialization = m_serialization.CaptureGeneration();
-        using var database = new AssetDatabase(contentRoot, serialization, m_types.current, new IdentityAllocator());
+        using ContentTestStore contentStore = ContentTestStore.FromDirectory(contentRoot);
+        using var database = new AssetDatabase(contentStore, serialization, m_types.current, new IdentityAllocator());
         Task<AssetLease<TextAsset>>[] requests = Enumerable.Range(0, 32).Select(_ =>
             database.AcquireAsync<TextAsset>(AssetPath.Project("Shared.txt")).AsTask()).ToArray();
         Assert.Throws<InvalidOperationException>(() => database.AcquireAsync<TextAsset>(AssetPath.Project("Shared.txt")));
@@ -1273,13 +1287,17 @@ public sealed class AssetLoaderTests : IDisposable
         string contentRoot = Path.Combine(workspace.libraryRoot, "Runtime");
         loader.ExportRuntimeArtifacts(contentRoot);
         using SerializationGeneration serialization = m_serialization.CaptureGeneration();
-        using var database = new AssetDatabase(contentRoot, serialization, m_types.current, new IdentityAllocator());
+        using ContentTestStore contentStore = ContentTestStore.FromDirectory(contentRoot);
+        using var database = new AssetDatabase(contentStore, serialization, m_types.current, new IdentityAllocator());
         using (ArtifactLease artifact = database.AcquireArtifact(shared.identity.persistentId, "runtime"))
         {
-            string path = artifact.info.absolutePath;
-            byte[] bytes = System.IO.File.ReadAllBytes(path);
+            ContentKey key = Assert.Single(contentStore.index.entries.Where(entry =>
+                entry.key.value!.StartsWith("Artifacts/", StringComparison.Ordinal)
+                && entry.key.value.Contains("/outputs/", StringComparison.Ordinal)
+                && entry.contentHash == artifact.info.contentHash)).key;
+            byte[] bytes = artifact.ReadAllBytes();
             bytes[0] ^= 0xff;
-            System.IO.File.WriteAllBytes(path, bytes);
+            contentStore.CorruptPayload(key, bytes);
         }
         Task<AssetLease<DependencyAsset>> first = database.AcquireAsync<DependencyAsset>(AssetPath.Project("A.depgraph")).AsTask();
         Task<AssetLease<DependencyAsset>> second = database.AcquireAsync<DependencyAsset>(AssetPath.Project("B.depgraph")).AsTask();
@@ -1696,7 +1714,9 @@ public sealed class AssetLoaderTests : IDisposable
         byte[] metaBefore = System.IO.File.ReadAllBytes(workspace.SourcePath("Data/rollback.mutableasset.imeta"));
         Assert.True(loader.TryGetArtifact(asset.identity.persistentId, "runtime", out AssetArtifactInfo? artifact));
         Assert.NotNull(artifact);
-        byte[] artifactBefore = System.IO.File.ReadAllBytes(artifact.absolutePath);
+        byte[] artifactBefore;
+        using (ArtifactLease before = loader.AcquireArtifact(asset.identity.persistentId, "runtime"))
+            artifactBefore = before.ReadAllBytes();
         long versionBefore = asset.contentVersion;
         asset.value = "!invalid!";
 
@@ -1704,7 +1724,8 @@ public sealed class AssetLoaderTests : IDisposable
 
         Assert.Equal(sourceBefore, System.IO.File.ReadAllBytes(workspace.SourcePath("Data/rollback.mutableasset")));
         Assert.Equal(metaBefore, System.IO.File.ReadAllBytes(workspace.SourcePath("Data/rollback.mutableasset.imeta")));
-        Assert.Equal(artifactBefore, System.IO.File.ReadAllBytes(artifact.absolutePath));
+        using (ArtifactLease after = loader.AcquireArtifact(asset.identity.persistentId, "runtime"))
+            Assert.Equal(artifactBefore, after.ReadAllBytes());
         Assert.Equal(versionBefore, asset.contentVersion);
     }
 
@@ -1946,16 +1967,17 @@ public sealed class AssetLoaderTests : IDisposable
         Assert.True(loader.TryGetArtifact(first.persistentId, "runtime", out AssetArtifactInfo? currentArtifact));
         Assert.NotNull(currentArtifact);
         Assert.NotEqual(oldArtifact.key, currentArtifact.key);
-        Assert.True(System.IO.File.Exists(oldArtifact.absolutePath));
+        string oldPath = workspace.FindArtifactFile(oldArtifact);
+        Assert.True(System.IO.File.Exists(oldPath));
 
         Assert.Equal(0, loader.CollectArtifacts(TimeSpan.Zero, maximumSizeBytes: 0));
-        Assert.True(System.IO.File.Exists(oldArtifact.absolutePath));
+        Assert.True(System.IO.File.Exists(oldPath));
         workspace.DeleteSource("Text/second.txt");
         System.IO.File.Delete(workspace.SourcePath("Text/second.txt.imeta"));
         loader.Rescan();
         Assert.True(loader.CollectArtifacts(TimeSpan.Zero, maximumSizeBytes: 0) >= 1);
-        Assert.False(System.IO.File.Exists(oldArtifact.absolutePath));
-        Assert.True(System.IO.File.Exists(currentArtifact.absolutePath));
+        Assert.False(System.IO.File.Exists(oldPath));
+        Assert.True(System.IO.File.Exists(workspace.FindArtifactFile(currentArtifact)));
     }
 
     [Fact]
@@ -1967,7 +1989,7 @@ public sealed class AssetLoaderTests : IDisposable
         loader.Rescan();
         Assert.True(loader.TryGetInfo(AssetPath.Project("Text/value.txt"), out AssetInfo? info));
         Assert.True(loader.TryGetArtifact(info!.persistentId, "runtime", out AssetArtifactInfo? artifact));
-        string path = artifact!.absolutePath;
+        string path = workspace.FindArtifactFile(artifact!);
         byte[] original = System.IO.File.ReadAllBytes(path);
 
         System.IO.File.WriteAllBytes(path, [1]);
@@ -2044,6 +2066,17 @@ public sealed class AssetLoaderTests : IDisposable
             LogRouter logs)
             => new(types, serialization, identities, diagnostics, logs, assetRoot, libraryRoot);
         internal string SourcePath(string relativePath) => Path.Combine(assetRoot, relativePath);
+
+        internal string FindArtifactFile(AssetArtifactInfo artifact)
+        {
+            string key = artifact.key.value;
+            string directory = Path.Combine(libraryRoot, "Artifacts", key[..2].ToLowerInvariant(),
+                key[2..4].ToLowerInvariant(), key, "outputs");
+            return Directory.EnumerateFiles(directory).Single(path =>
+                new FileInfo(path).Length == artifact.length
+                && Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(
+                    System.IO.File.ReadAllBytes(path))) == artifact.contentHash);
+        }
 
         internal void WriteText(string relativePath, string content)
         {

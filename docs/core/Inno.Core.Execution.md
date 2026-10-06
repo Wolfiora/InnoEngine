@@ -84,3 +84,74 @@ RunAsync 自有 Task 成功/取消时在完成路径内直接从 owner 移除，
 ## 验证
 
 `Inno.Core.Execution.Tests` 覆盖 LIFO、异步后代撤销、隔离、屏蔽、线程限制、取消和异常逆序释放。
+
+## 当前源码公开 API 清单
+
+以下仅列出当前程序集自己声明的 public/protected 契约；继承成员遵循所属基类页面。internal/private 实现不作为稳定公开 API。签名依据当前源码语义模型生成，行为、参数、异常与所有权说明同时以对应英文 XML 为准。
+
+### `Inno.Core.Execution.ExecutionSlot<TValue>`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Core.Execution.ExecutionSlot<TValue>.ExecutionSlot(string name)`](../../src/foundation/core/Inno.Core.Execution/ExecutionSlot.cs#L27) | Creates a slot without binding a process-global service. |
+| [`System.IDisposable Inno.Core.Execution.ExecutionSlot<TValue>.Enter(TValue value, bool threadAffine = false)`](../../src/foundation/core/Inno.Core.Execution/ExecutionSlot.cs#L58) | Binds a value until the returned scope is retired in strict last-in-first-out order. |
+| [`System.IDisposable Inno.Core.Execution.ExecutionSlot<TValue>.Suspend()`](../../src/foundation/core/Inno.Core.Execution/ExecutionSlot.cs#L74) | Temporarily masks this slot without exposing an enclosing binding. |
+| [`bool Inno.Core.Execution.ExecutionSlot<TValue>.TryGet(out TValue value)`](../../src/foundation/core/Inno.Core.Execution/ExecutionSlot.cs#L90) | Tries to read the current binding without falling through an expired child scope. |
+| [`TValue Inno.Core.Execution.ExecutionSlot<TValue>.current`](../../src/foundation/core/Inno.Core.Execution/ExecutionSlot.cs#L39) | Gets the current live value, rejecting expired or wrong-thread bindings. |
+| [`Inno.Core.Execution.ExecutionSlot<TValue>`](../../src/foundation/core/Inno.Core.Execution/ExecutionSlot.cs#L13) | Provides an isolated, revocable execution binding whose values never survive scope retirement. |
+
+### `Inno.Core.Execution.LifetimeScope`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Core.Execution.LifetimeScope.LifetimeScope(int maxTrackedWork = 4096)`](../../src/foundation/core/Inno.Core.Execution/LifetimeScope.cs#L37) | Creates a lifetime with finite asynchronous admission capacity. |
+| [`void Inno.Core.Execution.LifetimeScope.Cancel()`](../../src/foundation/core/Inno.Core.Execution/LifetimeScope.cs#L177) | Stops new registrations and invokes cancellation callbacks on the calling thread. |
+| [`void Inno.Core.Execution.LifetimeScope.Dispose()`](../../src/foundation/core/Inno.Core.Execution/LifetimeScope.cs#L223) | Releases a quiescent lifetime, attempting every resource even when release fails. |
+| [`System.Threading.Tasks.ValueTask Inno.Core.Execution.LifetimeScope.DisposeAsync()`](../../src/foundation/core/Inno.Core.Execution/LifetimeScope.cs#L268) | Cancels and asynchronously drains tracked work before reverse-order release. |
+| [`TResource Inno.Core.Execution.LifetimeScope.Own<TResource>(TResource resource)`](../../src/foundation/core/Inno.Core.Execution/LifetimeScope.cs#L113) | Transfers disposal ownership of a resource to this lifetime. |
+| [`System.Threading.Tasks.Task<TResult> Inno.Core.Execution.LifetimeScope.RunAsync<TResult>(System.Func<System.Threading.CancellationToken, System.Threading.Tasks.ValueTask<TResult>> operation, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))`](../../src/foundation/core/Inno.Core.Execution/LifetimeScope.cs#L156) | Atomically admits and tracks asynchronous work under this owner's cancellation boundary. |
+| [`void Inno.Core.Execution.LifetimeScope.Track(System.Threading.Tasks.Task task)`](../../src/foundation/core/Inno.Core.Execution/LifetimeScope.cs#L136) | Tracks work that must complete before this lifetime's resources can be released. |
+| [`System.Threading.CancellationToken Inno.Core.Execution.LifetimeScope.cancellationToken`](../../src/foundation/core/Inno.Core.Execution/LifetimeScope.cs#L80) | Gets cancellation shared by work owned by this lifetime. |
+| [`bool Inno.Core.Execution.LifetimeScope.isQuiescent`](../../src/foundation/core/Inno.Core.Execution/LifetimeScope.cs#L85) | Gets whether all tracked work has completed and resources can retire synchronously. |
+| [`int Inno.Core.Execution.LifetimeScope.peakTrackedWorkCount`](../../src/foundation/core/Inno.Core.Execution/LifetimeScope.cs#L57) | Gets the largest simultaneous retained work count. |
+| [`long Inno.Core.Execution.LifetimeScope.rejectedWorkCount`](../../src/foundation/core/Inno.Core.Execution/LifetimeScope.cs#L68) | Gets work registrations rejected before ownership transfer by finite capacity. |
+| [`int Inno.Core.Execution.LifetimeScope.trackedWorkCount`](../../src/foundation/core/Inno.Core.Execution/LifetimeScope.cs#L46) | Gets retained work records, including faults awaiting final retirement reporting. |
+| [`Inno.Core.Execution.LifetimeScope`](../../src/foundation/core/Inno.Core.Execution/LifetimeScope.cs#L12) | Owns cancellation, tracked work and reverse-order resource retirement for one lifecycle. |
+
+### `Inno.Core.Execution.OwnerThreadExecution`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`static TResult Inno.Core.Execution.OwnerThreadExecution.Run<TResult>(System.Func<System.Threading.Tasks.Task<TResult>> operation)`](../../src/foundation/core/Inno.Core.Execution/OwnerThreadExecution.cs#L37) | Pumps continuations until the owned operation completes, then restores the previous context. |
+| [`Inno.Core.Execution.OwnerThreadExecution`](../../src/foundation/core/Inno.Core.Execution/OwnerThreadExecution.cs#L12) | Runs asynchronous application work while returning its continuations to the calling thread. |
+
+### `Inno.Core.Execution.RetirementBarrier`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Core.Execution.RetirementBarrier.RetirementBarrier(string owner, System.TimeSpan? timeout = null)`](../../src/foundation/core/Inno.Core.Execution/RetirementBarrier.cs#L33) | Creates a deadline that starts with the first retirement attempt. |
+| [`bool Inno.Core.Execution.RetirementBarrier.TryComplete(System.Action retire)`](../../src/foundation/core/Inno.Core.Execution/RetirementBarrier.cs#L66) | Attempts retirement once at an owner-thread safe point. |
+| [`void Inno.Core.Execution.RetirementBarrier.Wait(System.Action retire)`](../../src/foundation/core/Inno.Core.Execution/RetirementBarrier.cs#L120) | Drains a failed startup or final shutdown on the owner thread until completion or explicit failure. |
+| [`Inno.Core.Execution.RetirementBarrier`](../../src/foundation/core/Inno.Core.Execution/RetirementBarrier.cs#L11) | Bounds owner-thread retirement attempts without taking resource ownership or releasing pending dependencies. |
+
+### `Inno.Core.Execution.RetirementPendingException`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Core.Execution.RetirementPendingException.RetirementPendingException(string message, System.Exception? innerException = null)`](../../src/foundation/core/Inno.Core.Execution/RetirementPendingException.cs#L20) | Creates a retryable retirement barrier for an owner with unfinished work. |
+| [`static void Inno.Core.Execution.RetirementPendingException.CollectCompletedFailures(System.Exception exception, System.Collections.Generic.ICollection<System.Exception> failures)`](../../src/foundation/core/Inno.Core.Execution/RetirementPendingException.cs#L69) | Retains ordinary failure branches across pending retries without recording transient pending signals as completed work. |
+| [`static Inno.Core.Execution.RetirementPendingException? Inno.Core.Execution.RetirementPendingException.Find(System.Exception exception)`](../../src/foundation/core/Inno.Core.Execution/RetirementPendingException.cs#L38) | Finds unfinished retirement in an exception tree without discarding its contextual or sibling failures. |
+| [`Inno.Core.Execution.RetirementPendingException`](../../src/foundation/core/Inno.Core.Execution/RetirementPendingException.cs#L9) | Reports that cancellation has begun but the owner must retain its dependencies until work drains. |
+
+### `Inno.Core.Execution.RetirementTimeoutException`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Core.Execution.RetirementTimeoutException.RetirementTimeoutException(string message, System.Exception? innerException = null)`](../../src/foundation/core/Inno.Core.Execution/RetirementTimeoutException.cs#L19) | Creates a terminal retirement failure whose owner must remain retained until host shutdown. |
+| [`Inno.Core.Execution.RetirementTimeoutException`](../../src/foundation/core/Inno.Core.Execution/RetirementTimeoutException.cs#L8) | Reports an expired retirement deadline without granting permission to release dependent resources. |
+
+## 项目依赖
+
+- [Inno.Extensibility.Catalogs](../extensibility/Inno.Extensibility.Catalogs.md)：项目引用；公开签名可见性由语义边界检查确认。
+
+共同 MSBuild 注入的 analyzer 与编译规则属于构建依赖，完整有效项目图记录在本轮验收证据中。

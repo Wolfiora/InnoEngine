@@ -3,12 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Inno.Assets.Pipeline;
 using Inno.Build;
-using Inno.Build.Managed;
-using Inno.Build.Managed.DotNet;
-using Inno.Build.Platform.Browser;
-using Inno.Build.Platform.MacOS;
-using Inno.Build.Platform.Windows;
-using Inno.Build.SupportPacks;
+using Inno.Build.Composition;
 using Inno.Build.Toolchains;
 using Inno.Build.Toolchains.Host;
 using Inno.Core.Settings;
@@ -41,21 +36,10 @@ internal static class BuildComposition
         ProjectSettingsStore settings,
         ScriptCompiler compiler,
         string supportPackRoot
-    ) => new(assets, plugins, settings, engine.serialization, engine.generations, compiler, supportPackRoot,
-        [new MacOSArm64GameBuildTarget(assets, engine.serialization, engine.types),
-            new WindowsX64GameBuildTarget(assets, engine.serialization, engine.types),
-            new BrowserWasmGameBuildTarget(assets, engine.serialization, engine.types)],
-        CreateManagedDeployments(), SourcePlayerSupportPackProvisioner.TryCreateForHost(
-            AppContext.BaseDirectory, BuiltInPlayerSupportPacks.CreatePublisher()));
-
-    private static ManagedDeploymentCatalog CreateManagedDeployments()
-    {
-        string host = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH") ?? "dotnet";
-        return new ManagedDeploymentCatalog([
-            new CoreClrDeploymentCompiler(host),
-            new MonoWasmDeploymentCompiler(host, aheadOfTime: false),
-            new MonoWasmDeploymentCompiler(host, aheadOfTime: true),
-            new NativeAotDeploymentCompiler(host)
-        ]);
+    ) {
+        var context = new BuildCompositionContext(
+            Environment.GetEnvironmentVariable("DOTNET_HOST_PATH") ?? "dotnet", AppContext.BaseDirectory);
+        return BuildPipelineFactory.Create(
+            context, BuiltInBuildDistribution.Create(context), engine, assets, plugins, settings, compiler, supportPackRoot);
     }
 }

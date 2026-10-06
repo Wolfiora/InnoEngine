@@ -10,7 +10,10 @@ using Inno.Build.Toolchains.Host;
 
 namespace Inno.Build.SupportPacks;
 
-internal sealed class DesktopPlayerSupportPackSource : IPlayerSupportPackSource
+/// <summary>
+/// Prepares a desktop runtime closure using an explicitly selected native host and managed target.
+/// </summary>
+public sealed class DesktopPlayerSupportPackSource : IPlayerSupportPackSource
 {
     private readonly BuildTargetId m_target;
     private readonly IPlayerSupportPackValidator m_validator;
@@ -18,13 +21,42 @@ internal sealed class DesktopPlayerSupportPackSource : IPlayerSupportPackSource
     private readonly string m_nativePlatform;
     private readonly string m_nativeExtension;
 
-    internal DesktopPlayerSupportPackSource(
+    /// <summary>
+    /// Captures the platform layout and validator without preparing any tools or files.
+    /// </summary>
+    /// <param name="target">
+    /// The publication platform identity.
+    /// </param>
+    /// <param name="runtimeIdentifier">
+    /// The managed SDK runtime target.
+    /// </param>
+    /// <param name="nativePlatform">
+    /// The native toolchain target identity required by this source.
+    /// </param>
+    /// <param name="nativeExtension">
+    /// The runtime library suffix selected by this platform.
+    /// </param>
+    /// <param name="validator">
+    /// The borrowed platform validator used before publication.
+    /// </param>
+    /// <exception cref="ArgumentException">
+    /// A platform identifier or required target string is blank.
+    /// </exception>
+    /// <exception cref="ArgumentNullException">
+    /// The validator is null.
+    /// </exception>
+    public DesktopPlayerSupportPackSource(
         BuildTargetId target,
         string runtimeIdentifier,
         string nativePlatform,
         string nativeExtension,
         IPlayerSupportPackValidator validator
     ) {
+        ArgumentException.ThrowIfNullOrWhiteSpace(target.value);
+        ArgumentException.ThrowIfNullOrWhiteSpace(runtimeIdentifier);
+        ArgumentException.ThrowIfNullOrWhiteSpace(nativePlatform);
+        ArgumentException.ThrowIfNullOrWhiteSpace(nativeExtension);
+        ArgumentNullException.ThrowIfNull(validator);
         m_target = target;
         m_validator = validator;
         m_runtimeIdentifier = runtimeIdentifier;
@@ -73,9 +105,8 @@ internal sealed class DesktopPlayerSupportPackSource : IPlayerSupportPackSource
         Directory.CreateDirectory(link);
         File.Copy(Path.Combine(context.engineRoot, "build", "support", "Inno.Build.SupportPacks",
             "Templates", "Desktop", "DesktopPlayer.project.xml"), Path.Combine(link, "Player.csproj"));
-        string sources = Path.GetDirectoryName(project)!;
-        foreach (string source in new[] { "Program.cs", "DesktopPlayerComposition.cs" })
-            File.Copy(Path.Combine(sources, source), Path.Combine(link, source));
+        await PlayerSupportPackFiles.CopyPlayerSourcesAsync(
+            context, project, link, cancellationToken).ConfigureAwait(false);
         PlayerSupportPackFiles.CopyCompositionInputs(context.engineRoot, link);
         string references = Path.Combine(link, "References");
         Directory.CreateDirectory(references);

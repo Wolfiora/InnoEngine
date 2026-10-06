@@ -11,7 +11,10 @@ using Inno.Build.Toolchains.Browser;
 
 namespace Inno.Build.SupportPacks;
 
-internal sealed class BrowserPlayerSupportPackSource : IPlayerSupportPackSource
+/// <summary>
+/// Prepares browser runtime and native link inputs for an explicitly composed distribution.
+/// </summary>
+public sealed class BrowserPlayerSupportPackSource : IPlayerSupportPackSource
 {
     /// <summary>
     /// Gets the platform identity whose closure this source prepares.
@@ -52,6 +55,9 @@ internal sealed class BrowserPlayerSupportPackSource : IPlayerSupportPackSource
             Path.Combine(Path.GetDirectoryName(project)!, "bin", "browser-wasm", artifacts.fingerprint, "Release", "net9.0-browser"),
             Path.Combine(context.stagingDirectory, "References"));
         CopyLinkTemplate(context.engineRoot, context.stagingDirectory, artifacts);
+        await PlayerSupportPackFiles.CopyPlayerSourcesAsync(
+            context, project, Path.Combine(context.stagingDirectory, "PlayerLink"),
+            cancellationToken, environment).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -89,8 +95,6 @@ internal sealed class BrowserPlayerSupportPackSource : IPlayerSupportPackSource
             Path.Combine(template, "Player.csproj"));
         PlayerSupportPackFiles.CopyCompositionInputs(engineRoot, template);
         string browserSource = Path.Combine(engineRoot, "src", "composition", "player", "Inno.Player.Browser");
-        foreach (string sourceName in new[] { "Program.cs", "BrowserPlayerComposition.cs", "BrowserContentLoader.cs", "BrowserBridge.cs" })
-            CopyRequired(Path.Combine(browserSource, sourceName), Path.Combine(template, sourceName));
         foreach (string assetName in new[] { "index.html", "main.js" })
             CopyRequired(Path.Combine(browserSource, "wwwroot", assetName), Path.Combine(webRoot, assetName));
 

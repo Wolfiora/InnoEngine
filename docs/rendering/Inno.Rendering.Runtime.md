@@ -1,146 +1,632 @@
 # Inno.Rendering.Runtime
 
-## 帧外资源释放
+[分类索引](README.md) · [Wiki 首页](../README.md) · [本轮整改计划](../architecture/ARCHITECTURE_CLEANUP_PLAN_2026_10_06.md)
 
-`IRenderResourceService.Release(id)` 在安全的图构建阶段可执行退休；帧外或图执行期间仅排队稳定资源 ID，由下一次 `BeginFrame` 执行。没有后续帧时，Runtime 的完整退出序列先打开原生安全帧再退休全部资源。
-队列只接收实际拥有的资源，不保存 Editor/Plugin 对象，也不通过吞掉 BGFX 帧外销毁异常来伪造成功。独立 Shader 预览的关闭、Editor 模块停止和 reload 使用同一协议。
+## 职责与边界
 
-[Rendering 索引](README.md) · [公开 API](Inno.Rendering.md) · [BGFX 后端](Inno.Adapter.Rendering.Bgfx.md) · [Wiki 首页](../README.md)
+本层拥有输出模型、RenderRequest、Pipeline/Feature、资产到 GPU 的解析、资源缓存及退休；明确引用运行资产，不引用 Authoring、Assets Pipeline、Shaders 或编译工具链。ContentRenderTargetArtifactProvider 使用 content store，删除文件型 provider。Contributor 注册变化时生成 immutable snapshot，帧开始固定，帧中注册/注销在下一帧生效。私有 RenderFrameScratch 保留容量，每帧/异常/退出清空所有 extension 引用。Validate 与最终 Compile 分离；RenderFrameStatistics.graphCompileCount 记录最近完成帧的完整编译次数。无主输出时跳过主输出建图与输入换算，离屏输出继续。
 
-## 代际退休与有界请求
+## 初始化、扩展与资源退休
 
-Request Provider 由 TypeCatalog 快照拥有，不在每帧另建一套实例代际。部分 Provider 构造登记在共享
-TypeRegistry candidate ownership 中；构造失败也必须等待已经创建的实例退休。Pipeline 与可释放 Feature
-从候选到活动状态始终属于同一内部 `RenderPipelineGeneration`，不通过两套 disposed/transfer 标志接力。
+宿主注入 TypeCatalog、IRenderDevice、诊断与内容 artifact provider。Runtime 拥有模型、Pipeline generation、资源 service、输出 target 和退休队列；设备属于宿主。注册 Contributor 后在帧开始固定 snapshot，帧内变化下一帧生效。失败 Contributor 的 mutation 完整回滚，当前帧继续采用已接受图；最后只构造一次完整 CompiledRenderGraph。
 
-普通清理错误会在所有可释放资源都被尝试后聚合报告；`RetirementPendingException` 不属于普通错误：
-它保留当前步骤和依赖，使用 Core 退休屏障等待，不能先清字典、设置 disposed 或结束 reload transaction。
-超时是终止性 Fault，不能继续提交、注册 Contributor、激活 Pipeline 或开始新 reload；即使底层稍后空闲，
-当前 Host 也不能绕过 Fault 继续退出依赖或发布代际。post-commit 退休失败不能报告为 last-good 回滚。
+```csharp
+using Inno.Core.Diagnostics;
+using Inno.Extensibility.Types;
+using Inno.Rendering;
+using Inno.Rendering.Runtime;
 
-Runtime 先退休 reload/Pipeline/Provider，再释放 GPU targets、uploads、resources，最后结束设备安全帧；
-它不拥有也不 Dispose 注入的共享 `IRenderDevice`。内部 `RenderRetirementQueue` 持有确定的退出步骤，
-成功步骤不重复执行，普通错误跨 Pending 重试保留，Pending 步骤不会让后续资源提前释放。
-帧内候选退休超时也必须穿过请求隔离边界，保留设备帧，不进入正常 `EndFrame` 提交。
-上述 owner 均为内部实现，不是 Plugin API；资源职责与有界接纳如下。
-
-`Submit` 最多接受合计 4096 个 pending/current-frame request；超限、退休中或 generation Fault 时抛
-`InvalidOperationException`，完整释放后抛 `ObjectDisposedException`。图构建与资源提交仍在控制线程。
-构造时的 Contributor 集合必须非 null 且不重复；验证在注册 extension owner 之前完成。
-
-## 公开入口
-
-| 类型 | 公开职责与成员 |
-| --- | --- |
-| `RenderRuntime` | 构造注入、`targets`、`viewContent`、`currentFrameIndex`、`SetPrimaryRoute`、`EnterExecutionScope`、`RegisterContributor`/`UnregisterContributor`、`Submit`、`TryActivateDefaultPipeline`、`BeginExtensionReload`；帧和退出入口继承 `RuntimeSubsystem` |
-| `RenderTargetStore` | `Import`、`TryGetTexture`、`Release`、`PrepareFrame`、`Dispose`；只有当前目标修订的 Graph attachment 写入成功录制后才向 UI 返回可采样纹理，退出开始后不再接受操作，Pending 时保留未释放资源 |
-| `IRenderRuntimeReloadTransaction` | `Prepare`、`Activate`、`Complete`、`Rollback`；只有真实退休完成后才释放事务引用，Pending/timeout 不 Finish |
-| `RenderRuntimeFactory` | 构造注入 runtime factory，`descriptor` 和 `Create` 接入统一 Runtime subsystem 装配 |
-| `GraphicsSettings` | 当前 execution scope 的 `capabilities`、`defaultPipeline`、`frameStatistics` |
-| `RenderFrameStatistics` | 构造冻结 `frameIndex`、`viewCount`、`drawCount`、`dispatchCount`、`culledPassCount` |
-| `FileRenderTargetArtifactProvider` | 从部署目录读取 `GetShaderArtifact` / `GetTextureArtifact`，不访问创作源或运行编译器 |
-
-`RenderRuntime : RuntimeSubsystem, IRenderRequestSink` 不包含任何具体 Pipeline。它组合请求队列、Pipeline/Feature generation、GPU 资源缓存和 ImGui 等 frame-final contributor。它不是 Core Layer；领域 Feature 也不是 RuntimeSubsystem。Host pipeline 负责每设备每帧唯一的 prepare/produce/complete output，Session 不再重复提交 GPU device frame。
-
-Player 在 Session Tick 完成后才收集渲染请求，因此 `inputSnapshotProvider` 从已完成的 InputRuntime 帧读取快照。`primaryInputSurfaceSizeProvider` 提供宿主窗口的逻辑宽高；Runtime 将鼠标位置按物理呈现尺寸换算，再扣除输出 viewport 的偏移。Retina 等高 DPI 窗口中，2D 命中与实际绘制因此使用同一像素坐标。Editor GameView 自己按 ImGui framebuffer 比例生成物理坐标，不使用这两个主窗口 callback。
-
-构造注入 Core `IDiagnosticReporter`，不再定义 Render diagnostic sink/severity；Shader 和 Graph 的领域结果仍可携带自己的结构信息，但 severity 与当前问题状态只有 Core 一套。Content 输入使用 `Inno.References.ContentReadScope`，Scene 通过 SceneContentSource 产生 scope，读取结束后显式释放。
-
-## 初始化与帧顺序
-
-```text
-OnPrepareOutput
-  ├─ finish any committed Pipeline/Feature generation transition
-  ├─ IRenderDevice.BeginFrame
-  ├─ GPU resource update / deferred destroy
-  ├─ 捕获完整主表面与 Host 选定的 content viewport
-  └─ 接收当前帧 RenderRequest
-OnProduceOutput
-  ├─ 从 TypeRegistry 候选中选择接受 Session 的 IRenderModel
-  ├─ 唯一模型直接构建；多个模型给出诊断并拒绝错误合成
-  └─ 调用 TypeRegistry 发现的 RenderRequestProvider，并接受独立预览等显式请求
-OnCompleteOutput
-  ├─ content viewport 未覆盖完整主表面时先清除黑色背景
-  ├─ 按 priority/name 将全部请求构建进一个全帧 Graph
-  ├─ 跟踪成功请求覆盖的 presentation region，并要求后续重叠层保留已有颜色
-  ├─ 将 ImGui 等 contributor 追加到同一个 Graph
-  ├─ 全帧只编译、分配 View 并执行一次 Graph
-  ├─ 确认所有 Encoder 结束
-  └─ IRenderDevice.EndFrame（唯一一次）
+static RenderRuntime CreateRuntime(
+    TypeCatalog types,
+    IRenderDevice device,
+    IDiagnosticReporter diagnostics
+) {
+    return new RenderRuntime(types, device, diagnostics);
+}
 ```
 
-## 公开 API
+ContentRenderTargetArtifactProvider 使用逻辑定位读取冻结 Shader、Texture 等产物；运行时不编译创作源码。输出缺失、能力缺失及损坏产物明确报告，候选失败保留 last-good。Material、Geometry、readback 和 framebuffer 各 owner 在对应 generation 安全点退休；scratch、snapshot 和 callback 在结束帧、异常和退出时清空旧扩展引用。
 
-| API | 说明 |
+资源描述与 GPU 图机制见 [Core](Inno.Rendering.md)，持久资产见 [Assets](Inno.Rendering.Assets.md)，创作编译见 [Authoring](Inno.Rendering.Assets.Authoring.md)。该程序集不引用创作或编译工具，不内建 2D/3D 世界模型。
+
+## 当前源码公开 API 清单
+
+以下仅列出当前程序集自己声明的 public/protected 契约；继承成员遵循所属基类页面。internal/private 实现不作为稳定公开 API。签名依据当前源码语义模型生成，行为、参数、异常与所有权说明同时以对应英文 XML 为准。
+
+### `Inno.Rendering.Runtime.ContentRenderTargetArtifactProvider`
+
+| 当前声明 | 行为 |
 | --- | --- |
-| `RenderRuntime` | 唯一设备帧拥有者与 `IRenderRequestSink` 实现。 |
-| `RenderRuntime.EnterExecutionScope()` | 把当前 Runtime 的 Graphics 脚本门面绑定到当前异步执行流；返回的 scope 必须按嵌套顺序释放。 |
-| `RenderTargetStore` | 在帧安全点创建、resize、导入和释放离屏目标；只有当前修订的 RenderGraph attachment 写入命令已成功录制，`TryGetTexture` 才返回可供下一帧 UI 采样的 handle。未写入的新 RT 不会被 Vulkan 当成 shader-readable 图片使用；被替换的目标会跨一个完整提交帧退役，避免已录制的 UI/呈现命令持有失效句柄。 |
-| `IRenderFrameGraphContributor` | 在用户请求后向同一帧贡献 Graph，例如 ImGui。 |
+| [`Inno.Rendering.Runtime.ContentRenderTargetArtifactProvider.ContentRenderTargetArtifactProvider(Inno.Content.IRuntimeContentStore content, Inno.Core.Serialization.SerializationRegistry serialization, Inno.Core.Serialization.SerializationContext context)`](../../src/services/rendering/Inno.Rendering.Runtime/Deployment/ContentRenderTargetArtifactProvider.cs#L37) | Creates a provider borrowing one source-free content store. |
+| [`Inno.Rendering.Runtime.RenderTargetArtifactStatus Inno.Rendering.Runtime.ContentRenderTargetArtifactProvider.GetShaderArtifact(Inno.Rendering.Assets.ShaderAsset shader, Inno.Rendering.Assets.RenderShaderVariant variant, Inno.Rendering.GraphicsCapabilities capabilities, out Inno.Rendering.Assets.RenderShaderArtifact? artifact)`](../../src/services/rendering/Inno.Rendering.Runtime/Deployment/ContentRenderTargetArtifactProvider.cs#L87) | Loads and validates one packaged shader target artifact when it exists. |
+| [`Inno.Rendering.Runtime.RenderTargetArtifactStatus Inno.Rendering.Runtime.ContentRenderTargetArtifactProvider.GetTextureArtifact(Inno.Rendering.Assets.RenderTextureArtifactReference texture, out System.ReadOnlyMemory<byte> artifact)`](../../src/services/rendering/Inno.Rendering.Runtime/Deployment/ContentRenderTargetArtifactProvider.cs#L145) | Loads one packaged portable texture artifact when it exists. |
+| [`Inno.Rendering.Assets.ShaderDefinition Inno.Rendering.Runtime.ContentRenderTargetArtifactProvider.ReadShaderDefinition(Inno.Rendering.Assets.RenderShaderArtifact artifact)`](../../src/services/rendering/Inno.Rendering.Runtime/Deployment/ContentRenderTargetArtifactProvider.cs#L56) | Reads and validates the shader definition value from its authoritative source. |
+| [`Inno.Rendering.Runtime.ContentRenderTargetArtifactProvider`](../../src/services/rendering/Inno.Rendering.Runtime/Deployment/ContentRenderTargetArtifactProvider.cs#L15) | Reads immutable render target artifacts from one verified logical content store. |
 
-Project/Plugin 不需要获得 Runtime 实例。实现 `[RenderRequestProviderExtension(id)]` 后，Provider 会随 TypeCache candidate 一起发现、排序、恢复和原子切换，并在 `OnRender` 通过公开 `RenderRequestProviderContext.requests` 提交零到多个请求。应用组合根可给 Runtime 提供 `ContentReadScope` callback 和主呈现 viewport callback；Context 将同一个显式、frame-scoped 内容集合与 content viewport 交给全部 Provider，Runtime 本身仍不知道 Scene、World 或具体适配策略。viewport callback 缺失时使用完整表面，返回越界区域时产生结构化诊断并安全恢复为完整表面。单个 Provider 抛异常只隔离该 Provider；其他请求和 Editor 合成继续运行。
+### `Inno.Rendering.Runtime.GraphicsSettings`
 
-Runtime 通过活动 TypeCache 创建 Pipeline 和 Feature 候选。同一 TypeCache generation 内的候选构造、配置恢复或建图失败只产生诊断，不替换该资产的 last-good generation。Editor 脚本重载把 Runtime 注册为统一 reload participant：候选 TypeCache 与 Asset Catalog 准备完成后，Runtime 会先构造并恢复所有当前活动 Pipeline/Feature；只有全部成功才切换，后续任一 participant 失败时恢复旧实例，完整提交后才释放旧实例。这样 Pipeline、Feature、Asset 和 Assembly generation 不会出现部分发布。
-
-扩展缺席不是候选构造失败。若候选 TypeCache 已经不包含资产引用的 Pipeline Stable ID，或不包含任一已启用 Feature Stable ID，Runtime 会提交一个显式 unavailable generation：旧 Pipeline、Feature 与 Request Provider 在提交后释放，资产配置继续保留 Stable ID，但不再执行旧 Plugin 代码。此状态与“Editor 在 Plugin 缺失时冷启动”完全一致；Editor Viewport Contributor registry 同步移除对应模型，Scene reload 把 Plugin Component/System 保存为 Missing。相同 Stable ID 回归后，Runtime 会在同一 reload transaction 内重新构建被跟踪的资产。只有扩展类型仍存在而构造、配置或状态恢复失败时，才视为坏候选并保留 last-good。Host 直接重建 TypeCache 而未使用 Editor 协调器时，Runtime 仍会在下一帧清理退休 generation，避免固定 collectible ALC。无 Pipeline 时不执行该请求，Editor 和 ImGui 仍继续提交。
-
-## Presentation 保留与多模型图层
-
-Runtime 不把一次请求假定为整个 target 的唯一 owner。请求仍按 `priority` 与名称确定性排序；每个请求成功完成 Pipeline 建图后，Runtime 才把它的 `RenderTarget + RenderViewport` 记录为已呈现区域。后续请求若写入同一 target 的重叠区域，`RenderPipelineContext.preservePresentationTarget` 为 true，Pipeline 必须使用 Load/Preserve 语义，而不能清除此前模型的颜色。区域不相交时该值保持 false，所以 split-screen 的每个区域都能独立清屏。
-
-上述保留机制只适用于有意共享目标的显式 `RenderRequest`。多个 `IRenderModel` 需要 `RenderOutputRoute`：每个 `RenderOutputLayer` 指定模型 ID 和只分给这一层的内容源 ID，重复分配会在构造 route 时失败。Runtime 检查模型集合与颜色格式，为每层建立独立可采样目标，再以预乘 Alpha 按 route 顺序合成；Editor GameView 使用同一机制。模型层的视口从 `(0,0)` 开始，最终合成才使用输出视口偏移。图层合成不支持跨模型几何深度交错；需要这类排序的内容应由同一模型接纳。`IViewContentFrameSource.CompleteFrame` 在所有输出收集完输入后、RenderGraph 建图前执行一次。
-
-Host 在 `RenderRuntime` 构造时传入 `IRenderLayerCompositionProgramProvider`。只有实际请求图层合成或软件输出传递时才创建程序；缺少供给器时抛出明确错误，由现有输出诊断边界报告。Runtime 只持有后端中立的顶点布局、图层排序与主目标颜色传递判断，BGFX 编译产物与平台选择由 [BGFX adapter](Inno.Adapter.Rendering.Bgfx.md) 拥有。Editor 和 Player 注入相同适配器。
-
-主呈现目标若报告 `primaryPresentationEncodesSrgb == false`，单模型输出也必须经过一次最终 sRGB 输出传递，不能直接把线性颜色写到画布。单模型直接读取自身图层，不额外创建合成纹理；多模型先用图层声明的共同格式完成线性空间中的预乘 Alpha 合成，再执行一次输出传递。合成目标保留共同格式（默认 `RGBA8Srgb`），避免转换为线性 `RGBA8` 时量化掉星光等暗部信号。sRGB attachment 的存储编码与采样解码不改变混合所使用的线性空间。自动编码的单模型目标仍直接渲染，多模型目标仍直接合成。离屏输出遵守声明格式，由最终呈现消费者负责显示传递。
-
-`SubmitComposition` 接受一个或多个非 null 图层；空图层集合、目标/viewport 不一致或不受支持的格式会被拒绝。
-
-## 资源与代际
-
-- Pipeline 缓存记录资产注册时的 Identity。Session 退出、资产卸载或身份替换后，下一帧及 reload 候选捕获前按原 owner 解析身份；失效条目先通过共享退休协议释放 Pipeline/Feature，再移除缓存。不能把已退出 Play 世界的 Pipeline 带入下一代。未注册的宿主自建 Pipeline 仍由 Runtime 生命周期拥有。
-- `RenderResourceService` 以资产 Persistent ID、内容状态和设备 generation 缓存 Texture、Geometry、Program 与 Material 绑定。
-- Provider 可按 Stable Resource ID + revision 原子获取原始 Graphics/Compute Pipeline；候选创建失败不会销毁旧 handle，因此预编译程序不依赖 Material helper 或运行时 shaderc。
-- 资源替换和销毁只发生在帧安全点；旧资源延迟释放。
-- Runtime 只在活动 generation 与尚未完成的 reload transaction 中短暂持有 Pipeline/Feature 实例；持久身份只使用 Stable ID 和中立配置 bytes。提交后旧实例释放，回滚后候选实例释放。
-- Plugin 移除会同时退休 Plugin-owned Pipeline、Feature、Request Provider 与 Editor Viewport Contributor；不会通过 rendering last-good 把已经退出 TypeCache 的 Plugin 类型继续固定在旧 collectible ALC 中。
-- Shader 与纹理目标编译器由 Host 注入。Runtime 不引用 BGFX 工具或选择平台 profile；没有编译器时低级 GPU 路径和预编译资源仍可运行，源资产解析会给出明确诊断。
-- shaderc/texturec 只在后台预热任务中运行。`PrewarmMaterial` 返回当前 variant 的 Ready/Pending/Failed/Unavailable 状态，`PrewarmTexture` 与首次 Resolve 也只登记候选；完成结果在后续 `BeginFrame` 安全点发布，失败保留 CPU artifact 与 GPU Program/Texture 的 last-good，不阻塞当前帧。Plugin 可以据此将尚未准备好的输出标为 Warning，而非在编译完成前误报 Error。
-- `IRenderFrameUploadService` 用可复用动态页处理当前帧 Vertex/Index/Storage 数据；页按布局复用，闲置后回收，返回的 slice 跨帧使用会被拒绝。
-- `IRenderResourceService.UpdateTexture` 在帧安全点验证并提交持久纹理局部更新，适合动态图集和持续变化的纹理，不替换 handle。
-- `IRenderResourceService.ReadTextureAsync` 建立 generation-scoped pending transfer；Runtime 在后续 `BeginFrame` 轮询设备完成，异步恢复等待者。取消和 Runtime 关闭都会通知设备释放 pending readback，不进行 CPU busy wait。
-- 多请求共享一个设备帧和一个 Graph；请求/Contributor 通过 name scope 隔离同名 Pass，单个建图失败由 mutation scope 回滚。累计 Pass 超过 `maxViews` 时拒绝新增候选并给出明确诊断。
-- 显式调用 `AllowParallelRecording` 的独立 Pass callback 可在 worker 上并行生成中立 command list；Runtime/后端仍按全帧 Graph 拓扑串行回放并只调用一次 `EndFrame`。
-- `GraphicsSettings.frameStatistics` 汇总全帧 Graph 的实际 View、后端报告的 draw/dispatch 与真实裁剪 Pass 数。
-- `RenderFrameStatistics.allocationCounters` 同时冻结后端中立的累计 transient 分配快照；含设备 generation，后端不提供时为 `null`，不是零。Editor Stats 实际展示此快照，性能工具也可读取同一契约。构造快照时必须显式传入该参数。
-
-## Graphics execution context
-
-`GraphicsSettings` 保留面向 Project/Plugin Script 的 Unity 风格静态调用形式，但不再保存任何
-process-global 可变状态。每个 `RenderRuntime` 拥有独立的 capabilities、default pipeline 和
-last-frame statistics；`EnterExecutionScope()` 只把该实例状态绑定到当前 `AsyncLocal` 执行流。
-Editor/Player 组合根在本帧 authoring、simulation、request collection 与 render 期间进入 scope，
-退出后立即释放。两个 Runtime 可以嵌套或并行存在而不会覆盖对方；没有活动 scope 时只读属性
-返回 `null`，写入 default pipeline 会明确失败。引擎内部仍直接使用实例状态，不反向依赖脚本门面。
-
-Reload transaction 在提交后会清空 previous pipeline、request provider 和 pending/current request
-快照。完成的 transaction 即使被外部诊断对象暂时保留，也不再包含旧 generation 的 `Type`、
-实例或 delegate；这条约束与 Scene Missing 占位共同保证退休 Plugin ALC 可回收。
-
-## 资源 owner 与容量
-
-| 内部 owner | 独占职责 |
+| 当前声明 | 行为 |
 | --- | --- |
-| RenderResourceCache | 一个资源种类的 active + retiring 状态；替换、Release、Sweep 在清掉 active 前转移退休所有权 |
-| RenderGeometryOwner | 一个候选内同时创建 vertex/index/metadata，完整成功才发布；部分失败释放 candidate 并保留完整旧 pair |
-| RenderMaterialOwner | Shader pass、材质绑定及 program generation，不拥有 Texture owner |
-| RenderReadbackOwner | native transfer、TCS、取消与终止步骤；取消在控制线程推进，Pending 不提前完成 TCS |
-| RenderFrameUploadService | 分布局的 upload page pool、帧 byte budget 与跨帧闲置回收 |
-| RenderTargetStore | 目标身份、resize 与延迟销毁；部分退休不重复销毁 |
-| RenderResourceService | 中立资源服务和上述 owner 组合，不把所有算法重新堆到 Runtime |
+| [`static Inno.Rendering.GraphicsCapabilities? Inno.Rendering.Runtime.GraphicsSettings.capabilities`](../../src/services/rendering/Inno.Rendering.Runtime/GraphicsSettings.cs#L18) | Gets current device capabilities, or before device initialization. |
+| [`static Inno.Rendering.Assets.RenderPipelineAsset? Inno.Rendering.Runtime.GraphicsSettings.defaultPipeline`](../../src/services/rendering/Inno.Rendering.Runtime/GraphicsSettings.cs#L23) | Gets or sets the project default pipeline used by requests without an override. |
+| [`static Inno.Rendering.Runtime.RenderFrameStatistics? Inno.Rendering.Runtime.GraphicsSettings.frameStatistics`](../../src/services/rendering/Inno.Rendering.Runtime/GraphicsSettings.cs#L32) | Gets statistics for the last completed frame, or before the first frame. |
+| [`Inno.Rendering.Runtime.GraphicsSettings`](../../src/services/rendering/Inno.Rendering.Runtime/GraphicsSettings.cs#L12) | Exposes current rendering configuration and immutable device state. |
 
-`RenderRuntime(..., resourceLimits: new RenderResourceLimits { ... })` 配置 immutable init-only 正容量：resourcesPerKind=16384、pendingReadbacks=64、uploadPages=1024、uploadResidentBytes=256MiB、uploadBytesPerFrame=64MiB、targets=1024。超限在相应 native allocation 前拒绝，释放尚 Pending 的资源仍计入所有权。单个 owner 已 Pending 时先推进它，不能不断提交新候选挤满退休队列。
+### `Inno.Rendering.Runtime.IPreparedViewDrawable`
 
-`resourceStatistics` 返回 `RenderResourceStatistics`，包括 active/retiring/rejected resources、pending/peak/rejected readbacks、upload page/resident/peak/frame bytes/rejections、target count/rejections。`RenderTargetStore(device, capacity)` 也公开 count/rejectedCount。统计不保存 backend 类型或 extension 对象。
+| 当前声明 | 行为 |
+| --- | --- |
+| [`void Inno.Rendering.Runtime.IPreparedViewDrawable.Encode(Inno.Rendering.RenderCommandEncoder commands)`](../../src/services/rendering/Inno.Rendering.Runtime/Models/ViewContent.cs#L207) | Encodes commands while the owning model controls attachments and view state. |
+| [`Inno.Rendering.Runtime.IPreparedViewDrawable`](../../src/services/rendering/Inno.Rendering.Runtime/Models/ViewContent.cs#L198) | Encodes a resource-ready draw into the owning model's scene pass. |
 
-普通退休错误继续其他步骤并报告，Pending 保留当前步骤；已经发布的新 native generation 不因随后旧资源退休错误而伪装为候选失败。Geometry sections 与 compiled pass definition 等发布数据拥有隔离副本；可编辑 Asset 保持可变，两者不能混用。
+### `Inno.Rendering.Runtime.IRenderModel`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Rendering.Runtime.RenderModelOutput Inno.Rendering.Runtime.IRenderModel.Build(Inno.Rendering.Runtime.RenderOutputSession session)`](../../src/services/rendering/Inno.Rendering.Runtime/Models/IRenderModel.cs#L37) | Builds one model output after acceptance. |
+| [`bool Inno.Rendering.Runtime.IRenderModel.CanRender(Inno.Rendering.Runtime.RenderOutputSession session)`](../../src/services/rendering/Inno.Rendering.Runtime/Models/IRenderModel.cs#L26) | Determines whether this model accepts the session's content. |
+| [`Inno.Rendering.Runtime.IRenderModel`](../../src/services/rendering/Inno.Rendering.Runtime/Models/IRenderModel.cs#L14) | Builds view requests from host output sessions without owning a host window. |
+
+### `Inno.Rendering.Runtime.IRenderRequestSink`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`void Inno.Rendering.Runtime.IRenderRequestSink.Submit(Inno.Rendering.Runtime.RenderRequest request)`](../../src/services/rendering/Inno.Rendering.Runtime/Requests/IRenderRequestSink.cs#L18) | Queues one immutable view request for the current or next render frame. |
+| [`Inno.Rendering.Runtime.IRenderRequestSink`](../../src/services/rendering/Inno.Rendering.Runtime/Requests/IRenderRequestSink.cs#L9) | Accepts rendering-model-neutral requests without exposing runtime or backend ownership. |
+
+### `Inno.Rendering.Runtime.IRenderResourceService`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Rendering.PersistentBufferHandle Inno.Rendering.Runtime.IRenderResourceService.AcquireBuffer(Inno.Rendering.Runtime.RenderPersistentResourceId id, long revision, Inno.Rendering.PersistentBufferDescriptor descriptor, System.ReadOnlyMemory<byte> initialData, string name)`](../../src/services/rendering/Inno.Rendering.Runtime/Resources/IRenderResourceService.cs#L89) | Acquires or atomically replaces a provider-owned persistent buffer. |
+| [`Inno.Rendering.ComputePipelineHandle Inno.Rendering.Runtime.IRenderResourceService.AcquireComputePipeline(Inno.Rendering.Runtime.RenderPersistentResourceId id, long revision, Inno.Rendering.ComputePipelineDescriptor descriptor, string name)`](../../src/services/rendering/Inno.Rendering.Runtime/Resources/IRenderResourceService.cs#L237) | Acquires or atomically replaces a provider-owned compute pipeline. |
+| [`Inno.Rendering.GraphicsPipelineHandle Inno.Rendering.Runtime.IRenderResourceService.AcquireGraphicsPipeline(Inno.Rendering.Runtime.RenderPersistentResourceId id, long revision, Inno.Rendering.GraphicsPipelineDescriptor descriptor, string name)`](../../src/services/rendering/Inno.Rendering.Runtime/Resources/IRenderResourceService.cs#L212) | Acquires or atomically replaces a provider-owned graphics pipeline. |
+| [`Inno.Rendering.PersistentTextureHandle Inno.Rendering.Runtime.IRenderResourceService.AcquireKtxTexture(Inno.Rendering.Runtime.RenderPersistentResourceId id, long revision, System.ReadOnlyMemory<byte> containerData, bool sRgb, string name)`](../../src/services/rendering/Inno.Rendering.Runtime/Resources/IRenderResourceService.cs#L147) | Acquires or atomically replaces a sampled texture from a portable KTX container. |
+| [`Inno.Rendering.PersistentTextureHandle Inno.Rendering.Runtime.IRenderResourceService.AcquireTexture(Inno.Rendering.Runtime.RenderPersistentResourceId id, long revision, Inno.Rendering.RenderTextureDescriptor descriptor, System.Collections.Generic.IReadOnlyList<Inno.Rendering.Runtime.RenderTextureSubresourceData> subresources, string name)`](../../src/services/rendering/Inno.Rendering.Runtime/Resources/IRenderResourceService.cs#L118) | Acquires or atomically replaces a provider-owned persistent texture. |
+| [`Inno.Rendering.Runtime.RenderTargetArtifactStatus Inno.Rendering.Runtime.IRenderResourceService.PrewarmMaterial(Inno.Rendering.Assets.MaterialAsset material)`](../../src/services/rendering/Inno.Rendering.Runtime/Resources/IRenderResourceService.cs#L50) | Queues all target shader work required by a material without blocking the render thread. |
+| [`void Inno.Rendering.Runtime.IRenderResourceService.PrewarmTexture(Inno.Rendering.Assets.TextureAsset texture)`](../../src/services/rendering/Inno.Rendering.Runtime/Resources/IRenderResourceService.cs#L58) | Queues target texture conversion without blocking the render thread. |
+| [`void Inno.Rendering.Runtime.IRenderResourceService.PrewarmTextureArtifact(Inno.Rendering.Assets.RenderTextureArtifactReference texture)`](../../src/services/rendering/Inno.Rendering.Runtime/Resources/IRenderResourceService.cs#L66) | Queues target conversion for a texture slot owned by any imported asset. |
+| [`System.Threading.Tasks.ValueTask<Inno.Rendering.RenderTextureReadbackResult> Inno.Rendering.Runtime.IRenderResourceService.ReadTextureAsync(Inno.Rendering.PersistentTextureHandle texture, int mipLevel = 0, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))`](../../src/services/rendering/Inno.Rendering.Runtime/Resources/IRenderResourceService.cs#L188) | Asynchronously copies one complete persistent texture mip into CPU-visible memory. |
+| [`void Inno.Rendering.Runtime.IRenderResourceService.Release(Inno.Rendering.Runtime.RenderPersistentResourceId id)`](../../src/services/rendering/Inno.Rendering.Runtime/Resources/IRenderResourceService.cs#L417) | Releases cached resources with this provider-owned identifier at a safe GPU mutation point. |
+| [`bool Inno.Rendering.Runtime.IRenderResourceService.TryResolveComputeMaterial(Inno.Rendering.Assets.MaterialAsset material, Inno.Rendering.Assets.ShaderContractId contractId, Inno.Rendering.Assets.ShaderPassRoleId passRoleId, Inno.Rendering.Assets.MaterialPropertyBlock? overrides, out Inno.Rendering.Runtime.RenderMaterialPass? materialPass)`](../../src/services/rendering/Inno.Rendering.Runtime/Resources/IRenderResourceService.cs#L350) | Resolves one compute material pass through an open provider contract and role. |
+| [`bool Inno.Rendering.Runtime.IRenderResourceService.TryResolveGeometry(Inno.Rendering.Assets.GeometryAsset geometry, out Inno.Rendering.Runtime.RenderGeometry? resolvedGeometry)`](../../src/services/rendering/Inno.Rendering.Runtime/Resources/IRenderResourceService.cs#L370) | Resolves imported helper geometry into persistent vertex and index buffers. |
+| [`bool Inno.Rendering.Runtime.IRenderResourceService.TryResolveGraphicsMaterial(Inno.Rendering.Assets.MaterialAsset material, Inno.Rendering.Assets.ShaderContractId contractId, Inno.Rendering.Assets.ShaderPassRoleId passRoleId, Inno.Rendering.RenderVertexLayout? vertexLayout, Inno.Rendering.Assets.MaterialPropertyBlock? overrides, out Inno.Rendering.Runtime.RenderMaterialPass? materialPass)`](../../src/services/rendering/Inno.Rendering.Runtime/Resources/IRenderResourceService.cs#L268) | Resolves one graphics material pass through an open provider contract and role. |
+| [`bool Inno.Rendering.Runtime.IRenderResourceService.TryResolveMaterialArtifact(Inno.Rendering.Runtime.RenderPersistentResourceId scope, Inno.Rendering.Assets.RenderShaderArtifact artifact, Inno.Rendering.Assets.MaterialAsset material, Inno.Rendering.Assets.ShaderContractId contractId, Inno.Rendering.Assets.ShaderPassRoleId passRoleId, Inno.Rendering.ShaderProgramKind programKind, Inno.Rendering.RenderVertexLayout? vertexLayout, Inno.Rendering.Assets.MaterialPropertyBlock? overrides, Inno.Core.Diagnostics.IDiagnosticReporter diagnostics, out Inno.Rendering.Runtime.RenderMaterialPass? materialPass)`](../../src/services/rendering/Inno.Rendering.Runtime/Resources/IRenderResourceService.cs#L316) | Resolves an explicitly compiled candidate in a caller-owned publication scope, without publishing it as an asset. |
+| [`bool Inno.Rendering.Runtime.IRenderResourceService.TryResolveTexture(Inno.Rendering.Assets.TextureAsset texture, out Inno.Rendering.PersistentTextureHandle resolvedTexture)`](../../src/services/rendering/Inno.Rendering.Runtime/Resources/IRenderResourceService.cs#L387) | Resolves an imported texture into a persistent sampled texture. |
+| [`bool Inno.Rendering.Runtime.IRenderResourceService.TryResolveTextureArtifact(Inno.Rendering.Assets.RenderTextureArtifactReference texture, out Inno.Rendering.PersistentTextureHandle resolvedTexture)`](../../src/services/rendering/Inno.Rendering.Runtime/Resources/IRenderResourceService.cs#L404) | Resolves one imported artifact texture into a persistent sampled texture. |
+| [`void Inno.Rendering.Runtime.IRenderResourceService.UpdateTexture(Inno.Rendering.PersistentTextureHandle texture, Inno.Rendering.RenderTextureRegion region, System.ReadOnlyMemory<byte> data)`](../../src/services/rendering/Inno.Rendering.Runtime/Resources/IRenderResourceService.cs#L167) | Updates a rectangular region of an active persistent texture without recreating it. |
+| [`void Inno.Rendering.Runtime.IRenderResourceService.ValidateShaderArtifact(Inno.Rendering.Assets.RenderShaderArtifact artifact)`](../../src/services/rendering/Inno.Rendering.Runtime/Resources/IRenderResourceService.cs#L32) | Creates and retires every program in one compiled artifact through the active device without publishing it. |
+| [`Inno.Rendering.GraphicsCapabilities Inno.Rendering.Runtime.IRenderResourceService.capabilities`](../../src/services/rendering/Inno.Rendering.Runtime/Resources/IRenderResourceService.cs#L21) | Gets the active backend-neutral capability snapshot. |
+| [`Inno.Rendering.Runtime.IRenderResourceService`](../../src/services/rendering/Inno.Rendering.Runtime/Resources/IRenderResourceService.cs#L15) | Resolves neutral assets and provider-owned uploads into opaque resources for the active device generation. |
+
+### `Inno.Rendering.Runtime.IRenderRuntimeReloadTransaction`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`void Inno.Rendering.Runtime.IRenderRuntimeReloadTransaction.Activate()`](../../src/services/rendering/Inno.Rendering.Runtime/IRenderRuntimeReloadTransaction.cs#L16) | Atomically selects the prepared candidate without retiring the previous generation. |
+| [`void Inno.Rendering.Runtime.IRenderRuntimeReloadTransaction.Complete()`](../../src/services/rendering/Inno.Rendering.Runtime/IRenderRuntimeReloadTransaction.cs#L21) | Commits an activated candidate and retires the previous generation. |
+| [`void Inno.Rendering.Runtime.IRenderRuntimeReloadTransaction.Prepare()`](../../src/services/rendering/Inno.Rendering.Runtime/IRenderRuntimeReloadTransaction.cs#L11) | Builds and validates every candidate registry and last-good rendering generation. |
+| [`void Inno.Rendering.Runtime.IRenderRuntimeReloadTransaction.Rollback()`](../../src/services/rendering/Inno.Rendering.Runtime/IRenderRuntimeReloadTransaction.cs#L26) | Discards the candidate and restores the previous generation after provisional activation. |
+| [`Inno.Rendering.Runtime.IRenderRuntimeReloadTransaction`](../../src/services/rendering/Inno.Rendering.Runtime/IRenderRuntimeReloadTransaction.cs#L6) | Controls one isolated rendering-extension candidate from preparation through atomic completion. |
+
+### `Inno.Rendering.Runtime.IRenderTargetArtifactProvider`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Rendering.Runtime.RenderTargetArtifactStatus Inno.Rendering.Runtime.IRenderTargetArtifactProvider.GetShaderArtifact(Inno.Rendering.Assets.ShaderAsset shader, Inno.Rendering.Assets.RenderShaderVariant variant, Inno.Rendering.GraphicsCapabilities capabilities, out Inno.Rendering.Assets.RenderShaderArtifact? artifact)`](../../src/services/rendering/Inno.Rendering.Runtime/Deployment/IRenderTargetArtifactProvider.cs#L49) | Resolves the target shader matching one runtime asset, variant, and device capability snapshot. |
+| [`Inno.Rendering.Runtime.RenderTargetArtifactStatus Inno.Rendering.Runtime.IRenderTargetArtifactProvider.GetTextureArtifact(Inno.Rendering.Assets.RenderTextureArtifactReference texture, out System.ReadOnlyMemory<byte> artifact)`](../../src/services/rendering/Inno.Rendering.Runtime/Deployment/IRenderTargetArtifactProvider.cs#L72) | Resolves the portable KTX artifact for one imported runtime texture. |
+| [`Inno.Rendering.Assets.ShaderDefinition Inno.Rendering.Runtime.IRenderTargetArtifactProvider.ReadShaderDefinition(Inno.Rendering.Assets.RenderShaderArtifact artifact)`](../../src/services/rendering/Inno.Rendering.Runtime/Deployment/IRenderTargetArtifactProvider.cs#L25) | Resolves the exact material contract stored with a compiled program using the current owner reference context. |
+| [`Inno.Rendering.Runtime.IRenderTargetArtifactProvider`](../../src/services/rendering/Inno.Rendering.Runtime/Deployment/IRenderTargetArtifactProvider.cs#L10) | Resolves immutable, source-free target artifacts for the active rendering device. |
+
+### `Inno.Rendering.Runtime.IViewContentCollector`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`System.Collections.Generic.IReadOnlyList<Inno.Rendering.Runtime.ViewContentItem> Inno.Rendering.Runtime.IViewContentCollector.Collect(Inno.Rendering.Runtime.ViewContentContext context)`](../../src/services/rendering/Inno.Rendering.Runtime/Models/ViewContent.cs#L439) | Collects active source items in deterministic source order. |
+| [`Inno.Rendering.Runtime.IViewContentCollector`](../../src/services/rendering/Inno.Rendering.Runtime/Models/ViewContent.cs#L427) | Collects all active world-content sources for one exact view. |
+
+### `Inno.Rendering.Runtime.IViewContentFrameSource`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`void Inno.Rendering.Runtime.IViewContentFrameSource.CompleteFrame(ulong frameIndex)`](../../src/services/rendering/Inno.Rendering.Runtime/Models/ViewContent.cs#L396) | Advances retained content once after all output views have supplied input. |
+| [`Inno.Rendering.Runtime.IViewContentFrameSource`](../../src/services/rendering/Inno.Rendering.Runtime/Models/ViewContent.cs#L387) | Completes frame-local input after every output has routed its views. |
+
+### `Inno.Rendering.Runtime.IViewContentSink`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`void Inno.Rendering.Runtime.IViewContentSink.Submit(Inno.Rendering.Runtime.ViewContentItem item)`](../../src/services/rendering/Inno.Rendering.Runtime/Models/ViewContent.cs#L360) | Adds an item to the current view. |
+| [`Inno.Rendering.Runtime.IViewContentSink`](../../src/services/rendering/Inno.Rendering.Runtime/Models/ViewContent.cs#L351) | Receives world items without imposing a rendering-model sort key. |
+
+### `Inno.Rendering.Runtime.IViewContentSource`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`void Inno.Rendering.Runtime.IViewContentSource.Collect(Inno.Rendering.Runtime.ViewContentContext context, Inno.Rendering.Runtime.IViewContentSink sink)`](../../src/services/rendering/Inno.Rendering.Runtime/Models/ViewContent.cs#L378) | Collects items for one exact view. |
+| [`Inno.Rendering.Runtime.IViewContentSource`](../../src/services/rendering/Inno.Rendering.Runtime/Models/ViewContent.cs#L366) | Contributes model-independent world items to selected views. |
+
+### `Inno.Rendering.Runtime.IViewDrawable`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`bool Inno.Rendering.Runtime.IViewDrawable.TryPrepare(Inno.Rendering.Runtime.RenderPipelineContext context, Inno.Rendering.Runtime.RenderView view, out Inno.Rendering.Runtime.IPreparedViewDrawable? prepared)`](../../src/services/rendering/Inno.Rendering.Runtime/Models/ViewContent.cs#L188) | Resolves reusable resources before render graph execution. |
+| [`Inno.Rendering.Runtime.IViewDrawable`](../../src/services/rendering/Inno.Rendering.Runtime/Models/ViewContent.cs#L170) | Prepares one model-independent drawable for a specific render pass. |
+
+### `Inno.Rendering.Runtime.IViewPointerTarget`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`void Inno.Rendering.Runtime.IViewPointerTarget.Advance(Inno.Rendering.Runtime.RenderOutputInput input, Inno.Core.Mathematics.Vector2 localPosition, ulong frameIndex)`](../../src/services/rendering/Inno.Rendering.Runtime/Models/ViewContent.cs#L268) | Advances this target once for the frame with either routed input or an empty snapshot. |
+| [`void Inno.Rendering.Runtime.IViewPointerTarget.SetKeyboardFocus(bool focused)`](../../src/services/rendering/Inno.Rendering.Runtime/Models/ViewContent.cs#L233) | Changes keyboard focus after the rendering model resolves a pointer press. |
+| [`bool Inno.Rendering.Runtime.IViewPointerTarget.TryHit(Inno.Rendering.Runtime.RenderView view, Inno.Rendering.Runtime.RenderOutputInput input, out Inno.Core.Mathematics.Vector2 localPosition)`](../../src/services/rendering/Inno.Rendering.Runtime/Models/ViewContent.cs#L250) | Maps one output pointer onto this item's local surface. |
+| [`bool Inno.Rendering.Runtime.IViewPointerTarget.hasKeyboardFocus`](../../src/services/rendering/Inno.Rendering.Runtime/Models/ViewContent.cs#L225) | Gets whether keyboard and text input should continue reaching this target. |
+| [`bool Inno.Rendering.Runtime.IViewPointerTarget.hasPointerCapture`](../../src/services/rendering/Inno.Rendering.Runtime/Models/ViewContent.cs#L220) | Gets whether this target retains pointer ownership from an earlier press. Rendering models route captured input before ordinary hit testing. |
+| [`Inno.Rendering.Runtime.IViewPointerTarget`](../../src/services/rendering/Inno.Rendering.Runtime/Models/ViewContent.cs#L213) | Receives pointer input after the rendering model resolves visible draw order. |
+
+### `Inno.Rendering.Runtime.RenderExtensionStateContext`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Rendering.Runtime.RenderExtensionStateContext.RenderExtensionStateContext(Inno.Assets.AssetObject owner)`](../../src/services/rendering/Inno.Rendering.Runtime/Pipelines/RenderExtensionStateContext.cs#L26) | Binds restoration to a canonical asset, independently of the caller's ambient session. |
+| [`void Inno.Rendering.Runtime.RenderExtensionStateContext.Restore<TSettings>(Inno.Rendering.Assets.SerializedRenderExtensionState state, TSettings target)`](../../src/services/rendering/Inno.Rendering.Runtime/Pipelines/RenderExtensionStateContext.cs#L40) | Restores a matching settings contract with this owner's asset references. |
+| [`Inno.Rendering.Runtime.RenderExtensionStateContext`](../../src/services/rendering/Inno.Rendering.Runtime/Pipelines/RenderExtensionStateContext.cs#L12) | Restores neutral render settings through the canonical asset's actual owner and pinned references. |
+
+### `Inno.Rendering.Runtime.RenderFeatureContext`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Rendering.Runtime.RenderFeatureContext.RenderFeatureContext(Inno.Rendering.Runtime.RenderPipelineContext pipeline, Inno.Rendering.Assets.RenderFeatureConfiguration configuration)`](../../src/services/rendering/Inno.Rendering.Runtime/Pipelines/RenderFeatureContext.cs#L26) | Creates a feature build context. |
+| [`Inno.Rendering.GraphicsCapabilities Inno.Rendering.Runtime.RenderFeatureContext.capabilities`](../../src/services/rendering/Inno.Rendering.Runtime/Pipelines/RenderFeatureContext.cs#L57) | Gets current device capabilities. |
+| [`Inno.Rendering.Assets.RenderFeatureConfiguration Inno.Rendering.Runtime.RenderFeatureContext.configuration`](../../src/services/rendering/Inno.Rendering.Runtime/Pipelines/RenderFeatureContext.cs#L42) | Gets stable feature configuration. |
+| [`Inno.Rendering.RenderGraphBuilder Inno.Rendering.Runtime.RenderFeatureContext.graph`](../../src/services/rendering/Inno.Rendering.Runtime/Pipelines/RenderFeatureContext.cs#L47) | Gets the current frame graph builder. |
+| [`Inno.Rendering.Runtime.RenderPipelineContext Inno.Rendering.Runtime.RenderFeatureContext.pipeline`](../../src/services/rendering/Inno.Rendering.Runtime/Pipelines/RenderFeatureContext.cs#L37) | Gets the owning pipeline context. |
+| [`Inno.Rendering.Runtime.IRenderResourceService Inno.Rendering.Runtime.RenderFeatureContext.resourceService`](../../src/services/rendering/Inno.Rendering.Runtime/Pipelines/RenderFeatureContext.cs#L62) | Gets the generation-aware neutral GPU resource service. |
+| [`Inno.Rendering.Runtime.RenderResourceMap Inno.Rendering.Runtime.RenderFeatureContext.resources`](../../src/services/rendering/Inno.Rendering.Runtime/Pipelines/RenderFeatureContext.cs#L52) | Gets open semantic resources for the request. |
+| [`Inno.Rendering.IRenderFrameUploadService Inno.Rendering.Runtime.RenderFeatureContext.uploads`](../../src/services/rendering/Inno.Rendering.Runtime/Pipelines/RenderFeatureContext.cs#L67) | Gets the frame-scoped streaming buffer service. |
+| [`Inno.Rendering.Runtime.RenderFeatureContext`](../../src/services/rendering/Inno.Rendering.Runtime/Pipelines/RenderFeatureContext.cs#L14) | Supplies one configured feature with frame-scoped graph services. |
+
+### `Inno.Rendering.Runtime.RenderFeatureExtensionAttribute`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Rendering.Runtime.RenderFeatureExtensionAttribute.RenderFeatureExtensionAttribute(string id)`](../../src/services/rendering/Inno.Rendering.Runtime/Pipelines/RenderFeatureExtensionAttribute.cs#L24) | Creates a feature extension declaration. |
+| [`string Inno.Rendering.Runtime.RenderFeatureExtensionAttribute.id`](../../src/services/rendering/Inno.Rendering.Runtime/Pipelines/RenderFeatureExtensionAttribute.cs#L33) | Gets the globally stable feature extension identifier. |
+| [`Inno.Rendering.Runtime.RenderFeatureExtensionAttribute`](../../src/services/rendering/Inno.Rendering.Runtime/Pipelines/RenderFeatureExtensionAttribute.cs#L14) | Marks a reloadable pipeline feature implementation with a stable extension identifier. |
+
+### `Inno.Rendering.Runtime.RenderFrameData`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`void Inno.Rendering.Runtime.RenderFrameData.Clear()`](../../src/services/rendering/Inno.Rendering.Runtime/Requests/RenderFrameData.cs#L92) | Removes all values before this object enters a submitted request. |
+| [`void Inno.Rendering.Runtime.RenderFrameData.Set<TValue>(Inno.Rendering.RenderDataChannelId channel, TValue value)`](../../src/services/rendering/Inno.Rendering.Runtime/Requests/RenderFrameData.cs#L41) | Adds or replaces one typed value in an open data channel. |
+| [`bool Inno.Rendering.Runtime.RenderFrameData.TryGet<TValue>(Inno.Rendering.RenderDataChannelId channel, out TValue? value)`](../../src/services/rendering/Inno.Rendering.Runtime/Requests/RenderFrameData.cs#L70) | Tries to read one typed value from an open data channel. |
+| [`int Inno.Rendering.Runtime.RenderFrameData.count`](../../src/services/rendering/Inno.Rendering.Runtime/Requests/RenderFrameData.cs#L24) | Gets the number of populated channel and value-type pairs. |
+| [`Inno.Rendering.Runtime.RenderFrameData`](../../src/services/rendering/Inno.Rendering.Runtime/Requests/RenderFrameData.cs#L15) | Carries generation-scoped, frame-only payloads between a request producer and its pipeline. |
+
+### `Inno.Rendering.Runtime.RenderFrameStatistics`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Rendering.Runtime.RenderFrameStatistics.RenderFrameStatistics(ulong frameIndex, int viewCount, int drawCount, int dispatchCount, int culledPassCount, Inno.Rendering.RenderDeviceAllocationCounters? allocationCounters, int graphCompileCount)`](../../src/services/rendering/Inno.Rendering.Runtime/RenderFrameStatistics.cs#L36) | Creates an immutable frame statistics snapshot. |
+| [`Inno.Rendering.RenderDeviceAllocationCounters? Inno.Rendering.Runtime.RenderFrameStatistics.allocationCounters`](../../src/services/rendering/Inno.Rendering.Runtime/RenderFrameStatistics.cs#L88) | Gets the device-generation cumulative transient allocation snapshot at frame completion. Null means the backend does not report allocation accounting; it does not mean zero allocations. |
+| [`int Inno.Rendering.Runtime.RenderFrameStatistics.culledPassCount`](../../src/services/rendering/Inno.Rendering.Runtime/RenderFrameStatistics.cs#L82) | Gets passes removed by graph compilation. |
+| [`int Inno.Rendering.Runtime.RenderFrameStatistics.dispatchCount`](../../src/services/rendering/Inno.Rendering.Runtime/RenderFrameStatistics.cs#L77) | Gets the recorded compute dispatch count. |
+| [`int Inno.Rendering.Runtime.RenderFrameStatistics.drawCount`](../../src/services/rendering/Inno.Rendering.Runtime/RenderFrameStatistics.cs#L72) | Gets the recorded draw count. |
+| [`ulong Inno.Rendering.Runtime.RenderFrameStatistics.frameIndex`](../../src/services/rendering/Inno.Rendering.Runtime/RenderFrameStatistics.cs#L62) | Gets the monotonic render frame index. |
+| [`int Inno.Rendering.Runtime.RenderFrameStatistics.graphCompileCount`](../../src/services/rendering/Inno.Rendering.Runtime/RenderFrameStatistics.cs#L93) | Gets complete graph compilation attempts for the frame. Validation does not increase this count. |
+| [`int Inno.Rendering.Runtime.RenderFrameStatistics.viewCount`](../../src/services/rendering/Inno.Rendering.Runtime/RenderFrameStatistics.cs#L67) | Gets the executed logical view count. |
+| [`Inno.Rendering.Runtime.RenderFrameStatistics`](../../src/services/rendering/Inno.Rendering.Runtime/RenderFrameStatistics.cs#L9) | Reports read-only statistics for the most recently completed render frame. |
+
+### `Inno.Rendering.Runtime.RenderGeometry`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`void Inno.Rendering.Runtime.RenderGeometry.Bind(Inno.Rendering.RenderCommandEncoder commands)`](../../src/services/rendering/Inno.Rendering.Runtime/Resources/RenderGeometry.cs#L72) | Binds both geometry streams at their first element. |
+| [`void Inno.Rendering.Runtime.RenderGeometry.DrawSection(Inno.Rendering.RenderCommandEncoder commands, int sectionIndex, int instanceCount = 1)`](../../src/services/rendering/Inno.Rendering.Runtime/Resources/RenderGeometry.cs#L91) | Binds and draws one indexed section. |
+| [`Inno.Rendering.PersistentBufferHandle Inno.Rendering.Runtime.RenderGeometry.indexBuffer`](../../src/services/rendering/Inno.Rendering.Runtime/Resources/RenderGeometry.cs#L44) | Gets the persistent index buffer. |
+| [`int Inno.Rendering.Runtime.RenderGeometry.indexCount`](../../src/services/rendering/Inno.Rendering.Runtime/Resources/RenderGeometry.cs#L59) | Gets the total index count. |
+| [`System.Collections.Generic.IReadOnlyList<Inno.Rendering.Runtime.RenderGeometrySection> Inno.Rendering.Runtime.RenderGeometry.sections`](../../src/services/rendering/Inno.Rendering.Runtime/Resources/RenderGeometry.cs#L64) | Gets independently drawable indexed ranges. |
+| [`Inno.Rendering.PersistentBufferHandle Inno.Rendering.Runtime.RenderGeometry.vertexBuffer`](../../src/services/rendering/Inno.Rendering.Runtime/Resources/RenderGeometry.cs#L39) | Gets the persistent vertex buffer. |
+| [`int Inno.Rendering.Runtime.RenderGeometry.vertexCount`](../../src/services/rendering/Inno.Rendering.Runtime/Resources/RenderGeometry.cs#L54) | Gets the number of vertices. |
+| [`Inno.Rendering.RenderVertexLayout Inno.Rendering.Runtime.RenderGeometry.vertexLayout`](../../src/services/rendering/Inno.Rendering.Runtime/Resources/RenderGeometry.cs#L49) | Gets the imported interleaved vertex layout. |
+| [`Inno.Rendering.Runtime.RenderGeometry`](../../src/services/rendering/Inno.Rendering.Runtime/Resources/RenderGeometry.cs#L15) | Provides generation-scoped GPU buffers for an imported geometry helper asset. |
+
+### `Inno.Rendering.Runtime.RenderGeometrySection`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Rendering.Runtime.RenderGeometrySection.RenderGeometrySection(int firstIndex, int indexCount)`](../../src/services/rendering/Inno.Rendering.Runtime/Resources/RenderGeometrySection.cs#L27) | Creates one indexed geometry range. |
+| [`int Inno.Rendering.Runtime.RenderGeometrySection.firstIndex`](../../src/services/rendering/Inno.Rendering.Runtime/Resources/RenderGeometrySection.cs#L40) | Gets the first index in the shared index buffer. |
+| [`int Inno.Rendering.Runtime.RenderGeometrySection.indexCount`](../../src/services/rendering/Inno.Rendering.Runtime/Resources/RenderGeometrySection.cs#L45) | Gets the number of indices in this range. |
+| [`Inno.Rendering.Runtime.RenderGeometrySection`](../../src/services/rendering/Inno.Rendering.Runtime/Resources/RenderGeometrySection.cs#L15) | Describes one indexed range in resolved backend-neutral geometry. |
+
+### `Inno.Rendering.Runtime.RenderMaterialPass`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`void Inno.Rendering.Runtime.RenderMaterialPass.Bind(Inno.Rendering.RenderCommandEncoder commands)`](../../src/services/rendering/Inno.Rendering.Runtime/Resources/RenderMaterialPass.cs#L132) | Binds the program and all material-owned values and textures. |
+| [`bool Inno.Rendering.Runtime.RenderMaterialPass.UsesBinding(Inno.Rendering.RenderBindingId binding, Inno.Rendering.RenderShaderBindingKind kind)`](../../src/services/rendering/Inno.Rendering.Runtime/Resources/RenderMaterialPass.cs#L109) | Gets whether the compiled program actively consumes one declared binding. |
+| [`Inno.Rendering.ComputePipelineHandle Inno.Rendering.Runtime.RenderMaterialPass.computePipeline`](../../src/services/rendering/Inno.Rendering.Runtime/Resources/RenderMaterialPass.cs#L81) | Gets the compute pipeline, or an invalid handle for a raster pass. |
+| [`Inno.Rendering.Assets.ShaderPassDefinition Inno.Rendering.Runtime.RenderMaterialPass.definition`](../../src/services/rendering/Inno.Rendering.Runtime/Resources/RenderMaterialPass.cs#L71) | Gets the selected provider-defined shader pass with detached metadata storage. |
+| [`Inno.Rendering.GraphicsPipelineHandle Inno.Rendering.Runtime.RenderMaterialPass.graphicsPipeline`](../../src/services/rendering/Inno.Rendering.Runtime/Resources/RenderMaterialPass.cs#L76) | Gets the graphics pipeline, or an invalid handle for a compute pass. |
+| [`bool Inno.Rendering.Runtime.RenderMaterialPass.isCompute`](../../src/services/rendering/Inno.Rendering.Runtime/Resources/RenderMaterialPass.cs#L91) | Gets whether this is a compute material pass. |
+| [`bool Inno.Rendering.Runtime.RenderMaterialPass.isGraphics`](../../src/services/rendering/Inno.Rendering.Runtime/Resources/RenderMaterialPass.cs#L86) | Gets whether this is a graphics material pass. |
+| [`Inno.Rendering.Runtime.RenderMaterialPass`](../../src/services/rendering/Inno.Rendering.Runtime/Resources/RenderMaterialPass.cs#L35) | Represents one frame-resolved material pass and its material-owned bindings. |
+
+### `Inno.Rendering.Runtime.RenderModelExtensionAttribute`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Rendering.Runtime.RenderModelExtensionAttribute.RenderModelExtensionAttribute(string id)`](../../src/services/rendering/Inno.Rendering.Runtime/Models/RenderModelExtensionAttribute.cs#L24) | Creates a model declaration. |
+| [`string Inno.Rendering.Runtime.RenderModelExtensionAttribute.id`](../../src/services/rendering/Inno.Rendering.Runtime/Models/RenderModelExtensionAttribute.cs#L33) | Gets the globally stable model identity. |
+| [`Inno.Rendering.Runtime.RenderModelExtensionAttribute`](../../src/services/rendering/Inno.Rendering.Runtime/Models/RenderModelExtensionAttribute.cs#L14) | Marks a reloadable rendering model with a stable identity. |
+
+### `Inno.Rendering.Runtime.RenderModelOutput`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Rendering.Runtime.RenderModelOutput.RenderModelOutput(string name, Inno.Rendering.Assets.RenderPipelineAsset pipeline, Inno.Rendering.Runtime.RenderFrameData data, Inno.Rendering.RenderTextureFormat targetFormat = Inno.Rendering.RenderTextureFormat.RGBA8Srgb)`](../../src/services/rendering/Inno.Rendering.Runtime/Models/RenderModelOutput.cs#L32) | Creates prepared model output. |
+| [`Inno.Rendering.Runtime.RenderFrameData Inno.Rendering.Runtime.RenderModelOutput.data`](../../src/services/rendering/Inno.Rendering.Runtime/Models/RenderModelOutput.cs#L56) | Gets model frame data. |
+| [`string Inno.Rendering.Runtime.RenderModelOutput.name`](../../src/services/rendering/Inno.Rendering.Runtime/Models/RenderModelOutput.cs#L48) | Gets the diagnostic name. |
+| [`Inno.Rendering.Assets.RenderPipelineAsset Inno.Rendering.Runtime.RenderModelOutput.pipeline`](../../src/services/rendering/Inno.Rendering.Runtime/Models/RenderModelOutput.cs#L52) | Gets the model's pipeline. |
+| [`Inno.Rendering.RenderTextureFormat Inno.Rendering.Runtime.RenderModelOutput.targetFormat`](../../src/services/rendering/Inno.Rendering.Runtime/Models/RenderModelOutput.cs#L60) | Gets required target format. |
+| [`Inno.Rendering.Runtime.RenderModelOutput`](../../src/services/rendering/Inno.Rendering.Runtime/Models/RenderModelOutput.cs#L14) | Gets one model's prepared pipeline data for a host-owned target. |
+
+### `Inno.Rendering.Runtime.RenderOutputInput`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Rendering.Runtime.RenderOutputInput.RenderOutputInput(Inno.Core.Mathematics.Vector2 pointerPosition, bool pointerInside, Inno.Core.Mathematics.Vector2 scrollDelta, Inno.Core.Input.KeyModifier modifiers, System.Collections.Generic.IReadOnlyCollection<Inno.Core.Input.KeyCode> keysPressed, System.Collections.Generic.IReadOnlyCollection<Inno.Core.Input.KeyCode> keysReleased, System.Collections.Generic.IReadOnlyCollection<Inno.Core.Input.MouseButton> buttonsPressed, System.Collections.Generic.IReadOnlyCollection<Inno.Core.Input.MouseButton> buttonsReleased, System.Collections.Generic.IReadOnlyList<string> textInput, bool interactionEnabled = true)`](../../src/services/rendering/Inno.Rendering.Runtime/Models/RenderOutputInput.cs#L48) | Creates an input snapshot for one output viewport. |
+| [`System.Collections.Generic.IReadOnlyCollection<Inno.Core.Input.MouseButton> Inno.Rendering.Runtime.RenderOutputInput.buttonsPressed`](../../src/services/rendering/Inno.Rendering.Runtime/Models/RenderOutputInput.cs#L111) | Gets buttons pressed this frame. |
+| [`System.Collections.Generic.IReadOnlyCollection<Inno.Core.Input.MouseButton> Inno.Rendering.Runtime.RenderOutputInput.buttonsReleased`](../../src/services/rendering/Inno.Rendering.Runtime/Models/RenderOutputInput.cs#L115) | Gets buttons released this frame. |
+| [`static Inno.Rendering.Runtime.RenderOutputInput Inno.Rendering.Runtime.RenderOutputInput.empty`](../../src/services/rendering/Inno.Rendering.Runtime/Models/RenderOutputInput.cs#L75) | Gets a snapshot with no active input. |
+| [`bool Inno.Rendering.Runtime.RenderOutputInput.interactionEnabled`](../../src/services/rendering/Inno.Rendering.Runtime/Models/RenderOutputInput.cs#L124) | Gets whether game pointer and keyboard interaction is enabled. |
+| [`System.Collections.Generic.IReadOnlyCollection<Inno.Core.Input.KeyCode> Inno.Rendering.Runtime.RenderOutputInput.keysPressed`](../../src/services/rendering/Inno.Rendering.Runtime/Models/RenderOutputInput.cs#L103) | Gets keys pressed this frame. |
+| [`System.Collections.Generic.IReadOnlyCollection<Inno.Core.Input.KeyCode> Inno.Rendering.Runtime.RenderOutputInput.keysReleased`](../../src/services/rendering/Inno.Rendering.Runtime/Models/RenderOutputInput.cs#L107) | Gets keys released this frame. |
+| [`Inno.Core.Input.KeyModifier Inno.Rendering.Runtime.RenderOutputInput.modifiers`](../../src/services/rendering/Inno.Rendering.Runtime/Models/RenderOutputInput.cs#L99) | Gets active keyboard modifiers. |
+| [`bool Inno.Rendering.Runtime.RenderOutputInput.pointerInside`](../../src/services/rendering/Inno.Rendering.Runtime/Models/RenderOutputInput.cs#L91) | Gets whether the pointer is inside this output. |
+| [`Inno.Core.Mathematics.Vector2 Inno.Rendering.Runtime.RenderOutputInput.pointerPosition`](../../src/services/rendering/Inno.Rendering.Runtime/Models/RenderOutputInput.cs#L87) | Gets viewport-local pointer coordinates. |
+| [`Inno.Core.Mathematics.Vector2 Inno.Rendering.Runtime.RenderOutputInput.scrollDelta`](../../src/services/rendering/Inno.Rendering.Runtime/Models/RenderOutputInput.cs#L95) | Gets wheel movement. |
+| [`static Inno.Rendering.Runtime.RenderOutputInput Inno.Rendering.Runtime.RenderOutputInput.suspended`](../../src/services/rendering/Inno.Rendering.Runtime/Models/RenderOutputInput.cs#L81) | Gets a snapshot that clears gameplay interaction while retaining the rendered output. |
+| [`System.Collections.Generic.IReadOnlyList<string> Inno.Rendering.Runtime.RenderOutputInput.textInput`](../../src/services/rendering/Inno.Rendering.Runtime/Models/RenderOutputInput.cs#L119) | Gets ordered text commits. |
+| [`Inno.Rendering.Runtime.RenderOutputInput`](../../src/services/rendering/Inno.Rendering.Runtime/Models/RenderOutputInput.cs#L12) | Frame-local input located in the output viewport's physical pixels. |
+
+### `Inno.Rendering.Runtime.RenderOutputLayer`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Rendering.Runtime.RenderOutputLayer.RenderOutputLayer(string modelId, System.Collections.Generic.IEnumerable<string> sourceIds)`](../../src/services/rendering/Inno.Rendering.Runtime/Models/RenderOutputLayer.cs#L26) | Creates a model layer with explicit, distinct content-source IDs. |
+| [`string Inno.Rendering.Runtime.RenderOutputLayer.modelId`](../../src/services/rendering/Inno.Rendering.Runtime/Models/RenderOutputLayer.cs#L43) | Gets the exact rendering model ID. |
+| [`System.Collections.Generic.IReadOnlyList<string> Inno.Rendering.Runtime.RenderOutputLayer.sourceIds`](../../src/services/rendering/Inno.Rendering.Runtime/Models/RenderOutputLayer.cs#L47) | Gets the assigned world-content source IDs. |
+| [`Inno.Rendering.Runtime.RenderOutputLayer`](../../src/services/rendering/Inno.Rendering.Runtime/Models/RenderOutputLayer.cs#L14) | Assigns exactly one rendering model and its world-content sources to an output layer. |
+
+### `Inno.Rendering.Runtime.RenderOutputRoute`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Rendering.Runtime.RenderOutputRoute.RenderOutputRoute(System.Collections.Generic.IEnumerable<Inno.Rendering.Runtime.RenderOutputLayer> layers)`](../../src/services/rendering/Inno.Rendering.Runtime/Models/RenderOutputRoute.cs#L23) | Creates a route from explicitly assigned model layers in draw order. |
+| [`System.Collections.Generic.IReadOnlyList<Inno.Rendering.Runtime.RenderOutputLayer> Inno.Rendering.Runtime.RenderOutputRoute.layers`](../../src/services/rendering/Inno.Rendering.Runtime/Models/RenderOutputRoute.cs#L39) | Gets exact model and source assignments in draw order. |
+| [`Inno.Rendering.Runtime.RenderOutputRoute`](../../src/services/rendering/Inno.Rendering.Runtime/Models/RenderOutputRoute.cs#L14) | States the exact model order and exclusive world-content assignment for one output. |
+
+### `Inno.Rendering.Runtime.RenderOutputSession`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Rendering.Runtime.RenderOutputSession.RenderOutputSession(string id, Inno.References.ContentReadScope content, Inno.Rendering.RenderViewport viewport, ulong frameIndex, float deltaTime, Inno.Rendering.Runtime.IViewContentCollector viewContent, Inno.Rendering.Runtime.RenderOutputInput? input = null, Inno.Rendering.Runtime.RenderOutputRoute? route = null)`](../../src/services/rendering/Inno.Rendering.Runtime/Models/RenderOutputSession.cs#L44) | Creates a frame-scoped output session. |
+| [`Inno.Rendering.Runtime.RenderOutputSession Inno.Rendering.Runtime.RenderOutputSession.ForLayer(Inno.Rendering.Runtime.RenderOutputLayer layer)`](../../src/services/rendering/Inno.Rendering.Runtime/Models/RenderOutputSession.cs#L107) | Creates the session seen by one explicitly assigned model layer. |
+| [`Inno.References.ContentReadScope Inno.Rendering.Runtime.RenderOutputSession.content`](../../src/services/rendering/Inno.Rendering.Runtime/Models/RenderOutputSession.cs#L72) | Gets selected content roots. |
+| [`float Inno.Rendering.Runtime.RenderOutputSession.deltaTime`](../../src/services/rendering/Inno.Rendering.Runtime/Models/RenderOutputSession.cs#L84) | Gets elapsed frame time. |
+| [`ulong Inno.Rendering.Runtime.RenderOutputSession.frameIndex`](../../src/services/rendering/Inno.Rendering.Runtime/Models/RenderOutputSession.cs#L80) | Gets the shared output frame index. |
+| [`string Inno.Rendering.Runtime.RenderOutputSession.id`](../../src/services/rendering/Inno.Rendering.Runtime/Models/RenderOutputSession.cs#L68) | Gets the stable host output identity. |
+| [`Inno.Rendering.Runtime.RenderOutputInput Inno.Rendering.Runtime.RenderOutputSession.input`](../../src/services/rendering/Inno.Rendering.Runtime/Models/RenderOutputSession.cs#L92) | Gets viewport-local input. |
+| [`Inno.Rendering.Runtime.RenderOutputRoute? Inno.Rendering.Runtime.RenderOutputSession.route`](../../src/services/rendering/Inno.Rendering.Runtime/Models/RenderOutputSession.cs#L96) | Gets the explicit model route, if configured. |
+| [`Inno.Rendering.Runtime.IViewContentCollector Inno.Rendering.Runtime.RenderOutputSession.viewContent`](../../src/services/rendering/Inno.Rendering.Runtime/Models/RenderOutputSession.cs#L88) | Gets the world content collector. |
+| [`Inno.Rendering.RenderViewport Inno.Rendering.Runtime.RenderOutputSession.viewport`](../../src/services/rendering/Inno.Rendering.Runtime/Models/RenderOutputSession.cs#L76) | Gets the output pixel viewport. |
+| [`Inno.Rendering.Runtime.RenderOutputSession`](../../src/services/rendering/Inno.Rendering.Runtime/Models/RenderOutputSession.cs#L14) | Declares a host output without naming a camera or scene model. |
+
+### `Inno.Rendering.Runtime.RenderPersistentResourceId`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Rendering.Runtime.RenderPersistentResourceId.RenderPersistentResourceId(string value)`](../../src/services/rendering/Inno.Rendering.Runtime/Resources/RenderPersistentResourceId.cs#L24) | Creates a globally stable persistent resource identifier. |
+| [`override string Inno.Rendering.Runtime.RenderPersistentResourceId.ToString()`](../../src/services/rendering/Inno.Rendering.Runtime/Resources/RenderPersistentResourceId.cs#L46) | Formats this value as a human-readable representation. |
+| [`bool Inno.Rendering.Runtime.RenderPersistentResourceId.isValid`](../../src/services/rendering/Inno.Rendering.Runtime/Resources/RenderPersistentResourceId.cs#L38) | Gets whether the identifier contains a usable value. |
+| [`string Inno.Rendering.Runtime.RenderPersistentResourceId.value`](../../src/services/rendering/Inno.Rendering.Runtime/Resources/RenderPersistentResourceId.cs#L33) | Gets the provider-qualified stable identifier. |
+| [`Inno.Rendering.Runtime.RenderPersistentResourceId`](../../src/services/rendering/Inno.Rendering.Runtime/Resources/RenderPersistentResourceId.cs#L15) | Identifies one provider-owned persistent GPU resource without exposing a native handle. |
+
+### `Inno.Rendering.Runtime.RenderPipeline`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`abstract void Inno.Rendering.Runtime.RenderPipeline.Build(Inno.Rendering.Runtime.RenderPipelineContext context)`](../../src/services/rendering/Inno.Rendering.Runtime/Pipelines/RenderPipeline.cs#L42) | Builds all passes for one request. |
+| [`void Inno.Rendering.Runtime.RenderPipeline.Configure(Inno.Rendering.Assets.SerializedRenderExtensionState state, Inno.Rendering.Runtime.RenderExtensionStateContext settings)`](../../src/services/rendering/Inno.Rendering.Runtime/Pipelines/RenderPipeline.cs#L28) | Applies reload-safe pipeline settings to this generation. |
+| [`void Inno.Rendering.Runtime.RenderPipeline.Dispose()`](../../src/services/rendering/Inno.Rendering.Runtime/Pipelines/RenderPipeline.cs#L50) | Releases generation-scoped pipeline state. |
+| [`virtual void Inno.Rendering.Runtime.RenderPipeline.Dispose(bool disposing)`](../../src/services/rendering/Inno.Rendering.Runtime/Pipelines/RenderPipeline.cs#L94) | Releases managed generation-scoped state. |
+| [`virtual void Inno.Rendering.Runtime.RenderPipeline.OnConfigure(Inno.Rendering.Assets.SerializedRenderExtensionState state, Inno.Rendering.Runtime.RenderExtensionStateContext settings)`](../../src/services/rendering/Inno.Rendering.Runtime/Pipelines/RenderPipeline.cs#L80) | Reads pipeline-owned settings from neutral state. |
+| [`Inno.Rendering.Runtime.RenderPipeline`](../../src/services/rendering/Inno.Rendering.Runtime/Pipelines/RenderPipeline.cs#L14) | Builds frame-local passes without prescribing a rendering model. |
+
+### `Inno.Rendering.Runtime.RenderPipelineContext`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Rendering.Runtime.RenderPipelineContext.RenderPipelineContext(Inno.Rendering.Runtime.RenderRequest request, Inno.Rendering.Assets.RenderPipelineAsset pipelineAsset, Inno.Rendering.RenderGraphBuilder graph, Inno.Rendering.GraphicsCapabilities capabilities, Inno.Rendering.Runtime.RenderResourceMap resources, Inno.Core.Diagnostics.IDiagnosticReporter diagnostics, Inno.Rendering.Runtime.IRenderResourceService resourceService, Inno.Rendering.IRenderFrameUploadService uploads, ulong frameIndex, bool preservePresentationTarget, Inno.Rendering.RenderTextureHandle outputTexture = default(Inno.Rendering.RenderTextureHandle))`](../../src/services/rendering/Inno.Rendering.Runtime/Pipelines/RenderPipelineContext.cs#L53) | Creates a pipeline build context. |
+| [`Inno.Rendering.GraphicsCapabilities Inno.Rendering.Runtime.RenderPipelineContext.capabilities`](../../src/services/rendering/Inno.Rendering.Runtime/Pipelines/RenderPipelineContext.cs#L105) | Gets current device capabilities. |
+| [`Inno.Core.Diagnostics.IDiagnosticReporter Inno.Rendering.Runtime.RenderPipelineContext.diagnostics`](../../src/services/rendering/Inno.Rendering.Runtime/Pipelines/RenderPipelineContext.cs#L115) | Gets the structured diagnostic sink. |
+| [`ulong Inno.Rendering.Runtime.RenderPipelineContext.frameIndex`](../../src/services/rendering/Inno.Rendering.Runtime/Pipelines/RenderPipelineContext.cs#L130) | Gets the monotonic render frame index. |
+| [`Inno.Rendering.RenderGraphBuilder Inno.Rendering.Runtime.RenderPipelineContext.graph`](../../src/services/rendering/Inno.Rendering.Runtime/Pipelines/RenderPipelineContext.cs#L100) | Gets the current frame graph builder. |
+| [`Inno.Rendering.RenderTextureHandle Inno.Rendering.Runtime.RenderPipelineContext.outputTexture`](../../src/services/rendering/Inno.Rendering.Runtime/Pipelines/RenderPipelineContext.cs#L143) | Gets the imported offscreen target, or an invalid handle for the backbuffer. |
+| [`Inno.Rendering.Assets.RenderPipelineAsset Inno.Rendering.Runtime.RenderPipelineContext.pipelineAsset`](../../src/services/rendering/Inno.Rendering.Runtime/Pipelines/RenderPipelineContext.cs#L95) | Gets selected pipeline configuration. |
+| [`bool Inno.Rendering.Runtime.RenderPipelineContext.preservePresentationTarget`](../../src/services/rendering/Inno.Rendering.Runtime/Pipelines/RenderPipelineContext.cs#L138) | Gets whether this model contribution must load and preserve an earlier contribution to the same target. |
+| [`Inno.Rendering.Runtime.RenderRequest Inno.Rendering.Runtime.RenderPipelineContext.request`](../../src/services/rendering/Inno.Rendering.Runtime/Pipelines/RenderPipelineContext.cs#L90) | Gets the current request. |
+| [`Inno.Rendering.Runtime.IRenderResourceService Inno.Rendering.Runtime.RenderPipelineContext.resourceService`](../../src/services/rendering/Inno.Rendering.Runtime/Pipelines/RenderPipelineContext.cs#L120) | Gets the generation-aware neutral GPU resource service. |
+| [`Inno.Rendering.Runtime.RenderResourceMap Inno.Rendering.Runtime.RenderPipelineContext.resources`](../../src/services/rendering/Inno.Rendering.Runtime/Pipelines/RenderPipelineContext.cs#L110) | Gets open semantic resources for this request. |
+| [`Inno.Rendering.IRenderFrameUploadService Inno.Rendering.Runtime.RenderPipelineContext.uploads`](../../src/services/rendering/Inno.Rendering.Runtime/Pipelines/RenderPipelineContext.cs#L125) | Gets the frame-scoped streaming buffer service. |
+| [`Inno.Rendering.Runtime.RenderPipelineContext`](../../src/services/rendering/Inno.Rendering.Runtime/Pipelines/RenderPipelineContext.cs#L14) | Supplies one request and frame-scoped services to a render pipeline. |
+
+### `Inno.Rendering.Runtime.RenderPipelineExtensionAttribute`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Rendering.Runtime.RenderPipelineExtensionAttribute.RenderPipelineExtensionAttribute(string id)`](../../src/services/rendering/Inno.Rendering.Runtime/Pipelines/RenderPipelineExtensionAttribute.cs#L24) | Creates a pipeline extension declaration. |
+| [`string Inno.Rendering.Runtime.RenderPipelineExtensionAttribute.id`](../../src/services/rendering/Inno.Rendering.Runtime/Pipelines/RenderPipelineExtensionAttribute.cs#L33) | Gets the globally stable pipeline extension identifier. |
+| [`Inno.Rendering.Runtime.RenderPipelineExtensionAttribute`](../../src/services/rendering/Inno.Rendering.Runtime/Pipelines/RenderPipelineExtensionAttribute.cs#L14) | Marks a reloadable render pipeline implementation with a stable extension identifier. |
+
+### `Inno.Rendering.Runtime.RenderPipelineFeature`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`abstract void Inno.Rendering.Runtime.RenderPipelineFeature.AddRenderPasses(Inno.Rendering.Runtime.RenderFeatureContext context)`](../../src/services/rendering/Inno.Rendering.Runtime/Pipelines/RenderPipelineFeature.cs#L40) | Adds frame-scoped passes and dependencies. |
+| [`void Inno.Rendering.Runtime.RenderPipelineFeature.Configure(Inno.Rendering.Assets.RenderFeatureConfiguration configuration, Inno.Rendering.Runtime.RenderExtensionStateContext settings)`](../../src/services/rendering/Inno.Rendering.Runtime/Pipelines/RenderPipelineFeature.cs#L26) | Applies reload-safe settings to this feature generation. |
+| [`virtual void Inno.Rendering.Runtime.RenderPipelineFeature.OnConfigure(Inno.Rendering.Assets.SerializedRenderExtensionState state, Inno.Rendering.Runtime.RenderExtensionStateContext settings)`](../../src/services/rendering/Inno.Rendering.Runtime/Pipelines/RenderPipelineFeature.cs#L51) | Reads feature-owned settings from neutral state. |
+| [`Inno.Rendering.Runtime.RenderPipelineFeature`](../../src/services/rendering/Inno.Rendering.Runtime/Pipelines/RenderPipelineFeature.cs#L14) | Adds capability-aware passes without owning frame graph state. |
+
+### `Inno.Rendering.Runtime.RenderRequest`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Rendering.Runtime.RenderRequest.RenderRequest(string name, Inno.Rendering.RenderTarget target, Inno.Rendering.RenderViewport viewport, Inno.Rendering.Assets.RenderPipelineAsset? pipeline = null, Inno.Rendering.Runtime.RenderFrameData? data = null, int priority = 0)`](../../src/services/rendering/Inno.Rendering.Runtime/Requests/RenderRequest.cs#L35) | Creates an immutable render request. |
+| [`Inno.Rendering.Runtime.RenderFrameData Inno.Rendering.Runtime.RenderRequest.data`](../../src/services/rendering/Inno.Rendering.Runtime/Requests/RenderRequest.cs#L75) | Gets immutable pipeline-defined frame data. |
+| [`string Inno.Rendering.Runtime.RenderRequest.name`](../../src/services/rendering/Inno.Rendering.Runtime/Requests/RenderRequest.cs#L55) | Gets the frame-local diagnostic name. |
+| [`Inno.Rendering.Assets.RenderPipelineAsset? Inno.Rendering.Runtime.RenderRequest.pipeline`](../../src/services/rendering/Inno.Rendering.Runtime/Requests/RenderRequest.cs#L70) | Gets the per-request pipeline asset, or null to use the project default. |
+| [`int Inno.Rendering.Runtime.RenderRequest.priority`](../../src/services/rendering/Inno.Rendering.Runtime/Requests/RenderRequest.cs#L80) | Gets the ascending frame scheduling priority. |
+| [`Inno.Rendering.RenderTarget Inno.Rendering.Runtime.RenderRequest.target`](../../src/services/rendering/Inno.Rendering.Runtime/Requests/RenderRequest.cs#L60) | Gets the render destination. |
+| [`Inno.Rendering.RenderViewport Inno.Rendering.Runtime.RenderRequest.viewport`](../../src/services/rendering/Inno.Rendering.Runtime/Requests/RenderRequest.cs#L65) | Gets the destination pixel viewport. |
+| [`Inno.Rendering.Runtime.RenderRequest`](../../src/services/rendering/Inno.Rendering.Runtime/Requests/RenderRequest.cs#L11) | Requests one pipeline-defined rendering operation without prescribing world semantics. |
+
+### `Inno.Rendering.Runtime.RenderRequestProvider`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`void Inno.Rendering.Runtime.RenderRequestProvider.Dispose()`](../../src/services/rendering/Inno.Rendering.Runtime/Requests/RenderRequestProvider.cs#L180) | Releases generation-scoped provider state. |
+| [`virtual void Inno.Rendering.Runtime.RenderRequestProvider.Dispose(bool disposing)`](../../src/services/rendering/Inno.Rendering.Runtime/Requests/RenderRequestProvider.cs#L210) | Releases managed generation-scoped state. |
+| [`abstract void Inno.Rendering.Runtime.RenderRequestProvider.Submit(Inno.Rendering.Runtime.RenderRequestProviderContext context)`](../../src/services/rendering/Inno.Rendering.Runtime/Requests/RenderRequestProvider.cs#L172) | Submits zero or more requests for the current frame. |
+| [`Inno.Rendering.Runtime.RenderRequestProvider`](../../src/services/rendering/Inno.Rendering.Runtime/Requests/RenderRequestProvider.cs#L161) | Produces arbitrary render requests without prescribing a scene or rendering model. |
+
+### `Inno.Rendering.Runtime.RenderRequestProviderContext`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Rendering.Runtime.RenderRequestProviderContext.RenderRequestProviderContext(Inno.Rendering.Runtime.IRenderRequestSink requests, Inno.References.ContentReadScope content, Inno.Rendering.GraphicsCapabilities capabilities, Inno.Rendering.RenderPresentationSize? primaryPresentationSize, Inno.Rendering.RenderViewport? primaryPresentationViewport, ulong frameIndex, float deltaTime, Inno.Rendering.Runtime.IViewContentCollector viewContent, Inno.Rendering.Runtime.RenderOutputInput? input = null)`](../../src/services/rendering/Inno.Rendering.Runtime/Requests/RenderRequestProvider.cs#L80) | Creates a frame-scoped provider context. |
+| [`Inno.Rendering.GraphicsCapabilities Inno.Rendering.Runtime.RenderRequestProviderContext.capabilities`](../../src/services/rendering/Inno.Rendering.Runtime/Requests/RenderRequestProvider.cs#L126) | Gets the active backend-neutral capability snapshot. |
+| [`Inno.References.ContentReadScope Inno.Rendering.Runtime.RenderRequestProviderContext.content`](../../src/services/rendering/Inno.Rendering.Runtime/Requests/RenderRequestProvider.cs#L121) | Gets the explicit ordered host content visible to request providers this frame. |
+| [`float Inno.Rendering.Runtime.RenderRequestProviderContext.deltaTime`](../../src/services/rendering/Inno.Rendering.Runtime/Requests/RenderRequestProvider.cs#L146) | Gets the elapsed frame time in seconds. |
+| [`ulong Inno.Rendering.Runtime.RenderRequestProviderContext.frameIndex`](../../src/services/rendering/Inno.Rendering.Runtime/Requests/RenderRequestProvider.cs#L141) | Gets the monotonic render frame index. |
+| [`Inno.Rendering.Runtime.RenderOutputInput Inno.Rendering.Runtime.RenderRequestProviderContext.input`](../../src/services/rendering/Inno.Rendering.Runtime/Requests/RenderRequestProvider.cs#L155) | Gets viewport-local input for the primary output. |
+| [`Inno.Rendering.RenderPresentationSize? Inno.Rendering.Runtime.RenderRequestProviderContext.primaryPresentationSize`](../../src/services/rendering/Inno.Rendering.Runtime/Requests/RenderRequestProvider.cs#L131) | Gets the current primary pixel extent, or null while only offscreen outputs are available. |
+| [`Inno.Rendering.RenderViewport? Inno.Rendering.Runtime.RenderRequestProviderContext.primaryPresentationViewport`](../../src/services/rendering/Inno.Rendering.Runtime/Requests/RenderRequestProvider.cs#L136) | Gets the host-selected primary region, or null while no primary output is available. |
+| [`Inno.Rendering.Runtime.IRenderRequestSink Inno.Rendering.Runtime.RenderRequestProviderContext.requests`](../../src/services/rendering/Inno.Rendering.Runtime/Requests/RenderRequestProvider.cs#L116) | Gets the sink accepting requests for the current frame. |
+| [`Inno.Rendering.Runtime.IViewContentCollector Inno.Rendering.Runtime.RenderRequestProviderContext.viewContent`](../../src/services/rendering/Inno.Rendering.Runtime/Requests/RenderRequestProvider.cs#L151) | Gets the active generation's world-content collector. |
+| [`Inno.Rendering.Runtime.RenderRequestProviderContext`](../../src/services/rendering/Inno.Rendering.Runtime/Requests/RenderRequestProvider.cs#L47) | Supplies frame timing, capabilities and the request sink to one provider invocation. |
+
+### `Inno.Rendering.Runtime.RenderRequestProviderExtensionAttribute`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Rendering.Runtime.RenderRequestProviderExtensionAttribute.RenderRequestProviderExtensionAttribute(string id, int priority = 0)`](../../src/services/rendering/Inno.Rendering.Runtime/Requests/RenderRequestProvider.cs#L24) | Creates a render request provider declaration. |
+| [`string Inno.Rendering.Runtime.RenderRequestProviderExtensionAttribute.id`](../../src/services/rendering/Inno.Rendering.Runtime/Requests/RenderRequestProvider.cs#L36) | Gets the globally stable provider identifier. |
+| [`int Inno.Rendering.Runtime.RenderRequestProviderExtensionAttribute.priority`](../../src/services/rendering/Inno.Rendering.Runtime/Requests/RenderRequestProvider.cs#L41) | Gets the provider invocation priority. |
+| [`Inno.Rendering.Runtime.RenderRequestProviderExtensionAttribute`](../../src/services/rendering/Inno.Rendering.Runtime/Requests/RenderRequestProvider.cs#L11) | Marks a reloadable provider that produces model-neutral render requests each frame. |
+
+### `Inno.Rendering.Runtime.RenderResourceLimits`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`int Inno.Rendering.Runtime.RenderResourceLimits.pendingReadbacks`](../../src/services/rendering/Inno.Rendering.Runtime/RenderResourceLimits.cs#L18) | Gets the maximum readbacks that can retain GPU resources before owner-thread completion. |
+| [`int Inno.Rendering.Runtime.RenderResourceLimits.resourcesPerKind`](../../src/services/rendering/Inno.Rendering.Runtime/RenderResourceLimits.cs#L13) | Gets the maximum active entries in each buffer, texture or pipeline cache. |
+| [`int Inno.Rendering.Runtime.RenderResourceLimits.targets`](../../src/services/rendering/Inno.Rendering.Runtime/RenderResourceLimits.cs#L35) | Gets the offscreen target count and per-frame target allocation capacity. |
+| [`long Inno.Rendering.Runtime.RenderResourceLimits.uploadBytesPerFrame`](../../src/services/rendering/Inno.Rendering.Runtime/RenderResourceLimits.cs#L31) | Gets the maximum bytes uploaded during one frame. |
+| [`int Inno.Rendering.Runtime.RenderResourceLimits.uploadPages`](../../src/services/rendering/Inno.Rendering.Runtime/RenderResourceLimits.cs#L23) | Gets the maximum resident frame-upload pages. |
+| [`long Inno.Rendering.Runtime.RenderResourceLimits.uploadResidentBytes`](../../src/services/rendering/Inno.Rendering.Runtime/RenderResourceLimits.cs#L27) | Gets the maximum resident frame-upload bytes, including retired pages. |
+| [`Inno.Rendering.Runtime.RenderResourceLimits`](../../src/services/rendering/Inno.Rendering.Runtime/RenderResourceLimits.cs#L8) | Sets finite native resource and asynchronous readback admission limits for one rendering owner. |
+
+### `Inno.Rendering.Runtime.RenderResourceMap`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`void Inno.Rendering.Runtime.RenderResourceMap.PublishBuffer(Inno.Rendering.RenderResourceId id, Inno.Rendering.RenderBufferHandle buffer)`](../../src/services/rendering/Inno.Rendering.Runtime/Pipelines/RenderResourceMap.cs#L49) | Publishes a buffer under a pipeline-defined semantic identifier. |
+| [`void Inno.Rendering.Runtime.RenderResourceMap.PublishTexture(Inno.Rendering.RenderResourceId id, Inno.Rendering.RenderTextureHandle texture)`](../../src/services/rendering/Inno.Rendering.Runtime/Pipelines/RenderResourceMap.cs#L29) | Publishes a texture under a pipeline-defined semantic identifier. |
+| [`bool Inno.Rendering.Runtime.RenderResourceMap.TryGetBuffer(Inno.Rendering.RenderResourceId id, out Inno.Rendering.RenderBufferHandle buffer)`](../../src/services/rendering/Inno.Rendering.Runtime/Pipelines/RenderResourceMap.cs#L89) | Tries to get a published buffer. |
+| [`bool Inno.Rendering.Runtime.RenderResourceMap.TryGetTexture(Inno.Rendering.RenderResourceId id, out Inno.Rendering.RenderTextureHandle texture)`](../../src/services/rendering/Inno.Rendering.Runtime/Pipelines/RenderResourceMap.cs#L72) | Tries to get a published texture. |
+| [`Inno.Rendering.Runtime.RenderResourceMap`](../../src/services/rendering/Inno.Rendering.Runtime/Pipelines/RenderResourceMap.cs#L14) | Stores open semantic graph resources for one pipeline request. |
+
+### `Inno.Rendering.Runtime.RenderResourceProvider`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`static Inno.Rendering.Runtime.RenderGeometry Inno.Rendering.Runtime.RenderResourceProvider.CreateGeometry(Inno.Rendering.PersistentBufferHandle vertexBuffer, Inno.Rendering.PersistentBufferHandle indexBuffer, Inno.Rendering.RenderVertexLayout vertexLayout, int vertexCount, int indexCount, System.Collections.Generic.IReadOnlyList<Inno.Rendering.Runtime.RenderGeometrySection> sections)`](../../src/services/rendering/Inno.Rendering.Runtime/Resources/RenderResourceProvider.cs#L163) | Creates generation-scoped resolved geometry from persistent buffers and immutable sections. |
+| [`static Inno.Rendering.Runtime.RenderMaterialPass Inno.Rendering.Runtime.RenderResourceProvider.CreateMaterialPass(Inno.Rendering.Assets.ShaderPassDefinition definition, Inno.Rendering.GraphicsPipelineHandle graphicsPipeline, Inno.Rendering.ComputePipelineHandle computePipeline, System.Collections.Generic.IReadOnlyList<Inno.Rendering.Assets.ShaderPropertyDefinition> declaredBindings, Inno.Rendering.ShaderInterface activeInterface, System.Collections.Generic.IReadOnlyList<Inno.Rendering.Runtime.RenderResourceProvider.MaterialBinding> bindings)`](../../src/services/rendering/Inno.Rendering.Runtime/Resources/RenderResourceProvider.cs#L123) | Creates a generation-scoped resolved material pass. |
+| [`static Inno.Rendering.Runtime.RenderMaterialPass Inno.Rendering.Runtime.RenderResourceProvider.CreateMaterialPass(Inno.Rendering.Assets.ShaderPassDefinition definition, Inno.Rendering.GraphicsPipelineHandle graphicsPipeline, Inno.Rendering.ComputePipelineHandle computePipeline, System.Collections.Generic.IReadOnlyList<Inno.Rendering.Runtime.RenderResourceProvider.MaterialBinding> bindings)`](../../src/services/rendering/Inno.Rendering.Runtime/Resources/RenderResourceProvider.cs#L91) | Creates a generation-scoped resolved material pass when no compiled-interface query is required. |
+| [`static Inno.Rendering.Runtime.RenderResourceProvider.MaterialBinding Inno.Rendering.Runtime.RenderResourceProvider.CreateTextureBinding(Inno.Rendering.RenderBindingId id, Inno.Rendering.PersistentTextureHandle texture, Inno.Rendering.RenderSamplerState sampler)`](../../src/services/rendering/Inno.Rendering.Runtime/Resources/RenderResourceProvider.cs#L65) | Creates a protected sampled-texture binding value. |
+| [`static Inno.Rendering.Runtime.RenderResourceProvider.MaterialBinding Inno.Rendering.Runtime.RenderResourceProvider.CreateUniformBinding(Inno.Rendering.RenderBindingId id, System.ReadOnlySpan<byte> data)`](../../src/services/rendering/Inno.Rendering.Runtime/Resources/RenderResourceProvider.cs#L44) | Creates a protected uniform binding value. |
+| [`Inno.Rendering.Runtime.RenderResourceProvider`](../../src/services/rendering/Inno.Rendering.Runtime/Resources/RenderResourceProvider.cs#L16) | Provides protected construction operations for replaceable render resource-service implementations. |
+
+### `Inno.Rendering.Runtime.RenderResourceProvider.MaterialBinding`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Rendering.Runtime.RenderResourceProvider.MaterialBinding`](../../src/services/rendering/Inno.Rendering.Runtime/Resources/RenderResourceProvider.cs#L22) | Represents one material binding staged by a derived resource service. |
+
+### `Inno.Rendering.Runtime.RenderResourceStatistics`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`int Inno.Rendering.Runtime.RenderResourceStatistics.activeResources`](../../src/services/rendering/Inno.Rendering.Runtime/RenderResourceStatistics.cs#L11) | Gets active persistent buffers, textures, pipelines, material programs and geometry pairs. |
+| [`int Inno.Rendering.Runtime.RenderResourceStatistics.peakReadbacks`](../../src/services/rendering/Inno.Rendering.Runtime/RenderResourceStatistics.cs#L27) | Gets the largest simultaneous readback occupancy. |
+| [`int Inno.Rendering.Runtime.RenderResourceStatistics.pendingReadbacks`](../../src/services/rendering/Inno.Rendering.Runtime/RenderResourceStatistics.cs#L23) | Gets readbacks that still own native operations. |
+| [`long Inno.Rendering.Runtime.RenderResourceStatistics.rejectedReadbacks`](../../src/services/rendering/Inno.Rendering.Runtime/RenderResourceStatistics.cs#L31) | Gets readbacks rejected before native allocation. |
+| [`long Inno.Rendering.Runtime.RenderResourceStatistics.rejectedResources`](../../src/services/rendering/Inno.Rendering.Runtime/RenderResourceStatistics.cs#L19) | Gets cache admissions rejected by per-kind capacity. |
+| [`long Inno.Rendering.Runtime.RenderResourceStatistics.rejectedTargets`](../../src/services/rendering/Inno.Rendering.Runtime/RenderResourceStatistics.cs#L59) | Gets offscreen target requests rejected by finite capacity. |
+| [`long Inno.Rendering.Runtime.RenderResourceStatistics.rejectedUploads`](../../src/services/rendering/Inno.Rendering.Runtime/RenderResourceStatistics.cs#L51) | Gets upload requests rejected by resident or per-frame limits. |
+| [`int Inno.Rendering.Runtime.RenderResourceStatistics.retiringResources`](../../src/services/rendering/Inno.Rendering.Runtime/RenderResourceStatistics.cs#L15) | Gets resource entries whose native retirement is still pending. |
+| [`int Inno.Rendering.Runtime.RenderResourceStatistics.targets`](../../src/services/rendering/Inno.Rendering.Runtime/RenderResourceStatistics.cs#L55) | Gets active offscreen targets. |
+| [`int Inno.Rendering.Runtime.RenderResourceStatistics.uploadPages`](../../src/services/rendering/Inno.Rendering.Runtime/RenderResourceStatistics.cs#L35) | Gets retained upload pages, including pages awaiting retirement. |
+| [`long Inno.Rendering.Runtime.RenderResourceStatistics.uploadPeakBytes`](../../src/services/rendering/Inno.Rendering.Runtime/RenderResourceStatistics.cs#L43) | Gets the high-water mark of resident upload bytes. |
+| [`long Inno.Rendering.Runtime.RenderResourceStatistics.uploadResidentBytes`](../../src/services/rendering/Inno.Rendering.Runtime/RenderResourceStatistics.cs#L39) | Gets resident upload bytes, including pages awaiting retirement. |
+| [`long Inno.Rendering.Runtime.RenderResourceStatistics.uploadedFrameBytes`](../../src/services/rendering/Inno.Rendering.Runtime/RenderResourceStatistics.cs#L47) | Gets successfully uploaded bytes during the current frame. |
+| [`Inno.Rendering.Runtime.RenderResourceStatistics`](../../src/services/rendering/Inno.Rendering.Runtime/RenderResourceStatistics.cs#L6) | Reports control-thread resource occupancy and admission pressure without exposing backend objects. |
+
+### `Inno.Rendering.Runtime.RenderRuntime`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Rendering.Runtime.RenderRuntime.RenderRuntime(Inno.Extensibility.Types.TypeCatalog types, Inno.Rendering.IRenderDevice device, Inno.Core.Diagnostics.IDiagnosticReporter diagnostics, System.Collections.Generic.IEnumerable<Inno.Rendering.IRenderFrameGraphContributor>? contributors = null, Inno.Rendering.Runtime.IRenderTargetArtifactProvider? targetArtifacts = null, System.Func<Inno.References.ContentReadScope>? contentScopeProvider = null, System.Func<Inno.Rendering.RenderPresentationSize, Inno.Rendering.RenderViewport>? primaryPresentationViewportProvider = null, Inno.Rendering.Runtime.RenderResourceLimits? resourceLimits = null, System.Func<Inno.Input.InputSnapshot>? inputSnapshotProvider = null, System.Func<Inno.Rendering.RenderPresentationSize?>? primaryInputSurfaceSizeProvider = null, Inno.Rendering.IRenderLayerCompositionProgramProvider? compositionProgramProvider = null)`](../../src/services/rendering/Inno.Rendering.Runtime/RenderRuntime.cs#L109) | Creates a render runtime without installing any concrete pipeline. |
+| [`Inno.Rendering.Runtime.IRenderRuntimeReloadTransaction Inno.Rendering.Runtime.RenderRuntime.BeginExtensionReload()`](../../src/services/rendering/Inno.Rendering.Runtime/RenderRuntime.Pipelines.cs#L55) | Begins an isolated rendering-extension reload transaction at a frame boundary. |
+| [`System.Collections.Generic.IReadOnlyList<Inno.Rendering.Runtime.ViewContentItem> Inno.Rendering.Runtime.RenderRuntime.Collect(Inno.Rendering.Runtime.ViewContentContext context)`](../../src/services/rendering/Inno.Rendering.Runtime/RenderRuntime.cs#L182) | Collects frame requests from rendering models and registered providers. |
+| [`System.IDisposable Inno.Rendering.Runtime.RenderRuntime.EnterExecutionScope()`](../../src/services/rendering/Inno.Rendering.Runtime/RenderRuntime.cs#L239) | Binds this rendering runtime to script-facing graphics APIs for the current asynchronous execution flow. |
+| [`override void Inno.Rendering.Runtime.RenderRuntime.OnBeginFrame(Inno.Runtime.Contracts.RuntimeFrame frame)`](../../src/services/rendering/Inno.Rendering.Runtime/RenderRuntime.Frames.cs#L25) | Captures snapshots and binds service façades. |
+| [`override void Inno.Rendering.Runtime.RenderRuntime.OnCompleteOutput(Inno.Runtime.Contracts.RuntimeFrame frame)`](../../src/services/rendering/Inno.Rendering.Runtime/RenderRuntime.Frames.cs#L51) | Submits output and closes output-specific temporary resources. |
+| [`override void Inno.Rendering.Runtime.RenderRuntime.OnPrepareOutput(Inno.Runtime.Contracts.RuntimeFrame frame)`](../../src/services/rendering/Inno.Rendering.Runtime/RenderRuntime.Frames.cs#L37) | Opens resources required for this frame's output. |
+| [`override void Inno.Rendering.Runtime.RenderRuntime.OnProduceOutput(Inno.Runtime.Contracts.RuntimeFrame frame)`](../../src/services/rendering/Inno.Rendering.Runtime/RenderRuntime.Frames.cs#L44) | Collects output commands without executing managed code on a native realtime callback. |
+| [`override void Inno.Rendering.Runtime.RenderRuntime.OnStart()`](../../src/services/rendering/Inno.Rendering.Runtime/RenderRuntime.cs#L248) | Attaches this feature to its owning runtime generation. |
+| [`override void Inno.Rendering.Runtime.RenderRuntime.OnStop()`](../../src/services/rendering/Inno.Rendering.Runtime/RenderRuntime.cs#L265) | Releases every runtime rendering generation, persistent target, upload, and GPU resource owned by this instance. |
+| [`void Inno.Rendering.Runtime.RenderRuntime.RegisterContributor(Inno.Rendering.IRenderFrameGraphContributor contributor)`](../../src/services/rendering/Inno.Rendering.Runtime/RenderRuntime.Contributors.cs#L31) | Registers frame-final work without transferring frame ownership. |
+| [`void Inno.Rendering.Runtime.RenderRuntime.SetPrimaryModelOutputEnabled(bool enabled)`](../../src/services/rendering/Inno.Rendering.Runtime/RenderRuntime.Models.cs#L40) | Enables or disables model rendering to the host's primary backbuffer. Editor hosts disable this because their Game and Scene sessions own offscreen outputs. |
+| [`void Inno.Rendering.Runtime.RenderRuntime.SetPrimaryRoute(Inno.Rendering.Runtime.RenderOutputRoute? route)`](../../src/services/rendering/Inno.Rendering.Runtime/RenderRuntime.Models.cs#L25) | Sets the explicit model composition route for the primary output at a frame boundary. |
+| [`void Inno.Rendering.Runtime.RenderRuntime.Submit(Inno.Rendering.Runtime.RenderRequest request)`](../../src/services/rendering/Inno.Rendering.Runtime/RenderRuntime.Requests.cs#L32) | Submits validated work to the active backend for ordered processing. |
+| [`void Inno.Rendering.Runtime.RenderRuntime.SubmitComposition(string name, Inno.Rendering.RenderTarget target, Inno.Rendering.RenderViewport viewport, Inno.Rendering.RenderTextureFormat format, System.Collections.Generic.IReadOnlyList<Inno.Rendering.Runtime.RenderRequest> layers, int priority = 0)`](../../src/services/rendering/Inno.Rendering.Runtime/RenderRuntime.Requests.cs#L72) | Submits one or more independently rendered model layers for premultiplied-alpha output composition. |
+| [`bool Inno.Rendering.Runtime.RenderRuntime.TryActivateDefaultPipeline(Inno.Rendering.Assets.RenderPipelineAsset pipelineAsset)`](../../src/services/rendering/Inno.Rendering.Runtime/RenderRuntime.Pipelines.cs#L31) | Validates and selects a project default while preserving its last-good generation. |
+| [`bool Inno.Rendering.Runtime.RenderRuntime.UnregisterContributor(Inno.Rendering.IRenderFrameGraphContributor contributor)`](../../src/services/rendering/Inno.Rendering.Runtime/RenderRuntime.Contributors.cs#L53) | Stops invoking a previously registered frame-final contributor. |
+| [`ulong Inno.Rendering.Runtime.RenderRuntime.currentFrameIndex`](../../src/services/rendering/Inno.Rendering.Runtime/RenderRuntime.cs#L171) | Gets the monotonic index of the current or most recently completed output frame. |
+| [`uint Inno.Rendering.Runtime.RenderRuntime.deviceGeneration`](../../src/services/rendering/Inno.Rendering.Runtime/RenderRuntime.cs#L215) | Gets the non-zero rendering-device generation that owns persistent handles. |
+| [`Inno.Rendering.Runtime.RenderResourceStatistics Inno.Rendering.Runtime.RenderRuntime.resourceStatistics`](../../src/services/rendering/Inno.Rendering.Runtime/RenderRuntime.cs#L220) | Gets a detached control-thread snapshot of resource occupancy, high-water marks and rejected admissions. |
+| [`Inno.Rendering.Runtime.IRenderResourceService Inno.Rendering.Runtime.RenderRuntime.resources`](../../src/services/rendering/Inno.Rendering.Runtime/RenderRuntime.cs#L161) | Gets backend-neutral persistent resource resolution for host-owned previews and rendering integrations. |
+| [`Inno.Rendering.Runtime.RenderTargetStore Inno.Rendering.Runtime.RenderRuntime.targets`](../../src/services/rendering/Inno.Rendering.Runtime/RenderRuntime.cs#L156) | Gets persistent offscreen target services for viewport presentation. |
+| [`Inno.Rendering.Runtime.IViewContentCollector Inno.Rendering.Runtime.RenderRuntime.viewContent`](../../src/services/rendering/Inno.Rendering.Runtime/RenderRuntime.cs#L166) | Gets the generation-scoped collector used by rendering models for world content. |
+| [`Inno.Rendering.Runtime.RenderRuntime`](../../src/services/rendering/Inno.Rendering.Runtime/RenderFrameScratch.cs#L7) | Owns the sole graphics frame boundary and executes model-neutral render requests. |
+
+### `Inno.Rendering.Runtime.RenderRuntimeFactory`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Rendering.Runtime.RenderRuntimeFactory.RenderRuntimeFactory(System.Func<Inno.Runtime.Contracts.RuntimeSubsystemContext, Inno.Rendering.Runtime.RenderRuntime> runtimeFactory)`](../../src/services/rendering/Inno.Rendering.Runtime/RenderRuntimeFactory.cs#L21) | Creates a reusable factory around a composition-owned rendering runtime callback. |
+| [`Inno.Runtime.Contracts.IRuntimeSubsystem Inno.Rendering.Runtime.RenderRuntimeFactory.Create(Inno.Runtime.Contracts.RuntimeSubsystemContext context)`](../../src/services/rendering/Inno.Rendering.Runtime/RenderRuntimeFactory.cs#L43) | Creates a rendering feature over a newly allocated runtime layer. |
+| [`Inno.Runtime.Contracts.RuntimeSubsystemDescriptor Inno.Rendering.Runtime.RenderRuntimeFactory.descriptor`](../../src/services/rendering/Inno.Rendering.Runtime/RenderRuntimeFactory.cs#L29) | Gets stable ordering metadata that places rendering after simulation features. |
+| [`Inno.Rendering.Runtime.RenderRuntimeFactory`](../../src/services/rendering/Inno.Rendering.Runtime/RenderRuntimeFactory.cs#L11) | Creates one rendering lifecycle feature for every isolated runtime session. |
+
+### `Inno.Rendering.Runtime.RenderTargetArtifactStatus`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Rendering.Runtime.RenderTargetArtifactStatus.Failed`](../../src/services/rendering/Inno.Rendering.Runtime/Deployment/RenderTargetArtifactStatus.cs#L29) | Artifact production completed unsuccessfully and published a specific diagnostic. |
+| [`Inno.Rendering.Runtime.RenderTargetArtifactStatus.Pending`](../../src/services/rendering/Inno.Rendering.Runtime/Deployment/RenderTargetArtifactStatus.cs#L19) | Artifact production is still running and no usable artifact is available yet. |
+| [`Inno.Rendering.Runtime.RenderTargetArtifactStatus.Ready`](../../src/services/rendering/Inno.Rendering.Runtime/Deployment/RenderTargetArtifactStatus.cs#L14) | A validated artifact is available for immediate use. |
+| [`Inno.Rendering.Runtime.RenderTargetArtifactStatus.Unavailable`](../../src/services/rendering/Inno.Rendering.Runtime/Deployment/RenderTargetArtifactStatus.cs#L24) | The active deployment does not contain the requested artifact. |
+| [`Inno.Rendering.Runtime.RenderTargetArtifactStatus`](../../src/services/rendering/Inno.Rendering.Runtime/Deployment/RenderTargetArtifactStatus.cs#L8) | Describes the current availability of one target-specific rendering artifact. |
+
+### `Inno.Rendering.Runtime.RenderTargetStore`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Rendering.Runtime.RenderTargetStore.RenderTargetStore(Inno.Rendering.IRenderDevice device, int capacity = 1024)`](../../src/services/rendering/Inno.Rendering.Runtime/RenderTargetStore.cs#L34) | Creates a target registry for one device generation. |
+| [`void Inno.Rendering.Runtime.RenderTargetStore.Dispose()`](../../src/services/rendering/Inno.Rendering.Runtime/RenderTargetStore.cs#L203) | Queues all owned resources for device-safe destruction. |
+| [`Inno.Rendering.RenderTextureHandle Inno.Rendering.Runtime.RenderTargetStore.Import(Inno.Rendering.RenderGraphBuilder graph, Inno.Rendering.RenderTexture target)`](../../src/services/rendering/Inno.Rendering.Runtime/RenderTargetStore.cs#L65) | Imports or creates one target in the current frame graph. |
+| [`void Inno.Rendering.Runtime.RenderTargetStore.PrepareFrame()`](../../src/services/rendering/Inno.Rendering.Runtime/RenderTargetStore.cs#L158) | Advances queued target releases at a frame safety point. |
+| [`void Inno.Rendering.Runtime.RenderTargetStore.Release(Inno.Rendering.RenderTexture target)`](../../src/services/rendering/Inno.Rendering.Runtime/RenderTargetStore.cs#L143) | Queues one target for frame-safe retirement. |
+| [`bool Inno.Rendering.Runtime.RenderTargetStore.TryGetTexture(Inno.Rendering.RenderTexture target, out Inno.Rendering.PersistentTextureHandle texture)`](../../src/services/rendering/Inno.Rendering.Runtime/RenderTargetStore.cs#L106) | Tries to get the current opaque device texture for UI presentation. |
+| [`int Inno.Rendering.Runtime.RenderTargetStore.count`](../../src/services/rendering/Inno.Rendering.Runtime/RenderTargetStore.cs#L46) | Gets the number of retained offscreen targets. |
+| [`long Inno.Rendering.Runtime.RenderTargetStore.rejectedCount`](../../src/services/rendering/Inno.Rendering.Runtime/RenderTargetStore.cs#L51) | Gets target admissions rejected by finite capacity. |
+| [`Inno.Rendering.Runtime.RenderTargetStore`](../../src/services/rendering/Inno.Rendering.Runtime/RenderTargetStore.cs#L11) | Owns persistent offscreen targets without exposing backend-native handles. |
+
+### `Inno.Rendering.Runtime.RenderTextureSubresourceData`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Rendering.Runtime.RenderTextureSubresourceData.RenderTextureSubresourceData(int mipLevel, int arrayLayer, System.ReadOnlySpan<byte> data)`](../../src/services/rendering/Inno.Rendering.Runtime/Resources/RenderTextureSubresourceData.cs#L32) | Creates one immutable texture subresource upload. |
+| [`int Inno.Rendering.Runtime.RenderTextureSubresourceData.arrayLayer`](../../src/services/rendering/Inno.Rendering.Runtime/Resources/RenderTextureSubresourceData.cs#L54) | Gets the zero-based array layer, volume slice, or flattened cubemap face. |
+| [`System.ReadOnlyMemory<byte> Inno.Rendering.Runtime.RenderTextureSubresourceData.data`](../../src/services/rendering/Inno.Rendering.Runtime/Resources/RenderTextureSubresourceData.cs#L59) | Gets immutable tightly packed bytes. |
+| [`int Inno.Rendering.Runtime.RenderTextureSubresourceData.mipLevel`](../../src/services/rendering/Inno.Rendering.Runtime/Resources/RenderTextureSubresourceData.cs#L49) | Gets the zero-based mip level. |
+| [`Inno.Rendering.Runtime.RenderTextureSubresourceData`](../../src/services/rendering/Inno.Rendering.Runtime/Resources/RenderTextureSubresourceData.cs#L15) | Stores one complete texture mip and addressable layer, slice, or cubemap-face upload. |
+
+### `Inno.Rendering.Runtime.RenderView`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Rendering.Runtime.RenderView.RenderView(string id, Inno.Rendering.RenderViewport viewport, Inno.Core.Mathematics.Matrix viewMatrix, Inno.Core.Mathematics.Matrix projectionMatrix, ulong visibilityMask = 18446744073709551615)`](../../src/services/rendering/Inno.Rendering.Runtime/Models/ViewContent.cs#L34) | Creates the exact view used to render content into a viewport. |
+| [`string Inno.Rendering.Runtime.RenderView.id`](../../src/services/rendering/Inno.Rendering.Runtime/Models/ViewContent.cs#L52) | Gets the view identity within its output session. |
+| [`Inno.Core.Mathematics.Matrix Inno.Rendering.Runtime.RenderView.projectionMatrix`](../../src/services/rendering/Inno.Rendering.Runtime/Models/ViewContent.cs#L67) | Gets the view-to-clip transform. |
+| [`Inno.Core.Mathematics.Matrix Inno.Rendering.Runtime.RenderView.viewMatrix`](../../src/services/rendering/Inno.Rendering.Runtime/Models/ViewContent.cs#L62) | Gets the world-to-view transform. |
+| [`Inno.Rendering.RenderViewport Inno.Rendering.Runtime.RenderView.viewport`](../../src/services/rendering/Inno.Rendering.Runtime/Models/ViewContent.cs#L57) | Gets the destination pixel rectangle. |
+| [`ulong Inno.Rendering.Runtime.RenderView.visibilityMask`](../../src/services/rendering/Inno.Rendering.Runtime/Models/ViewContent.cs#L72) | Gets the model-defined visible content bits. |
+| [`Inno.Rendering.Runtime.RenderView`](../../src/services/rendering/Inno.Rendering.Runtime/Models/ViewContent.cs#L13) | Describes one backend-neutral view produced by a rendering model. |
+
+### `Inno.Rendering.Runtime.SelectedViewContentCollector`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Rendering.Runtime.SelectedViewContentCollector.SelectedViewContentCollector(Inno.Rendering.Runtime.IViewContentCollector inner, System.Collections.Generic.IReadOnlyList<string> sourceIds)`](../../src/services/rendering/Inno.Rendering.Runtime/Models/ViewContent.cs#L460) | Creates a collector that forwards only the selected source identities. |
+| [`System.Collections.Generic.IReadOnlyList<Inno.Rendering.Runtime.ViewContentItem> Inno.Rendering.Runtime.SelectedViewContentCollector.Collect(Inno.Rendering.Runtime.ViewContentContext context)`](../../src/services/rendering/Inno.Rendering.Runtime/Models/ViewContent.cs#L477) | Collects only the assigned world-content sources for one exact view. |
+| [`Inno.Rendering.Runtime.SelectedViewContentCollector`](../../src/services/rendering/Inno.Rendering.Runtime/Models/ViewContent.cs#L445) | Restricts a neutral world-content collector to an output layer's source IDs. |
+
+### `Inno.Rendering.Runtime.ViewContentContext`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Rendering.Runtime.ViewContentContext.ViewContentContext(Inno.References.ContentReadScope content, string sessionId, Inno.Rendering.Runtime.RenderView view, ulong frameIndex, float deltaTime, Inno.Rendering.Runtime.RenderOutputInput? input = null, System.Collections.Generic.IReadOnlyList<Inno.Rendering.Runtime.RenderView>? views = null, System.Collections.Generic.IReadOnlyList<string>? sourceIds = null)`](../../src/services/rendering/Inno.Rendering.Runtime/Models/ViewContent.cs#L108) | Creates a frame-scoped content collection context. |
+| [`Inno.References.ContentReadScope Inno.Rendering.Runtime.ViewContentContext.content`](../../src/services/rendering/Inno.Rendering.Runtime/Models/ViewContent.cs#L132) | Gets the ordered host-selected content roots. |
+| [`float Inno.Rendering.Runtime.ViewContentContext.deltaTime`](../../src/services/rendering/Inno.Rendering.Runtime/Models/ViewContent.cs#L152) | Gets elapsed time in seconds. |
+| [`ulong Inno.Rendering.Runtime.ViewContentContext.frameIndex`](../../src/services/rendering/Inno.Rendering.Runtime/Models/ViewContent.cs#L147) | Gets the monotonic output frame number. |
+| [`Inno.Rendering.Runtime.RenderOutputInput Inno.Rendering.Runtime.ViewContentContext.input`](../../src/services/rendering/Inno.Rendering.Runtime/Models/ViewContent.cs#L156) | Gets frame-local input for this output. |
+| [`string Inno.Rendering.Runtime.ViewContentContext.sessionId`](../../src/services/rendering/Inno.Rendering.Runtime/Models/ViewContent.cs#L137) | Gets the stable host output session identity. |
+| [`System.Collections.Generic.IReadOnlyList<string>? Inno.Rendering.Runtime.ViewContentContext.sourceIds`](../../src/services/rendering/Inno.Rendering.Runtime/Models/ViewContent.cs#L164) | Gets the exclusive source allowlist; null collects every active source. |
+| [`Inno.Rendering.Runtime.RenderView Inno.Rendering.Runtime.ViewContentContext.view`](../../src/services/rendering/Inno.Rendering.Runtime/Models/ViewContent.cs#L142) | Gets the exact destination view. |
+| [`System.Collections.Generic.IReadOnlyList<Inno.Rendering.Runtime.RenderView> Inno.Rendering.Runtime.ViewContentContext.views`](../../src/services/rendering/Inno.Rendering.Runtime/Models/ViewContent.cs#L160) | Gets every view in the same model output. |
+| [`Inno.Rendering.Runtime.ViewContentContext`](../../src/services/rendering/Inno.Rendering.Runtime/Models/ViewContent.cs#L78) | Supplies one content source with the host-selected scene roots and an exact view. |
+
+### `Inno.Rendering.Runtime.ViewContentItem`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Rendering.Runtime.ViewContentItem.ViewContentItem(Inno.Core.Identity.Identity owner, Inno.Core.Mathematics.Matrix localToWorld, Inno.Core.Mathematics.Vector3 localBoundsMin, Inno.Core.Mathematics.Vector3 localBoundsMax, Inno.Rendering.Runtime.IViewDrawable drawable, Inno.Rendering.Runtime.IViewPointerTarget? pointerTarget = null)`](../../src/services/rendering/Inno.Rendering.Runtime/Models/ViewContent.cs#L302) | Creates an item whose lifetime is limited to the current frame. |
+| [`Inno.Rendering.Runtime.IViewDrawable Inno.Rendering.Runtime.ViewContentItem.drawable`](../../src/services/rendering/Inno.Rendering.Runtime/Models/ViewContent.cs#L341) | Gets the drawable encoded by the selected rendering model. |
+| [`Inno.Core.Mathematics.Vector3 Inno.Rendering.Runtime.ViewContentItem.localBoundsMax`](../../src/services/rendering/Inno.Rendering.Runtime/Models/ViewContent.cs#L336) | Gets the local maximum corner. |
+| [`Inno.Core.Mathematics.Vector3 Inno.Rendering.Runtime.ViewContentItem.localBoundsMin`](../../src/services/rendering/Inno.Rendering.Runtime/Models/ViewContent.cs#L331) | Gets the local minimum corner. |
+| [`Inno.Core.Mathematics.Matrix Inno.Rendering.Runtime.ViewContentItem.localToWorld`](../../src/services/rendering/Inno.Rendering.Runtime/Models/ViewContent.cs#L326) | Gets the local-to-world transform. |
+| [`Inno.Core.Identity.Identity Inno.Rendering.Runtime.ViewContentItem.owner`](../../src/services/rendering/Inno.Rendering.Runtime/Models/ViewContent.cs#L321) | Gets the owner identity for model-owned sorting and visibility. |
+| [`Inno.Rendering.Runtime.IViewPointerTarget? Inno.Rendering.Runtime.ViewContentItem.pointerTarget`](../../src/services/rendering/Inno.Rendering.Runtime/Models/ViewContent.cs#L345) | Gets the optional pointer target associated with this draw item. |
+| [`Inno.Rendering.Runtime.ViewContentItem`](../../src/services/rendering/Inno.Rendering.Runtime/Models/ViewContent.cs#L278) | One world item supplied to a rendering model without choosing its sort policy. |
+
+### `Inno.Rendering.Runtime.ViewContentSourceExtensionAttribute`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Rendering.Runtime.ViewContentSourceExtensionAttribute.ViewContentSourceExtensionAttribute(string id)`](../../src/services/rendering/Inno.Rendering.Runtime/Models/ViewContent.cs#L412) | Creates a source declaration with a stable identifier. |
+| [`string Inno.Rendering.Runtime.ViewContentSourceExtensionAttribute.id`](../../src/services/rendering/Inno.Rendering.Runtime/Models/ViewContent.cs#L421) | Gets the globally stable source identifier. |
+| [`Inno.Rendering.Runtime.ViewContentSourceExtensionAttribute`](../../src/services/rendering/Inno.Rendering.Runtime/Models/ViewContent.cs#L402) | Discovers an independently reloadable world-content source. |
+
+## 项目依赖
+
+- [Inno.Core.Identity](../core/Inno.Core.Identity.md)：实现依赖（`PrivateAssets="compile"`）。
+- [Inno.Extensibility.Types](../extensibility/Inno.Extensibility.Types.md)：实现依赖（`PrivateAssets="compile"`）。
+- [Inno.Scripting.Api](../scripting/Inno.Scripting.Api.md)：实现依赖（`PrivateAssets="compile"`）。
+- [Inno.Rendering](Inno.Rendering.md)：项目引用；公开签名可见性由语义边界检查确认。
+- [Inno.Content](../assets/Inno.Content.md)：项目引用；公开签名可见性由语义边界检查确认。
+- [Inno.Core.Execution](../core/Inno.Core.Execution.md)：实现依赖（`PrivateAssets="compile"`）。
+- [Inno.Core.Diagnostics](../core/Inno.Core.Diagnostics.md)：项目引用；公开签名可见性由语义边界检查确认。
+- [Inno.Runtime.Contracts](../runtime/Inno.Runtime.Contracts.md)：项目引用；公开签名可见性由语义边界检查确认。
+- [Inno.Input](../input/Inno.Input.md)：项目引用；公开签名可见性由语义边界检查确认。
+- [Inno.References](../references/Inno.References.md)：项目引用；公开签名可见性由语义边界检查确认。
+- [Inno.Extensibility.Catalogs](../extensibility/Inno.Extensibility.Catalogs.md)：项目引用；公开签名可见性由语义边界检查确认。
+- [Inno.Rendering.Assets](Inno.Rendering.Assets.md)：项目引用；公开签名可见性由语义边界检查确认。
+
+共同 MSBuild 注入的 analyzer 与编译规则属于构建依赖，完整有效项目图记录在本轮验收证据中。

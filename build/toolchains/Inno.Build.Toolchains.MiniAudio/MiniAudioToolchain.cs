@@ -45,8 +45,11 @@ public static class MiniAudioToolchain
         var builder = MiniAudioBuilderFactory.CreateForCurrentPlatform();
         string miniAudioDirectory = Path.Combine(context.engineRoot, "extern", "miniaudio");
         MiniAudioBuildUtils.ValidateSource(miniAudioDirectory);
-        return await NativeArtifactPublisher.PublishAsync(context, typeof(MiniAudioToolchain).Assembly,
-            "miniaudio", builder.OutputPlatform, [miniAudioDirectory], [], async (
+        NativeBuildRecipe recipe = NativeBuildRecipe.CreateForComponent(context, typeof(MiniAudioToolchain).Assembly, "miniaudio", builder.OutputPlatform, [miniAudioDirectory], []);
+        return await NativeArtifactPublisher.PublishAsync(
+            context,
+            recipe,
+            async (
                 scoped,
                 output,
                 token

@@ -20,7 +20,7 @@ public sealed class RuntimeSubsystemPolicyTests : IDisposable
     public RuntimeSubsystemPolicyTests()
         => m_host = new EngineHostBuilder()
                 .UseMetadataSources(new DotNetAssemblyCatalogSource(typeof(RuntimeSubsystemPolicyTests).Assembly),
-                    new ReflectionTypeCatalogSource(), new ReflectionSerializationMetadataSource()).UseMetadataCache(m_root).Build();
+                    new ReflectionTypeCatalogSource(), new ReflectionSerializationMetadataSource()).Build();
 
     public void Dispose()
     {
@@ -132,7 +132,7 @@ public sealed class RuntimeSubsystemPolicyTests : IDisposable
         string root = Path.Combine(m_root, "Timeout");
         EngineHost host = new EngineHostBuilder()
                 .UseMetadataSources(new DotNetAssemblyCatalogSource(typeof(RuntimeSubsystemPolicyTests).Assembly),
-                    new ReflectionTypeCatalogSource(), new ReflectionSerializationMetadataSource()).UseMetadataCache(root)
+                    new ReflectionTypeCatalogSource(), new ReflectionSerializationMetadataSource())
             .UseRetirementTimeout(TimeSpan.FromTicks(1)).Build();
         var pending = new TaskCompletionSource();
         var factory = Create("test.timeout");

@@ -86,3 +86,35 @@ Shader 与节点 Inspector 不重复画布 Header 的 Save / Revert / Format / C
 
 Stage Input 的 `Source = Builtin` 表示该值由 GPU 阶段或引擎/Adapter 的标准阶段环境提供，而不是来自顶点缓冲、Material uniform、纹理或上游 varying。图保存后端中立 semantic，例如 Vertex 的 `vertex-id`/`instance-id`/`view-projection`、Fragment 的 `fragment-coordinate`/`front-facing`/`view-rectangle`，以及 Compute 的 `global-invocation-id`；Target 与 Adapter 必须共同支持该 semantic 和精确类型，否则 Check 产生错误。它不是任意源码表达式，也不是让用户填原生变量名的旁路。
 完整 UI 实操和热重载回归仍在最终验收清单中，不能把接线完成等同为验收通过。
+
+## 当前源码公开 API 清单
+
+以下仅列出当前程序集自己声明的 public/protected 契约；继承成员遵循所属基类页面。internal/private 实现不作为稳定公开 API。签名依据当前源码语义模型生成，行为、参数、异常与所有权说明同时以对应英文 XML 为准。
+
+## 项目依赖
+
+- [Inno.Editor.Inspection](Inno.Editor.Inspection.md)：实现依赖（`PrivateAssets="compile"`）。
+- [Inno.Editor.Shaders](Inno.Editor.Shaders.md)：实现依赖（`PrivateAssets="compile"`）。
+- [Inno.Core.Execution](../core/Inno.Core.Execution.md)：实现依赖（`PrivateAssets="compile"`）。
+- [Inno.Editor.Rendering](Inno.Editor.Rendering.md)：实现依赖（`PrivateAssets="compile"`）。
+- [Inno.Editor.Panel.FileBrowser](Inno.Editor.Panel.FileBrowser.md)：实现依赖（`PrivateAssets="compile"`）。
+- [Inno.Core.Input](../core/Inno.Core.Input.md)：实现依赖（`PrivateAssets="compile"`）。
+- [Inno.Native.ImGui](../native/Inno.Native.ImGui.md)：实现依赖（`PrivateAssets="compile"`）。
+- [Inno.Core.IO](../core/Inno.Core.IO.md)：实现依赖（`PrivateAssets="compile"`）。
+- [Inno.Scripting.Api](../scripting/Inno.Scripting.Api.md)：实现依赖（`PrivateAssets="compile"`）。
+- [Inno.Extensibility.Types](../extensibility/Inno.Extensibility.Types.md)：实现依赖（`PrivateAssets="compile"`）。
+- [Inno.Assets](../assets/Inno.Assets.md)：实现依赖（`PrivateAssets="compile"`）。
+- [Inno.Assets.Pipeline](../assets/Inno.Assets.Pipeline.md)：实现依赖（`PrivateAssets="compile"`）。
+- [Inno.Rendering](../rendering/Inno.Rendering.md)：实现依赖（`PrivateAssets="compile"`）。
+- [Inno.Rendering.Shaders](../rendering/Inno.Rendering.Shaders.md)：实现依赖（`PrivateAssets="compile"`）。
+- [Inno.Rendering.Assets](../rendering/Inno.Rendering.Assets.md)：实现依赖（`PrivateAssets="compile"`）。
+- [Inno.Editor.Core](Inno.Editor.Core.md)：实现依赖（`PrivateAssets="compile"`）。
+- [Inno.Editor.Graph](Inno.Editor.Graph.md)：实现依赖（`PrivateAssets="compile"`）。
+- [Inno.Editor.Interactions](Inno.Editor.Interactions.md)：实现依赖（`PrivateAssets="compile"`）。
+- [Inno.Editor.ImGui](Inno.Editor.ImGui.md)：实现依赖（`PrivateAssets="compile"`）。
+- [Inno.Core.Graphs](../core/Inno.Core.Graphs.md)：实现依赖（`PrivateAssets="compile"`）。
+- [Inno.Rendering.Assets.Authoring](../rendering/Inno.Rendering.Assets.Authoring.md)：实现依赖（`PrivateAssets="compile"`）。
+- [Inno.Core.Serialization](../core/Inno.Core.Serialization.md)：项目引用；公开签名可见性由语义边界检查确认。
+- [Inno.Extensibility.Catalogs](../extensibility/Inno.Extensibility.Catalogs.md)：项目引用；公开签名可见性由语义边界检查确认。
+
+共同 MSBuild 注入的 analyzer 与编译规则属于构建依赖，完整有效项目图记录在本轮验收证据中。

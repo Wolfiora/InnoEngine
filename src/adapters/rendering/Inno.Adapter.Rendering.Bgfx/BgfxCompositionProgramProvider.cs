@@ -71,22 +71,20 @@ public sealed class BgfxCompositionProgramProvider : IRenderLayerCompositionProg
             ?? throw new InvalidDataException($"The BGFX adapter cannot read {programName} shader '{resources[0]}'.");
         using var bytes = new MemoryStream();
         source.CopyTo(bytes);
-        RenderShaderArtifact artifact = RenderShaderArtifactCodec.Decode(
-            bytes.ToArray(), $"Inno/Host/{programName}", RenderShaderVariant.empty);
-        RenderShaderPassArtifact pass = artifact.passes.Single();
-        ShaderInterfaceBinding binding = pass.shaderInterface.bindings.Single();
+        GraphicsPipelineDescriptor program = GraphicsProgramArtifactCodec.Decode(bytes.ToArray(), vertexLayout);
+        RenderShaderBindingDescriptor binding = program.bindings.Single();
         if (binding.id.value != "s_tex"
-            || binding.bindingKind != ShaderPropertyBindingKind.SampledTexture
-            || binding.location != 0)
+            || binding.kind != RenderShaderBindingKind.Texture
+            || binding.slot != 0)
             throw new InvalidDataException($"The BGFX {programName} shader must expose s_tex at slot zero.");
-        RenderRasterState authored = pass.rasterState;
+        RenderRasterState authored = program.rasterState;
         var raster = new RenderRasterState(
             RenderCullMode.None, authored.frontFace, RenderDepthCompare.Always,
             depthWrite: false, blend,
             authored.colorWriteMask, authored.multisampling, authored.topology);
         return new GraphicsPipelineDescriptor(
-            pass.stages.Single(static stage => stage.stage == ShaderStage.Vertex).bytes.Span,
-            pass.stages.Single(static stage => stage.stage == ShaderStage.Fragment).bytes.Span,
+            program.vertexShader.Span,
+            program.fragmentShader.Span,
             [new(S_TEXTURE, RenderShaderBindingKind.Texture, slot: 0, nativeName: binding.nativeName)],
             vertexLayout, raster);
     }

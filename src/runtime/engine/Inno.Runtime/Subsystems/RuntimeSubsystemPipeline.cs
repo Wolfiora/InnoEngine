@@ -77,7 +77,7 @@ public sealed class RuntimeSubsystemPipeline : IDisposable
                 {
                     var context = new RuntimeSubsystemContext(m_context.events, m_context.diagnostics,
                         m_context.identities, m_context.types, entry.resources, m_context.lifetime,
-                        m_context.persistentDataDirectory, m_context.isEditMode, m_context.capabilities);
+                        m_context.isEditMode, m_context.capabilities);
                     entry.subsystem = factory.Create(context)
                         ?? throw new InvalidOperationException($"Runtime subsystem factory '{descriptor.id}' returned null.");
                     entry.subsystem.Attach();

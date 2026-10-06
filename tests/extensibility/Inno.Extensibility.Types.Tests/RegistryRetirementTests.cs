@@ -19,7 +19,7 @@ public sealed class RegistryRetirementTests
     public void PendingBatchDoesNotRepeatCompletedResourcesOrReleaseLowerDependenciesEarly()
     {
         string cache = Path.Combine(Path.GetTempPath(), "InnoRegistryRetirement", Guid.NewGuid().ToString("N"));
-        using var modules = new ModuleHost(new ModuleHostOptions { catalogSource = new DotNetAssemblyCatalogSource(typeof(RegistryRetirementTests).Assembly), cacheDirectory = cache });
+        using var modules = new ModuleHost(new ModuleHostOptions { catalogSource = new DotNetAssemblyCatalogSource(typeof(RegistryRetirementTests).Assembly)});
         using var types = new TypeCatalog(modules, new ReflectionTypeCatalogSource());
         var calls = new List<string>();
         int pendingAttempts = 0;
@@ -52,7 +52,7 @@ public sealed class RegistryRetirementTests
     public void DeadlineFailureRetainsDependenciesAndPermanentlyRejectsFurtherRetirement(bool clear)
     {
         string cache = Path.Combine(Path.GetTempPath(), "InnoRegistryRetirement", Guid.NewGuid().ToString("N"));
-        var modules = new ModuleHost(new ModuleHostOptions { catalogSource = new DotNetAssemblyCatalogSource(typeof(RegistryRetirementTests).Assembly), cacheDirectory = cache });
+        var modules = new ModuleHost(new ModuleHostOptions { catalogSource = new DotNetAssemblyCatalogSource(typeof(RegistryRetirementTests).Assembly)});
         var types = new TypeCatalog(modules, new ReflectionTypeCatalogSource());
         int released = 0;
         int attempts = 0;

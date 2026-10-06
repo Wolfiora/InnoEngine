@@ -21,3 +21,27 @@ Player 的单一 Project Settings 执行作用域覆盖完整 Shell 循环，而
 `--smoke-frames` 使用 Shell 的有界 run loop，并输出最终 rendering statistics；如果 DiagnosticHub 仍有活动错误则返回失败，不把空提交当作成功。普通启动运行到 application 或 primary window 请求退出。Player 接入既有 `ConsoleLogSink`，领域和渲染诊断不会在无 Editor Console 时被丢弃。
 
 `Program` 只委托 `DesktopPlayerComposition`。后者选择内容位置、系统持久数据父目录、生成的静态 metadata/activator 和 PollingShellFrameDriver，然后调用 PlayerApplication.RunAsync。本项目没有供外部调用的 public/protected API。
+
+
+
+
+
+
+## 本轮边界与所有权
+
+DesktopPlayerComposition 选择文件内容来源、真实数据根、存储/log factories 与 PollingShellFrameDriver。FilePlayerContentSource 从部署位置取得 metadata/Pack，并通过文件缓存 Adapter 准备 store。共享 Player 不知道这些路径。
+
+## 当前源码公开 API 清单
+
+以下仅列出当前程序集自己声明的 public/protected 契约；继承成员遵循所属基类页面。internal/private 实现不作为稳定公开 API。签名依据当前源码语义模型生成，行为、参数、异常与所有权说明同时以对应英文 XML 为准。
+
+## 项目依赖
+
+- [Inno.Core.Execution](../core/Inno.Core.Execution.md)：项目引用；公开签名可见性由语义边界检查确认。
+- [Inno.Player.Runtime](Inno.Player.Runtime.md)：项目引用；公开签名可见性由语义边界检查确认。
+- [Inno.Adapter.Default](Inno.Adapter.Default.md)：项目引用；公开签名可见性由语义边界检查确认。
+- [Inno.Adapter.Content.FileSystem](../assets/Inno.Adapter.Content.FileSystem.md)：项目引用；公开签名可见性由语义边界检查确认。
+- [Inno.Adapter.Storage.FileSystem](../storage/Inno.Adapter.Storage.FileSystem.md)：项目引用；公开签名可见性由语义边界检查确认。
+- [Inno.Extensibility.Catalogs](../extensibility/Inno.Extensibility.Catalogs.md)：项目引用；公开签名可见性由语义边界检查确认。
+
+共同 MSBuild 注入的 analyzer 与编译规则属于构建依赖，完整有效项目图记录在本轮验收证据中。

@@ -6,6 +6,17 @@ using System.Threading;
 using Inno.Assets;
 using Inno.Core.Execution;
 using Inno.References;
+using System.IO;
+using System.Threading.Tasks;
+using Inno.Assets.Pipeline;
+using Inno.Extensibility.Modules;
+using Inno.Core.Identity;
+using Inno.Core.Diagnostics;
+using Inno.Core.Logging;
+using Inno.Extensibility.Types;
+using Inno.Scripting.Api;
+using Inno.Core.Serialization;
+using Inno.Extensibility.Reload;
 
 namespace Inno.Assets.Pipeline;
 
@@ -132,4 +143,252 @@ public sealed partial class AssetPipeline
         AssetCatalogCandidate catalog,
         AssetFileSystem files
     );
+
+    /// <summary>
+    /// Validates and atomically replaces the complete source-mount generation while preserving the active
+    /// generation after any candidate failure.
+    /// </summary>
+    /// <param name="mounts">
+    /// A writable project source followed by zero or more read-only sources.
+    /// </param>
+    [ScriptingApiIgnore]
+    public void ReplaceSourceMounts(IReadOnlyList<AssetSourceMount> mounts)
+    {
+        using AssetSourceMountTransaction transaction = PrepareSourceMounts(mounts);
+        transaction.Activate();
+        transaction.Complete();
+    }
+
+    /// <summary>
+    /// Builds and validates an isolated source-mount candidate without changing active AssetPipeline state.
+    /// </summary>
+    /// <param name="mounts">
+    /// A writable project source followed by zero or more read-only sources.
+    /// </param>
+    /// <returns>
+    /// A transaction that can be inspected, activated, completed, or rolled back.
+    /// </returns>
+    [ScriptingApiIgnore]
+    public AssetSourceMountTransaction PrepareSourceMounts(IReadOnlyList<AssetSourceMount> mounts)
+    {
+        ArgumentNullException.ThrowIfNull(mounts);
+        EnsureOwnerThread();
+        return PrepareSourceMountsCore(mounts);
+    }
+
+    internal void ActivatePreparedSourceMounts(AssetSourceMountTransaction transaction)
+    {
+        ArgumentNullException.ThrowIfNull(transaction);
+        EnsureInitializationThread();
+        using IDisposable operationScope = AcquireOperation();
+        lock (m_lifecycleLock)
+        {
+            EnsurePendingSourceMountTransaction(transaction);
+            if (transaction.isActivated)
+                return;
+            transaction.candidateLoader.ActivateExtensionDiscovery();
+            _ = transaction.candidateLoader.RefreshRegistries();
+            transaction.candidateFileSystem.Refresh();
+            transaction.previousLoader = m_loader;
+            transaction.previousFileSystem = m_fileSystem;
+            transaction.previousMounts = sourceMounts;
+            transaction.previousOptions = m_options;
+            SwitchSourceIdentities(transaction.previousLoader!, transaction.previousFileSystem!,
+                transaction.candidateLoader, transaction.candidateFileSystem);
+            transaction.candidateLoader.AssetReloaded += OnAssetReloaded;
+            m_loader = transaction.candidateLoader;
+            m_fileSystem = transaction.candidateFileSystem;
+            sourceMounts = transaction.sourceMounts;
+            AssetSourceMount project = transaction.sourceMounts.Single(
+                static mount => mount.id == AssetSourceId.project);
+            assetRoot = project.rootPath;
+            m_options = m_options with { assetRoot = assetRoot, sourceMounts = transaction.sourceMounts };
+            m_revision++;
+            transaction.isActivated = true;
+        }
+    }
+
+    internal void CompletePreparedSourceMounts(AssetSourceMountTransaction transaction)
+    {
+        ArgumentNullException.ThrowIfNull(transaction);
+        EnsureInitializationThread();
+        using IDisposable operationScope = AcquireOperation();
+        Action? changed;
+        lock (m_lifecycleLock)
+        {
+            m_generations.EnsureRetirementSafe();
+            EnsurePendingSourceMountTransaction(transaction);
+            if (!transaction.isActivated)
+                throw new InvalidOperationException("A source-mount candidate must be activated before completion.");
+            try
+            {
+                transaction.catalogCandidate.Commit();
+                if (m_options.enableFileSystemWatcher)
+                    transaction.candidateFileSystem.Start();
+            }
+            catch (Exception failure)
+            {
+                m_generations.Fault(failure);
+                throw;
+            }
+            transaction.retirement = new LifetimeScope();
+            transaction.retirement.Own(transaction.catalogCandidate);
+            if (transaction.previousLoader is not null)
+            {
+                transaction.previousLoader.AssetReloaded -= OnAssetReloaded;
+                transaction.retirement.Own(transaction.previousLoader);
+            }
+            if (transaction.previousFileSystem is not null)
+                transaction.retirement.Own(transaction.previousFileSystem);
+            RetireSourceMounts(transaction);
+            changed = SourceMountsChanged;
+        }
+        InvokeObservers(changed);
+    }
+
+    internal void RollbackPreparedSourceMounts(AssetSourceMountTransaction transaction)
+    {
+        ArgumentNullException.ThrowIfNull(transaction);
+        if (transaction.isFinished)
+            return;
+        EnsureInitializationThread();
+        using IDisposable operationScope = AcquireOperation();
+        lock (m_lifecycleLock)
+        {
+            m_generations.EnsureRetirementSafe();
+            EnsurePendingSourceMountTransaction(transaction);
+            if (transaction.isActivated)
+            {
+                transaction.candidateLoader.AssetReloaded -= OnAssetReloaded;
+                SwitchSourceIdentities(transaction.candidateLoader, transaction.candidateFileSystem,
+                    transaction.previousLoader!, transaction.previousFileSystem!);
+                m_loader = transaction.previousLoader;
+                m_fileSystem = transaction.previousFileSystem;
+                sourceMounts = transaction.previousMounts ?? [];
+                m_options = transaction.previousOptions;
+                AssetSourceMount? project = sourceMounts.SingleOrDefault(
+                    static mount => mount.id == AssetSourceId.project);
+                assetRoot = project?.rootPath ?? string.Empty;
+                m_revision++;
+                transaction.isActivated = false;
+            }
+            transaction.retirement = new LifetimeScope();
+            transaction.retirement.Own(transaction.catalogCandidate);
+            transaction.retirement.Own(transaction.candidateLoader);
+            transaction.retirement.Own(transaction.candidateFileSystem);
+            RetireSourceMounts(transaction);
+        }
+    }
+
+    private void RetireSourceMounts(AssetSourceMountTransaction transaction)
+    {
+        try
+        {
+            Retire(transaction.retirement!, transaction.retirementBarrier);
+        }
+        catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null)
+        {
+            throw;
+        }
+        catch
+        {
+            Finish();
+            throw;
+        }
+        Finish();
+
+        void Finish()
+        {
+            transaction.previousLoader = null;
+            transaction.previousFileSystem = null;
+            transaction.previousMounts = null;
+            transaction.isFinished = true;
+            m_sourceMountCandidate = null;
+        }
+    }
+
+    private void Retire(
+        LifetimeScope lifetime,
+        RetirementBarrier barrier
+    ) {
+        m_generations.EnsureRetirementSafe();
+        try
+        {
+            barrier.Wait(lifetime.Dispose);
+        }
+        catch (Exception failure)
+        {
+            m_generations.Fault(failure);
+            throw;
+        }
+    }
+
+    private void DeleteCandidateCatalogRoots(string activeLibraryRoot)
+    {
+        string root = Path.Combine(activeLibraryRoot, "AssetDatabase", "Candidates");
+        if (Directory.Exists(root))
+            Directory.Delete(root, recursive: true);
+    }
+
+    private void SwitchSourceIdentities(
+        AssetLoader previousLoader,
+        AssetFileSystem previousFiles,
+        AssetLoader candidateLoader,
+        AssetFileSystem candidateFiles
+    ) {
+        var rollback = new Stack<Action>();
+        try
+        {
+            Apply(() => previousLoader.SetIdentitiesActive(false), () => previousLoader.SetIdentitiesActive(true));
+            Apply(previousFiles.DeactivateIdentities, previousFiles.ActivateIdentities);
+            Apply(() => candidateLoader.SetIdentitiesActive(true), () => candidateLoader.SetIdentitiesActive(false));
+            Apply(candidateFiles.ActivateIdentities, candidateFiles.DeactivateIdentities);
+        }
+        catch (Exception failure) when (RetirementPendingException.Find(failure) is not null)
+        {
+            m_generations.Fault(failure);
+            throw;
+        }
+        catch (Exception failure)
+        {
+            List<Exception> failures = [failure];
+            while (rollback.TryPop(out Action? restore))
+            {
+                try
+                {
+                    restore();
+                }
+                catch (Exception pending) when (RetirementPendingException.Find(pending) is not null)
+                {
+                    m_generations.Fault(pending);
+                    throw;
+                }
+                catch (Exception compensation)
+                {
+                    failures.Add(compensation);
+                }
+            }
+            if (failures.Count > 1)
+            {
+                var aggregate = new AggregateException("Asset identity publication could not restore its previous domain.", failures);
+                m_generations.Fault(aggregate);
+                throw aggregate;
+            }
+            throw;
+        }
+
+        void Apply(
+            Action apply,
+            Action compensate
+        ) {
+            rollback.Push(compensate);
+            apply();
+        }
+    }
+
+    private void EnsurePendingSourceMountTransaction(AssetSourceMountTransaction transaction)
+    {
+        if (!ReferenceEquals(m_sourceMountCandidate, transaction))
+            throw new InvalidOperationException("The source-mount transaction is not the current candidate.");
+    }
 }

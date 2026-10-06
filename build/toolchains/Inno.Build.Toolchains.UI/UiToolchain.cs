@@ -41,14 +41,13 @@ public static class UiToolchain
         context = await HostNativeToolchain.ResolveAsync(context, cancellationToken).ConfigureAwait(false);
         string nativeDirectory = Path.Combine(context.engineRoot, "native", "Inno.Native.UI", "Native");
         string platform = context.hostToolchain!.targetId;
-        return await NativeArtifactPublisher.PublishAsync(context, typeof(UiToolchain).Assembly,
-            "ui", platform, [Path.Combine(nativeDirectory, "CMakeLists.txt"),
+        return await NativeArtifactPublisher.PublishAsync(context, NativeBuildRecipe.CreateForComponent(context, typeof(UiToolchain).Assembly, "ui", platform, [Path.Combine(nativeDirectory, "CMakeLists.txt"),
                 Path.Combine(nativeDirectory, "include"),
                 Path.Combine(nativeDirectory, "src"),
                 Path.Combine(nativeDirectory, "Generated"),
                 Path.Combine(context.engineRoot, "extern", "freetype"),
                 Path.Combine(context.engineRoot, "extern", "harfbuzz"),
-                Path.Combine(context.engineRoot, "extern", "RmlUi")], [],
+                Path.Combine(context.engineRoot, "extern", "RmlUi")], []),
             async (
                 scoped,
                 output,

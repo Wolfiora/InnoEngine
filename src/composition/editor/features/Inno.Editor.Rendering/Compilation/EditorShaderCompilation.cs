@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Inno.Core.Graphs;
 using Inno.Rendering;
+using Inno.Rendering.Assets;
 
 namespace Inno.Editor.Rendering;
 

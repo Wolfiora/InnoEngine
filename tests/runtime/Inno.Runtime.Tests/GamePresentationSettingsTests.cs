@@ -1,3 +1,4 @@
+using Inno.Core.IO;
 using Inno.Adapter.Serialization.DotNet;
 using Inno.Adapter.Modules.DotNet;
 using System;
@@ -58,10 +59,9 @@ public sealed class GamePresentationSettingsTests
             using EngineHost host = new EngineHostBuilder()
                 .UseMetadataSources(new DotNetAssemblyCatalogSource(typeof(GamePresentationSettingsTests).Assembly),
                     new ReflectionTypeCatalogSource(), new ReflectionSerializationMetadataSource())
-                .UseMetadataCache(Path.Combine(directory, "Metadata"))
                 .Build();
             using var settings = new ProjectSettingsStore(
-                Path.Combine(directory, "Settings.Project.inno"),
+                new FileByteDocumentStore(Path.GetFullPath(Path.Combine(directory, "Settings.Project.inno"))),
                 host.types,
                 host.serialization,
                 new ProjectId("tests.runtime"),

@@ -119,10 +119,6 @@ public sealed class BrowserWasmGameBuildTarget : IGameBuildTarget
         string[] packs = Directory.GetFiles(contentDirectory, "content-*.pack", SearchOption.TopDirectoryOnly);
         if (packs.Length != 1)
             throw new InvalidDataException("The browser deployment must contain exactly one content pack.");
-        await File.WriteAllTextAsync(
-            Path.Combine(contentDirectory, "content-pack.txt"),
-            Path.GetFileName(packs[0]),
-            cancellationToken);
         return site;
     }
 

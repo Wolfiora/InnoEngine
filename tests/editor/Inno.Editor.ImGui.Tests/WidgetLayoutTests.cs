@@ -55,7 +55,10 @@ public sealed unsafe class WidgetLayoutTests
 
     [Theory]
     [InlineData(2, false, 0.75f)]
+    [InlineData(2, false, 0.85f)]
+    [InlineData(2, false, 0.9f)]
     [InlineData(2, false, 1f)]
+    [InlineData(2, false, 1.1f)]
     [InlineData(2, false, 1.5f)]
     [InlineData(100, true, 1f)]
     [InlineData(100, true, 1.5f)]
@@ -152,10 +155,14 @@ public sealed unsafe class WidgetLayoutTests
         Assert.True(popupPosition.Y + popupSize.Y <= 381f);
     }
 
-    [Fact]
-    public void ContextMenu_SearchFillsItsActualContentWidthWithoutScrollbars()
+    [Theory]
+    [InlineData(0.85f)]
+    [InlineData(0.9f)]
+    [InlineData(1f)]
+    [InlineData(1.1f)]
+    public void ContextMenu_SearchFillsItsActualContentWidthWithoutScrollbars(float zoom)
     {
-        using NativeContext context = new(1f);
+        using NativeContext context = new(zoom);
         Vector2 controlMinimum = default;
         Vector2 controlMaximum = default;
         Vector2 scroll = default;

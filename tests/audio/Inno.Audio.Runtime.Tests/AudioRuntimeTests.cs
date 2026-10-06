@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography;
 using Inno.Core.Diagnostics;
 using System.Threading.Tasks;
 using System.Threading;
@@ -195,8 +196,7 @@ public sealed class AudioRuntimeTests : IDisposable
         AudioClipAsset asset = CreateClip(48000);
         using ArtifactLease artifact = m_artifacts.AcquireArtifact(asset.identity.persistentId, "audio-data");
         AudioBusHandle master = backend.CreateBus(AudioBusId.master);
-        AudioClipHandle clip = backend.CreateClip(new AudioClipDescriptor(artifact.info.absolutePath,
-            AudioCodecId.wav, AudioClipLoadMode.Decode, 2, 48000, 48000, artifact.info.length));
+        AudioClipHandle clip = backend.CreateClip(new AudioClipDescriptor(            AudioCodecId.wav, AudioClipLoadMode.Decode, 2, 48000, 48000, artifact.info.length),new LeaseAudioTestSource(artifact));
         Assert.False(backend.Play(clip, master, default).isValid);
         foreach (double invalid in new[] { double.NaN, double.PositiveInfinity, double.NegativeInfinity, -1d })
             Assert.False(backend.Play(clip, master, AudioPlayOptions.defaultValue, invalid).isValid);
@@ -645,9 +645,7 @@ public sealed class AudioRuntimeTests : IDisposable
         m_root = Path.Combine(Path.GetTempPath(), "InnoAudioRuntimeTests", Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(m_root);
         m_modules = new ModuleHost(new ModuleHostOptions
-        { catalogSource = new DotNetAssemblyCatalogSource(typeof(AudioRuntimeTests).Assembly),
-            cacheDirectory = Path.Combine(m_root, "Assemblies")
-        });
+        { catalogSource = new DotNetAssemblyCatalogSource(typeof(AudioRuntimeTests).Assembly)        });
         _ = typeof(TestMixerExtension);
         m_types = new TypeCatalog(m_modules, new ReflectionTypeCatalogSource());
         m_types.Rebuild();
@@ -1055,6 +1053,8 @@ public sealed class AudioRuntimeTests : IDisposable
     private sealed class FakeArtifactLookup : AssetResidencyProvider, IAssetArtifactLookup
     {
         private readonly ArtifactRetention m_retention = new();
+        private readonly Dictionary<Guid, AssetArtifactInfo> m_artifacts = [];
+        private readonly Dictionary<Guid, string> m_paths = [];
         internal int acquisitions;
         internal Exception? acquisitionFailure;
         internal Guid pendingReleaseId;
@@ -1066,8 +1066,9 @@ public sealed class AudioRuntimeTests : IDisposable
             acquisitions++;
             if (acquisitionFailure is not null)
                 throw acquisitionFailure;
-            ArtifactLease retained = m_retention.Retain(m_artifacts[persistentId]);
-            return CreateArtifactLease(retained.info, () =>
+            ArtifactLease retained = m_retention.Retain(m_artifacts[persistentId],
+                () => File.OpenRead(m_paths[persistentId]));
+            return CreateArtifactLease(retained.info, retained.OpenRead, () =>
             {
                 releaseAttempts++;
                 if (persistentId == pendingReleaseId && pendingReleases-- > 0)
@@ -1075,16 +1076,16 @@ public sealed class AudioRuntimeTests : IDisposable
                 retained.Dispose();
             });
         }
-        private readonly Dictionary<Guid, AssetArtifactInfo> m_artifacts = [];
 
         internal void Add(Guid id, string path)
         {
-            File.WriteAllBytes(path, new byte[256]);
+            byte[] bytes = new byte[256];
+            File.WriteAllBytes(path, bytes);
+            m_paths[id] = path;
             m_artifacts[id] = new AssetArtifactInfo(
                 new AssetArtifactKey(new string('A', 64)),
                 "audio-data",
-                path,
-                "TEST",
+                Convert.ToHexString(SHA256.HashData(bytes)),
                 256);
         }
 
@@ -1130,7 +1131,10 @@ public sealed class AudioRuntimeTests : IDisposable
 
         public AudioStatistics statistics => m_inner.statistics;
 
-        public AudioClipHandle CreateClip(AudioClipDescriptor descriptor) => m_inner.CreateClip(descriptor);
+        public AudioClipHandle CreateClip(
+            AudioClipDescriptor descriptor,
+            IAudioClipSource source
+        ) => m_inner.CreateClip(descriptor, source);
         internal AudioClipState clipState = AudioClipState.Ready;
         public AudioClipState GetClipState(AudioClipHandle clip)
         {

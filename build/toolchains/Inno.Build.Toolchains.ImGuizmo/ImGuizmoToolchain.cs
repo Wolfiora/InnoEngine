@@ -58,9 +58,11 @@ public static class ImGuizmoToolchain
         string cimguizmoDir = Path.Combine(context.engineRoot, "extern", "cimguizmo");
         string cimguiDir = Path.Combine(context.engineRoot, "extern", "cimgui");
         CImguizmoBuildUtils.ValidateSource(cimguizmoDir, cimguiDir);
-        return await NativeArtifactPublisher.PublishAsync(context, typeof(ImGuizmoToolchain).Assembly,
-            "cimguizmo", builder.outputPlatform, [cimguizmoDir, cimguiDir, libraries[0]],
-            [imGui.fingerprint], async (
+        NativeBuildRecipe recipe = NativeBuildRecipe.CreateForComponent(context, typeof(ImGuizmoToolchain).Assembly, "cimguizmo", builder.outputPlatform, [cimguizmoDir, cimguiDir, libraries[0]], [imGui.fingerprint]);
+        return await NativeArtifactPublisher.PublishAsync(
+            context,
+            recipe,
+            async (
                 scoped,
                 output,
                 token

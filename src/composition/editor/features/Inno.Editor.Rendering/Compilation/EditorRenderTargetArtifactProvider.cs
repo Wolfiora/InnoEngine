@@ -1,5 +1,6 @@
 using Inno.Core.Diagnostics;
 using System;
+using System.IO;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -10,6 +11,8 @@ using Inno.Core.Serialization;
 using Inno.Extensibility.Types;
 using Inno.Rendering;
 using Inno.Rendering.Assets;
+using Inno.Rendering.Assets.Authoring;
+using Inno.Rendering.Runtime;
 
 namespace Inno.Editor.Rendering;
 
@@ -373,8 +376,9 @@ public sealed partial class EditorRenderTargetArtifactProvider : IRenderTargetAr
                 return await Task.Run(
                     async () =>
                     {
+                        using Stream encoded = lease.OpenRead();
                         return await m_textureCompiler.CompileKtxAsync(
-                            lease.info.absolutePath,
+                            encoded,
                             texture.slot.colorSpace,
                             token).ConfigureAwait(false);
                     }).ConfigureAwait(false);

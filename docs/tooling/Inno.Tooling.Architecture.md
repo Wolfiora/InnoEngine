@@ -55,3 +55,20 @@ dotnet run --no-build --project build/cli/Inno.Build.Cli -- verify .
 
 BGCS/Cpp2C target profile 必须显式声明 Native owner 内的输出目录，与宿主输出不能相同或互相包含。
 此规则覆盖 managed binding 和 C++ bridge，避免任一生成器的原子目录替换删除另一目标的产物。
+
+## 当前源码公开 API 清单
+
+以下仅列出当前程序集自己声明的 public/protected 契约；继承成员遵循所属基类页面。internal/private 实现不作为稳定公开 API。签名依据当前源码语义模型生成，行为、参数、异常与所有权说明同时以对应英文 XML 为准。
+
+### `Inno.Tooling.Architecture.ArchitectureValidator`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`static int Inno.Tooling.Architecture.ArchitectureValidator.Execute(string[] arguments)`](../../tools/Inno.Tooling.Architecture/ArchitectureValidator.cs#L46) | Executes repository validation or an explicitly requested documentation maintenance operation. |
+| [`Inno.Tooling.Architecture.ArchitectureValidator`](../../tools/Inno.Tooling.Architecture/ArchitectureValidator.cs#L13) | Checks repository dependency, API documentation and source ownership invariants. |
+
+## 项目依赖
+
+- [Inno.Extensibility.Catalogs](../extensibility/Inno.Extensibility.Catalogs.md)：项目引用；公开签名可见性由语义边界检查确认。
+
+共同 MSBuild 注入的 analyzer 与编译规则属于构建依赖，完整有效项目图记录在本轮验收证据中。

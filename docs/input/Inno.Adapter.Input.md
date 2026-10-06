@@ -1,44 +1,107 @@
 # Inno.Adapter.Input
 
-[Input 索引](README.md) · [中立 Input](Inno.Input.md) · [SDL3 implementation](Inno.Adapter.Input.Sdl3.md)
+[分类索引](README.md) · [Wiki 首页](../README.md) · [本轮整改计划](../architecture/ARCHITECTURE_CLEANUP_PLAN_2026_10_06.md)
 
-该项目定义平台事件到 Session Input backend 之间的 Adapter family，不包含 SDL3 引用。
+## 职责与边界
 
-## 公开 API
+提供开放 Input backend catalog 与基于 Core Events 的通用事件输入实现。EventInputSource、EventInputBackend 和 EventInputBackendProvider 不引用 SDL 或 Native；平台 Adapter 将系统事件转成同一 Core Events 协议。
 
-- `InputBackendId`：Composition 启动时使用的 input implementation 选择。
-- `IInputBackendFactory.CreateEventSource`：创建 application-owned event source；`acceptAllWindows` 为 `false` 时只接收指定主窗口，为 `true` 时接收所有窗口，但调用方仍须按目标 Session 筛选事件。
-- `IInputEventSource`：接收中立 `Event`，并为每个 RuntimeSession 创建隔离的 `IInputBackend`。
+## 生命周期与事件消费
 
-Shell 拥有主窗口 event source，并在平台事件泵中调用 `ProcessEvent`。Editor 另为 Play Session 创建全窗口 event source，只把经过 Game View 焦点与画面命中策略的中立事件交给它。每个 Session 只拥有自己由 `CreateBackend` 返回的 backend；销毁 Session 不得销毁 application event source。
+内置 ID 为 `inno.input.events`。source 使用 `Inno.Core.Events` 订阅/分发，为每个 Session 创建独立 backend。Dispose 释放所属订阅；其他 Session 保持可用。已消费事件不能再次影响游戏快照。
 
-```csharp
-using IInputEventSource source = catalog.input.CreateEventSource(
-    selection.input,
-    window,
-    acceptAllWindows: false);
-using IInputBackend backend = source.CreateBackend();
-```
+Press、Release、Pointer、Wheel 和 Text 使用同一入口。窗口身份、焦点与失焦释放保持明确；Editor GameView 在 presentation 边界筛选事件，Modal、Popup 或前景窗口阻止底层游戏输入。不建立第二个事件总线。
 
-Action Map、rebinding 和 UI navigation 不属于此 family。
+第三方 provider 使用开放稳定 ID 注册。catalog 捕获不可变集合，重复/null provider 在构造失败，未注册 ID 明确报错。provider 由 composition owner 管理，创建出的 source/backend 由调用方释放。
 
-## 平台事件交付
+## 验证
 
-Sdl3InputSource 复用 Core Events 的 EventDispatcher/EventHub，将 backend 注册为 Event 订阅。全局已消费事件不再传入 Session；backend Dispose 释放自身订阅，其他 Session 保持有效。source 的列表只管理 backend 生命周期，不承担第二套事件分发。Game View 的焦点策略仍在 Editor presentation 边界筛选，同一平台事件入口适用于桌面和 Web。
+InputRuntime、ShellLifecycle 和 EditorGameInputCapture 测试共同覆盖消费、焦点、浮动 GameView、窗口和 Session 隔离。
 
-## 开放注册与生命周期
+## 当前源码公开 API 清单
 
-后端 ID 是开放的 ordinal 字符串，不能包含空白；默认 struct 未赋值。内置 ID `sdl3` 只提供默认组合，不限制第三方实现。
+以下仅列出当前程序集自己声明的 public/protected 契约；继承成员遵循所属基类页面。internal/private 实现不作为稳定公开 API。签名依据当前源码语义模型生成，行为、参数、异常与所有权说明同时以对应英文 XML 为准。
 
-| API | 当前语义 |
+### `Inno.Adapter.Input.EventInputBackend`
+
+| 当前声明 | 行为 |
 | --- | --- |
-| `InputBackendId(string)`；`value`、`isValid`、`ToString()` | 创建、检查并显示稳定 ID；无效构造抛出 `ArgumentException`。 |
-| `InputBackendProvider(InputBackendId)`（protected）；`id` | composition 显式配置的不可变注册描述；provider 不执行类型发现。 |
-| `InputBackendProvider.CreateEventSource` | 实现者的创建扩展点；返回 caller-owned `IInputEventSource`，不允许 null。 |
-| `InputBackendCatalog(IEnumerable<InputBackendProvider>)` | 捕获完整注册快照；重复或 null provider 在构造时失败；不创建设备。 |
-| `InputBackendCatalog.supportedBackends / CreateEventSource` | 只解析当前快照中的 exact ID；未注册抛出 `NotSupportedException`，null 产品抛出 `InvalidOperationException`。 |
-| `IInputBackendFactory.supportedBackends` | 启动前能力预检使用的只读注册列表。 |
+| [`Inno.Adapter.Input.EventInputBackend.EventInputBackend(uint windowId)`](../../src/adapters/input/Inno.Adapter.Input/EventInputBackend.cs#L41) | Creates an event-backed input adapter for one platform window. |
+| [`Inno.Input.InputSnapshot Inno.Adapter.Input.EventInputBackend.Capture(long frameIndex)`](../../src/adapters/input/Inno.Adapter.Input/EventInputBackend.cs#L137) | Captures an immutable snapshot of the current observable state. |
+| [`void Inno.Adapter.Input.EventInputBackend.Dispose()`](../../src/adapters/input/Inno.Adapter.Input/EventInputBackend.cs#L169) | Releases the resources owned by this implementation. |
+| [`void Inno.Adapter.Input.EventInputBackend.ProcessEvent(Inno.Core.Events.Event evnt)`](../../src/adapters/input/Inno.Adapter.Input/EventInputBackend.cs#L66) | Applies one backend-neutral event translated by the owning platform application. |
+| [`Inno.Adapter.Input.EventInputBackend`](../../src/adapters/input/Inno.Adapter.Input/EventInputBackend.cs#L15) | Accumulates backend-neutral platform events into complete runtime input snapshots. |
 
-provider 及其 delegate/资源由 composition owner 释放；catalog 不接管 provider。创建出的服务由调用方释放。源码扩展若通过 TypeRegistry 发现，其 ID 仍由发现协议的 Attribute 声明；此处是宿主明确传入的 provider 集合，不额外扫描程序集。
+### `Inno.Adapter.Input.EventInputBackendProvider`
 
-`AdapterSelection.Validate(catalog)` 在初始化任何窗口或设备前检查全部领域。可在 composition 为 provider 传入任意分配的 `InputBackendId`，无需新增枚举或修改中央分支。
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Adapter.Input.EventInputBackendProvider.EventInputBackendProvider()`](../../src/adapters/input/Inno.Adapter.Input/EventInputBackendProvider.cs#L14) | Creates an explicitly composed registration for the bundled implementation. |
+| [`override Inno.Adapter.Input.IInputEventSource Inno.Adapter.Input.EventInputBackendProvider.CreateEventSource(Inno.Platform.IPlatformWindow window, bool acceptAllWindows)`](../../src/adapters/input/Inno.Adapter.Input/EventInputBackendProvider.cs#L17) | See the implemented contract. |
+| [`Inno.Adapter.Input.EventInputBackendProvider`](../../src/adapters/input/Inno.Adapter.Input/EventInputBackendProvider.cs#L9) | Supplies the common event implementation through the neutral input creation boundary. |
+
+### `Inno.Adapter.Input.EventInputSource`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Adapter.Input.EventInputSource.EventInputSource(uint windowId)`](../../src/adapters/input/Inno.Adapter.Input/EventInputSource.cs#L26) | Creates an input source restricted to one window, or to all windows when the identifier is zero. |
+| [`Inno.Input.IInputBackend Inno.Adapter.Input.EventInputSource.CreateBackend()`](../../src/adapters/input/Inno.Adapter.Input/EventInputSource.cs#L41) | Creates one isolated backend that receives subsequent events from this source. |
+| [`void Inno.Adapter.Input.EventInputSource.Dispose()`](../../src/adapters/input/Inno.Adapter.Input/EventInputSource.cs#L72) | Disconnects all session backends and rejects subsequent event delivery. |
+| [`void Inno.Adapter.Input.EventInputSource.ProcessEvent(Inno.Core.Events.Event evnt)`](../../src/adapters/input/Inno.Adapter.Input/EventInputSource.cs#L62) | Dispatches one translated platform event to active session backends, honoring event consumption. |
+| [`Inno.Adapter.Input.EventInputSource`](../../src/adapters/input/Inno.Adapter.Input/EventInputSource.cs#L12) | Routes backend-neutral platform events through Core Events to isolated runtime-session input backends. |
+
+### `Inno.Adapter.Input.IInputBackendFactory`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Adapter.Input.IInputEventSource Inno.Adapter.Input.IInputBackendFactory.CreateEventSource(Inno.Adapter.Input.InputBackendId backend, Inno.Platform.IPlatformWindow window, bool acceptAllWindows)`](../../src/adapters/input/Inno.Adapter.Input/IInputBackendFactory.cs#L34) | Creates an input event source for one window or for the entire application. |
+| [`System.Collections.Generic.IReadOnlyList<Inno.Adapter.Input.InputBackendId> Inno.Adapter.Input.IInputBackendFactory.supportedBackends`](../../src/adapters/input/Inno.Adapter.Input/IInputBackendFactory.cs#L14) | Gets the exact registrations available in this composition snapshot. |
+| [`Inno.Adapter.Input.IInputBackendFactory`](../../src/adapters/input/Inno.Adapter.Input/IInputBackendFactory.cs#L9) | Creates host-level input event sources from explicit backend selections. |
+
+### `Inno.Adapter.Input.IInputEventSource`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Input.IInputBackend Inno.Adapter.Input.IInputEventSource.CreateBackend()`](../../src/adapters/input/Inno.Adapter.Input/IInputEventSource.cs#L18) | Creates an isolated input backend owned by one runtime session. |
+| [`void Inno.Adapter.Input.IInputEventSource.ProcessEvent(Inno.Core.Events.Event evnt)`](../../src/adapters/input/Inno.Adapter.Input/IInputEventSource.cs#L26) | Routes one backend-neutral platform event to active input backends. |
+| [`Inno.Adapter.Input.IInputEventSource`](../../src/adapters/input/Inno.Adapter.Input/IInputEventSource.cs#L10) | Routes backend-neutral platform events into isolated runtime input backends. |
+
+### `Inno.Adapter.Input.InputBackendCatalog`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Adapter.Input.InputBackendCatalog.InputBackendCatalog(System.Collections.Generic.IEnumerable<Inno.Adapter.Input.InputBackendProvider> providers)`](../../src/adapters/input/Inno.Adapter.Input/InputBackendCatalog.cs#L27) | Validates and captures a complete provider set without creating any service. |
+| [`Inno.Adapter.Input.IInputEventSource Inno.Adapter.Input.InputBackendCatalog.CreateEventSource(Inno.Adapter.Input.InputBackendId backend, Inno.Platform.IPlatformWindow window, bool acceptAllWindows)`](../../src/adapters/input/Inno.Adapter.Input/InputBackendCatalog.cs#L45) | See the implemented contract. |
+| [`System.Collections.Generic.IReadOnlyList<Inno.Adapter.Input.InputBackendId> Inno.Adapter.Input.InputBackendCatalog.supportedBackends`](../../src/adapters/input/Inno.Adapter.Input/InputBackendCatalog.cs#L39) | See the implemented contract. |
+| [`Inno.Adapter.Input.InputBackendCatalog`](../../src/adapters/input/Inno.Adapter.Input/InputBackendCatalog.cs#L11) | Resolves input providers from one immutable, composition-owned registration snapshot. |
+
+### `Inno.Adapter.Input.InputBackendId`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Adapter.Input.InputBackendId.InputBackendId(string value)`](../../src/adapters/input/Inno.Adapter.Input/InputBackendId.cs#L19) | Creates an ordinal, case-sensitive implementation identifier. |
+| [`override string Inno.Adapter.Input.InputBackendId.ToString()`](../../src/adapters/input/Inno.Adapter.Input/InputBackendId.cs#L49) | Returns the identifier without resolving a provider. |
+| [`static Inno.Adapter.Input.InputBackendId Inno.Adapter.Input.InputBackendId.events`](../../src/adapters/input/Inno.Adapter.Input/InputBackendId.cs#L31) | Gets the identifier of the backend-neutral event accumulator. |
+| [`bool Inno.Adapter.Input.InputBackendId.isValid`](../../src/adapters/input/Inno.Adapter.Input/InputBackendId.cs#L41) | Gets whether this value identifies an implementation. |
+| [`string Inno.Adapter.Input.InputBackendId.value`](../../src/adapters/input/Inno.Adapter.Input/InputBackendId.cs#L36) | Gets the stable identifier; a default value is unassigned. |
+| [`Inno.Adapter.Input.InputBackendId`](../../src/adapters/input/Inno.Adapter.Input/InputBackendId.cs#L8) | Identifies a input implementation without closing the set of supported backends. |
+
+### `Inno.Adapter.Input.InputBackendProvider`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Adapter.Input.InputBackendProvider.InputBackendProvider(Inno.Adapter.Input.InputBackendId id)`](../../src/adapters/input/Inno.Adapter.Input/InputBackendProvider.cs#L24) | Captures the identity assigned by the composition owner. |
+| [`abstract Inno.Adapter.Input.IInputEventSource Inno.Adapter.Input.InputBackendProvider.CreateEventSource(Inno.Platform.IPlatformWindow window, bool acceptAllWindows)`](../../src/adapters/input/Inno.Adapter.Input/InputBackendProvider.cs#L48) | Creates a caller-owned input service using this implementation. |
+| [`Inno.Adapter.Input.InputBackendId Inno.Adapter.Input.InputBackendProvider.id`](../../src/adapters/input/Inno.Adapter.Input/InputBackendProvider.cs#L34) | Gets this registration's immutable implementation identity. |
+| [`Inno.Adapter.Input.InputBackendProvider`](../../src/adapters/input/Inno.Adapter.Input/InputBackendProvider.cs#L13) | Describes one explicitly composed input implementation and its creation boundary. |
+
+## 项目依赖
+
+- [Inno.Input](Inno.Input.md)：项目引用；公开签名可见性由语义边界检查确认。
+- [Inno.Core.Events](../core/Inno.Core.Events.md)：项目引用；公开签名可见性由语义边界检查确认。
+- [Inno.Core.Input](../core/Inno.Core.Input.md)：项目引用；公开签名可见性由语义边界检查确认。
+- [Inno.Core.Mathematics](../core/Inno.Core.Mathematics.md)：项目引用；公开签名可见性由语义边界检查确认。
+- [Inno.Platform](../platform/Inno.Platform.md)：项目引用；公开签名可见性由语义边界检查确认。
+- [Inno.Extensibility.Catalogs](../extensibility/Inno.Extensibility.Catalogs.md)：项目引用；公开签名可见性由语义边界检查确认。
+
+共同 MSBuild 注入的 analyzer 与编译规则属于构建依赖，完整有效项目图记录在本轮验收证据中。

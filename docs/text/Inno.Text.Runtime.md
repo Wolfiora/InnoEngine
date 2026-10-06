@@ -18,3 +18,37 @@ TextLayout title = Text.Shape(font, "界面", new TextStyle(24f));
 ```
 
 此段供拥有 `TextRuntime` 的 Host 使用；普通脚本在活动帧内直接使用 `Text`。错误的字体引用、已停止的 Runtime、无活动 scope 或后端错误都会明确失败；热重载后不可保存旧 face handle。
+
+## 当前源码公开 API 清单
+
+以下仅列出当前程序集自己声明的 public/protected 契约；继承成员遵循所属基类页面。internal/private 实现不作为稳定公开 API。签名依据当前源码语义模型生成，行为、参数、异常与所有权说明同时以对应英文 XML 为准。
+
+### `Inno.Text.Runtime.TextRuntime`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Text.Runtime.TextRuntime.TextRuntime(Inno.Text.ITextBackend backend, Inno.Assets.IAssetArtifactLookup artifacts)`](../../src/services/text/Inno.Text.Runtime/TextRuntime.cs#L30) | Creates a text runtime and assumes ownership of its backend. |
+| [`System.IDisposable Inno.Text.Runtime.TextRuntime.EnterExecutionScope()`](../../src/services/text/Inno.Text.Runtime/TextRuntime.cs#L52) | Binds this runtime to the current asynchronous execution context. |
+| [`override void Inno.Text.Runtime.TextRuntime.OnBeginFrame(Inno.Runtime.Contracts.RuntimeFrame frame)`](../../src/services/text/Inno.Text.Runtime/TextRuntime.cs#L44) | Binds the script-facing text facade for the complete runtime frame. |
+| [`override void Inno.Text.Runtime.TextRuntime.OnStop()`](../../src/services/text/Inno.Text.Runtime/TextRuntime.cs#L123) | Releases every native face and retained immutable artifact before the backend. |
+| [`Inno.Text.GlyphBitmap Inno.Text.Runtime.TextRuntime.Rasterize(Inno.Text.FontAsset font, int faceIndex, uint glyphId, float fontSize)`](../../src/services/text/Inno.Text.Runtime/TextRuntime.cs#L107) | Rasterizes one glyph from an imported font. |
+| [`Inno.Text.TextLayout Inno.Text.Runtime.TextRuntime.Shape(Inno.Text.FontAsset font, string text, Inno.Text.TextStyle style, Inno.Text.TextShapingOptions options)`](../../src/services/text/Inno.Text.Runtime/TextRuntime.cs#L76) | Shapes one Unicode string with an imported font. |
+| [`Inno.Text.Runtime.TextRuntime`](../../src/services/text/Inno.Text.Runtime/TextRuntime.cs#L14) | Owns imported font leases and a replaceable Unicode shaping backend for one runtime session. |
+
+### `Inno.Text.Runtime.TextRuntimeFactory`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Text.Runtime.TextRuntimeFactory.TextRuntimeFactory(System.Func<Inno.Runtime.Contracts.RuntimeSubsystemContext, Inno.Text.Runtime.TextRuntime> runtimeFactory)`](../../src/services/text/Inno.Text.Runtime/TextRuntimeFactory.cs#L21) | Creates a reusable text runtime factory. |
+| [`Inno.Runtime.Contracts.IRuntimeSubsystem Inno.Text.Runtime.TextRuntimeFactory.Create(Inno.Runtime.Contracts.RuntimeSubsystemContext context)`](../../src/services/text/Inno.Text.Runtime/TextRuntimeFactory.cs#L42) | Creates one session-owned text runtime. |
+| [`Inno.Runtime.Contracts.RuntimeSubsystemDescriptor Inno.Text.Runtime.TextRuntimeFactory.descriptor`](../../src/services/text/Inno.Text.Runtime/TextRuntimeFactory.cs#L29) | Gets stable ordering metadata that makes text available before scene simulation. |
+| [`Inno.Text.Runtime.TextRuntimeFactory`](../../src/services/text/Inno.Text.Runtime/TextRuntimeFactory.cs#L11) | Creates one text service for every isolated runtime session. |
+
+## 项目依赖
+
+- [Inno.Text](Inno.Text.md)：项目引用；公开签名可见性由语义边界检查确认。
+- [Inno.Assets](../assets/Inno.Assets.md)：项目引用；公开签名可见性由语义边界检查确认。
+- [Inno.Runtime.Contracts](../runtime/Inno.Runtime.Contracts.md)：项目引用；公开签名可见性由语义边界检查确认。
+- [Inno.Extensibility.Catalogs](../extensibility/Inno.Extensibility.Catalogs.md)：项目引用；公开签名可见性由语义边界检查确认。
+
+共同 MSBuild 注入的 analyzer 与编译规则属于构建依赖，完整有效项目图记录在本轮验收证据中。

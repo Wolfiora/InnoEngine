@@ -10,16 +10,34 @@ public sealed class NativeArtifactIdentityTests : IDisposable
     private readonly string m_root = Path.Combine(Path.GetTempPath(), "InnoNativeArtifactTests", Guid.NewGuid().ToString("N"));
 
     [Fact]
-    public void FingerprintIsOrderIndependentAndChangesForSourceOrSdkIdentity()
+    public void FingerprintPreservesDeclarationOrderAndChangesForSourceOrSdkIdentity()
     {
         string header = Write("include/api.h", "int sample(void);");
         string compiler = Write("tools/clang", "compiler");
-        string first = NativeBuildFingerprint.Create(["sdk-a", "wasm32"], [header, compiler]);
-        Assert.Equal(first, NativeBuildFingerprint.Create(["wasm32", "sdk-a"], [compiler, header, header]));
-        Assert.NotEqual(first, NativeBuildFingerprint.Create(["sdk-b", "wasm32"], [header, compiler]));
+        string first = NativeBuildFingerprint.Create(["sdk-a", "wasm32"], [new NativeBuildInput("include/api.h", header), new NativeBuildInput("tools/clang", compiler)]);
+        Assert.Equal(first, NativeBuildFingerprint.Create(["sdk-a", "wasm32"], [new NativeBuildInput("tools/clang", compiler), new NativeBuildInput("include/api.h", header), new NativeBuildInput("include/api.h", header)]));
+        Assert.NotEqual(first, NativeBuildFingerprint.Create(["sdk-b", "wasm32"], [new NativeBuildInput("include/api.h", header), new NativeBuildInput("tools/clang", compiler)]));
+        Assert.NotEqual(first, NativeBuildFingerprint.Create(["wasm32", "sdk-a"], [new NativeBuildInput("include/api.h", header), new NativeBuildInput("tools/clang", compiler)]));
         File.WriteAllText(header, "long sample(void);");
-        Assert.NotEqual(first, NativeBuildFingerprint.Create(["sdk-a", "wasm32"], [header, compiler]));
-        Assert.Throws<ArgumentException>(() => NativeBuildFingerprint.Create([], ["relative.h"]));
+        Assert.NotEqual(first, NativeBuildFingerprint.Create(["sdk-a", "wasm32"], [new NativeBuildInput("include/api.h", header), new NativeBuildInput("tools/clang", compiler)]));
+        Assert.Throws<ArgumentException>(() => new NativeBuildInput("include/api.h", "relative.h"));
+    }
+
+    [Fact]
+    public void LogicalInputsCanMoveWithoutChangingIdentityAndSameTimestampTamperingInvalidatesIt()
+    {
+        string first = Write("checkout-a/include/api.h", "int one(void);");
+        string relocated = Write("checkout-b/include/api.h", "int one(void);");
+        string fingerprint = NativeBuildFingerprint.Create(["target"], [new NativeBuildInput("include/api.h", first)]);
+        Assert.Equal(fingerprint,
+            NativeBuildFingerprint.Create(["target"], [new NativeBuildInput("include/api.h", relocated)]));
+        DateTime timestamp = File.GetLastWriteTimeUtc(relocated);
+        long length = new FileInfo(relocated).Length;
+        File.WriteAllText(relocated, "int two(void);");
+        File.SetLastWriteTimeUtc(relocated, timestamp);
+        Assert.Equal(length, new FileInfo(relocated).Length);
+        Assert.NotEqual(fingerprint,
+            NativeBuildFingerprint.Create(["target"], [new NativeBuildInput("include/api.h", relocated)]));
     }
 
     [Fact]

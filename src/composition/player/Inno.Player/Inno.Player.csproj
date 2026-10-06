@@ -9,8 +9,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="../../../foundation/core/Inno.Core.Execution/Inno.Core.Execution.csproj" />
     <ProjectReference Include="../Inno.Player.Runtime/Inno.Player.Runtime.csproj" />
     <ProjectReference Include="../../../adapters/default/Inno.Adapter.Default/Inno.Adapter.Default.csproj" />
+    <ProjectReference Include="../../../adapters/content/Inno.Adapter.Content.FileSystem/Inno.Adapter.Content.FileSystem.csproj" />
+    <ProjectReference Include="../../../adapters/storage/Inno.Adapter.Storage.FileSystem/Inno.Adapter.Storage.FileSystem.csproj" />
   </ItemGroup>
 
   <ItemGroup>

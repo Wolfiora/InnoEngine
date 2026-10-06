@@ -180,9 +180,7 @@ public sealed class SerializationMetadataGeneratorTests
             var metadata = new StaticSerializationMetadataSource([register]);
             using var modules = new ModuleHost(new ModuleHostOptions
             {
-                catalogSource = new DotNetAssemblyCatalogSource(assembly),
-                cacheDirectory = Path.Combine(Path.GetTempPath(), "Inno.SerializationMetadataFixture", Guid.NewGuid().ToString("N"))
-            });
+                catalogSource = new DotNetAssemblyCatalogSource(assembly)            });
             using var types = new TypeCatalog(modules, new ReflectionTypeCatalogSource());
             using var serialization = new SerializationRegistry(types, metadata);
             var run = assembly.GetType("Fixture.Scenario", throwOnError: true)!.GetMethod("Run")!
@@ -295,9 +293,7 @@ public sealed class SerializationMetadataGeneratorTests
             var metadata = new StaticSerializationMetadataSource([register]);
             using var modules = new ModuleHost(new ModuleHostOptions
             {
-                catalogSource = new DotNetAssemblyCatalogSource(assembly),
-                cacheDirectory = Path.Combine(Path.GetTempPath(), "Inno.PrivateSerializationFixture", Guid.NewGuid().ToString("N"))
-            });
+                catalogSource = new DotNetAssemblyCatalogSource(assembly)            });
             using var types = new TypeCatalog(modules, new ReflectionTypeCatalogSource());
             using var serialization = new SerializationRegistry(types, metadata);
             var run = assembly.GetType("Fixture.Scenario", throwOnError: true)!.GetMethod("Run")!

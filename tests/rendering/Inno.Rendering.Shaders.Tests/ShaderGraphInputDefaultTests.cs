@@ -9,6 +9,7 @@ using Inno.Core.Serialization;
 using Inno.Extensibility.Modules;
 using Inno.Extensibility.Types;
 using Xunit;
+using Inno.Rendering.Assets;
 
 namespace Inno.Rendering.Shaders.Tests;
 
@@ -24,9 +25,7 @@ public sealed class ShaderGraphInputDefaultTests : IDisposable
     {
         m_modules = new(new()
         {
-            catalogSource = new DotNetAssemblyCatalogSource(typeof(ShaderGraphInputDefaultTests).Assembly),
-            cacheDirectory = m_root
-        });
+            catalogSource = new DotNetAssemblyCatalogSource(typeof(ShaderGraphInputDefaultTests).Assembly)        });
         m_types = new(m_modules, new ReflectionTypeCatalogSource());
         m_serialization = new(m_types, new ReflectionSerializationMetadataSource());
     }

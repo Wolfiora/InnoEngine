@@ -8,7 +8,7 @@ namespace Inno.Extensibility.Types;
 /// <param name="id">
 /// The stable identity used to locate the requested value.
 /// </param>
-[AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct | AttributeTargets.Interface, Inherited = false)]
+[AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct | AttributeTargets.Interface | AttributeTargets.Enum, Inherited = false)]
 public sealed class StableTypeIdAttribute(string id) : Attribute
 {
     /// <summary>

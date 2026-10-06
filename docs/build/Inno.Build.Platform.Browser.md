@@ -47,3 +47,42 @@ target 不持有运行时脚本实例，也不运行 dotnet 子进程。通用 p
 ## 发布前校验
 
 公开 `BrowserSupportPackValidator` 实现 IPlayerSupportPackValidator，Validate(directory) 验证所需平台文件；对应 GameBuildTarget.Validate 调用同一规则，源码 Support Pack publisher 也复用它。缺失文件/跨平台 Native 二进制明确失败，没有重复平台闭包规则。
+
+## 当前源码公开 API 清单
+
+以下仅列出当前程序集自己声明的 public/protected 契约；继承成员遵循所属基类页面。internal/private 实现不作为稳定公开 API。签名依据当前源码语义模型生成，行为、参数、异常与所有权说明同时以对应英文 XML 为准。
+
+### `Inno.Build.Platform.Browser.BrowserSupportPackValidator`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`void Inno.Build.Platform.Browser.BrowserSupportPackValidator.Validate(string directory)`](../../build/pipeline/Inno.Build.Platform.Browser/BrowserSupportPackValidator.cs#L21) | Rejects incomplete or foreign platform inputs in the supplied Support Pack. |
+| [`Inno.Build.Platform.Browser.BrowserSupportPackValidator`](../../build/pipeline/Inno.Build.Platform.Browser/BrowserSupportPackValidator.cs#L10) | Validates the platform runtime or linker closure before compilation and installation. |
+
+### `Inno.Build.Platform.Browser.BrowserWasmGameBuildTarget`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Build.Platform.Browser.BrowserWasmGameBuildTarget.BrowserWasmGameBuildTarget(Inno.Assets.Pipeline.AssetPipeline assets, Inno.Core.Serialization.SerializationRegistry serialization, Inno.Extensibility.Types.TypeCatalog types)`](../../build/pipeline/Inno.Build.Platform.Browser/BrowserWasmGameBuildTarget.cs#L33) | Creates a browser target over the active authoring generation. |
+| [`System.Threading.Tasks.ValueTask Inno.Build.Platform.Browser.BrowserWasmGameBuildTarget.BuildContentAsync(Inno.Build.GameBuildContentContext context, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))`](../../build/pipeline/Inno.Build.Platform.Browser/BrowserWasmGameBuildTarget.cs#L85) | Compiles browser-compatible shader and texture artifacts into staging. |
+| [`System.Threading.Tasks.ValueTask<string> Inno.Build.Platform.Browser.BrowserWasmGameBuildTarget.PackageAsync(Inno.Build.GameBuildPackageContext context, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))`](../../build/pipeline/Inno.Build.Platform.Browser/BrowserWasmGameBuildTarget.cs#L105) | Composes an independently hostable site from a verified browser Support Pack and content pack. |
+| [`void Inno.Build.Platform.Browser.BrowserWasmGameBuildTarget.Validate(string directory)`](../../build/pipeline/Inno.Build.Platform.Browser/BrowserWasmGameBuildTarget.cs#L50) | Validates the target closure before runtime script compilation. |
+| [`Inno.Build.Managed.ManagedDeploymentId Inno.Build.Platform.Browser.BrowserWasmGameBuildTarget.defaultManagedDeployment`](../../build/pipeline/Inno.Build.Platform.Browser/BrowserWasmGameBuildTarget.cs#L58) | See the implemented contract. |
+| [`string Inno.Build.Platform.Browser.BrowserWasmGameBuildTarget.displayName`](../../build/pipeline/Inno.Build.Platform.Browser/BrowserWasmGameBuildTarget.cs#L66) | Gets the name shown by authoring hosts. |
+| [`Inno.Build.BuildTargetId Inno.Build.Platform.Browser.BrowserWasmGameBuildTarget.id`](../../build/pipeline/Inno.Build.Platform.Browser/BrowserWasmGameBuildTarget.cs#L55) | Gets the browser WebAssembly target identity. |
+| [`bool Inno.Build.Platform.Browser.BrowserWasmGameBuildTarget.isPreferredOnCurrentHost`](../../build/pipeline/Inno.Build.Platform.Browser/BrowserWasmGameBuildTarget.cs#L71) | Gets whether this target should replace the host's native default. |
+| [`string Inno.Build.Platform.Browser.BrowserWasmGameBuildTarget.runtimeIdentifier`](../../build/pipeline/Inno.Build.Platform.Browser/BrowserWasmGameBuildTarget.cs#L61) | See the implemented contract. |
+| [`Inno.Build.Platform.Browser.BrowserWasmGameBuildTarget`](../../build/pipeline/Inno.Build.Platform.Browser/BrowserWasmGameBuildTarget.cs#L16) | Compiles WebGL 2 content and packages a browser Player as a static site. |
+
+## 项目依赖
+
+- [Inno.Build.Toolchains.Bgfx.Tools](Inno.Build.Toolchains.Bgfx.Tools.md)：实现依赖（`PrivateAssets="compile"`）。
+- [Inno.Assets](../assets/Inno.Assets.md)：项目引用；公开签名可见性由语义边界检查确认。
+- [Inno.Assets.Pipeline](../assets/Inno.Assets.Pipeline.md)：项目引用；公开签名可见性由语义边界检查确认。
+- [Inno.Core.Serialization](../core/Inno.Core.Serialization.md)：项目引用；公开签名可见性由语义边界检查确认。
+- [Inno.Extensibility.Types](../extensibility/Inno.Extensibility.Types.md)：项目引用；公开签名可见性由语义边界检查确认。
+- [Inno.Build](Inno.Build.md)：项目引用；公开签名可见性由语义边界检查确认。
+- [Inno.Build.Managed](Inno.Build.Managed.md)：项目引用；公开签名可见性由语义边界检查确认。
+- [Inno.Extensibility.Catalogs](../extensibility/Inno.Extensibility.Catalogs.md)：项目引用；公开签名可见性由语义边界检查确认。
+
+共同 MSBuild 注入的 analyzer 与编译规则属于构建依赖，完整有效项目图记录在本轮验收证据中。

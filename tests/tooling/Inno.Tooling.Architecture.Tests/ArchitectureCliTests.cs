@@ -40,7 +40,7 @@ public sealed class ArchitectureCliTests
 
     [Theory]
     [InlineData("src/services/audio/Probe.cs", "global using System;", "global using", true)]
-    [InlineData("src/composition/player/Inno.Player/Probe.cs", "internal class Probe { private BgfxDevice device; }", "backend-neutral", true)]
+    [InlineData("src/composition/player/Inno.Player.Runtime/Probe.cs", "internal class Probe { private BgfxDevice device; }", "backend-neutral", true)]
     [InlineData("src/content/assets/Probe.cs", "internal class Probe { void Read() { context.With<IAssetReferenceResolver>(resolver); } }", "owner-complete", true)]
     [InlineData("src/services/audio/Probe.cs", "public class Probe { public MaEngine engine; }", "native implementation", true)]
     [InlineData("src/services/audio/Probe.cs", "internal class Probe { void Release() { OnCleanupFailed(phase, failure); } }", "diagnostic-only", true)]

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
 using Inno.Core.IO;
@@ -14,7 +15,7 @@ namespace Inno.Build.Toolchains.Host;
 public static class HostNativeDeployment
 {
     /// <summary>
-    /// Atomically replaces the application's native tree using the supplied products alone.
+    /// Validates the application's native tree and atomically replaces it when its exact contents differ.
     /// </summary>
     /// <param name="products">
     /// Validated runtime and optional authoring products returned by HostNativeBuild.
@@ -24,7 +25,8 @@ public static class HostNativeDeployment
     /// Cancels ownership acquisition or staging before the atomic installation starts.
     /// </param>
     /// <returns>
-    /// Completion after the complete native tree has been installed under exclusive publication ownership.
+    /// Completion after the complete native tree has been validated under exclusive publication ownership.
+    /// Identical deployments retain their files, including libraries loaded by a running application.
     /// </returns>
     /// <param name="applicationDirectory">
     /// The managed output directory receiving the complete native tree.
@@ -54,37 +56,30 @@ public static class HostNativeDeployment
         using FileLease ownership = await FileLease.AcquireAsync(destination + ".lock",
             Timeout.InfiniteTimeSpan, cancellationToken).ConfigureAwait(false);
         cancellationToken.ThrowIfCancellationRequested();
+        ValidateProducts(closure, cancellationToken);
+        IReadOnlyDictionary<string, string> files = GetDeploymentFiles(closure);
+        if (HasSameFiles(destination, files, cancellationToken))
+        {
+            ValidateProducts(closure, cancellationToken);
+            cancellationToken.ThrowIfCancellationRequested();
+            return;
+        }
         string staging = destination + ".staging-" + Guid.NewGuid().ToString("N");
         Directory.CreateDirectory(staging);
         try
         {
-            foreach (NativeBuildProduct product in closure)
+            foreach ((string relative, string file) in files)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                if (!BuildArtifactManifest.IsComplete(product.directory, product.fingerprint, ["Outputs"]))
-                    throw new InvalidDataException($"Native product '{product.component}' changed after publication.");
-                foreach (string file in product.files)
-                {
-                    cancellationToken.ThrowIfCancellationRequested();
-                    string relative = Path.GetRelativePath(Path.Combine(product.directory, "Outputs"), file);
-                    // Import libraries belong to the build closure, not to an application deployment.
-                    if (relative.Split(Path.DirectorySeparatorChar)[0] == "Link")
-                        continue;
-                    string output = product.component == "bgfx-tools"
-                        ? relative.StartsWith("includes" + Path.DirectorySeparatorChar, StringComparison.Ordinal)
-                            ? Path.Combine(staging, "bgfx", relative)
-                            : Path.Combine(staging, "bgfx", product.targetId, "tools", relative)
-                        : Path.Combine(staging, product.component, product.targetId, relative);
-                    Directory.CreateDirectory(Path.GetDirectoryName(output)!);
-                    await using (FileStream source = File.OpenRead(file))
-                    await using (FileStream target = new(output, FileMode.CreateNew))
-                        await source.CopyToAsync(target, cancellationToken).ConfigureAwait(false);
-                    if (!OperatingSystem.IsWindows())
-                        File.SetUnixFileMode(output, File.GetUnixFileMode(file));
-                }
-                if (!BuildArtifactManifest.IsComplete(product.directory, product.fingerprint, ["Outputs"]))
-                    throw new InvalidDataException($"Native product '{product.component}' changed during deployment.");
+                string output = Path.Combine(staging, relative);
+                Directory.CreateDirectory(Path.GetDirectoryName(output)!);
+                await using (FileStream source = File.OpenRead(file))
+                await using (FileStream target = new(output, FileMode.CreateNew))
+                    await source.CopyToAsync(target, cancellationToken).ConfigureAwait(false);
+                if (!OperatingSystem.IsWindows())
+                    File.SetUnixFileMode(output, File.GetUnixFileMode(file));
             }
+            ValidateProducts(closure, cancellationToken);
             cancellationToken.ThrowIfCancellationRequested();
             AtomicDirectory.Install(staging, destination);
         }
@@ -93,5 +88,66 @@ public static class HostNativeDeployment
             if (Directory.Exists(staging))
                 Directory.Delete(staging, recursive: true);
         }
+    }
+
+    private static void ValidateProducts(
+        IReadOnlyList<NativeBuildProduct> products,
+        CancellationToken cancellationToken
+    ) {
+        foreach (NativeBuildProduct product in products)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            if (!BuildArtifactManifest.IsComplete(product.directory, product.fingerprint, ["Outputs"]))
+                throw new InvalidDataException($"Native product '{product.component}' changed after publication.");
+        }
+    }
+
+    private static IReadOnlyDictionary<string, string> GetDeploymentFiles(IReadOnlyList<NativeBuildProduct> products)
+    {
+        var files = new Dictionary<string, string>(OperatingSystem.IsWindows()
+            ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal);
+        foreach (NativeBuildProduct product in products)
+        {
+            foreach (string file in product.files)
+            {
+                string relative = Path.GetRelativePath(Path.Combine(product.directory, "Outputs"), file);
+                // Import libraries belong to the build closure, not to an application deployment.
+                if (relative.Split(Path.DirectorySeparatorChar)[0] == "Link")
+                    continue;
+                string output = product.component == "bgfx-tools"
+                    ? relative.StartsWith("includes" + Path.DirectorySeparatorChar, StringComparison.Ordinal)
+                        ? Path.Combine("bgfx", relative)
+                        : Path.Combine("bgfx", product.targetId, "tools", relative)
+                    : Path.Combine(product.component, product.targetId, relative);
+                files.Add(output, file);
+            }
+        }
+        return files;
+    }
+
+    private static bool HasSameFiles(
+        string directory,
+        IReadOnlyDictionary<string, string> files,
+        CancellationToken cancellationToken
+    ) {
+        if (!Directory.Exists(directory))
+            return false;
+        int count = 0;
+        foreach (string deployed in PathBoundary.EnumerateFiles(directory))
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            if (!files.TryGetValue(Path.GetRelativePath(directory, deployed), out string? source)
+                || new FileInfo(deployed).Length != new FileInfo(source).Length)
+                return false;
+            using FileStream deployedStream = File.OpenRead(deployed);
+            using FileStream sourceStream = File.OpenRead(source);
+            if (!SHA256.HashData(deployedStream).AsSpan().SequenceEqual(SHA256.HashData(sourceStream)))
+                return false;
+            if (!OperatingSystem.IsWindows() && File.GetUnixFileMode(deployed) != File.GetUnixFileMode(source))
+                return false;
+            count++;
+        }
+        cancellationToken.ThrowIfCancellationRequested();
+        return count == files.Count;
     }
 }

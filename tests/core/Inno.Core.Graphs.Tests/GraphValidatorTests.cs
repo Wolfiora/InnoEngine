@@ -24,9 +24,7 @@ public sealed class GraphValidatorTests : IDisposable
     public GraphValidatorTests()
     {
         m_modules = new ModuleHost(new ModuleHostOptions
-        { catalogSource = new DotNetAssemblyCatalogSource(typeof(GraphValidatorTests).Assembly),
-            cacheDirectory = Path.Combine(m_testRoot, "Assemblies")
-        });
+        { catalogSource = new DotNetAssemblyCatalogSource(typeof(GraphValidatorTests).Assembly)        });
         m_types = new TypeCatalog(m_modules, new ReflectionTypeCatalogSource());
         m_serialization = new SerializationRegistry(m_types, new ReflectionSerializationMetadataSource());
     }

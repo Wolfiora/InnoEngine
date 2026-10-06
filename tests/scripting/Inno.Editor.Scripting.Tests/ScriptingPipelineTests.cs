@@ -1,3 +1,5 @@
+using Inno.Core.Logging;
+using Inno.Core.IO;
 using Inno.Adapter.Serialization.DotNet;
 using Inno.Adapter.Modules.DotNet;
 using Inno.Core.Diagnostics;
@@ -706,6 +708,29 @@ public sealed class ScriptingPipelineTests : IDisposable
     }
 
     [Fact]
+    public void LogicalDocumentationProjectsNamespacesWithoutLosingMemberDescriptions()
+    {
+        m_fixture.compiler.GenerateProjectFiles();
+        XDocument project = XDocument.Load(Path.Combine(m_fixture.projectRoot, "Inno.GameScripts.csproj"));
+        XElement[] members = project.Descendants("HintPath")
+            .Select(reference => Path.ChangeExtension(Path.GetFullPath(reference.Value, m_fixture.projectRoot), ".xml"))
+            .Where(File.Exists)
+            .SelectMany(path => XDocument.Load(path).Descendants("member"))
+            .ToArray();
+
+        XElement manager = Assert.Single(members.Where(member =>
+            member.Attribute("name")?.Value == "T:InnoEngine.Scene.SceneManager"));
+        Assert.Contains("scene operations", manager.Element("summary")!.Value, StringComparison.Ordinal);
+        Assert.Contains(manager.Descendants("see"), reference =>
+            reference.Attribute("cref")?.Value == "T:InnoEngine.Scene.SceneWorld");
+        Assert.Contains(members, member =>
+            member.Attribute("name")?.Value == "P:InnoEngine.Scene.SceneManager.activeScene" &&
+            member.Element("summary")?.Value.Contains("active scene", StringComparison.Ordinal) == true);
+        Assert.DoesNotContain(members, member =>
+            member.Attribute("name")?.Value.StartsWith("T:Inno.Scene.", StringComparison.Ordinal) == true);
+    }
+
+    [Fact]
     public void GenerateProjectFilesUsesTheSameRuntimeAndEditorClassification()
     {
         m_fixture.Write(
@@ -1311,7 +1336,8 @@ public sealed class ScriptingPipelineTests : IDisposable
             "source",
             out AssetArtifactInfo? source));
         Assert.NotNull(source);
-        Assert.True(File.Exists(source.absolutePath));
+        using (ArtifactLease encoded = m_fixture.assets.AcquireArtifact(info.persistentId, "source"))
+            Assert.NotEmpty(encoded.ReadAllBytes());
         Assert.Equal(0, exported.assetCount);
         Assert.DoesNotContain(
             Directory.EnumerateFiles(contentRoot, "*", SearchOption.AllDirectories),
@@ -1545,7 +1571,7 @@ public sealed class ScriptingPipelineTests : IDisposable
         Assert.True(initial.success, FormatDiagnostics(initial));
         Assert.True(reload.ApplyPendingReload());
         using var detachedSettings = new ProjectSettingsStore(
-            Path.Combine(fixture.projectRoot, "DetachedSettings.inno"), fixture.host.types,
+            new FileByteDocumentStore(Path.GetFullPath(Path.Combine(fixture.projectRoot, "DetachedSettings.inno"))), fixture.host.types,
             fixture.host.serialization, new ProjectId("tests.detached.settings"),
             AssetSerializationContext.Create(fixture.assets));
         WeakReference previousType = CaptureCachedSettingType(detachedSettings);
@@ -1651,10 +1677,10 @@ public sealed class ScriptingPipelineTests : IDisposable
             {
                 kind = RuntimeSessionKind.Play,
                 applicationId = "tests.scripting.play-reload",
-                persistentDataDirectory = Path.Combine(
+                createLogSink = _ => new FileLogSink(Path.Combine(Path.Combine(
                     fixture.projectRoot,
                     "Persistent",
-                    "tests.scripting.play-reload"),
+                    "tests.scripting.play-reload"), "Logs")),
                 jobExecutionMode = RuntimeJobExecutionMode.SingleThread,
                 referenceResolvers = [fixture.assets]
             },
@@ -1784,7 +1810,7 @@ public sealed class ScriptingPipelineTests : IDisposable
         using var play = new EditorPlayModeController(fixture.host, new RuntimeSessionOptions
         {
             kind = RuntimeSessionKind.Play, applicationId = "tests.content-soak",
-            persistentDataDirectory = Path.Combine(fixture.projectRoot, "Persistent", "tests.content-soak"),
+            createLogSink = _ => new FileLogSink(Path.Combine(Path.Combine(fixture.projectRoot, "Persistent", "tests.content-soak"), "Logs")),
             jobExecutionMode = RuntimeJobExecutionMode.SingleThread, referenceResolvers = [fixture.assets]
         }, scenes, new ReadyScriptCompilation(), history, fixture.host.logs);
         using IDisposable registration = reloads.Register(play);
@@ -2420,7 +2446,6 @@ internal sealed class ScriptingFixture : IDisposable
         host = new EngineHostBuilder()
                 .UseMetadataSources(new DotNetAssemblyCatalogSource(typeof(ScriptingPipelineTests).Assembly),
                     new ReflectionTypeCatalogSource(), new ReflectionSerializationMetadataSource())
-            .UseMetadataCache(Path.Combine(libraryRoot, "Assemblies"))
             .Build();
         m_diagnosticScope = host.diagnostics.EnterScope();
         configureProject?.Invoke(projectRoot, host.serialization);
@@ -2445,7 +2470,7 @@ internal sealed class ScriptingFixture : IDisposable
                 ]
             });
         m_settings = new ProjectSettingsStore(
-            Path.Combine(projectRoot, "Settings.Project.inno"),
+            new FileByteDocumentStore(Path.GetFullPath(Path.Combine(projectRoot, "Settings.Project.inno"))),
             host.types,
             host.serialization,
             new ProjectId("tests.scripting"),
@@ -2543,9 +2568,10 @@ internal sealed class ScriptingFixture : IDisposable
         return directory;
     }
 
-    private static IModuleSource CreateScriptModuleSource(ScriptModuleDeployment deployment)
+    private IModuleSource CreateScriptModuleSource(ScriptModuleDeployment deployment)
         => new DotNetModuleSource
         {
+            artifactRootDirectory = Path.Combine(projectRoot, "Library", "Assemblies"),
             moduleName = deployment.moduleName,
             mainAssemblyPath = deployment.mainAssemblyPath,
             domain = deployment.domain,
@@ -2632,7 +2658,7 @@ internal sealed class ScriptingFixture : IDisposable
         {
             kind = RuntimeSessionKind.Edit,
             applicationId = "tests.editor",
-            persistentDataDirectory = Path.Combine(projectRoot, "Persistent", "tests.editor"),
+            createLogSink = _ => new FileLogSink(Path.Combine(Path.Combine(projectRoot, "Persistent", "tests.editor"), "Logs")),
             referenceResolvers = [assets]
         });
         return m_editorSession;

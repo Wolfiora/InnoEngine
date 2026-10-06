@@ -175,7 +175,7 @@ public sealed class TextRuntime : RuntimeSubsystem, ITextService
         ArtifactLease artifact = m_artifacts.AcquireArtifact(font.identity.persistentId, "font-data");
         try
         {
-            byte[] bytes = File.ReadAllBytes(artifact.info.absolutePath);
+            byte[] bytes = artifact.ReadAllBytes();
             TextFontHandle handle = m_backend.LoadFont(bytes, faceIndex);
             if (!handle.isValid)
                 throw new InvalidOperationException("The text backend rejected the imported font face.");

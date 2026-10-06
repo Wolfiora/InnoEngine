@@ -5,15 +5,14 @@
 ## 1. 当前能保证什么
 
 玩法、领域契约、Scene、类型目录、共同 Player 生命周期和帧执行不选择 Windows、macOS 或浏览器。
-平台宿主把服务、帧驱动、线程策略和部署目录注入共同运行流程；具体 Adapter 使用相同领域契约。
+平台宿主把服务、帧驱动、线程策略、内容来源和存储/log factories 注入共同运行流程；具体 Adapter 使用相同领域契约。
 
 平台中立不能解释成整个仓库没有平台代码，也不能解释成新增平台无需实现或验收。
 窗口、GPU surface、文件系统、原生 ABI、托管发布、SDK 与签名都有真实差异，由各自边界处理。
 
-当前源码还有文件系统相关的 OS 判断：Core.IO 的路径比较和 Windows 文件移动重试，以及
-`RuntimeContentDeployment`、`FileRenderTargetArtifactProvider` 的文件路径防越界比较。
-后两者是具体的文件部署/读取实现，不是纯领域契约；因此不能声称所有 Runtime/Services 文件都没有 OS 判断。
-它们没有选择另一套玩法、事件总线或渲染执行流程。
+文件系统相关的 OS 判断只属于 Core.IO 的文件操作及具体文件 Adapter、宿主或工具链。
+共同 Player 从 IPlayerContentSource 取得 metadata 和只读 store；ContentRenderTargetArtifactProvider 使用逻辑定位，
+不取得部署目录。新增 HTTP、内存或其他内容来源时，共用 Scene、资产 lease、事件与渲染执行流程。
 
 ## 2. 真实例子：FlappyBird
 
@@ -42,7 +41,7 @@ byte[]? saved = await Storage.ReadAsync(bestScoreKey);
 `DesktopPlayerComposition` 与 `BrowserPlayerComposition` 都通过 `PlayerLaunchOptions` 注入这些选择，
 并调用 `PlayerApplication.RunAsync`。默认 Adapter catalog 可以替换某一个领域的 provider，
 不要求复制 EngineHost 或 Player。
-实际 Windows CoreCLR/NativeAOT、Web 解释执行/AOT 证据见[完整重构验收](PLATFORM_RUNTIME_ACCEPTANCE.md)。
+实际 Windows CoreCLR/NativeAOT、Web 解释执行/AOT 证据见[本轮架构整改验收](ARCHITECTURE_CLEANUP_ACCEPTANCE_2026_10_06.md)。
 
 ## 3. 新平台例子：未来接入 iOS
 
@@ -89,12 +88,13 @@ build/support/Inno.Build.SupportPacks/
 4. **实现平台包。** `IosArm64GameBuildTarget` 实现 `IGameBuildTarget` 的内容处理、打包和校验；
    packager/signer 管理资源、平台清单与签名。`IosPlayerSupportPackSource` 实现 `IPlayerSupportPackSource`，
    共同 publisher 继续拥有缓存、安装和输出保全事务。
-5. **实现系统宿主。** `IosPlayerComposition` 管理启动与系统生命周期，注入帧驱动、存储目录、Adapter、
-   模块目录和线程策略，再进入共同 `PlayerApplication.RunAsync`。
+5. **实现系统宿主。** `IosPlayerComposition` 管理启动与系统生命周期，通过 `PlayerLaunchOptions` 注入内容来源、
+   storage/log factories、Adapter、模块目录、帧驱动和线程策略，再进入共同 `PlayerApplication.RunAsync`。
    可以用 `ScheduledShellFrameDriver` 包装系统帧回调；确有不同调度行为时实现 `IShellFrameDriver`。
    暂停、恢复和输入继续进入现有平台契约与 Core Events。
-6. **注册组合。** Build CLI 和 Editor composition 注册 target、deployment compiler 与 Support Pack source，
-   同步项目引用、Solution、Wiki 和架构分类。通用 Build Pipeline 不增加 iOS 专用分支；
+6. **注册组合。** 在 `Inno.Build.Composition` 的唯一内置 distribution 注册 target factory、deployment compiler
+   与 Support Pack source；Editor、CLI 和 MSBuild 自动消费同一集合。同步项目引用、Solution、Wiki 和架构分类。
+   共同预检在工具启动前拒绝不支持的目标与部署组合。通用 Build Pipeline 不增加 iOS 专用分支；
    没有要求的领域不增加 Adapter。
 7. **实机验收。** 分别验证设备/模拟器、触摸、焦点、后台恢复、GPU surface、音频、存储、回调释放、
    AOT/裁剪、取消和失败时保留旧输出。通过前不能标为已支持。

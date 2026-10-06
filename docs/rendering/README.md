@@ -6,9 +6,11 @@ Rendering Core 是后端中立机制，不内建 2D/3D/PBR/Forward/Deferred/Came
 
 | 项目 | 职责 |
 | --- | --- |
-| [Inno.Rendering](Inno.Rendering.md) | capability、resource、RenderGraph、command、Pipeline、Shader IR 与 request contract |
+| [Inno.Rendering](Inno.Rendering.md) | 设备、capability、resource、RenderGraph、command 与纯绑定反射 |
 | [Inno.Rendering.Runtime](Inno.Rendering.Runtime.md) | 帧调度、GPU resource generation、Pending 安全退休与 safe-point reload |
-| [Inno.Rendering.Assets](Inno.Rendering.Assets.md) | Shader/Texture/Geometry importer 与离线编译 contract |
+| [Inno.Rendering.Assets](Inno.Rendering.Assets.md) | Shader/Material/Texture/Geometry/Pipeline 运行资产与部署产物 |
+| [Inno.Rendering.Assets.Authoring](Inno.Rendering.Assets.Authoring.md) | 导入、图创作、源码冻结、目标编译与 last-good |
+| [Inno.Rendering.Assets.Authoring](Inno.Rendering.Assets.Authoring.md) | 导入、图创作、源码冻结、目标编译与 last-good |
 | [Inno.Rendering.Shaders](Inno.Rendering.Shaders.md) | 源码函数、节点降低、typed stage/资源/结构化区域；完整资产闭环实施中 |
 | [Inno.Rendering.Shaders.Tests](Inno.Rendering.Shaders.Tests.md) | 源码/图/资源/控制流与代际测试、Metal 原生编译，不替代 GPU 验收 |
 | [Inno.Adapter.Rendering](Inno.Adapter.Rendering.md) | Rendering backend 选择、runtime device factory 与 authoring compiler factory contract |

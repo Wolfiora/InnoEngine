@@ -185,6 +185,7 @@ internal sealed class GameBuildPipeline
             (_, string contentHash) = await ContentPackWriter.WriteAsync(
                     rawContent,
                     packagedContent,
+                    serialization,
                     stagingToken)
                 .ConfigureAwait(false);
             var catalog = new RuntimeContentCatalog

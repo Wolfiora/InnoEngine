@@ -3,6 +3,7 @@ using System.IO;
 
 using Inno.Core.Serialization;
 using Inno.Core.Settings;
+using Inno.Core.IO;
 
 namespace Inno.Build;
 
@@ -43,7 +44,7 @@ public sealed class BuildSettingsStore
         ArgumentNullException.ThrowIfNull(defaultSettings);
         defaultSettings.ValidateDocument();
         m_documents = new SettingsDocumentStore<BuildSettings>(
-            path,
+            new FileByteDocumentStore(Path.GetFullPath(path)),
             serialization,
             defaultSettings.Copy,
             static value => value.ValidateDocument());

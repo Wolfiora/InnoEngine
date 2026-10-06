@@ -64,9 +64,9 @@ public interface IRenderDevice : IDisposable
     uint generation { get; }
 
     /// <summary>
-    /// Gets the current primary presentation extent in physical pixels.
+    /// Gets the real primary presentation extent in physical pixels, or null while no output is available.
     /// </summary>
-    RenderPresentationSize primaryPresentationSize => new(1, 1);
+    RenderPresentationSize? primaryPresentationSize { get; }
 
     /// <summary>
     /// Gets whether the primary presentation target encodes linear RGB to sRGB during writes.
@@ -113,18 +113,15 @@ public interface IRenderDevice : IDisposable
     uint EndFrame();
 
     /// <summary>
-    /// Queues a backbuffer resize for the current API-thread safety point.
+    /// Queues primary output availability and its real pixel extent for the next frame safety point.
     /// </summary>
-    /// <param name="width">
-    /// Backbuffer width in pixels.
+    /// <param name="size">
+    /// A valid drawable pixel extent, or null when the primary surface cannot currently present.
     /// </param>
-    /// <param name="height">
-    /// Backbuffer height in pixels.
-    /// </param>
-    void ResizeBackbuffer(
-        int width,
-        int height
-    );
+    /// <exception cref="ArgumentException">
+    /// The assigned extent has zero or negative dimensions, including a default struct value.
+    /// </exception>
+    void SetPrimaryPresentationSize(RenderPresentationSize? size);
 
     /// <summary>
     /// Queues display synchronization policy on the API thread for the next frame boundary.

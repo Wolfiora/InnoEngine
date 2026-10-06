@@ -12,7 +12,8 @@ using Inno.Editor.Interactions;
 using Inno.Editor.Rendering;
 using Inno.Rendering;
 using Inno.Rendering.Assets;
-using Draft = Inno.Editor.Assets.AssetDraftDocuments<Inno.Rendering.MaterialAsset>.Draft;
+using Draft = Inno.Editor.Assets.AssetDraftDocuments<Inno.Rendering.Assets.MaterialAsset>.Draft;
+using Inno.Rendering.Assets.Authoring;
 
 namespace Inno.Editor.Shaders;
 

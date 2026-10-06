@@ -10,6 +10,7 @@ using Inno.Core.Execution;
 using Inno.Core.Identity;
 using Inno.Extensibility.Types;
 using Inno.Core.Serialization;
+using Inno.Content;
 
 namespace Inno.Assets;
 
@@ -29,7 +30,6 @@ public sealed partial class AssetDatabase : AssetResidencyProvider,
     IAssetResidency
 {
     private readonly AssetRuntimeOwner m_runtimeOwner;
-    private readonly ArtifactRetention m_artifactRetention = new();
     private readonly object m_sync = new();
     private readonly Dictionary<AssetPath, RuntimeAssetRecord> m_recordsByPath = [];
     private readonly Dictionary<Guid, RuntimeAssetRecord> m_recordsById = [];
@@ -38,7 +38,7 @@ public sealed partial class AssetDatabase : AssetResidencyProvider,
     private readonly SerializationContext m_serializationContext;
     private TypeCacheSnapshot? m_types;
     private readonly IdentityAllocator m_identities;
-    private readonly string m_artifactRoot;
+    private readonly IRuntimeContentStore m_content;
     private readonly long m_residencyBudgetBytes;
     private readonly long m_preparationBudgetBytes;
     private long m_accessSequence;
@@ -79,10 +79,10 @@ public sealed partial class AssetDatabase : AssetResidencyProvider,
     }
 
     /// <summary>
-    /// Creates a read-only runtime asset database from one materialized content pack.
+    /// Creates a read-only runtime asset database from one verified immutable content store.
     /// </summary>
-    /// <param name="contentRoot">
-    /// The verified runtime content root containing <c>AssetDatabase</c> and <c>Artifacts</c> directories.
+    /// <param name="content">
+    /// The borrowed content store; its owner closes it after this database and all outstanding reads retire.
     /// </param>
     /// <param name="serialization">
     /// The immutable converter generation pinned by the owning runtime session.
@@ -99,9 +99,6 @@ public sealed partial class AssetDatabase : AssetResidencyProvider,
     /// <param name="preparationBudgetBytes">
     /// Maximum encoded payload bytes reserved by unfinished cold-load closures, independently of residency.
     /// </param>
-    /// <exception cref="ArgumentException">
-    /// Thrown when <paramref name="contentRoot"/> is empty.
-    /// </exception>
     /// <exception cref="ArgumentNullException">
     /// Thrown when <paramref name="serialization"/> is null.
     /// </exception>
@@ -109,20 +106,20 @@ public sealed partial class AssetDatabase : AssetResidencyProvider,
     /// Thrown when the deployed catalog or its runtime artifact closure is incomplete or malformed.
     /// </exception>
     public AssetDatabase(
-        string contentRoot,
+        IRuntimeContentStore content,
         SerializationGeneration serialization,
         TypeCacheSnapshot types,
         IdentityAllocator identities,
         long residencyBudgetBytes = long.MaxValue,
         long preparationBudgetBytes = 64L * 1024 * 1024
     ) {
-        ArgumentException.ThrowIfNullOrWhiteSpace(contentRoot);
+        ArgumentNullException.ThrowIfNull(content);
         ArgumentNullException.ThrowIfNull(serialization);
         ArgumentNullException.ThrowIfNull(types);
         ArgumentNullException.ThrowIfNull(identities);
         ArgumentOutOfRangeException.ThrowIfNegative(residencyBudgetBytes);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(preparationBudgetBytes);
-        string root = Path.GetFullPath(contentRoot);
+        m_content = content;
         m_serialization = serialization;
         m_runtimeOwner = new(this);
         m_serializationContext = AssetSerializationContext.Create(new PreparedAssetResolver(this));
@@ -130,11 +127,8 @@ public sealed partial class AssetDatabase : AssetResidencyProvider,
         m_identities = identities;
         m_residencyBudgetBytes = residencyBudgetBytes;
         m_preparationBudgetBytes = preparationBudgetBytes;
-        m_artifactRoot = Path.Combine(root, "Artifacts");
-        string catalogPath = Path.Combine(root, "AssetDatabase", "Catalog.snapshot");
-        if (!File.Exists(catalogPath))
-            throw new InvalidDataException($"Runtime asset catalog '{catalogPath}' does not exist.");
-        RuntimeAssetCatalog catalog = m_serialization.Deserialize<RuntimeAssetCatalog>(File.ReadAllBytes(catalogPath));
+        RuntimeAssetCatalog catalog = m_serialization.Deserialize<RuntimeAssetCatalog>(
+            ReadContent(new ContentKey("AssetDatabase/Catalog.snapshot")));
         for (int index = 0; index < catalog.entries.Length; index++)
         {
             RuntimeAssetData data = m_serialization.Deserialize<RuntimeAssetData>(catalog.entries[index]);
@@ -422,7 +416,7 @@ public sealed partial class AssetDatabase : AssetResidencyProvider,
     /// The exact artifact output name.
     /// </param>
     /// <param name="artifact">
-    /// Receives verified output metadata and its absolute immutable path when successful.
+    /// Receives verified output metadata without prescribing a physical deployment location.
     /// </param>
     /// <returns>
     /// <see langword="true"/> when the deployed bundle contains the requested output; otherwise,
@@ -447,11 +441,10 @@ public sealed partial class AssetDatabase : AssetResidencyProvider,
                 string.Equals(candidate.name, outputName, StringComparison.Ordinal));
             if (string.IsNullOrWhiteSpace(output.name))
                 return false;
-            string artifactPath = GetVerifiedOutputPath(record, output);
+            _ = GetVerifiedOutputKey(record, output);
             artifact = new AssetArtifactInfo(
                 new AssetArtifactKey(record.artifactKey),
                 output.name,
-                artifactPath,
                 output.contentHash,
                 output.length);
             return true;
@@ -474,12 +467,18 @@ public sealed partial class AssetDatabase : AssetResidencyProvider,
         Guid persistentId,
         string outputName
     ) {
-        if (!TryGetArtifact(persistentId, outputName, out AssetArtifactInfo? artifact) || artifact is null)
+        lock (m_sync)
         {
-            throw new InvalidOperationException(
-                $"Runtime asset '{persistentId:D}' has no verified artifact output '{outputName}'.");
+            if (!TryGetArtifact(persistentId, outputName, out AssetArtifactInfo? artifact) || artifact is null)
+            {
+                throw new InvalidOperationException(
+                    $"Runtime asset '{persistentId:D}' has no verified artifact output '{outputName}'.");
+            }
+            RuntimeAssetRecord record = m_recordsById[persistentId];
+            RuntimeArtifactOutput output = ReadArtifactManifest(record).outputs.Single(candidate => candidate.name == outputName);
+            ContentReadLease content = m_content.Acquire(GetVerifiedOutputKey(record, output));
+            return CreateArtifactLease(artifact, content.OpenRead, content.Dispose);
         }
-        return m_artifactRetention.Retain(artifact);
     }
 
     /// <summary>
@@ -639,7 +638,7 @@ public sealed partial class AssetDatabase : AssetResidencyProvider,
         {
             RuntimeArtifactOutput output = ReadArtifactManifest(record).outputs.Single(candidate =>
                 string.Equals(candidate.name, "runtime", StringComparison.Ordinal));
-            payload = File.ReadAllBytes(GetVerifiedOutputPath(record, output));
+            payload = ReadContent(GetVerifiedOutputKey(record, output));
         }
         m_runtimeOwner.Initialize(asset, record.path, record.sourceHash, payload, isMissing: false, version: 1);
         record.runtimeBytes = payload.LongLength;
@@ -842,41 +841,50 @@ public sealed partial class AssetDatabase : AssetResidencyProvider,
                 $"Runtime artifact bundle '{record.artifactKey}' does not contain one complete asset-state/runtime pair.");
         }
         foreach (RuntimeArtifactOutput output in manifest.outputs)
-            _ = GetVerifiedOutputPath(record, output);
+            _ = GetVerifiedOutputKey(record, output);
     }
 
     private RuntimeArtifactManifest ReadArtifactManifest(RuntimeAssetRecord record)
     {
-        string manifestPath = Path.Combine(GetBundleRoot(record.artifactKey), "manifest");
-        if (!File.Exists(manifestPath))
-            throw new InvalidDataException($"Runtime artifact bundle '{record.artifactKey}' has no manifest.");
-        return m_serialization.Deserialize<RuntimeArtifactManifest>(File.ReadAllBytes(manifestPath));
+        ContentKey key = new(GetBundleRoot(record.artifactKey) + "/manifest");
+        return m_serialization.Deserialize<RuntimeArtifactManifest>(ReadContent(key));
     }
 
-    private string GetVerifiedOutputPath(
+    private ContentKey GetVerifiedOutputKey(
         RuntimeAssetRecord record,
         RuntimeArtifactOutput output
     ) {
         if (string.IsNullOrWhiteSpace(output.name) || string.IsNullOrWhiteSpace(output.fileName)
-            || Path.GetFileName(output.fileName) != output.fileName)
+            || output.fileName.Contains('/') || output.fileName.Contains('\\'))
         {
             throw new InvalidDataException($"Runtime artifact bundle '{record.artifactKey}' contains an invalid output path.");
         }
-        string path = Path.Combine(GetBundleRoot(record.artifactKey), "outputs", output.fileName);
-        if (!File.Exists(path))
+        ContentKey key = new(GetBundleRoot(record.artifactKey) + "/outputs/" + output.fileName);
+        if (!m_content.index.TryGetEntry(key, out ContentEntry? entry))
             throw new InvalidDataException($"Runtime artifact output '{record.artifactKey}/{output.name}' is missing.");
-        var info = new FileInfo(path);
-        if (info.Length != output.length)
+        if (entry!.length != output.length)
             throw new InvalidDataException($"Runtime artifact output '{record.artifactKey}/{output.name}' has an invalid length.");
-        using FileStream stream = File.OpenRead(path);
-        string hash = Convert.ToHexString(SHA256.HashData(stream));
-        if (!string.Equals(hash, output.contentHash, StringComparison.OrdinalIgnoreCase))
+        if (!string.Equals(entry.contentHash, output.contentHash, StringComparison.OrdinalIgnoreCase))
             throw new InvalidDataException($"Runtime artifact output '{record.artifactKey}/{output.name}' failed hash verification.");
-        return path;
+        return key;
     }
 
-    private string GetBundleRoot(string key)
-        => Path.Combine(m_artifactRoot, key[..2].ToLowerInvariant(), key[2..4].ToLowerInvariant(), key);
+    private static string GetBundleRoot(string key)
+        => "Artifacts/" + key[..2].ToLowerInvariant() + "/" + key[2..4].ToLowerInvariant() + "/" + key;
+
+    private byte[] ReadContent(ContentKey key)
+    {
+        using ContentReadLease lease = m_content.Acquire(key);
+        if (lease.entry.length > Array.MaxLength)
+            throw new InvalidDataException($"Content '{key}' exceeds the supported array budget.");
+        using Stream input = lease.OpenRead();
+        byte[] bytes = new byte[(int)lease.entry.length];
+        input.ReadExactly(bytes);
+        if (input.ReadByte() != -1 || !string.Equals(Convert.ToHexString(SHA256.HashData(bytes)),
+            lease.entry.contentHash, StringComparison.Ordinal))
+            throw new InvalidDataException($"Content '{key}' failed integrity verification.");
+        return bytes;
+    }
 
     private void EnsureActive() => ObjectDisposedException.ThrowIf(m_disposed || m_retirement is not null, this);
 

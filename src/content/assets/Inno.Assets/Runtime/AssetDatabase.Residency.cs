@@ -5,6 +5,7 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
+using Inno.Content;
 
 namespace Inno.Assets;
 
@@ -129,7 +130,7 @@ public sealed partial class AssetDatabase
                 {
                     if (!m_payloadReads.TryGetValue(read, out SharedPayload? payload))
                     {
-                        payload = new SharedPayload(read, m_payloadReadSlots);
+                        payload = new SharedPayload(read, m_content.Acquire(read.key), m_payloadReadSlots);
                         m_payloadReads.Add(read, payload);
                         m_preparingBytes += read.length;
                         m_payloadReadsStarted++;
@@ -184,23 +185,22 @@ public sealed partial class AssetDatabase
         RuntimeArtifactOutput output = ReadArtifactManifest(record).outputs.Single(candidate => candidate.name == "runtime");
         if (output.length < 0 || output.length > int.MaxValue)
             throw new InvalidDataException("A runtime payload length is outside the supported allocation range.");
-        if (string.IsNullOrWhiteSpace(output.fileName) || Path.GetFileName(output.fileName) != output.fileName)
-            throw new InvalidDataException("A runtime artifact contains an invalid output path.");
         reads.Add(new PayloadRead(record.persistentId,
-            Path.Combine(GetBundleRoot(record.artifactKey), "outputs", output.fileName), output.length, output.contentHash));
+            GetVerifiedOutputKey(record, output), output.length, output.contentHash));
         foreach (AssetDependency dependency in record.dependencies)
             CollectPayloadReads(m_recordsById[dependency.persistentId], visited, reads);
     }
 
     private static async Task<byte[]> ReadPayloadAsync(
         PayloadRead read,
+        ContentReadLease lease,
         CancellationToken token,
         SemaphoreSlim slots
     ) {
         await slots.WaitAsync(token).ConfigureAwait(false);
         try
         {
-            return await ReadPayloadFileAsync(read, token).ConfigureAwait(false);
+            return await ReadPayloadContentAsync(read, lease, token).ConfigureAwait(false);
         }
         finally
         {
@@ -208,18 +208,16 @@ public sealed partial class AssetDatabase
         }
     }
 
-    private static async Task<byte[]> ReadPayloadFileAsync(
+    private static async Task<byte[]> ReadPayloadContentAsync(
         PayloadRead read,
+        ContentReadLease lease,
         CancellationToken token
     ) {
-        await using var stream = new FileStream(read.path, FileMode.Open, FileAccess.Read, FileShare.Read,
-            4096, FileOptions.Asynchronous | FileOptions.SequentialScan);
-        if (stream.Length != read.length)
-            throw new InvalidDataException($"Runtime payload '{read.id:D}' has an unexpected length.");
+        using Stream stream = lease.OpenRead();
         byte[] bytes = new byte[checked((int)read.length)];
         await stream.ReadExactlyAsync(bytes, token).ConfigureAwait(false);
         token.ThrowIfCancellationRequested();
-        if (bytes.LongLength != read.length ||
+        if (stream.ReadByte() != -1 || bytes.LongLength != read.length ||
             !string.Equals(Convert.ToHexString(SHA256.HashData(bytes)), read.hash, StringComparison.OrdinalIgnoreCase))
             throw new InvalidDataException($"Runtime payload '{read.id:D}' failed integrity verification.");
         return bytes;
@@ -283,7 +281,7 @@ public sealed partial class AssetDatabase
 
     private sealed record PayloadRead(
         Guid id,
-        string path,
+        ContentKey key,
         long length,
         string hash
     );
@@ -301,22 +299,24 @@ public sealed partial class AssetDatabase
     {
         internal SharedPayload(
             PayloadRead read,
+            ContentReadLease lease,
             SemaphoreSlim slots
         ) {
             this.read = read;
             try
             {
                 if (ExecutionContext.IsFlowSuppressed())
-                    preparation = Task.Run(() => ReadPayloadAsync(read, cancellation.Token, slots), cancellation.Token);
+                    preparation = Task.Run(() => PrepareAsync(read, lease, cancellation.Token, slots));
                 else
                 {
                     using (ExecutionContext.SuppressFlow())
-                        preparation = Task.Run(() => ReadPayloadAsync(read, cancellation.Token, slots), cancellation.Token);
+                        preparation = Task.Run(() => PrepareAsync(read, lease, cancellation.Token, slots));
                 }
             }
             catch
             {
                 cancellation.Dispose();
+                lease.Dispose();
                 throw;
             }
         }
@@ -325,6 +325,16 @@ public sealed partial class AssetDatabase
         internal CancellationTokenSource cancellation { get; } = new();
         internal Task<byte[]> preparation { get; }
         internal int owners { get; set; }
+
+        private static async Task<byte[]> PrepareAsync(
+            PayloadRead read,
+            ContentReadLease lease,
+            CancellationToken cancellation,
+            SemaphoreSlim slots
+        ) {
+            using (lease)
+                return await ReadPayloadAsync(read, lease, cancellation, slots).ConfigureAwait(false);
+        }
     }
 
     private sealed class PendingAcquisition(

@@ -74,9 +74,12 @@ public sealed class MutedAudioDevice : AudioDevice, IAudioDevice
             0,
             0);
 
-    AudioClipHandle IAudioDevice.CreateClip(AudioClipDescriptor descriptor)
-    {
+    AudioClipHandle IAudioDevice.CreateClip(
+        AudioClipDescriptor descriptor,
+        IAudioClipSource source
+    ) {
         EnsureActive();
+        ArgumentNullException.ThrowIfNull(source);
         if (m_clips.Count >= m_limits.clips)
             return default;
         ulong id = m_nextIdentity++;

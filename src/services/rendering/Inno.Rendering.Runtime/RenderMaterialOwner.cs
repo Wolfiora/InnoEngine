@@ -5,6 +5,7 @@ using System.Runtime.InteropServices;
 using Inno.Core.Diagnostics;
 using Inno.Core.Execution;
 using Inno.Core.Mathematics;
+using Inno.Rendering.Assets;
 
 namespace Inno.Rendering.Runtime;
 

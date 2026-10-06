@@ -192,10 +192,14 @@ public sealed class BuildPipeline
     }
 
     /// <summary>
-    /// Asynchronously prepares and verifies a target Support Pack before a game build starts.
+    /// Validates the platform and managed deployment before asynchronously preparing its Support Pack.
     /// </summary>
     /// <param name="target">
     /// The registered platform and architecture target to prepare.
+    /// </param>
+    /// <param name="deployment">
+    /// The selected managed publisher, or null to use the platform's default deployment.
+    /// Unsupported pairs fail before any provisioner or external tool starts.
     /// </param>
     /// <param name="cancellationToken">
     /// Cancellation before the Pack installation commits.
@@ -206,6 +210,9 @@ public sealed class BuildPipeline
     /// <exception cref="NotSupportedException">
     /// No game target is registered for the requested identity.
     /// </exception>
+    /// <exception cref="InvalidOperationException">
+    /// The managed publisher is absent or cannot publish the selected platform's runtime identifier.
+    /// </exception>
     /// <exception cref="DirectoryNotFoundException">
     /// The Pack is absent and this host has no provisioner.
     /// </exception>
@@ -214,10 +221,13 @@ public sealed class BuildPipeline
     /// </exception>
     public async ValueTask<string> EnsurePlayerSupportPackAsync(
         BuildTargetId target,
+        ManagedDeploymentId? deployment,
         CancellationToken cancellationToken = default
     ) {
         if (!m_gameTargets.TryGetValue(target, out IGameBuildTarget? packager))
             throw new NotSupportedException($"Game target '{target}' is not registered.");
+        _ = m_managedDeployments.Resolve(deployment ?? packager.defaultManagedDeployment, packager.runtimeIdentifier);
+        cancellationToken.ThrowIfCancellationRequested();
         return await m_supportPacks.ResolveOrProvisionAsync(
             target, packager, m_supportPackProvisioner, cancellationToken).ConfigureAwait(false);
     }

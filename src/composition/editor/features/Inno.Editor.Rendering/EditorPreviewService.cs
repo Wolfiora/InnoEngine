@@ -1,6 +1,7 @@
 using System;
 using System.Numerics;
 using Inno.Rendering;
+using Inno.Rendering.Assets;
 
 namespace Inno.Editor.Rendering;
 

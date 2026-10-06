@@ -46,8 +46,11 @@ public static class ImGuiToolchain
         var builder = CimguiBuilderFactory.CreateForCurrentPlatform();
         string cimguiDir = Path.Combine(context.engineRoot, "extern", "cimgui");
         CimguiBuildUtils.ValidateSource(cimguiDir);
-        return await NativeArtifactPublisher.PublishAsync(context, typeof(ImGuiToolchain).Assembly,
-            "cimgui", builder.outputPlatform, [cimguiDir, Path.Combine(context.engineRoot, "build", "toolchains", "Inno.Build.Toolchains.ImGui", "CMakeLists.txt")], [], async (
+        NativeBuildRecipe recipe = NativeBuildRecipe.CreateForComponent(context, typeof(ImGuiToolchain).Assembly, "cimgui", builder.outputPlatform, [cimguiDir, Path.Combine(context.engineRoot, "build", "toolchains", "Inno.Build.Toolchains.ImGui", "CMakeLists.txt")], []);
+        return await NativeArtifactPublisher.PublishAsync(
+            context,
+            recipe,
+            async (
                 scoped,
                 output,
                 token

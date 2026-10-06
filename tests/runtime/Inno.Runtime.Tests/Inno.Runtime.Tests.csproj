@@ -7,6 +7,12 @@
     <IsTestProject>true</IsTestProject>
   </PropertyGroup>
   <ItemGroup>
+    <ProjectReference Include="../../../src/content/assets/Inno.Assets.Pipeline/Inno.Assets.Pipeline.csproj" />
+    <ProjectReference Include="../../../src/content/scene/Inno.Scene.Assets/Inno.Scene.Assets.csproj" />
+    <ProjectReference Include="../../../src/services/audio/Inno.Audio.Runtime/Inno.Audio.Runtime.csproj" />
+    <ProjectReference Include="../../../src/composition/player/Inno.Player.Runtime/Inno.Player.Runtime.csproj" />
+    <ProjectReference Include="../../content/fixtures/Inno.Content.Testing/Inno.Content.Testing.csproj" />
+    <ProjectReference Include="../../../src/content/assets/Inno.Assets/Inno.Assets.csproj" />
     <ProjectReference Include="../../../src/adapters/presentation/Inno.Adapter.Presentation/Inno.Adapter.Presentation.csproj" />
     <ProjectReference Include="../../../src/adapters/common/Inno.Adapter/Inno.Adapter.csproj" />
     <ProjectReference Include="../../../src/foundation/core/Inno.Core.Execution/Inno.Core.Execution.csproj" />

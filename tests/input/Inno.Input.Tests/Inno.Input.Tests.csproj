@@ -10,7 +10,7 @@
     <ProjectReference Include="../../../src/adapters/platform/Inno.Adapter.Platform.Sdl3/Inno.Adapter.Platform.Sdl3.csproj" />
     <ProjectReference Include="..\..\..\src\services\input\Inno.Input\Inno.Input.csproj" />
     <ProjectReference Include="..\..\..\src\services\input\Inno.Input.Runtime\Inno.Input.Runtime.csproj" />
-    <ProjectReference Include="..\..\..\src\adapters\input\Inno.Adapter.Input.Sdl3\Inno.Adapter.Input.Sdl3.csproj" />
+    <ProjectReference Include="..\..\..\src\adapters\input\Inno.Adapter.Input\Inno.Adapter.Input.csproj" />
     <ProjectReference Include="..\..\..\src\runtime\engine\Inno.Runtime\Inno.Runtime.csproj" />
     <ProjectReference Include="..\..\..\src\foundation\core\Inno.Core.Events\Inno.Core.Events.csproj" PrivateAssets="compile" />
     <ProjectReference Include="..\..\..\src\foundation\core\Inno.Core.Input\Inno.Core.Input.csproj" PrivateAssets="compile" />

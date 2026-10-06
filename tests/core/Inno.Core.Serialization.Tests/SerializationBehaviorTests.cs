@@ -27,9 +27,7 @@ public sealed class SerializationBehaviorTests : IDisposable
     public SerializationBehaviorTests()
     {
         m_modules = new ModuleHost(new ModuleHostOptions
-        { catalogSource = new DotNetAssemblyCatalogSource(typeof(SerializationBehaviorTests).Assembly),
-            cacheDirectory = Path.Combine(m_testRoot, "Assemblies")
-        });
+        { catalogSource = new DotNetAssemblyCatalogSource(typeof(SerializationBehaviorTests).Assembly)        });
         m_types = new TypeCatalog(m_modules, new ReflectionTypeCatalogSource());
         m_serialization = new SerializationRegistry(m_types, new ReflectionSerializationMetadataSource());
     }
@@ -117,9 +115,7 @@ public sealed class SerializationBehaviorTests : IDisposable
         Assert.Throws<InvalidOperationException>(() => new TypeCatalog(m_modules, new ReflectionTypeCatalogSource()));
 
         m_modules = new ModuleHost(new ModuleHostOptions
-        { catalogSource = new DotNetAssemblyCatalogSource(typeof(SerializationBehaviorTests).Assembly),
-            cacheDirectory = Path.Combine(m_testRoot, "ReplacementAssemblies")
-        });
+        { catalogSource = new DotNetAssemblyCatalogSource(typeof(SerializationBehaviorTests).Assembly)        });
         m_types = new TypeCatalog(m_modules, new ReflectionTypeCatalogSource());
         m_serialization = new SerializationRegistry(m_types, new ReflectionSerializationMetadataSource());
     }

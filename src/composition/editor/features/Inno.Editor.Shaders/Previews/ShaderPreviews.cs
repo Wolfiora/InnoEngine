@@ -10,6 +10,7 @@ using Inno.Extensibility.Types;
 using Inno.Rendering;
 using ImGuiApi = Inno.Native.ImGui.ImGui;
 using Widget = Inno.Editor.ImGui.ImGuiWidget.ImGuiWidget;
+using Inno.Rendering.Assets;
 
 namespace Inno.Editor.Shaders;
 

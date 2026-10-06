@@ -7,11 +7,12 @@ using Inno.Extensibility.Types;
 using Inno.Rendering;
 using Inno.Runtime;
 using Inno.Shell;
+using Inno.Storage;
 
 namespace Inno.Player.Runtime;
 
 /// <summary>
-/// Supplies resolved host services and deployment locations to the common Player lifecycle.
+/// Supplies resolved host services and content to the common Player lifecycle.
 /// </summary>
 public sealed class PlayerLaunchOptions
 {
@@ -36,14 +37,19 @@ public sealed class PlayerLaunchOptions
     public required IAdapterCatalog adapters { get; init; }
 
     /// <summary>
-    /// Gets the directory containing the prepared runtime manifest and content pack.
+    /// Gets the borrowed source of deployment metadata and verified immutable content.
     /// </summary>
-    public required string contentDirectory { get; init; }
+    public required IPlayerContentSource contentSource { get; init; }
 
     /// <summary>
-    /// Gets the parent directory under which the manifest's application data path is resolved.
+    /// Gets the host factory transferring application storage ownership to the game session.
     /// </summary>
-    public required string persistentDataRoot { get; init; }
+    public required Func<GameRuntimeManifest, IApplicationStorage> createStorage { get; init; }
+
+    /// <summary>
+    /// Gets the optional host factory transferring a session log sink to the game session.
+    /// </summary>
+    public Func<GameRuntimeManifest, LogSessionId, ILogSink>? createLogSink { get; init; }
 
     /// <summary>
     /// Gets the strategy that activates the frozen deployment's managed modules.

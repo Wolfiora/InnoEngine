@@ -67,14 +67,11 @@ public sealed class ModuleHost : IDisposable
     public ModuleHost(ModuleHostOptions options)
     {
         ArgumentNullException.ThrowIfNull(options);
-        if (string.IsNullOrWhiteSpace(options.cacheDirectory))
-            throw new ArgumentException("Assembly cache directory is required.", nameof(options));
 
         lock (m_sync)
         {
             m_options = new ModuleHostOptions
             {
-                cacheDirectory = Path.GetFullPath(options.cacheDirectory),
                 catalogSource = options.catalogSource
             };
             ArgumentNullException.ThrowIfNull(m_options.catalogSource);
@@ -957,7 +954,7 @@ public sealed class ModuleHost : IDisposable
     ) {
         ValidateRequest(source);
         var context = new ModuleSourceContext(
-            generation, m_options.cacheDirectory, m_options.catalogSource,
+            generation, m_options.catalogSource,
             upstreamModules.Select(static module => module.contribution).ToArray(),
             m_modules.Values.Select(static module => module.contribution).ToArray(),
             plannedAssemblies.ToDictionary(static pair => pair.Key,

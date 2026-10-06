@@ -44,9 +44,7 @@ public sealed class EditorRuntimeTests : IDisposable
         Directory.CreateDirectory(Path.Combine(m_projectRoot, "Assets"));
         m_diagnosticScope = m_diagnostics.EnterScope();
         m_modules = new ModuleHost(new ModuleHostOptions
-        { catalogSource = new DotNetAssemblyCatalogSource(typeof(EditorRuntimeTests).Assembly),
-            cacheDirectory = Path.Combine(m_projectRoot, "Library", "Assemblies")
-        });
+        { catalogSource = new DotNetAssemblyCatalogSource(typeof(EditorRuntimeTests).Assembly)        });
         m_types = new TypeCatalog(m_modules, new ReflectionTypeCatalogSource());
 
         TestModule.startCount = 0;

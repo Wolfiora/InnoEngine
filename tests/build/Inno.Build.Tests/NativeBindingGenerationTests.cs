@@ -186,7 +186,7 @@ public sealed class NativeBindingGenerationTests : IDisposable
         string config,
         RecordingBuildEngine engine
     ) => new() {
-        ConfigPath = config, OutputDirectory = Path.Combine(m_root, "Generated"),
+        EngineRoot = m_root, ConfigPath = config, OutputDirectory = Path.Combine(m_root, "Generated"),
         TargetOutputRoot = Path.Combine(m_root, "obj", "fixture-target"), BuildEngine = engine,
         DescriptorOutputPath = Path.Combine(m_root, "requests", Guid.NewGuid().ToString("N") + ".json")
     };

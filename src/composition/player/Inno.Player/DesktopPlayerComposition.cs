@@ -5,6 +5,12 @@ using Inno.Rendering;
 using System.IO;
 using Inno.Player.Runtime;
 using Inno.Shell;
+using Inno.Adapter.Storage;
+using Inno.Adapter.Storage.FileSystem;
+using Inno.Core.Logging;
+using Inno.Core.Execution;
+using Inno.Runtime;
+using Inno.Storage;
 
 namespace Inno.Player;
 
@@ -15,23 +21,32 @@ internal static class DesktopPlayerComposition
         try
         {
             ParseOptions(arguments, out int? smokeFrameLimit, out GraphicsApi? graphicsApi, out bool windowVisible);
-            var adapterCatalog = new DefaultAdapterCatalog();
+            string dataRoot = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+            var storage = new StorageBackendCatalog([new FileSystemStorageBackendProvider(dataRoot)]);
+            var adapterCatalog = new DefaultAdapterCatalog(new DefaultAdapterCatalogOptions { storage = storage });
             string resources = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "Resources", "Content"));
-            return PlayerApplication.RunAsync(new PlayerLaunchOptions
+            return OwnerThreadExecution.Run(() => PlayerApplication.RunAsync(new PlayerLaunchOptions
             {
                 modules = Generated.PlayerMetadataComposition.CreateModules(),
                 types = Generated.PlayerMetadataComposition.CreateTypes(),
                 serializationMetadata = Generated.PlayerMetadataComposition.CreateSerialization(),
                 adapters = adapterCatalog,
-                contentDirectory = Directory.Exists(resources) ? resources : Path.Combine(AppContext.BaseDirectory, "Content"),
-                persistentDataRoot = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                contentSource = new FilePlayerContentSource(
+                    Directory.Exists(resources) ? resources : Path.Combine(AppContext.BaseDirectory, "Content"), dataRoot),
+                createStorage = manifest => new FileSystemApplicationStorage(
+                    Path.Combine(ResolveDataRoot(dataRoot, manifest), "Storage")),
+                createLogSink = (
+                    manifest,
+                    sessionId
+                ) => new FileLogSink(
+                    Path.Combine(ResolveDataRoot(dataRoot, manifest), "Logs", sessionId.ToString())),
                 moduleActivator = Generated.PlayerMetadataComposition.CreateActivator(),
                 frameDriver = new PollingShellFrameDriver(),
                 consoleColors = true,
                 graphicsApi = graphicsApi,
                 windowVisible = windowVisible,
                 smokeFrameLimit = smokeFrameLimit
-            }).GetAwaiter().GetResult();
+            }));
         }
         catch (Exception exception)
         {
@@ -39,6 +54,11 @@ internal static class DesktopPlayerComposition
             return 1;
         }
     }
+
+    private static string ResolveDataRoot(
+        string root,
+        GameRuntimeManifest manifest
+    ) => Path.Combine(root, manifest.persistentDataPath.Length == 0 ? manifest.applicationId : manifest.persistentDataPath);
 
     private static void ParseOptions(
         string[] arguments,

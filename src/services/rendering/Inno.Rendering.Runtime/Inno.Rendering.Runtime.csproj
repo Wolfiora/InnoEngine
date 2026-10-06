@@ -21,6 +21,7 @@
 
   <ItemGroup>
     <ProjectReference Include="../Inno.Rendering/Inno.Rendering.csproj" />
+    <ProjectReference Include="../../../content/deployment/Inno.Content/Inno.Content.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -35,5 +36,9 @@
     <ProjectReference Include="../../../services/input/Inno.Input/Inno.Input.csproj" />
     <ProjectReference Include="../../../content/references/Inno.References/Inno.References.csproj" />
     <ProjectReference Include="../../../foundation/extensibility/Inno.Extensibility.Catalogs/Inno.Extensibility.Catalogs.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../Inno.Rendering.Assets/Inno.Rendering.Assets.csproj" />
   </ItemGroup>
 </Project>

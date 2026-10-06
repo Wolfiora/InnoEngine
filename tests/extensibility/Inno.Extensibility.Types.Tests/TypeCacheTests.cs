@@ -25,7 +25,7 @@ public sealed class TypeCacheTests : IDisposable
 
     public TypeCacheTests()
     {
-        m_modules = new ModuleHost(new ModuleHostOptions { catalogSource = new DotNetAssemblyCatalogSource(typeof(TypeCacheTests).Assembly), cacheDirectory = m_cacheDirectory });
+        m_modules = new ModuleHost(new ModuleHostOptions { catalogSource = new DotNetAssemblyCatalogSource(typeof(TypeCacheTests).Assembly)});
         m_types = new TypeCatalog(m_modules, new ReflectionTypeCatalogSource());
     }
 

@@ -56,9 +56,6 @@ public sealed unsafe class BgfxImGuiRenderer : IPlatformImGuiRenderer, IRenderFr
     private ulong m_nextTextureToken = 1;
     private int m_vertexCapacity;
     private int m_indexCapacity;
-    private int m_mainWidth;
-    private int m_mainHeight;
-    private bool m_mainResizePending;
     private bool m_disposeRequested;
     private bool m_released;
 
@@ -185,18 +182,12 @@ public sealed unsafe class BgfxImGuiRenderer : IPlatformImGuiRenderer, IRenderFr
             }
 
             m_mainPacket = CaptureDrawData(drawData, 0, default);
-            if (m_mainPacket is not null
-                && (m_mainPacket.pixelWidth != m_mainWidth || m_mainPacket.pixelHeight != m_mainHeight))
-            {
-                m_mainWidth = m_mainPacket.pixelWidth;
-                m_mainHeight = m_mainPacket.pixelHeight;
-                m_mainResizePending = true;
-            }
         }
     }
 
     /// <summary>
-    /// Synchronizes the main render output with the current drawable dimensions.
+    /// Invalidates a captured main packet when its drawable extent changes.
+    /// The Shell owns device presentation availability and publishes it at frame boundaries.
     /// </summary>
     /// <param name="pixelWidth">
     /// The pixel width consumed by synchronize main output; ownership remains with the caller unless explicitly stated otherwise.
@@ -208,13 +199,13 @@ public sealed unsafe class BgfxImGuiRenderer : IPlatformImGuiRenderer, IRenderFr
         int pixelWidth,
         int pixelHeight
     ) {
-        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(pixelWidth);
-        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(pixelHeight);
+        ArgumentOutOfRangeException.ThrowIfNegative(pixelWidth);
+        ArgumentOutOfRangeException.ThrowIfNegative(pixelHeight);
         lock (m_sync)
         {
-            m_mainWidth = pixelWidth;
-            m_mainHeight = pixelHeight;
-            m_mainResizePending = true;
+            if (m_mainPacket is not null
+                && (m_mainPacket.pixelWidth != pixelWidth || m_mainPacket.pixelHeight != pixelHeight))
+                m_mainPacket = null;
         }
     }
 
@@ -354,12 +345,6 @@ public sealed unsafe class BgfxImGuiRenderer : IPlatformImGuiRenderer, IRenderFr
             if (needsOutputTransfer)
                 PreparePresentationQuad();
             PrepareTextures();
-            if (m_mainResizePending && m_mainWidth > 0 && m_mainHeight > 0)
-            {
-                m_device.ResizeBackbuffer(m_mainWidth, m_mainHeight);
-                m_mainResizePending = false;
-            }
-
             PrepareDrawPackets();
         }
     }
@@ -388,6 +373,8 @@ public sealed unsafe class BgfxImGuiRenderer : IPlatformImGuiRenderer, IRenderFr
 
             foreach (PreparedPacket packet in m_framePackets)
             {
+                if (packet.viewportId == 0 && !m_device.primaryPresentationSize.HasValue)
+                    continue;
                 string name = packet.viewportId == 0 ? "ImGui/Main" : $"ImGui/Viewport/{packet.viewportId}";
                 bool needsOutputTransfer = packet.surface.isValid
                     ? !m_bgfxDevice.WindowSurfaceIsSrgb(packet.surface)
@@ -709,6 +696,11 @@ public sealed unsafe class BgfxImGuiRenderer : IPlatformImGuiRenderer, IRenderFr
             return null;
         }
 
+        Vector2 clipScale = drawData.FramebufferScale;
+        int pixelWidth = checked((int)MathF.Round(drawData.DisplaySize.X * clipScale.X));
+        int pixelHeight = checked((int)MathF.Round(drawData.DisplaySize.Y * clipScale.Y));
+        if (pixelWidth <= 0 || pixelHeight <= 0)
+            return null;
         ProcessTextureRequests(drawData);
         byte[] vertices = new byte[checked(drawData.TotalVtxCount * C_VERTEX_STRIDE)];
         byte[] indices = new byte[checked(drawData.TotalIdxCount * C_INDEX_STRIDE)];
@@ -716,9 +708,6 @@ public sealed unsafe class BgfxImGuiRenderer : IPlatformImGuiRenderer, IRenderFr
         int vertexBase = 0;
         int indexBase = 0;
         Vector2 clipOffset = drawData.DisplayPos;
-        Vector2 clipScale = drawData.FramebufferScale;
-        int pixelWidth = Math.Max(1, (int)MathF.Round(drawData.DisplaySize.X * clipScale.X));
-        int pixelHeight = Math.Max(1, (int)MathF.Round(drawData.DisplaySize.Y * clipScale.Y));
         for (int listIndex = 0; listIndex < drawData.CmdListsCount; listIndex++)
         {
             ImDrawListPtr drawList = drawData.CmdLists[listIndex];

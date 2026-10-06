@@ -1,0 +1,127 @@
+using Inno.Assets;
+using Inno.Assets.Pipeline;
+using Inno.Core.Serialization;
+using Inno.Rendering;
+using Inno.Rendering.Shaders;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+
+namespace Inno.Rendering.Assets.Authoring;
+
+[AssetImporter("inno.rendering.shader-function")]
+[Inno.Extensibility.Types.StableTypeId("17f67477-6d9c-5b85-9c98-f1c9df4961d3")]
+internal sealed class ShaderFunctionImporter : AssetImporter<ShaderFunctionAsset>
+{
+    /// <summary>
+    /// Gets the normalized source extensions accepted by this importer.
+    /// </summary>
+    public override IReadOnlyList<string> supportedExtensions { get; } = [".ishadersource"];
+    /// <summary>
+    /// Gets whether imported output is deployed to runtime, editor, or both domains.
+    /// </summary>
+    public override AssetDeploymentScope deploymentScope => AssetDeploymentScope.AuthoringOnly;
+    /// <summary>
+    /// Creates an import settings using this implementation's validated inputs.
+    /// </summary>
+    /// <returns>
+    /// The validated iserializable that represents the completed operation.
+    /// </returns>
+    public override ISerializable CreateImportSettings() => new ShaderSourceImportSettings();
+
+    /// <summary>
+    /// Imports source content into a validated runtime asset and artifact set.
+    /// </summary>
+    /// <param name="context">
+    /// The context that supplies state and services for this operation.
+    /// </param>
+    /// <param name="output">
+    /// The import output writer that receives runtime data and dependency declarations.
+    /// </param>
+    /// <param name="cancellationToken">
+    /// The token that cancels the operation before it commits.
+    /// </param>
+    /// <returns>
+    /// An asynchronous operation that completes after all requested work has finished.
+    /// </returns>
+    protected override async ValueTask ImportAsync(
+        AssetImportContext context,
+        AssetImportWriter<ShaderFunctionAsset> output,
+        CancellationToken cancellationToken
+    ) {
+        var settings = context.importSettings as ShaderSourceImportSettings
+            ?? throw new InvalidOperationException("Shader source requires its standard import settings.");
+        ArgumentException.ThrowIfNullOrWhiteSpace(settings.languageId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(settings.implementationId);
+        string[] exports = (settings.exports ?? []).Where(static value => !string.IsNullOrWhiteSpace(value))
+            .Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal).ToArray();
+        if (exports.Length == 0)
+            throw new InvalidDataException("Shader source libraries must export at least one named function.");
+        var source = new ShaderSourceFile(context.assetPath.ToString(), context.ReadUtf8Text());
+        using var frontends = new ShaderSourceFrontendRegistry(context.types);
+        var modules = new Dictionary<string, ShaderSourceModuleAnalysis>(StringComparer.Ordinal);
+        foreach (string export in exports)
+        {
+            var requests = new List<ShaderSourceImplementationRequest>
+            { new(settings.implementationId, settings.languageId, new(source, export, new SourceResolver(context))) };
+            foreach (ShaderFunctionAsset implementation in settings.implementations ?? [])
+            {
+                if (implementation is null || implementation.isMissing)
+                    throw new InvalidDataException("An alternate shader implementation is missing; its reference must be repaired before compilation.");
+                context.DependsOnArtifact(implementation.identity.persistentId);
+                using ArtifactLease lease = context.AcquireArtifact(implementation.identity.persistentId, ShaderSourceBundle.outputName);
+                requests.AddRange(ShaderSourceBundle.Decode(lease.ReadAllBytes(), export, context.serialization));
+            }
+            ShaderSourceModuleAnalysis module = frontends.AnalyzeModule(requests);
+            if (!module.succeeded)
+                throw new InvalidDataException(string.Join("\n", module.diagnostics.Select(static diagnostic =>
+                    $"{diagnostic.location.assetPath}:{diagnostic.location.line}:{diagnostic.location.column}: {diagnostic.message}")));
+            modules.Add(export, module);
+        }
+        output.SetAsset(new ShaderFunctionAsset
+        {
+            languageId = settings.languageId,
+            exports = exports,
+            implementationId = settings.implementationId,
+            catalogPath = NormalizeCatalogPath(settings.catalogPath),
+            catalogOrder = settings.catalogOrder
+        });
+        await output.WriteArtifactAsync(ShaderSourceBundle.outputName, ShaderSourceBundle.Encode(modules, context.serialization),
+            cancellationToken, AssetDeploymentScope.AuthoringOnly).ConfigureAwait(false);
+    }
+
+    private static string NormalizeCatalogPath(string? value)
+        => string.Join('/', (value ?? string.Empty).Split('/',
+            StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries));
+
+    private sealed class SourceResolver(AssetImportContext context) : IShaderSourceResolver
+    {
+        /// <summary>
+        /// Reads and validates the include value from its authoritative source.
+        /// </summary>
+        /// <param name="includingFile">
+        /// The including file text validated by the read include operation.
+        /// </param>
+        /// <param name="include">
+        /// The include text validated by the read include operation.
+        /// </param>
+        /// <returns>
+        /// The validated shader source file that represents the completed operation.
+        /// </returns>
+public ShaderSourceFile ReadInclude(
+    string includingFile,
+    string include
+) {
+            AssetPath owner = AssetPath.Parse(includingFile);
+            string normalized = include.Replace('\\', '/');
+            AssetPath path = normalized.Contains("::", StringComparison.Ordinal) ? AssetPath.Parse(normalized)
+                : new AssetPath(owner.source, (Path.GetDirectoryName(owner.localPath)?.Replace('\\', '/') is { Length: > 0 } directory
+                    ? directory + "/" : "") + normalized);
+            return new(path.ToString(), context.ReadSourceUtf8Text(path));
+        }
+    }
+}
+

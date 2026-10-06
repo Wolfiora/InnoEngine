@@ -18,12 +18,13 @@ public sealed class SettingsDocumentStore<TDocument>
     private readonly Func<TDocument> m_createDefault;
     private readonly SerializationRegistry m_serialization;
     private readonly Action<TDocument> m_validate;
+    private readonly IByteDocumentStore m_document;
 
     /// <summary>
     /// Creates a type-safe settings document store.
     /// </summary>
-    /// <param name="path">
-    /// The absolute or project-relative document path.
+    /// <param name="document">
+    /// The borrowed document boundary; read-only sources explicitly reject writes.
     /// </param>
     /// <param name="serialization">
     /// The active serialization registry.
@@ -35,29 +36,29 @@ public sealed class SettingsDocumentStore<TDocument>
     /// Validates one deserialized or candidate document.
     /// </param>
     public SettingsDocumentStore(
-        string path,
+        IByteDocumentStore document,
         SerializationRegistry serialization,
         Func<TDocument> createDefault,
         Action<TDocument>? validate = null
     ) {
-        ArgumentException.ThrowIfNullOrWhiteSpace(path);
+        ArgumentNullException.ThrowIfNull(document);
         ArgumentNullException.ThrowIfNull(serialization);
         ArgumentNullException.ThrowIfNull(createDefault);
-        this.path = Path.GetFullPath(path);
+        m_document = document;
         m_serialization = serialization;
         m_createDefault = createDefault;
         m_validate = validate ?? (static _ => { });
     }
 
     /// <summary>
-    /// Gets the normalized document path.
+    /// Gets the source's logical diagnostic name without requiring a filesystem location.
     /// </summary>
-    public string path { get; }
+    public string documentName => m_document.documentName;
 
     /// <summary>
     /// Gets whether the document currently exists.
     /// </summary>
-    public bool exists => File.Exists(path);
+    public bool exists => m_document.exists;
 
     /// <summary>
     /// Loads the saved value, or creates a validated default when absent.
@@ -67,13 +68,14 @@ public sealed class SettingsDocumentStore<TDocument>
     /// </returns>
     public TDocument Load()
     {
-        if (!exists)
+        byte[]? data = m_document.Read();
+        if (data is null)
         {
             TDocument value = m_createDefault();
             m_validate(value);
             return Clone(value);
         }
-        return Deserialize(File.ReadAllBytes(path));
+        return Deserialize(data);
     }
 
     /// <summary>
@@ -84,9 +86,9 @@ public sealed class SettingsDocumentStore<TDocument>
     /// </returns>
     public TDocument LoadRequired()
     {
-        if (!exists)
-            throw new FileNotFoundException("The settings document does not exist.", path);
-        return Deserialize(File.ReadAllBytes(path));
+        byte[] data = m_document.Read() ?? throw new InvalidDataException(
+            $"Required settings document '{documentName}' does not exist.");
+        return Deserialize(data);
     }
 
     /// <summary>
@@ -99,7 +101,7 @@ public sealed class SettingsDocumentStore<TDocument>
     {
         ArgumentNullException.ThrowIfNull(document);
         m_validate(document);
-        AtomicFile.WriteAllBytes(path, m_serialization.Serialize(document));
+        m_document.Write(m_serialization.Serialize(document));
     }
 
     /// <summary>
@@ -141,7 +143,7 @@ public sealed class SettingsDocumentStore<TDocument>
             or NotSupportedException)
         {
             throw new InvalidDataException(
-                $"Settings document '{path}' is not a valid current-format {typeof(TDocument).Name}.",
+                $"Settings document '{documentName}' is not a valid current-format {typeof(TDocument).Name}.",
                 exception);
         }
     }

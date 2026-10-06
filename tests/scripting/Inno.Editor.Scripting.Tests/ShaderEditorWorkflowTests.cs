@@ -33,6 +33,7 @@ using Inno.Rendering.Shaders;
 using Inno.Native.ImGui;
 using ImGuiApi = Inno.Native.ImGui.ImGui;
 using Xunit;
+using Inno.Rendering.Assets.Authoring;
 
 namespace Inno.Editor.Scripting.Tests;
 
@@ -67,7 +68,7 @@ public sealed class ShaderEditorWorkflowTests : IDisposable
         _ = typeof(ShaderNodeDrawer);
         _ = typeof(ShaderGraphSourceStore);
         _ = typeof(GraphEditorModule);
-        m_modules = new(new() { catalogSource = new DotNetAssemblyCatalogSource(typeof(ShaderEditorWorkflowTests).Assembly), cacheDirectory = Path.Combine(m_root, "Library", "Assemblies") });
+        m_modules = new(new() { catalogSource = new DotNetAssemblyCatalogSource(typeof(ShaderEditorWorkflowTests).Assembly)});
         m_types = new(m_modules, new ReflectionTypeCatalogSource());
         m_serialization = new(m_types, new ReflectionSerializationMetadataSource());
         m_diagnostics = new DiagnosticHub();

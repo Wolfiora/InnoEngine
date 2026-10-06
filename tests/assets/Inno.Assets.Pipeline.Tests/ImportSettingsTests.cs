@@ -174,7 +174,7 @@ public sealed class ImportSettingsTests
             Directory.CreateDirectory(Path.Combine(m_root, "EmptyProject"));
             File.WriteAllText(sourcePath, "source");
             m_scope = m_identities.EnterScope();
-            m_modules = new ModuleHost(new ModuleHostOptions { catalogSource = new DotNetAssemblyCatalogSource(typeof(ImportSettingsTests).Assembly), cacheDirectory = Path.Combine(m_root, "Assemblies") });
+            m_modules = new ModuleHost(new ModuleHostOptions { catalogSource = new DotNetAssemblyCatalogSource(typeof(ImportSettingsTests).Assembly)});
             m_types = new TypeCatalog(m_modules, new ReflectionTypeCatalogSource());
             m_serialization = new SerializationRegistry(m_types, new ReflectionSerializationMetadataSource());
         }

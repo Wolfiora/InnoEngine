@@ -1,7 +1,7 @@
 using System;
 using System.Threading;
 using Inno.Build;
-using Inno.Build.SupportPacks;
+using Inno.Build.Composition;
 using Microsoft.Build.Framework;
 using BuildTask = Microsoft.Build.Utilities.Task;
 
@@ -56,7 +56,9 @@ public sealed class PublishSupportPackTask : BuildTask, ICancelableTask
         }
         try
         {
-            string installed = BuiltInPlayerSupportPacks.CreatePublisher().PublishAsync(
+            BuildTaskHostRetirement.Inspect(EngineRoot);
+            var context = new BuildCompositionContext(DotnetHost, AppContext.BaseDirectory);
+            string installed = BuiltInBuildDistribution.Create(context).supportPacks.PublishAsync(
                 EngineRoot, OutputRoot, new BuildTargetId(Target), DotnetHost, cancellation.Token)
                 .AsTask().GetAwaiter().GetResult();
             Log.LogMessage(MessageImportance.Normal, "Installed Player Support Pack: {0}", installed);

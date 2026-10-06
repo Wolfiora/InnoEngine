@@ -1,67 +1,76 @@
 using System;
+using System.Buffers.Binary;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
+using System.Threading;
 
 namespace Inno.Build.Toolchains;
 
 /// <summary>
-/// Derives native build identities from explicit toolchain declarations and source bytes.
+/// Derives recipe identities from ordered declarations, logical input names and complete source bytes.
 /// </summary>
 public static class NativeBuildFingerprint
 {
     /// <summary>
-    /// Hashes declarations and complete source files in a deterministic order.
+    /// Hashes a complete declared input closure independently of checkout location and file timestamps.
     /// </summary>
     /// <param name="declarations">
-    /// Target, configuration, SDK and generation identities selected by the owning toolchain.
+    /// Ordered target, configuration, SDK, compiler and linker arguments. Order is significant.
     /// </param>
-    /// <param name="files">
-    /// Absolute source and tool files; duplicates are read once and missing files fail.
+    /// <param name="inputs">
+    /// Files and directories with explicit logical identities; overlapping reading locations are hashed once.
+    /// </param>
+    /// <param name="cancellationToken">
+    /// Cancels enumeration or complete content hashing before a fingerprint is returned.
     /// </param>
     /// <returns>
-    /// A lowercase SHA-256 identity that changes when any declared input changes.
+    /// A lowercase SHA-256 identity that changes when a declaration, input inventory or input byte changes.
     /// </returns>
     /// <exception cref="ArgumentNullException">
-    /// An input collection is null.
+    /// A required input collection is null.
     /// </exception>
-    /// <exception cref="ArgumentException">
-    /// An input path is empty or relative.
+    /// <exception cref="System.IO.IOException">
+    /// An input cannot be read or contains a directory-link cycle.
     /// </exception>
-    /// <exception cref="IOException">
-    /// An input file cannot be read.
+    /// <exception cref="OperationCanceledException">
+    /// Content hashing was canceled.
     /// </exception>
     public static string Create(
         IEnumerable<string> declarations,
-        IEnumerable<string> files
+        IEnumerable<NativeBuildInput> inputs,
+        CancellationToken cancellationToken = default
     ) {
         ArgumentNullException.ThrowIfNull(declarations);
-        ArgumentNullException.ThrowIfNull(files);
+        ArgumentNullException.ThrowIfNull(inputs);
+        NativeBuildInputState state = new();
+        return Create(declarations, state.CaptureInitial(inputs, cancellationToken));
+    }
+
+    internal static string Create(
+        IEnumerable<string> declarations,
+        NativeInputSnapshot snapshot
+    ) {
         using IncrementalHash hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
-        foreach (string declaration in declarations.Order(StringComparer.Ordinal))
-            Append(declaration);
-        StringComparer paths = OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal;
-        foreach (string path in files.Distinct(paths).Order(paths))
+        foreach (string declaration in declarations)
+            Append(hash, declaration);
+        foreach (NativeInputSnapshot.Entry entry in snapshot.entries)
         {
-            ArgumentException.ThrowIfNullOrWhiteSpace(path);
-            if (!Path.IsPathFullyQualified(path))
-                throw new ArgumentException("Native fingerprint inputs must be absolute paths.", nameof(files));
-            Append(Path.GetFullPath(path));
-            using FileStream input = File.OpenRead(path);
-            hash.AppendData(SHA256.HashData(input));
+            Append(hash, entry.logicalPath);
+            hash.AppendData(entry.hash);
         }
         return Convert.ToHexStringLower(hash.GetHashAndReset());
+    }
 
-        void Append(string value)
-        {
-            ArgumentNullException.ThrowIfNull(value);
-            byte[] bytes = Encoding.UTF8.GetBytes(value);
-            Span<byte> length = stackalloc byte[4];
-            System.Buffers.Binary.BinaryPrimitives.WriteInt32LittleEndian(length, bytes.Length);
-            hash.AppendData(length);
-            hash.AppendData(bytes);
-        }
+    private static void Append(
+        IncrementalHash hash,
+        string value
+    ) {
+        ArgumentNullException.ThrowIfNull(value);
+        byte[] bytes = Encoding.UTF8.GetBytes(value);
+        Span<byte> length = stackalloc byte[4];
+        BinaryPrimitives.WriteInt32LittleEndian(length, bytes.Length);
+        hash.AppendData(length);
+        hash.AppendData(bytes);
     }
 }

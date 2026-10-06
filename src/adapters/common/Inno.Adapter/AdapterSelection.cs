@@ -29,7 +29,7 @@ public readonly struct AdapterSelection()
     /// <summary>
     /// Gets the selected input backend.
     /// </summary>
-    public InputBackendId input { get; init; } = InputBackendId.sdl3;
+    public InputBackendId input { get; init; } = InputBackendId.events;
 
     /// <summary>
     /// Gets the selected storage backend.

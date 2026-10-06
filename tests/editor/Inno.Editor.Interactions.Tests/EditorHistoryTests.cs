@@ -267,9 +267,7 @@ public sealed class EditorHistoryTests
             Directory.CreateDirectory(Path.Combine(m_projectRoot, "Assets"));
             NeutralValueHistoryHandler.Reset();
             m_modules = new ModuleHost(new ModuleHostOptions
-            { catalogSource = new DotNetAssemblyCatalogSource(typeof(EditorHistoryTests).Assembly),
-                cacheDirectory = Path.Combine(m_projectRoot, "Library", "Assemblies")
-            });
+            { catalogSource = new DotNetAssemblyCatalogSource(typeof(EditorHistoryTests).Assembly)            });
             types = new TypeCatalog(m_modules, new ReflectionTypeCatalogSource());
             runtime = new EditorInteractionRuntime(
                 new EditorContext(m_projectRoot),

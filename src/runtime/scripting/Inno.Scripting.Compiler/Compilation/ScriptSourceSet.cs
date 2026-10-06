@@ -230,10 +230,14 @@ internal sealed record ScriptSourceSet(
         }
         IReadOnlyList<AssetSourceMount> mounts = candidateAssets?.sourceMounts ?? assets.sourceMounts;
         AssetSourceMount mount = mounts.Single(candidate => candidate.id == entry.assetPath.source);
+        using ArtifactLease lease = candidateAssets is null
+            ? assets.AcquireArtifact(info.persistentId, "source")
+            : candidateAssets.AcquireArtifact(info.persistentId, "source");
+        using StreamReader reader = new(lease.OpenRead(), Encoding.UTF8, detectEncodingFromByteOrderMarks: true);
         return new ScriptSourceInput(
             entry.assetPath,
             mount.Resolve(entry.assetPath.localPath),
-            source.absolutePath,
+            reader.ReadToEnd(),
             info.persistentId,
             source.contentHash);
     }
@@ -538,7 +542,7 @@ internal sealed record ScriptAssemblyInput(
 internal sealed record ScriptSourceInput(
     AssetPath assetPath,
     string sourcePath,
-    string snapshotPath,
+    string snapshotSource,
     Guid persistentId,
     string contentHash
 ) {

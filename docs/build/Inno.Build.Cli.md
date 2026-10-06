@@ -17,7 +17,7 @@ dotnet run --project build/cli/Inno.Build.Cli -- verify .
 
 | 命令 | 功能 |
 | --- | --- |
-| `engine` | 先生成当前宿主绑定，再顺序构建 Native/工具、Editor 与请求目标 Support Pack。 |
+| `engine` | 先生成当前宿主绑定，再构建 Editor（普通 MSBuild 入口准备并部署 Native/工具）与请求目标 Support Pack。 |
 | `clean` | 清理工作区各项目的 bin/obj 和 artifacts 下的 native/managed/support-packs/builds，保留正在执行 CLI 的输出。 |
 | `bindings` | 通过各组件 BGCS 配置生成绑定。 |
 | `support-pack` | 通过与 Editor 相同的发布器准备、校验并以带回滚的事务安装目标 Pack。 |
@@ -54,5 +54,61 @@ CLI 的 Ctrl+C token 在准备、preflight 等待和最终发布前检查；取�
 
 项目命令先由 `BuildComposition` 准备 CLI 自己的宿主 Native 和离线工具，再创建 authoring workspace。
 CLI 的原生配置与其实际编译配置一致；游戏目标与 managed deployment 独立选择。
-`engine` 将返回的确切 product 部署到 Editor 输出。默认 Support Pack 根为 `artifacts/support-packs`。
+`engine` 复用 Editor 的普通 MSBuild 原生准备与部署目标，输出目录由 `TargetDir` 决定。默认 Support Pack 根为 `artifacts/support-packs`。
 运行时加载器只读取部署树，项目命令不依赖隐式的 Native 复制或仓库 fallback。
+
+
+
+
+
+
+
+## 本轮边界与所有权
+
+唯一生产构建 Program；通过 Inno.Build.Composition 获得 target/deployment/support-pack distribution。CLI 只注入 SDK、目录和 authoring services，不重复注册内置平台名单，不进行第二次 native 安装。
+
+## 当前源码公开 API 清单
+
+以下仅列出当前程序集自己声明的 public/protected 契约；继承成员遵循所属基类页面。internal/private 实现不作为稳定公开 API。签名依据当前源码语义模型生成，行为、参数、异常与所有权说明同时以对应英文 XML 为准。
+
+## 项目依赖
+
+- [Inno.Build.Composition](Inno.Build.Composition.md)：实现依赖（`PrivateAssets="compile"`）。
+- [Inno.Build.Toolchains](Inno.Build.Toolchains.md)：实现依赖（`PrivateAssets="compile"`）。
+- [Inno.Build.Toolchains.Host](Inno.Build.Toolchains.Host.md)：实现依赖（`PrivateAssets="compile"`）。
+- [Inno.Editor.Annotations](../editor/Inno.Editor.Annotations.md)：实现依赖（`PrivateAssets="compile"`）。
+- [Inno.Editor.Core](../editor/Inno.Editor.Core.md)：实现依赖（`PrivateAssets="compile"`）。
+- [Inno.Editor.Interactions](../editor/Inno.Editor.Interactions.md)：实现依赖（`PrivateAssets="compile"`）。
+- [Inno.Editor.Inspection](../editor/Inno.Editor.Inspection.md)：实现依赖（`PrivateAssets="compile"`）。
+- [Inno.Editor.Settings](../editor/Inno.Editor.Settings.md)：实现依赖（`PrivateAssets="compile"`）。
+- [Inno.Editor.Graph](../editor/Inno.Editor.Graph.md)：实现依赖（`PrivateAssets="compile"`）。
+- [Inno.Editor.ImGui](../editor/Inno.Editor.ImGui.md)：实现依赖（`PrivateAssets="compile"`）。
+- [Inno.Editor.Scene](../editor/Inno.Editor.Scene.md)：实现依赖（`PrivateAssets="compile"`）。
+- [Inno.Editor.Rendering](../editor/Inno.Editor.Rendering.md)：实现依赖（`PrivateAssets="compile"`）。
+- [Inno.Editor.PlayMode](../editor/Inno.Editor.PlayMode.md)：实现依赖（`PrivateAssets="compile"`）。
+- [Inno.Editor.Panel.FileBrowser](../editor/Inno.Editor.Panel.FileBrowser.md)：实现依赖（`PrivateAssets="compile"`）。
+- [Inno.Editor.Panel.ShaderEditor](../editor/Inno.Editor.Panel.ShaderEditor.md)：实现依赖（`PrivateAssets="compile"`）。
+- [Inno.Editor.Panel.Hierarchy](../editor/Inno.Editor.Panel.Hierarchy.md)：实现依赖（`PrivateAssets="compile"`）。
+- [Inno.Editor.Panel.Inspector](../editor/Inno.Editor.Panel.Inspector.md)：实现依赖（`PrivateAssets="compile"`）。
+- [Inno.Extensibility.Modules](../extensibility/Inno.Extensibility.Modules.md)：实现依赖（`PrivateAssets="compile"`）。
+- [Inno.Build](Inno.Build.md)：实现依赖（`PrivateAssets="compile"`）。
+- [Inno.Assets.Pipeline](../assets/Inno.Assets.Pipeline.md)：实现依赖（`PrivateAssets="compile"`）。
+- [Inno.Core.Identity](../core/Inno.Core.Identity.md)：实现依赖（`PrivateAssets="compile"`）。
+- [Inno.Core.Settings](../core/Inno.Core.Settings.md)：实现依赖（`PrivateAssets="compile"`）。
+- [Inno.Plugins.Authoring](../plugins/Inno.Plugins.Authoring.md)：实现依赖（`PrivateAssets="compile"`）。
+- [Inno.Runtime](../runtime/Inno.Runtime.md)：实现依赖（`PrivateAssets="compile"`）。
+- [Inno.Scene.Assets](../scene/Inno.Scene.Assets.md)：实现依赖（`PrivateAssets="compile"`）。
+- [Inno.Audio.Assets](../audio/Inno.Audio.Assets.md)：实现依赖（`PrivateAssets="compile"`）。
+- [Inno.Text.Assets](../text/Inno.Text.Assets.md)：实现依赖（`PrivateAssets="compile"`）。
+- [Inno.UI.Assets](../ui/Inno.UI.Assets.md)：实现依赖（`PrivateAssets="compile"`）。
+- [Inno.Adapter.UI.RmlUi.Authoring](../ui/Inno.Adapter.UI.RmlUi.Authoring.md)：实现依赖（`PrivateAssets="compile"`）。
+- [Inno.Scripting.Compiler](../scripting/Inno.Scripting.Compiler.md)：实现依赖（`PrivateAssets="compile"`）。
+- [Inno.Build.Toolchains.Bgfx.Shaders](Inno.Build.Toolchains.Bgfx.Shaders.md)：实现依赖（`PrivateAssets="compile"`）。
+- [Inno.Build.Toolchains.Bgfx.Tools](Inno.Build.Toolchains.Bgfx.Tools.md)：实现依赖（`PrivateAssets="compile"`）。
+- [Inno.Tooling.Architecture](../tooling/Inno.Tooling.Architecture.md)：实现依赖（`PrivateAssets="compile"`）。
+- [Inno.Adapter.Modules.DotNet](../platform/Inno.Adapter.Modules.DotNet.md)：实现依赖（`PrivateAssets="compile"`）。
+- [Inno.Adapter.Serialization.DotNet](../platform/Inno.Adapter.Serialization.DotNet.md)：实现依赖（`PrivateAssets="compile"`）。
+- [Inno.Build.Managed](Inno.Build.Managed.md)：实现依赖（`PrivateAssets="compile"`）。
+- [Inno.Extensibility.Catalogs](../extensibility/Inno.Extensibility.Catalogs.md)：项目引用；公开签名可见性由语义边界检查确认。
+
+共同 MSBuild 注入的 analyzer 与编译规则属于构建依赖，完整有效项目图记录在本轮验收证据中。

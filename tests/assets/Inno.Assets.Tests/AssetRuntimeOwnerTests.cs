@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using Inno.Assets;
 using Xunit;
 
@@ -41,9 +42,9 @@ public sealed class AssetRuntimeOwnerTests
     public void ArtifactRetentionCountsIndependentIdempotentLeases()
     {
         var retention = new ArtifactRetention();
-        var artifact = new AssetArtifactInfo(new AssetArtifactKey(new string('A', 64)), "runtime", "/tmp/value", "HASH", 0);
-        using ArtifactLease first = retention.Retain(artifact);
-        using ArtifactLease second = retention.Retain(artifact);
+        var artifact = new AssetArtifactInfo(new AssetArtifactKey(new string('A', 64)), "runtime", "HASH", 0);
+        using ArtifactLease first = retention.Retain(artifact, static () => Stream.Null);
+        using ArtifactLease second = retention.Retain(artifact, static () => Stream.Null);
         Assert.Single(retention.GetRetainedKeys());
         Assert.Throws<NotSupportedException>(() => ((IList<AssetArtifactKey>)retention.GetRetainedKeys()).Clear());
         first.Dispose();

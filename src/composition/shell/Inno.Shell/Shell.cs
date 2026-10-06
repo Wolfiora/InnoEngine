@@ -275,6 +275,7 @@ public abstract class Shell : IDisposable
                     sRgbBackbuffer = options.sRgbBackbuffer,
                     forceSingleThreaded = options.forceSingleThreadedRendering
                 });
+            UpdatePrimaryPresentationSize();
             state = ShellState.Ready;
         }
         catch (Exception failure)
@@ -425,8 +426,8 @@ public abstract class Shell : IDisposable
     {
         if (state != ShellState.Running || !hasCompletedFrame || m_frameActive || m_exitRequested || primaryWindow.isClosed)
             return;
-        if (windowId == primaryWindow.windowId && primaryWindow.pixelWidth > 0 && primaryWindow.pixelHeight > 0)
-            renderDevice.ResizeBackbuffer(primaryWindow.pixelWidth, primaryWindow.pixelHeight);
+        if (windowId == primaryWindow.windowId)
+            UpdatePrimaryPresentationSize();
         DrawFrame();
     }
 
@@ -498,7 +499,7 @@ public abstract class Shell : IDisposable
             if (evnt is not ApplicationSuspensionChangedEvent)
                 inputSource.ProcessEvent(evnt);
             if (evnt is WindowResizeEvent resize && resize.windowId == primaryWindow.windowId)
-                renderDevice.ResizeBackbuffer(primaryWindow.pixelWidth, primaryWindow.pixelHeight);
+                UpdatePrimaryPresentationSize();
             if (ShouldExit(evnt))
             {
                 RequestExit();
@@ -528,14 +529,14 @@ public abstract class Shell : IDisposable
             case ApplicationSuspensionChangedEvent application:
                 m_applicationSuspended = application.isSuspended;
                 break;
-            case WindowVisibilityChangedEvent window when
-                m_suspendWhenHidden && window.windowId == primaryWindow.windowId:
+            case WindowVisibilityChangedEvent window when window.windowId == primaryWindow.windowId:
                 m_primaryWindowHidden = !window.isVisible;
                 break;
             default:
                 return;
         }
-        bool suspended = m_applicationSuspended || m_primaryWindowHidden;
+        UpdatePrimaryPresentationSize();
+        bool suspended = m_applicationSuspended || (m_suspendWhenHidden && m_primaryWindowHidden);
         if (suspended == (state == ShellState.Suspended))
             return;
         if (suspended)
@@ -550,6 +551,15 @@ public abstract class Shell : IDisposable
         }
         inputSource.ProcessEvent(new ApplicationSuspensionChangedEvent(suspended));
         OnSuspensionChanged(suspended);
+    }
+
+    private void UpdatePrimaryPresentationSize()
+    {
+        int width = primaryWindow.pixelWidth;
+        int height = primaryWindow.pixelHeight;
+        renderDevice.SetPrimaryPresentationSize(
+            !primaryWindow.isClosed && !m_primaryWindowHidden && !m_applicationSuspended && width > 0 && height > 0
+                ? new RenderPresentationSize(width, height) : null);
     }
 
     private void NotifyStopping()

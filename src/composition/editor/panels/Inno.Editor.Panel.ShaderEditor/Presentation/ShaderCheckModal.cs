@@ -5,6 +5,7 @@ using Inno.Editor.Core;
 using Inno.Editor.ImGui.ImGuiWidget;
 using Inno.Editor.Rendering;
 using Inno.Rendering;
+using Inno.Rendering.Assets;
 
 namespace Inno.Editor.Panel.ShaderEditor;
 

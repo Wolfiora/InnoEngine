@@ -61,3 +61,38 @@ clang 报告 `19.1.0`。这些事实与 BGCS 包内 Clang 20 解析器及其 res
 嵌套环境、跨中间调用帧跳转、`longjmp(env, 0)` 返回 1、20 次重复 invocation 均通过。
 这是显式的 SDK lowering 补足，不能称为完全没有平台专用实现。升级 SDK 时必须重新执行同一链接及行为验证，
 若 SDK 已提供这两个符号，应删除此补足并同步 Support Pack source、validator 与链接模板。
+
+## 当前源码公开 API 清单
+
+以下仅列出当前程序集自己声明的 public/protected 契约；继承成员遵循所属基类页面。internal/private 实现不作为稳定公开 API。签名依据当前源码语义模型生成，行为、参数、异常与所有权说明同时以对应英文 XML 为准。
+
+### `Inno.Build.Toolchains.Browser.BrowserNativeArtifacts`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`string Inno.Build.Toolchains.Browser.BrowserNativeArtifacts.bindingSelectionPath`](../../build/toolchains/Inno.Build.Toolchains.Browser/BrowserNativeArtifacts.cs#L31) | Gets the immutable MSBuild selection file used to reject mismatched managed binding inputs. |
+| [`string Inno.Build.Toolchains.Browser.BrowserNativeArtifacts.directory`](../../build/toolchains/Inno.Build.Toolchains.Browser/BrowserNativeArtifacts.cs#L26) | Gets the absolute immutable install root containing component archive directories. |
+| [`string Inno.Build.Toolchains.Browser.BrowserNativeArtifacts.fingerprint`](../../build/toolchains/Inno.Build.Toolchains.Browser/BrowserNativeArtifacts.cs#L21) | Gets the identity of the SDK, source, configuration and selected binding generations. |
+| [`Inno.Build.Toolchains.Browser.BrowserNativeArtifacts`](../../build/toolchains/Inno.Build.Toolchains.Browser/BrowserNativeArtifacts.cs#L8) | Identifies the immutable native closure produced by one browser toolchain request. |
+
+### `Inno.Build.Toolchains.Browser.BrowserToolchain`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`static System.Threading.Tasks.Task<Inno.Build.Toolchains.Browser.BrowserNativeArtifacts> Inno.Build.Toolchains.Browser.BrowserToolchain.BuildAsync(string engineRoot, string dotnetHost, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))`](../../build/toolchains/Inno.Build.Toolchains.Browser/BrowserToolchain.cs#L39) | Builds the native closure from source and publishes complete outputs by immutable input identity. |
+| [`Inno.Build.Toolchains.Browser.BrowserToolchain`](../../build/toolchains/Inno.Build.Toolchains.Browser/BrowserToolchain.cs#L15) | Builds static native artifacts with the Emscripten SDK owned by the selected .NET workload. |
+
+### `Inno.Build.Toolchains.Browser.EmscriptenToolchainResolver`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`static System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyDictionary<string, string>> Inno.Build.Toolchains.Browser.EmscriptenToolchainResolver.ResolveAsync(string dotnetHost, string projectPath, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))`](../../build/toolchains/Inno.Build.Toolchains.Browser/EmscriptenToolchainResolver.cs#L49) | Resolves the native toolchain actually selected by MSBuild for one browser project. |
+| [`Inno.Build.Toolchains.Browser.EmscriptenToolchainResolver`](../../build/toolchains/Inno.Build.Toolchains.Browser/EmscriptenToolchainResolver.cs#L13) | Resolves Emscripten from the workload selected by one application project. |
+
+## 项目依赖
+
+- [Inno.Build.Toolchains](Inno.Build.Toolchains.md)：实现依赖（`PrivateAssets="compile"`）。
+- [Inno.Core.IO](../core/Inno.Core.IO.md)：实现依赖（`PrivateAssets="compile"`）。
+- [Inno.Extensibility.Catalogs](../extensibility/Inno.Extensibility.Catalogs.md)：项目引用；公开签名可见性由语义边界检查确认。
+
+共同 MSBuild 注入的 analyzer 与编译规则属于构建依赖，完整有效项目图记录在本轮验收证据中。

@@ -12,6 +12,21 @@ public sealed class FileLeaseTests : IDisposable
     private readonly string m_root = Path.Combine(Path.GetTempPath(), "InnoFileLeaseTests", Guid.NewGuid().ToString("N"));
 
     [Fact]
+    public async Task ReadersShareOwnershipAndExcludeWritersUntilEveryReaderCloses()
+    {
+        string path = Path.Combine(m_root, "generation.lock");
+        (await FileLease.AcquireAsync(path, TimeSpan.Zero)).Dispose();
+        FileLease first = await FileLease.AcquireSharedAsync(path, TimeSpan.Zero);
+        using FileLease second = await FileLease.AcquireSharedAsync(path, TimeSpan.Zero);
+        await Assert.ThrowsAsync<TimeoutException>(() => FileLease.AcquireAsync(path, TimeSpan.Zero).AsTask());
+        first.Dispose();
+        await Assert.ThrowsAsync<TimeoutException>(() => FileLease.AcquireAsync(path, TimeSpan.Zero).AsTask());
+        second.Dispose();
+        using FileLease writer = await FileLease.AcquireAsync(path, TimeSpan.Zero);
+        await Assert.ThrowsAsync<TimeoutException>(() => FileLease.AcquireSharedAsync(path, TimeSpan.Zero).AsTask());
+    }
+
+    [Fact]
     public async Task CompetingOwnershipWaitsForDisposalAndRetainsTheSameLeaseFile()
     {
         string path = Path.Combine(m_root, "output.lock");

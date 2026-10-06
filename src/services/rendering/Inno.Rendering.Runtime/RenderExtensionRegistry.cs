@@ -6,6 +6,7 @@ using System.Security.Cryptography;
 using System.Text;
 using Inno.Core.Execution;
 using Inno.Extensibility.Types;
+using Inno.Rendering.Assets;
 
 namespace Inno.Rendering.Runtime;
 

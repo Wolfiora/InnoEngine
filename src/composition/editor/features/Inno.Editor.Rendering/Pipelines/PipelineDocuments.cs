@@ -8,6 +8,7 @@ using Inno.Editor.Core;
 using Inno.Editor.Interactions;
 using Inno.Extensibility.Types;
 using Inno.Rendering;
+using Inno.Rendering.Assets;
 
 namespace Inno.Editor.Rendering;
 

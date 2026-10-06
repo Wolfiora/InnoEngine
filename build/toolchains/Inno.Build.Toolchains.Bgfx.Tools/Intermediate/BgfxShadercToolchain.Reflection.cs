@@ -8,6 +8,7 @@ using Inno.Rendering;
 using Inno.Rendering.Assets;
 using Inno.Rendering.Shaders;
 using NativeBgfx = Inno.Native.Bgfx.bgfx;
+using Inno.Rendering.Assets.Authoring;
 
 namespace Inno.Build.Toolchains.Bgfx.Tools;
 

@@ -14,7 +14,6 @@ namespace Inno.Build.Toolchains.Browser;
 /// </summary>
 public static class BrowserToolchain
 {
-    private static readonly string[] NativeOutputDirectories = ["bgfx", "sdl3", "miniaudio", "text", "ui", "Metadata"];
 
     /// <summary>
     /// Builds the native closure from source and publishes complete outputs by immutable input identity.
@@ -56,91 +55,80 @@ public static class BrowserToolchain
         Directory.CreateDirectory(requests);
         try
         {
-            foreach (string component in new[] { "Bgfx", "Sdl3", "MiniAudio", "Text", "UI" })
-            {
-                string project = Path.Combine(root, "native", "Inno.Native." + component,
-                    "Inno.Native." + component + ".csproj");
-                string descriptor = Path.Combine(requests, component + ".json");
-                await ToolchainEnvironment.RunAsync(environment["DOTNET_HOST_PATH"],
-                    ["build", project, "-t:GenerateBindings", "--configuration", "Release",
-                        "--disable-build-servers", "-m:1", "-nodeReuse:false",
-                        "-p:InnoNativeTarget=browser-wasm", "-p:BindGenDescriptorOutput=" + descriptor],
-                    root, cancellationToken, environment).ConfigureAwait(false);
-                generations.Add(component, NativeBindingGenerationDescriptor.Load(descriptor));
-            }
+            string[] components = ["Bgfx", "Sdl3", "MiniAudio", "Text", "UI"];
+            string request = Path.Combine(requests, "GenerateBindings.proj");
+            new XDocument(new XElement("Project",
+                new XElement("ItemGroup", components.Select(component =>
+                    new XElement("BindingProject",
+                        new XAttribute("Include", Path.Combine(root, "native", "Inno.Native." + component,
+                            "Inno.Native." + component + ".csproj")),
+                        new XElement("AdditionalProperties", "BindGenDescriptorOutput=" +
+                            Path.Combine(requests, component + ".json"))))),
+                new XElement("Target", new XAttribute("Name", "Generate"),
+                    new XElement("MSBuild", new XAttribute("Projects", "@(BindingProject)"),
+                        new XAttribute("Targets", "GenerateBindings"),
+                        new XAttribute("Properties", "Configuration=Release;InnoNativeTarget=browser-wasm")))))
+                .Save(request);
+            await ToolchainEnvironment.RunAsync(environment["DOTNET_HOST_PATH"],
+                ["msbuild", request, "-t:Generate", "-nologo", "-m:1", "-nodeReuse:false"],
+                root, cancellationToken, environment).ConfigureAwait(false);
+            foreach (string component in components)
+                generations.Add(component, NativeBindingGenerationDescriptor.Load(Path.Combine(requests, component + ".json")));
         }
         finally
         {
             Directory.Delete(requests, recursive: true);
         }
         cancellationToken.ThrowIfCancellationRequested();
-        string[] declarations = environment.Select(pair => pair.Key + "=" + pair.Value)
-                .Concat(generations.Select(pair => pair.Key + "=" + pair.Value.fingerprint))
+        string[] declarations = environment.OrderBy(pair => pair.Key, StringComparer.Ordinal).Select(pair => pair.Key + "=" + pair.Value)
+                .Concat(generations.OrderBy(pair => pair.Key, StringComparer.Ordinal).Select(pair => pair.Key + "=" + pair.Value.fingerprint))
                 .Append("browser-wasm/Release/Ninja")
-                .Append(typeof(BrowserToolchain).Assembly.ManifestModule.ModuleVersionId.ToString()).ToArray();
-        string[] inputs = EnumerateNativeSources(Path.Combine(root, "extern"))
-                .Concat(EnumerateNativeSources(Path.Combine(root, "native")))
-                .Concat(EnumerateNativeSources(Path.Combine(owner, "Native")))
-                .Concat(EnumerateToolchainInputs(Path.GetDirectoryName(environment["EMSCRIPTEN"])!))
-                .Concat([toolchain, cmake, ninja, environment["EMSDK_NODE"], environment["EMSDK_PYTHON"]])
                 .ToArray();
-        string fingerprint = NativeBuildFingerprint.Create(declarations, inputs);
-        string intermediate = Path.Combine(owner, "obj", "native", "browser-wasm", fingerprint);
-        string destination = Path.Combine(root, "artifacts", "native", "browser", "browser-wasm", fingerprint);
-        using FileLease ownership = await FileLease.AcquireAsync(
-            intermediate + ".lock", Timeout.InfiniteTimeSpan, cancellationToken).ConfigureAwait(false);
-        if (BuildArtifactManifest.IsComplete(destination, fingerprint, NativeOutputDirectories))
-            return new BrowserNativeArtifacts(fingerprint, destination);
-
-        string staging = destination + ".staging-" + Guid.NewGuid().ToString("N");
-        Directory.CreateDirectory(staging);
-        try
+        string sdkRoot = Path.GetDirectoryName(environment["EMSCRIPTEN"])!;
+        string[] inputs = new[] { "bgfx", "bx", "bimg", "SDL", "miniaudio", "freetype", "harfbuzz", "RmlUi" }
+            .Select(name => Path.Combine(root, "extern", name))
+            .Concat(new[] { "Text", "UI" }.SelectMany(name =>
+                Directory.EnumerateFileSystemEntries(Path.Combine(root, "native", "Inno.Native." + name, "Native"))
+                    .Where(static path => Path.GetFileName(path) != "Generated")))
+            .Concat(generations.Values.Where(static generation => generation.bridgeDirectory.Length != 0)
+                .Select(static generation => generation.bridgeDirectory))
+            .Concat([sdkRoot, Path.Combine(sdkRoot, "bin"), Path.Combine(environment["EM_CACHE"], "sysroot", "include"),
+                toolchain, cmake, ninja, environment["EMSDK_NODE"], environment["EMSDK_PYTHON"],
+                Path.Combine(root, "build", "toolchains", "Inno.Build.Toolchains", "Native", "NativeBindingGenerationDescriptor.cs")])
+            .ToArray();
+        var context = new NativeBuildContext(root, "release");
+        NativeBuildRecipe recipe = NativeBuildRecipe.CreateForComponent(
+            context, typeof(BrowserToolchain).Assembly, "browser", "browser-wasm", inputs, declarations);
+        NativeBuildProduct product = await NativeArtifactPublisher.PublishAsync(context, recipe, async (
+            scoped,
+            output,
+            token
+        ) =>
         {
-            await ToolchainEnvironment.RunAsync(cmake,
+            string intermediate = scoped.GetNativeBuildRoot(typeof(BrowserToolchain).Assembly);
+            await ToolchainEnvironment.RunAsync(scoped, cmake,
                 ["-S", Path.Combine(owner, "Native"), "-B", intermediate, "-G", "Ninja",
                     "-DCMAKE_MAKE_PROGRAM=" + ninja,
                     "-DCMAKE_BUILD_TYPE=Release", "-DCMAKE_TOOLCHAIN_FILE=" + toolchain,
-                    "-DCMAKE_INSTALL_PREFIX=" + staging,
+                    "-DCMAKE_INSTALL_PREFIX=" + output,
                     "-DINNO_UI_BRIDGE_ROOT=" + generations["UI"].bridgeDirectory,
                     "-DINNO_TEXT_BRIDGE_ROOT=" + generations["Text"].bridgeDirectory,
                     "-DPython3_EXECUTABLE=" + environment["EMSDK_PYTHON"]],
-                root, cancellationToken, environment).ConfigureAwait(false);
-            await ToolchainEnvironment.RunAsync(cmake, ["--build", intermediate],
-                root, cancellationToken, environment).ConfigureAwait(false);
-            await ToolchainEnvironment.RunAsync(cmake, ["--install", intermediate, "--component", "Inno"],
-                root, cancellationToken, environment).ConfigureAwait(false);
-            ValidateNativeOutputs(staging);
-            if (NativeBuildFingerprint.Create(declarations, inputs) != fingerprint)
-                throw new InvalidOperationException("Native build inputs changed during compilation; the candidate was not published.");
-            string metadata = Path.Combine(staging, "Metadata");
+                root, token, environment).ConfigureAwait(false);
+            await ToolchainEnvironment.RunAsync(scoped, cmake, ["--build", intermediate],
+                root, token, environment).ConfigureAwait(false);
+            await ToolchainEnvironment.RunAsync(scoped, cmake, ["--install", intermediate, "--component", "Inno"],
+                root, token, environment).ConfigureAwait(false);
+            ValidateNativeOutputs(output);
+            string metadata = Path.Combine(output, "Metadata");
             Directory.CreateDirectory(metadata);
             new XDocument(new XElement("Project", generations.OrderBy(pair => pair.Key, StringComparer.Ordinal)
                 .Select(pair => new XElement("PropertyGroup",
                     new XAttribute("Condition", "'$(MSBuildProjectName)' == 'Inno.Native." + pair.Key + "'"),
                     new XElement("BindGenExpectedFingerprint", pair.Value.fingerprint)))))
                 .Save(Path.Combine(metadata, "BindingSelection.props"));
-            BuildArtifactManifest.Write(staging, fingerprint, NativeOutputDirectories);
-            cancellationToken.ThrowIfCancellationRequested();
-            AtomicDirectory.Install(staging, destination);
-            return new BrowserNativeArtifacts(fingerprint, destination);
-        }
-        finally
-        {
-            if (Directory.Exists(staging))
-                Directory.Delete(staging, recursive: true);
-        }
-    }
-
-    private static IEnumerable<string> EnumerateToolchainInputs(string directory)
-    {
-        foreach (string file in Directory.EnumerateFiles(directory, "*", SearchOption.AllDirectories))
-        {
-            string extension = Path.GetExtension(file).ToLowerInvariant();
-            if (extension is ".exe" or ".dll" or ".py" or ".js" or ".mjs" or ".cmake" or ".sh"
-                || !OperatingSystem.IsWindows() && extension.Length == 0
-                    && Path.GetFileName(Path.GetDirectoryName(file)) == "bin")
-                yield return file;
-        }
+        }, cancellationToken).ConfigureAwait(false);
+        return new BrowserNativeArtifacts(product.fingerprint, Path.Combine(product.directory, "Outputs"));
     }
 
     private static void ValidateNativeOutputs(string directory)
@@ -157,25 +145,6 @@ public static class BrowserToolchain
             string file = Path.Combine(directory, component, "browser-wasm", archive);
             if (!File.Exists(file) || new FileInfo(file).Length == 0)
                 throw new InvalidDataException($"The native candidate is missing a complete archive at '{file}'.");
-        }
-    }
-
-    private static IEnumerable<string> EnumerateNativeSources(string root)
-    {
-        foreach (string path in Directory.EnumerateFiles(root))
-        {
-            string extension = Path.GetExtension(path).ToLowerInvariant();
-            if (Path.GetFileName(path) == "CMakeLists.txt"
-                || extension is ".c" or ".cpp" or ".cxx" or ".cc" or ".h" or ".hpp" or ".hxx"
-                    or ".inc" or ".in" or ".cmake" or ".def" or ".rc" or ".s" or ".asm")
-                yield return Path.GetFullPath(path);
-        }
-        foreach (string directory in Directory.EnumerateDirectories(root))
-        {
-            if (Path.GetFileName(directory) is ".git" or ".build" or "obj" or "bin" or "Generated" or "Bindings")
-                continue;
-            foreach (string path in EnumerateNativeSources(directory))
-                yield return path;
         }
     }
 

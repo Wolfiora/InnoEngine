@@ -59,4 +59,9 @@
   <ItemGroup>
     <ProjectReference Include="../../../src/adapters/serialization/Inno.Adapter.Serialization.DotNet/Inno.Adapter.Serialization.DotNet.csproj" PrivateAssets="compile" />
   </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../../../src/services/rendering/Inno.Rendering.Assets.Authoring/Inno.Rendering.Assets.Authoring.csproj" />
+    <ProjectReference Include="../../../src/services/rendering/Inno.Rendering.Runtime/Inno.Rendering.Runtime.csproj" />
+  </ItemGroup>
 </Project>

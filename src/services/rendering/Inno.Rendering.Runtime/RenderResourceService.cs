@@ -7,6 +7,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Inno.Rendering;
+using Inno.Rendering.Assets;
 
 namespace Inno.Rendering.Runtime;
 
@@ -572,7 +573,7 @@ internal sealed class RenderResourceService : RenderResourceProvider, IRenderRes
         if (texture.assetId == Guid.Empty || string.IsNullOrWhiteSpace(texture.slot.id))
             return false;
 
-        RenderPersistentResourceId resourceId = texture.resourceId;
+        RenderPersistentResourceId resourceId = new($"asset:{texture.assetId:D}:texture:{texture.slot.id}");
         bool sRgb = texture.slot.colorSpace == TextureColorSpace.Srgb;
         if (m_textures.TryGetValue(resourceId, out TextureEntry? current)
             && current.kind == TextureEntryKind.Ktx

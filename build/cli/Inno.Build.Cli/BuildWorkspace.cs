@@ -1,9 +1,8 @@
+using Inno.Core.IO;
 using Inno.Extensibility.Modules;
 using Inno.Adapter.Modules.DotNet;
 using Inno.Adapter.Serialization.DotNet;
 using System;
-using Inno.Build.Managed;
-using Inno.Build.Managed.DotNet;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -13,10 +12,6 @@ using System.Threading.Tasks;
 using Inno.Assets;
 using Inno.Assets.Pipeline;
 using Inno.Build;
-using Inno.Build.Platform.MacOS;
-using Inno.Build.Platform.Browser;
-using Inno.Build.Platform.Windows;
-using Inno.Build.SupportPacks;
 using Inno.Core.Execution;
 using Inno.Core.Identity;
 using Inno.Core.Settings;
@@ -171,7 +166,6 @@ internal sealed class BuildWorkspace : IDisposable
             engine = new EngineHostBuilder()
                 .UseMetadataSources(new DotNetAssemblyCatalogSource(typeof(BuildWorkspace).Assembly),
                     new ReflectionTypeCatalogSource(), new ReflectionSerializationMetadataSource())
-                .UseMetadataCache(Path.Combine(libraryRoot, "Build", "Metadata"))
                 .Build();
             var sources = new PluginSourceService(engine.serialization, pluginsRoot, libraryRoot);
             PluginScanResult scan = sources.Scan();
@@ -196,7 +190,7 @@ internal sealed class BuildWorkspace : IDisposable
                     ]
                 });
             settings = new ProjectSettingsStore(
-                Path.Combine(projectRoot, SettingsFileNames.project),
+                new FileByteDocumentStore(Path.GetFullPath(Path.Combine(projectRoot, SettingsFileNames.project))),
                 engine.types,
                 engine.serialization,
                 ProjectId.FromName(new DirectoryInfo(projectRoot).Name),
@@ -223,7 +217,7 @@ internal sealed class BuildWorkspace : IDisposable
                 },
                 assets,
                 plugins);
-            ActivateAuthoring(engine, plugins, compiler);
+            ActivateAuthoring(engine, plugins, compiler, Path.Combine(libraryRoot, "Build", "Metadata"));
             engine.generations.Wait();
             assets.CompleteExtensionDiscovery();
             assets.Rescan();
@@ -240,9 +234,13 @@ internal sealed class BuildWorkspace : IDisposable
         }
     }
 
-    private static IModuleSource CreateScriptModuleSource(ScriptModuleDeployment deployment)
+    private static IModuleSource CreateScriptModuleSource(
+        ScriptModuleDeployment deployment,
+        string artifactRootDirectory
+    )
         => new DotNetModuleSource
         {
+            artifactRootDirectory = artifactRootDirectory,
             moduleName = deployment.moduleName,
             mainAssemblyPath = deployment.mainAssemblyPath,
             domain = deployment.domain,
@@ -256,7 +254,8 @@ internal sealed class BuildWorkspace : IDisposable
     private static void ActivateAuthoring(
         EngineHost engine,
         PluginEnvironment plugins,
-        ScriptCompiler compiler
+        ScriptCompiler compiler,
+        string artifactRootDirectory
     ) {
         // Asset importers and graph extensions belong to the authoring generation, including in a
         // headless build. Compiling only Player scripts would export unresolved/last-good asset state.
@@ -265,7 +264,7 @@ internal sealed class BuildWorkspace : IDisposable
             throw new InvalidOperationException("Build authoring compilation failed:" + Environment.NewLine
                 + string.Join(Environment.NewLine, result.diagnostics.Select(static diagnostic => diagnostic.message)));
         using Inno.Extensibility.Modules.AssemblyReloadSession reload = engine.modules.BeginReload(
-            result.moduleDeployments.Select(CreateScriptModuleSource).ToArray());
+            result.moduleDeployments.Select(deployment => CreateScriptModuleSource(deployment, artifactRootDirectory)).ToArray());
         _ = engine.generations.Execute("Build authoring generation", reload, [plugins.CreateReloadChange()]);
     }
 

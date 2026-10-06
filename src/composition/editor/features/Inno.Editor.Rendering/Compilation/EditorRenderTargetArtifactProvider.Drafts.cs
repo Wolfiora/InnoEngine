@@ -8,6 +8,7 @@ using Inno.Core.Graphs;
 using Inno.Assets;
 using Inno.Rendering;
 using Inno.Rendering.Assets;
+using Inno.Rendering.Assets.Authoring;
 
 namespace Inno.Editor.Rendering;
 
@@ -56,7 +57,7 @@ public sealed partial class EditorRenderTargetArtifactProvider
                             if (!m_assets.TryGetInfo(id, out AssetInfo? source) || source is null || source.status != AssetImportStatus.Imported)
                                 throw new InvalidDataException($"Shader function '{id}' has no current successful import. Preview cannot hide its source error with an old bundle.");
                             using ArtifactLease lease = m_assets.AcquireArtifact(id, ShaderSourceBundle.outputName);
-                            return File.ReadAllBytes(lease.info.absolutePath);
+                            return lease.ReadAllBytes();
                         }, m_lifetime.Token,
                         (
                             id,

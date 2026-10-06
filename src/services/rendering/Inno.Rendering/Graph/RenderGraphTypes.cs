@@ -266,6 +266,7 @@ internal sealed record RenderAttachment(
 
 internal sealed class RenderPassRecord
 {
+    internal required int index { get; init; }
     /// <summary>
     /// Gets the human-readable name used for presentation and diagnostics.
     /// </summary>
@@ -328,12 +329,14 @@ internal sealed record RenderTextureRecord(
     string name,
     RenderTextureDescriptor descriptor,
     bool imported,
-    PersistentTextureHandle persistentHandle
+    PersistentTextureHandle persistentHandle,
+    ulong allocationId
 );
 
 internal sealed record RenderBufferRecord(
     string name,
     RenderBufferDescriptor descriptor,
     bool imported,
-    PersistentBufferHandle persistentHandle
+    PersistentBufferHandle persistentHandle,
+    ulong allocationId
 );

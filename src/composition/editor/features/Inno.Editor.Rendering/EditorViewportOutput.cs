@@ -4,6 +4,8 @@ using System.Linq;
 using System.Numerics;
 using Inno.Adapter.Presentation;
 using Inno.Rendering;
+using Inno.Rendering.Assets;
+using Inno.Rendering.Runtime;
 
 namespace Inno.Editor.Rendering;
 

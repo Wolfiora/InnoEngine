@@ -38,7 +38,7 @@ public sealed class ConsolePanelNativeLayoutTests
             ImGuiApi.GetIO().BackendFlags |= ImGuiBackendFlags.RendererHasTextures;
             ImGuiApi.GetIO().Fonts.RendererHasTextures = true;
             ImGuiApi.GetStyle().ScaleAllSizes(scale);
-            using var modules = new ModuleHost(new() { catalogSource = new DotNetAssemblyCatalogSource(typeof(ConsolePanelNativeLayoutTests).Assembly), cacheDirectory = Path.Combine(root, "Library", "Assemblies") });
+            using var modules = new ModuleHost(new() { catalogSource = new DotNetAssemblyCatalogSource(typeof(ConsolePanelNativeLayoutTests).Assembly)});
             using var types = new TypeCatalog(modules, new ReflectionTypeCatalogSource());
             using var logs = new LogRouter();
             var hub = new DiagnosticHub();

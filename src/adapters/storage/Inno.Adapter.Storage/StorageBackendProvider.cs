@@ -36,12 +36,12 @@ public abstract class StorageBackendProvider
     /// <summary>
     /// Creates a caller-owned storage service using this implementation.
     /// </summary>
-    /// <param name="rootDirectory">
-    /// The application-owned root or origin namespace for stored data.
+    /// <param name="scope">
+    /// The application namespace to isolate within this provider's host configuration.
     /// </param>
     /// <returns>
     /// A new service owned by the caller; providers must not return null.
     /// </returns>
-    public abstract IApplicationStorage CreateStorage(string rootDirectory);
+    public abstract IApplicationStorage CreateStorage(StorageScope scope);
 }
 

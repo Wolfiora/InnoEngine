@@ -119,3 +119,112 @@ MiniAudio 原生线程不执行 provider、反射、Asset IO、托管日志、�
 - `Update` 在执行 Provider 前拒绝负数、NaN 与无限 deltaTime，不将无效时间静默改为零。
 
 `MutedAudioDevice(AudioDeviceLimits? limits = null)` 使用与官方 native backend 一致的 Clip/Bus/Voice + completion 接纳限制。静音不会意味着无限积累；调用者仍必须通过 Update 和 TryDequeueCompletion 推进生命周期。
+
+
+
+
+
+
+## 本轮边界与所有权
+
+Runtime 从 ArtifactLease 创建编码来源并交给设备；AudioClipCache 不取得物理路径。准备任务受取消与 owner-thread 发布控制；退出先取消并完成准备，再退休 native clip 并释放 source lease。
+
+## 当前源码公开 API 清单
+
+以下仅列出当前程序集自己声明的 public/protected 契约；继承成员遵循所属基类页面。internal/private 实现不作为稳定公开 API。签名依据当前源码语义模型生成，行为、参数、异常与所有权说明同时以对应英文 XML 为准。
+
+### `Inno.Audio.Runtime.AudioContentStatistics`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Audio.Runtime.AudioContentStatistics.AudioContentStatistics(int capacity, int acceptedSnapshots, int rejectedProviders)`](../../src/services/audio/Inno.Audio.Runtime/AudioContentStatistics.cs#L25) | Creates a content admission snapshot without retaining providers or host content. |
+| [`int Inno.Audio.Runtime.AudioContentStatistics.acceptedSnapshots`](../../src/services/audio/Inno.Audio.Runtime/AudioContentStatistics.cs#L47) | Gets accepted snapshots, bounded by capacity and excluding every rejected partial contribution. |
+| [`int Inno.Audio.Runtime.AudioContentStatistics.capacity`](../../src/services/audio/Inno.Audio.Runtime/AudioContentStatistics.cs#L42) | Gets the immutable combined snapshot budget assigned to the runtime. |
+| [`int Inno.Audio.Runtime.AudioContentStatistics.rejectedProviders`](../../src/services/audio/Inno.Audio.Runtime/AudioContentStatistics.cs#L52) | Gets rejected contributions in this collection, including overflow and duplicate identities. |
+| [`Inno.Audio.Runtime.AudioContentStatistics`](../../src/services/audio/Inno.Audio.Runtime/AudioContentStatistics.cs#L8) | Reports immutable content admission pressure from the most recent control-thread collection. |
+
+### `Inno.Audio.Runtime.AudioRuntime`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Audio.Runtime.AudioRuntime.AudioRuntime(Inno.Extensibility.Types.TypeCatalog types, Inno.Audio.IAudioDevice device, Inno.Assets.IAssetArtifactLookup artifacts, Inno.Core.Events.EventDispatcher events, Inno.Core.Diagnostics.IDiagnosticReporter diagnostics, Inno.Audio.Runtime.AudioRuntimeOptions? options = null, System.Func<Inno.References.ContentReadScope>? contentScopeProvider = null, System.Func<Inno.Audio.IAudioDevice>? deviceRecoveryFactory = null)`](../../src/services/audio/Inno.Audio.Runtime/AudioRuntime.cs#L78) | Creates an audio runtime over one backend device generation. |
+| [`bool Inno.Audio.Runtime.AudioRuntime.ApplyMixer(Inno.Audio.AudioMixerAsset asset)`](../../src/services/audio/Inno.Audio.Runtime/AudioRuntime.cs#L458) | Builds and atomically installs a mixer graph from reloadable extensions. |
+| [`System.IDisposable Inno.Audio.Runtime.AudioRuntime.EnterExecutionScope()`](../../src/services/audio/Inno.Audio.Runtime/AudioRuntime.cs#L182) | Binds this runtime to script-facing audio APIs for the current asynchronous flow. |
+| [`override void Inno.Audio.Runtime.AudioRuntime.OnBeginFrame(Inno.Runtime.Contracts.RuntimeFrame frame)`](../../src/services/audio/Inno.Audio.Runtime/AudioRuntime.cs#L149) | Captures snapshots and binds service façades. |
+| [`override void Inno.Audio.Runtime.AudioRuntime.OnStart()`](../../src/services/audio/Inno.Audio.Runtime/AudioRuntime.cs#L139) | See the implemented contract. |
+| [`override void Inno.Audio.Runtime.AudioRuntime.OnStop()`](../../src/services/audio/Inno.Audio.Runtime/AudioRuntime.cs#L703) | Stops voices and releases providers, cache entries, mixer generations, and the owned backend device. |
+| [`override void Inno.Audio.Runtime.AudioRuntime.OnUpdate(Inno.Runtime.Contracts.RuntimeFrame frame)`](../../src/services/audio/Inno.Audio.Runtime/AudioRuntime.cs#L156) | Advances domain state on the variable clock. |
+| [`bool Inno.Audio.Runtime.AudioRuntime.Pause(Inno.Audio.AudioVoiceHandle voice)`](../../src/services/audio/Inno.Audio.Runtime/AudioRuntime.cs#L272) | Pauses a live or preparing voice. |
+| [`Inno.Audio.AudioVoiceHandle Inno.Audio.Runtime.AudioRuntime.Play(Inno.Audio.AudioClipAsset clip)`](../../src/services/audio/Inno.Audio.Runtime/AudioRuntime.cs#L197) | Starts one clip using default playback parameters. |
+| [`Inno.Audio.AudioVoiceHandle Inno.Audio.Runtime.AudioRuntime.Play(Inno.Audio.AudioClipAsset clip, Inno.Audio.AudioPlayOptions options)`](../../src/services/audio/Inno.Audio.Runtime/AudioRuntime.cs#L214) | Starts one clip using explicit playback parameters. |
+| [`Inno.Audio.AudioVoiceHandle Inno.Audio.Runtime.AudioRuntime.PlayScheduled(Inno.Audio.AudioClipAsset clip, double scheduledDspTime, Inno.Audio.AudioPlayOptions options)`](../../src/services/audio/Inno.Audio.Runtime/AudioRuntime.cs#L237) | Schedules one clip against the monotonic audio clock. |
+| [`System.Threading.Tasks.ValueTask Inno.Audio.Runtime.AudioRuntime.PreloadAsync(Inno.Audio.AudioClipAsset clip, Inno.Audio.AudioClipLoadMode loadMode = Inno.Audio.AudioClipLoadMode.Automatic, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))`](../../src/services/audio/Inno.Audio.Runtime/AudioRuntime.cs#L428) | Prepares and explicitly retains a clip cache entry. |
+| [`void Inno.Audio.Runtime.AudioRuntime.ReleasePreload(Inno.Audio.AudioClipAsset clip)`](../../src/services/audio/Inno.Audio.Runtime/AudioRuntime.cs#L443) | Releases one explicit preload retention without interrupting voices. |
+| [`void Inno.Audio.Runtime.AudioRuntime.ReplaceDevice(Inno.Audio.IAudioDevice replacement)`](../../src/services/audio/Inno.Audio.Runtime/AudioRuntime.cs#L506) | Replaces a lost or muted backend at a main-thread safety point. |
+| [`bool Inno.Audio.Runtime.AudioRuntime.Resume(Inno.Audio.AudioVoiceHandle voice)`](../../src/services/audio/Inno.Audio.Runtime/AudioRuntime.cs#L287) | Resumes a paused voice. |
+| [`bool Inno.Audio.Runtime.AudioRuntime.Seek(Inno.Audio.AudioVoiceHandle voice, System.TimeSpan position)`](../../src/services/audio/Inno.Audio.Runtime/AudioRuntime.cs#L305) | Moves a live or preparing voice cursor to a clip-relative position. |
+| [`bool Inno.Audio.Runtime.AudioRuntime.SetBusMuted(Inno.Audio.AudioBusId bus, bool muted)`](../../src/services/audio/Inno.Audio.Runtime/AudioRuntime.cs#L385) | Updates mute state for a semantic mixer bus. |
+| [`bool Inno.Audio.Runtime.AudioRuntime.SetBusPaused(Inno.Audio.AudioBusId bus, bool paused)`](../../src/services/audio/Inno.Audio.Runtime/AudioRuntime.cs#L405) | Updates pause state for a semantic mixer bus. |
+| [`bool Inno.Audio.Runtime.AudioRuntime.SetBusVolume(Inno.Audio.AudioBusId bus, float volume)`](../../src/services/audio/Inno.Audio.Runtime/AudioRuntime.cs#L365) | Updates linear gain for a semantic mixer bus. |
+| [`bool Inno.Audio.Runtime.AudioRuntime.SetVoiceParameters(Inno.Audio.AudioVoiceHandle voice, Inno.Audio.AudioVoiceParameters parameters)`](../../src/services/audio/Inno.Audio.Runtime/AudioRuntime.cs#L325) | Replaces mutable parameters for a live or preparing voice. |
+| [`bool Inno.Audio.Runtime.AudioRuntime.Stop(Inno.Audio.AudioVoiceHandle voice)`](../../src/services/audio/Inno.Audio.Runtime/AudioRuntime.cs#L257) | Stops a live or preparing voice. |
+| [`bool Inno.Audio.Runtime.AudioRuntime.TryGetVoiceState(Inno.Audio.AudioVoiceHandle voice, out Inno.Audio.AudioPlaybackState playbackState)`](../../src/services/audio/Inno.Audio.Runtime/AudioRuntime.cs#L345) | Queries the current state of a runtime voice. |
+| [`bool Inno.Audio.Runtime.AudioRuntime.TryRecoverDevice(System.Func<Inno.Audio.IAudioDevice> deviceFactory)`](../../src/services/audio/Inno.Audio.Runtime/AudioRuntime.cs#L588) | Attempts to replace a muted or lost output generation while preserving the active mixer graph. |
+| [`void Inno.Audio.Runtime.AudioRuntime.Update(float deltaTime)`](../../src/services/audio/Inno.Audio.Runtime/AudioRuntime.cs#L670) | Advances providers, pending preparation, backend maintenance, and completion dispatch at a main-thread safety point. |
+| [`Inno.Audio.AudioCapabilities Inno.Audio.Runtime.AudioRuntime.capabilities`](../../src/services/audio/Inno.Audio.Runtime/AudioRuntime.cs#L126) | Gets immutable capabilities for the current backend generation. |
+| [`Inno.Audio.Runtime.AudioContentStatistics Inno.Audio.Runtime.AudioRuntime.contentStatistics`](../../src/services/audio/Inno.Audio.Runtime/AudioRuntime.cs#L171) | Gets bounded provider admission counts from the most recent content collection on this device generation. |
+| [`Inno.Audio.AudioDeviceState Inno.Audio.Runtime.AudioRuntime.deviceState`](../../src/services/audio/Inno.Audio.Runtime/AudioRuntime.cs#L131) | Gets the current output availability state. |
+| [`double Inno.Audio.Runtime.AudioRuntime.dspTime`](../../src/services/audio/Inno.Audio.Runtime/AudioRuntime.cs#L136) | Gets the monotonic backend audio clock in seconds. |
+| [`Inno.Audio.AudioStatistics Inno.Audio.Runtime.AudioRuntime.statistics`](../../src/services/audio/Inno.Audio.Runtime/AudioRuntime.cs#L161) | Gets current runtime resource statistics. |
+| [`Inno.Audio.Runtime.AudioRuntime`](../../src/services/audio/Inno.Audio.Runtime/AudioRuntime.cs#L19) | Owns playback scheduling, clip retention, mixer generations, and content synchronization. |
+
+### `Inno.Audio.Runtime.AudioRuntimeFactory`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Audio.Runtime.AudioRuntimeFactory.AudioRuntimeFactory(System.Func<Inno.Runtime.Contracts.RuntimeSubsystemContext, Inno.Audio.Runtime.AudioRuntime> runtimeFactory)`](../../src/services/audio/Inno.Audio.Runtime/AudioRuntimeFactory.cs#L21) | Creates a reusable factory around a composition-owned audio runtime callback. |
+| [`Inno.Runtime.Contracts.IRuntimeSubsystem Inno.Audio.Runtime.AudioRuntimeFactory.Create(Inno.Runtime.Contracts.RuntimeSubsystemContext context)`](../../src/services/audio/Inno.Audio.Runtime/AudioRuntimeFactory.cs#L43) | Creates an audio feature over a newly allocated runtime layer. |
+| [`Inno.Runtime.Contracts.RuntimeSubsystemDescriptor Inno.Audio.Runtime.AudioRuntimeFactory.descriptor`](../../src/services/audio/Inno.Audio.Runtime/AudioRuntimeFactory.cs#L29) | Gets stable ordering metadata that updates audio after scene simulation. |
+| [`Inno.Audio.Runtime.AudioRuntimeFactory`](../../src/services/audio/Inno.Audio.Runtime/AudioRuntimeFactory.cs#L11) | Creates one audio lifecycle feature for every isolated runtime session. |
+
+### `Inno.Audio.Runtime.AudioRuntimeOptions`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`long Inno.Audio.Runtime.AudioRuntimeOptions.automaticStreamingThresholdBytes`](../../src/services/audio/Inno.Audio.Runtime/AudioRuntimeOptions.cs#L33) | Gets or sets the encoded byte threshold used by automatic load-mode selection. |
+| [`long Inno.Audio.Runtime.AudioRuntimeOptions.decodedCacheBudgetBytes`](../../src/services/audio/Inno.Audio.Runtime/AudioRuntimeOptions.cs#L28) | Gets or sets the decoded clip cache budget in bytes. |
+| [`float Inno.Audio.Runtime.AudioRuntimeOptions.deviceRecoveryIntervalSeconds`](../../src/services/audio/Inno.Audio.Runtime/AudioRuntimeOptions.cs#L38) | Gets or sets the positive delay between output-device recovery attempts in seconds. |
+| [`int Inno.Audio.Runtime.AudioRuntimeOptions.maxContentSnapshots`](../../src/services/audio/Inno.Audio.Runtime/AudioRuntimeOptions.cs#L23) | Gets or sets the maximum combined emitter and listener snapshots accepted across all providers per update. |
+| [`int Inno.Audio.Runtime.AudioRuntimeOptions.maxPendingPreloads`](../../src/services/audio/Inno.Audio.Runtime/AudioRuntimeOptions.cs#L18) | Gets or sets the maximum number of unfinished preload waiters accepted by this owner. |
+| [`int Inno.Audio.Runtime.AudioRuntimeOptions.maxVoices`](../../src/services/audio/Inno.Audio.Runtime/AudioRuntimeOptions.cs#L13) | Gets or sets the maximum number of preparing, scheduled, paused, and playing voices. |
+| [`Inno.Audio.Runtime.AudioRuntimeOptions`](../../src/services/audio/Inno.Audio.Runtime/AudioRuntimeOptions.cs#L8) | Configures bounded audio runtime resource policies. |
+
+### `Inno.Audio.Runtime.MutedAudioDevice`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Audio.Runtime.MutedAudioDevice.MutedAudioDevice(int sampleRate = 48000, Inno.Audio.AudioDeviceLimits? limits = null)`](../../src/services/audio/Inno.Audio.Runtime/MutedAudioDevice.cs#L35) | Creates a muted device with deterministic clock and lifecycle behavior. |
+| [`void Inno.Audio.Runtime.MutedAudioDevice.Dispose()`](../../src/services/audio/Inno.Audio.Runtime/MutedAudioDevice.cs#L327) | Releases all logical clips, voices, buses, and listeners. |
+| [`Inno.Audio.AudioCapabilities Inno.Audio.Runtime.MutedAudioDevice.capabilities`](../../src/services/audio/Inno.Audio.Runtime/MutedAudioDevice.cs#L50) | Gets logical capabilities available while output is muted. |
+| [`double Inno.Audio.Runtime.MutedAudioDevice.dspTime`](../../src/services/audio/Inno.Audio.Runtime/MutedAudioDevice.cs#L65) | Gets the deterministic logical audio clock in seconds. |
+| [`uint Inno.Audio.Runtime.MutedAudioDevice.generation`](../../src/services/audio/Inno.Audio.Runtime/MutedAudioDevice.cs#L55) | Gets the non-zero logical device generation. |
+| [`Inno.Audio.AudioDeviceState Inno.Audio.Runtime.MutedAudioDevice.state`](../../src/services/audio/Inno.Audio.Runtime/MutedAudioDevice.cs#L60) | Gets until this device is disposed. |
+| [`Inno.Audio.AudioStatistics Inno.Audio.Runtime.MutedAudioDevice.statistics`](../../src/services/audio/Inno.Audio.Runtime/MutedAudioDevice.cs#L70) | Gets current logical resource statistics. |
+| [`Inno.Audio.Runtime.MutedAudioDevice`](../../src/services/audio/Inno.Audio.Runtime/MutedAudioDevice.cs#L12) | Advances deterministic audio state without opening an operating-system output device. |
+
+## 项目依赖
+
+- [Inno.Core.Execution](../core/Inno.Core.Execution.md)：实现依赖（`PrivateAssets="compile"`）。
+- [Inno.Extensibility.Types](../extensibility/Inno.Extensibility.Types.md)：实现依赖（`PrivateAssets="compile"`）。
+- [Inno.Scripting.Api](../scripting/Inno.Scripting.Api.md)：实现依赖（`PrivateAssets="compile"`）。
+- [Inno.Core.Serialization](../core/Inno.Core.Serialization.md)：实现依赖（`PrivateAssets="compile"`）。
+- [Inno.Assets](../assets/Inno.Assets.md)：项目引用；公开签名可见性由语义边界检查确认。
+- [Inno.Core.Events](../core/Inno.Core.Events.md)：项目引用；公开签名可见性由语义边界检查确认。
+- [Inno.Core.Settings](../core/Inno.Core.Settings.md)：项目引用；公开签名可见性由语义边界检查确认。
+- [Inno.Audio](Inno.Audio.md)：项目引用；公开签名可见性由语义边界检查确认。
+- [Inno.Core.Diagnostics](../core/Inno.Core.Diagnostics.md)：项目引用；公开签名可见性由语义边界检查确认。
+- [Inno.Runtime.Contracts](../runtime/Inno.Runtime.Contracts.md)：项目引用；公开签名可见性由语义边界检查确认。
+- [Inno.References](../references/Inno.References.md)：项目引用；公开签名可见性由语义边界检查确认。
+- [Inno.Extensibility.Catalogs](../extensibility/Inno.Extensibility.Catalogs.md)：项目引用；公开签名可见性由语义边界检查确认。
+
+共同 MSBuild 注入的 analyzer 与编译规则属于构建依赖，完整有效项目图记录在本轮验收证据中。

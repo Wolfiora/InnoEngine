@@ -14,10 +14,9 @@ public sealed class BrowserStorageBackendProvider : StorageBackendProvider
     public BrowserStorageBackendProvider() : base(StorageBackendId.browser) { }
 
     /// <inheritdoc />
-    public override IApplicationStorage CreateStorage(string rootDirectory)
+    public override IApplicationStorage CreateStorage(StorageScope scope)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(rootDirectory);
-        return new BrowserApplicationStorage(rootDirectory);
+        return new BrowserApplicationStorage(scope);
     }
 }
 

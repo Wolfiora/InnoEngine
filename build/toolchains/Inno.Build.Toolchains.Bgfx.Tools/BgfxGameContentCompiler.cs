@@ -10,6 +10,7 @@ using Inno.Core.Serialization;
 using Inno.Rendering;
 using Inno.Extensibility.Types;
 using Inno.Rendering.Assets;
+using Inno.Rendering.Assets.Authoring;
 
 namespace Inno.Build.Toolchains.Bgfx.Tools;
 
@@ -215,8 +216,9 @@ public sealed class BgfxGameContentCompiler
                 texture.reference.assetId,
                 texture.reference.slot.sourceOutputName))
             {
+                using Stream encoded = source.OpenRead();
                 bytes = await textureCompiler.CompileKtxAsync(
-                        source.info.absolutePath,
+                        encoded,
                         texture.reference.slot.colorSpace,
                         cancellationToken)
                     .ConfigureAwait(false);

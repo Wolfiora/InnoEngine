@@ -39,9 +39,7 @@ public sealed class TextServiceTests : IDisposable
         Directory.CreateDirectory(m_assets);
         m_identityScope = m_identities.EnterScope();
         m_modules = new ModuleHost(new ModuleHostOptions
-        { catalogSource = new DotNetAssemblyCatalogSource(typeof(TextServiceTests).Assembly),
-            cacheDirectory = Path.Combine(m_root, "Assemblies")
-        });
+        { catalogSource = new DotNetAssemblyCatalogSource(typeof(TextServiceTests).Assembly)        });
         _ = Assembly.Load("Inno.Text.Assets");
         m_types = new TypeCatalog(m_modules, new ReflectionTypeCatalogSource());
         m_serialization = new SerializationRegistry(m_types, new ReflectionSerializationMetadataSource());
@@ -71,7 +69,8 @@ public sealed class TextServiceTests : IDisposable
         Assert.Equal(source.Length, font.metadata.Value.encodedByteLength);
         Assert.True(loader.TryGetArtifact(font.identity.persistentId, "font-data", out AssetArtifactInfo? data));
         Assert.NotNull(data);
-        Assert.Equal(source, File.ReadAllBytes(data.absolutePath));
+        using ArtifactLease encoded = loader.AcquireArtifact(font.identity.persistentId, "font-data");
+        Assert.Equal(source, encoded.ReadAllBytes());
     }
 
     [Fact]

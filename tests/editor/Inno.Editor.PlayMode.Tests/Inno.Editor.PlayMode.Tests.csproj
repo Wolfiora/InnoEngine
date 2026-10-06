@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <ItemGroup>
-    <ProjectReference Include="../../../src/adapters/input/Inno.Adapter.Input.Sdl3/Inno.Adapter.Input.Sdl3.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../../src/adapters/input/Inno.Adapter.Input/Inno.Adapter.Input.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../../src/foundation/core/Inno.Core.Execution/Inno.Core.Execution.csproj" />
     <ProjectReference Include="../../../src/foundation/core/Inno.Core.Events/Inno.Core.Events.csproj" />
     <ProjectReference Include="../../../src/foundation/core/Inno.Core.Input/Inno.Core.Input.csproj" />

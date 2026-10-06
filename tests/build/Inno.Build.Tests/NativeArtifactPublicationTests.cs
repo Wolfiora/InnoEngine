@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -14,6 +15,64 @@ namespace Inno.Build.Tests;
 public sealed class NativeArtifactPublicationTests : IDisposable
 {
     private readonly string m_root = Path.Combine(Path.GetTempPath(), "InnoNativePublication", Guid.NewGuid().ToString("N"));
+
+    [Fact]
+    public async Task MaterializationPreservesIdenticalTimestampsAndRejectsChangesAfterTheSourceSnapshot()
+    {
+        NativeBuildContext context = CreateContext();
+        string source = Path.Combine(m_root, "source.h");
+        File.WriteAllText(source, "int first;");
+        string intermediate = Path.Combine(m_root, "Intermediate", "input.h");
+        await NativeArtifactPublisher.PublishAsync(context,
+            CreateRecipe(context, typeof(NativeArtifactPublisher).Assembly, "fixture", "fixture-x64", [source], []), async (
+                scoped,
+                output,
+                cancellation
+            ) => {
+                Assert.True(await NativeInputMaterializer.CopyAsync(scoped, source, intermediate, cancellation));
+                DateTime original = File.GetLastWriteTimeUtc(intermediate);
+                Assert.False(await NativeInputMaterializer.CopyAsync(scoped, source, intermediate, cancellation));
+                Assert.Equal(original, File.GetLastWriteTimeUtc(intermediate));
+                File.WriteAllText(Path.Combine(output, "result.native"), "complete");
+            });
+
+        context = CreateContext();
+        File.WriteAllText(source, "int newer;");
+        await Assert.ThrowsAsync<InvalidOperationException>(() => NativeArtifactPublisher.PublishAsync(context,
+            CreateRecipe(context, typeof(NativeArtifactPublisher).Assembly, "fixture", "fixture-x64", [source], []), async (
+                scoped,
+                output,
+                cancellation
+            ) => {
+                File.WriteAllText(source, "int wrong;");
+                await NativeInputMaterializer.CopyAsync(scoped, source, intermediate, cancellation);
+            }));
+        Assert.Equal("int first;", File.ReadAllText(intermediate));
+        Assert.Empty(Directory.EnumerateFiles(m_root, "*.staging-*", SearchOption.AllDirectories));
+    }
+
+    [Fact]
+    public async Task CanceledMaterializationPreservesTheOwnedIntermediate()
+    {
+        NativeBuildContext context = CreateContext();
+        string source = Path.Combine(m_root, "source.h");
+        string intermediate = Path.Combine(m_root, "input.h");
+        File.WriteAllText(source, "source");
+        File.WriteAllText(intermediate, "previous");
+        await NativeArtifactPublisher.PublishAsync(context,
+            CreateRecipe(context, typeof(NativeArtifactPublisher).Assembly, "fixture", "fixture-x64", [source], []), async (
+                scoped,
+                output,
+                cancellation
+            ) => {
+                using var canceled = new CancellationTokenSource();
+                canceled.Cancel();
+                await Assert.ThrowsAnyAsync<OperationCanceledException>(() =>
+                    NativeInputMaterializer.CopyAsync(scoped, source, intermediate, canceled.Token).AsTask());
+                File.WriteAllText(Path.Combine(output, "result.native"), "complete");
+            });
+        Assert.Equal("previous", File.ReadAllText(intermediate));
+    }
 
     [Fact]
     public async Task SdkDirectoryAliasesContributeContentAndDirectoryCyclesFailBeforeProducingOutput()
@@ -35,8 +94,12 @@ public sealed class NativeArtifactPublicationTests : IDisposable
                 string output,
                 CancellationToken cancellation
             ) => File.WriteAllTextAsync(Path.Combine(output, "api.native"), "complete", cancellation);
-            Task<NativeBuildProduct> Publish() => NativeArtifactPublisher.PublishAsync(context,
-                typeof(NativeArtifactPublisher).Assembly, "fixture", "fixture-x64", [source], [], Produce);
+            Task<NativeBuildProduct> Publish()
+            {
+                NativeBuildContext operation = CreateContext();
+                return NativeArtifactPublisher.PublishAsync(operation,
+                    CreateRecipe(operation, typeof(NativeArtifactPublisher).Assembly, "fixture", "fixture-x64", [source], []), Produce);
+            }
             NativeBuildProduct first = await Publish();
             File.WriteAllText(header, "changed declaration");
             NativeBuildProduct changed = await Publish();
@@ -82,7 +145,7 @@ public sealed class NativeArtifactPublicationTests : IDisposable
             await File.WriteAllTextAsync(Path.Combine(output, "api.native"), "complete", cancellation);
         }
         Task<NativeBuildProduct> Publish() => NativeArtifactPublisher.PublishAsync(context,
-            typeof(NativeArtifactPublisher).Assembly, "fixture", "fixture-x64", [source], ["sdk"], Produce);
+            CreateRecipe(context, typeof(NativeArtifactPublisher).Assembly, "fixture", "fixture-x64", [source], ["sdk"]), Produce);
 
         NativeBuildProduct[] products = await Task.WhenAll(Enumerable.Range(0, 4).Select(_ => Publish()));
         Assert.Equal(1, builds);
@@ -100,6 +163,31 @@ public sealed class NativeArtifactPublicationTests : IDisposable
     }
 
     [Fact]
+    public async Task SharedInitialInputsAreHashedOnceButEveryPublicationRechecksTheirBytes()
+    {
+        NativeBuildContext context = CreateContext();
+        string source = Path.Combine(m_root, "shared.h");
+        File.WriteAllText(source, "shared");
+        Task Produce(
+            NativeBuildContext scoped,
+            string output,
+            CancellationToken cancellation
+        ) => File.WriteAllTextAsync(Path.Combine(output, "api.native"), "complete", cancellation);
+        await NativeArtifactPublisher.PublishAsync(context,
+            CreateRecipe(context, typeof(NativeArtifactPublisher).Assembly, "first", "fixture-x64", [source], []), Produce);
+        await NativeArtifactPublisher.PublishAsync(context,
+            CreateRecipe(context, typeof(NativeArtifactPublisher).Assembly, "second", "fixture-x64", [source], []), Produce);
+        Assert.Equal(5, context.statistics.hashedFiles);
+        Assert.Equal(30, context.statistics.hashedBytes);
+
+        DateTime timestamp = File.GetLastWriteTimeUtc(source);
+        File.WriteAllText(source, "unsafe");
+        File.SetLastWriteTimeUtc(source, timestamp);
+        await Assert.ThrowsAsync<InvalidOperationException>(() => NativeArtifactPublisher.PublishAsync(context,
+            CreateRecipe(context, typeof(NativeArtifactPublisher).Assembly, "third", "fixture-x64", [source], []), Produce));
+    }
+
+    [Fact]
     public async Task ChangedClosureAndFailedPreparationPreserveEarlierProducts()
     {
         NativeBuildContext context = CreateContext();
@@ -112,11 +200,12 @@ public sealed class NativeArtifactPublicationTests : IDisposable
             CancellationToken cancellation
         ) => File.WriteAllTextAsync(Path.Combine(output, "api.native"), "complete", cancellation);
         NativeBuildProduct first = await NativeArtifactPublisher.PublishAsync(context,
-            typeof(NativeArtifactPublisher).Assembly, "fixture", "fixture-x64", [source], [], Produce);
+            CreateRecipe(context, typeof(NativeArtifactPublisher).Assembly, "fixture", "fixture-x64", [source], []), Produce);
 
         File.WriteAllText(Path.Combine(source, "added.h"), "new closure");
+        context = CreateContext();
         await Assert.ThrowsAsync<IOException>(() => NativeArtifactPublisher.PublishAsync(context,
-            typeof(NativeArtifactPublisher).Assembly, "fixture", "fixture-x64", [source], [],
+            CreateRecipe(context, typeof(NativeArtifactPublisher).Assembly, "fixture", "fixture-x64", [source], []),
             (
                 scoped,
                 output,
@@ -124,8 +213,9 @@ public sealed class NativeArtifactPublicationTests : IDisposable
             ) => throw new IOException("Compiler failed.")));
         Assert.Equal("complete", File.ReadAllText(first.files[0]));
 
+        context = CreateContext();
         await Assert.ThrowsAsync<InvalidOperationException>(() => NativeArtifactPublisher.PublishAsync(context,
-            typeof(NativeArtifactPublisher).Assembly, "fixture", "fixture-x64", [source], [], async (
+            CreateRecipe(context, typeof(NativeArtifactPublisher).Assembly, "fixture", "fixture-x64", [source], []), async (
                 scoped,
                 output,
                 cancellation
@@ -144,7 +234,7 @@ public sealed class NativeArtifactPublicationTests : IDisposable
         string source = Path.Combine(m_root, "source.h");
         File.WriteAllText(source, "source");
         NativeBuildProduct product = await NativeArtifactPublisher.PublishAsync(context,
-            typeof(NativeArtifactPublisher).Assembly, "fixture", "fixture-x64", [source], [], async (
+            CreateRecipe(context, typeof(NativeArtifactPublisher).Assembly, "fixture", "fixture-x64", [source], []), async (
                 scoped,
                 output,
                 cancellation
@@ -187,7 +277,7 @@ public sealed class NativeArtifactPublicationTests : IDisposable
         File.WriteAllText(Path.Combine(source, "api.c"), "__declspec(dllexport) int value(void) { return 42; }\n");
 
         NativeBuildProduct product = await NativeArtifactPublisher.PublishAsync(context,
-            typeof(NativeArtifactPublisher).Assembly, "fixture", "windows-x64", [source], [], async (
+            CreateRecipe(context, typeof(NativeArtifactPublisher).Assembly, "fixture", "windows-x64", [source], []), async (
                 scoped,
                 output,
                 cancellation
@@ -215,7 +305,7 @@ public sealed class NativeArtifactPublicationTests : IDisposable
         File.WriteAllText(source, "source");
         using var cancellation = new CancellationTokenSource();
         await Assert.ThrowsAnyAsync<OperationCanceledException>(() => NativeArtifactPublisher.PublishAsync(context,
-            typeof(NativeArtifactPublisher).Assembly, "fixture", "fixture-x64", [source], [], async (
+            CreateRecipe(context, typeof(NativeArtifactPublisher).Assembly, "fixture", "fixture-x64", [source], []), async (
                 scoped,
                 output,
                 token
@@ -232,6 +322,18 @@ public sealed class NativeArtifactPublicationTests : IDisposable
         if (Directory.Exists(m_root))
             Directory.Delete(m_root, recursive: true);
     }
+
+    private static NativeBuildRecipe CreateRecipe(
+        NativeBuildContext context,
+        Assembly owner,
+        string component,
+        string targetId,
+        IReadOnlyList<string> inputPaths,
+        IReadOnlyList<string> declarations
+    ) => new(owner, component, targetId,
+        inputPaths.Concat(context.hostToolchain?.inputPaths ?? [])
+            .Select(path => NativeBuildInput.FromPath(context.engineRoot, path)),
+        declarations.Concat(context.hostToolchain?.declarations ?? []));
 
     private static async Task CreateDirectoryAlias(
         string path,

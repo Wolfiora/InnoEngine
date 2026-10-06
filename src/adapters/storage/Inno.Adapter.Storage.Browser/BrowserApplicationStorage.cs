@@ -16,15 +16,19 @@ public sealed partial class BrowserApplicationStorage : IApplicationStorage
     private readonly string m_prefix;
 
     /// <summary>
-    /// Creates an origin-scoped sandbox for one application-specific storage directory.
+    /// Creates a namespace sandbox within the current browser origin.
     /// </summary>
-    /// <param name="rootDirectory">
-    /// Stable application-owned directory used to isolate keys within the browser origin.
+    /// <param name="scope">
+    /// The application namespace used to isolate keys within the browser origin.
     /// </param>
-    public BrowserApplicationStorage(string rootDirectory)
+    /// <exception cref="ArgumentException">
+    /// The namespace is unassigned.
+    /// </exception>
+    public BrowserApplicationStorage(StorageScope scope)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(rootDirectory);
-        m_prefix = "inno-storage:" + rootDirectory.Replace('\\', '/').TrimEnd('/') + "/";
+        if (!scope.isValid)
+            throw new ArgumentException("Browser storage requires an assigned namespace.", nameof(scope));
+        m_prefix = scope.value + ":";
     }
 
     /// <summary>

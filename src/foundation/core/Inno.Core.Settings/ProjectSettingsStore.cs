@@ -5,6 +5,7 @@ using Inno.Extensibility.Types;
 using Inno.Extensibility.Reload;
 using Inno.Core.Serialization;
 using Inno.Scripting.Api;
+using Inno.Core.IO;
 
 namespace Inno.Core.Settings;
 
@@ -26,8 +27,8 @@ public sealed class ProjectSettingsStore : IDisposable, IProjectSettingsLookup
     /// <summary>
     /// Creates a project settings store from one type and serialization generation owner.
     /// </summary>
-    /// <param name="documentPath">
-    /// The absolute path of the current project settings document.
+    /// <param name="documentStore">
+    /// The borrowed document boundary; writable authoring and read-only runtime sources use the same protocol.
     /// </param>
     /// <param name="types">
     /// The type catalog that owns setting definitions and composers.
@@ -41,25 +42,22 @@ public sealed class ProjectSettingsStore : IDisposable, IProjectSettingsLookup
     /// <param name="serializationContext">
     /// The owner's complete resolver context; settings never construct a partial reference context themselves.
     /// </param>
-    /// <exception cref="ArgumentException">
-    /// Thrown when <paramref name="documentPath"/> is empty.
-    /// </exception>
     /// <exception cref="ArgumentNullException">
     /// Thrown when a service dependency is null.
     /// </exception>
     public ProjectSettingsStore(
-        string documentPath,
+        IByteDocumentStore documentStore,
         TypeCatalog types,
         SerializationRegistry serialization,
         ProjectId defaultProjectId,
         SerializationContext serializationContext
     ) {
-        ArgumentException.ThrowIfNullOrWhiteSpace(documentPath);
+        ArgumentNullException.ThrowIfNull(documentStore);
         ArgumentNullException.ThrowIfNull(types);
         ArgumentNullException.ThrowIfNull(serialization);
         ArgumentNullException.ThrowIfNull(serializationContext);
         m_serialization = serialization;
-        m_current = new ProjectSettings(documentPath, types, serialization, defaultProjectId, serializationContext);
+        m_current = new ProjectSettings(documentStore, types, serialization, defaultProjectId, serializationContext);
         m_revision = 1;
     }
 

@@ -16,7 +16,7 @@ Importer 校验 WAV chunk、FLAC STREAMINFO 和 MP3 frame/header。截断、矛�
 ```csharp
 AudioClipAsset clip = assets.Load<AudioClipAsset>(AssetPath.Project("Audio/Jump.wav"));
 if (assets.TryGetArtifact(clip.persistentId, "audio-data", out AssetArtifactInfo? data))
-    Console.WriteLine(data.absolutePath);
+    Console.WriteLine($"{data.key}: {data.length} encoded bytes");
 ```
 
 Runtime 只依赖 `IAssetArtifactLookup`，因此同一代码可在 Editor 的 `AssetPipeline` 与 Player 的 `AssetDatabase` 上解析 Artifact。Ogg、Opus 与 transcoding 不属于当前项目；未来格式由独立 importer/codec Plugin 提供。

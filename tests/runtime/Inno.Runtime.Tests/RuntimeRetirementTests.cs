@@ -1,3 +1,4 @@
+using Inno.Core.Logging;
 using Inno.Adapter.Serialization.DotNet;
 using Inno.Adapter.Modules.DotNet;
 using System;
@@ -23,7 +24,7 @@ public sealed class RuntimeRetirementTests
         string root = Path.Combine(Path.GetTempPath(), "InnoStartupTests", Guid.NewGuid().ToString("N"));
         using EngineHost host = new EngineHostBuilder()
                 .UseMetadataSources(new DotNetAssemblyCatalogSource(typeof(RuntimeRetirementTests).Assembly),
-                    new ReflectionTypeCatalogSource(), new ReflectionSerializationMetadataSource()).UseMetadataCache(Path.Combine(root, "Metadata")).Build();
+                    new ReflectionTypeCatalogSource(), new ReflectionSerializationMetadataSource()).Build();
         var resource = new Resource();
         var factory = new FailingFactory(resource, hostLifetime, failAttach);
         try
@@ -34,7 +35,7 @@ public sealed class RuntimeRetirementTests
                 {
                     applicationId = "startup.test",
                     kind = RuntimeSessionKind.Play,
-                    persistentDataDirectory = Path.Combine(root, "startup.test"),
+                    createLogSink = _ => new FileLogSink(Path.Combine(Path.Combine(root, "startup.test"), "Logs")),
                     jobExecutionMode = RuntimeJobExecutionMode.SingleThread,
                     createSubsystems = _ => [factory]
                 }));
@@ -60,14 +61,14 @@ public sealed class RuntimeRetirementTests
         string root = Path.Combine(Path.GetTempPath(), "InnoStopTests", Guid.NewGuid().ToString("N"));
         using EngineHost host = new EngineHostBuilder()
                 .UseMetadataSources(new DotNetAssemblyCatalogSource(typeof(RuntimeRetirementTests).Assembly),
-                    new ReflectionTypeCatalogSource(), new ReflectionSerializationMetadataSource()).UseMetadataCache(Path.Combine(root, "Metadata")).Build();
+                    new ReflectionTypeCatalogSource(), new ReflectionSerializationMetadataSource()).Build();
         var pending = new StopPendingSubsystem();
         var resource = new Resource();
         RuntimeSession session = host.CreateSession(new RuntimeSessionOptions
         {
             applicationId = "stop.test",
             kind = RuntimeSessionKind.Play,
-            persistentDataDirectory = Path.Combine(root, "stop.test"),
+            createLogSink = _ => new FileLogSink(Path.Combine(Path.Combine(root, "stop.test"), "Logs")),
             jobExecutionMode = RuntimeJobExecutionMode.SingleThread,
             createSubsystems = _ => [new SimpleFactory(pending, resource)]
         });
@@ -89,14 +90,14 @@ public sealed class RuntimeRetirementTests
         var resource = new Resource();
         using EngineHost host = new EngineHostBuilder()
                 .UseMetadataSources(new DotNetAssemblyCatalogSource(typeof(RuntimeRetirementTests).Assembly),
-                    new ReflectionTypeCatalogSource(), new ReflectionSerializationMetadataSource()).UseMetadataCache(Path.Combine(root, "Metadata")).Build();
+                    new ReflectionTypeCatalogSource(), new ReflectionSerializationMetadataSource()).Build();
         try
         {
             RuntimeSession session = host.CreateSession(new RuntimeSessionOptions
             {
                 applicationId = "retirement.test",
                 kind = RuntimeSessionKind.Play,
-                persistentDataDirectory = Path.Combine(root, "retirement.test"),
+                createLogSink = _ => new FileLogSink(Path.Combine(Path.Combine(root, "retirement.test"), "Logs")),
                 jobExecutionMode = RuntimeJobExecutionMode.SingleThread,
                 createSubsystems = _ => [new Factory(pending, resource)]
             });

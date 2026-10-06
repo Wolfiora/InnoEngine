@@ -1,15 +1,53 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Inno.Build;
 using Inno.Build.Toolchains;
+using Inno.Core.IO;
 
 namespace Inno.Build.SupportPacks;
 
 internal static class PlayerSupportPackFiles
 {
+    internal static async Task CopyPlayerSourcesAsync(
+        PlayerSupportPackBuildContext context,
+        string project,
+        string destination,
+        CancellationToken cancellationToken,
+        IReadOnlyDictionary<string, string>? environment = null
+    ) {
+        string evaluated = await ToolchainEnvironment.CaptureOutputAsync(
+            context.dotnetHost,
+            ["msbuild", project, "-getItem:Compile", "-p:Configuration=Release",
+                "-p:DesignTimeBuild=true", "-nodeReuse:false", "-nologo"],
+            context.engineRoot, cancellationToken, environment).ConfigureAwait(false);
+        using JsonDocument document = JsonDocument.Parse(evaluated);
+        JsonElement sources = document.RootElement.GetProperty("Items").GetProperty("Compile");
+        string projectDirectory = Path.GetDirectoryName(project)!;
+        var outputs = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (JsonElement source in sources.EnumerateArray()
+            .OrderBy(static source => source.GetProperty("Identity").GetString(), StringComparer.Ordinal))
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            string input = PathBoundary.RequireUnlinkedPath(
+                context.engineRoot, source.GetProperty("FullPath").GetString()!);
+            string relative = source.TryGetProperty("Link", out JsonElement link)
+                && !string.IsNullOrWhiteSpace(link.GetString())
+                ? link.GetString()! : Path.GetRelativePath(projectDirectory, input);
+            string output = PathBoundary.Resolve(destination, relative);
+            if (!outputs.Add(relative.Replace('\\', '/')))
+                throw new InvalidDataException($"Player sources repeat publication path '{relative}'.");
+            Directory.CreateDirectory(Path.GetDirectoryName(output)!);
+            File.Copy(input, output);
+        }
+        if (outputs.Count == 0)
+            throw new InvalidDataException("The Player project declares no publication sources.");
+    }
+
     internal static void CopyCompositionInputs(
         string engineRoot,
         string playerDirectory

@@ -1,4 +1,5 @@
 <Project>
+  <Import Project="$(MSBuildThisFileDirectory)build/msbuild/Inno.Build.Tasks.targets" />
   <ItemGroup Condition="'$(IsRoslynComponent)' != 'true' and '$(IsTestProject)' != 'true' and '$(MSBuildProjectName)' != 'Inno.Scripting.Compiler' and $([System.String]::Copy('$(MSBuildProjectName)').StartsWith('Inno.')) and !$([System.String]::Copy('$(MSBuildProjectName)').StartsWith('Inno.Native.')) and '$(TargetFramework)' != 'netstandard2.0'">
     <ProjectReference Include="$(MSBuildThisFileDirectory)src/runtime/generators/Inno.Runtime.Generators/Inno.Runtime.Generators.csproj"
                       OutputItemType="Analyzer" ReferenceOutputAssembly="false" PrivateAssets="all" />
@@ -27,10 +28,6 @@
   <PropertyGroup Condition="'$(BindGenGeneratedBindings)' == 'true'">
     <BindGenConfig Condition="'$(BindGenConfig)' == ''">$(MSBuildProjectDirectory)/Bindings/bindgen.json</BindGenConfig>
     <BindGenOutputDirectory Condition="'$(BindGenOutputDirectory)' == ''">$(MSBuildProjectDirectory)/Generated</BindGenOutputDirectory>
-    <BindGenTaskProject>$(MSBuildThisFileDirectory)build/tasks/Inno.Build.Tasks/Inno.Build.Tasks.csproj</BindGenTaskProject>
-    <BindGenHostArtifacts>$(MSBuildThisFileDirectory)artifacts/build-tools/bindings</BindGenHostArtifacts>
-    <BindGenTaskAssembly Condition="'$(BindGenTaskAssembly)' == ''">$(BindGenHostArtifacts)/bin/Inno.Build.Tasks/$(Configuration.ToLowerInvariant())/Inno.Build.Tasks.dll</BindGenTaskAssembly>
-    <BindGenBootstrapProperties>InnoNativeTarget;InnoNativeBuildFingerprint;InnoNativeBindingSelection;RuntimeIdentifier;TargetFramework;BindGenProfile;BindGenTargetOutputRoot;BindGenConfig;BindGenOutputDirectory;BindGenGeneratedSource;BindGenGenerationFingerprint;BindGenNativeBridgeDirectory;BindGenDescriptorOutput;BindGenExpectedFingerprint;DebugType;DebugSymbols;DefineConstants;PublishAot;RunAOTCompilation;PublishTrimmed;SelfContained;WasmBuildNative;InnoGeneratePlayerComposition;ArtifactsPivots;UseArtifactsOutput;BaseOutputPath;BaseIntermediateOutputPath;OutputPath;IntermediateOutputPath</BindGenBootstrapProperties>
   </PropertyGroup>
 
   <Target Name="ValidateNativeBindingSelection" BeforeTargets="CoreCompile" Condition="'$(InnoNativeBindingSelection)' != ''">
@@ -42,22 +39,18 @@
     <Error Condition="!Exists('$(BindGenRoot)/src/BGCS/BGCS.csproj')" Text="BindGen-CS library is missing. Set BindGenRoot to the BindGen-CS checkout." />
   </Target>
 
-  <UsingTask TaskName="Inno.Build.Tasks.GenerateBindingsTask" AssemblyFile="$(BindGenTaskAssembly)" Condition="'$(BindGenGeneratedBindings)' == 'true'" />
+  <Target Name="BuildBindingGenerator" DependsOnTargets="ValidateBindingGenerator;PrepareInnoBuildTaskHost" Condition="'$(BindGenGeneratedBindings)' == 'true' and '$(DesignTimeBuild)' != 'true'" />
 
-  <Target Name="BuildBindingGenerator" DependsOnTargets="ValidateBindingGenerator" Condition="'$(BindGenGeneratedBindings)' == 'true'">
-    <MSBuild Projects="$(BindGenTaskProject)" Targets="Restore;Build" Properties="Configuration=$(Configuration);BindGenRoot=$(BindGenRoot);ArtifactsPath=$(BindGenHostArtifacts)" RemoveProperties="$(BindGenBootstrapProperties)" />
+  <Target Name="BuildBindingExtension" Condition="'$(BindGenGeneratedBindings)' == 'true' and '$(BindGenExtensionProject)' != '' and '$(DesignTimeBuild)' != 'true'">
+    <MSBuild Projects="$(BindGenExtensionProject)" Targets="Restore;Build" Properties="Configuration=Release;BindGenRoot=$(BindGenRoot);ArtifactsPath=$(InnoTaskArtifacts)/extensions;BuildProjectReferences=true" RemoveProperties="$(InnoTaskExcludedProperties)" />
   </Target>
 
-  <Target Name="BuildBindingExtension" Condition="'$(BindGenGeneratedBindings)' == 'true' and '$(BindGenExtensionProject)' != ''">
-    <MSBuild Projects="$(BindGenExtensionProject)" Targets="Restore;Build" Properties="Configuration=Release;BindGenRoot=$(BindGenRoot);ArtifactsPath=$(BindGenHostArtifacts)" RemoveProperties="$(BindGenBootstrapProperties)" />
-  </Target>
-
-  <Target Name="GenerateBindings" DependsOnTargets="BuildBindingGenerator;BuildBindingExtension" Condition="'$(BindGenGeneratedBindings)' == 'true'">
+  <Target Name="GenerateBindings" DependsOnTargets="BuildBindingGenerator;BuildBindingExtension" Condition="'$(BindGenGeneratedBindings)' == 'true' and '$(DesignTimeBuild)' != 'true'">
     <PropertyGroup>
       <_BindGenBridgeTargetConfig Condition="'$(BindGenBridgeConfig)' != '' and '$(BindGenProfile)' != ''">$([System.IO.Path]::ChangeExtension('$(BindGenBridgeConfig)', '$(BindGenProfile).json'))</_BindGenBridgeTargetConfig>
       <BindGenBridgeConfig Condition="'$(_BindGenBridgeTargetConfig)' != '' and Exists('$(_BindGenBridgeTargetConfig)')">$(_BindGenBridgeTargetConfig)</BindGenBridgeConfig>
     </PropertyGroup>
-    <Inno.Build.Tasks.GenerateBindingsTask ConfigPath="$(BindGenConfig)" BridgeConfigPath="$(BindGenBridgeConfig)"
+    <Inno.Build.Tasks.GenerateBindingsTask EngineRoot="$(MSBuildThisFileDirectory)" ConfigPath="$(BindGenConfig)" BridgeConfigPath="$(BindGenBridgeConfig)"
                                          OutputDirectory="$(BindGenOutputDirectory)" TargetOutputRoot="$(BindGenTargetOutputRoot)"
                                          DescriptorOutputPath="$(BindGenDescriptorOutput)" ExpectedFingerprint="$(BindGenExpectedFingerprint)">
       <Output TaskParameter="GeneratedBindings" PropertyName="BindGenGeneratedSource" />
@@ -73,14 +66,14 @@
     </ItemGroup>
   </Target>
 
-  <Target Name="CheckBindings" DependsOnTargets="BuildBindingGenerator;BuildBindingExtension;ValidateBindGenBindings" Condition="'$(BindGenGeneratedBindings)' == 'true'">
-    <Inno.Build.Tasks.GenerateBindingsTask ConfigPath="$(BindGenConfig)" BridgeConfigPath="$(BindGenBridgeConfig)"
+  <Target Name="CheckBindings" DependsOnTargets="BuildBindingGenerator;BuildBindingExtension;ValidateBindGenBindings" Condition="'$(BindGenGeneratedBindings)' == 'true' and '$(DesignTimeBuild)' != 'true'">
+    <Inno.Build.Tasks.GenerateBindingsTask EngineRoot="$(MSBuildThisFileDirectory)" ConfigPath="$(BindGenConfig)" BridgeConfigPath="$(BindGenBridgeConfig)"
                                          OutputDirectory="$(BindGenOutputDirectory)" TargetOutputRoot="$(BindGenTargetOutputRoot)"
                                          CheckOnly="true" ExpectedFingerprint="$(BindGenExpectedFingerprint)" />
   </Target>
 
   <Target Name="EnsureBindGenBindings" DependsOnTargets="GenerateBindings"
-          Condition="'$(BindGenGeneratedBindings)' == 'true' and ('$(BindGenProfile)' != '' or !Exists('$(BindGenOutputDirectory)/Bindings.cs'))" />
+          Condition="'$(BindGenGeneratedBindings)' == 'true' and '$(DesignTimeBuild)' != 'true' and ('$(BindGenProfile)' != '' or !Exists('$(BindGenOutputDirectory)/Bindings.cs'))" />
 
   <Target Name="ValidateBindGenBindings" BeforeTargets="CoreCompile" DependsOnTargets="EnsureBindGenBindings" Condition="'$(BindGenGeneratedBindings)' == 'true'">
     <ItemGroup>

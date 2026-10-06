@@ -1,6 +1,6 @@
 using System.Numerics;
 
-using Inno.Adapter.Input.Sdl3;
+using Inno.Adapter.Input;
 using Inno.Core.Events;
 using Inno.Core.Input;
 using Inno.Editor.ImGui;
@@ -108,7 +108,7 @@ public sealed class EditorGameInputCaptureTests
         var capture = new EditorGameInputCapture(_ => 42u);
         capture.BeginFrame();
         capture.Report(9, Vector2.Zero, new Vector2(100f), focused: true, hovered: true);
-        using var source = new Sdl3InputSource(0);
+        using var source = new EventInputSource(0);
         using IInputBackend backend = source.CreateBackend();
         dispatcher.dispatched += evnt =>
         {

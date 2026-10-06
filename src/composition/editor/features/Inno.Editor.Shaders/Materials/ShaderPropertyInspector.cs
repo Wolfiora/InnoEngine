@@ -2,6 +2,7 @@ using System;
 using Inno.Core.Mathematics;
 using Inno.Editor.Inspection;
 using Inno.Rendering;
+using Inno.Rendering.Assets;
 
 namespace Inno.Editor.Shaders;
 

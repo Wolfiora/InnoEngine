@@ -49,7 +49,6 @@ public sealed class HostLoadContextTests
             object source = Activator.CreateInstance(sourceType, [new[] { modules, types }])!;
             Type optionsType = modules.GetType(typeof(ModuleHostOptions).FullName!, throwOnError: true)!;
             object options = Activator.CreateInstance(optionsType)!;
-            optionsType.GetProperty(nameof(ModuleHostOptions.cacheDirectory))!.SetValue(options, cache);
             optionsType.GetProperty(nameof(ModuleHostOptions.catalogSource))!.SetValue(options, source);
             Type hostType = modules.GetType(typeof(ModuleHost).FullName!, throwOnError: true)!;
             using var host = (IDisposable)Activator.CreateInstance(hostType, options)!;

@@ -1,10 +1,14 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using Inno.Adapter;
 using Inno.Adapter.Authoring.Default;
 using Inno.Adapter.Presentation;
 using Inno.Rendering;
 using Inno.Shell;
+using Inno.Adapter.Default;
+using Inno.Adapter.Storage;
+using Inno.Adapter.Storage.FileSystem;
 
 namespace Inno.Editor.Application;
 
@@ -24,7 +28,11 @@ internal static class Program
         }
         try
         {
-            var adapterCatalog = new DefaultAuthoringAdapterCatalog();
+            var adapterCatalog = new DefaultAuthoringAdapterCatalog(new DefaultAdapterCatalogOptions
+            {
+                storage = new StorageBackendCatalog([new FileSystemStorageBackendProvider(
+                    Path.Combine(Path.GetFullPath(projectDirectory), "Library", "PersistentData"))])
+            });
             using EditorHost host = EditorHost.Create(
                 adapterCatalog,
                 AdapterSelection.defaultValue,

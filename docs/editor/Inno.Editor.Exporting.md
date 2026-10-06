@@ -11,7 +11,7 @@
 ## Game 工作流
 
 1. 打开 modal 时从 `Settings.Build.inno` 复制 Game 默认值；Application ID 始终由当前 Project ID 给出。
-2. 用户点击 Export 后，设置窗口立即关闭，进度以不可拖动且阻断其他交互的 modal 显示，并提供 Cancel。先调用 `BuildPipeline.EnsurePlayerSupportPackAsync(target)`。源码工作区中若目标 Pack 不存在，会在后台发布并校验；已有有效 Pack 直接通过，损坏 Pack 明确失败。构建成功、失败或取消后进度 modal 自动关闭，结果写入 Console。
+2. 用户点击 Export 后，设置窗口立即关闭，进度以不可拖动且阻断其他交互的 modal 显示，并提供 Cancel。先调用 `BuildPipeline.EnsurePlayerSupportPackAsync(target, deployment)`，在启动外部工具前检查目标与托管部署能力。源码工作区中若目标 Pack 不存在，会在后台发布并校验；已有有效 Pack 直接通过，损坏 Pack 明确失败。构建成功、失败或取消后进度 modal 自动关闭，结果写入 Console。
 3. 预备任务完成后，`OnUpdate` 在 Editor 主线程启动 `BuildGameAsync`。资产数据库与脚本发现因此保持原来的 owner-thread 边界；Support Pack 发布期间 UI 可继续刷新、显示状态并响应取消。
 4. Build 管线捕获当前组合 generation，编译目标 runtime scripts 和 Shader/Texture 产物，导出 runtime Asset closure，组合已验证的 Pack，最后以带回滚的目录安装提交目标产物。
 

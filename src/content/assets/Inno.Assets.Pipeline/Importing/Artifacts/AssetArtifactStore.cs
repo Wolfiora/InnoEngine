@@ -116,7 +116,7 @@ internal sealed class AssetArtifactStore
             return false;
         if (new FileInfo(path).Length != output.length)
             throw new InvalidDataException($"Artifact '{key}/{output.name}' has an invalid output length.");
-        artifact = new AssetArtifactInfo(key, output.name, path, output.contentHash, output.length);
+        artifact = new AssetArtifactInfo(key, output.name, output.contentHash, output.length);
         return true;
     }
 
@@ -125,8 +125,40 @@ internal sealed class AssetArtifactStore
         string outputName
     ) {
         return TryGet(key, outputName, out AssetArtifactInfo? artifact) && artifact is not null
-            ? ReadOutputBytes(artifact)
+            ? ReadOutputBytes(artifact, ResolveOutput(artifact))
             : [];
+    }
+
+    internal Func<Stream> CreateReadFactory(AssetArtifactInfo artifact)
+    {
+        string path = ResolveOutput(artifact);
+        return () =>
+        {
+            FileStream input = new(path, FileMode.Open, FileAccess.Read, FileShare.Read);
+            try
+            {
+                if (input.Length != artifact.length
+                    || Convert.ToHexString(SHA256.HashData(input)) != artifact.contentHash)
+                    throw new InvalidDataException($"Artifact '{artifact.key}/{artifact.outputName}' failed integrity validation.");
+                input.Position = 0;
+                return input;
+            }
+            catch
+            {
+                input.Dispose();
+                throw;
+            }
+        };
+    }
+
+    private string ResolveOutput(AssetArtifactInfo artifact)
+    {
+        AssetArtifactManifest manifest = ReadManifest(artifact.key, serialization: null)
+            ?? throw new InvalidDataException($"Artifact bundle '{artifact.key}' has no manifest.");
+        AssetArtifactOutputData output = manifest.outputs.Single(value => value.name == artifact.outputName);
+        if (output.length != artifact.length || output.contentHash != artifact.contentHash)
+            throw new InvalidDataException($"Artifact '{artifact.key}/{artifact.outputName}' changed its metadata.");
+        return PathBoundary.Resolve(Path.Combine(GetBundlePath(artifact.key), "outputs"), output.fileName);
     }
 
     internal int Collect(
@@ -292,7 +324,7 @@ internal sealed class AssetArtifactStore
             if (output.deploymentScope == AssetDeploymentScope.AuthoringOnly)
                 continue;
             string path = PathBoundary.Resolve(Path.Combine(GetBundlePath(key), "outputs"), output.fileName);
-            byte[] bytes = ReadOutputBytes(new AssetArtifactInfo(key, output.name, path, output.contentHash, output.length));
+            byte[] bytes = ReadOutputBytes(new AssetArtifactInfo(key, output.name, output.contentHash, output.length), path);
             outputs.Add(output.name, bytes);
         }
         return destination.Commit("Inno.RuntimeProjection:" + key.value, outputs, serialization: serialization);
@@ -308,9 +340,12 @@ internal sealed class AssetArtifactStore
         return true;
     }
 
-    private static byte[] ReadOutputBytes(AssetArtifactInfo artifact)
+    private static byte[] ReadOutputBytes(
+        AssetArtifactInfo artifact,
+        string path
+    )
     {
-        byte[] bytes = IOFile.ReadAllBytes(artifact.absolutePath);
+        byte[] bytes = IOFile.ReadAllBytes(path);
         if (bytes.LongLength != artifact.length || Convert.ToHexString(SHA256.HashData(bytes)) != artifact.contentHash)
             throw new InvalidDataException($"Artifact '{artifact.key}/{artifact.outputName}' failed integrity validation.");
         return bytes;

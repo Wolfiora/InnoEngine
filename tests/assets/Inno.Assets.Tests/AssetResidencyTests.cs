@@ -40,7 +40,7 @@ public sealed class AssetResidencyTests
     }
 
     [Fact]
-    public void ArtifactLeaseOpensVerifiedPathAndInvalidatesAfterRelease()
+    public void ArtifactLeaseReadsProviderBytesAndInvalidatesAfterRelease()
     {
         string path = Path.GetTempFileName();
         try
@@ -99,9 +99,9 @@ public sealed class AssetResidencyTests
                 new AssetArtifactInfo(
                     new AssetArtifactKey(new string('A', 64)),
                     outputName,
-                    m_artifactPath,
                     "HASH",
                     3),
+                () => File.OpenRead(m_artifactPath),
                 () => artifactReleaseCount++);
     }
 

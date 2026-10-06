@@ -21,6 +21,9 @@ public sealed unsafe class MiniAudioDevice : AudioDevice, IAudioDevice
 
     private readonly Dictionary<ulong, BusRecord> m_buses = [];
     private readonly Dictionary<ulong, AudioClipDescriptor> m_clips = [];
+    private readonly MiniAudioEncodedArtifactCache m_encodedArtifacts = new();
+    private readonly Dictionary<ulong, MiniAudioClipSourceLease> m_clipPreparations = [];
+    private readonly HashSet<ulong> m_failedClips = [];
     private readonly Dictionary<ulong, nint> m_clipSources = [];
     private readonly Queue<AudioDeviceCompletion> m_completions = [];
     private readonly Dictionary<ulong, uint> m_listeners = [];
@@ -127,13 +130,43 @@ public sealed unsafe class MiniAudioDevice : AudioDevice, IAudioDevice
                 .Sum(EstimateDecodedByteLength),
             0);
 
-    AudioClipHandle IAudioDevice.CreateClip(AudioClipDescriptor descriptor)
-    {
+    AudioClipHandle IAudioDevice.CreateClip(
+        AudioClipDescriptor descriptor,
+        IAudioClipSource source
+    ) {
         EnsureActive();
+        ArgumentNullException.ThrowIfNull(source);
         if (m_clips.Count >= m_options.limits.clips)
             return default;
-        if (!System.IO.File.Exists(descriptor.artifactPath))
-            return default;
+        if (!descriptor.codec.isValid || descriptor.channels <= 0 || descriptor.sampleRate <= 0
+            || descriptor.encodedByteLength != source.length || !Enum.IsDefined(descriptor.loadMode))
+        {
+            throw new ArgumentException("An audio descriptor must match its immutable source.", nameof(descriptor));
+        }
+        MiniAudioClipSourceLease lease = m_encodedArtifacts.Acquire(source);
+        ulong identity = m_nextIdentity++;
+        m_clips.Add(identity, descriptor);
+        m_clipPreparations.Add(identity, lease);
+        return CreateClipHandle(identity, generation);
+    }
+
+    private bool PrepareNativeClip(ulong identity)
+    {
+        if (m_clipSources.ContainsKey(identity))
+            return true;
+        if (m_failedClips.Contains(identity))
+            return false;
+        MiniAudioClipPreparation preparation = m_clipPreparations[identity].preparation;
+        if (!preparation.completion.IsCompletedSuccessfully)
+        {
+            if (preparation.completion.IsCompleted)
+            {
+                _ = preparation.completion.Exception;
+                m_failedClips.Add(identity);
+            }
+            return false;
+        }
+        AudioClipDescriptor descriptor = m_clips[identity];
         MaResourceManagerDataSource* source = (MaResourceManagerDataSource*)NativeMemory.AllocZeroed(
             (nuint)sizeof(MaResourceManagerDataSource));
         uint flags = (uint)(MaResourceManagerDataSourceFlags.FlagAsync |
@@ -143,7 +176,7 @@ public sealed unsafe class MiniAudioDevice : AudioDevice, IAudioDevice
         try
         {
             result = NativeApi.ResourceManagerDataSourceInit(NativeApi.EngineGetResourceManager(new MaEnginePtr(m_engine)),
-                descriptor.artifactPath, flags, MaResourceManagerPipelineNotificationsPtr.Null,
+                preparation.path, flags, MaResourceManagerPipelineNotificationsPtr.Null,
                 new MaResourceManagerDataSourcePtr(source));
         }
         catch
@@ -154,19 +187,21 @@ public sealed unsafe class MiniAudioDevice : AudioDevice, IAudioDevice
         if (result != MaResult.Success)
         {
             NativeMemory.Free(source);
-            return default;
+            m_failedClips.Add(identity);
+            return false;
         }
-        ulong identity = m_nextIdentity++;
-        m_clips.Add(identity, descriptor);
         m_clipSources.Add(identity, (nint)source);
-        return CreateClipHandle(identity, generation);
+        return true;
     }
 
     AudioClipState IAudioDevice.GetClipState(AudioClipHandle clip)
     {
         DeviceHandleIdentity identity = GetHandleIdentity(clip);
-        if (identity.generation != generation || !m_clipSources.TryGetValue(identity.value, out nint pointer))
+        if (identity.generation != generation || !m_clips.ContainsKey(identity.value))
             return AudioClipState.Failed;
+        if (!PrepareNativeClip(identity.value))
+            return m_failedClips.Contains(identity.value) ? AudioClipState.Failed : AudioClipState.Preparing;
+        nint pointer = m_clipSources[identity.value];
         return NativeApi.ResourceManagerDataSourceResult(new MaResourceManagerDataSourcePtr((MaResourceManagerDataSource*)pointer)) switch
         {
             MaResult.Success => AudioClipState.Ready,
@@ -184,9 +219,10 @@ public sealed unsafe class MiniAudioDevice : AudioDevice, IAudioDevice
         {
             return false;
         }
-        if (!m_clips.Remove(identity.value))
+        if (!m_clips.ContainsKey(identity.value))
             return false;
         ReleaseClipSource(identity.value);
+        m_clips.Remove(identity.value);
         return true;
     }
 
@@ -205,6 +241,8 @@ public sealed unsafe class MiniAudioDevice : AudioDevice, IAudioDevice
         DeviceHandleIdentity busIdentity = GetHandleIdentity(bus);
         if (clipIdentity.generation != generation || !m_clips.TryGetValue(clipIdentity.value, out AudioClipDescriptor descriptor))
             return default;
+        if (!PrepareNativeClip(clipIdentity.value))
+            return default;
         if (busIdentity.generation != generation || !m_buses.TryGetValue(busIdentity.value, out BusRecord? busRecord))
             return default;
         if (scheduledDspTime is double startTime &&
@@ -221,7 +259,7 @@ public sealed unsafe class MiniAudioDevice : AudioDevice, IAudioDevice
         flags |= (uint)MaSoundFlags.FlagAsync;
         MaResult initResult = NativeApi.SoundInitFromFile(
             new MaEnginePtr(m_engine),
-            descriptor.artifactPath,
+            m_clipPreparations[clipIdentity.value].preparation.path,
             flags,
             new MaSoundPtr(busRecord.group),
             MaFencePtr.Null,
@@ -493,6 +531,8 @@ public sealed unsafe class MiniAudioDevice : AudioDevice, IAudioDevice
         if (deltaTime < 0f)
             throw new ArgumentOutOfRangeException(nameof(deltaTime));
         EnsureActive();
+        foreach (ulong identity in m_clips.Keys)
+            _ = PrepareNativeClip(identity);
         if (m_options.noDevice)
             ProcessHeadlessFrames(deltaTime);
         else
@@ -529,6 +569,10 @@ public sealed unsafe class MiniAudioDevice : AudioDevice, IAudioDevice
     /// <summary>
     /// Releases all sounds, buses, processor nodes, listeners, and the native engine in dependency order.
     /// </summary>
+    /// <exception cref="Inno.Core.Execution.RetirementPendingException">
+    /// Canceled encoded preparation still owns a source reader. The owner must retain this device
+    /// and retry disposal at its retirement safe point until preparation drains.
+    /// </exception>
     public void Dispose()
     {
         if (m_state == AudioDeviceState.Disposed)
@@ -538,9 +582,13 @@ public sealed unsafe class MiniAudioDevice : AudioDevice, IAudioDevice
             ReleaseVoice(voice);
         m_voices.Clear();
 
-        foreach (ulong identity in m_clipSources.Keys.ToArray())
+        m_encodedArtifacts.CancelPreparation();
+        foreach (ulong identity in m_clips.Keys.ToArray())
+        {
             ReleaseClipSource(identity);
-        m_clips.Clear();
+            m_clips.Remove(identity);
+        }
+        m_encodedArtifacts.Dispose();
 
         foreach (BusRecord bus in m_buses.Values.OrderByDescending(GetBusDepth).ToArray())
             ReleaseBus(bus);
@@ -559,16 +607,18 @@ public sealed unsafe class MiniAudioDevice : AudioDevice, IAudioDevice
 
     private void ReleaseClipSource(ulong identity)
     {
-        nint pointer = m_clipSources[identity];
-        m_clipSources.Remove(identity);
-        try
+        if (m_clipSources.TryGetValue(identity, out nint pointer))
         {
             NativeApi.ResourceManagerDataSourceUninit(new MaResourceManagerDataSourcePtr((MaResourceManagerDataSource*)pointer));
-        }
-        finally
-        {
+            m_clipSources.Remove(identity);
             NativeMemory.Free((void*)pointer);
         }
+        if (m_clipPreparations.TryGetValue(identity, out MiniAudioClipSourceLease? preparation))
+        {
+            preparation.Dispose();
+            m_clipPreparations.Remove(identity);
+        }
+        m_failedClips.Remove(identity);
     }
 
     private static uint NextGeneration()

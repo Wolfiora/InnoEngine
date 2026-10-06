@@ -40,6 +40,9 @@ internal sealed class AudioClipRequest : IDisposable
     internal AssetArtifactInfo artifact => m_artifact?.info
         ?? throw new InvalidOperationException(m_failure ?? "The clip artifact was transferred or released.");
 
+    internal IAudioClipSource source => new ArtifactAudioClipSource(m_artifact
+        ?? throw new InvalidOperationException(m_failure ?? "The clip artifact was transferred or released."));
+
     internal ArtifactLease TakeArtifact()
     {
         _ = artifact;

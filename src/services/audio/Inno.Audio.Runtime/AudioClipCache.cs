@@ -121,13 +121,12 @@ internal sealed class AudioClipCache : IDisposable
                 $"Decoded audio clip '{clip.assetPath}' exceeds the configured cache budget.");
         }
         AudioClipHandle handle = m_device.CreateClip(new AudioClipDescriptor(
-            artifact.absolutePath,
             metadata.codec,
             resolvedMode,
             metadata.channels,
             metadata.sampleRate,
             metadata.frameCount,
-            artifact.length));
+            artifact.length), clip.source);
         if (!handle.isValid)
             throw new InvalidOperationException("The audio backend rejected clip creation.");
         var entry = new ClipCacheEntry(key, handle, decodedByteLength, clip.TakeArtifact(), m_device);

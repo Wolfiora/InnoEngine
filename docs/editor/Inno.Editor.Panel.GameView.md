@@ -19,3 +19,26 @@ Canvas 只发布世界空间 `IViewContentSource`，不提供 Game View contribu
 无适用 Contributor、模型争用、贡献失败或 GPU target 尚未准备好时，Panel 使用背景色填充完整区域，并在中央显示状态；不可用输出会被释放，不影响 Editor 主界面。
 
 Editor 的通用 `RenderRuntime` 不注入任何隐式 Scene content。Scene View 与 Game View 都必须显式提交自己的 `RenderContentScope`，因此不会在 viewport 请求之外额外把 Edit 世界渲染到 Editor backbuffer，也不存在同一帧两个互相矛盾的游戏世界来源。
+
+## 当前源码公开 API 清单
+
+以下仅列出当前程序集自己声明的 public/protected 契约；继承成员遵循所属基类页面。internal/private 实现不作为稳定公开 API。签名依据当前源码语义模型生成，行为、参数、异常与所有权说明同时以对应英文 XML 为准。
+
+## 项目依赖
+
+- [Inno.Native.ImGui](../native/Inno.Native.ImGui.md)：实现依赖（`PrivateAssets="compile"`）。
+- [Inno.Core.Settings](../core/Inno.Core.Settings.md)：实现依赖（`PrivateAssets="compile"`）。
+- [Inno.Runtime](../runtime/Inno.Runtime.md)：实现依赖（`PrivateAssets="compile"`）。
+- [Inno.Editor.Core](Inno.Editor.Core.md)：实现依赖（`PrivateAssets="compile"`）。
+- [Inno.Editor.ImGui](Inno.Editor.ImGui.md)：实现依赖（`PrivateAssets="compile"`）。
+- [Inno.Editor.Rendering](Inno.Editor.Rendering.md)：实现依赖（`PrivateAssets="compile"`）。
+- [Inno.Editor.PlayMode](Inno.Editor.PlayMode.md)：实现依赖（`PrivateAssets="compile"`）。
+- [Inno.Editor.Scene](Inno.Editor.Scene.md)：实现依赖（`PrivateAssets="compile"`）。
+- [Inno.Editor.Settings](Inno.Editor.Settings.md)：实现依赖（`PrivateAssets="compile"`）。
+- [Inno.Rendering](../rendering/Inno.Rendering.md)：实现依赖（`PrivateAssets="compile"`）。
+- [Inno.References](../references/Inno.References.md)：实现依赖（`PrivateAssets="compile"`）。
+- [Inno.Rendering.Runtime](../rendering/Inno.Rendering.Runtime.md)：实现依赖（`PrivateAssets="compile"`）。
+- [Inno.Extensibility.Catalogs](../extensibility/Inno.Extensibility.Catalogs.md)：项目引用；公开签名可见性由语义边界检查确认。
+- [Inno.Core.Serialization](../core/Inno.Core.Serialization.md)：项目引用；公开签名可见性由语义边界检查确认。
+
+共同 MSBuild 注入的 analyzer 与编译规则属于构建依赖，完整有效项目图记录在本轮验收证据中。

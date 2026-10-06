@@ -104,9 +104,17 @@ public sealed partial class Sdl3PlatformApplication
             throw new InvalidOperationException(SDL.GetError() ?? "SDL_CreateWindow failed.");
         }
 
-        var window = new Sdl3PlatformWindow(windowHandle, options.title);
-        m_windows[window.windowId] = window;
-        return window;
+        try
+        {
+            var window = new Sdl3PlatformWindow(windowHandle, options.title);
+            m_windows[window.windowId] = window;
+            return window;
+        }
+        catch
+        {
+            SDL.DestroyWindow(windowHandle);
+            throw;
+        }
     }
 
     private static SDLWindow CreateBrowserWindow(PlatformWindowOptions options)
@@ -410,10 +418,9 @@ public sealed partial class Sdl3PlatformApplication
             if (m_windows.TryGetValue(windowId, out Sdl3PlatformWindow? window))
             {
                 int width = 0, height = 0;
-                SDL.GetWindowSize(window.sdlWindow, ref width, ref height);
+                if (!SDL.GetWindowSize(window.sdlWindow, ref width, ref height))
+                    throw new InvalidOperationException(SDL.GetError() ?? "SDL_GetWindowSize failed during live resize.");
                 window.UpdateLogicalSize(width, height);
-                SDL.GetWindowSizeInPixels(window.sdlWindow, ref width, ref height);
-                window.UpdatePixelSize(width, height);
             }
             foreach (ISdl3ApplicationExtension extension in m_extensions.ToArray())
                 extension.PrepareLiveResizeWindow(this, windowId);

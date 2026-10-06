@@ -22,8 +22,8 @@ internal sealed class DocumentationSourceModels
         string configuration
     ) {
         string[] projects = new[] { "src", "native", "build", "tools" }
-            .SelectMany(folder => Directory.EnumerateFiles(
-                Path.Combine(repositoryRoot, folder), "*.csproj", SearchOption.AllDirectories))
+            .SelectMany(folder => RepositorySourceInventory.Files(
+                Path.Combine(repositoryRoot, folder), "*.csproj"))
             .Where(IsSourcePath)
             .ToArray();
         m_projectNames = projects.Select(Path.GetFileNameWithoutExtension)
@@ -33,6 +33,7 @@ internal sealed class DocumentationSourceModels
             .Split(Path.PathSeparator);
         foreach (string path in platform.Where(File.Exists))
             paths[Path.GetFileNameWithoutExtension(path)] = path;
+        var projectOutputs = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         foreach (string project in projects)
         {
             XDocument document = XDocument.Load(project);
@@ -42,9 +43,17 @@ internal sealed class DocumentationSourceModels
                 configuration, framework);
             if (!Directory.Exists(directory))
                 continue;
+            string assemblyName = document.Descendants("AssemblyName").FirstOrDefault()?.Value
+                ?? Path.GetFileNameWithoutExtension(project);
+            string projectOutput = Path.Combine(directory, assemblyName + ".dll");
+            if (File.Exists(projectOutput))
+                projectOutputs[assemblyName] = projectOutput;
             foreach (string path in Directory.EnumerateFiles(directory, "*.dll"))
-                paths[Path.GetFileNameWithoutExtension(path)] = path;
+                paths.TryAdd(Path.GetFileNameWithoutExtension(path), path);
         }
+        // A consumer's copied dependency must not replace the owning project's contract snapshot.
+        foreach (KeyValuePair<string, string> output in projectOutputs)
+            paths[output.Key] = output.Value;
         m_references = paths.Values.Select(static path =>
         {
             string documentationPath = Path.ChangeExtension(path, ".xml");
@@ -65,7 +74,7 @@ internal sealed class DocumentationSourceModels
         if (!string.Equals(projectDirectory, m_projectDirectory, StringComparison.OrdinalIgnoreCase))
         {
             m_projectDirectory = projectDirectory;
-            m_trees = Directory.EnumerateFiles(projectDirectory, "*.cs", SearchOption.AllDirectories)
+            m_trees = RepositorySourceInventory.Files(projectDirectory, "*.cs")
                 .Where(IsSourcePath)
                 .ToDictionary(static value => Path.GetFullPath(value), static value =>
                     (SyntaxTree)CSharpSyntaxTree.ParseText(File.ReadAllText(value), path: value),

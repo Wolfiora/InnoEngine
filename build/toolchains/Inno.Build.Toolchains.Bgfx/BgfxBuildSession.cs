@@ -24,15 +24,18 @@ internal static class BgfxBuildSession
         string bimg = Path.Combine(external, "bimg");
         BgfxBuildUtils.ValidateSubmodules(bgfx, bx, bimg);
         string genie = ResolveGenie(context);
-        return await NativeArtifactPublisher.PublishAsync(context, typeof(BgfxNativeBuild).Assembly,
-            includeTools ? "bgfx-tools" : "bgfx", builder.outputPlatform, [bgfx, bx, bimg, genie], [], async (
+        NativeBuildRecipe recipe = NativeBuildRecipe.CreateForComponent(context, typeof(BgfxNativeBuild).Assembly, includeTools ? "bgfx-tools" : "bgfx", builder.outputPlatform, [bgfx, bx, bimg, genie, Path.Combine(context.engineRoot, "build", "toolchains", "Inno.Build.Toolchains", "Native", "NativeInputMaterializer.cs")], []);
+        return await NativeArtifactPublisher.PublishAsync(
+            context,
+            recipe,
+            async (
                 scoped,
                 output,
                 token
             ) => {
                 string snapshot = Path.Combine(scoped.GetNativeBuildRoot(typeof(BgfxNativeBuild).Assembly), "Sources");
                 foreach (string component in new[] { "bgfx", "bx", "bimg" })
-                    CopySources(Path.Combine(external, component), Path.Combine(snapshot, component), token);
+                    await CopySourcesAsync(scoped, Path.Combine(external, component), Path.Combine(snapshot, component), token).ConfigureAwait(false);
                 string source = Path.Combine(snapshot, "bgfx");
                 await builder.BuildAsync(source, genie, scoped, includeTools, token).ConfigureAwait(false);
                 token.ThrowIfCancellationRequested();
@@ -57,7 +60,8 @@ internal static class BgfxBuildSession
             "tools", "bin", platform, OperatingSystem.IsWindows() ? "genie.exe" : "genie"));
     }
 
-    private static void CopySources(
+    private static async Task CopySourcesAsync(
+        NativeBuildContext context,
         string source,
         string destination,
         CancellationToken cancellationToken
@@ -69,15 +73,13 @@ internal static class BgfxBuildSession
             if (Path.GetFileName(file) == ".git")
                 continue;
             string output = Path.Combine(destination, Path.GetFileName(file));
-            File.Copy(file, output, overwrite: true);
-            if (!OperatingSystem.IsWindows())
-                File.SetUnixFileMode(output, File.GetUnixFileMode(file));
+            await NativeInputMaterializer.CopyAsync(context, file, output, cancellationToken).ConfigureAwait(false);
         }
         foreach (string directory in Directory.EnumerateDirectories(source))
         {
             if (Path.GetFileName(directory) is ".git" or ".build" or "bin" or "obj")
                 continue;
-            CopySources(directory, Path.Combine(destination, Path.GetFileName(directory)), cancellationToken);
+            await CopySourcesAsync(context, directory, Path.Combine(destination, Path.GetFileName(directory)), cancellationToken).ConfigureAwait(false);
         }
     }
 

@@ -41,13 +41,12 @@ public static class TextToolchain
         context = await HostNativeToolchain.ResolveAsync(context, cancellationToken).ConfigureAwait(false);
         string nativeDirectory = Path.Combine(context.engineRoot, "native", "Inno.Native.Text", "Native");
         string platform = context.hostToolchain!.targetId;
-        return await NativeArtifactPublisher.PublishAsync(context, typeof(TextToolchain).Assembly,
-            "text", platform, [Path.Combine(nativeDirectory, "CMakeLists.txt"),
+        return await NativeArtifactPublisher.PublishAsync(context, NativeBuildRecipe.CreateForComponent(context, typeof(TextToolchain).Assembly, "text", platform, [Path.Combine(nativeDirectory, "CMakeLists.txt"),
                 Path.Combine(nativeDirectory, "include"),
                 Path.Combine(nativeDirectory, "src"),
                 Path.Combine(nativeDirectory, "Generated"),
                 Path.Combine(context.engineRoot, "extern", "freetype"),
-                Path.Combine(context.engineRoot, "extern", "harfbuzz")], [],
+                Path.Combine(context.engineRoot, "extern", "harfbuzz")], []),
             async (
                 scoped,
                 output,

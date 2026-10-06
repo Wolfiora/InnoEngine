@@ -1,3 +1,4 @@
+using Inno.Core.IO;
 using System;
 using System.IO;
 using Inno.Core.Serialization;
@@ -21,7 +22,7 @@ public sealed class StaticProjectSettingsTests
         try
         {
             using EngineHost host = CreateHost(directory, static () => new Setting(17));
-            using var settings = new ProjectSettings(Path.Combine(directory, "Settings.Project.inno"),
+            using var settings = new ProjectSettings(new FileByteDocumentStore(Path.GetFullPath(Path.Combine(directory, "Settings.Project.inno"))),
                 host.types, host.serialization, new ProjectId("tests.static"), SerializationContext.empty);
 
             Setting first = settings.Get<Setting>(SettingId);
@@ -45,7 +46,7 @@ public sealed class StaticProjectSettingsTests
         {
             using EngineHost host = CreateHost(directory, factory: null);
             InvalidOperationException exception = Assert.Throws<InvalidOperationException>(() =>
-                new ProjectSettings(Path.Combine(directory, "Settings.Project.inno"), host.types,
+                new ProjectSettings(new FileByteDocumentStore(Path.GetFullPath(Path.Combine(directory, "Settings.Project.inno"))), host.types,
                     host.serialization, new ProjectId("tests.static"), SerializationContext.empty));
             Assert.Contains("factory in the current type catalog", exception.Message);
         }
@@ -74,7 +75,7 @@ public sealed class StaticProjectSettingsTests
             ], static () => new Setting(17))),
             Inno.Core.Settings.Generated.RuntimeSerializationMetadataCatalog.Register
         ]);
-        return new EngineHostBuilder().UseMetadataCache(Path.Combine(directory, "Metadata"))
+        return new EngineHostBuilder()
             .UseMetadataSources(new StaticAssemblyCatalogSource([typeof(Setting).Assembly], [typeof(object).Assembly]),
                 types, serialization).Build();
     }

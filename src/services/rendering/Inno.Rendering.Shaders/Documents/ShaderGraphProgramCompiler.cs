@@ -8,6 +8,7 @@ using Inno.Core.Diagnostics;
 using Inno.Core.Execution;
 using Inno.Core.Graphs;
 using Inno.Core.Serialization;
+using Inno.Rendering.Assets;
 
 namespace Inno.Rendering.Shaders;
 

@@ -13,6 +13,43 @@ namespace Inno.Tooling.Architecture.Tests;
 
 public sealed class ArchitectureSymbolTests
 {
+    [Fact]
+    public async Task InheritedDocumentationUsesTheOwningProjectInsteadOfACopiedDependency()
+    {
+        using var fixture = new SymbolFixture();
+        const string contractProject = "src/foundation/core/Inno.Core.Contract";
+        const string consumerProject = "src/composition/editor/framework/Inno.Editor.Probe";
+        string contract = fixture.Compile(contractProject, "Inno.Core.Contract", """
+            namespace Inno.Core.Contract;
+            public interface IContract
+            {
+                /// <summary>
+                /// Reads the current value supplied by the implementation.
+                /// </summary>
+                /// <returns>
+                /// The current value without changing the provider.
+                /// </returns>
+                int Read();
+            }
+            """);
+        string source = """
+            namespace Inno.Editor.Probe;
+            public class Probe : Inno.Core.Contract.IContract
+            {
+                /// <inheritdoc />
+                public int Read() => 1;
+            }
+            """;
+        string consumer = fixture.Compile(consumerProject, "Inno.Editor.Probe", source, contract);
+        fixture.WriteSource(consumerProject, source);
+        string copied = Path.Combine(Path.GetDirectoryName(consumer)!, Path.GetFileName(contract));
+        File.Copy(contract, copied);
+        File.WriteAllText(Path.ChangeExtension(copied, ".xml"), "<doc><members /></doc>");
+
+        Assert.DoesNotContain("inheritdoc requires a documented overridden or implemented contract",
+            await fixture.Run(), StringComparison.Ordinal);
+    }
+
     [Theory]
     [InlineData("src/services/platform/Inno.Platform", true)]
     [InlineData("src/adapters/platform/Inno.Adapter.Platform", false)]
@@ -275,6 +312,25 @@ public sealed class ArchitectureSymbolTests
         Assert.Equal(rejected, output.Contains("one implementation group followed by one public API group", StringComparison.Ordinal));
     }
 
+    [Theory]
+    [InlineData("System.IO.File.ReadAllBytes(\"payload\");", true)]
+    [InlineData("System.IO.Directory.CreateDirectory(\"cache\");", true)]
+    [InlineData("new System.IO.FileStream(\"payload\", System.IO.FileMode.Open);", true)]
+    [InlineData("throw new System.IO.InvalidDataException(\"Invalid payload\");", false)]
+    [InlineData("new System.IO.MemoryStream(new byte[] { 1 });", false)]
+    public async Task SharedContentIoChecksResolvedSymbolsInsteadOfIoNamespaceText(
+        string operation,
+        bool rejected
+    ) {
+        using var fixture = new SymbolFixture();
+        const string relative = "src/content/deployment/Inno.Content";
+        string source = "internal class Probe { void Read() { " + operation + " } }";
+        fixture.Compile(relative, "Inno.Content", source);
+        fixture.WriteSource(relative, source);
+        string output = await fixture.Run();
+        Assert.Equal(rejected, output.Contains("shared content owners must receive reading contracts", StringComparison.Ordinal));
+    }
+
     private sealed class SymbolFixture : IDisposable
     {
         private readonly string m_root = Path.Combine(Path.GetTempPath(), "InnoArchitectureSymbolTests", Guid.NewGuid().ToString("N"));
@@ -304,7 +360,7 @@ public sealed class ArchitectureSymbolTests
             CSharpCompilation compilation = CSharpCompilation.Create(assemblyName,
                 [CSharpSyntaxTree.ParseText(source)], references,
                 new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary, allowUnsafe: true));
-            var result = compilation.Emit(output);
+            var result = compilation.Emit(output, xmlDocumentationPath: Path.ChangeExtension(output, ".xml"));
             Assert.True(result.Success, string.Join(Environment.NewLine, result.Diagnostics));
             return output;
         }

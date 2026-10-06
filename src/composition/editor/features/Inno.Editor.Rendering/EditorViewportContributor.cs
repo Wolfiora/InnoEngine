@@ -5,6 +5,8 @@ using Inno.Core.Mathematics;
 using Inno.Editor.Core;
 using Inno.Editor.Interactions;
 using Inno.Rendering;
+using Inno.Rendering.Assets;
+using Inno.Rendering.Runtime;
 
 namespace Inno.Editor.Rendering;
 

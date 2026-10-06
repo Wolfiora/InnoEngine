@@ -1,3 +1,4 @@
+using Inno.Core.Logging;
 using Inno.Adapter.Serialization.DotNet;
 using Inno.Adapter.Modules.DotNet;
 using System;
@@ -41,7 +42,6 @@ public sealed class EditorPlayModeTests : IDisposable
         m_engineHost = new EngineHostBuilder()
                 .UseMetadataSources(new DotNetAssemblyCatalogSource(typeof(EditorPlayModeTests).Assembly),
                     new ReflectionTypeCatalogSource(), new ReflectionSerializationMetadataSource())
-            .UseMetadataCache(Path.Combine(m_projectRoot, "Library", "Assemblies"))
             .Build();
         m_editSession = m_engineHost.CreateSession(CreateSessionOptions(RuntimeSessionKind.Edit));
         m_editScope = m_editSession.EnterExecutionScope();
@@ -487,10 +487,10 @@ public sealed class EditorPlayModeTests : IDisposable
                 {
                     kind = RuntimeSessionKind.Play,
                     applicationId = "inno.tests.play",
-                    persistentDataDirectory = Path.Combine(
+                    createLogSink = _ => new FileLogSink(Path.Combine(Path.Combine(
                         projectRoot,
                         "PersistentData",
-                        "inno.tests.play"),
+                        "inno.tests.play"), "Logs")),
                     jobExecutionMode = RuntimeJobExecutionMode.SingleThread,
                     createSubsystems = _ => factory is null ? [] : [factory]
                 },
@@ -651,10 +651,10 @@ public sealed class EditorPlayModeTests : IDisposable
         {
             kind = kind,
             applicationId = applicationId,
-            persistentDataDirectory = Path.Combine(
+            createLogSink = _ => new FileLogSink(Path.Combine(Path.Combine(
                 m_projectRoot,
                 "PersistentData",
-                applicationId),
+                applicationId), "Logs")),
             jobExecutionMode = RuntimeJobExecutionMode.SingleThread
         };
     }

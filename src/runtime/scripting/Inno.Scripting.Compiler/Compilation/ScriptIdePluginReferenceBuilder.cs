@@ -87,7 +87,7 @@ internal static class ScriptIdePluginReferenceBuilder
             preprocessorSymbols: symbols);
         SyntaxTree[] trees = assembly.sources.Select(source =>
             CSharpSyntaxTree.ParseText(
-                SourceText.From(File.ReadAllText(source.snapshotPath), Encoding.UTF8),
+                SourceText.From(source.snapshotSource, Encoding.UTF8),
                 parseOptions,
                 source.sourcePath)).ToArray();
         IEnumerable<MetadataReference> references = FrameworkReferenceResolver

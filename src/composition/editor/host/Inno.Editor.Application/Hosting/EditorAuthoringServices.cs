@@ -1,3 +1,4 @@
+using Inno.Core.IO;
 using System;
 using System.IO;
 using System.Linq;
@@ -90,7 +91,7 @@ internal sealed class EditorAuthoringServices : IDisposable
                 ]
             });
             settings = new ProjectSettingsStore(
-                Path.Combine(projectRoot, SettingsFileNames.project),
+                new FileByteDocumentStore(Path.GetFullPath(Path.Combine(projectRoot, SettingsFileNames.project))),
                 engineHost.types,
                 engineHost.serialization,
                 ProjectId.FromName(new DirectoryInfo(projectRoot).Name),

@@ -532,7 +532,7 @@ public sealed class UiRuntime : RuntimeSubsystem, IUiService
         FontRegistration registration
     )
         => m_backend.RegisterFont(new UiFontRegistration(
-            File.ReadAllBytes(artifact.info.absolutePath),
+            artifact.ReadAllBytes(),
             registration.faceIndex,
             registration.family,
             registration.style,

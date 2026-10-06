@@ -36,3 +36,52 @@ Session 级 Reporter 的 source ID 必须包含实际 owner 范围。Animation �
 原先 Animation 使用固定 source `inno.animation.bindings`，创建 Play 会话会撤销仍在使用的 Edit Reporter；随后更新或退出触发 `DiagnosticReporter` 过期异常，并使退休 gate 进入 Faulted。修复位于默认工厂的 source 构造，不改变 Core Reporter 的代际保护或 GC 屏障。
 
 通过公开 `DefaultEngine.CreateSessionSubsystems` 和 `EngineHost.CreateSession` 的仓库外验证程序，修复前复现相同退休异常；修复后通过 32 次 Edit/Play 循环、三个并存会话、不同退出顺序、Missing 诊断互不覆盖与 Host 正常释放。现有 Diagnostics、Animation、Runtime、Editor PlayMode、Editor Audio、Editor Scripting 六个测试项目共 128 项通过；Solution 零警告/错误，Architecture 通过。本次未修改 tests，不把这些程序化验证称为真实 GUI 点击验收或全量发行验收。
+
+## 当前源码公开 API 清单
+
+以下仅列出当前程序集自己声明的 public/protected 契约；继承成员遵循所属基类页面。internal/private 实现不作为稳定公开 API。签名依据当前源码语义模型生成，行为、参数、异常与所有权说明同时以对应英文 XML 为准。
+
+### `Inno.Engine.Default.DefaultEngine`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`static System.Collections.Generic.IReadOnlyList<Inno.Runtime.Contracts.IRuntimeSubsystemFactory> Inno.Engine.Default.DefaultEngine.CreateHostSubsystems(Inno.Rendering.Runtime.RenderRuntime context)`](../../src/composition/default/Inno.Engine.Default/DefaultEngine.cs#L33) | Creates the default host factory set over the product-configured rendering runtime. |
+| [`static System.Collections.Generic.IReadOnlyList<Inno.Runtime.Contracts.IRuntimeSubsystemFactory> Inno.Engine.Default.DefaultEngine.CreateSessionSubsystems(Inno.Engine.Default.EngineSessionComposition context)`](../../src/composition/default/Inno.Engine.Default/DefaultEngine.cs#L21) | Creates the complete default session factory set from local subsystem declarations. |
+| [`Inno.Engine.Default.DefaultEngine`](../../src/composition/default/Inno.Engine.Default/DefaultEngine.cs#L10) | Provides build-generated default engine assembly, independent of Editor and Player loop implementations. |
+
+### `Inno.Engine.Default.EngineSessionComposition`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Engine.Default.EngineSessionComposition.EngineSessionComposition(Inno.Runtime.RuntimeSession session, Inno.Adapter.IAdapterCatalog adapters, Inno.Adapter.AdapterSelection selection, Inno.Adapter.Input.IInputEventSource inputSource, Inno.Assets.IAssetArtifactLookup artifacts, System.Func<Inno.Audio.AudioProjectSettings> audioSettings, System.Func<Inno.Storage.IApplicationStorage> createStorage, Inno.Runtime.Contracts.IRuntimeSubsystemFactory? audioOverride = null)`](../../src/composition/default/Inno.Engine.Default/EngineSessionComposition.cs#L44) | Captures the inputs borrowed during synchronous default subsystem construction. |
+| [`Inno.Adapter.IAdapterCatalog Inno.Engine.Default.EngineSessionComposition.adapters`](../../src/composition/default/Inno.Engine.Default/EngineSessionComposition.cs#L71) | Gets the backend-neutral adapter factory catalog. |
+| [`Inno.Assets.IAssetArtifactLookup Inno.Engine.Default.EngineSessionComposition.artifacts`](../../src/composition/default/Inno.Engine.Default/EngineSessionComposition.cs#L83) | Gets immutable encoded content artifacts from the selected host environment. |
+| [`Inno.Runtime.Contracts.IRuntimeSubsystemFactory? Inno.Engine.Default.EngineSessionComposition.audioOverride`](../../src/composition/default/Inno.Engine.Default/EngineSessionComposition.cs#L95) | Gets an optional product-specific audio owner factory. |
+| [`System.Func<Inno.Audio.AudioProjectSettings> Inno.Engine.Default.EngineSessionComposition.audioSettings`](../../src/composition/default/Inno.Engine.Default/EngineSessionComposition.cs#L87) | Gets the control-thread source of portable audio defaults. |
+| [`System.Func<Inno.Storage.IApplicationStorage> Inno.Engine.Default.EngineSessionComposition.createStorage`](../../src/composition/default/Inno.Engine.Default/EngineSessionComposition.cs#L91) | Gets the factory transferring storage ownership to this session. |
+| [`Inno.Adapter.Input.IInputEventSource Inno.Engine.Default.EngineSessionComposition.inputSource`](../../src/composition/default/Inno.Engine.Default/EngineSessionComposition.cs#L79) | Gets the host input source shared by isolated session readers. |
+| [`Inno.Adapter.AdapterSelection Inno.Engine.Default.EngineSessionComposition.selection`](../../src/composition/default/Inno.Engine.Default/EngineSessionComposition.cs#L75) | Gets portable backend selection values. |
+| [`Inno.Runtime.RuntimeSession Inno.Engine.Default.EngineSessionComposition.session`](../../src/composition/default/Inno.Engine.Default/EngineSessionComposition.cs#L67) | Gets the isolated session selected by the product. |
+| [`Inno.Engine.Default.EngineSessionComposition`](../../src/composition/default/Inno.Engine.Default/EngineSessionComposition.cs#L15) | Supplies strongly typed product-owned inputs to the default engine composition without exposing concrete backends. |
+
+## 项目依赖
+
+- [Inno.Runtime.Generators](Inno.Runtime.Generators.md)：项目引用；公开签名可见性由语义边界检查确认。
+- [Inno.Audio.Runtime](../audio/Inno.Audio.Runtime.md)：实现依赖（`PrivateAssets="compile"`）。
+- [Inno.Input.Runtime](../input/Inno.Input.Runtime.md)：实现依赖（`PrivateAssets="compile"`）。
+- [Inno.Storage.Runtime](../storage/Inno.Storage.Runtime.md)：实现依赖（`PrivateAssets="compile"`）。
+- [Inno.Text.Runtime](../text/Inno.Text.Runtime.md)：实现依赖（`PrivateAssets="compile"`）。
+- [Inno.UI.Runtime](../ui/Inno.UI.Runtime.md)：实现依赖（`PrivateAssets="compile"`）。
+- [Inno.Animation.Runtime](../animation/Inno.Animation.Runtime.md)：实现依赖（`PrivateAssets="compile"`）。
+- [Inno.Scene](../scene/Inno.Scene.md)：实现依赖（`PrivateAssets="compile"`）。
+- [Inno.Core.Diagnostics](../core/Inno.Core.Diagnostics.md)：实现依赖（`PrivateAssets="compile"`）。
+- [Inno.Runtime.Contracts](Inno.Runtime.Contracts.md)：项目引用；公开签名可见性由语义边界检查确认。
+- [Inno.Runtime](Inno.Runtime.md)：项目引用；公开签名可见性由语义边界检查确认。
+- [Inno.Adapter](Inno.Adapter.md)：项目引用；公开签名可见性由语义边界检查确认。
+- [Inno.Adapter.Input](../input/Inno.Adapter.Input.md)：项目引用；公开签名可见性由语义边界检查确认。
+- [Inno.Assets](../assets/Inno.Assets.md)：项目引用；公开签名可见性由语义边界检查确认。
+- [Inno.Audio](../audio/Inno.Audio.md)：项目引用；公开签名可见性由语义边界检查确认。
+- [Inno.Rendering.Runtime](../rendering/Inno.Rendering.Runtime.md)：项目引用；公开签名可见性由语义边界检查确认。
+- [Inno.Extensibility.Catalogs](../extensibility/Inno.Extensibility.Catalogs.md)：项目引用；公开签名可见性由语义边界检查确认。
+
+共同 MSBuild 注入的 analyzer 与编译规则属于构建依赖，完整有效项目图记录在本轮验收证据中。

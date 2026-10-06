@@ -1,3 +1,6 @@
+using Inno.Core.IO;
+using Inno.Content;
+using Inno.Adapter.Content.FileSystem;
 using Inno.Adapter.Serialization.DotNet;
 using Inno.Adapter.Modules.DotNet;
 using System;
@@ -65,7 +68,6 @@ public sealed class BuildPipelineTests : IDisposable
         m_engine = new EngineHostBuilder()
                 .UseMetadataSources(new DotNetAssemblyCatalogSource(typeof(BuildPipelineTests).Assembly),
                     new ReflectionTypeCatalogSource(), new ReflectionSerializationMetadataSource())
-            .UseMetadataCache(Path.Combine(libraryRoot, "Build", "Metadata"))
             .Build();
         m_sceneWorld = new SceneWorld(m_identities, m_engine.types);
         m_sceneWorldScope = m_sceneWorld.EnterScope();
@@ -83,7 +85,7 @@ public sealed class BuildPipelineTests : IDisposable
                 enableFileSystemWatcher = false
             });
         m_settings = new ProjectSettingsStore(
-            Path.Combine(m_projectRoot, "Settings.Project.inno"),
+            new FileByteDocumentStore(Path.GetFullPath(Path.Combine(m_projectRoot, "Settings.Project.inno"))),
             m_engine.types,
             m_engine.serialization,
             new ProjectId("tests.build"),
@@ -123,6 +125,22 @@ public sealed class BuildPipelineTests : IDisposable
     {
         Assert.Equal("tests.build", m_settings.projectId.value);
         Assert.False(m_settings.HasProjectOverride(ProjectIdentitySettings.settingId));
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void DesktopPackRejectsAMissingContentSource(bool windows)
+    {
+        BuildTargetId target = windows ? BuildTargetId.windowsX64 : BuildTargetId.macOSArm64;
+        string pack = GetSupportPackDirectory(target);
+        File.Delete(Path.Combine(pack, "PlayerLink", "FilePlayerContentSource.cs"));
+        IPlayerSupportPackValidator validator = windows
+            ? new WindowsSupportPackValidator() : new MacOSSupportPackValidator();
+
+        InvalidDataException missing = Assert.Throws<InvalidDataException>(() => validator.Validate(pack));
+
+        Assert.Contains("FilePlayerContentSource.cs", missing.Message, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -230,9 +248,16 @@ public sealed class BuildPipelineTests : IDisposable
         Assert.Equal(Inno.Extensibility.Modules.AssemblyDomain.InnoScripting, runtimeModule.domain);
 
         string persistentRoot = Path.Combine(m_root, "Persistent", manifest.applicationId);
-        string materialized = RuntimeContentDeployment.Materialize(packagedContent, persistentRoot);
+        RuntimeContentCatalog contentCatalog = serialization.Deserialize<RuntimeContentCatalog>(
+            File.ReadAllBytes(Path.Combine(packagedContent, "catalog.inno")));
+        contentCatalog.Validate();
+        using PackContentStore packStore = ContentPackReader.Open(
+            File.OpenRead(Path.Combine(packagedContent, contentCatalog.packFileName)),
+            new ContentPackDescriptor(contentCatalog.contentHash, contentCatalog.packFileName), serialization);
+        using FileContentStore contentStore = await FileContentPreparation.PrepareAsync(packStore,
+            new FileContentCacheOptions(persistentRoot));
         using var runtimeAssets = new AssetDatabase(
-            materialized,
+            contentStore,
             serialization,
             runtimeTypes,
             new IdentityAllocator(),
@@ -257,7 +282,7 @@ public sealed class BuildPipelineTests : IDisposable
         Assert.True(coalesced.IsCanceled);
         Assert.Equal(0, runtimeAssets.preparingBytes);
         Assert.Equal(0, runtimeAssets.residencyStatistics.residentAssetCount);
-        using (var limited = new AssetDatabase(materialized, serialization, runtimeTypes,
+        using (var limited = new AssetDatabase(contentStore, serialization, runtimeTypes,
                    new IdentityAllocator(), preparationBudgetBytes: 1))
         {
             Assert.Throws<InvalidOperationException>(() => limited.AcquireAsync<SceneAsset>(
@@ -274,14 +299,13 @@ public sealed class BuildPipelineTests : IDisposable
             return canceledLoad.IsCompleted;
         }, TimeSpan.FromSeconds(5)));
         Assert.True(canceledLoad.IsCanceled);
-        Assert.True(File.Exists(Path.Combine(materialized, "AssetDatabase", "Catalog.snapshot")));
-        Assert.False(Directory.Exists(Path.Combine(materialized, "Managed")));
-        Assert.StartsWith(Path.GetFullPath(persistentRoot), materialized, StringComparison.Ordinal);
+        Assert.True(contentStore.index.TryGetEntry(new ContentKey("AssetDatabase/Catalog.snapshot"), out _));
+        Assert.DoesNotContain(contentStore.index.entries, static entry => entry.key.value!.StartsWith("Managed/", StringComparison.Ordinal));
         Assert.DoesNotContain(
-            Directory.EnumerateFiles(materialized, "*", SearchOption.AllDirectories),
-            static path => path.EndsWith(".iscene", StringComparison.OrdinalIgnoreCase)
-                           || path.EndsWith(".imeta", StringComparison.OrdinalIgnoreCase)
-                           || path.EndsWith(".cs", StringComparison.OrdinalIgnoreCase));
+            contentStore.index.entries,
+            static entry => entry.key.value!.EndsWith(".iscene", StringComparison.OrdinalIgnoreCase)
+                            || entry.key.value.EndsWith(".imeta", StringComparison.OrdinalIgnoreCase)
+                            || entry.key.value.EndsWith(".cs", StringComparison.OrdinalIgnoreCase));
         Assert.Equal(1, result.assetCount);
         Assert.Equal(1, result.runtimeAssemblyCount);
     }
@@ -525,6 +549,38 @@ public sealed class BuildPipelineTests : IDisposable
     }
 
     [Fact]
+    public async Task UnknownManagedDeploymentNeverStartsSupportPackPreparation()
+    {
+        var provisioner = new TestSupportPackProvisioner(_ =>
+            throw new InvalidOperationException("Unsupported deployments must not prepare a Pack."));
+        BuildPipeline pipeline = CreatePipeline(provisioner);
+
+        InvalidOperationException failure = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            pipeline.EnsurePlayerSupportPackAsync(
+                BuildTargetId.windowsX64, new ManagedDeploymentId("unregistered")).AsTask());
+
+        Assert.Contains("unregistered", failure.Message, StringComparison.Ordinal);
+        Assert.Equal(0, provisioner.callCount);
+    }
+
+    [Fact]
+    public async Task UnsupportedPlatformDeploymentPairNeverStartsSupportPackPreparation()
+    {
+        var provisioner = new TestSupportPackProvisioner(_ =>
+            throw new InvalidOperationException("Unsupported platforms must not prepare a Pack."));
+        var deployments = new ManagedDeploymentCatalog(
+            [new FixtureManagedDeploymentCompiler(["browser-wasm"])]);
+        BuildPipeline pipeline = CreatePipeline(provisioner, deployments);
+
+        InvalidOperationException failure = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            pipeline.EnsurePlayerSupportPackAsync(
+                BuildTargetId.windowsX64, ManagedDeploymentId.coreClr).AsTask());
+
+        Assert.Contains("win-x64", failure.Message, StringComparison.Ordinal);
+        Assert.Equal(0, provisioner.callCount);
+    }
+
+    [Fact]
     public async Task MissingSupportPackIsPreparedBeforeTheOwnerThreadExport()
     {
         SaveStartupScene();
@@ -533,7 +589,7 @@ public sealed class BuildPipelineTests : IDisposable
             CreateSupportPack(target, "Inno.Player"));
 
         BuildPipeline pipeline = CreatePipeline(provisioner);
-        _ = await pipeline.EnsurePlayerSupportPackAsync(BuildTargetId.macOSArm64);
+        _ = await pipeline.EnsurePlayerSupportPackAsync(BuildTargetId.macOSArm64, deployment: null);
         BuildResult result = await pipeline.BuildGameAsync(new GameBuildRequest
         {
             profile = CreateProfile(BuildTargetId.macOSArm64),
@@ -554,7 +610,7 @@ public sealed class BuildPipelineTests : IDisposable
         var provisioner = new PendingSupportPackProvisioner();
         BuildPipeline pipeline = CreatePipeline(provisioner);
         Task<string> preparation = pipeline.EnsurePlayerSupportPackAsync(
-            BuildTargetId.macOSArm64, cancellation.Token).AsTask();
+            BuildTargetId.macOSArm64, deployment: null, cancellation.Token).AsTask();
         try
         {
             Assert.False(preparation.IsCompleted);
@@ -816,7 +872,7 @@ public sealed class BuildPipelineTests : IDisposable
         string link = Path.Combine(directory, "PlayerLink");
         Directory.CreateDirectory(link);
         File.WriteAllText(Path.Combine(link, "Player.csproj"), "<Project><PropertyGroup><AssemblyName>Inno.Player</AssemblyName></PropertyGroup></Project>");
-        foreach (string source in new[] { "Program.cs", "DesktopPlayerComposition.cs", "global.json" })
+        foreach (string source in new[] { "Program.cs", "DesktopPlayerComposition.cs", "FilePlayerContentSource.cs", "global.json" })
             File.WriteAllText(Path.Combine(link, source), "fixture input");
         string analyzers = Path.Combine(link, "Analyzers");
         Directory.CreateDirectory(analyzers);
@@ -856,7 +912,10 @@ public sealed class BuildPipelineTests : IDisposable
         return Path.Combine(targetRoot, File.ReadAllText(Path.Combine(targetRoot, "current")));
     }
 
-    private BuildPipeline CreatePipeline(IPlayerSupportPackProvisioner? provisioner = null)
+    private BuildPipeline CreatePipeline(
+        IPlayerSupportPackProvisioner? provisioner = null,
+        ManagedDeploymentCatalog? managedDeployments = null
+    )
         => new(
             m_assets,
             m_plugins,
@@ -869,7 +928,7 @@ public sealed class BuildPipelineTests : IDisposable
                 new MacOSArm64GameBuildTarget(m_assets, m_engine.serialization, m_engine.types),
                 new WindowsX64GameBuildTarget(m_assets, m_engine.serialization, m_engine.types)
             ],
-            CreateManagedDeployments(),
+            managedDeployments ?? CreateManagedDeployments(),
             provisioner);
 
     private static ManagedDeploymentCatalog CreateManagedDeployments()
@@ -877,10 +936,16 @@ public sealed class BuildPipelineTests : IDisposable
 
     private sealed class FixtureManagedDeploymentCompiler : IManagedDeploymentCompiler
     {
+        internal FixtureManagedDeploymentCompiler(IReadOnlyList<string>? runtimeIdentifiers = null)
+        {
+            capabilities = new ManagedDeploymentCapabilities(
+                runtimeIdentifiers ?? ["win-x64", "osx-arm64"],
+                dynamicCode: true, aheadOfTime: false, nativeStaticLinking: false);
+        }
+
         public ManagedDeploymentId id => ManagedDeploymentId.coreClr;
 
-        public ManagedDeploymentCapabilities capabilities { get; } = new(
-            ["win-x64", "osx-arm64"], dynamicCode: true, aheadOfTime: false, nativeStaticLinking: false);
+        public ManagedDeploymentCapabilities capabilities { get; }
 
         public ValueTask<ManagedDeploymentResult> CompileAsync(
             ManagedDeploymentRequest request,

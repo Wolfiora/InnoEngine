@@ -28,7 +28,6 @@ public sealed class EngineHost : IDisposable
     private bool m_stopping;
 
     internal EngineHost(
-        string metadataCacheDirectory,
         TimeSpan retirementTimeout,
         LogDeliveryMode logDeliveryMode,
         IAssemblyCatalogSource moduleSource,
@@ -42,7 +41,6 @@ public sealed class EngineHost : IDisposable
         {
             modules = new ModuleHost(new ModuleHostOptions
             {
-                cacheDirectory = metadataCacheDirectory,
                 catalogSource = moduleSource
             });
             types = new TypeCatalog(modules, typeSource);

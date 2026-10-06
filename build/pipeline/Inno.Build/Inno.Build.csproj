@@ -8,6 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="../../../src/content/deployment/Inno.Content/Inno.Content.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../../src/foundation/extensibility/Inno.Extensibility.Reload/Inno.Extensibility.Reload.csproj" />
     <ProjectReference
       Include="../../../src/foundation/core/Inno.Core.Serialization.Generators/Inno.Core.Serialization.Generators.csproj"

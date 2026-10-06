@@ -4,9 +4,8 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Inno.Build;
-using Inno.Build.SupportPacks;
+using Inno.Build.Composition;
 using Inno.Build.Toolchains;
-using Inno.Build.Toolchains.Host;
 using Inno.Build.Toolchains.Bgfx.Shaders;
 using Inno.Build.Toolchains.Bgfx.Tools;
 using Inno.Rendering;
@@ -52,17 +51,14 @@ internal static class EngineBuildWorkflow
         if (command == "engine")
         {
             await GenerateBindingsAsync(root, dotnet, configuration, cancellationToken);
-            var products = await HostNativeBuild.BuildEditorAsync(
-                new NativeBuildContext(root, configuration.ToLowerInvariant()), cancellationToken);
             await ToolchainEnvironment.RunAsync(dotnet,
                 ["build", Path.Combine(root, "src/composition/editor/host/Inno.Editor.Application/Inno.Editor.Application.csproj"),
                     "--configuration", configuration, "--disable-build-servers", "-m:1", "-nodeReuse:false"],
                 root, cancellationToken);
-            string editor = Path.Combine(root, "src", "composition", "editor", "host", "Inno.Editor.Application",
-                "bin", configuration, "net9.0");
-            await HostNativeDeployment.InstallAsync(products, editor, cancellationToken).ConfigureAwait(false);
         }
-        Console.WriteLine(await BuiltInPlayerSupportPacks.CreatePublisher().PublishAsync(root, output, target, dotnet, cancellationToken));
+        var context = new BuildCompositionContext(dotnet, AppContext.BaseDirectory);
+        Console.WriteLine(await BuiltInBuildDistribution.Create(context).supportPacks.PublishAsync(
+            root, output, target, dotnet, cancellationToken));
     }
 
     private static async Task GenerateBindingsAsync(

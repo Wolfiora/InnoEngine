@@ -1,4 +1,8 @@
 <Project>
+  <PropertyGroup>
+    <Deterministic>true</Deterministic>
+    <PathMap>$(PathMap);$(MSBuildThisFileDirectory)=/_/InnoEngine/</PathMap>
+  </PropertyGroup>
   <Import Project="$(InnoNativeBindingSelection)" Condition="'$(InnoNativeBindingSelection)' != '' and Exists('$(InnoNativeBindingSelection)')" />
   <PropertyGroup>
     <DefaultItemExcludes>$(DefaultItemExcludes);$(MSBuildProjectDirectory)/obj/**;$(MSBuildProjectDirectory)/bin/**</DefaultItemExcludes>

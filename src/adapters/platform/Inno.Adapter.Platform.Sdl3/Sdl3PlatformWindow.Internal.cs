@@ -50,7 +50,8 @@ public sealed partial class Sdl3PlatformWindow
 
         var currentWidth = 0;
         var currentHeight = 0;
-        SDL.GetWindowSize(m_window, ref currentWidth, ref currentHeight);
+        if (!SDL.GetWindowSize(m_window, ref currentWidth, ref currentHeight))
+            throw new InvalidOperationException(SDL.GetError() ?? "SDL_GetWindowSize failed.");
         m_width = currentWidth;
         m_height = currentHeight;
         RefreshPixelSize();
@@ -74,8 +75,10 @@ public sealed partial class Sdl3PlatformWindow
         int width,
         int height
     ) {
-        m_pixelWidth = Math.Max(1, width);
-        m_pixelHeight = Math.Max(1, height);
+        ArgumentOutOfRangeException.ThrowIfNegative(width);
+        ArgumentOutOfRangeException.ThrowIfNegative(height);
+        m_pixelWidth = width;
+        m_pixelHeight = height;
     }
 
     internal void MarkClosed()
@@ -111,9 +114,9 @@ public sealed partial class Sdl3PlatformWindow
     {
         var pixelWidth = 0;
         var pixelHeight = 0;
-        SDL.GetWindowSizeInPixels(m_window, ref pixelWidth, ref pixelHeight);
-        m_pixelWidth = pixelWidth > 0 ? pixelWidth : Math.Max(1, m_width);
-        m_pixelHeight = pixelHeight > 0 ? pixelHeight : Math.Max(1, m_height);
+        if (!SDL.GetWindowSizeInPixels(m_window, ref pixelWidth, ref pixelHeight))
+            throw new InvalidOperationException(SDL.GetError() ?? "SDL_GetWindowSizeInPixels failed.");
+        UpdatePixelSize(pixelWidth, pixelHeight);
     }
     
     /// <summary>

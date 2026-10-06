@@ -5,10 +5,12 @@ using System.Reflection;
 namespace Inno.Build.Toolchains;
 
 /// <summary>
-/// Identifies the checkout and configuration owned by one native build operation.
+/// Identifies the checkout, configuration and frozen initial inputs owned by one native build operation.
+/// Create a new context for each operation; changes during its lifetime fail stability verification.
 /// </summary>
 public sealed class NativeBuildContext
 {
+    private readonly NativeBuildInputState m_inputState;
     private readonly string? m_buildOwner;
     private readonly string? m_targetId;
     private readonly string? m_fingerprint;
@@ -38,6 +40,7 @@ public sealed class NativeBuildContext
         if (!File.Exists(Path.Combine(this.engineRoot, ToolchainLayout.C_REPOSITORY_MARKER_FILE)))
             throw new DirectoryNotFoundException($"Engine checkout is unavailable at '{this.engineRoot}'.");
         this.configuration = configuration;
+        m_inputState = new NativeBuildInputState();
     }
 
     private NativeBuildContext(
@@ -46,6 +49,7 @@ public sealed class NativeBuildContext
         string targetId,
         string fingerprint
     ) : this(origin.engineRoot, origin.configuration) {
+        m_inputState = origin.m_inputState;
         m_buildOwner = buildOwner;
         m_targetId = targetId;
         m_fingerprint = fingerprint;
@@ -56,6 +60,7 @@ public sealed class NativeBuildContext
         NativeBuildContext origin,
         HostNativeToolchain toolchain
     ) : this(origin.engineRoot, origin.configuration) {
+        m_inputState = origin.m_inputState;
         hostToolchain = toolchain;
         m_buildOwner = origin.m_buildOwner;
         m_targetId = origin.m_targetId;
@@ -67,6 +72,7 @@ public sealed class NativeBuildContext
         NativeBuildContext origin,
         string toolDirectory
     ) : this(origin.engineRoot, origin.configuration) {
+        m_inputState = origin.m_inputState;
         m_buildOwner = origin.m_buildOwner;
         m_targetId = origin.m_targetId;
         m_fingerprint = origin.m_fingerprint;
@@ -121,6 +127,13 @@ public sealed class NativeBuildContext
             throw new InvalidOperationException($"The native operation belongs to '{m_buildOwner}', not '{projectName}'.");
         return m_toolDirectory ?? Path.Combine(root, m_targetId!, m_fingerprint!);
     }
+
+    /// <summary>
+    /// Gets actual hashing and native execution work accumulated by this operation and its scoped contexts.
+    /// </summary>
+    public NativeBuildStatistics statistics => m_inputState.statistics;
+
+    internal NativeBuildInputState inputState => m_inputState;
 
     internal NativeBuildContext WithIdentity(
         Assembly owner,

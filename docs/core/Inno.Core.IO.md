@@ -1,52 +1,130 @@
 # Inno.Core.IO
 
-[Core 索引](README.md) · [Settings](Inno.Core.Settings.md) · [Wiki 首页](../README.md)
+[分类索引](README.md) · [Wiki 首页](../README.md) · [本轮整改计划](../architecture/ARCHITECTURE_CLEANUP_PLAN_2026_10_06.md)
 
-`Inno.Core.IO` 是不含领域语义的文件系统安全基础层。它不认识 Asset、Plugin、Settings 或 Build 格式，只提供这些领域共同需要、并且必须只有一种正确实现的原子提交与路径边界能力。
+## 职责与边界
 
-## 原子提交
+提供原子文件/目录发布、明确文件 lease、路径边界、小型 byte document 与独立 stream pin。领域模型通过文档或内容契约读取，不把物理位置泄漏给共享 Runtime。
 
-- `AtomicFile.WriteAllBytes` 在目标同目录写完整 staging 文件、强制刷新后再安装，读者不会观察到半个文件。
-- `AtomicFile.Install` 要求候选文件与目标同目录，并以一次原子替换提交；失败时原目标保持不变。
-- `AtomicDirectory.Publish` 将完整候选树移动到尚未占用的路径，不覆盖已存在的目录。
-  它用于内容寻址 Artifact 和 Support Pack 的首次发布，支持在提交前取消。
-  Windows 的临时访问/共享冲突最多等待两秒，成功后不再检查取消；永久失败保留候选及原目标。
-- 原子文件和目录的 rename 共用同一个内部 IO 策略。Windows 临时未授予 delete sharing 的读者
-  可能使目录移动报 `ERROR_ACCESS_DENIED`；只重试 rename，保留原异常，不吞掉权限或磁盘错误。
-- `AtomicDirectory.Install` 要求候选和目标目录树互不包含，也不能为同一路径；通过两次目录移动替换完整树。
-  调用方必须协调同一目标的读写，移动之间可能短暂没有目标目录，不能把它描述成文件式的单次原子替换。
-  候选安装失败时恢复旧备份；恢复也失败时同时报告两项异常并保留两棵树，不删除其他写入者创建的目标强行回滚。
-  候选移动成功即提交，随后清理旧备份。清理失败会抛出明确说明已安装目标和剩余备份位置的 `IOException`，
-  保留完整新内容；不得恢复已被部分删除的旧备份。
-  两次移动同样采用上述有界等待，备份删除失败仍按已提交失败语义报告。
+## 所有权与失败
 
-Settings 文档、Build profile、Plugin package、runtime content pack、Asset Catalog、Artifact manifest 与单个 source metadata 写入都复用这些 primitive。Asset source + `.imeta` 的双文件事务仍由 Asset Pipeline 编排，因为它包含 watcher、source ownership 与 metadata 一致性语义；底层 IO 不伪装成领域事务。
+`FileLease` 支持共享读取与独占写入协调；Windows 与 Unix 遵循同一语义。锁文件保留，不能删除锁文件代替解锁。等待受取消与有界 timeout 控制。
 
-## 路径边界
+`IByteDocumentStore` 仅用于小型文档。`FileByteDocumentStore` 复用 AtomicFile；`ReadOnlyByteDocumentStore` 捕获 owned bytes，写入明确失败。它不是 Asset catalog 或事件协议。
 
-`PathBoundary.Resolve(root, relativePath)` 和 `RequireContained(root, path)` 在规范化绝对路径后验证目标仍位于 owner root 内，统一处理 `..`、绝对路径和平台大小写规则。根目录可以是卷根目录（例如 `C:\` 或 `/`），其尾部已有分隔符时不再重复追加。Asset source mount、Plugin package extraction 与 FileSystem Storage 使用该 API，因此这些路径不再各自维护一份 mount escape 判断。
+`AtomicDirectory.Publish` 发布完整 staging，不覆盖活跃 reader 所持 generation。`OwnedReadStream` 独立持有读取 pin，外层 lease 提前关闭不破坏打开的读取流。失败补偿和退出确保 pin 仅释放一次。
 
-`PathBoundary.EnumerateFiles(root)` 枚举 owner 的普通文件树，并在遇到文件符号链接、目录 junction
-或其他 reparse point 时明确失败，避免产物哈希和打包跨出所有权边界。返回绝对路径，不保留文件句柄；
-调用方仍需持有写入所有权，并决定排序和内容哈希。此入口用于已生成的产物，SDK 源树的链接策略由工具链另行管理。
+## 使用示例
 
-## 进程间所有权
+```csharp
+using Inno.Core.IO;
 
-`FileLease.AcquireAsync(path, timeout, cancellationToken)` 接受显式绝对路径，以异步等待取得进程间独占文件所有权。
-`timeout` 可以为零或 `Timeout.InfiniteTimeSpan`；超时抛出 `TimeoutException`，取消抛出 `OperationCanceledException`。
-返回的 sealed `FileLease` 实现 `IDisposable`，重复释放安全。取消等待不会释放其他调用方的 lease。
-lease 文件在释放后保留，避免 Unix 上删除文件后出现同一路径对应两个被分别锁定的 inode。
-此契约只提供协作进程间的所有权；调用方决定受保护的产物、持有范围、校验与提交顺序。
+static IByteDocumentStore CreateDocument(string absolutePath)
+{
+    return new FileByteDocumentStore(absolutePath);
+}
+```
 
-## 设计边界
+文件路径的选择属于调用此 factory 的宿主。`tests/core/Inno.Core.IO.Tests` 覆盖 lease 协调、取消、原子写入、只读文档与读取 pin。
 
-该程序集只接受显式路径，不保存全局 current directory，不提供 service locator，也不吞掉 IO 异常。调用方仍负责：
+## 当前源码公开 API 清单
 
-- 决定哪个 root/文件属于自己；
-- 验证领域文档和命名；
-- 组织多文件事务及并发策略；
-- 处理用户可见 diagnostic。
+以下仅列出当前程序集自己声明的 public/protected 契约；继承成员遵循所属基类页面。internal/private 实现不作为稳定公开 API。签名依据当前源码语义模型生成，行为、参数、异常与所有权说明同时以对应英文 XML 为准。
 
-普通读取、staging 目录内生成文件以及领域格式写入继续直接使用 `System.IO`；它们不需要为了“统一”而绕过一个 service。`Inno.Core.IO` 只收口跨领域且出错代价高的安全 primitive，而不是把各系统耦合到同一个“万能文件管理器”。
+### `Inno.Core.IO.AtomicDirectory`
 
-[上一页：Identity](Inno.Core.Identity.md) · [下一页：Input](Inno.Core.Input.md)
+| 当前声明 | 行为 |
+| --- | --- |
+| [`static void Inno.Core.IO.AtomicDirectory.Install(string source, string destination)`](../../src/foundation/core/Inno.Core.IO/AtomicDirectory.cs#L94) | Installs a disjoint candidate tree and restores the previous destination if installation fails. |
+| [`static void Inno.Core.IO.AtomicDirectory.Publish(string source, string destination, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))`](../../src/foundation/core/Inno.Core.IO/AtomicDirectory.cs#L43) | Publishes a complete directory at an unoccupied path without replacing an existing destination. |
+| [`Inno.Core.IO.AtomicDirectory`](../../src/foundation/core/Inno.Core.IO/AtomicDirectory.cs#L10) | Provides rollback-safe installation of complete directory trees. |
+
+### `Inno.Core.IO.AtomicFile`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`static void Inno.Core.IO.AtomicFile.Install(string source, string destination, bool overwrite = true)`](../../src/foundation/core/Inno.Core.IO/AtomicFile.cs#L64) | Atomically installs an existing same-directory candidate file. |
+| [`static void Inno.Core.IO.AtomicFile.WriteAllBytes(string path, System.ReadOnlySpan<byte> data, bool overwrite = true)`](../../src/foundation/core/Inno.Core.IO/AtomicFile.cs#L23) | Writes a complete byte payload and atomically installs it at the destination. |
+| [`Inno.Core.IO.AtomicFile`](../../src/foundation/core/Inno.Core.IO/AtomicFile.cs#L9) | Provides durable same-directory file replacement without exposing partial destination content. |
+
+### `Inno.Core.IO.FileByteDocumentStore`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Core.IO.FileByteDocumentStore.FileByteDocumentStore(string path)`](../../src/foundation/core/Inno.Core.IO/FileByteDocumentStore.cs#L22) | Selects one host-owned absolute document location. |
+| [`byte[]? Inno.Core.IO.FileByteDocumentStore.Read()`](../../src/foundation/core/Inno.Core.IO/FileByteDocumentStore.cs#L40) | See the implemented contract. |
+| [`void Inno.Core.IO.FileByteDocumentStore.Write(System.ReadOnlySpan<byte> data)`](../../src/foundation/core/Inno.Core.IO/FileByteDocumentStore.cs#L57) | See the implemented contract. |
+| [`bool Inno.Core.IO.FileByteDocumentStore.canWrite`](../../src/foundation/core/Inno.Core.IO/FileByteDocumentStore.cs#L34) | See the implemented contract. |
+| [`string Inno.Core.IO.FileByteDocumentStore.documentName`](../../src/foundation/core/Inno.Core.IO/FileByteDocumentStore.cs#L31) | See the implemented contract. |
+| [`bool Inno.Core.IO.FileByteDocumentStore.exists`](../../src/foundation/core/Inno.Core.IO/FileByteDocumentStore.cs#L37) | See the implemented contract. |
+| [`Inno.Core.IO.FileByteDocumentStore`](../../src/foundation/core/Inno.Core.IO/FileByteDocumentStore.cs#L9) | Stores one file document with atomic replacement using the common filesystem boundary. |
+
+### `Inno.Core.IO.FileLease`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`static System.Threading.Tasks.ValueTask<Inno.Core.IO.FileLease> Inno.Core.IO.FileLease.AcquireAsync(string path, System.TimeSpan timeout, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))`](../../src/foundation/core/Inno.Core.IO/FileLease.cs#L52) | Waits for exclusive ownership without blocking an owner thread or changing shared data. |
+| [`static System.Threading.Tasks.ValueTask<Inno.Core.IO.FileLease> Inno.Core.IO.FileLease.AcquireSharedAsync(string path, System.TimeSpan timeout, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))`](../../src/foundation/core/Inno.Core.IO/FileLease.cs#L83) | Pins an existing generation against exclusive retirement while permitting other readers. |
+| [`void Inno.Core.IO.FileLease.Dispose()`](../../src/foundation/core/Inno.Core.IO/FileLease.cs#L135) | Releases ownership; repeated disposal has no effect and the lease file is retained. |
+| [`Inno.Core.IO.FileLease`](../../src/foundation/core/Inno.Core.IO/FileLease.cs#L12) | Owns shared reading or exclusive writing rights coordinated by independent processes. |
+
+### `Inno.Core.IO.IByteDocumentStore`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`byte[]? Inno.Core.IO.IByteDocumentStore.Read()`](../../src/foundation/core/Inno.Core.IO/IByteDocumentStore.cs#L31) | Obtains a newly owned complete document snapshot. |
+| [`void Inno.Core.IO.IByteDocumentStore.Write(System.ReadOnlySpan<byte> data)`](../../src/foundation/core/Inno.Core.IO/IByteDocumentStore.cs#L42) | Replaces the document atomically after preparation succeeds. |
+| [`bool Inno.Core.IO.IByteDocumentStore.canWrite`](../../src/foundation/core/Inno.Core.IO/IByteDocumentStore.cs#L18) | Gets whether this source permits atomic replacement. |
+| [`string Inno.Core.IO.IByteDocumentStore.documentName`](../../src/foundation/core/Inno.Core.IO/IByteDocumentStore.cs#L13) | Gets a stable diagnostic name for this document, independent of its storage implementation. |
+| [`bool Inno.Core.IO.IByteDocumentStore.exists`](../../src/foundation/core/Inno.Core.IO/IByteDocumentStore.cs#L23) | Gets whether a document currently exists; callers must still handle absence during a later read. |
+| [`Inno.Core.IO.IByteDocumentStore`](../../src/foundation/core/Inno.Core.IO/IByteDocumentStore.cs#L8) | Reads and replaces one complete document without prescribing its physical location. |
+
+### `Inno.Core.IO.OwnedReadStream`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Core.IO.OwnedReadStream.OwnedReadStream(System.IO.Stream input, System.IDisposable owner)`](../../src/foundation/core/Inno.Core.IO/OwnedReadStream.cs#L30) | Transfers a readable stream and its independent lifetime pin into this wrapper. |
+| [`override void Inno.Core.IO.OwnedReadStream.Dispose(bool disposing)`](../../src/foundation/core/Inno.Core.IO/OwnedReadStream.cs#L96) | See the implemented contract. |
+| [`override void Inno.Core.IO.OwnedReadStream.Flush()`](../../src/foundation/core/Inno.Core.IO/OwnedReadStream.cs#L85) | See the implemented contract. |
+| [`override int Inno.Core.IO.OwnedReadStream.Read(byte[] buffer, int offset, int count)`](../../src/foundation/core/Inno.Core.IO/OwnedReadStream.cs#L58) | See the implemented contract. |
+| [`override int Inno.Core.IO.OwnedReadStream.Read(System.Span<byte> buffer)`](../../src/foundation/core/Inno.Core.IO/OwnedReadStream.cs#L64) | See the implemented contract. |
+| [`override System.Threading.Tasks.Task<int> Inno.Core.IO.OwnedReadStream.ReadAsync(byte[] buffer, int offset, int count, System.Threading.CancellationToken cancellationToken)`](../../src/foundation/core/Inno.Core.IO/OwnedReadStream.cs#L73) | See the implemented contract. |
+| [`override System.Threading.Tasks.ValueTask<int> Inno.Core.IO.OwnedReadStream.ReadAsync(System.Memory<byte> buffer, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))`](../../src/foundation/core/Inno.Core.IO/OwnedReadStream.cs#L68) | See the implemented contract. |
+| [`override int Inno.Core.IO.OwnedReadStream.ReadByte()`](../../src/foundation/core/Inno.Core.IO/OwnedReadStream.cs#L66) | See the implemented contract. |
+| [`override long Inno.Core.IO.OwnedReadStream.Seek(long offset, System.IO.SeekOrigin origin)`](../../src/foundation/core/Inno.Core.IO/OwnedReadStream.cs#L80) | See the implemented contract. |
+| [`override void Inno.Core.IO.OwnedReadStream.SetLength(long value)`](../../src/foundation/core/Inno.Core.IO/OwnedReadStream.cs#L87) | See the implemented contract. |
+| [`override void Inno.Core.IO.OwnedReadStream.Write(byte[] buffer, int offset, int count)`](../../src/foundation/core/Inno.Core.IO/OwnedReadStream.cs#L89) | See the implemented contract. |
+| [`override bool Inno.Core.IO.OwnedReadStream.CanRead`](../../src/foundation/core/Inno.Core.IO/OwnedReadStream.cs#L43) | See the implemented contract. |
+| [`override bool Inno.Core.IO.OwnedReadStream.CanSeek`](../../src/foundation/core/Inno.Core.IO/OwnedReadStream.cs#L45) | See the implemented contract. |
+| [`override bool Inno.Core.IO.OwnedReadStream.CanWrite`](../../src/foundation/core/Inno.Core.IO/OwnedReadStream.cs#L47) | See the implemented contract. |
+| [`override long Inno.Core.IO.OwnedReadStream.Length`](../../src/foundation/core/Inno.Core.IO/OwnedReadStream.cs#L49) | See the implemented contract. |
+| [`override long Inno.Core.IO.OwnedReadStream.Position`](../../src/foundation/core/Inno.Core.IO/OwnedReadStream.cs#L51) | See the implemented contract. |
+| [`Inno.Core.IO.OwnedReadStream`](../../src/foundation/core/Inno.Core.IO/OwnedReadStream.cs#L11) | Keeps an independent read stream and its lifetime pin owned together until both retire. |
+
+### `Inno.Core.IO.PathBoundary`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`static System.Collections.Generic.IEnumerable<string> Inno.Core.IO.PathBoundary.EnumerateFiles(string root)`](../../src/foundation/core/Inno.Core.IO/PathBoundary.cs#L125) | Enumerates regular files in an owned tree without following filesystem links. |
+| [`static string Inno.Core.IO.PathBoundary.RequireContained(string root, string path)`](../../src/foundation/core/Inno.Core.IO/PathBoundary.cs#L50) | Validates and normalizes an absolute path beneath a root. |
+| [`static string Inno.Core.IO.PathBoundary.RequireUnlinkedPath(string root, string path)`](../../src/foundation/core/Inno.Core.IO/PathBoundary.cs#L81) | Resolves an owned path while rejecting existing links in its containment chain. |
+| [`static string Inno.Core.IO.PathBoundary.Resolve(string root, string relativePath)`](../../src/foundation/core/Inno.Core.IO/PathBoundary.cs#L24) | Resolves a relative path beneath a root and rejects traversal outside that root. |
+| [`Inno.Core.IO.PathBoundary`](../../src/foundation/core/Inno.Core.IO/PathBoundary.cs#L10) | Resolves paths while enforcing an explicit filesystem ownership boundary. |
+
+### `Inno.Core.IO.ReadOnlyByteDocumentStore`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Core.IO.ReadOnlyByteDocumentStore.ReadOnlyByteDocumentStore(string documentName, System.ReadOnlySpan<byte> data)`](../../src/foundation/core/Inno.Core.IO/ReadOnlyByteDocumentStore.cs#L21) | Copies one complete document into this source. |
+| [`byte[] Inno.Core.IO.ReadOnlyByteDocumentStore.Read()`](../../src/foundation/core/Inno.Core.IO/ReadOnlyByteDocumentStore.cs#L40) | See the implemented contract. |
+| [`void Inno.Core.IO.ReadOnlyByteDocumentStore.Write(System.ReadOnlySpan<byte> data)`](../../src/foundation/core/Inno.Core.IO/ReadOnlyByteDocumentStore.cs#L43) | See the implemented contract. |
+| [`bool Inno.Core.IO.ReadOnlyByteDocumentStore.canWrite`](../../src/foundation/core/Inno.Core.IO/ReadOnlyByteDocumentStore.cs#L34) | See the implemented contract. |
+| [`string Inno.Core.IO.ReadOnlyByteDocumentStore.documentName`](../../src/foundation/core/Inno.Core.IO/ReadOnlyByteDocumentStore.cs#L31) | See the implemented contract. |
+| [`bool Inno.Core.IO.ReadOnlyByteDocumentStore.exists`](../../src/foundation/core/Inno.Core.IO/ReadOnlyByteDocumentStore.cs#L37) | See the implemented contract. |
+| [`Inno.Core.IO.ReadOnlyByteDocumentStore`](../../src/foundation/core/Inno.Core.IO/ReadOnlyByteDocumentStore.cs#L8) | Owns an immutable document snapshot that cannot be replaced through its read boundary. |
+
+## 项目依赖
+
+- [Inno.Extensibility.Catalogs](../extensibility/Inno.Extensibility.Catalogs.md)：项目引用；公开签名可见性由语义边界检查确认。
+
+共同 MSBuild 注入的 analyzer 与编译规则属于构建依赖，完整有效项目图记录在本轮验收证据中。

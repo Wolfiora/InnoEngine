@@ -4,6 +4,7 @@ using System.IO;
 
 using Inno.Core.Serialization;
 using Inno.Core.Settings;
+using Inno.Core.IO;
 
 namespace Inno.Editor.Settings;
 
@@ -22,7 +23,7 @@ internal sealed class EditorSettingsStore
         ArgumentNullException.ThrowIfNull(serialization);
         string path = Path.Combine(Path.GetFullPath(projectDirectory), C_FILE_NAME);
         m_documents = new SettingsDocumentStore<EditorSettingsDocument>(
-            path,
+            new FileByteDocumentStore(path),
             serialization,
             static () => new EditorSettingsDocument(),
             ValidateDocumentValue);

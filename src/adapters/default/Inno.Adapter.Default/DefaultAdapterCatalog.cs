@@ -1,15 +1,14 @@
+using System;
 using System.Collections.Generic;
 
 using Inno.Adapter.Audio;
 using Inno.Adapter.Audio.MiniAudio;
 using Inno.Adapter.Input;
-using Inno.Adapter.Input.Sdl3;
 using Inno.Adapter.Platform;
 using Inno.Adapter.Platform.Sdl3;
 using Inno.Adapter.Rendering;
 using Inno.Adapter.Rendering.Bgfx;
 using Inno.Adapter.Storage;
-using Inno.Adapter.Storage.FileSystem;
 using Inno.Adapter.Text;
 using Inno.Adapter.Text.FreeTypeHarfBuzz;
 using Inno.Adapter.UI;
@@ -28,7 +27,7 @@ public sealed class DefaultAdapterCatalog : IAdapterCatalog
 {
     private readonly PlatformBackendCatalog m_platform;
     private readonly InputBackendCatalog m_input;
-    private readonly StorageBackendCatalog m_storage;
+    private readonly IStorageBackendFactory m_storage;
     private readonly RenderingBackendCatalog m_rendering;
     private readonly AudioBackendCatalog m_audio;
     private readonly TextBackendCatalog m_text;
@@ -37,14 +36,14 @@ public sealed class DefaultAdapterCatalog : IAdapterCatalog
     /// <summary>
     /// Captures each domain registration snapshot without initializing native services.
     /// </summary>
+    /// <param name="options">
+    /// Explicit host configuration for location-dependent services.
+    /// </param>
     /// <param name="renderingProviders">
     /// Complete rendering registrations, or null to use the bundled implementation.
     /// </param>
     /// <param name="uiProviders">
     /// Complete ui registrations, or null to use the bundled implementation.
-    /// </param>
-    /// <param name="storageProviders">
-    /// Complete storage registrations, or null to use the bundled implementation.
     /// </param>
     /// <param name="platformProviders">
     /// Complete platform registrations, or null to use the bundled implementation.
@@ -59,17 +58,18 @@ public sealed class DefaultAdapterCatalog : IAdapterCatalog
     /// Complete text registrations, or null to use the bundled implementation.
     /// </param>
     public DefaultAdapterCatalog(
+        DefaultAdapterCatalogOptions options,
         IEnumerable<RenderingBackendProvider>? renderingProviders = null,
         IEnumerable<UiBackendProvider>? uiProviders = null,
-        IEnumerable<StorageBackendProvider>? storageProviders = null,
         IEnumerable<PlatformBackendProvider>? platformProviders = null,
         IEnumerable<InputBackendProvider>? inputProviders = null,
         IEnumerable<AudioBackendProvider>? audioProviders = null,
         IEnumerable<TextBackendProvider>? textProviders = null
     ) {
+        ArgumentNullException.ThrowIfNull(options);
         m_platform = new PlatformBackendCatalog(platformProviders ?? [new Sdl3PlatformBackendProvider()]);
-        m_input = new InputBackendCatalog(inputProviders ?? [new Sdl3InputBackendProvider()]);
-        m_storage = new StorageBackendCatalog(storageProviders ?? [new FileSystemStorageBackendProvider()]);
+        m_input = new InputBackendCatalog(inputProviders ?? [new EventInputBackendProvider()]);
+        m_storage = options.storage ?? throw new ArgumentException("Host storage must be configured.", nameof(options));
         m_rendering = new RenderingBackendCatalog(renderingProviders ?? [new BgfxRenderingBackendProvider()]);
         m_audio = new AudioBackendCatalog(audioProviders ?? [new MiniAudioBackendProvider()]);
         m_text = new TextBackendCatalog(textProviders ?? [new FreeTypeHarfBuzzTextBackendProvider()]);

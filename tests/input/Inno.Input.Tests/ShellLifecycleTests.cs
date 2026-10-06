@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using Inno.Adapter;
 using Inno.Adapter.Audio;
 using Inno.Adapter.Input;
-using Inno.Adapter.Input.Sdl3;
 using Inno.Adapter.Platform;
 using Inno.Adapter.Rendering;
 using Inno.Adapter.Storage;
@@ -165,7 +164,7 @@ public sealed class ShellLifecycleTests
         public ITextBackendFactory text => this;
         public IUiBackendFactory ui => this;
         IReadOnlyList<PlatformBackendId> IPlatformBackendFactory.supportedBackends => [PlatformBackendId.sdl3];
-        IReadOnlyList<InputBackendId> IInputBackendFactory.supportedBackends => [InputBackendId.sdl3];
+        IReadOnlyList<InputBackendId> IInputBackendFactory.supportedBackends => [InputBackendId.events];
         IReadOnlyList<RenderingBackendId> IRenderingBackendFactory.supportedBackends => [RenderingBackendId.bgfx];
         IReadOnlyList<StorageBackendId> IStorageBackendFactory.supportedBackends => [StorageBackendId.fileSystem];
         IReadOnlyList<AudioBackendId> IAudioBackendFactory.supportedBackends => [AudioBackendId.miniAudio];
@@ -183,7 +182,7 @@ public sealed class ShellLifecycleTests
         ) => new TestRenderDevice(retired);
         public IApplicationStorage CreateStorage(
             StorageBackendId backend,
-            string rootDirectory
+            StorageScope scope
         ) => throw new NotSupportedException();
         public IAudioDevice CreateDevice(
             AudioBackendId backend,
@@ -228,7 +227,7 @@ public sealed class ShellLifecycleTests
 
     private sealed class TestInputSource(List<string> retired) : IInputEventSource
     {
-        private readonly Sdl3InputSource m_source = new(1);
+        private readonly EventInputSource m_source = new(1);
         public IInputBackend CreateBackend() => m_source.CreateBackend();
         public void ProcessEvent(Event evnt) => m_source.ProcessEvent(evnt);
         public void Dispose()
@@ -242,6 +241,7 @@ public sealed class ShellLifecycleTests
     {
         public GraphicsCapabilities capabilities => throw new NotSupportedException();
         public uint generation => 1;
+        public RenderPresentationSize? primaryPresentationSize { get; private set; }
         public bool primaryPresentationEncodesSrgb => true;
         public void SetVerticalSync(bool enabled) { }
         public void BeginFrame() => throw new NotSupportedException();
@@ -250,10 +250,7 @@ public sealed class ShellLifecycleTests
             CompiledRenderGraph graph,
             ulong frameIndex
         ) => throw new NotSupportedException();
-        public void ResizeBackbuffer(
-            int width,
-            int height
-        ) { }
+        public void SetPrimaryPresentationSize(RenderPresentationSize? size) => primaryPresentationSize = size;
         public PersistentTextureHandle CreateTexture(
             RenderTextureDescriptor descriptor,
             string name

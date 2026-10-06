@@ -19,6 +19,7 @@ using Inno.Rendering;
 using Inno.Extensibility.Types;
 using Inno.Rendering.Assets;
 using Inno.Rendering.Shaders;
+using Inno.Rendering.Assets.Authoring;
 
 namespace Inno.Editor.Panel.ShaderEditor;
 

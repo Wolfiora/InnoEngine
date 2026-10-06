@@ -5,6 +5,7 @@ using System.Runtime.InteropServices;
 using Inno.Core.Diagnostics;
 using Inno.Core.Execution;
 using Inno.Rendering;
+using Inno.Rendering.Assets;
 
 namespace Inno.Rendering.Runtime;
 

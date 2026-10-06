@@ -1,4 +1,3 @@
-using System.IO;
 using Inno.Runtime.Contracts;
 using Inno.Storage.Runtime;
 
@@ -8,6 +7,5 @@ internal static class StorageSubsystem
 {
     [RuntimeSubsystemRegistration("inno.runtime.storage")]
     internal static IRuntimeSubsystemFactory Create(EngineSessionComposition context)
-        => new StorageRuntimeFactory(owner => context.adapters.storage.CreateStorage(context.selection.storage,
-            Path.Combine(owner.persistentDataDirectory, "Storage")));
+        => new StorageRuntimeFactory(_ => context.createStorage());
 }

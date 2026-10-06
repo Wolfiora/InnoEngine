@@ -7,6 +7,7 @@
     <IsTestProject>true</IsTestProject>
   </PropertyGroup>
   <ItemGroup>
+    <ProjectReference Include="../../content/fixtures/Inno.Content.Testing/Inno.Content.Testing.csproj" />
     <ProjectReference Include="../../../src/foundation/core/Inno.Core.Execution/Inno.Core.Execution.csproj" />
     <ProjectReference Include="../../../src/runtime/contracts/Inno.Runtime.Contracts/Inno.Runtime.Contracts.csproj" />
     <ProjectReference Include="..\..\..\src\content\assets\Inno.Assets\Inno.Assets.csproj" PrivateAssets="compile" />
@@ -44,5 +45,9 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="../../../src/adapters/serialization/Inno.Adapter.Serialization.DotNet/Inno.Adapter.Serialization.DotNet.csproj" PrivateAssets="compile" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../../../src/services/rendering/Inno.Rendering.Assets/Inno.Rendering.Assets.csproj" />
   </ItemGroup>
 </Project>

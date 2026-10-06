@@ -16,6 +16,7 @@ using Inno.Runtime;
 using Inno.Native.ImGui;
 using NativeImGui = Inno.Native.ImGui.ImGui;
 using EditorWidget = Inno.Editor.ImGui.ImGuiWidget.ImGuiWidget;
+using Inno.Rendering.Runtime;
 
 namespace Inno.Editor.Panel.GameView;
 

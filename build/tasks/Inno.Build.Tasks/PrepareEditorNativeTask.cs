@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Threading;
 using Inno.Build.Toolchains;
 using Inno.Build.Toolchains.Host;
@@ -8,7 +9,7 @@ using BuildTask = Microsoft.Build.Utilities.Task;
 namespace Inno.Build.Tasks;
 
 /// <summary>
-/// Connects Editor publication to host-native preparation and exact product deployment.
+/// Connects Editor builds and publication to host-native preparation and exact product deployment.
 /// </summary>
 public sealed class PrepareEditorNativeTask : BuildTask, ICancelableTask
 {
@@ -29,7 +30,7 @@ public sealed class PrepareEditorNativeTask : BuildTask, ICancelableTask
     public string OutputDirectory { get; set; } = string.Empty;
 
     /// <summary>
-    /// Gets or sets the debug or release configuration used by the published managed application.
+    /// Gets or sets the debug or release configuration used by the managed application.
     /// </summary>
     public string Configuration { get; set; } = "release";
 
@@ -50,11 +51,19 @@ public sealed class PrepareEditorNativeTask : BuildTask, ICancelableTask
         }
         try
         {
+            BuildTaskHostRetirement.Inspect(EngineRoot);
+            long started = Stopwatch.GetTimestamp();
+            var context = new NativeBuildContext(EngineRoot, Configuration.ToLowerInvariant());
             var products = HostNativeBuild.BuildEditorAsync(
-                new NativeBuildContext(EngineRoot, Configuration.ToLowerInvariant()), cancellation.Token)
+                context, cancellation.Token)
                 .GetAwaiter().GetResult();
             cancellation.Token.ThrowIfCancellationRequested();
             HostNativeDeployment.InstallAsync(products, OutputDirectory, cancellation.Token).GetAwaiter().GetResult();
+            NativeBuildStatistics statistics = context.statistics;
+            Log.LogMessage(MessageImportance.High,
+                $"INNO-NATIVE-PREPARE elapsedMs={Stopwatch.GetElapsedTime(started).TotalMilliseconds:F1} "
+                + $"hashedFiles={statistics.hashedFiles} hashedBytes={statistics.hashedBytes} "
+                + $"processes={statistics.nativeProcesses} products={products.Count}");
             return true;
         }
         catch (Exception failure)

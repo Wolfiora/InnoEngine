@@ -3,6 +3,7 @@ using System.Linq;
 using Inno.Rendering;
 using EditorImGui = Inno.Editor.ImGui.ImGui;
 using ImGuiApi = Inno.Native.ImGui.ImGui;
+using Inno.Rendering.Assets;
 
 namespace Inno.Editor.Panel.ShaderEditor;
 

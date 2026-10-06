@@ -5,8 +5,6 @@ using Inno.Scripting.Compiler;
 using Inno.Engine.Default;
 using Inno.Runtime.Contracts;
 using System;
-using Inno.Build.Managed;
-using Inno.Build.Managed.DotNet;
 using Inno.Core.Diagnostics;
 using System.Collections.Generic;
 using System.IO;
@@ -21,10 +19,7 @@ using Inno.Animation.Runtime;
 using Inno.Audio.Runtime;
 using Inno.Audio;
 using Inno.Build;
-using Inno.Build.Platform.MacOS;
-using Inno.Build.Platform.Browser;
-using Inno.Build.Platform.Windows;
-using Inno.Build.SupportPacks;
+using Inno.Build.Composition;
 using Inno.UI.Runtime;
 using Inno.Core.Events;
 using Inno.Core.Layers;
@@ -44,6 +39,7 @@ using Inno.Scene;
 using Inno.Shell;
 using Inno.Storage.Runtime;
 using ShellHost = Inno.Shell.Shell;
+using Inno.Rendering.Assets.Authoring;
 
 namespace Inno.Editor.Application;
 
@@ -52,17 +48,6 @@ namespace Inno.Editor.Application;
 /// </summary>
 internal sealed class EditorHost : ShellHost
 {
-    private static ManagedDeploymentCatalog CreateManagedDeployments()
-    {
-        string host = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH") ?? "dotnet";
-        return new ManagedDeploymentCatalog([
-            new CoreClrDeploymentCompiler(host),
-            new MonoWasmDeploymentCompiler(host, aheadOfTime: false),
-            new MonoWasmDeploymentCompiler(host, aheadOfTime: true),
-            new NativeAotDeploymentCompiler(host)
-        ]);
-    }
-
     private const string C_LOG_DIRECTORY_NAME = "Logs";
     private const string C_BOOT_LOG_FILE_NAME = "EditorBoot.log";
 
@@ -329,7 +314,6 @@ internal sealed class EditorHost : ShellHost
             () => new EngineHostBuilder()
                 .UseMetadataSources(new DotNetAssemblyCatalogSource(typeof(EditorHost).Assembly),
                     new ReflectionTypeCatalogSource(), new ReflectionSerializationMetadataSource())
-                .UseMetadataCache(Path.Combine(projectDirectory, "Library", "Assemblies"))
                 .Build(),
             static host => host.Dispose());
         var consoleLog = new ConsoleLogSink(useColors: true);
@@ -364,11 +348,8 @@ internal sealed class EditorHost : ShellHost
             {
                 kind = RuntimeSessionKind.Edit,
                 applicationId = "inno.editor",
-                persistentDataDirectory = Path.Combine(
-                    projectDirectory,
-                    "Library",
-                    "PersistentData",
-                    "inno.editor"),
+                createLogSink = _ => new FileLogSink(Path.Combine(projectDirectory,
+                    "Library", "PersistentData", "inno.editor", "Logs")),
                 fixedDeltaTime = 1f / 60f,
                 maxFrameDeltaTime = 0.25f,
                 maxFixedStepsPerFrame = 8,
@@ -382,22 +363,17 @@ internal sealed class EditorHost : ShellHost
             activeEditSession.EnterExecutionScope,
             static scope => scope.Dispose());
 
-        var buildPipeline = new BuildPipeline(
+        var buildContext = new BuildCompositionContext(
+            Environment.GetEnvironmentVariable("DOTNET_HOST_PATH") ?? "dotnet", AppContext.BaseDirectory);
+        BuildPipeline buildPipeline = BuildPipelineFactory.Create(
+            buildContext,
+            BuiltInBuildDistribution.Create(buildContext),
+            engineHost,
             activeAuthoring.assets,
             activeAuthoring.plugins,
             activeAuthoring.settings,
-            engineHost.serialization,
-            engineHost.generations,
             activeAuthoring.compiler,
-            ResolveSupportPackRoot(),
-            [
-                new MacOSArm64GameBuildTarget(activeAuthoring.assets, engineHost.serialization, engineHost.types),
-                new WindowsX64GameBuildTarget(activeAuthoring.assets, engineHost.serialization, engineHost.types),
-                new BrowserWasmGameBuildTarget(activeAuthoring.assets, engineHost.serialization, engineHost.types)
-            ],
-            CreateManagedDeployments(),
-            SourcePlayerSupportPackProvisioner.TryCreateForHost(
-                AppContext.BaseDirectory, BuiltInPlayerSupportPacks.CreatePublisher()));
+            ResolveSupportPackRoot());
         BuildSettings defaultBuildSettings = BuildSettings.CreateDefault(
             Path.GetFileName(Path.TrimEndingDirectorySeparator(projectDirectory)),
             FindDefaultStartupScene(activeAuthoring.assets),
@@ -491,11 +467,8 @@ internal sealed class EditorHost : ShellHost
         {
             kind = RuntimeSessionKind.Play,
             applicationId = "inno.editor.play",
-            persistentDataDirectory = Path.Combine(
-                projectDirectory,
-                "Library",
-                "PersistentData",
-                "inno.editor.play"),
+            createLogSink = _ => new FileLogSink(Path.Combine(projectDirectory,
+                "Library", "PersistentData", "inno.editor.play", "Logs")),
             fixedDeltaTime = 1f / 60f,
             maxFrameDeltaTime = 0.25f,
             maxFixedStepsPerFrame = 8,
@@ -557,9 +530,10 @@ internal sealed class EditorHost : ShellHost
             + $"root='{activeAuthoring.assets.assetRoot}'.");
     }
 
-    private static IModuleSource CreateScriptModuleSource(ScriptModuleDeployment deployment)
+    private IModuleSource CreateScriptModuleSource(ScriptModuleDeployment deployment)
         => new DotNetModuleSource
         {
+            artifactRootDirectory = Path.Combine(projectDirectory, "Library", "Assemblies"),
             moduleName = deployment.moduleName,
             mainAssemblyPath = deployment.mainAssemblyPath,
             domain = deployment.domain,
@@ -581,6 +555,8 @@ internal sealed class EditorHost : ShellHost
             owner, adapters, adapterSelection, activeInputSource, authoring.assets,
             () => authoring.settings.TryGet(AudioProjectSettings.settingId, out AudioProjectSettings? settings) && settings is not null
                 ? settings : new AudioProjectSettings(),
+            () => adapters.storage.CreateStorage(adapterSelection.storage,
+                new Inno.Storage.StorageScope(owner.options.applicationId)),
             activeAudio.CreateRuntimeSubsystemFactory(owner)));
     }
 

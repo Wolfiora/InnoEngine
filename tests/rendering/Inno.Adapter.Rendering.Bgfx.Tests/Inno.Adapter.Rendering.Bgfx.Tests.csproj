@@ -31,4 +31,9 @@
   <ItemGroup>
     <ProjectReference Include="../../../src/adapters/serialization/Inno.Adapter.Serialization.DotNet/Inno.Adapter.Serialization.DotNet.csproj" PrivateAssets="compile" />
   </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../../../src/services/rendering/Inno.Rendering.Assets/Inno.Rendering.Assets.csproj" />
+    <ProjectReference Include="../../../src/services/rendering/Inno.Rendering.Assets.Authoring/Inno.Rendering.Assets.Authoring.csproj" />
+  </ItemGroup>
 </Project>

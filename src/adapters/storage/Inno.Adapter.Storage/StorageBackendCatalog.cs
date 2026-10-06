@@ -44,12 +44,13 @@ public sealed class StorageBackendCatalog : IStorageBackendFactory
     /// </exception>
     public IApplicationStorage CreateStorage(
         StorageBackendId backend,
-        string rootDirectory
+        StorageScope scope
     ) {
-        ArgumentException.ThrowIfNullOrWhiteSpace(rootDirectory);
+        if (!scope.isValid)
+            throw new ArgumentException("Storage requires an assigned application namespace.", nameof(scope));
         if (!m_providers.TryGetValue(backend, out StorageBackendProvider? provider))
             throw new NotSupportedException("Storage backend '" + backend + "' is not registered.");
-        return provider.CreateStorage(rootDirectory)
+        return provider.CreateStorage(scope)
             ?? throw new InvalidOperationException("Storage provider '" + backend + "' returned no service.");
     }
 }

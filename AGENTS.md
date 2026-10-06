@@ -215,6 +215,7 @@ public void AAA(
 - 所有左侧 label、右侧 input 的 Editor 字段复用 `ImGuiWidget.SetupPropertyColumns()` 与 `PropertyLabel()`，按 2:3 分配可用宽度；有操作列时先扣除操作列。label 必须在自身列换行，行高随内容增长。
 - 禁止以固定 label 像素宽度、无条件 scrollbar flag、虚假的 content size 或额外嵌套滚动 Child 修补布局。修改表单、Panel、Popup 后要在小窗口、长文本与不同 zoom 下验证 `ScrollMaxX/ScrollMaxY` 只在内容确实溢出时为正。
 - Editor 下拉选择器统一使用 `BeginBoundedCombo` / `EndBoundedCombo` 或 `BeginMenuSelector` / `EndMenuSelector`；弹层从触发控件下边缘向下展开，宽度受所属窗口限制，高度同时受所属窗口剩余空间和窗口高度比例限制。不要直接用原生 Combo 的自动翻转定位。
+- Popup 尺寸约束统一在 Widget 边界做像素对齐：上限向下取整，内容所需尺寸向上取整，防止 ImGui 截断小数 padding 后产生假溢出。回归必须覆盖 85%、90%、110% 等非整像素缩放；不能只测试整数或半整数 padding，也不能用 `NoScrollbar` 隐藏问题。
 - 自绘命中区域除了矩形包含关系，还必须确认所属 ImGui window 是当前可交互的前景窗口；被浮动窗口、Popup 或 Modal 遮挡时不得触发底层 Panel 的关闭、画布手势或游戏输入。平台事件仍使用 `Inno.Core.Events`，ImGui 只决定可见 UI 的命中与焦点；Play Session 使用独立 Input backend 接收经 Game View 焦点策略筛选的事件，不建立第二个事件总线。
 
 
@@ -225,7 +226,8 @@ public void AAA(
 - BGCS 生成的 ABI carrier 已明确封送；所有绑定组件通过共同 MSBuild 规则启用 DisableRuntimeMarshalling，禁止让运行时重复解释声明或在各组件重复 assembly attribute。验收检查实际参数、返回与回调，不能仅检查 sizeof。
 - Cpp2C 目标桥使用同一 obj/<target>/<generationFingerprint>/Native，与 managed 单文件经过共同 staging 验证和原子提交，不能覆盖宿主 Native/Generated。目标工具链读取当前请求的生成描述，通过 CMake 参数选择桥；Emscripten SDK/Cache/Node/Python 必须以目标项目的 MSBuild workload 选择为准，不从已安装包中猜测最高版本。
 - 构建工具只保留 Inno.Build.Cli 一个 Program。组件工具链、Shader 编译、Support Pack 事务和架构验证作为库组合，MSBuild 使用薄 Task 适配。
-- Support Pack 核心通过 IPlayerSupportPackSource 与 IPlayerSupportPackValidator 注册目标，不维护具体平台分支。Build CLI 是 composition root；通用 Build 库仍禁止引用 Editor。
+- Editor 的普通 IDE/MSBuild 构建与 Publish 必须通过同一 Native 工具链和部署契约准备当前配置的完整原生闭包；构建失败不得报告可运行。运行时 Loader 只加载明确部署的文件，不承担构建、仓库缓存探测或旧符号兼容。内容完全一致的部署应保持原文件，避免重复复制或替换正在使用的 DLL。
+- Support Pack 核心通过 IPlayerSupportPackSource 与 IPlayerSupportPackValidator 注册目标，不维护具体平台分支。内置 target、managed deployment 与 Support Pack source 只在 Inno.Build.Composition 注册；Editor、CLI 与 MSBuild 注入宿主上下文后消费同一不可变 distribution。通用 Build 库禁止反向引用该组合库或 Editor。请求的目标与托管部署能力必须在 Support Pack 供给及外部工具启动前统一校验，不能先执行昂贵准备再拒绝不支持的组合。
 
 ## 26. Solution 与项目文件整理
 
@@ -233,3 +235,13 @@ public void AAA(
 - `.csproj`、`.props`、`.targets` 使用两空格缩进，顶层职责块以空行分隔，长属性列表逐属性换行，ProjectReference 相对路径使用 `/`。
 - 只合并条件和引用可见性一致的相邻引用分组。不得重排 Import、Property、Target 或改变条件、metadata 和求值顺序；Editor 公开与实现引用边界必须保留。
 - 详细规则见 `docs/architecture/CSHARP_DEVELOPMENT_STANDARD.md`；整理后核对有效 XML、Solution 项目身份与配置，并运行受影响构建及架构验证。
+
+## 27. 内容、渲染层次与帧所有权
+
+- `Inno.Content` 只依赖必要 Foundation 契约，统一逻辑 ContentKey、Pack 索引、读取预算和只读 lease。共享 Player、Runtime Session 与 AssetDatabase 不读取部署文件或创建物理目录；具体内容来源负责文件、HTTP、缓存与 owned stream。Asset 消费复用 `ArtifactLease.OpenRead()`，打开的流持有独立 pin。
+- 内容缓存必须校验完整文件集合、实际长度及内容哈希；标记文件、mtime 或长度不能代替完整性。候选在独立 staging 验证后原子发布，reader 固定 generation，旧目录只有在全部 reader 释放后才退休。提交后清理失败必须与提交失败区分。
+- Rendering 严格分为 Core 图形机制、Assets 运行资产、Assets.Authoring 创作/编译与 Runtime 模型/资源服务。Core 不引用 Assets 或 References；Assets 不引用 Runtime、Shaders 或 Pipeline；Runtime 与 Player 发布闭包不引用 Authoring、Assets Pipeline 或 Shader 编译工具。物理输入文件只属于具体 SDK/toolchain 适配边界。
+- 通用输入使用 `Inno.Adapter.Input` 的 Core Events 实现，不能把中立事件快照放进 SDL 项目。存储 namespace 与物理根分离，文档 IO 使用 `IByteDocumentStore`，Session 日志由宿主 factory 交付且只由所属 Session 释放。
+- 主呈现尺寸必须真实且显式可用：`null` 表示没有主输出；零尺寸或内部 1×1 资源不能伪装为可用 surface。没有主输出时跳过其建图与输入换算，独立离屏请求仍可运行。
+- Contributor snapshot 仅在注册变化时重建，帧开始固定；私有 scratch 在正常帧、异常和退休路径都清空 extension 引用。Graph Validate 只分析，最终 Compile 只执行一次完整资源分配；mutation rollback 同步回滚图与验证状态，不允许修改已接受的 pass。
+- Native recipe 声明真实输入闭包与工具身份。operation 内共用初始输入扫描，等待 lease 后及发布前保留必要的重新验证；无关程序集 MVID 不能代替组件 recipe 身份。Task 引导统一、目标属性隔离，内容相同的 native 部署不复制、不替换加载中的 DLL、不更新 mtime。

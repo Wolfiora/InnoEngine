@@ -345,7 +345,12 @@ public sealed class AssetSampleImportTransaction : IDisposable
             out AssetInfo? info
         ) => candidate.TryGetInfo(path, out info);
 
-        bool IAssetSourceSnapshot.TryGetArtifact(
+        ArtifactLease IAssetArtifactLookup.AcquireArtifact(
+            Guid persistentId,
+            string outputName
+        ) => candidate.AcquireArtifact(persistentId, outputName);
+
+        bool IAssetArtifactLookup.TryGetArtifact(
             Guid persistentId,
             string outputName,
             out AssetArtifactInfo? artifact

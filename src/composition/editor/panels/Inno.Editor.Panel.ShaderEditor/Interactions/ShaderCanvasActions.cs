@@ -9,6 +9,7 @@ using Inno.Editor.Interactions;
 using Inno.Editor.Shaders;
 using Inno.Rendering.Assets;
 using Inno.Rendering.Shaders;
+using Inno.Rendering.Assets.Authoring;
 
 namespace Inno.Editor.Panel.ShaderEditor;
 
@@ -191,7 +192,7 @@ protected override void Execute(EditorActionContext<AssetFileEntry, string> cont
         var draft = documents.Open(context.target);
         var controller = documents.Controller(draft);
         GraphDocument graph = controller.document.Clone();
-        Inno.Rendering.ShaderDefinition definition = ShaderGraphDocument.ReadDefinition(graph, documents.serialization, documents.context);
+        Inno.Rendering.Assets.ShaderDefinition definition = ShaderGraphDocument.ReadDefinition(graph, documents.serialization, documents.context);
         Inno.Rendering.ShaderStage stage = Enum.Parse<Inno.Rendering.ShaderStage>(context.argument);
         Inno.Rendering.ShaderProgramKind kind = stage == Inno.Rendering.ShaderStage.Compute
             ? Inno.Rendering.ShaderProgramKind.Compute : Inno.Rendering.ShaderProgramKind.Raster;

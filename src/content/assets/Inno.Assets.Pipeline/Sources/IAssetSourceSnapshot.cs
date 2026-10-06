@@ -12,7 +12,7 @@ namespace Inno.Assets.Pipeline;
 /// Capture inputs on the owner thread and retain the owning generation transaction until all
 /// asynchronous consumers drain. This view neither activates nor commits its underlying catalog.
 /// </remarks>
-public interface IAssetSourceSnapshot
+public interface IAssetSourceSnapshot : IAssetArtifactLookup
 {
     /// <summary>
     /// Gets the source mounts represented by this view.
@@ -64,24 +64,4 @@ public interface IAssetSourceSnapshot
         out AssetInfo? info
     );
 
-    /// <summary>
-    /// Resolves a named immutable artifact from one persistent asset identity.
-    /// </summary>
-    /// <param name="persistentId">
-    /// The persistent asset identity.
-    /// </param>
-    /// <param name="outputName">
-    /// The named importer output.
-    /// </param>
-    /// <param name="artifact">
-    /// The artifact descriptor, or null when the output is absent.
-    /// </param>
-    /// <returns>
-    /// True when the requested artifact is available.
-    /// </returns>
-    bool TryGetArtifact(
-        Guid persistentId,
-        string outputName,
-        out AssetArtifactInfo? artifact
-    );
 }

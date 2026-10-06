@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <WarningsAsErrors>$(WarningsAsErrors);CS1572;CS1573;CS1591</WarningsAsErrors>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../../managed/Inno.Build.Managed.DotNet/Inno.Build.Managed.DotNet.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../pipeline/Inno.Build.Platform.Windows/Inno.Build.Platform.Windows.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../pipeline/Inno.Build.Platform.MacOS/Inno.Build.Platform.MacOS.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../pipeline/Inno.Build.Platform.Browser/Inno.Build.Platform.Browser.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../support/Inno.Build.SupportPacks/Inno.Build.SupportPacks.csproj" PrivateAssets="compile" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../../pipeline/Inno.Build/Inno.Build.csproj" />
+    <ProjectReference Include="../../managed/Inno.Build.Managed/Inno.Build.Managed.csproj" />
+    <ProjectReference Include="../../support/Inno.Build.SupportPacks.Core/Inno.Build.SupportPacks.Core.csproj" />
+    <ProjectReference Include="../../../src/content/assets/Inno.Assets.Pipeline/Inno.Assets.Pipeline.csproj" />
+    <ProjectReference Include="../../../src/foundation/core/Inno.Core.Serialization/Inno.Core.Serialization.csproj" />
+    <ProjectReference Include="../../../src/foundation/extensibility/Inno.Extensibility.Types/Inno.Extensibility.Types.csproj" />
+    <ProjectReference Include="../../../src/runtime/engine/Inno.Runtime/Inno.Runtime.csproj" />
+    <ProjectReference Include="../../../src/runtime/plugins/Inno.Plugins.Authoring/Inno.Plugins.Authoring.csproj" />
+    <ProjectReference Include="../../../src/runtime/scripting/Inno.Scripting.Compiler/Inno.Scripting.Compiler.csproj" />
+    <ProjectReference Include="../../../src/foundation/core/Inno.Core.Settings/Inno.Core.Settings.csproj" />
+  </ItemGroup>
+</Project>

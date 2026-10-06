@@ -284,8 +284,8 @@ internal static class ScriptCompilerEngine
         {
             ScriptSourceInput sourceInput = sources[sourceIndex];
             progress.Begin($"Parsing {assemblyName} sources ({sourceIndex + 1}/{sources.Count})...");
-            string source = await File.ReadAllTextAsync(sourceInput.snapshotPath, cancellationToken)
-                .ConfigureAwait(false);
+            cancellationToken.ThrowIfCancellationRequested();
+            string source = sourceInput.snapshotSource;
             syntaxTrees.Add(CSharpSyntaxTree.ParseText(
                 SourceText.From(source, Encoding.UTF8),
                 parseOptions,

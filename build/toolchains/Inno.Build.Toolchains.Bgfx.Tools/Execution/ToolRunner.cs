@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -11,8 +12,43 @@ namespace Inno.Build.Toolchains.Bgfx.Tools;
 /// <summary>
 /// Runs bgfx tool executables from the native output with argument-safe process invocation.
 /// </summary>
-public static class ToolRunner
+public sealed class ToolRunner
 {
+    private readonly IReadOnlyDictionary<BgfxTool, string>? m_executables;
+
+    /// <summary>
+    /// Creates a runner for tools explicitly deployed with the current application.
+    /// Resolution is deferred until execution; constructing a compiler does not start or discover a process.
+    /// </summary>
+    public ToolRunner() { }
+
+    /// <summary>
+    /// Freezes executables selected and validated by the host's toolchain operation.
+    /// </summary>
+    /// <param name="executables">
+    /// Tool identities mapped to existing absolute executable paths; the collection is copied.
+    /// </param>
+    /// <exception cref="ArgumentException">
+    /// An identity is unsupported or an executable path is relative.
+    /// </exception>
+    /// <exception cref="FileNotFoundException">
+    /// A declared executable is unavailable.
+    /// </exception>
+    public ToolRunner(IReadOnlyDictionary<BgfxTool, string> executables)
+    {
+        ArgumentNullException.ThrowIfNull(executables);
+        Dictionary<BgfxTool, string> snapshot = [];
+        foreach ((BgfxTool tool, string path) in executables)
+        {
+            if (!Enum.IsDefined(tool) || !Path.IsPathFullyQualified(path))
+                throw new ArgumentException("A tool runner requires supported identities and absolute executable paths.", nameof(executables));
+            if (!File.Exists(path))
+                throw new FileNotFoundException("A selected BGFX executable is unavailable.", path);
+            snapshot.Add(tool, Path.GetFullPath(path));
+        }
+        m_executables = new ReadOnlyDictionary<BgfxTool, string>(snapshot);
+    }
+
     /// <summary>
     /// Executes the configured workflow and returns its process outcome.
     /// </summary>
@@ -28,7 +64,7 @@ public static class ToolRunner
     /// <returns>
     /// The exit code and captured output.
     /// </returns>
-    public static ToolRunResult Run(
+    public ToolRunResult Run(
         BgfxTool tool,
         IReadOnlyList<string> arguments,
         string? workingDirectory = null
@@ -62,7 +98,7 @@ public static class ToolRunner
     /// <exception cref="OperationCanceledException">
     /// Cancellation stopped the process tree and all redirected output has been drained.
     /// </exception>
-    public static async ValueTask<ToolRunResult> RunAsync(
+    public async ValueTask<ToolRunResult> RunAsync(
         BgfxTool tool,
         IReadOnlyList<string> arguments,
         string? workingDirectory = null,
@@ -122,8 +158,11 @@ public static class ToolRunner
         }
     }
 
-    private static string ResolveToolPath(BgfxTool tool)
+    private string ResolveToolPath(BgfxTool tool)
     {
+        if (m_executables is not null)
+            return m_executables.TryGetValue(tool, out string? executable)
+                ? executable : throw new FileNotFoundException($"The selected distribution has no '{tool}' executable.");
         string name = tool.ToString().ToLowerInvariant() + GetConfigSuffix();
         return NativeDllLoader.FindNativeFile(OperatingSystem.IsWindows() ? name + ".exe" : name);
     }

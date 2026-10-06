@@ -29,3 +29,5 @@
 | [Inno.Build.Toolchains.UI](Inno.Build.Toolchains.UI.md) | RmlUi bridge 原生构建库 |
 
 Game Build 固定执行 Validate → Support Pack 供给与校验 → Combined Snapshot → Scripts/Target Artifacts → Content Pack → Managed Deployment → Platform Package → Atomic Commit。Editor Exporting 只调用该 API，不拥有构建机制。
+
+[Inno.Build.Composition](Inno.Build.Composition.md)：Editor/CLI/MSBuild 共用的内置构建组合。

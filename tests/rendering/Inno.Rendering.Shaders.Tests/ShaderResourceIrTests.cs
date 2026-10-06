@@ -6,6 +6,7 @@ using Inno.Build.Toolchains.Bgfx.Tools;
 using Inno.Rendering;
 using Inno.Rendering.Assets;
 using Xunit;
+using Inno.Rendering.Assets.Authoring;
 
 namespace Inno.Rendering.Shaders.Tests;
 

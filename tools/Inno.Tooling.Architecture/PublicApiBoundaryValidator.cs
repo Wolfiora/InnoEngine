@@ -16,7 +16,7 @@ internal static class PublicApiBoundaryValidator
         ICollection<string> failures
     ) {
         Project[] projects = new[] { "src", "native", "build" }
-            .SelectMany(folder => Directory.EnumerateFiles(Path.Combine(root, folder), "*.csproj", SearchOption.AllDirectories))
+            .SelectMany(folder => RepositorySourceInventory.Files(Path.Combine(root, folder), "*.csproj"))
             .Where(path => !path.Split(Path.DirectorySeparatorChar).Any(segment => segment is "bin" or "obj"))
             // Binding extensions run only while generating source; they are not runtime or solution assemblies.
             .Where(path => !path.Split(Path.DirectorySeparatorChar).Contains("Bindings", StringComparer.Ordinal))

@@ -11,7 +11,7 @@
 | [Scripting](scripting/README.md) | 脚本 API、编译与原子 reload |
 | [Assets](assets/README.md) | Player-safe runtime assets 与 authoring pipeline |
 | [References](references/README.md) | 跨领域持久引用、Missing 与恢复事务 |
-| [Input](input/README.md) | 每 Session 的物理输入快照、脚本 façade 与 SDL3 adapter |
+| [Input](input/README.md) | 每 Session 的物理输入快照、脚本 façade 与通用 Core Events backend |
 | [Storage](storage/README.md) | 沙箱化应用持久数据契约、Runtime Subsystem 与文件系统 adapter |
 | [Animation](animation/README.md) | 后端中立 Clip、采样、混合、事件、资产与 Runtime Subsystem |
 | [Audio](audio/README.md) | 后端中立播放/Mixer 契约、Runtime、资产与 MiniAudio adapter |
@@ -19,7 +19,7 @@
 | [UI](ui/README.md) | RML 文档、交互、后端中立帧与 RmlUi adapter |
 | [Plugins](plugins/README.md) | Plugin manifest、安装源、只读 mount 与候选激活 |
 | [Scene](scene/README.md) | SceneWorld、GameBehavior、GameSystem、Scene/Prefab asset integration |
-| [Rendering](rendering/README.md) | 后端中立 Rendering、目标资产、BGFX 与实施中的统一 Shader 创作层 |
+| [Rendering](rendering/README.md) | 后端中立 Rendering、运行资产、独立创作层、Runtime 与 BGFX |
 | [Platform](platform/README.md) | 中立窗口契约与 SDL3 adapter |
 | [Runtime](runtime/README.md) | Subsystem Contracts、声明生成器、默认装配、EngineHost、RuntimeSession 与 Player |
 | [Editor](editor/README.md) | Editor feature、Panel、Play Mode、Diagnostics 与 Export UI |
@@ -34,6 +34,10 @@ Build 分类已覆盖新增的 [Inno.Build.SupportPacks.Core](build/Inno.Build.S
 
 ## 核心依赖方向
 
+部署内容入口见 [Inno.Content](assets/Inno.Content.md) 与
+[文件内容缓存](assets/Inno.Adapter.Content.FileSystem.md)。本轮 A01–A08 的执行范围见
+[架构整改计划](architecture/ARCHITECTURE_CLEANUP_PLAN_2026_10_06.md)，实际 gate 状态见[本轮验收](architecture/ARCHITECTURE_CLEANUP_ACCEPTANCE_2026_10_06.md)。
+
 ```text
 EditorHost : Shell / GamePlayerHost : Shell / Build CLI
         ↓ compose through neutral catalogs
@@ -46,7 +50,7 @@ Foundation (Extensibility / Core / Scripting API)
 Native Bindings ← only Adapters / Toolchains / native tests
 ```
 
-Core 不引用业务领域；Build 库不引用 Editor，Build CLI 作为 composition root 可以组合作者端参考；Runtime 不引用 Build/Editor；Player closure 不包含 Compiler、authoring pipeline 或 toolchain。违反关系由 `Inno.Tooling.Architecture` 阻止。引擎长期分层与新系统归属以
+Core 不引用业务领域；Build 库不引用 Editor，Build Composition 统一内置注册，CLI 注入作者端上下文；Runtime 不引用 Build/Editor；Player closure 不包含 Compiler、authoring pipeline 或 toolchain。违反关系由 `Inno.Tooling.Architecture` 阻止。引擎长期分层与新系统归属以
 [完整项目架构 Overview 与本体收口方案](architecture/ENGINE_ARCHITECTURE_OVERVIEW.md)为准。
 所有跨域 live object 索引、可恢复引用、Missing、Undo/Redo 与 collectible generation 的完成语义以
 [Identity、可恢复引用与热重载强制标准](architecture/IDENTITY_REFERENCE_RELOAD_STANDARD.md)为准。
@@ -84,3 +88,5 @@ Core 不引用业务领域；Build 库不引用 Editor，Build CLI 作为 compos
 
 [RML 创作前端](ui/Inno.Adapter.UI.RmlUi.Authoring.md) 与组件内的
 [ImGui binding extension](native/Inno.Native.ImGui.BindingExtension.md) 已补齐独立项目页及分类索引。
+
+本轮新增 [Rendering Assets Authoring](rendering/Inno.Rendering.Assets.Authoring.md) 与 [Build Composition](build/Inno.Build.Composition.md) 已有独立项目页和完整当前源码 API 清单。

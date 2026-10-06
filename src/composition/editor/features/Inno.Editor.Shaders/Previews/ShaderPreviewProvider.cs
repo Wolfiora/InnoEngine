@@ -2,6 +2,8 @@ using System;
 using Inno.Core.Diagnostics;
 using Inno.Editor.Rendering;
 using Inno.Rendering;
+using Inno.Rendering.Assets;
+using Inno.Rendering.Runtime;
 
 namespace Inno.Editor.Shaders;
 

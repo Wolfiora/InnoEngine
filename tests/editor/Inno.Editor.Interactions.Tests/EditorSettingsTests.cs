@@ -39,9 +39,7 @@ public sealed class EditorSettingsTests : IDisposable
     {
         Directory.CreateDirectory(m_projectRoot);
         m_modules = new ModuleHost(new ModuleHostOptions
-        { catalogSource = new DotNetAssemblyCatalogSource(typeof(EditorSettingsTests).Assembly),
-            cacheDirectory = Path.Combine(m_projectRoot, "Library", "Assemblies")
-        });
+        { catalogSource = new DotNetAssemblyCatalogSource(typeof(EditorSettingsTests).Assembly)        });
         _ = typeof(EditorSettings);
         _ = System.Reflection.Assembly.Load("Inno.Editor.Panel.Logging");
         m_types = new TypeCatalog(m_modules, new ReflectionTypeCatalogSource());

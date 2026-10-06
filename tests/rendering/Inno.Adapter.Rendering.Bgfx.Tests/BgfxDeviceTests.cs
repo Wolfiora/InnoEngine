@@ -275,9 +275,9 @@ public sealed class BgfxDeviceTests
         foreach (bool enabled in new[] { true, true, false, false, true, false })
         {
             device.SetVerticalSync(enabled);
-            device.ResizeBackbuffer(127, 93);
+            device.SetPrimaryPresentationSize(null);
             device.BeginFrame();
-            Assert.Equal(new RenderPresentationSize(127, 93), device.primaryPresentationSize);
+            Assert.Null(device.primaryPresentationSize);
             device.EndFrame();
         }
         Assert.Equal(generation, device.generation);
@@ -367,9 +367,12 @@ public sealed class BgfxDeviceTests
     }
 
     [Fact]
-    public void ResizeBackbuffer_AppliesAtNextFrameSafetyPoint()
+    public void WindowlessDeviceDoesNotAdvertiseAnInternalBackbufferAsPresentation()
     {
-        m_device.ResizeBackbuffer(32, 24);
+        Assert.Null(m_device.primaryPresentationSize);
+        Assert.Throws<ArgumentException>(() => m_device.SetPrimaryPresentationSize(default(RenderPresentationSize)));
+        Assert.Throws<NotSupportedException>(() => m_device.SetPrimaryPresentationSize(new RenderPresentationSize(32, 24)));
+        m_device.SetPrimaryPresentationSize(null);
         m_device.BeginFrame();
         m_device.EndFrame();
     }

@@ -60,6 +60,54 @@ public static class PathBoundary
     }
 
     /// <summary>
+    /// Resolves an owned path while rejecting existing links in its containment chain.
+    /// </summary>
+    /// <param name="root">
+    /// The trusted ownership root, which may not exist yet.
+    /// </param>
+    /// <param name="path">
+    /// The absolute existing or future path beneath that root.
+    /// </param>
+    /// <returns>
+    /// The normalized contained path after every existing entry from the root has been inspected.
+    /// </returns>
+    /// <exception cref="IOException">
+    /// The path escapes the boundary or an existing entry is a link or reparse point.
+    /// </exception>
+    /// <remarks>
+    /// This validates the observed filesystem state. Concurrent mutations require an owner lease;
+    /// it does not grant protection against unrelated actors replacing paths after validation.
+    /// </remarks>
+    public static string RequireUnlinkedPath(
+        string root,
+        string path
+    ) {
+        string candidate = RequireContained(root, path);
+        string current = Path.GetFullPath(root);
+        Inspect(current);
+        string relative = Path.GetRelativePath(current, candidate);
+        if (relative != ".")
+        {
+            foreach (string segment in relative.Split(Path.DirectorySeparatorChar))
+            {
+                current = Path.Combine(current, segment);
+                Inspect(current);
+            }
+        }
+        return candidate;
+
+        static void Inspect(string entry)
+        {
+            try
+            {
+                RequireRegularEntry(entry);
+            }
+            catch (FileNotFoundException) { }
+            catch (DirectoryNotFoundException) { }
+        }
+    }
+
+    /// <summary>
     /// Enumerates regular files in an owned tree without following filesystem links.
     /// </summary>
     /// <param name="root">

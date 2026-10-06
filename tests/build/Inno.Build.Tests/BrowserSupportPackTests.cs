@@ -25,7 +25,7 @@ public sealed class BrowserSupportPackTests : IDisposable
         Write(pack, "PlayerLink/Player.csproj");
         Write(pack, "PlayerLink/Program.cs");
         Write(pack, "PlayerLink/BrowserPlayerComposition.cs");
-        Write(pack, "PlayerLink/BrowserContentLoader.cs");
+        Write(pack, "PlayerLink/HttpPlayerContentSource.cs");
         Write(pack, "PlayerLink/BrowserBridge.cs");
         Write(pack, "PlayerLink/global.json");
         Write(pack, "PlayerLink/Analyzers/Inno.Runtime.Generators.dll");
@@ -53,6 +53,11 @@ public sealed class BrowserSupportPackTests : IDisposable
             BuildTargetId.browserWasm, pack, new Inno.Build.Platform.Browser.BrowserSupportPackValidator()).AsTask());
 
         Write(pack, "PlayerLink/References/BGCS.Runtime.dll");
+        File.Delete(Path.Combine(pack, "PlayerLink", "HttpPlayerContentSource.cs"));
+        InvalidDataException missingSource = Assert.Throws<InvalidDataException>(
+            () => new Inno.Build.Platform.Browser.BrowserSupportPackValidator().Validate(pack));
+        Assert.Contains("HttpPlayerContentSource.cs", missingSource.Message, StringComparison.Ordinal);
+        Write(pack, "PlayerLink/HttpPlayerContentSource.cs");
         pack = await catalog.PublishAsync(BuildTargetId.browserWasm, pack,
             new Inno.Build.Platform.Browser.BrowserSupportPackValidator());
         Assert.Equal(pack, catalog.Resolve(BuildTargetId.browserWasm, new Inno.Build.Platform.Browser.BrowserSupportPackValidator()));

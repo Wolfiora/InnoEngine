@@ -1,3 +1,4 @@
+using Inno.Core.IO;
 using Inno.Adapter.Serialization.DotNet;
 using Inno.Adapter.Modules.DotNet;
 using System;
@@ -51,13 +52,11 @@ public sealed class PluginSourceServiceTests : IDisposable
         _ = typeof(TextAsset);
         _ = typeof(PluginSourceService);
         m_modules = new ModuleHost(new ModuleHostOptions
-        { catalogSource = new DotNetAssemblyCatalogSource(typeof(PluginSourceServiceTests).Assembly),
-            cacheDirectory = Path.Combine(m_root, "Assemblies")
-        });
+        { catalogSource = new DotNetAssemblyCatalogSource(typeof(PluginSourceServiceTests).Assembly)        });
         m_types = new TypeCatalog(m_modules, new ReflectionTypeCatalogSource());
         m_serialization = new SerializationRegistry(m_types, new ReflectionSerializationMetadataSource());
         m_settings = new ProjectSettingsStore(
-            Path.Combine(m_root, "Settings.Project.inno"),
+            new FileByteDocumentStore(Path.GetFullPath(Path.Combine(m_root, "Settings.Project.inno"))),
             m_types,
             m_serialization,
             new ProjectId("tests.plugins"),

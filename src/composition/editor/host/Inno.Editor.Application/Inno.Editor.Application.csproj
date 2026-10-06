@@ -7,9 +7,11 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <WarningsAsErrors>$(WarningsAsErrors);CS1572;CS1573;CS1591</WarningsAsErrors>
     <InnoAssemblyScope>Editor</InnoAssemblyScope>
+    <DisableFastUpToDateCheck>true</DisableFastUpToDateCheck>
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="../../../../../build/composition/Inno.Build.Composition/Inno.Build.Composition.csproj" PrivateAssets="compile" />
     <ProjectReference
       Include="../../../../foundation/core/Inno.Core.Execution/Inno.Core.Execution.csproj"
       PrivateAssets="compile" />
@@ -17,6 +19,7 @@
       Include="../../../default/Inno.Engine.Default/Inno.Engine.Default.csproj"
       PrivateAssets="compile" />
     <ProjectReference Include="../../../../adapters/common/Inno.Adapter/Inno.Adapter.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../../../adapters/storage/Inno.Adapter.Storage.FileSystem/Inno.Adapter.Storage.FileSystem.csproj" PrivateAssets="compile" />
     <ProjectReference
       Include="../../../../adapters/default/Inno.Adapter.Authoring.Default/Inno.Adapter.Authoring.Default.csproj"
       PrivateAssets="compile" />
@@ -35,18 +38,6 @@
       PrivateAssets="compile" />
     <ProjectReference Include="../../features/Inno.Editor.Audio/Inno.Editor.Audio.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../../../../build/pipeline/Inno.Build/Inno.Build.csproj" PrivateAssets="compile" />
-    <ProjectReference
-      Include="../../../../../build/support/Inno.Build.SupportPacks/Inno.Build.SupportPacks.csproj"
-      PrivateAssets="compile" />
-    <ProjectReference
-      Include="../../../../../build/pipeline/Inno.Build.Platform.MacOS/Inno.Build.Platform.MacOS.csproj"
-      PrivateAssets="compile" />
-    <ProjectReference
-      Include="../../../../../build/pipeline/Inno.Build.Platform.Browser/Inno.Build.Platform.Browser.csproj"
-      PrivateAssets="compile" />
-    <ProjectReference
-      Include="../../../../../build/pipeline/Inno.Build.Platform.Windows/Inno.Build.Platform.Windows.csproj"
-      PrivateAssets="compile" />
     <ProjectReference Include="../../framework/Inno.Editor.Core/Inno.Editor.Core.csproj" PrivateAssets="compile" />
     <ProjectReference
       Include="../../features/Inno.Editor.Exporting/Inno.Editor.Exporting.csproj"
@@ -158,9 +149,6 @@
       Include="../../../../adapters/modules/Inno.Adapter.Modules.DotNet/Inno.Adapter.Modules.DotNet.csproj"
       PrivateAssets="compile" />
     <ProjectReference
-      Include="../../../../../build/managed/Inno.Build.Managed.DotNet/Inno.Build.Managed.DotNet.csproj"
-      PrivateAssets="compile" />
-    <ProjectReference
       Include="../../../../../build/managed/Inno.Build.Managed/Inno.Build.Managed.csproj"
       PrivateAssets="compile" />
     <ProjectReference
@@ -175,6 +163,7 @@
     <ProjectReference
       Include="../../../../foundation/extensibility/Inno.Extensibility.Reload/Inno.Extensibility.Reload.csproj"
       PrivateAssets="compile" />
+    <ProjectReference Include="../../../../services/rendering/Inno.Rendering.Assets.Authoring/Inno.Rendering.Assets.Authoring.csproj" PrivateAssets="compile" />
   </ItemGroup>
 
   <ItemGroup>
@@ -193,27 +182,25 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <_InnoBuildTasks>$(MSBuildProjectDirectory)/../../../../../build/tasks/Inno.Build.Tasks/bin/$(Configuration)/net9.0/Inno.Build.Tasks.dll</_InnoBuildTasks>
     <_InnoBuildDotnetHost Condition="'$(DOTNET_HOST_PATH)' != ''">$(DOTNET_HOST_PATH)</_InnoBuildDotnetHost>
     <_InnoBuildDotnetHost Condition="'$(_InnoBuildDotnetHost)' == ''">dotnet</_InnoBuildDotnetHost>
   </PropertyGroup>
 
-  <UsingTask TaskName="Inno.Build.Tasks.PublishSupportPackTask" AssemblyFile="$(_InnoBuildTasks)" />
-
-  <UsingTask TaskName="Inno.Build.Tasks.PrepareEditorNativeTask" AssemblyFile="$(_InnoBuildTasks)" />
-
-  <Target Name="BuildEditorPublishTasks">
-    <MSBuild
-      Projects="../../../../../build/tasks/Inno.Build.Tasks/Inno.Build.Tasks.csproj"
-      Targets="Restore;Build"
-      Properties="Configuration=$(Configuration)"
-      RemoveProperties="RuntimeIdentifier;SelfContained;PublishSingleFile;PublishDir" />
+  <Target
+    Name="PrepareEditorNativeOutput"
+    AfterTargets="Build"
+    DependsOnTargets="PrepareInnoBuildTaskHost"
+    Condition="'$(DesignTimeBuild)' != 'true' and '$(IsCrossTargetingBuild)' != 'true'">
+    <PrepareEditorNativeTask
+      EngineRoot="$(MSBuildProjectDirectory)/../../../../.."
+      OutputDirectory="$(TargetDir)"
+      Configuration="$(Configuration)" />
   </Target>
 
   <Target
     Name="BundleEditorPlayerSupportPack"
     AfterTargets="Publish"
-    DependsOnTargets="BuildEditorPublishTasks"
+    DependsOnTargets="PrepareInnoBuildTaskHost"
     Condition="'$(InnoEditorPublishSupportPackTarget)' != ''">
     <PublishSupportPackTask
       EngineRoot="$(MSBuildProjectDirectory)/../../../../.."
@@ -239,4 +226,5 @@
       SourceFiles="@(_InnoEditorFrameworkReference)"
       DestinationFiles="@(_InnoEditorFrameworkReference-&gt;'$(PublishDir)packs/Microsoft.NETCore.App.Ref/%(PackVersion)/ref/$(TargetFramework)/%(Filename)%(Extension)')" />
   </Target>
+
 </Project>

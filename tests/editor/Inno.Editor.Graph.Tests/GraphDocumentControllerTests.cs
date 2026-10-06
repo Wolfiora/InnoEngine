@@ -34,9 +34,7 @@ public sealed class GraphDocumentControllerTests : IDisposable
     {
         _ = typeof(GraphEditorModule);
         m_modules = new ModuleHost(new ModuleHostOptions
-        { catalogSource = new DotNetAssemblyCatalogSource(typeof(GraphDocumentControllerTests).Assembly),
-            cacheDirectory = Path.Combine(m_testRoot, "Assemblies")
-        });
+        { catalogSource = new DotNetAssemblyCatalogSource(typeof(GraphDocumentControllerTests).Assembly)        });
         m_types = new TypeCatalog(m_modules, new ReflectionTypeCatalogSource());
         m_serialization = new SerializationRegistry(m_types, new ReflectionSerializationMetadataSource());
         m_runtime = new EditorInteractionRuntime(
@@ -77,6 +75,7 @@ public sealed class GraphDocumentControllerTests : IDisposable
         string directory = Path.Combine(AppContext.BaseDirectory, "Modules");
         using (AssemblyReloadSession reload = m_modules.BeginReload([new DotNetModuleSource
         {
+            artifactRootDirectory = Path.Combine(m_testRoot, "Assemblies"),
             moduleName = "GraphRecovery", domain = AssemblyDomain.InnoPlugin, scope = AssemblyScope.Runtime,
             mainAssemblyPath = Path.Combine(directory, "Inno.Extensibility.Modules.TestModule.dll"),
             preloadAssemblyPaths = [Path.Combine(directory, "Reloadable.PrivateDependency.dll")]

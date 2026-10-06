@@ -5,6 +5,7 @@ using Inno.Editor.Inspection;
 using Inno.Rendering;
 using EditorWidget = Inno.Editor.ImGui.ImGuiWidget.ImGuiWidget;
 using NativeImGui = Inno.Native.ImGui.ImGui;
+using Inno.Rendering.Assets;
 
 namespace Inno.Editor.Shaders;
 

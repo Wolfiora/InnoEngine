@@ -1,3 +1,4 @@
+using Inno.Core.Logging;
 using Inno.Adapter.Serialization.DotNet;
 using Inno.Adapter.Modules.DotNet;
 using Inno.Runtime.Contracts;
@@ -17,6 +18,15 @@ namespace Inno.Storage.Tests;
 
 public sealed class StorageTests
 {
+    [Theory]
+    [InlineData("CON")]
+    [InlineData("nul.save")]
+    [InlineData("com1")]
+    [InlineData("LPT9")]
+    [InlineData("../other")]
+    public void ScopeRejectsNamesThatCannotBeMappedPortably(string value)
+        => Assert.Throws<ArgumentException>(() => new StorageScope(value));
+
     [Fact]
     public async Task FileSystemAdapterAcceptsAnExplicitVolumeRoot()
     {
@@ -148,19 +158,18 @@ public sealed class StorageTests
             using EngineHost host = new EngineHostBuilder()
                 .UseMetadataSources(new DotNetAssemblyCatalogSource(typeof(StorageTests).Assembly),
                     new ReflectionTypeCatalogSource(), new ReflectionSerializationMetadataSource())
-                .UseMetadataCache(Path.Combine(root, "Metadata"))
                 .Build();
             var options = new RuntimeSessionOptions
             {
                 kind = RuntimeSessionKind.Play,
                 applicationId = "tests.storage",
-                persistentDataDirectory = Path.Combine(root, "tests.storage"),
+                createLogSink = _ => new FileLogSink(Path.Combine(Path.Combine(root, "tests.storage"), "Logs")),
                 jobExecutionMode = RuntimeJobExecutionMode.SingleThread,
                 createSubsystems = owner =>
                 [
                     new StorageRuntimeFactory(context =>
                         new FileSystemApplicationStorage(Path.Combine(
-                            context.persistentDataDirectory,
+                            root, "tests.storage",
                             "Storage"))),
                     new StorageProbeFactory()
                 ]

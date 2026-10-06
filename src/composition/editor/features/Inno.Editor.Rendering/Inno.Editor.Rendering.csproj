@@ -24,14 +24,13 @@
       Include="../../../../foundation/core/Inno.Core.Execution/Inno.Core.Execution.csproj"
       PrivateAssets="compile" />
     <ProjectReference
-      Include="../../../../services/rendering/Inno.Rendering.Runtime/Inno.Rendering.Runtime.csproj"
-      PrivateAssets="compile" />
-    <ProjectReference
       Include="../../../../foundation/scripting/Inno.Scripting.Api/Inno.Scripting.Api.csproj"
       PrivateAssets="compile" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference
+      Include="../../../../services/rendering/Inno.Rendering.Runtime/Inno.Rendering.Runtime.csproj" />
     <ProjectReference Include="../../../../foundation/core/Inno.Core.Mathematics/Inno.Core.Mathematics.csproj" />
     <ProjectReference Include="../../framework/Inno.Editor.Interactions/Inno.Editor.Interactions.csproj" />
     <ProjectReference Include="../../framework/Inno.Editor.Core/Inno.Editor.Core.csproj" />
@@ -47,5 +46,7 @@
     <ProjectReference Include="../../../../services/rendering/Inno.Rendering.Assets/Inno.Rendering.Assets.csproj" />
     <ProjectReference Include="../../../../foundation/extensibility/Inno.Extensibility.Types/Inno.Extensibility.Types.csproj" />
     <ProjectReference Include="../../../../foundation/core/Inno.Core.Serialization/Inno.Core.Serialization.csproj" />
+    <ProjectReference Include="../../../../services/rendering/Inno.Rendering.Assets.Authoring/Inno.Rendering.Assets.Authoring.csproj" />
   </ItemGroup>
+
 </Project>

@@ -14,13 +14,13 @@ public interface IStorageBackendFactory
     IReadOnlyList<StorageBackendId> supportedBackends { get; }
 
     /// <summary>
-    /// Creates storage rooted at the supplied host-owned directory.
+    /// Creates isolated storage for a logical application namespace.
     /// </summary>
     /// <param name="backend">
     /// storage implementation selected by the composition root.
     /// </param>
-    /// <param name="rootDirectory">
-    /// Absolute or relative root assigned exclusively to the returned storage instance.
+    /// <param name="scope">
+    /// The application namespace mapped to a location by the selected provider.
     /// </param>
     /// <returns>
     /// A caller-owned backend-neutral application storage service.
@@ -30,6 +30,6 @@ public interface IStorageBackendFactory
     /// </exception>
     IApplicationStorage CreateStorage(
         StorageBackendId backend,
-        string rootDirectory
+        StorageScope scope
     );
 }

@@ -1,6 +1,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Net.Http;
 using Inno.Adapter;
 using Inno.Adapter.Default;
 using Inno.Adapter.Storage;
@@ -9,6 +10,7 @@ using Inno.Core.Logging;
 using Inno.Player.Runtime;
 using Inno.Runtime;
 using Inno.Shell;
+using Inno.Storage;
 
 namespace Inno.Player.Browser;
 
@@ -19,7 +21,8 @@ internal static class BrowserPlayerComposition
         try
         {
             BrowserBridge.SetStatus("Loading game content…");
-            await BrowserContentLoader.DownloadAsync();
+            using var client = new HttpClient { BaseAddress = new Uri(BrowserBridge.GetBaseUrl()) };
+            var storage = new StorageBackendCatalog([new BrowserStorageBackendProvider()]);
 
             BrowserBridge.SetStatus("Starting game…");
             BrowserBridge.SetStatus(string.Empty);
@@ -28,10 +31,11 @@ internal static class BrowserPlayerComposition
                 modules = Generated.PlayerMetadataComposition.CreateModules(),
                 types = Generated.PlayerMetadataComposition.CreateTypes(),
                 serializationMetadata = Generated.PlayerMetadataComposition.CreateSerialization(),
-                adapters = new DefaultAdapterCatalog(storageProviders: [new BrowserStorageBackendProvider()]),
+                adapters = new DefaultAdapterCatalog(new DefaultAdapterCatalogOptions { storage = storage }),
                 adapterSelection = new AdapterSelection { storage = StorageBackendId.browser },
-                contentDirectory = "/Content",
-                persistentDataRoot = "/persistent",
+                contentSource = new HttpPlayerContentSource(client),
+                createStorage = manifest => storage.CreateStorage(StorageBackendId.browser,
+                    new StorageScope(manifest.applicationId)),
                 moduleActivator = Generated.PlayerMetadataComposition.CreateActivator(),
                 frameDriver = new ScheduledShellFrameDriver(NextFrameAsync),
                 jobExecutionMode = RuntimeJobExecutionMode.SingleThread,

@@ -59,7 +59,7 @@ public sealed class ShaderSourceFrontendRegistryTests
             RegistryFrontendProbe.created = 0;
             RegistryFrontendProbe.disposed = 0;
             RegistryFrontendProbe.conflict = false;
-            modules = new ModuleHost(new ModuleHostOptions { catalogSource = new DotNetAssemblyCatalogSource(typeof(ShaderSourceFrontendRegistryTests).Assembly), cacheDirectory = m_root });
+            modules = new ModuleHost(new ModuleHostOptions { catalogSource = new DotNetAssemblyCatalogSource(typeof(ShaderSourceFrontendRegistryTests).Assembly)});
             types = new TypeCatalog(modules, new ReflectionTypeCatalogSource());
         }
         public void Dispose()

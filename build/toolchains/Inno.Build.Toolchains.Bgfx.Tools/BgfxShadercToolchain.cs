@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Inno.Rendering.Assets;
 using Inno.Rendering;
+using Inno.Rendering.Assets.Authoring;
 
 namespace Inno.Build.Toolchains.Bgfx.Tools;
 
@@ -34,6 +35,7 @@ public enum BgfxShaderTargetPlatform
 public sealed partial class BgfxShadercToolchain : IShaderCompilerToolchain
 {
     private readonly BgfxShaderTargetPlatform m_targetPlatform;
+    private readonly ToolRunner m_tools;
 
     /// <summary>
     /// Creates a compiler targeting the current supported host platform.
@@ -52,9 +54,15 @@ public sealed partial class BgfxShadercToolchain : IShaderCompilerToolchain
     /// <param name="targetPlatform">
     /// Target platform whose shaderc profiles are required.
     /// </param>
-    public BgfxShadercToolchain(BgfxShaderTargetPlatform targetPlatform)
-    {
+    /// <param name="tools">
+    /// Frozen host-selected executables, or null to use the application's explicit native deployment.
+    /// </param>
+    public BgfxShadercToolchain(
+        BgfxShaderTargetPlatform targetPlatform,
+        ToolRunner? tools = null
+    ) {
         m_targetPlatform = targetPlatform;
+        m_tools = tools ?? new ToolRunner();
     }
 
     /// <summary>
@@ -175,7 +183,7 @@ public sealed partial class BgfxShadercToolchain : IShaderCompilerToolchain
                 arguments.Add("--debug");
             arguments.Add("--keepcomments");
 
-            ToolRunResult result = await ToolRunner.RunAsync(
+            ToolRunResult result = await m_tools.RunAsync(
                 BgfxTool.Shaderc,
                 arguments,
                 temporaryDirectory,

@@ -11,7 +11,7 @@
 - `BgfxShaderSourceFrontend`：实现 `IShaderSourceFrontend`；`languageId` 为
   `inno.shader-language.bgfx-sc`，`Analyze(ShaderSourceRequest)` 返回函数接口、原始 include 依赖和定位诊断。
 
-这些类型只在 authoring/build 路径使用。工具进程执行器 `BgfxTool`、`ToolRunner` 和 `ToolRunResult` 归属本项目 `Execution/`，与 Shader/Texture 离线编译策略一起留在构建层。Player 通过 `FileRenderTargetArtifactProvider` 读取结果，不引用本项目或 BGFX tools。
+这些类型只在 authoring/build 路径使用。工具进程执行器 `BgfxTool`、`ToolRunner` 和 `ToolRunResult` 归属本项目 `Execution/`，与 Shader/Texture 离线编译策略一起留在构建层。Player 通过 `ContentRenderTargetArtifactProvider` 和只读内容 store 读取结果，不引用本项目或 BGFX tools。
 
 `BgfxGameContentCompiler.CreateMacOSArm64` / `CreateWindowsX64` / `CreateBrowserWasm` 接收
 `AssetPipeline`、`SerializationRegistry` 和 `TypeCatalog`；`CompileAsync(GameBuildContentContext, cancellationToken)`
@@ -79,3 +79,111 @@ using Inno.Build.Toolchains.Bgfx.Tools;
 
 ToolRunResult result = ToolRunner.Run(BgfxTool.Shaderc, ["--help"]);
 ```
+
+## 当前源码公开 API 清单
+
+以下仅列出当前程序集自己声明的 public/protected 契约；继承成员遵循所属基类页面。internal/private 实现不作为稳定公开 API。签名依据当前源码语义模型生成，行为、参数、异常与所有权说明同时以对应英文 XML 为准。
+
+### `Inno.Build.Toolchains.Bgfx.Tools.BgfxGameContentCompiler`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`System.Threading.Tasks.ValueTask Inno.Build.Toolchains.Bgfx.Tools.BgfxGameContentCompiler.CompileAsync(Inno.Build.GameBuildContentContext context, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))`](../../build/toolchains/Inno.Build.Toolchains.Bgfx.Tools/BgfxGameContentCompiler.cs#L157) | Captures the active Asset generation and compiles every required runtime variant. |
+| [`static Inno.Build.Toolchains.Bgfx.Tools.BgfxGameContentCompiler Inno.Build.Toolchains.Bgfx.Tools.BgfxGameContentCompiler.CreateBrowserWasm(Inno.Assets.Pipeline.AssetPipeline assets, Inno.Core.Serialization.SerializationRegistry serialization, Inno.Extensibility.Types.TypeCatalog types)`](../../build/toolchains/Inno.Build.Toolchains.Bgfx.Tools/BgfxGameContentCompiler.cs#L128) | Creates the WebGL 2 content compiler for a browser WebAssembly Player. |
+| [`static Inno.Build.Toolchains.Bgfx.Tools.BgfxGameContentCompiler Inno.Build.Toolchains.Bgfx.Tools.BgfxGameContentCompiler.CreateMacOSArm64(Inno.Assets.Pipeline.AssetPipeline assets, Inno.Core.Serialization.SerializationRegistry serialization, Inno.Extensibility.Types.TypeCatalog types)`](../../build/toolchains/Inno.Build.Toolchains.Bgfx.Tools/BgfxGameContentCompiler.cs#L68) | Creates the canonical Metal compiler used by Apple Silicon macOS Players. |
+| [`static Inno.Build.Toolchains.Bgfx.Tools.BgfxGameContentCompiler Inno.Build.Toolchains.Bgfx.Tools.BgfxGameContentCompiler.CreateWindowsX64(Inno.Assets.Pipeline.AssetPipeline assets, Inno.Core.Serialization.SerializationRegistry serialization, Inno.Extensibility.Types.TypeCatalog types)`](../../build/toolchains/Inno.Build.Toolchains.Bgfx.Tools/BgfxGameContentCompiler.cs#L98) | Creates the canonical compiler used by 64-bit Windows Players. |
+| [`Inno.Build.Toolchains.Bgfx.Tools.BgfxGameContentCompiler`](../../build/toolchains/Inno.Build.Toolchains.Bgfx.Tools/BgfxGameContentCompiler.cs#L20) | Produces source-free BGFX shader and texture artifacts for one Player target. |
+
+### `Inno.Build.Toolchains.Bgfx.Tools.BgfxShaderSourceFrontend`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Rendering.Shaders.ShaderSourceAnalysis Inno.Build.Toolchains.Bgfx.Tools.BgfxShaderSourceFrontend.Analyze(Inno.Rendering.Shaders.ShaderSourceRequest request)`](../../build/toolchains/Inno.Build.Toolchains.Bgfx.Tools/Sources/BgfxShaderSourceFrontend.cs#L29) | Analyzes source text and returns validated output with diagnostics. |
+| [`string Inno.Build.Toolchains.Bgfx.Tools.BgfxShaderSourceFrontend.languageId`](../../build/toolchains/Inno.Build.Toolchains.Bgfx.Tools/Sources/BgfxShaderSourceFrontend.cs#L18) | Gets the language id text used by the current instance. |
+| [`Inno.Build.Toolchains.Bgfx.Tools.BgfxShaderSourceFrontend`](../../build/toolchains/Inno.Build.Toolchains.Bgfx.Tools/Sources/BgfxShaderSourceFrontend.cs#L13) | Parses BGFX SC function modules without placing BGFX grammar in the common shader model. |
+
+### `Inno.Build.Toolchains.Bgfx.Tools.BgfxShaderTargetPlatform`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Build.Toolchains.Bgfx.Tools.BgfxShaderTargetPlatform.BrowserWasm`](../../build/toolchains/Inno.Build.Toolchains.Bgfx.Tools/BgfxShadercToolchain.cs#L29) | Browser WebAssembly player using WebGL 2. |
+| [`Inno.Build.Toolchains.Bgfx.Tools.BgfxShaderTargetPlatform.MacOSArm64`](../../build/toolchains/Inno.Build.Toolchains.Bgfx.Tools/BgfxShadercToolchain.cs#L25) | Apple Silicon macOS player or editor. |
+| [`Inno.Build.Toolchains.Bgfx.Tools.BgfxShaderTargetPlatform.WindowsX64`](../../build/toolchains/Inno.Build.Toolchains.Bgfx.Tools/BgfxShadercToolchain.cs#L21) | 64-bit Windows player or editor. |
+| [`Inno.Build.Toolchains.Bgfx.Tools.BgfxShaderTargetPlatform`](../../build/toolchains/Inno.Build.Toolchains.Bgfx.Tools/BgfxShadercToolchain.cs#L16) | Identifies a host or offline target supported by the bundled BGFX tools. |
+
+### `Inno.Build.Toolchains.Bgfx.Tools.BgfxShadercToolchain`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Build.Toolchains.Bgfx.Tools.BgfxShadercToolchain.BgfxShadercToolchain()`](../../build/toolchains/Inno.Build.Toolchains.Bgfx.Tools/BgfxShadercToolchain.cs#L46) | Creates a compiler targeting the current supported host platform. |
+| [`Inno.Build.Toolchains.Bgfx.Tools.BgfxShadercToolchain.BgfxShadercToolchain(Inno.Build.Toolchains.Bgfx.Tools.BgfxShaderTargetPlatform targetPlatform, Inno.Build.Toolchains.Bgfx.Tools.ToolRunner? tools = null)`](../../build/toolchains/Inno.Build.Toolchains.Bgfx.Tools/BgfxShadercToolchain.cs#L60) | Creates a compiler for one explicit offline target platform. |
+| [`System.Threading.Tasks.ValueTask<Inno.Rendering.Assets.Authoring.ShaderStageToolResult> Inno.Build.Toolchains.Bgfx.Tools.BgfxShadercToolchain.CompileAsync(Inno.Rendering.Assets.Authoring.ShaderStageToolRequest request, System.Threading.CancellationToken cancellationToken)`](../../build/toolchains/Inno.Build.Toolchains.Bgfx.Tools/Intermediate/BgfxShadercToolchain.Typed.cs#L51) | Compiles the supplied source into a validated runtime artifact. |
+| [`Inno.Rendering.Assets.Authoring.ShaderCompileTarget Inno.Build.Toolchains.Bgfx.Tools.BgfxShadercToolchain.CreateTarget(Inno.Rendering.GraphicsCapabilities capabilities, bool optimize = true, bool debugInformation = false)`](../../build/toolchains/Inno.Build.Toolchains.Bgfx.Tools/BgfxShadercToolchain.cs#L83) | Creates a target using this implementation's validated inputs. |
+| [`string Inno.Build.Toolchains.Bgfx.Tools.BgfxShadercToolchain.implementationId`](../../build/toolchains/Inno.Build.Toolchains.Bgfx.Tools/Intermediate/BgfxShadercToolchain.Typed.cs#L37) | Gets the implementation id text used by the current instance. |
+| [`System.Collections.Generic.IReadOnlyList<string> Inno.Build.Toolchains.Bgfx.Tools.BgfxShadercToolchain.supportedSourceLanguages`](../../build/toolchains/Inno.Build.Toolchains.Bgfx.Tools/Intermediate/BgfxShadercToolchain.Typed.cs#L32) | Gets shader source languages accepted by this toolchain. |
+| [`Inno.Build.Toolchains.Bgfx.Tools.BgfxShadercToolchain`](../../build/toolchains/Inno.Build.Toolchains.Bgfx.Tools/BgfxShadercToolchain.cs#L35) | Compiles common Shader IR stages with the BGFX shaderc toolchain. |
+
+### `Inno.Build.Toolchains.Bgfx.Tools.BgfxTargetCapabilities`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`static Inno.Rendering.GraphicsCapabilities Inno.Build.Toolchains.Bgfx.Tools.BgfxTargetCapabilities.Create(Inno.Build.Toolchains.Bgfx.Tools.BgfxShaderTargetPlatform platform, Inno.Rendering.GraphicsApi backend)`](../../build/toolchains/Inno.Build.Toolchains.Bgfx.Tools/BgfxTargetCapabilities.cs#L24) | Creates the limits and format set used to validate one target's shader output. |
+| [`Inno.Build.Toolchains.Bgfx.Tools.BgfxTargetCapabilities`](../../build/toolchains/Inno.Build.Toolchains.Bgfx.Tools/BgfxTargetCapabilities.cs#L10) | Supplies one consistent offline capability profile to all BGFX target compilers. |
+
+### `Inno.Build.Toolchains.Bgfx.Tools.BgfxTextureTargetCompiler`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Build.Toolchains.Bgfx.Tools.BgfxTextureTargetCompiler.BgfxTextureTargetCompiler(Inno.Build.Toolchains.Bgfx.Tools.ToolRunner? tools = null)`](../../build/toolchains/Inno.Build.Toolchains.Bgfx.Tools/BgfxTextureTargetCompiler.cs#L25) | Creates a texture compiler using frozen host tools or the application's explicit native deployment. |
+| [`System.Threading.Tasks.ValueTask<byte[]> Inno.Build.Toolchains.Bgfx.Tools.BgfxTextureTargetCompiler.CompileKtxAsync(System.IO.Stream source, Inno.Rendering.Assets.TextureColorSpace colorSpace, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))`](../../build/toolchains/Inno.Build.Toolchains.Bgfx.Tools/BgfxTextureTargetCompiler.cs#L42) | Compiles the supplied source into a validated runtime artifact. |
+| [`Inno.Build.Toolchains.Bgfx.Tools.BgfxTextureTargetCompiler`](../../build/toolchains/Inno.Build.Toolchains.Bgfx.Tools/BgfxTextureTargetCompiler.cs#L15) | Converts artist texture sources into validated KTX containers with BGFX texturec. |
+
+### `Inno.Build.Toolchains.Bgfx.Tools.BgfxTool`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Build.Toolchains.Bgfx.Tools.BgfxTool.Geometryc`](../../build/toolchains/Inno.Build.Toolchains.Bgfx.Tools/Execution/BgfxTool.cs#L15) | Geometry compiler. |
+| [`Inno.Build.Toolchains.Bgfx.Tools.BgfxTool.Geometryv`](../../build/toolchains/Inno.Build.Toolchains.Bgfx.Tools/Execution/BgfxTool.cs#L19) | Geometry validator. |
+| [`Inno.Build.Toolchains.Bgfx.Tools.BgfxTool.Shaderc`](../../build/toolchains/Inno.Build.Toolchains.Bgfx.Tools/Execution/BgfxTool.cs#L11) | Shader compiler. |
+| [`Inno.Build.Toolchains.Bgfx.Tools.BgfxTool.Texturec`](../../build/toolchains/Inno.Build.Toolchains.Bgfx.Tools/Execution/BgfxTool.cs#L23) | Texture compiler. |
+| [`Inno.Build.Toolchains.Bgfx.Tools.BgfxTool.Texturev`](../../build/toolchains/Inno.Build.Toolchains.Bgfx.Tools/Execution/BgfxTool.cs#L27) | Texture validator. |
+| [`Inno.Build.Toolchains.Bgfx.Tools.BgfxTool`](../../build/toolchains/Inno.Build.Toolchains.Bgfx.Tools/Execution/BgfxTool.cs#L6) | Known bgfx tool executables. |
+
+### `Inno.Build.Toolchains.Bgfx.Tools.ToolRunResult`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Build.Toolchains.Bgfx.Tools.ToolRunResult.ToolRunResult(int exitCode, string standardOutput, string standardError)`](../../build/toolchains/Inno.Build.Toolchains.Bgfx.Tools/Execution/ToolRunResult.cs#L20) | Creates a tool invocation result. |
+| [`int Inno.Build.Toolchains.Bgfx.Tools.ToolRunResult.exitCode`](../../build/toolchains/Inno.Build.Toolchains.Bgfx.Tools/Execution/ToolRunResult.cs#L33) | Gets the native process exit code. |
+| [`string Inno.Build.Toolchains.Bgfx.Tools.ToolRunResult.standardError`](../../build/toolchains/Inno.Build.Toolchains.Bgfx.Tools/Execution/ToolRunResult.cs#L43) | Gets captured standard error. |
+| [`string Inno.Build.Toolchains.Bgfx.Tools.ToolRunResult.standardOutput`](../../build/toolchains/Inno.Build.Toolchains.Bgfx.Tools/Execution/ToolRunResult.cs#L38) | Gets captured standard output. |
+| [`bool Inno.Build.Toolchains.Bgfx.Tools.ToolRunResult.succeeded`](../../build/toolchains/Inno.Build.Toolchains.Bgfx.Tools/Execution/ToolRunResult.cs#L48) | Gets whether the tool exited successfully. |
+| [`Inno.Build.Toolchains.Bgfx.Tools.ToolRunResult`](../../build/toolchains/Inno.Build.Toolchains.Bgfx.Tools/Execution/ToolRunResult.cs#L6) | Contains the immutable result of one bgfx tool invocation. |
+
+### `Inno.Build.Toolchains.Bgfx.Tools.ToolRunner`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Build.Toolchains.Bgfx.Tools.ToolRunner.ToolRunner()`](../../build/toolchains/Inno.Build.Toolchains.Bgfx.Tools/Execution/ToolRunner.cs#L23) | Creates a runner for tools explicitly deployed with the current application. Resolution is deferred until execution; constructing a compiler does not start or discover a process. |
+| [`Inno.Build.Toolchains.Bgfx.Tools.ToolRunner.ToolRunner(System.Collections.Generic.IReadOnlyDictionary<Inno.Build.Toolchains.Bgfx.Tools.BgfxTool, string> executables)`](../../build/toolchains/Inno.Build.Toolchains.Bgfx.Tools/Execution/ToolRunner.cs#L37) | Freezes executables selected and validated by the host's toolchain operation. |
+| [`Inno.Build.Toolchains.Bgfx.Tools.ToolRunResult Inno.Build.Toolchains.Bgfx.Tools.ToolRunner.Run(Inno.Build.Toolchains.Bgfx.Tools.BgfxTool tool, System.Collections.Generic.IReadOnlyList<string> arguments, string? workingDirectory = null)`](../../build/toolchains/Inno.Build.Toolchains.Bgfx.Tools/Execution/ToolRunner.cs#L67) | Executes the configured workflow and returns its process outcome. |
+| [`System.Threading.Tasks.ValueTask<Inno.Build.Toolchains.Bgfx.Tools.ToolRunResult> Inno.Build.Toolchains.Bgfx.Tools.ToolRunner.RunAsync(Inno.Build.Toolchains.Bgfx.Tools.BgfxTool tool, System.Collections.Generic.IReadOnlyList<string> arguments, string? workingDirectory = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))`](../../build/toolchains/Inno.Build.Toolchains.Bgfx.Tools/Execution/ToolRunner.cs#L101) | Runs the external tool asynchronously and captures its complete process outcome. |
+| [`Inno.Build.Toolchains.Bgfx.Tools.ToolRunner`](../../build/toolchains/Inno.Build.Toolchains.Bgfx.Tools/Execution/ToolRunner.cs#L15) | Runs bgfx tool executables from the native output with argument-safe process invocation. |
+
+## 项目依赖
+
+- [Inno.Native.LibraryLoading](../native/Inno.Native.LibraryLoading.md)：实现依赖（`PrivateAssets="compile"`）。
+- [Inno.Core.Execution](../core/Inno.Core.Execution.md)：实现依赖（`PrivateAssets="compile"`）。
+- [Inno.Native.Bgfx](../native/Inno.Native.Bgfx.md)：实现依赖（`PrivateAssets="compile"`）。
+- [Inno.Assets](../assets/Inno.Assets.md)：实现依赖（`PrivateAssets="compile"`）。
+- [Inno.Build](Inno.Build.md)：项目引用；公开签名可见性由语义边界检查确认。
+- [Inno.Assets.Pipeline](../assets/Inno.Assets.Pipeline.md)：项目引用；公开签名可见性由语义边界检查确认。
+- [Inno.Core.Serialization](../core/Inno.Core.Serialization.md)：项目引用；公开签名可见性由语义边界检查确认。
+- [Inno.Extensibility.Types](../extensibility/Inno.Extensibility.Types.md)：项目引用；公开签名可见性由语义边界检查确认。
+- [Inno.Rendering.Shaders](../rendering/Inno.Rendering.Shaders.md)：项目引用；公开签名可见性由语义边界检查确认。
+- [Inno.Rendering](../rendering/Inno.Rendering.md)：项目引用；公开签名可见性由语义边界检查确认。
+- [Inno.Rendering.Assets](../rendering/Inno.Rendering.Assets.md)：项目引用；公开签名可见性由语义边界检查确认。
+- [Inno.Extensibility.Catalogs](../extensibility/Inno.Extensibility.Catalogs.md)：项目引用；公开签名可见性由语义边界检查确认。
+- [Inno.Rendering.Assets.Authoring](../rendering/Inno.Rendering.Assets.Authoring.md)：项目引用；公开签名可见性由语义边界检查确认。
+
+共同 MSBuild 注入的 analyzer 与编译规则属于构建依赖，完整有效项目图记录在本轮验收证据中。

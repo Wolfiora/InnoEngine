@@ -1,3 +1,4 @@
+using Inno.Core.Logging;
 using Inno.Adapter.Serialization.DotNet;
 using Inno.Adapter.Modules.DotNet;
 using Inno.Runtime.Contracts;
@@ -25,7 +26,6 @@ public sealed class EditorAudioHostTests : IDisposable
         m_engine = new EngineHostBuilder()
                 .UseMetadataSources(new DotNetAssemblyCatalogSource(typeof(EditorAudioHostTests).Assembly),
                     new ReflectionTypeCatalogSource(), new ReflectionSerializationMetadataSource())
-            .UseMetadataCache(Path.Combine(m_root, "Assemblies"))
             .Build();
     }
 
@@ -89,7 +89,7 @@ public sealed class EditorAudioHostTests : IDisposable
         {
             kind = kind,
             applicationId = name,
-            persistentDataDirectory = Path.Combine(m_root, "Persistent", name),
+            createLogSink = _ => new FileLogSink(Path.Combine(Path.Combine(m_root, "Persistent", name), "Logs")),
             jobExecutionMode = RuntimeJobExecutionMode.SingleThread,
             createSubsystems = owner => [host.CreateRuntimeSubsystemFactory(owner)]
         };
@@ -120,19 +120,26 @@ public sealed class EditorAudioHostTests : IDisposable
     {
         private readonly ArtifactRetention m_retention = new();
         public ArtifactLease AcquireArtifact(Guid persistentId, string outputName)
-            => m_retention.Retain(m_artifacts[persistentId]);
-        private readonly Dictionary<Guid, AssetArtifactInfo> m_artifacts = [];
+            => m_retention.Retain(m_artifacts[persistentId].info,
+                () => File.OpenRead(m_artifacts[persistentId].path));
+        private readonly Dictionary<Guid, (AssetArtifactInfo info, string path)> m_artifacts = [];
 
-        internal void Add(Guid id, string path)
+        internal void Add(
+            Guid id,
+            string path
+        )
             => m_artifacts.Add(
                 id,
-                new AssetArtifactInfo(new AssetArtifactKey(new string('A', 64)), "audio-data", path, "TEST", 128));
+                (new AssetArtifactInfo(new AssetArtifactKey(new string('A', 64)), "audio-data", "TEST", 128), path));
 
-        public bool TryGetArtifact(Guid persistentId, string outputName, out AssetArtifactInfo? artifact)
-        {
-            if (outputName == "audio-data" && m_artifacts.TryGetValue(persistentId, out AssetArtifactInfo? found))
+        public bool TryGetArtifact(
+            Guid persistentId,
+            string outputName,
+            out AssetArtifactInfo? artifact
+        ) {
+            if (outputName == "audio-data" && m_artifacts.TryGetValue(persistentId, out var found))
             {
-                artifact = found;
+                artifact = found.info;
                 return true;
             }
             artifact = null;

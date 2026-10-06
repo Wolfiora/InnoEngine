@@ -10,6 +10,7 @@ using Inno.Editor.Interactions;
 using Inno.Editor.Panel.FileBrowser;
 using Inno.Rendering;
 using Inno.Rendering.Shaders;
+using Inno.Rendering.Assets;
 
 namespace Inno.Editor.Panel.ShaderEditor;
 

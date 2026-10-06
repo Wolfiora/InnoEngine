@@ -7,6 +7,7 @@ using Inno.Core.Serialization;
 using Inno.Rendering;
 using Inno.Rendering.Assets;
 using Xunit;
+using Inno.Rendering.Assets.Authoring;
 
 namespace Inno.Rendering.Shaders.Tests;
 

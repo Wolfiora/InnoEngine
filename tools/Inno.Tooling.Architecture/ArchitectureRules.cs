@@ -18,6 +18,9 @@ internal static partial class ArchitectureRules
         "Inno.Scripting.Compiler",
         "Inno.Scripting.Reload",
         "Inno.Assets.Pipeline",
+        "Inno.Rendering.Assets.Authoring",
+        "Inno.Rendering.Shaders",
+        "Inno.Adapter.Authoring",
         "Inno.Plugins.Authoring",
         "Inno.Adapter.Modules.DotNet",
         "Inno.Adapter.Serialization.DotNet",
@@ -40,18 +43,17 @@ internal static partial class ArchitectureRules
         "Inno.Engine.Scene",
         "Inno.Audio.Scene",
         "Inno.Rendering.Core",
-        "Inno.Native.Dll"
+        "Inno.Native.Dll",
+        "Inno.Adapter.Input.Sdl3"
     ];
     private static readonly string[] S_CONCRETE_ADAPTER_MARKERS =
     [
         "Inno.Adapter.Platform.Sdl3",
-        "Inno.Adapter.Input.Sdl3",
         "Inno.Adapter.Storage.FileSystem",
         "Inno.Adapter.Rendering.Bgfx",
         "Inno.Adapter.Audio.MiniAudio",
         "Inno.Adapter.Presentation.ImGui",
         "Sdl3Platform",
-        "Sdl3Input",
         "FileSystemApplicationStorage",
         "BgfxDevice",
         "MiniAudioDevice",
@@ -230,8 +232,8 @@ internal static partial class ArchitectureRules
             failures.Add(
                 $"{relative}: composition roots must discover engine modules from their declared dependency closure, not typeof anchors.");
         }
-        if ((relative.StartsWith("src/composition/player/Inno.Player/", StringComparison.Ordinal) ||
-             relative.StartsWith("src/composition/editor/host/Inno.Editor.Application/", StringComparison.Ordinal)) &&
+        if ((relative.StartsWith("src/composition/player/Inno.Player.Runtime/", StringComparison.Ordinal) ||
+             relative.StartsWith("src/composition/shell/", StringComparison.Ordinal)) &&
             S_CONCRETE_ADAPTER_MARKERS.Any(source.Contains))
         {
             failures.Add(
@@ -384,6 +386,24 @@ internal static partial class ArchitectureRules
     ) {
         string sourcePath = project.relative;
         string targetPath = target.relative;
+        bool foundationTarget = targetPath.StartsWith("src/foundation/", StringComparison.Ordinal);
+        if ((project.name is "Inno.Rendering" or "Inno.Content") && !foundationTarget)
+            failures.Add($"{sourcePath}: neutral mechanisms may only reference Foundation contracts, not {targetPath}.");
+        if (project.name == "Inno.Rendering.Assets" && target.name is
+            "Inno.Rendering.Runtime" or "Inno.Rendering.Shaders" or "Inno.Rendering.Assets.Authoring" or "Inno.Assets.Pipeline")
+            failures.Add($"{sourcePath}: runtime asset definitions cannot reference authoring or runtime owners in {targetPath}.");
+        if (project.name == "Inno.Rendering.Runtime" && target.name is
+            "Inno.Rendering.Assets.Authoring" or "Inno.Assets.Pipeline" or "Inno.Rendering.Shaders")
+            failures.Add($"{sourcePath}: rendering runtime cannot include authoring implementation {targetPath}.");
+        if (project.name == "Inno.Rendering.Shaders" && target.name == "Inno.Rendering.Runtime")
+            failures.Add($"{sourcePath}: shader authoring cannot depend on the runtime owner {targetPath}.");
+        if (project.name == "Inno.Adapter.Input" && (targetPath.StartsWith("native/", StringComparison.Ordinal)
+            || IsConcreteAdapter(target.name)))
+            failures.Add($"{sourcePath}: shared event input cannot depend on native or platform adapters in {targetPath}.");
+        if (project.name == "Inno.Build" && (targetPath.StartsWith("build/composition/", StringComparison.Ordinal)
+            || targetPath.StartsWith("build/pipeline/Inno.Build.Platform.", StringComparison.Ordinal)
+            || target.name == "Inno.Build.Managed.DotNet"))
+            failures.Add($"{sourcePath}: the build pipeline must receive providers instead of referencing {targetPath}.");
         if (sourcePath.StartsWith("native/", StringComparison.Ordinal) &&
             !targetPath.StartsWith("native/", StringComparison.Ordinal))
         {
@@ -592,7 +612,8 @@ internal static partial class ArchitectureRules
             {
                 failures.Add($"{host.relative}: product composition must inherit the common Inno.Shell lifecycle.");
             }
-            foreach (ProjectNode target in host.references.Where(static target => IsConcreteAdapter(target.name)))
+            foreach (ProjectNode target in host.references.Where(target =>
+                         projectName == "Inno.Player.Runtime" && IsConcreteAdapter(target.name)))
             {
                 failures.Add(
                     $"{host.relative}: product composition cannot reference concrete adapter project {target.relative}; use Inno.Adapter.Default and neutral contracts.");
@@ -631,7 +652,8 @@ internal static partial class ArchitectureRules
            string.Equals(name, "Inno.Adapter.Presentation", StringComparison.Ordinal);
 
     private static bool IsConcreteAdapter(string name)
-        => name.StartsWith("Inno.Adapter.Platform.", StringComparison.Ordinal) ||
+        => name.StartsWith("Inno.Adapter.Content.", StringComparison.Ordinal) ||
+           name.StartsWith("Inno.Adapter.Platform.", StringComparison.Ordinal) ||
            name.StartsWith("Inno.Adapter.Input.", StringComparison.Ordinal) ||
            name.StartsWith("Inno.Adapter.Storage.", StringComparison.Ordinal) ||
            name.StartsWith("Inno.Adapter.Rendering.", StringComparison.Ordinal) &&
@@ -669,19 +691,7 @@ internal static partial class ArchitectureRules
     private static IEnumerable<string> EnumerateFiles(
         string root,
         string pattern
-    ) {
-        foreach (string path in Directory.EnumerateFiles(root, pattern, SearchOption.AllDirectories))
-        {
-            string normalized = path.Replace('\\', '/');
-            if (normalized.Contains("/bin/", StringComparison.Ordinal) ||
-                normalized.Contains("/obj/", StringComparison.Ordinal) ||
-                normalized.Contains("/extern/", StringComparison.Ordinal))
-            {
-                continue;
-            }
-            yield return path;
-        }
-    }
+    ) => RepositorySourceInventory.Files(root, pattern);
 
     private static bool IsGenerated(string source)
         => source.Contains("<auto-generated>", StringComparison.OrdinalIgnoreCase) ||

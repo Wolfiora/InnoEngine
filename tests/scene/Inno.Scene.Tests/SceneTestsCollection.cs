@@ -42,9 +42,7 @@ public sealed class SceneTestsFixture : IDisposable
     {
         _ = typeof(Inno.Scene.SceneAsset);
         modules = new ModuleHost(new ModuleHostOptions
-        { catalogSource = new DotNetAssemblyCatalogSource(typeof(SceneTestsCollection).Assembly),
-            cacheDirectory = m_cacheDirectory
-        });
+        { catalogSource = new DotNetAssemblyCatalogSource(typeof(SceneTestsCollection).Assembly)        });
         types = new TypeCatalog(modules, new ReflectionTypeCatalogSource());
         serialization = new SerializationRegistry(types, new ReflectionSerializationMetadataSource());
         world = new Inno.Scene.SceneWorld(identities, types);

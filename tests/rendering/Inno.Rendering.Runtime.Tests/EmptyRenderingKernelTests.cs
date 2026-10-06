@@ -19,6 +19,8 @@ using Inno.Core.Serialization;
 using Inno.Extensibility.Types;
 using Inno.Rendering;
 using Xunit;
+using Inno.Rendering.Assets;
+using Inno.Rendering.Runtime;
 
 namespace Inno.Rendering.Runtime.Tests;
 
@@ -77,7 +79,7 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
         _ = typeof(TextureAsset);
         m_identities = new IdentityAllocator();
         m_identityScope = m_identities.EnterScope();
-        m_modules = new ModuleHost(new ModuleHostOptions { catalogSource = new DotNetAssemblyCatalogSource(typeof(EmptyRenderingKernelTests).Assembly), cacheDirectory = m_cacheDirectory });
+        m_modules = new ModuleHost(new ModuleHostOptions { catalogSource = new DotNetAssemblyCatalogSource(typeof(EmptyRenderingKernelTests).Assembly)});
         m_types = new TypeCatalog(m_modules, new ReflectionTypeCatalogSource());
         m_serialization = new SerializationRegistry(m_types, new ReflectionSerializationMetadataSource());
         ResourceProbePipeline.action = null;
@@ -399,9 +401,7 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
     public void TerminalPipelineRetirementBlocksAdmissionAndPreservesLowerOwners(bool duringFrame)
     {
         var modules = new ModuleHost(new ModuleHostOptions
-        { catalogSource = new DotNetAssemblyCatalogSource(typeof(EmptyRenderingKernelTests).Assembly),
-            cacheDirectory = Path.Combine(m_cacheDirectory, "FaultedRendering")
-        });
+        { catalogSource = new DotNetAssemblyCatalogSource(typeof(EmptyRenderingKernelTests).Assembly)        });
         var types = new TypeCatalog(modules, new ReflectionTypeCatalogSource());
         var runtime = new RenderRuntime(types, TestDeviceProxy.Create(out TestDeviceProxy device), new TestDiagnosticSink());
         var asset = new RenderPipelineAsset { pipelineTypeId = DisposablePipeline.extensionId };
@@ -1307,10 +1307,11 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
             pipeline,
             priority: priority);
 
-    private static DotNetModuleSource CreateRenderingPluginRequest()
+    private DotNetModuleSource CreateRenderingPluginRequest()
         => new()
         {
             moduleName = "RenderingRuntimeReloadTests",
+            artifactRootDirectory = Path.Combine(m_cacheDirectory, "Modules"),
             mainAssemblyPath = Path.Combine(
                 AppContext.BaseDirectory,
                 "Modules",
@@ -1754,7 +1755,7 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
         internal static int pendingRetirements { get; set; }
         internal static int retirementAttempts { get; private set; }
         internal static ContentReadScope? lastContent { get; private set; }
-        internal static RenderViewport lastPresentationViewport { get; private set; }
+        internal static RenderViewport? lastPresentationViewport { get; private set; }
         internal static RenderOutputInput lastInput { get; private set; } = RenderOutputInput.empty;
 
         public override void Submit(RenderRequestProviderContext context)
@@ -1870,8 +1871,12 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
 
         public GraphicsCapabilities capabilities { get; internal set; } = S_CAPABILITIES;
         public uint generation => 1;
-        public RenderPresentationSize presentationSize { get; set; } = new(1, 1);
-        public RenderPresentationSize primaryPresentationSize => presentationSize;
+        public RenderPresentationSize? presentationSize { get; set; } = new(1, 1);
+        public RenderPresentationSize? primaryPresentationSize
+        {
+            get => presentationSize;
+            private set => presentationSize = value;
+        }
         public bool primaryPresentationEncodesSrgb { get; set; } = true;
 
         public void BeginFrame()
@@ -1896,10 +1901,9 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
             return checked((uint)endFrameCount);
         }
 
-        public void ResizeBackbuffer(int width, int height)
+        public void SetPrimaryPresentationSize(RenderPresentationSize? size)
         {
-            _ = width;
-            _ = height;
+            primaryPresentationSize = size;
         }
 
         public PersistentTextureHandle CreateTexture(RenderTextureDescriptor descriptor, string name)
@@ -2074,6 +2078,7 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
         public GraphicsCapabilities capabilities { get; }
 
         public uint generation => 1;
+        public RenderPresentationSize? primaryPresentationSize { get; private set; } = new(1, 1);
         public bool primaryPresentationEncodesSrgb => true;
 
         public void BeginFrame() { }
@@ -2091,11 +2096,7 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
             return checked((uint)endFrameCount);
         }
 
-        public void ResizeBackbuffer(int width, int height)
-        {
-            _ = width;
-            _ = height;
-        }
+        public void SetPrimaryPresentationSize(RenderPresentationSize? size) => primaryPresentationSize = size;
 
         public PersistentTextureHandle CreateTexture(RenderTextureDescriptor descriptor, string name)
         {

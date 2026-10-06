@@ -7,6 +7,7 @@ using Inno.Native.ImGui;
 using Inno.Rendering.Assets;
 using EditorImGui = Inno.Editor.ImGui.ImGui;
 using ImGuiApi = Inno.Native.ImGui.ImGui;
+using Inno.Rendering.Assets.Authoring;
 
 namespace Inno.Editor.Panel.ShaderEditor;
 

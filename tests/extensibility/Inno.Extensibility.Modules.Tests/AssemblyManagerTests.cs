@@ -133,7 +133,7 @@ public sealed class ModuleHostTests : IDisposable
 
     public ModuleHostTests()
     {
-        m_modules = new ModuleHost(new ModuleHostOptions { catalogSource = new DotNetAssemblyCatalogSource(typeof(ModuleHostTests).Assembly), cacheDirectory = m_cacheDirectory });
+        m_modules = new ModuleHost(new ModuleHostOptions { catalogSource = new DotNetAssemblyCatalogSource(typeof(ModuleHostTests).Assembly)});
         m_types = new TypeCatalog(m_modules, new ReflectionTypeCatalogSource());
     }
 
@@ -226,6 +226,7 @@ public sealed class ModuleHostTests : IDisposable
         var request = new DotNetModuleSource
         {
             moduleName = "InvalidPluginScope",
+            artifactRootDirectory = m_cacheDirectory,
             mainAssemblyPath = Path.Combine(directory, "Inno.Extensibility.Modules.TestModule.dll"),
             preloadAssemblyPaths = [dependency],
             domain = AssemblyDomain.InnoPlugin,
@@ -247,6 +248,7 @@ public sealed class ModuleHostTests : IDisposable
         var dependency = new DotNetModuleSource
         {
             moduleName = "Plugin.Dependency",
+            artifactRootDirectory = m_cacheDirectory,
             mainAssemblyPath = Path.Combine(directory, "Reloadable.PrivateDependency.dll"),
             domain = AssemblyDomain.InnoPlugin,
             scope = AssemblyScope.Runtime
@@ -254,6 +256,7 @@ public sealed class ModuleHostTests : IDisposable
         var consumer = new DotNetModuleSource
         {
             moduleName = "Plugin.Consumer",
+            artifactRootDirectory = m_cacheDirectory,
             mainAssemblyPath = Path.Combine(directory, "Inno.Extensibility.Modules.TestModule.dll"),
             upstreamModuleNames = [dependency.moduleName],
             domain = AssemblyDomain.InnoPlugin,
@@ -493,12 +496,13 @@ public sealed class ModuleHostTests : IDisposable
             "The rejected candidate load context was not observed.");
     }
 
-    private static DotNetModuleSource CreateRequest(string version)
+    private DotNetModuleSource CreateRequest(string version)
     {
         string directory = Path.Combine(AppContext.BaseDirectory, "Modules", version);
         string dependency = Path.Combine(directory, "Reloadable.PrivateDependency.dll");
         return new DotNetModuleSource
         {
+            artifactRootDirectory = m_cacheDirectory,
             moduleName = "ReloadableTests",
             mainAssemblyPath = Path.Combine(directory, "Inno.Extensibility.Modules.TestModule.dll"),
             preloadAssemblyPaths = File.Exists(dependency) ? [dependency] : [],

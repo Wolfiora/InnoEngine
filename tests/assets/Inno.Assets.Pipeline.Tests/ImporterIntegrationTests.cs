@@ -31,9 +31,7 @@ public sealed class ImporterIntegrationTests : IDisposable
     {
         m_identityScope = m_identities.EnterScope();
         m_modules = new ModuleHost(new ModuleHostOptions
-        { catalogSource = new DotNetAssemblyCatalogSource(typeof(ImporterIntegrationTests).Assembly),
-            cacheDirectory = Path.Combine(Path.GetTempPath(), "InnoImporterTests", "Assemblies")
-        });
+        { catalogSource = new DotNetAssemblyCatalogSource(typeof(ImporterIntegrationTests).Assembly)        });
         m_types = new TypeCatalog(m_modules, new ReflectionTypeCatalogSource());
         m_serialization = new SerializationRegistry(m_types, new ReflectionSerializationMetadataSource());
     }

@@ -163,8 +163,8 @@ internal sealed partial class ShaderEditorCanvas(
                 else if (preview.state == EditorShaderCompilationState.Succeeded && preview.artifact is not null
                     && owner.interactions.TryGetModule<Inno.Editor.Shaders.ShaderPreviews>(out var images) && images is not null)
                 {
-                    var shader = owner.assets.Load<Inno.Rendering.ShaderAsset>(draft.path);
-                    images.Draw(draft.id, new Inno.Rendering.MaterialAsset { shader = shader }, preview,
+                    var shader = owner.assets.Load<Inno.Rendering.Assets.ShaderAsset>(draft.path);
+                    images.Draw(draft.id, new Inno.Rendering.Assets.MaterialAsset { shader = shader }, preview,
                         MathF.Max(1f, MathF.Min(256f, ImGuiApi.GetContentRegionAvail().X)));
                 }
             }

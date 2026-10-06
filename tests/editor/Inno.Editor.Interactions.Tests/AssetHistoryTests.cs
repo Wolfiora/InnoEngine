@@ -1,3 +1,4 @@
+using Inno.Core.IO;
 using Inno.Adapter.Serialization.DotNet;
 using Inno.Adapter.Modules.DotNet;
 using System;
@@ -45,9 +46,7 @@ public sealed class AssetHistoryTests : IDisposable
         _ = typeof(AssetEditorModule);
         _ = typeof(TextAsset);
         m_modules = new ModuleHost(new ModuleHostOptions
-        { catalogSource = new DotNetAssemblyCatalogSource(typeof(AssetHistoryTests).Assembly),
-            cacheDirectory = Path.Combine(m_projectRoot, "Library", "Assemblies")
-        });
+        { catalogSource = new DotNetAssemblyCatalogSource(typeof(AssetHistoryTests).Assembly)        });
         m_types = new TypeCatalog(m_modules, new ReflectionTypeCatalogSource());
         m_serialization = new SerializationRegistry(m_types, new ReflectionSerializationMetadataSource());
         string libraryRoot = Path.Combine(m_projectRoot, "Library");
@@ -73,7 +72,7 @@ public sealed class AssetHistoryTests : IDisposable
             m_logs,
             options);
         m_settings = new ProjectSettingsStore(
-            Path.Combine(m_projectRoot, "Settings.Project.inno"),
+            new FileByteDocumentStore(Path.GetFullPath(Path.Combine(m_projectRoot, "Settings.Project.inno"))),
             m_types,
             m_serialization,
             new ProjectId("tests.editor"),

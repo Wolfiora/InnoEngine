@@ -6,6 +6,7 @@ using System.Linq;
 using Inno.Extensibility.Types;
 using Inno.Core.Serialization;
 using Inno.Core.Collections;
+using Inno.Core.IO;
 
 namespace Inno.Core.Settings;
 
@@ -26,8 +27,8 @@ public sealed class ProjectSettings : IDisposable
     /// <summary>
     /// Loads one project settings document and builds the initial effective snapshot.
     /// </summary>
-    /// <param name="documentPath">
-    /// Settings.Project.inno path.
+    /// <param name="documentStore">
+    /// The project document source; read-only deployments cannot persist project overrides.
     /// </param>
     /// <param name="types">
     /// The type catalog that owns project setting definitions and composers.
@@ -48,14 +49,14 @@ public sealed class ProjectSettings : IDisposable
     /// A required service or the owner's serialization context is null.
     /// </exception>
     public ProjectSettings(
-        string documentPath,
+        IByteDocumentStore documentStore,
         TypeCatalog types,
         SerializationRegistry serialization,
         ProjectId defaultProjectId,
         SerializationContext serializationContext,
         IReadOnlyList<ProjectSettingsContributor>? contributors = null
     ) {
-        ArgumentException.ThrowIfNullOrWhiteSpace(documentPath);
+        ArgumentNullException.ThrowIfNull(documentStore);
         ArgumentNullException.ThrowIfNull(types);
         if (!defaultProjectId.isValid)
             throw new ArgumentException("A default Project ID is required.", nameof(defaultProjectId));
@@ -66,7 +67,7 @@ public sealed class ProjectSettings : IDisposable
         m_defaultProjectId = defaultProjectId;
         m_registry = new ProjectSettingsRegistry(types);
         m_documents = new SettingsDocumentStore<ProjectSettingsDocument>(
-            documentPath,
+            documentStore,
             serialization,
             static () => new ProjectSettingsDocument(),
             ValidateDocument);

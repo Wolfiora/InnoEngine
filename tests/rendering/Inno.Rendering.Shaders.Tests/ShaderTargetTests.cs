@@ -22,7 +22,7 @@ public sealed class ShaderTargetTests : IDisposable
 
     public ShaderTargetTests()
     {
-        m_modules = new(new() { catalogSource = new DotNetAssemblyCatalogSource(typeof(ShaderTargetTests).Assembly), cacheDirectory = Path.Combine(Path.GetTempPath(), "ShaderTargets", Guid.NewGuid().ToString("N")) });
+        m_modules = new(new() { catalogSource = new DotNetAssemblyCatalogSource(typeof(ShaderTargetTests).Assembly)});
         m_types = new(m_modules, new ReflectionTypeCatalogSource());
         m_serialization = new(m_types, new ReflectionSerializationMetadataSource());
         m_targets = new(m_types);

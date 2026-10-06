@@ -34,7 +34,7 @@ public sealed class WindowsSupportPackValidator : IPlayerSupportPackValidator
         }
         foreach (string input in new[]
         {
-            "Player.csproj", "Program.cs", "DesktopPlayerComposition.cs", "global.json",
+            "Player.csproj", "Program.cs", "DesktopPlayerComposition.cs", "FilePlayerContentSource.cs", "global.json",
             Path.Combine("Analyzers", "Inno.Runtime.Generators.dll"),
             Path.Combine("Analyzers", "Inno.Core.Serialization.Generators.dll"),
             Path.Combine("References", "Inno.Player.Runtime.dll"), Path.Combine("References", "BGCS.Runtime.dll")

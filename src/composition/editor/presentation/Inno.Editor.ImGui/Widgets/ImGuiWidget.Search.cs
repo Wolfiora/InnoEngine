@@ -39,7 +39,7 @@ public static partial class ImGuiWidget
         float width = -1f
     ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(id);
-        NativeImGui.SetNextItemWidth(width);
+        NativeImGui.SetNextItemWidth(width < 0f ? MathF.Max(1f, NativeImGui.GetContentRegionAvail().X) : width);
         return ImGuiUtf8Buffer.InputText($"##search_{id}", hint, ref query, capacity, ImGuiInputTextFlags.None);
     }
 

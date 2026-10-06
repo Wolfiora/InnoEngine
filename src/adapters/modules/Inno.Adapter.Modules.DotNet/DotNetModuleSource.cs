@@ -15,6 +15,11 @@ namespace Inno.Adapter.Modules.DotNet;
 public sealed class DotNetModuleSource : IModuleSource
 {
     /// <summary>
+    /// Gets the absolute host-selected root owned by this dynamic source for shadow-copy generations.
+    /// </summary>
+    public required string artifactRootDirectory { get; init; }
+
+    /// <summary>
     /// Gets or sets the stable logical module name.
     /// </summary>
     public required string moduleName { get; init; }
@@ -88,11 +93,14 @@ public sealed class DotNetModuleSource : IModuleSource
     public ModuleCatalogContribution Prepare(ModuleSourceContext context)
     {
         ArgumentNullException.ThrowIfNull(context);
+        ArgumentException.ThrowIfNullOrWhiteSpace(artifactRootDirectory);
+        if (!Path.IsPathFullyQualified(artifactRootDirectory))
+            throw new ArgumentException("Dynamic module storage requires an absolute adapter-owned root.", nameof(artifactRootDirectory));
 
         DotNetModuleSource request = this;
         _ = GetAssemblyNames();
         string generationDirectory = Path.Combine(
-            context.artifactDirectory,
+            artifactRootDirectory,
             SanitizePathSegment(request.moduleName),
             context.generation.ToString(System.Globalization.CultureInfo.InvariantCulture) + "-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(generationDirectory);

@@ -1,5 +1,4 @@
 using System;
-using System.IO;
 using Inno.Core.Logging;
 using Inno.Core.Serialization;
 using Inno.Extensibility.Modules;
@@ -17,29 +16,6 @@ public sealed class EngineHostBuilder
     private ISerializationMetadataSource? m_serializationMetadata;
     private LogDeliveryMode m_logDeliveryMode = LogDeliveryMode.Background;
     private TimeSpan m_retirementTimeout = TimeSpan.FromSeconds(30);
-    private string m_metadataCacheDirectory = Path.Combine(
-        Path.GetTempPath(),
-        "InnoEngine",
-        "RuntimeMetadata");
-
-    /// <summary>
-    /// Selects the writable cache used for assembly shadow copies and immutable type metadata.
-    /// </summary>
-    /// <param name="directory">
-    /// The absolute or current-directory-relative cache directory.
-    /// </param>
-    /// <returns>
-    /// This builder for fluent configuration.
-    /// </returns>
-    /// <exception cref="ArgumentException">
-    /// Thrown when <paramref name="directory"/> is empty.
-    /// </exception>
-    public EngineHostBuilder UseMetadataCache(string directory)
-    {
-        ArgumentException.ThrowIfNullOrWhiteSpace(directory);
-        m_metadataCacheDirectory = Path.GetFullPath(directory);
-        return this;
-    }
 
     /// <summary>
     /// Sets the maximum owner-thread drain duration before retirement faults the host.
@@ -71,7 +47,7 @@ public sealed class EngineHostBuilder
     {
         if (m_moduleSource is null || m_typeSource is null || m_serializationMetadata is null)
             throw new InvalidOperationException("The composition root must select module, type and serialization metadata sources.");
-        EngineHost host = new(m_metadataCacheDirectory, m_retirementTimeout, m_logDeliveryMode,
+        EngineHost host = new(m_retirementTimeout, m_logDeliveryMode,
             m_moduleSource, m_typeSource, m_serializationMetadata);
         m_moduleSource = null;
         m_typeSource = null;
@@ -111,7 +87,7 @@ public sealed class EngineHostBuilder
     }
 
     /// <summary>
-    /// Selects the host router's delivery policy, which also schedules every session's file sink.
+    /// Selects the host router's delivery policy for host and session sinks.
     /// </summary>
     /// <param name="deliveryMode">
     /// Background worker or inline producer-thread delivery.

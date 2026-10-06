@@ -185,7 +185,7 @@ internal sealed class ExportWindowModule : EditorModule
                 outputDirectory = ResolveOutputPath(gameOutputDirectory)
             };
             m_gamePreparation = m_buildPipeline.EnsurePlayerSupportPackAsync(
-                profile.target, m_cancellation!.Token).AsTask();
+                profile.target, profile.managedDeployment, m_cancellation!.Token).AsTask();
         }
         catch (Exception exception)
         {

@@ -2,6 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
+using System.Threading;
+using Inno.Build.Toolchains;
 using BGCS.Configuration;
 using BGCS.Core.Caching;
 using BGCS.Core.Extensibility;
@@ -23,6 +26,8 @@ internal static class NativeBindingGenerationIdentity
         string configPath,
         string bridgeConfigPath,
         string outputRoot,
+        string engineRoot,
+        CancellationToken cancellationToken,
         IReadOnlyList<string>? excludedDirectories = null
     ) {
         string managedBase = Path.GetDirectoryName(Path.GetFullPath(configPath))!;
@@ -51,9 +56,14 @@ internal static class NativeBindingGenerationIdentity
         }
         string[] excluded = (bridgeOutput is null ? new[] { outputRoot } : [outputRoot, bridgeOutput])
             .Concat(excludedDirectories ?? []).ToArray();
+        cancellationToken.ThrowIfCancellationRequested();
         IReadOnlyList<string> inputs = IncrementalGenerationCache.DiscoverInputs(entries, includes, excluded);
+        string implementation = typeof(NativeBindingGenerationIdentity).Assembly
+            .GetCustomAttributes<AssemblyMetadataAttribute>()
+            .Single(static metadata => metadata.Key == "Inno.BindingImplementation").Value
+            ?? throw new InvalidOperationException("The binding task has no compiled implementation identity.");
         string fingerprint = string.Join("\n",
-            typeof(NativeBindingGenerationIdentity).Assembly.ManifestModule.ModuleVersionId,
+            implementation,
             typeof(CsCodeGenerator).Assembly.ManifestModule.ModuleVersionId,
             typeof(Cpp2CCodeGenerator).Assembly.ManifestModule.ModuleVersionId,
             typeof(CppParserOptions).Assembly.ManifestModule.ModuleVersionId,
@@ -73,7 +83,10 @@ internal static class NativeBindingGenerationIdentity
                     bridgeBase!, allowCommandName: true)),
             bridge?.plugins.GetCacheFingerprint() ?? "",
             lowering);
-        return IncrementalGenerationCache.CreateKey(fingerprint, inputs).value;
+        return NativeBuildFingerprint.Create(
+            [fingerprint],
+            inputs.Select(path => NativeBuildInput.FromPath(engineRoot, path)),
+            cancellationToken);
     }
 
     internal static string Resolve(

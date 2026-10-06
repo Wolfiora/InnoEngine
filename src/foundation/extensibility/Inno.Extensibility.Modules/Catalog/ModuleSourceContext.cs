@@ -16,7 +16,6 @@ public sealed class ModuleSourceContext
 
     internal ModuleSourceContext(
         int generation,
-        string artifactDirectory,
         IAssemblyCatalogSource host,
         IReadOnlyList<ModuleCatalogContribution> upstreamModules,
         IReadOnlyList<ModuleCatalogContribution> activeModules,
@@ -24,7 +23,6 @@ public sealed class ModuleSourceContext
         Action<IAssemblyUnloadProbe> trackRetirement
     ) {
         this.generation = generation;
-        this.artifactDirectory = artifactDirectory;
         this.host = host;
         this.upstreamModules = Array.AsReadOnly(upstreamModules.ToArray());
         this.activeModules = Array.AsReadOnly(activeModules.ToArray());
@@ -37,10 +35,6 @@ public sealed class ModuleSourceContext
     /// Gets the candidate generation number.
     /// </summary>
     public int generation { get; }
-    /// <summary>
-    /// Gets the source artifact root configured by the composition owner.
-    /// </summary>
-    public string artifactDirectory { get; }
     /// <summary>
     /// Gets the borrowed host contract source.
     /// </summary>

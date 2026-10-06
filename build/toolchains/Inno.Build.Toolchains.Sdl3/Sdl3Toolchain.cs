@@ -46,8 +46,11 @@ public static class Sdl3Toolchain
         var builder = Sdl3BuilderFactory.CreateForCurrentPlatform();
         string sdlDir = Path.Combine(context.engineRoot, "extern", "SDL");
         Sdl3BuildUtils.ValidateSource(sdlDir);
-        return await NativeArtifactPublisher.PublishAsync(context, typeof(Sdl3Toolchain).Assembly,
-            "sdl3", builder.OutputPlatform, [sdlDir], [], async (
+        NativeBuildRecipe recipe = NativeBuildRecipe.CreateForComponent(context, typeof(Sdl3Toolchain).Assembly, "sdl3", builder.OutputPlatform, [sdlDir], []);
+        return await NativeArtifactPublisher.PublishAsync(
+            context,
+            recipe,
+            async (
                 scoped,
                 output,
                 token

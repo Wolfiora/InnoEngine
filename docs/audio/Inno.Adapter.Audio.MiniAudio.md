@@ -38,3 +38,60 @@ using IAudioDevice device = new MiniAudioDevice(new MiniAudioDeviceOptions
 ## Composition provider
 
 `MiniAudioBackendProvider()` 只创建注册描述，不初始化原生服务。`CreateDevice(AudioBackendOptions)` 是继承的 provider 创建扩展点，返回调用方拥有的服务。`id` 来自所属领域的内置稳定 ID；同一 provider 可在 composition 生命周期内创建独立服务，具体线程及进程 owner 约束仍由该实现执行。
+
+
+
+
+
+
+## 本轮边界与所有权
+
+MiniAudio 的文件型 native 入口所需 materialization 仅属于此 Adapter。编码缓存按内容身份复用，不按 voice 复制；Stream 保留 native 流式解码，不变为整段 PCM 常驻。准备任务在后台执行，native audio callback 保留在原生侧；销毁顺序为完成/取消准备、释放 native clip、释放 source lease。
+
+## 当前源码公开 API 清单
+
+以下仅列出当前程序集自己声明的 public/protected 契约；继承成员遵循所属基类页面。internal/private 实现不作为稳定公开 API。签名依据当前源码语义模型生成，行为、参数、异常与所有权说明同时以对应英文 XML 为准。
+
+### `Inno.Adapter.Audio.MiniAudio.MiniAudioBackendProvider`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Adapter.Audio.MiniAudio.MiniAudioBackendProvider.MiniAudioBackendProvider()`](../../src/adapters/audio/Inno.Adapter.Audio.MiniAudio/MiniAudioBackendProvider.cs#L14) | Creates an explicitly composed registration for the bundled implementation. |
+| [`override Inno.Audio.IAudioDevice Inno.Adapter.Audio.MiniAudio.MiniAudioBackendProvider.CreateDevice(Inno.Adapter.Audio.AudioBackendOptions options)`](../../src/adapters/audio/Inno.Adapter.Audio.MiniAudio/MiniAudioBackendProvider.cs#L17) | See the implemented contract. |
+| [`Inno.Adapter.Audio.MiniAudio.MiniAudioBackendProvider`](../../src/adapters/audio/Inno.Adapter.Audio.MiniAudio/MiniAudioBackendProvider.cs#L9) | Supplies the MiniAudio implementation through the neutral audio creation boundary. |
+
+### `Inno.Adapter.Audio.MiniAudio.MiniAudioDevice`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Adapter.Audio.MiniAudio.MiniAudioDevice.MiniAudioDevice()`](../../src/adapters/audio/Inno.Adapter.Audio.MiniAudio/MiniAudioDevice.cs#L43) | Creates a MiniAudio device using the default operating-system output device. |
+| [`Inno.Adapter.Audio.MiniAudio.MiniAudioDevice.MiniAudioDevice(Inno.Adapter.Audio.MiniAudio.MiniAudioDeviceOptions options)`](../../src/adapters/audio/Inno.Adapter.Audio.MiniAudio/MiniAudioDevice.cs#L57) | Creates one MiniAudio backend generation with explicit output and headless settings. |
+| [`void Inno.Adapter.Audio.MiniAudio.MiniAudioDevice.Dispose()`](../../src/adapters/audio/Inno.Adapter.Audio.MiniAudio/MiniAudioDevice.cs#L576) | Releases all sounds, buses, processor nodes, listeners, and the native engine in dependency order. |
+| [`Inno.Audio.AudioCapabilities Inno.Adapter.Audio.MiniAudio.MiniAudioDevice.capabilities`](../../src/adapters/audio/Inno.Adapter.Audio.MiniAudio/MiniAudioDevice.cs#L101) | Gets MiniAudio capabilities for this immutable device generation. |
+| [`double Inno.Adapter.Audio.MiniAudio.MiniAudioDevice.dspTime`](../../src/adapters/audio/Inno.Adapter.Audio.MiniAudio/MiniAudioDevice.cs#L116) | Gets the monotonic MiniAudio engine clock in seconds. |
+| [`uint Inno.Adapter.Audio.MiniAudio.MiniAudioDevice.generation`](../../src/adapters/audio/Inno.Adapter.Audio.MiniAudio/MiniAudioDevice.cs#L106) | Gets the non-zero generation encoded into every handle created by this device. |
+| [`Inno.Audio.AudioDeviceState Inno.Adapter.Audio.MiniAudio.MiniAudioDevice.state`](../../src/adapters/audio/Inno.Adapter.Audio.MiniAudio/MiniAudioDevice.cs#L111) | Gets current native output availability without exposing a MiniAudio device type. |
+| [`Inno.Audio.AudioStatistics Inno.Adapter.Audio.MiniAudio.MiniAudioDevice.statistics`](../../src/adapters/audio/Inno.Adapter.Audio.MiniAudio/MiniAudioDevice.cs#L124) | Gets current native resource counts and approximate decoded storage. |
+| [`Inno.Adapter.Audio.MiniAudio.MiniAudioDevice`](../../src/adapters/audio/Inno.Adapter.Audio.MiniAudio/MiniAudioDevice.cs#L16) | Implements the backend-neutral audio device contract with a private MiniAudio engine and node graph. |
+
+### `Inno.Adapter.Audio.MiniAudio.MiniAudioDeviceOptions`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`int Inno.Adapter.Audio.MiniAudio.MiniAudioDeviceOptions.channels`](../../src/adapters/audio/Inno.Adapter.Audio.MiniAudio/MiniAudioDeviceOptions.cs#L19) | Gets or initializes the output channel count used by the engine graph. |
+| [`Inno.Audio.AudioDeviceLimits Inno.Adapter.Audio.MiniAudio.MiniAudioDeviceOptions.limits`](../../src/adapters/audio/Inno.Adapter.Audio.MiniAudio/MiniAudioDeviceOptions.cs#L34) | Gets finite device resource capacities, including pending completion admission. |
+| [`int Inno.Adapter.Audio.MiniAudio.MiniAudioDeviceOptions.listenerCount`](../../src/adapters/audio/Inno.Adapter.Audio.MiniAudio/MiniAudioDeviceOptions.cs#L29) | Gets or initializes the maximum listener count exposed by this backend generation. |
+| [`bool Inno.Adapter.Audio.MiniAudio.MiniAudioDeviceOptions.noDevice`](../../src/adapters/audio/Inno.Adapter.Audio.MiniAudio/MiniAudioDeviceOptions.cs#L14) | Gets or initializes whether the engine advances without opening an operating-system output device. |
+| [`int Inno.Adapter.Audio.MiniAudio.MiniAudioDeviceOptions.sampleRate`](../../src/adapters/audio/Inno.Adapter.Audio.MiniAudio/MiniAudioDeviceOptions.cs#L24) | Gets or initializes the output sample rate in frames per second. |
+| [`Inno.Adapter.Audio.MiniAudio.MiniAudioDeviceOptions`](../../src/adapters/audio/Inno.Adapter.Audio.MiniAudio/MiniAudioDeviceOptions.cs#L9) | Configures creation of one MiniAudio backend generation. |
+
+## 项目依赖
+
+- [Inno.Core.IO](../core/Inno.Core.IO.md)：实现依赖（`PrivateAssets="compile"`）。
+- [Inno.Core.Execution](../core/Inno.Core.Execution.md)：实现依赖（`PrivateAssets="compile"`）。
+- [Inno.Native.MiniAudio](../native/Inno.Native.MiniAudio.md)：实现依赖（`PrivateAssets="compile"`）。
+- [Inno.Adapter.Audio](Inno.Adapter.Audio.md)：项目引用；公开签名可见性由语义边界检查确认。
+- [Inno.Audio](Inno.Audio.md)：项目引用；公开签名可见性由语义边界检查确认。
+- [Inno.Extensibility.Catalogs](../extensibility/Inno.Extensibility.Catalogs.md)：项目引用；公开签名可见性由语义边界检查确认。
+
+共同 MSBuild 注入的 analyzer 与编译规则属于构建依赖，完整有效项目图记录在本轮验收证据中。

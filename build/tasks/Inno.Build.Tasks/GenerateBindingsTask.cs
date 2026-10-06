@@ -25,6 +25,12 @@ public sealed class GenerateBindingsTask : BuildTask, ICancelableTask {
     private bool m_completed;
 
     /// <summary>
+    /// Gets or sets the checkout root used to give source inputs stable logical identities.
+    /// </summary>
+    [Required]
+    public string EngineRoot { get; set; } = string.Empty;
+
+    /// <summary>
     /// Gets or sets the composed managed binding definition.
     /// </summary>
     [Required]
@@ -98,6 +104,7 @@ public sealed class GenerateBindingsTask : BuildTask, ICancelableTask {
     /// </returns>
     public override bool Execute() {
         try {
+            BuildTaskHostRetirement.Inspect(EngineRoot);
             CancellationToken cancellation = m_cancellation.Token;
             cancellation.ThrowIfCancellationRequested();
             CsCodeGeneratorConfig config = new ConfigLoader().Load(Path.GetFullPath(ConfigPath));
@@ -139,7 +146,7 @@ public sealed class GenerateBindingsTask : BuildTask, ICancelableTask {
             ? [managedOutput] : [managedOutput, nativeOutput], cancellationToken: cancellation);
         string[] excluded = publication.stagingPaths.Values.ToArray();
         GenerationFingerprint = NativeBindingGenerationIdentity.Compute(
-            config, bridgeConfig, ConfigPath, BridgeConfigPath, managedOutput, excluded);
+            config, bridgeConfig, ConfigPath, BridgeConfigPath, managedOutput, EngineRoot, cancellation, excluded);
         if (ExpectedFingerprint.Length > 0 && ExpectedFingerprint != GenerationFingerprint)
             throw new InvalidOperationException("Binding inputs changed after the native build selected its generation.");
         config.enableIncrementalCache = false;
@@ -181,7 +188,7 @@ public sealed class GenerateBindingsTask : BuildTask, ICancelableTask {
         Cpp2CGeneratorConfig? bridge = string.IsNullOrWhiteSpace(BridgeConfigPath) ? null
             : Cpp2CGeneratorConfig.Load(Path.GetFullPath(BridgeConfigPath));
         string current = NativeBindingGenerationIdentity.Compute(
-            managed, bridge, ConfigPath, BridgeConfigPath, outputRoot, excludedDirectories);
+            managed, bridge, ConfigPath, BridgeConfigPath, outputRoot, EngineRoot, m_cancellation.Token, excludedDirectories);
         if (current != GenerationFingerprint)
             throw new InvalidOperationException("Binding source or toolchain inputs changed during generation; the candidate was not published.");
     }
@@ -203,7 +210,7 @@ public sealed class GenerateBindingsTask : BuildTask, ICancelableTask {
     ) {
         string root = Path.GetFullPath(TargetOutputRoot);
         GenerationFingerprint = NativeBindingGenerationIdentity.Compute(
-            config, bridgeConfig, ConfigPath, BridgeConfigPath, root);
+            config, bridgeConfig, ConfigPath, BridgeConfigPath, root, EngineRoot, cancellation);
         if (ExpectedFingerprint.Length > 0 && ExpectedFingerprint != GenerationFingerprint)
             throw new InvalidOperationException("Binding inputs changed after the native build selected its generation.");
         cancellation.ThrowIfCancellationRequested();

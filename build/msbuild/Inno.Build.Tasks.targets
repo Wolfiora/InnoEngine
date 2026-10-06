@@ -1,0 +1,96 @@
+<Project>
+  <PropertyGroup>
+    <BindGenRoot Condition="'$(BindGenRoot)' == ''">$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)../../../BindGen-CS'))</BindGenRoot>
+    <InnoTaskProject>$(MSBuildThisFileDirectory)../tasks/Inno.Build.Tasks/Inno.Build.Tasks.csproj</InnoTaskProject>
+    <InnoTaskArtifacts>$(MSBuildThisFileDirectory)../../artifacts/build-tools/tasks</InnoTaskArtifacts>
+    <InnoTaskLoadId>$([System.Guid]::NewGuid().ToString('N'))</InnoTaskLoadId>
+    <InnoTaskLoadDirectory>$(InnoTaskArtifacts)/loads/$(InnoTaskLoadId)/$(Configuration)</InnoTaskLoadDirectory>
+    <InnoTaskHostAssembly>$(InnoTaskLoadDirectory)/Inno.Build.Tasks.dll</InnoTaskHostAssembly>
+    <InnoTaskHostProperties>Configuration=$(Configuration);BindGenRoot=$(BindGenRoot);ArtifactsPath=$(InnoTaskArtifacts)/bootstrap;BuildProjectReferences=true</InnoTaskHostProperties>
+    <InnoTaskExcludedProperties>InnoNativeTarget;InnoNativeBuildFingerprint;InnoNativeBindingSelection;RuntimeIdentifier;RuntimeIdentifiers;TargetFramework;TargetFrameworks;BindGenProfile;BindGenTargetOutputRoot;BindGenConfig;BindGenOutputDirectory;BindGenGeneratedSource;BindGenGenerationFingerprint;BindGenNativeBridgeDirectory;BindGenDescriptorOutput;BindGenExpectedFingerprint;DebugType;DebugSymbols;DefineConstants;PublishAot;RunAOTCompilation;PublishTrimmed;SelfContained;PublishSingleFile;PublishDir;WasmBuildNative;InnoGeneratePlayerComposition;ArtifactsPivots;UseArtifactsOutput;BaseOutputPath;BaseIntermediateOutputPath;OutputPath;IntermediateOutputPath;BuildingInsideVisualStudio;BuildingSolutionFile;CurrentSolutionConfigurationContents;DesignTimeBuild;IsCrossTargetingBuild</InnoTaskExcludedProperties>
+  </PropertyGroup>
+
+  <UsingTask TaskName="Inno.Build.Tasks.GenerateBindingsTask" AssemblyFile="$(InnoTaskHostAssembly)" />
+  <UsingTask TaskName="Inno.Build.Tasks.CompileShaderTask" AssemblyFile="$(InnoTaskHostAssembly)" />
+  <UsingTask TaskName="Inno.Build.Tasks.PublishSupportPackTask" AssemblyFile="$(InnoTaskHostAssembly)" />
+  <UsingTask TaskName="Inno.Build.Tasks.PrepareEditorNativeTask" AssemblyFile="$(InnoTaskHostAssembly)" />
+
+  <Target Name="PrepareInnoBuildTaskHost" Condition="'$(DesignTimeBuild)' != 'true'">
+    <MSBuild
+      Projects="$(InnoTaskProject)"
+      Targets="Restore;PublishInnoBuildTaskHost"
+      Properties="$(InnoTaskHostProperties)"
+      RemoveProperties="$(InnoTaskExcludedProperties)">
+      <Output TaskParameter="TargetOutputs" ItemName="_InnoTaskHostOutput" />
+    </MSBuild>
+    <Error Condition="'@(_InnoTaskHostOutput->Count())' != '1'" Text="The build task host must return one verified assembly." />
+    <PropertyGroup>
+      <_InnoPreparedTaskAssembly>@(_InnoTaskHostOutput)</_InnoPreparedTaskAssembly>
+      <_InnoPreparedTaskDirectory>$([System.IO.Path]::GetDirectoryName('$(_InnoPreparedTaskAssembly)'))</_InnoPreparedTaskDirectory>
+    </PropertyGroup>
+    <Error Condition="'$(_InnoPreparedTaskDirectory)' == '' or !Exists('$(_InnoPreparedTaskAssembly)')" Text="The build task snapshot is unavailable: $(_InnoPreparedTaskAssembly)" />
+    <ItemGroup>
+      <_InnoPreparedRuntimeFile Include="$(_InnoPreparedTaskDirectory)/**/*" />
+    </ItemGroup>
+    <Copy
+      SourceFiles="@(_InnoPreparedRuntimeFile)"
+      DestinationFiles="@(_InnoPreparedRuntimeFile->'$(InnoTaskLoadDirectory)/%(RecursiveDir)%(Filename)%(Extension)')"
+      UseHardlinksIfPossible="true"
+      SkipUnchangedFiles="true" />
+    <WriteLinesToFile File="$(InnoTaskLoadDirectory)/source-host.txt" Lines="$(_InnoPreparedTaskAssembly)" Overwrite="true" WriteOnlyWhenDifferent="true" />
+  </Target>
+
+  <!-- Each build operation loads a private, verified closure. Loaded tools never lock bootstrap outputs. -->
+  <Target
+    Name="PublishInnoBuildTaskHost"
+    DependsOnTargets="Build"
+    Returns="$(_InnoPublishedTaskAssembly)"
+    Condition="'$(MSBuildProjectName)' == 'Inno.Build.Tasks'">
+    <ItemGroup>
+      <_InnoTaskRuntimeInput Include="$(TargetDir)**/*" Exclude="$(TargetDir)**/*.pdb;$(TargetDir)**/*.xml" />
+    </ItemGroup>
+    <ItemGroup>
+      <_InnoTaskRuntimeInput>
+        <RelativePath>%(_InnoTaskRuntimeInput.RecursiveDir)%(_InnoTaskRuntimeInput.Filename)%(_InnoTaskRuntimeInput.Extension)</RelativePath>
+      </_InnoTaskRuntimeInput>
+    </ItemGroup>
+    <Error Condition="!Exists('$(TargetPath)')" Text="The build task assembly was not produced." />
+    <GetFileHash Files="@(_InnoTaskRuntimeInput)">
+      <Output TaskParameter="Items" ItemName="_InnoHashedTaskInput" />
+    </GetFileHash>
+    <WriteLinesToFile
+      File="$(IntermediateOutputPath)task-host.inputs"
+      Lines="@(_InnoHashedTaskInput->'%(RelativePath)|%(FileHash)')"
+      Overwrite="true"
+      WriteOnlyWhenDifferent="true" />
+    <GetFileHash Files="$(IntermediateOutputPath)task-host.inputs">
+      <Output TaskParameter="Hash" PropertyName="_InnoTaskHostFingerprint" />
+    </GetFileHash>
+    <PropertyGroup>
+      <_InnoTaskSnapshotRoot>$(InnoTaskArtifacts)/hosts/$(_InnoTaskHostFingerprint)/$([System.Guid]::NewGuid().ToString('N'))</_InnoTaskSnapshotRoot>
+      <_InnoPublishedTaskAssembly>$(_InnoTaskSnapshotRoot)/Runtime/Inno.Build.Tasks.dll</_InnoPublishedTaskAssembly>
+    </PropertyGroup>
+    <ItemGroup>
+      <_InnoHashedTaskInput>
+        <ExpectedHash>%(_InnoHashedTaskInput.FileHash)</ExpectedHash>
+      </_InnoHashedTaskInput>
+      <_InnoTaskSnapshotFile Include="@(_InnoHashedTaskInput->'$(_InnoTaskSnapshotRoot)/Runtime/%(RelativePath)')">
+        <ExpectedHash>%(_InnoHashedTaskInput.FileHash)</ExpectedHash>
+      </_InnoTaskSnapshotFile>
+    </ItemGroup>
+    <Copy SourceFiles="@(_InnoHashedTaskInput)" DestinationFiles="@(_InnoTaskSnapshotFile)" />
+    <GetFileHash Files="@(_InnoTaskSnapshotFile)">
+      <Output TaskParameter="Items" ItemName="_InnoVerifiedTaskSnapshot" />
+    </GetFileHash>
+    <Error
+      Condition="'%(_InnoVerifiedTaskSnapshot.FileHash)' != '%(_InnoVerifiedTaskSnapshot.ExpectedHash)'"
+      Text="A build task runtime file changed during snapshot publication: %(_InnoVerifiedTaskSnapshot.Identity)" />
+    <GetFileHash Files="@(_InnoHashedTaskInput)">
+      <Output TaskParameter="Items" ItemName="_InnoVerifiedTaskInput" />
+    </GetFileHash>
+    <Error
+      Condition="'%(_InnoVerifiedTaskInput.FileHash)' != '%(_InnoVerifiedTaskInput.ExpectedHash)'"
+      Text="A build task runtime input changed during snapshot publication: %(_InnoVerifiedTaskInput.Identity)" />
+    <Message Importance="normal" Text="INNO-TASK-HOST prepared $(_InnoTaskHostFingerprint)" />
+  </Target>
+</Project>

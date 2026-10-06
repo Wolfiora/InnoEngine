@@ -31,7 +31,6 @@ public sealed class NativeBindingCompilationTests
                 SingleFileOutputName = "Bindings.cs"
             }));
             string engine = FindEngine();
-            string taskAssembly = typeof(GenerateBindingsTask).Assembly.Location;
             string sources = Path.Combine(root, "compile-sources.txt");
             string project = Path.Combine(root, "Fixture.csproj");
             new XDocument(new XElement("Project", new XAttribute("Sdk", "Microsoft.NET.Sdk"),
@@ -43,15 +42,12 @@ public sealed class NativeBindingCompilationTests
                     new XElement("IsTestProject", "true"),
                     new XElement("BindGenGeneratedBindings", "true"),
                     new XElement("BindGenProfile", "fixture-target"),
-                    new XElement("BindGenTaskAssembly", taskAssembly),
                     new XElement("BindGenConfig", config),
                     new XElement("BindGenRoot", Path.Combine(engine, "..", "BindGen-CS")),
                     new XElement("BindGenTargetOutputRoot", Path.Combine(root, "obj", "fixture-target"))),
                 new XElement("Import", new XAttribute("Project", Path.Combine(engine, "Directory.Build.targets"))),
                 new XElement("ItemGroup", new XElement("Reference", new XAttribute("Include", "BGCS.Runtime"),
                     new XElement("HintPath", typeof(BGCS.Runtime.FunctionTable).Assembly.Location))),
-                new XElement("Target", new XAttribute("Name", "BuildBindingGenerator")),
-                new XElement("Target", new XAttribute("Name", "BuildBindingExtension")),
                 new XElement("Target", new XAttribute("Name", "CaptureCompileSources"),
                     new XAttribute("AfterTargets", "ValidateBindGenBindings"),
                     new XElement("WriteLinesToFile", new XAttribute("File", sources),
@@ -60,6 +56,7 @@ public sealed class NativeBindingCompilationTests
 
             (int success, string output) = await Build(project, []);
             Assert.True(success == 0, output);
+            Assert.Equal(1, output.Split("INNO-TASK-HOST prepared", StringSplitOptions.None).Length - 1);
             string selected = Assert.Single(File.ReadAllLines(sources)
                 .Where(static path => Path.GetFileName(path) == "Bindings.cs"));
             Assert.StartsWith(Path.Combine(root, "obj", "fixture-target") + Path.DirectorySeparatorChar, selected);
@@ -97,7 +94,7 @@ public sealed class NativeBindingCompilationTests
             WorkingDirectory = FindEngine(), UseShellExecute = false, CreateNoWindow = true,
             RedirectStandardOutput = true, RedirectStandardError = true
         };
-        foreach (string argument in new[] { "build", project, "-c", "Release", "--disable-build-servers", "-m:1", "-nodeReuse:false" }
+        foreach (string argument in new[] { "build", project, "-c", "Release", "--disable-build-servers", "-m:1", "-nodeReuse:false", "-v:normal" }
             .Concat(arguments))
             start.ArgumentList.Add(argument);
         using Process process = Process.Start(start) ?? throw new InvalidOperationException("MSBuild did not start.");

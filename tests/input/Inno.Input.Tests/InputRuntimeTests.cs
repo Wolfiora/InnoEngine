@@ -1,3 +1,4 @@
+using Inno.Core.Logging;
 using Inno.Adapter.Serialization.DotNet;
 using Inno.Adapter.Modules.DotNet;
 using Inno.Runtime.Contracts;
@@ -8,7 +9,7 @@ using System.IO;
 using Inno.Core.Events;
 using Inno.Core.Input;
 using Inno.Input.Runtime;
-using Inno.Adapter.Input.Sdl3;
+using Inno.Adapter.Input;
 using Inno.Runtime;
 using Xunit;
 
@@ -17,9 +18,49 @@ namespace Inno.Input.Tests;
 public sealed class InputRuntimeTests
 {
     [Fact]
+    public void DirectEventBackendRejectsGloballyConsumedInput()
+    {
+        using var backend = new EventInputBackend(7);
+        var consumed = new KeyPressedEvent(7, KeyCode.Space);
+        consumed.HandleInGlobal();
+        backend.ProcessEvent(consumed);
+        Assert.False(backend.Capture(1).IsKeyDown(KeyCode.Space));
+    }
+
+    [Fact]
+    public void WindowSourcesRemainIsolatedAcrossTextWheelAndRelease()
+    {
+        using var first = new EventInputSource(7);
+        using var second = new EventInputSource(8);
+        using var firstBackend = first.CreateBackend();
+        using var secondBackend = second.CreateBackend();
+        Event[] events = [
+            new KeyPressedEvent(7, KeyCode.Space),
+            new TextInputEvent(7, "typed"),
+            new MouseScrolledEvent(7, 2f, 3f)
+        ];
+        foreach (Event evnt in events)
+        {
+            first.ProcessEvent(evnt);
+            second.ProcessEvent(evnt);
+        }
+        InputSnapshot accepted = firstBackend.Capture(1);
+        InputSnapshot isolated = secondBackend.Capture(1);
+        Assert.True(accepted.IsKeyDown(KeyCode.Space));
+        Assert.Equal("typed", Assert.Single(accepted.textInput));
+        Assert.Equal(3f, accepted.scrollDelta.y);
+        Assert.False(isolated.IsKeyDown(KeyCode.Space));
+        Assert.Empty(isolated.textInput);
+        Assert.Equal(0f, isolated.scrollDelta.y);
+        first.ProcessEvent(new WindowFocusChangedEvent(7, false));
+        Assert.True(firstBackend.Capture(2).WasKeyReleased(KeyCode.Space));
+        Assert.False(secondBackend.Capture(2).WasKeyReleased(KeyCode.Space));
+    }
+
+    [Fact]
     public void ApplicationSuspensionClearsTransientInputAndRejectsBackgroundPresses()
     {
-        using var source = new Sdl3InputSource(windowId: 7);
+        using var source = new EventInputSource(windowId: 7);
         using var backend = source.CreateBackend();
         source.ProcessEvent(new KeyPressedEvent(7, KeyCode.Space));
         source.ProcessEvent(new MouseButtonPressedEvent(7, MouseButton.Left));
@@ -41,7 +82,7 @@ public sealed class InputRuntimeTests
     [Fact]
     public void GloballyConsumedPlatformEventsNeverReachSessionInput()
     {
-        using var source = new Sdl3InputSource(windowId: 0);
+        using var source = new EventInputSource(windowId: 0);
         using var backend = source.CreateBackend();
         var consumed = new KeyPressedEvent(42, KeyCode.Space);
         consumed.HandleInGlobal();
@@ -54,7 +95,7 @@ public sealed class InputRuntimeTests
     [Fact]
     public void DisposingOneSessionDoesNotDisconnectOtherSessionSubscriptions()
     {
-        using var source = new Sdl3InputSource(windowId: 0);
+        using var source = new EventInputSource(windowId: 0);
         var retired = source.CreateBackend();
         using var current = source.CreateBackend();
         retired.Dispose();
@@ -65,9 +106,9 @@ public sealed class InputRuntimeTests
     }
 
     [Fact]
-    public void SdlAdapterCapturesTransitionsAndClearsTransientState()
+    public void EventBackendCapturesTransitionsAndClearsTransientState()
     {
-        using var backend = new Sdl3InputBackend(windowId: 7);
+        using var backend = new EventInputBackend(windowId: 7);
         backend.ProcessEvent(new KeyPressedEvent(7, KeyCode.Space));
         backend.ProcessEvent(new MouseMovedEvent(7, 10f, 20f));
         backend.ProcessEvent(new MouseScrolledEvent(7, 0f, 2f));
@@ -88,7 +129,7 @@ public sealed class InputRuntimeTests
     [Fact]
     public void AllWindowSourceAcceptsDetachedWindowAndClearsItOnFocusLoss()
     {
-        using var source = new Sdl3InputSource(windowId: 0);
+        using var source = new EventInputSource(windowId: 0);
         using var backend = source.CreateBackend();
 
         source.ProcessEvent(new KeyPressedEvent(42, KeyCode.Space));
@@ -108,18 +149,17 @@ public sealed class InputRuntimeTests
     public void RuntimeSubsystemBindsSnapshotAcrossSimulationPhases()
     {
         string root = Path.Combine(Path.GetTempPath(), "InnoInputRuntimeTests", Guid.NewGuid().ToString("N"));
-        using var source = new Sdl3InputSource(windowId: 1);
+        using var source = new EventInputSource(windowId: 1);
         var observations = new List<bool>();
         using EngineHost host = new EngineHostBuilder()
                 .UseMetadataSources(new DotNetAssemblyCatalogSource(typeof(InputRuntimeTests).Assembly),
                     new ReflectionTypeCatalogSource(), new ReflectionSerializationMetadataSource())
-            .UseMetadataCache(Path.Combine(root, "Metadata"))
             .Build();
         var options = new RuntimeSessionOptions
         {
             kind = RuntimeSessionKind.Play,
             applicationId = "tests.input",
-            persistentDataDirectory = Path.Combine(root, "tests.input"),
+            createLogSink = _ => new FileLogSink(Path.Combine(Path.Combine(root, "tests.input"), "Logs")),
             jobExecutionMode = RuntimeJobExecutionMode.SingleThread,
             createSubsystems = owner =>
             [

@@ -7,12 +7,6 @@
 
   <ItemGroup>
     <ProjectReference
-      Include="../../pipeline/Inno.Build.Platform.Windows/Inno.Build.Platform.Windows.csproj"
-      PrivateAssets="compile" />
-    <ProjectReference
-      Include="../../pipeline/Inno.Build.Platform.MacOS/Inno.Build.Platform.MacOS.csproj"
-      PrivateAssets="compile" />
-    <ProjectReference
       Include="../../pipeline/Inno.Build.Platform.Browser/Inno.Build.Platform.Browser.csproj"
       PrivateAssets="compile" />
     <ProjectReference Include="../../../src/foundation/core/Inno.Core.IO/Inno.Core.IO.csproj" PrivateAssets="compile" />
@@ -25,7 +19,7 @@
     <ProjectReference
       Include="../../toolchains/Inno.Build.Toolchains.Browser/Inno.Build.Toolchains.Browser.csproj"
       PrivateAssets="compile" />
-    <ProjectReference Include="../../pipeline/Inno.Build/Inno.Build.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../pipeline/Inno.Build/Inno.Build.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -21,11 +21,21 @@ public static class PlayerApplication
     /// <returns>
     /// Zero after orderly shutdown; startup, execution and retirement failures propagate.
     /// </returns>
+    /// <remarks>
+    /// Hosts must preserve their owner thread across asynchronous startup and frame callbacks using
+    /// their synchronization context. A blocking host can use OwnerThreadExecution.Run.
+    /// </remarks>
     /// <exception cref="ArgumentNullException">
     /// Options or a required host service is null.
     /// </exception>
     /// <exception cref="OperationCanceledException">
     /// Frame scheduling was canceled.
+    /// </exception>
+    /// <exception cref="System.IO.InvalidDataException">
+    /// Deployment metadata, linked code, or the prepared content identity is inconsistent.
+    /// </exception>
+    /// <exception cref="InvalidOperationException">
+    /// A host factory does not provide its required product, or runtime startup or retirement fails.
     /// </exception>
     public static async Task<int> RunAsync(
         PlayerLaunchOptions options,
@@ -38,7 +48,10 @@ public static class PlayerApplication
         ArgumentNullException.ThrowIfNull(options.adapters);
         ArgumentNullException.ThrowIfNull(options.moduleActivator);
         ArgumentNullException.ThrowIfNull(options.frameDriver);
-        using GamePlayerHost host = GamePlayerHost.Create(options);
+        ArgumentNullException.ThrowIfNull(options.contentSource);
+        ArgumentNullException.ThrowIfNull(options.createStorage);
+        cancellationToken.ThrowIfCancellationRequested();
+        using GamePlayerHost host = await GamePlayerHost.CreateAsync(options, cancellationToken);
         return await host.RunGameAsync(options.frameDriver, options.smokeFrameLimit, cancellationToken);
     }
 }

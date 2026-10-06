@@ -26,6 +26,8 @@ internal sealed class RenderPresentationComposer
         m_initializedRegions.Add(new PresentationRegion(request.target, request.viewport));
     }
 
+    internal void Clear() => m_initializedRegions.Clear();
+
     private static bool Overlaps(
         RenderViewport left,
         RenderViewport right

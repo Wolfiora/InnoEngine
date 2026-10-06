@@ -882,3 +882,13 @@ Sample 后台快照复用 generation read lease、Serialization generation 和 C
 ## 2026-10-04 编译产物与加载策略
 
 Compiler 只发布不可变 `ScriptModuleDeployment`，不创建 ALC 或引用 DotNet Adapter。Reload 的组合工厂将产物转换为 `IModuleSource`，共同 ModuleHost/GenerationCoordinator 继续拥有候选、原子发布和 Full GC → finalizers → Full GC 退休屏障。工厂不能提前激活模块，也不能在 Faulted gate 外开启新的加载事务。
+
+
+## 内容与帧临时状态的 owner 复核
+
+
+Contributor snapshot、scratch、内容读取流与异步 clip 准备属于各自 owner。帧固定 snapshot 后，下一帧才接受注册变化；所有 scratch 引用在 finally 清空。取消 clip/content 准备后必须完成任务退休，不能让 callback 或下载 continuation 持有已卸载 extension。
+
+内容 store 的 reader generation 与代码 TypeCache/Assembly generation 具有不同语义：reader pin 只保护冻结内容，不成为 live object 第二索引；跨 generation live object 仍通过 Core.Identity 重新解析。Settings 与 Asset 引用使用 owner 的完整 SerializationContext。只读 Pack 与 Asset lease 不公开物理路径。
+
+本轮职责迁移保留显式 Stable Type ID，并固定迁移前推导出的持久 DTO ID；内部 parser、临时键和生成 catalog 不进入持久协议。退出顺序和 GC barrier 继续按本页原规范执行，不能把缓存 reader 已释放当作 collectible ALC 已退休。

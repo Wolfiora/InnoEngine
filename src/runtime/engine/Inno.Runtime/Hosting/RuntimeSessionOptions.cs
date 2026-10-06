@@ -3,6 +3,8 @@ using System;
 using System.Collections.Generic;
 
 using Inno.References;
+using Inno.Content;
+using Inno.Core.Logging;
 
 namespace Inno.Runtime;
 
@@ -22,18 +24,23 @@ public sealed class RuntimeSessionOptions
     public string applicationId { get; init; } = "inno.application";
 
     /// <summary>
-    /// Gets or initializes the optional materialized runtime content root.
+    /// Gets or initializes the immutable content store borrowed for the session lifetime.
     /// </summary>
     /// <remarks>
-    /// Player sessions require this directory. Edit and Play sessions may omit it when an authoring asset
+    /// Player sessions require this store. Edit and Play sessions may omit it when an authoring asset
     /// service is composed by the Editor.
     /// </remarks>
-    public string? runtimeContentDirectory { get; init; }
+    public IRuntimeContentStore? contentStore { get; init; }
 
     /// <summary>
-    /// Gets or initializes the writable application-specific persistent data root selected by the host.
+    /// Gets or initializes the optional factory that transfers one session log sink to this session.
     /// </summary>
-    public string persistentDataDirectory { get; init; } = string.Empty;
+    /// <remarks>
+    /// The factory receives the session identity. The returned sink receives only this session's entries
+    /// and is disposed during retirement when it implements <c>IDisposable</c>.
+    /// A null factory leaves logging to the host router's existing sinks.
+    /// </remarks>
+    public Func<LogSessionId, ILogSink>? createLogSink { get; init; }
 
     /// <summary>
     /// Gets or initializes the runtime asset payload residency budget in bytes.

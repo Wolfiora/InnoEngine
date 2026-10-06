@@ -1,64 +1,140 @@
 # Inno.Player.Runtime
 
-[Runtime 索引](README.md) · [Wiki 首页](../README.md) · [Shell](Inno.Shell.md) · [桌面入口](Inno.Player.md) · [Web 入口](Inno.Player.Browser.md)
+[分类索引](README.md) · [Wiki 首页](../README.md) · [本轮整改计划](../architecture/ARCHITECTURE_CLEANUP_PLAN_2026_10_06.md)
 
 ## 职责与边界
 
-这是桌面和 Web 共用的 Player 应用层。唯一运行入口是 `PlayerApplication.RunAsync`。平台入口准备内容和宿主服务，运行时模块装配、Scene、Settings、Input、Rendering、Diagnostics 与退休流程在这里完成。内部 `GamePlayerHost : Shell` 不属于公开扩展契约，不通过源码链接共享。
+桌面和浏览器共用的 Player 应用层。平台 composition 注入内容来源、元数据、Adapter、存储、日志与帧驱动；共享流程不读取部署文件，不创建缓存目录，不引用 Build 或具体内容 Adapter。内部 GamePlayerHost 不是公开扩展协议。
 
-## 所有公开 API
+## 启动数据流
 
-| API | 稳定语义 |
-| --- | --- |
-| `PlayerApplication.RunAsync(options, cancellationToken)` | 启动冻结部署并运行共享生命周期；正常退出返回 0，失败和取消传播异常。 |
-| `PlayerLaunchOptions.adapters` | 必填的后端目录，决定平台、输入、渲染、音频、文本、UI 和存储工厂。 |
-| `modules` / `types` / `serializationMetadata` | 必填的模块、类型与序列化元数据来源，由同一 composition 选择；模块来源的所有权移交给应用。 |
-| `contentDirectory` / `persistentDataRoot` | 必填的已准备内容目录和持久数据父目录；游戏相对目录来自 manifest。 |
-| `moduleActivator` / `frameDriver` | 必填的程序集激活策略和宿主帧调度契约。 |
-| `adapterSelection` | 后端选择，默认使用目录默认项。 |
-| `jobExecutionMode` / `renderOnCallingThread` | 显式线程能力，不通过浏览器判断改变领域行为。 |
-| `logDeliveryMode` / `consoleColors` | 显式日志交付与终端显示能力。 |
-| `graphicsApi` / `smokeFrameLimit` | 可选图形 API 偏好与有界验证帧数。 |
-| `windowVisible` | 默认显示主窗口；false 请求隐藏窗口，保留完整渲染生命周期。 |
-| 主窗口暂停策略 | 可见 Player 使用 Shell 的隐藏/最小化暂停；隐藏验证窗口继续渲染。应用暂停始终经过同一 Core Events 生命周期。 |
-| `IPlayerModuleActivator.Activate(modules, deployment)` | 激活经验证的逻辑代码部署，不要求 DLL 目录。 |
-| `StaticPlayerModuleActivator(linkedDeployment, assemblies)` | 冻结构建时模块与实际链接程序集的对应关系；运行时核对模块顺序、domain、依赖和内容指纹，再通过同一 ModuleHost 事务激活。 |
+1. `IPlayerContentSource.ReadMetadataAsync` 返回 owned manifest/catalog bytes。
+2. 共享 Player 验证 envelope、应用 ID、代码闭包和 Pack 描述；activator 核对静态链接代码身份。
+3. `PrepareAsync` 返回 verified read-only content store。Desktop/HTTP 来源使用同一 Pack reader。
+4. Shell 创建 Adapter；Session 从 store 读取 Asset catalog 和只读 Project Settings；宿主 factory 创建存储和日志。
+5. 启动 Scene 并运行同一帧驱动。退出先退休 Session，再 Settings、Content、Engine 和诊断 owner。
 
-没有供派生实现者使用的 protected 扩展点。插件通过已有 Runtime Subsystem、TypeRegistry 和 ModuleHost 契约扩展。
+内容来源本身由宿主借用；它交出的 store 由 Player 释放。元数据 bytes 的所有权独立于外部下载缓冲。取消和启动失败执行完整补偿，不制造默认 Scene，不隐藏异常。
 
-## 初始化和示例
-
-先准备内容，再创建 Adapter Catalog，最后调用共享入口：
+## 组合示例
 
 ```csharp
-using System.Collections.Generic;
-using System.Reflection;
-using Inno.Adapter.Default;
+using System.Threading;
+using System.Threading.Tasks;
 using Inno.Player.Runtime;
-using Inno.Runtime;
-using Inno.Shell;
 
-await PlayerApplication.RunAsync(new PlayerLaunchOptions
-{
-    modules = moduleCatalogSource,
-    types = typeCatalogSource,
-    serializationMetadata = serializationMetadataSource,
-    adapters = new DefaultAdapterCatalog(),
-    contentDirectory = contentDirectory,
-    persistentDataRoot = persistentDataRoot,
-    moduleActivator = new StaticPlayerModuleActivator(linkedDeployment, linkedAssemblies),
-    frameDriver = new PollingShellFrameDriver()
-});
+static Task<int> StartPlayer(
+    PlayerLaunchOptions options,
+    CancellationToken cancellationToken
+) {
+    return PlayerApplication.RunAsync(options, cancellationToken);
+}
 ```
 
-变量由调用方 composition 提供；`linkedAssemblies` 的类型是 `IReadOnlyDictionary<string, IReadOnlyList<Assembly>>`。生产 Player 的源生成器根据编译引用和构建生成的部署定义创建这些输入。执行顺序是 manifest envelope 校验与内容准备 → 引擎初始化 → 模块身份、指纹与链接闭包核对和激活 → Shell Adapter 初始化 → Session/Settings/Scene → Shell 帧循环 → 资源退休。
+options 的必要内容与生命周期见下方完整 API。桌面阻塞入口使用 `OwnerThreadExecution.Run`；异步宿主须保留 owner-thread synchronization context。`windowVisible=false` 用于不夺焦点的有界渲染验收，真实渲染生命周期仍执行。
 
-## 错误、生命周期和热重载
+## 扩展和热重载
 
-缺失内容、无效模块闭包和启动失败明确抛出异常；不会制造默认 Scene 或吞掉错误。输入仍使用同一 `IInputEventSource`，Session 拥有独立 backend。帧驱动只调度，不实现第二套游戏循环。
+新增内容来源只实现 `IPlayerContentSource` 和内容 store；不修改 Session 或 AssetDatabase。新增宿主只选择帧驱动和平台 Adapter。静态 Player 不携带 collectible loader 或运行时 compiler；Editor 的 Full GC/finalizer/弱监测/Faulted gate 不因静态发布改变。
 
-发行 Player 使用生成的静态目录，不携带 collectible loader 或运行时编译器。Editor 的动态来源仍独立保留 RetirementBarrier、Full GC、finalizer wait、弱 monitor 和 Faulted gate；静态部署不会改变该契约。
+## 当前源码公开 API 清单
 
-共享 Player 将有效 `OnSuspensionChanged` 同步发送到 Session 的 `EventDispatcher`。
-Audio Runtime 通过生命周期所属的 Core Events Hub 暂停 active/retained mixer 的 master bus，恢复时保留用户原本的 bus 暂停设置；
-更换设备或 mixer 仍保留宿主暂停状态。领域服务不判断浏览器或桌面平台。
+以下仅列出当前程序集自己声明的 public/protected 契约；继承成员遵循所属基类页面。internal/private 实现不作为稳定公开 API。签名依据当前源码语义模型生成，行为、参数、异常与所有权说明同时以对应英文 XML 为准。
+
+### `Inno.Player.Runtime.IPlayerContentSource`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`System.Threading.Tasks.ValueTask<Inno.Content.IRuntimeContentStore> Inno.Player.Runtime.IPlayerContentSource.PrepareAsync(Inno.Content.ContentPackDescriptor pack, Inno.Storage.StorageScope scope, Inno.Core.Serialization.SerializationGeneration serialization, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))`](../../src/composition/player/Inno.Player.Runtime/Deployment/IPlayerContentSource.cs#L47) | Prepares the exact verified pack selected by the decoded catalog. |
+| [`System.Threading.Tasks.ValueTask<Inno.Player.Runtime.PlayerContentMetadata> Inno.Player.Runtime.IPlayerContentSource.ReadMetadataAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))`](../../src/composition/player/Inno.Player.Runtime/Deployment/IPlayerContentSource.cs#L24) | Reads the bounded deployment manifest and content catalog before serialization starts. |
+| [`Inno.Player.Runtime.IPlayerContentSource`](../../src/composition/player/Inno.Player.Runtime/Deployment/IPlayerContentSource.cs#L13) | Supplies deployment metadata and verified content without prescribing a physical layout. |
+
+### `Inno.Player.Runtime.IPlayerModuleActivator`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`void Inno.Player.Runtime.IPlayerModuleActivator.Activate(Inno.Extensibility.Modules.ModuleHost modules, Inno.Runtime.GameCodeDeployment deployment)`](../../src/composition/player/Inno.Player.Runtime/Deployment/IPlayerModuleActivator.cs#L23) | Verifies the code closure and publishes its module contributions atomically. |
+| [`Inno.Player.Runtime.IPlayerModuleActivator`](../../src/composition/player/Inno.Player.Runtime/Deployment/IPlayerModuleActivator.cs#L9) | Activates a validated logical code deployment through the common module transaction boundary. |
+
+### `Inno.Player.Runtime.PlayerApplication`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`static System.Threading.Tasks.Task<int> Inno.Player.Runtime.PlayerApplication.RunAsync(Inno.Player.Runtime.PlayerLaunchOptions options, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))`](../../src/composition/player/Inno.Player.Runtime/PlayerApplication.cs#L40) | Runs a frozen game deployment using explicitly supplied host services. |
+| [`Inno.Player.Runtime.PlayerApplication`](../../src/composition/player/Inno.Player.Runtime/PlayerApplication.cs#L10) | Owns the common Player startup, frame execution and verified resource retirement. |
+
+### `Inno.Player.Runtime.PlayerContentMetadata`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Player.Runtime.PlayerContentMetadata.PlayerContentMetadata(System.ReadOnlySpan<byte> manifest, System.ReadOnlySpan<byte> catalog)`](../../src/composition/player/Inno.Player.Runtime/Deployment/PlayerContentMetadata.cs#L22) | Copies deployment metadata so the source can retire its own buffers immediately. |
+| [`System.ReadOnlyMemory<byte> Inno.Player.Runtime.PlayerContentMetadata.catalog`](../../src/composition/player/Inno.Player.Runtime/Deployment/PlayerContentMetadata.cs#L40) | Gets the owned serialized content catalog, valid for this metadata object's lifetime. |
+| [`System.ReadOnlyMemory<byte> Inno.Player.Runtime.PlayerContentMetadata.manifest`](../../src/composition/player/Inno.Player.Runtime/Deployment/PlayerContentMetadata.cs#L35) | Gets the owned manifest envelope, valid for this metadata object's lifetime. |
+| [`Inno.Player.Runtime.PlayerContentMetadata`](../../src/composition/player/Inno.Player.Runtime/Deployment/PlayerContentMetadata.cs#L8) | Owns the two metadata documents required to identify and verify a Player deployment. |
+
+### `Inno.Player.Runtime.PlayerLaunchOptions`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Adapter.AdapterSelection Inno.Player.Runtime.PlayerLaunchOptions.adapterSelection`](../../src/composition/player/Inno.Player.Runtime/PlayerLaunchOptions.cs#L67) | Gets the coherent runtime backend selection. |
+| [`required Inno.Adapter.IAdapterCatalog Inno.Player.Runtime.PlayerLaunchOptions.adapters`](../../src/composition/player/Inno.Player.Runtime/PlayerLaunchOptions.cs#L37) | Gets the host-owned factories used to create isolated runtime adapters. |
+| [`bool Inno.Player.Runtime.PlayerLaunchOptions.consoleColors`](../../src/composition/player/Inno.Player.Runtime/PlayerLaunchOptions.cs#L87) | Gets whether the host console supports changing terminal colors. |
+| [`required Inno.Player.Runtime.IPlayerContentSource Inno.Player.Runtime.PlayerLaunchOptions.contentSource`](../../src/composition/player/Inno.Player.Runtime/PlayerLaunchOptions.cs#L42) | Gets the borrowed source of deployment metadata and verified immutable content. |
+| [`System.Func<Inno.Runtime.GameRuntimeManifest, Inno.Core.Logging.LogSessionId, Inno.Core.Logging.ILogSink>? Inno.Player.Runtime.PlayerLaunchOptions.createLogSink`](../../src/composition/player/Inno.Player.Runtime/PlayerLaunchOptions.cs#L52) | Gets the optional host factory transferring a session log sink to the game session. |
+| [`required System.Func<Inno.Runtime.GameRuntimeManifest, Inno.Storage.IApplicationStorage> Inno.Player.Runtime.PlayerLaunchOptions.createStorage`](../../src/composition/player/Inno.Player.Runtime/PlayerLaunchOptions.cs#L47) | Gets the host factory transferring application storage ownership to the game session. |
+| [`required Inno.Shell.IShellFrameDriver Inno.Player.Runtime.PlayerLaunchOptions.frameDriver`](../../src/composition/player/Inno.Player.Runtime/PlayerLaunchOptions.cs#L62) | Gets the owner-thread driver that schedules the common shell frames. |
+| [`Inno.Rendering.GraphicsApi? Inno.Player.Runtime.PlayerLaunchOptions.graphicsApi`](../../src/composition/player/Inno.Player.Runtime/PlayerLaunchOptions.cs#L92) | Gets an optional rendering API preference; null selects the adapter default. |
+| [`Inno.Runtime.RuntimeJobExecutionMode Inno.Player.Runtime.PlayerLaunchOptions.jobExecutionMode`](../../src/composition/player/Inno.Player.Runtime/PlayerLaunchOptions.cs#L72) | Gets the execution policy available to the game's job scheduler. |
+| [`Inno.Core.Logging.LogDeliveryMode Inno.Player.Runtime.PlayerLaunchOptions.logDeliveryMode`](../../src/composition/player/Inno.Player.Runtime/PlayerLaunchOptions.cs#L82) | Gets the host's logging delivery policy. |
+| [`required Inno.Player.Runtime.IPlayerModuleActivator Inno.Player.Runtime.PlayerLaunchOptions.moduleActivator`](../../src/composition/player/Inno.Player.Runtime/PlayerLaunchOptions.cs#L57) | Gets the strategy that activates the frozen deployment's managed modules. |
+| [`required Inno.Extensibility.Modules.IAssemblyCatalogSource Inno.Player.Runtime.PlayerLaunchOptions.modules`](../../src/composition/player/Inno.Player.Runtime/PlayerLaunchOptions.cs#L22) | Gets the code catalog selected by the platform composition; ownership transfers to the application. |
+| [`bool Inno.Player.Runtime.PlayerLaunchOptions.renderOnCallingThread`](../../src/composition/player/Inno.Player.Runtime/PlayerLaunchOptions.cs#L77) | Gets whether graphics commands must execute on the frame owner's thread. |
+| [`required Inno.Core.Serialization.ISerializationMetadataSource Inno.Player.Runtime.PlayerLaunchOptions.serializationMetadata`](../../src/composition/player/Inno.Player.Runtime/PlayerLaunchOptions.cs#L32) | Gets generated declaration access and collection construction for the linked code closure. |
+| [`int? Inno.Player.Runtime.PlayerLaunchOptions.smokeFrameLimit`](../../src/composition/player/Inno.Player.Runtime/PlayerLaunchOptions.cs#L102) | Gets an optional positive frame count for a bounded verification run. |
+| [`required Inno.Extensibility.Types.ITypeCatalogSource Inno.Player.Runtime.PlayerLaunchOptions.types`](../../src/composition/player/Inno.Player.Runtime/PlayerLaunchOptions.cs#L27) | Gets the metadata implementation corresponding to the selected code deployment. |
+| [`bool Inno.Player.Runtime.PlayerLaunchOptions.windowVisible`](../../src/composition/player/Inno.Player.Runtime/PlayerLaunchOptions.cs#L97) | Gets whether the primary window is initially shown; false preserves rendering without taking focus. |
+| [`Inno.Player.Runtime.PlayerLaunchOptions`](../../src/composition/player/Inno.Player.Runtime/PlayerLaunchOptions.cs#L17) | Supplies resolved host services and content to the common Player lifecycle. |
+
+### `Inno.Player.Runtime.StaticPlayerModuleActivator`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Player.Runtime.StaticPlayerModuleActivator.StaticPlayerModuleActivator(Inno.Runtime.GameCodeDeployment deployment, System.Collections.Generic.IReadOnlyDictionary<string, System.Collections.Generic.IReadOnlyList<System.Reflection.Assembly>> assemblies)`](../../src/composition/player/Inno.Player.Runtime/Deployment/StaticPlayerModuleActivator.cs#L31) | Validates and freezes linked assembly ownership before the Player opens its runtime session. |
+| [`void Inno.Player.Runtime.StaticPlayerModuleActivator.Activate(Inno.Extensibility.Modules.ModuleHost modules, Inno.Runtime.GameCodeDeployment deployment)`](../../src/composition/player/Inno.Player.Runtime/Deployment/StaticPlayerModuleActivator.cs#L55) | See the implemented contract. |
+| [`Inno.Player.Runtime.StaticPlayerModuleActivator`](../../src/composition/player/Inno.Player.Runtime/Deployment/StaticPlayerModuleActivator.cs#L14) | Activates explicit linked code without probing assemblies or opening runtime code files. |
+
+## 项目依赖
+
+- [Inno.Core.Execution](../core/Inno.Core.Execution.md)：实现依赖（`PrivateAssets="compile"`）。
+- [Inno.Engine.Default](Inno.Engine.Default.md)：实现依赖（`PrivateAssets="compile"`）。
+- [Inno.Animation.Runtime](../animation/Inno.Animation.Runtime.md)：实现依赖（`PrivateAssets="compile"`）。
+- [Inno.Animation](../animation/Inno.Animation.md)：实现依赖（`PrivateAssets="compile"`）。
+- [Inno.Audio.Runtime](../audio/Inno.Audio.Runtime.md)：实现依赖（`PrivateAssets="compile"`）。
+- [Inno.Audio](../audio/Inno.Audio.md)：实现依赖（`PrivateAssets="compile"`）。
+- [Inno.Assets](../assets/Inno.Assets.md)：实现依赖（`PrivateAssets="compile"`）。
+- [Inno.Core.Events](../core/Inno.Core.Events.md)：实现依赖（`PrivateAssets="compile"`）。
+- [Inno.Core.IO](../core/Inno.Core.IO.md)：实现依赖（`PrivateAssets="compile"`）。
+- [Inno.Core.Settings](../core/Inno.Core.Settings.md)：实现依赖（`PrivateAssets="compile"`）。
+- [Inno.Input.Runtime](../input/Inno.Input.Runtime.md)：实现依赖（`PrivateAssets="compile"`）。
+- [Inno.Platform](../platform/Inno.Platform.md)：实现依赖（`PrivateAssets="compile"`）。
+- [Inno.References](../references/Inno.References.md)：实现依赖（`PrivateAssets="compile"`）。
+- [Inno.Rendering.Runtime](../rendering/Inno.Rendering.Runtime.md)：实现依赖（`PrivateAssets="compile"`）。
+- [Inno.Text](../text/Inno.Text.md)：实现依赖（`PrivateAssets="compile"`）。
+- [Inno.Text.Runtime](../text/Inno.Text.Runtime.md)：实现依赖（`PrivateAssets="compile"`）。
+- [Inno.UI](../ui/Inno.UI.md)：实现依赖（`PrivateAssets="compile"`）。
+- [Inno.UI.Runtime](../ui/Inno.UI.Runtime.md)：实现依赖（`PrivateAssets="compile"`）。
+- [Inno.Scene](../scene/Inno.Scene.md)：实现依赖（`PrivateAssets="compile"`）。
+- [Inno.Storage.Runtime](../storage/Inno.Storage.Runtime.md)：实现依赖（`PrivateAssets="compile"`）。
+- [Inno.Core.Diagnostics](../core/Inno.Core.Diagnostics.md)：实现依赖（`PrivateAssets="compile"`）。
+- [Inno.Adapter](Inno.Adapter.md)：项目引用；公开签名可见性由语义边界检查确认。
+- [Inno.Shell](Inno.Shell.md)：项目引用；公开签名可见性由语义边界检查确认。
+- [Inno.Core.Logging](../core/Inno.Core.Logging.md)：项目引用；公开签名可见性由语义边界检查确认。
+- [Inno.Rendering](../rendering/Inno.Rendering.md)：项目引用；公开签名可见性由语义边界检查确认。
+- [Inno.Runtime](Inno.Runtime.md)：项目引用；公开签名可见性由语义边界检查确认。
+- [Inno.Content](../assets/Inno.Content.md)：项目引用；公开签名可见性由语义边界检查确认。
+- [Inno.Storage](../storage/Inno.Storage.md)：项目引用；公开签名可见性由语义边界检查确认。
+- [Inno.Core.Serialization](../core/Inno.Core.Serialization.md)：项目引用；公开签名可见性由语义边界检查确认。
+- [Inno.Extensibility.Modules](../extensibility/Inno.Extensibility.Modules.md)：项目引用；公开签名可见性由语义边界检查确认。
+- [Inno.Extensibility.Catalogs](../extensibility/Inno.Extensibility.Catalogs.md)：项目引用；公开签名可见性由语义边界检查确认。
+
+共同 MSBuild 注入的 analyzer 与编译规则属于构建依赖，完整有效项目图记录在本轮验收证据中。

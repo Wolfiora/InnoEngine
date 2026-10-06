@@ -7,6 +7,7 @@
     <IsTestProject>true</IsTestProject>
   </PropertyGroup>
   <ItemGroup>
+    <ProjectReference Include="../../../src/foundation/core/Inno.Core.Execution/Inno.Core.Execution.csproj" />
     <ProjectReference Include="..\..\..\src\adapters\audio\Inno.Adapter.Audio.MiniAudio\Inno.Adapter.Audio.MiniAudio.csproj" />
     <ProjectReference Include="..\..\..\src\services\audio\Inno.Audio\Inno.Audio.csproj" />
     <ProjectReference Include="..\..\..\src\foundation\core\Inno.Core.Mathematics\Inno.Core.Mathematics.csproj" />

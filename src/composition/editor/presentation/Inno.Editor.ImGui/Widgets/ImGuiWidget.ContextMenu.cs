@@ -1,5 +1,7 @@
 using System;
 using System.Numerics;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
 using Inno.Native.ImGui;
 using NativeImGui = Inno.Native.ImGui.ImGui;
@@ -214,9 +216,32 @@ public static partial class ImGuiWidget
         float minimumWidth = MathF.Min(
             workSize.X,
             style.searchPopupWidth + style.menuWindowPadding.X * 2f + style.menuBorderSize * 2f);
-        NativeImGui.SetNextWindowSizeConstraints(
+        SetMenuPopupSizeConstraints(
             new Vector2(minimumWidth, 0f),
             Vector2.Max(workSize, Vector2.One));
+    }
+
+    private static unsafe void SetMenuPopupSizeConstraints(
+        Vector2 minimum,
+        Vector2 maximum
+    ) {
+        Vector2 pixelMaximum = Vector2.Max(Vector2.One, new Vector2(
+            MathF.Floor(maximum.X),
+            MathF.Floor(maximum.Y)));
+        Vector2 pixelMinimum = Vector2.Min(pixelMaximum, new Vector2(
+            MathF.Ceiling(minimum.X),
+            MathF.Ceiling(minimum.Y)));
+        NativeImGui.SetNextWindowSizeConstraints(pixelMinimum, pixelMaximum, &RoundMenuPopupSize);
+    }
+
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    private static unsafe void RoundMenuPopupSize(ImGuiSizeCallbackData* data)
+    {
+        // ImGui truncates constrained sizes. Round content upward within integer bounds so
+        // fractional padding cannot turn a fully fitting menu into a scrolling window.
+        data->DesiredSize = new Vector2(
+            MathF.Ceiling(data->DesiredSize.X),
+            MathF.Ceiling(data->DesiredSize.Y));
     }
 
     private static void PushContextMenuStyle()

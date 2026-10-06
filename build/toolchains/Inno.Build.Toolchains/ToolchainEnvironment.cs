@@ -16,6 +16,55 @@ namespace Inno.Build.Toolchains;
 public static class ToolchainEnvironment
 {
     /// <summary>
+    /// Executes a declared absolute tool with an explicitly resolved SDK environment and records the operation cost.
+    /// </summary>
+    /// <param name="context">
+    /// The operation owning execution statistics and frozen recipe inputs.
+    /// </param>
+    /// <param name="fileName">
+    /// The absolute executable declared by the recipe; no host-native SDK is inferred.
+    /// </param>
+    /// <param name="arguments">
+    /// Individual arguments passed without shell interpretation.
+    /// </param>
+    /// <param name="workingDirectory">
+    /// The owned source or intermediate directory.
+    /// </param>
+    /// <param name="cancellationToken">
+    /// Cancels execution and drains the complete process tree.
+    /// </param>
+    /// <param name="environment">
+    /// The frozen environment supplied by the selected SDK resolver.
+    /// </param>
+    /// <returns>
+    /// Completion after successful exit and output delivery.
+    /// </returns>
+    /// <exception cref="ArgumentException">
+    /// The executable is not an absolute declared tool path.
+    /// </exception>
+    /// <exception cref="InvalidOperationException">
+    /// The process fails to start or exits unsuccessfully.
+    /// </exception>
+    /// <exception cref="OperationCanceledException">
+    /// Execution was canceled.
+    /// </exception>
+    public static Task RunAsync(
+        NativeBuildContext context,
+        string fileName,
+        IReadOnlyList<string> arguments,
+        string workingDirectory,
+        CancellationToken cancellationToken,
+        IReadOnlyDictionary<string, string> environment
+    ) {
+        ArgumentNullException.ThrowIfNull(context);
+        ArgumentNullException.ThrowIfNull(environment);
+        if (!Path.IsPathFullyQualified(fileName))
+            throw new ArgumentException("An explicit SDK tool must have an absolute path.", nameof(fileName));
+        context.inputState.RecordProcess();
+        return RunAsync(fileName, arguments, workingDirectory, cancellationToken, environment);
+    }
+
+    /// <summary>
     /// Runs a host-native process with the context's frozen compiler and SDK selection.
     /// </summary>
     /// <param name="context">
@@ -54,6 +103,7 @@ public static class ToolchainEnvironment
         string executable = Path.IsPathFullyQualified(fileName) ? fileName : tools.ResolveExecutable(fileName);
         IReadOnlyList<string> selectedArguments = fileName == "cmake" && arguments.Contains("-S")
             ? arguments.Concat(tools.cmakeArguments).ToArray() : arguments;
+        context.inputState.RecordProcess();
         return RunAsync(executable, selectedArguments, workingDirectory, cancellationToken, tools.environment);
     }
 
@@ -97,6 +147,7 @@ public static class ToolchainEnvironment
         if (fileName == "cmake" && arguments.StartsWith("-S ", StringComparison.Ordinal))
             arguments += " " + string.Join(" ", tools.cmakeArguments.Select(static argument => "\"" + argument + "\""));
         var start = new ProcessStartInfo(executable) { Arguments = arguments, WorkingDirectory = workingDirectory };
+        context.inputState.RecordProcess();
         return RunProcessAsync(start, cancellationToken, tools.environment, Console.Out);
     }
 

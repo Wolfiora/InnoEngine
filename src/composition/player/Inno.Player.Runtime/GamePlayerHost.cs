@@ -1,3 +1,5 @@
+using Inno.Core.IO;
+using Inno.Content;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -28,6 +30,7 @@ using Inno.Rendering;
 using Inno.Rendering.Runtime;
 using Inno.Shell;
 using Inno.Storage.Runtime;
+using Inno.Storage;
 using Inno.UI.Runtime;
 using ShellHost = Inno.Shell.Shell;
 
@@ -36,6 +39,7 @@ namespace Inno.Player.Runtime;
 internal sealed class GamePlayerHost : ShellHost
 {
     private readonly EngineHost m_engine;
+    private IRuntimeContentStore? m_content;
     private ProjectSettingsStore? m_settings;
     private RuntimeSession? m_session;
     private RenderRuntime? m_rendering;
@@ -54,30 +58,41 @@ internal sealed class GamePlayerHost : ShellHost
         m_engine.logs.RegisterSink(new ConsoleLogSink(options.consoleColors));
     }
 
-    internal static GamePlayerHost Create(PlayerLaunchOptions options)
-    {
+    internal static async Task<GamePlayerHost> CreateAsync(
+        PlayerLaunchOptions options,
+        CancellationToken cancellationToken
+    ) {
         ArgumentNullException.ThrowIfNull(options);
-        string packagedContentRoot = Path.GetFullPath(options.contentDirectory);
-        byte[] manifestEnvelope = File.ReadAllBytes(Path.Combine(packagedContentRoot, "runtime.manifest"));
-        string persistentDataPath = RuntimeManifestEnvelope.ReadPersistentDataPath(manifestEnvelope);
-        string persistentRoot = Path.GetFullPath(Path.Combine(options.persistentDataRoot, persistentDataPath));
-        string runtimeContentRoot = RuntimeContentDeployment.Materialize(
-            packagedContentRoot,
-            persistentRoot);
         EngineHost engine = new EngineHostBuilder()
             .UseMetadataSources(options.modules, options.types, options.serializationMetadata)
-            .UseMetadataCache(Path.Combine(persistentRoot, "Library", "RuntimeMetadata"))
             .UseLogDelivery(options.logDeliveryMode)
             .Build();
         GamePlayerHost? host = null;
+        IRuntimeContentStore? content = null;
         try
         {
+            PlayerContentMetadata metadata = await options.contentSource.ReadMetadataAsync(cancellationToken);
             using SerializationGeneration serialization = engine.serialization.CaptureGeneration();
-            GameRuntimeManifest manifest = RuntimeManifestEnvelope.Decode(manifestEnvelope, serialization);
+            GameRuntimeManifest manifest = RuntimeManifestEnvelope.Decode(metadata.manifest.Span, serialization);
+            RuntimeContentCatalog catalog = serialization.Deserialize<RuntimeContentCatalog>(metadata.catalog.Span);
+            catalog.Validate();
+            if (catalog.runtimeAssemblyCount != manifest.modules.Sum(static module => module.assemblies.Length))
+                throw new InvalidDataException("The content catalog and runtime manifest have different code closures.");
             ActivateRuntimeModules(
                 options.moduleActivator,
                 engine.modules,
                 GameCodeDeployment.FromManifest(manifest.modules));
+            var pack = new ContentPackDescriptor(catalog.contentHash, catalog.packFileName);
+            content = await options.contentSource.PrepareAsync(
+                pack,
+                new StorageScope(manifest.applicationId),
+                serialization,
+                cancellationToken);
+            if (content is null)
+                throw new InvalidOperationException("The Player content source returned no prepared store.");
+            if (content.descriptor != pack)
+                throw new InvalidDataException("The prepared Player content store differs from the selected deployment pack.");
+            cancellationToken.ThrowIfCancellationRequested();
             host = new GamePlayerHost(
                 options.adapters,
                 new ShellOptions
@@ -99,10 +114,9 @@ internal sealed class GamePlayerHost : ShellHost
                     suspendWhenHidden = options.windowVisible
                 },
                 engine, options);
-            host.InitializeRuntime(
-                manifest,
-                runtimeContentRoot,
-                persistentRoot, options.jobExecutionMode);
+            host.m_content = content;
+            content = null;
+            host.InitializeRuntime(manifest, options);
             return host;
         }
         catch
@@ -113,7 +127,14 @@ internal sealed class GamePlayerHost : ShellHost
             }
             else
             {
-                engine.Dispose();
+                try
+                {
+                    content?.Dispose();
+                }
+                finally
+                {
+                    engine.Dispose();
+                }
             }
             throw;
         }
@@ -189,6 +210,8 @@ internal sealed class GamePlayerHost : ShellHost
         m_rendering = null;
         Attempt(() => m_settings?.Dispose());
         m_settings = null;
+        Attempt(() => m_content?.Dispose());
+        m_content = null;
         Attempt(m_engine.Dispose);
         Attempt(() => m_renderDiagnostics?.Dispose());
         m_renderDiagnostics = null;
@@ -232,9 +255,7 @@ internal sealed class GamePlayerHost : ShellHost
 
     private void InitializeRuntime(
         GameRuntimeManifest manifest,
-        string runtimeContentRoot,
-        string persistentRoot,
-        RuntimeJobExecutionMode jobExecutionMode
+        PlayerLaunchOptions options
     ) {
         InitializeAdapterResources();
         m_diagnosticLogs = new DiagnosticLogSink(m_engine.diagnostics, m_engine.logs);
@@ -242,14 +263,18 @@ internal sealed class GamePlayerHost : ShellHost
         m_session = m_engine.CreateSession(new RuntimeSessionOptions
         {
             kind = RuntimeSessionKind.Player,
-            jobExecutionMode = jobExecutionMode,
+            jobExecutionMode = options.jobExecutionMode,
             applicationId = manifest.applicationId,
-            runtimeContentDirectory = runtimeContentRoot,
-            persistentDataDirectory = persistentRoot,
+            contentStore = m_content,
+            createLogSink = options.createLogSink is null ? null : id => options.createLogSink(manifest, id),
             createSubsystems = owner =>
             {
+                using ContentReadLease document = m_content!.Acquire(new ContentKey(SettingsFileNames.project));
+                using Stream documentStream = document.OpenRead();
+                byte[] documentBytes = new byte[checked((int)document.entry.length)];
+                documentStream.ReadExactly(documentBytes);
                 m_settings = new ProjectSettingsStore(
-                    Path.Combine(runtimeContentRoot, SettingsFileNames.project),
+                    new ReadOnlyByteDocumentStore(document.entry.key.value!, documentBytes),
                     m_engine.types, m_engine.serialization, new ProjectId(manifest.applicationId),
                     AssetSerializationContext.Create(owner.assets));
                 settings.SetContributors(manifest.CreateSettingContributors());
@@ -258,7 +283,8 @@ internal sealed class GamePlayerHost : ShellHost
                     throw new InvalidDataException("Runtime manifest and Project Settings identities do not match.");
                 return DefaultEngine.CreateSessionSubsystems(new EngineSessionComposition(
                     owner, adapters, adapterSelection, inputSource, owner.assets,
-                    () => settings.Get<AudioProjectSettings>(AudioProjectSettings.settingId)));
+                    () => settings.Get<AudioProjectSettings>(AudioProjectSettings.settingId),
+                    () => options.createStorage(manifest)));
             }
         });
         GamePresentationSettings presentation = settings.Get<GamePresentationSettings>(GamePresentationSettings.settingId);
@@ -269,13 +295,13 @@ internal sealed class GamePlayerHost : ShellHost
         InputRuntime inputRuntime = session.subsystems
             .GetRequiredSubsystem<InputRuntime>();
         m_rendering = new RenderRuntime(m_engine.types, renderDevice, m_renderDiagnostics,
-            targetArtifacts: new FileRenderTargetArtifactProvider(runtimeContentRoot, m_engine.serialization,
+            targetArtifacts: new ContentRenderTargetArtifactProvider(m_content!, m_engine.serialization,
                 AssetSerializationContext.Create(session.assets)),
             contentScopeProvider: () => SceneContentSource.CreateScope(session.scenes),
             primaryPresentationViewportProvider: size => CreatePresentationViewport(presentation, size),
             inputSnapshotProvider: () => inputRuntime.snapshot,
-            primaryInputSurfaceSizeProvider: () => new RenderPresentationSize(
-                Math.Max(1, primaryWindow.width), Math.Max(1, primaryWindow.height)),
+            primaryInputSurfaceSizeProvider: () => primaryWindow.width > 0 && primaryWindow.height > 0
+                ? new RenderPresentationSize(primaryWindow.width, primaryWindow.height) : null,
             compositionProgramProvider: adapters.rendering.CreateCompositionProgramProvider(
                 adapterSelection.rendering));
         UseHostPipeline(m_engine.CreateHostPipeline(DefaultEngine.CreateHostSubsystems(m_rendering)));

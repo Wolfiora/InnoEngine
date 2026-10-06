@@ -1,119 +1,337 @@
 # Inno.Runtime
 
-[Runtime 索引](README.md) · [Player](Inno.Player.md) · [Scene](../scene/Inno.Scene.md) · [Assets](../assets/Inno.Assets.md)
+[分类索引](README.md) · [Wiki 首页](../README.md) · [本轮整改计划](../architecture/ARCHITECTURE_CLEANUP_PLAN_2026_10_06.md)
 
-## 未退休 generation 的依赖保护
+## 职责与边界
 
-EngineHost / RuntimeSession 退出前通过共享 `GenerationCoordinator.EnsureRetirementSafe()` 检查仍在使用的代际资源。
-普通退出错误仍可继续逆序清理；已报告 Pending/timeout 的 generation 不允许销毁 Session、metadata 或设备所依赖的服务。
-该状态要求重启 Host，不提供 Reset、跳过或旧 generation 的静默复用。
+Session 通过 `contentStore` 读取运行内容，通过 `createLogSink` 接管自己的日志 sink；不自行创建文件日志或部署目录。EngineHostBuilder 的 metadata 来源显式注入；动态 shadow-copy 根属于 DotNet module source。Settings 来自注入的文档来源，Player 使用只读文档。Session 退出先停止新工作、取消并完成任务，再退休子系统、资源与事件订阅；失败保留 Pending/Faulted 语义。
 
-## 退休顺序与重试
+## 组合与生命周期
 
-Pipeline 进入 stopping 后拒绝新帧；pending 子系统不会被标为已释放，context resources 保留。Session 仅在实际退休后从 Host 注销；pending 时会有界排空 Job 主线程队列，允许完成依赖主线程的回调。Host 在所有 Session/Host Pipeline 退休前保留 metadata owner，并拒绝新增 owner。
-
-该行为由 `RuntimeRetirementTests` 通过公开 factory、Session 与 Host 接口验证；没有测试访问后门。
-
-构造器不再运行用户 factory/Attach。Host 先登记 Session/Pipeline，随后内部 Start；失败启动由同一 owner
-按 `EngineHostBuilder.UseRetirementTimeout(timeout)` 有界排空（默认 30 秒）。无法完成时保留未退休 owner，
-Fault 共享 generation gate；普通启动失败在完整补偿后可以重试。退休途中已发生的清理异常不会因 Pending 重试丢失。
-
-`RuntimeSessionOptions.assetPreparationBudgetBytes` 默认 64 MiB，独立于 `assetResidencyBudgetBytes`：前者限制并发冷读暂存 bytes，后者限制已物化 payload 驻留。Player 创建 AssetDatabase 时同时传入两者，预算无效在创建 Session 时拒绝。
-
-`Inno.Runtime` 是 Editor Play Mode 与独立 Player 共用的实例化执行宿主。它拥有 Host/Session 生命周期、脚本执行上下文和部署清单，但不拥有窗口、图形后端、Build 或 Editor UI。
-
-## 所有权模型
-
-`EngineHost` 持有可跨 Session 共享但仍按 Host 隔离的 Module、Type、Serialization、Logging 和 Diagnostics 服务。`RuntimeSession` 持有 SceneWorld、Identity、Job、Coroutine、Event、Clock、Session Log，以及可选的只读 `AssetDatabase`。一个 Host 可以同时创建多个互不污染的 Edit、Play 或 Player Session。
+EngineHost 由模块、类型及序列化来源建立；Session 的内容 store 是借用边界，日志 factory 创建的 sink 由 Session 独占释放。Edit、Play 和 Player 使用独立 identity、event、diagnostic 与资源作用域。
 
 ```csharp
-using EngineHost host = new EngineHostBuilder()
-    .UseMetadataSources(moduleSource, typeSource, serializationMetadataSource)
-    .UseMetadataCache(metadataCacheDirectory)
-    .Build();
+using Inno.Content;
+using Inno.Runtime;
 
-using RuntimeSession play = host.CreateSession(new RuntimeSessionOptions
-{
-    kind = RuntimeSessionKind.Play,
-    applicationId = "sample.game",
-    persistentDataDirectory = Path.Combine(userDataRoot, "sample.game")
-});
-
-play.Tick(deltaTime);
+static RuntimeSession CreateSession(
+    EngineHost host,
+    IRuntimeContentStore content
+) {
+    return host.CreateSession(new RuntimeSessionOptions
+    {
+        kind = RuntimeSessionKind.Player,
+        applicationId = "sample.game",
+        contentStore = content,
+        jobExecutionMode = RuntimeJobExecutionMode.SingleThread
+    });
+}
 ```
 
-`RuntimeSessionOptions.persistentDataDirectory` 由宿主选择并必须是有效的可写目录；Player 导出默认使用系统 Local Application Data 下的 Application ID 目录，也可以在 Build Settings 或一次导出中指定其下的可移植相对子目录。`Player` Session 还必须提供已经物化的 `runtimeContentDirectory`；Edit/Play 可以由 Editor 组合 authoring 资产服务。
+宿主先配置 metadata、完整引用解析上下文和 subsystem factories，再创建 Session。先退出 Session，再关闭 content；创建失败按反序退休已取得资源。Pending 退休保留 owner，Faulted generation 禁止继续 Play/Build/Export，需重启 Host。动态模块路径仅属于 DotNet source，静态模块不需要 shadow-copy cache。
 
-## 公开 API
+Asset、Settings 和 Rendering 的内容读取分别由其公开契约完成；共享 Session 不读取部署目录，也不创建日志文件。完整 Player 工作流见 [Player Runtime](Inno.Player.Runtime.md)，代际规则见 [Identity 与 Reload](../architecture/IDENTITY_REFERENCE_RELOAD_STANDARD.md)。
 
-生命周期协议类型已经位于 [Inno.Runtime.Contracts](Inno.Runtime.Contracts.md)；`RuntimeSubsystemPipeline` 仍属于本项目。`RuntimeSession.subsystems` 是 Session pipeline；`EngineHost.CreateHostPipeline` 持有 Host pipeline；Shell 借用 Host pipeline 驱动输出。场景模拟是 Runtime 内部 bridge，不被低层 Contracts 引用。
+## 当前源码公开 API 清单
 
-`EngineHost.generations` 与 `ModuleHost.generations` 指向同一个 GenerationCoordinator。CreateSession 受 gate 约束；Build/Export 在整段异步消费期间持有 read lease。Dispose 先释放 Session、host pipeline、registry/module 等 owner，再等待弱 unload monitor，不能先 GC 再假定依赖已经释放。
+以下仅列出当前程序集自己声明的 public/protected 契约；继承成员遵循所属基类页面。internal/private 实现不作为稳定公开 API。签名依据当前源码语义模型生成，行为、参数、异常与所有权说明同时以对应英文 XML 为准。
 
-| API | 作用 |
+### `Inno.Runtime.EngineHost`
+
+| 当前声明 | 行为 |
 | --- | --- |
-| `EngineHostBuilder` | 配置显式模块、类型、序列化元数据来源与 Host 生命周期，并构建实例。 |
-| `UseMetadataSources(modules, types, serialization)` | 必填的来源组合；Editor 选择动态 Adapter，Player 选择生成目录。缺失来源在 Build 时失败。 |
-| `UseRetirementTimeout(timeout)` | 配置启动补偿、Session 和 Host 退休的正值 deadline；不是允许跳过清理的超时 |
-| `EngineHost` | 拥有应用级实例服务并创建隔离 Session。 |
-| `RuntimeSessionOptions` | 定义 Session 角色、持久目录、运行内容、资产驻留预算、固定步长、Job、Subsystem factory 与 owner-provided reference resolvers。 |
-| `RuntimeSession` | 暴露只读 Session 状态、SceneWorld、EventDispatcher、Reference Catalog、可选 AssetDatabase、Subsystem pipeline、执行作用域与 `Tick`。 |
-| `RuntimeSubsystemId` / `RuntimeSubsystemDescriptor` | 以开放稳定 ID、依赖 DAG 和顺序描述一个 Session 能力。 |
-| `IRuntimeSubsystemFactory` / `RuntimeSubsystemContext` | Contracts 中的装配协议，由 Composition 为 Host 或 Session 创建隔离子系统。 |
-| `RuntimeSubsystem` / `RuntimeSubsystemPipeline` | 固定阶段调度、严格 frame scope、逆序 detach/dispose 与依赖验证。 |
-| `RuntimeSessionOptions.capabilities` | Composition 提供并在 Session 创建时冻结的中立能力 ID 集合 |
-| `EngineHost.CreateHostPipeline(factories, capabilities)` | 对 Host 使用同一 Required/Optional、能力、依赖和补偿策略 |
-| `RuntimeSubsystemPipeline.startupDiagnostics` | 不可用 Optional 子系统的中立诊断快照，同时进入 Core DiagnosticHub；退休时撤销 |
-| `RuntimeSessionKind` | 区分 `Edit`、`Play` 和 `Player` 所有权语义。 |
-| `GameRuntimeManifest` | 描述当前 Player 的应用 ID、持久数据子目录、产品名、启动 Scene、窗口、Plugin 设置贡献和冻结模块 generation。 |
-| `RuntimeManifestEnvelope.ReadPersistentDataPath` | 在初始化序列化服务前读取并严格验证可移植的 Player 数据目录，与完整 manifest 解码时的值必须一致。 |
-| `GameRuntimePlugin` | 保存依赖有序的中立 Plugin 设置贡献，不保存 Plugin `Type`、实例或 delegate。 |
-| `GameRuntimeModule` / `GameRuntimeAssembly` | 保存依赖有序的逻辑模块、domain、程序集名称和内容指纹，不保存运行时 `Assembly`。 |
-| `GameCodeDeployment` / `GameCodeModule` / `GameCodeAssembly` | 校验并冻结逻辑代码部署；静态激活器核对它与实际链接代码闭包的一致性。 |
-| `GamePresentationSettings`, `GamePresentationViewport` | 定义 Game View 与 Player 共用的参考帧、aspect-preserving 策略及确定性居中内容区域。 |
+| [`Inno.Runtime.RuntimeSubsystemPipeline Inno.Runtime.EngineHost.CreateHostPipeline(System.Collections.Generic.IReadOnlyList<Inno.Runtime.Contracts.IRuntimeSubsystemFactory> factories, System.Collections.Generic.IReadOnlyList<Inno.Runtime.Contracts.RuntimeCapabilityId>? capabilities = null)`](../../src/runtime/engine/Inno.Runtime/Hosting/EngineHost.cs#L143) | Creates host-owned subsystems that outlive individual Edit, Play or Player sessions. |
+| [`Inno.Runtime.RuntimeSession Inno.Runtime.EngineHost.CreateSession(Inno.Runtime.RuntimeSessionOptions options)`](../../src/runtime/engine/Inno.Runtime/Hosting/EngineHost.cs#L104) | Creates an isolated Edit, Play, or Player runtime session. |
+| [`void Inno.Runtime.EngineHost.Dispose()`](../../src/runtime/engine/Inno.Runtime/Hosting/EngineHost.cs#L178) | Disposes every owned session before releasing application metadata services. |
+| [`Inno.Core.Diagnostics.DiagnosticHub Inno.Runtime.EngineHost.diagnostics`](../../src/runtime/engine/Inno.Runtime/Hosting/EngineHost.cs#L67) | Gets the isolated diagnostic state hub owned by this host. |
+| [`Inno.Extensibility.Reload.GenerationCoordinator Inno.Runtime.EngineHost.generations`](../../src/runtime/engine/Inno.Runtime/Hosting/EngineHost.cs#L72) | Gets the shared admission gate for reload, recovery, Play, Build and Export. |
+| [`Inno.Core.Logging.LogRouter Inno.Runtime.EngineHost.logs`](../../src/runtime/engine/Inno.Runtime/Hosting/EngineHost.cs#L62) | Gets the isolated logging router using this host's configured delivery policy. |
+| [`Inno.Extensibility.Modules.ModuleHost Inno.Runtime.EngineHost.modules`](../../src/runtime/engine/Inno.Runtime/Hosting/EngineHost.cs#L77) | Gets the isolated managed module host that owns this engine host's reload generations. |
+| [`Inno.Core.Serialization.SerializationRegistry Inno.Runtime.EngineHost.serialization`](../../src/runtime/engine/Inno.Runtime/Hosting/EngineHost.cs#L87) | Gets the isolated serialization registry derived from this host's active type generation. |
+| [`Inno.Extensibility.Types.TypeCatalog Inno.Runtime.EngineHost.types`](../../src/runtime/engine/Inno.Runtime/Hosting/EngineHost.cs#L82) | Gets the isolated immutable type catalog derived from this host's active modules. |
+| [`Inno.Runtime.EngineHost`](../../src/runtime/engine/Inno.Runtime/Hosting/EngineHost.cs#L20) | Owns application-level engine services and creates isolated runtime sessions. |
 
-## 脚本执行上下文
+### `Inno.Runtime.EngineHostBuilder`
 
-当前 `Time`、`SceneManager`、`Log`、`Assets`、`Input`、`Storage`、`Animation` 和 `Settings` 等 Unity 风格门面只解析当前
-Session/Host 的执行作用域。`RuntimeSession.EnterExecutionScope()` 绑定 Log、Diagnostics、Session
-identity、Scene、Clock 与可选 `AssetDatabase`；Player Composition Root 同时绑定它拥有的
-`ProjectSettingsStore`。引擎实例服务不调用这些门面。无活动 Session、Scope 乱序释放或 Session
-已 Dispose 时都会明确失败，因此并行 Session 不共享静态可变状态。
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Runtime.EngineHost Inno.Runtime.EngineHostBuilder.Build()`](../../src/runtime/engine/Inno.Runtime/Hosting/EngineHostBuilder.cs#L46) | Creates an application host and acquires its immutable metadata services. |
+| [`Inno.Runtime.EngineHostBuilder Inno.Runtime.EngineHostBuilder.UseLogDelivery(Inno.Core.Logging.LogDeliveryMode deliveryMode)`](../../src/runtime/engine/Inno.Runtime/Hosting/EngineHostBuilder.cs#L101) | Selects the host router's delivery policy for host and session sinks. |
+| [`Inno.Runtime.EngineHostBuilder Inno.Runtime.EngineHostBuilder.UseMetadataSources(Inno.Extensibility.Modules.IAssemblyCatalogSource modules, Inno.Extensibility.Types.ITypeCatalogSource types, Inno.Core.Serialization.ISerializationMetadataSource serialization)`](../../src/runtime/engine/Inno.Runtime/Hosting/EngineHostBuilder.cs#L73) | Selects the code and metadata implementation before creating the application host. |
+| [`Inno.Runtime.EngineHostBuilder Inno.Runtime.EngineHostBuilder.UseRetirementTimeout(System.TimeSpan timeout)`](../../src/runtime/engine/Inno.Runtime/Hosting/EngineHostBuilder.cs#L32) | Sets the maximum owner-thread drain duration before retirement faults the host. |
+| [`Inno.Runtime.EngineHostBuilder`](../../src/runtime/engine/Inno.Runtime/Hosting/EngineHostBuilder.cs#L12) | Collects application-level runtime services before creating an . |
 
-`Inno.Input.Runtime` 在 `BeginFrame` 捕获不可变键鼠快照并绑定严格 execution scope；SDL3 adapter 在 Host poll 后端事件时累积状态。Input Actions、rebinding、gamepad 与 text/IME 仍是后续增量，其中 Action 映射保持 Plugin 边界。
+### `Inno.Runtime.GameCodeAssembly`
 
-`RuntimeSession.references` 是本 Session 唯一的 immutable `ReferenceCatalog`。Edit/Play 的 Composition Root
-通过 `RuntimeSessionOptions.referenceResolvers` 注入 authoring Asset resolver；Player 的只读
-`AssetDatabase` 自动加入同一 generation。需要 reference 服务的能力由 Composition 显式注入；
-低层 RuntimeSubsystemContext 不持有 Session/ReferenceCatalog，也不提供 service locator。
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Runtime.GameCodeAssembly.GameCodeAssembly(string name, string contentFingerprint)`](../../src/runtime/engine/Inno.Runtime/Deployment/GameCodeAssembly.cs#L22) | Validates and freezes one logical assembly identity. |
+| [`string Inno.Runtime.GameCodeAssembly.contentFingerprint`](../../src/runtime/engine/Inno.Runtime/Deployment/GameCodeAssembly.cs#L39) | Gets the build input's content fingerprint. |
+| [`string Inno.Runtime.GameCodeAssembly.name`](../../src/runtime/engine/Inno.Runtime/Deployment/GameCodeAssembly.cs#L34) | Gets the exact simple assembly name. |
+| [`Inno.Runtime.GameCodeAssembly`](../../src/runtime/engine/Inno.Runtime/Deployment/GameCodeAssembly.cs#L8) | Identifies one immutable code input independently of its physical deployment representation. |
 
-Runtime Subsystem 类型是 Host/Composition 的公开装配契约，但故意不进入 gameplay Scripting API；当前该项目
-只向 `InnoEngine.Core` 脚本 namespace 导出 `Time`。游戏脚本使用具体领域 façade，不能改写 Session pipeline。
+### `Inno.Runtime.GameCodeDeployment`
 
-`RuntimeSubsystemPipeline` 没有公开构造器；它必须由 `EngineHost` 创建或从 `RuntimeSession.subsystems` 借用，
-以保证 factory 失败时仍然存在能继续退休的 owner。能力判断使用 `RuntimeCapabilityId`，不暴露 native 或 adapter 实现类型。
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Runtime.GameCodeDeployment.GameCodeDeployment(System.Collections.Generic.IReadOnlyList<Inno.Runtime.GameCodeModule> modules)`](../../src/runtime/engine/Inno.Runtime/Deployment/GameCodeDeployment.cs#L22) | Copies an explicit code closure and verifies unique ownership and dependency ordering. |
+| [`static Inno.Runtime.GameCodeDeployment Inno.Runtime.GameCodeDeployment.FromManifest(System.Collections.Generic.IReadOnlyList<Inno.Runtime.GameRuntimeModule> modules)`](../../src/runtime/engine/Inno.Runtime/Deployment/GameCodeDeployment.cs#L58) | Freezes validated manifest declarations without retaining their mutable arrays or entries. |
+| [`void Inno.Runtime.GameCodeDeployment.ValidateMatches(Inno.Runtime.GameCodeDeployment expected)`](../../src/runtime/engine/Inno.Runtime/Deployment/GameCodeDeployment.cs#L81) | Rejects a manifest that differs from the code closure linked by the build. |
+| [`System.Collections.Generic.IReadOnlyList<Inno.Runtime.GameCodeModule> Inno.Runtime.GameCodeDeployment.modules`](../../src/runtime/engine/Inno.Runtime/Deployment/GameCodeDeployment.cs#L44) | Gets the immutable dependency-ordered code closure. |
+| [`Inno.Runtime.GameCodeDeployment`](../../src/runtime/engine/Inno.Runtime/Deployment/GameCodeDeployment.cs#L11) | Owns a validated, immutable and dependency-ordered logical game code closure. |
 
-## 部署内容
+### `Inno.Runtime.GameCodeModule`
 
-`StaticTypeCatalogSource(IReadOnlyList<Action<ITypeCatalogRegistrar>>)` 执行各程序集的生成目录，
-随后冻结声明、发现事实及工厂。`GetTypes` 只返回声明，`GetMetadata` 返回 Catalogs 契约的事实；
-`ConstructGenericType` 解析已经链接的封闭构造；编译期确认不满足约束的组合返回 null，
-合法但缺失的构造抛出 NotSupportedException；
-`CanCreateInstance` 和 `CreateInstance` 使用同一工厂表。
-工厂按需执行，返回类型错误明确失败；泛型构造缺少所属定义时在组合阶段失败。
-重复声明失败，同一封闭工厂重复贡献幂等。注册器不能跨线程使用或在组合结束后继续写入。
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Runtime.GameCodeModule.GameCodeModule(string name, Inno.Extensibility.Modules.AssemblyDomain domain, System.Collections.Generic.IReadOnlyList<Inno.Runtime.GameCodeAssembly> assemblies, System.Collections.Generic.IReadOnlyList<string> dependencies)`](../../src/runtime/engine/Inno.Runtime/Deployment/GameCodeModule.cs#L31) | Copies and validates a module contribution without retaining mutable manifest objects. |
+| [`System.Collections.Generic.IReadOnlyList<Inno.Runtime.GameCodeAssembly> Inno.Runtime.GameCodeModule.assemblies`](../../src/runtime/engine/Inno.Runtime/Deployment/GameCodeModule.cs#L72) | Gets the exact ordered code identities. |
+| [`System.Collections.Generic.IReadOnlyList<string> Inno.Runtime.GameCodeModule.dependencies`](../../src/runtime/engine/Inno.Runtime/Deployment/GameCodeModule.cs#L77) | Gets the logical modules required before activation. |
+| [`Inno.Extensibility.Modules.AssemblyDomain Inno.Runtime.GameCodeModule.domain`](../../src/runtime/engine/Inno.Runtime/Deployment/GameCodeModule.cs#L67) | Gets the ownership domain of this contribution. |
+| [`string Inno.Runtime.GameCodeModule.name`](../../src/runtime/engine/Inno.Runtime/Deployment/GameCodeModule.cs#L62) | Gets the stable logical module identity. |
+| [`Inno.Runtime.GameCodeModule`](../../src/runtime/engine/Inno.Runtime/Deployment/GameCodeModule.cs#L11) | Freezes the code ownership, ordered assembly identities and dependencies of one logical module. |
 
-Player 的 Runtime Session 使用 `AssetDatabase` 读取物化后的 Catalog 和 Artifact Bundle。Build 将运行时代码闭包固化为逻辑模块和程序集指纹，由所选托管 compiler 完成最终链接。Player 校验 `GameCodeDeployment` 与生成目录，通过同一个 `ModuleHost` 候选事务激活 Plugin 和 Game Scripts，使 TypeCache、Serialization 和 Rendering Registry 共享同一 generation。内容只从部署产物读取；`RuntimeManifestEnvelope` 严格检查当前格式的 magic 和内容。
+### `Inno.Runtime.GamePresentationSettings`
 
-`FileRenderTargetArtifactProvider` 只读取部署内容，返回 `Ready` 或 `Unavailable`，不会伪造 Editor 的异步 `Pending` 状态。损坏的 Shader envelope 或空 Texture artifact 会抛出严格数据异常；Player 不调用编译器进行运行时补救。
+| 当前声明 | 行为 |
+| --- | --- |
+| [`const string Inno.Runtime.GamePresentationSettings.settingProtocolId`](../../src/runtime/engine/Inno.Runtime/Presentation/GamePresentationSettings.cs#L20) | Gets the immutable project-setting protocol value used by discovery metadata. |
+| [`Inno.Runtime.GamePresentationViewport Inno.Runtime.GamePresentationSettings.CalculateViewport(int availableWidth, int availableHeight)`](../../src/runtime/engine/Inno.Runtime/Presentation/GamePresentationSettings.cs#L60) | Calculates the centered content region for an available presentation surface. |
+| [`bool Inno.Runtime.GamePresentationSettings.preserveAspectRatio`](../../src/runtime/engine/Inno.Runtime/Presentation/GamePresentationSettings.cs#L30) | Gets or sets whether the complete reference frame is fitted inside the available surface. |
+| [`int Inno.Runtime.GamePresentationSettings.referenceHeight`](../../src/runtime/engine/Inno.Runtime/Presentation/GamePresentationSettings.cs#L42) | Gets or sets the positive reference-frame height used to derive the presentation aspect ratio. |
+| [`int Inno.Runtime.GamePresentationSettings.referenceWidth`](../../src/runtime/engine/Inno.Runtime/Presentation/GamePresentationSettings.cs#L36) | Gets or sets the positive reference-frame width used to derive the presentation aspect ratio. |
+| [`static Inno.Core.Settings.ProjectSettingId Inno.Runtime.GamePresentationSettings.settingId`](../../src/runtime/engine/Inno.Runtime/Presentation/GamePresentationSettings.cs#L25) | Gets the stable project-setting identity for game presentation. |
+| [`Inno.Runtime.GamePresentationSettings`](../../src/runtime/engine/Inno.Runtime/Presentation/GamePresentationSettings.cs#L12) | Defines the project-wide game presentation area shared by Editor previews and deployed Players. |
 
-## 生命周期与错误
+### `Inno.Runtime.GamePresentationViewport`
 
-- `RuntimeSession.Tick` 先打开 Feature frame，再刷新 Event、Coroutine 和 Job；fixed/update/late/render/end 阶段按 Feature DAG 顺序执行，结束与释放按逆序补偿。Edit Session 不执行游戏生命周期。
-- `RuntimeSession.Dispose` 释放 Scene、Asset、Scheduler、Serialization generation 和 Session Log；`EngineHost.Dispose` 会逆序释放仍存活的 Session。
-- Host 或 Session 的 Dispose 会聚合普通终态清理失败；Pending 则保留依赖并阻止后续退休，不能当作普通错误继续销毁。
-- Session 日志携带明确 `LogSessionId`，Editor Console 不再根据 Assembly Scope 猜测来源。
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Runtime.GamePresentationViewport.GamePresentationViewport(int x, int y, int width, int height)`](../../src/runtime/engine/Inno.Runtime/Presentation/GamePresentationSettings.cs#L108) | Creates a validated game presentation viewport. |
+| [`int Inno.Runtime.GamePresentationViewport.height`](../../src/runtime/engine/Inno.Runtime/Presentation/GamePresentationSettings.cs#L142) | Gets the content height. |
+| [`int Inno.Runtime.GamePresentationViewport.width`](../../src/runtime/engine/Inno.Runtime/Presentation/GamePresentationSettings.cs#L137) | Gets the content width. |
+| [`int Inno.Runtime.GamePresentationViewport.x`](../../src/runtime/engine/Inno.Runtime/Presentation/GamePresentationSettings.cs#L127) | Gets the horizontal content offset. |
+| [`int Inno.Runtime.GamePresentationViewport.y`](../../src/runtime/engine/Inno.Runtime/Presentation/GamePresentationSettings.cs#L132) | Gets the vertical content offset. |
+| [`Inno.Runtime.GamePresentationViewport`](../../src/runtime/engine/Inno.Runtime/Presentation/GamePresentationSettings.cs#L91) | Stores one centered game-content region within a presentation surface. |
 
-[下一页：Player](Inno.Player.md)
+### `Inno.Runtime.GameRuntimeAssembly`
 
-`EngineHostBuilder.UseLogDelivery(LogDeliveryMode)` 显式指定 Host router 与所有 Session file sink 的后台或 Inline 交付策略；未知值在配置阶段失败。默认 Background，平台入口按实际线程能力选择。Inline 的 Session 日志在生产者调用返回前写入文件，不隐式创建日志线程。
+| 当前声明 | 行为 |
+| --- | --- |
+| [`void Inno.Runtime.GameRuntimeAssembly.Validate()`](../../src/runtime/engine/Inno.Runtime/Deployment/GameRuntimeAssembly.cs#L32) | Rejects identities or fingerprints that cannot describe a frozen code input. |
+| [`string Inno.Runtime.GameRuntimeAssembly.contentFingerprint`](../../src/runtime/engine/Inno.Runtime/Deployment/GameRuntimeAssembly.cs#L23) | Gets or sets the lowercase SHA-256 fingerprint of the frozen compiler output. |
+| [`string Inno.Runtime.GameRuntimeAssembly.name`](../../src/runtime/engine/Inno.Runtime/Deployment/GameRuntimeAssembly.cs#L17) | Gets or sets the exact simple assembly name, independent of deployment file layout. |
+| [`Inno.Runtime.GameRuntimeAssembly`](../../src/runtime/engine/Inno.Runtime/Deployment/GameRuntimeAssembly.cs#L11) | Records a logical assembly identity and the content fingerprint of its build input. |
+
+### `Inno.Runtime.GameRuntimeManifest`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`System.Collections.Generic.IReadOnlyList<Inno.Core.Settings.ProjectSettingsContributor> Inno.Runtime.GameRuntimeManifest.CreateSettingContributors()`](../../src/runtime/engine/Inno.Runtime/Deployment/GameRuntimeManifest.cs#L132) | Creates current-generation setting contributors from neutral manifest data. |
+| [`void Inno.Runtime.GameRuntimeManifest.Validate()`](../../src/runtime/engine/Inno.Runtime/Deployment/GameRuntimeManifest.cs#L69) | Validates startup identity, dimensions, scene, and Plugin ordering. |
+| [`string Inno.Runtime.GameRuntimeManifest.applicationId`](../../src/runtime/engine/Inno.Runtime/Deployment/GameRuntimeManifest.cs#L18) | Gets or sets the stable lowercase application identifier. |
+| [`Inno.Runtime.GameRuntimeModule[] Inno.Runtime.GameRuntimeManifest.modules`](../../src/runtime/engine/Inno.Runtime/Deployment/GameRuntimeManifest.cs#L60) | Gets or sets the dependency-ordered managed modules in the frozen Player generation. |
+| [`string Inno.Runtime.GameRuntimeManifest.persistentDataPath`](../../src/runtime/engine/Inno.Runtime/Deployment/GameRuntimeManifest.cs#L30) | Gets or sets the writable data folder below local application data; empty uses the application ID. |
+| [`Inno.Runtime.GameRuntimePlugin[] Inno.Runtime.GameRuntimeManifest.plugins`](../../src/runtime/engine/Inno.Runtime/Deployment/GameRuntimeManifest.cs#L54) | Gets or sets dependency-ordered runtime Plugin setting contributions. |
+| [`string Inno.Runtime.GameRuntimeManifest.productName`](../../src/runtime/engine/Inno.Runtime/Deployment/GameRuntimeManifest.cs#L24) | Gets or sets the player-facing product name. |
+| [`string Inno.Runtime.GameRuntimeManifest.startupScene`](../../src/runtime/engine/Inno.Runtime/Deployment/GameRuntimeManifest.cs#L36) | Gets or sets the mount-qualified startup scene path. |
+| [`int Inno.Runtime.GameRuntimeManifest.windowHeight`](../../src/runtime/engine/Inno.Runtime/Deployment/GameRuntimeManifest.cs#L48) | Gets or sets the initial logical window height. |
+| [`int Inno.Runtime.GameRuntimeManifest.windowWidth`](../../src/runtime/engine/Inno.Runtime/Deployment/GameRuntimeManifest.cs#L42) | Gets or sets the initial logical window width. |
+| [`Inno.Runtime.GameRuntimeManifest`](../../src/runtime/engine/Inno.Runtime/Deployment/GameRuntimeManifest.cs#L13) | Stores the immutable startup contract consumed by a deployed game Player. |
+
+### `Inno.Runtime.GameRuntimeModule`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`void Inno.Runtime.GameRuntimeModule.Validate()`](../../src/runtime/engine/Inno.Runtime/Deployment/GameRuntimeModule.cs#L45) | Validates module identity, ownership, file names, and dependency declarations. |
+| [`Inno.Runtime.GameRuntimeAssembly[] Inno.Runtime.GameRuntimeModule.assemblies`](../../src/runtime/engine/Inno.Runtime/Deployment/GameRuntimeModule.cs#L30) | Gets or sets the exact ordered code identities contributed by this module. |
+| [`string[] Inno.Runtime.GameRuntimeModule.dependencies`](../../src/runtime/engine/Inno.Runtime/Deployment/GameRuntimeModule.cs#L36) | Gets or sets stable module names that must be active before this module. |
+| [`Inno.Extensibility.Modules.AssemblyDomain Inno.Runtime.GameRuntimeModule.domain`](../../src/runtime/engine/Inno.Runtime/Deployment/GameRuntimeModule.cs#L24) | Gets or sets the ownership domain declared by the deployed module. |
+| [`string Inno.Runtime.GameRuntimeModule.name`](../../src/runtime/engine/Inno.Runtime/Deployment/GameRuntimeModule.cs#L18) | Gets or sets the stable module name used by the managed module host. |
+| [`Inno.Runtime.GameRuntimeModule`](../../src/runtime/engine/Inno.Runtime/Deployment/GameRuntimeModule.cs#L12) | Describes one dependency-ordered managed module in a frozen Player generation. |
+
+### `Inno.Runtime.GameRuntimePlugin`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`void Inno.Runtime.GameRuntimePlugin.Validate()`](../../src/runtime/engine/Inno.Runtime/Deployment/GameRuntimePlugin.cs#L45) | Validates identity and ownership declarations. |
+| [`string[] Inno.Runtime.GameRuntimePlugin.dependencies`](../../src/runtime/engine/Inno.Runtime/Deployment/GameRuntimePlugin.cs#L24) | Gets or sets Plugin IDs that must precede this Plugin. |
+| [`string Inno.Runtime.GameRuntimePlugin.id`](../../src/runtime/engine/Inno.Runtime/Deployment/GameRuntimePlugin.cs#L18) | Gets or sets the stable Plugin identifier. |
+| [`string[] Inno.Runtime.GameRuntimePlugin.overrides`](../../src/runtime/engine/Inno.Runtime/Deployment/GameRuntimePlugin.cs#L30) | Gets or sets dependencies whose setting defaults may be replaced. |
+| [`Inno.Core.Settings.ProjectSettingRecord[] Inno.Runtime.GameRuntimePlugin.settings`](../../src/runtime/engine/Inno.Runtime/Deployment/GameRuntimePlugin.cs#L36) | Gets or sets neutral setting contribution records. |
+| [`Inno.Runtime.GameRuntimePlugin`](../../src/runtime/engine/Inno.Runtime/Deployment/GameRuntimePlugin.cs#L12) | Stores one Plugin's runtime-only project setting contribution. |
+
+### `Inno.Runtime.RuntimeContentCatalog`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`void Inno.Runtime.RuntimeContentCatalog.Validate()`](../../src/runtime/engine/Inno.Runtime/Deployment/RuntimeContentCatalog.cs#L55) | Validates content identity, file naming, snapshot identity, and counts. |
+| [`int Inno.Runtime.RuntimeContentCatalog.artifactBundleCount`](../../src/runtime/engine/Inno.Runtime/Deployment/RuntimeContentCatalog.cs#L40) | Gets or sets the number of content-addressed artifact bundles in the pack. |
+| [`int Inno.Runtime.RuntimeContentCatalog.assetCount`](../../src/runtime/engine/Inno.Runtime/Deployment/RuntimeContentCatalog.cs#L34) | Gets or sets the number of runtime assets in the enclosed asset catalog. |
+| [`string Inno.Runtime.RuntimeContentCatalog.contentHash`](../../src/runtime/engine/Inno.Runtime/Deployment/RuntimeContentCatalog.cs#L16) | Gets or sets the SHA-256 identity of the complete content pack bytes. |
+| [`string Inno.Runtime.RuntimeContentCatalog.packFileName`](../../src/runtime/engine/Inno.Runtime/Deployment/RuntimeContentCatalog.cs#L22) | Gets or sets the content pack file name relative to the packaged Content directory. |
+| [`int Inno.Runtime.RuntimeContentCatalog.runtimeAssemblyCount`](../../src/runtime/engine/Inno.Runtime/Deployment/RuntimeContentCatalog.cs#L46) | Gets or sets the number of runtime assemblies in the pack. |
+| [`string Inno.Runtime.RuntimeContentCatalog.snapshotFingerprint`](../../src/runtime/engine/Inno.Runtime/Deployment/RuntimeContentCatalog.cs#L28) | Gets or sets the combined build input snapshot fingerprint. |
+| [`Inno.Runtime.RuntimeContentCatalog`](../../src/runtime/engine/Inno.Runtime/Deployment/RuntimeContentCatalog.cs#L11) | Describes the single immutable content pack deployed with a Player build. |
+
+### `Inno.Runtime.RuntimeJobExecutionMode`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Runtime.RuntimeJobExecutionMode.SingleThread`](../../src/runtime/engine/Inno.Runtime/Hosting/RuntimeJobExecutionMode.cs#L11) | Executes jobs deterministically on the session owner thread. |
+| [`Inno.Runtime.RuntimeJobExecutionMode.WorkerPool`](../../src/runtime/engine/Inno.Runtime/Hosting/RuntimeJobExecutionMode.cs#L16) | Executes ready jobs on a bounded worker pool owned by the session. |
+| [`Inno.Runtime.RuntimeJobExecutionMode`](../../src/runtime/engine/Inno.Runtime/Hosting/RuntimeJobExecutionMode.cs#L6) | Selects how one runtime session executes its frame jobs. |
+
+### `Inno.Runtime.RuntimeManifestEnvelope`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`static Inno.Runtime.GameRuntimeManifest Inno.Runtime.RuntimeManifestEnvelope.Decode(System.ReadOnlySpan<byte> data, Inno.Core.Serialization.SerializationGeneration serialization)`](../../src/runtime/engine/Inno.Runtime/Deployment/RuntimeManifestEnvelope.cs#L118) | Deserializes and validates the complete runtime manifest after engine serialization is available. |
+| [`static byte[] Inno.Runtime.RuntimeManifestEnvelope.Encode(Inno.Runtime.GameRuntimeManifest manifest, Inno.Core.Serialization.SerializationGeneration serialization)`](../../src/runtime/engine/Inno.Runtime/Deployment/RuntimeManifestEnvelope.cs#L34) | Encodes a validated runtime manifest into the strict deployment envelope. |
+| [`static string Inno.Runtime.RuntimeManifestEnvelope.ReadApplicationId(System.ReadOnlySpan<byte> data)`](../../src/runtime/engine/Inno.Runtime/Deployment/RuntimeManifestEnvelope.cs#L76) | Reads and validates the application identity without requiring serialization services to be initialized. |
+| [`static string Inno.Runtime.RuntimeManifestEnvelope.ReadPersistentDataPath(System.ReadOnlySpan<byte> data)`](../../src/runtime/engine/Inno.Runtime/Deployment/RuntimeManifestEnvelope.cs#L95) | Reads the validated writable data folder before engine serialization is initialized. |
+| [`Inno.Runtime.RuntimeManifestEnvelope`](../../src/runtime/engine/Inno.Runtime/Deployment/RuntimeManifestEnvelope.cs#L12) | Frames the serialized runtime manifest with the application identity required before engine startup. |
+
+### `Inno.Runtime.RuntimeSession`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`void Inno.Runtime.RuntimeSession.Dispose()`](../../src/runtime/engine/Inno.Runtime/Hosting/RuntimeSession.cs#L299) | Releases scene, asset, scheduling, serialization, and logging ownership for this session. |
+| [`System.IDisposable Inno.Runtime.RuntimeSession.EnterExecutionScope()`](../../src/runtime/engine/Inno.Runtime/Hosting/RuntimeSession.cs#L181) | Binds this session's script façades to the current asynchronous execution context. |
+| [`void Inno.Runtime.RuntimeSession.StopCoroutines(object owner)`](../../src/runtime/engine/Inno.Runtime/Hosting/RuntimeSession.cs#L286) | Stops every coroutine owned by a runtime object before that object is retired by an atomic reload. |
+| [`void Inno.Runtime.RuntimeSession.Tick(float deltaTime)`](../../src/runtime/engine/Inno.Runtime/Hosting/RuntimeSession.cs#L216) | Advances session events, jobs, coroutines, and scene lifecycle by one frame. |
+| [`Inno.Assets.AssetDatabase Inno.Runtime.RuntimeSession.assets`](../../src/runtime/engine/Inno.Runtime/Hosting/RuntimeSession.cs#L168) | Gets the source-free runtime asset database configured for this session. |
+| [`Inno.Core.Events.EventDispatcher Inno.Runtime.RuntimeSession.events`](../../src/runtime/engine/Inno.Runtime/Hosting/RuntimeSession.cs#L118) | Gets the event dispatcher owned by this session. |
+| [`Inno.Core.Identity.IdentityAllocator Inno.Runtime.RuntimeSession.identities`](../../src/runtime/engine/Inno.Runtime/Hosting/RuntimeSession.cs#L123) | Gets the identity domain that owns every live object in this isolated session. |
+| [`bool Inno.Runtime.RuntimeSession.isPaused`](../../src/runtime/engine/Inno.Runtime/Hosting/RuntimeSession.cs#L151) | Gets or sets whether scaled simulation is paused while unscaled subsystems continue to receive frames. |
+| [`Inno.Runtime.RuntimeSessionOptions Inno.Runtime.RuntimeSession.options`](../../src/runtime/engine/Inno.Runtime/Hosting/RuntimeSession.cs#L108) | Gets the validated immutable options used to create this session. |
+| [`Inno.References.ReferenceCatalog Inno.Runtime.RuntimeSession.references`](../../src/runtime/engine/Inno.Runtime/Hosting/RuntimeSession.cs#L128) | Gets the immutable cross-domain reference resolver generation owned by this session. |
+| [`Inno.Scene.SceneWorld Inno.Runtime.RuntimeSession.scenes`](../../src/runtime/engine/Inno.Runtime/Hosting/RuntimeSession.cs#L160) | Gets the isolated scene world owned by this session. |
+| [`Inno.Core.Logging.LogSessionId Inno.Runtime.RuntimeSession.sessionId`](../../src/runtime/engine/Inno.Runtime/Hosting/RuntimeSession.cs#L113) | Gets the unique logging identity assigned to this session. |
+| [`Inno.Runtime.RuntimeSubsystemPipeline Inno.Runtime.RuntimeSession.subsystems`](../../src/runtime/engine/Inno.Runtime/Hosting/RuntimeSession.cs#L133) | Gets the dependency-ordered subsystem generation owned by this session. |
+| [`float Inno.Runtime.RuntimeSession.timeScale`](../../src/runtime/engine/Inno.Runtime/Hosting/RuntimeSession.cs#L142) | Gets or sets the finite non-negative simulation time multiplier. |
+| [`Inno.Runtime.RuntimeSession`](../../src/runtime/engine/Inno.Runtime/Hosting/RuntimeSession.cs#L22) | Owns all mutable simulation, identity, asset, scheduling, and logging state for one isolated execution session. |
+
+### `Inno.Runtime.RuntimeSessionKind`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Runtime.RuntimeSessionKind.Edit`](../../src/runtime/engine/Inno.Runtime/Hosting/RuntimeSessionKind.cs#L11) | An authoring session whose scene world remains editable. |
+| [`Inno.Runtime.RuntimeSessionKind.Play`](../../src/runtime/engine/Inno.Runtime/Hosting/RuntimeSessionKind.cs#L16) | A disposable Editor play-test session created from an immutable start snapshot. |
+| [`Inno.Runtime.RuntimeSessionKind.Player`](../../src/runtime/engine/Inno.Runtime/Hosting/RuntimeSessionKind.cs#L21) | A deployed standalone game session backed only by runtime artifacts. |
+| [`Inno.Runtime.RuntimeSessionKind`](../../src/runtime/engine/Inno.Runtime/Hosting/RuntimeSessionKind.cs#L6) | Identifies the ownership and lifecycle semantics of an isolated runtime session. |
+
+### `Inno.Runtime.RuntimeSessionOptions`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`string Inno.Runtime.RuntimeSessionOptions.applicationId`](../../src/runtime/engine/Inno.Runtime/Hosting/RuntimeSessionOptions.cs#L24) | Gets or initializes the stable application identifier used to isolate persistent data. |
+| [`long Inno.Runtime.RuntimeSessionOptions.assetPreparationBudgetBytes`](../../src/runtime/engine/Inno.Runtime/Hosting/RuntimeSessionOptions.cs#L53) | Gets or initializes the maximum simultaneous cold asset payload preparation bytes before admission is rejected. |
+| [`long Inno.Runtime.RuntimeSessionOptions.assetResidencyBudgetBytes`](../../src/runtime/engine/Inno.Runtime/Hosting/RuntimeSessionOptions.cs#L48) | Gets or initializes the runtime asset payload residency budget in bytes. |
+| [`System.Collections.Generic.IReadOnlyList<Inno.Runtime.Contracts.RuntimeCapabilityId> Inno.Runtime.RuntimeSessionOptions.capabilities`](../../src/runtime/engine/Inno.Runtime/Hosting/RuntimeSessionOptions.cs#L89) | Gets or initializes capabilities verified by composition for this session's selected services. |
+| [`Inno.Content.IRuntimeContentStore? Inno.Runtime.RuntimeSessionOptions.contentStore`](../../src/runtime/engine/Inno.Runtime/Hosting/RuntimeSessionOptions.cs#L33) | Gets or initializes the immutable content store borrowed for the session lifetime. |
+| [`System.Func<Inno.Core.Logging.LogSessionId, Inno.Core.Logging.ILogSink>? Inno.Runtime.RuntimeSessionOptions.createLogSink`](../../src/runtime/engine/Inno.Runtime/Hosting/RuntimeSessionOptions.cs#L43) | Gets or initializes the optional factory that transfers one session log sink to this session. |
+| [`System.Func<Inno.Runtime.RuntimeSession, System.Collections.Generic.IReadOnlyList<Inno.Runtime.Contracts.IRuntimeSubsystemFactory>> Inno.Runtime.RuntimeSessionOptions.createSubsystems`](../../src/runtime/engine/Inno.Runtime/Hosting/RuntimeSessionOptions.cs#L83) | Gets or initializes the backend-neutral subsystem factories composed into each session. |
+| [`float Inno.Runtime.RuntimeSessionOptions.fixedDeltaTime`](../../src/runtime/engine/Inno.Runtime/Hosting/RuntimeSessionOptions.cs#L58) | Gets or initializes the fixed simulation interval in seconds. |
+| [`Inno.Runtime.RuntimeJobExecutionMode Inno.Runtime.RuntimeSessionOptions.jobExecutionMode`](../../src/runtime/engine/Inno.Runtime/Hosting/RuntimeSessionOptions.cs#L73) | Gets or initializes the job execution strategy owned by this session. |
+| [`int Inno.Runtime.RuntimeSessionOptions.jobWorkerCount`](../../src/runtime/engine/Inno.Runtime/Hosting/RuntimeSessionOptions.cs#L78) | Gets or initializes the worker count used by the work-stealing scheduler; zero selects the default. |
+| [`Inno.Runtime.RuntimeSessionKind Inno.Runtime.RuntimeSessionOptions.kind`](../../src/runtime/engine/Inno.Runtime/Hosting/RuntimeSessionOptions.cs#L19) | Gets or initializes the session role. |
+| [`int Inno.Runtime.RuntimeSessionOptions.maxFixedStepsPerFrame`](../../src/runtime/engine/Inno.Runtime/Hosting/RuntimeSessionOptions.cs#L68) | Gets or initializes the maximum number of fixed updates performed by one frame tick. |
+| [`float Inno.Runtime.RuntimeSessionOptions.maxFrameDeltaTime`](../../src/runtime/engine/Inno.Runtime/Hosting/RuntimeSessionOptions.cs#L63) | Gets or initializes the maximum accepted variable frame interval in seconds. |
+| [`System.Collections.Generic.IReadOnlyList<Inno.References.IReferenceResolver> Inno.Runtime.RuntimeSessionOptions.referenceResolvers`](../../src/runtime/engine/Inno.Runtime/Hosting/RuntimeSessionOptions.cs#L97) | Gets or initializes owner-provided resolvers included in this session's immutable reference catalog. |
+| [`Inno.Runtime.RuntimeSessionOptions`](../../src/runtime/engine/Inno.Runtime/Hosting/RuntimeSessionOptions.cs#L14) | Defines storage, scheduling, and timing policy for one runtime session. |
+
+### `Inno.Runtime.RuntimeSubsystemPipeline`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`void Inno.Runtime.RuntimeSubsystemPipeline.BeginFrame(Inno.Runtime.Contracts.RuntimeFrame frame)`](../../src/runtime/engine/Inno.Runtime/Subsystems/RuntimeSubsystemPipeline.cs#L164) | Opens foundation scopes and immutable snapshots for one owner frame. |
+| [`void Inno.Runtime.RuntimeSubsystemPipeline.Dispose()`](../../src/runtime/engine/Inno.Runtime/Subsystems/RuntimeSubsystemPipeline.cs#L309) | Detaches and disposes every subsystem in reverse dependency order. |
+| [`void Inno.Runtime.RuntimeSubsystemPipeline.EndFrame(Inno.Runtime.Contracts.RuntimeFrame frame)`](../../src/runtime/engine/Inno.Runtime/Subsystems/RuntimeSubsystemPipeline.cs#L282) | Closes every successfully opened frame scope in reverse dependency order. |
+| [`void Inno.Runtime.RuntimeSubsystemPipeline.FixedUpdate(Inno.Runtime.Contracts.RuntimeFixedFrame frame)`](../../src/runtime/engine/Inno.Runtime/Subsystems/RuntimeSubsystemPipeline.cs#L184) | Advances every subsystem by one deterministic fixed step. |
+| [`TFeature Inno.Runtime.RuntimeSubsystemPipeline.GetRequiredSubsystem<TFeature>()`](../../src/runtime/engine/Inno.Runtime/Subsystems/RuntimeSubsystemPipeline.cs#L140) | Resolves the unique active subsystem that implements the requested contract. |
+| [`void Inno.Runtime.RuntimeSubsystemPipeline.LateUpdate(Inno.Runtime.Contracts.RuntimeFrame frame)`](../../src/runtime/engine/Inno.Runtime/Subsystems/RuntimeSubsystemPipeline.cs#L214) | Advances state that depends on completed simulation. |
+| [`void Inno.Runtime.RuntimeSubsystemPipeline.RenderFrame(Inno.Runtime.Contracts.RuntimeFrame frame, System.Action? submit = null)`](../../src/runtime/engine/Inno.Runtime/Subsystems/RuntimeSubsystemPipeline.cs#L232) | Opens output resources, accepts product requests and submits each owner's output once. |
+| [`void Inno.Runtime.RuntimeSubsystemPipeline.Update(Inno.Runtime.Contracts.RuntimeFrame frame)`](../../src/runtime/engine/Inno.Runtime/Subsystems/RuntimeSubsystemPipeline.cs#L199) | Advances variable-clock domain state. |
+| [`System.Collections.Generic.IReadOnlyList<Inno.Runtime.Contracts.RuntimeSubsystemDescriptor> Inno.Runtime.RuntimeSubsystemPipeline.descriptors`](../../src/runtime/engine/Inno.Runtime/Subsystems/RuntimeSubsystemPipeline.cs#L118) | Gets the active immutable subsystem descriptors in execution order. |
+| [`System.Collections.Generic.IReadOnlyList<Inno.Core.Diagnostics.Diagnostic> Inno.Runtime.RuntimeSubsystemPipeline.startupDiagnostics`](../../src/runtime/engine/Inno.Runtime/Subsystems/RuntimeSubsystemPipeline.cs#L123) | Gets immutable diagnostics for unavailable optional subsystems; no exception or extension instance is retained. |
+| [`Inno.Runtime.RuntimeSubsystemPipeline`](../../src/runtime/engine/Inno.Runtime/Subsystems/RuntimeSubsystemPipeline.cs#L14) | Owns the dependency-ordered runtime subsystem generation for one Host or Session scope. |
+
+### `Inno.Runtime.StaticAssemblyCatalogSource`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`System.Action? Inno.Runtime.StaticAssemblyCatalogSource.changed`](../../src/runtime/engine/Inno.Runtime/Registration/StaticAssemblyCatalogSource.cs#L46) | See the implemented contract. |
+| [`Inno.Runtime.StaticAssemblyCatalogSource.StaticAssemblyCatalogSource(System.Collections.Generic.IReadOnlyList<System.Reflection.Assembly> assemblies, System.Collections.Generic.IReadOnlyList<System.Reflection.Assembly> frameworkAssemblies)`](../../src/runtime/engine/Inno.Runtime/Registration/StaticAssemblyCatalogSource.cs#L29) | Copies the host and framework identities provided by the generated platform composition. |
+| [`void Inno.Runtime.StaticAssemblyCatalogSource.Dispose()`](../../src/runtime/engine/Inno.Runtime/Registration/StaticAssemblyCatalogSource.cs#L81) | See the implemented contract. |
+| [`System.Collections.Generic.IReadOnlyList<System.Reflection.Assembly> Inno.Runtime.StaticAssemblyCatalogSource.GetAssemblies()`](../../src/runtime/engine/Inno.Runtime/Registration/StaticAssemblyCatalogSource.cs#L53) | See the implemented contract. |
+| [`System.Collections.Generic.IReadOnlyList<System.Reflection.Assembly> Inno.Runtime.StaticAssemblyCatalogSource.GetSharedAssemblies()`](../../src/runtime/engine/Inno.Runtime/Registration/StaticAssemblyCatalogSource.cs#L60) | See the implemented contract. |
+| [`bool Inno.Runtime.StaticAssemblyCatalogSource.IsFrameworkAssembly(System.Reflection.Assembly assembly)`](../../src/runtime/engine/Inno.Runtime/Registration/StaticAssemblyCatalogSource.cs#L74) | See the implemented contract. |
+| [`bool Inno.Runtime.StaticAssemblyCatalogSource.IsFrameworkReference(string assemblyName)`](../../src/runtime/engine/Inno.Runtime/Registration/StaticAssemblyCatalogSource.cs#L67) | See the implemented contract. |
+| [`Inno.Runtime.StaticAssemblyCatalogSource`](../../src/runtime/engine/Inno.Runtime/Registration/StaticAssemblyCatalogSource.cs#L12) | Supplies an explicit linked host closure without runtime assembly probing or dynamic loading. |
+
+### `Inno.Runtime.StaticModuleSource`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Runtime.StaticModuleSource.StaticModuleSource(string moduleName, Inno.Extensibility.Modules.AssemblyDomain domain, Inno.Extensibility.Modules.AssemblyScope scope, System.Collections.Generic.IReadOnlyList<System.Reflection.Assembly> assemblies, System.Collections.Generic.IReadOnlyList<string> dependencies)`](../../src/runtime/engine/Inno.Runtime/Registration/StaticModuleSource.cs#L35) | Freezes a linked module's explicit assemblies and logical dependencies. |
+| [`System.Collections.Generic.IReadOnlyList<string> Inno.Runtime.StaticModuleSource.GetAssemblyNames()`](../../src/runtime/engine/Inno.Runtime/Registration/StaticModuleSource.cs#L66) | See the implemented contract. |
+| [`Inno.Extensibility.Modules.ModuleCatalogContribution Inno.Runtime.StaticModuleSource.Prepare(Inno.Extensibility.Modules.ModuleSourceContext context)`](../../src/runtime/engine/Inno.Runtime/Registration/StaticModuleSource.cs#L69) | See the implemented contract. |
+| [`System.Collections.Generic.IReadOnlyDictionary<string, Inno.Extensibility.Modules.AssemblyScope> Inno.Runtime.StaticModuleSource.assemblyScopes`](../../src/runtime/engine/Inno.Runtime/Registration/StaticModuleSource.cs#L64) | See the implemented contract. |
+| [`bool Inno.Runtime.StaticModuleSource.collectible`](../../src/runtime/engine/Inno.Runtime/Registration/StaticModuleSource.cs#L60) | See the implemented contract. |
+| [`Inno.Extensibility.Modules.AssemblyDomain Inno.Runtime.StaticModuleSource.domain`](../../src/runtime/engine/Inno.Runtime/Registration/StaticModuleSource.cs#L56) | See the implemented contract. |
+| [`string Inno.Runtime.StaticModuleSource.moduleName`](../../src/runtime/engine/Inno.Runtime/Registration/StaticModuleSource.cs#L54) | See the implemented contract. |
+| [`Inno.Extensibility.Modules.AssemblyScope Inno.Runtime.StaticModuleSource.scope`](../../src/runtime/engine/Inno.Runtime/Registration/StaticModuleSource.cs#L58) | See the implemented contract. |
+| [`System.Collections.Generic.IReadOnlyList<string> Inno.Runtime.StaticModuleSource.upstreamModuleNames`](../../src/runtime/engine/Inno.Runtime/Registration/StaticModuleSource.cs#L62) | See the implemented contract. |
+| [`Inno.Runtime.StaticModuleSource`](../../src/runtime/engine/Inno.Runtime/Registration/StaticModuleSource.cs#L13) | Contributes statically linked module code to the same catalog transactions used by authoring hosts. |
+
+### `Inno.Runtime.StaticTypeCatalogSource`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Runtime.StaticTypeCatalogSource.StaticTypeCatalogSource(System.Collections.Generic.IReadOnlyList<System.Action<Inno.Extensibility.Catalogs.ITypeCatalogRegistrar>> catalogs)`](../../src/runtime/engine/Inno.Runtime/Registration/StaticTypeCatalogSource.cs#L31) | Executes generated contributions once and freezes the resulting metadata and factory closure. |
+| [`bool Inno.Runtime.StaticTypeCatalogSource.CanCreateInstance(System.Type type)`](../../src/runtime/engine/Inno.Runtime/Registration/StaticTypeCatalogSource.cs#L110) | See the implemented contract. |
+| [`System.Type? Inno.Runtime.StaticTypeCatalogSource.ConstructGenericType(System.Type definition, System.Collections.Generic.IReadOnlyList<System.Type> arguments)`](../../src/runtime/engine/Inno.Runtime/Registration/StaticTypeCatalogSource.cs#L87) | See the implemented contract. |
+| [`object Inno.Runtime.StaticTypeCatalogSource.CreateInstance(System.Type type)`](../../src/runtime/engine/Inno.Runtime/Registration/StaticTypeCatalogSource.cs#L114) | See the implemented contract. |
+| [`Inno.Extensibility.Catalogs.TypeCatalogMetadata Inno.Runtime.StaticTypeCatalogSource.GetMetadata(System.Type type)`](../../src/runtime/engine/Inno.Runtime/Registration/StaticTypeCatalogSource.cs#L82) | See the implemented contract. |
+| [`System.Collections.Generic.IReadOnlyList<System.Type> Inno.Runtime.StaticTypeCatalogSource.GetTypes(System.Reflection.Assembly assembly)`](../../src/runtime/engine/Inno.Runtime/Registration/StaticTypeCatalogSource.cs#L77) | See the implemented contract. |
+| [`Inno.Runtime.StaticTypeCatalogSource`](../../src/runtime/engine/Inno.Runtime/Registration/StaticTypeCatalogSource.cs#L14) | Resolves type metadata and factories from linked registrations without runtime type discovery. |
+
+### `Inno.Runtime.Time`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`static float Inno.Runtime.Time.deltaTime`](../../src/runtime/engine/Inno.Runtime/Execution/Time.cs#L31) | Gets the current variable frame interval in seconds. |
+| [`static float Inno.Runtime.Time.fixedDeltaTime`](../../src/runtime/engine/Inno.Runtime/Execution/Time.cs#L63) | Gets the interval of the active fixed simulation step in seconds. |
+| [`static float Inno.Runtime.Time.fixedTime`](../../src/runtime/engine/Inno.Runtime/Execution/Time.cs#L55) | Gets the accumulated fixed simulation time in seconds. |
+| [`static long Inno.Runtime.Time.frameCount`](../../src/runtime/engine/Inno.Runtime/Execution/Time.cs#L95) | Gets the number of variable frames begun by this session. |
+| [`static bool Inno.Runtime.Time.isPaused`](../../src/runtime/engine/Inno.Runtime/Execution/Time.cs#L83) | Gets whether scaled simulation is paused. |
+| [`static float Inno.Runtime.Time.time`](../../src/runtime/engine/Inno.Runtime/Execution/Time.cs#L23) | Gets the total elapsed session time in seconds. |
+| [`static float Inno.Runtime.Time.timeScale`](../../src/runtime/engine/Inno.Runtime/Execution/Time.cs#L71) | Gets the current simulation time multiplier. |
+| [`static float Inno.Runtime.Time.unscaledDeltaTime`](../../src/runtime/engine/Inno.Runtime/Execution/Time.cs#L47) | Gets the current frame interval unaffected by pause or time scaling. |
+| [`static float Inno.Runtime.Time.unscaledTime`](../../src/runtime/engine/Inno.Runtime/Execution/Time.cs#L39) | Gets total elapsed session time unaffected by pause or time scaling. |
+| [`Inno.Runtime.Time`](../../src/runtime/engine/Inno.Runtime/Execution/Time.cs#L15) | Provides Unity-style timing values for the runtime session bound to the current execution context. |
+
+## 项目依赖
+
+- [Inno.Extensibility.Modules](../extensibility/Inno.Extensibility.Modules.md)：实现依赖（`PrivateAssets="compile"`）。
+- [Inno.Core.Coroutines](../core/Inno.Core.Coroutines.md)：实现依赖（`PrivateAssets="compile"`）。
+- [Inno.Core.Diagnostics](../core/Inno.Core.Diagnostics.md)：项目引用；公开签名可见性由语义边界检查确认。
+- [Inno.Core.Jobs](../core/Inno.Core.Jobs.md)：实现依赖（`PrivateAssets="compile"`）。
+- [Inno.Extensibility.Types](../extensibility/Inno.Extensibility.Types.md)：实现依赖（`PrivateAssets="compile"`）。
+- [Inno.Scripting.Api](../scripting/Inno.Scripting.Api.md)：实现依赖（`PrivateAssets="compile"`）。
+- [Inno.Assets](../assets/Inno.Assets.md)：项目引用；公开签名可见性由语义边界检查确认。
+- [Inno.Content](../assets/Inno.Content.md)：项目引用；公开签名可见性由语义边界检查确认。
+- [Inno.Core.Events](../core/Inno.Core.Events.md)：项目引用；公开签名可见性由语义边界检查确认。
+- [Inno.Core.Identity](../core/Inno.Core.Identity.md)：项目引用；公开签名可见性由语义边界检查确认。
+- [Inno.Core.Logging](../core/Inno.Core.Logging.md)：项目引用；公开签名可见性由语义边界检查确认。
+- [Inno.Core.Serialization](../core/Inno.Core.Serialization.md)：项目引用；公开签名可见性由语义边界检查确认。
+- [Inno.Core.Settings](../core/Inno.Core.Settings.md)：项目引用；公开签名可见性由语义边界检查确认。
+- [Inno.References](../references/Inno.References.md)：项目引用；公开签名可见性由语义边界检查确认。
+- [Inno.Scene](../scene/Inno.Scene.md)：项目引用；公开签名可见性由语义边界检查确认。
+- [Inno.Core.Execution](../core/Inno.Core.Execution.md)：实现依赖（`PrivateAssets="compile"`）。
+- [Inno.Runtime.Contracts](Inno.Runtime.Contracts.md)：项目引用；公开签名可见性由语义边界检查确认。
+- [Inno.Extensibility.Reload](../extensibility/Inno.Extensibility.Reload.md)：项目引用；公开签名可见性由语义边界检查确认。
+- [Inno.Extensibility.Catalogs](../extensibility/Inno.Extensibility.Catalogs.md)：项目引用；公开签名可见性由语义边界检查确认。
+
+共同 MSBuild 注入的 analyzer 与编译规则属于构建依赖，完整有效项目图记录在本轮验收证据中。

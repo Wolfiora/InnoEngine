@@ -26,9 +26,9 @@ public readonly record struct InputBackendId
     }
 
     /// <summary>
-    /// Gets the identifier of the bundled sdl3 implementation.
+    /// Gets the identifier of the backend-neutral event accumulator.
     /// </summary>
-    public static InputBackendId sdl3 { get; } = new("inno.input.sdl3");
+    public static InputBackendId events { get; } = new("inno.input.events");
 
     /// <summary>
     /// Gets the stable identifier; a default value is unassigned.

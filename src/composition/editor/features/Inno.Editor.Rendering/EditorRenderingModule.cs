@@ -11,6 +11,7 @@ using Inno.Editor.Core;
 using Inno.Editor.Interactions;
 using Inno.Rendering;
 using EngineColor = Inno.Core.Mathematics.Color;
+using Inno.Rendering.Runtime;
 
 namespace Inno.Editor.Rendering;
 

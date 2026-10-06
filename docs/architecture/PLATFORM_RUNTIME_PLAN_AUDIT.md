@@ -61,3 +61,20 @@
 - iOS、主机、未来 CoreCLR WebAssembly 是原 Plan 标注的未来接入节点；具体新增位置和接入契约已记录，没有空项目或占位 compiler。
 - 原生 ImGui 帧与公开焦点契约通过；OS 浮动 viewport 的人工交互、真实页面冻结和硬件 GPU 性能不据此宣称已经验收。
 - 代码没有自动提交；未执行远程 CI、签名或发布。所有权、失败和取消的本机 gate 与外部设备验证状态分别记录。
+
+
+## 2026-10-06 A01–A08 对照
+
+本轮已完成源码、消费者和本机必需 gate；当前命令、结果、性能方法和未实测范围见[最终验收](ARCHITECTURE_CLEANUP_ACCEPTANCE_2026_10_06.md)。下表列出归属与对应验证种类，实际结果以该报告和原始证据为准。
+
+| 本轮项 | 当前文件归属 | 必需证据 |
+| --- | --- | --- |
+| A01 | Core / Assets / Assets.Authoring / Runtime 四层；模型与请求在 Runtime | 单层编译、禁止依赖、资产 ID/round-trip、脚本与 Player closure |
+| A02/A04 | Inno.Content、Content.FileSystem、ArtifactLease、IPlayerContentSource、byte document/store/log factories | 完整性、篡改、并发、取消、reader generation、纯内存来源和实际 Player |
+| A03 | EventInputSource/Backend/Provider 归 Inno.Adapter.Input | Core Events、焦点、消费与 Session 隔离 |
+| A05 | Inno.Build.Composition | 三入口共同 distribution、配对失败和实际构建 |
+| A06 | mandatory nullable Presentation 尺寸及安全点 | 无主输出、离屏、恢复、DPI、实际显示 |
+| A07 | 共同 Tasks.targets、recipe/input snapshot、完整 native/binding publisher | 正确失效、并发/取消、必需 export、冷/热测量 |
+| A08 | 九个 owner 的职责 partial、immutable Contributor snapshot、frame scratch、Graph validator/compiler | token 等价、回滚、诊断、分配、最终 compile 数与代际退休 |
+
+逐文件对应保存在 artifacts/acceptance/architecture-cleanup/file-map.tsv；本轮报告记录验证结果，不以本表的结构归属声明代替执行证据。新增四个生产库，删除 Input.Sdl3；没有新增生产 Program、旧 namespace 转发或兼容 API。A03 之后通用实现是 EventInput，不再使用历史轮次表中的 SDL 输入实现。动态模块 Adapter 自己持有产物根，不再由 Foundation ModuleSourceContext 要求磁盘缓存。

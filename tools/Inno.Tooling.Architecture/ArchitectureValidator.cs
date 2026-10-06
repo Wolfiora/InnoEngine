@@ -155,6 +155,8 @@ public static partial class ArchitectureValidator
             PublicApiDocumentationValidator.Validate(relative, source, failures,
                 source.Contains("<inheritdoc", StringComparison.Ordinal) ? documentationModels.GetModel(path) : null,
                 documentationModels);
+            if (RuntimeContentBoundaryValidator.ShouldAudit(relative))
+                RuntimeContentBoundaryValidator.Validate(relative, documentationModels.GetModel(path), failures);
             GenerationCleanupValidator.Validate(relative, source, failures);
             AddSourceFailure(source.Contains("InternalsVisibleTo", StringComparison.Ordinal), relative,
                 "friend assemblies are forbidden", failures);
@@ -447,11 +449,11 @@ public static partial class ArchitectureValidator
 
         var declaredSourceProjects = paths
             .Where(static pair => (pair.Value.StartsWith("src/", StringComparison.Ordinal) ||
-                                   pair.Value.StartsWith("build/support/", StringComparison.Ordinal)) &&
+                                   pair.Value.StartsWith("build/", StringComparison.Ordinal)) &&
                                   pair.Value.EndsWith(".csproj", StringComparison.OrdinalIgnoreCase))
             .ToDictionary(static pair => pair.Value, static pair => pair.Key, StringComparer.OrdinalIgnoreCase);
         string sourceDirectory = Path.Combine(repositoryRoot, "src");
-        string supportDirectory = Path.Combine(repositoryRoot, "build", "support");
+        string supportDirectory = Path.Combine(repositoryRoot, "build");
         foreach (string projectPath in EnumerateFiles(sourceDirectory, "*.csproj")
                      .Concat(Directory.Exists(supportDirectory)
                          ? EnumerateFiles(supportDirectory, "*.csproj")
@@ -465,8 +467,8 @@ public static partial class ArchitectureValidator
         foreach ((string projectPath, string projectId) in declaredSourceProjects)
         {
             string projectName = names[projectId];
-            string? expectedPath = projectPath.StartsWith("build/support/", StringComparison.Ordinal)
-                ? "build/support"
+            string? expectedPath = projectPath.StartsWith("build/", StringComparison.Ordinal)
+                ? Path.GetDirectoryName(Path.GetDirectoryName(projectPath))?.Replace('\\', '/')
                 : ClassifySourceSolutionPath(projectName);
             if (expectedPath is null)
             {
@@ -548,6 +550,10 @@ public static partial class ArchitectureValidator
             return "src/adapters/ui";
         if (projectName.StartsWith("Inno.Adapter.Audio", StringComparison.Ordinal))
             return "src/adapters/audio";
+        if (projectName.StartsWith("Inno.Adapter.Content", StringComparison.Ordinal))
+            return "src/adapters/content";
+        if (string.Equals(projectName, "Inno.Content", StringComparison.Ordinal))
+            return "src/content/deployment";
         if (projectName.StartsWith("Inno.References", StringComparison.Ordinal))
             return "src/content/references";
         if (projectName.StartsWith("Inno.Assets", StringComparison.Ordinal))
@@ -660,40 +666,12 @@ public static partial class ArchitectureValidator
     }
 
     private static IEnumerable<string> EnumerateDirectories(string root)
-    {
-        var pending = new Stack<string>();
-        pending.Push(root);
-        while (pending.Count > 0)
-        {
-            string current = pending.Pop();
-            foreach (string child in Directory.EnumerateDirectories(current))
-            {
-                if (S_IGNORED_DIRECTORIES.Contains(Path.GetFileName(child)))
-                    continue;
-                yield return child;
-                pending.Push(child);
-            }
-        }
-    }
+        => RepositorySourceInventory.Directories(root);
 
     private static IEnumerable<string> EnumerateFiles(
         string root,
         string pattern
-    ) {
-        var pending = new Stack<string>();
-        pending.Push(root);
-        while (pending.Count > 0)
-        {
-            string current = pending.Pop();
-            foreach (string file in Directory.EnumerateFiles(current, pattern))
-                yield return file;
-            foreach (string child in Directory.EnumerateDirectories(current))
-            {
-                if (!S_IGNORED_DIRECTORIES.Contains(Path.GetFileName(child)))
-                    pending.Push(child);
-            }
-        }
-    }
+    ) => RepositorySourceInventory.Files(root, pattern);
 
     private static bool IsIgnoredPath(string path) => path.Split(Path.DirectorySeparatorChar).Any(S_IGNORED_DIRECTORIES.Contains);
 

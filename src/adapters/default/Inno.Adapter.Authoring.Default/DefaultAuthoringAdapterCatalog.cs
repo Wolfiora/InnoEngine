@@ -12,6 +12,7 @@ using Inno.Adapter.Text;
 using Inno.Adapter.UI;
 using Inno.Build.Toolchains.Bgfx.Tools;
 using Inno.Rendering.Assets;
+using Inno.Rendering.Assets.Authoring;
 
 namespace Inno.Adapter.Authoring.Default;
 
@@ -29,6 +30,9 @@ public sealed class DefaultAuthoringAdapterCatalog :
     /// <summary>
     /// Creates paired runtime and authoring registrations before any native device is initialized.
     /// </summary>
+    /// <param name="options">
+    /// The host's explicit runtime service configuration.
+    /// </param>
     /// <param name="renderingProviders">
     /// Complete runtime rendering registrations, or null for bundled BGFX.
     /// </param>
@@ -42,11 +46,12 @@ public sealed class DefaultAuthoringAdapterCatalog :
     /// The runtime and authoring backend registrations do not match.
     /// </exception>
     public DefaultAuthoringAdapterCatalog(
+        DefaultAdapterCatalogOptions options,
         IEnumerable<RenderingBackendProvider>? renderingProviders = null,
         IEnumerable<RenderingAuthoringBackendProvider>? authoringProviders = null,
         IEnumerable<PresentationBackendProvider>? presentationProviders = null
     ) {
-        m_runtime = new DefaultAdapterCatalog(renderingProviders);
+        m_runtime = new DefaultAdapterCatalog(options, renderingProviders);
         m_presentation = new PresentationBackendCatalog(presentationProviders ?? [new ImGuiPresentationProvider()]);
         m_renderingAuthoring = new RenderingAuthoringBackendCatalog(
             m_runtime.rendering,

@@ -1,3 +1,4 @@
+using Inno.Core.Logging;
 using Inno.Adapter.Serialization.DotNet;
 using Inno.Adapter.Modules.DotNet;
 using System;
@@ -43,17 +44,16 @@ public sealed class SceneHistoryTests : IDisposable
         m_host = new EngineHostBuilder()
                 .UseMetadataSources(new DotNetAssemblyCatalogSource(typeof(SceneHistoryTests).Assembly),
                     new ReflectionTypeCatalogSource(), new ReflectionSerializationMetadataSource())
-            .UseMetadataCache(Path.Combine(m_projectRoot, "Library", "Assemblies"))
             .Build();
         m_session = m_host.CreateSession(new RuntimeSessionOptions
         {
             kind = RuntimeSessionKind.Edit,
             applicationId = "inno.tests.scene-history",
-            persistentDataDirectory = Path.Combine(
+            createLogSink = _ => new FileLogSink(Path.Combine(Path.Combine(
                 m_projectRoot,
                 "Library",
                 "PersistentData",
-                "inno.tests.scene-history"),
+                "inno.tests.scene-history"), "Logs")),
             jobExecutionMode = RuntimeJobExecutionMode.SingleThread
         });
         m_executionScope = m_session.EnterExecutionScope();
@@ -458,10 +458,11 @@ public sealed class SceneHistoryTests : IDisposable
         _ = m_reloads.Execute(reload);
     }
 
-    private static DotNetModuleSource CreateHistoryRequest()
+    private DotNetModuleSource CreateHistoryRequest()
         => new()
         {
             moduleName = "SceneHistoryRecovery",
+            artifactRootDirectory = Path.Combine(m_projectRoot, "Library", "Modules"),
             mainAssemblyPath = Path.Combine(AppContext.BaseDirectory, "Modules", "SceneReload", "Inno.Scene.Reload.TestModule.dll"),
             domain = AssemblyDomain.InnoPlugin,
             scope = AssemblyScope.Runtime

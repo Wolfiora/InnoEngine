@@ -5,6 +5,7 @@ using Inno.Assets;
 using Inno.Audio;
 using Inno.Runtime;
 using Inno.Runtime.Contracts;
+using Inno.Storage;
 
 namespace Inno.Engine.Default;
 
@@ -37,6 +38,9 @@ public sealed class EngineSessionComposition
     /// <param name="audioOverride">
     /// An optional product-specific audio owner, such as Editor preview/Play isolation.
     /// </param>
+    /// <param name="createStorage">
+    /// The host factory transferring one isolated storage service to the session.
+    /// </param>
     public EngineSessionComposition(
         RuntimeSession session,
         IAdapterCatalog adapters,
@@ -44,6 +48,7 @@ public sealed class EngineSessionComposition
         IInputEventSource inputSource,
         IAssetArtifactLookup artifacts,
         Func<AudioProjectSettings> audioSettings,
+        Func<IApplicationStorage> createStorage,
         IRuntimeSubsystemFactory? audioOverride = null
     ) {
         this.session = session ?? throw new ArgumentNullException(nameof(session));
@@ -52,6 +57,7 @@ public sealed class EngineSessionComposition
         this.inputSource = inputSource ?? throw new ArgumentNullException(nameof(inputSource));
         this.artifacts = artifacts ?? throw new ArgumentNullException(nameof(artifacts));
         this.audioSettings = audioSettings ?? throw new ArgumentNullException(nameof(audioSettings));
+        this.createStorage = createStorage ?? throw new ArgumentNullException(nameof(createStorage));
         this.audioOverride = audioOverride;
     }
 
@@ -79,6 +85,10 @@ public sealed class EngineSessionComposition
     /// Gets the control-thread source of portable audio defaults.
     /// </summary>
     public Func<AudioProjectSettings> audioSettings { get; }
+    /// <summary>
+    /// Gets the factory transferring storage ownership to this session.
+    /// </summary>
+    public Func<IApplicationStorage> createStorage { get; }
     /// <summary>
     /// Gets an optional product-specific audio owner factory.
     /// </summary>

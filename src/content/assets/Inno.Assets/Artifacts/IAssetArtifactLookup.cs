@@ -37,7 +37,7 @@ public interface IAssetArtifactLookup
     /// Exact stable artifact output name.
     /// </param>
     /// <param name="artifact">
-    /// Receives verified output metadata and its absolute immutable path when available.
+    /// Receives verified output metadata without exposing the provider's physical location.
     /// </param>
     /// <returns>
     /// <see langword="true"/> when the artifact output exists and passes integrity validation.

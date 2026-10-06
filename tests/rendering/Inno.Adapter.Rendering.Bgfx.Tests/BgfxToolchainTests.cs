@@ -16,6 +16,7 @@ using Inno.Build.Toolchains.Bgfx.Tools;
 using Inno.Rendering.Assets;
 using Inno.Rendering;
 using Xunit;
+using Inno.Rendering.Assets.Authoring;
 
 namespace Inno.Adapter.Rendering.Bgfx.Tests;
 
@@ -84,7 +85,6 @@ public sealed class BgfxToolchainTests : IDisposable
             return;
         using var modules = new ModuleHost(new()
         {
-            cacheDirectory = Path.Combine(m_root, "Modules"),
             catalogSource = new DotNetAssemblyCatalogSource(typeof(ShaderNodeCompilerRegistry).Assembly)
         });
         using var types = new TypeCatalog(modules, new ReflectionTypeCatalogSource());
@@ -115,7 +115,6 @@ public sealed class BgfxToolchainTests : IDisposable
             return;
         using var modules = new ModuleHost(new()
         {
-            cacheDirectory = Path.Combine(m_root, "Modules"),
             catalogSource = new DotNetAssemblyCatalogSource(typeof(ShaderNodeCompilerRegistry).Assembly)
         });
         using var types = new TypeCatalog(modules, new ReflectionTypeCatalogSource());
@@ -192,8 +191,9 @@ public sealed class BgfxToolchainTests : IDisposable
         string sourcePath = Path.Combine(m_root, "checker.tga");
         File.WriteAllBytes(sourcePath, CreateTga());
 
+        using FileStream source = File.OpenRead(sourcePath);
         byte[] artifact = await new BgfxTextureTargetCompiler().CompileKtxAsync(
-            sourcePath,
+            source,
             TextureColorSpace.Srgb);
 
         Assert.True(artifact.Length > C_KTX_IDENTIFIER.Length);

@@ -31,7 +31,8 @@ internal static class ProjectBuildWorkflow
             GameBuildRequest request = command.CreateGameRequest(workspace.LoadGameProfile(command.profilePath));
             // The command-line host has no UI scheduler. Keep the authoring owner on this thread
             // while preparing external tools, then capture its build snapshot before the first await.
-            _ = workspace.pipeline.EnsurePlayerSupportPackAsync(request.profile.target, cancellationToken)
+            _ = workspace.pipeline.EnsurePlayerSupportPackAsync(
+                    request.profile.target, request.profile.managedDeployment, cancellationToken)
                 .GetAwaiter().GetResult();
             result = await workspace.pipeline.BuildGameAsync(request, progress, cancellationToken);
         }

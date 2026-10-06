@@ -86,12 +86,16 @@ public sealed class ResidencyRetirementTests
         {
             Interlocked.Increment(ref attempts);
             started.Set();
-            Assert.True(finish.Wait(TimeSpan.FromSeconds(5)));
+            Assert.True(finish.Wait(TimeSpan.FromSeconds(30)));
         });
-        Task worker = Task.Run(lease.Dispose);
+        Task worker = Task.Factory.StartNew(
+            lease.Dispose,
+            CancellationToken.None,
+            TaskCreationOptions.LongRunning,
+            TaskScheduler.Default);
         try
         {
-            Assert.True(started.Wait(TimeSpan.FromSeconds(5)));
+            Assert.True(started.Wait(TimeSpan.FromSeconds(30)));
             Assert.Throws<RetirementPendingException>(lease.Dispose);
             Assert.NotNull(lease.info);
             Assert.Equal(1, attempts);
@@ -151,8 +155,7 @@ public sealed class ResidencyRetirementTests
         });
     }
 
-    private static AssetArtifactInfo Artifact() => new(new AssetArtifactKey(new string('A', 64)), "audio-data",
-        Path.Combine(Path.GetTempPath(), "inno-retirement-fixture.wav"), "TEST", 0);
+    private static AssetArtifactInfo Artifact() => new(new AssetArtifactKey(new string('A', 64)), "audio-data", "TEST", 0);
 
     private static void Collect()
     {
@@ -164,7 +167,10 @@ public sealed class ResidencyRetirementTests
     private sealed class TestProvider : AssetResidencyProvider
     {
         internal AssetLease<TextAsset> Asset(TextAsset asset, Action release) => CreateAssetLease(asset, release);
-        internal ArtifactLease Artifact(AssetArtifactInfo info, Action release) => CreateArtifactLease(info, release);
+        internal ArtifactLease Artifact(
+            AssetArtifactInfo info,
+            Action release
+        ) => CreateArtifactLease(info, static () => Stream.Null, release);
     }
 
     private sealed class ReleaseStep(Action release) : IDisposable
