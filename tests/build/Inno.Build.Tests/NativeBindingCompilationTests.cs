@@ -56,7 +56,7 @@ public sealed class NativeBindingCompilationTests
 
             (int success, string output) = await Build(project, []);
             Assert.True(success == 0, output);
-            Assert.Equal(1, output.Split("INNO-TASK-HOST prepared", StringSplitOptions.None).Length - 1);
+            Assert.Equal(1, output.Split("INNO-TASK-HOST verified", StringSplitOptions.None).Length - 1);
             string selected = Assert.Single(File.ReadAllLines(sources)
                 .Where(static path => Path.GetFileName(path) == "Bindings.cs"));
             Assert.StartsWith(Path.Combine(root, "obj", "fixture-target") + Path.DirectorySeparatorChar, selected);

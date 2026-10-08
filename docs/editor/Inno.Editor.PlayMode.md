@@ -1,6 +1,6 @@
 # Inno.Editor.PlayMode
 
-[Editor 索引](README.md) · [Interactions](Inno.Editor.Interactions.md) · [Scene](Inno.Editor.Scene.md) · [Scripting](Inno.Editor.Scripting.md) · [Application](Inno.Editor.Application.md)
+[Editor 索引](README.md) · [Interactions](Inno.Editor.Interactions.md) · [Scene](Inno.Editor.Scene.md) · [Scripting](Inno.Editor.Scripting.md) · [Application](Inno.Editor.Hosting.md)
 
 `Inno.Editor.PlayMode` 负责在可编辑 Scene 文档与可运行游戏副本之间执行原子切换。它只编排脚本就绪、Scene 隔离、Audio generation、History 隔离和游戏生命周期；不拥有 Scene 文件格式、脚本编译器、音频后端、渲染 Pipeline 或具体 Panel。
 
@@ -133,4 +133,79 @@ Command/Ctrl + `P` 与 icon 使用同一个 Action 和状态查询，因此不�
 - 上一页：[Inno.Editor.Interactions](Inno.Editor.Interactions.md)
 - Scene 隔离实现：[Inno.Editor.Scene](Inno.Editor.Scene.md)
 - 编译门禁：[Inno.Editor.Scripting](Inno.Editor.Scripting.md)
-- 下一页：[Inno.Editor.Application](Inno.Editor.Application.md)
+- 下一页：[Inno.Editor.Hosting](Inno.Editor.Hosting.md)
+
+## 当前源码公开 API 清单
+
+只列当前源码的 public/protected 表面；内部实现不作为稳定 API。参数、返回、失败和 owner 以英文 XML 为准。
+
+### `Inno.Editor.PlayMode.EditorPlayModeController`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Core.Logging.LogSessionId Inno.Editor.PlayMode.EditorPlayModeController.activeSessionId`](../../src/composition/editor/features/Inno.Editor.PlayMode/Runtime/EditorPlayModeController.cs#L126) | Gets the isolated runtime log session associated with the current request. |
+| [`Inno.Editor.PlayMode.EditorPlayModeController`](../../src/composition/editor/features/Inno.Editor.PlayMode/Runtime/EditorPlayModeController.cs#L28) | Implements the deterministic state machine for one editor Play Mode workflow. |
+| [`Inno.Editor.PlayMode.EditorPlayModeController.EditorPlayModeController(Inno.Runtime.EngineHost engineHost, Inno.Runtime.RuntimeSessionOptions runtimeOptions, Inno.Editor.Scene.IEditorScenePlayMode scenes, Inno.Editor.Scripting.IEditorScriptCompilation scripting, Inno.Editor.Interactions.IEditorHistoryIsolation history, Inno.Core.Logging.LogRouter logs, Inno.Editor.Audio.IEditorAudioHost? audio = null)`](../../src/composition/editor/features/Inno.Editor.PlayMode/Runtime/EditorPlayModeController.cs#L83) | Creates a Play Mode controller around the runtime host, scene snapshot, scripting, and history boundaries. |
+| [`Inno.Editor.PlayMode.EditorPlayModeState Inno.Editor.PlayMode.EditorPlayModeController.state`](../../src/composition/editor/features/Inno.Editor.PlayMode/Runtime/EditorPlayModeController.cs#L111) | Gets the current Play Mode transition state. |
+| [`System.Action<Inno.Editor.PlayMode.EditorPlayModeState>? Inno.Editor.PlayMode.EditorPlayModeController.stateChanged`](../../src/composition/editor/features/Inno.Editor.PlayMode/Runtime/EditorPlayModeController.cs#L131) | Occurs after the controller commits a state transition. |
+| [`bool Inno.Editor.PlayMode.EditorPlayModeController.EnterPlayMode()`](../../src/composition/editor/features/Inno.Editor.PlayMode/Runtime/EditorPlayModeController.cs#L142) | Requests a fresh script generation before preparing an isolated runtime session. |
+| [`bool Inno.Editor.PlayMode.EditorPlayModeController.ExitPlayMode()`](../../src/composition/editor/features/Inno.Editor.PlayMode/Runtime/EditorPlayModeController.cs#L166) | Requests cancellation, runtime-session disposal, or dismissal of a failed transition. |
+| [`bool Inno.Editor.PlayMode.EditorPlayModeController.isPlaying`](../../src/composition/editor/features/Inno.Editor.PlayMode/Runtime/EditorPlayModeController.cs#L116) | Gets whether isolated runtime scenes are actively simulating. |
+| [`string? Inno.Editor.PlayMode.EditorPlayModeController.lastFailure`](../../src/composition/editor/features/Inno.Editor.PlayMode/Runtime/EditorPlayModeController.cs#L121) | Gets the most recent transition or simulation failure. |
+| [`void Inno.Editor.PlayMode.EditorPlayModeController.AdvanceTransition()`](../../src/composition/editor/features/Inno.Editor.PlayMode/Runtime/EditorPlayModeController.cs#L192) | Advances at most one Play Mode transition at an editor-controlled frame-safe point. |
+| [`void Inno.Editor.PlayMode.EditorPlayModeController.Dispose()`](../../src/composition/editor/features/Inno.Editor.PlayMode/Runtime/EditorPlayModeController.cs#L229) | Releases the isolated runtime session and history scope owned by this controller. |
+| [`void Inno.Editor.PlayMode.EditorPlayModeController.Tick(float deltaTime)`](../../src/composition/editor/features/Inno.Editor.PlayMode/Runtime/EditorPlayModeController.cs#L216) | Advances the isolated runtime session by one complete frame. |
+
+### `Inno.Editor.PlayMode.EditorPlayModeLoop`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Editor.PlayMode.EditorPlayModeLoop`](../../src/composition/editor/features/Inno.Editor.PlayMode/Runtime/EditorPlayModeLoop.cs#L8) | Bridges the editor host frame clock to the active Play Mode session. |
+| [`System.IDisposable Inno.Editor.PlayMode.EditorPlayModeLoop.EnterPresentationScope()`](../../src/composition/editor/features/Inno.Editor.PlayMode/Runtime/EditorPlayModeLoop.cs#L29) | Binds editor presentation and interaction work to the isolated Play session while simulation is active, or returns an inert scope while the editor is not presenting runtime copies. |
+| [`void Inno.Editor.PlayMode.EditorPlayModeLoop.Quiesce()`](../../src/composition/editor/features/Inno.Editor.PlayMode/Runtime/EditorPlayModeLoop.cs#L37) | Drains the active Play session before the product tears down editor modules, history or presentation. |
+| [`void Inno.Editor.PlayMode.EditorPlayModeLoop.Tick(float deltaTime)`](../../src/composition/editor/features/Inno.Editor.PlayMode/Runtime/EditorPlayModeLoop.cs#L20) | Advances the active simulation by one complete frame when Play Mode is running. |
+
+### `Inno.Editor.PlayMode.EditorPlayModeState`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Editor.PlayMode.EditorPlayModeState`](../../src/composition/editor/features/Inno.Editor.PlayMode/EditorPlayModeState.cs#L6) | Identifies the current relationship between editor documents and game simulation. |
+| [`Inno.Editor.PlayMode.EditorPlayModeState.Compiling`](../../src/composition/editor/features/Inno.Editor.PlayMode/EditorPlayModeState.cs#L16) | Play Mode is waiting for the requested script generation to become active. |
+| [`Inno.Editor.PlayMode.EditorPlayModeState.Editing`](../../src/composition/editor/features/Inno.Editor.PlayMode/EditorPlayModeState.cs#L11) | Editable scene documents are loaded and game simulation is stopped. |
+| [`Inno.Editor.PlayMode.EditorPlayModeState.Failed`](../../src/composition/editor/features/Inno.Editor.PlayMode/EditorPlayModeState.cs#L36) | The most recent transition failed and its diagnostic remains available for inspection. |
+| [`Inno.Editor.PlayMode.EditorPlayModeState.Playing`](../../src/composition/editor/features/Inno.Editor.PlayMode/EditorPlayModeState.cs#L26) | Isolated runtime scenes are receiving the game update lifecycle. |
+| [`Inno.Editor.PlayMode.EditorPlayModeState.Preparing`](../../src/composition/editor/features/Inno.Editor.PlayMode/EditorPlayModeState.cs#L21) | The active script generation is ready and isolated runtime state is being prepared. |
+| [`Inno.Editor.PlayMode.EditorPlayModeState.Stopping`](../../src/composition/editor/features/Inno.Editor.PlayMode/EditorPlayModeState.cs#L31) | The isolated runtime session is stopping and releasing its owned state. |
+
+### `Inno.Editor.PlayMode.IEditorPlayMode`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Core.Logging.LogSessionId Inno.Editor.PlayMode.IEditorPlayMode.activeSessionId`](../../src/composition/editor/features/Inno.Editor.PlayMode/IEditorPlayMode.cs#L30) | Gets the active isolated runtime log session, or outside a Play Mode request. |
+| [`Inno.Editor.PlayMode.EditorPlayModeState Inno.Editor.PlayMode.IEditorPlayMode.state`](../../src/composition/editor/features/Inno.Editor.PlayMode/IEditorPlayMode.cs#L15) | Gets the current Play Mode transition state. |
+| [`Inno.Editor.PlayMode.IEditorPlayMode`](../../src/composition/editor/features/Inno.Editor.PlayMode/IEditorPlayMode.cs#L10) | Controls the editor's isolated game-simulation session. |
+| [`System.Action<Inno.Editor.PlayMode.EditorPlayModeState>? Inno.Editor.PlayMode.IEditorPlayMode.stateChanged`](../../src/composition/editor/features/Inno.Editor.PlayMode/IEditorPlayMode.cs#L35) | Occurs after changes. |
+| [`bool Inno.Editor.PlayMode.IEditorPlayMode.EnterPlayMode()`](../../src/composition/editor/features/Inno.Editor.PlayMode/IEditorPlayMode.cs#L43) | Requests entry after the active script generation becomes ready. |
+| [`bool Inno.Editor.PlayMode.IEditorPlayMode.ExitPlayMode()`](../../src/composition/editor/features/Inno.Editor.PlayMode/IEditorPlayMode.cs#L51) | Requests disposal of the active runtime session or dismisses a failed transition. |
+| [`bool Inno.Editor.PlayMode.IEditorPlayMode.isPlaying`](../../src/composition/editor/features/Inno.Editor.PlayMode/IEditorPlayMode.cs#L20) | Gets whether isolated runtime scenes are actively simulating. |
+| [`string? Inno.Editor.PlayMode.IEditorPlayMode.lastFailure`](../../src/composition/editor/features/Inno.Editor.PlayMode/IEditorPlayMode.cs#L25) | Gets the most recent transition or simulation failure, or when no failure is active. |
+
+## 项目依赖
+
+- [Inno.Core.Execution](../core/Inno.Core.Execution.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.UI.Runtime](../ui/Inno.UI.Runtime.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Scripting.Compiler](../scripting/Inno.Scripting.Compiler.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Core.Input](../core/Inno.Core.Input.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Scripting.Api](../scripting/Inno.Scripting.Api.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Scene](../scene/Inno.Scene.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Core.Diagnostics](../core/Inno.Core.Diagnostics.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Extensibility.Reload](../extensibility/Inno.Extensibility.Reload.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Editor.Audio](Inno.Editor.Audio.md)：公开引用边界由实际签名核对。
+- [Inno.Editor.Core](Inno.Editor.Core.md)：公开引用边界由实际签名核对。
+- [Inno.Runtime](../runtime/Inno.Runtime.md)：公开引用边界由实际签名核对。
+- [Inno.Editor.Interactions](Inno.Editor.Interactions.md)：公开引用边界由实际签名核对。
+- [Inno.Editor.Scene](Inno.Editor.Scene.md)：公开引用边界由实际签名核对。
+- [Inno.Editor.Scripting](Inno.Editor.Scripting.md)：公开引用边界由实际签名核对。
+- [Inno.Core.Logging](../core/Inno.Core.Logging.md)：公开引用边界由实际签名核对。
+- [Inno.Core.Serialization](../core/Inno.Core.Serialization.md)：公开引用边界由实际签名核对。
+- [Inno.Extensibility.Catalogs](../extensibility/Inno.Extensibility.Catalogs.md)：公开引用边界由实际签名核对。

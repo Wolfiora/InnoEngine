@@ -1,3 +1,4 @@
+using Inno.Integration.MacOS.Bgfx;
 using Inno.Content.Testing;
 using Inno.Adapter.Serialization.DotNet;
 using Inno.Adapter.Modules.DotNet;
@@ -51,7 +52,7 @@ public sealed class RenderingImporterIntegrationTests : IDisposable
         _ = typeof(AssetSerializationServices);
         m_types = new TypeCatalog(m_modules, new ReflectionTypeCatalogSource());
         m_serialization = new SerializationRegistry(m_types, new ReflectionSerializationMetadataSource());
-        _ = new BgfxShadercToolchain(BgfxShaderTargetPlatform.MacOSArm64);
+        _ = new BgfxShadercToolchain(Inno.Integration.MacOS.Bgfx.MacOSBgfxShaderProfiles.target);
         m_types.Rebuild();
     }
 

@@ -58,7 +58,7 @@ public static class BuildPipelineFactory
         ArgumentNullException.ThrowIfNull(engine);
         return new BuildPipeline(
             assets, plugins, settings, engine.serialization, engine.generations, compiler, supportPackRoot,
-            distribution.CreateTargets(assets, engine.serialization, engine.types),
+            distribution.CreateBindings(assets, engine.serialization, engine.types),
             distribution.managedDeployments,
             SourcePlayerSupportPackProvisioner.TryCreateForHost(
                 context.applicationDirectory, distribution.supportPacks, context.dotnetHost));

@@ -48,6 +48,12 @@ sealed partial class AssetLoader
         if (record.meta.importStatus != (int)AssetImportStatus.Imported &&
             record.meta.importStatus != (int)AssetImportStatus.Failed)
             return true;
+        // A failed dependency can recover when another extension becomes available, even when
+        // this importer's implementation and source bytes are unchanged. Retry once per catalog
+        // generation; the transient observation deliberately does not survive a loader restart.
+        if (record.meta.importStatus == (int)AssetImportStatus.Failed
+            && record.failedTypeGeneration != m_types.current.version)
+            return true;
         if (record.meta.importStatus == (int)AssetImportStatus.Failed &&
             record.meta.diagnostics.Any(static diagnostic =>
                 diagnostic.StartsWith("IOException:", StringComparison.Ordinal) ||

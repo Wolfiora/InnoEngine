@@ -10,6 +10,28 @@ public sealed class NativeArtifactIdentityTests : IDisposable
     private readonly string m_root = Path.Combine(Path.GetTempPath(), "InnoNativeArtifactTests", Guid.NewGuid().ToString("N"));
 
     [Fact]
+    public void MultipurposeRecipeOwnerIncludesOnlyItsDeclaredImplementationClosure()
+    {
+        Write("InnoEngine.sln", "fixture");
+        string project = Write("platforms/Fixture/Inno.Build.Fixture.csproj", "<Project />");
+        string builder = Write("platforms/Fixture/NativeBuilder.cs", "builder");
+        string packaging = Write("platforms/Fixture/Packaging.cs", "packaging");
+        var owner = new NativeComponentDescriptor("fixture",
+            Path.GetRelativePath(m_root, project), Path.GetRelativePath(m_root, project));
+        var context = new NativeBuildContext(m_root, "release").WithComponentOptions(owner, new(NativeLibraryKind.Shared));
+        NativeBuildRecipe recipe = NativeBuildRecipe.CreateForComponent(
+            context, owner, "fixture", "fixture-target", [], [], [builder]);
+        foreach (NativeBuildInput input in recipe.inputs)
+            if (!File.Exists(input.physicalPath) && !Directory.Exists(input.physicalPath))
+                Write(Path.GetRelativePath(m_root, input.physicalPath), "common executor");
+        string identity = NativeBuildFingerprint.Create(recipe.declarations, recipe.inputs);
+        File.WriteAllText(packaging, "unrelated packaging changed");
+        Assert.Equal(identity, NativeBuildFingerprint.Create(recipe.declarations, recipe.inputs));
+        File.WriteAllText(builder, "native recipe changed");
+        Assert.NotEqual(identity, NativeBuildFingerprint.Create(recipe.declarations, recipe.inputs));
+    }
+
+    [Fact]
     public void FingerprintPreservesDeclarationOrderAndChangesForSourceOrSdkIdentity()
     {
         string header = Write("include/api.h", "int sample(void);");

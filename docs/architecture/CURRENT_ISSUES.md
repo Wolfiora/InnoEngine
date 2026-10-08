@@ -2,6 +2,24 @@
 
 [架构治理](README.md) · [Wiki 首页](../README.md) · [正式问题台账](../issues/2026-08-31-complete-issue-register.md)
 
+2026-10-08 后续执行：BGFX 封闭平台选择与 Support Pack staging 前预检两项 P2 已完成源码替换，
+65,536 字符属性的真实静态图还原也已修复。411 项受影响测试、四条最终 Player 发布/运行、
+Debug/Release Editor 与 Rendering2D 6000 帧/脚本编译均通过，详见
+[平台边界收口验收](PLATFORM_BOUNDARY_CLOSEOUT_ACCEPTANCE_2026_10_08.md)；下方发现记录是历史状态。
+Hierarchy/Export/Modal/GameView/小地图已有当前实际 UI 证据；Rendering2D 未把后台 GPU 日志当作人工画面复核。
+macOS/Linux 实机、任意多屏 DPI、声学听音及第三方浏览器 warning 继续明确保留。
+
+2026-10-08 [平台计划与 Solution 重新复核](PLATFORM_OWNERSHIP_PLAN_AUDIT_2026_10_08.md)：217 项当前有效引用图通过；
+删除一个未被项目/runner 消费的旧验收脚本，清理 339 处迁移空目录及四个旧输出缓存，完整移除旧 native 根，修正 README 与 Editor 参数并补齐启动指南。
+该次发现的两个 P2 是 BGFX 固定目标工厂/命名平台内容编译配置、Support Pack 在 SDK 预检前创建 staging；
+发现时三个最终可见复核暂缓。它们的后续源码结果与当前证据以上方收口验收为准，保留本段用于追溯。
+
+2026-10-07 [平台归属重构](PLATFORM_OWNERSHIP_REFACTOR_PLAN.md)源码与当前允许的自动验收完成：217 项有效引用图、82 项架构契约、
+引擎 1752 passed / 0 failed / 16 macOS Metal skipped；四条最终 Player 发布/运行、Canvas 普通 SDK 10 构建/6 项测试、Rendering2D 脚本与 Windows Editor Release 普通 Build 通过。
+用户最新禁止 Computer Use，最终 Hierarchy 左键、Export 完成自动关闭和 Rendering2D 可见 Editor smoke 三项暂缓，整体无保留验收仍未关闭。
+清理自有旧任务/迁移项目缓存共观测释放约 66.1 GiB，保留当前产物和证据；macOS 实机、OS 多屏 DPI 和声学听音仍未实测。
+本轮状态、失败修复与缓存清理记录见[当前验收报告](PLATFORM_OWNERSHIP_REFACTOR_ACCEPTANCE.md)，不得使用下方历史通过结果替代本轮门禁。
+
 2026-10-07：[Solution 与架构边界复核](SOLUTION_CLEANUP_ACCEPTANCE_2026_10_07.md)补齐遗漏的 ImGui 绑定生成扩展归属，
 并修复 Windows 无法查询旧 Task owner 时缓存退休使构建失败的问题。项目覆盖门禁现包含 Native 与 Tooling；
 本轮结构、有效引用图和构建结果与下方历史运行证据分别记录。
@@ -63,3 +81,11 @@ FlappyBird Windows/Web 导出成功。首次 Artifact staging access denied 的�
 [全仓架构整改总方案](../issues/2026-08-31-architecture-remediation-master-plan.md)。
 
 同日反馈的自动编译/旧代验证循环已修复：排除当前候选的 SourceMountsChanged 通知回声，票据/IDE 投影等待 GC 完成，Faulted 不再显示无限忙碌；同时移除 LifetimeScope 自有任务多余的完成观察回调。最终验收与新自动模式测试见上述当前报告文末。
+
+## 本轮集成整改
+
+BGFX 平台配置、内容 compiler/packager、SDL 宿主与 ImGui 尺度、Native 链接已进入明确集成边界。当前验证状态由[本轮验收](BACKEND_PLATFORM_INTEGRATION_ACCEPTANCE.md)统一记录；实施中不以静态检查替代产品 gate。
+
+## 本次集成整改交接
+
+平台/backend 源码边界已整改；完整产品、最终 ImGui DPI、实际 UI 与性能验收按用户要求待续跑。详见[验收报告](BACKEND_PLATFORM_INTEGRATION_ACCEPTANCE.md)和[续跑清单](BACKEND_PLATFORM_INTEGRATION_HANDOFF.md)，当前不作全矩阵通过声明。

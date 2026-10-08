@@ -14,47 +14,42 @@ namespace Inno.Adapter;
 /// <summary>
 /// Selects one implementation for every replaceable host backend family.
 /// </summary>
-public readonly struct AdapterSelection()
+public readonly struct AdapterSelection
 {
-    /// <summary>
-    /// Gets the built-in default adapter selection shipped by the engine distribution.
-    /// </summary>
-    public static AdapterSelection defaultValue { get; } = new();
-
     /// <summary>
     /// Gets the selected platform backend.
     /// </summary>
-    public PlatformBackendId platform { get; init; } = PlatformBackendId.sdl3;
+    public PlatformBackendId platform { get; init; }
 
     /// <summary>
     /// Gets the selected input backend.
     /// </summary>
-    public InputBackendId input { get; init; } = InputBackendId.events;
+    public InputBackendId input { get; init; }
 
     /// <summary>
     /// Gets the selected storage backend.
     /// </summary>
-    public StorageBackendId storage { get; init; } = StorageBackendId.fileSystem;
+    public StorageBackendId storage { get; init; }
 
     /// <summary>
     /// Gets the selected rendering backend.
     /// </summary>
-    public RenderingBackendId rendering { get; init; } = RenderingBackendId.bgfx;
+    public RenderingBackendId rendering { get; init; }
 
     /// <summary>
     /// Gets the selected audio backend.
     /// </summary>
-    public AudioBackendId audio { get; init; } = AudioBackendId.miniAudio;
+    public AudioBackendId audio { get; init; }
 
     /// <summary>
     /// Gets the selected Unicode text backend.
     /// </summary>
-    public TextBackendId text { get; init; } = TextBackendId.freeTypeHarfBuzz;
+    public TextBackendId text { get; init; }
 
     /// <summary>
     /// Gets the selected retained-mode UI backend.
     /// </summary>
-    public UiBackendId ui { get; init; } = UiBackendId.rmlUi;
+    public UiBackendId ui { get; init; }
 
     /// <summary>
     /// Validates every selected registration before the composition creates any service.

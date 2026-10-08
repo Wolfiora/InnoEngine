@@ -32,3 +32,28 @@ Local/World 只改变操作轴基准，不改变 Transform 数据模型：World 
 Contributor 在 `EditorViewportManipulationSpace.plane` 声明平面时，Scene View 将其转换为 ImGuizmo 的操作子集：Move 保留平面两条轴和中心自由拖拽，移除法线轴及重复的平面方块；Rotate 保留 XYZ 三轴，以便 2D 对象也能绕任意轴旋转；Scale 保留平面内两轴，并在读取操作矩阵时保持已有的负缩放符号。对原生轴 mask 和平面可见性阈值的调整局限在单次 ImGuizmo 调用范围内，退出时还原默认值；未声明平面的 3D（包括正交 3D）保持原有操作方式。具体 Plugin 不需要引用 ImGuizmo，核心也不识别 Rendering2D。
 
 导航状态通过 Panel 的 `Capture`/`Restore` 写入 `editor.ini`，但不会进入 Scene、Undo 或 Plugin 持久状态。
+
+## 当前源码公开 API 清单
+
+只列当前源码的 public/protected 表面；内部实现不作为稳定 API。参数、返回、失败和 owner 以英文 XML 为准。
+
+本项目没有公开入口，通过组合或扩展发现使用内部实现。
+
+## 项目依赖
+
+- [Inno.Native.ImGui](../backends/ImGui/Inno.Native.ImGui.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Native.ImGuizmo](../backends/ImGui/Inno.Native.ImGuizmo.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Editor.ImGui](Inno.Editor.ImGui.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Editor.Interactions](Inno.Editor.Interactions.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Editor.Core](Inno.Editor.Core.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Editor.Rendering](Inno.Editor.Rendering.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Editor.Scene](Inno.Editor.Scene.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Editor.Settings](Inno.Editor.Settings.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Core.Identity](../core/Inno.Core.Identity.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Core.Mathematics](../core/Inno.Core.Mathematics.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Scene](../scene/Inno.Scene.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Adapter.Presentation.ImGui.Sdl3](../backends/ImGui/Inno.Adapter.Presentation.ImGui.Sdl3.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Rendering](../rendering/Inno.Rendering.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.References](../references/Inno.References.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Extensibility.Catalogs](../extensibility/Inno.Extensibility.Catalogs.md)：公开引用边界由实际签名核对。
+- [Inno.Core.Serialization](../core/Inno.Core.Serialization.md)：公开引用边界由实际签名核对。

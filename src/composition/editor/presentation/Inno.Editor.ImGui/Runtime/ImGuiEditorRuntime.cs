@@ -252,7 +252,7 @@ public sealed class ImGuiEditorRuntime : EditorRuntime
             return;
         // Text widgets own editing keys, including Backspace and clipboard/history gestures.
         // Explicit document save remains available without first leaving an input field.
-        HotKeyGesture save = HotKeyGesture.Primary(KeyCode.S);
+        HotKeyGesture save = HotKeyGesture.Primary(KeyCode.S, context.keyboard);
         if (NativeImGui.GetIO().WantTextInput && (keyEvent.key != save.key || keyEvent.modifiers != save.modifiers))
             return;
         m_runtime.HandleKeyPressed(keyEvent);

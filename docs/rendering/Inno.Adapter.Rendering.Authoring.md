@@ -24,42 +24,40 @@
 
 ## 当前源码公开 API 清单
 
-以下仅列出当前程序集自己声明的 public/protected 契约；继承成员遵循所属基类页面。internal/private 实现不作为稳定公开 API。签名依据当前源码语义模型生成，行为、参数、异常与所有权说明同时以对应英文 XML 为准。
+只列当前源码的 public/protected 表面；内部实现不作为稳定 API。参数、返回、失败和 owner 以英文 XML 为准。
 
 ### `Inno.Adapter.Rendering.IRenderingAuthoringBackendFactory`
 
 | 当前声明 | 行为 |
 | --- | --- |
+| [`Inno.Adapter.Rendering.IRenderingAuthoringBackendFactory`](../../src/adapters/rendering/Inno.Adapter.Rendering.Authoring/IRenderingAuthoringBackendFactory.cs#L10) | Creates offline rendering compilers paired with a selected runtime rendering backend. |
 | [`Inno.Rendering.Assets.Authoring.IShaderCompilerToolchain Inno.Adapter.Rendering.IRenderingAuthoringBackendFactory.CreateShaderCompilerToolchain(Inno.Adapter.Rendering.RenderingBackendId backend)`](../../src/adapters/rendering/Inno.Adapter.Rendering.Authoring/IRenderingAuthoringBackendFactory.cs#L26) | Creates the shader compiler toolchain paired with the selected rendering backend. |
 | [`Inno.Rendering.Assets.Authoring.ITextureTargetCompiler Inno.Adapter.Rendering.IRenderingAuthoringBackendFactory.CreateTextureTargetCompiler(Inno.Adapter.Rendering.RenderingBackendId backend)`](../../src/adapters/rendering/Inno.Adapter.Rendering.Authoring/IRenderingAuthoringBackendFactory.cs#L37) | Creates the texture compiler paired with the selected rendering backend. |
 | [`System.Collections.Generic.IReadOnlyList<Inno.Adapter.Rendering.RenderingBackendId> Inno.Adapter.Rendering.IRenderingAuthoringBackendFactory.supportedBackends`](../../src/adapters/rendering/Inno.Adapter.Rendering.Authoring/IRenderingAuthoringBackendFactory.cs#L15) | Gets the runtime backend identities supported by this authoring composition. |
-| [`Inno.Adapter.Rendering.IRenderingAuthoringBackendFactory`](../../src/adapters/rendering/Inno.Adapter.Rendering.Authoring/IRenderingAuthoringBackendFactory.cs#L10) | Creates offline rendering compilers paired with a selected runtime rendering backend. |
 
 ### `Inno.Adapter.Rendering.RenderingAuthoringBackendCatalog`
 
 | 当前声明 | 行为 |
 | --- | --- |
+| [`Inno.Adapter.Rendering.RenderingAuthoringBackendCatalog`](../../src/adapters/rendering/Inno.Adapter.Rendering.Authoring/RenderingAuthoringBackendCatalog.cs#L12) | Pairs one immutable authoring provider set with a runtime rendering catalog. |
 | [`Inno.Adapter.Rendering.RenderingAuthoringBackendCatalog.RenderingAuthoringBackendCatalog(Inno.Adapter.Rendering.IRenderingBackendFactory runtime, System.Collections.Generic.IEnumerable<Inno.Adapter.Rendering.RenderingAuthoringBackendProvider> providers)`](../../src/adapters/rendering/Inno.Adapter.Rendering.Authoring/RenderingAuthoringBackendCatalog.cs#L28) | Validates that every runtime backend has exactly one matching authoring provider. |
 | [`Inno.Rendering.Assets.Authoring.IShaderCompilerToolchain Inno.Adapter.Rendering.RenderingAuthoringBackendCatalog.CreateShaderCompilerToolchain(Inno.Adapter.Rendering.RenderingBackendId backend)`](../../src/adapters/rendering/Inno.Adapter.Rendering.Authoring/RenderingAuthoringBackendCatalog.cs#L57) | Creates a shader compiler toolchain using this implementation's validated inputs. |
 | [`Inno.Rendering.Assets.Authoring.ITextureTargetCompiler Inno.Adapter.Rendering.RenderingAuthoringBackendCatalog.CreateTextureTargetCompiler(Inno.Adapter.Rendering.RenderingBackendId backend)`](../../src/adapters/rendering/Inno.Adapter.Rendering.Authoring/RenderingAuthoringBackendCatalog.cs#L70) | Creates a texture target compiler using this implementation's validated inputs. |
 | [`System.Collections.Generic.IReadOnlyList<Inno.Adapter.Rendering.RenderingBackendId> Inno.Adapter.Rendering.RenderingAuthoringBackendCatalog.supportedBackends`](../../src/adapters/rendering/Inno.Adapter.Rendering.Authoring/RenderingAuthoringBackendCatalog.cs#L46) | Gets backend registrations available in this type generation. |
-| [`Inno.Adapter.Rendering.RenderingAuthoringBackendCatalog`](../../src/adapters/rendering/Inno.Adapter.Rendering.Authoring/RenderingAuthoringBackendCatalog.cs#L12) | Pairs one immutable authoring provider set with a runtime rendering catalog. |
 
 ### `Inno.Adapter.Rendering.RenderingAuthoringBackendProvider`
 
 | 当前声明 | 行为 |
 | --- | --- |
+| [`Inno.Adapter.Rendering.RenderingAuthoringBackendProvider`](../../src/adapters/rendering/Inno.Adapter.Rendering.Authoring/RenderingAuthoringBackendProvider.cs#L10) | Supplies authoring tools paired with one runtime rendering implementation. |
 | [`Inno.Adapter.Rendering.RenderingAuthoringBackendProvider.RenderingAuthoringBackendProvider(Inno.Adapter.Rendering.RenderingBackendId id)`](../../src/adapters/rendering/Inno.Adapter.Rendering.Authoring/RenderingAuthoringBackendProvider.cs#L21) | Captures the registration identity assigned by the composition owner. |
+| [`Inno.Adapter.Rendering.RenderingBackendId Inno.Adapter.Rendering.RenderingAuthoringBackendProvider.id`](../../src/adapters/rendering/Inno.Adapter.Rendering.Authoring/RenderingAuthoringBackendProvider.cs#L31) | Gets the stable runtime implementation identity served by these tools. |
 | [`abstract Inno.Rendering.Assets.Authoring.IShaderCompilerToolchain Inno.Adapter.Rendering.RenderingAuthoringBackendProvider.CreateShaderCompilerToolchain()`](../../src/adapters/rendering/Inno.Adapter.Rendering.Authoring/RenderingAuthoringBackendProvider.cs#L39) | Creates the shader toolchain for this implementation. |
 | [`abstract Inno.Rendering.Assets.Authoring.ITextureTargetCompiler Inno.Adapter.Rendering.RenderingAuthoringBackendProvider.CreateTextureTargetCompiler()`](../../src/adapters/rendering/Inno.Adapter.Rendering.Authoring/RenderingAuthoringBackendProvider.cs#L47) | Creates the texture compiler for this implementation. |
-| [`Inno.Adapter.Rendering.RenderingBackendId Inno.Adapter.Rendering.RenderingAuthoringBackendProvider.id`](../../src/adapters/rendering/Inno.Adapter.Rendering.Authoring/RenderingAuthoringBackendProvider.cs#L31) | Gets the stable runtime implementation identity served by these tools. |
-| [`Inno.Adapter.Rendering.RenderingAuthoringBackendProvider`](../../src/adapters/rendering/Inno.Adapter.Rendering.Authoring/RenderingAuthoringBackendProvider.cs#L10) | Supplies authoring tools paired with one runtime rendering implementation. |
 
 ## 项目依赖
 
-- [Inno.Adapter.Rendering](Inno.Adapter.Rendering.md)：项目引用；公开签名可见性由语义边界检查确认。
-- [Inno.Rendering.Assets](Inno.Rendering.Assets.md)：项目引用；公开签名可见性由语义边界检查确认。
-- [Inno.Extensibility.Catalogs](../extensibility/Inno.Extensibility.Catalogs.md)：项目引用；公开签名可见性由语义边界检查确认。
-- [Inno.Rendering.Assets.Authoring](Inno.Rendering.Assets.Authoring.md)：项目引用；公开签名可见性由语义边界检查确认。
-
-共同 MSBuild 注入的 analyzer 与编译规则属于构建依赖，完整有效项目图记录在本轮验收证据中。
+- [Inno.Adapter.Rendering](Inno.Adapter.Rendering.md)：公开引用边界由实际签名核对。
+- [Inno.Rendering.Assets](Inno.Rendering.Assets.md)：公开引用边界由实际签名核对。
+- [Inno.Extensibility.Catalogs](../extensibility/Inno.Extensibility.Catalogs.md)：公开引用边界由实际签名核对。
+- [Inno.Rendering.Assets.Authoring](Inno.Rendering.Assets.Authoring.md)：公开引用边界由实际签名核对。

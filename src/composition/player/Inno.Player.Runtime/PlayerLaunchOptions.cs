@@ -64,7 +64,7 @@ public sealed class PlayerLaunchOptions
     /// <summary>
     /// Gets the coherent runtime backend selection.
     /// </summary>
-    public AdapterSelection adapterSelection { get; init; } = AdapterSelection.defaultValue;
+    public required AdapterSelection adapterSelection { get; init; }
 
     /// <summary>
     /// Gets the execution policy available to the game's job scheduler.

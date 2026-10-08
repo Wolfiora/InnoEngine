@@ -8,7 +8,7 @@
 
 Registry 派生实现不得直接调用 `OnCleanupFailed` 代替退休失败传播。源码 AST 检查会拒绝该绕过；统一清理应使用 `DisposeExtensions` 并让 TypeRegistry 封锁 generation。负向行为见[CLI 测试项目](Inno.Tooling.Architecture.Tests.md)。
 
-本项目是架构验证库，由统一 Build CLI 调用。`ArchitectureValidator.Execute(arguments)` 从包含
+本项目是架构验证库，由统一 Build CLI 调用。`ArchitectureValidator.Execute(arguments, cancellationToken)` 从包含
 `InnoEngine.sln` 的根目录加载源码与 `.csproj` 图，返回 0 表示通过，1 表示违反项；源码根缺失时抛出
 `DirectoryNotFoundException`。可指定源码根与 `--configuration Debug|Release`，默认 Debug。
 未知选项、重复配置和多个根抛出 `ArgumentException`。
@@ -36,8 +36,8 @@ Native 符号检查目前覆盖 BGFX、SDL3、MiniAudio；ImGui presentation 的
 - Player dependency closure；
 - Native 类型泄漏和 Engine 内部脚本 Log facade；
 - tests 的 non-public reflection；
-- `src`、`native`、`build`、`tools` 的全部创作源码项目必须进入 Solution；`src`/`build` 按职责层次归类，Native 组件及绑定生成扩展共用 `native`，验证工具共用 `tools`；
-- 全部 test project 必须进入 solution，并位于 `tests/<domain>` 虚拟 Solution Folder；TestModule/TestAssembly/TestDependency 必须继续位于二级 `fixtures`；
+- `src`、`backends`、`platforms`、`build`、`tools` 的全部创作源码项目必须进入 Solution，按真实职责和组件/平台 owner 归类；验证工具共用 `tools`；
+- 全部 test project 必须进入 Solution；组件测试归所属 backend，通用领域/集成测试位于根 `tests`；TestModule/TestAssembly/TestDependency 保留 fixture 职责；
 - `Inno.Audio` 不得引用 Runtime、Scene、Editor、Platform、Native 或具体 backend；只有 MiniAudio adapter/toolchain/native/tests 可直接引用 native binding；
 - Audio scripting 清单不得导出设备、native binding 或 backend，MiniAudio 实时适配源码不得持有托管 extension generation/reflection 对象；
 - public/protected 多行英文 XML 的 summary/param/typeparam/returns/exception contract。
@@ -46,6 +46,12 @@ Native 符号检查目前覆盖 BGFX、SDL3、MiniAudio；ImGui presentation 的
 dotnet build InnoEngine.sln -m:1 -p:UseSharedCompilation=false
 dotnet run --no-build --project build/cli/Inno.Build.Cli -- verify .
 ```
+
+指定 `--dotnet <绝对 SDK executable>` 后还会通过 SDK 的只读 MSBuild item/property 查询检查实际导入后的
+ProjectReference、Compile、程序集身份、产品与 Native target。不会执行 Restore、Build、Native 或生成 target。
+`--project-graph <output.json>` 同时保存此次有效图，必须与 `--dotnet` 一起使用。每个查询有一分钟预算；取消会
+停止并完成已启动的子进程。检查包含 imported 平台依赖、普通源码的第二 owner、重复程序集、循环与 Player 创作/构建闭包。
+这些检查与源码/公开 API 检查共同使用，不能用只读 evaluation 代替真实编译、发布或实机运行。
 
 `--expand-xml` 只机械展开已有 XML 标签，不改变说明内容。缺失说明由作者补齐，
 工具不根据方法名称猜测语义，也不把继承契约替换为占位文本。正常 CI 不使用写入参数。
@@ -59,17 +65,16 @@ BGCS/Cpp2C target profile 必须显式声明 Native owner 内的输出目录，�
 
 ## 当前源码公开 API 清单
 
-以下仅列出当前程序集自己声明的 public/protected 契约；继承成员遵循所属基类页面。internal/private 实现不作为稳定公开 API。签名依据当前源码语义模型生成，行为、参数、异常与所有权说明同时以对应英文 XML 为准。
+只列当前源码的 public/protected 表面；内部实现不作为稳定 API。参数、返回、失败和 owner 以英文 XML 为准。
 
 ### `Inno.Tooling.Architecture.ArchitectureValidator`
 
 | 当前声明 | 行为 |
 | --- | --- |
-| [`static int Inno.Tooling.Architecture.ArchitectureValidator.Execute(string[] arguments)`](../../tools/Inno.Tooling.Architecture/ArchitectureValidator.cs#L46) | Executes repository validation or an explicitly requested documentation maintenance operation. |
-| [`Inno.Tooling.Architecture.ArchitectureValidator`](../../tools/Inno.Tooling.Architecture/ArchitectureValidator.cs#L13) | Checks repository dependency, API documentation and source ownership invariants. |
+| [`Inno.Tooling.Architecture.ArchitectureValidator`](../../tools/Inno.Tooling.Architecture/ArchitectureValidator.cs#L16) | Checks repository dependency, API documentation and source ownership invariants. |
+| [`static int Inno.Tooling.Architecture.ArchitectureValidator.Execute(string[] arguments, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))`](../../tools/Inno.Tooling.Architecture/ArchitectureValidator.cs#L55) | Executes repository validation or an explicitly requested documentation maintenance operation. |
 
 ## 项目依赖
 
-- [Inno.Extensibility.Catalogs](../extensibility/Inno.Extensibility.Catalogs.md)：项目引用；公开签名可见性由语义边界检查确认。
-
-共同 MSBuild 注入的 analyzer 与编译规则属于构建依赖，完整有效项目图记录在本轮验收证据中。
+- [Inno.Extensibility.Catalogs](../extensibility/Inno.Extensibility.Catalogs.md)：公开引用边界由实际签名核对。
+- [Inno.Build.Toolchains](../build/Inno.Build.Toolchains.md)：实现依赖，PrivateAssets="compile"。

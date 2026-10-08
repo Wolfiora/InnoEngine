@@ -5,7 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using Inno.Build.Toolchains;
-using Inno.Build.Toolchains.Browser;
+using Inno.Build.Browser;
 using Xunit;
 
 namespace Inno.Build.Tests;
@@ -82,7 +82,7 @@ public sealed class BrowserToolchainTests : IDisposable
 
         string output = await ToolchainEnvironment.CaptureOutputAsync("dotnet",
             ["msbuild", project, "-nologo", "-nodeReuse:false", "-getProperty:Result"],
-            m_root, CancellationToken.None, new Dictionary<string, string> { [variable] = value });
+            m_root, CancellationToken.None, new Dictionary<string, string?> { [variable] = value });
 
         Assert.Equal(value, output.Trim());
         Assert.Equal(parent, Environment.GetEnvironmentVariable(variable));

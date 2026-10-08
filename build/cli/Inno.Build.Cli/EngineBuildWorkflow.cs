@@ -1,3 +1,7 @@
+using System.Collections.Generic;
+using System.Xml.Linq;
+using Inno.Build.Distribution.Standard;
+using Inno.Build.Toolchains.Bgfx;
 using System;
 using System.IO;
 using System.Linq;
@@ -27,60 +31,86 @@ internal static class EngineBuildWorkflow
         string configuration = options.Read("configuration", "Release");
         ToolchainEnvironment.ValidateConfiguration(configuration.ToLowerInvariant());
         configuration = configuration.Equals("debug", StringComparison.OrdinalIgnoreCase) ? "Debug" : "Release";
-        if (command == "shader")
-        {
-            if (!Enum.TryParse(options.Require("platform"), out BgfxShaderTargetPlatform platform)
-                || !GraphicsApi.TryParse(options.Require("renderer"), out GraphicsApi renderer))
-                throw new ArgumentException("The shader platform or rendering API is invalid.");
-            ShaderArtifactBuilder.Compile(options.Require("assets"), options.Require("shader"),
-                platform, renderer, options.Require("output"));
-            return;
-        }
         if (command == "clean")
         {
             Clean(root);
             return;
         }
-        if (command == "bindings")
+        BuildTargetId target = new(options.Require("target"));
+        BuildTargetId toolsTarget = new(options.Require("tools-target"));
+        BuildCompositionContext captured = StandardBuildEnvironment.Capture(AppContext.BaseDirectory, toolsTarget);
+        var context = new BuildCompositionContext(ToolchainEnvironment.ResolveExecutable(dotnet),
+            captured.applicationDirectory, captured.host, toolsTarget);
+        BuildDistribution distribution = StandardBuildDistribution.Create(context).build;
+        if (command == "shader")
         {
-            await GenerateBindingsAsync(root, dotnet, configuration, cancellationToken);
+            BgfxShaderTargetProfile platform = StandardBuildDistribution.Create(context).ResolveShaderTarget(target);
+            if (!GraphicsApi.TryParse(options.Require("renderer"), out GraphicsApi renderer))
+                throw new ArgumentException("The shader platform or rendering API is invalid.");
+            NativeBuildContext native = new(root, configuration.ToLowerInvariant());
+            native = native.WithToolchain(await distribution.ResolveNativeToolchain(toolsTarget.value)
+                .ResolveAsync(native, context.host, toolsTarget.value, cancellationToken).ConfigureAwait(false));
+            NativeBuildProduct product = (await distribution.ResolveNativeProduct(toolsTarget.value, "shader-tools")
+                .BuildAsync(native, cancellationToken).ConfigureAwait(false)).Single();
+            string extension = native.RequireToolchain().host.system == "Windows" ? ".exe" : string.Empty;
+            var executables = Enum.GetValues<BgfxTool>().ToDictionary(static tool => tool,
+                tool => product.files.Single(file => Path.GetFileName(file) == tool.ToString().ToLowerInvariant()
+                    + "-" + native.configuration + extension));
+            ShaderArtifactBuilder.Compile(options.Require("assets"), options.Require("shader"),
+                platform, renderer, options.Require("output"), new ToolRunner(executables), cancellationToken);
             return;
         }
-        BuildTargetId target = new(options.Require("target"));
-        string output = options.Read("output", Path.Combine(root, "artifacts", "support-packs"));
+        if (command is "bindings" or "engine")
+        {
+            string productId = options.Read("product", "editor");
+            if (command == "engine" && productId != "editor")
+                throw new ArgumentException("The engine command builds the Editor product.");
+            ProductNativeBuildPlan product = distribution.ResolveNativeProduct(target.value, productId);
+            await GenerateBindingsAsync(root, context.dotnetHost, configuration, target, product, cancellationToken).ConfigureAwait(false);
+        }
+        if (command == "bindings")
+            return;
         if (command == "engine")
         {
-            await GenerateBindingsAsync(root, dotnet, configuration, cancellationToken);
-            await ToolchainEnvironment.RunAsync(dotnet,
-                ["build", Path.Combine(root, "src/composition/editor/host/Inno.Editor.Application/Inno.Editor.Application.csproj"),
-                    "--configuration", configuration, "--disable-build-servers", "-m:1", "-nodeReuse:false"],
-                root, cancellationToken);
+            BuildPlatformContribution platform = distribution.platforms.Single(contribution => contribution.descriptor.id == target);
+            string project = platform.editorProject
+                ?? throw new NotSupportedException($"Target '{target}' does not provide an Editor product.");
+            await ToolchainEnvironment.RunAsync(context.dotnetHost,
+                ["build", Path.GetFullPath(project, root), "--configuration", configuration,
+                    "-p:InnoNativeTarget=" + target.value, "-p:InnoToolTarget=" + toolsTarget.value,
+                    "--disable-build-servers", "-m:1", "-nodeReuse:false"], root, cancellationToken,
+                DotNetSdkEnvironment.Create(context.dotnetHost)).ConfigureAwait(false);
         }
-        var context = new BuildCompositionContext(dotnet, AppContext.BaseDirectory);
-        Console.WriteLine(await BuiltInBuildDistribution.Create(context).supportPacks.PublishAsync(
-            root, output, target, dotnet, cancellationToken));
+        string output = options.Read("output", Path.Combine(root, "artifacts", "support-packs"));
+        Console.WriteLine(await distribution.supportPacks.PublishAsync(
+            root, output, target, context.dotnetHost, cancellationToken).ConfigureAwait(false));
     }
 
     private static async Task GenerateBindingsAsync(
         string root,
         string dotnet,
         string configuration,
+        BuildTargetId target,
+        ProductNativeBuildPlan product,
         CancellationToken cancellationToken
     ) {
-        foreach (string project in Directory.EnumerateFiles(Path.Combine(root, "native"), "*.csproj", SearchOption.AllDirectories)
-            .Where(static path => !path.Split(Path.DirectorySeparatorChar).Any(static part => part is "bin" or "obj")))
+        foreach (NativeComponentDescriptor owner in product.steps
+            .Select(static step => step.component).DistinctBy(static component => component.nativeProject))
         {
-            if (!File.Exists(Path.Combine(Path.GetDirectoryName(project)!, "Bindings", "bindgen.json")))
+            string project = Path.GetFullPath(owner.nativeProject, root);
+            if (!XDocument.Load(project).Descendants("BindGenGeneratedBindings")
+                .Any(static property => property.Value.Trim() == "true"))
                 continue;
             await ToolchainEnvironment.RunAsync(dotnet,
-                ["build", project, "-t:GenerateBindings", "-m:1", "-nodeReuse:false", "--configuration", configuration],
-                root, cancellationToken);
+                ["build", project, "-t:GenerateBindings", "-m:1", "-nodeReuse:false",
+                    "--configuration", configuration, "-p:InnoNativeTarget=" + target.value],
+                root, cancellationToken, DotNetSdkEnvironment.Create(dotnet)).ConfigureAwait(false);
         }
     }
 
     private static void Clean(string root)
     {
-        foreach (string sourceRoot in new[] { "src", "native", "build", "tools" })
+        foreach (string sourceRoot in new[] { "src", "backends", "platforms", "build", "tools" })
         {
             string directory = Path.Combine(root, sourceRoot);
             foreach (string project in Directory.EnumerateFiles(directory, "*.csproj", SearchOption.AllDirectories)

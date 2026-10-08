@@ -31,42 +31,47 @@ selection.Validate(catalog);
 
 ## 当前源码公开 API 清单
 
-以下仅列出当前程序集自己声明的 public/protected 契约；继承成员遵循所属基类页面。internal/private 实现不作为稳定公开 API。签名依据当前源码语义模型生成，行为、参数、异常与所有权说明同时以对应英文 XML 为准。
+只列当前源码的 public/protected 表面；内部实现不作为稳定 API。参数、返回、失败和 owner 以英文 XML 为准。
 
 ### `Inno.Adapter.Default.DefaultAdapterCatalog`
 
 | 当前声明 | 行为 |
 | --- | --- |
-| [`Inno.Adapter.Default.DefaultAdapterCatalog.DefaultAdapterCatalog(Inno.Adapter.Default.DefaultAdapterCatalogOptions options, System.Collections.Generic.IEnumerable<Inno.Adapter.Rendering.RenderingBackendProvider>? renderingProviders = null, System.Collections.Generic.IEnumerable<Inno.Adapter.UI.UiBackendProvider>? uiProviders = null, System.Collections.Generic.IEnumerable<Inno.Adapter.Platform.PlatformBackendProvider>? platformProviders = null, System.Collections.Generic.IEnumerable<Inno.Adapter.Input.InputBackendProvider>? inputProviders = null, System.Collections.Generic.IEnumerable<Inno.Adapter.Audio.AudioBackendProvider>? audioProviders = null, System.Collections.Generic.IEnumerable<Inno.Adapter.Text.TextBackendProvider>? textProviders = null)`](../../src/adapters/default/Inno.Adapter.Default/DefaultAdapterCatalog.cs#L60) | Captures each domain registration snapshot without initializing native services. |
-| [`Inno.Adapter.Audio.IAudioBackendFactory Inno.Adapter.Default.DefaultAdapterCatalog.audio`](../../src/adapters/default/Inno.Adapter.Default/DefaultAdapterCatalog.cs#L102) | Gets the composition-owned audio factory snapshot. |
-| [`Inno.Adapter.Input.IInputBackendFactory Inno.Adapter.Default.DefaultAdapterCatalog.input`](../../src/adapters/default/Inno.Adapter.Default/DefaultAdapterCatalog.cs#L87) | Gets the composition-owned input factory snapshot. |
-| [`Inno.Adapter.Platform.IPlatformBackendFactory Inno.Adapter.Default.DefaultAdapterCatalog.platform`](../../src/adapters/default/Inno.Adapter.Default/DefaultAdapterCatalog.cs#L82) | Gets the composition-owned platform factory snapshot. |
-| [`Inno.Adapter.Rendering.IRenderingBackendFactory Inno.Adapter.Default.DefaultAdapterCatalog.rendering`](../../src/adapters/default/Inno.Adapter.Default/DefaultAdapterCatalog.cs#L97) | Gets the composition-owned rendering factory snapshot. |
-| [`Inno.Adapter.Storage.IStorageBackendFactory Inno.Adapter.Default.DefaultAdapterCatalog.storage`](../../src/adapters/default/Inno.Adapter.Default/DefaultAdapterCatalog.cs#L92) | Gets the composition-owned storage factory snapshot. |
-| [`Inno.Adapter.Text.ITextBackendFactory Inno.Adapter.Default.DefaultAdapterCatalog.text`](../../src/adapters/default/Inno.Adapter.Default/DefaultAdapterCatalog.cs#L107) | Gets the composition-owned text factory snapshot. |
-| [`Inno.Adapter.UI.IUiBackendFactory Inno.Adapter.Default.DefaultAdapterCatalog.ui`](../../src/adapters/default/Inno.Adapter.Default/DefaultAdapterCatalog.cs#L112) | Gets the composition-owned ui factory snapshot. |
-| [`Inno.Adapter.Default.DefaultAdapterCatalog`](../../src/adapters/default/Inno.Adapter.Default/DefaultAdapterCatalog.cs#L26) | Composes independent, open provider catalogs for the standard engine distribution. |
+| [`Inno.Adapter.Audio.IAudioBackendFactory Inno.Adapter.Default.DefaultAdapterCatalog.audio`](../../src/composition/adapters/Inno.Adapter.Default/DefaultAdapterCatalog.cs#L97) | Gets the composition-owned audio factory snapshot. |
+| [`Inno.Adapter.Default.DefaultAdapterCatalog`](../../src/composition/adapters/Inno.Adapter.Default/DefaultAdapterCatalog.cs#L25) | Composes independent, open provider catalogs for the standard engine distribution. |
+| [`Inno.Adapter.Default.DefaultAdapterCatalog.DefaultAdapterCatalog(Inno.Adapter.Default.DefaultAdapterCatalogOptions options, System.Collections.Generic.IEnumerable<Inno.Adapter.Rendering.RenderingBackendProvider>? renderingProviders = null, System.Collections.Generic.IEnumerable<Inno.Adapter.UI.UiBackendProvider>? uiProviders = null, System.Collections.Generic.IEnumerable<Inno.Adapter.Input.InputBackendProvider>? inputProviders = null, System.Collections.Generic.IEnumerable<Inno.Adapter.Audio.AudioBackendProvider>? audioProviders = null, System.Collections.Generic.IEnumerable<Inno.Adapter.Text.TextBackendProvider>? textProviders = null)`](../../src/composition/adapters/Inno.Adapter.Default/DefaultAdapterCatalog.cs#L56) | Captures each domain registration snapshot without initializing native services. |
+| [`Inno.Adapter.Input.IInputBackendFactory Inno.Adapter.Default.DefaultAdapterCatalog.input`](../../src/composition/adapters/Inno.Adapter.Default/DefaultAdapterCatalog.cs#L82) | Gets the composition-owned input factory snapshot. |
+| [`Inno.Adapter.Platform.IPlatformBackendFactory Inno.Adapter.Default.DefaultAdapterCatalog.platform`](../../src/composition/adapters/Inno.Adapter.Default/DefaultAdapterCatalog.cs#L77) | Gets the composition-owned platform factory snapshot. |
+| [`Inno.Adapter.Rendering.IRenderingBackendFactory Inno.Adapter.Default.DefaultAdapterCatalog.rendering`](../../src/composition/adapters/Inno.Adapter.Default/DefaultAdapterCatalog.cs#L92) | Gets the composition-owned rendering factory snapshot. |
+| [`Inno.Adapter.Storage.IStorageBackendFactory Inno.Adapter.Default.DefaultAdapterCatalog.storage`](../../src/composition/adapters/Inno.Adapter.Default/DefaultAdapterCatalog.cs#L87) | Gets the composition-owned storage factory snapshot. |
+| [`Inno.Adapter.Text.ITextBackendFactory Inno.Adapter.Default.DefaultAdapterCatalog.text`](../../src/composition/adapters/Inno.Adapter.Default/DefaultAdapterCatalog.cs#L102) | Gets the composition-owned text factory snapshot. |
+| [`Inno.Adapter.UI.IUiBackendFactory Inno.Adapter.Default.DefaultAdapterCatalog.ui`](../../src/composition/adapters/Inno.Adapter.Default/DefaultAdapterCatalog.cs#L107) | Gets the composition-owned ui factory snapshot. |
 
 ### `Inno.Adapter.Default.DefaultAdapterCatalogOptions`
 
 | 当前声明 | 行为 |
 | --- | --- |
-| [`required Inno.Adapter.Storage.IStorageBackendFactory Inno.Adapter.Default.DefaultAdapterCatalogOptions.storage`](../../src/adapters/default/Inno.Adapter.Default/DefaultAdapterCatalogOptions.cs#L13) | Gets or initializes the immutable storage factory configured for this host. |
-| [`Inno.Adapter.Default.DefaultAdapterCatalogOptions`](../../src/adapters/default/Inno.Adapter.Default/DefaultAdapterCatalogOptions.cs#L8) | Supplies host-owned services whose locations cannot be inferred by the engine distribution. |
+| [`Inno.Adapter.Default.DefaultAdapterCatalogOptions`](../../src/composition/adapters/Inno.Adapter.Default/DefaultAdapterCatalogOptions.cs#L9) | Supplies host-owned services whose locations cannot be inferred by the engine distribution. |
+| [`required Inno.Adapter.Platform.IPlatformBackendFactory Inno.Adapter.Default.DefaultAdapterCatalogOptions.platform`](../../src/composition/adapters/Inno.Adapter.Default/DefaultAdapterCatalogOptions.cs#L14) | Gets or initializes the explicitly selected platform factory and host integration. |
+| [`required Inno.Adapter.Storage.IStorageBackendFactory Inno.Adapter.Default.DefaultAdapterCatalogOptions.storage`](../../src/composition/adapters/Inno.Adapter.Default/DefaultAdapterCatalogOptions.cs#L19) | Gets or initializes the immutable storage factory configured for this host. |
+
+### `Inno.Adapter.Default.StandardAdapterSelection`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Adapter.Default.StandardAdapterSelection`](../../src/composition/adapters/Inno.Adapter.Default/StandardAdapterSelection.cs#L14) | Explicitly selects the shared backends shipped by the standard runtime composition. |
+| [`static Inno.Adapter.AdapterSelection Inno.Adapter.Default.StandardAdapterSelection.Create(Inno.Adapter.Storage.StorageBackendId storage)`](../../src/composition/adapters/Inno.Adapter.Default/StandardAdapterSelection.cs#L25) | Creates a complete selection while leaving the location-dependent storage choice to the product. |
 
 ## 项目依赖
 
-- [Inno.Adapter](Inno.Adapter.md)：项目引用；公开签名可见性由语义边界检查确认。
-- [Inno.Adapter.Audio.MiniAudio](../audio/Inno.Adapter.Audio.MiniAudio.md)：实现依赖（`PrivateAssets="compile"`）。
-- [Inno.Adapter.Input](../input/Inno.Adapter.Input.md)：实现依赖（`PrivateAssets="compile"`）。
-- [Inno.Adapter.Platform.Sdl3](../platform/Inno.Adapter.Platform.Sdl3.md)：实现依赖（`PrivateAssets="compile"`）。
-- [Inno.Adapter.Rendering.Bgfx](../rendering/Inno.Adapter.Rendering.Bgfx.md)：实现依赖（`PrivateAssets="compile"`）。
-- [Inno.Adapter.Text.FreeTypeHarfBuzz](../text/Inno.Adapter.Text.FreeTypeHarfBuzz.md)：实现依赖（`PrivateAssets="compile"`）。
-- [Inno.Adapter.UI.RmlUi](../ui/Inno.Adapter.UI.RmlUi.md)：实现依赖（`PrivateAssets="compile"`）。
-- [Inno.Adapter.Text](../text/Inno.Adapter.Text.md)：项目引用；公开签名可见性由语义边界检查确认。
-- [Inno.Adapter.UI](../ui/Inno.Adapter.UI.md)：项目引用；公开签名可见性由语义边界检查确认。
-- [Inno.Text](../text/Inno.Text.md)：项目引用；公开签名可见性由语义边界检查确认。
-- [Inno.UI](../ui/Inno.UI.md)：项目引用；公开签名可见性由语义边界检查确认。
-- [Inno.Extensibility.Catalogs](../extensibility/Inno.Extensibility.Catalogs.md)：项目引用；公开签名可见性由语义边界检查确认。
-
-共同 MSBuild 注入的 analyzer 与编译规则属于构建依赖，完整有效项目图记录在本轮验收证据中。
+- [Inno.Adapter](Inno.Adapter.md)：公开引用边界由实际签名核对。
+- [Inno.Adapter.Audio.MiniAudio](../backends/MiniAudio/Inno.Adapter.Audio.MiniAudio.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Adapter.Input](../input/Inno.Adapter.Input.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Adapter.Rendering.Bgfx](../backends/Bgfx/Inno.Adapter.Rendering.Bgfx.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Adapter.Text.FreeTypeHarfBuzz](../backends/Text/Inno.Adapter.Text.FreeTypeHarfBuzz.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Adapter.UI.RmlUi](../backends/RmlUi/Inno.Adapter.UI.RmlUi.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Adapter.Text](../text/Inno.Adapter.Text.md)：公开引用边界由实际签名核对。
+- [Inno.Adapter.UI](../ui/Inno.Adapter.UI.md)：公开引用边界由实际签名核对。
+- [Inno.Text](../text/Inno.Text.md)：公开引用边界由实际签名核对。
+- [Inno.UI](../ui/Inno.UI.md)：公开引用边界由实际签名核对。
+- [Inno.Extensibility.Catalogs](../extensibility/Inno.Extensibility.Catalogs.md)：公开引用边界由实际签名核对。

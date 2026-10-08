@@ -85,7 +85,8 @@ public static partial class ImGuiWidget
         NativeImGui.SetNextItemOpen(open, ImGuiCond.Always);
 
         Vector2 nodeCursor = NativeImGui.GetCursorScreenPos();
-        ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags.SpanFullWidth | ImGuiTreeNodeFlags.AllowOverlap;
+        // Each disclosure, content row and overlay owns its own hit region.
+        ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags.None;
         if (isLeaf)
             flags |= ImGuiTreeNodeFlags.Leaf | ImGuiTreeNodeFlags.NoTreePushOnOpen;
         else
@@ -235,7 +236,6 @@ public static partial class ImGuiWidget
         float contentBoundaryX = window.DC.CursorMaxPos.X;
         float idealBoundaryX = window.DC.IdealMaxPos.X;
         NativeImGui.SetCursorScreenPos(hitMin);
-        NativeImGui.SetNextItemAllowOverlap();
         _ = NativeImGui.InvisibleButton($"##tree_content_hit_{id}", hitMax - hitMin);
         window.DC.CursorMaxPos.X = contentBoundaryX;
         window.DC.IdealMaxPos.X = idealBoundaryX;

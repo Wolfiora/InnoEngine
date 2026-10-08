@@ -20,6 +20,71 @@ public sealed class SupportPackPublisherTests : IDisposable
 
     public void Dispose() => Directory.Delete(m_root, recursive: true);
 
+    [Theory]
+    [InlineData("missing-sdk")]
+    [InlineData("wrong-target")]
+    [InlineData("null-plan")]
+    public async Task PreflightFailuresLeaveNoPublicationDirectory(string failure)
+    {
+        string output = Path.Combine(m_root, "Packs");
+        var source = new PlanningSource((
+            context,
+            token
+        ) => {
+            Assert.False(Directory.Exists(output));
+            if (failure == "missing-sdk")
+                throw new FileNotFoundException("The selected SDK is absent.");
+            return ValueTask.FromResult<PlayerSupportPackPlan>(failure == "null-plan"
+                ? null! : new ForeignPlan());
+        });
+        var publisher = new PlayerSupportPackPublisher([source]);
+
+        if (failure == "missing-sdk")
+            await Assert.ThrowsAsync<FileNotFoundException>(() => publisher.PublishAsync(m_root, output, S_TARGET, "unused").AsTask());
+        else
+            await Assert.ThrowsAsync<InvalidDataException>(() => publisher.PublishAsync(m_root, output, S_TARGET, "unused").AsTask());
+        Assert.False(Directory.Exists(output));
+    }
+
+    [Fact]
+    public async Task CancellationDuringPlanningLeavesNoOutputAndExecutesNoPlan()
+    {
+        using var cancellation = new CancellationTokenSource();
+        string output = Path.Combine(m_root, "Packs");
+        var source = new PlanningSource((
+            context,
+            token
+        ) => {
+            cancellation.Cancel();
+            return ValueTask.FromResult<PlayerSupportPackPlan>(new ForeignPlan(S_TARGET));
+        });
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => new PlayerSupportPackPublisher([source])
+            .PublishAsync(m_root, output, S_TARGET, "unused", cancellation.Token).AsTask());
+
+        Assert.False(Directory.Exists(output));
+    }
+
+    [Fact]
+    public async Task PreparedPlanIsExecutedOnceWithoutRepeatingDiscovery()
+    {
+        int planningCount = 0;
+        string output = Path.Combine(m_root, "Packs");
+        var source = new PlanningSource(async (
+            context,
+            token
+        ) => {
+            Assert.False(Directory.Exists(output));
+            planningCount++;
+            return await new TestSource(null, payload: "frozen").CreatePlanAsync(context, token);
+        });
+
+        string installed = await new PlayerSupportPackPublisher([source]).PublishAsync(m_root, output, S_TARGET, "unused");
+
+        Assert.Equal(1, planningCount);
+        Assert.Equal("frozen", File.ReadAllText(Path.Combine(installed, "References", "Inno.Test.dll")));
+    }
+
     [Fact]
     public async Task RegisteredCustomTargetInstallsWithoutCorePlatformBranches()
     {
@@ -50,7 +115,7 @@ public sealed class SupportPackPublisherTests : IDisposable
         string output = Path.Combine(m_root, "Packs");
         await Assert.ThrowsAnyAsync<OperationCanceledException>(
             () => publisher.PublishAsync(m_root, output, S_TARGET, "unused", cancellation.Token).AsTask());
-        Assert.Empty(Directory.EnumerateDirectories(output));
+        Assert.False(Directory.Exists(output));
     }
 
     [Fact]
@@ -152,16 +217,51 @@ public sealed class SupportPackPublisherTests : IDisposable
     ) : IPlayerSupportPackSource {
         public BuildTargetId target => S_TARGET;
 
-        public async ValueTask PrepareAsync(
-            PlayerSupportPackBuildContext context,
+        public ValueTask<PlayerSupportPackPlan> CreatePlanAsync(
+            PlayerSupportPackPlanningContext context,
             CancellationToken cancellationToken
         ) {
-            entered.SetResult();
-            await release.Task.WaitAsync(cancellationToken);
-            await new TestSource(null).PrepareAsync(context, cancellationToken);
+            return ValueTask.FromResult<PlayerSupportPackPlan>(new PendingPlan(entered, release));
+        }
+
+        private sealed class PendingPlan(
+            TaskCompletionSource entered,
+            TaskCompletionSource release
+        ) : PlayerSupportPackPlan(S_TARGET) {
+            public override async ValueTask PrepareAsync(
+                string stagingDirectory,
+                CancellationToken cancellationToken
+            ) {
+                entered.SetResult();
+                await release.Task.WaitAsync(cancellationToken);
+                PlayerSupportPackPlan plan = await new TestSource(null).CreatePlanAsync(
+                    new PlayerSupportPackPlanningContext("unused", "unused"), cancellationToken);
+                await plan.PrepareAsync(stagingDirectory, cancellationToken);
+            }
         }
 
         public void Validate(string directory) => new TestSource(null).Validate(directory);
+    }
+
+    private sealed class PlanningSource(
+        Func<PlayerSupportPackPlanningContext, CancellationToken, ValueTask<PlayerSupportPackPlan>> createPlan
+    ) : IPlayerSupportPackSource {
+        public BuildTargetId target => S_TARGET;
+
+        public ValueTask<PlayerSupportPackPlan> CreatePlanAsync(
+            PlayerSupportPackPlanningContext context,
+            CancellationToken cancellationToken
+        ) => createPlan(context, cancellationToken);
+
+        public void Validate(string directory) => new TestSource(null).Validate(directory);
+    }
+
+    private sealed class ForeignPlan(BuildTargetId? target = null) : PlayerSupportPackPlan(target ?? new("foreign-target"))
+    {
+        public override ValueTask PrepareAsync(
+            string stagingDirectory,
+            CancellationToken cancellationToken
+        ) => throw new Xunit.Sdk.XunitException("An unaccepted plan must never execute.");
     }
 
     private sealed class TestSource(
@@ -171,17 +271,28 @@ public sealed class SupportPackPublisherTests : IDisposable
     ) : IPlayerSupportPackSource {
         public BuildTargetId target => S_TARGET;
 
-        public ValueTask PrepareAsync(
-            PlayerSupportPackBuildContext context,
+        public ValueTask<PlayerSupportPackPlan> CreatePlanAsync(
+            PlayerSupportPackPlanningContext context,
             CancellationToken cancellationToken
-        ) {
-            cancellationToken.ThrowIfCancellationRequested();
-            string references = Path.Combine(context.stagingDirectory, "References");
-            Directory.CreateDirectory(references);
-            File.WriteAllText(Path.Combine(references, "Inno.Test.dll"), payload);
-            if (failure is not null)
-                throw failure;
-            return ValueTask.CompletedTask;
+        ) => ValueTask.FromResult<PlayerSupportPackPlan>(new TestPlan(failure, payload));
+
+        private sealed class TestPlan(
+            Exception? failure,
+            string payload
+        ) : PlayerSupportPackPlan(S_TARGET) {
+            public override ValueTask PrepareAsync(
+                string stagingDirectory,
+                CancellationToken cancellationToken
+            ) {
+                cancellationToken.ThrowIfCancellationRequested();
+                string references = Path.Combine(stagingDirectory, "References");
+                Directory.CreateDirectory(references);
+                File.WriteAllText(Path.Combine(references, "Inno.Test.dll"), payload);
+                if (failure is not null)
+                    throw failure;
+                return ValueTask.CompletedTask;
+            }
+
         }
 
         public void Validate(string directory)

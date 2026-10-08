@@ -1,3 +1,4 @@
+using Inno.Integration.Windows.Bgfx;
 using System;
 using Inno.Adapter.Rendering;
 using Inno.Build.Toolchains.Bgfx.Tools;
@@ -47,7 +48,7 @@ public sealed class RenderingBackendRegistrationTests
 
     private sealed class AuthoringProvider(RenderingBackendId id) : RenderingAuthoringBackendProvider(id)
     {
-        public override IShaderCompilerToolchain CreateShaderCompilerToolchain() => new BgfxShadercToolchain();
+        public override IShaderCompilerToolchain CreateShaderCompilerToolchain() => new BgfxShadercToolchain(Inno.Integration.Windows.Bgfx.WindowsBgfxShaderProfiles.target);
         public override ITextureTargetCompiler CreateTextureTargetCompiler() => new BgfxTextureTargetCompiler();
     }
 }

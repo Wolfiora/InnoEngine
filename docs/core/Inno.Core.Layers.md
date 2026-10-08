@@ -91,3 +91,51 @@ public sealed class ConsoleOverlay : Layer
 `LayerStack` 是通用的局部顺序容器。`Inno.Shell` 是 application-level Host 基类；`IRuntimeSubsystem` 是
 RuntimeSession 的正式 feature pipeline。三者不能互相替代：Editor 可以在 Shell 的 `OnFrame` 中使用
 LayerStack 排列 presentation layer，但 Runtime feature 的 attach/safe-point/detach 仍由 RuntimeSession 管理。
+
+## 当前源码公开 API 清单
+
+只列当前源码的 public/protected 表面；内部实现不作为稳定 API。参数、返回、失败和 owner 以英文 XML 为准。
+
+### `Inno.Core.Layers.Layer`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Core.Layers.Layer`](../../src/foundation/core/Inno.Core.Layers/Layer.cs#L13) | Defines a backend-neutral lifecycle participant that can receive frame callbacks and own event subscriptions. |
+| [`Inno.Core.Layers.Layer.Layer(string name = "Layer")`](../../src/foundation/core/Inno.Core.Layers/Layer.cs#L29) | Creates a layer with the supplied diagnostic name. |
+| [`System.IDisposable Inno.Core.Layers.Layer.Listen<TEvent>(System.Action<TEvent> handler, int priority = 0)`](../../src/foundation/core/Inno.Core.Layers/Layer.cs#L142) | Subscribes to an event for the lifetime of this layer attachment. |
+| [`System.IDisposable Inno.Core.Layers.Layer.ListenOnce<TEvent>(System.Action<TEvent> handler, int priority = 0)`](../../src/foundation/core/Inno.Core.Layers/Layer.cs#L172) | Subscribes once to an event for the lifetime of this layer attachment. |
+| [`string Inno.Core.Layers.Layer.name`](../../src/foundation/core/Inno.Core.Layers/Layer.cs#L39) | Gets the diagnostic name of this layer. |
+| [`virtual void Inno.Core.Layers.Layer.OnAfterRender(float deltaTime)`](../../src/foundation/core/Inno.Core.Layers/Layer.cs#L120) | Completes frame-scoped rendering state after render submission. |
+| [`virtual void Inno.Core.Layers.Layer.OnAttach()`](../../src/foundation/core/Inno.Core.Layers/Layer.cs#L44) | Runs after the layer has received its event scope and joined a stack. |
+| [`virtual void Inno.Core.Layers.Layer.OnBeforeRender(float deltaTime)`](../../src/foundation/core/Inno.Core.Layers/Layer.cs#L96) | Prepares frame-scoped rendering state before render work is submitted. |
+| [`virtual void Inno.Core.Layers.Layer.OnDetach()`](../../src/foundation/core/Inno.Core.Layers/Layer.cs#L56) | Runs while the layer is leaving its stack and before its event scope is released. |
+| [`virtual void Inno.Core.Layers.Layer.OnFixedUpdate(float fixedDeltaTime)`](../../src/foundation/core/Inno.Core.Layers/Layer.cs#L66) | Advances fixed-step work for this layer. |
+| [`virtual void Inno.Core.Layers.Layer.OnLateUpdate(float deltaTime)`](../../src/foundation/core/Inno.Core.Layers/Layer.cs#L86) | Advances work that must run after the regular update phase. |
+| [`virtual void Inno.Core.Layers.Layer.OnRender(float deltaTime)`](../../src/foundation/core/Inno.Core.Layers/Layer.cs#L106) | Submits rendering work without presenting a concrete graphics backend. |
+| [`virtual void Inno.Core.Layers.Layer.OnUpdate(float deltaTime)`](../../src/foundation/core/Inno.Core.Layers/Layer.cs#L76) | Advances variable-step work for this layer. |
+| [`void Inno.Core.Layers.Layer.Announce(Inno.Core.Events.Event evnt)`](../../src/foundation/core/Inno.Core.Layers/Layer.cs#L193) | Dispatches an event immediately inside this layer's event scope. |
+
+### `Inno.Core.Layers.LayerStack`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Core.Layers.Layer Inno.Core.Layers.LayerStack.this[int index]`](../../src/foundation/core/Inno.Core.Layers/LayerStack.cs#L53) | Gets the layer at the supplied stack position. |
+| [`Inno.Core.Layers.LayerStack`](../../src/foundation/core/Inno.Core.Layers/LayerStack.cs#L13) | Owns an ordered collection of base layers and overlays with isolated event scopes. |
+| [`Inno.Core.Layers.LayerStack.LayerStack(System.Func<Inno.Core.Events.EventHub> eventHubFactory)`](../../src/foundation/core/Inno.Core.Layers/LayerStack.cs#L31) | Creates a layer stack that obtains one event scope for each attachment. |
+| [`bool Inno.Core.Layers.LayerStack.PopLayer(Inno.Core.Layers.Layer layer)`](../../src/foundation/core/Inno.Core.Layers/LayerStack.cs#L107) | Detaches a base layer from this stack. |
+| [`bool Inno.Core.Layers.LayerStack.PopOverlay(Inno.Core.Layers.Layer overlay)`](../../src/foundation/core/Inno.Core.Layers/LayerStack.cs#L133) | Detaches an overlay from this stack. |
+| [`int Inno.Core.Layers.LayerStack.count`](../../src/foundation/core/Inno.Core.Layers/LayerStack.cs#L39) | Gets the number of attached base layers and overlays. |
+| [`void Inno.Core.Layers.LayerStack.Clear()`](../../src/foundation/core/Inno.Core.Layers/LayerStack.cs#L251) | Detaches every layer in top-to-bottom order while keeping this stack reusable. |
+| [`void Inno.Core.Layers.LayerStack.Dispose()`](../../src/foundation/core/Inno.Core.Layers/LayerStack.cs#L268) | Detaches every layer and permanently releases this stack. |
+| [`void Inno.Core.Layers.LayerStack.OnFixedUpdate(float fixedDeltaTime)`](../../src/foundation/core/Inno.Core.Layers/LayerStack.cs#L153) | Advances fixed-step callbacks in bottom-to-top stack order. |
+| [`void Inno.Core.Layers.LayerStack.OnLateUpdate(float deltaTime)`](../../src/foundation/core/Inno.Core.Layers/LayerStack.cs#L185) | Advances late-update callbacks in bottom-to-top stack order. |
+| [`void Inno.Core.Layers.LayerStack.OnUpdate(float deltaTime)`](../../src/foundation/core/Inno.Core.Layers/LayerStack.cs#L169) | Advances variable-step callbacks in bottom-to-top stack order. |
+| [`void Inno.Core.Layers.LayerStack.PushLayer(Inno.Core.Layers.Layer layer)`](../../src/foundation/core/Inno.Core.Layers/LayerStack.cs#L70) | Attaches a base layer below all overlays. |
+| [`void Inno.Core.Layers.LayerStack.PushOverlay(Inno.Core.Layers.Layer overlay)`](../../src/foundation/core/Inno.Core.Layers/LayerStack.cs#L90) | Attaches an overlay above all base layers and existing overlays. |
+| [`void Inno.Core.Layers.LayerStack.RenderFrame(float deltaTime)`](../../src/foundation/core/Inno.Core.Layers/LayerStack.cs#L204) | Executes preparation and submission in stack order, then completion in reverse order. |
+
+## 项目依赖
+
+- [Inno.Core.Execution](Inno.Core.Execution.md)：公开引用边界由实际签名核对。
+- [Inno.Core.Events](Inno.Core.Events.md)：公开引用边界由实际签名核对。
+- [Inno.Extensibility.Catalogs](../extensibility/Inno.Extensibility.Catalogs.md)：公开引用边界由实际签名核对。

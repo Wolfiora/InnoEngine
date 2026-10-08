@@ -6,7 +6,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-using Inno.Build.Toolchains.Platforms;
 
 namespace Inno.Build.Toolchains;
 
@@ -61,14 +60,14 @@ public static class ToolchainEnvironment
         if (!Path.IsPathFullyQualified(fileName))
             throw new ArgumentException("An explicit SDK tool must have an absolute path.", nameof(fileName));
         context.inputState.RecordProcess();
-        return RunAsync(fileName, arguments, workingDirectory, cancellationToken, environment);
+        return RunAsync(fileName, arguments, workingDirectory, cancellationToken, CaptureEnvironmentOverrides(environment));
     }
 
     /// <summary>
     /// Runs a host-native process with the context's frozen compiler and SDK selection.
     /// </summary>
     /// <param name="context">
-    /// A context resolved by HostNativeToolchain before artifact fingerprinting.
+    /// A context resolved by NativeToolchainSelection before artifact fingerprinting.
     /// </param>
     /// <param name="fileName">
     /// A selected build command or an absolute executable declared as a component input.
@@ -98,13 +97,11 @@ public static class ToolchainEnvironment
         string workingDirectory,
         CancellationToken cancellationToken
     ) {
-        HostNativeToolchain tools = context.hostToolchain
+        NativeToolchainSelection tools = context.toolchain
             ?? throw new InvalidOperationException("Host native tools must be resolved before execution.");
         string executable = Path.IsPathFullyQualified(fileName) ? fileName : tools.ResolveExecutable(fileName);
-        IReadOnlyList<string> selectedArguments = fileName == "cmake" && arguments.Contains("-S")
-            ? arguments.Concat(tools.cmakeArguments).ToArray() : arguments;
         context.inputState.RecordProcess();
-        return RunAsync(executable, selectedArguments, workingDirectory, cancellationToken, tools.environment);
+        return RunAsync(executable, arguments, workingDirectory, cancellationToken, CaptureEnvironmentOverrides(tools.environment));
     }
 
     /// <summary>
@@ -141,14 +138,12 @@ public static class ToolchainEnvironment
         string workingDirectory,
         CancellationToken cancellationToken
     ) {
-        HostNativeToolchain tools = context.hostToolchain
+        NativeToolchainSelection tools = context.toolchain
             ?? throw new InvalidOperationException("Host native tools must be resolved before execution.");
         string executable = Path.IsPathFullyQualified(fileName) ? fileName : tools.ResolveExecutable(fileName);
-        if (fileName == "cmake" && arguments.StartsWith("-S ", StringComparison.Ordinal))
-            arguments += " " + string.Join(" ", tools.cmakeArguments.Select(static argument => "\"" + argument + "\""));
         var start = new ProcessStartInfo(executable) { Arguments = arguments, WorkingDirectory = workingDirectory };
         context.inputState.RecordProcess();
-        return RunProcessAsync(start, cancellationToken, tools.environment, Console.Out);
+        return RunProcessAsync(start, cancellationToken, CaptureEnvironmentOverrides(tools.environment), Console.Out);
     }
 
     /// <summary>
@@ -204,6 +199,7 @@ public static class ToolchainEnvironment
     /// </param>
     /// <param name="environment">
     /// Optional process-local toolchain variables; the parent environment is unchanged.
+    /// Null values remove inherited variables, while empty values remain explicitly empty.
     /// </param>
     /// <returns>
     /// Completion after both output streams have drained and the process succeeds.
@@ -222,7 +218,7 @@ public static class ToolchainEnvironment
         IReadOnlyList<string> arguments,
         string workingDirectory,
         CancellationToken cancellationToken,
-        IReadOnlyDictionary<string, string>? environment = null
+        IReadOnlyDictionary<string, string?>? environment = null
     ) => RunCoreAsync(fileName, arguments, workingDirectory, cancellationToken, environment, Console.Out);
 
     /// <summary>
@@ -241,7 +237,8 @@ public static class ToolchainEnvironment
     /// Cancels the complete process tree and drains both output streams.
     /// </param>
     /// <param name="environment">
-    /// Optional child-only toolchain variables.
+    /// Optional child-only toolchain variables. Null values remove inherited variables;
+    /// empty values remain explicitly empty.
     /// </param>
     /// <param name="standardOutput">
     /// The caller-owned standard output destination; the runner does not dispose it.
@@ -266,7 +263,7 @@ public static class ToolchainEnvironment
         IReadOnlyList<string> arguments,
         string workingDirectory,
         CancellationToken cancellationToken,
-        IReadOnlyDictionary<string, string>? environment,
+        IReadOnlyDictionary<string, string?>? environment,
         TextWriter standardOutput,
         TextWriter standardError
     ) {
@@ -294,7 +291,8 @@ public static class ToolchainEnvironment
     /// Cancels the child process tree and waits for its complete exit.
     /// </param>
     /// <param name="environment">
-    /// Optional child-only environment variables.
+    /// Optional child-only environment variables. Null values remove inherited variables;
+    /// empty values remain explicitly empty.
     /// </param>
     /// <returns>
     /// The complete standard output after successful exit; failures and cancellation propagate.
@@ -313,7 +311,7 @@ public static class ToolchainEnvironment
         IReadOnlyList<string> arguments,
         string workingDirectory,
         CancellationToken cancellationToken,
-        IReadOnlyDictionary<string, string>? environment = null
+        IReadOnlyDictionary<string, string?>? environment = null
     ) {
         using var output = new StringWriter();
         await RunCoreAsync(fileName, arguments, workingDirectory, cancellationToken, environment, output).ConfigureAwait(false);
@@ -511,21 +509,25 @@ public static class ToolchainEnvironment
     /// <returns>
     /// Complete standard output after successful discovery; errors and cancellation propagate.
     /// </returns>
-    internal static async Task<string> CaptureOutputAsync(
+    public static async Task<string> CaptureOutputAsync(
         ProcessStartInfo start,
         CancellationToken cancellationToken
     ) {
+        ArgumentNullException.ThrowIfNull(start);
         using var output = new StringWriter();
         await RunProcessAsync(start, cancellationToken, null, output).ConfigureAwait(false);
         return output.ToString();
     }
+
+    private static IReadOnlyDictionary<string, string?> CaptureEnvironmentOverrides(IReadOnlyDictionary<string, string> environment)
+        => environment.ToDictionary(static entry => entry.Key, static entry => (string?)entry.Value, StringComparer.OrdinalIgnoreCase);
 
     private static async Task RunCoreAsync(
         string fileName,
         IReadOnlyList<string> arguments,
         string workingDirectory,
         CancellationToken cancellationToken,
-        IReadOnlyDictionary<string, string>? environment,
+        IReadOnlyDictionary<string, string?>? environment,
         TextWriter standardOutput
     ) {
         var start = new ProcessStartInfo(fileName) { WorkingDirectory = workingDirectory };
@@ -537,7 +539,7 @@ public static class ToolchainEnvironment
     private static async Task RunProcessAsync(
         ProcessStartInfo start,
         CancellationToken cancellationToken,
-        IReadOnlyDictionary<string, string>? environment,
+        IReadOnlyDictionary<string, string?>? environment,
         TextWriter standardOutput,
         TextWriter? standardError = null
     ) {
@@ -547,9 +549,13 @@ public static class ToolchainEnvironment
         start.RedirectStandardError = true;
         start.CreateNoWindow = true;
         if (environment is not null)
-            foreach ((string name, string value) in environment)
-                start.Environment[name] = value;
-        await WindowsCppBuildEnvironment.ConfigureAsync(start, cancellationToken).ConfigureAwait(false);
+            foreach ((string name, string? value) in environment)
+            {
+                if (value is null)
+                    start.Environment.Remove(name);
+                else
+                    start.Environment[name] = value;
+            }
         cancellationToken.ThrowIfCancellationRequested();
         using var process = new Process { StartInfo = start };
         if (!process.Start())

@@ -272,3 +272,69 @@ Serialized state 使用逐成员兼容迁移：成员类型保持兼容时恢复
 如果候选 generation 缺少 live Component/System，Scene participant 会把对象变为 host-owned missing placeholder，并继续保存 `TypeRef`（落盘仅原逻辑 Stable ID）、原类型名、property bytes、asset dependencies、persistent ID、顺序和图引用。placeholder 身份和 missing 标志不进入 Scene schema，类型消失/恢复本身不改变 clean Scene 的 dirty 状态。类型删除、插件移除、Scene/Prefab round-trip 都不会持有旧 ALC；相同 Stable ID 返回时 `isValid` 自动恢复并原位重建。`INNOHR0002` 完全由 Scene feature 按当前 loaded Scene 与 TypeCache generation 对账：打开带 Missing 的 `.iscene` 后，在 Scene workspace 下一次安全更新就会出现在 Console，不需要等待 Recompile/Reload。每次协调 reload 完成还会请求各领域刷新诊断，因此无变化 Recompile 后仍会重新发布用户 Clear 掉但依然成立的 Missing；类型恢复后该组立即解除。恢复构造、identity 转移、property restore 或失败清理不完整时仍精确回滚到原占位对象。
 
 无法自动迁移 static 字段、后台 Thread/Task、第三方事件订阅或外部裸 CLR 引用。用户代码需要在 `OnDisable` 释放这些资源。
+
+## 当前源码公开 API 清单
+
+只列当前源码的 public/protected 表面；内部实现不作为稳定 API。参数、返回、失败和 owner 以英文 XML 为准。
+
+### `Inno.Editor.Scripting.EditorScriptCompilationState`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Editor.Scripting.EditorScriptCompilationState`](../../src/composition/editor/features/Inno.Editor.Scripting/Runtime/IEditorScriptCompilation.cs#L8) | Identifies whether the active project script generation can safely start game simulation. |
+| [`Inno.Editor.Scripting.EditorScriptCompilationState.Compiling`](../../src/composition/editor/features/Inno.Editor.Scripting/Runtime/IEditorScriptCompilation.cs#L18) | A requested script generation is compiling, activating, or completing unload verification. |
+| [`Inno.Editor.Scripting.EditorScriptCompilationState.Failed`](../../src/composition/editor/features/Inno.Editor.Scripting/Runtime/IEditorScriptCompilation.cs#L28) | Compilation, activation, or generation retirement failed, so game simulation must not start. |
+| [`Inno.Editor.Scripting.EditorScriptCompilationState.Initializing`](../../src/composition/editor/features/Inno.Editor.Scripting/Runtime/IEditorScriptCompilation.cs#L13) | The script service has not produced its initial active generation. |
+| [`Inno.Editor.Scripting.EditorScriptCompilationState.Ready`](../../src/composition/editor/features/Inno.Editor.Scripting/Runtime/IEditorScriptCompilation.cs#L23) | The most recent compilation succeeded, its generation is active, and retired generations passed GC verification. |
+
+### `Inno.Editor.Scripting.IEditorScriptCompilation`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Editor.Scripting.EditorScriptCompilationState Inno.Editor.Scripting.IEditorScriptCompilation.state`](../../src/composition/editor/features/Inno.Editor.Scripting/Runtime/IEditorScriptCompilation.cs#L53) | Gets the current script-generation readiness state. |
+| [`Inno.Editor.Scripting.IEditorScriptCompilation`](../../src/composition/editor/features/Inno.Editor.Scripting/Runtime/IEditorScriptCompilation.cs#L34) | Exposes the minimal script-generation readiness contract required by editor workflows. |
+| [`Inno.Editor.Scripting.IScriptCompilationTicket Inno.Editor.Scripting.IEditorScriptCompilation.RequestCompilation()`](../../src/composition/editor/features/Inno.Editor.Scripting/Runtime/IEditorScriptCompilation.cs#L43) | Queues a fresh cache-aware compilation for a build or simulation workflow. |
+| [`Inno.Editor.Scripting.IScriptCompilationTicket? Inno.Editor.Scripting.IEditorScriptCompilation.currentTicket`](../../src/composition/editor/features/Inno.Editor.Scripting/Runtime/IEditorScriptCompilation.cs#L48) | Gets the most recently requested compilation ticket, or when no explicit request exists. |
+| [`Inno.Scripting.Compiler.ScriptCompilationResult? Inno.Editor.Scripting.IEditorScriptCompilation.lastCompilation`](../../src/composition/editor/features/Inno.Editor.Scripting/Runtime/IEditorScriptCompilation.cs#L63) | Gets the most recently completed compilation, or before the first attempt completes. |
+| [`string Inno.Editor.Scripting.IEditorScriptCompilation.status`](../../src/composition/editor/features/Inno.Editor.Scripting/Runtime/IEditorScriptCompilation.cs#L58) | Gets a human-readable description of current compiler work or readiness. |
+
+### `Inno.Editor.Scripting.IScriptCompilationTicket`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Editor.Scripting.IScriptCompilationTicket`](../../src/composition/editor/features/Inno.Editor.Scripting/Runtime/IScriptCompilationTicket.cs#L8) | Exposes the immutable observer view of one exact script compilation and activation request. |
+| [`Inno.Editor.Scripting.ScriptCompilationTicketState Inno.Editor.Scripting.IScriptCompilationTicket.state`](../../src/composition/editor/features/Inno.Editor.Scripting/Runtime/IScriptCompilationTicket.cs#L18) | Gets the current lifecycle state of this exact request. |
+| [`Inno.Scripting.Compiler.ScriptCompilationResult? Inno.Editor.Scripting.IScriptCompilationTicket.result`](../../src/composition/editor/features/Inno.Editor.Scripting/Runtime/IScriptCompilationTicket.cs#L28) | Gets the completed compiler result, or before the compiler finishes. |
+| [`bool Inno.Editor.Scripting.IScriptCompilationTicket.isCompleted`](../../src/composition/editor/features/Inno.Editor.Scripting/Runtime/IScriptCompilationTicket.cs#L33) | Gets whether no further state transition is valid for this request. |
+| [`long Inno.Editor.Scripting.IScriptCompilationTicket.requestId`](../../src/composition/editor/features/Inno.Editor.Scripting/Runtime/IScriptCompilationTicket.cs#L13) | Gets the producer-local monotonic identifier of this request. |
+| [`string Inno.Editor.Scripting.IScriptCompilationTicket.status`](../../src/composition/editor/features/Inno.Editor.Scripting/Runtime/IScriptCompilationTicket.cs#L23) | Gets a human-readable description of the current or terminal state. |
+
+### `Inno.Editor.Scripting.ScriptCompilationTicketState`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Editor.Scripting.ScriptCompilationTicketState`](../../src/composition/editor/features/Inno.Editor.Scripting/Runtime/ScriptCompilationTicketState.cs#L6) | Identifies the lifecycle state of one exact script compilation request. |
+| [`Inno.Editor.Scripting.ScriptCompilationTicketState.Canceled`](../../src/composition/editor/features/Inno.Editor.Scripting/Runtime/ScriptCompilationTicketState.cs#L31) | The request was explicitly canceled before activation. |
+| [`Inno.Editor.Scripting.ScriptCompilationTicketState.Compiling`](../../src/composition/editor/features/Inno.Editor.Scripting/Runtime/ScriptCompilationTicketState.cs#L16) | The request owns the compiler pipeline or is activating its candidate generation. |
+| [`Inno.Editor.Scripting.ScriptCompilationTicketState.Failed`](../../src/composition/editor/features/Inno.Editor.Scripting/Runtime/ScriptCompilationTicketState.cs#L26) | Compilation or candidate activation failed without replacing the active generation. |
+| [`Inno.Editor.Scripting.ScriptCompilationTicketState.Queued`](../../src/composition/editor/features/Inno.Editor.Scripting/Runtime/ScriptCompilationTicketState.cs#L11) | The request is queued behind the active compiler operation. |
+| [`Inno.Editor.Scripting.ScriptCompilationTicketState.Succeeded`](../../src/composition/editor/features/Inno.Editor.Scripting/Runtime/ScriptCompilationTicketState.cs#L21) | The request compiled and atomically activated its candidate generation. |
+| [`Inno.Editor.Scripting.ScriptCompilationTicketState.Superseded`](../../src/composition/editor/features/Inno.Editor.Scripting/Runtime/ScriptCompilationTicketState.cs#L36) | A newer request replaced this request before its candidate could activate. |
+
+## 项目依赖
+
+- [Inno.Editor.ImGui](Inno.Editor.ImGui.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Editor.Interactions](Inno.Editor.Interactions.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Assets](../assets/Inno.Assets.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Plugins.Authoring](../plugins/Inno.Plugins.Authoring.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Extensibility.Modules](../extensibility/Inno.Extensibility.Modules.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Core.Diagnostics](../core/Inno.Core.Diagnostics.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Core.Logging](../core/Inno.Core.Logging.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Core.Settings](../core/Inno.Core.Settings.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Scripting.Reload](../scripting/Inno.Scripting.Reload.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Native.ImGui](../backends/ImGui/Inno.Native.ImGui.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Editor.Core](Inno.Editor.Core.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Assets.Pipeline](../assets/Inno.Assets.Pipeline.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Scripting.Compiler](../scripting/Inno.Scripting.Compiler.md)：公开引用边界由实际签名核对。
+- [Inno.Core.Serialization](../core/Inno.Core.Serialization.md)：公开引用边界由实际签名核对。
+- [Inno.Extensibility.Catalogs](../extensibility/Inno.Extensibility.Catalogs.md)：公开引用边界由实际签名核对。

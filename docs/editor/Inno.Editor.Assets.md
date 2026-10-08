@@ -107,3 +107,92 @@ Revert 读取最新源作为新基线并进入 History。Undo/Redo 只改草稿�
 Store 不保留插件资产实例、设置实例或 Type；消费者在每次绘制时 Read 并结束引用。
 缺失源保留 bytes/history；缺失设置由领域层呈现，不清除中立属性。
 只读安装资产禁止 Replace/Save。选择切换不是 Save；关闭确认由无可见 Panel 的共享 Document Service 负责。
+
+## 当前源码公开 API 清单
+
+只列当前源码的 public/protected 表面；内部实现不作为稳定 API。参数、返回、失败和 owner 以英文 XML 为准。
+
+### `Inno.Editor.Assets.AssetCreationContext`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Editor.Assets.AssetCreationContext`](../../src/composition/editor/features/Inno.Editor.Assets/Creation/AssetCreationTemplate.cs#L169) | Provides source encoding services to one detached Asset creation template invocation. |
+| [`Inno.Editor.Assets.AssetCreationContext.AssetCreationContext(Inno.Assets.Pipeline.AssetSourceStore sources)`](../../src/composition/editor/features/Inno.Editor.Assets/Creation/AssetCreationTemplate.cs#L179) | Creates a context over the source serializer owned by the active Asset pipeline. |
+| [`byte[] Inno.Editor.Assets.AssetCreationContext.EncodeNative(Inno.Assets.AssetObject asset)`](../../src/composition/editor/features/Inno.Editor.Assets/Creation/AssetCreationTemplate.cs#L191) | Encodes an Asset value through the current native structured source serializer. |
+
+### `Inno.Editor.Assets.AssetCreationMenuAttribute`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Editor.Assets.AssetCreationMenuAttribute`](../../src/composition/editor/features/Inno.Editor.Assets/Creation/AssetCreationTemplate.cs#L12) | Declares the source name, extension, and menu placement that cannot be inferred from an type alone. |
+| [`Inno.Editor.Assets.AssetCreationMenuAttribute.AssetCreationMenuAttribute(string id, string menuPath, string extension, string defaultName, int groupOrder = 0, int itemOrder = 0, bool separatorBeforeGroup = false)`](../../src/composition/editor/features/Inno.Editor.Assets/Creation/AssetCreationTemplate.cs#L42) | Creates one asset creation menu declaration. |
+| [`bool Inno.Editor.Assets.AssetCreationMenuAttribute.separatorBeforeGroup`](../../src/composition/editor/features/Inno.Editor.Assets/Creation/AssetCreationTemplate.cs#L114) | Gets whether the top-level category starts after a separator. |
+| [`int Inno.Editor.Assets.AssetCreationMenuAttribute.groupOrder`](../../src/composition/editor/features/Inno.Editor.Assets/Creation/AssetCreationTemplate.cs#L104) | Gets the stable order of the top-level category below Create. |
+| [`int Inno.Editor.Assets.AssetCreationMenuAttribute.itemOrder`](../../src/composition/editor/features/Inno.Editor.Assets/Creation/AssetCreationTemplate.cs#L109) | Gets the stable order of the leaf within its immediate category. |
+| [`string Inno.Editor.Assets.AssetCreationMenuAttribute.defaultName`](../../src/composition/editor/features/Inno.Editor.Assets/Creation/AssetCreationTemplate.cs#L99) | Gets the default source name without an extension or numeric suffix. |
+| [`string Inno.Editor.Assets.AssetCreationMenuAttribute.extension`](../../src/composition/editor/features/Inno.Editor.Assets/Creation/AssetCreationTemplate.cs#L94) | Gets the native source extension, including its leading dot. |
+| [`string Inno.Editor.Assets.AssetCreationMenuAttribute.id`](../../src/composition/editor/features/Inno.Editor.Assets/Creation/AssetCreationTemplate.cs#L84) | Gets the globally stable template identifier. |
+| [`string Inno.Editor.Assets.AssetCreationMenuAttribute.menuPath`](../../src/composition/editor/features/Inno.Editor.Assets/Creation/AssetCreationTemplate.cs#L89) | Gets the slash-delimited path below the File Browser Create menu. |
+
+### `Inno.Editor.Assets.AssetCreationTemplate`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Editor.Assets.AssetCreationTemplate`](../../src/composition/editor/features/Inno.Editor.Assets/Creation/AssetCreationTemplate.cs#L124) | Produces the detached initial value for one authorable native asset source. |
+| [`abstract Inno.Assets.AssetObject Inno.Editor.Assets.AssetCreationTemplate.Create()`](../../src/composition/editor/features/Inno.Editor.Assets/Creation/AssetCreationTemplate.cs#L137) | Creates a detached default value that has not been imported or published. |
+| [`abstract System.Type Inno.Editor.Assets.AssetCreationTemplate.assetType`](../../src/composition/editor/features/Inno.Editor.Assets/Creation/AssetCreationTemplate.cs#L129) | Gets the concrete asset type produced by this template. |
+| [`virtual byte[] Inno.Editor.Assets.AssetCreationTemplate.Encode(Inno.Editor.Assets.AssetCreationContext context, Inno.Assets.AssetObject asset)`](../../src/composition/editor/features/Inno.Editor.Assets/Creation/AssetCreationTemplate.cs#L156) | Encodes the detached initial value into the source representation owned by this template. |
+
+### `Inno.Editor.Assets.AssetCreationTemplate<TAsset>`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Editor.Assets.AssetCreationTemplate<TAsset>`](../../src/composition/editor/features/Inno.Editor.Assets/Creation/AssetCreationTemplate.cs#L204) | Creates a default-constructed native source for an authorable asset type. |
+| [`override Inno.Assets.AssetObject Inno.Editor.Assets.AssetCreationTemplate<TAsset>.Create()`](../../src/composition/editor/features/Inno.Editor.Assets/Creation/AssetCreationTemplate.cs#L218) | Creates a value using this implementation's validated inputs. |
+| [`override sealed System.Type Inno.Editor.Assets.AssetCreationTemplate<TAsset>.assetType`](../../src/composition/editor/features/Inno.Editor.Assets/Creation/AssetCreationTemplate.cs#L210) | Gets the asset type created by this Editor template. |
+| [`virtual TAsset Inno.Editor.Assets.AssetCreationTemplate<TAsset>.CreateAsset()`](../../src/composition/editor/features/Inno.Editor.Assets/Creation/AssetCreationTemplate.cs#L226) | Creates the initial detached value, allowing specialized deterministic defaults. |
+
+### `Inno.Editor.Assets.AssetDraftDocuments<TAsset>`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Editor.Assets.AssetDraftDocuments<TAsset>`](../../src/composition/editor/features/Inno.Editor.Assets/Documents/AssetDraftDocuments.cs#L20) | Owns detached native asset drafts with shared document, History, recovery and explicit-save semantics. |
+| [`Inno.Editor.Assets.AssetDraftDocuments<TAsset>.AssetDraftDocuments(Inno.Assets.Pipeline.AssetPipeline assets, Inno.Core.Serialization.SerializationRegistry serialization, Inno.Editor.Interactions.EditorInteractions interactions, string providerId, string historyKind, string extension, string label)`](../../src/composition/editor/features/Inno.Editor.Assets/Documents/AssetDraftDocuments.cs#L61) | Creates a feature-owned draft store; call Start after document services become available. |
+| [`Inno.Editor.Assets.AssetDraftDocuments<TAsset>.Draft Inno.Editor.Assets.AssetDraftDocuments<TAsset>.GetDraft(System.Guid assetId)`](../../src/composition/editor/features/Inno.Editor.Assets/Documents/AssetDraftDocuments.cs#L94) | Gets host-owned neutral presentation state for an open document. |
+| [`System.Guid Inno.Editor.Assets.AssetDraftDocuments<TAsset>.Open(Inno.Assets.AssetPath path)`](../../src/composition/editor/features/Inno.Editor.Assets/Documents/AssetDraftDocuments.cs#L113) | Opens a native asset source in the shared document service without revealing a second Inspector. |
+| [`TAsset Inno.Editor.Assets.AssetDraftDocuments<TAsset>.Read(System.Guid assetId)`](../../src/composition/editor/features/Inno.Editor.Assets/Documents/AssetDraftDocuments.cs#L132) | Reads a detached current-generation value; callers must never mutate its referenced canonical assets. |
+| [`void Inno.Editor.Assets.AssetDraftDocuments<TAsset>.ApplyHistory(Inno.Editor.Interactions.EditorHistoryChange change, Inno.Editor.Interactions.EditorHistoryDirection direction)`](../../src/composition/editor/features/Inno.Editor.Assets/Documents/AssetDraftDocuments.cs#L280) | Applies a previously validated neutral record; failed recovery leaves the draft unchanged. |
+| [`void Inno.Editor.Assets.AssetDraftDocuments<TAsset>.Commit(System.Guid assetId)`](../../src/composition/editor/features/Inno.Editor.Assets/Documents/AssetDraftDocuments.cs#L158) | Finishes the active edit gesture without saving or applying its draft. |
+| [`void Inno.Editor.Assets.AssetDraftDocuments<TAsset>.CommitMany(System.Collections.Generic.IEnumerable<System.Guid> assetIds)`](../../src/composition/editor/features/Inno.Editor.Assets/Documents/AssetDraftDocuments.cs#L204) | Commits all selected draft samples in a single shared history transaction. |
+| [`void Inno.Editor.Assets.AssetDraftDocuments<TAsset>.Dispose()`](../../src/composition/editor/features/Inno.Editor.Assets/Documents/AssetDraftDocuments.cs#L481) | Preserves unsaved recovery and unregisters the current feature provider. |
+| [`void Inno.Editor.Assets.AssetDraftDocuments<TAsset>.Replace(System.Guid assetId, TAsset candidate, bool finishGesture = true)`](../../src/composition/editor/features/Inno.Editor.Assets/Documents/AssetDraftDocuments.cs#L146) | Updates the open draft through shared History without saving or publishing a runtime asset. |
+| [`void Inno.Editor.Assets.AssetDraftDocuments<TAsset>.ReplaceMany(System.Collections.Generic.IReadOnlyDictionary<System.Guid, TAsset> candidates, bool finishGesture = true)`](../../src/composition/editor/features/Inno.Editor.Assets/Documents/AssetDraftDocuments.cs#L169) | Edits compatible selected drafts as one gesture without saving any source. |
+| [`void Inno.Editor.Assets.AssetDraftDocuments<TAsset>.Start()`](../../src/composition/editor/features/Inno.Editor.Assets/Documents/AssetDraftDocuments.cs#L407) | Registers the feature provider with the headless document ownership service. |
+| [`void Inno.Editor.Assets.AssetDraftDocuments<TAsset>.TouchInspection(System.Guid assetId)`](../../src/composition/editor/features/Inno.Editor.Assets/Documents/AssetDraftDocuments.cs#L102) | Marks a document as inspected in this frame so a lost gesture can be completed. |
+| [`void Inno.Editor.Assets.AssetDraftDocuments<TAsset>.Update()`](../../src/composition/editor/features/Inno.Editor.Assets/Documents/AssetDraftDocuments.cs#L417) | Completes abandoned gestures, imports explicit saves and reconciles source changes. |
+| [`void Inno.Editor.Assets.AssetDraftDocuments<TAsset>.ValidateHistory(Inno.Editor.Interactions.EditorHistoryChange change, Inno.Editor.Interactions.EditorHistoryDirection direction)`](../../src/composition/editor/features/Inno.Editor.Assets/Documents/AssetDraftDocuments.cs#L264) | Validates a feature's neutral History record without changing the draft. |
+
+### `Inno.Editor.Assets.AssetDraftDocuments<TAsset>.Draft`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Assets.AssetPath Inno.Editor.Assets.AssetDraftDocuments<TAsset>.Draft.path`](../../src/composition/editor/features/Inno.Editor.Assets/Documents/AssetDraftDocuments.cs#L599) | Gets the current resolved source path. |
+| [`Inno.Editor.Assets.AssetDraftDocuments<TAsset>.Draft`](../../src/composition/editor/features/Inno.Editor.Assets/Documents/AssetDraftDocuments.cs#L564) | Contains neutral draft status; only the owning store can change it. |
+| [`System.Guid Inno.Editor.Assets.AssetDraftDocuments<TAsset>.Draft.documentId`](../../src/composition/editor/features/Inno.Editor.Assets/Documents/AssetDraftDocuments.cs#L595) | Gets the shared document identity used for Save/Revert and close confirmation. |
+| [`System.Guid Inno.Editor.Assets.AssetDraftDocuments<TAsset>.Draft.id`](../../src/composition/editor/features/Inno.Editor.Assets/Documents/AssetDraftDocuments.cs#L591) | Gets the persistent source identity. |
+| [`bool Inno.Editor.Assets.AssetDraftDocuments<TAsset>.Draft.isDirty`](../../src/composition/editor/features/Inno.Editor.Assets/Documents/AssetDraftDocuments.cs#L611) | Gets whether detached bytes differ from the saved baseline. |
+| [`bool Inno.Editor.Assets.AssetDraftDocuments<TAsset>.Draft.readOnly`](../../src/composition/editor/features/Inno.Editor.Assets/Documents/AssetDraftDocuments.cs#L603) | Gets whether this source is installed read-only content. |
+| [`string Inno.Editor.Assets.AssetDraftDocuments<TAsset>.Draft.error`](../../src/composition/editor/features/Inno.Editor.Assets/Documents/AssetDraftDocuments.cs#L607) | Gets the latest source, save or import diagnostic. |
+
+## 项目依赖
+
+- [Inno.Core.IO](../core/Inno.Core.IO.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Core.Execution](../core/Inno.Core.Execution.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Editor.Core](Inno.Editor.Core.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Native.ImGui](../backends/ImGui/Inno.Native.ImGui.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Scripting.Api](../scripting/Inno.Scripting.Api.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Assets](../assets/Inno.Assets.md)：公开引用边界由实际签名核对。
+- [Inno.Assets.Pipeline](../assets/Inno.Assets.Pipeline.md)：公开引用边界由实际签名核对。
+- [Inno.Core.Serialization](../core/Inno.Core.Serialization.md)：公开引用边界由实际签名核对。
+- [Inno.Editor.Interactions](Inno.Editor.Interactions.md)：公开引用边界由实际签名核对。
+- [Inno.Extensibility.Catalogs](../extensibility/Inno.Extensibility.Catalogs.md)：公开引用边界由实际签名核对。

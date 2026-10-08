@@ -1,14 +1,15 @@
 <Project>
+  <Import Project="$(InnoProductBuildProperties)" Condition="'$(InnoProductBuildProperties)' != ''" />
   <PropertyGroup>
     <Deterministic>true</Deterministic>
+    <RestoreUseStaticGraphEvaluation>true</RestoreUseStaticGraphEvaluation>
+    <!-- Preserve all global properties without placing IDE-sized values on the command line. -->
+    <RestoreSerializeGlobalProperties>true</RestoreSerializeGlobalProperties>
     <PathMap>$(PathMap);$(MSBuildThisFileDirectory)=/_/InnoEngine/</PathMap>
   </PropertyGroup>
   <Import Project="$(InnoNativeBindingSelection)" Condition="'$(InnoNativeBindingSelection)' != '' and Exists('$(InnoNativeBindingSelection)')" />
   <PropertyGroup>
     <DefaultItemExcludes>$(DefaultItemExcludes);$(MSBuildProjectDirectory)/obj/**;$(MSBuildProjectDirectory)/bin/**</DefaultItemExcludes>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(InnoNativeTarget)' == '' and ('$(MSBuildProjectName)' == 'Inno.Player.Browser' or '$(RuntimeIdentifier)' == 'browser-wasm')">
-    <InnoNativeTarget>browser-wasm</InnoNativeTarget>
   </PropertyGroup>
   <PropertyGroup Condition="'$(InnoNativeTarget)' != ''">
     <BaseIntermediateOutputPath>obj/$(InnoNativeTarget)/</BaseIntermediateOutputPath>

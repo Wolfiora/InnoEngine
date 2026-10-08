@@ -1,6 +1,6 @@
 # Web Player 实现与验收（2026-10-01）
 
-[架构索引](README.md) · [Wiki 首页](../README.md) · [Web 架构](WEB_PLAYER_ARCHITECTURE.md) · [Browser Build target](../build/Inno.Build.Platform.Browser.md)
+[架构索引](README.md) · [Wiki 首页](../README.md) · [Web 架构](WEB_PLAYER_ARCHITECTURE.md) · [Browser Build target](../platform/Browser/Inno.Build.Browser.md)
 
 > 本页保留宿主重构之前的验收证据；其中独立 Browser Native 项目、BrowserAdapterCatalog、旧 CLI 与共享 Host 平台分支已经被当前重构删除。当前架构见 [Web 宿主边界](WEB_PLAYER_ARCHITECTURE.md)。以下历史运行结果不代替本轮重构验收。
 

@@ -13,14 +13,14 @@ public sealed class ToolchainEnvironmentTests
         string expected = Path.Combine(ToolchainEnvironment.FindRepoRoot(),
             "build", "toolchains", "Inno.Build.Toolchains", "obj", "native");
 
-        Assert.Equal(expected, new NativeBuildContext(ToolchainEnvironment.FindRepoRoot(), "debug").GetNativeBuildRoot(typeof(ToolchainEnvironment).Assembly));
+        Assert.Equal(expected, new NativeBuildContext(ToolchainEnvironment.FindRepoRoot(), "debug").GetNativeBuildRoot(new NativeComponentDescriptor("fixture", "build/toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj", "build/toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj")));
     }
 
     [Fact]
     public void NativeBuildRootRejectsAnUnrelatedOwner()
     {
         Assert.Throws<InvalidOperationException>(
-            () => new NativeBuildContext(ToolchainEnvironment.FindRepoRoot(), "debug").GetNativeBuildRoot(typeof(ToolchainEnvironmentTests).Assembly));
+            () => new NativeBuildContext(ToolchainEnvironment.FindRepoRoot(), "debug").GetNativeBuildRoot(new NativeComponentDescriptor("missing", "missing/Native.csproj", "missing/Build.csproj")));
     }
 
     [Fact]

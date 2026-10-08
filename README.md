@@ -41,7 +41,7 @@ Plugin-Oriented does **not** mean every engine service must be installed as a pl
 | Content | Assets, import and artifact pipelines, recoverable references, scenes, prefabs, and animation data |
 | Services | Backend-neutral rendering, audio, input, storage, and their runtime services |
 | Runtime | Host/session isolation, subsystem scheduling, scripting, and plugin discovery and activation |
-| Default adapters | SDL3 platform/input, BGFX rendering, MiniAudio audio, filesystem storage, and ImGui presentation |
+| Default adapters | SDL3 window/events, shared event input, BGFX rendering, MiniAudio audio, filesystem storage, and ImGui presentation |
 | Products and tools | A shared Shell for Editor and Player, extensible Editor tooling, build pipelines, and Player Support Packs |
 
 A plugin can contribute both code and content. Projects author content under `Assets/`; exported `.iplugin` packages are installed under `Plugins/` and mounted read-only into the existing asset pipeline. See the [plugin workflow](docs/plugins/Inno.Plugins.Authoring.md).
@@ -57,11 +57,12 @@ InnoEngine/
 │   ├── content/      # Assets, references, scenes, animation
 │   ├── services/     # Rendering, audio, input, storage, platform contracts
 │   ├── runtime/      # Host/session execution, subsystem contracts, scripting, plugins
-│   ├── adapters/     # Neutral adapter catalogs and concrete backend implementations
-│   └── composition/  # Default engine assembly, Shell, Editor, Player
-├── native/           # C# bindings to native APIs
+│   ├── adapters/     # Neutral adapter catalogs and shared event input
+│   └── composition/  # Shared engine, Shell, Editor hosting, Player runtime, standard adapters
+├── backends/         # Reusable runtime adapters, native bindings, and component build recipes
+├── platforms/        # OS/SDK integration, explicit targets, product entry points, packaging
 ├── extern/           # Third-party source dependencies
-├── build/            # Build pipelines, native toolchains, Support Packs
+├── build/            # Neutral pipelines/toolchains/Support Packs and explicit distribution registration
 ├── tools/            # Architecture validation and development tools
 ├── tests/            # Tests grouped by domain
 └── docs/             # Architecture, workflows, and API Wiki
@@ -73,12 +74,14 @@ Native bindings expose foreign APIs; adapters translate them into engine contrac
 
 The Editor and Player target **.NET 9**. Game exports currently target **Windows x64**, **macOS ARM64**, and **WebAssembly browsers with WebGL 2**. Desktop exports can use CoreCLR or NativeAOT; browser exports use the selected .NET Mono Wasm interpreter or AOT compiler. Platform packaging, managed deployment, native toolchains, and domain adapters are separate choices. Linux is not currently a game export target.
 
-See the [platform and runtime architecture](docs/architecture/PLATFORM_RUNTIME_ARCHITECTURE.md) for these boundaries and the [refactor acceptance report](docs/architecture/PLATFORM_RUNTIME_ACCEPTANCE.md) for actual verification on each host. iOS, consoles, and a future CoreCLR WebAssembly deployment remain documented extension points.
+See the [platform and runtime architecture](docs/architecture/PLATFORM_RUNTIME_ARCHITECTURE.md) for these boundaries and the [current plan audit](docs/architecture/PLATFORM_OWNERSHIP_PLAN_AUDIT_2026_10_08.md) for completed work, remaining gaps, and actual verification on each host. iOS, consoles, and a future CoreCLR WebAssembly deployment remain documented extension points.
 
-Native dependencies need to be built before running the Editor. Start with:
+Build a platform Editor project to prepare its native dependencies automatically. The five platform Editor/Player projects are visible in the solution and require an explicit product build; they are excluded from the default shared solution build. A Player contains its game's published code and content, so export a game before running it. See [product startup and “not built”](docs/platform/PRODUCT_STARTUP.md) for IDE setup and complete commands.
+
+Start with:
 
 - [Build and native toolchains](docs/build/README.md)
-- [Editor startup and project directories](docs/editor/Inno.Editor.Application.md)
+- [Editor startup and project directories](docs/editor/Inno.Editor.Hosting.md)
 - [Scripting and extension APIs](docs/scripting/README.md)
 - [Plugin authoring and installation](docs/plugins/Inno.Plugins.Authoring.md)
 - [Player and runtime](docs/runtime/README.md)

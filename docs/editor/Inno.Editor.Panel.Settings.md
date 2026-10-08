@@ -76,3 +76,23 @@ Settings frontend 不内建 Boolean、Layer、Tag、PBR 或其他业务字段类
 该项目没有公开类型；业务扩展只引用 [Inno.Editor.Settings](Inno.Editor.Settings.md)，不引用本 Panel。
 
 [上一页：Inno.Editor.Settings](Inno.Editor.Settings.md) · [下一页：Inno.Editor.Panel.Stats](Inno.Editor.Panel.Stats.md)
+
+## 当前源码公开 API 清单
+
+只列当前源码的 public/protected 表面；内部实现不作为稳定 API。参数、返回、失败和 owner 以英文 XML 为准。
+
+本项目没有公开入口，通过组合或扩展发现使用内部实现。
+
+## 项目依赖
+
+- [Inno.Build](../build/Inno.Build.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Editor.ImGui](Inno.Editor.ImGui.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Editor.Core](Inno.Editor.Core.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Editor.Interactions](Inno.Editor.Interactions.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Editor.Settings](Inno.Editor.Settings.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Core.Settings](../core/Inno.Core.Settings.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Adapter.Presentation.ImGui.Sdl3](../backends/ImGui/Inno.Adapter.Presentation.ImGui.Sdl3.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Native.ImGui](../backends/ImGui/Inno.Native.ImGui.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Build.Managed](../build/Inno.Build.Managed.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Core.Serialization](../core/Inno.Core.Serialization.md)：公开引用边界由实际签名核对。
+- [Inno.Extensibility.Catalogs](../extensibility/Inno.Extensibility.Catalogs.md)：公开引用边界由实际签名核对。

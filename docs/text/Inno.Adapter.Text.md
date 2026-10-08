@@ -31,3 +31,49 @@
 provider 及其 delegate/资源由 composition owner 释放；catalog 不接管 provider。创建出的服务由调用方释放。源码扩展若通过 TypeRegistry 发现，其 ID 仍由发现协议的 Attribute 声明；此处是宿主明确传入的 provider 集合，不额外扫描程序集。
 
 `AdapterSelection.Validate(catalog)` 在初始化任何窗口或设备前检查全部领域。可在 composition 为 provider 传入任意分配的 `TextBackendId`，无需新增枚举或修改中央分支。
+
+## 当前源码公开 API 清单
+
+只列当前源码的 public/protected 表面；内部实现不作为稳定 API。参数、返回、失败和 owner 以英文 XML 为准。
+
+### `Inno.Adapter.Text.ITextBackendFactory`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Adapter.Text.ITextBackendFactory`](../../src/adapters/text/Inno.Adapter.Text/ITextBackendFactory.cs#L9) | Creates isolated text backends without exposing implementation assemblies to composition code. |
+| [`Inno.Text.ITextBackend Inno.Adapter.Text.ITextBackendFactory.CreateBackend(Inno.Adapter.Text.TextBackendId backend)`](../../src/adapters/text/Inno.Adapter.Text/ITextBackendFactory.cs#L25) | Creates one caller-owned text backend. |
+| [`System.Collections.Generic.IReadOnlyList<Inno.Adapter.Text.TextBackendId> Inno.Adapter.Text.ITextBackendFactory.supportedBackends`](../../src/adapters/text/Inno.Adapter.Text/ITextBackendFactory.cs#L14) | Gets the exact registrations available in this composition snapshot. |
+
+### `Inno.Adapter.Text.TextBackendCatalog`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Adapter.Text.TextBackendCatalog`](../../src/adapters/text/Inno.Adapter.Text/TextBackendCatalog.cs#L11) | Resolves text providers from one immutable, composition-owned registration snapshot. |
+| [`Inno.Adapter.Text.TextBackendCatalog.TextBackendCatalog(System.Collections.Generic.IEnumerable<Inno.Adapter.Text.TextBackendProvider> providers)`](../../src/adapters/text/Inno.Adapter.Text/TextBackendCatalog.cs#L27) | Validates and captures a complete provider set without creating any service. |
+| [`Inno.Text.ITextBackend Inno.Adapter.Text.TextBackendCatalog.CreateBackend(Inno.Adapter.Text.TextBackendId backend)`](../../src/adapters/text/Inno.Adapter.Text/TextBackendCatalog.cs#L45) | See the implemented contract. |
+| [`System.Collections.Generic.IReadOnlyList<Inno.Adapter.Text.TextBackendId> Inno.Adapter.Text.TextBackendCatalog.supportedBackends`](../../src/adapters/text/Inno.Adapter.Text/TextBackendCatalog.cs#L39) | See the implemented contract. |
+
+### `Inno.Adapter.Text.TextBackendId`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Adapter.Text.TextBackendId`](../../src/adapters/text/Inno.Adapter.Text/TextBackendId.cs#L8) | Identifies a text implementation without closing the set of supported backends. |
+| [`Inno.Adapter.Text.TextBackendId.TextBackendId(string value)`](../../src/adapters/text/Inno.Adapter.Text/TextBackendId.cs#L19) | Creates an ordinal, case-sensitive implementation identifier. |
+| [`bool Inno.Adapter.Text.TextBackendId.isValid`](../../src/adapters/text/Inno.Adapter.Text/TextBackendId.cs#L41) | Gets whether this value identifies an implementation. |
+| [`override string Inno.Adapter.Text.TextBackendId.ToString()`](../../src/adapters/text/Inno.Adapter.Text/TextBackendId.cs#L49) | Returns the identifier without resolving a provider. |
+| [`static Inno.Adapter.Text.TextBackendId Inno.Adapter.Text.TextBackendId.freeTypeHarfBuzz`](../../src/adapters/text/Inno.Adapter.Text/TextBackendId.cs#L31) | Gets the identifier of the bundled freeTypeHarfBuzz implementation. |
+| [`string Inno.Adapter.Text.TextBackendId.value`](../../src/adapters/text/Inno.Adapter.Text/TextBackendId.cs#L36) | Gets the stable identifier; a default value is unassigned. |
+
+### `Inno.Adapter.Text.TextBackendProvider`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Adapter.Text.TextBackendId Inno.Adapter.Text.TextBackendProvider.id`](../../src/adapters/text/Inno.Adapter.Text/TextBackendProvider.cs#L34) | Gets this registration's immutable implementation identity. |
+| [`Inno.Adapter.Text.TextBackendProvider`](../../src/adapters/text/Inno.Adapter.Text/TextBackendProvider.cs#L13) | Describes one explicitly composed text implementation and its creation boundary. |
+| [`Inno.Adapter.Text.TextBackendProvider.TextBackendProvider(Inno.Adapter.Text.TextBackendId id)`](../../src/adapters/text/Inno.Adapter.Text/TextBackendProvider.cs#L24) | Captures the identity assigned by the composition owner. |
+| [`abstract Inno.Text.ITextBackend Inno.Adapter.Text.TextBackendProvider.CreateBackend()`](../../src/adapters/text/Inno.Adapter.Text/TextBackendProvider.cs#L42) | Creates a caller-owned text service using this implementation. |
+
+## 项目依赖
+
+- [Inno.Text](Inno.Text.md)：公开引用边界由实际签名核对。
+- [Inno.Extensibility.Catalogs](../extensibility/Inno.Extensibility.Catalogs.md)：公开引用边界由实际签名核对。

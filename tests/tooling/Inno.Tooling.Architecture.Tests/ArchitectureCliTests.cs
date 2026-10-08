@@ -11,6 +11,94 @@ namespace Inno.Tooling.Architecture.Tests;
 public sealed class ArchitectureCliTests
 {
     [Theory]
+    [InlineData("backends/Interop/native/Inno.Native.Probe", false)]
+    [InlineData("src/services/input/Inno.Input.Probe", true)]
+    public async Task CliChecksExplicitInteropRuntimeOwnership(
+        string projectLocation,
+        bool rejected
+    ) {
+        string root = Path.Combine(Path.GetTempPath(), "InnoInteropOwnershipTests", Guid.NewGuid().ToString("N"));
+        try
+        {
+            Directory.CreateDirectory(root);
+            File.WriteAllText(Path.Combine(root, "InnoEngine.sln"), "Microsoft Visual Studio Solution File, Format Version 12.00");
+            string project = Path.Combine(root, projectLocation);
+            Directory.CreateDirectory(project);
+            File.WriteAllText(Path.Combine(project, Path.GetFileName(project) + ".csproj"),
+                "<Project Sdk=\"Microsoft.NET.Sdk\"><PropertyGroup><TargetFramework>net9.0</TargetFramework></PropertyGroup>"
+                + "<ItemGroup><ProjectReference Include=\"$(BGCSRuntimeProject)\" /></ItemGroup></Project>");
+            (_, string output) = await Run(root);
+            Assert.Equal(rejected, output.Contains("the interop runtime dependency belongs", StringComparison.Ordinal));
+            Assert.DoesNotContain("does not resolve to a repository project", output, StringComparison.Ordinal);
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+                Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [Theory]
+    [InlineData("reference", "effective Foundation dependency")]
+    [InlineData("source", "effective hand-authored Compile source")]
+    [InlineData("target", "effective product target and native ABI")]
+    public async Task CliChecksImportedMSBuildOwnership(
+        string scenario,
+        string expected
+    ) {
+        string root = Path.Combine(Path.GetTempPath(), "InnoEvaluatedOwnershipTests", Guid.NewGuid().ToString("N"));
+        try
+        {
+            Directory.CreateDirectory(root);
+            File.WriteAllText(Path.Combine(root, "InnoEngine.sln"), "Microsoft Visual Studio Solution File, Format Version 12.00");
+            string relative = scenario == "target"
+                ? "platforms/Windows/player/Inno.Player.Windows"
+                : "src/foundation/core/Inno.Core.Probe";
+            string project = Path.Combine(root, relative);
+            Directory.CreateDirectory(project);
+            string properties = scenario == "target"
+                ? "<OutputType>Exe</OutputType><InnoProductId>player</InnoProductId><InnoProductTarget>windows-x64</InnoProductTarget><InnoNativeTarget>windows-x64</InnoNativeTarget>"
+                : string.Empty;
+            File.WriteAllText(Path.Combine(project, Path.GetFileName(project) + ".csproj"),
+                "<Project Sdk=\"Microsoft.NET.Sdk\"><PropertyGroup><TargetFramework>net9.0</TargetFramework>"
+                + properties + "</PropertyGroup></Project>");
+            string imported;
+            if (scenario == "reference")
+            {
+                string upper = Path.Combine(root, "platforms/MacOS/runtime/Probe");
+                Directory.CreateDirectory(upper);
+                File.WriteAllText(Path.Combine(upper, "Probe.csproj"),
+                    "<Project Sdk=\"Microsoft.NET.Sdk\"><PropertyGroup><TargetFramework>net9.0</TargetFramework></PropertyGroup></Project>");
+                imported = "<ItemGroup Condition=\"'$(MSBuildProjectName)' == 'Inno.Core.Probe'\"><ProjectReference Include=\"$(MSBuildThisFileDirectory)platforms/MacOS/runtime/Probe/Probe.csproj\" /></ItemGroup>";
+            }
+            else if (scenario == "source")
+            {
+                string upper = Path.Combine(root, "src/content/Probe");
+                Directory.CreateDirectory(upper);
+                File.WriteAllText(Path.Combine(upper, "Probe.cs"), "internal class ImportedSource { }");
+                imported = "<ItemGroup><Compile Include=\"$(MSBuildThisFileDirectory)src/content/Probe/Probe.cs\" Link=\"ImportedSource.cs\" /></ItemGroup>";
+            }
+            else
+                imported = "<PropertyGroup><InnoNativeTarget>macos-arm64</InnoNativeTarget></PropertyGroup>";
+            File.WriteAllText(Path.Combine(root, "Directory.Build.targets"), "<Project>" + imported + "</Project>");
+            string dotnet = Path.GetFullPath("../../../dotnet", RuntimeEnvironment.GetRuntimeDirectory());
+            if (OperatingSystem.IsWindows())
+                dotnet += ".exe";
+            string graph = Path.Combine(root, "evaluated.json");
+            (int code, string output) = await Run(root, "--dotnet", dotnet, "--project-graph", graph);
+            Assert.Equal(1, code);
+            Assert.Contains(expected, output, StringComparison.Ordinal);
+            Assert.True(File.Exists(graph));
+            Assert.False(Directory.Exists(Path.Combine(project, "bin")));
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+                Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [Theory]
     [InlineData("internal sealed class Probe { void Apply(int first, int second) { } }", true)]
     [InlineData("internal sealed class Probe(int first, int second) { }", true)]
     [InlineData("internal sealed class Probe { System.Func<int,int,int> factory = (first, second) => first + second; }", true)]
@@ -112,8 +200,10 @@ public sealed class ArchitectureCliTests
                 Global
                 EndGlobal
                 """);
-            string bindings = Path.Combine(root, "native", "Inno.Native.Probe", "Bindings");
+            string bindings = Path.Combine(root, "backends", "Probe", "native", "Inno.Native.Probe", "Bindings");
             Directory.CreateDirectory(bindings);
+            File.WriteAllText(Path.Combine(Path.GetDirectoryName(bindings)!, "Inno.Native.Probe.csproj"),
+                "<Project Sdk=\"Microsoft.NET.Sdk\"><PropertyGroup><TargetFramework>net9.0</TargetFramework></PropertyGroup></Project>");
             File.WriteAllText(Path.Combine(bindings, "bindgen.json"), JsonSerializer.Serialize(new { outputPath = "../Generated" }));
             File.WriteAllText(Path.Combine(bindings, "bindgen.browser-wasm.json"), JsonSerializer.Serialize(new { outputPath = targetOutput }));
 

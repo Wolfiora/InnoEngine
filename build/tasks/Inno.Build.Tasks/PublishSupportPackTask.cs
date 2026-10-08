@@ -2,6 +2,8 @@ using System;
 using System.Threading;
 using Inno.Build;
 using Inno.Build.Composition;
+using Inno.Build.Distribution.Standard;
+using Inno.Build.Toolchains;
 using Microsoft.Build.Framework;
 using BuildTask = Microsoft.Build.Utilities.Task;
 
@@ -40,6 +42,12 @@ public sealed class PublishSupportPackTask : BuildTask, ICancelableTask
     public string DotnetHost { get; set; } = "dotnet";
 
     /// <summary>
+    /// Gets or sets the independently selected native target for executable compilation tools.
+    /// </summary>
+    [Required]
+    public string ToolTarget { get; set; } = string.Empty;
+
+    /// <summary>
     /// Publishes and validates the target pack, reporting failures through MSBuild.
     /// </summary>
     /// <returns>
@@ -56,9 +64,10 @@ public sealed class PublishSupportPackTask : BuildTask, ICancelableTask
         }
         try
         {
-            BuildTaskHostRetirement.Inspect(EngineRoot);
-            var context = new BuildCompositionContext(DotnetHost, AppContext.BaseDirectory);
-            string installed = BuiltInBuildDistribution.Create(context).supportPacks.PublishAsync(
+            var execution = StandardBuildEnvironment.Capture(AppContext.BaseDirectory, new BuildTargetId(ToolTarget));
+            var context = new BuildCompositionContext(ToolchainEnvironment.ResolveExecutable(DotnetHost),
+                AppContext.BaseDirectory, execution.host, execution.toolsTarget);
+            string installed = StandardBuildDistribution.Create(context).build.supportPacks.PublishAsync(
                 EngineRoot, OutputRoot, new BuildTargetId(Target), DotnetHost, cancellation.Token)
                 .AsTask().GetAwaiter().GetResult();
             Log.LogMessage(MessageImportance.Normal, "Installed Player Support Pack: {0}", installed);

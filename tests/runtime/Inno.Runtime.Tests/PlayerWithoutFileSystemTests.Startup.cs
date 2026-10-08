@@ -40,6 +40,15 @@ public sealed partial class PlayerWithoutFileSystemTests
         var deployment = GameCodeDeployment.FromManifest(source.manifest.modules);
         var options = new PlayerLaunchOptions
         {
+            adapterSelection = new Inno.Adapter.AdapterSelection {
+                platform = Inno.Adapter.Platform.PlatformBackendId.sdl3,
+                input = Inno.Adapter.Input.InputBackendId.events,
+                rendering = Inno.Adapter.Rendering.RenderingBackendId.bgfx,
+                storage = Inno.Adapter.Storage.StorageBackendId.fileSystem,
+                audio = Inno.Adapter.Audio.AudioBackendId.miniAudio,
+                text = Inno.Adapter.Text.TextBackendId.freeTypeHarfBuzz,
+                ui = Inno.Adapter.UI.UiBackendId.rmlUi
+            },
             modules = modules,
             types = new ReflectionTypeCatalogSource(),
             serializationMetadata = new ReflectionSerializationMetadataSource(),

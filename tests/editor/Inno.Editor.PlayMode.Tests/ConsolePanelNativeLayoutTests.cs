@@ -25,8 +25,10 @@ public sealed class ConsolePanelNativeLayoutTests
     [InlineData(true, 1f)]
     [InlineData(false, 1.5f)]
     [InlineData(true, 1.5f)]
-    public unsafe void RealConsoleKeepsCompleteLabelsOnFirstExpansionAndResize(bool diagnostic, float scale)
-    {
+    public unsafe void RealConsoleKeepsCompleteLabelsOnFirstExpansionAndResize(
+        bool diagnostic,
+        float scale
+    ) {
         string root = Path.Combine(Path.GetTempPath(), "InnoConsoleLayout", Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(root);
         _ = Assembly.Load("Inno.Editor.Panel.Logging");
@@ -45,7 +47,7 @@ public sealed class ConsolePanelNativeLayoutTests
             using var console = new EditorConsole(logs, hub, new InactivePlayMode());
             console.Start();
             using var reporter = hub.CreateReporter(new("shader", "Rendering"));
-            using var runtime = new EditorInteractionRuntime(new EditorContext(root), types, logs, [console]);
+            using var runtime = new EditorInteractionRuntime(new EditorContext(root, new EditorKeyboardPolicy(Inno.Core.Input.KeyModifier.Control, "Super")), types, logs, [console]);
             runtime.Start();
             logs.Flush();
             console.Clear();

@@ -1,6 +1,6 @@
 # Editor 普通构建与原生部署修复验收
 
-[架构索引](README.md) · [Editor Application](../editor/Inno.Editor.Application.md) · [Host 工具链](../build/Inno.Build.Toolchains.Host.md) · [MSBuild Task](../build/Inno.Build.Tasks.md)
+[架构索引](README.md) · [Editor Application](../editor/Inno.Editor.Hosting.md) · [Host 工具链](../build/Inno.Build.Toolchains.md) · [MSBuild Task](../build/Inno.Build.Tasks.md)
 
 ## 原因与证据
 

@@ -1,6 +1,6 @@
 # Inno.Editor.Panel.Stats
 
-[Editor 索引](README.md) · [Logging](Inno.Editor.Panel.Logging.md) · [Application](Inno.Editor.Application.md)
+[Editor 索引](README.md) · [Logging](Inno.Editor.Panel.Logging.md) · [Application](Inno.Editor.Hosting.md)
 
 该项目提供最小独立 Stats Panel，不拥有 Scene、Asset、Rendering 或 Interaction 业务。
 
@@ -30,3 +30,18 @@ context.statistics.Publish(new EditorStatistic(
 该 Panel 项目没有 Scripting API；发布协议由 `Inno.Editor.Core` 通过逻辑命名空间
 `InnoEditor.Core` 提供。未来新增 profiler timeline 时应创建新的独立 Panel feature，而不是把
 采样历史、菜单和渲染塞回 Application。
+
+## 当前源码公开 API 清单
+
+只列当前源码的 public/protected 表面；内部实现不作为稳定 API。参数、返回、失败和 owner 以英文 XML 为准。
+
+本项目没有公开入口，通过组合或扩展发现使用内部实现。
+
+## 项目依赖
+
+- [Inno.Editor.ImGui](Inno.Editor.ImGui.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Adapter.Presentation.ImGui.Sdl3](../backends/ImGui/Inno.Adapter.Presentation.ImGui.Sdl3.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Native.ImGui](../backends/ImGui/Inno.Native.ImGui.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Editor.Core](Inno.Editor.Core.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Extensibility.Catalogs](../extensibility/Inno.Extensibility.Catalogs.md)：公开引用边界由实际签名核对。
+- [Inno.Core.Serialization](../core/Inno.Core.Serialization.md)：公开引用边界由实际签名核对。

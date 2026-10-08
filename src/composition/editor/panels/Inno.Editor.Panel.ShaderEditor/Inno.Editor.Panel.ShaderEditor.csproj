@@ -27,7 +27,7 @@
       Include="../../../../foundation/core/Inno.Core.Input/Inno.Core.Input.csproj"
       PrivateAssets="compile" />
     <ProjectReference
-      Include="../../../../../native/Inno.Native.ImGui/Inno.Native.ImGui.csproj"
+      Include="../../../../../backends/ImGui/native/Inno.Native.ImGui/Inno.Native.ImGui.csproj"
       PrivateAssets="compile" />
     <ProjectReference Include="../../../../foundation/core/Inno.Core.IO/Inno.Core.IO.csproj" PrivateAssets="compile" />
     <ProjectReference

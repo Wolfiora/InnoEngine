@@ -7,9 +7,14 @@
     <IsTestProject>true</IsTestProject>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="../../../src/adapters/serialization/Inno.Adapter.Serialization.DotNet/Inno.Adapter.Serialization.DotNet.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../../platforms/MacOS/integrations/Inno.Integration.MacOS.Bgfx/Inno.Integration.MacOS.Bgfx.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../../platforms/Windows/integrations/Inno.Integration.Windows.Bgfx/Inno.Integration.Windows.Bgfx.csproj" PrivateAssets="compile" />
+
+    <ProjectReference Include="../../../backends/DotNet/runtime/Inno.Adapter.Serialization.DotNet/Inno.Adapter.Serialization.DotNet.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../../src/services/rendering/Inno.Rendering.Shaders/Inno.Rendering.Shaders.csproj" />
-    <ProjectReference Include="../../../build/toolchains/Inno.Build.Toolchains.Bgfx.Tools/Inno.Build.Toolchains.Bgfx.Tools.csproj" />
+    <ProjectReference Include="../../../backends/Bgfx/build/Inno.Build.Toolchains.Bgfx.Tools/Inno.Build.Toolchains.Bgfx.Tools.csproj" />
+    <ProjectReference Include="../../../platforms/Windows/build/Inno.Build.Windows/Inno.Build.Windows.csproj" />
+    <ProjectReference Include="../../../platforms/MacOS/build/Inno.Build.MacOS/Inno.Build.MacOS.csproj" />
     <ProjectReference Include="../../../src/adapters/rendering/Inno.Adapter.Rendering.Authoring/Inno.Adapter.Rendering.Authoring.csproj" />
     <ProjectReference Include="../../../src/foundation/extensibility/Inno.Extensibility.Modules/Inno.Extensibility.Modules.csproj" />
   </ItemGroup>
@@ -22,7 +27,7 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="../../../src/adapters/modules/Inno.Adapter.Modules.DotNet/Inno.Adapter.Modules.DotNet.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../../backends/DotNet/runtime/Inno.Adapter.Modules.DotNet/Inno.Adapter.Modules.DotNet.csproj" PrivateAssets="compile" />
   </ItemGroup>
 
   <ItemGroup>

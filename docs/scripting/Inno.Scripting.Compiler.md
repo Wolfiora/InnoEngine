@@ -44,47 +44,47 @@ Reference 生成的串行准入及 Roslyn parse/emit 也接收本次取消 token
 
 ## 当前源码公开 API 清单
 
-以下仅列出当前程序集自己声明的 public/protected 契约；继承成员遵循所属基类页面。internal/private 实现不作为稳定公开 API。签名依据当前源码语义模型生成，行为、参数、异常与所有权说明同时以对应英文 XML 为准。
+只列当前源码的 public/protected 表面；内部实现不作为稳定 API。参数、返回、失败和 owner 以英文 XML 为准。
 
 ### `Inno.Scripting.Compiler.CSharpSampleSourceRewriter`
 
 | 当前声明 | 行为 |
 | --- | --- |
-| [`void Inno.Scripting.Compiler.CSharpSampleSourceRewriter.Transform(Inno.Assets.Pipeline.AssetSampleTransformContext context)`](../../src/runtime/scripting/Inno.Scripting.Compiler/Compilation/CSharpSampleSourceRewriter.cs#L25) | Rewrites explicit stable type identities in cloned C# scripts and registers their asset mappings. |
 | [`Inno.Scripting.Compiler.CSharpSampleSourceRewriter`](../../src/runtime/scripting/Inno.Scripting.Compiler/Compilation/CSharpSampleSourceRewriter.cs#L16) | Gives imported C# sample scripts distinct type identities before their scene assets are remapped. |
+| [`void Inno.Scripting.Compiler.CSharpSampleSourceRewriter.Transform(Inno.Assets.Pipeline.AssetSampleTransformContext context)`](../../src/runtime/scripting/Inno.Scripting.Compiler/Compilation/CSharpSampleSourceRewriter.cs#L25) | Rewrites explicit stable type identities in cloned C# scripts and registers their asset mappings. |
 
 ### `Inno.Scripting.Compiler.LogicalScriptingApiAnalyzer`
 
 | 当前声明 | 行为 |
 | --- | --- |
+| [`Inno.Scripting.Compiler.LogicalScriptingApiAnalyzer`](../../src/runtime/scripting/Inno.Scripting.Compiler/Compilation/LogicalScriptingApiAnalyzer.cs#L16) | Enforces logical scripting namespaces and rejects direct implementation namespace access. |
 | [`const string Inno.Scripting.Compiler.LogicalScriptingApiAnalyzer.compilationWideUsingDiagnosticId`](../../src/runtime/scripting/Inno.Scripting.Compiler/Compilation/LogicalScriptingApiAnalyzer.cs#L32) | Diagnostic identifier for a forbidden compilation-wide namespace import. |
 | [`const string Inno.Scripting.Compiler.LogicalScriptingApiAnalyzer.directImplementationNamespaceDiagnosticId`](../../src/runtime/scripting/Inno.Scripting.Compiler/Compilation/LogicalScriptingApiAnalyzer.cs#L22) | Diagnostic identifier for direct implementation namespace access. |
 | [`const string Inno.Scripting.Compiler.LogicalScriptingApiAnalyzer.missingLogicalNamespaceDiagnosticId`](../../src/runtime/scripting/Inno.Scripting.Compiler/Compilation/LogicalScriptingApiAnalyzer.cs#L27) | Diagnostic identifier for a missing logical namespace import. |
-| [`override void Inno.Scripting.Compiler.LogicalScriptingApiAnalyzer.Initialize(Microsoft.CodeAnalysis.Diagnostics.AnalysisContext context)`](../../src/runtime/scripting/Inno.Scripting.Compiler/Compilation/LogicalScriptingApiAnalyzer.cs#L73) | Initializes owned resources and establishes the instance's active lifetime. |
 | [`override System.Collections.Immutable.ImmutableArray<Microsoft.CodeAnalysis.DiagnosticDescriptor> Inno.Scripting.Compiler.LogicalScriptingApiAnalyzer.SupportedDiagnostics`](../../src/runtime/scripting/Inno.Scripting.Compiler/Compilation/LogicalScriptingApiAnalyzer.cs#L61) | Gets the complete compiler diagnostic set enforced by this analyzer. |
-| [`Inno.Scripting.Compiler.LogicalScriptingApiAnalyzer`](../../src/runtime/scripting/Inno.Scripting.Compiler/Compilation/LogicalScriptingApiAnalyzer.cs#L16) | Enforces logical scripting namespaces and rejects direct implementation namespace access. |
+| [`override void Inno.Scripting.Compiler.LogicalScriptingApiAnalyzer.Initialize(Microsoft.CodeAnalysis.Diagnostics.AnalysisContext context)`](../../src/runtime/scripting/Inno.Scripting.Compiler/Compilation/LogicalScriptingApiAnalyzer.cs#L73) | Initializes owned resources and establishes the instance's active lifetime. |
 
 ### `Inno.Scripting.Compiler.ScriptAssemblyDefinitionAsset`
 
 | 当前声明 | 行为 |
 | --- | --- |
+| [`Inno.Scripting.Compiler.ScriptAssemblyDefinitionAsset`](../../src/runtime/scripting/Inno.Scripting.Compiler/Assets/ScriptAssemblyDefinitionAsset.cs#L12) | Defines one project script assembly and its compilation policy. |
 | [`Inno.Scripting.Compiler.ScriptAssemblyDefinitionAsset.ScriptAssemblyDefinitionAsset()`](../../src/runtime/scripting/Inno.Scripting.Compiler/Assets/ScriptAssemblyDefinitionAsset.cs#L54) | Creates an empty definition asset for deserialization. |
 | [`Inno.Scripting.Compiler.ScriptAssemblyDefinitionAsset.ScriptAssemblyDefinitionAsset(string assemblyName, Inno.Scripting.Compiler.ScriptAssemblyScope scope, string[]? references = null, string[]? defines = null, bool nullable = true, bool allowUnsafe = false)`](../../src/runtime/scripting/Inno.Scripting.Compiler/Assets/ScriptAssemblyDefinitionAsset.cs#L82) | Creates a configured script assembly definition for native asset export. |
+| [`Inno.Scripting.Compiler.ScriptAssemblyScope Inno.Scripting.Compiler.ScriptAssemblyDefinitionAsset.scope`](../../src/runtime/scripting/Inno.Scripting.Compiler/Assets/ScriptAssemblyDefinitionAsset.cs#L24) | Gets the assembly API scope. |
 | [`bool Inno.Scripting.Compiler.ScriptAssemblyDefinitionAsset.allowUnsafe`](../../src/runtime/scripting/Inno.Scripting.Compiler/Assets/ScriptAssemblyDefinitionAsset.cs#L48) | Gets whether unsafe source is permitted. |
+| [`bool Inno.Scripting.Compiler.ScriptAssemblyDefinitionAsset.nullable`](../../src/runtime/scripting/Inno.Scripting.Compiler/Assets/ScriptAssemblyDefinitionAsset.cs#L42) | Gets whether nullable reference analysis is enabled. |
 | [`string Inno.Scripting.Compiler.ScriptAssemblyDefinitionAsset.assemblyName`](../../src/runtime/scripting/Inno.Scripting.Compiler/Assets/ScriptAssemblyDefinitionAsset.cs#L18) | Gets the stable assembly name. |
 | [`string[] Inno.Scripting.Compiler.ScriptAssemblyDefinitionAsset.defines`](../../src/runtime/scripting/Inno.Scripting.Compiler/Assets/ScriptAssemblyDefinitionAsset.cs#L36) | Gets preprocessor symbols applied to this assembly. |
-| [`bool Inno.Scripting.Compiler.ScriptAssemblyDefinitionAsset.nullable`](../../src/runtime/scripting/Inno.Scripting.Compiler/Assets/ScriptAssemblyDefinitionAsset.cs#L42) | Gets whether nullable reference analysis is enabled. |
 | [`string[] Inno.Scripting.Compiler.ScriptAssemblyDefinitionAsset.references`](../../src/runtime/scripting/Inno.Scripting.Compiler/Assets/ScriptAssemblyDefinitionAsset.cs#L30) | Gets referenced script assembly names. |
-| [`Inno.Scripting.Compiler.ScriptAssemblyScope Inno.Scripting.Compiler.ScriptAssemblyDefinitionAsset.scope`](../../src/runtime/scripting/Inno.Scripting.Compiler/Assets/ScriptAssemblyDefinitionAsset.cs#L24) | Gets the assembly API scope. |
-| [`Inno.Scripting.Compiler.ScriptAssemblyDefinitionAsset`](../../src/runtime/scripting/Inno.Scripting.Compiler/Assets/ScriptAssemblyDefinitionAsset.cs#L12) | Defines one project script assembly and its compilation policy. |
 
 ### `Inno.Scripting.Compiler.ScriptAssemblyScope`
 
 | 当前声明 | 行为 |
 | --- | --- |
+| [`Inno.Scripting.Compiler.ScriptAssemblyScope`](../../src/runtime/scripting/Inno.Scripting.Compiler/Assets/ScriptAssemblyScope.cs#L6) | Identifies whether a project script assembly can use editor-only APIs. |
 | [`Inno.Scripting.Compiler.ScriptAssemblyScope.Editor`](../../src/runtime/scripting/Inno.Scripting.Compiler/Assets/ScriptAssemblyScope.cs#L16) | The assembly can use runtime and editor scripting APIs. |
 | [`Inno.Scripting.Compiler.ScriptAssemblyScope.Runtime`](../../src/runtime/scripting/Inno.Scripting.Compiler/Assets/ScriptAssemblyScope.cs#L11) | The assembly can use runtime scripting APIs only. |
-| [`Inno.Scripting.Compiler.ScriptAssemblyScope`](../../src/runtime/scripting/Inno.Scripting.Compiler/Assets/ScriptAssemblyScope.cs#L6) | Identifies whether a project script assembly can use editor-only APIs. |
 
 ### `Inno.Scripting.Compiler.ScriptCompilationProgress`
 
@@ -96,43 +96,43 @@ Reference 生成的串行准入及 Roslyn parse/emit 也接收本次取消 token
 
 | 当前声明 | 行为 |
 | --- | --- |
-| [`static Inno.Scripting.Compiler.ScriptCompilationResult Inno.Scripting.Compiler.ScriptCompilationResult.Failure(Inno.Scripting.Compiler.ScriptDiagnostic diagnostic)`](../../src/runtime/scripting/Inno.Scripting.Compiler/Compilation/ScriptCompilationResult.cs#L93) | Creates a failed result for an exception intercepted at an orchestration boundary. |
-| [`System.Collections.Generic.IReadOnlyList<string> Inno.Scripting.Compiler.ScriptCompilationResult.compiledAssemblyNames`](../../src/runtime/scripting/Inno.Scripting.Compiler/Compilation/ScriptCompilationResult.cs#L77) | Gets assembly names compiled during this request instead of reused from the artifact cache. |
+| [`Inno.Scripting.Compiler.ScriptCompilationResult`](../../src/runtime/scripting/Inno.Scripting.Compiler/Compilation/ScriptCompilationResult.cs#L13) | Reports the outputs and diagnostics of one authoring-generation or runtime-deployment script compilation. |
+| [`System.Collections.Generic.IReadOnlyList<Inno.Scripting.Compiler.ScriptCompilationStageTiming> Inno.Scripting.Compiler.ScriptCompilationResult.stageTimings`](../../src/runtime/scripting/Inno.Scripting.Compiler/Compilation/ScriptCompilationResult.cs#L62) | Gets completed compiler stage timings in execution order. |
 | [`System.Collections.Generic.IReadOnlyList<Inno.Scripting.Compiler.ScriptDiagnostic> Inno.Scripting.Compiler.ScriptCompilationResult.diagnostics`](../../src/runtime/scripting/Inno.Scripting.Compiler/Compilation/ScriptCompilationResult.cs#L52) | Gets all diagnostics produced by the compilation. |
 | [`System.Collections.Generic.IReadOnlyList<Inno.Scripting.Compiler.ScriptModuleDeployment> Inno.Scripting.Compiler.ScriptCompilationResult.moduleDeployments`](../../src/runtime/scripting/Inno.Scripting.Compiler/Compilation/ScriptCompilationResult.cs#L72) | Gets the immutable module artifacts and dependency topology produced by this compilation. |
-| [`string? Inno.Scripting.Compiler.ScriptCompilationResult.outputDirectory`](../../src/runtime/scripting/Inno.Scripting.Compiler/Compilation/ScriptCompilationResult.cs#L57) | Gets the generation output directory when one was created. |
+| [`System.Collections.Generic.IReadOnlyList<string> Inno.Scripting.Compiler.ScriptCompilationResult.compiledAssemblyNames`](../../src/runtime/scripting/Inno.Scripting.Compiler/Compilation/ScriptCompilationResult.cs#L77) | Gets assembly names compiled during this request instead of reused from the artifact cache. |
 | [`System.Collections.Generic.IReadOnlyList<string> Inno.Scripting.Compiler.ScriptCompilationResult.reusedAssemblyNames`](../../src/runtime/scripting/Inno.Scripting.Compiler/Compilation/ScriptCompilationResult.cs#L82) | Gets assembly names reused from the deterministic artifact cache. |
 | [`System.Collections.Generic.IReadOnlyList<string> Inno.Scripting.Compiler.ScriptCompilationResult.runtimeAssemblyPaths`](../../src/runtime/scripting/Inno.Scripting.Compiler/Compilation/ScriptCompilationResult.cs#L67) | Gets exact runtime-scope managed assemblies suitable for a deployed Player. |
-| [`System.Collections.Generic.IReadOnlyList<Inno.Scripting.Compiler.ScriptCompilationStageTiming> Inno.Scripting.Compiler.ScriptCompilationResult.stageTimings`](../../src/runtime/scripting/Inno.Scripting.Compiler/Compilation/ScriptCompilationResult.cs#L62) | Gets completed compiler stage timings in execution order. |
 | [`bool Inno.Scripting.Compiler.ScriptCompilationResult.success`](../../src/runtime/scripting/Inno.Scripting.Compiler/Compilation/ScriptCompilationResult.cs#L47) | Gets whether every discovered script assembly compiled or reused successfully. |
-| [`Inno.Scripting.Compiler.ScriptCompilationResult`](../../src/runtime/scripting/Inno.Scripting.Compiler/Compilation/ScriptCompilationResult.cs#L13) | Reports the outputs and diagnostics of one authoring-generation or runtime-deployment script compilation. |
+| [`static Inno.Scripting.Compiler.ScriptCompilationResult Inno.Scripting.Compiler.ScriptCompilationResult.Failure(Inno.Scripting.Compiler.ScriptDiagnostic diagnostic)`](../../src/runtime/scripting/Inno.Scripting.Compiler/Compilation/ScriptCompilationResult.cs#L93) | Creates a failed result for an exception intercepted at an orchestration boundary. |
+| [`string? Inno.Scripting.Compiler.ScriptCompilationResult.outputDirectory`](../../src/runtime/scripting/Inno.Scripting.Compiler/Compilation/ScriptCompilationResult.cs#L57) | Gets the generation output directory when one was created. |
 
 ### `Inno.Scripting.Compiler.ScriptCompilationStageTiming`
 
 | 当前声明 | 行为 |
 | --- | --- |
+| [`Inno.Scripting.Compiler.ScriptCompilationStageTiming`](../../src/runtime/scripting/Inno.Scripting.Compiler/Compilation/ScriptCompilationStageTiming.cs#L8) | Describes the elapsed wall time of one completed script compilation stage. |
 | [`Inno.Scripting.Compiler.ScriptCompilationStageTiming.ScriptCompilationStageTiming(string stage, System.TimeSpan elapsed)`](../../src/runtime/scripting/Inno.Scripting.Compiler/Compilation/ScriptCompilationStageTiming.cs#L25) | Creates one immutable stage timing sample. |
 | [`System.TimeSpan Inno.Scripting.Compiler.ScriptCompilationStageTiming.elapsed`](../../src/runtime/scripting/Inno.Scripting.Compiler/Compilation/ScriptCompilationStageTiming.cs#L45) | Gets the wall time spent in the stage. |
 | [`string Inno.Scripting.Compiler.ScriptCompilationStageTiming.stage`](../../src/runtime/scripting/Inno.Scripting.Compiler/Compilation/ScriptCompilationStageTiming.cs#L40) | Gets the human-readable stage description. |
-| [`Inno.Scripting.Compiler.ScriptCompilationStageTiming`](../../src/runtime/scripting/Inno.Scripting.Compiler/Compilation/ScriptCompilationStageTiming.cs#L8) | Describes the elapsed wall time of one completed script compilation stage. |
 
 ### `Inno.Scripting.Compiler.ScriptCompiler`
 
 | 当前声明 | 行为 |
 | --- | --- |
+| [`Inno.Scripting.Compiler.ScriptCompiler`](../../src/runtime/scripting/Inno.Scripting.Compiler/ScriptCompiler.cs#L16) | Produces deterministic runtime and editor script artifacts from one authoring snapshot. |
 | [`Inno.Scripting.Compiler.ScriptCompiler.ScriptCompiler(Inno.Scripting.Compiler.ScriptCompilerOptions options, Inno.Assets.Pipeline.AssetPipeline assets, Inno.Plugins.Authoring.PluginEnvironment plugins)`](../../src/runtime/scripting/Inno.Scripting.Compiler/ScriptCompiler.cs#L40) | Creates a compiler over explicit authoring services owned by one host. |
-| [`int Inno.Scripting.Compiler.ScriptCompiler.CollectArtifacts(System.Collections.Generic.IEnumerable<string?> retainedDirectories)`](../../src/runtime/scripting/Inno.Scripting.Compiler/ScriptCompiler.cs#L173) | Removes unreferenced compiler generations while retaining the supplied active directories. |
 | [`System.Threading.Tasks.ValueTask<Inno.Scripting.Compiler.ScriptCompilationResult> Inno.Scripting.Compiler.ScriptCompiler.CompileAuthoringGenerationAsync(System.IProgress<Inno.Scripting.Compiler.ScriptCompilationProgress>? progress = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken), Inno.Assets.Pipeline.IAssetSourceSnapshot? sourceSnapshot = null)`](../../src/runtime/scripting/Inno.Scripting.Compiler/ScriptCompiler.cs#L96) | Compiles a complete runtime and editor candidate generation without activating it. |
 | [`System.Threading.Tasks.ValueTask<Inno.Scripting.Compiler.ScriptCompilationResult> Inno.Scripting.Compiler.ScriptCompiler.CompileRuntimeDeploymentAsync(string targetRuntimeDirectory, System.IProgress<Inno.Scripting.Compiler.ScriptCompilationProgress>? progress = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))`](../../src/runtime/scripting/Inno.Scripting.Compiler/ScriptCompiler.cs#L143) | Compiles only the runtime assembly closure required by a deployed Player and binds it to that Player runtime. |
+| [`int Inno.Scripting.Compiler.ScriptCompiler.CollectArtifacts(System.Collections.Generic.IEnumerable<string?> retainedDirectories)`](../../src/runtime/scripting/Inno.Scripting.Compiler/ScriptCompiler.cs#L173) | Removes unreferenced compiler generations while retaining the supplied active directories. |
 | [`void Inno.Scripting.Compiler.ScriptCompiler.GenerateProjectFiles()`](../../src/runtime/scripting/Inno.Scripting.Compiler/ScriptCompiler.cs#L64) | Regenerates IDE project files from the current source graph and logical API references. |
-| [`Inno.Scripting.Compiler.ScriptCompiler`](../../src/runtime/scripting/Inno.Scripting.Compiler/ScriptCompiler.cs#L16) | Produces deterministic runtime and editor script artifacts from one authoring snapshot. |
 
 ### `Inno.Scripting.Compiler.ScriptCompilerOptions`
 
 | 当前声明 | 行为 |
 | --- | --- |
-| [`required string Inno.Scripting.Compiler.ScriptCompilerOptions.projectRootDirectory`](../../src/runtime/scripting/Inno.Scripting.Compiler/ScriptCompilerOptions.cs#L13) | Gets the project root containing Assets and Library. |
 | [`Inno.Scripting.Compiler.ScriptCompilerOptions`](../../src/runtime/scripting/Inno.Scripting.Compiler/ScriptCompilerOptions.cs#L8) | Identifies the project and derived-cache locations used by one script compiler. |
+| [`required string Inno.Scripting.Compiler.ScriptCompilerOptions.projectRootDirectory`](../../src/runtime/scripting/Inno.Scripting.Compiler/ScriptCompilerOptions.cs#L13) | Gets the project root containing Assets and Library. |
 
 ### `Inno.Scripting.Compiler.ScriptDiagnostic`
 
@@ -144,35 +144,33 @@ Reference 生成的串行准入及 Roslyn parse/emit 也接收本次取消 token
 
 | 当前声明 | 行为 |
 | --- | --- |
-| [`System.Collections.Generic.IReadOnlyDictionary<string, Inno.Extensibility.Modules.AssemblyScope> Inno.Scripting.Compiler.ScriptModuleDeployment.assemblyScopes`](../../src/runtime/scripting/Inno.Scripting.Compiler/Compilation/ScriptModuleDeployment.cs#L70) | Gets explicit scopes keyed by assembly simple name, with case-insensitive lookup. |
 | [`Inno.Extensibility.Modules.AssemblyDomain Inno.Scripting.Compiler.ScriptModuleDeployment.domain`](../../src/runtime/scripting/Inno.Scripting.Compiler/Compilation/ScriptModuleDeployment.cs#L50) | Gets the ownership domain of this module's assemblies. |
+| [`Inno.Extensibility.Modules.AssemblyScope Inno.Scripting.Compiler.ScriptModuleDeployment.scope`](../../src/runtime/scripting/Inno.Scripting.Compiler/Compilation/ScriptModuleDeployment.cs#L55) | Gets the dependency scope used for assemblies without an explicit scope override. |
+| [`Inno.Scripting.Compiler.ScriptModuleDeployment`](../../src/runtime/scripting/Inno.Scripting.Compiler/Compilation/ScriptModuleDeployment.cs#L14) | Describes the immutable assembly artifacts and dependency topology of one compiled script module. The receiving host chooses how these artifacts enter its module catalog. |
+| [`System.Collections.Generic.IReadOnlyDictionary<string, Inno.Extensibility.Modules.AssemblyScope> Inno.Scripting.Compiler.ScriptModuleDeployment.assemblyScopes`](../../src/runtime/scripting/Inno.Scripting.Compiler/Compilation/ScriptModuleDeployment.cs#L70) | Gets explicit scopes keyed by assembly simple name, with case-insensitive lookup. |
+| [`System.Collections.Generic.IReadOnlyList<string> Inno.Scripting.Compiler.ScriptModuleDeployment.preloadAssemblyPaths`](../../src/runtime/scripting/Inno.Scripting.Compiler/Compilation/ScriptModuleDeployment.cs#L60) | Gets the additional assembly artifacts that belong to this same module generation. |
+| [`System.Collections.Generic.IReadOnlyList<string> Inno.Scripting.Compiler.ScriptModuleDeployment.upstreamModuleNames`](../../src/runtime/scripting/Inno.Scripting.Compiler/Compilation/ScriptModuleDeployment.cs#L65) | Gets the logical names of modules that supply managed dependencies to this module. |
 | [`string Inno.Scripting.Compiler.ScriptModuleDeployment.mainAssemblyPath`](../../src/runtime/scripting/Inno.Scripting.Compiler/Compilation/ScriptModuleDeployment.cs#L45) | Gets the absolute path of the module's primary assembly artifact. |
 | [`string Inno.Scripting.Compiler.ScriptModuleDeployment.moduleName`](../../src/runtime/scripting/Inno.Scripting.Compiler/Compilation/ScriptModuleDeployment.cs#L40) | Gets the logical module name used to resolve dependencies within this compiled generation. |
-| [`System.Collections.Generic.IReadOnlyList<string> Inno.Scripting.Compiler.ScriptModuleDeployment.preloadAssemblyPaths`](../../src/runtime/scripting/Inno.Scripting.Compiler/Compilation/ScriptModuleDeployment.cs#L60) | Gets the additional assembly artifacts that belong to this same module generation. |
-| [`Inno.Extensibility.Modules.AssemblyScope Inno.Scripting.Compiler.ScriptModuleDeployment.scope`](../../src/runtime/scripting/Inno.Scripting.Compiler/Compilation/ScriptModuleDeployment.cs#L55) | Gets the dependency scope used for assemblies without an explicit scope override. |
-| [`System.Collections.Generic.IReadOnlyList<string> Inno.Scripting.Compiler.ScriptModuleDeployment.upstreamModuleNames`](../../src/runtime/scripting/Inno.Scripting.Compiler/Compilation/ScriptModuleDeployment.cs#L65) | Gets the logical names of modules that supply managed dependencies to this module. |
-| [`Inno.Scripting.Compiler.ScriptModuleDeployment`](../../src/runtime/scripting/Inno.Scripting.Compiler/Compilation/ScriptModuleDeployment.cs#L14) | Describes the immutable assembly artifacts and dependency topology of one compiled script module. The receiving host chooses how these artifacts enter its module catalog. |
 
 ### `Inno.Scripting.Compiler.ScriptSourceAsset`
 
 | 当前声明 | 行为 |
 | --- | --- |
+| [`Inno.Scripting.Compiler.ScriptAssemblyScope Inno.Scripting.Compiler.ScriptSourceAsset.scope`](../../src/runtime/scripting/Inno.Scripting.Compiler/Assets/ScriptSourceAsset.cs#L16) | Gets the default assembly scope inferred for the source. |
+| [`Inno.Scripting.Compiler.ScriptSourceAsset`](../../src/runtime/scripting/Inno.Scripting.Compiler/Assets/ScriptSourceAsset.cs#L10) | Describes an imported C# source snapshot and its parse diagnostics. |
 | [`Inno.Scripting.Compiler.ScriptSourceAsset.ScriptSourceAsset()`](../../src/runtime/scripting/Inno.Scripting.Compiler/Assets/ScriptSourceAsset.cs#L34) | Creates an empty script source asset for deserialization. |
 | [`string[] Inno.Scripting.Compiler.ScriptSourceAsset.declaredTypeNames`](../../src/runtime/scripting/Inno.Scripting.Compiler/Assets/ScriptSourceAsset.cs#L22) | Gets syntax-level type names declared by the source. |
 | [`string[] Inno.Scripting.Compiler.ScriptSourceAsset.parseDiagnostics`](../../src/runtime/scripting/Inno.Scripting.Compiler/Assets/ScriptSourceAsset.cs#L28) | Gets parse diagnostics associated with the source snapshot. |
-| [`Inno.Scripting.Compiler.ScriptAssemblyScope Inno.Scripting.Compiler.ScriptSourceAsset.scope`](../../src/runtime/scripting/Inno.Scripting.Compiler/Assets/ScriptSourceAsset.cs#L16) | Gets the default assembly scope inferred for the source. |
-| [`Inno.Scripting.Compiler.ScriptSourceAsset`](../../src/runtime/scripting/Inno.Scripting.Compiler/Assets/ScriptSourceAsset.cs#L10) | Describes an imported C# source snapshot and its parse diagnostics. |
 
 ## 项目依赖
 
-- [Inno.Core.Collections](../core/Inno.Core.Collections.md)：实现依赖（`PrivateAssets="compile"`）。
-- [Inno.Extensibility.Modules](../extensibility/Inno.Extensibility.Modules.md)：项目引用；公开签名可见性由语义边界检查确认。
-- [Inno.Scripting.Api](Inno.Scripting.Api.md)：实现依赖（`PrivateAssets="compile"`）。
-- [Inno.Assets](../assets/Inno.Assets.md)：项目引用；公开签名可见性由语义边界检查确认。
-- [Inno.Assets.Pipeline](../assets/Inno.Assets.Pipeline.md)：项目引用；公开签名可见性由语义边界检查确认。
-- [Inno.Plugins.Authoring](../plugins/Inno.Plugins.Authoring.md)：项目引用；公开签名可见性由语义边界检查确认。
-- [Inno.Core.Diagnostics](../core/Inno.Core.Diagnostics.md)：项目引用；公开签名可见性由语义边界检查确认。
-- [Inno.Runtime.Generators](../runtime/Inno.Runtime.Generators.md)：实现依赖（`PrivateAssets="compile"`）。
-- [Inno.Core.Serialization.Generators](../core/Inno.Core.Serialization.Generators.md)：实现依赖（`PrivateAssets="compile"`）。
-
-共同 MSBuild 注入的 analyzer 与编译规则属于构建依赖，完整有效项目图记录在本轮验收证据中。
+- [Inno.Core.Collections](../core/Inno.Core.Collections.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Extensibility.Modules](../extensibility/Inno.Extensibility.Modules.md)：公开引用边界由实际签名核对。
+- [Inno.Scripting.Api](Inno.Scripting.Api.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Assets](../assets/Inno.Assets.md)：公开引用边界由实际签名核对。
+- [Inno.Assets.Pipeline](../assets/Inno.Assets.Pipeline.md)：公开引用边界由实际签名核对。
+- [Inno.Plugins.Authoring](../plugins/Inno.Plugins.Authoring.md)：公开引用边界由实际签名核对。
+- [Inno.Core.Diagnostics](../core/Inno.Core.Diagnostics.md)：公开引用边界由实际签名核对。
+- [Inno.Runtime.Generators](../runtime/Inno.Runtime.Generators.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Core.Serialization.Generators](../core/Inno.Core.Serialization.Generators.md)：实现依赖，PrivateAssets="compile"。

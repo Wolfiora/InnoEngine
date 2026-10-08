@@ -1,6 +1,6 @@
 # Inno.Rendering.Shaders
 
-[Rendering 索引](README.md) · [Wiki 首页](../README.md) · [BGFX 工具链](../build/Inno.Build.Toolchains.Bgfx.Tools.md)
+[Rendering 索引](README.md) · [Wiki 首页](../README.md) · [BGFX 工具链](../backends/Bgfx/Inno.Build.Toolchains.Bgfx.Tools.md)
 
 ## 职责与当前状态
 
@@ -297,92 +297,92 @@ static ShaderIrBlock BuildBrightness()
 
 ## 当前源码公开 API 清单
 
-以下仅列出当前程序集自己声明的 public/protected 契约；继承成员遵循所属基类页面。internal/private 实现不作为稳定公开 API。签名依据当前源码语义模型生成，行为、参数、异常与所有权说明同时以对应英文 XML 为准。
+只列当前源码的 public/protected 表面；内部实现不作为稳定 API。参数、返回、失败和 owner 以英文 XML 为准。
 
 ### `Inno.Rendering.Shaders.IShaderNodeCompiler`
 
 | 当前声明 | 行为 |
 | --- | --- |
-| [`System.Collections.Generic.IReadOnlyList<Inno.Rendering.Shaders.ShaderNodePort> Inno.Rendering.Shaders.IShaderNodeCompiler.GetPorts(Inno.Rendering.Shaders.ShaderNodeDescriptionContext context)`](../../src/services/rendering/Inno.Rendering.Shaders/Compilation/ShaderNodeCompiler.cs#L50) | Describes ports for the current neutral properties and resolved source/target inputs. |
-| [`System.Collections.Generic.IReadOnlyDictionary<string, Inno.Rendering.Shaders.ShaderIrValue> Inno.Rendering.Shaders.IShaderNodeCompiler.Lower(Inno.Rendering.Shaders.ShaderNodeLoweringContext context)`](../../src/services/rendering/Inno.Rendering.Shaders/Compilation/ShaderNodeCompiler.cs#L60) | Lowers the node into the supplied typed builder without generating source strings. |
-| [`string Inno.Rendering.Shaders.IShaderNodeCompiler.definitionId`](../../src/services/rendering/Inno.Rendering.Shaders/Compilation/ShaderNodeCompiler.cs#L40) | Gets the exact graph node definition identity implemented by this compiler. |
 | [`Inno.Rendering.Shaders.IShaderNodeCompiler`](../../src/services/rendering/Inno.Rendering.Shaders/Compilation/ShaderNodeCompiler.cs#L35) | Defines one shader node's typed ports and lowering; drawing belongs to a separate editor extension. |
+| [`System.Collections.Generic.IReadOnlyDictionary<string, Inno.Rendering.Shaders.ShaderIrValue> Inno.Rendering.Shaders.IShaderNodeCompiler.Lower(Inno.Rendering.Shaders.ShaderNodeLoweringContext context)`](../../src/services/rendering/Inno.Rendering.Shaders/Compilation/ShaderNodeCompiler.cs#L60) | Lowers the node into the supplied typed builder without generating source strings. |
+| [`System.Collections.Generic.IReadOnlyList<Inno.Rendering.Shaders.ShaderNodePort> Inno.Rendering.Shaders.IShaderNodeCompiler.GetPorts(Inno.Rendering.Shaders.ShaderNodeDescriptionContext context)`](../../src/services/rendering/Inno.Rendering.Shaders/Compilation/ShaderNodeCompiler.cs#L50) | Describes ports for the current neutral properties and resolved source/target inputs. |
+| [`string Inno.Rendering.Shaders.IShaderNodeCompiler.definitionId`](../../src/services/rendering/Inno.Rendering.Shaders/Compilation/ShaderNodeCompiler.cs#L40) | Gets the exact graph node definition identity implemented by this compiler. |
 
 ### `Inno.Rendering.Shaders.IShaderSourceFrontend`
 
 | 当前声明 | 行为 |
 | --- | --- |
+| [`Inno.Rendering.Shaders.IShaderSourceFrontend`](../../src/services/rendering/Inno.Rendering.Shaders/Sources/IShaderSourceFrontend.cs#L187) | Parses one source language into canonical function interfaces; it does not create GPU objects. |
 | [`Inno.Rendering.Shaders.ShaderSourceAnalysis Inno.Rendering.Shaders.IShaderSourceFrontend.Analyze(Inno.Rendering.Shaders.ShaderSourceRequest request)`](../../src/services/rendering/Inno.Rendering.Shaders/Sources/IShaderSourceFrontend.cs#L202) | Analyzes an immutable source candidate with explicit preprocessing inputs. |
 | [`string Inno.Rendering.Shaders.IShaderSourceFrontend.languageId`](../../src/services/rendering/Inno.Rendering.Shaders/Sources/IShaderSourceFrontend.cs#L192) | Gets the open source language identity, distinct from a rendering backend or GPU API. |
-| [`Inno.Rendering.Shaders.IShaderSourceFrontend`](../../src/services/rendering/Inno.Rendering.Shaders/Sources/IShaderSourceFrontend.cs#L187) | Parses one source language into canonical function interfaces; it does not create GPU objects. |
 
 ### `Inno.Rendering.Shaders.IShaderSourceResolver`
 
 | 当前声明 | 行为 |
 | --- | --- |
-| [`Inno.Rendering.Shaders.ShaderSourceFile Inno.Rendering.Shaders.IShaderSourceResolver.ReadInclude(string includingFile, string include)`](../../src/services/rendering/Inno.Rendering.Shaders/Sources/IShaderSourceFrontend.cs#L79) | Resolves and reads an include without bypassing asset mount permissions. |
 | [`Inno.Rendering.Shaders.IShaderSourceResolver`](../../src/services/rendering/Inno.Rendering.Shaders/Sources/IShaderSourceFrontend.cs#L65) | Reads dependencies only from the current source candidate and records their import dependencies. |
+| [`Inno.Rendering.Shaders.ShaderSourceFile Inno.Rendering.Shaders.IShaderSourceResolver.ReadInclude(string includingFile, string include)`](../../src/services/rendering/Inno.Rendering.Shaders/Sources/IShaderSourceFrontend.cs#L79) | Resolves and reads an include without bypassing asset mount permissions. |
 
 ### `Inno.Rendering.Shaders.ShaderBinaryNodeCompiler`
 
 | 当前声明 | 行为 |
 | --- | --- |
-| [`System.Collections.Generic.IReadOnlyList<Inno.Rendering.Shaders.ShaderNodePort> Inno.Rendering.Shaders.ShaderBinaryNodeCompiler.GetPorts(Inno.Rendering.Shaders.ShaderNodeDescriptionContext context)`](../../src/services/rendering/Inno.Rendering.Shaders/Compilation/ShaderBuiltinNodeCompilers.cs#L70) | Gets a ports required by the implemented contract. |
-| [`System.Collections.Generic.IReadOnlyDictionary<string, Inno.Rendering.Shaders.ShaderIrValue> Inno.Rendering.Shaders.ShaderBinaryNodeCompiler.Lower(Inno.Rendering.Shaders.ShaderNodeLoweringContext context)`](../../src/services/rendering/Inno.Rendering.Shaders/Compilation/ShaderBuiltinNodeCompilers.cs#L86) | Lowers this graph node to typed shader IR after validating its inputs. |
-| [`string Inno.Rendering.Shaders.ShaderBinaryNodeCompiler.definitionId`](../../src/services/rendering/Inno.Rendering.Shaders/Compilation/ShaderBuiltinNodeCompilers.cs#L60) | Gets the definition id text used by the current instance. |
 | [`Inno.Rendering.Shaders.ShaderBinaryNodeCompiler`](../../src/services/rendering/Inno.Rendering.Shaders/Compilation/ShaderBuiltinNodeCompilers.cs#L55) | Lowers an explicit arithmetic/comparison operation; operation IDs are node configuration, not backend code. |
+| [`System.Collections.Generic.IReadOnlyDictionary<string, Inno.Rendering.Shaders.ShaderIrValue> Inno.Rendering.Shaders.ShaderBinaryNodeCompiler.Lower(Inno.Rendering.Shaders.ShaderNodeLoweringContext context)`](../../src/services/rendering/Inno.Rendering.Shaders/Compilation/ShaderBuiltinNodeCompilers.cs#L86) | Lowers this graph node to typed shader IR after validating its inputs. |
+| [`System.Collections.Generic.IReadOnlyList<Inno.Rendering.Shaders.ShaderNodePort> Inno.Rendering.Shaders.ShaderBinaryNodeCompiler.GetPorts(Inno.Rendering.Shaders.ShaderNodeDescriptionContext context)`](../../src/services/rendering/Inno.Rendering.Shaders/Compilation/ShaderBuiltinNodeCompilers.cs#L70) | Gets a ports required by the implemented contract. |
+| [`string Inno.Rendering.Shaders.ShaderBinaryNodeCompiler.definitionId`](../../src/services/rendering/Inno.Rendering.Shaders/Compilation/ShaderBuiltinNodeCompilers.cs#L60) | Gets the definition id text used by the current instance. |
 
 ### `Inno.Rendering.Shaders.ShaderConstantNodeCompiler`
 
 | 当前声明 | 行为 |
 | --- | --- |
-| [`System.Collections.Generic.IReadOnlyList<Inno.Rendering.Shaders.ShaderNodePort> Inno.Rendering.Shaders.ShaderConstantNodeCompiler.GetPorts(Inno.Rendering.Shaders.ShaderNodeDescriptionContext context)`](../../src/services/rendering/Inno.Rendering.Shaders/Compilation/ShaderBuiltinNodeCompilers.cs#L26) | Gets a ports required by the implemented contract. |
-| [`System.Collections.Generic.IReadOnlyDictionary<string, Inno.Rendering.Shaders.ShaderIrValue> Inno.Rendering.Shaders.ShaderConstantNodeCompiler.Lower(Inno.Rendering.Shaders.ShaderNodeLoweringContext context)`](../../src/services/rendering/Inno.Rendering.Shaders/Compilation/ShaderBuiltinNodeCompilers.cs#L37) | Lowers this graph node to typed shader IR after validating its inputs. |
-| [`string Inno.Rendering.Shaders.ShaderConstantNodeCompiler.definitionId`](../../src/services/rendering/Inno.Rendering.Shaders/Compilation/ShaderBuiltinNodeCompilers.cs#L16) | Gets the definition id text used by the current instance. |
 | [`Inno.Rendering.Shaders.ShaderConstantNodeCompiler`](../../src/services/rendering/Inno.Rendering.Shaders/Compilation/ShaderBuiltinNodeCompilers.cs#L11) | Lowers an exact scalar constant; its type/value are native graph properties. |
+| [`System.Collections.Generic.IReadOnlyDictionary<string, Inno.Rendering.Shaders.ShaderIrValue> Inno.Rendering.Shaders.ShaderConstantNodeCompiler.Lower(Inno.Rendering.Shaders.ShaderNodeLoweringContext context)`](../../src/services/rendering/Inno.Rendering.Shaders/Compilation/ShaderBuiltinNodeCompilers.cs#L37) | Lowers this graph node to typed shader IR after validating its inputs. |
+| [`System.Collections.Generic.IReadOnlyList<Inno.Rendering.Shaders.ShaderNodePort> Inno.Rendering.Shaders.ShaderConstantNodeCompiler.GetPorts(Inno.Rendering.Shaders.ShaderNodeDescriptionContext context)`](../../src/services/rendering/Inno.Rendering.Shaders/Compilation/ShaderBuiltinNodeCompilers.cs#L26) | Gets a ports required by the implemented contract. |
+| [`string Inno.Rendering.Shaders.ShaderConstantNodeCompiler.definitionId`](../../src/services/rendering/Inno.Rendering.Shaders/Compilation/ShaderBuiltinNodeCompilers.cs#L16) | Gets the definition id text used by the current instance. |
 
 ### `Inno.Rendering.Shaders.ShaderConstructNodeCompiler`
 
 | 当前声明 | 行为 |
 | --- | --- |
-| [`System.Collections.Generic.IReadOnlyList<Inno.Rendering.Shaders.ShaderNodePort> Inno.Rendering.Shaders.ShaderConstructNodeCompiler.GetPorts(Inno.Rendering.Shaders.ShaderNodeDescriptionContext context)`](../../src/services/rendering/Inno.Rendering.Shaders/Compilation/ShaderBuiltinNodeCompilers.cs#L118) | Gets a ports required by the implemented contract. |
-| [`System.Collections.Generic.IReadOnlyDictionary<string, Inno.Rendering.Shaders.ShaderIrValue> Inno.Rendering.Shaders.ShaderConstructNodeCompiler.Lower(Inno.Rendering.Shaders.ShaderNodeLoweringContext context)`](../../src/services/rendering/Inno.Rendering.Shaders/Compilation/ShaderBuiltinNodeCompilers.cs#L133) | Lowers this graph node to typed shader IR after validating its inputs. |
-| [`string Inno.Rendering.Shaders.ShaderConstructNodeCompiler.definitionId`](../../src/services/rendering/Inno.Rendering.Shaders/Compilation/ShaderBuiltinNodeCompilers.cs#L108) | Gets the definition id text used by the current instance. |
 | [`Inno.Rendering.Shaders.ShaderConstructNodeCompiler`](../../src/services/rendering/Inno.Rendering.Shaders/Compilation/ShaderBuiltinNodeCompilers.cs#L103) | Constructs a vector or column-major matrix from individually connected scalar components. |
+| [`System.Collections.Generic.IReadOnlyDictionary<string, Inno.Rendering.Shaders.ShaderIrValue> Inno.Rendering.Shaders.ShaderConstructNodeCompiler.Lower(Inno.Rendering.Shaders.ShaderNodeLoweringContext context)`](../../src/services/rendering/Inno.Rendering.Shaders/Compilation/ShaderBuiltinNodeCompilers.cs#L133) | Lowers this graph node to typed shader IR after validating its inputs. |
+| [`System.Collections.Generic.IReadOnlyList<Inno.Rendering.Shaders.ShaderNodePort> Inno.Rendering.Shaders.ShaderConstructNodeCompiler.GetPorts(Inno.Rendering.Shaders.ShaderNodeDescriptionContext context)`](../../src/services/rendering/Inno.Rendering.Shaders/Compilation/ShaderBuiltinNodeCompilers.cs#L118) | Gets a ports required by the implemented contract. |
+| [`string Inno.Rendering.Shaders.ShaderConstructNodeCompiler.definitionId`](../../src/services/rendering/Inno.Rendering.Shaders/Compilation/ShaderBuiltinNodeCompilers.cs#L108) | Gets the definition id text used by the current instance. |
 
 ### `Inno.Rendering.Shaders.ShaderExtractNodeCompiler`
 
 | 当前声明 | 行为 |
 | --- | --- |
-| [`System.Collections.Generic.IReadOnlyList<Inno.Rendering.Shaders.ShaderNodePort> Inno.Rendering.Shaders.ShaderExtractNodeCompiler.GetPorts(Inno.Rendering.Shaders.ShaderNodeDescriptionContext context)`](../../src/services/rendering/Inno.Rendering.Shaders/Compilation/ShaderValueNodeCompilers.cs#L25) | Gets a ports required by the implemented contract. |
-| [`System.Collections.Generic.IReadOnlyDictionary<string, Inno.Rendering.Shaders.ShaderIrValue> Inno.Rendering.Shaders.ShaderExtractNodeCompiler.Lower(Inno.Rendering.Shaders.ShaderNodeLoweringContext context)`](../../src/services/rendering/Inno.Rendering.Shaders/Compilation/ShaderValueNodeCompilers.cs#L41) | Lowers this graph node to typed shader IR after validating its inputs. |
-| [`string Inno.Rendering.Shaders.ShaderExtractNodeCompiler.definitionId`](../../src/services/rendering/Inno.Rendering.Shaders/Compilation/ShaderValueNodeCompilers.cs#L15) | Gets the definition id text used by the current instance. |
 | [`Inno.Rendering.Shaders.ShaderExtractNodeCompiler`](../../src/services/rendering/Inno.Rendering.Shaders/Compilation/ShaderValueNodeCompilers.cs#L10) | Extracts one statically selected component from a vector or matrix. |
+| [`System.Collections.Generic.IReadOnlyDictionary<string, Inno.Rendering.Shaders.ShaderIrValue> Inno.Rendering.Shaders.ShaderExtractNodeCompiler.Lower(Inno.Rendering.Shaders.ShaderNodeLoweringContext context)`](../../src/services/rendering/Inno.Rendering.Shaders/Compilation/ShaderValueNodeCompilers.cs#L41) | Lowers this graph node to typed shader IR after validating its inputs. |
+| [`System.Collections.Generic.IReadOnlyList<Inno.Rendering.Shaders.ShaderNodePort> Inno.Rendering.Shaders.ShaderExtractNodeCompiler.GetPorts(Inno.Rendering.Shaders.ShaderNodeDescriptionContext context)`](../../src/services/rendering/Inno.Rendering.Shaders/Compilation/ShaderValueNodeCompilers.cs#L25) | Gets a ports required by the implemented contract. |
+| [`string Inno.Rendering.Shaders.ShaderExtractNodeCompiler.definitionId`](../../src/services/rendering/Inno.Rendering.Shaders/Compilation/ShaderValueNodeCompilers.cs#L15) | Gets the definition id text used by the current instance. |
 
 ### `Inno.Rendering.Shaders.ShaderGraphBindings`
 
 | 当前声明 | 行为 |
 | --- | --- |
+| [`Inno.Rendering.Shaders.ShaderGraphBindings`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphBindings.cs#L13) | Keeps graph input edits and the material-visible parameter contract in one neutral document change. |
 | [`static Inno.Core.Graphs.GraphDocument Inno.Rendering.Shaders.ShaderGraphBindings.ChangeInput(Inno.Core.Graphs.GraphDocument graph, Inno.Core.Graphs.GraphNodeId nodeId, Inno.Rendering.Shaders.ShaderGraphInputSettings settings, Inno.Core.Serialization.SerializationRegistry serialization, Inno.Core.Serialization.SerializationContext context)`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphBindings.cs#L135) | Creates a detached candidate with the input and its material/resource declaration updated together. |
 | [`static Inno.Core.Graphs.GraphDocument Inno.Rendering.Shaders.ShaderGraphBindings.RemoveNodes(Inno.Core.Graphs.GraphDocument graph, System.Collections.Generic.IEnumerable<Inno.Core.Graphs.GraphNodeId> nodeIds, Inno.Core.Serialization.SerializationRegistry serialization, Inno.Core.Serialization.SerializationContext context)`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphBindings.cs#L36) | Removes selected nodes, stage-owned nodes and declarations which lose their last graph owner. |
-| [`Inno.Rendering.Shaders.ShaderGraphBindings`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphBindings.cs#L13) | Keeps graph input edits and the material-visible parameter contract in one neutral document change. |
 
 ### `Inno.Rendering.Shaders.ShaderGraphCallNodeCompiler`
 
 | 当前声明 | 行为 |
 | --- | --- |
-| [`System.Collections.Generic.IReadOnlyList<Inno.Rendering.Shaders.ShaderNodePort> Inno.Rendering.Shaders.ShaderGraphCallNodeCompiler.GetPorts(Inno.Rendering.Shaders.ShaderNodeDescriptionContext context)`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphNodes.cs#L616) | Gets a ports required by the implemented contract. |
-| [`System.Collections.Generic.IReadOnlyDictionary<string, Inno.Rendering.Shaders.ShaderIrValue> Inno.Rendering.Shaders.ShaderGraphCallNodeCompiler.Lower(Inno.Rendering.Shaders.ShaderNodeLoweringContext context)`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphNodes.cs#L627) | Lowers this graph node to typed shader IR after validating its inputs. |
-| [`string Inno.Rendering.Shaders.ShaderGraphCallNodeCompiler.definitionId`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphNodes.cs#L606) | Gets the definition id text used by the current instance. |
 | [`Inno.Rendering.Shaders.ShaderGraphCallNodeCompiler`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphNodes.cs#L601) | Describes graph-authored node references before they are expanded or consumed by a Target. |
+| [`System.Collections.Generic.IReadOnlyDictionary<string, Inno.Rendering.Shaders.ShaderIrValue> Inno.Rendering.Shaders.ShaderGraphCallNodeCompiler.Lower(Inno.Rendering.Shaders.ShaderNodeLoweringContext context)`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphNodes.cs#L627) | Lowers this graph node to typed shader IR after validating its inputs. |
+| [`System.Collections.Generic.IReadOnlyList<Inno.Rendering.Shaders.ShaderNodePort> Inno.Rendering.Shaders.ShaderGraphCallNodeCompiler.GetPorts(Inno.Rendering.Shaders.ShaderNodeDescriptionContext context)`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphNodes.cs#L616) | Gets a ports required by the implemented contract. |
+| [`string Inno.Rendering.Shaders.ShaderGraphCallNodeCompiler.definitionId`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphNodes.cs#L606) | Gets the definition id text used by the current instance. |
 
 ### `Inno.Rendering.Shaders.ShaderGraphClipboard`
 
 | 当前声明 | 行为 |
 | --- | --- |
+| [`Inno.Rendering.Shaders.ShaderGraphClipboard`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphClipboard.cs#L13) | Copies and pastes shader structures as detached atomic candidates, including their parameter and Pass contracts. |
 | [`static Inno.Core.Graphs.GraphDocument Inno.Rendering.Shaders.ShaderGraphClipboard.Copy(Inno.Core.Graphs.GraphDocument graph, System.Collections.Generic.IEnumerable<Inno.Core.Graphs.GraphNodeId> nodes, Inno.Core.Serialization.SerializationRegistry serialization, Inno.Core.Serialization.SerializationContext context)`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphClipboard.cs#L33) | Captures selected nodes and the owned contents of selected stage outputs. |
 | [`static Inno.Rendering.Shaders.ShaderGraphPasteResult Inno.Rendering.Shaders.ShaderGraphClipboard.Paste(Inno.Core.Graphs.GraphDocument graph, Inno.Core.Graphs.GraphDocument fragment, bool preserveExternalStageReferences, Inno.Core.Graphs.GraphNodeId? activeStage, Inno.Core.Serialization.SerializationRegistry serialization, Inno.Core.Serialization.SerializationContext context)`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphClipboard.cs#L73) | Creates a detached paste candidate with new node identities and remapped program, Pass and Technique references. |
-| [`Inno.Rendering.Shaders.ShaderGraphClipboard`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphClipboard.cs#L13) | Copies and pastes shader structures as detached atomic candidates, including their parameter and Pass contracts. |
 
 ### `Inno.Rendering.Shaders.ShaderGraphDiagnostic`
 
@@ -394,6 +394,7 @@ static ShaderIrBlock BuildBrightness()
 
 | 当前声明 | 行为 |
 | --- | --- |
+| [`Inno.Rendering.Shaders.ShaderGraphDocument`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphDocument.cs#L11) | Defines the native graph document protocol shared by shader import, templates and the editor. |
 | [`const string Inno.Rendering.Shaders.ShaderGraphDocument.definitionKey`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphDocument.cs#L16) | Identifies the graph metadata containing the source-free material and pass contract. |
 | [`const string Inno.Rendering.Shaders.ShaderGraphDocument.inputDefaultPrefix`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphDocument.cs#L86) | Prefixes stable port IDs storing explicit typed defaults for unconnected inputs. |
 | [`const string Inno.Rendering.Shaders.ShaderGraphDocument.outputDefinitionId`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphDocument.cs#L74) | Identifies a stage output node; its incoming edges name the stage's GPU outputs. |
@@ -401,246 +402,245 @@ static ShaderIrBlock BuildBrightness()
 | [`const string Inno.Rendering.Shaders.ShaderGraphDocument.stageKey`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphDocument.cs#L78) | Identifies a node property containing its owning stage output node identity. |
 | [`const string Inno.Rendering.Shaders.ShaderGraphDocument.targetKey`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphDocument.cs#L20) | Identifies the optional domain target; absent means explicitly authored generic stages. |
 | [`static Inno.Core.Graphs.GraphDocument Inno.Rendering.Shaders.ShaderGraphDocument.Create(Inno.Rendering.Assets.ShaderDefinition definition, Inno.Core.Serialization.SerializationRegistry serialization, Inno.Core.Serialization.SerializationContext context)`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphDocument.cs#L103) | Creates an empty graph with a source-free shader contract; incomplete graphs remain serializable. |
-| [`static T Inno.Rendering.Shaders.ShaderGraphDocument.Decode<T>(Inno.Core.Graphs.GraphSerializedValue value, Inno.Core.Serialization.SerializationRegistry serialization, Inno.Core.Serialization.SerializationContext context)`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphDocument.cs#L187) | Decodes a graph value against the current owner generation. |
 | [`static Inno.Core.Graphs.GraphSerializedValue Inno.Rendering.Shaders.ShaderGraphDocument.Encode<T>(T value, Inno.Core.Serialization.SerializationRegistry serialization, Inno.Core.Serialization.SerializationContext context)`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphDocument.cs#L159) | Encodes a node or document value through the common native serialization channel. |
 | [`static Inno.Rendering.Assets.ShaderDefinition Inno.Rendering.Shaders.ShaderGraphDocument.ReadDefinition(Inno.Core.Graphs.GraphDocument graph, Inno.Core.Serialization.SerializationRegistry serialization, Inno.Core.Serialization.SerializationContext context)`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphDocument.cs#L130) | Reads the material and pass contract without evaluating or altering the graph. |
-| [`static string Inno.Rendering.Shaders.ShaderGraphDocument.ReadTarget(Inno.Core.Graphs.GraphDocument graph, Inno.Core.Serialization.SerializationRegistry serialization, Inno.Core.Serialization.SerializationContext context)`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphDocument.cs#L37) | Reads the stable domain target assignment without resolving extension instances. |
+| [`static T Inno.Rendering.Shaders.ShaderGraphDocument.Decode<T>(Inno.Core.Graphs.GraphSerializedValue value, Inno.Core.Serialization.SerializationRegistry serialization, Inno.Core.Serialization.SerializationContext context)`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphDocument.cs#L187) | Decodes a graph value against the current owner generation. |
 | [`static T Inno.Rendering.Shaders.ShaderGraphDocument.Read<T>(Inno.Core.Graphs.GraphNodeRecord node, string key, T defaultValue, Inno.Core.Serialization.SerializationRegistry serialization, Inno.Core.Serialization.SerializationContext context)`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphDocument.cs#L222) | Reads a named node value; absent values use the declared default, corrupt values never do. |
+| [`static string Inno.Rendering.Shaders.ShaderGraphDocument.ReadTarget(Inno.Core.Graphs.GraphDocument graph, Inno.Core.Serialization.SerializationRegistry serialization, Inno.Core.Serialization.SerializationContext context)`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphDocument.cs#L37) | Reads the stable domain target assignment without resolving extension instances. |
 | [`static void Inno.Rendering.Shaders.ShaderGraphDocument.SetTarget(Inno.Core.Graphs.GraphDocument graph, string targetId, Inno.Core.Serialization.SerializationRegistry serialization, Inno.Core.Serialization.SerializationContext context)`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphDocument.cs#L59) | Assigns a domain target by stable identity without retaining its current provider. |
-| [`Inno.Rendering.Shaders.ShaderGraphDocument`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphDocument.cs#L11) | Defines the native graph document protocol shared by shader import, templates and the editor. |
 
 ### `Inno.Rendering.Shaders.ShaderGraphInputSettings`
 
 | 当前声明 | 行为 |
 | --- | --- |
-| [`Inno.Rendering.Shaders.ShaderIrStageInput Inno.Rendering.Shaders.ShaderGraphInputSettings.CreateBinding()`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphDocument.cs#L314) | Validates the persisted descriptor and freezes its stage binding. |
-| [`string Inno.Rendering.Shaders.ShaderGraphInputSettings.id`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphDocument.cs#L290) | Gets or sets the stable logical binding identity. |
-| [`Inno.Rendering.Shaders.ShaderIrInputKind Inno.Rendering.Shaders.ShaderGraphInputSettings.kind`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphDocument.cs#L298) | Gets or sets the stage input category. |
-| [`int Inno.Rendering.Shaders.ShaderGraphInputSettings.location`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphDocument.cs#L306) | Gets or sets the interface index. |
-| [`string Inno.Rendering.Shaders.ShaderGraphInputSettings.semantic`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphDocument.cs#L302) | Gets or sets the target semantic, not a native expression. |
-| [`Inno.Rendering.Shaders.ShaderGraphType Inno.Rendering.Shaders.ShaderGraphInputSettings.type`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphDocument.cs#L294) | Gets or sets the complete neutral type descriptor. |
 | [`Inno.Rendering.Shaders.ShaderGraphInputSettings`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphDocument.cs#L285) | Stores a stage input node's logical interface without native names or GPU handles. |
+| [`Inno.Rendering.Shaders.ShaderGraphType Inno.Rendering.Shaders.ShaderGraphInputSettings.type`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphDocument.cs#L294) | Gets or sets the complete neutral type descriptor. |
+| [`Inno.Rendering.Shaders.ShaderIrInputKind Inno.Rendering.Shaders.ShaderGraphInputSettings.kind`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphDocument.cs#L298) | Gets or sets the stage input category. |
+| [`Inno.Rendering.Shaders.ShaderIrStageInput Inno.Rendering.Shaders.ShaderGraphInputSettings.CreateBinding()`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphDocument.cs#L314) | Validates the persisted descriptor and freezes its stage binding. |
+| [`int Inno.Rendering.Shaders.ShaderGraphInputSettings.location`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphDocument.cs#L306) | Gets or sets the interface index. |
+| [`string Inno.Rendering.Shaders.ShaderGraphInputSettings.id`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphDocument.cs#L290) | Gets or sets the stable logical binding identity. |
+| [`string Inno.Rendering.Shaders.ShaderGraphInputSettings.semantic`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphDocument.cs#L302) | Gets or sets the target semantic, not a native expression. |
 
 ### `Inno.Rendering.Shaders.ShaderGraphLiteral`
 
 | 当前声明 | 行为 |
 | --- | --- |
+| [`Inno.Rendering.Shaders.ShaderGraphLiteral`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphLiteral.cs#L10) | Stores an exact typed value for an unconnected node input, independently of source-language syntax. |
+| [`Inno.Rendering.Shaders.ShaderGraphType Inno.Rendering.Shaders.ShaderGraphLiteral.type`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphLiteral.cs#L15) | Gets or sets the complete value type, including named aggregates and fixed arrays. |
 | [`Inno.Rendering.Shaders.ShaderIrValue Inno.Rendering.Shaders.ShaderGraphLiteral.Emit(Inno.Rendering.Shaders.ShaderIrBuilder builder, Inno.Rendering.Shaders.ShaderSourceType expectedType)`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphLiteral.cs#L76) | Emits ordinary typed constants and aggregate construction into the common IR. |
 | [`System.Collections.Generic.IReadOnlyList<string> Inno.Rendering.Shaders.ShaderGraphLiteral.GetScalarTypes()`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphLiteral.cs#L47) | Gets the exact scalar type of each stored component for shared Inspector value controls. |
 | [`static Inno.Rendering.Shaders.ShaderGraphLiteral Inno.Rendering.Shaders.ShaderGraphLiteral.Zero(Inno.Rendering.Shaders.ShaderSourceType type)`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphLiteral.cs#L33) | Creates an explicit zero value for a supported scalar, vector, matrix, structure or array. |
 | [`uint[] Inno.Rendering.Shaders.ShaderGraphLiteral.scalarBits`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphLiteral.cs#L19) | Gets or sets scalar bit patterns in declaration order; matrices use column-major order. |
-| [`Inno.Rendering.Shaders.ShaderGraphType Inno.Rendering.Shaders.ShaderGraphLiteral.type`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphLiteral.cs#L15) | Gets or sets the complete value type, including named aggregates and fixed arrays. |
-| [`Inno.Rendering.Shaders.ShaderGraphLiteral`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphLiteral.cs#L10) | Stores an exact typed value for an unconnected node input, independently of source-language syntax. |
 
 ### `Inno.Rendering.Shaders.ShaderGraphLoweringRequest`
 
 | 当前声明 | 行为 |
 | --- | --- |
-| [`Inno.Rendering.Shaders.ShaderGraphLoweringRequest.ShaderGraphLoweringRequest(Inno.Core.Graphs.GraphDocument graph, System.Collections.Generic.IReadOnlyDictionary<string, Inno.Core.Graphs.GraphEndpoint> outputs, string implementationId, System.Collections.Generic.IReadOnlyDictionary<Inno.Core.Graphs.GraphNodeId, Inno.Rendering.Shaders.ShaderSourceModuleAnalysis>? sourceModules = null, System.Collections.Generic.IReadOnlyDictionary<Inno.Core.Graphs.GraphNodeId, Inno.Rendering.Shaders.ShaderIrStageInput>? stageInputs = null)`](../../src/services/rendering/Inno.Rendering.Shaders/Compilation/ShaderGraphLoweringRequest.cs#L35) | Captures a region without retaining an asset object, source resolver, node provider or UI selection. |
-| [`string Inno.Rendering.Shaders.ShaderGraphLoweringRequest.implementationId`](../../src/services/rendering/Inno.Rendering.Shaders/Compilation/ShaderGraphLoweringRequest.cs#L61) | Gets the exact implementation key selected by the target. |
-| [`System.Collections.Generic.IReadOnlyDictionary<string, Inno.Core.Graphs.GraphEndpoint> Inno.Rendering.Shaders.ShaderGraphLoweringRequest.outputs`](../../src/services/rendering/Inno.Rendering.Shaders/Compilation/ShaderGraphLoweringRequest.cs#L57) | Gets named region outputs by stable graph endpoint. |
-| [`System.Collections.Generic.IReadOnlyDictionary<Inno.Core.Graphs.GraphNodeId, Inno.Rendering.Shaders.ShaderSourceModuleAnalysis> Inno.Rendering.Shaders.ShaderGraphLoweringRequest.sourceModules`](../../src/services/rendering/Inno.Rendering.Shaders/Compilation/ShaderGraphLoweringRequest.cs#L65) | Gets frozen source modules, including unavailable/failed modules for accurate diagnostics. |
-| [`System.Collections.Generic.IReadOnlyDictionary<Inno.Core.Graphs.GraphNodeId, Inno.Rendering.Shaders.ShaderIrStageInput> Inno.Rendering.Shaders.ShaderGraphLoweringRequest.stageInputs`](../../src/services/rendering/Inno.Rendering.Shaders/Compilation/ShaderGraphLoweringRequest.cs#L69) | Gets target-assigned input descriptors; they contain no native expressions. |
 | [`Inno.Rendering.Shaders.ShaderGraphLoweringRequest`](../../src/services/rendering/Inno.Rendering.Shaders/Compilation/ShaderGraphLoweringRequest.cs#L13) | Freezes one target-selected graph region and its externally resolved, neutral compilation inputs. |
+| [`Inno.Rendering.Shaders.ShaderGraphLoweringRequest.ShaderGraphLoweringRequest(Inno.Core.Graphs.GraphDocument graph, System.Collections.Generic.IReadOnlyDictionary<string, Inno.Core.Graphs.GraphEndpoint> outputs, string implementationId, System.Collections.Generic.IReadOnlyDictionary<Inno.Core.Graphs.GraphNodeId, Inno.Rendering.Shaders.ShaderSourceModuleAnalysis>? sourceModules = null, System.Collections.Generic.IReadOnlyDictionary<Inno.Core.Graphs.GraphNodeId, Inno.Rendering.Shaders.ShaderIrStageInput>? stageInputs = null)`](../../src/services/rendering/Inno.Rendering.Shaders/Compilation/ShaderGraphLoweringRequest.cs#L35) | Captures a region without retaining an asset object, source resolver, node provider or UI selection. |
+| [`System.Collections.Generic.IReadOnlyDictionary<Inno.Core.Graphs.GraphNodeId, Inno.Rendering.Shaders.ShaderIrStageInput> Inno.Rendering.Shaders.ShaderGraphLoweringRequest.stageInputs`](../../src/services/rendering/Inno.Rendering.Shaders/Compilation/ShaderGraphLoweringRequest.cs#L69) | Gets target-assigned input descriptors; they contain no native expressions. |
+| [`System.Collections.Generic.IReadOnlyDictionary<Inno.Core.Graphs.GraphNodeId, Inno.Rendering.Shaders.ShaderSourceModuleAnalysis> Inno.Rendering.Shaders.ShaderGraphLoweringRequest.sourceModules`](../../src/services/rendering/Inno.Rendering.Shaders/Compilation/ShaderGraphLoweringRequest.cs#L65) | Gets frozen source modules, including unavailable/failed modules for accurate diagnostics. |
+| [`System.Collections.Generic.IReadOnlyDictionary<string, Inno.Core.Graphs.GraphEndpoint> Inno.Rendering.Shaders.ShaderGraphLoweringRequest.outputs`](../../src/services/rendering/Inno.Rendering.Shaders/Compilation/ShaderGraphLoweringRequest.cs#L57) | Gets named region outputs by stable graph endpoint. |
+| [`string Inno.Rendering.Shaders.ShaderGraphLoweringRequest.implementationId`](../../src/services/rendering/Inno.Rendering.Shaders/Compilation/ShaderGraphLoweringRequest.cs#L61) | Gets the exact implementation key selected by the target. |
 
 ### `Inno.Rendering.Shaders.ShaderGraphLoweringResult`
 
 | 当前声明 | 行为 |
 | --- | --- |
+| [`Inno.Rendering.Shaders.ShaderGraphLoweringResult`](../../src/services/rendering/Inno.Rendering.Shaders/Compilation/ShaderGraphLoweringRequest.cs#L101) | Contains a detached typed region only after all graph, port and node lowering validation succeeds. |
 | [`Inno.Rendering.Shaders.ShaderIrBlock? Inno.Rendering.Shaders.ShaderGraphLoweringResult.block`](../../src/services/rendering/Inno.Rendering.Shaders/Compilation/ShaderGraphLoweringRequest.cs#L113) | Gets the immutable typed region, or null on failure. |
 | [`System.Collections.Generic.IReadOnlyList<Inno.Rendering.Shaders.ShaderGraphDiagnostic> Inno.Rendering.Shaders.ShaderGraphLoweringResult.diagnostics`](../../src/services/rendering/Inno.Rendering.Shaders/Compilation/ShaderGraphLoweringRequest.cs#L117) | Gets located graph diagnostics, including missing definitions and stale source ports. |
 | [`bool Inno.Rendering.Shaders.ShaderGraphLoweringResult.succeeded`](../../src/services/rendering/Inno.Rendering.Shaders/Compilation/ShaderGraphLoweringRequest.cs#L121) | Gets whether lowering produced a complete region without errors; native compilation is a separate gate. |
-| [`Inno.Rendering.Shaders.ShaderGraphLoweringResult`](../../src/services/rendering/Inno.Rendering.Shaders/Compilation/ShaderGraphLoweringRequest.cs#L101) | Contains a detached typed region only after all graph, port and node lowering validation succeeds. |
 
 ### `Inno.Rendering.Shaders.ShaderGraphNodeEffect`
 
 | 当前声明 | 行为 |
 | --- | --- |
+| [`Inno.Rendering.Shaders.ShaderGraphNodeEffect`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphNodes.cs#L28) | Declares whether a graph-authored function is pure or intentionally emits ordered effects. |
 | [`Inno.Rendering.Shaders.ShaderGraphNodeEffect.Pure`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphNodes.cs#L33) | The function only computes returned values and therefore requires at least one output. |
 | [`Inno.Rendering.Shaders.ShaderGraphNodeEffect.SideEffect`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphNodes.cs#L37) | The function may contain ordered GPU effects and can intentionally expose no returned values. |
-| [`Inno.Rendering.Shaders.ShaderGraphNodeEffect`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphNodes.cs#L28) | Declares whether a graph-authored function is pure or intentionally emits ordered effects. |
 
 ### `Inno.Rendering.Shaders.ShaderGraphNodeInputSettings`
 
 | 当前声明 | 行为 |
 | --- | --- |
-| [`Inno.Rendering.Shaders.ShaderGraphNodePortDefinition[] Inno.Rendering.Shaders.ShaderGraphNodeInputSettings.ports`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphNodes.cs#L101) | Gets or sets values supplied by callers and exposed as outputs inside the node graph. |
 | [`Inno.Rendering.Shaders.ShaderGraphNodeInputSettings`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphNodes.cs#L96) | Stores values supplied by callers to a graph-authored node. |
+| [`Inno.Rendering.Shaders.ShaderGraphNodePortDefinition[] Inno.Rendering.Shaders.ShaderGraphNodeInputSettings.ports`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphNodes.cs#L101) | Gets or sets values supplied by callers and exposed as outputs inside the node graph. |
 
 ### `Inno.Rendering.Shaders.ShaderGraphNodeInputsCompiler`
 
 | 当前声明 | 行为 |
 | --- | --- |
-| [`System.Collections.Generic.IReadOnlyList<Inno.Rendering.Shaders.ShaderNodePort> Inno.Rendering.Shaders.ShaderGraphNodeInputsCompiler.GetPorts(Inno.Rendering.Shaders.ShaderNodeDescriptionContext context)`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphNodes.cs#L649) | Gets a ports required by the implemented contract. |
-| [`System.Collections.Generic.IReadOnlyDictionary<string, Inno.Rendering.Shaders.ShaderIrValue> Inno.Rendering.Shaders.ShaderGraphNodeInputsCompiler.Lower(Inno.Rendering.Shaders.ShaderNodeLoweringContext context)`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphNodes.cs#L661) | Lowers this graph node to typed shader IR after validating its inputs. |
-| [`string Inno.Rendering.Shaders.ShaderGraphNodeInputsCompiler.definitionId`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphNodes.cs#L639) | Gets the definition id text used by the current instance. |
 | [`Inno.Rendering.Shaders.ShaderGraphNodeInputsCompiler`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphNodes.cs#L634) | Describes the multi-port external inputs while editing a graph-authored node asset. |
+| [`System.Collections.Generic.IReadOnlyDictionary<string, Inno.Rendering.Shaders.ShaderIrValue> Inno.Rendering.Shaders.ShaderGraphNodeInputsCompiler.Lower(Inno.Rendering.Shaders.ShaderNodeLoweringContext context)`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphNodes.cs#L661) | Lowers this graph node to typed shader IR after validating its inputs. |
+| [`System.Collections.Generic.IReadOnlyList<Inno.Rendering.Shaders.ShaderNodePort> Inno.Rendering.Shaders.ShaderGraphNodeInputsCompiler.GetPorts(Inno.Rendering.Shaders.ShaderNodeDescriptionContext context)`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphNodes.cs#L649) | Gets a ports required by the implemented contract. |
+| [`string Inno.Rendering.Shaders.ShaderGraphNodeInputsCompiler.definitionId`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphNodes.cs#L639) | Gets the definition id text used by the current instance. |
 
 ### `Inno.Rendering.Shaders.ShaderGraphNodeInterface`
 
 | 当前声明 | 行为 |
 | --- | --- |
+| [`Inno.Rendering.Shaders.ShaderGraphNodeEffect Inno.Rendering.Shaders.ShaderGraphNodeInterface.effect`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphNodes.cs#L139) | Gets or sets whether an inline function is pure or intentionally emits ordered effects. |
+| [`Inno.Rendering.Shaders.ShaderGraphNodeInterface`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphNodes.cs#L118) | Freezes the complete public interface resolved from one graph-authored node asset. |
+| [`Inno.Rendering.Shaders.ShaderGraphNodeKind Inno.Rendering.Shaders.ShaderGraphNodeInterface.kind`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphNodes.cs#L135) | Gets or sets whether the graph is inline computation or a Target-owned output boundary. |
+| [`Inno.Rendering.Shaders.ShaderGraphNodePortDefinition[] Inno.Rendering.Shaders.ShaderGraphNodeInterface.inputs`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphNodes.cs#L147) | Gets or sets externally supplied inputs. |
+| [`Inno.Rendering.Shaders.ShaderGraphNodePortDefinition[] Inno.Rendering.Shaders.ShaderGraphNodeInterface.outputs`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphNodes.cs#L151) | Gets or sets externally visible results. |
 | [`System.Collections.Generic.IReadOnlyList<Inno.Rendering.Shaders.ShaderNodePort> Inno.Rendering.Shaders.ShaderGraphNodeInterface.GetPorts()`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphNodes.cs#L159) | Gets detached typed ports in deterministic input-then-output order. |
 | [`int Inno.Rendering.Shaders.ShaderGraphNodeInterface.createOrder`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphNodes.cs#L131) | Gets or sets the deterministic order within the creation catalog. |
 | [`string Inno.Rendering.Shaders.ShaderGraphNodeInterface.createPath`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphNodes.cs#L127) | Gets or sets the slash-separated creation catalog beneath Graph Nodes. |
 | [`string Inno.Rendering.Shaders.ShaderGraphNodeInterface.displayName`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphNodes.cs#L123) | Gets or sets the node title displayed to authors. |
-| [`Inno.Rendering.Shaders.ShaderGraphNodeEffect Inno.Rendering.Shaders.ShaderGraphNodeInterface.effect`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphNodes.cs#L139) | Gets or sets whether an inline function is pure or intentionally emits ordered effects. |
-| [`Inno.Rendering.Shaders.ShaderGraphNodePortDefinition[] Inno.Rendering.Shaders.ShaderGraphNodeInterface.inputs`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphNodes.cs#L147) | Gets or sets externally supplied inputs. |
-| [`Inno.Rendering.Shaders.ShaderGraphNodeKind Inno.Rendering.Shaders.ShaderGraphNodeInterface.kind`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphNodes.cs#L135) | Gets or sets whether the graph is inline computation or a Target-owned output boundary. |
-| [`Inno.Rendering.Shaders.ShaderGraphNodePortDefinition[] Inno.Rendering.Shaders.ShaderGraphNodeInterface.outputs`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphNodes.cs#L151) | Gets or sets externally visible results. |
 | [`string Inno.Rendering.Shaders.ShaderGraphNodeInterface.role`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphNodes.cs#L143) | Gets or sets the Target-owned role for a domain output. |
-| [`Inno.Rendering.Shaders.ShaderGraphNodeInterface`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphNodes.cs#L118) | Freezes the complete public interface resolved from one graph-authored node asset. |
 
 ### `Inno.Rendering.Shaders.ShaderGraphNodeKind`
 
 | 当前声明 | 行为 |
 | --- | --- |
+| [`Inno.Rendering.Shaders.ShaderGraphNodeKind`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphNodes.cs#L13) | Chooses whether a graph-authored node is inlined or consumed by a domain Target. |
 | [`Inno.Rendering.Shaders.ShaderGraphNodeKind.DomainOutput`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphNodes.cs#L22) | Leaves the node as a typed domain boundary for the selected Shader Target. |
 | [`Inno.Rendering.Shaders.ShaderGraphNodeKind.Function`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphNodes.cs#L18) | Inlines the node graph into the caller before Target expansion and typed lowering. |
-| [`Inno.Rendering.Shaders.ShaderGraphNodeKind`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphNodes.cs#L13) | Chooses whether a graph-authored node is inlined or consumed by a domain Target. |
 
 ### `Inno.Rendering.Shaders.ShaderGraphNodeOutputSettings`
 
 | 当前声明 | 行为 |
 | --- | --- |
-| [`Inno.Rendering.Shaders.ShaderGraphNodePortDefinition[] Inno.Rendering.Shaders.ShaderGraphNodeOutputSettings.ports`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphNodes.cs#L112) | Gets or sets values collected inside the node graph and exposed as outputs to callers. |
 | [`Inno.Rendering.Shaders.ShaderGraphNodeOutputSettings`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphNodes.cs#L107) | Stores values returned by a graph-authored function node. |
+| [`Inno.Rendering.Shaders.ShaderGraphNodePortDefinition[] Inno.Rendering.Shaders.ShaderGraphNodeOutputSettings.ports`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphNodes.cs#L112) | Gets or sets values collected inside the node graph and exposed as outputs to callers. |
 
 ### `Inno.Rendering.Shaders.ShaderGraphNodeOutputsCompiler`
 
 | 当前声明 | 行为 |
 | --- | --- |
-| [`System.Collections.Generic.IReadOnlyList<Inno.Rendering.Shaders.ShaderNodePort> Inno.Rendering.Shaders.ShaderGraphNodeOutputsCompiler.GetPorts(Inno.Rendering.Shaders.ShaderNodeDescriptionContext context)`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphNodes.cs#L683) | Gets a ports required by the implemented contract. |
-| [`System.Collections.Generic.IReadOnlyDictionary<string, Inno.Rendering.Shaders.ShaderIrValue> Inno.Rendering.Shaders.ShaderGraphNodeOutputsCompiler.Lower(Inno.Rendering.Shaders.ShaderNodeLoweringContext context)`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphNodes.cs#L695) | Lowers this graph node to typed shader IR after validating its inputs. |
-| [`string Inno.Rendering.Shaders.ShaderGraphNodeOutputsCompiler.definitionId`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphNodes.cs#L673) | Gets the definition id text used by the current instance. |
 | [`Inno.Rendering.Shaders.ShaderGraphNodeOutputsCompiler`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphNodes.cs#L668) | Describes the multi-port returned values while editing a graph-authored function node asset. |
+| [`System.Collections.Generic.IReadOnlyDictionary<string, Inno.Rendering.Shaders.ShaderIrValue> Inno.Rendering.Shaders.ShaderGraphNodeOutputsCompiler.Lower(Inno.Rendering.Shaders.ShaderNodeLoweringContext context)`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphNodes.cs#L695) | Lowers this graph node to typed shader IR after validating its inputs. |
+| [`System.Collections.Generic.IReadOnlyList<Inno.Rendering.Shaders.ShaderNodePort> Inno.Rendering.Shaders.ShaderGraphNodeOutputsCompiler.GetPorts(Inno.Rendering.Shaders.ShaderNodeDescriptionContext context)`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphNodes.cs#L683) | Gets a ports required by the implemented contract. |
+| [`string Inno.Rendering.Shaders.ShaderGraphNodeOutputsCompiler.definitionId`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphNodes.cs#L673) | Gets the definition id text used by the current instance. |
 
 ### `Inno.Rendering.Shaders.ShaderGraphNodePortDefinition`
 
 | 当前声明 | 行为 |
 | --- | --- |
-| [`string Inno.Rendering.Shaders.ShaderGraphNodePortDefinition.id`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphNodes.cs#L79) | Gets or sets the stable node-local port identity. |
-| [`bool Inno.Rendering.Shaders.ShaderGraphNodePortDefinition.required`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphNodes.cs#L87) | Gets or sets whether callers must connect the input instead of using an explicit/default zero. |
-| [`Inno.Rendering.Shaders.ShaderGraphType Inno.Rendering.Shaders.ShaderGraphNodePortDefinition.type`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphNodes.cs#L83) | Gets or sets the complete backend-neutral value type. |
 | [`Inno.Rendering.Shaders.ShaderGraphNodePortDefinition`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphNodes.cs#L74) | Declares one stable, typed port on a graph-authored node interface. |
+| [`Inno.Rendering.Shaders.ShaderGraphType Inno.Rendering.Shaders.ShaderGraphNodePortDefinition.type`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphNodes.cs#L83) | Gets or sets the complete backend-neutral value type. |
+| [`bool Inno.Rendering.Shaders.ShaderGraphNodePortDefinition.required`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphNodes.cs#L87) | Gets or sets whether callers must connect the input instead of using an explicit/default zero. |
+| [`string Inno.Rendering.Shaders.ShaderGraphNodePortDefinition.id`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphNodes.cs#L79) | Gets or sets the stable node-local port identity. |
 
 ### `Inno.Rendering.Shaders.ShaderGraphNodeSettings`
 
 | 当前声明 | 行为 |
 | --- | --- |
+| [`Inno.Rendering.Shaders.ShaderGraphNodeEffect Inno.Rendering.Shaders.ShaderGraphNodeSettings.effect`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphNodes.cs#L64) | Gets or sets the observable computation behavior of an inline function. |
+| [`Inno.Rendering.Shaders.ShaderGraphNodeKind Inno.Rendering.Shaders.ShaderGraphNodeSettings.kind`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphNodes.cs#L60) | Gets or sets how a reference to this graph participates in compilation. |
+| [`Inno.Rendering.Shaders.ShaderGraphNodeSettings`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphNodes.cs#L43) | Stores graph-level identity and catalog metadata for a reusable Shader node. |
 | [`int Inno.Rendering.Shaders.ShaderGraphNodeSettings.createOrder`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphNodes.cs#L56) | Gets or sets the deterministic order within the creation catalog. |
 | [`string Inno.Rendering.Shaders.ShaderGraphNodeSettings.createPath`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphNodes.cs#L52) | Gets or sets the slash-separated creation catalog beneath Graph Nodes. |
 | [`string Inno.Rendering.Shaders.ShaderGraphNodeSettings.displayName`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphNodes.cs#L48) | Gets or sets the node title displayed to authors. |
-| [`Inno.Rendering.Shaders.ShaderGraphNodeEffect Inno.Rendering.Shaders.ShaderGraphNodeSettings.effect`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphNodes.cs#L64) | Gets or sets the observable computation behavior of an inline function. |
-| [`Inno.Rendering.Shaders.ShaderGraphNodeKind Inno.Rendering.Shaders.ShaderGraphNodeSettings.kind`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphNodes.cs#L60) | Gets or sets how a reference to this graph participates in compilation. |
 | [`string Inno.Rendering.Shaders.ShaderGraphNodeSettings.role`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphNodes.cs#L68) | Gets or sets the domain role consumed by a Target; empty for ordinary inline functions. |
-| [`Inno.Rendering.Shaders.ShaderGraphNodeSettings`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphNodes.cs#L43) | Stores graph-level identity and catalog metadata for a reusable Shader node. |
 
 ### `Inno.Rendering.Shaders.ShaderGraphNodes`
 
 | 当前声明 | 行为 |
 | --- | --- |
+| [`Inno.Rendering.Shaders.ShaderGraphNodes`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphNodes.cs#L168) | Reads and expands reusable node graphs without retaining assets or provider instances. |
 | [`const string Inno.Rendering.Shaders.ShaderGraphNodes.callDefinitionId`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphNodes.cs#L181) | Identifies a reference to another Shader graph used as a node. |
 | [`const string Inno.Rendering.Shaders.ShaderGraphNodes.inputDefinitionId`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphNodes.cs#L173) | Identifies the single multi-port node-input interface record. |
 | [`const string Inno.Rendering.Shaders.ShaderGraphNodes.interfaceKey`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphNodes.cs#L185) | Identifies the serialized interface snapshot retained by a graph-node reference. |
 | [`const string Inno.Rendering.Shaders.ShaderGraphNodes.outputDefinitionId`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphNodes.cs#L177) | Identifies the optional multi-port node-output interface record. |
 | [`const string Inno.Rendering.Shaders.ShaderGraphNodes.settingsKey`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphNodes.cs#L189) | Identifies graph-level reusable-node metadata, independent of either interface direction. |
 | [`static Inno.Core.Graphs.GraphDocument Inno.Rendering.Shaders.ShaderGraphNodes.Expand(Inno.Core.Graphs.GraphDocument graph, System.Func<System.Guid, string, Inno.Core.Graphs.GraphDocument> resolve, Inno.Core.Serialization.SerializationRegistry serialization, Inno.Core.Serialization.SerializationContext context)`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphNodes.cs#L359) | Expands every inline graph-node reference and refreshes domain-output interfaces. |
-| [`static bool Inno.Rendering.Shaders.ShaderGraphNodes.IsNodeGraph(Inno.Core.Graphs.GraphDocument graph)`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphNodes.cs#L200) | Determines whether a Shader graph declares a reusable node interface. |
 | [`static Inno.Rendering.Shaders.ShaderGraphNodeInterface Inno.Rendering.Shaders.ShaderGraphNodes.ReadCallInterface(Inno.Core.Graphs.GraphNodeRecord node, Inno.Core.Serialization.SerializationRegistry serialization, Inno.Core.Serialization.SerializationContext context)`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphNodes.cs#L330) | Reads the current interface snapshot stored on a graph-node reference. |
 | [`static Inno.Rendering.Shaders.ShaderGraphNodeInterface Inno.Rendering.Shaders.ShaderGraphNodes.ReadInterface(Inno.Core.Graphs.GraphDocument graph, Inno.Core.Serialization.SerializationRegistry serialization, Inno.Core.Serialization.SerializationContext context)`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphNodes.cs#L273) | Reads and validates the public node interface declared by a Shader graph. |
 | [`static Inno.Rendering.Shaders.ShaderGraphNodeSettings Inno.Rendering.Shaders.ShaderGraphNodes.ReadSettings(Inno.Core.Graphs.GraphDocument graph, Inno.Core.Serialization.SerializationRegistry serialization, Inno.Core.Serialization.SerializationContext context)`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphNodes.cs#L247) | Reads required graph-level reusable-node metadata. |
+| [`static bool Inno.Rendering.Shaders.ShaderGraphNodes.IsNodeGraph(Inno.Core.Graphs.GraphDocument graph)`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphNodes.cs#L200) | Determines whether a Shader graph declares a reusable node interface. |
 | [`static void Inno.Rendering.Shaders.ShaderGraphNodes.WriteSettings(Inno.Core.Graphs.GraphDocument graph, Inno.Rendering.Shaders.ShaderGraphNodeSettings settings, Inno.Core.Serialization.SerializationRegistry serialization, Inno.Core.Serialization.SerializationContext context)`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphNodes.cs#L221) | Writes graph-level reusable-node metadata without coupling it to an input or output record. |
-| [`Inno.Rendering.Shaders.ShaderGraphNodes`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphNodes.cs#L168) | Reads and expands reusable node graphs without retaining assets or provider instances. |
 
 ### `Inno.Rendering.Shaders.ShaderGraphOutput`
 
 | 当前声明 | 行为 |
 | --- | --- |
-| [`string Inno.Rendering.Shaders.ShaderGraphOutput.id`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphDocument.cs#L267) | Gets or sets the stable input port identity on the stage output node. |
+| [`Inno.Rendering.Shaders.ShaderGraphOutput`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphDocument.cs#L262) | Stores one stable output port's destination, independent of adapter source syntax. |
 | [`Inno.Rendering.Shaders.ShaderIrOutputKind Inno.Rendering.Shaders.ShaderGraphOutput.kind`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphDocument.cs#L271) | Gets or sets the GPU destination category. |
 | [`int Inno.Rendering.Shaders.ShaderGraphOutput.location`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphDocument.cs#L279) | Gets or sets the varying or attachment index. |
+| [`string Inno.Rendering.Shaders.ShaderGraphOutput.id`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphDocument.cs#L267) | Gets or sets the stable input port identity on the stage output node. |
 | [`string Inno.Rendering.Shaders.ShaderGraphOutput.semantic`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphDocument.cs#L275) | Gets or sets the varying semantic; empty for fixed position, color or depth outputs. |
-| [`Inno.Rendering.Shaders.ShaderGraphOutput`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphDocument.cs#L262) | Stores one stable output port's destination, independent of adapter source syntax. |
 
 ### `Inno.Rendering.Shaders.ShaderGraphPass`
 
 | 当前声明 | 行为 |
 | --- | --- |
-| [`Inno.Rendering.Shaders.ShaderGraphPass.ShaderGraphPass(string name, System.Collections.Generic.IEnumerable<Inno.Rendering.Shaders.ShaderIrStage> stages)`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphProgram.cs#L22) | Captures a pass's ordered typed stages. |
-| [`string Inno.Rendering.Shaders.ShaderGraphPass.name`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphProgram.cs#L34) | Gets the stable pass identity. |
-| [`System.Collections.Generic.IReadOnlyList<Inno.Rendering.Shaders.ShaderIrStage> Inno.Rendering.Shaders.ShaderGraphPass.stages`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphProgram.cs#L38) | Gets immutable graph-lowered stages. |
 | [`Inno.Rendering.Shaders.ShaderGraphPass`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphProgram.cs#L11) | Freezes the graph-lowered stages of one material-selectable GPU pass. |
+| [`Inno.Rendering.Shaders.ShaderGraphPass.ShaderGraphPass(string name, System.Collections.Generic.IEnumerable<Inno.Rendering.Shaders.ShaderIrStage> stages)`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphProgram.cs#L22) | Captures a pass's ordered typed stages. |
+| [`System.Collections.Generic.IReadOnlyList<Inno.Rendering.Shaders.ShaderIrStage> Inno.Rendering.Shaders.ShaderGraphPass.stages`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphProgram.cs#L38) | Gets immutable graph-lowered stages. |
+| [`string Inno.Rendering.Shaders.ShaderGraphPass.name`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphProgram.cs#L34) | Gets the stable pass identity. |
 
 ### `Inno.Rendering.Shaders.ShaderGraphPassProgram`
 
 | 当前声明 | 行为 |
 | --- | --- |
+| [`Inno.Rendering.Shaders.ShaderGraphPassProgram`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphPrograms.cs#L13) | References shared stage output identities from a material-selectable pass. |
 | [`string Inno.Rendering.Shaders.ShaderGraphPassProgram.pass`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphPrograms.cs#L18) | Gets or sets the exact pass identity in the runtime shader definition. |
 | [`string[] Inno.Rendering.Shaders.ShaderGraphPassProgram.stages`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphPrograms.cs#L22) | Gets or sets stable stage output node identities; computation remains owned by those nodes. |
-| [`Inno.Rendering.Shaders.ShaderGraphPassProgram`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphPrograms.cs#L13) | References shared stage output identities from a material-selectable pass. |
 
 ### `Inno.Rendering.Shaders.ShaderGraphPasteResult`
 
 | 当前声明 | 行为 |
 | --- | --- |
 | [`Inno.Core.Graphs.GraphDocument Inno.Rendering.Shaders.ShaderGraphPasteResult.document`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphClipboard.cs#L182) | Gets the complete detached candidate; the caller owns its subsequent edits. |
-| [`System.Collections.Generic.IReadOnlyList<Inno.Core.Graphs.GraphNodeId> Inno.Rendering.Shaders.ShaderGraphPasteResult.insertedNodes`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphClipboard.cs#L186) | Gets new identities suitable for selecting the pasted nodes. |
 | [`Inno.Rendering.Shaders.ShaderGraphPasteResult`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphClipboard.cs#L170) | Contains a detached paste candidate and its newly allocated node identities. |
+| [`System.Collections.Generic.IReadOnlyList<Inno.Core.Graphs.GraphNodeId> Inno.Rendering.Shaders.ShaderGraphPasteResult.insertedNodes`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphClipboard.cs#L186) | Gets new identities suitable for selecting the pasted nodes. |
 
 ### `Inno.Rendering.Shaders.ShaderGraphProgramCompiler`
 
 | 当前声明 | 行为 |
 | --- | --- |
+| [`Inno.Rendering.Shaders.ShaderGraphProgramCompiler`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphProgramCompiler.cs#L18) | Partitions explicit GPU-stage regions and lowers them through registered node compilers. |
 | [`Inno.Rendering.Shaders.ShaderGraphProgramCompiler.ShaderGraphProgramCompiler(Inno.Rendering.Shaders.ShaderNodeCompilerRegistry nodes)`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphProgramCompiler.cs#L28) | Uses the shared node compiler generation rather than retaining individual providers. |
 | [`Inno.Rendering.Shaders.ShaderGraphProgramResult Inno.Rendering.Shaders.ShaderGraphProgramCompiler.Lower(Inno.Core.Graphs.GraphDocument document, string implementationId, System.Collections.Generic.IReadOnlyDictionary<Inno.Core.Graphs.GraphNodeId, Inno.Rendering.Shaders.ShaderSourceModuleAnalysis> sources, Inno.Core.Serialization.SerializationRegistry serialization, Inno.Core.Serialization.SerializationContext context, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphProgramCompiler.cs#L55) | Validates the complete pass/stage graph without deleting invalid or unavailable records. |
-| [`Inno.Rendering.Shaders.ShaderGraphProgramCompiler`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphProgramCompiler.cs#L18) | Partitions explicit GPU-stage regions and lowers them through registered node compilers. |
 
 ### `Inno.Rendering.Shaders.ShaderGraphProgramResult`
 
 | 当前声明 | 行为 |
 | --- | --- |
+| [`Inno.Rendering.Shaders.ShaderGraphProgramResult`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphProgram.cs#L44) | Contains the result of lowering an entire shader graph, before target-native compilation. |
 | [`System.Collections.Generic.IReadOnlyList<Inno.Rendering.Shaders.ShaderGraphDiagnostic> Inno.Rendering.Shaders.ShaderGraphProgramResult.diagnostics`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphProgram.cs#L60) | Gets stable graph/node diagnostics without provider references. |
 | [`System.Collections.Generic.IReadOnlyList<Inno.Rendering.Shaders.ShaderGraphPass> Inno.Rendering.Shaders.ShaderGraphProgramResult.passes`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphProgram.cs#L56) | Gets the complete stage set; empty if any stage failed. |
 | [`bool Inno.Rendering.Shaders.ShaderGraphProgramResult.succeeded`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphProgram.cs#L64) | Gets whether every declared pass was lowered without errors. |
-| [`Inno.Rendering.Shaders.ShaderGraphProgramResult`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphProgram.cs#L44) | Contains the result of lowering an entire shader graph, before target-native compilation. |
 
 ### `Inno.Rendering.Shaders.ShaderGraphPrograms`
 
 | 当前声明 | 行为 |
 | --- | --- |
+| [`Inno.Rendering.Shaders.ShaderGraphPrograms`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphPrograms.cs#L28) | Edits pass-to-program references without copying computation or changing runtime render states. |
 | [`const string Inno.Rendering.Shaders.ShaderGraphPrograms.bindingsKey`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphPrograms.cs#L33) | Identifies native metadata holding pass references to shared stage programs. |
 | [`static Inno.Core.Graphs.GraphDocument Inno.Rendering.Shaders.ShaderGraphPrograms.Bind(Inno.Core.Graphs.GraphDocument graph, string pass, System.Collections.Generic.IEnumerable<Inno.Core.Graphs.GraphNodeId> stages, Inno.Core.Serialization.SerializationRegistry serialization, Inno.Core.Serialization.SerializationContext context)`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphPrograms.cs#L80) | Assigns existing shared stages to one pass in an atomic detached candidate. |
-| [`static Inno.Rendering.Shaders.ShaderGraphPassProgram[] Inno.Rendering.Shaders.ShaderGraphPrograms.Read(Inno.Core.Graphs.GraphDocument graph, Inno.Core.Serialization.SerializationRegistry serialization, Inno.Core.Serialization.SerializationContext context)`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphPrograms.cs#L50) | Reads detached pass-to-stage references, including unresolved authored identities. |
 | [`static Inno.Core.Graphs.GraphDocument Inno.Rendering.Shaders.ShaderGraphPrograms.RemovePass(Inno.Core.Graphs.GraphDocument graph, string pass, Inno.Core.Serialization.SerializationRegistry serialization, Inno.Core.Serialization.SerializationContext context)`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphPrograms.cs#L127) | Removes a pass and only computations whose final referencing pass was removed. |
-| [`Inno.Rendering.Shaders.ShaderGraphPrograms`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphPrograms.cs#L28) | Edits pass-to-program references without copying computation or changing runtime render states. |
+| [`static Inno.Rendering.Shaders.ShaderGraphPassProgram[] Inno.Rendering.Shaders.ShaderGraphPrograms.Read(Inno.Core.Graphs.GraphDocument graph, Inno.Core.Serialization.SerializationRegistry serialization, Inno.Core.Serialization.SerializationContext context)`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphPrograms.cs#L50) | Reads detached pass-to-stage references, including unresolved authored identities. |
 
 ### `Inno.Rendering.Shaders.ShaderGraphStageSettings`
 
 | 当前声明 | 行为 |
 | --- | --- |
-| [`Inno.Rendering.Shaders.ShaderGraphOutput[] Inno.Rendering.Shaders.ShaderGraphStageSettings.outputs`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphDocument.cs#L244) | Gets or sets output ports and their GPU destinations. |
 | [`Inno.Rendering.ShaderStage Inno.Rendering.Shaders.ShaderGraphStageSettings.stage`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphDocument.cs#L240) | Gets or sets the programmable stage. |
+| [`Inno.Rendering.Shaders.ShaderGraphOutput[] Inno.Rendering.Shaders.ShaderGraphStageSettings.outputs`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphDocument.cs#L244) | Gets or sets output ports and their GPU destinations. |
+| [`Inno.Rendering.Shaders.ShaderGraphStageSettings`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphDocument.cs#L235) | Stores one stage's explicit output interface and compute dimensions inside its output node. |
 | [`int Inno.Rendering.Shaders.ShaderGraphStageSettings.threadsX`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphDocument.cs#L248) | Gets or sets compute workgroup width. |
 | [`int Inno.Rendering.Shaders.ShaderGraphStageSettings.threadsY`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphDocument.cs#L252) | Gets or sets compute workgroup height. |
 | [`int Inno.Rendering.Shaders.ShaderGraphStageSettings.threadsZ`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphDocument.cs#L256) | Gets or sets compute workgroup depth. |
-| [`Inno.Rendering.Shaders.ShaderGraphStageSettings`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphDocument.cs#L235) | Stores one stage's explicit output interface and compute dimensions inside its output node. |
 
 ### `Inno.Rendering.Shaders.ShaderGraphTemplate`
 
 | 当前声明 | 行为 |
 | --- | --- |
-| [`abstract Inno.Core.Graphs.GraphDocument Inno.Rendering.Shaders.ShaderGraphTemplate.Create(Inno.Core.Serialization.SerializationRegistry serialization, Inno.Core.Serialization.SerializationContext context)`](../../src/services/rendering/Inno.Rendering.Shaders/Templates/ShaderGraphTemplate.cs#L62) | Creates a fresh detached graph with its target and parameter declarations. |
 | [`Inno.Rendering.Shaders.ShaderGraphTemplate`](../../src/services/rendering/Inno.Rendering.Shaders/Templates/ShaderGraphTemplate.cs#L48) | Contributes an ordinary shader graph to the shared asset creation workflow. |
+| [`abstract Inno.Core.Graphs.GraphDocument Inno.Rendering.Shaders.ShaderGraphTemplate.Create(Inno.Core.Serialization.SerializationRegistry serialization, Inno.Core.Serialization.SerializationContext context)`](../../src/services/rendering/Inno.Rendering.Shaders/Templates/ShaderGraphTemplate.cs#L62) | Creates a fresh detached graph with its target and parameter declarations. |
 
 ### `Inno.Rendering.Shaders.ShaderGraphTemplateAttribute`
 
 | 当前声明 | 行为 |
 | --- | --- |
+| [`Inno.Rendering.Shaders.ShaderGraphTemplateAttribute`](../../src/services/rendering/Inno.Rendering.Shaders/Templates/ShaderGraphTemplate.cs#L10) | Declares immutable creation metadata for a Shader graph template. |
 | [`Inno.Rendering.Shaders.ShaderGraphTemplateAttribute.ShaderGraphTemplateAttribute(string id, string displayName)`](../../src/services/rendering/Inno.Rendering.Shaders/Templates/ShaderGraphTemplate.cs#L22) | Creates Shader graph template discovery metadata. |
 | [`string Inno.Rendering.Shaders.ShaderGraphTemplateAttribute.displayName`](../../src/services/rendering/Inno.Rendering.Shaders/Templates/ShaderGraphTemplate.cs#L42) | Gets the user-facing creation menu label. |
 | [`string Inno.Rendering.Shaders.ShaderGraphTemplateAttribute.id`](../../src/services/rendering/Inno.Rendering.Shaders/Templates/ShaderGraphTemplate.cs#L37) | Gets the stable template identity used by creation commands. |
-| [`Inno.Rendering.Shaders.ShaderGraphTemplateAttribute`](../../src/services/rendering/Inno.Rendering.Shaders/Templates/ShaderGraphTemplate.cs#L10) | Declares immutable creation metadata for a Shader graph template. |
 
 ### `Inno.Rendering.Shaders.ShaderGraphTemplateInfo`
 
@@ -652,104 +652,105 @@ static ShaderIrBlock BuildBrightness()
 
 | 当前声明 | 行为 |
 | --- | --- |
-| [`Inno.Rendering.Shaders.ShaderGraphTemplateRegistry.ShaderGraphTemplateRegistry(Inno.Extensibility.Types.TypeCatalog types)`](../../src/services/rendering/Inno.Rendering.Shaders/Templates/ShaderGraphTemplateRegistry.cs#L39) | Registers a template owner with the shared type-generation catalog. |
 | [`Inno.Core.Graphs.GraphDocument Inno.Rendering.Shaders.ShaderGraphTemplateRegistry.Create(string id, Inno.Core.Serialization.SerializationRegistry serialization, Inno.Core.Serialization.SerializationContext context)`](../../src/services/rendering/Inno.Rendering.Shaders/Templates/ShaderGraphTemplateRegistry.cs#L76) | Invokes the selected template under one generation lease. |
-| [`void Inno.Rendering.Shaders.ShaderGraphTemplateRegistry.Dispose()`](../../src/services/rendering/Inno.Rendering.Shaders/Templates/ShaderGraphTemplateRegistry.cs#L91) | Retires providers through the shared generation lifecycle. |
-| [`System.Collections.Generic.IReadOnlyList<Inno.Rendering.Shaders.ShaderGraphTemplateInfo> Inno.Rendering.Shaders.ShaderGraphTemplateRegistry.templates`](../../src/services/rendering/Inno.Rendering.Shaders/Templates/ShaderGraphTemplateRegistry.cs#L48) | Gets detached menu descriptions for the current generation. |
 | [`Inno.Rendering.Shaders.ShaderGraphTemplateRegistry`](../../src/services/rendering/Inno.Rendering.Shaders/Templates/ShaderGraphTemplateRegistry.cs#L28) | Owns generation-safe template discovery and invocation for editor asset creation. |
+| [`Inno.Rendering.Shaders.ShaderGraphTemplateRegistry.ShaderGraphTemplateRegistry(Inno.Extensibility.Types.TypeCatalog types)`](../../src/services/rendering/Inno.Rendering.Shaders/Templates/ShaderGraphTemplateRegistry.cs#L39) | Registers a template owner with the shared type-generation catalog. |
+| [`System.Collections.Generic.IReadOnlyList<Inno.Rendering.Shaders.ShaderGraphTemplateInfo> Inno.Rendering.Shaders.ShaderGraphTemplateRegistry.templates`](../../src/services/rendering/Inno.Rendering.Shaders/Templates/ShaderGraphTemplateRegistry.cs#L48) | Gets detached menu descriptions for the current generation. |
+| [`void Inno.Rendering.Shaders.ShaderGraphTemplateRegistry.Dispose()`](../../src/services/rendering/Inno.Rendering.Shaders/Templates/ShaderGraphTemplateRegistry.cs#L91) | Retires providers through the shared generation lifecycle. |
 
 ### `Inno.Rendering.Shaders.ShaderGraphTemplates`
 
 | 当前声明 | 行为 |
 | --- | --- |
-| [`static Inno.Core.Graphs.GraphDocument Inno.Rendering.Shaders.ShaderGraphTemplates.CreateRaster(Inno.Core.Serialization.SerializationRegistry serialization, Inno.Core.Serialization.SerializationContext context)`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphTemplates.cs#L26) | Creates a raster graph accepting clip-space XY positions and an exposed RGBA color. |
 | [`Inno.Rendering.Shaders.ShaderGraphTemplates`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphTemplates.cs#L12) | Provides small backend-neutral starting documents composed exclusively of ordinary graph nodes. |
+| [`static Inno.Core.Graphs.GraphDocument Inno.Rendering.Shaders.ShaderGraphTemplates.CreateRaster(Inno.Core.Serialization.SerializationRegistry serialization, Inno.Core.Serialization.SerializationContext context)`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphTemplates.cs#L26) | Creates a raster graph accepting clip-space XY positions and an exposed RGBA color. |
 
 ### `Inno.Rendering.Shaders.ShaderGraphType`
 
 | 当前声明 | 行为 |
 | --- | --- |
-| [`static Inno.Rendering.Shaders.ShaderGraphType Inno.Rendering.Shaders.ShaderGraphType.Capture(Inno.Rendering.Shaders.ShaderSourceType type)`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphType.cs#L70) | Captures a full immutable source type as reload-safe authoring data. |
-| [`Inno.Rendering.Shaders.ShaderSourceType Inno.Rendering.Shaders.ShaderGraphType.CreateType()`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphType.cs#L97) | Validates and freezes the complete descriptor. |
 | [`Inno.Rendering.RenderStorageAccess Inno.Rendering.Shaders.ShaderGraphType.access`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphType.cs#L47) | Gets or sets storage access. |
 | [`Inno.Rendering.RenderTextureDimension Inno.Rendering.Shaders.ShaderGraphType.dimension`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphType.cs#L55) | Gets or sets the image spatial dimension. |
-| [`Inno.Rendering.Shaders.ShaderGraphType? Inno.Rendering.Shaders.ShaderGraphType.element`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphType.cs#L19) | Gets or sets the fixed array element type, or null for a non-array. |
-| [`string[] Inno.Rendering.Shaders.ShaderGraphType.fieldNames`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphType.cs#L27) | Gets or sets ordered structure member names. |
-| [`Inno.Rendering.Shaders.ShaderGraphType[] Inno.Rendering.Shaders.ShaderGraphType.fieldTypes`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphType.cs#L31) | Gets or sets ordered structure member types. |
 | [`Inno.Rendering.RenderTextureFormat Inno.Rendering.Shaders.ShaderGraphType.format`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphType.cs#L51) | Gets or sets the image texel format. |
-| [`string Inno.Rendering.Shaders.ShaderGraphType.id`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphType.cs#L15) | Gets or sets the atomic or nominal structure type identity. |
+| [`Inno.Rendering.Shaders.ShaderGraphType`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphType.cs#L10) | Persists a complete shader type as neutral native-serializable data, without extension instances. |
+| [`Inno.Rendering.Shaders.ShaderGraphType? Inno.Rendering.Shaders.ShaderGraphType.element`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphType.cs#L19) | Gets or sets the fixed array element type, or null for a non-array. |
+| [`Inno.Rendering.Shaders.ShaderGraphType? Inno.Rendering.Shaders.ShaderGraphType.storageElement`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphType.cs#L43) | Gets or sets the complete buffer element type. |
+| [`Inno.Rendering.Shaders.ShaderGraphType[] Inno.Rendering.Shaders.ShaderGraphType.fieldTypes`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphType.cs#L31) | Gets or sets ordered structure member types. |
+| [`Inno.Rendering.Shaders.ShaderSourceType Inno.Rendering.Shaders.ShaderGraphType.CreateType()`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphType.cs#L97) | Validates and freezes the complete descriptor. |
 | [`bool Inno.Rendering.Shaders.ShaderGraphType.isArray`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphType.cs#L59) | Gets or sets whether an image has array layers. |
 | [`bool Inno.Rendering.Shaders.ShaderGraphType.isImage`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphType.cs#L39) | Gets or sets whether storage is an image instead of a buffer. |
 | [`bool Inno.Rendering.Shaders.ShaderGraphType.isStorage`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphType.cs#L35) | Gets or sets whether the descriptor represents a storage binding. |
 | [`int Inno.Rendering.Shaders.ShaderGraphType.length`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphType.cs#L23) | Gets or sets the fixed array length. |
-| [`Inno.Rendering.Shaders.ShaderGraphType? Inno.Rendering.Shaders.ShaderGraphType.storageElement`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphType.cs#L43) | Gets or sets the complete buffer element type. |
-| [`Inno.Rendering.Shaders.ShaderGraphType`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphType.cs#L10) | Persists a complete shader type as neutral native-serializable data, without extension instances. |
+| [`static Inno.Rendering.Shaders.ShaderGraphType Inno.Rendering.Shaders.ShaderGraphType.Capture(Inno.Rendering.Shaders.ShaderSourceType type)`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphType.cs#L70) | Captures a full immutable source type as reload-safe authoring data. |
+| [`string Inno.Rendering.Shaders.ShaderGraphType.id`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphType.cs#L15) | Gets or sets the atomic or nominal structure type identity. |
+| [`string[] Inno.Rendering.Shaders.ShaderGraphType.fieldNames`](../../src/services/rendering/Inno.Rendering.Shaders/Documents/ShaderGraphType.cs#L27) | Gets or sets ordered structure member names. |
 
 ### `Inno.Rendering.Shaders.ShaderIrBlock`
 
 | 当前声明 | 行为 |
 | --- | --- |
-| [`System.Collections.Generic.IReadOnlyList<Inno.Rendering.Shaders.ShaderIrInstruction> Inno.Rendering.Shaders.ShaderIrBlock.instructions`](../../src/services/rendering/Inno.Rendering.Shaders/Intermediate/ShaderIrBlock.cs#L214) | Gets instructions in evaluation order, including source calls whose outputs are unused. |
-| [`System.Collections.Generic.IReadOnlyDictionary<string, Inno.Rendering.Shaders.ShaderIrValue> Inno.Rendering.Shaders.ShaderIrBlock.outputs`](../../src/services/rendering/Inno.Rendering.Shaders/Intermediate/ShaderIrBlock.cs#L218) | Gets named values returned to the enclosing stage or region. |
 | [`Inno.Rendering.Shaders.ShaderIrBlock`](../../src/services/rendering/Inno.Rendering.Shaders/Intermediate/ShaderIrBlock.cs#L201) | Contains immutable ordered instructions and nested structured regions without retaining builder callbacks. |
+| [`System.Collections.Generic.IReadOnlyDictionary<string, Inno.Rendering.Shaders.ShaderIrValue> Inno.Rendering.Shaders.ShaderIrBlock.outputs`](../../src/services/rendering/Inno.Rendering.Shaders/Intermediate/ShaderIrBlock.cs#L218) | Gets named values returned to the enclosing stage or region. |
+| [`System.Collections.Generic.IReadOnlyList<Inno.Rendering.Shaders.ShaderIrInstruction> Inno.Rendering.Shaders.ShaderIrBlock.instructions`](../../src/services/rendering/Inno.Rendering.Shaders/Intermediate/ShaderIrBlock.cs#L214) | Gets instructions in evaluation order, including source calls whose outputs are unused. |
 
 ### `Inno.Rendering.Shaders.ShaderIrBuilder`
 
 | 当前声明 | 行为 |
 | --- | --- |
+| [`Inno.Rendering.Shaders.ShaderIrBlock Inno.Rendering.Shaders.ShaderIrBuilder.Build(System.Collections.Generic.IReadOnlyDictionary<string, Inno.Rendering.Shaders.ShaderIrValue> outputs)`](../../src/services/rendering/Inno.Rendering.Shaders/Intermediate/ShaderIrBuilder.cs#L364) | Freezes the current region without pruning unused calls or retaining this mutable builder. |
+| [`Inno.Rendering.Shaders.ShaderIrBuilder`](../../src/services/rendering/Inno.Rendering.Shaders/Intermediate/ShaderIrBuilder.ControlFlow.cs#L11) | Builds typed shader IR instructions for graph compilation. |
 | [`Inno.Rendering.Shaders.ShaderIrBuilder.ShaderIrBuilder()`](../../src/services/rendering/Inno.Rendering.Shaders/Intermediate/ShaderIrBuilder.cs#L26) | Creates an independent typed region builder and value identity scope. |
 | [`Inno.Rendering.Shaders.ShaderIrValue Inno.Rendering.Shaders.ShaderIrBuilder.AtomicAddStorage(Inno.Rendering.Shaders.ShaderIrValue resource, Inno.Rendering.Shaders.ShaderIrValue index, Inno.Rendering.Shaders.ShaderIrValue value)`](../../src/services/rendering/Inno.Rendering.Shaders/Intermediate/ShaderIrBuilder.Resources.cs#L140) | Atomically adds to a scalar integer buffer element and returns its previous value. |
 | [`Inno.Rendering.Shaders.ShaderIrValue Inno.Rendering.Shaders.ShaderIrBuilder.Binary(Inno.Rendering.Shaders.ShaderIrOperation operation, Inno.Rendering.Shaders.ShaderIrValue left, Inno.Rendering.Shaders.ShaderIrValue right)`](../../src/services/rendering/Inno.Rendering.Shaders/Intermediate/ShaderIrBuilder.cs#L140) | Applies an explicitly typed binary arithmetic or scalar comparison operation. |
-| [`System.Collections.Generic.IReadOnlyDictionary<string, Inno.Rendering.Shaders.ShaderIrValue> Inno.Rendering.Shaders.ShaderIrBuilder.Branch(Inno.Rendering.Shaders.ShaderIrValue condition, System.Func<Inno.Rendering.Shaders.ShaderIrBuilder, System.Collections.Generic.IReadOnlyDictionary<string, Inno.Rendering.Shaders.ShaderIrValue>> whenTrue, System.Func<Inno.Rendering.Shaders.ShaderIrBuilder, System.Collections.Generic.IReadOnlyDictionary<string, Inno.Rendering.Shaders.ShaderIrValue>> whenFalse)`](../../src/services/rendering/Inno.Rendering.Shaders/Intermediate/ShaderIrBuilder.ControlFlow.cs#L34) | Builds a real conditional: only the selected region executes, including its memory and source-call effects. |
-| [`Inno.Rendering.Shaders.ShaderIrBlock Inno.Rendering.Shaders.ShaderIrBuilder.Build(System.Collections.Generic.IReadOnlyDictionary<string, Inno.Rendering.Shaders.ShaderIrValue> outputs)`](../../src/services/rendering/Inno.Rendering.Shaders/Intermediate/ShaderIrBuilder.cs#L364) | Freezes the current region without pruning unused calls or retaining this mutable builder. |
-| [`System.Collections.Generic.IReadOnlyDictionary<string, Inno.Rendering.Shaders.ShaderIrValue> Inno.Rendering.Shaders.ShaderIrBuilder.Call(Inno.Rendering.Shaders.ShaderSourceModuleAnalysis module, string implementationId, System.Collections.Generic.IReadOnlyDictionary<string, Inno.Rendering.Shaders.ShaderIrValue> inputs)`](../../src/services/rendering/Inno.Rendering.Shaders/Intermediate/ShaderIrBuilder.cs#L315) | Calls a validated source implementation using semantic parameter names, preserving all call side effects. |
 | [`Inno.Rendering.Shaders.ShaderIrValue Inno.Rendering.Shaders.ShaderIrBuilder.Constant(bool value)`](../../src/services/rendering/Inno.Rendering.Shaders/Intermediate/ShaderIrBuilder.cs#L120) | Produces a scalar Boolean constant. |
-| [`Inno.Rendering.Shaders.ShaderIrValue Inno.Rendering.Shaders.ShaderIrBuilder.Constant(int value)`](../../src/services/rendering/Inno.Rendering.Shaders/Intermediate/ShaderIrBuilder.cs#L98) | Produces an exact signed 32-bit integer constant. |
 | [`Inno.Rendering.Shaders.ShaderIrValue Inno.Rendering.Shaders.ShaderIrBuilder.Constant(float value)`](../../src/services/rendering/Inno.Rendering.Shaders/Intermediate/ShaderIrBuilder.cs#L82) | Produces a finite, exact 32-bit floating-point constant. |
+| [`Inno.Rendering.Shaders.ShaderIrValue Inno.Rendering.Shaders.ShaderIrBuilder.Constant(int value)`](../../src/services/rendering/Inno.Rendering.Shaders/Intermediate/ShaderIrBuilder.cs#L98) | Produces an exact signed 32-bit integer constant. |
 | [`Inno.Rendering.Shaders.ShaderIrValue Inno.Rendering.Shaders.ShaderIrBuilder.Constant(uint value)`](../../src/services/rendering/Inno.Rendering.Shaders/Intermediate/ShaderIrBuilder.cs#L109) | Produces an exact unsigned 32-bit integer constant. |
 | [`Inno.Rendering.Shaders.ShaderIrValue Inno.Rendering.Shaders.ShaderIrBuilder.Construct(Inno.Rendering.Shaders.ShaderSourceType type, params Inno.Rendering.Shaders.ShaderIrValue[] members)`](../../src/services/rendering/Inno.Rendering.Shaders/Intermediate/ShaderIrBuilder.cs#L217) | Constructs a complete vector, column-major matrix, structure or fixed array from typed members. |
-| [`void Inno.Rendering.Shaders.ShaderIrBuilder.Discard(Inno.Rendering.Shaders.ShaderIrValue condition)`](../../src/services/rendering/Inno.Rendering.Shaders/Intermediate/ShaderIrBuilder.Resources.cs#L165) | Discards a fragment when the Boolean condition is true; other stages reject this instruction. |
 | [`Inno.Rendering.Shaders.ShaderIrValue Inno.Rendering.Shaders.ShaderIrBuilder.Extract(Inno.Rendering.Shaders.ShaderIrValue value, int memberIndex)`](../../src/services/rendering/Inno.Rendering.Shaders/Intermediate/ShaderIrBuilder.cs#L262) | Extracts one static component, structure member or array element without source-language member syntax. |
 | [`Inno.Rendering.Shaders.ShaderIrValue Inno.Rendering.Shaders.ShaderIrBuilder.Input(string name, Inno.Rendering.Shaders.ShaderSourceType type)`](../../src/services/rendering/Inno.Rendering.Shaders/Intermediate/ShaderIrBuilder.cs#L49) | Reads a named input from the enclosing typed function or stage interface. |
 | [`Inno.Rendering.Shaders.ShaderIrValue Inno.Rendering.Shaders.ShaderIrBuilder.LoadStorage(Inno.Rendering.Shaders.ShaderIrValue resource, Inno.Rendering.Shaders.ShaderIrValue coordinate)`](../../src/services/rendering/Inno.Rendering.Shaders/Intermediate/ShaderIrBuilder.Resources.cs#L83) | Loads a storage value at this exact point in the block's memory-effect sequence. |
-| [`System.Collections.Generic.IReadOnlyDictionary<string, Inno.Rendering.Shaders.ShaderIrValue> Inno.Rendering.Shaders.ShaderIrBuilder.Loop(Inno.Rendering.Shaders.ShaderIrValue iterations, System.Collections.Generic.IReadOnlyDictionary<string, Inno.Rendering.Shaders.ShaderIrValue> initialState, System.Func<Inno.Rendering.Shaders.ShaderIrBuilder, Inno.Rendering.Shaders.ShaderIrValue, System.Collections.Generic.IReadOnlyDictionary<string, Inno.Rendering.Shaders.ShaderIrValue>, System.Collections.Generic.IReadOnlyDictionary<string, Inno.Rendering.Shaders.ShaderIrValue>> body)`](../../src/services/rendering/Inno.Rendering.Shaders/Intermediate/ShaderIrBuilder.ControlFlow.cs#L82) | Builds a counted loop; each iteration receives the preceding iteration's complete carried state. |
 | [`Inno.Rendering.Shaders.ShaderIrValue Inno.Rendering.Shaders.ShaderIrBuilder.Sample(Inno.Rendering.Shaders.ShaderIrValue texture, Inno.Rendering.Shaders.ShaderIrValue coordinate)`](../../src/services/rendering/Inno.Rendering.Shaders/Intermediate/ShaderIrBuilder.Resources.cs#L26) | Samples a texture using implicit derivatives; the enclosing stage must be Fragment. |
 | [`Inno.Rendering.Shaders.ShaderIrValue Inno.Rendering.Shaders.ShaderIrBuilder.SampleLevel(Inno.Rendering.Shaders.ShaderIrValue texture, Inno.Rendering.Shaders.ShaderIrValue coordinate, Inno.Rendering.Shaders.ShaderIrValue level)`](../../src/services/rendering/Inno.Rendering.Shaders/Intermediate/ShaderIrBuilder.Resources.cs#L54) | Samples a texture at an explicit floating-point mip level without implicit derivatives. |
 | [`Inno.Rendering.Shaders.ShaderIrValue Inno.Rendering.Shaders.ShaderIrBuilder.Select(Inno.Rendering.Shaders.ShaderIrValue condition, Inno.Rendering.Shaders.ShaderIrValue whenTrue, Inno.Rendering.Shaders.ShaderIrValue whenFalse)`](../../src/services/rendering/Inno.Rendering.Shaders/Intermediate/ShaderIrBuilder.cs#L185) | Selects between equal typed values without conditionally executing their producers. |
+| [`System.Collections.Generic.IReadOnlyDictionary<string, Inno.Rendering.Shaders.ShaderIrValue> Inno.Rendering.Shaders.ShaderIrBuilder.Branch(Inno.Rendering.Shaders.ShaderIrValue condition, System.Func<Inno.Rendering.Shaders.ShaderIrBuilder, System.Collections.Generic.IReadOnlyDictionary<string, Inno.Rendering.Shaders.ShaderIrValue>> whenTrue, System.Func<Inno.Rendering.Shaders.ShaderIrBuilder, System.Collections.Generic.IReadOnlyDictionary<string, Inno.Rendering.Shaders.ShaderIrValue>> whenFalse)`](../../src/services/rendering/Inno.Rendering.Shaders/Intermediate/ShaderIrBuilder.ControlFlow.cs#L34) | Builds a real conditional: only the selected region executes, including its memory and source-call effects. |
+| [`System.Collections.Generic.IReadOnlyDictionary<string, Inno.Rendering.Shaders.ShaderIrValue> Inno.Rendering.Shaders.ShaderIrBuilder.Call(Inno.Rendering.Shaders.ShaderSourceModuleAnalysis module, string implementationId, System.Collections.Generic.IReadOnlyDictionary<string, Inno.Rendering.Shaders.ShaderIrValue> inputs)`](../../src/services/rendering/Inno.Rendering.Shaders/Intermediate/ShaderIrBuilder.cs#L315) | Calls a validated source implementation using semantic parameter names, preserving all call side effects. |
+| [`System.Collections.Generic.IReadOnlyDictionary<string, Inno.Rendering.Shaders.ShaderIrValue> Inno.Rendering.Shaders.ShaderIrBuilder.Loop(Inno.Rendering.Shaders.ShaderIrValue iterations, System.Collections.Generic.IReadOnlyDictionary<string, Inno.Rendering.Shaders.ShaderIrValue> initialState, System.Func<Inno.Rendering.Shaders.ShaderIrBuilder, Inno.Rendering.Shaders.ShaderIrValue, System.Collections.Generic.IReadOnlyDictionary<string, Inno.Rendering.Shaders.ShaderIrValue>, System.Collections.Generic.IReadOnlyDictionary<string, Inno.Rendering.Shaders.ShaderIrValue>> body)`](../../src/services/rendering/Inno.Rendering.Shaders/Intermediate/ShaderIrBuilder.ControlFlow.cs#L82) | Builds a counted loop; each iteration receives the preceding iteration's complete carried state. |
+| [`void Inno.Rendering.Shaders.ShaderIrBuilder.Discard(Inno.Rendering.Shaders.ShaderIrValue condition)`](../../src/services/rendering/Inno.Rendering.Shaders/Intermediate/ShaderIrBuilder.Resources.cs#L165) | Discards a fragment when the Boolean condition is true; other stages reject this instruction. |
 | [`void Inno.Rendering.Shaders.ShaderIrBuilder.StoreStorage(Inno.Rendering.Shaders.ShaderIrValue resource, Inno.Rendering.Shaders.ShaderIrValue coordinate, Inno.Rendering.Shaders.ShaderIrValue value)`](../../src/services/rendering/Inno.Rendering.Shaders/Intermediate/ShaderIrBuilder.Resources.cs#L110) | Stores a storage value without pruning unused writes or reordering surrounding memory operations. |
-| [`Inno.Rendering.Shaders.ShaderIrBuilder`](../../src/services/rendering/Inno.Rendering.Shaders/Intermediate/ShaderIrBuilder.ControlFlow.cs#L11) | Builds typed shader IR instructions for graph compilation. |
 
 ### `Inno.Rendering.Shaders.ShaderIrInputKind`
 
 | 当前声明 | 行为 |
 | --- | --- |
+| [`Inno.Rendering.Shaders.ShaderIrInputKind`](../../src/services/rendering/Inno.Rendering.Shaders/Intermediate/ShaderIrStage.cs#L11) | Identifies the GPU interface through which a stage receives a value. |
 | [`Inno.Rendering.Shaders.ShaderIrInputKind.Builtin`](../../src/services/rendering/Inno.Rendering.Shaders/Intermediate/ShaderIrStage.cs#L36) | A standard GPU stage input identified by a target semantic, not native source text. |
 | [`Inno.Rendering.Shaders.ShaderIrInputKind.SampledTexture`](../../src/services/rendering/Inno.Rendering.Shaders/Intermediate/ShaderIrStage.cs#L28) | A sampled texture binding whose slot is assigned by target resource layout. |
 | [`Inno.Rendering.Shaders.ShaderIrInputKind.Storage`](../../src/services/rendering/Inno.Rendering.Shaders/Intermediate/ShaderIrStage.cs#L32) | A typed storage buffer or image whose access, shape and layout are explicit. |
 | [`Inno.Rendering.Shaders.ShaderIrInputKind.Uniform`](../../src/services/rendering/Inno.Rendering.Shaders/Intermediate/ShaderIrStage.cs#L24) | A material, frame or draw uniform identified by a stable binding identity. |
 | [`Inno.Rendering.Shaders.ShaderIrInputKind.Varying`](../../src/services/rendering/Inno.Rendering.Shaders/Intermediate/ShaderIrStage.cs#L20) | An interpolated value written by the preceding raster stage. |
 | [`Inno.Rendering.Shaders.ShaderIrInputKind.VertexAttribute`](../../src/services/rendering/Inno.Rendering.Shaders/Intermediate/ShaderIrStage.cs#L16) | A vertex stream attribute, including instance-rate streams. |
-| [`Inno.Rendering.Shaders.ShaderIrInputKind`](../../src/services/rendering/Inno.Rendering.Shaders/Intermediate/ShaderIrStage.cs#L11) | Identifies the GPU interface through which a stage receives a value. |
 
 ### `Inno.Rendering.Shaders.ShaderIrInstruction`
 
 | 当前声明 | 行为 |
 | --- | --- |
-| [`ulong Inno.Rendering.Shaders.ShaderIrInstruction.constantBits`](../../src/services/rendering/Inno.Rendering.Shaders/Intermediate/ShaderIrBlock.cs#L177) | Gets exact scalar bits for a Constant instruction; the result type determines interpretation. |
-| [`bool Inno.Rendering.Shaders.ShaderIrInstruction.hasSideEffects`](../../src/services/rendering/Inno.Rendering.Shaders/Intermediate/ShaderIrBlock.cs#L193) | Gets whether removing or reordering this instruction may change observable behavior. |
-| [`string? Inno.Rendering.Shaders.ShaderIrInstruction.inputName`](../../src/services/rendering/Inno.Rendering.Shaders/Intermediate/ShaderIrBlock.cs#L173) | Gets the stable interface or region-parameter identity, only for Input or RegionInput. |
-| [`System.Collections.Generic.IReadOnlyList<Inno.Rendering.Shaders.ShaderIrValue> Inno.Rendering.Shaders.ShaderIrInstruction.inputs`](../../src/services/rendering/Inno.Rendering.Shaders/Intermediate/ShaderIrBlock.cs#L165) | Gets immutable operands in operation or function-declaration order. |
-| [`int Inno.Rendering.Shaders.ShaderIrInstruction.memberIndex`](../../src/services/rendering/Inno.Rendering.Shaders/Intermediate/ShaderIrBlock.cs#L181) | Gets the zero-based component/member/element ordinal for an Extract instruction. |
-| [`Inno.Rendering.Shaders.ShaderIrOperation Inno.Rendering.Shaders.ShaderIrInstruction.operation`](../../src/services/rendering/Inno.Rendering.Shaders/Intermediate/ShaderIrBlock.cs#L161) | Gets the semantic operation independent of any source language. |
-| [`System.Collections.Generic.IReadOnlyList<Inno.Rendering.Shaders.ShaderIrValue> Inno.Rendering.Shaders.ShaderIrInstruction.outputs`](../../src/services/rendering/Inno.Rendering.Shaders/Intermediate/ShaderIrBlock.cs#L169) | Gets produced values; a call orders its return value first, then out/inout parameters. |
-| [`System.Collections.Generic.IReadOnlyList<Inno.Rendering.Shaders.ShaderIrBlock> Inno.Rendering.Shaders.ShaderIrInstruction.regions`](../../src/services/rendering/Inno.Rendering.Shaders/Intermediate/ShaderIrBlock.cs#L189) | Gets immutable nested regions: true/false for Branch, or one body for Loop. |
-| [`Inno.Rendering.Shaders.ShaderSourceImplementationAnalysis? Inno.Rendering.Shaders.ShaderIrInstruction.source`](../../src/services/rendering/Inno.Rendering.Shaders/Intermediate/ShaderIrBlock.cs#L185) | Gets a frozen, analyzed function implementation only for a SourceCall instruction. |
 | [`Inno.Rendering.Shaders.ShaderIrInstruction`](../../src/services/rendering/Inno.Rendering.Shaders/Intermediate/ShaderIrBlock.cs#L136) | Stores one immutable typed instruction without generated stage source or backend expressions. |
+| [`Inno.Rendering.Shaders.ShaderIrOperation Inno.Rendering.Shaders.ShaderIrInstruction.operation`](../../src/services/rendering/Inno.Rendering.Shaders/Intermediate/ShaderIrBlock.cs#L161) | Gets the semantic operation independent of any source language. |
+| [`Inno.Rendering.Shaders.ShaderSourceImplementationAnalysis? Inno.Rendering.Shaders.ShaderIrInstruction.source`](../../src/services/rendering/Inno.Rendering.Shaders/Intermediate/ShaderIrBlock.cs#L185) | Gets a frozen, analyzed function implementation only for a SourceCall instruction. |
+| [`System.Collections.Generic.IReadOnlyList<Inno.Rendering.Shaders.ShaderIrBlock> Inno.Rendering.Shaders.ShaderIrInstruction.regions`](../../src/services/rendering/Inno.Rendering.Shaders/Intermediate/ShaderIrBlock.cs#L189) | Gets immutable nested regions: true/false for Branch, or one body for Loop. |
+| [`System.Collections.Generic.IReadOnlyList<Inno.Rendering.Shaders.ShaderIrValue> Inno.Rendering.Shaders.ShaderIrInstruction.inputs`](../../src/services/rendering/Inno.Rendering.Shaders/Intermediate/ShaderIrBlock.cs#L165) | Gets immutable operands in operation or function-declaration order. |
+| [`System.Collections.Generic.IReadOnlyList<Inno.Rendering.Shaders.ShaderIrValue> Inno.Rendering.Shaders.ShaderIrInstruction.outputs`](../../src/services/rendering/Inno.Rendering.Shaders/Intermediate/ShaderIrBlock.cs#L169) | Gets produced values; a call orders its return value first, then out/inout parameters. |
+| [`bool Inno.Rendering.Shaders.ShaderIrInstruction.hasSideEffects`](../../src/services/rendering/Inno.Rendering.Shaders/Intermediate/ShaderIrBlock.cs#L193) | Gets whether removing or reordering this instruction may change observable behavior. |
+| [`int Inno.Rendering.Shaders.ShaderIrInstruction.memberIndex`](../../src/services/rendering/Inno.Rendering.Shaders/Intermediate/ShaderIrBlock.cs#L181) | Gets the zero-based component/member/element ordinal for an Extract instruction. |
+| [`string? Inno.Rendering.Shaders.ShaderIrInstruction.inputName`](../../src/services/rendering/Inno.Rendering.Shaders/Intermediate/ShaderIrBlock.cs#L173) | Gets the stable interface or region-parameter identity, only for Input or RegionInput. |
+| [`ulong Inno.Rendering.Shaders.ShaderIrInstruction.constantBits`](../../src/services/rendering/Inno.Rendering.Shaders/Intermediate/ShaderIrBlock.cs#L177) | Gets exact scalar bits for a Constant instruction; the result type determines interpretation. |
 
 ### `Inno.Rendering.Shaders.ShaderIrOperation`
 
 | 当前声明 | 行为 |
 | --- | --- |
+| [`Inno.Rendering.Shaders.ShaderIrOperation`](../../src/services/rendering/Inno.Rendering.Shaders/Intermediate/ShaderIrBlock.cs#L37) | Defines backend-neutral value operations; graph node IDs are not instruction opcodes. |
 | [`Inno.Rendering.Shaders.ShaderIrOperation.Add`](../../src/services/rendering/Inno.Rendering.Shaders/Intermediate/ShaderIrBlock.cs#L58) | Adds two equal numeric types component by component. |
 | [`Inno.Rendering.Shaders.ShaderIrOperation.Branch`](../../src/services/rendering/Inno.Rendering.Shaders/Intermediate/ShaderIrBlock.cs#L126) | Executes exactly one nested region and merges its named output values. |
 | [`Inno.Rendering.Shaders.ShaderIrOperation.Constant`](../../src/services/rendering/Inno.Rendering.Shaders/Intermediate/ShaderIrBlock.cs#L46) | Produces an exact scalar constant stored as bits, not source-language text. |
@@ -773,107 +774,106 @@ static ShaderIrBlock BuildBrightness()
 | [`Inno.Rendering.Shaders.ShaderIrOperation.Subtract`](../../src/services/rendering/Inno.Rendering.Shaders/Intermediate/ShaderIrBlock.cs#L62) | Subtracts two equal numeric types component by component. |
 | [`Inno.Rendering.Shaders.ShaderIrOperation.TextureSample`](../../src/services/rendering/Inno.Rendering.Shaders/Intermediate/ShaderIrBlock.cs#L98) | Samples a floating-point texture using implicit fragment derivatives. |
 | [`Inno.Rendering.Shaders.ShaderIrOperation.TextureSampleLevel`](../../src/services/rendering/Inno.Rendering.Shaders/Intermediate/ShaderIrBlock.cs#L102) | Samples a floating-point texture at an explicit mip level. |
-| [`Inno.Rendering.Shaders.ShaderIrOperation`](../../src/services/rendering/Inno.Rendering.Shaders/Intermediate/ShaderIrBlock.cs#L37) | Defines backend-neutral value operations; graph node IDs are not instruction opcodes. |
 
 ### `Inno.Rendering.Shaders.ShaderIrOutputKind`
 
 | 当前声明 | 行为 |
 | --- | --- |
+| [`Inno.Rendering.Shaders.ShaderIrOutputKind`](../../src/services/rendering/Inno.Rendering.Shaders/Intermediate/ShaderIrStage.cs#L42) | Identifies where a typed stage output is written. |
 | [`Inno.Rendering.Shaders.ShaderIrOutputKind.ClipPosition`](../../src/services/rendering/Inno.Rendering.Shaders/Intermediate/ShaderIrStage.cs#L47) | The vertex position in homogeneous clip space. |
 | [`Inno.Rendering.Shaders.ShaderIrOutputKind.Color`](../../src/services/rendering/Inno.Rendering.Shaders/Intermediate/ShaderIrStage.cs#L55) | A fragment color attachment at its explicit location. |
 | [`Inno.Rendering.Shaders.ShaderIrOutputKind.Depth`](../../src/services/rendering/Inno.Rendering.Shaders/Intermediate/ShaderIrStage.cs#L59) | The fragment depth value. |
 | [`Inno.Rendering.Shaders.ShaderIrOutputKind.Varying`](../../src/services/rendering/Inno.Rendering.Shaders/Intermediate/ShaderIrStage.cs#L51) | A value interpolated for the next raster stage. |
-| [`Inno.Rendering.Shaders.ShaderIrOutputKind`](../../src/services/rendering/Inno.Rendering.Shaders/Intermediate/ShaderIrStage.cs#L42) | Identifies where a typed stage output is written. |
 
 ### `Inno.Rendering.Shaders.ShaderIrStage`
 
 | 当前声明 | 行为 |
 | --- | --- |
-| [`Inno.Rendering.Shaders.ShaderIrStage.ShaderIrStage(Inno.Rendering.ShaderStage stage, Inno.Rendering.Shaders.ShaderIrBlock body, System.Collections.Generic.IEnumerable<Inno.Rendering.Shaders.ShaderIrStageInput> inputs, System.Collections.Generic.IEnumerable<Inno.Rendering.Shaders.ShaderIrStageOutput> outputs, int threadsX = 1, int threadsY = 1, int threadsZ = 1)`](../../src/services/rendering/Inno.Rendering.Shaders/Intermediate/ShaderIrStage.cs#L216) | Validates and freezes a single stage's interface and ordered body. |
+| [`Inno.Rendering.ShaderStage Inno.Rendering.Shaders.ShaderIrStage.stage`](../../src/services/rendering/Inno.Rendering.Shaders/Intermediate/ShaderIrStage.cs#L246) | Gets the programmable stage. |
 | [`Inno.Rendering.Shaders.ShaderIrBlock Inno.Rendering.Shaders.ShaderIrStage.body`](../../src/services/rendering/Inno.Rendering.Shaders/Intermediate/ShaderIrStage.cs#L250) | Gets its immutable ordered instructions. |
-| [`string Inno.Rendering.Shaders.ShaderIrStage.contentHash`](../../src/services/rendering/Inno.Rendering.Shaders/Intermediate/ShaderIrStage.cs#L275) | Gets a deterministic hash of stage semantics, ordered effects, nested regions, complete types, resource layout and frozen sources. A compiled artifact cache must additionally include toolchain identity, target capabilities, optimization and variant configuration. |
+| [`Inno.Rendering.Shaders.ShaderIrStage`](../../src/services/rendering/Inno.Rendering.Shaders/Intermediate/ShaderIrStage.cs#L190) | Freezes a typed GPU stage and its explicit interface. It contains no main function, varying declarations or source expressions. Targets own stage/resource layout; adapters translate these semantics into their native language. |
+| [`Inno.Rendering.Shaders.ShaderIrStage.ShaderIrStage(Inno.Rendering.ShaderStage stage, Inno.Rendering.Shaders.ShaderIrBlock body, System.Collections.Generic.IEnumerable<Inno.Rendering.Shaders.ShaderIrStageInput> inputs, System.Collections.Generic.IEnumerable<Inno.Rendering.Shaders.ShaderIrStageOutput> outputs, int threadsX = 1, int threadsY = 1, int threadsZ = 1)`](../../src/services/rendering/Inno.Rendering.Shaders/Intermediate/ShaderIrStage.cs#L216) | Validates and freezes a single stage's interface and ordered body. |
 | [`System.Collections.Generic.IReadOnlyList<Inno.Rendering.Shaders.ShaderIrStageInput> Inno.Rendering.Shaders.ShaderIrStage.inputs`](../../src/services/rendering/Inno.Rendering.Shaders/Intermediate/ShaderIrStage.cs#L254) | Gets all input bindings. |
 | [`System.Collections.Generic.IReadOnlyList<Inno.Rendering.Shaders.ShaderIrStageOutput> Inno.Rendering.Shaders.ShaderIrStage.outputs`](../../src/services/rendering/Inno.Rendering.Shaders/Intermediate/ShaderIrStage.cs#L258) | Gets all output destinations. |
-| [`Inno.Rendering.ShaderStage Inno.Rendering.Shaders.ShaderIrStage.stage`](../../src/services/rendering/Inno.Rendering.Shaders/Intermediate/ShaderIrStage.cs#L246) | Gets the programmable stage. |
 | [`int Inno.Rendering.Shaders.ShaderIrStage.threadsX`](../../src/services/rendering/Inno.Rendering.Shaders/Intermediate/ShaderIrStage.cs#L262) | Gets the compute workgroup X size. |
 | [`int Inno.Rendering.Shaders.ShaderIrStage.threadsY`](../../src/services/rendering/Inno.Rendering.Shaders/Intermediate/ShaderIrStage.cs#L266) | Gets the compute workgroup Y size. |
 | [`int Inno.Rendering.Shaders.ShaderIrStage.threadsZ`](../../src/services/rendering/Inno.Rendering.Shaders/Intermediate/ShaderIrStage.cs#L270) | Gets the compute workgroup Z size. |
-| [`Inno.Rendering.Shaders.ShaderIrStage`](../../src/services/rendering/Inno.Rendering.Shaders/Intermediate/ShaderIrStage.cs#L190) | Freezes a typed GPU stage and its explicit interface. It contains no main function, varying declarations or source expressions. Targets own stage/resource layout; adapters translate these semantics into their native language. |
+| [`string Inno.Rendering.Shaders.ShaderIrStage.contentHash`](../../src/services/rendering/Inno.Rendering.Shaders/Intermediate/ShaderIrStage.cs#L275) | Gets a deterministic hash of stage semantics, ordered effects, nested regions, complete types, resource layout and frozen sources. A compiled artifact cache must additionally include toolchain identity, target capabilities, optimization and variant configuration. |
 
 ### `Inno.Rendering.Shaders.ShaderIrStageInput`
 
 | 当前声明 | 行为 |
 | --- | --- |
-| [`Inno.Rendering.Shaders.ShaderIrStageInput.ShaderIrStageInput(string id, Inno.Rendering.Shaders.ShaderSourceType type, Inno.Rendering.Shaders.ShaderIrInputKind kind, string semantic = "", int location = 0)`](../../src/services/rendering/Inno.Rendering.Shaders/Intermediate/ShaderIrStage.cs#L85) | Creates an immutable stage input binding. |
-| [`string Inno.Rendering.Shaders.ShaderIrStageInput.id`](../../src/services/rendering/Inno.Rendering.Shaders/Intermediate/ShaderIrStage.cs#L111) | Gets the logical binding identity. |
 | [`Inno.Rendering.Shaders.ShaderIrInputKind Inno.Rendering.Shaders.ShaderIrStageInput.kind`](../../src/services/rendering/Inno.Rendering.Shaders/Intermediate/ShaderIrStage.cs#L119) | Gets the GPU input category. |
-| [`int Inno.Rendering.Shaders.ShaderIrStageInput.location`](../../src/services/rendering/Inno.Rendering.Shaders/Intermediate/ShaderIrStage.cs#L127) | Gets the target-assigned interface location or sampled-texture slot. |
-| [`string Inno.Rendering.Shaders.ShaderIrStageInput.semantic`](../../src/services/rendering/Inno.Rendering.Shaders/Intermediate/ShaderIrStage.cs#L123) | Gets the target semantic; an adapter must reject unsupported semantics. |
-| [`Inno.Rendering.Shaders.ShaderSourceType Inno.Rendering.Shaders.ShaderIrStageInput.type`](../../src/services/rendering/Inno.Rendering.Shaders/Intermediate/ShaderIrStage.cs#L115) | Gets the complete typed value received by the stage. |
 | [`Inno.Rendering.Shaders.ShaderIrStageInput`](../../src/services/rendering/Inno.Rendering.Shaders/Intermediate/ShaderIrStage.cs#L65) | Describes a stage input without embedding native declarations or expressions. |
+| [`Inno.Rendering.Shaders.ShaderIrStageInput.ShaderIrStageInput(string id, Inno.Rendering.Shaders.ShaderSourceType type, Inno.Rendering.Shaders.ShaderIrInputKind kind, string semantic = "", int location = 0)`](../../src/services/rendering/Inno.Rendering.Shaders/Intermediate/ShaderIrStage.cs#L85) | Creates an immutable stage input binding. |
+| [`Inno.Rendering.Shaders.ShaderSourceType Inno.Rendering.Shaders.ShaderIrStageInput.type`](../../src/services/rendering/Inno.Rendering.Shaders/Intermediate/ShaderIrStage.cs#L115) | Gets the complete typed value received by the stage. |
+| [`int Inno.Rendering.Shaders.ShaderIrStageInput.location`](../../src/services/rendering/Inno.Rendering.Shaders/Intermediate/ShaderIrStage.cs#L127) | Gets the target-assigned interface location or sampled-texture slot. |
+| [`string Inno.Rendering.Shaders.ShaderIrStageInput.id`](../../src/services/rendering/Inno.Rendering.Shaders/Intermediate/ShaderIrStage.cs#L111) | Gets the logical binding identity. |
+| [`string Inno.Rendering.Shaders.ShaderIrStageInput.semantic`](../../src/services/rendering/Inno.Rendering.Shaders/Intermediate/ShaderIrStage.cs#L123) | Gets the target semantic; an adapter must reject unsupported semantics. |
 
 ### `Inno.Rendering.Shaders.ShaderIrStageOutput`
 
 | 当前声明 | 行为 |
 | --- | --- |
-| [`Inno.Rendering.Shaders.ShaderIrStageOutput.ShaderIrStageOutput(string id, Inno.Rendering.Shaders.ShaderIrOutputKind kind, string semantic = "", int location = 0)`](../../src/services/rendering/Inno.Rendering.Shaders/Intermediate/ShaderIrStage.cs#L150) | Creates an immutable stage output binding. |
-| [`string Inno.Rendering.Shaders.ShaderIrStageOutput.id`](../../src/services/rendering/Inno.Rendering.Shaders/Intermediate/ShaderIrStage.cs#L171) | Gets the exact block output identity. |
 | [`Inno.Rendering.Shaders.ShaderIrOutputKind Inno.Rendering.Shaders.ShaderIrStageOutput.kind`](../../src/services/rendering/Inno.Rendering.Shaders/Intermediate/ShaderIrStage.cs#L175) | Gets the GPU output category. |
-| [`int Inno.Rendering.Shaders.ShaderIrStageOutput.location`](../../src/services/rendering/Inno.Rendering.Shaders/Intermediate/ShaderIrStage.cs#L183) | Gets the target-assigned varying or attachment index. |
-| [`string Inno.Rendering.Shaders.ShaderIrStageOutput.semantic`](../../src/services/rendering/Inno.Rendering.Shaders/Intermediate/ShaderIrStage.cs#L179) | Gets the varying semantic, not native assignment syntax. |
 | [`Inno.Rendering.Shaders.ShaderIrStageOutput`](../../src/services/rendering/Inno.Rendering.Shaders/Intermediate/ShaderIrStage.cs#L133) | Describes a named block output's GPU destination. |
+| [`Inno.Rendering.Shaders.ShaderIrStageOutput.ShaderIrStageOutput(string id, Inno.Rendering.Shaders.ShaderIrOutputKind kind, string semantic = "", int location = 0)`](../../src/services/rendering/Inno.Rendering.Shaders/Intermediate/ShaderIrStage.cs#L150) | Creates an immutable stage output binding. |
+| [`int Inno.Rendering.Shaders.ShaderIrStageOutput.location`](../../src/services/rendering/Inno.Rendering.Shaders/Intermediate/ShaderIrStage.cs#L183) | Gets the target-assigned varying or attachment index. |
+| [`string Inno.Rendering.Shaders.ShaderIrStageOutput.id`](../../src/services/rendering/Inno.Rendering.Shaders/Intermediate/ShaderIrStage.cs#L171) | Gets the exact block output identity. |
+| [`string Inno.Rendering.Shaders.ShaderIrStageOutput.semantic`](../../src/services/rendering/Inno.Rendering.Shaders/Intermediate/ShaderIrStage.cs#L179) | Gets the varying semantic, not native assignment syntax. |
 
 ### `Inno.Rendering.Shaders.ShaderIrValue`
 
 | 当前声明 | 行为 |
 | --- | --- |
-| [`int Inno.Rendering.Shaders.ShaderIrValue.index`](../../src/services/rendering/Inno.Rendering.Shaders/Intermediate/ShaderIrBlock.cs#L26) | Gets the deterministic block-local value index, not a GPU register or resource slot. |
-| [`Inno.Rendering.Shaders.ShaderSourceType Inno.Rendering.Shaders.ShaderIrValue.type`](../../src/services/rendering/Inno.Rendering.Shaders/Intermediate/ShaderIrBlock.cs#L30) | Gets the complete language-independent value type. |
 | [`Inno.Rendering.Shaders.ShaderIrValue`](../../src/services/rendering/Inno.Rendering.Shaders/Intermediate/ShaderIrBlock.cs#L11) | Identifies a typed single-assignment value within one intermediate block. |
+| [`Inno.Rendering.Shaders.ShaderSourceType Inno.Rendering.Shaders.ShaderIrValue.type`](../../src/services/rendering/Inno.Rendering.Shaders/Intermediate/ShaderIrBlock.cs#L30) | Gets the complete language-independent value type. |
+| [`int Inno.Rendering.Shaders.ShaderIrValue.index`](../../src/services/rendering/Inno.Rendering.Shaders/Intermediate/ShaderIrBlock.cs#L26) | Gets the deterministic block-local value index, not a GPU register or resource slot. |
 
 ### `Inno.Rendering.Shaders.ShaderNodeCompilerCatalog`
 
 | 当前声明 | 行为 |
 | --- | --- |
+| [`Inno.Rendering.Shaders.ShaderGraphLoweringResult Inno.Rendering.Shaders.ShaderNodeCompilerCatalog.Lower(Inno.Rendering.Shaders.ShaderGraphLoweringRequest request, Inno.Core.Serialization.SerializationRegistry serialization, Inno.Core.Serialization.SerializationContext context, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))`](../../src/services/rendering/Inno.Rendering.Shaders/Compilation/ShaderNodeCompilerCatalog.cs#L103) | Lowers an entire target-selected region, preserving stable topological/document order and all source calls. Missing definitions, stale ports and cycles fail without mutating graph records or dropping edges. |
+| [`Inno.Rendering.Shaders.ShaderNodeCompilerCatalog`](../../src/services/rendering/Inno.Rendering.Shaders/Compilation/ShaderNodeCompilerCatalog.cs#L16) | Owns an immutable compiler map; the common lowering algorithm never switches on concrete node identities. |
 | [`Inno.Rendering.Shaders.ShaderNodeCompilerCatalog.ShaderNodeCompilerCatalog(System.Collections.Generic.IEnumerable<Inno.Rendering.Shaders.IShaderNodeCompiler> compilers)`](../../src/services/rendering/Inno.Rendering.Shaders/Compilation/ShaderNodeCompilerCatalog.cs#L27) | Validates a complete generation of node compiler registrations. |
 | [`System.Collections.Generic.IReadOnlyList<Inno.Rendering.Shaders.ShaderNodePort> Inno.Rendering.Shaders.ShaderNodeCompilerCatalog.DescribePorts(Inno.Core.Graphs.GraphNodeRecord node, Inno.Core.Serialization.SerializationRegistry serialization, Inno.Core.Serialization.SerializationContext context, Inno.Rendering.Shaders.ShaderSourceModuleAnalysis? source = null, string implementationId = "", Inno.Rendering.Shaders.ShaderIrStageInput? input = null)`](../../src/services/rendering/Inno.Rendering.Shaders/Compilation/ShaderNodeCompilerCatalog.cs#L70) | Describes current typed ports for editor presentation without exposing the compiler provider. |
-| [`Inno.Rendering.Shaders.ShaderGraphLoweringResult Inno.Rendering.Shaders.ShaderNodeCompilerCatalog.Lower(Inno.Rendering.Shaders.ShaderGraphLoweringRequest request, Inno.Core.Serialization.SerializationRegistry serialization, Inno.Core.Serialization.SerializationContext context, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))`](../../src/services/rendering/Inno.Rendering.Shaders/Compilation/ShaderNodeCompilerCatalog.cs#L103) | Lowers an entire target-selected region, preserving stable topological/document order and all source calls. Missing definitions, stale ports and cycles fail without mutating graph records or dropping edges. |
 | [`System.Collections.Generic.IReadOnlyList<string> Inno.Rendering.Shaders.ShaderNodeCompilerCatalog.definitionIds`](../../src/services/rendering/Inno.Rendering.Shaders/Compilation/ShaderNodeCompilerCatalog.cs#L44) | Gets stable registered definition identities, without exposing providers. |
-| [`Inno.Rendering.Shaders.ShaderNodeCompilerCatalog`](../../src/services/rendering/Inno.Rendering.Shaders/Compilation/ShaderNodeCompilerCatalog.cs#L16) | Owns an immutable compiler map; the common lowering algorithm never switches on concrete node identities. |
 
 ### `Inno.Rendering.Shaders.ShaderNodeCompilerRegistry`
 
 | 当前声明 | 行为 |
 | --- | --- |
-| [`Inno.Rendering.Shaders.ShaderNodeCompilerRegistry.ShaderNodeCompilerRegistry(Inno.Extensibility.Types.TypeCatalog types)`](../../src/services/rendering/Inno.Rendering.Shaders/Compilation/ShaderNodeCompilerRegistry.cs#L24) | Registers the compiler generation owner with the shared type catalog. |
-| [`override Inno.Rendering.Shaders.ShaderNodeCompilerCatalog Inno.Rendering.Shaders.ShaderNodeCompilerRegistry.Build(Inno.Extensibility.Types.TypeCacheSnapshot types)`](../../src/services/rendering/Inno.Rendering.Shaders/Compilation/ShaderNodeCompilerRegistry.cs#L111) | Builds a validated result from the current immutable input snapshot. |
-| [`System.Collections.Generic.IReadOnlyList<Inno.Rendering.Shaders.ShaderNodePort> Inno.Rendering.Shaders.ShaderNodeCompilerRegistry.DescribePorts(Inno.Core.Graphs.GraphNodeRecord node, Inno.Core.Serialization.SerializationRegistry serialization, Inno.Core.Serialization.SerializationContext context, Inno.Rendering.Shaders.ShaderSourceModuleAnalysis? source = null, string implementationId = "", Inno.Rendering.Shaders.ShaderIrStageInput? input = null)`](../../src/services/rendering/Inno.Rendering.Shaders/Compilation/ShaderNodeCompilerRegistry.cs#L90) | Captures a node's current typed ports under the shared generation lease. |
-| [`override void Inno.Rendering.Shaders.ShaderNodeCompilerRegistry.DisposeSnapshot(Inno.Rendering.Shaders.ShaderNodeCompilerCatalog snapshot)`](../../src/services/rendering/Inno.Rendering.Shaders/Compilation/ShaderNodeCompilerRegistry.cs#L126) | Releases the generation lease retained by an immutable registry snapshot. |
 | [`Inno.Rendering.Shaders.ShaderGraphLoweringResult Inno.Rendering.Shaders.ShaderNodeCompilerRegistry.Lower(Inno.Rendering.Shaders.ShaderGraphLoweringRequest request, Inno.Core.Serialization.SerializationRegistry serialization, Inno.Core.Serialization.SerializationContext context, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))`](../../src/services/rendering/Inno.Rendering.Shaders/Compilation/ShaderNodeCompilerRegistry.cs#L56) | Lowers a whole region under one shared generation operation. |
-| [`System.Collections.Generic.IReadOnlyList<string> Inno.Rendering.Shaders.ShaderNodeCompilerRegistry.definitionIds`](../../src/services/rendering/Inno.Rendering.Shaders/Compilation/ShaderNodeCompilerRegistry.cs#L29) | Gets stable compiler identities without exposing provider instances. |
 | [`Inno.Rendering.Shaders.ShaderNodeCompilerRegistry`](../../src/services/rendering/Inno.Rendering.Shaders/Compilation/ShaderNodeCompilerRegistry.cs#L14) | Owns reloadable shader node compilers through the shared candidate, rollback and retirement protocol. |
+| [`Inno.Rendering.Shaders.ShaderNodeCompilerRegistry.ShaderNodeCompilerRegistry(Inno.Extensibility.Types.TypeCatalog types)`](../../src/services/rendering/Inno.Rendering.Shaders/Compilation/ShaderNodeCompilerRegistry.cs#L24) | Registers the compiler generation owner with the shared type catalog. |
+| [`System.Collections.Generic.IReadOnlyList<Inno.Rendering.Shaders.ShaderNodePort> Inno.Rendering.Shaders.ShaderNodeCompilerRegistry.DescribePorts(Inno.Core.Graphs.GraphNodeRecord node, Inno.Core.Serialization.SerializationRegistry serialization, Inno.Core.Serialization.SerializationContext context, Inno.Rendering.Shaders.ShaderSourceModuleAnalysis? source = null, string implementationId = "", Inno.Rendering.Shaders.ShaderIrStageInput? input = null)`](../../src/services/rendering/Inno.Rendering.Shaders/Compilation/ShaderNodeCompilerRegistry.cs#L90) | Captures a node's current typed ports under the shared generation lease. |
+| [`System.Collections.Generic.IReadOnlyList<string> Inno.Rendering.Shaders.ShaderNodeCompilerRegistry.definitionIds`](../../src/services/rendering/Inno.Rendering.Shaders/Compilation/ShaderNodeCompilerRegistry.cs#L29) | Gets stable compiler identities without exposing provider instances. |
+| [`override Inno.Rendering.Shaders.ShaderNodeCompilerCatalog Inno.Rendering.Shaders.ShaderNodeCompilerRegistry.Build(Inno.Extensibility.Types.TypeCacheSnapshot types)`](../../src/services/rendering/Inno.Rendering.Shaders/Compilation/ShaderNodeCompilerRegistry.cs#L111) | Builds a validated result from the current immutable input snapshot. |
+| [`override void Inno.Rendering.Shaders.ShaderNodeCompilerRegistry.DisposeSnapshot(Inno.Rendering.Shaders.ShaderNodeCompilerCatalog snapshot)`](../../src/services/rendering/Inno.Rendering.Shaders/Compilation/ShaderNodeCompilerRegistry.cs#L126) | Releases the generation lease retained by an immutable registry snapshot. |
 
 ### `Inno.Rendering.Shaders.ShaderNodeDescriptionContext`
 
 | 当前声明 | 行为 |
 | --- | --- |
+| [`Inno.Core.Graphs.GraphNodeId Inno.Rendering.Shaders.ShaderNodeDescriptionContext.nodeId`](../../src/services/rendering/Inno.Rendering.Shaders/Compilation/ShaderNodeCompiler.cs#L91) | Gets the node's stable identity, never its editor runtime handle. |
+| [`Inno.Rendering.Shaders.ShaderIrStageInput? Inno.Rendering.Shaders.ShaderNodeDescriptionContext.stageInput`](../../src/services/rendering/Inno.Rendering.Shaders/Compilation/ShaderNodeCompiler.cs#L107) | Gets the target-assigned stage input for this node, when applicable. |
+| [`Inno.Rendering.Shaders.ShaderNodeDescriptionContext`](../../src/services/rendering/Inno.Rendering.Shaders/Compilation/ShaderNodeCompiler.cs#L66) | Provides invocation-scoped property decoding through the complete owner serialization context. |
+| [`Inno.Rendering.Shaders.ShaderSourceModuleAnalysis? Inno.Rendering.Shaders.ShaderNodeDescriptionContext.sourceModule`](../../src/services/rendering/Inno.Rendering.Shaders/Compilation/ShaderNodeCompiler.cs#L99) | Gets a frozen module resolved by the asset owner; null means unassigned or unavailable. |
 | [`T Inno.Rendering.Shaders.ShaderNodeDescriptionContext.Read<T>(string id, T defaultValue)`](../../src/services/rendering/Inno.Rendering.Shaders/Compilation/ShaderNodeCompiler.cs#L124) | Reads a property using the owner's converter generation and complete reference resolver context. |
 | [`string Inno.Rendering.Shaders.ShaderNodeDescriptionContext.definitionId`](../../src/services/rendering/Inno.Rendering.Shaders/Compilation/ShaderNodeCompiler.cs#L95) | Gets the node definition's stable identity. |
 | [`string Inno.Rendering.Shaders.ShaderNodeDescriptionContext.implementationId`](../../src/services/rendering/Inno.Rendering.Shaders/Compilation/ShaderNodeCompiler.cs#L103) | Gets the exact implementation key chosen by the target. |
-| [`Inno.Core.Graphs.GraphNodeId Inno.Rendering.Shaders.ShaderNodeDescriptionContext.nodeId`](../../src/services/rendering/Inno.Rendering.Shaders/Compilation/ShaderNodeCompiler.cs#L91) | Gets the node's stable identity, never its editor runtime handle. |
-| [`Inno.Rendering.Shaders.ShaderSourceModuleAnalysis? Inno.Rendering.Shaders.ShaderNodeDescriptionContext.sourceModule`](../../src/services/rendering/Inno.Rendering.Shaders/Compilation/ShaderNodeCompiler.cs#L99) | Gets a frozen module resolved by the asset owner; null means unassigned or unavailable. |
-| [`Inno.Rendering.Shaders.ShaderIrStageInput? Inno.Rendering.Shaders.ShaderNodeDescriptionContext.stageInput`](../../src/services/rendering/Inno.Rendering.Shaders/Compilation/ShaderNodeCompiler.cs#L107) | Gets the target-assigned stage input for this node, when applicable. |
-| [`Inno.Rendering.Shaders.ShaderNodeDescriptionContext`](../../src/services/rendering/Inno.Rendering.Shaders/Compilation/ShaderNodeCompiler.cs#L66) | Provides invocation-scoped property decoding through the complete owner serialization context. |
 
 ### `Inno.Rendering.Shaders.ShaderNodeLoweringContext`
 
 | 当前声明 | 行为 |
 | --- | --- |
-| [`Inno.Rendering.Shaders.ShaderIrValue Inno.Rendering.Shaders.ShaderNodeLoweringContext.Input(string id)`](../../src/services/rendering/Inno.Rendering.Shaders/Compilation/ShaderNodeCompiler.cs#L171) | Requires one connected input without implicit defaults or positional rebinding. |
 | [`Inno.Rendering.Shaders.ShaderIrBuilder Inno.Rendering.Shaders.ShaderNodeLoweringContext.builder`](../../src/services/rendering/Inno.Rendering.Shaders/Compilation/ShaderNodeCompiler.cs#L157) | Gets the builder shared by nodes in this typed region. |
+| [`Inno.Rendering.Shaders.ShaderIrValue Inno.Rendering.Shaders.ShaderNodeLoweringContext.Input(string id)`](../../src/services/rendering/Inno.Rendering.Shaders/Compilation/ShaderNodeCompiler.cs#L171) | Requires one connected input without implicit defaults or positional rebinding. |
 | [`Inno.Rendering.Shaders.ShaderNodeDescriptionContext Inno.Rendering.Shaders.ShaderNodeLoweringContext.description`](../../src/services/rendering/Inno.Rendering.Shaders/Compilation/ShaderNodeCompiler.cs#L153) | Gets the invocation-scoped node description. |
-| [`System.Collections.Generic.IReadOnlyDictionary<string, Inno.Rendering.Shaders.ShaderIrValue> Inno.Rendering.Shaders.ShaderNodeLoweringContext.inputs`](../../src/services/rendering/Inno.Rendering.Shaders/Compilation/ShaderNodeCompiler.cs#L161) | Gets connected values keyed by semantic input port identity, never connection order. |
 | [`Inno.Rendering.Shaders.ShaderNodeLoweringContext`](../../src/services/rendering/Inno.Rendering.Shaders/Compilation/ShaderNodeCompiler.cs#L138) | Supplies one node's connected values and the region builder during lowering only. |
+| [`System.Collections.Generic.IReadOnlyDictionary<string, Inno.Rendering.Shaders.ShaderIrValue> Inno.Rendering.Shaders.ShaderNodeLoweringContext.inputs`](../../src/services/rendering/Inno.Rendering.Shaders/Compilation/ShaderNodeCompiler.cs#L161) | Gets connected values keyed by semantic input port identity, never connection order. |
 
 ### `Inno.Rendering.Shaders.ShaderNodePort`
 
@@ -885,39 +885,39 @@ static ShaderIrBlock BuildBrightness()
 
 | 当前声明 | 行为 |
 | --- | --- |
-| [`System.Collections.Generic.IReadOnlyList<Inno.Rendering.Shaders.ShaderNodePort> Inno.Rendering.Shaders.ShaderRerouteNodeCompiler.GetPorts(Inno.Rendering.Shaders.ShaderNodeDescriptionContext context)`](../../src/services/rendering/Inno.Rendering.Shaders/Compilation/ShaderRerouteNodeCompiler.cs#L24) | Gets a ports required by the implemented contract. |
-| [`System.Collections.Generic.IReadOnlyDictionary<string, Inno.Rendering.Shaders.ShaderIrValue> Inno.Rendering.Shaders.ShaderRerouteNodeCompiler.Lower(Inno.Rendering.Shaders.ShaderNodeLoweringContext context)`](../../src/services/rendering/Inno.Rendering.Shaders/Compilation/ShaderRerouteNodeCompiler.cs#L38) | Lowers this graph node to typed shader IR after validating its inputs. |
-| [`string Inno.Rendering.Shaders.ShaderRerouteNodeCompiler.definitionId`](../../src/services/rendering/Inno.Rendering.Shaders/Compilation/ShaderRerouteNodeCompiler.cs#L14) | Gets the definition id text used by the current instance. |
 | [`Inno.Rendering.Shaders.ShaderRerouteNodeCompiler`](../../src/services/rendering/Inno.Rendering.Shaders/Compilation/ShaderRerouteNodeCompiler.cs#L9) | Forwards a typed connection without adding instructions or changing resource-effect order. |
+| [`System.Collections.Generic.IReadOnlyDictionary<string, Inno.Rendering.Shaders.ShaderIrValue> Inno.Rendering.Shaders.ShaderRerouteNodeCompiler.Lower(Inno.Rendering.Shaders.ShaderNodeLoweringContext context)`](../../src/services/rendering/Inno.Rendering.Shaders/Compilation/ShaderRerouteNodeCompiler.cs#L38) | Lowers this graph node to typed shader IR after validating its inputs. |
+| [`System.Collections.Generic.IReadOnlyList<Inno.Rendering.Shaders.ShaderNodePort> Inno.Rendering.Shaders.ShaderRerouteNodeCompiler.GetPorts(Inno.Rendering.Shaders.ShaderNodeDescriptionContext context)`](../../src/services/rendering/Inno.Rendering.Shaders/Compilation/ShaderRerouteNodeCompiler.cs#L24) | Gets a ports required by the implemented contract. |
+| [`string Inno.Rendering.Shaders.ShaderRerouteNodeCompiler.definitionId`](../../src/services/rendering/Inno.Rendering.Shaders/Compilation/ShaderRerouteNodeCompiler.cs#L14) | Gets the definition id text used by the current instance. |
 
 ### `Inno.Rendering.Shaders.ShaderSampleNodeCompiler`
 
 | 当前声明 | 行为 |
 | --- | --- |
-| [`System.Collections.Generic.IReadOnlyList<Inno.Rendering.Shaders.ShaderNodePort> Inno.Rendering.Shaders.ShaderSampleNodeCompiler.GetPorts(Inno.Rendering.Shaders.ShaderNodeDescriptionContext context)`](../../src/services/rendering/Inno.Rendering.Shaders/Compilation/ShaderValueNodeCompilers.cs#L63) | Gets a ports required by the implemented contract. |
-| [`System.Collections.Generic.IReadOnlyDictionary<string, Inno.Rendering.Shaders.ShaderIrValue> Inno.Rendering.Shaders.ShaderSampleNodeCompiler.Lower(Inno.Rendering.Shaders.ShaderNodeLoweringContext context)`](../../src/services/rendering/Inno.Rendering.Shaders/Compilation/ShaderValueNodeCompilers.cs#L82) | Lowers this graph node to typed shader IR after validating its inputs. |
-| [`string Inno.Rendering.Shaders.ShaderSampleNodeCompiler.definitionId`](../../src/services/rendering/Inno.Rendering.Shaders/Compilation/ShaderValueNodeCompilers.cs#L53) | Gets the definition id text used by the current instance. |
 | [`Inno.Rendering.Shaders.ShaderSampleNodeCompiler`](../../src/services/rendering/Inno.Rendering.Shaders/Compilation/ShaderValueNodeCompilers.cs#L48) | Samples a graph-connected texture with implicit derivatives or an explicit level of detail. |
+| [`System.Collections.Generic.IReadOnlyDictionary<string, Inno.Rendering.Shaders.ShaderIrValue> Inno.Rendering.Shaders.ShaderSampleNodeCompiler.Lower(Inno.Rendering.Shaders.ShaderNodeLoweringContext context)`](../../src/services/rendering/Inno.Rendering.Shaders/Compilation/ShaderValueNodeCompilers.cs#L82) | Lowers this graph node to typed shader IR after validating its inputs. |
+| [`System.Collections.Generic.IReadOnlyList<Inno.Rendering.Shaders.ShaderNodePort> Inno.Rendering.Shaders.ShaderSampleNodeCompiler.GetPorts(Inno.Rendering.Shaders.ShaderNodeDescriptionContext context)`](../../src/services/rendering/Inno.Rendering.Shaders/Compilation/ShaderValueNodeCompilers.cs#L63) | Gets a ports required by the implemented contract. |
+| [`string Inno.Rendering.Shaders.ShaderSampleNodeCompiler.definitionId`](../../src/services/rendering/Inno.Rendering.Shaders/Compilation/ShaderValueNodeCompilers.cs#L53) | Gets the definition id text used by the current instance. |
 
 ### `Inno.Rendering.Shaders.ShaderSelectNodeCompiler`
 
 | 当前声明 | 行为 |
 | --- | --- |
-| [`System.Collections.Generic.IReadOnlyList<Inno.Rendering.Shaders.ShaderNodePort> Inno.Rendering.Shaders.ShaderSelectNodeCompiler.GetPorts(Inno.Rendering.Shaders.ShaderNodeDescriptionContext context)`](../../src/services/rendering/Inno.Rendering.Shaders/Compilation/ShaderBuiltinNodeCompilers.cs#L210) | Gets a ports required by the implemented contract. |
-| [`System.Collections.Generic.IReadOnlyDictionary<string, Inno.Rendering.Shaders.ShaderIrValue> Inno.Rendering.Shaders.ShaderSelectNodeCompiler.Lower(Inno.Rendering.Shaders.ShaderNodeLoweringContext context)`](../../src/services/rendering/Inno.Rendering.Shaders/Compilation/ShaderBuiltinNodeCompilers.cs#L225) | Lowers this graph node to typed shader IR after validating its inputs. |
-| [`string Inno.Rendering.Shaders.ShaderSelectNodeCompiler.definitionId`](../../src/services/rendering/Inno.Rendering.Shaders/Compilation/ShaderBuiltinNodeCompilers.cs#L200) | Gets the definition id text used by the current instance. |
 | [`Inno.Rendering.Shaders.ShaderSelectNodeCompiler`](../../src/services/rendering/Inno.Rendering.Shaders/Compilation/ShaderBuiltinNodeCompilers.cs#L195) | Selects between equal typed values; all producer effects remain evaluated before selection. |
+| [`System.Collections.Generic.IReadOnlyDictionary<string, Inno.Rendering.Shaders.ShaderIrValue> Inno.Rendering.Shaders.ShaderSelectNodeCompiler.Lower(Inno.Rendering.Shaders.ShaderNodeLoweringContext context)`](../../src/services/rendering/Inno.Rendering.Shaders/Compilation/ShaderBuiltinNodeCompilers.cs#L225) | Lowers this graph node to typed shader IR after validating its inputs. |
+| [`System.Collections.Generic.IReadOnlyList<Inno.Rendering.Shaders.ShaderNodePort> Inno.Rendering.Shaders.ShaderSelectNodeCompiler.GetPorts(Inno.Rendering.Shaders.ShaderNodeDescriptionContext context)`](../../src/services/rendering/Inno.Rendering.Shaders/Compilation/ShaderBuiltinNodeCompilers.cs#L210) | Gets a ports required by the implemented contract. |
+| [`string Inno.Rendering.Shaders.ShaderSelectNodeCompiler.definitionId`](../../src/services/rendering/Inno.Rendering.Shaders/Compilation/ShaderBuiltinNodeCompilers.cs#L200) | Gets the definition id text used by the current instance. |
 
 ### `Inno.Rendering.Shaders.ShaderSourceAnalysis`
 
 | 当前声明 | 行为 |
 | --- | --- |
-| [`Inno.Rendering.Shaders.ShaderSourceAnalysis.ShaderSourceAnalysis(Inno.Rendering.Shaders.ShaderSourceFunction? function, System.Collections.Generic.IEnumerable<string> dependencies, System.Collections.Generic.IEnumerable<Inno.Rendering.Shaders.ShaderSourceDiagnostic> diagnostics)`](../../src/services/rendering/Inno.Rendering.Shaders/Sources/IShaderSourceFrontend.cs#L155) | Captures a completed analysis without retaining compiler objects. |
-| [`System.Collections.Generic.IReadOnlyList<string> Inno.Rendering.Shaders.ShaderSourceAnalysis.dependencies`](../../src/services/rendering/Inno.Rendering.Shaders/Sources/IShaderSourceFrontend.cs#L173) | Gets original source dependencies for invalidation. |
-| [`System.Collections.Generic.IReadOnlyList<Inno.Rendering.Shaders.ShaderSourceDiagnostic> Inno.Rendering.Shaders.ShaderSourceAnalysis.diagnostics`](../../src/services/rendering/Inno.Rendering.Shaders/Sources/IShaderSourceFrontend.cs#L177) | Gets immutable, provider-neutral diagnostics. |
-| [`Inno.Rendering.Shaders.ShaderSourceFunction? Inno.Rendering.Shaders.ShaderSourceAnalysis.function`](../../src/services/rendering/Inno.Rendering.Shaders/Sources/IShaderSourceFrontend.cs#L169) | Gets the parsed interface, or null after an analysis failure. |
-| [`bool Inno.Rendering.Shaders.ShaderSourceAnalysis.succeeded`](../../src/services/rendering/Inno.Rendering.Shaders/Sources/IShaderSourceFrontend.cs#L181) | Gets whether a usable interface was found without errors. |
 | [`Inno.Rendering.Shaders.ShaderSourceAnalysis`](../../src/services/rendering/Inno.Rendering.Shaders/Sources/IShaderSourceFrontend.cs#L141) | Returns a recoverable source analysis result and complete original-source dependencies. |
+| [`Inno.Rendering.Shaders.ShaderSourceAnalysis.ShaderSourceAnalysis(Inno.Rendering.Shaders.ShaderSourceFunction? function, System.Collections.Generic.IEnumerable<string> dependencies, System.Collections.Generic.IEnumerable<Inno.Rendering.Shaders.ShaderSourceDiagnostic> diagnostics)`](../../src/services/rendering/Inno.Rendering.Shaders/Sources/IShaderSourceFrontend.cs#L155) | Captures a completed analysis without retaining compiler objects. |
+| [`Inno.Rendering.Shaders.ShaderSourceFunction? Inno.Rendering.Shaders.ShaderSourceAnalysis.function`](../../src/services/rendering/Inno.Rendering.Shaders/Sources/IShaderSourceFrontend.cs#L169) | Gets the parsed interface, or null after an analysis failure. |
+| [`System.Collections.Generic.IReadOnlyList<Inno.Rendering.Shaders.ShaderSourceDiagnostic> Inno.Rendering.Shaders.ShaderSourceAnalysis.diagnostics`](../../src/services/rendering/Inno.Rendering.Shaders/Sources/IShaderSourceFrontend.cs#L177) | Gets immutable, provider-neutral diagnostics. |
+| [`System.Collections.Generic.IReadOnlyList<string> Inno.Rendering.Shaders.ShaderSourceAnalysis.dependencies`](../../src/services/rendering/Inno.Rendering.Shaders/Sources/IShaderSourceFrontend.cs#L173) | Gets original source dependencies for invalidation. |
+| [`bool Inno.Rendering.Shaders.ShaderSourceAnalysis.succeeded`](../../src/services/rendering/Inno.Rendering.Shaders/Sources/IShaderSourceFrontend.cs#L181) | Gets whether a usable interface was found without errors. |
 
 ### `Inno.Rendering.Shaders.ShaderSourceDiagnostic`
 
@@ -929,10 +929,10 @@ static ShaderIrBlock BuildBrightness()
 
 | 当前声明 | 行为 |
 | --- | --- |
-| [`Inno.Rendering.Shaders.ShaderSourceField.ShaderSourceField(string name, Inno.Rendering.Shaders.ShaderSourceType type)`](../../src/services/rendering/Inno.Rendering.Shaders/Sources/ShaderSourceType.cs#L169) | Creates a structure field. |
-| [`string Inno.Rendering.Shaders.ShaderSourceField.name`](../../src/services/rendering/Inno.Rendering.Shaders/Sources/ShaderSourceType.cs#L182) | Gets the public field name. |
-| [`Inno.Rendering.Shaders.ShaderSourceType Inno.Rendering.Shaders.ShaderSourceField.type`](../../src/services/rendering/Inno.Rendering.Shaders/Sources/ShaderSourceType.cs#L186) | Gets the complete field type. |
 | [`Inno.Rendering.Shaders.ShaderSourceField`](../../src/services/rendering/Inno.Rendering.Shaders/Sources/ShaderSourceType.cs#L155) | Describes one immutable named structure field. |
+| [`Inno.Rendering.Shaders.ShaderSourceField.ShaderSourceField(string name, Inno.Rendering.Shaders.ShaderSourceType type)`](../../src/services/rendering/Inno.Rendering.Shaders/Sources/ShaderSourceType.cs#L169) | Creates a structure field. |
+| [`Inno.Rendering.Shaders.ShaderSourceType Inno.Rendering.Shaders.ShaderSourceField.type`](../../src/services/rendering/Inno.Rendering.Shaders/Sources/ShaderSourceType.cs#L186) | Gets the complete field type. |
+| [`string Inno.Rendering.Shaders.ShaderSourceField.name`](../../src/services/rendering/Inno.Rendering.Shaders/Sources/ShaderSourceType.cs#L182) | Gets the public field name. |
 
 ### `Inno.Rendering.Shaders.ShaderSourceFile`
 
@@ -944,61 +944,61 @@ static ShaderIrBlock BuildBrightness()
 
 | 当前声明 | 行为 |
 | --- | --- |
-| [`Inno.Rendering.Shaders.ShaderSourceFrontendCatalog.ShaderSourceFrontendCatalog(System.Collections.Generic.IEnumerable<Inno.Rendering.Shaders.IShaderSourceFrontend> frontends)`](../../src/services/rendering/Inno.Rendering.Shaders/Sources/ShaderSourceFrontendCatalog.cs#L25) | Captures a validated language provider set without a process-global registry. |
 | [`Inno.Rendering.Shaders.ShaderSourceAnalysis Inno.Rendering.Shaders.ShaderSourceFrontendCatalog.Analyze(string languageId, Inno.Rendering.Shaders.ShaderSourceRequest request)`](../../src/services/rendering/Inno.Rendering.Shaders/Sources/ShaderSourceFrontendCatalog.cs#L56) | Analyzes source using an explicitly selected language. |
+| [`Inno.Rendering.Shaders.ShaderSourceFrontendCatalog`](../../src/services/rendering/Inno.Rendering.Shaders/Sources/ShaderSourceFrontendCatalog.cs#L12) | Owns an immutable language registration snapshot for one authoring generation. |
+| [`Inno.Rendering.Shaders.ShaderSourceFrontendCatalog.ShaderSourceFrontendCatalog(System.Collections.Generic.IEnumerable<Inno.Rendering.Shaders.IShaderSourceFrontend> frontends)`](../../src/services/rendering/Inno.Rendering.Shaders/Sources/ShaderSourceFrontendCatalog.cs#L25) | Captures a validated language provider set without a process-global registry. |
 | [`Inno.Rendering.Shaders.ShaderSourceModuleAnalysis Inno.Rendering.Shaders.ShaderSourceFrontendCatalog.AnalyzeModule(System.Collections.Generic.IEnumerable<Inno.Rendering.Shaders.ShaderSourceImplementationRequest> implementations)`](../../src/services/rendering/Inno.Rendering.Shaders/Sources/ShaderSourceFrontendCatalog.cs#L79) | Analyzes all selected implementations and variants against one immutable provider generation. |
 | [`System.Collections.Generic.IReadOnlyList<string> Inno.Rendering.Shaders.ShaderSourceFrontendCatalog.languageIds`](../../src/services/rendering/Inno.Rendering.Shaders/Sources/ShaderSourceFrontendCatalog.cs#L37) | Gets registered language identities for source import settings. |
-| [`Inno.Rendering.Shaders.ShaderSourceFrontendCatalog`](../../src/services/rendering/Inno.Rendering.Shaders/Sources/ShaderSourceFrontendCatalog.cs#L12) | Owns an immutable language registration snapshot for one authoring generation. |
 
 ### `Inno.Rendering.Shaders.ShaderSourceFrontendRegistry`
 
 | 当前声明 | 行为 |
 | --- | --- |
-| [`Inno.Rendering.Shaders.ShaderSourceFrontendRegistry.ShaderSourceFrontendRegistry(Inno.Extensibility.Types.TypeCatalog types)`](../../src/services/rendering/Inno.Rendering.Shaders/Sources/ShaderSourceFrontendRegistry.cs#L22) | Registers this authoring owner with the shared candidate and rollback coordinator. |
 | [`Inno.Rendering.Shaders.ShaderSourceAnalysis Inno.Rendering.Shaders.ShaderSourceFrontendRegistry.Analyze(string languageId, Inno.Rendering.Shaders.ShaderSourceRequest request)`](../../src/services/rendering/Inno.Rendering.Shaders/Sources/ShaderSourceFrontendRegistry.cs#L51) | Analyzes source while preventing provider retirement for the complete synchronous operation. |
+| [`Inno.Rendering.Shaders.ShaderSourceFrontendRegistry`](../../src/services/rendering/Inno.Rendering.Shaders/Sources/ShaderSourceFrontendRegistry.cs#L12) | Discovers source language providers through the shared type-generation transaction and owns their retirement. |
+| [`Inno.Rendering.Shaders.ShaderSourceFrontendRegistry.ShaderSourceFrontendRegistry(Inno.Extensibility.Types.TypeCatalog types)`](../../src/services/rendering/Inno.Rendering.Shaders/Sources/ShaderSourceFrontendRegistry.cs#L22) | Registers this authoring owner with the shared candidate and rollback coordinator. |
 | [`Inno.Rendering.Shaders.ShaderSourceModuleAnalysis Inno.Rendering.Shaders.ShaderSourceFrontendRegistry.AnalyzeModule(System.Collections.Generic.IEnumerable<Inno.Rendering.Shaders.ShaderSourceImplementationRequest> implementations)`](../../src/services/rendering/Inno.Rendering.Shaders/Sources/ShaderSourceFrontendRegistry.cs#L71) | Freezes and validates a complete module without mixing frontend generations between implementations. |
+| [`System.Collections.Generic.IReadOnlyList<string> Inno.Rendering.Shaders.ShaderSourceFrontendRegistry.languageIds`](../../src/services/rendering/Inno.Rendering.Shaders/Sources/ShaderSourceFrontendRegistry.cs#L27) | Gets immutable language identities available in the current generation. |
 | [`override Inno.Rendering.Shaders.ShaderSourceFrontendCatalog Inno.Rendering.Shaders.ShaderSourceFrontendRegistry.Build(Inno.Extensibility.Types.TypeCacheSnapshot types)`](../../src/services/rendering/Inno.Rendering.Shaders/Sources/ShaderSourceFrontendRegistry.cs#L86) | Builds a validated result from the current immutable input snapshot. |
 | [`override void Inno.Rendering.Shaders.ShaderSourceFrontendRegistry.DisposeSnapshot(Inno.Rendering.Shaders.ShaderSourceFrontendCatalog snapshot)`](../../src/services/rendering/Inno.Rendering.Shaders/Sources/ShaderSourceFrontendRegistry.cs#L102) | Releases the generation lease retained by an immutable registry snapshot. |
-| [`System.Collections.Generic.IReadOnlyList<string> Inno.Rendering.Shaders.ShaderSourceFrontendRegistry.languageIds`](../../src/services/rendering/Inno.Rendering.Shaders/Sources/ShaderSourceFrontendRegistry.cs#L27) | Gets immutable language identities available in the current generation. |
-| [`Inno.Rendering.Shaders.ShaderSourceFrontendRegistry`](../../src/services/rendering/Inno.Rendering.Shaders/Sources/ShaderSourceFrontendRegistry.cs#L12) | Discovers source language providers through the shared type-generation transaction and owns their retirement. |
 
 ### `Inno.Rendering.Shaders.ShaderSourceFunction`
 
 | 当前声明 | 行为 |
 | --- | --- |
-| [`Inno.Rendering.Shaders.ShaderSourceFunction.ShaderSourceFunction(string name, Inno.Rendering.Shaders.ShaderSourceType returnType, System.Collections.Generic.IEnumerable<Inno.Rendering.Shaders.ShaderSourceParameter> parameters, Inno.Rendering.Shaders.ShaderSourcePosition location)`](../../src/services/rendering/Inno.Rendering.Shaders/Sources/ShaderSourceFunction.cs#L97) | Captures a source function declaration without retaining parser or provider objects. |
-| [`bool Inno.Rendering.Shaders.ShaderSourceFunction.HasSameInterface(Inno.Rendering.Shaders.ShaderSourceFunction? other)`](../../src/services/rendering/Inno.Rendering.Shaders/Sources/ShaderSourceFunction.cs#L142) | Validates alternative implementations by semantic names, types, direction, and call order. |
-| [`Inno.Rendering.Shaders.ShaderSourcePosition Inno.Rendering.Shaders.ShaderSourceFunction.location`](../../src/services/rendering/Inno.Rendering.Shaders/Sources/ShaderSourceFunction.cs#L131) | Gets the original declaration position. |
-| [`string Inno.Rendering.Shaders.ShaderSourceFunction.name`](../../src/services/rendering/Inno.Rendering.Shaders/Sources/ShaderSourceFunction.cs#L119) | Gets the implementation function name. |
-| [`System.Collections.Generic.IReadOnlyList<Inno.Rendering.Shaders.ShaderSourceParameter> Inno.Rendering.Shaders.ShaderSourceFunction.parameters`](../../src/services/rendering/Inno.Rendering.Shaders/Sources/ShaderSourceFunction.cs#L127) | Gets the immutable function parameters. |
-| [`Inno.Rendering.Shaders.ShaderSourceType Inno.Rendering.Shaders.ShaderSourceFunction.returnType`](../../src/services/rendering/Inno.Rendering.Shaders/Sources/ShaderSourceFunction.cs#L123) | Gets the canonical result type. |
 | [`Inno.Rendering.Shaders.ShaderSourceFunction`](../../src/services/rendering/Inno.Rendering.Shaders/Sources/ShaderSourceFunction.cs#L77) | Contains the single callable interface exported by a source asset. |
+| [`Inno.Rendering.Shaders.ShaderSourceFunction.ShaderSourceFunction(string name, Inno.Rendering.Shaders.ShaderSourceType returnType, System.Collections.Generic.IEnumerable<Inno.Rendering.Shaders.ShaderSourceParameter> parameters, Inno.Rendering.Shaders.ShaderSourcePosition location)`](../../src/services/rendering/Inno.Rendering.Shaders/Sources/ShaderSourceFunction.cs#L97) | Captures a source function declaration without retaining parser or provider objects. |
+| [`Inno.Rendering.Shaders.ShaderSourcePosition Inno.Rendering.Shaders.ShaderSourceFunction.location`](../../src/services/rendering/Inno.Rendering.Shaders/Sources/ShaderSourceFunction.cs#L131) | Gets the original declaration position. |
+| [`Inno.Rendering.Shaders.ShaderSourceType Inno.Rendering.Shaders.ShaderSourceFunction.returnType`](../../src/services/rendering/Inno.Rendering.Shaders/Sources/ShaderSourceFunction.cs#L123) | Gets the canonical result type. |
+| [`System.Collections.Generic.IReadOnlyList<Inno.Rendering.Shaders.ShaderSourceParameter> Inno.Rendering.Shaders.ShaderSourceFunction.parameters`](../../src/services/rendering/Inno.Rendering.Shaders/Sources/ShaderSourceFunction.cs#L127) | Gets the immutable function parameters. |
+| [`bool Inno.Rendering.Shaders.ShaderSourceFunction.HasSameInterface(Inno.Rendering.Shaders.ShaderSourceFunction? other)`](../../src/services/rendering/Inno.Rendering.Shaders/Sources/ShaderSourceFunction.cs#L142) | Validates alternative implementations by semantic names, types, direction, and call order. |
+| [`string Inno.Rendering.Shaders.ShaderSourceFunction.name`](../../src/services/rendering/Inno.Rendering.Shaders/Sources/ShaderSourceFunction.cs#L119) | Gets the implementation function name. |
 
 ### `Inno.Rendering.Shaders.ShaderSourceImplementationAnalysis`
 
 | 当前声明 | 行为 |
 | --- | --- |
-| [`Inno.Rendering.Shaders.ShaderSourceRequest Inno.Rendering.Shaders.ShaderSourceImplementationAnalysis.CreateSourceRequest()`](../../src/services/rendering/Inno.Rendering.Shaders/Sources/ShaderSourceModuleAnalysis.cs#L139) | Recreates a compiler input backed only by immutable captured sources and resolution edges. |
 | [`Inno.Rendering.Shaders.ShaderSourceAnalysis Inno.Rendering.Shaders.ShaderSourceImplementationAnalysis.analysis`](../../src/services/rendering/Inno.Rendering.Shaders/Sources/ShaderSourceModuleAnalysis.cs#L126) | Gets the parsed interface and implementation-local diagnostics. |
-| [`string Inno.Rendering.Shaders.ShaderSourceImplementationAnalysis.contentHash`](../../src/services/rendering/Inno.Rendering.Shaders/Sources/ShaderSourceModuleAnalysis.cs#L131) | Gets a deterministic source-input hash. A compiler cache must additionally include its toolchain, target, graph semantics and binding layout; this hash alone is not a compiled artifact key. |
+| [`Inno.Rendering.Shaders.ShaderSourceImplementationAnalysis`](../../src/services/rendering/Inno.Rendering.Shaders/Sources/ShaderSourceModuleAnalysis.cs#L75) | Freezes a parsed implementation and its complete source inputs without retaining a frontend or resolver. |
+| [`Inno.Rendering.Shaders.ShaderSourceRequest Inno.Rendering.Shaders.ShaderSourceImplementationAnalysis.CreateSourceRequest()`](../../src/services/rendering/Inno.Rendering.Shaders/Sources/ShaderSourceModuleAnalysis.cs#L139) | Recreates a compiler input backed only by immutable captured sources and resolution edges. |
 | [`System.Collections.Generic.IReadOnlyDictionary<string, string> Inno.Rendering.Shaders.ShaderSourceImplementationAnalysis.defines`](../../src/services/rendering/Inno.Rendering.Shaders/Sources/ShaderSourceModuleAnalysis.cs#L114) | Gets the immutable preprocessing inputs used for this implementation. |
+| [`System.Collections.Generic.IReadOnlyList<Inno.Rendering.Shaders.ShaderSourceFile> Inno.Rendering.Shaders.ShaderSourceImplementationAnalysis.sources`](../../src/services/rendering/Inno.Rendering.Shaders/Sources/ShaderSourceModuleAnalysis.cs#L118) | Gets every successfully read source, including the root, ordered by path. |
+| [`System.Collections.Generic.IReadOnlyList<Inno.Rendering.Shaders.ShaderSourceInclude> Inno.Rendering.Shaders.ShaderSourceImplementationAnalysis.includes`](../../src/services/rendering/Inno.Rendering.Shaders/Sources/ShaderSourceModuleAnalysis.cs#L122) | Gets the original resolver's frozen include edges, including aliases and mounted source paths. |
+| [`string Inno.Rendering.Shaders.ShaderSourceImplementationAnalysis.contentHash`](../../src/services/rendering/Inno.Rendering.Shaders/Sources/ShaderSourceModuleAnalysis.cs#L131) | Gets a deterministic source-input hash. A compiler cache must additionally include its toolchain, target, graph semantics and binding layout; this hash alone is not a compiled artifact key. |
 | [`string Inno.Rendering.Shaders.ShaderSourceImplementationAnalysis.entryPoint`](../../src/services/rendering/Inno.Rendering.Shaders/Sources/ShaderSourceModuleAnalysis.cs#L110) | Gets the implementation's selected callable function name. |
 | [`string Inno.Rendering.Shaders.ShaderSourceImplementationAnalysis.implementationId`](../../src/services/rendering/Inno.Rendering.Shaders/Sources/ShaderSourceModuleAnalysis.cs#L98) | Gets the stable implementation/configuration key. |
-| [`System.Collections.Generic.IReadOnlyList<Inno.Rendering.Shaders.ShaderSourceInclude> Inno.Rendering.Shaders.ShaderSourceImplementationAnalysis.includes`](../../src/services/rendering/Inno.Rendering.Shaders/Sources/ShaderSourceModuleAnalysis.cs#L122) | Gets the original resolver's frozen include edges, including aliases and mounted source paths. |
 | [`string Inno.Rendering.Shaders.ShaderSourceImplementationAnalysis.languageId`](../../src/services/rendering/Inno.Rendering.Shaders/Sources/ShaderSourceModuleAnalysis.cs#L102) | Gets the selected source language. |
 | [`string Inno.Rendering.Shaders.ShaderSourceImplementationAnalysis.sourcePath`](../../src/services/rendering/Inno.Rendering.Shaders/Sources/ShaderSourceModuleAnalysis.cs#L106) | Gets the root source path in the frozen source set. |
-| [`System.Collections.Generic.IReadOnlyList<Inno.Rendering.Shaders.ShaderSourceFile> Inno.Rendering.Shaders.ShaderSourceImplementationAnalysis.sources`](../../src/services/rendering/Inno.Rendering.Shaders/Sources/ShaderSourceModuleAnalysis.cs#L118) | Gets every successfully read source, including the root, ordered by path. |
-| [`Inno.Rendering.Shaders.ShaderSourceImplementationAnalysis`](../../src/services/rendering/Inno.Rendering.Shaders/Sources/ShaderSourceModuleAnalysis.cs#L75) | Freezes a parsed implementation and its complete source inputs without retaining a frontend or resolver. |
 
 ### `Inno.Rendering.Shaders.ShaderSourceImplementationRequest`
 
 | 当前声明 | 行为 |
 | --- | --- |
+| [`Inno.Rendering.Shaders.ShaderSourceImplementationRequest`](../../src/services/rendering/Inno.Rendering.Shaders/Sources/ShaderSourceModuleAnalysis.cs#L32) | Identifies one explicitly selected implementation and preprocessing configuration of a source module. |
 | [`Inno.Rendering.Shaders.ShaderSourceImplementationRequest.ShaderSourceImplementationRequest(string implementationId, string languageId, Inno.Rendering.Shaders.ShaderSourceRequest source)`](../../src/services/rendering/Inno.Rendering.Shaders/Sources/ShaderSourceModuleAnalysis.cs#L46) | Creates a candidate without inferring a language or adapter from its filename. |
+| [`Inno.Rendering.Shaders.ShaderSourceRequest Inno.Rendering.Shaders.ShaderSourceImplementationRequest.source`](../../src/services/rendering/Inno.Rendering.Shaders/Sources/ShaderSourceModuleAnalysis.cs#L69) | Gets the transient candidate request, which must not be persisted or retained after analysis. |
 | [`string Inno.Rendering.Shaders.ShaderSourceImplementationRequest.implementationId`](../../src/services/rendering/Inno.Rendering.Shaders/Sources/ShaderSourceModuleAnalysis.cs#L61) | Gets the stable owner-defined implementation/configuration key. |
 | [`string Inno.Rendering.Shaders.ShaderSourceImplementationRequest.languageId`](../../src/services/rendering/Inno.Rendering.Shaders/Sources/ShaderSourceModuleAnalysis.cs#L65) | Gets the explicitly selected language identity. |
-| [`Inno.Rendering.Shaders.ShaderSourceRequest Inno.Rendering.Shaders.ShaderSourceImplementationRequest.source`](../../src/services/rendering/Inno.Rendering.Shaders/Sources/ShaderSourceModuleAnalysis.cs#L69) | Gets the transient candidate request, which must not be persisted or retained after analysis. |
-| [`Inno.Rendering.Shaders.ShaderSourceImplementationRequest`](../../src/services/rendering/Inno.Rendering.Shaders/Sources/ShaderSourceModuleAnalysis.cs#L32) | Identifies one explicitly selected implementation and preprocessing configuration of a source module. |
 
 ### `Inno.Rendering.Shaders.ShaderSourceInclude`
 
@@ -1010,48 +1010,48 @@ static ShaderIrBlock BuildBrightness()
 
 | 当前声明 | 行为 |
 | --- | --- |
-| [`System.Collections.Generic.IReadOnlyList<Inno.Rendering.Shaders.ShaderSourceDiagnostic> Inno.Rendering.Shaders.ShaderSourceModuleAnalysis.diagnostics`](../../src/services/rendering/Inno.Rendering.Shaders/Sources/ShaderSourceModuleAnalysis.cs#L223) | Gets implementation and cross-implementation diagnostics with original source positions. |
 | [`Inno.Rendering.Shaders.ShaderSourceFunction? Inno.Rendering.Shaders.ShaderSourceModuleAnalysis.function`](../../src/services/rendering/Inno.Rendering.Shaders/Sources/ShaderSourceModuleAnalysis.cs#L227) | Gets the common interface only when all supplied implementations agree and are valid. |
+| [`Inno.Rendering.Shaders.ShaderSourceModuleAnalysis`](../../src/services/rendering/Inno.Rendering.Shaders/Sources/ShaderSourceModuleAnalysis.cs#L203) | Reports whether every supplied implementation and variant has the same callable graph interface. |
+| [`System.Collections.Generic.IReadOnlyList<Inno.Rendering.Shaders.ShaderSourceDiagnostic> Inno.Rendering.Shaders.ShaderSourceModuleAnalysis.diagnostics`](../../src/services/rendering/Inno.Rendering.Shaders/Sources/ShaderSourceModuleAnalysis.cs#L223) | Gets implementation and cross-implementation diagnostics with original source positions. |
 | [`System.Collections.Generic.IReadOnlyList<Inno.Rendering.Shaders.ShaderSourceImplementationAnalysis> Inno.Rendering.Shaders.ShaderSourceModuleAnalysis.implementations`](../../src/services/rendering/Inno.Rendering.Shaders/Sources/ShaderSourceModuleAnalysis.cs#L219) | Gets all implementation snapshots, including failed or unavailable implementations. |
 | [`bool Inno.Rendering.Shaders.ShaderSourceModuleAnalysis.succeeded`](../../src/services/rendering/Inno.Rendering.Shaders/Sources/ShaderSourceModuleAnalysis.cs#L231) | Gets whether interface analysis succeeded; native compilation is a separate gate. |
-| [`Inno.Rendering.Shaders.ShaderSourceModuleAnalysis`](../../src/services/rendering/Inno.Rendering.Shaders/Sources/ShaderSourceModuleAnalysis.cs#L203) | Reports whether every supplied implementation and variant has the same callable graph interface. |
 
 ### `Inno.Rendering.Shaders.ShaderSourceNodeCompiler`
 
 | 当前声明 | 行为 |
 | --- | --- |
-| [`System.Collections.Generic.IReadOnlyList<Inno.Rendering.Shaders.ShaderNodePort> Inno.Rendering.Shaders.ShaderSourceNodeCompiler.GetPorts(Inno.Rendering.Shaders.ShaderNodeDescriptionContext context)`](../../src/services/rendering/Inno.Rendering.Shaders/Compilation/ShaderBuiltinNodeCompilers.cs#L247) | Gets a ports required by the implemented contract. |
-| [`System.Collections.Generic.IReadOnlyDictionary<string, Inno.Rendering.Shaders.ShaderIrValue> Inno.Rendering.Shaders.ShaderSourceNodeCompiler.Lower(Inno.Rendering.Shaders.ShaderNodeLoweringContext context)`](../../src/services/rendering/Inno.Rendering.Shaders/Compilation/ShaderBuiltinNodeCompilers.cs#L280) | Lowers this graph node to typed shader IR after validating its inputs. |
-| [`string Inno.Rendering.Shaders.ShaderSourceNodeCompiler.definitionId`](../../src/services/rendering/Inno.Rendering.Shaders/Compilation/ShaderBuiltinNodeCompilers.cs#L237) | Gets the definition id text used by the current instance. |
 | [`Inno.Rendering.Shaders.ShaderSourceNodeCompiler`](../../src/services/rendering/Inno.Rendering.Shaders/Compilation/ShaderBuiltinNodeCompilers.cs#L232) | Lowers a parsed function module with name-based ports and explicit aggregate/member connection alternatives. |
+| [`System.Collections.Generic.IReadOnlyDictionary<string, Inno.Rendering.Shaders.ShaderIrValue> Inno.Rendering.Shaders.ShaderSourceNodeCompiler.Lower(Inno.Rendering.Shaders.ShaderNodeLoweringContext context)`](../../src/services/rendering/Inno.Rendering.Shaders/Compilation/ShaderBuiltinNodeCompilers.cs#L280) | Lowers this graph node to typed shader IR after validating its inputs. |
+| [`System.Collections.Generic.IReadOnlyList<Inno.Rendering.Shaders.ShaderNodePort> Inno.Rendering.Shaders.ShaderSourceNodeCompiler.GetPorts(Inno.Rendering.Shaders.ShaderNodeDescriptionContext context)`](../../src/services/rendering/Inno.Rendering.Shaders/Compilation/ShaderBuiltinNodeCompilers.cs#L247) | Gets a ports required by the implemented contract. |
+| [`string Inno.Rendering.Shaders.ShaderSourceNodeCompiler.definitionId`](../../src/services/rendering/Inno.Rendering.Shaders/Compilation/ShaderBuiltinNodeCompilers.cs#L237) | Gets the definition id text used by the current instance. |
 
 ### `Inno.Rendering.Shaders.ShaderSourceNodeDefinition`
 
 | 当前声明 | 行为 |
 | --- | --- |
-| [`Inno.Rendering.Shaders.ShaderSourceNodeDefinition.ShaderSourceNodeDefinition(Inno.Rendering.Shaders.ShaderSourceFunction function)`](../../src/services/rendering/Inno.Rendering.Shaders/Sources/ShaderSourceNodeDefinition.cs#L22) | Creates a source node definition for the currently resolved source generation. |
-| [`override System.Collections.Generic.IReadOnlyList<Inno.Core.Graphs.GraphPortDefinition> Inno.Rendering.Shaders.ShaderSourceNodeDefinition.GetPorts(Inno.Core.Graphs.GraphNodeRecord node)`](../../src/services/rendering/Inno.Rendering.Shaders/Sources/ShaderSourceNodeDefinition.cs#L66) | Gets a ports required by the implemented contract. |
 | [`Inno.Rendering.Shaders.ShaderSourceFunction Inno.Rendering.Shaders.ShaderSourceNodeDefinition.function`](../../src/services/rendering/Inno.Rendering.Shaders/Sources/ShaderSourceNodeDefinition.cs#L55) | Gets the immutable parsed source interface belonging to this definition. |
 | [`Inno.Rendering.Shaders.ShaderSourceNodeDefinition`](../../src/services/rendering/Inno.Rendering.Shaders/Sources/ShaderSourceNodeDefinition.cs#L12) | Projects one resolved source interface into immutable graph ports without duplicating authored port declarations. |
+| [`Inno.Rendering.Shaders.ShaderSourceNodeDefinition.ShaderSourceNodeDefinition(Inno.Rendering.Shaders.ShaderSourceFunction function)`](../../src/services/rendering/Inno.Rendering.Shaders/Sources/ShaderSourceNodeDefinition.cs#L22) | Creates a source node definition for the currently resolved source generation. |
+| [`override System.Collections.Generic.IReadOnlyList<Inno.Core.Graphs.GraphPortDefinition> Inno.Rendering.Shaders.ShaderSourceNodeDefinition.GetPorts(Inno.Core.Graphs.GraphNodeRecord node)`](../../src/services/rendering/Inno.Rendering.Shaders/Sources/ShaderSourceNodeDefinition.cs#L66) | Gets a ports required by the implemented contract. |
 
 ### `Inno.Rendering.Shaders.ShaderSourceParameter`
 
 | 当前声明 | 行为 |
 | --- | --- |
+| [`Inno.Rendering.Shaders.ShaderSourceParameter`](../../src/services/rendering/Inno.Rendering.Shaders/Sources/ShaderSourceFunction.cs#L29) | Describes one parameter parsed from a public source declaration. |
 | [`Inno.Rendering.Shaders.ShaderSourceParameter.ShaderSourceParameter(string name, Inno.Rendering.Shaders.ShaderSourceType type, Inno.Rendering.Shaders.ShaderSourceParameterDirection direction)`](../../src/services/rendering/Inno.Rendering.Shaders/Sources/ShaderSourceFunction.cs#L46) | Creates a validated function parameter. |
 | [`Inno.Rendering.Shaders.ShaderSourceParameterDirection Inno.Rendering.Shaders.ShaderSourceParameter.direction`](../../src/services/rendering/Inno.Rendering.Shaders/Sources/ShaderSourceFunction.cs#L71) | Gets the declared value flow. |
-| [`string Inno.Rendering.Shaders.ShaderSourceParameter.name`](../../src/services/rendering/Inno.Rendering.Shaders/Sources/ShaderSourceFunction.cs#L63) | Gets the public parameter name. |
 | [`Inno.Rendering.Shaders.ShaderSourceType Inno.Rendering.Shaders.ShaderSourceParameter.type`](../../src/services/rendering/Inno.Rendering.Shaders/Sources/ShaderSourceFunction.cs#L67) | Gets the complete canonical value type. |
-| [`Inno.Rendering.Shaders.ShaderSourceParameter`](../../src/services/rendering/Inno.Rendering.Shaders/Sources/ShaderSourceFunction.cs#L29) | Describes one parameter parsed from a public source declaration. |
+| [`string Inno.Rendering.Shaders.ShaderSourceParameter.name`](../../src/services/rendering/Inno.Rendering.Shaders/Sources/ShaderSourceFunction.cs#L63) | Gets the public parameter name. |
 
 ### `Inno.Rendering.Shaders.ShaderSourceParameterDirection`
 
 | 当前声明 | 行为 |
 | --- | --- |
+| [`Inno.Rendering.Shaders.ShaderSourceParameterDirection`](../../src/services/rendering/Inno.Rendering.Shaders/Sources/ShaderSourceFunction.cs#L10) | Declares value flow across a source function parameter. |
 | [`Inno.Rendering.Shaders.ShaderSourceParameterDirection.Input`](../../src/services/rendering/Inno.Rendering.Shaders/Sources/ShaderSourceFunction.cs#L15) | The caller supplies a value. |
 | [`Inno.Rendering.Shaders.ShaderSourceParameterDirection.InputOutput`](../../src/services/rendering/Inno.Rendering.Shaders/Sources/ShaderSourceFunction.cs#L23) | The caller supplies a value and the function produces its replacement. |
 | [`Inno.Rendering.Shaders.ShaderSourceParameterDirection.Output`](../../src/services/rendering/Inno.Rendering.Shaders/Sources/ShaderSourceFunction.cs#L19) | The function produces a value. |
-| [`Inno.Rendering.Shaders.ShaderSourceParameterDirection`](../../src/services/rendering/Inno.Rendering.Shaders/Sources/ShaderSourceFunction.cs#L10) | Declares value flow across a source function parameter. |
 
 ### `Inno.Rendering.Shaders.ShaderSourcePosition`
 
@@ -1063,67 +1063,67 @@ static ShaderIrBlock BuildBrightness()
 
 | 当前声明 | 行为 |
 | --- | --- |
-| [`Inno.Rendering.Shaders.ShaderSourceRequest.ShaderSourceRequest(Inno.Rendering.Shaders.ShaderSourceFile source, string entryPoint, Inno.Rendering.Shaders.IShaderSourceResolver resolver, System.Collections.Generic.IReadOnlyDictionary<string, string>? defines = null)`](../../src/services/rendering/Inno.Rendering.Shaders/Sources/IShaderSourceFrontend.cs#L105) | Creates an analysis request for an explicitly selected function. |
-| [`System.Collections.Generic.IReadOnlyDictionary<string, string> Inno.Rendering.Shaders.ShaderSourceRequest.defines`](../../src/services/rendering/Inno.Rendering.Shaders/Sources/IShaderSourceFrontend.cs#L135) | Gets immutable preprocessing inputs included in analysis cache identity. |
-| [`string Inno.Rendering.Shaders.ShaderSourceRequest.entryPoint`](../../src/services/rendering/Inno.Rendering.Shaders/Sources/IShaderSourceFrontend.cs#L127) | Gets the explicitly selected export function name. |
 | [`Inno.Rendering.Shaders.IShaderSourceResolver Inno.Rendering.Shaders.ShaderSourceRequest.resolver`](../../src/services/rendering/Inno.Rendering.Shaders/Sources/IShaderSourceFrontend.cs#L131) | Gets the candidate-scoped dependency resolver. |
 | [`Inno.Rendering.Shaders.ShaderSourceFile Inno.Rendering.Shaders.ShaderSourceRequest.source`](../../src/services/rendering/Inno.Rendering.Shaders/Sources/IShaderSourceFrontend.cs#L123) | Gets the root source snapshot. |
 | [`Inno.Rendering.Shaders.ShaderSourceRequest`](../../src/services/rendering/Inno.Rendering.Shaders/Sources/IShaderSourceFrontend.cs#L88) | Carries the immutable inputs required to execute one shader source request. |
+| [`Inno.Rendering.Shaders.ShaderSourceRequest.ShaderSourceRequest(Inno.Rendering.Shaders.ShaderSourceFile source, string entryPoint, Inno.Rendering.Shaders.IShaderSourceResolver resolver, System.Collections.Generic.IReadOnlyDictionary<string, string>? defines = null)`](../../src/services/rendering/Inno.Rendering.Shaders/Sources/IShaderSourceFrontend.cs#L105) | Creates an analysis request for an explicitly selected function. |
+| [`System.Collections.Generic.IReadOnlyDictionary<string, string> Inno.Rendering.Shaders.ShaderSourceRequest.defines`](../../src/services/rendering/Inno.Rendering.Shaders/Sources/IShaderSourceFrontend.cs#L135) | Gets immutable preprocessing inputs included in analysis cache identity. |
+| [`string Inno.Rendering.Shaders.ShaderSourceRequest.entryPoint`](../../src/services/rendering/Inno.Rendering.Shaders/Sources/IShaderSourceFrontend.cs#L127) | Gets the explicitly selected export function name. |
 
 ### `Inno.Rendering.Shaders.ShaderSourceType`
 
 | 当前声明 | 行为 |
 | --- | --- |
+| [`Inno.Rendering.Shaders.ShaderSourceType`](../../src/services/rendering/Inno.Rendering.Shaders/Sources/ShaderSourceType.cs#L10) | Describes a language-independent function value, including aggregate members and fixed arrays. |
+| [`Inno.Rendering.Shaders.ShaderSourceType? Inno.Rendering.Shaders.ShaderSourceType.elementType`](../../src/services/rendering/Inno.Rendering.Shaders/Sources/ShaderSourceType.cs#L34) | Gets the array element type, or null for a non-array value. |
+| [`Inno.Rendering.Shaders.ShaderStorageType? Inno.Rendering.Shaders.ShaderSourceType.storage`](../../src/services/rendering/Inno.Rendering.Shaders/Sources/ShaderSourceType.cs#L47) | Gets a typed storage binding contract, or null for ordinary values and sampled textures. |
+| [`System.Collections.Generic.IReadOnlyList<Inno.Rendering.Shaders.ShaderSourceField> Inno.Rendering.Shaders.ShaderSourceType.fields`](../../src/services/rendering/Inno.Rendering.Shaders/Sources/ShaderSourceType.cs#L42) | Gets immutable structure fields in declaration order. |
+| [`bool Inno.Rendering.Shaders.ShaderSourceType.IsEquivalentTo(Inno.Rendering.Shaders.ShaderSourceType? other)`](../../src/services/rendering/Inno.Rendering.Shaders/Sources/ShaderSourceType.cs#L136) | Checks both nominal identity and complete aggregate layout. |
+| [`int Inno.Rendering.Shaders.ShaderSourceType.elementCount`](../../src/services/rendering/Inno.Rendering.Shaders/Sources/ShaderSourceType.cs#L38) | Gets the fixed array length, or zero for a non-array value. |
 | [`static Inno.Rendering.Shaders.ShaderSourceType Inno.Rendering.Shaders.ShaderSourceType.ArrayOf(Inno.Rendering.Shaders.ShaderSourceType element, int count)`](../../src/services/rendering/Inno.Rendering.Shaders/Sources/ShaderSourceType.cs#L87) | Creates a fixed-length array without collapsing its element type. |
 | [`static Inno.Rendering.Shaders.ShaderSourceType Inno.Rendering.Shaders.ShaderSourceType.Atomic(string id)`](../../src/services/rendering/Inno.Rendering.Shaders/Sources/ShaderSourceType.cs#L70) | Creates an atomic type supplied by a language or graph target. |
-| [`bool Inno.Rendering.Shaders.ShaderSourceType.IsEquivalentTo(Inno.Rendering.Shaders.ShaderSourceType? other)`](../../src/services/rendering/Inno.Rendering.Shaders/Sources/ShaderSourceType.cs#L136) | Checks both nominal identity and complete aggregate layout. |
 | [`static Inno.Rendering.Shaders.ShaderSourceType Inno.Rendering.Shaders.ShaderSourceType.Storage(Inno.Rendering.Shaders.ShaderStorageType storage)`](../../src/services/rendering/Inno.Rendering.Shaders/Sources/ShaderSourceType.cs#L58) | Creates an opaque storage binding value with a complete element, format and access contract. |
 | [`static Inno.Rendering.Shaders.ShaderSourceType Inno.Rendering.Shaders.ShaderSourceType.Structure(string id, System.Collections.Generic.IEnumerable<Inno.Rendering.Shaders.ShaderSourceField> fields)`](../../src/services/rendering/Inno.Rendering.Shaders/Sources/ShaderSourceType.cs#L113) | Creates a nominal structure with a validated immutable field layout. |
-| [`int Inno.Rendering.Shaders.ShaderSourceType.elementCount`](../../src/services/rendering/Inno.Rendering.Shaders/Sources/ShaderSourceType.cs#L38) | Gets the fixed array length, or zero for a non-array value. |
-| [`Inno.Rendering.Shaders.ShaderSourceType? Inno.Rendering.Shaders.ShaderSourceType.elementType`](../../src/services/rendering/Inno.Rendering.Shaders/Sources/ShaderSourceType.cs#L34) | Gets the array element type, or null for a non-array value. |
-| [`System.Collections.Generic.IReadOnlyList<Inno.Rendering.Shaders.ShaderSourceField> Inno.Rendering.Shaders.ShaderSourceType.fields`](../../src/services/rendering/Inno.Rendering.Shaders/Sources/ShaderSourceType.cs#L42) | Gets immutable structure fields in declaration order. |
 | [`string Inno.Rendering.Shaders.ShaderSourceType.id`](../../src/services/rendering/Inno.Rendering.Shaders/Sources/ShaderSourceType.cs#L30) | Gets the open semantic type identifier, independent of source-language spelling. |
-| [`Inno.Rendering.Shaders.ShaderStorageType? Inno.Rendering.Shaders.ShaderSourceType.storage`](../../src/services/rendering/Inno.Rendering.Shaders/Sources/ShaderSourceType.cs#L47) | Gets a typed storage binding contract, or null for ordinary values and sampled textures. |
-| [`Inno.Rendering.Shaders.ShaderSourceType`](../../src/services/rendering/Inno.Rendering.Shaders/Sources/ShaderSourceType.cs#L10) | Describes a language-independent function value, including aggregate members and fixed arrays. |
 
 ### `Inno.Rendering.Shaders.ShaderStageInputNodeCompiler`
 
 | 当前声明 | 行为 |
 | --- | --- |
-| [`System.Collections.Generic.IReadOnlyList<Inno.Rendering.Shaders.ShaderNodePort> Inno.Rendering.Shaders.ShaderStageInputNodeCompiler.GetPorts(Inno.Rendering.Shaders.ShaderNodeDescriptionContext context)`](../../src/services/rendering/Inno.Rendering.Shaders/Compilation/ShaderBuiltinNodeCompilers.cs#L172) | Gets a ports required by the implemented contract. |
-| [`System.Collections.Generic.IReadOnlyDictionary<string, Inno.Rendering.Shaders.ShaderIrValue> Inno.Rendering.Shaders.ShaderStageInputNodeCompiler.Lower(Inno.Rendering.Shaders.ShaderNodeLoweringContext context)`](../../src/services/rendering/Inno.Rendering.Shaders/Compilation/ShaderBuiltinNodeCompilers.cs#L183) | Lowers this graph node to typed shader IR after validating its inputs. |
-| [`string Inno.Rendering.Shaders.ShaderStageInputNodeCompiler.definitionId`](../../src/services/rendering/Inno.Rendering.Shaders/Compilation/ShaderBuiltinNodeCompilers.cs#L162) | Gets the definition id text used by the current instance. |
 | [`Inno.Rendering.Shaders.ShaderStageInputNodeCompiler`](../../src/services/rendering/Inno.Rendering.Shaders/Compilation/ShaderBuiltinNodeCompilers.cs#L157) | Reads one target-assigned stage/resource input without choosing a native variable name. |
+| [`System.Collections.Generic.IReadOnlyDictionary<string, Inno.Rendering.Shaders.ShaderIrValue> Inno.Rendering.Shaders.ShaderStageInputNodeCompiler.Lower(Inno.Rendering.Shaders.ShaderNodeLoweringContext context)`](../../src/services/rendering/Inno.Rendering.Shaders/Compilation/ShaderBuiltinNodeCompilers.cs#L183) | Lowers this graph node to typed shader IR after validating its inputs. |
+| [`System.Collections.Generic.IReadOnlyList<Inno.Rendering.Shaders.ShaderNodePort> Inno.Rendering.Shaders.ShaderStageInputNodeCompiler.GetPorts(Inno.Rendering.Shaders.ShaderNodeDescriptionContext context)`](../../src/services/rendering/Inno.Rendering.Shaders/Compilation/ShaderBuiltinNodeCompilers.cs#L172) | Gets a ports required by the implemented contract. |
+| [`string Inno.Rendering.Shaders.ShaderStageInputNodeCompiler.definitionId`](../../src/services/rendering/Inno.Rendering.Shaders/Compilation/ShaderBuiltinNodeCompilers.cs#L162) | Gets the definition id text used by the current instance. |
 
 ### `Inno.Rendering.Shaders.ShaderStorageType`
 
 | 当前声明 | 行为 |
 | --- | --- |
-| [`static Inno.Rendering.Shaders.ShaderStorageType Inno.Rendering.Shaders.ShaderStorageType.Buffer(Inno.Rendering.Shaders.ShaderSourceType element, Inno.Rendering.RenderStorageAccess access)`](../../src/services/rendering/Inno.Rendering.Shaders/Intermediate/ShaderStorageType.cs#L67) | Creates a structured storage buffer with an explicit element layout. |
-| [`static Inno.Rendering.Shaders.ShaderStorageType Inno.Rendering.Shaders.ShaderStorageType.Image(Inno.Rendering.RenderTextureFormat format, Inno.Rendering.RenderStorageAccess access, Inno.Rendering.RenderTextureDimension dimension = Inno.Rendering.RenderTextureDimension.Texture2D, bool array = false)`](../../src/services/rendering/Inno.Rendering.Shaders/Intermediate/ShaderStorageType.cs#L97) | Creates a formatted storage image; target capabilities must separately support its access and format. |
-| [`bool Inno.Rendering.Shaders.ShaderStorageType.IsEquivalentTo(Inno.Rendering.Shaders.ShaderStorageType? other)`](../../src/services/rendering/Inno.Rendering.Shaders/Intermediate/ShaderStorageType.cs#L119) | Compares complete access, format, shape and element layout contracts. |
 | [`Inno.Rendering.RenderStorageAccess Inno.Rendering.Shaders.ShaderStorageType.access`](../../src/services/rendering/Inno.Rendering.Shaders/Intermediate/ShaderStorageType.cs#L34) | Gets the permitted memory access, independent of Render Graph scheduling. |
-| [`bool Inno.Rendering.Shaders.ShaderStorageType.array`](../../src/services/rendering/Inno.Rendering.Shaders/Intermediate/ShaderStorageType.cs#L46) | Gets whether a two-dimensional storage image has array layers. |
 | [`Inno.Rendering.RenderTextureDimension Inno.Rendering.Shaders.ShaderStorageType.dimension`](../../src/services/rendering/Inno.Rendering.Shaders/Intermediate/ShaderStorageType.cs#L42) | Gets the image dimension; ignored for buffers. |
 | [`Inno.Rendering.RenderTextureFormat? Inno.Rendering.Shaders.ShaderStorageType.format`](../../src/services/rendering/Inno.Rendering.Shaders/Intermediate/ShaderStorageType.cs#L38) | Gets the exact storage image format, or null for a structured buffer. |
-| [`bool Inno.Rendering.Shaders.ShaderStorageType.isImage`](../../src/services/rendering/Inno.Rendering.Shaders/Intermediate/ShaderStorageType.cs#L50) | Gets whether this descriptor denotes an image rather than a structured buffer. |
 | [`Inno.Rendering.Shaders.ShaderSourceType Inno.Rendering.Shaders.ShaderStorageType.valueType`](../../src/services/rendering/Inno.Rendering.Shaders/Intermediate/ShaderStorageType.cs#L30) | Gets the buffer element or image load/store value type; image operations use float4. |
 | [`Inno.Rendering.Shaders.ShaderStorageType`](../../src/services/rendering/Inno.Rendering.Shaders/Intermediate/ShaderStorageType.cs#L9) | Describes typed storage without embedding a backend register, declaration or resource handle. |
+| [`bool Inno.Rendering.Shaders.ShaderStorageType.IsEquivalentTo(Inno.Rendering.Shaders.ShaderStorageType? other)`](../../src/services/rendering/Inno.Rendering.Shaders/Intermediate/ShaderStorageType.cs#L119) | Compares complete access, format, shape and element layout contracts. |
+| [`bool Inno.Rendering.Shaders.ShaderStorageType.array`](../../src/services/rendering/Inno.Rendering.Shaders/Intermediate/ShaderStorageType.cs#L46) | Gets whether a two-dimensional storage image has array layers. |
+| [`bool Inno.Rendering.Shaders.ShaderStorageType.isImage`](../../src/services/rendering/Inno.Rendering.Shaders/Intermediate/ShaderStorageType.cs#L50) | Gets whether this descriptor denotes an image rather than a structured buffer. |
+| [`static Inno.Rendering.Shaders.ShaderStorageType Inno.Rendering.Shaders.ShaderStorageType.Buffer(Inno.Rendering.Shaders.ShaderSourceType element, Inno.Rendering.RenderStorageAccess access)`](../../src/services/rendering/Inno.Rendering.Shaders/Intermediate/ShaderStorageType.cs#L67) | Creates a structured storage buffer with an explicit element layout. |
+| [`static Inno.Rendering.Shaders.ShaderStorageType Inno.Rendering.Shaders.ShaderStorageType.Image(Inno.Rendering.RenderTextureFormat format, Inno.Rendering.RenderStorageAccess access, Inno.Rendering.RenderTextureDimension dimension = Inno.Rendering.RenderTextureDimension.Texture2D, bool array = false)`](../../src/services/rendering/Inno.Rendering.Shaders/Intermediate/ShaderStorageType.cs#L97) | Creates a formatted storage image; target capabilities must separately support its access and format. |
 
 ### `Inno.Rendering.Shaders.ShaderTarget`
 
 | 当前声明 | 行为 |
 | --- | --- |
-| [`abstract Inno.Core.Graphs.GraphDocument Inno.Rendering.Shaders.ShaderTarget.Expand(Inno.Rendering.Shaders.ShaderTargetContext context, System.Threading.CancellationToken cancellationToken)`](../../src/services/rendering/Inno.Rendering.Shaders/Targets/ShaderTarget.cs#L48) | Builds explicit stage interfaces, resource declarations, techniques and pass states. |
 | [`Inno.Rendering.Shaders.ShaderTarget`](../../src/services/rendering/Inno.Rendering.Shaders/Targets/ShaderTarget.cs#L34) | Expands a domain's surface contract into ordinary graph stages before source dependency capture. |
+| [`abstract Inno.Core.Graphs.GraphDocument Inno.Rendering.Shaders.ShaderTarget.Expand(Inno.Rendering.Shaders.ShaderTargetContext context, System.Threading.CancellationToken cancellationToken)`](../../src/services/rendering/Inno.Rendering.Shaders/Targets/ShaderTarget.cs#L48) | Builds explicit stage interfaces, resource declarations, techniques and pass states. |
 
 ### `Inno.Rendering.Shaders.ShaderTargetAttribute`
 
 | 当前声明 | 行为 |
 | --- | --- |
+| [`Inno.Rendering.Shaders.ShaderTargetAttribute`](../../src/services/rendering/Inno.Rendering.Shaders/Targets/ShaderTarget.cs#L11) | Declares the immutable identity used to select a Shader Target from an authored graph. |
 | [`Inno.Rendering.Shaders.ShaderTargetAttribute.ShaderTargetAttribute(string id)`](../../src/services/rendering/Inno.Rendering.Shaders/Targets/ShaderTarget.cs#L20) | Creates target discovery metadata. |
 | [`string Inno.Rendering.Shaders.ShaderTargetAttribute.id`](../../src/services/rendering/Inno.Rendering.Shaders/Targets/ShaderTarget.cs#L28) | Gets the stable target identity persisted by Shader assets. |
-| [`Inno.Rendering.Shaders.ShaderTargetAttribute`](../../src/services/rendering/Inno.Rendering.Shaders/Targets/ShaderTarget.cs#L11) | Declares the immutable identity used to select a Shader Target from an authored graph. |
 
 ### `Inno.Rendering.Shaders.ShaderTargetContext`
 
@@ -1138,30 +1138,28 @@ static ShaderIrBlock BuildBrightness()
 
 | 当前声明 | 行为 |
 | --- | --- |
-| [`Inno.Rendering.Shaders.ShaderTargetRegistry.ShaderTargetRegistry(Inno.Extensibility.Types.TypeCatalog types)`](../../src/services/rendering/Inno.Rendering.Shaders/Targets/ShaderTargetRegistry.cs#L26) | Creates a target owner participating in shared candidate publication and retirement. |
-| [`void Inno.Rendering.Shaders.ShaderTargetRegistry.Dispose()`](../../src/services/rendering/Inno.Rendering.Shaders/Targets/ShaderTargetRegistry.cs#L93) | Retires the target snapshot through the shared registry lifecycle. |
 | [`Inno.Core.Graphs.GraphDocument Inno.Rendering.Shaders.ShaderTargetRegistry.Expand(Inno.Core.Graphs.GraphDocument document, Inno.Core.Serialization.SerializationRegistry serialization, Inno.Core.Serialization.SerializationContext context, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))`](../../src/services/rendering/Inno.Rendering.Shaders/Targets/ShaderTargetRegistry.cs#L68) | Expands an assigned target, or copies an explicitly authored low-level graph with no domain target. |
-| [`System.Collections.Generic.IReadOnlyList<string> Inno.Rendering.Shaders.ShaderTargetRegistry.ids`](../../src/services/rendering/Inno.Rendering.Shaders/Targets/ShaderTargetRegistry.cs#L35) | Gets detached stable target identities available in the current generation. |
 | [`Inno.Rendering.Shaders.ShaderTargetRegistry`](../../src/services/rendering/Inno.Rendering.Shaders/Targets/ShaderTargetRegistry.cs#L15) | Resolves domain targets under the same generation lease as their graph expansion. |
+| [`Inno.Rendering.Shaders.ShaderTargetRegistry.ShaderTargetRegistry(Inno.Extensibility.Types.TypeCatalog types)`](../../src/services/rendering/Inno.Rendering.Shaders/Targets/ShaderTargetRegistry.cs#L26) | Creates a target owner participating in shared candidate publication and retirement. |
+| [`System.Collections.Generic.IReadOnlyList<string> Inno.Rendering.Shaders.ShaderTargetRegistry.ids`](../../src/services/rendering/Inno.Rendering.Shaders/Targets/ShaderTargetRegistry.cs#L35) | Gets detached stable target identities available in the current generation. |
+| [`void Inno.Rendering.Shaders.ShaderTargetRegistry.Dispose()`](../../src/services/rendering/Inno.Rendering.Shaders/Targets/ShaderTargetRegistry.cs#L93) | Retires the target snapshot through the shared registry lifecycle. |
 
 ### `Inno.Rendering.Shaders.ShaderTargetUnavailableException`
 
 | 当前声明 | 行为 |
 | --- | --- |
+| [`Inno.Rendering.Shaders.ShaderTargetUnavailableException`](../../src/services/rendering/Inno.Rendering.Shaders/Targets/ShaderTargetUnavailableException.cs#L8) | Identifies an authored target that is absent from the current extension generation. |
 | [`Inno.Rendering.Shaders.ShaderTargetUnavailableException.ShaderTargetUnavailableException(string targetId)`](../../src/services/rendering/Inno.Rendering.Shaders/Targets/ShaderTargetUnavailableException.cs#L16) | Creates a missing-target diagnostic without retaining extension objects. |
 | [`string Inno.Rendering.Shaders.ShaderTargetUnavailableException.targetId`](../../src/services/rendering/Inno.Rendering.Shaders/Targets/ShaderTargetUnavailableException.cs#L26) | Gets the stable target identity required by the authored graph. |
-| [`Inno.Rendering.Shaders.ShaderTargetUnavailableException`](../../src/services/rendering/Inno.Rendering.Shaders/Targets/ShaderTargetUnavailableException.cs#L8) | Identifies an authored target that is absent from the current extension generation. |
 
 ## 项目依赖
 
-- [Inno.Core.Execution](../core/Inno.Core.Execution.md)：实现依赖（`PrivateAssets="compile"`）。
-- [Inno.Scripting.Api](../scripting/Inno.Scripting.Api.md)：实现依赖（`PrivateAssets="compile"`）。
-- [Inno.Core.Serialization](../core/Inno.Core.Serialization.md)：项目引用；公开签名可见性由语义边界检查确认。
-- [Inno.Rendering](Inno.Rendering.md)：项目引用；公开签名可见性由语义边界检查确认。
-- [Inno.Core.Graphs](../core/Inno.Core.Graphs.md)：项目引用；公开签名可见性由语义边界检查确认。
-- [Inno.Core.Diagnostics](../core/Inno.Core.Diagnostics.md)：项目引用；公开签名可见性由语义边界检查确认。
-- [Inno.Extensibility.Types](../extensibility/Inno.Extensibility.Types.md)：项目引用；公开签名可见性由语义边界检查确认。
-- [Inno.Extensibility.Catalogs](../extensibility/Inno.Extensibility.Catalogs.md)：项目引用；公开签名可见性由语义边界检查确认。
-- [Inno.Rendering.Assets](Inno.Rendering.Assets.md)：项目引用；公开签名可见性由语义边界检查确认。
-
-共同 MSBuild 注入的 analyzer 与编译规则属于构建依赖，完整有效项目图记录在本轮验收证据中。
+- [Inno.Core.Execution](../core/Inno.Core.Execution.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Scripting.Api](../scripting/Inno.Scripting.Api.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Core.Serialization](../core/Inno.Core.Serialization.md)：公开引用边界由实际签名核对。
+- [Inno.Rendering](Inno.Rendering.md)：公开引用边界由实际签名核对。
+- [Inno.Core.Graphs](../core/Inno.Core.Graphs.md)：公开引用边界由实际签名核对。
+- [Inno.Core.Diagnostics](../core/Inno.Core.Diagnostics.md)：公开引用边界由实际签名核对。
+- [Inno.Extensibility.Types](../extensibility/Inno.Extensibility.Types.md)：公开引用边界由实际签名核对。
+- [Inno.Extensibility.Catalogs](../extensibility/Inno.Extensibility.Catalogs.md)：公开引用边界由实际签名核对。
+- [Inno.Rendering.Assets](Inno.Rendering.Assets.md)：公开引用边界由实际签名核对。

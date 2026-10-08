@@ -37,9 +37,9 @@ internal static class RuntimeContentBoundaryValidator
             if (contentOwner && type is not null && PhysicalIoTypes.Contains(type))
                 failures.Add($"{relative}: shared content owners must receive reading contracts instead of calling {type}.");
             if (!compositionOwner && (expression is ObjectCreationExpressionSyntax or ImplicitObjectCreationExpressionSyntax)
-                && (type is "Inno.Build.Platform.Windows.WindowsX64GameBuildTarget"
-                    or "Inno.Build.Platform.MacOS.MacOSArm64GameBuildTarget"
-                    or "Inno.Build.Platform.Browser.BrowserWasmGameBuildTarget"))
+                && (type is "Inno.Build.Windows.WindowsX64GameBuildTarget"
+                    or "Inno.Build.MacOS.MacOSArm64GameBuildTarget"
+                    or "Inno.Build.Browser.BrowserWasm32GameBuildTarget"))
                 failures.Add($"{relative}: built-in targets must be registered by the shared build composition.");
         }
     }

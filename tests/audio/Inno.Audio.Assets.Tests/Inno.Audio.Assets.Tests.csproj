@@ -7,16 +7,16 @@
     <IsTestProject>true</IsTestProject>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\src\services\audio\Inno.Audio.Assets\Inno.Audio.Assets.csproj" />
-    <ProjectReference Include="..\..\..\src\services\audio\Inno.Audio\Inno.Audio.csproj" />
-    <ProjectReference Include="..\..\..\src\content\assets\Inno.Assets.Pipeline\Inno.Assets.Pipeline.csproj" />
-    <ProjectReference Include="..\..\..\src\foundation\core\Inno.Core.Diagnostics\Inno.Core.Diagnostics.csproj" />
-    <ProjectReference Include="..\..\..\src\foundation\core\Inno.Core.Identity\Inno.Core.Identity.csproj" />
-    <ProjectReference Include="..\..\..\src\foundation\core\Inno.Core.Logging\Inno.Core.Logging.csproj" />
-    <ProjectReference Include="..\..\..\src\foundation\core\Inno.Core.Serialization\Inno.Core.Serialization.csproj" />
-    <ProjectReference Include="..\..\..\src\foundation\extensibility\Inno.Extensibility.Modules\Inno.Extensibility.Modules.csproj" />
-    <ProjectReference Include="..\..\..\src\foundation\extensibility\Inno.Extensibility.Types\Inno.Extensibility.Types.csproj" />
-    <ProjectReference Include="..\..\..\src\content\references\Inno.References\Inno.References.csproj" />
+    <ProjectReference Include="../../../src/services/audio/Inno.Audio.Assets/Inno.Audio.Assets.csproj" />
+    <ProjectReference Include="../../../src/services/audio/Inno.Audio/Inno.Audio.csproj" />
+    <ProjectReference Include="../../../src/content/assets/Inno.Assets.Pipeline/Inno.Assets.Pipeline.csproj" />
+    <ProjectReference Include="../../../src/foundation/core/Inno.Core.Diagnostics/Inno.Core.Diagnostics.csproj" />
+    <ProjectReference Include="../../../src/foundation/core/Inno.Core.Identity/Inno.Core.Identity.csproj" />
+    <ProjectReference Include="../../../src/foundation/core/Inno.Core.Logging/Inno.Core.Logging.csproj" />
+    <ProjectReference Include="../../../src/foundation/core/Inno.Core.Serialization/Inno.Core.Serialization.csproj" />
+    <ProjectReference Include="../../../src/foundation/extensibility/Inno.Extensibility.Modules/Inno.Extensibility.Modules.csproj" />
+    <ProjectReference Include="../../../src/foundation/extensibility/Inno.Extensibility.Types/Inno.Extensibility.Types.csproj" />
+    <ProjectReference Include="../../../src/content/references/Inno.References/Inno.References.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
@@ -27,9 +27,9 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="../../../src/adapters/modules/Inno.Adapter.Modules.DotNet/Inno.Adapter.Modules.DotNet.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../../backends/DotNet/runtime/Inno.Adapter.Modules.DotNet/Inno.Adapter.Modules.DotNet.csproj" PrivateAssets="compile" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="../../../src/adapters/serialization/Inno.Adapter.Serialization.DotNet/Inno.Adapter.Serialization.DotNet.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../../backends/DotNet/runtime/Inno.Adapter.Serialization.DotNet/Inno.Adapter.Serialization.DotNet.csproj" PrivateAssets="compile" />
   </ItemGroup>
 </Project>

@@ -13,12 +13,34 @@ namespace Inno.Build.Tests;
 [Collection("Build pipeline serialization")]
 public sealed class ToolchainProcessTests : IDisposable
 {
+    private const int C_RETIREMENT_WINDOW_MILLISECONDS = 2000;
+
     private readonly string m_root = Path.Combine(Path.GetTempPath(), "InnoToolchainProcessTests", Guid.NewGuid().ToString("N"));
 
     public void Dispose()
     {
-        if (Directory.Exists(m_root))
-            Directory.Delete(m_root, recursive: true);
+        string root = Path.GetFullPath(m_root);
+        string owner = Path.GetFullPath(Path.Combine(Path.GetTempPath(), "InnoToolchainProcessTests"))
+            + Path.DirectorySeparatorChar;
+        if (!root.StartsWith(owner, StringComparison.Ordinal))
+            throw new InvalidOperationException("The process fixture directory escaped its temporary owner.");
+        long started = Stopwatch.GetTimestamp();
+        while (Directory.Exists(root))
+        {
+            try
+            {
+                Directory.Delete(root, recursive: true);
+                return;
+            }
+            catch (IOException exception) when ((exception.HResult is unchecked((int)0x80070020)
+                or unchecked((int)0x80070021))
+                && Stopwatch.GetElapsedTime(started).TotalMilliseconds < C_RETIREMENT_WINDOW_MILLISECONDS)
+            {
+                // Process termination does not promise that filesystem observers have released the directory.
+                // Retry only sharing/lock violations; persistent failures and all other errors remain visible.
+                Thread.Sleep(25);
+            }
+        }
     }
 
     [Theory]

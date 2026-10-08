@@ -1,0 +1,14 @@
+<Project>
+  <Target
+    Name="PrepareNativeTestDeployment"
+    BeforeTargets="VSTest"
+    DependsOnTargets="PrepareInnoBuildTaskHost"
+    Condition="'$(InnoTestNativeProduct)' != '' and '$(DesignTimeBuild)' != 'true'">
+    <Inno.Build.Tasks.PrepareProductNativeTask
+      EngineRoot="$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)../'))"
+      ProductId="$(InnoTestNativeProduct)"
+      TargetId="$(InnoTestNativeTarget)"
+      Configuration="$(Configuration)"
+      OutputDirectory="$(TargetDir)" />
+  </Target>
+</Project>

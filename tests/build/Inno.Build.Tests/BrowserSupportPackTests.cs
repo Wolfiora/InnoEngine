@@ -2,6 +2,8 @@ using System;
 using System.IO;
 using System.Threading.Tasks;
 using Inno.Build;
+using Inno.Build.Distribution.Standard;
+using Inno.Build.Toolchains;
 using Xunit;
 
 namespace Inno.Build.Tests;
@@ -18,8 +20,10 @@ public sealed class BrowserSupportPackTests : IDisposable
     }
 
     [Fact]
-    public async Task BrowserPackRequiresItsGameLinkerAndBindingRuntime()
+    public async Task BrowserPackRequiresItsStaticGameLinkerClosure()
     {
+        ProductNativeBuildPlan plan = StandardNativeBuildPlans.CreateStaticPlayer(Inno.Integration.Browser.Bgfx.BrowserBgfxIntegration.nativeOptions);
+        var validator = new Inno.Build.Browser.BrowserSupportPackValidator(plan);
         string pack = Path.Combine(m_root, "candidate");
         Write(pack, "References/Inno.Runtime.dll");
         Write(pack, "PlayerLink/Player.csproj");
@@ -40,31 +44,31 @@ public sealed class BrowserSupportPackTests : IDisposable
             "Inno.Native.Sdl3.dll", "Inno.Native.Text.dll", "Inno.Native.UI.dll"
         })
             Write(pack, "PlayerLink/References/" + binding);
-        foreach (string archive in new[]
-        {
-            "bgfxRelease.a", "bxRelease.a", "bimgRelease.a", "bimg_decodeRelease.a",
-            "libSDL3.a", "libminiaudio.a", "libinno-text.a", "libinno-ui.a",
-            "librmlui.a", "libfreetype.a", "libharfbuzz.a"
-        })
-            Write(pack, "PlayerLink/Native/" + archive);
+        foreach (ProductNativeBuildStep step in plan.steps)
+            foreach (string archive in step.component.staticBuild!.archiveNames)
+                Write(pack, $"PlayerLink/Native/{step.id}/browser-wasm/{archive}");
         var catalog = new PlayerSupportPackCatalog(m_root);
 
-        await Assert.ThrowsAsync<InvalidDataException>(() => catalog.PublishAsync(
-            BuildTargetId.browserWasm, pack, new Inno.Build.Platform.Browser.BrowserSupportPackValidator()).AsTask());
-
-        Write(pack, "PlayerLink/References/BGCS.Runtime.dll");
+        Write(pack, "PlayerLink/Native/foreign.dll");
+        InvalidDataException foreignBinary = Assert.Throws<InvalidDataException>(
+            () => validator.Validate(pack));
+        Assert.Contains("foreign.dll", foreignBinary.Message, StringComparison.Ordinal);
+        File.Delete(Path.Combine(pack, "PlayerLink", "Native", "foreign.dll"));
         File.Delete(Path.Combine(pack, "PlayerLink", "HttpPlayerContentSource.cs"));
         InvalidDataException missingSource = Assert.Throws<InvalidDataException>(
-            () => new Inno.Build.Platform.Browser.BrowserSupportPackValidator().Validate(pack));
+            () => validator.Validate(pack));
         Assert.Contains("HttpPlayerContentSource.cs", missingSource.Message, StringComparison.Ordinal);
         Write(pack, "PlayerLink/HttpPlayerContentSource.cs");
-        pack = await catalog.PublishAsync(BuildTargetId.browserWasm, pack,
-            new Inno.Build.Platform.Browser.BrowserSupportPackValidator());
-        Assert.Equal(pack, catalog.Resolve(BuildTargetId.browserWasm, new Inno.Build.Platform.Browser.BrowserSupportPackValidator()));
+        Write(pack, "PlayerLink/Native/extra.a");
+        Assert.Throws<InvalidDataException>(() => validator.Validate(pack));
+        File.Delete(Path.Combine(pack, "PlayerLink", "Native", "extra.a"));
+        pack = await catalog.PublishAsync(BuildTargetId.browserWasm, pack, validator);
+        Assert.False(File.Exists(Path.Combine(pack, "PlayerLink", "References", "BGCS.Runtime.dll")));
+        Assert.Equal(pack, catalog.Resolve(BuildTargetId.browserWasm, validator));
 
-        File.Delete(Path.Combine(pack, "PlayerLink", "Native", "libSDL3.a"));
+        File.Delete(Path.Combine(pack, "PlayerLink", "Native", "sdl3", "browser-wasm", "libSDL3.a"));
         InvalidDataException missingArchive = Assert.Throws<InvalidDataException>(
-            () => catalog.Resolve(BuildTargetId.browserWasm, new Inno.Build.Platform.Browser.BrowserSupportPackValidator()));
+            () => catalog.Resolve(BuildTargetId.browserWasm, validator));
         Assert.Contains("libSDL3.a", missingArchive.Message, StringComparison.Ordinal);
     }
 

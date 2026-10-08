@@ -1,3 +1,4 @@
+using Inno.Integration.MacOS.Bgfx;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -28,7 +29,7 @@ public sealed partial class ShaderGraphProgramTests
     {
         ShaderGraphProgramResult lowered = Lower(StorageGraph());
         Assert.True(lowered.succeeded, string.Join("\n", lowered.diagnostics.Select(value => value.message)));
-        var compiler = new ShaderCompiler(new BgfxShadercToolchain(BgfxShaderTargetPlatform.MacOSArm64));
+        var compiler = new ShaderCompiler(new BgfxShadercToolchain(Inno.Integration.MacOS.Bgfx.MacOSBgfxShaderProfiles.target));
         RenderTextureFormat[] formats = Enum.GetValues<RenderTextureFormat>();
         var caps = new GraphicsCapabilities(GraphicsApi.Metal, GraphicsCapability.Compute | GraphicsCapability.StorageBuffer, new(256, 8, 8192, 16),
             formats, formats, formats, formats, false, false, formats, formats, formats);

@@ -124,7 +124,15 @@ public sealed class ShellLifecycleTests
         public TestShell(
             TestCatalog catalog,
             bool suspendWhenHidden
-        ) : base(catalog, new ShellOptions { suspendWhenHidden = suspendWhenHidden }) {
+        ) : base(catalog, new ShellOptions { adapters = new Inno.Adapter.AdapterSelection {
+                platform = Inno.Adapter.Platform.PlatformBackendId.sdl3,
+                input = Inno.Adapter.Input.InputBackendId.events,
+                rendering = Inno.Adapter.Rendering.RenderingBackendId.bgfx,
+                storage = Inno.Adapter.Storage.StorageBackendId.fileSystem,
+                audio = Inno.Adapter.Audio.AudioBackendId.miniAudio,
+                text = Inno.Adapter.Text.TextBackendId.freeTypeHarfBuzz,
+                ui = Inno.Adapter.UI.UiBackendId.rmlUi
+            }, suspendWhenHidden = suspendWhenHidden }) {
             InitializeAdapterResources();
         }
 

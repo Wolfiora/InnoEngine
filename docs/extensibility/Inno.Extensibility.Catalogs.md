@@ -62,3 +62,32 @@ public static class ExampleCatalog
 
 `RuntimeModuleCatalogGeneratorTests` 编译并执行生成目录；`StaticGenericFactoryTests` 覆盖
 发现隔离、重复工厂、缺失定义、非法结果、成功和失败后的 registrar 退休。
+
+## 当前源码公开 API 清单
+
+只列当前源码的 public/protected 表面；内部实现不作为稳定 API。参数、返回、失败和 owner 以英文 XML 为准。
+
+### `Inno.Extensibility.Catalogs.ITypeCatalogRegistrar`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Extensibility.Catalogs.ITypeCatalogRegistrar`](../../src/foundation/extensibility/Inno.Extensibility.Catalogs/ITypeCatalogRegistrar.cs#L13) | Accepts explicit declarations and linked generic factories while a static catalog is being composed. |
+| [`void Inno.Extensibility.Catalogs.ITypeCatalogRegistrar.Register(Inno.Extensibility.Catalogs.TypeCatalogMetadata metadata, System.Func<object>? factory)`](../../src/foundation/extensibility/Inno.Extensibility.Catalogs/ITypeCatalogRegistrar.cs#L30) | Registers immutable discovery metadata and an optional parameterless construction function. |
+| [`void Inno.Extensibility.Catalogs.ITypeCatalogRegistrar.RegisterFactory(System.Type type, System.Func<object> factory)`](../../src/foundation/extensibility/Inno.Extensibility.Catalogs/ITypeCatalogRegistrar.cs#L53) | Registers a closed generic construction linked by the contributing assembly. |
+| [`void Inno.Extensibility.Catalogs.ITypeCatalogRegistrar.RejectGenericConstruction(System.Type definition, System.Collections.Generic.IReadOnlyList<System.Type> arguments)`](../../src/foundation/extensibility/Inno.Extensibility.Catalogs/ITypeCatalogRegistrar.cs#L80) | Records a construction whose argument set was rejected by the declaration's compile-time constraints. |
+
+### `Inno.Extensibility.Catalogs.TypeCatalogMetadata`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Extensibility.Catalogs.TypeCatalogMetadata`](../../src/foundation/extensibility/Inno.Extensibility.Catalogs/TypeCatalogMetadata.cs#L10) | Freezes a declaration's discovery facts independently of its runtime's reflection implementation. |
+| [`Inno.Extensibility.Catalogs.TypeCatalogMetadata.TypeCatalogMetadata(System.Type type, System.Collections.Generic.IReadOnlyList<System.Type> baseTypes, System.Collections.Generic.IReadOnlyList<System.Type> interfaces, System.Collections.Generic.IReadOnlyList<System.Attribute> declaredAttributes, System.Collections.Generic.IReadOnlyList<System.Attribute> inheritedAttributes, System.Collections.Generic.IReadOnlyList<(string name, System.Type declaringBase)> parameterlessOverrides)`](../../src/foundation/extensibility/Inno.Extensibility.Catalogs/TypeCatalogMetadata.cs#L36) | Captures type relationships and attributes for one candidate generation. |
+| [`System.Collections.Generic.IReadOnlyList<(string name, System.Type declaringBase)> Inno.Extensibility.Catalogs.TypeCatalogMetadata.parameterlessOverrides`](../../src/foundation/extensibility/Inno.Extensibility.Catalogs/TypeCatalogMetadata.cs#L86) | Gets effective parameterless overrides without retaining runtime MethodInfo objects. |
+| [`System.Collections.Generic.IReadOnlyList<System.Attribute> Inno.Extensibility.Catalogs.TypeCatalogMetadata.declaredAttributes`](../../src/foundation/extensibility/Inno.Extensibility.Catalogs/TypeCatalogMetadata.cs#L76) | Gets directly declared attribute instances owned by this generation. |
+| [`System.Collections.Generic.IReadOnlyList<System.Attribute> Inno.Extensibility.Catalogs.TypeCatalogMetadata.inheritedAttributes`](../../src/foundation/extensibility/Inno.Extensibility.Catalogs/TypeCatalogMetadata.cs#L81) | Gets the effective attribute set used by inherited extension discovery. |
+| [`System.Collections.Generic.IReadOnlyList<System.Type> Inno.Extensibility.Catalogs.TypeCatalogMetadata.baseTypes`](../../src/foundation/extensibility/Inno.Extensibility.Catalogs/TypeCatalogMetadata.cs#L66) | Gets the ordered inheritance chain, excluding System.Object. |
+| [`System.Collections.Generic.IReadOnlyList<System.Type> Inno.Extensibility.Catalogs.TypeCatalogMetadata.interfaces`](../../src/foundation/extensibility/Inno.Extensibility.Catalogs/TypeCatalogMetadata.cs#L71) | Gets the complete implemented interface set. |
+| [`System.Type Inno.Extensibility.Catalogs.TypeCatalogMetadata.type`](../../src/foundation/extensibility/Inno.Extensibility.Catalogs/TypeCatalogMetadata.cs#L61) | Gets the declaration whose metadata is owned by this generation. |
+
+## 项目依赖
+

@@ -21,8 +21,7 @@ namespace Inno.Build;
 public sealed class BuildPipeline
 {
     private readonly IReadOnlyList<BuildTargetId> m_availableGameTargets;
-    private readonly BuildTargetId m_defaultGameTarget;
-    private readonly IReadOnlyDictionary<BuildTargetId, IGameBuildTarget> m_gameTargets;
+    private readonly IReadOnlyDictionary<BuildTargetId, GameBuildTargetBinding> m_gameTargets;
     private readonly GameBuildPipeline m_game;
     private readonly PluginPackageBuilder m_plugins;
     private readonly PlayerSupportPackCatalog m_supportPacks;
@@ -64,8 +63,7 @@ public sealed class BuildPipeline
     /// Optional build-time provider that checks current source and SDK inputs during explicit pack preparation.
     /// </param>
     /// <exception cref="ArgumentException">
-    /// Thrown when the Support Pack root is empty, no target is provided, a target identity is duplicated,
-    /// or multiple targets claim current-host preference.
+    /// Thrown when the Support Pack root is empty, no target is provided, or a target identity is duplicated.
     /// </exception>
     public BuildPipeline(
         AssetPipeline assets,
@@ -75,7 +73,7 @@ public sealed class BuildPipeline
         GenerationCoordinator generations,
         ScriptCompiler compiler,
         string supportPackRoot,
-        IEnumerable<IGameBuildTarget> gameTargets,
+        IEnumerable<GameBuildTargetBinding> gameTargets,
         ManagedDeploymentCatalog managedDeployments,
         IPlayerSupportPackProvisioner? supportPackProvisioner = null
     ) {
@@ -89,38 +87,25 @@ public sealed class BuildPipeline
         ArgumentNullException.ThrowIfNull(gameTargets);
         ArgumentNullException.ThrowIfNull(managedDeployments);
         m_managedDeployments = managedDeployments;
-        IGameBuildTarget[] targets = gameTargets.ToArray();
+        GameBuildTargetBinding[] targets = gameTargets.ToArray();
         if (targets.Any(static value => value is null))
             throw new ArgumentException("Game target collection cannot contain null values.", nameof(gameTargets));
         if (targets.Length == 0)
             throw new ArgumentException("At least one game build target is required.", nameof(gameTargets));
-        if (targets.Any(static value => string.IsNullOrWhiteSpace(value.id.value)))
+        if (targets.Any(static value => string.IsNullOrWhiteSpace(value.packager.id.value)))
             throw new ArgumentException("Every game build target requires a valid identity.", nameof(gameTargets));
-        if (targets.Any(static value => string.IsNullOrWhiteSpace(value.displayName)))
+        if (targets.Any(static value => string.IsNullOrWhiteSpace(value.packager.displayName)))
             throw new ArgumentException("Every game build target requires a display name.", nameof(gameTargets));
-        IGrouping<BuildTargetId, IGameBuildTarget>? duplicate = targets
-            .GroupBy(static value => value.id)
+        IGrouping<BuildTargetId, GameBuildTargetBinding>? duplicate = targets
+            .GroupBy(static value => value.packager.id)
             .FirstOrDefault(static group => group.Count() > 1);
         if (duplicate is not null)
             throw new ArgumentException($"Game target '{duplicate.Key}' is registered more than once.", nameof(gameTargets));
-        IGameBuildTarget[] preferred = targets
-            .Where(static target => target.isPreferredOnCurrentHost)
-            .OrderBy(static target => target.id.value, StringComparer.Ordinal)
-            .ToArray();
-        if (preferred.Length > 1)
-        {
-            throw new ArgumentException(
-                "More than one game build target is preferred on the current host.",
-                nameof(gameTargets));
-        }
         m_availableGameTargets = Array.AsReadOnly(targets
-            .Select(static target => target.id)
+            .Select(static target => target.packager.id)
             .OrderBy(static id => id.value, StringComparer.Ordinal)
             .ToArray());
-        m_defaultGameTarget = preferred.Length == 1
-            ? preferred[0].id
-            : m_availableGameTargets[0];
-        m_gameTargets = targets.ToDictionary(static value => value.id);
+        m_gameTargets = targets.ToDictionary(static value => value.packager.id);
         m_supportPacks = new PlayerSupportPackCatalog(supportPackRoot);
         m_supportPackProvisioner = supportPackProvisioner;
         m_game = new GameBuildPipeline(
@@ -145,11 +130,6 @@ public sealed class BuildPipeline
     public IReadOnlyList<BuildTargetId> availableGameTargets => m_availableGameTargets;
 
     /// <summary>
-    /// Gets the single adapter-selected target preferred for new build settings on this host.
-    /// </summary>
-    public BuildTargetId defaultGameTarget => m_defaultGameTarget;
-
-    /// <summary>
     /// Gets the managed deployment choices supported by a registered publication platform.
     /// </summary>
     /// <param name="target">
@@ -162,8 +142,8 @@ public sealed class BuildPipeline
     /// The publication target is not registered in this build composition.
     /// </exception>
     public IReadOnlyList<ManagedDeploymentId> GetManagedDeployments(BuildTargetId target)
-        => m_gameTargets.TryGetValue(target, out IGameBuildTarget? gameTarget)
-            ? m_managedDeployments.GetSupportedDeployments(gameTarget.runtimeIdentifier)
+        => m_gameTargets.TryGetValue(target, out GameBuildTargetBinding? gameTarget)
+            ? m_managedDeployments.GetSupportedDeployments(gameTarget.packager.runtimeIdentifier)
             : throw new ArgumentException($"Game target '{target}' is not registered.", nameof(target));
 
     /// <summary>
@@ -182,9 +162,9 @@ public sealed class BuildPipeline
         BuildTargetId target,
         out string displayName
     ) {
-        if (m_gameTargets.TryGetValue(target, out IGameBuildTarget? gameTarget))
+        if (m_gameTargets.TryGetValue(target, out GameBuildTargetBinding? gameTarget))
         {
-            displayName = gameTarget.displayName;
+            displayName = gameTarget.packager.displayName;
             return true;
         }
         displayName = string.Empty;
@@ -224,8 +204,9 @@ public sealed class BuildPipeline
         ManagedDeploymentId? deployment,
         CancellationToken cancellationToken = default
     ) {
-        if (!m_gameTargets.TryGetValue(target, out IGameBuildTarget? packager))
+        if (!m_gameTargets.TryGetValue(target, out GameBuildTargetBinding? binding))
             throw new NotSupportedException($"Game target '{target}' is not registered.");
+        IGameBuildTarget packager = binding.packager;
         _ = m_managedDeployments.Resolve(deployment ?? packager.defaultManagedDeployment, packager.runtimeIdentifier);
         cancellationToken.ThrowIfCancellationRequested();
         return await m_supportPacks.ResolveOrProvisionAsync(

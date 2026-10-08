@@ -6,7 +6,6 @@
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <BindGenRoot Condition="'$(BindGenRoot)' == ''">$(MSBuildProjectDirectory)/../../../../BindGen-CS</BindGenRoot>
   </PropertyGroup>
-
   <Target Name="ComputeBindingImplementationIdentity" BeforeTargets="GetAssemblyAttributes">
     <ItemGroup>
       <_BindingImplementationInput Include="$(MSBuildProjectDirectory)/GenerateBindingsTask.cs;$(MSBuildProjectDirectory)/NativeBindingGenerationIdentity.cs" />
@@ -15,11 +14,7 @@
     <GetFileHash Files="@(_BindingImplementationInput)">
       <Output TaskParameter="Items" ItemName="_BindingImplementationHash" />
     </GetFileHash>
-    <WriteLinesToFile
-      File="$(IntermediateOutputPath)binding-implementation.inputs"
-      Lines="@(_BindingImplementationHash->'%(Filename)%(Extension)|%(FileHash)')"
-      Overwrite="true"
-      WriteOnlyWhenDifferent="true" />
+    <WriteLinesToFile File="$(IntermediateOutputPath)binding-implementation.inputs" Lines="@(_BindingImplementationHash-&gt;'%(Filename)%(Extension)|%(FileHash)')" Overwrite="true" WriteOnlyWhenDifferent="true" />
     <GetFileHash Files="$(IntermediateOutputPath)binding-implementation.inputs">
       <Output TaskParameter="Hash" PropertyName="_BindingImplementationFingerprint" />
     </GetFileHash>
@@ -27,37 +22,22 @@
       <AssemblyMetadata Include="Inno.BindingImplementation" Value="$(_BindingImplementationFingerprint)" />
     </ItemGroup>
   </Target>
-
   <ItemGroup>
-    <ProjectReference Include="../../toolchains/Inno.Build.Toolchains.Bgfx/Inno.Build.Toolchains.Bgfx.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../../backends/Bgfx/build/Inno.Build.Toolchains.Bgfx/Inno.Build.Toolchains.Bgfx.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../composition/Inno.Build.Composition/Inno.Build.Composition.csproj" PrivateAssets="compile" />
-    <ProjectReference
-      Include="../../toolchains/Inno.Build.Toolchains.Host/Inno.Build.Toolchains.Host.csproj"
-      PrivateAssets="compile" />
-    <ProjectReference
-      Include="../../toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj"
-      PrivateAssets="compile" />
+    <ProjectReference Include="../../toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj" PrivateAssets="compile" />
     <ProjectReference Include="$(BindGenRoot)/src/BGCS/BGCS.csproj" PrivateAssets="compile" />
     <ProjectReference Include="$(BindGenRoot)/src/BGCS.Cpp2C/BGCS.Cpp2C.csproj" PrivateAssets="compile" />
-    <ProjectReference
-      Include="../../toolchains/Inno.Build.Toolchains.Bgfx.Shaders/Inno.Build.Toolchains.Bgfx.Shaders.csproj"
-      PrivateAssets="compile" />
+    <ProjectReference Include="../../../backends/Bgfx/build/Inno.Build.Toolchains.Bgfx.Shaders/Inno.Build.Toolchains.Bgfx.Shaders.csproj" PrivateAssets="compile" />
   </ItemGroup>
-
   <ItemGroup>
-    <PackageReference
-      Include="Microsoft.Build.Framework"
-      Version="17.12.50"
-      PrivateAssets="all"
-      ExcludeAssets="runtime" />
-    <PackageReference
-      Include="Microsoft.Build.Utilities.Core"
-      Version="17.12.50"
-      PrivateAssets="all"
-      ExcludeAssets="runtime" />
+    <PackageReference Include="Microsoft.Build.Framework" Version="17.12.50" PrivateAssets="all" ExcludeAssets="runtime" />
+    <PackageReference Include="Microsoft.Build.Utilities.Core" Version="17.12.50" PrivateAssets="all" ExcludeAssets="runtime" />
   </ItemGroup>
-
   <ItemGroup>
     <ProjectReference Include="../../../src/foundation/extensibility/Inno.Extensibility.Catalogs/Inno.Extensibility.Catalogs.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../distributions/Inno.Build.Distribution.Standard/Inno.Build.Distribution.Standard.csproj" PrivateAssets="compile" />
   </ItemGroup>
 </Project>

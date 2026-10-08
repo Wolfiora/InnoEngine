@@ -25,7 +25,7 @@ public sealed class NativeWindowSurfaceTests
     {
         if (!OperatingSystem.IsWindows())
             return;
-        using var application = new Sdl3PlatformApplication();
+        using var application = new Sdl3PlatformApplication(new Inno.Integration.Windows.Sdl3.WindowsSdl3HostIntegration());
         using Sdl3PlatformWindow window = application.CreateWindow(new PlatformWindowOptions
         {
             title = "Native surface lifetime test",

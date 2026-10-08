@@ -26,6 +26,8 @@ internal sealed class BuildCommand
     ) {
         this.kind = kind;
         m_values = values;
+        if (kind == BuildCommandKind.Game)
+            _ = Require(values, "target");
         projectDirectory = Require(values, "project");
         supportPackRoot = kind == BuildCommandKind.Game
             ? Require(values, "support-packs")
@@ -37,6 +39,10 @@ internal sealed class BuildCommand
     internal string projectDirectory { get; }
 
     internal string supportPackRoot { get; }
+
+    internal BuildTargetId toolsTarget => new(Require(m_values, "tools-target"));
+
+    internal BuildTargetId gameTarget => new(Require(m_values, "target"));
 
     internal string? profilePath => m_values.GetValueOrDefault("profile");
 
@@ -113,8 +119,8 @@ internal sealed class BuildCommand
 
     private static string Usage()
         => "Usage:\n"
-           + "  Inno.Build.Cli game --project <dir> --support-packs <dir> --output <dir> [--profile <BuildProfile.inno>] [--target <target>] [--deployment <provider-id>] [--startup-scene <scene>]\n"
-           + "  Inno.Build.Cli plugin --project <dir> --output <package.iplugin> --display-name <name> [--dependencies <id,id>] [--include-dependencies]\n"
-           + "  Inno.Build.Cli import-sample --project <dir> --source <plugin-id::~Sample>\n"
-           + "  Inno.Build.Cli scripts --project <dir> --output <dir>";
+           + "  Inno.Build.Cli game --tools-target <native-target> --project <dir> --support-packs <dir> --output <dir> [--profile <BuildProfile.inno>] --target <target> [--deployment <provider-id>] [--startup-scene <scene>]\n"
+           + "  Inno.Build.Cli plugin --tools-target <native-target> --project <dir> --output <package.iplugin> --display-name <name> [--dependencies <id,id>] [--include-dependencies]\n"
+           + "  Inno.Build.Cli import-sample --tools-target <native-target> --project <dir> --source <plugin-id::~Sample>\n"
+           + "  Inno.Build.Cli scripts --tools-target <native-target> --project <dir> --output <dir>";
 }

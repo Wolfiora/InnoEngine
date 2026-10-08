@@ -1,3 +1,5 @@
+using Inno.Build.Composition;
+using Inno.Build.Distribution.Standard;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,8 +14,9 @@ internal static class ProjectBuildWorkflow
         CancellationToken cancellationToken
     ) {
         BuildCommand command = BuildCommand.Parse(arguments);
-        await BuildComposition.PrepareNativeAsync(cancellationToken).ConfigureAwait(false);
-        using BuildWorkspace workspace = BuildWorkspace.Open(command.projectDirectory, command.supportPackRoot);
+        BuildCompositionContext context = StandardBuildEnvironment.Capture(AppContext.BaseDirectory, command.toolsTarget);
+        await BuildComposition.PrepareNativeAsync(context, cancellationToken).ConfigureAwait(false);
+        using BuildWorkspace workspace = BuildWorkspace.Open(command.projectDirectory, command.supportPackRoot, context);
         if (command.kind == BuildCommandKind.ImportSample)
         {
             Console.WriteLine(workspace.ImportSample(command.sampleSource, cancellationToken));
@@ -28,7 +31,7 @@ internal static class ProjectBuildWorkflow
         BuildResult result;
         if (command.kind == BuildCommandKind.Game)
         {
-            GameBuildRequest request = command.CreateGameRequest(workspace.LoadGameProfile(command.profilePath));
+            GameBuildRequest request = command.CreateGameRequest(workspace.LoadGameProfile(command.profilePath, command.gameTarget));
             // The command-line host has no UI scheduler. Keep the authoring owner on this thread
             // while preparing external tools, then capture its build snapshot before the first await.
             _ = workspace.pipeline.EnsurePlayerSupportPackAsync(

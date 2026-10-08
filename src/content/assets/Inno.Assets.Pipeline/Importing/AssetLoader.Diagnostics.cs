@@ -146,6 +146,7 @@ sealed partial class AssetLoader
         bool extensionUnavailable = unavailable is not null;
         bool pending = extensionUnavailable && m_deferUnavailableExtensions;
         record.meta.importStatus = (int)(pending ? AssetImportStatus.Pending : AssetImportStatus.Failed);
+        record.failedTypeGeneration = m_types.current.version;
         record.meta.diagnostics = [pending
             ? $"Waiting for authoring extension publication (or recovery after compilation failure). {exception.Message}" +
               (settingsFailure is null ? string.Empty : $" Import settings could not be inspected: {settingsFailure}")

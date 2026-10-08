@@ -44,7 +44,7 @@ Native 组合库的 public reference 只有共同构建契约；具体工具链�
 
 相关说明：[Core Events](../core/Inno.Core.Events.md)、[Logging](../core/Inno.Core.Logging.md)、
 [Graph](../core/Inno.Core.Graphs.md)、[Toolchains](../build/Inno.Build.Toolchains.md)、
-[Host Native 组合](../build/Inno.Build.Toolchains.Host.md)、[Browser Toolchain](../build/Inno.Build.Toolchains.Browser.md)。
+[Host Native 组合](../build/Inno.Build.Toolchains.md)、[Browser Toolchain](../platform/Browser/Inno.Build.Browser.md)。
 
 BGCS 新增的是配套工具链数据，不是手写修改第三方实现：
 `BindGen-CS/extern/clang-resource/Headers.zip` 内含 275 个未经修改的 LLVM 20.1.8 builtin headers，附许可和来源。

@@ -3,7 +3,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Inno.Build.Toolchains;
-using Inno.Build.Toolchains.Host;
+using Inno.Build.Distribution.Standard;
 using Xunit;
 
 namespace Inno.Build.Tests;
@@ -29,7 +29,7 @@ public sealed class NativeBuildContextTests : IDisposable
 
         Assert.Equal(Path.GetFullPath(m_root), context.engineRoot);
         Assert.Equal("release", context.configuration);
-        Assert.Equal(Path.Combine(owner, "obj", "native"), context.GetNativeBuildRoot(typeof(ToolchainEnvironment).Assembly));
+        Assert.Equal(Path.Combine(owner, "obj", "native"), context.GetNativeBuildRoot(new NativeComponentDescriptor("fixture", "build/toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj", "build/toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj")));
         Assert.NotEqual(ToolchainEnvironment.FindRepoRoot(), context.engineRoot);
         Assert.False(Directory.Exists(Path.Combine(owner, "obj")));
     }
@@ -55,23 +55,21 @@ public sealed class NativeBuildContextTests : IDisposable
         var context = new NativeBuildContext(m_root, "debug");
 
         await Assert.ThrowsAnyAsync<OperationCanceledException>(() => editor
-            ? HostNativeBuild.BuildEditorAsync(context, cancellation.Token)
-            : HostNativeBuild.BuildRuntimeAsync(context, cancellation.Token));
+            ? StandardNativeBuildPlans.CreateEditor(Inno.Integration.Windows.Bgfx.WindowsBgfxIntegration.nativeProfile).BuildAsync(context, cancellation.Token)
+            : StandardNativeBuildPlans.CreatePlayer(Inno.Integration.Windows.Bgfx.WindowsBgfxIntegration.nativeProfile).BuildAsync(context, cancellation.Token));
 
         Assert.Single(Directory.EnumerateFileSystemEntries(m_root));
     }
 
     [Fact]
-    public async Task MissingNativeSourcesAreReportedFromTheSelectedCheckout()
+    public async Task UnresolvedToolchainsFailBeforeIntermediatesOrSourceDiscovery()
     {
         CreateCheckout();
         var context = new NativeBuildContext(m_root, "release");
-
-        DirectoryNotFoundException failure = await Assert.ThrowsAsync<DirectoryNotFoundException>(
-            () => HostNativeBuild.BuildRuntimeAsync(context));
-
-        Assert.Contains(Path.Combine(m_root, "extern"), failure.Message, StringComparison.OrdinalIgnoreCase);
-        Assert.DoesNotContain(ToolchainEnvironment.FindRepoRoot(), failure.Message, StringComparison.OrdinalIgnoreCase);
+        InvalidOperationException failure = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => StandardNativeBuildPlans.CreatePlayer(Inno.Integration.Windows.Bgfx.WindowsBgfxIntegration.nativeProfile).BuildAsync(context, CancellationToken.None));
+        Assert.Contains("explicit target toolchain", failure.Message, StringComparison.Ordinal);
+        Assert.Single(Directory.EnumerateFileSystemEntries(m_root));
     }
 
     private void CreateCheckout()

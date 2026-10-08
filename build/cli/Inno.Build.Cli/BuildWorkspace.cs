@@ -1,3 +1,4 @@
+using Inno.Build.Composition;
 using Inno.Core.IO;
 using Inno.Extensibility.Modules;
 using Inno.Adapter.Modules.DotNet;
@@ -146,7 +147,8 @@ internal sealed class BuildWorkspace : IDisposable
 
     internal static BuildWorkspace Open(
         string projectDirectory,
-        string supportPackRoot
+        string supportPackRoot,
+        BuildCompositionContext context
     ) {
         string projectRoot = Path.GetFullPath(projectDirectory);
         string assetsRoot = Path.Combine(projectRoot, "Assets");
@@ -221,7 +223,7 @@ internal sealed class BuildWorkspace : IDisposable
             engine.generations.Wait();
             assets.CompleteExtensionDiscovery();
             assets.Rescan();
-            BuildPipeline pipeline = BuildComposition.CreatePipeline(engine, assets, plugins, settings, compiler, supportPackRoot);
+            BuildPipeline pipeline = BuildComposition.CreatePipeline(context, engine, assets, plugins, settings, compiler, supportPackRoot);
             return new BuildWorkspace(engine, settings, assets, plugins, compiler, projectRoot, pipeline);
         }
         catch
@@ -279,8 +281,10 @@ internal sealed class BuildWorkspace : IDisposable
         m_engine.Dispose();
     }
 
-    internal BuildProfile LoadGameProfile(string? path)
-    {
+    internal BuildProfile LoadGameProfile(
+        string? path,
+        BuildTargetId defaultTarget
+    ) {
         if (!string.IsNullOrWhiteSpace(path))
         {
             string profilePath = Path.GetFullPath(path, m_projectDirectory);
@@ -289,9 +293,6 @@ internal sealed class BuildWorkspace : IDisposable
             return profile;
         }
 
-        BuildTargetId defaultTarget = OperatingSystem.IsWindows()
-            ? BuildTargetId.windowsX64
-            : BuildTargetId.macOSArm64;
         BuildSettings defaults = BuildSettings.CreateDefault(
             Path.GetFileName(Path.TrimEndingDirectorySeparator(m_projectDirectory)),
             FindDefaultStartupScene(),

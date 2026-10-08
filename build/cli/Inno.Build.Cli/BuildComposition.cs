@@ -5,7 +5,7 @@ using Inno.Assets.Pipeline;
 using Inno.Build;
 using Inno.Build.Composition;
 using Inno.Build.Toolchains;
-using Inno.Build.Toolchains.Host;
+using Inno.Build.Distribution.Standard;
 using Inno.Core.Settings;
 using Inno.Plugins.Authoring;
 using Inno.Runtime;
@@ -21,15 +21,22 @@ internal static class BuildComposition
     private const string C_HOST_CONFIGURATION = "release";
 #endif
 
-    internal static async Task PrepareNativeAsync(CancellationToken cancellationToken)
-    {
+    internal static async Task PrepareNativeAsync(
+        BuildCompositionContext context,
+        CancellationToken cancellationToken
+    ) {
         string root = ToolchainEnvironment.FindRepoRoot();
-        var products = await HostNativeBuild.BuildEditorAsync(
-            new NativeBuildContext(root, C_HOST_CONFIGURATION), cancellationToken).ConfigureAwait(false);
-        await HostNativeDeployment.InstallAsync(products, AppContext.BaseDirectory, cancellationToken).ConfigureAwait(false);
+        var nativeContext = new NativeBuildContext(root, C_HOST_CONFIGURATION);
+        var provider = StandardBuildDistribution.Create(context).build.ResolveNativeToolchain(context.toolsTarget.value);
+        nativeContext = nativeContext.WithToolchain(await provider.ResolveAsync(
+            nativeContext, context.host, context.toolsTarget.value, cancellationToken).ConfigureAwait(false));
+        ProductNativeBuildPlan plan = StandardBuildDistribution.Create(context).build.ResolveNativeProduct(context.toolsTarget.value, "shader-tools");
+        var products = await plan.BuildAsync(nativeContext, cancellationToken).ConfigureAwait(false);
+        await ProductNativeDeployment.InstallAsync(products, plan, AppContext.BaseDirectory, cancellationToken).ConfigureAwait(false);
     }
 
     internal static BuildPipeline CreatePipeline(
+        BuildCompositionContext context,
         EngineHost engine,
         AssetPipeline assets,
         PluginEnvironment plugins,
@@ -37,9 +44,7 @@ internal static class BuildComposition
         ScriptCompiler compiler,
         string supportPackRoot
     ) {
-        var context = new BuildCompositionContext(
-            Environment.GetEnvironmentVariable("DOTNET_HOST_PATH") ?? "dotnet", AppContext.BaseDirectory);
         return BuildPipelineFactory.Create(
-            context, BuiltInBuildDistribution.Create(context), engine, assets, plugins, settings, compiler, supportPackRoot);
+            context, StandardBuildDistribution.Create(context).build, engine, assets, plugins, settings, compiler, supportPackRoot);
     }
 }

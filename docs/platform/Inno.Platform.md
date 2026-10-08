@@ -61,3 +61,57 @@ static void PumpOnce(IPlatformBackendFactory factory)
 ## 扩展与验收
 
 新增平台实现 `IPlatformApplication` / `IPlatformWindow` 并在 composition 注册 provider；公共服务不增加平台枚举或判断分支。窗口创建、尺寸、焦点、暂停和退出由公开边界验证；Shell 的替换 Adapter 测试覆盖多暂停原因、取消、失败清理和回调注销。实机图形 surface 和系统生命周期须在对应平台独立验证。
+
+## 当前源码公开 API 清单
+
+只列当前源码的 public/protected 表面；内部实现不作为稳定 API。参数、返回、失败和 owner 以英文 XML 为准。
+
+### `Inno.Platform.FramePacingOptions`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Platform.FramePacingOptions`](../../src/services/platform/Inno.Platform/FramePacingOptions.cs#L8) | Defines host presentation cadence independently of simulation and fixed-step timing. |
+| [`bool Inno.Platform.FramePacingOptions.verticalSync`](../../src/services/platform/Inno.Platform/FramePacingOptions.cs#L15) | Gets or sets whether presentation waits for display synchronization. |
+| [`int Inno.Platform.FramePacingOptions.maximumFrameRate`](../../src/services/platform/Inno.Platform/FramePacingOptions.cs#L23) | Gets or sets the software frame-rate ceiling. Zero leaves the frame rate unlimited. |
+
+### `Inno.Platform.IPlatformApplication`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Platform.IPlatformApplication`](../../src/services/platform/Inno.Platform/IPlatformApplication.cs#L10) | Defines the backend-neutral lifetime, window creation, and event-polling contract for a platform session. |
+| [`Inno.Platform.IPlatformWindow Inno.Platform.IPlatformApplication.CreateWindow(Inno.Platform.PlatformWindowOptions options)`](../../src/services/platform/Inno.Platform/IPlatformApplication.cs#L30) | Creates a window owned by this platform session. |
+| [`System.Action<uint>? Inno.Platform.IPlatformApplication.redrawRequested`](../../src/services/platform/Inno.Platform/IPlatformApplication.cs#L16) | Requests one complete host frame on the event-pump thread while the operating system owns a modal window resize loop. Handlers must not poll events or reenter an active frame. |
+| [`System.Collections.Generic.IReadOnlyList<Inno.Platform.IPlatformWindow> Inno.Platform.IPlatformApplication.GetWindows()`](../../src/services/platform/Inno.Platform/IPlatformApplication.cs#L55) | Captures the currently valid windows owned or tracked by this platform session. |
+| [`bool Inno.Platform.IPlatformApplication.PollEvent(out Inno.Core.Events.Event? evnt)`](../../src/services/platform/Inno.Platform/IPlatformApplication.cs#L44) | Attempts to dequeue the next backend-neutral platform event. |
+
+### `Inno.Platform.IPlatformWindow`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Platform.IPlatformWindow`](../../src/services/platform/Inno.Platform/IPlatformWindow.cs#L8) | Represents a backend-neutral native window owned by a platform application. |
+| [`bool Inno.Platform.IPlatformWindow.isClosed`](../../src/services/platform/Inno.Platform/IPlatformWindow.cs#L43) | Gets whether the window has received or requested a close operation. |
+| [`bool Inno.Platform.IPlatformWindow.isFocused`](../../src/services/platform/Inno.Platform/IPlatformWindow.cs#L48) | Gets whether the window currently owns platform input focus. |
+| [`int Inno.Platform.IPlatformWindow.height`](../../src/services/platform/Inno.Platform/IPlatformWindow.cs#L28) | Gets the logical client height. |
+| [`int Inno.Platform.IPlatformWindow.pixelHeight`](../../src/services/platform/Inno.Platform/IPlatformWindow.cs#L38) | Gets the drawable height in physical pixels. |
+| [`int Inno.Platform.IPlatformWindow.pixelWidth`](../../src/services/platform/Inno.Platform/IPlatformWindow.cs#L33) | Gets the drawable width in physical pixels. |
+| [`int Inno.Platform.IPlatformWindow.width`](../../src/services/platform/Inno.Platform/IPlatformWindow.cs#L23) | Gets the logical client width. |
+| [`string Inno.Platform.IPlatformWindow.title`](../../src/services/platform/Inno.Platform/IPlatformWindow.cs#L18) | Gets the title captured when the window was created. |
+| [`uint Inno.Platform.IPlatformWindow.windowId`](../../src/services/platform/Inno.Platform/IPlatformWindow.cs#L13) | Gets the application-local identifier of this window. |
+| [`void Inno.Platform.IPlatformWindow.RequestClose()`](../../src/services/platform/Inno.Platform/IPlatformWindow.cs#L53) | Marks the window as requesting closure without destroying it immediately. |
+
+### `Inno.Platform.PlatformWindowOptions`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Platform.PlatformWindowOptions`](../../src/services/platform/Inno.Platform/PlatformWindowOptions.cs#L9) | Defines backend-neutral properties used to create a platform window. |
+| [`bool Inno.Platform.PlatformWindowOptions.highPixelDensity`](../../src/services/platform/Inno.Platform/PlatformWindowOptions.cs#L34) | Gets whether high pixel density is requested for the window. |
+| [`bool Inno.Platform.PlatformWindowOptions.resizable`](../../src/services/platform/Inno.Platform/PlatformWindowOptions.cs#L29) | Gets whether the window is user-resizable. |
+| [`bool Inno.Platform.PlatformWindowOptions.visible`](../../src/services/platform/Inno.Platform/PlatformWindowOptions.cs#L39) | Gets whether the window is initially shown; hidden windows retain their rendering surface. |
+| [`int Inno.Platform.PlatformWindowOptions.height`](../../src/services/platform/Inno.Platform/PlatformWindowOptions.cs#L24) | Gets the initial window height in platform-independent logical units. |
+| [`int Inno.Platform.PlatformWindowOptions.width`](../../src/services/platform/Inno.Platform/PlatformWindowOptions.cs#L19) | Gets the initial window width in platform-independent logical units. |
+| [`string Inno.Platform.PlatformWindowOptions.title`](../../src/services/platform/Inno.Platform/PlatformWindowOptions.cs#L14) | Gets the window title. |
+
+## 项目依赖
+
+- [Inno.Core.Events](../core/Inno.Core.Events.md)：公开引用边界由实际签名核对。
+- [Inno.Extensibility.Catalogs](../extensibility/Inno.Extensibility.Catalogs.md)：公开引用边界由实际签名核对。

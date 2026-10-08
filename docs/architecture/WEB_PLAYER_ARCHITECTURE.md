@@ -1,97 +1,63 @@
-# Web 能力、共享宿主与构建边界
+# Browser Player：共享运行流与平台边界
 
-[架构索引](README.md) · [Wiki 首页](../README.md) · [实施计划](WEB_HOST_REFACTOR_PLAN.md) · [Build 索引](../build/README.md)
+[架构索引](README.md) · [Wiki 首页](../README.md) · [Browser 平台包](../platform/Browser/README.md) · [扩展指南](PLATFORM_EXTENSION_GUIDE.md)
 
-## 当前架构
+## 当前组合
 
-游戏使用同一份 Scene、脚本、Plugin、内容包与服务契约。桌面与 Web 的差异由组合入口、Adapter 和工具链承担。共享 Foundation、Shell、Player Runtime 不判断浏览器平台。
+Scene、玩法、内容、Input、Rendering、Audio、Text、UI、Storage 使用共同领域契约。Browser 包负责页面/JS 生命周期、HTTP 下载、调度、浏览器存储、Emscripten SDK、最终静态链接与站点布局。共享 Shell/Player Runtime 不根据 OS 或托管运行时选择行为。
 
 ```text
-Editor / Inno.Build.Cli / MSBuild Tasks
-  → Inno.Build（脚本、内容闭包、诊断、取消与原子提交）
-  → Managed compiler（CoreCLR / Mono Wasm / NativeAOT 发布与链接）
-  → Windows / macOS / Browser target（布局、验证与打包）
+Editor / CLI / MSBuild
+→ StandardBuildDistribution
+→ BrowserBuildModule + 所选 managed compiler
+→ 共享内容/代码 pipeline
+→ backend-owned static recipe + 同一目标绑定闭包
+→ Browser 包装/校验/原子提交
 
-Desktop Program / Browser Program
-  → Inno.Player.Runtime.PlayerApplication
-  → 同一个 GamePlayerHost 与 Shell.RunAsync
-  → EngineHost / Scene / Assets / 各领域服务
-  → 同一个 DefaultAdapterCatalog（可注入存储工厂）
-  → SDL3、BGFX、MiniAudio、Text、UI Adapter
+页面 main.js / BrowserBridge
+→ BrowserPlayerComposition
+→ PlayerApplication / Shell / EngineHost / RuntimeSession
+→ 同一领域运行服务与 Core Events
 ```
 
-`Inno.Player.Browser` 是 .NET 浏览器 SDK 的启动入口，负责 HTTP 内容下载、JS 帧调度及存储组合。它没有第二套游戏 Host、输入系统或场景逻辑，也不链接桌面 Host 源码。共享 Player 是真正的程序集项目 `Inno.Player.Runtime`。
+## 必要差异及归属
 
-## 必要的平台策略
+| 差异 | 实现 owner | 共用部分 |
+| --- | --- | --- |
+| requestAnimationFrame、暂停/恢复、页面回调 | Browser Player/Bridge | ScheduledShellFrameDriver 和 Shell 生命周期。 |
+| HTTP metadata 与 owned pack stream | HttpPlayerContentSource | ContentPackReader、Content store、Asset lease、只读 Settings。 |
+| 浏览器存储 | Browser Storage Adapter | StorageScope、Runtime API。 |
+| 单线程、调用线程渲染、inline 日志 | Browser composition 显式配置 | Job、Rendering、LogRouter 契约。 |
+| wasm32 ABI、静态原生链接、WebGL 2 | Browser SDK/构建包与共享 backend recipe | 同一窄 facade、BGCS 生成链和中立渲染协议。 |
+| 解释执行或 AOT | DotNet managed deployment compiler | 同一冻结代码闭包、静态注册与 Browser 宿主。 |
 
-| 能力 | 桌面入口 | Web 入口 | 共同执行路径 |
-| --- | --- | --- | --- |
-| 帧调度 | `PollingShellFrameDriver` | `ScheduledShellFrameDriver` 接收 requestAnimationFrame | `Shell.RunAsync` |
-| 线程策略 | WorkerPool、可用渲染线程 | SingleThread、调用线程渲染 | EngineHost 与 Rendering Runtime |
-| 日志 | Background delivery、终端颜色 | Inline delivery | Core LogRouter 与同一 sink 契约 |
-| 模块激活 | 静态注册的链接代码 | 静态注册的链接代码 | 同一 ModuleHost、TypeCatalog、GameCodeDeployment |
-| 持久化 | 文件系统 | 浏览器 localStorage Adapter | 同一 Storage Runtime API |
-| 输入 | SDL3 Native | SDL3 Emscripten | Platform Event → Core Events → Input Runtime |
+Browser 目标稳定 ID 仍是 `browser-wasm`，描述明确为 wasm32；这个 ID 不表示构建宿主必须是 Windows。SDK 从所选 .NET 工程/workload 解析，Node、Python、CMake、Emscripten 只在操作边界冻结，不在领域查 PATH 或选择最高版本。
 
-这些参数表达宿主能力，不在基础库中使用 `OperatingSystem.IsBrowser()` 推断策略。浏览器原生 Canvas 句柄等实现细节留在平台和图形 Adapter。
+## 原生与绑定
 
-模块与类型来源由 composition 显式提供；发行 Player 使用生成目录，Editor 使用 `Inno.Adapter.Modules.DotNet` 的动态来源。序列化来源同样由 composition 提供，Player 使用生成访问器，Editor 的反射属于 `Inno.Adapter.Serialization.DotNet`。Editor collectible generation 仍必须经过 Full GC、finalizers、Full GC 和弱 monitor 验证。
+SDL、BGFX、MiniAudio、Text、RmlUi 在各自 backend 维护一份源码。组件的 StaticLibraries.cmake 声明自己的源、依赖、语义选项和 archive；Browser 聚合只组合选定组件、SDK约束、异常/longjmp及最终链接要求。
 
-## Native 与 BGCS
+目标 C 桥与 managed 单文件位于 Native owner 的 `obj/browser-wasm/<generationFingerprint>`。Browser managed 发布消费同一次准备的 BindingSelection，发现身份不一致时失败。CMake 中间态属于 Browser 构建 owner 的 `obj/native`；完整 archive 闭包按目标/指纹位于 artifacts，不覆盖宿主生成物。
 
-每个组件只有一个 `Inno.Native.XXX` 项目。五个 `.Browser` Native 副本已删除。
+`wasm_sjlj_shim.c` 属于当前 SDK 的 ABI/link 边界，不能进入玩法或服务层。更换 runtime/SDK 必须重新验收 interop、异常、回调和最终链接，不能凭成功编译声称可运行。
 
-- `Bindings/common.json` 保存共同声明和映射。
-- `bindgen.json` 与 `bindgen.browser-wasm.json` 只描述目标 ABI、链接方式与生成策略。
-- Host managed 绑定位于 `Generated/Bindings.cs`；目标绑定位于该项目 `obj/<target>/<generationFingerprint>/Generated/Bindings.cs`。
-- managed 的 `bin/obj` 按目标及选中原生构建指纹隔离，桌面编译不会使用 wasm32 布局。
-- Browser 工具链从选定 .NET workload 解析完整、版本匹配的 Emscripten SDK；环境只传给子进程。
-- CMake 输出归 `Inno.Build.Toolchains.Browser/obj/native/browser-wasm/<fingerprint>`，完整静态闭包归 `artifacts/native/browser/browser-wasm/<fingerprint>`。
-- UI 的同一 C++ facade 通过目标 Cpp2C profile 和 BGCS 生成绑定；不手写一套浏览器 P/Invoke。
-- UI 目标 C++ 桥位于所属项目 `obj/browser-wasm/<generationFingerprint>/Native`，与 managed source 一起验证及提交，通过请求描述与 CMake 参数选择；宿主 `Native/Generated` 不被目标生成覆盖。
+## 构建入口
 
-缓存读取检查完整文件集合和 SHA-256。Support Pack 保存选中组件的绑定指纹，托管编译发现输入变化时明确失败，
-避免生成器或 facade 变化后混用上一代原生库。详细所有权见 [当前平台与构建分层](PLATFORM_RUNTIME_ARCHITECTURE.md)。
-
-Emscripten、wasm32、静态链接和浏览器存储需要平台实现。共享程序集不因此增加副本。当前 .NET 9 / Emscripten 3.1.56 的 SjLj ABI lowering 位于 Browser 工具链与链接模板中，原因及作用范围有代码记录，不进入游戏、Shell 或渲染服务。
-
-## 统一构建
-
-仓库生产代码只保留四个程序入口：Editor、桌面 Player、Web Player、`Inno.Build.Cli`。原生组件构建、Shader 编译、Support Pack 与架构验证都是库，MSBuild 使用薄 Task 调用相同实现。
-
-Support Pack 核心通过 `IPlayerSupportPackSource` 注册准备流程，通过 `IPlayerSupportPackValidator` 验证目标闭包，不维护平台 switch。`BuiltInBuildDistribution` 是 Editor/CLI/MSBuild 共用的内置目标组合点。准备失败或取消不替换已有 pack；游戏发布在隔离 staging 中完成后再提交输出。
-
-Support Pack 保存最终游戏发布所需的模板、注册 Analyzer、编译引用和原生输入。每次游戏 Build 冻结实际代码闭包，生成 `PlayerDeploymentDefinition`，再调用独立的托管 compiler 完成发行；平台 target 消费发布结果并打包。`--deployment coreclr`、`nativeaot`、`mono-wasm`、`mono-wasm-aot` 明确选择部署方式，平台默认项可以省略。
+生产入口共六个，构建程序只保留 Inno.Build.Cli。示例中的 SDK 必须具有工程需要的 Wasm workload，路径按本机安装填写：
 
 ```powershell
- dotnet build build/cli/Inno.Build.Cli/Inno.Build.Cli.csproj -c Release -m:1
- dotnet build/cli/Inno.Build.Cli/bin/Release/net9.0/Inno.Build.Cli.dll support-pack `
-   --target browser-wasm --dotnet <wasm-tools-dotnet> --output <support-packs>
- dotnet build/cli/Inno.Build.Cli/bin/Release/net9.0/Inno.Build.Cli.dll game `
-   --project <FlappyBird> --support-packs <support-packs> --target browser-wasm `
-   --startup-scene FlappyBird/FlappyBird.iscene --output <export>
+dotnet build build/cli/Inno.Build.Cli/Inno.Build.Cli.csproj -c Release -m:1
+dotnet build/cli/Inno.Build.Cli/bin/Release/net9.0/Inno.Build.Cli.dll game `
+  --tools-target windows-x64 --target browser-wasm --deployment mono-wasm `
+  --project <project-directory> --support-packs <support-pack-root> --output <output-directory>
 ```
 
-目标游戏输出是 HTTP(S) 可静态托管的站点。浏览器要求 WebGL 2。运行代码、内容格式和输入契约在不同主机上相同；具体 SDK、原生 ABI、发布产物及浏览器能力由所属边界处理。
+`mono-wasm-aot` 选择 AOT；作者工具目标独立于游戏目标，导出 Browser 不改变当前 Editor 的 Native 或 ImGui Shader。内容 metadata 从同一 catalog 读取 Pack 身份，不重复维护 content-pack.txt，不先写入另一份 /Content 再解压。
 
-## 渲染与验收边界
+## 生命周期和未来接入
 
-此轮宿主重构复用现有 BGFX Adapter、Shader IR、能力与颜色空间契约，不增加第二套 Web 渲染管线。此前颜色偏暗、光照坐标与夜晚星星的问题已有独立的渲染修复；此轮重新导出 FlappyBird 验证这些结果没有回退。
+共同退出协议停止新工作、取消并完成任务、注销回调、提交存储，再退休资源。输入由 Platform Event → Core Events → EventInput → Session 快照；没有 Browser 专用玩法输入入口。
 
-构建成功不等于全部平台实际运行通过。Windows 构建、后台 Edge/WebGL 运行、macOS 主机和 Safari 的实测结果分别记录。
-本次结果见[平台与运行时重构验收](PLATFORM_RUNTIME_ACCEPTANCE.md)；
-[前轮 Web 验收](WEB_PLAYER_ACCEPTANCE_2026_10_01.md)和[前轮共享宿主验收](WEB_HOST_REFACTOR_ACCEPTANCE_2026_10_02.md)只保留为历史证据。
+将来接入 CoreCLR WebAssembly 需要新的部署 compiler 和匹配 SDK/link resolver，重新验证启动、回调、异常、interop与实际游戏。Browser宿主及共同领域可以复用，不在Scene、Rendering或Input增加runtime switch。当前不宣称这个未来部署已实现，也不提供 Browser Editor。
 
-
-## 2026-10-06 当前启动与内容流程
-
-
-BrowserPlayerComposition 选择生成的静态模块/类型/序列化目录、HTTP 内容来源、浏览器存储和外部帧回调。HttpPlayerContentSource 取得 manifest 与 catalog；共享 Player 解码并核对，随后来源下载 catalog 指定的唯一 Pack，交出 owned seekable stream。Reader 完成完整哈希、目录、预算和 payload 验证后，PackContentStore 直接供运行消费者读取。
-
-没有 /Content 写入加二次解压流程，也不再生成 content-pack.txt。浏览器 SDK 自身的虚拟文件系统需求仍由具体工具链/Adapter 管理。MiniAudio 的文件型编码缓存属于其 Adapter，Stream 继续 native 流式解码。共同 Input、Scene、Rendering、Assets 和 Runtime 不因此增加浏览器副本。
-
-Browser 原生闭包使用同一 NativeArtifactPublisher、NativeBuildRecipe 和完整生成描述。五个目标 binding 请求批量生成，SDK/tool 由所选 workload 一次解析；当前 target 桥与 managed bindings 通过独立 target/fingerprint 目录及 metadata-selection.props 进入链接，不能覆盖宿主生成物。
-
-当前 managed compiler 可选 mono-wasm 或 mono-wasm-aot。未来 CoreCLR WebAssembly 需新增 deployment compiler 与对应 SDK/link resolver，并重新验收 interop、回调和启动；浏览器内容来源、共同 Player 和玩法不需要改成另一套。
-
-颜色空间、主输出真实可用性、光照坐标与星光均沿同一 Rendering Core/Runtime 契约处理；浏览器实际结果单独记录在本轮验收中。
+本轮解释执行、AOT、音频、持久化、昼夜颜色、光照和星光的实际结果见平台归属验收；启动成功不能代替视觉与玩法验证。

@@ -29,7 +29,7 @@ public sealed class ConditionalInspectionTests : IDisposable
             catalogSource = new DotNetAssemblyCatalogSource(typeof(ConditionalInspectionTests).Assembly)        });
         m_types = new(m_modules, new ReflectionTypeCatalogSource());
         m_serialization = new(m_types, new ReflectionSerializationMetadataSource());
-        m_runtime = new(new EditorContext(m_root), m_types, m_logs, [m_types, m_serialization]);
+        m_runtime = new(new EditorContext(m_root, new EditorKeyboardPolicy(Inno.Core.Input.KeyModifier.Control, "Super")), m_types, m_logs, [m_types, m_serialization]);
         m_runtime.Start();
     }
     [Fact]
@@ -53,34 +53,60 @@ public sealed class ConditionalInspectionTests : IDisposable
             => (IInspectionDrawer)Activator.CreateInstance(type, nonPublic: true)!;
     }
 
-    public sealed record ConditionalTarget(int kind, bool ambiguous);
+    public sealed record ConditionalTarget(
+        int kind,
+        bool ambiguous
+    );
     [InspectionDrawer(typeof(ConditionalTarget), conditional: true)]
     public sealed class ConditionalFirst : InspectionDrawer<ConditionalTarget>
     {
         public override string icon => "";
         protected override bool CanInspect(ConditionalTarget target) => target.kind == 1;
-        protected override (string name, Action<string>? setter) BindName(InspectionDrawContext context, ConditionalTarget target) => ("First", null);
-        protected override void Draw(InspectionDrawContext context, ConditionalTarget target) { }
+        protected override (string name, Action<string>? setter) BindName(
+            InspectionDrawContext context,
+            ConditionalTarget target
+        ) => ("First", null);
+        protected override void Draw(
+            InspectionDrawContext context,
+            ConditionalTarget target
+        ) { }
     }
     [InspectionDrawer(typeof(ConditionalTarget), conditional: true)]
     public sealed class ConditionalSecond : InspectionDrawer<ConditionalTarget>
     {
         public override string icon => "";
         protected override bool CanInspect(ConditionalTarget target) => target.kind == 2;
-        protected override (string name, Action<string>? setter) BindName(InspectionDrawContext context, ConditionalTarget target) => ("Second", null);
-        protected override void Draw(InspectionDrawContext context, ConditionalTarget target) { }
+        protected override (string name, Action<string>? setter) BindName(
+            InspectionDrawContext context,
+            ConditionalTarget target
+        ) => ("Second", null);
+        protected override void Draw(
+            InspectionDrawContext context,
+            ConditionalTarget target
+        ) { }
     }
     [InspectionDrawer(typeof(ConditionalTarget), conditional: true)]
     public sealed class ConditionalOverlap : InspectionDrawer<ConditionalTarget>
     {
         public override string icon => "";
         protected override bool CanInspect(ConditionalTarget target) => target.ambiguous;
-        protected override (string name, Action<string>? setter) BindName(InspectionDrawContext context, ConditionalTarget target) => ("Overlap", null);
-        protected override void Draw(InspectionDrawContext context, ConditionalTarget target) { }
+        protected override (string name, Action<string>? setter) BindName(
+            InspectionDrawContext context,
+            ConditionalTarget target
+        ) => ("Overlap", null);
+        protected override void Draw(
+            InspectionDrawContext context,
+            ConditionalTarget target
+        ) { }
     }
     private sealed class ProbePropertyEdits : IInspectionPropertyEditService
     {
-        public bool ChangeProperty(object owner, string propertyName, Action mutation, string historyName)
+        public bool ChangeProperty(
+            object owner,
+            string propertyName,
+            Action mutation,
+            string historyName
+        )
             => throw new InvalidOperationException("Resolution must not edit a property.");
     }
 

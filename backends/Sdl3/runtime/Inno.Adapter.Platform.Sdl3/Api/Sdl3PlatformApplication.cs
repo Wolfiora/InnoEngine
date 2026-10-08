@@ -1,0 +1,87 @@
+using System;
+using System.Collections.Generic;
+using Inno.Core.Events;
+using Inno.Platform;
+
+namespace Inno.Adapter.Platform.Sdl3;
+
+/// <summary>
+/// Platform runtime entry point responsible for window creation and platform event polling.
+/// </summary>
+public sealed partial class Sdl3PlatformApplication : IPlatformApplication
+{
+    /// <summary>
+    /// Occurs after the observable redraw requested state changes.
+    /// </summary>
+    public event Action<uint>? redrawRequested;
+
+    /// <summary>
+    /// Initializes platform subsystems required for windowing and input events.
+    /// </summary>
+    /// <param name="hostIntegration">
+    /// The borrowed immutable host configuration used for every window and native surface.
+    /// </param>
+    /// <exception cref="ArgumentNullException">
+    /// Host configuration is absent.
+    /// </exception>
+    public Sdl3PlatformApplication(ISdl3HostIntegration hostIntegration)
+    {
+        ArgumentNullException.ThrowIfNull(hostIntegration);
+        ArgumentNullException.ThrowIfNull(hostIntegration.capabilities);
+        m_hostIntegration = hostIntegration;
+        Initialize();
+    }
+
+    /// <summary>
+    /// Creates a platform window from the provided options.
+    /// </summary>
+    /// <param name="options">
+    /// Window creation options.
+    /// </param>
+    /// <returns>
+    /// The created <see cref="Sdl3PlatformWindow"/> instance.
+    /// </returns>
+    public partial Sdl3PlatformWindow CreateWindow(PlatformWindowOptions options);
+
+    /// <summary>
+    /// Polls the next translated platform event.
+    /// </summary>
+    /// <param name="evnt">
+    /// The translated event, or <see langword="null"/> when no event is available.
+    /// </param>
+    /// <returns>
+    /// <see langword="true"/> when an event was returned; otherwise <see langword="false"/>.
+    /// </returns>
+    public partial bool PollEvent(out Event? evnt);
+
+    /// <summary>
+    /// Gets a snapshot of all currently valid platform windows.
+    /// </summary>
+    /// <returns>
+    /// A read-only list containing every currently valid window, including windows created by integrations
+    /// such as ImGui viewports.
+    /// </returns>
+    public partial IReadOnlyList<Sdl3PlatformWindow> GetWindows();
+
+    IPlatformWindow IPlatformApplication.CreateWindow(PlatformWindowOptions options)
+        => CreateWindow(options);
+
+    IReadOnlyList<IPlatformWindow> IPlatformApplication.GetWindows()
+        => GetWindows();
+
+    /// <summary>
+    /// Registers an optional platform backend integration for this application instance.
+    /// </summary>
+    /// <param name="extension">
+    /// The extension that receives native integration callbacks.
+    /// </param>
+    /// <returns>
+    /// A registration that removes the extension when disposed.
+    /// </returns>
+    public partial IDisposable RegisterExtension(ISdl3ApplicationExtension extension);
+
+    /// <summary>
+    /// Releases all platform resources owned by this application instance.
+    /// </summary>
+    public partial void Dispose();
+}

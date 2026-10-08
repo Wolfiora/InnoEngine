@@ -1,0 +1,14 @@
+<Project>
+  <Import Project="../src/Directory.Build.props" />
+
+  <PropertyGroup>
+    <BindGenRoot Condition="'$(BindGenRoot)' == ''">$(MSBuildThisFileDirectory)../../BindGen-CS</BindGenRoot>
+    <BGCSRuntimeProject Condition="'$(BGCSRuntimeProject)' == ''">$(BindGenRoot)/src/BGCS.Runtime/BGCS.Runtime.csproj</BGCSRuntimeProject>
+    <NoWarn>$(NoWarn);CS8981</NoWarn>
+    <BindGenProfile
+      Condition="'$(InnoNativeTarget)' != '' and Exists('$(MSBuildProjectDirectory)/Bindings/bindgen.$(InnoNativeTarget).json')">$(InnoNativeTarget)</BindGenProfile>
+    <BindGenConfig Condition="'$(BindGenProfile)' != ''">$(MSBuildProjectDirectory)/Bindings/bindgen.$(BindGenProfile).json</BindGenConfig>
+    <BindGenTargetOutputRoot Condition="'$(BindGenProfile)' != ''">$(MSBuildProjectDirectory)/obj/$(BindGenProfile)</BindGenTargetOutputRoot>
+    <DefineConstants Condition="'$(BindGenProfile)' == 'browser-wasm'">$(DefineConstants);INNO_STATIC_NATIVE</DefineConstants>
+  </PropertyGroup>
+</Project>

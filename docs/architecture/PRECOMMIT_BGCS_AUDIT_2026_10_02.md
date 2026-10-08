@@ -60,7 +60,7 @@ Browser target、静态链接、帧调度和 localStorage 仍需平台实现。�
 不是 BGCS 生成器改动。实际 MSBuild workload 9.0.20 选择 Emscripten pack 3.1.56，其 clang 报告 19.1.0。
 同一测试程序无 shim 时因 `__wasm_setjmp` / `__wasm_setjmp_test` 未定义失败；加入后实际 wasm 运行通过：
 嵌套 jump buffer、跨中间调用帧、零值归一化及 20 次重复 invocation。
-详细职责和 SDK 升级后的删除/复验要求见 [Browser 工具链](../build/Inno.Build.Toolchains.Browser.md)。
+详细职责和 SDK 升级后的删除/复验要求见 [Browser 工具链](../platform/Browser/Inno.Build.Browser.md)。
 
 这些 BGCS 修复不改变颜色空间、光照方向或 Shader 输出；重新生成和实际导出用于检查消费链是否回退。
 当前分层把平台差异集中在目标和 adapter/toolchain 中，但工具链与第三方升级仍需要维护，不能承诺永久无需适配。

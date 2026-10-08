@@ -73,7 +73,7 @@ Runtime Subsystem Pipeline、可撤销 execution scope、统一 DiagnosticReport
 - [EngineHost](../../src/runtime/engine/Inno.Runtime/Hosting/EngineHost.cs)
 - [RuntimeSession](../../src/runtime/engine/Inno.Runtime/Hosting/RuntimeSession.cs)
 - [Player composition root](../../src/composition/player/Inno.Player.Runtime/GamePlayerHost.cs)
-- [Editor composition root](../../src/composition/editor/host/Inno.Editor.Application/Hosting/EditorHost.cs)
+- [Editor composition root](../../src/composition/editor/hosting/Inno.Editor.Hosting/Hosting/EditorHost.cs)
 - [ModuleHost](../../src/foundation/extensibility/Inno.Extensibility.Modules/ModuleHost.cs)
 - [TypeRegistry](../../src/foundation/extensibility/Inno.Extensibility.Types/TypeRegistry.cs)
 - [AssetPipeline](../../src/content/assets/Inno.Assets.Pipeline/AssetPipeline.cs)

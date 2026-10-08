@@ -22,7 +22,7 @@
       Include="../../framework/Inno.Editor.Interactions/Inno.Editor.Interactions.csproj"
       PrivateAssets="compile" />
     <ProjectReference
-      Include="../../../../../native/Inno.Native.ImGui/Inno.Native.ImGui.csproj"
+      Include="../../../../../backends/ImGui/native/Inno.Native.ImGui/Inno.Native.ImGui.csproj"
       PrivateAssets="compile" />
     <ProjectReference
       Include="../../../../../build/managed/Inno.Build.Managed/Inno.Build.Managed.csproj"

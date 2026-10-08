@@ -2,18 +2,17 @@
 
 [架构索引](README.md) · [Wiki 首页](../README.md) · [完整执行计划](PLATFORM_RUNTIME_REFACTOR_PLAN.md) · [Web 启动](WEB_PLAYER_ARCHITECTURE.md)
 
-本文按当前源码说明已经建立的边界。本次当前平台重构及本机验收已完成；测试数量、实际运行证据和平台限制见本次验收记录。
-未来平台列在接入章节，不能据此推断已经实现或验收。
+本文按当前源码说明运行、内容与代际契约。平台归属以[当前总览](ENGINE_ARCHITECTURE_OVERVIEW.md)和[扩展指南](PLATFORM_EXTENSION_GUIDE.md)为准；本轮实际 gate 另见平台归属验收。未来接入不能视为已实现或实测。
 
 ## 1. 五个独立选择
 
 | 选择 | 归属 | 当前入口 | 负责的差异 |
 | --- | --- | --- | --- |
-| 发布平台 | `build/pipeline/Inno.Build.Platform.*` | `IGameBuildTarget` | 内容约束、输出布局、平台包校验 |
-| 托管部署 | `build/managed` | `IManagedDeploymentCompiler` | CoreCLR、Mono Wasm 解释执行/AOT、NativeAOT 的实际发布 |
-| 平台宿主 | `src/composition/player` | Desktop/Browser composition | 启动、下载、系统回调、帧调度与平台生命周期 |
-| 原生工具链 | `build/toolchains` | 显式 SDK 与组件 Toolchain | compiler、sysroot、ABI、生成身份、编译与链接 |
-| 领域实现 | `src/adapters` | 各领域 provider catalog | 窗口、输入、存储、图形、音频、文本、UI 和 presentation |
+| 发布平台 | `platforms/<platform>/build` | `IGameBuildTarget` | 内容约束、输出布局、平台包校验 |
+| 托管部署 | `build/managed` 契约 / `backends/DotNet/build` 实现 | `IManagedDeploymentCompiler` | CoreCLR、Mono Wasm 解释执行/AOT、NativeAOT 的实际发布 |
+| 平台宿主 | `platforms/<platform>/player` | 明确平台 composition | 启动、下载、系统回调、帧调度与平台生命周期 |
+| 原生工具链 | `build/toolchains` 机制 / 平台 SDK / backend recipe | 冻结工具链与组件描述 | compiler、sysroot、ABI、生成身份、编译与链接 |
+| 领域实现 | `backends` 与平台 runtime | 各领域 provider catalog | 窗口、输入、存储、图形、音频、文本、UI 和 presentation |
 
 `browser-wasm` 是原生目标和发布平台的选择；它不表示生成器只能在 Windows 运行。
 所用托管运行时另由部署 ID 决定。更换托管运行时不需要把领域服务改成另一套实现。
@@ -26,9 +25,10 @@ src/foundation    基础值、事件、身份、模块目录、类型目录和�
 src/content       Asset、引用、Scene 与 Animation
 src/services      后端中立的领域契约及运行服务
 src/runtime       引擎组合、部署内容、运行子系统、创作态脚本编译/reload
-src/adapters      领域具体实现、动态模块与反射序列化实现
+src/adapters      中立 SPI、provider catalog 与 EventInput
 src/composition   默认引擎、Shell、Player 和 Editor 组合入口
-native            单组件语义 facade、BGCS 定义和生成绑定
+backends          共享具体实现、Native facade、BGCS 和组件 recipe
+platforms         系统/SDK、产品启动、布局和 Support Pack
 build             CLI、Task、Pipeline、Managed、Toolchain、Support Pack
 tools             架构与源码验证库
 ```
@@ -220,3 +220,11 @@ Inno.Build.Composition 是内置 target、managed deployment 和 Support Pack so
 共同 Task 引导隔离 RID/AOT/Wasm/IDE 属性，一次闭包同一工具身份只准备一次宿主。Native recipe 覆盖实际组件源码、SDK/tool、参数、BGCS 定义/实现和必需 exports；operation 共用初始输入扫描，等锁后及发布前重新验证稳定性。热命中仍校验完整产物内容，内容相同的部署保持 DLL 字节和 mtime。
 
 本轮结构和 API 已按上述职责调整；实际 gate 的当前状态见 [本轮验收](ARCHITECTURE_CLEANUP_ACCEPTANCE_2026_10_06.md)，不使用历史结果替代本轮实测。
+
+## 平台与后端的连接边界
+
+平台基础 build/runtime 不引用 backend；共享 backend 不引用平台/integration。实际 SDK 与 backend 连接归 `platforms/<platform>/integrations/Inno.Integration.<platform>.<backend>`；产品和 Standard Distribution 选择它。IGameBuildTarget 只验证和打包，IGameContentCompiler 由所选 backend 提供，GameBuildContribution 绑定两者；BuildDistribution.CreateBindings 返回完整绑定。
+
+新增 WindowsX86：补 Windows 的目标/SDK/ABI 支持，复用 Windows 产品与 packager，增加真实 BGFX/SDL 接入配置后验收并注册。换图形 backend：增加该 backend 与需要的 integration，替换 compiler/Native plan，平台 packager 不改。NS/iOS：真实 SDK、产品入口与 packaging 归平台包，backend 可复用时直接选择，仅实际差异进入 integration。Browser 换托管运行时只换部署 compiler 和 linker。
+
+Native 步骤显式声明 Static/Shared、有序组件参数和输入 bytes；SDL 应用统一窗口 owner/surface；ImGui 在 NewFrame 前刷新尺度，不维护 WindowsX64 返回 ABI。完整树与测试见[当前批准计划](BACKEND_PLATFORM_INTEGRATION_PLAN.md)，实机状态见[验收](BACKEND_PLATFORM_INTEGRATION_ACCEPTANCE.md)。

@@ -15,8 +15,8 @@ Rendering Core 是后端中立机制，不内建 2D/3D/PBR/Forward/Deferred/Came
 | [Inno.Rendering.Shaders.Tests](Inno.Rendering.Shaders.Tests.md) | 源码/图/资源/控制流与代际测试、Metal 原生编译，不替代 GPU 验收 |
 | [Inno.Adapter.Rendering](Inno.Adapter.Rendering.md) | Rendering backend 选择、runtime device factory 与 authoring compiler factory contract |
 | [Inno.Adapter.Rendering.Authoring](Inno.Adapter.Rendering.Authoring.md) | Authoring-only shader/texture compiler factory contract |
-| [Inno.Adapter.Rendering.Bgfx](Inno.Adapter.Rendering.Bgfx.md) | 唯一 BGFX device adapter |
-| [Inno.Adapter.Presentation.ImGui.Bgfx](Inno.Adapter.Presentation.ImGui.Bgfx.md) | BGFX/ImGui GPU 合成 implementation |
+| [Inno.Adapter.Rendering.Bgfx](../backends/Bgfx/Inno.Adapter.Rendering.Bgfx.md) | 唯一 BGFX device adapter |
+| [Inno.Adapter.Presentation.ImGui.Bgfx](../backends/ImGui/Inno.Adapter.Presentation.ImGui.Bgfx.md) | BGFX/ImGui GPU 合成 implementation |
 | [Inno.Editor.Panel.ShaderEditor](../editor/Inno.Editor.Panel.ShaderEditor.md) | `.ishader` 选择跟随、图画布、节点设置与自动保存；创作层，不属于运行时 |
 
 目标是所有 `.ishader` 由图定义，源码仅为函数节点，Material 只保存 Shader 引用与参数。

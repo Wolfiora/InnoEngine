@@ -227,7 +227,7 @@ internal sealed class EditorActionRouter(
         return false;
     }
 
-    private static bool TryResolveShortcut(
+    private bool TryResolveShortcut(
         EditorExtensionCatalog.ActionRegistration? registration,
         string area,
         out HotKeyGesture gesture
@@ -302,10 +302,10 @@ internal sealed class EditorActionRouter(
             : new ResolvedAction(best, bestDistance, best.area is not null);
     }
 
-    private static HotKeyGesture CreateGesture(EditorShortcutAttribute shortcut)
+    private HotKeyGesture CreateGesture(EditorShortcutAttribute shortcut)
         => shortcut.primary
-            ? HotKeyGesture.Primary(shortcut.key, shortcut.modifiers)
-            : new HotKeyGesture(shortcut.key, shortcut.modifiers);
+            ? HotKeyGesture.Primary(shortcut.key, editor.keyboard, shortcut.modifiers)
+            : new HotKeyGesture(shortcut.key, shortcut.modifiers, editor.keyboard.superModifierLabel);
 
     private static IEnumerable<EditorShortcutAttribute> GetApplicableShortcuts(
         EditorExtensionCatalog.ActionRegistration registration,

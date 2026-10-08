@@ -62,7 +62,7 @@ BGCS 的 capability matrix 只采用自身测试：target triple、32 位 pointe
 
 Binding 必须按目标解析 `long`、pointer、alignment、calling convention 和 target headers。否则 64 位作者主机上的解析结果可能被错误当成 32 位 Wasm ABI。Clang 明确区分 target triple、sysroot 和宿主工具链输入；BGCS 识别 Emscripten 属于必要的通用目标支持。[Clang 交叉编译](https://clang.llvm.org/docs/CrossCompilation.html)。
 
-必要的是一份目标描述及显式 SDK 输入；不需要每个 native 库拥有另一套 BGCS 生成逻辑。引擎 Browser 工具链的静态链接、宿主帧调度和存储，以及 SDK SjLj lowering，继续属于引擎平台实现。参见 [Browser 工具链](../build/Inno.Build.Toolchains.Browser.md)及 [Web Player 边界](WEB_PLAYER_ARCHITECTURE.md)。
+必要的是一份目标描述及显式 SDK 输入；不需要每个 native 库拥有另一套 BGCS 生成逻辑。引擎 Browser 工具链的静态链接、宿主帧调度和存储，以及 SDK SjLj lowering，继续属于引擎平台实现。参见 [Browser 工具链](../platform/Browser/Inno.Build.Browser.md)及 [Web Player 边界](WEB_PLAYER_ARCHITECTURE.md)。
 
 ## 验证
 

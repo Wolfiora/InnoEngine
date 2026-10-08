@@ -27,7 +27,7 @@ internal sealed class GameBuildPipeline
     private readonly ProjectSettingsStore m_settings;
     private readonly SerializationRegistry m_serialization;
     private readonly ScriptCompiler m_compiler;
-    private readonly IReadOnlyDictionary<BuildTargetId, IGameBuildTarget> m_targets;
+    private readonly IReadOnlyDictionary<BuildTargetId, GameBuildTargetBinding> m_targets;
     private readonly PlayerSupportPackCatalog m_supportPacks;
     private readonly ManagedDeploymentCatalog m_managedDeployments;
 
@@ -37,7 +37,7 @@ internal sealed class GameBuildPipeline
         ProjectSettingsStore settings,
         SerializationRegistry serialization,
         ScriptCompiler compiler,
-        IReadOnlyDictionary<BuildTargetId, IGameBuildTarget> targets,
+        IReadOnlyDictionary<BuildTargetId, GameBuildTargetBinding> targets,
         PlayerSupportPackCatalog supportPacks,
         ManagedDeploymentCatalog managedDeployments
     ) {
@@ -58,8 +58,9 @@ internal sealed class GameBuildPipeline
     ) {
         ArgumentNullException.ThrowIfNull(request);
         request.Validate();
-        if (!m_targets.TryGetValue(request.profile.target, out IGameBuildTarget? target))
+        if (!m_targets.TryGetValue(request.profile.target, out GameBuildTargetBinding? binding))
             throw new InvalidOperationException($"No game packager is registered for '{request.profile.target}'.");
+        IGameBuildTarget target = binding.packager;
         IManagedDeploymentCompiler managedCompiler = m_managedDeployments.Resolve(
             request.profile.managedDeployment ?? target.defaultManagedDeployment, target.runtimeIdentifier);
         if (!m_assets.isInitialized)
@@ -104,7 +105,7 @@ internal sealed class GameBuildPipeline
             assetExportTask = m_assets.ExportRuntimeArtifactsAsync(
                 rawContent,
                 stagingToken);
-            targetContentTask = target.BuildContentAsync(
+            targetContentTask = binding.compiler.CompileAsync(
                     new GameBuildContentContext(request.profile, targetContent, serialization),
                     stagingToken)
                 .AsTask();

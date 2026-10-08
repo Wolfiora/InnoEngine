@@ -681,7 +681,10 @@ public sealed class ScriptingPipelineTests : IDisposable
         Assert.True(result.success, FormatDiagnostics(result));
         Assert.NotEmpty(progress.values);
         Assert.All(progress.values, static value => Assert.InRange(value.fraction, 0f, 1f));
-        Assert.True(progress.values.Zip(progress.values.Skip(1), static (left, right) =>
+        Assert.True(progress.values.Zip(progress.values.Skip(1), static (
+            left,
+            right
+        ) =>
             right.fraction >= left.fraction).All(static value => value));
         Assert.NotEmpty(result.stageTimings);
         Assert.All(result.stageTimings, static timing => Assert.True(timing.elapsed >= TimeSpan.Zero));
@@ -858,7 +861,10 @@ public sealed class ScriptingPipelineTests : IDisposable
     [Fact]
     public void InvalidSampleScriptPreflightLeavesNoProjectCopy()
     {
-        using var fixture = new ScriptingFixture((root, serialization) =>
+        using var fixture = new ScriptingFixture((
+            root,
+            serialization
+        ) =>
             WriteSamplePlugin(root, serialization, "public sealed class BrokenSample { this is invalid; }"));
         AssetPath source = new(new AssetSourceId("tests.samples"), "~Starter");
         using AssetSampleImportTransaction import = PrepareSample(fixture, source);
@@ -1916,8 +1922,8 @@ public sealed class ScriptingPipelineTests : IDisposable
         EditorInteractionRuntime runtime,
         Func<bool> completed,
         Func<string> status,
-        bool focused = true)
-    {
+        bool focused = true
+    ) {
         long started = Environment.TickCount64;
         int frame = 0;
         while (!completed())
@@ -1975,8 +1981,8 @@ public sealed class ScriptingPipelineTests : IDisposable
     private static WeakReference CaptureActiveType(
         ScriptingFixture fixture,
         string typeName,
-        int expectedVersion)
-    {
+        int expectedVersion
+    ) {
         Type type = fixture.ResolveActiveType(typeName);
         Assert.Equal(expectedVersion, ReadVersion(type));
         return new WeakReference(type);
@@ -1985,8 +1991,8 @@ public sealed class ScriptingPipelineTests : IDisposable
     [MethodImpl(MethodImplOptions.NoInlining)]
     private static RetiredScriptObject AttachReloadableBehavior(
         ScriptingFixture fixture,
-        GameObject gameObject)
-    {
+        GameObject gameObject
+    ) {
         Type type = fixture.ResolveActiveType("ReloadableBehavior");
         GameComponent component = gameObject.AddComponent(type);
         type.GetProperty("retained")!.SetValue(component, 41);
@@ -1996,8 +2002,8 @@ public sealed class ScriptingPipelineTests : IDisposable
     [MethodImpl(MethodImplOptions.NoInlining)]
     private static AvailabilitySceneState CreateAvailabilitySceneState(
         ScriptingFixture fixture,
-        GameScene scene)
-    {
+        GameScene scene
+    ) {
         GameObject pluginOwner = scene.CreateObject("Plugin Owner");
         GameObject scriptOwner = scene.CreateObject("Script Owner");
         Type pluginType = fixture.ResolveActiveType("PluginBehavior");
@@ -2025,8 +2031,8 @@ public sealed class ScriptingPipelineTests : IDisposable
     private static MissingGenerationExpectation CommitPluginRemoval(
         ScriptingFixture fixture,
         ScriptReloadHost reload,
-        RuntimeSession session)
-    {
+        RuntimeSession session
+    ) {
         GameScene scene = session.scenes.LoadNewScene("Plugin Removal");
         GameObject owner = scene.CreateObject("Plugin Owner");
         Type pluginType = fixture.ResolveActiveType("PluginBehavior");
@@ -2067,22 +2073,25 @@ public sealed class ScriptingPipelineTests : IDisposable
         GameObject owner,
         Guid componentId,
         WeakReference retiredComponent,
-        WeakReference retiredType);
+        WeakReference retiredType
+    );
 
     private readonly record struct RetiredScriptObject(
         WeakReference type,
-        WeakReference component);
+        WeakReference component
+    );
 
     private readonly record struct AvailabilitySceneState(
         GameObject pluginOwner,
         GameObject scriptOwner,
         Guid pluginComponentId,
-        Guid scriptComponentId);
+        Guid scriptComponentId
+    );
 
     private static void WriteProjectionPlugin(
         string projectRoot,
-        SerializationRegistry serialization)
-    {
+        SerializationRegistry serialization
+    ) {
         const string c_source = """
             using InnoEngine.Scene;
 
@@ -2110,7 +2119,8 @@ public sealed class ScriptingPipelineTests : IDisposable
 
     private static void WriteUnavailableGenerationPlugin(
         string projectRoot,
-        SerializationRegistry serialization)
+        SerializationRegistry serialization
+    )
         => WriteUnavailableGenerationPlugin(projectRoot, serialization, """
             using InnoEngine.Reflection;
             using InnoEngine.Scene;
@@ -2129,8 +2139,8 @@ public sealed class ScriptingPipelineTests : IDisposable
     private static void WriteUnavailableGenerationPlugin(
         string projectRoot,
         SerializationRegistry serialization,
-        string source)
-    {
+        string source
+    ) {
         WritePluginPackage(
             projectRoot,
             "unavailability.iplugin",
@@ -2151,8 +2161,8 @@ public sealed class ScriptingPipelineTests : IDisposable
 
     private static void WriteSamplePlugin(
         string projectRoot,
-        SerializationRegistry serialization)
-    {
+        SerializationRegistry serialization
+    ) {
         const string c_source =
             "using InnoEngine.Reflection; using InnoEngine.Scene; " +
             "[StableTypeId(\"ce3b52c6-2a07-42ea-b632-a307a0ef7407\")] " +
@@ -2163,8 +2173,8 @@ public sealed class ScriptingPipelineTests : IDisposable
     private static void WriteSamplePlugin(
         string projectRoot,
         SerializationRegistry serialization,
-        string source)
-    {
+        string source
+    ) {
         WritePluginPackage(
             projectRoot,
             "samples.iplugin",
@@ -2192,7 +2202,8 @@ public sealed class ScriptingPipelineTests : IDisposable
 
     private static byte[] CreateScriptSourceMeta(
         SerializationRegistry serialization,
-        Guid persistentId)
+        Guid persistentId
+    )
         => serialization.Serialize(new ScriptingAssetSourceMeta
         {
             persistentId = persistentId,
@@ -2205,8 +2216,8 @@ public sealed class ScriptingPipelineTests : IDisposable
         string fileName,
         SerializationRegistry serialization,
         PluginManifest manifest,
-        IReadOnlyDictionary<string, byte[]> entries)
-    {
+        IReadOnlyDictionary<string, byte[]> entries
+    ) {
         string path = Path.Combine(projectRoot, "Plugins", fileName);
         using FileStream stream = File.Create(path);
         using var archive = new ZipArchive(stream, ZipArchiveMode.Create);
@@ -2218,8 +2229,8 @@ public sealed class ScriptingPipelineTests : IDisposable
     private static void WritePluginPackageEntry(
         ZipArchive archive,
         string path,
-        byte[] bytes)
-    {
+        byte[] bytes
+    ) {
         ZipArchiveEntry entry = archive.CreateEntry(path, CompressionLevel.Optimal);
         if (path.EndsWith("/", StringComparison.Ordinal))
             return;
@@ -2231,8 +2242,10 @@ public sealed class ScriptingPipelineTests : IDisposable
         => string.Join(Environment.NewLine, result.diagnostics.Select(static diagnostic =>
             $"{diagnostic.id}: {diagnostic.message}"));
 
-    private static bool ContainsCustomAttribute(string assemblyPath, string attributeTypeName)
-    {
+    private static bool ContainsCustomAttribute(
+        string assemblyPath,
+        string attributeTypeName
+    ) {
         using FileStream stream = File.OpenRead(assemblyPath);
         using var portableExecutable = new PEReader(stream);
         MetadataReader metadata = portableExecutable.GetMetadataReader();
@@ -2257,8 +2270,8 @@ public sealed class ScriptingPipelineTests : IDisposable
 
     private static string? GetMemberReferenceDeclaringTypeName(
         MetadataReader metadata,
-        MemberReferenceHandle constructorHandle)
-    {
+        MemberReferenceHandle constructorHandle
+    ) {
         MemberReference constructor = metadata.GetMemberReference(constructorHandle);
         return constructor.Parent.Kind switch
         {
@@ -2502,15 +2515,19 @@ internal sealed class ScriptingFixture : IDisposable
     internal RuntimeSession editorSession
         => m_editorSession ?? throw new InvalidOperationException("The Editor runtime session has not been created.");
 
-    internal void Write(string relativePath, string source)
-    {
+    internal void Write(
+        string relativePath,
+        string source
+    ) {
         string path = Path.Combine(projectRoot, "Assets", relativePath);
         Directory.CreateDirectory(Path.GetDirectoryName(path)!);
         File.WriteAllText(path, source);
     }
 
-    internal void Move(string sourceRelativePath, string destinationRelativePath)
-    {
+    internal void Move(
+        string sourceRelativePath,
+        string destinationRelativePath
+    ) {
         string source = Path.Combine(projectRoot, "Assets", sourceRelativePath);
         string destination = Path.Combine(projectRoot, "Assets", destinationRelativePath);
         Directory.CreateDirectory(Path.GetDirectoryName(destination)!);
@@ -2534,8 +2551,8 @@ internal sealed class ScriptingFixture : IDisposable
 
     internal ScriptCompilationResult Compile(
         IProgress<ScriptCompilationProgress>? progress = null,
-        CancellationToken cancellationToken = default)
-    {
+        CancellationToken cancellationToken = default
+    ) {
         Rescan();
         return compiler.CompileAuthoringGenerationAsync(progress, cancellationToken).GetAwaiter().GetResult();
     }
@@ -2543,8 +2560,8 @@ internal sealed class ScriptingFixture : IDisposable
     internal ScriptCompilationResult CompileRuntimeDeployment(
         string? targetRuntimeDirectory = null,
         IProgress<ScriptCompilationProgress>? progress = null,
-        CancellationToken cancellationToken = default)
-    {
+        CancellationToken cancellationToken = default
+    ) {
         Rescan();
         return compiler.CompileRuntimeDeploymentAsync(
                 targetRuntimeDirectory ?? AppContext.BaseDirectory,
@@ -2582,7 +2599,10 @@ internal sealed class ScriptingFixture : IDisposable
             collectible = true
         };
 
-    internal ScriptReloadHost CreateReloadHost(EditorReloadCoordinator? reloads = null, bool autoCompile = false)
+    internal ScriptReloadHost CreateReloadHost(
+        EditorReloadCoordinator? reloads = null,
+        bool autoCompile = false
+    )
         => new(
             new ScriptReloadOptions
             {
@@ -2635,7 +2655,7 @@ internal sealed class ScriptingFixture : IDisposable
         reloads ??= new EditorReloadCoordinator();
         RuntimeSession editorSession = CreateEditorSession();
         return new EditorInteractionRuntime(
-            new EditorContext(projectRoot),
+            new EditorContext(projectRoot, new EditorKeyboardPolicy(Inno.Core.Input.KeyModifier.Control, "Super")),
             host.types,
             host.logs,
             [

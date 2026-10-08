@@ -137,6 +137,7 @@ public sealed class PlayerContentSourceTests
         IPlayerModuleActivator? activator = null
     ) => new()
     {
+        adapterSelection = new Inno.Adapter.AdapterSelection(),
         modules = modules,
         types = new ReflectionTypeCatalogSource(),
         serializationMetadata = new ReflectionSerializationMetadataSource(),

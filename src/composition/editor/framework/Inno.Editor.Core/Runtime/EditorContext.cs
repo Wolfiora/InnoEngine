@@ -18,14 +18,24 @@ public sealed class EditorContext
     /// <param name="projectDirectory">
     /// The project root containing Assets and Library.
     /// </param>
+    /// <param name="keyboard">
+    /// The explicit immutable conventions selected by product composition.
+    /// </param>
+    /// <exception cref="ArgumentNullException">
+    /// The keyboard policy is null.
+    /// </exception>
     /// <exception cref="ArgumentException">
     /// Thrown when <paramref name="projectDirectory"/> is empty.
     /// </exception>
     [ScriptingApiIgnore]
-    public EditorContext(string projectDirectory)
-    {
+    public EditorContext(
+        string projectDirectory,
+        EditorKeyboardPolicy keyboard
+    ) {
         if (string.IsNullOrWhiteSpace(projectDirectory))
             throw new ArgumentException("A project directory is required.", nameof(projectDirectory));
+        ArgumentNullException.ThrowIfNull(keyboard);
+        this.keyboard = keyboard;
         this.projectDirectory = Path.GetFullPath(projectDirectory);
         layout = new EditorLayoutSettings(this.projectDirectory);
         statistics = new EditorStatistics();
@@ -35,6 +45,11 @@ public sealed class EditorContext
     /// Gets the normalized project root directory.
     /// </summary>
     public string projectDirectory { get; }
+
+    /// <summary>
+    /// Gets the immutable keyboard conventions shared by discovery, dispatch and presentation.
+    /// </summary>
+    public EditorKeyboardPolicy keyboard { get; }
 
     /// <summary>
     /// Gets the frame-scoped statistics exchange used by independent editor features and viewers.

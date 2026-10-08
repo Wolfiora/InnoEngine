@@ -1,0 +1,33 @@
+<Project>
+  <!-- Product dependencies ship discoverable extensions; Hosting exposes only its startup contracts. -->
+  <ItemGroup>
+    <ProjectReference Include="$(MSBuildThisFileDirectory)features/Inno.Editor.Audio/Inno.Editor.Audio.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="$(MSBuildThisFileDirectory)features/Inno.Editor.Exporting/Inno.Editor.Exporting.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="$(MSBuildThisFileDirectory)features/Inno.Editor.PlayMode/Inno.Editor.PlayMode.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="$(MSBuildThisFileDirectory)features/Inno.Editor.Rendering/Inno.Editor.Rendering.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="$(MSBuildThisFileDirectory)features/Inno.Editor.Scene/Inno.Editor.Scene.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="$(MSBuildThisFileDirectory)features/Inno.Editor.Scripting/Inno.Editor.Scripting.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="$(MSBuildThisFileDirectory)framework/Inno.Editor.Core/Inno.Editor.Core.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="$(MSBuildThisFileDirectory)framework/Inno.Editor.Graph/Inno.Editor.Graph.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="$(MSBuildThisFileDirectory)framework/Inno.Editor.Inspection/Inno.Editor.Inspection.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="$(MSBuildThisFileDirectory)framework/Inno.Editor.Interactions/Inno.Editor.Interactions.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="$(MSBuildThisFileDirectory)framework/Inno.Editor.Settings/Inno.Editor.Settings.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="$(MSBuildThisFileDirectory)panels/Inno.Editor.Panel.FileBrowser/Inno.Editor.Panel.FileBrowser.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="$(MSBuildThisFileDirectory)panels/Inno.Editor.Panel.GameView/Inno.Editor.Panel.GameView.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="$(MSBuildThisFileDirectory)panels/Inno.Editor.Panel.Global/Inno.Editor.Panel.Global.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="$(MSBuildThisFileDirectory)panels/Inno.Editor.Panel.Hierarchy/Inno.Editor.Panel.Hierarchy.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="$(MSBuildThisFileDirectory)panels/Inno.Editor.Panel.Inspector/Inno.Editor.Panel.Inspector.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="$(MSBuildThisFileDirectory)panels/Inno.Editor.Panel.Logging/Inno.Editor.Panel.Logging.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="$(MSBuildThisFileDirectory)panels/Inno.Editor.Panel.SceneView/Inno.Editor.Panel.SceneView.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="$(MSBuildThisFileDirectory)panels/Inno.Editor.Panel.Settings/Inno.Editor.Panel.Settings.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="$(MSBuildThisFileDirectory)panels/Inno.Editor.Panel.ShaderEditor/Inno.Editor.Panel.ShaderEditor.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="$(MSBuildThisFileDirectory)panels/Inno.Editor.Panel.Stats/Inno.Editor.Panel.Stats.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="$(MSBuildThisFileDirectory)presentation/Inno.Editor.ImGui/Inno.Editor.ImGui.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="$(MSBuildThisFileDirectory)../../content/animation/Inno.Animation.Assets/Inno.Animation.Assets.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="$(MSBuildThisFileDirectory)../../services/audio/Inno.Audio.Assets/Inno.Audio.Assets.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="$(MSBuildThisFileDirectory)../../services/text/Inno.Text.Assets/Inno.Text.Assets.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="$(MSBuildThisFileDirectory)../../services/ui/Inno.UI.Assets/Inno.UI.Assets.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="$(MSBuildThisFileDirectory)../../content/scene/Inno.Scene.Assets/Inno.Scene.Assets.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="$(MSBuildThisFileDirectory)../../services/rendering/Inno.Rendering.Assets.Authoring/Inno.Rendering.Assets.Authoring.csproj" PrivateAssets="compile" />
+  </ItemGroup>
+</Project>

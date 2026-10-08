@@ -824,7 +824,7 @@ internal sealed class EditorExtensionCatalog : TypeRegistry<EditorExtensionCatal
         }
     }
 
-    private static void ValidateShortcuts(ActionRegistration[] actions)
+    private void ValidateShortcuts(ActionRegistration[] actions)
     {
         var shortcuts = new List<ShortcutValidationEntry>();
         for (int actionIndex = 0; actionIndex < actions.Length; actionIndex++)
@@ -933,10 +933,10 @@ internal sealed class EditorExtensionCatalog : TypeRegistry<EditorExtensionCatal
                 $"Editor action '{duplicate.Key.id}' has duplicate toolbar placements.");
     }
 
-    private static HotKeyGesture CreateShortcutGesture(EditorShortcutAttribute shortcut)
+    private HotKeyGesture CreateShortcutGesture(EditorShortcutAttribute shortcut)
         => shortcut.primary
-            ? HotKeyGesture.Primary(shortcut.key, shortcut.modifiers)
-            : new HotKeyGesture(shortcut.key, shortcut.modifiers);
+            ? HotKeyGesture.Primary(shortcut.key, m_context.keyboard, shortcut.modifiers)
+            : new HotKeyGesture(shortcut.key, shortcut.modifiers, m_context.keyboard.superModifierLabel);
 
     private static void ValidateDrops(DropRegistration[] drops)
     {

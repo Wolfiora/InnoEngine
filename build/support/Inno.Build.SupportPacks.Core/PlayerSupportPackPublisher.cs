@@ -30,7 +30,8 @@ public sealed class PlayerSupportPackPublisher
         var registered = new Dictionary<BuildTargetId, IPlayerSupportPackSource>();
         foreach (IPlayerSupportPackSource source in sources)
         {
-            if (source is null || !registered.TryAdd(source.target, source))
+            if (source is null || string.IsNullOrWhiteSpace(source.target.value)
+                || !registered.TryAdd(source.target, source))
                 throw new ArgumentException("Support Pack sources must be non-null and have unique target identities.", nameof(sources));
         }
         m_sources = registered;
@@ -91,6 +92,12 @@ public sealed class PlayerSupportPackPublisher
         string root = Path.GetFullPath(engineRoot);
         if (!File.Exists(Path.Combine(root, "InnoEngine.sln")))
             throw new DirectoryNotFoundException($"Engine root '{root}' has no InnoEngine.sln.");
+        cancellationToken.ThrowIfCancellationRequested();
+        PlayerSupportPackPlan plan = await source.CreatePlanAsync(
+            new PlayerSupportPackPlanningContext(root, dotnetHost), cancellationToken).ConfigureAwait(false);
+        if (plan is null || plan.target != target)
+            throw new InvalidDataException("The Support Pack plan does not match its registered target.");
+        cancellationToken.ThrowIfCancellationRequested();
         string output = Path.GetFullPath(outputRoot);
         Directory.CreateDirectory(output);
         using FileLease ownership = await FileLease.AcquireAsync(
@@ -98,11 +105,11 @@ public sealed class PlayerSupportPackPublisher
             .ConfigureAwait(false);
         string transaction = Path.Combine(output, ".support-pack-" + Guid.NewGuid().ToString("N"));
         string staging = Path.Combine(transaction, target.value);
-        Directory.CreateDirectory(staging);
         try
         {
             cancellationToken.ThrowIfCancellationRequested();
-            await source.PrepareAsync(new PlayerSupportPackBuildContext(root, staging, dotnetHost), cancellationToken)
+            Directory.CreateDirectory(staging);
+            await plan.PrepareAsync(staging, cancellationToken)
                 .ConfigureAwait(false);
             cancellationToken.ThrowIfCancellationRequested();
             return await new PlayerSupportPackCatalog(output).PublishAsync(

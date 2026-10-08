@@ -1,7 +1,6 @@
 using System;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Inno.Core.IO;
@@ -54,7 +53,7 @@ public static class NativeArtifactPublisher
         ArgumentNullException.ThrowIfNull(recipe);
         ArgumentNullException.ThrowIfNull(build);
         cancellationToken.ThrowIfCancellationRequested();
-        Assembly owner = recipe.owner;
+        NativeComponentDescriptor owner = recipe.owner;
         string component = recipe.component;
         string targetId = recipe.targetId;
         NativeInputSnapshot snapshot = context.inputState.CaptureInitial(recipe.inputs, cancellationToken);

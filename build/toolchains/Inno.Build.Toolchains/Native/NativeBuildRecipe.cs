@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 
 namespace Inno.Build.Toolchains;
 
@@ -15,7 +14,7 @@ public sealed class NativeBuildRecipe
     /// Creates a complete recipe without inferring implementation identity from an assembly MVID.
     /// </summary>
     /// <param name="owner">
-    /// The toolchain assembly identifying the project that owns native intermediates.
+    /// The explicit component descriptor identifying source and intermediate owners.
     /// </param>
     /// <param name="component">
     /// The component's portable artifact path segment.
@@ -36,7 +35,7 @@ public sealed class NativeBuildRecipe
     /// A required owner or collection is null.
     /// </exception>
     public NativeBuildRecipe(
-        Assembly owner,
+        NativeComponentDescriptor owner,
         string component,
         string targetId,
         IEnumerable<NativeBuildInput> inputs,
@@ -60,9 +59,9 @@ public sealed class NativeBuildRecipe
     }
 
     /// <summary>
-    /// Gets the assembly identifying the intermediate owner, without using its MVID as a recipe input.
+    /// Gets the declared intermediate owner independently of assembly location and MVID.
     /// </summary>
-    public Assembly owner { get; }
+    public NativeComponentDescriptor owner { get; }
 
     /// <summary>
     /// Gets the component's artifact path segment.
@@ -105,6 +104,10 @@ public sealed class NativeBuildRecipe
     /// <param name="declarations">
     /// Ordered component arguments and generation identities.
     /// </param>
+    /// <param name="implementationPaths">
+    /// The complete implementation inputs when the owner also contains unrelated product code.
+    /// Null selects all implementation source files in the component owner.
+    /// </param>
     /// <returns>
     /// The complete recipe; unrelated build and Editor implementation assemblies do not affect it.
     /// </returns>
@@ -113,23 +116,24 @@ public sealed class NativeBuildRecipe
     /// </exception>
     public static NativeBuildRecipe CreateForComponent(
         NativeBuildContext context,
-        Assembly owner,
+        NativeComponentDescriptor owner,
         string component,
         string targetId,
         IEnumerable<string> inputPaths,
-        IEnumerable<string> declarations
+        IEnumerable<string> declarations,
+        IEnumerable<string>? implementationPaths = null
     ) {
         ArgumentNullException.ThrowIfNull(context);
         ArgumentNullException.ThrowIfNull(owner);
         ArgumentNullException.ThrowIfNull(inputPaths);
         ArgumentNullException.ThrowIfNull(declarations);
-        string projectName = owner.GetName().Name!;
-        string projectRoot = Path.Combine(context.engineRoot, "build", "toolchains", projectName);
-        string projectFile = Path.Combine(projectRoot, projectName + ".csproj");
+        NativeComponentBuildOptions options = context.RequireComponentOptions(owner);
+        string projectRoot = owner.GetToolchainRoot(context.engineRoot);
+        string projectFile = Path.GetFullPath(owner.toolchainProject, context.engineRoot);
         if (!File.Exists(projectFile))
             throw new FileNotFoundException("A native recipe owner project is unavailable.", projectFile);
-        List<string> paths = [..inputPaths, ..(context.hostToolchain?.inputPaths ?? []), projectFile];
-        paths.AddRange(EnumerateImplementation(projectRoot));
+        List<string> paths = [..inputPaths, ..options.inputPaths.Select(path => Path.GetFullPath(path, context.engineRoot)), ..(context.toolchain?.inputPaths ?? []), projectFile];
+        paths.AddRange(implementationPaths ?? EnumerateImplementation(projectRoot));
         string commonRoot = Path.Combine(context.engineRoot, "build", "toolchains", "Inno.Build.Toolchains");
         paths.AddRange(new[] { "NativeBuildContext.cs", "ToolchainEnvironment.cs", "ToolchainLayout.cs", "BuildArtifactManifest.cs" }
             .Select(file => Path.Combine(commonRoot, file)));
@@ -137,22 +141,31 @@ public sealed class NativeBuildRecipe
         {
             "NativeArtifactPublisher.cs", "NativeBuildFingerprint.cs", "NativeBuildInput.cs",
             "NativeBuildInputState.cs", "NativeInputSnapshot.cs", "NativeBuildProduct.cs",
-            "NativeBuildStatistics.cs", "HostNativeToolchain.cs", "NativeBuildRecipe.cs"
+            "NativeBuildStatistics.cs", "NativeToolchainSelection.cs", "NativeBuildRecipe.cs",
+            "NativeCMakeExecutor.cs", "NativeComponentBuildOptions.cs", "ProductNativeBuildStep.cs", "ProductNativeBuildPlan.cs", "NativeInputMaterializer.cs", "NativeBindingGenerationDescriptor.cs",
+            "NativeBindingPreparation.cs", "NativeComponentDescriptor.cs", "NativeStaticBuildDefinition.cs",
+            "NativeToolchainPreparation.cs", "BuildHostDescriptor.cs"
         }.Select(file => Path.Combine(commonRoot, "Native", file)));
         paths.Add(Path.Combine(commonRoot, "Platforms"));
+        paths.Add(Path.Combine(commonRoot, "Managed", "DotNetSdkEnvironment.cs"));
         string ioRoot = Path.Combine(context.engineRoot, "src", "foundation", "core", "Inno.Core.IO");
         paths.AddRange(new[] { "AtomicDirectory.cs", "AtomicFile.cs", "FileSystemRename.cs", "FileLease.cs", "PathBoundary.cs" }
             .Select(file => Path.Combine(ioRoot, file)));
-        foreach (string nativeRoot in inputPaths.Select(path => Path.GetFullPath(path, context.engineRoot))
-            .Select(path => FindNativeRoot(context.engineRoot, path)).OfType<string>().Distinct(StringComparer.Ordinal))
+        string nativeRoot = owner.GetNativeRoot(context.engineRoot);
+        string bindings = Path.Combine(nativeRoot, "Bindings");
+        if (owner.bindingConfig is not null)
         {
-            paths.Add(Path.Combine(nativeRoot, "Bindings"));
-            paths.Add(Path.Combine(nativeRoot, "Generated", "Bindings.cs"));
+            paths.Add(bindings);
+            NativeBindingGenerationDescriptor generation = context.RequireBindings(owner);
+            paths.Add(generation.bindingsPath);
+            if (generation.bridgeDirectory.Length > 0)
+                paths.Add(generation.bridgeDirectory);
+            declarations = declarations.Append("bindings=" + generation.fingerprint);
         }
         return new NativeBuildRecipe(owner, component, targetId,
             paths.Select(path => NativeBuildInput.FromPath(context.engineRoot, path)),
             new[] { component, targetId, context.configuration, "executionRoot=" + context.engineRoot }.Concat(declarations)
-                .Concat(context.hostToolchain?.declarations ?? []));
+                .Concat(options.declarations).Concat(context.toolchain?.declarations ?? []));
     }
 
     private static IEnumerable<string> EnumerateImplementation(string directory)
@@ -166,16 +179,6 @@ public sealed class NativeBuildRecipe
             foreach (string file in EnumerateImplementation(child))
                 yield return file;
         }
-    }
-
-    private static string? FindNativeRoot(
-        string engineRoot,
-        string path
-    ) {
-        string relative = Path.GetRelativePath(Path.Combine(engineRoot, "native"), path).Replace('\\', '/');
-        string segment = relative.Split('/')[0];
-        return segment.StartsWith("Inno.Native.", StringComparison.Ordinal)
-            ? Path.Combine(engineRoot, "native", segment) : null;
     }
 
     private static void ValidateSegment(string value)

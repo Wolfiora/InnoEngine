@@ -17,10 +17,10 @@
       Include="../../../../foundation/scripting/Inno.Scripting.Api/Inno.Scripting.Api.csproj"
       PrivateAssets="compile" />
     <ProjectReference
-      Include="../../../../adapters/presentation/Inno.Adapter.Presentation.ImGui.Sdl3/Inno.Adapter.Presentation.ImGui.Sdl3.csproj"
+      Include="../../../../../backends/ImGui/runtime/Inno.Adapter.Presentation.ImGui.Sdl3/Inno.Adapter.Presentation.ImGui.Sdl3.csproj"
       PrivateAssets="compile" />
     <ProjectReference
-      Include="../../../../../native/Inno.Native.ImGui/Inno.Native.ImGui.csproj"
+      Include="../../../../../backends/ImGui/native/Inno.Native.ImGui/Inno.Native.ImGui.csproj"
       PrivateAssets="compile" />
     <ProjectReference
       Include="../../contracts/Inno.Editor.Annotations/Inno.Editor.Annotations.csproj"

@@ -12,7 +12,7 @@ public sealed class ShellOptions
     /// <summary>
     /// Gets or sets the complete backend selection used by the shell and its derived product host.
     /// </summary>
-    public AdapterSelection adapters { get; set; } = AdapterSelection.defaultValue;
+    public required AdapterSelection adapters { get; set; }
 
     /// <summary>
     /// Gets or sets primary-window creation options.

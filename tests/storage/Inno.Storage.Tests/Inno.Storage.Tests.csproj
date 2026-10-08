@@ -8,10 +8,10 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="../../../src/foundation/core/Inno.Core.Execution/Inno.Core.Execution.csproj" />
-    <ProjectReference Include="..\..\..\src\services\storage\Inno.Storage\Inno.Storage.csproj" />
-    <ProjectReference Include="..\..\..\src\adapters\storage\Inno.Adapter.Storage.FileSystem\Inno.Adapter.Storage.FileSystem.csproj" />
-    <ProjectReference Include="..\..\..\src\services\storage\Inno.Storage.Runtime\Inno.Storage.Runtime.csproj" />
-    <ProjectReference Include="..\..\..\src\runtime\engine\Inno.Runtime\Inno.Runtime.csproj" />
+    <ProjectReference Include="../../../src/services/storage/Inno.Storage/Inno.Storage.csproj" />
+    <ProjectReference Include="../../../backends/FileSystem/runtime/Inno.Adapter.Storage.FileSystem/Inno.Adapter.Storage.FileSystem.csproj" />
+    <ProjectReference Include="../../../src/services/storage/Inno.Storage.Runtime/Inno.Storage.Runtime.csproj" />
+    <ProjectReference Include="../../../src/runtime/engine/Inno.Runtime/Inno.Runtime.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
@@ -25,9 +25,9 @@
     <ProjectReference Include="../../../src/runtime/contracts/Inno.Runtime.Contracts/Inno.Runtime.Contracts.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="../../../src/adapters/modules/Inno.Adapter.Modules.DotNet/Inno.Adapter.Modules.DotNet.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../../backends/DotNet/runtime/Inno.Adapter.Modules.DotNet/Inno.Adapter.Modules.DotNet.csproj" PrivateAssets="compile" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="../../../src/adapters/serialization/Inno.Adapter.Serialization.DotNet/Inno.Adapter.Serialization.DotNet.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../../backends/DotNet/runtime/Inno.Adapter.Serialization.DotNet/Inno.Adapter.Serialization.DotNet.csproj" PrivateAssets="compile" />
   </ItemGroup>
 </Project>

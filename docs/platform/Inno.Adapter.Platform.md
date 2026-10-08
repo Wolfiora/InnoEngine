@@ -1,6 +1,6 @@
 # Inno.Adapter.Platform
 
-[Platform 索引](README.md) · [中立 Platform](Inno.Platform.md) · [SDL3 implementation](Inno.Adapter.Platform.Sdl3.md)
+[Platform 索引](README.md) · [中立 Platform](Inno.Platform.md) · [SDL3 implementation](../backends/Sdl3/Inno.Adapter.Platform.Sdl3.md)
 
 该项目定义平台 Adapter family 的稳定边界，不包含 SDL3 引用。
 
@@ -16,7 +16,7 @@ IPlatformApplication application = catalog.platform.CreateApplication(selection.
 using IPlatformWindow window = application.CreateWindow(windowOptions);
 ```
 
-相邻职责：窗口/事件语义见 [Inno.Platform](Inno.Platform.md)，SDL3 映射见 [Inno.Adapter.Platform.Sdl3](Inno.Adapter.Platform.Sdl3.md)。
+相邻职责：窗口/事件语义见 [Inno.Platform](Inno.Platform.md)，SDL3 映射见 [Inno.Adapter.Platform.Sdl3](../backends/Sdl3/Inno.Adapter.Platform.Sdl3.md)。
 
 ## 开放注册与生命周期
 
@@ -45,3 +45,75 @@ provider 及其 delegate/资源由 composition owner 释放；catalog 不接管 
 | `PlatformNativeHandleId.win32 / cocoa / browserCanvas` | 内置 HWND、Cocoa 窗口及 UTF-8 canvas selector ABI。第三方可以声明自己的 ID，不修改本项目。 |
 
 具体图形 Adapter 验证它理解的 ID 与句柄；不支持必须明确失败。窗口释放后再次借用句柄抛出 `ObjectDisposedException`。BGFX 在接管原生进程资源之前拒绝未实现此 SPI 的窗口。新增平台 surface 的映射留在具体窗口和图形 Adapter，不能扩展为服务层原生访问 API。这里的 SPI 不进入 Scripting API；不参与对象 Identity、History 或序列化。
+
+## 当前源码公开 API 清单
+
+只列当前源码的 public/protected 表面；内部实现不作为稳定 API。参数、返回、失败和 owner 以英文 XML 为准。
+
+### `Inno.Adapter.Platform.INativeWindowSurface`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Adapter.Platform.INativeWindowSurface`](../../src/adapters/platform/Inno.Adapter.Platform/INativeWindowSurface.cs#L12) | Supplies borrowed native presentation handles to cooperating adapters. |
+| [`Inno.Adapter.Platform.PlatformNativeHandles Inno.Adapter.Platform.INativeWindowSurface.nativeHandles`](../../src/adapters/platform/Inno.Adapter.Platform/INativeWindowSurface.cs#L20) | Gets handles owned by the live window; consumers must neither free nor retain them beyond its lifetime. |
+
+### `Inno.Adapter.Platform.IPlatformBackendFactory`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Adapter.Platform.IPlatformBackendFactory`](../../src/adapters/platform/Inno.Adapter.Platform/IPlatformBackendFactory.cs#L9) | Creates backend-neutral platform applications from explicit backend selections. |
+| [`Inno.Platform.IPlatformApplication Inno.Adapter.Platform.IPlatformBackendFactory.CreateApplication(Inno.Adapter.Platform.PlatformBackendId backend)`](../../src/adapters/platform/Inno.Adapter.Platform/IPlatformBackendFactory.cs#L28) | Creates a new platform application for the selected backend. |
+| [`System.Collections.Generic.IReadOnlyList<Inno.Adapter.Platform.PlatformBackendId> Inno.Adapter.Platform.IPlatformBackendFactory.supportedBackends`](../../src/adapters/platform/Inno.Adapter.Platform/IPlatformBackendFactory.cs#L14) | Gets the exact registrations available in this composition snapshot. |
+
+### `Inno.Adapter.Platform.PlatformBackendCatalog`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Adapter.Platform.PlatformBackendCatalog`](../../src/adapters/platform/Inno.Adapter.Platform/PlatformBackendCatalog.cs#L11) | Resolves platform providers from one immutable, composition-owned registration snapshot. |
+| [`Inno.Adapter.Platform.PlatformBackendCatalog.PlatformBackendCatalog(System.Collections.Generic.IEnumerable<Inno.Adapter.Platform.PlatformBackendProvider> providers)`](../../src/adapters/platform/Inno.Adapter.Platform/PlatformBackendCatalog.cs#L27) | Validates and captures a complete provider set without creating any service. |
+| [`Inno.Platform.IPlatformApplication Inno.Adapter.Platform.PlatformBackendCatalog.CreateApplication(Inno.Adapter.Platform.PlatformBackendId backend)`](../../src/adapters/platform/Inno.Adapter.Platform/PlatformBackendCatalog.cs#L45) | See the implemented contract. |
+| [`System.Collections.Generic.IReadOnlyList<Inno.Adapter.Platform.PlatformBackendId> Inno.Adapter.Platform.PlatformBackendCatalog.supportedBackends`](../../src/adapters/platform/Inno.Adapter.Platform/PlatformBackendCatalog.cs#L39) | See the implemented contract. |
+
+### `Inno.Adapter.Platform.PlatformBackendId`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Adapter.Platform.PlatformBackendId`](../../src/adapters/platform/Inno.Adapter.Platform/PlatformBackendId.cs#L8) | Identifies a platform implementation without closing the set of supported backends. |
+| [`Inno.Adapter.Platform.PlatformBackendId.PlatformBackendId(string value)`](../../src/adapters/platform/Inno.Adapter.Platform/PlatformBackendId.cs#L19) | Creates an ordinal, case-sensitive implementation identifier. |
+| [`bool Inno.Adapter.Platform.PlatformBackendId.isValid`](../../src/adapters/platform/Inno.Adapter.Platform/PlatformBackendId.cs#L41) | Gets whether this value identifies an implementation. |
+| [`override string Inno.Adapter.Platform.PlatformBackendId.ToString()`](../../src/adapters/platform/Inno.Adapter.Platform/PlatformBackendId.cs#L49) | Returns the identifier without resolving a provider. |
+| [`static Inno.Adapter.Platform.PlatformBackendId Inno.Adapter.Platform.PlatformBackendId.sdl3`](../../src/adapters/platform/Inno.Adapter.Platform/PlatformBackendId.cs#L31) | Gets the identifier of the bundled sdl3 implementation. |
+| [`string Inno.Adapter.Platform.PlatformBackendId.value`](../../src/adapters/platform/Inno.Adapter.Platform/PlatformBackendId.cs#L36) | Gets the stable identifier; a default value is unassigned. |
+
+### `Inno.Adapter.Platform.PlatformBackendProvider`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Adapter.Platform.PlatformBackendId Inno.Adapter.Platform.PlatformBackendProvider.id`](../../src/adapters/platform/Inno.Adapter.Platform/PlatformBackendProvider.cs#L34) | Gets this registration's immutable implementation identity. |
+| [`Inno.Adapter.Platform.PlatformBackendProvider`](../../src/adapters/platform/Inno.Adapter.Platform/PlatformBackendProvider.cs#L13) | Describes one explicitly composed platform implementation and its creation boundary. |
+| [`Inno.Adapter.Platform.PlatformBackendProvider.PlatformBackendProvider(Inno.Adapter.Platform.PlatformBackendId id)`](../../src/adapters/platform/Inno.Adapter.Platform/PlatformBackendProvider.cs#L24) | Captures the identity assigned by the composition owner. |
+| [`abstract Inno.Platform.IPlatformApplication Inno.Adapter.Platform.PlatformBackendProvider.CreateApplication()`](../../src/adapters/platform/Inno.Adapter.Platform/PlatformBackendProvider.cs#L42) | Creates a caller-owned platform service using this implementation. |
+
+### `Inno.Adapter.Platform.PlatformNativeHandleId`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Adapter.Platform.PlatformNativeHandleId`](../../src/adapters/platform/Inno.Adapter.Platform/PlatformNativeHandleId.cs#L8) | Identifies an open native surface ABI understood by cooperating window and graphics adapters. |
+| [`Inno.Adapter.Platform.PlatformNativeHandleId.PlatformNativeHandleId(string value)`](../../src/adapters/platform/Inno.Adapter.Platform/PlatformNativeHandleId.cs#L19) | Creates an ordinal, case-sensitive ABI identifier. |
+| [`bool Inno.Adapter.Platform.PlatformNativeHandleId.isValid`](../../src/adapters/platform/Inno.Adapter.Platform/PlatformNativeHandleId.cs#L51) | Gets whether a surface ABI was assigned. |
+| [`override string Inno.Adapter.Platform.PlatformNativeHandleId.ToString()`](../../src/adapters/platform/Inno.Adapter.Platform/PlatformNativeHandleId.cs#L59) | Returns the identifier without resolving an implementation. |
+| [`static Inno.Adapter.Platform.PlatformNativeHandleId Inno.Adapter.Platform.PlatformNativeHandleId.browserCanvas`](../../src/adapters/platform/Inno.Adapter.Platform/PlatformNativeHandleId.cs#L41) | Gets the UTF-8 canvas selector surface ABI. |
+| [`static Inno.Adapter.Platform.PlatformNativeHandleId Inno.Adapter.Platform.PlatformNativeHandleId.cocoa`](../../src/adapters/platform/Inno.Adapter.Platform/PlatformNativeHandleId.cs#L36) | Gets the Cocoa window surface ABI. |
+| [`static Inno.Adapter.Platform.PlatformNativeHandleId Inno.Adapter.Platform.PlatformNativeHandleId.win32`](../../src/adapters/platform/Inno.Adapter.Platform/PlatformNativeHandleId.cs#L31) | Gets the Win32 HWND surface ABI. |
+| [`string Inno.Adapter.Platform.PlatformNativeHandleId.value`](../../src/adapters/platform/Inno.Adapter.Platform/PlatformNativeHandleId.cs#L46) | Gets the stable identifier; the default value is unassigned. |
+
+### `Inno.Adapter.Platform.PlatformNativeHandles`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Adapter.Platform.PlatformNativeHandles`](../../src/adapters/platform/Inno.Adapter.Platform/PlatformNativeHandles.cs#L24) | Borrows surface handles from a live window for cooperating native adapters. |
+
+## 项目依赖
+
+- [Inno.Platform](Inno.Platform.md)：公开引用边界由实际签名核对。
+- [Inno.Extensibility.Catalogs](../extensibility/Inno.Extensibility.Catalogs.md)：公开引用边界由实际签名核对。

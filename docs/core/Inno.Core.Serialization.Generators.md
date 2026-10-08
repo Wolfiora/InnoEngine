@@ -28,3 +28,24 @@
 所有需要承载内部目录的 containing owner 必须是 nongeneric `partial` 类型。开放泛型不作为闭合部署形状生成；实际可达的闭合泛型必须能在编译阶段表达，否则报告构建诊断。这里不引入反射 fallback，也不为了生成器扩大数据类型的访问级别。
 
 候选序列化调用先根据当前公共/内部泛型方法名作语法筛选，再由 Roslyn 绑定实际方法，保留类型推导调用。元数据、typed accessors 与生成目录受同一程序集 generation 管理。
+
+## 当前源码公开 API 清单
+
+只列当前源码的 public/protected 表面；内部实现不作为稳定 API。参数、返回、失败和 owner 以英文 XML 为准。
+
+### `Inno.Core.Serialization.Generators.SerializationConverterGenerator`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Core.Serialization.Generators.SerializationConverterGenerator`](../../src/foundation/core/Inno.Core.Serialization.Generators/SerializationConverterGenerator.cs#L16) | Generates stateless serialization converters for explicitly annotated closed data-transfer types. |
+| [`void Inno.Core.Serialization.Generators.SerializationConverterGenerator.Initialize(Microsoft.CodeAnalysis.IncrementalGeneratorInitializationContext context)`](../../src/foundation/core/Inno.Core.Serialization.Generators/SerializationConverterGenerator.cs#L64) | Registers the incremental syntax and source-production pipeline. |
+
+### `Inno.Core.Serialization.Generators.SerializationMetadataGenerator`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Core.Serialization.Generators.SerializationMetadataGenerator`](../../src/foundation/core/Inno.Core.Serialization.Generators/SerializationMetadataGenerator.cs#L14) | Generates closed member access, restoration hooks and collection construction for static deployments. |
+| [`void Inno.Core.Serialization.Generators.SerializationMetadataGenerator.Initialize(Microsoft.CodeAnalysis.IncrementalGeneratorInitializationContext context)`](../../src/foundation/core/Inno.Core.Serialization.Generators/SerializationMetadataGenerator.cs#L33) | See the implemented contract. |
+
+## 项目依赖
+

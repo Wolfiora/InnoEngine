@@ -22,23 +22,23 @@ Editor 的通用 `RenderRuntime` 不注入任何隐式 Scene content。Scene Vie
 
 ## 当前源码公开 API 清单
 
-以下仅列出当前程序集自己声明的 public/protected 契约；继承成员遵循所属基类页面。internal/private 实现不作为稳定公开 API。签名依据当前源码语义模型生成，行为、参数、异常与所有权说明同时以对应英文 XML 为准。
+只列当前源码的 public/protected 表面；内部实现不作为稳定 API。参数、返回、失败和 owner 以英文 XML 为准。
+
+本项目没有公开入口，通过组合或扩展发现使用内部实现。
 
 ## 项目依赖
 
-- [Inno.Native.ImGui](../native/Inno.Native.ImGui.md)：实现依赖（`PrivateAssets="compile"`）。
-- [Inno.Core.Settings](../core/Inno.Core.Settings.md)：实现依赖（`PrivateAssets="compile"`）。
-- [Inno.Runtime](../runtime/Inno.Runtime.md)：实现依赖（`PrivateAssets="compile"`）。
-- [Inno.Editor.Core](Inno.Editor.Core.md)：实现依赖（`PrivateAssets="compile"`）。
-- [Inno.Editor.ImGui](Inno.Editor.ImGui.md)：实现依赖（`PrivateAssets="compile"`）。
-- [Inno.Editor.Rendering](Inno.Editor.Rendering.md)：实现依赖（`PrivateAssets="compile"`）。
-- [Inno.Editor.PlayMode](Inno.Editor.PlayMode.md)：实现依赖（`PrivateAssets="compile"`）。
-- [Inno.Editor.Scene](Inno.Editor.Scene.md)：实现依赖（`PrivateAssets="compile"`）。
-- [Inno.Editor.Settings](Inno.Editor.Settings.md)：实现依赖（`PrivateAssets="compile"`）。
-- [Inno.Rendering](../rendering/Inno.Rendering.md)：实现依赖（`PrivateAssets="compile"`）。
-- [Inno.References](../references/Inno.References.md)：实现依赖（`PrivateAssets="compile"`）。
-- [Inno.Rendering.Runtime](../rendering/Inno.Rendering.Runtime.md)：实现依赖（`PrivateAssets="compile"`）。
-- [Inno.Extensibility.Catalogs](../extensibility/Inno.Extensibility.Catalogs.md)：项目引用；公开签名可见性由语义边界检查确认。
-- [Inno.Core.Serialization](../core/Inno.Core.Serialization.md)：项目引用；公开签名可见性由语义边界检查确认。
-
-共同 MSBuild 注入的 analyzer 与编译规则属于构建依赖，完整有效项目图记录在本轮验收证据中。
+- [Inno.Native.ImGui](../backends/ImGui/Inno.Native.ImGui.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Core.Settings](../core/Inno.Core.Settings.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Runtime](../runtime/Inno.Runtime.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Editor.Core](Inno.Editor.Core.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Editor.ImGui](Inno.Editor.ImGui.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Editor.Rendering](Inno.Editor.Rendering.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Editor.PlayMode](Inno.Editor.PlayMode.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Editor.Scene](Inno.Editor.Scene.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Editor.Settings](Inno.Editor.Settings.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Rendering](../rendering/Inno.Rendering.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.References](../references/Inno.References.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Rendering.Runtime](../rendering/Inno.Rendering.Runtime.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Extensibility.Catalogs](../extensibility/Inno.Extensibility.Catalogs.md)：公开引用边界由实际签名核对。
+- [Inno.Core.Serialization](../core/Inno.Core.Serialization.md)：公开引用边界由实际签名核对。

@@ -9,6 +9,6 @@
 
   <ItemGroup>
     <ProjectReference Include="../Inno.Content.Testing/Inno.Content.Testing.csproj" />
-    <ProjectReference Include="../../../../src/adapters/content/Inno.Adapter.Content.FileSystem/Inno.Adapter.Content.FileSystem.csproj" />
+    <ProjectReference Include="../../../../backends/FileSystem/runtime/Inno.Adapter.Content.FileSystem/Inno.Adapter.Content.FileSystem.csproj" />
   </ItemGroup>
 </Project>

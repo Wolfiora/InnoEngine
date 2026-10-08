@@ -7,36 +7,42 @@
     <IsTestProject>true</IsTestProject>
   </PropertyGroup>
   <ItemGroup>
+    <ProjectReference Include="../../../backends/Bgfx/build/Inno.Build.Toolchains.Bgfx.Tools/Inno.Build.Toolchains.Bgfx.Tools.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../../backends/Bgfx/build/Inno.Build.Toolchains.Bgfx/Inno.Build.Toolchains.Bgfx.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../../platforms/Linux/integrations/Inno.Integration.Linux.Bgfx/Inno.Integration.Linux.Bgfx.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../../platforms/Browser/integrations/Inno.Integration.Browser.Bgfx/Inno.Integration.Browser.Bgfx.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../../platforms/MacOS/integrations/Inno.Integration.MacOS.Bgfx/Inno.Integration.MacOS.Bgfx.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../../platforms/Windows/integrations/Inno.Integration.Windows.Bgfx/Inno.Integration.Windows.Bgfx.csproj" PrivateAssets="compile" />
+
     <ProjectReference Include="../../../build/composition/Inno.Build.Composition/Inno.Build.Composition.csproj" />
-    <ProjectReference Include="../../../src/adapters/content/Inno.Adapter.Content.FileSystem/Inno.Adapter.Content.FileSystem.csproj" />
-    <ProjectReference Include="../../../build/managed/Inno.Build.Managed.DotNet/Inno.Build.Managed.DotNet.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../../backends/FileSystem/runtime/Inno.Adapter.Content.FileSystem/Inno.Adapter.Content.FileSystem.csproj" />
+    <ProjectReference Include="../../../backends/DotNet/build/Inno.Build.Managed.DotNet/Inno.Build.Managed.DotNet.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../../build/tasks/Inno.Build.Tasks/Inno.Build.Tasks.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../../build/tasks/Inno.Build.TaskHosting/Inno.Build.TaskHosting.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../../src/composition/editor/features/Inno.Editor.Exporting/Inno.Editor.Exporting.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../../src/composition/editor/framework/Inno.Editor.Core/Inno.Editor.Core.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../../src/composition/editor/framework/Inno.Editor.Interactions/Inno.Editor.Interactions.csproj" PrivateAssets="compile" />
-    <ProjectReference Include="../../../native/Inno.Native.ImGui/Inno.Native.ImGui.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../../backends/ImGui/native/Inno.Native.ImGui/Inno.Native.ImGui.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../../build/toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj" PrivateAssets="compile" />
-    <ProjectReference Include="../../../build/toolchains/Inno.Build.Toolchains.Host/Inno.Build.Toolchains.Host.csproj" PrivateAssets="compile" />
-    <ProjectReference Include="../../../build/toolchains/Inno.Build.Toolchains.Browser/Inno.Build.Toolchains.Browser.csproj" PrivateAssets="compile" />
-    <ProjectReference Include="..\..\..\build\pipeline\Inno.Build\Inno.Build.csproj" PrivateAssets="compile" />
-    <ProjectReference Include="..\..\..\build\pipeline\Inno.Build.Platform.MacOS\Inno.Build.Platform.MacOS.csproj" PrivateAssets="compile" />
-    <ProjectReference Include="..\..\..\build\pipeline\Inno.Build.Platform.Windows\Inno.Build.Platform.Windows.csproj" PrivateAssets="compile" />
-    <ProjectReference Include="..\..\..\src\content\assets\Inno.Assets.Pipeline\Inno.Assets.Pipeline.csproj" PrivateAssets="compile" />
-    <ProjectReference Include="..\..\..\src\content\assets\Inno.Assets\Inno.Assets.csproj" PrivateAssets="compile" />
-    <ProjectReference Include="..\..\..\src\runtime\plugins\Inno.Plugins.Authoring\Inno.Plugins.Authoring.csproj" PrivateAssets="compile" />
-    <ProjectReference Include="..\..\..\src\foundation\core\Inno.Core.Identity\Inno.Core.Identity.csproj" PrivateAssets="compile" />
-    <ProjectReference Include="..\..\..\src\foundation\core\Inno.Core.Serialization\Inno.Core.Serialization.csproj" PrivateAssets="compile" />
-    <ProjectReference Include="..\..\..\src\foundation\core\Inno.Core.Settings\Inno.Core.Settings.csproj" PrivateAssets="compile" />
-    <ProjectReference Include="..\..\..\src\foundation\extensibility\Inno.Extensibility.Modules\Inno.Extensibility.Modules.csproj" PrivateAssets="compile" />
-    <ProjectReference Include="..\..\..\src\foundation\extensibility\Inno.Extensibility.Types\Inno.Extensibility.Types.csproj" PrivateAssets="compile" />
-    <ProjectReference Include="..\..\..\src\runtime\plugins\Inno.Plugins\Inno.Plugins.csproj" PrivateAssets="compile" />
-    <ProjectReference Include="..\..\..\src\runtime\engine\Inno.Runtime\Inno.Runtime.csproj" PrivateAssets="compile" />
-    <ProjectReference Include="..\..\..\src\content\scene\Inno.Scene\Inno.Scene.csproj" PrivateAssets="compile" />
-    <ProjectReference Include="..\..\..\src\content\scene\Inno.Scene.Assets\Inno.Scene.Assets.csproj" PrivateAssets="compile" />
-    <ProjectReference Include="..\..\..\src\runtime\scripting\Inno.Scripting.Compiler\Inno.Scripting.Compiler.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../../platforms/Browser/build/Inno.Build.Browser/Inno.Build.Browser.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../../build/pipeline/Inno.Build/Inno.Build.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../../platforms/MacOS/build/Inno.Build.MacOS/Inno.Build.MacOS.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../../platforms/Windows/build/Inno.Build.Windows/Inno.Build.Windows.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../../src/content/assets/Inno.Assets.Pipeline/Inno.Assets.Pipeline.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../../src/content/assets/Inno.Assets/Inno.Assets.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../../src/runtime/plugins/Inno.Plugins.Authoring/Inno.Plugins.Authoring.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../../src/foundation/core/Inno.Core.Identity/Inno.Core.Identity.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../../src/foundation/core/Inno.Core.Serialization/Inno.Core.Serialization.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../../src/foundation/core/Inno.Core.Settings/Inno.Core.Settings.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../../src/foundation/extensibility/Inno.Extensibility.Modules/Inno.Extensibility.Modules.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../../src/foundation/extensibility/Inno.Extensibility.Types/Inno.Extensibility.Types.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../../src/runtime/plugins/Inno.Plugins/Inno.Plugins.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../../src/runtime/engine/Inno.Runtime/Inno.Runtime.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../../src/content/scene/Inno.Scene/Inno.Scene.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../../src/content/scene/Inno.Scene.Assets/Inno.Scene.Assets.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../../src/runtime/scripting/Inno.Scripting.Compiler/Inno.Scripting.Compiler.csproj" PrivateAssets="compile" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="../../../build/pipeline/Inno.Build.Platform.Browser/Inno.Build.Platform.Browser.csproj" />
     <ProjectReference Include="../../../build/support/Inno.Build.SupportPacks.Core/Inno.Build.SupportPacks.Core.csproj" />
   </ItemGroup>
   <ItemGroup>
@@ -50,9 +56,12 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="../../../src/adapters/modules/Inno.Adapter.Modules.DotNet/Inno.Adapter.Modules.DotNet.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../../backends/DotNet/runtime/Inno.Adapter.Modules.DotNet/Inno.Adapter.Modules.DotNet.csproj" PrivateAssets="compile" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="../../../src/adapters/serialization/Inno.Adapter.Serialization.DotNet/Inno.Adapter.Serialization.DotNet.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../../backends/DotNet/runtime/Inno.Adapter.Serialization.DotNet/Inno.Adapter.Serialization.DotNet.csproj" PrivateAssets="compile" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../../build/distributions/Inno.Build.Distribution.Standard/Inno.Build.Distribution.Standard.csproj" PrivateAssets="compile" />
   </ItemGroup>
 </Project>

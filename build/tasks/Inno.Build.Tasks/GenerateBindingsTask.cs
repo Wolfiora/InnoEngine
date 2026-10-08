@@ -104,7 +104,6 @@ public sealed class GenerateBindingsTask : BuildTask, ICancelableTask {
     /// </returns>
     public override bool Execute() {
         try {
-            BuildTaskHostRetirement.Inspect(EngineRoot);
             CancellationToken cancellation = m_cancellation.Token;
             cancellation.ThrowIfCancellationRequested();
             CsCodeGeneratorConfig config = new ConfigLoader().Load(Path.GetFullPath(ConfigPath));

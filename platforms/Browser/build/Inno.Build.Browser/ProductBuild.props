@@ -1,0 +1,6 @@
+<Project>
+  <PropertyGroup>
+    <InnoBgfxShaderTarget>browser-wasm</InnoBgfxShaderTarget>
+    <InnoBgfxShaderApis>OpenGLES</InnoBgfxShaderApis>
+  </PropertyGroup>
+</Project>

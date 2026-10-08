@@ -1,0 +1,36 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <AssemblyName>Inno.Player.MacOS</AssemblyName>
+    <InnoGeneratePlayerComposition>true</InnoGeneratePlayerComposition>
+    <InnoAssemblyDomain>InnoInternal</InnoAssemblyDomain>
+  </PropertyGroup>
+  <ItemGroup>
+    <_EngineAssembly Include="References/*.dll" />
+    <_GameAssembly Include="$(InnoGameManagedRoot)/*.dll" />
+    <Reference Include="@(_EngineAssembly);@(_GameAssembly)" />
+    <Analyzer Include="Analyzers/*.dll" />
+    <CompilerVisibleProperty Include="InnoGeneratePlayerComposition" />
+    <AssemblyMetadata Include="Inno.AssemblyDomain" Value="InnoInternal" />
+    <AssemblyMetadata Include="Inno.AssemblyScope" Value="Runtime" />
+    <_PlayerNativeRuntime Include="native/**/*" />
+    <Content Include="@(_PlayerNativeRuntime)" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest"
+             ExcludeFromSingleFile="true" />
+  </ItemGroup>
+  <Target Name="ValidateGameCodeComposition" BeforeTargets="ResolveReferences">
+    <Error Condition="'$(InnoGameManagedRoot)' == '' or '@(_GameAssembly)' == '' or !Exists('PlayerDeploymentDefinition.g.cs')"
+           Text="Player publication requires a frozen code closure and its generated deployment composition." />
+  </Target>
+  <Target Name="ValidateNativePublicationInputs" BeforeTargets="PrepareForPublish">
+    <Error Condition="'@(_PlayerNativeRuntime)' == ''"
+           Text="MacOS Player publication requires an explicitly deployed native runtime closure." />
+  </Target>
+  <Target Name="ValidateNativePublicationOutput" AfterTargets="Publish">
+    <Error Condition="!Exists('$(PublishDir)%(_PlayerNativeRuntime.Identity)')"
+           Text="MacOS Player publication did not deploy native runtime '%(_PlayerNativeRuntime.Identity)'." />
+  </Target>
+</Project>

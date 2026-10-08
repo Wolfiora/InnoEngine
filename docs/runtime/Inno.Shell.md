@@ -83,91 +83,92 @@ Shell 时钟停止，恢复时不补跑后台停留时间；允许阻塞的轮�
 
 ## 当前源码公开 API 清单
 
-以下仅列出当前程序集自己声明的 public/protected 契约；继承成员遵循所属基类页面。internal/private 实现不作为稳定公开 API。签名依据当前源码语义模型生成，行为、参数、异常与所有权说明同时以对应英文 XML 为准。
+只列当前源码的 public/protected 表面；内部实现不作为稳定 API。参数、返回、失败和 owner 以英文 XML 为准。
 
 ### `Inno.Shell.IShellFrameDriver`
 
 | 当前声明 | 行为 |
 | --- | --- |
+| [`Inno.Shell.IShellFrameDriver`](../../src/composition/shell/Inno.Shell/IShellFrameDriver.cs#L10) | Gives a host ownership of frame scheduling while the shell owns frame execution and retirement. |
 | [`System.Threading.Tasks.ValueTask Inno.Shell.IShellFrameDriver.RunAsync(System.Func<bool> advanceFrame, System.Threading.CancellationToken cancellationToken)`](../../src/composition/shell/Inno.Shell/IShellFrameDriver.cs#L29) | Schedules frames on the owning thread until a frame callback requests termination. |
 | [`bool Inno.Shell.IShellFrameDriver.allowsBlockingPacing`](../../src/composition/shell/Inno.Shell/IShellFrameDriver.cs#L15) | Gets whether the shell may block the calling thread to enforce its frame rate. |
-| [`Inno.Shell.IShellFrameDriver`](../../src/composition/shell/Inno.Shell/IShellFrameDriver.cs#L10) | Gives a host ownership of frame scheduling while the shell owns frame execution and retirement. |
 
 ### `Inno.Shell.PollingShellFrameDriver`
 
 | 当前声明 | 行为 |
 | --- | --- |
+| [`Inno.Shell.PollingShellFrameDriver`](../../src/composition/shell/Inno.Shell/PollingShellFrameDriver.cs#L10) | Runs an application-owned frame loop synchronously on its calling thread. |
 | [`System.Threading.Tasks.ValueTask Inno.Shell.PollingShellFrameDriver.RunAsync(System.Func<bool> advanceFrame, System.Threading.CancellationToken cancellationToken)`](../../src/composition/shell/Inno.Shell/PollingShellFrameDriver.cs#L35) | Advances frames until the callback stops the loop, cancellation is requested or a callback fails. |
 | [`bool Inno.Shell.PollingShellFrameDriver.allowsBlockingPacing`](../../src/composition/shell/Inno.Shell/PollingShellFrameDriver.cs#L15) | Gets whether this driver permits blocking frame pacing (true). |
-| [`Inno.Shell.PollingShellFrameDriver`](../../src/composition/shell/Inno.Shell/PollingShellFrameDriver.cs#L10) | Runs an application-owned frame loop synchronously on its calling thread. |
 
 ### `Inno.Shell.ScheduledShellFrameDriver`
 
 | 当前声明 | 行为 |
 | --- | --- |
+| [`Inno.Shell.ScheduledShellFrameDriver`](../../src/composition/shell/Inno.Shell/ScheduledShellFrameDriver.cs#L10) | Runs frames when an external host grants a nonblocking presentation opportunity. |
 | [`Inno.Shell.ScheduledShellFrameDriver.ScheduledShellFrameDriver(System.Func<System.Threading.CancellationToken, System.Threading.Tasks.ValueTask> nextFrame)`](../../src/composition/shell/Inno.Shell/ScheduledShellFrameDriver.cs#L23) | Creates a driver whose scheduling callback resumes on the frame owner's thread. |
 | [`System.Threading.Tasks.ValueTask Inno.Shell.ScheduledShellFrameDriver.RunAsync(System.Func<bool> advanceFrame, System.Threading.CancellationToken cancellationToken)`](../../src/composition/shell/Inno.Shell/ScheduledShellFrameDriver.cs#L51) | Advances frames until the callback stops the loop, cancellation is requested or a callback fails. |
 | [`bool Inno.Shell.ScheduledShellFrameDriver.allowsBlockingPacing`](../../src/composition/shell/Inno.Shell/ScheduledShellFrameDriver.cs#L31) | Gets whether this driver permits blocking frame pacing (false). |
-| [`Inno.Shell.ScheduledShellFrameDriver`](../../src/composition/shell/Inno.Shell/ScheduledShellFrameDriver.cs#L10) | Runs frames when an external host grants a nonblocking presentation opportunity. |
 
 ### `Inno.Shell.Shell`
 
 | 当前声明 | 行为 |
 | --- | --- |
+| [`Inno.Adapter.AdapterSelection Inno.Shell.Shell.adapterSelection`](../../src/composition/shell/Inno.Shell/Shell.cs#L190) | Gets the immutable backend selection used by this product host. |
+| [`Inno.Adapter.IAdapterCatalog Inno.Shell.Shell.adapters`](../../src/composition/shell/Inno.Shell/Shell.cs#L185) | Gets the implementation-neutral adapter catalog used by this product host. |
+| [`Inno.Adapter.Input.IInputEventSource Inno.Shell.Shell.inputSource`](../../src/composition/shell/Inno.Shell/Shell.cs#L209) | Gets the shared input event source used to create isolated runtime-session backends. |
+| [`Inno.Platform.FramePacingOptions Inno.Shell.Shell.framePacing`](../../src/composition/shell/Inno.Shell/Shell.cs#L75) | Gets the mutable presentation cadence applied at the next complete host frame. Zero maximum frame rate means no software frame limit. |
+| [`Inno.Platform.IPlatformApplication Inno.Shell.Shell.platformApplication`](../../src/composition/shell/Inno.Shell/Shell.cs#L195) | Gets the active backend-neutral platform application. |
+| [`Inno.Platform.IPlatformWindow Inno.Shell.Shell.primaryWindow`](../../src/composition/shell/Inno.Shell/Shell.cs#L202) | Gets the active primary platform window. |
+| [`Inno.Rendering.IRenderDevice Inno.Shell.Shell.renderDevice`](../../src/composition/shell/Inno.Shell/Shell.cs#L216) | Gets the active backend-neutral rendering device. |
+| [`Inno.Shell.Shell`](../../src/composition/shell/Inno.Shell/Shell.cs#L22) | Owns the backend-neutral window, event pump, input source, rendering device, and host frame lifecycle. |
 | [`Inno.Shell.Shell.Shell(Inno.Adapter.IAdapterCatalog adapterCatalog, Inno.Shell.ShellOptions options)`](../../src/composition/shell/Inno.Shell/Shell.cs#L59) | Creates the backend-neutral host resources shared by Player and Editor products. |
-| [`void Inno.Shell.Shell.Dispose()`](../../src/composition/shell/Inno.Shell/Shell.cs#L157) | Releases product resources followed by rendering, input, window, and platform resources. |
-| [`virtual void Inno.Shell.Shell.DisposeProductResources()`](../../src/composition/shell/Inno.Shell/Shell.cs#L387) | Releases resources owned by the derived product before common adapter resources are destroyed. |
-| [`void Inno.Shell.Shell.InitializeAdapterResources()`](../../src/composition/shell/Inno.Shell/Shell.cs#L253) | Creates common adapter resources after a derived product has prepared its non-window bootstrap state. |
-| [`virtual void Inno.Shell.Shell.OnEvent(Inno.Core.Events.Event evnt)`](../../src/composition/shell/Inno.Shell/Shell.cs#L324) | Receives one backend-neutral platform event after shared input routing and close evaluation. |
+| [`Inno.Shell.ShellOptions Inno.Shell.Shell.options`](../../src/composition/shell/Inno.Shell/Shell.cs#L223) | Gets the immutable shell creation options. |
+| [`Inno.Shell.ShellState Inno.Shell.Shell.state`](../../src/composition/shell/Inno.Shell/Shell.cs#L80) | Gets the current owner-thread lifecycle state, including suspension and failed retirement. |
+| [`System.Threading.Tasks.Task<int> Inno.Shell.Shell.RunAsync(Inno.Shell.IShellFrameDriver driver, int? smokeFrameLimit = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))`](../../src/composition/shell/Inno.Shell/Shell.cs#L109) | Runs one shell lifecycle using an explicitly selected owner-thread frame driver. |
 | [`abstract void Inno.Shell.Shell.OnFrame(Inno.Shell.ShellFrame frame)`](../../src/composition/shell/Inno.Shell/Shell.cs#L356) | Advances one product-specific frame after all pending platform events have been dispatched. |
+| [`bool Inno.Shell.Shell.hasCompletedFrame`](../../src/composition/shell/Inno.Shell/Shell.cs#L228) | Gets whether at least one complete product frame has run. |
+| [`virtual bool Inno.Shell.Shell.ShouldExit(Inno.Core.Events.Event evnt)`](../../src/composition/shell/Inno.Shell/Shell.cs#L346) | Determines whether one event requests orderly product shutdown. |
+| [`virtual void Inno.Shell.Shell.DisposeProductResources()`](../../src/composition/shell/Inno.Shell/Shell.cs#L387) | Releases resources owned by the derived product before common adapter resources are destroyed. |
+| [`virtual void Inno.Shell.Shell.OnEvent(Inno.Core.Events.Event evnt)`](../../src/composition/shell/Inno.Shell/Shell.cs#L324) | Receives one backend-neutral platform event after shared input routing and close evaluation. |
 | [`virtual void Inno.Shell.Shell.OnPresentation(Inno.Shell.ShellFrame frame)`](../../src/composition/shell/Inno.Shell/Shell.cs#L364) | Submits product UI requests while the host output pipeline is open. |
 | [`virtual void Inno.Shell.Shell.OnSmokeCompleted(int frameCount)`](../../src/composition/shell/Inno.Shell/Shell.cs#L373) | Receives the final frame count only when a bounded smoke run reaches its requested frame limit. Closing a window or requesting an earlier exit does not report smoke completion. |
 | [`virtual void Inno.Shell.Shell.OnStarting()`](../../src/composition/shell/Inno.Shell/Shell.cs#L314) | Runs once immediately before the common event and frame loop starts. |
 | [`virtual void Inno.Shell.Shell.OnStopping()`](../../src/composition/shell/Inno.Shell/Shell.cs#L380) | Runs once when the main loop is stopping while all product and adapter resources remain alive. |
 | [`virtual void Inno.Shell.Shell.OnSuspensionChanged(bool isSuspended)`](../../src/composition/shell/Inno.Shell/Shell.cs#L335) | Receives an effective application suspension change at an event-pump safety point. Repeated notifications and changes that leave another suspension reason active do not invoke this hook. |
+| [`void Inno.Shell.Shell.Dispose()`](../../src/composition/shell/Inno.Shell/Shell.cs#L157) | Releases product resources followed by rendering, input, window, and platform resources. |
+| [`void Inno.Shell.Shell.InitializeAdapterResources()`](../../src/composition/shell/Inno.Shell/Shell.cs#L253) | Creates common adapter resources after a derived product has prepared its non-window bootstrap state. |
 | [`void Inno.Shell.Shell.RequestExit()`](../../src/composition/shell/Inno.Shell/Shell.cs#L309) | Requests an orderly exit after the current event or frame callback completes. |
-| [`System.Threading.Tasks.Task<int> Inno.Shell.Shell.RunAsync(Inno.Shell.IShellFrameDriver driver, int? smokeFrameLimit = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))`](../../src/composition/shell/Inno.Shell/Shell.cs#L109) | Runs one shell lifecycle using an explicitly selected owner-thread frame driver. |
-| [`virtual bool Inno.Shell.Shell.ShouldExit(Inno.Core.Events.Event evnt)`](../../src/composition/shell/Inno.Shell/Shell.cs#L346) | Determines whether one event requests orderly product shutdown. |
 | [`void Inno.Shell.Shell.UseHostPipeline(Inno.Runtime.RuntimeSubsystemPipeline pipeline)`](../../src/composition/shell/Inno.Shell/Shell.cs#L239) | Borrows the EngineHost-owned pipeline used for application-wide output and services. |
-| [`Inno.Adapter.AdapterSelection Inno.Shell.Shell.adapterSelection`](../../src/composition/shell/Inno.Shell/Shell.cs#L190) | Gets the immutable backend selection used by this product host. |
-| [`Inno.Adapter.IAdapterCatalog Inno.Shell.Shell.adapters`](../../src/composition/shell/Inno.Shell/Shell.cs#L185) | Gets the implementation-neutral adapter catalog used by this product host. |
-| [`Inno.Platform.FramePacingOptions Inno.Shell.Shell.framePacing`](../../src/composition/shell/Inno.Shell/Shell.cs#L75) | Gets the mutable presentation cadence applied at the next complete host frame. Zero maximum frame rate means no software frame limit. |
-| [`bool Inno.Shell.Shell.hasCompletedFrame`](../../src/composition/shell/Inno.Shell/Shell.cs#L228) | Gets whether at least one complete product frame has run. |
-| [`Inno.Adapter.Input.IInputEventSource Inno.Shell.Shell.inputSource`](../../src/composition/shell/Inno.Shell/Shell.cs#L209) | Gets the shared input event source used to create isolated runtime-session backends. |
-| [`Inno.Shell.ShellOptions Inno.Shell.Shell.options`](../../src/composition/shell/Inno.Shell/Shell.cs#L223) | Gets the immutable shell creation options. |
-| [`Inno.Platform.IPlatformApplication Inno.Shell.Shell.platformApplication`](../../src/composition/shell/Inno.Shell/Shell.cs#L195) | Gets the active backend-neutral platform application. |
-| [`Inno.Platform.IPlatformWindow Inno.Shell.Shell.primaryWindow`](../../src/composition/shell/Inno.Shell/Shell.cs#L202) | Gets the active primary platform window. |
-| [`Inno.Rendering.IRenderDevice Inno.Shell.Shell.renderDevice`](../../src/composition/shell/Inno.Shell/Shell.cs#L216) | Gets the active backend-neutral rendering device. |
-| [`Inno.Shell.ShellState Inno.Shell.Shell.state`](../../src/composition/shell/Inno.Shell/Shell.cs#L80) | Gets the current owner-thread lifecycle state, including suspension and failed retirement. |
-| [`Inno.Shell.Shell`](../../src/composition/shell/Inno.Shell/Shell.cs#L22) | Owns the backend-neutral window, event pump, input source, rendering device, and host frame lifecycle. |
 
 ### `Inno.Shell.ShellFrame`
 
 | 当前声明 | 行为 |
 | --- | --- |
+| [`Inno.Shell.ShellFrame`](../../src/composition/shell/Inno.Shell/ShellFrame.cs#L8) | Captures immutable timing and identity for one composition-shell frame. |
 | [`Inno.Shell.ShellFrame.ShellFrame(int frameIndex, double totalTime, float deltaTime)`](../../src/composition/shell/Inno.Shell/ShellFrame.cs#L22) | Creates one validated shell frame. |
+| [`double Inno.Shell.ShellFrame.totalTime`](../../src/composition/shell/Inno.Shell/ShellFrame.cs#L43) | Gets monotonic elapsed host time in seconds. |
 | [`float Inno.Shell.ShellFrame.deltaTime`](../../src/composition/shell/Inno.Shell/ShellFrame.cs#L48) | Gets non-negative elapsed time since the previous frame in seconds. |
 | [`int Inno.Shell.ShellFrame.frameIndex`](../../src/composition/shell/Inno.Shell/ShellFrame.cs#L38) | Gets the zero-based shell frame index. |
-| [`double Inno.Shell.ShellFrame.totalTime`](../../src/composition/shell/Inno.Shell/ShellFrame.cs#L43) | Gets monotonic elapsed host time in seconds. |
-| [`Inno.Shell.ShellFrame`](../../src/composition/shell/Inno.Shell/ShellFrame.cs#L8) | Captures immutable timing and identity for one composition-shell frame. |
 
 ### `Inno.Shell.ShellOptions`
 
 | 当前声明 | 行为 |
 | --- | --- |
-| [`Inno.Adapter.AdapterSelection Inno.Shell.ShellOptions.adapters`](../../src/composition/shell/Inno.Shell/ShellOptions.cs#L15) | Gets or sets the complete backend selection used by the shell and its derived product host. |
-| [`bool Inno.Shell.ShellOptions.forceSingleThreadedRendering`](../../src/composition/shell/Inno.Shell/ShellOptions.cs#L40) | Gets or sets whether rendering must execute on the calling thread. |
+| [`Inno.Platform.PlatformWindowOptions Inno.Shell.ShellOptions.window`](../../src/composition/shell/Inno.Shell/ShellOptions.cs#L20) | Gets or sets primary-window creation options. |
 | [`Inno.Rendering.GraphicsApi? Inno.Shell.ShellOptions.preferredGraphicsApi`](../../src/composition/shell/Inno.Shell/ShellOptions.cs#L25) | Gets or sets the preferred graphics API, or for the rendering-backend default. |
+| [`Inno.Shell.ShellOptions`](../../src/composition/shell/Inno.Shell/ShellOptions.cs#L10) | Configures backend selection and primary-window policy for a composition shell. |
+| [`bool Inno.Shell.ShellOptions.forceSingleThreadedRendering`](../../src/composition/shell/Inno.Shell/ShellOptions.cs#L40) | Gets or sets whether rendering must execute on the calling thread. |
 | [`bool Inno.Shell.ShellOptions.sRgbBackbuffer`](../../src/composition/shell/Inno.Shell/ShellOptions.cs#L35) | Gets or sets whether the primary backbuffer performs sRGB encoding. |
 | [`bool Inno.Shell.ShellOptions.suspendWhenHidden`](../../src/composition/shell/Inno.Shell/ShellOptions.cs#L46) | Gets or sets whether hiding or minimizing the primary window suspends product frames. Application suspension always stops frames independently of this window policy. |
 | [`bool Inno.Shell.ShellOptions.verticalSync`](../../src/composition/shell/Inno.Shell/ShellOptions.cs#L30) | Gets or sets whether presentation waits for display synchronization. |
-| [`Inno.Platform.PlatformWindowOptions Inno.Shell.ShellOptions.window`](../../src/composition/shell/Inno.Shell/ShellOptions.cs#L20) | Gets or sets primary-window creation options. |
-| [`Inno.Shell.ShellOptions`](../../src/composition/shell/Inno.Shell/ShellOptions.cs#L10) | Configures backend selection and primary-window policy for a composition shell. |
+| [`required Inno.Adapter.AdapterSelection Inno.Shell.ShellOptions.adapters`](../../src/composition/shell/Inno.Shell/ShellOptions.cs#L15) | Gets or sets the complete backend selection used by the shell and its derived product host. |
 
 ### `Inno.Shell.ShellState`
 
 | 当前声明 | 行为 |
 | --- | --- |
+| [`Inno.Shell.ShellState`](../../src/composition/shell/Inno.Shell/ShellState.cs#L6) | Describes the observable lifetime of one owner-thread composition shell. |
 | [`Inno.Shell.ShellState.Created`](../../src/composition/shell/Inno.Shell/ShellState.cs#L11) | Adapter resources have not been initialized. |
 | [`Inno.Shell.ShellState.Disposed`](../../src/composition/shell/Inno.Shell/ShellState.cs#L46) | All owned resources were released successfully. |
 | [`Inno.Shell.ShellState.Faulted`](../../src/composition/shell/Inno.Shell/ShellState.cs#L41) | Initialization, execution, or retirement failed; another run is prohibited. |
@@ -176,19 +177,16 @@ Shell 时钟停止，恢复时不补跑后台停留时间；允许阻塞的轮�
 | [`Inno.Shell.ShellState.Stopped`](../../src/composition/shell/Inno.Shell/ShellState.cs#L36) | The run ended or was canceled and the stopping callback completed. |
 | [`Inno.Shell.ShellState.Stopping`](../../src/composition/shell/Inno.Shell/ShellState.cs#L31) | The stopping callback is executing while resources remain alive. |
 | [`Inno.Shell.ShellState.Suspended`](../../src/composition/shell/Inno.Shell/ShellState.cs#L26) | Platform events continue while product frames and their clock are suspended. |
-| [`Inno.Shell.ShellState`](../../src/composition/shell/Inno.Shell/ShellState.cs#L6) | Describes the observable lifetime of one owner-thread composition shell. |
 
 ## 项目依赖
 
-- [Inno.Core.Execution](../core/Inno.Core.Execution.md)：实现依赖（`PrivateAssets="compile"`）。
-- [Inno.Runtime](Inno.Runtime.md)：项目引用；公开签名可见性由语义边界检查确认。
-- [Inno.Runtime.Contracts](Inno.Runtime.Contracts.md)：项目引用；公开签名可见性由语义边界检查确认。
-- [Inno.Adapter](Inno.Adapter.md)：项目引用；公开签名可见性由语义边界检查确认。
-- [Inno.Core.Events](../core/Inno.Core.Events.md)：项目引用；公开签名可见性由语义边界检查确认。
-- [Inno.Adapter.Input](../input/Inno.Adapter.Input.md)：项目引用；公开签名可见性由语义边界检查确认。
-- [Inno.Platform](../platform/Inno.Platform.md)：项目引用；公开签名可见性由语义边界检查确认。
-- [Inno.Adapter.Rendering](../rendering/Inno.Adapter.Rendering.md)：项目引用；公开签名可见性由语义边界检查确认。
-- [Inno.Rendering](../rendering/Inno.Rendering.md)：项目引用；公开签名可见性由语义边界检查确认。
-- [Inno.Extensibility.Catalogs](../extensibility/Inno.Extensibility.Catalogs.md)：项目引用；公开签名可见性由语义边界检查确认。
-
-共同 MSBuild 注入的 analyzer 与编译规则属于构建依赖，完整有效项目图记录在本轮验收证据中。
+- [Inno.Core.Execution](../core/Inno.Core.Execution.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Runtime](Inno.Runtime.md)：公开引用边界由实际签名核对。
+- [Inno.Runtime.Contracts](Inno.Runtime.Contracts.md)：公开引用边界由实际签名核对。
+- [Inno.Adapter](Inno.Adapter.md)：公开引用边界由实际签名核对。
+- [Inno.Core.Events](../core/Inno.Core.Events.md)：公开引用边界由实际签名核对。
+- [Inno.Adapter.Input](../input/Inno.Adapter.Input.md)：公开引用边界由实际签名核对。
+- [Inno.Platform](../platform/Inno.Platform.md)：公开引用边界由实际签名核对。
+- [Inno.Adapter.Rendering](../rendering/Inno.Adapter.Rendering.md)：公开引用边界由实际签名核对。
+- [Inno.Rendering](../rendering/Inno.Rendering.md)：公开引用边界由实际签名核对。
+- [Inno.Extensibility.Catalogs](../extensibility/Inno.Extensibility.Catalogs.md)：公开引用边界由实际签名核对。

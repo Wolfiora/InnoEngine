@@ -1,4 +1,5 @@
 using System;
+using Inno.Build.Toolchains;
 
 namespace Inno.Build.SupportPacks;
 
@@ -16,8 +17,8 @@ public sealed class PlayerSupportPackBuildContext
     /// <param name="stagingDirectory">
     /// The empty transaction directory to populate.
     /// </param>
-    /// <param name="dotnetHost">
-    /// The host-selected SDK executable.
+    /// <param name="sdk">
+    /// The project-selected SDK frozen during read-only preflight.
     /// </param>
     /// <exception cref="ArgumentException">
     /// A required input is blank.
@@ -25,14 +26,14 @@ public sealed class PlayerSupportPackBuildContext
     public PlayerSupportPackBuildContext(
         string engineRoot,
         string stagingDirectory,
-        string dotnetHost
+        DotNetSdkDescriptor sdk
     ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(engineRoot);
         ArgumentException.ThrowIfNullOrWhiteSpace(stagingDirectory);
-        ArgumentException.ThrowIfNullOrWhiteSpace(dotnetHost);
+        ArgumentNullException.ThrowIfNull(sdk);
         this.engineRoot = engineRoot;
         this.stagingDirectory = stagingDirectory;
-        this.dotnetHost = dotnetHost;
+        this.sdk = sdk;
     }
 
     /// <summary>
@@ -46,7 +47,7 @@ public sealed class PlayerSupportPackBuildContext
     public string stagingDirectory { get; }
 
     /// <summary>
-    /// Gets the SDK executable selected by the composition host.
+    /// Gets the frozen SDK host and CLI entry used without resolving another SDK.
     /// </summary>
-    public string dotnetHost { get; }
+    public DotNetSdkDescriptor sdk { get; }
 }

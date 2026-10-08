@@ -89,32 +89,32 @@ Stage Input 的 `Source = Builtin` 表示该值由 GPU 阶段或引擎/Adapter �
 
 ## 当前源码公开 API 清单
 
-以下仅列出当前程序集自己声明的 public/protected 契约；继承成员遵循所属基类页面。internal/private 实现不作为稳定公开 API。签名依据当前源码语义模型生成，行为、参数、异常与所有权说明同时以对应英文 XML 为准。
+只列当前源码的 public/protected 表面；内部实现不作为稳定 API。参数、返回、失败和 owner 以英文 XML 为准。
+
+本项目没有公开入口，通过组合或扩展发现使用内部实现。
 
 ## 项目依赖
 
-- [Inno.Editor.Inspection](Inno.Editor.Inspection.md)：实现依赖（`PrivateAssets="compile"`）。
-- [Inno.Editor.Shaders](Inno.Editor.Shaders.md)：实现依赖（`PrivateAssets="compile"`）。
-- [Inno.Core.Execution](../core/Inno.Core.Execution.md)：实现依赖（`PrivateAssets="compile"`）。
-- [Inno.Editor.Rendering](Inno.Editor.Rendering.md)：实现依赖（`PrivateAssets="compile"`）。
-- [Inno.Editor.Panel.FileBrowser](Inno.Editor.Panel.FileBrowser.md)：实现依赖（`PrivateAssets="compile"`）。
-- [Inno.Core.Input](../core/Inno.Core.Input.md)：实现依赖（`PrivateAssets="compile"`）。
-- [Inno.Native.ImGui](../native/Inno.Native.ImGui.md)：实现依赖（`PrivateAssets="compile"`）。
-- [Inno.Core.IO](../core/Inno.Core.IO.md)：实现依赖（`PrivateAssets="compile"`）。
-- [Inno.Scripting.Api](../scripting/Inno.Scripting.Api.md)：实现依赖（`PrivateAssets="compile"`）。
-- [Inno.Extensibility.Types](../extensibility/Inno.Extensibility.Types.md)：实现依赖（`PrivateAssets="compile"`）。
-- [Inno.Assets](../assets/Inno.Assets.md)：实现依赖（`PrivateAssets="compile"`）。
-- [Inno.Assets.Pipeline](../assets/Inno.Assets.Pipeline.md)：实现依赖（`PrivateAssets="compile"`）。
-- [Inno.Rendering](../rendering/Inno.Rendering.md)：实现依赖（`PrivateAssets="compile"`）。
-- [Inno.Rendering.Shaders](../rendering/Inno.Rendering.Shaders.md)：实现依赖（`PrivateAssets="compile"`）。
-- [Inno.Rendering.Assets](../rendering/Inno.Rendering.Assets.md)：实现依赖（`PrivateAssets="compile"`）。
-- [Inno.Editor.Core](Inno.Editor.Core.md)：实现依赖（`PrivateAssets="compile"`）。
-- [Inno.Editor.Graph](Inno.Editor.Graph.md)：实现依赖（`PrivateAssets="compile"`）。
-- [Inno.Editor.Interactions](Inno.Editor.Interactions.md)：实现依赖（`PrivateAssets="compile"`）。
-- [Inno.Editor.ImGui](Inno.Editor.ImGui.md)：实现依赖（`PrivateAssets="compile"`）。
-- [Inno.Core.Graphs](../core/Inno.Core.Graphs.md)：实现依赖（`PrivateAssets="compile"`）。
-- [Inno.Rendering.Assets.Authoring](../rendering/Inno.Rendering.Assets.Authoring.md)：实现依赖（`PrivateAssets="compile"`）。
-- [Inno.Core.Serialization](../core/Inno.Core.Serialization.md)：项目引用；公开签名可见性由语义边界检查确认。
-- [Inno.Extensibility.Catalogs](../extensibility/Inno.Extensibility.Catalogs.md)：项目引用；公开签名可见性由语义边界检查确认。
-
-共同 MSBuild 注入的 analyzer 与编译规则属于构建依赖，完整有效项目图记录在本轮验收证据中。
+- [Inno.Editor.Inspection](Inno.Editor.Inspection.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Editor.Shaders](Inno.Editor.Shaders.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Core.Execution](../core/Inno.Core.Execution.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Editor.Rendering](Inno.Editor.Rendering.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Editor.Panel.FileBrowser](Inno.Editor.Panel.FileBrowser.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Core.Input](../core/Inno.Core.Input.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Native.ImGui](../backends/ImGui/Inno.Native.ImGui.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Core.IO](../core/Inno.Core.IO.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Scripting.Api](../scripting/Inno.Scripting.Api.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Extensibility.Types](../extensibility/Inno.Extensibility.Types.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Assets](../assets/Inno.Assets.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Assets.Pipeline](../assets/Inno.Assets.Pipeline.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Rendering](../rendering/Inno.Rendering.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Rendering.Shaders](../rendering/Inno.Rendering.Shaders.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Rendering.Assets](../rendering/Inno.Rendering.Assets.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Editor.Core](Inno.Editor.Core.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Editor.Graph](Inno.Editor.Graph.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Editor.Interactions](Inno.Editor.Interactions.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Editor.ImGui](Inno.Editor.ImGui.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Core.Graphs](../core/Inno.Core.Graphs.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Rendering.Assets.Authoring](../rendering/Inno.Rendering.Assets.Authoring.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Core.Serialization](../core/Inno.Core.Serialization.md)：公开引用边界由实际签名核对。
+- [Inno.Extensibility.Catalogs](../extensibility/Inno.Extensibility.Catalogs.md)：公开引用边界由实际签名核对。

@@ -23,10 +23,10 @@
       Include="../../framework/Inno.Editor.Settings/Inno.Editor.Settings.csproj"
       PrivateAssets="compile" />
     <ProjectReference
-      Include="../../../../adapters/presentation/Inno.Adapter.Presentation.ImGui.Sdl3/Inno.Adapter.Presentation.ImGui.Sdl3.csproj"
+      Include="../../../../../backends/ImGui/runtime/Inno.Adapter.Presentation.ImGui.Sdl3/Inno.Adapter.Presentation.ImGui.Sdl3.csproj"
       PrivateAssets="compile" />
     <ProjectReference
-      Include="../../../../../native/Inno.Native.ImGui/Inno.Native.ImGui.csproj"
+      Include="../../../../../backends/ImGui/native/Inno.Native.ImGui/Inno.Native.ImGui.csproj"
       PrivateAssets="compile" />
     <ProjectReference Include="../../framework/Inno.Editor.Core/Inno.Editor.Core.csproj" PrivateAssets="compile" />
     <ProjectReference

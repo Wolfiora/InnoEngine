@@ -47,7 +47,7 @@ public sealed class EditorSettingsTests : IDisposable
         SettingsCaptureModule.current = null;
         SettingsCaptureModule.console = null;
         m_runtime = new EditorInteractionRuntime(
-            new EditorContext(m_projectRoot),
+            new EditorContext(m_projectRoot, new EditorKeyboardPolicy(Inno.Core.Input.KeyModifier.Control, "Super")),
             m_types,
             m_logs,
             [m_types, m_serialization, m_diagnostics, m_playMode]);
@@ -292,7 +292,8 @@ public sealed class EditorSettingsTests : IDisposable
     [EditorModule("tests.settings-capture", order: int.MaxValue)]
     private sealed class SettingsCaptureModule(
         EditorSettings settings,
-        IEditorConsole editorConsole) : EditorModule
+        IEditorConsole editorConsole
+    ) : EditorModule
     {
         internal static EditorSettings? current;
         internal static IEditorConsole? console;

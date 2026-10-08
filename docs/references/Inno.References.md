@@ -96,3 +96,150 @@ Dispose 或跨线程读取失败；不会自动重绑定到新 generation。
 
 SceneContentSource.CreateScope(world) 为 Rendering 与 Audio 提供同一个内容协议。
 完整未完成项见[累积收口报告](../architecture/ENGINE_CLOSURE_CONTINUATION_2026_09_07.md)。
+
+## 当前源码公开 API 清单
+
+只列当前源码的 public/protected 表面；内部实现不作为稳定 API。参数、返回、失败和 owner 以英文 XML 为准。
+
+### `Inno.References.ContentReadScope`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.References.ContentReadScope`](../../src/content/references/Inno.References/ContentReadScope.cs#L14) | Exposes ordered content roots through weak, generation-checked identity snapshots for one control-thread operation. |
+| [`Inno.References.ContentReadScope.ContentReadScope(System.Collections.Generic.IEnumerable<Inno.Core.Identity.Identity> contents, System.Guid? activeContent = null)`](../../src/content/references/Inno.References/ContentReadScope.cs#L32) | Captures immutable root identities without retaining their live objects or registry. |
+| [`System.Collections.Generic.IReadOnlyList<Inno.Core.Identity.Identity> Inno.References.ContentReadScope.contents`](../../src/content/references/Inno.References/ContentReadScope.cs#L56) | Gets the ordered weak identity snapshots; no live root object is retained. |
+| [`System.Collections.Generic.IReadOnlyList<TValue> Inno.References.ContentReadScope.GetValues<TValue>()`](../../src/content/references/Inno.References/ContentReadScope.cs#L78) | Resolves all live roots matching the requested content contract. |
+| [`System.Guid? Inno.References.ContentReadScope.activeContent`](../../src/content/references/Inno.References/ContentReadScope.cs#L61) | Gets the optional persistent identity selected as primary content. |
+| [`bool Inno.References.ContentReadScope.TryGetValue<TValue>(System.Guid id, out TValue? value)`](../../src/content/references/Inno.References/ContentReadScope.cs#L106) | Resolves a selected root without rebinding a stale snapshot to a replacement generation. |
+| [`static Inno.References.ContentReadScope Inno.References.ContentReadScope.empty`](../../src/content/references/Inno.References/ContentReadScope.cs#L51) | Gets a new empty operation scope owned by the caller. |
+| [`void Inno.References.ContentReadScope.Dispose()`](../../src/content/references/Inno.References/ContentReadScope.cs#L126) | Revokes all future root resolution without affecting the owner objects. |
+
+### `Inno.References.IReferenceRecoveryParticipant`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.References.IReferenceRecoveryParticipant`](../../src/content/references/Inno.References/IReferenceRecoveryParticipant.cs#L9) | Applies domain-owned missing and recovered representations as one candidate transaction participant. |
+| [`void Inno.References.IReferenceRecoveryParticipant.Validate(System.Collections.Generic.IReadOnlyList<Inno.References.ReferenceRecoveryChange> changes)`](../../src/content/references/Inno.References/IReferenceRecoveryParticipant.cs#L17) | Validates resolved slots after provisional structures and values have been applied, before commit. |
+
+### `Inno.References.IReferenceResolver`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.References.IReferenceResolver`](../../src/content/references/Inno.References/IReferenceResolver.cs#L6) | Resolves one open reference kind against a complete immutable domain generation. |
+| [`Inno.References.ReferenceKindId Inno.References.IReferenceResolver.kindId`](../../src/content/references/Inno.References/IReferenceResolver.cs#L11) | Gets the unique reference kind implemented by this resolver. |
+| [`Inno.References.ReferenceResolution Inno.References.IReferenceResolver.Resolve(Inno.References.ReferenceDescriptor descriptor)`](../../src/content/references/Inno.References/IReferenceResolver.cs#L22) | Resolves a descriptor without mutating its owner or the authoritative catalog. |
+
+### `Inno.References.ReferenceCatalog`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.References.ReferenceCatalog`](../../src/content/references/Inno.References/ReferenceCatalog.cs#L9) | Owns one complete immutable generation of reference resolvers. |
+| [`Inno.References.ReferenceResolution Inno.References.ReferenceCatalog.Resolve(Inno.References.ReferenceDescriptor descriptor)`](../../src/content/references/Inno.References/ReferenceCatalog.cs#L86) | Resolves a persistent descriptor using the resolver selected by its kind. |
+| [`long Inno.References.ReferenceCatalog.generation`](../../src/content/references/Inno.References/ReferenceCatalog.cs#L29) | Gets the owner-assigned generation represented by this snapshot. |
+| [`static Inno.References.ReferenceCatalog Inno.References.ReferenceCatalog.Create(long generation, System.Collections.Generic.IEnumerable<Inno.References.IReferenceResolver> resolvers)`](../../src/content/references/Inno.References/ReferenceCatalog.cs#L52) | Builds a complete resolver generation and rejects duplicate protocol identifiers. |
+| [`static Inno.References.ReferenceCatalog Inno.References.ReferenceCatalog.empty`](../../src/content/references/Inno.References/ReferenceCatalog.cs#L24) | Gets an empty initial reference catalog. |
+
+### `Inno.References.ReferenceDescriptor`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.References.ReferenceDescriptor`](../../src/content/references/Inno.References/ReferenceDescriptor.cs#L8) | Preserves the stable intent and diagnostic metadata for one logical object reference. |
+| [`Inno.References.ReferenceDescriptor.ReferenceDescriptor(Inno.References.ReferenceKindId kindId, System.Guid targetPersistentId, System.Guid expectedStableTypeId = default(System.Guid), string? lastKnownName = null, string? lastKnownPath = null)`](../../src/content/references/Inno.References/ReferenceDescriptor.cs#L31) | Creates a persistent reference descriptor. |
+| [`Inno.References.ReferenceKindId Inno.References.ReferenceDescriptor.kindId`](../../src/content/references/Inno.References/ReferenceDescriptor.cs#L50) | Gets the protocol used to resolve this reference. |
+| [`System.Guid Inno.References.ReferenceDescriptor.expectedStableTypeId`](../../src/content/references/Inno.References/ReferenceDescriptor.cs#L60) | Gets the optional stable type constraint interpreted by the selected resolver. |
+| [`System.Guid Inno.References.ReferenceDescriptor.targetPersistentId`](../../src/content/references/Inno.References/ReferenceDescriptor.cs#L55) | Gets the persistent identity of the intended target, or an empty value when unassigned. |
+| [`bool Inno.References.ReferenceDescriptor.isUnassigned`](../../src/content/references/Inno.References/ReferenceDescriptor.cs#L75) | Gets whether the user explicitly left this reference unassigned. |
+| [`string? Inno.References.ReferenceDescriptor.lastKnownName`](../../src/content/references/Inno.References/ReferenceDescriptor.cs#L65) | Gets optional display text retained only for diagnostics and missing-state presentation. |
+| [`string? Inno.References.ReferenceDescriptor.lastKnownPath`](../../src/content/references/Inno.References/ReferenceDescriptor.cs#L70) | Gets an optional last-known source path that is never used as resolution authority. |
+
+### `Inno.References.ReferenceKey`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.References.ReferenceKey`](../../src/content/references/Inno.References/ReferenceKey.cs#L8) | Identifies one persistent reference slot owned by a logical object. |
+| [`Inno.References.ReferenceKey.ReferenceKey(System.Guid ownerPersistentId, string path)`](../../src/content/references/Inno.References/ReferenceKey.cs#L22) | Creates a key for one reference slot. |
+| [`System.Guid Inno.References.ReferenceKey.ownerPersistentId`](../../src/content/references/Inno.References/ReferenceKey.cs#L37) | Gets the persistent identity of the object that owns this reference slot. |
+| [`bool Inno.References.ReferenceKey.Equals(Inno.References.ReferenceKey other)`](../../src/content/references/Inno.References/ReferenceKey.cs#L53) | Determines whether two values identify the same owner slot. |
+| [`override bool Inno.References.ReferenceKey.Equals(object? obj)`](../../src/content/references/Inno.References/ReferenceKey.cs#L65) | Determines whether an object identifies the same owner slot. |
+| [`override int Inno.References.ReferenceKey.GetHashCode()`](../../src/content/references/Inno.References/ReferenceKey.cs#L73) | Computes a hash code from the owner identity and stable path. |
+| [`override string Inno.References.ReferenceKey.ToString()`](../../src/content/references/Inno.References/ReferenceKey.cs#L81) | Formats this slot identity for diagnostics. |
+| [`static bool Inno.References.ReferenceKey.operator !=(Inno.References.ReferenceKey left, Inno.References.ReferenceKey right)`](../../src/content/references/Inno.References/ReferenceKey.cs#L112) | Determines whether two reference keys are different. |
+| [`static bool Inno.References.ReferenceKey.operator ==(Inno.References.ReferenceKey left, Inno.References.ReferenceKey right)`](../../src/content/references/Inno.References/ReferenceKey.cs#L95) | Determines whether two reference keys are equal. |
+| [`string Inno.References.ReferenceKey.path`](../../src/content/references/Inno.References/ReferenceKey.cs#L42) | Gets the stable property or structural path inside the owner. |
+
+### `Inno.References.ReferenceKindId`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.References.ReferenceKindId`](../../src/content/references/Inno.References/ReferenceKindId.cs#L8) | Identifies an open reference-resolution protocol independently of its current implementation. |
+| [`Inno.References.ReferenceKindId.ReferenceKindId(string value)`](../../src/content/references/Inno.References/ReferenceKindId.cs#L19) | Creates a stable reference kind identifier. |
+| [`bool Inno.References.ReferenceKindId.Equals(Inno.References.ReferenceKindId other)`](../../src/content/references/Inno.References/ReferenceKindId.cs#L45) | Compares two identifiers using ordinal protocol identity. |
+| [`bool Inno.References.ReferenceKindId.isValid`](../../src/content/references/Inno.References/ReferenceKindId.cs#L34) | Gets whether this value contains a usable protocol identifier. |
+| [`override bool Inno.References.ReferenceKindId.Equals(object? obj)`](../../src/content/references/Inno.References/ReferenceKindId.cs#L56) | Determines whether an object contains the same reference kind identifier. |
+| [`override int Inno.References.ReferenceKindId.GetHashCode()`](../../src/content/references/Inno.References/ReferenceKindId.cs#L64) | Computes an ordinal hash code for this identifier. |
+| [`override string Inno.References.ReferenceKindId.ToString()`](../../src/content/references/Inno.References/ReferenceKindId.cs#L72) | Formats the protocol identifier for diagnostics. |
+| [`static bool Inno.References.ReferenceKindId.operator !=(Inno.References.ReferenceKindId left, Inno.References.ReferenceKindId right)`](../../src/content/references/Inno.References/ReferenceKindId.cs#L103) | Determines whether two reference kind identifiers are different. |
+| [`static bool Inno.References.ReferenceKindId.operator ==(Inno.References.ReferenceKindId left, Inno.References.ReferenceKindId right)`](../../src/content/references/Inno.References/ReferenceKindId.cs#L86) | Determines whether two reference kind identifiers are equal. |
+| [`string Inno.References.ReferenceKindId.value`](../../src/content/references/Inno.References/ReferenceKindId.cs#L29) | Gets the stable protocol identifier. |
+
+### `Inno.References.ReferenceRecoveryChange`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.References.ReferenceRecoveryChange`](../../src/content/references/Inno.References/ReferenceRecoveryChange.cs#L6) | Describes one candidate missing-state transition at an owner-thread safe point. |
+| [`Inno.References.ReferenceRecoveryChange.ReferenceRecoveryChange(Inno.References.SerializedMissingState missingState, Inno.References.ReferenceResolution resolution)`](../../src/content/references/Inno.References/ReferenceRecoveryChange.cs#L20) | Creates a recovery change from preserved state and its candidate resolution. |
+| [`Inno.References.ReferenceResolution Inno.References.ReferenceRecoveryChange.resolution`](../../src/content/references/Inno.References/ReferenceRecoveryChange.cs#L38) | Gets the candidate generation's resolution for the preserved descriptor. |
+| [`Inno.References.SerializedMissingState Inno.References.ReferenceRecoveryChange.missingState`](../../src/content/references/Inno.References/ReferenceRecoveryChange.cs#L33) | Gets the preserved owner and target state. |
+
+### `Inno.References.ReferenceRecoveryTransaction`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.References.ReferenceRecoveryTransaction`](../../src/content/references/Inno.References/ReferenceRecoveryTransaction.cs#L16) | Coordinates preserved reference slots using the host generation publication and two-phase rollback protocol. |
+| [`Inno.References.ReferenceRecoveryTransaction.ReferenceRecoveryTransaction(Inno.References.ReferenceCatalog catalog, System.Collections.Generic.IEnumerable<Inno.References.SerializedMissingState> missingStates, System.Collections.Generic.IEnumerable<Inno.References.IReferenceRecoveryParticipant> participants)`](../../src/content/references/Inno.References/ReferenceRecoveryTransaction.cs#L45) | Captures neutral slots and ordered domain owners without resolving or mutating live state. |
+| [`System.Collections.Generic.IReadOnlyList<Inno.References.ReferenceRecoveryChange> Inno.References.ReferenceRecoveryTransaction.changes`](../../src/content/references/Inno.References/ReferenceRecoveryTransaction.cs#L71) | Gets candidate resolutions after provisional application, or an empty set before resolution or after rollback. |
+| [`void Inno.References.ReferenceRecoveryTransaction.Apply()`](../../src/content/references/Inno.References/ReferenceRecoveryTransaction.cs#L97) | Applies provisional objects and values, resolves preserved slots, and validates the candidate before commit. |
+| [`void Inno.References.ReferenceRecoveryTransaction.Complete()`](../../src/content/references/Inno.References/ReferenceRecoveryTransaction.cs#L122) | Retires previous objects after irreversible publication and releases every completed domain owner. |
+| [`void Inno.References.ReferenceRecoveryTransaction.PrepareForActivation()`](../../src/content/references/Inno.References/ReferenceRecoveryTransaction.cs#L79) | Quiesces domain owners while the previous type and serialization publication is still active. |
+| [`void Inno.References.ReferenceRecoveryTransaction.RestorePreviousState()`](../../src/content/references/Inno.References/ReferenceRecoveryTransaction.cs#L169) | Restores previous values and lifecycle after the old type and serializer publication is active again. |
+| [`void Inno.References.ReferenceRecoveryTransaction.RollbackStructure()`](../../src/content/references/Inno.References/ReferenceRecoveryTransaction.cs#L141) | Restores attempted domain structures in reverse order before the previous publication is restored. |
+
+### `Inno.References.ReferenceResolution`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Core.Identity.RuntimeIdentity? Inno.References.ReferenceResolution.runtimeIdentity`](../../src/content/references/Inno.References/ReferenceResolution.cs#L60) | Gets the live target identity when is . |
+| [`Inno.References.ReferenceDescriptor Inno.References.ReferenceResolution.descriptor`](../../src/content/references/Inno.References/ReferenceResolution.cs#L50) | Gets the persistent descriptor that produced this result. |
+| [`Inno.References.ReferenceResolution`](../../src/content/references/Inno.References/ReferenceResolution.cs#L9) | Reports how one descriptor resolves in an immutable reference-catalog generation. |
+| [`Inno.References.ReferenceResolution.ReferenceResolution(Inno.References.ReferenceDescriptor descriptor, Inno.References.ReferenceResolutionState state, Inno.Core.Identity.RuntimeIdentity? runtimeIdentity = null, string? diagnostic = null)`](../../src/content/references/Inno.References/ReferenceResolution.cs#L32) | Creates a reference-resolution result. |
+| [`Inno.References.ReferenceResolutionState Inno.References.ReferenceResolution.state`](../../src/content/references/Inno.References/ReferenceResolution.cs#L55) | Gets the current resolution state. |
+| [`string? Inno.References.ReferenceResolution.diagnostic`](../../src/content/references/Inno.References/ReferenceResolution.cs#L65) | Gets optional diagnostics describing why the reference is not resolved. |
+
+### `Inno.References.ReferenceResolutionState`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.References.ReferenceResolutionState`](../../src/content/references/Inno.References/ReferenceResolutionState.cs#L6) | Describes the current resolution state without discarding persistent reference intent. |
+| [`Inno.References.ReferenceResolutionState.Invalid`](../../src/content/references/Inno.References/ReferenceResolutionState.cs#L31) | The descriptor or authoritative source is invalid. |
+| [`Inno.References.ReferenceResolutionState.Missing`](../../src/content/references/Inno.References/ReferenceResolutionState.cs#L21) | The intended target is temporarily unavailable. |
+| [`Inno.References.ReferenceResolutionState.Resolved`](../../src/content/references/Inno.References/ReferenceResolutionState.cs#L16) | The current generation resolved a compatible live target. |
+| [`Inno.References.ReferenceResolutionState.TypeMismatch`](../../src/content/references/Inno.References/ReferenceResolutionState.cs#L26) | The intended target exists but does not satisfy the stable type constraint. |
+| [`Inno.References.ReferenceResolutionState.Unassigned`](../../src/content/references/Inno.References/ReferenceResolutionState.cs#L11) | The slot has no assigned target. |
+
+### `Inno.References.SerializedMissingState`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.References.ReferenceDescriptor Inno.References.SerializedMissingState.descriptor`](../../src/content/references/Inno.References/SerializedMissingState.cs#L46) | Gets the persistent target intent preserved by this record. |
+| [`Inno.References.ReferenceKey Inno.References.SerializedMissingState.key`](../../src/content/references/Inno.References/SerializedMissingState.cs#L41) | Gets the persistent owner slot represented by this record. |
+| [`Inno.References.SerializedMissingState`](../../src/content/references/Inno.References/SerializedMissingState.cs#L8) | Preserves one recoverable slot and its neutral owner state without retaining runtime objects. |
+| [`Inno.References.SerializedMissingState.SerializedMissingState(Inno.References.ReferenceKey key, Inno.References.ReferenceDescriptor descriptor, System.ReadOnlySpan<byte> payload)`](../../src/content/references/Inno.References/SerializedMissingState.cs#L27) | Creates an immutable missing-state record. |
+| [`System.ReadOnlyMemory<byte> Inno.References.SerializedMissingState.payload`](../../src/content/references/Inno.References/SerializedMissingState.cs#L51) | Gets immutable neutral bytes used to reconstruct the owner state. |
+
+## 项目依赖
+
+- [Inno.Core.Execution](../core/Inno.Core.Execution.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Extensibility.Reload](../extensibility/Inno.Extensibility.Reload.md)：公开引用边界由实际签名核对。
+- [Inno.Scripting.Api](../scripting/Inno.Scripting.Api.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Core.Identity](../core/Inno.Core.Identity.md)：公开引用边界由实际签名核对。
+- [Inno.Extensibility.Catalogs](../extensibility/Inno.Extensibility.Catalogs.md)：公开引用边界由实际签名核对。

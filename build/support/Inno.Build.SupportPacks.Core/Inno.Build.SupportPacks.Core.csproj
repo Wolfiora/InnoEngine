@@ -12,6 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="../../toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj" />
     <ProjectReference Include="../../pipeline/Inno.Build/Inno.Build.csproj" />
     <ProjectReference Include="../../../src/foundation/extensibility/Inno.Extensibility.Catalogs/Inno.Extensibility.Catalogs.csproj" />
   </ItemGroup>

@@ -167,135 +167,133 @@ EditorScripts 使用 `InnoEditor.Assets` 扩展 AssetEditor、声明 AssetIcon/A
 
 ## 当前源码公开 API 清单
 
-以下仅列出当前程序集自己声明的 public/protected 契约；继承成员遵循所属基类页面。internal/private 实现不作为稳定公开 API。签名依据当前源码语义模型生成，行为、参数、异常与所有权说明同时以对应英文 XML 为准。
+只列当前源码的 public/protected 表面；内部实现不作为稳定 API。参数、返回、失败和 owner 以英文 XML 为准。
 
 ### `Inno.Editor.Panel.FileBrowser.AssetBrowserRoot`
 
 | 当前声明 | 行为 |
 | --- | --- |
+| [`Inno.Editor.Panel.FileBrowser.AssetBrowserRoot`](../../src/composition/editor/panels/Inno.Editor.Panel.FileBrowser/Browser/AssetBrowserState.cs#L16) | Identifies the authoring or installed-content root displayed by the Asset Browser. |
 | [`Inno.Editor.Panel.FileBrowser.AssetBrowserRoot.Assets`](../../src/composition/editor/panels/Inno.Editor.Panel.FileBrowser/Browser/AssetBrowserState.cs#L21) | The writable project Assets authoring root. |
 | [`Inno.Editor.Panel.FileBrowser.AssetBrowserRoot.Plugins`](../../src/composition/editor/panels/Inno.Editor.Panel.FileBrowser/Browser/AssetBrowserState.cs#L26) | The read-only Plugins installation root. |
-| [`Inno.Editor.Panel.FileBrowser.AssetBrowserRoot`](../../src/composition/editor/panels/Inno.Editor.Panel.FileBrowser/Browser/AssetBrowserState.cs#L16) | Identifies the authoring or installed-content root displayed by the Asset Browser. |
 
 ### `Inno.Editor.Panel.FileBrowser.AssetBrowserState`
 
 | 当前声明 | 行为 |
 | --- | --- |
+| [`Inno.Editor.Panel.FileBrowser.AssetBrowserRoot Inno.Editor.Panel.FileBrowser.AssetBrowserState.root`](../../src/composition/editor/panels/Inno.Editor.Panel.FileBrowser/Browser/AssetBrowserState.cs#L62) | Gets the root currently displayed by the Asset Browser. |
+| [`Inno.Editor.Panel.FileBrowser.AssetBrowserState`](../../src/composition/editor/panels/Inno.Editor.Panel.FileBrowser/Browser/AssetBrowserState.cs#L32) | Stores asset browser navigation independently from global object selection. |
+| [`string Inno.Editor.Panel.FileBrowser.AssetBrowserState.currentDirectory`](../../src/composition/editor/panels/Inno.Editor.Panel.FileBrowser/Browser/AssetBrowserState.cs#L67) | Gets the current directory inside . An empty value identifies that root's overview. |
+| [`string Inno.Editor.Panel.FileBrowser.AssetBrowserState.projectDirectory`](../../src/composition/editor/panels/Inno.Editor.Panel.FileBrowser/Browser/AssetBrowserState.cs#L74) | Gets the most recently visited writable project directory, independently of the displayed root. |
 | [`string? Inno.Editor.Panel.FileBrowser.AssetBrowserState.GetSelectedPath(Inno.Editor.Core.EditorContext context)`](../../src/composition/editor/panels/Inno.Editor.Panel.FileBrowser/Browser/AssetBrowserState.cs#L88) | Gets the selected asset path when the editor-wide target belongs to the Asset Browser. |
 | [`void Inno.Editor.Panel.FileBrowser.AssetBrowserState.Select(Inno.Editor.Core.EditorContext context, string? relativePath)`](../../src/composition/editor/panels/Inno.Editor.Panel.FileBrowser/Browser/AssetBrowserState.cs#L171) | Selects an asset path through the editor-wide selection state, or clears Asset selection. |
 | [`void Inno.Editor.Panel.FileBrowser.AssetBrowserState.SetCurrentDirectory(string relativePath)`](../../src/composition/editor/panels/Inno.Editor.Panel.FileBrowser/Browser/AssetBrowserState.cs#L142) | Sets the current Asset Browser directory and infers its root from the isolated source identity. |
 | [`void Inno.Editor.Panel.FileBrowser.AssetBrowserState.SetRoot(Inno.Editor.Panel.FileBrowser.AssetBrowserRoot value)`](../../src/composition/editor/panels/Inno.Editor.Panel.FileBrowser/Browser/AssetBrowserState.cs#L134) | Switches the displayed root while preserving the last directory visited in each root. |
-| [`string Inno.Editor.Panel.FileBrowser.AssetBrowserState.currentDirectory`](../../src/composition/editor/panels/Inno.Editor.Panel.FileBrowser/Browser/AssetBrowserState.cs#L67) | Gets the current directory inside . An empty value identifies that root's overview. |
-| [`string Inno.Editor.Panel.FileBrowser.AssetBrowserState.projectDirectory`](../../src/composition/editor/panels/Inno.Editor.Panel.FileBrowser/Browser/AssetBrowserState.cs#L74) | Gets the most recently visited writable project directory, independently of the displayed root. |
-| [`Inno.Editor.Panel.FileBrowser.AssetBrowserRoot Inno.Editor.Panel.FileBrowser.AssetBrowserState.root`](../../src/composition/editor/panels/Inno.Editor.Panel.FileBrowser/Browser/AssetBrowserState.cs#L62) | Gets the root currently displayed by the Asset Browser. |
-| [`Inno.Editor.Panel.FileBrowser.AssetBrowserState`](../../src/composition/editor/panels/Inno.Editor.Panel.FileBrowser/Browser/AssetBrowserState.cs#L32) | Stores asset browser navigation independently from global object selection. |
 
 ### `Inno.Editor.Panel.FileBrowser.AssetEditor`
 
 | 当前声明 | 行为 |
 | --- | --- |
+| [`Inno.Editor.Panel.FileBrowser.AssetEditor`](../../src/composition/editor/panels/Inno.Editor.Panel.FileBrowser/AssetEditors/AssetEditor.cs#L8) | Customizes editor interactions for one imported asset type. |
+| [`virtual Inno.Editor.Interactions.EditorDragData Inno.Editor.Panel.FileBrowser.AssetEditor.CreateDragData(Inno.Editor.Panel.FileBrowser.AssetEditorContext context)`](../../src/composition/editor/panels/Inno.Editor.Panel.FileBrowser/AssetEditors/AssetEditor.cs#L108) | Creates the managed source, preview label, and validity predicate for an asset drag. |
+| [`virtual Inno.Editor.Panel.FileBrowser.AssetOperationValidation Inno.Editor.Panel.FileBrowser.AssetEditor.ValidateDelete(Inno.Editor.Panel.FileBrowser.AssetEditorContext context)`](../../src/composition/editor/panels/Inno.Editor.Panel.FileBrowser/AssetEditors/AssetEditor.cs#L76) | Validates a requested asset deletion before the AssetPipeline transaction begins. |
+| [`virtual Inno.Editor.Panel.FileBrowser.AssetOperationValidation Inno.Editor.Panel.FileBrowser.AssetEditor.ValidateRename(Inno.Editor.Panel.FileBrowser.AssetEditorContext context, string targetPath)`](../../src/composition/editor/panels/Inno.Editor.Panel.FileBrowser/AssetEditors/AssetEditor.cs#L43) | Validates a requested asset move before the AssetPipeline transaction begins. |
 | [`virtual bool Inno.Editor.Panel.FileBrowser.AssetEditor.CanOpen(Inno.Editor.Panel.FileBrowser.AssetEditorContext context)`](../../src/composition/editor/panels/Inno.Editor.Panel.FileBrowser/AssetEditors/AssetEditor.cs#L19) | Gets whether the fallback asset editor can open the supplied source entry. |
 | [`virtual bool Inno.Editor.Panel.FileBrowser.AssetEditor.CanStartDrag(Inno.Editor.Panel.FileBrowser.AssetEditorContext context)`](../../src/composition/editor/panels/Inno.Editor.Panel.FileBrowser/AssetEditors/AssetEditor.cs#L97) | Gets whether the supplied entry can begin a managed editor drag operation. |
-| [`virtual Inno.Editor.Interactions.EditorDragData Inno.Editor.Panel.FileBrowser.AssetEditor.CreateDragData(Inno.Editor.Panel.FileBrowser.AssetEditorContext context)`](../../src/composition/editor/panels/Inno.Editor.Panel.FileBrowser/AssetEditors/AssetEditor.cs#L108) | Creates the managed source, preview label, and validity predicate for an asset drag. |
 | [`virtual void Inno.Editor.Panel.FileBrowser.AssetEditor.OnDeleted(Inno.Editor.Panel.FileBrowser.AssetEditorContext context)`](../../src/composition/editor/panels/Inno.Editor.Panel.FileBrowser/AssetEditors/AssetEditor.cs#L84) | Runs after an asset deletion transaction commits successfully. |
 | [`virtual void Inno.Editor.Panel.FileBrowser.AssetEditor.OnRenamed(Inno.Editor.Panel.FileBrowser.AssetEditorContext context, string oldPath, string newPath)`](../../src/composition/editor/panels/Inno.Editor.Panel.FileBrowser/AssetEditors/AssetEditor.cs#L60) | Runs after an asset move transaction commits successfully. |
 | [`virtual void Inno.Editor.Panel.FileBrowser.AssetEditor.Open(Inno.Editor.Panel.FileBrowser.AssetEditorContext context)`](../../src/composition/editor/panels/Inno.Editor.Panel.FileBrowser/AssetEditors/AssetEditor.cs#L27) | Opens the supplied asset entry when no more specific typed open action handled it. |
-| [`virtual Inno.Editor.Panel.FileBrowser.AssetOperationValidation Inno.Editor.Panel.FileBrowser.AssetEditor.ValidateDelete(Inno.Editor.Panel.FileBrowser.AssetEditorContext context)`](../../src/composition/editor/panels/Inno.Editor.Panel.FileBrowser/AssetEditors/AssetEditor.cs#L76) | Validates a requested asset deletion before the AssetPipeline transaction begins. |
-| [`virtual Inno.Editor.Panel.FileBrowser.AssetOperationValidation Inno.Editor.Panel.FileBrowser.AssetEditor.ValidateRename(Inno.Editor.Panel.FileBrowser.AssetEditorContext context, string targetPath)`](../../src/composition/editor/panels/Inno.Editor.Panel.FileBrowser/AssetEditors/AssetEditor.cs#L43) | Validates a requested asset move before the AssetPipeline transaction begins. |
-| [`Inno.Editor.Panel.FileBrowser.AssetEditor`](../../src/composition/editor/panels/Inno.Editor.Panel.FileBrowser/AssetEditors/AssetEditor.cs#L8) | Customizes editor interactions for one imported asset type. |
 
 ### `Inno.Editor.Panel.FileBrowser.AssetEditorAttribute`
 
 | 当前声明 | 行为 |
 | --- | --- |
+| [`Inno.Editor.Panel.FileBrowser.AssetEditorAttribute`](../../src/composition/editor/panels/Inno.Editor.Panel.FileBrowser/AssetEditors/AssetEditorAttribute.cs#L8) | Associates an asset editor with an imported asset type. |
 | [`Inno.Editor.Panel.FileBrowser.AssetEditorAttribute.AssetEditorAttribute(System.Type assetType, bool useForChildren = false, int priority = 0)`](../../src/composition/editor/panels/Inno.Editor.Panel.FileBrowser/AssetEditors/AssetEditorAttribute.cs#L26) | Creates an asset-editor registration for an imported runtime asset type. |
 | [`System.Type Inno.Editor.Panel.FileBrowser.AssetEditorAttribute.assetType`](../../src/composition/editor/panels/Inno.Editor.Panel.FileBrowser/AssetEditors/AssetEditorAttribute.cs#L39) | Gets the imported asset type handled by the editor. |
-| [`int Inno.Editor.Panel.FileBrowser.AssetEditorAttribute.priority`](../../src/composition/editor/panels/Inno.Editor.Panel.FileBrowser/AssetEditors/AssetEditorAttribute.cs#L49) | Gets the tie-breaking priority. |
 | [`bool Inno.Editor.Panel.FileBrowser.AssetEditorAttribute.useForChildren`](../../src/composition/editor/panels/Inno.Editor.Panel.FileBrowser/AssetEditors/AssetEditorAttribute.cs#L44) | Gets whether derived asset types are accepted. |
-| [`Inno.Editor.Panel.FileBrowser.AssetEditorAttribute`](../../src/composition/editor/panels/Inno.Editor.Panel.FileBrowser/AssetEditors/AssetEditorAttribute.cs#L8) | Associates an asset editor with an imported asset type. |
+| [`int Inno.Editor.Panel.FileBrowser.AssetEditorAttribute.priority`](../../src/composition/editor/panels/Inno.Editor.Panel.FileBrowser/AssetEditors/AssetEditorAttribute.cs#L49) | Gets the tie-breaking priority. |
 
 ### `Inno.Editor.Panel.FileBrowser.AssetEditorContext`
 
 | 当前声明 | 行为 |
 | --- | --- |
-| [`System.Type? Inno.Editor.Panel.FileBrowser.AssetEditorContext.assetType`](../../src/composition/editor/panels/Inno.Editor.Panel.FileBrowser/AssetEditors/AssetEditorContext.cs#L100) | Gets the resolved imported asset type when available. |
-| [`Inno.Editor.Core.EditorContext Inno.Editor.Panel.FileBrowser.AssetEditorContext.editorContext`](../../src/composition/editor/panels/Inno.Editor.Panel.FileBrowser/AssetEditors/AssetEditorContext.cs#L70) | Gets the shared editor context. |
 | [`Inno.Assets.AssetInfo? Inno.Editor.Panel.FileBrowser.AssetEditorContext.info`](../../src/composition/editor/panels/Inno.Editor.Panel.FileBrowser/AssetEditors/AssetEditorContext.cs#L95) | Gets the cataloged asset information when available. |
+| [`Inno.Editor.Core.EditorContext Inno.Editor.Panel.FileBrowser.AssetEditorContext.editorContext`](../../src/composition/editor/panels/Inno.Editor.Panel.FileBrowser/AssetEditors/AssetEditorContext.cs#L70) | Gets the shared editor context. |
 | [`Inno.Editor.Interactions.EditorInteractions Inno.Editor.Panel.FileBrowser.AssetEditorContext.interactions`](../../src/composition/editor/panels/Inno.Editor.Panel.FileBrowser/AssetEditors/AssetEditorContext.cs#L75) | Gets the active editor interaction entry point. |
+| [`Inno.Editor.Panel.FileBrowser.AssetEditorContext`](../../src/composition/editor/panels/Inno.Editor.Panel.FileBrowser/AssetEditors/AssetEditorContext.cs#L12) | Provides an immutable snapshot for an asset editor operation. |
+| [`System.Type? Inno.Editor.Panel.FileBrowser.AssetEditorContext.assetType`](../../src/composition/editor/panels/Inno.Editor.Panel.FileBrowser/AssetEditors/AssetEditorContext.cs#L100) | Gets the resolved imported asset type when available. |
 | [`bool Inno.Editor.Panel.FileBrowser.AssetEditorContext.isDirectory`](../../src/composition/editor/panels/Inno.Editor.Panel.FileBrowser/AssetEditors/AssetEditorContext.cs#L90) | Gets whether the source represents a directory. |
 | [`string Inno.Editor.Panel.FileBrowser.AssetEditorContext.name`](../../src/composition/editor/panels/Inno.Editor.Panel.FileBrowser/AssetEditors/AssetEditorContext.cs#L85) | Gets the final source path segment. |
 | [`string Inno.Editor.Panel.FileBrowser.AssetEditorContext.relativePath`](../../src/composition/editor/panels/Inno.Editor.Panel.FileBrowser/AssetEditors/AssetEditorContext.cs#L80) | Gets the source-relative path. |
-| [`Inno.Editor.Panel.FileBrowser.AssetEditorContext`](../../src/composition/editor/panels/Inno.Editor.Panel.FileBrowser/AssetEditors/AssetEditorContext.cs#L12) | Provides an immutable snapshot for an asset editor operation. |
 
 ### `Inno.Editor.Panel.FileBrowser.AssetEditorModule`
 
 | 当前声明 | 行为 |
 | --- | --- |
-| [`Inno.Editor.Panel.FileBrowser.AssetEditorModule.AssetEditorModule(Inno.Editor.Interactions.EditorInteractions interactions, Inno.Editor.Settings.EditorSettings settings, Inno.Assets.Pipeline.AssetPipeline pipeline, Inno.Plugins.Authoring.PluginEnvironment plugins, Inno.Extensibility.Types.TypeCatalog types, Inno.Core.Logging.LogRouter logs)`](../../src/composition/editor/panels/Inno.Editor.Panel.FileBrowser/AssetEditors/AssetEditorModule.cs#L61) | Creates the Asset Browser feature module. |
-| [`void Inno.Editor.Panel.FileBrowser.AssetEditorModule.BeginCreatedSourceRename(Inno.Assets.Pipeline.AssetFileEntry entry)`](../../src/composition/editor/panels/Inno.Editor.Panel.FileBrowser/AssetEditors/AssetEditorModule.Creation.cs#L22) | Selects a newly created source and starts its shared inline rename interaction. |
-| [`override void Inno.Editor.Panel.FileBrowser.AssetEditorModule.Capture(Inno.Editor.Core.EditorState state)`](../../src/composition/editor/panels/Inno.Editor.Panel.FileBrowser/AssetEditors/AssetEditorModule.cs#L93) | Captures an immutable snapshot of the current observable state. |
 | [`Inno.Assets.Pipeline.AssetFileEntry Inno.Editor.Panel.FileBrowser.AssetEditorModule.CreateSource(Inno.Assets.AssetPath path, System.ReadOnlySpan<byte> bytes)`](../../src/composition/editor/panels/Inno.Editor.Panel.FileBrowser/AssetEditors/AssetEditorModule.Creation.cs#L48) | Creates a native or ordinary-text asset source as one recoverable shared-history operation. |
-| [`string Inno.Editor.Panel.FileBrowser.AssetEditorModule.GetIcon(Inno.Assets.Pipeline.AssetFileEntry entry)`](../../src/composition/editor/panels/Inno.Editor.Panel.FileBrowser/AssetEditors/AssetEditorModule.cs#L542) | Resolves the presentation icon registered for an asset type or source extension. |
+| [`Inno.Editor.Panel.FileBrowser.AssetBrowserState Inno.Editor.Panel.FileBrowser.AssetEditorModule.browser`](../../src/composition/editor/panels/Inno.Editor.Panel.FileBrowser/AssetEditors/AssetEditorModule.cs#L85) | Gets shared Asset Browser navigation and selection state. |
+| [`Inno.Editor.Panel.FileBrowser.AssetEditorModule`](../../src/composition/editor/panels/Inno.Editor.Panel.FileBrowser/AssetEditors/AssetEditorModule.Creation.cs#L14) | Handles asset creation actions in the Editor file browser. |
+| [`Inno.Editor.Panel.FileBrowser.AssetEditorModule.AssetEditorModule(Inno.Editor.Interactions.EditorInteractions interactions, Inno.Editor.Settings.EditorSettings settings, Inno.Assets.Pipeline.AssetPipeline pipeline, Inno.Plugins.Authoring.PluginEnvironment plugins, Inno.Extensibility.Types.TypeCatalog types, Inno.Core.Logging.LogRouter logs)`](../../src/composition/editor/panels/Inno.Editor.Panel.FileBrowser/AssetEditors/AssetEditorModule.cs#L61) | Creates the Asset Browser feature module. |
+| [`override void Inno.Editor.Panel.FileBrowser.AssetEditorModule.Capture(Inno.Editor.Core.EditorState state)`](../../src/composition/editor/panels/Inno.Editor.Panel.FileBrowser/AssetEditors/AssetEditorModule.cs#L93) | Captures an immutable snapshot of the current observable state. |
 | [`override void Inno.Editor.Panel.FileBrowser.AssetEditorModule.OnDispose()`](../../src/composition/editor/panels/Inno.Editor.Panel.FileBrowser/AssetEditors/AssetEditorModule.cs#L582) | Releases resources retained by this feature after it has stopped. |
 | [`override void Inno.Editor.Panel.FileBrowser.AssetEditorModule.OnStart(Inno.Editor.Core.EditorContext context)`](../../src/composition/editor/panels/Inno.Editor.Panel.FileBrowser/AssetEditors/AssetEditorModule.cs#L563) | Initializes this feature when its owning runtime becomes active. |
 | [`override void Inno.Editor.Panel.FileBrowser.AssetEditorModule.OnStop(Inno.Editor.Core.EditorContext context)`](../../src/composition/editor/panels/Inno.Editor.Panel.FileBrowser/AssetEditors/AssetEditorModule.cs#L574) | Stops this feature before its owning runtime releases the active generation. |
 | [`override void Inno.Editor.Panel.FileBrowser.AssetEditorModule.Restore(Inno.Editor.Core.EditorState state)`](../../src/composition/editor/panels/Inno.Editor.Panel.FileBrowser/AssetEditors/AssetEditorModule.cs#L106) | Restores the supplied snapshot while preserving current invariants. |
-| [`Inno.Editor.Panel.FileBrowser.AssetBrowserState Inno.Editor.Panel.FileBrowser.AssetEditorModule.browser`](../../src/composition/editor/panels/Inno.Editor.Panel.FileBrowser/AssetEditors/AssetEditorModule.cs#L85) | Gets shared Asset Browser navigation and selection state. |
-| [`Inno.Editor.Panel.FileBrowser.AssetEditorModule`](../../src/composition/editor/panels/Inno.Editor.Panel.FileBrowser/AssetEditors/AssetEditorModule.Creation.cs#L14) | Handles asset creation actions in the Editor file browser. |
+| [`string Inno.Editor.Panel.FileBrowser.AssetEditorModule.GetIcon(Inno.Assets.Pipeline.AssetFileEntry entry)`](../../src/composition/editor/panels/Inno.Editor.Panel.FileBrowser/AssetEditors/AssetEditorModule.cs#L542) | Resolves the presentation icon registered for an asset type or source extension. |
+| [`void Inno.Editor.Panel.FileBrowser.AssetEditorModule.BeginCreatedSourceRename(Inno.Assets.Pipeline.AssetFileEntry entry)`](../../src/composition/editor/panels/Inno.Editor.Panel.FileBrowser/AssetEditors/AssetEditorModule.Creation.cs#L22) | Selects a newly created source and starts its shared inline rename interaction. |
 
 ### `Inno.Editor.Panel.FileBrowser.AssetIconAttribute`
 
 | 当前声明 | 行为 |
 | --- | --- |
-| [`Inno.Editor.Panel.FileBrowser.AssetIconAttribute.AssetIconAttribute(string extension, string icon, int priority = 0)`](../../src/composition/editor/panels/Inno.Editor.Panel.FileBrowser/Icons/AssetIconAttribute.cs#L71) | Creates an icon declaration for files ending with a source extension. |
-| [`Inno.Editor.Panel.FileBrowser.AssetIconAttribute.AssetIconAttribute(System.Type assetType, string icon, bool useForChildren = false, int priority = 0)`](../../src/composition/editor/panels/Inno.Editor.Panel.FileBrowser/Icons/AssetIconAttribute.cs#L43) | Creates an icon declaration using a glyph from the Editor icon catalog. |
-| [`System.Type? Inno.Editor.Panel.FileBrowser.AssetIconAttribute.assetType`](../../src/composition/editor/panels/Inno.Editor.Panel.FileBrowser/Icons/AssetIconAttribute.cs#L85) | Gets the imported asset type represented by this declaration, or for an extension declaration. |
-| [`string? Inno.Editor.Panel.FileBrowser.AssetIconAttribute.extension`](../../src/composition/editor/panels/Inno.Editor.Panel.FileBrowser/Icons/AssetIconAttribute.cs#L91) | Gets the normalized source extension represented by this declaration, or for a type declaration. |
-| [`string Inno.Editor.Panel.FileBrowser.AssetIconAttribute.icon`](../../src/composition/editor/panels/Inno.Editor.Panel.FileBrowser/Icons/AssetIconAttribute.cs#L96) | Gets the Editor icon glyph to render. |
-| [`int Inno.Editor.Panel.FileBrowser.AssetIconAttribute.priority`](../../src/composition/editor/panels/Inno.Editor.Panel.FileBrowser/Icons/AssetIconAttribute.cs#L107) | Gets the tie-breaking priority after target specificity. |
-| [`bool Inno.Editor.Panel.FileBrowser.AssetIconAttribute.useForChildren`](../../src/composition/editor/panels/Inno.Editor.Panel.FileBrowser/Icons/AssetIconAttribute.cs#L102) | Gets whether a type declaration may also represent derived asset types. Extension declarations always return . |
 | [`Inno.Editor.Panel.FileBrowser.AssetIconAttribute`](../../src/composition/editor/panels/Inno.Editor.Panel.FileBrowser/Icons/AssetIconAttribute.cs#L12) | Declares the icon used by the Asset Browser for an imported asset type or source extension. |
+| [`Inno.Editor.Panel.FileBrowser.AssetIconAttribute.AssetIconAttribute(System.Type assetType, string icon, bool useForChildren = false, int priority = 0)`](../../src/composition/editor/panels/Inno.Editor.Panel.FileBrowser/Icons/AssetIconAttribute.cs#L43) | Creates an icon declaration using a glyph from the Editor icon catalog. |
+| [`Inno.Editor.Panel.FileBrowser.AssetIconAttribute.AssetIconAttribute(string extension, string icon, int priority = 0)`](../../src/composition/editor/panels/Inno.Editor.Panel.FileBrowser/Icons/AssetIconAttribute.cs#L71) | Creates an icon declaration for files ending with a source extension. |
+| [`System.Type? Inno.Editor.Panel.FileBrowser.AssetIconAttribute.assetType`](../../src/composition/editor/panels/Inno.Editor.Panel.FileBrowser/Icons/AssetIconAttribute.cs#L85) | Gets the imported asset type represented by this declaration, or for an extension declaration. |
+| [`bool Inno.Editor.Panel.FileBrowser.AssetIconAttribute.useForChildren`](../../src/composition/editor/panels/Inno.Editor.Panel.FileBrowser/Icons/AssetIconAttribute.cs#L102) | Gets whether a type declaration may also represent derived asset types. Extension declarations always return . |
+| [`int Inno.Editor.Panel.FileBrowser.AssetIconAttribute.priority`](../../src/composition/editor/panels/Inno.Editor.Panel.FileBrowser/Icons/AssetIconAttribute.cs#L107) | Gets the tie-breaking priority after target specificity. |
+| [`string Inno.Editor.Panel.FileBrowser.AssetIconAttribute.icon`](../../src/composition/editor/panels/Inno.Editor.Panel.FileBrowser/Icons/AssetIconAttribute.cs#L96) | Gets the Editor icon glyph to render. |
+| [`string? Inno.Editor.Panel.FileBrowser.AssetIconAttribute.extension`](../../src/composition/editor/panels/Inno.Editor.Panel.FileBrowser/Icons/AssetIconAttribute.cs#L91) | Gets the normalized source extension represented by this declaration, or for a type declaration. |
 
 ### `Inno.Editor.Panel.FileBrowser.AssetImportSettingsEdits`
 
 | 当前声明 | 行为 |
 | --- | --- |
+| [`Inno.Editor.Panel.FileBrowser.AssetImportSettingsEdits`](../../src/composition/editor/panels/Inno.Editor.Panel.FileBrowser/AssetEditors/AssetImportSettingsEdits.cs#L15) | Applies importer configuration through the common sidecar pipeline and stable-identity Editor history. |
 | [`Inno.Editor.Panel.FileBrowser.AssetImportSettingsEdits.AssetImportSettingsEdits(Inno.Assets.Pipeline.AssetPipeline assets, Inno.Core.Serialization.SerializationRegistry serialization, Inno.Extensibility.Types.TypeCatalog types, Inno.Editor.Interactions.EditorInteractions interactions)`](../../src/composition/editor/panels/Inno.Editor.Panel.FileBrowser/AssetEditors/AssetImportSettingsEdits.cs#L38) | Uses the authoring owners responsible for source identity, converter generations and shared undo. |
 | [`bool Inno.Editor.Panel.FileBrowser.AssetImportSettingsEdits.Apply(Inno.Assets.AssetPath path, Inno.Core.Serialization.ISerializable settings, string expectedFingerprint)`](../../src/composition/editor/panels/Inno.Editor.Panel.FileBrowser/AssetEditors/AssetImportSettingsEdits.cs#L66) | Saves one settings gesture, recording neutral before/after properties even when reimport reports an error. |
-| [`Inno.Editor.Panel.FileBrowser.AssetImportSettingsEdits`](../../src/composition/editor/panels/Inno.Editor.Panel.FileBrowser/AssetEditors/AssetImportSettingsEdits.cs#L15) | Applies importer configuration through the common sidecar pipeline and stable-identity Editor history. |
 
 ### `Inno.Editor.Panel.FileBrowser.AssetOperationValidation`
 
 | 当前声明 | 行为 |
 | --- | --- |
-| [`Inno.Editor.Panel.FileBrowser.AssetOperationValidation.AssetOperationValidation(bool isValid, string message)`](../../src/composition/editor/panels/Inno.Editor.Panel.FileBrowser/AssetEditors/AssetOperationValidation.cs#L17) | Creates the validation result returned before an asset transaction begins. |
-| [`static Inno.Editor.Panel.FileBrowser.AssetOperationValidation Inno.Editor.Panel.FileBrowser.AssetOperationValidation.Invalid(string message)`](../../src/composition/editor/panels/Inno.Editor.Panel.FileBrowser/AssetEditors/AssetOperationValidation.cs#L49) | Creates a failed asset-operation validation result. |
-| [`bool Inno.Editor.Panel.FileBrowser.AssetOperationValidation.isValid`](../../src/composition/editor/panels/Inno.Editor.Panel.FileBrowser/AssetEditors/AssetOperationValidation.cs#L28) | Gets whether the operation may proceed. |
-| [`string Inno.Editor.Panel.FileBrowser.AssetOperationValidation.message`](../../src/composition/editor/panels/Inno.Editor.Panel.FileBrowser/AssetEditors/AssetOperationValidation.cs#L33) | Gets the validation diagnostic. |
-| [`static Inno.Editor.Panel.FileBrowser.AssetOperationValidation Inno.Editor.Panel.FileBrowser.AssetOperationValidation.valid`](../../src/composition/editor/panels/Inno.Editor.Panel.FileBrowser/AssetEditors/AssetOperationValidation.cs#L38) | Gets a successful validation result. |
 | [`Inno.Editor.Panel.FileBrowser.AssetOperationValidation`](../../src/composition/editor/panels/Inno.Editor.Panel.FileBrowser/AssetEditors/AssetOperationValidation.cs#L6) | Describes whether an editor asset operation may proceed. |
+| [`Inno.Editor.Panel.FileBrowser.AssetOperationValidation.AssetOperationValidation(bool isValid, string message)`](../../src/composition/editor/panels/Inno.Editor.Panel.FileBrowser/AssetEditors/AssetOperationValidation.cs#L17) | Creates the validation result returned before an asset transaction begins. |
+| [`bool Inno.Editor.Panel.FileBrowser.AssetOperationValidation.isValid`](../../src/composition/editor/panels/Inno.Editor.Panel.FileBrowser/AssetEditors/AssetOperationValidation.cs#L28) | Gets whether the operation may proceed. |
+| [`static Inno.Editor.Panel.FileBrowser.AssetOperationValidation Inno.Editor.Panel.FileBrowser.AssetOperationValidation.Invalid(string message)`](../../src/composition/editor/panels/Inno.Editor.Panel.FileBrowser/AssetEditors/AssetOperationValidation.cs#L49) | Creates a failed asset-operation validation result. |
+| [`static Inno.Editor.Panel.FileBrowser.AssetOperationValidation Inno.Editor.Panel.FileBrowser.AssetOperationValidation.valid`](../../src/composition/editor/panels/Inno.Editor.Panel.FileBrowser/AssetEditors/AssetOperationValidation.cs#L38) | Gets a successful validation result. |
+| [`string Inno.Editor.Panel.FileBrowser.AssetOperationValidation.message`](../../src/composition/editor/panels/Inno.Editor.Panel.FileBrowser/AssetEditors/AssetOperationValidation.cs#L33) | Gets the validation diagnostic. |
 
 ## 项目依赖
 
-- [Inno.Scripting.Compiler](../scripting/Inno.Scripting.Compiler.md)：实现依赖（`PrivateAssets="compile"`）。
-- [Inno.Editor.Assets](Inno.Editor.Assets.md)：实现依赖（`PrivateAssets="compile"`）。
-- [Inno.Core.Execution](../core/Inno.Core.Execution.md)：实现依赖（`PrivateAssets="compile"`）。
-- [Inno.Core.IO](../core/Inno.Core.IO.md)：实现依赖（`PrivateAssets="compile"`）。
-- [Inno.Editor.ImGui](Inno.Editor.ImGui.md)：实现依赖（`PrivateAssets="compile"`）。
-- [Inno.Scripting.Api](../scripting/Inno.Scripting.Api.md)：实现依赖（`PrivateAssets="compile"`）。
-- [Inno.Adapter.Presentation.ImGui.Sdl3](../platform/Inno.Adapter.Presentation.ImGui.Sdl3.md)：实现依赖（`PrivateAssets="compile"`）。
-- [Inno.Native.ImGui](../native/Inno.Native.ImGui.md)：实现依赖（`PrivateAssets="compile"`）。
-- [Inno.Editor.Scripting](Inno.Editor.Scripting.md)：实现依赖（`PrivateAssets="compile"`）。
-- [Inno.Editor.Core](Inno.Editor.Core.md)：项目引用；公开签名可见性由语义边界检查确认。
-- [Inno.Core.Serialization](../core/Inno.Core.Serialization.md)：项目引用；公开签名可见性由语义边界检查确认。
-- [Inno.Editor.Inspection](Inno.Editor.Inspection.md)：项目引用；公开签名可见性由语义边界检查确认。
-- [Inno.Editor.Interactions](Inno.Editor.Interactions.md)：项目引用；公开签名可见性由语义边界检查确认。
-- [Inno.Editor.Settings](Inno.Editor.Settings.md)：项目引用；公开签名可见性由语义边界检查确认。
-- [Inno.Assets](../assets/Inno.Assets.md)：项目引用；公开签名可见性由语义边界检查确认。
-- [Inno.Assets.Pipeline](../assets/Inno.Assets.Pipeline.md)：项目引用；公开签名可见性由语义边界检查确认。
-- [Inno.Plugins.Authoring](../plugins/Inno.Plugins.Authoring.md)：项目引用；公开签名可见性由语义边界检查确认。
-- [Inno.Core.Logging](../core/Inno.Core.Logging.md)：项目引用；公开签名可见性由语义边界检查确认。
-- [Inno.Extensibility.Types](../extensibility/Inno.Extensibility.Types.md)：项目引用；公开签名可见性由语义边界检查确认。
-- [Inno.Extensibility.Catalogs](../extensibility/Inno.Extensibility.Catalogs.md)：项目引用；公开签名可见性由语义边界检查确认。
-
-共同 MSBuild 注入的 analyzer 与编译规则属于构建依赖，完整有效项目图记录在本轮验收证据中。
+- [Inno.Scripting.Compiler](../scripting/Inno.Scripting.Compiler.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Editor.Assets](Inno.Editor.Assets.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Core.Execution](../core/Inno.Core.Execution.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Core.IO](../core/Inno.Core.IO.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Editor.ImGui](Inno.Editor.ImGui.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Scripting.Api](../scripting/Inno.Scripting.Api.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Adapter.Presentation.ImGui.Sdl3](../backends/ImGui/Inno.Adapter.Presentation.ImGui.Sdl3.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Native.ImGui](../backends/ImGui/Inno.Native.ImGui.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Editor.Scripting](Inno.Editor.Scripting.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Editor.Core](Inno.Editor.Core.md)：公开引用边界由实际签名核对。
+- [Inno.Core.Serialization](../core/Inno.Core.Serialization.md)：公开引用边界由实际签名核对。
+- [Inno.Editor.Inspection](Inno.Editor.Inspection.md)：公开引用边界由实际签名核对。
+- [Inno.Editor.Interactions](Inno.Editor.Interactions.md)：公开引用边界由实际签名核对。
+- [Inno.Editor.Settings](Inno.Editor.Settings.md)：公开引用边界由实际签名核对。
+- [Inno.Assets](../assets/Inno.Assets.md)：公开引用边界由实际签名核对。
+- [Inno.Assets.Pipeline](../assets/Inno.Assets.Pipeline.md)：公开引用边界由实际签名核对。
+- [Inno.Plugins.Authoring](../plugins/Inno.Plugins.Authoring.md)：公开引用边界由实际签名核对。
+- [Inno.Core.Logging](../core/Inno.Core.Logging.md)：公开引用边界由实际签名核对。
+- [Inno.Extensibility.Types](../extensibility/Inno.Extensibility.Types.md)：公开引用边界由实际签名核对。
+- [Inno.Extensibility.Catalogs](../extensibility/Inno.Extensibility.Catalogs.md)：公开引用边界由实际签名核对。

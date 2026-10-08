@@ -65,3 +65,108 @@ subsystem 的持久 Fault，而不是清空 monitor 后继续运行。
 
 本项目属于 Foundation，依赖 Core Execution 的退休信号，不依赖 Assets、Scene、Runtime 或 Editor。`Inno.Extensibility.Modules` 提供具体
 `AssemblyUnloadMonitor` probe；`Inno.Scripting.Reload` 和 Plugin composition 使用 barrier 控制可见完成语义。
+
+## 当前源码公开 API 清单
+
+只列当前源码的 public/protected 表面；内部实现不作为稳定 API。参数、返回、失败和 owner 以英文 XML 为准。
+
+### `Inno.Extensibility.Reload.AssemblyUnloadBarrier`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Extensibility.Reload.AssemblyUnloadBarrier`](../../src/foundation/extensibility/Inno.Extensibility.Reload/AssemblyUnloadBarrier.cs#L12) | Prevents a generation transition from completing until every retired collectible assembly is reclaimed. |
+| [`Inno.Extensibility.Reload.AssemblyUnloadBarrier.AssemblyUnloadBarrier(System.Collections.Generic.IEnumerable<Inno.Extensibility.Reload.IAssemblyUnloadProbe> probes, Inno.Extensibility.Reload.AssemblyUnloadBarrierOptions? options = null)`](../../src/foundation/extensibility/Inno.Extensibility.Reload/AssemblyUnloadBarrier.cs#L39) | Creates a barrier over a complete retirement set. |
+| [`Inno.Extensibility.Reload.AssemblyUnloadBarrierState Inno.Extensibility.Reload.AssemblyUnloadBarrier.state`](../../src/foundation/extensibility/Inno.Extensibility.Reload/AssemblyUnloadBarrier.cs#L66) | Gets the current barrier state. |
+| [`Inno.Extensibility.Reload.AssemblyUnloadException? Inno.Extensibility.Reload.AssemblyUnloadBarrier.failure`](../../src/foundation/extensibility/Inno.Extensibility.Reload/AssemblyUnloadBarrier.cs#L90) | Gets the terminal failure after the barrier enters . |
+| [`bool Inno.Extensibility.Reload.AssemblyUnloadBarrier.Advance()`](../../src/foundation/extensibility/Inno.Extensibility.Reload/AssemblyUnloadBarrier.cs#L108) | Performs a due full collection cycle and reevaluates every retired generation. |
+| [`int Inno.Extensibility.Reload.AssemblyUnloadBarrier.collectionAttempts`](../../src/foundation/extensibility/Inno.Extensibility.Reload/AssemblyUnloadBarrier.cs#L78) | Gets the number of full collection cycles performed by this barrier. |
+| [`void Inno.Extensibility.Reload.AssemblyUnloadBarrier.Wait(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))`](../../src/foundation/extensibility/Inno.Extensibility.Reload/AssemblyUnloadBarrier.cs#L164) | Blocks the caller until all retired generations are reclaimed, cancellation is requested, or the barrier faults. |
+
+### `Inno.Extensibility.Reload.AssemblyUnloadBarrierOptions`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Extensibility.Reload.AssemblyUnloadBarrierOptions`](../../src/foundation/extensibility/Inno.Extensibility.Reload/AssemblyUnloadBarrierOptions.cs#L8) | Configures forced-collection cadence and the retention failure threshold. |
+| [`System.TimeSpan Inno.Extensibility.Reload.AssemblyUnloadBarrierOptions.collectionInterval`](../../src/foundation/extensibility/Inno.Extensibility.Reload/AssemblyUnloadBarrierOptions.cs#L13) | Gets the minimum interval between full collection attempts. |
+| [`System.TimeSpan Inno.Extensibility.Reload.AssemblyUnloadBarrierOptions.retentionTimeout`](../../src/foundation/extensibility/Inno.Extensibility.Reload/AssemblyUnloadBarrierOptions.cs#L18) | Gets the duration after which a still-reachable generation faults the reload subsystem. |
+
+### `Inno.Extensibility.Reload.AssemblyUnloadBarrierState`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Extensibility.Reload.AssemblyUnloadBarrierState`](../../src/foundation/extensibility/Inno.Extensibility.Reload/AssemblyUnloadBarrierState.cs#L6) | Describes the terminal or waiting state of an assembly unload barrier. |
+| [`Inno.Extensibility.Reload.AssemblyUnloadBarrierState.AwaitingCollection`](../../src/foundation/extensibility/Inno.Extensibility.Reload/AssemblyUnloadBarrierState.cs#L11) | At least one retired collectible generation remains reachable. |
+| [`Inno.Extensibility.Reload.AssemblyUnloadBarrierState.Completed`](../../src/foundation/extensibility/Inno.Extensibility.Reload/AssemblyUnloadBarrierState.cs#L16) | Every retired generation is unreachable and cleaned up. |
+| [`Inno.Extensibility.Reload.AssemblyUnloadBarrierState.Faulted`](../../src/foundation/extensibility/Inno.Extensibility.Reload/AssemblyUnloadBarrierState.cs#L21) | The retention threshold was reached and the owning reload subsystem must stop accepting work. |
+
+### `Inno.Extensibility.Reload.AssemblyUnloadException`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Extensibility.Reload.AssemblyUnloadException`](../../src/foundation/extensibility/Inno.Extensibility.Reload/AssemblyUnloadException.cs#L10) | Reports retired collectible generations that remained reachable after the unload barrier threshold. |
+| [`Inno.Extensibility.Reload.AssemblyUnloadException.AssemblyUnloadException(System.Collections.Generic.IReadOnlyList<string> retainedGenerations, System.TimeSpan elapsed, int collectionAttempts)`](../../src/foundation/extensibility/Inno.Extensibility.Reload/AssemblyUnloadException.cs#L30) | Creates a terminal unload failure with stable generation diagnostics. |
+| [`System.Collections.Generic.IReadOnlyList<string> Inno.Extensibility.Reload.AssemblyUnloadException.retainedGenerations`](../../src/foundation/extensibility/Inno.Extensibility.Reload/AssemblyUnloadException.cs#L48) | Gets stable descriptions of every generation that prevented completion. |
+| [`System.TimeSpan Inno.Extensibility.Reload.AssemblyUnloadException.elapsed`](../../src/foundation/extensibility/Inno.Extensibility.Reload/AssemblyUnloadException.cs#L53) | Gets the elapsed duration before the barrier faulted. |
+| [`int Inno.Extensibility.Reload.AssemblyUnloadException.collectionAttempts`](../../src/foundation/extensibility/Inno.Extensibility.Reload/AssemblyUnloadException.cs#L58) | Gets the number of full collection cycles performed before failure. |
+
+### `Inno.Extensibility.Reload.GenerationCoordinator`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Extensibility.Reload.GenerationCoordinator`](../../src/foundation/extensibility/Inno.Extensibility.Reload/GenerationCoordinator.cs#L13) | Owns generation admission, atomic domain changes, rollback, and non-bypassable weak unload verification. |
+| [`Inno.Extensibility.Reload.GenerationState Inno.Extensibility.Reload.GenerationCoordinator.state`](../../src/foundation/extensibility/Inno.Extensibility.Reload/GenerationCoordinator.cs#L30) | Gets the gate state shared by reload, Play, Build and Export owners. |
+| [`System.Exception? Inno.Extensibility.Reload.GenerationCoordinator.failure`](../../src/foundation/extensibility/Inno.Extensibility.Reload/GenerationCoordinator.cs#L42) | Gets the terminal failure, retained until the entire host is discarded. |
+| [`System.IDisposable Inno.Extensibility.Reload.GenerationCoordinator.AcquireOperation(string operation)`](../../src/foundation/extensibility/Inno.Extensibility.Reload/GenerationCoordinator.cs#L143) | Keeps one synchronous operation on the published generation and defers automatic catalog replacement. |
+| [`System.IDisposable Inno.Extensibility.Reload.GenerationCoordinator.AcquireRead(string operation)`](../../src/foundation/extensibility/Inno.Extensibility.Reload/GenerationCoordinator.cs#L110) | Pins generation admission for a Build or Export operation, including asynchronous snapshot consumers. |
+| [`TProbe Inno.Extensibility.Reload.GenerationCoordinator.Execute<TProbe>(string operation, Inno.Extensibility.Reload.IGenerationPublication<TProbe> publication, System.Collections.Generic.IReadOnlyList<Inno.Extensibility.Reload.IGenerationChange> changes)`](../../src/foundation/extensibility/Inno.Extensibility.Reload/GenerationCoordinator.cs#L239) | Activates one publication and its captured domain changes, preserving all rollback and cleanup failures. |
+| [`bool Inno.Extensibility.Reload.GenerationCoordinator.Advance()`](../../src/foundation/extensibility/Inno.Extensibility.Reload/GenerationCoordinator.cs#L341) | Runs a due Full GC/finalizer/Full GC cycle only after candidate stack frames have unwound. |
+| [`bool Inno.Extensibility.Reload.GenerationCoordinator.TryAcquireChange(string operation, out System.IDisposable? reservation)`](../../src/foundation/extensibility/Inno.Extensibility.Reload/GenerationCoordinator.cs#L177) | Tries to reserve exclusive owner-controlled publication without disturbing active read leases. |
+| [`void Inno.Extensibility.Reload.GenerationCoordinator.Configure(Inno.Extensibility.Reload.AssemblyUnloadBarrierOptions options)`](../../src/foundation/extensibility/Inno.Extensibility.Reload/GenerationCoordinator.cs#L60) | Configures collection cadence before beginning a generation or retirement. |
+| [`void Inno.Extensibility.Reload.GenerationCoordinator.EnsureReady(string operation)`](../../src/foundation/extensibility/Inno.Extensibility.Reload/GenerationCoordinator.cs#L82) | Rejects work while a candidate, retained context or terminal failure is pending. |
+| [`void Inno.Extensibility.Reload.GenerationCoordinator.EnsureRetirementSafe()`](../../src/foundation/extensibility/Inno.Extensibility.Reload/GenerationCoordinator.cs#L431) | Rejects dependency destruction after a generation owner reported unfinished retirement. |
+| [`void Inno.Extensibility.Reload.GenerationCoordinator.Fault(System.Exception exception)`](../../src/foundation/extensibility/Inno.Extensibility.Reload/GenerationCoordinator.cs#L410) | Permanently closes admission when an owner cannot safely retire or restore generation state. |
+| [`void Inno.Extensibility.Reload.GenerationCoordinator.TrackRetirement(Inno.Extensibility.Reload.IAssemblyUnloadProbe probe)`](../../src/foundation/extensibility/Inno.Extensibility.Reload/GenerationCoordinator.cs#L202) | Registers every retired or discarded context without dropping already pending monitors. |
+| [`void Inno.Extensibility.Reload.GenerationCoordinator.Wait(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))`](../../src/foundation/extensibility/Inno.Extensibility.Reload/GenerationCoordinator.cs#L395) | Waits for all retirements while preserving pending monitors on cancellation or failure. |
+
+### `Inno.Extensibility.Reload.GenerationState`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Extensibility.Reload.GenerationState`](../../src/foundation/extensibility/Inno.Extensibility.Reload/GenerationState.cs#L6) | Describes the shared admission gate for owner-thread generation transactions. |
+| [`Inno.Extensibility.Reload.GenerationState.AwaitingCollection`](../../src/foundation/extensibility/Inno.Extensibility.Reload/GenerationState.cs#L19) | Publication finished but retired collectible contexts have not been verified unreachable. |
+| [`Inno.Extensibility.Reload.GenerationState.Faulted`](../../src/foundation/extensibility/Inno.Extensibility.Reload/GenerationState.cs#L23) | A rollback, cleanup or unload failure requires a complete host restart. |
+| [`Inno.Extensibility.Reload.GenerationState.Ready`](../../src/foundation/extensibility/Inno.Extensibility.Reload/GenerationState.cs#L11) | No candidate or unverified retirement is pending. |
+| [`Inno.Extensibility.Reload.GenerationState.Transitioning`](../../src/foundation/extensibility/Inno.Extensibility.Reload/GenerationState.cs#L15) | A candidate is being activated or rolled back. |
+
+### `Inno.Extensibility.Reload.IAssemblyUnloadProbe`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Extensibility.Reload.IAssemblyUnloadProbe`](../../src/foundation/extensibility/Inno.Extensibility.Reload/IAssemblyUnloadProbe.cs#L6) | Observes one retired collectible generation without retaining its load context. |
+| [`bool Inno.Extensibility.Reload.IAssemblyUnloadProbe.isCompleted`](../../src/foundation/extensibility/Inno.Extensibility.Reload/IAssemblyUnloadProbe.cs#L16) | Gets whether the retired generation is unreachable and its generation storage is released. |
+| [`string Inno.Extensibility.Reload.IAssemblyUnloadProbe.description`](../../src/foundation/extensibility/Inno.Extensibility.Reload/IAssemblyUnloadProbe.cs#L11) | Gets a stable diagnostic description of the retired generation. |
+
+### `Inno.Extensibility.Reload.IGenerationChange`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Extensibility.Reload.IGenerationChange`](../../src/foundation/extensibility/Inno.Extensibility.Reload/IGenerationChange.cs#L6) | Stages domain-owned state around an atomic generation publication without retaining it after completion. |
+| [`void Inno.Extensibility.Reload.IGenerationChange.Apply()`](../../src/foundation/extensibility/Inno.Extensibility.Reload/IGenerationChange.cs#L15) | Applies captured state after candidate publication; partial changes must be rollback-safe. |
+| [`void Inno.Extensibility.Reload.IGenerationChange.Complete()`](../../src/foundation/extensibility/Inno.Extensibility.Reload/IGenerationChange.cs#L19) | Releases old instances after irreversible publication; cleanup failures fault the owner. |
+| [`void Inno.Extensibility.Reload.IGenerationChange.PrepareForActivation()`](../../src/foundation/extensibility/Inno.Extensibility.Reload/IGenerationChange.cs#L11) | Quiesces old instances while the old publication remains active. |
+| [`void Inno.Extensibility.Reload.IGenerationChange.RestorePreviousState()`](../../src/foundation/extensibility/Inno.Extensibility.Reload/IGenerationChange.cs#L27) | Restores old values and lifecycle after the previous publication has been restored. |
+| [`void Inno.Extensibility.Reload.IGenerationChange.RollbackStructure()`](../../src/foundation/extensibility/Inno.Extensibility.Reload/IGenerationChange.cs#L23) | Removes provisional structures before restoring the old publication. |
+
+### `Inno.Extensibility.Reload.IGenerationPublication<TProbe>`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Extensibility.Reload.IGenerationPublication<TProbe>`](../../src/foundation/extensibility/Inno.Extensibility.Reload/IGenerationPublication.cs#L9) | Publishes a candidate and supplies a weak retirement monitor at the irreversible commit boundary. |
+| [`TProbe Inno.Extensibility.Reload.IGenerationPublication<TProbe>.Complete()`](../../src/foundation/extensibility/Inno.Extensibility.Reload/IGenerationPublication.cs#L25) | Commits publication after all dependent changes apply successfully. |
+| [`void Inno.Extensibility.Reload.IGenerationPublication<TProbe>.Activate()`](../../src/foundation/extensibility/Inno.Extensibility.Reload/IGenerationPublication.cs#L14) | Makes the fully prepared candidate provisionally visible at an owner-thread safe point. |
+| [`void Inno.Extensibility.Reload.IGenerationPublication<TProbe>.Rollback()`](../../src/foundation/extensibility/Inno.Extensibility.Reload/IGenerationPublication.cs#L18) | Restores the previous publication and retires discarded candidates. |
+
+## 项目依赖
+
+- [Inno.Core.Execution](../core/Inno.Core.Execution.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Extensibility.Catalogs](Inno.Extensibility.Catalogs.md)：公开引用边界由实际签名核对。

@@ -81,12 +81,13 @@ Required consumer 则拒绝 owner。重复 ID、cycle、生命周期错误始终
 
 ## 当前源码公开 API 清单
 
-以下仅列出当前程序集自己声明的 public/protected 契约；继承成员遵循所属基类页面。internal/private 实现不作为稳定公开 API。签名依据当前源码语义模型生成，行为、参数、异常与所有权说明同时以对应英文 XML 为准。
+只列当前源码的 public/protected 表面；内部实现不作为稳定 API。参数、返回、失败和 owner 以英文 XML 为准。
 
 ### `Inno.Runtime.Contracts.IRuntimeSubsystem`
 
 | 当前声明 | 行为 |
 | --- | --- |
+| [`Inno.Runtime.Contracts.IRuntimeSubsystem`](../../src/runtime/contracts/Inno.Runtime.Contracts/IRuntimeSubsystem.cs#L8) | Participates in the ordered lifecycle of one isolated runtime session. |
 | [`void Inno.Runtime.Contracts.IRuntimeSubsystem.AfterRender(Inno.Runtime.Contracts.RuntimeFrame frame)`](../../src/runtime/contracts/Inno.Runtime.Contracts/IRuntimeSubsystem.cs#L69) | Finalizes frame output even when rendering fails. |
 | [`void Inno.Runtime.Contracts.IRuntimeSubsystem.Attach()`](../../src/runtime/contracts/Inno.Runtime.Contracts/IRuntimeSubsystem.cs#L13) | Acquires session resources after every dependency has attached. |
 | [`void Inno.Runtime.Contracts.IRuntimeSubsystem.BeforeRender(Inno.Runtime.Contracts.RuntimeFrame frame)`](../../src/runtime/contracts/Inno.Runtime.Contracts/IRuntimeSubsystem.cs#L53) | Prepares frame output after simulation has completed. |
@@ -97,63 +98,56 @@ Required consumer 则拒绝 owner。重复 ID、cycle、生命周期错误始终
 | [`void Inno.Runtime.Contracts.IRuntimeSubsystem.LateUpdate(Inno.Runtime.Contracts.RuntimeFrame frame)`](../../src/runtime/contracts/Inno.Runtime.Contracts/IRuntimeSubsystem.cs#L45) | Advances state that depends on completed variable simulation. |
 | [`void Inno.Runtime.Contracts.IRuntimeSubsystem.Render(Inno.Runtime.Contracts.RuntimeFrame frame)`](../../src/runtime/contracts/Inno.Runtime.Contracts/IRuntimeSubsystem.cs#L61) | Produces frame output owned by this subsystem. |
 | [`void Inno.Runtime.Contracts.IRuntimeSubsystem.Update(Inno.Runtime.Contracts.RuntimeFrame frame)`](../../src/runtime/contracts/Inno.Runtime.Contracts/IRuntimeSubsystem.cs#L37) | Advances variable simulation state. |
-| [`Inno.Runtime.Contracts.IRuntimeSubsystem`](../../src/runtime/contracts/Inno.Runtime.Contracts/IRuntimeSubsystem.cs#L8) | Participates in the ordered lifecycle of one isolated runtime session. |
 
 ### `Inno.Runtime.Contracts.IRuntimeSubsystemFactory`
 
 | 当前声明 | 行为 |
 | --- | --- |
 | [`Inno.Runtime.Contracts.IRuntimeSubsystem Inno.Runtime.Contracts.IRuntimeSubsystemFactory.Create(Inno.Runtime.Contracts.RuntimeSubsystemContext context)`](../../src/runtime/contracts/Inno.Runtime.Contracts/IRuntimeSubsystemFactory.cs#L22) | Creates a subsystem owned exclusively by the supplied construction scope. |
-| [`Inno.Runtime.Contracts.RuntimeSubsystemDescriptor Inno.Runtime.Contracts.IRuntimeSubsystemFactory.descriptor`](../../src/runtime/contracts/Inno.Runtime.Contracts/IRuntimeSubsystemFactory.cs#L11) | Gets stable ordering and dependency metadata without creating runtime state. |
 | [`Inno.Runtime.Contracts.IRuntimeSubsystemFactory`](../../src/runtime/contracts/Inno.Runtime.Contracts/IRuntimeSubsystemFactory.cs#L6) | Creates one runtime subsystem instance for each declared Host or Session owner. |
+| [`Inno.Runtime.Contracts.RuntimeSubsystemDescriptor Inno.Runtime.Contracts.IRuntimeSubsystemFactory.descriptor`](../../src/runtime/contracts/Inno.Runtime.Contracts/IRuntimeSubsystemFactory.cs#L11) | Gets stable ordering and dependency metadata without creating runtime state. |
 
 ### `Inno.Runtime.Contracts.RuntimeCapabilityId`
 
 | 当前声明 | 行为 |
 | --- | --- |
-| [`Inno.Runtime.Contracts.RuntimeCapabilityId.RuntimeCapabilityId(string value)`](../../src/runtime/contracts/Inno.Runtime.Contracts/RuntimeCapabilityId.cs#L19) | Creates an open capability protocol identifier. |
-| [`override string Inno.Runtime.Contracts.RuntimeCapabilityId.ToString()`](../../src/runtime/contracts/Inno.Runtime.Contracts/RuntimeCapabilityId.cs#L41) | Formats the capability for diagnostics. |
-| [`bool Inno.Runtime.Contracts.RuntimeCapabilityId.isValid`](../../src/runtime/contracts/Inno.Runtime.Contracts/RuntimeCapabilityId.cs#L33) | Gets whether this value contains a usable capability name. |
-| [`string Inno.Runtime.Contracts.RuntimeCapabilityId.value`](../../src/runtime/contracts/Inno.Runtime.Contracts/RuntimeCapabilityId.cs#L28) | Gets the stable capability name, without interpreting it as a backend name. |
 | [`Inno.Runtime.Contracts.RuntimeCapabilityId`](../../src/runtime/contracts/Inno.Runtime.Contracts/RuntimeCapabilityId.cs#L8) | Identifies a backend-neutral capability supplied by composition, not an object or native handle. |
+| [`Inno.Runtime.Contracts.RuntimeCapabilityId.RuntimeCapabilityId(string value)`](../../src/runtime/contracts/Inno.Runtime.Contracts/RuntimeCapabilityId.cs#L19) | Creates an open capability protocol identifier. |
+| [`bool Inno.Runtime.Contracts.RuntimeCapabilityId.isValid`](../../src/runtime/contracts/Inno.Runtime.Contracts/RuntimeCapabilityId.cs#L33) | Gets whether this value contains a usable capability name. |
+| [`override string Inno.Runtime.Contracts.RuntimeCapabilityId.ToString()`](../../src/runtime/contracts/Inno.Runtime.Contracts/RuntimeCapabilityId.cs#L41) | Formats the capability for diagnostics. |
+| [`string Inno.Runtime.Contracts.RuntimeCapabilityId.value`](../../src/runtime/contracts/Inno.Runtime.Contracts/RuntimeCapabilityId.cs#L28) | Gets the stable capability name, without interpreting it as a backend name. |
 
 ### `Inno.Runtime.Contracts.RuntimeFixedFrame`
 
 | 当前声明 | 行为 |
 | --- | --- |
+| [`Inno.Runtime.Contracts.RuntimeFixedFrame`](../../src/runtime/contracts/Inno.Runtime.Contracts/RuntimeFixedFrame.cs#L6) | Provides immutable timing state to one deterministic fixed simulation step. |
 | [`Inno.Runtime.Contracts.RuntimeFixedFrame.RuntimeFixedFrame(long stepIndex, float time, float deltaTime)`](../../src/runtime/contracts/Inno.Runtime.Contracts/RuntimeFixedFrame.cs#L20) | Creates one deterministic fixed-step timing value. |
 | [`float Inno.Runtime.Contracts.RuntimeFixedFrame.deltaTime`](../../src/runtime/contracts/Inno.Runtime.Contracts/RuntimeFixedFrame.cs#L43) | Gets the configured fixed simulation interval in seconds. |
-| [`long Inno.Runtime.Contracts.RuntimeFixedFrame.stepIndex`](../../src/runtime/contracts/Inno.Runtime.Contracts/RuntimeFixedFrame.cs#L33) | Gets the zero-based fixed-step index. |
 | [`float Inno.Runtime.Contracts.RuntimeFixedFrame.time`](../../src/runtime/contracts/Inno.Runtime.Contracts/RuntimeFixedFrame.cs#L38) | Gets accumulated fixed simulation time in seconds. |
-| [`Inno.Runtime.Contracts.RuntimeFixedFrame`](../../src/runtime/contracts/Inno.Runtime.Contracts/RuntimeFixedFrame.cs#L6) | Provides immutable timing state to one deterministic fixed simulation step. |
+| [`long Inno.Runtime.Contracts.RuntimeFixedFrame.stepIndex`](../../src/runtime/contracts/Inno.Runtime.Contracts/RuntimeFixedFrame.cs#L33) | Gets the zero-based fixed-step index. |
 
 ### `Inno.Runtime.Contracts.RuntimeFrame`
 
 | 当前声明 | 行为 |
 | --- | --- |
+| [`Inno.Runtime.Contracts.RuntimeFrame`](../../src/runtime/contracts/Inno.Runtime.Contracts/RuntimeFrame.cs#L8) | Provides immutable timing state to one variable runtime frame. |
 | [`Inno.Runtime.Contracts.RuntimeFrame.RuntimeFrame(long frameIndex, float time, float unscaledTime, float deltaTime, float unscaledDeltaTime, float timeScale, bool isPaused)`](../../src/runtime/contracts/Inno.Runtime.Contracts/RuntimeFrame.cs#L34) | Creates the immutable timing snapshot for one variable frame. |
-| [`float Inno.Runtime.Contracts.RuntimeFrame.deltaTime`](../../src/runtime/contracts/Inno.Runtime.Contracts/RuntimeFrame.cs#L70) | Gets the scaled variable frame interval in seconds. |
-| [`long Inno.Runtime.Contracts.RuntimeFrame.frameIndex`](../../src/runtime/contracts/Inno.Runtime.Contracts/RuntimeFrame.cs#L55) | Gets the zero-based session frame index. |
 | [`bool Inno.Runtime.Contracts.RuntimeFrame.isPaused`](../../src/runtime/contracts/Inno.Runtime.Contracts/RuntimeFrame.cs#L85) | Gets whether scaled simulation is paused for this frame. |
+| [`float Inno.Runtime.Contracts.RuntimeFrame.deltaTime`](../../src/runtime/contracts/Inno.Runtime.Contracts/RuntimeFrame.cs#L70) | Gets the scaled variable frame interval in seconds. |
 | [`float Inno.Runtime.Contracts.RuntimeFrame.time`](../../src/runtime/contracts/Inno.Runtime.Contracts/RuntimeFrame.cs#L60) | Gets accumulated scaled session time in seconds. |
 | [`float Inno.Runtime.Contracts.RuntimeFrame.timeScale`](../../src/runtime/contracts/Inno.Runtime.Contracts/RuntimeFrame.cs#L80) | Gets the simulation time multiplier used for this frame. |
 | [`float Inno.Runtime.Contracts.RuntimeFrame.unscaledDeltaTime`](../../src/runtime/contracts/Inno.Runtime.Contracts/RuntimeFrame.cs#L75) | Gets the unscaled variable frame interval in seconds. |
 | [`float Inno.Runtime.Contracts.RuntimeFrame.unscaledTime`](../../src/runtime/contracts/Inno.Runtime.Contracts/RuntimeFrame.cs#L65) | Gets accumulated unscaled session time in seconds. |
-| [`Inno.Runtime.Contracts.RuntimeFrame`](../../src/runtime/contracts/Inno.Runtime.Contracts/RuntimeFrame.cs#L8) | Provides immutable timing state to one variable runtime frame. |
+| [`long Inno.Runtime.Contracts.RuntimeFrame.frameIndex`](../../src/runtime/contracts/Inno.Runtime.Contracts/RuntimeFrame.cs#L55) | Gets the zero-based session frame index. |
 
 ### `Inno.Runtime.Contracts.RuntimeSubsystem`
 
 | 当前声明 | 行为 |
 | --- | --- |
-| [`void Inno.Runtime.Contracts.RuntimeSubsystem.AfterRender(Inno.Runtime.Contracts.RuntimeFrame frame)`](../../src/runtime/contracts/Inno.Runtime.Contracts/RuntimeSubsystem.cs#L149) | Finalizes frame output even when rendering fails. |
-| [`void Inno.Runtime.Contracts.RuntimeSubsystem.Attach()`](../../src/runtime/contracts/Inno.Runtime.Contracts/RuntimeSubsystem.cs#L41) | Acquires session resources after every dependency has attached. |
-| [`void Inno.Runtime.Contracts.RuntimeSubsystem.BeforeRender(Inno.Runtime.Contracts.RuntimeFrame frame)`](../../src/runtime/contracts/Inno.Runtime.Contracts/RuntimeSubsystem.cs#L127) | Prepares frame output after simulation has completed. |
-| [`void Inno.Runtime.Contracts.RuntimeSubsystem.BeginFrame(Inno.Runtime.Contracts.RuntimeFrame frame)`](../../src/runtime/contracts/Inno.Runtime.Contracts/RuntimeSubsystem.cs#L65) | Begins one frame before event dispatch and simulation. |
-| [`void Inno.Runtime.Contracts.RuntimeSubsystem.Detach()`](../../src/runtime/contracts/Inno.Runtime.Contracts/RuntimeSubsystem.cs#L176) | Releases attached session resources before dependencies detach. |
-| [`void Inno.Runtime.Contracts.RuntimeSubsystem.Dispose()`](../../src/runtime/contracts/Inno.Runtime.Contracts/RuntimeSubsystem.cs#L186) | Releases this owner's registrations and resources exactly once. |
-| [`void Inno.Runtime.Contracts.RuntimeSubsystem.EndFrame(Inno.Runtime.Contracts.RuntimeFrame frame)`](../../src/runtime/contracts/Inno.Runtime.Contracts/RuntimeSubsystem.cs#L160) | Ends one frame and releases frame-scoped state. |
-| [`void Inno.Runtime.Contracts.RuntimeSubsystem.FixedUpdate(Inno.Runtime.Contracts.RuntimeFixedFrame frame)`](../../src/runtime/contracts/Inno.Runtime.Contracts/RuntimeSubsystem.cs#L94) | Advances one deterministic simulation step. |
-| [`void Inno.Runtime.Contracts.RuntimeSubsystem.LateUpdate(Inno.Runtime.Contracts.RuntimeFrame frame)`](../../src/runtime/contracts/Inno.Runtime.Contracts/RuntimeSubsystem.cs#L116) | Advances state that depends on completed variable simulation. |
+| [`Inno.Core.Execution.LifetimeScope Inno.Runtime.Contracts.RuntimeSubsystem.lifetime`](../../src/runtime/contracts/Inno.Runtime.Contracts/RuntimeSubsystem.cs#L30) | Gets resources and cancellation owned exclusively by this subsystem. |
+| [`Inno.Runtime.Contracts.RuntimeSubsystem`](../../src/runtime/contracts/Inno.Runtime.Contracts/RuntimeSubsystem.cs#L10) | Enforces one control-thread lifecycle while derived runtimes compose their own domain services. |
+| [`bool Inno.Runtime.Contracts.RuntimeSubsystem.isStarted`](../../src/runtime/contracts/Inno.Runtime.Contracts/RuntimeSubsystem.cs#L25) | Gets whether this instance is attached to an owner and has not retired. |
 | [`virtual void Inno.Runtime.Contracts.RuntimeSubsystem.OnBeginFrame(Inno.Runtime.Contracts.RuntimeFrame frame)`](../../src/runtime/contracts/Inno.Runtime.Contracts/RuntimeSubsystem.cs#L235) | Captures snapshots and binds service façades. |
 | [`virtual void Inno.Runtime.Contracts.RuntimeSubsystem.OnCompleteOutput(Inno.Runtime.Contracts.RuntimeFrame frame)`](../../src/runtime/contracts/Inno.Runtime.Contracts/RuntimeSubsystem.cs#L277) | Submits output and closes output-specific temporary resources. |
 | [`virtual void Inno.Runtime.Contracts.RuntimeSubsystem.OnEndFrame(Inno.Runtime.Contracts.RuntimeFrame frame)`](../../src/runtime/contracts/Inno.Runtime.Contracts/RuntimeSubsystem.cs#L284) | Finalizes control-thread frame state before execution bindings are revoked. |
@@ -164,12 +158,18 @@ Required consumer 则拒绝 owner。重复 ID、cycle、生命周期错误始终
 | [`virtual void Inno.Runtime.Contracts.RuntimeSubsystem.OnStart()`](../../src/runtime/contracts/Inno.Runtime.Contracts/RuntimeSubsystem.cs#L228) | Acquires resources after dependencies have started. |
 | [`virtual void Inno.Runtime.Contracts.RuntimeSubsystem.OnStop()`](../../src/runtime/contracts/Inno.Runtime.Contracts/RuntimeSubsystem.cs#L288) | Releases domain resources, including allocations made before attachment. |
 | [`virtual void Inno.Runtime.Contracts.RuntimeSubsystem.OnUpdate(Inno.Runtime.Contracts.RuntimeFrame frame)`](../../src/runtime/contracts/Inno.Runtime.Contracts/RuntimeSubsystem.cs#L249) | Advances domain state on the variable clock. |
+| [`void Inno.Runtime.Contracts.RuntimeSubsystem.AfterRender(Inno.Runtime.Contracts.RuntimeFrame frame)`](../../src/runtime/contracts/Inno.Runtime.Contracts/RuntimeSubsystem.cs#L149) | Finalizes frame output even when rendering fails. |
+| [`void Inno.Runtime.Contracts.RuntimeSubsystem.Attach()`](../../src/runtime/contracts/Inno.Runtime.Contracts/RuntimeSubsystem.cs#L41) | Acquires session resources after every dependency has attached. |
+| [`void Inno.Runtime.Contracts.RuntimeSubsystem.BeforeRender(Inno.Runtime.Contracts.RuntimeFrame frame)`](../../src/runtime/contracts/Inno.Runtime.Contracts/RuntimeSubsystem.cs#L127) | Prepares frame output after simulation has completed. |
+| [`void Inno.Runtime.Contracts.RuntimeSubsystem.BeginFrame(Inno.Runtime.Contracts.RuntimeFrame frame)`](../../src/runtime/contracts/Inno.Runtime.Contracts/RuntimeSubsystem.cs#L65) | Begins one frame before event dispatch and simulation. |
+| [`void Inno.Runtime.Contracts.RuntimeSubsystem.Detach()`](../../src/runtime/contracts/Inno.Runtime.Contracts/RuntimeSubsystem.cs#L176) | Releases attached session resources before dependencies detach. |
+| [`void Inno.Runtime.Contracts.RuntimeSubsystem.Dispose()`](../../src/runtime/contracts/Inno.Runtime.Contracts/RuntimeSubsystem.cs#L186) | Releases this owner's registrations and resources exactly once. |
+| [`void Inno.Runtime.Contracts.RuntimeSubsystem.EndFrame(Inno.Runtime.Contracts.RuntimeFrame frame)`](../../src/runtime/contracts/Inno.Runtime.Contracts/RuntimeSubsystem.cs#L160) | Ends one frame and releases frame-scoped state. |
+| [`void Inno.Runtime.Contracts.RuntimeSubsystem.FixedUpdate(Inno.Runtime.Contracts.RuntimeFixedFrame frame)`](../../src/runtime/contracts/Inno.Runtime.Contracts/RuntimeSubsystem.cs#L94) | Advances one deterministic simulation step. |
+| [`void Inno.Runtime.Contracts.RuntimeSubsystem.LateUpdate(Inno.Runtime.Contracts.RuntimeFrame frame)`](../../src/runtime/contracts/Inno.Runtime.Contracts/RuntimeSubsystem.cs#L116) | Advances state that depends on completed variable simulation. |
 | [`void Inno.Runtime.Contracts.RuntimeSubsystem.OwnFrameScope(System.IDisposable scope)`](../../src/runtime/contracts/Inno.Runtime.Contracts/RuntimeSubsystem.cs#L218) | Registers a binding that must close even when a frame hook fails. |
 | [`void Inno.Runtime.Contracts.RuntimeSubsystem.Render(Inno.Runtime.Contracts.RuntimeFrame frame)`](../../src/runtime/contracts/Inno.Runtime.Contracts/RuntimeSubsystem.cs#L138) | Produces frame output owned by this subsystem. |
 | [`void Inno.Runtime.Contracts.RuntimeSubsystem.Update(Inno.Runtime.Contracts.RuntimeFrame frame)`](../../src/runtime/contracts/Inno.Runtime.Contracts/RuntimeSubsystem.cs#L105) | Advances variable simulation state. |
-| [`bool Inno.Runtime.Contracts.RuntimeSubsystem.isStarted`](../../src/runtime/contracts/Inno.Runtime.Contracts/RuntimeSubsystem.cs#L25) | Gets whether this instance is attached to an owner and has not retired. |
-| [`Inno.Core.Execution.LifetimeScope Inno.Runtime.Contracts.RuntimeSubsystem.lifetime`](../../src/runtime/contracts/Inno.Runtime.Contracts/RuntimeSubsystem.cs#L30) | Gets resources and cancellation owned exclusively by this subsystem. |
-| [`Inno.Runtime.Contracts.RuntimeSubsystem`](../../src/runtime/contracts/Inno.Runtime.Contracts/RuntimeSubsystem.cs#L10) | Enforces one control-thread lifecycle while derived runtimes compose their own domain services. |
 
 ### `Inno.Runtime.Contracts.RuntimeSubsystemCatalogAttribute`
 
@@ -181,71 +181,69 @@ Required consumer 则拒绝 owner。重复 ID、cycle、生命周期错误始终
 
 | 当前声明 | 行为 |
 | --- | --- |
-| [`Inno.Runtime.Contracts.RuntimeSubsystemContext.RuntimeSubsystemContext(Inno.Core.Events.EventDispatcher events, Inno.Core.Diagnostics.DiagnosticHub diagnostics, Inno.Core.Identity.IdentityAllocator identities, Inno.Extensibility.Types.TypeCatalog types, Inno.Core.Execution.LifetimeScope resources, Inno.Runtime.Contracts.RuntimeSubsystemLifetime lifetime, bool isEditMode = false, System.Collections.Generic.IEnumerable<Inno.Runtime.Contracts.RuntimeCapabilityId>? capabilities = null)`](../../src/runtime/contracts/Inno.Runtime.Contracts/RuntimeSubsystemContext.cs#L48) | Creates the explicit construction boundary for a host or session pipeline. |
-| [`System.Collections.Generic.IReadOnlySet<Inno.Runtime.Contracts.RuntimeCapabilityId> Inno.Runtime.Contracts.RuntimeSubsystemContext.capabilities`](../../src/runtime/contracts/Inno.Runtime.Contracts/RuntimeSubsystemContext.cs#L102) | Gets the immutable capabilities verified by the owner, never a mutable service container. |
 | [`Inno.Core.Diagnostics.DiagnosticHub Inno.Runtime.Contracts.RuntimeSubsystemContext.diagnostics`](../../src/runtime/contracts/Inno.Runtime.Contracts/RuntimeSubsystemContext.cs#L77) | Gets the shared diagnostic state owner. |
 | [`Inno.Core.Events.EventDispatcher Inno.Runtime.Contracts.RuntimeSubsystemContext.events`](../../src/runtime/contracts/Inno.Runtime.Contracts/RuntimeSubsystemContext.cs#L73) | Gets the owner-thread event dispatcher. |
-| [`Inno.Core.Identity.IdentityAllocator Inno.Runtime.Contracts.RuntimeSubsystemContext.identities`](../../src/runtime/contracts/Inno.Runtime.Contracts/RuntimeSubsystemContext.cs#L81) | Gets the isolated live-object identity domain. |
-| [`bool Inno.Runtime.Contracts.RuntimeSubsystemContext.isEditMode`](../../src/runtime/contracts/Inno.Runtime.Contracts/RuntimeSubsystemContext.cs#L97) | Gets whether scaled simulation should be disabled for authoring. |
-| [`Inno.Runtime.Contracts.RuntimeSubsystemLifetime Inno.Runtime.Contracts.RuntimeSubsystemContext.lifetime`](../../src/runtime/contracts/Inno.Runtime.Contracts/RuntimeSubsystemContext.cs#L93) | Gets the owner scope used to validate factory lifetimes. |
 | [`Inno.Core.Execution.LifetimeScope Inno.Runtime.Contracts.RuntimeSubsystemContext.resources`](../../src/runtime/contracts/Inno.Runtime.Contracts/RuntimeSubsystemContext.cs#L89) | Gets resources owned by this pipeline, not by a global container. |
+| [`Inno.Core.Identity.IdentityAllocator Inno.Runtime.Contracts.RuntimeSubsystemContext.identities`](../../src/runtime/contracts/Inno.Runtime.Contracts/RuntimeSubsystemContext.cs#L81) | Gets the isolated live-object identity domain. |
 | [`Inno.Extensibility.Types.TypeCatalog Inno.Runtime.Contracts.RuntimeSubsystemContext.types`](../../src/runtime/contracts/Inno.Runtime.Contracts/RuntimeSubsystemContext.cs#L85) | Gets the current foundation type catalog. |
 | [`Inno.Runtime.Contracts.RuntimeSubsystemContext`](../../src/runtime/contracts/Inno.Runtime.Contracts/RuntimeSubsystemContext.cs#L16) | Exposes only foundation services and owner metadata, never a complete RuntimeSession or domain service locator. |
+| [`Inno.Runtime.Contracts.RuntimeSubsystemContext.RuntimeSubsystemContext(Inno.Core.Events.EventDispatcher events, Inno.Core.Diagnostics.DiagnosticHub diagnostics, Inno.Core.Identity.IdentityAllocator identities, Inno.Extensibility.Types.TypeCatalog types, Inno.Core.Execution.LifetimeScope resources, Inno.Runtime.Contracts.RuntimeSubsystemLifetime lifetime, bool isEditMode = false, System.Collections.Generic.IEnumerable<Inno.Runtime.Contracts.RuntimeCapabilityId>? capabilities = null)`](../../src/runtime/contracts/Inno.Runtime.Contracts/RuntimeSubsystemContext.cs#L48) | Creates the explicit construction boundary for a host or session pipeline. |
+| [`Inno.Runtime.Contracts.RuntimeSubsystemLifetime Inno.Runtime.Contracts.RuntimeSubsystemContext.lifetime`](../../src/runtime/contracts/Inno.Runtime.Contracts/RuntimeSubsystemContext.cs#L93) | Gets the owner scope used to validate factory lifetimes. |
+| [`System.Collections.Generic.IReadOnlySet<Inno.Runtime.Contracts.RuntimeCapabilityId> Inno.Runtime.Contracts.RuntimeSubsystemContext.capabilities`](../../src/runtime/contracts/Inno.Runtime.Contracts/RuntimeSubsystemContext.cs#L102) | Gets the immutable capabilities verified by the owner, never a mutable service container. |
+| [`bool Inno.Runtime.Contracts.RuntimeSubsystemContext.isEditMode`](../../src/runtime/contracts/Inno.Runtime.Contracts/RuntimeSubsystemContext.cs#L97) | Gets whether scaled simulation should be disabled for authoring. |
 
 ### `Inno.Runtime.Contracts.RuntimeSubsystemDescriptor`
 
 | 当前声明 | 行为 |
 | --- | --- |
+| [`Inno.Runtime.Contracts.RuntimeSubsystemDescriptor`](../../src/runtime/contracts/Inno.Runtime.Contracts/RuntimeSubsystemDescriptor.cs#L10) | Describes stable ordering and dependency requirements for one runtime subsystem. |
 | [`Inno.Runtime.Contracts.RuntimeSubsystemDescriptor.RuntimeSubsystemDescriptor(Inno.Runtime.Contracts.RuntimeSubsystemId id, int order = 0, System.Collections.Generic.IReadOnlyList<Inno.Runtime.Contracts.RuntimeSubsystemId>? dependencies = null, Inno.Runtime.Contracts.RuntimeSubsystemLifetime lifetime = Inno.Runtime.Contracts.RuntimeSubsystemLifetime.Session, Inno.Runtime.Contracts.RuntimeSubsystemRequirement requirement = Inno.Runtime.Contracts.RuntimeSubsystemRequirement.Required, System.Collections.Generic.IReadOnlyList<Inno.Runtime.Contracts.RuntimeCapabilityId>? requiredCapabilities = null)`](../../src/runtime/contracts/Inno.Runtime.Contracts/RuntimeSubsystemDescriptor.cs#L36) | Creates an immutable runtime subsystem descriptor. |
-| [`System.Collections.Generic.IReadOnlyList<Inno.Runtime.Contracts.RuntimeSubsystemId> Inno.Runtime.Contracts.RuntimeSubsystemDescriptor.dependencies`](../../src/runtime/contracts/Inno.Runtime.Contracts/RuntimeSubsystemDescriptor.cs#L86) | Gets the immutable required-subsystem identifiers. |
 | [`Inno.Runtime.Contracts.RuntimeSubsystemId Inno.Runtime.Contracts.RuntimeSubsystemDescriptor.id`](../../src/runtime/contracts/Inno.Runtime.Contracts/RuntimeSubsystemDescriptor.cs#L71) | Gets the unique subsystem protocol identifier. |
 | [`Inno.Runtime.Contracts.RuntimeSubsystemLifetime Inno.Runtime.Contracts.RuntimeSubsystemDescriptor.lifetime`](../../src/runtime/contracts/Inno.Runtime.Contracts/RuntimeSubsystemDescriptor.cs#L76) | Gets the exclusive owner scope required by this subsystem. |
-| [`int Inno.Runtime.Contracts.RuntimeSubsystemDescriptor.order`](../../src/runtime/contracts/Inno.Runtime.Contracts/RuntimeSubsystemDescriptor.cs#L81) | Gets the deterministic order used after dependency constraints. |
-| [`System.Collections.Generic.IReadOnlyList<Inno.Runtime.Contracts.RuntimeCapabilityId> Inno.Runtime.Contracts.RuntimeSubsystemDescriptor.requiredCapabilities`](../../src/runtime/contracts/Inno.Runtime.Contracts/RuntimeSubsystemDescriptor.cs#L96) | Gets the immutable capability prerequisites checked before allocating subsystem resources. |
 | [`Inno.Runtime.Contracts.RuntimeSubsystemRequirement Inno.Runtime.Contracts.RuntimeSubsystemDescriptor.requirement`](../../src/runtime/contracts/Inno.Runtime.Contracts/RuntimeSubsystemDescriptor.cs#L91) | Gets whether this subsystem must start for its owner to become available. |
-| [`Inno.Runtime.Contracts.RuntimeSubsystemDescriptor`](../../src/runtime/contracts/Inno.Runtime.Contracts/RuntimeSubsystemDescriptor.cs#L10) | Describes stable ordering and dependency requirements for one runtime subsystem. |
+| [`System.Collections.Generic.IReadOnlyList<Inno.Runtime.Contracts.RuntimeCapabilityId> Inno.Runtime.Contracts.RuntimeSubsystemDescriptor.requiredCapabilities`](../../src/runtime/contracts/Inno.Runtime.Contracts/RuntimeSubsystemDescriptor.cs#L96) | Gets the immutable capability prerequisites checked before allocating subsystem resources. |
+| [`System.Collections.Generic.IReadOnlyList<Inno.Runtime.Contracts.RuntimeSubsystemId> Inno.Runtime.Contracts.RuntimeSubsystemDescriptor.dependencies`](../../src/runtime/contracts/Inno.Runtime.Contracts/RuntimeSubsystemDescriptor.cs#L86) | Gets the immutable required-subsystem identifiers. |
+| [`int Inno.Runtime.Contracts.RuntimeSubsystemDescriptor.order`](../../src/runtime/contracts/Inno.Runtime.Contracts/RuntimeSubsystemDescriptor.cs#L81) | Gets the deterministic order used after dependency constraints. |
 
 ### `Inno.Runtime.Contracts.RuntimeSubsystemId`
 
 | 当前声明 | 行为 |
 | --- | --- |
-| [`Inno.Runtime.Contracts.RuntimeSubsystemId.RuntimeSubsystemId(string value)`](../../src/runtime/contracts/Inno.Runtime.Contracts/RuntimeSubsystemId.cs#L19) | Creates a stable runtime subsystem identifier. |
-| [`override string Inno.Runtime.Contracts.RuntimeSubsystemId.ToString()`](../../src/runtime/contracts/Inno.Runtime.Contracts/RuntimeSubsystemId.cs#L41) | Formats the subsystem identifier for diagnostics. |
-| [`bool Inno.Runtime.Contracts.RuntimeSubsystemId.isValid`](../../src/runtime/contracts/Inno.Runtime.Contracts/RuntimeSubsystemId.cs#L33) | Gets whether this identifier contains a usable protocol value. |
-| [`string Inno.Runtime.Contracts.RuntimeSubsystemId.value`](../../src/runtime/contracts/Inno.Runtime.Contracts/RuntimeSubsystemId.cs#L28) | Gets the stable protocol value. |
 | [`Inno.Runtime.Contracts.RuntimeSubsystemId`](../../src/runtime/contracts/Inno.Runtime.Contracts/RuntimeSubsystemId.cs#L8) | Identifies one backend-neutral runtime subsystem protocol. |
+| [`Inno.Runtime.Contracts.RuntimeSubsystemId.RuntimeSubsystemId(string value)`](../../src/runtime/contracts/Inno.Runtime.Contracts/RuntimeSubsystemId.cs#L19) | Creates a stable runtime subsystem identifier. |
+| [`bool Inno.Runtime.Contracts.RuntimeSubsystemId.isValid`](../../src/runtime/contracts/Inno.Runtime.Contracts/RuntimeSubsystemId.cs#L33) | Gets whether this identifier contains a usable protocol value. |
+| [`override string Inno.Runtime.Contracts.RuntimeSubsystemId.ToString()`](../../src/runtime/contracts/Inno.Runtime.Contracts/RuntimeSubsystemId.cs#L41) | Formats the subsystem identifier for diagnostics. |
+| [`string Inno.Runtime.Contracts.RuntimeSubsystemId.value`](../../src/runtime/contracts/Inno.Runtime.Contracts/RuntimeSubsystemId.cs#L28) | Gets the stable protocol value. |
 
 ### `Inno.Runtime.Contracts.RuntimeSubsystemLifetime`
 
 | 当前声明 | 行为 |
 | --- | --- |
+| [`Inno.Runtime.Contracts.RuntimeSubsystemLifetime`](../../src/runtime/contracts/Inno.Runtime.Contracts/RuntimeSubsystemLifetime.cs#L6) | Identifies the exclusive owner that creates and retires a stable engine subsystem. |
 | [`Inno.Runtime.Contracts.RuntimeSubsystemLifetime.Host`](../../src/runtime/contracts/Inno.Runtime.Contracts/RuntimeSubsystemLifetime.cs#L11) | The subsystem is shared by sessions and retires with the application host. |
 | [`Inno.Runtime.Contracts.RuntimeSubsystemLifetime.Session`](../../src/runtime/contracts/Inno.Runtime.Contracts/RuntimeSubsystemLifetime.cs#L15) | The subsystem belongs to one isolated Edit, Play or Player session. |
-| [`Inno.Runtime.Contracts.RuntimeSubsystemLifetime`](../../src/runtime/contracts/Inno.Runtime.Contracts/RuntimeSubsystemLifetime.cs#L6) | Identifies the exclusive owner that creates and retires a stable engine subsystem. |
 
 ### `Inno.Runtime.Contracts.RuntimeSubsystemRegistrationAttribute`
 
 | 当前声明 | 行为 |
 | --- | --- |
+| [`Inno.Runtime.Contracts.RuntimeSubsystemRegistrationAttribute`](../../src/runtime/contracts/Inno.Runtime.Contracts/RuntimeSubsystemRegistrationAttribute.cs#L8) | Declares a strongly typed composition method for build-time subsystem catalog generation. |
 | [`Inno.Runtime.Contracts.RuntimeSubsystemRegistrationAttribute.RuntimeSubsystemRegistrationAttribute(string id)`](../../src/runtime/contracts/Inno.Runtime.Contracts/RuntimeSubsystemRegistrationAttribute.cs#L17) | Declares the stable ID returned by this method's subsystem factory. |
 | [`string Inno.Runtime.Contracts.RuntimeSubsystemRegistrationAttribute.id`](../../src/runtime/contracts/Inno.Runtime.Contracts/RuntimeSubsystemRegistrationAttribute.cs#L26) | Gets the stable descriptor ID checked by the generated catalog. |
-| [`Inno.Runtime.Contracts.RuntimeSubsystemRegistrationAttribute`](../../src/runtime/contracts/Inno.Runtime.Contracts/RuntimeSubsystemRegistrationAttribute.cs#L8) | Declares a strongly typed composition method for build-time subsystem catalog generation. |
 
 ### `Inno.Runtime.Contracts.RuntimeSubsystemRequirement`
 
 | 当前声明 | 行为 |
 | --- | --- |
+| [`Inno.Runtime.Contracts.RuntimeSubsystemRequirement`](../../src/runtime/contracts/Inno.Runtime.Contracts/RuntimeSubsystemRequirement.cs#L6) | Selects startup failure behavior without changing runtime-frame or retirement error semantics. |
 | [`Inno.Runtime.Contracts.RuntimeSubsystemRequirement.Optional`](../../src/runtime/contracts/Inno.Runtime.Contracts/RuntimeSubsystemRequirement.cs#L16) | A fully compensated startup may remain unavailable with diagnostics; cleanup failures still reject the owner. |
 | [`Inno.Runtime.Contracts.RuntimeSubsystemRequirement.Required`](../../src/runtime/contracts/Inno.Runtime.Contracts/RuntimeSubsystemRequirement.cs#L11) | Missing capabilities, dependencies or failed startup reject the entire owner. |
-| [`Inno.Runtime.Contracts.RuntimeSubsystemRequirement`](../../src/runtime/contracts/Inno.Runtime.Contracts/RuntimeSubsystemRequirement.cs#L6) | Selects startup failure behavior without changing runtime-frame or retirement error semantics. |
 
 ## 项目依赖
 
-- [Inno.Core.Events](../core/Inno.Core.Events.md)：项目引用；公开签名可见性由语义边界检查确认。
-- [Inno.Core.Diagnostics](../core/Inno.Core.Diagnostics.md)：项目引用；公开签名可见性由语义边界检查确认。
-- [Inno.Core.Execution](../core/Inno.Core.Execution.md)：项目引用；公开签名可见性由语义边界检查确认。
-- [Inno.Core.Identity](../core/Inno.Core.Identity.md)：项目引用；公开签名可见性由语义边界检查确认。
-- [Inno.Extensibility.Types](../extensibility/Inno.Extensibility.Types.md)：项目引用；公开签名可见性由语义边界检查确认。
-- [Inno.Extensibility.Catalogs](../extensibility/Inno.Extensibility.Catalogs.md)：项目引用；公开签名可见性由语义边界检查确认。
-
-共同 MSBuild 注入的 analyzer 与编译规则属于构建依赖，完整有效项目图记录在本轮验收证据中。
+- [Inno.Core.Events](../core/Inno.Core.Events.md)：公开引用边界由实际签名核对。
+- [Inno.Core.Diagnostics](../core/Inno.Core.Diagnostics.md)：公开引用边界由实际签名核对。
+- [Inno.Core.Execution](../core/Inno.Core.Execution.md)：公开引用边界由实际签名核对。
+- [Inno.Core.Identity](../core/Inno.Core.Identity.md)：公开引用边界由实际签名核对。
+- [Inno.Extensibility.Types](../extensibility/Inno.Extensibility.Types.md)：公开引用边界由实际签名核对。
+- [Inno.Extensibility.Catalogs](../extensibility/Inno.Extensibility.Catalogs.md)：公开引用边界由实际签名核对。

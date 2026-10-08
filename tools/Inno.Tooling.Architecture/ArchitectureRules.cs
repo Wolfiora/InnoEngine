@@ -10,7 +10,7 @@ namespace Inno.Tooling.Architecture;
 
 internal static partial class ArchitectureRules
 {
-    private static readonly string[] S_SCAN_ROOTS = ["src", "native", "build", "tests"];
+    private static readonly string[] S_SCAN_ROOTS = ["src", "backends", "platforms", "build", "tests"];
     private static readonly string[] S_FORBIDDEN_PLAYER_PROJECT_FRAGMENTS =
     [
         "Inno.Editor.",
@@ -44,7 +44,9 @@ internal static partial class ArchitectureRules
         "Inno.Audio.Scene",
         "Inno.Rendering.Core",
         "Inno.Native.Dll",
-        "Inno.Adapter.Input.Sdl3"
+        "Inno.Adapter.Input.Sdl3",
+        "Inno.Editor.Application", "Inno.Player", "Inno.Build.Toolchains.Host", "Inno.Build.Toolchains.Browser",
+        "Inno.Build.SupportPacks", "Inno.Build.Platform.Windows", "Inno.Build.Platform.MacOS", "Inno.Build.Platform.Browser"
     ];
     private static readonly string[] S_CONCRETE_ADAPTER_MARKERS =
     [
@@ -65,6 +67,7 @@ internal static partial class ArchitectureRules
         ICollection<string> failures
     ) {
         ValidateHostIsolation(repositoryRoot, failures);
+        PlatformOwnershipValidator.Validate(repositoryRoot, failures);
         ValidateBindingTargetOutputs(repositoryRoot, failures);
         ValidateRepositorySources(repositoryRoot, failures);
         Dictionary<string, ProjectNode> graph = LoadProjectGraph(repositoryRoot, failures);
@@ -75,15 +78,20 @@ internal static partial class ArchitectureRules
         ValidateRemovedProjects(repositoryRoot, failures);
     }
 
+    internal static bool IsForbiddenPlayerDependency(string assemblyName) => S_FORBIDDEN_PLAYER_PROJECT_FRAGMENTS
+        .Any(fragment => assemblyName.Contains(fragment, StringComparison.Ordinal))
+        || assemblyName.StartsWith("Inno.Integration.", StringComparison.Ordinal)
+        && assemblyName.EndsWith(".Bgfx", StringComparison.Ordinal);
+
     private static void ValidateHostIsolation(
         string repositoryRoot,
         ICollection<string> failures
     ) {
         var executables = new HashSet<string>(StringComparer.Ordinal)
         {
-            "Inno.Editor.Application", "Inno.Player", "Inno.Player.Browser", "Inno.Build.Cli"
+            "Inno.Editor.Windows", "Inno.Editor.MacOS", "Inno.Player.Windows", "Inno.Player.MacOS", "Inno.Player.Browser", "Inno.Build.Cli"
         };
-        foreach (string rootName in new[] { "src", "native", "build", "tools" })
+        foreach (string rootName in new[] { "src", "backends", "platforms", "build", "tools" })
         {
             foreach (string project in EnumerateFiles(Path.Combine(repositoryRoot, rootName), "*.csproj"))
             {
@@ -107,7 +115,7 @@ internal static partial class ArchitectureRules
                     failures.Add($"{Relative(repositoryRoot, sourcePath)}: shared code must receive host capabilities through contracts.");
             }
         }
-        string browserProject = Path.Combine(repositoryRoot, "src/composition/player/Inno.Player.Browser/Inno.Player.Browser.csproj");
+        string browserProject = Path.Combine(repositoryRoot, "platforms/Browser/player/Inno.Player.Browser/Inno.Player.Browser.csproj");
         if (File.Exists(browserProject) &&
             XDocument.Load(browserProject).Descendants("Compile").Any(static item => item.Attribute("Link") is not null))
             failures.Add("Inno.Player.Browser: shared Player source must be consumed through Inno.Player.Runtime.");
@@ -117,10 +125,12 @@ internal static partial class ArchitectureRules
         string repositoryRoot,
         ICollection<string> failures
     ) {
-        string nativeRoot = Path.Combine(repositoryRoot, "native");
-        if (!Directory.Exists(nativeRoot))
+        string backendRoot = Path.Combine(repositoryRoot, "backends");
+        if (!Directory.Exists(backendRoot))
             return;
-        foreach (string owner in Directory.EnumerateDirectories(nativeRoot))
+        foreach (string owner in EnumerateFiles(backendRoot, "*.csproj")
+            .Where(static path => Path.GetFileName(path).StartsWith("Inno.Native.", StringComparison.Ordinal))
+            .Select(static path => Path.GetDirectoryName(path)!))
         {
             string bindings = Path.Combine(owner, "Bindings");
             if (!Directory.Exists(bindings))
@@ -169,7 +179,7 @@ internal static partial class ArchitectureRules
                 if (IsGenerated(source))
                     continue;
                 ValidateForbiddenImplementationNames(relative, source, failures);
-                if (relative.StartsWith("tests/", StringComparison.Ordinal))
+                if ((relative.StartsWith("tests/", StringComparison.Ordinal) || relative.Contains("/tests/", StringComparison.Ordinal)))
                     ValidateTestSource(relative, source, failures);
                 else
                     ValidateProductionSource(relative, source, failures);
@@ -324,7 +334,7 @@ internal static partial class ArchitectureRules
                 {
                     bool permitted = node.relative switch
                     {
-                        "native/Inno.Native.ImGui/Bindings/Extension/Inno.Native.ImGui.BindingExtension.csproj"
+                        "backends/ImGui/native/Inno.Native.ImGui/Bindings/Extension/Inno.Native.ImGui.BindingExtension.csproj"
                             => include is "$(BindGenRoot)/src/BGCS/BGCS.csproj"
                                 or "$(BindGenRoot)/src/BGCS.Core/BGCS.Core.csproj",
                         "build/tasks/Inno.Build.Tasks/Inno.Build.Tasks.csproj"
@@ -338,9 +348,12 @@ internal static partial class ArchitectureRules
                         failures.Add($"{node.relative}: external binding dependency '{include}' is unavailable or outside its generation boundary.");
                     continue;
                 }
-                if (include == "$(BGCSRuntimeProject)" &&
-                    (string?)reference.Attribute("Condition") == "'$(BGCSRuntimeProject)' != ''")
+                if (include == "$(BGCSRuntimeProject)")
+                {
+                    if (!node.relative.StartsWith("backends/", StringComparison.Ordinal))
+                        failures.Add($"{node.relative}: the interop runtime dependency belongs to a backend boundary.");
                     continue;
+                }
                 string normalizedInclude = include
                     .Replace('\\', Path.DirectorySeparatorChar)
                     .Replace('/', Path.DirectorySeparatorChar);
@@ -379,6 +392,9 @@ internal static partial class ArchitectureRules
         }
     }
 
+    private static bool IsNativeProject(string path) => path.StartsWith("backends/", StringComparison.Ordinal)
+        && path.Contains("/native/", StringComparison.Ordinal);
+
     private static void ValidateReferenceBoundary(
         ProjectNode project,
         ProjectNode target,
@@ -397,15 +413,15 @@ internal static partial class ArchitectureRules
             failures.Add($"{sourcePath}: rendering runtime cannot include authoring implementation {targetPath}.");
         if (project.name == "Inno.Rendering.Shaders" && target.name == "Inno.Rendering.Runtime")
             failures.Add($"{sourcePath}: shader authoring cannot depend on the runtime owner {targetPath}.");
-        if (project.name == "Inno.Adapter.Input" && (targetPath.StartsWith("native/", StringComparison.Ordinal)
+        if (project.name == "Inno.Adapter.Input" && (IsNativeProject(targetPath)
             || IsConcreteAdapter(target.name)))
             failures.Add($"{sourcePath}: shared event input cannot depend on native or platform adapters in {targetPath}.");
         if (project.name == "Inno.Build" && (targetPath.StartsWith("build/composition/", StringComparison.Ordinal)
             || targetPath.StartsWith("build/pipeline/Inno.Build.Platform.", StringComparison.Ordinal)
             || target.name == "Inno.Build.Managed.DotNet"))
             failures.Add($"{sourcePath}: the build pipeline must receive providers instead of referencing {targetPath}.");
-        if (sourcePath.StartsWith("native/", StringComparison.Ordinal) &&
-            !targetPath.StartsWith("native/", StringComparison.Ordinal))
+        if (IsNativeProject(sourcePath) &&
+            !IsNativeProject(targetPath))
         {
             failures.Add($"{sourcePath}: Native cannot reference upper-layer project {targetPath}.");
         }
@@ -424,7 +440,7 @@ internal static partial class ArchitectureRules
              string.Equals(project.name, "Inno.Rendering.Runtime", StringComparison.Ordinal)) &&
             (targetPath.StartsWith("build/", StringComparison.Ordinal) ||
              targetPath.StartsWith("src/adapters/", StringComparison.Ordinal) ||
-             targetPath.StartsWith("native/", StringComparison.Ordinal)))
+             IsNativeProject(targetPath)))
         {
             failures.Add($"{sourcePath}: backend-neutral Rendering cannot reference implementation project {targetPath}.");
         }
@@ -447,7 +463,7 @@ internal static partial class ArchitectureRules
              targetPath.StartsWith("src/runtime/", StringComparison.Ordinal) ||
              targetPath.StartsWith("src/composition/editor/", StringComparison.Ordinal) ||
              targetPath.StartsWith("src/services/platform/", StringComparison.Ordinal) ||
-             targetPath.StartsWith("native/", StringComparison.Ordinal)))
+             IsNativeProject(targetPath)))
         {
             failures.Add($"{sourcePath}: backend-neutral Audio cannot reference {targetPath}.");
         }
@@ -457,7 +473,7 @@ internal static partial class ArchitectureRules
              targetPath.StartsWith("src/services/rendering/", StringComparison.Ordinal) ||
              targetPath.StartsWith("src/services/audio/", StringComparison.Ordinal) ||
              targetPath.StartsWith("src/composition/editor/", StringComparison.Ordinal) ||
-             targetPath.StartsWith("native/", StringComparison.Ordinal)))
+             IsNativeProject(targetPath)))
         {
             failures.Add($"{sourcePath}: backend-neutral Animation cannot reference {targetPath}.");
         }
@@ -555,7 +571,7 @@ internal static partial class ArchitectureRules
         string solution = File.ReadAllText(Path.Combine(repositoryRoot, "InnoEngine.sln"));
         foreach (string removed in S_REMOVED_PROJECT_NAMES)
         {
-            if (solution.Contains(removed, StringComparison.Ordinal))
+            if (solution.Contains("= \"" + removed + "\",", StringComparison.Ordinal))
                 failures.Add($"InnoEngine.sln: removed project '{removed}' remains in the solution.");
             foreach (string projectPath in EnumerateFiles(repositoryRoot, "*.csproj"))
             {
@@ -596,7 +612,7 @@ internal static partial class ArchitectureRules
         ICollection<string> failures
     ) {
         ValidateHost("Inno.Player.Runtime");
-        ValidateHost("Inno.Editor.Application");
+        ValidateHost("Inno.Editor.Hosting");
 
         void ValidateHost(string projectName)
         {
@@ -675,6 +691,7 @@ internal static partial class ArchitectureRules
            name.StartsWith("Inno.Adapter.Presentation.ImGui.Sdl3", StringComparison.Ordinal) ||
            name.StartsWith("Inno.Build.Toolchains.Sdl3", StringComparison.Ordinal) ||
            name.StartsWith("Inno.Native.Sdl3", StringComparison.Ordinal) ||
+           name is "Inno.Integration.Windows.Sdl3" or "Inno.Integration.MacOS.Sdl3" or "Inno.Integration.Browser.Sdl3" ||
            name.EndsWith(".Tests", StringComparison.Ordinal);
 
     private static bool IsAllowedMiniAudioConsumer(string name)

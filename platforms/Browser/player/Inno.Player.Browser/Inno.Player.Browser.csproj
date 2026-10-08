@@ -1,0 +1,56 @@
+<Project>
+  <PropertyGroup>
+    <InnoProductId Condition="'$(InnoProductId)' == ''">player</InnoProductId>
+    <InnoProductTarget Condition="'$(InnoProductTarget)' == ''">browser-wasm</InnoProductTarget>
+    <InnoNativeTarget Condition="'$(InnoNativeTarget)' == ''">browser-wasm</InnoNativeTarget>
+    <InnoPrepareProductNative>false</InnoPrepareProductNative>
+    <InnoProductBuildProperties>$(MSBuildThisFileDirectory)../../build/Inno.Build.Browser/ProductBuild.props</InnoProductBuildProperties>
+  </PropertyGroup>
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk.WebAssembly" />
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <InnoGeneratePlayerComposition>true</InnoGeneratePlayerComposition>
+    <TargetFramework>net9.0-browser</TargetFramework>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <AssemblyName>Inno.Player.Browser</AssemblyName>
+    <RuntimeIdentifier>browser-wasm</RuntimeIdentifier>
+    <WasmBuildNative>true</WasmBuildNative>
+    <PublishTrimmed>true</PublishTrimmed>
+    <TrimMode>partial</TrimMode>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <EmccFlags>-sSUPPORT_LONGJMP=wasm -sMIN_WEBGL_VERSION=2 -sMAX_WEBGL_VERSION=2 -sFULL_ES3=1</EmccFlags>
+  </PropertyGroup>
+  <Target Name="ValidateBrowserNativeDeployment" BeforeTargets="PrepareForPublish;Publish">
+    <Error Condition="'$(InnoBrowserNativeRoot)' == ''" Text="Browser publication requires an explicit native product closure. Use Inno.Build.Cli to build or export the Player." />
+    <Error Condition="'$(InnoBrowserNativeRoot)' != '' and !Exists('$(InnoBrowserNativeRoot)')" Text="The selected browser native product directory is missing: $(InnoBrowserNativeRoot)" />
+  </Target>
+  <Target Name="ValidateBrowserBuildClosure" BeforeTargets="PrepareForBuild" Condition="'$(DesignTimeBuild)' != 'true'">
+    <Error Condition="'$(InnoNativeBindingSelection)' == '' or '$(InnoNativeBuildFingerprint)' == ''" Text="Browser compilation requires an explicit target binding closure and its fingerprint. Use Inno.Build.Cli support-pack or game to prepare the selected SDK and native inputs." />
+  </Target>
+  <Target Name="ValidateBrowserPublicationInputs" BeforeTargets="PrepareForBuild" Condition="'$(_IsPublishing)' == 'true'" DependsOnTargets="ValidateBrowserNativeDeployment" />
+  <ItemGroup Condition="'$(InnoBrowserGameManagedRoot)' != ''">
+    <_BrowserGameAssembly Include="$(InnoBrowserGameManagedRoot)/*.dll" />
+    <Reference Include="@(_BrowserGameAssembly)">
+      <Private>true</Private>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../integrations/Inno.Integration.Browser.Sdl3/Inno.Integration.Browser.Sdl3.csproj" PrivateAssets="compile" />
+
+    <ProjectReference Include="../../../../src/composition/player/Inno.Player.Runtime/Inno.Player.Runtime.csproj" />
+    <ProjectReference Include="../../../../src/composition/adapters/Inno.Adapter.Default/Inno.Adapter.Default.csproj" />
+    <ProjectReference Include="../../runtime/Inno.Adapter.Storage.Browser/Inno.Adapter.Storage.Browser.csproj" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(InnoBrowserNativeRoot)' != ''">
+    <NativeFileReference Include="$(InnoBrowserNativeRoot)/**/*.a" />
+    <NativeFileReference Include="../../build/Inno.Build.Browser/Native/wasm_sjlj_shim.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <CompilerVisibleProperty Include="InnoGeneratePlayerComposition" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../../../src/foundation/extensibility/Inno.Extensibility.Catalogs/Inno.Extensibility.Catalogs.csproj" />
+  </ItemGroup>
+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk.WebAssembly" />
+</Project>

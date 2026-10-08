@@ -15,19 +15,19 @@ public interface IPlayerSupportPackSource : IPlayerSupportPackValidator
     BuildTargetId target { get; }
 
     /// <summary>
-    /// Builds the complete pack in the supplied isolated directory.
+    /// Validates discovery inputs and freezes a plan before publication output exists.
     /// </summary>
     /// <param name="context">
-    /// The source checkout, staging directory and selected SDK executable.
+    /// The source checkout and host used for read-only SDK discovery.
     /// </param>
     /// <param name="cancellationToken">
     /// Cancels preparation before installation.
     /// </param>
     /// <returns>
-    /// Completion after all required runtime and compiler inputs are prepared.
+    /// A frozen plan with no running work; missing tools and unsupported hosts fail here.
     /// </returns>
-    ValueTask PrepareAsync(
-        PlayerSupportPackBuildContext context,
+    ValueTask<PlayerSupportPackPlan> CreatePlanAsync(
+        PlayerSupportPackPlanningContext context,
         CancellationToken cancellationToken
     );
 }

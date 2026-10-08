@@ -1,6 +1,6 @@
 # Inno.Adapter.Storage
 
-[Storage 索引](README.md) · [中立 Storage](Inno.Storage.md) · [FileSystem implementation](Inno.Adapter.Storage.FileSystem.md)
+[Storage 索引](README.md) · [中立 Storage](Inno.Storage.md) · [FileSystem implementation](../backends/FileSystem/Inno.Adapter.Storage.FileSystem.md)
 
 该项目定义应用存储 Adapter family，不包含文件系统路径实现。
 
@@ -45,49 +45,47 @@ provider/catalog 接收 StorageScope。逻辑 namespace 与物理布局分开；
 
 ## 当前源码公开 API 清单
 
-以下仅列出当前程序集自己声明的 public/protected 契约；继承成员遵循所属基类页面。internal/private 实现不作为稳定公开 API。签名依据当前源码语义模型生成，行为、参数、异常与所有权说明同时以对应英文 XML 为准。
+只列当前源码的 public/protected 表面；内部实现不作为稳定 API。参数、返回、失败和 owner 以英文 XML 为准。
 
 ### `Inno.Adapter.Storage.IStorageBackendFactory`
 
 | 当前声明 | 行为 |
 | --- | --- |
+| [`Inno.Adapter.Storage.IStorageBackendFactory`](../../src/adapters/storage/Inno.Adapter.Storage/IStorageBackendFactory.cs#L9) | Creates isolated application-storage instances from explicit backend selections. |
 | [`Inno.Storage.IApplicationStorage Inno.Adapter.Storage.IStorageBackendFactory.CreateStorage(Inno.Adapter.Storage.StorageBackendId backend, Inno.Storage.StorageScope scope)`](../../src/adapters/storage/Inno.Adapter.Storage/IStorageBackendFactory.cs#L31) | Creates isolated storage for a logical application namespace. |
 | [`System.Collections.Generic.IReadOnlyList<Inno.Adapter.Storage.StorageBackendId> Inno.Adapter.Storage.IStorageBackendFactory.supportedBackends`](../../src/adapters/storage/Inno.Adapter.Storage/IStorageBackendFactory.cs#L14) | Gets the exact registrations available in this composition snapshot. |
-| [`Inno.Adapter.Storage.IStorageBackendFactory`](../../src/adapters/storage/Inno.Adapter.Storage/IStorageBackendFactory.cs#L9) | Creates isolated application-storage instances from explicit backend selections. |
 
 ### `Inno.Adapter.Storage.StorageBackendCatalog`
 
 | 当前声明 | 行为 |
 | --- | --- |
+| [`Inno.Adapter.Storage.StorageBackendCatalog`](../../src/adapters/storage/Inno.Adapter.Storage/StorageBackendCatalog.cs#L11) | Resolves storage providers from one immutable, composition-owned registration snapshot. |
 | [`Inno.Adapter.Storage.StorageBackendCatalog.StorageBackendCatalog(System.Collections.Generic.IEnumerable<Inno.Adapter.Storage.StorageBackendProvider> providers)`](../../src/adapters/storage/Inno.Adapter.Storage/StorageBackendCatalog.cs#L27) | Validates and captures a complete provider set without creating any service. |
 | [`Inno.Storage.IApplicationStorage Inno.Adapter.Storage.StorageBackendCatalog.CreateStorage(Inno.Adapter.Storage.StorageBackendId backend, Inno.Storage.StorageScope scope)`](../../src/adapters/storage/Inno.Adapter.Storage/StorageBackendCatalog.cs#L45) | See the implemented contract. |
 | [`System.Collections.Generic.IReadOnlyList<Inno.Adapter.Storage.StorageBackendId> Inno.Adapter.Storage.StorageBackendCatalog.supportedBackends`](../../src/adapters/storage/Inno.Adapter.Storage/StorageBackendCatalog.cs#L39) | See the implemented contract. |
-| [`Inno.Adapter.Storage.StorageBackendCatalog`](../../src/adapters/storage/Inno.Adapter.Storage/StorageBackendCatalog.cs#L11) | Resolves storage providers from one immutable, composition-owned registration snapshot. |
 
 ### `Inno.Adapter.Storage.StorageBackendId`
 
 | 当前声明 | 行为 |
 | --- | --- |
+| [`Inno.Adapter.Storage.StorageBackendId`](../../src/adapters/storage/Inno.Adapter.Storage/StorageBackendId.cs#L8) | Identifies a storage implementation without closing the set of supported backends. |
 | [`Inno.Adapter.Storage.StorageBackendId.StorageBackendId(string value)`](../../src/adapters/storage/Inno.Adapter.Storage/StorageBackendId.cs#L19) | Creates an ordinal, case-sensitive implementation identifier. |
+| [`bool Inno.Adapter.Storage.StorageBackendId.isValid`](../../src/adapters/storage/Inno.Adapter.Storage/StorageBackendId.cs#L46) | Gets whether this value identifies an implementation. |
 | [`override string Inno.Adapter.Storage.StorageBackendId.ToString()`](../../src/adapters/storage/Inno.Adapter.Storage/StorageBackendId.cs#L54) | Returns the identifier without resolving a provider. |
 | [`static Inno.Adapter.Storage.StorageBackendId Inno.Adapter.Storage.StorageBackendId.browser`](../../src/adapters/storage/Inno.Adapter.Storage/StorageBackendId.cs#L36) | Gets the identifier of the bundled browser implementation. |
 | [`static Inno.Adapter.Storage.StorageBackendId Inno.Adapter.Storage.StorageBackendId.fileSystem`](../../src/adapters/storage/Inno.Adapter.Storage/StorageBackendId.cs#L31) | Gets the identifier of the bundled fileSystem implementation. |
-| [`bool Inno.Adapter.Storage.StorageBackendId.isValid`](../../src/adapters/storage/Inno.Adapter.Storage/StorageBackendId.cs#L46) | Gets whether this value identifies an implementation. |
 | [`string Inno.Adapter.Storage.StorageBackendId.value`](../../src/adapters/storage/Inno.Adapter.Storage/StorageBackendId.cs#L41) | Gets the stable identifier; a default value is unassigned. |
-| [`Inno.Adapter.Storage.StorageBackendId`](../../src/adapters/storage/Inno.Adapter.Storage/StorageBackendId.cs#L8) | Identifies a storage implementation without closing the set of supported backends. |
 
 ### `Inno.Adapter.Storage.StorageBackendProvider`
 
 | 当前声明 | 行为 |
 | --- | --- |
-| [`Inno.Adapter.Storage.StorageBackendProvider.StorageBackendProvider(Inno.Adapter.Storage.StorageBackendId id)`](../../src/adapters/storage/Inno.Adapter.Storage/StorageBackendProvider.cs#L24) | Captures the identity assigned by the composition owner. |
-| [`abstract Inno.Storage.IApplicationStorage Inno.Adapter.Storage.StorageBackendProvider.CreateStorage(Inno.Storage.StorageScope scope)`](../../src/adapters/storage/Inno.Adapter.Storage/StorageBackendProvider.cs#L45) | Creates a caller-owned storage service using this implementation. |
 | [`Inno.Adapter.Storage.StorageBackendId Inno.Adapter.Storage.StorageBackendProvider.id`](../../src/adapters/storage/Inno.Adapter.Storage/StorageBackendProvider.cs#L34) | Gets this registration's immutable implementation identity. |
 | [`Inno.Adapter.Storage.StorageBackendProvider`](../../src/adapters/storage/Inno.Adapter.Storage/StorageBackendProvider.cs#L13) | Describes one explicitly composed storage implementation and its creation boundary. |
+| [`Inno.Adapter.Storage.StorageBackendProvider.StorageBackendProvider(Inno.Adapter.Storage.StorageBackendId id)`](../../src/adapters/storage/Inno.Adapter.Storage/StorageBackendProvider.cs#L24) | Captures the identity assigned by the composition owner. |
+| [`abstract Inno.Storage.IApplicationStorage Inno.Adapter.Storage.StorageBackendProvider.CreateStorage(Inno.Storage.StorageScope scope)`](../../src/adapters/storage/Inno.Adapter.Storage/StorageBackendProvider.cs#L45) | Creates a caller-owned storage service using this implementation. |
 
 ## 项目依赖
 
-- [Inno.Storage](Inno.Storage.md)：项目引用；公开签名可见性由语义边界检查确认。
-- [Inno.Extensibility.Catalogs](../extensibility/Inno.Extensibility.Catalogs.md)：项目引用；公开签名可见性由语义边界检查确认。
-
-共同 MSBuild 注入的 analyzer 与编译规则属于构建依赖，完整有效项目图记录在本轮验收证据中。
+- [Inno.Storage](Inno.Storage.md)：公开引用边界由实际签名核对。
+- [Inno.Extensibility.Catalogs](../extensibility/Inno.Extensibility.Catalogs.md)：公开引用边界由实际签名核对。

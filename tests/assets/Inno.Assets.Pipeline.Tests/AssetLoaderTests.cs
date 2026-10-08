@@ -101,6 +101,53 @@ public sealed class AssetLoaderTests : IDisposable
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
+    public void FailedRuntimeDependencyRecoversAfterPublicationOrLoaderRestart(bool reopen)
+    {
+        using TestWorkspace workspace = new();
+        workspace.WriteText("parent.depgraph", "child.deferredasset");
+        workspace.WriteText("child.deferredasset", "unchanged");
+        DeferredAssetImporter.isAvailable = false;
+        m_types.Rebuild();
+        AssetLoader? loader = null;
+        try
+        {
+            loader = new AssetLoader(m_types, m_serialization, m_identities, m_diagnostics,
+                m_logs, workspace.assetRoot, workspace.libraryRoot);
+            loader.Rescan();
+            AssetPath parent = AssetPath.Project("parent.depgraph");
+            Assert.True(loader.TryGetInfo(parent, out AssetInfo? failed));
+            Assert.Equal(AssetImportStatus.Failed, failed!.status);
+            Guid identity = failed.persistentId;
+            loader.Rescan();
+            Assert.True(loader.TryGetInfo(parent, out AssetInfo? unchanged));
+            Assert.Equal(AssetImportStatus.Failed, unchanged!.status);
+
+            if (reopen)
+            {
+                loader.Dispose();
+                loader = null;
+            }
+            DeferredAssetImporter.isAvailable = true;
+            m_types.Rebuild();
+            loader ??= new AssetLoader(m_types, m_serialization, m_identities, m_diagnostics,
+                m_logs, workspace.assetRoot, workspace.libraryRoot);
+            loader.Rescan();
+            Assert.True(loader.TryGetInfo(parent, out AssetInfo? recovered));
+            Assert.Equal(AssetImportStatus.Imported, recovered!.status);
+            Assert.Equal(identity, recovered.persistentId);
+            Assert.True(loader.TryGetInfo(AssetPath.Project("child.deferredasset"), out AssetInfo? child));
+            Assert.Equal(AssetImportStatus.Imported, child!.status);
+        }
+        finally
+        {
+            loader?.Dispose();
+            DeferredAssetImporter.isAvailable = true;
+        }
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
     public void ExtensionDiscoveryDefersOnlyMissingExtensionsAndRetriesOnceWhenCompleted(bool available)
     {
         using TestWorkspace workspace = new();
@@ -1159,8 +1206,10 @@ public sealed class AssetLoaderTests : IDisposable
     [Theory]
     [InlineData("failed", true)]
     [InlineData("changed", false)]
-    public void RuntimeExportRejectsTransitiveAuthoringInputsWithoutDiscardingLastGood(string change, bool importChange)
-    {
+    public void RuntimeExportRejectsTransitiveAuthoringInputsWithoutDiscardingLastGood(
+        string change,
+        bool importChange
+    ) {
         using TestWorkspace workspace = new();
         workspace.WriteText("leaf.buildinput", "original");
         using var loader = workspace.CreateLoader(m_types, m_serialization, m_identities, m_diagnostics, m_logs);
@@ -2063,7 +2112,8 @@ public sealed class AssetLoaderTests : IDisposable
             SerializationRegistry serialization,
             IdentityAllocator identities,
             DiagnosticHub diagnostics,
-            LogRouter logs)
+            LogRouter logs
+        )
             => new(types, serialization, identities, diagnostics, logs, assetRoot, libraryRoot);
         internal string SourcePath(string relativePath) => Path.Combine(assetRoot, relativePath);
 
@@ -2078,8 +2128,10 @@ public sealed class AssetLoaderTests : IDisposable
                     System.IO.File.ReadAllBytes(path))) == artifact.contentHash);
         }
 
-        internal void WriteText(string relativePath, string content)
-        {
+        internal void WriteText(
+            string relativePath,
+            string content
+        ) {
             string path = SourcePath(relativePath);
             Directory.CreateDirectory(Path.GetDirectoryName(path)!);
             System.IO.File.WriteAllText(path, content, new UTF8Encoding(false));
@@ -2087,8 +2139,10 @@ public sealed class AssetLoaderTests : IDisposable
 
         internal string ReadText(string relativePath) => System.IO.File.ReadAllText(SourcePath(relativePath));
 
-        internal void Move(string oldRelativePath, string newRelativePath)
-        {
+        internal void Move(
+            string oldRelativePath,
+            string newRelativePath
+        ) {
             string target = SourcePath(newRelativePath);
             Directory.CreateDirectory(Path.GetDirectoryName(target)!);
             System.IO.File.Move(SourcePath(oldRelativePath), target);
@@ -2142,8 +2196,8 @@ internal sealed class PrivateConstructorAssetImporter : AssetImporter<PrivateCon
     protected override ValueTask ImportAsync(
         AssetImportContext context,
         AssetImportWriter<PrivateConstructorAsset> output,
-        CancellationToken cancellationToken)
-    {
+        CancellationToken cancellationToken
+    ) {
         output.SetAsset(new PrivateConstructorAsset { value = context.ReadUtf8Text() });
         return output.WriteArtifactAsync("runtime", context.sourceBytes, cancellationToken);
     }
@@ -2162,9 +2216,11 @@ internal sealed class ExtensionDependentImporter : AssetImporter<ExtensionDepend
     internal static int attempts;
     public override IReadOnlyList<string> supportedExtensions { get; } = [".extensionasset"];
 
-    protected override ValueTask ImportAsync(AssetImportContext context,
-        AssetImportWriter<ExtensionDependentAsset> output, CancellationToken cancellationToken)
-    {
+    protected override ValueTask ImportAsync(
+        AssetImportContext context,
+        AssetImportWriter<ExtensionDependentAsset> output,
+        CancellationToken cancellationToken
+    ) {
         attempts++;
         if (!available)
             throw new AssetImportExtensionUnavailableException("tests.target", "tests.surface");
@@ -2178,9 +2234,11 @@ internal sealed class ExtensionConsumerImporter : AssetImporter<ExtensionDepende
 {
     public override IReadOnlyList<string> supportedExtensions { get; } = [".extensiondependent"];
 
-    protected override ValueTask ImportAsync(AssetImportContext context,
-        AssetImportWriter<ExtensionDependentAsset> output, CancellationToken cancellationToken)
-    {
+    protected override ValueTask ImportAsync(
+        AssetImportContext context,
+        AssetImportWriter<ExtensionDependentAsset> output,
+        CancellationToken cancellationToken
+    ) {
         string source = context.ReadUtf8Text();
         if (Guid.TryParse(source, out Guid id))
             _ = context.references.Resolve(id, context.services.GetStableTypeId<ExtensionDependentAsset>(),
@@ -2205,8 +2263,8 @@ internal sealed class DeferredAssetImporter : AssetImporter<DeferredAsset>
     protected override ValueTask ImportAsync(
         AssetImportContext context,
         AssetImportWriter<DeferredAsset> output,
-        CancellationToken cancellationToken)
-    {
+        CancellationToken cancellationToken
+    ) {
         output.SetAsset(new DeferredAsset());
         return output.WriteArtifactAsync("runtime", context.sourceBytes, cancellationToken);
     }
@@ -2223,8 +2281,8 @@ internal sealed class DependencyAssetImporter : AssetImporter<DependencyAsset>
     protected override ValueTask ImportAsync(
         AssetImportContext context,
         AssetImportWriter<DependencyAsset> output,
-        CancellationToken cancellationToken)
-    {
+        CancellationToken cancellationToken
+    ) {
         string dependency = context.ReadUtf8Text().Trim();
         if (!string.IsNullOrWhiteSpace(dependency))
             output.DependsOnAsset(AssetPath.Parse(dependency));
@@ -2241,8 +2299,8 @@ internal sealed class AlternateDependencyAssetImporter : AssetImporter<Dependenc
     protected override ValueTask ImportAsync(
         AssetImportContext context,
         AssetImportWriter<DependencyAsset> output,
-        CancellationToken cancellationToken)
-    {
+        CancellationToken cancellationToken
+    ) {
         output.SetAsset(new DependencyAsset());
         return output.WriteArtifactAsync("runtime", context.sourceBytes, cancellationToken);
     }
@@ -2254,9 +2312,11 @@ internal sealed class BuildInputAssetImporter : AssetImporter<DependencyAsset>
     public override IReadOnlyList<string> supportedExtensions { get; } = [".buildinput"];
     public override AssetDeploymentScope deploymentScope => AssetDeploymentScope.AuthoringOnly;
 
-    protected override ValueTask ImportAsync(AssetImportContext context, AssetImportWriter<DependencyAsset> output,
-        CancellationToken cancellationToken)
-    {
+    protected override ValueTask ImportAsync(
+        AssetImportContext context,
+        AssetImportWriter<DependencyAsset> output,
+        CancellationToken cancellationToken
+    ) {
         string text = context.ReadUtf8Text();
         if (text == "failed")
             throw new InvalidDataException("Required authoring input failed.");
@@ -2272,9 +2332,11 @@ internal sealed class MixedScopeAssetImporter : AssetImporter<DependencyAsset>
 {
     public override IReadOnlyList<string> supportedExtensions { get; } = [".mixedscope"];
 
-    protected override ValueTask ImportAsync(AssetImportContext context, AssetImportWriter<DependencyAsset> output,
-        CancellationToken cancellationToken)
-    {
+    protected override ValueTask ImportAsync(
+        AssetImportContext context,
+        AssetImportWriter<DependencyAsset> output,
+        CancellationToken cancellationToken
+    ) {
         output.SetAsset(new DependencyAsset());
         if (context.ReadUtf8Text() == "authoring")
         {
@@ -2291,9 +2353,11 @@ internal sealed class BuildConsumerAssetImporter : AssetImporter<DependencyAsset
 {
     public override IReadOnlyList<string> supportedExtensions { get; } = [".buildconsumer"];
 
-    protected override ValueTask ImportAsync(AssetImportContext context, AssetImportWriter<DependencyAsset> output,
-        CancellationToken cancellationToken)
-    {
+    protected override ValueTask ImportAsync(
+        AssetImportContext context,
+        AssetImportWriter<DependencyAsset> output,
+        CancellationToken cancellationToken
+    ) {
         context.DependsOnArtifact(Guid.Parse(context.ReadUtf8Text()));
         output.SetAsset(new DependencyAsset());
         return output.WriteArtifactAsync("runtime", context.sourceBytes, cancellationToken);
@@ -2311,8 +2375,8 @@ internal sealed class ImportGraphAssetImporter : AssetImporter<ImportGraphAsset>
     protected override ValueTask ImportAsync(
         AssetImportContext context,
         AssetImportWriter<ImportGraphAsset> output,
-        CancellationToken cancellationToken)
-    {
+        CancellationToken cancellationToken
+    ) {
         string dependency = context.ReadUtf8Text().Trim();
         if (!string.IsNullOrWhiteSpace(dependency))
             output.DependsOnSource(AssetPath.Parse(dependency));
@@ -2347,8 +2411,8 @@ internal sealed class SlowAssetImporter : AssetImporter<SlowAsset>
     protected override ValueTask ImportAsync(
         AssetImportContext context,
         AssetImportWriter<SlowAsset> output,
-        CancellationToken cancellationToken)
-    {
+        CancellationToken cancellationToken
+    ) {
         Interlocked.Increment(ref importCount);
         importStarted.Set();
         if (!allowImport.Wait(TimeSpan.FromSeconds(5)))
@@ -2374,8 +2438,8 @@ internal sealed class MutableAssetImporter : AssetImporter<MutableAsset>
     protected override ValueTask ImportAsync(
         AssetImportContext context,
         AssetImportWriter<MutableAsset> output,
-        CancellationToken cancellationToken)
-    {
+        CancellationToken cancellationToken
+    ) {
         attempts++;
         string value = context.ReadUtf8Text();
         if (value == "!invalid!")
@@ -2387,7 +2451,8 @@ internal sealed class MutableAssetImporter : AssetImporter<MutableAsset>
     protected override ValueTask<ReadOnlyMemory<byte>?> ExportAsync(
         AssetExportContext context,
         MutableAsset asset,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken
+    )
         => ValueTask.FromResult<ReadOnlyMemory<byte>?>(Encoding.UTF8.GetBytes(asset.value));
 }
 
@@ -2402,7 +2467,8 @@ internal sealed class HookAsset : AssetObject
 
     protected override void OnRuntimePayloadChanged(
         ReadOnlyMemory<byte> previousPayload,
-        ReadOnlyMemory<byte> currentPayload)
+        ReadOnlyMemory<byte> currentPayload
+    )
         => Interlocked.Increment(ref payloadChangeCount);
 
     protected override void OnUnloading()
@@ -2428,8 +2494,8 @@ internal sealed class HookAssetImporter : AssetImporter<HookAsset>
     protected override ValueTask ImportAsync(
         AssetImportContext context,
         AssetImportWriter<HookAsset> output,
-        CancellationToken cancellationToken)
-    {
+        CancellationToken cancellationToken
+    ) {
         output.SetAsset(new HookAsset());
         return output.WriteArtifactAsync("runtime", context.sourceBytes, cancellationToken);
     }
@@ -2454,8 +2520,8 @@ internal sealed class ImporterConflictAssetImporterA : AssetImporter<ImporterCon
     protected override ValueTask ImportAsync(
         AssetImportContext context,
         AssetImportWriter<ImporterConflictAsset> output,
-        CancellationToken cancellationToken)
-    {
+        CancellationToken cancellationToken
+    ) {
         output.SetAsset(new ImporterConflictAsset());
         return output.WriteArtifactAsync("runtime", context.sourceBytes, cancellationToken);
     }
@@ -2472,8 +2538,8 @@ internal sealed class ImporterConflictAssetImporterB : AssetImporter<ImporterCon
     protected override ValueTask ImportAsync(
         AssetImportContext context,
         AssetImportWriter<ImporterConflictAsset> output,
-        CancellationToken cancellationToken)
-    {
+        CancellationToken cancellationToken
+    ) {
         output.SetAsset(new ImporterConflictAsset());
         return output.WriteArtifactAsync("runtime", context.sourceBytes, cancellationToken);
     }
@@ -2492,8 +2558,8 @@ internal sealed class TestBuildProcessor : AssetBuildProcessor<TestBuildDefiniti
     protected override ValueTask BuildAsync(
         AssetBuildContext<TestBuildDefinitionAsset> context,
         AssetArtifactWriter output,
-        CancellationToken cancellationToken)
-    {
+        CancellationToken cancellationToken
+    ) {
         string value = context.definition.label + ":" + context.inputs.Count;
         return output.WriteAsync("result", Encoding.UTF8.GetBytes(value), cancellationToken);
     }

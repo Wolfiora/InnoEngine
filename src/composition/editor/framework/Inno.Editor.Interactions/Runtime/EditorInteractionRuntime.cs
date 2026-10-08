@@ -40,12 +40,16 @@ public sealed class EditorInteractionRuntime : Inno.Editor.Core.EditorRuntime
     /// <param name="logs">
     /// The host-owned logging router used by editor infrastructure.
     /// </param>
+    /// <param name="keyboard">
+    /// The explicit immutable product keyboard conventions.
+    /// </param>
     public EditorInteractionRuntime(
         string projectDirectory,
         TypeCatalog types,
-        LogRouter logs
+        LogRouter logs,
+        EditorKeyboardPolicy keyboard
     )
-        : this(new EditorContext(projectDirectory), types, logs)
+        : this(new EditorContext(projectDirectory, keyboard), types, logs)
     {
     }
 

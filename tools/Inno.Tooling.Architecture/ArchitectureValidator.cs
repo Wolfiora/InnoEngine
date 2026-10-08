@@ -3,7 +3,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Xml.Linq;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Inno.Tooling.Architecture;
 
@@ -12,7 +15,7 @@ namespace Inno.Tooling.Architecture;
 /// </summary>
 public static partial class ArchitectureValidator
 {
-    private static readonly string[] S_PRODUCTION_ROOTS = ["src", "native", "build", "tools"];
+    private static readonly string[] S_PRODUCTION_ROOTS = ["src", "backends", "platforms", "build", "tools"];
     private static readonly HashSet<string> S_IGNORED_DIRECTORIES = new(StringComparer.OrdinalIgnoreCase)
     {
         "bin",
@@ -32,7 +35,10 @@ public static partial class ArchitectureValidator
     /// Executes repository validation or an explicitly requested documentation maintenance operation.
     /// </summary>
     /// <param name="arguments">
-    /// The optional repository path, selected build configuration and whitespace-only XML expansion flag.
+    /// The optional repository path, configuration, XML maintenance flag, explicit SDK and evaluated graph output.
+    /// </param>
+    /// <param name="cancellationToken">
+    /// Cancels owned SDK evaluation processes and drains them before returning.
     /// </param>
     /// <returns>
     /// Zero when validation succeeds, or one when any invariant is violated.
@@ -43,18 +49,29 @@ public static partial class ArchitectureValidator
     /// <exception cref="DirectoryNotFoundException">
     /// The requested path is not inside an engine checkout.
     /// </exception>
-    public static int Execute(string[] arguments)
-    {
+    /// <exception cref="OperationCanceledException">
+    /// The caller cancels evaluated SDK project inspection.
+    /// </exception>
+    public static int Execute(
+        string[] arguments,
+        CancellationToken cancellationToken = default
+    ) {
         ArgumentNullException.ThrowIfNull(arguments);
         bool expandXml = false;
         string configuration = "Debug";
         bool selectedConfiguration = false;
+        string? dotnetHost = null;
+        string? projectGraphPath = null;
         var paths = new List<string>();
         for (int index = 0; index < arguments.Length; index++)
         {
             string argument = arguments[index];
             if (argument == "--expand-xml" && !expandXml)
                 expandXml = true;
+            else if (argument == "--dotnet" && dotnetHost is null && index + 1 < arguments.Length)
+                dotnetHost = arguments[++index];
+            else if (argument == "--project-graph" && projectGraphPath is null && index + 1 < arguments.Length)
+                projectGraphPath = arguments[++index];
             else if (argument == "--configuration" && !selectedConfiguration && index + 1 < arguments.Length)
             {
                 configuration = arguments[++index] switch
@@ -68,8 +85,10 @@ public static partial class ArchitectureValidator
             else if (!argument.StartsWith("--", StringComparison.Ordinal) && paths.Count == 0)
                 paths.Add(argument);
             else
-                throw new ArgumentException("Usage: verify [engine-root] [--configuration Debug|Release] [--expand-xml]", nameof(arguments));
+                throw new ArgumentException("Usage: verify [engine-root] [--configuration Debug|Release] [--expand-xml] [--dotnet SDK] [--project-graph output.json]", nameof(arguments));
         }
+        if (projectGraphPath is not null && dotnetHost is null)
+            throw new ArgumentException("Evaluated project graph output requires an explicitly selected --dotnet SDK.", nameof(arguments));
         string repositoryRoot = ResolveRepositoryRoot(paths);
         if (expandXml)
         {
@@ -95,6 +114,9 @@ public static partial class ArchitectureValidator
         ValidateTestSolutionFolders(repositoryRoot, failures);
         ArchitectureRules.Validate(repositoryRoot, failures);
         PublicApiBoundaryValidator.Validate(repositoryRoot, configuration, failures);
+        if (dotnetHost is not null)
+            MSBuildProjectGraphValidator.ValidateAsync(repositoryRoot, configuration, dotnetHost,
+                projectGraphPath, failures, cancellationToken).GetAwaiter().GetResult();
         if (failures.Count == 0)
         {
             Console.WriteLine("InnoEngine architecture validation passed.");
@@ -150,13 +172,30 @@ public static partial class ArchitectureValidator
                 continue;
             string relative = Relative(repositoryRoot, path);
             CSharpStyleValidator.Validate(relative, source, failures);
-            if (relative.StartsWith("tools/Inno.Tooling.Architecture/", StringComparison.Ordinal))
+            if (relative.StartsWith("tools/Inno.Tooling.Architecture/", StringComparison.Ordinal)
+                || relative.Contains("/tests/", StringComparison.Ordinal))
                 continue;
             PublicApiDocumentationValidator.Validate(relative, source, failures,
                 source.Contains("<inheritdoc", StringComparison.Ordinal) ? documentationModels.GetModel(path) : null,
                 documentationModels);
             if (RuntimeContentBoundaryValidator.ShouldAudit(relative))
                 RuntimeContentBoundaryValidator.Validate(relative, documentationModels.GetModel(path), failures);
+            if (relative.StartsWith("platforms/", StringComparison.Ordinal) && relative.Contains("/Targets/", StringComparison.Ordinal))
+            {
+                SemanticModel? model = documentationModels.GetModel(path);
+                if (model is not null)
+                {
+                    foreach (VariableDeclaratorSyntax field in model.SyntaxTree.GetRoot()
+                        .DescendantNodes().OfType<VariableDeclaratorSyntax>())
+                    {
+                        if (model.GetDeclaredSymbol(field) is IFieldSymbol symbol
+                            && symbol.Type is INamedTypeSymbol type
+                            && (type.ToDisplayString() == "Inno.Build.IGameContentCompiler"
+                                || type.AllInterfaces.Any(static contract => contract.ToDisplayString() == "Inno.Build.IGameContentCompiler")))
+                            failures.Add($"{relative}: platform packaging cannot own a content compiler; bind it in the distribution.");
+                    }
+                }
+            }
             GenerationCleanupValidator.Validate(relative, source, failures);
             AddSourceFailure(source.Contains("InternalsVisibleTo", StringComparison.Ordinal), relative,
                 "friend assemblies are forbidden", failures);
@@ -276,7 +315,7 @@ public static partial class ArchitectureValidator
                 if (targetRelative.Contains("Inno.Native.Bgfx", StringComparison.Ordinal) &&
                     !projectRelative.Contains("Inno.Adapter.Rendering.Bgfx", StringComparison.Ordinal) &&
                     !projectRelative.Contains("Inno.Native.Bgfx", StringComparison.Ordinal) &&
-                    !projectRelative.StartsWith("build/toolchains/Inno.Build.Toolchains.Bgfx", StringComparison.Ordinal) &&
+                    !projectRelative.StartsWith("backends/Bgfx/build/Inno.Build.Toolchains.Bgfx", StringComparison.Ordinal) &&
                     !projectRelative.StartsWith("tests/", StringComparison.Ordinal))
                 {
                     failures.Add($"{projectRelative}: BGFX native code is restricted to the BGFX adapter.");
@@ -285,7 +324,10 @@ public static partial class ArchitectureValidator
                     !projectRelative.Contains("Inno.Adapter.Platform.Sdl3", StringComparison.Ordinal) &&
                     !projectRelative.Contains("Inno.Adapter.Presentation.ImGui.Sdl3", StringComparison.Ordinal) &&
                     !projectRelative.Contains("Inno.Native.Sdl3", StringComparison.Ordinal) &&
-                    !projectRelative.StartsWith("build/toolchains/Inno.Build.Toolchains.Sdl3", StringComparison.Ordinal) &&
+                    !(projectRelative.StartsWith("platforms/", StringComparison.Ordinal)
+                        && projectRelative.Contains("/integrations/Inno.Integration.", StringComparison.Ordinal)
+                        && projectRelative.Contains(".Sdl3/", StringComparison.Ordinal)) &&
+                    !projectRelative.StartsWith("backends/Sdl3/build/Inno.Build.Toolchains.Sdl3", StringComparison.Ordinal) &&
                     !projectRelative.StartsWith("tests/", StringComparison.Ordinal))
                 {
                     failures.Add($"{projectRelative}: SDL3 native code is restricted to the SDL3 platform adapter.");
@@ -293,7 +335,7 @@ public static partial class ArchitectureValidator
                 if (targetRelative.Contains("Inno.Native.MiniAudio", StringComparison.Ordinal) &&
                     !projectRelative.Contains("Inno.Adapter.Audio.MiniAudio", StringComparison.Ordinal) &&
                     !projectRelative.Contains("Inno.Native.MiniAudio", StringComparison.Ordinal) &&
-                    !projectRelative.StartsWith("build/toolchains/Inno.Build.Toolchains.MiniAudio", StringComparison.Ordinal) &&
+                    !projectRelative.StartsWith("backends/MiniAudio/build/Inno.Build.Toolchains.MiniAudio", StringComparison.Ordinal) &&
                     !projectRelative.StartsWith("tests/", StringComparison.Ordinal))
                 {
                     failures.Add($"{projectRelative}: miniaudio native code is restricted to the MiniAudio adapter.");
@@ -301,7 +343,7 @@ public static partial class ArchitectureValidator
                 if (targetRelative.Contains("Inno.Native.UI", StringComparison.Ordinal) &&
                     !projectRelative.Contains("Inno.Adapter.UI.RmlUi", StringComparison.Ordinal) &&
                     !projectRelative.Contains("Inno.Native.UI", StringComparison.Ordinal) &&
-                    !projectRelative.StartsWith("build/toolchains/Inno.Build.Toolchains.UI", StringComparison.Ordinal) &&
+                    !projectRelative.StartsWith("backends/RmlUi/build/Inno.Build.Toolchains.UI", StringComparison.Ordinal) &&
                     !projectRelative.StartsWith("tests/", StringComparison.Ordinal))
                 {
                     failures.Add($"{projectRelative}: RmlUi native code is restricted to the RmlUi adapter.");
@@ -353,7 +395,7 @@ public static partial class ArchitectureValidator
         }
 
         string? testsRoot = solutionFolders.FirstOrDefault(id =>
-            string.Equals(names.GetValueOrDefault(id), "tests", StringComparison.Ordinal));
+            string.Equals(names.GetValueOrDefault(id), "tests", StringComparison.Ordinal) && !parents.ContainsKey(id));
         if (testsRoot is null)
         {
             failures.Add("InnoEngine.sln: missing root tests Solution Folder.");
@@ -468,7 +510,8 @@ public static partial class ArchitectureValidator
             string sourceRoot = projectPath[..projectPath.IndexOf('/')];
             string? expectedPath = sourceRoot switch
             {
-                "native" or "tools" => sourceRoot,
+                "tools" => sourceRoot,
+                "backends" or "platforms" => Path.GetDirectoryName(Path.GetDirectoryName(projectPath))?.Replace('\\', '/'),
                 "build" => Path.GetDirectoryName(Path.GetDirectoryName(projectPath))?.Replace('\\', '/'),
                 _ => ClassifySourceSolutionPath(projectName)
             };
@@ -478,14 +521,19 @@ public static partial class ArchitectureValidator
                 continue;
             }
 
+            string projectDirectory = Path.GetDirectoryName(Path.Combine(repositoryRoot, projectPath))!;
+            if (EnumerateFiles(projectDirectory, "*.csproj").Any(path => Path.GetFullPath(path) != Path.GetFullPath(Path.Combine(repositoryRoot, projectPath))))
+                expectedPath = Path.GetDirectoryName(projectPath)!.Replace('\\', '/');
             string actualPath = GetSolutionFolderPath(projectId, names, solutionFolders, parents);
             if (!string.Equals(actualPath, expectedPath, StringComparison.Ordinal))
                 failures.Add($"{projectPath}: expected Solution Folder '{expectedPath}', found '{actualPath}'.");
 
-            string physicalGroup = sourceRoot is "native" or "tools"
+            string physicalGroup = sourceRoot == "tools"
                 ? sourceRoot
                 : Path.GetDirectoryName(Path.GetDirectoryName(projectPath))?
                     .Replace('\\', '/').TrimEnd('/') ?? string.Empty;
+            if (expectedPath == Path.GetDirectoryName(projectPath)?.Replace('\\', '/'))
+                physicalGroup = expectedPath;
             if (!string.Equals(physicalGroup, expectedPath, StringComparison.Ordinal))
             {
                 failures.Add(
@@ -504,17 +552,15 @@ public static partial class ArchitectureValidator
             return "src/foundation/scripting";
         if (string.Equals(projectName, "Inno.Shell", StringComparison.Ordinal))
             return "src/composition/shell";
-        if (string.Equals(projectName, "Inno.Player", StringComparison.Ordinal) ||
-            string.Equals(projectName, "Inno.Player.Browser", StringComparison.Ordinal) ||
-            string.Equals(projectName, "Inno.Player.Runtime", StringComparison.Ordinal))
+        if (string.Equals(projectName, "Inno.Player.Runtime", StringComparison.Ordinal))
             return "src/composition/player";
         if (string.Equals(projectName, "Inno.Editor.Annotations", StringComparison.Ordinal))
             return "src/composition/editor/contracts";
 
         if (projectName.StartsWith("Inno.Editor.Panel.", StringComparison.Ordinal))
             return "src/composition/editor/panels";
-        if (string.Equals(projectName, "Inno.Editor.Application", StringComparison.Ordinal))
-            return "src/composition/editor/host";
+        if (string.Equals(projectName, "Inno.Editor.Hosting", StringComparison.Ordinal))
+            return "src/composition/editor/hosting";
         if (string.Equals(projectName, "Inno.Editor.ImGui", StringComparison.Ordinal))
             return "src/composition/editor/presentation";
         if (string.Equals(projectName, "Inno.Editor.Core", StringComparison.Ordinal) ||
@@ -531,15 +577,11 @@ public static partial class ArchitectureValidator
         if (string.Equals(projectName, "Inno.Adapter", StringComparison.Ordinal))
             return "src/adapters/common";
         if (string.Equals(projectName, "Inno.Adapter.Default", StringComparison.Ordinal))
-            return "src/adapters/default";
+            return "src/composition/adapters";
         if (string.Equals(projectName, "Inno.Adapter.Authoring.Default", StringComparison.Ordinal))
-            return "src/adapters/default";
+            return "src/composition/adapters";
         if (projectName.StartsWith("Inno.Adapter.Presentation", StringComparison.Ordinal))
             return "src/adapters/presentation";
-        if (projectName.StartsWith("Inno.Adapter.Modules", StringComparison.Ordinal))
-            return "src/adapters/modules";
-        if (projectName.StartsWith("Inno.Adapter.Serialization", StringComparison.Ordinal))
-            return "src/adapters/serialization";
         if (projectName.StartsWith("Inno.Adapter.Platform", StringComparison.Ordinal))
             return "src/adapters/platform";
         if (projectName.StartsWith("Inno.Adapter.Input", StringComparison.Ordinal))
@@ -554,8 +596,6 @@ public static partial class ArchitectureValidator
             return "src/adapters/ui";
         if (projectName.StartsWith("Inno.Adapter.Audio", StringComparison.Ordinal))
             return "src/adapters/audio";
-        if (projectName.StartsWith("Inno.Adapter.Content", StringComparison.Ordinal))
-            return "src/adapters/content";
         if (string.Equals(projectName, "Inno.Content", StringComparison.Ordinal))
             return "src/content/deployment";
         if (projectName.StartsWith("Inno.References", StringComparison.Ordinal))

@@ -15,11 +15,13 @@ internal static class PublicApiBoundaryValidator
         string configuration,
         ICollection<string> failures
     ) {
-        Project[] projects = new[] { "src", "native", "build" }
+        Project[] projects = new[] { "src", "backends", "platforms", "build" }
             .SelectMany(folder => RepositorySourceInventory.Files(Path.Combine(root, folder), "*.csproj"))
             .Where(path => !path.Split(Path.DirectorySeparatorChar).Any(segment => segment is "bin" or "obj"))
             // Binding extensions run only while generating source; they are not runtime or solution assemblies.
             .Where(path => !path.Split(Path.DirectorySeparatorChar).Contains("Bindings", StringComparer.Ordinal))
+            .Where(path => !path.Split(Path.DirectorySeparatorChar).Contains("tests", StringComparer.Ordinal))
+            .Where(path => !XDocument.Load(path).Descendants("OutputType").Any(static item => item.Value == "Exe"))
             .Select(path => Project.Read(path, configuration)).ToArray();
         var byName = projects.ToDictionary(project => project.name, StringComparer.Ordinal);
         var references = new Dictionary<string, PortableExecutableReference>(StringComparer.OrdinalIgnoreCase);

@@ -12,5 +12,6 @@
 
   <ItemGroup>
     <ProjectReference Include="../../src/foundation/extensibility/Inno.Extensibility.Catalogs/Inno.Extensibility.Catalogs.csproj" />
+    <ProjectReference Include="../../build/toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj" PrivateAssets="compile" />
   </ItemGroup>
 </Project>

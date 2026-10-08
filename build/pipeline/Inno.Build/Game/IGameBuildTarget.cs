@@ -30,31 +30,6 @@ public interface IGameBuildTarget : IPlayerSupportPackValidator
     string displayName { get; }
 
     /// <summary>
-    /// Gets whether this target is the adapter's preferred default on the current host.
-    /// </summary>
-    bool isPreferredOnCurrentHost { get; }
-
-    /// <summary>
-    /// Produces every target-specific runtime artifact required by this platform.
-    /// </summary>
-    /// <param name="context">
-    /// The isolated target-content staging context.
-    /// </param>
-    /// <param name="cancellationToken">
-    /// The token that cancels offline compilation before package commit.
-    /// </param>
-    /// <returns>
-    /// An operation that completes after all target artifacts are durably staged.
-    /// </returns>
-    /// <exception cref="System.OperationCanceledException">
-    /// Thrown when target artifact generation is canceled.
-    /// </exception>
-    ValueTask BuildContentAsync(
-        GameBuildContentContext context,
-        CancellationToken cancellationToken = default
-    );
-
-    /// <summary>
     /// Composes one platform output from a verified Support Pack and source-free content directory.
     /// </summary>
     /// <param name="context">

@@ -232,6 +232,160 @@ public sealed unsafe class WidgetLayoutTests
         Assert.Equal(1, foregroundPresses);
     }
 
+    [Theory]
+    [InlineData(true, 1f)]
+    [InlineData(false, 1f)]
+    [InlineData(true, 1.5f)]
+    [InlineData(false, 1.5f)]
+    public void TreeRows_ContentClickIsDeliveredOnce(
+        bool isLeaf,
+        float zoom
+    ) {
+        using NativeContext context = new(zoom);
+        int presses = 0;
+        Vector2 hit = default;
+        Action draw = () =>
+        {
+            BeginWindow("Tree content", new Vector2(400f, 300f));
+            var result = Widget.TreeNode(
+                $"content-{isLeaf}-{zoom}",
+                _ => Widget.IconText("O", "Selected object", false),
+                new()
+                {
+                    isLeaf = isLeaf,
+                    drawViewportOverlay = () =>
+                    {
+                        float rowY = NativeImGui.GetItemRectMin().Y;
+                        NativeImGui.SetCursorScreenPos(new Vector2(360f, rowY));
+                        _ = Widget.ClickableIcon("visibility", "V", "Visibility");
+                    }
+                });
+            hit = new Vector2(result.contentMin.X + 80f, (result.min.Y + result.max.Y) * 0.5f);
+            if (result.isClicked)
+                presses++;
+            if (result.isOpen)
+                NativeImGui.TreePop();
+            NativeImGui.End();
+        };
+
+        context.Frame(draw);
+        context.Frame(draw);
+        context.Click(hit, 0, draw, settleHover: false);
+
+        Assert.Equal(1, presses);
+    }
+
+    [Fact]
+    public void TreeRows_DisclosureClickExpandsWithoutSelectingContent()
+    {
+        using NativeContext context = new(1f);
+        int presses = 0;
+        bool opened = false;
+        Vector2 hit = default;
+        Action draw = () =>
+        {
+            BeginWindow("Tree disclosure", new Vector2(400f, 300f));
+            var result = Widget.TreeNode(
+                "disclosure",
+                _ => NativeImGui.TextUnformatted("Parent"),
+                new() { isLeaf = false });
+            hit = new Vector2(
+                result.contentMin.X - NativeImGui.GetTreeNodeToLabelSpacing() * 0.5f,
+                (result.min.Y + result.max.Y) * 0.5f);
+            opened = result.isOpen;
+            if (result.isClicked)
+                presses++;
+            if (result.isOpen)
+                NativeImGui.TreePop();
+            NativeImGui.End();
+        };
+
+        context.Frame(draw);
+        context.Frame(draw);
+        context.Click(hit, 0, draw);
+        context.Frame(draw);
+
+        Assert.True(opened);
+        Assert.Equal(0, presses);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void TreeRows_OverlayConsumesItsOwnClick(bool settleHover)
+    {
+        using NativeContext context = new(1f);
+        int rowPresses = 0;
+        int overlayPresses = 0;
+        Vector2 overlayHit = default;
+        Action draw = () =>
+        {
+            BeginWindow("Tree overlay", new Vector2(400f, 300f));
+            var result = Widget.TreeNode(
+                $"overlay-{settleHover}",
+                _ => NativeImGui.TextUnformatted("Object"),
+                new()
+                {
+                    isLeaf = true,
+                    drawViewportOverlay = () =>
+                    {
+                        float rowY = NativeImGui.GetItemRectMin().Y;
+                        NativeImGui.SetCursorScreenPos(new Vector2(360f, rowY));
+                        if (NativeImGui.SmallButton("Eye"))
+                            overlayPresses++;
+                        overlayHit = (NativeImGui.GetItemRectMin() + NativeImGui.GetItemRectMax()) * 0.5f;
+                    }
+                });
+            if (result.isClicked)
+                rowPresses++;
+            NativeImGui.End();
+        };
+
+        context.Frame(draw);
+        context.Frame(draw);
+        context.Click(overlayHit, 0, draw, settleHover);
+
+        Assert.Equal(1, overlayPresses);
+        Assert.Equal(0, rowPresses);
+    }
+
+    [Fact]
+    public void TreeRows_ContentDoubleClickExpandsOnce()
+    {
+        using NativeContext context = new(1f);
+        int presses = 0;
+        int doublePresses = 0;
+        bool opened = false;
+        Vector2 hit = default;
+        Action draw = () =>
+        {
+            BeginWindow("Tree double click", new Vector2(400f, 300f));
+            var result = Widget.TreeNode(
+                "double-click",
+                _ => NativeImGui.TextUnformatted("Parent"),
+                new() { isLeaf = false });
+            hit = new Vector2(result.contentMin.X + 80f, (result.min.Y + result.max.Y) * 0.5f);
+            opened = result.isOpen;
+            if (result.isClicked)
+                presses++;
+            if (result.isDoubleClicked)
+                doublePresses++;
+            if (result.isOpen)
+                NativeImGui.TreePop();
+            NativeImGui.End();
+        };
+
+        context.Frame(draw);
+        context.Frame(draw);
+        context.Click(hit, 0, draw);
+        context.Click(hit, 0, draw);
+        context.Frame(draw);
+
+        Assert.Equal(2, presses);
+        Assert.Equal(1, doublePresses);
+        Assert.True(opened);
+    }
+
     private static void BeginWindow(
         string name,
         Vector2 size
@@ -271,11 +425,13 @@ public sealed unsafe class WidgetLayoutTests
         public void Click(
             Vector2 position,
             int button,
-            Action draw
+            Action draw,
+            bool settleHover = true
         ) {
             ImGuiIOPtr io = NativeImGui.GetIO();
             io.AddMousePosEvent(position.X, position.Y);
-            Frame(draw);
+            if (settleHover)
+                Frame(draw);
             io.AddMouseButtonEvent(button, true);
             Frame(draw);
             io.AddMouseButtonEvent(button, false);

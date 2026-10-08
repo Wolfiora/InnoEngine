@@ -113,6 +113,6 @@ public sealed class SourcePlayerSupportPackProvisioner : IPlayerSupportPackProvi
 
     private static bool IsEngineRoot(string path)
         => File.Exists(Path.Combine(path, "InnoEngine.sln")) &&
-           File.Exists(Path.Combine(path, "src", "composition", "player", "Inno.Player", "Inno.Player.csproj"));
+           File.Exists(Path.Combine(path, "build", "distributions", "Inno.Build.Distribution.Standard", "Inno.Build.Distribution.Standard.csproj"));
 
 }

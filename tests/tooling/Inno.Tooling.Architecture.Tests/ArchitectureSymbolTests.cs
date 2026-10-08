@@ -166,10 +166,12 @@ public sealed class ArchitectureSymbolTests
     [InlineData("internal class Probe { public Raw value; }", false)]
     [InlineData("public class Probe { private class Nested { public Raw value; } }", false)]
     [InlineData("public class Probe { public int Read() => 0; }", false)]
-    public async Task SymbolAuditFollowsPublicShapesAndRespectsEffectiveAccessibility(string declaration, bool rejected)
-    {
+    public async Task SymbolAuditFollowsPublicShapesAndRespectsEffectiveAccessibility(
+        string declaration,
+        bool rejected
+    ) {
         using var fixture = new SymbolFixture();
-        string native = fixture.Compile("native/Inno.Native.MiniAudio", "Inno.Native.MiniAudio", """
+        string native = fixture.Compile("backends/MiniAudio/native/Inno.Native.MiniAudio", "Inno.Native.MiniAudio", """
             namespace Inno.Native.MiniAudio;
             public struct MaEngine { public int value; }
             public class MaBase { }
@@ -205,10 +207,13 @@ public sealed class ArchitectureSymbolTests
     [Theory]
     [InlineData("Inno.Shell", "Inno.Adapter.Audio.MiniAudio", true)]
     [InlineData("Inno.Player", "Inno.Adapter.Rendering.Bgfx", true)]
-    [InlineData("Inno.Editor.Application", "Inno.Adapter.Platform.Sdl3", true)]
+    [InlineData("Inno.Editor.Hosting", "Inno.Adapter.Platform.Sdl3", true)]
     [InlineData("Inno.Shell", "Inno.Adapter.Audio", false)]
-    public async Task CompositionOnlyExposesNeutralAdapterContracts(string owner, string adapter, bool rejected)
-    {
+    public async Task CompositionOnlyExposesNeutralAdapterContracts(
+        string owner,
+        string adapter,
+        bool rejected
+    ) {
         using var fixture = new SymbolFixture();
         string implementation = fixture.Compile("src/adapters/audio/" + adapter, adapter,
             "namespace Backend; public class Device { }");
@@ -223,8 +228,11 @@ public sealed class ArchitectureSymbolTests
     [InlineData("public class Probe { public Value value; }", true, true)]
     [InlineData("public class Probe { protected Value Read() => null; }", true, true)]
     [InlineData("public class Probe { public Value value; }", false, false)]
-    public async Task EditorPublicReferencePolicyFollowsCompiledVisibility(string declaration, bool privateReference, bool rejected)
-    {
+    public async Task EditorPublicReferencePolicyFollowsCompiledVisibility(
+        string declaration,
+        bool privateReference,
+        bool rejected
+    ) {
         using var fixture = new SymbolFixture();
         string dependency = fixture.Compile("src/foundation/core/Inno.Core.Values", "Inno.Core.Values",
             "namespace Values; public class Value { }");
@@ -238,16 +246,18 @@ public sealed class ArchitectureSymbolTests
 
     [Theory]
     [InlineData("src/services/audio/Inno.Audio", true)]
-    [InlineData("src/adapters/platform/Inno.Adapter.Platform.Sdl3", false)]
-    [InlineData("src/adapters/presentation/Inno.Adapter.Presentation.ImGui.Sdl3", false)]
-    [InlineData("build/toolchains/Inno.Build.Toolchains.Sdl3", false)]
-    public async Task SdlReferencesAreLimitedToTheActualPlatformAndPresentationOwners(string relative, bool rejected)
-    {
+    [InlineData("backends/Sdl3/runtime/Inno.Adapter.Platform.Sdl3", false)]
+    [InlineData("backends/ImGui/runtime/Inno.Adapter.Presentation.ImGui.Sdl3", false)]
+    [InlineData("backends/Sdl3/build/Inno.Build.Toolchains.Sdl3", false)]
+    public async Task SdlReferencesAreLimitedToTheActualPlatformAndPresentationOwners(
+        string relative,
+        bool rejected
+    ) {
         using var fixture = new SymbolFixture();
-        string native = fixture.Compile("native/Inno.Native.Sdl3", "Inno.Native.Sdl3", "public struct Raw { }");
+        string native = fixture.Compile("backends/Sdl3/native/Inno.Native.Sdl3", "Inno.Native.Sdl3", "public struct Raw { }");
         string projectName = Path.GetFileName(relative);
         fixture.Compile(relative, projectName, "internal class Probe { private Raw value; }", native);
-        fixture.AddReference(relative + "/" + projectName + ".csproj", "native/Inno.Native.Sdl3/Inno.Native.Sdl3.csproj", true);
+        fixture.AddReference(relative + "/" + projectName + ".csproj", "backends/Sdl3/native/Inno.Native.Sdl3/Inno.Native.Sdl3.csproj", true);
         string output = await fixture.Run();
         Assert.Equal(rejected, output.Contains("SDL3 native code is restricted", StringComparison.Ordinal));
     }
@@ -346,8 +356,12 @@ public sealed class ArchitectureSymbolTests
                 """);
         }
 
-        internal string Compile(string relative, string assemblyName, string source, params string[] dependencies)
-        {
+        internal string Compile(
+            string relative,
+            string assemblyName,
+            string source,
+            params string[] dependencies
+        ) {
             string directory = Path.Combine(m_root, relative);
             string output = Path.Combine(directory, "bin", "Debug", "net9.0", assemblyName + ".dll");
             Directory.CreateDirectory(Path.GetDirectoryName(output)!);
@@ -365,8 +379,11 @@ public sealed class ArchitectureSymbolTests
             return output;
         }
 
-        internal void AddReference(string owner, string target, bool privateReference)
-        {
+        internal void AddReference(
+            string owner,
+            string target,
+            bool privateReference
+        ) {
             string path = Path.Combine(m_root, owner);
             XDocument document = XDocument.Load(path);
             var reference = new XElement("ProjectReference", new XAttribute("Include",

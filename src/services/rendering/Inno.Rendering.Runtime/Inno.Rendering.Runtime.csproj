@@ -33,7 +33,7 @@
   <ItemGroup>
     <ProjectReference Include="../../../foundation/core/Inno.Core.Diagnostics/Inno.Core.Diagnostics.csproj" />
     <ProjectReference Include="../../../runtime/contracts/Inno.Runtime.Contracts/Inno.Runtime.Contracts.csproj" />
-    <ProjectReference Include="../../../services/input/Inno.Input/Inno.Input.csproj" />
+    <ProjectReference Include="../../input/Inno.Input/Inno.Input.csproj" />
     <ProjectReference Include="../../../content/references/Inno.References/Inno.References.csproj" />
     <ProjectReference Include="../../../foundation/extensibility/Inno.Extensibility.Catalogs/Inno.Extensibility.Catalogs.csproj" />
   </ItemGroup>

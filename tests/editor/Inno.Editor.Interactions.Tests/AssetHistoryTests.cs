@@ -86,7 +86,7 @@ public sealed class AssetHistoryTests : IDisposable
             pluginScan,
             m_modules.generations);
         m_runtime = new EditorInteractionRuntime(
-            new EditorContext(m_projectRoot),
+            new EditorContext(m_projectRoot, new EditorKeyboardPolicy(Inno.Core.Input.KeyModifier.Control, "Super")),
             m_types,
             m_logs,
             [m_types, m_serialization, m_identities, m_assets, m_plugins]);

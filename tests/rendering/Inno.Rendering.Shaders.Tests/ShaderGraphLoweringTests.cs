@@ -1,3 +1,4 @@
+using Inno.Integration.MacOS.Bgfx;
 using Inno.Adapter.Serialization.DotNet;
 using Inno.Adapter.Modules.DotNet;
 using System;
@@ -50,7 +51,7 @@ public sealed partial class ShaderGraphLoweringTests : IDisposable
         Assert.Contains(lowered.block.instructions, instruction => instruction.operation == ShaderIrOperation.Multiply);
         Assert.Equal(BitConverter.SingleToUInt32Bits(0.25f), lowered.block.instructions[0].constantBits);
         var stage = new ShaderIrStage(ShaderStage.Fragment, lowered.block, [], [new("color", ShaderIrOutputKind.Color)]);
-        var compiler = new ShaderCompiler(new BgfxShadercToolchain(BgfxShaderTargetPlatform.MacOSArm64));
+        var compiler = new ShaderCompiler(new BgfxShadercToolchain(Inno.Integration.MacOS.Bgfx.MacOSBgfxShaderProfiles.target));
         var caps = new GraphicsCapabilities(GraphicsApi.Metal, GraphicsCapability.None, new(256, 8, 8192, 16),
             Enum.GetValues<RenderTextureFormat>(), Enum.GetValues<RenderTextureFormat>(), Enum.GetValues<RenderTextureFormat>(),
             Enum.GetValues<RenderTextureFormat>(), false, false);

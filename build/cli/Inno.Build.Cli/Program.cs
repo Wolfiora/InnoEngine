@@ -36,7 +36,7 @@ internal static class Program
                 case "import-sample":
                     return await ProjectBuildWorkflow.RunAsync(arguments, cancellation.Token);
                 case "verify":
-                    return ArchitectureValidator.Execute(options);
+                    return ArchitectureValidator.Execute(options, cancellation.Token);
                 case "verify-native":
                     return await NativeBindingsVerification.RunAsync(options, cancellation.Token);
                 case "engine":

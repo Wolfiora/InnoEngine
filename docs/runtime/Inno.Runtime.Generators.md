@@ -27,3 +27,31 @@ SerializationConverterGenerator 另外输出本程序集的 RuntimeSerialization
 `INNORUN002` 在构建阶段拒绝无法访问或缺少无参数构造入口的封闭 Converter。
 私有泛型构造入口使用对应的泛型辅助类型，保留声明的类型参数顺序与约束，
 符合 [.NET 9 UnsafeAccessor 的签名匹配规则](https://learn.microsoft.com/en-us/dotnet/core/compatibility/core-libraries/9.0/unsafeaccessor-generics)。
+
+## 当前源码公开 API 清单
+
+只列当前源码的 public/protected 表面；内部实现不作为稳定 API。参数、返回、失败和 owner 以英文 XML 为准。
+
+### `Inno.Runtime.Generators.RuntimeFactoryGenerator`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Runtime.Generators.RuntimeFactoryGenerator`](../../src/runtime/generators/Inno.Runtime.Generators/Registration/RuntimeFactoryGenerator.cs#L12) | Composes explicit assembly-local metadata catalogs for a Player entry project selected by its build. |
+| [`void Inno.Runtime.Generators.RuntimeFactoryGenerator.Initialize(Microsoft.CodeAnalysis.IncrementalGeneratorInitializationContext context)`](../../src/runtime/generators/Inno.Runtime.Generators/Registration/RuntimeFactoryGenerator.cs#L16) | See the implemented contract. |
+
+### `Inno.Runtime.Generators.RuntimeModuleCatalogGenerator`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Runtime.Generators.RuntimeModuleCatalogGenerator`](../../src/runtime/generators/Inno.Runtime.Generators/Registration/RuntimeModuleCatalogGenerator.cs#L13) | Emits a local, explicit type and construction catalog for statically deployed managed assemblies. |
+| [`void Inno.Runtime.Generators.RuntimeModuleCatalogGenerator.Initialize(Microsoft.CodeAnalysis.IncrementalGeneratorInitializationContext context)`](../../src/runtime/generators/Inno.Runtime.Generators/Registration/RuntimeModuleCatalogGenerator.cs#L22) | Registers deterministic catalog generation from the current assembly's declared symbols. |
+
+### `Inno.Runtime.Generators.RuntimeSubsystemGenerator`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Runtime.Generators.RuntimeSubsystemGenerator`](../../src/runtime/generators/Inno.Runtime.Generators/RuntimeSubsystemGenerator.cs#L14) | Generates deterministic, reflection-free catalogs from local strongly typed subsystem declarations. |
+| [`void Inno.Runtime.Generators.RuntimeSubsystemGenerator.Initialize(Microsoft.CodeAnalysis.IncrementalGeneratorInitializationContext context)`](../../src/runtime/generators/Inno.Runtime.Generators/RuntimeSubsystemGenerator.cs#L26) | Registers incremental discovery of composition methods and catalog declarations. |
+
+## 项目依赖
+

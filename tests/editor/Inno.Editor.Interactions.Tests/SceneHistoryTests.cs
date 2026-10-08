@@ -71,7 +71,7 @@ public sealed class SceneHistoryTests : IDisposable
                 enableFileSystemWatcher = false
             });
         m_runtime = new EditorInteractionRuntime(
-            new EditorContext(m_projectRoot),
+            new EditorContext(m_projectRoot, new EditorKeyboardPolicy(Inno.Core.Input.KeyModifier.Control, "Super")),
             m_host.types,
             m_host.logs,
             [
@@ -342,8 +342,11 @@ public sealed class SceneHistoryTests : IDisposable
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
-    private Guid AddAndRemoveReloadableComponent(GameObject owner, TextAsset? asset, bool rejectRestore)
-    {
+    private Guid AddAndRemoveReloadableComponent(
+        GameObject owner,
+        TextAsset? asset,
+        bool rejectRestore
+    ) {
         Type type = new TypeRef(Guid.Parse("9f67d41e-082b-46d5-aaf0-dfc76c693182")).Resolve(m_host.types);
         GameComponent component = owner.AddComponent(type);
         type.GetProperty("value")!.SetValue(component, 73);
@@ -437,8 +440,11 @@ public sealed class SceneHistoryTests : IDisposable
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
-    private void AssertRecoveredComponent(Guid componentId, Guid assetId, int missingRuntimeId)
-    {
+    private void AssertRecoveredComponent(
+        Guid componentId,
+        Guid assetId,
+        int missingRuntimeId
+    ) {
         GameComponent component = Assert.IsAssignableFrom<GameComponent>(m_session.scenes.Find<GameComponent>(componentId));
         Assert.IsNotType<MissingGameComponent>(component);
         Assert.NotEqual(missingRuntimeId, component.identity.runtimeId);
@@ -484,7 +490,10 @@ public sealed class SceneHistoryTests : IDisposable
         Assert.Equal(GenerationState.Ready, m_host.modules.generations.state);
     }
 
-    private sealed class ExternalContentChange(Action activate, Action restore) : IGenerationChange
+    private sealed class ExternalContentChange(
+        Action activate,
+        Action restore
+    ) : IGenerationChange
     {
         public void PrepareForActivation() { }
         public void Apply() => activate();
@@ -837,8 +846,10 @@ public sealed class SceneHistoryTests : IDisposable
 [EditorModule("tests.scene-history-probe", order: 220)]
 public sealed class SceneHistoryProbe : EditorModule
 {
-    public SceneHistoryProbe(SceneEdits sceneEdits, IEditorSceneWorkspace workspace)
-    {
+    public SceneHistoryProbe(
+        SceneEdits sceneEdits,
+        IEditorSceneWorkspace workspace
+    ) {
         edits = sceneEdits;
         documents = workspace;
     }

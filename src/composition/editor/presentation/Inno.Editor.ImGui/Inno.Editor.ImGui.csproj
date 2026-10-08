@@ -17,7 +17,7 @@
       Include="../../../../foundation/core/Inno.Core.Execution/Inno.Core.Execution.csproj"
       PrivateAssets="compile" />
     <ProjectReference
-      Include="../../../../adapters/presentation/Inno.Adapter.Presentation.ImGui.Sdl3/Inno.Adapter.Presentation.ImGui.Sdl3.csproj"
+      Include="../../../../../backends/ImGui/runtime/Inno.Adapter.Presentation.ImGui.Sdl3/Inno.Adapter.Presentation.ImGui.Sdl3.csproj"
       PrivateAssets="compile" />
     <ProjectReference
       Include="../../../../foundation/core/Inno.Core.Identity/Inno.Core.Identity.csproj"
@@ -28,7 +28,7 @@
     <ProjectReference Include="../../../../foundation/extensibility/Inno.Extensibility.Types/Inno.Extensibility.Types.csproj" />
     <ProjectReference Include="../../framework/Inno.Editor.Core/Inno.Editor.Core.csproj" />
     <ProjectReference Include="../../framework/Inno.Editor.Interactions/Inno.Editor.Interactions.csproj" />
-    <ProjectReference Include="../../../../../native/Inno.Native.ImGui/Inno.Native.ImGui.csproj" />
+    <ProjectReference Include="../../../../../backends/ImGui/native/Inno.Native.ImGui/Inno.Native.ImGui.csproj" />
     <ProjectReference Include="../../../../foundation/core/Inno.Core.Events/Inno.Core.Events.csproj" />
     <ProjectReference Include="../../../../foundation/core/Inno.Core.Logging/Inno.Core.Logging.csproj" />
     <ProjectReference Include="../../../../foundation/core/Inno.Core.Serialization/Inno.Core.Serialization.csproj" />

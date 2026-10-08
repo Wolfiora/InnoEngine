@@ -14,17 +14,19 @@ internal sealed class NativeVerificationOptions
         string engineRoot,
         string bindGenRoot,
         string configuration,
-        string dotnet
+        string dotnet,
+        string target
     ) {
         this.engineRoot = engineRoot;
         this.bindGenRoot = bindGenRoot;
         this.configuration = configuration;
         this.dotnet = dotnet;
+        this.target = target;
     }
 
     internal static string usage
         => "Usage: dotnet run --project build/cli/Inno.Build.Cli -- verify-native "
-           + "[--engine-root <dir>] [--bindgen-root <dir>] [--configuration <Debug|Release>] [--dotnet <path>]";
+           + "--target <native-target> [--engine-root <dir>] [--bindgen-root <dir>] [--configuration <Debug|Release>] [--dotnet <path>]";
 
     internal string engineRoot { get; }
 
@@ -33,6 +35,8 @@ internal sealed class NativeVerificationOptions
     internal string configuration { get; }
 
     internal string dotnet { get; }
+
+    internal string target { get; }
 
     internal static NativeVerificationOptions Parse(IReadOnlyList<string> args)
     {
@@ -59,11 +63,13 @@ internal sealed class NativeVerificationOptions
             throw new ArgumentException("--configuration must be either Debug or Release.");
         string dotnet = values.GetValueOrDefault("dotnet", ResolveDotnet());
 
-        string[] knownKeys = ["engine-root", "bindgen-root", "configuration", "dotnet"];
+        if (!values.TryGetValue("target", out string? target) || string.IsNullOrWhiteSpace(target))
+            throw new ArgumentException("--target requires an explicit implemented native target.");
+        string[] knownKeys = ["engine-root", "bindgen-root", "configuration", "dotnet", "target"];
         string? unknownKey = values.Keys.FirstOrDefault(key => !knownKeys.Contains(key, StringComparer.Ordinal));
         if (unknownKey != null)
             throw new ArgumentException($"Unknown argument '--{unknownKey}'.{Environment.NewLine}{usage}");
-        return new NativeVerificationOptions(engineRoot, bindGenRoot, configuration, dotnet);
+        return new NativeVerificationOptions(engineRoot, bindGenRoot, configuration, dotnet, target);
     }
 
     private static string ResolveDotnet()

@@ -1,0 +1,35 @@
+<Project>
+  <PropertyGroup>
+    <InnoProductId Condition="'$(InnoProductId)' == ''">editor</InnoProductId>
+    <InnoProductTarget Condition="'$(InnoProductTarget)' == ''">macos-arm64</InnoProductTarget>
+    <InnoNativeTarget Condition="'$(InnoNativeTarget)' == ''">macos-arm64</InnoNativeTarget>
+    <InnoToolTarget Condition="'$(InnoToolTarget)' == ''">macos-arm64</InnoToolTarget>
+    <InnoProductBuildProperties>$(MSBuildThisFileDirectory)../../build/Inno.Build.MacOS/EditorProduct.props</InnoProductBuildProperties>
+  </PropertyGroup>
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <OutputType>Exe</OutputType>
+    <InnoAssemblyScope>Editor</InnoAssemblyScope>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../integrations/Inno.Integration.MacOS.Sdl3/Inno.Integration.MacOS.Sdl3.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../integrations/Inno.Integration.MacOS.Bgfx/Inno.Integration.MacOS.Bgfx.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../../../backends/ImGui/runtime/Inno.Adapter.Presentation.ImGui.Bgfx/Inno.Adapter.Presentation.ImGui.Bgfx.csproj" PrivateAssets="compile" />
+
+    <ProjectReference Include="../../build/Inno.Build.MacOS/Inno.Build.MacOS.csproj" />
+    <ProjectReference Include="../../../../src/composition/editor/hosting/Inno.Editor.Hosting/Inno.Editor.Hosting.csproj" />
+    <ProjectReference Include="../../../../src/composition/adapters/Inno.Adapter.Authoring.Default/Inno.Adapter.Authoring.Default.csproj" />
+    <ProjectReference Include="../../../../backends/FileSystem/runtime/Inno.Adapter.Storage.FileSystem/Inno.Adapter.Storage.FileSystem.csproj" />
+    <ProjectReference Include="../../../../backends/DotNet/runtime/Inno.Adapter.Modules.DotNet/Inno.Adapter.Modules.DotNet.csproj" />
+    <ProjectReference Include="../../../../backends/DotNet/runtime/Inno.Adapter.Serialization.DotNet/Inno.Adapter.Serialization.DotNet.csproj" />
+    <ProjectReference Include="../../../../build/distributions/Inno.Build.Distribution.Standard/Inno.Build.Distribution.Standard.csproj" />
+    <ProjectReference Include="../../../../src/foundation/core/Inno.Core.Execution/Inno.Core.Execution.csproj" />
+    <ProjectReference Include="../../runtime/Inno.Platform.MacOS/Inno.Platform.MacOS.csproj" />
+    <ProjectReference Include="../../../../backends/Bgfx/build/Inno.Build.Toolchains.Bgfx.Tools/Inno.Build.Toolchains.Bgfx.Tools.csproj" />
+  </ItemGroup>
+  <Import Project="../../../../src/composition/editor/EditorProduct.props" />
+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+</Project>

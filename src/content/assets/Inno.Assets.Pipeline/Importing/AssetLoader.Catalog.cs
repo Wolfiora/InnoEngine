@@ -526,6 +526,7 @@ sealed partial class AssetLoader
         internal AssetObject? asset;
         internal bool? lastSweepReachability;
         internal long importerGeneration;
+        internal long failedTypeGeneration;
         internal AssetSourceFileStamp settingsStamp;
     }
 

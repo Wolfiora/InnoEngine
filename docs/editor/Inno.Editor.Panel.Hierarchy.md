@@ -75,3 +75,43 @@ Command/Ctrl+S 使用原始 Action ID `editor/save`，由本 feature 提供实�
 ## Scripting API
 
 EditorScripts 使用 `InnoEditor.Hierarchy` 获取公开 drop target；Attribute 与运行时 API 共用 feature-owned `const string` ID/area。Workspace 查询与工作流接口 `IEditorSceneWorkspace`、可逆编辑门面 `SceneEdits` 位于 `InnoEditor.Scene`。没有 global using。
+
+## 当前源码公开 API 清单
+
+只列当前源码的 public/protected 表面；内部实现不作为稳定 API。参数、返回、失败和 owner 以英文 XML 为准。
+
+### `Inno.Editor.Panel.Hierarchy.HierarchyObjectDropTarget`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Editor.Panel.Hierarchy.HierarchyObjectDropTarget`](../../src/composition/editor/panels/Inno.Editor.Panel.Hierarchy/Interactions/HierarchyObjectDropTarget.cs#L11) | Identifies a game object hierarchy drop target. |
+| [`Inno.Editor.Panel.Hierarchy.HierarchyObjectDropTarget.HierarchyObjectDropTarget(Inno.Scene.GameObject gameObject)`](../../src/composition/editor/panels/Inno.Editor.Panel.Hierarchy/Interactions/HierarchyObjectDropTarget.cs#L22) | Creates a hierarchy drop target representing one live game object row. |
+| [`Inno.Scene.GameObject Inno.Editor.Panel.Hierarchy.HierarchyObjectDropTarget.gameObject`](../../src/composition/editor/panels/Inno.Editor.Panel.Hierarchy/Interactions/HierarchyObjectDropTarget.cs#L30) | Gets the target game object. |
+
+### `Inno.Editor.Panel.Hierarchy.HierarchySceneDropTarget`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Editor.Panel.Hierarchy.HierarchySceneDropTarget`](../../src/composition/editor/panels/Inno.Editor.Panel.Hierarchy/Interactions/HierarchySceneDropTarget.cs#L11) | Identifies a scene row or scene root hierarchy drop target. |
+| [`Inno.Editor.Panel.Hierarchy.HierarchySceneDropTarget.HierarchySceneDropTarget(Inno.Scene.GameScene scene)`](../../src/composition/editor/panels/Inno.Editor.Panel.Hierarchy/Interactions/HierarchySceneDropTarget.cs#L22) | Creates a hierarchy drop target representing one loaded scene row or root. |
+| [`Inno.Scene.GameScene Inno.Editor.Panel.Hierarchy.HierarchySceneDropTarget.scene`](../../src/composition/editor/panels/Inno.Editor.Panel.Hierarchy/Interactions/HierarchySceneDropTarget.cs#L30) | Gets the target scene. |
+
+## 项目依赖
+
+- [Inno.Editor.ImGui](Inno.Editor.ImGui.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Editor.Scene](Inno.Editor.Scene.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Editor.Settings](Inno.Editor.Settings.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Editor.Panel.FileBrowser](Inno.Editor.Panel.FileBrowser.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Assets](../assets/Inno.Assets.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Assets.Pipeline](../assets/Inno.Assets.Pipeline.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Core.Identity](../core/Inno.Core.Identity.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Core.Logging](../core/Inno.Core.Logging.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Scripting.Api](../scripting/Inno.Scripting.Api.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Scene.Assets](../scene/Inno.Scene.Assets.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Adapter.Presentation.ImGui.Sdl3](../backends/ImGui/Inno.Adapter.Presentation.ImGui.Sdl3.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Native.ImGui](../backends/ImGui/Inno.Native.ImGui.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Editor.Core](Inno.Editor.Core.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Editor.Interactions](Inno.Editor.Interactions.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Scene](../scene/Inno.Scene.md)：公开引用边界由实际签名核对。
+- [Inno.Core.Serialization](../core/Inno.Core.Serialization.md)：公开引用边界由实际签名核对。
+- [Inno.Extensibility.Catalogs](../extensibility/Inno.Extensibility.Catalogs.md)：公开引用边界由实际签名核对。
