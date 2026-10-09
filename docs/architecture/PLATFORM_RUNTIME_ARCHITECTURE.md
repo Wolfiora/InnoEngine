@@ -215,7 +215,7 @@ Contributor 注册变化时发布 immutable snapshot，帧开始固定；帧中�
 
 ### 构建组合与原生身份
 
-Inno.Build.Composition 是内置 target、managed deployment 和 Support Pack source 的唯一组合库。Editor、CLI 和 MSBuild Task 注入各自上下文后消费相同 distribution；通用 Build 不反向引用组合库。
+Inno.Build.Composition 只承载中立组合契约与完整绑定机制；Inno.Build.Distribution.Standard 是内置平台、所选 integration、managed deployment 和 Support Pack 的唯一发行注册入口。Editor、CLI 和 MSBuild Task 注入各自上下文后消费相同 distribution；通用 Build 不反向引用具体发行。
 
 共同 Task 引导隔离 RID/AOT/Wasm/IDE 属性，一次闭包同一工具身份只准备一次宿主。Native recipe 覆盖实际组件源码、SDK/tool、参数、BGCS 定义/实现和必需 exports；operation 共用初始输入扫描，等锁后及发布前重新验证稳定性。热命中仍校验完整产物内容，内容相同的部署保持 DLL 字节和 mtime。
 

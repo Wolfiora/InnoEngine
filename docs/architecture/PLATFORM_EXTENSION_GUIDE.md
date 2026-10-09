@@ -2,9 +2,10 @@
 
 [架构索引](README.md) · [Wiki 首页](../README.md) · [平台包](../platform/README.md) · [共享后端](../backends/README.md)
 
-当前 BGFX Native recipe 接收平台贡献的 `BgfxNativeBuildProfile`，Shader compiler 接收不可变的
-`BgfxShaderTargetProfile`；共享 backend 不再维护命名平台工厂或 Inno target 枚举。
-完整变更与实测边界见[平台边界收口验收](PLATFORM_BOUNDARY_CLOSEOUT_ACCEPTANCE_2026_10_08.md)。
+当前平台基础模块声明目标、SDK 与打包；对应 BGFX integration 提供 `BgfxNativeBuildProfile`、
+`BgfxShaderTargetProfile` 和内容编译工厂。Standard Distribution 绑定平台与后端，
+共享 backend 不维护命名平台工厂或 Inno target 枚举。
+完整变更与实测边界见[当前集成整改验收](BACKEND_PLATFORM_INTEGRATION_ACCEPTANCE.md)。
 下面的接入结构仍须配合实际 SDK、第三方能力和设备验收，不能仅凭可组合配置宣称平台支持。
 
 ## 1. 一个归属位置，多个明确职责
@@ -16,13 +17,18 @@ flowchart TD
     P[平台产品入口] --> H[共享 Editor Hosting / Player Runtime / Shell]
     P --> S[平台系统服务]
     P --> B[共享 backend 或平台 SDK Adapter]
+    P --> I[所选平台与 backend 集成]
+    I --> S
+    I --> B
     H --> D[中立领域服务与契约]
     B --> D
     D --> F[Foundation / Content]
     R[具体发行组合] --> PB[平台构建模块]
+    R --> BI[所选构建集成]
     R --> M[托管部署 compiler]
+    BI --> PB
+    BI --> BC[backend 组件构建与内容 compiler]
     PB --> T[共同 Toolchains / Support Pack 机制]
-    PB --> BC[backend 组件构建]
 ```
 
 维护平台、运行目标、产品、托管部署和工具宿主分别表达。例如在 Windows 上运行构建工具，可以请求 Browser Wasm32；当前 Windows Editor 导出 Browser 游戏时仍使用 Windows 的 ImGui 和 Native 产物。
@@ -34,6 +40,7 @@ flowchart TD
 | 已解析 SDK、工具、环境与参数 | `NativeToolchainSelection` |
 | 组件源码、生成定义与中间目录 | `NativeComponentDescriptor` |
 | 游戏目标、Support Pack、SDK provider | `BuildPlatformContribution` |
+| 平台 packager 与后端内容 compiler 的完整绑定 | `GameBuildContribution` / `GameBuildTargetBinding` |
 | 实际组件闭包 | `ProductNativeBuildPlan` |
 | 托管执行与最终链接 | `IManagedDeploymentCompiler` |
 
@@ -61,6 +68,9 @@ platforms/NS/
 │  ├─ Managed/
 │  ├─ Packaging/
 │  └─ SupportPacks/
+├─ integrations/                           仅有真实连接代码时建立
+│  ├─ Inno.Integration.NS.<GraphicsBackend>/
+│  └─ Inno.Integration.NS.<WindowBackend>/
 ├─ editor/Inno.Editor.NS.Tools/       确实有专属工具时添加
 ├─ tests/
 └─ docs/
@@ -106,9 +116,9 @@ backend 不引用 `Inno.Platform.NS`。它只消费领域 SPI 和所属 Native f
 
 ### BGFX 与 Support Pack 的明确扩展点
 
-- Native：平台提供 `BgfxNativeBuildProfile` 的目标、GENie 参数、输出 token 和冻结 SDK invocation。
+- Native：对应 integration 提供 `BgfxNativeBuildProfile` 的目标、GENie 参数、输出 token 和冻结 SDK invocation。
   共同 recipe 负责源码、执行、完整参数指纹与发布，不读取一个命名平台列表。
-- Shader：平台构造 `BgfxShaderCompilerProfile`，明确能力、shaderc 参数、阶段方言和 defines；
+- Shader：对应 integration 构造 `BgfxShaderCompilerProfile`，明确能力、shaderc 参数、阶段方言和 defines；
   将所需 renderer 集合组成 `BgfxShaderTargetProfile`，发行组合把它与同一 target contribution 绑定。
   `BgfxGameContentCompiler` 接收实际需要的 renderer 闭包，不通过三个固定平台工厂创建。
 - 静态 Native：产品计划声明真实 `staticBuild` recipe，由平台聚合执行器执行；不能填入不会运行的独立 producer。

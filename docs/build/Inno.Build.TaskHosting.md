@@ -4,12 +4,14 @@
 
 ## 职责与边界
 
-这是 MSBuild 引导边界的小型库，唯一职责是发布及退休 Task 的不可变运行闭包。它只依赖 Core IO 和 MSBuild 契约，
+这是 MSBuild 引导边界的小型库，负责协调 Task 运行闭包的编译、发布及退休。它只依赖 Core IO 和 MSBuild 契约，
 不引用 BGCS、具体平台、后端、发行组合或完整 `Inno.Build.Tasks`。发布宿主无需加载正在构建的任务库，避免引导循环与 bootstrap DLL 锁定。
 
 ## 初始化与所有权
 
-共同 targets 先构建小型 publisher，并将其复制到私有引导目录；完整 Task 项目返回实际运行文件的逻辑路径及 SHA-256。
+共同 targets 在操作私有中间目录构建小型 publisher，避免多个 MSBuild 进程争用尚未加载的引导 DLL。
+`BuildTaskRuntimeTask` 使用同一共享 bootstrap 根的 `FileLease` 协调完整 Task 项目编译；等待时通过 MSBuild `Yield`/`Reacquire` 释放节点，失败、取消或异常都释放写 lease。
+SDK 与项目构建仍由当前 MSBuild engine 执行，保留明确属性和移除产品属性的机制，不创建第二个 CLI 或通过 PATH 重新选择 SDK。完整 Task 项目返回实际运行文件的逻辑路径及 SHA-256。
 Publisher 在 fingerprint lease 下验证来源及缓存，发布完整 staging，然后登记当前进程的私有 reader。
 MSBuild 从已验证的不可变快照准备自己的私有加载目录。宿主快照按内容身份共享，加载目录按进程保留。
 
@@ -20,6 +22,11 @@ MSBuild 从已验证的不可变快照准备自己的私有加载目录。宿主
 
 | API | 语义 |
 | --- | --- |
+| `BuildTaskRuntimeTask` | 一次实例协调一次共享编译；调用者提供支持 Yield 的真实 MSBuild engine。 |
+| `ProjectFile` / `Targets` | 绝对任务项目位置及返回完整 runtime 的有序目标；目标为空或项目不存在明确失败。 |
+| `ArtifactsDirectory` | 绝对共享编译 owner；任务直接设置 ArtifactsPath，并在此取得 build.lock。 |
+| `Properties` / `RemoveProperties` | 明确 name=value 编译属性及从父构建移除的全局属性；拒绝重复声明和 ArtifactsPath 覆盖。 |
+| `TargetOutputs` | 成功返回的实际文件及原始哈希 metadata；失败不发布闭包。 |
 | `PublishTaskHostTask` | 一次实例用于一次 MSBuild 发布；依赖通过公开 Task 属性及 `BuildEngine` 注入。 |
 | `InputFiles` | 冻结文件集合；每项提供 `RelativePath` 与 `FileHash`，必须包括 Task 主程序集。 |
 | `CacheDirectory` | 绝对共享 host 缓存 owner；不同内容身份分别发布。 |
@@ -47,11 +54,26 @@ MSBuild 从已验证的不可变快照准备自己的私有加载目录。宿主
 ## 验证
 
 `tests/build/Inno.Build.Tests/TaskHostPublicationTests.cs` 通过真实 Task 契约验证复用、并发、损坏、取消、路径拒绝及 reader 退休。
+`TaskRuntimeBuildTests.cs` 通过公开 Task/IBuildEngine3/FileLease 验证共享写入、取消、失败释放及属性拒绝；并发真实 MSBuild 进程另行验证实际引导闭包。
 普通产品 Build/Publish 还验证真实引导闭包；Design-time Build 不执行该 Task。
 
 ## 当前源码公开 API 清单
 
 只列当前源码的 public/protected 表面；内部实现不作为稳定 API。参数、返回、失败和 owner 以英文 XML 为准。
+
+### `Inno.Build.TaskHosting.BuildTaskRuntimeTask`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`ITaskItem[] Inno.Build.TaskHosting.BuildTaskRuntimeTask.TargetOutputs`](../../build/tasks/Inno.Build.TaskHosting/BuildTaskRuntimeTask.cs#L53) | Gets the returned runtime files and their hash metadata after successful compilation. |
+| [`Inno.Build.TaskHosting.BuildTaskRuntimeTask`](../../build/tasks/Inno.Build.TaskHosting/BuildTaskRuntimeTask.cs#L15) | Coordinates shared task-runtime compilation before immutable publication and private loading. |
+| [`override bool Inno.Build.TaskHosting.BuildTaskRuntimeTask.Execute()`](../../build/tasks/Inno.Build.TaskHosting/BuildTaskRuntimeTask.cs#L62) | Serializes shared writes across processes while yielding the MSBuild node during ownership waits. |
+| [`string Inno.Build.TaskHosting.BuildTaskRuntimeTask.ArtifactsDirectory`](../../build/tasks/Inno.Build.TaskHosting/BuildTaskRuntimeTask.cs#L30) | Gets or sets the absolute shared intermediate owner, also supplied as ArtifactsPath. |
+| [`string Inno.Build.TaskHosting.BuildTaskRuntimeTask.ProjectFile`](../../build/tasks/Inno.Build.TaskHosting/BuildTaskRuntimeTask.cs#L24) | Gets or sets the task project whose complete runtime is built by the calling MSBuild engine. |
+| [`string[] Inno.Build.TaskHosting.BuildTaskRuntimeTask.Properties`](../../build/tasks/Inno.Build.TaskHosting/BuildTaskRuntimeTask.cs#L43) | Gets or sets explicit name=value properties after product-specific global properties are removed. ArtifactsPath is owned by this task and cannot be overridden. |
+| [`string[] Inno.Build.TaskHosting.BuildTaskRuntimeTask.RemoveProperties`](../../build/tasks/Inno.Build.TaskHosting/BuildTaskRuntimeTask.cs#L48) | Gets or sets parent global properties that must not enter the host tool build. |
+| [`string[] Inno.Build.TaskHosting.BuildTaskRuntimeTask.Targets`](../../build/tasks/Inno.Build.TaskHosting/BuildTaskRuntimeTask.cs#L36) | Gets or sets the ordered targets returning the complete hashed runtime closure. |
+| [`void Inno.Build.TaskHosting.BuildTaskRuntimeTask.Cancel()`](../../build/tasks/Inno.Build.TaskHosting/BuildTaskRuntimeTask.cs#L129) | Cancels an ownership wait without racing retirement of the cancellation source. |
 
 ### `Inno.Build.TaskHosting.PublishTaskHostTask`
 

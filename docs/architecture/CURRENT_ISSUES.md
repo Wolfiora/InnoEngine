@@ -88,4 +88,8 @@ BGFX 平台配置、内容 compiler/packager、SDL 宿主与 ImGui 尺度、Nati
 
 ## 本次集成整改交接
 
-平台/backend 源码边界已整改；完整产品、最终 ImGui DPI、实际 UI 与性能验收按用户要求待续跑。详见[验收报告](BACKEND_PLATFORM_INTEGRATION_ACCEPTANCE.md)和[续跑清单](BACKEND_PLATFORM_INTEGRATION_HANDOFF.md)，当前不作全矩阵通过声明。
+2026-10-09：平台/backend 源码边界整改与本机无人值守门禁已完成。四条 Player 发布/运行、Windows Debug/Release 普通 Editor Build、隐藏 Editor 6000 帧、当前消费者、有效引用图及三次热构建通过。续跑发现的共享 Task bootstrap `CS2012` 已在中立 TaskHosting 用 Core.IO lease、节点 Yield/Reacquire 和私有最小引导修复；真实并发及取消/失败回归通过。
+
+仍保留两类证据/成本：真实焦点、多窗口、高 DPI、人工玩法/听音及 macOS 实机未验收；热构建仍需约 3–4 分钟，每次 Native 完整校验读取约 13.95 GB，并观察到 17 个新的私有 Task 载入目录。Native 工具启动为 0、部署文件不变，不能据此称整体构建已足够快或没有 IO。Web 实际玩法检查通过，但第三方 capability warning 和 favicon.ico 的 404 单独保留；游戏 page error 为 0 不等于全部请求无错误。
+
+详见[验收报告](BACKEND_PLATFORM_INTEGRATION_ACCEPTANCE.md)和[剩余实机清单](BACKEND_PLATFORM_INTEGRATION_HANDOFF.md)。这组当前结果不覆盖上方历史记录，也不作全平台/全部实机无保留通过声明。

@@ -122,6 +122,12 @@ WindowsX86 复用 Windows 产品入口，先实现目标/SDK/ABI，再在相应 
 
 验收报告记录每条命令、结果、未实测项和性能数据；源码边界通过不能替代 macOS、Linux 或真实高 DPI 设备验收。最终交付同时总结用户的三个疑问：BGFX 平台配置耦合、其他 backend 是否有同类问题、如何让今后新增平台/后端有固定接入位置。
 
-## 额度交接状态
+## 当前执行状态（2026-10-09）
 
-源码与契约整改完成，Solution Debug/Release 和已完成契约门禁通过。用户要求将未完成产品/实机/性能验收留待额度重置；详见[当前报告](BACKEND_PLATFORM_INTEGRATION_ACCEPTANCE.md)及[续跑清单](BACKEND_PLATFORM_INTEGRATION_HANDOFF.md)。不得把待验收写成已完成。
+七阶段的源码、消费者、Solution 与文档整改完成；本机无人值守门禁现已补齐：Debug/Release Solution 和 Windows Editor 普通 Build、四条 Player 发布/运行、隐藏 Editor、Canvas/Rendering2D、独立 BGCS、有效引用图及三次热构建测量通过。当前集成整改已由用户提交，本次续跑没有自动提交。
+
+续跑真实并发构建发现 Task runtime 共享中间态写入冲突。新增中立 `BuildTaskRuntimeTask`，复用 Core.IO lease 和 MSBuild Yield/Reacquire；最小 publisher 使用操作私有 bootstrap，完整 runtime 共享编译后进入原有不可变发布/载入协议。对应文件为 `build/tasks/Inno.Build.TaskHosting/BuildTaskRuntimeTask.cs`、`build/msbuild/Inno.Build.Tasks.targets`、`tests/build/Inno.Build.Tests/TaskRuntimeBuildTests.cs` 与 TaskHosting Wiki。五个新增测试、最终 16 项定向回归和两个真实并发 MSBuild 均通过。Canvas 的旧 Metal 选择 API 同步为显式 MacOS BGFX integration。
+
+本轮引擎与 Canvas 测试按稳定 test ID 去重为 864 passed、0 failed、16 macOS 条件案例未执行；BGCS 独立 managed 1023 passed，NativeAOT/Wasm 解释/Wasm AOT 各 56 项实际 API 检查通过。三次热构建没有 Native 工具启动或部署文件变化，但整次仍耗时约 3–4 分钟，完整哈希与 Task 引导成本明确保留。
+
+真实桌面焦点、浮动 viewport、多屏 DPI、人工玩法/听音和 macOS 实机尚未完成本轮验收。用户当前禁止 Computer Use，未恢复桌面操作；不得用隐藏窗口或 headless 结果代替这组证据。详见[当前报告](BACKEND_PLATFORM_INTEGRATION_ACCEPTANCE.md)和[剩余实机清单](BACKEND_PLATFORM_INTEGRATION_HANDOFF.md)。

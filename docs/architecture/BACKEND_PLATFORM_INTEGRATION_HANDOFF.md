@@ -1,31 +1,32 @@
-# 平台/后端集成整改续跑清单
+# 集成整改剩余实机验收
 
-[验收报告](BACKEND_PLATFORM_INTEGRATION_ACCEPTANCE.md) · [批准计划](BACKEND_PLATFORM_INTEGRATION_PLAN.md)
+[本轮报告](BACKEND_PLATFORM_INTEGRATION_ACCEPTANCE.md) · [批准计划](BACKEND_PLATFORM_INTEGRATION_PLAN.md)
 
-## 从这里继续
+## 已完成与后续边界
 
-源码重构已完成，最后 Debug/Release Solution 编译均通过。用户在额度仅剩 4% 时要求停止 Computer Use，并将未完成验收留至额度重置；不要重新执行 phase/edit 迁移脚本，不要覆盖既有未提交工作区。
+源码整改、当前契约门禁、Debug/Release 有效引用图、四条无人值守发布/运行、隐藏 Editor 与消费者和三次热构建已完成，精确结果以本轮报告为准。当前 HEAD 包含用户已提交的集成整改；本次新增 Task bootstrap 协调修复、Canvas 测试迁移及文档更正尚未自动提交。
 
-1. 阅读 AGENTS、验收报告及本次 `results/handoff-source-identity.json`；确认工作区之后是否改变。当前源码没有 BGCS/extern/生成绑定手工修改。
-2. 先重新执行 ImGui 最终 35 项；上一份 `imgui.trx` 34 项早于最终 DPI 调整，只作为历史证据。
-3. `remaining-gates.py` 根据已有成功记录跳过 Debug/Release Solution；继续 Release 架构验证、Canvas 和 BGFX 原生测试。执行前若源码变动，撤销对应成功缓存并重验，不盲目跳过。
-4. `products.py` 使用 owned CLI 副本、同一发行绑定及四条部署路径，已成功条目跳过；Native 输入被冻结后禁止边编译边改 recipe/配置源码。首次冷构建昂贵，待热缓存完成。CLI 副本需要与当前源码一致；若源码变动先重新 build/copy。
-5. Rendering2D 使用其正式 Validate-Rendering2D.ps1，Windows Editor Debug/Release 单独产品 build/smoke；实际 UI 必须等用户再次允许 Computer Use。当前不要自动启动 UI。
-6. 复核发布 closure、Native exports、光照方向、夜晚星光、真实音频和存储；热构建测量必须在其他构建结束后独立执行。
-7. 重新运行 structure/doc links/有效项目图，刷新 file-map 和本验收报告；只清理本任务明确拥有且已不再使用的缓存。
+当前用户禁止 Computer Use，本轮没有恢复桌面操作。剩余项目不是重新运行架构迁移或完整 SDK 冷构建：
 
-## 命令
+1. 用户允许空闲桌面操作后，分别启动 Debug/Release Windows Editor，使用 Samples/FlappyBird，验证 Play/Stop、浮动 GameView 焦点/失焦释放、前景 Popup/Modal 吸收输入、重叠窗口和退出。
+2. 验证 Export 设置/进度/完成自动关闭、FileBrowser/Selector 的单一滚动 owner、长 label/小窗口、ShaderEditor 小地图。
+3. 使用真实多屏高 DPI 验证附加 viewport、移动、最小化/恢复和 live-resize；已有原生尺度测试不能替代设备组合。
+4. Windows CoreCLR/NativeAOT Player 补人工玩法、听音与图像对照；Web 的两条 headless 路径已有昼夜/星光/移动光/输入/存档/非零样本，其他硬件和浏览器另验。
+5. macOS Native/Editor/Player 在 macOS 环境实测。Linux 只验证已实现的工具能力，不宣称完整 Player；WindowsX86、iOS、NS 没有实现/注册，接入步骤见扩展指南。
 
-工作目录 `C:/Dev/GameEngineDev/InnoEngine`，Web SDK `C:/Users/23842/AppData/Local/InnoWebDotnet/dotnet.exe`，真实 Python `C:/Users/23842/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/python.exe`。
+## Windows 启动入口
 
 ```powershell
-& 'C:/Users/23842/AppData/Local/InnoWebDotnet/dotnet.exe' test tests/editor/Inno.Editor.ImGui.Tests/Inno.Editor.ImGui.Tests.csproj -m:1 -nodeReuse:false --logger 'trx;LogFileName=imgui-final.trx' --results-directory artifacts/acceptance/backend-platform-integration/results
-& 'C:/Users/23842/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/python.exe' artifacts/acceptance/backend-platform-integration/remaining-gates.py
-& 'C:/Users/23842/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/python.exe' artifacts/acceptance/backend-platform-integration/products.py
+& 'C:/Users/23842/AppData/Local/InnoWebDotnet/dotnet.exe' run --no-build --project platforms/Windows/editor/Inno.Editor.Windows/Inno.Editor.Windows.csproj -- 'C:/Dev/GameEngineDev/InnoEngine.Samples/FlappyBird'
+& 'C:/Users/23842/AppData/Local/InnoWebDotnet/dotnet.exe' run --no-build --configuration Release --project platforms/Windows/editor/Inno.Editor.Windows/Inno.Editor.Windows.csproj -- 'C:/Dev/GameEngineDev/InnoEngine.Samples/FlappyBird'
 ```
 
-以上产品脚本的浏览器验收使用隔离 headless Edge，不操作用户桌面；实际桌面 UI 仍需用户许可。未来实际执行过程中保持无关 SDK/用户全局缓存不动。
+这两条命令会打开真实 Editor，当前不要自动执行。Player 使用本轮 products/windows-coreclr 或 products/windows-nativeaot 中发布后的 FlappyBird.exe，不把未附带部署清单和游戏代码的基础 Player 项目当作已导出的游戏。Solution 的产品 opt-in 配置不参与默认批量 Build，`not built` 不代表项目被废弃。
 
-## 中断与缓存
+## 可追溯与缓存
 
-`results/deferred-processes.json` 与 `results/deferred-imgui-processes.json` 记录本轮明确终止的验证进程；本次中断不算测试失败，也不算通过。Native 的发布候选/中间目录可能保留，重启后重新取得 lease、检查内容完整性，不能手工把它们标为完成。停止后尝试只移除可确认归属、无活跃进程的 Temp/InnoTools junction，自动审批审核以通用 blocked-by-policy 原因拒绝了该删除操作，未执行删除。真实 Native obj、当前产物、SDK/用户缓存与验收日志均保留，磁盘余量见 `results/cache-cleanup.json`。
+证据目录为 `artifacts/acceptance/backend-platform-integration`；当前 source hashes、精确命令、TRX、产品日志、headless 图片和热构建观测均保留。不要重执行 phase/edit/finalize-handoff 旧迁移脚本，不用历史截图替代当前交互。
+
+继续前核对当前源码 revision/工作区；修改了被验证的源文件时重新运行对应 gate，不盲目使用脚本的成功跳过记录。Native 输入冻结后不能一边编译一边修改 recipe/配置。
+
+没有创建周期自动化、外部通知或自动提交。只清理明确归属且无活跃进程的任务中间缓存；保留当前 Native 热缓存、SDK、用户文件、最终产物和验收证据。指定 Glass.aiff 在 Windows 不存在，提示音未播放。

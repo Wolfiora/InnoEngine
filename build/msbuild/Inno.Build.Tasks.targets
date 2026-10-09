@@ -9,7 +9,7 @@
     <InnoTaskHostAssembly>$(InnoTaskLoadDirectory)/Inno.Build.Tasks.dll</InnoTaskHostAssembly>
     <InnoTaskPublisherDirectory>$(InnoTaskArtifacts)/publishers/$(InnoTaskLoadId)/$(Configuration)</InnoTaskPublisherDirectory>
     <InnoTaskPublisherAssembly>$(InnoTaskPublisherDirectory)/Inno.Build.TaskHosting.dll</InnoTaskPublisherAssembly>
-    <InnoTaskHostProperties>Configuration=$(Configuration);BindGenRoot=$(BindGenRoot);ArtifactsPath=$(InnoTaskArtifacts)/bootstrap;BuildProjectReferences=true</InnoTaskHostProperties>
+    <InnoTaskHostProperties>Configuration=$(Configuration);BindGenRoot=$(BindGenRoot);BuildProjectReferences=true</InnoTaskHostProperties>
     <InnoTaskExcludedProperties>InnoProductId;InnoProductTarget;InnoProductBuildProperties;InnoBgfxShaderTarget;InnoBgfxShaderApis;InnoImGuiShaderTarget;InnoImGuiShaderApis;InnoProductRestore;InnoToolTarget;InnoPrepareProductNative;InnoNativeTarget;InnoNativeBuildFingerprint;InnoNativeBindingSelection;RuntimeIdentifier;RuntimeIdentifiers;TargetFramework;TargetFrameworks;BindGenProfile;BindGenTargetOutputRoot;BindGenConfig;BindGenOutputDirectory;BindGenGeneratedSource;BindGenGenerationFingerprint;BindGenNativeBridgeDirectory;BindGenDescriptorOutput;BindGenExpectedFingerprint;DebugType;DebugSymbols;DefineConstants;PublishAot;RunAOTCompilation;PublishTrimmed;SelfContained;PublishSingleFile;PublishDir;WasmBuildNative;InnoGeneratePlayerComposition;ArtifactsPivots;UseArtifactsOutput;MSBuildProjectExtensionsPath;BaseOutputPath;BaseIntermediateOutputPath;OutputPath;IntermediateOutputPath;BuildingInsideVisualStudio;BuildingSolutionFile;CurrentSolutionConfigurationContents;DesignTimeBuild;IsCrossTargetingBuild</InnoTaskExcludedProperties>
   </PropertyGroup>
 
@@ -18,10 +18,11 @@
   <UsingTask TaskName="Inno.Build.Tasks.PublishSupportPackTask" AssemblyFile="$(InnoTaskHostAssembly)" />
   <UsingTask TaskName="Inno.Build.Tasks.PrepareProductNativeTask" AssemblyFile="$(InnoTaskHostAssembly)" />
   <UsingTask TaskName="Inno.Build.TaskHosting.PublishTaskHostTask" AssemblyFile="$(InnoTaskPublisherAssembly)" />
+  <UsingTask TaskName="Inno.Build.TaskHosting.BuildTaskRuntimeTask" AssemblyFile="$(InnoTaskPublisherAssembly)" />
 
   <Target Name="PrepareInnoTaskPublisher" Condition="'$(DesignTimeBuild)' != 'true'">
     <MSBuild Projects="$(InnoTaskPublisherProject)" Targets="Restore;PublishInnoTaskPublisherBootstrap"
-             Properties="$(InnoTaskHostProperties)" RemoveProperties="$(InnoTaskExcludedProperties)">
+             Properties="$(InnoTaskHostProperties);ArtifactsPath=$(InnoTaskPublisherDirectory)/bootstrap" RemoveProperties="$(InnoTaskExcludedProperties)">
       <Output TaskParameter="TargetOutputs" ItemName="_InnoPublisherOutput" />
     </MSBuild>
     <Error Condition="'@(_InnoPublisherOutput->Count())' != '1'" Text="The task publisher must return one bootstrap assembly." />
@@ -40,13 +41,14 @@
           Condition="'$(MSBuildProjectName)' == 'Inno.Build.TaskHosting'" />
 
   <Target Name="PrepareInnoBuildTaskHost" DependsOnTargets="PrepareInnoTaskPublisher" Condition="'$(DesignTimeBuild)' != 'true'">
-    <MSBuild
-      Projects="$(InnoTaskProject)"
+    <Inno.Build.TaskHosting.BuildTaskRuntimeTask
+      ProjectFile="$([System.IO.Path]::GetFullPath('$(InnoTaskProject)'))"
+      ArtifactsDirectory="$([System.IO.Path]::GetFullPath('$(InnoTaskArtifacts)/bootstrap'))"
       Targets="Restore;PublishInnoBuildTaskHost"
       Properties="$(InnoTaskHostProperties)"
       RemoveProperties="$(InnoTaskExcludedProperties)">
       <Output TaskParameter="TargetOutputs" ItemName="_InnoTaskHostOutput" />
-    </MSBuild>
+    </Inno.Build.TaskHosting.BuildTaskRuntimeTask>
     <Error Condition="'@(_InnoTaskHostOutput)' == ''" Text="The build task host must return its complete hashed runtime closure." />
     <Inno.Build.TaskHosting.PublishTaskHostTask InputFiles="@(_InnoTaskHostOutput)"
         CacheDirectory="$(InnoTaskArtifacts)/hosts" LoadDirectory="$(InnoTaskLoadDirectory)"

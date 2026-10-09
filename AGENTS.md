@@ -250,6 +250,7 @@ public void AAA(
 - 主呈现尺寸必须真实且显式可用：`null` 表示没有主输出；零尺寸或内部 1×1 资源不能伪装为可用 surface。没有主输出时跳过其建图与输入换算，独立离屏请求仍可运行。
 - Contributor snapshot 仅在注册变化时重建，帧开始固定；私有 scratch 在正常帧、异常和退休路径都清空 extension 引用。Graph Validate 只分析，最终 Compile 只执行一次完整资源分配；mutation rollback 同步回滚图与验证状态，不允许修改已接受的 pass。
 - Native recipe 声明真实输入闭包与工具身份。operation 内共用初始输入扫描，等待 lease 后及发布前保留必要的重新验证；无关程序集 MVID 不能代替组件 recipe 身份。Task 引导统一、目标属性隔离，内容相同的 native 部署不复制、不替换加载中的 DLL、不更新 mtime。
+- Task 完整运行闭包的共享编译必须使用 Core IO lease 协调跨进程写入，等待时释放 MSBuild 节点；最小引导 publisher 使用操作私有中间态，随后由现有不可变发布与 reader 协议管理加载及退休。
 
 ## 28. 平台、共享后端与产品组合
 
