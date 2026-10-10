@@ -1,0 +1,29 @@
+<Project>
+  <PropertyGroup>
+    <InnoBindingHostConfig>bindgen.json</InnoBindingHostConfig>
+    <InnoBindingHostBridge>text.bridge.json</InnoBindingHostBridge>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <InnoBindingTarget Include="browser-wasm">
+      <Config>bindgen.browser-wasm.json</Config>
+      <Bridge>text.bridge.browser-wasm.json</Bridge>
+    </InnoBindingTarget>
+    <InnoBindingTarget Include="linux-arm64">
+      <Config>bindgen.linux-arm64.json</Config>
+      <Bridge>text.bridge.linux-arm64.json</Bridge>
+    </InnoBindingTarget>
+    <InnoBindingTarget Include="linux-x64">
+      <Config>bindgen.linux-x64.json</Config>
+      <Bridge>text.bridge.linux-x64.json</Bridge>
+    </InnoBindingTarget>
+    <InnoBindingTarget Include="macos-arm64">
+      <Config>bindgen.macos-arm64.json</Config>
+      <Bridge>text.bridge.macos-arm64.json</Bridge>
+    </InnoBindingTarget>
+    <InnoBindingTarget Include="windows-x64">
+      <Config>bindgen.windows-x64.json</Config>
+      <Bridge>text.bridge.windows-x64.json</Bridge>
+    </InnoBindingTarget>
+  </ItemGroup>
+</Project>

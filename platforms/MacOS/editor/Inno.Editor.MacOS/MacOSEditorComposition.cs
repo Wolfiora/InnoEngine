@@ -1,3 +1,6 @@
+using Inno.Adapter.Rendering;
+using Inno.Adapter.Rendering.Bgfx;
+using Inno.Integration.MacOS.Bgfx.Runtime;
 using Inno.Adapter.Presentation.ImGui;
 using Inno.Integration.MacOS.Bgfx;
 using Inno.Adapter.Platform;
@@ -42,6 +45,7 @@ internal static class MacOSEditorComposition
             var adapters = new DefaultAuthoringAdapterCatalog(new DefaultAdapterCatalogOptions
             {
                 platform = new PlatformBackendCatalog([new Sdl3PlatformBackendProvider(new MacOSSdl3HostIntegration())]),
+                rendering = new RenderingBackendCatalog([new BgfxRenderingBackendProvider(new MacOSBgfxSurfaceIntegration())]),
                 storage = new StorageBackendCatalog([new FileSystemStorageBackendProvider(persistentRoot)])
             }, [new BgfxAuthoringProvider(MacOSBgfxIntegration.shaderProfile)],
                 [new ImGuiPresentationProvider(new ImGuiInteractionOptions(commandKeyBehavior: true, horizontalWheelDirection: -1))]);

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Inno.Build.Toolchains;
@@ -13,6 +14,9 @@ namespace Inno.Build.Tests;
 
 public sealed class NativeArtifactPublicationTests : IDisposable
 {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    private delegate int ReadNativeValue();
+
     private readonly string m_root = Path.Combine(Path.GetTempPath(), "InnoNativePublication", Guid.NewGuid().ToString("N"));
 
     [Fact]
@@ -276,7 +280,7 @@ public sealed class NativeArtifactPublicationTests : IDisposable
     }
 
     [Fact]
-    public async Task WindowsColdCMakeBuildUsesTheOwnedToolAliasAndPublishesItsCompiledOutput()
+    public async Task WindowsColdCMakeBuildCompilesCopiedInputsEvenWhenOriginalBytesAreTemporarilyChanged()
     {
         if (!OperatingSystem.IsWindows())
             return;
@@ -290,8 +294,14 @@ public sealed class NativeArtifactPublicationTests : IDisposable
         string source = Path.Combine(m_root, "Source");
         Directory.CreateDirectory(source);
         File.WriteAllText(Path.Combine(source, "CMakeLists.txt"),
-            "cmake_minimum_required(VERSION 3.20)\nproject(ColdFixture C)\nadd_library(fixture SHARED api.c)\n");
-        File.WriteAllText(Path.Combine(source, "api.c"), "__declspec(dllexport) int value(void) { return 42; }\n");
+            "cmake_minimum_required(VERSION 3.20)\nproject(ColdFixture C)\n"
+            + "configure_file(\"${INNO_FIXTURE_INPUT}\" \"${CMAKE_CURRENT_BINARY_DIR}/answer.h\" COPYONLY)\n"
+            + "add_library(fixture SHARED api.c)\n"
+            + "target_include_directories(fixture PRIVATE \"${CMAKE_CURRENT_BINARY_DIR}\")\n");
+        File.WriteAllText(Path.Combine(source, "api.c"), "#include \"answer.h\"\n__declspec(dllexport) int value(void) { return ANSWER; }\n");
+        string header = Path.Combine(source, "answer.h");
+        File.WriteAllText(header, "#define ANSWER 42\n");
+        DateTime timestamp = File.GetLastWriteTimeUtc(header);
 
         NativeBuildProduct product = await NativeArtifactPublisher.PublishAsync(context,
             CreateRecipe(context, new NativeComponentDescriptor("fixture", "build/toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj", "build/toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj"), "fixture", "windows-x64", [source], []), async (
@@ -302,13 +312,40 @@ public sealed class NativeArtifactPublicationTests : IDisposable
                 var owner = new NativeComponentDescriptor("fixture",
                     "build/toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj",
                     "build/toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj");
-                string directory = await NativeCMakeExecutor.BuildAsync(scoped, owner, source,
-                    "fixture", [], cancellation);
-                File.Copy(NativeCMakeExecutor.FindOutput(scoped, directory, "fixture.dll"), Path.Combine(output, "fixture.dll"));
+                NativeCMakeSource copied = await NativeCMakeExecutor.PrepareSourceAsync(scoped, owner, cancellation);
+                Assert.Same(copied, await NativeCMakeExecutor.PrepareSourceAsync(scoped.WithToolchain(tools), owner, cancellation));
+                Assert.NotEqual(source, copied.ResolvePath(source));
+                Assert.Throws<InvalidOperationException>(() => copied.ResolvePath(Path.Combine(source, "undeclared.h")));
+                Assert.Equal("-DCMAKE_INSTALL_PREFIX=" + output, copied.ResolveDefinition("-DCMAKE_INSTALL_PREFIX=" + output));
+                File.WriteAllText(header, "#define ANSWER 17\n");
+                File.SetLastWriteTimeUtc(header, timestamp);
+                try
+                {
+                    Assert.Equal("#define ANSWER 42\n", File.ReadAllText(copied.ResolvePath(header)));
+                    string directory = await NativeCMakeExecutor.BuildAsync(scoped, owner, source,
+                        "fixture", ["-DINNO_FIXTURE_INPUT=" + header], cancellation);
+                    File.Copy(NativeCMakeExecutor.FindOutput(scoped, directory, "fixture.dll"), Path.Combine(output, "fixture.dll"));
+                }
+                finally
+                {
+                    File.WriteAllText(header, "#define ANSWER 42\n");
+                    File.SetLastWriteTimeUtc(header, timestamp);
+                }
             });
 
         Assert.Single(product.files);
         Assert.True(new FileInfo(product.files[0]).Length > 0);
+        nint library = NativeLibrary.Load(product.files[0]);
+        try
+        {
+            ReadNativeValue read = Marshal.GetDelegateForFunctionPointer<ReadNativeValue>(NativeLibrary.GetExport(library, "value"));
+            Assert.Equal(42, read());
+        }
+        finally
+        {
+            NativeLibrary.Free(library);
+        }
+        Assert.True(context.statistics.materializedBytes > 0);
         Assert.Empty(Directory.EnumerateDirectories(Path.Combine(m_root, "artifacts"), "*.staging-*", SearchOption.AllDirectories));
     }
 

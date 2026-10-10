@@ -26,7 +26,7 @@ Validator 由平台贡献传入同一个不可变 `ProductNativeBuildPlan`，直
 
 ## 当前源码公开 API 清单
 
-只列当前源码的 public/protected 表面；内部实现不作为稳定 API。参数、返回、失败和 owner 以英文 XML 为准。
+只列当前源码 public/protected 表面；内部机制不是稳定 API，参数、返回、失败及所有权以英文 XML 为准。
 
 ### `Inno.Build.Browser.BrowserBuildModule`
 
@@ -50,10 +50,10 @@ Validator 由平台贡献传入同一个不可变 `ProductNativeBuildPlan`，直
 | 当前声明 | 行为 |
 | --- | --- |
 | [`Inno.Build.Browser.BrowserPlayerSupportPackSource`](../../../platforms/Browser/build/Inno.Build.Browser/SupportPacks/BrowserPlayerSupportPackSource.cs#L14) | Prepares Browser runtime sources and one frozen native closure for isolated publication. |
-| [`Inno.Build.Browser.BrowserPlayerSupportPackSource.BrowserPlayerSupportPackSource(Inno.Build.Toolchains.BuildHostDescriptor host, Inno.Build.BuildTargetId toolsTarget, Inno.Build.Toolchains.ProductNativeBuildPlan nativePlan)`](../../../platforms/Browser/build/Inno.Build.Browser/SupportPacks/BrowserPlayerSupportPackSource.cs#L38) | Captures independent Browser product and offline compiler selections. |
-| [`Inno.Build.BuildTargetId Inno.Build.Browser.BrowserPlayerSupportPackSource.target`](../../../platforms/Browser/build/Inno.Build.Browser/SupportPacks/BrowserPlayerSupportPackSource.cs#L52) | See the implemented contract. |
-| [`System.Threading.Tasks.ValueTask<Inno.Build.SupportPacks.PlayerSupportPackPlan> Inno.Build.Browser.BrowserPlayerSupportPackSource.CreatePlanAsync(Inno.Build.SupportPacks.PlayerSupportPackPlanningContext context, System.Threading.CancellationToken cancellationToken)`](../../../platforms/Browser/build/Inno.Build.Browser/SupportPacks/BrowserPlayerSupportPackSource.cs#L55) | See the implemented contract. |
-| [`void Inno.Build.Browser.BrowserPlayerSupportPackSource.Validate(string directory)`](../../../platforms/Browser/build/Inno.Build.Browser/SupportPacks/BrowserPlayerSupportPackSource.cs#L104) | See the implemented contract. |
+| [`Inno.Build.Browser.BrowserPlayerSupportPackSource.BrowserPlayerSupportPackSource(Inno.Build.Toolchains.BuildHostDescriptor host, Inno.Build.BuildTargetId toolsTarget, Inno.Build.Toolchains.ProductNativeBuildPlan nativePlan, Inno.Build.Toolchains.INativeBindingGenerator bindingGenerator)`](../../../platforms/Browser/build/Inno.Build.Browser/SupportPacks/BrowserPlayerSupportPackSource.cs#L42) | Captures independent Browser product and offline compiler selections. |
+| [`Inno.Build.BuildTargetId Inno.Build.Browser.BrowserPlayerSupportPackSource.target`](../../../platforms/Browser/build/Inno.Build.Browser/SupportPacks/BrowserPlayerSupportPackSource.cs#L59) | See the implemented contract. |
+| [`System.Threading.Tasks.ValueTask<Inno.Build.SupportPacks.PlayerSupportPackPlan> Inno.Build.Browser.BrowserPlayerSupportPackSource.CreatePlanAsync(Inno.Build.SupportPacks.PlayerSupportPackPlanningContext context, System.Threading.CancellationToken cancellationToken)`](../../../platforms/Browser/build/Inno.Build.Browser/SupportPacks/BrowserPlayerSupportPackSource.cs#L62) | See the implemented contract. |
+| [`void Inno.Build.Browser.BrowserPlayerSupportPackSource.Validate(string directory)`](../../../platforms/Browser/build/Inno.Build.Browser/SupportPacks/BrowserPlayerSupportPackSource.cs#L111) | See the implemented contract. |
 
 ### `Inno.Build.Browser.BrowserSupportPackValidator`
 
@@ -67,9 +67,9 @@ Validator 由平台贡献传入同一个不可变 `ProductNativeBuildPlan`，直
 
 | 当前声明 | 行为 |
 | --- | --- |
-| [`Inno.Build.Browser.BrowserToolchain`](../../../platforms/Browser/build/Inno.Build.Browser/BrowserToolchain.cs#L16) | Aggregates explicitly selected backend static recipes using a frozen Emscripten SDK. |
-| [`static Inno.Build.Toolchains.NativeComponentDescriptor Inno.Build.Browser.BrowserToolchain.componentDescriptor`](../../../platforms/Browser/build/Inno.Build.Browser/BrowserToolchain.cs#L21) | Gets the sole owner of Browser aggregation, ABI constraints and SDK link support. |
-| [`static System.Threading.Tasks.Task<Inno.Build.Browser.BrowserNativeArtifacts> Inno.Build.Browser.BrowserToolchain.BuildAsync(Inno.Build.Toolchains.NativeBuildContext context, Inno.Build.Toolchains.ProductNativeBuildPlan plan, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))`](../../../platforms/Browser/build/Inno.Build.Browser/BrowserToolchain.cs#L50) | Publishes one exact static closure without discovering components or reselecting tools. |
+| [`Inno.Build.Browser.BrowserToolchain`](../../../platforms/Browser/build/Inno.Build.Browser/BrowserToolchain.cs#L15) | Aggregates explicitly selected backend static recipes using a frozen Emscripten SDK. |
+| [`static Inno.Build.Toolchains.NativeComponentDescriptor Inno.Build.Browser.BrowserToolchain.componentDescriptor`](../../../platforms/Browser/build/Inno.Build.Browser/BrowserToolchain.cs#L20) | Gets the sole owner of Browser aggregation, ABI constraints and SDK link support. |
+| [`static System.Threading.Tasks.Task<Inno.Build.Browser.BrowserNativeArtifacts> Inno.Build.Browser.BrowserToolchain.BuildAsync(Inno.Build.Toolchains.NativeBuildContext context, Inno.Build.Toolchains.ProductNativeBuildPlan plan, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))`](../../../platforms/Browser/build/Inno.Build.Browser/BrowserToolchain.cs#L49) | Publishes one exact static closure without discovering components or reselecting tools. |
 
 ### `Inno.Build.Browser.BrowserWasm32GameBuildTarget`
 

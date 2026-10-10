@@ -44,7 +44,7 @@ public static class MacOSBuildModule
         ArgumentNullException.ThrowIfNull(editorNativePlan);
         return new(target,
             () => new MacOSArm64GameBuildTarget(),
-            new MacOSPlayerSupportPackSource(nativePlan, context.host, context.dotnetHost), new MacOSNativeToolchainProvider(context.dotnetHost),
+            new MacOSPlayerSupportPackSource(nativePlan, context.host, context.dotnetHost, context.bindingGenerator), new MacOSNativeToolchainProvider(context.dotnetHost),
             "platforms/MacOS/editor/Inno.Editor.MacOS/Inno.Editor.MacOS.csproj",
             [nativePlan, editorNativePlan, shaderToolsPlan]);
     }

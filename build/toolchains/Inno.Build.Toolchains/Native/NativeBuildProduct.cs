@@ -14,12 +14,14 @@ public sealed class NativeBuildProduct
         string component,
         string targetId,
         string fingerprint,
-        string directory
+        string directory,
+        NativeBindingGenerationDescriptor? bindingGeneration
     ) {
         this.component = component;
         this.targetId = targetId;
         this.fingerprint = fingerprint;
         this.directory = directory;
+        this.bindingGeneration = bindingGeneration;
         files = Array.AsReadOnly(Directory.EnumerateFiles(Path.Combine(directory, "Outputs"),
             "*", SearchOption.AllDirectories).Order(StringComparer.Ordinal).ToArray());
     }
@@ -43,6 +45,12 @@ public sealed class NativeBuildProduct
     /// Gets the immutable artifact root containing Outputs and its integrity manifest.
     /// </summary>
     public string directory { get; }
+
+    /// <summary>
+    /// Gets the exact binding generation compiled into this product, or null for a component without bindings.
+    /// Managed consumers must retain this selection rather than resolve a new generation after native preparation.
+    /// </summary>
+    public NativeBindingGenerationDescriptor? bindingGeneration { get; }
 
     /// <summary>
     /// Gets the exact absolute output file paths validated by the publisher.

@@ -9,6 +9,8 @@ Wiki，也不把未来规划描述为当前能力。
 
 | 页面 | 内容 | 维护要求 |
 | --- | --- | --- |
+| [Backend 运行接入与构建成本整改计划](BACKEND_RUNTIME_BOUNDARY_OPTIMIZATION_PLAN.md) | SDL 共同操作、BGFX 可注入 surface、附加窗口退休、绑定生成与验证/Task 成本 | 源码已实施，当前证据与未执行项见本轮验收 |
+| [Backend 运行接入与构建成本整改验收](BACKEND_RUNTIME_BOUNDARY_OPTIMIZATION_ACCEPTANCE.md) | 当前命令、产品、性能、所有权及扩展证据 | 不以历史结果或后台运行代替实机/GUI |
 | [2026-10-08 平台边界收口计划](PLATFORM_BOUNDARY_CLOSEOUT_PLAN_2026_10_08.md) | BGFX 开放配置、Support Pack 冻结预检及 NuGet 属性传输 | 删除旧选择入口，重新验收实际产品 |
 | [2026-10-08 平台边界收口验收](PLATFORM_BOUNDARY_CLOSEOUT_ACCEPTANCE_2026_10_08.md) | 两个 P2、静态图还原、补充 UI 与当前发布证据 | 当前结果与历史证据分别记录 |
 | [2026-10-08 平台计划与启动复核](PLATFORM_OWNERSHIP_PLAN_AUDIT_2026_10_08.md) | 逐项计划状态、两个源码缺口、Solution/游离脚本清理及产品启动 | 自动检查通过不能覆盖人工发现 |
@@ -57,3 +59,7 @@ Wiki，也不把未来规划描述为当前能力。
 [批准计划](BACKEND_PLATFORM_INTEGRATION_PLAN.md) · [本轮验收](BACKEND_PLATFORM_INTEGRATION_ACCEPTANCE.md)。平台基础、共享 backend 与真实 integration 由独立程序集维护；七个 integration 已纳入平台分类索引。
 
 - [平台/后端集成整改续跑清单](BACKEND_PLATFORM_INTEGRATION_HANDOFF.md)：额度重置后的待验收顺序与命令。
+
+## 当前运行边界整改
+
+[计划](BACKEND_RUNTIME_BOUNDARY_OPTIMIZATION_PLAN.md) · [验收](BACKEND_RUNTIME_BOUNDARY_OPTIMIZATION_ACCEPTANCE.md)：R01、R02、R02-L、R03 的源码、所有权和当前证据。

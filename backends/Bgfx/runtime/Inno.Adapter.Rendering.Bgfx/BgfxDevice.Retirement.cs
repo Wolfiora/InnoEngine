@@ -16,6 +16,10 @@ sealed unsafe partial class BgfxDevice
     /// <summary>
     /// Shuts down BGFX after releasing all active and queued backend resources.
     /// </summary>
+    /// <exception cref="InvalidOperationException">
+    /// The caller is not on the owner thread, rendering is active, or retirement cannot complete.
+    /// A failed retirement retains the device and its dependencies for diagnosis and a safe retry.
+    /// </exception>
     public void Dispose()
     {
         if (m_disposed)
@@ -35,6 +39,16 @@ sealed unsafe partial class BgfxDevice
         }
 
         ResetPreviousViews();
+
+        foreach (BgfxWindowSurfaceResource surface in m_windowSurfaces.Values)
+        {
+            surface.retirement.pending.Add(surface.frameBuffer);
+            surface.retirement.closing = true;
+            if (!m_surfaceRetirements.Contains(surface.retirement))
+                m_surfaceRetirements.Add(surface.retirement);
+        }
+        m_windowSurfaces.Clear();
+        DrainWindowSurfaceRetirements();
 
         foreach (bgfx.TextureHandle texture in m_persistentTextures.Values)
         {
@@ -58,11 +72,6 @@ sealed unsafe partial class BgfxDevice
         foreach (BgfxPipelineResource pipeline in m_computePipelines.Values)
         {
             EnqueuePipelineDestroy(pipeline);
-        }
-
-        foreach (BgfxWindowSurfaceResource surface in m_windowSurfaces.Values)
-        {
-            EnqueueDestroy(DeferredResource.ForFrameBuffer(surface.frameBuffer));
         }
 
         foreach (CachedGraphFrameBuffer cached in m_graphFrameBufferCache)
@@ -177,14 +186,14 @@ sealed unsafe partial class BgfxDevice
         while (m_deferredResources.Count != 0)
         {
             bgfx.touch(0);
-            m_backendFrame = bgfx.frame((byte)bgfx.FrameFlags.None);
+            m_backendFrame = SubmitNativeFrame(bgfx.FrameFlags.Flush);
             ProcessDeferredResources(force: false);
         }
 
         for (int frame = 0; frame < m_deferredDestroyFrames; frame++)
         {
             bgfx.touch(0);
-            m_backendFrame = bgfx.frame((byte)bgfx.FrameFlags.None);
+            m_backendFrame = SubmitNativeFrame(bgfx.FrameFlags.Flush);
         }
     }
 
@@ -207,6 +216,7 @@ sealed unsafe partial class BgfxDevice
             || m_graphicsPipelines.Count != 0
             || m_computePipelines.Count != 0
             || m_windowSurfaces.Count != 0
+            || m_surfaceRetirements.Count != 0
             || m_deferredResources.Count != 0)
         {
             return "BGFX shutdown detected a non-empty managed resource ownership graph.";

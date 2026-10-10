@@ -1,3 +1,4 @@
+using Inno.Build.Bindings;
 using Inno.Integration.Browser.Bgfx;
 using System;
 using System.IO;
@@ -25,7 +26,8 @@ public sealed class PlatformOwnershipContractTests
         var host = unsupportedHost ? new BuildHostDescriptor("MacOS", "arm64")
             : new BuildHostDescriptor("Windows", "x64");
         var source = new WindowsPlayerSupportPackSource(
-            StandardNativeBuildPlans.CreatePlayer(Inno.Integration.Windows.Bgfx.WindowsBgfxIntegration.nativeProfile), host, sdk);
+            StandardNativeBuildPlans.CreatePlayer(Inno.Integration.Windows.Bgfx.WindowsBgfxIntegration.nativeProfile),
+            host, sdk, new NativeBindingGenerator(sdk));
         var publisher = new PlayerSupportPackPublisher([source]);
 
         if (unsupportedHost)
@@ -58,7 +60,7 @@ public sealed class PlatformOwnershipContractTests
     public void StandardShaderTargetIsIndependentOfTheOfflineToolTarget()
     {
         var context = new BuildCompositionContext("unresolved-sdk", Path.GetFullPath(Path.GetTempPath()),
-            new BuildHostDescriptor("Windows", "x64"), BuildTargetId.windowsX64);
+            new BuildHostDescriptor("Windows", "x64"), BuildTargetId.windowsX64, new NativeBindingGenerator("explicit-sdk"));
         StandardBuildDistribution distribution = StandardBuildDistribution.Create(context);
 
         Assert.Same(BrowserBgfxShaderProfiles.target,
@@ -72,9 +74,9 @@ public sealed class PlatformOwnershipContractTests
     public void DistributionDoesNotDeriveProductTargetsFromTheToolHost()
     {
         var windows = new BuildCompositionContext("unresolved-sdk", Path.GetFullPath(Path.GetTempPath()),
-            new BuildHostDescriptor("Windows", "x64"), BuildTargetId.windowsX64);
+            new BuildHostDescriptor("Windows", "x64"), BuildTargetId.windowsX64, new NativeBindingGenerator("explicit-sdk"));
         var apple = new BuildCompositionContext("unresolved-sdk", Path.GetFullPath(Path.GetTempPath()),
-            new BuildHostDescriptor("MacOS", "arm64"), BuildTargetId.macOSArm64);
+            new BuildHostDescriptor("MacOS", "arm64"), BuildTargetId.macOSArm64, new NativeBindingGenerator("explicit-sdk"));
         BuildDistribution first = StandardBuildDistribution.Create(windows).build;
         BuildDistribution second = StandardBuildDistribution.Create(apple).build;
 

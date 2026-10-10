@@ -9,6 +9,7 @@ using Inno.Adapter.Presentation;
 using Inno.Adapter.Storage;
 using Inno.Adapter.Storage.FileSystem;
 using Inno.Build;
+using Inno.Build.Bindings;
 using Inno.Build.Composition;
 using Inno.Build.Distribution.Standard;
 using Inno.Build.Toolchains;
@@ -79,12 +80,17 @@ public sealed class EditorApplicationTests
         bool keyboard = true
     ) {
         string project = Path.Combine(Path.GetTempPath(), "InnoHostingContract", Guid.NewGuid().ToString("N"));
-        var build = new BuildCompositionContext("dotnet", AppContext.BaseDirectory,
-            new BuildHostDescriptor("Windows", "x64"), BuildTargetId.windowsX64);
+        var build = new BuildCompositionContext(
+            "dotnet",
+            AppContext.BaseDirectory,
+            new BuildHostDescriptor("Windows", "x64"),
+            BuildTargetId.windowsX64,
+            new NativeBindingGenerator("dotnet"));
         StandardBuildDistribution standard = StandardBuildDistribution.Create(build);
         var adapters = new DefaultAuthoringAdapterCatalog(new DefaultAdapterCatalogOptions
         {
             platform = new Inno.Adapter.Platform.PlatformBackendCatalog([new Inno.Adapter.Platform.Sdl3.Sdl3PlatformBackendProvider(new Inno.Integration.Windows.Sdl3.WindowsSdl3HostIntegration())]),
+            rendering = new Inno.Adapter.Rendering.RenderingBackendCatalog([new Inno.Adapter.Rendering.Bgfx.BgfxRenderingBackendProvider(new Inno.Integration.Windows.Bgfx.Runtime.WindowsBgfxSurfaceIntegration())]),
             storage = new StorageBackendCatalog([new FileSystemStorageBackendProvider(Path.Combine(project, "Data"))])
         }, [new BgfxAuthoringProvider(standard.ResolveShaderTarget(BuildTargetId.windowsX64))],
             [new Inno.Adapter.Presentation.ImGui.ImGuiPresentationProvider(new Inno.Adapter.Presentation.ImGui.ImGuiInteractionOptions(false, 1))]);

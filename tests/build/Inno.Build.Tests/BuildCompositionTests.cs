@@ -1,3 +1,4 @@
+using Inno.Build.Bindings;
 using System;
 using System.IO;
 using System.Linq;
@@ -22,7 +23,7 @@ public sealed class BuildCompositionTests
     [Fact]
     public void EveryHostObtainsTheSameFrozenBuiltInDistribution()
     {
-        var context = new BuildCompositionContext("explicit-sdk", Path.GetFullPath(Path.GetTempPath()), new BuildHostDescriptor("Windows", "x64"), new BuildTargetId("windows-x64"));
+        var context = new BuildCompositionContext("explicit-sdk", Path.GetFullPath(Path.GetTempPath()), new BuildHostDescriptor("Windows", "x64"), new BuildTargetId("windows-x64"), new NativeBindingGenerator("explicit-sdk"));
         BuildDistribution editor = StandardBuildDistribution.Create(context).build;
         BuildDistribution cli = StandardBuildDistribution.Create(context).build;
         BuildDistribution msbuild = StandardBuildDistribution.Create(context).build;
@@ -34,7 +35,7 @@ public sealed class BuildCompositionTests
         Assert.Equal(editor.ResolveNativeProduct("windows-x64", "editor").steps.Select(static step => step.id),
             msbuild.ResolveNativeProduct("windows-x64", "editor").steps.Select(static step => step.id));
         Assert.Throws<NotSupportedException>(() => editor.ResolveNativeProduct("browser-wasm", "editor"));
-        Assert.Throws<ArgumentException>(() => new BuildCompositionContext("sdk", "relative", new BuildHostDescriptor("Windows", "x64"), new BuildTargetId("windows-x64")));
+        Assert.Throws<ArgumentException>(() => new BuildCompositionContext("sdk", "relative", new BuildHostDescriptor("Windows", "x64"), new BuildTargetId("windows-x64"), new NativeBindingGenerator("explicit-sdk")));
     }
 
     [Fact]

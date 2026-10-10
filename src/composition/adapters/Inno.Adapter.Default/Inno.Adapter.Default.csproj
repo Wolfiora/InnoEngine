@@ -16,9 +16,6 @@
       Include="../../../adapters/input/Inno.Adapter.Input/Inno.Adapter.Input.csproj"
       PrivateAssets="compile" />
     <ProjectReference
-      Include="../../../../backends/Bgfx/runtime/Inno.Adapter.Rendering.Bgfx/Inno.Adapter.Rendering.Bgfx.csproj"
-      PrivateAssets="compile" />
-    <ProjectReference
       Include="../../../../backends/Text/runtime/Inno.Adapter.Text.FreeTypeHarfBuzz/Inno.Adapter.Text.FreeTypeHarfBuzz.csproj"
       PrivateAssets="compile" />
     <ProjectReference Include="../../../../backends/RmlUi/runtime/Inno.Adapter.UI.RmlUi/Inno.Adapter.UI.RmlUi.csproj" PrivateAssets="compile" />

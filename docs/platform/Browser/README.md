@@ -15,3 +15,7 @@
 - [Inno.Integration.Browser.Bgfx](Inno.Integration.Browser.Bgfx.md)：平台与共享后端的明确接入。
 
 - [Inno.Integration.Browser.Sdl3](Inno.Integration.Browser.Sdl3.md)：平台与共享后端的明确接入。
+
+## BGFX 运行接入
+
+- [Inno.Integration.Browser.Bgfx.Runtime](Inno.Integration.Browser.Bgfx.Runtime.md)：独立于构建 integration 的 surface 解析和能力声明。

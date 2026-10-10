@@ -74,3 +74,9 @@ Identity、Missing、History、collectible generation 仍遵循[热重载标准]
 ## 平台与后端集成
 
 [批准计划](architecture/BACKEND_PLATFORM_INTEGRATION_PLAN.md) · [本轮验收](architecture/BACKEND_PLATFORM_INTEGRATION_ACCEPTANCE.md)。平台基础、共享 backend 与真实 integration 由独立程序集维护；七个 integration 已纳入平台分类索引。
+
+## Backend 运行边界与构建成本
+
+[实施计划](architecture/BACKEND_RUNTIME_BOUNDARY_OPTIMIZATION_PLAN.md) · [当前验收](architecture/BACKEND_RUNTIME_BOUNDARY_OPTIMIZATION_ACCEPTANCE.md)。
+
+新增 [绑定生成库](build/Inno.Build.Bindings.md) 与 [Windows](platform/Windows/Inno.Integration.Windows.Bgfx.Runtime.md)、[macOS](platform/MacOS/Inno.Integration.MacOS.Bgfx.Runtime.md)、[Browser](platform/Browser/Inno.Integration.Browser.Bgfx.Runtime.md) BGFX 运行接入，四个项目均有唯一 Wiki 页面。真实焦点/GUI、其他机器的结果独立标注。

@@ -20,7 +20,7 @@ public static class ImGuizmoToolchain
         "cimguizmo",
         "backends/ImGui/native/Inno.Native.ImGuizmo/Inno.Native.ImGuizmo.csproj",
         "backends/ImGui/build/Inno.Build.Toolchains.ImGuizmo/Inno.Build.Toolchains.ImGuizmo.csproj",
-        bindingConfig: "backends/ImGui/native/Inno.Native.ImGuizmo/Bindings/bindgen.json");
+        bindingDefinition: "backends/ImGui/native/Inno.Native.ImGuizmo/Bindings/bindings.props");
 
     /// <summary>
     /// Builds and installs the component for the current native host.

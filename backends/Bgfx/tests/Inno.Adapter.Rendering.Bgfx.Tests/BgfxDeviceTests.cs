@@ -56,7 +56,7 @@ public sealed class BgfxDeviceTests
     {
         m_device.BeginFrame();
 
-        Assert.Throws<PlatformNotSupportedException>(() => m_device.CreateWindowSurface(
+        Assert.Throws<NotSupportedException>(() => m_device.CreateWindowSurface(
             new PlatformNativeHandles(new IntPtr(1), handleKind: default(PlatformNativeHandleId)),
             32,
             32,

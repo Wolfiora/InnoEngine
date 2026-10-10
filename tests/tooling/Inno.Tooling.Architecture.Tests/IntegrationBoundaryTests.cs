@@ -13,6 +13,12 @@ public sealed class IntegrationBoundaryTests
     [InlineData("platforms/Windows/integrations/Probe", "backends/Bgfx/build/ProbeBackend", "platform base modules cannot select", false)]
     [InlineData("backends/Bgfx/build/ProbeBackend", "platforms/Windows/integrations/Probe", "reusable backends cannot depend", true)]
     [InlineData("platforms/Browser/integrations/Probe", "platforms/Windows/integrations/ProbeWindows", "one concrete platform cannot depend", true)]
+    [InlineData("platforms/Windows/integrations/Inno.Integration.Windows.Bgfx.Runtime", "backends/Bgfx/runtime/Inno.Adapter.Rendering.Bgfx", "runtime surface integrations cannot depend", false)]
+    [InlineData("platforms/Windows/integrations/Inno.Integration.Windows.Bgfx.Runtime", "platforms/Windows/integrations/Inno.Integration.Windows.Bgfx", "runtime surface integrations cannot depend", true)]
+    [InlineData("platforms/Windows/integrations/Inno.Integration.Windows.Bgfx.Runtime", "backends/Bgfx/native/Inno.Native.Bgfx", "runtime surface integrations cannot depend", true)]
+    [InlineData("build/toolchains/Probe", "build/bindings/Inno.Build.Bindings", "neutral toolchains cannot depend", true)]
+    [InlineData("build/bindings/Inno.Build.Bindings", "build/tasks/Inno.Build.Tasks", "binding generation cannot depend", true)]
+    [InlineData("platforms/Windows/build/Probe", "build/bindings/Inno.Build.Bindings", "platform modules must borrow", true)]
     public async Task CliChecksActualPlatformIntegrationProjectReferences(
         string owner,
         string dependency,

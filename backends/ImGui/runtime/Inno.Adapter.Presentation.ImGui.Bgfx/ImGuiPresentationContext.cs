@@ -93,9 +93,8 @@ internal sealed class ImGuiPresentationContext : IPresentationContext
     {
         if (m_disposed)
             return;
-        m_disposed = true;
         m_application.DestroyImGuiContext(m_window);
-        m_renderer.Dispose();
+        m_disposed = true;
     }
 
 

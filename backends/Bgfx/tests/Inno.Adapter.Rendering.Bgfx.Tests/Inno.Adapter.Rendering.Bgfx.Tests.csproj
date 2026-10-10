@@ -8,6 +8,11 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
+    <ProjectReference Include="../../../Sdl3/runtime/Inno.Adapter.Platform.Sdl3/Inno.Adapter.Platform.Sdl3.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../../../platforms/Windows/integrations/Inno.Integration.Windows.Sdl3/Inno.Integration.Windows.Sdl3.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../../../platforms/Windows/integrations/Inno.Integration.Windows.Bgfx.Runtime/Inno.Integration.Windows.Bgfx.Runtime.csproj" />
+    <ProjectReference Include="../../../../platforms/MacOS/integrations/Inno.Integration.MacOS.Bgfx.Runtime/Inno.Integration.MacOS.Bgfx.Runtime.csproj" />
+    <ProjectReference Include="../../../../platforms/Browser/integrations/Inno.Integration.Browser.Bgfx.Runtime/Inno.Integration.Browser.Bgfx.Runtime.csproj" />
     <ProjectReference Include="../../../../src/foundation/extensibility/Inno.Extensibility.Modules/Inno.Extensibility.Modules.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../build/Inno.Build.Toolchains.Bgfx.Tools/Inno.Build.Toolchains.Bgfx.Tools.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../runtime/Inno.Adapter.Rendering.Bgfx/Inno.Adapter.Rendering.Bgfx.csproj" PrivateAssets="compile" />

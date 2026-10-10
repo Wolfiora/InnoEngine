@@ -2,6 +2,8 @@
 
 [架构治理](README.md) · [Wiki 首页](../README.md) · [正式问题台账](../issues/2026-08-31-complete-issue-register.md)
 
+2026-10-09–10-10：SDL 共同窗口操作、BGFX 运行 surface 注入、附加窗口退休 R02-L、绑定/Task 成本 R03 的源码与本机可自动执行验收已完成，见[计划](BACKEND_RUNTIME_BOUNDARY_OPTIMIZATION_PLAN.md)和[本轮验收](BACKEND_RUNTIME_BOUNDARY_OPTIMIZATION_ACCEPTANCE.md)。708 项回归通过，四条最终 Player 发布/运行、普通 Editor Debug/Release、真实后台 reload 与 229 项有效 MSBuild 图通过。Native 热阶段均值 84.915→24.475 秒，但整次热构建均值 236.338→250.723 秒，没有整体加速结论。最终 GUI reload 因 Computer Use 访问拒绝未执行；macOS/Linux 实机、多屏 DPI、声学和未覆盖的 GUI 操作保留证据缺口，不标记无保留实机验收完成。
+
 2026-10-08 后续执行：BGFX 封闭平台选择与 Support Pack staging 前预检两项 P2 已完成源码替换，
 65,536 字符属性的真实静态图还原也已修复。411 项受影响测试、四条最终 Player 发布/运行、
 Debug/Release Editor 与 Rendering2D 6000 帧/脚本编译均通过，详见

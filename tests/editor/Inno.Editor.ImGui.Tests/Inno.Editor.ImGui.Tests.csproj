@@ -11,6 +11,7 @@
     <InnoTestNativeTarget>windows-x64</InnoTestNativeTarget>
   </PropertyGroup>
   <ItemGroup>
+    <ProjectReference Include="../../../src/foundation/core/Inno.Core.Execution/Inno.Core.Execution.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../../backends/ImGui/runtime/Inno.Adapter.Presentation.ImGui.Sdl3/Inno.Adapter.Presentation.ImGui.Sdl3.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../../backends/Sdl3/runtime/Inno.Adapter.Platform.Sdl3/Inno.Adapter.Platform.Sdl3.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../../backends/Sdl3/native/Inno.Native.Sdl3/Inno.Native.Sdl3.csproj" PrivateAssets="compile" />

@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using System;
 using System.Buffers.Binary;
 using System.Collections.Generic;
@@ -100,7 +101,7 @@ public sealed unsafe class BgfxImGuiRenderer : IPlatformImGuiRenderer, IRenderFr
     /// <summary>
     /// Gets whether supports viewports is enabled for this implementation.
     /// </summary>
-    public bool supportsViewports => true;
+    public bool supportsViewports => m_bgfxDevice.supportsAdditionalSurfaces;
 
     /// <summary>
     /// Queues a compiled shader replacement that commits atomically at a frame safety point.
@@ -290,23 +291,28 @@ public sealed unsafe class BgfxImGuiRenderer : IPlatformImGuiRenderer, IRenderFr
     /// <param name="target">
     /// The existing target that receives the validated result.
     /// </param>
-    public void DestroyViewport(PlatformImGuiViewportTarget target)
+    /// <returns>
+    /// Completion of render-thread window release, or an already completed task for an unallocated viewport.
+    /// </returns>
+    public Task RetireViewport(PlatformImGuiViewportTarget target)
     {
         ArgumentNullException.ThrowIfNull(target);
-        RenderSurfaceHandle surface = default;
         lock (m_sync)
         {
-            if (m_viewports.Remove(target.viewportId, out ViewportState? state))
+            if (m_viewports.TryGetValue(target.viewportId, out ViewportState? state))
             {
-                surface = state.surface;
+                Task retirement = state.surface.isValid
+                    ? m_bgfxDevice.RetireWindowSurface(state.surface) : Task.CompletedTask;
+                m_viewports.Remove(target.viewportId);
+                m_framePackets = m_framePackets.Where(packet => packet.viewportId != target.viewportId).ToArray();
+                return retirement;
             }
         }
-
-        if (surface.isValid)
-        {
-            m_bgfxDevice.DestroyWindowSurface(surface);
-        }
+        return Task.CompletedTask;
     }
+
+    /// <inheritdoc />
+    public void DrainViewportRetirements() => m_bgfxDevice.DrainWindowSurfaceRetirements();
 
     /// <summary>
     /// Prepares frame-owned resources before render graph recording begins.
@@ -416,28 +422,15 @@ public sealed unsafe class BgfxImGuiRenderer : IPlatformImGuiRenderer, IRenderFr
     /// </summary>
     public void Dispose()
     {
-        RenderSurfaceHandle[] surfaces;
         lock (m_sync)
         {
-            if (m_disposeRequested)
-            {
-                return;
-            }
-
             m_disposeRequested = true;
-            surfaces = m_viewports.Values
-                .Select(static value => value.surface)
-                .Where(static value => value.isValid)
-                .ToArray();
-            m_viewports.Clear();
+            foreach (uint viewportId in m_viewports.Keys.ToArray())
+                _ = RetireViewport(m_viewports[viewportId].target);
             m_mainPacket = null;
             m_framePackets = [];
         }
-
-        foreach (RenderSurfaceHandle surface in surfaces)
-        {
-            m_bgfxDevice.DestroyWindowSurface(surface);
-        }
+        DrainViewportRetirements();
     }
 
     private void PreparePipeline()

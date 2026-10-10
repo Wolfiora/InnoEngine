@@ -9,14 +9,14 @@
 - `IRenderingAuthoringBackendFactory.CreateShaderCompilerToolchain`：创建与所选 runtime backend 匹配的 shader target compiler。
 - `IRenderingAuthoringBackendFactory.CreateTextureTargetCompiler`：创建匹配的 texture target compiler。
 
-接口使用开放的 `RenderingBackendId` 选择实现，并返回 `Inno.Rendering.Assets` 中的中立 compiler contract。具体 shaderc/texturec 工具、路径与进程实现只存在于默认 Adapter 及对应 Toolchain。
+接口使用开放的 `RenderingBackendId` 选择实现，并返回 `Inno.Rendering.Assets.Authoring` 中的中立 compiler contract。具体 shaderc/texturec 工具、路径与进程实现属于 backend 构建实现。
 
 `RenderingAuthoringBackendProvider` 声明 `id`、`CreateShaderCompilerToolchain()` 和 `CreateTextureTargetCompiler()`。
 `RenderingAuthoringBackendCatalog(runtime, providers)` 捕获不可变注册集合，并在创建 native device 前校验 runtime 与 authoring ID 集合完全一致；空 ID、重复 ID 或未配对集合抛出 `ArgumentException`。
 `supportedBackends` 提供当前注册集合；未注册 ID 的创建操作明确失败。
-`DefaultAuthoringAdapterCatalog(renderingProviders, authoringProviders)` 支持完整自定义配对集合；两者均 null 使用内置 BGFX。
+`DefaultAuthoringAdapterCatalog(options, authoringProviders, presentationProviders)` 接收完整显式组合；options.rendering 与 authoringProviders 的 Backend ID 必须配对。不存在 null 默认 BGFX 分支。
 
-该程序集允许依赖 `Inno.Rendering.Assets`，但 `Inno.Adapter.Rendering`、`Inno.Adapter`、`Inno.Adapter.Default`、`Inno.Shell` 与 Player 均不得反向引用它。
+该程序集允许依赖 `Inno.Rendering.Assets.Authoring`，但 `Inno.Adapter.Rendering`、`Inno.Adapter`、`Inno.Adapter.Default`、`Inno.Shell` 与 Player 均不得反向引用它。
 
 ## 注册身份
 

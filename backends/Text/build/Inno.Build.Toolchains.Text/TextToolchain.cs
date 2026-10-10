@@ -23,7 +23,7 @@ public static class TextToolchain
             ["extern/freetype", "extern/harfbuzz", "backends/Text/native/Inno.Native.Text/Native/include", "backends/Text/native/Inno.Native.Text/Native/src", "backends/Text/native/Inno.Native.Text/Native/CMakeLists.txt"],
             ["libinno-text.a", "libfreetype.a", "libharfbuzz.a"],
             ["browser-wasm"]),
-        bindingConfig: "backends/Text/native/Inno.Native.Text/Bindings/bindgen.json");
+        bindingDefinition: "backends/Text/native/Inno.Native.Text/Bindings/bindings.props");
 
     /// <summary>
     /// Builds the component using the explicitly selected target SDK and validates the complete native product.

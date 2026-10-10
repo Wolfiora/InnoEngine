@@ -24,7 +24,7 @@ Support Pack source 复用共同 FilePlayerSupportPackPreparation，注入产品
 
 ## 当前源码公开 API 清单
 
-只列当前源码的 public/protected 表面；内部实现不作为稳定 API。参数、返回、失败和 owner 以英文 XML 为准。
+只列当前源码 public/protected 表面；内部机制不是稳定 API，参数、返回、失败及所有权以英文 XML 为准。
 
 ### `Inno.Build.MacOS.MacOSArm64GameBuildTarget`
 
@@ -58,11 +58,11 @@ Support Pack source 复用共同 FilePlayerSupportPackPreparation，注入产品
 
 | 当前声明 | 行为 |
 | --- | --- |
-| [`Inno.Build.BuildTargetId Inno.Build.MacOS.MacOSPlayerSupportPackSource.target`](../../../platforms/MacOS/build/Inno.Build.MacOS/SupportPacks/MacOSPlayerSupportPackSource.cs#L41) | See the implemented contract. |
+| [`Inno.Build.BuildTargetId Inno.Build.MacOS.MacOSPlayerSupportPackSource.target`](../../../platforms/MacOS/build/Inno.Build.MacOS/SupportPacks/MacOSPlayerSupportPackSource.cs#L45) | See the implemented contract. |
 | [`Inno.Build.MacOS.MacOSPlayerSupportPackSource`](../../../platforms/MacOS/build/Inno.Build.MacOS/SupportPacks/MacOSPlayerSupportPackSource.cs#L11) | Prepares the MacOS Player's explicit layout through shared publication mechanisms. |
-| [`Inno.Build.MacOS.MacOSPlayerSupportPackSource.MacOSPlayerSupportPackSource(Inno.Build.Toolchains.ProductNativeBuildPlan nativePlan, Inno.Build.Toolchains.BuildHostDescriptor host, string dotnetHost)`](../../../platforms/MacOS/build/Inno.Build.MacOS/SupportPacks/MacOSPlayerSupportPackSource.cs#L27) | Captures the selected product closure and tool execution host. |
-| [`System.Threading.Tasks.ValueTask<Inno.Build.SupportPacks.PlayerSupportPackPlan> Inno.Build.MacOS.MacOSPlayerSupportPackSource.CreatePlanAsync(Inno.Build.SupportPacks.PlayerSupportPackPlanningContext context, System.Threading.CancellationToken cancellationToken)`](../../../platforms/MacOS/build/Inno.Build.MacOS/SupportPacks/MacOSPlayerSupportPackSource.cs#L44) | See the implemented contract. |
-| [`void Inno.Build.MacOS.MacOSPlayerSupportPackSource.Validate(string directory)`](../../../platforms/MacOS/build/Inno.Build.MacOS/SupportPacks/MacOSPlayerSupportPackSource.cs#L50) | See the implemented contract. |
+| [`Inno.Build.MacOS.MacOSPlayerSupportPackSource.MacOSPlayerSupportPackSource(Inno.Build.Toolchains.ProductNativeBuildPlan nativePlan, Inno.Build.Toolchains.BuildHostDescriptor host, string dotnetHost, Inno.Build.Toolchains.INativeBindingGenerator bindingGenerator)`](../../../platforms/MacOS/build/Inno.Build.MacOS/SupportPacks/MacOSPlayerSupportPackSource.cs#L30) | Captures the selected product closure and tool execution host. |
+| [`System.Threading.Tasks.ValueTask<Inno.Build.SupportPacks.PlayerSupportPackPlan> Inno.Build.MacOS.MacOSPlayerSupportPackSource.CreatePlanAsync(Inno.Build.SupportPacks.PlayerSupportPackPlanningContext context, System.Threading.CancellationToken cancellationToken)`](../../../platforms/MacOS/build/Inno.Build.MacOS/SupportPacks/MacOSPlayerSupportPackSource.cs#L48) | See the implemented contract. |
+| [`void Inno.Build.MacOS.MacOSPlayerSupportPackSource.Validate(string directory)`](../../../platforms/MacOS/build/Inno.Build.MacOS/SupportPacks/MacOSPlayerSupportPackSource.cs#L54) | See the implemented contract. |
 
 ### `Inno.Build.MacOS.MacOSSupportPackValidator`
 

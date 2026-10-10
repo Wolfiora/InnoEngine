@@ -11,11 +11,11 @@
   <PropertyGroup>
     <DefaultItemExcludes>$(DefaultItemExcludes);$(MSBuildProjectDirectory)/obj/**;$(MSBuildProjectDirectory)/bin/**</DefaultItemExcludes>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(InnoNativeTarget)' != ''">
+  <PropertyGroup Condition="'$(InnoNativeTarget)' != '' and '$(UseArtifactsOutput)' != 'true' and '$(ArtifactsPath)' == ''">
     <BaseIntermediateOutputPath>obj/$(InnoNativeTarget)/</BaseIntermediateOutputPath>
     <BaseOutputPath>bin/$(InnoNativeTarget)/</BaseOutputPath>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(InnoNativeTarget)' != '' and '$(InnoNativeBuildFingerprint)' != ''">
+  <PropertyGroup Condition="'$(InnoNativeTarget)' != '' and '$(InnoNativeBuildFingerprint)' != '' and '$(UseArtifactsOutput)' != 'true' and '$(ArtifactsPath)' == ''">
     <BaseIntermediateOutputPath>obj/$(InnoNativeTarget)/$(InnoNativeBuildFingerprint)/</BaseIntermediateOutputPath>
     <BaseOutputPath>bin/$(InnoNativeTarget)/$(InnoNativeBuildFingerprint)/</BaseOutputPath>
   </PropertyGroup>

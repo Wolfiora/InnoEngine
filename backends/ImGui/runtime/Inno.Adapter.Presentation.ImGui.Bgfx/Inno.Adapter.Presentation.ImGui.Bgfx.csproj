@@ -17,8 +17,19 @@
     <ProjectReference Include="../../../../src/services/rendering/Inno.Rendering/Inno.Rendering.csproj" />
   </ItemGroup>
   <Target Name="CompileImGuiShaderGraphs" DependsOnTargets="PrepareInnoBuildTaskHost" Condition="'$(InnoNativeTarget)' != '' and '$(DesignTimeBuild)' != 'true'">
+    <PropertyGroup>
+      <_InnoShaderIntermediateRoot>$([System.IO.Path]::GetFullPath('$(IntermediateOutputPath)', '$(MSBuildProjectDirectory)'))</_InnoShaderIntermediateRoot>
+    </PropertyGroup>
     <Error Condition="'$(InnoImGuiShaderTarget)' == '' or '@(_ImGuiShaderApi)' == ''" Text="ImGui shader compilation requires the Editor product's explicit shader platform and graphics API set." />
-    <CompileShaderTask EngineRoot="$(MSBuildProjectDirectory)/../../../.." Configuration="$(Configuration)" AssetRoot="$(MSBuildProjectDirectory)/Shaders" ShaderPath="ImGui.ishader" Target="$(InnoImGuiShaderTarget)" Renderer="%(_ImGuiShaderApi.Identity)" OutputFile="$(MSBuildProjectDirectory)/$(IntermediateOutputPath)Shaders/%(_ImGuiShaderApi.Identity)/Outputs/%(_ImGuiShaderApi.Identity).bin" ToolTarget="$(InnoToolTarget)" />
+    <CompileShaderTask
+      EngineRoot="$(MSBuildProjectDirectory)/../../../.."
+      Configuration="$(Configuration)"
+      AssetRoot="$(MSBuildProjectDirectory)/Shaders"
+      ShaderPath="ImGui.ishader"
+      Target="$(InnoImGuiShaderTarget)"
+      Renderer="%(_ImGuiShaderApi.Identity)"
+      OutputFile="$(_InnoShaderIntermediateRoot)/Shaders/%(_ImGuiShaderApi.Identity)/Outputs/%(_ImGuiShaderApi.Identity).bin"
+      ToolTarget="$(InnoToolTarget)" />
   </Target>
   <Target Name="IncludeImGuiShaderArtifacts" Condition="'$(InnoNativeTarget)' != '' and '$(DesignTimeBuild)' != 'true'" BeforeTargets="AssignTargetPaths" DependsOnTargets="CompileImGuiShaderGraphs">
     <ItemGroup>

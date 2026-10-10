@@ -12,9 +12,13 @@
 
 `NativeComponentDescriptor` 显式指定 Native、Toolchain、binding 配置和可选静态构建定义的唯一 owner。不同 checkout 的逻辑位置与物理读取分开。`NativeBuildContext.GetNativeBuildRoot` 不按程序集名称猜目录。
 
-`ProductNativeBuildPlan.BuildAsync` 在所有步骤开始前批量准备同一目标的 bindings，再按明确依赖执行组件 recipe。`NativeBindingPreparation` 复用 BGCS 库的 MSBuild 集成，结果按目标/指纹隔离。缺少 profile、工具或 SDK 在候选发布前明确失败。
+`ProductNativeBuildPlan.BuildAsync` 在所有步骤开始前批量准备同一目标的 bindings，再按明确依赖执行组件 recipe。`NativeBindingPreparation` 直接调用借用的 `INativeBindingGenerator`；具体 BGCS 应用流程在 Inno.Build.Bindings，结果按目标/指纹隔离。缺少 profile、工具或 SDK 在候选发布前明确失败。
 
 `NativeArtifactPublisher` 使用完整内容哈希、operation-owned snapshot、写 lease、再次稳定性验证和原子提交。工具、SDK、参数、生成身份、真实 source/executor closure 共同参与指纹。热命中仍校验产物与输入内容，不依赖 mtime。
+
+冷 CMake 生产流程由 `NativeCMakeExecutor.PrepareSourceAsync` 将 recipe 已冻结的工作区输入复制到所属 intermediate 的 `Sources`。`NativeCMakeSource` 只提供该复制树及声明输入的路径解析；原始源码即使在编译期间被修改后恢复，也不会改变编译器读取的内容。复制逐文件核对初始内容哈希，不使用 hardlink；已有复制树的完整集合与内容不符时重新原子准备。
+
+`NativeCMakeExecutor.BuildAsync` 必须在 `NativeArtifactPublisher` 的 producer scope 内调用。它自动共用该 scope 的一次准备，解析 `-S`、`INNO_ROOT` 和已声明的 CMake 输入参数；输出安装位置及外部 SDK 保留实际 owner。Browser 在同一 scope 准备一次 source，并用该 descriptor 生成组件 include 与 bridge 路径，随后执行相同 executor。产物缓存命中不进入冷 producer，因而不复制源码；锁后及编译后的 fresh 原始输入校验仍保留。
 
 `NativeBuildRecipe.CreateForComponent` 默认包含独立组件 owner 的全部实现；多职责平台模块通过 `implementationPaths` 显式声明实际原生执行源码。Browser 聚合只包含聚合实现与产物描述，Support Pack、打包和 Target 代码不参与原生归档指纹。共用 executor、组件 recipe、SDK、生成桥与参数继续参与失效；缩小无关范围不削弱发布前稳定性校验。
 
@@ -57,9 +61,17 @@ static Task<IReadOnlyList<NativeBuildProduct>> Prepare(
 
 NativeBuildContext.WithComponentOptions 固定对应 NativeComponentDescriptor 与 NativeComponentBuildOptions；ProductNativeBuildStep 必须提供它。libraryKind、有序 CMake definitions、输入文件 bytes 与目标、SDK、binding generation 共同参与 recipe identity。NativeStaticBuildDefinition 声明准确 targetIds；当前 .a 聚合仅实现 browser-wasm，未知格式或链接请求在构建前拒绝。
 
+## 中立绑定与阶段校验
+
+NativeBuildContext.WithBindingGenerator 借用 INativeBindingGenerator；派生 context 共用 provider、operation 输入状态和统计。NativeBindingPreparation 为完整 Product 请求一次批次，不生成临时 MSBuild 工程。BeginInputVerification 明确开启 fresh phase，阶段内部去重物理读；各独立锁等待和编译后必须重新验证。NativeBuildProduct.bindingGeneration 记录实际 Native 编译的绑定，WriteSelection 同时冻结每个实际组件的 Static/Shared 请求，供托管初始化和 Native 发布共同校验；静态组件只在 Native 编译边界定义 INNO_STATIC_NATIVE，不从宿主或目标名称推导。统计区分 source/verification/output、binding batch/generation、Native/managed 进程及 materialization bytes。完整性成本仍存在，不能称为零 IO。
+
+## 并发托管输出归属
+
+独立构建请求通过 SDK `--artifacts-path <request>/<target>` 各自持有托管 bin/obj；共同属性尊重该明确选择。独立 interop 编译和还原也采用同一请求根。普通 IDE bin/obj 只属于一个活动构建，两个独立进程同时写同一路径不受支持。Native 内容寻址缓存仍共享，写入继续由组件 lease 和阶段验证协调。
+
 ## 当前源码公开 API 清单
 
-只列当前源码的 public/protected 表面；内部实现不作为稳定 API。参数、返回、失败和 owner 以英文 XML 为准。
+只列当前源码 public/protected 表面；内部机制不是稳定 API，参数、返回、失败及所有权以英文 XML 为准。
 
 ### `Inno.Build.Toolchains.BuildArtifactCopier`
 
@@ -73,8 +85,8 @@ NativeBuildContext.WithComponentOptions 固定对应 NativeComponentDescriptor �
 | 当前声明 | 行为 |
 | --- | --- |
 | [`Inno.Build.Toolchains.BuildArtifactManifest`](../../build/toolchains/Inno.Build.Toolchains/BuildArtifactManifest.cs#L14) | Validates complete build outputs against their input identity and recorded file hashes. |
-| [`static bool Inno.Build.Toolchains.BuildArtifactManifest.IsComplete(string directory, string fingerprint, System.Collections.Generic.IReadOnlyList<string> outputDirectories)`](../../build/toolchains/Inno.Build.Toolchains/BuildArtifactManifest.cs#L70) | Checks the identity, exact output file set and bytes before reusing a cached artifact. |
-| [`static void Inno.Build.Toolchains.BuildArtifactManifest.Write(string directory, string fingerprint, System.Collections.Generic.IReadOnlyList<string> outputDirectories)`](../../build/toolchains/Inno.Build.Toolchains/BuildArtifactManifest.cs#L36) | Records a completed staging tree before its owner publishes the directory. |
+| [`static bool Inno.Build.Toolchains.BuildArtifactManifest.IsComplete(string directory, string fingerprint, System.Collections.Generic.IReadOnlyList<string> outputDirectories, Inno.Build.Toolchains.NativeBuildContext? context = null)`](../../build/toolchains/Inno.Build.Toolchains/BuildArtifactManifest.cs#L77) | Checks the identity, exact output file set and bytes before reusing a cached artifact. |
+| [`static void Inno.Build.Toolchains.BuildArtifactManifest.Write(string directory, string fingerprint, System.Collections.Generic.IReadOnlyList<string> outputDirectories, Inno.Build.Toolchains.NativeBuildContext? context = null)`](../../build/toolchains/Inno.Build.Toolchains/BuildArtifactManifest.cs#L39) | Records a completed staging tree before its owner publishes the directory. |
 
 ### `Inno.Build.Toolchains.BuildArtifactOptions`
 
@@ -114,6 +126,13 @@ NativeBuildContext.WithComponentOptions 固定对应 NativeComponentDescriptor �
 | [`Inno.Build.Toolchains.DotNetSdkResolver`](../../build/toolchains/Inno.Build.Toolchains/Managed/DotNetSdkResolver.cs#L12) | Resolves the managed SDK using the prepared entry project's directory and normal global.json rules. |
 | [`static System.Threading.Tasks.ValueTask<Inno.Build.Toolchains.DotNetSdkDescriptor> Inno.Build.Toolchains.DotNetSdkResolver.ResolveAsync(string hostPath, string projectPath, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))`](../../build/toolchains/Inno.Build.Toolchains/Managed/DotNetSdkResolver.cs#L35) | Asks the selected host to resolve its SDK from the project location without guessing installed versions. |
 
+### `Inno.Build.Toolchains.INativeBindingGenerator`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Build.Toolchains.INativeBindingGenerator`](../../build/toolchains/Inno.Build.Toolchains/Native/INativeBindingGenerator.cs#L10) | Prepares an entire binding closure without coupling native recipes to a generator or build host. |
+| [`System.Threading.Tasks.ValueTask<System.Collections.Generic.IReadOnlyDictionary<string, Inno.Build.Toolchains.NativeBindingGenerationDescriptor>> Inno.Build.Toolchains.INativeBindingGenerator.GenerateAsync(Inno.Build.Toolchains.NativeBuildContext context, Inno.Build.Toolchains.NativeBindingGenerationRequest request, System.Threading.CancellationToken cancellationToken)`](../../build/toolchains/Inno.Build.Toolchains/Native/INativeBindingGenerator.cs#L38) | Generates or verifies the requested closure under publication ownership. |
+
 ### `Inno.Build.Toolchains.INativeToolchainProvider`
 
 | 当前声明 | 行为 |
@@ -132,43 +151,73 @@ NativeBuildContext.WithComponentOptions 固定对应 NativeComponentDescriptor �
 
 | 当前声明 | 行为 |
 | --- | --- |
-| [`Inno.Build.Toolchains.NativeBindingGenerationDescriptor`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeBindingGenerationDescriptor.cs#L10) | Describes the complete binding generation selected by one native build request. |
-| [`required string Inno.Build.Toolchains.NativeBindingGenerationDescriptor.bindingsPath`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeBindingGenerationDescriptor.cs#L20) | Gets the absolute managed source path selected by the component project. |
-| [`required string Inno.Build.Toolchains.NativeBindingGenerationDescriptor.bridgeDirectory`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeBindingGenerationDescriptor.cs#L25) | Gets the complete native bridge directory, or an empty string for a direct C binding. |
-| [`required string Inno.Build.Toolchains.NativeBindingGenerationDescriptor.fingerprint`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeBindingGenerationDescriptor.cs#L15) | Gets the immutable input identity assigned to this target generation. |
-| [`static Inno.Build.Toolchains.NativeBindingGenerationDescriptor Inno.Build.Toolchains.NativeBindingGenerationDescriptor.Load(string path)`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeBindingGenerationDescriptor.cs#L42) | Reads and validates the result of a completed component generation request. |
-| [`void Inno.Build.Toolchains.NativeBindingGenerationDescriptor.Write(string path)`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeBindingGenerationDescriptor.cs#L61) | Atomically writes this completed generation to a request-owned descriptor file. |
+| [`Inno.Build.Toolchains.NativeBindingGenerationDescriptor`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeBindingGenerationDescriptor.cs#L13) | Describes the complete binding generation selected by one native build request. |
+| [`required string Inno.Build.Toolchains.NativeBindingGenerationDescriptor.bindingsPath`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeBindingGenerationDescriptor.cs#L88) | Gets the absolute managed source path selected by the component project. |
+| [`required string Inno.Build.Toolchains.NativeBindingGenerationDescriptor.bridgeDirectory`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeBindingGenerationDescriptor.cs#L93) | Gets the complete native bridge directory, or an empty string for a direct C binding. |
+| [`required string Inno.Build.Toolchains.NativeBindingGenerationDescriptor.fingerprint`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeBindingGenerationDescriptor.cs#L83) | Gets the immutable input identity assigned to this target generation. |
+| [`static Inno.Build.Toolchains.NativeBindingGenerationDescriptor Inno.Build.Toolchains.NativeBindingGenerationDescriptor.Load(string path)`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeBindingGenerationDescriptor.cs#L110) | Reads and validates the result of a completed component generation request. |
+| [`static void Inno.Build.Toolchains.NativeBindingGenerationDescriptor.ValidateSelection(string path, System.Collections.Generic.IReadOnlyDictionary<string, Inno.Build.Toolchains.NativeBindingGenerationDescriptor> generations, System.Collections.Generic.IReadOnlyDictionary<string, Inno.Build.Toolchains.NativeLibraryKind> linkage)`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeBindingGenerationDescriptor.cs#L71) | Rejects publication when the managed selection differs from the complete native generations to deploy. |
+| [`static void Inno.Build.Toolchains.NativeBindingGenerationDescriptor.WriteSelection(string path, System.Collections.Generic.IReadOnlyDictionary<string, Inno.Build.Toolchains.NativeBindingGenerationDescriptor> generations, System.Collections.Generic.IReadOnlyDictionary<string, Inno.Build.Toolchains.NativeLibraryKind> linkage)`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeBindingGenerationDescriptor.cs#L33) | Writes the exact native binding identities for a subsequent managed build without reselecting generations. |
+| [`void Inno.Build.Toolchains.NativeBindingGenerationDescriptor.Write(string path)`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeBindingGenerationDescriptor.cs#L129) | Atomically writes this completed generation to a request-owned descriptor file. |
+
+### `Inno.Build.Toolchains.NativeBindingGenerationRequest`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Build.Toolchains.NativeBindingGenerationRequest`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeBindingGenerationRequest.cs#L26) | Freezes the complete binding request before ownership waits or candidate creation. |
+| [`Inno.Build.Toolchains.NativeBindingGenerationRequest.NativeBindingGenerationRequest(System.Collections.Generic.IEnumerable<Inno.Build.Toolchains.NativeComponentDescriptor> components, string targetId, Inno.Build.Toolchains.NativeBindingOutputMode outputMode, bool checkOnly = false, System.Collections.Generic.IReadOnlyDictionary<string, string>? expectedFingerprints = null)`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeBindingGenerationRequest.cs#L49) | Captures explicit owners and a target without discovering components or parsing a build project. |
+| [`Inno.Build.Toolchains.NativeBindingOutputMode Inno.Build.Toolchains.NativeBindingGenerationRequest.outputMode`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeBindingGenerationRequest.cs#L88) | Gets the selected output ownership policy. |
+| [`System.Collections.Generic.IReadOnlyDictionary<string, string> Inno.Build.Toolchains.NativeBindingGenerationRequest.expectedFingerprints`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeBindingGenerationRequest.cs#L96) | Gets the expected identities which must match before any candidate is generated. |
+| [`System.Collections.Generic.IReadOnlyList<Inno.Build.Toolchains.NativeComponentDescriptor> Inno.Build.Toolchains.NativeBindingGenerationRequest.components`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeBindingGenerationRequest.cs#L80) | Gets the immutable component closure owned by this request. |
+| [`bool Inno.Build.Toolchains.NativeBindingGenerationRequest.checkOnly`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeBindingGenerationRequest.cs#L92) | Gets whether publication is forbidden and current output must match fresh generation. |
+| [`string Inno.Build.Toolchains.NativeBindingGenerationRequest.targetId`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeBindingGenerationRequest.cs#L84) | Gets the explicit configuration target, independent of the build execution host. |
+
+### `Inno.Build.Toolchains.NativeBindingOutputMode`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Build.Toolchains.NativeBindingOutputMode`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeBindingGenerationRequest.cs#L11) | Selects the publication owner of generated sources. |
+| [`Inno.Build.Toolchains.NativeBindingOutputMode.HostSource`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeBindingGenerationRequest.cs#L16) | Replaces the component's authored host source and bridge outputs together. |
+| [`Inno.Build.Toolchains.NativeBindingOutputMode.TargetArtifacts`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeBindingGenerationRequest.cs#L20) | Publishes immutable target outputs under the component's generation fingerprint. |
 
 ### `Inno.Build.Toolchains.NativeBindingPreparation`
 
 | 当前声明 | 行为 |
 | --- | --- |
-| [`Inno.Build.Toolchains.NativeBindingPreparation`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeBindingPreparation.cs#L14) | Requests one coherent target binding closure through the shared MSBuild generator integration. |
-| [`static System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyDictionary<string, Inno.Build.Toolchains.NativeBindingGenerationDescriptor>> Inno.Build.Toolchains.NativeBindingPreparation.PrepareAsync(Inno.Build.Toolchains.NativeBuildContext context, System.Collections.Generic.IReadOnlyList<Inno.Build.Toolchains.NativeComponentDescriptor> components, System.Threading.CancellationToken cancellationToken)`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeBindingPreparation.cs#L40) | Generates or verifies target-isolated bindings for the explicitly selected component owners. |
+| [`Inno.Build.Toolchains.NativeBindingPreparation`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeBindingPreparation.cs#L12) | Prepares a coherent target closure through the borrowed generator, without invoking MSBuild. |
+| [`static System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyDictionary<string, Inno.Build.Toolchains.NativeBindingGenerationDescriptor>> Inno.Build.Toolchains.NativeBindingPreparation.PrepareAsync(Inno.Build.Toolchains.NativeBuildContext context, System.Collections.Generic.IReadOnlyList<Inno.Build.Toolchains.NativeComponentDescriptor> components, System.Threading.CancellationToken cancellationToken)`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeBindingPreparation.cs#L32) | Requests one binding batch for all generated components of a product. |
 
 ### `Inno.Build.Toolchains.NativeBuildContext`
 
 | 当前声明 | 行为 |
 | --- | --- |
-| [`Inno.Build.Toolchains.NativeBindingGenerationDescriptor Inno.Build.Toolchains.NativeBuildContext.RequireBindings(Inno.Build.Toolchains.NativeComponentDescriptor component)`](../../build/toolchains/Inno.Build.Toolchains/NativeBuildContext.cs#L278) | Requires the target binding generation prepared for an explicitly declared Native owner. |
+| [`Inno.Build.Toolchains.INativeBindingGenerator Inno.Build.Toolchains.NativeBuildContext.RequireBindingGenerator()`](../../build/toolchains/Inno.Build.Toolchains/NativeBuildContext.cs#L347) | Requires generation to be configured explicitly before creating staging or launching tools. |
+| [`Inno.Build.Toolchains.NativeBindingGenerationDescriptor Inno.Build.Toolchains.NativeBuildContext.RequireBindings(Inno.Build.Toolchains.NativeComponentDescriptor component)`](../../build/toolchains/Inno.Build.Toolchains/NativeBuildContext.cs#L317) | Requires the target binding generation prepared for an explicitly declared Native owner. |
 | [`Inno.Build.Toolchains.NativeBuildContext`](../../build/toolchains/Inno.Build.Toolchains/NativeBuildContext.cs#L12) | Identifies the checkout, configuration and frozen initial inputs owned by one native build operation. Create a new context for each operation; changes during its lifetime fail stability verification. |
-| [`Inno.Build.Toolchains.NativeBuildContext Inno.Build.Toolchains.NativeBuildContext.WithBindings(System.Collections.Generic.IReadOnlyDictionary<string, Inno.Build.Toolchains.NativeBindingGenerationDescriptor> bindings)`](../../build/toolchains/Inno.Build.Toolchains/NativeBuildContext.cs#L257) | Creates a scoped operation with an immutable, explicitly prepared target binding closure. |
-| [`Inno.Build.Toolchains.NativeBuildContext Inno.Build.Toolchains.NativeBuildContext.WithComponentOptions(Inno.Build.Toolchains.NativeComponentDescriptor component, Inno.Build.Toolchains.NativeComponentBuildOptions options)`](../../build/toolchains/Inno.Build.Toolchains/NativeBuildContext.cs#L219) | Scopes one component's explicit product configuration without changing the frozen SDK. |
-| [`Inno.Build.Toolchains.NativeBuildContext Inno.Build.Toolchains.NativeBuildContext.WithToolchain(Inno.Build.Toolchains.NativeToolchainSelection toolchain)`](../../build/toolchains/Inno.Build.Toolchains/NativeBuildContext.cs#L186) | Attaches a provider's immutable tool selection while preserving this operation's input ownership. |
-| [`Inno.Build.Toolchains.NativeBuildContext.NativeBuildContext(string engineRoot, string configuration)`](../../build/toolchains/Inno.Build.Toolchains/NativeBuildContext.cs#L38) | Creates a build context without consulting the tool assembly's checkout. |
-| [`Inno.Build.Toolchains.NativeBuildStatistics Inno.Build.Toolchains.NativeBuildContext.statistics`](../../build/toolchains/Inno.Build.Toolchains/NativeBuildContext.cs#L164) | Gets actual hashing and native execution work accumulated by this operation and its scoped contexts. |
-| [`Inno.Build.Toolchains.NativeComponentBuildOptions Inno.Build.Toolchains.NativeBuildContext.RequireComponentOptions(Inno.Build.Toolchains.NativeComponentDescriptor component)`](../../build/toolchains/Inno.Build.Toolchains/NativeBuildContext.cs#L240) | Requires product configuration for the exact component before its recipe or tools execute. |
-| [`Inno.Build.Toolchains.NativeToolchainSelection Inno.Build.Toolchains.NativeBuildContext.RequireToolchain()`](../../build/toolchains/Inno.Build.Toolchains/NativeBuildContext.cs#L201) | Requires an explicit selection before a component can build or start a native tool. |
-| [`Inno.Build.Toolchains.NativeToolchainSelection? Inno.Build.Toolchains.NativeBuildContext.toolchain`](../../build/toolchains/Inno.Build.Toolchains/NativeBuildContext.cs#L127) | Gets the explicit frozen target compiler and SDK selection, or null before composition resolves it. Browser toolchains resolve their own workload-specific SDK independently. |
-| [`string Inno.Build.Toolchains.NativeBuildContext.GetNativeBuildRoot(Inno.Build.Toolchains.NativeComponentDescriptor component)`](../../build/toolchains/Inno.Build.Toolchains/NativeBuildContext.cs#L146) | Resolves native intermediates under the owning toolchain project in this checkout. |
-| [`string Inno.Build.Toolchains.NativeBuildContext.configuration`](../../build/toolchains/Inno.Build.Toolchains/NativeBuildContext.cs#L121) | Gets the normalized debug or release configuration prepared by this operation. |
-| [`string Inno.Build.Toolchains.NativeBuildContext.engineRoot`](../../build/toolchains/Inno.Build.Toolchains/NativeBuildContext.cs#L116) | Gets the absolute checkout used for every source, intermediate and output path. |
+| [`Inno.Build.Toolchains.NativeBuildContext Inno.Build.Toolchains.NativeBuildContext.BeginInputVerification(string phase)`](../../build/toolchains/Inno.Build.Toolchains/NativeBuildContext.cs#L362) | Starts a fresh verification phase whose reads can be shared only within this derived context. |
+| [`Inno.Build.Toolchains.NativeBuildContext Inno.Build.Toolchains.NativeBuildContext.WithBindingGenerator(Inno.Build.Toolchains.INativeBindingGenerator generator)`](../../build/toolchains/Inno.Build.Toolchains/NativeBuildContext.cs#L330) | Borrows a generator while preserving this operation's input and tool ownership. |
+| [`Inno.Build.Toolchains.NativeBuildContext Inno.Build.Toolchains.NativeBuildContext.WithBindings(System.Collections.Generic.IReadOnlyDictionary<string, Inno.Build.Toolchains.NativeBindingGenerationDescriptor> bindings)`](../../build/toolchains/Inno.Build.Toolchains/NativeBuildContext.cs#L296) | Creates a scoped operation with an immutable, explicitly prepared target binding closure. |
+| [`Inno.Build.Toolchains.NativeBuildContext Inno.Build.Toolchains.NativeBuildContext.WithComponentOptions(Inno.Build.Toolchains.NativeComponentDescriptor component, Inno.Build.Toolchains.NativeComponentBuildOptions options)`](../../build/toolchains/Inno.Build.Toolchains/NativeBuildContext.cs#L258) | Scopes one component's explicit product configuration without changing the frozen SDK. |
+| [`Inno.Build.Toolchains.NativeBuildContext Inno.Build.Toolchains.NativeBuildContext.WithToolchain(Inno.Build.Toolchains.NativeToolchainSelection toolchain)`](../../build/toolchains/Inno.Build.Toolchains/NativeBuildContext.cs#L225) | Attaches a provider's immutable tool selection while preserving this operation's input ownership. |
+| [`Inno.Build.Toolchains.NativeBuildContext.NativeBuildContext(string engineRoot, string configuration)`](../../build/toolchains/Inno.Build.Toolchains/NativeBuildContext.cs#L40) | Creates a build context without consulting the tool assembly's checkout. |
+| [`Inno.Build.Toolchains.NativeBuildStatistics Inno.Build.Toolchains.NativeBuildContext.statistics`](../../build/toolchains/Inno.Build.Toolchains/NativeBuildContext.cs#L178) | Gets actual hashing and native execution work accumulated by this operation and its scoped contexts. |
+| [`Inno.Build.Toolchains.NativeComponentBuildOptions Inno.Build.Toolchains.NativeBuildContext.RequireComponentOptions(Inno.Build.Toolchains.NativeComponentDescriptor component)`](../../build/toolchains/Inno.Build.Toolchains/NativeBuildContext.cs#L279) | Requires product configuration for the exact component before its recipe or tools execute. |
+| [`Inno.Build.Toolchains.NativeToolchainSelection Inno.Build.Toolchains.NativeBuildContext.RequireToolchain()`](../../build/toolchains/Inno.Build.Toolchains/NativeBuildContext.cs#L240) | Requires an explicit selection before a component can build or start a native tool. |
+| [`Inno.Build.Toolchains.NativeToolchainSelection? Inno.Build.Toolchains.NativeBuildContext.toolchain`](../../build/toolchains/Inno.Build.Toolchains/NativeBuildContext.cs#L141) | Gets the explicit frozen target compiler and SDK selection, or null before composition resolves it. Browser toolchains resolve their own workload-specific SDK independently. |
+| [`string Inno.Build.Toolchains.NativeBuildContext.GetNativeBuildRoot(Inno.Build.Toolchains.NativeComponentDescriptor component)`](../../build/toolchains/Inno.Build.Toolchains/NativeBuildContext.cs#L160) | Resolves native intermediates under the owning toolchain project in this checkout. |
+| [`string Inno.Build.Toolchains.NativeBuildContext.configuration`](../../build/toolchains/Inno.Build.Toolchains/NativeBuildContext.cs#L135) | Gets the normalized debug or release configuration prepared by this operation. |
+| [`string Inno.Build.Toolchains.NativeBuildContext.engineRoot`](../../build/toolchains/Inno.Build.Toolchains/NativeBuildContext.cs#L130) | Gets the absolute checkout used for every source, intermediate and output path. |
+| [`void Inno.Build.Toolchains.NativeBuildContext.RecordBindingBatch()`](../../build/toolchains/Inno.Build.Toolchains/NativeBuildContext.cs#L187) | Records one complete binding batch executed by the borrowed provider. |
+| [`void Inno.Build.Toolchains.NativeBuildContext.RecordBindingGeneration()`](../../build/toolchains/Inno.Build.Toolchains/NativeBuildContext.cs#L192) | Records one actual bridge or managed generator invocation. |
+| [`void Inno.Build.Toolchains.NativeBuildContext.RecordManagedProcess()`](../../build/toolchains/Inno.Build.Toolchains/NativeBuildContext.cs#L205) | Records a managed SDK process owned by generator extension preparation. |
+| [`void Inno.Build.Toolchains.NativeBuildContext.RecordOutputRead(long bytes)`](../../build/toolchains/Inno.Build.Toolchains/NativeBuildContext.cs#L200) | Records one full artifact output read without treating it as an input snapshot hash. |
 
 ### `Inno.Build.Toolchains.NativeBuildFingerprint`
 
 | 当前声明 | 行为 |
 | --- | --- |
 | [`Inno.Build.Toolchains.NativeBuildFingerprint`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeBuildFingerprint.cs#L13) | Derives recipe identities from ordered declarations, logical input names and complete source bytes. |
+| [`static string Inno.Build.Toolchains.NativeBuildFingerprint.Create(Inno.Build.Toolchains.NativeBuildContext context, System.Collections.Generic.IEnumerable<string> declarations, System.Collections.Generic.IEnumerable<Inno.Build.Toolchains.NativeBuildInput> inputs, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeBuildFingerprint.cs#L68) | Hashes declarations using the current operation's initial snapshot or explicit fresh verification phase. |
 | [`static string Inno.Build.Toolchains.NativeBuildFingerprint.Create(System.Collections.Generic.IEnumerable<string> declarations, System.Collections.Generic.IEnumerable<Inno.Build.Toolchains.NativeBuildInput> inputs, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeBuildFingerprint.cs#L39) | Hashes a complete declared input closure independently of checkout location and file timestamps. |
 
 ### `Inno.Build.Toolchains.NativeBuildInput`
@@ -181,16 +230,27 @@ NativeBuildContext.WithComponentOptions 固定对应 NativeComponentDescriptor �
 | [`string Inno.Build.Toolchains.NativeBuildInput.logicalPath`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeBuildInput.cs#L42) | Gets the identity included in the recipe fingerprint. |
 | [`string Inno.Build.Toolchains.NativeBuildInput.physicalPath`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeBuildInput.cs#L47) | Gets the reading location, which is not implicitly included in the fingerprint. |
 
+### `Inno.Build.Toolchains.NativeBuildPhaseStatistics`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Build.Toolchains.NativeBuildPhaseStatistics`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeBuildPhaseStatistics.cs#L6) | Describes actual full reads and physical read reuse within one explicitly bounded input phase. |
+| [`long Inno.Build.Toolchains.NativeBuildPhaseStatistics.bytes`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeBuildPhaseStatistics.cs#L19) | Gets the number of bytes actually read for hashing. |
+| [`long Inno.Build.Toolchains.NativeBuildPhaseStatistics.files`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeBuildPhaseStatistics.cs#L15) | Gets the number of complete physical file reads. |
+| [`long Inno.Build.Toolchains.NativeBuildPhaseStatistics.reusedReads`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeBuildPhaseStatistics.cs#L23) | Gets repeated physical hash requests satisfied from this phase's cache. |
+| [`required string Inno.Build.Toolchains.NativeBuildPhaseStatistics.phase`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeBuildPhaseStatistics.cs#L11) | Gets the named operation phase which owns these read results. |
+
 ### `Inno.Build.Toolchains.NativeBuildProduct`
 
 | 当前声明 | 行为 |
 | --- | --- |
+| [`Inno.Build.Toolchains.NativeBindingGenerationDescriptor? Inno.Build.Toolchains.NativeBuildProduct.bindingGeneration`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeBuildProduct.cs#L53) | Gets the exact binding generation compiled into this product, or null for a component without bindings. Managed consumers must retain this selection rather than resolve a new generation after native preparation. |
 | [`Inno.Build.Toolchains.NativeBuildProduct`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeBuildProduct.cs#L11) | Identifies one complete, integrity-checked native artifact and its exact published file closure. |
-| [`System.Collections.Generic.IReadOnlyList<string> Inno.Build.Toolchains.NativeBuildProduct.files`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeBuildProduct.cs#L50) | Gets the exact absolute output file paths validated by the publisher. |
-| [`string Inno.Build.Toolchains.NativeBuildProduct.component`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeBuildProduct.cs#L30) | Gets the component identity supplied by the owning toolchain. |
-| [`string Inno.Build.Toolchains.NativeBuildProduct.directory`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeBuildProduct.cs#L45) | Gets the immutable artifact root containing Outputs and its integrity manifest. |
-| [`string Inno.Build.Toolchains.NativeBuildProduct.fingerprint`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeBuildProduct.cs#L40) | Gets the content fingerprint covering sources, tool executables and toolchain declarations. |
-| [`string Inno.Build.Toolchains.NativeBuildProduct.targetId`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeBuildProduct.cs#L35) | Gets the target ABI selected for this build. |
+| [`System.Collections.Generic.IReadOnlyList<string> Inno.Build.Toolchains.NativeBuildProduct.files`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeBuildProduct.cs#L58) | Gets the exact absolute output file paths validated by the publisher. |
+| [`string Inno.Build.Toolchains.NativeBuildProduct.component`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeBuildProduct.cs#L32) | Gets the component identity supplied by the owning toolchain. |
+| [`string Inno.Build.Toolchains.NativeBuildProduct.directory`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeBuildProduct.cs#L47) | Gets the immutable artifact root containing Outputs and its integrity manifest. |
+| [`string Inno.Build.Toolchains.NativeBuildProduct.fingerprint`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeBuildProduct.cs#L42) | Gets the content fingerprint covering sources, tool executables and toolchain declarations. |
+| [`string Inno.Build.Toolchains.NativeBuildProduct.targetId`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeBuildProduct.cs#L37) | Gets the target ABI selected for this build. |
 
 ### `Inno.Build.Toolchains.NativeBuildRecipe`
 
@@ -209,18 +269,35 @@ NativeBuildContext.WithComponentOptions 固定对应 NativeComponentDescriptor �
 
 | 当前声明 | 行为 |
 | --- | --- |
-| [`Inno.Build.Toolchains.NativeBuildStatistics`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeBuildStatistics.cs#L6) | Reports actual input reading and compiler process work accumulated by one build context. |
-| [`long Inno.Build.Toolchains.NativeBuildStatistics.hashedBytes`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeBuildStatistics.cs#L16) | Gets the actual bytes consumed by input hashing, excluding output integrity validation. |
-| [`long Inno.Build.Toolchains.NativeBuildStatistics.hashedFiles`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeBuildStatistics.cs#L11) | Gets the number of complete file hashes read, including required stability verification. |
-| [`long Inno.Build.Toolchains.NativeBuildStatistics.nativeProcesses`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeBuildStatistics.cs#L22) | Gets native execution processes started through the context's frozen tool selection. SDK discovery and managed task bootstrapping are recorded by their separate build logs. |
+| [`Inno.Build.Toolchains.NativeBuildStatistics`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeBuildStatistics.cs#L8) | Reports actual input reading and compiler process work accumulated by one build context. |
+| [`System.Collections.Generic.IReadOnlyList<Inno.Build.Toolchains.NativeBuildPhaseStatistics> Inno.Build.Toolchains.NativeBuildStatistics.phases`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeBuildStatistics.cs#L29) | Gets immutable phase-specific read accounting accumulated by this operation. |
+| [`long Inno.Build.Toolchains.NativeBuildStatistics.bindingBatches`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeBuildStatistics.cs#L34) | Gets complete binding batches requested by this operation. |
+| [`long Inno.Build.Toolchains.NativeBuildStatistics.bindingGenerations`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeBuildStatistics.cs#L39) | Gets actual bridge or managed generation invocations, excluding valid artifact reuse. |
+| [`long Inno.Build.Toolchains.NativeBuildStatistics.hashedBytes`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeBuildStatistics.cs#L18) | Gets the actual bytes consumed by input hashing, excluding output integrity validation. |
+| [`long Inno.Build.Toolchains.NativeBuildStatistics.hashedFiles`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeBuildStatistics.cs#L13) | Gets the number of complete file hashes read, including required stability verification. |
+| [`long Inno.Build.Toolchains.NativeBuildStatistics.managedProcesses`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeBuildStatistics.cs#L59) | Gets managed SDK processes started for generator extension preparation. |
+| [`long Inno.Build.Toolchains.NativeBuildStatistics.materializedBytes`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeBuildStatistics.cs#L44) | Gets bytes copied to freeze mutable repository inputs. |
+| [`long Inno.Build.Toolchains.NativeBuildStatistics.nativeProcesses`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeBuildStatistics.cs#L24) | Gets native execution processes started through the context's frozen tool selection. SDK discovery and managed task bootstrapping are recorded by their separate build logs. |
+| [`long Inno.Build.Toolchains.NativeBuildStatistics.outputBytes`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeBuildStatistics.cs#L54) | Gets bytes read from actual outputs, separately from source snapshot verification. |
+| [`long Inno.Build.Toolchains.NativeBuildStatistics.outputFiles`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeBuildStatistics.cs#L49) | Gets independent artifact output hashes performed for integrity verification and publication. |
 
 ### `Inno.Build.Toolchains.NativeCMakeExecutor`
 
 | 当前声明 | 行为 |
 | --- | --- |
 | [`Inno.Build.Toolchains.NativeCMakeExecutor`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeCMakeExecutor.cs#L13) | Executes component-owned CMake definitions using an already frozen target SDK selection. |
-| [`static System.Threading.Tasks.Task<string> Inno.Build.Toolchains.NativeCMakeExecutor.BuildAsync(Inno.Build.Toolchains.NativeBuildContext context, Inno.Build.Toolchains.NativeComponentDescriptor component, string sourceDirectory, string? target, System.Collections.Generic.IReadOnlyList<string> componentArguments, System.Threading.CancellationToken cancellationToken)`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeCMakeExecutor.cs#L48) | Configures and builds an explicit component target without detecting the current platform. |
-| [`static string Inno.Build.Toolchains.NativeCMakeExecutor.FindOutput(Inno.Build.Toolchains.NativeBuildContext context, string buildDirectory, string filePattern)`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeCMakeExecutor.cs#L114) | Selects one declared output while excluding CMake's compiler probes and other build configurations. |
+| [`static System.Threading.Tasks.Task<Inno.Build.Toolchains.NativeCMakeSource> Inno.Build.Toolchains.NativeCMakeExecutor.PrepareSourceAsync(Inno.Build.Toolchains.NativeBuildContext context, Inno.Build.Toolchains.NativeComponentDescriptor component, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeCMakeExecutor.cs#L39) | Copies the recipe's declared checkout inputs before a cold CMake invocation. |
+| [`static System.Threading.Tasks.Task<string> Inno.Build.Toolchains.NativeCMakeExecutor.BuildAsync(Inno.Build.Toolchains.NativeBuildContext context, Inno.Build.Toolchains.NativeComponentDescriptor component, string sourceDirectory, string? target, System.Collections.Generic.IReadOnlyList<string> componentArguments, System.Threading.CancellationToken cancellationToken)`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeCMakeExecutor.cs#L86) | Configures and builds an explicit component target without detecting the current platform. |
+| [`static string Inno.Build.Toolchains.NativeCMakeExecutor.FindOutput(Inno.Build.Toolchains.NativeBuildContext context, string buildDirectory, string filePattern)`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeCMakeExecutor.cs#L153) | Selects one declared output while excluding CMake's compiler probes and other build configurations. |
+
+### `Inno.Build.Toolchains.NativeCMakeSource`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Build.Toolchains.NativeCMakeSource`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeCMakeSource.cs#L15) | Describes copied recipe inputs owned by one cold CMake producer. External SDK locations remain assigned to the frozen toolchain. |
+| [`string Inno.Build.Toolchains.NativeCMakeSource.ResolveDefinition(string argument)`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeCMakeSource.cs#L82) | Resolves declared input paths in one CMake definition without redirecting output or SDK locations. |
+| [`string Inno.Build.Toolchains.NativeCMakeSource.ResolvePath(string path)`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeCMakeSource.cs#L57) | Resolves a declared checkout file or directory to its copied counterpart. |
+| [`string Inno.Build.Toolchains.NativeCMakeSource.root`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeCMakeSource.cs#L40) | Gets the isolated source root; this is neither the checkout nor an output installation directory. |
 
 ### `Inno.Build.Toolchains.NativeComponentBuildOptions`
 
@@ -237,14 +314,14 @@ NativeBuildContext.WithComponentOptions 固定对应 NativeComponentDescriptor �
 | 当前声明 | 行为 |
 | --- | --- |
 | [`Inno.Build.Toolchains.NativeComponentDescriptor`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeComponentDescriptor.cs#L10) | Declares the unique source and build owners of a reusable native component. |
-| [`Inno.Build.Toolchains.NativeComponentDescriptor.NativeComponentDescriptor(string id, string nativeProject, string toolchainProject, Inno.Build.Toolchains.NativeStaticBuildDefinition? staticBuild = null, string? bindingConfig = null)`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeComponentDescriptor.cs#L33) | Freezes portable checkout-relative owner locations without assembly-name or directory inference. |
+| [`Inno.Build.Toolchains.NativeComponentDescriptor.NativeComponentDescriptor(string id, string nativeProject, string toolchainProject, Inno.Build.Toolchains.NativeStaticBuildDefinition? staticBuild = null, string? bindingDefinition = null)`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeComponentDescriptor.cs#L33) | Freezes portable checkout-relative owner locations without assembly-name or directory inference. |
 | [`Inno.Build.Toolchains.NativeStaticBuildDefinition? Inno.Build.Toolchains.NativeComponentDescriptor.staticBuild`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeComponentDescriptor.cs#L74) | Gets the declared static build capability without requiring a platform-specific component project. |
 | [`string Inno.Build.Toolchains.NativeComponentDescriptor.GetNativeRoot(string engineRoot)`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeComponentDescriptor.cs#L90) | Resolves the declared native owner within an explicitly supplied checkout. |
 | [`string Inno.Build.Toolchains.NativeComponentDescriptor.GetToolchainRoot(string engineRoot)`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeComponentDescriptor.cs#L101) | Resolves the declared recipe owner within an explicitly supplied checkout. |
 | [`string Inno.Build.Toolchains.NativeComponentDescriptor.id`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeComponentDescriptor.cs#L59) | Gets the portable artifact identity. |
 | [`string Inno.Build.Toolchains.NativeComponentDescriptor.nativeProject`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeComponentDescriptor.cs#L64) | Gets the explicit checkout-relative Native owner project. |
 | [`string Inno.Build.Toolchains.NativeComponentDescriptor.toolchainProject`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeComponentDescriptor.cs#L69) | Gets the explicit checkout-relative recipe owner project. |
-| [`string? Inno.Build.Toolchains.NativeComponentDescriptor.bindingConfig`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeComponentDescriptor.cs#L79) | Gets the declared binding definition, or null for a component without generated bindings. |
+| [`string? Inno.Build.Toolchains.NativeComponentDescriptor.bindingDefinition`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeComponentDescriptor.cs#L79) | Gets the declared binding definition, or null for a component without generated bindings. |
 
 ### `Inno.Build.Toolchains.NativeInputMaterializer`
 
@@ -287,7 +364,7 @@ NativeBuildContext.WithComponentOptions 固定对应 NativeComponentDescriptor �
 | [`Inno.Build.Toolchains.BuildHostDescriptor Inno.Build.Toolchains.NativeToolchainSelection.host`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeToolchainSelection.cs#L115) | Gets the declared tool execution host. |
 | [`Inno.Build.Toolchains.NativeToolchainSelection`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeToolchainSelection.cs#L12) | Freezes target compiler tools and SDK inputs independently of discovery and platform policy. |
 | [`Inno.Build.Toolchains.NativeToolchainSelection.NativeToolchainSelection(string targetId, Inno.Build.Toolchains.BuildHostDescriptor host, System.Collections.Generic.IReadOnlyDictionary<string, string> tools, System.Collections.Generic.IReadOnlyDictionary<string, string> environment, System.Collections.Generic.IEnumerable<string> inputPaths, System.Collections.Generic.IEnumerable<string> cmakeArguments, string sharedLibraryExtension, bool multiConfiguration)`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeToolchainSelection.cs#L52) | Captures an immutable, explicit compiler and SDK selection supplied by a platform provider. |
-| [`System.Collections.Generic.IReadOnlyDictionary<string, string> Inno.Build.Toolchains.NativeToolchainSelection.environment`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeToolchainSelection.cs#L135) | Gets the environment supplied exclusively to owned tools. |
+| [`System.Collections.Generic.IReadOnlyDictionary<string, string> Inno.Build.Toolchains.NativeToolchainSelection.environment`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeToolchainSelection.cs#L135) | Gets frozen SDK values supplied to owned tools and in-process binding configuration. |
 | [`System.Collections.Generic.IReadOnlyList<string> Inno.Build.Toolchains.NativeToolchainSelection.cmakeArguments`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeToolchainSelection.cs#L130) | Gets configuration arguments selecting the compiler, generator and SDK. |
 | [`System.Collections.Generic.IReadOnlyList<string> Inno.Build.Toolchains.NativeToolchainSelection.declarations`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeToolchainSelection.cs#L125) | Gets ordered tool and environment facts included in the recipe fingerprint. |
 | [`System.Collections.Generic.IReadOnlyList<string> Inno.Build.Toolchains.NativeToolchainSelection.inputPaths`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeToolchainSelection.cs#L120) | Gets the immutable SDK and compiler input closure. |

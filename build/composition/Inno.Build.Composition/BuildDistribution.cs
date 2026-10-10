@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Inno.Assets.Pipeline;
 using Inno.Build.Managed;
@@ -111,6 +112,30 @@ public sealed class BuildDistribution
         if (m_nativeToolchains.TryGetValue(targetId, out INativeToolchainProvider? provider))
             return provider;
         throw new NotSupportedException($"No native toolchain is registered for target '{targetId}'.");
+    }
+
+    /// <summary>
+    /// Checks whether this distribution contributes an SDK for an explicitly requested binding target.
+    /// A standalone binding definition may describe a target without registering a product publisher.
+    /// </summary>
+    /// <param name="targetId">
+    /// The exact target identity; no host-derived target is substituted.
+    /// </param>
+    /// <param name="provider">
+    /// The borrowed SDK provider when registered, or null when the distribution has no such contribution.
+    /// </param>
+    /// <returns>
+    /// True when the target has an explicit SDK contribution; false does not imply SDK-free configuration.
+    /// </returns>
+    /// <exception cref="ArgumentException">
+    /// The target identity is empty.
+    /// </exception>
+    public bool TryResolveNativeToolchain(
+        string targetId,
+        [NotNullWhen(true)] out INativeToolchainProvider? provider
+    ) {
+        ArgumentException.ThrowIfNullOrWhiteSpace(targetId);
+        return m_nativeToolchains.TryGetValue(targetId, out provider);
     }
 
     /// <summary>

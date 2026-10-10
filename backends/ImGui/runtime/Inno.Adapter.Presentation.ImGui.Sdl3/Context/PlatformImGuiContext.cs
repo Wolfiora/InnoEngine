@@ -68,39 +68,51 @@ public sealed partial class PlatformImGuiContext
         m_context = ImGuiNative.CreateContext();
         ImGuiNative.SetCurrentContext(m_context);
 
-        var io = ImGuiNative.GetIO();
-        // SDL cannot reliably identify the viewport beneath a transient NoInputs viewport while
-        // docking, and the official SDL backend disables this capability on macOS. Let Dear ImGui
-        // use its viewport heuristic instead of publishing incorrect hovered viewport identities.
-        io.BackendFlags |= ImGuiBackendFlags.HasMouseCursors
-            | ImGuiBackendFlags.HasSetMousePos
-            | ImGuiBackendFlags.RendererHasTextures;
-        io.ConfigFlags |= ImGuiConfigFlags.NavEnableKeyboard;
-
-        if (enableDocking)
+        try
         {
-            io.ConfigFlags |= ImGuiConfigFlags.DockingEnable;
-        }
+            var io = ImGuiNative.GetIO();
+            // SDL cannot reliably identify the viewport beneath a transient NoInputs viewport while
+            // docking, and the official SDL backend disables this capability on macOS. Let Dear ImGui
+            // use its viewport heuristic instead of publishing incorrect hovered viewport identities.
+            io.BackendFlags |= ImGuiBackendFlags.HasMouseCursors
+                | ImGuiBackendFlags.HasSetMousePos
+                | ImGuiBackendFlags.RendererHasTextures;
+            io.ConfigFlags |= ImGuiConfigFlags.NavEnableKeyboard;
 
-        if (enableViewports)
+            if (enableDocking)
+            {
+                io.ConfigFlags |= ImGuiConfigFlags.DockingEnable;
+            }
+
+            if (enableViewports)
+            {
+                io.ConfigFlags |= ImGuiConfigFlags.ViewportsEnable;
+                io.ConfigDpiScaleViewports = true;
+                io.BackendFlags |= ImGuiBackendFlags.PlatformHasViewports | ImGuiBackendFlags.RendererHasViewports;
+            }
+
+            io.ConfigDpiScaleFonts = true;
+            io.ConfigMacOSXBehaviors = interaction.commandKeyBehavior;
+            io.MouseDrawCursor = false;
+            io.Fonts.RendererHasTextures = true;
+            ConfigureKeyRepeat(io);
+            ConfigureFonts(m_context, io);
+            ImGuiPackedColor.EnsureInitialized();
+
+            UpdateDisplayMetrics(io);
+            m_renderer = renderer ?? new PlatformImGuiSdlRenderer(window);
+            m_viewports = enableViewports ? new PlatformImGuiViewportBackend(application, window, m_renderer) : null;
+            RegisterClipboardCallbacks();
+        }
+        catch
         {
-            io.ConfigFlags |= ImGuiConfigFlags.ViewportsEnable;
-            io.ConfigDpiScaleViewports = true;
-            io.BackendFlags |= ImGuiBackendFlags.PlatformHasViewports | ImGuiBackendFlags.RendererHasViewports;
+            m_viewports?.Dispose();
+            ImGuiFont.UnregisterContext(m_context);
+            ImGuiNative.DestroyContext(m_context);
+            if (renderer is null)
+                m_renderer?.Dispose();
+            throw;
         }
-
-        io.ConfigDpiScaleFonts = true;
-        io.ConfigMacOSXBehaviors = interaction.commandKeyBehavior;
-        io.MouseDrawCursor = false;
-        io.Fonts.RendererHasTextures = true;
-        ConfigureKeyRepeat(io);
-        ConfigureFonts(m_context, io);
-        ImGuiPackedColor.EnsureInitialized();
-
-        UpdateDisplayMetrics(io);
-        m_renderer = renderer ?? new PlatformImGuiSdlRenderer(window);
-        m_viewports = enableViewports ? new PlatformImGuiViewportBackend(application, window, m_renderer) : null;
-        RegisterClipboardCallbacks();
     }
 
     /// <summary>
@@ -685,6 +697,7 @@ public sealed partial class PlatformImGuiContext
         }
 
         ImGuiNative.SetCurrentContext(m_context);
+        m_viewports?.ProcessRetirements();
         m_hasStartedFrame = true;
 
         var io = ImGuiNative.GetIO();
@@ -822,6 +835,9 @@ public sealed partial class PlatformImGuiContext
             ImGuiNative.DestroyPlatformWindows();
         }
 
+        m_viewports?.Dispose();
+        m_renderer.DrainViewportRetirements();
+
         foreach (var cursor in m_cursors.Values)
         {
             if (!cursor.IsNull)
@@ -831,7 +847,6 @@ public sealed partial class PlatformImGuiContext
         }
 
         m_cursors.Clear();
-        m_viewports?.Dispose();
         m_renderer.Dispose();
         ImGuiFont.UnregisterContext(m_context);
         ImGuiNative.DestroyContext(m_context);

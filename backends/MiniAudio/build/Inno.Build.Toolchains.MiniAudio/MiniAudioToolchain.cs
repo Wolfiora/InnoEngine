@@ -23,7 +23,7 @@ public static class MiniAudioToolchain
             ["extern/miniaudio"],
             ["libminiaudio.a"],
             ["browser-wasm"]),
-        bindingConfig: "backends/MiniAudio/native/Inno.Native.MiniAudio/Bindings/bindgen.json");
+        bindingDefinition: "backends/MiniAudio/native/Inno.Native.MiniAudio/Bindings/bindings.props");
 
     /// <summary>
     /// Builds the component using the explicitly selected target SDK and validates the complete native product.

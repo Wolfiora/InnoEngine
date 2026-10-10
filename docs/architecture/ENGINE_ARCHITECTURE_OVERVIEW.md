@@ -264,3 +264,7 @@ Native 步骤显式声明 Static/Shared、有序组件参数和输入 bytes；SD
 - `Inno.Integration.Browser.Bgfx`：`platforms/Browser/integrations/Inno.Integration.Browser.Bgfx/`。构建接入。
 - `Inno.Integration.Browser.Sdl3`：`platforms/Browser/integrations/Inno.Integration.Browser.Sdl3/`。运行宿主接入。
 - `Inno.Integration.Linux.Bgfx`：`platforms/Linux/integrations/Inno.Integration.Linux.Bgfx/`。构建接入。
+
+## Backend 运行与绑定生成程序集
+
+新增 Inno.Build.Bindings、Inno.Integration.Windows.Bgfx.Runtime、Inno.Integration.MacOS.Bgfx.Runtime、Inno.Integration.Browser.Bgfx.Runtime 四个库，无新增生产入口。Bindings 依赖 BGCS 公开库与中立 Toolchains；runtime integration 依赖所属 BGFX SPI 与中立 Platform。完整本轮结构与门禁见 BACKEND_RUNTIME_BOUNDARY_OPTIMIZATION_ACCEPTANCE.md。

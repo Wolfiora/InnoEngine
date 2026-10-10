@@ -1,5 +1,5 @@
+using Inno.Build.Bindings;
 using System.Collections.Generic;
-using System.Xml.Linq;
 using Inno.Build.Distribution.Standard;
 using Inno.Build.Toolchains.Bgfx;
 using System;
@@ -40,14 +40,16 @@ internal static class EngineBuildWorkflow
         BuildTargetId toolsTarget = new(options.Require("tools-target"));
         BuildCompositionContext captured = StandardBuildEnvironment.Capture(AppContext.BaseDirectory, toolsTarget);
         var context = new BuildCompositionContext(ToolchainEnvironment.ResolveExecutable(dotnet),
-            captured.applicationDirectory, captured.host, toolsTarget);
+            captured.applicationDirectory, captured.host, toolsTarget,
+            new NativeBindingGenerator(ToolchainEnvironment.ResolveExecutable(dotnet)));
         BuildDistribution distribution = StandardBuildDistribution.Create(context).build;
         if (command == "shader")
         {
             BgfxShaderTargetProfile platform = StandardBuildDistribution.Create(context).ResolveShaderTarget(target);
             if (!GraphicsApi.TryParse(options.Require("renderer"), out GraphicsApi renderer))
                 throw new ArgumentException("The shader platform or rendering API is invalid.");
-            NativeBuildContext native = new(root, configuration.ToLowerInvariant());
+            NativeBuildContext native = new NativeBuildContext(root, configuration.ToLowerInvariant())
+                .WithBindingGenerator(context.bindingGenerator);
             native = native.WithToolchain(await distribution.ResolveNativeToolchain(toolsTarget.value)
                 .ResolveAsync(native, context.host, toolsTarget.value, cancellationToken).ConfigureAwait(false));
             NativeBuildProduct product = (await distribution.ResolveNativeProduct(toolsTarget.value, "shader-tools")
@@ -60,13 +62,18 @@ internal static class EngineBuildWorkflow
                 platform, renderer, options.Require("output"), new ToolRunner(executables), cancellationToken);
             return;
         }
-        if (command is "bindings" or "engine")
+        if (command == "bindings")
         {
             string productId = options.Read("product", "editor");
-            if (command == "engine" && productId != "editor")
-                throw new ArgumentException("The engine command builds the Editor product.");
             ProductNativeBuildPlan product = distribution.ResolveNativeProduct(target.value, productId);
-            await GenerateBindingsAsync(root, context.dotnetHost, configuration, target, product, cancellationToken).ConfigureAwait(false);
+            NativeBuildContext bindings = new(root, configuration.ToLowerInvariant());
+            bindings = bindings.WithBindingGenerator(context.bindingGenerator);
+            bindings = bindings.WithToolchain(await distribution.ResolveNativeToolchain(target.value)
+                .ResolveAsync(bindings, context.host, target.value, cancellationToken).ConfigureAwait(false));
+            var request = new NativeBindingGenerationRequest(product.steps.Select(static step => step.component)
+                .Where(static owner => owner.bindingDefinition is not null).DistinctBy(static owner => owner.nativeProject),
+                target.value, NativeBindingOutputMode.TargetArtifacts);
+            await context.bindingGenerator.GenerateAsync(bindings, request, cancellationToken).ConfigureAwait(false);
         }
         if (command == "bindings")
             return;
@@ -84,28 +91,6 @@ internal static class EngineBuildWorkflow
         string output = options.Read("output", Path.Combine(root, "artifacts", "support-packs"));
         Console.WriteLine(await distribution.supportPacks.PublishAsync(
             root, output, target, context.dotnetHost, cancellationToken).ConfigureAwait(false));
-    }
-
-    private static async Task GenerateBindingsAsync(
-        string root,
-        string dotnet,
-        string configuration,
-        BuildTargetId target,
-        ProductNativeBuildPlan product,
-        CancellationToken cancellationToken
-    ) {
-        foreach (NativeComponentDescriptor owner in product.steps
-            .Select(static step => step.component).DistinctBy(static component => component.nativeProject))
-        {
-            string project = Path.GetFullPath(owner.nativeProject, root);
-            if (!XDocument.Load(project).Descendants("BindGenGeneratedBindings")
-                .Any(static property => property.Value.Trim() == "true"))
-                continue;
-            await ToolchainEnvironment.RunAsync(dotnet,
-                ["build", project, "-t:GenerateBindings", "-m:1", "-nodeReuse:false",
-                    "--configuration", configuration, "-p:InnoNativeTarget=" + target.value],
-                root, cancellationToken, DotNetSdkEnvironment.Create(dotnet)).ConfigureAwait(false);
-        }
     }
 
     private static void Clean(string root)

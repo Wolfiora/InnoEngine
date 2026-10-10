@@ -24,6 +24,10 @@ public sealed unsafe partial class BgfxDevice : RenderDevice, IRenderDevice, IRe
     private readonly int m_apiThreadId;
     private readonly int m_deferredDestroyFrames;
     private readonly bool m_hasPrimarySurface;
+    private readonly List<BgfxSurfaceRetirement> m_surfaceRetirements = [];
+    private Inno.Core.Execution.RetirementBarrier? m_surfaceRetirementBarrier;
+    private ulong m_submissionSequence;
+    private readonly IBgfxSurfaceIntegration? m_surfaceIntegration;
     private readonly Dictionary<ulong, bgfx.TextureHandle> m_persistentTextures = [];
     private readonly Dictionary<ulong, RenderTextureDescriptor> m_persistentTextureDescriptors = [];
     private readonly List<DeferredResource> m_deferredResources = [];
@@ -73,8 +77,11 @@ public sealed unsafe partial class BgfxDevice : RenderDevice, IRenderDevice, IRe
         PlatformNativeHandles nativeHandles = options.window is null ? default
             : options.window is INativeWindowSurface surface ? surface.nativeHandles
             : throw new NotSupportedException("BGFX requires a window that implements INativeWindowSurface.");
-        m_processLease = BgfxProcessDeviceLease.Acquire(options.forceSingleThreaded);
-
+        m_surfaceIntegration = options.surfaceIntegration;
+        BgfxSurfaceDescriptor primarySurface = options.window is null ? default
+            : BgfxSurfaceBinding.Validate((m_surfaceIntegration
+                ?? throw new ArgumentException("A windowed BGFX device requires an explicit surface integration.", nameof(options)))
+                .Resolve(nativeHandles, BgfxSurfaceRole.Primary));
         m_apiThreadId = Environment.CurrentManagedThreadId;
         m_deferredDestroyFrames = options.deferredDestroyFrames;
         m_hasPrimarySurface = options.window is not null;
@@ -86,10 +93,11 @@ public sealed unsafe partial class BgfxDevice : RenderDevice, IRenderDevice, IRe
         m_backbufferHeight = Math.Max(1, pixelHeight);
         m_resetFlags = (uint)(
             (options.verticalSync ? bgfx.ResetFlags.Vsync : bgfx.ResetFlags.None)
-            | (options.sRgbBackbuffer && nativeHandles.handleKind != PlatformNativeHandleId.browserCanvas
+            | (options.sRgbBackbuffer && (!m_hasPrimarySurface || primarySurface.supportsSrgbReset)
                 ? bgfx.ResetFlags.SrgbBackbuffer
                 : bgfx.ResetFlags.None));
 
+        m_processLease = BgfxProcessDeviceLease.Acquire(options.forceSingleThreaded);
         bool nativeInitialized = false;
         try
         {
@@ -106,7 +114,7 @@ public sealed unsafe partial class BgfxDevice : RenderDevice, IRenderDevice, IRe
             }
 
             if (options.window is not null)
-                ApplyPlatformData(ref init, nativeHandles);
+                BgfxSurfaceBinding.Apply(ref init, primarySurface);
             init.resolution.width = checked((uint)m_backbufferWidth);
             init.resolution.height = checked((uint)m_backbufferHeight);
             init.resolution.reset = m_resetFlags;
@@ -148,6 +156,12 @@ public sealed unsafe partial class BgfxDevice : RenderDevice, IRenderDevice, IRe
     /// Gets whether the primary BGFX surface automatically encodes linear RGB to sRGB.
     /// </summary>
     public bool primaryPresentationEncodesSrgb => backbufferIsSrgb;
+
+    /// <summary>
+    /// Gets whether both the selected host and active renderer permit additional window surfaces.
+    /// </summary>
+    public bool supportsAdditionalSurfaces => m_surfaceIntegration?.supportsAdditionalSurfaces == true
+        && capabilities.Supports(GraphicsCapability.SwapChain);
 
     /// <summary>
     /// Gets the generation identity that owns this value.
@@ -221,26 +235,6 @@ public sealed unsafe partial class BgfxDevice : RenderDevice, IRenderDevice, IRe
         {
             throw new InvalidOperationException("BGFX API operations must run on the device API thread.");
         }
-    }
-
-    private static void ApplyPlatformData(
-        ref bgfx.Init init,
-        PlatformNativeHandles handles
-    ) {
-        if (handles.handleKind == PlatformNativeHandleId.browserCanvas)
-        {
-            init.platformData.nwh = handles.windowHandle.ToPointer();
-            return;
-        }
-
-        if (handles.handleKind != PlatformNativeHandleId.win32 && handles.handleKind != PlatformNativeHandleId.cocoa)
-        {
-            throw new PlatformNotSupportedException(
-                $"BGFX window surfaces do not support native handle kind '{handles.handleKind}'.");
-        }
-
-        init.platformData.nwh = handles.windowHandle.ToPointer();
-        init.platformData.ndt = handles.displayHandle.ToPointer();
     }
 
     private static uint PackColor(RenderClearColor color)

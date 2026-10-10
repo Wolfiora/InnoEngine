@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using System;
 using System.Numerics;
 using Inno.Adapter.Platform;
@@ -111,7 +112,12 @@ public sealed unsafe class ViewportMetricsTests
             IntPtr drawData
         ) { }
         public void PresentViewport(PlatformImGuiViewportTarget target) { }
-        public void DestroyViewport(PlatformImGuiViewportTarget target) => this.target = null;
+        public Task RetireViewport(PlatformImGuiViewportTarget target)
+        {
+            this.target = null;
+            return Task.CompletedTask;
+        }
+        public void DrainViewportRetirements() { }
         public void Dispose() { }
     }
 }

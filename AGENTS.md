@@ -280,3 +280,15 @@ public void AAA(
 - 平台 packager 仅验证和打包；内容 compiler 由后端实现，发行通过 GameBuildContribution 绑定准确目标。平台基础不持有 compiler，也不接收创作服务。
 - Native 每个产品步骤显式声明 Static/Shared、有序组件参数与配置输入；真实配置参与指纹，recipe 在 staging 前拒绝未实现的链接方式。SDK 不隐式决定产品链接。
 - SDL 应用的窗口目录只包含自身创建或明确接管的窗口；外部 owner 保留原生销毁权，解除登记先失效 wrapper。ImGui 使用同一 host surface，不重复解析 SDK 句柄；交互规则由产品注入，尺度在 NewFrame 前同步，不维护 CPU 专属返回 ABI。
+
+## 29. Backend 运行接入与生成成本
+
+- SDL 共同窗口创建与焦点读取只有一个 backend owner；平台 integration 仅处理实际 SDK 差异。共享 BGFX Device 通过自身 IBgfxSurfaceIntegration 接收借用 surface，不维护命名平台/ABI 白名单；Default catalog 必须接收明确 rendering factory。
+- 附加窗口关闭先解除交互/登记，再退休 renderer surface；渲染端确认已处理 framebuffer 销毁命令后才释放原生窗口。Native callback 不等待或推进帧；最终 drain 仅在 owner thread、闭帧、无 graph/encoder 的安全点执行，失败保留依赖 owner。完成 Task 不是通用 GPU fence。
+- Native 生成定义唯一属于组件 Bindings/bindings.props，MSBuild 与库调用共用；Toolchains 只依赖 INativeBindingGenerator，具体 BGCS 应用流程属于 Inno.Build.Bindings，Task 仅映射参数/取消/日志。产品闭包只请求一次完整 binding batch，托管消费保留 Native 已选指纹及逐组件 Static/Shared 请求；动态初始化开关只在 Native 编译边界消费实际链接选择，不能由平台名称或宿主推导。
+- 绑定配置路径变量只从 operation 冻结的 Native SDK 环境展开；直接库与 MSBuild 使用同一目标解析，不以修改进程环境或临时 PATH 让生成器获得 SDK。缺失配置在候选创建前失败。
+- 产品 binding selection 属于本次私有 Task reader，必须存活至全部 managed/native 消费者完成；Build 可能是 Publish 的嵌套依赖，禁止在 AfterTargets="Build" 提前释放或猜测 IsPublishing。Native Publish 严格核对同一闭包、指纹和源码后释放；普通 Build 随 reader/process owner 确认退休回收。
+- 初始、批次锁后/生成后及各 Native 锁后/编译后分别 fresh 校验；只在同一明确阶段去重完整内容读取，不能跨等待/执行复用旧结果。可变源码必须复制固定，不以 hardlink 伪装不可变输入。
+- 冷 CMake producer 通过共同 executor 固定 recipe 声明的工作区输入；Browser 聚合的组件 include、bridge 与参数必须解析到同一复制树。热缓存命中不复制，外部 SDK 与输出保持自己的位置和 owner，不用字符串替换整个仓库根来误重定向输出。
+- Task runtime 只在 IBuildEngine4 Build 生命周期、同一完整请求身份内复用成功不可变 publication；registry 只存 BCL 数据，不持有 SDK owner、lease 或私有 ALC 类型。每个实际载入边界仍有独立 owner；失败/取消不缓存。共享 restore 写入由 Core.IO lease 协调，等待时 Yield/Reacquire，保留锁文件。
+- 独立并发托管构建必须通过 SDK 的明确 ArtifactsPath 使用各自 bin/obj owner；共同规则不得覆盖该输出选择。外部 interop 编译与还原采用相同 operation owner，Native 内容寻址缓存仍通过自身 lease 共享。普通 IDE bin/obj 仅属于一个活动构建，不能把两个独立进程同时写同一路径视为受支持的并发模式。

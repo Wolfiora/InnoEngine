@@ -228,3 +228,7 @@ Inno.Build.Composition 只承载中立组合契约与完整绑定机制；Inno.B
 新增 WindowsX86：补 Windows 的目标/SDK/ABI 支持，复用 Windows 产品与 packager，增加真实 BGFX/SDL 接入配置后验收并注册。换图形 backend：增加该 backend 与需要的 integration，替换 compiler/Native plan，平台 packager 不改。NS/iOS：真实 SDK、产品入口与 packaging 归平台包，backend 可复用时直接选择，仅实际差异进入 integration。Browser 换托管运行时只换部署 compiler 和 linker。
 
 Native 步骤显式声明 Static/Shared、有序组件参数和输入 bytes；SDL 应用统一窗口 owner/surface；ImGui 在 NewFrame 前刷新尺度，不维护 WindowsX64 返回 ABI。完整树与测试见[当前批准计划](BACKEND_PLATFORM_INTEGRATION_PLAN.md)，实机状态见[验收](BACKEND_PLATFORM_INTEGRATION_ACCEPTANCE.md)。
+
+## 当前 backend 运行边界
+
+SDL 共用窗口操作，BGFX runtime integration 与 build integration 独立；Default 组合明确接收 rendering factory。共享 Host/Player 不识别具体 surface SPI。Binding provider 属于构建 operation，通过中立接口传递；源码变化按各 fresh verification phase 校验。窗口关闭顺序为交互脱离→渲染命令退休→Task 成功→原窗口 owner 销毁。

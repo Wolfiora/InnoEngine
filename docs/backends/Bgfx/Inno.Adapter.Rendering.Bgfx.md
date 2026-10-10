@@ -10,9 +10,9 @@
 
 `Inno.Adapter.Rendering.Bgfx` 是唯一允许引用 `Inno.Native.Bgfx` 的运行时托管渲染程序集。它把 `IRenderDevice`、Compiled RenderGraph、资源描述和 `RenderCommandEncoder` 映射为 BGFX 设备、View、Encoder、Framebuffer 和延迟销毁队列。shaderc/texturec 只存在于 Build Toolchain，不进入运行时 Adapter 或 Player。
 
-浏览器 canvas 使用 Adapter 层的 `PlatformNativeHandleId.browserCanvas` 标识。BGFX 通过 `INativeWindowSurface` 获取窗口持有的 UTF-8 Canvas 选择器；公共 `IPlatformWindow` 不暴露 native handle。当前 Browser Player 复用这个 Adapter；发布与运行状态见[本次平台验收](../../architecture/PLATFORM_RUNTIME_ACCEPTANCE.md)。
+Device 接收 `IBgfxSurfaceIntegration`，不识别 Win32/Cocoa/Canvas 名单。平台运行 integration 负责验证 ABI/角色并返回 `BgfxSurfaceDescriptor`，窗口和显示句柄均借用。Browser 的 Canvas 规则只属于 Browser integration。此 SPI 不进入 Rendering Core、游戏脚本或 Player Runtime。
 
-其公开 API 仍保持后端中立：`BgfxDeviceOptions` 接受 `GraphicsApi` 与 `IPlatformWindow`，`BgfxDevice` 返回 `GraphicsCapabilities`、帧号和 Rendering 层 opaque handle。原生 handle 只存在于程序集内部。
+领域 API 使用中立 Rendering handle；backend 自身公开 SPI 可以表达必要的借用 surface。窗口型 `BgfxDeviceOptions` 必须提供 surfaceIntegration，无窗口设备不要求虚构 integration；所有接入验证先于 Native process lease。
 
 共同 Composition/OutputTransfer Shader 的编译配置由平台 `ProductBuild.props` 通过 `InnoProductBuildProperties` 传入；本项目消费 `InnoBgfxShaderTarget` 与 `InnoBgfxShaderApis`，不维护平台或 CPU 选择表。每个 Shader/API 的候选、哈希清单与 `Outputs` 有独立 owner；共同 Task 校验源码、工具及输出内容，不能仅根据时间戳跳过。运行时只消费已嵌入的产物。
 
@@ -22,7 +22,7 @@
    传入 `IPlatformWindow` 时，初始 backbuffer 直接使用其物理 `pixelWidth`/`pixelHeight`，避免 HiDPI 窗口在首帧进行一次逻辑尺寸到 drawable 尺寸的重复 reset。
 2. 每帧调用 `BeginFrame`，处理 resize 与到期资源释放。
 3. 编译一个或多个 RenderGraph 后调用 `Execute`。
-4. 所有 Encoder 结束后调用一次 `EndFrame`；该方法是唯一的 `bgfx.frame` 提交点。
+4. 所有 Encoder 结束后调用一次 `EndFrame`；正常帧和最终退休 drain 共用一个 Native 提交入口。
 5. 在相同 API thread 调用 `Dispose`，释放存活资源并执行 `bgfx.shutdown`。
 
 `BgfxDevice` 通过进程设备 lease 明确表达 BGFX 的真实平台约束：一个进程同一时间只能拥有一个
@@ -76,9 +76,9 @@ Metal、D3D、Vulkan 等 BGFX renderer 不要求分别维护业务 Shader：同�
 
 - 非 API thread、未开启帧、嵌套 Graph/Encoder、跨 generation handle 和 frame 前未结束 Encoder 都会抛出明确异常。
 - GPU 资源不会在 finalizer 或 Asset 回调线程销毁；销毁请求按 BGFX 帧号延迟处理。
-- Detached window surface 的 resize 与 destroy 同样进入统一延迟销毁队列，不会在仍可能被 GPU 使用时直接销毁旧 framebuffer。
-- `BgfxDevice.Dispose` 在调用 native shutdown 前采集 managed texture、buffer、pipeline、surface、graph 与 deferred queue 的闭包状态；即使发现遗漏也始终完成 native shutdown、readback buffer 清理和 process lease 释放，随后把遗漏作为 Inno 所有权错误明确报告。诊断不能把设备留在半关闭状态。
-- 开发环境的 native loader 会按 SHA-256 内容身份把 `.lib` 当前产物同步到应用输出目录后再加载，避免重新构建 BGFX 后仍运行旧 dylib；已部署 Player 没有源码 checkout 时继续只使用 Support Pack 内的冻结产物。
+- Surface 的 resize 旧 framebuffer 和最终 framebuffer 属于同一退休组。RetireWindowSurface 停止后续提交，Task 在单调 managed 提交序号确认命令处理后完成；不以 deferredDestroyFrames 或 uint 帧号比较作为窗口释放信号。
+- Dispose 先完成窗口 surface 退休；退休失败/超时保留设备及窗口 owner。成功后才继续资源闭包检查、native shutdown、readback 与 process lease 释放。
+- 普通产品 Build/Publish 通过统一 Native Task 准备明确部署；运行时 loader 只读取部署产物，不扫描仓库缓存或参与构建。
 
 双平台 Rendering CI 固定验证 Windows x64 与 macOS arm64 runner 架构，并在真实 Editor 冒烟日志中断言 D3D11/D3D12 或 Metal 后端、约定帧数和完整关闭；原生 BGFX 输出与 Editor boot log 会一同作为诊断 artifact 上传。
 
@@ -100,7 +100,7 @@ Metal、D3D、Vulkan 等 BGFX renderer 不要求分别维护业务 Shader：同�
 
 ## 当前源码公开 API 清单
 
-只列当前源码的 public/protected 表面；内部实现不作为稳定 API。参数、返回、失败和 owner 以英文 XML 为准。
+只列当前源码 public/protected 表面；内部机制不是稳定 API，参数、返回、失败及所有权以英文 XML 为准。
 
 ### `Inno.Adapter.Rendering.Bgfx.BgfxCompositionProgramProvider`
 
@@ -115,26 +115,28 @@ Metal、D3D、Vulkan 等 BGFX renderer 不要求分别维护业务 Shader：同�
 | 当前声明 | 行为 |
 | --- | --- |
 | [`Inno.Adapter.Rendering.Bgfx.BgfxDevice`](../../../backends/Bgfx/runtime/Inno.Adapter.Rendering.Bgfx/BgfxDevice.cs#L17) | Implements the sole BGFX device generation, API-thread frame boundary and graph backend. |
-| [`Inno.Adapter.Rendering.Bgfx.BgfxDevice.BgfxDevice(Inno.Adapter.Rendering.Bgfx.BgfxDeviceOptions options)`](../../../backends/Bgfx/runtime/Inno.Adapter.Rendering.Bgfx/BgfxDevice.cs#L70) | Initializes BGFX and captures immutable device capabilities. |
+| [`Inno.Adapter.Rendering.Bgfx.BgfxDevice.BgfxDevice(Inno.Adapter.Rendering.Bgfx.BgfxDeviceOptions options)`](../../../backends/Bgfx/runtime/Inno.Adapter.Rendering.Bgfx/BgfxDevice.cs#L74) | Initializes BGFX and captures immutable device capabilities. |
 | [`Inno.Rendering.ComputePipelineHandle Inno.Adapter.Rendering.Bgfx.BgfxDevice.CreateComputePipeline(Inno.Rendering.ComputePipelineDescriptor descriptor, string name)`](../../../backends/Bgfx/runtime/Inno.Adapter.Rendering.Bgfx/BgfxDevice.Resources.cs#L203) | Creates a compute pipeline using this implementation's validated inputs. |
-| [`Inno.Rendering.GraphicsCapabilities Inno.Adapter.Rendering.Bgfx.BgfxDevice.capabilities`](../../../backends/Bgfx/runtime/Inno.Adapter.Rendering.Bgfx/BgfxDevice.cs#L140) | Gets the immutable feature and limit set reported by the active graphics backend. |
+| [`Inno.Rendering.GraphicsCapabilities Inno.Adapter.Rendering.Bgfx.BgfxDevice.capabilities`](../../../backends/Bgfx/runtime/Inno.Adapter.Rendering.Bgfx/BgfxDevice.cs#L148) | Gets the immutable feature and limit set reported by the active graphics backend. |
 | [`Inno.Rendering.GraphicsPipelineHandle Inno.Adapter.Rendering.Bgfx.BgfxDevice.CreateGraphicsPipeline(Inno.Rendering.GraphicsPipelineDescriptor descriptor, string name)`](../../../backends/Bgfx/runtime/Inno.Adapter.Rendering.Bgfx/BgfxDevice.Resources.cs#L156) | Creates a graphics pipeline using this implementation's validated inputs. |
 | [`Inno.Rendering.PersistentBufferHandle Inno.Adapter.Rendering.Bgfx.BgfxDevice.CreateBuffer(Inno.Rendering.PersistentBufferDescriptor descriptor, System.ReadOnlySpan<byte> initialData, string name)`](../../../backends/Bgfx/runtime/Inno.Adapter.Rendering.Bgfx/BgfxDevice.Resources.cs#L38) | Creates a buffer using this implementation's validated inputs. |
 | [`Inno.Rendering.PersistentTextureHandle Inno.Adapter.Rendering.Bgfx.BgfxDevice.CreateTexture(Inno.Rendering.RenderTextureContainer container, System.ReadOnlySpan<byte> data, bool sRgb, string name)`](../../../backends/Bgfx/runtime/Inno.Adapter.Rendering.Bgfx/BgfxDevice.Textures.cs#L66) | Creates a texture using this implementation's validated inputs. |
 | [`Inno.Rendering.PersistentTextureHandle Inno.Adapter.Rendering.Bgfx.BgfxDevice.CreateTexture(Inno.Rendering.RenderTextureDescriptor descriptor, string name)`](../../../backends/Bgfx/runtime/Inno.Adapter.Rendering.Bgfx/BgfxDevice.Textures.cs#L28) | Creates a texture using this implementation's validated inputs. |
 | [`Inno.Rendering.RenderCommandEncoder Inno.Adapter.Rendering.Bgfx.BgfxDevice.BeginPass(Inno.Rendering.CompiledRenderPass pass)`](../../../backends/Bgfx/runtime/Inno.Adapter.Rendering.Bgfx/BgfxDevice.Graphs.cs#L120) | Begins recording commands for one compiled render pass. |
-| [`Inno.Rendering.RenderDeviceAllocationCounters? Inno.Adapter.Rendering.Bgfx.BgfxDevice.allocationCounters`](../../../backends/Bgfx/runtime/Inno.Adapter.Rendering.Bgfx/BgfxDevice.cs#L170) | Gets API-thread allocation diagnostics for the current device generation's native transient pools. |
-| [`Inno.Rendering.RenderDeviceFrameCounters Inno.Adapter.Rendering.Bgfx.BgfxDevice.frameCounters`](../../../backends/Bgfx/runtime/Inno.Adapter.Rendering.Bgfx/BgfxDevice.cs#L165) | Gets the submitted and completed frame counters used for deferred retirement. |
-| [`Inno.Rendering.RenderPresentationSize? Inno.Adapter.Rendering.Bgfx.BgfxDevice.primaryPresentationSize`](../../../backends/Bgfx/runtime/Inno.Adapter.Rendering.Bgfx/BgfxDevice.cs#L160) | Gets the current drawable pixel size of the main presentation surface. |
-| [`Inno.Rendering.RenderSurfaceHandle Inno.Adapter.Rendering.Bgfx.BgfxDevice.CreateWindowSurface(Inno.Adapter.Platform.PlatformNativeHandles nativeHandles, int width, int height, string name)`](../../../backends/Bgfx/runtime/Inno.Adapter.Rendering.Bgfx/BgfxDevice.Surfaces.cs#L41) | Creates a detached-window presentation surface at a frame safety point. |
+| [`Inno.Rendering.RenderDeviceAllocationCounters? Inno.Adapter.Rendering.Bgfx.BgfxDevice.allocationCounters`](../../../backends/Bgfx/runtime/Inno.Adapter.Rendering.Bgfx/BgfxDevice.cs#L184) | Gets API-thread allocation diagnostics for the current device generation's native transient pools. |
+| [`Inno.Rendering.RenderDeviceFrameCounters Inno.Adapter.Rendering.Bgfx.BgfxDevice.frameCounters`](../../../backends/Bgfx/runtime/Inno.Adapter.Rendering.Bgfx/BgfxDevice.cs#L179) | Gets the submitted and completed frame counters used for deferred retirement. |
+| [`Inno.Rendering.RenderPresentationSize? Inno.Adapter.Rendering.Bgfx.BgfxDevice.primaryPresentationSize`](../../../backends/Bgfx/runtime/Inno.Adapter.Rendering.Bgfx/BgfxDevice.cs#L174) | Gets the current drawable pixel size of the main presentation surface. |
+| [`Inno.Rendering.RenderSurfaceHandle Inno.Adapter.Rendering.Bgfx.BgfxDevice.CreateWindowSurface(Inno.Adapter.Platform.PlatformNativeHandles nativeHandles, int width, int height, string name)`](../../../backends/Bgfx/runtime/Inno.Adapter.Rendering.Bgfx/BgfxDevice.Surfaces.cs#L43) | Creates a detached-window presentation surface at a frame safety point. |
 | [`Inno.Rendering.RenderTextureReadbackHandle Inno.Adapter.Rendering.Bgfx.BgfxDevice.BeginTextureReadback(Inno.Rendering.PersistentTextureHandle texture, int mipLevel = 0)`](../../../backends/Bgfx/runtime/Inno.Adapter.Rendering.Bgfx/BgfxDevice.Readback.cs#L28) | Schedules asynchronous texture readback into caller-provided destination storage. |
+| [`System.Threading.Tasks.Task Inno.Adapter.Rendering.Bgfx.BgfxDevice.RetireWindowSurface(Inno.Rendering.RenderSurfaceHandle surface)`](../../../backends/Bgfx/runtime/Inno.Adapter.Rendering.Bgfx/BgfxDevice.Surfaces.cs#L156) | Stops accepting work for a surface and queues all of its framebuffer generations for retirement. |
 | [`bool Inno.Adapter.Rendering.Bgfx.BgfxDevice.TryGetTextureReadback(Inno.Rendering.RenderTextureReadbackHandle readback, out Inno.Rendering.RenderTextureReadbackResult? result)`](../../../backends/Bgfx/runtime/Inno.Adapter.Rendering.Bgfx/BgfxDevice.Readback.cs#L87) | Attempts to get texture readback without changing state when the operation cannot complete. |
-| [`bool Inno.Adapter.Rendering.Bgfx.BgfxDevice.WindowSurfaceIsSrgb(Inno.Rendering.RenderSurfaceHandle surface)`](../../../backends/Bgfx/runtime/Inno.Adapter.Rendering.Bgfx/BgfxDevice.Surfaces.cs#L81) | Reports whether the native window surface encodes linear render-target writes as sRGB. |
-| [`bool Inno.Adapter.Rendering.Bgfx.BgfxDevice.backbufferIsSrgb`](../../../backends/Bgfx/runtime/Inno.Adapter.Rendering.Bgfx/BgfxDevice.cs#L145) | Gets whether the primary presentation surface encodes linear color as sRGB. |
-| [`bool Inno.Adapter.Rendering.Bgfx.BgfxDevice.primaryPresentationEncodesSrgb`](../../../backends/Bgfx/runtime/Inno.Adapter.Rendering.Bgfx/BgfxDevice.cs#L150) | Gets whether the primary BGFX surface automatically encodes linear RGB to sRGB. |
+| [`bool Inno.Adapter.Rendering.Bgfx.BgfxDevice.WindowSurfaceIsSrgb(Inno.Rendering.RenderSurfaceHandle surface)`](../../../backends/Bgfx/runtime/Inno.Adapter.Rendering.Bgfx/BgfxDevice.Surfaces.cs#L88) | Reports whether the native window surface encodes linear render-target writes as sRGB. |
+| [`bool Inno.Adapter.Rendering.Bgfx.BgfxDevice.backbufferIsSrgb`](../../../backends/Bgfx/runtime/Inno.Adapter.Rendering.Bgfx/BgfxDevice.cs#L153) | Gets whether the primary presentation surface encodes linear color as sRGB. |
+| [`bool Inno.Adapter.Rendering.Bgfx.BgfxDevice.primaryPresentationEncodesSrgb`](../../../backends/Bgfx/runtime/Inno.Adapter.Rendering.Bgfx/BgfxDevice.cs#L158) | Gets whether the primary BGFX surface automatically encodes linear RGB to sRGB. |
+| [`bool Inno.Adapter.Rendering.Bgfx.BgfxDevice.supportsAdditionalSurfaces`](../../../backends/Bgfx/runtime/Inno.Adapter.Rendering.Bgfx/BgfxDevice.cs#L163) | Gets whether both the selected host and active renderer permit additional window surfaces. |
 | [`uint Inno.Adapter.Rendering.Bgfx.BgfxDevice.EndFrame()`](../../../backends/Bgfx/runtime/Inno.Adapter.Rendering.Bgfx/BgfxDevice.Frames.cs#L86) | Commits the current frame-scoped operation and returns its completion identity. |
-| [`uint Inno.Adapter.Rendering.Bgfx.BgfxDevice.backendFrame`](../../../backends/Bgfx/runtime/Inno.Adapter.Rendering.Bgfx/BgfxDevice.cs#L184) | Gets the last frame number returned by BGFX submission. |
-| [`uint Inno.Adapter.Rendering.Bgfx.BgfxDevice.generation`](../../../backends/Bgfx/runtime/Inno.Adapter.Rendering.Bgfx/BgfxDevice.cs#L155) | Gets the generation identity that owns this value. |
+| [`uint Inno.Adapter.Rendering.Bgfx.BgfxDevice.backendFrame`](../../../backends/Bgfx/runtime/Inno.Adapter.Rendering.Bgfx/BgfxDevice.cs#L198) | Gets the last frame number returned by BGFX submission. |
+| [`uint Inno.Adapter.Rendering.Bgfx.BgfxDevice.generation`](../../../backends/Bgfx/runtime/Inno.Adapter.Rendering.Bgfx/BgfxDevice.cs#L169) | Gets the generation identity that owns this value. |
 | [`void Inno.Adapter.Rendering.Bgfx.BgfxDevice.BeginFrame()`](../../../backends/Bgfx/runtime/Inno.Adapter.Rendering.Bgfx/BgfxDevice.Frames.cs#L19) | Begins a frame-scoped operation and makes queued work visible. |
 | [`void Inno.Adapter.Rendering.Bgfx.BgfxDevice.BeginGraph(Inno.Rendering.CompiledRenderGraph graph)`](../../../backends/Bgfx/runtime/Inno.Adapter.Rendering.Bgfx/BgfxDevice.Graphs.cs#L22) | Begins recording commands for one validated compiled render graph. |
 | [`void Inno.Adapter.Rendering.Bgfx.BgfxDevice.CancelTextureReadback(Inno.Rendering.RenderTextureReadbackHandle readback)`](../../../backends/Bgfx/runtime/Inno.Adapter.Rendering.Bgfx/BgfxDevice.Readback.cs#L124) | Cancels a pending texture readback and releases its retained state. |
@@ -142,12 +144,12 @@ Metal、D3D、Vulkan 等 BGFX renderer 不要求分别维护业务 Shader：同�
 | [`void Inno.Adapter.Rendering.Bgfx.BgfxDevice.DestroyComputePipeline(Inno.Rendering.ComputePipelineHandle pipeline)`](../../../backends/Bgfx/runtime/Inno.Adapter.Rendering.Bgfx/BgfxDevice.Resources.cs#L227) | Destroys the compute pipeline after all in-flight references have retired. |
 | [`void Inno.Adapter.Rendering.Bgfx.BgfxDevice.DestroyGraphicsPipeline(Inno.Rendering.GraphicsPipelineHandle pipeline)`](../../../backends/Bgfx/runtime/Inno.Adapter.Rendering.Bgfx/BgfxDevice.Resources.cs#L175) | Destroys the graphics pipeline after all in-flight references have retired. |
 | [`void Inno.Adapter.Rendering.Bgfx.BgfxDevice.DestroyTexture(Inno.Rendering.PersistentTextureHandle texture)`](../../../backends/Bgfx/runtime/Inno.Adapter.Rendering.Bgfx/BgfxDevice.Textures.cs#L307) | Destroys the texture after all in-flight references have retired. |
-| [`void Inno.Adapter.Rendering.Bgfx.BgfxDevice.DestroyWindowSurface(Inno.Rendering.RenderSurfaceHandle surface)`](../../../backends/Bgfx/runtime/Inno.Adapter.Rendering.Bgfx/BgfxDevice.Surfaces.cs#L140) | Queues a detached-window presentation surface for GPU-safe destruction. |
-| [`void Inno.Adapter.Rendering.Bgfx.BgfxDevice.Dispose()`](../../../backends/Bgfx/runtime/Inno.Adapter.Rendering.Bgfx/BgfxDevice.Retirement.cs#L19) | Shuts down BGFX after releasing all active and queued backend resources. |
+| [`void Inno.Adapter.Rendering.Bgfx.BgfxDevice.Dispose()`](../../../backends/Bgfx/runtime/Inno.Adapter.Rendering.Bgfx/BgfxDevice.Retirement.cs#L23) | Shuts down BGFX after releasing all active and queued backend resources. |
+| [`void Inno.Adapter.Rendering.Bgfx.BgfxDevice.DrainWindowSurfaceRetirements()`](../../../backends/Bgfx/runtime/Inno.Adapter.Rendering.Bgfx/BgfxDevice.Surfaces.cs#L181) | Advances nonpresenting frames until all requested window retirements have been acknowledged. |
 | [`void Inno.Adapter.Rendering.Bgfx.BgfxDevice.EndGraph(Inno.Rendering.CompiledRenderGraph graph)`](../../../backends/Bgfx/runtime/Inno.Adapter.Rendering.Bgfx/BgfxDevice.Graphs.cs#L167) | Finishes graph recording and submits its completed command stream. |
 | [`void Inno.Adapter.Rendering.Bgfx.BgfxDevice.EndPass(Inno.Rendering.CompiledRenderPass pass)`](../../../backends/Bgfx/runtime/Inno.Adapter.Rendering.Bgfx/BgfxDevice.Graphs.cs#L149) | Ends the active render pass and seals its recorded commands. |
 | [`void Inno.Adapter.Rendering.Bgfx.BgfxDevice.Execute(Inno.Rendering.CompiledRenderGraph graph, ulong frameIndex)`](../../../backends/Bgfx/runtime/Inno.Adapter.Rendering.Bgfx/BgfxDevice.Frames.cs#L71) | Executes the prepared operation and publishes only a completed result. |
-| [`void Inno.Adapter.Rendering.Bgfx.BgfxDevice.ResizeWindowSurface(Inno.Rendering.RenderSurfaceHandle surface, int width, int height)`](../../../backends/Bgfx/runtime/Inno.Adapter.Rendering.Bgfx/BgfxDevice.Surfaces.cs#L104) | Recreates a detached-window presentation surface for a new drawable extent. |
+| [`void Inno.Adapter.Rendering.Bgfx.BgfxDevice.ResizeWindowSurface(Inno.Rendering.RenderSurfaceHandle surface, int width, int height)`](../../../backends/Bgfx/runtime/Inno.Adapter.Rendering.Bgfx/BgfxDevice.Surfaces.cs#L111) | Recreates a detached-window presentation surface for a new drawable extent. |
 | [`void Inno.Adapter.Rendering.Bgfx.BgfxDevice.SetPrimaryPresentationSize(Inno.Rendering.RenderPresentationSize? size)`](../../../backends/Bgfx/runtime/Inno.Adapter.Rendering.Bgfx/BgfxDevice.Frames.cs#L122) | Publishes drawable availability at the next BeginFrame without inventing a windowless output. |
 | [`void Inno.Adapter.Rendering.Bgfx.BgfxDevice.SetVerticalSync(bool enabled)`](../../../backends/Bgfx/runtime/Inno.Adapter.Rendering.Bgfx/BgfxDevice.Frames.cs#L141) | Queues an idempotent presentation policy update for the next BeginFrame reset. Noop devices retain the policy without issuing a native presentation reset. |
 | [`void Inno.Adapter.Rendering.Bgfx.BgfxDevice.UpdateBuffer(Inno.Rendering.PersistentBufferHandle buffer, System.ReadOnlySpan<byte> data, int startElement = 0)`](../../../backends/Bgfx/runtime/Inno.Adapter.Rendering.Bgfx/BgfxDevice.Resources.cs#L90) | Updates buffer state from the current authoritative inputs. |
@@ -159,26 +161,54 @@ Metal、D3D、Vulkan 等 BGFX renderer 不要求分别维护业务 Shader：同�
 | 当前声明 | 行为 |
 | --- | --- |
 | [`Inno.Adapter.Rendering.Bgfx.BgfxDeviceOptions`](../../../backends/Bgfx/runtime/Inno.Adapter.Rendering.Bgfx/BgfxDeviceOptions.cs#L10) | Configures BGFX initialization without exposing native BGFX structures. |
+| [`Inno.Adapter.Rendering.Bgfx.IBgfxSurfaceIntegration? Inno.Adapter.Rendering.Bgfx.BgfxDeviceOptions.surfaceIntegration`](../../../backends/Bgfx/runtime/Inno.Adapter.Rendering.Bgfx/BgfxDeviceOptions.cs#L30) | Gets or sets the borrowed immutable surface integration, required for a windowed device. A windowless device may omit it and cannot create additional windows without one. |
 | [`Inno.Platform.IPlatformWindow? Inno.Adapter.Rendering.Bgfx.BgfxDeviceOptions.window`](../../../backends/Bgfx/runtime/Inno.Adapter.Rendering.Bgfx/BgfxDeviceOptions.cs#L24) | Gets or sets the platform window used as the main swapchain surface. |
 | [`Inno.Rendering.GraphicsApi? Inno.Adapter.Rendering.Bgfx.BgfxDeviceOptions.preferredBackend`](../../../backends/Bgfx/runtime/Inno.Adapter.Rendering.Bgfx/BgfxDeviceOptions.cs#L19) | Gets or sets the preferred renderer, or for platform default. |
-| [`bool Inno.Adapter.Rendering.Bgfx.BgfxDeviceOptions.forceSingleThreaded`](../../../backends/Bgfx/runtime/Inno.Adapter.Rendering.Bgfx/BgfxDeviceOptions.cs#L65) | Gets or sets whether BGFX rendering is driven inline on the API thread. |
-| [`bool Inno.Adapter.Rendering.Bgfx.BgfxDeviceOptions.sRgbBackbuffer`](../../../backends/Bgfx/runtime/Inno.Adapter.Rendering.Bgfx/BgfxDeviceOptions.cs#L56) | Gets or sets whether the main backbuffer performs sRGB encoding. |
-| [`bool Inno.Adapter.Rendering.Bgfx.BgfxDeviceOptions.verticalSync`](../../../backends/Bgfx/runtime/Inno.Adapter.Rendering.Bgfx/BgfxDeviceOptions.cs#L51) | Gets or sets whether submission waits for display synchronization. |
-| [`int Inno.Adapter.Rendering.Bgfx.BgfxDeviceOptions.backbufferHeight`](../../../backends/Bgfx/runtime/Inno.Adapter.Rendering.Bgfx/BgfxDeviceOptions.cs#L40) | Gets or sets the initial backbuffer height in physical pixels when no window supplies one. |
-| [`int Inno.Adapter.Rendering.Bgfx.BgfxDeviceOptions.backbufferWidth`](../../../backends/Bgfx/runtime/Inno.Adapter.Rendering.Bgfx/BgfxDeviceOptions.cs#L29) | Gets or sets the initial backbuffer width in physical pixels when no window supplies one. |
-| [`int Inno.Adapter.Rendering.Bgfx.BgfxDeviceOptions.deferredDestroyFrames`](../../../backends/Bgfx/runtime/Inno.Adapter.Rendering.Bgfx/BgfxDeviceOptions.cs#L70) | Gets or sets the number of submitted frames before queued native destruction. |
+| [`bool Inno.Adapter.Rendering.Bgfx.BgfxDeviceOptions.forceSingleThreaded`](../../../backends/Bgfx/runtime/Inno.Adapter.Rendering.Bgfx/BgfxDeviceOptions.cs#L71) | Gets or sets whether BGFX rendering is driven inline on the API thread. |
+| [`bool Inno.Adapter.Rendering.Bgfx.BgfxDeviceOptions.sRgbBackbuffer`](../../../backends/Bgfx/runtime/Inno.Adapter.Rendering.Bgfx/BgfxDeviceOptions.cs#L62) | Gets or sets whether the main backbuffer performs sRGB encoding. |
+| [`bool Inno.Adapter.Rendering.Bgfx.BgfxDeviceOptions.verticalSync`](../../../backends/Bgfx/runtime/Inno.Adapter.Rendering.Bgfx/BgfxDeviceOptions.cs#L57) | Gets or sets whether submission waits for display synchronization. |
+| [`int Inno.Adapter.Rendering.Bgfx.BgfxDeviceOptions.backbufferHeight`](../../../backends/Bgfx/runtime/Inno.Adapter.Rendering.Bgfx/BgfxDeviceOptions.cs#L46) | Gets or sets the initial backbuffer height in physical pixels when no window supplies one. |
+| [`int Inno.Adapter.Rendering.Bgfx.BgfxDeviceOptions.backbufferWidth`](../../../backends/Bgfx/runtime/Inno.Adapter.Rendering.Bgfx/BgfxDeviceOptions.cs#L35) | Gets or sets the initial backbuffer width in physical pixels when no window supplies one. |
+| [`int Inno.Adapter.Rendering.Bgfx.BgfxDeviceOptions.deferredDestroyFrames`](../../../backends/Bgfx/runtime/Inno.Adapter.Rendering.Bgfx/BgfxDeviceOptions.cs#L76) | Gets or sets the number of submitted frames before queued native destruction. |
 
 ### `Inno.Adapter.Rendering.Bgfx.BgfxRenderingBackendProvider`
 
 | 当前声明 | 行为 |
 | --- | --- |
 | [`Inno.Adapter.Rendering.Bgfx.BgfxRenderingBackendProvider`](../../../backends/Bgfx/runtime/Inno.Adapter.Rendering.Bgfx/BgfxRenderingBackendProvider.cs#L9) | Supplies BGFX rendering devices and compatible layer composition programs. |
-| [`Inno.Adapter.Rendering.Bgfx.BgfxRenderingBackendProvider.BgfxRenderingBackendProvider()`](../../../backends/Bgfx/runtime/Inno.Adapter.Rendering.Bgfx/BgfxRenderingBackendProvider.cs#L14) | Creates a composition-owned registration for the bundled implementation. |
-| [`override Inno.Rendering.IRenderDevice Inno.Adapter.Rendering.Bgfx.BgfxRenderingBackendProvider.CreateDevice(Inno.Adapter.Rendering.RenderingBackendOptions options)`](../../../backends/Bgfx/runtime/Inno.Adapter.Rendering.Bgfx/BgfxRenderingBackendProvider.cs#L17) | See the implemented contract. |
-| [`override Inno.Rendering.IRenderLayerCompositionProgramProvider Inno.Adapter.Rendering.Bgfx.BgfxRenderingBackendProvider.CreateCompositionProgramProvider()`](../../../backends/Bgfx/runtime/Inno.Adapter.Rendering.Bgfx/BgfxRenderingBackendProvider.cs#L31) | See the implemented contract. |
+| [`Inno.Adapter.Rendering.Bgfx.BgfxRenderingBackendProvider.BgfxRenderingBackendProvider(Inno.Adapter.Rendering.Bgfx.IBgfxSurfaceIntegration surfaceIntegration)`](../../../backends/Bgfx/runtime/Inno.Adapter.Rendering.Bgfx/BgfxRenderingBackendProvider.cs#L22) | Registers BGFX with an explicitly selected, borrowed host surface integration. |
+| [`override Inno.Rendering.IRenderDevice Inno.Adapter.Rendering.Bgfx.BgfxRenderingBackendProvider.CreateDevice(Inno.Adapter.Rendering.RenderingBackendOptions options)`](../../../backends/Bgfx/runtime/Inno.Adapter.Rendering.Bgfx/BgfxRenderingBackendProvider.cs#L29) | See the implemented contract. |
+| [`override Inno.Rendering.IRenderLayerCompositionProgramProvider Inno.Adapter.Rendering.Bgfx.BgfxRenderingBackendProvider.CreateCompositionProgramProvider()`](../../../backends/Bgfx/runtime/Inno.Adapter.Rendering.Bgfx/BgfxRenderingBackendProvider.cs#L44) | See the implemented contract. |
+
+### `Inno.Adapter.Rendering.Bgfx.BgfxSurfaceDescriptor`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Adapter.Rendering.Bgfx.BgfxSurfaceDescriptor`](../../../backends/Bgfx/runtime/Inno.Adapter.Rendering.Bgfx/Surfaces/BgfxSurfaceDescriptor.cs#L12) | Freezes borrowed window and display values without exposing BGFX native structures. |
+| [`Inno.Adapter.Rendering.Bgfx.BgfxSurfaceDescriptor.BgfxSurfaceDescriptor(nint windowHandle, nint displayHandle, bool supportsSrgbReset)`](../../../backends/Bgfx/runtime/Inno.Adapter.Rendering.Bgfx/Surfaces/BgfxSurfaceDescriptor.cs#L29) | Creates a validated borrowing description for a selected host integration. |
+| [`bool Inno.Adapter.Rendering.Bgfx.BgfxSurfaceDescriptor.supportsSrgbReset`](../../../backends/Bgfx/runtime/Inno.Adapter.Rendering.Bgfx/Surfaces/BgfxSurfaceDescriptor.cs#L54) | Gets whether this primary surface permits sRGB reset. |
+| [`nint Inno.Adapter.Rendering.Bgfx.BgfxSurfaceDescriptor.displayHandle`](../../../backends/Bgfx/runtime/Inno.Adapter.Rendering.Bgfx/Surfaces/BgfxSurfaceDescriptor.cs#L49) | Gets the borrowed display value, or zero when this ABI does not require one. |
+| [`nint Inno.Adapter.Rendering.Bgfx.BgfxSurfaceDescriptor.windowHandle`](../../../backends/Bgfx/runtime/Inno.Adapter.Rendering.Bgfx/Surfaces/BgfxSurfaceDescriptor.cs#L44) | Gets the borrowed window value; the default descriptor has no valid window. |
+
+### `Inno.Adapter.Rendering.Bgfx.BgfxSurfaceRole`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Adapter.Rendering.Bgfx.BgfxSurfaceRole`](../../../backends/Bgfx/runtime/Inno.Adapter.Rendering.Bgfx/Surfaces/IBgfxSurfaceIntegration.cs#L8) | Identifies how a borrowed window is used by a BGFX device, independently of its system ABI. |
+| [`Inno.Adapter.Rendering.Bgfx.BgfxSurfaceRole.Additional`](../../../backends/Bgfx/runtime/Inno.Adapter.Rendering.Bgfx/Surfaces/IBgfxSurfaceIntegration.cs#L17) | An additional window whose framebuffer is owned by an active device generation. |
+| [`Inno.Adapter.Rendering.Bgfx.BgfxSurfaceRole.Primary`](../../../backends/Bgfx/runtime/Inno.Adapter.Rendering.Bgfx/Surfaces/IBgfxSurfaceIntegration.cs#L13) | The primary window supplied before device initialization. |
+
+### `Inno.Adapter.Rendering.Bgfx.IBgfxSurfaceIntegration`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Adapter.Rendering.Bgfx.BgfxSurfaceDescriptor Inno.Adapter.Rendering.Bgfx.IBgfxSurfaceIntegration.Resolve(Inno.Adapter.Platform.PlatformNativeHandles handles, Inno.Adapter.Rendering.Bgfx.BgfxSurfaceRole role)`](../../../backends/Bgfx/runtime/Inno.Adapter.Rendering.Bgfx/Surfaces/IBgfxSurfaceIntegration.cs#L52) | Validates a host ABI and freezes the handle values needed by the requested surface role. |
+| [`Inno.Adapter.Rendering.Bgfx.IBgfxSurfaceIntegration`](../../../backends/Bgfx/runtime/Inno.Adapter.Rendering.Bgfx/Surfaces/IBgfxSurfaceIntegration.cs#L27) | Resolves an explicitly selected host's borrowed surface handles for the shared BGFX backend. |
+| [`bool Inno.Adapter.Rendering.Bgfx.IBgfxSurfaceIntegration.supportsAdditionalSurfaces`](../../../backends/Bgfx/runtime/Inno.Adapter.Rendering.Bgfx/Surfaces/IBgfxSurfaceIntegration.cs#L32) | Gets whether this host permits additional surfaces, subject to the device's SwapChain capability. |
 
 ## 项目依赖
 
+- [Inno.Core.Execution](../../core/Inno.Core.Execution.md)：实现依赖，PrivateAssets="compile"。
 - [Inno.Native.Bgfx](Inno.Native.Bgfx.md)：实现依赖，PrivateAssets="compile"。
 - [Inno.Adapter.Platform](../../platform/Inno.Adapter.Platform.md)：公开引用边界由实际签名核对。
 - [Inno.Adapter.Rendering](../../rendering/Inno.Adapter.Rendering.md)：公开引用边界由实际签名核对。

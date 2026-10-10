@@ -337,7 +337,7 @@ internal static partial class ArchitectureRules
                         "backends/ImGui/native/Inno.Native.ImGui/Bindings/Extension/Inno.Native.ImGui.BindingExtension.csproj"
                             => include is "$(BindGenRoot)/src/BGCS/BGCS.csproj"
                                 or "$(BindGenRoot)/src/BGCS.Core/BGCS.Core.csproj",
-                        "build/tasks/Inno.Build.Tasks/Inno.Build.Tasks.csproj"
+                        "build/bindings/Inno.Build.Bindings/Inno.Build.Bindings.csproj"
                             => include is "$(BindGenRoot)/src/BGCS/BGCS.csproj"
                                 or "$(BindGenRoot)/src/BGCS.Cpp2C/BGCS.Cpp2C.csproj",
                         _ => false

@@ -23,7 +23,7 @@ IRenderDevice device = catalog.rendering.CreateDevice(
 BGFX handle、view ID、native enum 和 compiler executable path 不得进入这些公开契约。
 
 自定义后端通过 `new RenderingBackendId("studio.rendering.custom")` 与派生 provider 注册；不修改公共枚举或中央分支。
-`DefaultAdapterCatalog(renderingProviders)` 接收完整替换集合，null 才使用默认 BGFX。Provider 属于 Composition generation，不在跨代静态缓存中保留。
+`DefaultAdapterCatalogOptions.rendering` 必須接收完整 `IRenderingBackendFactory`，不隐式选择 BGFX。Provider 属于 Composition generation，不在跨代静态缓存中保留。
 
 ## 注册身份
 

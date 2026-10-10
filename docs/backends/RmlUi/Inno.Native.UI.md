@@ -22,7 +22,7 @@ RmlUi 字体引擎是进程级资源，内部 `RmlUiProcessHost` 显式管理引
 
 ## 当前源码公开 API 清单
 
-只列当前源码的 public/protected 表面；内部实现不作为稳定 API。参数、返回、失败和 owner 以英文 XML 为准。
+只列当前源码 public/protected 表面；内部机制不是稳定 API，参数、返回、失败及所有权以英文 XML 为准。
 
 ### `Inno.Native.UI.UiNative`
 

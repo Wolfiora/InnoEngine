@@ -73,6 +73,7 @@ public static class NativeInputMaterializer
                 File.SetUnixFileMode(candidate, File.GetUnixFileMode(input.physicalPath));
             cancellationToken.ThrowIfCancellationRequested();
             AtomicFile.Install(candidate, output.physicalPath);
+            context.inputState.RecordMaterialization(new FileInfo(output.physicalPath).Length);
             return true;
         }
         finally

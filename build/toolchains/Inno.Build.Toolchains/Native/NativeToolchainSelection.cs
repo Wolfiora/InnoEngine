@@ -26,7 +26,7 @@ public sealed class NativeToolchainSelection
     /// Absolute executable paths indexed by explicit command names.
     /// </param>
     /// <param name="environment">
-    /// The environment applied only to owned child processes.
+    /// Frozen SDK values applied to owned tools and in-process binding configuration without changing process state.
     /// </param>
     /// <param name="inputPaths">
     /// Compiler, SDK and tool files participating in product identity.
@@ -130,7 +130,7 @@ public sealed class NativeToolchainSelection
     public IReadOnlyList<string> cmakeArguments { get; }
 
     /// <summary>
-    /// Gets the environment supplied exclusively to owned tools.
+    /// Gets frozen SDK values supplied to owned tools and in-process binding configuration.
     /// </summary>
     public IReadOnlyDictionary<string, string> environment { get; }
 

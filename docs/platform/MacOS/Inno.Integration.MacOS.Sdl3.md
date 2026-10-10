@@ -27,16 +27,16 @@ Windows 解析 Win32 surface；macOS 解析 Cocoa surface 并设置当前按键�
 
 ## 当前源码公开 API 清单
 
-只列当前源码的 public/protected 表面；内部实现不作为稳定 API。参数、返回、失败和 owner 以英文 XML 为准。
+只列当前源码 public/protected 表面；内部机制不是稳定 API，参数、返回、失败及所有权以英文 XML 为准。
 
 ### `Inno.Integration.MacOS.Sdl3.MacOSSdl3HostIntegration`
 
 | 当前声明 | 行为 |
 | --- | --- |
-| [`Inno.Adapter.Platform.PlatformNativeHandles Inno.Integration.MacOS.Sdl3.MacOSSdl3HostIntegration.ResolveNativeSurface(nint windowHandle)`](../../../platforms/MacOS/integrations/Inno.Integration.MacOS.Sdl3/MacOSSdl3HostIntegration.cs#L38) | See the implemented contract. |
+| [`Inno.Adapter.Platform.PlatformNativeHandles Inno.Integration.MacOS.Sdl3.MacOSSdl3HostIntegration.ResolveNativeSurface(nint windowHandle)`](../../../platforms/MacOS/integrations/Inno.Integration.MacOS.Sdl3/MacOSSdl3HostIntegration.cs#L30) | See the implemented contract. |
 | [`Inno.Adapter.Platform.Sdl3.Sdl3HostCapabilities Inno.Integration.MacOS.Sdl3.MacOSSdl3HostIntegration.capabilities`](../../../platforms/MacOS/integrations/Inno.Integration.MacOS.Sdl3/MacOSSdl3HostIntegration.cs#L15) | See the implemented contract. |
 | [`Inno.Integration.MacOS.Sdl3.MacOSSdl3HostIntegration`](../../../platforms/MacOS/integrations/Inno.Integration.MacOS.Sdl3/MacOSSdl3HostIntegration.cs#L12) | Provides the MacOS SDK, native surface and focus policies for the shared SDL backend. |
-| [`bool Inno.Integration.MacOS.Sdl3.MacOSSdl3HostIntegration.GetInitialFocus(nint windowHandle)`](../../../platforms/MacOS/integrations/Inno.Integration.MacOS.Sdl3/MacOSSdl3HostIntegration.cs#L51) | See the implemented contract. |
+| [`bool Inno.Integration.MacOS.Sdl3.MacOSSdl3HostIntegration.GetInitialFocus(nint windowHandle)`](../../../platforms/MacOS/integrations/Inno.Integration.MacOS.Sdl3/MacOSSdl3HostIntegration.cs#L43) | See the implemented contract. |
 | [`nint Inno.Integration.MacOS.Sdl3.MacOSSdl3HostIntegration.CreateWindow(Inno.Platform.PlatformWindowOptions options)`](../../../platforms/MacOS/integrations/Inno.Integration.MacOS.Sdl3/MacOSSdl3HostIntegration.cs#L24) | See the implemented contract. |
 | [`void Inno.Integration.MacOS.Sdl3.MacOSSdl3HostIntegration.ConfigureInitialization()`](../../../platforms/MacOS/integrations/Inno.Integration.MacOS.Sdl3/MacOSSdl3HostIntegration.cs#L18) | See the implemented contract. |
 

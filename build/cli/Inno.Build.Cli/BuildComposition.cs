@@ -26,7 +26,7 @@ internal static class BuildComposition
         CancellationToken cancellationToken
     ) {
         string root = ToolchainEnvironment.FindRepoRoot();
-        var nativeContext = new NativeBuildContext(root, C_HOST_CONFIGURATION);
+        var nativeContext = new NativeBuildContext(root, C_HOST_CONFIGURATION).WithBindingGenerator(context.bindingGenerator);
         var provider = StandardBuildDistribution.Create(context).build.ResolveNativeToolchain(context.toolsTarget.value);
         nativeContext = nativeContext.WithToolchain(await provider.ResolveAsync(
             nativeContext, context.host, context.toolsTarget.value, cancellationToken).ConfigureAwait(false));

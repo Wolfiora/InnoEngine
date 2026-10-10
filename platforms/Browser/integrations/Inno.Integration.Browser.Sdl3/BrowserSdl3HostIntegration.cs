@@ -21,32 +21,9 @@ public sealed class BrowserSdl3HostIntegration : ISdl3HostIntegration
     }
 
     /// <inheritdoc />
-    public unsafe nint CreateWindow(PlatformWindowOptions options)
+    public nint CreateWindow(PlatformWindowOptions options)
     {
-        uint properties = SDL.CreateProperties();
-        if (properties == 0)
-            throw new InvalidOperationException(SDL.GetError() ?? "SDL_CreateProperties failed.");
-        try
-        {
-            if (!SDL.SetStringProperty(properties, SDL.SDL_PROP_WINDOW_CREATE_TITLE_STRING, options.title)
-                || !SDL.SetNumberProperty(properties, SDL.SDL_PROP_WINDOW_CREATE_WIDTH_NUMBER, options.width)
-                || !SDL.SetNumberProperty(properties, SDL.SDL_PROP_WINDOW_CREATE_HEIGHT_NUMBER, options.height)
-                || !SDL.SetBooleanProperty(properties, SDL.SDL_PROP_WINDOW_CREATE_OPENGL_BOOLEAN, true)
-                || !SDL.SetBooleanProperty(properties, SDL.SDL_PROP_WINDOW_CREATE_HIDDEN_BOOLEAN, !options.visible)
-                || !SDL.SetBooleanProperty(properties, SDL.SDL_PROP_WINDOW_CREATE_RESIZABLE_BOOLEAN, options.resizable)
-                || !SDL.SetBooleanProperty(properties, SDL.SDL_PROP_WINDOW_CREATE_HIGH_PIXEL_DENSITY_BOOLEAN, options.highPixelDensity))
-            {
-                throw new InvalidOperationException(SDL.GetError() ?? "SDL window properties could not be set.");
-            }
-            SDLWindow window = SDL.CreateWindowWithProperties(properties);
-            if (window.IsNull)
-                throw new InvalidOperationException(SDL.GetError() ?? "SDL canvas window creation failed.");
-            return (nint)window.Handle;
-        }
-        finally
-        {
-            SDL.DestroyProperties(properties);
-        }
+        return Sdl3WindowOperations.CreateWindow(options, requireOpenGl: true);
     }
 
     /// <inheritdoc />

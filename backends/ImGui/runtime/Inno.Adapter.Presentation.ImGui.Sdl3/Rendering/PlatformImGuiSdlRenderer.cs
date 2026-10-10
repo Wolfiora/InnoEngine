@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using System;
 using System.Numerics;
 
@@ -103,7 +104,13 @@ internal sealed unsafe class PlatformImGuiSdlRenderer : IPlatformImGuiRenderer
     /// <param name="target">
     /// The existing target that receives the validated result.
     /// </param>
-    public void DestroyViewport(PlatformImGuiViewportTarget target) { }
+    /// <returns>
+    /// An already completed task because this renderer owns no additional native windows.
+    /// </returns>
+    public Task RetireViewport(PlatformImGuiViewportTarget target) => Task.CompletedTask;
+
+    /// <inheritdoc />
+    public void DrainViewportRetirements() { }
 
     internal void Render(ImDrawDataPtr drawData)
     {

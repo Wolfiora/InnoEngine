@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using Inno.Adapter.Platform;
 using System;
 using Inno.Platform;
@@ -152,10 +153,24 @@ public interface IPlatformImGuiRenderer : IDisposable
     void PresentViewport(PlatformImGuiViewportTarget target);
 
     /// <summary>
-    /// Releases presentation state before its detached platform window is destroyed.
+    /// Removes the viewport from future rendering and schedules release of its borrowed native window.
     /// </summary>
     /// <param name="target">
-    /// Viewport being destroyed.
+    /// The viewport whose original owner keeps its native window alive during retirement.
     /// </param>
-    void DestroyViewport(PlatformImGuiViewportTarget target);
+    /// <returns>
+    /// A task completed only when the renderer no longer uses the native window. This is not a GPU fence.
+    /// </returns>
+    /// <remarks>
+    /// Native callbacks may request retirement but must not wait or advance rendering.
+    /// </remarks>
+    Task RetireViewport(PlatformImGuiViewportTarget target);
+
+    /// <summary>
+    /// Drains requested retirements at a closed-frame owner-thread point outside native UI callbacks.
+    /// </summary>
+    /// <remarks>
+    /// Failure or timeout retains all unfinished viewport and renderer owners.
+    /// </remarks>
+    void DrainViewportRetirements();
 }

@@ -21,7 +21,7 @@ public static class BgfxNativeBuild
             ["extern/bgfx", "extern/bx", "extern/bimg"],
             ["bgfxRelease.a", "bxRelease.a", "bimgRelease.a", "bimg_decodeRelease.a"],
             ["browser-wasm"]),
-        bindingConfig: "backends/Bgfx/native/Inno.Native.Bgfx/Bindings/bindgen.json");
+        bindingDefinition: "backends/Bgfx/native/Inno.Native.Bgfx/Bindings/bindings.props");
 
     /// <summary>
     /// Builds and installs graphics artifacts using explicit platform-owned SDK configuration.

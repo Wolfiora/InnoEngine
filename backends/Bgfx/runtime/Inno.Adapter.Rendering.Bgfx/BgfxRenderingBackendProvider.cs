@@ -8,10 +8,22 @@ namespace Inno.Adapter.Rendering.Bgfx;
 /// </summary>
 public sealed class BgfxRenderingBackendProvider : RenderingBackendProvider
 {
+    private readonly IBgfxSurfaceIntegration m_surfaceIntegration;
+
     /// <summary>
-    /// Creates a composition-owned registration for the bundled implementation.
+    /// Registers BGFX with an explicitly selected, borrowed host surface integration.
     /// </summary>
-    public BgfxRenderingBackendProvider() : base(RenderingBackendId.bgfx) { }
+    /// <param name="surfaceIntegration">
+    /// Immutable host configuration shared by devices created from this provider.
+    /// </param>
+    /// <exception cref="ArgumentNullException">
+    /// The integration is null.
+    /// </exception>
+    public BgfxRenderingBackendProvider(IBgfxSurfaceIntegration surfaceIntegration) : base(RenderingBackendId.bgfx)
+    {
+        ArgumentNullException.ThrowIfNull(surfaceIntegration);
+        m_surfaceIntegration = surfaceIntegration;
+    }
 
     /// <inheritdoc />
     public override IRenderDevice CreateDevice(RenderingBackendOptions options)
@@ -20,6 +32,7 @@ public sealed class BgfxRenderingBackendProvider : RenderingBackendProvider
         return new BgfxDevice(new BgfxDeviceOptions
         {
             window = options.window,
+            surfaceIntegration = m_surfaceIntegration,
             preferredBackend = options.preferredGraphicsApi,
             verticalSync = options.verticalSync,
             sRgbBackbuffer = options.sRgbBackbuffer,

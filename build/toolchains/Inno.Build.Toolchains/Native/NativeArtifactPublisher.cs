@@ -54,6 +54,8 @@ public static class NativeArtifactPublisher
         ArgumentNullException.ThrowIfNull(build);
         cancellationToken.ThrowIfCancellationRequested();
         NativeComponentDescriptor owner = recipe.owner;
+        NativeBindingGenerationDescriptor? bindingGeneration = owner.bindingDefinition is null
+            ? null : context.RequireBindings(owner);
         string component = recipe.component;
         string targetId = recipe.targetId;
         NativeInputSnapshot snapshot = context.inputState.CaptureInitial(recipe.inputs, cancellationToken);
@@ -64,11 +66,11 @@ public static class NativeArtifactPublisher
         using FileLease ownership = await FileLease.AcquireAsync(intermediate + ".lock",
             Timeout.InfiniteTimeSpan, cancellationToken).ConfigureAwait(false);
         cancellationToken.ThrowIfCancellationRequested();
-        if (NativeBuildFingerprint.Create(recipe.declarations,
-            context.inputState.CaptureVerification(recipe.inputs, cancellationToken)) != fingerprint)
+        if (NativeBuildFingerprint.Create(context.BeginInputVerification("native-lock:" + component),
+            recipe.declarations, recipe.inputs, cancellationToken) != fingerprint)
             throw new InvalidOperationException($"Native inputs for '{component}' changed while waiting for ownership.");
-        if (BuildArtifactManifest.IsComplete(destination, fingerprint, ["Outputs"]))
-            return new(component, targetId, fingerprint, destination);
+        if (BuildArtifactManifest.IsComplete(destination, fingerprint, ["Outputs"], context))
+            return new(component, targetId, fingerprint, destination, bindingGeneration);
 
         string staging = destination + ".staging-" + Guid.NewGuid().ToString("N");
         string output = Path.Combine(staging, "Outputs");
@@ -77,17 +79,18 @@ public static class NativeArtifactPublisher
         {
             using (ToolchainWorkingDirectory workspace = await ToolchainWorkingDirectory.OpenAsync(
                 intermediate, cancellationToken).ConfigureAwait(false))
-                await build(scoped.WithToolDirectory(workspace.toolPath), output, cancellationToken).ConfigureAwait(false);
+                await build(scoped.WithToolDirectory(workspace.toolPath).WithExecutionInputs(snapshot),
+                    output, cancellationToken).ConfigureAwait(false);
             cancellationToken.ThrowIfCancellationRequested();
             if (!PathBoundary.EnumerateFiles(output).Any())
                 throw new InvalidOperationException($"Native component '{component}' produced no output files.");
-            if (NativeBuildFingerprint.Create(recipe.declarations,
-            context.inputState.CaptureVerification(recipe.inputs, cancellationToken)) != fingerprint)
+            if (NativeBuildFingerprint.Create(context.BeginInputVerification("native-build:" + component),
+                recipe.declarations, recipe.inputs, cancellationToken) != fingerprint)
                 throw new InvalidOperationException($"Native inputs for '{component}' changed during preparation; the candidate was not published.");
-            BuildArtifactManifest.Write(staging, fingerprint, ["Outputs"]);
+            BuildArtifactManifest.Write(staging, fingerprint, ["Outputs"], context);
             cancellationToken.ThrowIfCancellationRequested();
             AtomicDirectory.Install(staging, destination);
-            return new(component, targetId, fingerprint, destination);
+            return new(component, targetId, fingerprint, destination, bindingGeneration);
         }
         finally
         {

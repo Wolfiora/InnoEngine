@@ -43,17 +43,17 @@ Publisher 拥有本次 staging、写 lease 与 current 提交，source 拥有其
 
 ## 当前源码公开 API 清单
 
-只列当前源码的 public/protected 表面；内部实现不作为稳定 API。参数、返回、失败和 owner 以英文 XML 为准。
+只列当前源码 public/protected 表面；内部机制不是稳定 API，参数、返回、失败及所有权以英文 XML 为准。
 
 ### `Inno.Build.SupportPacks.FilePlayerSupportPackPreparation`
 
 | 当前声明 | 行为 |
 | --- | --- |
-| [`Inno.Build.BuildTargetId Inno.Build.SupportPacks.FilePlayerSupportPackPreparation.target`](../../build/support/Inno.Build.SupportPacks.Core/FilePlayerSupportPackPreparation.cs#L104) | Gets the platform identity whose closure this source prepares. |
+| [`Inno.Build.BuildTargetId Inno.Build.SupportPacks.FilePlayerSupportPackPreparation.target`](../../build/support/Inno.Build.SupportPacks.Core/FilePlayerSupportPackPreparation.cs#L111) | Gets the platform identity whose closure this source prepares. |
 | [`Inno.Build.SupportPacks.FilePlayerSupportPackPreparation`](../../build/support/Inno.Build.SupportPacks.Core/FilePlayerSupportPackPreparation.cs#L15) | Prepares file-based product inputs using injected target tools, source locations and native closure. |
-| [`Inno.Build.SupportPacks.FilePlayerSupportPackPreparation.FilePlayerSupportPackPreparation(Inno.Build.BuildTargetId target, string runtimeIdentifier, string nativePlatform, string nativeExtension, Inno.Build.IPlayerSupportPackValidator validator, string productProject, string templateFile, Inno.Build.Toolchains.ProductNativeBuildPlan nativePlan, Inno.Build.Toolchains.INativeToolchainProvider toolchainProvider, Inno.Build.Toolchains.BuildHostDescriptor host)`](../../build/support/Inno.Build.SupportPacks.Core/FilePlayerSupportPackPreparation.cs#L67) | Captures the platform layout and validator without preparing any tools or files. |
-| [`System.Threading.Tasks.ValueTask<Inno.Build.SupportPacks.PlayerSupportPackPlan> Inno.Build.SupportPacks.FilePlayerSupportPackPreparation.CreatePlanAsync(Inno.Build.SupportPacks.PlayerSupportPackPlanningContext context, System.Threading.CancellationToken cancellationToken)`](../../build/support/Inno.Build.SupportPacks.Core/FilePlayerSupportPackPreparation.cs#L118) | Resolves tools and validates required source inputs before any staging exists. |
-| [`void Inno.Build.SupportPacks.FilePlayerSupportPackPreparation.Validate(string directory)`](../../build/support/Inno.Build.SupportPacks.Core/FilePlayerSupportPackPreparation.cs#L177) | Validates the prepared platform inputs before atomic installation. |
+| [`Inno.Build.SupportPacks.FilePlayerSupportPackPreparation.FilePlayerSupportPackPreparation(Inno.Build.BuildTargetId target, string runtimeIdentifier, string nativePlatform, string nativeExtension, Inno.Build.IPlayerSupportPackValidator validator, string productProject, string templateFile, Inno.Build.Toolchains.ProductNativeBuildPlan nativePlan, Inno.Build.Toolchains.INativeToolchainProvider toolchainProvider, Inno.Build.Toolchains.BuildHostDescriptor host, Inno.Build.Toolchains.INativeBindingGenerator bindingGenerator)`](../../build/support/Inno.Build.SupportPacks.Core/FilePlayerSupportPackPreparation.cs#L71) | Captures the platform layout and validator without preparing any tools or files. |
+| [`System.Threading.Tasks.ValueTask<Inno.Build.SupportPacks.PlayerSupportPackPlan> Inno.Build.SupportPacks.FilePlayerSupportPackPreparation.CreatePlanAsync(Inno.Build.SupportPacks.PlayerSupportPackPlanningContext context, System.Threading.CancellationToken cancellationToken)`](../../build/support/Inno.Build.SupportPacks.Core/FilePlayerSupportPackPreparation.cs#L125) | Resolves tools and validates required source inputs before any staging exists. |
+| [`void Inno.Build.SupportPacks.FilePlayerSupportPackPreparation.Validate(string directory)`](../../build/support/Inno.Build.SupportPacks.Core/FilePlayerSupportPackPreparation.cs#L207) | Validates the prepared platform inputs before atomic installation. |
 
 ### `Inno.Build.SupportPacks.IPlayerSupportPackSource`
 

@@ -23,9 +23,6 @@
     "CIMGUI_VARGS0"
   ],
   "outputPath": "../Generated",
-  "pluginAssemblies": [
-    "../../../../../artifacts/build-tools/bindings/bin/Inno.Native.ImGui.BindingExtension/release/Inno.Native.ImGui.BindingExtension.dll"
-  ],
   "usings": [
     "System.Numerics"
   ],

@@ -8,6 +8,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="../../../build/bindings/Inno.Build.Bindings/Inno.Build.Bindings.csproj" />
+    <ProjectReference Include="../../../platforms/Windows/integrations/Inno.Integration.Windows.Bgfx.Runtime/Inno.Integration.Windows.Bgfx.Runtime.csproj" />
     <ProjectReference Include="../../../backends/ImGui/runtime/Inno.Adapter.Presentation.ImGui.Bgfx/Inno.Adapter.Presentation.ImGui.Bgfx.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../../platforms/Windows/integrations/Inno.Integration.Windows.Sdl3/Inno.Integration.Windows.Sdl3.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../../src/composition/editor/hosting/Inno.Editor.Hosting/Inno.Editor.Hosting.csproj" />

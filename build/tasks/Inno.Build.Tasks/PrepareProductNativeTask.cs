@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading;
 using Inno.Build.Toolchains;
 using Inno.Build;
@@ -48,6 +50,17 @@ public sealed class PrepareProductNativeTask : BuildTask, ICancelableTask
     public string Configuration { get; set; } = "release";
 
     /// <summary>
+    /// Gets or sets an optional operation-owned selection consumed by the subsequent managed project closure.
+    /// </summary>
+    public string BindingSelectionOutputPath { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Gets or sets the managed build's frozen selection that publication must preserve before deployment.
+    /// An empty value denotes initial preparation without a preceding managed compilation.
+    /// </summary>
+    public string BindingSelectionInputPath { get; set; } = string.Empty;
+
+    /// <summary>
     /// Prepares all host-native products and installs their exact closure after successful validation.
     /// </summary>
     /// <returns>
@@ -68,18 +81,42 @@ public sealed class PrepareProductNativeTask : BuildTask, ICancelableTask
             var execution = StandardBuildEnvironment.Capture(AppContext.BaseDirectory, new BuildTargetId(TargetId));
             var distribution = StandardBuildDistribution.Create(execution).build;
             ProductNativeBuildPlan plan = distribution.ResolveNativeProduct(TargetId, ProductId);
-            var context = new NativeBuildContext(EngineRoot, Configuration.ToLowerInvariant());
+            var context = new NativeBuildContext(EngineRoot, Configuration.ToLowerInvariant())
+                .WithBindingGenerator(execution.bindingGenerator);
             NativeToolchainSelection toolchain = distribution.ResolveNativeToolchain(TargetId)
                 .ResolveAsync(context, execution.host, TargetId, cancellation.Token).AsTask().GetAwaiter().GetResult();
             context = context.WithToolchain(toolchain);
             var products = plan.BuildAsync(context, cancellation.Token).GetAwaiter().GetResult();
             cancellation.Token.ThrowIfCancellationRequested();
+            var generations = products.Select((
+                product,
+                index
+            ) => (product, owner: plan.steps[index].component.nativeProject))
+                .Where(static entry => entry.product.bindingGeneration is not null)
+                .GroupBy(static entry => entry.owner, StringComparer.Ordinal)
+                .ToDictionary(static group => group.Key,
+                    static group => RequireSharedGeneration(group.Select(static entry => entry.product.bindingGeneration!)),
+                    StringComparer.Ordinal);
+            var linkage = plan.steps.Where(step => generations.ContainsKey(step.component.nativeProject))
+                .GroupBy(static step => step.component.nativeProject, StringComparer.Ordinal)
+                .ToDictionary(static group => group.Key,
+                    static group => group.Select(step => step.options.libraryKind).Distinct().Single(), StringComparer.Ordinal);
+            if (BindingSelectionInputPath.Length != 0)
+                NativeBindingGenerationDescriptor.ValidateSelection(BindingSelectionInputPath, generations, linkage);
             ProductNativeDeployment.InstallAsync(products, plan, OutputDirectory, cancellation.Token).GetAwaiter().GetResult();
+            if (BindingSelectionOutputPath.Length != 0)
+                NativeBindingGenerationDescriptor.WriteSelection(BindingSelectionOutputPath, generations, linkage);
             NativeBuildStatistics statistics = context.statistics;
             Log.LogMessage(MessageImportance.High,
                 $"INNO-NATIVE-PREPARE elapsedMs={Stopwatch.GetElapsedTime(started).TotalMilliseconds:F1} "
                 + $"hashedFiles={statistics.hashedFiles} hashedBytes={statistics.hashedBytes} "
-                + $"processes={statistics.nativeProcesses} products={products.Count}");
+                + $"processes={statistics.nativeProcesses} products={products.Count} "
+                + $"bindingBatches={statistics.bindingBatches} bindingGenerations={statistics.bindingGenerations} "
+                + $"outputFiles={statistics.outputFiles} outputBytes={statistics.outputBytes} "
+                + $"materializedBytes={statistics.materializedBytes} managedProcesses={statistics.managedProcesses}");
+            foreach (NativeBuildPhaseStatistics phase in statistics.phases)
+                Log.LogMessage(MessageImportance.High,
+                    $"INNO-NATIVE-PHASE name={phase.phase} files={phase.files} bytes={phase.bytes} reusedReads={phase.reusedReads}");
             return true;
         }
         catch (Exception failure)
@@ -104,5 +141,14 @@ public sealed class PrepareProductNativeTask : BuildTask, ICancelableTask
             m_canceled = true;
             m_cancellation?.Cancel();
         }
+    }
+
+    private static NativeBindingGenerationDescriptor RequireSharedGeneration(IEnumerable<NativeBindingGenerationDescriptor> generations)
+    {
+        NativeBindingGenerationDescriptor selected = generations.First();
+        if (generations.Any(generation => generation.fingerprint != selected.fingerprint
+            || generation.bindingsPath != selected.bindingsPath || generation.bridgeDirectory != selected.bridgeDirectory))
+            throw new InvalidOperationException("Native products sharing a binding owner must select the same complete generation.");
+        return selected;
     }
 }

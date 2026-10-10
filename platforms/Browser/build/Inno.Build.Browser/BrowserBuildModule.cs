@@ -36,7 +36,7 @@ public static class BrowserBuildModule
         return new(target,
             () => new BrowserWasm32GameBuildTarget(
                 new BrowserSupportPackValidator(nativePlan)),
-            new BrowserPlayerSupportPackSource(context.host, context.toolsTarget, nativePlan),
+            new BrowserPlayerSupportPackSource(context.host, context.toolsTarget, nativePlan, context.bindingGenerator),
             new EmscriptenNativeToolchainProvider(context.dotnetHost));
     }
 }

@@ -7,6 +7,8 @@
     <BindGenGeneratedBindings>true</BindGenGeneratedBindings>
   </PropertyGroup>
 
+  <Import Project="Bindings/bindings.props" />
+
   <ItemGroup>
     <ProjectReference Include="../../../Interop/native/Inno.Native.LibraryLoading/Inno.Native.LibraryLoading.csproj" PrivateAssets="compile" />
     <ProjectReference Include="$(BGCSRuntimeProject)" />

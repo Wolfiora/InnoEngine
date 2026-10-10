@@ -16,7 +16,7 @@ using BGCS.CppAst.Targeting;
 using BGCS.Facade;
 using Newtonsoft.Json;
 
-namespace Inno.Build.Tasks;
+namespace Inno.Build.Bindings;
 
 internal static class NativeBindingGenerationIdentity
 {
@@ -26,7 +26,9 @@ internal static class NativeBindingGenerationIdentity
         string configPath,
         string bridgeConfigPath,
         string outputRoot,
-        string engineRoot,
+        NativeBuildContext context,
+        string definitionPath,
+        string? hostBridgeRoot,
         CancellationToken cancellationToken,
         IReadOnlyList<string>? excludedDirectories = null
     ) {
@@ -34,7 +36,8 @@ internal static class NativeBindingGenerationIdentity
         string bridgeBase = bridge is null ? managedBase : Path.GetDirectoryName(Path.GetFullPath(bridgeConfigPath))!;
         string? bridgeOutput = bridge is null ? null : Resolve(bridge.outputPath, bridgeBase!);
         IEnumerable<string> entries = managed.entryFiles.Select(path => Resolve(path, managedBase))
-            .Where(path => bridgeOutput is null || !IsWithin(path, bridgeOutput));
+            .Where(path => (bridgeOutput is null || !IsWithin(path, bridgeOutput))
+                && (hostBridgeRoot is null || !IsWithin(path, hostBridgeRoot)));
         IEnumerable<string> includes = managed.includeFolders.Concat(managed.systemIncludeFolders)
             .Select(path => Resolve(path, managedBase))
             .Concat(managed.resolvedTarget.toolchain.systemIncludeFolders)
@@ -55,9 +58,15 @@ internal static class NativeBindingGenerationIdentity
                 .Select(static service => service.GetCacheFingerprint()).Order(StringComparer.Ordinal));
         }
         string[] excluded = (bridgeOutput is null ? new[] { outputRoot } : [outputRoot, bridgeOutput])
-            .Concat(excludedDirectories ?? []).ToArray();
+            .Concat(hostBridgeRoot is null ? [] : new[] { hostBridgeRoot }).Concat(excludedDirectories ?? []).ToArray();
         cancellationToken.ThrowIfCancellationRequested();
         IReadOnlyList<string> inputs = IncrementalGenerationCache.DiscoverInputs(entries, includes, excluded);
+        string? managedCompiler = CppToolchainDiscovery.FindCompiler(managed.parserKind,
+            ConfigurationPath.Resolve(managed.compilerPath ?? managed.resolvedTarget.toolchain.compilerPath,
+                managedBase, allowCommandName: true));
+        string? bridgeCompiler = bridge is null ? null : CppToolchainDiscovery.FindCompiler(CppParserKind.Cpp,
+            ConfigurationPath.Resolve(bridge.compilerPath ?? bridge.resolvedTarget.toolchain.compilerPath,
+                bridgeBase, allowCommandName: true));
         string implementation = typeof(NativeBindingGenerationIdentity).Assembly
             .GetCustomAttributes<AssemblyMetadataAttribute>()
             .Single(static metadata => metadata.Key == "Inno.BindingImplementation").Value
@@ -84,8 +93,11 @@ internal static class NativeBindingGenerationIdentity
             bridge?.plugins.GetCacheFingerprint() ?? "",
             lowering);
         return NativeBuildFingerprint.Create(
+            context,
             [fingerprint],
-            inputs.Select(path => NativeBuildInput.FromPath(engineRoot, path)),
+            inputs.Concat(new[] { definitionPath, configPath, bridgeConfigPath, managedCompiler, bridgeCompiler }
+                .OfType<string>().Where(static path => path.Length != 0))
+                .Select(path => NativeBuildInput.FromPath(context.engineRoot, path)),
             cancellationToken);
     }
 

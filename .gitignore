@@ -366,6 +366,9 @@ ASALocalRun/
 # MSBuild Binary and Structured Log
 *.binlog
 
+# Persistent cross-process binding generation ownership
+*.generation.lock
+
 # NVidia Nsight GPU debugger configuration file
 *.nvuser
 

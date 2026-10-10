@@ -36,6 +36,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="../../integrations/Inno.Integration.Browser.Bgfx.Runtime/Inno.Integration.Browser.Bgfx.Runtime.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../integrations/Inno.Integration.Browser.Sdl3/Inno.Integration.Browser.Sdl3.csproj" PrivateAssets="compile" />
 
     <ProjectReference Include="../../../../src/composition/player/Inno.Player.Runtime/Inno.Player.Runtime.csproj" />

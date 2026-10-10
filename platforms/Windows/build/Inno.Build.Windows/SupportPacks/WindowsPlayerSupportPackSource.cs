@@ -21,20 +21,24 @@ public sealed class WindowsPlayerSupportPackSource : IPlayerSupportPackSource
     /// <param name="host">
     /// The declared machine executing platform tools.
     /// </param>
+    /// <param name="bindingGenerator">
+    /// The borrowed shared binding implementation selected by distribution.
+    /// </param>
     /// <param name="dotnetHost">
     /// The explicit SDK executable for binding generation.
     /// </param>
     public WindowsPlayerSupportPackSource(
         ProductNativeBuildPlan nativePlan,
         BuildHostDescriptor host,
-        string dotnetHost
+        string dotnetHost,
+        INativeBindingGenerator bindingGenerator
     ) {
         m_preparation = new FilePlayerSupportPackPreparation(
             BuildTargetId.windowsX64, "win-x64", BuildTargetId.windowsX64.value, ".dll",
             new WindowsSupportPackValidator(),
             "platforms/Windows/player/Inno.Player.Windows/Inno.Player.Windows.csproj",
             "platforms/Windows/build/Inno.Build.Windows/Templates/WindowsPlayer.project.xml",
-            nativePlan, new WindowsNativeToolchainProvider(dotnetHost), host);
+            nativePlan, new WindowsNativeToolchainProvider(dotnetHost), host, bindingGenerator);
     }
 
     /// <inheritdoc />

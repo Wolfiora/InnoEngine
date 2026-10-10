@@ -1,3 +1,5 @@
+using System.Threading.Tasks;
+using Inno.Core.Execution;
 using Inno.Adapter.Platform;
 using System;
 using System.Collections.Generic;
@@ -12,7 +14,7 @@ using ImGuiNative = Inno.Native.ImGui.ImGui;
 
 namespace Inno.Adapter.Presentation.ImGui;
 
-internal sealed unsafe class PlatformImGuiViewportBackend : IDisposable
+internal sealed unsafe partial class PlatformImGuiViewportBackend : IDisposable
 {
     private sealed class ViewportWindowData
     {
@@ -20,6 +22,8 @@ internal sealed unsafe class PlatformImGuiViewportBackend : IDisposable
         internal required Sdl3PlatformWindow registeredWindow;
         internal ImGuiViewportPtr viewport;
         internal bool drawable;
+        internal Task? retirement;
+        internal bool detached;
         internal SDLWindow window;
         internal SDLRenderer renderer;
         internal IPlatformImGuiRenderer? externalRenderer;
@@ -62,6 +66,8 @@ internal sealed unsafe class PlatformImGuiViewportBackend : IDisposable
     private readonly nuint m_contextKey;
     private readonly Dictionary<uint, ViewportWindowData> m_viewportsById = [];
     private readonly Dictionary<uint, uint> m_windowToViewport = [];
+    private readonly List<ViewportWindowData> m_retiringViewports = [];
+    private Exception? m_callbackFailure;
     private bool m_monitorsDirty;
     private bool m_disposed;
 
@@ -263,6 +269,11 @@ internal sealed unsafe class PlatformImGuiViewportBackend : IDisposable
 
         m_viewportsById.Clear();
         m_windowToViewport.Clear();
+        if (m_retiringViewports.Count != 0)
+            m_renderer.DrainViewportRetirements();
+        ProcessRetirements();
+        if (m_retiringViewports.Count != 0)
+            throw new RetirementPendingException("Detached ImGui windows are still borrowed by their renderer.");
 
         var platformIo = ImGuiNative.GetPlatformIO();
         platformIo.ClearPlatformHandlers();
@@ -288,6 +299,8 @@ internal sealed unsafe class PlatformImGuiViewportBackend : IDisposable
 
     private static void PlatformCreateWindowCallback(ImGuiViewport* viewport)
     {
+        try
+        {
         if (viewport == null || viewport->PlatformUserData != null || (viewport->Flags & ImGuiViewportFlags.OwnedByApp) != 0)
         {
             return;
@@ -388,6 +401,11 @@ internal sealed unsafe class PlatformImGuiViewportBackend : IDisposable
             backend.m_windowToViewport.Remove(data.windowId);
             DestroyViewportWindow(data);
             throw;
+        }
+            }
+        catch (Exception failure)
+        {
+            GetCurrentBackend().m_callbackFailure = failure;
         }
     }
 
@@ -707,40 +725,6 @@ internal sealed unsafe class PlatformImGuiViewportBackend : IDisposable
             workSize: new Vector2(workBounds.W, workBounds.H),
             dpiScale: dpiScale,
             platformHandle: (void*)(nuint)displayId));
-    }
-
-    private static void DestroyViewportWindow(ViewportWindowData data)
-    {
-        if (data.externalRenderer is not null && data.externalTarget is not null)
-        {
-            data.externalRenderer.DestroyViewport(data.externalTarget);
-            data.externalRenderer = null;
-            data.externalTarget = null;
-        }
-
-        if (!data.fontTexture.IsNull)
-        {
-            SDL.DestroyTexture(data.fontTexture);
-            data.fontTexture = SDLTexturePtr.Null;
-        }
-
-        if (!data.renderer.IsNull)
-        {
-            SDL.DestroyRenderer(data.renderer);
-            data.renderer = SDLRenderer.Null;
-        }
-
-        if (!data.window.IsNull)
-        {
-            data.owner.m_application.ReleaseWindow(data.registeredWindow);
-            SDL.DestroyWindow(data.window);
-            data.window = SDLWindow.Null;
-        }
-
-        if (data.gcHandle.IsAllocated)
-        {
-            data.gcHandle.Free();
-        }
     }
 
     private static void EnsureViewportFontTexture(ViewportWindowData data)
@@ -1067,4 +1051,3 @@ internal sealed unsafe class PlatformImGuiViewportBackend : IDisposable
         return (void*)Marshal.GetFunctionPointerForDelegate(del);
     }
 }
-

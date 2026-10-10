@@ -6,12 +6,16 @@
 
 ## 公开 API
 
-- `AdapterSelection`：一次 Host 启动所使用的 Platform、Input、Storage、Rendering 与 Audio 中立枚举集合；`defaultValue` 表示标准发行版组合。
-- `IAdapterCatalog`：公开上述五个 family factory。
+- `AdapterSelection`：Platform、Input、Storage、Rendering、Audio、Text、UI 的开放稳定 ID 选择；没有隐式默认 backend。
+- `IAdapterCatalog`：公开上述七个领域的中立 factory。
 
 ```csharp
-AdapterSelection selection = AdapterSelection.defaultValue;
-IAdapterCatalog catalog = new DefaultAdapterCatalog();
+using Inno.Adapter;
+
+static void Validate(
+    AdapterSelection selection,
+    IAdapterCatalog catalog
+) => selection.Validate(catalog);
 ```
 
 `AdapterSelection` 只保存选择，不保存 native handle、实例或可热重载对象。Presentation 和 compiler 不属于 runtime catalog；它们由 [authoring catalog](Inno.Adapter.Authoring.Default.md) 独立扩展。

@@ -102,7 +102,7 @@ sealed unsafe partial class BgfxDevice
             bgfx.touch(0);
         }
 
-        m_backendFrame = bgfx.frame((byte)bgfx.FrameFlags.None);
+        m_backendFrame = SubmitNativeFrame(bgfx.FrameFlags.None);
         m_frameOpen = false;
         return m_backendFrame;
     }

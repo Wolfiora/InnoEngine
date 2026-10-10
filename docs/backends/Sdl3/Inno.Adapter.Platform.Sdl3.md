@@ -28,9 +28,13 @@ Application/Window 的 SDL handle、event union 和 pointer 都停留在本程�
 
 应用构造必须接收 ISdl3HostIntegration；没有当前 OS 默认策略。Sdl3HostCapabilities 声明多窗口和 live-resize。自建窗口归应用，AdoptWindow 是借用登记，ReleaseWindow 先失效后由原 owner 销毁；GetWindows 仅返回本应用窗口。窗口包装失败销毁新建窗口，借用包装失败不销毁外部窗口。
 
+## 共同窗口操作
+
+Sdl3WindowOperations.CreateWindow 使用统一 SDL properties 并总是释放临时 properties；成功 handle 的销毁权交给应用。ReadFocus 只读取。Windows/macOS 不要求 OpenGL，Browser 要求 OpenGL 且初始焦点继续等待真实事件；surface 解析/SDK 配置属于各 integration。应用唯一管理登记、owner thread、包装失败清理和外部窗口借用。
+
 ## 当前源码公开 API 清单
 
-只列当前源码的 public/protected 表面；内部实现不作为稳定 API。参数、返回、失败和 owner 以英文 XML 为准。
+只列当前源码 public/protected 表面；内部机制不是稳定 API，参数、返回、失败及所有权以英文 XML 为准。
 
 ### `Inno.Adapter.Platform.Sdl3.ISdl3ApplicationExtension`
 
@@ -101,6 +105,14 @@ Application/Window 的 SDL handle、event union 和 pointer 都停留在本程�
 | [`uint Inno.Adapter.Platform.Sdl3.Sdl3PlatformWindow.windowId`](../../../backends/Sdl3/runtime/Inno.Adapter.Platform.Sdl3/Api/Sdl3PlatformWindow.cs#L15) | Gets the platform window identifier. |
 | [`void Inno.Adapter.Platform.Sdl3.Sdl3PlatformWindow.Dispose()`](../../../backends/Sdl3/runtime/Inno.Adapter.Platform.Sdl3/Sdl3PlatformWindow.Internal.cs#L132) | Releases the resources owned by this instance. |
 | [`void Inno.Adapter.Platform.Sdl3.Sdl3PlatformWindow.RequestClose()`](../../../backends/Sdl3/runtime/Inno.Adapter.Platform.Sdl3/Sdl3PlatformWindow.Internal.cs#L124) | Queues a close request for processing at the next platform safety point. |
+
+### `Inno.Adapter.Platform.Sdl3.Sdl3WindowOperations`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Adapter.Platform.Sdl3.Sdl3WindowOperations`](../../../backends/Sdl3/runtime/Inno.Adapter.Platform.Sdl3/Api/Sdl3WindowOperations.cs#L10) | Implements shared SDL window operations without selecting a system host or registering windows. |
+| [`static bool Inno.Adapter.Platform.Sdl3.Sdl3WindowOperations.ReadFocus(nint windowHandle)`](../../../backends/Sdl3/runtime/Inno.Adapter.Platform.Sdl3/Api/Sdl3WindowOperations.cs#L75) | Reads native focus without registering the window or changing its input state. |
+| [`static nint Inno.Adapter.Platform.Sdl3.Sdl3WindowOperations.CreateWindow(Inno.Platform.PlatformWindowOptions options, bool requireOpenGl)`](../../../backends/Sdl3/runtime/Inno.Adapter.Platform.Sdl3/Api/Sdl3WindowOperations.cs#L30) | Creates an SDL window and transfers its native destruction responsibility to the caller. |
 
 ## 项目依赖
 

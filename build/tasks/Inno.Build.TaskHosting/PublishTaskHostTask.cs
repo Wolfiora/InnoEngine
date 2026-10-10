@@ -76,20 +76,27 @@ public sealed partial class PublishTaskHostTask : Microsoft.Build.Utilities.Task
                 PathBoundary.RequireUnlinkedPath(Path.Combine(owner, "publishers"), publisher);
                 RegisterProcessOwner(publisher);
             }
-            RuntimeFile[] files = FreezeFiles();
-            string fingerprint = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(
-                string.Join('\n', files.Select(static file => file.relative + "|" + file.hash)))));
+            TaskRuntimePreparation.RuntimeFile[] files = FreezeFiles();
+            string fingerprint = TaskRuntimePreparation.Fingerprint(files);
             string destination = Path.Combine(cache, fingerprint);
-            using (FileLease ownership = FileLease.AcquireAsync(destination + ".lock",
-                Timeout.InfiniteTimeSpan, cancellation).AsTask().GetAwaiter().GetResult())
+            bool prepared = BuildEngine is IBuildEngine4 engine
+                && TaskRuntimeBuildScope.Read(engine, "publication:" + cache + "/" + fingerprint, verifyOutputs: false)
+                    is ITaskItem[] publication
+                && publication.Length == files.Length
+                && publication.Zip(files).All(static pair => pair.First.ItemSpec == pair.Second.source
+                    && pair.First.GetMetadata("RelativePath") == pair.Second.relative
+                    && pair.First.GetMetadata("FileHash") == pair.Second.hash);
+            if (!prepared)
             {
-                ValidateSources(files, cancellation);
-                if (!IsComplete(Path.Combine(destination, "Runtime"), files, cancellation))
-                    PublishCandidate(destination, files, cancellation);
-                ValidateSources(files, cancellation);
-                PublishedAssembly = Path.Combine(destination, "Runtime", "Inno.Build.Tasks.dll");
-                RegisterReader(load, PublishedAssembly);
+                using FileLease ownership = FileLease.AcquireAsync(destination + ".lock",
+                    Timeout.InfiniteTimeSpan, cancellation).AsTask().GetAwaiter().GetResult();
+                TaskRuntimePreparation.ValidateSources(files, cancellation);
+                if (!TaskRuntimePreparation.IsComplete(Path.Combine(destination, "Runtime"), files, cancellation))
+                    TaskRuntimePreparation.PublishCandidate(destination, files, cancellation);
+                TaskRuntimePreparation.ValidateSources(files, cancellation);
             }
+            PublishedAssembly = Path.Combine(destination, "Runtime", "Inno.Build.Tasks.dll");
+            RegisterReader(load, PublishedAssembly);
             RetireReaders(owner, destination);
             Log.LogMessage(MessageImportance.Normal, "INNO-TASK-HOST verified {0}", fingerprint);
             return true;
@@ -119,122 +126,11 @@ public sealed partial class PublishTaskHostTask : Microsoft.Build.Utilities.Task
                 m_cancellation.Cancel();
     }
 
-    private RuntimeFile[] FreezeFiles()
-    {
-        if (InputFiles.Length == 0)
-            throw new InvalidDataException("The task runtime closure is empty.");
-        var paths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        RuntimeFile[] files = InputFiles.Select(item =>
-        {
-            string relative = item.GetMetadata("RelativePath").Replace('\\', '/');
-            string hash = item.GetMetadata("FileHash").ToUpperInvariant();
-            if (relative.Length == 0 || relative.Split('/').Any(static segment => segment is "" or "." or "..")
-                || relative.Contains(':') || !paths.Add(relative)
-                || hash.Length != 64 || hash.Any(static character => !Uri.IsHexDigit(character)))
-                throw new InvalidDataException("A runtime input has an invalid path, hash or duplicate identity.");
-            return new RuntimeFile(RequireAbsolute(item.ItemSpec), relative, hash);
-        }).OrderBy(static file => file.relative, StringComparer.Ordinal).ToArray();
-        if (!paths.Contains("Inno.Build.Tasks.dll"))
-            throw new InvalidDataException("The task runtime closure has no task assembly.");
-        return files;
-    }
-
-    private static string RequireAbsolute(string path)
-    {
-        ArgumentException.ThrowIfNullOrWhiteSpace(path);
-        if (!Path.IsPathFullyQualified(path))
-            throw new ArgumentException("Task host locations must be absolute.", nameof(path));
-        return Path.GetFullPath(path);
-    }
-
-    private static void ValidateSources(
-        IReadOnlyList<RuntimeFile> files,
-        CancellationToken cancellation
-    ) {
-        foreach (RuntimeFile file in files)
-        {
-            cancellation.ThrowIfCancellationRequested();
-            if (Hash(file.source) != file.hash)
-                throw new InvalidDataException($"Task runtime input changed after selection: {file.source}");
-        }
-    }
-
-    private static bool IsComplete(
-        string runtime,
-        IReadOnlyList<RuntimeFile> files,
-        CancellationToken cancellation
-    ) {
-        if (!Directory.Exists(runtime))
-            return false;
-        string[] actual = PathBoundary.EnumerateFiles(runtime)
-            .Select(path => Path.GetRelativePath(runtime, path).Replace('\\', '/')).ToArray();
-        if (!actual.ToHashSet(StringComparer.Ordinal).SetEquals(files.Select(static file => file.relative)))
-            return false;
-        foreach (RuntimeFile file in files)
-        {
-            cancellation.ThrowIfCancellationRequested();
-            if (Hash(PathBoundary.Resolve(runtime, file.relative)) != file.hash)
-                return false;
-        }
-        return true;
-    }
-
-    private static void PublishCandidate(
-        string destination,
-        IReadOnlyList<RuntimeFile> files,
-        CancellationToken cancellation
-    ) {
-        string staging = destination + ".staging-" + Guid.NewGuid().ToString("N");
-        string runtime = Path.Combine(staging, "Runtime");
-        try
-        {
-            foreach (RuntimeFile file in files)
-            {
-                cancellation.ThrowIfCancellationRequested();
-                string output = PathBoundary.Resolve(runtime, file.relative);
-                Directory.CreateDirectory(Path.GetDirectoryName(output)!);
-                File.Copy(file.source, output);
-            }
-            if (!IsComplete(runtime, files, cancellation))
-                throw new InvalidDataException("The copied task runtime did not match its selected closure.");
-            ValidateSources(files, cancellation);
-            cancellation.ThrowIfCancellationRequested();
-            AtomicDirectory.Install(staging, destination);
-        }
-        finally
-        {
-            if (Directory.Exists(staging))
-                Directory.Delete(staging, recursive: true);
-        }
-    }
-
-    private static string Hash(string path)
-    {
-        using FileStream input = File.OpenRead(path);
-        return Convert.ToHexString(SHA256.HashData(input));
-    }
-
+    private TaskRuntimePreparation.RuntimeFile[] FreezeFiles() => TaskRuntimePreparation.FreezeFiles(InputFiles);
+    private static string RequireAbsolute(string path) => TaskRuntimePreparation.RequireAbsolute(path);
     private static void RegisterReader(
         string load,
         string assembly
-    ) {
-        RegisterProcessOwner(load);
-        Directory.CreateDirectory(load);
-        AtomicFile.WriteAllBytes(Path.Combine(load, "source-host.txt"), Encoding.UTF8.GetBytes(assembly));
-    }
-
-    private static void RegisterProcessOwner(string directory)
-    {
-        string operation = Path.GetDirectoryName(directory)!;
-        string owners = Path.Combine(operation, "owners");
-        Directory.CreateDirectory(owners);
-        string process = Environment.ProcessId.ToString(System.Globalization.CultureInfo.InvariantCulture);
-        AtomicFile.WriteAllBytes(Path.Combine(owners, process + ".pid"), Encoding.UTF8.GetBytes(process));
-    }
-
-    private sealed record RuntimeFile(
-        string source,
-        string relative,
-        string hash
-    );
+    ) => TaskRuntimePreparation.RegisterReader(load, assembly);
+    private static void RegisterProcessOwner(string directory) => TaskRuntimePreparation.RegisterProcessOwner(directory);
 }

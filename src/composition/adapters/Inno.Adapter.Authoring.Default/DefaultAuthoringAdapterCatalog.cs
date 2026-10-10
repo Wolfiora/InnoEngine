@@ -31,9 +31,6 @@ public sealed class DefaultAuthoringAdapterCatalog :
     /// <param name="options">
     /// The host's explicit runtime service configuration.
     /// </param>
-    /// <param name="renderingProviders">
-    /// Complete runtime rendering registrations, or null for bundled BGFX.
-    /// </param>
     /// <param name="authoringProviders">
     /// Complete matching authoring registrations with explicit product compilation targets.
     /// </param>
@@ -46,11 +43,10 @@ public sealed class DefaultAuthoringAdapterCatalog :
     public DefaultAuthoringAdapterCatalog(
         DefaultAdapterCatalogOptions options,
         IEnumerable<RenderingAuthoringBackendProvider> authoringProviders,
-        IEnumerable<PresentationBackendProvider> presentationProviders,
-        IEnumerable<RenderingBackendProvider>? renderingProviders = null
+        IEnumerable<PresentationBackendProvider> presentationProviders
     ) {
         ArgumentNullException.ThrowIfNull(authoringProviders);
-        m_runtime = new DefaultAdapterCatalog(options, renderingProviders);
+        m_runtime = new DefaultAdapterCatalog(options);
         ArgumentNullException.ThrowIfNull(presentationProviders);
         m_presentation = new PresentationBackendCatalog(presentationProviders);
         m_renderingAuthoring = new RenderingAuthoringBackendCatalog(

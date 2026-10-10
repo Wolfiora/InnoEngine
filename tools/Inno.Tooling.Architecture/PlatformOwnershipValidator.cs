@@ -70,6 +70,24 @@ internal static class PlatformOwnershipValidator
         string[] segments = relative.Split('/');
         bool platformBase = relative.StartsWith("platforms/", StringComparison.Ordinal)
             && segments.Length > 2 && segments[2] is "build" or "runtime";
+        bool runtimeIntegration = relative.Contains("/integrations/", StringComparison.Ordinal)
+            && relative.Contains(".Bgfx.Runtime/", StringComparison.Ordinal);
+        if (runtimeIntegration && (dependency.Contains("/build/", StringComparison.Ordinal)
+            || dependency.StartsWith("build/", StringComparison.Ordinal)
+            || dependency.Contains("/Inno.Native.Bgfx/", StringComparison.Ordinal)
+            || dependency.StartsWith("platforms/", StringComparison.Ordinal)
+                && dependency.Contains("/integrations/", StringComparison.Ordinal)
+                && dependency.Contains(".Bgfx/", StringComparison.Ordinal)))
+            failures.Add($"{relative}: runtime surface integrations cannot depend on build tools or native BGFX {dependency}.");
+        if (platformBase && dependency.StartsWith("build/bindings/", StringComparison.Ordinal))
+            failures.Add($"{relative}: platform modules must borrow the neutral binding generator contract {dependency}.");
+        if (relative.StartsWith("build/toolchains/", StringComparison.Ordinal)
+            && (dependency.StartsWith("build/bindings/", StringComparison.Ordinal)
+                || dependency.StartsWith("build/tasks/", StringComparison.Ordinal)))
+            failures.Add($"{relative}: neutral toolchains cannot depend on a generator implementation or MSBuild tasks {dependency}.");
+        if (relative.StartsWith("build/bindings/", StringComparison.Ordinal)
+            && dependency.StartsWith("build/tasks/", StringComparison.Ordinal))
+            failures.Add($"{relative}: binding generation cannot depend on MSBuild tasks {dependency}.");
         if (platformBase && dependency.StartsWith("backends/", StringComparison.Ordinal))
             failures.Add($"{relative}: platform base modules cannot select backend implementations {dependency}.");
         if (platformBase && dependency.Contains("/integrations/", StringComparison.Ordinal))

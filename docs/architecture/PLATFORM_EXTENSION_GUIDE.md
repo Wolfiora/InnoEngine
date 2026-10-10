@@ -151,3 +151,61 @@ backend 不引用 `Inno.Platform.NS`。它只消费领域 SPI 和所属 Native f
 新增 WindowsX86：补 Windows 的目标/SDK/ABI 支持，复用 Windows 产品与 packager，增加真实 BGFX/SDL 接入配置后验收并注册。换图形 backend：增加该 backend 与需要的 integration，替换 compiler/Native plan，平台 packager 不改。NS/iOS：真实 SDK、产品入口与 packaging 归平台包，backend 可复用时直接选择，仅实际差异进入 integration。Browser 换托管运行时只换部署 compiler 和 linker。
 
 Native 步骤显式声明 Static/Shared、有序组件参数和输入 bytes；SDL 应用统一窗口 owner/surface；ImGui 在 NewFrame 前刷新尺度，不维护 WindowsX64 返回 ABI。完整树与测试见[当前批准计划](BACKEND_PLATFORM_INTEGRATION_PLAN.md)，实机状态见[验收](BACKEND_PLATFORM_INTEGRATION_ACCEPTANCE.md)。
+
+## 运行 surface 与构建 integration 分离
+
+新增实际平台时，运行接入放在 Inno.Integration.<Platform>.Bgfx.Runtime，实现 IBgfxSurfaceIntegration 并在产品 rendering factory 注入；Native/Shader 配置留在已有 build integration。SDL 复用 Sdl3WindowOperations，只实现 SDK hints、surface 和焦点差异。没有真实差异不建空 integration。关闭附加窗口必须等待渲染退休。新 renderer 只替换 rendering factory、内容 compiler 与 Native plan，不修改 platform packager。
+
+### 当前 Windows 的实际组合
+
+```text
+platforms/Windows/
+├─ integrations/
+│  ├─ Inno.Integration.Windows.Sdl3/
+│  │  └─ WindowsSdl3HostIntegration.cs
+│  ├─ Inno.Integration.Windows.Bgfx.Runtime/
+│  │  └─ WindowsBgfxSurfaceIntegration.cs
+│  └─ Inno.Integration.Windows.Bgfx/
+│     ├─ WindowsBgfxIntegration.cs
+│     ├─ WindowsBgfxBuildProfile.cs
+│     └─ WindowsBgfxShaderProfiles.cs
+├─ editor/Inno.Editor.Windows/
+│  └─ WindowsEditorComposition.cs
+└─ player/Inno.Player.Windows/
+   └─ WindowsPlayerComposition.cs
+
+backends/
+├─ Sdl3/runtime/Inno.Adapter.Platform.Sdl3/
+│  └─ Api/Sdl3WindowOperations.cs
+└─ Bgfx/runtime/Inno.Adapter.Rendering.Bgfx/
+   └─ Surfaces/
+      ├─ IBgfxSurfaceIntegration.cs
+      └─ BgfxSurfaceDescriptor.cs
+```
+
+Windows、macOS、Browser 分别在自己的产品入口注入对应的 surface integration。
+运行期 Player 只需要运行集成；Shader、Native 编译配置由构建集成提供给发行组合。
+下面使用当前公开契约展示 Windows 的两个 factory；它们仍需要与 storage factory 一起传入完整的 Catalog options。
+
+```csharp
+using Inno.Adapter.Platform;
+using Inno.Adapter.Platform.Sdl3;
+using Inno.Adapter.Rendering;
+using Inno.Adapter.Rendering.Bgfx;
+using Inno.Integration.Windows.Bgfx.Runtime;
+using Inno.Integration.Windows.Sdl3;
+
+var platform = new PlatformBackendCatalog(
+    [new Sdl3PlatformBackendProvider(new WindowsSdl3HostIntegration())]);
+var rendering = new RenderingBackendCatalog(
+    [new BgfxRenderingBackendProvider(new WindowsBgfxSurfaceIntegration())]);
+```
+
+新平台若确实使用 SDL 与 BGFX，就实现对应的 `ISdl3HostIntegration` 和 `IBgfxSurfaceIntegration`，
+然后在产品入口以同样方式注入。共同 `BgfxDevice` 不添加平台名称、ABI 白名单或 Browser 分支。
+新图形 backend 实现自己的 `IRenderingBackendFactory`，只在需要系统连接代码时增加所属 integration；
+它不需要实现 BGFX 的 SPI，也不需要修改平台 packager。
+
+每个 surface descriptor 借用窗口 owner 的 handle。附加窗口关闭时，先移除输入和 callback 路由，
+再等待 renderer 的退休 Task，最后由原窗口 owner 销毁原生窗口。任务完成表达命令处理完成，不能当作通用 GPU fence。
+本轮实际证据和未实测项目见[运行边界验收](BACKEND_RUNTIME_BOUNDARY_OPTIMIZATION_ACCEPTANCE.md)。

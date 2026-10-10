@@ -21,17 +21,9 @@ public sealed class MacOSSdl3HostIntegration : ISdl3HostIntegration
     }
 
     /// <inheritdoc />
-    public unsafe nint CreateWindow(PlatformWindowOptions options)
+    public nint CreateWindow(PlatformWindowOptions options)
     {
-        SDLWindowFlags flags = options.highPixelDensity ? SDLWindowFlags.HighPixelDensity : 0;
-        if (!options.visible)
-            flags |= SDLWindowFlags.Hidden;
-        if (options.resizable)
-            flags |= SDLWindowFlags.Resizable;
-        SDLWindow window = SDL.CreateWindow(options.title, options.width, options.height, flags);
-        if (window.IsNull)
-            throw new InvalidOperationException(SDL.GetError() ?? "SDL window creation failed.");
-        return (nint)window.Handle;
+        return Sdl3WindowOperations.CreateWindow(options, requireOpenGl: false);
     }
 
     /// <inheritdoc />
@@ -50,8 +42,6 @@ public sealed class MacOSSdl3HostIntegration : ISdl3HostIntegration
     /// <inheritdoc />
     public bool GetInitialFocus(nint windowHandle)
     {
-        if (windowHandle == 0)
-            throw new ArgumentException("A live SDL window is required.", nameof(windowHandle));
-        return (SDL.GetWindowFlags(new SDLWindow(windowHandle)) & SDLWindowFlags.InputFocus) != 0;
+        return Sdl3WindowOperations.ReadFocus(windowHandle);
     }
 }

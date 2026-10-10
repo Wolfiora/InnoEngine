@@ -29,9 +29,13 @@ static BuildDistribution CreateStandard(BuildCompositionContext context)
 
 `StandardBuildEnvironment.Capture` 只记录实际执行宿主；调用者必须明确提供 tools target。新增平台注册位置只有这里，领域服务和共享 Editor 不修改。注册不等于 SDK 已存在或设备验收已通过。
 
+## 绑定生成实现
+
+StandardBuildEnvironment 创建 NativeBindingGenerator，StandardBuildDistribution 通过中立 composition 传递。内置产品 Native 计划仍在此唯一声明；平台模块、Task 和 CLI 不维护另一份 backend/生成列表。
+
 ## 当前源码公开 API 清单
 
-只列当前源码的 public/protected 表面；内部实现不作为稳定 API。参数、返回、失败和 owner 以英文 XML 为准。
+只列当前源码 public/protected 表面；内部机制不是稳定 API，参数、返回、失败及所有权以英文 XML 为准。
 
 ### `Inno.Build.Distribution.Standard.StandardBuildDistribution`
 
@@ -46,8 +50,8 @@ static BuildDistribution CreateStandard(BuildCompositionContext context)
 
 | 当前声明 | 行为 |
 | --- | --- |
-| [`Inno.Build.Distribution.Standard.StandardBuildEnvironment`](../../build/distributions/Inno.Build.Distribution.Standard/StandardBuildEnvironment.cs#L12) | Captures the actual machine running distribution tools without choosing an output target. |
-| [`static Inno.Build.Composition.BuildCompositionContext Inno.Build.Distribution.Standard.StandardBuildEnvironment.Capture(string applicationDirectory, Inno.Build.BuildTargetId toolsTarget)`](../../build/distributions/Inno.Build.Distribution.Standard/StandardBuildEnvironment.cs#L32) | Resolves the selected managed host and captures execution capabilities at the composition boundary. |
+| [`Inno.Build.Distribution.Standard.StandardBuildEnvironment`](../../build/distributions/Inno.Build.Distribution.Standard/StandardBuildEnvironment.cs#L13) | Captures the actual machine running distribution tools without choosing an output target. |
+| [`static Inno.Build.Composition.BuildCompositionContext Inno.Build.Distribution.Standard.StandardBuildEnvironment.Capture(string applicationDirectory, Inno.Build.BuildTargetId toolsTarget)`](../../build/distributions/Inno.Build.Distribution.Standard/StandardBuildEnvironment.cs#L33) | Resolves the selected managed host and captures execution capabilities at the composition boundary. |
 
 ### `Inno.Build.Distribution.Standard.StandardNativeBuildPlans`
 
@@ -61,6 +65,7 @@ static BuildDistribution CreateStandard(BuildCompositionContext context)
 
 ## 项目依赖
 
+- [Inno.Build.Bindings](Inno.Build.Bindings.md)：实现依赖，PrivateAssets="compile"。
 - [Inno.Integration.Windows.Bgfx](../platform/Windows/Inno.Integration.Windows.Bgfx.md)：实现依赖，PrivateAssets="compile"。
 - [Inno.Integration.MacOS.Bgfx](../platform/MacOS/Inno.Integration.MacOS.Bgfx.md)：实现依赖，PrivateAssets="compile"。
 - [Inno.Integration.Browser.Bgfx](../platform/Browser/Inno.Integration.Browser.Bgfx.md)：实现依赖，PrivateAssets="compile"。

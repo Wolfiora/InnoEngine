@@ -1,3 +1,6 @@
+using Inno.Adapter.Rendering;
+using Inno.Adapter.Rendering.Bgfx;
+using Inno.Integration.Windows.Bgfx.Runtime;
 using Inno.Adapter.Presentation.ImGui;
 using Inno.Integration.Windows.Bgfx;
 using Inno.Adapter.Platform;
@@ -42,6 +45,7 @@ internal static class WindowsEditorComposition
             var adapters = new DefaultAuthoringAdapterCatalog(new DefaultAdapterCatalogOptions
             {
                 platform = new PlatformBackendCatalog([new Sdl3PlatformBackendProvider(new WindowsSdl3HostIntegration())]),
+                rendering = new RenderingBackendCatalog([new BgfxRenderingBackendProvider(new WindowsBgfxSurfaceIntegration())]),
                 storage = new StorageBackendCatalog([new FileSystemStorageBackendProvider(persistentRoot)])
             }, [new BgfxAuthoringProvider(WindowsBgfxIntegration.shaderProfile)],
                 [new ImGuiPresentationProvider(new ImGuiInteractionOptions(commandKeyBehavior: false, horizontalWheelDirection: 1))]);

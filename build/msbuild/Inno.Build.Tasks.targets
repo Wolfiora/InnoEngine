@@ -9,8 +9,8 @@
     <InnoTaskHostAssembly>$(InnoTaskLoadDirectory)/Inno.Build.Tasks.dll</InnoTaskHostAssembly>
     <InnoTaskPublisherDirectory>$(InnoTaskArtifacts)/publishers/$(InnoTaskLoadId)/$(Configuration)</InnoTaskPublisherDirectory>
     <InnoTaskPublisherAssembly>$(InnoTaskPublisherDirectory)/Inno.Build.TaskHosting.dll</InnoTaskPublisherAssembly>
-    <InnoTaskHostProperties>Configuration=$(Configuration);BindGenRoot=$(BindGenRoot);BuildProjectReferences=true</InnoTaskHostProperties>
-    <InnoTaskExcludedProperties>InnoProductId;InnoProductTarget;InnoProductBuildProperties;InnoBgfxShaderTarget;InnoBgfxShaderApis;InnoImGuiShaderTarget;InnoImGuiShaderApis;InnoProductRestore;InnoToolTarget;InnoPrepareProductNative;InnoNativeTarget;InnoNativeBuildFingerprint;InnoNativeBindingSelection;RuntimeIdentifier;RuntimeIdentifiers;TargetFramework;TargetFrameworks;BindGenProfile;BindGenTargetOutputRoot;BindGenConfig;BindGenOutputDirectory;BindGenGeneratedSource;BindGenGenerationFingerprint;BindGenNativeBridgeDirectory;BindGenDescriptorOutput;BindGenExpectedFingerprint;DebugType;DebugSymbols;DefineConstants;PublishAot;RunAOTCompilation;PublishTrimmed;SelfContained;PublishSingleFile;PublishDir;WasmBuildNative;InnoGeneratePlayerComposition;ArtifactsPivots;UseArtifactsOutput;MSBuildProjectExtensionsPath;BaseOutputPath;BaseIntermediateOutputPath;OutputPath;IntermediateOutputPath;BuildingInsideVisualStudio;BuildingSolutionFile;CurrentSolutionConfigurationContents;DesignTimeBuild;IsCrossTargetingBuild</InnoTaskExcludedProperties>
+    <InnoTaskHostProperties>Configuration=$(Configuration);BindGenRoot=$([System.IO.Path]::GetFullPath('$(BindGenRoot)'));BuildProjectReferences=true</InnoTaskHostProperties>
+    <InnoTaskExcludedProperties>InnoProductId;InnoProductTarget;InnoProductBuildProperties;InnoBgfxShaderTarget;InnoBgfxShaderApis;InnoImGuiShaderTarget;InnoImGuiShaderApis;InnoProductRestore;InnoToolTarget;InnoPrepareProductNative;InnoNativeTarget;InnoNativeBuildFingerprint;InnoNativeBindingSelection;InnoNativeLibraryKind;RuntimeIdentifier;RuntimeIdentifiers;TargetFramework;TargetFrameworks;InnoBindingEngineRoot;InnoBindingDefinition;InnoBindingTargetId;InnoBindingOutputMode;InnoBindingDotnetHost;BindGenOutputDirectory;BindGenGeneratedSource;BindGenGenerationFingerprint;BindGenNativeBridgeDirectory;BindGenDescriptorOutput;BindGenExpectedFingerprint;DebugType;DebugSymbols;DefineConstants;PublishAot;RunAOTCompilation;PublishTrimmed;SelfContained;PublishSingleFile;PublishDir;WasmBuildNative;InnoGeneratePlayerComposition;ArtifactsPivots;UseArtifactsOutput;MSBuildProjectExtensionsPath;BaseOutputPath;BaseIntermediateOutputPath;OutputPath;IntermediateOutputPath;BuildingInsideVisualStudio;BuildingSolutionFile;CurrentSolutionConfigurationContents;DesignTimeBuild;IsCrossTargetingBuild</InnoTaskExcludedProperties>
   </PropertyGroup>
 
   <UsingTask TaskName="Inno.Build.Tasks.GenerateBindingsTask" AssemblyFile="$(InnoTaskHostAssembly)" />
@@ -19,6 +19,7 @@
   <UsingTask TaskName="Inno.Build.Tasks.PrepareProductNativeTask" AssemblyFile="$(InnoTaskHostAssembly)" />
   <UsingTask TaskName="Inno.Build.TaskHosting.PublishTaskHostTask" AssemblyFile="$(InnoTaskPublisherAssembly)" />
   <UsingTask TaskName="Inno.Build.TaskHosting.BuildTaskRuntimeTask" AssemblyFile="$(InnoTaskPublisherAssembly)" />
+  <UsingTask TaskName="Inno.Build.TaskHosting.RestoreOwnedProjectTask" AssemblyFile="$(InnoTaskPublisherAssembly)" />
 
   <Target Name="PrepareInnoTaskPublisher" Condition="'$(DesignTimeBuild)' != 'true'">
     <MSBuild Projects="$(InnoTaskPublisherProject)" Targets="Restore;PublishInnoTaskPublisherBootstrap"
@@ -44,6 +45,7 @@
     <Inno.Build.TaskHosting.BuildTaskRuntimeTask
       ProjectFile="$([System.IO.Path]::GetFullPath('$(InnoTaskProject)'))"
       ArtifactsDirectory="$([System.IO.Path]::GetFullPath('$(InnoTaskArtifacts)/bootstrap'))"
+      LoadDirectory="$([System.IO.Path]::GetFullPath('$(InnoTaskLoadDirectory)'))"
       Targets="Restore;PublishInnoBuildTaskHost"
       Properties="$(InnoTaskHostProperties)"
       RemoveProperties="$(InnoTaskExcludedProperties)">

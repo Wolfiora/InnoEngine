@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -7,6 +8,7 @@ using System.Threading.Tasks;
 using System.Xml.Linq;
 
 using Inno.Build.Tasks;
+using Inno.Build.Toolchains;
 using Xunit;
 
 namespace Inno.Build.Tests;
@@ -31,20 +33,32 @@ public sealed class NativeBindingCompilationTests
                 SingleFileOutputName = "Bindings.cs"
             }));
             string engine = FindEngine();
+            File.WriteAllText(Path.Combine(root, "InnoEngine.sln"), string.Empty);
+            string definition = Path.Combine(root, "bindings.props");
+            new XDocument(new XElement("Project",
+                new XElement("PropertyGroup", new XElement("InnoBindingHostConfig", "bindgen.json")),
+                new XElement("ItemGroup", new XElement("InnoBindingTarget", new XAttribute("Include", "fixture-target"),
+                    new XElement("Config", "bindgen.json")))))
+                .Save(definition);
             string sources = Path.Combine(root, "compile-sources.txt");
             string project = Path.Combine(root, "Fixture.csproj");
             new XDocument(new XElement("Project", new XAttribute("Sdk", "Microsoft.NET.Sdk"),
+                new XElement("Import", new XAttribute("Project", "$(InnoNativeBindingSelection)"),
+                    new XAttribute("Condition", "'$(InnoNativeBindingSelection)' != '' and Exists('$(InnoNativeBindingSelection)')")),
                 new XElement("PropertyGroup",
                     new XElement("TargetFramework", "net9.0"),
                     new XElement("AllowUnsafeBlocks", "true"),
                     new XElement("ImplicitUsings", "disable"),
+                    new XElement("EnableDefaultCompileItems", "false"),
                     new XElement("Nullable", "enable"),
                     new XElement("IsTestProject", "true"),
                     new XElement("BindGenGeneratedBindings", "true"),
-                    new XElement("BindGenProfile", "fixture-target"),
-                    new XElement("BindGenConfig", config),
+                    new XElement("InnoBindingTargetId", "fixture-target"),
+                    new XElement("InnoBindingEngineRoot", root),
+                    new XElement("InnoBindingDefinition", definition),
                     new XElement("BindGenRoot", Path.Combine(engine, "..", "BindGen-CS")),
-                    new XElement("BindGenTargetOutputRoot", Path.Combine(root, "obj", "fixture-target"))),
+                    new XElement("InnoBindingOutputMode", "TargetArtifacts")),
+                new XElement("Import", new XAttribute("Project", definition)),
                 new XElement("Import", new XAttribute("Project", Path.Combine(engine, "Directory.Build.targets"))),
                 new XElement("ItemGroup", new XElement("Reference", new XAttribute("Include", "BGCS.Runtime"),
                     new XElement("HintPath", typeof(BGCS.Runtime.FunctionTable).Assembly.Location))),
@@ -63,6 +77,46 @@ public sealed class NativeBindingCompilationTests
             Assert.True(File.Exists(selected), output);
             Assert.True(File.Exists(Path.Combine(root, "bin", "Release", "net9.0", "Fixture.dll")), output);
 
+            string selection = Path.Combine(root, "SelectedBindings.props");
+            NativeBindingGenerationDescriptor.WriteSelection(selection,
+                new Dictionary<string, NativeBindingGenerationDescriptor>
+                {
+                    [project] = new()
+                    {
+                        fingerprint = Directory.GetParent(Path.GetDirectoryName(selected)!)!.Name,
+                        bindingsPath = selected,
+                        bridgeDirectory = string.Empty
+                    }
+                }, new Dictionary<string, NativeLibraryKind> { [project] = NativeLibraryKind.Shared });
+            (int reused, string reuseOutput) = await Build(project, ["-p:InnoNativeBindingSelection=" + selection]);
+            Assert.True(reused == 0, reuseOutput);
+            Assert.Equal(selected, Assert.Single(File.ReadAllLines(sources)
+                .Where(static path => Path.GetFileName(path) == "Bindings.cs")));
+            Assert.DoesNotContain("INNO-TASK-RUNTIME", reuseOutput);
+
+            string staticSelection = Path.Combine(root, "StaticBindings.props");
+            NativeBindingGenerationDescriptor.WriteSelection(staticSelection,
+                new Dictionary<string, NativeBindingGenerationDescriptor>
+                {
+                    [project] = new()
+                    {
+                        fingerprint = Directory.GetParent(Path.GetDirectoryName(selected)!)!.Name,
+                        bindingsPath = selected,
+                        bridgeDirectory = string.Empty
+                    }
+                }, new Dictionary<string, NativeLibraryKind> { [project] = NativeLibraryKind.Static });
+            string bootstrap = Path.Combine(root, "Bootstrap.cs");
+            File.WriteAllText(bootstrap, "#if !INNO_STATIC_NATIVE\n#error The selected static component must omit dynamic initialization.\n#endif");
+            XDocument staticProject = XDocument.Load(project);
+            staticProject.Root!.Add(new XElement("ItemGroup", new XElement("Compile", new XAttribute("Include", bootstrap))));
+            staticProject.Save(project);
+            (int staticExit, string staticOutput) = await Build(project, ["-p:InnoNativeBindingSelection=" + staticSelection]);
+            Assert.True(staticExit == 0, staticOutput);
+            staticProject.Root!.Elements("ItemGroup").Last().Remove();
+            staticProject.Save(project);
+
+            await VerifyTransitiveSelection(root, engine, project, selection, sources, selected);
+
             (int rejected, string failure) = await Build(project,
                 ["-p:InnoNativeBindingSelection=" + Path.Combine(root, "absent-selection.props")]);
             Assert.NotEqual(0, rejected);
@@ -73,6 +127,41 @@ public sealed class NativeBindingCompilationTests
             if (Directory.Exists(root))
                 Directory.Delete(root, recursive: true);
         }
+    }
+
+    private static async Task VerifyTransitiveSelection(
+        string root,
+        string engine,
+        string nativeProject,
+        string selection,
+        string sources,
+        string selected
+    ) {
+        string middle = Path.Combine(root, "Consumers", "Middle", "Middle.csproj");
+        string host = Path.Combine(root, "Consumers", "Host", "Host.csproj");
+        foreach (var entry in new[] { (path: middle, reference: nativeProject), (path: host, reference: middle) })
+        {
+            Directory.CreateDirectory(Path.GetDirectoryName(entry.path)!);
+            var document = new XElement("Project", new XAttribute("Sdk", "Microsoft.NET.Sdk"),
+                new XElement("PropertyGroup", new XElement("TargetFramework", "net9.0"),
+                    new XElement("IsTestProject", "true"), new XElement("EnableDefaultCompileItems", "false"),
+                    new XElement("InnoProductReferenceProperties", "FixtureDeclared=true")),
+                new XElement("Import", new XAttribute("Project", Path.Combine(engine, "Directory.Build.targets"))),
+                new XElement("ItemGroup", new XElement("ProjectReference", new XAttribute("Include", entry.reference))));
+            if (entry.path == host)
+                document.Add(new XElement("Target", new XAttribute("Name", "SelectOperationBindings"),
+                    new XAttribute("BeforeTargets", "AssignProjectConfiguration"),
+                    new XElement("PropertyGroup", new XElement("InnoNativeBindingSelection", selection)),
+                    new XElement("ItemGroup", new XElement("ProjectReference",
+                        new XElement("AdditionalProperties", "InnoNativeBindingSelection=$(InnoNativeBindingSelection)")))));
+            new XDocument(document).Save(entry.path);
+        }
+        (int exit, string output) = await Build(host, []);
+        Assert.True(exit == 0, output);
+        Assert.DoesNotContain("INNO-BINDINGS-PREPARE", output);
+        Assert.DoesNotContain("INNO-TASK-RUNTIME", output);
+        Assert.Equal(selected, Assert.Single(File.ReadAllLines(sources)
+            .Where(static path => Path.GetFileName(path) == "Bindings.cs")));
     }
 
     private static string FindEngine()

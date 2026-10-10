@@ -18,12 +18,11 @@ Windows Editor 的薄产品入口。选择明确运行目标、共享 backend �
 
 ## 当前源码公开 API 清单
 
-只列当前源码的 public/protected 表面；内部实现不作为稳定 API。参数、返回、失败和 owner 以英文 XML 为准。
-
-本项目没有公开入口，通过组合或扩展发现使用内部实现。
+只列当前源码 public/protected 表面；内部机制不是稳定 API，参数、返回、失败及所有权以英文 XML 为准。
 
 ## 项目依赖
 
+- [Inno.Integration.Windows.Bgfx.Runtime](Inno.Integration.Windows.Bgfx.Runtime.md)：实现依赖，PrivateAssets="compile"。
 - [Inno.Integration.Windows.Sdl3](Inno.Integration.Windows.Sdl3.md)：实现依赖，PrivateAssets="compile"。
 - [Inno.Integration.Windows.Bgfx](Inno.Integration.Windows.Bgfx.md)：实现依赖，PrivateAssets="compile"。
 - [Inno.Adapter.Presentation.ImGui.Bgfx](../../backends/ImGui/Inno.Adapter.Presentation.ImGui.Bgfx.md)：实现依赖，PrivateAssets="compile"。

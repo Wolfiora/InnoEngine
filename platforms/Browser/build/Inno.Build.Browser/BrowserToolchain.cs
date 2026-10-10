@@ -5,7 +5,6 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Xml.Linq;
 using Inno.Build.Toolchains;
 
 namespace Inno.Build.Browser;
@@ -95,7 +94,9 @@ public static class BrowserToolchain
                 string intermediate = scoped.GetNativeBuildRoot(componentDescriptor);
                 Directory.CreateDirectory(intermediate);
                 string selection = Path.Combine(intermediate, "Components.cmake");
-                WriteComponentSelection(selection, scoped.engineRoot, plan, generations);
+                NativeCMakeSource sources = await NativeCMakeExecutor.PrepareSourceAsync(
+                    scoped, componentDescriptor, token).ConfigureAwait(false);
+                WriteComponentSelection(selection, scoped.engineRoot, sources, plan, generations);
                 string build = await NativeCMakeExecutor.BuildAsync(scoped, componentDescriptor,
                     Path.Combine(owner, "Native"), null,
                     ["-DINNO_COMPONENT_SELECTION=" + selection, "-DCMAKE_INSTALL_PREFIX=" + output,
@@ -104,7 +105,9 @@ public static class BrowserToolchain
                     ["--install", build, "--component", "Inno"], scoped.engineRoot, token,
                     tools.environment).ConfigureAwait(false);
                 ValidateNativeOutputs(output, tools.targetId, plan);
-                WriteBindingSelection(Path.Combine(output, "Metadata", "BindingSelection.props"), plan, generations);
+                NativeBindingGenerationDescriptor.WriteSelection(Path.Combine(output, "Metadata", "BindingSelection.props"), generations,
+                    plan.steps.Where(step => generations.ContainsKey(step.component.nativeProject))
+                        .ToDictionary(static step => step.component.nativeProject, static step => step.options.libraryKind, StringComparer.Ordinal));
             }, cancellationToken).ConfigureAwait(false);
         return new BrowserNativeArtifacts(product.fingerprint, Path.Combine(product.directory, "Outputs"));
     }
@@ -112,6 +115,7 @@ public static class BrowserToolchain
     private static void WriteComponentSelection(
         string path,
         string engineRoot,
+        NativeCMakeSource sources,
         ProductNativeBuildPlan plan,
         IReadOnlyDictionary<string, NativeBindingGenerationDescriptor> generations
     ) {
@@ -124,30 +128,20 @@ public static class BrowserToolchain
             text.AppendLine("set(INNO_LIBRARY_KIND STATIC)");
             foreach (string argument in step.options.cmakeArguments)
             {
-                int separator = argument.IndexOf('=');
-                string name = argument[2..separator].Split(':')[0];
-                text.AppendLine("set(" + name + " " + CMakeLiteral(argument[(separator + 1)..]) + ")");
+                string definition = sources.ResolveDefinition(argument);
+                int separator = definition.IndexOf('=');
+                string name = definition[2..separator].Split(':')[0];
+                text.AppendLine("set(" + name + " " + CMakeLiteral(definition[(separator + 1)..]) + ")");
             }
             text.AppendLine("set(INNO_COMPONENT_ID " + CMakeLiteral(step.id) + ")");
-            text.AppendLine("set(INNO_COMPONENT_NATIVE " + CMakeLiteral(step.component.GetNativeRoot(engineRoot)) + ")");
-            text.AppendLine("set(INNO_COMPONENT_BRIDGE " + CMakeLiteral(generations[step.component.nativeProject].bridgeDirectory) + ")");
-            text.AppendLine("include(" + CMakeLiteral(Path.GetFullPath(step.component.staticBuild!.cmakeFile, engineRoot)) + ")");
+            text.AppendLine("set(INNO_COMPONENT_NATIVE " + CMakeLiteral(sources.ResolvePath(step.component.GetNativeRoot(engineRoot))) + ")");
+            string bridge = generations[step.component.nativeProject].bridgeDirectory;
+            text.AppendLine("set(INNO_COMPONENT_BRIDGE " + CMakeLiteral(bridge.Length == 0 ? string.Empty : sources.ResolvePath(bridge)) + ")");
+            text.AppendLine("include(" + CMakeLiteral(sources.ResolvePath(Path.GetFullPath(step.component.staticBuild!.cmakeFile, engineRoot))) + ")");
             text.AppendLine("endfunction()");
             text.AppendLine(scope + "()");
         }
         File.WriteAllText(path, text.ToString());
-    }
-
-    private static void WriteBindingSelection(
-        string path,
-        ProductNativeBuildPlan plan,
-        IReadOnlyDictionary<string, NativeBindingGenerationDescriptor> generations
-    ) {
-        Directory.CreateDirectory(Path.GetDirectoryName(path)!);
-        new XDocument(new XElement("Project", plan.steps.Select(step => new XElement("PropertyGroup",
-            new XAttribute("Condition", "'$(MSBuildProjectName)' == '" + Path.GetFileNameWithoutExtension(step.component.nativeProject) + "'"),
-            new XElement("BindGenExpectedFingerprint", generations[step.component.nativeProject].fingerprint)))))
-            .Save(path);
     }
 
     private static void ValidateNativeOutputs(

@@ -24,6 +24,12 @@ public sealed class BgfxDeviceOptions
     public IPlatformWindow? window { get; set; }
 
     /// <summary>
+    /// Gets or sets the borrowed immutable surface integration, required for a windowed device.
+    /// A windowless device may omit it and cannot create additional windows without one.
+    /// </summary>
+    public IBgfxSurfaceIntegration? surfaceIntegration { get; set; }
+
+    /// <summary>
     /// Gets or sets the initial backbuffer width in physical pixels when no window supplies one.
     /// </summary>
     public int backbufferWidth

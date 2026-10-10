@@ -128,6 +128,7 @@ public sealed class CompileShaderTask : BuildTask, ICancelableTask
     ) {
         NativeBuildContext context = new(EngineRoot, Configuration.ToLowerInvariant());
         var execution = StandardBuildEnvironment.Capture(AppContext.BaseDirectory, new BuildTargetId(ToolTarget));
+        context = context.WithBindingGenerator(execution.bindingGenerator);
         string cacheKey = "Inno.Build.ShaderTools|" + context.engineRoot + "|" + context.configuration + "|" + ToolTarget;
         IBuildEngine4 engine = BuildEngine as IBuildEngine4
             ?? throw new InvalidOperationException("Offline tool preparation requires MSBuild's build-lifetime task ownership.");
@@ -148,7 +149,7 @@ public sealed class CompileShaderTask : BuildTask, ICancelableTask
                 .BuildAsync(context, cancellationToken).GetAwaiter().GetResult().Single();
             record = [product.directory, product.fingerprint, .. product.files];
             engine.RegisterTaskObject(cacheKey, record, RegisteredTaskObjectLifetime.Build, allowEarlyCollection: false);
-            Log.LogMessage(MessageImportance.Normal,
+            Log.LogMessage(MessageImportance.High,
                 "INNO-SHADER-TOOLS prepared {0}; hashedFiles={1}; hashedBytes={2}; nativeProcesses={3}",
                 product.fingerprint, context.statistics.hashedFiles, context.statistics.hashedBytes,
                 context.statistics.nativeProcesses);

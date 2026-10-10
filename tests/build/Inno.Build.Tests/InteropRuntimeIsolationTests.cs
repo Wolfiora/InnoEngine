@@ -41,12 +41,15 @@ public sealed class InteropRuntimeIsolationTests
         try
         {
             Assert.False(File.Exists(Path.Combine(restore, "project.assets.json")));
-            await ToolchainEnvironment.RunAsync(host,
+            using StringWriter output = new();
+            using StringWriter error = new();
+            Exception? failure = await Record.ExceptionAsync(() => ToolchainEnvironment.RunAsync(host,
                 ["build", project, "-m:1", "-nodeReuse:false", "--disable-build-servers",
                     "-p:UseSharedCompilation=false", "-p:RestoreUseStaticGraphEvaluation=false",
                     "-p:InnoInteropRuntimeRestore=" + restore, "-p:DebugType=None", "-p:DebugSymbols=false",
                     "-p:InnoNativeBuildFingerprint=" + Path.GetFileName(fixture)],
-                fixture, CancellationToken.None, environment);
+                fixture, CancellationToken.None, environment, output, error));
+            Assert.True(failure is null, output.ToString() + error.ToString() + failure);
             Assert.True(File.Exists(Path.Combine(restore, "project.assets.json")));
             Assert.True(File.Exists(Path.Combine(fixture, "bin", "Debug", "net9.0", "Consumer.dll")));
         }

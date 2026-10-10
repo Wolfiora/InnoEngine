@@ -8,6 +8,7 @@
     <WarningsAsErrors>$(WarningsAsErrors);CS1572;CS1573;CS1591</WarningsAsErrors>
   </PropertyGroup>
   <ItemGroup>
+    <ProjectReference Include="../../../../src/foundation/core/Inno.Core.Execution/Inno.Core.Execution.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../native/Inno.Native.Bgfx/Inno.Native.Bgfx.csproj" PrivateAssets="compile" />
   </ItemGroup>
   <ItemGroup>
@@ -17,6 +18,9 @@
     <ProjectReference Include="../../../../src/services/rendering/Inno.Rendering/Inno.Rendering.csproj" />
   </ItemGroup>
   <Target Name="CompileCompositionShaderGraphs" DependsOnTargets="PrepareInnoBuildTaskHost" Condition="'$(InnoNativeTarget)' != '' and '$(DesignTimeBuild)' != 'true'">
+    <PropertyGroup>
+      <_InnoShaderIntermediateRoot>$([System.IO.Path]::GetFullPath('$(IntermediateOutputPath)', '$(MSBuildProjectDirectory)'))</_InnoShaderIntermediateRoot>
+    </PropertyGroup>
     <Error Condition="'$(InnoBgfxShaderTarget)' == '' or '@(_CompositionShaderApi)' == ''"
            Text="BGFX composition shader compilation requires the product's explicit shader platform and graphics API set." />
     <CompileShaderTask
@@ -26,7 +30,7 @@
       ShaderPath="Composition.ishader"
       Target="$(InnoBgfxShaderTarget)"
       Renderer="%(_CompositionShaderApi.Identity)"
-      OutputFile="$(MSBuildProjectDirectory)/$(IntermediateOutputPath)Shaders/Composition/%(_CompositionShaderApi.Identity)/Outputs/Composition.%(_CompositionShaderApi.Identity).bin"
+      OutputFile="$(_InnoShaderIntermediateRoot)/Shaders/Composition/%(_CompositionShaderApi.Identity)/Outputs/Composition.%(_CompositionShaderApi.Identity).bin"
       ToolTarget="$(InnoToolTarget)" />
     <CompileShaderTask
       EngineRoot="$(MSBuildProjectDirectory)/../../../.."
@@ -35,7 +39,7 @@
       ShaderPath="OutputTransfer.ishader"
       Target="$(InnoBgfxShaderTarget)"
       Renderer="%(_CompositionShaderApi.Identity)"
-      OutputFile="$(MSBuildProjectDirectory)/$(IntermediateOutputPath)Shaders/OutputTransfer/%(_CompositionShaderApi.Identity)/Outputs/OutputTransfer.%(_CompositionShaderApi.Identity).bin"
+      OutputFile="$(_InnoShaderIntermediateRoot)/Shaders/OutputTransfer/%(_CompositionShaderApi.Identity)/Outputs/OutputTransfer.%(_CompositionShaderApi.Identity).bin"
       ToolTarget="$(InnoToolTarget)" />
   </Target>
   <Target Name="IncludeCompositionShaderArtifacts" Condition="'$(InnoNativeTarget)' != '' and '$(DesignTimeBuild)' != 'true'" BeforeTargets="AssignTargetPaths" DependsOnTargets="CompileCompositionShaderGraphs">

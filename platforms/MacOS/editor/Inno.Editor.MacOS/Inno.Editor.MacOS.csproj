@@ -15,6 +15,7 @@
     <InnoAssemblyScope>Editor</InnoAssemblyScope>
   </PropertyGroup>
   <ItemGroup>
+    <ProjectReference Include="../../integrations/Inno.Integration.MacOS.Bgfx.Runtime/Inno.Integration.MacOS.Bgfx.Runtime.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../integrations/Inno.Integration.MacOS.Sdl3/Inno.Integration.MacOS.Sdl3.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../integrations/Inno.Integration.MacOS.Bgfx/Inno.Integration.MacOS.Bgfx.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../../../backends/ImGui/runtime/Inno.Adapter.Presentation.ImGui.Bgfx/Inno.Adapter.Presentation.ImGui.Bgfx.csproj" PrivateAssets="compile" />

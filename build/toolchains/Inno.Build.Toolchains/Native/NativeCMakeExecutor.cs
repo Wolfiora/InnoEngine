@@ -13,16 +13,54 @@ namespace Inno.Build.Toolchains;
 public static class NativeCMakeExecutor
 {
     /// <summary>
+    /// Copies the recipe's declared checkout inputs before a cold CMake invocation.
+    /// </summary>
+    /// <param name="context">
+    /// The producer scope supplied by NativeArtifactPublisher while holding its intermediate lease.
+    /// </param>
+    /// <param name="component">
+    /// The sole owner of the intermediate source copy.
+    /// </param>
+    /// <param name="cancellationToken">
+    /// Cancels copying before the source candidate is installed.
+    /// </param>
+    /// <returns>
+    /// The same prepared input descriptor for subsequent invocations in this producer scope.
+    /// </returns>
+    /// <exception cref="InvalidOperationException">
+    /// No recipe scope exists or an input changed during copying.
+    /// </exception>
+    /// <exception cref="OperationCanceledException">
+    /// Copying was canceled before publication.
+    /// </exception>
+    /// <exception cref="ArgumentNullException">
+    /// The context or component is null.
+    /// </exception>
+    public static async Task<NativeCMakeSource> PrepareSourceAsync(
+        NativeBuildContext context,
+        NativeComponentDescriptor component,
+        CancellationToken cancellationToken = default
+    ) {
+        ArgumentNullException.ThrowIfNull(context);
+        ArgumentNullException.ThrowIfNull(component);
+        cancellationToken.ThrowIfCancellationRequested();
+        context.GetNativeBuildRoot(component);
+        NativeCMakeSource.Preparation preparation = context.sourcePreparation
+            ?? throw new InvalidOperationException("CMake source preparation requires a recipe-owned publication scope.");
+        return await preparation.GetAsync(context, component, cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <summary>
     /// Configures and builds an explicit component target without detecting the current platform.
     /// </summary>
     /// <param name="context">
-    /// The operation owning tools, environment and target identity.
+    /// The recipe-owned producer scope supplied by NativeArtifactPublisher, with frozen tools and inputs.
     /// </param>
     /// <param name="component">
     /// The unique component owner of target-scoped intermediate output.
     /// </param>
     /// <param name="sourceDirectory">
-    /// The component-owned CMake source directory.
+    /// The declared component-owned source directory, resolved to the operation's independent copy.
     /// </param>
     /// <param name="target">
     /// The declared CMake build target, or null for the complete selected project.
@@ -74,15 +112,16 @@ public static class NativeCMakeExecutor
         }
         string buildType = context.configuration == "debug" ? "Debug" : "Release";
         string buildDirectory = Path.Combine(context.GetNativeBuildRoot(component), "CMake");
-        List<string> configure = ["-S", sourceDirectory, "-B", buildDirectory];
-        configure.AddRange(selection.cmakeArguments);
-        configure.Add("-DINNO_ROOT=" + context.engineRoot);
+        NativeCMakeSource sources = await PrepareSourceAsync(context, component, cancellationToken).ConfigureAwait(false);
+        List<string> configure = ["-S", sources.ResolvePath(sourceDirectory), "-B", buildDirectory];
+        configure.AddRange(selection.cmakeArguments.Select(sources.ResolveDefinition));
+        configure.Add("-DINNO_ROOT=" + sources.root);
         configure.Add("-DINNO_NATIVE_TARGET=" + selection.targetId);
         if (!selection.multiConfiguration)
             configure.Add("-DCMAKE_BUILD_TYPE=" + buildType);
         configure.Add("-DINNO_LIBRARY_KIND=" + options.libraryKind.ToString().ToUpperInvariant());
-        configure.AddRange(componentArguments);
-        configure.AddRange(options.cmakeArguments);
+        configure.AddRange(componentArguments.Select(sources.ResolveDefinition));
+        configure.AddRange(options.cmakeArguments.Select(sources.ResolveDefinition));
         await ToolchainEnvironment.RunAsync(context, "cmake", configure,
             context.engineRoot, cancellationToken).ConfigureAwait(false);
         List<string> build = ["--build", buildDirectory, "--config", buildType];

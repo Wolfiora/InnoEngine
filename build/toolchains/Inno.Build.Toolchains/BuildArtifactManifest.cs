@@ -27,6 +27,9 @@ public static class BuildArtifactManifest
     /// <param name="outputDirectories">
     /// Relative output subdirectories included in this artifact; each must stay within the root.
     /// </param>
+    /// <param name="context">
+    /// The optional operation collecting independent output-read statistics.
+    /// </param>
     /// <exception cref="ArgumentException">
     /// An identity or output path is invalid.
     /// </exception>
@@ -36,10 +39,11 @@ public static class BuildArtifactManifest
     public static void Write(
         string directory,
         string fingerprint,
-        IReadOnlyList<string> outputDirectories
+        IReadOnlyList<string> outputDirectories,
+        NativeBuildContext? context = null
     ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(fingerprint);
-        Dictionary<string, string> files = ReadFiles(directory, outputDirectories);
+        Dictionary<string, string> files = ReadFiles(directory, outputDirectories, context);
         if (files.Count == 0)
             throw new InvalidDataException("A completed artifact must contain output files.");
         File.WriteAllText(Path.Combine(directory, C_FILE_NAME), JsonSerializer.Serialize(
@@ -58,6 +62,9 @@ public static class BuildArtifactManifest
     /// <param name="outputDirectories">
     /// The same relative output subdirectories supplied when recording the artifact.
     /// </param>
+    /// <param name="context">
+    /// The optional operation collecting actual output integrity reads.
+    /// </param>
     /// <returns>
     /// True only for complete, unmodified outputs; false for a missing, malformed or mismatched manifest.
     /// </returns>
@@ -70,7 +77,8 @@ public static class BuildArtifactManifest
     public static bool IsComplete(
         string directory,
         string fingerprint,
-        IReadOnlyList<string> outputDirectories
+        IReadOnlyList<string> outputDirectories,
+        NativeBuildContext? context = null
     ) {
         string path = Path.Combine(directory, C_FILE_NAME);
         if (!File.Exists(path))
@@ -86,14 +94,15 @@ public static class BuildArtifactManifest
         }
         if (manifest?.fingerprint != fingerprint || manifest.files is null || manifest.files.Count == 0)
             return false;
-        Dictionary<string, string> files = ReadFiles(directory, outputDirectories);
+        Dictionary<string, string> files = ReadFiles(directory, outputDirectories, context);
         return files.Count == manifest.files.Count
             && files.All(pair => manifest.files.TryGetValue(pair.Key, out string? value) && pair.Value == value);
     }
 
     private static Dictionary<string, string> ReadFiles(
         string directory,
-        IReadOnlyList<string> outputDirectories
+        IReadOnlyList<string> outputDirectories,
+        NativeBuildContext? context
     ) {
         ArgumentNullException.ThrowIfNull(outputDirectories);
         string root = Path.GetFullPath(directory);
@@ -113,6 +122,7 @@ public static class BuildArtifactManifest
                 using FileStream input = File.OpenRead(path);
                 files.Add(Path.GetRelativePath(root, path).Replace('\\', '/'),
                     Convert.ToHexStringLower(SHA256.HashData(input)));
+                context?.RecordOutputRead(input.Position);
             }
         }
         return files;

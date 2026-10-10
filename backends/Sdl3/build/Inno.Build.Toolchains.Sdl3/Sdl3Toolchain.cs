@@ -23,7 +23,7 @@ public static class Sdl3Toolchain
             ["extern/SDL"],
             ["libSDL3.a"],
             ["browser-wasm"]),
-        bindingConfig: "backends/Sdl3/native/Inno.Native.Sdl3/Bindings/bindgen.json");
+        bindingDefinition: "backends/Sdl3/native/Inno.Native.Sdl3/Bindings/bindings.props");
 
     /// <summary>
     /// Builds the component using the explicitly selected target SDK and validates the complete native product.

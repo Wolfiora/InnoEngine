@@ -31,6 +31,12 @@ public sealed class BuildTaskRuntimeTask : Microsoft.Build.Utilities.Task, ICanc
     public string ArtifactsDirectory { get; set; } = string.Empty;
 
     /// <summary>
+    /// Gets or sets the private reader location registered before returning an immutable runtime.
+    /// </summary>
+    [Required]
+    public string LoadDirectory { get; set; } = string.Empty;
+
+    /// <summary>
     /// Gets or sets the ordered targets returning the complete hashed runtime closure.
     /// </summary>
     [Required]
@@ -65,15 +71,27 @@ public sealed class BuildTaskRuntimeTask : Microsoft.Build.Utilities.Task, ICanc
         {
             CancellationToken token = m_cancellation.Token;
             token.ThrowIfCancellationRequested();
-            if (BuildEngine is not IBuildEngine3 engine)
-                throw new InvalidOperationException("Task-runtime preparation requires a yielding MSBuild engine.");
+            if (BuildEngine is not IBuildEngine4 engine)
+                throw new InvalidOperationException("Task-runtime preparation requires the MSBuild Build-lifetime registry.");
             string project = RequireAbsolute(ProjectFile);
             string artifacts = RequireAbsolute(ArtifactsDirectory);
+            string load = RequireAbsolute(LoadDirectory);
+            string cache = Path.Combine(Path.GetDirectoryName(artifacts)!, "hosts");
+            PathBoundary.RequireUnlinkedPath(Path.Combine(Path.GetDirectoryName(artifacts)!, "loads"), load);
             string[] targets = Targets.ToArray();
             string[] removed = RemoveProperties.ToArray();
             if (!File.Exists(project) || targets.Length == 0 || targets.Any(string.IsNullOrWhiteSpace))
                 throw new ArgumentException("A task project and nonempty build targets are required.");
-            IDictionary properties = FreezeProperties(artifacts);
+            IDictionary properties = FreezeProperties(artifacts, removed);
+            bool restoreRequired = TaskRuntimeRequestKey.NeedsRestore(project, properties);
+            string? request = restoreRequired ? null : TaskRuntimeRequestKey.Capture(project, artifacts, targets, properties, token);
+            if (request is not null && TaskRuntimeBuildScope.Read(engine, request, cancellation: token) is ITaskItem[] reused)
+            {
+                TargetOutputs = reused;
+                TaskRuntimePreparation.RegisterReader(load, reused.Single(static item => item.GetMetadata("RelativePath") == "Inno.Build.Tasks.dll").ItemSpec);
+                Log.LogMessage(MessageImportance.High, "INNO-TASK-RUNTIME reused {0}", request);
+                return true;
+            }
             FileLease? ownership = null;
             engine.Yield();
             try
@@ -96,6 +114,24 @@ public sealed class BuildTaskRuntimeTask : Microsoft.Build.Utilities.Task, ICanc
             using (ownership)
             {
                 token.ThrowIfCancellationRequested();
+                if (restoreRequired)
+                {
+                    BuildEngineResult restored = engine.BuildProjectFilesInParallel([project], ["Restore"],
+                        [properties], [removed], [null!], returnTargetOutputs: false);
+                    token.ThrowIfCancellationRequested();
+                    if (!restored.Result)
+                        return false;
+                    request = TaskRuntimeRequestKey.Capture(project, artifacts, targets, properties, token);
+                }
+                if (TaskRuntimeRequestKey.Capture(project, artifacts, targets, properties, token) != request)
+                    throw new InvalidOperationException("Task-runtime inputs changed while waiting for build ownership.");
+                if (TaskRuntimeBuildScope.Read(engine, request, cancellation: token) is ITaskItem[] completed)
+                {
+                    TargetOutputs = completed;
+                    TaskRuntimePreparation.RegisterReader(load, completed.Single(static item => item.GetMetadata("RelativePath") == "Inno.Build.Tasks.dll").ItemSpec);
+                    Log.LogMessage(MessageImportance.High, "INNO-TASK-RUNTIME reused {0}", request);
+                    return true;
+                }
                 BuildEngineResult result = engine.BuildProjectFilesInParallel([project], targets,
                     [properties], [removed], [null!], returnTargetOutputs: true);
                 token.ThrowIfCancellationRequested();
@@ -105,6 +141,12 @@ public sealed class BuildTaskRuntimeTask : Microsoft.Build.Utilities.Task, ICanc
                     .SelectMany(static output => output).ToArray();
                 if (TargetOutputs.Length == 0)
                     throw new InvalidDataException("The task project returned no runtime closure.");
+                if (TaskRuntimeRequestKey.Capture(project, artifacts, targets, properties, token) != request)
+                    throw new InvalidOperationException("Task-runtime inputs changed during compilation; its preparation was not cached.");
+                TargetOutputs = TaskRuntimePreparation.Publish(cache, TargetOutputs, engine, token);
+                TaskRuntimePreparation.RegisterReader(load, TargetOutputs.Single(static item => item.GetMetadata("RelativePath") == "Inno.Build.Tasks.dll").ItemSpec);
+                TaskRuntimeBuildScope.Register(engine, request, TargetOutputs);
+                Log.LogMessage(MessageImportance.High, "INNO-TASK-RUNTIME prepared {0}", request);
             }
             return true;
         }
@@ -133,13 +175,20 @@ public sealed class BuildTaskRuntimeTask : Microsoft.Build.Utilities.Task, ICanc
                 m_cancellation.Cancel();
     }
 
-    private IDictionary FreezeProperties(string artifacts)
-    {
+    private IDictionary FreezeProperties(
+        string artifacts,
+        IReadOnlyList<string> removed
+    ) {
         Hashtable properties = new(StringComparer.OrdinalIgnoreCase);
+        if (BuildEngine is IBuildEngine6 engine)
+            foreach (var property in engine.GetGlobalProperties())
+                if (!removed.Contains(property.Key, StringComparer.OrdinalIgnoreCase))
+                    properties[property.Key] = property.Value;
+        var explicitNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         foreach (string property in Properties)
         {
             int separator = property.IndexOf('=');
-            if (separator <= 0 || properties.Contains(property[..separator]))
+            if (separator <= 0 || !explicitNames.Add(property[..separator]))
                 throw new ArgumentException("Task properties require unique name=value declarations.");
             string name = property[..separator];
             if (string.Equals(name, "ArtifactsPath", StringComparison.OrdinalIgnoreCase))

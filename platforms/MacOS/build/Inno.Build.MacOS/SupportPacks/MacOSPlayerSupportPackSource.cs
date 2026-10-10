@@ -21,20 +21,24 @@ public sealed class MacOSPlayerSupportPackSource : IPlayerSupportPackSource
     /// <param name="host">
     /// The declared machine executing platform tools.
     /// </param>
+    /// <param name="bindingGenerator">
+    /// The borrowed shared binding implementation selected by distribution.
+    /// </param>
     /// <param name="dotnetHost">
     /// The explicit SDK executable for binding generation.
     /// </param>
     public MacOSPlayerSupportPackSource(
         ProductNativeBuildPlan nativePlan,
         BuildHostDescriptor host,
-        string dotnetHost
+        string dotnetHost,
+        INativeBindingGenerator bindingGenerator
     ) {
         m_preparation = new FilePlayerSupportPackPreparation(
             BuildTargetId.macOSArm64, "osx-arm64", BuildTargetId.macOSArm64.value, ".dylib",
             new MacOSSupportPackValidator(),
             "platforms/MacOS/player/Inno.Player.MacOS/Inno.Player.MacOS.csproj",
             "platforms/MacOS/build/Inno.Build.MacOS/Templates/MacOSPlayer.project.xml",
-            nativePlan, new MacOSNativeToolchainProvider(dotnetHost), host);
+            nativePlan, new MacOSNativeToolchainProvider(dotnetHost), host, bindingGenerator);
     }
 
     /// <inheritdoc />

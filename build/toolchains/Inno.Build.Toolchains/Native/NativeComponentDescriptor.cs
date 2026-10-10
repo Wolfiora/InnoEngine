@@ -24,7 +24,7 @@ public sealed class NativeComponentDescriptor
     /// <param name="staticBuild">
     /// The backend-owned static recipe, or null when this component has none.
     /// </param>
-    /// <param name="bindingConfig">
+    /// <param name="bindingDefinition">
     /// The portable binding definition, or null when the component generates no bindings.
     /// </param>
     /// <exception cref="ArgumentException">
@@ -35,7 +35,7 @@ public sealed class NativeComponentDescriptor
         string nativeProject,
         string toolchainProject,
         NativeStaticBuildDefinition? staticBuild = null,
-        string? bindingConfig = null
+        string? bindingDefinition = null
     ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(id);
         if (id is "." or "..")
@@ -47,10 +47,10 @@ public sealed class NativeComponentDescriptor
         this.nativeProject = ValidateProject(nativeProject);
         this.toolchainProject = ValidateProject(toolchainProject);
         this.staticBuild = staticBuild;
-        if (bindingConfig is not null && (bindingConfig.StartsWith('/') || bindingConfig.Contains(':')
-            || bindingConfig.Split('/').Any(static segment => segment is "" or "." or "..")))
-            throw new ArgumentException("A binding definition must remain within its checkout.", nameof(bindingConfig));
-        this.bindingConfig = bindingConfig;
+        if (bindingDefinition is not null && (bindingDefinition.StartsWith('/') || bindingDefinition.Contains(':')
+            || bindingDefinition.Split('/').Any(static segment => segment is "" or "." or "..")))
+            throw new ArgumentException("A binding definition must remain within its checkout.", nameof(bindingDefinition));
+        this.bindingDefinition = bindingDefinition;
     }
 
     /// <summary>
@@ -76,7 +76,7 @@ public sealed class NativeComponentDescriptor
     /// <summary>
     /// Gets the declared binding definition, or null for a component without generated bindings.
     /// </summary>
-    public string? bindingConfig { get; }
+    public string? bindingDefinition { get; }
 
     /// <summary>
     /// Resolves the declared native owner within an explicitly supplied checkout.

@@ -1,11 +1,13 @@
+using System.Xml.Linq;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text.Json;
-using Inno.Build.Tasks;
+using System.Threading;
+using System.Threading.Tasks;
+using Inno.Build.Bindings;
 using Inno.Build.Toolchains;
-using Microsoft.Build.Framework;
 using Xunit;
 
 namespace Inno.Build.Tests;
@@ -15,39 +17,117 @@ public sealed class NativeBindingGenerationTests : IDisposable
     private readonly string m_root = Path.Combine(Path.GetTempPath(), "InnoNativeBindingTests", Guid.NewGuid().ToString("N"));
 
     [Fact]
-    public void SourceChangesSelectIndependentGenerationsAndTamperingIsRepaired()
+    public void ManagedSelectionPreservesExactNativeIdentitiesInStableProjectOrder()
     {
-        string config = CreateConfig("int sample(int value);");
-        RecordingBuildEngine engine = new();
-        GenerateBindingsTask first = CreateTask(config, engine);
-        Assert.True(first.Execute(), string.Join(Environment.NewLine, engine.errors));
-        string original = File.ReadAllText(first.GeneratedBindings);
-        Assert.Contains(Path.Combine(first.GenerationFingerprint, "Generated", "Bindings.cs"), first.GeneratedBindings);
-        NativeBindingGenerationDescriptor descriptor = NativeBindingGenerationDescriptor.Load(first.DescriptorOutputPath);
-        Assert.Equal(first.GeneratedBindings, descriptor.bindingsPath);
-        Assert.True(BuildArtifactManifest.IsComplete(Path.GetDirectoryName(Path.GetDirectoryName(first.GeneratedBindings))!,
-            first.GenerationFingerprint, ["Native", "Generated"]));
+        string output = Path.Combine(m_root, "BindingSelection.props");
+        NativeBindingGenerationDescriptor.WriteSelection(output,
+            new Dictionary<string, NativeBindingGenerationDescriptor>
+            {
+                ["backends/Text/native/Inno.Native.Text/Inno.Native.Text.csproj"] = SelectedGeneration("text-fingerprint"),
+                ["backends/Bgfx/native/Inno.Native.Bgfx/Inno.Native.Bgfx.csproj"] = SelectedGeneration("bgfx-fingerprint")
+            }, new Dictionary<string, NativeLibraryKind>
+            {
+                ["backends/Text/native/Inno.Native.Text/Inno.Native.Text.csproj"] = NativeLibraryKind.Static,
+                ["backends/Bgfx/native/Inno.Native.Bgfx/Inno.Native.Bgfx.csproj"] = NativeLibraryKind.Shared
+            });
 
-        File.WriteAllText(first.GeneratedBindings, "tampered");
-        GenerateBindingsTask repaired = CreateTask(config, engine);
-        Assert.True(repaired.Execute(), string.Join(Environment.NewLine, engine.errors));
-        Assert.Equal(first.GenerationFingerprint, repaired.GenerationFingerprint);
-        Assert.Equal(original, File.ReadAllText(repaired.GeneratedBindings));
-
-        File.WriteAllText(Path.Combine(m_root, "api.h"), "long sample(long value);");
-        GenerateBindingsTask stale = CreateTask(config, engine);
-        stale.ExpectedFingerprint = first.GenerationFingerprint;
-        Assert.False(stale.Execute());
-        Assert.False(File.Exists(stale.DescriptorOutputPath));
-        GenerateBindingsTask changed = CreateTask(config, engine);
-        Assert.True(changed.Execute(), string.Join(Environment.NewLine, engine.errors));
-        Assert.NotEqual(first.GenerationFingerprint, changed.GenerationFingerprint);
-        Assert.Equal(original, File.ReadAllText(first.GeneratedBindings));
-        Assert.NotEqual(original, File.ReadAllText(changed.GeneratedBindings));
+        XElement[] groups = XDocument.Load(output).Root!.Elements("PropertyGroup").ToArray();
+        Assert.Equal(2, groups.Length);
+        Assert.Equal("'$(MSBuildProjectName)' == 'Inno.Native.Bgfx'", groups[0].Attribute("Condition")!.Value);
+        Assert.Equal("bgfx-fingerprint", groups[0].Element("BindGenExpectedFingerprint")!.Value);
+        Assert.Equal(Path.GetDirectoryName(SelectedGeneration("bgfx-fingerprint").bindingsPath),
+            groups[0].Element("BindGenOutputDirectory")!.Value);
+        Assert.Equal("text-fingerprint", groups[1].Element("BindGenExpectedFingerprint")!.Value);
+        Assert.Equal("Shared", groups[0].Element("InnoNativeLibraryKind")!.Value);
+        Assert.Equal("Static", groups[1].Element("InnoNativeLibraryKind")!.Value);
     }
 
     [Fact]
-    public void CppBridgeAndManagedBindingsShareOneCompletedGeneration()
+    public void PublicationRejectsChangedOrIncompleteManagedSelection()
+    {
+        string output = Path.Combine(m_root, "BindingSelection.props");
+        var original = new Dictionary<string, NativeBindingGenerationDescriptor>
+        {
+            ["Inno.Native.Text.csproj"] = SelectedGeneration("original")
+        };
+        var linkage = new Dictionary<string, NativeLibraryKind> { ["Inno.Native.Text.csproj"] = NativeLibraryKind.Shared };
+        NativeBindingGenerationDescriptor.WriteSelection(output, original, linkage);
+        NativeBindingGenerationDescriptor.ValidateSelection(output, original, linkage);
+        Assert.Throws<InvalidDataException>(() => NativeBindingGenerationDescriptor.ValidateSelection(output,
+            new Dictionary<string, NativeBindingGenerationDescriptor>
+            {
+                ["Inno.Native.Text.csproj"] = SelectedGeneration("changed")
+            }, linkage));
+        Assert.Throws<InvalidDataException>(() => NativeBindingGenerationDescriptor.ValidateSelection(output,
+            new Dictionary<string, NativeBindingGenerationDescriptor>(), new Dictionary<string, NativeLibraryKind>()));
+        Assert.Throws<InvalidDataException>(() => NativeBindingGenerationDescriptor.ValidateSelection(output, original,
+            new Dictionary<string, NativeLibraryKind> { ["Inno.Native.Text.csproj"] = NativeLibraryKind.Static }));
+        Assert.Throws<ArgumentException>(() => NativeBindingGenerationDescriptor.WriteSelection(output, original,
+            new Dictionary<string, NativeLibraryKind>()));
+        Assert.Equal("original", XDocument.Load(output).Root!.Element("PropertyGroup")!
+            .Element("BindGenExpectedFingerprint")!.Value);
+    }
+
+    [Fact]
+    public void CollidingManagedSelectionDoesNotReplaceAnExistingCompleteSelection()
+    {
+        string output = Path.Combine(m_root, "BindingSelection.props");
+        Directory.CreateDirectory(m_root);
+        File.WriteAllText(output, "previous complete selection");
+
+        Assert.Throws<ArgumentException>(() => NativeBindingGenerationDescriptor.WriteSelection(output,
+            new Dictionary<string, NativeBindingGenerationDescriptor>
+            {
+                ["first/Inno.Native.Text.csproj"] = SelectedGeneration("first"),
+                ["second/inno.native.text.csproj"] = SelectedGeneration("second")
+            }, new Dictionary<string, NativeLibraryKind>
+            {
+                ["first/Inno.Native.Text.csproj"] = NativeLibraryKind.Shared,
+                ["second/inno.native.text.csproj"] = NativeLibraryKind.Shared
+            }));
+        Assert.Equal("previous complete selection", File.ReadAllText(output));
+    }
+
+    [Fact]
+    public void UnsafeManagedProjectNameIsRejectedBeforeCreatingSelectionOutput()
+    {
+        string output = Path.Combine(m_root, "BindingSelection.props");
+        Assert.Throws<ArgumentException>(() => NativeBindingGenerationDescriptor.WriteSelection(output,
+            new Dictionary<string, NativeBindingGenerationDescriptor>
+            {
+                ["Inno'Injected.csproj"] = SelectedGeneration("selected")
+            }, new Dictionary<string, NativeLibraryKind> { ["Inno'Injected.csproj"] = NativeLibraryKind.Shared }));
+        Assert.False(Directory.Exists(m_root));
+    }
+
+    [Fact]
+    public async Task SourceChangesSelectIndependentGenerationsAndTamperingIsRepaired()
+    {
+        CreateConfig("int sample(int value);");
+        NativeBindingGenerationDescriptor first = await GenerateAsync();
+        string original = File.ReadAllText(first.bindingsPath);
+        Assert.Contains(Path.Combine(first.fingerprint, "Generated", "Bindings.cs"), first.bindingsPath);
+        string descriptorPath = Path.Combine(m_root, "requests", "descriptor.json");
+        first.Write(descriptorPath);
+        Assert.Equal(first.bindingsPath, NativeBindingGenerationDescriptor.Load(descriptorPath).bindingsPath);
+        Assert.True(BuildArtifactManifest.IsComplete(Path.GetDirectoryName(Path.GetDirectoryName(first.bindingsPath))!,
+            first.fingerprint, ["Native", "Generated"]));
+
+        File.WriteAllText(first.bindingsPath, "tampered");
+        NativeBindingGenerationDescriptor repaired = await GenerateAsync();
+        Assert.Equal(first.fingerprint, repaired.fingerprint);
+        Assert.Equal(original, File.ReadAllText(repaired.bindingsPath));
+
+        File.WriteAllText(Path.Combine(m_root, "api.h"), "long sample(long value);");
+        await Assert.ThrowsAsync<InvalidOperationException>(() => GenerateAsync(expected: first.fingerprint));
+        NativeBindingGenerationDescriptor changed = await GenerateAsync();
+        Assert.NotEqual(first.fingerprint, changed.fingerprint);
+        Assert.Equal(original, File.ReadAllText(first.bindingsPath));
+        Assert.NotEqual(original, File.ReadAllText(changed.bindingsPath));
+    }
+
+    [Fact]
+    public async Task CppBridgeAndManagedBindingsShareOneCompletedGeneration()
     {
         string config = CreateConfig("int sample(int value);");
         string facade = Path.Combine(m_root, "facade.hpp");
@@ -65,26 +145,23 @@ public sealed class NativeBindingGenerationTests : IDisposable
             IncludeFolders = new[] { "declared/include" }, GenerateRuntimeSource = false,
             MergeGeneratedFilesToSingleFile = true, SingleFileOutputName = "Bindings.cs"
         }));
-        RecordingBuildEngine engine = new();
-        GenerateBindingsTask first = CreateTask(config, engine);
-        first.BridgeConfigPath = bridge;
-        Assert.True(first.Execute(), string.Join(Environment.NewLine, engine.errors));
-        Assert.True(File.Exists(Path.Combine(first.NativeBridgeDirectory, "include", "Classes.h")));
-        Assert.True(File.Exists(Path.Combine(first.NativeBridgeDirectory, "src", "Classes.cpp")));
-        Assert.Equal(Path.GetDirectoryName(first.NativeBridgeDirectory),
-            Path.GetDirectoryName(Path.GetDirectoryName(first.GeneratedBindings)));
+        WriteDefinition(bridge);
+        NativeBindingGenerationDescriptor first = await GenerateAsync();
+        Assert.True(File.Exists(Path.Combine(first.bridgeDirectory, "include", "Classes.h")));
+        Assert.True(File.Exists(Path.Combine(first.bridgeDirectory, "src", "Classes.cpp")));
+        Assert.Equal(Path.GetDirectoryName(first.bridgeDirectory),
+            Path.GetDirectoryName(Path.GetDirectoryName(first.bindingsPath)));
         Assert.False(Directory.Exists(Path.Combine(m_root, "declared")));
-        string original = File.ReadAllText(first.GeneratedBindings);
+        string original = File.ReadAllText(first.bindingsPath);
         File.WriteAllText(facade, "class Counter { invalid C++; };");
-        GenerateBindingsTask failed = CreateTask(config, engine);
-        failed.BridgeConfigPath = bridge;
-        Assert.False(failed.Execute());
-        Assert.Equal(original, File.ReadAllText(first.GeneratedBindings));
+        WriteDefinition(bridge);
+        await Assert.ThrowsAnyAsync<Exception>(() => GenerateAsync());
+        Assert.Equal(original, File.ReadAllText(first.bindingsPath));
         Assert.Single(Directory.GetDirectories(Path.Combine(m_root, "obj", "fixture-target")));
     }
 
     [Fact]
-    public void HostBindingFailurePreservesBothPublishedOutputTrees()
+    public async Task HostBindingFailurePreservesBothPublishedOutputTrees()
     {
         string config = CreateConfig("int sample(int value);");
         string facade = Path.Combine(m_root, "facade.hpp");
@@ -95,72 +172,55 @@ public sealed class NativeBindingGenerationTests : IDisposable
              "languageStandard":"c++20","generateBuildManifest":false,"generateCSharpBindings":false}
             """);
         File.WriteAllText(config, """
-            {"preset":"c-library","namespace":"Fixture.Native","apiName":"Api","libName":"fixture",
+            {"preset":"c-library","namespace":"Fixture.Native","apiName":"Api","libName":"fixture","outputPath":"Generated",
              "entryFiles":["Native/Generated/include/Classes.h"],"allowedHeaders":["Native/Generated/include/Classes.h"],
              "includeFolders":["Native/Generated/include"],"generateRuntimeSource":false,
              "mergeGeneratedFilesToSingleFile":true,"singleFileOutputName":"Bindings.cs"}
             """);
-        RecordingBuildEngine engine = new();
-        GenerateBindingsTask initial = CreateTask(config, engine);
-        initial.TargetOutputRoot = string.Empty;
-        initial.BridgeConfigPath = bridge;
-        Assert.True(initial.Execute(), string.Join(Environment.NewLine, engine.errors));
-        string source = File.ReadAllText(initial.GeneratedBindings);
-        string nativeHeader = Path.Combine(initial.NativeBridgeDirectory, "include", "Classes.h");
+        WriteDefinition(bridge);
+        NativeBindingGenerationDescriptor initial = await GenerateAsync(mode: NativeBindingOutputMode.HostSource);
+        string source = File.ReadAllText(initial.bindingsPath);
+        string nativeHeader = Path.Combine(initial.bridgeDirectory, "include", "Classes.h");
         string header = File.ReadAllText(nativeHeader);
-        string nativeSource = Path.Combine(initial.NativeBridgeDirectory, "src", "Classes.cpp");
+        string nativeSource = Path.Combine(initial.bridgeDirectory, "src", "Classes.cpp");
         string implementation = File.ReadAllText(nativeSource);
         File.WriteAllText(facade, "class Counter { public: int Changed() { return 9; } };");
         File.WriteAllText(config, File.ReadAllText(config).Replace("Classes.h", "missing.h", StringComparison.Ordinal));
 
-        GenerateBindingsTask failed = CreateTask(config, engine);
-        failed.TargetOutputRoot = string.Empty;
-        failed.BridgeConfigPath = bridge;
-        Assert.False(failed.Execute());
+        WriteDefinition(bridge);
+        await Assert.ThrowsAnyAsync<Exception>(() => GenerateAsync(mode: NativeBindingOutputMode.HostSource));
 
-        Assert.Equal(source, File.ReadAllText(initial.GeneratedBindings));
+        Assert.Equal(source, File.ReadAllText(initial.bindingsPath));
         Assert.Equal(header, File.ReadAllText(nativeHeader));
         Assert.Equal(implementation, File.ReadAllText(nativeSource));
-        Assert.False(File.Exists(failed.DescriptorOutputPath));
         Assert.Empty(Directory.GetDirectories(m_root, ".bgcs-staging-*", SearchOption.AllDirectories));
     }
 
     [Fact]
-    public void FailedOrCanceledGenerationKeepsTheLastCompleteBundle()
+    public async Task FailedOrCanceledGenerationKeepsTheLastCompleteBundle()
     {
-        string config = CreateConfig("int sample(int value);");
-        RecordingBuildEngine engine = new();
-        GenerateBindingsTask first = CreateTask(config, engine);
-        Assert.True(first.Execute(), string.Join(Environment.NewLine, engine.errors));
-        string original = File.ReadAllText(first.GeneratedBindings);
+        CreateConfig("int sample(int value);");
+        NativeBindingGenerationDescriptor first = await GenerateAsync();
+        string original = File.ReadAllText(first.bindingsPath);
         File.WriteAllText(Path.Combine(m_root, "api.h"), "this is not valid C;");
-        GenerateBindingsTask failed = CreateTask(config, engine);
-        Assert.False(failed.Execute());
-        Assert.NotEmpty(engine.errors);
-        Assert.Equal(original, File.ReadAllText(first.GeneratedBindings));
-        GenerateBindingsTask canceled = CreateTask(config, engine);
-        canceled.Cancel();
-        Assert.False(canceled.Execute());
-        Assert.Equal(original, File.ReadAllText(first.GeneratedBindings));
-        Assert.False(File.Exists(canceled.DescriptorOutputPath));
+        await Assert.ThrowsAnyAsync<Exception>(() => GenerateAsync());
+        Assert.Equal(original, File.ReadAllText(first.bindingsPath));
+        using var cancellation = new CancellationTokenSource();
+        cancellation.Cancel();
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => GenerateAsync(cancellation: cancellation.Token));
+        Assert.Equal(original, File.ReadAllText(first.bindingsPath));
         Assert.Single(Directory.GetDirectories(Path.Combine(m_root, "obj", "fixture-target")));
     }
 
     [Fact]
-    public void CheckOnlyDetectsModifiedOutputsWithoutPublishing()
+    public async Task CheckOnlyDetectsModifiedOutputsWithoutPublishing()
     {
-        string config = CreateConfig("int sample(int value);");
-        RecordingBuildEngine engine = new();
-        GenerateBindingsTask first = CreateTask(config, engine);
-        Assert.True(first.Execute(), string.Join(Environment.NewLine, engine.errors));
-        GenerateBindingsTask check = CreateTask(config, engine);
-        check.CheckOnly = true;
-        Assert.True(check.Execute(), string.Join(Environment.NewLine, engine.errors));
-        File.WriteAllText(first.GeneratedBindings, "tampered");
-        GenerateBindingsTask changed = CreateTask(config, engine);
-        changed.CheckOnly = true;
-        Assert.False(changed.Execute());
-        Assert.Equal("tampered", File.ReadAllText(first.GeneratedBindings));
+        CreateConfig("int sample(int value);");
+        NativeBindingGenerationDescriptor first = await GenerateAsync();
+        await GenerateAsync(checkOnly: true);
+        File.WriteAllText(first.bindingsPath, "tampered");
+        await Assert.ThrowsAsync<InvalidDataException>(() => GenerateAsync(checkOnly: true));
+        Assert.Equal("tampered", File.ReadAllText(first.bindingsPath));
     }
 
     public void Dispose()
@@ -169,10 +229,21 @@ public sealed class NativeBindingGenerationTests : IDisposable
             Directory.Delete(m_root, recursive: true);
     }
 
+    private static NativeBindingGenerationDescriptor SelectedGeneration(string fingerprint)
+        => new()
+        {
+            fingerprint = fingerprint,
+            bindingsPath = Path.Combine(Path.GetTempPath(), "SelectedGeneration", fingerprint, "Generated", "Bindings.cs"),
+            bridgeDirectory = string.Empty
+        };
+
     private string CreateConfig(string header)
     {
         Directory.CreateDirectory(m_root);
         File.WriteAllText(Path.Combine(m_root, "api.h"), header);
+        File.WriteAllText(Path.Combine(m_root, "InnoEngine.sln"), string.Empty);
+        File.WriteAllText(Path.Combine(m_root, "Fixture.csproj"), "<Project />");
+        WriteDefinition();
         string config = Path.Combine(m_root, "bindgen.json");
         File.WriteAllText(config, JsonSerializer.Serialize(new {
             Preset = "c-library", Namespace = "Fixture.Native", ApiName = "Api", LibName = "fixture",
@@ -182,32 +253,29 @@ public sealed class NativeBindingGenerationTests : IDisposable
         return config;
     }
 
-    private GenerateBindingsTask CreateTask(
-        string config,
-        RecordingBuildEngine engine
-    ) => new() {
-        EngineRoot = m_root, ConfigPath = config, OutputDirectory = Path.Combine(m_root, "Generated"),
-        TargetOutputRoot = Path.Combine(m_root, "obj", "fixture-target"), BuildEngine = engine,
-        DescriptorOutputPath = Path.Combine(m_root, "requests", Guid.NewGuid().ToString("N") + ".json")
-    };
-
-    private sealed class RecordingBuildEngine : IBuildEngine
-    {
-        public List<string> errors { get; } = [];
-        public bool ContinueOnError => false;
-        public int LineNumberOfTaskNode => 0;
-        public int ColumnNumberOfTaskNode => 0;
-        public string ProjectFileOfTaskNode => "fixture.proj";
-
-        public void LogErrorEvent(BuildErrorEventArgs e) => errors.Add(e.Message ?? string.Empty);
-        public void LogWarningEvent(BuildWarningEventArgs e) { }
-        public void LogMessageEvent(BuildMessageEventArgs e) { }
-        public void LogCustomEvent(CustomBuildEventArgs e) { }
-        public bool BuildProjectFile(
-            string projectFileName,
-            string[] targetNames,
-            IDictionary globalProperties,
-            IDictionary targetOutputs
-        ) => throw new NotSupportedException();
+    private async Task<NativeBindingGenerationDescriptor> GenerateAsync(
+        NativeBindingOutputMode mode = NativeBindingOutputMode.TargetArtifacts,
+        bool checkOnly = false,
+        string? expected = null,
+        CancellationToken cancellation = default
+    ) {
+        var owner = new NativeComponentDescriptor("fixture", "Fixture.csproj", "Fixture.csproj", bindingDefinition: "bindings.props");
+        var fingerprints = expected is null ? null : new Dictionary<string, string> { [owner.nativeProject] = expected };
+        var request = new NativeBindingGenerationRequest([owner], "fixture-target", mode, checkOnly, fingerprints);
+        var result = await new NativeBindingGenerator("dotnet").GenerateAsync(
+            new NativeBuildContext(m_root, "release"), request, cancellation);
+        return result[owner.nativeProject];
     }
+
+    private void WriteDefinition(string? bridge = null)
+    {
+        new XDocument(new XElement("Project",
+            new XElement("PropertyGroup", new XElement("InnoBindingHostConfig", "bindgen.json"),
+                bridge is null ? null : new XElement("InnoBindingHostBridge", Path.GetFileName(bridge))),
+            new XElement("ItemGroup", new XElement("InnoBindingTarget", new XAttribute("Include", "fixture-target"),
+                new XElement("Config", "bindgen.json"),
+                bridge is null ? null : new XElement("Bridge", Path.GetFileName(bridge))))))
+            .Save(Path.Combine(m_root, "bindings.props"));
+    }
+
 }

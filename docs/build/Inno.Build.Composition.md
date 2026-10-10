@@ -1,5 +1,8 @@
 # Inno.Build.Composition
 
+`BuildDistribution.TryResolveNativeToolchain(targetId, out provider)` 只查询已注册的同目标 SDK 贡献。
+它允许独立绑定定义不注册产品发布平台；false 不授予 SDK 能力，不选择其他目标，也不屏蔽已注册 provider 的解析失败。
+
 [分类索引](README.md) · [Wiki 首页](../README.md) · [平台归属与扩展](../architecture/PLATFORM_EXTENSION_GUIDE.md)
 
 ## 职责与边界
@@ -31,35 +34,41 @@ static BuildDistribution Compose(
 
 平台贡献还声明目标自身的不可变 `nativeProducts`。`BuildDistribution.ResolveNativeProduct(targetId, productId)` 是普通 MSBuild Native 准备的唯一选择入口；Task 不维护 Editor/Player 的 backend 列表或产品 switch。不同平台可以给同一 product ID 选择不同闭包；未注册的产品在 SDK 解析和 staging 前明确失败。Browser 的聚合/最终链接由自身发布链处理，不注册普通 Editor Native 构建。
 
+## 生成服务组合
+
+BuildCompositionContext 必须提供 INativeBindingGenerator。平台目标和 Support Pack 只借用此服务；BuildPipelineFactory 将其传递给完整执行链，不引用具体 BGCS 实现。
+
 ## 当前源码公开 API 清单
 
-只列当前源码的 public/protected 表面；内部实现不作为稳定 API。参数、返回、失败和 owner 以英文 XML 为准。
+只列当前源码 public/protected 表面；内部机制不是稳定 API，参数、返回、失败及所有权以英文 XML 为准。
 
 ### `Inno.Build.Composition.BuildCompositionContext`
 
 | 当前声明 | 行为 |
 | --- | --- |
-| [`Inno.Build.BuildTargetId Inno.Build.Composition.BuildCompositionContext.toolsTarget`](../../build/composition/Inno.Build.Composition/BuildCompositionContext.cs#L67) | Gets the independently declared native target of build tools executed by this host. |
+| [`Inno.Build.BuildTargetId Inno.Build.Composition.BuildCompositionContext.toolsTarget`](../../build/composition/Inno.Build.Composition/BuildCompositionContext.cs#L73) | Gets the independently declared native target of build tools executed by this host. |
 | [`Inno.Build.Composition.BuildCompositionContext`](../../build/composition/Inno.Build.Composition/BuildCompositionContext.cs#L10) | Captures host-owned SDK selection and application location without probing global process state. |
-| [`Inno.Build.Composition.BuildCompositionContext.BuildCompositionContext(string dotnetHost, string applicationDirectory, Inno.Build.Toolchains.BuildHostDescriptor host, Inno.Build.BuildTargetId toolsTarget)`](../../build/composition/Inno.Build.Composition/BuildCompositionContext.cs#L30) | Captures the host dependencies used by deployment and Support Pack preparation. |
-| [`Inno.Build.Toolchains.BuildHostDescriptor Inno.Build.Composition.BuildCompositionContext.host`](../../build/composition/Inno.Build.Composition/BuildCompositionContext.cs#L62) | Gets the declared execution host without selecting a product target. |
-| [`string Inno.Build.Composition.BuildCompositionContext.applicationDirectory`](../../build/composition/Inno.Build.Composition/BuildCompositionContext.cs#L57) | Gets the host location used for source provisioning discovery. |
-| [`string Inno.Build.Composition.BuildCompositionContext.dotnetHost`](../../build/composition/Inno.Build.Composition/BuildCompositionContext.cs#L52) | Gets the explicitly selected SDK executable. |
+| [`Inno.Build.Composition.BuildCompositionContext.BuildCompositionContext(string dotnetHost, string applicationDirectory, Inno.Build.Toolchains.BuildHostDescriptor host, Inno.Build.BuildTargetId toolsTarget, Inno.Build.Toolchains.INativeBindingGenerator bindingGenerator)`](../../build/composition/Inno.Build.Composition/BuildCompositionContext.cs#L33) | Captures the host dependencies used by deployment and Support Pack preparation. |
+| [`Inno.Build.Toolchains.BuildHostDescriptor Inno.Build.Composition.BuildCompositionContext.host`](../../build/composition/Inno.Build.Composition/BuildCompositionContext.cs#L68) | Gets the declared execution host without selecting a product target. |
+| [`Inno.Build.Toolchains.INativeBindingGenerator Inno.Build.Composition.BuildCompositionContext.bindingGenerator`](../../build/composition/Inno.Build.Composition/BuildCompositionContext.cs#L78) | Gets the borrowed generation provider selected once by distribution composition. |
+| [`string Inno.Build.Composition.BuildCompositionContext.applicationDirectory`](../../build/composition/Inno.Build.Composition/BuildCompositionContext.cs#L63) | Gets the host location used for source provisioning discovery. |
+| [`string Inno.Build.Composition.BuildCompositionContext.dotnetHost`](../../build/composition/Inno.Build.Composition/BuildCompositionContext.cs#L58) | Gets the explicitly selected SDK executable. |
 
 ### `Inno.Build.Composition.BuildDistribution`
 
 | 当前声明 | 行为 |
 | --- | --- |
-| [`Inno.Build.Composition.BuildDistribution`](../../build/composition/Inno.Build.Composition/BuildDistribution.cs#L16) | Freezes platform factories, managed publishers, and matching Support Pack sources as one distribution. |
-| [`Inno.Build.Composition.BuildDistribution.BuildDistribution(System.Collections.Generic.IReadOnlyList<Inno.Build.Composition.GameBuildContribution> games, System.Collections.Generic.IReadOnlyList<Inno.Build.Managed.IManagedDeploymentCompiler> managedCompilers, System.Collections.Generic.IReadOnlyList<Inno.Build.Composition.NativeToolchainContribution>? nativeOnlyContributions = null)`](../../build/composition/Inno.Build.Composition/BuildDistribution.cs#L43) | Captures a complete distribution without creating authoring services or starting any tool. |
-| [`Inno.Build.Managed.ManagedDeploymentCatalog Inno.Build.Composition.BuildDistribution.managedDeployments`](../../build/composition/Inno.Build.Composition/BuildDistribution.cs#L89) | Gets the immutable deployment implementation catalog. |
-| [`Inno.Build.SupportPacks.PlayerSupportPackPublisher Inno.Build.Composition.BuildDistribution.supportPacks`](../../build/composition/Inno.Build.Composition/BuildDistribution.cs#L94) | Gets the publisher containing the same platform input providers. |
-| [`Inno.Build.Toolchains.INativeToolchainProvider Inno.Build.Composition.BuildDistribution.ResolveNativeToolchain(string targetId)`](../../build/composition/Inno.Build.Composition/BuildDistribution.cs#L108) | Resolves the SDK integration bound to an explicitly registered publication target. |
-| [`Inno.Build.Toolchains.ProductNativeBuildPlan Inno.Build.Composition.BuildDistribution.ResolveNativeProduct(string targetId, string productId)`](../../build/composition/Inno.Build.Composition/BuildDistribution.cs#L134) | Resolves a platform-contributed product closure without selecting backends inside the invoking host. |
-| [`System.Collections.Generic.IReadOnlyList<Inno.Build.BuildTargetId> Inno.Build.Composition.BuildDistribution.availableTargets`](../../build/composition/Inno.Build.Composition/BuildDistribution.cs#L79) | Gets the immutable platform identities shared by all hosts. |
-| [`System.Collections.Generic.IReadOnlyList<Inno.Build.Composition.BuildPlatformContribution> Inno.Build.Composition.BuildDistribution.platforms`](../../build/composition/Inno.Build.Composition/BuildDistribution.cs#L84) | Gets complete platform registrations in their explicit composition order. |
-| [`System.Collections.Generic.IReadOnlyList<Inno.Build.GameBuildTargetBinding> Inno.Build.Composition.BuildDistribution.CreateBindings(Inno.Assets.Pipeline.AssetPipeline assets, Inno.Core.Serialization.SerializationRegistry serialization, Inno.Extensibility.Types.TypeCatalog types)`](../../build/composition/Inno.Build.Composition/BuildDistribution.cs#L165) | Creates platform targets and validates their identities and default deployment capabilities. |
-| [`void Inno.Build.Composition.BuildDistribution.ValidateDeployment(Inno.Build.IGameBuildTarget target, Inno.Build.Managed.ManagedDeploymentId deployment)`](../../build/composition/Inno.Build.Composition/BuildDistribution.cs#L203) | Rejects unsupported target and deployment pairs before any staging or publication begins. |
+| [`Inno.Build.Composition.BuildDistribution`](../../build/composition/Inno.Build.Composition/BuildDistribution.cs#L17) | Freezes platform factories, managed publishers, and matching Support Pack sources as one distribution. |
+| [`Inno.Build.Composition.BuildDistribution.BuildDistribution(System.Collections.Generic.IReadOnlyList<Inno.Build.Composition.GameBuildContribution> games, System.Collections.Generic.IReadOnlyList<Inno.Build.Managed.IManagedDeploymentCompiler> managedCompilers, System.Collections.Generic.IReadOnlyList<Inno.Build.Composition.NativeToolchainContribution>? nativeOnlyContributions = null)`](../../build/composition/Inno.Build.Composition/BuildDistribution.cs#L44) | Captures a complete distribution without creating authoring services or starting any tool. |
+| [`Inno.Build.Managed.ManagedDeploymentCatalog Inno.Build.Composition.BuildDistribution.managedDeployments`](../../build/composition/Inno.Build.Composition/BuildDistribution.cs#L90) | Gets the immutable deployment implementation catalog. |
+| [`Inno.Build.SupportPacks.PlayerSupportPackPublisher Inno.Build.Composition.BuildDistribution.supportPacks`](../../build/composition/Inno.Build.Composition/BuildDistribution.cs#L95) | Gets the publisher containing the same platform input providers. |
+| [`Inno.Build.Toolchains.INativeToolchainProvider Inno.Build.Composition.BuildDistribution.ResolveNativeToolchain(string targetId)`](../../build/composition/Inno.Build.Composition/BuildDistribution.cs#L109) | Resolves the SDK integration bound to an explicitly registered publication target. |
+| [`Inno.Build.Toolchains.ProductNativeBuildPlan Inno.Build.Composition.BuildDistribution.ResolveNativeProduct(string targetId, string productId)`](../../build/composition/Inno.Build.Composition/BuildDistribution.cs#L159) | Resolves a platform-contributed product closure without selecting backends inside the invoking host. |
+| [`System.Collections.Generic.IReadOnlyList<Inno.Build.BuildTargetId> Inno.Build.Composition.BuildDistribution.availableTargets`](../../build/composition/Inno.Build.Composition/BuildDistribution.cs#L80) | Gets the immutable platform identities shared by all hosts. |
+| [`System.Collections.Generic.IReadOnlyList<Inno.Build.Composition.BuildPlatformContribution> Inno.Build.Composition.BuildDistribution.platforms`](../../build/composition/Inno.Build.Composition/BuildDistribution.cs#L85) | Gets complete platform registrations in their explicit composition order. |
+| [`System.Collections.Generic.IReadOnlyList<Inno.Build.GameBuildTargetBinding> Inno.Build.Composition.BuildDistribution.CreateBindings(Inno.Assets.Pipeline.AssetPipeline assets, Inno.Core.Serialization.SerializationRegistry serialization, Inno.Extensibility.Types.TypeCatalog types)`](../../build/composition/Inno.Build.Composition/BuildDistribution.cs#L190) | Creates platform targets and validates their identities and default deployment capabilities. |
+| [`bool Inno.Build.Composition.BuildDistribution.TryResolveNativeToolchain(string targetId, out Inno.Build.Toolchains.INativeToolchainProvider? provider)`](../../build/composition/Inno.Build.Composition/BuildDistribution.cs#L133) | Checks whether this distribution contributes an SDK for an explicitly requested binding target. A standalone binding definition may describe a target without registering a product publisher. |
+| [`void Inno.Build.Composition.BuildDistribution.ValidateDeployment(Inno.Build.IGameBuildTarget target, Inno.Build.Managed.ManagedDeploymentId deployment)`](../../build/composition/Inno.Build.Composition/BuildDistribution.cs#L228) | Rejects unsupported target and deployment pairs before any staging or publication begins. |
 
 ### `Inno.Build.Composition.BuildPipelineFactory`
 

@@ -29,23 +29,28 @@ Adapter 同一进程只允许一个活动设备。Editor Application 是唯一�
 
 CreateImGuiContext 必须显式传入 ImGuiInteractionOptions，窗口必须属于应用。主窗口与 viewport 共享应用 host/surface，附加窗口创建后登记、销毁前释放登记。Platform_GetWindowFramebufferScale 为空；每个 NewFrame 前读取已有窗口真实尺寸、像素尺度与 DPI，无窗口快照复制、WindowsX64 返回 ABI 或重复 Win32/Cocoa 解析。最小化或隐藏窗口不呈现。
 
+## 附加视口退休与 renderer 所有权
+
+关闭回调只解除路由/登记和 callback 数据，调用 RetireViewport 后保留原生 SDL 窗口。在下一 managed 安全点检查 Task，成功才销毁一次；失败保留 owner 并报告。Context 成功创建后接管 renderer；失败创建由调用者保留 renderer，重复创建明确拒绝。最终 Context Dispose 调用 drain，成功后释放 Native Context 与 renderer。Application 在成功退休前保留 context 登记。内部文件按 Context/Viewports/Rendering/Interop 组织；不存在另一份窗口目录或事件总线。
+
 ## 当前源码公开 API 清单
 
-只列当前源码的 public/protected 表面；内部实现不作为稳定 API。参数、返回、失败和 owner 以英文 XML 为准。
+只列当前源码 public/protected 表面；内部机制不是稳定 API，参数、返回、失败及所有权以英文 XML 为准。
 
 ### `Inno.Adapter.Presentation.ImGui.IPlatformImGuiRenderer`
 
 | 当前声明 | 行为 |
 | --- | --- |
-| [`Inno.Adapter.Presentation.ImGui.IPlatformImGuiRenderer`](../../../backends/ImGui/runtime/Inno.Adapter.Presentation.ImGui.Sdl3/Api/IPlatformImGuiRenderer.Api.cs#L87) | Presents ImGui draw data through a replaceable renderer while platform input and windows stay shared. |
-| [`bool Inno.Adapter.Presentation.ImGui.IPlatformImGuiRenderer.supportsViewports`](../../../backends/ImGui/runtime/Inno.Adapter.Presentation.ImGui.Sdl3/Api/IPlatformImGuiRenderer.Api.cs#L92) | Gets whether detached viewport windows are rendered by this backend. |
-| [`void Inno.Adapter.Presentation.ImGui.IPlatformImGuiRenderer.CreateViewport(Inno.Adapter.Presentation.ImGui.PlatformImGuiViewportTarget target)`](../../../backends/ImGui/runtime/Inno.Adapter.Presentation.ImGui.Sdl3/Api/IPlatformImGuiRenderer.Api.cs#L122) | Creates backend presentation state for one detached viewport. |
-| [`void Inno.Adapter.Presentation.ImGui.IPlatformImGuiRenderer.DestroyViewport(Inno.Adapter.Presentation.ImGui.PlatformImGuiViewportTarget target)`](../../../backends/ImGui/runtime/Inno.Adapter.Presentation.ImGui.Sdl3/Api/IPlatformImGuiRenderer.Api.cs#L160) | Releases presentation state before its detached platform window is destroyed. |
-| [`void Inno.Adapter.Presentation.ImGui.IPlatformImGuiRenderer.PresentViewport(Inno.Adapter.Presentation.ImGui.PlatformImGuiViewportTarget target)`](../../../backends/ImGui/runtime/Inno.Adapter.Presentation.ImGui.Sdl3/Api/IPlatformImGuiRenderer.Api.cs#L152) | Marks one detached viewport ready for presentation. |
-| [`void Inno.Adapter.Presentation.ImGui.IPlatformImGuiRenderer.RenderMain(nint drawData)`](../../../backends/ImGui/runtime/Inno.Adapter.Presentation.ImGui.Sdl3/Api/IPlatformImGuiRenderer.Api.cs#L100) | Consumes current main-window draw data before the next ImGui frame begins. |
-| [`void Inno.Adapter.Presentation.ImGui.IPlatformImGuiRenderer.RenderViewport(Inno.Adapter.Presentation.ImGui.PlatformImGuiViewportTarget target, nint drawData)`](../../../backends/ImGui/runtime/Inno.Adapter.Presentation.ImGui.Sdl3/Api/IPlatformImGuiRenderer.Api.cs#L141) | Consumes draw data for one detached viewport. |
-| [`void Inno.Adapter.Presentation.ImGui.IPlatformImGuiRenderer.ResizeViewport(Inno.Adapter.Presentation.ImGui.PlatformImGuiViewportTarget target)`](../../../backends/ImGui/runtime/Inno.Adapter.Presentation.ImGui.Sdl3/Api/IPlatformImGuiRenderer.Api.cs#L130) | Resizes backend presentation state for one detached viewport. |
-| [`void Inno.Adapter.Presentation.ImGui.IPlatformImGuiRenderer.SynchronizeMainOutput(int pixelWidth, int pixelHeight)`](../../../backends/ImGui/runtime/Inno.Adapter.Presentation.ImGui.Sdl3/Api/IPlatformImGuiRenderer.Api.cs#L111) | Synchronizes the primary drawable after a platform resize. |
+| [`Inno.Adapter.Presentation.ImGui.IPlatformImGuiRenderer`](../../../backends/ImGui/runtime/Inno.Adapter.Presentation.ImGui.Sdl3/Api/IPlatformImGuiRenderer.Api.cs#L88) | Presents ImGui draw data through a replaceable renderer while platform input and windows stay shared. |
+| [`System.Threading.Tasks.Task Inno.Adapter.Presentation.ImGui.IPlatformImGuiRenderer.RetireViewport(Inno.Adapter.Presentation.ImGui.PlatformImGuiViewportTarget target)`](../../../backends/ImGui/runtime/Inno.Adapter.Presentation.ImGui.Sdl3/Api/IPlatformImGuiRenderer.Api.cs#L167) | Removes the viewport from future rendering and schedules release of its borrowed native window. |
+| [`bool Inno.Adapter.Presentation.ImGui.IPlatformImGuiRenderer.supportsViewports`](../../../backends/ImGui/runtime/Inno.Adapter.Presentation.ImGui.Sdl3/Api/IPlatformImGuiRenderer.Api.cs#L93) | Gets whether detached viewport windows are rendered by this backend. |
+| [`void Inno.Adapter.Presentation.ImGui.IPlatformImGuiRenderer.CreateViewport(Inno.Adapter.Presentation.ImGui.PlatformImGuiViewportTarget target)`](../../../backends/ImGui/runtime/Inno.Adapter.Presentation.ImGui.Sdl3/Api/IPlatformImGuiRenderer.Api.cs#L123) | Creates backend presentation state for one detached viewport. |
+| [`void Inno.Adapter.Presentation.ImGui.IPlatformImGuiRenderer.DrainViewportRetirements()`](../../../backends/ImGui/runtime/Inno.Adapter.Presentation.ImGui.Sdl3/Api/IPlatformImGuiRenderer.Api.cs#L175) | Drains requested retirements at a closed-frame owner-thread point outside native UI callbacks. |
+| [`void Inno.Adapter.Presentation.ImGui.IPlatformImGuiRenderer.PresentViewport(Inno.Adapter.Presentation.ImGui.PlatformImGuiViewportTarget target)`](../../../backends/ImGui/runtime/Inno.Adapter.Presentation.ImGui.Sdl3/Api/IPlatformImGuiRenderer.Api.cs#L153) | Marks one detached viewport ready for presentation. |
+| [`void Inno.Adapter.Presentation.ImGui.IPlatformImGuiRenderer.RenderMain(nint drawData)`](../../../backends/ImGui/runtime/Inno.Adapter.Presentation.ImGui.Sdl3/Api/IPlatformImGuiRenderer.Api.cs#L101) | Consumes current main-window draw data before the next ImGui frame begins. |
+| [`void Inno.Adapter.Presentation.ImGui.IPlatformImGuiRenderer.RenderViewport(Inno.Adapter.Presentation.ImGui.PlatformImGuiViewportTarget target, nint drawData)`](../../../backends/ImGui/runtime/Inno.Adapter.Presentation.ImGui.Sdl3/Api/IPlatformImGuiRenderer.Api.cs#L142) | Consumes draw data for one detached viewport. |
+| [`void Inno.Adapter.Presentation.ImGui.IPlatformImGuiRenderer.ResizeViewport(Inno.Adapter.Presentation.ImGui.PlatformImGuiViewportTarget target)`](../../../backends/ImGui/runtime/Inno.Adapter.Presentation.ImGui.Sdl3/Api/IPlatformImGuiRenderer.Api.cs#L131) | Resizes backend presentation state for one detached viewport. |
+| [`void Inno.Adapter.Presentation.ImGui.IPlatformImGuiRenderer.SynchronizeMainOutput(int pixelWidth, int pixelHeight)`](../../../backends/ImGui/runtime/Inno.Adapter.Presentation.ImGui.Sdl3/Api/IPlatformImGuiRenderer.Api.cs#L112) | Synchronizes the primary drawable after a platform resize. |
 
 ### `Inno.Adapter.Presentation.ImGui.ImGuiContextFlags`
 
@@ -1503,10 +1508,10 @@ CreateImGuiContext 必须显式传入 ImGuiInteractionOptions，窗口必须属�
 
 | 当前声明 | 行为 |
 | --- | --- |
-| [`Inno.Adapter.Presentation.ImGui.ImGuiTextureHandle`](../../../backends/ImGui/runtime/Inno.Adapter.Presentation.ImGui.Sdl3/Api/IPlatformImGuiRenderer.Api.cs#L10) | Identifies a backend-owned texture through an opaque ImGui token instead of a native graphics handle. |
-| [`Inno.Adapter.Presentation.ImGui.ImGuiTextureHandle.ImGuiTextureHandle(ulong value)`](../../../backends/ImGui/runtime/Inno.Adapter.Presentation.ImGui.Sdl3/Api/IPlatformImGuiRenderer.Api.cs#L18) | Creates an opaque texture token allocated by an ImGui presentation backend. |
-| [`bool Inno.Adapter.Presentation.ImGui.ImGuiTextureHandle.isValid`](../../../backends/ImGui/runtime/Inno.Adapter.Presentation.ImGui.Sdl3/Api/IPlatformImGuiRenderer.Api.cs#L36) | Gets whether this token identifies a registered texture. |
-| [`ulong Inno.Adapter.Presentation.ImGui.ImGuiTextureHandle.value`](../../../backends/ImGui/runtime/Inno.Adapter.Presentation.ImGui.Sdl3/Api/IPlatformImGuiRenderer.Api.cs#L31) | Gets the opaque token consumed only by the active ImGui backend. |
+| [`Inno.Adapter.Presentation.ImGui.ImGuiTextureHandle`](../../../backends/ImGui/runtime/Inno.Adapter.Presentation.ImGui.Sdl3/Api/IPlatformImGuiRenderer.Api.cs#L11) | Identifies a backend-owned texture through an opaque ImGui token instead of a native graphics handle. |
+| [`Inno.Adapter.Presentation.ImGui.ImGuiTextureHandle.ImGuiTextureHandle(ulong value)`](../../../backends/ImGui/runtime/Inno.Adapter.Presentation.ImGui.Sdl3/Api/IPlatformImGuiRenderer.Api.cs#L19) | Creates an opaque texture token allocated by an ImGui presentation backend. |
+| [`bool Inno.Adapter.Presentation.ImGui.ImGuiTextureHandle.isValid`](../../../backends/ImGui/runtime/Inno.Adapter.Presentation.ImGui.Sdl3/Api/IPlatformImGuiRenderer.Api.cs#L37) | Gets whether this token identifies a registered texture. |
+| [`ulong Inno.Adapter.Presentation.ImGui.ImGuiTextureHandle.value`](../../../backends/ImGui/runtime/Inno.Adapter.Presentation.ImGui.Sdl3/Api/IPlatformImGuiRenderer.Api.cs#L32) | Gets the opaque token consumed only by the active ImGui backend. |
 
 ### `Inno.Adapter.Presentation.ImGui.PlatformImGuiContext`
 
@@ -1526,23 +1531,24 @@ CreateImGuiContext 必须显式传入 ImGuiInteractionOptions，窗口必须属�
 
 | 当前声明 | 行为 |
 | --- | --- |
-| [`Inno.Adapter.Platform.PlatformNativeHandles Inno.Adapter.Presentation.ImGui.PlatformImGuiViewportTarget.nativeHandles`](../../../backends/ImGui/runtime/Inno.Adapter.Presentation.ImGui.Sdl3/Api/IPlatformImGuiRenderer.Api.cs#L71) | Gets backend-neutral native-window integration handles. |
-| [`Inno.Adapter.Presentation.ImGui.PlatformImGuiViewportTarget`](../../../backends/ImGui/runtime/Inno.Adapter.Presentation.ImGui.Sdl3/Api/IPlatformImGuiRenderer.Api.cs#L42) | Describes one detached ImGui viewport without exposing SDL or graphics-backend handles. |
-| [`int Inno.Adapter.Presentation.ImGui.PlatformImGuiViewportTarget.height`](../../../backends/ImGui/runtime/Inno.Adapter.Presentation.ImGui.Sdl3/Api/IPlatformImGuiRenderer.Api.cs#L81) | Gets the current framebuffer height. |
-| [`int Inno.Adapter.Presentation.ImGui.PlatformImGuiViewportTarget.width`](../../../backends/ImGui/runtime/Inno.Adapter.Presentation.ImGui.Sdl3/Api/IPlatformImGuiRenderer.Api.cs#L76) | Gets the current framebuffer width. |
-| [`uint Inno.Adapter.Presentation.ImGui.PlatformImGuiViewportTarget.viewportId`](../../../backends/ImGui/runtime/Inno.Adapter.Presentation.ImGui.Sdl3/Api/IPlatformImGuiRenderer.Api.cs#L61) | Gets the stable Dear ImGui viewport identity. |
-| [`uint Inno.Adapter.Presentation.ImGui.PlatformImGuiViewportTarget.windowId`](../../../backends/ImGui/runtime/Inno.Adapter.Presentation.ImGui.Sdl3/Api/IPlatformImGuiRenderer.Api.cs#L66) | Gets the platform window identity. |
+| [`Inno.Adapter.Platform.PlatformNativeHandles Inno.Adapter.Presentation.ImGui.PlatformImGuiViewportTarget.nativeHandles`](../../../backends/ImGui/runtime/Inno.Adapter.Presentation.ImGui.Sdl3/Api/IPlatformImGuiRenderer.Api.cs#L72) | Gets backend-neutral native-window integration handles. |
+| [`Inno.Adapter.Presentation.ImGui.PlatformImGuiViewportTarget`](../../../backends/ImGui/runtime/Inno.Adapter.Presentation.ImGui.Sdl3/Api/IPlatformImGuiRenderer.Api.cs#L43) | Describes one detached ImGui viewport without exposing SDL or graphics-backend handles. |
+| [`int Inno.Adapter.Presentation.ImGui.PlatformImGuiViewportTarget.height`](../../../backends/ImGui/runtime/Inno.Adapter.Presentation.ImGui.Sdl3/Api/IPlatformImGuiRenderer.Api.cs#L82) | Gets the current framebuffer height. |
+| [`int Inno.Adapter.Presentation.ImGui.PlatformImGuiViewportTarget.width`](../../../backends/ImGui/runtime/Inno.Adapter.Presentation.ImGui.Sdl3/Api/IPlatformImGuiRenderer.Api.cs#L77) | Gets the current framebuffer width. |
+| [`uint Inno.Adapter.Presentation.ImGui.PlatformImGuiViewportTarget.viewportId`](../../../backends/ImGui/runtime/Inno.Adapter.Presentation.ImGui.Sdl3/Api/IPlatformImGuiRenderer.Api.cs#L62) | Gets the stable Dear ImGui viewport identity. |
+| [`uint Inno.Adapter.Presentation.ImGui.PlatformImGuiViewportTarget.windowId`](../../../backends/ImGui/runtime/Inno.Adapter.Presentation.ImGui.Sdl3/Api/IPlatformImGuiRenderer.Api.cs#L67) | Gets the platform window identity. |
 
 ### `Inno.Adapter.Presentation.ImGui.Sdl3PlatformApplicationImGuiExtensions`
 
 | 当前声明 | 行为 |
 | --- | --- |
 | [`Inno.Adapter.Presentation.ImGui.Sdl3PlatformApplicationImGuiExtensions`](../../../backends/ImGui/runtime/Inno.Adapter.Presentation.ImGui.Sdl3/Api/Sdl3PlatformApplicationImGuiExtensions.cs#L14) | Extension APIs that add ImGui integration on top of . |
-| [`static Inno.Adapter.Presentation.ImGui.PlatformImGuiContext Inno.Adapter.Presentation.ImGui.Sdl3PlatformApplicationImGuiExtensions.CreateImGuiContext(Inno.Adapter.Platform.Sdl3.Sdl3PlatformApplication application, Inno.Adapter.Platform.Sdl3.Sdl3PlatformWindow window, Inno.Adapter.Presentation.ImGui.ImGuiContextFlags contextFlags, Inno.Adapter.Presentation.ImGui.ImGuiInteractionOptions interaction, Inno.Adapter.Presentation.ImGui.IPlatformImGuiRenderer? renderer = null)`](../../../backends/ImGui/runtime/Inno.Adapter.Presentation.ImGui.Sdl3/Api/Sdl3PlatformApplicationImGuiExtensions.cs#L89) | Creates or returns an existing ImGui context bound to the provided platform window. |
-| [`static void Inno.Adapter.Presentation.ImGui.Sdl3PlatformApplicationImGuiExtensions.DestroyImGuiContext(Inno.Adapter.Platform.Sdl3.Sdl3PlatformApplication application, Inno.Adapter.Platform.Sdl3.Sdl3PlatformWindow window)`](../../../backends/ImGui/runtime/Inno.Adapter.Presentation.ImGui.Sdl3/Api/Sdl3PlatformApplicationImGuiExtensions.cs#L126) | Destroys the ImGui context associated with the provided window, if it exists. |
+| [`static Inno.Adapter.Presentation.ImGui.PlatformImGuiContext Inno.Adapter.Presentation.ImGui.Sdl3PlatformApplicationImGuiExtensions.CreateImGuiContext(Inno.Adapter.Platform.Sdl3.Sdl3PlatformApplication application, Inno.Adapter.Platform.Sdl3.Sdl3PlatformWindow window, Inno.Adapter.Presentation.ImGui.ImGuiContextFlags contextFlags, Inno.Adapter.Presentation.ImGui.ImGuiInteractionOptions interaction, Inno.Adapter.Presentation.ImGui.IPlatformImGuiRenderer? renderer = null)`](../../../backends/ImGui/runtime/Inno.Adapter.Presentation.ImGui.Sdl3/Api/Sdl3PlatformApplicationImGuiExtensions.cs#L98) | Creates one ImGui context and transfers the supplied renderer ownership only after successful creation. |
+| [`static void Inno.Adapter.Presentation.ImGui.Sdl3PlatformApplicationImGuiExtensions.DestroyImGuiContext(Inno.Adapter.Platform.Sdl3.Sdl3PlatformApplication application, Inno.Adapter.Platform.Sdl3.Sdl3PlatformWindow window)`](../../../backends/ImGui/runtime/Inno.Adapter.Presentation.ImGui.Sdl3/Api/Sdl3PlatformApplicationImGuiExtensions.cs#L141) | Retires and disposes the window's context, retaining its application registration if retirement fails. |
 
 ## 项目依赖
 
+- [Inno.Core.Execution](../../core/Inno.Core.Execution.md)：实现依赖，PrivateAssets="compile"。
 - [Inno.Native.Sdl3](../Sdl3/Inno.Native.Sdl3.md)：公开引用边界由实际签名核对。
 - [Inno.Native.ImGui](Inno.Native.ImGui.md)：公开引用边界由实际签名核对。
 - `$(BGCSRuntimeProject)`：公开引用边界由实际签名核对。

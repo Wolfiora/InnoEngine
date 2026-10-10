@@ -1,3 +1,4 @@
+using Inno.Build.Bindings;
 using System;
 using System.IO;
 using System.Runtime.InteropServices;
@@ -46,6 +47,6 @@ public static class StandardBuildEnvironment
         };
         string host = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH") ?? "dotnet";
         host = ToolchainEnvironment.ResolveExecutable(host);
-        return new BuildCompositionContext(host, applicationDirectory, new BuildHostDescriptor(system, architecture), toolsTarget);
+        return new BuildCompositionContext(host, applicationDirectory, new BuildHostDescriptor(system, architecture), toolsTarget, new NativeBindingGenerator(host));
     }
 }

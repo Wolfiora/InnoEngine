@@ -12,6 +12,8 @@ namespace Inno.Build.Toolchains;
 public sealed class NativeBuildContext
 {
     private readonly NativeBuildInputState m_inputState;
+    private INativeBindingGenerator? m_bindingGenerator;
+    private NativeInputVerificationScope? m_verification;
     private NativeComponentDescriptor? m_component;
     private NativeComponentBuildOptions? m_componentOptions;
     private readonly string? m_buildOwner;
@@ -55,6 +57,9 @@ public sealed class NativeBuildContext
         string fingerprint
     ) : this(origin.engineRoot, origin.configuration) {
         m_inputState = origin.m_inputState;
+        sourcePreparation = origin.sourcePreparation;
+        m_bindingGenerator = origin.m_bindingGenerator;
+        m_verification = origin.m_verification;
         m_component = origin.m_component;
         m_componentOptions = origin.m_componentOptions;
         m_buildOwner = buildOwner;
@@ -69,6 +74,9 @@ public sealed class NativeBuildContext
         NativeToolchainSelection toolchain
     ) : this(origin.engineRoot, origin.configuration) {
         m_inputState = origin.m_inputState;
+        sourcePreparation = origin.sourcePreparation;
+        m_bindingGenerator = origin.m_bindingGenerator;
+        m_verification = origin.m_verification;
         m_component = origin.m_component;
         m_componentOptions = origin.m_componentOptions;
         this.toolchain = toolchain;
@@ -85,6 +93,9 @@ public sealed class NativeBuildContext
         NativeComponentBuildOptions options
     ) : this(origin.engineRoot, origin.configuration) {
         m_inputState = origin.m_inputState;
+        sourcePreparation = origin.sourcePreparation;
+        m_bindingGenerator = origin.m_bindingGenerator;
+        m_verification = origin.m_verification;
         m_component = component;
         m_componentOptions = options;
         m_buildOwner = origin.m_buildOwner;
@@ -97,9 +108,12 @@ public sealed class NativeBuildContext
 
     private NativeBuildContext(
         NativeBuildContext origin,
-        string toolDirectory
+        string? toolDirectory
     ) : this(origin.engineRoot, origin.configuration) {
         m_inputState = origin.m_inputState;
+        sourcePreparation = origin.sourcePreparation;
+        m_bindingGenerator = origin.m_bindingGenerator;
+        m_verification = origin.m_verification;
         m_component = origin.m_component;
         m_componentOptions = origin.m_componentOptions;
         m_buildOwner = origin.m_buildOwner;
@@ -164,6 +178,31 @@ public sealed class NativeBuildContext
     public NativeBuildStatistics statistics => m_inputState.statistics;
 
     internal NativeBuildInputState inputState => m_inputState;
+
+    internal NativeCMakeSource.Preparation? sourcePreparation { get; private set; }
+
+    /// <summary>
+    /// Records one complete binding batch executed by the borrowed provider.
+    /// </summary>
+    public void RecordBindingBatch() => m_inputState.RecordBindingBatch();
+
+    /// <summary>
+    /// Records one actual bridge or managed generator invocation.
+    /// </summary>
+    public void RecordBindingGeneration() => m_inputState.RecordBindingGeneration();
+
+    /// <summary>
+    /// Records one full artifact output read without treating it as an input snapshot hash.
+    /// </summary>
+    /// <param name="bytes">
+    /// The actual number of bytes consumed by output integrity verification.
+    /// </param>
+    public void RecordOutputRead(long bytes) => m_inputState.RecordOutput(bytes);
+
+    /// <summary>
+    /// Records a managed SDK process owned by generator extension preparation.
+    /// </summary>
+    public void RecordManagedProcess() => m_inputState.RecordManagedProcess();
 
     internal NativeBuildContext WithIdentity(
         NativeComponentDescriptor owner,
@@ -279,5 +318,67 @@ public sealed class NativeBuildContext
         m_bindings.TryGetValue(component.nativeProject, out NativeBindingGenerationDescriptor? generation)
             ? generation : throw new InvalidOperationException($"No target binding generation was prepared for '{component.nativeProject}'.");
 
+    /// <summary>
+    /// Borrows a generator while preserving this operation's input and tool ownership.
+    /// </summary>
+    /// <param name="generator">
+    /// The shared generation implementation selected by composition.
+    /// </param>
+    /// <returns>
+    /// A derived context; neither context owns or disposes the provider.
+    /// </returns>
+    public NativeBuildContext WithBindingGenerator(INativeBindingGenerator generator)
+    {
+        ArgumentNullException.ThrowIfNull(generator);
+        var scoped = new NativeBuildContext(this, m_toolDirectory);
+        scoped.m_bindingGenerator = generator;
+        return scoped;
+    }
+
+    /// <summary>
+    /// Requires generation to be configured explicitly before creating staging or launching tools.
+    /// </summary>
+    /// <returns>
+    /// The borrowed provider without discovering or constructing an implementation.
+    /// </returns>
+    /// <exception cref="InvalidOperationException">
+    /// Composition has not supplied a binding generator.
+    /// </exception>
+    public INativeBindingGenerator RequireBindingGenerator() => m_bindingGenerator
+        ?? throw new InvalidOperationException("Native composition must provide a binding generator.");
+
+    /// <summary>
+    /// Starts a fresh verification phase whose reads can be shared only within this derived context.
+    /// </summary>
+    /// <param name="phase">
+    /// The operation phase recorded in statistics, such as binding-locks or binding-generation.
+    /// </param>
+    /// <returns>
+    /// A context with a new input inventory and hash cache; existing scopes are unchanged.
+    /// </returns>
+    /// <remarks>
+    /// Create another phase after each independent ownership wait, generation or compilation.
+    /// </remarks>
+    public NativeBuildContext BeginInputVerification(string phase)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(phase);
+        var scoped = new NativeBuildContext(this, m_toolDirectory);
+        scoped.m_verification = new NativeInputVerificationScope(m_inputState, phase);
+        return scoped;
+    }
+
+    internal NativeInputSnapshot CaptureInputs(
+        IEnumerable<NativeBuildInput> inputs,
+        System.Threading.CancellationToken cancellationToken
+    ) => m_verification?.Capture(inputs, cancellationToken)
+        ?? m_inputState.CaptureInitial(inputs, cancellationToken);
+
     internal NativeBuildContext WithToolDirectory(string toolDirectory) => new(this, toolDirectory);
+
+    internal NativeBuildContext WithExecutionInputs(NativeInputSnapshot inputs)
+    {
+        var scoped = new NativeBuildContext(this, m_toolDirectory);
+        scoped.sourcePreparation = new NativeCMakeSource.Preparation(inputs);
+        return scoped;
+    }
 }

@@ -1,3 +1,6 @@
+using Inno.Adapter.Rendering;
+using Inno.Adapter.Rendering.Bgfx;
+using Inno.Integration.Windows.Bgfx.Runtime;
 using Inno.Adapter.Platform;
 using Inno.Adapter.Platform.Sdl3;
 using Inno.Integration.Windows.Sdl3;
@@ -27,7 +30,7 @@ internal static class WindowsPlayerComposition
             PlayerCommandLineOptions command = PlayerCommandLineOptions.Parse(arguments);
             string dataRoot = WindowsApplicationLocations.userDataRoot;
             var storage = new StorageBackendCatalog([new FileSystemStorageBackendProvider(dataRoot)]);
-            var adapterCatalog = new DefaultAdapterCatalog(new DefaultAdapterCatalogOptions { platform = new PlatformBackendCatalog([new Sdl3PlatformBackendProvider(new WindowsSdl3HostIntegration())]), storage = storage });
+            var adapterCatalog = new DefaultAdapterCatalog(new DefaultAdapterCatalogOptions { platform = new PlatformBackendCatalog([new Sdl3PlatformBackendProvider(new WindowsSdl3HostIntegration())]), storage = storage, rendering = new RenderingBackendCatalog([new BgfxRenderingBackendProvider(new WindowsBgfxSurfaceIntegration())]) });
             return OwnerThreadExecution.Run(() => PlayerApplication.RunAsync(new PlayerLaunchOptions
             {
                 modules = Generated.PlayerMetadataComposition.CreateModules(),

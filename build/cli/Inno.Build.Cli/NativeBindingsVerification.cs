@@ -1,3 +1,4 @@
+using Inno.Build.Bindings;
 using System.Threading;
 using System.Threading.Tasks;
 using Inno.Build.Toolchains;
@@ -33,16 +34,9 @@ internal static partial class NativeBindingsVerification
             string bindGenRoot = Path.GetFullPath(options.bindGenRoot);
             string repositoryRoot = options.engineRoot;
             IReadOnlyList<string> bindingProjects = DiscoverBindingProjects(repositoryRoot, options.target);
-            string uiBridgeConfig = Path.Combine(
-                repositoryRoot,
-                "backends", "RmlUi", "native",
-                "Inno.Native.UI",
-                "Bindings",
-                "rmlui.bridge.json");
-            string bindGenProject = Path.Combine(bindGenRoot, "src", "BGCS.Tool", "BGCS.Tool.csproj");
             string bindGenRuntimeProject = Path.Combine(
                 bindGenRoot, "src", "BGCS.Runtime", "BGCS.Runtime.csproj");
-            ValidateInputs(bindingProjects, uiBridgeConfig, bindGenProject, bindGenRuntimeProject);
+            ValidateInputs(bindingProjects, bindGenRuntimeProject);
 
             string target = options.target;
             string nativeConfiguration = options.configuration.ToLowerInvariant();
@@ -118,20 +112,14 @@ internal static partial class NativeBindingsVerification
 
     private static void ValidateInputs(
         IReadOnlyList<string> bindingProjects,
-        string uiBridgeConfig,
-        string bindGenProject,
         string bindGenRuntimeProject
     ) {
         foreach (string project in bindingProjects)
         {
-            string config = Path.Combine(Path.GetDirectoryName(project)!, "Bindings", "bindgen.json");
-            if (!File.Exists(config))
-                throw new FileNotFoundException("Native binding configuration was not found.", config);
+            string definition = Path.Combine(Path.GetDirectoryName(project)!, "Bindings", "bindings.props");
+            if (!File.Exists(definition))
+                throw new FileNotFoundException("The sole component binding definition was not found.", definition);
         }
-        if (!File.Exists(uiBridgeConfig))
-            throw new FileNotFoundException("RmlUi Cpp2C bridge configuration was not found.", uiBridgeConfig);
-        if (!File.Exists(bindGenProject))
-            throw new FileNotFoundException("The BindGen-CS CLI project was not found.", bindGenProject);
         if (!File.Exists(bindGenRuntimeProject))
             throw new FileNotFoundException("The BindGen-CS runtime project was not found.", bindGenRuntimeProject);
 
@@ -203,10 +191,10 @@ internal static partial class NativeBindingsVerification
     ) {
         Console.WriteLine("[inno-bindings] Build every native dependency required by generated bindings.");
         BuildCompositionContext captured = StandardBuildEnvironment.Capture(AppContext.BaseDirectory, new(options.target));
-        var host = new BuildCompositionContext(options.dotnet, captured.applicationDirectory, captured.host, captured.toolsTarget);
+        var host = new BuildCompositionContext(options.dotnet, captured.applicationDirectory, captured.host, captured.toolsTarget, new NativeBindingGenerator(options.dotnet));
         BuildDistribution distribution = StandardBuildDistribution.Create(host).build;
         ProductNativeBuildPlan plan = distribution.ResolveNativeProduct(options.target, "editor");
-        var context = new NativeBuildContext(repositoryRoot, nativeConfiguration);
+        var context = new NativeBuildContext(repositoryRoot, nativeConfiguration).WithBindingGenerator(host.bindingGenerator);
         context = context.WithToolchain(await distribution.ResolveNativeToolchain(options.target)
             .ResolveAsync(context, host.host, options.target, cancellationToken).ConfigureAwait(false));
         return (plan, await plan.BuildAsync(context, cancellationToken).ConfigureAwait(false));
@@ -216,7 +204,8 @@ internal static partial class NativeBindingsVerification
     {
         string nativeTestsRoot = Path.Combine(repositoryRoot, "backends");
         var projects = Directory.EnumerateFiles(nativeTestsRoot, "*.csproj", SearchOption.AllDirectories)
-            .Where(static path => path.Contains(Path.DirectorySeparatorChar + "tests" + Path.DirectorySeparatorChar, StringComparison.Ordinal)
+            .Where(static path => Path.GetFileNameWithoutExtension(path).StartsWith("Inno.Native.", StringComparison.Ordinal)
+                && path.Contains(Path.DirectorySeparatorChar + "tests" + Path.DirectorySeparatorChar, StringComparison.Ordinal)
                 && !path.Split(Path.DirectorySeparatorChar).Any(static part => part is "bin" or "obj"))
             .Order(StringComparer.Ordinal).ToList();
         projects.Add(Path.Combine(repositoryRoot, "tests", "text", "Inno.Text.Tests", "Inno.Text.Tests.csproj"));

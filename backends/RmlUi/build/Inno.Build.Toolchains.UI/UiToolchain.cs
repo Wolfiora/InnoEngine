@@ -23,7 +23,7 @@ public static class UiToolchain
             ["extern/freetype", "extern/harfbuzz", "extern/RmlUi", "backends/RmlUi/native/Inno.Native.UI/Native/include", "backends/RmlUi/native/Inno.Native.UI/Native/src", "backends/RmlUi/native/Inno.Native.UI/Native/CMakeLists.txt"],
             ["libinno-ui.a", "librmlui.a"],
             ["browser-wasm"]),
-        bindingConfig: "backends/RmlUi/native/Inno.Native.UI/Bindings/bindgen.json");
+        bindingDefinition: "backends/RmlUi/native/Inno.Native.UI/Bindings/bindings.props");
 
     /// <summary>
     /// Builds the component using the explicitly selected target SDK and validates the complete native product.

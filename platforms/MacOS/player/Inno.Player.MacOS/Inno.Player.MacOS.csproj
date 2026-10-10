@@ -15,6 +15,7 @@
     <InnoGeneratePlayerComposition>true</InnoGeneratePlayerComposition>
   </PropertyGroup>
   <ItemGroup>
+    <ProjectReference Include="../../integrations/Inno.Integration.MacOS.Bgfx.Runtime/Inno.Integration.MacOS.Bgfx.Runtime.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../integrations/Inno.Integration.MacOS.Sdl3/Inno.Integration.MacOS.Sdl3.csproj" PrivateAssets="compile" />
 
     <ProjectReference Include="../../../../src/foundation/core/Inno.Core.Execution/Inno.Core.Execution.csproj" />

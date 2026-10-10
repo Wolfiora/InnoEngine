@@ -33,7 +33,7 @@ public sealed class BrowserSupportPackValidator : IPlayerSupportPackValidator
             throw new ArgumentException("A browser Support Pack requires a complete static component closure.", nameof(nativePlan));
         m_archives = nativePlan.steps.SelectMany(step => step.component.staticBuild!.archiveNames
             .Select(archive => Path.Combine(step.id, BuildTargetId.browserWasm.value, archive))).ToArray();
-        m_bindings = nativePlan.steps.Where(static step => step.component.bindingConfig is not null)
+        m_bindings = nativePlan.steps.Where(static step => step.component.bindingDefinition is not null)
             .Select(static step => Path.GetFileNameWithoutExtension(step.component.nativeProject) + ".dll").ToArray();
     }
 

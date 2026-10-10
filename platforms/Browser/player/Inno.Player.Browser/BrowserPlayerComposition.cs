@@ -1,3 +1,6 @@
+using Inno.Adapter.Rendering;
+using Inno.Adapter.Rendering.Bgfx;
+using Inno.Integration.Browser.Bgfx.Runtime;
 using Inno.Adapter.Platform;
 using Inno.Adapter.Platform.Sdl3;
 using Inno.Integration.Browser.Sdl3;
@@ -34,7 +37,7 @@ internal static class BrowserPlayerComposition
                 modules = Generated.PlayerMetadataComposition.CreateModules(),
                 types = Generated.PlayerMetadataComposition.CreateTypes(),
                 serializationMetadata = Generated.PlayerMetadataComposition.CreateSerialization(),
-                adapters = new DefaultAdapterCatalog(new DefaultAdapterCatalogOptions { platform = new PlatformBackendCatalog([new Sdl3PlatformBackendProvider(new BrowserSdl3HostIntegration())]), storage = storage }),
+                adapters = new DefaultAdapterCatalog(new DefaultAdapterCatalogOptions { platform = new PlatformBackendCatalog([new Sdl3PlatformBackendProvider(new BrowserSdl3HostIntegration())]), storage = storage, rendering = new RenderingBackendCatalog([new BgfxRenderingBackendProvider(new BrowserBgfxSurfaceIntegration())]) }),
                 adapterSelection = StandardAdapterSelection.Create(StorageBackendId.browser),
                 contentSource = new HttpPlayerContentSource(client),
                 createStorage = manifest => storage.CreateStorage(StorageBackendId.browser,

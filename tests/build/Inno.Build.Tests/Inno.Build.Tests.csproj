@@ -7,6 +7,7 @@
     <IsTestProject>true</IsTestProject>
   </PropertyGroup>
   <ItemGroup>
+    <ProjectReference Include="../../../build/bindings/Inno.Build.Bindings/Inno.Build.Bindings.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../../backends/Bgfx/build/Inno.Build.Toolchains.Bgfx.Tools/Inno.Build.Toolchains.Bgfx.Tools.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../../backends/Bgfx/build/Inno.Build.Toolchains.Bgfx/Inno.Build.Toolchains.Bgfx.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../../platforms/Linux/integrations/Inno.Integration.Linux.Bgfx/Inno.Integration.Linux.Bgfx.csproj" PrivateAssets="compile" />
@@ -47,6 +48,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
+    <PackageReference Include="Microsoft.Build" Version="17.12.50" />
     <PackageReference Include="Microsoft.Build.Framework" Version="17.12.50" />
     <PackageReference Include="Microsoft.Build.Utilities.Core" Version="17.12.50" />
     <PackageReference Include="xunit" Version="2.6.6" />

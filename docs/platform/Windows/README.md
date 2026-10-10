@@ -16,3 +16,7 @@
 - [Inno.Integration.Windows.Bgfx](Inno.Integration.Windows.Bgfx.md)：平台与共享后端的明确接入。
 
 - [Inno.Integration.Windows.Sdl3](Inno.Integration.Windows.Sdl3.md)：平台与共享后端的明确接入。
+
+## BGFX 运行接入
+
+- [Inno.Integration.Windows.Bgfx.Runtime](Inno.Integration.Windows.Bgfx.Runtime.md)：独立于构建 integration 的 surface 解析和能力声明。

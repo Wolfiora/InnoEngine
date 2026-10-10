@@ -24,7 +24,7 @@ Support Pack source 复用共同 FilePlayerSupportPackPreparation，注入产品
 
 ## 当前源码公开 API 清单
 
-只列当前源码的 public/protected 表面；内部实现不作为稳定 API。参数、返回、失败和 owner 以英文 XML 为准。
+只列当前源码 public/protected 表面；内部机制不是稳定 API，参数、返回、失败及所有权以英文 XML 为准。
 
 ### `Inno.Build.Windows.WindowsBuildModule`
 
@@ -46,11 +46,11 @@ Support Pack source 复用共同 FilePlayerSupportPackPreparation，注入产品
 
 | 当前声明 | 行为 |
 | --- | --- |
-| [`Inno.Build.BuildTargetId Inno.Build.Windows.WindowsPlayerSupportPackSource.target`](../../../platforms/Windows/build/Inno.Build.Windows/SupportPacks/WindowsPlayerSupportPackSource.cs#L41) | See the implemented contract. |
+| [`Inno.Build.BuildTargetId Inno.Build.Windows.WindowsPlayerSupportPackSource.target`](../../../platforms/Windows/build/Inno.Build.Windows/SupportPacks/WindowsPlayerSupportPackSource.cs#L45) | See the implemented contract. |
 | [`Inno.Build.Windows.WindowsPlayerSupportPackSource`](../../../platforms/Windows/build/Inno.Build.Windows/SupportPacks/WindowsPlayerSupportPackSource.cs#L11) | Prepares the Windows Player's explicit layout through shared publication mechanisms. |
-| [`Inno.Build.Windows.WindowsPlayerSupportPackSource.WindowsPlayerSupportPackSource(Inno.Build.Toolchains.ProductNativeBuildPlan nativePlan, Inno.Build.Toolchains.BuildHostDescriptor host, string dotnetHost)`](../../../platforms/Windows/build/Inno.Build.Windows/SupportPacks/WindowsPlayerSupportPackSource.cs#L27) | Captures the selected product closure and tool execution host. |
-| [`System.Threading.Tasks.ValueTask<Inno.Build.SupportPacks.PlayerSupportPackPlan> Inno.Build.Windows.WindowsPlayerSupportPackSource.CreatePlanAsync(Inno.Build.SupportPacks.PlayerSupportPackPlanningContext context, System.Threading.CancellationToken cancellationToken)`](../../../platforms/Windows/build/Inno.Build.Windows/SupportPacks/WindowsPlayerSupportPackSource.cs#L44) | See the implemented contract. |
-| [`void Inno.Build.Windows.WindowsPlayerSupportPackSource.Validate(string directory)`](../../../platforms/Windows/build/Inno.Build.Windows/SupportPacks/WindowsPlayerSupportPackSource.cs#L50) | See the implemented contract. |
+| [`Inno.Build.Windows.WindowsPlayerSupportPackSource.WindowsPlayerSupportPackSource(Inno.Build.Toolchains.ProductNativeBuildPlan nativePlan, Inno.Build.Toolchains.BuildHostDescriptor host, string dotnetHost, Inno.Build.Toolchains.INativeBindingGenerator bindingGenerator)`](../../../platforms/Windows/build/Inno.Build.Windows/SupportPacks/WindowsPlayerSupportPackSource.cs#L30) | Captures the selected product closure and tool execution host. |
+| [`System.Threading.Tasks.ValueTask<Inno.Build.SupportPacks.PlayerSupportPackPlan> Inno.Build.Windows.WindowsPlayerSupportPackSource.CreatePlanAsync(Inno.Build.SupportPacks.PlayerSupportPackPlanningContext context, System.Threading.CancellationToken cancellationToken)`](../../../platforms/Windows/build/Inno.Build.Windows/SupportPacks/WindowsPlayerSupportPackSource.cs#L48) | See the implemented contract. |
+| [`void Inno.Build.Windows.WindowsPlayerSupportPackSource.Validate(string directory)`](../../../platforms/Windows/build/Inno.Build.Windows/SupportPacks/WindowsPlayerSupportPackSource.cs#L54) | See the implemented contract. |
 
 ### `Inno.Build.Windows.WindowsSupportPackValidator`
 

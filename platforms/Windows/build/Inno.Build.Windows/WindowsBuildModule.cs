@@ -44,7 +44,7 @@ public static class WindowsBuildModule
         ArgumentNullException.ThrowIfNull(editorNativePlan);
         return new(target,
             () => new WindowsX64GameBuildTarget(),
-            new WindowsPlayerSupportPackSource(nativePlan, context.host, context.dotnetHost), new WindowsNativeToolchainProvider(context.dotnetHost),
+            new WindowsPlayerSupportPackSource(nativePlan, context.host, context.dotnetHost, context.bindingGenerator), new WindowsNativeToolchainProvider(context.dotnetHost),
             "platforms/Windows/editor/Inno.Editor.Windows/Inno.Editor.Windows.csproj",
             [nativePlan, editorNativePlan, shaderToolsPlan]);
     }

@@ -1,3 +1,4 @@
+using Inno.Build.Bindings;
 using System;
 using Inno.Build.Distribution.Standard;
 using Inno.Build.Composition;
@@ -21,7 +22,7 @@ public sealed class PlatformBackendIntegrationTests
         Assert.Equal("linux-arm64", LinuxBgfxIntegration.CreateNativeProfile("linux-arm64").targetId);
         Assert.Throws<NotSupportedException>(() => LinuxBgfxIntegration.CreateNativeProfile("windows-x64"));
         var context = new BuildCompositionContext("explicit-sdk", System.IO.Path.GetTempPath(),
-            new BuildHostDescriptor("Windows", "x64"), BuildTargetId.windowsX64);
+            new BuildHostDescriptor("Windows", "x64"), BuildTargetId.windowsX64, new NativeBindingGenerator("explicit-sdk"));
         var standard = StandardBuildDistribution.Create(context);
         Assert.Same(WindowsBgfxIntegration.shaderProfile, standard.ResolveShaderTarget(BuildTargetId.windowsX64));
         Assert.Same(MacOSBgfxIntegration.shaderProfile, standard.ResolveShaderTarget(BuildTargetId.macOSArm64));

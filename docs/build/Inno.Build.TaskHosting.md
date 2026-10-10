@@ -57,23 +57,32 @@ MSBuild 从已验证的不可变快照准备自己的私有加载目录。宿主
 `TaskRuntimeBuildTests.cs` 通过公开 Task/IBuildEngine3/FileLease 验证共享写入、取消、失败释放及属性拒绝；并发真实 MSBuild 进程另行验证实际引导闭包。
 普通产品 Build/Publish 还验证真实引导闭包；Design-time Build 不执行该 Task。
 
+## Build 生命周期内复用与 restore ownership
+
+BuildTaskRuntimeTask 在 IBuildEngine4 的 Build registry 注册 BCL string[][] 不可变 publication metadata。复用前重新读取完整请求身份和实际输出哈希；源码、SDK、配置变化、输出损坏、失败或取消不会命中成功缓存。不同 Build 和私有载入边界保持独立。共享 Task runtime 编译和 restore graph 写入分别取得 Core.IO FileLease，等待时 Yield/Reacquire；RestoreOwnedProjectTask 传递明确 project metadata/属性，不重新解析 SDK。registry 不持有 lease 或 SDK owner，后续 publisher 按 reader 协议退休。
+
+## Build 生命周期复用
+
+IBuildEngine4 的 Build registry 只缓存已成功验证的不可变 publication，完整身份覆盖当前源码、SDK、配置、明确属性及输出 owner。记录使用 BCL 数据，不持有私有 ALC 类型、SDK、文件 lease 或失败/取消结果；各实际载入边界仍保留自己的私有 owner。跨进程编译和共享 restore 写入由 Core.IO lease 协调，等待期间 Yield/Reacquire。
+
 ## 当前源码公开 API 清单
 
-只列当前源码的 public/protected 表面；内部实现不作为稳定 API。参数、返回、失败和 owner 以英文 XML 为准。
+只列当前源码 public/protected 表面；内部机制不是稳定 API，参数、返回、失败及所有权以英文 XML 为准。
 
 ### `Inno.Build.TaskHosting.BuildTaskRuntimeTask`
 
 | 当前声明 | 行为 |
 | --- | --- |
-| [`ITaskItem[] Inno.Build.TaskHosting.BuildTaskRuntimeTask.TargetOutputs`](../../build/tasks/Inno.Build.TaskHosting/BuildTaskRuntimeTask.cs#L53) | Gets the returned runtime files and their hash metadata after successful compilation. |
+| [`ITaskItem[] Inno.Build.TaskHosting.BuildTaskRuntimeTask.TargetOutputs`](../../build/tasks/Inno.Build.TaskHosting/BuildTaskRuntimeTask.cs#L59) | Gets the returned runtime files and their hash metadata after successful compilation. |
 | [`Inno.Build.TaskHosting.BuildTaskRuntimeTask`](../../build/tasks/Inno.Build.TaskHosting/BuildTaskRuntimeTask.cs#L15) | Coordinates shared task-runtime compilation before immutable publication and private loading. |
-| [`override bool Inno.Build.TaskHosting.BuildTaskRuntimeTask.Execute()`](../../build/tasks/Inno.Build.TaskHosting/BuildTaskRuntimeTask.cs#L62) | Serializes shared writes across processes while yielding the MSBuild node during ownership waits. |
+| [`override bool Inno.Build.TaskHosting.BuildTaskRuntimeTask.Execute()`](../../build/tasks/Inno.Build.TaskHosting/BuildTaskRuntimeTask.cs#L68) | Serializes shared writes across processes while yielding the MSBuild node during ownership waits. |
 | [`string Inno.Build.TaskHosting.BuildTaskRuntimeTask.ArtifactsDirectory`](../../build/tasks/Inno.Build.TaskHosting/BuildTaskRuntimeTask.cs#L30) | Gets or sets the absolute shared intermediate owner, also supplied as ArtifactsPath. |
+| [`string Inno.Build.TaskHosting.BuildTaskRuntimeTask.LoadDirectory`](../../build/tasks/Inno.Build.TaskHosting/BuildTaskRuntimeTask.cs#L36) | Gets or sets the private reader location registered before returning an immutable runtime. |
 | [`string Inno.Build.TaskHosting.BuildTaskRuntimeTask.ProjectFile`](../../build/tasks/Inno.Build.TaskHosting/BuildTaskRuntimeTask.cs#L24) | Gets or sets the task project whose complete runtime is built by the calling MSBuild engine. |
-| [`string[] Inno.Build.TaskHosting.BuildTaskRuntimeTask.Properties`](../../build/tasks/Inno.Build.TaskHosting/BuildTaskRuntimeTask.cs#L43) | Gets or sets explicit name=value properties after product-specific global properties are removed. ArtifactsPath is owned by this task and cannot be overridden. |
-| [`string[] Inno.Build.TaskHosting.BuildTaskRuntimeTask.RemoveProperties`](../../build/tasks/Inno.Build.TaskHosting/BuildTaskRuntimeTask.cs#L48) | Gets or sets parent global properties that must not enter the host tool build. |
-| [`string[] Inno.Build.TaskHosting.BuildTaskRuntimeTask.Targets`](../../build/tasks/Inno.Build.TaskHosting/BuildTaskRuntimeTask.cs#L36) | Gets or sets the ordered targets returning the complete hashed runtime closure. |
-| [`void Inno.Build.TaskHosting.BuildTaskRuntimeTask.Cancel()`](../../build/tasks/Inno.Build.TaskHosting/BuildTaskRuntimeTask.cs#L129) | Cancels an ownership wait without racing retirement of the cancellation source. |
+| [`string[] Inno.Build.TaskHosting.BuildTaskRuntimeTask.Properties`](../../build/tasks/Inno.Build.TaskHosting/BuildTaskRuntimeTask.cs#L49) | Gets or sets explicit name=value properties after product-specific global properties are removed. ArtifactsPath is owned by this task and cannot be overridden. |
+| [`string[] Inno.Build.TaskHosting.BuildTaskRuntimeTask.RemoveProperties`](../../build/tasks/Inno.Build.TaskHosting/BuildTaskRuntimeTask.cs#L54) | Gets or sets parent global properties that must not enter the host tool build. |
+| [`string[] Inno.Build.TaskHosting.BuildTaskRuntimeTask.Targets`](../../build/tasks/Inno.Build.TaskHosting/BuildTaskRuntimeTask.cs#L42) | Gets or sets the ordered targets returning the complete hashed runtime closure. |
+| [`void Inno.Build.TaskHosting.BuildTaskRuntimeTask.Cancel()`](../../build/tasks/Inno.Build.TaskHosting/BuildTaskRuntimeTask.cs#L171) | Cancels an ownership wait without racing retirement of the cancellation source. |
 
 ### `Inno.Build.TaskHosting.PublishTaskHostTask`
 
@@ -86,7 +95,18 @@ MSBuild 从已验证的不可变快照准备自己的私有加载目录。宿主
 | [`string Inno.Build.TaskHosting.PublishTaskHostTask.LoadDirectory`](../../build/tasks/Inno.Build.TaskHosting/PublishTaskHostTask.cs#L39) | Gets or sets the absolute private load directory whose parent receives this process's ownership marker. |
 | [`string Inno.Build.TaskHosting.PublishTaskHostTask.PublishedAssembly`](../../build/tasks/Inno.Build.TaskHosting/PublishTaskHostTask.cs#L51) | Gets the verified immutable task assembly path after successful publication. |
 | [`string Inno.Build.TaskHosting.PublishTaskHostTask.PublisherDirectory`](../../build/tasks/Inno.Build.TaskHosting/PublishTaskHostTask.cs#L46) | Gets or sets an optional private bootstrap directory to register under the same process ownership. An empty value leaves the caller's publisher assembly lifetime outside this cache. |
-| [`void Inno.Build.TaskHosting.PublishTaskHostTask.Cancel()`](../../build/tasks/Inno.Build.TaskHosting/PublishTaskHostTask.cs#L115) | Cancels ownership waits and unpublished copies without racing token retirement. |
+| [`void Inno.Build.TaskHosting.PublishTaskHostTask.Cancel()`](../../build/tasks/Inno.Build.TaskHosting/PublishTaskHostTask.cs#L122) | Cancels ownership waits and unpublished copies without racing token retirement. |
+
+### `Inno.Build.TaskHosting.RestoreOwnedProjectTask`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`ITaskItem[] Inno.Build.TaskHosting.RestoreOwnedProjectTask.Projects`](../../build/tasks/Inno.Build.TaskHosting/RestoreOwnedProjectTask.cs#L23) | Gets or sets projects with their explicit AdditionalProperties metadata. |
+| [`Inno.Build.TaskHosting.RestoreOwnedProjectTask`](../../build/tasks/Inno.Build.TaskHosting/RestoreOwnedProjectTask.cs#L14) | Coordinates SDK restore writes for the checkout's shared restore graph owner. |
+| [`override bool Inno.Build.TaskHosting.RestoreOwnedProjectTask.Execute()`](../../build/tasks/Inno.Build.TaskHosting/RestoreOwnedProjectTask.cs#L44) | Waits outside the MSBuild node, then restores under exclusive cross-process write ownership. |
+| [`string Inno.Build.TaskHosting.RestoreOwnedProjectTask.LockPath`](../../build/tasks/Inno.Build.TaskHosting/RestoreOwnedProjectTask.cs#L30) | Gets or sets the absolute lock belonging to all writers of the shared restore graph. The lock file remains after release. |
+| [`string[] Inno.Build.TaskHosting.RestoreOwnedProjectTask.Properties`](../../build/tasks/Inno.Build.TaskHosting/RestoreOwnedProjectTask.cs#L36) | Gets or sets explicit name=value restore properties, independent of product discovery. |
+| [`void Inno.Build.TaskHosting.RestoreOwnedProjectTask.Cancel()`](../../build/tasks/Inno.Build.TaskHosting/RestoreOwnedProjectTask.cs#L107) | Cancels this writer's ownership wait without canceling another active restore. |
 
 ## 项目依赖
 

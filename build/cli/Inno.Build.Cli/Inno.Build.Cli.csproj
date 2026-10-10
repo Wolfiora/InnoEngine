@@ -7,6 +7,7 @@
     <OutputPath Condition="'$(InnoBuildCliOutputPath)' != ''">$(InnoBuildCliOutputPath)</OutputPath>
   </PropertyGroup>
   <ItemGroup>
+    <ProjectReference Include="../../bindings/Inno.Build.Bindings/Inno.Build.Bindings.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../../backends/Bgfx/build/Inno.Build.Toolchains.Bgfx/Inno.Build.Toolchains.Bgfx.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../composition/Inno.Build.Composition/Inno.Build.Composition.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj" PrivateAssets="compile" />

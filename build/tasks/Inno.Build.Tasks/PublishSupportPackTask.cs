@@ -1,3 +1,4 @@
+using Inno.Build.Bindings;
 using System;
 using System.Threading;
 using Inno.Build;
@@ -66,7 +67,8 @@ public sealed class PublishSupportPackTask : BuildTask, ICancelableTask
         {
             var execution = StandardBuildEnvironment.Capture(AppContext.BaseDirectory, new BuildTargetId(ToolTarget));
             var context = new BuildCompositionContext(ToolchainEnvironment.ResolveExecutable(DotnetHost),
-                AppContext.BaseDirectory, execution.host, execution.toolsTarget);
+                AppContext.BaseDirectory, execution.host, execution.toolsTarget,
+                new NativeBindingGenerator(ToolchainEnvironment.ResolveExecutable(DotnetHost)));
             string installed = StandardBuildDistribution.Create(context).build.supportPacks.PublishAsync(
                 EngineRoot, OutputRoot, new BuildTargetId(Target), DotnetHost, cancellation.Token)
                 .AsTask().GetAwaiter().GetResult();

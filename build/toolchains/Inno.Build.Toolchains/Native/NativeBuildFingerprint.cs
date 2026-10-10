@@ -47,6 +47,36 @@ public static class NativeBuildFingerprint
         return Create(declarations, state.CaptureInitial(inputs, cancellationToken));
     }
 
+    /// <summary>
+    /// Hashes declarations using the current operation's initial snapshot or explicit fresh verification phase.
+    /// </summary>
+    /// <param name="context">
+    /// The owner of this phase's complete input inventory and content hashes.
+    /// </param>
+    /// <param name="declarations">
+    /// Ordered non-file inputs; declaration order remains significant.
+    /// </param>
+    /// <param name="inputs">
+    /// Complete inputs with stable logical identities and physical read locations.
+    /// </param>
+    /// <param name="cancellationToken">
+    /// Cancels complete enumeration and hashing.
+    /// </param>
+    /// <returns>
+    /// The SHA-256 identity; repeated physical reads within this phase are reused.
+    /// </returns>
+    public static string Create(
+        NativeBuildContext context,
+        IEnumerable<string> declarations,
+        IEnumerable<NativeBuildInput> inputs,
+        CancellationToken cancellationToken = default
+    ) {
+        ArgumentNullException.ThrowIfNull(context);
+        ArgumentNullException.ThrowIfNull(declarations);
+        ArgumentNullException.ThrowIfNull(inputs);
+        return Create(declarations, context.CaptureInputs(inputs, cancellationToken));
+    }
+
     internal static string Create(
         IEnumerable<string> declarations,
         NativeInputSnapshot snapshot

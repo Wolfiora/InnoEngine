@@ -27,16 +27,16 @@ Windows 解析 Win32 surface；macOS 解析 Cocoa surface 并设置当前按键�
 
 ## 当前源码公开 API 清单
 
-只列当前源码的 public/protected 表面；内部实现不作为稳定 API。参数、返回、失败和 owner 以英文 XML 为准。
+只列当前源码 public/protected 表面；内部机制不是稳定 API，参数、返回、失败及所有权以英文 XML 为准。
 
 ### `Inno.Integration.Browser.Sdl3.BrowserSdl3HostIntegration`
 
 | 当前声明 | 行为 |
 | --- | --- |
-| [`Inno.Adapter.Platform.PlatformNativeHandles Inno.Integration.Browser.Sdl3.BrowserSdl3HostIntegration.ResolveNativeSurface(nint windowHandle)`](../../../platforms/Browser/integrations/Inno.Integration.Browser.Sdl3/BrowserSdl3HostIntegration.cs#L53) | See the implemented contract. |
+| [`Inno.Adapter.Platform.PlatformNativeHandles Inno.Integration.Browser.Sdl3.BrowserSdl3HostIntegration.ResolveNativeSurface(nint windowHandle)`](../../../platforms/Browser/integrations/Inno.Integration.Browser.Sdl3/BrowserSdl3HostIntegration.cs#L30) | See the implemented contract. |
 | [`Inno.Adapter.Platform.Sdl3.Sdl3HostCapabilities Inno.Integration.Browser.Sdl3.BrowserSdl3HostIntegration.capabilities`](../../../platforms/Browser/integrations/Inno.Integration.Browser.Sdl3/BrowserSdl3HostIntegration.cs#L16) | See the implemented contract. |
 | [`Inno.Integration.Browser.Sdl3.BrowserSdl3HostIntegration`](../../../platforms/Browser/integrations/Inno.Integration.Browser.Sdl3/BrowserSdl3HostIntegration.cs#L13) | Provides the Browser SDK, native surface and focus policies for the shared SDL backend. |
-| [`bool Inno.Integration.Browser.Sdl3.BrowserSdl3HostIntegration.GetInitialFocus(nint windowHandle)`](../../../platforms/Browser/integrations/Inno.Integration.Browser.Sdl3/BrowserSdl3HostIntegration.cs#L69) | See the implemented contract. |
+| [`bool Inno.Integration.Browser.Sdl3.BrowserSdl3HostIntegration.GetInitialFocus(nint windowHandle)`](../../../platforms/Browser/integrations/Inno.Integration.Browser.Sdl3/BrowserSdl3HostIntegration.cs#L46) | See the implemented contract. |
 | [`nint Inno.Integration.Browser.Sdl3.BrowserSdl3HostIntegration.CreateWindow(Inno.Platform.PlatformWindowOptions options)`](../../../platforms/Browser/integrations/Inno.Integration.Browser.Sdl3/BrowserSdl3HostIntegration.cs#L24) | See the implemented contract. |
 | [`void Inno.Integration.Browser.Sdl3.BrowserSdl3HostIntegration.ConfigureInitialization()`](../../../platforms/Browser/integrations/Inno.Integration.Browser.Sdl3/BrowserSdl3HostIntegration.cs#L19) | See the implemented contract. |
 

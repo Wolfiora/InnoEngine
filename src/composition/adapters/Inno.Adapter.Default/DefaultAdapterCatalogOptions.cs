@@ -1,4 +1,5 @@
 using Inno.Adapter.Storage;
+using Inno.Adapter.Rendering;
 using Inno.Adapter.Platform;
 
 namespace Inno.Adapter.Default;
@@ -17,4 +18,9 @@ public sealed class DefaultAdapterCatalogOptions
     /// Gets or initializes the immutable storage factory configured for this host.
     /// </summary>
     public required IStorageBackendFactory storage { get; init; }
+
+    /// <summary>
+    /// Gets or initializes the explicitly selected rendering factory and its host surface integration.
+    /// </summary>
+    public required IRenderingBackendFactory rendering { get; init; }
 }

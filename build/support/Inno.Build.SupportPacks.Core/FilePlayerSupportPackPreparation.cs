@@ -24,6 +24,7 @@ public sealed class FilePlayerSupportPackPreparation
     private readonly ProductNativeBuildPlan m_nativePlan;
     private readonly INativeToolchainProvider m_toolchainProvider;
     private readonly BuildHostDescriptor m_host;
+    private readonly INativeBindingGenerator m_bindingGenerator;
 
     /// <summary>
     /// Captures the platform layout and validator without preparing any tools or files.
@@ -58,6 +59,9 @@ public sealed class FilePlayerSupportPackPreparation
     /// <param name="host">
     /// The declared machine executing tools.
     /// </param>
+    /// <param name="bindingGenerator">
+    /// The borrowed generation service used by the frozen Native operation.
+    /// </param>
     /// <exception cref="ArgumentException">
     /// A platform identifier or required target string is blank.
     /// </exception>
@@ -74,7 +78,8 @@ public sealed class FilePlayerSupportPackPreparation
         string templateFile,
         ProductNativeBuildPlan nativePlan,
         INativeToolchainProvider toolchainProvider,
-        BuildHostDescriptor host
+        BuildHostDescriptor host,
+        INativeBindingGenerator bindingGenerator
     ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(target.value);
         ArgumentException.ThrowIfNullOrWhiteSpace(runtimeIdentifier);
@@ -90,6 +95,8 @@ public sealed class FilePlayerSupportPackPreparation
         m_templateFile = templateFile;
         m_nativePlan = nativePlan;
         m_toolchainProvider = toolchainProvider;
+        ArgumentNullException.ThrowIfNull(bindingGenerator);
+        m_bindingGenerator = bindingGenerator;
         m_host = host;
         m_target = target;
         m_validator = validator;
@@ -125,7 +132,8 @@ public sealed class FilePlayerSupportPackPreparation
         string template = Inno.Core.IO.PathBoundary.Resolve(context.engineRoot, m_templateFile);
         if (!File.Exists(template))
             throw new FileNotFoundException("The Player publication template is absent.", template);
-        var native = new NativeBuildContext(context.engineRoot, ToolchainLayout.C_RELEASE_CONFIGURATION);
+        var native = new NativeBuildContext(context.engineRoot, ToolchainLayout.C_RELEASE_CONFIGURATION)
+            .WithBindingGenerator(m_bindingGenerator);
         NativeToolchainSelection selection = await m_toolchainProvider.ResolveAsync(
             native, m_host, m_nativePlatform, cancellationToken).ConfigureAwait(false);
         DotNetSdkDescriptor sdk = await DotNetSdkResolver.ResolveAsync(
@@ -140,11 +148,33 @@ public sealed class FilePlayerSupportPackPreparation
         CancellationToken cancellationToken
     ) {
         IReadOnlyList<NativeBuildProduct> products = await m_nativePlan.BuildAsync(native, cancellationToken).ConfigureAwait(false);
-        await ToolchainEnvironment.RunAsync(context.sdk.hostPath,
+        string bindingSelection = Path.Combine(context.stagingDirectory, "BindingSelection.props");
+        NativeBindingGenerationDescriptor.WriteSelection(bindingSelection,
+            m_nativePlan.steps.Select((
+                step,
+                index
+            ) => (step, product: products[index]))
+                .Where(static pair => pair.product.bindingGeneration is not null)
+                .ToDictionary(static pair => pair.step.component.nativeProject,
+                    static pair => pair.product.bindingGeneration!, StringComparer.Ordinal),
+            m_nativePlan.steps.Where((
+                step,
+                index
+            ) => products[index].bindingGeneration is not null)
+                .ToDictionary(static step => step.component.nativeProject, static step => step.options.libraryKind, StringComparer.Ordinal));
+        try
+        {
+            await ToolchainEnvironment.RunAsync(context.sdk.hostPath,
             [context.sdk.cliPath, "build", project, "--disable-build-servers", "-m:1", "-nodeReuse:false", "--configuration", "Release",
                 "--runtime", m_runtimeIdentifier, "--nologo", "-p:DebugType=None", "-p:DebugSymbols=false",
-                "-p:InnoNativeTarget=" + m_target.value, "-p:InnoPrepareProductNative=false"],
+                "-p:InnoNativeTarget=" + m_target.value, "-p:InnoPrepareProductNative=false",
+                "-p:InnoNativeBindingSelection=" + bindingSelection],
             context.engineRoot, cancellationToken, DotNetSdkEnvironment.Create(context.sdk.hostPath)).ConfigureAwait(false);
+        }
+        finally
+        {
+            File.Delete(bindingSelection);
+        }
         string buildOutput = (await ToolchainEnvironment.CaptureOutputAsync(context.sdk.hostPath,
             [context.sdk.cliPath, "msbuild", project, "-getProperty:TargetDir", "-p:Configuration=Release", "-p:RuntimeIdentifier=" + m_runtimeIdentifier,
                 "-p:InnoNativeTarget=" + m_target.value, "-p:DesignTimeBuild=true", "-nologo"],

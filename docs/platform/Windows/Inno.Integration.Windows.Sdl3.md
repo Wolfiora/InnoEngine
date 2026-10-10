@@ -27,16 +27,16 @@ Windows 解析 Win32 surface；macOS 解析 Cocoa surface 并设置当前按键�
 
 ## 当前源码公开 API 清单
 
-只列当前源码的 public/protected 表面；内部实现不作为稳定 API。参数、返回、失败和 owner 以英文 XML 为准。
+只列当前源码 public/protected 表面；内部机制不是稳定 API，参数、返回、失败及所有权以英文 XML 为准。
 
 ### `Inno.Integration.Windows.Sdl3.WindowsSdl3HostIntegration`
 
 | 当前声明 | 行为 |
 | --- | --- |
-| [`Inno.Adapter.Platform.PlatformNativeHandles Inno.Integration.Windows.Sdl3.WindowsSdl3HostIntegration.ResolveNativeSurface(nint windowHandle)`](../../../platforms/Windows/integrations/Inno.Integration.Windows.Sdl3/WindowsSdl3HostIntegration.cs#L37) | See the implemented contract. |
+| [`Inno.Adapter.Platform.PlatformNativeHandles Inno.Integration.Windows.Sdl3.WindowsSdl3HostIntegration.ResolveNativeSurface(nint windowHandle)`](../../../platforms/Windows/integrations/Inno.Integration.Windows.Sdl3/WindowsSdl3HostIntegration.cs#L29) | See the implemented contract. |
 | [`Inno.Adapter.Platform.Sdl3.Sdl3HostCapabilities Inno.Integration.Windows.Sdl3.WindowsSdl3HostIntegration.capabilities`](../../../platforms/Windows/integrations/Inno.Integration.Windows.Sdl3/WindowsSdl3HostIntegration.cs#L15) | See the implemented contract. |
 | [`Inno.Integration.Windows.Sdl3.WindowsSdl3HostIntegration`](../../../platforms/Windows/integrations/Inno.Integration.Windows.Sdl3/WindowsSdl3HostIntegration.cs#L12) | Provides the Windows SDK, native surface and focus policies for the shared SDL backend. |
-| [`bool Inno.Integration.Windows.Sdl3.WindowsSdl3HostIntegration.GetInitialFocus(nint windowHandle)`](../../../platforms/Windows/integrations/Inno.Integration.Windows.Sdl3/WindowsSdl3HostIntegration.cs#L50) | See the implemented contract. |
+| [`bool Inno.Integration.Windows.Sdl3.WindowsSdl3HostIntegration.GetInitialFocus(nint windowHandle)`](../../../platforms/Windows/integrations/Inno.Integration.Windows.Sdl3/WindowsSdl3HostIntegration.cs#L42) | See the implemented contract. |
 | [`nint Inno.Integration.Windows.Sdl3.WindowsSdl3HostIntegration.CreateWindow(Inno.Platform.PlatformWindowOptions options)`](../../../platforms/Windows/integrations/Inno.Integration.Windows.Sdl3/WindowsSdl3HostIntegration.cs#L23) | See the implemented contract. |
 | [`void Inno.Integration.Windows.Sdl3.WindowsSdl3HostIntegration.ConfigureInitialization()`](../../../platforms/Windows/integrations/Inno.Integration.Windows.Sdl3/WindowsSdl3HostIntegration.cs#L18) | See the implemented contract. |
 

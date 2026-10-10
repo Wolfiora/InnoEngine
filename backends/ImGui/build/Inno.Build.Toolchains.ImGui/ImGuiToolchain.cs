@@ -18,7 +18,7 @@ public static class ImGuiToolchain
         "cimgui",
         "backends/ImGui/native/Inno.Native.ImGui/Inno.Native.ImGui.csproj",
         "backends/ImGui/build/Inno.Build.Toolchains.ImGui/Inno.Build.Toolchains.ImGui.csproj",
-        bindingConfig: "backends/ImGui/native/Inno.Native.ImGui/Bindings/bindgen.json");
+        bindingDefinition: "backends/ImGui/native/Inno.Native.ImGui/Bindings/bindings.props");
 
     /// <summary>
     /// Builds the component using the explicitly selected target SDK and validates the complete native product.

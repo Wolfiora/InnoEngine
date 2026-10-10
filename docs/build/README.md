@@ -28,3 +28,7 @@ Windows、MacOS、Browser 的 target/source/validator/template 属于各平台 B
 ```
 
 游戏导出目标不改变正在运行的 Editor 目标或 ImGui Shader。CLI 的 `--tools-target` 与 `--target` 分别指定作者工具和游戏目标。失败与取消保留上次完整输出；不从旧目录读取兼容产物。
+
+## 共享绑定生成
+
+- [Inno.Build.Bindings](Inno.Build.Bindings.md)：唯一 BGCS 消费实现，供中立生成契约组合。

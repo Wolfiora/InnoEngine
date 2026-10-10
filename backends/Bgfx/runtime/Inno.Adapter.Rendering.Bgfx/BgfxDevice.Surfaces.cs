@@ -1,3 +1,5 @@
+using System.Threading.Tasks;
+using Inno.Core.Execution;
 using Inno.Adapter.Platform;
 using System;
 using System.Collections.Generic;
@@ -32,8 +34,8 @@ public sealed unsafe partial class BgfxDevice
     /// <returns>
     /// An opaque surface handle consumable by <see cref="RasterPassBuilder.UseSurface"/>.
     /// </returns>
-    /// <exception cref="PlatformNotSupportedException">
-    /// Thrown for unsupported native handle kinds.
+    /// <exception cref="NotSupportedException">
+    /// The selected integration or renderer cannot provide the requested surface.
     /// </exception>
     /// <exception cref="InvalidOperationException">
     /// Thrown when BGFX cannot create the window framebuffer.
@@ -48,21 +50,26 @@ public sealed unsafe partial class BgfxDevice
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(width);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(height);
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
-        ValidateWindowHandles(nativeHandles);
+        IBgfxSurfaceIntegration integration = m_surfaceIntegration
+            ?? throw new NotSupportedException("Additional BGFX windows require an explicit surface integration.");
+        if (!integration.supportsAdditionalSurfaces)
+            throw new NotSupportedException("The selected host does not support additional window surfaces.");
+        BgfxSurfaceDescriptor descriptor = BgfxSurfaceBinding.Validate(
+            integration.Resolve(nativeHandles, BgfxSurfaceRole.Additional));
         if (!capabilities.Supports(GraphicsCapability.SwapChain))
         {
             throw new NotSupportedException(
                 "The active graphics backend does not support additional presentation surfaces.");
         }
 
-        bgfx.FrameBufferHandle frameBuffer = CreateNativeWindowSurface(nativeHandles, width, height);
+        bgfx.FrameBufferHandle frameBuffer = CreateNativeWindowSurface(descriptor, width, height);
         if (!frameBuffer.Valid)
         {
             throw new InvalidOperationException($"BGFX could not create detached window surface '{name}'.");
         }
 
         ulong id = m_nextPersistentId++;
-        m_windowSurfaces.Add(id, new BgfxWindowSurfaceResource(frameBuffer, width, height, nativeHandles, name));
+        m_windowSurfaces.Add(id, new BgfxWindowSurfaceResource(frameBuffer, width, height, descriptor, name));
         return CreateRenderSurfaceHandle(id, generation);
     }
 
@@ -115,7 +122,7 @@ public sealed unsafe partial class BgfxDevice
             return;
         }
 
-        bgfx.FrameBufferHandle replacement = CreateNativeWindowSurface(resource.nativeHandles, width, height);
+        bgfx.FrameBufferHandle replacement = CreateNativeWindowSurface(resource.descriptor, width, height);
         if (!replacement.Valid)
         {
             throw new InvalidOperationException($"BGFX could not resize detached window surface '{resource.name}'.");
@@ -125,37 +132,139 @@ public sealed unsafe partial class BgfxDevice
         resource.frameBuffer = replacement;
         resource.width = width;
         resource.height = height;
-        EnqueueDestroy(DeferredResource.ForFrameBuffer(previous));
+        resource.retirement.pending.Add(previous);
+        if (!m_surfaceRetirements.Contains(resource.retirement))
+            m_surfaceRetirements.Add(resource.retirement);
     }
 
     /// <summary>
-    /// Queues a detached-window presentation surface for GPU-safe destruction.
+    /// Stops accepting work for a surface and queues all of its framebuffer generations for retirement.
     /// </summary>
     /// <param name="surface">
-    /// Surface owned by this device generation.
+    /// The active surface owned by this device generation.
     /// </param>
+    /// <returns>
+    /// A task completed after the render thread has processed every associated destruction command.
+    /// This confirms release of the borrowed window, not a general GPU fence.
+    /// </returns>
     /// <exception cref="ArgumentException">
-    /// Thrown when the surface is stale or no longer active.
+    /// The surface is stale or no longer active.
     /// </exception>
-    public void DestroyWindowSurface(RenderSurfaceHandle surface)
+    /// <exception cref="InvalidOperationException">
+    /// The caller is not the API thread or a graph or encoder is active.
+    /// </exception>
+    public Task RetireWindowSurface(RenderSurfaceHandle surface)
     {
         EnsureSurfaceSafetyPoint();
-        ValidatePersistentHandle(surface);
-        if (!m_windowSurfaces.Remove(GetHandleIdentity(surface).value, out BgfxWindowSurfaceResource? resource))
+        BgfxWindowSurfaceResource resource = ResolveSurface(surface);
+        m_windowSurfaces.Remove(GetHandleIdentity(surface).value);
+        resource.retirement.pending.Add(resource.frameBuffer);
+        resource.retirement.closing = true;
+        if (!m_surfaceRetirements.Contains(resource.retirement))
+            m_surfaceRetirements.Add(resource.retirement);
+        return resource.retirement.completion.Task;
+    }
+
+    /// <summary>
+    /// Advances nonpresenting frames until all requested window retirements have been acknowledged.
+    /// </summary>
+    /// <remarks>
+    /// Call only on the API thread with no open frame, graph, encoder or native UI callback.
+    /// A failed drain retains the device and the borrowed native windows.
+    /// </remarks>
+    /// <exception cref="InvalidOperationException">
+    /// The caller is not at a closed-frame API-thread safety point.
+    /// </exception>
+    /// <exception cref="RetirementTimeoutException">
+    /// The bounded retirement deadline expired; dependent owners must remain alive.
+    /// </exception>
+    public void DrainWindowSurfaceRetirements()
+    {
+        EnsureSurfaceSafetyPoint();
+        if (m_frameOpen)
+            throw new InvalidOperationException("Window retirement draining requires a closed render frame.");
+        if (!HasClosingSurface())
+            return;
+        m_surfaceRetirementBarrier ??= new RetirementBarrier("BGFX window surfaces");
+        m_surfaceRetirementBarrier.Wait(() =>
         {
-            throw new ArgumentException("Presentation surface is not active on this device.", nameof(surface));
+            SubmitNativeFrame(bgfx.FrameFlags.Flush);
+            foreach (BgfxSurfaceRetirement retirement in m_surfaceRetirements)
+                if (retirement.closing)
+                    throw new RetirementPendingException("BGFX has not acknowledged window destruction.", retirement.failure);
+        });
+        m_surfaceRetirementBarrier = null;
+    }
+
+    private bool HasClosingSurface()
+    {
+        foreach (BgfxSurfaceRetirement retirement in m_surfaceRetirements)
+            if (retirement.closing)
+                return true;
+        return false;
+    }
+
+    private uint SubmitNativeFrame(bgfx.FrameFlags flags)
+    {
+        ulong submission = checked(m_submissionSequence + 1);
+        foreach (BgfxSurfaceRetirement retirement in m_surfaceRetirements)
+        {
+            if (retirement.failure is not null)
+                throw new RetirementPendingException("A window framebuffer could not retire.", retirement.failure);
+            try
+            {
+                foreach (bgfx.FrameBufferHandle frameBuffer in retirement.pending)
+                    bgfx.destroy_frame_buffer(frameBuffer);
+                if (retirement.pending.Count > 0)
+                    retirement.lastSubmission = submission;
+                retirement.pending.Clear();
+            }
+            catch (Exception failure)
+            {
+                retirement.failure = failure;
+                retirement.completion.TrySetException(failure);
+                throw new RetirementPendingException("Window framebuffer destruction failed; its window remains owned.", failure);
+            }
         }
 
-        EnqueueDestroy(DeferredResource.ForFrameBuffer(resource.frameBuffer));
+        // frame() waits for the preceding submission's render commands before handing over this one.
+        // The same conservative acknowledgment is used when the renderer executes inline.
+        uint frame;
+        try
+        {
+            frame = bgfx.frame((byte)flags);
+        }
+        catch (Exception failure)
+        {
+            foreach (BgfxSurfaceRetirement retirement in m_surfaceRetirements)
+            {
+                retirement.failure = failure;
+                retirement.completion.TrySetException(failure);
+            }
+            throw new RetirementPendingException("The render submission failed; borrowed windows remain owned.", failure);
+        }
+        m_backendFrame = frame;
+        ulong acknowledged = m_submissionSequence;
+        m_submissionSequence = submission;
+        for (int index = m_surfaceRetirements.Count - 1; index >= 0; index--)
+        {
+            BgfxSurfaceRetirement retirement = m_surfaceRetirements[index];
+            if (retirement.lastSubmission > acknowledged)
+                continue;
+            if (retirement.closing)
+                retirement.completion.TrySetResult();
+            m_surfaceRetirements.RemoveAt(index);
+        }
+        return frame;
     }
 
     private static bgfx.FrameBufferHandle CreateNativeWindowSurface(
-        PlatformNativeHandles nativeHandles,
+        BgfxSurfaceDescriptor descriptor,
         int width,
         int height
     )
         => bgfx.create_frame_buffer_from_nwh(
-            nativeHandles.windowHandle.ToPointer(),
+            descriptor.windowHandle.ToPointer(),
             checked((ushort)width),
             checked((ushort)height),
             bgfx.TextureFormat.BGRA8,
@@ -170,20 +279,6 @@ public sealed unsafe partial class BgfxDevice
         }
 
         return resource;
-    }
-
-    private static void ValidateWindowHandles(PlatformNativeHandles handles)
-    {
-        if (handles.windowHandle == IntPtr.Zero)
-        {
-            throw new ArgumentException("A native window handle is required.", nameof(handles));
-        }
-
-        if (handles.handleKind != PlatformNativeHandleId.win32 && handles.handleKind != PlatformNativeHandleId.cocoa)
-        {
-            throw new PlatformNotSupportedException(
-                $"BGFX window surfaces do not support native handle kind '{handles.handleKind}'.");
-        }
     }
 
     private void EnsureSurfaceSafetyPoint()
@@ -211,8 +306,8 @@ public sealed unsafe partial class BgfxDevice
         /// <param name="height">
         /// The height in logical units or pixels required by this operation.
         /// </param>
-        /// <param name="nativeHandles">
-        /// The native handles consumed by bgfx window surface resource; ownership remains with the caller unless explicitly stated otherwise.
+        /// <param name="descriptor">
+        /// The descriptor consumed by bgfx window surface resource; ownership remains with the caller unless explicitly stated otherwise.
         /// </param>
         /// <param name="name">
         /// The human-readable name used for presentation and diagnostics.
@@ -221,13 +316,13 @@ public sealed unsafe partial class BgfxDevice
             bgfx.FrameBufferHandle frameBuffer,
             int width,
             int height,
-            PlatformNativeHandles nativeHandles,
+            BgfxSurfaceDescriptor descriptor,
             string name
         ) {
             this.frameBuffer = frameBuffer;
             this.width = width;
             this.height = height;
-            this.nativeHandles = nativeHandles;
+            this.descriptor = descriptor;
             this.name = name;
         }
 
@@ -235,6 +330,7 @@ public sealed unsafe partial class BgfxDevice
         /// Gets the BGFX framebuffer owned by this presentation surface.
         /// </summary>
         public bgfx.FrameBufferHandle frameBuffer { get; set; }
+        internal BgfxSurfaceRetirement retirement { get; } = new();
         /// <summary>
         /// Gets the scalar measurement or identity associated with the current state.
         /// </summary>
@@ -246,7 +342,7 @@ public sealed unsafe partial class BgfxDevice
         /// <summary>
         /// Gets the platform-native window and display handles used to create the surface.
         /// </summary>
-        public PlatformNativeHandles nativeHandles { get; }
+        public BgfxSurfaceDescriptor descriptor { get; }
         /// <summary>
         /// Gets the human-readable name used for presentation and diagnostics.
         /// </summary>

@@ -16,3 +16,7 @@
 - [Inno.Integration.MacOS.Bgfx](Inno.Integration.MacOS.Bgfx.md)：平台与共享后端的明确接入。
 
 - [Inno.Integration.MacOS.Sdl3](Inno.Integration.MacOS.Sdl3.md)：平台与共享后端的明确接入。
+
+## BGFX 运行接入
+
+- [Inno.Integration.MacOS.Bgfx.Runtime](Inno.Integration.MacOS.Bgfx.Runtime.md)：独立于构建 integration 的 surface 解析和能力声明。

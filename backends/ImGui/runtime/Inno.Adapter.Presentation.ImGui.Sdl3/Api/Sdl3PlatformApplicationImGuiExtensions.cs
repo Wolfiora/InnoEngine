@@ -66,7 +66,7 @@ public static class Sdl3PlatformApplicationImGuiExtensions
     private static readonly ConditionalWeakTable<Sdl3PlatformApplication, ImGuiState> s_states = new();
 
     /// <summary>
-    /// Creates or returns an existing ImGui context bound to the provided platform window.
+    /// Creates one ImGui context and transfers the supplied renderer ownership only after successful creation.
     /// </summary>
     /// <param name="application">
     /// Target platform application instance.
@@ -81,11 +81,20 @@ public static class Sdl3PlatformApplicationImGuiExtensions
     /// ImGui context feature flags.
     /// </param>
     /// <param name="renderer">
-    /// Optional presentation backend; the SDL renderer is used when omitted.
+    /// Optional presentation backend; ownership transfers on success and remains with the caller on failure.
     /// </param>
     /// <returns>
-    /// The created or existing <see cref="PlatformImGuiContext"/>.
+    /// The newly created context, which owns its renderer until complete retirement and disposal.
     /// </returns>
+    /// <exception cref="ArgumentNullException">
+    /// An application, window, or interaction configuration is null.
+    /// </exception>
+    /// <exception cref="ArgumentException">
+    /// The window does not belong to the supplied application.
+    /// </exception>
+    /// <exception cref="InvalidOperationException">
+    /// The window is closed or already owns an ImGui context.
+    /// </exception>
     public static PlatformImGuiContext CreateImGuiContext(
         this Sdl3PlatformApplication application,
         Sdl3PlatformWindow window,
@@ -106,8 +115,8 @@ public static class Sdl3PlatformApplicationImGuiExtensions
             throw new ArgumentException("The window must belong to the supplied SDL application.", nameof(window));
 
         ImGuiState state = s_states.GetValue(application, CreateState);
-        if (state.contexts.TryGetValue(window.windowId, out PlatformImGuiContext? existing))
-            return existing;
+        if (state.contexts.ContainsKey(window.windowId))
+            throw new InvalidOperationException("This window already owns an ImGui context.");
 
         var context = new PlatformImGuiContext(application, window, contextFlags, interaction, renderer);
         state.contexts[window.windowId] = context;
@@ -115,7 +124,7 @@ public static class Sdl3PlatformApplicationImGuiExtensions
     }
 
     /// <summary>
-    /// Destroys the ImGui context associated with the provided window, if it exists.
+    /// Retires and disposes the window's context, retaining its application registration if retirement fails.
     /// </summary>
     /// <param name="application">
     /// Target platform application instance.
@@ -123,6 +132,12 @@ public static class Sdl3PlatformApplicationImGuiExtensions
     /// <param name="window">
     /// Target platform window.
     /// </param>
+    /// <exception cref="ArgumentNullException">
+    /// The application or window is null.
+    /// </exception>
+    /// <exception cref="InvalidOperationException">
+    /// Retirement cannot complete at the current owner-thread safe point; the context remains owned.
+    /// </exception>
     public static void DestroyImGuiContext(
         this Sdl3PlatformApplication application,
         Sdl3PlatformWindow window
@@ -132,9 +147,10 @@ public static class Sdl3PlatformApplicationImGuiExtensions
 
         if (!s_states.TryGetValue(application, out ImGuiState? state))
             return;
-        if (!state.contexts.Remove(window.windowId, out PlatformImGuiContext? context))
+        if (!state.contexts.TryGetValue(window.windowId, out PlatformImGuiContext? context))
             return;
         context.Dispose();
+        state.contexts.Remove(window.windowId);
     }
 
     private static ImGuiState CreateState(Sdl3PlatformApplication application)

@@ -140,9 +140,9 @@ public sealed class NativeBuildRecipe
         paths.AddRange(new[]
         {
             "NativeArtifactPublisher.cs", "NativeBuildFingerprint.cs", "NativeBuildInput.cs",
-            "NativeBuildInputState.cs", "NativeInputSnapshot.cs", "NativeBuildProduct.cs",
+            "NativeBuildInputState.cs", "NativeInputSnapshot.cs", "NativeInputReadCache.cs", "NativeInputVerificationScope.cs", "NativeBuildPhaseStatistics.cs", "NativeBuildProduct.cs",
             "NativeBuildStatistics.cs", "NativeToolchainSelection.cs", "NativeBuildRecipe.cs",
-            "NativeCMakeExecutor.cs", "NativeComponentBuildOptions.cs", "ProductNativeBuildStep.cs", "ProductNativeBuildPlan.cs", "NativeInputMaterializer.cs", "NativeBindingGenerationDescriptor.cs",
+            "NativeCMakeExecutor.cs", "NativeCMakeSource.cs", "NativeComponentBuildOptions.cs", "ProductNativeBuildStep.cs", "ProductNativeBuildPlan.cs", "NativeInputMaterializer.cs", "NativeBindingGenerationDescriptor.cs",
             "NativeBindingPreparation.cs", "NativeComponentDescriptor.cs", "NativeStaticBuildDefinition.cs",
             "NativeToolchainPreparation.cs", "BuildHostDescriptor.cs"
         }.Select(file => Path.Combine(commonRoot, "Native", file)));
@@ -153,7 +153,7 @@ public sealed class NativeBuildRecipe
             .Select(file => Path.Combine(ioRoot, file)));
         string nativeRoot = owner.GetNativeRoot(context.engineRoot);
         string bindings = Path.Combine(nativeRoot, "Bindings");
-        if (owner.bindingConfig is not null)
+        if (owner.bindingDefinition is not null)
         {
             paths.Add(bindings);
             NativeBindingGenerationDescriptor generation = context.RequireBindings(owner);

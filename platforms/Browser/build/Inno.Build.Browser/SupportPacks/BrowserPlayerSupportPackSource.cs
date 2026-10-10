@@ -16,6 +16,7 @@ public sealed class BrowserPlayerSupportPackSource : IPlayerSupportPackSource
     private readonly BuildHostDescriptor m_host;
     private readonly BuildTargetId m_toolsTarget;
     private readonly ProductNativeBuildPlan m_nativePlan;
+    private readonly INativeBindingGenerator m_bindingGenerator;
 
     /// <summary>
     /// Captures independent Browser product and offline compiler selections.
@@ -29,6 +30,9 @@ public sealed class BrowserPlayerSupportPackSource : IPlayerSupportPackSource
     /// <param name="nativePlan">
     /// The borrowed immutable Player component closure.
     /// </param>
+    /// <param name="bindingGenerator">
+    /// The borrowed generation service used by the Browser component batch.
+    /// </param>
     /// <exception cref="ArgumentNullException">
     /// The host or native plan is null.
     /// </exception>
@@ -38,11 +42,14 @@ public sealed class BrowserPlayerSupportPackSource : IPlayerSupportPackSource
     public BrowserPlayerSupportPackSource(
         BuildHostDescriptor host,
         BuildTargetId toolsTarget,
-        ProductNativeBuildPlan nativePlan
+        ProductNativeBuildPlan nativePlan,
+        INativeBindingGenerator bindingGenerator
     ) {
         ArgumentNullException.ThrowIfNull(host);
         ArgumentNullException.ThrowIfNull(nativePlan);
         ArgumentException.ThrowIfNullOrWhiteSpace(toolsTarget.value);
+        ArgumentNullException.ThrowIfNull(bindingGenerator);
+        m_bindingGenerator = bindingGenerator;
         m_host = host;
         m_toolsTarget = toolsTarget;
         m_nativePlan = nativePlan;
@@ -64,7 +71,7 @@ public sealed class BrowserPlayerSupportPackSource : IPlayerSupportPackSource
             "Templates", "BrowserPlayer.project.xml");
         if (!File.Exists(template))
             throw new FileNotFoundException("The Browser publication template is absent.", template);
-        var nativeContext = new NativeBuildContext(context.engineRoot, "release");
+        var nativeContext = new NativeBuildContext(context.engineRoot, "release").WithBindingGenerator(m_bindingGenerator);
         NativeToolchainSelection tools = await new EmscriptenNativeToolchainProvider(context.dotnetHost)
             .ResolveAsync(nativeContext, m_host, target.value, cancellationToken).ConfigureAwait(false);
         DotNetSdkDescriptor sdk = await DotNetSdkResolver.ResolveAsync(
