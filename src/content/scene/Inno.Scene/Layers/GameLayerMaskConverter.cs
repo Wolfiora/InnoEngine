@@ -20,8 +20,10 @@ internal sealed class GameLayerMaskConverter : SerializationConverter<GameLayerM
     /// <param name="value">
     /// The concrete value read or transformed by this operation.
     /// </param>
-    public override void Write(SerializationWriter writer, GameLayerMask value)
-    {
+    public override void Write(
+        SerializationWriter writer,
+        GameLayerMask value
+    ) {
         ArgumentNullException.ThrowIfNull(writer);
         writer.Write("value", value.value);
     }

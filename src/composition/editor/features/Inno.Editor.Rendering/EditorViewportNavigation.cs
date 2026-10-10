@@ -139,8 +139,10 @@ public readonly record struct EditorViewportFocusBounds
     /// <exception cref="ArgumentOutOfRangeException">
     /// Thrown when the radius is negative or non-finite.
     /// </exception>
-    public EditorViewportFocusBounds(Vector3 center, float radius)
-    {
+    public EditorViewportFocusBounds(
+        Vector3 center,
+        float radius
+    ) {
         if (!IsFinite(center))
             throw new ArgumentException("Focus center components must be finite.", nameof(center));
         if (!float.IsFinite(radius) || radius < 0f)
@@ -159,8 +161,7 @@ public readonly record struct EditorViewportFocusBounds
     /// </summary>
     public float radius { get; }
 
-    private static bool IsFinite(Vector3 value)
-        => float.IsFinite(value.x) && float.IsFinite(value.y) && float.IsFinite(value.z);
+    private static bool IsFinite(Vector3 value) => float.IsFinite(value.x) && float.IsFinite(value.y) && float.IsFinite(value.z);
 }
 
 /// <summary>
@@ -183,8 +184,8 @@ public sealed class EditorViewportNavigationProfile
     public EditorViewportNavigationProfile(
         EditorViewportNavigationProfileId id,
         EditorViewportNavigationCapabilities capabilities,
-        EditorViewportNavigationMode defaultMode)
-    {
+        EditorViewportNavigationMode defaultMode
+    ) {
         if (!id.isValid)
             throw new ArgumentException("A valid navigation profile ID is required.", nameof(id));
         const EditorViewportNavigationCapabilities validCapabilities
@@ -282,7 +283,8 @@ public sealed class EditorViewportNavigationProfile
 
     private static bool SupportsMode(
         EditorViewportNavigationCapabilities capabilities,
-        EditorViewportNavigationMode mode)
+        EditorViewportNavigationMode mode
+    )
         => mode switch
         {
             EditorViewportNavigationMode.Planar =>
@@ -496,8 +498,11 @@ public sealed class EditorViewportNavigationState
     /// <param name="orthographicSize">
     /// Positive orthographic half-height.
     /// </param>
-    public void ConfigureOrthographic(Vector3 position, Quaternion rotation, float orthographicSize)
-    {
+    public void ConfigureOrthographic(
+        Vector3 position,
+        Quaternion rotation,
+        float orthographicSize
+    ) {
         ValidateFinite(position, nameof(position));
         ValidateRotation(rotation, nameof(rotation));
         if (!float.IsFinite(orthographicSize)
@@ -535,8 +540,8 @@ public sealed class EditorViewportNavigationState
         Quaternion rotation,
         float fieldOfView,
         float nearClip,
-        float farClip)
-    {
+        float farClip
+    ) {
         ValidateFinite(position, nameof(position));
         ValidateRotation(rotation, nameof(rotation));
         if (!float.IsFinite(fieldOfView)
@@ -558,14 +563,18 @@ public sealed class EditorViewportNavigationState
         isInitialized = true;
     }
 
-    private static void ValidateFinite(Vector3 value, string parameterName)
-    {
+    private static void ValidateFinite(
+        Vector3 value,
+        string parameterName
+    ) {
         if (!float.IsFinite(value.x) || !float.IsFinite(value.y) || !float.IsFinite(value.z))
             throw new ArgumentException("Navigation position components must be finite.", parameterName);
     }
 
-    private static void ValidateFinite(Quaternion value, string parameterName)
-    {
+    private static void ValidateFinite(
+        Quaternion value,
+        string parameterName
+    ) {
         if (!float.IsFinite(value.x)
             || !float.IsFinite(value.y)
             || !float.IsFinite(value.z)
@@ -575,8 +584,10 @@ public sealed class EditorViewportNavigationState
         }
     }
 
-    private static void ValidateRotation(Quaternion value, string parameterName)
-    {
+    private static void ValidateRotation(
+        Quaternion value,
+        string parameterName
+    ) {
         ValidateFinite(value, parameterName);
         if (value.LengthSquared() < 0.000001f)
             throw new ArgumentException("Navigation rotation must have a usable magnitude.", parameterName);

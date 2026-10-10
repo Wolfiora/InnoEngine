@@ -35,8 +35,11 @@ internal sealed class HierarchyService
         transform.SetParentDirect(null);
     }
 
-    internal void SetParent(Transform transform, Transform? parent, bool worldPositionStays)
-    {
+    internal void SetParent(
+        Transform transform,
+        Transform? parent,
+        bool worldPositionStays
+    ) {
         ArgumentNullException.ThrowIfNull(transform);
         if (ReferenceEquals(transform, parent))
             throw new InvalidOperationException("A transform cannot parent itself.");
@@ -95,8 +98,10 @@ internal sealed class HierarchyService
         return m_roots.IndexOf(transform);
     }
 
-    internal void SetSiblingIndex(Transform transform, int siblingIndex)
-    {
+    internal void SetSiblingIndex(
+        Transform transform,
+        int siblingIndex
+    ) {
         if (transform.parent is Transform parent)
         {
             int current = parent.IndexOfChild(transform);

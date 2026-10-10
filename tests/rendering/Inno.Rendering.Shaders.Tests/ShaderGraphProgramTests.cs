@@ -1,3 +1,5 @@
+using Inno.Adapter.Serialization.DotNet;
+using Inno.Adapter.Modules.DotNet;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -9,6 +11,7 @@ using Inno.Extensibility.Modules;
 using Inno.Extensibility.Types;
 using Inno.Rendering;
 using Xunit;
+using Inno.Rendering.Assets;
 
 namespace Inno.Rendering.Shaders.Tests;
 
@@ -22,9 +25,9 @@ public sealed partial class ShaderGraphProgramTests : IDisposable
 
     public ShaderGraphProgramTests()
     {
-        m_modules = new(new() { cacheDirectory = m_root });
-        m_types = new(m_modules);
-        m_serialization = new(m_types);
+        m_modules = new(new() { catalogSource = new DotNetAssemblyCatalogSource(typeof(ShaderGraphProgramTests).Assembly)});
+        m_types = new(m_modules, new ReflectionTypeCatalogSource());
+        m_serialization = new(m_types, new ReflectionSerializationMetadataSource());
         m_nodes = new(m_types);
     }
 

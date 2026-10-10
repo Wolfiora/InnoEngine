@@ -6,8 +6,14 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <WarningsAsErrors>$(WarningsAsErrors);CS1572;CS1573;CS1591</WarningsAsErrors>
   </PropertyGroup>
+
   <ItemGroup>
-    <ProjectReference Include="..\Inno.Adapter.Rendering\Inno.Adapter.Rendering.csproj" />
-    <ProjectReference Include="..\..\..\services\rendering\Inno.Rendering.Assets\Inno.Rendering.Assets.csproj" />
+    <ProjectReference Include="../Inno.Adapter.Rendering/Inno.Adapter.Rendering.csproj" />
+    <ProjectReference Include="../../../services/rendering/Inno.Rendering.Assets/Inno.Rendering.Assets.csproj" />
+    <ProjectReference Include="../../../foundation/extensibility/Inno.Extensibility.Catalogs/Inno.Extensibility.Catalogs.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../../../services/rendering/Inno.Rendering.Assets.Authoring/Inno.Rendering.Assets.Authoring.csproj" />
   </ItemGroup>
 </Project>

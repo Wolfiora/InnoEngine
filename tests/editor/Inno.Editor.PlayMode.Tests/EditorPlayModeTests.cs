@@ -1,3 +1,6 @@
+using Inno.Core.Logging;
+using Inno.Adapter.Serialization.DotNet;
+using Inno.Adapter.Modules.DotNet;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -37,7 +40,8 @@ public sealed class EditorPlayModeTests : IDisposable
     {
         Directory.CreateDirectory(Path.Combine(m_projectRoot, "Assets"));
         m_engineHost = new EngineHostBuilder()
-            .UseMetadataCache(Path.Combine(m_projectRoot, "Library", "Assemblies"))
+                .UseMetadataSources(new DotNetAssemblyCatalogSource(typeof(EditorPlayModeTests).Assembly),
+                    new ReflectionTypeCatalogSource(), new ReflectionSerializationMetadataSource())
             .Build();
         m_editSession = m_engineHost.CreateSession(CreateSessionOptions(RuntimeSessionKind.Edit));
         m_editScope = m_editSession.EnterExecutionScope();
@@ -280,6 +284,36 @@ public sealed class EditorPlayModeTests : IDisposable
     }
 
     [Fact]
+    public void DeletingTheLastRuntimeSceneRestoresTheEditSceneOnExit()
+    {
+        using EditorSceneWorkspaceHost workspaceHost = EditorSceneWorkspaceFactory.Create(
+            m_editSession,
+            m_authoringAssets,
+            m_engineHost.types,
+            m_engineHost.serialization,
+            m_engineHost.logs);
+        var editScene = new GameScene("Edit Scene");
+        SceneManager.LoadScene(editScene);
+
+        using RuntimeSession runtimeSession = m_engineHost.CreateSession(
+            CreateSessionOptions(RuntimeSessionKind.Play));
+        IDisposable playLease = workspaceHost.playMode.BeginPlayMode(runtimeSession);
+        using (runtimeSession.EnterExecutionScope())
+        {
+            GameScene runtimeScene = Assert.Single(SceneManager.loadedScenes);
+            Assert.NotSame(editScene, runtimeScene);
+            Assert.True(SceneManager.UnloadScene(runtimeScene));
+            Assert.Empty(SceneManager.loadedScenes);
+        }
+
+        playLease.Dispose();
+
+        Assert.Same(editScene, Assert.Single(SceneManager.loadedScenes));
+        Assert.Same(editScene, Assert.Single(workspaceHost.workspace.scenes));
+        Assert.True(workspaceHost.workspace.canPersist);
+    }
+
+    [Fact]
     public void SceneSessionMaterializesSerializedAssetReferences()
     {
         string sourcePath = Path.Combine(m_projectRoot, "Assets", "Text", "shared.txt");
@@ -453,10 +487,10 @@ public sealed class EditorPlayModeTests : IDisposable
                 {
                     kind = RuntimeSessionKind.Play,
                     applicationId = "inno.tests.play",
-                    persistentDataDirectory = Path.Combine(
+                    createLogSink = _ => new FileLogSink(Path.Combine(Path.Combine(
                         projectRoot,
                         "PersistentData",
-                        "inno.tests.play"),
+                        "inno.tests.play"), "Logs")),
                     jobExecutionMode = RuntimeJobExecutionMode.SingleThread,
                     createSubsystems = _ => factory is null ? [] : [factory]
                 },
@@ -617,10 +651,10 @@ public sealed class EditorPlayModeTests : IDisposable
         {
             kind = kind,
             applicationId = applicationId,
-            persistentDataDirectory = Path.Combine(
+            createLogSink = _ => new FileLogSink(Path.Combine(Path.Combine(
                 m_projectRoot,
                 "PersistentData",
-                applicationId),
+                applicationId), "Logs")),
             jobExecutionMode = RuntimeJobExecutionMode.SingleThread
         };
     }

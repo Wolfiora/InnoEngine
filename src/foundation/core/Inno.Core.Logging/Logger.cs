@@ -22,8 +22,8 @@ public sealed class Logger
         LogRouter router,
         AssemblyDomain domain,
         AssemblyScope scope,
-        string category)
-    {
+        string category
+    ) {
         m_router = router;
         m_domain = domain;
         m_scope = scope;
@@ -59,8 +59,8 @@ public sealed class Logger
         string message,
         IReadOnlyList<object?>? arguments = null,
         [CallerFilePath] string filePath = "",
-        [CallerLineNumber] int lineNumber = 0)
-    {
+        [CallerLineNumber] int lineNumber = 0
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(message);
         if (!m_router.IsEnabled(level))
             return;

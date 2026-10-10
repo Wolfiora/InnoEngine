@@ -67,8 +67,10 @@ internal sealed class ScriptArtifactCache
         return removed;
     }
 
-    private static int CollectStaleStaging(string root, DateTime cutoff)
-    {
+    private static int CollectStaleStaging(
+        string root,
+        DateTime cutoff
+    ) {
         if (!Directory.Exists(root))
             return 0;
 
@@ -101,8 +103,10 @@ internal sealed class ScriptArtifactCache
                name.All(static character => char.IsAsciiHexDigit(character));
     }
 
-    private static bool TryCreateEntry(string path, out Entry entry)
-    {
+    private static bool TryCreateEntry(
+        string path,
+        out Entry entry
+    ) {
         try
         {
             long size = new DirectoryInfo(path)
@@ -126,5 +130,9 @@ internal sealed class ScriptArtifactCache
         }
     }
 
-    private readonly record struct Entry(string path, DateTime lastWriteUtc, long size);
+    private readonly record struct Entry(
+        string path,
+        DateTime lastWriteUtc,
+        long size
+    );
 }

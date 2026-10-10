@@ -5,6 +5,8 @@ using Inno.Core.Mathematics;
 using Inno.Editor.Core;
 using Inno.Editor.Interactions;
 using Inno.Rendering;
+using Inno.Rendering.Assets;
+using Inno.Rendering.Runtime;
 
 namespace Inno.Editor.Rendering;
 
@@ -69,8 +71,8 @@ public sealed class EditorViewportContributorExtensionAttribute : Attribute
         string id,
         string kind,
         int order = 0,
-        int controllerPriority = 0)
-    {
+        int controllerPriority = 0
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(id);
         ArgumentException.ThrowIfNullOrWhiteSpace(kind);
         this.id = id.Trim();
@@ -117,8 +119,8 @@ public sealed class EditorViewportContext
         EditorViewportPresentation presentation,
         IViewContentCollector viewContent,
         ulong frameIndex,
-        RenderOutputInput input)
-    {
+        RenderOutputInput input
+    ) {
         this.editor = editor;
         this.interactions = interactions;
         this.kind = kind;
@@ -215,8 +217,10 @@ public readonly record struct EditorViewportPresentation
     /// <param name="pixelDensity">
     /// Physical render pixels per logical presentation unit.
     /// </param>
-    public EditorViewportPresentation(Color backgroundColor, float pixelDensity = 1f)
-    {
+    public EditorViewportPresentation(
+        Color backgroundColor,
+        float pixelDensity = 1f
+    ) {
         if (!float.IsFinite(pixelDensity) || pixelDensity <= 0f)
             throw new ArgumentOutOfRangeException(nameof(pixelDensity));
         this.backgroundColor = backgroundColor;
@@ -288,8 +292,8 @@ public readonly record struct EditorViewportManipulationSpace
         Matrix viewMatrix,
         Matrix projectionMatrix,
         bool isOrthographic,
-        EditorViewportManipulationPlane plane = EditorViewportManipulationPlane.Spatial)
-    {
+        EditorViewportManipulationPlane plane = EditorViewportManipulationPlane.Spatial
+    ) {
         if (!Enum.IsDefined(plane))
             throw new ArgumentOutOfRangeException(nameof(plane));
         this.viewMatrix = viewMatrix;
@@ -343,8 +347,8 @@ public sealed class EditorViewportContribution
         RenderFrameData data,
         RenderPipelineAsset? pipeline = null,
         RenderTextureFormat targetFormat = RenderTextureFormat.RGBA8Srgb,
-        EditorViewportManipulationSpace? manipulationSpace = null)
-    {
+        EditorViewportManipulationSpace? manipulationSpace = null
+    ) {
         this.data = data ?? throw new ArgumentNullException(nameof(data));
         this.pipeline = pipeline;
         this.targetFormat = targetFormat;
@@ -377,8 +381,12 @@ public sealed class EditorViewportContribution
 /// </summary>
 public sealed class EditorViewportPointerContext
 {
-    internal EditorViewportPointerContext(EditorViewportContext viewport, float x, float y, int button)
-    {
+    internal EditorViewportPointerContext(
+        EditorViewportContext viewport,
+        float x,
+        float y,
+        int button
+    ) {
         this.viewport = viewport;
         this.x = Math.Clamp(x, 0f, 1f);
         this.y = Math.Clamp(y, 0f, 1f);

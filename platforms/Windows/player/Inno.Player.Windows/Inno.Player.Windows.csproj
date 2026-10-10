@@ -1,0 +1,32 @@
+<Project>
+  <PropertyGroup>
+    <InnoProductId Condition="'$(InnoProductId)' == ''">player</InnoProductId>
+    <InnoProductTarget Condition="'$(InnoProductTarget)' == ''">windows-x64</InnoProductTarget>
+    <InnoNativeTarget Condition="'$(InnoNativeTarget)' == ''">windows-x64</InnoNativeTarget>
+    <InnoToolTarget Condition="'$(InnoToolTarget)' == ''">windows-x64</InnoToolTarget>
+    <InnoProductBuildProperties>$(MSBuildThisFileDirectory)../../build/Inno.Build.Windows/ProductBuild.props</InnoProductBuildProperties>
+  </PropertyGroup>
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <OutputType>Exe</OutputType>
+    <InnoGeneratePlayerComposition>true</InnoGeneratePlayerComposition>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../integrations/Inno.Integration.Windows.Bgfx.Runtime/Inno.Integration.Windows.Bgfx.Runtime.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../integrations/Inno.Integration.Windows.Sdl3/Inno.Integration.Windows.Sdl3.csproj" PrivateAssets="compile" />
+
+    <ProjectReference Include="../../../../src/foundation/core/Inno.Core.Execution/Inno.Core.Execution.csproj" />
+    <ProjectReference Include="../../../../src/composition/player/Inno.Player.Runtime/Inno.Player.Runtime.csproj" />
+    <ProjectReference Include="../../../../src/composition/adapters/Inno.Adapter.Default/Inno.Adapter.Default.csproj" />
+    <ProjectReference Include="../../../../backends/FileSystem/runtime/Inno.Adapter.Content.FileSystem/Inno.Adapter.Content.FileSystem.csproj" />
+    <ProjectReference Include="../../../../backends/FileSystem/runtime/Inno.Adapter.Storage.FileSystem/Inno.Adapter.Storage.FileSystem.csproj" />
+    <ProjectReference Include="../../runtime/Inno.Platform.Windows/Inno.Platform.Windows.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <CompilerVisibleProperty Include="InnoGeneratePlayerComposition" />
+  </ItemGroup>
+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+</Project>

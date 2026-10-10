@@ -38,8 +38,8 @@ public sealed class AssemblyUnloadBarrier
     /// </exception>
     public AssemblyUnloadBarrier(
         IEnumerable<IAssemblyUnloadProbe> probes,
-        AssemblyUnloadBarrierOptions? options = null)
-    {
+        AssemblyUnloadBarrierOptions? options = null
+    ) {
         ArgumentNullException.ThrowIfNull(probes);
         m_probes = probes.ToArray();
         if (m_probes.Any(static probe => probe is null))

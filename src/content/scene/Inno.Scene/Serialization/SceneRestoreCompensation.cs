@@ -14,8 +14,8 @@ internal static class SceneRestoreCompensation
         Exception restoreFailure,
         GameScene scene,
         IReadOnlySet<GameObject> existing,
-        string description)
-    {
+        string description
+    ) {
         ArgumentNullException.ThrowIfNull(restoreFailure);
         ArgumentNullException.ThrowIfNull(scene);
         ArgumentNullException.ThrowIfNull(existing);

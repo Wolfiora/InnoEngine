@@ -23,8 +23,11 @@ public sealed class EditorMenuBuilder
     /// <param name="separatorBefore">
     /// Whether a separator precedes this group at its own level.
     /// </param>
-    public void AddGroup(string path, int order = 0, bool separatorBefore = false)
-    {
+    public void AddGroup(
+        string path,
+        int order = 0,
+        bool separatorBefore = false
+    ) {
         if (string.IsNullOrWhiteSpace(path))
             throw new ArgumentException("A menu group path is required.", nameof(path));
         m_groups.Add(new EditorMenuGroupPlacement(path, order, separatorBefore));
@@ -56,8 +59,8 @@ public sealed class EditorMenuBuilder
         string actionId,
         int order = 0,
         bool separatorBefore = false,
-        object? argument = null)
-    {
+        object? argument = null
+    ) {
         if (string.IsNullOrWhiteSpace(path))
             throw new ArgumentException("A menu path is required.", nameof(path));
         ArgumentException.ThrowIfNullOrWhiteSpace(actionId);
@@ -68,7 +71,11 @@ public sealed class EditorMenuBuilder
     internal IReadOnlyList<EditorMenuGroupPlacement> groups => m_groups;
 }
 
-internal sealed record EditorMenuGroupPlacement(string path, int order, bool separatorBefore);
+internal sealed record EditorMenuGroupPlacement(
+    string path,
+    int order,
+    bool separatorBefore
+);
 
 internal sealed class EditorMenuPlacement
 {
@@ -77,8 +84,8 @@ internal sealed class EditorMenuPlacement
         string actionId,
         int order,
         bool separatorBefore,
-        object? argument)
-    {
+        object? argument
+    ) {
         this.path = path;
         this.actionId = actionId;
         this.order = order;

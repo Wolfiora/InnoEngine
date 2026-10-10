@@ -8,8 +8,10 @@ namespace Inno.Editor.Diagnostics;
 /// </summary>
 public sealed class EditorConsoleGroup
 {
-    internal EditorConsoleGroup(string identity, EditorConsoleOccurrence[] occurrences)
-    {
+    internal EditorConsoleGroup(
+        string identity,
+        EditorConsoleOccurrence[] occurrences
+    ) {
         this.identity = identity;
         this.occurrences = Array.AsReadOnly(occurrences);
         latest = occurrences[^1];

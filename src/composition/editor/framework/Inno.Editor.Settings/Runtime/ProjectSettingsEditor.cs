@@ -42,8 +42,8 @@ public sealed class ProjectSettingsEditor : EditorModule
         EditorInteractions interactions,
         TypeCatalog types,
         ProjectSettingsStore settings,
-        SerializationRegistry serialization)
-    {
+        SerializationRegistry serialization
+    ) {
         ArgumentNullException.ThrowIfNull(interactions);
         ArgumentNullException.ThrowIfNull(types);
         ArgumentNullException.ThrowIfNull(settings);
@@ -136,8 +136,8 @@ public sealed class ProjectSettingsEditor : EditorModule
     /// </exception>
     public bool Apply(
         IReadOnlyDictionary<ProjectSettingId, ISerializable> values,
-        IReadOnlySet<ProjectSettingId>? resets = null)
-    {
+        IReadOnlySet<ProjectSettingId>? resets = null
+    ) {
         ArgumentNullException.ThrowIfNull(values);
         byte[] before = m_settings.CaptureDocument();
         if (!m_settings.ApplyProjectOverrides(values, resets))
@@ -159,16 +159,12 @@ public sealed class ProjectSettingsEditor : EditorModule
     /// <summary>
     /// Releases resources retained by this feature after it has stopped.
     /// </summary>
-    protected override void OnDispose()
-        => m_catalog.Dispose();
+    protected override void OnDispose() => m_catalog.Dispose();
 
-    internal byte[] CaptureDocument()
-        => m_settings.CaptureDocument();
+    internal byte[] CaptureDocument() => m_settings.CaptureDocument();
 
-    internal void ValidateDocument(ReadOnlySpan<byte> document)
-        => m_settings.ValidateDocument(document);
+    internal void ValidateDocument(ReadOnlySpan<byte> document) => m_settings.ValidateDocument(document);
 
-    internal void RestoreFromHistory(ReadOnlySpan<byte> document)
-        => m_settings.RestoreDocument(document);
+    internal void RestoreFromHistory(ReadOnlySpan<byte> document) => m_settings.RestoreDocument(document);
 
 }

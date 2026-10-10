@@ -42,7 +42,8 @@ public abstract class AssetEditor
     /// </returns>
     public virtual AssetOperationValidation ValidateRename(
         AssetEditorContext context,
-        string targetPath) => AssetOperationValidation.valid;
+        string targetPath
+    ) => AssetOperationValidation.valid;
 
     /// <summary>
     /// Runs after an asset move transaction commits successfully.
@@ -59,8 +60,8 @@ public abstract class AssetEditor
     public virtual void OnRenamed(
         AssetEditorContext context,
         string oldPath,
-        string newPath)
-    {
+        string newPath
+    ) {
     }
 
     /// <summary>
@@ -72,8 +73,7 @@ public abstract class AssetEditor
     /// <returns>
     /// A valid result when the transaction may proceed, or a diagnostic describing the rejection.
     /// </returns>
-    public virtual AssetOperationValidation ValidateDelete(AssetEditorContext context)
-        => AssetOperationValidation.valid;
+    public virtual AssetOperationValidation ValidateDelete(AssetEditorContext context) => AssetOperationValidation.valid;
 
     /// <summary>
     /// Runs after an asset deletion transaction commits successfully.
@@ -105,6 +105,5 @@ public abstract class AssetEditor
     /// <returns>
     /// The managed drag data published by the Asset Browser.
     /// </returns>
-    public virtual EditorDragData CreateDragData(AssetEditorContext context)
-        => context.CreateDefaultDragData();
+    public virtual EditorDragData CreateDragData(AssetEditorContext context) => context.CreateDefaultDragData();
 }

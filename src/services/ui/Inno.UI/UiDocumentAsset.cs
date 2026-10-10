@@ -50,9 +50,11 @@ public sealed class UiDocumentAsset : AssetObject
     /// <returns>
     /// Complete deterministic runtime payload bytes.
     /// </returns>
-    public static byte[] CreateRuntimePayload(string implementationId, UiDocumentSource source,
-        IReadOnlyList<UiDocumentFontFace>? fonts = null)
-    {
+    public static byte[] CreateRuntimePayload(
+        string implementationId,
+        UiDocumentSource source,
+        IReadOnlyList<UiDocumentFontFace>? fonts = null
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(implementationId);
         ArgumentNullException.ThrowIfNull(source);
         using var stream = new MemoryStream();
@@ -87,8 +89,8 @@ public sealed class UiDocumentAsset : AssetObject
     /// </param>
     protected override void OnRuntimePayloadChanged(
         ReadOnlyMemory<byte> previousPayload,
-        ReadOnlyMemory<byte> currentPayload)
-    {
+        ReadOnlyMemory<byte> currentPayload
+    ) {
         if (currentPayload.IsEmpty)
         {
             m_source = null;

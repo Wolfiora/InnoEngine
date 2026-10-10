@@ -66,6 +66,7 @@ BenchmarkDotNet.Artifacts/
 project.lock.json
 project.fragment.lock.json
 artifacts/
+*.bgcs-lock
 !src/**/Artifacts/
 !src/**/Artifacts/**/*.cs
 
@@ -364,6 +365,9 @@ ASALocalRun/
 
 # MSBuild Binary and Structured Log
 *.binlog
+
+# Persistent cross-process binding generation ownership
+*.generation.lock
 
 # NVidia Nsight GPU debugger configuration file
 *.nvuser

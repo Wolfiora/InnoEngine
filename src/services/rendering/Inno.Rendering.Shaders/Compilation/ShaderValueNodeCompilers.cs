@@ -65,7 +65,8 @@ public sealed class ShaderSampleNodeCompiler : IShaderNodeCompiler
         string type = context.Read("type", "sampled-texture2d");
         string coordinate = type switch { "sampled-texture2d" => "float2", "sampled-texture2d-array" or "sampled-texture3d" or "sampled-texture-cube" => "float3", _ => throw new InvalidOperationException("Unknown sampled texture type.") };
         var ports = new List<ShaderNodePort> { new("texture", ShaderSourceType.Atomic(type), GraphPortDirection.Input), new("coordinate", ShaderSourceType.Atomic(coordinate), GraphPortDirection.Input) };
-        if (context.Read("explicitLevel", false)) ports.Add(new("level", ShaderSourceType.Atomic("float"), GraphPortDirection.Input));
+        if (context.Read("explicitLevel", false))
+            ports.Add(new("level", ShaderSourceType.Atomic("float"), GraphPortDirection.Input));
         ports.Add(new("value", ShaderSourceType.Atomic("float4"), GraphPortDirection.Output));
         return ports;
     }

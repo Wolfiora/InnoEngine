@@ -22,8 +22,7 @@ internal sealed class ProjectIdentitySettingsEditor : ProjectSettingEditor<Proje
     /// <summary>
     /// Gets the user-facing explanation of this feature or setting.
     /// </summary>
-    public override string description
-        => "Defines the project namespace. Project-owned IDs are resolved as projectId.name at runtime.";
+    public override string description => "Defines the project namespace. Project-owned IDs are resolved as projectId.name at runtime.";
 
     /// <summary>
     /// Draws this feature using the current editor presentation context.

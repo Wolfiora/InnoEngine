@@ -11,8 +11,10 @@ namespace Inno.Assets.Pipeline;
 /// </remarks>
 public sealed class AssetImportSettingsSnapshot
 {
-    internal AssetImportSettingsSnapshot(ISerializable? value, string fingerprint)
-    {
+    internal AssetImportSettingsSnapshot(
+        ISerializable? value,
+        string fingerprint
+    ) {
         this.value = value;
         this.fingerprint = fingerprint;
     }

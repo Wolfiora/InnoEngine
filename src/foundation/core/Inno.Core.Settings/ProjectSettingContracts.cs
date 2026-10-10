@@ -56,8 +56,10 @@ public sealed class ProjectSettingDefinitionAttribute : Attribute
     /// <param name="allowPluginContributions">
     /// Whether Plugin packages may contribute values to this protocol.
     /// </param>
-    public ProjectSettingDefinitionAttribute(string id, bool allowPluginContributions = true)
-    {
+    public ProjectSettingDefinitionAttribute(
+        string id,
+        bool allowPluginContributions = true
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(id);
         this.id = id;
         this.allowPluginContributions = allowPluginContributions;
@@ -91,8 +93,11 @@ public struct ProjectSettingRecord
     /// <param name="propertyData">
     /// Composer-owned contribution bytes, or complete property bytes for replacement settings.
     /// </param>
-    public ProjectSettingRecord(ProjectSettingId id, Guid stableTypeId, ReadOnlySpan<byte> propertyData)
-    {
+    public ProjectSettingRecord(
+        ProjectSettingId id,
+        Guid stableTypeId,
+        ReadOnlySpan<byte> propertyData
+    ) {
         if (!id.isValid)
             throw new ArgumentException("A project setting ID must be valid.", nameof(id));
         if (stableTypeId == Guid.Empty)
@@ -156,8 +161,8 @@ public sealed class ProjectSettingsContributor
         string id,
         IEnumerable<string> dependencies,
         IEnumerable<string> overrides,
-        IEnumerable<ProjectSettingRecord> settings)
-    {
+        IEnumerable<ProjectSettingRecord> settings
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(id);
         ArgumentNullException.ThrowIfNull(dependencies);
         ArgumentNullException.ThrowIfNull(overrides);

@@ -1,3 +1,4 @@
+using Inno.Integration.MacOS.Bgfx;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -6,6 +7,7 @@ using Inno.Build.Toolchains.Bgfx.Tools;
 using Inno.Rendering;
 using Inno.Rendering.Assets;
 using Xunit;
+using Inno.Rendering.Assets.Authoring;
 
 namespace Inno.Rendering.Shaders.Tests;
 
@@ -139,7 +141,7 @@ public sealed class ShaderControlFlowIrTests
 
     private static async Task Compile(ShaderIrStage stage)
     {
-        var toolchain = new BgfxShadercToolchain(BgfxShaderTargetPlatform.MacOSArm64);
+        var toolchain = new BgfxShadercToolchain(Inno.Integration.MacOS.Bgfx.MacOSBgfxShaderProfiles.target);
         var capabilities = new GraphicsCapabilities(GraphicsApi.Metal, GraphicsCapability.Compute | GraphicsCapability.StorageBuffer,
             new GraphicsLimits(256, 8, 8192, 16), Enum.GetValues<RenderTextureFormat>(), Enum.GetValues<RenderTextureFormat>(),
             Enum.GetValues<RenderTextureFormat>(), Enum.GetValues<RenderTextureFormat>(), false, false);

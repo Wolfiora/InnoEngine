@@ -25,7 +25,8 @@ public sealed class EditorShortcutAttribute : Attribute
     public EditorShortcutAttribute(
         KeyCode key,
         KeyModifier modifiers = KeyModifier.None,
-        bool primary = false)
+        bool primary = false
+    )
         : this(string.Empty, key, modifiers, primary)
     {
     }
@@ -49,8 +50,8 @@ public sealed class EditorShortcutAttribute : Attribute
         string area,
         KeyCode key,
         KeyModifier modifiers = KeyModifier.None,
-        bool primary = false)
-    {
+        bool primary = false
+    ) {
         this.area = area ?? string.Empty;
         this.key = key;
         this.modifiers = modifiers;

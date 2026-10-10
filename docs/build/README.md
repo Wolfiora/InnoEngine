@@ -1,25 +1,34 @@
-# Build API
+# 统一构建
 
-[Wiki 首页](../README.md) · [Runtime](../runtime/README.md) · [Native](../native/README.md)
+[Wiki 首页](../README.md) · [平台包](../platform/README.md) · [共享后端](../backends/README.md)
+
+构建机制、具体实现和发行注册分别维护。Editor、CLI 和 MSBuild 消费同一显式发行定义；共同 Build 不依赖具体发行或 Editor。
 
 | 项目 | 职责 |
 | --- | --- |
-| [Inno.Build](Inno.Build.md) | Profile、request/result、Plugin/Game pipeline 与内部 staging stages |
-| [Inno.Build.Platform.MacOS](Inno.Build.Platform.MacOS.md) | macOS ARM64 target artifact 与 app bundle |
-| [Inno.Build.Platform.Windows](Inno.Build.Platform.Windows.md) | Windows x64 target artifact 与 portable application directory |
-| [Inno.Editor.Build.Cli](../editor/Inno.Editor.Build.Cli.md) | 作者端无界面构建入口 |
-| [Inno.Build.NativeBindings](Inno.Build.NativeBindings.md) | BGCS 生成、原生依赖、程序集与 ABI 验收入口 |
-| [Native binding generation](../native/BindingGeneration.md) | 各 Native 项目自己的单文件 binding 生成与检查入口 |
-| [Inno.Build.SupportPacks](Inno.Build.SupportPacks.md) | 生产 source-independent Player Support Pack |
-| [Inno.Build.Toolchains](Inno.Build.Toolchains.md) | toolchain layout、process environment 与 artifact copy |
-| [Inno.Build.Toolchains.Bgfx](Inno.Build.Toolchains.Bgfx.md) | BGFX native build CLI |
-| [Inno.Build.Toolchains.Bgfx.Tools](Inno.Build.Toolchains.Bgfx.Tools.md) | shaderc/texturec 与目标内容编译 |
-| [Inno.Build.Toolchains.Bgfx.Shaders](Inno.Build.Toolchains.Bgfx.Shaders.md) | 离线图编译及内置 ImGui 预编译产物 |
-| [Inno.Build.Toolchains.Sdl3](Inno.Build.Toolchains.Sdl3.md) | SDL3 native build CLI |
-| [Inno.Build.Toolchains.MiniAudio](Inno.Build.Toolchains.MiniAudio.md) | miniaudio native build CLI |
-| [Inno.Build.Toolchains.ImGui](Inno.Build.Toolchains.ImGui.md) | cimgui native build CLI |
-| [Inno.Build.Toolchains.ImGuizmo](Inno.Build.Toolchains.ImGuizmo.md) | cimguizmo native build CLI |
-| [Inno.Build.Toolchains.Text](Inno.Build.Toolchains.Text.md) | FreeType/HarfBuzz Text bridge native build CLI |
-| [Inno.Build.Toolchains.UI](Inno.Build.Toolchains.UI.md) | RmlUi bridge native build CLI |
+| [Inno.Build](Inno.Build.md) | Profile、内容/代码快照、Game/Plugin pipeline、诊断与原子提交。 |
+| [Inno.Build.Managed](Inno.Build.Managed.md) | 可替换 managed deployment 契约与能力目录。 |
+| [Inno.Build.Toolchains](Inno.Build.Toolchains.md) | 冻结目标/宿主/组件、进程执行、哈希、Native 发布与部署机制。 |
+| [Inno.Build.Composition](Inno.Build.Composition.md) | 绑定完整平台贡献的中立不可变组合。 |
+| [Inno.Build.Distribution.Standard](Inno.Build.Distribution.Standard.md) | 唯一内置注册与标准产品组件闭包。 |
+| [Inno.Build.SupportPacks.Core](Inno.Build.SupportPacks.Core.md) | 中立供给、验证、准备和原子发布。 |
+| [Inno.Build.Tasks](Inno.Build.Tasks.md) | 普通 Build/Publish 的薄 Task 入口，产品与工具属性隔离。 |
+| [Inno.Build.TaskHosting](Inno.Build.TaskHosting.md) | 小型引导发布库；按内容复用完整 Task runtime，并管理私有 reader 的退休。 |
+| [Inno.Build.Cli](Inno.Build.Cli.md) | 唯一构建命令程序。 |
 
-Game Build 固定执行 Validate → Combined Snapshot → Scripts/Target Artifacts → Content Pack → Support Pack composition → Platform Package → Atomic Commit。Editor Exporting 只调用该 API，不拥有构建机制。
+Windows、MacOS、Browser 的 target/source/validator/template 属于各平台 Build 包。DotNet compiler 属于 [DotNet backend](../backends/DotNet/README.md)。BGFX、SDL3 等组件 recipe 属于各自 backend。不存在 Host Toolchain 的固定组件列表或 Desktop 发布目标。
+
+```text
+显式 Profile / 产品目标
+→ distribution 与能力预检
+→ 冻结宿主、SDK、组件与绑定
+→ 内容/代码/Native/managed 准备
+→ 所属平台布局与完整性校验
+→ 原子提交
+```
+
+游戏导出目标不改变正在运行的 Editor 目标或 ImGui Shader。CLI 的 `--tools-target` 与 `--target` 分别指定作者工具和游戏目标。失败与取消保留上次完整输出；不从旧目录读取兼容产物。
+
+## 共享绑定生成
+
+- [Inno.Build.Bindings](Inno.Build.Bindings.md)：唯一 BGCS 消费实现，供中立生成契约组合。

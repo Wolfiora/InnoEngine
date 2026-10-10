@@ -20,7 +20,11 @@ namespace Inno.Rendering.Shaders;
 /// <param name="resolvedPath">
 /// Exact source identity within the frozen file set.
 /// </param>
-public sealed record ShaderSourceInclude(string includingFile, string include, string resolvedPath);
+public sealed record ShaderSourceInclude(
+    string includingFile,
+    string include,
+    string resolvedPath
+);
 
 /// <summary>
 /// Identifies one explicitly selected implementation and preprocessing configuration of a source module.
@@ -39,8 +43,11 @@ public sealed class ShaderSourceImplementationRequest
     /// <param name="source">
     /// Source function and candidate-scoped dependency resolver.
     /// </param>
-    public ShaderSourceImplementationRequest(string implementationId, string languageId, ShaderSourceRequest source)
-    {
+    public ShaderSourceImplementationRequest(
+        string implementationId,
+        string languageId,
+        ShaderSourceRequest source
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(implementationId);
         ArgumentException.ThrowIfNullOrWhiteSpace(languageId);
         this.implementationId = implementationId;
@@ -67,9 +74,12 @@ public sealed class ShaderSourceImplementationRequest
 /// </summary>
 public sealed class ShaderSourceImplementationAnalysis
 {
-    internal ShaderSourceImplementationAnalysis(ShaderSourceImplementationRequest request, ShaderSourceAnalysis analysis,
-        IEnumerable<ShaderSourceFile> files, IEnumerable<ShaderSourceInclude> includes)
-    {
+    internal ShaderSourceImplementationAnalysis(
+        ShaderSourceImplementationRequest request,
+        ShaderSourceAnalysis analysis,
+        IEnumerable<ShaderSourceFile> files,
+        IEnumerable<ShaderSourceInclude> includes
+    ) {
         implementationId = request.implementationId;
         languageId = request.languageId;
         sourcePath = request.source.source.assetPath;
@@ -159,7 +169,10 @@ public sealed class ShaderSourceImplementationAnalysis
         return Convert.ToHexString(SHA256.HashData(stream.GetBuffer().AsSpan(0, checked((int)stream.Length))));
     }
 
-    private sealed class FrozenResolver(IReadOnlyList<ShaderSourceFile> sources, IReadOnlyList<ShaderSourceInclude> includes) : IShaderSourceResolver
+    private sealed class FrozenResolver(
+        IReadOnlyList<ShaderSourceFile> sources,
+        IReadOnlyList<ShaderSourceInclude> includes
+    ) : IShaderSourceResolver
     {
         /// <summary>
         /// Reads and validates the include value from its authoritative source.
@@ -173,8 +186,10 @@ public sealed class ShaderSourceImplementationAnalysis
         /// <returns>
         /// The validated shader source file that represents the completed operation.
         /// </returns>
-public ShaderSourceFile ReadInclude(string includingFile, string include)
-        {
+public ShaderSourceFile ReadInclude(
+    string includingFile,
+    string include
+) {
             ShaderSourceInclude edge = includes.FirstOrDefault(value => value.includingFile == includingFile && value.include == include)
                 ?? throw new InvalidOperationException($"Include '{include}' from '{includingFile}' was not captured during source analysis.");
             return sources.Single(file => file.assetPath == edge.resolvedPath);
@@ -187,9 +202,10 @@ public ShaderSourceFile ReadInclude(string includingFile, string include)
 /// </summary>
 public sealed class ShaderSourceModuleAnalysis
 {
-    internal ShaderSourceModuleAnalysis(IEnumerable<ShaderSourceImplementationAnalysis> implementations,
-        IEnumerable<ShaderSourceDiagnostic> diagnostics)
-    {
+    internal ShaderSourceModuleAnalysis(
+        IEnumerable<ShaderSourceImplementationAnalysis> implementations,
+        IEnumerable<ShaderSourceDiagnostic> diagnostics
+    ) {
         this.implementations = Array.AsReadOnly(implementations.ToArray());
         this.diagnostics = Array.AsReadOnly(diagnostics.ToArray());
         succeeded = this.implementations.Count != 0 && this.implementations.All(static item => item.analysis.succeeded)
@@ -242,8 +258,10 @@ internal sealed class ShaderSourceSnapshotResolver : IShaderSourceResolver
     /// <returns>
     /// The validated shader source file that represents the completed operation.
     /// </returns>
-public ShaderSourceFile ReadInclude(string includingFile, string include)
-    {
+public ShaderSourceFile ReadInclude(
+    string includingFile,
+    string include
+) {
         if (!m_files.ContainsKey(includingFile))
             throw new InvalidOperationException("An include must originate from an already captured source.");
         ShaderSourceFile file = m_resolver.ReadInclude(includingFile, include)

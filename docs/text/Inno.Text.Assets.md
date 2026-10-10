@@ -9,3 +9,21 @@
 `FontImporter : AssetImporter<FontAsset>` 的公开 `supportedExtensions` 列出四种格式；创作侧通过标准 Asset Pipeline 发现该 importer，无须单独调用。它的 `ImportAsync` 是标准受保护扩展点，读取当前源文件、写入 `FontAsset` 和 `font-data`，并交由统一 Catalog 管理身份、Missing 与依赖。业务脚本仅通过 [Inno.Text](Inno.Text.md) 的 `FontAsset` 使用结果，不引用此创作项目。
 
 将 `Fonts/Interface.ttf` 放入 Project `Assets` 后，脚本可用 `Assets.Load<FontAsset>(Assets.LocalPath("Fonts/Interface.ttf"))` 获得资产；必须在 Asset scope 中调用。字体源缺失或头损坏时导入失败，不生成可被运行时误用的空 face。运行时部署只保留经验证的字体数据和 metadata，不部署 importer。
+
+## 当前源码公开 API 清单
+
+只列当前源码的 public/protected 表面；内部实现不作为稳定 API。参数、返回、失败和 owner 以英文 XML 为准。
+
+### `Inno.Text.Assets.FontImporter`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Text.Assets.FontImporter`](../../src/services/text/Inno.Text.Assets/FontImporter.cs#L15) | Imports OpenType fonts into compact metadata and immutable encoded font artifacts. |
+| [`override System.Collections.Generic.IReadOnlyList<string> Inno.Text.Assets.FontImporter.supportedExtensions`](../../src/services/text/Inno.Text.Assets/FontImporter.cs#L21) | Gets the supported OpenType source extensions. |
+| [`override System.Threading.Tasks.ValueTask Inno.Text.Assets.FontImporter.ImportAsync(Inno.Assets.Pipeline.AssetImportContext context, Inno.Assets.Pipeline.AssetImportWriter<Inno.Text.FontAsset> output, System.Threading.CancellationToken cancellationToken)`](../../src/services/text/Inno.Text.Assets/FontImporter.cs#L38) | Validates the source container and emits runtime metadata plus encoded font data. |
+
+## 项目依赖
+
+- [Inno.Text](Inno.Text.md)：公开引用边界由实际签名核对。
+- [Inno.Assets.Pipeline](../assets/Inno.Assets.Pipeline.md)：公开引用边界由实际签名核对。
+- [Inno.Extensibility.Catalogs](../extensibility/Inno.Extensibility.Catalogs.md)：公开引用边界由实际签名核对。

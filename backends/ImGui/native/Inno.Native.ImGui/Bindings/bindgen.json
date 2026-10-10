@@ -1,0 +1,121 @@
+{
+  "baseConfig": {
+    "url": "file://cimgui-api-shape.json"
+  },
+  "namespace": "Inno.Native.ImGui",
+  "apiName": "ImGui",
+  "libName": "cimgui",
+  "boolType": "Byte",
+  "delegatesAsVoidPointer": false,
+  "generateExtensions": true,
+  "strictSafetySeverity": "Warning",
+  "entryFiles": [
+    "../../../../../extern/cimgui/cimgui.h"
+  ],
+  "allowedHeaders": [
+    "../../../../../extern/cimgui/cimgui.h"
+  ],
+  "includeFolders": [
+    "../../../../../extern/cimgui"
+  ],
+  "defines": [
+    "CIMGUI_DEFINE_ENUMS_AND_STRUCTS",
+    "CIMGUI_VARGS0"
+  ],
+  "outputPath": "../Generated",
+  "usings": [
+    "System.Numerics"
+  ],
+  "functionPrefixes": [
+    "ig"
+  ],
+  "ignoredFunctions": [
+    "igText",
+    "igTextColored",
+    "igTextDisabled",
+    "igTextWrapped",
+    "igLabelText",
+    "igBulletText",
+    "igTreeNode_StrStr",
+    "igTreeNode_Ptr",
+    "igTreeNodeEx_StrStr",
+    "igTreeNodeEx_Ptr",
+    "igSetTooltip",
+    "igSetItemTooltip",
+    "igLogText",
+    "igDebugLog",
+    "igImFormatString",
+    "igImFormatStringToTempBuffer",
+    "igTextAligned",
+    "ImGuiTextBuffer_appendf"
+  ],
+  "typeMappings": {
+    "ImVec2": "Vector2",
+    "ImVec2_c": "Vector2",
+    "ImVec4": "Vector4",
+    "ImVec4_c": "Vector4",
+    "ImTextureID": "ImTextureID",
+    "ImRect_c": "ImRect",
+    "ImColor_c": "ImColor"
+  },
+  "knownDefaultValueNames": {
+    "ImVec2(-FLT_MIN,0)": "new Vector2(-1.17549435E-38f, 0f)",
+    "ImVec2(0,0)": "new Vector2(0f, 0f)",
+    "ImVec2(0,1)": "new Vector2(0f, 1f)",
+    "ImVec2(0.0f,0.0f)": "new Vector2(0f, 0f)",
+    "ImVec2(1,0)": "new Vector2(1f, 0f)",
+    "ImVec2(1,1)": "new Vector2(1f, 1f)",
+    "ImVec4(0,0,0,0)": "new Vector4(0f, 0f, 0f, 0f)",
+    "ImVec4(1,1,1,1)": "new Vector4(1f, 1f, 1f, 1f)"
+  },
+  "externalTypeContracts": [
+    {
+      "nativeTypes": [
+        "ImVec2",
+        "ImVec2_c"
+      ],
+      "managedTypes": [
+        "Vector2"
+      ],
+      "size": 8,
+      "alignment": 4,
+      "byValuePolicy": "RequireLayoutMatch"
+    },
+    {
+      "nativeTypes": [
+        "ImVec4",
+        "ImVec4_c"
+      ],
+      "managedTypes": [
+        "Vector4"
+      ],
+      "size": 16,
+      "alignment": 4,
+      "byValuePolicy": "RequireLayoutMatch"
+    },
+    {
+      "nativeTypes": [
+        "ImVector_*"
+      ],
+      "managedTypes": [
+        "ImVector<*>"
+      ],
+      "size": 16,
+      "alignment": 8,
+      "byValuePolicy": "RequireLayoutMatch"
+    }
+  ],
+  "ignoredTypes": [
+    "ImVec2_c",
+    "ImVec4_c"
+  ],
+  "ignoredTypedefs": [
+    "ImVec2",
+    "ImVec2_c",
+    "ImVec4",
+    "ImVec4_c",
+    "ImTextureID",
+    "ImRect_c",
+    "ImColor_c"
+  ]
+}

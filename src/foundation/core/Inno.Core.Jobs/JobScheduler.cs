@@ -21,8 +21,10 @@ public sealed class JobScheduler : IDisposable
     /// <exception cref="ArgumentOutOfRangeException">
     /// Thrown when <paramref name="mode"/> is not a defined execution strategy.
     /// </exception>
-    public JobScheduler(JobExecutionMode mode, JobSchedulerOptions options = default)
-    {
+    public JobScheduler(
+        JobExecutionMode mode,
+        JobSchedulerOptions options = default
+    ) {
         m_implementation = mode switch
         {
             JobExecutionMode.SingleThread => new SingleThreadJobSystem(options),
@@ -80,7 +82,8 @@ public sealed class JobScheduler : IDisposable
     public JobHandle Schedule(
         Action<object?> job,
         object? state,
-        ReadOnlySpan<JobHandle> dependencies)
+        ReadOnlySpan<JobHandle> dependencies
+    )
         => m_implementation.Schedule(job, state, dependencies);
 
     /// <summary>
@@ -92,8 +95,7 @@ public sealed class JobScheduler : IDisposable
     /// <returns>
     /// A generation-safe combined handle.
     /// </returns>
-    public JobHandle CombineDependencies(ReadOnlySpan<JobHandle> dependencies)
-        => m_implementation.CombineDependencies(dependencies);
+    public JobHandle CombineDependencies(ReadOnlySpan<JobHandle> dependencies) => m_implementation.CombineDependencies(dependencies);
 
     /// <summary>
     /// Schedules a range as independent contiguous batches.
@@ -110,8 +112,11 @@ public sealed class JobScheduler : IDisposable
     /// <returns>
     /// A handle that completes after every batch.
     /// </returns>
-    public JobHandle ParallelFor(int length, int batchSize, Action<int, int> body)
-        => m_implementation.ParallelFor(length, batchSize, body);
+    public JobHandle ParallelFor(
+        int length,
+        int batchSize,
+        Action<int, int> body
+    ) => m_implementation.ParallelFor(length, batchSize, body);
 
     /// <summary>
     /// Blocks the calling thread until one scheduled operation completes.
@@ -127,8 +132,7 @@ public sealed class JobScheduler : IDisposable
     /// <param name="handles">
     /// The generation-safe operation handles to complete.
     /// </param>
-    public void CompleteAll(ReadOnlySpan<JobHandle> handles)
-        => m_implementation.CompleteAll(handles);
+    public void CompleteAll(ReadOnlySpan<JobHandle> handles) => m_implementation.CompleteAll(handles);
 
     /// <summary>
     /// Enqueues an operation that must run on the scheduler owner thread.
@@ -136,14 +140,12 @@ public sealed class JobScheduler : IDisposable
     /// <param name="action">
     /// The owner-thread operation.
     /// </param>
-    public void EnqueueMainThread(Action action)
-        => m_implementation.EnqueueMainThread(action);
+    public void EnqueueMainThread(Action action) => m_implementation.EnqueueMainThread(action);
 
     /// <summary>
     /// Attempts at most the configured drain budget from the current queue snapshot; reentrant posts wait for a later drain.
     /// </summary>
-    public void DrainMainThreadQueue()
-        => m_implementation.DrainMainThreadQueue();
+    public void DrainMainThreadQueue() => m_implementation.DrainMainThreadQueue();
 
     /// <summary>
     /// Stops worker threads and releases every pending scheduling resource.

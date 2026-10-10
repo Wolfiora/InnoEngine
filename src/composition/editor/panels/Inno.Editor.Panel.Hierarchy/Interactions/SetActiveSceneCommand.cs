@@ -28,6 +28,5 @@ internal sealed class SetActiveSceneCommand(IEditorSceneWorkspace workspace) : E
     /// <param name="context">
     /// The operation scope that provides state, services, and ownership boundaries.
     /// </param>
-    protected override void Execute(EditorActionContext<GameScene> context)
-        => workspace.SetActiveScene(context.target);
+    protected override void Execute(EditorActionContext<GameScene> context) => workspace.SetActiveScene(context.target);
 }

@@ -41,8 +41,10 @@ public sealed class AudioMixerFeatureExtensionAttribute : Attribute
     /// <param name="priority">
     /// Feature invocation priority; lower values build first.
     /// </param>
-    public AudioMixerFeatureExtensionAttribute(string id, int priority = 0)
-    {
+    public AudioMixerFeatureExtensionAttribute(
+        string id,
+        int priority = 0
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(id);
         this.id = id;
         this.priority = priority;
@@ -73,7 +75,10 @@ public abstract class AudioMixerExtension
     /// <param name="state">
     /// Reload-safe neutral extension state.
     /// </param>
-    public abstract void Build(AudioMixerBuilder builder, SerializedAudioExtensionState state);
+    public abstract void Build(
+        AudioMixerBuilder builder,
+        SerializedAudioExtensionState state
+    );
 }
 
 /// <summary>
@@ -90,5 +95,8 @@ public abstract class AudioMixerFeature
     /// <param name="state">
     /// Reload-safe neutral feature state.
     /// </param>
-    public abstract void Build(AudioMixerBuilder builder, SerializedAudioExtensionState state);
+    public abstract void Build(
+        AudioMixerBuilder builder,
+        SerializedAudioExtensionState state
+    );
 }

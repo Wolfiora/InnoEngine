@@ -57,8 +57,10 @@ public sealed class CoroutineScheduler : IDisposable
     /// <returns>
     /// Coroutine handle.
     /// </returns>
-    public CoroutineHandle StartCoroutine(object? owner, IEnumerator routine)
-    {
+    public CoroutineHandle StartCoroutine(
+        object? owner,
+        IEnumerator routine
+    ) {
         ArgumentNullException.ThrowIfNull(routine);
 
         lock (m_tickGate)
@@ -353,8 +355,10 @@ public sealed class CoroutineScheduler : IDisposable
         }
     }
 
-    private void RemoveAtActiveIndex(int activeIndex, long id)
-    {
+    private void RemoveAtActiveIndex(
+        int activeIndex,
+        long id
+    ) {
         m_states.Remove(id);
         m_liveIds.TryRemove(id, out _);
         m_active.RemoveAt(activeIndex);
@@ -372,8 +376,8 @@ public sealed class CoroutineScheduler : IDisposable
         CommandKind kind,
         long id,
         object? owner,
-        IEnumerator? routine)
-    {
+        IEnumerator? routine
+    ) {
         /// <summary>
         /// Gets the operation kind that determines how this value is interpreted.
         /// </summary>
@@ -406,8 +410,11 @@ public sealed class CoroutineScheduler : IDisposable
         /// <returns>
         /// The validated command that represents the completed operation.
         /// </returns>
-        public static Command Start(long id, object? owner, IEnumerator routine)
-            => new(CommandKind.Start, id, owner, routine);
+        public static Command Start(
+            long id,
+            object? owner,
+            IEnumerator routine
+        ) => new(CommandKind.Start, id, owner, routine);
 
         /// <summary>
         /// Stops value processing and releases operation-scoped resources.
@@ -418,8 +425,7 @@ public sealed class CoroutineScheduler : IDisposable
         /// <returns>
         /// The validated command that represents the completed operation.
         /// </returns>
-        public static Command Stop(long id)
-            => new(CommandKind.Stop, id, null, null);
+        public static Command Stop(long id) => new(CommandKind.Stop, id, null, null);
 
         /// <summary>
         /// Stops by owner processing and releases operation-scoped resources.
@@ -430,8 +436,7 @@ public sealed class CoroutineScheduler : IDisposable
         /// <returns>
         /// The validated command that represents the completed operation.
         /// </returns>
-        public static Command StopByOwner(object owner)
-            => new(CommandKind.StopByOwner, 0, owner, null);
+        public static Command StopByOwner(object owner) => new(CommandKind.StopByOwner, 0, owner, null);
 
         /// <summary>
         /// Stops all processing and releases operation-scoped resources.
@@ -439,12 +444,14 @@ public sealed class CoroutineScheduler : IDisposable
         /// <returns>
         /// The validated command that represents the completed operation.
         /// </returns>
-        public static Command StopAll()
-            => new(CommandKind.StopAll, 0, null, null);
+        public static Command StopAll() => new(CommandKind.StopAll, 0, null, null);
     }
 
-    private sealed class CoroutineState(long id, object? owner, IEnumerator routine)
-    {
+    private sealed class CoroutineState(
+        long id,
+        object? owner,
+        IEnumerator routine
+    ) {
         /// <summary>
         /// Gets the stable identity used to reference this value across subsystem boundaries.
         /// </summary>

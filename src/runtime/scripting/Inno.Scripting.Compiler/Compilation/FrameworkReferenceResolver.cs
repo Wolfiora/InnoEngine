@@ -20,6 +20,12 @@ internal static class FrameworkReferenceResolver
             .ToArray();
     }
 
+    internal static IReadOnlySet<string> GetFrameworkAssemblyNames()
+        => Directory.EnumerateFiles(FindReferenceDirectory(), "*.dll", SearchOption.TopDirectoryOnly)
+            .Select(static path => Path.GetFileNameWithoutExtension(path))
+            .Append("System.Private.CoreLib")
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
     private static string FindReferenceDirectory()
     {
         Version runtimeVersion = Environment.Version;
@@ -47,12 +53,14 @@ internal static class FrameworkReferenceResolver
         }
         throw new InvalidOperationException(
             $"The {targetFramework} reference pack is required to generate script API assemblies. " +
-            "Install the matching .NET SDK or configure DOTNET_ROOT.");
+            "Install the matching .NET SDK, publish the Editor with its reference pack, or configure DOTNET_ROOT.");
     }
 
     private static IEnumerable<string> GetDotnetRoots()
     {
-        var roots = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var roots = new List<string>();
+        var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        Add(AppContext.BaseDirectory);
         Add(Environment.GetEnvironmentVariable("DOTNET_ROOT"));
         Add(Environment.GetEnvironmentVariable("DOTNET_ROOT_X64"));
         string runtimeDirectory = Path.GetFullPath(RuntimeEnvironment.GetRuntimeDirectory());
@@ -62,7 +70,11 @@ internal static class FrameworkReferenceResolver
         void Add(string? path)
         {
             if (!string.IsNullOrWhiteSpace(path) && Directory.Exists(path))
-                roots.Add(Path.TrimEndingDirectorySeparator(Path.GetFullPath(path)));
+            {
+                string root = Path.TrimEndingDirectorySeparator(Path.GetFullPath(path));
+                if (seen.Add(root))
+                    roots.Add(root);
+            }
         }
     }
 

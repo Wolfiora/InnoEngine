@@ -5,6 +5,7 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
+using Inno.Content;
 
 namespace Inno.Assets;
 
@@ -44,7 +45,11 @@ public sealed partial class AssetDatabase
     /// </summary>
     public long preparingBytes
     {
-        get { lock (m_sync) return m_preparingBytes; }
+        get
+        {
+            lock (m_sync)
+                return m_preparingBytes;
+        }
     }
 
     /// <summary>
@@ -87,7 +92,9 @@ public sealed partial class AssetDatabase
     }
 
     private ValueTask<AssetLease<TAsset>> QueueAcquisition<TAsset>(
-        RuntimeAssetRecord record, CancellationToken cancellationToken) where TAsset : AssetObject
+        RuntimeAssetRecord record,
+        CancellationToken cancellationToken
+    ) where TAsset : AssetObject
     {
         EnsureResidencyOwner();
         cancellationToken.ThrowIfCancellationRequested();
@@ -123,7 +130,7 @@ public sealed partial class AssetDatabase
                 {
                     if (!m_payloadReads.TryGetValue(read, out SharedPayload? payload))
                     {
-                        payload = new SharedPayload(read, m_payloadReadSlots);
+                        payload = new SharedPayload(read, m_content.Acquire(read.key), m_payloadReadSlots);
                         m_payloadReads.Add(read, payload);
                         m_preparingBytes += read.length;
                         m_payloadReadsStarted++;
@@ -158,48 +165,59 @@ public sealed partial class AssetDatabase
         return new ValueTask<AssetLease<TAsset>>(completion.Task);
     }
 
-    private AssetLease<TAsset> CreateResidencyLease<TAsset>(RuntimeAssetRecord record, TAsset asset)
+    private AssetLease<TAsset> CreateResidencyLease<TAsset>(
+        RuntimeAssetRecord record,
+        TAsset asset
+    )
         where TAsset : AssetObject
     {
         bool released = false;
         return CreateAssetLease(asset, () => ReleaseLease(record, ref released));
     }
 
-    private void CollectPayloadReads(RuntimeAssetRecord record, HashSet<Guid> visited, List<PayloadRead> reads)
-    {
+    private void CollectPayloadReads(
+        RuntimeAssetRecord record,
+        HashSet<Guid> visited,
+        List<PayloadRead> reads
+    ) {
         if (!visited.Add(record.persistentId))
             return;
         RuntimeArtifactOutput output = ReadArtifactManifest(record).outputs.Single(candidate => candidate.name == "runtime");
         if (output.length < 0 || output.length > int.MaxValue)
             throw new InvalidDataException("A runtime payload length is outside the supported allocation range.");
-        if (string.IsNullOrWhiteSpace(output.fileName) || Path.GetFileName(output.fileName) != output.fileName)
-            throw new InvalidDataException("A runtime artifact contains an invalid output path.");
         reads.Add(new PayloadRead(record.persistentId,
-            Path.Combine(GetBundleRoot(record.artifactKey), "outputs", output.fileName), output.length, output.contentHash));
+            GetVerifiedOutputKey(record, output), output.length, output.contentHash));
         foreach (AssetDependency dependency in record.dependencies)
             CollectPayloadReads(m_recordsById[dependency.persistentId], visited, reads);
     }
 
-    private static async Task<byte[]> ReadPayloadAsync(PayloadRead read, CancellationToken token, SemaphoreSlim slots)
-    {
+    private static async Task<byte[]> ReadPayloadAsync(
+        PayloadRead read,
+        ContentReadLease lease,
+        CancellationToken token,
+        SemaphoreSlim slots
+    ) {
         await slots.WaitAsync(token).ConfigureAwait(false);
         try
         {
-            return await ReadPayloadFileAsync(read, token).ConfigureAwait(false);
+            return await ReadPayloadContentAsync(read, lease, token).ConfigureAwait(false);
         }
-        finally { slots.Release(); }
+        finally
+        {
+            slots.Release();
+        }
     }
 
-    private static async Task<byte[]> ReadPayloadFileAsync(PayloadRead read, CancellationToken token)
-    {
-        await using var stream = new FileStream(read.path, FileMode.Open, FileAccess.Read, FileShare.Read,
-            4096, FileOptions.Asynchronous | FileOptions.SequentialScan);
-        if (stream.Length != read.length)
-            throw new InvalidDataException($"Runtime payload '{read.id:D}' has an unexpected length.");
+    private static async Task<byte[]> ReadPayloadContentAsync(
+        PayloadRead read,
+        ContentReadLease lease,
+        CancellationToken token
+    ) {
+        using Stream stream = lease.OpenRead();
         byte[] bytes = new byte[checked((int)read.length)];
         await stream.ReadExactlyAsync(bytes, token).ConfigureAwait(false);
         token.ThrowIfCancellationRequested();
-        if (bytes.LongLength != read.length ||
+        if (stream.ReadByte() != -1 || bytes.LongLength != read.length ||
             !string.Equals(Convert.ToHexString(SHA256.HashData(bytes)), read.hash, StringComparison.OrdinalIgnoreCase))
             throw new InvalidDataException($"Runtime payload '{read.id:D}' failed integrity verification.");
         return bytes;
@@ -229,8 +247,10 @@ public sealed partial class AssetDatabase
         m_pendingLoads.Clear();
     }
 
-    private void ReleasePreparation(Guid id, SharedPreparation preparation)
-    {
+    private void ReleasePreparation(
+        Guid id,
+        SharedPreparation preparation
+    ) {
         if (--preparation.waiters != 0)
             return;
         m_preparations.Remove(id);
@@ -243,7 +263,10 @@ public sealed partial class AssetDatabase
         if (--payload.owners != 0)
             return;
         payload.cancellation.Cancel();
-        try { payload.preparation.GetAwaiter().GetResult(); }
+        try
+        {
+            payload.preparation.GetAwaiter().GetResult();
+        }
         catch (Exception) { /* The acquisition reports IO failures; rollback only drains ownership. */ }
         m_payloadReads.Remove(payload.read);
         m_preparingBytes -= payload.read.length;
@@ -256,11 +279,17 @@ public sealed partial class AssetDatabase
             throw new InvalidOperationException("Runtime asset acquisition and publication require the database owner thread.");
     }
 
-    private sealed record PayloadRead(Guid id, string path, long length, string hash);
+    private sealed record PayloadRead(
+        Guid id,
+        ContentKey key,
+        long length,
+        string hash
+    );
 
     private sealed class SharedPreparation(
-        Task<Dictionary<Guid, byte[]>> preparation, SharedPayload[] payloads)
-    {
+        Task<Dictionary<Guid, byte[]>> preparation,
+        SharedPayload[] payloads
+    ) {
         internal Task<Dictionary<Guid, byte[]>> preparation { get; } = preparation;
         internal SharedPayload[] payloads { get; } = payloads;
         internal int waiters { get; set; }
@@ -268,32 +297,54 @@ public sealed partial class AssetDatabase
 
     private sealed class SharedPayload
     {
-        internal SharedPayload(PayloadRead read, SemaphoreSlim slots)
-        {
+        internal SharedPayload(
+            PayloadRead read,
+            ContentReadLease lease,
+            SemaphoreSlim slots
+        ) {
             this.read = read;
             try
             {
                 if (ExecutionContext.IsFlowSuppressed())
-                    preparation = Task.Run(() => ReadPayloadAsync(read, cancellation.Token, slots), cancellation.Token);
+                    preparation = Task.Run(() => PrepareAsync(read, lease, cancellation.Token, slots));
                 else
                 {
                     using (ExecutionContext.SuppressFlow())
-                        preparation = Task.Run(() => ReadPayloadAsync(read, cancellation.Token, slots), cancellation.Token);
+                        preparation = Task.Run(() => PrepareAsync(read, lease, cancellation.Token, slots));
                 }
             }
-            catch { cancellation.Dispose(); throw; }
+            catch
+            {
+                cancellation.Dispose();
+                lease.Dispose();
+                throw;
+            }
         }
 
         internal PayloadRead read { get; }
         internal CancellationTokenSource cancellation { get; } = new();
         internal Task<byte[]> preparation { get; }
         internal int owners { get; set; }
+
+        private static async Task<byte[]> PrepareAsync(
+            PayloadRead read,
+            ContentReadLease lease,
+            CancellationToken cancellation,
+            SemaphoreSlim slots
+        ) {
+            using (lease)
+                return await ReadPayloadAsync(read, lease, cancellation, slots).ConfigureAwait(false);
+        }
     }
 
     private sealed class PendingAcquisition(
-        Task<Dictionary<Guid, byte[]>> preparation, CancellationToken cancellation,
-        Action<Dictionary<Guid, byte[]>> publish, Action<Exception> fail, Action cancel, Action release)
-    {
+        Task<Dictionary<Guid, byte[]>> preparation,
+        CancellationToken cancellation,
+        Action<Dictionary<Guid, byte[]>> publish,
+        Action<Exception> fail,
+        Action cancel,
+        Action release
+    ) {
         internal Task<Dictionary<Guid, byte[]>> preparation { get; } = preparation;
 
         internal void Complete()
@@ -303,14 +354,26 @@ public sealed partial class AssetDatabase
                 cancellation.ThrowIfCancellationRequested();
                 publish(preparation.GetAwaiter().GetResult());
             }
-            catch (OperationCanceledException) { cancel(); }
-            catch (Exception exception) { fail(exception); }
-            finally { release(); }
+            catch (OperationCanceledException)
+            {
+                cancel();
+            }
+            catch (Exception exception)
+            {
+                fail(exception);
+            }
+            finally
+            {
+                release();
+            }
         }
 
         internal void Cancel()
         {
-            try { preparation.GetAwaiter().GetResult(); }
+            try
+            {
+                preparation.GetAwaiter().GetResult();
+            }
             catch (Exception) { /* The retiring owner reports cancellation instead of publishing. */ }
             cancel();
             release();

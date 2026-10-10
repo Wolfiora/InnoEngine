@@ -47,6 +47,7 @@ public static class EditorSceneWorkspaceFactory
         TypeCatalog types,
         SerializationRegistry serialization,
         LogRouter logs,
-        IEditorSelectionCoordinator? selection = null)
+        IEditorSelectionCoordinator? selection = null
+    )
         => new(runtimeSession, assets, types, serialization, logs, selection);
 }

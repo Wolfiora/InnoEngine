@@ -51,8 +51,8 @@ public sealed class AssetEditorContext
         bool isDirectory,
         AssetInfo? info,
         Type? assetType,
-        Func<EditorDragData> createDefaultDragData)
-    {
+        Func<EditorDragData> createDefaultDragData
+    ) {
         this.editorContext = editorContext ?? throw new ArgumentNullException(nameof(editorContext));
         this.interactions = interactions ?? throw new ArgumentNullException(nameof(interactions));
         this.relativePath = relativePath ?? throw new ArgumentNullException(nameof(relativePath));
@@ -99,6 +99,5 @@ public sealed class AssetEditorContext
     /// </summary>
     public Type? assetType { get; }
 
-    internal EditorDragData CreateDefaultDragData()
-        => m_createDefaultDragData();
+    internal EditorDragData CreateDefaultDragData() => m_createDefaultDragData();
 }

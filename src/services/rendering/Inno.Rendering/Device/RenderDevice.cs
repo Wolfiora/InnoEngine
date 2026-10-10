@@ -18,7 +18,10 @@ public abstract class RenderDevice
     /// <param name="generation">
     /// The device generation that owns the resource.
     /// </param>
-    protected readonly record struct DeviceHandleIdentity(ulong value, uint generation);
+    protected readonly record struct DeviceHandleIdentity(
+        ulong value,
+        uint generation
+    );
 
     /// <summary>
     /// Stores one decoded frame-scoped graph identity for use inside a concrete backend.
@@ -29,7 +32,10 @@ public abstract class RenderDevice
     /// <param name="generation">
     /// The render-graph generation that owns the resource.
     /// </param>
-    protected readonly record struct GraphHandleIdentity(int index, uint generation);
+    protected readonly record struct GraphHandleIdentity(
+        int index,
+        uint generation
+    );
 
     /// <summary>
     /// Encodes a persistent texture identity into a backend-neutral handle.
@@ -43,8 +49,10 @@ public abstract class RenderDevice
     /// <returns>
     /// An opaque texture handle suitable for the public render-device contract.
     /// </returns>
-    protected static PersistentTextureHandle CreatePersistentTextureHandle(ulong value, uint generation)
-        => new(value, generation);
+    protected static PersistentTextureHandle CreatePersistentTextureHandle(
+        ulong value,
+        uint generation
+    ) => new(value, generation);
 
     /// <summary>
     /// Encodes a persistent buffer identity into a backend-neutral handle.
@@ -58,8 +66,10 @@ public abstract class RenderDevice
     /// <returns>
     /// An opaque buffer handle suitable for the public render-device contract.
     /// </returns>
-    protected static PersistentBufferHandle CreatePersistentBufferHandle(ulong value, uint generation)
-        => new(value, generation);
+    protected static PersistentBufferHandle CreatePersistentBufferHandle(
+        ulong value,
+        uint generation
+    ) => new(value, generation);
 
     /// <summary>
     /// Encodes a graphics pipeline identity into a backend-neutral handle.
@@ -73,8 +83,10 @@ public abstract class RenderDevice
     /// <returns>
     /// An opaque graphics pipeline handle.
     /// </returns>
-    protected static GraphicsPipelineHandle CreateGraphicsPipelineHandle(ulong value, uint generation)
-        => new(value, generation);
+    protected static GraphicsPipelineHandle CreateGraphicsPipelineHandle(
+        ulong value,
+        uint generation
+    ) => new(value, generation);
 
     /// <summary>
     /// Encodes a compute pipeline identity into a backend-neutral handle.
@@ -88,8 +100,10 @@ public abstract class RenderDevice
     /// <returns>
     /// An opaque compute pipeline handle.
     /// </returns>
-    protected static ComputePipelineHandle CreateComputePipelineHandle(ulong value, uint generation)
-        => new(value, generation);
+    protected static ComputePipelineHandle CreateComputePipelineHandle(
+        ulong value,
+        uint generation
+    ) => new(value, generation);
 
     /// <summary>
     /// Encodes a presentation-surface identity into a backend-neutral handle.
@@ -103,8 +117,10 @@ public abstract class RenderDevice
     /// <returns>
     /// An opaque presentation-surface handle.
     /// </returns>
-    protected static RenderSurfaceHandle CreateRenderSurfaceHandle(ulong value, uint generation)
-        => new(value, generation);
+    protected static RenderSurfaceHandle CreateRenderSurfaceHandle(
+        ulong value,
+        uint generation
+    ) => new(value, generation);
 
     /// <summary>
     /// Encodes a texture-readback identity into a backend-neutral handle.
@@ -118,8 +134,10 @@ public abstract class RenderDevice
     /// <returns>
     /// An opaque texture-readback handle.
     /// </returns>
-    protected static RenderTextureReadbackHandle CreateRenderTextureReadbackHandle(ulong value, uint generation)
-        => new(value, generation);
+    protected static RenderTextureReadbackHandle CreateRenderTextureReadbackHandle(
+        ulong value,
+        uint generation
+    ) => new(value, generation);
 
     /// <summary>
     /// Decodes a persistent texture handle for backend lookup and generation validation.
@@ -130,8 +148,7 @@ public abstract class RenderDevice
     /// <returns>
     /// The backend resource identity and owning device generation.
     /// </returns>
-    protected static DeviceHandleIdentity GetHandleIdentity(PersistentTextureHandle handle)
-        => new(handle.value, handle.deviceGeneration);
+    protected static DeviceHandleIdentity GetHandleIdentity(PersistentTextureHandle handle) => new(handle.value, handle.deviceGeneration);
 
     /// <summary>
     /// Decodes a persistent buffer handle for backend lookup and generation validation.
@@ -142,8 +159,7 @@ public abstract class RenderDevice
     /// <returns>
     /// The backend resource identity and owning device generation.
     /// </returns>
-    protected static DeviceHandleIdentity GetHandleIdentity(PersistentBufferHandle handle)
-        => new(handle.value, handle.deviceGeneration);
+    protected static DeviceHandleIdentity GetHandleIdentity(PersistentBufferHandle handle) => new(handle.value, handle.deviceGeneration);
 
     /// <summary>
     /// Decodes a graphics pipeline handle for backend lookup and generation validation.
@@ -154,8 +170,7 @@ public abstract class RenderDevice
     /// <returns>
     /// The backend resource identity and owning device generation.
     /// </returns>
-    protected static DeviceHandleIdentity GetHandleIdentity(GraphicsPipelineHandle handle)
-        => new(handle.value, handle.deviceGeneration);
+    protected static DeviceHandleIdentity GetHandleIdentity(GraphicsPipelineHandle handle) => new(handle.value, handle.deviceGeneration);
 
     /// <summary>
     /// Decodes a compute pipeline handle for backend lookup and generation validation.
@@ -166,8 +181,7 @@ public abstract class RenderDevice
     /// <returns>
     /// The backend resource identity and owning device generation.
     /// </returns>
-    protected static DeviceHandleIdentity GetHandleIdentity(ComputePipelineHandle handle)
-        => new(handle.value, handle.deviceGeneration);
+    protected static DeviceHandleIdentity GetHandleIdentity(ComputePipelineHandle handle) => new(handle.value, handle.deviceGeneration);
 
     /// <summary>
     /// Decodes a presentation-surface handle for backend lookup and generation validation.
@@ -178,8 +192,7 @@ public abstract class RenderDevice
     /// <returns>
     /// The backend resource identity and owning device generation.
     /// </returns>
-    protected static DeviceHandleIdentity GetHandleIdentity(RenderSurfaceHandle handle)
-        => new(handle.value, handle.deviceGeneration);
+    protected static DeviceHandleIdentity GetHandleIdentity(RenderSurfaceHandle handle) => new(handle.value, handle.deviceGeneration);
 
     /// <summary>
     /// Decodes a texture-readback handle for backend lookup and generation validation.
@@ -202,8 +215,7 @@ public abstract class RenderDevice
     /// <returns>
     /// The graph resource index and owning graph generation.
     /// </returns>
-    protected static GraphHandleIdentity GetHandleIdentity(RenderTextureHandle handle)
-        => new(handle.index, handle.generation);
+    protected static GraphHandleIdentity GetHandleIdentity(RenderTextureHandle handle) => new(handle.index, handle.generation);
 
     /// <summary>
     /// Decodes a frame-scoped buffer handle for graph resource lookup.
@@ -214,6 +226,5 @@ public abstract class RenderDevice
     /// <returns>
     /// The graph resource index and owning graph generation.
     /// </returns>
-    protected static GraphHandleIdentity GetHandleIdentity(RenderBufferHandle handle)
-        => new(handle.index, handle.generation);
+    protected static GraphHandleIdentity GetHandleIdentity(RenderBufferHandle handle) => new(handle.index, handle.generation);
 }

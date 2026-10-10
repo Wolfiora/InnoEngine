@@ -7,9 +7,17 @@
     <IsTestProject>true</IsTestProject>
   </PropertyGroup>
   <ItemGroup>
+    <ProjectReference Include="../../../src/content/assets/Inno.Assets.Pipeline/Inno.Assets.Pipeline.csproj" />
+    <ProjectReference Include="../../../src/content/scene/Inno.Scene.Assets/Inno.Scene.Assets.csproj" />
+    <ProjectReference Include="../../../src/services/audio/Inno.Audio.Runtime/Inno.Audio.Runtime.csproj" />
+    <ProjectReference Include="../../../src/composition/player/Inno.Player.Runtime/Inno.Player.Runtime.csproj" />
+    <ProjectReference Include="../../content/fixtures/Inno.Content.Testing/Inno.Content.Testing.csproj" />
+    <ProjectReference Include="../../../src/content/assets/Inno.Assets/Inno.Assets.csproj" />
+    <ProjectReference Include="../../../src/adapters/presentation/Inno.Adapter.Presentation/Inno.Adapter.Presentation.csproj" />
+    <ProjectReference Include="../../../src/adapters/common/Inno.Adapter/Inno.Adapter.csproj" />
     <ProjectReference Include="../../../src/foundation/core/Inno.Core.Execution/Inno.Core.Execution.csproj" />
-    <ProjectReference Include="..\..\..\src\runtime\engine\Inno.Runtime\Inno.Runtime.csproj" />
-    <ProjectReference Include="..\..\..\src\content\scene\Inno.Scene\Inno.Scene.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../../src/runtime/engine/Inno.Runtime/Inno.Runtime.csproj" />
+    <ProjectReference Include="../../../src/content/scene/Inno.Scene/Inno.Scene.csproj" PrivateAssets="compile" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
@@ -21,5 +29,11 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="../../../src/runtime/contracts/Inno.Runtime.Contracts/Inno.Runtime.Contracts.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../../backends/DotNet/runtime/Inno.Adapter.Modules.DotNet/Inno.Adapter.Modules.DotNet.csproj" PrivateAssets="compile" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../../backends/DotNet/runtime/Inno.Adapter.Serialization.DotNet/Inno.Adapter.Serialization.DotNet.csproj" PrivateAssets="compile" />
   </ItemGroup>
 </Project>

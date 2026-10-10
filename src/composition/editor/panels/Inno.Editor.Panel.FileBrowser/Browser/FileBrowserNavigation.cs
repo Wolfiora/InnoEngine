@@ -25,8 +25,8 @@ internal sealed class FileBrowserNavigation(AssetEditorModule assets)
     internal void NavigateTo(
         EditorContext context,
         string directory,
-        string? selectedPathAfterNavigation = null)
-    {
+        string? selectedPathAfterNavigation = null
+    ) {
         directory = NormalizePath(directory);
         AssetBrowserRoot root = string.IsNullOrEmpty(directory)
             ? assets.browser.root
@@ -44,8 +44,10 @@ internal sealed class FileBrowserNavigation(AssetEditorModule assets)
             assets.browser.Select(context, selectedPathAfterNavigation);
     }
 
-    internal void NavigateToRoot(EditorContext context, AssetBrowserRoot root)
-    {
+    internal void NavigateToRoot(
+        EditorContext context,
+        AssetBrowserRoot root
+    ) {
         var target = new BrowserLocation(root, string.Empty);
         if (CurrentLocation == target)
             return;
@@ -54,8 +56,10 @@ internal sealed class FileBrowserNavigation(AssetEditorModule assets)
         ApplyLocation(context, target);
     }
 
-    internal void SwitchRoot(EditorContext context, AssetBrowserRoot root)
-    {
+    internal void SwitchRoot(
+        EditorContext context,
+        AssetBrowserRoot root
+    ) {
         if (assets.browser.root == root)
             return;
         m_backHistory.Clear();
@@ -79,8 +83,10 @@ internal sealed class FileBrowserNavigation(AssetEditorModule assets)
         ApplyLocation(context, m_forwardHistory.Pop());
     }
 
-    private void ApplyLocation(EditorContext context, BrowserLocation location)
-    {
+    private void ApplyLocation(
+        EditorContext context,
+        BrowserLocation location
+    ) {
         m_historyCurrent = location;
         assets.browser.SetLocation(location.root, location.directory);
         assets.browser.Select(context, string.Empty);
@@ -89,8 +95,8 @@ internal sealed class FileBrowserNavigation(AssetEditorModule assets)
     internal void OpenEntry(
         EditorContext context,
         AssetFileEntry entry,
-        FileBrowserTree tree)
-    {
+        FileBrowserTree tree
+    ) {
         if (entry.isDirectory)
         {
             tree.RequestOpenTreeToPath(entry.assetPath.ToString());
@@ -102,8 +108,10 @@ internal sealed class FileBrowserNavigation(AssetEditorModule assets)
             .Execute(FileBrowserInteractionIds.C_OPEN);
     }
 
-    internal void SyncExternalDirectoryChange(AssetBrowserRoot root, string directory)
-    {
+    internal void SyncExternalDirectoryChange(
+        AssetBrowserRoot root,
+        string directory
+    ) {
         var location = new BrowserLocation(root, NormalizePath(directory));
         if (m_historyCurrent == location)
             return;
@@ -112,13 +120,12 @@ internal sealed class FileBrowserNavigation(AssetEditorModule assets)
         m_forwardHistory.Clear();
     }
 
-    private BrowserLocation CurrentLocation
-        => new(assets.browser.root, NormalizePath(assets.browser.currentDirectory));
+    private BrowserLocation CurrentLocation => new(assets.browser.root, NormalizePath(assets.browser.currentDirectory));
 
     private readonly record struct BrowserLocation(
         AssetBrowserRoot root,
-        string directory)
-    {
+        string directory
+    ) {
         internal static BrowserLocation AssetsRoot { get; } = new(
             AssetBrowserRoot.Assets,
             string.Empty);

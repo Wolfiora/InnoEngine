@@ -31,7 +31,10 @@ public readonly record struct GameLayerId
     /// <param name="name">
     /// The stable project-local layer identity.
     /// </param>
-    public GameLayerId(ProjectId projectId, ProjectLocalId name)
+    public GameLayerId(
+        ProjectId projectId,
+        ProjectLocalId name
+    )
         : this(projectId.Qualify(name))
     {
     }

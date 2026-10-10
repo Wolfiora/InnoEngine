@@ -38,8 +38,8 @@ public sealed class SceneAsset : AssetObject
     public static SceneAsset Capture(
         GameScene scene,
         SerializationRegistry serialization,
-        IAssetReferenceResolver assets)
-    {
+        IAssetReferenceResolver assets
+    ) {
         var asset = new SceneAsset();
         asset.CaptureFrom(scene, serialization, assets);
         return asset;
@@ -61,8 +61,8 @@ public sealed class SceneAsset : AssetObject
     public void CaptureFrom(
         GameScene scene,
         SerializationRegistry serialization,
-        IAssetReferenceResolver assets)
-    {
+        IAssetReferenceResolver assets
+    ) {
         ArgumentNullException.ThrowIfNull(scene);
         ArgumentNullException.ThrowIfNull(serialization);
         ArgumentNullException.ThrowIfNull(assets);
@@ -87,8 +87,8 @@ public sealed class SceneAsset : AssetObject
     [ScriptingApiIgnore]
     public GameScene Instantiate(
         SerializationRegistry serialization,
-        IAssetReferenceResolver assets)
-    {
+        IAssetReferenceResolver assets
+    ) {
         ArgumentNullException.ThrowIfNull(serialization);
         ArgumentNullException.ThrowIfNull(assets);
         SerializationContext context = AssetSerializationContext.Create(assets)
@@ -114,8 +114,8 @@ public sealed class SceneAsset : AssetObject
     [ScriptingApiIgnore]
     public static SceneAsset CreateImported(
         ReadOnlySpan<byte> payload,
-        IReadOnlyList<AssetDependency> dependencies)
-    {
+        IReadOnlyList<AssetDependency> dependencies
+    ) {
         ArgumentNullException.ThrowIfNull(dependencies);
         if (payload.IsEmpty)
             throw new ArgumentException("Imported scene content cannot be empty.", nameof(payload));
@@ -133,8 +133,7 @@ public sealed class SceneAsset : AssetObject
     /// A detached authoring-content snapshot owned by the caller.
     /// </returns>
     [ScriptingApiIgnore]
-    public EngineAssetContent CaptureContent()
-        => new(GetPayload(), sourceDependencies);
+    public EngineAssetContent CaptureContent() => new(GetPayload(), sourceDependencies);
 
     private byte[] GetPayload()
     {
@@ -156,8 +155,8 @@ public sealed class SceneAsset : AssetObject
     /// </param>
     protected override void OnRuntimePayloadChanged(
         ReadOnlyMemory<byte> previousPayload,
-        ReadOnlyMemory<byte> currentPayload)
-    {
+        ReadOnlyMemory<byte> currentPayload
+    ) {
         m_pendingPayload = [];
     }
 }

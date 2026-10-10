@@ -7,19 +7,19 @@
     <IsTestProject>true</IsTestProject>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\src\services\text\Inno.Text\Inno.Text.csproj" />
-    <ProjectReference Include="..\..\..\src\services\text\Inno.Text.Assets\Inno.Text.Assets.csproj" />
-    <ProjectReference Include="..\..\..\src\adapters\text\Inno.Adapter.Text.FreeTypeHarfBuzz\Inno.Adapter.Text.FreeTypeHarfBuzz.csproj" />
-    <ProjectReference Include="..\..\..\src\content\assets\Inno.Assets.Pipeline\Inno.Assets.Pipeline.csproj" />
-    <ProjectReference Include="..\..\..\src\foundation\core\Inno.Core.Diagnostics\Inno.Core.Diagnostics.csproj" />
-    <ProjectReference Include="..\..\..\src\foundation\core\Inno.Core.Identity\Inno.Core.Identity.csproj" />
-    <ProjectReference Include="..\..\..\src\foundation\core\Inno.Core.Logging\Inno.Core.Logging.csproj" />
-    <ProjectReference Include="..\..\..\src\foundation\core\Inno.Core.Serialization\Inno.Core.Serialization.csproj" />
-    <ProjectReference Include="..\..\..\src\foundation\extensibility\Inno.Extensibility.Modules\Inno.Extensibility.Modules.csproj" />
-    <ProjectReference Include="..\..\..\src\foundation\extensibility\Inno.Extensibility.Types\Inno.Extensibility.Types.csproj" />
+    <ProjectReference Include="../../../src/services/text/Inno.Text/Inno.Text.csproj" />
+    <ProjectReference Include="../../../src/services/text/Inno.Text.Assets/Inno.Text.Assets.csproj" />
+    <ProjectReference Include="../../../backends/Text/runtime/Inno.Adapter.Text.FreeTypeHarfBuzz/Inno.Adapter.Text.FreeTypeHarfBuzz.csproj" />
+    <ProjectReference Include="../../../src/content/assets/Inno.Assets.Pipeline/Inno.Assets.Pipeline.csproj" />
+    <ProjectReference Include="../../../src/foundation/core/Inno.Core.Diagnostics/Inno.Core.Diagnostics.csproj" />
+    <ProjectReference Include="../../../src/foundation/core/Inno.Core.Identity/Inno.Core.Identity.csproj" />
+    <ProjectReference Include="../../../src/foundation/core/Inno.Core.Logging/Inno.Core.Logging.csproj" />
+    <ProjectReference Include="../../../src/foundation/core/Inno.Core.Serialization/Inno.Core.Serialization.csproj" />
+    <ProjectReference Include="../../../src/foundation/extensibility/Inno.Extensibility.Modules/Inno.Extensibility.Modules.csproj" />
+    <ProjectReference Include="../../../src/foundation/extensibility/Inno.Extensibility.Types/Inno.Extensibility.Types.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="..\..\..\extern\RmlUi\Samples\assets\LatoLatin-Regular.ttf" Link="TestData\LatoLatin-Regular.ttf" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="../../../extern/RmlUi/Samples/assets/LatoLatin-Regular.ttf" Link="TestData\LatoLatin-Regular.ttf" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
@@ -28,5 +28,11 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../../backends/DotNet/runtime/Inno.Adapter.Modules.DotNet/Inno.Adapter.Modules.DotNet.csproj" PrivateAssets="compile" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../../backends/DotNet/runtime/Inno.Adapter.Serialization.DotNet/Inno.Adapter.Serialization.DotNet.csproj" PrivateAssets="compile" />
   </ItemGroup>
 </Project>

@@ -14,8 +14,13 @@ internal sealed class ShaderGraphLiteralConverter : SerializationConverter<Shade
     /// <param name="value">
     /// The concrete value read or transformed by this operation.
     /// </param>
-    public override void Write(SerializationWriter writer, ShaderGraphLiteral value)
-    { writer.Write("type", value.type); writer.Write("scalarBits", value.scalarBits); }
+    public override void Write(
+        SerializationWriter writer,
+        ShaderGraphLiteral value
+    ) {
+        writer.Write("type", value.type);
+        writer.Write("scalarBits", value.scalarBits);
+    }
     /// <summary>
     /// Reconstructs a complete value through the configured serialization contract.
     /// </summary>
@@ -40,8 +45,10 @@ internal sealed class ShaderGraphStageSettingsConverter : SerializationConverter
     /// <param name="value">
     /// The concrete value read or transformed by this operation.
     /// </param>
-    public override void Write(SerializationWriter writer, ShaderGraphStageSettings value)
-    {
+    public override void Write(
+        SerializationWriter writer,
+        ShaderGraphStageSettings value
+    ) {
         writer.Write("stage", value.stage);
         writer.Write("outputs", value.outputs);
         writer.Write("threadsX", value.threadsX);
@@ -78,8 +85,10 @@ internal sealed class ShaderGraphInputSettingsConverter : SerializationConverter
     /// <param name="value">
     /// The concrete value read or transformed by this operation.
     /// </param>
-    public override void Write(SerializationWriter writer, ShaderGraphInputSettings value)
-    {
+    public override void Write(
+        SerializationWriter writer,
+        ShaderGraphInputSettings value
+    ) {
         writer.Write("id", value.id);
         writer.Write("type", value.type);
         writer.Write("kind", value.kind);
@@ -116,8 +125,10 @@ internal sealed class ShaderGraphNodePortDefinitionConverter : SerializationConv
     /// <param name="value">
     /// The concrete value read or transformed by this operation.
     /// </param>
-    public override void Write(SerializationWriter writer, ShaderGraphNodePortDefinition value)
-    {
+    public override void Write(
+        SerializationWriter writer,
+        ShaderGraphNodePortDefinition value
+    ) {
         writer.Write("id", value.id);
         writer.Write("type", value.type);
         writer.Write("required", value.required);
@@ -151,8 +162,10 @@ internal sealed class ShaderGraphNodeSettingsConverter : SerializationConverter<
     /// <param name="value">
     /// The concrete value read or transformed by this operation.
     /// </param>
-    public override void Write(SerializationWriter writer, ShaderGraphNodeSettings value)
-    {
+    public override void Write(
+        SerializationWriter writer,
+        ShaderGraphNodeSettings value
+    ) {
         writer.Write("displayName", value.displayName);
         writer.Write("createPath", value.createPath);
         writer.Write("createOrder", value.createOrder);
@@ -192,8 +205,10 @@ internal sealed class ShaderGraphNodeInputSettingsConverter : SerializationConve
     /// <param name="value">
     /// The concrete value read or transformed by this operation.
     /// </param>
-    public override void Write(SerializationWriter writer, ShaderGraphNodeInputSettings value)
-        => writer.Write("ports", value.ports);
+    public override void Write(
+        SerializationWriter writer,
+        ShaderGraphNodeInputSettings value
+    ) => writer.Write("ports", value.ports);
 
     /// <summary>
     /// Reconstructs a complete value through the configured serialization contract.
@@ -221,8 +236,10 @@ internal sealed class ShaderGraphNodeOutputSettingsConverter : SerializationConv
     /// <param name="value">
     /// The concrete value read or transformed by this operation.
     /// </param>
-    public override void Write(SerializationWriter writer, ShaderGraphNodeOutputSettings value)
-        => writer.Write("ports", value.ports);
+    public override void Write(
+        SerializationWriter writer,
+        ShaderGraphNodeOutputSettings value
+    ) => writer.Write("ports", value.ports);
 
     /// <summary>
     /// Reconstructs a complete value through the configured serialization contract.
@@ -248,8 +265,10 @@ internal sealed class ShaderGraphNodeInterfaceConverter : SerializationConverter
     /// <param name="value">
     /// The concrete value read or transformed by this operation.
     /// </param>
-    public override void Write(SerializationWriter writer, ShaderGraphNodeInterface value)
-    {
+    public override void Write(
+        SerializationWriter writer,
+        ShaderGraphNodeInterface value
+    ) {
         writer.Write("displayName", value.displayName);
         writer.Write("createPath", value.createPath);
         writer.Write("createOrder", value.createOrder);
@@ -293,8 +312,10 @@ internal sealed class ShaderGraphTypeConverter : SerializationConverter<ShaderGr
     /// <param name="value">
     /// The concrete value read or transformed by this operation.
     /// </param>
-    public override void Write(SerializationWriter writer, ShaderGraphType value)
-    {
+    public override void Write(
+        SerializationWriter writer,
+        ShaderGraphType value
+    ) {
         writer.Write("id", value.id);
         writer.Write("element", value.element);
         writer.Write("length", value.length);

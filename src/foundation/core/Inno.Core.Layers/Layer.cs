@@ -139,7 +139,10 @@ public abstract class Layer
     /// <exception cref="InvalidOperationException">
     /// Thrown when the layer is not currently attached to a stack.
     /// </exception>
-    protected IDisposable Listen<TEvent>(Action<TEvent> handler, int priority = 0)
+    protected IDisposable Listen<TEvent>(
+        Action<TEvent> handler,
+        int priority = 0
+    )
         where TEvent : Event
     {
         EventHub events = RequireActiveEvents();
@@ -166,7 +169,10 @@ public abstract class Layer
     /// <exception cref="InvalidOperationException">
     /// Thrown when the layer is not currently attached to a stack.
     /// </exception>
-    protected IDisposable ListenOnce<TEvent>(Action<TEvent> handler, int priority = 0)
+    protected IDisposable ListenOnce<TEvent>(
+        Action<TEvent> handler,
+        int priority = 0
+    )
         where TEvent : Event
     {
         EventHub events = RequireActiveEvents();

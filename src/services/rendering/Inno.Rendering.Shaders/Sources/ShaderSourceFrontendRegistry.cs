@@ -48,8 +48,10 @@ public sealed class ShaderSourceFrontendRegistry : TypeRegistry<ShaderSourceFron
     /// <exception cref="NotSupportedException">
     /// The language is not available in the current generation.
     /// </exception>
-    public ShaderSourceAnalysis Analyze(string languageId, ShaderSourceRequest request)
-    {
+    public ShaderSourceAnalysis Analyze(
+        string languageId,
+        ShaderSourceRequest request
+    ) {
         using IDisposable operation = m_types.AcquireOperation("Analyze shader source interface");
         return current.Analyze(languageId, request);
     }
@@ -97,6 +99,5 @@ public sealed class ShaderSourceFrontendRegistry : TypeRegistry<ShaderSourceFron
     /// <param name="snapshot">
     /// The immutable state snapshot consumed by this operation.
     /// </param>
-    protected override void DisposeSnapshot(ShaderSourceFrontendCatalog snapshot)
-        => DisposeExtensions(snapshot.providers);
+    protected override void DisposeSnapshot(ShaderSourceFrontendCatalog snapshot) => DisposeExtensions(snapshot.providers);
 }

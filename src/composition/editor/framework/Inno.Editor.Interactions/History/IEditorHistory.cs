@@ -78,7 +78,10 @@ public interface IEditorHistory
     /// <returns>
     /// The result of applying the change in the Redo direction.
     /// </returns>
-    EditorHistoryResult Execute(string name, EditorHistoryChange change);
+    EditorHistoryResult Execute(
+        string name,
+        EditorHistoryChange change
+    );
 
     /// <summary>
     /// Records a neutral change whose domain mutation is already applied.
@@ -89,7 +92,10 @@ public interface IEditorHistory
     /// <param name="change">
     /// The independently owned neutral change.
     /// </param>
-    void RecordApplied(string name, EditorHistoryChange change);
+    void RecordApplied(
+        string name,
+        EditorHistoryChange change
+    );
 
     /// <summary>
     /// Attempts to restore the state preceding the newest committed operation.

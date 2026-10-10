@@ -1,3 +1,6 @@
+using Inno.Core.IO;
+using Inno.Adapter.Serialization.DotNet;
+using Inno.Adapter.Modules.DotNet;
 using System;
 using Inno.Assets;
 using System.IO;
@@ -34,7 +37,8 @@ public sealed class AudioScriptingApiTests
             var identities = new IdentityAllocator();
             using IDisposable identityScope = identities.EnterScope();
             using EngineHost host = new EngineHostBuilder()
-                .UseMetadataCache(Path.Combine(projectRoot, "Library", "Assemblies"))
+                .UseMetadataSources(new DotNetAssemblyCatalogSource(typeof(AudioScriptingApiTests).Assembly),
+                    new ReflectionTypeCatalogSource(), new ReflectionSerializationMetadataSource())
                 .Build();
             var pluginSources = new PluginSourceService(
                 host.serialization,
@@ -55,7 +59,7 @@ public sealed class AudioScriptingApiTests
                     enableFileSystemWatcher = false
                 });
             using var settings = new ProjectSettingsStore(
-                Path.Combine(projectRoot, "Settings.Project.inno"),
+                new FileByteDocumentStore(Path.GetFullPath(Path.Combine(projectRoot, "Settings.Project.inno"))),
                 host.types,
                 host.serialization,
                 new ProjectId("tests.audio.scripting"),

@@ -46,8 +46,8 @@ public sealed class AssetCreationMenuAttribute : Attribute
         string defaultName,
         int groupOrder = 0,
         int itemOrder = 0,
-        bool separatorBeforeGroup = false)
-    {
+        bool separatorBeforeGroup = false
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(id);
         ArgumentException.ThrowIfNullOrWhiteSpace(menuPath);
         ArgumentException.ThrowIfNullOrWhiteSpace(extension);
@@ -153,8 +153,10 @@ public abstract class AssetCreationTemplate
     /// with a textual or custom binary importer can override this method without changing the
     /// File Browser or registering a second creation protocol.
     /// </remarks>
-    public virtual byte[] Encode(AssetCreationContext context, AssetObject asset)
-    {
+    public virtual byte[] Encode(
+        AssetCreationContext context,
+        AssetObject asset
+    ) {
         ArgumentNullException.ThrowIfNull(context);
         ArgumentNullException.ThrowIfNull(asset);
         return context.EncodeNative(asset);
@@ -175,8 +177,7 @@ public sealed class AssetCreationContext
     /// Source serializer carrying the active reference context.
     /// </param>
     [ScriptingApiIgnore]
-    public AssetCreationContext(AssetSourceStore sources)
-        => m_sources = sources ?? throw new ArgumentNullException(nameof(sources));
+    public AssetCreationContext(AssetSourceStore sources) => m_sources = sources ?? throw new ArgumentNullException(nameof(sources));
 
     /// <summary>
     /// Encodes an Asset value through the current native structured source serializer.

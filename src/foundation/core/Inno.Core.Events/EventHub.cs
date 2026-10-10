@@ -20,8 +20,11 @@ public sealed class EventHub : IDisposable
     private int m_attached = 1;
     private int m_order;
 
-    internal EventHub(EventDispatcher dispatcher, int order, long sequence)
-    {
+    internal EventHub(
+        EventDispatcher dispatcher,
+        int order,
+        long sequence
+    ) {
         m_dispatcherRef = new WeakReference<EventDispatcher>(dispatcher);
         m_order = order;
         this.sequence = sequence;
@@ -82,7 +85,10 @@ public sealed class EventHub : IDisposable
     /// <returns>
     /// A token that unsubscribes this listener when disposed.
     /// </returns>
-    public IDisposable Listen<TEvent>(Action<TEvent> handler, int priority = 0)
+    public IDisposable Listen<TEvent>(
+        Action<TEvent> handler,
+        int priority = 0
+    )
         where TEvent : Event
     {
         ThrowIfInvalid();
@@ -123,7 +129,10 @@ public sealed class EventHub : IDisposable
     /// <returns>
     /// A token that can cancel the one-shot listener before it runs.
     /// </returns>
-    public IDisposable ListenOnce<TEvent>(Action<TEvent> handler, int priority = 0)
+    public IDisposable ListenOnce<TEvent>(
+        Action<TEvent> handler,
+        int priority = 0
+    )
         where TEvent : Event
     {
         ThrowIfInvalid();
@@ -217,8 +226,10 @@ public sealed class EventHub : IDisposable
         }
     }
 
-    private void Unlisten(Type eventType, long listenerOrder)
-    {
+    private void Unlisten(
+        Type eventType,
+        long listenerOrder
+    ) {
         if (Volatile.Read(ref m_disposed) != 0)
         {
             return;
@@ -264,7 +275,11 @@ public sealed class EventHub : IDisposable
         }
     }
 
-    private sealed class Subscription(EventHub hub, Type eventType, long listenerOrder) : IDisposable
+    private sealed class Subscription(
+        EventHub hub,
+        Type eventType,
+        long listenerOrder
+    ) : IDisposable
     {
         private EventHub? m_hub = hub;
 
@@ -283,8 +298,11 @@ public sealed class EventHub : IDisposable
         }
     }
 
-    private sealed class Listener(Action<Event> callback, int priority, long order)
-    {
+    private sealed class Listener(
+        Action<Event> callback,
+        int priority,
+        long order
+    ) {
         /// <summary>
         /// Gets the scalar measurement or identity associated with the current state.
         /// </summary>
@@ -387,8 +405,10 @@ public sealed class EventHub : IDisposable
         /// <returns>
         /// An immutable snapshot of the values selected by the operation.
         /// </returns>
-        public static Listener[] InsertSorted(Listener[] source, Listener listener)
-        {
+        public static Listener[] InsertSorted(
+            Listener[] source,
+            Listener listener
+        ) {
             Listener[] result = new Listener[source.Length + 1];
             int index = 0;
             while (index < source.Length)
@@ -434,8 +454,10 @@ public sealed class EventHub : IDisposable
         /// <returns>
         /// An immutable snapshot of the values selected by the operation.
         /// </returns>
-        public static Listener[] RemoveByOrder(Listener[] source, long listenerOrder)
-        {
+        public static Listener[] RemoveByOrder(
+            Listener[] source,
+            long listenerOrder
+        ) {
             int index = -1;
             for (int i = 0; i < source.Length; i++)
             {

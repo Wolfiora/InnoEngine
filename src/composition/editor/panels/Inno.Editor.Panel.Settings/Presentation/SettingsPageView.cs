@@ -14,8 +14,8 @@ internal sealed class SettingsPageView(SettingsEditSession session)
 {
     internal void Draw(
         SettingsPage page,
-        Action<SettingsPage> navigate)
-    {
+        Action<SettingsPage> navigate
+    ) {
         DrawPageHeader(page);
         NativeImGui.Spacing();
         PushDisabledText();
@@ -94,8 +94,8 @@ internal sealed class SettingsPageView(SettingsEditSession session)
 
     private static void DrawOverview(
         IReadOnlyList<SettingsPage> children,
-        Action<SettingsPage> navigate)
-    {
+        Action<SettingsPage> navigate
+    ) {
         if (children.Count == 0)
         {
             PushDisabledText();
@@ -119,8 +119,8 @@ internal sealed class SettingsPageView(SettingsEditSession session)
 
     private void DrawSection(
         IEnumerable<SettingsField> settings,
-        ref int fieldIndex)
-    {
+        ref int fieldIndex
+    ) {
         ImGuiTableFlags flags = ImGuiTableFlags.SizingStretchProp |
                                 ImGuiTableFlags.NoSavedSettings |
                                 ImGuiTableFlags.NoPadOuterX;
@@ -139,18 +139,7 @@ internal sealed class SettingsPageView(SettingsEditSession session)
             if (!tableStarted)
                 return;
 
-            float labelWidth = Math.Clamp(
-                tableWidth * 0.22f,
-                120f * EditorWidget.style.zoom,
-                240f * EditorWidget.style.zoom);
-            NativeImGui.TableSetupColumn(
-                "##settings_label",
-                ImGuiTableColumnFlags.WidthFixed,
-                labelWidth);
-            NativeImGui.TableSetupColumn(
-                "##settings_content",
-                ImGuiTableColumnFlags.WidthStretch,
-                1f);
+            EditorWidget.SetupPropertyColumns();
             NativeImGui.TableSetupColumn(
                 "##settings_reset",
                 ImGuiTableColumnFlags.WidthFixed,
@@ -166,8 +155,10 @@ internal sealed class SettingsPageView(SettingsEditSession session)
         }
     }
 
-    private void DrawFieldRow(SettingsField setting, int fieldIndex)
-    {
+    private void DrawFieldRow(
+        SettingsField setting,
+        int fieldIndex
+    ) {
         NativeImGui.TableNextRow();
         uint background = NativeImGui.ColorConvertFloat4ToU32(
             fieldIndex % 2 == 0
@@ -182,9 +173,7 @@ internal sealed class SettingsPageView(SettingsEditSession session)
             _ = NativeImGui.TableSetColumnIndex(0);
             NativeImGui.SetCursorPosX(
                 NativeImGui.GetCursorPosX() + NativeImGui.GetStyle().WindowPadding.X);
-            NativeImGui.AlignTextToFramePadding();
-            NativeImGui.TextUnformatted(setting.label);
-            EditorWidget.DrawItemTooltip(setting.description);
+            EditorWidget.PropertyLabel(setting.label, setting.description);
 
             _ = NativeImGui.TableSetColumnIndex(1);
             bool groupStarted = false;

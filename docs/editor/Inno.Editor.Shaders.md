@@ -1,6 +1,6 @@
 # Inno.Editor.Shaders
 
-[Editor 索引](README.md) · [Wiki 首页](../README.md) · [Shader Editor](Inno.Editor.Panel.ShaderEditor.md) · [Shader 编译](../render/Inno.Rendering.Shaders.md)
+[Editor 索引](README.md) · [Wiki 首页](../README.md) · [Shader Editor](Inno.Editor.Panel.ShaderEditor.md) · [Shader 编译](../rendering/Inno.Rendering.Shaders.md)
 
 ## 职责与边界
 
@@ -79,3 +79,172 @@ File Browser 的 Create 菜单支持创建 Material 和从选中 Shader 创建 M
 保存复用 headless Document Service；Inspector Header 提供 Save/Revert，关闭确认和全部保存仍走同一服务，不另建状态系统。MaterialDocuments 组合 [AssetDraftDocuments](Inno.Editor.Assets.md)，恢复数据在 Library/Editor/AssetDrafts/inno.material；外部修改冲突保留两份内容，不覆盖外部源。
 资产/节点多选只保存稳定 ID；Drawer 重新查询当前 generation，不把节点选择当作 File Browser 选择。
 完整渲染预览及 UI 验收仍见[实施记录](../issues/2026-09-12-shader-authoring-execution.md)，不能把编译预览等同为画面预览。
+
+## 当前源码公开 API 清单
+
+只列当前源码的 public/protected 表面；内部实现不作为稳定 API。参数、返回、失败和 owner 以英文 XML 为准。
+
+### `Inno.Editor.Shaders.MaterialDocuments`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Editor.Shaders.MaterialDocuments`](../../src/composition/editor/features/Inno.Editor.Shaders/Materials/MaterialDocuments.cs#L23) | Owns Material authoring sessions; native source editing uses the shared asset draft lifecycle. |
+| [`Inno.Rendering.Assets.MaterialAsset Inno.Editor.Shaders.MaterialDocuments.Read(System.Guid assetId)`](../../src/composition/editor/features/Inno.Editor.Shaders/Materials/MaterialDocuments.cs#L65) | Reads a detached current-generation Material; referenced assets remain canonical read-only inputs. |
+| [`System.Guid Inno.Editor.Shaders.MaterialDocuments.Open(Inno.Assets.AssetPath path)`](../../src/composition/editor/features/Inno.Editor.Shaders/Materials/MaterialDocuments.cs#L54) | Opens native source, including a source with failed import, without publishing its draft. |
+| [`override void Inno.Editor.Shaders.MaterialDocuments.OnStart(Inno.Editor.Core.EditorContext context)`](../../src/composition/editor/features/Inno.Editor.Shaders/Materials/MaterialDocuments.cs#L172) | Initializes this feature when its owning runtime becomes active. |
+| [`override void Inno.Editor.Shaders.MaterialDocuments.OnStop(Inno.Editor.Core.EditorContext context)`](../../src/composition/editor/features/Inno.Editor.Shaders/Materials/MaterialDocuments.cs#L186) | Stops this feature before its owning runtime releases the active generation. |
+| [`override void Inno.Editor.Shaders.MaterialDocuments.OnUpdate(Inno.Editor.Core.EditorContext context)`](../../src/composition/editor/features/Inno.Editor.Shaders/Materials/MaterialDocuments.cs#L179) | Advances this feature using the current runtime state. |
+| [`void Inno.Editor.Shaders.MaterialDocuments.Commit(System.Guid assetId)`](../../src/composition/editor/features/Inno.Editor.Shaders/Materials/MaterialDocuments.cs#L92) | Finishes a draft gesture without saving its source. |
+| [`void Inno.Editor.Shaders.MaterialDocuments.CommitMany(System.Collections.Generic.IEnumerable<System.Guid> assetIds)`](../../src/composition/editor/features/Inno.Editor.Shaders/Materials/MaterialDocuments.cs#L115) | Completes a multi-document gesture as one shared History transaction. |
+| [`void Inno.Editor.Shaders.MaterialDocuments.Replace(System.Guid assetId, Inno.Rendering.Assets.MaterialAsset candidate, bool finishGesture = true)`](../../src/composition/editor/features/Inno.Editor.Shaders/Materials/MaterialDocuments.cs#L79) | Changes a draft through shared History without modifying its source or Scene/Game. |
+| [`void Inno.Editor.Shaders.MaterialDocuments.ReplaceMany(System.Collections.Generic.IReadOnlyDictionary<System.Guid, Inno.Rendering.Assets.MaterialAsset> candidates, bool finishGesture = true)`](../../src/composition/editor/features/Inno.Editor.Shaders/Materials/MaterialDocuments.cs#L103) | Changes compatible selected drafts within one shared gesture. |
+
+### `Inno.Editor.Shaders.ShaderInspectionSelection`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Editor.Shaders.ShaderInspectionSelection`](../../src/composition/editor/features/Inno.Editor.Shaders/Nodes/ShaderInspectionSelection.cs#L11) | Identifies a shader document and selected nodes without retaining a graph, extension object or delegate. |
+| [`Inno.Editor.Shaders.ShaderInspectionSelection.ShaderInspectionSelection(System.Guid assetId, System.Collections.Generic.IEnumerable<Inno.Core.Graphs.GraphNodeId> nodes)`](../../src/composition/editor/features/Inno.Editor.Shaders/Nodes/ShaderInspectionSelection.cs#L23) | Creates a neutral Inspector selection separate from the Asset Browser's navigation. |
+| [`System.Collections.Generic.IReadOnlyList<Inno.Core.Graphs.GraphNodeId> Inno.Editor.Shaders.ShaderInspectionSelection.nodes`](../../src/composition/editor/features/Inno.Editor.Shaders/Nodes/ShaderInspectionSelection.cs#L40) | Gets selected stable node identities. |
+| [`System.Guid Inno.Editor.Shaders.ShaderInspectionSelection.assetId`](../../src/composition/editor/features/Inno.Editor.Shaders/Nodes/ShaderInspectionSelection.cs#L36) | Gets the persistent shader identity. |
+
+### `Inno.Editor.Shaders.ShaderNodeDrawContext`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Core.Graphs.GraphNodeId Inno.Editor.Shaders.ShaderNodeDrawContext.nodeId`](../../src/composition/editor/features/Inno.Editor.Shaders/Nodes/ShaderNodeDrawer.cs#L198) | Gets the stable node identity for Editor widget IDs. |
+| [`Inno.Editor.Rendering.IEditorPreviewService Inno.Editor.Shaders.ShaderNodeDrawContext.previews`](../../src/composition/editor/features/Inno.Editor.Shaders/Nodes/ShaderNodeDrawer.cs#L193) | Gets the shared generation-scoped preview service for optional inline texture previews; valid only during this draw. |
+| [`Inno.Editor.Shaders.ShaderNodeDrawContext`](../../src/composition/editor/features/Inno.Editor.Shaders/Nodes/ShaderNodeDrawer.cs#L140) | Exposes detached node values and one-gesture writes without exposing the live graph document. |
+| [`Inno.Editor.Shaders.ShaderNodeDrawContext.ShaderNodeDrawContext(Inno.Core.Graphs.GraphNodeRecord node, Inno.Core.Serialization.SerializationRegistry serialization, Inno.Core.Serialization.SerializationContext context, System.Action<string, Inno.Core.Graphs.GraphSerializedValue, bool> write, Inno.Editor.Rendering.IEditorPreviewService previews, Inno.Editor.Inspection.InspectionDrawContext inspection, bool readOnly)`](../../src/composition/editor/features/Inno.Editor.Shaders/Nodes/ShaderNodeDrawer.cs#L172) | Creates invocation-scoped access for a graph or Inspector host. |
+| [`T Inno.Editor.Shaders.ShaderNodeDrawContext.Read<T>(string key, T defaultValue)`](../../src/composition/editor/features/Inno.Editor.Shaders/Nodes/ShaderNodeDrawer.cs#L215) | Reads a detached property value; missing values use the node's declared default. |
+| [`void Inno.Editor.Shaders.ShaderNodeDrawContext.DrawProperty<T>(string key, string label, T defaultValue)`](../../src/composition/editor/features/Inno.Editor.Shaders/Nodes/ShaderNodeDrawer.cs#L261) | Draws a node property through the existing Inspector controls, including precise numbers and asset picking. |
+| [`void Inno.Editor.Shaders.ShaderNodeDrawContext.Write<T>(string key, T value, bool continuous = false)`](../../src/composition/editor/features/Inno.Editor.Shaders/Nodes/ShaderNodeDrawer.cs#L236) | Records an unsaved draft edit through shared history; only an explicit document save applies it to the asset. |
+
+### `Inno.Editor.Shaders.ShaderNodeDrawer`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Editor.Shaders.ShaderNodeDrawer`](../../src/composition/editor/features/Inno.Editor.Shaders/Nodes/ShaderNodeDrawer.cs#L126) | Provides reloadable Inspector controls; instances must not retain frame contexts or asset objects. |
+| [`abstract void Inno.Editor.Shaders.ShaderNodeDrawer.Draw(Inno.Editor.Shaders.ShaderNodeDrawContext context)`](../../src/composition/editor/features/Inno.Editor.Shaders/Nodes/ShaderNodeDrawer.cs#L134) | Draws the selected node's controls using the shared Inspector styling. |
+
+### `Inno.Editor.Shaders.ShaderNodeDrawerAttribute`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Editor.Shaders.ShaderNodeDrawerAttribute`](../../src/composition/editor/features/Inno.Editor.Shaders/Nodes/ShaderNodeDrawer.cs#L13) | Registers Editor-only node controls independently from a node's shader compiler. |
+| [`Inno.Editor.Shaders.ShaderNodeDrawerAttribute.ShaderNodeDrawerAttribute(string definitionId, string displayName = "", string createPath = "", int createOrder = 0, bool separatorBefore = false)`](../../src/composition/editor/features/Inno.Editor.Shaders/Nodes/ShaderNodeDrawer.cs#L34) | Associates the drawer with one stable node definition. |
+| [`bool Inno.Editor.Shaders.ShaderNodeDrawerAttribute.separatorBefore`](../../src/composition/editor/features/Inno.Editor.Shaders/Nodes/ShaderNodeDrawer.cs#L67) | Gets whether the contributed creation group starts a new visual section. |
+| [`int Inno.Editor.Shaders.ShaderNodeDrawerAttribute.createOrder`](../../src/composition/editor/features/Inno.Editor.Shaders/Nodes/ShaderNodeDrawer.cs#L63) | Gets the creation-menu order. |
+| [`string Inno.Editor.Shaders.ShaderNodeDrawerAttribute.createPath`](../../src/composition/editor/features/Inno.Editor.Shaders/Nodes/ShaderNodeDrawer.cs#L59) | Gets the optional creation-menu path below Create. |
+| [`string Inno.Editor.Shaders.ShaderNodeDrawerAttribute.definitionId`](../../src/composition/editor/features/Inno.Editor.Shaders/Nodes/ShaderNodeDrawer.cs#L51) | Gets the stable node identity handled by this drawer. |
+| [`string Inno.Editor.Shaders.ShaderNodeDrawerAttribute.displayName`](../../src/composition/editor/features/Inno.Editor.Shaders/Nodes/ShaderNodeDrawer.cs#L55) | Gets the optional presentation-only name; it does not participate in Shader compilation or identity. |
+
+### `Inno.Editor.Shaders.ShaderNodeDrawerRegistry`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Editor.Shaders.ShaderNodeDrawerRegistry`](../../src/composition/editor/features/Inno.Editor.Shaders/Nodes/ShaderNodeDrawerRegistry.cs#L12) | Shares generation-scoped node presentation between graph and Inspector hosts. |
+| [`Inno.Editor.Shaders.ShaderNodeDrawerRegistry.ShaderNodeDrawerRegistry(Inno.Extensibility.Types.TypeCatalog types)`](../../src/composition/editor/features/Inno.Editor.Shaders/Nodes/ShaderNodeDrawerRegistry.cs#L23) | Creates a presentation registry owned by the current editor feature lifetime. |
+| [`bool Inno.Editor.Shaders.ShaderNodeDrawerRegistry.TryDraw(string definitionId, Inno.Editor.Shaders.ShaderNodeDrawContext context)`](../../src/composition/editor/features/Inno.Editor.Shaders/Nodes/ShaderNodeDrawerRegistry.cs#L41) | Invokes optional node controls within one generation lease. |
+| [`bool Inno.Editor.Shaders.ShaderNodeDrawerRegistry.TryGetPresentation(string definitionId, out Inno.Editor.Shaders.ShaderNodePresentation presentation)`](../../src/composition/editor/features/Inno.Editor.Shaders/Nodes/ShaderNodeDrawerRegistry.cs#L79) | Gets optional creation-menu presentation without executing the drawer. |
+| [`string? Inno.Editor.Shaders.ShaderNodeDrawerRegistry.GetDisplayName(string definitionId)`](../../src/composition/editor/features/Inno.Editor.Shaders/Nodes/ShaderNodeDrawerRegistry.cs#L61) | Resolves an optional artist-facing name without executing a drawer or retaining its generation. |
+| [`void Inno.Editor.Shaders.ShaderNodeDrawerRegistry.Dispose()`](../../src/composition/editor/features/Inno.Editor.Shaders/Nodes/ShaderNodeDrawerRegistry.cs#L90) | Retires the current presentation providers through the shared lifecycle. |
+
+### `Inno.Editor.Shaders.ShaderNodePresentation`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Editor.Shaders.ShaderNodePresentation`](../../src/composition/editor/features/Inno.Editor.Shaders/Nodes/ShaderNodeDrawer.cs#L73) | Immutable authoring presentation contributed for one Shader node definition. |
+| [`Inno.Editor.Shaders.ShaderNodePresentation.ShaderNodePresentation(string displayName, string createPath, int createOrder, bool separatorBefore)`](../../src/composition/editor/features/Inno.Editor.Shaders/Nodes/ShaderNodeDrawer.cs#L90) | Creates presentation metadata for one Shader node definition. |
+| [`bool Inno.Editor.Shaders.ShaderNodePresentation.separatorBefore`](../../src/composition/editor/features/Inno.Editor.Shaders/Nodes/ShaderNodeDrawer.cs#L120) | Gets whether the contributed group starts a visual section. |
+| [`int Inno.Editor.Shaders.ShaderNodePresentation.createOrder`](../../src/composition/editor/features/Inno.Editor.Shaders/Nodes/ShaderNodeDrawer.cs#L115) | Gets the stable ordering value within the creation menu. |
+| [`string Inno.Editor.Shaders.ShaderNodePresentation.createPath`](../../src/composition/editor/features/Inno.Editor.Shaders/Nodes/ShaderNodeDrawer.cs#L110) | Gets the optional slash-delimited creation-menu path. |
+| [`string Inno.Editor.Shaders.ShaderNodePresentation.displayName`](../../src/composition/editor/features/Inno.Editor.Shaders/Nodes/ShaderNodeDrawer.cs#L105) | Gets the optional artist-facing node name. |
+
+### `Inno.Editor.Shaders.ShaderParameterPresentation`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Editor.Shaders.ShaderParameterPresentation`](../../src/composition/editor/features/Inno.Editor.Shaders/Materials/ShaderParameterPresentation.cs#L12) | Stores Editor-only parameter presentation by stable binding identity in the Shader's authoring graph. |
+| [`bool Inno.Editor.Shaders.ShaderParameterPresentation.hasRange`](../../src/composition/editor/features/Inno.Editor.Shaders/Materials/ShaderParameterPresentation.cs#L31) | Gets or sets whether a scalar Float control uses the declared editing bounds. |
+| [`bool Inno.Editor.Shaders.ShaderParameterPresentation.visible`](../../src/composition/editor/features/Inno.Editor.Shaders/Materials/ShaderParameterPresentation.cs#L27) | Gets or sets whether this Material-owned parameter appears in ordinary Material Inspectors. |
+| [`double Inno.Editor.Shaders.ShaderParameterPresentation.maximum`](../../src/composition/editor/features/Inno.Editor.Shaders/Materials/ShaderParameterPresentation.cs#L39) | Gets or sets the inclusive editing maximum. |
+| [`double Inno.Editor.Shaders.ShaderParameterPresentation.minimum`](../../src/composition/editor/features/Inno.Editor.Shaders/Materials/ShaderParameterPresentation.cs#L35) | Gets or sets the inclusive editing minimum; existing values are not changed by presentation metadata. |
+| [`static Inno.Editor.Shaders.ShaderParameterPresentation Inno.Editor.Shaders.ShaderParameterPresentation.Read(Inno.Core.Graphs.GraphDocument graph, Inno.Rendering.ShaderPropertyId propertyId, Inno.Core.Serialization.SerializationRegistry serialization, Inno.Core.Serialization.SerializationContext context)`](../../src/composition/editor/features/Inno.Editor.Shaders/Materials/ShaderParameterPresentation.cs#L59) | Reads detached presentation for one binding, defaulting only when no presentation was authored. |
+| [`static void Inno.Editor.Shaders.ShaderParameterPresentation.Write(Inno.Core.Graphs.GraphDocument graph, Inno.Rendering.ShaderPropertyId propertyId, Inno.Editor.Shaders.ShaderParameterPresentation presentation, Inno.Core.Serialization.SerializationRegistry serialization, Inno.Core.Serialization.SerializationContext context)`](../../src/composition/editor/features/Inno.Editor.Shaders/Materials/ShaderParameterPresentation.cs#L92) | Writes presentation to a detached graph without changing any default, Material, or compiled program. |
+| [`string Inno.Editor.Shaders.ShaderParameterPresentation.description`](../../src/composition/editor/features/Inno.Editor.Shaders/Materials/ShaderParameterPresentation.cs#L23) | Gets or sets the hover description without adding a permanent paragraph. |
+| [`string Inno.Editor.Shaders.ShaderParameterPresentation.group`](../../src/composition/editor/features/Inno.Editor.Shaders/Materials/ShaderParameterPresentation.cs#L19) | Gets or sets the Material Inspector section; empty uses the standard Parameters section. |
+
+### `Inno.Editor.Shaders.ShaderPreviewContext`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Core.Diagnostics.IDiagnosticReporter Inno.Editor.Shaders.ShaderPreviewContext.diagnostics`](../../src/composition/editor/features/Inno.Editor.Shaders/Previews/ShaderPreviewProvider.cs#L108) | Gets the host-owned, isolated diagnostic producer. |
+| [`Inno.Editor.Shaders.ShaderPreviewContext`](../../src/composition/editor/features/Inno.Editor.Shaders/Previews/ShaderPreviewProvider.cs#L46) | Carries frame-only preview inputs; persistent provider state must retain stable values rather than this object. |
+| [`Inno.Editor.Shaders.ShaderPreviewContext.ShaderPreviewContext(Inno.Rendering.Runtime.RenderPersistentResourceId resourceId, Inno.Rendering.Assets.MaterialAsset material, Inno.Rendering.Assets.RenderShaderArtifact artifact, Inno.Rendering.Assets.ShaderDefinition definition, Inno.Core.Diagnostics.IDiagnosticReporter diagnostics, int pixelWidth, int pixelHeight)`](../../src/composition/editor/features/Inno.Editor.Shaders/Previews/ShaderPreviewProvider.cs#L72) | Creates a preview invocation from host-owned detached inputs. |
+| [`Inno.Rendering.Assets.MaterialAsset Inno.Editor.Shaders.ShaderPreviewContext.material`](../../src/composition/editor/features/Inno.Editor.Shaders/Previews/ShaderPreviewProvider.cs#L96) | Gets the invocation-local Material values. |
+| [`Inno.Rendering.Assets.RenderShaderArtifact Inno.Editor.Shaders.ShaderPreviewContext.artifact`](../../src/composition/editor/features/Inno.Editor.Shaders/Previews/ShaderPreviewProvider.cs#L100) | Gets the complete immutable GPU candidate. |
+| [`Inno.Rendering.Assets.ShaderDefinition Inno.Editor.Shaders.ShaderPreviewContext.definition`](../../src/composition/editor/features/Inno.Editor.Shaders/Previews/ShaderPreviewProvider.cs#L104) | Gets the candidate's exact contract, not the latest uncompiled source interface. |
+| [`Inno.Rendering.Runtime.RenderPersistentResourceId Inno.Editor.Shaders.ShaderPreviewContext.resourceId`](../../src/composition/editor/features/Inno.Editor.Shaders/Previews/ShaderPreviewProvider.cs#L92) | Gets the publication scope released by the host when this preview closes. |
+| [`int Inno.Editor.Shaders.ShaderPreviewContext.pixelHeight`](../../src/composition/editor/features/Inno.Editor.Shaders/Previews/ShaderPreviewProvider.cs#L116) | Gets target height in physical pixels. |
+| [`int Inno.Editor.Shaders.ShaderPreviewContext.pixelWidth`](../../src/composition/editor/features/Inno.Editor.Shaders/Previews/ShaderPreviewProvider.cs#L112) | Gets target width in physical pixels. |
+
+### `Inno.Editor.Shaders.ShaderPreviewProvider`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Editor.Shaders.ShaderPreviewProvider`](../../src/composition/editor/features/Inno.Editor.Shaders/Previews/ShaderPreviewProvider.cs#L29) | Builds domain-owned preview geometry and pass inputs without changing a scene or canonical asset. |
+| [`abstract Inno.Editor.Rendering.EditorViewportLayer Inno.Editor.Shaders.ShaderPreviewProvider.CreateLayer(Inno.Editor.Shaders.ShaderPreviewContext context)`](../../src/composition/editor/features/Inno.Editor.Shaders/Previews/ShaderPreviewProvider.cs#L40) | Creates one frame-local rendering layer through the ordinary Render Graph. |
+
+### `Inno.Editor.Shaders.ShaderPreviewProviderAttribute`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Editor.Shaders.ShaderPreviewProviderAttribute`](../../src/composition/editor/features/Inno.Editor.Shaders/Previews/ShaderPreviewProvider.cs#L16) | Associates a reloadable preview implementation with one open Shader contract. |
+| [`string Inno.Editor.Shaders.ShaderPreviewProviderAttribute.contractId`](../../src/composition/editor/features/Inno.Editor.Shaders/Previews/ShaderPreviewProvider.cs#L22) | Gets the non-empty Shader contract consumed by this preview. |
+
+### `Inno.Editor.Shaders.ShaderPreviews`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Editor.Shaders.ShaderPreviews`](../../src/composition/editor/features/Inno.Editor.Shaders/Previews/ShaderPreviews.cs#L20) | Hosts isolated Shader and Material images using domain-contributed preview pipelines. |
+| [`override void Inno.Editor.Shaders.ShaderPreviews.OnStop(Inno.Editor.Core.EditorContext context)`](../../src/composition/editor/features/Inno.Editor.Shaders/Previews/ShaderPreviews.cs#L170) | Stops this feature before its owning runtime releases the active generation. |
+| [`override void Inno.Editor.Shaders.ShaderPreviews.OnUpdate(Inno.Editor.Core.EditorContext context)`](../../src/composition/editor/features/Inno.Editor.Shaders/Previews/ShaderPreviews.cs#L158) | Advances this feature using the current runtime state. |
+| [`void Inno.Editor.Shaders.ShaderPreviews.Draw(System.Guid ownerId, Inno.Rendering.Assets.MaterialAsset material, Inno.Editor.Rendering.EditorShaderDraftCompilationSnapshot compilation, float logicalSize)`](../../src/composition/editor/features/Inno.Editor.Shaders/Previews/ShaderPreviews.cs#L88) | Draws a compiled draft without modifying the source Shader or its canonical runtime publication. |
+| [`void Inno.Editor.Shaders.ShaderPreviews.DrawMaterial(System.Guid ownerId, Inno.Rendering.Assets.MaterialAsset material, float logicalSize)`](../../src/composition/editor/features/Inno.Editor.Shaders/Previews/ShaderPreviews.cs#L53) | Draws detached Material overrides using its Shader's compiled contract. |
+| [`void Inno.Editor.Shaders.ShaderPreviews.Release(System.Guid ownerId)`](../../src/composition/editor/features/Inno.Editor.Shaders/Previews/ShaderPreviews.cs#L146) | Releases this document's viewport and scoped GPU publication without touching other consumers. |
+
+### `Inno.Editor.Shaders.ShaderPropertyInspector`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Editor.Shaders.ShaderPropertyInspector`](../../src/composition/editor/features/Inno.Editor.Shaders/Materials/ShaderPropertyInspector.cs#L12) | Uses the shared Inspector drawers for both Shader defaults and Material overrides. |
+| [`static Inno.Rendering.Assets.MaterialValue Inno.Editor.Shaders.ShaderPropertyInspector.ApplyEdit(Inno.Rendering.ShaderPropertyType type, Inno.Rendering.Assets.MaterialValue before, Inno.Rendering.Assets.MaterialValue edited, Inno.Rendering.Assets.MaterialValue target)`](../../src/composition/editor/features/Inno.Editor.Shaders/Materials/ShaderPropertyInspector.cs#L111) | Applies the edited components of a representative value without replacing unrelated mixed components. |
+| [`static bool Inno.Editor.Shaders.ShaderPropertyInspector.Compatible(Inno.Rendering.ShaderPropertyType type, Inno.Rendering.Assets.MaterialValueKind kind)`](../../src/composition/editor/features/Inno.Editor.Shaders/Materials/ShaderPropertyInspector.cs#L80) | Tests whether a stored override has the exact representation expected by a declaration. |
+| [`static void Inno.Editor.Shaders.ShaderPropertyInspector.Draw(Inno.Editor.Inspection.InspectionDrawContext context, object owner, string path, Inno.Rendering.Assets.ShaderPropertyDefinition property, Inno.Rendering.Assets.MaterialValue value, System.Action<Inno.Rendering.Assets.MaterialValue> setter, Inno.Editor.Inspection.IInspectionPropertyEditService edits, bool readOnly, Inno.Editor.Shaders.ShaderParameterPresentation? presentation = null)`](../../src/composition/editor/features/Inno.Editor.Shaders/Materials/ShaderPropertyInspector.cs#L44) | Draws a typed value without choosing its persistence or history policy. |
+
+## 项目依赖
+
+- [Inno.Editor.Assets](Inno.Editor.Assets.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Core.IO](../core/Inno.Core.IO.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Core.Execution](../core/Inno.Core.Execution.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Editor.ImGui](Inno.Editor.ImGui.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Native.ImGui](../backends/ImGui/Inno.Native.ImGui.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Adapter.Presentation.ImGui.Sdl3](../backends/ImGui/Inno.Adapter.Presentation.ImGui.Sdl3.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Assets.Pipeline](../assets/Inno.Assets.Pipeline.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Editor.Interactions](Inno.Editor.Interactions.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Scripting.Api](../scripting/Inno.Scripting.Api.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Rendering.Shaders](../rendering/Inno.Rendering.Shaders.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Rendering.Assets.Authoring](../rendering/Inno.Rendering.Assets.Authoring.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Rendering.Assets](../rendering/Inno.Rendering.Assets.md)：公开引用边界由实际签名核对。
+- [Inno.Core.Diagnostics](../core/Inno.Core.Diagnostics.md)：公开引用边界由实际签名核对。
+- [Inno.Editor.Inspection](Inno.Editor.Inspection.md)：公开引用边界由实际签名核对。
+- [Inno.Assets](../assets/Inno.Assets.md)：公开引用边界由实际签名核对。
+- [Inno.Editor.Core](Inno.Editor.Core.md)：公开引用边界由实际签名核对。
+- [Inno.Rendering](../rendering/Inno.Rendering.md)：公开引用边界由实际签名核对。
+- [Inno.Core.Graphs](../core/Inno.Core.Graphs.md)：公开引用边界由实际签名核对。
+- [Inno.Core.Serialization](../core/Inno.Core.Serialization.md)：公开引用边界由实际签名核对。
+- [Inno.Editor.Rendering](Inno.Editor.Rendering.md)：公开引用边界由实际签名核对。
+- [Inno.Extensibility.Types](../extensibility/Inno.Extensibility.Types.md)：公开引用边界由实际签名核对。
+- [Inno.Extensibility.Catalogs](../extensibility/Inno.Extensibility.Catalogs.md)：公开引用边界由实际签名核对。
+- [Inno.Rendering.Runtime](../rendering/Inno.Rendering.Runtime.md)：公开引用边界由实际签名核对。

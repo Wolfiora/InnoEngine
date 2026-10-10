@@ -25,7 +25,10 @@ public sealed class ScriptingApiExportAttribute : Attribute
     /// <exception cref="ArgumentNullException">
     /// Thrown when <paramref name="type"/> is <see langword="null"/>.
     /// </exception>
-    public ScriptingApiExportAttribute(Type type, ScriptingApiScope scope)
+    public ScriptingApiExportAttribute(
+        Type type,
+        ScriptingApiScope scope
+    )
         : this(type, GetDefaultName(type), scope)
     {
     }
@@ -48,8 +51,11 @@ public sealed class ScriptingApiExportAttribute : Attribute
     /// <exception cref="ArgumentException">
     /// Thrown when <paramref name="name"/> is empty.
     /// </exception>
-    public ScriptingApiExportAttribute(Type type, string name, ScriptingApiScope scope)
-    {
+    public ScriptingApiExportAttribute(
+        Type type,
+        string name,
+        ScriptingApiScope scope
+    ) {
         this.type = type ?? throw new ArgumentNullException(nameof(type));
         if (string.IsNullOrWhiteSpace(name))
             throw new ArgumentException("A script-facing type name is required.", nameof(name));

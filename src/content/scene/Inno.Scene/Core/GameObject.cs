@@ -29,8 +29,10 @@ public sealed class GameObject : EngineObject, ISerializable
     private bool m_activeSelf = true;
     private bool m_activeInHierarchy = true;
 
-    internal GameObject(GameScene scene, string name)
-    {
+    internal GameObject(
+        GameScene scene,
+        string name
+    ) {
         m_scene = scene ?? throw new ArgumentNullException(nameof(scene));
         m_name = name ?? string.Empty;
     }
@@ -185,8 +187,7 @@ public sealed class GameObject : EngineObject, ISerializable
     /// <returns>
     /// The attached component.
     /// </returns>
-    public TComponent AddComponent<TComponent>() where TComponent : GameComponent
-        => (TComponent)AddComponent(typeof(TComponent));
+    public TComponent AddComponent<TComponent>() where TComponent : GameComponent => (TComponent)AddComponent(typeof(TComponent));
 
     /// <summary>
     /// Creates and attaches a component of the requested runtime type.
@@ -271,8 +272,7 @@ public sealed class GameObject : EngineObject, ISerializable
     /// <returns>
     /// <see langword="true"/> when a matching component exists.
     /// </returns>
-    public bool HasComponent<TComponent>() where TComponent : GameComponent
-        => TryGetComponent<TComponent>(out _);
+    public bool HasComponent<TComponent>() where TComponent : GameComponent => TryGetComponent<TComponent>(out _);
 
     /// <summary>
     /// Gets all attached components assignable to the requested type in attachment order.
@@ -292,8 +292,7 @@ public sealed class GameObject : EngineObject, ISerializable
     /// <returns>
     /// A stable component snapshot.
     /// </returns>
-    public IReadOnlyList<GameComponent> GetComponents()
-        => EnsureAlive().GetComponents(this);
+    public IReadOnlyList<GameComponent> GetComponents() => EnsureAlive().GetComponents(this);
 
     /// <summary>
     /// Gets the attachment index of a component on this object.
@@ -320,8 +319,10 @@ public sealed class GameObject : EngineObject, ISerializable
     /// <param name="componentIndex">
     /// Requested zero-based attachment index.
     /// </param>
-    public void SetComponentIndex(GameComponent component, int componentIndex)
-    {
+    public void SetComponentIndex(
+        GameComponent component,
+        int componentIndex
+    ) {
         ArgumentNullException.ThrowIfNull(component);
         EnsureAlive().SetComponentIndex(this, component, componentIndex);
     }
@@ -401,8 +402,7 @@ public sealed class GameObject : EngineObject, ISerializable
     }
     internal void SetActiveSelfDirect(bool value) => m_activeSelf = value;
     internal void SetActiveInHierarchyDirect(bool value) => m_activeInHierarchy = value;
-    internal void SetSceneDirect(GameScene scene)
-        => m_scene = scene ?? throw new ArgumentNullException(nameof(scene));
+    internal void SetSceneDirect(GameScene scene) => m_scene = scene ?? throw new ArgumentNullException(nameof(scene));
     internal void SetPrefabInstanceDirect(PrefabInstanceInfo? value) => m_prefabInstance = value;
     internal void SetPrefabConnectionDirect(PrefabConnectionRecord? value) => m_prefabConnection = value;
 

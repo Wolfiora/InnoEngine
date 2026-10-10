@@ -113,8 +113,10 @@ internal static class ScriptCompilerCacheSerialization
         return new ScriptTypeManifest(assemblyName, types);
     }
 
-    private static int ReadCount(BinaryReader reader, string entryName)
-    {
+    private static int ReadCount(
+        BinaryReader reader,
+        string entryName
+    ) {
         int count = reader.ReadInt32();
         if (count < 0 || count > C_MAX_ENTRY_COUNT)
         {
@@ -124,24 +126,31 @@ internal static class ScriptCompilerCacheSerialization
         return count;
     }
 
-    private static Guid ReadGuid(BinaryReader reader, string fieldName)
-    {
+    private static Guid ReadGuid(
+        BinaryReader reader,
+        string fieldName
+    ) {
         byte[] bytes = reader.ReadBytes(16);
         if (bytes.Length != 16)
             throw new InvalidDataException($"The script compiler cache truncated its {fieldName}.");
         return new Guid(bytes);
     }
 
-    private static void ValidateMagic(BinaryReader reader, int expectedMagic, string artifactName)
-    {
+    private static void ValidateMagic(
+        BinaryReader reader,
+        int expectedMagic,
+        string artifactName
+    ) {
         if (reader.ReadInt32() != expectedMagic)
         {
             throw new InvalidDataException($"The {artifactName} header is invalid.");
         }
     }
 
-    private static void ValidateEndOfArtifact(MemoryStream stream, string artifactName)
-    {
+    private static void ValidateEndOfArtifact(
+        MemoryStream stream,
+        string artifactName
+    ) {
         if (stream.Position != stream.Length)
         {
             throw new InvalidDataException($"The {artifactName} contains trailing data.");

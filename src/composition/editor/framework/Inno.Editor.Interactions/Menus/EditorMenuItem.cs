@@ -41,8 +41,8 @@ public sealed class EditorMenuItem
         bool separatorBefore,
         EditorActionState status,
         IReadOnlyList<EditorMenuItem>? children = null,
-        object? argument = null)
-    {
+        object? argument = null
+    ) {
         this.label = label ?? string.Empty;
         this.actionId = actionId ?? string.Empty;
         this.order = order;

@@ -22,7 +22,10 @@ public interface IApplicationStorage
     /// <returns>
     /// <see langword="true"/> when the value exists.
     /// </returns>
-    ValueTask<bool> ExistsAsync(StorageKey key, CancellationToken cancellationToken = default);
+    ValueTask<bool> ExistsAsync(
+        StorageKey key,
+        CancellationToken cancellationToken = default
+    );
 
     /// <summary>
     /// Reads a complete immutable value.
@@ -36,7 +39,10 @@ public interface IApplicationStorage
     /// <returns>
     /// The stored bytes, or <see langword="null"/> when the key does not exist.
     /// </returns>
-    ValueTask<byte[]?> ReadAsync(StorageKey key, CancellationToken cancellationToken = default);
+    ValueTask<byte[]?> ReadAsync(
+        StorageKey key,
+        CancellationToken cancellationToken = default
+    );
 
     /// <summary>
     /// Atomically replaces a complete value.
@@ -56,7 +62,8 @@ public interface IApplicationStorage
     ValueTask WriteAsync(
         StorageKey key,
         ReadOnlyMemory<byte> value,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default
+    );
 
     /// <summary>
     /// Deletes one value without failing when it is already absent.
@@ -70,7 +77,10 @@ public interface IApplicationStorage
     /// <returns>
     /// <see langword="true"/> when an existing value was deleted.
     /// </returns>
-    ValueTask<bool> DeleteAsync(StorageKey key, CancellationToken cancellationToken = default);
+    ValueTask<bool> DeleteAsync(
+        StorageKey key,
+        CancellationToken cancellationToken = default
+    );
 
     /// <summary>
     /// Lists immutable keys below an optional logical prefix.
@@ -86,5 +96,6 @@ public interface IApplicationStorage
     /// </returns>
     ValueTask<IReadOnlyList<StorageKey>> ListAsync(
         StorageKey? prefix = null,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default
+    );
 }

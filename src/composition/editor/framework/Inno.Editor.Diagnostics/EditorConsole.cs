@@ -45,8 +45,8 @@ public sealed class EditorConsole : IEditorConsole, ILogSink, IDiagnosticSink, I
     public EditorConsole(
         LogRouter logRouter,
         DiagnosticHub diagnosticHub,
-        IEditorPlayMode playMode)
-    {
+        IEditorPlayMode playMode
+    ) {
         m_logRouter = logRouter ?? throw new ArgumentNullException(nameof(logRouter));
         m_diagnosticHub = diagnosticHub ?? throw new ArgumentNullException(nameof(diagnosticHub));
         m_playMode = playMode ?? throw new ArgumentNullException(nameof(playMode));
@@ -173,16 +173,15 @@ public sealed class EditorConsole : IEditorConsole, ILogSink, IDiagnosticSink, I
     }
 
     /// <summary>
-    /// Removes all retained logs and current diagnostic reports.
+    /// Removes retained logs while keeping currently reported issues visible until their owners resolve them.
     /// </summary>
     public void Clear()
     {
         lock (m_sync)
         {
-            if (m_logs.Count == 0 && m_diagnostics.Count == 0)
+            if (m_logs.Count == 0)
                 return;
             m_logs.Clear();
-            m_diagnostics.Clear();
             m_revision++;
         }
     }
@@ -222,7 +221,10 @@ public sealed class EditorConsole : IEditorConsole, ILogSink, IDiagnosticSink, I
         }
     }
 
-    private static EditorConsoleOccurrence FromLog(long sequence, LogEntry entry)
+    private static EditorConsoleOccurrence FromLog(
+        long sequence,
+        LogEntry entry
+    )
         => new(
             sequence,
             EditorConsoleEntryKind.Log,
@@ -242,8 +244,8 @@ public sealed class EditorConsole : IEditorConsole, ILogSink, IDiagnosticSink, I
     private static EditorConsoleOccurrence FromDiagnostic(
         long sequence,
         DiagnosticReport report,
-        Diagnostic diagnostic)
-    {
+        Diagnostic diagnostic
+    ) {
         DiagnosticLocation? location = diagnostic.location;
         return new EditorConsoleOccurrence(
             sequence,
@@ -268,8 +270,7 @@ public sealed class EditorConsole : IEditorConsole, ILogSink, IDiagnosticSink, I
             LogSessionId.none);
     }
 
-    private long NextSequence()
-        => Interlocked.Increment(ref m_nextSequence);
+    private long NextSequence() => Interlocked.Increment(ref m_nextSequence);
 
     private void TrimLogsUnsafe()
     {

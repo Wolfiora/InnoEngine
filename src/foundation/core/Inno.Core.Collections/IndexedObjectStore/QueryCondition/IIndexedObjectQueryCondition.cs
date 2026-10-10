@@ -33,7 +33,10 @@ public interface IIndexedObjectQueryCondition<T> where T : class
     /// <returns>
     /// True when a single item is available.
     /// </returns>
-    bool TryGetSingle(IndexedObjectStore<T> store, out T item);
+    bool TryGetSingle(
+        IndexedObjectStore<T> store,
+        out T item
+    );
 
     /// <summary>
     /// Returns a candidate set for this condition if available.
@@ -58,5 +61,8 @@ public interface IIndexedObjectQueryCondition<T> where T : class
     /// <returns>
     /// True if the item matches.
     /// </returns>
-    bool Validate(IndexedObjectStore<T> store, T item);
+    bool Validate(
+        IndexedObjectStore<T> store,
+        T item
+    );
 }

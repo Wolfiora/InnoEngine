@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Inno.Platform;
 
 namespace Inno.Adapter.Platform;
@@ -8,10 +9,15 @@ namespace Inno.Adapter.Platform;
 public interface IPlatformBackendFactory
 {
     /// <summary>
+    /// Gets the exact registrations available in this composition snapshot.
+    /// </summary>
+    IReadOnlyList<PlatformBackendId> supportedBackends { get; }
+
+    /// <summary>
     /// Creates a new platform application for the selected backend.
     /// </summary>
     /// <param name="backend">
-    /// Built-in platform backend selected by the composition root.
+    /// platform implementation selected by the composition root.
     /// </param>
     /// <returns>
     /// A caller-owned backend-neutral platform application.
@@ -19,5 +25,5 @@ public interface IPlatformBackendFactory
     /// <exception cref="System.NotSupportedException">
     /// Thrown when the catalog does not contain the selected backend.
     /// </exception>
-    IPlatformApplication CreateApplication(PlatformBackend backend);
+    IPlatformApplication CreateApplication(PlatformBackendId backend);
 }

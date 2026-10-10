@@ -34,8 +34,10 @@ public sealed class UiRuntime : RuntimeSubsystem, IUiService
     /// <param name="artifacts">
     /// The immutable asset artifact lookup.
     /// </param>
-    public UiRuntime(IUiBackend backend, IAssetArtifactLookup artifacts)
-    {
+    public UiRuntime(
+        IUiBackend backend,
+        IAssetArtifactLookup artifacts
+    ) {
         m_backend = backend ?? throw new ArgumentNullException(nameof(backend));
         m_artifacts = artifacts ?? throw new ArgumentNullException(nameof(artifacts));
     }
@@ -112,8 +114,12 @@ public sealed class UiRuntime : RuntimeSubsystem, IUiService
     /// <param name="density">
     /// The density consumed by set viewport; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
-    public void SetViewport(UiContextHandle context, int width, int height, float density = 1f)
-    {
+    public void SetViewport(
+        UiContextHandle context,
+        int width,
+        int height,
+        float density = 1f
+    ) {
         EnsureActive();
         m_backend.SetViewport(context, width, height, density);
     }
@@ -130,8 +136,10 @@ public sealed class UiRuntime : RuntimeSubsystem, IUiService
     /// <returns>
     /// The validated ui document handle that represents the completed operation.
     /// </returns>
-    public UiDocumentHandle LoadDocument(UiContextHandle context, UiDocumentSource source)
-    {
+    public UiDocumentHandle LoadDocument(
+        UiContextHandle context,
+        UiDocumentSource source
+    ) {
         ArgumentNullException.ThrowIfNull(source);
         EnsureActive();
         EnsureLanguageSupported(source.language);
@@ -150,8 +158,10 @@ public sealed class UiRuntime : RuntimeSubsystem, IUiService
     /// <returns>
     /// The validated ui document handle that represents the completed operation.
     /// </returns>
-    public UiDocumentHandle LoadDocument(UiContextHandle context, UiDocumentAsset document)
-    {
+    public UiDocumentHandle LoadDocument(
+        UiContextHandle context,
+        UiDocumentAsset document
+    ) {
         ArgumentNullException.ThrowIfNull(document);
         EnsureActive();
         if (document.isMissing)
@@ -207,8 +217,10 @@ public sealed class UiRuntime : RuntimeSubsystem, IUiService
     /// <param name="document">
     /// The document consumed by show document; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
-    public void ShowDocument(UiContextHandle context, UiDocumentHandle document)
-    {
+    public void ShowDocument(
+        UiContextHandle context,
+        UiDocumentHandle document
+    ) {
         EnsureActive();
         m_backend.ShowDocument(context, document);
     }
@@ -222,8 +234,10 @@ public sealed class UiRuntime : RuntimeSubsystem, IUiService
     /// <param name="document">
     /// The document consumed by hide document; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
-    public void HideDocument(UiContextHandle context, UiDocumentHandle document)
-    {
+    public void HideDocument(
+        UiContextHandle context,
+        UiDocumentHandle document
+    ) {
         EnsureActive();
         m_backend.HideDocument(context, document);
     }
@@ -237,8 +251,10 @@ public sealed class UiRuntime : RuntimeSubsystem, IUiService
     /// <param name="document">
     /// The document consumed by close document; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
-    public void CloseDocument(UiContextHandle context, UiDocumentHandle document)
-    {
+    public void CloseDocument(
+        UiContextHandle context,
+        UiDocumentHandle document
+    ) {
         EnsureActive();
         m_backend.CloseDocument(context, document);
         var key = new DocumentKey(context, document);
@@ -264,8 +280,12 @@ public sealed class UiRuntime : RuntimeSubsystem, IUiService
     /// <returns>
     /// <see langword="true"/> when the operation succeeds or its condition is satisfied; otherwise, <see langword="false"/>.
     /// </returns>
-    public bool SetText(UiContextHandle context, UiDocumentHandle document, string elementId, string text)
-    {
+    public bool SetText(
+        UiContextHandle context,
+        UiDocumentHandle document,
+        string elementId,
+        string text
+    ) {
         EnsureActive();
         return m_backend.SetText(context, document, elementId, text);
     }
@@ -292,8 +312,8 @@ public sealed class UiRuntime : RuntimeSubsystem, IUiService
         UiContextHandle context,
         UiDocumentHandle document,
         string elementId,
-        UiDocumentFragment content)
-    {
+        UiDocumentFragment content
+    ) {
         EnsureActive();
         EnsureLanguageSupported(content.language);
         return m_backend.SetContent(context, document, elementId, content);
@@ -325,8 +345,8 @@ public sealed class UiRuntime : RuntimeSubsystem, IUiService
         UiDocumentHandle document,
         string elementId,
         string name,
-        string value)
-    {
+        string value
+    ) {
         EnsureActive();
         return m_backend.SetAttribute(context, document, elementId, name, value);
     }
@@ -357,8 +377,8 @@ public sealed class UiRuntime : RuntimeSubsystem, IUiService
         UiDocumentHandle document,
         string elementId,
         string className,
-        bool active)
-    {
+        bool active
+    ) {
         EnsureActive();
         return m_backend.SetClass(context, document, elementId, className, active);
     }
@@ -375,8 +395,11 @@ public sealed class UiRuntime : RuntimeSubsystem, IUiService
     /// <param name="texture">
     /// The texture consumed by register texture; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
-    public void RegisterTexture(UiContextHandle context, string source, UiTextureData texture)
-    {
+    public void RegisterTexture(
+        UiContextHandle context,
+        string source,
+        UiTextureData texture
+    ) {
         EnsureActive();
         m_backend.RegisterTexture(context, source, texture);
     }
@@ -393,8 +416,10 @@ public sealed class UiRuntime : RuntimeSubsystem, IUiService
     /// <returns>
     /// <see langword="true"/> when the operation succeeds or its condition is satisfied; otherwise, <see langword="false"/>.
     /// </returns>
-    public bool HasElementAtPoint(UiContextHandle context, Vector2 position)
-    {
+    public bool HasElementAtPoint(
+        UiContextHandle context,
+        Vector2 position
+    ) {
         EnsureActive();
         return m_backend.HasElementAtPoint(context, position);
     }
@@ -428,8 +453,10 @@ public sealed class UiRuntime : RuntimeSubsystem, IUiService
     /// <param name="input">
     /// Input mapped into the context's local pixel coordinates.
     /// </param>
-    public void Update(UiContextHandle context, UiInputSnapshot input)
-    {
+    public void Update(
+        UiContextHandle context,
+        UiInputSnapshot input
+    ) {
         EnsureActive();
         m_backend.Update(context, input ?? throw new ArgumentNullException(nameof(input)));
     }
@@ -472,8 +499,14 @@ public sealed class UiRuntime : RuntimeSubsystem, IUiService
         if (m_disposed)
             return;
         List<Exception> failures = [];
-        try { m_backend.Dispose(); }
-        catch (Exception exception) { failures.Add(exception); }
+        try
+        {
+            m_backend.Dispose();
+        }
+        catch (Exception exception)
+        {
+            failures.Add(exception);
+        }
         foreach ((FontRegistration registration, FontResidency residency) in m_fonts.ToArray())
         {
             try
@@ -481,7 +514,10 @@ public sealed class UiRuntime : RuntimeSubsystem, IUiService
                 residency.lease.Dispose();
                 m_fonts.Remove(registration);
             }
-            catch (Exception exception) { failures.Add(exception); }
+            catch (Exception exception)
+            {
+                failures.Add(exception);
+            }
         }
         m_documentFonts.Clear();
         if (failures.Count > 0)
@@ -491,16 +527,22 @@ public sealed class UiRuntime : RuntimeSubsystem, IUiService
 
     private void EnsureActive() => ObjectDisposedException.ThrowIf(m_disposed, this);
 
-    private void RegisterBackendFont(ArtifactLease artifact, FontRegistration registration)
+    private void RegisterBackendFont(
+        ArtifactLease artifact,
+        FontRegistration registration
+    )
         => m_backend.RegisterFont(new UiFontRegistration(
-            File.ReadAllBytes(artifact.info.absolutePath),
+            artifact.ReadAllBytes(),
             registration.faceIndex,
             registration.family,
             registration.style,
             registration.weight));
 
-    private FontRegistration RegisterDocumentFont(UiDocumentFontFace face, long documentVersion, string family)
-    {
+    private FontRegistration RegisterDocumentFont(
+        UiDocumentFontFace face,
+        long documentVersion,
+        string family
+    ) {
         var registration = new FontRegistration(face.assetId, documentVersion, 0,
             family, face.style, face.weight);
         if (m_fonts.TryGetValue(registration, out FontResidency? existing))
@@ -551,7 +593,10 @@ public sealed class UiRuntime : RuntimeSubsystem, IUiService
         internal int references = 1;
     }
 
-    private readonly record struct DocumentKey(UiContextHandle context, UiDocumentHandle document);
+    private readonly record struct DocumentKey(
+        UiContextHandle context,
+        UiDocumentHandle document
+    );
 
     private void EnsureLanguageSupported(UiDocumentLanguageId language)
     {
@@ -566,5 +611,6 @@ public sealed class UiRuntime : RuntimeSubsystem, IUiService
         int faceIndex,
         string family,
         TextFontStyle style,
-        int weight);
+        int weight
+    );
 }

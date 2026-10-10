@@ -1,3 +1,6 @@
+using Inno.Integration.MacOS.Bgfx;
+using Inno.Adapter.Serialization.DotNet;
+using Inno.Adapter.Modules.DotNet;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -13,6 +16,7 @@ using Inno.Extensibility.Types;
 using Inno.Rendering;
 using Inno.Rendering.Assets;
 using Xunit;
+using Inno.Rendering.Assets.Authoring;
 
 namespace Inno.Rendering.Shaders.Tests;
 
@@ -26,9 +30,9 @@ public sealed partial class ShaderGraphLoweringTests : IDisposable
 
     public ShaderGraphLoweringTests()
     {
-        m_modules = new(new ModuleHostOptions { cacheDirectory = m_root });
-        m_types = new(m_modules);
-        m_serialization = new(m_types);
+        m_modules = new(new ModuleHostOptions { catalogSource = new DotNetAssemblyCatalogSource(typeof(ShaderGraphLoweringTests).Assembly)});
+        m_types = new(m_modules, new ReflectionTypeCatalogSource());
+        m_serialization = new(m_types, new ReflectionSerializationMetadataSource());
     }
 
     [MetalShaderFact]
@@ -47,7 +51,7 @@ public sealed partial class ShaderGraphLoweringTests : IDisposable
         Assert.Contains(lowered.block.instructions, instruction => instruction.operation == ShaderIrOperation.Multiply);
         Assert.Equal(BitConverter.SingleToUInt32Bits(0.25f), lowered.block.instructions[0].constantBits);
         var stage = new ShaderIrStage(ShaderStage.Fragment, lowered.block, [], [new("color", ShaderIrOutputKind.Color)]);
-        var compiler = new ShaderCompiler(new BgfxShadercToolchain(BgfxShaderTargetPlatform.MacOSArm64));
+        var compiler = new ShaderCompiler(new BgfxShadercToolchain(Inno.Integration.MacOS.Bgfx.MacOSBgfxShaderProfiles.target));
         var caps = new GraphicsCapabilities(GraphicsApi.Metal, GraphicsCapability.None, new(256, 8, 8192, 16),
             Enum.GetValues<RenderTextureFormat>(), Enum.GetValues<RenderTextureFormat>(), Enum.GetValues<RenderTextureFormat>(),
             Enum.GetValues<RenderTextureFormat>(), false, false);

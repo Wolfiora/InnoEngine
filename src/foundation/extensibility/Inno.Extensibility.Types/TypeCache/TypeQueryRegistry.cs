@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
+using Inno.Extensibility.Catalogs;
+
 namespace Inno.Extensibility.Types;
 
 /// <summary>
@@ -22,8 +24,10 @@ internal sealed class TypeQueryRegistry
     /// <param name="typeIdentityRegistry">
     /// The type identity registry consumed by rebuild; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
-    public void Rebuild(IEnumerable<Type> concreteTypes, TypeIdentityRegistry typeIdentityRegistry)
-    {
+    public void Rebuild(
+        IEnumerable<TypeCatalogMetadata> concreteTypes,
+        TypeIdentityRegistry typeIdentityRegistry
+    ) {
         ArgumentNullException.ThrowIfNull(concreteTypes);
         ArgumentNullException.ThrowIfNull(typeIdentityRegistry);
 
@@ -31,26 +35,25 @@ internal sealed class TypeQueryRegistry
         var interfaceSets = new Dictionary<int, HashSet<Type>>();
         var attributeSets = new Dictionary<int, HashSet<Type>>();
 
-        foreach (Type type in concreteTypes)
+        foreach (TypeCatalogMetadata metadata in concreteTypes)
         {
+            Type type = metadata.type;
             if (type.IsAbstract || type.IsInterface)
             {
                 continue;
             }
 
-            Type? baseType = type.BaseType;
-            while (baseType != null && baseType != typeof(object))
+            foreach (Type baseType in metadata.baseTypes)
             {
                 AddToIndex(subclassSets, baseType, type, typeIdentityRegistry);
-                baseType = baseType.BaseType;
             }
 
-            foreach (Type iface in type.GetInterfaces())
+            foreach (Type iface in metadata.interfaces)
             {
                 AddToIndex(interfaceSets, iface, type, typeIdentityRegistry);
             }
 
-            foreach (Attribute attr in type.GetCustomAttributes(inherit: true))
+            foreach (Attribute attr in metadata.inheritedAttributes)
             {
                 AddToIndex(attributeSets, attr.GetType(), type, typeIdentityRegistry);
             }
@@ -126,8 +129,8 @@ internal sealed class TypeQueryRegistry
         Dictionary<int, HashSet<Type>> index,
         Type keyType,
         Type valueType,
-        TypeIdentityRegistry typeIdentityRegistry)
-    {
+        TypeIdentityRegistry typeIdentityRegistry
+    ) {
         int keyId = typeIdentityRegistry.GetOrAddRuntimeTypeId(keyType);
         if (!index.TryGetValue(keyId, out HashSet<Type>? set))
         {
@@ -140,8 +143,8 @@ internal sealed class TypeQueryRegistry
 
     private static Dictionary<int, IReadOnlyList<TypeRef>> FreezeIndex(
         Dictionary<int, HashSet<Type>> index,
-        TypeIdentityRegistry typeIdentityRegistry)
-    {
+        TypeIdentityRegistry typeIdentityRegistry
+    ) {
         var frozen = new Dictionary<int, IReadOnlyList<TypeRef>>(index.Count);
         foreach ((int key, HashSet<Type> value) in index)
         {

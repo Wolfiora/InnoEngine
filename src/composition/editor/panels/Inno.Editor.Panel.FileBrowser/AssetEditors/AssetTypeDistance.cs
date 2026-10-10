@@ -4,8 +4,11 @@ namespace Inno.Editor.Panel.FileBrowser;
 
 internal static class AssetTypeDistance
 {
-    internal static bool TryGet(Type concreteType, Type candidateType, out int distance)
-    {
+    internal static bool TryGet(
+        Type concreteType,
+        Type candidateType,
+        out int distance
+    ) {
         if (!candidateType.IsAssignableFrom(concreteType))
         {
             distance = int.MaxValue;

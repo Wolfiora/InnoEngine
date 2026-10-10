@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
 using Inno.Assets;
 
 namespace Inno.Assets.Pipeline;
@@ -13,15 +14,20 @@ public sealed class AssetSampleTransformContext
     private readonly Dictionary<Guid, Guid> m_identityMap;
     private readonly IReadOnlyDictionary<string, (Guid oldId, Guid newId)> m_sourceIdentities;
 
-    internal AssetSampleTransformContext(string stagedRoot, AssetPath source, AssetPath target,
+    internal AssetSampleTransformContext(
+        string stagedRoot,
+        AssetPath source,
+        AssetPath target,
         Dictionary<Guid, Guid> identityMap,
-        IReadOnlyDictionary<string, (Guid oldId, Guid newId)> sourceIdentities)
-    {
+        IReadOnlyDictionary<string, (Guid oldId, Guid newId)> sourceIdentities,
+        CancellationToken cancellationToken
+    ) {
         this.stagedRoot = stagedRoot;
         this.source = source;
         this.target = target;
         m_identityMap = identityMap;
         m_sourceIdentities = sourceIdentities;
+        this.cancellationToken = cancellationToken;
     }
 
     /// <summary>
@@ -38,6 +44,11 @@ public sealed class AssetSampleTransformContext
     /// Gets the writable project destination path.
     /// </summary>
     public AssetPath target { get; }
+
+    /// <summary>
+    /// Gets cancellation for this private, generation-pinned transformation.
+    /// </summary>
+    public CancellationToken cancellationToken { get; }
 
     /// <summary>
     /// Gets cloned source identities, including directory and file metadata.
@@ -59,8 +70,11 @@ public sealed class AssetSampleTransformContext
     /// <returns>
     /// Whether both identities were recorded from sample metadata.
     /// </returns>
-    public bool TryGetSourceIdentity(string relativePath, out Guid oldId, out Guid newId)
-    {
+    public bool TryGetSourceIdentity(
+        string relativePath,
+        out Guid oldId,
+        out Guid newId
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(relativePath);
         if (m_sourceIdentities.TryGetValue(relativePath.Replace('\\', '/'), out var pair))
         {
@@ -85,8 +99,10 @@ public sealed class AssetSampleTransformContext
     /// <exception cref="InvalidDataException">
     /// A source identity is reused inconsistently.
     /// </exception>
-    public void MapType(Guid oldId, Guid newId)
-    {
+    public void MapType(
+        Guid oldId,
+        Guid newId
+    ) {
         if (oldId == Guid.Empty || newId == Guid.Empty)
             throw new ArgumentException("Sample type identities must be non-empty.");
         if (m_identityMap.TryGetValue(oldId, out Guid existing) && existing != newId)
@@ -103,6 +119,10 @@ public interface IAssetSampleSourceRewriter
     /// <summary>
     /// Rewrites staged source files and registers any changed serialized type identities.
     /// </summary>
+    /// <remarks>
+    /// Runs on a worker with a pinned extension generation. Access only transaction-owned files
+    /// and context data, observe cancellation, and do not access live Assets or Editor state.
+    /// </remarks>
     /// <param name="context">
     /// The transaction-owned staged clone.
     /// </param>

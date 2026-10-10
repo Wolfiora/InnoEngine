@@ -1,0 +1,20 @@
+<Project>
+  <PropertyGroup>
+    <InnoBindingHostConfig>bindgen.json</InnoBindingHostConfig>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <InnoBindingTarget Include="linux-arm64">
+      <Config>bindgen.linux-arm64.json</Config>
+    </InnoBindingTarget>
+    <InnoBindingTarget Include="linux-x64">
+      <Config>bindgen.linux-x64.json</Config>
+    </InnoBindingTarget>
+    <InnoBindingTarget Include="macos-arm64">
+      <Config>bindgen.macos-arm64.json</Config>
+    </InnoBindingTarget>
+    <InnoBindingTarget Include="windows-x64">
+      <Config>bindgen.windows-x64.json</Config>
+    </InnoBindingTarget>
+  </ItemGroup>
+</Project>

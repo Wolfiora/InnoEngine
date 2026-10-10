@@ -1,3 +1,5 @@
+using Inno.Adapter.Serialization.DotNet;
+using Inno.Adapter.Modules.DotNet;
 using System;
 using System.Buffers.Binary;
 using System.IO;
@@ -35,12 +37,10 @@ public sealed class AudioClipImporterTests : IDisposable
         Directory.CreateDirectory(m_assets);
         m_identityScope = m_identities.EnterScope();
         m_modules = new ModuleHost(new ModuleHostOptions
-        {
-            cacheDirectory = Path.Combine(m_root, "Assemblies")
-        });
+        { catalogSource = new DotNetAssemblyCatalogSource(typeof(AudioClipImporterTests).Assembly)        });
         _ = Assembly.Load("Inno.Audio.Assets");
-        m_types = new TypeCatalog(m_modules);
-        m_serialization = new SerializationRegistry(m_types);
+        m_types = new TypeCatalog(m_modules, new ReflectionTypeCatalogSource());
+        m_serialization = new SerializationRegistry(m_types, new ReflectionSerializationMetadataSource());
         m_types.Rebuild();
     }
 
@@ -102,8 +102,9 @@ public sealed class AudioClipImporterTests : IDisposable
         Assert.NotNull(runtime);
         Assert.NotNull(data);
         Assert.InRange(runtime.length, 1, 127);
-        Assert.NotEqual(runtime.absolutePath, data.absolutePath);
-        Assert.Equal(expected, File.ReadAllBytes(data.absolutePath));
+        Assert.NotEqual(runtime.outputName, data.outputName);
+        using ArtifactLease encoded = loader.AcquireArtifact(asset.identity.persistentId, "audio-data");
+        Assert.Equal(expected, encoded.ReadAllBytes());
     }
 
     private void Write(string path, byte[] bytes) => File.WriteAllBytes(Path.Combine(m_assets, path), bytes);

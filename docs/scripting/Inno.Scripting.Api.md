@@ -144,3 +144,55 @@ using Inno.Scene.Components;
 - 不要为方便而导出整个 Manager/Registry 程序集。先导出脚本确实需要的最小类型。
 - 不要在多个文件分散 assembly attribute。每个项目唯一的 `Properties/ScriptingApi.cs` 是可审查的 API 清单。
 - 脚本 API namespace 是稳定的源码契约；真实 CLR namespace 仍决定运行时类型身份。
+
+## 当前源码公开 API 清单
+
+只列当前源码的 public/protected 表面；内部实现不作为稳定 API。参数、返回、失败和 owner 以英文 XML 为准。
+
+### `Inno.Scripting.Api.ScriptingApiExportAttribute`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Scripting.Api.ScriptingApiExportAttribute`](../../src/foundation/scripting/Inno.Scripting.Api/ScriptingApiExportAttribute.cs#L13) | Exports one public runtime type to a script compilation profile. |
+| [`Inno.Scripting.Api.ScriptingApiExportAttribute.ScriptingApiExportAttribute(System.Type type, Inno.Scripting.Api.ScriptingApiScope scope)`](../../src/foundation/scripting/Inno.Scripting.Api/ScriptingApiExportAttribute.cs#L28) | Creates an explicit script API export. |
+| [`Inno.Scripting.Api.ScriptingApiExportAttribute.ScriptingApiExportAttribute(System.Type type, string name, Inno.Scripting.Api.ScriptingApiScope scope)`](../../src/foundation/scripting/Inno.Scripting.Api/ScriptingApiExportAttribute.cs#L54) | Creates an explicit script API export with a script-facing type name. |
+| [`Inno.Scripting.Api.ScriptingApiScope Inno.Scripting.Api.ScriptingApiExportAttribute.scope`](../../src/foundation/scripting/Inno.Scripting.Api/ScriptingApiExportAttribute.cs#L79) | Gets the script profile that receives the type. |
+| [`System.Type Inno.Scripting.Api.ScriptingApiExportAttribute.type`](../../src/foundation/scripting/Inno.Scripting.Api/ScriptingApiExportAttribute.cs#L69) | Gets the runtime type exposed to scripts. |
+| [`string Inno.Scripting.Api.ScriptingApiExportAttribute.name`](../../src/foundation/scripting/Inno.Scripting.Api/ScriptingApiExportAttribute.cs#L74) | Gets the type name presented by the script facade. |
+
+### `Inno.Scripting.Api.ScriptingApiIgnoreAttribute`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Scripting.Api.ScriptingApiIgnoreAttribute`](../../src/foundation/scripting/Inno.Scripting.Api/ScriptingApiIgnoreAttribute.cs#L8) | Explicitly excludes one otherwise visible member from generated scripting reference assemblies. |
+
+### `Inno.Scripting.Api.ScriptingApiNamespaceAttribute`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Scripting.Api.ScriptingApiNamespaceAttribute`](../../src/foundation/scripting/Inno.Scripting.Api/ScriptingApiNamespaceAttribute.cs#L14) | Maps a stable script-facing API namespace to one CLR implementation namespace. |
+| [`Inno.Scripting.Api.ScriptingApiNamespaceAttribute.ScriptingApiNamespaceAttribute(string name, string implementationNamespace, Inno.Scripting.Api.ScriptingApiScope scope)`](../../src/foundation/scripting/Inno.Scripting.Api/ScriptingApiNamespaceAttribute.cs#L29) | Creates a script API namespace mapping. |
+| [`Inno.Scripting.Api.ScriptingApiScope Inno.Scripting.Api.ScriptingApiNamespaceAttribute.scope`](../../src/foundation/scripting/Inno.Scripting.Api/ScriptingApiNamespaceAttribute.cs#L56) | Gets the script profile that receives the mapping. |
+| [`string Inno.Scripting.Api.ScriptingApiNamespaceAttribute.implementationNamespace`](../../src/foundation/scripting/Inno.Scripting.Api/ScriptingApiNamespaceAttribute.cs#L51) | Gets the CLR namespace that implements the script API namespace. |
+| [`string Inno.Scripting.Api.ScriptingApiNamespaceAttribute.name`](../../src/foundation/scripting/Inno.Scripting.Api/ScriptingApiNamespaceAttribute.cs#L46) | Gets the stable script API namespace. |
+
+### `Inno.Scripting.Api.ScriptingApiScope`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Scripting.Api.ScriptingApiScope`](../../src/foundation/scripting/Inno.Scripting.Api/ScriptingApiScope.cs#L6) | Identifies the script compilation profile that receives an exported API. |
+| [`Inno.Scripting.Api.ScriptingApiScope.Authoring`](../../src/foundation/scripting/Inno.Scripting.Api/ScriptingApiScope.cs#L22) | Exposes compile-time annotations to game and editor scripts. Player compilation erases their applications and derived annotation declarations before binding to target assemblies. |
+| [`Inno.Scripting.Api.ScriptingApiScope.Editor`](../../src/foundation/scripting/Inno.Scripting.Api/ScriptingApiScope.cs#L16) | Exposes the API only to editor scripts. |
+| [`Inno.Scripting.Api.ScriptingApiScope.Runtime`](../../src/foundation/scripting/Inno.Scripting.Api/ScriptingApiScope.cs#L11) | Exposes the API to both game and editor scripts. |
+
+### `Inno.Scripting.Api.ScriptingAttachableTypeAttribute`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Scripting.Api.ScriptingAttachableTypeAttribute`](../../src/foundation/scripting/Inno.Scripting.Api/ScriptingAttachableTypeAttribute.cs#L9) | Marks a script API base type whose concrete script-derived types require stable source-owned identity metadata. |
+| [`Inno.Scripting.Api.ScriptingAttachableTypeAttribute.ScriptingAttachableTypeAttribute(string kind)`](../../src/foundation/scripting/Inno.Scripting.Api/ScriptingAttachableTypeAttribute.cs#L21) | Creates attachable script-type metadata for one extensible base class. |
+| [`string Inno.Scripting.Api.ScriptingAttachableTypeAttribute.kind`](../../src/foundation/scripting/Inno.Scripting.Api/ScriptingAttachableTypeAttribute.cs#L30) | Gets the domain-defined attachable type kind recorded in script manifests. |
+
+## 项目依赖
+
+- [Inno.Extensibility.Catalogs](../extensibility/Inno.Extensibility.Catalogs.md)：公开引用边界由实际签名核对。

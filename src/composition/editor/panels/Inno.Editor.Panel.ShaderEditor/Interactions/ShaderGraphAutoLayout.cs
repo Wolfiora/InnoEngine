@@ -21,8 +21,8 @@ internal static class ShaderGraphAutoLayout
         GraphDocument source,
         SerializationRegistry serialization,
         SerializationContext context,
-        Func<GraphNodeRecord, IReadOnlyList<ShaderNodePort>> describePorts)
-    {
+        Func<GraphNodeRecord, IReadOnlyList<ShaderNodePort>> describePorts
+    ) {
         ArgumentNullException.ThrowIfNull(source);
         ArgumentNullException.ThrowIfNull(serialization);
         ArgumentNullException.ThrowIfNull(describePorts);
@@ -53,8 +53,11 @@ internal static class ShaderGraphAutoLayout
         }
         return graph;
 
-        void LayoutLane(GraphNodeRecord output, GraphNodeRecord[] members, ref float y)
-        {
+        void LayoutLane(
+            GraphNodeRecord output,
+            GraphNodeRecord[] members,
+            ref float y
+        ) {
             var memberIds = members.Select(static node => node.id).ToHashSet();
             var distance = new Dictionary<GraphNodeId, int> { [output.id] = 0 };
             var queue = new Queue<GraphNodeId>();
@@ -69,7 +72,8 @@ internal static class ShaderGraphAutoLayout
                     // A draft may be invalid and contain a cycle. Layout must still terminate;
                     // compilation owns cycle diagnostics, while the first reverse-BFS rank gives
                     // every reachable node a stable visual column.
-                    if (distance.ContainsKey(predecessor)) continue;
+                    if (distance.ContainsKey(predecessor))
+                        continue;
                     distance[predecessor] = next;
                     queue.Enqueue(predecessor);
                 }
@@ -87,8 +91,10 @@ internal static class ShaderGraphAutoLayout
             // not get bundled into visibly crossing curves.
             for (int sweep = 0; sweep < C_SWEEPS; sweep++)
             {
-                for (int rank = 1; rank <= maximumDistance; rank++) Order(rank, towardOutput: true);
-                for (int rank = maximumDistance - 1; rank >= 0; rank--) Order(rank, towardOutput: false);
+                for (int rank = 1; rank <= maximumDistance; rank++)
+                    Order(rank, towardOutput: true);
+                for (int rank = maximumDistance - 1; rank >= 0; rank--)
+                    Order(rank, towardOutput: false);
             }
 
             int maximumRows = ranks.Values.Select(static rank => rank.Count).DefaultIfEmpty(1).Max();
@@ -103,21 +109,33 @@ internal static class ShaderGraphAutoLayout
             }
             y += maximumRows * C_ROW + C_LANE;
 
-            void Order(int rank, bool towardOutput)
-            {
-                if (!ranks.TryGetValue(rank, out List<GraphNodeRecord>? nodes) || nodes.Count < 2) return;
-                var oldOrder = nodes.Select(static (node, index) => (node.id, index)).ToDictionary();
-                nodes.Sort((left, right) =>
+            void Order(
+                int rank,
+                bool towardOutput
+            ) {
+                if (!ranks.TryGetValue(rank, out List<GraphNodeRecord>? nodes) || nodes.Count < 2)
+                    return;
+                var oldOrder = nodes.Select(static (
+                    node,
+                    index
+                ) => (node.id, index)).ToDictionary();
+                nodes.Sort((
+                    left,
+                    right
+                ) =>
                 {
                     int comparison = Score(left, towardOutput).CompareTo(Score(right, towardOutput));
-                    if (comparison != 0) return comparison;
+                    if (comparison != 0)
+                        return comparison;
                     comparison = oldOrder[left.id].CompareTo(oldOrder[right.id]);
                     return comparison != 0 ? comparison : StringComparer.Ordinal.Compare(left.id.value, right.id.value);
                 });
             }
 
-            double Score(GraphNodeRecord node, bool towardOutput)
-            {
+            double Score(
+                GraphNodeRecord node,
+                bool towardOutput
+            ) {
                 IEnumerable<(GraphNodeId neighbor, GraphPortId port)> endpoints = towardOutput
                     ? graph.edges.Where(edge => edge.output.nodeId == node.id && distance.ContainsKey(edge.input.nodeId))
                         .Select(static edge => (edge.input.nodeId, edge.input.portId))
@@ -128,13 +146,20 @@ internal static class ShaderGraphAutoLayout
                 foreach ((GraphNodeId neighborId, GraphPortId port) in endpoints)
                 {
                     if (!distance.TryGetValue(neighborId, out int neighborRank)
-                        || !ranks.TryGetValue(neighborRank, out List<GraphNodeRecord>? neighbors)) continue;
+                        || !ranks.TryGetValue(neighborRank, out List<GraphNodeRecord>? neighbors))
+                            continue;
                     int index = neighbors.FindIndex(candidate => candidate.id == neighborId);
-                    if (index < 0) continue;
+                    if (index < 0)
+                        continue;
                     IReadOnlyList<ShaderNodePort> ports;
-                    try { ports = describePorts(neighbors[index]); }
+                    try
+                    {
+                        ports = describePorts(neighbors[index]);
+                    }
                     catch (Exception failure) when (failure is InvalidOperationException or ArgumentException or FormatException)
-                    { ports = Array.Empty<ShaderNodePort>(); }
+                    {
+                        ports = Array.Empty<ShaderNodePort>();
+                    }
                     GraphPortDirection direction = towardOutput ? GraphPortDirection.Input : GraphPortDirection.Output;
                     ShaderNodePort[] matching = ports.Where(candidate => candidate.direction == direction).ToArray();
                     int portIndex = Array.FindIndex(matching, candidate => candidate.id == port.value);

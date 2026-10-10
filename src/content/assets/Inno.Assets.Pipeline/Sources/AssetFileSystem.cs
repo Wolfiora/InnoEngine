@@ -60,7 +60,8 @@ public sealed class AssetFileSystem : IDisposable
         string assetRoot,
         bool autoStart = true,
         int flushDelayMs = 80,
-        AssetSourcePolicy? sourcePolicy = null)
+        AssetSourcePolicy? sourcePolicy = null
+    )
         : this(
             [new AssetSourceMount(AssetSourceId.project, assetRoot, isReadOnly: false)],
             autoStart,
@@ -97,7 +98,8 @@ public sealed class AssetFileSystem : IDisposable
         bool autoStart = true,
         int flushDelayMs = 80,
         AssetSourcePolicy? sourcePolicy = null,
-        bool requireWritableProject = true)
+        bool requireWritableProject = true
+    )
         : this(
             mounts,
             autoStart,
@@ -118,8 +120,8 @@ public sealed class AssetFileSystem : IDisposable
         bool requireWritableProject,
         IdentityAllocator identities,
         Func<AssetPath, Guid?>? persistentIdentityResolver,
-        bool activateIdentities)
-    {
+        bool activateIdentities
+    ) {
         ArgumentNullException.ThrowIfNull(mounts);
         ArgumentNullException.ThrowIfNull(identities);
         if (mounts.Count == 0)
@@ -227,8 +229,10 @@ public sealed class AssetFileSystem : IDisposable
     /// <returns>
     /// <see langword="true"/> when the entry exists.
     /// </returns>
-    public bool TryGetEntry(AssetPath path, out AssetFileEntry entry)
-    {
+    public bool TryGetEntry(
+        AssetPath path,
+        out AssetFileEntry entry
+    ) {
         ObjectDisposedException.ThrowIf(m_disposed, this);
         string normalized = NormalizeAssetPath(path);
         lock (m_sync)
@@ -301,8 +305,7 @@ public sealed class AssetFileSystem : IDisposable
     /// <returns>
     /// The changes observed since the previous poll.
     /// </returns>
-    public IReadOnlyList<AssetChangedEvent> PollChanges()
-        => PollChanges(out _);
+    public IReadOnlyList<AssetChangedEvent> PollChanges() => PollChanges(out _);
 
     /// <summary>
     /// Polls changes and reports whether watcher recovery requires a full rescan.
@@ -329,8 +332,7 @@ public sealed class AssetFileSystem : IDisposable
     /// <returns>
     /// An immutable snapshot of the values selected by the operation.
     /// </returns>
-    public IReadOnlyList<AssetChangedEvent> WaitForIdle()
-        => WaitForIdle(out _);
+    public IReadOnlyList<AssetChangedEvent> WaitForIdle() => WaitForIdle(out _);
 
     /// <summary>
     /// Waits for queued changes and reports whether a full rescan is required.
@@ -436,8 +438,8 @@ public sealed class AssetFileSystem : IDisposable
     private void IndexDirectoryRecursive(
         AssetSourceMount mount,
         string absoluteDirectoryPath,
-        string localDirectoryPath)
-    {
+        string localDirectoryPath
+    ) {
         string normalizedDirectory = NormalizeLocalPath(localDirectoryPath);
         AddOrUpdateEntry(new AssetPath(mount.id, normalizedDirectory), mount.isReadOnly, isDirectory: true);
 
@@ -460,8 +462,11 @@ public sealed class AssetFileSystem : IDisposable
         }
     }
 
-    private void AddOrUpdateEntry(AssetPath assetPath, bool isReadOnly, bool isDirectory)
-    {
+    private void AddOrUpdateEntry(
+        AssetPath assetPath,
+        bool isReadOnly,
+        bool isDirectory
+    ) {
         string path = assetPath.ToString();
         AssetFileEntry? existing = m_entries.First(m_pathKey, path);
         if (existing is null)
@@ -540,7 +545,10 @@ public sealed class AssetFileSystem : IDisposable
         return new AssetPath(path.source, parent).ToString();
     }
 
-    private static string CombineLocalPath(string a, string b)
+    private static string CombineLocalPath(
+        string a,
+        string b
+    )
         => NormalizeLocalPath(Path.Combine(NormalizeLocalPath(a), NormalizeLocalPath(b)));
 
     private string NormalizeAssetPath(AssetPath path)

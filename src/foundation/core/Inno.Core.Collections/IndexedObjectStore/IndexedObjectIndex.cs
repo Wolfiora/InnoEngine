@@ -23,7 +23,10 @@ internal interface IIndexedObjectIndex<T> where T : class
     /// <param name="key">
     /// The backend-neutral physical key associated with this event.
     /// </param>
-    void AddOrUpdate(T item, object key);
+    void AddOrUpdate(
+        T item,
+        object key
+    );
     /// <summary>
     /// Removes the requested value while preserving the collection's invariants.
     /// </summary>
@@ -57,7 +60,10 @@ internal interface IIndexedObjectIndex<T> where T : class
     /// <returns>
     /// <see langword="true"/> when the requested condition is satisfied; otherwise, <see langword="false"/>.
     /// </returns>
-    bool TryGetSingle(object key, out T? item);
+    bool TryGetSingle(
+        object key,
+        out T? item
+    );
     /// <summary>
     /// Determines whether current state contains the requested value value.
     /// </summary>
@@ -70,7 +76,10 @@ internal interface IIndexedObjectIndex<T> where T : class
     /// <returns>
     /// <see langword="true"/> when the requested condition is satisfied; otherwise, <see langword="false"/>.
     /// </returns>
-    bool Contains(object key, T item);
+    bool Contains(
+        object key,
+        T item
+    );
     /// <summary>
     /// Retrieves the requested set value from current authoritative state.
     /// </summary>
@@ -106,8 +115,8 @@ internal sealed class IndexedObjectIndex<T, TKey> : IIndexedObjectIndex<T> where
     internal IndexedObjectIndex(
         string name,
         IndexedObjectKeyFlags flags,
-        IComparer<TKey>? orderComparer)
-    {
+        IComparer<TKey>? orderComparer
+    ) {
         this.name = name;
         this.flags = flags;
 
@@ -123,7 +132,10 @@ internal sealed class IndexedObjectIndex<T, TKey> : IIndexedObjectIndex<T> where
         m_keyByItem = new Dictionary<T, TKey>(IndexedObjectStore<T>.ReferenceEqualityComparer<T>.INSTANCE);
     }
 
-    void IIndexedObjectIndex<T>.AddOrUpdate(T item, object key)
+    void IIndexedObjectIndex<T>.AddOrUpdate(
+        T item,
+        object key
+    )
         => AddOrUpdate(item, (TKey)key);
 
     void IIndexedObjectIndex<T>.Remove(T item)
@@ -135,10 +147,16 @@ internal sealed class IndexedObjectIndex<T, TKey> : IIndexedObjectIndex<T> where
     int IIndexedObjectIndex<T>.GetCount(object key)
         => GetCount((TKey)key);
 
-    bool IIndexedObjectIndex<T>.TryGetSingle(object key, out T? item)
+    bool IIndexedObjectIndex<T>.TryGetSingle(
+        object key,
+        out T? item
+    )
         => TryGetSingle((TKey)key, out item);
 
-    bool IIndexedObjectIndex<T>.Contains(object key, T item)
+    bool IIndexedObjectIndex<T>.Contains(
+        object key,
+        T item
+    )
         => Contains((TKey)key, item);
 
     HashSet<T>? IIndexedObjectIndex<T>.GetSet(object key)
@@ -153,8 +171,10 @@ internal sealed class IndexedObjectIndex<T, TKey> : IIndexedObjectIndex<T> where
     /// <param name="key">
     /// The backend-neutral physical key associated with this event.
     /// </param>
-    public void AddOrUpdate(T item, TKey key)
-    {
+    public void AddOrUpdate(
+        T item,
+        TKey key
+    ) {
         if (m_keyByItem.TryGetValue(item, out var oldKey))
         {
             if (EqualityComparer<TKey>.Default.Equals(oldKey, key))
@@ -216,29 +236,34 @@ internal sealed class IndexedObjectIndex<T, TKey> : IIndexedObjectIndex<T> where
     /// <see langword="true"/> when the requested condition is satisfied; otherwise, <see langword="false"/>.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public bool TryGetSingle(TKey key, out T? item)
-        => m_storage.TryGetSingle(key, out item);
+    public bool TryGetSingle(
+        TKey key,
+        out T? item
+    ) => m_storage.TryGetSingle(key, out item);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal HashSet<T>? FindUnsafe(TKey key)
-        => m_storage.GetSet(key);
+    internal HashSet<T>? FindUnsafe(TKey key) => m_storage.GetSet(key);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal int GetCount(TKey key)
-        => m_storage.GetCount(key);
+    internal int GetCount(TKey key) => m_storage.GetCount(key);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal bool Contains(TKey key, T item)
-        => m_storage.Contains(key, item);
+    internal bool Contains(
+        TKey key,
+        T item
+    ) => m_storage.Contains(key, item);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal bool TryGetKey(T item, out TKey key)
-        => m_keyByItem.TryGetValue(item, out key!);
+    internal bool TryGetKey(
+        T item,
+        out TKey key
+    ) => m_keyByItem.TryGetValue(item, out key!);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal int CompareKeys(TKey left, TKey right)
-        => m_orderComparer.Compare(left, right);
+    internal int CompareKeys(
+        TKey left,
+        TKey right
+    ) => m_orderComparer.Compare(left, right);
 
-    internal IEnumerable<TKey> EnumerateOrderedKeys()
-        => m_ordering.Enumerate();
+    internal IEnumerable<TKey> EnumerateOrderedKeys() => m_ordering.Enumerate();
 }

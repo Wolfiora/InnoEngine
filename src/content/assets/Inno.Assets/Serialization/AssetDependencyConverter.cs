@@ -18,8 +18,10 @@ internal sealed class AssetDependencyConverter : SerializationConverter<AssetDep
     /// <param name="value">
     /// The concrete value read or transformed by this operation.
     /// </param>
-    public override void Write(SerializationWriter writer, AssetDependency value)
-    {
+    public override void Write(
+        SerializationWriter writer,
+        AssetDependency value
+    ) {
         ArgumentNullException.ThrowIfNull(writer);
         writer.Write("persistentId", value.persistentId);
         writer.Write("stableTypeId", value.type.stableId);

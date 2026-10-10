@@ -40,11 +40,16 @@ public sealed class EditorInteractionRuntime : Inno.Editor.Core.EditorRuntime
     /// <param name="logs">
     /// The host-owned logging router used by editor infrastructure.
     /// </param>
+    /// <param name="keyboard">
+    /// The explicit immutable product keyboard conventions.
+    /// </param>
     public EditorInteractionRuntime(
         string projectDirectory,
         TypeCatalog types,
-        LogRouter logs)
-        : this(new EditorContext(projectDirectory), types, logs)
+        LogRouter logs,
+        EditorKeyboardPolicy keyboard
+    )
+        : this(new EditorContext(projectDirectory, keyboard), types, logs)
     {
     }
 
@@ -66,7 +71,8 @@ public sealed class EditorInteractionRuntime : Inno.Editor.Core.EditorRuntime
     public EditorInteractionRuntime(
         EditorContext context,
         TypeCatalog types,
-        LogRouter logs)
+        LogRouter logs
+    )
         : this(context, types, logs, Array.Empty<object>())
     {
     }
@@ -93,7 +99,8 @@ public sealed class EditorInteractionRuntime : Inno.Editor.Core.EditorRuntime
         EditorContext context,
         TypeCatalog types,
         LogRouter logs,
-        IEnumerable<object> hostServices)
+        IEnumerable<object> hostServices
+    )
         : base(context)
     {
         ArgumentNullException.ThrowIfNull(types);
@@ -320,8 +327,10 @@ public sealed class EditorInteractionRuntime : Inno.Editor.Core.EditorRuntime
         m_describedSnapshot = null;
     }
 
-    private static void TryShutdownStage(Action stage, ICollection<Exception> failures)
-    {
+    private static void TryShutdownStage(
+        Action stage,
+        ICollection<Exception> failures
+    ) {
         try
         {
             stage();

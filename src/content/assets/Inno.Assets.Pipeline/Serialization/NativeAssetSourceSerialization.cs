@@ -10,7 +10,7 @@ namespace Inno.Assets.Pipeline;
 /// <summary>
 /// Imports and exports editable asset source state through the common native serializer.
 /// </summary>
-public static class NativeAssetSourceSerialization
+public static partial class NativeAssetSourceSerialization
 {
     /// <summary>
     /// Serializes one asset's editable properties and direct asset dependencies.
@@ -29,7 +29,8 @@ public static class NativeAssetSourceSerialization
     /// </returns>
     public static byte[] Export<TAsset>(
         TAsset asset,
-        AssetSerializationServices services)
+        AssetSerializationServices services
+    )
         where TAsset : AssetObject
     {
         ArgumentNullException.ThrowIfNull(asset);
@@ -72,7 +73,8 @@ public static class NativeAssetSourceSerialization
     public static TAsset Import<TAsset>(
         ReadOnlySpan<byte> bytes,
         AssetSerializationServices services,
-        out IReadOnlyList<AssetDependency> dependencies)
+        out IReadOnlyList<AssetDependency> dependencies
+    )
         where TAsset : AssetObject
     {
         ArgumentNullException.ThrowIfNull(services);

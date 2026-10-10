@@ -10,8 +10,8 @@ internal static class PropertySnapshotPipeline
         ISerializable value,
         string propertyName,
         SerializationContext context,
-        ConverterRegistryLease converters)
-    {
+        ConverterRegistryLease converters
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(propertyName);
         return Capture(value, context, converters).FirstOrDefault(snapshot =>
                    string.Equals(snapshot.name, propertyName, StringComparison.Ordinal))
@@ -23,13 +23,13 @@ internal static class PropertySnapshotPipeline
     internal static IReadOnlyList<SerializationPropertySnapshot> Capture(
         ISerializable value,
         SerializationContext context,
-        ConverterRegistryLease converters)
-    {
-        SerializableMember[] members = ReflectionMetadata.GetSerializableMembers(value.GetType());
-        var snapshots = new List<SerializationPropertySnapshot>(members.Length);
-        for (int i = 0; i < members.Length; i++)
+        ConverterRegistryLease converters
+    ) {
+        IReadOnlyList<SerializationMemberMetadata> members = context.GetRequired<ISerializationMetadataSource>().GetMetadata(value.GetType()).members;
+        var snapshots = new List<SerializationPropertySnapshot>(members.Count);
+        for (int i = 0; i < members.Count; i++)
         {
-            SerializableMember member = members[i];
+            SerializationMemberMetadata member = members[i];
             if ((member.visibility & PropertyVisibility.Serialize) == 0)
                 continue;
 
@@ -60,13 +60,13 @@ internal static class PropertySnapshotPipeline
         IReadOnlyList<SerializationPropertySnapshot> snapshots,
         SerializationPropertyRestoreMode mode,
         SerializationContext context,
-        ConverterRegistryLease converters)
-    {
-        SerializableMember[] members = ReflectionMetadata.GetSerializableMembers(target.GetType());
-        var membersByName = new Dictionary<string, SerializableMember>(members.Length, StringComparer.Ordinal);
-        for (int i = 0; i < members.Length; i++)
+        ConverterRegistryLease converters
+    ) {
+        IReadOnlyList<SerializationMemberMetadata> members = context.GetRequired<ISerializationMetadataSource>().GetMetadata(target.GetType()).members;
+        var membersByName = new Dictionary<string, SerializationMemberMetadata>(members.Count, StringComparer.Ordinal);
+        for (int i = 0; i < members.Count; i++)
         {
-            SerializableMember member = members[i];
+            SerializationMemberMetadata member = members[i];
             if ((member.visibility & PropertyVisibility.Deserialize) != 0)
                 membersByName.Add(member.name, member);
         }
@@ -81,7 +81,7 @@ internal static class PropertySnapshotPipeline
             for (int i = 0; i < snapshots.Count; i++)
             {
                 SerializationPropertySnapshot snapshot = snapshots[i];
-                if (!membersByName.TryGetValue(snapshot.name, out SerializableMember? member))
+                if (!membersByName.TryGetValue(snapshot.name, out SerializationMemberMetadata? member))
                 {
                     ignoredCount++;
                     continue;

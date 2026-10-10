@@ -20,13 +20,21 @@ Registry、TypeCatalog、ModuleHost 保留原始外层异常与 owner，而非�
 ## 初始化关系
 
 ```csharp
-using var modules = new ModuleHost(new ModuleHostOptions { cacheDirectory = cachePath });
-using var types = new TypeCatalog(modules);
+using Inno.Adapter.Modules.DotNet;
+using Inno.Extensibility.Modules;
+using Inno.Extensibility.Types;
+
+using var modules = new ModuleHost(new ModuleHostOptions
+{
+    cacheDirectory = cachePath,
+    catalogSource = new DotNetAssemblyCatalogSource(typeof(Application).Assembly)
+});
+using var types = new TypeCatalog(modules, new ReflectionTypeCatalogSource());
 types.Rebuild();
 // Registries must retire before types and modules.
 ```
 
-Reflection 引用 Assemblies 并注册一个 catalog participant。Assemblies 不引用 Reflection，也不存在 `InternalsVisibleTo` 耦合。
+Types 引用中立 Modules 并注册一个 catalog participant。动态反射由组合入口注入的 DotNet Adapter 提供；Modules 不反向引用 Types 或 Adapter，也不存在 `InternalsVisibleTo` 耦合。
 
 ## TypeCatalog
 
@@ -34,7 +42,7 @@ Reflection 引用 Assemblies 并注册一个 catalog participant。Assemblies �
 | --- | --- |
 | `bool isInitialized` | TypeCache participant 已注册且 ModuleHost 仍有效。 |
 | `TypeCacheSnapshot current` | 当前不可变快照；读取前会先处理 dirty Host catalog。 |
-| `TypeCatalog(ModuleHost)` | 创建实例并注册类型/Registry 统一事务参与者。 |
+| `TypeCatalog(ModuleHost, ITypeCatalogSource)` | 借用已启动的模块宿主和明确的元数据来源，注册类型/Registry 统一事务参与者。 |
 | `Rebuild()` | 通过 ModuleHost 强制重建 assembly、type 与 registry 快照。 |
 | `AcquireOperation(string)` | 同步领域操作期间保护捕获的 generation，延后自动刷新；发布线程内部可借用，其他发布并发访问拒绝。 |
 | `Dispose()` | 注销 participant 并释放 Registry 状态。 |
@@ -81,6 +89,18 @@ Console.WriteLine(player.Resolve(types).FullName);
 | `GetTypesImplementing<TInterface>()` | 快照内的具体接口实现。 |
 | `GetTypesWithAttribute<TAttribute>()` | 快照内带 attribute 的类型。 |
 | `GetTypeRef(Type)` / `TryGetTypeRef` | 把属于该快照的 CLR Type 转成 `TypeRef`。 |
+| `CanCreateInstance(TypeRef)` | 判断当前部署是否提供该声明的无参构造工厂；不存在的类型返回 false。 |
+| `CreateInstance(Type)` | 通过所属来源构造声明或其封闭泛型；返回的新实例由调用者拥有。 |
+| `ConstructGenericType(Type, IReadOnlyList<Type>)` | 在本 generation 内解析封闭泛型；约束不成立返回 null，静态部署未链接该构造时明确抛异常。 |
+| `GetMetadata(TypeRef)` | 读取本 generation 的不可变发现事实，缺失或过期引用在解析时失败。 |
+| `GetAttribute<TAttribute>(TypeRef, bool inherit = true)` | 从已提供的元数据中取得单一 attribute；缺失返回 null，重复声明失败。 |
+
+## ITypeCatalogSource
+
+来源提供 `GetTypes(Assembly)`、`GetMetadata(Type)`、`ConstructGenericType(definition, arguments)`、
+`CanCreateInstance(Type)` 和 `CreateInstance(Type)`。这些行为必须对应同一个模块闭包与 generation。
+动态来源通过反射取得事实；静态来源消费程序集生成目录。Types 不根据操作系统选择来源，也不隐式补做动态反射。
+基础元数据与生成 registrar 契约属于 [Inno.Extensibility.Catalogs](Inno.Extensibility.Catalogs.md)。
 
 不要长期缓存旧 snapshot：其内部为了 generation 一致性强持有 `Type` 和反射发现 slice，即使公开查询只返回 `TypeRef`。Registry 在 `Complete/Rollback` 中及时释放旧快照；外部调用方若自行保留旧 snapshot 或 `Resolve` 的结果，则 ALC 延迟卸载属于该引用的预期结果。
 
@@ -90,7 +110,7 @@ Snapshot 构建会按 `Assembly` 引用身份复用上一代的内部 Type slice
 
 普通 Host/Plugin 类型在没有 attribute 时，Stable ID 由 `程序集简单名 + 完整类型名` 生成确定性 UUIDv5。脚本编译器可以通过 assembly metadata 提供 source-based canonical ID；TypeCache 只验证并消费当前映射，不依赖 Asset/Scripting 项目。类型级 `[StableTypeId]` 始终优先于编译器映射。
 
-需要重命名兼容时显式固定：
+需要让语义身份独立于类型名称时显式固定：
 
 ```csharp
 [StableTypeId("c5db9123-9768-4e34-a346-22981ee4b4da")]
@@ -199,3 +219,136 @@ TypeCache 不再静默吞掉 `ReflectionTypeLoadException`。这对热重载很�
 - 同一程序集名与完整类型名通常保持 Stable ID，但运行时 `Type` 对象不是同一个。
 - Registry snapshot 不应跨代际缓存旧 `Type`、delegate 或 extension instance。
 - `TypeCatalog.Rebuild()` 适合“活动程序集集合未重新载入，但需要重算类型/Registry”的场景；读取新 DLL 仍由 Assemblies 的 Reload API 完成。
+
+## 显式类型元数据来源
+
+`ITypeCatalogSource.GetTypes(Assembly)`、`GetMetadata(Type)`、`ConstructGenericType(Type, IReadOnlyList<Type>)`、`CanCreateInstance(Type)` 和 `CreateInstance(Type)` 是动态反射与编译目录共用的边界。`TypeCatalog(ModuleHost, ITypeCatalogSource)` 接收组合入口选择的来源；Types 不调用 Assembly.GetTypes、MakeGenericType 或负责 ALC。
+
+[`TypeCatalogMetadata`](Inno.Extensibility.Catalogs.md) 属于独立的 Catalogs 契约项目，构造时防御性复制 `type / baseTypes / interfaces / declaredAttributes / inheritedAttributes / parameterlessOverrides`。TypeCacheSnapshot 的 `GetMetadata(TypeRef)`、`GetAttribute<TAttribute>(TypeRef, inherit=true)`、`CanCreateInstance(TypeRef)`、`ConstructGenericType(Type, IReadOnlyList<Type>)` 与 `CreateInstance(Type)` 将 registry 查询和构造统一到当前 generation。过期 TypeRef 或缺失 factory 明确失败。无返回语义的 marker 不作为发现条件；Attribute 只携带真实元数据。
+
+Reflection 来源属于 [DotNet Adapter](../backends/DotNet/Inno.Adapter.Modules.DotNet.md)。静态来源属于 [Runtime](../runtime/Inno.Runtime.md)，通过 generated catalogs 提供相同事实。旧 snapshot 清理时释放 source、metadata、Type 和 factory 的 generation 引用。
+
+## 当前源码公开 API 清单
+
+只列当前源码的 public/protected 表面；内部实现不作为稳定 API。参数、返回、失败和 owner 以英文 XML 为准。
+
+### `Inno.Extensibility.Types.ITypeCatalogSource`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Extensibility.Catalogs.TypeCatalogMetadata Inno.Extensibility.Types.ITypeCatalogSource.GetMetadata(System.Type type)`](../../src/foundation/extensibility/Inno.Extensibility.Types/TypeCache/ITypeCatalogSource.cs#L34) | Resolves immutable discovery facts for a declaration in this source. |
+| [`Inno.Extensibility.Types.ITypeCatalogSource`](../../src/foundation/extensibility/Inno.Extensibility.Types/TypeCache/ITypeCatalogSource.cs#L12) | Provides type metadata for an explicit assembly in a candidate module generation. |
+| [`System.Collections.Generic.IReadOnlyList<System.Type> Inno.Extensibility.Types.ITypeCatalogSource.GetTypes(System.Reflection.Assembly assembly)`](../../src/foundation/extensibility/Inno.Extensibility.Types/TypeCache/ITypeCatalogSource.cs#L23) | Resolves the complete type set without publishing a partial generation. |
+| [`System.Type? Inno.Extensibility.Types.ITypeCatalogSource.ConstructGenericType(System.Type definition, System.Collections.Generic.IReadOnlyList<System.Type> arguments)`](../../src/foundation/extensibility/Inno.Extensibility.Types/TypeCache/ITypeCatalogSource.cs#L54) | Resolves a generic construction through the deployment's linked or dynamic type mechanism. |
+| [`bool Inno.Extensibility.Types.ITypeCatalogSource.CanCreateInstance(System.Type type)`](../../src/foundation/extensibility/Inno.Extensibility.Types/TypeCache/ITypeCatalogSource.cs#L68) | Determines whether this deployment supplies a parameterless factory for a declared type. |
+| [`object Inno.Extensibility.Types.ITypeCatalogSource.CreateInstance(System.Type type)`](../../src/foundation/extensibility/Inno.Extensibility.Types/TypeCache/ITypeCatalogSource.cs#L79) | Constructs a declared type through the selected deployment's factory mechanism. |
+
+### `Inno.Extensibility.Types.StableTypeIdAttribute`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Extensibility.Types.StableTypeIdAttribute`](../../src/foundation/extensibility/Inno.Extensibility.Types/TypeCache/Attributes/StableTypeIdAttribute.cs#L11) | Defines a stable identity for a type, used by persistence and hot-reload remapping. |
+| [`string Inno.Extensibility.Types.StableTypeIdAttribute.id`](../../src/foundation/extensibility/Inno.Extensibility.Types/TypeCache/Attributes/StableTypeIdAttribute.cs#L17) | Stable type id as Guid string. |
+
+### `Inno.Extensibility.Types.TypeCacheBuildException`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Extensibility.Types.TypeCacheBuildException`](../../src/foundation/extensibility/Inno.Extensibility.Types/TypeCache/TypeCacheBuildException.cs#L9) | Reports one or more failures encountered while building a type-cache snapshot. |
+| [`Inno.Extensibility.Types.TypeCacheBuildException.TypeCacheBuildException(string message, System.Collections.Generic.IReadOnlyList<System.Exception> loaderExceptions)`](../../src/foundation/extensibility/Inno.Extensibility.Types/TypeCache/TypeCacheBuildException.cs#L20) | Creates an exception for a failed type-cache snapshot build. |
+| [`System.Collections.Generic.IReadOnlyList<System.Exception> Inno.Extensibility.Types.TypeCacheBuildException.loaderExceptions`](../../src/foundation/extensibility/Inno.Extensibility.Types/TypeCache/TypeCacheBuildException.cs#L32) | Gets the individual type-loader failures. |
+
+### `Inno.Extensibility.Types.TypeCacheReloadContext`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Extensibility.Types.TypeCacheReloadContext`](../../src/foundation/extensibility/Inno.Extensibility.Types/TypeCache/TypeCacheReloadContext.cs#L8) | Provides the previous and candidate type catalogs during an assembly reload transaction. |
+| [`Inno.Extensibility.Types.TypeCacheSnapshot Inno.Extensibility.Types.TypeCacheReloadContext.candidate`](../../src/foundation/extensibility/Inno.Extensibility.Types/TypeCache/TypeCacheReloadContext.cs#L29) | Gets the validated candidate type snapshot. |
+| [`Inno.Extensibility.Types.TypeCacheSnapshot Inno.Extensibility.Types.TypeCacheReloadContext.previous`](../../src/foundation/extensibility/Inno.Extensibility.Types/TypeCache/TypeCacheReloadContext.cs#L24) | Gets the active type snapshot from before activation. |
+| [`bool Inno.Extensibility.Types.TypeCacheReloadContext.IsRetired(Inno.Extensibility.Types.TypeRef typeRef)`](../../src/foundation/extensibility/Inno.Extensibility.Types/TypeCache/TypeCacheReloadContext.cs#L40) | Determines whether a logical type belongs to the retiring generation. |
+| [`bool Inno.Extensibility.Types.TypeCacheReloadContext.TryResolveReplacement(Inno.Extensibility.Types.TypeRef previousType, out Inno.Extensibility.Types.TypeRef replacement)`](../../src/foundation/extensibility/Inno.Extensibility.Types/TypeCache/TypeCacheReloadContext.cs#L59) | Tries to find the candidate type that preserves a retiring type's stable identity. |
+
+### `Inno.Extensibility.Types.TypeCacheSnapshot`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Extensibility.Catalogs.TypeCatalogMetadata Inno.Extensibility.Types.TypeCacheSnapshot.GetMetadata(Inno.Extensibility.Types.TypeRef type)`](../../src/foundation/extensibility/Inno.Extensibility.Types/TypeCache/TypeCacheSnapshot.cs#L199) | Reads the immutable discovery facts for a declaration in this exact generation. |
+| [`Inno.Extensibility.Types.TypeCacheSnapshot`](../../src/foundation/extensibility/Inno.Extensibility.Types/TypeCache/TypeCacheSnapshot.cs#L18) | Represents an immutable, internally consistent view of discoverable runtime types. |
+| [`Inno.Extensibility.Types.TypeRef Inno.Extensibility.Types.TypeCacheSnapshot.GetTypeRef(System.Type type)`](../../src/foundation/extensibility/Inno.Extensibility.Types/TypeCache/TypeCacheSnapshot.cs#L109) | Gets the reference for a CLR type in this snapshot. |
+| [`System.Collections.Generic.IReadOnlyList<Inno.Extensibility.Types.TypeRef> Inno.Extensibility.Types.TypeCacheSnapshot.GetSubTypesOf<T>()`](../../src/foundation/extensibility/Inno.Extensibility.Types/TypeCache/TypeCacheSnapshot.cs#L68) | Gets all concrete discovered types assignable to . |
+| [`System.Collections.Generic.IReadOnlyList<Inno.Extensibility.Types.TypeRef> Inno.Extensibility.Types.TypeCacheSnapshot.GetTypesImplementing<TInterface>()`](../../src/foundation/extensibility/Inno.Extensibility.Types/TypeCache/TypeCacheSnapshot.cs#L79) | Gets all concrete discovered types implementing . |
+| [`System.Collections.Generic.IReadOnlyList<Inno.Extensibility.Types.TypeRef> Inno.Extensibility.Types.TypeCacheSnapshot.GetTypesWithAttribute<TAttribute>()`](../../src/foundation/extensibility/Inno.Extensibility.Types/TypeCache/TypeCacheSnapshot.cs#L91) | Gets all concrete discovered types marked with . |
+| [`System.Collections.Generic.IReadOnlyList<Inno.Extensibility.Types.TypeRef> Inno.Extensibility.Types.TypeCacheSnapshot.types`](../../src/foundation/extensibility/Inno.Extensibility.Types/TypeCache/TypeCacheSnapshot.cs#L57) | Gets every type included in this snapshot. |
+| [`System.Type? Inno.Extensibility.Types.TypeCacheSnapshot.ConstructGenericType(System.Type definition, System.Collections.Generic.IReadOnlyList<System.Type> arguments)`](../../src/foundation/extensibility/Inno.Extensibility.Types/TypeCache/TypeCacheSnapshot.cs#L179) | Resolves a generic construction belonging to this exact generation. |
+| [`TAttribute? Inno.Extensibility.Types.TypeCacheSnapshot.GetAttribute<TAttribute>(Inno.Extensibility.Types.TypeRef type, bool inherit = true)`](../../src/foundation/extensibility/Inno.Extensibility.Types/TypeCache/TypeCacheSnapshot.cs#L216) | Reads a single extension attribute without requiring runtime reflection. |
+| [`bool Inno.Extensibility.Types.TypeCacheSnapshot.CanCreateInstance(Inno.Extensibility.Types.TypeRef type)`](../../src/foundation/extensibility/Inno.Extensibility.Types/TypeCache/TypeCacheSnapshot.cs#L137) | Determines whether the current deployment can construct a type in this exact generation. |
+| [`bool Inno.Extensibility.Types.TypeCacheSnapshot.TryGetTypeRef(System.Type type, out Inno.Extensibility.Types.TypeRef typeRef)`](../../src/foundation/extensibility/Inno.Extensibility.Types/TypeCache/TypeCacheSnapshot.cs#L123) | Tries to get the reference for a CLR type in this snapshot. |
+| [`long Inno.Extensibility.Types.TypeCacheSnapshot.version`](../../src/foundation/extensibility/Inno.Extensibility.Types/TypeCache/TypeCacheSnapshot.cs#L52) | Gets the monotonically increasing catalog version. |
+| [`object Inno.Extensibility.Types.TypeCacheSnapshot.CreateInstance(System.Type type)`](../../src/foundation/extensibility/Inno.Extensibility.Types/TypeCache/TypeCacheSnapshot.cs#L152) | Constructs a declared type through this generation's selected metadata source. |
+
+### `Inno.Extensibility.Types.TypeCatalog`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Extensibility.Types.TypeCacheSnapshot Inno.Extensibility.Types.TypeCatalog.current`](../../src/foundation/extensibility/Inno.Extensibility.Types/TypeCache/TypeCatalog.cs#L86) | Gets the current immutable type snapshot after applying pending host assembly changes. |
+| [`Inno.Extensibility.Types.TypeCatalog`](../../src/foundation/extensibility/Inno.Extensibility.Types/TypeCache/TypeCatalog.cs#L13) | Owns the active type catalog and provides all type discovery and identity queries. |
+| [`Inno.Extensibility.Types.TypeCatalog.TypeCatalog(Inno.Extensibility.Modules.ModuleHost modules, Inno.Extensibility.Types.ITypeCatalogSource source)`](../../src/foundation/extensibility/Inno.Extensibility.Types/TypeCache/TypeCatalog.cs#L43) | Creates a type catalog derived transactionally from one module host. |
+| [`Inno.Extensibility.Types.TypeRef Inno.Extensibility.Types.TypeCatalog.GetTypeRef(System.Type type)`](../../src/foundation/extensibility/Inno.Extensibility.Types/TypeCache/TypeCatalog.cs#L188) | Gets the reference for an active CLR type. |
+| [`System.Collections.Generic.IReadOnlyList<Inno.Extensibility.Types.TypeRef> Inno.Extensibility.Types.TypeCatalog.GetSubTypesOf<T>()`](../../src/foundation/extensibility/Inno.Extensibility.Types/TypeCache/TypeCatalog.cs#L148) | Gets all non-abstract discovered types assignable to . |
+| [`System.Collections.Generic.IReadOnlyList<Inno.Extensibility.Types.TypeRef> Inno.Extensibility.Types.TypeCatalog.GetTypesImplementing<TInterface>()`](../../src/foundation/extensibility/Inno.Extensibility.Types/TypeCache/TypeCatalog.cs#L159) | Gets all non-abstract discovered types implementing . |
+| [`System.Collections.Generic.IReadOnlyList<Inno.Extensibility.Types.TypeRef> Inno.Extensibility.Types.TypeCatalog.GetTypesWithAttribute<TAttribute>()`](../../src/foundation/extensibility/Inno.Extensibility.Types/TypeCache/TypeCatalog.cs#L170) | Gets all non-abstract discovered types marked with . |
+| [`System.IDisposable Inno.Extensibility.Types.TypeCatalog.AcquireOperation(string operation)`](../../src/foundation/extensibility/Inno.Extensibility.Types/TypeCache/TypeCatalog.cs#L77) | Defers automatic assembly publication until a synchronous typed operation releases its current owners. |
+| [`System.Type Inno.Extensibility.Types.TypeCatalog.Resolve(Inno.Extensibility.Types.TypeRef typeRef)`](../../src/foundation/extensibility/Inno.Extensibility.Types/TypeCache/TypeCatalog.cs#L243) | Resolves a logical type reference against the active immutable generation. |
+| [`bool Inno.Extensibility.Types.TypeCatalog.TryGetTypeRef(System.Type type, out Inno.Extensibility.Types.TypeRef typeRef)`](../../src/foundation/extensibility/Inno.Extensibility.Types/TypeCache/TypeCatalog.cs#L202) | Tries to get the reference for an active CLR type. |
+| [`bool Inno.Extensibility.Types.TypeCatalog.TryResolve(Inno.Extensibility.Types.TypeRef typeRef, out System.Type? type)`](../../src/foundation/extensibility/Inno.Extensibility.Types/TypeCache/TypeCatalog.cs#L219) | Attempts to resolve a logical type reference against the active immutable generation. |
+| [`bool Inno.Extensibility.Types.TypeCatalog.isInitialized`](../../src/foundation/extensibility/Inno.Extensibility.Types/TypeCache/TypeCatalog.cs#L60) | Gets whether the type catalog is registered with an initialized . |
+| [`void Inno.Extensibility.Types.TypeCatalog.Dispose()`](../../src/foundation/extensibility/Inno.Extensibility.Types/TypeCache/TypeCatalog.cs#L112) | Unregisters type discovery and releases all active type-registry snapshots. |
+| [`void Inno.Extensibility.Types.TypeCatalog.Rebuild()`](../../src/foundation/extensibility/Inno.Extensibility.Types/TypeCache/TypeCatalog.cs#L100) | Rebuilds the assembly catalog, type snapshot, and every registered type registry. |
+
+### `Inno.Extensibility.Types.TypeRef`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Extensibility.Types.TypeRef`](../../src/foundation/extensibility/Inno.Extensibility.Types/TypeCache/TypeRef.cs#L12) | Identifies one logical runtime type without retaining its assembly or load context. |
+| [`Inno.Extensibility.Types.TypeRef.TypeRef(System.Guid stableId)`](../../src/foundation/extensibility/Inno.Extensibility.Types/TypeCache/TypeRef.cs#L20) | Creates an unresolved type reference from its persistent identity. |
+| [`System.Guid Inno.Extensibility.Types.TypeRef.stableId`](../../src/foundation/extensibility/Inno.Extensibility.Types/TypeCache/TypeRef.cs#L36) | Gets the persistent identity used across assembly generations and process launches. |
+| [`System.Type Inno.Extensibility.Types.TypeRef.Resolve(Inno.Extensibility.Types.TypeCacheSnapshot snapshot)`](../../src/foundation/extensibility/Inno.Extensibility.Types/TypeCache/TypeRef.cs#L100) | Resolves this reference against a specific immutable type-cache snapshot. |
+| [`System.Type Inno.Extensibility.Types.TypeRef.Resolve(Inno.Extensibility.Types.TypeCatalog catalog)`](../../src/foundation/extensibility/Inno.Extensibility.Types/TypeCache/TypeRef.cs#L79) | Resolves this reference against one catalog's active immutable generation. |
+| [`bool Inno.Extensibility.Types.TypeRef.Equals(Inno.Extensibility.Types.TypeRef other)`](../../src/foundation/extensibility/Inno.Extensibility.Types/TypeCache/TypeRef.cs#L117) | Determines whether this instance and the supplied value represent the same logical state. |
+| [`bool Inno.Extensibility.Types.TypeRef.IsValid(Inno.Extensibility.Types.TypeCatalog catalog)`](../../src/foundation/extensibility/Inno.Extensibility.Types/TypeCache/TypeRef.cs#L58) | Determines whether one type catalog currently resolves this reference. |
+| [`int Inno.Extensibility.Types.TypeRef.runtimeId`](../../src/foundation/extensibility/Inno.Extensibility.Types/TypeCache/TypeRef.cs#L44) | Gets the generation-local lookup hint captured when this value was created. |
+| [`override bool Inno.Extensibility.Types.TypeRef.Equals(object? obj)`](../../src/foundation/extensibility/Inno.Extensibility.Types/TypeCache/TypeRef.cs#L128) | Determines whether this instance and the supplied value represent the same logical state. |
+| [`override int Inno.Extensibility.Types.TypeRef.GetHashCode()`](../../src/foundation/extensibility/Inno.Extensibility.Types/TypeCache/TypeRef.cs#L136) | Computes a hash code from the fields that participate in logical equality. |
+| [`override string Inno.Extensibility.Types.TypeRef.ToString()`](../../src/foundation/extensibility/Inno.Extensibility.Types/TypeCache/TypeRef.cs#L144) | Formats this value as a human-readable representation. |
+| [`static bool Inno.Extensibility.Types.TypeRef.operator !=(Inno.Extensibility.Types.TypeRef left, Inno.Extensibility.Types.TypeRef right)`](../../src/foundation/extensibility/Inno.Extensibility.Types/TypeCache/TypeRef.cs#L175) | Determines whether two references identify different logical types. |
+| [`static bool Inno.Extensibility.Types.TypeRef.operator ==(Inno.Extensibility.Types.TypeRef left, Inno.Extensibility.Types.TypeRef right)`](../../src/foundation/extensibility/Inno.Extensibility.Types/TypeCache/TypeRef.cs#L158) | Determines whether two references identify the same logical type. |
+
+### `Inno.Extensibility.Types.TypeRegistry<TSnapshot>`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Extensibility.Types.TypeRegistry<TSnapshot>`](../../src/foundation/extensibility/Inno.Extensibility.Types/TypeRegistry.cs#L16) | Builds immutable extension registries from versioned type-cache snapshots. |
+| [`Inno.Extensibility.Types.TypeRegistry<TSnapshot>.TypeRegistry(Inno.Extensibility.Types.TypeCatalog types, System.TimeSpan? retirementTimeout = null)`](../../src/foundation/extensibility/Inno.Extensibility.Types/TypeRegistry.cs#L49) | Creates and registers a refreshable type registry. |
+| [`TExtension Inno.Extensibility.Types.TypeRegistry<TSnapshot>.CreateExtension<TExtension>(System.Type type)`](../../src/foundation/extensibility/Inno.Extensibility.Types/TypeRegistry.cs#L349) | Creates a validated extension instance using a parameterless constructor. |
+| [`TExtension Inno.Extensibility.Types.TypeRegistry<TSnapshot>.OwnCandidateExtension<TExtension>(TExtension extension)`](../../src/foundation/extensibility/Inno.Extensibility.Types/TypeRegistry.cs#L386) | Adds a newly constructed extension to the current build's rollback ownership before further validation. |
+| [`TSnapshot Inno.Extensibility.Types.TypeRegistry<TSnapshot>.current`](../../src/foundation/extensibility/Inno.Extensibility.Types/TypeRegistry.cs#L204) | Gets the current snapshot, refreshing it when the type catalog changed. |
+| [`abstract TSnapshot Inno.Extensibility.Types.TypeRegistry<TSnapshot>.Build(Inno.Extensibility.Types.TypeCacheSnapshot types)`](../../src/foundation/extensibility/Inno.Extensibility.Types/TypeRegistry.cs#L231) | Builds a complete candidate registry without changing the active snapshot. |
+| [`bool Inno.Extensibility.Types.TypeRegistry<TSnapshot>.isInitialized`](../../src/foundation/extensibility/Inno.Extensibility.Types/TypeRegistry.cs#L65) | Gets whether the registry has built its first snapshot. |
+| [`virtual void Inno.Extensibility.Types.TypeRegistry<TSnapshot>.DisposeSnapshot(TSnapshot snapshot)`](../../src/foundation/extensibility/Inno.Extensibility.Types/TypeRegistry.cs#L296) | Releases resources owned by a registry snapshot. |
+| [`virtual void Inno.Extensibility.Types.TypeRegistry<TSnapshot>.OnActivating(TSnapshot? previous, TSnapshot candidate)`](../../src/foundation/extensibility/Inno.Extensibility.Types/TypeRegistry.cs#L246) | Reversibly activates a complete candidate while the previous snapshot remains available. |
+| [`virtual void Inno.Extensibility.Types.TypeRegistry<TSnapshot>.OnActivationCompleted(TSnapshot? previous, TSnapshot currentSnapshot)`](../../src/foundation/extensibility/Inno.Extensibility.Types/TypeRegistry.cs#L284) | Finalizes a successfully activated candidate after every coordinated registry has activated. |
+| [`virtual void Inno.Extensibility.Types.TypeRegistry<TSnapshot>.OnActivationRolledBack(TSnapshot? previous, TSnapshot candidate)`](../../src/foundation/extensibility/Inno.Extensibility.Types/TypeRegistry.cs#L265) | Reverses lifecycle work performed while activating a candidate snapshot. |
+| [`virtual void Inno.Extensibility.Types.TypeRegistry<TSnapshot>.OnCleanupFailed(string phase, System.Exception exception)`](../../src/foundation/extensibility/Inno.Extensibility.Types/TypeRegistry.cs#L315) | Reports an exception raised while rolling back activation, completing activation, or releasing a snapshot. |
+| [`void Inno.Extensibility.Types.TypeRegistry<TSnapshot>.Clear()`](../../src/foundation/extensibility/Inno.Extensibility.Types/TypeRegistry.cs#L130) | Releases the active snapshot while keeping the registry reusable. |
+| [`void Inno.Extensibility.Types.TypeRegistry<TSnapshot>.Dispose()`](../../src/foundation/extensibility/Inno.Extensibility.Types/TypeRegistry.cs#L169) | Releases the current registry snapshot. |
+| [`void Inno.Extensibility.Types.TypeRegistry<TSnapshot>.DisposeExtensions(System.Collections.Generic.IEnumerable<object> extensions)`](../../src/foundation/extensibility/Inno.Extensibility.Types/TypeRegistry.cs#L408) | Retires distinct disposable extensions in reverse order, draining pending work before lower dependencies. |
+| [`void Inno.Extensibility.Types.TypeRegistry<TSnapshot>.Refresh()`](../../src/foundation/extensibility/Inno.Extensibility.Types/TypeRegistry.cs#L81) | Refreshes this registry from the currently active type snapshot. |
+| [`void Inno.Extensibility.Types.TypeRegistry<TSnapshot>.ReportRetirementFailure(System.Exception exception)`](../../src/foundation/extensibility/Inno.Extensibility.Types/TypeRegistry.cs#L331) | Faults the shared generation gate when a resource composed from this registry cannot retire safely. |
+| [`void Inno.Extensibility.Types.TypeRegistry<TSnapshot>.RetireResource(string owner, System.Action retire)`](../../src/foundation/extensibility/Inno.Extensibility.Types/TypeRegistry.cs#L429) | Drains one retryable lifecycle operation at the control-thread safe point before releasing dependencies. |
+
+## 项目依赖
+
+- [Inno.Core.Execution](../core/Inno.Core.Execution.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Extensibility.Modules](Inno.Extensibility.Modules.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Scripting.Api](../scripting/Inno.Scripting.Api.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Extensibility.Catalogs](Inno.Extensibility.Catalogs.md)：公开引用边界由实际签名核对。

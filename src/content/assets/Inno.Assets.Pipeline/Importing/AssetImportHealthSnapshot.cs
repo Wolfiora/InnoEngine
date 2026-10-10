@@ -43,4 +43,5 @@ public sealed class AssetImportHealthSnapshot
 /// </param>
 public readonly record struct AssetImportFailure(
     string assetPath,
-    string diagnostics);
+    string diagnostics
+);

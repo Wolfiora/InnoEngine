@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.IO.Compression;
+using System.Threading;
 
 using Inno.Assets;
 using Inno.Assets.Pipeline;
@@ -15,14 +16,23 @@ internal static class AssetSourceArchive
     internal static byte[] Capture(
         AssetPipeline assets,
         string relativePath,
-        out bool isDirectory)
-    {
+        out bool isDirectory
+    ) {
         ArgumentNullException.ThrowIfNull(assets);
         string source = GetSourcePath(assets, relativePath);
         isDirectory = Directory.Exists(source);
         if (!isDirectory && !File.Exists(source))
             throw new FileNotFoundException($"Asset source '{relativePath}' does not exist.", source);
 
+        return CapturePhysical(source, isDirectory, CancellationToken.None);
+    }
+
+    internal static byte[] CapturePhysical(
+        string source,
+        bool isDirectory,
+        CancellationToken cancellationToken
+    ) {
+        cancellationToken.ThrowIfCancellationRequested();
         using var stream = new MemoryStream();
         using (var archive = new ZipArchive(stream, ZipArchiveMode.Create, leaveOpen: true))
         {
@@ -41,30 +51,46 @@ internal static class AssetSourceArchive
                 for (int i = 0; i < files.Length; i++)
                 {
                     string local = Path.GetRelativePath(source, files[i]).Replace('\\', '/');
-                    archive.CreateEntryFromFile(
-                        files[i],
-                        $"{C_SOURCE_ENTRY}/{local}",
-                        CompressionLevel.Fastest);
+                    WriteEntry(archive, files[i], $"{C_SOURCE_ENTRY}/{local}", cancellationToken);
                 }
             }
             else
             {
-                archive.CreateEntryFromFile(source, C_SOURCE_ENTRY, CompressionLevel.Fastest);
+                WriteEntry(archive, source, C_SOURCE_ENTRY, cancellationToken);
             }
 
             string meta = source + ".imeta";
             if (File.Exists(meta))
-                archive.CreateEntryFromFile(meta, C_META_ENTRY, CompressionLevel.Fastest);
+                WriteEntry(archive, meta, C_META_ENTRY, cancellationToken);
         }
         return stream.ToArray();
+    }
+
+    private static void WriteEntry(
+        ZipArchive archive,
+        string source,
+        string entryName,
+        CancellationToken cancellationToken
+    ) {
+        cancellationToken.ThrowIfCancellationRequested();
+        ZipArchiveEntry entry = archive.CreateEntry(entryName, CompressionLevel.Fastest);
+        using Stream output = entry.Open();
+        using FileStream input = File.OpenRead(source);
+        byte[] buffer = new byte[81920];
+        int count;
+        while ((count = input.Read(buffer)) != 0)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            output.Write(buffer, 0, count);
+        }
     }
 
     internal static void Restore(
         AssetPipeline assets,
         string relativePath,
         bool isDirectory,
-        ReadOnlySpan<byte> data)
-    {
+        ReadOnlySpan<byte> data
+    ) {
         ArgumentNullException.ThrowIfNull(assets);
         string target = GetSourcePath(assets, relativePath);
         if (File.Exists(target) || Directory.Exists(target))
@@ -153,8 +179,8 @@ internal static class AssetSourceArchive
         string stagingSource,
         string stagingMeta,
         bool isDirectory,
-        string entryName)
-    {
+        string entryName
+    ) {
         if (string.Equals(entryName, C_META_ENTRY, StringComparison.Ordinal))
             return stagingMeta;
         if (!isDirectory && string.Equals(entryName, C_SOURCE_ENTRY, StringComparison.Ordinal))
@@ -169,8 +195,10 @@ internal static class AssetSourceArchive
         throw new InvalidDataException($"Unknown asset history archive entry '{entryName}'.");
     }
 
-    private static string GetSourcePath(AssetPipeline assets, string relativePath)
-    {
+    private static string GetSourcePath(
+        AssetPipeline assets,
+        string relativePath
+    ) {
         string root = Path.GetFullPath(assets.assetRoot) + Path.DirectorySeparatorChar;
         string result = Path.GetFullPath(Path.Combine(
             assets.assetRoot,
@@ -180,8 +208,11 @@ internal static class AssetSourceArchive
         return result;
     }
 
-    private static void MoveSource(string source, string target, bool isDirectory)
-    {
+    private static void MoveSource(
+        string source,
+        string target,
+        bool isDirectory
+    ) {
         if (isDirectory)
             Directory.Move(source, target);
         else

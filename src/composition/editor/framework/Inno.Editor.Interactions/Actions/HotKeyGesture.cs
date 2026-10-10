@@ -2,6 +2,7 @@ using System;
 
 using Inno.Core.Events;
 using Inno.Core.Input;
+using Inno.Editor.Core;
 
 namespace Inno.Editor.Interactions;
 
@@ -10,9 +11,7 @@ namespace Inno.Editor.Interactions;
 /// </summary>
 public readonly record struct HotKeyGesture
 {
-    private static readonly KeyModifier S_PRIMARY_MODIFIER = OperatingSystem.IsMacOS()
-        ? KeyModifier.Super
-        : KeyModifier.Control;
+    private readonly string? m_superModifierLabel;
 
     /// <summary>
     /// Creates a keyboard gesture with an exact set of modifier keys after symbolic-key normalization.
@@ -23,8 +22,19 @@ public readonly record struct HotKeyGesture
     /// <param name="modifiers">
     /// The modifier keys required by the gesture.
     /// </param>
-    public HotKeyGesture(KeyCode key, KeyModifier modifiers = KeyModifier.None)
-    {
+    /// <param name="superModifierLabel">
+    /// The display name of the Super modifier; the neutral name is used for explicitly constructed gestures.
+    /// </param>
+    /// <exception cref="ArgumentException">
+    /// The modifier label is empty.
+    /// </exception>
+    public HotKeyGesture(
+        KeyCode key,
+        KeyModifier modifiers = KeyModifier.None,
+        string superModifierLabel = "Super"
+    ) {
+        ArgumentException.ThrowIfNullOrWhiteSpace(superModifierLabel);
+        m_superModifierLabel = superModifierLabel;
         this.key = key;
         this.modifiers = modifiers;
     }
@@ -40,25 +50,34 @@ public readonly record struct HotKeyGesture
     public KeyModifier modifiers { get; }
 
     /// <summary>
-    /// Creates a gesture that includes the platform primary modifier.
+    /// Creates a gesture that includes the product-selected primary modifier.
     /// </summary>
     /// <param name="key">
     /// The non-modifier key in the gesture.
     /// </param>
+    /// <param name="keyboard">
+    /// The product-selected immutable keyboard policy.
+    /// </param>
     /// <param name="additionalModifiers">
-    /// Additional modifiers combined with Command on macOS or Control elsewhere.
+    /// Additional modifiers combined with the product-selected primary modifier.
     /// </param>
     /// <returns>
-    /// A platform-aware keyboard gesture.
+    /// A product-resolved keyboard gesture.
     /// </returns>
-    public static HotKeyGesture Primary(KeyCode key, KeyModifier additionalModifiers = KeyModifier.None)
-        => new(key, S_PRIMARY_MODIFIER | additionalModifiers);
+    public static HotKeyGesture Primary(
+        KeyCode key,
+        EditorKeyboardPolicy keyboard,
+        KeyModifier additionalModifiers = KeyModifier.None
+    ) {
+        ArgumentNullException.ThrowIfNull(keyboard);
+        return new(key, keyboard.primaryModifier | additionalModifiers, keyboard.superModifierLabel);
+    }
 
     /// <summary>
     /// Formats the gesture as a human-readable editor menu shortcut label.
     /// </summary>
     /// <returns>
-    /// A platform-aware textual representation of the gesture.
+    /// A product-resolved textual representation of the gesture.
     /// </returns>
     public override string ToString()
     {
@@ -66,7 +85,7 @@ public readonly record struct HotKeyGesture
         if ((modifiers & KeyModifier.Control) != 0)
             prefix += "Ctrl+";
         if ((modifiers & KeyModifier.Super) != 0)
-            prefix += OperatingSystem.IsMacOS() ? "Cmd+" : "Super+";
+            prefix += (m_superModifierLabel ?? "Super") + "+";
         if ((modifiers & KeyModifier.Alt) != 0)
             prefix += "Alt+";
         if ((modifiers & KeyModifier.Shift) != 0)
@@ -89,8 +108,10 @@ public readonly record struct HotKeyGesture
            keyEvent.key == key &&
            Normalize(key, keyEvent.modifiers) == Normalize(key, modifiers);
 
-    private static KeyModifier Normalize(KeyCode key, KeyModifier value)
-    {
+    private static KeyModifier Normalize(
+        KeyCode key,
+        KeyModifier value
+    ) {
         KeyModifier normalized = value &
                                  (KeyModifier.Alt |
                                   KeyModifier.Control |

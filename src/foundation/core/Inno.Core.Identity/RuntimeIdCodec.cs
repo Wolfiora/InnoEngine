@@ -37,8 +37,10 @@ internal static class RuntimeIdCodec
     /// <returns>
     /// The scalar result calculated from the supplied inputs.
     /// </returns>
-    public static int Pack(int slot, int generation)
-    {
+    public static int Pack(
+        int slot,
+        int generation
+    ) {
         if ((uint)slot > SLOT_MASK)
             throw new ArgumentOutOfRangeException(nameof(slot));
         if ((uint)generation > GENERATION_MASK)
@@ -56,8 +58,7 @@ internal static class RuntimeIdCodec
     /// <returns>
     /// The scalar result calculated from the supplied inputs.
     /// </returns>
-    public static int UnpackSlot(int runtimeId)
-        => runtimeId & SLOT_MASK;
+    public static int UnpackSlot(int runtimeId) => runtimeId & SLOT_MASK;
 
     /// <summary>
     /// Extracts the owner generation encoded in an opaque runtime identifier.
@@ -68,6 +69,5 @@ internal static class RuntimeIdCodec
     /// <returns>
     /// The scalar result calculated from the supplied inputs.
     /// </returns>
-    public static int UnpackGeneration(int runtimeId)
-        => (runtimeId >> SLOT_BITS) & GENERATION_MASK;
+    public static int UnpackGeneration(int runtimeId) => (runtimeId >> SLOT_BITS) & GENERATION_MASK;
 }

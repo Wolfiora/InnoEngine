@@ -3,8 +3,11 @@ using System.IO;
 
 namespace Inno.Editor.Scene;
 
-internal readonly record struct SceneOrderHistoryData(Guid sceneId, int beforeIndex, int afterIndex)
-{
+internal readonly record struct SceneOrderHistoryData(
+    Guid sceneId,
+    int beforeIndex,
+    int afterIndex
+) {
     internal byte[] Encode()
     {
         using var stream = new MemoryStream();

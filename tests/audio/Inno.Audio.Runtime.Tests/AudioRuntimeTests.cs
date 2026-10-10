@@ -1,7 +1,9 @@
+using Inno.Adapter.Modules.DotNet;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography;
 using Inno.Core.Diagnostics;
 using System.Threading.Tasks;
 using System.Threading;
@@ -19,6 +21,77 @@ namespace Inno.Audio.Runtime.Tests;
 
 public sealed class AudioRuntimeTests : IDisposable
 {
+    [Fact]
+    public void ConsumedApplicationLifecycleStillSuspendsAudioAndUnsubscribesOnStop()
+    {
+        var device = new ReadyAudioDevice();
+        using var reporter = new DiagnosticHub().CreateReporter(new DiagnosticSource("test.suspension.consumed", "Suspension"));
+        using var consumer = m_events.CreateHub(int.MaxValue);
+        consumer.Listen<ApplicationSuspensionChangedEvent>(e => e.HandleInGlobal());
+        using var runtime = new AudioRuntime(m_types, device, m_artifacts, m_events, reporter);
+        runtime.Attach();
+        var suspension = new ApplicationSuspensionChangedEvent(true);
+        m_events.Emit(suspension);
+        Assert.True(suspension.isGlobalHandled);
+        Assert.True(device.GetBusPaused(AudioBusId.master));
+        m_events.Emit(new ApplicationSuspensionChangedEvent(false));
+        Assert.False(device.GetBusPaused(AudioBusId.master));
+        runtime.Dispose();
+        int callsAfterStop = device.busPauseCalls;
+        m_events.Emit(new ApplicationSuspensionChangedEvent(true));
+        Assert.Equal(callsAfterStop, device.busPauseCalls);
+    }
+
+    [Fact]
+    public void FailedSuspensionRollsBackRetainedMixerRootsAndRemainsRetryable()
+    {
+        var device = new ReadyAudioDevice();
+        using var reporter = new DiagnosticHub().CreateReporter(new DiagnosticSource("test.suspension.rollback", "Suspension"));
+        using var runtime = new AudioRuntime(m_types, device, m_artifacts, m_events, reporter);
+        runtime.Attach();
+        runtime.Play(CreateClip(480000), new AudioPlayOptions(loop: true));
+        runtime.Update(0);
+        Assert.True(runtime.ApplyMixer(new AudioMixerAsset { mixerTypeId = "tests.audio.mixer" }));
+        device.failBusPauseAt = device.busPauseCalls + 2;
+        Assert.Throws<InvalidOperationException>(() => m_events.Emit(new ApplicationSuspensionChangedEvent(true)));
+        Assert.All(device.GetMasterPauses(), paused => Assert.False(paused));
+        Assert.Equal(2, device.GetMasterPauses().Count);
+        device.failBusPauseAt = null;
+        m_events.Emit(new ApplicationSuspensionChangedEvent(true));
+        Assert.All(device.GetMasterPauses(), paused => Assert.True(paused));
+        m_events.Emit(new ApplicationSuspensionChangedEvent(false));
+        Assert.All(device.GetMasterPauses(), paused => Assert.False(paused));
+    }
+
+    [Fact]
+    public void ApplicationSuspensionPreservesUserPauseAndReplacementMixerState()
+    {
+        var device = new ReadyAudioDevice();
+        using var reporter = new DiagnosticHub().CreateReporter(new DiagnosticSource("test.suspension", "Suspension"));
+        using var runtime = new AudioRuntime(m_types, device, m_artifacts, m_events, reporter);
+        runtime.Attach();
+        Assert.True(runtime.SetBusPaused(AudioBusId.master, true));
+        m_events.Emit(new ApplicationSuspensionChangedEvent(true));
+        m_events.Emit(new ApplicationSuspensionChangedEvent(false));
+        Assert.True(device.GetBusPaused(AudioBusId.master));
+
+        Assert.True(runtime.SetBusPaused(AudioBusId.master, false));
+        m_events.Emit(new ApplicationSuspensionChangedEvent(true));
+        Assert.True(runtime.SetBusPaused(AudioBusId.master, false));
+        Assert.True(device.GetBusPaused(AudioBusId.master));
+        Assert.True(runtime.ApplyMixer(new AudioMixerAsset { mixerTypeId = "tests.audio.mixer" }));
+        Assert.True(device.GetBusPaused(AudioBusId.master));
+
+        var replacement = new ReadyAudioDevice();
+        runtime.ReplaceDevice(replacement);
+        Assert.True(replacement.GetBusPaused(AudioBusId.master));
+        m_events.Emit(new ApplicationSuspensionChangedEvent(false));
+        Assert.False(replacement.GetBusPaused(AudioBusId.master));
+        runtime.Dispose();
+        m_events.Emit(new ApplicationSuspensionChangedEvent(true));
+        Assert.Equal(1, replacement.disposals);
+    }
+
     [Fact]
     public void InvalidPlaybackOptionsDoNotStealOrAcquireAnArtifact()
     {
@@ -123,8 +196,7 @@ public sealed class AudioRuntimeTests : IDisposable
         AudioClipAsset asset = CreateClip(48000);
         using ArtifactLease artifact = m_artifacts.AcquireArtifact(asset.identity.persistentId, "audio-data");
         AudioBusHandle master = backend.CreateBus(AudioBusId.master);
-        AudioClipHandle clip = backend.CreateClip(new AudioClipDescriptor(artifact.info.absolutePath,
-            AudioCodecId.wav, AudioClipLoadMode.Decode, 2, 48000, 48000, artifact.info.length));
+        AudioClipHandle clip = backend.CreateClip(new AudioClipDescriptor(            AudioCodecId.wav, AudioClipLoadMode.Decode, 2, 48000, 48000, artifact.info.length),new LeaseAudioTestSource(artifact));
         Assert.False(backend.Play(clip, master, default).isValid);
         foreach (double invalid in new[] { double.NaN, double.PositiveInfinity, double.NegativeInfinity, -1d })
             Assert.False(backend.Play(clip, master, AudioPlayOptions.defaultValue, invalid).isValid);
@@ -573,11 +645,9 @@ public sealed class AudioRuntimeTests : IDisposable
         m_root = Path.Combine(Path.GetTempPath(), "InnoAudioRuntimeTests", Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(m_root);
         m_modules = new ModuleHost(new ModuleHostOptions
-        {
-            cacheDirectory = Path.Combine(m_root, "Assemblies")
-        });
+        { catalogSource = new DotNetAssemblyCatalogSource(typeof(AudioRuntimeTests).Assembly)        });
         _ = typeof(TestMixerExtension);
-        m_types = new TypeCatalog(m_modules);
+        m_types = new TypeCatalog(m_modules, new ReflectionTypeCatalogSource());
         m_types.Rebuild();
     }
 
@@ -983,6 +1053,8 @@ public sealed class AudioRuntimeTests : IDisposable
     private sealed class FakeArtifactLookup : AssetResidencyProvider, IAssetArtifactLookup
     {
         private readonly ArtifactRetention m_retention = new();
+        private readonly Dictionary<Guid, AssetArtifactInfo> m_artifacts = [];
+        private readonly Dictionary<Guid, string> m_paths = [];
         internal int acquisitions;
         internal Exception? acquisitionFailure;
         internal Guid pendingReleaseId;
@@ -994,8 +1066,9 @@ public sealed class AudioRuntimeTests : IDisposable
             acquisitions++;
             if (acquisitionFailure is not null)
                 throw acquisitionFailure;
-            ArtifactLease retained = m_retention.Retain(m_artifacts[persistentId]);
-            return CreateArtifactLease(retained.info, () =>
+            ArtifactLease retained = m_retention.Retain(m_artifacts[persistentId],
+                () => File.OpenRead(m_paths[persistentId]));
+            return CreateArtifactLease(retained.info, retained.OpenRead, () =>
             {
                 releaseAttempts++;
                 if (persistentId == pendingReleaseId && pendingReleases-- > 0)
@@ -1003,16 +1076,16 @@ public sealed class AudioRuntimeTests : IDisposable
                 retained.Dispose();
             });
         }
-        private readonly Dictionary<Guid, AssetArtifactInfo> m_artifacts = [];
 
         internal void Add(Guid id, string path)
         {
-            File.WriteAllBytes(path, new byte[256]);
+            byte[] bytes = new byte[256];
+            File.WriteAllBytes(path, bytes);
+            m_paths[id] = path;
             m_artifacts[id] = new AssetArtifactInfo(
-                new AssetArtifactKey("AABB"),
+                new AssetArtifactKey(new string('A', 64)),
                 "audio-data",
-                path,
-                "TEST",
+                Convert.ToHexString(SHA256.HashData(bytes)),
                 256);
         }
 
@@ -1034,6 +1107,9 @@ public sealed class AudioRuntimeTests : IDisposable
         private readonly Dictionary<AudioBusId, bool> m_busPaused = [];
         private readonly Dictionary<AudioBusId, float> m_busVolumes = [];
         private readonly IAudioDevice m_inner = new MutedAudioDevice();
+        private readonly Dictionary<AudioBusHandle, bool> m_pausedHandles = [];
+        internal int busPauseCalls;
+        internal int? failBusPauseAt;
         internal bool failClipRetirement;
         internal bool failDisposal;
         internal int clipRetirements;
@@ -1055,7 +1131,10 @@ public sealed class AudioRuntimeTests : IDisposable
 
         public AudioStatistics statistics => m_inner.statistics;
 
-        public AudioClipHandle CreateClip(AudioClipDescriptor descriptor) => m_inner.CreateClip(descriptor);
+        public AudioClipHandle CreateClip(
+            AudioClipDescriptor descriptor,
+            IAudioClipSource source
+        ) => m_inner.CreateClip(descriptor, source);
         internal AudioClipState clipState = AudioClipState.Ready;
         public AudioClipState GetClipState(AudioClipHandle clip)
         {
@@ -1103,7 +1182,10 @@ public sealed class AudioRuntimeTests : IDisposable
         {
             AudioBusHandle handle = m_inner.CreateBus(id, parent);
             if (handle.isValid)
+            {
                 m_busIds.Add(handle, id);
+                m_pausedHandles.Add(handle, false);
+            }
             return handle;
         }
 
@@ -1112,7 +1194,10 @@ public sealed class AudioRuntimeTests : IDisposable
             busRetirements++;
             if (pendingBusRetirements-- > 0)
                 throw new RetirementPendingException("Expected bus drain.");
-            return m_inner.DestroyBus(bus);
+            bool destroyed = m_inner.DestroyBus(bus);
+            if (destroyed)
+                m_pausedHandles.Remove(bus);
+            return destroyed;
         }
 
         public bool SetBusVolume(AudioBusHandle bus, float volume)
@@ -1127,9 +1212,12 @@ public sealed class AudioRuntimeTests : IDisposable
 
         public bool SetBusPaused(AudioBusHandle bus, bool paused)
         {
+            if (++busPauseCalls == failBusPauseAt)
+                return false;
             if (!m_inner.SetBusPaused(bus, paused))
                 return false;
             m_busPaused[m_busIds[bus]] = paused;
+            m_pausedHandles[bus] = paused;
             return true;
         }
 
@@ -1163,5 +1251,8 @@ public sealed class AudioRuntimeTests : IDisposable
         internal float GetBusVolume(AudioBusId id) => m_busVolumes[id];
 
         internal bool GetBusPaused(AudioBusId id) => m_busPaused[id];
+        internal IReadOnlyList<bool> GetMasterPauses()
+            => m_pausedHandles.Where(pair => m_busIds[pair.Key] == AudioBusId.master)
+                .Select(pair => pair.Value).ToArray();
     }
 }

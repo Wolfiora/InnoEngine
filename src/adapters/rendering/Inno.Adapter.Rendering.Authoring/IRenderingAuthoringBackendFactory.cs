@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Inno.Rendering.Assets;
+using Inno.Rendering.Assets.Authoring;
 
 namespace Inno.Adapter.Rendering;
 

@@ -32,7 +32,10 @@ internal sealed class TransformInspectionDrawer(SceneEdits edits) : InspectionDr
     /// <returns>
     /// A fixed Transform label with no rename action.
     /// </returns>
-    protected override (string name, Action<string>? setter) BindName(InspectionDrawContext context, Transform target)
+    protected override (string name, Action<string>? setter) BindName(
+        InspectionDrawContext context,
+        Transform target
+    )
         => ("Transform", null);
 
     /// <summary>
@@ -44,8 +47,10 @@ internal sealed class TransformInspectionDrawer(SceneEdits edits) : InspectionDr
     /// <param name="target">
     /// The existing target that receives the validated result.
     /// </param>
-    protected override void Draw(InspectionDrawContext context, Transform target)
-    {
+    protected override void Draw(
+        InspectionDrawContext context,
+        Transform target
+    ) {
         if (!EditorWidget.SectionHeader(
             m_world ? "World Space" : "Local Space",
             m_world
@@ -62,8 +67,14 @@ internal sealed class TransformInspectionDrawer(SceneEdits edits) : InspectionDr
         bool invertible = true;
         if (m_world && target.parent is not null)
         {
-            try { _ = target.parent.worldToLocalMatrix; }
-            catch (InvalidOperationException) { invertible = false; }
+            try
+            {
+                _ = target.parent.worldToLocalMatrix;
+            }
+            catch (InvalidOperationException)
+            {
+                invertible = false;
+            }
         }
         if (!invertible)
             EditorWidget.HelpBox("World editing requires an invertible parent transform. Edit in Local Space or restore the parent's zero scale.",
@@ -77,30 +88,47 @@ internal sealed class TransformInspectionDrawer(SceneEdits edits) : InspectionDr
             Vector3 scale = m_world ? target.worldScale : target.localScale;
             DrawVector("Position", "Translation in world units.", position, value => Change(target, "localPosition", () =>
             {
-                if (m_world) target.worldPosition = value;
-                else target.localPosition = value;
+                if (m_world)
+                    target.worldPosition = value;
+                else
+                    target.localPosition = value;
             }));
             DrawVector("Rotation", "Euler rotation in degrees.", euler, value => Change(target, "localRotation", () =>
             {
                 Quaternion next = Quaternion.FromEulerAnglesZYXDegrees(value);
-                if (m_world) target.worldRotation = next;
-                else target.localRotation = next;
+                if (m_world)
+                    target.worldRotation = next;
+                else
+                    target.localRotation = next;
             }));
             DrawVector("Scale", "Scale along each axis. One preserves the original size.", scale, value => Change(target, "localScale", () =>
             {
-                if (m_world) target.worldScale = value;
-                else target.localScale = value;
+                if (m_world)
+                    target.worldScale = value;
+                else
+                    target.localScale = value;
             }));
         }
-        finally { NativeImGui.EndDisabled(); }
+        finally
+        {
+            NativeImGui.EndDisabled();
+        }
     }
 
-    private void Change(Transform target, string property, Action mutation)
+    private void Change(
+        Transform target,
+        string property,
+        Action mutation
+    )
         => edits.ChangeProperty(target, property, mutation, "Change Transform " + property,
             $"transform:{target.identity.persistentId:N}:{property}:{m_world}");
 
-    private static void DrawVector(string label, string tooltip, Vector3 value, Action<Vector3> apply)
-    {
+    private static void DrawVector(
+        string label,
+        string tooltip,
+        Vector3 value,
+        Action<Vector3> apply
+    ) {
         EditorWidget.PropertyRow("transform." + label, label, () =>
         {
             float width = MathF.Max(1f, (NativeImGui.GetContentRegionAvail().X - NativeImGui.GetStyle().ItemSpacing.X * 2f) / 3f);
@@ -109,7 +137,8 @@ internal sealed class TransformInspectionDrawer(SceneEdits edits) : InspectionDr
             changed |= EditorWidget.AxisDragFloat(label, "Y", ref value.y, width);
             NativeImGui.SameLine();
             changed |= EditorWidget.AxisDragFloat(label, "Z", ref value.z, width);
-            if (changed) apply(value);
+            if (changed)
+                apply(value);
         }, tooltip: tooltip);
     }
 }

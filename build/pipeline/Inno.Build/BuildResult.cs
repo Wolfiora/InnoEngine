@@ -17,8 +17,8 @@ public sealed class BuildResult
         int artifactBundleCount,
         int runtimeAssemblyCount,
         int embeddedPluginCount,
-        IReadOnlyList<BuildDiagnostic>? diagnostics = null)
-    {
+        IReadOnlyList<BuildDiagnostic>? diagnostics = null
+    ) {
         this.succeeded = succeeded;
         this.outputPath = outputPath;
         this.target = target;
@@ -83,8 +83,8 @@ public sealed class BuildResult
         int artifactBundleCount,
         int runtimeAssemblyCount,
         int embeddedPluginCount,
-        IReadOnlyList<BuildDiagnostic>? diagnostics = null)
-    {
+        IReadOnlyList<BuildDiagnostic>? diagnostics = null
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(outputPath);
         ArgumentException.ThrowIfNullOrWhiteSpace(contentHash);
         return new BuildResult(
@@ -101,8 +101,8 @@ public sealed class BuildResult
 
     internal static BuildResult Failure(
         BuildTargetId? target,
-        IReadOnlyList<BuildDiagnostic> diagnostics)
-    {
+        IReadOnlyList<BuildDiagnostic> diagnostics
+    ) {
         ArgumentNullException.ThrowIfNull(diagnostics);
         if (diagnostics.Count == 0)
             throw new ArgumentException("A failed build requires at least one diagnostic.", nameof(diagnostics));

@@ -22,8 +22,10 @@ public sealed class AssetBuildContext<TDefinition> where TDefinition : AssetObje
     /// <param name="inputs">
     /// The immutable input catalog snapshots.
     /// </param>
-    public AssetBuildContext(TDefinition definition, IReadOnlyList<AssetInfo> inputs)
-    {
+    public AssetBuildContext(
+        TDefinition definition,
+        IReadOnlyList<AssetInfo> inputs
+    ) {
         this.definition = definition ?? throw new ArgumentNullException(nameof(definition));
         this.inputs = inputs ?? throw new ArgumentNullException(nameof(inputs));
     }

@@ -36,9 +36,6 @@ public sealed class RuntimeSubsystemContext
     /// <param name="lifetime">
     /// The scope in which created subsystems will live.
     /// </param>
-    /// <param name="persistentDataDirectory">
-    /// The owner-selected persistent root.
-    /// </param>
     /// <param name="isEditMode">
     /// Whether simulation belongs to an authoring session.
     /// </param>
@@ -48,18 +45,22 @@ public sealed class RuntimeSubsystemContext
     /// <exception cref="ArgumentNullException">
     /// A required foundation service is null.
     /// </exception>
-    public RuntimeSubsystemContext(EventDispatcher events, DiagnosticHub diagnostics,
-        IdentityAllocator identities, TypeCatalog types, LifetimeScope resources,
-        RuntimeSubsystemLifetime lifetime, string persistentDataDirectory = "", bool isEditMode = false,
-        IEnumerable<RuntimeCapabilityId>? capabilities = null)
-    {
+    public RuntimeSubsystemContext(
+        EventDispatcher events,
+        DiagnosticHub diagnostics,
+        IdentityAllocator identities,
+        TypeCatalog types,
+        LifetimeScope resources,
+        RuntimeSubsystemLifetime lifetime,
+        bool isEditMode = false,
+        IEnumerable<RuntimeCapabilityId>? capabilities = null
+    ) {
         this.events = events ?? throw new ArgumentNullException(nameof(events));
         this.diagnostics = diagnostics ?? throw new ArgumentNullException(nameof(diagnostics));
         this.identities = identities ?? throw new ArgumentNullException(nameof(identities));
         this.types = types ?? throw new ArgumentNullException(nameof(types));
         this.resources = resources ?? throw new ArgumentNullException(nameof(resources));
         this.lifetime = lifetime;
-        this.persistentDataDirectory = persistentDataDirectory ?? throw new ArgumentNullException(nameof(persistentDataDirectory));
         this.isEditMode = isEditMode;
         this.capabilities = (capabilities ?? []).ToFrozenSet();
         if (this.capabilities.Any(static capability => !capability.isValid))
@@ -90,10 +91,6 @@ public sealed class RuntimeSubsystemContext
     /// Gets the owner scope used to validate factory lifetimes.
     /// </summary>
     public RuntimeSubsystemLifetime lifetime { get; }
-    /// <summary>
-    /// Gets the explicit owner-selected persistent directory.
-    /// </summary>
-    public string persistentDataDirectory { get; }
     /// <summary>
     /// Gets whether scaled simulation should be disabled for authoring.
     /// </summary>

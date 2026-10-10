@@ -15,21 +15,31 @@ internal sealed partial class ShaderEditorCanvas
         {
             InspectorRow("target", "Target", () =>
             {
-                if (!Widget.BeginBoundedCombo("##target", current.Length == 0 ? "Explicit Stages" : current)) return;
+                if (!Widget.BeginBoundedCombo("##target", current.Length == 0 ? "Explicit Stages" : current))
+                    return;
                 try
                 {
-                    if (ImGuiApi.Selectable("Explicit Stages", current.Length == 0)) Assign("");
+                    if (ImGuiApi.Selectable("Explicit Stages", current.Length == 0))
+                        Assign("");
                     if (owner.targets is { } targets)
                         foreach (string id in targets.ids)
-                            if (ImGuiApi.Selectable(id, current == id)) Assign(id);
+                            if (ImGuiApi.Selectable(id, current == id))
+                                Assign(id);
                 }
-                finally { ImGuiApi.EndCombo(); }
+                finally
+                {
+                    Widget.EndBoundedCombo();
+                }
             });
         }
-        finally { ImGuiApi.EndDisabled(); }
+        finally
+        {
+            ImGuiApi.EndDisabled();
+        }
         void Assign(string id)
         {
-            if (id == current) return;
+            if (id == current)
+                return;
             GraphDocument candidate = Controller.document.Clone();
             ShaderGraphDocument.SetTarget(candidate, id, owner.serialization, owner.context);
             Controller.ReplaceDocument(candidate, "Change Shader Target");

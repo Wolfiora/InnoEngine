@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <WarningsAsErrors>$(WarningsAsErrors);CS1572;CS1573;CS1591</WarningsAsErrors>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../../../adapters/common/Inno.Adapter/Inno.Adapter.csproj" />
+    <ProjectReference
+      Include="../../../../backends/MiniAudio/runtime/Inno.Adapter.Audio.MiniAudio/Inno.Adapter.Audio.MiniAudio.csproj"
+      PrivateAssets="compile" />
+    <ProjectReference
+      Include="../../../adapters/input/Inno.Adapter.Input/Inno.Adapter.Input.csproj"
+      PrivateAssets="compile" />
+    <ProjectReference
+      Include="../../../../backends/Text/runtime/Inno.Adapter.Text.FreeTypeHarfBuzz/Inno.Adapter.Text.FreeTypeHarfBuzz.csproj"
+      PrivateAssets="compile" />
+    <ProjectReference Include="../../../../backends/RmlUi/runtime/Inno.Adapter.UI.RmlUi/Inno.Adapter.UI.RmlUi.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../../adapters/text/Inno.Adapter.Text/Inno.Adapter.Text.csproj" />
+    <ProjectReference Include="../../../adapters/ui/Inno.Adapter.UI/Inno.Adapter.UI.csproj" />
+    <ProjectReference Include="../../../services/text/Inno.Text/Inno.Text.csproj" />
+    <ProjectReference Include="../../../services/ui/Inno.UI/Inno.UI.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../../../foundation/extensibility/Inno.Extensibility.Catalogs/Inno.Extensibility.Catalogs.csproj" />
+  </ItemGroup>
+</Project>

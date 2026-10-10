@@ -2,6 +2,7 @@ using System;
 using Inno.Core.Mathematics;
 using Inno.Editor.Inspection;
 using Inno.Rendering;
+using Inno.Rendering.Assets;
 
 namespace Inno.Editor.Shaders;
 
@@ -40,10 +41,17 @@ public static class ShaderPropertyInspector
     /// <param name="presentation">
     /// Optional Editor-only description and scalar bounds; it never changes inherited or stored values.
     /// </param>
-    public static void Draw(InspectionDrawContext context, object owner, string path, ShaderPropertyDefinition property,
-        MaterialValue value, Action<MaterialValue> setter, IInspectionPropertyEditService edits, bool readOnly,
-        ShaderParameterPresentation? presentation = null)
-    {
+    public static void Draw(
+        InspectionDrawContext context,
+        object owner,
+        string path,
+        ShaderPropertyDefinition property,
+        MaterialValue value,
+        Action<MaterialValue> setter,
+        IInspectionPropertyEditService edits,
+        bool readOnly,
+        ShaderParameterPresentation? presentation = null
+    ) {
         context.properties.DrawValue(context.editorContext, owner, path, property.displayName, ValueType(property.type),
             () => Unbox(property.type, value), next => setter(Box(property.type, next, value)), edits, readOnly,
             hdrColor: property.type == ShaderPropertyType.Color, tooltip: presentation?.description,
@@ -69,7 +77,10 @@ public static class ShaderPropertyInspector
     /// <returns>
     /// True only for supported matching kinds; no lossy conversion is performed.
     /// </returns>
-    public static bool Compatible(ShaderPropertyType type, MaterialValueKind kind) => type switch
+    public static bool Compatible(
+        ShaderPropertyType type,
+        MaterialValueKind kind
+    ) => type switch
     {
         ShaderPropertyType.Float => kind == MaterialValueKind.Float,
         ShaderPropertyType.Vector2 or ShaderPropertyType.Vector3 or ShaderPropertyType.Vector4 => kind == MaterialValueKind.Vector,
@@ -97,14 +108,20 @@ public static class ShaderPropertyInspector
     /// <returns>
     /// A detached value preserving the target's untouched channels, texture or sampler.
     /// </returns>
-    public static MaterialValue ApplyEdit(ShaderPropertyType type, MaterialValue before, MaterialValue edited, MaterialValue target)
-    {
+    public static MaterialValue ApplyEdit(
+        ShaderPropertyType type,
+        MaterialValue before,
+        MaterialValue edited,
+        MaterialValue target
+    ) {
         if (!Compatible(type, before.kind) || !Compatible(type, edited.kind) || !Compatible(type, target.kind))
             throw new ArgumentException("A multi-Material edit requires exactly matching value kinds.");
-        if (type == ShaderPropertyType.Float) return edited;
+        if (type == ShaderPropertyType.Float)
+            return edited;
         if (edited.kind == MaterialValueKind.Texture)
         {
-            if (!ReferenceEquals(before.texture, edited.texture)) target.texture = edited.texture;
+            if (!ReferenceEquals(before.texture, edited.texture))
+                target.texture = edited.texture;
             target.sampler = new(
                 before.sampler.filter == edited.sampler.filter ? target.sampler.filter : edited.sampler.filter,
                 before.sampler.addressU == edited.sampler.addressU ? target.sampler.addressU : edited.sampler.addressU,
@@ -126,7 +143,11 @@ public static class ShaderPropertyInspector
             target.vector = new(Merge(b.x,e.x,t.x), Merge(b.y,e.y,t.y), Merge(b.z,e.z,t.z), Merge(b.w,e.w,t.w));
         }
         return target;
-        static float Merge(float previous, float next, float current)
+        static float Merge(
+            float previous,
+            float next,
+            float current
+        )
             => BitConverter.SingleToUInt32Bits(previous) == BitConverter.SingleToUInt32Bits(next) ? current : next;
     }
 
@@ -139,7 +160,10 @@ public static class ShaderPropertyInspector
         _ => throw new InvalidOperationException("No material editor exists for " + type)
     };
 
-    private static object? Unbox(ShaderPropertyType type, MaterialValue value) => type switch
+    private static object? Unbox(
+        ShaderPropertyType type,
+        MaterialValue value
+    ) => type switch
     {
         ShaderPropertyType.Float => value.vector.x, ShaderPropertyType.Vector2 => new Vector2(value.vector.x, value.vector.y),
         ShaderPropertyType.Vector3 => new Vector3(value.vector.x, value.vector.y, value.vector.z), ShaderPropertyType.Vector4 => value.vector,
@@ -147,7 +171,11 @@ public static class ShaderPropertyInspector
         ShaderPropertyType.Matrix4x4 => value.matrix, _ => value.texture
     };
 
-    private static MaterialValue Box(ShaderPropertyType type, object? value, MaterialValue previous) => type switch
+    private static MaterialValue Box(
+        ShaderPropertyType type,
+        object? value,
+        MaterialValue previous
+    ) => type switch
     {
         ShaderPropertyType.Float => MaterialValue.FromFloat((float)value!),
         ShaderPropertyType.Vector2 => MaterialValue.FromVector(new Vector4(((Vector2)value!).x, ((Vector2)value!).y, 0, 0)),

@@ -51,8 +51,11 @@ public sealed class AnimationRuntime : RuntimeSubsystem, IAnimationService
     /// <param name="maxPlaybacks">
     /// Positive active playback capacity; rejection occurs before allocating a handle.
     /// </param>
-    public AnimationRuntime(EventDispatcher events, IAnimationBindingSink bindings, int maxPlaybacks = 16384)
-    {
+    public AnimationRuntime(
+        EventDispatcher events,
+        IAnimationBindingSink bindings,
+        int maxPlaybacks = 16384
+    ) {
         m_events = events ?? throw new ArgumentNullException(nameof(events));
         m_bindings = bindings ?? throw new ArgumentNullException(nameof(bindings));
         m_runtimeGeneration = m_handles.generation;
@@ -81,7 +84,10 @@ public sealed class AnimationRuntime : RuntimeSubsystem, IAnimationService
     /// <param name="target">
     /// The weak destination or explicit sampling-only policy.
     /// </param>
-    public AnimationPlaybackHandle Play(AnimationClipAsset clip, AnimationTarget target)
+    public AnimationPlaybackHandle Play(
+        AnimationClipAsset clip,
+        AnimationTarget target
+    )
         => Play(clip, target, AnimationPlayOptions.defaultValue);
 
     /// <summary>
@@ -111,8 +117,11 @@ public sealed class AnimationRuntime : RuntimeSubsystem, IAnimationService
     /// <param name="target">
     /// The weak destination or explicit sampling-only policy.
     /// </param>
-    public AnimationPlaybackHandle Play(AnimationClipAsset clip, AnimationTarget target, AnimationPlayOptions options)
-    {
+    public AnimationPlaybackHandle Play(
+        AnimationClipAsset clip,
+        AnimationTarget target,
+        AnimationPlayOptions options
+    ) {
         ObjectDisposedException.ThrowIf(m_disposed, this);
         ArgumentNullException.ThrowIfNull(clip);
         if (!target.isValid)
@@ -221,8 +230,10 @@ public sealed class AnimationRuntime : RuntimeSubsystem, IAnimationService
     /// <exception cref="ArgumentOutOfRangeException">
     /// Thrown when <paramref name="time"/> is not finite.
     /// </exception>
-    public bool Seek(AnimationPlaybackHandle handle, float time)
-    {
+    public bool Seek(
+        AnimationPlaybackHandle handle,
+        float time
+    ) {
         if (!float.IsFinite(time))
             throw new ArgumentOutOfRangeException(nameof(time));
         if (!TryGetPlayback(handle, out Playback? playback))
@@ -249,8 +260,8 @@ public sealed class AnimationRuntime : RuntimeSubsystem, IAnimationService
     public bool TryGetState(
         AnimationPlaybackHandle handle,
         out AnimationPlaybackState state,
-        out float time)
-    {
+        out float time
+    ) {
         if (TryGetPlayback(handle, out Playback? playback))
         {
             state = playback.state;
@@ -271,8 +282,10 @@ public sealed class AnimationRuntime : RuntimeSubsystem, IAnimationService
     /// <param name="unscaledDeltaTime">
     /// Non-negative unscaled frame interval.
     /// </param>
-    public void Update(float scaledDeltaTime, float unscaledDeltaTime)
-    {
+    public void Update(
+        float scaledDeltaTime,
+        float unscaledDeltaTime
+    ) {
         ObjectDisposedException.ThrowIf(m_disposed, this);
         if (!float.IsFinite(scaledDeltaTime) || scaledDeltaTime < 0f)
             throw new ArgumentOutOfRangeException(nameof(scaledDeltaTime));
@@ -332,8 +345,8 @@ public sealed class AnimationRuntime : RuntimeSubsystem, IAnimationService
         AnimationPlaybackHandle handle,
         Playback playback,
         float previousTime,
-        float delta)
-    {
+        float delta
+    ) {
         if (delta <= 0f)
             return false;
         float duration = playback.clip.duration;
@@ -371,8 +384,8 @@ public sealed class AnimationRuntime : RuntimeSubsystem, IAnimationService
         AnimationPlaybackHandle handle,
         AnimationClipSnapshot clip,
         float startExclusive,
-        float endInclusive)
-    {
+        float endInclusive
+    ) {
         for (int index = 0; index < clip.events.Length; index++)
         {
             AnimationEventMarker marker = clip.events[index];
@@ -388,8 +401,8 @@ public sealed class AnimationRuntime : RuntimeSubsystem, IAnimationService
 
     private static void Sample(
         Playback playback,
-        IDictionary<(AnimationTarget target, AnimationBindingId binding), BlendAccumulator> samples)
-    {
+        IDictionary<(AnimationTarget target, AnimationBindingId binding), BlendAccumulator> samples
+    ) {
         if (playback.options.weight <= 0f)
             return;
         for (int index = 0; index < playback.clip.tracks.Length; index++)
@@ -415,8 +428,10 @@ public sealed class AnimationRuntime : RuntimeSubsystem, IAnimationService
         }
     }
 
-    private static AnimationValue SampleTrack(AnimationTrack track, float time)
-    {
+    private static AnimationValue SampleTrack(
+        AnimationTrack track,
+        float time
+    ) {
         AnimationKeyframe[] keys = track.keyframes;
         if (time <= keys[0].time)
             return keys[0].value;
@@ -438,8 +453,8 @@ public sealed class AnimationRuntime : RuntimeSubsystem, IAnimationService
 
     private bool TryGetPlayback(
         AnimationPlaybackHandle handle,
-        [NotNullWhen(true)] out Playback? playback)
-    {
+        [NotNullWhen(true)] out Playback? playback
+    ) {
         playback = null;
         var identity = m_handles.Decode(handle);
         if (m_disposed || !handle.isValid || handle.runtimeGeneration != m_runtimeGeneration ||
@@ -451,8 +466,10 @@ public sealed class AnimationRuntime : RuntimeSubsystem, IAnimationService
         return playback is not null && playback.generation == identity.generation;
     }
 
-    private void Retire(int slot, Playback playback)
-    {
+    private void Retire(
+        int slot,
+        Playback playback
+    ) {
         uint next = unchecked(playback.generation + 1);
         if (next == 0)
             next = 1;
@@ -473,8 +490,8 @@ public sealed class AnimationRuntime : RuntimeSubsystem, IAnimationService
         AnimationClipSnapshot clip,
         AnimationTarget target,
         AnimationPlayOptions options,
-        uint generation)
-    {
+        uint generation
+    ) {
         internal AnimationClipSnapshot clip { get; } = clip;
 
         internal AnimationTarget target { get; } = target;
@@ -488,23 +505,30 @@ public sealed class AnimationRuntime : RuntimeSubsystem, IAnimationService
         internal float time { get; set; }
     }
 
-    private struct BlendAccumulator(int layer, AnimationValue value, float weight)
-    {
+    private struct BlendAccumulator(
+        int layer,
+        AnimationValue value,
+        float weight
+    ) {
         private AnimationValue m_sum = Multiply(value, weight);
         private float m_weight = weight;
 
         internal int layer { get; } = layer;
 
-        internal void Add(AnimationValue value, float weight)
-        {
+        internal void Add(
+            AnimationValue value,
+            float weight
+        ) {
             m_sum = AnimationSampling.AddWeighted(m_sum, value, weight);
             m_weight += weight;
         }
 
-        internal AnimationValue Complete()
-            => AnimationSampling.CompleteWeighted(m_sum, 1f / m_weight);
+        internal AnimationValue Complete() => AnimationSampling.CompleteWeighted(m_sum, 1f / m_weight);
 
-        private static AnimationValue Multiply(AnimationValue value, float weight)
+        private static AnimationValue Multiply(
+            AnimationValue value,
+            float weight
+        )
             => new(
                 value.kind,
                 value.x * weight,

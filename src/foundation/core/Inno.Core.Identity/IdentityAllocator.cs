@@ -41,8 +41,7 @@ public sealed class IdentityAllocator
     /// <exception cref="InvalidOperationException">
     /// Thrown when the caller is outside a runtime session execution scope.
     /// </exception>
-    public static IdentityAllocator current
-        => S_CURRENT_SCOPE.current;
+    public static IdentityAllocator current => S_CURRENT_SCOPE.current;
 
     /// <summary>
     /// Gets the number of currently registered live identity objects.
@@ -89,8 +88,10 @@ public sealed class IdentityAllocator
     /// <returns>
     /// <see langword="true"/> when the object was newly registered; otherwise, <see langword="false"/>.
     /// </returns>
-    public bool Register(IdentityObject obj, Guid? persistentId = null)
-        => m_registry.Register(obj, persistentId);
+    public bool Register(
+        IdentityObject obj,
+        Guid? persistentId = null
+    ) => m_registry.Register(obj, persistentId);
 
     /// <summary>
     /// Assigns a persistent identity to a detached object without allocating a runtime identity.
@@ -110,8 +111,10 @@ public sealed class IdentityAllocator
     /// <exception cref="InvalidOperationException">
     /// Thrown when the object already has a live runtime identity.
     /// </exception>
-    public void InitializePersistentIdentity(IdentityObject obj, Guid persistentId)
-    {
+    public void InitializePersistentIdentity(
+        IdentityObject obj,
+        Guid persistentId
+    ) {
         ArgumentNullException.ThrowIfNull(obj);
         if (persistentId == Guid.Empty)
             throw new ArgumentException("A detached persistent identity cannot be empty.", nameof(persistentId));

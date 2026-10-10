@@ -7,6 +7,13 @@
     <InnoAssemblyDomain>InnoPlugin</InnoAssemblyDomain>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\src\services\rendering\Inno.Rendering\Inno.Rendering.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../../../src/services/rendering/Inno.Rendering/Inno.Rendering.csproj" PrivateAssets="compile" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../../../src/foundation/extensibility/Inno.Extensibility.Catalogs/Inno.Extensibility.Catalogs.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../../../../src/services/rendering/Inno.Rendering.Runtime/Inno.Rendering.Runtime.csproj" />
   </ItemGroup>
 </Project>

@@ -19,8 +19,8 @@ internal static class ScriptIdePluginReferenceBuilder
         ScriptCompilerOptions options,
         ScriptSourceSet sources,
         ScriptApiReferenceSet runtimeApi,
-        ScriptApiReferenceSet editorApi)
-    {
+        ScriptApiReferenceSet editorApi
+    ) {
         var results = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         string root = Path.Combine(options.ideDirectory, "PluginReferences");
         foreach (ScriptAssemblyInput assembly in sources.assemblies)
@@ -53,8 +53,8 @@ internal static class ScriptIdePluginReferenceBuilder
     private static string CreateFingerprint(
         ScriptAssemblyInput assembly,
         ScriptApiReferenceSet api,
-        IReadOnlyList<string> dependencies)
-    {
+        IReadOnlyList<string> dependencies
+    ) {
         string input = string.Join('\n', new[]
         {
             assembly.name,
@@ -73,8 +73,8 @@ internal static class ScriptIdePluginReferenceBuilder
         ScriptAssemblyInput assembly,
         ScriptApiReferenceSet api,
         IReadOnlyList<string> dependencies,
-        string outputPath)
-    {
+        string outputPath
+    ) {
         string[] symbols = assembly.defines
             .Concat(assembly.scope == ScriptAssemblyScope.Editor ? ["INNO_EDITOR"] : [])
             .Concat(["DEBUG", "TRACE"])
@@ -87,7 +87,7 @@ internal static class ScriptIdePluginReferenceBuilder
             preprocessorSymbols: symbols);
         SyntaxTree[] trees = assembly.sources.Select(source =>
             CSharpSyntaxTree.ParseText(
-                SourceText.From(File.ReadAllText(source.snapshotPath), Encoding.UTF8),
+                SourceText.From(source.snapshotSource, Encoding.UTF8),
                 parseOptions,
                 source.sourcePath)).ToArray();
         IEnumerable<MetadataReference> references = FrameworkReferenceResolver
@@ -106,23 +106,32 @@ internal static class ScriptIdePluginReferenceBuilder
                 nullableContextOptions: assembly.nullable
                     ? NullableContextOptions.Enable
                     : NullableContextOptions.Disable));
-        string temporaryPath = outputPath + ".tmp";
+        string temporaryPath = outputPath + ".tmp-" + Guid.NewGuid().ToString("N");
         try
         {
-            using FileStream stream = File.Create(temporaryPath);
-            EmitResult result = compilation.Emit(
-                stream,
-                options: new EmitOptions(metadataOnly: true, includePrivateMembers: false));
-            if (!result.Success)
+            using (FileStream stream = File.Create(temporaryPath))
             {
-                string errors = string.Join(Environment.NewLine,
-                    result.Diagnostics
-                        .Where(static diagnostic => diagnostic.Severity == DiagnosticSeverity.Error)
-                        .Select(static diagnostic => diagnostic.ToString()));
-                throw new InvalidDataException(
-                    $"Failed to generate IDE Plugin reference '{assembly.name}':{Environment.NewLine}{errors}");
+                EmitResult result = compilation.Emit(
+                    stream,
+                    options: new EmitOptions(metadataOnly: true, includePrivateMembers: false));
+                if (!result.Success)
+                {
+                    string errors = string.Join(Environment.NewLine,
+                        result.Diagnostics
+                            .Where(static diagnostic => diagnostic.Severity == DiagnosticSeverity.Error)
+                            .Select(static diagnostic => diagnostic.ToString()));
+                    throw new InvalidDataException(
+                        $"Failed to generate IDE Plugin reference '{assembly.name}':{Environment.NewLine}{errors}");
+                }
             }
-            File.Move(temporaryPath, outputPath, overwrite: true);
+            try
+            {
+                File.Move(temporaryPath, outputPath);
+            }
+            catch (IOException) when (File.Exists(outputPath))
+            {
+                // Another projection already published the same immutable reference.
+            }
         }
         finally
         {

@@ -120,3 +120,136 @@ History 事务；这允许一个较大的运行时设置协议在 UI 中拆成�
 - 删除或移动路径时同步当前项目数据、调用方与 Wiki，不保留旧 key alias。
 
 [上一页：Inno.Editor.Scene](Inno.Editor.Scene.md) · [下一页：Inno.Editor.Panel.Settings](Inno.Editor.Panel.Settings.md)
+
+## 当前源码公开 API 清单
+
+只列当前源码的 public/protected 表面；内部实现不作为稳定 API。参数、返回、失败和 owner 以英文 XML 为准。
+
+### `Inno.Editor.Settings.EditorSetting`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Editor.Settings.EditorSetting`](../../src/composition/editor/framework/Inno.Editor.Settings/Definitions/EditorSetting.cs#L10) | Defines one path-addressed Settings page or one custom-drawn Settings field. |
+| [`Inno.Editor.Settings.EditorSetting.EditorSetting()`](../../src/composition/editor/framework/Inno.Editor.Settings/Definitions/EditorSetting.cs#L23) | Creates a Settings definition. A field supplies its persisted default through ; a page keeps the base implementation. |
+| [`bool Inno.Editor.Settings.EditorSetting.Draw(Inno.Editor.Settings.EditorSettingObject setting)`](../../src/composition/editor/framework/Inno.Editor.Settings/Definitions/EditorSetting.cs#L85) | Draws this field inside the frontend-managed content container. |
+| [`bool Inno.Editor.Settings.EditorSetting.IsDefault(Inno.Editor.Settings.EditorSettingObject setting)`](../../src/composition/editor/framework/Inno.Editor.Settings/Definitions/EditorSetting.cs#L110) | Determines whether a staged field object equals this definition's bound default value. |
+| [`bool Inno.Editor.Settings.EditorSetting.hasValue`](../../src/composition/editor/framework/Inno.Editor.Settings/Definitions/EditorSetting.cs#L50) | Gets whether this definition owns one persisted JSON object. |
+| [`int Inno.Editor.Settings.EditorSetting.order`](../../src/composition/editor/framework/Inno.Editor.Settings/Definitions/EditorSetting.cs#L45) | Gets the stable order among fields with the same section and label. |
+| [`string Inno.Editor.Settings.EditorSetting.label`](../../src/composition/editor/framework/Inno.Editor.Settings/Definitions/EditorSetting.cs#L40) | Gets the display label derived from the final path segment. |
+| [`string Inno.Editor.Settings.EditorSetting.pagePath`](../../src/composition/editor/framework/Inno.Editor.Settings/Definitions/EditorSetting.cs#L35) | Gets the page that owns this field, or this page's own path for a page definition. |
+| [`string Inno.Editor.Settings.EditorSetting.path`](../../src/composition/editor/framework/Inno.Editor.Settings/Definitions/EditorSetting.cs#L30) | Gets the complete slash-delimited identity and placement path. |
+| [`virtual Inno.Editor.Settings.EditorSettingObject Inno.Editor.Settings.EditorSetting.defaultValue`](../../src/composition/editor/framework/Inno.Editor.Settings/Definitions/EditorSetting.cs#L59) | Creates the default object for a field. Page definitions keep the base implementation, whose internal value is . |
+| [`virtual string Inno.Editor.Settings.EditorSetting.description`](../../src/composition/editor/framework/Inno.Editor.Settings/Definitions/EditorSetting.cs#L70) | Gets the page or field explanation displayed by the Settings frontend. |
+| [`virtual string Inno.Editor.Settings.EditorSetting.section`](../../src/composition/editor/framework/Inno.Editor.Settings/Definitions/EditorSetting.cs#L65) | Gets the section heading used to group fields alphabetically. Definitions without a section keep the base implementation, whose internal value is . |
+| [`virtual void Inno.Editor.Settings.EditorSetting.OnDraw(Inno.Editor.Settings.EditorSettingObject setting)`](../../src/composition/editor/framework/Inno.Editor.Settings/Definitions/EditorSetting.cs#L126) | Draws the field using the staged JSON object owned by the Settings frontend. A type that does not override this method describes a page. |
+
+### `Inno.Editor.Settings.EditorSettingObject`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Editor.Settings.EditorSettingObject`](../../src/composition/editor/framework/Inno.Editor.Settings/Definitions/EditorSettingObject.cs#L12) | Represents one isolated, strongly typed object exposed to a Settings field and its consumers. |
+| [`Inno.Editor.Settings.EditorSettingObject.EditorSettingObject()`](../../src/composition/editor/framework/Inno.Editor.Settings/Definitions/EditorSettingObject.cs#L21) | Creates an empty Settings object. |
+| [`bool Inno.Editor.Settings.EditorSettingObject.GetAsBoolean(string name, bool defaultValue = false)`](../../src/composition/editor/framework/Inno.Editor.Settings/Definitions/EditorSettingObject.cs#L42) | Gets a Boolean property, or a fallback when the property is absent. |
+| [`bool[] Inno.Editor.Settings.EditorSettingObject.GetAsBooleanArray(string name, bool[]? defaultValue = null)`](../../src/composition/editor/framework/Inno.Editor.Settings/Definitions/EditorSettingObject.cs#L304) | Gets a Boolean array property, or a copied fallback when the property is absent. |
+| [`double Inno.Editor.Settings.EditorSettingObject.GetAsDouble(string name, double defaultValue = 0)`](../../src/composition/editor/framework/Inno.Editor.Settings/Definitions/EditorSettingObject.cs#L235) | Gets a double-precision property, or a fallback when the property is absent. |
+| [`double[] Inno.Editor.Settings.EditorSettingObject.GetAsDoubleArray(string name, double[]? defaultValue = null)`](../../src/composition/editor/framework/Inno.Editor.Settings/Definitions/EditorSettingObject.cs#L428) | Gets a double-precision array property, or a copied fallback when absent. |
+| [`float Inno.Editor.Settings.EditorSettingObject.GetAsSingle(string name, float defaultValue = 0)`](../../src/composition/editor/framework/Inno.Editor.Settings/Definitions/EditorSettingObject.cs#L197) | Gets a single-precision property, or a fallback when the property is absent. |
+| [`float[] Inno.Editor.Settings.EditorSettingObject.GetAsSingleArray(string name, float[]? defaultValue = null)`](../../src/composition/editor/framework/Inno.Editor.Settings/Definitions/EditorSettingObject.cs#L397) | Gets a single-precision array property, or a copied fallback when absent. |
+| [`int Inno.Editor.Settings.EditorSettingObject.GetAsInt32(string name, int defaultValue = 0)`](../../src/composition/editor/framework/Inno.Editor.Settings/Definitions/EditorSettingObject.cs#L73) | Gets a 32-bit signed integer property, or a fallback when the property is absent. |
+| [`int[] Inno.Editor.Settings.EditorSettingObject.GetAsInt32Array(string name, int[]? defaultValue = null)`](../../src/composition/editor/framework/Inno.Editor.Settings/Definitions/EditorSettingObject.cs#L335) | Gets a 32-bit signed integer array property, or a copied fallback when absent. |
+| [`long Inno.Editor.Settings.EditorSettingObject.GetAsInt64(string name, long defaultValue = 0)`](../../src/composition/editor/framework/Inno.Editor.Settings/Definitions/EditorSettingObject.cs#L135) | Gets a 64-bit signed integer property, or a fallback when the property is absent. |
+| [`string? Inno.Editor.Settings.EditorSettingObject.GetAsString(string name, string? defaultValue = null)`](../../src/composition/editor/framework/Inno.Editor.Settings/Definitions/EditorSettingObject.cs#L273) | Gets a string property, or a fallback when the property is absent or null. |
+| [`string?[] Inno.Editor.Settings.EditorSettingObject.GetAsStringArray(string name, string?[]? defaultValue = null)`](../../src/composition/editor/framework/Inno.Editor.Settings/Definitions/EditorSettingObject.cs#L459) | Gets a nullable string array property, or a copied fallback when absent. |
+| [`uint Inno.Editor.Settings.EditorSettingObject.GetAsUInt32(string name, uint defaultValue = 0)`](../../src/composition/editor/framework/Inno.Editor.Settings/Definitions/EditorSettingObject.cs#L104) | Gets a 32-bit unsigned integer property, or a fallback when the property is absent. |
+| [`uint[] Inno.Editor.Settings.EditorSettingObject.GetAsUInt32Array(string name, uint[]? defaultValue = null)`](../../src/composition/editor/framework/Inno.Editor.Settings/Definitions/EditorSettingObject.cs#L366) | Gets a 32-bit unsigned integer array property, or a copied fallback when absent. |
+| [`ulong Inno.Editor.Settings.EditorSettingObject.GetAsUInt64(string name, ulong defaultValue = 0)`](../../src/composition/editor/framework/Inno.Editor.Settings/Definitions/EditorSettingObject.cs#L166) | Gets a 64-bit unsigned integer property, or a fallback when the property is absent. |
+| [`void Inno.Editor.Settings.EditorSettingObject.SetAsBoolean(string name, bool value)`](../../src/composition/editor/framework/Inno.Editor.Settings/Definitions/EditorSettingObject.cs#L56) | Sets a Boolean property. |
+| [`void Inno.Editor.Settings.EditorSettingObject.SetAsBooleanArray(string name, bool[] value)`](../../src/composition/editor/framework/Inno.Editor.Settings/Definitions/EditorSettingObject.cs#L318) | Sets a Boolean array property by value. |
+| [`void Inno.Editor.Settings.EditorSettingObject.SetAsDouble(string name, double value)`](../../src/composition/editor/framework/Inno.Editor.Settings/Definitions/EditorSettingObject.cs#L252) | Sets a finite double-precision property. |
+| [`void Inno.Editor.Settings.EditorSettingObject.SetAsDoubleArray(string name, double[] value)`](../../src/composition/editor/framework/Inno.Editor.Settings/Definitions/EditorSettingObject.cs#L442) | Sets a double-precision array property by value. |
+| [`void Inno.Editor.Settings.EditorSettingObject.SetAsInt32(string name, int value)`](../../src/composition/editor/framework/Inno.Editor.Settings/Definitions/EditorSettingObject.cs#L87) | Sets a 32-bit signed integer property. |
+| [`void Inno.Editor.Settings.EditorSettingObject.SetAsInt32Array(string name, int[] value)`](../../src/composition/editor/framework/Inno.Editor.Settings/Definitions/EditorSettingObject.cs#L349) | Sets a 32-bit signed integer array property by value. |
+| [`void Inno.Editor.Settings.EditorSettingObject.SetAsInt64(string name, long value)`](../../src/composition/editor/framework/Inno.Editor.Settings/Definitions/EditorSettingObject.cs#L149) | Sets a 64-bit signed integer property. |
+| [`void Inno.Editor.Settings.EditorSettingObject.SetAsSingle(string name, float value)`](../../src/composition/editor/framework/Inno.Editor.Settings/Definitions/EditorSettingObject.cs#L214) | Sets a finite single-precision property. |
+| [`void Inno.Editor.Settings.EditorSettingObject.SetAsSingleArray(string name, float[] value)`](../../src/composition/editor/framework/Inno.Editor.Settings/Definitions/EditorSettingObject.cs#L411) | Sets a single-precision array property by value. |
+| [`void Inno.Editor.Settings.EditorSettingObject.SetAsString(string name, string? value)`](../../src/composition/editor/framework/Inno.Editor.Settings/Definitions/EditorSettingObject.cs#L287) | Sets a nullable string property. |
+| [`void Inno.Editor.Settings.EditorSettingObject.SetAsStringArray(string name, string?[] value)`](../../src/composition/editor/framework/Inno.Editor.Settings/Definitions/EditorSettingObject.cs#L473) | Sets a nullable string array property by value. |
+| [`void Inno.Editor.Settings.EditorSettingObject.SetAsUInt32(string name, uint value)`](../../src/composition/editor/framework/Inno.Editor.Settings/Definitions/EditorSettingObject.cs#L118) | Sets a 32-bit unsigned integer property. |
+| [`void Inno.Editor.Settings.EditorSettingObject.SetAsUInt32Array(string name, uint[] value)`](../../src/composition/editor/framework/Inno.Editor.Settings/Definitions/EditorSettingObject.cs#L380) | Sets a 32-bit unsigned integer array property by value. |
+| [`void Inno.Editor.Settings.EditorSettingObject.SetAsUInt64(string name, ulong value)`](../../src/composition/editor/framework/Inno.Editor.Settings/Definitions/EditorSettingObject.cs#L180) | Sets a 64-bit unsigned integer property. |
+
+### `Inno.Editor.Settings.EditorSettingPathAttribute`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Editor.Settings.EditorSettingPathAttribute`](../../src/composition/editor/framework/Inno.Editor.Settings/Definitions/EditorSettingPathAttribute.cs#L8) | Places an at an arbitrary string Settings path. |
+| [`Inno.Editor.Settings.EditorSettingPathAttribute.EditorSettingPathAttribute(string path, int order = 0)`](../../src/composition/editor/framework/Inno.Editor.Settings/Definitions/EditorSettingPathAttribute.cs#L24) | Creates a path placement. A definition that overrides its drawing method becomes a field; a definition that keeps the default drawing method describes the page at the complete path. |
+| [`int Inno.Editor.Settings.EditorSettingPathAttribute.order`](../../src/composition/editor/framework/Inno.Editor.Settings/Definitions/EditorSettingPathAttribute.cs#L48) | Gets the stable order among fields with the same section and label. |
+| [`string Inno.Editor.Settings.EditorSettingPathAttribute.path`](../../src/composition/editor/framework/Inno.Editor.Settings/Definitions/EditorSettingPathAttribute.cs#L43) | Gets the normalized path including the field label. |
+
+### `Inno.Editor.Settings.EditorSettings`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Editor.Settings.EditorSettingObject Inno.Editor.Settings.EditorSettings.Get(string path)`](../../src/composition/editor/framework/Inno.Editor.Settings/Runtime/EditorSettings.cs#L96) | Reads an isolated effective object from one complete Settings path. |
+| [`Inno.Editor.Settings.EditorSettings`](../../src/composition/editor/framework/Inno.Editor.Settings/Runtime/EditorSettings.cs#L16) | Owns the discovered Settings catalog and the project-root Settings document. |
+| [`System.Action<Inno.Editor.Settings.EditorSettings>? Inno.Editor.Settings.EditorSettings.changed`](../../src/composition/editor/framework/Inno.Editor.Settings/Runtime/EditorSettings.cs#L72) | Occurs after a complete Settings Apply, Undo, or Redo changes the effective document. The committed service is the event's only argument. |
+| [`System.Collections.Generic.IReadOnlyList<Inno.Editor.Settings.EditorSetting> Inno.Editor.Settings.EditorSettings.definitions`](../../src/composition/editor/framework/Inno.Editor.Settings/Runtime/EditorSettings.cs#L82) | Gets all discovered path definitions in deterministic path order. |
+| [`bool Inno.Editor.Settings.EditorSettings.Apply(System.Collections.Generic.IReadOnlyDictionary<string, Inno.Editor.Settings.EditorSettingObject> values, System.Collections.Generic.IReadOnlySet<string>? resets = null)`](../../src/composition/editor/framework/Inno.Editor.Settings/Runtime/EditorSettings.cs#L131) | Atomically applies staged field objects as one shared Undo and Redo history entry. |
+| [`long Inno.Editor.Settings.EditorSettings.catalogRevision`](../../src/composition/editor/framework/Inno.Editor.Settings/Runtime/EditorSettings.cs#L77) | Gets the current discovered type-catalog revision. |
+| [`override void Inno.Editor.Settings.EditorSettings.OnDispose()`](../../src/composition/editor/framework/Inno.Editor.Settings/Runtime/EditorSettings.cs#L209) | Releases resources retained by this feature after it has stopped. |
+
+### `Inno.Editor.Settings.ProjectSettingEditor`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Core.Settings.ProjectSettingId Inno.Editor.Settings.ProjectSettingEditor.settingId`](../../src/composition/editor/framework/Inno.Editor.Settings/Definitions/ProjectSettingEditor.cs#L26) | Gets the stable runtime project setting protocol read from the target setting type's by the Editor catalog. |
+| [`Inno.Editor.Settings.ProjectSettingEditor`](../../src/composition/editor/framework/Inno.Editor.Settings/Definitions/ProjectSettingEditor.cs#L13) | Describes one Editor presentation for a strongly typed runtime project setting. |
+| [`bool Inno.Editor.Settings.ProjectSettingEditor.Draw(Inno.Core.Serialization.ISerializable value)`](../../src/composition/editor/framework/Inno.Editor.Settings/Definitions/ProjectSettingEditor.cs#L70) | Draws one isolated staged value through this presentation. |
+| [`bool Inno.Editor.Settings.ProjectSettingEditor.ValuesEqual(Inno.Core.Serialization.ISerializable left, Inno.Core.Serialization.ISerializable right)`](../../src/composition/editor/framework/Inno.Editor.Settings/Definitions/ProjectSettingEditor.cs#L88) | Compares two exact-type values through their native serialized property data. |
+| [`int Inno.Editor.Settings.ProjectSettingEditor.order`](../../src/composition/editor/framework/Inno.Editor.Settings/Definitions/ProjectSettingEditor.cs#L46) | Gets the stable order among fields in the same section. |
+| [`string Inno.Editor.Settings.ProjectSettingEditor.label`](../../src/composition/editor/framework/Inno.Editor.Settings/Definitions/ProjectSettingEditor.cs#L41) | Gets the display label derived from the final path segment. |
+| [`string Inno.Editor.Settings.ProjectSettingEditor.pagePath`](../../src/composition/editor/framework/Inno.Editor.Settings/Definitions/ProjectSettingEditor.cs#L36) | Gets the page that owns this field. |
+| [`string Inno.Editor.Settings.ProjectSettingEditor.path`](../../src/composition/editor/framework/Inno.Editor.Settings/Definitions/ProjectSettingEditor.cs#L31) | Gets the complete slash-delimited placement path. |
+| [`virtual string Inno.Editor.Settings.ProjectSettingEditor.description`](../../src/composition/editor/framework/Inno.Editor.Settings/Definitions/ProjectSettingEditor.cs#L56) | Gets the explanation displayed by the unified Settings frontend. |
+| [`virtual string Inno.Editor.Settings.ProjectSettingEditor.section`](../../src/composition/editor/framework/Inno.Editor.Settings/Definitions/ProjectSettingEditor.cs#L51) | Gets the section heading used to group this field. |
+
+### `Inno.Editor.Settings.ProjectSettingEditor<TSetting>`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Editor.Settings.ProjectSettingEditor<TSetting>`](../../src/composition/editor/framework/Inno.Editor.Settings/Definitions/ProjectSettingEditor.cs#L173) | Provides a typed drawing extension for one runtime project setting protocol. |
+| [`abstract void Inno.Editor.Settings.ProjectSettingEditor<TSetting>.OnDraw(TSetting setting)`](../../src/composition/editor/framework/Inno.Editor.Settings/Definitions/ProjectSettingEditor.cs#L184) | Draws the isolated staged value. Mutations remain local until the Settings frontend applies them. |
+
+### `Inno.Editor.Settings.ProjectSettingPathAttribute`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Editor.Settings.ProjectSettingPathAttribute`](../../src/composition/editor/framework/Inno.Editor.Settings/Definitions/ProjectSettingPathAttribute.cs#L8) | Places a strongly typed project setting editor under the Project root of the unified Settings window. |
+| [`Inno.Editor.Settings.ProjectSettingPathAttribute.ProjectSettingPathAttribute(string path, int order = 0)`](../../src/composition/editor/framework/Inno.Editor.Settings/Definitions/ProjectSettingPathAttribute.cs#L23) | Creates a project setting placement. |
+| [`int Inno.Editor.Settings.ProjectSettingPathAttribute.order`](../../src/composition/editor/framework/Inno.Editor.Settings/Definitions/ProjectSettingPathAttribute.cs#L46) | Gets the stable order among fields in the same section. |
+| [`string Inno.Editor.Settings.ProjectSettingPathAttribute.path`](../../src/composition/editor/framework/Inno.Editor.Settings/Definitions/ProjectSettingPathAttribute.cs#L41) | Gets the normalized complete placement path. |
+
+### `Inno.Editor.Settings.ProjectSettingsEditor`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Core.Serialization.ISerializable Inno.Editor.Settings.ProjectSettingsEditor.Get(Inno.Editor.Settings.ProjectSettingEditor definition)`](../../src/composition/editor/framework/Inno.Editor.Settings/Runtime/ProjectSettingsEditor.cs#L81) | Creates an isolated editable snapshot for one registered presentation. |
+| [`Inno.Core.Serialization.ISerializable Inno.Editor.Settings.ProjectSettingsEditor.GetComposedDefault(Inno.Editor.Settings.ProjectSettingEditor definition)`](../../src/composition/editor/framework/Inno.Editor.Settings/Runtime/ProjectSettingsEditor.cs#L108) | Creates the composed host and Plugin default without the project override. |
+| [`Inno.Editor.Settings.ProjectSettingsEditor`](../../src/composition/editor/framework/Inno.Editor.Settings/Runtime/ProjectSettingsEditor.cs#L16) | Owns the reloadable Editor presentations and history-aware project override workflow for runtime settings. |
+| [`System.Collections.Generic.IReadOnlyList<Inno.Editor.Settings.ProjectSettingEditor> Inno.Editor.Settings.ProjectSettingsEditor.definitions`](../../src/composition/editor/framework/Inno.Editor.Settings/Runtime/ProjectSettingsEditor.cs#L64) | Gets all active strongly typed project setting presentations. |
+| [`bool Inno.Editor.Settings.ProjectSettingsEditor.Apply(System.Collections.Generic.IReadOnlyDictionary<Inno.Core.Settings.ProjectSettingId, Inno.Core.Serialization.ISerializable> values, System.Collections.Generic.IReadOnlySet<Inno.Core.Settings.ProjectSettingId>? resets = null)`](../../src/composition/editor/framework/Inno.Editor.Settings/Runtime/ProjectSettingsEditor.cs#L137) | Atomically applies project-authored overrides and records one stable history entry. |
+| [`long Inno.Editor.Settings.ProjectSettingsEditor.catalogRevision`](../../src/composition/editor/framework/Inno.Editor.Settings/Runtime/ProjectSettingsEditor.cs#L59) | Gets the active project setting Editor catalog revision. |
+| [`override void Inno.Editor.Settings.ProjectSettingsEditor.OnDispose()`](../../src/composition/editor/framework/Inno.Editor.Settings/Runtime/ProjectSettingsEditor.cs#L162) | Releases resources retained by this feature after it has stopped. |
+
+## 项目依赖
+
+- [Inno.Core.Logging](../core/Inno.Core.Logging.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Extensibility.Types](../extensibility/Inno.Extensibility.Types.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Scripting.Api](../scripting/Inno.Scripting.Api.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Editor.Interactions](Inno.Editor.Interactions.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Core.Serialization.Generators](../core/Inno.Core.Serialization.Generators.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Core.Serialization](../core/Inno.Core.Serialization.md)：公开引用边界由实际签名核对。
+- [Inno.Core.Settings](../core/Inno.Core.Settings.md)：公开引用边界由实际签名核对。
+- [Inno.Editor.Core](Inno.Editor.Core.md)：公开引用边界由实际签名核对。
+- [Inno.Extensibility.Catalogs](../extensibility/Inno.Extensibility.Catalogs.md)：公开引用边界由实际签名核对。

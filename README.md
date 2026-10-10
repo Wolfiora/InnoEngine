@@ -1,91 +1,75 @@
 # InnoEngine
 
-*Innovate As You Want.*
+**Innovate As You Want.** A plugin-oriented game engine written in C#.
 
-**A Plugin-Oriented game engine written in C#.**
+Build your game's rendering models, gameplay systems, and Editor tools on a shared foundation. InnoEngine provides backend-neutral mechanisms, explicit platform composition, and a common asset and plugin workflow.
 
-Inno expresses a simple idea: **Innovate As You Want**. Build the systems, tools, and workflows your game needs on a shared engine foundation.
+[Get started](#get-started--windows-x64) · [Wiki](docs/README.md) · [Architecture](docs/architecture/ENGINE_ARCHITECTURE_OVERVIEW.md) · [Extend the engine](docs/architecture/PLATFORM_EXTENSION_GUIDE.md)
 
-InnoEngine is a personal engine-development project with cross-platform ambitions. Its central design principle is **Plugin-Oriented**: the engine provides reusable mechanisms and default backends; plugins define the rendering models, gameplay systems, and specialized tools built on top.
+![InnoEngine Editor](preview.png)
 
-[Wiki](docs/README.md) · [Architecture](docs/architecture/ENGINE_ARCHITECTURE_OVERVIEW.md) · [Plugins](docs/plugins/README.md) · [Build](docs/build/README.md)
+> Active development. APIs and project data evolve together. Current validation and outstanding device checks are recorded in the [acceptance report](docs/architecture/BACKEND_RUNTIME_BOUNDARY_OPTIMIZATION_ACCEPTANCE.md).
 
-![InnoEngine editor preview](preview.png)
+## Get started · Windows x64
 
-> **Work in progress.** APIs, project formats, and tooling are actively evolving. Backward compatibility is not guaranteed.
+**Requirements:** Git, .NET 9 SDK for InnoEngine, and Visual Studio 2022 with **Desktop development with C++**, Windows SDK, and C++ CMake tools. BindGen-CS declares its own SDK in `global.json` (currently .NET 10).
 
-## Plugin-Oriented, by design
+Keep the engine, binding generator, and samples beside each other:
 
-Plugins are a primary way to build with InnoEngine, not just a place to add optional features.
+```powershell
+git clone --recurse-submodules https://github.com/Wolfiora/InnoEngine.git
+git clone https://github.com/FLwolfy/BindGen-CS.git
+git clone https://github.com/Wolfiora/InnoEngine.Samples.git
+cd InnoEngine
 
-The engine supplies rendering, audio, animation, input, storage, assets, scene structure, and execution lifecycles. Plugins combine those mechanisms into concrete models: a visual-novel dialogue system, a 2D camera and sprite renderer, or a 3D rendering pipeline.
-
-These are examples of what plugins can define, not a list of bundled gameplay plugins.
-
-Plugin-Oriented does **not** mean every engine service must be installed as a plugin. InnoEngine includes default adapters, an Editor, and a Player. The goal is a useful foundation that lets you shape the engine around your game without rebuilding its infrastructure.
-
-## Design principles
-
-- **Mechanisms in the engine, models in plugins.** Common capabilities belong to the engine; genre-specific behavior and rendering models belong to extensions.
-- **Explicit boundaries.** Foundation, domain services, adapters, and product composition have distinct responsibilities and checked dependency directions.
-- **Backend-neutral APIs.** Engine contracts separate game code from concrete platform and native implementations.
-- **Discoverable extensions.** Stable declarations and type discovery connect components, importers, rendering features, audio providers, and Editor tools without a central per-plugin type list.
-- **Owned lifecycles.** Identity, resource ownership, candidate publication, and retirement are shared infrastructure. Missing references preserve recovery data; hot reload must verify that retired generations have actually unloaded.
-- **One authoring workflow.** Plugins participate in the same asset pipeline, serialization, inspection, and Undo/Redo mechanisms as the rest of the Editor.
-
-## What the engine provides
-
-| Area | Role |
-| --- | --- |
-| Foundation | Identity, serialization, events, diagnostics, logging, jobs, and lifetime management |
-| Content | Assets, import and artifact pipelines, recoverable references, scenes, prefabs, and animation data |
-| Services | Backend-neutral rendering, audio, input, storage, and their runtime services |
-| Runtime | Host/session isolation, subsystem scheduling, scripting, and plugin discovery and activation |
-| Default adapters | SDL3 platform/input, BGFX rendering, MiniAudio audio, filesystem storage, and ImGui presentation |
-| Products and tools | A shared Shell for Editor and Player, extensible Editor tooling, build pipelines, and Player Support Packs |
-
-A plugin can contribute both code and content. Projects author content under `Assets/`; exported `.iplugin` packages are installed under `Plugins/` and mounted read-only into the existing asset pipeline. See the [plugin workflow](docs/plugins/Inno.Plugins.Authoring.md).
-
-## Repository layout
-
-This is the current top-level organization. Detailed project maps and public APIs live in the Wiki.
-
-```text
-InnoEngine/
-├── src/
-│   ├── foundation/   # Core infrastructure, extensibility, scripting API declarations
-│   ├── content/      # Assets, references, scenes, animation
-│   ├── services/     # Rendering, audio, input, storage, platform contracts
-│   ├── runtime/      # Host/session execution, subsystem contracts, scripting, plugins
-│   ├── adapters/     # Neutral adapter catalogs and concrete backend implementations
-│   └── composition/  # Default engine assembly, Shell, Editor, Player
-├── native/           # C# bindings to native APIs
-├── extern/           # Third-party source dependencies
-├── build/            # Build pipelines, native toolchains, Support Packs
-├── tools/            # Architecture validation and development tools
-├── tests/            # Tests grouped by domain
-└── docs/             # Architecture, workflows, and API Wiki
+dotnet run --project platforms/Windows/editor/Inno.Editor.Windows -c Debug -- ../InnoEngine.Samples/FlappyBird
 ```
 
-Native bindings expose foreign APIs; adapters translate them into engine contracts. Third-party sources and generated native libraries are separate from both.
+The first build prepares native libraries, bindings, and Editor shaders automatically. Open the FlappyBird scene and press **Play**.
 
-## Explore and build
+In an IDE, select **Inno.Editor.Windows** as the startup project and pass the sample's absolute directory as its first program argument. Build that project explicitly; platform products are intentionally excluded from the default solution build.
 
-The Editor and Player target **.NET 9**. Native toolchains and CI are configured for **macOS ARM64** and **Windows x64**; Linux is not currently a build target.
+For macOS startup and Windows/Web game exports, see [Product startup](docs/platform/PRODUCT_STARTUP.md). Players run the exported game, including its code and content.
 
-Native dependencies need to be built before running the Editor. Start with:
+## Product targets
 
-- [Build and native toolchains](docs/build/README.md)
-- [Editor startup and project directories](docs/editor/Inno.Editor.Application.md)
-- [Scripting and extension APIs](docs/scripting/README.md)
-- [Plugin authoring and installation](docs/plugins/Inno.Plugins.Authoring.md)
-- [Player and runtime](docs/runtime/README.md)
+| Target | Products | Managed deployment |
+|---|---|---|
+| Windows x64 | Editor, Player | CoreCLR, NativeAOT |
+| macOS ARM64 | Editor, Player | CoreCLR, NativeAOT |
+| Browser Wasm32 / WebGL 2 | Player | Mono Wasm, Mono Wasm AOT |
 
-## Follow the project
+Windows and Web have publish-and-run evidence. macOS actual-host validation and remaining GUI, DPI, and audio device checks are tracked separately in the acceptance report. Linux currently contributes native tooling only.
 
-InnoEngine started as a way to understand game engines by building one. Discussions, suggestions, and contributions are welcome.
+## Built to compose
 
-If this direction interests you, a star helps the project reach more people. Feel free to open an issue or get in touch by [email](mailto:hsuankailiao@gmail.com).
+- **Shared mechanisms.** Identity, serialization, events, assets, scenes, rendering, audio, input, storage, and execution lifecycles.
+- **Replaceable implementations.** SDL3, BGFX, MiniAudio, FreeType/HarfBuzz, RmlUi, and ImGui live in reusable backends. Platform integrations connect actual SDK differences.
+- **Explicit ownership.** Sessions own resources; candidate publication, Missing recovery, and verified generation retirement support hot reload.
+- **Plugins shape the engine.** Rendering models, components, importers, and Editor tools share the same discovery and authoring infrastructure.
+
+Author under `Assets/`; install `.iplugin` packages under `Plugins/`. Installed plugin content enters the existing asset pipeline as read-only sources. [Plugin workflow →](docs/plugins/Inno.Plugins.Authoring.md)
+
+```text
+src/         Shared foundation, content, services, runtime, and product hosting
+backends/    Reusable adapters, native bindings, and component build recipes
+platforms/   System/SDK integration, product entry points, and packaging
+build/       Common pipelines, toolchains, and explicit distribution composition
+tests/       Domain and cross-component contract tests
+extern/      Third-party source dependencies
+docs/        Architecture, workflows, and API Wiki
+```
+
+New platforms select backends and supply the required integrations. New backends implement domain contracts and join the explicit product/build composition. [Extension guide →](docs/architecture/PLATFORM_EXTENSION_GUIDE.md)
+
+## Learn more
+
+| Start here | Find |
+|---|---|
+| [API Wiki](docs/README.md) | Project pages and public contracts |
+| [Scripting](docs/scripting/README.md) | Game code and extension APIs |
+| [Build](docs/build/README.md) | CLI, native toolchains, and game exports |
+| [Architecture](docs/architecture/ENGINE_ARCHITECTURE_OVERVIEW.md) | Layers, dependencies, and ownership |
 
 ## License
 

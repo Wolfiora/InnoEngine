@@ -7,17 +7,9 @@
     <IsTestProject>true</IsTestProject>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="../../../build/toolchains/Inno.Build.Toolchains.Bgfx.Tools/Inno.Build.Toolchains.Bgfx.Tools.csproj" />
-    <ProjectReference Include="..\..\..\src\services\rendering\Inno.Rendering.Assets\Inno.Rendering.Assets.csproj" />
-    <ProjectReference Include="..\..\..\src\foundation\core\Inno.Core.Serialization\Inno.Core.Serialization.csproj" />
-    <ProjectReference Include="..\..\..\src\foundation\extensibility\Inno.Extensibility.Modules\Inno.Extensibility.Modules.csproj" />
-    <ProjectReference Include="..\..\..\src\foundation\extensibility\Inno.Extensibility.Types\Inno.Extensibility.Types.csproj" />
-    <ProjectReference Include="..\..\..\src\foundation\core\Inno.Core.Identity\Inno.Core.Identity.csproj" />
-    <ProjectReference Include="..\..\..\src\foundation\core\Inno.Core.Diagnostics\Inno.Core.Diagnostics.csproj" />
-    <ProjectReference Include="..\..\..\src\foundation\core\Inno.Core.Logging\Inno.Core.Logging.csproj" />
-    <ProjectReference Include="..\..\..\src\content\assets\Inno.Assets.Pipeline\Inno.Assets.Pipeline.csproj" />
-    <ProjectReference Include="..\..\..\src\content\assets\Inno.Assets\Inno.Assets.csproj" />
-    <ProjectReference Include="..\..\..\src\content\references\Inno.References\Inno.References.csproj" />
+    <ProjectReference Include="../../../src/services/rendering/Inno.Rendering.Assets/Inno.Rendering.Assets.csproj" />
+    <ProjectReference Include="../../../backends/DotNet/runtime/Inno.Adapter.Modules.DotNet/Inno.Adapter.Modules.DotNet.csproj" />
+    <ProjectReference Include="../../../backends/DotNet/runtime/Inno.Adapter.Serialization.DotNet/Inno.Adapter.Serialization.DotNet.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />

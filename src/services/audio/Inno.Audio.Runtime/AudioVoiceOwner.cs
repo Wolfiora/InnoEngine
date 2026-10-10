@@ -26,11 +26,17 @@ internal sealed class AudioVoiceOwner
     private long m_stolenVoiceCount;
     private readonly List<Exception> m_retirementFailures = [];
 
-    internal AudioVoiceOwner(IAudioDevice device, IAssetArtifactLookup artifacts, AudioClipCache clipCache,
-        AudioMixerOwner mixer, EventDispatcher events, IDiagnosticReporter diagnostics, AudioRuntimeOptions options,
+    internal AudioVoiceOwner(
+        IAudioDevice device,
+        IAssetArtifactLookup artifacts,
+        AudioClipCache clipCache,
+        AudioMixerOwner mixer,
+        EventDispatcher events,
+        IDiagnosticReporter diagnostics,
+        AudioRuntimeOptions options,
         Action<Action> retireResources,
-        AudioVoiceOwner? previous = null)
-    {
+        AudioVoiceOwner? previous = null
+    ) {
         m_device = device;
         m_artifacts = artifacts;
         m_clipCache = clipCache;
@@ -104,16 +110,20 @@ internal sealed class AudioVoiceOwner
         return result;
     }
 
-    internal bool Seek(AudioVoiceHandle voice, TimeSpan position)
-    {
+    internal bool Seek(
+        AudioVoiceHandle voice,
+        TimeSpan position
+    ) {
         if (position < TimeSpan.Zero || !m_voices.TryGetValue(voice, out VoiceRecord? record))
             return false;
         record.seekPosition = position;
         return !record.backendVoice.isValid || m_device.Seek(record.backendVoice, position);
     }
 
-    internal bool SetVoiceParameters(AudioVoiceHandle voice, AudioVoiceParameters parameters)
-    {
+    internal bool SetVoiceParameters(
+        AudioVoiceHandle voice,
+        AudioVoiceParameters parameters
+    ) {
         if (parameters.pitch <= 0f)
             return false;
         if (!m_voices.TryGetValue(voice, out VoiceRecord? record))
@@ -122,8 +132,10 @@ internal sealed class AudioVoiceOwner
         return !record.backendVoice.isValid || m_device.SetVoiceParameters(record.backendVoice, parameters);
     }
 
-    internal bool TryGetVoiceState(AudioVoiceHandle voice, out AudioPlaybackState playbackState)
-    {
+    internal bool TryGetVoiceState(
+        AudioVoiceHandle voice,
+        out AudioPlaybackState playbackState
+    ) {
         if (m_voices.TryGetValue(voice, out VoiceRecord? record))
         {
             UpdateVoiceState(record);
@@ -139,8 +151,11 @@ internal sealed class AudioVoiceOwner
         return false;
     }
 
-    internal AudioVoiceHandle Play(AudioClipAsset clip, AudioPlayOptions options, double? scheduledDspTime = null)
-    {
+    internal AudioVoiceHandle Play(
+        AudioClipAsset clip,
+        AudioPlayOptions options,
+        double? scheduledDspTime = null
+    ) {
         ArgumentNullException.ThrowIfNull(clip);
         if (!options.bus.isValid)
             throw new ArgumentException("Playback options must be initialized.", nameof(options));
@@ -156,8 +171,14 @@ internal sealed class AudioVoiceOwner
         }
         catch (Exception failure)
         {
-            try { m_retireResources(request.Dispose); }
-            catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null) { throw; }
+            try
+            {
+                m_retireResources(request.Dispose);
+            }
+            catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null)
+            {
+                throw;
+            }
             catch (Exception cleanup)
             {
                 throw new AggregateException("Audio voice admission and request retirement failed.", failure, cleanup);
@@ -220,7 +241,10 @@ internal sealed class AudioVoiceOwner
                 UpdateVoiceState(voice);
                 m_diagnostics.Resolve("AUDIO_CLIP_PREPARATION_FAILED", voice.clip.persistentId.ToString("D"));
             }
-            catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null) { throw; }
+            catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null)
+            {
+                throw;
+            }
             catch (Exception exception)
             {
                 Publish(
@@ -233,8 +257,10 @@ internal sealed class AudioVoiceOwner
         }
     }
 
-    private void FinishVoice(VoiceRecord voice, AudioCompletionReason reason)
-    {
+    private void FinishVoice(
+        VoiceRecord voice,
+        AudioCompletionReason reason
+    ) {
         if (!m_voices.ContainsKey(voice.handle))
             return;
         voice.finishingReason ??= reason;
@@ -291,11 +317,26 @@ internal sealed class AudioVoiceOwner
                 if (voice.backendVoice.isValid && voice.finishingReason is null)
                     _ = m_device.Stop(voice.backendVoice);
             }
-            catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null) { throw; }
-            catch (Exception exception) { m_retirementFailures.Add(exception); }
-            try { FinishVoice(voice, reason); }
-            catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null) { throw; }
-            catch (Exception exception) { m_retirementFailures.Add(exception); }
+            catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null)
+            {
+                throw;
+            }
+            catch (Exception exception)
+            {
+                m_retirementFailures.Add(exception);
+            }
+            try
+            {
+                FinishVoice(voice, reason);
+            }
+            catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null)
+            {
+                throw;
+            }
+            catch (Exception exception)
+            {
+                m_retirementFailures.Add(exception);
+            }
         }
         if (m_retirementFailures.Count == 0)
             return;
@@ -311,8 +352,8 @@ internal sealed class AudioVoiceOwner
             AudioClipRequest clip,
             AudioPlayOptions options,
             double? scheduledDspTime,
-            long sequence)
-        {
+            long sequence
+        ) {
             this.handle = handle;
             this.clip = clip;
             this.options = options;
@@ -338,6 +379,11 @@ internal sealed class AudioVoiceOwner
         internal bool cacheReferenceReleased { get; set; }
     }
 
-    private void Publish(string code, string message, DiagnosticSeverity severity, string? source)
+    private void Publish(
+        string code,
+        string message,
+        DiagnosticSeverity severity,
+        string? source
+    )
         => m_diagnostics.Publish(new Diagnostic(code, message, severity, source));
 }

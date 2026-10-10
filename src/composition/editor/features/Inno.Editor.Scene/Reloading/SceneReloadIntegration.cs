@@ -17,8 +17,8 @@ internal static class SceneReloadIntegration
         RuntimeSession runtimeSession,
         SerializationRegistry serialization,
         IAssetReferenceResolver assets,
-        EditorReloadCoordinator reloads)
-    {
+        EditorReloadCoordinator reloads
+    ) {
         ArgumentNullException.ThrowIfNull(runtimeSession);
         ArgumentNullException.ThrowIfNull(serialization);
         ArgumentNullException.ThrowIfNull(assets);
@@ -35,8 +35,8 @@ internal static class SceneReloadIntegration
         internal SceneReloadParticipant(
             RuntimeSession runtimeSession,
             SerializationRegistry serialization,
-            IAssetReferenceResolver assets)
-        {
+            IAssetReferenceResolver assets
+        ) {
             m_runtimeSession = runtimeSession;
             m_reload = new SceneReloadService(runtimeSession.scenes, serialization, assets);
         }
@@ -69,7 +69,8 @@ internal static class SceneReloadIntegration
 
     private sealed class SceneReloadTransaction(
         RuntimeSession runtimeSession,
-        ISceneReloadStateTransfer migration) : IGenerationChange
+        ISceneReloadStateTransfer migration
+    ) : IGenerationChange
     {
         /// <summary>
         /// Builds and validates candidate state without changing the active generation.
@@ -84,8 +85,7 @@ internal static class SceneReloadIntegration
         /// <summary>
         /// Applies a validated change atomically at the caller-controlled commit point.
         /// </summary>
-        public void Apply()
-            => migration.Apply();
+        public void Apply() => migration.Apply();
 
         /// <summary>
         /// Finalizes candidate activation and releases temporary transaction state.
@@ -101,8 +101,7 @@ internal static class SceneReloadIntegration
         /// <summary>
         /// Restores the state captured before the current transaction began.
         /// </summary>
-        public void RollbackStructure()
-            => migration.RollbackStructure();
+        public void RollbackStructure() => migration.RollbackStructure();
 
         /// <summary>
         /// Restores the state captured before the current transaction began.

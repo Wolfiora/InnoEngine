@@ -13,7 +13,7 @@ namespace Inno.Scene;
 /// </param>
 internal sealed record SceneObjectStructureSnapshot(
     GameObject gameObject,
-    IReadOnlyList<GameComponent> components);
+    IReadOnlyList<GameComponent> components
+);
 
-internal sealed record SceneStructureSnapshot(
-    IReadOnlyList<SceneObjectStructureSnapshot> objects);
+internal sealed record SceneStructureSnapshot(IReadOnlyList<SceneObjectStructureSnapshot> objects);

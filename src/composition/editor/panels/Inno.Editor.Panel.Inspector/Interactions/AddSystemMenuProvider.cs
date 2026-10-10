@@ -20,8 +20,10 @@ internal sealed class AddSystemMenuProvider(TypeCatalog types) : EditorMenuSourc
     /// <param name="builder">
     /// The builder consumed by build; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
-    public override void Build(EditorMenuContext context, EditorMenuBuilder builder)
-    {
+    public override void Build(
+        EditorMenuContext context,
+        EditorMenuBuilder builder
+    ) {
         if (context.target is not GameScene scene)
             return;
         TypeCacheSnapshot snapshot = types.current;
@@ -34,8 +36,10 @@ internal sealed class AddSystemMenuProvider(TypeCatalog types) : EditorMenuSourc
         }
     }
 
-    private static bool IsAddable(Type type, GameScene scene)
-    {
+    private static bool IsAddable(
+        Type type,
+        GameScene scene
+    ) {
         if (type.IsAbstract || type.GetConstructor(
                 BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic,
                 binder: null,

@@ -1,6 +1,4 @@
 using System;
-using System.Linq;
-using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -16,47 +14,42 @@ namespace Inno.Assets;
 /// </remarks>
 public static class Assets
 {
-    private const string C_ASSET_SOURCE_KEY = "Inno.AssetSource";
-
     /// <summary>
-    /// Creates a path relative to the Asset source that owns the calling script assembly.
+    /// Creates a path relative to the Asset source that owns the calling script.
     /// </summary>
     /// <param name="localPath">
     /// The normalized path relative to the caller's Project or installed Plugin Assets root.
+    /// </param>
+    /// <param name="sourceFile">
+    /// The compiler-supplied canonical Asset path of the calling source file; callers normally omit it.
     /// </param>
     /// <returns>
     /// A mount-qualified path that follows the script from Project development into an installed Plugin.
     /// </returns>
     /// <exception cref="InvalidOperationException">
-    /// Thrown when the calling assembly was not produced by the Inno scripting compiler or has invalid
-    /// Asset source ownership metadata.
+    /// The caller does not provide a canonical source location produced by the scripting compiler.
     /// </exception>
-    [MethodImpl(MethodImplOptions.NoInlining)]
-    public static AssetPath LocalPath(string localPath)
-    {
-        Assembly caller = Assembly.GetCallingAssembly();
-        AssemblyMetadataAttribute? metadata = caller
-            .GetCustomAttributes<AssemblyMetadataAttribute>()
-            .SingleOrDefault(static value => string.Equals(
-                value.Key,
-                C_ASSET_SOURCE_KEY,
-                StringComparison.Ordinal));
-        if (metadata is null || string.IsNullOrWhiteSpace(metadata.Value))
-        {
-            throw new InvalidOperationException(
-                $"Assembly '{caller.GetName().Name}' has no {C_ASSET_SOURCE_KEY} ownership metadata.");
-        }
-
+    /// <exception cref="ArgumentNullException">
+    /// The local path or source location is null.
+    /// </exception>
+    public static AssetPath LocalPath(
+        string localPath,
+        [CallerFilePath] string sourceFile = ""
+    ) {
+        ArgumentNullException.ThrowIfNull(localPath);
+        ArgumentNullException.ThrowIfNull(sourceFile);
+        if (!sourceFile.Contains("::", StringComparison.Ordinal))
+            throw new InvalidOperationException("Source-local Asset paths require a compiler-supplied canonical source location.");
+        AssetSourceId source;
         try
         {
-            return new AssetPath(new AssetSourceId(metadata.Value), localPath);
+            source = AssetPath.Parse(sourceFile).source;
         }
         catch (ArgumentException exception)
         {
-            throw new InvalidOperationException(
-                $"Assembly '{caller.GetName().Name}' has invalid {C_ASSET_SOURCE_KEY} ownership metadata.",
-                exception);
+            throw new InvalidOperationException("The caller's canonical Asset source location is invalid.", exception);
         }
+        return new AssetPath(source, localPath);
     }
 
     /// <summary>
@@ -116,7 +109,10 @@ public static class Assets
     /// <exception cref="InvalidOperationException">
     /// Thrown when no asset lookup is active for the caller.
     /// </exception>
-    public static bool TryLoad<TAsset>(AssetPath path, out TAsset? asset)
+    public static bool TryLoad<TAsset>(
+        AssetPath path,
+        out TAsset? asset
+    )
         where TAsset : AssetObject
         => AssetExecutionContext.current.TryLoad(path, out asset);
 
@@ -139,7 +135,10 @@ public static class Assets
     /// <exception cref="InvalidOperationException">
     /// Thrown when no asset lookup is active for the caller.
     /// </exception>
-    public static bool TryLoad<TAsset>(Guid persistentId, out TAsset? asset)
+    public static bool TryLoad<TAsset>(
+        Guid persistentId,
+        out TAsset? asset
+    )
         where TAsset : AssetObject
         => AssetExecutionContext.current.TryLoad(persistentId, out asset);
 
@@ -160,7 +159,8 @@ public static class Assets
     /// </returns>
     public static ValueTask<AssetLease<TAsset>> AcquireAsync<TAsset>(
         AssetPath path,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
         where TAsset : AssetObject
         => GetResidency().AcquireAsync<TAsset>(path, cancellationToken);
 
@@ -181,7 +181,8 @@ public static class Assets
     /// </returns>
     public static ValueTask<AssetLease<TAsset>> AcquireAsync<TAsset>(
         Guid persistentId,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
         where TAsset : AssetObject
         => GetResidency().AcquireAsync<TAsset>(persistentId, cancellationToken);
 
@@ -197,7 +198,10 @@ public static class Assets
     /// <returns>
     /// A lease over verified artifact metadata and bytes.
     /// </returns>
-    public static ArtifactLease AcquireArtifact(Guid persistentId, string outputName)
+    public static ArtifactLease AcquireArtifact(
+        Guid persistentId,
+        string outputName
+    )
         => GetResidency().AcquireArtifact(persistentId, outputName);
 
     private static IAssetResidency GetResidency()

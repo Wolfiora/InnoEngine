@@ -47,8 +47,10 @@ public static class SceneManager
     /// <param name="sceneIndex">
     /// The requested zero-based hierarchy index.
     /// </param>
-    public static void SetSceneIndex(GameScene scene, int sceneIndex)
-        => SceneWorld.current.SetSceneIndex(scene, sceneIndex);
+    public static void SetSceneIndex(
+        GameScene scene,
+        int sceneIndex
+    ) => SceneWorld.current.SetSceneIndex(scene, sceneIndex);
 
     /// <summary>
     /// Replaces the current session scene set with one active scene.
@@ -67,7 +69,10 @@ public static class SceneManager
     /// <param name="makeActive">
     /// Whether the loaded scene becomes active.
     /// </param>
-    public static void LoadSceneAdditive(GameScene scene, bool makeActive = true)
+    public static void LoadSceneAdditive(
+        GameScene scene,
+        bool makeActive = true
+    )
         => SceneWorld.current.LoadSceneAdditive(scene, makeActive);
 
     /// <summary>
@@ -79,8 +84,7 @@ public static class SceneManager
     /// <returns>
     /// The newly created and loaded scene.
     /// </returns>
-    public static GameScene LoadNewScene(string name = "Untitled Scene")
-        => SceneWorld.current.LoadNewScene(name);
+    public static GameScene LoadNewScene(string name = "Untitled Scene") => SceneWorld.current.LoadNewScene(name);
 
     /// <summary>
     /// Creates and additively loads a new scene in the current runtime session.
@@ -94,7 +98,10 @@ public static class SceneManager
     /// <returns>
     /// The newly created and loaded scene.
     /// </returns>
-    public static GameScene LoadNewSceneAdditive(string name = "Untitled Scene", bool makeActive = true)
+    public static GameScene LoadNewSceneAdditive(
+        string name = "Untitled Scene",
+        bool makeActive = true
+    )
         => SceneWorld.current.LoadNewSceneAdditive(name, makeActive);
 
     /// <summary>
@@ -114,7 +121,10 @@ public static class SceneManager
     /// <param name="destination">
     /// The loaded destination scene.
     /// </param>
-    public static void MoveGameObjectToScene(GameObject gameObject, GameScene destination)
+    public static void MoveGameObjectToScene(
+        GameObject gameObject,
+        GameScene destination
+    )
         => SceneWorld.current.MoveGameObjectToScene(gameObject, destination);
 
     /// <summary>

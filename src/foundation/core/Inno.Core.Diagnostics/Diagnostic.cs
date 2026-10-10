@@ -34,8 +34,14 @@ public sealed class Diagnostic
     /// <exception cref="ArgumentNullException">
     /// The message is null.
     /// </exception>
-    public Diagnostic(string code, string message, DiagnosticSeverity severity,
-        string? semanticId = null, Guid? objectId = null, DiagnosticLocation? location = null)
+    public Diagnostic(
+        string code,
+        string message,
+        DiagnosticSeverity severity,
+        string? semanticId = null,
+        Guid? objectId = null,
+        DiagnosticLocation? location = null
+    )
         : this(severity, code, message, location)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(code);
@@ -76,7 +82,8 @@ public sealed class Diagnostic
     public static Diagnostic Info(
         string code,
         string message,
-        DiagnosticLocation? location = null)
+        DiagnosticLocation? location = null
+    )
         => new(DiagnosticSeverity.Info, code, message, location);
 
     /// <summary>
@@ -100,7 +107,8 @@ public sealed class Diagnostic
     public static Diagnostic Warning(
         string code,
         string message,
-        DiagnosticLocation? location = null)
+        DiagnosticLocation? location = null
+    )
         => new(DiagnosticSeverity.Warning, code, message, location);
 
     /// <summary>
@@ -124,15 +132,16 @@ public sealed class Diagnostic
     public static Diagnostic Error(
         string code,
         string message,
-        DiagnosticLocation? location = null)
+        DiagnosticLocation? location = null
+    )
         => new(DiagnosticSeverity.Error, code, message, location);
 
     private Diagnostic(
         DiagnosticSeverity severity,
         string code,
         string message,
-        DiagnosticLocation? location)
-    {
+        DiagnosticLocation? location
+    ) {
         ArgumentNullException.ThrowIfNull(message);
         this.severity = severity;
         this.code = code ?? string.Empty;

@@ -1,0 +1,11 @@
+cmake_minimum_required(VERSION 3.20)
+project(inno_browser_native LANGUAGES C CXX)
+file(TO_CMAKE_PATH "${INNO_ROOT}" INNO_ROOT)
+if(NOT EMSCRIPTEN OR NOT IS_DIRECTORY "${INNO_ROOT}/extern" OR NOT EXISTS "${INNO_COMPONENT_SELECTION}")
+    message(FATAL_ERROR "A frozen Emscripten toolchain, checkout and component selection are required.")
+endif()
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/artifacts")
+set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
+# Preserve the SDK's exception and non-local jump ABI across all selected components.
+add_compile_options(-sSUPPORT_LONGJMP=wasm -fwasm-exceptions)
+include("${INNO_COMPONENT_SELECTION}")

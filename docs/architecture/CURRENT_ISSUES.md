@@ -2,7 +2,72 @@
 
 [架构治理](README.md) · [Wiki 首页](../README.md) · [正式问题台账](../issues/2026-08-31-complete-issue-register.md)
 
-2026-09-26 更新：[Rendering / Canvas / Plugin Samples 验收记录](RENDER_CANVAS_ACCEPTANCE_2026_09_26.md)显示：当前单模型 Canvas 可在 TestProject Editor 中显示，自动测试和架构门禁通过；多模型图层合成、跨 View 输入时序、Import Sample 后 Player 构建仍未达到批准方案，整体状态为**未验收**。旧报告中的通过结果不得覆盖这些新门禁。
+2026-10-09–10-10：SDL 共同窗口操作、BGFX 运行 surface 注入、附加窗口退休 R02-L、绑定/Task 成本 R03 的源码与本机可自动执行验收已完成，见[计划](BACKEND_RUNTIME_BOUNDARY_OPTIMIZATION_PLAN.md)和[本轮验收](BACKEND_RUNTIME_BOUNDARY_OPTIMIZATION_ACCEPTANCE.md)。708 项回归通过，四条最终 Player 发布/运行、普通 Editor Debug/Release、真实后台 reload 与 229 项有效 MSBuild 图通过。Native 热阶段均值 84.915→24.475 秒，但整次热构建均值 236.338→250.723 秒，没有整体加速结论。最终 GUI reload 因 Computer Use 访问拒绝未执行；macOS/Linux 实机、多屏 DPI、声学和未覆盖的 GUI 操作保留证据缺口，不标记无保留实机验收完成。
+
+2026-10-08 后续执行：BGFX 封闭平台选择与 Support Pack staging 前预检两项 P2 已完成源码替换，
+65,536 字符属性的真实静态图还原也已修复。411 项受影响测试、四条最终 Player 发布/运行、
+Debug/Release Editor 与 Rendering2D 6000 帧/脚本编译均通过，详见
+[平台边界收口验收](PLATFORM_BOUNDARY_CLOSEOUT_ACCEPTANCE_2026_10_08.md)；下方发现记录是历史状态。
+Hierarchy/Export/Modal/GameView/小地图已有当前实际 UI 证据；Rendering2D 未把后台 GPU 日志当作人工画面复核。
+macOS/Linux 实机、任意多屏 DPI、声学听音及第三方浏览器 warning 继续明确保留。
+
+2026-10-08 [平台计划与 Solution 重新复核](PLATFORM_OWNERSHIP_PLAN_AUDIT_2026_10_08.md)：217 项当前有效引用图通过；
+删除一个未被项目/runner 消费的旧验收脚本，清理 339 处迁移空目录及四个旧输出缓存，完整移除旧 native 根，修正 README 与 Editor 参数并补齐启动指南。
+该次发现的两个 P2 是 BGFX 固定目标工厂/命名平台内容编译配置、Support Pack 在 SDK 预检前创建 staging；
+发现时三个最终可见复核暂缓。它们的后续源码结果与当前证据以上方收口验收为准，保留本段用于追溯。
+
+2026-10-07 [平台归属重构](PLATFORM_OWNERSHIP_REFACTOR_PLAN.md)源码与当前允许的自动验收完成：217 项有效引用图、82 项架构契约、
+引擎 1752 passed / 0 failed / 16 macOS Metal skipped；四条最终 Player 发布/运行、Canvas 普通 SDK 10 构建/6 项测试、Rendering2D 脚本与 Windows Editor Release 普通 Build 通过。
+用户最新禁止 Computer Use，最终 Hierarchy 左键、Export 完成自动关闭和 Rendering2D 可见 Editor smoke 三项暂缓，整体无保留验收仍未关闭。
+清理自有旧任务/迁移项目缓存共观测释放约 66.1 GiB，保留当前产物和证据；macOS 实机、OS 多屏 DPI 和声学听音仍未实测。
+本轮状态、失败修复与缓存清理记录见[当前验收报告](PLATFORM_OWNERSHIP_REFACTOR_ACCEPTANCE.md)，不得使用下方历史通过结果替代本轮门禁。
+
+2026-10-07：[Solution 与架构边界复核](SOLUTION_CLEANUP_ACCEPTANCE_2026_10_07.md)补齐遗漏的 ImGui 绑定生成扩展归属，
+并修复 Windows 无法查询旧 Task owner 时缓存退休使构建失败的问题。项目覆盖门禁现包含 Native 与 Tooling；
+本轮结构、有效引用图和构建结果与下方历史运行证据分别记录。
+
+2026-10-06 本轮 A01–A08：源码整改、当前消费者和本机必需验收已完成，见[架构整改验收](ARCHITECTURE_CLEANUP_ACCEPTANCE_2026_10_06.md)。最终 Release Solution/Debug Editor 零警告错误，架构门禁通过；汇总 2727 passed、0 failed、16 macOS Metal skipped，四条 FlappyBird 发布/运行及可见 Editor UI 有当前证据。macOS/iOS/主机实机、任意多屏 DPI 和声学听音未实测；Native 热构建的完整哈希 IO 成本与帧测量方法明确保留，不宣称零 IO/零分配。本轮与下方历史证据分别记录。
+
+2026-10-06：[Editor 普通构建与原生部署修复](EDITOR_NATIVE_BUILD_ACCEPTANCE_2026_10_06.md)确认并修复 Debug 输出残留旧 Text DLL 的启动失败。
+普通 IDE/MSBuild 与 Publish 复用同一 Native Task，CLI 删除重复安装入口。FlappyBird Debug/Release Editor 各完成 120 帧并正常退出，
+34 项现有回归和 10 项部署验收通过。首次原生准备及完整指纹校验的耗时、第三方 warning 与 macOS 实机验证边界在报告中分别记录。
+
+2026-10-05 当前入口：[完整平台/运行时重构验收](PLATFORM_RUNTIME_ACCEPTANCE.md)与
+[Plan 逐项核对](PLATFORM_RUNTIME_PLAN_AUDIT.md)记录此次结构、静态注册、四条实际 Player 路径及独立 BGCS 验收。
+Windows 临时目录 rename 的共享/访问拒绝现由共同 IO 边界有界处理；持续拒绝仍明确失败并保留旧输出。
+有真实占用、恢复、并发和回滚回归，未把重试视为外部占用进程已被确定。
+下列旧轮次的测试数和 staging 风险属于历史证据；当前结果与 macOS/GUI/设备限制以本次报告为准。
+
+2026-10-03 更新：[Sample 导入修复与 BGCS 独立性复核](PRECOMMIT_SAMPLE_AUDIT_2026_10_03.md)记录后台复制/身份重写、候选 Catalog/Importer、统一编译器后台 reference/Roslyn、History、取消和退出退休。下述 Sample 主线程同步 preflight 的 P2 已修复；同时移除索引前 watcher 静默等待，并补齐完整对账的 FileSystem 索引刷新。
+真实 watcher 的成功/取消及外部文件对账回归通过。最终引擎 50 项目汇总为 1434 passed、0 failed、16 skipped；Solution、Release CLI 和架构验证通过，FlappyBird 最终 Windows/Web 导出与 Web 运行回归通过。汇总采用最终矩阵的 49 个项目与完整 Scripting 成功重跑，原失败证据保留，详见本轮报告。BGCS 文档已移除引擎专属验收描述，独立 11 项目 710 passed。
+本轮 Windows FlappyBird 导出仍出现 staging 访问拒绝，重试及独立冷缓存副本成功；尚未定位根因，属于保留风险，不能称为已修复。macOS/Linux 与可见 GUI/高 DPI/音频证据缺口仍保留。
+
+2026-10-02 第四轮复核：[BGCS 修改原因、补充修复与当前证据](PRECOMMIT_BGCS_AUDIT_2026_10_02.md)记录 FunctionTable 的
+opaque handle 载体统一、编译器查询输出拥塞修复和五个配置测试预期同步。BGCS 全部 11 项目 708 passed；
+引擎全部 50 项目 1421 passed / 0 failed / 16 平台限定 skipped，七个 Native CheckBindings 与架构检查通过。
+Windows/Web Support Pack、FlappyBird 导出及静音 headless 昼夜/星光/玩法/持久化回归通过；运行 error 0，既有 browser warning 315。
+该轮另确认 P2：Editor Import Sample 在 owner thread 同步等待脚本 preflight，耗时编译期间不能继续绘制进度或接收取消。
+此问题在上述 2026-10-03 事务修复中完成整改；保留该条作为发现记录。
+
+2026-10-02 最新全范围复核：[八项补充问题与最终证据](PRECOMMIT_FULL_AUDIT_2026_10_02.md)记录目录提交后的数据保全、
+重叠树拒绝、Core.IO 路径复用、已消费 move 的输入边界、显式 Pack 准备、Editor 导出退休、Web 编译预算与目标封装。
+50 个测试项目最终为 1421 passed / 0 failed / 16 平台限定 skipped；架构验证通过。
+Windows/Web Support Pack 与 FlappyBird 导出、静音 headless 昼夜/星光/玩法/持久化回归均通过；运行 error 为 0，保留 315 条既有 warning。
+下方历史 Rendering/Canvas 门禁与未实测平台继续保留，不能用本轮通过结果覆盖。
+
+2026-10-02 再次核查：[补充修复与当前验收](PRECOMMIT_RECHECK_ACCEPTANCE_2026_10_02.md)记录文件日志、
+Game Input 实际消费顺序、Support Pack 最后取消检查及工具输出失败清理的补充修正。
+该轮 50 个测试项目汇总为 1408 passed / 0 failed / 16 平台限定 skipped；Windows/Web FlappyBird 导出和静音 headless 浏览器回归通过。
+浏览器 warning、GUI 与 macOS/Linux 实机验证边界继续明确保留。
+
+2026-10-02 更新：[提交前 1–8 项修复验收](PRECOMMIT_REPAIR_ACCEPTANCE_2026_10_02.md)记录本轮日志重入/并发、
+输入消费、Native 配置与 root、进程取消、BGCS builtin headers、minimap 性能及代码整理的修复。
+50 个引擎测试项目为 1367 passed / 0 failed / 16 平台限定 skipped；BGCS 284 项通过。
+FlappyBird Windows/Web 导出成功。首次 Artifact staging access denied 的外部来源尚未确定，日志与重试结果明确保留；
+本次结果不替代下方历史问题的独立验收。
+
+2026-09-26 更新：[Rendering / Canvas / Plugin Samples 验收记录](RENDER_CANVAS_ACCEPTANCE_2026_09_26.md)显示：Canvas/Rendering2D 实现、RenderGraph route、输入汇总、CLI Import Sample 与 TestProject Player 构建均已有通过证据。
+仍缺真实双模型图像、跨 View 交互及完整 Transform/高 DPI 视觉矩阵，以及 Editor Import Sample 菜单的完整留证；整体状态为**未完成无保留验收**。这些是独立验收证据缺口，不能写成上述功能没有实现或构建失败。
 
 2026-09-12 更新：[MaterialGraph 双资产路径清理](../issues/2026-09-11-material-graph-dual-asset-path.md)
 已按后续用户授权完成；单一 Shader 创作链及尚未完成的验收见
@@ -18,3 +83,15 @@
 [全仓架构整改总方案](../issues/2026-08-31-architecture-remediation-master-plan.md)。
 
 同日反馈的自动编译/旧代验证循环已修复：排除当前候选的 SourceMountsChanged 通知回声，票据/IDE 投影等待 GC 完成，Faulted 不再显示无限忙碌；同时移除 LifetimeScope 自有任务多余的完成观察回调。最终验收与新自动模式测试见上述当前报告文末。
+
+## 本轮集成整改
+
+BGFX 平台配置、内容 compiler/packager、SDL 宿主与 ImGui 尺度、Native 链接已进入明确集成边界。当前验证状态由[本轮验收](BACKEND_PLATFORM_INTEGRATION_ACCEPTANCE.md)统一记录；实施中不以静态检查替代产品 gate。
+
+## 本次集成整改交接
+
+2026-10-09：平台/backend 源码边界整改与本机无人值守门禁已完成。四条 Player 发布/运行、Windows Debug/Release 普通 Editor Build、隐藏 Editor 6000 帧、当前消费者、有效引用图及三次热构建通过。续跑发现的共享 Task bootstrap `CS2012` 已在中立 TaskHosting 用 Core.IO lease、节点 Yield/Reacquire 和私有最小引导修复；真实并发及取消/失败回归通过。
+
+仍保留两类证据/成本：真实焦点、多窗口、高 DPI、人工玩法/听音及 macOS 实机未验收；热构建仍需约 3–4 分钟，每次 Native 完整校验读取约 13.95 GB，并观察到 17 个新的私有 Task 载入目录。Native 工具启动为 0、部署文件不变，不能据此称整体构建已足够快或没有 IO。Web 实际玩法检查通过，但第三方 capability warning 和 favicon.ico 的 404 单独保留；游戏 page error 为 0 不等于全部请求无错误。
+
+详见[验收报告](BACKEND_PLATFORM_INTEGRATION_ACCEPTANCE.md)和[剩余实机清单](BACKEND_PLATFORM_INTEGRATION_HANDOFF.md)。这组当前结果不覆盖上方历史记录，也不作全平台/全部实机无保留通过声明。

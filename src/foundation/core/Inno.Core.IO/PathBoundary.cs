@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Collections.Generic;
 
 namespace Inno.Core.IO;
 
@@ -20,8 +21,10 @@ public static class PathBoundary
     /// <returns>
     /// The normalized absolute contained path.
     /// </returns>
-    public static string Resolve(string root, string relativePath)
-    {
+    public static string Resolve(
+        string root,
+        string relativePath
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(root);
         ArgumentNullException.ThrowIfNull(relativePath);
         if (Path.IsPathRooted(relativePath))
@@ -44,8 +47,10 @@ public static class PathBoundary
     /// <returns>
     /// The normalized absolute contained path.
     /// </returns>
-    public static string RequireContained(string root, string path)
-    {
+    public static string RequireContained(
+        string root,
+        string path
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(root);
         ArgumentException.ThrowIfNullOrWhiteSpace(path);
         string normalizedRoot = Path.TrimEndingDirectorySeparator(Path.GetFullPath(root));
@@ -54,9 +59,105 @@ public static class PathBoundary
         return candidate;
     }
 
-    private static void EnsureContains(string root, string candidate)
+    /// <summary>
+    /// Resolves an owned path while rejecting existing links in its containment chain.
+    /// </summary>
+    /// <param name="root">
+    /// The trusted ownership root, which may not exist yet.
+    /// </param>
+    /// <param name="path">
+    /// The absolute existing or future path beneath that root.
+    /// </param>
+    /// <returns>
+    /// The normalized contained path after every existing entry from the root has been inspected.
+    /// </returns>
+    /// <exception cref="IOException">
+    /// The path escapes the boundary or an existing entry is a link or reparse point.
+    /// </exception>
+    /// <remarks>
+    /// This validates the observed filesystem state. Concurrent mutations require an owner lease;
+    /// it does not grant protection against unrelated actors replacing paths after validation.
+    /// </remarks>
+    public static string RequireUnlinkedPath(
+        string root,
+        string path
+    ) {
+        string candidate = RequireContained(root, path);
+        string current = Path.GetFullPath(root);
+        Inspect(current);
+        string relative = Path.GetRelativePath(current, candidate);
+        if (relative != ".")
+        {
+            foreach (string segment in relative.Split(Path.DirectorySeparatorChar))
+            {
+                current = Path.Combine(current, segment);
+                Inspect(current);
+            }
+        }
+        return candidate;
+
+        static void Inspect(string entry)
+        {
+            try
+            {
+                RequireRegularEntry(entry);
+            }
+            catch (FileNotFoundException) { }
+            catch (DirectoryNotFoundException) { }
+        }
+    }
+
+    /// <summary>
+    /// Enumerates regular files in an owned tree without following filesystem links.
+    /// </summary>
+    /// <param name="root">
+    /// The existing physical root whose files and subdirectories belong to the caller.
+    /// </param>
+    /// <returns>
+    /// Absolute file paths in unspecified order; enumeration does not retain open file handles.
+    /// </returns>
+    /// <exception cref="IOException">
+    /// The root or any entry is a symbolic link, junction or other reparse point, or cannot be inspected.
+    /// </exception>
+    /// <exception cref="DirectoryNotFoundException">
+    /// The root does not exist.
+    /// </exception>
+    public static IEnumerable<string> EnumerateFiles(string root)
     {
-        string prefix = root + Path.DirectorySeparatorChar;
+        ArgumentException.ThrowIfNullOrWhiteSpace(root);
+        string normalizedRoot = Path.GetFullPath(root);
+        if (!Directory.Exists(normalizedRoot))
+            throw new DirectoryNotFoundException($"Owned directory '{normalizedRoot}' does not exist.");
+        var pending = new Stack<string>();
+        pending.Push(normalizedRoot);
+        while (pending.Count > 0)
+        {
+            string directory = pending.Pop();
+            RequireRegularEntry(directory);
+            foreach (string entry in Directory.EnumerateFileSystemEntries(directory))
+            {
+                FileAttributes attributes = RequireRegularEntry(entry);
+                if ((attributes & FileAttributes.Directory) != 0)
+                    pending.Push(entry);
+                else
+                    yield return entry;
+            }
+        }
+    }
+
+    private static FileAttributes RequireRegularEntry(string path)
+    {
+        FileAttributes attributes = File.GetAttributes(path);
+        if ((attributes & FileAttributes.ReparsePoint) != 0)
+            throw new IOException($"Owned filesystem entry '{path}' cannot be a link or reparse point.");
+        return attributes;
+    }
+
+    private static void EnsureContains(
+        string root,
+        string candidate
+    ) {
+        string prefix = Path.EndsInDirectorySeparator(root) ? root : root + Path.DirectorySeparatorChar;
         StringComparison comparison = OperatingSystem.IsWindows() || OperatingSystem.IsMacOS()
             ? StringComparison.OrdinalIgnoreCase
             : StringComparison.Ordinal;

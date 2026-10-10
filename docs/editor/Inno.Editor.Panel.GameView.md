@@ -4,6 +4,8 @@
 
 Game View 是开放 kind `inno.editor.viewport.game` 的通用 viewport host。Panel 不查找内建 Camera，也不解释 Scene。Panel 从 `IEditorGameScenePresentation` 捕获内容范围，并提供输出尺寸、viewport 和指针输入。Rendering2D 等插件的适配器把这些数据交给同一个 `IRenderModel`，由模型建立 Camera stack 和帧数据。
 
+Play Mode 使用与 Edit Session 分离的 Input backend。Game View 每帧向 `EditorGameInputCapture` 报告所属 presentation viewport、画面矩形、ImGui 前景悬停状态与焦点；Host 通过 `IPresentationContext.TryGetWindowId` 解析主窗口或独立窗口。键盘与文本只在 Game View 获得焦点时进入 Play Session；鼠标仅在画面处于前景并被命中时开始输入，按住后的移动与释放保持完整。失焦、隐藏或关闭 Game View 时发送焦点释放事件，清空已按下的按键和鼠标按钮。渲染模型收到的 `RenderOutputInput` 使用同一焦点与命中条件。
+
 Canvas 只发布世界空间 `IViewContentSource`，不提供 Game View contributor。单独安装 Canvas 时 Game View 不出图；安装 Rendering2D 并在场景中添加 Camera2D 与 Rendering2DSceneSystem 后，2D 模型将 Canvas 和精灵统一排序。多个模型接受同一个 Game View 输出时必须指定 `RenderOutputRoute`，否则显示诊断。
 
 `IEditorGameScenePresentation` 的 owner 是 `Inno.Editor.Scene`。Editing、Compiling 和尚未提交完成的 Preparing 阶段返回 Edit Session；Play Scene 全部物化成功后一次切换到隔离 Runtime Session；停止时先切回 Edit Session，再释放 Play 世界。Game View、Scene View、Hierarchy、Inspector、Selection 与 Gizmo 因此观察并操作同一个脚本驱动 runtime graph。Play workspace 禁止持久化且使用独立 History 分支，所以这些临时修改不会污染 Edit 文档；Panel 不访问 `RuntimeSession`，PlayMode 也不依赖 Rendering。
@@ -17,3 +19,26 @@ Canvas 只发布世界空间 `IViewContentSource`，不提供 Game View contribu
 无适用 Contributor、模型争用、贡献失败或 GPU target 尚未准备好时，Panel 使用背景色填充完整区域，并在中央显示状态；不可用输出会被释放，不影响 Editor 主界面。
 
 Editor 的通用 `RenderRuntime` 不注入任何隐式 Scene content。Scene View 与 Game View 都必须显式提交自己的 `RenderContentScope`，因此不会在 viewport 请求之外额外把 Edit 世界渲染到 Editor backbuffer，也不存在同一帧两个互相矛盾的游戏世界来源。
+
+## 当前源码公开 API 清单
+
+只列当前源码的 public/protected 表面；内部实现不作为稳定 API。参数、返回、失败和 owner 以英文 XML 为准。
+
+本项目没有公开入口，通过组合或扩展发现使用内部实现。
+
+## 项目依赖
+
+- [Inno.Native.ImGui](../backends/ImGui/Inno.Native.ImGui.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Core.Settings](../core/Inno.Core.Settings.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Runtime](../runtime/Inno.Runtime.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Editor.Core](Inno.Editor.Core.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Editor.ImGui](Inno.Editor.ImGui.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Editor.Rendering](Inno.Editor.Rendering.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Editor.PlayMode](Inno.Editor.PlayMode.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Editor.Scene](Inno.Editor.Scene.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Editor.Settings](Inno.Editor.Settings.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Rendering](../rendering/Inno.Rendering.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.References](../references/Inno.References.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Rendering.Runtime](../rendering/Inno.Rendering.Runtime.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Extensibility.Catalogs](../extensibility/Inno.Extensibility.Catalogs.md)：公开引用边界由实际签名核对。
+- [Inno.Core.Serialization](../core/Inno.Core.Serialization.md)：公开引用边界由实际签名核对。

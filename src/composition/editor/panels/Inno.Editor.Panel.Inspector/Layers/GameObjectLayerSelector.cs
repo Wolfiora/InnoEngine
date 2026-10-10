@@ -31,8 +31,10 @@ internal sealed class GameObjectLayerSelector
     /// <exception cref="ArgumentNullException">
     /// Thrown when <paramref name="settings"/> or <paramref name="edits"/> is <see langword="null"/>.
     /// </exception>
-    internal GameObjectLayerSelector(SceneProjectSettingsModule settings, SceneEdits edits)
-    {
+    internal GameObjectLayerSelector(
+        SceneProjectSettingsModule settings,
+        SceneEdits edits
+    ) {
         m_settings = settings ?? throw new ArgumentNullException(nameof(settings));
         m_edits = edits ?? throw new ArgumentNullException(nameof(edits));
     }
@@ -46,8 +48,10 @@ internal sealed class GameObjectLayerSelector
     /// <param name="width">
     /// The width reserved for the combo control.
     /// </param>
-    internal void Draw(GameObject target, float width)
-    {
+    internal void Draw(
+        GameObject target,
+        float width
+    ) {
         ArgumentNullException.ThrowIfNull(target);
         GameLayerCatalog stack = m_settings.layerStack;
         string preview = FormatLayerPreview(stack.GetName(target.layer));
@@ -89,12 +93,12 @@ internal sealed class GameObjectLayerSelector
     /// <returns>
     /// <see langword="true"/> when the layer can be selected.
     /// </returns>
-    internal bool IsLayerDefined(GameLayer layer)
-        => m_settings.layerStack.IsDefined(layer);
+    internal bool IsLayerDefined(GameLayer layer) => m_settings.layerStack.IsDefined(layer);
 
-    private static string FormatLayerLabel(GameLayer layer, string name)
-        => $"({layer.index}) {name}";
+    private static string FormatLayerLabel(
+        GameLayer layer,
+        string name
+    ) => $"({layer.index}) {name}";
 
-    private static string FormatLayerPreview(string? name)
-        => name ?? "Undefined";
+    private static string FormatLayerPreview(string? name) => name ?? "Undefined";
 }

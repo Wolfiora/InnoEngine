@@ -31,8 +31,10 @@ internal sealed class GameObjectTagSelector
     /// <exception cref="ArgumentNullException">
     /// Thrown when <paramref name="settings"/> or <paramref name="edits"/> is <see langword="null"/>.
     /// </exception>
-    internal GameObjectTagSelector(SceneProjectSettingsModule settings, SceneEdits edits)
-    {
+    internal GameObjectTagSelector(
+        SceneProjectSettingsModule settings,
+        SceneEdits edits
+    ) {
         m_settings = settings ?? throw new ArgumentNullException(nameof(settings));
         m_edits = edits ?? throw new ArgumentNullException(nameof(edits));
     }
@@ -46,8 +48,10 @@ internal sealed class GameObjectTagSelector
     /// <param name="width">
     /// The width reserved for the selector.
     /// </param>
-    internal void Draw(GameObject target, float width)
-    {
+    internal void Draw(
+        GameObject target,
+        float width
+    ) {
         ArgumentNullException.ThrowIfNull(target);
         IReadOnlyList<string> tags = m_settings.tagCatalog.GetTags();
         string preview = m_settings.tagCatalog.IsDefined(target.tag)
@@ -92,6 +96,5 @@ internal sealed class GameObjectTagSelector
     /// <returns>
     /// <see langword="true"/> when the tag is currently defined.
     /// </returns>
-    internal bool IsTagDefined(string tag)
-        => m_settings.tagCatalog.IsDefined(tag);
+    internal bool IsTagDefined(string tag) => m_settings.tagCatalog.IsDefined(tag);
 }

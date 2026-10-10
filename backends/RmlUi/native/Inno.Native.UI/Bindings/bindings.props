@@ -1,0 +1,29 @@
+<Project>
+  <PropertyGroup>
+    <InnoBindingHostConfig>bindgen.json</InnoBindingHostConfig>
+    <InnoBindingHostBridge>rmlui.bridge.json</InnoBindingHostBridge>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <InnoBindingTarget Include="browser-wasm">
+      <Config>bindgen.browser-wasm.json</Config>
+      <Bridge>rmlui.bridge.browser-wasm.json</Bridge>
+    </InnoBindingTarget>
+    <InnoBindingTarget Include="linux-arm64">
+      <Config>bindgen.linux-arm64.json</Config>
+      <Bridge>rmlui.bridge.linux-arm64.json</Bridge>
+    </InnoBindingTarget>
+    <InnoBindingTarget Include="linux-x64">
+      <Config>bindgen.linux-x64.json</Config>
+      <Bridge>rmlui.bridge.linux-x64.json</Bridge>
+    </InnoBindingTarget>
+    <InnoBindingTarget Include="macos-arm64">
+      <Config>bindgen.macos-arm64.json</Config>
+      <Bridge>rmlui.bridge.macos-arm64.json</Bridge>
+    </InnoBindingTarget>
+    <InnoBindingTarget Include="windows-x64">
+      <Config>bindgen.windows-x64.json</Config>
+      <Bridge>rmlui.bridge.windows-x64.json</Bridge>
+    </InnoBindingTarget>
+  </ItemGroup>
+</Project>

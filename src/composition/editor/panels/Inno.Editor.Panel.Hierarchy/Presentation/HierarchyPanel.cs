@@ -45,14 +45,19 @@ internal sealed class HierarchyPanel : EditorPanel
     public override bool useWindowPadding => false;
 
     /// <summary>
+    /// Lets the hierarchy content child own both scroll directions.
+    /// </summary>
+    public override bool allowScrolling => false;
+
+    /// <summary>
     /// Creates the hierarchy panel.
     /// </summary>
     internal HierarchyPanel(
         IEditorSceneWorkspace workspace,
         EditorInteractions interactions,
         SceneEdits edits,
-        EditorSettings settings)
-    {
+        EditorSettings settings
+    ) {
         m_workspace = workspace ?? throw new ArgumentNullException(nameof(workspace));
         m_interactions = interactions ?? throw new ArgumentNullException(nameof(interactions));
         m_edits = edits ?? throw new ArgumentNullException(nameof(edits));
@@ -117,8 +122,10 @@ internal sealed class HierarchyPanel : EditorPanel
         }
     }
 
-    private void DrawScene(EditorContext context, GameScene scene)
-    {
+    private void DrawScene(
+        EditorContext context,
+        GameScene scene
+    ) {
         Guid sceneId = ((IdentityObject)scene).identity.persistentId;
         string id = sceneId.ToString("N");
         bool shouldOpen = m_initializedSceneIds.Add(sceneId);
@@ -186,8 +193,11 @@ internal sealed class HierarchyPanel : EditorPanel
         }
     }
 
-    private void DrawObject(EditorContext context, GameScene scene, GameObject gameObject)
-    {
+    private void DrawObject(
+        EditorContext context,
+        GameScene scene,
+        GameObject gameObject
+    ) {
         if (!gameObject.isRuntimeValid || !m_drawnIds.Add(gameObject.identity.persistentId))
         {
             return;
@@ -270,8 +280,8 @@ internal sealed class HierarchyPanel : EditorPanel
     private void DrawRowContent(
         EditorContext context,
         GameObject gameObject,
-        float rowHeight)
-    {
+        float rowHeight
+    ) {
         string id = gameObject.identity.persistentId.ToString("N");
         bool dimmed = !gameObject.activeInHierarchy;
         if (dimmed)
@@ -327,8 +337,8 @@ internal sealed class HierarchyPanel : EditorPanel
         EditorContext context,
         GameScene scene,
         string id,
-        float rowHeight)
-    {
+        float rowHeight
+    ) {
         EditorInteraction interaction = m_interactions.For(HierarchyInteractionIds.C_AREA, scene);
         if (!interaction.IsActive(HierarchyInteractionIds.C_RENAME))
         {
@@ -356,8 +366,10 @@ internal sealed class HierarchyPanel : EditorPanel
                 C_NAME_BUFFER_SIZE));
     }
 
-    private void DrawVisibilityButton(GameObject gameObject, string id)
-    {
+    private void DrawVisibilityButton(
+        GameObject gameObject,
+        string id
+    ) {
         string icon = gameObject.activeSelf ? ImGuiIcon.Eye : ImGuiIcon.EyeSlash;
         float buttonWidth = GetVisibilityButtonWidth();
         float right = ImGuiP.GetCurrentWindow().WorkRect.Max.X -
@@ -375,8 +387,11 @@ internal sealed class HierarchyPanel : EditorPanel
 
     private static float GetVisibilityButtonWidth() => EditorWidget.GetCompactIconSize().X;
 
-    private void DrawSceneContextMenu(EditorContext context, GameScene scene, string id)
-    {
+    private void DrawSceneContextMenu(
+        EditorContext context,
+        GameScene scene,
+        string id
+    ) {
         if (NativeImGui.IsItemClicked(ImGuiMouseButton.Right))
             _ = m_interactions.For(HierarchyInteractionIds.C_AREA, scene).Select();
         _ = EditorMenuRenderer.ContextMenu(
@@ -384,8 +399,11 @@ internal sealed class HierarchyPanel : EditorPanel
             m_interactions.For(HierarchyInteractionIds.C_AREA, scene));
     }
 
-    private void DrawObjectContextMenu(EditorContext context, GameObject gameObject, string id)
-    {
+    private void DrawObjectContextMenu(
+        EditorContext context,
+        GameObject gameObject,
+        string id
+    ) {
         if (NativeImGui.IsItemClicked(ImGuiMouseButton.Right))
             _ = m_interactions.For(HierarchyInteractionIds.C_AREA, gameObject).Select();
         _ = EditorMenuRenderer.ContextMenu(

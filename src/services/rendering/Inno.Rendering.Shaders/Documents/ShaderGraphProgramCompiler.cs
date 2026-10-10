@@ -8,6 +8,7 @@ using Inno.Core.Diagnostics;
 using Inno.Core.Execution;
 using Inno.Core.Graphs;
 using Inno.Core.Serialization;
+using Inno.Rendering.Assets;
 
 namespace Inno.Rendering.Shaders;
 
@@ -51,10 +52,14 @@ public sealed class ShaderGraphProgramCompiler
     /// <returns>
     /// All typed passes, or diagnostics without a partial publishable program.
     /// </returns>
-    public ShaderGraphProgramResult Lower(GraphDocument document, string implementationId,
+    public ShaderGraphProgramResult Lower(
+        GraphDocument document,
+        string implementationId,
         IReadOnlyDictionary<GraphNodeId, ShaderSourceModuleAnalysis> sources,
-        SerializationRegistry serialization, SerializationContext context, CancellationToken cancellationToken = default)
-    {
+        SerializationRegistry serialization,
+        SerializationContext context,
+        CancellationToken cancellationToken = default
+    ) {
         ArgumentNullException.ThrowIfNull(document);
         ArgumentNullException.ThrowIfNull(sources);
         var diagnostics = new List<ShaderGraphDiagnostic>();
@@ -66,10 +71,12 @@ public sealed class ShaderGraphProgramCompiler
             ShaderDefinition definition = ShaderGraphDocument.ReadDefinition(graph, serialization, context);
             diagnostics.AddRange(ShaderDefinitionValidator.Validate(definition).Select(static value =>
                 new ShaderGraphDiagnostic(value.code, value.severity, value.message)));
-            if (diagnostics.Any(static value => value.severity == DiagnosticSeverity.Error)) return new([], diagnostics);
+            if (diagnostics.Any(static value => value.severity == DiagnosticSeverity.Error))
+                return new([], diagnostics);
             ConnectRasterStages(graph, implementationId, sources, serialization, context);
             var definitions = definition.passes.ToDictionary(static pass => pass.name, StringComparer.Ordinal);
-            if (definitions.Count == 0) throw new InvalidOperationException("A shader graph requires at least one pass.");
+            if (definitions.Count == 0)
+                throw new InvalidOperationException("A shader graph requires at least one pass.");
             ShaderGraphPassProgram[] programs = ShaderGraphPrograms.Read(graph, serialization, context);
             if (programs.Select(static value => value.pass).Distinct(StringComparer.Ordinal).Count() != programs.Length
                 || programs.Any(value => !definitions.ContainsKey(value.pass)))
@@ -80,8 +87,10 @@ public sealed class ShaderGraphProgramCompiler
                 .ToDictionary(static node => node.id, node => ShaderGraphDocument.Read(node, ShaderGraphDocument.stageKey, "", serialization, context));
             var outputIds = outputs.Select(static node => node.id.value).ToHashSet(StringComparer.Ordinal);
             foreach ((GraphNodeId node, string owner) in owners)
-                if (!outputIds.Contains(owner)) Error("SHADER_STAGE_MISSING", "The node's stage is missing; its data remains available for repair.", node);
-            if (diagnostics.Count != 0) return new([], diagnostics);
+                if (!outputIds.Contains(owner))
+                    Error("SHADER_STAGE_MISSING", "The node's stage is missing; its data remains available for repair.", node);
+            if (diagnostics.Count != 0)
+                return new([], diagnostics);
             foreach (GraphNodeRecord output in outputs)
             {
                 cancellationToken.ThrowIfCancellationRequested();
@@ -91,20 +100,24 @@ public sealed class ShaderGraphProgramCompiler
                     ?? throw new InvalidOperationException("A stage output node requires its stage settings.");
                 var region = graph.Clone();
                 foreach (GraphNodeRecord node in graph.nodes)
-                    if (!owners.TryGetValue(node.id, out string? owner) || owner != output.id.value) region.RemoveNode(node.id);
+                    if (!owners.TryGetValue(node.id, out string? owner) || owner != output.id.value)
+                        region.RemoveNode(node.id);
                 HashSet<GraphNodeId> members = region.nodes.Select(static node => node.id).ToHashSet();
                 var endpoints = new Dictionary<string, GraphEndpoint>(StringComparer.Ordinal);
                 foreach (GraphEdgeRecord edge in graph.edges)
                 {
                     if (edge.input.nodeId == output.id)
                     {
-                        if (!members.Contains(edge.output.nodeId)) throw new InvalidOperationException("A stage output is connected to another stage; use an explicit varying interface.");
-                        if (!endpoints.TryAdd(edge.input.portId.value, edge.output)) throw new InvalidOperationException("A stage output port has multiple incoming connections.");
+                        if (!members.Contains(edge.output.nodeId))
+                            throw new InvalidOperationException("A stage output is connected to another stage; use an explicit varying interface.");
+                        if (!endpoints.TryAdd(edge.input.portId.value, edge.output))
+                            throw new InvalidOperationException("A stage output port has multiple incoming connections.");
                     }
                     else if (members.Contains(edge.input.nodeId) != members.Contains(edge.output.nodeId)
                         && edge.output.nodeId != output.id && edge.input.nodeId != output.id)
                         throw new InvalidOperationException("A connection crosses incompatible stage boundaries.");
-                    if (edge.output.nodeId == output.id) throw new InvalidOperationException("A GPU stage output node cannot produce graph values.");
+                    if (edge.output.nodeId == output.id)
+                        throw new InvalidOperationException("A GPU stage output node cannot produce graph values.");
                 }
                 string[] expected = settings.outputs.Select(static value => value.id).ToArray();
                 if (expected.Distinct(StringComparer.Ordinal).Count() != expected.Length || !expected.ToHashSet(StringComparer.Ordinal).SetEquals(endpoints.Keys))
@@ -125,7 +138,8 @@ public sealed class ShaderGraphProgramCompiler
                 ShaderGraphLoweringResult lowered = m_nodes.Lower(new(region, endpoints, implementationId,
                     sources.Where(pair => members.Contains(pair.Key)).ToDictionary(), inputs), serialization, context, cancellationToken);
                 diagnostics.AddRange(lowered.diagnostics);
-                if (!lowered.succeeded) continue;
+                if (!lowered.succeeded)
+                    continue;
                 var stage = new ShaderIrStage(settings.stage, lowered.block!, inputs.Values,
                     settings.outputs.Select(static value => new ShaderIrStageOutput(value.id, value.kind, value.semantic ?? "", value.location)),
                     settings.threadsX, settings.threadsY, settings.threadsZ);
@@ -142,34 +156,53 @@ public sealed class ShaderGraphProgramCompiler
                 };
                 ShaderGraphPassProgram[] references = programs.Where(value => value.pass == pass.name).ToArray();
                 if (references.Length != 1 || references[0].stages is null)
-                { Error("SHADER_PROGRAM_MISSING", $"Pass '{pass.name}' has no stage program assignment."); continue; }
+                {
+                    Error("SHADER_PROGRAM_MISSING", $"Pass '{pass.name}' has no stage program assignment.");
+                    continue;
+                }
                 var selected = new Dictionary<ShaderStage, ShaderIrStage>();
                 foreach (string reference in references[0].stages)
                 {
                     if (!stages.TryGetValue(reference, out ShaderIrStage? shared))
-                    { Error("SHADER_PROGRAM_STAGE_MISSING", $"Pass '{pass.name}' refers to unavailable stage program '{reference}'."); continue; }
+                    {
+                        Error("SHADER_PROGRAM_STAGE_MISSING", $"Pass '{pass.name}' refers to unavailable stage program '{reference}'.");
+                        continue;
+                    }
                     if (!selected.TryAdd(shared.stage, shared))
                         Error("SHADER_PROGRAM_STAGE_DUPLICATE", $"Pass '{pass.name}' repeats stage {shared.stage}.");
                 }
                 if (!expected.ToHashSet().SetEquals(selected.Keys))
-                { Error("SHADER_STAGE_SET", $"Pass '{pass.name}' requires exactly {string.Join(" and ", expected)} stages."); continue; }
-                if (pass.programKind == ShaderProgramKind.Raster) ValidateVaryings(selected[ShaderStage.Vertex], selected[ShaderStage.Fragment]);
+                {
+                    Error("SHADER_STAGE_SET", $"Pass '{pass.name}' requires exactly {string.Join(" and ", expected)} stages.");
+                    continue;
+                }
+                if (pass.programKind == ShaderProgramKind.Raster)
+                    ValidateVaryings(selected[ShaderStage.Vertex], selected[ShaderStage.Fragment]);
                 passes.Add(new(pass.name, expected.Select(stage => selected[stage])));
             }
         }
         catch (Exception failure) when (failure is ArgumentException or InvalidOperationException or FormatException or NotSupportedException
             && RetirementPendingException.Find(failure) is null)
-        { Error("SHADER_GRAPH_PROGRAM", failure.Message, activeNode); }
+        {
+            Error("SHADER_GRAPH_PROGRAM", failure.Message, activeNode);
+        }
         return new(diagnostics.Any(static value => value.severity == DiagnosticSeverity.Error) ? [] : passes, diagnostics);
 
-        void Error(string code, string message, GraphNodeId? node = null)
+        void Error(
+            string code,
+            string message,
+            GraphNodeId? node = null
+        )
             => diagnostics.Add(new(code, DiagnosticSeverity.Error, message, node));
     }
 
-    private void ConnectRasterStages(GraphDocument graph, string implementationId,
+    private void ConnectRasterStages(
+        GraphDocument graph,
+        string implementationId,
         IReadOnlyDictionary<GraphNodeId, ShaderSourceModuleAnalysis> sources,
-        SerializationRegistry serialization, SerializationContext context)
-    {
+        SerializationRegistry serialization,
+        SerializationContext context
+    ) {
         GraphNodeRecord[] outputs = graph.nodes
             .Where(static node => node.definitionId == ShaderGraphDocument.outputDefinitionId)
             .ToArray();
@@ -202,7 +235,8 @@ public sealed class ShaderGraphProgramCompiler
             .ThenBy(static value => value.edge.input.nodeId.value, StringComparer.Ordinal)
             .ThenBy(static value => value.edge.input.portId.value, StringComparer.Ordinal)
             .ToArray();
-        if (crossings.Length == 0) return;
+        if (crossings.Length == 0)
+            return;
 
         var ports = new Dictionary<GraphEndpoint, ShaderNodePort>();
         foreach (GraphNodeRecord node in graph.nodes.Where(static node => node.definitionId != ShaderGraphDocument.outputDefinitionId))
@@ -318,8 +352,10 @@ public sealed class ShaderGraphProgramCompiler
         }
     }
 
-    private static void ValidateVaryings(ShaderIrStage vertex, ShaderIrStage fragment)
-    {
+    private static void ValidateVaryings(
+        ShaderIrStage vertex,
+        ShaderIrStage fragment
+    ) {
         foreach (ShaderIrStageInput input in fragment.inputs.Where(static input => input.kind == ShaderIrInputKind.Varying))
         {
             ShaderIrStageOutput? output = vertex.outputs.SingleOrDefault(output => output.kind == ShaderIrOutputKind.Varying

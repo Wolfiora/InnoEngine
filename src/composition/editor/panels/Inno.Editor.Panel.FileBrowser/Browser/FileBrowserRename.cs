@@ -40,8 +40,8 @@ internal sealed class FileBrowserRename(AssetEditorModule assets)
     internal bool IsEditing(
         EditorContext context,
         string relativePath,
-        FileBrowserPresentation presentation)
-    {
+        FileBrowserPresentation presentation
+    ) {
         Update(context);
         return m_activeTarget is AssetFileEntry target &&
                m_activePresentation == presentation &&
@@ -54,8 +54,8 @@ internal sealed class FileBrowserRename(AssetEditorModule assets)
         string relativePath,
         FileBrowserPresentation presentation,
         float width,
-        float rowHeight)
-    {
+        float rowHeight
+    ) {
         if (!IsEditing(context, relativePath, presentation) || m_activeTarget is null)
             return;
         _ = assets.interactions

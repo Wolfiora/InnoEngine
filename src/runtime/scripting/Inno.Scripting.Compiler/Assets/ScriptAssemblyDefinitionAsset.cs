@@ -85,8 +85,8 @@ public sealed class ScriptAssemblyDefinitionAsset : AssetObject
         string[]? references = null,
         string[]? defines = null,
         bool nullable = true,
-        bool allowUnsafe = false)
-    {
+        bool allowUnsafe = false
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(assemblyName);
         this.assemblyName = assemblyName;
         this.scope = scope;

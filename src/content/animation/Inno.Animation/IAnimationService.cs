@@ -21,7 +21,10 @@ public interface IAnimationService
     /// <param name="target">
     /// The weak destination or explicit sampling-only policy.
     /// </param>
-    AnimationPlaybackHandle Play(AnimationClipAsset clip, AnimationTarget target);
+    AnimationPlaybackHandle Play(
+        AnimationClipAsset clip,
+        AnimationTarget target
+    );
 
     /// <summary>
     /// Starts one clip with explicit playback options.
@@ -38,7 +41,11 @@ public interface IAnimationService
     /// <param name="target">
     /// The weak destination or explicit sampling-only policy.
     /// </param>
-    AnimationPlaybackHandle Play(AnimationClipAsset clip, AnimationTarget target, AnimationPlayOptions options);
+    AnimationPlaybackHandle Play(
+        AnimationClipAsset clip,
+        AnimationTarget target,
+        AnimationPlayOptions options
+    );
 
     /// <summary>
     /// Stops one live playback.
@@ -85,7 +92,10 @@ public interface IAnimationService
     /// <returns>
     /// <see langword="true"/> when the handle was live and the position was updated.
     /// </returns>
-    bool Seek(AnimationPlaybackHandle handle, float time);
+    bool Seek(
+        AnimationPlaybackHandle handle,
+        float time
+    );
 
     /// <summary>
     /// Tries to read one live playback's state and position.
@@ -105,7 +115,8 @@ public interface IAnimationService
     bool TryGetState(
         AnimationPlaybackHandle handle,
         out AnimationPlaybackState state,
-        out float time);
+        out float time
+    );
 }
 
 /// <summary>
@@ -128,8 +139,8 @@ public sealed class AnimationMarkerEvent : Event
     public AnimationMarkerEvent(
         AnimationPlaybackHandle playback,
         string eventId,
-        ReadOnlyMemory<byte> payload)
-    {
+        ReadOnlyMemory<byte> payload
+    ) {
         if (!playback.isValid)
             throw new ArgumentException("A valid animation playback handle is required.", nameof(playback));
         ArgumentException.ThrowIfNullOrWhiteSpace(eventId);

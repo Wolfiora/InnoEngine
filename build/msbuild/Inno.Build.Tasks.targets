@@ -1,0 +1,94 @@
+<Project>
+  <PropertyGroup>
+    <BindGenRoot Condition="'$(BindGenRoot)' == ''">$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)../../../BindGen-CS'))</BindGenRoot>
+    <InnoTaskProject>$(MSBuildThisFileDirectory)../tasks/Inno.Build.Tasks/Inno.Build.Tasks.csproj</InnoTaskProject>
+    <InnoTaskPublisherProject>$(MSBuildThisFileDirectory)../tasks/Inno.Build.TaskHosting/Inno.Build.TaskHosting.csproj</InnoTaskPublisherProject>
+    <InnoTaskArtifacts>$(MSBuildThisFileDirectory)../../artifacts/build-tools/tasks</InnoTaskArtifacts>
+    <InnoTaskLoadId>$([System.Guid]::NewGuid().ToString('N'))</InnoTaskLoadId>
+    <InnoTaskLoadDirectory>$(InnoTaskArtifacts)/loads/$(InnoTaskLoadId)/$(Configuration)</InnoTaskLoadDirectory>
+    <InnoTaskHostAssembly>$(InnoTaskLoadDirectory)/Inno.Build.Tasks.dll</InnoTaskHostAssembly>
+    <InnoTaskPublisherDirectory>$(InnoTaskArtifacts)/publishers/$(InnoTaskLoadId)/$(Configuration)</InnoTaskPublisherDirectory>
+    <InnoTaskPublisherAssembly>$(InnoTaskPublisherDirectory)/Inno.Build.TaskHosting.dll</InnoTaskPublisherAssembly>
+    <InnoTaskHostProperties>Configuration=$(Configuration);BindGenRoot=$([System.IO.Path]::GetFullPath('$(BindGenRoot)'));BuildProjectReferences=true</InnoTaskHostProperties>
+    <InnoTaskExcludedProperties>InnoProductId;InnoProductTarget;InnoProductBuildProperties;InnoBgfxShaderTarget;InnoBgfxShaderApis;InnoImGuiShaderTarget;InnoImGuiShaderApis;InnoProductRestore;InnoToolTarget;InnoPrepareProductNative;InnoNativeTarget;InnoNativeBuildFingerprint;InnoNativeBindingSelection;InnoNativeLibraryKind;RuntimeIdentifier;RuntimeIdentifiers;TargetFramework;TargetFrameworks;InnoBindingEngineRoot;InnoBindingDefinition;InnoBindingTargetId;InnoBindingOutputMode;InnoBindingDotnetHost;BindGenOutputDirectory;BindGenGeneratedSource;BindGenGenerationFingerprint;BindGenNativeBridgeDirectory;BindGenDescriptorOutput;BindGenExpectedFingerprint;DebugType;DebugSymbols;DefineConstants;PublishAot;RunAOTCompilation;PublishTrimmed;SelfContained;PublishSingleFile;PublishDir;WasmBuildNative;InnoGeneratePlayerComposition;ArtifactsPivots;UseArtifactsOutput;MSBuildProjectExtensionsPath;BaseOutputPath;BaseIntermediateOutputPath;OutputPath;IntermediateOutputPath;BuildingInsideVisualStudio;BuildingSolutionFile;CurrentSolutionConfigurationContents;DesignTimeBuild;IsCrossTargetingBuild</InnoTaskExcludedProperties>
+  </PropertyGroup>
+
+  <UsingTask TaskName="Inno.Build.Tasks.GenerateBindingsTask" AssemblyFile="$(InnoTaskHostAssembly)" />
+  <UsingTask TaskName="Inno.Build.Tasks.CompileShaderTask" AssemblyFile="$(InnoTaskHostAssembly)" />
+  <UsingTask TaskName="Inno.Build.Tasks.PublishSupportPackTask" AssemblyFile="$(InnoTaskHostAssembly)" />
+  <UsingTask TaskName="Inno.Build.Tasks.PrepareProductNativeTask" AssemblyFile="$(InnoTaskHostAssembly)" />
+  <UsingTask TaskName="Inno.Build.TaskHosting.PublishTaskHostTask" AssemblyFile="$(InnoTaskPublisherAssembly)" />
+  <UsingTask TaskName="Inno.Build.TaskHosting.BuildTaskRuntimeTask" AssemblyFile="$(InnoTaskPublisherAssembly)" />
+  <UsingTask TaskName="Inno.Build.TaskHosting.RestoreOwnedProjectTask" AssemblyFile="$(InnoTaskPublisherAssembly)" />
+
+  <Target Name="PrepareInnoTaskPublisher" Condition="'$(DesignTimeBuild)' != 'true'">
+    <MSBuild Projects="$(InnoTaskPublisherProject)" Targets="Restore;PublishInnoTaskPublisherBootstrap"
+             Properties="$(InnoTaskHostProperties);ArtifactsPath=$(InnoTaskPublisherDirectory)/bootstrap" RemoveProperties="$(InnoTaskExcludedProperties)">
+      <Output TaskParameter="TargetOutputs" ItemName="_InnoPublisherOutput" />
+    </MSBuild>
+    <Error Condition="'@(_InnoPublisherOutput->Count())' != '1'" Text="The task publisher must return one bootstrap assembly." />
+    <PropertyGroup>
+      <_InnoPublisherSource>@(_InnoPublisherOutput)</_InnoPublisherSource>
+      <_InnoPublisherSourceDirectory>$([System.IO.Path]::GetDirectoryName('$(_InnoPublisherSource)'))</_InnoPublisherSourceDirectory>
+    </PropertyGroup>
+    <ItemGroup>
+      <_InnoPublisherFile Include="$(_InnoPublisherSourceDirectory)/**/*" Exclude="$(_InnoPublisherSourceDirectory)/**/*.pdb;$(_InnoPublisherSourceDirectory)/**/*.xml" />
+    </ItemGroup>
+    <Copy SourceFiles="@(_InnoPublisherFile)"
+          DestinationFiles="@(_InnoPublisherFile->'$(InnoTaskPublisherDirectory)/%(RecursiveDir)%(Filename)%(Extension)')" />
+  </Target>
+
+  <Target Name="PublishInnoTaskPublisherBootstrap" DependsOnTargets="Build" Returns="$(TargetPath)"
+          Condition="'$(MSBuildProjectName)' == 'Inno.Build.TaskHosting'" />
+
+  <Target Name="PrepareInnoBuildTaskHost" DependsOnTargets="PrepareInnoTaskPublisher" Condition="'$(DesignTimeBuild)' != 'true'">
+    <Inno.Build.TaskHosting.BuildTaskRuntimeTask
+      ProjectFile="$([System.IO.Path]::GetFullPath('$(InnoTaskProject)'))"
+      ArtifactsDirectory="$([System.IO.Path]::GetFullPath('$(InnoTaskArtifacts)/bootstrap'))"
+      LoadDirectory="$([System.IO.Path]::GetFullPath('$(InnoTaskLoadDirectory)'))"
+      Targets="Restore;PublishInnoBuildTaskHost"
+      Properties="$(InnoTaskHostProperties)"
+      RemoveProperties="$(InnoTaskExcludedProperties)">
+      <Output TaskParameter="TargetOutputs" ItemName="_InnoTaskHostOutput" />
+    </Inno.Build.TaskHosting.BuildTaskRuntimeTask>
+    <Error Condition="'@(_InnoTaskHostOutput)' == ''" Text="The build task host must return its complete hashed runtime closure." />
+    <Inno.Build.TaskHosting.PublishTaskHostTask InputFiles="@(_InnoTaskHostOutput)"
+        CacheDirectory="$(InnoTaskArtifacts)/hosts" LoadDirectory="$(InnoTaskLoadDirectory)"
+        PublisherDirectory="$(InnoTaskPublisherDirectory)">
+      <Output TaskParameter="PublishedAssembly" PropertyName="_InnoPreparedTaskAssembly" />
+    </Inno.Build.TaskHosting.PublishTaskHostTask>
+    <PropertyGroup>
+      <_InnoPreparedTaskDirectory>$([System.IO.Path]::GetDirectoryName('$(_InnoPreparedTaskAssembly)'))</_InnoPreparedTaskDirectory>
+    </PropertyGroup>
+    <Error Condition="'$(_InnoPreparedTaskDirectory)' == '' or !Exists('$(_InnoPreparedTaskAssembly)')" Text="The build task snapshot is unavailable: $(_InnoPreparedTaskAssembly)" />
+    <ItemGroup>
+      <_InnoPreparedRuntimeFile Include="$(_InnoPreparedTaskDirectory)/**/*" />
+    </ItemGroup>
+    <Copy
+      SourceFiles="@(_InnoPreparedRuntimeFile)"
+      DestinationFiles="@(_InnoPreparedRuntimeFile->'$(InnoTaskLoadDirectory)/%(RecursiveDir)%(Filename)%(Extension)')"
+      UseHardlinksIfPossible="true"
+      SkipUnchangedFiles="true" />
+    <WriteLinesToFile File="$(InnoTaskLoadDirectory)/source-host.txt" Lines="$(_InnoPreparedTaskAssembly)" Overwrite="true" WriteOnlyWhenDifferent="true" />
+  </Target>
+
+  <!-- The lightweight publisher snapshots this closure before consumers load a private runtime. -->
+  <Target
+    Name="PublishInnoBuildTaskHost"
+    DependsOnTargets="Build"
+    Returns="@(_InnoHashedTaskInput)"
+    Condition="'$(MSBuildProjectName)' == 'Inno.Build.Tasks'">
+    <ItemGroup>
+      <_InnoTaskRuntimeInput Include="$(TargetDir)**/*" Exclude="$(TargetDir)**/*.pdb;$(TargetDir)**/*.xml" />
+    </ItemGroup>
+    <ItemGroup>
+      <_InnoTaskRuntimeInput>
+        <RelativePath>%(_InnoTaskRuntimeInput.RecursiveDir)%(_InnoTaskRuntimeInput.Filename)%(_InnoTaskRuntimeInput.Extension)</RelativePath>
+      </_InnoTaskRuntimeInput>
+    </ItemGroup>
+    <Error Condition="!Exists('$(TargetPath)')" Text="The build task assembly was not produced." />
+    <GetFileHash Files="@(_InnoTaskRuntimeInput)">
+      <Output TaskParameter="Items" ItemName="_InnoHashedTaskInput" />
+    </GetFileHash>
+  </Target>
+</Project>

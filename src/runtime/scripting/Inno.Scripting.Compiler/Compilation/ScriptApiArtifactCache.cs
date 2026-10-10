@@ -10,8 +10,10 @@ internal static class ScriptApiArtifactCache
     private const long C_MAXIMUM_SIZE = 512L * 1024 * 1024;
     private static readonly TimeSpan S_GRACE_PERIOD = TimeSpan.FromDays(7);
 
-    internal static int Collect(string root, IEnumerable<string?> protectedDirectories)
-    {
+    internal static int Collect(
+        string root,
+        IEnumerable<string?> protectedDirectories
+    ) {
         if (!Directory.Exists(root))
             return 0;
         var protectedPaths = protectedDirectories
@@ -71,5 +73,9 @@ internal static class ScriptApiArtifactCache
         }
     }
 
-    private sealed record Entry(string path, DateTime lastWriteUtc, long size);
+    private sealed record Entry(
+        string path,
+        DateTime lastWriteUtc,
+        long size
+    );
 }

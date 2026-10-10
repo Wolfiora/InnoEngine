@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 
 using Inno.Core.Serialization;
+using Inno.Build.Managed;
 
 namespace Inno.Build;
 
@@ -33,6 +34,13 @@ public sealed class BuildProfile : ISerializable
     public string productName { get; set; } = string.Empty;
 
     /// <summary>
+    /// Gets or sets the writable data folder relative to the operating system's local application data directory.
+    /// An empty value uses <see cref="applicationId"/>.
+    /// </summary>
+    [SerializableProperty]
+    public string persistentDataPath { get; set; } = string.Empty;
+
+    /// <summary>
     /// Gets or sets the mount-qualified startup scene path.
     /// </summary>
     [SerializableProperty]
@@ -46,6 +54,18 @@ public sealed class BuildProfile : ISerializable
         get => new(m_targetId);
         set => m_targetId = value.value;
     }
+
+    /// <summary>
+    /// Gets or sets an explicit managed publisher; null uses the platform composition's default.
+    /// </summary>
+    public ManagedDeploymentId? managedDeployment
+    {
+        get => m_managedDeploymentId.Length == 0 ? null : new ManagedDeploymentId(m_managedDeploymentId);
+        set => m_managedDeploymentId = value?.value ?? string.Empty;
+    }
+
+    [SerializableProperty]
+    internal string m_managedDeploymentId = string.Empty;
 
     /// <summary>
     /// Gets or sets the initial logical window width.
@@ -63,6 +83,24 @@ public sealed class BuildProfile : ISerializable
     internal string m_targetId = string.Empty;
 
     /// <summary>
+    /// Copies product and deployment settings before an asynchronous build retains the request.
+    /// </summary>
+    /// <returns>
+    /// A newly owned profile with the same current-format scalar settings and stable selections.
+    /// </returns>
+    public BuildProfile Copy() => new()
+    {
+        applicationId = applicationId,
+        productName = productName,
+        persistentDataPath = persistentDataPath,
+        startupScene = startupScene,
+        windowWidth = windowWidth,
+        windowHeight = windowHeight,
+        m_targetId = m_targetId,
+        m_managedDeploymentId = m_managedDeploymentId
+    };
+
+    /// <summary>
     /// Validates product identity, startup content, target, and window dimensions.
     /// </summary>
     /// <exception cref="InvalidDataException">
@@ -74,6 +112,9 @@ public sealed class BuildProfile : ISerializable
             throw new InvalidDataException("Application ID must be a stable lowercase portable identifier.");
         if (!IsPortableProductName(productName))
             throw new InvalidDataException("Product name must be a portable file name.");
+        if (persistentDataPath is null ||
+            !IsPortableDataPath(persistentDataPath.Length == 0 ? applicationId : persistentDataPath))
+            throw new InvalidDataException("Persistent data path must contain only portable folder names separated by '/'.");
         if (string.IsNullOrWhiteSpace(startupScene))
             throw new InvalidDataException("A startup scene is required.");
         try
@@ -83,6 +124,16 @@ public sealed class BuildProfile : ISerializable
         catch (ArgumentException exception)
         {
             throw new InvalidDataException("A game build target is required and must use a portable target ID.", exception);
+        }
+        if (m_managedDeploymentId is null)
+            throw new InvalidDataException("Managed deployment selection cannot be null.");
+        if (m_managedDeploymentId.Length > 0)
+        {
+            try { _ = new ManagedDeploymentId(m_managedDeploymentId); }
+            catch (ArgumentException exception)
+            {
+                throw new InvalidDataException("Managed deployment selection must use a portable provider ID.", exception);
+            }
         }
         if (windowWidth <= 0 || windowHeight <= 0)
             throw new InvalidDataException("Window dimensions must be positive.");
@@ -97,6 +148,14 @@ public sealed class BuildProfile : ISerializable
             || character is >= '0' and <= '9'
             || character is '.' or '_' or '-');
     }
+
+    private static bool IsPortableDataPath(string value)
+        => value is not null
+           && (value.Length == 0 || value.Split('/').All(static segment =>
+               segment is not "." and not ".."
+               && !segment.EndsWith('.')
+               && !S_WINDOWS_RESERVED_NAMES.Contains(segment.Split('.', 2)[0])
+               && IsPortableIdentifier(segment)));
 
     private static bool IsPortableProductName(string value)
     {

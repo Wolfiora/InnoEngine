@@ -34,8 +34,8 @@ internal sealed class BinaryAssetImporter : AssetImporter<BinaryAsset>
     protected override async ValueTask ImportAsync(
         AssetImportContext context,
         AssetImportWriter<BinaryAsset> output,
-        CancellationToken cancellationToken)
-    {
+        CancellationToken cancellationToken
+    ) {
         byte[] payload = context.sourceBytes.ToArray();
         var asset = new BinaryAsset(payload.Length);
         output.SetAsset(asset);
@@ -60,6 +60,7 @@ internal sealed class BinaryAssetImporter : AssetImporter<BinaryAsset>
     protected override ValueTask<ReadOnlyMemory<byte>?> ExportAsync(
         AssetExportContext context,
         BinaryAsset asset,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken
+    )
         => ValueTask.FromResult<ReadOnlyMemory<byte>?>(asset.runtimePayload);
 }

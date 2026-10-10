@@ -97,7 +97,8 @@ internal sealed class AssetEditorRegistry : TypeRegistry<AssetEditorRegistry.Sna
         bool useForChildren,
         int priority,
         Type implementationType,
-        AssetEditor editor);
+        AssetEditor editor
+    );
 
     private sealed class DefaultAssetEditor : AssetEditor;
 }

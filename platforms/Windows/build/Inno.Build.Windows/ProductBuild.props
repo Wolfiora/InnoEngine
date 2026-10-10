@@ -1,0 +1,6 @@
+<Project>
+  <PropertyGroup>
+    <InnoBgfxShaderTarget>windows-x64</InnoBgfxShaderTarget>
+    <InnoBgfxShaderApis>Direct3D11;Direct3D12;Vulkan;OpenGL</InnoBgfxShaderApis>
+  </PropertyGroup>
+</Project>

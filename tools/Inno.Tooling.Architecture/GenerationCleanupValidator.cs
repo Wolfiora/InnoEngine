@@ -8,8 +8,11 @@ namespace Inno.Tooling.Architecture;
 
 internal static class GenerationCleanupValidator
 {
-    internal static void Validate(string relative, string source, ICollection<string> failures)
-    {
+    internal static void Validate(
+        string relative,
+        string source,
+        ICollection<string> failures
+    ) {
         var root = CSharpSyntaxTree.ParseText(source).GetRoot();
         foreach (CatchClauseSyntax clause in root.DescendantNodes().OfType<CatchClauseSyntax>())
         {

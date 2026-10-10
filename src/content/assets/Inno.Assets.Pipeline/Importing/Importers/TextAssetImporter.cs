@@ -36,8 +36,8 @@ internal sealed class TextAssetImporter : AssetImporter<TextAsset>
     protected override async ValueTask ImportAsync(
         AssetImportContext context,
         AssetImportWriter<TextAsset> output,
-        CancellationToken cancellationToken)
-    {
+        CancellationToken cancellationToken
+    ) {
         string content = context.ReadUtf8Text();
         string hint = context.extension switch
         {
@@ -75,6 +75,7 @@ internal sealed class TextAssetImporter : AssetImporter<TextAsset>
     protected override ValueTask<ReadOnlyMemory<byte>?> ExportAsync(
         AssetExportContext context,
         TextAsset asset,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken
+    )
         => ValueTask.FromResult<ReadOnlyMemory<byte>?>(Encoding.UTF8.GetBytes(asset.content));
 }

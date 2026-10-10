@@ -7,16 +7,17 @@
     <IsTestProject>true</IsTestProject>
   </PropertyGroup>
   <ItemGroup>
+    <ProjectReference Include="../../content/fixtures/Inno.Content.Testing/Inno.Content.Testing.csproj" />
     <ProjectReference Include="../../../src/foundation/core/Inno.Core.Execution/Inno.Core.Execution.csproj" />
     <ProjectReference Include="../../../src/runtime/contracts/Inno.Runtime.Contracts/Inno.Runtime.Contracts.csproj" />
-    <ProjectReference Include="..\..\..\src\content\assets\Inno.Assets\Inno.Assets.csproj" PrivateAssets="compile" />
-    <ProjectReference Include="..\..\..\src\foundation\extensibility\Inno.Extensibility.Modules\Inno.Extensibility.Modules.csproj" PrivateAssets="compile" />
-    <ProjectReference Include="..\..\..\src\foundation\core\Inno.Core.Identity\Inno.Core.Identity.csproj" PrivateAssets="compile" />
-    <ProjectReference Include="..\..\..\src\foundation\extensibility\Inno.Extensibility.Types\Inno.Extensibility.Types.csproj" PrivateAssets="compile" />
-    <ProjectReference Include="..\..\..\src\foundation\core\Inno.Core.Serialization\Inno.Core.Serialization.csproj" PrivateAssets="compile" />
-    <ProjectReference Include="..\..\..\src\services\rendering\Inno.Rendering.Runtime\Inno.Rendering.Runtime.csproj" PrivateAssets="compile" />
-    <ProjectReference Include="..\..\..\src\services\rendering\Inno.Rendering\Inno.Rendering.csproj" PrivateAssets="compile" />
-    <ProjectReference Include="..\fixtures\Inno.Rendering.Runtime.Reload.TestModule\Inno.Rendering.Runtime.Reload.TestModule.csproj" ReferenceOutputAssembly="false" PrivateAssets="compile" />
+    <ProjectReference Include="../../../src/content/assets/Inno.Assets/Inno.Assets.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../../src/foundation/extensibility/Inno.Extensibility.Modules/Inno.Extensibility.Modules.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../../src/foundation/core/Inno.Core.Identity/Inno.Core.Identity.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../../src/foundation/extensibility/Inno.Extensibility.Types/Inno.Extensibility.Types.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../../src/foundation/core/Inno.Core.Serialization/Inno.Core.Serialization.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../../src/services/rendering/Inno.Rendering.Runtime/Inno.Rendering.Runtime.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../../src/services/rendering/Inno.Rendering/Inno.Rendering.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../fixtures/Inno.Rendering.Runtime.Reload.TestModule/Inno.Rendering.Runtime.Reload.TestModule.csproj" ReferenceOutputAssembly="false" PrivateAssets="compile" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
@@ -38,5 +39,15 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="../../../src/content/references/Inno.References/Inno.References.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../../backends/DotNet/runtime/Inno.Adapter.Modules.DotNet/Inno.Adapter.Modules.DotNet.csproj" PrivateAssets="compile" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../../backends/DotNet/runtime/Inno.Adapter.Serialization.DotNet/Inno.Adapter.Serialization.DotNet.csproj" PrivateAssets="compile" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../../../src/services/rendering/Inno.Rendering.Assets/Inno.Rendering.Assets.csproj" />
   </ItemGroup>
 </Project>

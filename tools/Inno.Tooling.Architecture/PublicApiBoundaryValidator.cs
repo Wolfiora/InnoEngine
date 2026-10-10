@@ -10,14 +10,19 @@ namespace Inno.Tooling.Architecture;
 
 internal static class PublicApiBoundaryValidator
 {
-    internal static void Validate(string root, ICollection<string> failures)
-    {
-        Project[] projects = new[] { "src", "native", "build" }
-            .SelectMany(folder => Directory.EnumerateFiles(Path.Combine(root, folder), "*.csproj", SearchOption.AllDirectories))
+    internal static void Validate(
+        string root,
+        string configuration,
+        ICollection<string> failures
+    ) {
+        Project[] projects = new[] { "src", "backends", "platforms", "build" }
+            .SelectMany(folder => RepositorySourceInventory.Files(Path.Combine(root, folder), "*.csproj"))
             .Where(path => !path.Split(Path.DirectorySeparatorChar).Any(segment => segment is "bin" or "obj"))
             // Binding extensions run only while generating source; they are not runtime or solution assemblies.
             .Where(path => !path.Split(Path.DirectorySeparatorChar).Contains("Bindings", StringComparer.Ordinal))
-            .Select(Project.Read).ToArray();
+            .Where(path => !path.Split(Path.DirectorySeparatorChar).Contains("tests", StringComparer.Ordinal))
+            .Where(path => !XDocument.Load(path).Descendants("OutputType").Any(static item => item.Value == "Exe"))
+            .Select(path => Project.Read(path, configuration)).ToArray();
         var byName = projects.ToDictionary(project => project.name, StringComparer.Ordinal);
         var references = new Dictionary<string, PortableExecutableReference>(StringComparer.OrdinalIgnoreCase);
         string[] platform = ((string?)AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES") ?? string.Empty).Split(Path.PathSeparator);
@@ -28,20 +33,26 @@ internal static class PublicApiBoundaryValidator
             if (File.Exists(project.output))
                 references[project.name] = MetadataReference.CreateFromFile(project.output);
             else
-                failures.Add($"{Path.GetRelativePath(root, project.path)}: public API symbol audit requires a Debug solution build; output is missing.");
+                failures.Add($"{Path.GetRelativePath(root, project.path)}: public API symbol audit requires a {configuration} solution build; output is missing.");
         }
         CSharpCompilation compilation = CSharpCompilation.Create("Inno.Architecture.SymbolAudit", references: references.Values,
             options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
         foreach (Project project in projects.Where(project => project.path.Contains(Path.DirectorySeparatorChar + "src" + Path.DirectorySeparatorChar, StringComparison.Ordinal)))
         {
-            if (!references.TryGetValue(project.name, out PortableExecutableReference? reference) ||
-                compilation.GetAssemblyOrModuleSymbol(reference) is not IAssemblySymbol assembly)
+            if (!references.TryGetValue(project.name, out PortableExecutableReference? assemblyReference) ||
+                compilation.GetAssemblyOrModuleSymbol(assemblyReference) is not IAssemblySymbol assembly)
                 continue;
             var dependencies = new HashSet<string>(StringComparer.Ordinal);
             foreach (INamedTypeSymbol type in Types(assembly.GlobalNamespace))
             {
                 if (!Exposed(type))
                     continue;
+                if (project.name.StartsWith("Inno.Adapter.", StringComparison.Ordinal)
+                    && project.name.Split('.').Length == 3 && type.TypeKind == TypeKind.Enum
+                    && type.Name.EndsWith("Backend", StringComparison.Ordinal))
+                {
+                    failures.Add($"{Path.GetRelativePath(root, project.path)}: replaceable backend selections require open IDs and provider catalogs, not closed enums.");
+                }
                 Inspect(type.BaseType, type);
                 foreach (INamedTypeSymbol contract in type.Interfaces)
                     Inspect(contract, type);
@@ -54,13 +65,16 @@ internal static class PublicApiBoundaryValidator
                     {
                         case IMethodSymbol method:
                             Inspect(method.ReturnType, member);
-                            foreach (IParameterSymbol parameter in method.Parameters) Inspect(parameter.Type, member);
+                            foreach (IParameterSymbol parameter in method.Parameters)
+                                Inspect(parameter.Type, member);
                             foreach (ITypeParameterSymbol parameter in method.TypeParameters)
-                                foreach (ITypeSymbol constraint in parameter.ConstraintTypes) Inspect(constraint, member);
+                                foreach (ITypeSymbol constraint in parameter.ConstraintTypes)
+                                    Inspect(constraint, member);
                             break;
                         case IPropertySymbol property:
                             Inspect(property.Type, member);
-                            foreach (IParameterSymbol parameter in property.Parameters) Inspect(parameter.Type, member);
+                            foreach (IParameterSymbol parameter in property.Parameters)
+                                Inspect(parameter.Type, member);
                             break;
                         case IFieldSymbol field: Inspect(field.Type, member); break;
                         case IEventSymbol signal: Inspect(signal.Type, member); break;
@@ -69,6 +83,16 @@ internal static class PublicApiBoundaryValidator
             }
             if (project.name.StartsWith("Inno.Editor.", StringComparison.Ordinal))
             {
+                XElement[] referenceGroups = project.references.Select(reference => reference.Parent!).Distinct().ToArray();
+                XElement[] implementationGroups = referenceGroups.Where(group => group.Elements("ProjectReference").Any(IsCompilePrivate)).ToArray();
+                XElement[] publicGroups = referenceGroups.Where(group => group.Elements("ProjectReference").Any(reference => !IsCompilePrivate(reference))).ToArray();
+                if (implementationGroups.Length > 1 || publicGroups.Length > 1 ||
+                    referenceGroups.Any(group => group.Elements("ProjectReference").Any(IsCompilePrivate)
+                        && group.Elements("ProjectReference").Any(reference => !IsCompilePrivate(reference))) ||
+                    (referenceGroups.Length == 2 && publicGroups.Length == 1 && ReferenceEquals(referenceGroups[0], publicGroups[0])))
+                {
+                    failures.Add($"{Path.GetRelativePath(root, project.path)}: Editor references require one implementation group followed by one public API group.");
+                }
                 foreach (string dependency in dependencies.Where(byName.ContainsKey).Order(StringComparer.Ordinal))
                 {
                     XElement? declaration = project.references.FirstOrDefault(element =>
@@ -76,26 +100,38 @@ internal static class PublicApiBoundaryValidator
                     if (declaration is null || ((string?)declaration.Attribute("PrivateAssets"))?.Split(';').Contains("compile") == true)
                         failures.Add($"{Path.GetRelativePath(root, project.path)}: public/protected API exposes {dependency}; declare a direct public ProjectReference.");
                 }
+                foreach (XElement reference in project.references)
+                {
+                    string dependency = Path.GetFileNameWithoutExtension(reference.Attribute("Include")?.Value.Replace('\\', '/') ?? string.Empty);
+                    if (byName.ContainsKey(dependency) && !dependencies.Contains(dependency) && !IsCompilePrivate(reference))
+                        failures.Add($"{Path.GetRelativePath(root, project.path)}: {dependency} is an implementation dependency; declare PrivateAssets=compile.");
+                }
             }
 
-            void Inspect(ITypeSymbol? value, ISymbol member)
-            {
-                if (value is null) return;
+            void Inspect(
+                ITypeSymbol? value,
+                ISymbol member
+            ) {
+                if (value is null)
+                    return;
                 switch (value)
                 {
                     case IArrayTypeSymbol array: Inspect(array.ElementType, member); return;
                     case IPointerTypeSymbol pointer: Inspect(pointer.PointedAtType, member); return;
                     case IFunctionPointerTypeSymbol pointer:
                         Inspect(pointer.Signature.ReturnType, member);
-                        foreach (IParameterSymbol parameter in pointer.Signature.Parameters) Inspect(parameter.Type, member);
+                        foreach (IParameterSymbol parameter in pointer.Signature.Parameters)
+                            Inspect(parameter.Type, member);
                         return;
                     case INamedTypeSymbol named:
                         Inspect(named.ContainingType, member);
-                        foreach (ITypeSymbol argument in named.TypeArguments) Inspect(argument, member);
+                        foreach (ITypeSymbol argument in named.TypeArguments)
+                            Inspect(argument, member);
                         break;
                 }
                 string? dependency = value.ContainingAssembly?.Identity.Name;
-                if (dependency is null || dependency == project.name) return;
+                if (dependency is null || dependency == project.name)
+                    return;
                 dependencies.Add(dependency);
                 if (dependency.StartsWith("Inno.Native.Bgfx", StringComparison.Ordinal) ||
                     dependency == "Inno.Native.MiniAudio" || dependency == "Inno.Native.Sdl3")
@@ -111,28 +147,40 @@ internal static class PublicApiBoundaryValidator
     private static bool Exposed(ISymbol symbol)
         => symbol.DeclaredAccessibility is Accessibility.Public or Accessibility.Protected or Accessibility.ProtectedOrInternal;
 
+    private static bool IsCompilePrivate(XElement reference)
+        => ((string?)reference.Attribute("PrivateAssets"))?.Split(';').Contains("compile") == true;
+
     private static IEnumerable<INamedTypeSymbol> Types(INamespaceOrTypeSymbol owner)
     {
         foreach (ISymbol member in owner.GetMembers())
         {
             if (member is INamespaceSymbol space)
-                foreach (INamedTypeSymbol type in Types(space)) yield return type;
+                foreach (INamedTypeSymbol type in Types(space))
+                    yield return type;
             else if (member is INamedTypeSymbol type && Exposed(type))
             {
                 yield return type;
-                foreach (INamedTypeSymbol nested in Types(type)) yield return nested;
+                foreach (INamedTypeSymbol nested in Types(type))
+                    yield return nested;
             }
         }
     }
 
-    private sealed record Project(string path, string name, string output, XElement[] references)
-    {
-        internal static Project Read(string path)
-        {
+    private sealed record Project(
+        string path,
+        string name,
+        string output,
+        XElement[] references
+    ) {
+        internal static Project Read(
+            string path,
+            string configuration
+        ) {
             XDocument document = XDocument.Load(path);
             string name = document.Descendants("AssemblyName").FirstOrDefault()?.Value ?? Path.GetFileNameWithoutExtension(path);
             string framework = document.Descendants("TargetFramework").FirstOrDefault()?.Value ?? "net9.0";
-            return new Project(path, name, Path.Combine(Path.GetDirectoryName(path)!, "bin", "Debug", framework, name + ".dll"),
+            return new Project(path, name, Path.Combine(Path.GetDirectoryName(path)!,
+                name == "Inno.Player.Browser" ? "bin/browser-wasm" : "bin", configuration, framework, name + ".dll"),
                 document.Descendants("ProjectReference").ToArray());
         }
     }

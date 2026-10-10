@@ -1,0 +1,19 @@
+{
+  "entryFiles": [
+    "../Native/include/TextRuntime.hpp"
+  ],
+  "allowedHeaders": [
+    "../Native/include/TextRuntime.hpp"
+  ],
+  "includeFolders": [
+    "../Native/include"
+  ],
+  "outputPath": "../obj/windows-x64/Native",
+  "languageStandard": "c++17",
+  "generateBuildManifest": false,
+  "generateCSharpBindings": false,
+  "namePrefix": "inno_text_",
+  "parseSystemIncludes": false,
+  "parseComments": false,
+  "targetId": "windows-x64-msvc"
+}

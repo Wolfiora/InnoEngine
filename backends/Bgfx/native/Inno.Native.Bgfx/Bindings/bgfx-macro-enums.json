@@ -1,0 +1,2764 @@
+{
+  "baseConfig": {
+    "url": "file://bgfx-api-shape.json"
+  },
+  "customEnums": [
+    {
+      "cppName": "BufferFlags",
+      "name": "BufferFlags",
+      "attributes": [
+        "[Flags]"
+      ],
+      "comment": null,
+      "baseType": "ushort",
+      "items": [
+        {
+          "cppName": "ComputeFormat8x1",
+          "cppValue": "0x0001",
+          "name": "ComputeFormat8x1",
+          "value": "0x0001",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "ComputeFormat8x2",
+          "cppValue": "0x0002",
+          "name": "ComputeFormat8x2",
+          "value": "0x0002",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "ComputeFormat8x4",
+          "cppValue": "0x0003",
+          "name": "ComputeFormat8x4",
+          "value": "0x0003",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "ComputeFormat16x1",
+          "cppValue": "0x0004",
+          "name": "ComputeFormat16x1",
+          "value": "0x0004",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "ComputeFormat16x2",
+          "cppValue": "0x0005",
+          "name": "ComputeFormat16x2",
+          "value": "0x0005",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "ComputeFormat16x4",
+          "cppValue": "0x0006",
+          "name": "ComputeFormat16x4",
+          "value": "0x0006",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "ComputeFormat32x1",
+          "cppValue": "0x0007",
+          "name": "ComputeFormat32x1",
+          "value": "0x0007",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "ComputeFormat32x2",
+          "cppValue": "0x0008",
+          "name": "ComputeFormat32x2",
+          "value": "0x0008",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "ComputeFormat32x4",
+          "cppValue": "0x0009",
+          "name": "ComputeFormat32x4",
+          "value": "0x0009",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "ComputeFormatShift",
+          "cppValue": "0",
+          "name": "ComputeFormatShift",
+          "value": "0",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "ComputeFormatMask",
+          "cppValue": "0x000f",
+          "name": "ComputeFormatMask",
+          "value": "0x000f",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "ComputeTypeInt",
+          "cppValue": "0x0010",
+          "name": "ComputeTypeInt",
+          "value": "0x0010",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "ComputeTypeUint",
+          "cppValue": "0x0020",
+          "name": "ComputeTypeUint",
+          "value": "0x0020",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "ComputeTypeFloat",
+          "cppValue": "0x0030",
+          "name": "ComputeTypeFloat",
+          "value": "0x0030",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "ComputeTypeShift",
+          "cppValue": "4",
+          "name": "ComputeTypeShift",
+          "value": "4",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "ComputeTypeMask",
+          "cppValue": "0x0030",
+          "name": "ComputeTypeMask",
+          "value": "0x0030",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "None",
+          "cppValue": "0x0000",
+          "name": "None",
+          "value": "0x0000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "ComputeRead",
+          "cppValue": "0x0100",
+          "name": "ComputeRead",
+          "value": "0x0100",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "ComputeWrite",
+          "cppValue": "0x0200",
+          "name": "ComputeWrite",
+          "value": "0x0200",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "DrawIndirect",
+          "cppValue": "0x0400",
+          "name": "DrawIndirect",
+          "value": "0x0400",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "AllowResize",
+          "cppValue": "0x0800",
+          "name": "AllowResize",
+          "value": "0x0800",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "Index32",
+          "cppValue": "0x1000",
+          "name": "Index32",
+          "value": "0x1000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "ComputeReadWrite",
+          "cppValue": "0x0300",
+          "name": "ComputeReadWrite",
+          "value": "0x0300",
+          "attributes": [],
+          "comment": null
+        }
+      ]
+    },
+    {
+      "cppName": "CapsFlags",
+      "name": "CapsFlags",
+      "attributes": [
+        "[Flags]"
+      ],
+      "comment": null,
+      "baseType": "ulong",
+      "items": [
+        {
+          "cppName": "AlphaToCoverage",
+          "cppValue": "0x0000000000000001",
+          "name": "AlphaToCoverage",
+          "value": "0x0000000000000001",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "BlendIndependent",
+          "cppValue": "0x0000000000000002",
+          "name": "BlendIndependent",
+          "value": "0x0000000000000002",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "Compute",
+          "cppValue": "0x0000000000000004",
+          "name": "Compute",
+          "value": "0x0000000000000004",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "ConservativeRaster",
+          "cppValue": "0x0000000000000008",
+          "name": "ConservativeRaster",
+          "value": "0x0000000000000008",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "DrawIndirect",
+          "cppValue": "0x0000000000000010",
+          "name": "DrawIndirect",
+          "value": "0x0000000000000010",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "DrawIndirectCount",
+          "cppValue": "0x0000000000000020",
+          "name": "DrawIndirectCount",
+          "value": "0x0000000000000020",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "FragmentDepth",
+          "cppValue": "0x0000000000000040",
+          "name": "FragmentDepth",
+          "value": "0x0000000000000040",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "FragmentOrdering",
+          "cppValue": "0x0000000000000080",
+          "name": "FragmentOrdering",
+          "value": "0x0000000000000080",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "GraphicsDebugger",
+          "cppValue": "0x0000000000000100",
+          "name": "GraphicsDebugger",
+          "value": "0x0000000000000100",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "Hdr10",
+          "cppValue": "0x0000000000000200",
+          "name": "Hdr10",
+          "value": "0x0000000000000200",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "Hidpi",
+          "cppValue": "0x0000000000000400",
+          "name": "Hidpi",
+          "value": "0x0000000000000400",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "ImageRw",
+          "cppValue": "0x0000000000000800",
+          "name": "ImageRw",
+          "value": "0x0000000000000800",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "Index32",
+          "cppValue": "0x0000000000001000",
+          "name": "Index32",
+          "value": "0x0000000000001000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "Instancing",
+          "cppValue": "0x0000000000002000",
+          "name": "Instancing",
+          "value": "0x0000000000002000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "OcclusionQuery",
+          "cppValue": "0x0000000000004000",
+          "name": "OcclusionQuery",
+          "value": "0x0000000000004000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "PrimitiveId",
+          "cppValue": "0x0000000000008000",
+          "name": "PrimitiveId",
+          "value": "0x0000000000008000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "RendererMultithreaded",
+          "cppValue": "0x0000000000010000",
+          "name": "RendererMultithreaded",
+          "value": "0x0000000000010000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "SwapChain",
+          "cppValue": "0x0000000000020000",
+          "name": "SwapChain",
+          "value": "0x0000000000020000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "TextureBlit",
+          "cppValue": "0x0000000000040000",
+          "name": "TextureBlit",
+          "value": "0x0000000000040000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "TextureCompareLequal",
+          "cppValue": "0x0000000000080000",
+          "name": "TextureCompareLequal",
+          "value": "0x0000000000080000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "TextureCompareReserved",
+          "cppValue": "0x0000000000100000",
+          "name": "TextureCompareReserved",
+          "value": "0x0000000000100000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "TextureCubeArray",
+          "cppValue": "0x0000000000200000",
+          "name": "TextureCubeArray",
+          "value": "0x0000000000200000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "TextureDirectAccess",
+          "cppValue": "0x0000000000400000",
+          "name": "TextureDirectAccess",
+          "value": "0x0000000000400000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "TextureExternal",
+          "cppValue": "0x0000000000800000",
+          "name": "TextureExternal",
+          "value": "0x0000000000800000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "TextureExternalShared",
+          "cppValue": "0x0000000001000000",
+          "name": "TextureExternalShared",
+          "value": "0x0000000001000000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "TextureReadBack",
+          "cppValue": "0x0000000002000000",
+          "name": "TextureReadBack",
+          "value": "0x0000000002000000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "Texture2dArray",
+          "cppValue": "0x0000000004000000",
+          "name": "Texture2dArray",
+          "value": "0x0000000004000000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "Texture3d",
+          "cppValue": "0x0000000008000000",
+          "name": "Texture3d",
+          "value": "0x0000000008000000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "TransparentBackbuffer",
+          "cppValue": "0x0000000010000000",
+          "name": "TransparentBackbuffer",
+          "value": "0x0000000010000000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "VariableRateShading",
+          "cppValue": "0x0000000020000000",
+          "name": "VariableRateShading",
+          "value": "0x0000000020000000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "VertexAttribHalf",
+          "cppValue": "0x0000000040000000",
+          "name": "VertexAttribHalf",
+          "value": "0x0000000040000000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "VertexAttribUint10",
+          "cppValue": "0x0000000080000000",
+          "name": "VertexAttribUint10",
+          "value": "0x0000000080000000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "VertexId",
+          "cppValue": "0x0000000100000000",
+          "name": "VertexId",
+          "value": "0x0000000100000000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "ViewportLayerArray",
+          "cppValue": "0x0000000200000000",
+          "name": "ViewportLayerArray",
+          "value": "0x0000000200000000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "TextureCompareAll",
+          "cppValue": "0x0000000000180000",
+          "name": "TextureCompareAll",
+          "value": "0x0000000000180000",
+          "attributes": [],
+          "comment": null
+        }
+      ]
+    },
+    {
+      "cppName": "CapsFormatFlags",
+      "name": "CapsFormatFlags",
+      "attributes": [
+        "[Flags]"
+      ],
+      "comment": null,
+      "baseType": "uint",
+      "items": [
+        {
+          "cppName": "TextureNone",
+          "cppValue": "0x00000000",
+          "name": "TextureNone",
+          "value": "0x00000000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "Texture2d",
+          "cppValue": "0x00000001",
+          "name": "Texture2d",
+          "value": "0x00000001",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "Texture2dSrgb",
+          "cppValue": "0x00000002",
+          "name": "Texture2dSrgb",
+          "value": "0x00000002",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "Texture2dEmulated",
+          "cppValue": "0x00000004",
+          "name": "Texture2dEmulated",
+          "value": "0x00000004",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "Texture3d",
+          "cppValue": "0x00000008",
+          "name": "Texture3d",
+          "value": "0x00000008",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "Texture3dSrgb",
+          "cppValue": "0x00000010",
+          "name": "Texture3dSrgb",
+          "value": "0x00000010",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "Texture3dEmulated",
+          "cppValue": "0x00000020",
+          "name": "Texture3dEmulated",
+          "value": "0x00000020",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "TextureCube",
+          "cppValue": "0x00000040",
+          "name": "TextureCube",
+          "value": "0x00000040",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "TextureCubeSrgb",
+          "cppValue": "0x00000080",
+          "name": "TextureCubeSrgb",
+          "value": "0x00000080",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "TextureCubeEmulated",
+          "cppValue": "0x00000100",
+          "name": "TextureCubeEmulated",
+          "value": "0x00000100",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "TextureVertex",
+          "cppValue": "0x00000200",
+          "name": "TextureVertex",
+          "value": "0x00000200",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "TextureImageRead",
+          "cppValue": "0x00000400",
+          "name": "TextureImageRead",
+          "value": "0x00000400",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "TextureImageWrite",
+          "cppValue": "0x00000800",
+          "name": "TextureImageWrite",
+          "value": "0x00000800",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "TextureFramebuffer",
+          "cppValue": "0x00001000",
+          "name": "TextureFramebuffer",
+          "value": "0x00001000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "TextureFramebufferMsaa",
+          "cppValue": "0x00002000",
+          "name": "TextureFramebufferMsaa",
+          "value": "0x00002000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "TextureMsaa",
+          "cppValue": "0x00004000",
+          "name": "TextureMsaa",
+          "value": "0x00004000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "TextureMipAutogen",
+          "cppValue": "0x00008000",
+          "name": "TextureMipAutogen",
+          "value": "0x00008000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "TextureBackbuffer",
+          "cppValue": "0x00010000",
+          "name": "TextureBackbuffer",
+          "value": "0x00010000",
+          "attributes": [],
+          "comment": null
+        }
+      ]
+    },
+    {
+      "cppName": "ClearFlags",
+      "name": "ClearFlags",
+      "attributes": [
+        "[Flags]"
+      ],
+      "comment": null,
+      "baseType": "ushort",
+      "items": [
+        {
+          "cppName": "None",
+          "cppValue": "0x0000",
+          "name": "None",
+          "value": "0x0000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "Color",
+          "cppValue": "0x0001",
+          "name": "Color",
+          "value": "0x0001",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "Depth",
+          "cppValue": "0x0002",
+          "name": "Depth",
+          "value": "0x0002",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "Stencil",
+          "cppValue": "0x0004",
+          "name": "Stencil",
+          "value": "0x0004",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "DiscardColor0",
+          "cppValue": "0x0008",
+          "name": "DiscardColor0",
+          "value": "0x0008",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "DiscardColor1",
+          "cppValue": "0x0010",
+          "name": "DiscardColor1",
+          "value": "0x0010",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "DiscardColor2",
+          "cppValue": "0x0020",
+          "name": "DiscardColor2",
+          "value": "0x0020",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "DiscardColor3",
+          "cppValue": "0x0040",
+          "name": "DiscardColor3",
+          "value": "0x0040",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "DiscardColor4",
+          "cppValue": "0x0080",
+          "name": "DiscardColor4",
+          "value": "0x0080",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "DiscardColor5",
+          "cppValue": "0x0100",
+          "name": "DiscardColor5",
+          "value": "0x0100",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "DiscardColor6",
+          "cppValue": "0x0200",
+          "name": "DiscardColor6",
+          "value": "0x0200",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "DiscardColor7",
+          "cppValue": "0x0400",
+          "name": "DiscardColor7",
+          "value": "0x0400",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "DiscardDepth",
+          "cppValue": "0x0800",
+          "name": "DiscardDepth",
+          "value": "0x0800",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "DiscardStencil",
+          "cppValue": "0x1000",
+          "name": "DiscardStencil",
+          "value": "0x1000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "DiscardColorMask",
+          "cppValue": "0x07f8",
+          "name": "DiscardColorMask",
+          "value": "0x07f8",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "DiscardMask",
+          "cppValue": "0x1ff8",
+          "name": "DiscardMask",
+          "value": "0x1ff8",
+          "attributes": [],
+          "comment": null
+        }
+      ]
+    },
+    {
+      "cppName": "CubeMapFlags",
+      "name": "CubeMapFlags",
+      "attributes": [
+        "[Flags]"
+      ],
+      "comment": null,
+      "baseType": "uint",
+      "items": [
+        {
+          "cppName": "PositiveX",
+          "cppValue": "0x00000000",
+          "name": "PositiveX",
+          "value": "0x00000000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "NegativeX",
+          "cppValue": "0x00000001",
+          "name": "NegativeX",
+          "value": "0x00000001",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "PositiveY",
+          "cppValue": "0x00000002",
+          "name": "PositiveY",
+          "value": "0x00000002",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "NegativeY",
+          "cppValue": "0x00000003",
+          "name": "NegativeY",
+          "value": "0x00000003",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "PositiveZ",
+          "cppValue": "0x00000004",
+          "name": "PositiveZ",
+          "value": "0x00000004",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "NegativeZ",
+          "cppValue": "0x00000005",
+          "name": "NegativeZ",
+          "value": "0x00000005",
+          "attributes": [],
+          "comment": null
+        }
+      ]
+    },
+    {
+      "cppName": "DebugFlags",
+      "name": "DebugFlags",
+      "attributes": [
+        "[Flags]"
+      ],
+      "comment": null,
+      "baseType": "uint",
+      "items": [
+        {
+          "cppName": "None",
+          "cppValue": "0x00000000",
+          "name": "None",
+          "value": "0x00000000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "Wireframe",
+          "cppValue": "0x00000001",
+          "name": "Wireframe",
+          "value": "0x00000001",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "Ifh",
+          "cppValue": "0x00000002",
+          "name": "Ifh",
+          "value": "0x00000002",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "Stats",
+          "cppValue": "0x00000004",
+          "name": "Stats",
+          "value": "0x00000004",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "Text",
+          "cppValue": "0x00000008",
+          "name": "Text",
+          "value": "0x00000008",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "Profiler",
+          "cppValue": "0x00000010",
+          "name": "Profiler",
+          "value": "0x00000010",
+          "attributes": [],
+          "comment": null
+        }
+      ]
+    },
+    {
+      "cppName": "DiscardFlags",
+      "name": "DiscardFlags",
+      "attributes": [
+        "[Flags]"
+      ],
+      "comment": null,
+      "baseType": "uint",
+      "items": [
+        {
+          "cppName": "None",
+          "cppValue": "0x00000000",
+          "name": "None",
+          "value": "0x00000000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "Bindings",
+          "cppValue": "0x00000001",
+          "name": "Bindings",
+          "value": "0x00000001",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "IndexBuffer",
+          "cppValue": "0x00000002",
+          "name": "IndexBuffer",
+          "value": "0x00000002",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "InstanceData",
+          "cppValue": "0x00000004",
+          "name": "InstanceData",
+          "value": "0x00000004",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "State",
+          "cppValue": "0x00000008",
+          "name": "State",
+          "value": "0x00000008",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "Transform",
+          "cppValue": "0x00000010",
+          "name": "Transform",
+          "value": "0x00000010",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "VertexStreams",
+          "cppValue": "0x00000020",
+          "name": "VertexStreams",
+          "value": "0x00000020",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "All",
+          "cppValue": "0x000000ff",
+          "name": "All",
+          "value": "0x000000ff",
+          "attributes": [],
+          "comment": null
+        }
+      ]
+    },
+    {
+      "cppName": "FrameFlags",
+      "name": "FrameFlags",
+      "attributes": [
+        "[Flags]"
+      ],
+      "comment": null,
+      "baseType": "uint",
+      "items": [
+        {
+          "cppName": "None",
+          "cppValue": "0x00000000",
+          "name": "None",
+          "value": "0x00000000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "DebugCapture",
+          "cppValue": "0x00000001",
+          "name": "DebugCapture",
+          "value": "0x00000001",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "Discard",
+          "cppValue": "0x00000002",
+          "name": "Discard",
+          "value": "0x00000002",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "Flush",
+          "cppValue": "0x00000004",
+          "name": "Flush",
+          "value": "0x00000004",
+          "attributes": [],
+          "comment": null
+        }
+      ]
+    },
+    {
+      "cppName": "PciIdFlags",
+      "name": "PciIdFlags",
+      "attributes": [
+        "[Flags]"
+      ],
+      "comment": null,
+      "baseType": "ushort",
+      "items": [
+        {
+          "cppName": "None",
+          "cppValue": "0x0000",
+          "name": "None",
+          "value": "0x0000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "SoftwareRasterizer",
+          "cppValue": "0x0001",
+          "name": "SoftwareRasterizer",
+          "value": "0x0001",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "Amd",
+          "cppValue": "0x1002",
+          "name": "Amd",
+          "value": "0x1002",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "Apple",
+          "cppValue": "0x106b",
+          "name": "Apple",
+          "value": "0x106b",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "Intel",
+          "cppValue": "0x8086",
+          "name": "Intel",
+          "value": "0x8086",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "Nvidia",
+          "cppValue": "0x10de",
+          "name": "Nvidia",
+          "value": "0x10de",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "Microsoft",
+          "cppValue": "0x1414",
+          "name": "Microsoft",
+          "value": "0x1414",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "Arm",
+          "cppValue": "0x13b5",
+          "name": "Arm",
+          "value": "0x13b5",
+          "attributes": [],
+          "comment": null
+        }
+      ]
+    },
+    {
+      "cppName": "ResetFlags",
+      "name": "ResetFlags",
+      "attributes": [
+        "[Flags]"
+      ],
+      "comment": null,
+      "baseType": "uint",
+      "items": [
+        {
+          "cppName": "MsaaX2",
+          "cppValue": "0x00000010",
+          "name": "MsaaX2",
+          "value": "0x00000010",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "MsaaX4",
+          "cppValue": "0x00000020",
+          "name": "MsaaX4",
+          "value": "0x00000020",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "MsaaX8",
+          "cppValue": "0x00000030",
+          "name": "MsaaX8",
+          "value": "0x00000030",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "MsaaX16",
+          "cppValue": "0x00000040",
+          "name": "MsaaX16",
+          "value": "0x00000040",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "MsaaShift",
+          "cppValue": "4",
+          "name": "MsaaShift",
+          "value": "4",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "MsaaMask",
+          "cppValue": "0x00000070",
+          "name": "MsaaMask",
+          "value": "0x00000070",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "None",
+          "cppValue": "0x00000000",
+          "name": "None",
+          "value": "0x00000000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "Fullscreen",
+          "cppValue": "0x00000001",
+          "name": "Fullscreen",
+          "value": "0x00000001",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "Vsync",
+          "cppValue": "0x00000080",
+          "name": "Vsync",
+          "value": "0x00000080",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "Maxanisotropy",
+          "cppValue": "0x00000100",
+          "name": "Maxanisotropy",
+          "value": "0x00000100",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "Capture",
+          "cppValue": "0x00000200",
+          "name": "Capture",
+          "value": "0x00000200",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "FlushAfterRender",
+          "cppValue": "0x00002000",
+          "name": "FlushAfterRender",
+          "value": "0x00002000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "FlipAfterRender",
+          "cppValue": "0x00004000",
+          "name": "FlipAfterRender",
+          "value": "0x00004000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "SrgbBackbuffer",
+          "cppValue": "0x00008000",
+          "name": "SrgbBackbuffer",
+          "value": "0x00008000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "Hdr10",
+          "cppValue": "0x00010000",
+          "name": "Hdr10",
+          "value": "0x00010000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "Hidpi",
+          "cppValue": "0x00020000",
+          "name": "Hidpi",
+          "value": "0x00020000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "DepthClamp",
+          "cppValue": "0x00040000",
+          "name": "DepthClamp",
+          "value": "0x00040000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "Suspend",
+          "cppValue": "0x00080000",
+          "name": "Suspend",
+          "value": "0x00080000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "TransparentBackbuffer",
+          "cppValue": "0x00100000",
+          "name": "TransparentBackbuffer",
+          "value": "0x00100000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "FullscreenShift",
+          "cppValue": "0",
+          "name": "FullscreenShift",
+          "value": "0",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "FullscreenMask",
+          "cppValue": "0x00000001",
+          "name": "FullscreenMask",
+          "value": "0x00000001",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "ReservedShift",
+          "cppValue": "31",
+          "name": "ReservedShift",
+          "value": "31",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "ReservedMask",
+          "cppValue": "0x80000000",
+          "name": "ReservedMask",
+          "value": "0x80000000",
+          "attributes": [],
+          "comment": null
+        }
+      ]
+    },
+    {
+      "cppName": "ResolveFlags",
+      "name": "ResolveFlags",
+      "attributes": [
+        "[Flags]"
+      ],
+      "comment": null,
+      "baseType": "uint",
+      "items": [
+        {
+          "cppName": "None",
+          "cppValue": "0x00000000",
+          "name": "None",
+          "value": "0x00000000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "AutoGenMips",
+          "cppValue": "0x00000001",
+          "name": "AutoGenMips",
+          "value": "0x00000001",
+          "attributes": [],
+          "comment": null
+        }
+      ]
+    },
+    {
+      "cppName": "SamplerFlags",
+      "name": "SamplerFlags",
+      "attributes": [
+        "[Flags]"
+      ],
+      "comment": null,
+      "baseType": "uint",
+      "items": [
+        {
+          "cppName": "UMirror",
+          "cppValue": "0x00000001",
+          "name": "UMirror",
+          "value": "0x00000001",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "UClamp",
+          "cppValue": "0x00000002",
+          "name": "UClamp",
+          "value": "0x00000002",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "UBorder",
+          "cppValue": "0x00000003",
+          "name": "UBorder",
+          "value": "0x00000003",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "UShift",
+          "cppValue": "0",
+          "name": "UShift",
+          "value": "0",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "UMask",
+          "cppValue": "0x00000003",
+          "name": "UMask",
+          "value": "0x00000003",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "VMirror",
+          "cppValue": "0x00000004",
+          "name": "VMirror",
+          "value": "0x00000004",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "VClamp",
+          "cppValue": "0x00000008",
+          "name": "VClamp",
+          "value": "0x00000008",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "VBorder",
+          "cppValue": "0x0000000c",
+          "name": "VBorder",
+          "value": "0x0000000c",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "VShift",
+          "cppValue": "2",
+          "name": "VShift",
+          "value": "2",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "VMask",
+          "cppValue": "0x0000000c",
+          "name": "VMask",
+          "value": "0x0000000c",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "WMirror",
+          "cppValue": "0x00000010",
+          "name": "WMirror",
+          "value": "0x00000010",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "WClamp",
+          "cppValue": "0x00000020",
+          "name": "WClamp",
+          "value": "0x00000020",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "WBorder",
+          "cppValue": "0x00000030",
+          "name": "WBorder",
+          "value": "0x00000030",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "WShift",
+          "cppValue": "4",
+          "name": "WShift",
+          "value": "4",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "WMask",
+          "cppValue": "0x00000030",
+          "name": "WMask",
+          "value": "0x00000030",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "MinPoint",
+          "cppValue": "0x00000040",
+          "name": "MinPoint",
+          "value": "0x00000040",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "MinAnisotropic",
+          "cppValue": "0x00000080",
+          "name": "MinAnisotropic",
+          "value": "0x00000080",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "MinShift",
+          "cppValue": "6",
+          "name": "MinShift",
+          "value": "6",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "MinMask",
+          "cppValue": "0x000000c0",
+          "name": "MinMask",
+          "value": "0x000000c0",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "MagPoint",
+          "cppValue": "0x00000100",
+          "name": "MagPoint",
+          "value": "0x00000100",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "MagAnisotropic",
+          "cppValue": "0x00000200",
+          "name": "MagAnisotropic",
+          "value": "0x00000200",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "MagShift",
+          "cppValue": "8",
+          "name": "MagShift",
+          "value": "8",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "MagMask",
+          "cppValue": "0x00000300",
+          "name": "MagMask",
+          "value": "0x00000300",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "MipPoint",
+          "cppValue": "0x00000400",
+          "name": "MipPoint",
+          "value": "0x00000400",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "MipShift",
+          "cppValue": "10",
+          "name": "MipShift",
+          "value": "10",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "MipMask",
+          "cppValue": "0x00000400",
+          "name": "MipMask",
+          "value": "0x00000400",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "CompareLess",
+          "cppValue": "0x00010000",
+          "name": "CompareLess",
+          "value": "0x00010000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "CompareLequal",
+          "cppValue": "0x00020000",
+          "name": "CompareLequal",
+          "value": "0x00020000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "CompareEqual",
+          "cppValue": "0x00030000",
+          "name": "CompareEqual",
+          "value": "0x00030000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "CompareGequal",
+          "cppValue": "0x00040000",
+          "name": "CompareGequal",
+          "value": "0x00040000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "CompareGreater",
+          "cppValue": "0x00050000",
+          "name": "CompareGreater",
+          "value": "0x00050000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "CompareNotequal",
+          "cppValue": "0x00060000",
+          "name": "CompareNotequal",
+          "value": "0x00060000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "CompareNever",
+          "cppValue": "0x00070000",
+          "name": "CompareNever",
+          "value": "0x00070000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "CompareAlways",
+          "cppValue": "0x00080000",
+          "name": "CompareAlways",
+          "value": "0x00080000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "CompareShift",
+          "cppValue": "16",
+          "name": "CompareShift",
+          "value": "16",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "CompareMask",
+          "cppValue": "0x000f0000",
+          "name": "CompareMask",
+          "value": "0x000f0000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "BorderColorShift",
+          "cppValue": "24",
+          "name": "BorderColorShift",
+          "value": "24",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "BorderColorMask",
+          "cppValue": "0x0f000000",
+          "name": "BorderColorMask",
+          "value": "0x0f000000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "ReservedShift",
+          "cppValue": "28",
+          "name": "ReservedShift",
+          "value": "28",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "ReservedMask",
+          "cppValue": "0xf0000000",
+          "name": "ReservedMask",
+          "value": "0xf0000000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "None",
+          "cppValue": "0x00000000",
+          "name": "None",
+          "value": "0x00000000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "SampleStencil",
+          "cppValue": "0x00100000",
+          "name": "SampleStencil",
+          "value": "0x00100000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "Point",
+          "cppValue": "0x00000540",
+          "name": "Point",
+          "value": "0x00000540",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "UvwMirror",
+          "cppValue": "0x00000015",
+          "name": "UvwMirror",
+          "value": "0x00000015",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "UvwClamp",
+          "cppValue": "0x0000002a",
+          "name": "UvwClamp",
+          "value": "0x0000002a",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "UvwBorder",
+          "cppValue": "0x0000003f",
+          "name": "UvwBorder",
+          "value": "0x0000003f",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "BitsMask",
+          "cppValue": "0x000f07ff",
+          "name": "BitsMask",
+          "value": "0x000f07ff",
+          "attributes": [],
+          "comment": null
+        }
+      ]
+    },
+    {
+      "cppName": "StateFlags",
+      "name": "StateFlags",
+      "attributes": [
+        "[Flags]"
+      ],
+      "comment": null,
+      "baseType": "ulong",
+      "items": [
+        {
+          "cppName": "WriteR",
+          "cppValue": "0x0000000000000001",
+          "name": "WriteR",
+          "value": "0x0000000000000001",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "WriteG",
+          "cppValue": "0x0000000000000002",
+          "name": "WriteG",
+          "value": "0x0000000000000002",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "WriteB",
+          "cppValue": "0x0000000000000004",
+          "name": "WriteB",
+          "value": "0x0000000000000004",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "WriteA",
+          "cppValue": "0x0000000000000008",
+          "name": "WriteA",
+          "value": "0x0000000000000008",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "WriteZ",
+          "cppValue": "0x0000004000000000",
+          "name": "WriteZ",
+          "value": "0x0000004000000000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "WriteRgb",
+          "cppValue": "0x0000000000000007",
+          "name": "WriteRgb",
+          "value": "0x0000000000000007",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "WriteMask",
+          "cppValue": "0x000000400000000f",
+          "name": "WriteMask",
+          "value": "0x000000400000000f",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "DepthTestLess",
+          "cppValue": "0x0000000000000010",
+          "name": "DepthTestLess",
+          "value": "0x0000000000000010",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "DepthTestLequal",
+          "cppValue": "0x0000000000000020",
+          "name": "DepthTestLequal",
+          "value": "0x0000000000000020",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "DepthTestEqual",
+          "cppValue": "0x0000000000000030",
+          "name": "DepthTestEqual",
+          "value": "0x0000000000000030",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "DepthTestGequal",
+          "cppValue": "0x0000000000000040",
+          "name": "DepthTestGequal",
+          "value": "0x0000000000000040",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "DepthTestGreater",
+          "cppValue": "0x0000000000000050",
+          "name": "DepthTestGreater",
+          "value": "0x0000000000000050",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "DepthTestNotequal",
+          "cppValue": "0x0000000000000060",
+          "name": "DepthTestNotequal",
+          "value": "0x0000000000000060",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "DepthTestNever",
+          "cppValue": "0x0000000000000070",
+          "name": "DepthTestNever",
+          "value": "0x0000000000000070",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "DepthTestAlways",
+          "cppValue": "0x0000000000000080",
+          "name": "DepthTestAlways",
+          "value": "0x0000000000000080",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "DepthTestShift",
+          "cppValue": "4",
+          "name": "DepthTestShift",
+          "value": "4",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "DepthTestMask",
+          "cppValue": "0x00000000000000f0",
+          "name": "DepthTestMask",
+          "value": "0x00000000000000f0",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "BlendZero",
+          "cppValue": "0x0000000000001000",
+          "name": "BlendZero",
+          "value": "0x0000000000001000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "BlendOne",
+          "cppValue": "0x0000000000002000",
+          "name": "BlendOne",
+          "value": "0x0000000000002000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "BlendSrcColor",
+          "cppValue": "0x0000000000003000",
+          "name": "BlendSrcColor",
+          "value": "0x0000000000003000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "BlendInvSrcColor",
+          "cppValue": "0x0000000000004000",
+          "name": "BlendInvSrcColor",
+          "value": "0x0000000000004000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "BlendSrcAlpha",
+          "cppValue": "0x0000000000005000",
+          "name": "BlendSrcAlpha",
+          "value": "0x0000000000005000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "BlendInvSrcAlpha",
+          "cppValue": "0x0000000000006000",
+          "name": "BlendInvSrcAlpha",
+          "value": "0x0000000000006000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "BlendDstAlpha",
+          "cppValue": "0x0000000000007000",
+          "name": "BlendDstAlpha",
+          "value": "0x0000000000007000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "BlendInvDstAlpha",
+          "cppValue": "0x0000000000008000",
+          "name": "BlendInvDstAlpha",
+          "value": "0x0000000000008000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "BlendDstColor",
+          "cppValue": "0x0000000000009000",
+          "name": "BlendDstColor",
+          "value": "0x0000000000009000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "BlendInvDstColor",
+          "cppValue": "0x000000000000a000",
+          "name": "BlendInvDstColor",
+          "value": "0x000000000000a000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "BlendSrcAlphaSat",
+          "cppValue": "0x000000000000b000",
+          "name": "BlendSrcAlphaSat",
+          "value": "0x000000000000b000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "BlendFactor",
+          "cppValue": "0x000000000000c000",
+          "name": "BlendFactor",
+          "value": "0x000000000000c000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "BlendInvFactor",
+          "cppValue": "0x000000000000d000",
+          "name": "BlendInvFactor",
+          "value": "0x000000000000d000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "BlendShift",
+          "cppValue": "12",
+          "name": "BlendShift",
+          "value": "12",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "BlendMask",
+          "cppValue": "0x000000000ffff000",
+          "name": "BlendMask",
+          "value": "0x000000000ffff000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "BlendEquationAdd",
+          "cppValue": "0x0000000000000000",
+          "name": "BlendEquationAdd",
+          "value": "0x0000000000000000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "BlendEquationSub",
+          "cppValue": "0x0000000010000000",
+          "name": "BlendEquationSub",
+          "value": "0x0000000010000000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "BlendEquationRevsub",
+          "cppValue": "0x0000000020000000",
+          "name": "BlendEquationRevsub",
+          "value": "0x0000000020000000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "BlendEquationMin",
+          "cppValue": "0x0000000030000000",
+          "name": "BlendEquationMin",
+          "value": "0x0000000030000000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "BlendEquationMax",
+          "cppValue": "0x0000000040000000",
+          "name": "BlendEquationMax",
+          "value": "0x0000000040000000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "BlendEquationShift",
+          "cppValue": "28",
+          "name": "BlendEquationShift",
+          "value": "28",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "BlendEquationMask",
+          "cppValue": "0x00000003f0000000",
+          "name": "BlendEquationMask",
+          "value": "0x00000003f0000000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "CullCw",
+          "cppValue": "0x0000001000000000",
+          "name": "CullCw",
+          "value": "0x0000001000000000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "CullCcw",
+          "cppValue": "0x0000002000000000",
+          "name": "CullCcw",
+          "value": "0x0000002000000000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "CullShift",
+          "cppValue": "36",
+          "name": "CullShift",
+          "value": "36",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "CullMask",
+          "cppValue": "0x0000003000000000",
+          "name": "CullMask",
+          "value": "0x0000003000000000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "AlphaRefShift",
+          "cppValue": "40",
+          "name": "AlphaRefShift",
+          "value": "40",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "AlphaRefMask",
+          "cppValue": "0x0000ff0000000000",
+          "name": "AlphaRefMask",
+          "value": "0x0000ff0000000000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "PtTristrip",
+          "cppValue": "0x0001000000000000",
+          "name": "PtTristrip",
+          "value": "0x0001000000000000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "PtLines",
+          "cppValue": "0x0002000000000000",
+          "name": "PtLines",
+          "value": "0x0002000000000000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "PtLinestrip",
+          "cppValue": "0x0003000000000000",
+          "name": "PtLinestrip",
+          "value": "0x0003000000000000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "PtPoints",
+          "cppValue": "0x0004000000000000",
+          "name": "PtPoints",
+          "value": "0x0004000000000000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "PtShift",
+          "cppValue": "48",
+          "name": "PtShift",
+          "value": "48",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "PtMask",
+          "cppValue": "0x0007000000000000",
+          "name": "PtMask",
+          "value": "0x0007000000000000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "PointSizeShift",
+          "cppValue": "52",
+          "name": "PointSizeShift",
+          "value": "52",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "PointSizeMask",
+          "cppValue": "0x00f0000000000000",
+          "name": "PointSizeMask",
+          "value": "0x00f0000000000000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "Msaa",
+          "cppValue": "0x0100000000000000",
+          "name": "Msaa",
+          "value": "0x0100000000000000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "Lineaa",
+          "cppValue": "0x0200000000000000",
+          "name": "Lineaa",
+          "value": "0x0200000000000000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "ConservativeRaster",
+          "cppValue": "0x0400000000000000",
+          "name": "ConservativeRaster",
+          "value": "0x0400000000000000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "None",
+          "cppValue": "0x0000000000000000",
+          "name": "None",
+          "value": "0x0000000000000000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "FrontCcw",
+          "cppValue": "0x0000008000000000",
+          "name": "FrontCcw",
+          "value": "0x0000008000000000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "BlendIndependent",
+          "cppValue": "0x0000000400000000",
+          "name": "BlendIndependent",
+          "value": "0x0000000400000000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "BlendAlphaToCoverage",
+          "cppValue": "0x0000000800000000",
+          "name": "BlendAlphaToCoverage",
+          "value": "0x0000000800000000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "Default",
+          "cppValue": "0x010000500000001f",
+          "name": "Default",
+          "value": "0x010000500000001f",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "Mask",
+          "cppValue": "0xffffffffffffffff",
+          "name": "Mask",
+          "value": "0xffffffffffffffff",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "ReservedShift",
+          "cppValue": "61",
+          "name": "ReservedShift",
+          "value": "61",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "ReservedMask",
+          "cppValue": "0xe000000000000000",
+          "name": "ReservedMask",
+          "value": "0xe000000000000000",
+          "attributes": [],
+          "comment": null
+        }
+      ]
+    },
+    {
+      "cppName": "StencilFlags",
+      "name": "StencilFlags",
+      "attributes": [
+        "[Flags]"
+      ],
+      "comment": null,
+      "baseType": "uint",
+      "items": [
+        {
+          "cppName": "FuncRefShift",
+          "cppValue": "0",
+          "name": "FuncRefShift",
+          "value": "0",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "FuncRefMask",
+          "cppValue": "0x000000ff",
+          "name": "FuncRefMask",
+          "value": "0x000000ff",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "FuncRmaskShift",
+          "cppValue": "8",
+          "name": "FuncRmaskShift",
+          "value": "8",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "FuncRmaskMask",
+          "cppValue": "0x0000ff00",
+          "name": "FuncRmaskMask",
+          "value": "0x0000ff00",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "None",
+          "cppValue": "0x00000000",
+          "name": "None",
+          "value": "0x00000000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "Mask",
+          "cppValue": "0xffffffff",
+          "name": "Mask",
+          "value": "0xffffffff",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "Default",
+          "cppValue": "0x00000000",
+          "name": "Default",
+          "value": "0x00000000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "TestLess",
+          "cppValue": "0x00010000",
+          "name": "TestLess",
+          "value": "0x00010000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "TestLequal",
+          "cppValue": "0x00020000",
+          "name": "TestLequal",
+          "value": "0x00020000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "TestEqual",
+          "cppValue": "0x00030000",
+          "name": "TestEqual",
+          "value": "0x00030000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "TestGequal",
+          "cppValue": "0x00040000",
+          "name": "TestGequal",
+          "value": "0x00040000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "TestGreater",
+          "cppValue": "0x00050000",
+          "name": "TestGreater",
+          "value": "0x00050000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "TestNotequal",
+          "cppValue": "0x00060000",
+          "name": "TestNotequal",
+          "value": "0x00060000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "TestNever",
+          "cppValue": "0x00070000",
+          "name": "TestNever",
+          "value": "0x00070000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "TestAlways",
+          "cppValue": "0x00080000",
+          "name": "TestAlways",
+          "value": "0x00080000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "TestShift",
+          "cppValue": "16",
+          "name": "TestShift",
+          "value": "16",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "TestMask",
+          "cppValue": "0x000f0000",
+          "name": "TestMask",
+          "value": "0x000f0000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "OpFailSZero",
+          "cppValue": "0x00000000",
+          "name": "OpFailSZero",
+          "value": "0x00000000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "OpFailSKeep",
+          "cppValue": "0x00100000",
+          "name": "OpFailSKeep",
+          "value": "0x00100000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "OpFailSReplace",
+          "cppValue": "0x00200000",
+          "name": "OpFailSReplace",
+          "value": "0x00200000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "OpFailSIncr",
+          "cppValue": "0x00300000",
+          "name": "OpFailSIncr",
+          "value": "0x00300000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "OpFailSIncrsat",
+          "cppValue": "0x00400000",
+          "name": "OpFailSIncrsat",
+          "value": "0x00400000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "OpFailSDecr",
+          "cppValue": "0x00500000",
+          "name": "OpFailSDecr",
+          "value": "0x00500000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "OpFailSDecrsat",
+          "cppValue": "0x00600000",
+          "name": "OpFailSDecrsat",
+          "value": "0x00600000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "OpFailSInvert",
+          "cppValue": "0x00700000",
+          "name": "OpFailSInvert",
+          "value": "0x00700000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "OpFailSShift",
+          "cppValue": "20",
+          "name": "OpFailSShift",
+          "value": "20",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "OpFailSMask",
+          "cppValue": "0x00f00000",
+          "name": "OpFailSMask",
+          "value": "0x00f00000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "OpFailZZero",
+          "cppValue": "0x00000000",
+          "name": "OpFailZZero",
+          "value": "0x00000000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "OpFailZKeep",
+          "cppValue": "0x01000000",
+          "name": "OpFailZKeep",
+          "value": "0x01000000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "OpFailZReplace",
+          "cppValue": "0x02000000",
+          "name": "OpFailZReplace",
+          "value": "0x02000000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "OpFailZIncr",
+          "cppValue": "0x03000000",
+          "name": "OpFailZIncr",
+          "value": "0x03000000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "OpFailZIncrsat",
+          "cppValue": "0x04000000",
+          "name": "OpFailZIncrsat",
+          "value": "0x04000000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "OpFailZDecr",
+          "cppValue": "0x05000000",
+          "name": "OpFailZDecr",
+          "value": "0x05000000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "OpFailZDecrsat",
+          "cppValue": "0x06000000",
+          "name": "OpFailZDecrsat",
+          "value": "0x06000000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "OpFailZInvert",
+          "cppValue": "0x07000000",
+          "name": "OpFailZInvert",
+          "value": "0x07000000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "OpFailZShift",
+          "cppValue": "24",
+          "name": "OpFailZShift",
+          "value": "24",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "OpFailZMask",
+          "cppValue": "0x0f000000",
+          "name": "OpFailZMask",
+          "value": "0x0f000000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "OpPassZZero",
+          "cppValue": "0x00000000",
+          "name": "OpPassZZero",
+          "value": "0x00000000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "OpPassZKeep",
+          "cppValue": "0x10000000",
+          "name": "OpPassZKeep",
+          "value": "0x10000000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "OpPassZReplace",
+          "cppValue": "0x20000000",
+          "name": "OpPassZReplace",
+          "value": "0x20000000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "OpPassZIncr",
+          "cppValue": "0x30000000",
+          "name": "OpPassZIncr",
+          "value": "0x30000000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "OpPassZIncrsat",
+          "cppValue": "0x40000000",
+          "name": "OpPassZIncrsat",
+          "value": "0x40000000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "OpPassZDecr",
+          "cppValue": "0x50000000",
+          "name": "OpPassZDecr",
+          "value": "0x50000000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "OpPassZDecrsat",
+          "cppValue": "0x60000000",
+          "name": "OpPassZDecrsat",
+          "value": "0x60000000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "OpPassZInvert",
+          "cppValue": "0x70000000",
+          "name": "OpPassZInvert",
+          "value": "0x70000000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "OpPassZShift",
+          "cppValue": "28",
+          "name": "OpPassZShift",
+          "value": "28",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "OpPassZMask",
+          "cppValue": "0xf0000000",
+          "name": "OpPassZMask",
+          "value": "0xf0000000",
+          "attributes": [],
+          "comment": null
+        }
+      ]
+    },
+    {
+      "cppName": "TextureFlags",
+      "name": "TextureFlags",
+      "attributes": [
+        "[Flags]"
+      ],
+      "comment": null,
+      "baseType": "ulong",
+      "items": [
+        {
+          "cppName": "None",
+          "cppValue": "0x0000000000000000",
+          "name": "None",
+          "value": "0x0000000000000000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "MsaaSample",
+          "cppValue": "0x0000000800000000",
+          "name": "MsaaSample",
+          "value": "0x0000000800000000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "Rt",
+          "cppValue": "0x0000001000000000",
+          "name": "Rt",
+          "value": "0x0000001000000000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "ComputeWrite",
+          "cppValue": "0x0000100000000000",
+          "name": "ComputeWrite",
+          "value": "0x0000100000000000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "Srgb",
+          "cppValue": "0x0000200000000000",
+          "name": "Srgb",
+          "value": "0x0000200000000000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "BlitDst",
+          "cppValue": "0x0000400000000000",
+          "name": "BlitDst",
+          "value": "0x0000400000000000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "ReadBack",
+          "cppValue": "0x0000800000000000",
+          "name": "ReadBack",
+          "value": "0x0000800000000000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "ExternalShared",
+          "cppValue": "0x0001000000000000",
+          "name": "ExternalShared",
+          "value": "0x0001000000000000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "RtMsaaX2",
+          "cppValue": "0x0000002000000000",
+          "name": "RtMsaaX2",
+          "value": "0x0000002000000000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "RtMsaaX4",
+          "cppValue": "0x0000003000000000",
+          "name": "RtMsaaX4",
+          "value": "0x0000003000000000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "RtMsaaX8",
+          "cppValue": "0x0000004000000000",
+          "name": "RtMsaaX8",
+          "value": "0x0000004000000000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "RtMsaaX16",
+          "cppValue": "0x0000005000000000",
+          "name": "RtMsaaX16",
+          "value": "0x0000005000000000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "RtMsaaShift",
+          "cppValue": "36",
+          "name": "RtMsaaShift",
+          "value": "36",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "RtMsaaMask",
+          "cppValue": "0x0000007000000000",
+          "name": "RtMsaaMask",
+          "value": "0x0000007000000000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "RtWriteOnly",
+          "cppValue": "0x0000008000000000",
+          "name": "RtWriteOnly",
+          "value": "0x0000008000000000",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "RtShift",
+          "cppValue": "36",
+          "name": "RtShift",
+          "value": "36",
+          "attributes": [],
+          "comment": null
+        },
+        {
+          "cppName": "RtMask",
+          "cppValue": "0x000000f000000000",
+          "name": "RtMask",
+          "value": "0x000000f000000000",
+          "attributes": [],
+          "comment": null
+        }
+      ]
+    }
+  ]
+}

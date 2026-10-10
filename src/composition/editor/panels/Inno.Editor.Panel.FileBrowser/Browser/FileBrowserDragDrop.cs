@@ -26,8 +26,10 @@ internal sealed class FileBrowserDragDrop(AssetEditorModule assets)
     /// <param name="entry">
     /// The source entry bound to the last native item.
     /// </param>
-    internal void DrawAssetSource(EditorContext context, AssetFileEntry entry)
-    {
+    internal void DrawAssetSource(
+        EditorContext context,
+        AssetFileEntry entry
+    ) {
         if (!assets.TryCreateContext(
                 context,
                 entry.assetPath.ToString(),
@@ -53,8 +55,8 @@ internal sealed class FileBrowserDragDrop(AssetEditorModule assets)
     /// </param>
     internal void DrawDirectoryTarget(
         EditorContext context,
-        string relativePath)
-    {
+        string relativePath
+    ) {
         if (FileBrowserUtility.IsReadOnlySource(assets.pipeline, relativePath))
             return;
         System.Numerics.Vector2 minimum = NativeImGui.GetItemRectMin();

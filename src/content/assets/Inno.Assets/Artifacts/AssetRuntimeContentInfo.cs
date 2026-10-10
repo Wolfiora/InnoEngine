@@ -26,8 +26,8 @@ public sealed class AssetRuntimeContentInfo
         IReadOnlyList<AssetSourceId> sources,
         int assetCount,
         int artifactBundleCount,
-        long totalBytes)
-    {
+        long totalBytes
+    ) {
         this.sources = sources;
         this.assetCount = assetCount;
         this.artifactBundleCount = artifactBundleCount;

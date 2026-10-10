@@ -29,15 +29,14 @@ internal sealed class InspectorCardControls
         m_log = logs.CreateLogger<InspectorCardControls>();
     }
 
-    internal float GetWidth(bool canRemove)
-        => EditorWidget.GetCompactClickableTextSize().X * (canRemove ? 2f : 1f);
+    internal float GetWidth(bool canRemove) => EditorWidget.GetCompactClickableTextSize().X * (canRemove ? 2f : 1f);
 
     internal void DrawComponent(
         SceneEdits edits,
         GameComponent component,
         bool canRemove,
-        Action requestRemove)
-    {
+        Action requestRemove
+    ) {
         ArgumentNullException.ThrowIfNull(edits);
         ArgumentNullException.ThrowIfNull(component);
         ArgumentNullException.ThrowIfNull(requestRemove);
@@ -66,8 +65,8 @@ internal sealed class InspectorCardControls
         SceneEdits edits,
         GameScene owner,
         GameSystem system,
-        Action requestRemove)
-    {
+        Action requestRemove
+    ) {
         ArgumentNullException.ThrowIfNull(edits);
         ArgumentNullException.ThrowIfNull(owner);
         ArgumentNullException.ThrowIfNull(system);
@@ -93,8 +92,8 @@ internal sealed class InspectorCardControls
     internal void DrawComponentDragSource(
         GameComponent component,
         string title,
-        bool dimmed)
-    {
+        bool dimmed
+    ) {
         ArgumentNullException.ThrowIfNull(component);
         ArgumentNullException.ThrowIfNull(title);
         if (component.identity.runtimeIdentity is not RuntimeIdentity identity)
@@ -106,8 +105,11 @@ internal sealed class InspectorCardControls
             allowHoldToOpenOthers: false);
     }
 
-    internal void DrawSystemDragSource(GameSystem system, string title, bool dimmed)
-    {
+    internal void DrawSystemDragSource(
+        GameSystem system,
+        string title,
+        bool dimmed
+    ) {
         ArgumentNullException.ThrowIfNull(system);
         ArgumentNullException.ThrowIfNull(title);
         if (system.identity.runtimeIdentity is not RuntimeIdentity identity)
@@ -125,8 +127,8 @@ internal sealed class InspectorCardControls
         GameComponent target,
         int targetIndex,
         Vector2 cardMinimum,
-        Vector2 cardMaximum)
-    {
+        Vector2 cardMaximum
+    ) {
         ArgumentNullException.ThrowIfNull(interactions);
         ArgumentNullException.ThrowIfNull(edits);
         ArgumentNullException.ThrowIfNull(target);
@@ -139,7 +141,10 @@ internal sealed class InspectorCardControls
             source => source is GameComponent component &&
                       ReferenceEquals(component.gameObject, target.gameObject) &&
                       !ReferenceEquals(component, target),
-            (source, insertAfter) =>
+            (
+                source,
+                insertAfter
+            ) =>
             {
                 var component = (GameComponent)source;
                 int sourceIndex = component.gameObject.GetComponentIndex(component);
@@ -159,8 +164,8 @@ internal sealed class InspectorCardControls
         GameSystem target,
         int targetIndex,
         Vector2 cardMinimum,
-        Vector2 cardMaximum)
-    {
+        Vector2 cardMaximum
+    ) {
         ArgumentNullException.ThrowIfNull(interactions);
         ArgumentNullException.ThrowIfNull(edits);
         ArgumentNullException.ThrowIfNull(scene);
@@ -174,7 +179,10 @@ internal sealed class InspectorCardControls
             source => source is GameSystem system &&
                       !ReferenceEquals(system, target) &&
                       IsOwnedBy(scene, system),
-            (source, insertAfter) =>
+            (
+                source,
+                insertAfter
+            ) =>
             {
                 var system = (GameSystem)source;
                 int sourceIndex = scene.GetSystemIndex(system);
@@ -195,8 +203,8 @@ internal sealed class InspectorCardControls
         Vector2 cardMaximum,
         Func<IdentityObject, bool> accepts,
         Action<IdentityObject, bool> move,
-        string operation)
-    {
+        string operation
+    ) {
         ImGuiPayloadPtr activePayload = NativeImGui.GetDragDropPayload();
         if (activePayload.IsNull ||
             !activePayload.IsDataType(payloadType) ||
@@ -232,8 +240,10 @@ internal sealed class InspectorCardControls
             TryEdit(() => move(source, insertAfter), operation);
     }
 
-    private static void DrawDragPreview(string title, bool dimmed)
-    {
+    private static void DrawDragPreview(
+        string title,
+        bool dimmed
+    ) {
         Vector2 origin = NativeImGui.GetCursorScreenPos();
         Vector2 padding = EditorWidget.style.inspectorCardHeaderPadding;
         Vector2 gripSize = NativeImGui.CalcTextSize(ImGuiIcon.GripVertical);
@@ -258,8 +268,10 @@ internal sealed class InspectorCardControls
         NativeImGui.Dummy(size);
     }
 
-    private void TryEdit(Action edit, string operation)
-    {
+    private void TryEdit(
+        Action edit,
+        string operation
+    ) {
         try
         {
             edit();
@@ -270,8 +282,10 @@ internal sealed class InspectorCardControls
         }
     }
 
-    private static bool IsOwnedBy(GameScene scene, GameSystem system)
-    {
+    private static bool IsOwnedBy(
+        GameScene scene,
+        GameSystem system
+    ) {
         try
         {
             _ = scene.GetSystemIndex(system);

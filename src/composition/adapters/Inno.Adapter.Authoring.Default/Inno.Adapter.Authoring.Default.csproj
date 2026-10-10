@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <WarningsAsErrors>$(WarningsAsErrors);CS1572;CS1573;CS1591</WarningsAsErrors>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../../../adapters/common/Inno.Adapter/Inno.Adapter.csproj" />
+    <ProjectReference Include="../Inno.Adapter.Default/Inno.Adapter.Default.csproj" />
+    <ProjectReference Include="../../../adapters/text/Inno.Adapter.Text/Inno.Adapter.Text.csproj" />
+    <ProjectReference Include="../../../adapters/ui/Inno.Adapter.UI/Inno.Adapter.UI.csproj" />
+    <ProjectReference Include="../../../../backends/RmlUi/runtime/Inno.Adapter.UI.RmlUi.Authoring/Inno.Adapter.UI.RmlUi.Authoring.csproj" />
+    <ProjectReference
+      Include="../../../../backends/ImGui/runtime/Inno.Adapter.Presentation.ImGui.Bgfx/Inno.Adapter.Presentation.ImGui.Bgfx.csproj"
+      PrivateAssets="compile" />
+    <ProjectReference Include="../../../adapters/rendering/Inno.Adapter.Rendering.Authoring/Inno.Adapter.Rendering.Authoring.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../../../foundation/extensibility/Inno.Extensibility.Catalogs/Inno.Extensibility.Catalogs.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../../../services/rendering/Inno.Rendering.Assets.Authoring/Inno.Rendering.Assets.Authoring.csproj" />
+  </ItemGroup>
+</Project>

@@ -23,13 +23,16 @@ public static class GraphDocumentCodec
     /// </returns>
     public static byte[] Encode(
         GraphDocument document,
-        SerializationRegistry serialization)
-    {
+        SerializationRegistry serialization
+    ) {
         ArgumentNullException.ThrowIfNull(document);
         ArgumentNullException.ThrowIfNull(serialization);
         return serialization.Encode(writer =>
         {
-            writer.WriteObjectArray("nodes", document.nodes, static (nodeWriter, node) =>
+            writer.WriteObjectArray("nodes", document.nodes, static (
+                nodeWriter,
+                node
+            ) =>
             {
                 nodeWriter.Write("id", node.id.value);
                 nodeWriter.Write("definition", node.definitionId);
@@ -38,13 +41,19 @@ public static class GraphDocumentCodec
                 nodeWriter.WriteObjectArray(
                     "values",
                     node.values.OrderBy(static pair => pair.Key, StringComparer.Ordinal),
-                    static (valueWriter, pair) =>
+                    static (
+                        valueWriter,
+                        pair
+                    ) =>
                     {
                         valueWriter.Write("id", pair.Key);
                         valueWriter.Write("data", pair.Value.ToArray());
                     });
             });
-            writer.WriteObjectArray("edges", document.edges, static (edgeWriter, edge) =>
+            writer.WriteObjectArray("edges", document.edges, static (
+                edgeWriter,
+                edge
+            ) =>
             {
                 edgeWriter.Write("id", edge.id.value);
                 edgeWriter.Write("outputNode", edge.output.nodeId.value);
@@ -55,7 +64,10 @@ public static class GraphDocumentCodec
             writer.WriteObjectArray(
                 "metadata",
                 document.metadata.OrderBy(static pair => pair.Key, StringComparer.Ordinal),
-                static (metadataWriter, pair) =>
+                static (
+                    metadataWriter,
+                    pair
+                ) =>
                 {
                     metadataWriter.Write("id", pair.Key);
                     metadataWriter.Write("data", pair.Value.ToArray());
@@ -77,8 +89,8 @@ public static class GraphDocumentCodec
     /// </returns>
     public static GraphDocument Decode(
         ReadOnlySpan<byte> bytes,
-        SerializationRegistry serialization)
-    {
+        SerializationRegistry serialization
+    ) {
         ArgumentNullException.ThrowIfNull(serialization);
         return serialization.Decode(bytes, reader =>
         {

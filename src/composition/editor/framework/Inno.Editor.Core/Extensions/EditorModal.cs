@@ -30,6 +30,12 @@ public abstract class EditorModal
     public virtual bool canResize => false;
 
     /// <summary>
+    /// Gets whether the modal window owns scrolling when its content overflows.
+    /// Disable this when a child region owns all scrolling.
+    /// </summary>
+    public virtual bool allowScrolling => true;
+
+    /// <summary>
     /// Gets the initial modal size in unscaled editor units, or <see cref="Vector2.Zero"/>
     /// when the runtime should size the modal from its content.
     /// </summary>

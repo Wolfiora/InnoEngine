@@ -22,8 +22,7 @@ internal sealed class MoveAssetEntryDropHandler(AssetEditorModule assets)
     /// <param name="context">
     /// The context that supplies state and services for this operation.
     /// </param>
-    protected override EditorDropStatus Query(
-        EditorDropContext<AssetFileEntry, string> context)
+    protected override EditorDropStatus Query(EditorDropContext<AssetFileEntry, string> context)
         => assets.CanMoveToDirectory(context.source.assetPath.ToString(), context.target)
             ? EditorDropStatus.Accept()
             : EditorDropStatus.rejected;
@@ -37,8 +36,7 @@ internal sealed class MoveAssetEntryDropHandler(AssetEditorModule assets)
     /// <returns>
     /// The validated editor drop result that represents the completed operation.
     /// </returns>
-    protected override EditorDropResult Drop(
-        EditorDropContext<AssetFileEntry, string> context)
+    protected override EditorDropResult Drop(EditorDropContext<AssetFileEntry, string> context)
     {
         if (!Query(context).canDrop)
             return EditorDropResult.rejected;

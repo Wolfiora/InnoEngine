@@ -99,8 +99,10 @@ public sealed class PluginManifest : ISerializable
             throw new InvalidDataException("The current local Plugin container requires the single content root 'Assets'.");
     }
 
-    private static void EnsureUniquePluginIds(string[] values, string name)
-    {
+    private static void EnsureUniquePluginIds(
+        string[] values,
+        string name
+    ) {
         if (values is null || values.Any(string.IsNullOrWhiteSpace))
             throw new InvalidDataException($"Plugin manifest field '{name}' contains an empty value.");
         if (values.Distinct(StringComparer.Ordinal).Count() != values.Length)
@@ -109,8 +111,10 @@ public sealed class PluginManifest : ISerializable
             _ = new Inno.Assets.AssetSourceId(value);
     }
 
-    private static void EnsureUniquePaths(string[] values, string name)
-    {
+    private static void EnsureUniquePaths(
+        string[] values,
+        string name
+    ) {
         if (values is null || values.Any(string.IsNullOrWhiteSpace))
             throw new InvalidDataException($"Plugin manifest field '{name}' contains an empty path.");
         string[] normalized = values.Select(static value =>

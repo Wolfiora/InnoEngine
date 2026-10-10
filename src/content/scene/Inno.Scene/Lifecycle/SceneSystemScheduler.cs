@@ -25,8 +25,10 @@ internal sealed class SceneSystemScheduler
     private ReadOnlyCollection<GameSystem>? m_displayView;
     private SystemEntry[]? m_executionSnapshot;
 
-    internal SceneSystemScheduler(GameScene scene, SceneTypeCatalog types)
-    {
+    internal SceneSystemScheduler(
+        GameScene scene,
+        SceneTypeCatalog types
+    ) {
         m_scene = scene;
         m_types = types;
         m_behaviors = new GameBehaviorLifecycleRunner(scene);
@@ -40,8 +42,11 @@ internal sealed class SceneSystemScheduler
     internal TSystem Add<TSystem>() where TSystem : GameSystem, new()
         => (TSystem)Add(typeof(TSystem), persistentId: null, invokeReset: true);
 
-    internal GameSystem Add(Type systemType, Guid? persistentId, bool invokeReset)
-    {
+    internal GameSystem Add(
+        Type systemType,
+        Guid? persistentId,
+        bool invokeReset
+    ) {
         ArgumentNullException.ThrowIfNull(systemType);
         if (!m_types.TryGetSystem(systemType, out SceneSystemTypeDescriptor? descriptor) ||
             !descriptor!.isConcrete)
@@ -51,15 +56,7 @@ internal sealed class SceneSystemScheduler
                 nameof(systemType));
         }
 
-        ConstructorInfo? constructor = systemType.GetConstructor(
-            BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic,
-            binder: null,
-            Type.EmptyTypes,
-            modifiers: null);
-        if (constructor is null)
-            throw new InvalidOperationException($"GameSystem '{descriptor.displayName}' requires a parameterless constructor.");
-        var system = (GameSystem)(constructor.Invoke(null)
-            ?? throw new InvalidOperationException($"Could not create GameSystem '{descriptor.displayName}'."));
+        var system = (GameSystem)m_types.snapshot.CreateInstance(systemType);
         Add(system, descriptor, persistentId, invokeReset);
         return system;
     }
@@ -69,8 +66,8 @@ internal sealed class SceneSystemScheduler
         string missingTypeName,
         ReadOnlySpan<byte> serializedState,
         Guid? persistentId,
-        IReadOnlyList<AssetDependency>? dependencies = null)
-    {
+        IReadOnlyList<AssetDependency>? dependencies = null
+    ) {
         var system = new MissingGameSystem(
             missingType,
             missingTypeName,
@@ -84,8 +81,11 @@ internal sealed class SceneSystemScheduler
         return system;
     }
 
-    internal void Add(GameSystem system, Guid? persistentId = null, bool invokeReset = true)
-    {
+    internal void Add(
+        GameSystem system,
+        Guid? persistentId = null,
+        bool invokeReset = true
+    ) {
         ArgumentNullException.ThrowIfNull(system);
         SceneSystemTypeDescriptor descriptor = m_types.GetSystem(system.GetType());
         Add(system, descriptor, persistentId, invokeReset);
@@ -136,8 +136,10 @@ internal sealed class SceneSystemScheduler
         return entry!.displayIndex;
     }
 
-    internal void SetIndex(GameSystem system, int systemIndex)
-    {
+    internal void SetIndex(
+        GameSystem system,
+        int systemIndex
+    ) {
         if (!TryGetEntry(system, out SystemEntry? entry))
             throw new InvalidOperationException("The GameSystem is not registered with this scene.");
         int currentIndex = entry!.displayIndex;
@@ -153,8 +155,8 @@ internal sealed class SceneSystemScheduler
     internal void ReplaceForReload(
         GameSystem previous,
         GameSystem replacement,
-        int replacementRuntimeTypeId)
-    {
+        int replacementRuntimeTypeId
+    ) {
         if (!TryGetEntry(previous, out SystemEntry? entry))
             throw new InvalidOperationException("The GameSystem being replaced is not registered.");
         if (TryGetEntry(replacement, out _))
@@ -224,8 +226,7 @@ internal sealed class SceneSystemScheduler
         }
     }
 
-    internal void NotifyGameBehaviorActivationChanged(GameBehavior behavior)
-        => m_behaviors.Refresh(behavior);
+    internal void NotifyGameBehaviorActivationChanged(GameBehavior behavior) => m_behaviors.Refresh(behavior);
 
     internal void NotifyGameSystemActivationChanged(GameSystem system)
     {
@@ -233,8 +234,7 @@ internal sealed class SceneSystemScheduler
             _ = SceneLifecycle.Prepare(system, m_scene);
     }
 
-    internal void NotifyHierarchyActivationChanged()
-        => m_behaviors.RefreshAll();
+    internal void NotifyHierarchyActivationChanged() => m_behaviors.RefreshAll();
 
     internal void DestroyGameBehavior(GameBehavior behavior) => m_behaviors.Destroy(behavior);
 
@@ -322,8 +322,8 @@ internal sealed class SceneSystemScheduler
         GameSystem system,
         SceneSystemTypeDescriptor descriptor,
         Guid? persistentId,
-        bool invokeReset)
-    {
+        bool invokeReset
+    ) {
         if (TryGetEntry(system, out _))
         {
             throw new InvalidOperationException(
@@ -365,8 +365,10 @@ internal sealed class SceneSystemScheduler
         }
     }
 
-    private bool TryGetEntry(GameSystem system, out SystemEntry? entry)
-    {
+    private bool TryGetEntry(
+        GameSystem system,
+        out SystemEntry? entry
+    ) {
         entry = m_systems.First(m_systemKey, system);
         return entry is not null;
     }
@@ -416,8 +418,8 @@ internal sealed class SceneSystemScheduler
     private sealed class SystemEntry(
         GameSystem system,
         int runtimeTypeId,
-        int displayIndex)
-    {
+        int displayIndex
+    ) {
         internal GameSystem system { get; set; } = system;
         internal int runtimeTypeId { get; set; } = runtimeTypeId;
         internal int displayIndex { get; set; } = displayIndex;
@@ -440,8 +442,10 @@ internal sealed class SceneSystemScheduler
         /// <returns>
         /// The scalar result calculated from the supplied inputs.
         /// </returns>
-        public int Compare(SystemEntry? left, SystemEntry? right)
-        {
+        public int Compare(
+            SystemEntry? left,
+            SystemEntry? right
+        ) {
             if (ReferenceEquals(left, right))
                 return 0;
             if (left is null)

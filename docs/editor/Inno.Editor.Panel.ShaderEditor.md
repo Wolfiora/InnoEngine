@@ -1,10 +1,12 @@
 # Inno.Editor.Panel.ShaderEditor
 
-[Editor 索引](README.md) · [Wiki 首页](../README.md) · [Graph 控制层](Inno.Editor.Graph.md) · [Shader 模型](../render/Inno.Rendering.Shaders.md)
+[Editor 索引](README.md) · [Wiki 首页](../README.md) · [Graph 控制层](Inno.Editor.Graph.md) · [Shader 模型](../rendering/Inno.Rendering.Shaders.md)
 
 ## 职责与边界
 
 内置 `.ishader` 编辑界面，替代已经移除的 Material Graph Panel。`.imaterial` 仍只保存 Shader 引用及参数，不承载图。画布跟随 File Browser 当前 Shader 选择；双击 Shader 打开并聚焦。没有固定侧栏或路径输入框；画布 Header 第一行是当前 Shader 下拉选择，第二行提供 Save / Revert / Format / Check，星号表示尚未应用的草稿。没有选中 Shader 时 Header 仍然存在，显示 `Select Shader` 下拉选择，四个文档操作按钮禁用；其下使用带 Panel padding 的居中空状态。
+
+画布右上角显示小地图：按当前节点与可视区域的世界坐标计算缩放，显示节点、连接和当前视口框；左键点击或拖动小地图可平移画布到对应位置。小地图使用独立 child 命中区，不让其上的点击、拖拽或滚轮穿入底层节点和画布导航。
 
 当前实现与完整验收必须区分：右键菜单、节点值编辑、捕获式平移、鼠标锚点缩放、框选、节点移动、连接、复制粘贴、显式保存已经接线；完整 UI 实操、所有高级节点/资源操作和最终渲染一致性尚待验收。详见[实施状态](../issues/2026-09-11-unified-shader-implementation.md)。
 
@@ -62,6 +64,10 @@ public sealed class SurfaceDrawer : ShaderNodeDrawer
 
 ## 当前限制
 
+画布右上角小地图每帧只计算一次各节点的中立几何，随后通过稳定节点 ID 连接端点。
+几何缓存复用容量并按帧刷新，不保留扩展对象或依赖隐式 dirty 通知；拖动预览与缩放仍实时反映。
+节点和边的计算为 O(V+E)，不再对每条边线性扫描完整文档。
+
 节点参数在 Inspector 编辑，不在画布重复一套字段；输入值本身只由 Graph 连接决定。Optional 输入在未连接时由编译器生成精确类型的零值，Inspector 只显示 `Optional · Zero when unconnected`，不保存或提供外部 override。Required 输入必须在 Graph 中连接 Constant 或其他类型兼容的 output；旧文档里残留的 `input-default.*` 不能再让 required 输入通过编译。资源类型若不能表示零值则不能声明为 optional。连接后只显示上游来源。输入 label 只保留端口名；类型和来源统一留在右侧 value column，以 `Float4 · From tint-multiply.value` 这类普通弱化文字表达。所有 Inspector fieldset 都可直接点击标题文字折叠，折叠后保留中断横线和左右居中的短竖帽，不显示额外加减号或整行 hover 背景。Preview、连接来源、错误提示和其他 Hint 都按当前 fieldset 宽度自动换行。
 Inspector 的 Draft Preview 只在用户显式执行 Check 且当前草稿编译成功后显示；任何后续草稿修改都会使其失效并要求重新 Check。Check 失败时 Inspector 只提示失败，不显示详细错误，也不呈现编译器缓存中的 last-good 候选；完整成功/失败诊断统一进入 Console。未经 Save 的预览不进入正式资源发布；它当前是编译预览，不是完整材质画面预览。
 
@@ -80,3 +86,35 @@ Shader 与节点 Inspector 不重复画布 Header 的 Save / Revert / Format / C
 
 Stage Input 的 `Source = Builtin` 表示该值由 GPU 阶段或引擎/Adapter 的标准阶段环境提供，而不是来自顶点缓冲、Material uniform、纹理或上游 varying。图保存后端中立 semantic，例如 Vertex 的 `vertex-id`/`instance-id`/`view-projection`、Fragment 的 `fragment-coordinate`/`front-facing`/`view-rectangle`，以及 Compute 的 `global-invocation-id`；Target 与 Adapter 必须共同支持该 semantic 和精确类型，否则 Check 产生错误。它不是任意源码表达式，也不是让用户填原生变量名的旁路。
 完整 UI 实操和热重载回归仍在最终验收清单中，不能把接线完成等同为验收通过。
+
+## 当前源码公开 API 清单
+
+只列当前源码的 public/protected 表面；内部实现不作为稳定 API。参数、返回、失败和 owner 以英文 XML 为准。
+
+本项目没有公开入口，通过组合或扩展发现使用内部实现。
+
+## 项目依赖
+
+- [Inno.Editor.Inspection](Inno.Editor.Inspection.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Editor.Shaders](Inno.Editor.Shaders.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Core.Execution](../core/Inno.Core.Execution.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Editor.Rendering](Inno.Editor.Rendering.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Editor.Panel.FileBrowser](Inno.Editor.Panel.FileBrowser.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Core.Input](../core/Inno.Core.Input.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Native.ImGui](../backends/ImGui/Inno.Native.ImGui.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Core.IO](../core/Inno.Core.IO.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Scripting.Api](../scripting/Inno.Scripting.Api.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Extensibility.Types](../extensibility/Inno.Extensibility.Types.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Assets](../assets/Inno.Assets.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Assets.Pipeline](../assets/Inno.Assets.Pipeline.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Rendering](../rendering/Inno.Rendering.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Rendering.Shaders](../rendering/Inno.Rendering.Shaders.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Rendering.Assets](../rendering/Inno.Rendering.Assets.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Editor.Core](Inno.Editor.Core.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Editor.Graph](Inno.Editor.Graph.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Editor.Interactions](Inno.Editor.Interactions.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Editor.ImGui](Inno.Editor.ImGui.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Core.Graphs](../core/Inno.Core.Graphs.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Rendering.Assets.Authoring](../rendering/Inno.Rendering.Assets.Authoring.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Core.Serialization](../core/Inno.Core.Serialization.md)：公开引用边界由实际签名核对。
+- [Inno.Extensibility.Catalogs](../extensibility/Inno.Extensibility.Catalogs.md)：公开引用边界由实际签名核对。

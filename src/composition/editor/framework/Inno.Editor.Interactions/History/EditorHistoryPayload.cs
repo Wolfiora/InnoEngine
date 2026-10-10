@@ -19,8 +19,11 @@ public sealed class EditorHistoryPayload : IDisposable
         length = bytes.LongLength;
     }
 
-    private EditorHistoryPayload(EditorHistoryBlobStore store, string path, long length)
-    {
+    private EditorHistoryPayload(
+        EditorHistoryBlobStore store,
+        string path,
+        long length
+    ) {
         m_store = store;
         m_path = path;
         this.length = length;
@@ -49,8 +52,7 @@ public sealed class EditorHistoryPayload : IDisposable
     /// <returns>
     /// A new independently owned payload.
     /// </returns>
-    public static EditorHistoryPayload FromBytes(ReadOnlySpan<byte> bytes)
-        => new(bytes.ToArray());
+    public static EditorHistoryPayload FromBytes(ReadOnlySpan<byte> bytes) => new(bytes.ToArray());
 
     /// <summary>
     /// Reads the complete immutable payload into a newly allocated byte array.
@@ -72,8 +74,8 @@ public sealed class EditorHistoryPayload : IDisposable
     internal EditorHistoryPayload Retain(
         EditorHistoryBlobStore store,
         int inlinePayloadThreshold,
-        bool canStoreOnDisk)
-    {
+        bool canStoreOnDisk
+    ) {
         ObjectDisposedException.ThrowIf(m_disposed, this);
         byte[] bytes = ReadBytes();
         if (!canStoreOnDisk || bytes.Length < inlinePayloadThreshold)

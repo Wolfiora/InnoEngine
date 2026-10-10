@@ -1,0 +1,7 @@
+if(NOT INNO_LIBRARY_KIND STREQUAL "STATIC")
+    message(FATAL_ERROR "This archive recipe requires explicit static linkage")
+endif()
+set(MINIAUDIO_INSTALL OFF CACHE BOOL "" FORCE)
+set(MINIAUDIO_NO_EXTRA_NODES ON CACHE BOOL "" FORCE)
+add_subdirectory("${INNO_ROOT}/extern/miniaudio" miniaudio)
+install(TARGETS miniaudio ARCHIVE COMPONENT Inno DESTINATION "${INNO_COMPONENT_ID}/${INNO_NATIVE_TARGET}")

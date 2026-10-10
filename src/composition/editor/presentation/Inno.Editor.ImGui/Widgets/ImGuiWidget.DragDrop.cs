@@ -39,7 +39,8 @@ public static partial class ImGuiWidget
         string payloadType,
         in TPayload payload,
         Action? drawPreview = null,
-        bool allowHoldToOpenOthers = true)
+        bool allowHoldToOpenOthers = true
+    )
         where TPayload : unmanaged
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(payloadType);
@@ -88,7 +89,8 @@ public static partial class ImGuiWidget
         string payloadType,
         Func<TPayload> payloadFactory,
         Action? drawPreview = null,
-        bool allowHoldToOpenOthers = true)
+        bool allowHoldToOpenOthers = true
+    )
         where TPayload : unmanaged
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(payloadType);
@@ -123,7 +125,10 @@ public static partial class ImGuiWidget
     /// <returns>
     /// <see langword="true"/> only when a compatible payload is delivered.
     /// </returns>
-    public static bool DragDropTarget<TPayload>(string payloadType, out TPayload payload)
+    public static bool DragDropTarget<TPayload>(
+        string payloadType,
+        out TPayload payload
+    )
         where TPayload : unmanaged
     {
         return DragDropTarget(payloadType, out payload, out _);
@@ -150,7 +155,8 @@ public static partial class ImGuiWidget
     public static bool DragDropTarget<TPayload>(
         string payloadType,
         out TPayload payload,
-        out bool isPreviewing)
+        out bool isPreviewing
+    )
         where TPayload : unmanaged
     {
         return DragDropTarget(payloadType, out payload, out isPreviewing, drawDefaultHighlight: true);
@@ -181,7 +187,8 @@ public static partial class ImGuiWidget
         string payloadType,
         out TPayload payload,
         out bool isPreviewing,
-        bool drawDefaultHighlight)
+        bool drawDefaultHighlight
+    )
         where TPayload : unmanaged
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(payloadType);
@@ -245,7 +252,8 @@ public static partial class ImGuiWidget
         uint targetId,
         out TPayload payload,
         out bool isPreviewing,
-        bool drawDefaultHighlight = true)
+        bool drawDefaultHighlight = true
+    )
         where TPayload : unmanaged
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(payloadType);
@@ -273,7 +281,10 @@ public static partial class ImGuiWidget
         }
     }
 
-    private static unsafe void SetDragDropPayload<TPayload>(string payloadType, in TPayload payload)
+    private static unsafe void SetDragDropPayload<TPayload>(
+        string payloadType,
+        in TPayload payload
+    )
         where TPayload : unmanaged
     {
         TPayload payloadCopy = payload;
@@ -282,7 +293,8 @@ public static partial class ImGuiWidget
 
     private static unsafe bool TryReadDragDropPayload<TPayload>(
         ImGuiPayloadPtr nativePayload,
-        out TPayload payload)
+        out TPayload payload
+    )
         where TPayload : unmanaged
     {
         payload = default;

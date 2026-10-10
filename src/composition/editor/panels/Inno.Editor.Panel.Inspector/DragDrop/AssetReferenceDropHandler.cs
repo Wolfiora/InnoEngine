@@ -17,8 +17,7 @@ internal sealed class AssetReferenceDropHandler(AssetPipeline assets)
     /// <returns>
     /// The validated editor drop status that represents the completed operation.
     /// </returns>
-    protected override EditorDropStatus Query(
-        EditorDropContext<AssetFileEntry, AssetReferenceDropTarget> context)
+    protected override EditorDropStatus Query(EditorDropContext<AssetFileEntry, AssetReferenceDropTarget> context)
     {
         if (!assets.TryGetPersistentId(context.source.assetPath, out System.Guid persistentId) ||
             persistentId == System.Guid.Empty ||
@@ -40,8 +39,7 @@ internal sealed class AssetReferenceDropHandler(AssetPipeline assets)
     /// <returns>
     /// The validated editor drop result that represents the completed operation.
     /// </returns>
-    protected override EditorDropResult Drop(
-        EditorDropContext<AssetFileEntry, AssetReferenceDropTarget> context)
+    protected override EditorDropResult Drop(EditorDropContext<AssetFileEntry, AssetReferenceDropTarget> context)
     {
         if (!Query(context).canDrop)
             return EditorDropResult.rejected;

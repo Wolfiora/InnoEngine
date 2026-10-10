@@ -22,5 +22,8 @@ public interface IRenderFrameGraphContributor
     /// <param name="frameIndex">
     /// Monotonic engine render frame index.
     /// </param>
-    void AddRenderPasses(RenderGraphBuilder graph, ulong frameIndex);
+    void AddRenderPasses(
+        RenderGraphBuilder graph,
+        ulong frameIndex
+    );
 }

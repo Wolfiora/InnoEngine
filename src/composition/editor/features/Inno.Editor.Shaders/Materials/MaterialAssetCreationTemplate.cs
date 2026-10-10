@@ -1,5 +1,6 @@
 using Inno.Editor.Assets;
 using Inno.Rendering;
+using Inno.Rendering.Assets;
 
 namespace Inno.Editor.Shaders;
 

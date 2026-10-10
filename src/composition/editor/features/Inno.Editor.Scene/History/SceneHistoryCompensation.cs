@@ -12,8 +12,8 @@ internal static class SceneHistoryCompensation
         GameScene scene,
         IReadOnlySet<GameObject> existing,
         string description,
-        EditorSceneWorkspace workspace)
-    {
+        EditorSceneWorkspace workspace
+    ) {
         ArgumentNullException.ThrowIfNull(scene);
         ArgumentNullException.ThrowIfNull(existing);
         ArgumentException.ThrowIfNullOrWhiteSpace(description);
@@ -53,8 +53,8 @@ internal static class SceneHistoryCompensation
         EngineObject target,
         Func<bool> remove,
         string description,
-        EditorSceneWorkspace workspace)
-    {
+        EditorSceneWorkspace workspace
+    ) {
         ArgumentNullException.ThrowIfNull(target);
         ArgumentNullException.ThrowIfNull(remove);
         ArgumentException.ThrowIfNullOrWhiteSpace(description);
@@ -96,11 +96,9 @@ internal static class SceneHistoryCompensation
 
 internal readonly record struct SceneHistoryCompensationResult(
     bool statePreserved,
-    string message)
-{
-    internal static SceneHistoryCompensationResult Preserved(string message)
-        => new(true, message);
+    string message
+) {
+    internal static SceneHistoryCompensationResult Preserved(string message) => new(true, message);
 
-    internal static SceneHistoryCompensationResult Lost(string message)
-        => new(false, message);
+    internal static SceneHistoryCompensationResult Lost(string message) => new(false, message);
 }

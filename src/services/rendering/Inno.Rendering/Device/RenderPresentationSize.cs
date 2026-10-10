@@ -16,8 +16,10 @@ public readonly record struct RenderPresentationSize
     /// <param name="height">
     /// Positive physical-pixel height.
     /// </param>
-    public RenderPresentationSize(int width, int height)
-    {
+    public RenderPresentationSize(
+        int width,
+        int height
+    ) {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(width);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(height);
         this.width = width;
@@ -33,4 +35,9 @@ public readonly record struct RenderPresentationSize
     /// Gets the physical-pixel height.
     /// </summary>
     public int height { get; }
+
+    /// <summary>
+    /// Gets whether both dimensions describe a real drawable extent; a default struct is invalid.
+    /// </summary>
+    public bool isValid => width > 0 && height > 0;
 }

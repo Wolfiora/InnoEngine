@@ -22,7 +22,10 @@ public interface IAssetArtifactLookup
     /// <exception cref="InvalidOperationException">
     /// The requested output is unavailable or invalid.
     /// </exception>
-    ArtifactLease AcquireArtifact(Guid persistentId, string outputName);
+    ArtifactLease AcquireArtifact(
+        Guid persistentId,
+        string outputName
+    );
 
     /// <summary>
     /// Tries to resolve one named immutable artifact output by persistent asset identity.
@@ -34,7 +37,7 @@ public interface IAssetArtifactLookup
     /// Exact stable artifact output name.
     /// </param>
     /// <param name="artifact">
-    /// Receives verified output metadata and its absolute immutable path when available.
+    /// Receives verified output metadata without exposing the provider's physical location.
     /// </param>
     /// <returns>
     /// <see langword="true"/> when the artifact output exists and passes integrity validation.
@@ -42,5 +45,6 @@ public interface IAssetArtifactLookup
     bool TryGetArtifact(
         Guid persistentId,
         string outputName,
-        out AssetArtifactInfo? artifact);
+        out AssetArtifactInfo? artifact
+    );
 }

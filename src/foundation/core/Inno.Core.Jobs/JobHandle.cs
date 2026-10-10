@@ -5,8 +5,10 @@ namespace Inno.Core.Jobs;
 /// </summary>
 public readonly struct JobHandle
 {
-    internal JobHandle(int index, int version)
-    {
+    internal JobHandle(
+        int index,
+        int version
+    ) {
         this.index = index;
         this.version = version;
     }

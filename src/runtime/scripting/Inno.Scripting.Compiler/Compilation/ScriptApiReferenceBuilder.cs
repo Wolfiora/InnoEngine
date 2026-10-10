@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
+using System.Threading;
 
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -18,28 +18,39 @@ internal sealed record ScriptApiReferenceSet(
     IReadOnlyList<string> runtimeReferencePaths,
     IReadOnlyList<string> ideReferencePaths,
     string contractFingerprint,
-    string cacheDirectory);
+    string cacheDirectory
+);
 
 internal static class ScriptApiReferenceBuilder
 {
-    private static readonly object S_BUILD_SYNC = new();
+    private static readonly SemaphoreSlim S_BUILD_GATE = new(1, 1);
 
     internal static ScriptApiReferenceSet Build(
         ScriptCompilerOptions options,
         ScriptApiProfile profile,
         ScriptApiProfile? baseProfile = null,
-        ScriptApiReferenceSet? baseReferences = null)
-    {
-        lock (S_BUILD_SYNC)
-            return BuildLocked(options, profile, baseProfile, baseReferences);
+        ScriptApiReferenceSet? baseReferences = null,
+        CancellationToken cancellationToken = default
+    ) {
+        S_BUILD_GATE.Wait(cancellationToken);
+        try
+        {
+            return BuildLocked(options, profile, baseProfile, baseReferences, cancellationToken);
+        }
+        finally
+        {
+            S_BUILD_GATE.Release();
+        }
     }
 
     private static ScriptApiReferenceSet BuildLocked(
         ScriptCompilerOptions options,
         ScriptApiProfile profile,
         ScriptApiProfile? baseProfile,
-        ScriptApiReferenceSet? baseReferences)
-    {
+        ScriptApiReferenceSet? baseReferences,
+        CancellationToken cancellationToken
+    ) {
+        cancellationToken.ThrowIfCancellationRequested();
         string fingerprint = CreateFingerprint(profile);
         string directory = Path.Combine(options.scriptApiDirectory, profile.name, fingerprint);
         Directory.CreateDirectory(directory);
@@ -55,11 +66,13 @@ internal static class ScriptApiReferenceBuilder
         Directory.CreateDirectory(runtimeDirectory);
         foreach (ScriptApiAssembly export in profile.exports)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             string assemblyName = export.assembly.GetName().Name
                 ?? throw new InvalidOperationException("A script API assembly has no simple name.");
             string referencePath = Path.Combine(runtimeDirectory, assemblyName + ".dll");
             if (!File.Exists(referencePath))
-                EmitImplementationReferenceAssembly(export, referencePath, implementationPaths, exportedTypes);
+                EmitImplementationReferenceAssembly(
+                    export, referencePath, implementationPaths, exportedTypes, cancellationToken);
             runtimeReferencePaths.Add(referencePath);
         }
 
@@ -88,7 +101,8 @@ internal static class ScriptApiReferenceBuilder
                     logicalExports,
                     exportedTypes,
                     profile.namespaceMappings,
-                    baseReferences?.ideReferencePaths ?? []);
+                    baseReferences?.ideReferencePaths ?? [],
+                    cancellationToken);
             }
             string documentationPath = Path.ChangeExtension(referencePath, ".xml");
             if (!File.Exists(documentationPath))
@@ -116,14 +130,16 @@ internal static class ScriptApiReferenceBuilder
         ScriptApiAssembly export,
         string referencePath,
         IReadOnlyList<string> implementationPaths,
-        IReadOnlySet<Type> exportedTypes)
-    {
+        IReadOnlySet<Type> exportedTypes,
+        CancellationToken cancellationToken
+    ) {
         string assemblyName = export.assembly.GetName().Name!;
         string source = ScriptApiStubSourceBuilder.BuildImplementation(export, exportedTypes);
         SyntaxTree syntaxTree = CSharpSyntaxTree.ParseText(
             SourceText.From(source, Encoding.UTF8),
             new CSharpParseOptions(LanguageVersion.Latest),
-            $"<{assemblyName}.ScriptApi.g.cs>");
+            $"<{assemblyName}.ScriptApi.g.cs>",
+            cancellationToken: cancellationToken);
         var references = new Dictionary<string, MetadataReference>(StringComparer.OrdinalIgnoreCase);
         foreach (MetadataReference reference in FrameworkReferenceResolver.CreateReferencePackReferences())
         {
@@ -154,26 +170,9 @@ internal static class ScriptApiReferenceBuilder
                 concurrentBuild: false,
                 nullableContextOptions: NullableContextOptions.Enable,
                 metadataImportOptions: MetadataImportOptions.Public));
-        string temporaryPath = referencePath + ".tmp";
-        using (FileStream stream = File.Create(temporaryPath))
-        {
-            EmitResult result = compilation.Emit(
-                peStream: stream,
-                options: new EmitOptions(metadataOnly: true, includePrivateMembers: false));
-            if (!result.Success)
-            {
-                string errors = string.Join(
-                    Environment.NewLine,
-                    result.Diagnostics
-                        .Where(static diagnostic => diagnostic.Severity == DiagnosticSeverity.Error)
-                        .Select(static diagnostic => diagnostic.ToString()));
-                throw new InvalidOperationException(
-                    $"Failed to build script API reference assembly '{assemblyName}'." +
-                    $"{Environment.NewLine}{errors}" +
-                    $"{Environment.NewLine}{source}");
-            }
-        }
-        File.Move(temporaryPath, referencePath, overwrite: true);
+        EmitReferenceAssembly(
+            compilation, referencePath, source,
+            $"Failed to build script API reference assembly '{assemblyName}'.", cancellationToken);
     }
 
     private static void EmitLogicalReferenceAssembly(
@@ -182,8 +181,9 @@ internal static class ScriptApiReferenceBuilder
         IReadOnlyList<ScriptApiTypeExport> exports,
         IReadOnlySet<Type> exportedTypes,
         IReadOnlyList<ScriptApiNamespaceMapping> namespaceMappings,
-        IReadOnlyList<string> baseReferencePaths)
-    {
+        IReadOnlyList<string> baseReferencePaths,
+        CancellationToken cancellationToken
+    ) {
         Dictionary<string, string> mappings = namespaceMappings
             .GroupBy(static mapping => mapping.implementationNamespace, StringComparer.Ordinal)
             .ToDictionary(
@@ -194,7 +194,8 @@ internal static class ScriptApiReferenceBuilder
         SyntaxTree syntaxTree = CSharpSyntaxTree.ParseText(
             SourceText.From(source, Encoding.UTF8),
             new CSharpParseOptions(LanguageVersion.Latest),
-            $"<{assemblyName}.g.cs>");
+            $"<{assemblyName}.g.cs>",
+            cancellationToken: cancellationToken);
         var references = new Dictionary<string, MetadataReference>(StringComparer.OrdinalIgnoreCase);
         foreach (MetadataReference reference in FrameworkReferenceResolver.CreateReferencePackReferences())
         {
@@ -216,26 +217,65 @@ internal static class ScriptApiReferenceBuilder
                 concurrentBuild: false,
                 nullableContextOptions: NullableContextOptions.Enable,
                 metadataImportOptions: MetadataImportOptions.Public));
-        string temporaryPath = referencePath + ".tmp";
-        using (FileStream stream = File.Create(temporaryPath))
+        EmitReferenceAssembly(
+            compilation, referencePath, source,
+            $"Failed to build logical script API assembly '{assemblyName}'.", cancellationToken);
+    }
+
+    private static void EmitReferenceAssembly(
+        CSharpCompilation compilation,
+        string referencePath,
+        string source,
+        string failureMessage,
+        CancellationToken cancellationToken
+    ) {
+        string temporaryPath = referencePath + ".tmp-" + Guid.NewGuid().ToString("N");
+        try
         {
-            EmitResult result = compilation.Emit(
-                peStream: stream,
-                options: new EmitOptions(metadataOnly: true, includePrivateMembers: false));
-            if (!result.Success)
+            using (FileStream stream = File.Create(temporaryPath))
             {
-                string errors = string.Join(
-                    Environment.NewLine,
-                    result.Diagnostics
-                        .Where(static diagnostic => diagnostic.Severity == DiagnosticSeverity.Error)
-                        .Select(static diagnostic => diagnostic.ToString()));
-                throw new InvalidOperationException(
-                    $"Failed to build logical script API assembly '{assemblyName}'." +
-                    $"{Environment.NewLine}{errors}" +
-                    $"{Environment.NewLine}{source}");
+                EmitResult result = compilation.Emit(
+                    peStream: stream,
+                    options: new EmitOptions(metadataOnly: true, includePrivateMembers: false),
+                    cancellationToken: cancellationToken);
+                if (!result.Success)
+                {
+                    string errors = string.Join(
+                        Environment.NewLine,
+                        result.Diagnostics
+                            .Where(static diagnostic => diagnostic.Severity == DiagnosticSeverity.Error)
+                            .Select(static diagnostic => diagnostic.ToString()));
+                    throw new InvalidOperationException(
+                        failureMessage + $"{Environment.NewLine}{errors}{Environment.NewLine}{source}");
+                }
             }
+            cancellationToken.ThrowIfCancellationRequested();
+            InstallReference(temporaryPath, referencePath);
         }
-        File.Move(temporaryPath, referencePath, overwrite: true);
+        finally
+        {
+            if (File.Exists(temporaryPath))
+                File.Delete(temporaryPath);
+        }
+    }
+
+    private static void InstallReference(
+        string temporaryPath,
+        string referencePath
+    ) {
+        try
+        {
+            File.Move(temporaryPath, referencePath);
+        }
+        catch (IOException) when (File.Exists(referencePath))
+        {
+            // Another compiler already published the same immutable reference.
+        }
+        finally
+        {
+            if (File.Exists(temporaryPath))
+                File.Delete(temporaryPath);
+        }
     }
 
     private static void WriteLogicalDocumentation(
@@ -243,8 +283,8 @@ internal static class ScriptApiReferenceBuilder
         string assemblyName,
         IReadOnlyList<ScriptApiTypeExport> exports,
         IReadOnlyList<ScriptApiNamespaceMapping> namespaceMappings,
-        IReadOnlyList<ScriptApiTypeMapping> typeMappings)
-    {
+        IReadOnlyList<ScriptApiTypeMapping> typeMappings
+    ) {
         Dictionary<string, string> mappings = namespaceMappings
             .GroupBy(static mapping => mapping.implementationNamespace, StringComparer.Ordinal)
             .ToDictionary(
@@ -318,24 +358,16 @@ internal static class ScriptApiReferenceBuilder
         return Convert.ToHexString(hash).ToLowerInvariant();
     }
 
-    private static string[] GetImplementationPaths(ScriptApiProfile profile)
+    internal static string[] GetImplementationPaths(ScriptApiProfile profile)
     {
-        string runtimeDirectory = Path.TrimEndingDirectorySeparator(
-            Path.GetFullPath(RuntimeEnvironment.GetRuntimeDirectory()));
+        IReadOnlySet<string> frameworkAssemblyNames = FrameworkReferenceResolver.GetFrameworkAssemblyNames();
         return profile.implementationAssemblies
+            .Where(assembly => !frameworkAssemblyNames.Contains(assembly.GetName().Name ?? string.Empty))
             .Select(static assembly => assembly.Location)
-            .Where(path => !string.IsNullOrWhiteSpace(path) && !IsFrameworkAssembly(path, runtimeDirectory))
+            .Where(static path => !string.IsNullOrWhiteSpace(path))
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .OrderBy(static path => path, StringComparer.Ordinal)
             .ToArray();
-    }
-
-    private static bool IsFrameworkAssembly(string path, string runtimeDirectory)
-    {
-        string assemblyPath = Path.GetFullPath(path);
-        return assemblyPath.StartsWith(
-            runtimeDirectory + Path.DirectorySeparatorChar,
-            StringComparison.OrdinalIgnoreCase);
     }
 
 }

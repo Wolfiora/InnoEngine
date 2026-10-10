@@ -1,228 +1,277 @@
 # Inno.Extensibility.Modules
 
-[Extensibility 索引](README.md) · [下一页：Reflection](Inno.Extensibility.Types.md) · [Wiki 首页](../README.md)
+[Extensibility 索引](README.md) · [Wiki 首页](../README.md) · [Types](Inno.Extensibility.Types.md) · [DotNet 来源](../backends/DotNet/Inno.Adapter.Modules.DotNet.md)
 
-Pending / timeout 的分类覆盖整棵 Aggregate/InnerException 树。Catalog/Reload participant 和 ModuleHost
-保留原始异常、事务及未退出的两代 context；不得将包装 Pending 当成普通错误后继续 BeginUnload。
-已用真实 collectible ALC 验证 Activate、Complete、Rollback 三条包装异常路径。
+## 职责与依赖
 
-Catalog 候选失败并完整回滚后，保留当前 last-good publication，不因异常本身重新设置自动刷新请求。
-失败原样上抛；只有新的 Host Assembly load、显式 `Rebuild()` 或后续实际代际变更才发起新尝试。
-这样普通 `TypeCatalog.current` / Asset 查询不会不断重跑同一被拒绝候选，导致 last-good 虽已恢复却无法访问。
-候选准备期间实际到达的新 Assembly load 仍保留 dirty 标志，不吞掉新变化。
-AssemblyLoad 只为符合 Catalog 同一分类规则的非动态 Host/InnoInternal 程序集置 dirty；
-异常格式化时加载的 BCL、测试工具和不参与 Catalog 的程序集不会触发无关的全域重新发布。
+Foundation 拥有模块身份、目录快照、依赖排序、候选事务和 generation admission。它通过 `IAssemblyCatalogSource` 与 `IModuleSource` 接收代码；ALC、文件探测、shadow copy 和动态反射属于 DotNet Adapter。本项目依赖 Core.Collections、Core.Execution 与 Extensibility.Reload，不引用具体加载器、Types 或业务领域。
 
-`Inno.Extensibility.Modules` 是不依赖反射业务的程序集生命周期层。它管理当前“哪些程序集是活动的”、模块代际、shadow copy、collectible `AssemblyLoadContext` 和原子切换事务；它不知道 TypeCache、Importer、Converter、Component 或脚本目录。
+`ModuleHost` 是实例 owner。组合入口必须同时选择程序集来源与对应的类型元数据来源。共享事务适用于静态链接代码与 Editor 动态代码；是否可卸载由来源及其 `IModuleLifetime` 声明。
 
-## 源码目录
+## 公开契约
 
-`AssemblyCatalogSnapshot.assemblies` 持有独立只读副本，不能通过数组/IList 强转改写 generation 内容。快照仍强持有该代 Assembly；调用者必须在代际退休前释放其引用，不能把只读误解为弱引用。
+| 类型或入口 | 当前行为 |
+| --- | --- |
+| `ModuleHost(ModuleHostOptions)` | 接管 `catalogSource`、订阅目录变化并发布初始目录；启动失败注销和释放已取得的资源。 |
+| `ModuleHostOptions.cacheDirectory / catalogSource` | 来源产物根与必填目录来源。Foundation 不隐式创建 ALC 或扫描全进程程序集。 |
+| `ModuleHost.isInitialized / generations / modules` | Host 状态、统一 generation gate 与非 owning 模块信息。 |
+| `RegisterCatalogParticipant(participant)` | 准备、激活当前目录的派生状态，返回可释放的注册。 |
+| `Load(IModuleSource)` | 准备并发布一个来源贡献，返回 `AssemblyModuleHandle`。 |
+| `Register(moduleName, assemblies)` | 登记调用方拥有的外部代码；调用方负责其最终生命周期。 |
+| `BeginReload(handle, source)` | 替换一个指定模块的候选。 |
+| `BeginReload(sources)` | 对完整来源集合构建同一 publication。 |
+| `BeginReload(sources, removedModuleNames)` | 将替换、新增与移除纳入同一事务。 |
+| `Unload(handle)` / `Unload(handles)` | 移除目录贡献并返回退休 probe；返回 probe 不等于退休完成。 |
+| `Refresh / Rebuild / Dispose` | 对账来源变化、明确重建或退休 Host；Faulted 不可复位。 |
+| `IAssemblyCatalogSource` | `changed`、`GetAssemblies`、`GetSharedAssemblies`、`IsFrameworkReference`、`IsFrameworkAssembly` 和 `Dispose`。 |
+| `IModuleSource` | `moduleName / domain / scope / collectible / upstreamModuleNames / assemblyScopes`、预检 `GetAssemblyNames()`、候选获取 `Prepare(context)`。 |
+| `ModuleCatalogContribution` | 构造后冻结模块名、domain、scope、assemblies、逐程序集 scopes 和可选 lifetime。 |
+| `ModuleSourceContext` | 当前候选的 `generation / artifactDirectory / host / upstreamModules / activeModules / plannedAssemblies`；`TrackRetirement(probe)` 将失败获取的退休责任交给共享 gate。 |
+| `ModuleAssemblyDescriptor` | 冻结 planned assembly 的 domain 与 scope。 |
+| `IModuleLifetime.BeginRetirement()` | 来源交出不再强持有代码的释放 probe；Foundation 不知道 ALC。 |
+| `AssemblyCatalogSnapshot(version, assemblies)` | generation revision 与独立只读程序集列表。快照仍强持有程序集，须在退休前释放。 |
+| `IAssemblyCatalogParticipant.Prepare(candidate)` | 构建完整 unpublished 派生状态；失败保留 last-good。 |
+| `IAssemblyCatalogTransaction.Activate / Complete / Rollback` | 原子切换、释放前代或回滚候选。 |
+| `AssemblyReloadSession.context / generations` | 同一候选的中立上下文与 gate；`Activate / Complete / Rollback / Dispose` 管理 publication。 |
+| `AssemblyReloadContext` | `previousCatalog / candidateCatalog / module / modules`；`GetContext<T>() / TryGetContext<T>()` 查询候选 participant 上下文，完成后目录访问失效。 |
+| `AssemblyModuleHandle` | 运行时模块事务身份，不是 Object persistent ID。 |
+| `AssemblyModuleInfo` | handle、moduleName、generation、collectible、externallyOwned、domain、scope、status、assemblyNames 与 upstreamModuleNames。 |
+| `AssemblyDomain` | InnoInternal、InnoScripting、InnoPlugin 的代码所有权域。 |
+| `AssemblyScope` | Runtime 与 Editor 的依赖作用域。 |
+| `AssemblyModuleStatus` | 活动或退休过程的模块诊断状态。 |
+| `AssemblyExtensions` | `GetInnoAssemblyDomain`、`GetInnoAssemblyScope` 与 `TryGetInnoAssemblyClassification` 读取当前明确的程序集 metadata。 |
 
-```text
-Inno.Extensibility.Modules/
-├─ ModuleHost.cs
-├─ ModuleHostOptions.cs
-├─ Catalog/              # 不可变程序集快照与 participant 事务契约
-├─ Loading/              # 加载请求与 AssemblyLoadContext 实现
-├─ Metadata/             # AssemblyDomain/AssemblyScope 与 metadata 扩展
-├─ Modules/              # 模块 handle、诊断信息与卸载监视
-├─ Reloading/            # Reload session 与迁移上下文
-└─ Internal/
-   ├─ Catalog/           # participant 协调与原子刷新集合
-   └─ Modules/           # Manager 内部模块状态
-```
+本项目没有面向外部继承者的 protected 扩展面；使用来源和 participant 接口组合。
 
-公开类型虽然按职责分文件夹，但继续使用稳定的 `Inno.Extensibility.Modules` namespace；目录整理不会迫使调用方修改 using。只有具体的加载上下文实现位于内部的 `Inno.Extensibility.Modules.Loading` namespace。
-
-## 职责边界
-
-- Host assembly：位于默认 ALC 的引擎程序集，由运行时拥有。
-- External module：通过 `Register` 登记，生命周期仍由调用者拥有。
-- Managed module：通过文件路径加载，由 Manager 创建独立 ALC，并可协作式卸载。
-- Catalog participant：从完整程序集快照派生状态的通用事务参与者。
-- 不负责：编译 C#、监视源文件、扫描扩展类型、迁移 Scene 实例。
-
-## 初始化与关闭
+## 初始化示例
 
 ```csharp
-string cache = Path.Combine(projectRoot, "Library", "Assemblies");
-ModuleHost.Initialize(new ModuleHostOptions
+using Inno.Adapter.Modules.DotNet;
+using Inno.Extensibility.Modules;
+using Inno.Extensibility.Types;
+
+using var modules = new ModuleHost(new ModuleHostOptions
 {
-    cacheDirectory = cache,
-    preloadEntryAssemblyDependencies = true
+    cacheDirectory = cachePath,
+    catalogSource = new DotNetAssemblyCatalogSource(typeof(Application).Assembly)
 });
-
-// Register TypeCatalog and other higher-level services here.
-
-ModuleHost.Shutdown();
+using var types = new TypeCatalog(modules, new ReflectionTypeCatalogSource());
 ```
 
-`cacheDirectory` 用来存放 generation shadow copy，不能留空。`preloadEntryAssemblyDependencies=true` 会合并 CLR AssemblyRef 图与 `.deps.json` runtime dependency 图，预加载入口及当前 Default ALC host roots 关联的 Inno assembly。即使某个项目只通过 Attribute 提供扩展、没有产生具体类型调用，它仍会进入初始 catalog；由通用 launcher 或 testhost 承载时也使用同一规则。
+静态 Player 使用 Runtime 的 `StaticAssemblyCatalogSource / StaticModuleSource / StaticTypeCatalogSource`。类型、序列化与业务 registry 先于 ModuleHost 退休；owner-thread safe point 进行 publication，不在来源里偷偷切换全局状态。
 
-Shadow generation 是可再生缓存，不是序列化状态。collectible ALC 仍可达时目录会保留；`AssemblyUnloadMonitor` 观察到 ALC 不再可达后会协作式删除对应目录，后续 module staging 也会重试。Editor 异常退出或旧 ALC 一直存活时，下一次 `ModuleHost.Initialize` 会清理上次进程遗留的 cache directory。非 collectible module 在当前进程中无法安全回收，只能在下一次进程初始化时清理其文件。
+## 失败与退休
 
-## ModuleHost
+获取贡献失败时来源必须释放其资源，必要时用 `TrackRetirement` 登记未完成的释放。候选 Prepare/Activate 失败完整回滚后保留 last-good，只有新来源变化或显式重建才重试。包装在 Aggregate/InnerException 中的 pending retirement 仍属于 pending。
 
-| 成员 | 说明 |
+可卸载代码必须经过 Full GC → finalizers → Full GC 与弱 probe 验证，成功前拒绝新的 Reload/Play/Build/Export。超时置 Faulted，保留未退出的 owner 与事务，要求重新启动 Host。静态链接代码的进程生命周期不伪装为 collectible unload。
+
+## 验证入口
+
+`tests/extensibility/Inno.Extensibility.Modules.Tests` 覆盖真实来源、依赖、候选成功/失败、回滚和残留强引用。静态与动态元数据的共同目录行为还由 Types、Runtime 和 Scene 测试验证。
+
+
+
+
+
+
+## 本轮边界与所有权
+
+ModuleSourceContext 和 ModuleHostOptions 不携带动态加载磁盘缓存要求。Foundation 管理 catalog、身份、snapshot 与 generation transaction；DotNet source 自己拥有 shadow-copy 根。静态来源不需要动态缓存目录。
+
+## 当前源码公开 API 清单
+
+只列当前源码的 public/protected 表面；内部实现不作为稳定 API。参数、返回、失败和 owner 以英文 XML 为准。
+
+### `Inno.Extensibility.Modules.AssemblyCatalogSnapshot`
+
+| 当前声明 | 行为 |
 | --- | --- |
-| `bool isInitialized` | 是否已经建立全局程序集 catalog。 |
-| `IReadOnlyList<AssemblyModuleInfo> modules` | 当前 managed/external 模块的非 owning 诊断视图。 |
-| `Initialize(ModuleHostOptions)` | 初始化缓存目录、Host 发现和首次 catalog 发布。重复初始化会先关闭旧状态。 |
-| `RegisterCatalogParticipant(IAssemblyCatalogParticipant)` | 注册派生状态参与者，并立即用当前 catalog 初始化；返回的 `IDisposable` 用于注销。 |
-| `Load(AssemblyLoadRequest)` | shadow copy 并激活一个新 managed module，返回稳定 handle。 |
-| `Register(string, IReadOnlyList<Assembly>)` | 注册调用者已经加载的 assembly；Manager 不拥有也不卸载它们。 |
-| `BeginReload(handle, request)` | 加载并验证候选代际，但尚不发布；返回 reload session。 |
-| `BeginReload(requests)` | 按显式模块依赖顺序 stage 一个 reload closure，并用一个 session 原子切换。 |
-| `BeginReload(requests, removedModuleNames)` | 在同一候选 Catalog 中原子替换与移除模块；缺失反向依赖 closure 时拒绝。 |
-| `Unload(handle)` | 从活动 catalog 移除模块，并对 owned collectible ALC 发起卸载。 |
-| `Unload(handles)` | 用一个 catalog transaction 移除闭包，并按 Editor → Runtime → Plugin 请求卸载。 |
-| `Refresh()` | 仅在 Host AssemblyLoad 令 catalog dirty 时刷新；无变化时不重建。 |
-| `Rebuild()` | 强制重建当前 catalog，并事务刷新全部参与者；不会重新读取 DLL。 |
-| `Shutdown()` | 发布空 catalog、注销事件并发起 owned module 卸载。 |
+| [`Inno.Extensibility.Modules.AssemblyCatalogSnapshot`](../../src/foundation/extensibility/Inno.Extensibility.Modules/Catalog/AssemblyCatalogSnapshot.cs#L14) | Represents an immutable view of the assemblies participating in one catalog generation. |
+| [`System.Collections.Generic.IReadOnlyList<System.Reflection.Assembly> Inno.Extensibility.Modules.AssemblyCatalogSnapshot.assemblies`](../../src/foundation/extensibility/Inno.Extensibility.Modules/Catalog/AssemblyCatalogSnapshot.cs#L34) | Gets the host and active module assemblies in this generation. |
+| [`long Inno.Extensibility.Modules.AssemblyCatalogSnapshot.version`](../../src/foundation/extensibility/Inno.Extensibility.Modules/Catalog/AssemblyCatalogSnapshot.cs#L29) | Gets the monotonically increasing catalog version. |
 
-`AppDomain.AssemblyLoad` 事件只把 Host catalog 标记为 dirty。下一次 `Refresh()`（TypeCache 查询会间接调用）或显式 `Rebuild()` 才构建新快照。候选 ALC 在 `Activate()` 前不会出现在活动 catalog 中。
+### `Inno.Extensibility.Modules.AssemblyDomain`
 
-## 加载请求和模块信息
-
-### ModuleHostOptions
-
-| 属性 | 默认值 | 说明 |
-| --- | --- | --- |
-| `cacheDirectory` | `<AppBase>/AssemblyCache` | shadow generation 目录。Host 通常改成 `<Project>/Library/Assemblies`。 |
-| `preloadEntryAssemblyDependencies` | `true` | 是否从 CLR 引用和 runtime dependency manifests 预加载 Inno host dependencies。 |
-
-### AssemblyLoadRequest
-
-| 属性 | 说明 |
+| 当前声明 | 行为 |
 | --- | --- |
-| `required moduleName` | 跨代际稳定的逻辑名称；Reload 时必须与旧模块一致。 |
-| `required mainAssemblyPath` | 主 DLL 路径。 |
-| `preloadAssemblyPaths` | 在同一 ALC 中预加载的 DLL 列表。 |
-| `upstreamModuleNames` | 可满足本模块 AssemblyRef 的稳定上游模块名；也用于拓扑排序和反向依赖 closure。该清单对所有 domain 都是显式且完整的；空清单严格表示没有上游，Host 不从当前活动模块推断依赖。 |
-| `collectible` | 是否允许协作式 unload，默认 `true`。 |
-| `domain` | `InnoPlugin` 或 `InnoScripting`；`InnoInternal` 不能进入 collectible module。 |
-| `scope` | 模块的 `Runtime`/`Editor` 依赖边界。 |
-| `assemblyScopes` | 同一模块 ALC 内按 simple name 声明每个 DLL scope；未列出项使用 `scope`。 |
+| [`Inno.Extensibility.Modules.AssemblyDomain`](../../src/foundation/extensibility/Inno.Extensibility.Modules/Metadata/AssemblyDomain.cs#L6) | Identifies the ownership and reload boundary of a managed assembly. |
+| [`Inno.Extensibility.Modules.AssemblyDomain.InnoInternal`](../../src/foundation/extensibility/Inno.Extensibility.Modules/Metadata/AssemblyDomain.cs#L11) | The assembly is engine-owned and remains in the default load context. |
+| [`Inno.Extensibility.Modules.AssemblyDomain.InnoPlugin`](../../src/foundation/extensibility/Inno.Extensibility.Modules/Metadata/AssemblyDomain.cs#L21) | The assembly belongs to the project's unified collectible plugin generation. |
+| [`Inno.Extensibility.Modules.AssemblyDomain.InnoScripting`](../../src/foundation/extensibility/Inno.Extensibility.Modules/Metadata/AssemblyDomain.cs#L16) | The assembly contains project scripting code in a collectible load context. |
 
-### 诊断类型
+### `Inno.Extensibility.Modules.AssemblyExtensions`
 
-- `AssemblyModuleHandle(Guid id)`：不持有 Assembly/ALC 的稳定句柄。
-- `AssemblyModuleInfo`：record，公开 `handle`、`moduleName`、`generation`、`collectible`、`externallyOwned`、`domain`、`scope`、`status`、`assemblyNames` 与 `upstreamModuleNames`。
-- `AssemblyModuleStatus.Active`：当前公开状态。
-- `AssemblyUnloadMonitor.status` / `isCompleted`：通过弱引用观察旧 ALC 是否已经不可达。
-- `AssemblyUnloadStatus.Pending` / `Completed`：卸载仍被引用或已经完成。
-
-## 事务式 Reload
-
-```csharp
-using AssemblyReloadSession reload = ModuleHost.BeginReload(handle, new AssemblyLoadRequest
-{
-    moduleName = "RuntimeScripts",
-    mainAssemblyPath = nextDll,
-    domain = AssemblyDomain.InnoScripting,
-    scope = AssemblyScope.Runtime,
-    collectible = true
-});
-
-reload.Activate();
-try
-{
-    // Migrate higher-level state while both old and candidate contexts are available.
-    MigrateState(reload.context);
-    AssemblyUnloadMonitor oldGeneration = reload.Complete();
-}
-catch
-{
-    reload.Rollback();
-    throw;
-}
-```
-
-```mermaid
-sequenceDiagram
-    participant H as Host
-    participant A as ModuleHost
-    participant P as Catalog participants
-    H->>A: BeginReload
-    A->>A: Load candidate ALC + build catalog
-    A->>P: Prepare(candidate)
-    H->>A: Activate
-    A->>P: Activate prepared snapshots
-    alt migration succeeds
-        H->>A: Complete
-        A->>P: Complete and release old snapshots
-        A->>A: Unload old ALC
-    else migration fails
-        H->>A: Rollback
-        A->>P: Restore old snapshots
-        A->>A: Unload candidate ALC
-    end
-```
-
-`AssemblyReloadSession.Dispose()` 会对未完成 session 自动 rollback。`Complete()` 后 `AssemblyReloadContext` 会释放强引用，不能继续访问。
-普通、已终结的清理错误会在尝试其余清理后报告 Fault。`RetirementPendingException` 则表示依赖仍在使用：
-保留 transaction、module entries 和迁移 context，停止下游清理及 ALC Unload，原样抛出并关闭 generation gate。
-重复 Dispose/Complete/Rollback 不允许借由 finished 标志绕过该屏障；必须重启整个 Host。
-此时已提交 generation 不伪回滚，但 reload 不报告 Success，也不允许继续 Play/Build/Export。
-
-自动 Catalog refresh 在 Build/Export 的读租约期间保留当前快照，将 dirty 刷新延后；
-它通过 TryAcquireChange 预留互斥发布，不得为了响应一次类型查询而突破冻结 generation。
-
-多模块 session 使用 [Core Collections](../core/Inno.Core.Collections.md) 的 `DependencyGraph<string>` 对 `upstreamModuleNames` 做确定性拓扑排序；Project Scripting 自然位于其 Plugin 依赖之后，Editor Scripts 位于 Runtime Scripts 之后。下游 `ModuleLoadContext` 显式复用同一事务上游 candidate 中的精确 `Assembly` 实例，不复制并二次加载依赖 DLL。发布时一次切换 module map、Assembly catalog、TypeCache 与全部 Registry candidate；任一 stage、participant、Scene 或 extension 激活失败都恢复完整 previous 集合并逆序卸载 candidate。`Complete` 仅释放 previous snapshot 并按反向拓扑请求协作式卸载，不执行可失败的发现或刷新。
-
-依赖闭包是强制约束：Runtime Scripts reload 或 removal 必须包含 Editor Scripts；某个 Plugin reload/unload 必须包含依赖它的 Plugin 与 Project Scripting。Closure validation 对 replacement request 与 explicit removed module 使用完全相同的 domain/scope 语义，因此允许在没有替代 DLL 时原子退休完整闭包，同时仍拒绝遗漏任一活动下游。`upstreamModuleNames` 的空值语义不可被活动进程状态改写；否则删除 Plugin 的同一事务会让新的 Runtime Scripts 再次引用正在退休的 Plugin ALC。Plugin module 数量不封闭，通常每个稳定 Plugin ID 对应独立 collectible ALC；Runtime Scripting 和 Editor Scripting 各保持一个模块。每个事务会在加载前建立完整 module/simple-name/domain/scope 图，并在加载后校验实际 AssemblyRef；重复 simple name、Runtime → Editor、Plugin → Scripting、模块依赖 cycle、未声明的自定义依赖以及非 `InnoInternal` 的 Default ALC 共享依赖都会在发布前拒绝。只有受信任的平台程序集与具有当前 `InnoInternal` metadata 的 Host contract 可以从 Default ALC 共享。
-
-### AssemblyReloadContext
-
-| 成员 | 说明 |
+| 当前声明 | 行为 |
 | --- | --- |
-| `previousCatalog` / `candidateCatalog` | 激活前后的 `AssemblyCatalogSnapshot`。事务结束后不可访问。 |
-| `module` | staging 顺序中的第一个逻辑模块句柄。 |
-| `modules` | 该原子事务涉及的全部逻辑模块句柄。 |
-| `GetContext<TContext>()` | 取得某个 participant 提供的迁移上下文；不存在或重复时抛异常。 |
-| `TryGetContext<TContext>(out ...)` | 尝试取得唯一的指定上下文。 |
+| [`Inno.Extensibility.Modules.AssemblyExtensions`](../../src/foundation/extensibility/Inno.Extensibility.Modules/Metadata/AssemblyExtensions.cs#L10) | Provides ownership and scope metadata helpers for assemblies participating in the Inno runtime. |
+| [`static Inno.Extensibility.Modules.AssemblyDomain Inno.Extensibility.Modules.AssemblyExtensions.GetInnoAssemblyDomain(System.Reflection.Assembly assembly)`](../../src/foundation/extensibility/Inno.Extensibility.Modules/Metadata/AssemblyExtensions.cs#L32) | Resolves the reload domain declared by an assembly. |
+| [`static Inno.Extensibility.Modules.AssemblyScope Inno.Extensibility.Modules.AssemblyExtensions.GetInnoAssemblyScope(System.Reflection.Assembly assembly)`](../../src/foundation/extensibility/Inno.Extensibility.Modules/Metadata/AssemblyExtensions.cs#L55) | Resolves the dependency scope declared by an assembly. |
+| [`static bool Inno.Extensibility.Modules.AssemblyExtensions.TryGetInnoAssemblyClassification(System.Reflection.Assembly assembly, out Inno.Extensibility.Modules.AssemblyDomain domain, out Inno.Extensibility.Modules.AssemblyScope scope)`](../../src/foundation/extensibility/Inno.Extensibility.Modules/Metadata/AssemblyExtensions.cs#L78) | Reads ownership metadata without treating an unrelated assembly as an extension. |
 
-例如 Reflection participant 会提供 `TypeCacheReloadContext`：
+### `Inno.Extensibility.Modules.AssemblyModuleHandle`
 
-```csharp
-TypeCacheReloadContext types = reload.context.GetContext<TypeCacheReloadContext>();
-TypeRef previous = types.previous.GetTypeRef(oldInstance.GetType());
-types.TryResolveReplacement(previous, out TypeRef replacement);
-```
-
-## 自定义 Catalog Participant
-
-`IAssemblyCatalogParticipant` 只有一个 `Prepare(AssemblyCatalogSnapshot)`。实现必须旁路构建完整候选状态，返回 `IAssemblyCatalogTransaction`：
-
-| 事务成员 | 契约 |
+| 当前声明 | 行为 |
 | --- | --- |
-| `object? context` | 可选的短生命周期迁移上下文。 |
-| `Activate()` | 原子发布候选状态。 |
-| `Complete()` | 仅释放旧状态，不得再执行发布；普通错误聚合并 Fault，不伪回滚；未退休信号保留 owner 并停止下层释放。 |
-| `Rollback()` | 恢复旧状态并释放候选状态；普通错误继续尝试其他 participant，Pending 不可伪装为完成。 |
+| [`Inno.Extensibility.Modules.AssemblyModuleHandle`](../../src/foundation/extensibility/Inno.Extensibility.Modules/Modules/AssemblyModuleHandle.cs#L11) | Identifies a logical assembly module without retaining its runtime assemblies. |
 
-参与者不要保留过期的 `AssemblyCatalogSnapshot`，因为其中的 `assemblies` 会强引用 collectible ALC。
+### `Inno.Extensibility.Modules.AssemblyModuleInfo`
 
-## Assembly domain 与 scope
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Extensibility.Modules.AssemblyModuleInfo`](../../src/foundation/extensibility/Inno.Extensibility.Modules/Modules/AssemblyModuleInfo.cs#L47) | Provides non-owning diagnostic information about an active assembly module. |
+| [`System.Collections.Generic.IReadOnlyList<string> Inno.Extensibility.Modules.AssemblyModuleInfo.upstreamModuleNames`](../../src/foundation/extensibility/Inno.Extensibility.Modules/Modules/AssemblyModuleInfo.cs#L61) | Gets stable module dependencies used by this active generation. |
 
-程序集分类使用两个正交维度：`AssemblyDomain.InnoInternal/InnoScripting/InnoPlugin` 与 `AssemblyScope.Runtime/Editor`。Host csproj 通过 `InnoAssemblyDomain` / `InnoAssemblyScope` 生成当前 `Inno.AssemblyDomain` / `Inno.AssemblyScope` metadata；脚本编译器写入 Scripting 分类。外部 Plugin DLL 不必修改 metadata，Plugin asset/加载请求提供 domain 与逐程序集 scope，加载后只在弱分类表中登记当前 `Assembly`。
+### `Inno.Extensibility.Modules.AssemblyModuleStatus`
 
-```csharp
-AssemblyDomain domain = typeof(MyType).Assembly.GetInnoAssemblyDomain();
-AssemblyScope scope = typeof(MyType).Assembly.GetInnoAssemblyScope();
-```
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Extensibility.Modules.AssemblyModuleStatus`](../../src/foundation/extensibility/Inno.Extensibility.Modules/Modules/AssemblyModuleInfo.cs#L9) | Describes the catalog state of a published assembly module generation. |
+| [`Inno.Extensibility.Modules.AssemblyModuleStatus.Active`](../../src/foundation/extensibility/Inno.Extensibility.Modules/Modules/AssemblyModuleInfo.cs#L14) | The module generation is visible to assembly catalog participants. |
 
-两个查询使用 `ConditionalWeakTable<Assembly, ...>`，不会因分类缓存固定可卸载程序集。旧 `AssemblyGroup`、旧 metadata key 和兼容 reader 已删除。
+### `Inno.Extensibility.Modules.AssemblyReloadContext`
 
-物理 ALC 拓扑为 Default/Internal、多个按显式 DAG 连接的 `Plugin.<id>`、Runtime Scripts、Editor Scripts。依赖只能沿 Internal ← dependency Plugin ← dependent Plugin ← Runtime Scripts ← Editor Scripts 方向；Editor Scripts 还可访问 editor-scope Plugin/Internal API。ALC 只提供卸载和更新粒度，不是安全沙箱。
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Extensibility.Modules.AssemblyCatalogSnapshot Inno.Extensibility.Modules.AssemblyReloadContext.candidateCatalog`](../../src/foundation/extensibility/Inno.Extensibility.Modules/Reloading/AssemblyReloadContext.cs#L35) | Gets the validated candidate assembly catalog. |
+| [`Inno.Extensibility.Modules.AssemblyCatalogSnapshot Inno.Extensibility.Modules.AssemblyReloadContext.previousCatalog`](../../src/foundation/extensibility/Inno.Extensibility.Modules/Reloading/AssemblyReloadContext.cs#L30) | Gets the assembly catalog from before activation. |
+| [`Inno.Extensibility.Modules.AssemblyModuleHandle Inno.Extensibility.Modules.AssemblyReloadContext.module`](../../src/foundation/extensibility/Inno.Extensibility.Modules/Reloading/AssemblyReloadContext.cs#L40) | Gets the first logical module in dependency staging order. |
+| [`Inno.Extensibility.Modules.AssemblyReloadContext`](../../src/foundation/extensibility/Inno.Extensibility.Modules/Reloading/AssemblyReloadContext.cs#L9) | Provides assembly catalogs and participant-specific state during a reload transaction. |
+| [`System.Collections.Generic.IReadOnlyList<Inno.Extensibility.Modules.AssemblyModuleHandle> Inno.Extensibility.Modules.AssemblyReloadContext.modules`](../../src/foundation/extensibility/Inno.Extensibility.Modules/Reloading/AssemblyReloadContext.cs#L45) | Gets every logical module staged by this atomic reload transaction. |
+| [`TContext Inno.Extensibility.Modules.AssemblyReloadContext.GetContext<TContext>()`](../../src/foundation/extensibility/Inno.Extensibility.Modules/Reloading/AssemblyReloadContext.cs#L59) | Gets a context contributed by a registered catalog participant. |
+| [`bool Inno.Extensibility.Modules.AssemblyReloadContext.TryGetContext<TContext>(out TContext? context)`](../../src/foundation/extensibility/Inno.Extensibility.Modules/Reloading/AssemblyReloadContext.cs#L79) | Tries to get a context contributed by a registered catalog participant. |
 
-内部 `ModuleLoadContext` 在 `Unloading` 时释放共享程序集解析表。这张表只服务于活动 generation 的依赖解析，不能在退休后继续强持有上游 collectible Assembly；跨上下文泛型依赖可能使这类引用与 CLR 的 loader allocator 形成保留环。该清理覆盖正常卸载和候选加载失败，不改变弱 monitor、GC barrier 或 Faulted 语义。
+### `Inno.Extensibility.Modules.AssemblyReloadSession`
 
-## 常见误区
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Extensibility.Modules.AssemblyReloadContext Inno.Extensibility.Modules.AssemblyReloadSession.context`](../../src/foundation/extensibility/Inno.Extensibility.Modules/Reloading/AssemblyReloadSession.cs#L35) | Gets the old and candidate assembly catalogs and participant migration contexts. |
+| [`Inno.Extensibility.Modules.AssemblyReloadSession`](../../src/foundation/extensibility/Inno.Extensibility.Modules/Reloading/AssemblyReloadSession.cs#L12) | Controls activation, completion, and rollback of one prepared module generation. |
+| [`Inno.Extensibility.Reload.GenerationCoordinator Inno.Extensibility.Modules.AssemblyReloadSession.generations`](../../src/foundation/extensibility/Inno.Extensibility.Modules/Reloading/AssemblyReloadSession.cs#L40) | Gets the owning host's shared generation gate, including discarded-candidate retirements. |
+| [`Inno.Extensibility.Reload.IAssemblyUnloadProbe Inno.Extensibility.Modules.AssemblyReloadSession.Complete()`](../../src/foundation/extensibility/Inno.Extensibility.Modules/Reloading/AssemblyReloadSession.cs#L64) | Commits an activated reload and begins cooperative unload of the old generation. |
+| [`void Inno.Extensibility.Modules.AssemblyReloadSession.Activate()`](../../src/foundation/extensibility/Inno.Extensibility.Modules/Reloading/AssemblyReloadSession.cs#L48) | Atomically publishes the candidate module and all participant snapshots. |
+| [`void Inno.Extensibility.Modules.AssemblyReloadSession.Dispose()`](../../src/foundation/extensibility/Inno.Extensibility.Modules/Reloading/AssemblyReloadSession.cs#L125) | Rolls back an incomplete session. |
+| [`void Inno.Extensibility.Modules.AssemblyReloadSession.Rollback()`](../../src/foundation/extensibility/Inno.Extensibility.Modules/Reloading/AssemblyReloadSession.cs#L94) | Restores the previous generation and unloads the candidate generation. |
 
-- `Rebuild()` 只对当前活动 assembly 重做 catalog/participant 状态，不会从磁盘重新加载同名 DLL；文件内容变化必须走 `BeginReload()`。
-- `Unload()` 是协作式的。旧线程、静态事件、缓存的 `Type`/delegate/instance 都可能让 monitor 长期 `Pending`。
-- `Unload()` 发起退休并登记共享 GenerationCoordinator；`Pending` 不是成功。退休对象经 Full GC → Finalizers → Full GC 和弱 monitor 确认不可达后才能完成；等待期间不得开始另一代际事务或 Play/Build/Export，超时进入 Faulted，不能忽略 monitor 继续运行。
-- 不要从该层访问 TypeCache；依赖方向是 [Reflection](Inno.Extensibility.Types.md) → Assemblies，而不是反过来。
-- 一个时刻只允许一个 reload session；新 Load/Register/Unload/Rebuild 不能穿插在未完成事务中。
+### `Inno.Extensibility.Modules.AssemblyScope`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Extensibility.Modules.AssemblyScope`](../../src/foundation/extensibility/Inno.Extensibility.Modules/Metadata/AssemblyScope.cs#L6) | Identifies whether an assembly can participate in runtime or editor-only dependency graphs. |
+| [`Inno.Extensibility.Modules.AssemblyScope.Editor`](../../src/foundation/extensibility/Inno.Extensibility.Modules/Metadata/AssemblyScope.cs#L16) | The assembly is available only to editor consumers. |
+| [`Inno.Extensibility.Modules.AssemblyScope.Runtime`](../../src/foundation/extensibility/Inno.Extensibility.Modules/Metadata/AssemblyScope.cs#L11) | The assembly is available to runtime and editor consumers. |
+
+### `Inno.Extensibility.Modules.IAssemblyCatalogParticipant`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Extensibility.Modules.IAssemblyCatalogParticipant`](../../src/foundation/extensibility/Inno.Extensibility.Modules/Catalog/IAssemblyCatalogParticipant.cs#L6) | Builds transactional derived state for an assembly catalog generation. |
+| [`Inno.Extensibility.Modules.IAssemblyCatalogTransaction Inno.Extensibility.Modules.IAssemblyCatalogParticipant.Prepare(Inno.Extensibility.Modules.AssemblyCatalogSnapshot catalog)`](../../src/foundation/extensibility/Inno.Extensibility.Modules/Catalog/IAssemblyCatalogParticipant.cs#L17) | Validates a candidate catalog and prepares state without publishing it. |
+
+### `Inno.Extensibility.Modules.IAssemblyCatalogSource`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Extensibility.Modules.IAssemblyCatalogSource`](../../src/foundation/extensibility/Inno.Extensibility.Modules/Catalog/IAssemblyCatalogSource.cs#L13) | Owns the host assembly source independently of any module loading implementation. |
+| [`System.Action? Inno.Extensibility.Modules.IAssemblyCatalogSource.changed`](../../src/foundation/extensibility/Inno.Extensibility.Modules/Catalog/IAssemblyCatalogSource.cs#L18) | Notifies the owner that the host assembly snapshot should be refreshed at a safe point. |
+| [`System.Collections.Generic.IReadOnlyList<System.Reflection.Assembly> Inno.Extensibility.Modules.IAssemblyCatalogSource.GetAssemblies()`](../../src/foundation/extensibility/Inno.Extensibility.Modules/Catalog/IAssemblyCatalogSource.cs#L25) | Gets the complete host assemblies that participate in extension discovery. |
+| [`System.Collections.Generic.IReadOnlyList<System.Reflection.Assembly> Inno.Extensibility.Modules.IAssemblyCatalogSource.GetSharedAssemblies()`](../../src/foundation/extensibility/Inno.Extensibility.Modules/Catalog/IAssemblyCatalogSource.cs#L32) | Gets host contracts and framework assemblies available to candidate modules. |
+| [`bool Inno.Extensibility.Modules.IAssemblyCatalogSource.IsFrameworkAssembly(System.Reflection.Assembly assembly)`](../../src/foundation/extensibility/Inno.Extensibility.Modules/Catalog/IAssemblyCatalogSource.cs#L52) | Determines whether an assembly is a framework contract rather than a contributed module. |
+| [`bool Inno.Extensibility.Modules.IAssemblyCatalogSource.IsFrameworkReference(string assemblyName)`](../../src/foundation/extensibility/Inno.Extensibility.Modules/Catalog/IAssemblyCatalogSource.cs#L42) | Determines whether a referenced simple name belongs to the selected managed framework. |
+
+### `Inno.Extensibility.Modules.IAssemblyCatalogTransaction`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Extensibility.Modules.IAssemblyCatalogTransaction`](../../src/foundation/extensibility/Inno.Extensibility.Modules/Catalog/IAssemblyCatalogTransaction.cs#L6) | Controls one participant's prepared state during an assembly catalog transaction. |
+| [`object? Inno.Extensibility.Modules.IAssemblyCatalogTransaction.context`](../../src/foundation/extensibility/Inno.Extensibility.Modules/Catalog/IAssemblyCatalogTransaction.cs#L11) | Gets an optional short-lived context exposed through . |
+| [`void Inno.Extensibility.Modules.IAssemblyCatalogTransaction.Activate()`](../../src/foundation/extensibility/Inno.Extensibility.Modules/Catalog/IAssemblyCatalogTransaction.cs#L16) | Publishes the prepared candidate state. |
+| [`void Inno.Extensibility.Modules.IAssemblyCatalogTransaction.Complete()`](../../src/foundation/extensibility/Inno.Extensibility.Modules/Catalog/IAssemblyCatalogTransaction.cs#L26) | Finalizes an activated state and releases the previous state without performing further publication work. |
+| [`void Inno.Extensibility.Modules.IAssemblyCatalogTransaction.Rollback()`](../../src/foundation/extensibility/Inno.Extensibility.Modules/Catalog/IAssemblyCatalogTransaction.cs#L34) | Restores the previous state and releases the candidate state. |
+
+### `Inno.Extensibility.Modules.IModuleLifetime`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Extensibility.Modules.IModuleLifetime`](../../src/foundation/extensibility/Inno.Extensibility.Modules/Catalog/IModuleLifetime.cs#L13) | Owns implementation-specific resources acquired for one unpublished or active module generation. |
+| [`Inno.Extensibility.Reload.IAssemblyUnloadProbe Inno.Extensibility.Modules.IModuleLifetime.BeginRetirement()`](../../src/foundation/extensibility/Inno.Extensibility.Modules/Catalog/IModuleLifetime.cs#L21) | Begins retirement once all catalog participants have released the generation. |
+
+### `Inno.Extensibility.Modules.IModuleSource`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Extensibility.Modules.AssemblyDomain Inno.Extensibility.Modules.IModuleSource.domain`](../../src/foundation/extensibility/Inno.Extensibility.Modules/Catalog/IModuleSource.cs#L22) | Gets the ownership domain of the contribution. |
+| [`Inno.Extensibility.Modules.AssemblyScope Inno.Extensibility.Modules.IModuleSource.scope`](../../src/foundation/extensibility/Inno.Extensibility.Modules/Catalog/IModuleSource.cs#L26) | Gets the default dependency scope of contributed assemblies. |
+| [`Inno.Extensibility.Modules.IModuleSource`](../../src/foundation/extensibility/Inno.Extensibility.Modules/Catalog/IModuleSource.cs#L13) | Prepares one module generation without publishing it to the owning catalog. |
+| [`Inno.Extensibility.Modules.ModuleCatalogContribution Inno.Extensibility.Modules.IModuleSource.Prepare(Inno.Extensibility.Modules.ModuleSourceContext context)`](../../src/foundation/extensibility/Inno.Extensibility.Modules/Catalog/IModuleSource.cs#L55) | Acquires a validated candidate and transfers its lifetime to the caller on success. |
+| [`System.Collections.Generic.IReadOnlyDictionary<string, Inno.Extensibility.Modules.AssemblyScope> Inno.Extensibility.Modules.IModuleSource.assemblyScopes`](../../src/foundation/extensibility/Inno.Extensibility.Modules/Catalog/IModuleSource.cs#L38) | Gets explicit scope overrides keyed by contributed assembly simple name. |
+| [`System.Collections.Generic.IReadOnlyList<string> Inno.Extensibility.Modules.IModuleSource.GetAssemblyNames()`](../../src/foundation/extensibility/Inno.Extensibility.Modules/Catalog/IModuleSource.cs#L45) | Reads the complete owned assembly identities before any generation is acquired. |
+| [`System.Collections.Generic.IReadOnlyList<string> Inno.Extensibility.Modules.IModuleSource.upstreamModuleNames`](../../src/foundation/extensibility/Inno.Extensibility.Modules/Catalog/IModuleSource.cs#L34) | Gets the explicit logical upstream module names. |
+| [`bool Inno.Extensibility.Modules.IModuleSource.collectible`](../../src/foundation/extensibility/Inno.Extensibility.Modules/Catalog/IModuleSource.cs#L30) | Gets whether retirement can release this source's code generation. |
+| [`string Inno.Extensibility.Modules.IModuleSource.moduleName`](../../src/foundation/extensibility/Inno.Extensibility.Modules/Catalog/IModuleSource.cs#L18) | Gets the stable logical name used by dependency ordering and replacement transactions. |
+
+### `Inno.Extensibility.Modules.ModuleAssemblyDescriptor`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Extensibility.Modules.ModuleAssemblyDescriptor`](../../src/foundation/extensibility/Inno.Extensibility.Modules/Catalog/ModuleAssemblyDescriptor.cs#L19) | Describes the ownership classification of one planned assembly without loading its code. |
+
+### `Inno.Extensibility.Modules.ModuleCatalogContribution`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Extensibility.Modules.AssemblyDomain Inno.Extensibility.Modules.ModuleCatalogContribution.domain`](../../src/foundation/extensibility/Inno.Extensibility.Modules/Catalog/ModuleCatalogContribution.cs#L70) | Gets the ownership domain. |
+| [`Inno.Extensibility.Modules.AssemblyScope Inno.Extensibility.Modules.ModuleCatalogContribution.scope`](../../src/foundation/extensibility/Inno.Extensibility.Modules/Catalog/ModuleCatalogContribution.cs#L74) | Gets the default dependency scope. |
+| [`Inno.Extensibility.Modules.IModuleLifetime? Inno.Extensibility.Modules.ModuleCatalogContribution.lifetime`](../../src/foundation/extensibility/Inno.Extensibility.Modules/Catalog/ModuleCatalogContribution.cs#L86) | Gets the owned generation lifetime, or null for externally owned code. |
+| [`Inno.Extensibility.Modules.ModuleCatalogContribution`](../../src/foundation/extensibility/Inno.Extensibility.Modules/Catalog/ModuleCatalogContribution.cs#L13) | Freezes the assemblies, classification and lifetime of one acquired module generation. |
+| [`Inno.Extensibility.Modules.ModuleCatalogContribution.ModuleCatalogContribution(string moduleName, Inno.Extensibility.Modules.AssemblyDomain domain, Inno.Extensibility.Modules.AssemblyScope scope, System.Collections.Generic.IReadOnlyList<System.Reflection.Assembly> assemblies, System.Collections.Generic.IReadOnlyDictionary<System.Reflection.Assembly, Inno.Extensibility.Modules.AssemblyScope> assemblyScopes, Inno.Extensibility.Modules.IModuleLifetime? lifetime = null)`](../../src/foundation/extensibility/Inno.Extensibility.Modules/Catalog/ModuleCatalogContribution.cs#L39) | Acquires immutable views while transferring the generation lifetime to the contribution. |
+| [`System.Collections.Generic.IReadOnlyDictionary<System.Reflection.Assembly, Inno.Extensibility.Modules.AssemblyScope> Inno.Extensibility.Modules.ModuleCatalogContribution.assemblyScopes`](../../src/foundation/extensibility/Inno.Extensibility.Modules/Catalog/ModuleCatalogContribution.cs#L82) | Gets the complete per-assembly scope map. |
+| [`System.Collections.Generic.IReadOnlyList<System.Reflection.Assembly> Inno.Extensibility.Modules.ModuleCatalogContribution.assemblies`](../../src/foundation/extensibility/Inno.Extensibility.Modules/Catalog/ModuleCatalogContribution.cs#L78) | Gets the immutable owned assembly set. |
+| [`string Inno.Extensibility.Modules.ModuleCatalogContribution.moduleName`](../../src/foundation/extensibility/Inno.Extensibility.Modules/Catalog/ModuleCatalogContribution.cs#L66) | Gets the stable module name. |
+
+### `Inno.Extensibility.Modules.ModuleHost`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Extensibility.Modules.AssemblyModuleHandle Inno.Extensibility.Modules.ModuleHost.Load(Inno.Extensibility.Modules.IModuleSource request)`](../../src/foundation/extensibility/Inno.Extensibility.Modules/ModuleHost.cs#L171) | Loads and activates a new shadow-copied assembly module. |
+| [`Inno.Extensibility.Modules.AssemblyModuleHandle Inno.Extensibility.Modules.ModuleHost.Register(string moduleName, System.Collections.Generic.IReadOnlyList<System.Reflection.Assembly> assemblies)`](../../src/foundation/extensibility/Inno.Extensibility.Modules/ModuleHost.cs#L218) | Registers assemblies owned by an external load context. |
+| [`Inno.Extensibility.Modules.AssemblyReloadSession Inno.Extensibility.Modules.ModuleHost.BeginReload(Inno.Extensibility.Modules.AssemblyModuleHandle module, Inno.Extensibility.Modules.IModuleSource request)`](../../src/foundation/extensibility/Inno.Extensibility.Modules/ModuleHost.cs#L293) | Stages and validates a replacement generation without publishing it. |
+| [`Inno.Extensibility.Modules.AssemblyReloadSession Inno.Extensibility.Modules.ModuleHost.BeginReload(System.Collections.Generic.IReadOnlyList<Inno.Extensibility.Modules.IModuleSource> requests)`](../../src/foundation/extensibility/Inno.Extensibility.Modules/ModuleHost.cs#L335) | Stages a dependency-ordered set of module additions or replacements as one atomic transaction. Existing modules are matched by their stable module names; an unknown name creates a new module. |
+| [`Inno.Extensibility.Modules.AssemblyReloadSession Inno.Extensibility.Modules.ModuleHost.BeginReload(System.Collections.Generic.IReadOnlyList<Inno.Extensibility.Modules.IModuleSource> requests, System.Collections.Generic.IReadOnlyList<string> removedModuleNames)`](../../src/foundation/extensibility/Inno.Extensibility.Modules/ModuleHost.cs#L364) | Stages additions, replacements, and removals as one atomic dependency-ordered transaction. |
+| [`Inno.Extensibility.Modules.ModuleHost`](../../src/foundation/extensibility/Inno.Extensibility.Modules/ModuleHost.cs#L17) | Owns the active managed assembly catalog and transactional module generations. |
+| [`Inno.Extensibility.Modules.ModuleHost.ModuleHost(Inno.Extensibility.Modules.ModuleHostOptions options)`](../../src/foundation/extensibility/Inno.Extensibility.Modules/ModuleHost.cs#L67) | Creates a module host, discovers assemblies in its owning load context, and publishes the first catalog. |
+| [`Inno.Extensibility.Reload.GenerationCoordinator Inno.Extensibility.Modules.ModuleHost.generations`](../../src/foundation/extensibility/Inno.Extensibility.Modules/ModuleHost.cs#L42) | Gets the admission gate and retirement owner shared by all module and host generation changes. |
+| [`Inno.Extensibility.Reload.IAssemblyUnloadProbe Inno.Extensibility.Modules.ModuleHost.Unload(Inno.Extensibility.Modules.AssemblyModuleHandle module)`](../../src/foundation/extensibility/Inno.Extensibility.Modules/ModuleHost.cs#L387) | Removes an active module and starts cooperative unload when it is manager-owned. |
+| [`Inno.Extensibility.Reload.IAssemblyUnloadProbe Inno.Extensibility.Modules.ModuleHost.Unload(System.Collections.Generic.IReadOnlyList<Inno.Extensibility.Modules.AssemblyModuleHandle> modules)`](../../src/foundation/extensibility/Inno.Extensibility.Modules/ModuleHost.cs#L425) | Removes several active modules in one catalog transaction, then requests unload in reverse dependency order. |
+| [`System.Collections.Generic.IReadOnlyList<Inno.Extensibility.Modules.AssemblyModuleInfo> Inno.Extensibility.Modules.ModuleHost.modules`](../../src/foundation/extensibility/Inno.Extensibility.Modules/ModuleHost.cs#L47) | Gets non-owning information about active managed and external modules. |
+| [`System.IDisposable Inno.Extensibility.Modules.ModuleHost.RegisterCatalogParticipant(Inno.Extensibility.Modules.IAssemblyCatalogParticipant participant)`](../../src/foundation/extensibility/Inno.Extensibility.Modules/ModuleHost.cs#L104) | Registers a transactional consumer of the assembly catalog and initializes it from the currently active generation. |
+| [`bool Inno.Extensibility.Modules.ModuleHost.isInitialized`](../../src/foundation/extensibility/Inno.Extensibility.Modules/ModuleHost.cs#L37) | Gets whether this module host can accept catalog operations. |
+| [`void Inno.Extensibility.Modules.ModuleHost.Dispose()`](../../src/foundation/extensibility/Inno.Extensibility.Modules/ModuleHost.cs#L509) | Unsubscribes assembly discovery and begins unload of every module owned by this host. |
+| [`void Inno.Extensibility.Modules.ModuleHost.Rebuild()`](../../src/foundation/extensibility/Inno.Extensibility.Modules/ModuleHost.cs#L485) | Rebuilds the active assembly catalog and every registered derived-state participant. |
+| [`void Inno.Extensibility.Modules.ModuleHost.Refresh()`](../../src/foundation/extensibility/Inno.Extensibility.Modules/ModuleHost.cs#L470) | Applies pending host assembly changes without rebuilding an unchanged catalog. |
+
+### `Inno.Extensibility.Modules.ModuleHostOptions`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Extensibility.Modules.ModuleHostOptions`](../../src/foundation/extensibility/Inno.Extensibility.Modules/ModuleHostOptions.cs#L6) | Selects the isolated host catalog without prescribing storage for contributed module sources. |
+| [`required Inno.Extensibility.Modules.IAssemblyCatalogSource Inno.Extensibility.Modules.ModuleHostOptions.catalogSource`](../../src/foundation/extensibility/Inno.Extensibility.Modules/ModuleHostOptions.cs#L11) | Gets the host source whose ownership transfers to the module host during construction. |
+
+### `Inno.Extensibility.Modules.ModuleSourceContext`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Extensibility.Modules.IAssemblyCatalogSource Inno.Extensibility.Modules.ModuleSourceContext.host`](../../src/foundation/extensibility/Inno.Extensibility.Modules/Catalog/ModuleSourceContext.cs#L41) | Gets the borrowed host contract source. |
+| [`Inno.Extensibility.Modules.ModuleSourceContext`](../../src/foundation/extensibility/Inno.Extensibility.Modules/Catalog/ModuleSourceContext.cs#L13) | Supplies a source with the frozen dependencies and retirement boundary of one candidate generation. |
+| [`System.Collections.Generic.IReadOnlyDictionary<string, Inno.Extensibility.Modules.ModuleAssemblyDescriptor> Inno.Extensibility.Modules.ModuleSourceContext.plannedAssemblies`](../../src/foundation/extensibility/Inno.Extensibility.Modules/Catalog/ModuleSourceContext.cs#L53) | Gets identities and classifications for the complete candidate closure. |
+| [`System.Collections.Generic.IReadOnlyList<Inno.Extensibility.Modules.ModuleCatalogContribution> Inno.Extensibility.Modules.ModuleSourceContext.activeModules`](../../src/foundation/extensibility/Inno.Extensibility.Modules/Catalog/ModuleSourceContext.cs#L49) | Gets active contributions used to reject forbidden downstream references. |
+| [`System.Collections.Generic.IReadOnlyList<Inno.Extensibility.Modules.ModuleCatalogContribution> Inno.Extensibility.Modules.ModuleSourceContext.upstreamModules`](../../src/foundation/extensibility/Inno.Extensibility.Modules/Catalog/ModuleSourceContext.cs#L45) | Gets the validated direct upstream contributions for this candidate. |
+| [`int Inno.Extensibility.Modules.ModuleSourceContext.generation`](../../src/foundation/extensibility/Inno.Extensibility.Modules/Catalog/ModuleSourceContext.cs#L37) | Gets the candidate generation number. |
+| [`void Inno.Extensibility.Modules.ModuleSourceContext.TrackRetirement(Inno.Extensibility.Reload.IAssemblyUnloadProbe probe)`](../../src/foundation/extensibility/Inno.Extensibility.Modules/Catalog/ModuleSourceContext.cs#L60) | Transfers a failed acquisition's non-owning retirement probe to the shared generation gate. |
+
+## 项目依赖
+
+- [Inno.Core.Execution](../core/Inno.Core.Execution.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Core.Collections](../core/Inno.Core.Collections.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Extensibility.Reload](Inno.Extensibility.Reload.md)：公开引用边界由实际签名核对。
+- [Inno.Extensibility.Catalogs](Inno.Extensibility.Catalogs.md)：公开引用边界由实际签名核对。

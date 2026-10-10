@@ -7,7 +7,7 @@
 
 ## 2. 命名规范
 - 文件名与主类型名保持一致。
-- 默认命名空间与目录层级保持一致；`src/editor` 使用第 13 节定义的项目级命名空间规则。
+- 默认命名空间与目录层级保持一致；`src/composition/editor` 使用第 13 节定义的项目级命名空间规则。
 - 类型名使用 `PascalCase`。
 - 接口以 `I` 前缀。
 - 成员参数使用语义化 `camelCase`。
@@ -62,7 +62,15 @@
 - 发现潜在编译风险时，要在提交说明中显式标注。
 
 ## 10. 目录边界
-- `src/core`, `src/engine`, `src/assets`, `src/render`, `src/editor`, `src/platform`, `build`, `tests`
+- `src/foundation`：Core、扩展目录、类型及代际契约。
+- `src/content`：Assets、References、Scene、Animation。
+- `src/services`：后端中立的领域契约与运行服务。
+- `src/runtime`：Runtime、部署、生成器、Plugin 与创作态脚本流程。
+- `src/adapters`：中立 SPI、开放 Provider/Catalog 与 Core Events 输入实现。
+- `backends/<component>`：共享 backend 的 runtime、native、build recipe、组件测试；每个组件只有一个源码 owner。
+- `platforms/<platform>`：系统与 SDK 接入、明确目标、Editor/Player 薄入口、布局和 Support Pack；不得引用另一个平台。
+- `src/composition`：默认引擎、Shell、Player 与 Editor 组合入口。
+- `build`、`tools`、`tests`：中立统一构建、具体发行注册、验证库和跨组件契约测试。
 - 新文件尽量放置在匹配现有分层与职责目录。
 
 ## 11. Wiki 文档维护
@@ -87,7 +95,7 @@
 - 脚本必须使用逻辑 namespace（如 `using InnoEngine.Scene;`），不得直接使用实现侧 `Inno.*` namespace。
 
 ## 13. Editor 项目组织与引用边界
-- `src/editor` 中每个项目的业务源码统一使用与 `.csproj`/程序集名称完全相同的命名空间；功能目录只负责组织文件，不追加到命名空间。例如 `Inno.Editor.Inspection/PropertyDrawing` 中的类型仍使用 `namespace Inno.Editor.Inspection;`。
+- `src/composition/editor` 中每个项目的业务源码统一使用与 `.csproj`/程序集名称完全相同的命名空间；功能目录只负责组织文件，不追加到命名空间。例如 `Inno.Editor.Inspection/PropertyDrawing` 中的类型仍使用 `namespace Inno.Editor.Inspection;`。
 - 可复用的 InspectionDrawer、PropertyDrawer、Registry 与 serialized property renderer 统一属于 `Inno.Editor.Inspection`；业务 Panel 只在自身项目中实现具体 Drawer，不得为了扩展检查显示而引用 `Inno.Editor.Panel.Inspector`。
 - 唯一命名空间例外是 `Inno.Editor.ImGui/Widgets`：其中所有类型使用 `namespace Inno.Editor.ImGui.ImGuiWidget;`。
 - `Inno.Editor.ImGui/Widgets` 只允许 `ImGuiWidget.*.cs` 文件。Widget 的 presentation、options、result 与私有状态应收口到对应的 `ImGuiWidget.<Feature>.cs`，不得创建独立的 Widget helper 文件。
@@ -128,7 +136,7 @@
 ## 17. Rendering 强制边界
 - Rendering 的公开设计必须同时满足：跨平台、API 易用、扩展灵活和低耦合。不得以实现便利为由破坏其中任一项。
 - 只有 `Inno.Adapter.Rendering.Bgfx`、BGFX build toolchains 与对应 native tests 可以引用 `Inno.Native.Bgfx`。BGFX handle、View ID、原生指针和 BGFX 枚举不得出现在其他项目的 public/protected API 中。
-- `Inno.Rendering.Core` 必须保持后端中立，且不得引用 Scene、Assets、Editor 或任何具体图形后端。上层模块通过资源描述、能力集合、RenderGraph 和命令编码接口工作。
+- `Inno.Rendering` 必须保持后端中立，且不得引用 Scene、Assets、Editor 或任何具体图形后端。上层模块通过资源描述、能力集合、RenderGraph 和命令编码接口工作。
 - 通用 Graph 不得引用 Rendering 或 ImGui；Rendering 也不得反向引用 Shader 创作层或 Editor Graph。Shader 图与源码函数模块属于内置创作层，Material 只保存 Shader 引用与参数，不保存图。
 - 所有 Shader 通过图创作，并经统一的 Shader IR、编译、反射、验证和产物缓存链进入运行时；源码语言解析和后端生成由对应 provider 实现，不得建立第二套完整源码 Shader 创作路径。
 - Pipeline、Feature、Pass、Shader Node、GPU 资源与编译产物必须 capability-aware、generation-scoped 且 reload-safe。持久状态只保存 Stable ID 与中立数据，禁止长期保存 collectible ALC 的 `Type`、delegate 或 runtime 对象。
@@ -173,7 +181,7 @@
 - 语言与实现选择必须使用稳定、显式、可序列化的 `languageId` 与 `implementationId`。语言前端必须通过现有 TypeRegistry/TypeCache 体系形成代际化的不可变快照；前端只接收受控源码解析器与不可变请求，并产出中立依赖、结构化诊断和冻结产物。词法、预处理、语法解析、降级规则与原生编译必须留在具体前端、适配器或工具链中。
 - 若引擎决定把某种语言定义为公共标准，必须在公共契约和文档中明确声明；否则 BGFX SC、RML、RmlUi、FreeType、HarfBuzz 等实现名、专有术语、能力限制和错误文本不得出现在服务层、脚本层或中立资产契约中，只能存在于具体实现及其诊断中。
 - 可扩展运行时后端必须使用开放的稳定 ID、provider catalog 与 capability 描述；不得用封闭枚举或核心层 `switch` 作为第三方扩展入口。服务层只能表达中立能力缺失，具体实现负责解释自己的限制。
-- 第三方 C++ 库必须由所属 `native/Inno.Native.XXX/Native` 中的手写语义适配器隔离；同一项目的 BGCS 配置与生成扩展归属 `Bindings/`，managed 单文件归属 `Generated/Bindings.cs`；CMake 中间产物归属对应 `build/toolchains/Inno.Build.Toolchains.XXX/obj/native`，不得写入 `Native/`；`extern` 第三方源码不得修改。适配器只公开后端中立的窄 C++ facade，并通过 PImpl/不透明句柄和中立 DTO 隐藏第三方类型。默认由 BGCS Cpp2C 从该 facade 生成 C ABI，再由 BGCS 从生成的 C header 生成平台无关路径的单文件 managed binding；原生和 managed 生成物分别归属独立输出根，禁止手写 export/import 或修改生成代码。仅当 BGCS 无法表达且有明确记录的 lowering/shim 需求时，才允许额外手写 C ABI。原生句柄、符号和第三方类型不得越过适配层；帧热路径 callback 应留在原生侧，不得仅为 binding 方便穿越 managed 边界。第三方库的进程全局状态必须由显式进程宿主管理引用计数、线程归属、会话隔离、代际与最终释放，禁止用匿名全局变量伪装成 session-local 状态。
+- 第三方 C++ 库必须由所属 `backends/<component>/native/Inno.Native.XXX/Native` 中的手写语义适配器隔离；同一项目的 BGCS 配置与生成扩展归属 `Bindings/`，managed 单文件归属 `Generated/Bindings.cs`；CMake 中间产物归属对应 `backends/<component>/build/Inno.Build.Toolchains.XXX/obj/native`，不得写入 `Native/`；`extern` 第三方源码不得修改。适配器只公开后端中立的窄 C++ facade，并通过 PImpl/不透明句柄和中立 DTO 隐藏第三方类型。默认由 BGCS Cpp2C 从该 facade 生成 C ABI，再由 BGCS 从生成的 C header 生成平台无关路径的单文件 managed binding；原生和 managed 生成物分别归属独立输出根，禁止手写 export/import 或修改生成代码。仅当 BGCS 无法表达且有明确记录的 lowering/shim 需求时，才允许额外手写 C ABI。原生句柄、符号和第三方类型不得越过适配层；帧热路径 callback 应留在原生侧，不得仅为 binding 方便穿越 managed 边界。第三方库的进程全局状态必须由显式进程宿主管理引用计数、线程归属、会话隔离、代际与最终释放，禁止用匿名全局变量伪装成 session-local 状态。
 - 为源码插件提供后端中立的底层公共 API 是允许且必要的；“最小 public”指完成外部插件组合所需的最小稳定表面，而不是只允许游戏逻辑级 API。插件作者 API 必须显式进入 scripting 导出清单；后端 SPI、原生桥、具体实现和第三方句柄必须保持未导出。
 - 帧热路径必须显式定义所有权与生命周期。禁止每帧无条件复制完整几何、索引、纹理像素或为每条绘制命令重复编码；优先使用代际化稳定句柄、资源增量更新/释放、持久 GPU 缓存与具有明确释放协议的池化或所有权缓冲区。不得以优化为由向公共层暴露不安全的原生借用内存。
 - 新系统或边界调整必须同步更新架构验证器中的项目分类、解决方案归属、依赖规则、原生消费规则、scripting allowlist 与公共文档；仓库级架构验证通过之前不得视为完成。
@@ -181,3 +189,106 @@
 ## 22. 基础能力复用
 - 新增事件、身份、序列化、数学、诊断或其他基础能力前，先检查 `Inno.Core` 是否已有可用契约；优先直接使用或封装现有契约，禁止在 UI、Canvas、插件等上层模块另建平行管理系统。
 - UI 与插件事件的订阅、分发及生命周期统一复用 `Inno.Core.Events`。领域可以定义自己的事件类型及适配入口，但不能另建队列、监听器注册表或事件总线来取代核心事件管理。
+
+## 23. 源码可读性与排版
+- 可读性是所有手写源码的持续要求，覆盖 InnoEngine、Canvas 与 Rendering2D；生成的 Bindings 和第三方 `extern` 源码不纳入手工排版。改进排版时不得改变执行顺序、初始化顺序、公开契约、序列化数据、诊断或用户体验。
+- 优先让读者一眼看清声明和意图：字段、属性、无参数或单参数函数、简单表达式在合理行宽内能完整写成一行时，保持一行；不得仅因机械行宽规则把名称、箭头表达式或成员修饰符随意拆散。
+- 所有参数超过一个的函数声明（包括方法、构造函数、局部函数、委托、运算符、主构造函数和 Lambda）必须在 `(` 后换行，每个参数独占一行，最后一个参数后换行，并让 `)` 与声明起始行对齐。紧随参数列表的函数体左花括号与 `)` 同行，写成 `) {`；表达式体、约束和初始化器则在 `)` 后接其语法所需内容。无参数及单参数函数不强制展开。新增和修改源码均执行此规则；自动格式化不能覆盖该规则。
+
+- 一行过长或包含多个独立概念时按语义分行。多行调用与声明采用一致缩进，每行表达清晰的参数或逻辑组；链式调用、条件、集合初始化和异常构造也遵循同一原则。不要为了压缩行数把多条可执行语句挤在一行。
+- 空行用于分隔职责与处理阶段，缩进、括号、空格和换行在同一文件内保持统一。简单自动属性可以紧凑；包含流程控制、异常处理或多个语句的成员必须展开成容易逐步阅读的块。
+- 注释解释原因、约束和生命周期，不复述代码；XML `summary`、`param`、`returns` 等标签遵守现有架构校验器要求的展开形式，较长内容按完整语义换行。英文注释要求仍按第 5 节执行。
+- 可读性整理应逐文件审阅并以纯格式变更为原则；批量处理后核对语法 token、构建与相关测试。不要把重命名、逻辑重构或行为修复混入纯排版提交。
+
+多参数函数示例：
+
+```csharp
+public void AAA(
+    int param1,
+    int param2
+) {
+    // Method body.
+}
+```
+
+## 24. Editor 表单与滚动约束
+
+- 每个可视区域只能指定一个滚动 owner。父 Panel/Modal、布局 Child 与内容 Child 不得同时为同一方向生成滚动条；承载填满区域的可滚动 Child 时，父容器必须禁用对应滚动。
+- 所有左侧 label、右侧 input 的 Editor 字段复用 `ImGuiWidget.SetupPropertyColumns()` 与 `PropertyLabel()`，按 2:3 分配可用宽度；有操作列时先扣除操作列。label 必须在自身列换行，行高随内容增长。
+- 禁止以固定 label 像素宽度、无条件 scrollbar flag、虚假的 content size 或额外嵌套滚动 Child 修补布局。修改表单、Panel、Popup 后要在小窗口、长文本与不同 zoom 下验证 `ScrollMaxX/ScrollMaxY` 只在内容确实溢出时为正。
+- Editor 下拉选择器统一使用 `BeginBoundedCombo` / `EndBoundedCombo` 或 `BeginMenuSelector` / `EndMenuSelector`；弹层从触发控件下边缘向下展开，宽度受所属窗口限制，高度同时受所属窗口剩余空间和窗口高度比例限制。不要直接用原生 Combo 的自动翻转定位。
+- Popup 尺寸约束统一在 Widget 边界做像素对齐：上限向下取整，内容所需尺寸向上取整，防止 ImGui 截断小数 padding 后产生假溢出。回归必须覆盖 85%、90%、110% 等非整像素缩放；不能只测试整数或半整数 padding，也不能用 `NoScrollbar` 隐藏问题。
+- 自绘命中区域除了矩形包含关系，还必须确认所属 ImGui window 是当前可交互的前景窗口；被浮动窗口、Popup 或 Modal 遮挡时不得触发底层 Panel 的关闭、画布手势或游戏输入。平台事件仍使用 `Inno.Core.Events`，ImGui 只决定可见 UI 的命中与焦点；Play Session 使用独立 Input backend 接收经 Game View 焦点策略筛选的事件，不建立第二个事件总线。
+- 树行的 disclosure、正文与叠加按钮必须各自拥有独立命中区域；原生 TreeNode 不得以整行 SpanFullWidth/AllowOverlap 覆盖自绘正文。回归同时覆盖鼠标先悬停与移动/按下发生在同一帧、正文双击、箭头展开及叠加按钮，不能依赖额外一帧悬停才能点击。
+
+
+## 25. 宿主、平台目标与统一构建
+
+- 共享 Foundation、Shell、Player Runtime 不通过 OperatingSystem.IsBrowser 判断能力。平台入口注入帧调度、模块激活、存储、日志和线程策略；Input 使用同一 Core Events 入口。
+- Native 每组件只有一个项目，共同 BGCS 声明与 target profile 分开。Host 单文件位于 Generated/Bindings.cs，目标 managed 单文件位于所属项目 obj/<target>/<generationFingerprint>/Generated/Bindings.cs；CMake 中间产物仍归对应 toolchain 的 obj/native。不同目标与生成身份不能覆盖彼此输出。
+- BGCS 生成的 ABI carrier 已明确封送；所有绑定组件通过共同 MSBuild 规则启用 DisableRuntimeMarshalling，禁止让运行时重复解释声明或在各组件重复 assembly attribute。验收检查实际参数、返回与回调，不能仅检查 sizeof。
+- Cpp2C 目标桥使用同一 obj/<target>/<generationFingerprint>/Native，与 managed 单文件经过共同 staging 验证和原子提交，不能覆盖宿主 Native/Generated。目标工具链读取当前请求的生成描述，通过 CMake 参数选择桥；Emscripten SDK/Cache/Node/Python 必须以目标项目的 MSBuild workload 选择为准，不从已安装包中猜测最高版本。
+- 构建工具只保留 Inno.Build.Cli 一个 Program。组件工具链、Shader 编译、Support Pack 事务和架构验证作为库组合，MSBuild 使用薄 Task 适配。
+- Editor 的普通 IDE/MSBuild 构建与 Publish 必须通过同一 Native 工具链和部署契约准备当前配置的完整原生闭包；构建失败不得报告可运行。运行时 Loader 只加载明确部署的文件，不承担构建、仓库缓存探测或旧符号兼容。内容完全一致的部署应保持原文件，避免重复复制或替换正在使用的 DLL。
+- Support Pack 核心通过 IPlayerSupportPackSource 与 IPlayerSupportPackValidator 注册目标，不维护具体平台分支。Inno.Build.Composition 只接收中立绑定贡献；内置 target、managed deployment、Support Pack 和产品组件闭包只在 Inno.Build.Distribution.Standard 注册；Editor、CLI 与 MSBuild 注入宿主上下文后消费同一不可变 distribution。通用 Build 库禁止反向引用该组合库或 Editor。请求的目标与托管部署能力必须在 Support Pack 供给及外部工具启动前统一校验，不能先执行昂贵准备再拒绝不支持的组合。
+
+## 26. Solution 与项目文件整理
+
+- Solution Folder 与实际架构职责对应，删除没有有效项目或 Solution Items 的空分组；小型项目集合避免无必要的单项目包装层。
+- `src`、`backends`、`platforms`、`build`、`tools` 与 `tests` 中的创作源码项目必须纳入 Solution，包括绑定生成扩展和测试 fixture；`obj`、`artifacts` 及第三方生成项目不纳入。没有入站 ProjectReference 不代表项目无用，清理前必须核对宿主入口、MSBuild 工具调用与生成配置。
+- `.csproj`、`.props`、`.targets` 使用两空格缩进，顶层职责块以空行分隔，长属性列表逐属性换行，ProjectReference 相对路径使用 `/`。
+- 只合并条件和引用可见性一致的相邻引用分组。不得重排 Import、Property、Target 或改变条件、metadata 和求值顺序；Editor 公开与实现引用边界必须保留。
+- 详细规则见 `docs/architecture/CSHARP_DEVELOPMENT_STANDARD.md`；整理后核对有效 XML、Solution 项目身份与配置，并运行受影响构建及架构验证。
+- 长时间构建与验收应在阶段结束后清理本次操作所属的旧工具快照、私有加载目录和测试浏览器 profile，并检查可用磁盘空间。清理前核对明确 owner、解析后的绝对路径、符号链接和活跃进程；保留当前产物及验收日志，不清理用户或 SDK 的全局缓存。含 hardlink/压缩文件的逻辑大小不能当作实际释放空间。
+
+## 27. 内容、渲染层次与帧所有权
+
+- `Inno.Content` 只依赖必要 Foundation 契约，统一逻辑 ContentKey、Pack 索引、读取预算和只读 lease。共享 Player、Runtime Session 与 AssetDatabase 不读取部署文件或创建物理目录；具体内容来源负责文件、HTTP、缓存与 owned stream。Asset 消费复用 `ArtifactLease.OpenRead()`，打开的流持有独立 pin。
+- 内容缓存必须校验完整文件集合、实际长度及内容哈希；标记文件、mtime 或长度不能代替完整性。候选在独立 staging 验证后原子发布，reader 固定 generation，旧目录只有在全部 reader 释放后才退休。提交后清理失败必须与提交失败区分。
+- Rendering 严格分为 Core 图形机制、Assets 运行资产、Assets.Authoring 创作/编译与 Runtime 模型/资源服务。Core 不引用 Assets 或 References；Assets 不引用 Runtime、Shaders 或 Pipeline；Runtime 与 Player 发布闭包不引用 Authoring、Assets Pipeline 或 Shader 编译工具。物理输入文件只属于具体 SDK/toolchain 适配边界。
+- 通用输入使用 `Inno.Adapter.Input` 的 Core Events 实现，不能把中立事件快照放进 SDL 项目。存储 namespace 与物理根分离，文档 IO 使用 `IByteDocumentStore`，Session 日志由宿主 factory 交付且只由所属 Session 释放。
+- 主呈现尺寸必须真实且显式可用：`null` 表示没有主输出；零尺寸或内部 1×1 资源不能伪装为可用 surface。没有主输出时跳过其建图与输入换算，独立离屏请求仍可运行。
+- Contributor snapshot 仅在注册变化时重建，帧开始固定；私有 scratch 在正常帧、异常和退休路径都清空 extension 引用。Graph Validate 只分析，最终 Compile 只执行一次完整资源分配；mutation rollback 同步回滚图与验证状态，不允许修改已接受的 pass。
+- Native recipe 声明真实输入闭包与工具身份。operation 内共用初始输入扫描，等待 lease 后及发布前保留必要的重新验证；无关程序集 MVID 不能代替组件 recipe 身份。Task 引导统一、目标属性隔离，内容相同的 native 部署不复制、不替换加载中的 DLL、不更新 mtime。
+- Task 完整运行闭包的共享编译必须使用 Core IO lease 协调跨进程写入，等待时释放 MSBuild 节点；最小引导 publisher 使用操作私有中间态，随后由现有不可变发布与 reader 协议管理加载及退休。
+
+## 28. 平台、共享后端与产品组合
+
+- 按职责维护共享代码，按平台集中系统/SDK接入，按包含架构和 ABI 的明确目标构建，按产品组合 Editor 或 Player。Desktop 不作为目标；工具宿主、运行目标、产品和托管部署分别声明。
+- Foundation、Content、Services、Runtime、Shell、Player Runtime 与 Editor Hosting 不引用命名平台；backend 不引用平台，平台基础 build/runtime 不引用共享 backend 或 integrations，平台产品入口与同平台 integration 允许显式选择后端；平台不引用另一平台；Runtime 不引用构建、签名或 SDK 发布工具。
+- AdapterSelection 不提供具体 backend 默认值。平台产品显式注入 catalog、selection、frame driver、keyboard policy、日志/内容/存储来源及 distribution；共用 Host 不调用 OS 判断选择这些实现。
+- StandardBuildDistribution 是唯一内置发行注册点；平台模块贡献绑定完整的 target、Support Pack 和 SDK，DotNet deployment 独立注册。不能以目录扫描、环境变量、程序集命名或宿主 OS 隐式安装/选择平台。
+- 普通 Native 产品闭包由平台贡献的 `nativeProducts` 声明，通过 distribution 解析；MSBuild Task 不得维护另一份产品 switch 或 backend 列表。未注册产品必须在 SDK/staging 前失败。
+- NativeBuildContext 冻结实际 host、target、toolchain、组件位置及绑定。recipe 通过描述读取所属源码；CMake 参数仅由 NativeCMakeExecutor 组合，底层进程工具不能隐式增添目标参数。普通 Build/Publish 通过 PrepareProductNativeTask 准备完整匹配闭包，design-time 不执行 Native。
+- 托管工具进程统一使用 DotNetSdkEnvironment 隔离父 IDE/MSBuild 的 SDK resolver、加载程序集及扩展根变量，并保留已选 Native SDK 环境。进程 override 的 null 明确移除继承变量，空字符串仍表示显式空值；不得通过污染父进程或锁定所有消费者 SDK 来规避隔离问题。SDK 由所属工程声明解析，产品 Native 准备策略由产品项目声明，共同 targets 不判断具体平台 ID。
+- 工程选定的 SDK 必须冻结实际 CLI 入口，并由该入口执行发布；短路径、junction 或临时工作目录不能再次解析另一个 SDK。记录 SDK identity 与 CLI 路径，不能复制 global.json 或改写消费者 SDK 来掩盖执行差异。
+- 引用独立 BGCS.Runtime 源码时，Inno 的消费规则必须将输出放在本 checkout 的 artifacts/managed/interop，并按 SDK、目标、ABI 与真实编译属性隔离。不得把产品产物写进 BGCS 仓库的普通 bin/obj，也不能让不同 DebugType/AOT/运行目标争用同一输出；BGCS 的独立构建和源码保持独立。
+- SDK 自动加入的间接 interop ProjectReference 与直接引用必须采用相同产物隔离属性；仅修改求值阶段的直接 ProjectReference 不能作为完整隔离验收。验证普通产品 Build 的实际引用闭包，不能只检查静态项目项。
+- 外部消费者的普通 restore 不保留逐引用隔离 metadata；共同 interop 消费规则在编译引用前准备同一隔离还原。不得复制 assets、改动 BGCS 工程或要求消费者换 SDK；回归必须包含仓库外、普通 restore 的真实构建。
+- 多职责平台模块必须显式声明实际参与 Native recipe 的实现闭包，不能因修改 Support Pack 或包装代码使无关原生归档失效。校验器消费已冻结的组件产物声明，不重复维护另一份 backend 文件名单。
+- 当前六个生产入口为 Editor.Windows、Editor.MacOS、Player.Windows、Player.MacOS、Player.Browser 与 Build.Cli，其余生产项目为库。CPU 扩展复用所属平台产品，不复制 Program/backend；只有真实框架或启动差异才新建项目。
+- Editor 产品的 Shader 平台/API 配置归所属平台，由显式产品构建属性传递；共享 ImGui 后端不维护命名平台或 CPU 选择表。Shader 增量必须校验内容、工具与产物完整性，并复用现有哈希、lease 和原子发布；不能仅根据时间戳跳过验证。
+- 平台 `ProductBuild.props` 声明共享 backend Shader 配置，Editor 在此基础上声明 UI Shader；Player 与 Editor 显式传递同一产品属性机制。Composition、OutputTransfer 与 ImGui 的 Shader 产物都使用独立 `Outputs` owner，不在共享 backend 项目中恢复目标选择表或时间戳跳过。
+- 共享 Editor 的可发现功能和 Panel 由 `EditorProduct.props` 统一声明产品依赖，平台入口共同导入。Host 的实现依赖不能代替产品部署闭包；不得通过无效类型引用、运行时目录扫描或重复平台列表强行保留扩展。
+- 未来平台只记录真实接入边界，不创建空项目、SDK占位或未经验收的发布目标。复用 SDL/BGFX/MiniAudio 必须验证实际目标实现、SDK、ABI、surface、线程、回调和生命周期。
+- 新项目、目录迁移和公开契约必须同步 Solution、有效 MSBuild 引用、架构验证、所有消费者、唯一 Wiki 页面和当前验收；禁止通过移出旧扫描根绕过规则。
+
+- BGFX 等共享 backend 不维护命名平台的工厂、枚举或目标表。平台提供不可变 SDK invocation、Shader 方言、defines 和能力；发行在一个绑定入口组合。实际有序参数、布局、能力和工具必须进入指纹。
+- Support Pack 必须先完成只读预检并返回冻结计划，再取得发布 lease 和创建 staging；缺 SDK、预取消或错误计划不能创建输出。执行必须使用已选 managed CLI 与 Native toolchain，不能再次从 PATH 或临时目录解析 SDK。
+- NuGet 静态图还原必须使用 RestoreSerializeGlobalProperties 标准输入传输，保留 IDE 的完整全局属性；不得通过删除属性、关闭静态图或修改 SDK 来回避 Windows 命令行长度限制。
+
+- 平台 packager 仅验证和打包；内容 compiler 由后端实现，发行通过 GameBuildContribution 绑定准确目标。平台基础不持有 compiler，也不接收创作服务。
+- Native 每个产品步骤显式声明 Static/Shared、有序组件参数与配置输入；真实配置参与指纹，recipe 在 staging 前拒绝未实现的链接方式。SDK 不隐式决定产品链接。
+- SDL 应用的窗口目录只包含自身创建或明确接管的窗口；外部 owner 保留原生销毁权，解除登记先失效 wrapper。ImGui 使用同一 host surface，不重复解析 SDK 句柄；交互规则由产品注入，尺度在 NewFrame 前同步，不维护 CPU 专属返回 ABI。
+
+## 29. Backend 运行接入与生成成本
+
+- SDL 共同窗口创建与焦点读取只有一个 backend owner；平台 integration 仅处理实际 SDK 差异。共享 BGFX Device 通过自身 IBgfxSurfaceIntegration 接收借用 surface，不维护命名平台/ABI 白名单；Default catalog 必须接收明确 rendering factory。
+- 附加窗口关闭先解除交互/登记，再退休 renderer surface；渲染端确认已处理 framebuffer 销毁命令后才释放原生窗口。Native callback 不等待或推进帧；最终 drain 仅在 owner thread、闭帧、无 graph/encoder 的安全点执行，失败保留依赖 owner。完成 Task 不是通用 GPU fence。
+- Native 生成定义唯一属于组件 Bindings/bindings.props，MSBuild 与库调用共用；Toolchains 只依赖 INativeBindingGenerator，具体 BGCS 应用流程属于 Inno.Build.Bindings，Task 仅映射参数/取消/日志。产品闭包只请求一次完整 binding batch，托管消费保留 Native 已选指纹及逐组件 Static/Shared 请求；动态初始化开关只在 Native 编译边界消费实际链接选择，不能由平台名称或宿主推导。
+- 绑定配置路径变量只从 operation 冻结的 Native SDK 环境展开；直接库与 MSBuild 使用同一目标解析，不以修改进程环境或临时 PATH 让生成器获得 SDK。缺失配置在候选创建前失败。
+- 产品 binding selection 属于本次私有 Task reader，必须存活至全部 managed/native 消费者完成；Build 可能是 Publish 的嵌套依赖，禁止在 AfterTargets="Build" 提前释放或猜测 IsPublishing。Native Publish 严格核对同一闭包、指纹和源码后释放；普通 Build 随 reader/process owner 确认退休回收。
+- 初始、批次锁后/生成后及各 Native 锁后/编译后分别 fresh 校验；只在同一明确阶段去重完整内容读取，不能跨等待/执行复用旧结果。可变源码必须复制固定，不以 hardlink 伪装不可变输入。
+- 冷 CMake producer 通过共同 executor 固定 recipe 声明的工作区输入；Browser 聚合的组件 include、bridge 与参数必须解析到同一复制树。热缓存命中不复制，外部 SDK 与输出保持自己的位置和 owner，不用字符串替换整个仓库根来误重定向输出。
+- Task runtime 只在 IBuildEngine4 Build 生命周期、同一完整请求身份内复用成功不可变 publication；registry 只存 BCL 数据，不持有 SDK owner、lease 或私有 ALC 类型。每个实际载入边界仍有独立 owner；失败/取消不缓存。共享 restore 写入由 Core.IO lease 协调，等待时 Yield/Reacquire，保留锁文件。
+- 独立并发托管构建必须通过 SDK 的明确 ArtifactsPath 使用各自 bin/obj owner；共同规则不得覆盖该输出选择。外部 interop 编译与还原采用相同 operation owner，Native 内容寻址缓存仍通过自身 lease 共享。普通 IDE bin/obj 仅属于一个活动构建，不能把两个独立进程同时写同一路径视为受支持的并发模式。

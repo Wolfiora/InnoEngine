@@ -35,8 +35,8 @@ public sealed class GraphDiagnostic
         string message,
         DiagnosticSeverity severity,
         GraphNodeId? nodeId = null,
-        GraphEdgeId? edgeId = null)
-    {
+        GraphEdgeId? edgeId = null
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(code);
         ArgumentException.ThrowIfNullOrWhiteSpace(message);
         this.code = code;
@@ -143,8 +143,8 @@ public static class GraphValidator
         GraphDocument document,
         IGraphNodeDefinitionResolver resolver,
         IGraphTypeConversion? conversion = null,
-        bool allowCycles = false)
-    {
+        bool allowCycles = false
+    ) {
         ArgumentNullException.ThrowIfNull(document);
         ArgumentNullException.ThrowIfNull(resolver);
 
@@ -167,8 +167,8 @@ public static class GraphValidator
         GraphDocument document,
         IGraphNodeDefinitionResolver resolver,
         Dictionary<GraphNodeId, IReadOnlyDictionary<GraphPortId, GraphPortDefinition>> portsByNode,
-        List<GraphDiagnostic> diagnostics)
-    {
+        List<GraphDiagnostic> diagnostics
+    ) {
         foreach (GraphNodeRecord node in document.nodes)
         {
             if (!resolver.TryResolve(node.definitionId, out GraphNodeDefinition? definition) || definition is null)
@@ -213,8 +213,8 @@ public static class GraphValidator
         GraphDocument document,
         IReadOnlyDictionary<GraphNodeId, IReadOnlyDictionary<GraphPortId, GraphPortDefinition>> portsByNode,
         IGraphTypeConversion? conversion,
-        List<GraphDiagnostic> diagnostics)
-    {
+        List<GraphDiagnostic> diagnostics
+    ) {
         Dictionary<GraphEndpoint, int> connectionCounts = [];
 
         foreach (GraphEdgeRecord edge in document.edges)
@@ -276,8 +276,8 @@ public static class GraphValidator
         GraphPortDefinition port,
         Dictionary<GraphEndpoint, int> connectionCounts,
         GraphEdgeId edgeId,
-        List<GraphDiagnostic> diagnostics)
-    {
+        List<GraphDiagnostic> diagnostics
+    ) {
         connectionCounts.TryGetValue(endpoint, out int currentCount);
         currentCount++;
         connectionCounts[endpoint] = currentCount;
@@ -295,8 +295,8 @@ public static class GraphValidator
     private static void ValidateRequiredInputs(
         GraphDocument document,
         IReadOnlyDictionary<GraphNodeId, IReadOnlyDictionary<GraphPortId, GraphPortDefinition>> portsByNode,
-        List<GraphDiagnostic> diagnostics)
-    {
+        List<GraphDiagnostic> diagnostics
+    ) {
         HashSet<GraphEndpoint> connectedInputs = [];
         foreach (GraphEdgeRecord edge in document.edges)
         {
@@ -321,8 +321,10 @@ public static class GraphValidator
         }
     }
 
-    private static void ValidateCycles(GraphDocument document, List<GraphDiagnostic> diagnostics)
-    {
+    private static void ValidateCycles(
+        GraphDocument document,
+        List<GraphDiagnostic> diagnostics
+    ) {
         var graph = new DependencyGraph<GraphNodeId>();
         foreach (GraphNodeRecord node in document.nodes)
             graph.AddNode(node.id);
@@ -346,8 +348,8 @@ public static class GraphValidator
     private static bool TryGetPort(
         IReadOnlyDictionary<GraphNodeId, IReadOnlyDictionary<GraphPortId, GraphPortDefinition>> portsByNode,
         GraphEndpoint endpoint,
-        out GraphPortDefinition port)
-    {
+        out GraphPortDefinition port
+    ) {
         if (portsByNode.TryGetValue(
                 endpoint.nodeId,
                 out IReadOnlyDictionary<GraphPortId, GraphPortDefinition>? ports)

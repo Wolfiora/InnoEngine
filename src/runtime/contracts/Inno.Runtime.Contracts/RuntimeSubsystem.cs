@@ -45,7 +45,10 @@ public abstract class RuntimeSubsystem : IRuntimeSubsystem
             throw new InvalidOperationException("A subsystem cannot be attached to multiple owners.");
         m_ownerThread = Environment.CurrentManagedThreadId;
         m_started = true;
-        try { OnStart(); }
+        try
+        {
+            OnStart();
+        }
         catch
         {
             // The enclosing owner was registered before Attach and retains this partial instance.
@@ -65,11 +68,20 @@ public abstract class RuntimeSubsystem : IRuntimeSubsystem
         if (m_frameOpen)
             throw new InvalidOperationException("A subsystem frame is already open.");
         m_frameOpen = true;
-        try { OnBeginFrame(frame); }
+        try
+        {
+            OnBeginFrame(frame);
+        }
         catch (Exception failure)
         {
-            try { EndFrame(frame); }
-            catch (Exception cleanup) { throw new AggregateException("Subsystem frame entry and rollback failed.", failure, cleanup); }
+            try
+            {
+                EndFrame(frame);
+            }
+            catch (Exception cleanup)
+            {
+                throw new AggregateException("Subsystem frame entry and rollback failed.", failure, cleanup);
+            }
             throw;
         }
     }
@@ -79,42 +91,66 @@ public abstract class RuntimeSubsystem : IRuntimeSubsystem
     /// <param name="frame">
     /// The immutable fixed-step state.
     /// </param>
-    public void FixedUpdate(RuntimeFixedFrame frame) { EnsureFrame(); OnFixedUpdate(frame); }
+    public void FixedUpdate(RuntimeFixedFrame frame)
+    {
+        EnsureFrame();
+        OnFixedUpdate(frame);
+    }
     /// <summary>
     /// Advances variable simulation state.
     /// </summary>
     /// <param name="frame">
     /// The immutable variable-frame state.
     /// </param>
-    public void Update(RuntimeFrame frame) { EnsureFrame(); OnUpdate(frame); }
+    public void Update(RuntimeFrame frame)
+    {
+        EnsureFrame();
+        OnUpdate(frame);
+    }
     /// <summary>
     /// Advances state that depends on completed variable simulation.
     /// </summary>
     /// <param name="frame">
     /// The immutable variable-frame state.
     /// </param>
-    public void LateUpdate(RuntimeFrame frame) { EnsureFrame(); OnLateUpdate(frame); }
+    public void LateUpdate(RuntimeFrame frame)
+    {
+        EnsureFrame();
+        OnLateUpdate(frame);
+    }
     /// <summary>
     /// Prepares frame output after simulation has completed.
     /// </summary>
     /// <param name="frame">
     /// The immutable variable-frame state.
     /// </param>
-    public void BeforeRender(RuntimeFrame frame) { EnsureFrame(); OnPrepareOutput(frame); }
+    public void BeforeRender(RuntimeFrame frame)
+    {
+        EnsureFrame();
+        OnPrepareOutput(frame);
+    }
     /// <summary>
     /// Produces frame output owned by this subsystem.
     /// </summary>
     /// <param name="frame">
     /// The immutable variable-frame state.
     /// </param>
-    public void Render(RuntimeFrame frame) { EnsureFrame(); OnProduceOutput(frame); }
+    public void Render(RuntimeFrame frame)
+    {
+        EnsureFrame();
+        OnProduceOutput(frame);
+    }
     /// <summary>
     /// Finalizes frame output even when rendering fails.
     /// </summary>
     /// <param name="frame">
     /// The immutable variable-frame state.
     /// </param>
-    public void AfterRender(RuntimeFrame frame) { EnsureFrame(); OnCompleteOutput(frame); }
+    public void AfterRender(RuntimeFrame frame)
+    {
+        EnsureFrame();
+        OnCompleteOutput(frame);
+    }
     /// <summary>
     /// Ends one frame and releases frame-scoped state.
     /// </summary>
@@ -271,16 +307,33 @@ public abstract class RuntimeSubsystem : IRuntimeSubsystem
         if (m_ownerThread != 0 && m_ownerThread != Environment.CurrentManagedThreadId)
             throw new InvalidOperationException("Subsystem lifecycle operations require the owner thread.");
     }
-    private static void TryRelease(Action release, List<Exception> failures)
-    {
-        try { release(); }
-        catch (Exception exception) { failures.Add(exception); }
+    private static void TryRelease(
+        Action release,
+        List<Exception> failures
+    ) {
+        try
+        {
+            release();
+        }
+        catch (Exception exception)
+        {
+            failures.Add(exception);
+        }
     }
     private void TryRetire(Action release)
     {
-        try { release(); }
-        catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null) { throw; }
-        catch (Exception exception) { m_retirementFailures.Add(exception); }
+        try
+        {
+            release();
+        }
+        catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null)
+        {
+            throw;
+        }
+        catch (Exception exception)
+        {
+            m_retirementFailures.Add(exception);
+        }
     }
     private static void ThrowFailures(List<Exception> failures)
     {

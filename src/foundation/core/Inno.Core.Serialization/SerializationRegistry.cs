@@ -13,6 +13,7 @@ public sealed class SerializationRegistry : IDisposable
 {
     private readonly ConverterRegistry m_converters;
     private readonly TypeCatalog m_types;
+    private readonly ISerializationMetadataSource m_metadata;
     private bool m_disposed;
 
     /// <summary>
@@ -24,11 +25,17 @@ public sealed class SerializationRegistry : IDisposable
     /// <exception cref="ArgumentNullException">
     /// Thrown when <paramref name="types"/> is null.
     /// </exception>
+    /// <param name="metadata">
+    /// The declaration access provider selected by the same composition root.
+    /// </param>
     [ScriptingApiIgnore]
-    public SerializationRegistry(TypeCatalog types)
-    {
+    public SerializationRegistry(
+        TypeCatalog types,
+        ISerializationMetadataSource metadata
+    ) {
         ArgumentNullException.ThrowIfNull(types);
         m_types = types;
+        m_metadata = metadata ?? throw new ArgumentNullException(nameof(metadata));
         m_converters = new ConverterRegistry(types);
     }
 
@@ -62,6 +69,30 @@ public sealed class SerializationRegistry : IDisposable
     }
 
     /// <summary>
+    /// Reads the current provider's declaration metadata for domain operations such as prefab overrides.
+    /// </summary>
+    /// <param name="type">
+    /// The exact declaration owned by the current serialization generation.
+    /// </param>
+    /// <returns>
+    /// Immutable declaration accessors owned by this generation; unsupported declarations throw.
+    /// The caller must not retain the result across generation retirement.
+    /// </returns>
+    /// <exception cref="ArgumentNullException">
+    /// The declaration is null.
+    /// </exception>
+    /// <exception cref="ObjectDisposedException">
+    /// The registry has been disposed.
+    /// </exception>
+    [ScriptingApiIgnore]
+    public SerializationTypeMetadata GetMetadata(Type type)
+    {
+        EnsureInitialized();
+        ArgumentNullException.ThrowIfNull(type);
+        return m_metadata.GetMetadata(type);
+    }
+
+    /// <summary>
     /// Gets the stable ordered runtime-visible properties for a serializable object.
     /// </summary>
     /// <param name="value">
@@ -80,7 +111,17 @@ public sealed class SerializationRegistry : IDisposable
     {
         EnsureInitialized();
         ArgumentNullException.ThrowIfNull(value);
-        return ReflectionMetadata.GetRuntimeProperties(value);
+        IReadOnlyList<SerializationMemberMetadata> members = m_metadata.GetMetadata(value.GetType()).members;
+        var properties = new List<SerializedProperty>(members.Count);
+        foreach (SerializationMemberMetadata member in members)
+        {
+            if ((member.visibility & PropertyVisibility.RuntimeGet) == 0)
+                continue;
+            properties.Add(new SerializedProperty(member.name, member.type,
+                () => member.GetValue(value), propertyValue => member.SetValue(value, propertyValue),
+                member.visibility, true, (member.visibility & PropertyVisibility.RuntimeSet) != 0));
+        }
+        return properties;
     }
 
     /// <summary>
@@ -104,8 +145,8 @@ public sealed class SerializationRegistry : IDisposable
     [ScriptingApiIgnore]
     public IReadOnlyList<SerializationPropertySnapshot> CaptureProperties(
         ISerializable value,
-        SerializationContext? context = null)
-    {
+        SerializationContext? context = null
+    ) {
         EnsureInitialized();
         ArgumentNullException.ThrowIfNull(value);
         using ConverterRegistryLease converters = m_converters.Capture();
@@ -139,8 +180,8 @@ public sealed class SerializationRegistry : IDisposable
     public byte[] CapturePropertyData(
         ISerializable value,
         string propertyName,
-        SerializationContext? context = null)
-    {
+        SerializationContext? context = null
+    ) {
         EnsureInitialized();
         ArgumentNullException.ThrowIfNull(value);
         using ConverterRegistryLease converters = m_converters.Capture();
@@ -172,8 +213,8 @@ public sealed class SerializationRegistry : IDisposable
     /// </exception>
     public byte[] CapturePropertiesData(
         ISerializable value,
-        SerializationContext? context = null)
-    {
+        SerializationContext? context = null
+    ) {
         EnsureInitialized();
         ArgumentNullException.ThrowIfNull(value);
         using ConverterRegistryLease converters = m_converters.Capture();
@@ -233,8 +274,8 @@ public sealed class SerializationRegistry : IDisposable
         ISerializable target,
         IReadOnlyList<SerializationPropertySnapshot> snapshots,
         SerializationPropertyRestoreMode mode = SerializationPropertyRestoreMode.Strict,
-        SerializationContext? context = null)
-    {
+        SerializationContext? context = null
+    ) {
         EnsureInitialized();
         ArgumentNullException.ThrowIfNull(target);
         ArgumentNullException.ThrowIfNull(snapshots);
@@ -284,8 +325,8 @@ public sealed class SerializationRegistry : IDisposable
         ISerializable target,
         ReadOnlySpan<byte> data,
         SerializationPropertyRestoreMode mode = SerializationPropertyRestoreMode.Strict,
-        SerializationContext? context = null)
-    {
+        SerializationContext? context = null
+    ) {
         EnsureInitialized();
         ArgumentNullException.ThrowIfNull(target);
         if (!Enum.IsDefined(mode))
@@ -320,7 +361,10 @@ public sealed class SerializationRegistry : IDisposable
     /// <exception cref="InvalidOperationException">
     /// Thrown when the manager is not initialized.
     /// </exception>
-    public byte[] Serialize<T>(T value, SerializationContext? context = null)
+    public byte[] Serialize<T>(
+        T value,
+        SerializationContext? context = null
+    )
         where T : class, ISerializable
     {
         EnsureInitialized();
@@ -332,7 +376,8 @@ public sealed class SerializationRegistry : IDisposable
     internal byte[] Serialize<T>(
         T value,
         ConverterRegistryLease converters,
-        SerializationContext? context = null)
+        SerializationContext? context = null
+    )
         where T : class, ISerializable
     {
         ArgumentNullException.ThrowIfNull(value);
@@ -367,7 +412,10 @@ public sealed class SerializationRegistry : IDisposable
     /// <exception cref="InvalidOperationException">
     /// Thrown when the manager is not initialized.
     /// </exception>
-    public T Deserialize<T>(ReadOnlySpan<byte> bytes, SerializationContext? context = null)
+    public T Deserialize<T>(
+        ReadOnlySpan<byte> bytes,
+        SerializationContext? context = null
+    )
         where T : class, ISerializable
     {
         EnsureInitialized();
@@ -378,7 +426,8 @@ public sealed class SerializationRegistry : IDisposable
     internal T Deserialize<T>(
         ReadOnlySpan<byte> bytes,
         ConverterRegistryLease converters,
-        SerializationContext? context = null)
+        SerializationContext? context = null
+    )
         where T : class, ISerializable
     {
         ArgumentNullException.ThrowIfNull(converters);
@@ -418,7 +467,11 @@ public sealed class SerializationRegistry : IDisposable
     /// <exception cref="InvalidOperationException">
     /// Thrown when the manager is not initialized.
     /// </exception>
-    public void Restore<T>(T target, ReadOnlySpan<byte> bytes, SerializationContext? context = null)
+    public void Restore<T>(
+        T target,
+        ReadOnlySpan<byte> bytes,
+        SerializationContext? context = null
+    )
         where T : class, ISerializable
     {
         EnsureInitialized();
@@ -456,8 +509,10 @@ public sealed class SerializationRegistry : IDisposable
     /// <exception cref="InvalidOperationException">
     /// Thrown when the manager is not initialized.
     /// </exception>
-    public byte[] Encode(Action<SerializationWriter> write, SerializationContext? context = null)
-    {
+    public byte[] Encode(
+        Action<SerializationWriter> write,
+        SerializationContext? context = null
+    ) {
         EnsureInitialized();
         ArgumentNullException.ThrowIfNull(write);
         using ConverterRegistryLease converters = m_converters.Capture();
@@ -467,8 +522,8 @@ public sealed class SerializationRegistry : IDisposable
     internal byte[] Encode(
         Action<SerializationWriter> write,
         ConverterRegistryLease converters,
-        SerializationContext? context = null)
-    {
+        SerializationContext? context = null
+    ) {
         ArgumentNullException.ThrowIfNull(write);
         ArgumentNullException.ThrowIfNull(converters);
         var operation = new SerializationOperation(CreateContext(context), converters);
@@ -511,8 +566,8 @@ public sealed class SerializationRegistry : IDisposable
     public TResult Decode<TResult>(
         ReadOnlySpan<byte> bytes,
         Func<SerializationReader, TResult> read,
-        SerializationContext? context = null)
-    {
+        SerializationContext? context = null
+    ) {
         EnsureInitialized();
         ArgumentNullException.ThrowIfNull(read);
         using ConverterRegistryLease converters = m_converters.Capture();
@@ -523,8 +578,8 @@ public sealed class SerializationRegistry : IDisposable
         ReadOnlySpan<byte> bytes,
         Func<SerializationReader, TResult> read,
         ConverterRegistryLease converters,
-        SerializationContext? context = null)
-    {
+        SerializationContext? context = null
+    ) {
         ArgumentNullException.ThrowIfNull(read);
         ArgumentNullException.ThrowIfNull(converters);
         SerializationNode decoded = BinarySerializationFormat.Decode(bytes);
@@ -554,5 +609,5 @@ public sealed class SerializationRegistry : IDisposable
     }
 
     private SerializationContext CreateContext(SerializationContext? context)
-        => (context ?? SerializationContext.empty).With(m_types).With(this);
+        => (context ?? SerializationContext.empty).With(m_types).With(this).With<ISerializationMetadataSource>(m_metadata);
 }

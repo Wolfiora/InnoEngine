@@ -1,0 +1,61 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <WarningsAsErrors>$(WarningsAsErrors);CS1572;CS1573;CS1591</WarningsAsErrors>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../../../src/foundation/core/Inno.Core.Execution/Inno.Core.Execution.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../native/Inno.Native.Bgfx/Inno.Native.Bgfx.csproj" PrivateAssets="compile" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../../../src/adapters/platform/Inno.Adapter.Platform/Inno.Adapter.Platform.csproj" />
+    <ProjectReference Include="../../../../src/adapters/rendering/Inno.Adapter.Rendering/Inno.Adapter.Rendering.csproj" />
+    <ProjectReference Include="../../../../src/services/platform/Inno.Platform/Inno.Platform.csproj" />
+    <ProjectReference Include="../../../../src/services/rendering/Inno.Rendering/Inno.Rendering.csproj" />
+  </ItemGroup>
+  <Target Name="CompileCompositionShaderGraphs" DependsOnTargets="PrepareInnoBuildTaskHost" Condition="'$(InnoNativeTarget)' != '' and '$(DesignTimeBuild)' != 'true'">
+    <PropertyGroup>
+      <_InnoShaderIntermediateRoot>$([System.IO.Path]::GetFullPath('$(IntermediateOutputPath)', '$(MSBuildProjectDirectory)'))</_InnoShaderIntermediateRoot>
+    </PropertyGroup>
+    <Error Condition="'$(InnoBgfxShaderTarget)' == '' or '@(_CompositionShaderApi)' == ''"
+           Text="BGFX composition shader compilation requires the product's explicit shader platform and graphics API set." />
+    <CompileShaderTask
+      EngineRoot="$(MSBuildProjectDirectory)/../../../.."
+      Configuration="$(Configuration)"
+      AssetRoot="$(MSBuildProjectDirectory)/Shaders"
+      ShaderPath="Composition.ishader"
+      Target="$(InnoBgfxShaderTarget)"
+      Renderer="%(_CompositionShaderApi.Identity)"
+      OutputFile="$(_InnoShaderIntermediateRoot)/Shaders/Composition/%(_CompositionShaderApi.Identity)/Outputs/Composition.%(_CompositionShaderApi.Identity).bin"
+      ToolTarget="$(InnoToolTarget)" />
+    <CompileShaderTask
+      EngineRoot="$(MSBuildProjectDirectory)/../../../.."
+      Configuration="$(Configuration)"
+      AssetRoot="$(MSBuildProjectDirectory)/Shaders"
+      ShaderPath="OutputTransfer.ishader"
+      Target="$(InnoBgfxShaderTarget)"
+      Renderer="%(_CompositionShaderApi.Identity)"
+      OutputFile="$(_InnoShaderIntermediateRoot)/Shaders/OutputTransfer/%(_CompositionShaderApi.Identity)/Outputs/OutputTransfer.%(_CompositionShaderApi.Identity).bin"
+      ToolTarget="$(InnoToolTarget)" />
+  </Target>
+  <Target Name="IncludeCompositionShaderArtifacts" Condition="'$(InnoNativeTarget)' != '' and '$(DesignTimeBuild)' != 'true'" BeforeTargets="AssignTargetPaths" DependsOnTargets="CompileCompositionShaderGraphs">
+    <ItemGroup>
+      <EmbeddedResource Include="@(_CompositionShaderApi-&gt;'$(IntermediateOutputPath)Shaders/Composition/%(Identity)/Outputs/Composition.%(Identity).bin')">
+        <LogicalName>Inno.BgfxShaders.Composition.$(InnoBgfxShaderTarget).%(Filename)</LogicalName>
+      </EmbeddedResource>
+      <EmbeddedResource Include="@(_CompositionShaderApi-&gt;'$(IntermediateOutputPath)Shaders/OutputTransfer/%(Identity)/Outputs/OutputTransfer.%(Identity).bin')">
+        <LogicalName>Inno.BgfxShaders.OutputTransfer.$(InnoBgfxShaderTarget).%(Filename)</LogicalName>
+      </EmbeddedResource>
+    </ItemGroup>
+  </Target>
+  <ItemGroup>
+    <ProjectReference Include="../../../../src/foundation/extensibility/Inno.Extensibility.Catalogs/Inno.Extensibility.Catalogs.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <_CompositionShaderApi Include="$(InnoBgfxShaderApis)" Condition="'$(InnoBgfxShaderApis)' != ''" />
+  </ItemGroup>
+</Project>

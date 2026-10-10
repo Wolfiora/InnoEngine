@@ -49,8 +49,8 @@ public sealed class UiDocumentImporter : AssetImporter<UiDocumentAsset>
     protected override async ValueTask ImportAsync(
         AssetImportContext context,
         AssetImportWriter<UiDocumentAsset> output,
-        CancellationToken cancellationToken)
-    {
+        CancellationToken cancellationToken
+    ) {
         var settings = context.importSettings as UiDocumentImportSettings
             ?? throw new InvalidOperationException("UI source requires its standard import settings.");
         ArgumentException.ThrowIfNullOrWhiteSpace(settings.languageId);
@@ -95,8 +95,8 @@ public static class UiDocumentImportPipeline
         AssetImportWriter<UiDocumentAsset> output,
         UiDocumentLanguageId language,
         string implementationId,
-        CancellationToken cancellationToken)
-    {
+        CancellationToken cancellationToken
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(implementationId);
         string text = context.ReadUtf8Text();
         using var frontends = new UiDocumentFrontendRegistry(context.types);

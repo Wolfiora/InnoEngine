@@ -1,4 +1,86 @@
 <Project>
+  <Import Project="$(MSBuildThisFileDirectory)build/msbuild/Inno.Build.Tasks.targets" />
+
+  <PropertyGroup>
+    <InnoInteropRuntimeTarget Condition="'$(InnoNativeTarget)' == ''">neutral</InnoInteropRuntimeTarget>
+    <InnoInteropRuntimeTarget Condition="'$(InnoNativeTarget)' != ''">$(InnoNativeTarget)</InnoInteropRuntimeTarget>
+    <InnoInteropRuntimeOwner Condition="'$(ArtifactsPath)' == ''">$(MSBuildThisFileDirectory)artifacts/managed</InnoInteropRuntimeOwner>
+    <InnoInteropRuntimeOwner Condition="'$(ArtifactsPath)' != ''">$(ArtifactsPath)</InnoInteropRuntimeOwner>
+    <InnoInteropRuntimeArtifacts>$(InnoInteropRuntimeOwner)/interop/$(NETCoreSdkVersion)/$(InnoInteropRuntimeTarget)/abi-$(InnoNativeBuildFingerprint)/rid-$(RuntimeIdentifier)/tfm-$(TargetFramework)/d-$(DebugType)-$(DebugSymbols)_a-$(PublishAot)_s-$(SelfContained)_t-$(PublishTrimmed)</InnoInteropRuntimeArtifacts>
+    <InnoInteropRuntimeRestore>$(InnoInteropRuntimeOwner)/interop/$(NETCoreSdkVersion)/restore/rid-$(RuntimeIdentifier)/tfm-$(TargetFramework)/BGCS.Runtime/</InnoInteropRuntimeRestore>
+    <InnoInteropRuntimeProject>$([System.IO.Path]::GetFullPath('$(BindGenRoot)/src/BGCS.Runtime/BGCS.Runtime.csproj'))</InnoInteropRuntimeProject>
+    <InnoInteropRuntimeProperties>UseArtifactsOutput=true;ArtifactsPath=$(InnoInteropRuntimeArtifacts);MSBuildProjectExtensionsPath=$(InnoInteropRuntimeRestore)</InnoInteropRuntimeProperties>
+    <InnoProductReferenceProperties Condition="'$(InnoNativeTarget)' != ''">InnoNativeTarget=$(InnoNativeTarget);InnoToolTarget=$(InnoToolTarget)</InnoProductReferenceProperties>
+    <InnoProductReferenceProperties Condition="'$(InnoProductBuildProperties)' != ''">$(InnoProductReferenceProperties);InnoProductBuildProperties=$(InnoProductBuildProperties)</InnoProductReferenceProperties>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(BGCSRuntimeProject)' != ''">
+    <ProjectReference Update="$(BGCSRuntimeProject)">
+      <AdditionalProperties>%(ProjectReference.AdditionalProperties);$(InnoInteropRuntimeProperties)</AdditionalProperties>
+    </ProjectReference>
+  </ItemGroup>
+
+  <!-- Path-based restore does not retain project-reference properties across graph traversal. -->
+  <Target Name="RestoreInnoInteropRuntime"
+          BeforeTargets="ResolveProjectReferences"
+          DependsOnTargets="IncludeTransitiveProjectReferences"
+          Condition="'$(DesignTimeBuild)' != 'true' and '$(BuildProjectReferences)' != 'false'">
+    <ItemGroup>
+      <_InnoInteropRuntimeReference Include="@(ProjectReference)"
+                                    Condition="'%(ProjectReference.FullPath)' == '$(InnoInteropRuntimeProject)'" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="RestoreInnoInteropRuntimeOwned"
+          AfterTargets="RestoreInnoInteropRuntime"
+          DependsOnTargets="PrepareInnoTaskPublisher"
+          Condition="'@(_InnoInteropRuntimeReference)' != ''">
+    <Inno.Build.TaskHosting.RestoreOwnedProjectTask
+      Projects="@(_InnoInteropRuntimeReference)"
+      LockPath="$(MSBuildThisFileDirectory)artifacts/managed/restore-graphs/write.lock" />
+  </Target>
+
+  <!-- The SDK adds runtime references after evaluation without the direct reference's metadata. -->
+  <Target Name="ApplyInnoTransitiveReferenceProperties" AfterTargets="IncludeTransitiveProjectReferences">
+    <ItemGroup>
+      <ProjectReference Update="@(_TransitiveProjectReferences)"
+                        Condition="'$(InnoProductReferenceProperties)' != '' and '%(ProjectReference.OutputItemType)' != 'Analyzer'">
+        <AdditionalProperties>%(ProjectReference.AdditionalProperties);$(InnoProductReferenceProperties)</AdditionalProperties>
+      </ProjectReference>
+      <ProjectReference Update="@(_TransitiveProjectReferences)"
+                        Condition="'%(ProjectReference.FullPath)' == '$(InnoInteropRuntimeProject)'">
+        <AdditionalProperties>%(ProjectReference.AdditionalProperties);$(InnoInteropRuntimeProperties)</AdditionalProperties>
+      </ProjectReference>
+      <ProjectReference Update="@(_TransitiveProjectReferences)"
+                        Condition="'$(InnoNativeBindingSelection)' != '' and '%(ProjectReference.OutputItemType)' != 'Analyzer'">
+        <AdditionalProperties>%(ProjectReference.AdditionalProperties);InnoNativeBindingSelection=$(InnoNativeBindingSelection)</AdditionalProperties>
+      </ProjectReference>
+    </ItemGroup>
+  </Target>
+
+  <ItemGroup Condition="'$(IsRoslynComponent)' != 'true' and '$(IsTestProject)' != 'true' and '$(MSBuildProjectName)' != 'Inno.Scripting.Compiler' and $([System.String]::Copy('$(MSBuildProjectName)').StartsWith('Inno.')) and !$([System.String]::Copy('$(MSBuildProjectName)').StartsWith('Inno.Native.')) and '$(TargetFramework)' != 'netstandard2.0'">
+    <ProjectReference Include="$(MSBuildThisFileDirectory)src/runtime/generators/Inno.Runtime.Generators/Inno.Runtime.Generators.csproj"
+                      OutputItemType="Analyzer" ReferenceOutputAssembly="false" PrivateAssets="all" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(InnoProductReferenceProperties)' != ''">
+    <ProjectReference Update="@(ProjectReference)">
+      <AdditionalProperties Condition="'%(ProjectReference.OutputItemType)' != 'Analyzer'">%(ProjectReference.AdditionalProperties);$(InnoProductReferenceProperties)</AdditionalProperties>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Update="@(ProjectReference)">
+      <PrivateAssets Condition="'%(ProjectReference.OutputItemType)' == 'Analyzer'">all</PrivateAssets>
+      <GlobalPropertiesToRemove Condition="'%(ProjectReference.OutputItemType)' == 'Analyzer'">%(ProjectReference.GlobalPropertiesToRemove);$(InnoTaskExcludedProperties)</GlobalPropertiesToRemove>
+    </ProjectReference>
+  </ItemGroup>
+  <PropertyGroup Condition="'$(BindGenGeneratedBindings)' == 'true'">
+    <!-- Generated ABI carriers already own marshalling; the runtime must not reinterpret them. -->
+    <DisableRuntimeMarshalling>true</DisableRuntimeMarshalling>
+    <BindGenOutputDirectory Condition="'$(BindGenOutputDirectory)' == ''">$(MSBuildProjectDirectory)/Generated</BindGenOutputDirectory>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(BindGenGeneratedBindings)' == 'true' and '$(InnoNativeLibraryKind)' == 'Static'">
+    <DefineConstants>$(DefineConstants);INNO_STATIC_NATIVE</DefineConstants>
+  </PropertyGroup>
   <ItemGroup Condition="'$(InnoAssemblyDomain)' != '' and '$(InnoAssemblyScope)' != ''">
     <AssemblyMetadata Include="Inno.AssemblyDomain" Value="$(InnoAssemblyDomain)" />
     <AssemblyMetadata Include="Inno.AssemblyScope" Value="$(InnoAssemblyScope)" />
@@ -7,40 +89,142 @@
   <ItemGroup Condition="'$(BindGenGeneratedBindings)' == 'true'">
     <Compile Remove="$(MSBuildProjectDirectory)/Bindings/**/*.cs" />
     <Compile Remove="$(MSBuildProjectDirectory)/Generated/**/*.cs" />
-    <Compile Include="$(MSBuildProjectDirectory)/Generated/Bindings.cs" Link="Generated/Bindings.cs" />
+    <Compile Include="$(BindGenOutputDirectory)/Bindings.cs" Link="Generated/Bindings.cs" />
   </ItemGroup>
 
   <PropertyGroup Condition="'$(BindGenGeneratedBindings)' == 'true'">
-    <BindGenConfig>$(MSBuildProjectDirectory)/Bindings/bindgen.json</BindGenConfig>
-    <BindGenToolProject>$(BindGenRoot)/src/BGCS.Tool/BGCS.Tool.csproj</BindGenToolProject>
-    <BindGenDotNetHost Condition="'$(BindGenDotNetHost)' == '' and '$(DOTNET_HOST_PATH)' != ''">$(DOTNET_HOST_PATH)</BindGenDotNetHost>
-    <BindGenDotNetHost Condition="'$(BindGenDotNetHost)' == ''">dotnet</BindGenDotNetHost>
+    <InnoBindingEngineRoot Condition="'$(InnoBindingEngineRoot)' == ''">$(MSBuildThisFileDirectory)</InnoBindingEngineRoot>
+    <InnoBindingDefinition Condition="'$(InnoBindingDefinition)' == ''">$(MSBuildProjectDirectory)/Bindings/bindings.props</InnoBindingDefinition>
+    <InnoBindingTargetId Condition="'$(InnoBindingTargetId)' == '' and '$(InnoNativeTarget)' != ''">$(InnoNativeTarget)</InnoBindingTargetId>
+    <InnoBindingTargetId Condition="'$(InnoBindingTargetId)' == ''">host</InnoBindingTargetId>
+    <InnoBindingOutputMode Condition="'$(InnoBindingOutputMode)' == '' and '$(InnoBindingTargetId)' != 'host'">TargetArtifacts</InnoBindingOutputMode>
+    <InnoBindingOutputMode Condition="'$(InnoBindingOutputMode)' == ''">HostSource</InnoBindingOutputMode>
+    <InnoBindingDotnetHost Condition="'$(InnoBindingDotnetHost)' == ''">$(DOTNET_HOST_PATH)</InnoBindingDotnetHost>
+    <InnoBindingDotnetHost Condition="'$(InnoBindingDotnetHost)' == ''">$([System.IO.Path]::GetFullPath('$(MSBuildBinPath)/../../dotnet'))</InnoBindingDotnetHost>
   </PropertyGroup>
+  <ItemGroup Condition="'$(BindGenGeneratedBindings)' == 'true' and '$(InnoBindingOutputMode)' == 'TargetArtifacts'">
+    <_InnoSelectedBindingTarget Include="@(InnoBindingTarget->WithMetadataValue('Identity', '$(InnoBindingTargetId)'))" />
+  </ItemGroup>
+
+  <Target Name="ValidateNativeBindingSelection" BeforeTargets="CoreCompile" Condition="'$(InnoNativeBindingSelection)' != ''">
+    <Error Condition="!Exists('$(InnoNativeBindingSelection)')" Text="The selected native binding manifest is missing: $(InnoNativeBindingSelection)" />
+  </Target>
 
   <Target Name="ValidateBindingGenerator" Condition="'$(BindGenGeneratedBindings)' == 'true'">
-    <Error Condition="!Exists('$(BindGenConfig)')" Text="Binding config is missing: $(BindGenConfig)" />
-    <Error Condition="!Exists('$(BindGenToolProject)')" Text="BindGen-CS tool is missing: $(BindGenToolProject). Set BindGenRoot to the BindGen-CS checkout." />
+    <Error Condition="!Exists('$(InnoBindingDefinition)')" Text="The sole component binding definition is missing: $(InnoBindingDefinition)" />
+    <Error Condition="'$(InnoBindingOutputMode)' == 'TargetArtifacts' and '@(_InnoSelectedBindingTarget->Count())' != '1'" Text="The binding definition must declare exactly one configuration for $(InnoBindingTargetId)." />
+    <Error Condition="'$(InnoBindingHostConfig)' == ''" Text="The component binding definition must declare a host configuration." />
   </Target>
+  <Target Name="BuildBindingGenerator" DependsOnTargets="ValidateBindingGenerator;PrepareInnoBuildTaskHost" Condition="'$(BindGenGeneratedBindings)' == 'true' and '$(DesignTimeBuild)' != 'true'" />
 
-  <Target Name="BuildBindingExtension" Condition="'$(BindGenGeneratedBindings)' == 'true' and '$(BindGenExtensionProject)' != ''">
-    <MSBuild Projects="$(BindGenExtensionProject)" Targets="Restore;Build" Properties="Configuration=Release;BindGenRoot=$(BindGenRoot)" />
-  </Target>
-
-  <Target Name="GenerateBindings" DependsOnTargets="ValidateBindingGenerator;BuildBindingExtension" Condition="'$(BindGenGeneratedBindings)' == 'true'">
-    <Exec Condition="'$(BindGenBridgeConfig)' != ''" Command="&quot;$(BindGenDotNetHost)&quot; run --project &quot;$(BindGenToolProject)&quot; --configuration $(Configuration) -- bridge &quot;$(BindGenBridgeConfig)&quot;" />
-    <Exec Command="&quot;$(BindGenDotNetHost)&quot; run --project &quot;$(BindGenToolProject)&quot; --configuration $(Configuration) -- generate &quot;$(BindGenConfig)&quot;" />
-    <CallTarget Targets="ValidateBindGenBindings" />
-  </Target>
-
-  <Target Name="CheckBindings" DependsOnTargets="ValidateBindingGenerator;BuildBindingExtension;ValidateBindGenBindings" Condition="'$(BindGenGeneratedBindings)' == 'true'">
-    <Exec Command="&quot;$(BindGenDotNetHost)&quot; run --project &quot;$(BindGenToolProject)&quot; --configuration $(Configuration) -- diff &quot;$(BindGenConfig)&quot;" />
-  </Target>
-
-  <Target Name="ValidateBindGenBindings" BeforeTargets="CoreCompile" Condition="'$(BindGenGeneratedBindings)' == 'true'">
-    <Error Condition="!Exists('$(MSBuildProjectDirectory)/Generated/Bindings.cs')" Text="Generated bindings are missing from '$(MSBuildProjectDirectory)/Generated'. Run dotnet build this project -t:GenerateBindings." />
+  <Target Name="GenerateBindings" DependsOnTargets="BuildBindingGenerator" Condition="'$(BindGenGeneratedBindings)' == 'true' and '$(DesignTimeBuild)' != 'true'">
+    <Inno.Build.Tasks.GenerateBindingsTask EngineRoot="$(InnoBindingEngineRoot)" ComponentProject="$(MSBuildProjectFullPath)"
+        BindingDefinition="$(InnoBindingDefinition)" TargetId="$(InnoBindingTargetId)" OutputMode="$(InnoBindingOutputMode)"
+        DotnetHost="$(InnoBindingDotnetHost)" DescriptorOutputPath="$(BindGenDescriptorOutput)" ExpectedFingerprint="$(BindGenExpectedFingerprint)">
+      <Output TaskParameter="GeneratedBindings" PropertyName="BindGenGeneratedSource" />
+      <Output TaskParameter="GenerationFingerprint" PropertyName="BindGenGenerationFingerprint" />
+      <Output TaskParameter="NativeBridgeDirectory" PropertyName="BindGenNativeBridgeDirectory" />
+    </Inno.Build.Tasks.GenerateBindingsTask>
+    <PropertyGroup>
+      <BindGenOutputDirectory>$([System.IO.Path]::GetDirectoryName('$(BindGenGeneratedSource)'))</BindGenOutputDirectory>
+    </PropertyGroup>
     <ItemGroup>
-      <_BindGenExtraSources Include="$(MSBuildProjectDirectory)/Generated/**/*.cs" Exclude="$(MSBuildProjectDirectory)/Generated/Bindings.cs" />
+      <Compile Remove="@(Compile)" Condition="'%(Compile.Filename)%(Compile.Extension)' == 'Bindings.cs'" />
+      <Compile Include="$(BindGenGeneratedSource)" Link="Generated/Bindings.cs" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="CheckBindings" DependsOnTargets="BuildBindingGenerator" Condition="'$(BindGenGeneratedBindings)' == 'true' and '$(DesignTimeBuild)' != 'true'">
+    <Inno.Build.Tasks.GenerateBindingsTask EngineRoot="$(InnoBindingEngineRoot)" ComponentProject="$(MSBuildProjectFullPath)"
+        BindingDefinition="$(InnoBindingDefinition)" TargetId="$(InnoBindingTargetId)" OutputMode="$(InnoBindingOutputMode)"
+        DotnetHost="$(InnoBindingDotnetHost)" CheckOnly="true" ExpectedFingerprint="$(BindGenExpectedFingerprint)" />
+  </Target>
+
+  <Target Name="EnsureBindGenBindings" DependsOnTargets="GenerateBindings"
+      Condition="'$(BindGenGeneratedBindings)' == 'true' and '$(DesignTimeBuild)' != 'true' and (('$(InnoBindingOutputMode)' == 'TargetArtifacts' and '$(InnoNativeBindingSelection)' == '') or !Exists('$(BindGenOutputDirectory)/Bindings.cs'))" />
+
+  <Target Name="ValidateBindGenBindings" BeforeTargets="CoreCompile" DependsOnTargets="EnsureBindGenBindings" Condition="'$(BindGenGeneratedBindings)' == 'true'">
+    <Error Condition="'$(InnoNativeBindingSelection)' != '' and '$(InnoNativeLibraryKind)' != 'Static' and '$(InnoNativeLibraryKind)' != 'Shared'"
+           Text="The selected native component must declare its exact Static or Shared linkage." />
+    <ItemGroup>
+      <_BindGenExtraSources Include="$(BindGenOutputDirectory)/**/*.cs" Exclude="$(BindGenOutputDirectory)/Bindings.cs" />
+      <_BindGenCompileSources Include="@(Compile)" Condition="'%(Compile.Filename)%(Compile.Extension)' == 'Bindings.cs'" />
     </ItemGroup>
     <Error Condition="'@(_BindGenExtraSources)' != ''" Text="Generated must contain only Bindings.cs: @(_BindGenExtraSources)" />
+    <Error Condition="'@(_BindGenCompileSources->Count())' != '1'" Text="The native component must compile exactly one selected Bindings.cs source: @(_BindGenCompileSources)" />
+  </Target>
+  <Target
+    Name="RestoreProductTargetGraph"
+    BeforeTargets="PrepareForBuild"
+    DependsOnTargets="PrepareInnoTaskPublisher"
+    Condition="'$(InnoProductId)' != '' and '$(DesignTimeBuild)' != 'true' and '$(InnoProductRestore)' != 'false'">
+    <Inno.Build.TaskHosting.RestoreOwnedProjectTask
+      Projects="$(MSBuildProjectFullPath)"
+      Properties="InnoNativeTarget=$(InnoProductTarget);InnoToolTarget=$(InnoToolTarget);InnoProductRestore=false"
+      LockPath="$(MSBuildThisFileDirectory)artifacts/managed/restore-graphs/write.lock" />
+  </Target>
+
+  <Target
+    Name="ValidateProductTarget"
+    BeforeTargets="PrepareForBuild"
+    Condition="'$(InnoProductId)' != '' and '$(DesignTimeBuild)' != 'true'">
+    <Error Condition="'$(InnoProductTarget)' == '' or '$(InnoNativeTarget)' != '$(InnoProductTarget)'"
+           Text="The product requires its explicit matching native target." />
+  </Target>
+
+  <Target
+    Name="PrepareProductNativeDeployment"
+    BeforeTargets="AssignProjectConfiguration"
+    DependsOnTargets="PrepareInnoBuildTaskHost"
+    Condition="'$(InnoProductId)' != '' and '$(InnoPrepareProductNative)' != 'false' and '$(DesignTimeBuild)' != 'true' and '$(InnoNativeBindingSelection)' == ''">
+    <PropertyGroup>
+      <_InnoOwnedProductBindingSelection>$(InnoTaskLoadDirectory)/NativeBindingSelection.props</_InnoOwnedProductBindingSelection>
+    </PropertyGroup>
+    <Inno.Build.Tasks.PrepareProductNativeTask
+      EngineRoot="$(MSBuildThisFileDirectory)"
+      ProductId="$(InnoProductId)"
+      TargetId="$(InnoProductTarget)"
+      Configuration="$(Configuration)"
+      BindingSelectionOutputPath="$(_InnoOwnedProductBindingSelection)"
+      OutputDirectory="$(TargetDir)" />
+    <PropertyGroup>
+      <InnoNativeBindingSelection>$(_InnoOwnedProductBindingSelection)</InnoNativeBindingSelection>
+    </PropertyGroup>
+    <ItemGroup>
+      <ProjectReference Condition="'%(ProjectReference.OutputItemType)' != 'Analyzer'">
+        <AdditionalProperties>%(ProjectReference.AdditionalProperties);InnoNativeBindingSelection=$(InnoNativeBindingSelection)</AdditionalProperties>
+      </ProjectReference>
+      <_MSBuildProjectReferenceExistent Condition="'%(_MSBuildProjectReferenceExistent.OutputItemType)' != 'Analyzer'">
+        <AdditionalProperties>%(_MSBuildProjectReferenceExistent.AdditionalProperties);InnoNativeBindingSelection=$(InnoNativeBindingSelection)</AdditionalProperties>
+      </_MSBuildProjectReferenceExistent>
+    </ItemGroup>
+  </Target>
+
+  <!-- Build can be nested inside Publish. The private task reader owns the selection until its final consumer. -->
+  <Target Name="ReleasePublishBindingSelection" AfterTargets="Publish" DependsOnTargets="PublishProductNativeDeployment"
+      Condition="'$(_InnoOwnedProductBindingSelection)' != ''">
+    <Delete Files="$(_InnoOwnedProductBindingSelection)" />
+  </Target>
+
+  <Target
+    Name="ValidateProductNativePublication"
+    BeforeTargets="PrepareForPublish"
+    Condition="'$(InnoProductId)' != '' and '$(InnoPrepareProductNative)' != 'false' and '$(DesignTimeBuild)' != 'true'">
+    <Error Condition="'$(InnoNativeBindingSelection)' == '' or !Exists('$(InnoNativeBindingSelection)')"
+           Text="Native publication requires the exact binding selection used by managed compilation. A no-build publication must explicitly provide that selection." />
+  </Target>
+
+  <Target
+    Name="PublishProductNativeDeployment"
+    AfterTargets="Publish"
+    DependsOnTargets="ValidateProductNativePublication;PrepareInnoBuildTaskHost"
+    Condition="'$(InnoProductId)' != '' and '$(InnoPrepareProductNative)' != 'false' and '$(DesignTimeBuild)' != 'true'">
+    <Inno.Build.Tasks.PrepareProductNativeTask
+      EngineRoot="$(MSBuildThisFileDirectory)"
+      ProductId="$(InnoProductId)"
+      TargetId="$(InnoProductTarget)"
+      Configuration="$(Configuration)"
+      BindingSelectionInputPath="$(InnoNativeBindingSelection)"
+      OutputDirectory="$(PublishDir)" />
   </Target>
 </Project>

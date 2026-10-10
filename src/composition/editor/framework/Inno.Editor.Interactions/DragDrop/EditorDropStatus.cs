@@ -14,8 +14,10 @@ public readonly record struct EditorDropStatus
     /// <param name="visual">
     /// The standard visual requested for the target.
     /// </param>
-    public EditorDropStatus(bool canDrop, EditorDropVisual visual)
-    {
+    public EditorDropStatus(
+        bool canDrop,
+        EditorDropVisual visual
+    ) {
         this.canDrop = canDrop;
         this.visual = visual;
     }
@@ -44,6 +46,5 @@ public readonly record struct EditorDropStatus
     /// <returns>
     /// An accepted drop status.
     /// </returns>
-    public static EditorDropStatus Accept(EditorDropVisual visual = EditorDropVisual.Highlight)
-        => new(true, visual);
+    public static EditorDropStatus Accept(EditorDropVisual visual = EditorDropVisual.Highlight) => new(true, visual);
 }

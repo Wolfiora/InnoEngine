@@ -17,8 +17,10 @@ public sealed class AssetChangeSet
     /// <param name="changes">
     /// The ordered changes published by the commit, or <see langword="null"/> for an empty commit.
     /// </param>
-    public AssetChangeSet(long revision, IReadOnlyList<AssetChange>? changes)
-    {
+    public AssetChangeSet(
+        long revision,
+        IReadOnlyList<AssetChange>? changes
+    ) {
         this.revision = revision;
         this.changes = changes ?? Array.Empty<AssetChange>();
     }

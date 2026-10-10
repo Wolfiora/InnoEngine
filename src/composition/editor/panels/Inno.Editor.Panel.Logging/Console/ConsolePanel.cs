@@ -35,6 +35,11 @@ internal sealed class ConsolePanel : EditorPanel
     private readonly EditorInteractions m_interactions;
     #endregion
 
+    /// <summary>
+    /// Lets the Console entries region own vertical scrolling.
+    /// </summary>
+    public override bool allowScrolling => false;
+
     #region Lifecycle
     /// <summary>
     /// Creates the panel.
@@ -48,8 +53,10 @@ internal sealed class ConsolePanel : EditorPanel
     /// <exception cref="ArgumentNullException">
     /// Thrown when <paramref name="console"/> or <paramref name="interactions"/> is <see langword="null"/>.
     /// </exception>
-    internal ConsolePanel(IEditorConsole console, EditorInteractions interactions)
-    {
+    internal ConsolePanel(
+        IEditorConsole console,
+        EditorInteractions interactions
+    ) {
         m_console = console ?? throw new ArgumentNullException(nameof(console));
         m_interactions = interactions ?? throw new ArgumentNullException(nameof(interactions));
     }
@@ -84,7 +91,11 @@ internal sealed class ConsolePanel : EditorPanel
     /// </param>
     protected override void OnDraw(EditorContext context)
     {
-        NativeImGui.BeginChild("ConsoleChild", Vector2.Zero);
+        NativeImGui.BeginChild(
+            "ConsoleChild",
+            Vector2.Zero,
+            ImGuiChildFlags.None,
+            ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse);
         DrawToolbar();
         NativeImGui.Separator();
         DrawConsoleRegion();
@@ -149,7 +160,7 @@ internal sealed class ConsolePanel : EditorPanel
             changed = true;
         }
 
-        NativeImGui.EndCombo();
+        EditorWidget.EndBoundedCombo();
         return changed;
     }
 
@@ -231,8 +242,8 @@ internal sealed class ConsolePanel : EditorPanel
         EditorConsoleOccurrence entry,
         IReadOnlyList<EditorConsoleOccurrence> occurrences,
         int repeatCount,
-        string identity)
-    {
+        string identity
+    ) {
         (Vector4 levelColor, string levelIcon) = m_content.GetLevelVisual(entry.level);
 
         ConsoleEntryImGuiIdentity.Push(identity);
@@ -318,14 +329,15 @@ internal sealed class ConsolePanel : EditorPanel
         string levelIcon,
         bool isOpen,
         Vector4 headerBgColor,
-        out bool toggled)
-    {
+        out bool toggled
+    ) {
         toggled = false;
         ImGuiStylePtr style = NativeImGui.GetStyle();
 
         string content = isOpen ? entry.displayMessage : m_content.GetFirstLine(entry.displayMessage);
         string repeatText = repeatCount > 1 ? $" (x{repeatCount})" : string.Empty;
-        string prefix = $"{levelIcon} [{entry.level}] ";
+        string kind = entry.kind == EditorConsoleEntryKind.Diagnostic ? "Issue" : "Log";
+        string prefix = $"{levelIcon} [{entry.level}] [{kind}] ";
         string toggleText = isOpen ? "▼" : "▶";
 
         float toggleW = NativeImGui.CalcTextSize(toggleText).X + EditorWidget.style.logDisclosurePadding.X * 2f;
@@ -427,7 +439,8 @@ internal sealed class ConsolePanel : EditorPanel
             DrawStackedField("Kind:", entry.kind.ToString());
             DrawStackedField("File:", fileWithLineText);
             DrawStackedField("Source:", sourceText);
-            if (entry.sessionId.isAssigned) DrawStackedField("Session:", entry.sessionId.ToString());
+            if (entry.sessionId.isAssigned)
+                DrawStackedField("Session:", entry.sessionId.ToString());
             DrawStackedField("Time:", timeText);
         }
         else if (NativeImGui.BeginTable("##ConsoleEntryDetails", 2, ImGuiTableFlags.SizingStretchProp | ImGuiTableFlags.NoSavedSettings,
@@ -453,8 +466,10 @@ internal sealed class ConsolePanel : EditorPanel
         }
     }
 
-    private void DrawEntryContextMenu(EditorConsoleOccurrence entry, int repeatCount)
-    {
+    private void DrawEntryContextMenu(
+        EditorConsoleOccurrence entry,
+        int repeatCount
+    ) {
         _ = EditorMenuRenderer.ContextMenu(
             "##ConsoleEntryContextMenu",
             m_interactions.For(
@@ -474,8 +489,10 @@ internal sealed class ConsolePanel : EditorPanel
         m_openEntries.RemoveWhere(id => !activeIds.Contains(id));
     }
 
-    private static void DrawDetailFieldRow(string label, string value)
-    {
+    private static void DrawDetailFieldRow(
+        string label,
+        string value
+    ) {
         NativeImGui.TableNextRow();
         _ = NativeImGui.TableSetColumnIndex(0);
         NativeImGui.TextDisabled(label);
@@ -485,8 +502,10 @@ internal sealed class ConsolePanel : EditorPanel
         NativeImGui.PopTextWrapPos();
     }
 
-    private static void DrawStackedField(string label, string value)
-    {
+    private static void DrawStackedField(
+        string label,
+        string value
+    ) {
         NativeImGui.TextDisabled(label);
         NativeImGui.PushTextWrapPos(0f);
         NativeImGui.TextUnformatted(value);

@@ -1,3 +1,6 @@
+using Inno.Core.Logging;
+using Inno.Adapter.Serialization.DotNet;
+using Inno.Adapter.Modules.DotNet;
 using System;
 using System.IO;
 using System.Linq;
@@ -39,17 +42,18 @@ public sealed class SceneHistoryTests : IDisposable
         Directory.CreateDirectory(Path.Combine(m_projectRoot, "Assets"));
         SceneHistoryProbe.Reset();
         m_host = new EngineHostBuilder()
-            .UseMetadataCache(Path.Combine(m_projectRoot, "Library", "Assemblies"))
+                .UseMetadataSources(new DotNetAssemblyCatalogSource(typeof(SceneHistoryTests).Assembly),
+                    new ReflectionTypeCatalogSource(), new ReflectionSerializationMetadataSource())
             .Build();
         m_session = m_host.CreateSession(new RuntimeSessionOptions
         {
             kind = RuntimeSessionKind.Edit,
             applicationId = "inno.tests.scene-history",
-            persistentDataDirectory = Path.Combine(
+            createLogSink = _ => new FileLogSink(Path.Combine(Path.Combine(
                 m_projectRoot,
                 "Library",
                 "PersistentData",
-                "inno.tests.scene-history"),
+                "inno.tests.scene-history"), "Logs")),
             jobExecutionMode = RuntimeJobExecutionMode.SingleThread
         });
         m_executionScope = m_session.EnterExecutionScope();
@@ -67,7 +71,7 @@ public sealed class SceneHistoryTests : IDisposable
                 enableFileSystemWatcher = false
             });
         m_runtime = new EditorInteractionRuntime(
-            new EditorContext(m_projectRoot),
+            new EditorContext(m_projectRoot, new EditorKeyboardPolicy(Inno.Core.Input.KeyModifier.Control, "Super")),
             m_host.types,
             m_host.logs,
             [
@@ -338,8 +342,11 @@ public sealed class SceneHistoryTests : IDisposable
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
-    private Guid AddAndRemoveReloadableComponent(GameObject owner, TextAsset? asset, bool rejectRestore)
-    {
+    private Guid AddAndRemoveReloadableComponent(
+        GameObject owner,
+        TextAsset? asset,
+        bool rejectRestore
+    ) {
         Type type = new TypeRef(Guid.Parse("9f67d41e-082b-46d5-aaf0-dfc76c693182")).Resolve(m_host.types);
         GameComponent component = owner.AddComponent(type);
         type.GetProperty("value")!.SetValue(component, 73);
@@ -433,8 +440,11 @@ public sealed class SceneHistoryTests : IDisposable
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
-    private void AssertRecoveredComponent(Guid componentId, Guid assetId, int missingRuntimeId)
-    {
+    private void AssertRecoveredComponent(
+        Guid componentId,
+        Guid assetId,
+        int missingRuntimeId
+    ) {
         GameComponent component = Assert.IsAssignableFrom<GameComponent>(m_session.scenes.Find<GameComponent>(componentId));
         Assert.IsNotType<MissingGameComponent>(component);
         Assert.NotEqual(missingRuntimeId, component.identity.runtimeId);
@@ -447,17 +457,18 @@ public sealed class SceneHistoryTests : IDisposable
     [MethodImpl(MethodImplOptions.NoInlining)]
     private void ReloadHistoryModule(bool install)
     {
-        AssemblyLoadRequest request = CreateHistoryRequest();
+        DotNetModuleSource request = CreateHistoryRequest();
         using AssemblyReloadSession reload = install
             ? m_host.modules.BeginReload([request])
             : m_host.modules.BeginReload([], [request.moduleName]);
         _ = m_reloads.Execute(reload);
     }
 
-    private static AssemblyLoadRequest CreateHistoryRequest()
+    private DotNetModuleSource CreateHistoryRequest()
         => new()
         {
             moduleName = "SceneHistoryRecovery",
+            artifactRootDirectory = Path.Combine(m_projectRoot, "Library", "Modules"),
             mainAssemblyPath = Path.Combine(AppContext.BaseDirectory, "Modules", "SceneReload", "Inno.Scene.Reload.TestModule.dll"),
             domain = AssemblyDomain.InnoPlugin,
             scope = AssemblyScope.Runtime
@@ -479,7 +490,10 @@ public sealed class SceneHistoryTests : IDisposable
         Assert.Equal(GenerationState.Ready, m_host.modules.generations.state);
     }
 
-    private sealed class ExternalContentChange(Action activate, Action restore) : IGenerationChange
+    private sealed class ExternalContentChange(
+        Action activate,
+        Action restore
+    ) : IGenerationChange
     {
         public void PrepareForActivation() { }
         public void Apply() => activate();
@@ -832,8 +846,10 @@ public sealed class SceneHistoryTests : IDisposable
 [EditorModule("tests.scene-history-probe", order: 220)]
 public sealed class SceneHistoryProbe : EditorModule
 {
-    public SceneHistoryProbe(SceneEdits sceneEdits, IEditorSceneWorkspace workspace)
-    {
+    public SceneHistoryProbe(
+        SceneEdits sceneEdits,
+        IEditorSceneWorkspace workspace
+    ) {
         edits = sceneEdits;
         documents = workspace;
     }

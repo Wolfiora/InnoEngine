@@ -28,7 +28,11 @@ public interface IDiagnosticReporter
     /// <param name="objectId">
     /// The optional persistent object identity used at publication.
     /// </param>
-    void Resolve(string code, string? semanticId = null, Guid? objectId = null);
+    void Resolve(
+        string code,
+        string? semanticId = null,
+        Guid? objectId = null
+    );
 
     /// <summary>
     /// Atomically replaces this producer's complete current issue set.

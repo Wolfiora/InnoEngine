@@ -18,8 +18,8 @@ public sealed class SerializationGeneration : IDisposable
 
     internal SerializationGeneration(
         SerializationRegistry owner,
-        ConverterRegistryLease converters)
-    {
+        ConverterRegistryLease converters
+    ) {
         m_owner = owner;
         m_converters = converters;
     }
@@ -45,7 +45,10 @@ public sealed class SerializationGeneration : IDisposable
     /// <exception cref="ObjectDisposedException">
     /// Thrown when this generation has already been disposed.
     /// </exception>
-    public byte[] Serialize<T>(T value, SerializationContext? context = null)
+    public byte[] Serialize<T>(
+        T value,
+        SerializationContext? context = null
+    )
         where T : class, ISerializable
         => m_owner.Serialize(value, GetConverters(), context);
 
@@ -67,7 +70,10 @@ public sealed class SerializationGeneration : IDisposable
     /// <exception cref="ObjectDisposedException">
     /// Thrown when this generation has already been disposed.
     /// </exception>
-    public T Deserialize<T>(ReadOnlySpan<byte> bytes, SerializationContext? context = null)
+    public T Deserialize<T>(
+        ReadOnlySpan<byte> bytes,
+        SerializationContext? context = null
+    )
         where T : class, ISerializable
         => m_owner.Deserialize<T>(bytes, GetConverters(), context);
 
@@ -91,7 +97,8 @@ public sealed class SerializationGeneration : IDisposable
     /// </exception>
     public byte[] Encode(
         Action<SerializationWriter> write,
-        SerializationContext? context = null)
+        SerializationContext? context = null
+    )
         => m_owner.Encode(write, GetConverters(), context);
 
     /// <summary>
@@ -121,7 +128,8 @@ public sealed class SerializationGeneration : IDisposable
     public TResult Decode<TResult>(
         ReadOnlySpan<byte> bytes,
         Func<SerializationReader, TResult> read,
-        SerializationContext? context = null)
+        SerializationContext? context = null
+    )
         => m_owner.Decode(bytes, read, GetConverters(), context);
 
     /// <summary>
@@ -133,6 +141,5 @@ public sealed class SerializationGeneration : IDisposable
         converters?.Dispose();
     }
 
-    private ConverterRegistryLease GetConverters()
-        => m_converters ?? throw new ObjectDisposedException(nameof(SerializationGeneration));
+    private ConverterRegistryLease GetConverters() => m_converters ?? throw new ObjectDisposedException(nameof(SerializationGeneration));
 }

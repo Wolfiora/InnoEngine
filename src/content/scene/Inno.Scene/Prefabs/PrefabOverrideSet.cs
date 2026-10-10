@@ -28,7 +28,10 @@ internal sealed class PrefabOverrideSet
         m_properties.Values.Count(static item => item.isOrphaned) +
         m_structures.Values.Count(static item => item.isOrphaned);
 
-    internal bool IsPropertyOverridden(Guid sourceComponentId, string propertyName)
+    internal bool IsPropertyOverridden(
+        Guid sourceComponentId,
+        string propertyName
+    )
         => m_properties.ContainsKey((sourceComponentId, propertyName));
 
     internal PrefabObjectOverrideKind GetStructureOverride(Guid sourceObjectId)
@@ -42,8 +45,11 @@ internal sealed class PrefabOverrideSet
         m_properties[(value.sourceComponentId, value.propertyName)] = value;
     }
 
-    internal void SetStructure(Guid sourceObjectId, PrefabObjectOverrideKind kind, bool isOrphaned = false)
-    {
+    internal void SetStructure(
+        Guid sourceObjectId,
+        PrefabObjectOverrideKind kind,
+        bool isOrphaned = false
+    ) {
         if (kind == PrefabObjectOverrideKind.None)
         {
             m_structures.Remove(sourceObjectId);

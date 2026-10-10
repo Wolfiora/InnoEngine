@@ -18,6 +18,11 @@ public readonly record struct BuildTargetId
     public static BuildTargetId windowsX64 { get; } = new("windows-x64");
 
     /// <summary>
+    /// Identifies a browser Player using WebAssembly and WebGL 2.
+    /// </summary>
+    public static BuildTargetId browserWasm { get; } = new("browser-wasm");
+
+    /// <summary>
     /// Creates a stable target identity.
     /// </summary>
     /// <param name="value">
@@ -48,6 +53,5 @@ public readonly record struct BuildTargetId
     /// <returns>
     /// The exact stable target identity.
     /// </returns>
-    public override string ToString()
-        => value ?? string.Empty;
+    public override string ToString() => value ?? string.Empty;
 }

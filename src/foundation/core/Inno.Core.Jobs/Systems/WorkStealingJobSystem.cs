@@ -77,9 +77,11 @@ internal sealed class WorkStealingJobSystem : IJobSystem
         catch
         {
             Interlocked.Exchange(ref m_running, 0);
-            for (int index = 0; index < started; index++) m_wakeSignal.Release();
+            for (int index = 0; index < started; index++)
+                m_wakeSignal.Release();
             // No work can have been admitted before construction returns.
-            for (int index = 0; index < started; index++) m_workers[index].thread.Join();
+            for (int index = 0; index < started; index++)
+                m_workers[index].thread.Join();
             m_currentWorkerId.Dispose();
             m_wakeSignal.Dispose();
             m_completionSignal.Dispose();
@@ -94,7 +96,8 @@ internal sealed class WorkStealingJobSystem : IJobSystem
     {
         get
         {
-            lock (m_jobsGate) return m_mainThreadQueue.statistics with
+            lock (m_jobsGate)
+                return m_mainThreadQueue.statistics with
             {
                 frameJobs = m_frameJobs.Count, peakFrameJobs = m_peakFrameJobs, rejectedJobs = m_rejectedJobs
             };
@@ -159,7 +162,10 @@ internal sealed class WorkStealingJobSystem : IJobSystem
             {
                 Complete(handles[i]);
             }
-            catch (Exception pending) when (RetirementPendingException.Find(pending) is not null) { throw; }
+            catch (Exception pending) when (RetirementPendingException.Find(pending) is not null)
+            {
+                throw;
+            }
             catch (Exception ex)
             {
                 exceptions ??= [];
@@ -226,8 +232,11 @@ internal sealed class WorkStealingJobSystem : IJobSystem
     /// <returns>
     /// The validated job handle that represents the completed operation.
     /// </returns>
-    public JobHandle Schedule(Action<object?> job, object? state, ReadOnlySpan<JobHandle> dependencies)
-    {
+    public JobHandle Schedule(
+        Action<object?> job,
+        object? state,
+        ReadOnlySpan<JobHandle> dependencies
+    ) {
         ArgumentNullException.ThrowIfNull(job);
         ThrowIfDisposed();
 
@@ -239,7 +248,8 @@ internal sealed class WorkStealingJobSystem : IJobSystem
 
             foreach (JobHandle dependency in dependencies)
             {
-                if (!dependency.isValid) throw new ArgumentException("Dependency handle is invalid.", nameof(dependencies));
+                if (!dependency.isValid)
+                    throw new ArgumentException("Dependency handle is invalid.", nameof(dependencies));
                 _ = ResolveHandleNoLock(dependency);
             }
             var index = AllocateJobIndexNoLock(job, state);
@@ -312,8 +322,11 @@ internal sealed class WorkStealingJobSystem : IJobSystem
     /// <returns>
     /// The validated job handle that represents the completed operation.
     /// </returns>
-    public JobHandle ParallelFor(int length, int batchSize, Action<int, int> body)
-    {
+    public JobHandle ParallelFor(
+        int length,
+        int batchSize,
+        Action<int, int> body
+    ) {
         ArgumentNullException.ThrowIfNull(body);
         if (length < 0)
         {
@@ -451,11 +464,26 @@ internal sealed class WorkStealingJobSystem : IJobSystem
             if (m_frameActive)
                 EndFrame();
         }
-        catch (Exception pending) when (RetirementPendingException.Find(pending) is not null) { throw; }
-        catch (Exception exception) { m_shutdownFailures.Add(exception); }
-        try { m_mainThreadQueue.Close(); }
-        catch (Exception pending) when (RetirementPendingException.Find(pending) is not null) { throw; }
-        catch (Exception exception) { m_shutdownFailures.Add(exception); }
+        catch (Exception pending) when (RetirementPendingException.Find(pending) is not null)
+        {
+            throw;
+        }
+        catch (Exception exception)
+        {
+            m_shutdownFailures.Add(exception);
+        }
+        try
+        {
+            m_mainThreadQueue.Close();
+        }
+        catch (Exception pending) when (RetirementPendingException.Find(pending) is not null)
+        {
+            throw;
+        }
+        catch (Exception exception)
+        {
+            m_shutdownFailures.Add(exception);
+        }
         m_disposed = true;
         Interlocked.Exchange(ref m_running, 0);
 
@@ -657,8 +685,10 @@ internal sealed class WorkStealingJobSystem : IJobSystem
         }
     }
 
-    private int AllocateJobIndexNoLock(Action<object?> callback, object? state)
-    {
+    private int AllocateJobIndexNoLock(
+        Action<object?> callback,
+        object? state
+    ) {
         RequireCapacityNoLock(1);
         int index;
         if (m_freeIndices.Count > 0)
@@ -678,8 +708,10 @@ internal sealed class WorkStealingJobSystem : IJobSystem
         return index;
     }
 
-    private bool TryGetCompletion(JobHandle handle, out Exception? exception)
-    {
+    private bool TryGetCompletion(
+        JobHandle handle,
+        out Exception? exception
+    ) {
         lock (m_jobsGate)
         {
             var record = ResolveHandleNoLock(handle);
@@ -710,8 +742,10 @@ internal sealed class WorkStealingJobSystem : IJobSystem
         return record;
     }
 
-    private bool TryGetActiveRecordNoLock(int index, out JobRecord record)
-    {
+    private bool TryGetActiveRecordNoLock(
+        int index,
+        out JobRecord record
+    ) {
         if (index < 0 || index >= m_jobs.Count)
         {
             record = null!;
@@ -752,8 +786,11 @@ internal sealed class WorkStealingJobSystem : IJobSystem
         internal readonly int startInclusive;
         internal readonly int endExclusive;
 
-        internal ParallelForRangeState(Action<int, int> body, int startInclusive, int endExclusive)
-        {
+        internal ParallelForRangeState(
+            Action<int, int> body,
+            int startInclusive,
+            int endExclusive
+        ) {
             this.body = body;
             this.startInclusive = startInclusive;
             this.endExclusive = endExclusive;

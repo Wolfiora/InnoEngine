@@ -3,6 +3,7 @@ using Inno.Editor.Core;
 
 [assembly: ScriptingApiNamespace("InnoEditor.Core", "Inno.Editor.Core", ScriptingApiScope.Editor)]
 
+[assembly: ScriptingApiExport(typeof(EditorKeyboardPolicy), ScriptingApiScope.Editor)]
 [assembly: ScriptingApiExport(typeof(EditorContext), ScriptingApiScope.Editor)]
 [assembly: ScriptingApiExport(typeof(EditorFrame), ScriptingApiScope.Editor)]
 [assembly: ScriptingApiExport(typeof(EditorStatisticId), ScriptingApiScope.Editor)]

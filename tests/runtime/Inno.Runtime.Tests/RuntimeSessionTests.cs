@@ -1,9 +1,12 @@
+using Inno.Adapter.Serialization.DotNet;
+using Inno.Adapter.Modules.DotNet;
 using Inno.Runtime.Contracts;
 using System;
 using System.IO;
 using System.Collections.Generic;
 
 using Inno.References;
+using Inno.Core.Logging;
 using Inno.Runtime;
 using Inno.Scene;
 
@@ -17,6 +20,26 @@ public sealed class RuntimeSessionTests : IDisposable
         Path.GetTempPath(),
         "InnoRuntimeSessionTests",
         Guid.NewGuid().ToString("N"));
+
+    [Fact]
+    public void InlineHostDeliveryPersistsSessionLogsBeforeTheProducerReturns()
+    {
+        using EngineHost host = new EngineHostBuilder()
+                .UseMetadataSources(new DotNetAssemblyCatalogSource(typeof(RuntimeSessionTests).Assembly),
+                    new ReflectionTypeCatalogSource(), new ReflectionSerializationMetadataSource())
+            .UseLogDelivery(LogDeliveryMode.Inline)
+            .Build();
+        RuntimeSessionOptions options = CreateOptions("inline", RuntimeSessionKind.Play);
+        using RuntimeSession session = host.CreateSession(options);
+
+        using (session.EnterExecutionScope())
+            Log.Info("session-inline-delivery");
+
+        string file = Assert.Single(Directory.GetFiles(Path.Combine(m_root, "Persistent", "inline", "Logs")));
+        using var stream = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+        using var reader = new StreamReader(stream);
+        Assert.Contains("session-inline-delivery", reader.ReadToEnd());
+    }
 
     [Fact]
     public void MultipleHostsAndSessionsKeepSceneAndTimeStateIsolated()
@@ -92,7 +115,7 @@ public sealed class RuntimeSessionTests : IDisposable
         {
             kind = baseline.kind,
             applicationId = baseline.applicationId,
-            persistentDataDirectory = baseline.persistentDataDirectory,
+            createLogSink = baseline.createLogSink,
             fixedDeltaTime = baseline.fixedDeltaTime,
             jobExecutionMode = baseline.jobExecutionMode,
             createSubsystems = owner => [second, first]
@@ -138,7 +161,7 @@ public sealed class RuntimeSessionTests : IDisposable
         {
             kind = baseline.kind,
             applicationId = baseline.applicationId,
-            persistentDataDirectory = baseline.persistentDataDirectory,
+            createLogSink = baseline.createLogSink,
             assetResidencyBudgetBytes = 4096,
             fixedDeltaTime = baseline.fixedDeltaTime,
             jobExecutionMode = baseline.jobExecutionMode,
@@ -173,7 +196,8 @@ public sealed class RuntimeSessionTests : IDisposable
 
     private EngineHost CreateHost(string name)
         => new EngineHostBuilder()
-            .UseMetadataCache(Path.Combine(m_root, name, "Metadata"))
+                .UseMetadataSources(new DotNetAssemblyCatalogSource(typeof(RuntimeSessionTests).Assembly),
+                    new ReflectionTypeCatalogSource(), new ReflectionSerializationMetadataSource())
             .Build();
 
     private RuntimeSessionOptions CreateOptions(string applicationId, RuntimeSessionKind kind)
@@ -181,7 +205,7 @@ public sealed class RuntimeSessionTests : IDisposable
         {
             kind = kind,
             applicationId = applicationId,
-            persistentDataDirectory = Path.Combine(m_root, "Persistent", applicationId),
+            createLogSink = _ => new FileLogSink(Path.Combine(Path.Combine(m_root, "Persistent", applicationId), "Logs")),
             fixedDeltaTime = 0.02f,
             jobExecutionMode = RuntimeJobExecutionMode.SingleThread
         };

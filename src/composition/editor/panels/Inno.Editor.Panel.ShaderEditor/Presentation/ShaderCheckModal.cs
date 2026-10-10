@@ -5,6 +5,7 @@ using Inno.Editor.Core;
 using Inno.Editor.ImGui.ImGuiWidget;
 using Inno.Editor.Rendering;
 using Inno.Rendering;
+using Inno.Rendering.Assets;
 
 namespace Inno.Editor.Panel.ShaderEditor;
 
@@ -58,8 +59,8 @@ protected override void OnDraw(EditorContext context)
 
     private static void Publish(
         ShaderEditorDocuments.Draft draft,
-        EditorShaderDraftCompilationSnapshot snapshot)
-    {
+        EditorShaderDraftCompilationSnapshot snapshot
+    ) {
         var diagnostics = new List<Diagnostic>(Math.Max(1, snapshot.diagnostics.Count));
         for (int index = 0; index < snapshot.diagnostics.Count; index++)
         {

@@ -43,8 +43,8 @@ internal sealed class CSharpScriptImporter : AssetImporter<ScriptSourceAsset>
     protected override async ValueTask ImportAsync(
         AssetImportContext context,
         AssetImportWriter<ScriptSourceAsset> output,
-        CancellationToken cancellationToken)
-    {
+        CancellationToken cancellationToken
+    ) {
         string source = context.ReadUtf8Text();
         SyntaxTree tree = CSharpSyntaxTree.ParseText(
             source,
@@ -89,8 +89,7 @@ internal sealed class CSharpScriptImporter : AssetImporter<ScriptSourceAsset>
             cancellationToken).ConfigureAwait(false);
     }
 
-    private static ScriptSourceTypeDeclaration CreateTypeDeclaration(
-        BaseTypeDeclarationSyntax declaration)
+    private static ScriptSourceTypeDeclaration CreateTypeDeclaration(BaseTypeDeclarationSyntax declaration)
     {
         FileLinePositionSpan span = declaration.Identifier.GetLocation().GetLineSpan();
         return new ScriptSourceTypeDeclaration(

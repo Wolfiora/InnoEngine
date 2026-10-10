@@ -18,8 +18,10 @@ internal sealed class GameTagDiagnosticPublisher
     private readonly DiagnosticHub m_diagnostics;
     private readonly HashSet<Guid> m_activeTargets = [];
 
-    internal GameTagDiagnosticPublisher(SceneWorld world, DiagnosticHub diagnostics)
-    {
+    internal GameTagDiagnosticPublisher(
+        SceneWorld world,
+        DiagnosticHub diagnostics
+    ) {
         m_world = world ?? throw new ArgumentNullException(nameof(world));
         m_diagnostics = diagnostics ?? throw new ArgumentNullException(nameof(diagnostics));
     }
@@ -71,6 +73,9 @@ internal sealed class GameTagDiagnosticPublisher
         m_activeTargets.Clear();
     }
 
-    private static DiagnosticSource CreateSource(Guid targetId, string displayName)
+    private static DiagnosticSource CreateSource(
+        Guid targetId,
+        string displayName
+    )
         => new($"editor.scene.tag:{targetId:N}", $"{C_DIAGNOSTIC_GROUP}: {displayName}");
 }

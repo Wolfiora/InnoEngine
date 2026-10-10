@@ -8,6 +8,7 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="../../../tools/Inno.Tooling.Architecture/Inno.Tooling.Architecture.csproj" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="../../../build/cli/Inno.Build.Cli/Inno.Build.Cli.csproj" ReferenceOutputAssembly="false" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.8.0" />
     <PackageReference Include="xunit" Version="2.6.6" />

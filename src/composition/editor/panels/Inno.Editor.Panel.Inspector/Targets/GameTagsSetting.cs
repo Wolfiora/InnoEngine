@@ -34,8 +34,7 @@ internal sealed class GameTagsSetting : ProjectSettingEditor<GameTagCatalog>
     /// <summary>
     /// Gets the user-facing explanation of this feature or setting.
     /// </summary>
-    public override string description
-        => "Define the project-wide runtime tags that scenes and Plugins may assign to GameObjects.";
+    public override string description => "Define the project-wide runtime tags that scenes and Plugins may assign to GameObjects.";
 
     /// <summary>
     /// Draws this feature using the current editor presentation context.
@@ -157,8 +156,10 @@ internal sealed class GameTagsSetting : ProjectSettingEditor<GameTagCatalog>
         DrawHeaderCell(1, "Action");
     }
 
-    private static void DrawHeaderCell(int column, string label)
-    {
+    private static void DrawHeaderCell(
+        int column,
+        string label
+    ) {
         _ = NativeImGui.TableSetColumnIndex(column);
         InsetPlainCell();
         NativeImGui.TextUnformatted(label);

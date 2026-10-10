@@ -14,11 +14,9 @@ internal sealed class EditorExtensionStateDiagnosticPublisher : IDisposable
 
     private readonly Dictionary<string, string> m_states = new(StringComparer.Ordinal);
 
-    internal bool PublishCapture(IReadOnlyList<string> messages)
-        => Publish(C_CAPTURE_GROUP, "EDITOR-STATE-CAPTURE", messages);
+    internal bool PublishCapture(IReadOnlyList<string> messages) => Publish(C_CAPTURE_GROUP, "EDITOR-STATE-CAPTURE", messages);
 
-    internal bool PublishRestore(IReadOnlyList<string> messages)
-        => Publish(C_RESTORE_GROUP, "EDITOR-STATE-RESTORE", messages);
+    internal bool PublishRestore(IReadOnlyList<string> messages) => Publish(C_RESTORE_GROUP, "EDITOR-STATE-RESTORE", messages);
 
     internal bool PublishSave(Exception exception)
     {
@@ -26,8 +24,7 @@ internal sealed class EditorExtensionStateDiagnosticPublisher : IDisposable
         return Publish(C_SAVE_GROUP, "EDITOR-STATE-SAVE", [exception.Message]);
     }
 
-    internal void ResolveSave()
-        => Resolve(C_SAVE_GROUP);
+    internal void ResolveSave() => Resolve(C_SAVE_GROUP);
 
     /// <summary>
     /// Releases the resources owned by this instance.
@@ -38,8 +35,11 @@ internal sealed class EditorExtensionStateDiagnosticPublisher : IDisposable
             Resolve(group);
     }
 
-    private bool Publish(string group, string code, IReadOnlyList<string> messages)
-    {
+    private bool Publish(
+        string group,
+        string code,
+        IReadOnlyList<string> messages
+    ) {
         ArgumentNullException.ThrowIfNull(messages);
         string[] current = messages
             .Where(static message => !string.IsNullOrWhiteSpace(message))

@@ -9,8 +9,13 @@ namespace Inno.Rendering.Shaders;
 /// </summary>
 public sealed class ShaderSourceType
 {
-    private ShaderSourceType(string id, ShaderSourceType? element, int count, ShaderSourceField[] fields, ShaderStorageType? storage = null)
-    {
+    private ShaderSourceType(
+        string id,
+        ShaderSourceType? element,
+        int count,
+        ShaderSourceField[] fields,
+        ShaderStorageType? storage = null
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(id);
         this.id = id;
         elementType = element;
@@ -79,11 +84,14 @@ public sealed class ShaderSourceType
     /// <exception cref="ArgumentException">
     /// The element is void or an opaque storage binding.
     /// </exception>
-    public static ShaderSourceType ArrayOf(ShaderSourceType element, int count)
-    {
+    public static ShaderSourceType ArrayOf(
+        ShaderSourceType element,
+        int count
+    ) {
         ArgumentNullException.ThrowIfNull(element);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(count);
-        if (element.id == "void" || element.storage is not null) throw new ArgumentException("An array cannot contain void values or opaque storage bindings.", nameof(element));
+        if (element.id == "void" || element.storage is not null)
+            throw new ArgumentException("An array cannot contain void values or opaque storage bindings.", nameof(element));
         return new("array", element, count, []);
     }
 
@@ -102,10 +110,13 @@ public sealed class ShaderSourceType
     /// <exception cref="ArgumentException">
     /// The identity is reserved, or fields are empty, null, or duplicated.
     /// </exception>
-    public static ShaderSourceType Structure(string id, IEnumerable<ShaderSourceField> fields)
-    {
+    public static ShaderSourceType Structure(
+        string id,
+        IEnumerable<ShaderSourceField> fields
+    ) {
         ArgumentNullException.ThrowIfNull(fields);
-        if (id == "void") throw new ArgumentException("Void is reserved for the absence of a return value.", nameof(id));
+        if (id == "void")
+            throw new ArgumentException("Void is reserved for the absence of a return value.", nameof(id));
         ShaderSourceField[] snapshot = fields.ToArray();
         if (snapshot.Length == 0 || snapshot.Any(static field => field is null) ||
             snapshot.Select(static field => field.name).Distinct(StringComparer.Ordinal).Count() != snapshot.Length)
@@ -155,10 +166,13 @@ public sealed class ShaderSourceField
     /// <exception cref="ArgumentException">
     /// The field has void type or is an opaque storage binding.
     /// </exception>
-    public ShaderSourceField(string name, ShaderSourceType type)
-    {
+    public ShaderSourceField(
+        string name,
+        ShaderSourceType type
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
-        if (type?.id == "void" || type?.storage is not null) throw new ArgumentException("A structure field cannot have void type or contain an opaque storage binding.", nameof(type));
+        if (type?.id == "void" || type?.storage is not null)
+            throw new ArgumentException("A structure field cannot have void type or contain an opaque storage binding.", nameof(type));
         this.name = name;
         this.type = type ?? throw new ArgumentNullException(nameof(type));
     }

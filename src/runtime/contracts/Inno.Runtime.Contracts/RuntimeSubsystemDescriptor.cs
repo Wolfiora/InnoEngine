@@ -39,8 +39,8 @@ public sealed class RuntimeSubsystemDescriptor
         IReadOnlyList<RuntimeSubsystemId>? dependencies = null,
         RuntimeSubsystemLifetime lifetime = RuntimeSubsystemLifetime.Session,
         RuntimeSubsystemRequirement requirement = RuntimeSubsystemRequirement.Required,
-        IReadOnlyList<RuntimeCapabilityId>? requiredCapabilities = null)
-    {
+        IReadOnlyList<RuntimeCapabilityId>? requiredCapabilities = null
+    ) {
         if (!id.isValid)
             throw new ArgumentException("A runtime subsystem requires a valid ID.", nameof(id));
         if (!Enum.IsDefined(lifetime))

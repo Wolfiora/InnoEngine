@@ -10,11 +10,8 @@
   <ItemGroup>
     <ProjectReference Include="../../../src/foundation/core/Inno.Core.Execution/Inno.Core.Execution.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../../src/foundation/extensibility/Inno.Extensibility.Reload/Inno.Extensibility.Reload.csproj" />
-    <ProjectReference Include="..\..\..\src\foundation\extensibility\Inno.Extensibility.Modules\Inno.Extensibility.Modules.csproj" PrivateAssets="compile" />
-    <ProjectReference Include="..\..\..\src\foundation\extensibility\Inno.Extensibility.Types\Inno.Extensibility.Types.csproj" PrivateAssets="compile" />
-    <ProjectReference Include="..\fixtures\Inno.Extensibility.Modules.TestModule.V1\Inno.Extensibility.Modules.TestModule.V1.csproj" ReferenceOutputAssembly="false" PrivateAssets="compile" />
-    <ProjectReference Include="..\fixtures\Inno.Extensibility.Modules.TestModule.V2\Inno.Extensibility.Modules.TestModule.V2.csproj" ReferenceOutputAssembly="false" PrivateAssets="compile" />
-    <ProjectReference Include="..\fixtures\Inno.Extensibility.Modules.TestModule.Invalid\Inno.Extensibility.Modules.TestModule.Invalid.csproj" ReferenceOutputAssembly="false" PrivateAssets="compile" />
+    <ProjectReference Include="../../../src/foundation/extensibility/Inno.Extensibility.Modules/Inno.Extensibility.Modules.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../../src/foundation/extensibility/Inno.Extensibility.Types/Inno.Extensibility.Types.csproj" PrivateAssets="compile" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
@@ -26,15 +23,22 @@
   </ItemGroup>
   <Target Name="CopyAssemblyTestModules" AfterTargets="Build">
     <ItemGroup>
+      <TestModuleProject Include="../fixtures/Inno.Extensibility.Modules.TestModule.V1/Inno.Extensibility.Modules.TestModule.V1.csproj" />
+      <TestModuleProject Include="../fixtures/Inno.Extensibility.Modules.TestModule.V2/Inno.Extensibility.Modules.TestModule.V2.csproj" />
+      <TestModuleProject Include="../fixtures/Inno.Extensibility.Modules.TestModule.Invalid/Inno.Extensibility.Modules.TestModule.Invalid.csproj" />
       <TestModuleV1 Include="..\fixtures\Inno.Extensibility.Modules.TestModule.V1\bin\$(Configuration)\net9.0\Inno.Extensibility.Modules.TestModule.dll" />
       <TestModuleV2 Include="..\fixtures\Inno.Extensibility.Modules.TestModule.V2\bin\$(Configuration)\net9.0\Inno.Extensibility.Modules.TestModule.dll" />
       <TestModuleInvalid Include="..\fixtures\Inno.Extensibility.Modules.TestModule.Invalid\bin\$(Configuration)\net9.0\Inno.Extensibility.Modules.TestModule.dll" />
       <TestModuleDependency Include="..\fixtures\Inno.Extensibility.Modules.TestDependency\bin\$(Configuration)\net9.0\Reloadable.PrivateDependency.dll" />
     </ItemGroup>
+    <MSBuild Projects="@(TestModuleProject)" Targets="Build" Properties="Configuration=$(Configuration);TargetFramework=$(TargetFramework)" />
     <Copy SourceFiles="@(TestModuleV1)" DestinationFolder="$(OutDir)Modules\V1" />
     <Copy SourceFiles="@(TestModuleV2)" DestinationFolder="$(OutDir)Modules\V2" />
     <Copy SourceFiles="@(TestModuleInvalid)" DestinationFolder="$(OutDir)Modules\Invalid" />
     <Copy SourceFiles="@(TestModuleDependency)" DestinationFolder="$(OutDir)Modules\V1" />
     <Copy SourceFiles="@(TestModuleDependency)" DestinationFolder="$(OutDir)Modules\V2" />
   </Target>
+  <ItemGroup>
+    <ProjectReference Include="../../../backends/DotNet/runtime/Inno.Adapter.Modules.DotNet/Inno.Adapter.Modules.DotNet.csproj" PrivateAssets="compile" />
+  </ItemGroup>
 </Project>

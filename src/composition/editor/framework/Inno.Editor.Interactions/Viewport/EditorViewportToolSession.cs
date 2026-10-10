@@ -22,8 +22,8 @@ public sealed class EditorViewportToolSession : IDisposable
     /// </param>
     public EditorViewportToolSession(
         IEditorHistory history,
-        IEditorViewportCoordinateConverter coordinates)
-    {
+        IEditorViewportCoordinateConverter coordinates
+    ) {
         m_context = new EditorViewportToolContext(history, coordinates);
     }
 

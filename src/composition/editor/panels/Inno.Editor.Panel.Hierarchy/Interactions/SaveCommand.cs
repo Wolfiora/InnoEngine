@@ -16,7 +16,8 @@ namespace Inno.Editor.Panel.Hierarchy;
 internal sealed class SaveCommand(
     IEditorSceneWorkspace workspace,
     AssetEditorModule assets,
-    LogRouter logs) : EditorAction
+    LogRouter logs
+) : EditorAction
 {
     private readonly Logger m_log = (logs ?? throw new ArgumentNullException(nameof(logs)))
         .CreateLogger<SaveCommand>();

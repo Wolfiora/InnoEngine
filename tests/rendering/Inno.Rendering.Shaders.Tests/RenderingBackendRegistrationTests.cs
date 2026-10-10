@@ -1,8 +1,10 @@
+using Inno.Integration.Windows.Bgfx;
 using System;
 using Inno.Adapter.Rendering;
 using Inno.Build.Toolchains.Bgfx.Tools;
 using Inno.Rendering.Assets;
 using Xunit;
+using Inno.Rendering.Assets.Authoring;
 
 namespace Inno.Rendering.Shaders.Tests;
 
@@ -35,18 +37,18 @@ public sealed class RenderingBackendRegistrationTests
         Assert.False(default(RenderingBackendId).isValid);
     }
 
-    private sealed class RuntimeProvider(RenderingBackendId id) : RenderingBackendProvider
+    private sealed class RuntimeProvider(RenderingBackendId id) : RenderingBackendProvider(id)
     {
         public bool wasCreated { get; private set; }
-        public override RenderingBackendId id { get; } = id;
         public override IRenderDevice CreateDevice(RenderingBackendOptions options)
         { wasCreated = true; throw new InvalidOperationException("These registration tests must not create a GPU device."); }
+        public override IRenderLayerCompositionProgramProvider CreateCompositionProgramProvider()
+            => throw new InvalidOperationException("These registration tests do not create composition programs.");
     }
 
-    private sealed class AuthoringProvider(RenderingBackendId id) : RenderingAuthoringBackendProvider
+    private sealed class AuthoringProvider(RenderingBackendId id) : RenderingAuthoringBackendProvider(id)
     {
-        public override RenderingBackendId id { get; } = id;
-        public override IShaderCompilerToolchain CreateShaderCompilerToolchain() => new BgfxShadercToolchain();
+        public override IShaderCompilerToolchain CreateShaderCompilerToolchain() => new BgfxShadercToolchain(Inno.Integration.Windows.Bgfx.WindowsBgfxShaderProfiles.target);
         public override ITextureTargetCompiler CreateTextureTargetCompiler() => new BgfxTextureTargetCompiler();
     }
 }

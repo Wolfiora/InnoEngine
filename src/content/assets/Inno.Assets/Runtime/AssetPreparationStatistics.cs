@@ -5,9 +5,16 @@ namespace Inno.Assets;
 /// </summary>
 public readonly record struct AssetPreparationStatistics
 {
-    internal AssetPreparationStatistics(int pendingRequests, int peakPendingRequests, long rejectedRequests,
-        int pendingPayloads, long payloadReadsStarted, long sharedPayloadReads, long reservedBytes, long peakReservedBytes)
-    {
+    internal AssetPreparationStatistics(
+        int pendingRequests,
+        int peakPendingRequests,
+        long rejectedRequests,
+        int pendingPayloads,
+        long payloadReadsStarted,
+        long sharedPayloadReads,
+        long reservedBytes,
+        long peakReservedBytes
+    ) {
         this.pendingRequests = pendingRequests;
         this.peakPendingRequests = peakPendingRequests;
         this.rejectedRequests = rejectedRequests;

@@ -1,280 +1,456 @@
 # Inno.Assets
 
-## 冷加载峰值预算与合并
+[分类索引](README.md) · [Wiki 首页](../README.md) · [本轮整改计划](../architecture/ARCHITECTURE_CLEANUP_PLAN_2026_10_06.md)
 
-`AssetDatabase` 提供构造参数 `preparationBudgetBytes`（默认 64 MiB）和只读 `preparingBytes`。这是 encoded IO 预留预算，不等同于已有的 resident payload 预算。同一数据库内相同 persistent ID 的并发请求共用一次依赖闭包读取；不同 root 引用相同 dependency 时也共用该不可变 payload 的 IO 和唯一字节预留。取消一个等待者不取消其他等待者。
+## 职责与边界
 
-在开始读取前对闭包中尚未预留的 payload 长度求和并预留预算。打开文件后先验证实际长度，再分配精确大小并校验 hash；准备完成但尚未经过 `CompletePendingLoads` 的 bytes 仍计入预留。最后一个使用该 payload 的 root 完成/取消后归还预留。并发请求数仍限制为 32，超预算明确拒绝，不静默转为同步加载。
+AssetArtifactInfo 只保存 key、output、hash 和 length，不公开物理位置。ArtifactLease.OpenRead() 是唯一 artifact 读取入口；每条流持有自己的 pin，外层 lease 提前释放不破坏读取。AssetDatabase 借用 content store，不运行 importer、不创建目录。加载、依赖 retention、预加载预算和退休仍由 Asset residency owner 协调。
 
-`preparationStatistics` 返回不可变 `AssetPreparationStatistics`：`pendingRequests`、`peakPendingRequests`、
-`rejectedRequests`、`pendingPayloads`、`payloadReadsStarted`、`sharedPayloadReads`、`reservedBytes`、`peakReservedBytes`。
-累计/峰值计数的范围是数据库生命周期；当前计数在 publication/cancellation 后下降。`sharedPayloadReads`
-专指不同 root 的共享，重复请求同一 root 不会重复建立其依赖读集合。该统计不持有 Asset、Task、Type 或 delegate。
-每个数据库最多同时进行 4 个 payload 文件读取；共享不会变成无上限同时打开文件。Dispose 先取消并排空全部 IO，再销毁读取 gate。
-
-`IAssetReferenceResolver` 的通用引用桥会拒绝不同 persistent ID 的返回值，不允许 last-known path 偷换目标。
-
-运行时外部 owner（例如 Settings）解析合法但尚未物化的引用时，AssetDatabase 通过同一 canonical
-冷加载路径解析，并采用 Session pin。资产自身物化仍使用内部的 prepared-only resolver 视图，
-未在预备依赖闭包中的引用不能偷偷触发第二次冷加载。两者复用同一 `IAssetReferenceResolver` 协议与
-Identity/type 校验，不增加持久化引用格式。通用引用桥必须原样传播 `RetirementPendingException`，
-不得将未退出的 generation 包装成普通 Missing。
-
-[Assets 索引](README.md) · [Assets Pipeline](Inno.Assets.Pipeline.md) · [Wiki 首页](../README.md)
-
-`Inno.Assets` 是 Player-safe 的运行时资产契约和只读 `AssetDatabase`。创作源、Importer、Watcher、依赖图和 Artifact Writer 属于 `Inno.Assets.Pipeline`；Editor 通过一个显式 `AssetPipeline` 实例组合它们。
-
-## 运行状态与租约边界
-
-`AssetRuntimeOwner` 是数据库私有持有的写入权限：Initialize 首次声明实例归属，后续 Initialize/UpdateAssetPath/Release/GetSourceHash 都验证同一 owner。它不保留资产列表，不是静态全局写入口，也不导出给脚本。跨 owner 写入明确失败。Asset 不在 finalizer 中执行派生回调；数据库显式 Release。payload hook 失败会恢复先前的字段、payload 与内容 revision。
-
-`AssetObject.OnUnloading` 在资源真正退出后才算完成。派生 hook 抛出 `RetirementPendingException` 时，
-`AssetRuntimeOwner.Release` 保留 payload 与未完成状态；owner 必须保留对象并重试，派生实现不得重复
-已经完成的释放步骤。普通异常是终止失败，向上报告而不重复调用 hook；成功后重复 Release 无副作用。
-`AssetLoader` 与 Player `AssetDatabase` 的最终退出均以 Core lifetime 保留 Pending canonical object、
-Identity 注册与下层依赖，不能提前标记 disposed。进入退出后拒绝新加载。
-Runtime budget eviction 也在卸载成功后才移除 dependency retention 与 residency 计数；
-尚在退休中的记录不会被当作可继续使用的 loaded object 返回。
-
-`AssetReferenceLocation` / `AssetReferenceInfo` 的公开构造用于创建中立诊断快照；后者复制并冻结 reference 集合，不授予修改资产的权限。
-
-`IAssetArtifactLookup.AcquireArtifact(id, output)` 返回必须释放的 `ArtifactLease`。`ArtifactRetention.Retain(info)` 与 `GetRetainedKeys()` 为自定义 provider 提供 artifact-key 引用计数；provider 必须串行化 acquisition 与 collection。Authoring collector 把租约持有的旧 key 加入 reachable 集合，即使源已 reimport/delete 也不会提前删除。
-
-`AssetLease<T>` 和 `ArtifactLease` 使用同一个内部 residency owner：直接或任意包装层内的 `RetirementPendingException`
-保留 value 与 release callback，所属生命周期必须在安全点重试；成功或普通终止异常才撤销 value/callback。
-同一租约的并发或重入释放不会同时执行 callback，而是返回 Pending，不能当成已经释放。回调在内部锁之外执行；
-provider 对部分完成的引用计数、native 释放等必须记录阶段，重试不得重复副作用。终止之后再次 Dispose 无副作用。
-包装 Pending 中的普通错误通过 Core 分类收集，按实例去重；之后即使 release 成功也以 AggregateException 报告。
-单次普通终止失败仍原样上抛，不为了统一内部结构改变 provider 原来的异常类型。
-`RetentionScope` 复用 Core `LifetimeScope` 的逆序退休：Pending 阻止下层依赖被提前释放，之前的普通失败保留到
-最终聚合；开始退休之后禁止继续 Retain。它不是独立的第二套生命周期协议。
-
-冷路径 `AssetDatabase.AcquireAsync` 在后台读取并校验不可变 payload，不把 Type、serializer、Identity 或 execution scope
-流入 IO task。数据库固定接收 `TypeCacheSnapshot`，不在 Player 加载期间刷新 Authoring Registry。
-`CompletePendingLoads(completionBudget = 8)` 由 RuntimeSession 每帧调用，在 owner thread 创建、反序列化和注册资产。
-独立 Host 必须自己在安全点调用这一入口，不可在 owner thread 阻塞等待尚未发布的 lease。
-最多同时准备 32 个请求，超限明确拒绝；取消或 Dispose 不发布半成品，销毁数据库会取消并等待其 IO 退出。
-缓存命中返回已完成 lease；无论命中与否，调用方都必须 Dispose 租约。
-
-## 初始化与目录
+## 读取与所有权
 
 ```csharp
-using EngineHost host = new EngineHostBuilder().Build();
-var identities = new IdentityAllocator();
-using var assets = new AssetPipeline(
-    host.modules,
-    host.types,
-    host.serialization,
-    identities,
-    host.diagnostics,
-    host.logs,
-    AssetPipelineOptions.Create(
-        Path.Combine(projectRoot, "Assets"),
-        Path.Combine(projectRoot, "Library")));
-```
+using System.IO;
+using Inno.Assets;
 
-`AssetPipelineOptions`：
-
-| 属性 | 说明 |
-| --- | --- |
-| `mode` | `Authoring` 对账可写 source 并生成 Artifact；`RuntimeArtifacts` 只信任部署 Catalog/CAS。 |
-| `assetRoot` | 可写 Project Source Mount 根目录。 |
-| `libraryRoot` | 可重建的 Project Library 根目录。 |
-| `sourceMounts` | Project 与已激活 Plugin 的完整 mount 候选。 |
-| `enableFileSystemWatcher` | 是否观察外部文件系统变更。 |
-| `fileWatcherFlushDelayMs` | raw event quiet/debounce 窗口。 |
-| `sourcePolicy` | 统一 Source ignore policy。 |
-| `cacheOptions` | CAS 最大容量和 unreachable grace period。 |
-
-`artifactRoot` 不再是 option。`AssetPipeline.artifactRoot` 是只读派生值 `<libraryRoot>/Artifacts`。`AssetCacheOptions.CreateDefault()` 当前使用 4 GiB 上限和 7 天 grace period。
-
-## Owner-thread 模型
-
-`Initialize` 记录当前 managed thread。以下 mutation 必须从该线程调用：
-
-- `Update`
-- `WaitForIdle`
-- `Import`
-- `Save`
-- `Move`
-- `Delete`
-- `CreateDirectory`
-- `Rescan`
-- `BuildAsync`
-- `ExportRuntimeArtifacts`
-
-Editor Application 在每帧开始调用自己拥有的 `AssetPipeline.Update()`。Watcher callback 只 enqueue；`Update` 才 poll、对账、commit 和发布 observer。
-
-```csharp
-while (running)
+static int ReadFirstByte(ArtifactLease lease)
 {
-    assets.Update();
-    // Run frame work against one committed asset snapshot.
+    using Stream input = lease.OpenRead();
+    return input.ReadByte();
 }
 ```
 
-`WaitForIdle()` 适合测试、batch 工具和需要同步等待 source quiet window 的命令。它不是普通 frame loop 的替代品。
+ArtifactLease 固定内容身份，每个打开的流取得独立 pin；释放外层 lease 后现有流仍可完成读取。关闭 provider 后禁止取得新 lease；已借用的 store 由外部 owner 在 AssetDatabase 退休后释放。内容缺失与内容损坏分别报告，不伪造空数据。AssetDatabase 不执行 importer 或管理创作目录；创作服务见 [Assets Pipeline](Inno.Assets.Pipeline.md)。
 
-## 状态与事件
+Residency 管理加载、依赖 retention、预算、预加载取消和退休；RetirementPendingException 保留仍在释放的值及 callback，普通终止失败不得重复执行释放。Missing Asset 保留 persistent ID、Stable Type ID、原数据与依赖，恢复进入统一候选事务。所有包含引用的数据使用 owner 的完整 SerializationContext。
 
-| 成员 | 说明 |
+## 当前源码公开 API 清单
+
+只列当前源码的 public/protected 表面；内部实现不作为稳定 API。参数、返回、失败和 owner 以英文 XML 为准。
+
+### `Inno.Assets.ArtifactLease`
+
+| 当前声明 | 行为 |
 | --- | --- |
-| `isInitialized` | 服务是否可用。 |
-| `assetRoot` / `libraryRoot` / `artifactRoot` | 初始化后的绝对路径。 |
-| `sourceMounts` | 当前原子发布的 Project/Plugin mount snapshot。 |
-| `SourceMountsChanged` | mount generation 成功替换后的 owner-thread 通知。 |
-| `Changed` | 一次 commit 后的 `AssetChangeSet`。 |
-| `AssetReloaded` | loaded canonical asset 已原位更新。 |
+| [`Inno.Assets.ArtifactLease`](../../src/content/assets/Inno.Assets/Runtime/AssetResidency.cs#L171) | Keeps one verified immutable artifact generation available for an explicit lifetime. |
+| [`Inno.Assets.AssetArtifactInfo Inno.Assets.ArtifactLease.info`](../../src/content/assets/Inno.Assets/Runtime/AssetResidency.cs#L189) | Gets verified metadata for the retained artifact. |
+| [`System.IO.Stream Inno.Assets.ArtifactLease.OpenRead()`](../../src/content/assets/Inno.Assets/Runtime/AssetResidency.cs#L197) | Opens a read-only stream over the retained immutable artifact. |
+| [`byte[] Inno.Assets.ArtifactLease.ReadAllBytes()`](../../src/content/assets/Inno.Assets/Runtime/AssetResidency.cs#L215) | Reads one indexed payload through this lease's independently pinned stream. |
+| [`void Inno.Assets.ArtifactLease.Dispose()`](../../src/content/assets/Inno.Assets/Runtime/AssetResidency.cs#L242) | Releases artifact ownership, retaining metadata and callback while the provider reports Pending. |
 
-Observer 按订阅顺序在 owner thread 调用。某个 observer 抛异常会被隔离，不能回滚已经提交的 transaction，也不会阻止后续 observer。
-脚本 generation 切换后的第一次 `Update`/`Rescan` 会移除 `Changed` 与 `AssetReloaded` 中声明类型或 target 类型已经退休的 collectible observer，防止静态事件反向保留旧 ALC。Host observer 和当前活动 generation 的 observer 不受影响。
+### `Inno.Assets.ArtifactRetention`
 
-## 加载与保存
-
-| API | 行为 |
+| 当前声明 | 行为 |
 | --- | --- |
-| `IAssetLookup` | Authoring `AssetPipeline` 与 Player `AssetDatabase` 共同实现的最小只读查询边界。 |
-| `IAssetArtifactLookup` | 两种宿主共同实现的 named Artifact 定位边界；Runtime 服务不需要依赖 authoring pipeline。 |
-| `Assets.Load/TryLoad` | 项目脚本使用的无状态门面；只解析当前异步执行作用域，不拥有 Catalog、缓存或 Session 状态。 |
-| `Assets.AcquireAsync<T>` | 异步取得 canonical asset 与显式强驻留 `AssetLease<T>`；释放 lease 后对象才可参与预算回收。 |
-| `Assets.AcquireArtifact` | 取得 named immutable Artifact 的 `ArtifactLease`，并通过 `OpenRead()` 打开只读流。 |
-| `RetentionScope` | 组合多个 lease，并按加入顺序的逆序统一释放。 |
-| `Assets.LocalPath(localPath)` | 根据调用脚本 assembly 的 `Inno.AssetSource` metadata 创建 source-local 路径；同一代码在 Project 开发态与 `.iplugin` 安装态自动指向各自 Assets 根。 |
-| `Load<T>(AssetPath/id)` | 返回跨 mount canonical instance；缺失或类型不兼容时抛异常。字符串重载表示 Project mount。 |
-| `TryLoad<T>(path/id,out asset)` | 安全失败。 |
-| `LoadAsync<T>(path/id,token)` | 在 worker 上执行真实加载/导入等待；相同 path 或 ID 的并发请求共享任务并返回同一 canonical instance。取消只终止当前调用者的等待，不取消其他调用者共享的加载。 |
-| `Import(path)` | 显式导入单一受支持 source。 |
-| `Save(asset)` | 导出到现有 source path。 |
-| `Save(path,asset)` | 为新资产建立初始 source identity。 |
-| `Move(oldPath,newPath)` | 仅在可写 mount 内事务式移动 source 与 `.imeta`，保留 persistent ID、canonical instance 和 artifact。 |
-| `Delete(path)` | 事务式删除 file/directory source 与 sidecar；释放路径并保留 ID tombstone。 |
-| `CreateDirectory(path)` | 创建带稳定 `.imeta` 的 source folder；folder 不生成 artifact。 |
-| `Rescan()` | 对账全部 source/meta/catalog/artifact。 |
+| [`Inno.Assets.ArtifactLease Inno.Assets.ArtifactRetention.Retain(Inno.Assets.AssetArtifactInfo artifact, System.Func<System.IO.Stream> openRead)`](../../src/content/assets/Inno.Assets/Artifacts/ArtifactRetention.cs#L29) | Retains a verified output before its owner permits cache collection. |
+| [`Inno.Assets.ArtifactRetention`](../../src/content/assets/Inno.Assets/Artifacts/ArtifactRetention.cs#L12) | Counts explicit leases over immutable artifact keys independently of asset object residency. |
+| [`System.Collections.Generic.IReadOnlyList<Inno.Assets.AssetArtifactKey> Inno.Assets.ArtifactRetention.GetRetainedKeys()`](../../src/content/assets/Inno.Assets/Artifacts/ArtifactRetention.cs#L55) | Captures the keys a collector must preserve regardless of catalog reachability. |
 
-初始化会自动 `Rescan`，无需为已有文件逐个调用 `Import`。
+### `Inno.Assets.AssetArtifactInfo`
 
-Editor、Play Mode 与 Player 的 Composition Root 使用 `AssetExecutionContext.EnterScope(IAssetLookup)`
-绑定当前 Session。Scope 严格按 LIFO 释放，并通过 `AsyncLocal` 隔离并行异步执行流；没有活动
-Scope 时，脚本 `Assets` 门面明确抛出 `InvalidOperationException`。引擎内部服务始终直接依赖
-`IAssetLookup`、`AssetPipeline` 或 `AssetDatabase`，不反向调用脚本门面。
-
-异步加载捕获调用时的 Loader generation；Mount/Registry 原子切换不会让任务读到一半新、一半旧的 Catalog。`AssetPipeline.Dispose`/generation 退休会先拒绝新请求，再等待已经接受的加载结束后释放底层 Loader，因此后台任务不会访问已释放状态。最终 canonical cache 的发布仍由 Loader 自身的事务锁保护，不要求调用者切回 owner thread。
-
-`Rescan` 同时是 TypeCache generation 的资源收敛安全点。若已加载 canonical asset 的运行时类型已退休，Loader 会从内部 record、identity 和 dependency retention 中释放它；仍存活的 host asset 会用当前 generation 重新恢复其序列化引用。调用方自己仍强持有旧 canonical instance 时，旧 collectible ALC 会按普通 CLR 引用规则延迟卸载，这不影响 Loader 返回当前 generation 的新实例。
-
-`AssetPipeline` 也是统一 Assembly Catalog transaction participant。候选 TypeCache 与 Importer/Build Processor
-Registry 激活后，它只对隔离 loader 的 Source Mount 重新对账，成功后通过共同 Source recovery 发布新 canonical
-实例，旧 loader 直到 Complete 都不被 Rescan 修改；普通源文件 reimport 的原位更新与这种代际替换是两种不同操作。
-已有 Plugin compilation candidate 保持原 publication owner，程序集事务只复用验证，不重复 Complete/Rollback。
-激活前按 source path、状态、source hash、Importer ID 与结构化诊断记录可写 Project Mount 已有失败指纹；
-候选新制造或改变失败时拒绝整个程序集候选。MVID 本身不属于失败语义，完全相同的既有失败保留为诊断而不阻塞 reload。
-候选 sidecar 写入与诊断也暂存；失败恢复旧 loader/Identity/诊断，不通过下一次 GetLoader 延迟重扫修复。
-相关提交与 metadata 外部冲突约束见 [Pipeline 候选协议](Inno.Assets.Pipeline.md)。
-
-若本 transaction 或后续 participant 失败，ModuleHost 先恢复旧 TypeCache，AssetPipeline 再在下一次 owner-thread `Update`/访问时用旧 generation 自动恢复目录快照。Plugin mount 指向 `Library/Plugins/<pluginId>/<contentHash>` 中完整且不可变的 `.iplugin` generation snapshot，因此即使原安装包在 reload 中途被删除或覆盖，旧 Loader 的恢复、查询与关闭也不会访问失效路径。外部观察者不会看到“新 Registry + 旧 Asset Catalog”的半切换状态。
-
-## Catalog 与 artifact 查询
-
-| API | 说明 |
+| 当前声明 | 行为 |
 | --- | --- |
-| `TryGetInfo(path/id,out info)` | 读取 immutable `AssetInfo`。 |
-| `TryGetArtifact(id,outputName,out info)` | 定位 named output。 |
-| `TryGetPersistentId(path,out id)` | 不加载 runtime object 查询 source identity。 |
-| `TryGetAssetType(path,out type)` | 从 Catalog/Importer 解析类型。 |
-| `BuildAsync(definition,inputs,token)` | 调用自动发现的 aggregate Build Processor。 |
-| `ExportRuntimeArtifacts(destination)` | 写出裁剪 runtime Catalog、空 source 身份根与精确 CAS closure；不复制创作源。 |
-| `GetDependencies(asset,recursive)` | runtime dependency graph。 |
-| `GetReferenceInfo(asset)` | engine-known reference diagnostics。 |
-| `GetLoadedPaths()` | 当前 canonical cache 的 `AssetPath` snapshot。 |
-| `UnloadUnusedAssets()` | 协作式释放无外部 managed root 的实例。 |
+| [`Inno.Assets.AssetArtifactInfo`](../../src/content/assets/Inno.Assets/Artifacts/AssetArtifactInfo.cs#L6) | Describes one named output in an immutable artifact bundle. |
+| [`Inno.Assets.AssetArtifactInfo.AssetArtifactInfo(Inno.Assets.AssetArtifactKey key, string outputName, string contentHash, long length)`](../../src/content/assets/Inno.Assets/Artifacts/AssetArtifactInfo.cs#L23) | Creates an artifact output descriptor. |
+| [`Inno.Assets.AssetArtifactKey Inno.Assets.AssetArtifactInfo.key`](../../src/content/assets/Inno.Assets/Artifacts/AssetArtifactInfo.cs#L38) | Gets the owning artifact bundle key. |
+| [`long Inno.Assets.AssetArtifactInfo.length`](../../src/content/assets/Inno.Assets/Artifacts/AssetArtifactInfo.cs#L53) | Gets the output length in bytes. |
+| [`string Inno.Assets.AssetArtifactInfo.contentHash`](../../src/content/assets/Inno.Assets/Artifacts/AssetArtifactInfo.cs#L48) | Gets the output content fingerprint. |
+| [`string Inno.Assets.AssetArtifactInfo.outputName`](../../src/content/assets/Inno.Assets/Artifacts/AssetArtifactInfo.cs#L43) | Gets the stable output name. |
 
-`AssetPath(source, "")` 是合法的 Source Mount 根路径，可用于 `TryGetFileSystemEntry` 与 FileBrowser 导航，但它不是 Catalog 中的可导入资产。`TryGetInfo`、`TryGetPersistentId` 和 `TryGetAssetType` 对此类根路径稳定返回 `false`，不会把正常的 Assets/Plugins overview 查询转换成异常。
+### `Inno.Assets.AssetArtifactKey`
 
-```csharp
-if (AssetPipeline.TryGetInfo(AssetPath.Project("Scripts/Player.cs"), out AssetInfo? script) &&
-    script.status == AssetImportStatus.Imported &&
-    AssetPipeline.TryGetArtifact(script.persistentId, "source", out AssetArtifactInfo? source))
-{
-    Console.WriteLine(source.absolutePath);
-}
-```
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Assets.AssetArtifactKey`](../../src/content/assets/Inno.Assets/Artifacts/AssetArtifactKey.cs#L8) | Identifies one immutable content-addressed artifact bundle. |
+| [`Inno.Assets.AssetArtifactKey.AssetArtifactKey(string value)`](../../src/content/assets/Inno.Assets/Artifacts/AssetArtifactKey.cs#L21) | Creates an artifact key from a hexadecimal content fingerprint. |
+| [`bool Inno.Assets.AssetArtifactKey.Equals(Inno.Assets.AssetArtifactKey other)`](../../src/content/assets/Inno.Assets/Artifacts/AssetArtifactKey.cs#L61) | Determines whether this instance and the supplied value represent the same logical state. |
+| [`bool Inno.Assets.AssetArtifactKey.isEmpty`](../../src/content/assets/Inno.Assets/Artifacts/AssetArtifactKey.cs#L50) | Gets whether the key is empty. |
+| [`override bool Inno.Assets.AssetArtifactKey.Equals(object? obj)`](../../src/content/assets/Inno.Assets/Artifacts/AssetArtifactKey.cs#L72) | Determines whether this instance and the supplied value represent the same logical state. |
+| [`override int Inno.Assets.AssetArtifactKey.GetHashCode()`](../../src/content/assets/Inno.Assets/Artifacts/AssetArtifactKey.cs#L80) | Computes a hash code from the fields that participate in logical equality. |
+| [`override string Inno.Assets.AssetArtifactKey.ToString()`](../../src/content/assets/Inno.Assets/Artifacts/AssetArtifactKey.cs#L88) | Formats this value as a human-readable representation. |
+| [`static Inno.Assets.AssetArtifactKey Inno.Assets.AssetArtifactKey.empty`](../../src/content/assets/Inno.Assets/Artifacts/AssetArtifactKey.cs#L40) | Gets an empty artifact key. |
+| [`static bool Inno.Assets.AssetArtifactKey.operator !=(Inno.Assets.AssetArtifactKey left, Inno.Assets.AssetArtifactKey right)`](../../src/content/assets/Inno.Assets/Artifacts/AssetArtifactKey.cs#L119) | Determines whether two artifact keys differ. |
+| [`static bool Inno.Assets.AssetArtifactKey.operator ==(Inno.Assets.AssetArtifactKey left, Inno.Assets.AssetArtifactKey right)`](../../src/content/assets/Inno.Assets/Artifacts/AssetArtifactKey.cs#L102) | Determines whether two artifact keys are equal. |
+| [`string Inno.Assets.AssetArtifactKey.value`](../../src/content/assets/Inno.Assets/Artifacts/AssetArtifactKey.cs#L45) | Gets the normalized SHA-256 hexadecimal fingerprint, or an empty value for an unassigned key. |
 
-## Source 文件树
+### `Inno.Assets.AssetChange`
 
-`GetFileSystemEntries`、`GetFileSystemChildren` 和 `TryGetFileSystemEntry` 返回所有活动 mount 的统一 Source Policy 视图。条目的 `assetPath.source` 保持来源隔离；`.imeta`、artifact、IDE cache 和默认系统噪声不出现，Unsupported source 仍出现。
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Assets.AssetChange`](../../src/content/assets/Inno.Assets/Changes/AssetChange.cs#L8) | Describes one committed asset database change. |
+| [`Inno.Assets.AssetChange.AssetChange(Inno.Assets.AssetChangeKind kind, System.Guid persistentId, Inno.Assets.AssetPath assetPath, Inno.Assets.AssetPath? previousAssetPath = null)`](../../src/content/assets/Inno.Assets/Changes/AssetChange.cs#L25) | Creates an asset change descriptor. |
+| [`Inno.Assets.AssetChangeKind Inno.Assets.AssetChange.kind`](../../src/content/assets/Inno.Assets/Changes/AssetChange.cs#L40) | Gets the change kind. |
+| [`Inno.Assets.AssetPath Inno.Assets.AssetChange.assetPath`](../../src/content/assets/Inno.Assets/Changes/AssetChange.cs#L50) | Gets the current isolated source path. |
+| [`Inno.Assets.AssetPath? Inno.Assets.AssetChange.previousAssetPath`](../../src/content/assets/Inno.Assets/Changes/AssetChange.cs#L55) | Gets the previous isolated path for move operations. |
+| [`System.Guid Inno.Assets.AssetChange.persistentId`](../../src/content/assets/Inno.Assets/Changes/AssetChange.cs#L45) | Gets the persistent identity affected by the change. |
 
-`PrepareSourceMounts` 返回隔离的 `AssetSourceMountTransaction`。候选拥有自己的 Loader、FileSystem、Catalog 暂存文件与查询入口；在 `Activate` 前不会改变 `AssetPipeline.sourceMounts`、普通加载结果或正式 `Library/AssetDatabase/Catalog.snapshot`。内容寻址 Artifact 可以安全复用正式缓存，但 Catalog 只有 `Complete` 时才执行单次 atomic replace；`Rollback` 删除暂存 Catalog，进程异常遗留的候选目录会在下次初始化清理。`Activate` 只做安全点内的临时切换，不释放旧 generation，也不通知观察者；`Complete` 才发布 `SourceMountsChanged` 并退休旧 generation。`ReplaceSourceMounts` 是立即执行 Prepare → Activate → Complete 的便利入口。
+### `Inno.Assets.AssetChangeKind`
 
-Source entry 也是正式 Identity 对象。存在 `.imeta` 时使用 source persistent ID 派生 entry ID；mount root、
-目录或尚无 metadata 的节点使用隔离 `AssetPath` 派生的确定性 ID。候选 FileSystem 只初始化 persistent ID，
-在 `Activate` 前不注册 runtime ID；激活时先停用 last-good entry，再原子注册候选，失败或 `Rollback` 时反向
-恢复。因而同一 persistent identity 不会同时对应两个 live source entry，Editor DragDrop 也不会看到候选对象。
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Assets.AssetChangeKind`](../../src/content/assets/Inno.Assets/Changes/AssetChangeKind.cs#L6) | Identifies a committed asset database change. |
+| [`Inno.Assets.AssetChangeKind.Added`](../../src/content/assets/Inno.Assets/Changes/AssetChangeKind.cs#L11) | A source was added to the database. |
+| [`Inno.Assets.AssetChangeKind.Missing`](../../src/content/assets/Inno.Assets/Changes/AssetChangeKind.cs#L31) | A source became unavailable while retaining its identity. |
+| [`Inno.Assets.AssetChangeKind.Modified`](../../src/content/assets/Inno.Assets/Changes/AssetChangeKind.cs#L16) | An existing source or artifact changed. |
+| [`Inno.Assets.AssetChangeKind.Moved`](../../src/content/assets/Inno.Assets/Changes/AssetChangeKind.cs#L21) | A source moved while retaining its persistent identity. |
+| [`Inno.Assets.AssetChangeKind.Removed`](../../src/content/assets/Inno.Assets/Changes/AssetChangeKind.cs#L26) | A source and its persistent metadata were removed. |
+| [`Inno.Assets.AssetChangeKind.Replaced`](../../src/content/assets/Inno.Assets/Changes/AssetChangeKind.cs#L36) | A canonical runtime object was replaced by an incompatible imported type. |
+| [`Inno.Assets.AssetChangeKind.StatusChanged`](../../src/content/assets/Inno.Assets/Changes/AssetChangeKind.cs#L41) | An import status or diagnostic changed without replacing the source. |
 
-Plugin mount 必须只读，且只能来自完整 `.iplugin` 文件；Folder 和 `.zip` 安装不会创建 Mount。运行时和 Editor 无法绕过 source transaction 直接写入安装源或活动 snapshot。外部 package 变化只会触发 Plugin 候选事务。跨 mount 依赖必须由 mount 的 `dependencySourceIds` 明确授权。任何 Persistent ID 冲突或未声明依赖都会拒绝候选并保留旧 snapshot。该两阶段协议也允许 `.iplugin` 脚本从隔离候选 artifact 编译，而 File Browser、运行时资产与当前 Plugin Catalog 始终只观察 last-good generation。
+### `Inno.Assets.AssetChangeSet`
 
-FileBrowser List 使用 `AssetFileEntry.nameWithoutExtension` 显示名字，Grid 保持完整 `name`。所有实际命令始终使用完整 `assetPath`；公开 Manager/Loader/FileSystem 寻址 API 不再接受裸字符串路径。
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Assets.AssetChangeSet`](../../src/content/assets/Inno.Assets/Changes/AssetChangeSet.cs#L9) | Contains one atomically committed asset database revision. |
+| [`Inno.Assets.AssetChangeSet.AssetChangeSet(long revision, System.Collections.Generic.IReadOnlyList<Inno.Assets.AssetChange>? changes)`](../../src/content/assets/Inno.Assets/Changes/AssetChangeSet.cs#L20) | Creates a committed change set. |
+| [`System.Collections.Generic.IReadOnlyList<Inno.Assets.AssetChange> Inno.Assets.AssetChangeSet.changes`](../../src/content/assets/Inno.Assets/Changes/AssetChangeSet.cs#L36) | Gets the changes committed by this revision. |
+| [`bool Inno.Assets.AssetChangeSet.isEmpty`](../../src/content/assets/Inno.Assets/Changes/AssetChangeSet.cs#L41) | Gets whether the change set contains no changes. |
+| [`long Inno.Assets.AssetChangeSet.revision`](../../src/content/assets/Inno.Assets/Changes/AssetChangeSet.cs#L31) | Gets the monotonically increasing database revision. |
 
-## 外部 rename/delete/recovery
+### `Inno.Assets.AssetDatabase`
 
-### source-only rename
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Assets.ArtifactLease Inno.Assets.AssetDatabase.AcquireArtifact(System.Guid persistentId, string outputName)`](../../src/content/assets/Inno.Assets/Runtime/AssetDatabase.cs#L466) | Acquires one verified immutable artifact output for an explicit lifetime. |
+| [`Inno.Assets.AssetDatabase`](../../src/content/assets/Inno.Assets/Runtime/AssetDatabase.cs#L24) | Loads canonical runtime assets exclusively from a verified catalog and content-addressed artifact bundles. |
+| [`Inno.Assets.AssetDatabase.AssetDatabase(Inno.Content.IRuntimeContentStore content, Inno.Core.Serialization.SerializationGeneration serialization, Inno.Extensibility.Types.TypeCacheSnapshot types, Inno.Core.Identity.IdentityAllocator identities, long residencyBudgetBytes = 9223372036854775807, long preparationBudgetBytes = 67108864)`](../../src/content/assets/Inno.Assets/Runtime/AssetDatabase.cs#L108) | Creates a read-only runtime asset database from one verified immutable content store. |
+| [`Inno.Assets.AssetPreparationStatistics Inno.Assets.AssetDatabase.preparationStatistics`](../../src/content/assets/Inno.Assets/Runtime/AssetDatabase.Residency.cs#L33) | Gets immutable cold-load admission, unique IO and peak reservation counters for this database lifetime. |
+| [`Inno.Assets.AssetResidencyStatistics Inno.Assets.AssetDatabase.residencyStatistics`](../../src/content/assets/Inno.Assets/Runtime/AssetDatabase.cs#L299) | Gets current materialized asset count, payload bytes, and the configured budget. |
+| [`System.Collections.Generic.IReadOnlyList<Inno.Assets.AssetDependency> Inno.Assets.AssetDatabase.GetDependencies(Inno.Assets.AssetObject asset)`](../../src/content/assets/Inno.Assets/Runtime/AssetDatabase.cs#L394) | Gets the direct persistent dependencies declared by one loaded or cataloged asset. |
+| [`System.Threading.Tasks.ValueTask<Inno.Assets.AssetLease<TAsset>> Inno.Assets.AssetDatabase.AcquireAsync<TAsset>(Inno.Assets.AssetPath path, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))`](../../src/content/assets/Inno.Assets/Runtime/AssetDatabase.cs#L329) | Acquires a canonical runtime asset by path for an explicit residency lifetime. |
+| [`System.Threading.Tasks.ValueTask<Inno.Assets.AssetLease<TAsset>> Inno.Assets.AssetDatabase.AcquireAsync<TAsset>(System.Guid persistentId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))`](../../src/content/assets/Inno.Assets/Runtime/AssetDatabase.cs#L360) | Acquires a canonical runtime asset by persistent identity for an explicit residency lifetime. |
+| [`TAsset Inno.Assets.AssetDatabase.Load<TAsset>(Inno.Assets.AssetPath path)`](../../src/content/assets/Inno.Assets/Runtime/AssetDatabase.cs#L175) | Loads the canonical asset at one catalog path. |
+| [`TAsset Inno.Assets.AssetDatabase.Load<TAsset>(System.Guid persistentId)`](../../src/content/assets/Inno.Assets/Runtime/AssetDatabase.cs#L206) | Loads the canonical asset with one persistent identity. |
+| [`bool Inno.Assets.AssetDatabase.TryGetArtifact(System.Guid persistentId, string outputName, out Inno.Assets.AssetArtifactInfo? artifact)`](../../src/content/assets/Inno.Assets/Runtime/AssetDatabase.cs#L428) | Tries to resolve one named immutable artifact output by persistent asset identity. |
+| [`bool Inno.Assets.AssetDatabase.TryLoad<TAsset>(Inno.Assets.AssetPath path, out TAsset? asset)`](../../src/content/assets/Inno.Assets/Runtime/AssetDatabase.cs#L237) | Tries to load the canonical asset at one catalog path. |
+| [`bool Inno.Assets.AssetDatabase.TryLoad<TAsset>(System.Guid persistentId, out TAsset? asset)`](../../src/content/assets/Inno.Assets/Runtime/AssetDatabase.cs#L276) | Tries to load the canonical asset with one persistent identity. |
+| [`int Inno.Assets.AssetDatabase.CompletePendingLoads(int completionBudget = 8)`](../../src/content/assets/Inno.Assets/Runtime/AssetDatabase.Residency.cs#L70) | Publishes completed cold loads on the database owner thread without waiting for outstanding IO. |
+| [`int Inno.Assets.AssetDatabase.TrimToBudget()`](../../src/content/assets/Inno.Assets/Runtime/AssetDatabase.cs#L490) | Evicts least-recently-used unpinned assets until the configured payload budget is met. |
+| [`long Inno.Assets.AssetDatabase.preparingBytes`](../../src/content/assets/Inno.Assets/Runtime/AssetDatabase.Residency.cs#L46) | Gets encoded bytes reserved by cold-load closures, including completed IO awaiting owner publication. |
+| [`void Inno.Assets.AssetDatabase.Dispose()`](../../src/content/assets/Inno.Assets/Runtime/AssetDatabase.cs#L508) | Stops publication and releases canonical assets before dependency edges and the payload read gate. |
+| [`void Inno.Assets.AssetDatabase.RestoreProperties<TValue>(System.Guid stableTypeId, byte[] propertyData, TValue target)`](../../src/content/assets/Inno.Assets/Runtime/AssetDatabase.cs#L64) | Restores serialized properties to the existing asset object. |
 
-当操作系统只移动 source、没有移动 `.imeta`：
+### `Inno.Assets.AssetDependency`
 
-1. native rename old/new path 优先关联；
-2. Loader 检查目标 meta identity 冲突；
-3. `.imeta` 无 overwrite 地移动到新路径；
-4. Catalog path 与 loaded canonical `assetPath` 原位更新；
-5. CAS artifact 不移动，内容不变时 key 不变；
-6. 发布带 ID、oldPath、newPath 的 `Moved`。
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Assets.AssetDependency`](../../src/content/assets/Inno.Assets/AssetDependency.cs#L11) | Describes a persistent direct dependency on another asset. |
+| [`Inno.Assets.AssetDependency.AssetDependency(System.Guid persistentId, Inno.Extensibility.Types.TypeRef type, string lastKnownPath)`](../../src/content/assets/Inno.Assets/AssetDependency.cs#L28) | Creates an asset dependency descriptor. |
+| [`Inno.Extensibility.Types.TypeRef Inno.Assets.AssetDependency.type`](../../src/content/assets/Inno.Assets/AssetDependency.cs#L49) | Gets the reload-safe identity of the expected asset type. |
+| [`System.Guid Inno.Assets.AssetDependency.persistentId`](../../src/content/assets/Inno.Assets/AssetDependency.cs#L44) | Gets the persistent identity of the referenced asset. |
+| [`bool Inno.Assets.AssetDependency.Equals(Inno.Assets.AssetDependency other)`](../../src/content/assets/Inno.Assets/AssetDependency.cs#L66) | Determines whether this instance and the supplied value represent the same logical state. |
+| [`override bool Inno.Assets.AssetDependency.Equals(object? obj)`](../../src/content/assets/Inno.Assets/AssetDependency.cs#L77) | Determines whether this instance and the supplied value represent the same logical state. |
+| [`override int Inno.Assets.AssetDependency.GetHashCode()`](../../src/content/assets/Inno.Assets/AssetDependency.cs#L85) | Computes a hash code from the fields that participate in logical equality. |
+| [`static bool Inno.Assets.AssetDependency.operator !=(Inno.Assets.AssetDependency left, Inno.Assets.AssetDependency right)`](../../src/content/assets/Inno.Assets/AssetDependency.cs#L116) | Determines whether two descriptors refer to different persistent assets. |
+| [`static bool Inno.Assets.AssetDependency.operator ==(Inno.Assets.AssetDependency left, Inno.Assets.AssetDependency right)`](../../src/content/assets/Inno.Assets/AssetDependency.cs#L99) | Determines whether two descriptors refer to the same persistent asset. |
+| [`string Inno.Assets.AssetDependency.lastKnownPath`](../../src/content/assets/Inno.Assets/AssetDependency.cs#L55) | Gets the last known source-relative path. |
 
-平台若只报告 delete+create，Loader 会在提交删除前按缺失 record 和 fingerprint 做唯一匹配。存在歧义时不会猜测：新 source 获得新 ID，旧 ID 各自进入 tombstone，并在新记录上保留明确 diagnostic。
+### `Inno.Assets.AssetDependencyCollection`
 
-Watcher 增量刷新失败时会立即尝试 full rescan。第一次失败和 recovery 失败都是需要保留的 Log 事件；只有两条路径都失败、Source Database 仍处于不一致状态时才发布 `Asset Source Database` Diagnostic。后续任一成功 refresh/rescan 会自动清除该状态。
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Assets.AssetDependencyCollection`](../../src/content/assets/Inno.Assets/Serialization/AssetDependencyCollection.cs#L17) | Collects direct asset dependencies encountered by a serialization operation. |
+| [`Inno.Assets.AssetDependencyCollection.AssetDependencyCollection()`](../../src/content/assets/Inno.Assets/Serialization/AssetDependencyCollection.cs#L24) | Creates a dependency collector that preserves last-known source paths in serialized references. |
+| [`Inno.Assets.AssetDependencyCollection.AssetDependencyCollection(bool includeLastKnownPaths)`](../../src/content/assets/Inno.Assets/Serialization/AssetDependencyCollection.cs#L36) | Creates a dependency collector with an explicit location-hint policy. |
+| [`System.Collections.Generic.IReadOnlyList<Inno.Assets.AssetDependency> Inno.Assets.AssetDependencyCollection.dependencies`](../../src/content/assets/Inno.Assets/Serialization/AssetDependencyCollection.cs#L49) | Gets the collected dependencies in deterministic persistent-identity order. |
+| [`bool Inno.Assets.AssetDependencyCollection.includeLastKnownPaths`](../../src/content/assets/Inno.Assets/Serialization/AssetDependencyCollection.cs#L44) | Gets whether serialized asset references and collected dependencies retain source path hints. |
+| [`void Inno.Assets.AssetDependencyCollection.Add(Inno.Assets.AssetDependency dependency)`](../../src/content/assets/Inno.Assets/Serialization/AssetDependencyCollection.cs#L79) | Includes a dependency already captured inside a neutral nested property payload. |
 
-FileBrowser 的 New Folder、Rename 和 Delete 全部调用 AssetPipeline 的事务 API。`Move` 会暂停 watcher、提交单一 `Moved` change，然后恢复 watcher；目标 source 或 `.imeta` 已存在时明确失败，不进行覆盖。
+### `Inno.Assets.AssetExecutionContext`
 
-### delete/recovery
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Assets.AssetExecutionContext`](../../src/content/assets/Inno.Assets/Runtime/AssetExecutionContext.cs#L14) | Binds one host-owned asset lookup to the current asynchronous script execution context. |
+| [`static Inno.Assets.IAssetLookup Inno.Assets.AssetExecutionContext.current`](../../src/content/assets/Inno.Assets/Runtime/AssetExecutionContext.cs#L24) | Gets the asset lookup bound to the current asynchronous execution context. |
+| [`static System.IDisposable Inno.Assets.AssetExecutionContext.EnterScope(Inno.Assets.IAssetLookup assets)`](../../src/content/assets/Inno.Assets/Runtime/AssetExecutionContext.cs#L38) | Binds an asset lookup until the returned strict last-in-first-out scope is disposed. |
 
-- watcher quiet window 内出现 delete+create：折叠为 `Modified`，保留 ID，不产生短暂 Missing。
-- quiet window 后确认 source 已删除：自动删除孤立 `.imeta`，旧路径立即释放；Catalog 仅按 ID 保留最小 tombstone，current/last-successful artifact 引用立即清空。
-- 同路径稍后重新创建但没有原 `.imeta`：视为新资产并生成新 ID，不会误继承已删除资产的身份。
-- source 与原 `.imeta` 一起恢复：在 ID 无冲突时可以重新采用原 identity；若旧 canonical 仍存在则原位恢复。
-- source 和 `.imeta` 同时删除：与确认后的 source-only delete 结果一致。
-- duplicate source + meta：已知原路径保留 ID，新副本获得新 ID，避免两个路径争用同一身份。
+### `Inno.Assets.AssetImportStatus`
 
-## CAS 回收
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Assets.AssetImportStatus`](../../src/content/assets/Inno.Assets/AssetImportStatus.cs#L6) | Identifies the current source and import state of an asset. |
+| [`Inno.Assets.AssetImportStatus.Conflict`](../../src/content/assets/Inno.Assets/AssetImportStatus.cs#L36) | The source cannot be reconciled without resolving an identity conflict. |
+| [`Inno.Assets.AssetImportStatus.Failed`](../../src/content/assets/Inno.Assets/AssetImportStatus.cs#L26) | The latest import failed and diagnostics are available. |
+| [`Inno.Assets.AssetImportStatus.Imported`](../../src/content/assets/Inno.Assets/AssetImportStatus.cs#L21) | A valid artifact is committed for the source. |
+| [`Inno.Assets.AssetImportStatus.Missing`](../../src/content/assets/Inno.Assets/AssetImportStatus.cs#L31) | The source is unavailable while its persistent identity is retained. |
+| [`Inno.Assets.AssetImportStatus.Pending`](../../src/content/assets/Inno.Assets/AssetImportStatus.cs#L16) | The source is waiting for import or commit. |
+| [`Inno.Assets.AssetImportStatus.Unsupported`](../../src/content/assets/Inno.Assets/AssetImportStatus.cs#L11) | No importer currently accepts the source. |
 
-AssetPipeline 启动、`WaitForIdle` 和低频 idle update 会回收不可达 bundle。确认删除会立即解除 Catalog 中的 current/last-successful 引用；物理 bundle 仍由 reachability、共享引用、size limit 和 grace period 决定何时删除。超出 size limit 时优先删除最旧不可达 bundle；正常情况下尊重 grace period。
+### `Inno.Assets.AssetInfo`
 
-CAS 目录只占磁盘，不会因存在就常驻运行内存。Artifact key 与 Assembly runtime generation 都不会写入 Scene/Prefab schema。
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Assets.AssetArtifactKey Inno.Assets.AssetInfo.artifactKey`](../../src/content/assets/Inno.Assets/AssetInfo.cs#L101) | Gets the current committed artifact key. |
+| [`Inno.Assets.AssetArtifactKey Inno.Assets.AssetInfo.lastSuccessfulArtifactKey`](../../src/content/assets/Inno.Assets/AssetInfo.cs#L106) | Gets the most recent successfully imported artifact key. |
+| [`Inno.Assets.AssetImportStatus Inno.Assets.AssetInfo.status`](../../src/content/assets/Inno.Assets/AssetInfo.cs#L86) | Gets the current import status. |
+| [`Inno.Assets.AssetInfo`](../../src/content/assets/Inno.Assets/AssetInfo.cs#L9) | Provides an immutable public snapshot of one cataloged asset. |
+| [`Inno.Assets.AssetInfo.AssetInfo(System.Guid persistentId, Inno.Assets.AssetPath assetPath, Inno.Assets.AssetSourceKind sourceKind, Inno.Assets.AssetImportStatus status, string importerId, System.Guid stableAssetTypeId, Inno.Assets.AssetArtifactKey artifactKey, Inno.Assets.AssetArtifactKey lastSuccessfulArtifactKey, System.Collections.Generic.IReadOnlyList<string>? diagnostics = null)`](../../src/content/assets/Inno.Assets/AssetInfo.cs#L44) | Creates an asset information snapshot. |
+| [`Inno.Assets.AssetPath Inno.Assets.AssetInfo.assetPath`](../../src/content/assets/Inno.Assets/AssetInfo.cs#L76) | Gets the current isolated source path. |
+| [`Inno.Assets.AssetSourceKind Inno.Assets.AssetInfo.sourceKind`](../../src/content/assets/Inno.Assets/AssetInfo.cs#L81) | Gets whether the catalog entry represents a file or directory source. |
+| [`System.Collections.Generic.IReadOnlyList<string> Inno.Assets.AssetInfo.diagnostics`](../../src/content/assets/Inno.Assets/AssetInfo.cs#L111) | Gets diagnostics produced by the latest reconciliation or import. |
+| [`System.Guid Inno.Assets.AssetInfo.persistentId`](../../src/content/assets/Inno.Assets/AssetInfo.cs#L71) | Gets the persistent asset identity. |
+| [`System.Guid Inno.Assets.AssetInfo.stableAssetTypeId`](../../src/content/assets/Inno.Assets/AssetInfo.cs#L96) | Gets the stable imported asset type identity. |
+| [`string Inno.Assets.AssetInfo.importerId`](../../src/content/assets/Inno.Assets/AssetInfo.cs#L91) | Gets the selected importer identifier. |
 
-## Runtime Artifact 模式
+### `Inno.Assets.AssetLease<TAsset>`
 
-Game Build 在 Authoring `AssetPipeline` 上导出冻结的 runtime closure。目标目录必须为空。只有 Importer 明确声明 `AssetDeploymentScope.Runtime` 的记录进入部署 Catalog；这些记录必须同时拥有完整 `asset-state` 与 `runtime` output，且 runtime dependency 闭包中不能出现 `AuthoringOnly` Asset，否则整个导出失败。`.cs`、`.iasmdef` 等编译输入保留在 Authoring Catalog，编译结果由 Runtime DLL 部署，不复制源文件。结果只包含部署 Catalog 所引用的 bundle。
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Assets.AssetLease<TAsset>`](../../src/content/assets/Inno.Assets/Runtime/AssetResidency.cs#L132) | Keeps one canonical asset generation resident for an explicit lifetime. |
+| [`TAsset Inno.Assets.AssetLease<TAsset>.asset`](../../src/content/assets/Inno.Assets/Runtime/AssetResidency.cs#L150) | Gets the retained canonical asset while this lease is active. |
+| [`void Inno.Assets.AssetLease<TAsset>.Dispose()`](../../src/content/assets/Inno.Assets/Runtime/AssetResidency.cs#L165) | Releases this caller's residency ownership, retaining its value and callback while the provider reports Pending. |
 
-部署宿主通过 `RuntimeSession` 创建只读 `AssetDatabase`：
+### `Inno.Assets.AssetObject`
 
-```csharp
-using RuntimeSession player = host.CreateSession(new RuntimeSessionOptions
-{
-    kind = RuntimeSessionKind.Player,
-    applicationId = applicationId,
-    runtimeContentDirectory = materializedContentRoot,
-    persistentDataDirectory = persistentRoot
-});
-```
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Assets.AssetObject`](../../src/content/assets/Inno.Assets/AssetObject.cs#L13) | Provides the common runtime identity and payload contract for imported assets. |
+| [`Inno.Assets.AssetPath Inno.Assets.AssetObject.assetPath`](../../src/content/assets/Inno.Assets/AssetObject.cs#L26) | Gets the isolated source path associated with this asset. |
+| [`System.ReadOnlyMemory<byte> Inno.Assets.AssetObject.runtimePayload`](../../src/content/assets/Inno.Assets/AssetObject.cs#L49) | Gets the runtime artifact payload produced by the importer. |
+| [`bool Inno.Assets.AssetObject.isMissing`](../../src/content/assets/Inno.Assets/AssetObject.cs#L39) | Gets whether this instance represents an unavailable persistent asset. |
+| [`long Inno.Assets.AssetObject.contentVersion`](../../src/content/assets/Inno.Assets/AssetObject.cs#L44) | Gets the version of the currently committed runtime content. |
+| [`string Inno.Assets.AssetObject.name`](../../src/content/assets/Inno.Assets/AssetObject.cs#L32) | Gets a display name derived from the source-local path. |
+| [`virtual void Inno.Assets.AssetObject.OnRuntimePayloadChanged(System.ReadOnlyMemory<byte> previousPayload, System.ReadOnlyMemory<byte> currentPayload)`](../../src/content/assets/Inno.Assets/AssetObject.cs#L89) | Called after a new runtime payload has been committed to this instance. |
+| [`virtual void Inno.Assets.AssetObject.OnUnloading()`](../../src/content/assets/Inno.Assets/AssetObject.cs#L105) | Releases the runtime resources owned by this asset without clearing its payload before quiescence. |
+| [`void Inno.Assets.AssetObject.RestoreProperties<TValue>(System.Guid stableTypeId, byte[] propertyData, TValue target)`](../../src/content/assets/Inno.Assets/AssetObject.cs#L69) | Restores detached extension settings using this asset's actual owner and converter generation. |
 
-`AssetDatabase` 启动时直接加载并严格验证部署 Catalog/CAS，不扫描 source、不引用 Assets Pipeline、不运行 Importer、不生成 `.imeta`、不回收部署 bundle，也不启动 watcher。Player 因而不具备任何 authoring mutation API，不会在用户机器上悄悄重建内容。
+### `Inno.Assets.AssetPath`
 
-`AssetReferenceProtocol` 定义 Assets 在共享 Reference Catalog 中的稳定 kind；`IAssetReferenceResolver` 是该
-协议的领域 resolver。所有 Asset-aware 序列化必须由 owner 使用 `AssetSerializationContext.Create(...)`
-组合完整 context，不能由 converter、Scene 或 Editor feature 私自创建不完整 resolver scope。
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Assets.AssetPath`](../../src/content/assets/Inno.Assets/AssetPath.cs#L61) | Addresses one asset without conflating isolated source mounts. |
+| [`Inno.Assets.AssetPath.AssetPath(Inno.Assets.AssetSourceId source, string localPath)`](../../src/content/assets/Inno.Assets/AssetPath.cs#L74) | Creates an asset path. |
+| [`Inno.Assets.AssetSourceId Inno.Assets.AssetPath.source`](../../src/content/assets/Inno.Assets/AssetPath.cs#L87) | Gets or sets the owning source mount. |
+| [`bool Inno.Assets.AssetPath.isValid`](../../src/content/assets/Inno.Assets/AssetPath.cs#L97) | Gets whether the source and local path are valid. |
+| [`override string Inno.Assets.AssetPath.ToString()`](../../src/content/assets/Inno.Assets/AssetPath.cs#L134) | Formats this value as a human-readable representation. |
+| [`static Inno.Assets.AssetPath Inno.Assets.AssetPath.Parse(string value)`](../../src/content/assets/Inno.Assets/AssetPath.cs#L119) | Parses a canonical path, treating an unqualified value as project-owned. |
+| [`static Inno.Assets.AssetPath Inno.Assets.AssetPath.Project(string localPath)`](../../src/content/assets/Inno.Assets/AssetPath.cs#L108) | Creates a path in the writable project source. |
+| [`string Inno.Assets.AssetPath.localPath`](../../src/content/assets/Inno.Assets/AssetPath.cs#L92) | Gets or sets the source-local path. |
 
-Runtime Database 将旧的 `Load/TryLoad` 视为 Session 级 pin；显式 `AcquireAsync` 使用引用计数 lease。超过 `RuntimeSessionOptions.assetResidencyBudgetBytes` 时，只在安全访问点按 LRU 释放无 pin、无 lease、且未被其他已加载资产依赖的 payload。`AssetResidencyStatistics` 区分预算、resident bytes、materialized count 与 leased count；Artifact 文件属于冻结部署内容，不因对象 lease 释放而被删除。
+### `Inno.Assets.AssetPreparationStatistics`
 
-最后一个租约释放触发预算回收时，`OnUnloading` 的 Pending 会保留该租约、canonical Identity 与 payload。
-重试继续预算回收，但每个租约的计数只递减一次；不能提前归零后丢掉释放路径，也不能误减其他租约。
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Assets.AssetPreparationStatistics`](../../src/content/assets/Inno.Assets/Runtime/AssetPreparationStatistics.cs#L6) | Reports owner-thread cold-load admission and unique encoded IO reservations without retaining assets or tasks. |
+| [`int Inno.Assets.AssetPreparationStatistics.peakPendingRequests`](../../src/content/assets/Inno.Assets/Runtime/AssetPreparationStatistics.cs#L36) | Gets the largest simultaneous admitted request count during this database lifetime. |
+| [`int Inno.Assets.AssetPreparationStatistics.pendingPayloads`](../../src/content/assets/Inno.Assets/Runtime/AssetPreparationStatistics.cs#L46) | Gets unique payload reservations still retained by one or more cold-load roots. |
+| [`int Inno.Assets.AssetPreparationStatistics.pendingRequests`](../../src/content/assets/Inno.Assets/Runtime/AssetPreparationStatistics.cs#L31) | Gets requests still awaiting owner-thread completion, including canceled callers not yet drained. |
+| [`long Inno.Assets.AssetPreparationStatistics.payloadReadsStarted`](../../src/content/assets/Inno.Assets/Runtime/AssetPreparationStatistics.cs#L51) | Gets the cumulative number of unique physical payload reads started. |
+| [`long Inno.Assets.AssetPreparationStatistics.peakReservedBytes`](../../src/content/assets/Inno.Assets/Runtime/AssetPreparationStatistics.cs#L66) | Gets the largest simultaneous unique encoded-byte reservation. |
+| [`long Inno.Assets.AssetPreparationStatistics.rejectedRequests`](../../src/content/assets/Inno.Assets/Runtime/AssetPreparationStatistics.cs#L41) | Gets requests rejected by the pending-count or encoded-byte budget. |
+| [`long Inno.Assets.AssetPreparationStatistics.reservedBytes`](../../src/content/assets/Inno.Assets/Runtime/AssetPreparationStatistics.cs#L61) | Gets unique encoded bytes retained until all requesting roots complete, fail or cancel. |
+| [`long Inno.Assets.AssetPreparationStatistics.sharedPayloadReads`](../../src/content/assets/Inno.Assets/Runtime/AssetPreparationStatistics.cs#L56) | Gets payload reads reused by distinct roots with overlapping dependency closures. |
 
-## 关闭顺序
+### `Inno.Assets.AssetPropertySnapshot`
 
-Editor 先 Dispose 自己拥有的 `AssetPipeline`，再 Dispose Edit/Play Session，最后 Dispose `EngineHost`。Player 先释放 `RuntimeSession`，再释放 `EngineHost`。所有权由实例构造关系表达，不存在静态 Shutdown 顺序。
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Assets.AssetPropertySnapshot`](../../src/content/assets/Inno.Assets/Serialization/AssetPropertySnapshot.cs#L10) | Contains native properties and automatically captured asset dependencies without retaining their owner or typed object. |
+| [`Inno.Assets.AssetPropertySnapshot.AssetPropertySnapshot(System.Guid stableTypeId, System.ReadOnlySpan<byte> data, System.Collections.Generic.IEnumerable<Inno.Assets.AssetDependency> dependencies)`](../../src/content/assets/Inno.Assets/Serialization/AssetPropertySnapshot.cs#L25) | Freezes a complete owner-produced property value. |
+| [`System.Collections.Generic.IReadOnlyList<Inno.Assets.AssetDependency> Inno.Assets.AssetPropertySnapshot.dependencies`](../../src/content/assets/Inno.Assets/Serialization/AssetPropertySnapshot.cs#L48) | Gets the frozen direct dependency declarations. |
+| [`System.Guid Inno.Assets.AssetPropertySnapshot.stableTypeId`](../../src/content/assets/Inno.Assets/Serialization/AssetPropertySnapshot.cs#L40) | Gets the persistent settings type identity. |
+| [`System.ReadOnlyMemory<byte> Inno.Assets.AssetPropertySnapshot.data`](../../src/content/assets/Inno.Assets/Serialization/AssetPropertySnapshot.cs#L44) | Gets the frozen native property bytes. |
+
+### `Inno.Assets.AssetReferenceInfo`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Assets.AssetPath Inno.Assets.AssetReferenceInfo.assetPath`](../../src/content/assets/Inno.Assets/AssetReferenceInfo.cs#L62) | Gets the current mount-qualified asset path. |
+| [`Inno.Assets.AssetReferenceInfo`](../../src/content/assets/Inno.Assets/AssetReferenceInfo.cs#L14) | Provides a stable diagnostic snapshot of references known to the asset pipeline. |
+| [`Inno.Assets.AssetReferenceInfo.AssetReferenceInfo(System.Guid persistentId, Inno.Assets.AssetPath assetPath, long contentVersion, bool isLoaded, bool? lastSweepReachability, System.Collections.Generic.IReadOnlyList<Inno.Assets.AssetReferenceLocation> references)`](../../src/content/assets/Inno.Assets/AssetReferenceInfo.cs#L37) | Freezes one diagnostic view of the engine-known references to an asset. |
+| [`System.Collections.Generic.IReadOnlyList<Inno.Assets.AssetReferenceLocation> Inno.Assets.AssetReferenceInfo.references`](../../src/content/assets/Inno.Assets/AssetReferenceInfo.cs#L88) | Gets the engine-known reference locations. |
+| [`System.Guid Inno.Assets.AssetReferenceInfo.persistentId`](../../src/content/assets/Inno.Assets/AssetReferenceInfo.cs#L57) | Gets the persistent asset identity. |
+| [`bool Inno.Assets.AssetReferenceInfo.isLoaded`](../../src/content/assets/Inno.Assets/AssetReferenceInfo.cs#L72) | Gets whether the asset is currently held by the loader cache. |
+| [`bool? Inno.Assets.AssetReferenceInfo.lastSweepReachability`](../../src/content/assets/Inno.Assets/AssetReferenceInfo.cs#L78) | Gets whether an external managed reference was found by the previous unused-asset sweep, or when no sweep has inspected this asset. |
+| [`int Inno.Assets.AssetReferenceInfo.knownReferenceCount`](../../src/content/assets/Inno.Assets/AssetReferenceInfo.cs#L83) | Gets the number of engine-known reference locations. |
+| [`long Inno.Assets.AssetReferenceInfo.contentVersion`](../../src/content/assets/Inno.Assets/AssetReferenceInfo.cs#L67) | Gets the current runtime content version. |
+
+### `Inno.Assets.AssetReferenceKind`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Assets.AssetReferenceKind`](../../src/content/assets/Inno.Assets/AssetReferenceKind.cs#L7) | Identifies a reference source known to the asset pipeline. |
+| [`Inno.Assets.AssetReferenceKind.AssetDependency`](../../src/content/assets/Inno.Assets/AssetReferenceKind.cs#L12) | The reference originates from another asset's runtime dependencies. |
+| [`Inno.Assets.AssetReferenceKind.Editor`](../../src/content/assets/Inno.Assets/AssetReferenceKind.cs#L28) | The reference originates from an editor-only view or selection. |
+| [`Inno.Assets.AssetReferenceKind.PrefabSource`](../../src/content/assets/Inno.Assets/AssetReferenceKind.cs#L24) | The reference originates from a prefab source. |
+| [`Inno.Assets.AssetReferenceKind.RuntimeSubsystem`](../../src/content/assets/Inno.Assets/AssetReferenceKind.cs#L32) | The reference originates from a runtime subsystem. |
+| [`Inno.Assets.AssetReferenceKind.SceneResource`](../../src/content/assets/Inno.Assets/AssetReferenceKind.cs#L20) | The reference originates from a scene resource. |
+| [`Inno.Assets.AssetReferenceKind.SerializedProperty`](../../src/content/assets/Inno.Assets/AssetReferenceKind.cs#L16) | The reference originates from a serialized property. |
+
+### `Inno.Assets.AssetReferenceLocation`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Assets.AssetReferenceKind Inno.Assets.AssetReferenceLocation.kind`](../../src/content/assets/Inno.Assets/AssetReferenceLocation.cs#L40) | Gets the category of the known reference. |
+| [`Inno.Assets.AssetReferenceLocation`](../../src/content/assets/Inno.Assets/AssetReferenceLocation.cs#L8) | Describes one engine-known reference location for an asset. |
+| [`Inno.Assets.AssetReferenceLocation.AssetReferenceLocation(Inno.Assets.AssetReferenceKind kind, System.Guid ownerId, string ownerName, string propertyPath)`](../../src/content/assets/Inno.Assets/AssetReferenceLocation.cs#L25) | Describes a neutral, persistent location without retaining its live owner. |
+| [`System.Guid Inno.Assets.AssetReferenceLocation.ownerId`](../../src/content/assets/Inno.Assets/AssetReferenceLocation.cs#L45) | Gets the persistent identity of the known owner, when available. |
+| [`string Inno.Assets.AssetReferenceLocation.ownerName`](../../src/content/assets/Inno.Assets/AssetReferenceLocation.cs#L50) | Gets the display name of the known owner. |
+| [`string Inno.Assets.AssetReferenceLocation.propertyPath`](../../src/content/assets/Inno.Assets/AssetReferenceLocation.cs#L55) | Gets the serialized or subsystem-relative property path. |
+
+### `Inno.Assets.AssetReferenceProtocol`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Assets.AssetReferenceProtocol`](../../src/content/assets/Inno.Assets/Serialization/AssetReferenceProtocol.cs#L8) | Defines the open cross-domain protocol used to resolve persistent asset identities. |
+| [`static Inno.References.ReferenceKindId Inno.Assets.AssetReferenceProtocol.id`](../../src/content/assets/Inno.Assets/Serialization/AssetReferenceProtocol.cs#L13) | Gets the stable asset reference kind registered in shared reference catalogs. |
+
+### `Inno.Assets.AssetResidencyProvider`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Assets.AssetResidencyProvider`](../../src/content/assets/Inno.Assets/Runtime/AssetResidency.cs#L80) | Provides controlled lease construction to concrete asset residency implementations. |
+| [`static Inno.Assets.ArtifactLease Inno.Assets.AssetResidencyProvider.CreateArtifactLease(Inno.Assets.AssetArtifactInfo artifact, System.Func<System.IO.Stream> openRead, System.Action release)`](../../src/content/assets/Inno.Assets/Runtime/AssetResidency.cs#L119) | Creates one immutable artifact residency lease. |
+| [`static Inno.Assets.AssetLease<TAsset> Inno.Assets.AssetResidencyProvider.CreateAssetLease<TAsset>(TAsset asset, System.Action release)`](../../src/content/assets/Inno.Assets/Runtime/AssetResidency.cs#L97) | Creates one strongly typed asset residency lease. |
+
+### `Inno.Assets.AssetResidencyStatistics`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Assets.AssetResidencyStatistics`](../../src/content/assets/Inno.Assets/Runtime/AssetResidency.cs#L293) | Reports current explicit runtime asset residency accounting. |
+| [`Inno.Assets.AssetResidencyStatistics.AssetResidencyStatistics(int residentAssetCount, long residentBytes, long budgetBytes)`](../../src/content/assets/Inno.Assets/Runtime/AssetResidency.cs#L307) | Creates one immutable residency snapshot. |
+| [`int Inno.Assets.AssetResidencyStatistics.residentAssetCount`](../../src/content/assets/Inno.Assets/Runtime/AssetResidency.cs#L320) | Gets the number of materialized canonical assets. |
+| [`long Inno.Assets.AssetResidencyStatistics.budgetBytes`](../../src/content/assets/Inno.Assets/Runtime/AssetResidency.cs#L330) | Gets the configured runtime payload budget. |
+| [`long Inno.Assets.AssetResidencyStatistics.residentBytes`](../../src/content/assets/Inno.Assets/Runtime/AssetResidency.cs#L325) | Gets retained runtime payload bytes. |
+
+### `Inno.Assets.AssetRuntimeContentInfo`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Assets.AssetRuntimeContentInfo`](../../src/content/assets/Inno.Assets/Artifacts/AssetRuntimeContentInfo.cs#L8) | Describes one deployed runtime-only asset content snapshot. |
+| [`Inno.Assets.AssetRuntimeContentInfo.AssetRuntimeContentInfo(System.Collections.Generic.IReadOnlyList<Inno.Assets.AssetSourceId> sources, int assetCount, int artifactBundleCount, long totalBytes)`](../../src/content/assets/Inno.Assets/Artifacts/AssetRuntimeContentInfo.cs#L25) | Creates an immutable runtime content summary. |
+| [`System.Collections.Generic.IReadOnlyList<Inno.Assets.AssetSourceId> Inno.Assets.AssetRuntimeContentInfo.sources`](../../src/content/assets/Inno.Assets/Artifacts/AssetRuntimeContentInfo.cs#L40) | Gets the source identities represented by the deployed catalog. |
+| [`int Inno.Assets.AssetRuntimeContentInfo.artifactBundleCount`](../../src/content/assets/Inno.Assets/Artifacts/AssetRuntimeContentInfo.cs#L50) | Gets the number of unique content-addressed bundles. |
+| [`int Inno.Assets.AssetRuntimeContentInfo.assetCount`](../../src/content/assets/Inno.Assets/Artifacts/AssetRuntimeContentInfo.cs#L45) | Gets the number of runtime-scoped assets in the deployed catalog. |
+| [`long Inno.Assets.AssetRuntimeContentInfo.totalBytes`](../../src/content/assets/Inno.Assets/Artifacts/AssetRuntimeContentInfo.cs#L55) | Gets the total bytes copied into the runtime content root. |
+
+### `Inno.Assets.AssetRuntimeOwner`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Assets.AssetRuntimeOwner`](../../src/content/assets/Inno.Assets/Runtime/AssetRuntimeOwner.cs#L13) | Grants one database exclusive mutation authority over the asset instances it initializes. |
+| [`Inno.Assets.AssetRuntimeOwner.AssetRuntimeOwner(Inno.Assets.IAssetPropertyStateResolver? properties = null)`](../../src/content/assets/Inno.Assets/Runtime/AssetRuntimeOwner.cs#L24) | Creates exclusive mutation authority with optional owner-bound extension state restoration. |
+| [`string Inno.Assets.AssetRuntimeOwner.GetSourceHash(Inno.Assets.AssetObject asset)`](../../src/content/assets/Inno.Assets/Runtime/AssetRuntimeOwner.cs#L38) | Reads the source fingerprint of an asset claimed by this owner. |
+| [`void Inno.Assets.AssetRuntimeOwner.Initialize(Inno.Assets.AssetObject asset, Inno.Assets.AssetPath assetPath, string sourceHash, System.ReadOnlyMemory<byte> payload, bool isMissing, long version)`](../../src/content/assets/Inno.Assets/Runtime/AssetRuntimeOwner.cs#L68) | Claims an unowned asset or commits new runtime state to an already owned instance. |
+| [`void Inno.Assets.AssetRuntimeOwner.Release(Inno.Assets.AssetObject asset)`](../../src/content/assets/Inno.Assets/Runtime/AssetRuntimeOwner.cs#L112) | Releases an owned instance after quiescence, without relinquishing its mutation authority. |
+| [`void Inno.Assets.AssetRuntimeOwner.UpdateAssetPath(Inno.Assets.AssetObject asset, Inno.Assets.AssetPath assetPath)`](../../src/content/assets/Inno.Assets/Runtime/AssetRuntimeOwner.cs#L92) | Updates source location without replacing committed runtime content. |
+
+### `Inno.Assets.AssetSerializationContext`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Assets.AssetSerializationContext`](../../src/content/assets/Inno.Assets/Serialization/AssetSerializationContext.cs#L10) | Creates complete asset-aware converter contexts from an owner-provided reference generation. |
+| [`static Inno.Core.Serialization.SerializationContext Inno.Assets.AssetSerializationContext.Create(Inno.Assets.IAssetReferenceResolver references, Inno.Assets.AssetDependencyCollection? dependencies = null)`](../../src/content/assets/Inno.Assets/Serialization/AssetSerializationContext.cs#L27) | Creates a context containing the required asset resolver and an optional dependency collector. |
+
+### `Inno.Assets.AssetSourceId`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Assets.AssetSourceId`](../../src/content/assets/Inno.Assets/AssetPath.cs#L10) | Identifies one isolated asset source mount. |
+| [`Inno.Assets.AssetSourceId.AssetSourceId(string value)`](../../src/content/assets/Inno.Assets/AssetPath.cs#L23) | Creates a globally stable source identifier. |
+| [`bool Inno.Assets.AssetSourceId.isValid`](../../src/content/assets/Inno.Assets/AssetPath.cs#L47) | Gets whether the source identity has a usable value. |
+| [`override string Inno.Assets.AssetSourceId.ToString()`](../../src/content/assets/Inno.Assets/AssetPath.cs#L55) | Formats this value as a human-readable representation. |
+| [`static Inno.Assets.AssetSourceId Inno.Assets.AssetSourceId.project`](../../src/content/assets/Inno.Assets/AssetPath.cs#L15) | Gets the writable project source identifier. |
+| [`string Inno.Assets.AssetSourceId.value`](../../src/content/assets/Inno.Assets/AssetPath.cs#L42) | Gets or sets the globally stable source value. |
+
+### `Inno.Assets.AssetSourceKind`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Assets.AssetSourceKind`](../../src/content/assets/Inno.Assets/AssetSourceKind.cs#L6) | Identifies the durable source role recorded by an asset metadata sidecar. |
+| [`Inno.Assets.AssetSourceKind.Directory`](../../src/content/assets/Inno.Assets/AssetSourceKind.cs#L16) | A source directory with persistent identity but no runtime artifact. |
+| [`Inno.Assets.AssetSourceKind.File`](../../src/content/assets/Inno.Assets/AssetSourceKind.cs#L11) | A regular imported source file. |
+
+### `Inno.Assets.Assets`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Assets.Assets`](../../src/content/assets/Inno.Assets/Runtime/Assets.cs#L15) | Provides script-facing asset queries through the lookup bound to the current runtime session. |
+| [`static Inno.Assets.ArtifactLease Inno.Assets.Assets.AcquireArtifact(System.Guid persistentId, string outputName)`](../../src/content/assets/Inno.Assets/Runtime/Assets.cs#L201) | Acquires one verified immutable artifact output for an explicit lifetime. |
+| [`static Inno.Assets.AssetPath Inno.Assets.Assets.LocalPath(string localPath, string sourceFile = "")`](../../src/content/assets/Inno.Assets/Runtime/Assets.cs#L35) | Creates a path relative to the Asset source that owns the calling script. |
+| [`static System.Threading.Tasks.ValueTask<Inno.Assets.AssetLease<TAsset>> Inno.Assets.Assets.AcquireAsync<TAsset>(Inno.Assets.AssetPath path, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))`](../../src/content/assets/Inno.Assets/Runtime/Assets.cs#L160) | Acquires a canonical asset and explicitly retains it until the returned lease is disposed. |
+| [`static System.Threading.Tasks.ValueTask<Inno.Assets.AssetLease<TAsset>> Inno.Assets.Assets.AcquireAsync<TAsset>(System.Guid persistentId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))`](../../src/content/assets/Inno.Assets/Runtime/Assets.cs#L182) | Acquires a canonical asset by persistent identity and explicitly retains it. |
+| [`static TAsset Inno.Assets.Assets.Load<TAsset>(Inno.Assets.AssetPath path)`](../../src/content/assets/Inno.Assets/Runtime/Assets.cs#L70) | Loads the canonical asset at a logical catalog path in the current session. |
+| [`static TAsset Inno.Assets.Assets.Load<TAsset>(System.Guid persistentId)`](../../src/content/assets/Inno.Assets/Runtime/Assets.cs#L89) | Loads the canonical asset with a persistent identity in the current session. |
+| [`static bool Inno.Assets.Assets.TryLoad<TAsset>(Inno.Assets.AssetPath path, out TAsset? asset)`](../../src/content/assets/Inno.Assets/Runtime/Assets.cs#L112) | Tries to load the canonical asset at a logical catalog path in the current session. |
+| [`static bool Inno.Assets.Assets.TryLoad<TAsset>(System.Guid persistentId, out TAsset? asset)`](../../src/content/assets/Inno.Assets/Runtime/Assets.cs#L138) | Tries to load the canonical asset with a persistent identity in the current session. |
+
+### `Inno.Assets.BinaryAsset`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Assets.BinaryAsset`](../../src/content/assets/Inno.Assets/Types/BinaryAsset.cs#L10) | Describes an imported opaque binary payload. |
+| [`Inno.Assets.BinaryAsset.BinaryAsset()`](../../src/content/assets/Inno.Assets/Types/BinaryAsset.cs#L22) | Creates an empty binary asset descriptor. |
+| [`Inno.Assets.BinaryAsset.BinaryAsset(int byteLength)`](../../src/content/assets/Inno.Assets/Types/BinaryAsset.cs#L32) | Creates a binary asset descriptor with a byte length. |
+| [`int Inno.Assets.BinaryAsset.byteLength`](../../src/content/assets/Inno.Assets/Types/BinaryAsset.cs#L16) | Gets the imported payload length in bytes. |
+
+### `Inno.Assets.IAssetArtifactLookup`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Assets.ArtifactLease Inno.Assets.IAssetArtifactLookup.AcquireArtifact(System.Guid persistentId, string outputName)`](../../src/content/assets/Inno.Assets/Artifacts/IAssetArtifactLookup.cs#L25) | Retains one verified output so cache collection cannot remove an active generation. |
+| [`Inno.Assets.IAssetArtifactLookup`](../../src/content/assets/Inno.Assets/Artifacts/IAssetArtifactLookup.cs#L8) | Resolves verified named outputs from immutable asset artifact bundles. |
+| [`bool Inno.Assets.IAssetArtifactLookup.TryGetArtifact(System.Guid persistentId, string outputName, out Inno.Assets.AssetArtifactInfo? artifact)`](../../src/content/assets/Inno.Assets/Artifacts/IAssetArtifactLookup.cs#L45) | Tries to resolve one named immutable artifact output by persistent asset identity. |
+
+### `Inno.Assets.IAssetLookup`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Assets.IAssetLookup`](../../src/content/assets/Inno.Assets/Runtime/IAssetLookup.cs#L8) | Defines the read-only asset lookup boundary shared by authoring and deployed runtime databases. |
+| [`TAsset Inno.Assets.IAssetLookup.Load<TAsset>(Inno.Assets.AssetPath path)`](../../src/content/assets/Inno.Assets/Runtime/IAssetLookup.cs#L25) | Loads the canonical asset at a logical catalog path. |
+| [`TAsset Inno.Assets.IAssetLookup.Load<TAsset>(System.Guid persistentId)`](../../src/content/assets/Inno.Assets/Runtime/IAssetLookup.cs#L43) | Loads the canonical asset with a persistent identity. |
+| [`bool Inno.Assets.IAssetLookup.TryLoad<TAsset>(Inno.Assets.AssetPath path, out TAsset? asset)`](../../src/content/assets/Inno.Assets/Runtime/IAssetLookup.cs#L62) | Tries to load the canonical asset at a logical catalog path. |
+| [`bool Inno.Assets.IAssetLookup.TryLoad<TAsset>(System.Guid persistentId, out TAsset? asset)`](../../src/content/assets/Inno.Assets/Runtime/IAssetLookup.cs#L84) | Tries to load the canonical asset with a persistent identity. |
+
+### `Inno.Assets.IAssetPropertyStateResolver`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Assets.IAssetPropertyStateResolver`](../../src/content/assets/Inno.Assets/Serialization/IAssetPropertyStateResolver.cs#L9) | Restores nested neutral asset properties with the owning database's converter generation and references. |
+| [`void Inno.Assets.IAssetPropertyStateResolver.RestoreProperties<TValue>(System.Guid stableTypeId, byte[] propertyData, TValue target)`](../../src/content/assets/Inno.Assets/Serialization/IAssetPropertyStateResolver.cs#L26) | Restores a stable typed property payload into a caller-owned current-generation value. |
+
+### `Inno.Assets.IAssetReferenceResolver`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Assets.AssetObject Inno.Assets.IAssetReferenceResolver.Resolve(System.Guid persistentId, System.Guid stableTypeId, string lastKnownPath, System.Type expectedType, string propertyPath)`](../../src/content/assets/Inno.Assets/Serialization/IAssetReferenceResolver.cs#L113) | Resolves one serialized asset reference to the canonical object owned by this resolver. |
+| [`Inno.Assets.IAssetReferenceResolver`](../../src/content/assets/Inno.Assets/Serialization/IAssetReferenceResolver.cs#L13) | Resolves persistent asset references against one isolated asset database generation. |
+
+### `Inno.Assets.IAssetResidency`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Assets.ArtifactLease Inno.Assets.IAssetResidency.AcquireArtifact(System.Guid persistentId, string outputName)`](../../src/content/assets/Inno.Assets/Runtime/AssetResidency.cs#L71) | Acquires one verified immutable artifact output. |
+| [`Inno.Assets.IAssetResidency`](../../src/content/assets/Inno.Assets/Runtime/AssetResidency.cs#L12) | Exposes explicit asynchronous asset and artifact residency ownership. |
+| [`System.Threading.Tasks.ValueTask<Inno.Assets.AssetLease<TAsset>> Inno.Assets.IAssetResidency.AcquireAsync<TAsset>(Inno.Assets.AssetPath path, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))`](../../src/content/assets/Inno.Assets/Runtime/AssetResidency.cs#L29) | Acquires a canonical asset by logical path and keeps it resident until the lease is released. |
+| [`System.Threading.Tasks.ValueTask<Inno.Assets.AssetLease<TAsset>> Inno.Assets.IAssetResidency.AcquireAsync<TAsset>(System.Guid persistentId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))`](../../src/content/assets/Inno.Assets/Runtime/AssetResidency.cs#L50) | Acquires a canonical asset by persistent identity and keeps it resident until release. |
+
+### `Inno.Assets.RetentionScope`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Assets.RetentionScope`](../../src/content/assets/Inno.Assets/Runtime/AssetResidency.cs#L253) | Owns multiple asset, artifact, or subsystem leases as one reverse-order lifetime. |
+| [`TLease Inno.Assets.RetentionScope.Retain<TLease>(TLease lease)`](../../src/content/assets/Inno.Assets/Runtime/AssetResidency.cs#L272) | Transfers one lease into this scope. |
+| [`void Inno.Assets.RetentionScope.Dispose()`](../../src/content/assets/Inno.Assets/Runtime/AssetResidency.cs#L287) | Releases all retained leases in reverse acquisition order. |
+
+### `Inno.Assets.TextAsset`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Assets.TextAsset`](../../src/content/assets/Inno.Assets/Types/TextAsset.cs#L10) | Stores decoded text content and its language hint. |
+| [`Inno.Assets.TextAsset.TextAsset()`](../../src/content/assets/Inno.Assets/Types/TextAsset.cs#L28) | Creates an empty text asset. |
+| [`Inno.Assets.TextAsset.TextAsset(string content, string languageHint = "plain")`](../../src/content/assets/Inno.Assets/Types/TextAsset.cs#L41) | Creates a text asset with content and an optional language hint. |
+| [`string Inno.Assets.TextAsset.content`](../../src/content/assets/Inno.Assets/Types/TextAsset.cs#L16) | Gets the decoded text content. |
+| [`string Inno.Assets.TextAsset.languageHint`](../../src/content/assets/Inno.Assets/Types/TextAsset.cs#L22) | Gets the language or format hint associated with the text. |
+
+## 项目依赖
+
+- [Inno.Core.IO](../core/Inno.Core.IO.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Content](Inno.Content.md)：公开引用边界由实际签名核对。
+- [Inno.Scripting.Api](../scripting/Inno.Scripting.Api.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Core.Serialization](../core/Inno.Core.Serialization.md)：公开引用边界由实际签名核对。
+- [Inno.Core.Identity](../core/Inno.Core.Identity.md)：公开引用边界由实际签名核对。
+- [Inno.Extensibility.Types](../extensibility/Inno.Extensibility.Types.md)：公开引用边界由实际签名核对。
+- [Inno.References](../references/Inno.References.md)：公开引用边界由实际签名核对。
+- [Inno.Core.Execution](../core/Inno.Core.Execution.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Runtime.Contracts](../runtime/Inno.Runtime.Contracts.md)：公开引用边界由实际签名核对。
+- [Inno.Extensibility.Catalogs](../extensibility/Inno.Extensibility.Catalogs.md)：公开引用边界由实际签名核对。

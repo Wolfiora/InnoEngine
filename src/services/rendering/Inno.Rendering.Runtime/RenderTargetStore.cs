@@ -31,8 +31,10 @@ public sealed class RenderTargetStore : IDisposable
     /// <param name="capacity">
     /// Positive target and per-frame allocation capacity.
     /// </param>
-    public RenderTargetStore(IRenderDevice device, int capacity = 1024)
-    {
+    public RenderTargetStore(
+        IRenderDevice device,
+        int capacity = 1024
+    ) {
         m_device = device ?? throw new ArgumentNullException(nameof(device));
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(capacity);
         m_capacity = capacity;
@@ -60,8 +62,10 @@ public sealed class RenderTargetStore : IDisposable
     /// <returns>
     /// A graph-scoped handle for the current target resource.
     /// </returns>
-    public RenderTextureHandle Import(RenderGraphBuilder graph, RenderTexture target)
-    {
+    public RenderTextureHandle Import(
+        RenderGraphBuilder graph,
+        RenderTexture target
+    ) {
         ObjectDisposedException.ThrowIf(m_disposed || m_retirement is not null, this);
         ArgumentNullException.ThrowIfNull(graph);
         ArgumentNullException.ThrowIfNull(target);
@@ -99,8 +103,10 @@ public sealed class RenderTargetStore : IDisposable
     /// <returns>
     /// <see langword="true"/> after a graph write to the current target revision has been recorded successfully.
     /// </returns>
-    public bool TryGetTexture(RenderTexture target, out PersistentTextureHandle texture)
-    {
+    public bool TryGetTexture(
+        RenderTexture target,
+        out PersistentTextureHandle texture
+    ) {
         ObjectDisposedException.ThrowIf(m_disposed || m_retirement is not null, this);
         ArgumentNullException.ThrowIfNull(target);
         if (m_targets.TryGetValue(target, out TargetEntry? entry) && entry.hasWritten)
@@ -138,7 +144,8 @@ public sealed class RenderTargetStore : IDisposable
     {
         ObjectDisposedException.ThrowIf(m_disposed || m_retirement is not null, this);
         ArgumentNullException.ThrowIfNull(target);
-        if (m_targets.ContainsKey(target)) m_pendingReleases.Add(target);
+        if (m_targets.ContainsKey(target))
+            m_pendingReleases.Add(target);
     }
 
     /// <summary>
@@ -158,9 +165,19 @@ public sealed class RenderTargetStore : IDisposable
                 m_frameRetirement.Add(() => m_device.DestroyTexture(texture));
             m_retireFollowingFrame.Clear();
         }
-        try { m_frameRetirement.Dispose(); }
-        catch (Exception pending) when (RetirementPendingException.Find(pending) is not null) { throw; }
-        catch { m_frameRetirement = null; throw; }
+        try
+        {
+            m_frameRetirement.Dispose();
+        }
+        catch (Exception pending) when (RetirementPendingException.Find(pending) is not null)
+        {
+            throw;
+        }
+        catch
+        {
+            m_frameRetirement = null;
+            throw;
+        }
         m_frameRetirement = null;
         m_frameAllocations = 0;
         m_retireFollowingFrame.AddRange(m_retireNextFrame);
@@ -190,7 +207,8 @@ public sealed class RenderTargetStore : IDisposable
         if (m_retirement is null)
         {
             m_retirement = new RenderRetirementQueue();
-            if (m_frameRetirement is not null) m_retirement.Add(m_frameRetirement.Dispose);
+            if (m_frameRetirement is not null)
+                m_retirement.Add(m_frameRetirement.Dispose);
             foreach (TargetEntry entry in m_targets.Values)
                 m_retirement.Add(() => m_device.DestroyTexture(entry.handle));
             foreach (PersistentTextureHandle texture in m_retireNextFrame)
@@ -198,8 +216,14 @@ public sealed class RenderTargetStore : IDisposable
             foreach (PersistentTextureHandle texture in m_retireFollowingFrame)
                 m_retirement.Add(() => m_device.DestroyTexture(texture));
         }
-        try { m_retirement.Dispose(); }
-        catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null) { throw; }
+        try
+        {
+            m_retirement.Dispose();
+        }
+        catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null)
+        {
+            throw;
+        }
         catch
         {
             CompleteRetirement();
@@ -208,8 +232,10 @@ public sealed class RenderTargetStore : IDisposable
         CompleteRetirement();
     }
 
-    private static bool WritesTarget(CompiledRenderGraph graph, PersistentTextureHandle handle)
-    {
+    private static bool WritesTarget(
+        CompiledRenderGraph graph,
+        PersistentTextureHandle handle
+    ) {
         foreach (CompiledRenderTexture texture in graph.textures)
         {
             if (!texture.imported || texture.persistentHandle != handle)
@@ -240,8 +266,8 @@ public sealed class RenderTargetStore : IDisposable
     private sealed record TargetEntry(
         long revision,
         RenderTextureDescriptor descriptor,
-        PersistentTextureHandle handle)
-    {
+        PersistentTextureHandle handle
+    ) {
         internal bool hasWritten { get; set; }
     }
 }

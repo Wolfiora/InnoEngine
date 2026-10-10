@@ -33,8 +33,11 @@ public static partial class ImGuiWidget
     /// Thrown when <paramref name="text"/> is empty.
     /// </exception>
     [ScriptingApiIgnore]
-    public static Vector4 GetGlyphVisualBounds(ImFontPtr font, float fontSize, string text)
-    {
+    public static Vector4 GetGlyphVisualBounds(
+        ImFontPtr font,
+        float fontSize,
+        string text
+    ) {
         if (string.IsNullOrEmpty(text))
             throw new ArgumentException("Glyph text cannot be empty.", nameof(text));
 
@@ -80,8 +83,8 @@ public static partial class ImGuiWidget
         float fontSize,
         string text,
         Vector2 center,
-        uint color)
-    {
+        uint color
+    ) {
         Vector4 bounds = GetGlyphVisualBounds(font, fontSize, text);
         Vector2 visibleCenterOffset = new(
             (bounds.X + bounds.Z) * 0.5f,
@@ -116,7 +119,11 @@ public static partial class ImGuiWidget
     /// <exception cref="ArgumentNullException">
     /// Thrown when <paramref name="text"/> is <see langword="null"/>.
     /// </exception>
-    public static bool ClickableText(string id, string text, string? tooltip = null)
+    public static bool ClickableText(
+        string id,
+        string text,
+        string? tooltip = null
+    )
         => ClickableText(id, text, GetCompactClickableTextSize(), tooltip);
 
     /// <summary>
@@ -137,8 +144,10 @@ public static partial class ImGuiWidget
     /// <exception cref="ArgumentNullException">
     /// Thrown when <paramref name="text"/> is <see langword="null"/>.
     /// </exception>
-    public static bool HoverText(string id, string text)
-    {
+    public static bool HoverText(
+        string id,
+        string text
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(id);
         ArgumentNullException.ThrowIfNull(text);
         Vector2 cursor = NativeImGui.GetCursorScreenPos();
@@ -187,8 +196,11 @@ public static partial class ImGuiWidget
     /// <exception cref="ArgumentNullException">
     /// Thrown when <paramref name="icon"/> is <see langword="null"/>.
     /// </exception>
-    public static bool ClickableIcon(string id, string icon, string? tooltip = null)
-    {
+    public static bool ClickableIcon(
+        string id,
+        string icon,
+        string? tooltip = null
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(id);
         ArgumentNullException.ThrowIfNull(icon);
         Vector2 controlSize = GetCompactIconSize();
@@ -246,8 +258,8 @@ public static partial class ImGuiWidget
         string id,
         string text,
         Vector2 controlSize,
-        string? tooltip = null)
-    {
+        string? tooltip = null
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(id);
         ArgumentNullException.ThrowIfNull(text);
         if (controlSize.X <= 0f || controlSize.Y <= 0f)
@@ -296,8 +308,10 @@ public static partial class ImGuiWidget
     /// <exception cref="ArgumentOutOfRangeException">
     /// Thrown when either component of <paramref name="areaSize"/> is not positive.
     /// </exception>
-    public static void CenteredText(string text, Vector2 areaSize)
-    {
+    public static void CenteredText(
+        string text,
+        Vector2 areaSize
+    ) {
         ArgumentNullException.ThrowIfNull(text);
         if (areaSize.X <= 0f || areaSize.Y <= 0f)
         {
@@ -334,8 +348,11 @@ public static partial class ImGuiWidget
     /// <exception cref="ArgumentOutOfRangeException">
     /// Thrown when an area component is not positive or a padding component is negative.
     /// </exception>
-    public static void CenteredWrappedText(string text, Vector2 areaSize, Vector2 padding)
-    {
+    public static void CenteredWrappedText(
+        string text,
+        Vector2 areaSize,
+        Vector2 padding
+    ) {
         ArgumentNullException.ThrowIfNull(text);
         if (areaSize.X <= 0f || areaSize.Y <= 0f)
         {
@@ -396,8 +413,10 @@ public static partial class ImGuiWidget
     /// <exception cref="ArgumentNullException">
     /// Thrown when <paramref name="text"/> is <see langword="null"/>.
     /// </exception>
-    public static void ColoredText(Vector4 color, string text)
-    {
+    public static void ColoredText(
+        Vector4 color,
+        string text
+    ) {
         ArgumentNullException.ThrowIfNull(text);
         NativeImGui.PushStyleColor(ImGuiCol.Text, color);
         try
@@ -453,8 +472,10 @@ public static partial class ImGuiWidget
     /// <exception cref="ArgumentOutOfRangeException">
     /// Thrown when either component of <paramref name="padding"/> is negative.
     /// </exception>
-    public static Vector2 GetClickableTextSize(string text, Vector2 padding)
-    {
+    public static Vector2 GetClickableTextSize(
+        string text,
+        Vector2 padding
+    ) {
         ArgumentNullException.ThrowIfNull(text);
         if (padding.X < 0f || padding.Y < 0f)
         {
@@ -499,8 +520,8 @@ public static partial class ImGuiWidget
         string text,
         Vector2 textSize,
         bool hovered,
-        bool active)
-    {
+        bool active
+    ) {
         uint color = hovered || active
             ? NativeImGui.ColorConvertFloat4ToU32(EditorPalette.compactControlHovered)
             : NativeImGui.GetColorU32(ImGuiCol.Text);
@@ -520,8 +541,11 @@ public static partial class ImGuiWidget
     /// <param name="highlight">
     /// Whether to underline and emphasize the drawn icon and text.
     /// </param>
-    public static void IconText(string icon, string text, bool highlight)
-    {
+    public static void IconText(
+        string icon,
+        string text,
+        bool highlight
+    ) {
         ImGuiFontScope fontScope = highlight
             ? ImGuiFont.PushStyle(ImGuiFontStyle.Bold | ImGuiFontStyle.Italic)
             : default;
@@ -569,8 +593,12 @@ public static partial class ImGuiWidget
         }
     }
 
-    private static void IconTextAt(Vector2 screenPos, string icon, string text, bool highlight)
-    {
+    private static void IconTextAt(
+        Vector2 screenPos,
+        string icon,
+        string text,
+        bool highlight
+    ) {
         float offsetFromWindowStart = screenPos.X - NativeImGui.GetWindowPos().X;
         NativeImGui.SameLine(offsetFromWindowStart, 0f);
         IconText(icon, text, highlight);

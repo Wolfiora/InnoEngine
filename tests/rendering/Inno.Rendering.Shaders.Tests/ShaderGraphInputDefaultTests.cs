@@ -1,3 +1,5 @@
+using Inno.Adapter.Serialization.DotNet;
+using Inno.Adapter.Modules.DotNet;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -7,6 +9,7 @@ using Inno.Core.Serialization;
 using Inno.Extensibility.Modules;
 using Inno.Extensibility.Types;
 using Xunit;
+using Inno.Rendering.Assets;
 
 namespace Inno.Rendering.Shaders.Tests;
 
@@ -19,7 +22,13 @@ public sealed class ShaderGraphInputDefaultTests : IDisposable
     private readonly SerializationRegistry m_serialization;
 
     public ShaderGraphInputDefaultTests()
-    { m_modules = new(new() { cacheDirectory = m_root }); m_types = new(m_modules); m_serialization = new(m_types); }
+    {
+        m_modules = new(new()
+        {
+            catalogSource = new DotNetAssemblyCatalogSource(typeof(ShaderGraphInputDefaultTests).Assembly)        });
+        m_types = new(m_modules, new ReflectionTypeCatalogSource());
+        m_serialization = new(m_types, new ReflectionSerializationMetadataSource());
+    }
 
     [Fact]
     public void RequiredInputsRejectStoredDefaultsAndAcceptExplicitGraphConstants()

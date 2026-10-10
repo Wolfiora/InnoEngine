@@ -18,8 +18,8 @@ public sealed class PrefabInstanceInfo
         bool isMissing,
         int overrideCount,
         int orphanedOverrideCount,
-        AssetObject sourceAsset)
-    {
+        AssetObject sourceAsset
+    ) {
         this.sourceAssetId = sourceAssetId;
         this.sourceObjectId = sourceObjectId;
         this.instanceRoot = instanceRoot;

@@ -38,8 +38,11 @@ public sealed class GameScene : EngineObject, ISerializable
     {
     }
 
-    internal GameScene(SceneTypeCatalog types, string name, Guid? persistentId)
-    {
+    internal GameScene(
+        SceneTypeCatalog types,
+        string name,
+        Guid? persistentId
+    ) {
         m_types = types ?? throw new ArgumentNullException(nameof(types));
         m_name = name ?? string.Empty;
         m_store = new SceneStore(types);
@@ -99,7 +102,10 @@ public sealed class GameScene : EngineObject, ISerializable
     /// <exception cref="InvalidOperationException">
     /// The scene is not loaded in its owning world or prefab services are unavailable.
     /// </exception>
-    public GameObject InstantiatePrefab(PrefabAsset prefab, Transform? parent = null)
+    public GameObject InstantiatePrefab(
+        PrefabAsset prefab,
+        Transform? parent = null
+    )
         => (m_ownerWorld ?? throw new InvalidOperationException("The scene is not loaded in a world."))
             .InstantiatePrefab(prefab, this, parent);
 
@@ -386,14 +392,20 @@ public sealed class GameScene : EngineObject, ISerializable
     /// <param name="systemIndex">
     /// Requested zero-based display index.
     /// </param>
-    public void SetSystemIndex(GameSystem system, int systemIndex)
-    {
+    public void SetSystemIndex(
+        GameSystem system,
+        int systemIndex
+    ) {
         EnsureNotDestroyed();
         ArgumentNullException.ThrowIfNull(system);
         m_systems.SetIndex(system, systemIndex);
     }
 
-    internal GameSystem AddSystem(Type systemType, Guid? persistentId, bool invokeReset)
+    internal GameSystem AddSystem(
+        Type systemType,
+        Guid? persistentId,
+        bool invokeReset
+    )
         => m_systems.Add(systemType, persistentId, invokeReset);
 
     internal MissingGameSystem AddMissingSystem(
@@ -401,7 +413,8 @@ public sealed class GameScene : EngineObject, ISerializable
         string missingTypeName,
         ReadOnlySpan<byte> serializedState,
         Guid? persistentId,
-        IReadOnlyList<AssetDependency>? dependencies = null)
+        IReadOnlyList<AssetDependency>? dependencies = null
+    )
         => m_systems.AddMissing(
             missingType,
             missingTypeName,
@@ -421,8 +434,8 @@ public sealed class GameScene : EngineObject, ISerializable
         GameObject owner,
         Type componentType,
         Guid? persistentId,
-        bool invokeReset)
-    {
+        bool invokeReset
+    ) {
         EnsureOwned(owner);
         ArgumentNullException.ThrowIfNull(componentType);
         if (componentType == typeof(MissingGameComponent))
@@ -443,7 +456,7 @@ public sealed class GameScene : EngineObject, ISerializable
         }
 
         bool allowsMultiple = descriptor.allowsMultiple;
-        GameComponent component = ComponentFactory.Create(componentType);
+        GameComponent component = ComponentFactory.Create(componentType, m_types.snapshot);
         if (component is GameBehavior createdBehavior)
             createdBehavior.lifecyclePhases = descriptor.behaviorPhases;
         component.Attach(owner);
@@ -480,8 +493,10 @@ public sealed class GameScene : EngineObject, ISerializable
         }
     }
 
-    internal bool RemoveComponent(GameObject owner, GameComponent component)
-    {
+    internal bool RemoveComponent(
+        GameObject owner,
+        GameComponent component
+    ) {
         EnsureOwned(owner);
         if (!ReferenceEquals(component.ownerOrNull, owner))
             return false;
@@ -511,8 +526,8 @@ public sealed class GameScene : EngineObject, ISerializable
         string missingTypeName,
         ReadOnlySpan<byte> serializedState,
         Guid? persistentId,
-        IReadOnlyList<AssetDependency>? dependencies = null)
-    {
+        IReadOnlyList<AssetDependency>? dependencies = null
+    ) {
         EnsureOwned(owner);
         var component = new MissingGameComponent(
             missingType,
@@ -539,8 +554,10 @@ public sealed class GameScene : EngineObject, ISerializable
         }
     }
 
-    internal void ResetComponent(GameObject owner, GameComponent component)
-    {
+    internal void ResetComponent(
+        GameObject owner,
+        GameComponent component
+    ) {
         EnsureOwned(owner);
         ArgumentNullException.ThrowIfNull(component);
         if (!ReferenceEquals(component.ownerOrNull, owner))
@@ -554,14 +571,19 @@ public sealed class GameScene : EngineObject, ISerializable
         return m_store.GetComponents(owner);
     }
 
-    internal int GetComponentIndex(GameObject owner, GameComponent component)
-    {
+    internal int GetComponentIndex(
+        GameObject owner,
+        GameComponent component
+    ) {
         EnsureOwned(owner);
         return m_store.GetComponentIndex(owner, component);
     }
 
-    internal void SetComponentIndex(GameObject owner, GameComponent component, int componentIndex)
-    {
+    internal void SetComponentIndex(
+        GameObject owner,
+        GameComponent component,
+        int componentIndex
+    ) {
         EnsureOwned(owner);
         m_store.SetComponentIndex(owner, component, componentIndex);
     }
@@ -576,7 +598,10 @@ public sealed class GameScene : EngineObject, ISerializable
     internal IReadOnlyList<TComponent> GetComponents<TComponent>() where TComponent : GameComponent
         => m_store.GetComponents<TComponent>(m_types.GetComponent(typeof(TComponent)));
 
-    internal bool TryGetComponent<TComponent>(GameObject owner, out TComponent? component)
+    internal bool TryGetComponent<TComponent>(
+        GameObject owner,
+        out TComponent? component
+    )
         where TComponent : GameComponent
     {
         EnsureOwned(owner);
@@ -586,8 +611,11 @@ public sealed class GameScene : EngineObject, ISerializable
             out component);
     }
 
-    internal bool TryGetComponent(GameObject owner, Type componentType, out GameComponent? component)
-    {
+    internal bool TryGetComponent(
+        GameObject owner,
+        Type componentType,
+        out GameComponent? component
+    ) {
         EnsureOwned(owner);
         ArgumentNullException.ThrowIfNull(componentType);
         if (!m_types.TryGetComponent(componentType, out SceneComponentTypeDescriptor? descriptor))
@@ -598,8 +626,7 @@ public sealed class GameScene : EngineObject, ISerializable
         return m_store.TryGetComponent(owner, descriptor!, out component);
     }
 
-    internal IReadOnlyList<GameObject> Query<T1>() where T1 : GameComponent
-        => m_store.Query(m_types.GetComponent(typeof(T1)));
+    internal IReadOnlyList<GameObject> Query<T1>() where T1 : GameComponent => m_store.Query(m_types.GetComponent(typeof(T1)));
 
     internal IReadOnlyList<GameObject> Query<T1, T2>()
         where T1 : GameComponent
@@ -623,17 +650,15 @@ public sealed class GameScene : EngineObject, ISerializable
 
     internal IReadOnlyList<GameObject> GetOwnedObjects() => m_store.GetOwnedObjects();
 
-    internal GameObject? FindObject(Guid persistentId)
-        => m_store.FindObject(persistentId);
+    internal GameObject? FindObject(Guid persistentId) => m_store.FindObject(persistentId);
 
-    internal GameComponent? FindComponent(Guid persistentId)
-        => m_store.FindComponent(persistentId);
+    internal GameComponent? FindComponent(Guid persistentId) => m_store.FindComponent(persistentId);
 
     internal void ReplaceComponentForReload(
         GameComponent previous,
         GameComponent replacement,
-        int replacementRuntimeTypeId)
-    {
+        int replacementRuntimeTypeId
+    ) {
         GameObject owner = previous.ownerOrNull
             ?? throw new InvalidOperationException("The component being replaced is detached.");
         if (!Contains(owner) || previous is Transform || replacement is Transform)
@@ -706,7 +731,8 @@ public sealed class GameScene : EngineObject, ISerializable
     internal void ReplaceSystemForReload(
         GameSystem previous,
         GameSystem replacement,
-        int replacementRuntimeTypeId)
+        int replacementRuntimeTypeId
+    )
         => m_systems.ReplaceForReload(previous, replacement, replacementRuntimeTypeId);
 
     internal bool canDispatch => m_isLoaded && !m_isUnloading && !isDestroyed;
@@ -736,8 +762,10 @@ public sealed class GameScene : EngineObject, ISerializable
         }
     }
 
-    internal void SetActive(GameObject gameObject, bool active)
-    {
+    internal void SetActive(
+        GameObject gameObject,
+        bool active
+    ) {
         EnsureOwned(gameObject);
         m_activation.SetActive(gameObject, active);
         m_systems.NotifyHierarchyActivationChanged();
@@ -766,8 +794,11 @@ public sealed class GameScene : EngineObject, ISerializable
             m_systems.NotifyGameSystemActivationChanged(system);
     }
 
-    internal void SetParent(Transform transform, Transform? parent, bool worldPositionStays)
-    {
+    internal void SetParent(
+        Transform transform,
+        Transform? parent,
+        bool worldPositionStays
+    ) {
         EnsureOwned(transform.gameObject);
         m_hierarchy.SetParent(transform, parent, worldPositionStays);
     }
@@ -778,14 +809,18 @@ public sealed class GameScene : EngineObject, ISerializable
         return m_hierarchy.GetSiblingIndex(transform);
     }
 
-    internal void SetSiblingIndex(Transform transform, int siblingIndex)
-    {
+    internal void SetSiblingIndex(
+        Transform transform,
+        int siblingIndex
+    ) {
         EnsureOwned(transform.gameObject);
         m_hierarchy.SetSiblingIndex(transform, siblingIndex);
     }
 
-    internal void TransferObjectTo(GameObject gameObject, GameScene destination)
-    {
+    internal void TransferObjectTo(
+        GameObject gameObject,
+        GameScene destination
+    ) {
         EnsureOwned(gameObject);
         ArgumentNullException.ThrowIfNull(destination);
         destination.EnsureNotDestroyed();
@@ -872,8 +907,8 @@ public sealed class GameScene : EngineObject, ISerializable
         string name,
         Guid? persistentId,
         Guid? transformPersistentId,
-        bool invokeReset)
-    {
+        bool invokeReset
+    ) {
         EnsureNotDestroyed();
         var gameObject = new GameObject(this, name);
         gameObject.RegisterIdentity(persistentId);

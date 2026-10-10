@@ -74,8 +74,8 @@ internal sealed class AssetDiagnosticPublisher : IDisposable
     internal void PublishBuild(
         Guid targetId,
         string displayName,
-        IReadOnlyList<string> messages)
-    {
+        IReadOnlyList<string> messages
+    ) {
         ArgumentNullException.ThrowIfNull(messages);
         if (targetId == Guid.Empty)
             return;
@@ -105,8 +105,11 @@ internal sealed class AssetDiagnosticPublisher : IDisposable
         m_buildStates[targetId] = state;
     }
 
-    internal void PublishBuildFailure(Guid targetId, string displayName, Exception exception)
-    {
+    internal void PublishBuildFailure(
+        Guid targetId,
+        string displayName,
+        Exception exception
+    ) {
         ArgumentNullException.ThrowIfNull(exception);
         if (targetId == Guid.Empty)
             return;
@@ -138,8 +141,8 @@ internal sealed class AssetDiagnosticPublisher : IDisposable
     internal void PublishMissingReference(
         Guid targetId,
         string displayName,
-        Type expectedType)
-    {
+        Type expectedType
+    ) {
         if (targetId == Guid.Empty)
             return;
         ArgumentNullException.ThrowIfNull(expectedType);
@@ -199,8 +202,10 @@ internal sealed class AssetDiagnosticPublisher : IDisposable
         }
     }
 
-    private void Set(DiagnosticSource source, IReadOnlyList<Diagnostic> diagnostics)
-    {
+    private void Set(
+        DiagnosticSource source,
+        IReadOnlyList<Diagnostic> diagnostics
+    ) {
         if (m_reporters.Remove(source.id, out DiagnosticReporter? previous))
             previous.Dispose();
         var report = new Report(source, diagnostics.ToArray());
@@ -220,12 +225,18 @@ internal sealed class AssetDiagnosticPublisher : IDisposable
     {
         DiagnosticReporter reporter = m_diagnostics.CreateReporter(report.source);
         m_reporters.Add(report.source.id, reporter);
-        reporter.Replace(report.diagnostics.Select(static (issue, index) => new Diagnostic(
+        reporter.Replace(report.diagnostics.Select(static (
+            issue,
+            index
+        ) => new Diagnostic(
             issue.code, issue.message, issue.severity, index.ToString(CultureInfo.InvariantCulture),
             issue.objectId, issue.location)));
     }
 
-    private sealed record Report(DiagnosticSource source, Diagnostic[] diagnostics);
+    private sealed record Report(
+        DiagnosticSource source,
+        Diagnostic[] diagnostics
+    );
 
     private void ResolveBuild(Guid targetId)
     {
@@ -244,8 +255,8 @@ internal sealed class AssetDiagnosticPublisher : IDisposable
     private static DiagnosticSource CreateSource(
         string group,
         Guid? targetId = null,
-        string? displayName = null)
-    {
+        string? displayName = null
+    ) {
         string id = targetId.HasValue
             ? $"inno.assets.pipeline/{group}/{targetId.Value:N}"
             : $"inno.assets.pipeline/{group}";
@@ -276,6 +287,9 @@ internal sealed class AssetDiagnosticPublisher : IDisposable
         }).ToArray();
     }
 
-    private static string CreateState(AssetMeta entry, IReadOnlyList<Diagnostic> diagnostics)
+    private static string CreateState(
+        AssetMeta entry,
+        IReadOnlyList<Diagnostic> diagnostics
+    )
         => $"{entry.importStatus}:{entry.relativePath}:{string.Join('\n', diagnostics.Select(static value => value.message))}";
 }

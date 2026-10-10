@@ -43,8 +43,11 @@ public sealed class BuildDiagnostic
     /// <exception cref="ArgumentException">
     /// Thrown when code or message is empty.
     /// </exception>
-    public BuildDiagnostic(BuildDiagnosticSeverity severity, string code, string message)
-    {
+    public BuildDiagnostic(
+        BuildDiagnosticSeverity severity,
+        string code,
+        string message
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(code);
         ArgumentException.ThrowIfNullOrWhiteSpace(message);
         this.severity = severity;

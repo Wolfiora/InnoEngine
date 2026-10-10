@@ -20,3 +20,53 @@ UI.ShowDocument(context, document);
 ```
 
 此段供 Host 控制 Session 的场景使用；普通脚本在活动帧内调用 `UI` 门面。跨 Session 的 Context/Document handle 不能复用；持久配置只保存资产身份与业务数据。
+
+## 当前源码公开 API 清单
+
+只列当前源码的 public/protected 表面；内部实现不作为稳定 API。参数、返回、失败和 owner 以英文 XML 为准。
+
+### `Inno.UI.Runtime.UiRuntime`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.UI.Runtime.UiRuntime`](../../src/services/ui/Inno.UI.Runtime/UiRuntime.cs#L19) | Owns retained UI contexts, imported font leases, and current-frame input for one runtime session. |
+| [`Inno.UI.Runtime.UiRuntime.UiRuntime(Inno.UI.IUiBackend backend, Inno.Assets.IAssetArtifactLookup artifacts)`](../../src/services/ui/Inno.UI.Runtime/UiRuntime.cs#L37) | Creates a UI runtime and assumes ownership of its backend. |
+| [`Inno.UI.UiContextHandle Inno.UI.Runtime.UiRuntime.CreateContext(Inno.UI.UiContextOptions options)`](../../src/services/ui/Inno.UI.Runtime/UiRuntime.cs#L78) | Creates a context using this implementation's validated inputs. |
+| [`Inno.UI.UiDocumentHandle Inno.UI.Runtime.UiRuntime.LoadDocument(Inno.UI.UiContextHandle context, Inno.UI.UiDocumentAsset document)`](../../src/services/ui/Inno.UI.Runtime/UiRuntime.cs#L161) | Loads a document into the specified independent UI context. |
+| [`Inno.UI.UiDocumentHandle Inno.UI.Runtime.UiRuntime.LoadDocument(Inno.UI.UiContextHandle context, Inno.UI.UiDocumentSource source)`](../../src/services/ui/Inno.UI.Runtime/UiRuntime.cs#L139) | Loads a document into the specified independent UI context. |
+| [`Inno.UI.UiRenderFrame Inno.UI.Runtime.UiRuntime.Render(Inno.UI.UiContextHandle context)`](../../src/services/ui/Inno.UI.Runtime/UiRuntime.cs#L473) | Records value rendering for the current frame. |
+| [`System.Collections.Generic.IReadOnlyList<Inno.UI.UiEvent> Inno.UI.Runtime.UiRuntime.DrainEvents(Inno.UI.UiContextHandle context)`](../../src/services/ui/Inno.UI.Runtime/UiRuntime.cs#L488) | Returns and clears events emitted by this UI context. |
+| [`System.IDisposable Inno.UI.Runtime.UiRuntime.EnterExecutionScope()`](../../src/services/ui/Inno.UI.Runtime/UiRuntime.cs#L63) | Binds this runtime to the current asynchronous execution context. |
+| [`bool Inno.UI.Runtime.UiRuntime.HasElementAtPoint(Inno.UI.UiContextHandle context, Inno.Core.Mathematics.Vector2 position)`](../../src/services/ui/Inno.UI.Runtime/UiRuntime.cs#L419) | Tests whether an interactive document element occupies the supplied point. |
+| [`bool Inno.UI.Runtime.UiRuntime.SetAttribute(Inno.UI.UiContextHandle context, Inno.UI.UiDocumentHandle document, string elementId, string name, string value)`](../../src/services/ui/Inno.UI.Runtime/UiRuntime.cs#L343) | Updates the attribute state and applies the resulting invariants. |
+| [`bool Inno.UI.Runtime.UiRuntime.SetClass(Inno.UI.UiContextHandle context, Inno.UI.UiDocumentHandle document, string elementId, string className, bool active)`](../../src/services/ui/Inno.UI.Runtime/UiRuntime.cs#L375) | Updates the class state and applies the resulting invariants. |
+| [`bool Inno.UI.Runtime.UiRuntime.SetContent(Inno.UI.UiContextHandle context, Inno.UI.UiDocumentHandle document, string elementId, Inno.UI.UiDocumentFragment content)`](../../src/services/ui/Inno.UI.Runtime/UiRuntime.cs#L311) | Updates the content state and applies the resulting invariants. |
+| [`bool Inno.UI.Runtime.UiRuntime.SetText(Inno.UI.UiContextHandle context, Inno.UI.UiDocumentHandle document, string elementId, string text)`](../../src/services/ui/Inno.UI.Runtime/UiRuntime.cs#L283) | Updates the text state and applies the resulting invariants. |
+| [`override void Inno.UI.Runtime.UiRuntime.OnBeginFrame(Inno.Runtime.Contracts.RuntimeFrame frame)`](../../src/services/ui/Inno.UI.Runtime/UiRuntime.cs#L51) | Captures the input service snapshot and binds script-facing UI for the complete runtime frame. |
+| [`override void Inno.UI.Runtime.UiRuntime.OnStop()`](../../src/services/ui/Inno.UI.Runtime/UiRuntime.cs#L497) | Releases native UI state before releasing retained font artifacts. |
+| [`void Inno.UI.Runtime.UiRuntime.CloseDocument(Inno.UI.UiContextHandle context, Inno.UI.UiDocumentHandle document)`](../../src/services/ui/Inno.UI.Runtime/UiRuntime.cs#L254) | Closes the selected document and releases its retained state. |
+| [`void Inno.UI.Runtime.UiRuntime.DestroyContext(Inno.UI.UiContextHandle context)`](../../src/services/ui/Inno.UI.Runtime/UiRuntime.cs#L90) | Destroys the context after its in-flight references retire. |
+| [`void Inno.UI.Runtime.UiRuntime.HideDocument(Inno.UI.UiContextHandle context, Inno.UI.UiDocumentHandle document)`](../../src/services/ui/Inno.UI.Runtime/UiRuntime.cs#L237) | Hides the selected document while retaining its state. |
+| [`void Inno.UI.Runtime.UiRuntime.RegisterTexture(Inno.UI.UiContextHandle context, string source, Inno.UI.UiTextureData texture)`](../../src/services/ui/Inno.UI.Runtime/UiRuntime.cs#L398) | Registers a named RGBA texture source for UI document drawing. |
+| [`void Inno.UI.Runtime.UiRuntime.SetViewport(Inno.UI.UiContextHandle context, int width, int height, float density = 1)`](../../src/services/ui/Inno.UI.Runtime/UiRuntime.cs#L117) | Updates the viewport state and applies the resulting invariants. |
+| [`void Inno.UI.Runtime.UiRuntime.ShowDocument(Inno.UI.UiContextHandle context, Inno.UI.UiDocumentHandle document)`](../../src/services/ui/Inno.UI.Runtime/UiRuntime.cs#L220) | Makes the selected document visible in its owning UI context. |
+| [`void Inno.UI.Runtime.UiRuntime.Update(Inno.UI.UiContextHandle context)`](../../src/services/ui/Inno.UI.Runtime/UiRuntime.cs#L433) | Recomputes owned state from the current validated inputs. |
+| [`void Inno.UI.Runtime.UiRuntime.Update(Inno.UI.UiContextHandle context, Inno.UI.UiInputSnapshot input)`](../../src/services/ui/Inno.UI.Runtime/UiRuntime.cs#L456) | Advances one UI context with input routed from its rendered view. |
+
+### `Inno.UI.Runtime.UiRuntimeFactory`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Runtime.Contracts.IRuntimeSubsystem Inno.UI.Runtime.UiRuntimeFactory.Create(Inno.Runtime.Contracts.RuntimeSubsystemContext context)`](../../src/services/ui/Inno.UI.Runtime/UiRuntimeFactory.cs#L46) | Creates one session-owned UI runtime. |
+| [`Inno.Runtime.Contracts.RuntimeSubsystemDescriptor Inno.UI.Runtime.UiRuntimeFactory.descriptor`](../../src/services/ui/Inno.UI.Runtime/UiRuntimeFactory.cs#L29) | Gets stable ordering metadata that makes UI available before scene simulation. |
+| [`Inno.UI.Runtime.UiRuntimeFactory`](../../src/services/ui/Inno.UI.Runtime/UiRuntimeFactory.cs#L11) | Creates one UI service for every isolated runtime session. |
+| [`Inno.UI.Runtime.UiRuntimeFactory.UiRuntimeFactory(System.Func<Inno.Runtime.Contracts.RuntimeSubsystemContext, Inno.UI.Runtime.UiRuntime> runtimeFactory)`](../../src/services/ui/Inno.UI.Runtime/UiRuntimeFactory.cs#L21) | Creates a reusable UI runtime factory. |
+
+## 项目依赖
+
+- [Inno.UI](Inno.UI.md)：公开引用边界由实际签名核对。
+- [Inno.Input](../input/Inno.Input.md)：公开引用边界由实际签名核对。
+- [Inno.Text](../text/Inno.Text.md)：公开引用边界由实际签名核对。
+- [Inno.Assets](../assets/Inno.Assets.md)：公开引用边界由实际签名核对。
+- [Inno.Runtime.Contracts](../runtime/Inno.Runtime.Contracts.md)：公开引用边界由实际签名核对。
+- [Inno.Extensibility.Catalogs](../extensibility/Inno.Extensibility.Catalogs.md)：公开引用边界由实际签名核对。

@@ -50,7 +50,8 @@ public interface IEditorAudioHost : IDisposable
     AudioVoiceHandle PlayPreview(
         RuntimeSession session,
         AudioClipAsset clip,
-        AudioPlayOptions? options = null);
+        AudioPlayOptions? options = null
+    );
 
     /// <summary>
     /// Stops one preview voice owned by an active Edit session.
@@ -64,5 +65,8 @@ public interface IEditorAudioHost : IDisposable
     /// <returns>
     /// <see langword="true"/> when a live preview was stopped.
     /// </returns>
-    bool StopPreview(RuntimeSession session, AudioVoiceHandle voice);
+    bool StopPreview(
+        RuntimeSession session,
+        AudioVoiceHandle voice
+    );
 }

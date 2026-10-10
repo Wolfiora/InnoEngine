@@ -12,14 +12,20 @@ internal sealed class AssetIconRegistry : TypeRegistry<AssetIconRegistry.Snapsho
 {
     private readonly EditorSettings m_settings;
 
-    internal AssetIconRegistry(EditorSettings settings, TypeCatalog types)
+    internal AssetIconRegistry(
+        EditorSettings settings,
+        TypeCatalog types
+    )
         : base(types)
     {
         m_settings = settings ?? throw new ArgumentNullException(nameof(settings));
     }
 
-    internal bool TryResolve(Type? assetType, string relativePath, out string icon)
-    {
+    internal bool TryResolve(
+        Type? assetType,
+        string relativePath,
+        out string icon
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(relativePath);
         if (TryResolveType(assetType, out icon) || TryResolveExtension(relativePath, out icon))
         {
@@ -85,8 +91,10 @@ internal sealed class AssetIconRegistry : TypeRegistry<AssetIconRegistry.Snapsho
         return new Snapshot(typeRegistrations.ToArray(), extensionRegistrations.ToArray());
     }
 
-    private bool TryResolveType(Type? assetType, out string icon)
-    {
+    private bool TryResolveType(
+        Type? assetType,
+        out string icon
+    ) {
         TypeRegistration? best = null;
         int bestDistance = int.MaxValue;
         if (assetType is not null)
@@ -113,8 +121,10 @@ internal sealed class AssetIconRegistry : TypeRegistry<AssetIconRegistry.Snapsho
         return best is not null;
     }
 
-    private bool TryResolveExtension(string relativePath, out string icon)
-    {
+    private bool TryResolveExtension(
+        string relativePath,
+        out string icon
+    ) {
         ExtensionRegistration? best = null;
         foreach (ExtensionRegistration registration in current.extensionRegistrations)
         {
@@ -136,8 +146,8 @@ internal sealed class AssetIconRegistry : TypeRegistry<AssetIconRegistry.Snapsho
         AssetIconAttribute attribute,
         Type declarationType,
         Type assetType,
-        IReadOnlyList<TypeRegistration> registrations)
-    {
+        IReadOnlyList<TypeRegistration> registrations
+    ) {
         if (!typeof(AssetObject).IsAssignableFrom(assetType))
         {
             throw new InvalidOperationException(
@@ -161,8 +171,8 @@ internal sealed class AssetIconRegistry : TypeRegistry<AssetIconRegistry.Snapsho
         AssetIconAttribute attribute,
         Type declarationType,
         string extension,
-        IReadOnlyList<ExtensionRegistration> registrations)
-    {
+        IReadOnlyList<ExtensionRegistration> registrations
+    ) {
         if (registrations.Any(value =>
                 string.Equals(value.extension, extension, StringComparison.OrdinalIgnoreCase) &&
                 value.priority == attribute.priority))
@@ -175,18 +185,21 @@ internal sealed class AssetIconRegistry : TypeRegistry<AssetIconRegistry.Snapsho
 
     internal sealed record Snapshot(
         TypeRegistration[] typeRegistrations,
-        ExtensionRegistration[] extensionRegistrations);
+        ExtensionRegistration[] extensionRegistrations
+    );
 
     internal sealed record TypeRegistration(
         Type assetType,
         bool useForChildren,
         int priority,
         Type declarationType,
-        string icon);
+        string icon
+    );
 
     internal sealed record ExtensionRegistration(
         string extension,
         int priority,
         Type declarationType,
-        string icon);
+        string icon
+    );
 }

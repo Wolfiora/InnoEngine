@@ -23,8 +23,11 @@ public sealed class EditorModalAttribute : Attribute
     /// <exception cref="ArgumentException">
     /// Thrown when <paramref name="id"/> or <paramref name="title"/> is empty.
     /// </exception>
-    public EditorModalAttribute(string id, string title, int order = 0)
-    {
+    public EditorModalAttribute(
+        string id,
+        string title,
+        int order = 0
+    ) {
         if (string.IsNullOrWhiteSpace(id))
             throw new ArgumentException("An editor modal identifier is required.", nameof(id));
         if (string.IsNullOrWhiteSpace(title))

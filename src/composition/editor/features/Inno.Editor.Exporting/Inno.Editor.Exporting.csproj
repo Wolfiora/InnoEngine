@@ -7,12 +7,30 @@
     <WarningsAsErrors>$(WarningsAsErrors);CS1572;CS1573;CS1591</WarningsAsErrors>
     <InnoAssemblyScope>Editor</InnoAssemblyScope>
   </PropertyGroup>
+
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\..\build\pipeline\Inno.Build\Inno.Build.csproj" PrivateAssets="compile" />
-    <ProjectReference Include="..\..\..\..\foundation\core\Inno.Core.Logging\Inno.Core.Logging.csproj" PrivateAssets="compile" />
-    <ProjectReference Include="..\..\presentation\Inno.Editor.ImGui\Inno.Editor.ImGui.csproj" PrivateAssets="compile" />
-    <ProjectReference Include="..\..\framework\Inno.Editor.Core\Inno.Editor.Core.csproj" PrivateAssets="compile" />
-    <ProjectReference Include="..\..\framework\Inno.Editor.Interactions\Inno.Editor.Interactions.csproj" PrivateAssets="compile" />
-    <ProjectReference Include="..\..\..\..\..\native\Inno.Native.ImGui\Inno.Native.ImGui.csproj" PrivateAssets="compile" />
+    <ProjectReference
+      Include="../../../../foundation/core/Inno.Core.Execution/Inno.Core.Execution.csproj"
+      PrivateAssets="compile" />
+    <ProjectReference Include="../../../../../build/pipeline/Inno.Build/Inno.Build.csproj" PrivateAssets="compile" />
+    <ProjectReference
+      Include="../../../../foundation/core/Inno.Core.Logging/Inno.Core.Logging.csproj"
+      PrivateAssets="compile" />
+    <ProjectReference Include="../../presentation/Inno.Editor.ImGui/Inno.Editor.ImGui.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../framework/Inno.Editor.Core/Inno.Editor.Core.csproj" PrivateAssets="compile" />
+    <ProjectReference
+      Include="../../framework/Inno.Editor.Interactions/Inno.Editor.Interactions.csproj"
+      PrivateAssets="compile" />
+    <ProjectReference
+      Include="../../../../../backends/ImGui/native/Inno.Native.ImGui/Inno.Native.ImGui.csproj"
+      PrivateAssets="compile" />
+    <ProjectReference
+      Include="../../../../../build/managed/Inno.Build.Managed/Inno.Build.Managed.csproj"
+      PrivateAssets="compile" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../../../../foundation/core/Inno.Core.Serialization/Inno.Core.Serialization.csproj" />
+    <ProjectReference Include="../../../../foundation/extensibility/Inno.Extensibility.Catalogs/Inno.Extensibility.Catalogs.csproj" />
   </ItemGroup>
 </Project>

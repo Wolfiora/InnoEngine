@@ -25,13 +25,22 @@ public sealed class AnimationBindingRuntime : IAnimationBindingSink, IDisposable
     /// <param name="diagnostics">
     /// A borrowed reporter scoped to this session's binding diagnostics.
     /// </param>
-    public AnimationBindingRuntime(TypeCatalog types, IDiagnosticReporter diagnostics)
-    {
+    public AnimationBindingRuntime(
+        TypeCatalog types,
+        IDiagnosticReporter diagnostics
+    ) {
         ArgumentNullException.ThrowIfNull(types);
         m_diagnostics = diagnostics ?? throw new ArgumentNullException(nameof(diagnostics));
         m_registry = new Registry(types);
-        try { m_registry.Refresh(); }
-        catch { m_registry.Dispose(); throw; }
+        try
+        {
+            m_registry.Refresh();
+        }
+        catch
+        {
+            m_registry.Dispose();
+            throw;
+        }
     }
 
     /// <summary>
@@ -114,14 +123,14 @@ public sealed class AnimationBindingRuntime : IAnimationBindingSink, IDisposable
                 foreach (TypeRef reference in types.GetTypesWithAttribute<AnimationBindingProviderAttribute>())
                 {
                     Type type = reference.Resolve(types);
-                    AnimationBindingProviderAttribute declaration = type.GetCustomAttribute<AnimationBindingProviderAttribute>(false)!;
+                    AnimationBindingProviderAttribute declaration = types.GetAttribute<AnimationBindingProviderAttribute>(reference, false)!;
                     if (type.IsAbstract || type.ContainsGenericParameters || !typeof(AnimationBindingProvider).IsAssignableFrom(type)
-                        || type.GetConstructor(Type.EmptyTypes) is null)
+                        || !types.CanCreateInstance(reference))
                         throw new InvalidOperationException($"Animation provider '{declaration.id}' requires a concrete public parameterless implementation.");
                     var key = (declaration.bindingId, declaration.kind);
                     if (!ids.Add(declaration.id) || result.providers.ContainsKey(key))
                         throw new InvalidOperationException($"Animation provider '{declaration.id}' duplicates an extension ID or binding protocol.");
-                    result.providers.Add(key, (AnimationBindingProvider)Activator.CreateInstance(type)!);
+                    result.providers.Add(key, CreateExtension<AnimationBindingProvider>(type));
                 }
                 return result;
             }
@@ -153,8 +162,14 @@ public sealed class AnimationBindingRuntime : IAnimationBindingSink, IDisposable
             List<Exception>? failures = null;
             foreach (AnimationBindingProvider provider in providers.Values)
             {
-                try { provider.Dispose(); }
-                catch (Exception exception) { (failures ??= []).Add(exception); }
+                try
+                {
+                    provider.Dispose();
+                }
+                catch (Exception exception)
+                {
+                    (failures ??= []).Add(exception);
+                }
             }
             providers.Clear();
             if (failures is not null)

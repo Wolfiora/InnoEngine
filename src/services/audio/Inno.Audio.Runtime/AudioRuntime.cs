@@ -83,8 +83,8 @@ public sealed class AudioRuntime : RuntimeSubsystem, IAudioService
         IDiagnosticReporter diagnostics,
         AudioRuntimeOptions? options = null,
         Func<ContentReadScope>? contentScopeProvider = null,
-        Func<IAudioDevice>? deviceRecoveryFactory = null)
-    {
+        Func<IAudioDevice>? deviceRecoveryFactory = null
+    ) {
         ArgumentNullException.ThrowIfNull(types);
         m_device = device ?? throw new ArgumentNullException(nameof(device));
         m_artifacts = artifacts ?? throw new ArgumentNullException(nameof(artifacts));
@@ -95,8 +95,14 @@ public sealed class AudioRuntime : RuntimeSubsystem, IAudioService
         m_deviceRecoveryFactory = deviceRecoveryFactory;
         m_extensions = new AudioExtensionRegistry(types);
         m_clipCache = new AudioClipCache(m_device, m_artifacts, m_options, m_extensions.RetireBackend);
-        try { m_mixer = new AudioMixerOwner(m_device, m_extensions.Fault, m_extensions.RetireBackend); }
-        catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null) { throw; }
+        try
+        {
+            m_mixer = new AudioMixerOwner(m_device, m_extensions.Fault, m_extensions.RetireBackend);
+        }
+        catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null)
+        {
+            throw;
+        }
         catch
         {
             m_extensions.Dispose();
@@ -128,6 +134,12 @@ public sealed class AudioRuntime : RuntimeSubsystem, IAudioService
     /// Gets the monotonic backend audio clock in seconds.
     /// </summary>
     public double dspTime => m_device.dspTime;
+
+    /// <inheritdoc />
+    protected override void OnStart()
+    {
+        m_events.dispatched += OnEventDispatched;
+    }
     /// <summary>
     /// Captures snapshots and binds service façades.
     /// </summary>
@@ -199,8 +211,10 @@ public sealed class AudioRuntime : RuntimeSubsystem, IAudioService
     /// <exception cref="ArgumentException">
     /// Playback options are uninitialized. The request is rejected before asset acquisition or voice stealing.
     /// </exception>
-    public AudioVoiceHandle Play(AudioClipAsset clip, AudioPlayOptions options)
-    {
+    public AudioVoiceHandle Play(
+        AudioClipAsset clip,
+        AudioPlayOptions options
+    ) {
         EnsureActive();
         return m_voices.Play(clip, options, null);
     }
@@ -223,8 +237,8 @@ public sealed class AudioRuntime : RuntimeSubsystem, IAudioService
     public AudioVoiceHandle PlayScheduled(
         AudioClipAsset clip,
         double scheduledDspTime,
-        AudioPlayOptions options)
-    {
+        AudioPlayOptions options
+    ) {
         if (double.IsNaN(scheduledDspTime) || double.IsInfinity(scheduledDspTime) || scheduledDspTime < 0d)
             throw new ArgumentOutOfRangeException(nameof(scheduledDspTime));
         EnsureActive();
@@ -288,8 +302,10 @@ public sealed class AudioRuntime : RuntimeSubsystem, IAudioService
     /// <returns>
     /// <see langword="true"/> when the cursor request was accepted.
     /// </returns>
-    public bool Seek(AudioVoiceHandle voice, TimeSpan position)
-    {
+    public bool Seek(
+        AudioVoiceHandle voice,
+        TimeSpan position
+    ) {
         EnsureActive();
         return m_voices.Seek(voice, position);
     }
@@ -306,8 +322,10 @@ public sealed class AudioRuntime : RuntimeSubsystem, IAudioService
     /// <returns>
     /// <see langword="true"/> when the parameter request was accepted.
     /// </returns>
-    public bool SetVoiceParameters(AudioVoiceHandle voice, AudioVoiceParameters parameters)
-    {
+    public bool SetVoiceParameters(
+        AudioVoiceHandle voice,
+        AudioVoiceParameters parameters
+    ) {
         EnsureActive();
         return m_voices.SetVoiceParameters(voice, parameters);
     }
@@ -324,8 +342,10 @@ public sealed class AudioRuntime : RuntimeSubsystem, IAudioService
     /// <returns>
     /// <see langword="true"/> for active and terminal handles from this runtime generation.
     /// </returns>
-    public bool TryGetVoiceState(AudioVoiceHandle voice, out AudioPlaybackState playbackState)
-    {
+    public bool TryGetVoiceState(
+        AudioVoiceHandle voice,
+        out AudioPlaybackState playbackState
+    ) {
         EnsureActive();
         return m_voices.TryGetVoiceState(voice, out playbackState);
     }
@@ -342,8 +362,10 @@ public sealed class AudioRuntime : RuntimeSubsystem, IAudioService
     /// <returns>
     /// <see langword="true"/> when the active mixer contains the bus.
     /// </returns>
-    public bool SetBusVolume(AudioBusId bus, float volume)
-    {
+    public bool SetBusVolume(
+        AudioBusId bus,
+        float volume
+    ) {
         EnsureActive();
         return m_mixer.SetBusVolume(bus, volume);
     }
@@ -360,8 +382,10 @@ public sealed class AudioRuntime : RuntimeSubsystem, IAudioService
     /// <returns>
     /// <see langword="true"/> when the active mixer contains the bus.
     /// </returns>
-    public bool SetBusMuted(AudioBusId bus, bool muted)
-    {
+    public bool SetBusMuted(
+        AudioBusId bus,
+        bool muted
+    ) {
         EnsureActive();
         return m_mixer.SetBusMuted(bus, muted);
     }
@@ -378,8 +402,10 @@ public sealed class AudioRuntime : RuntimeSubsystem, IAudioService
     /// <returns>
     /// <see langword="true"/> when the active mixer contains the bus.
     /// </returns>
-    public bool SetBusPaused(AudioBusId bus, bool paused)
-    {
+    public bool SetBusPaused(
+        AudioBusId bus,
+        bool paused
+    ) {
         EnsureActive();
         return m_mixer.SetBusPaused(bus, paused);
     }
@@ -402,8 +428,8 @@ public sealed class AudioRuntime : RuntimeSubsystem, IAudioService
     public ValueTask PreloadAsync(
         AudioClipAsset clip,
         AudioClipLoadMode loadMode = AudioClipLoadMode.Automatic,
-        CancellationToken cancellationToken = default)
-    {
+        CancellationToken cancellationToken = default
+    ) {
         EnsureActive();
         return m_clipCache.PreloadAsync(clip, loadMode, cancellationToken);
     }
@@ -485,12 +511,24 @@ public sealed class AudioRuntime : RuntimeSubsystem, IAudioService
             throw new ArgumentException("The replacement must be a different device instance.", nameof(replacement));
         AudioMixerOwner replacementMixer;
         m_candidateRetirement = new AudioDeviceCandidate(replacement);
-        try { replacementMixer = m_candidateRetirement.Prepare(m_mixer); }
-        catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null) { throw; }
+        try
+        {
+            replacementMixer = m_candidateRetirement.Prepare(m_mixer);
+        }
+        catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null)
+        {
+            throw;
+        }
         catch (Exception failure)
         {
-            try { m_extensions.RetireBackend(m_candidateRetirement.Dispose); }
-            catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null) { throw; }
+            try
+            {
+                m_extensions.RetireBackend(m_candidateRetirement.Dispose);
+            }
+            catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null)
+            {
+                throw;
+            }
             catch (Exception cleanup)
             {
                 m_extensions.Fault(cleanup);
@@ -503,9 +541,18 @@ public sealed class AudioRuntime : RuntimeSubsystem, IAudioService
         m_extensions.RetireBackend(() => failures = RetireBackend(AudioCompletionReason.DeviceLost));
         if (failures.Count > 0)
         {
-            try { m_extensions.RetireBackend(m_candidateRetirement.Dispose); }
-            catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null) { throw; }
-            catch (Exception error) { failures.Add(error); }
+            try
+            {
+                m_extensions.RetireBackend(m_candidateRetirement.Dispose);
+            }
+            catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null)
+            {
+                throw;
+            }
+            catch (Exception error)
+            {
+                failures.Add(error);
+            }
             m_candidateRetirement = null;
             var failure = new AggregateException("Audio device retirement failed; the previous generation cannot resume.", failures);
             m_extensions.Fault(failure);
@@ -554,8 +601,15 @@ public sealed class AudioRuntime : RuntimeSubsystem, IAudioService
             {
                 IAudioDevice rejected = candidate;
                 candidate = null;
-                try { m_extensions.RetireBackend(rejected.Dispose); }
-                catch (Exception cleanup) { m_extensions.Fault(cleanup); throw; }
+                try
+                {
+                    m_extensions.RetireBackend(rejected.Dispose);
+                }
+                catch (Exception cleanup)
+                {
+                    m_extensions.Fault(cleanup);
+                    throw;
+                }
                 Publish(
                     "AUDIO_DEVICE_RECOVERY_FAILED",
                     "The replacement audio device did not reach the ready state; muted playback remains active.",
@@ -574,11 +628,21 @@ public sealed class AudioRuntime : RuntimeSubsystem, IAudioService
                 recoveredSource);
             return true;
         }
-        catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null) { throw; }
+        catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null)
+        {
+            throw;
+        }
         catch (Exception exception)
         {
-            try { if (candidate is not null) m_extensions.RetireBackend(candidate.Dispose); }
-            catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null) { throw; }
+            try
+            {
+                if (candidate is not null)
+                    m_extensions.RetireBackend(candidate.Dispose);
+            }
+            catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null)
+            {
+                throw;
+            }
             catch (Exception cleanup)
             {
                 m_extensions.Fault(cleanup);
@@ -641,21 +705,46 @@ public sealed class AudioRuntime : RuntimeSubsystem, IAudioService
         if (m_disposed)
             return;
         m_stopping = true;
+        m_events.dispatched -= OnEventDispatched;
         if (!m_extensionsRetired)
         {
-            try { m_extensions.Dispose(); }
-            catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null) { throw; }
-            catch (Exception exception) { m_retirementFailures.Add(exception); }
+            try
+            {
+                m_extensions.Dispose();
+            }
+            catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null)
+            {
+                throw;
+            }
+            catch (Exception exception)
+            {
+                m_retirementFailures.Add(exception);
+            }
             m_extensionsRetired = true;
         }
         List<Exception> failures = RetireBackend(AudioCompletionReason.Stopped);
-        try { m_candidateRetirement?.Dispose(); }
-        catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null) { throw; }
-        catch (Exception exception) { failures.Add(exception); }
+        try
+        {
+            m_candidateRetirement?.Dispose();
+        }
+        catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null)
+        {
+            throw;
+        }
+        catch (Exception exception)
+        {
+            failures.Add(exception);
+        }
         m_candidateRetirement = null;
         m_disposed = true;
         if (failures.Count > 0)
             throw new AggregateException("Audio retirement failed after all resource owners were attempted.", failures);
+    }
+
+    private void OnEventDispatched(Event e)
+    {
+        if (e is ApplicationSuspensionChangedEvent suspension)
+            m_mixer.SetSuspended(suspension.isSuspended);
     }
 
     private List<Exception> RetireBackend(AudioCompletionReason reason)
@@ -673,8 +762,14 @@ public sealed class AudioRuntime : RuntimeSubsystem, IAudioService
                     case 4: m_device.Dispose(); break;
                 }
             }
-            catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null) { throw; }
-            catch (Exception exception) { m_retirementFailures.Add(exception); }
+            catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null)
+            {
+                throw;
+            }
+            catch (Exception exception)
+            {
+                m_retirementFailures.Add(exception);
+            }
             m_retirementStage++;
         }
         List<Exception> failures = [.. m_retirementFailures];
@@ -699,7 +794,12 @@ public sealed class AudioRuntime : RuntimeSubsystem, IAudioService
         _ = TryRecoverDevice(m_deviceRecoveryFactory);
     }
 
-    private void Publish(string code, string message, DiagnosticSeverity severity, string? source)
+    private void Publish(
+        string code,
+        string message,
+        DiagnosticSeverity severity,
+        string? source
+    )
         => m_diagnostics.Publish(new Diagnostic(code, message, severity, source));
 
     private void EnsureActive()

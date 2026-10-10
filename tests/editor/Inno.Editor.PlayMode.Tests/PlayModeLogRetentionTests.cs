@@ -55,6 +55,22 @@ public sealed class PlayModeLogRetentionTests : IDisposable
     }
 
     [Fact]
+    public void ManualClearRemovesHistoryButKeepsCurrentIssuesUntilResolved()
+    {
+        Dispatch(LogLevel.Error, LogSessionId.none, "old failure");
+        using DiagnosticReporter reporter = m_diagnosticHub.CreateReporter(
+            new DiagnosticSource("tests.current", "Current issue"));
+        reporter.Publish(Diagnostic.Error("CURRENT", "still failing"));
+        m_logRouter.Flush();
+
+        m_console.Clear();
+
+        Assert.Equal("still failing", Assert.Single(m_console.Capture().occurrences).message);
+        reporter.Resolve("CURRENT");
+        Assert.Empty(m_console.Capture().occurrences);
+    }
+
+    [Fact]
     public void CompletedPlaySessionRetainsEveryRuntimeSeverity()
     {
         LogSessionId sessionId = m_playMode.Begin();

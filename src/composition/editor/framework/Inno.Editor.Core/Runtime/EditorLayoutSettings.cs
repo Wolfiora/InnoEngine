@@ -93,8 +93,8 @@ internal sealed class EditorLayoutSettings
     /// </exception>
     internal bool TryGetSection(
         string sectionName,
-        out IReadOnlyDictionary<string, string> values)
-    {
+        out IReadOnlyDictionary<string, string> values
+    ) {
         ValidateSectionName(sectionName);
         lock (m_sync)
         {
@@ -136,8 +136,8 @@ internal sealed class EditorLayoutSettings
     /// </exception>
     internal void SetSection(
         string sectionName,
-        IEnumerable<KeyValuePair<string, string>> values)
-    {
+        IEnumerable<KeyValuePair<string, string>> values
+    ) {
         ValidateSectionName(sectionName);
         ArgumentNullException.ThrowIfNull(values);
         var replacement = new Dictionary<string, string>(StringComparer.Ordinal);
@@ -223,8 +223,8 @@ internal sealed class EditorLayoutSettings
     private static void Parse(
         string document,
         out string layout,
-        out Dictionary<string, Dictionary<string, string>> sections)
-    {
+        out Dictionary<string, Dictionary<string, string>> sections
+    ) {
         sections = new Dictionary<string, Dictionary<string, string>>(StringComparer.Ordinal);
         var layoutBuilder = new StringBuilder();
         Dictionary<string, string>? currentEditorSection = null;
@@ -253,7 +253,7 @@ internal sealed class EditorLayoutSettings
                 continue;
             }
 
-            layoutBuilder.AppendLine(line);
+            layoutBuilder.Append(line).Append('\n');
         }
 
         layout = NormalizeLayout(layoutBuilder.ToString());
@@ -261,8 +261,8 @@ internal sealed class EditorLayoutSettings
 
     private static string Compose(
         string layout,
-        IReadOnlyDictionary<string, Dictionary<string, string>> sections)
-    {
+        IReadOnlyDictionary<string, Dictionary<string, string>> sections
+    ) {
         var builder = new StringBuilder();
         string normalizedLayout = NormalizeLayout(layout);
         if (normalizedLayout.Length > 0)
@@ -282,12 +282,13 @@ internal sealed class EditorLayoutSettings
         return builder.ToString();
     }
 
-    private static IEnumerable<KeyValuePair<string, string>> OrderValues(
-        IReadOnlyDictionary<string, string> values)
+    private static IEnumerable<KeyValuePair<string, string>> OrderValues(IReadOnlyDictionary<string, string> values)
         => values.OrderBy(static pair => pair.Key, StringComparer.Ordinal);
 
-    private static bool TryParseEditorSectionHeader(string line, out string sectionName)
-    {
+    private static bool TryParseEditorSectionHeader(
+        string line,
+        out string sectionName
+    ) {
         if (line.StartsWith(C_SECTION_PREFIX, StringComparison.Ordinal) &&
             line.EndsWith(']'))
         {
@@ -339,8 +340,7 @@ internal sealed class EditorLayoutSettings
         => !string.IsNullOrWhiteSpace(value) &&
            value.IndexOfAny(['=', '\r', '\n']) < 0;
 
-    private static bool IsValidValue(string value)
-        => value.IndexOfAny(['\r', '\n']) < 0;
+    private static bool IsValidValue(string value) => value.IndexOfAny(['\r', '\n']) < 0;
 
     private static string NormalizeLayout(string? layout)
         => string.IsNullOrWhiteSpace(layout)

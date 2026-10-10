@@ -26,8 +26,10 @@ public sealed class GraphEditorModule : EditorModule, IEditorReloadParticipant
     private IDisposable? m_registration;
     private readonly SerializationRegistry m_serialization;
 
-    internal GraphEditorModule(SerializationRegistry serialization, EditorReloadCoordinator reloads)
-    {
+    internal GraphEditorModule(
+        SerializationRegistry serialization,
+        EditorReloadCoordinator reloads
+    ) {
         m_serialization = serialization ?? throw new ArgumentNullException(nameof(serialization));
         m_reloads = reloads ?? throw new ArgumentNullException(nameof(reloads));
     }
@@ -55,9 +57,10 @@ public sealed class GraphEditorModule : EditorModule, IEditorReloadParticipant
     public GraphDocumentController OpenDocument(
         Guid documentId,
         GraphDocument document,
-        IEditorHistory history)
-    {
-        if (documentId == Guid.Empty) throw new ArgumentException("A graph document requires a persistent identity.", nameof(documentId));
+        IEditorHistory history
+    ) {
+        if (documentId == Guid.Empty)
+            throw new ArgumentException("A graph document requires a persistent identity.", nameof(documentId));
         ArgumentNullException.ThrowIfNull(document);
         ArgumentNullException.ThrowIfNull(history);
         GraphDocumentSession? session = m_identities.Get<GraphDocumentSession>(documentId);
@@ -86,7 +89,8 @@ public sealed class GraphEditorModule : EditorModule, IEditorReloadParticipant
     public bool CloseDocument(Guid documentId)
     {
         GraphDocumentSession? session = m_identities.Get<GraphDocumentSession>(documentId);
-        if (session is null) return false;
+        if (session is null)
+            return false;
         m_identities.Unregister(session);
         m_documents.Remove(documentId);
         m_ownedSessions.Remove(session);
@@ -108,8 +112,11 @@ public sealed class GraphEditorModule : EditorModule, IEditorReloadParticipant
     /// <returns>
     /// True when the document is still owned by this module.
     /// </returns>
-    public bool TryOpenDocument(Guid documentId, IEditorHistory history, out GraphDocumentController? controller)
-    {
+    public bool TryOpenDocument(
+        Guid documentId,
+        IEditorHistory history,
+        out GraphDocumentController? controller
+    ) {
         ArgumentNullException.ThrowIfNull(history);
         GraphDocumentSession? session = m_identities.Get<GraphDocumentSession>(documentId);
         controller = session is null ? null : new GraphDocumentController(session, history, m_serialization);
@@ -125,10 +132,13 @@ public sealed class GraphEditorModule : EditorModule, IEditorReloadParticipant
     /// <param name="available">
     /// Whether its source can be resolved in the current generation.
     /// </param>
-    public void SetAvailability(Guid documentId, bool available)
-    {
+    public void SetAvailability(
+        Guid documentId,
+        bool available
+    ) {
         GraphDocumentSession? session = m_identities.Get<GraphDocumentSession>(documentId);
-        if (session is not null) session.available = available;
+        if (session is not null)
+            session.available = available;
     }
 
     /// <summary>
@@ -143,9 +153,12 @@ public sealed class GraphEditorModule : EditorModule, IEditorReloadParticipant
     /// <exception cref="InvalidOperationException">
     /// Thrown when the document has no active session.
     /// </exception>
-    public void RebindDocument(Guid documentId, GraphDocument document)
-    {
-        if (documentId == Guid.Empty) throw new ArgumentException("A graph document requires a persistent identity.", nameof(documentId));
+    public void RebindDocument(
+        Guid documentId,
+        GraphDocument document
+    ) {
+        if (documentId == Guid.Empty)
+            throw new ArgumentException("A graph document requires a persistent identity.", nameof(documentId));
         ArgumentNullException.ThrowIfNull(document);
         GraphDocumentSession? session = m_identities.Get<GraphDocumentSession>(documentId);
         if (session is null)
@@ -161,8 +174,10 @@ public sealed class GraphEditorModule : EditorModule, IEditorReloadParticipant
         session.available = true;
     }
 
-    internal bool TryResolve(Guid documentId, out GraphDocumentSession? session)
-    {
+    internal bool TryResolve(
+        Guid documentId,
+        out GraphDocumentSession? session
+    ) {
         session = m_identities.Get<GraphDocumentSession>(documentId);
         return session is not null && session.available;
     }
@@ -181,7 +196,11 @@ public sealed class GraphEditorModule : EditorModule, IEditorReloadParticipant
     /// <param name="context">
     /// The context that supplies state and services for this operation.
     /// </param>
-    protected override void OnStop(EditorContext context) { m_registration?.Dispose(); m_registration = null; }
+    protected override void OnStop(EditorContext context)
+    {
+        m_registration?.Dispose();
+        m_registration = null;
+    }
 
     /// <summary>
     /// Unregisters every document identity so issued controllers cannot resolve retired sessions.
@@ -191,7 +210,8 @@ public sealed class GraphEditorModule : EditorModule, IEditorReloadParticipant
         foreach (Guid id in m_documents)
         {
             GraphDocumentSession? session = m_identities.Get<GraphDocumentSession>(id);
-            if (session is not null) m_identities.Unregister(session);
+            if (session is not null)
+                m_identities.Unregister(session);
         }
         m_documents.Clear();
         m_ownedSessions.Clear();
@@ -245,7 +265,11 @@ public sealed class GraphEditorModule : EditorModule, IEditorReloadParticipant
         /// <summary>
         /// Completes the committed operation and releases temporary state.
         /// </summary>
-        public void Complete() { m_previous.Clear(); m_candidate.Clear(); }
+        public void Complete()
+        {
+            m_previous.Clear();
+            m_candidate.Clear();
+        }
         /// <summary>
         /// Restores the state that existed before candidate activation began.
         /// </summary>
@@ -266,6 +290,11 @@ public sealed class GraphEditorModule : EditorModule, IEditorReloadParticipant
             }
             Complete();
         }
-        private sealed record State(byte[] bytes, ulong revision, bool dirty, bool available);
+        private sealed record State(
+            byte[] bytes,
+            ulong revision,
+            bool dirty,
+            bool available
+        );
     }
 }

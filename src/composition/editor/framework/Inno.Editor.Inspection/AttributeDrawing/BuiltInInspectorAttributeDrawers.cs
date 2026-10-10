@@ -77,8 +77,7 @@ internal sealed class TooltipInspectorAttributeDrawer : IInspectorAttributeDrawe
     /// <param name="context">
     /// Active attribute drawing context.
     /// </param>
-    public void Update(InspectorAttributeDrawContext context)
-        => context.tooltip = ((TooltipAttribute)context.attribute).text;
+    public void Update(InspectorAttributeDrawContext context) => context.tooltip = ((TooltipAttribute)context.attribute).text;
 }
 
 [InspectorAttributeDrawer(typeof(InspectorNameAttribute))]
@@ -90,8 +89,7 @@ internal sealed class NameInspectorAttributeDrawer : IInspectorAttributeDrawer
     /// <param name="context">
     /// Active attribute drawing context.
     /// </param>
-    public void Update(InspectorAttributeDrawContext context)
-        => context.label = ((InspectorNameAttribute)context.attribute).name;
+    public void Update(InspectorAttributeDrawContext context) => context.label = ((InspectorNameAttribute)context.attribute).name;
 }
 
 [InspectorAttributeDrawer(typeof(RangeAttribute))]
@@ -120,8 +118,7 @@ internal sealed class ReadOnlyInspectorAttributeDrawer : IInspectorAttributeDraw
     /// <param name="context">
     /// Active attribute drawing context.
     /// </param>
-    public void Update(InspectorAttributeDrawContext context)
-        => context.isReadOnly = true;
+    public void Update(InspectorAttributeDrawContext context) => context.isReadOnly = true;
 }
 
 [InspectorAttributeDrawer(typeof(ShowIfAttribute))]
@@ -200,8 +197,11 @@ internal sealed class HelpBoxInspectorAttributeDrawer : IInspectorAttributeDrawe
 
 internal static class InspectorConditionEvaluator
 {
-    internal static bool Evaluate(object? value, InspectorCondition condition, object? expected)
-    {
+    internal static bool Evaluate(
+        object? value,
+        InspectorCondition condition,
+        object? expected
+    ) {
         return condition switch
         {
             InspectorCondition.Truthy => IsTruthy(value),
@@ -240,8 +240,10 @@ internal static class InspectorConditionEvaluator
             : true;
     }
 
-    private static bool AreEqual(object? value, object? expected)
-    {
+    private static bool AreEqual(
+        object? value,
+        object? expected
+    ) {
         if (Equals(value, expected))
             return true;
         if (value is null || expected is null)

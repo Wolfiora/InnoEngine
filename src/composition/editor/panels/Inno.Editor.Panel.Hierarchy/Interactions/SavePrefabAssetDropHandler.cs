@@ -17,8 +17,8 @@ internal sealed class SavePrefabAssetDropHandler
 
     internal SavePrefabAssetDropHandler(
         IEditorSceneWorkspace workspace,
-        AssetPipeline assets)
-    {
+        AssetPipeline assets
+    ) {
         m_workspace = workspace ?? throw new System.ArgumentNullException(nameof(workspace));
         m_assets = assets ?? throw new System.ArgumentNullException(nameof(assets));
     }
@@ -32,8 +32,7 @@ internal sealed class SavePrefabAssetDropHandler
     /// <returns>
     /// The validated editor drop status that represents the completed operation.
     /// </returns>
-    protected override EditorDropStatus Query(
-        EditorDropContext<GameObject, string> context)
+    protected override EditorDropStatus Query(EditorDropContext<GameObject, string> context)
         => m_workspace.canPersist && context.source.isRuntimeValid
             ? EditorDropStatus.Accept()
             : EditorDropStatus.rejected;
@@ -47,8 +46,7 @@ internal sealed class SavePrefabAssetDropHandler
     /// <returns>
     /// The validated editor drop result that represents the completed operation.
     /// </returns>
-    protected override EditorDropResult Drop(
-        EditorDropContext<GameObject, string> context)
+    protected override EditorDropResult Drop(EditorDropContext<GameObject, string> context)
     {
         string path = m_workspace.SavePrefab(context.source, context.target);
         if (!m_assets.TryGetFileSystemEntry(AssetPath.Parse(path), out AssetFileEntry selection))

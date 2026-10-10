@@ -20,7 +20,10 @@ public sealed class SceneTypeResolutionException : Exception
     /// <exception cref="ArgumentException">
     /// Thrown when <paramref name="stableTypeId"/> is empty or <paramref name="elementKind"/> is empty.
     /// </exception>
-    public SceneTypeResolutionException(Guid stableTypeId, string elementKind)
+    public SceneTypeResolutionException(
+        Guid stableTypeId,
+        string elementKind
+    )
         : base($"Scene {elementKind} stable type id '{stableTypeId}' is not loaded.")
     {
         if (stableTypeId == Guid.Empty)

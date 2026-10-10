@@ -36,8 +36,8 @@ public static partial class ImGuiWidget
         ref bool isOpen,
         Action drawBody,
         ImGuiWindowFlags flags = ImGuiWindowFlags.NoCollapse,
-        bool useWindowPadding = true)
-    {
+        bool useWindowPadding = true
+    ) {
         if (!isOpen)
             return;
 
@@ -58,8 +58,14 @@ public static partial class ImGuiWidget
             // editor theme. Suppress that extra strip only while window decorations are built.
             NativeImGui.PushStyleVar(ImGuiStyleVar.FrameBorderSize, 0f);
             bool visible;
-            try { visible = NativeImGui.Begin(title, flags); }
-            finally { NativeImGui.PopStyleVar(2); }
+            try
+            {
+                visible = NativeImGui.Begin(title, flags);
+            }
+            finally
+            {
+                NativeImGui.PopStyleVar(2);
+            }
             beganWindow = true;
             if (pushedPadding)
             {
@@ -106,8 +112,8 @@ public static partial class ImGuiWidget
     public static void ConstrainedContent(
         string id,
         Action drawContent,
-        bool useWindowPadding = true)
-    {
+        bool useWindowPadding = true
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(id);
         ArgumentNullException.ThrowIfNull(drawContent);
 
@@ -158,8 +164,8 @@ public static partial class ImGuiWidget
     public static void HeaderSurface(
         string id,
         Action drawContent,
-        bool spanWindowPadding = false)
-    {
+        bool spanWindowPadding = false
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(id);
         ArgumentNullException.ThrowIfNull(drawContent);
 
@@ -245,8 +251,12 @@ public static partial class ImGuiWidget
                 (int)ImGuiButtonFlagsPrivate.AllowOverlap |
                 (int)ImGuiButtonFlagsPrivate.NoNavFocus |
                 (int)ImGuiButtonFlagsPrivate.PressedOnClickRelease);
-            bool mouseHovered = NativeImGui.IsMouseHoveringRect(itemMinimum, itemMaximum);
-            bool pressed = ImGuiP.ItemAdd(itemBounds, itemId) &&
+            ImGuiWindowPtr hoveredWindow = NativeImGui.GetCurrentContext().HoveredWindow;
+            bool hostHovered = hoveredWindow != ImGuiWindowPtr.Null &&
+                               hoveredWindow.RootWindowDockTree == dockNode.HostWindow.RootWindowDockTree;
+            bool mouseHovered = hostHovered && NativeImGui.IsMouseHoveringRect(itemMinimum, itemMaximum);
+            bool itemAdded = ImGuiP.ItemAdd(itemBounds, itemId);
+            bool pressed = hostHovered && itemAdded &&
                            ImGuiP.ButtonBehavior(itemBounds, itemId, ref hovered, ref held, buttonFlags);
             hovered |= mouseHovered;
             pressed |= mouseHovered && NativeImGui.IsMouseClicked(ImGuiMouseButton.Left);
@@ -315,8 +325,8 @@ public static partial class ImGuiWidget
         ImDrawListPtr drawList,
         Vector2 center,
         float slotSize,
-        uint color)
-    {
+        uint color
+    ) {
         float thickness = MathF.Max(1f, style.borderSize);
         float extent = MathF.Max(
             thickness,

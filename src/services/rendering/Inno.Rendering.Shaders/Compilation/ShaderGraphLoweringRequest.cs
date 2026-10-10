@@ -32,14 +32,18 @@ public sealed class ShaderGraphLoweringRequest
     /// <param name="stageInputs">
     /// Target-assigned stage inputs keyed by their input node identity.
     /// </param>
-    public ShaderGraphLoweringRequest(GraphDocument graph, IReadOnlyDictionary<string, GraphEndpoint> outputs,
-        string implementationId, IReadOnlyDictionary<GraphNodeId, ShaderSourceModuleAnalysis>? sourceModules = null,
-        IReadOnlyDictionary<GraphNodeId, ShaderIrStageInput>? stageInputs = null)
-    {
+    public ShaderGraphLoweringRequest(
+        GraphDocument graph,
+        IReadOnlyDictionary<string, GraphEndpoint> outputs,
+        string implementationId,
+        IReadOnlyDictionary<GraphNodeId, ShaderSourceModuleAnalysis>? sourceModules = null,
+        IReadOnlyDictionary<GraphNodeId, ShaderIrStageInput>? stageInputs = null
+    ) {
         ArgumentNullException.ThrowIfNull(graph);
         ArgumentNullException.ThrowIfNull(outputs);
         ArgumentException.ThrowIfNullOrWhiteSpace(implementationId);
-        foreach (string name in outputs.Keys) ArgumentException.ThrowIfNullOrWhiteSpace(name);
+        foreach (string name in outputs.Keys)
+            ArgumentException.ThrowIfNullOrWhiteSpace(name);
         this.graph = graph.Clone();
         this.outputs = new ReadOnlyDictionary<string, GraphEndpoint>(new Dictionary<string, GraphEndpoint>(outputs, StringComparer.Ordinal));
         this.implementationId = implementationId;
@@ -83,16 +87,23 @@ public sealed class ShaderGraphLoweringRequest
 /// <param name="portId">
 /// Affected semantic port when known.
 /// </param>
-public sealed record ShaderGraphDiagnostic(string code, DiagnosticSeverity severity, string message,
-    GraphNodeId? nodeId = null, string? portId = null);
+public sealed record ShaderGraphDiagnostic(
+    string code,
+    DiagnosticSeverity severity,
+    string message,
+    GraphNodeId? nodeId = null,
+    string? portId = null
+);
 
 /// <summary>
 /// Contains a detached typed region only after all graph, port and node lowering validation succeeds.
 /// </summary>
 public sealed class ShaderGraphLoweringResult
 {
-    internal ShaderGraphLoweringResult(ShaderIrBlock? block, IEnumerable<ShaderGraphDiagnostic> diagnostics)
-    {
+    internal ShaderGraphLoweringResult(
+        ShaderIrBlock? block,
+        IEnumerable<ShaderGraphDiagnostic> diagnostics
+    ) {
         this.block = block;
         this.diagnostics = Array.AsReadOnly(diagnostics.ToArray());
     }

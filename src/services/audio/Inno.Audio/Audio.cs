@@ -18,8 +18,7 @@ public static class AudioExecutionContext
     /// <exception cref="InvalidOperationException">
     /// Thrown when no audio service is active for the caller.
     /// </exception>
-    public static IAudioService current
-        => S_CURRENT_SCOPE.current;
+    public static IAudioService current => S_CURRENT_SCOPE.current;
 
     /// <summary>
     /// Binds an audio service until the returned strict last-in-first-out scope is disposed.
@@ -75,8 +74,7 @@ public static class Audio
     /// <returns>
     /// A voice handle that may initially be preparing.
     /// </returns>
-    public static AudioVoiceHandle Play(AudioClipAsset clip)
-        => AudioExecutionContext.current.Play(clip);
+    public static AudioVoiceHandle Play(AudioClipAsset clip) => AudioExecutionContext.current.Play(clip);
 
     /// <summary>
     /// Starts one clip using explicit playback parameters.
@@ -90,8 +88,10 @@ public static class Audio
     /// <returns>
     /// A voice handle that may initially be preparing.
     /// </returns>
-    public static AudioVoiceHandle Play(AudioClipAsset clip, AudioPlayOptions options)
-        => AudioExecutionContext.current.Play(clip, options);
+    public static AudioVoiceHandle Play(
+        AudioClipAsset clip,
+        AudioPlayOptions options
+    ) => AudioExecutionContext.current.Play(clip, options);
 
     /// <summary>
     /// Schedules one clip against the monotonic audio clock.
@@ -111,7 +111,8 @@ public static class Audio
     public static AudioVoiceHandle PlayScheduled(
         AudioClipAsset clip,
         double scheduledDspTime,
-        AudioPlayOptions options)
+        AudioPlayOptions options
+    )
         => AudioExecutionContext.current.PlayScheduled(clip, scheduledDspTime, options);
 
     /// <summary>
@@ -159,8 +160,10 @@ public static class Audio
     /// <returns>
     /// <see langword="true"/> when the cursor was updated.
     /// </returns>
-    public static bool Seek(AudioVoiceHandle voice, TimeSpan position)
-        => AudioExecutionContext.current.Seek(voice, position);
+    public static bool Seek(
+        AudioVoiceHandle voice,
+        TimeSpan position
+    ) => AudioExecutionContext.current.Seek(voice, position);
 
     /// <summary>
     /// Replaces mutable parameters for a live voice.
@@ -174,7 +177,10 @@ public static class Audio
     /// <returns>
     /// <see langword="true"/> when the voice was updated.
     /// </returns>
-    public static bool SetVoiceParameters(AudioVoiceHandle voice, AudioVoiceParameters parameters)
+    public static bool SetVoiceParameters(
+        AudioVoiceHandle voice,
+        AudioVoiceParameters parameters
+    )
         => AudioExecutionContext.current.SetVoiceParameters(voice, parameters);
 
     /// <summary>
@@ -189,7 +195,10 @@ public static class Audio
     /// <returns>
     /// <see langword="true"/> when the handle belongs to a known voice.
     /// </returns>
-    public static bool TryGetVoiceState(AudioVoiceHandle voice, out AudioPlaybackState playbackState)
+    public static bool TryGetVoiceState(
+        AudioVoiceHandle voice,
+        out AudioPlaybackState playbackState
+    )
         => AudioExecutionContext.current.TryGetVoiceState(voice, out playbackState);
 
     /// <summary>
@@ -204,8 +213,10 @@ public static class Audio
     /// <returns>
     /// <see langword="true"/> when the bus exists and was updated.
     /// </returns>
-    public static bool SetBusVolume(AudioBusId bus, float volume)
-        => AudioExecutionContext.current.SetBusVolume(bus, volume);
+    public static bool SetBusVolume(
+        AudioBusId bus,
+        float volume
+    ) => AudioExecutionContext.current.SetBusVolume(bus, volume);
 
     /// <summary>
     /// Updates mute state for a semantic mixer bus.
@@ -219,8 +230,10 @@ public static class Audio
     /// <returns>
     /// <see langword="true"/> when the bus exists and was updated.
     /// </returns>
-    public static bool SetBusMuted(AudioBusId bus, bool muted)
-        => AudioExecutionContext.current.SetBusMuted(bus, muted);
+    public static bool SetBusMuted(
+        AudioBusId bus,
+        bool muted
+    ) => AudioExecutionContext.current.SetBusMuted(bus, muted);
 
     /// <summary>
     /// Updates pause state for a semantic mixer bus.
@@ -234,8 +247,10 @@ public static class Audio
     /// <returns>
     /// <see langword="true"/> when the bus exists and was updated.
     /// </returns>
-    public static bool SetBusPaused(AudioBusId bus, bool paused)
-        => AudioExecutionContext.current.SetBusPaused(bus, paused);
+    public static bool SetBusPaused(
+        AudioBusId bus,
+        bool paused
+    ) => AudioExecutionContext.current.SetBusPaused(bus, paused);
 
     /// <summary>
     /// Prepares a clip and retains it in the runtime cache.
@@ -255,7 +270,8 @@ public static class Audio
     public static ValueTask PreloadAsync(
         AudioClipAsset clip,
         AudioClipLoadMode loadMode = AudioClipLoadMode.Automatic,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
         => AudioExecutionContext.current.PreloadAsync(clip, loadMode, cancellationToken);
 
     /// <summary>
@@ -264,6 +280,5 @@ public static class Audio
     /// <param name="clip">
     /// Imported clip whose preload retention should be released.
     /// </param>
-    public static void ReleasePreload(AudioClipAsset clip)
-        => AudioExecutionContext.current.ReleasePreload(clip);
+    public static void ReleasePreload(AudioClipAsset clip) => AudioExecutionContext.current.ReleasePreload(clip);
 }

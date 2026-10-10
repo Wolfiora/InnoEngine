@@ -25,8 +25,8 @@ public sealed class EditorSceneWorkspaceHost : IDisposable
         TypeCatalog types,
         SerializationRegistry serialization,
         LogRouter logs,
-        IEditorSelectionCoordinator? selection)
-    {
+        IEditorSelectionCoordinator? selection
+    ) {
         m_workspace = new EditorSceneWorkspace(
             runtimeSession,
             assets,

@@ -28,8 +28,10 @@ public sealed class EditorDropAttribute : Attribute
     /// <param name="priority">
     /// The tie-breaking priority used after source and target specificity.
     /// </param>
-    public EditorDropAttribute(string area, int priority = 0)
-    {
+    public EditorDropAttribute(
+        string area,
+        int priority = 0
+    ) {
         this.area = area ?? string.Empty;
         this.priority = priority;
     }

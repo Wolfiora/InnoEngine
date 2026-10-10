@@ -25,8 +25,10 @@ public static class Diagnostics
     /// Thrown when <paramref name="diagnostic"/> is <see langword="null"/>.
     /// </exception>
     [MethodImpl(MethodImplOptions.NoInlining)]
-    public static void Set(string group, Diagnostic diagnostic)
-    {
+    public static void Set(
+        string group,
+        Diagnostic diagnostic
+    ) {
         ArgumentNullException.ThrowIfNull(diagnostic);
         Set(group, [diagnostic]);
     }
@@ -47,8 +49,10 @@ public static class Diagnostics
     /// Thrown when <paramref name="diagnostics"/> is <see langword="null"/>.
     /// </exception>
     [MethodImpl(MethodImplOptions.NoInlining)]
-    public static void Set(string group, IEnumerable<Diagnostic> diagnostics)
-    {
+    public static void Set(
+        string group,
+        IEnumerable<Diagnostic> diagnostics
+    ) {
         ArgumentNullException.ThrowIfNull(diagnostics);
         DiagnosticHub.current.Set(
             DiagnosticCallerResolver.Resolve(group),
@@ -81,8 +85,8 @@ public static class Diagnostics
         Guid targetId,
         string group,
         Diagnostic diagnostic,
-        string? displayName = null)
-    {
+        string? displayName = null
+    ) {
         ArgumentNullException.ThrowIfNull(diagnostic);
         Set(targetId, group, [diagnostic], displayName);
     }
@@ -113,8 +117,8 @@ public static class Diagnostics
         Guid targetId,
         string group,
         IEnumerable<Diagnostic> diagnostics,
-        string? displayName = null)
-    {
+        string? displayName = null
+    ) {
         ArgumentNullException.ThrowIfNull(diagnostics);
         DiagnosticHub.current.Set(
             DiagnosticCallerResolver.Resolve(group, targetId, displayName),
@@ -131,8 +135,7 @@ public static class Diagnostics
     /// Thrown when <paramref name="group"/> is empty.
     /// </exception>
     [MethodImpl(MethodImplOptions.NoInlining)]
-    public static void Clear(string group)
-        => DiagnosticHub.current.Clear(DiagnosticCallerResolver.Resolve(group));
+    public static void Clear(string group) => DiagnosticHub.current.Clear(DiagnosticCallerResolver.Resolve(group));
 
     /// <summary>
     /// Clears one targeted diagnostic group owned by the calling type.
@@ -147,6 +150,8 @@ public static class Diagnostics
     /// Thrown when <paramref name="targetId"/> is empty or <paramref name="group"/> is empty.
     /// </exception>
     [MethodImpl(MethodImplOptions.NoInlining)]
-    public static void Clear(Guid targetId, string group)
-        => DiagnosticHub.current.Clear(DiagnosticCallerResolver.Resolve(group, targetId));
+    public static void Clear(
+        Guid targetId,
+        string group
+    ) => DiagnosticHub.current.Clear(DiagnosticCallerResolver.Resolve(group, targetId));
 }

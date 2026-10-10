@@ -32,7 +32,10 @@ public static class ImGui
     /// <returns>
     /// <see langword="true"/> when the button is activated.
     /// </returns>
-    public static bool Button(string label, Vector2 size = default) => RawImGui.Button(label, size);
+    public static bool Button(
+        string label,
+        Vector2 size = default
+    ) => RawImGui.Button(label, size);
 
     /// <summary>
     /// Draws a compact button.
@@ -57,7 +60,10 @@ public static class ImGui
     /// <param name="value">
     /// The concrete value read or transformed by this operation.
     /// </param>
-    public static bool Checkbox(string label, ref bool value) => RawImGui.Checkbox(label, ref value);
+    public static bool Checkbox(
+        string label,
+        ref bool value
+    ) => RawImGui.Checkbox(label, ref value);
 
     /// <summary>
     /// Draws and edits a bounded UTF-8 text value.
@@ -84,8 +90,8 @@ public static class ImGui
         string label,
         ref string value,
         int capacity = 1024,
-        ImGuiInputTextFlags flags = ImGuiInputTextFlags.None)
-    {
+        ImGuiInputTextFlags flags = ImGuiInputTextFlags.None
+    ) {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(capacity);
         return ImGuiUtf8Buffer.InputText(label, null, ref value, (nuint)capacity, flags);
     }
@@ -119,8 +125,8 @@ public static class ImGui
         string hint,
         ref string value,
         int capacity = 1024,
-        ImGuiInputTextFlags flags = ImGuiInputTextFlags.None)
-    {
+        ImGuiInputTextFlags flags = ImGuiInputTextFlags.None
+    ) {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(capacity);
         return ImGuiUtf8Buffer.InputText(label, hint, ref value, (nuint)capacity, flags);
     }
@@ -137,7 +143,10 @@ public static class ImGui
     /// <param name="value">
     /// The concrete value read or transformed by this operation.
     /// </param>
-    public static bool InputInt(string label, ref int value) => RawImGui.InputInt(label, ref value);
+    public static bool InputInt(
+        string label,
+        ref int value
+    ) => RawImGui.InputInt(label, ref value);
 
     /// <summary>
     /// Draws and edits a floating-point value.
@@ -151,7 +160,10 @@ public static class ImGui
     /// <param name="value">
     /// The concrete value read or transformed by this operation.
     /// </param>
-    public static bool InputFloat(string label, ref float value) => RawImGui.InputFloat(label, ref value);
+    public static bool InputFloat(
+        string label,
+        ref float value
+    ) => RawImGui.InputFloat(label, ref value);
 
     /// <summary>
     /// Draws a floating-point drag control.
@@ -179,7 +191,8 @@ public static class ImGui
         ref float value,
         float speed = 1f,
         float minimum = 0f,
-        float maximum = 0f)
+        float maximum = 0f
+    )
         => RawImGui.DragFloat(label, ref value, speed, minimum, maximum);
 
     /// <summary>
@@ -208,7 +221,8 @@ public static class ImGui
         ref float value,
         float minimum,
         float maximum,
-        ImGuiSliderFlags flags = ImGuiSliderFlags.None)
+        ImGuiSliderFlags flags = ImGuiSliderFlags.None
+    )
         => RawImGui.SliderFloat(label, ref value, minimum, maximum, flags);
 
     /// <summary>
@@ -229,8 +243,8 @@ public static class ImGui
     public static unsafe bool ColorEdit4(
         string label,
         ref Vector4 value,
-        ImGuiColorEditFlags flags = ImGuiColorEditFlags.None)
-    {
+        ImGuiColorEditFlags flags = ImGuiColorEditFlags.None
+    ) {
         fixed (Vector4* nativeValue = &value)
             return RawImGui.ColorEdit4(label, (float*)nativeValue, flags);
     }
@@ -253,9 +267,11 @@ public static class ImGui
     /// <exception cref="ArgumentException">
     /// HSV input storage conflicts with the linear-RGB value contract.
     /// </exception>
-    public static bool ColorEditLinear4(string label, ref Vector4 value,
-        ImGuiColorEditFlags flags = ImGuiColorEditFlags.None)
-    {
+    public static bool ColorEditLinear4(
+        string label,
+        ref Vector4 value,
+        ImGuiColorEditFlags flags = ImGuiColorEditFlags.None
+    ) {
         if ((flags & ImGuiColorEditFlags.InputHsv) != 0)
             throw new ArgumentException("Linear RGBA editing requires RGB input storage.", nameof(flags));
         Vector4 display = new(LinearToSrgb(value.X), LinearToSrgb(value.Y), LinearToSrgb(value.Z), value.W);
@@ -288,7 +304,8 @@ public static class ImGui
     public static bool BeginChild(
         string id,
         Vector2 size = default,
-        ImGuiChildFlags flags = ImGuiChildFlags.None)
+        ImGuiChildFlags flags = ImGuiChildFlags.None
+    )
         => RawImGui.BeginChild(id, size, flags);
 
     /// <summary>
@@ -318,7 +335,8 @@ public static class ImGui
         string id,
         int columns,
         ImGuiTableFlags flags = ImGuiTableFlags.None,
-        Vector2 size = default)
+        Vector2 size = default
+    )
         => RawImGui.BeginTable(id, columns, flags, size);
 
     /// <summary>
@@ -341,7 +359,8 @@ public static class ImGui
     public static void TableSetupColumn(
         string label,
         ImGuiTableColumnFlags flags = ImGuiTableColumnFlags.None,
-        float widthOrWeight = 0f)
+        float widthOrWeight = 0f
+    )
         => RawImGui.TableSetupColumn(label, flags, widthOrWeight);
 
     /// <summary>
@@ -380,7 +399,8 @@ public static class ImGui
     public static bool BeginCombo(
         string label,
         string preview,
-        ImGuiComboFlags flags = ImGuiComboFlags.None)
+        ImGuiComboFlags flags = ImGuiComboFlags.None
+    )
         => RawImGui.BeginCombo(label, preview, flags);
 
     /// <summary>
@@ -406,7 +426,8 @@ public static class ImGui
     public static bool Selectable(
         string label,
         bool selected = false,
-        ImGuiSelectableFlags flags = ImGuiSelectableFlags.None)
+        ImGuiSelectableFlags flags = ImGuiSelectableFlags.None
+    )
         => RawImGui.Selectable(label, selected, flags);
 
     /// <summary>
@@ -423,7 +444,8 @@ public static class ImGui
     /// </returns>
     public static bool CollapsingHeader(
         string label,
-        ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags.None)
+        ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags.None
+    )
         => RawImGui.CollapsingHeader(label, flags);
 
     /// <summary>
@@ -440,8 +462,8 @@ public static class ImGui
     /// </returns>
     public static bool TreeNode(
         string label,
-        ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags.None)
-        => RawImGui.TreeNodeEx(label, flags);
+        ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags.None
+    ) => RawImGui.TreeNodeEx(label, flags);
 
     /// <summary>
     /// Ends the current open tree-node scope.
@@ -460,8 +482,10 @@ public static class ImGui
     /// <returns>
     /// <see langword="true"/> when tab contents should be submitted.
     /// </returns>
-    public static bool BeginTabBar(string id, ImGuiTabBarFlags flags = ImGuiTabBarFlags.None)
-        => RawImGui.BeginTabBar(id, flags);
+    public static bool BeginTabBar(
+        string id,
+        ImGuiTabBarFlags flags = ImGuiTabBarFlags.None
+    ) => RawImGui.BeginTabBar(id, flags);
 
     /// <summary>
     /// Ends the current tab bar.
@@ -480,8 +504,10 @@ public static class ImGui
     /// <returns>
     /// <see langword="true"/> when tab contents should be submitted.
     /// </returns>
-    public static bool BeginTabItem(string label, ImGuiTabItemFlags flags = ImGuiTabItemFlags.None)
-        => RawImGui.BeginTabItem(label, flags);
+    public static bool BeginTabItem(
+        string label,
+        ImGuiTabItemFlags flags = ImGuiTabItemFlags.None
+    ) => RawImGui.BeginTabItem(label, flags);
 
     /// <summary>
     /// Begins one closeable tab item.
@@ -501,8 +527,8 @@ public static class ImGui
     public static unsafe bool BeginTabItem(
         string label,
         ref bool isOpen,
-        ImGuiTabItemFlags flags = ImGuiTabItemFlags.None)
-    {
+        ImGuiTabItemFlags flags = ImGuiTabItemFlags.None
+    ) {
         byte nativeOpen = isOpen ? (byte)1 : (byte)0;
         bool visible = RawImGui.BeginTabItem(label, &nativeOpen, flags);
         isOpen = nativeOpen != 0;
@@ -523,8 +549,10 @@ public static class ImGui
     /// <param name="flags">
     /// Popup opening behavior.
     /// </param>
-    public static void OpenPopup(string id, ImGuiPopupFlags flags = ImGuiPopupFlags.None)
-        => RawImGui.OpenPopup(id, flags);
+    public static void OpenPopup(
+        string id,
+        ImGuiPopupFlags flags = ImGuiPopupFlags.None
+    ) => RawImGui.OpenPopup(id, flags);
 
     /// <summary>
     /// Begins a named popup.
@@ -538,8 +566,10 @@ public static class ImGui
     /// <returns>
     /// <see langword="true"/> when popup contents should be submitted.
     /// </returns>
-    public static bool BeginPopup(string id, ImGuiWindowFlags flags = ImGuiWindowFlags.None)
-        => RawImGui.BeginPopup(id, flags);
+    public static bool BeginPopup(
+        string id,
+        ImGuiWindowFlags flags = ImGuiWindowFlags.None
+    ) => RawImGui.BeginPopup(id, flags);
 
     /// <summary>
     /// Ends the current popup.
@@ -604,8 +634,10 @@ public static class ImGui
     /// <param name="value">
     /// The linear RGBA value.
     /// </param>
-    public static void PushStyleColor(ImGuiCol color, Vector4 value)
-        => RawImGui.PushStyleColor(color, value);
+    public static void PushStyleColor(
+        ImGuiCol color,
+        Vector4 value
+    ) => RawImGui.PushStyleColor(color, value);
 
     /// <summary>
     /// Pops color overrides.
@@ -624,8 +656,10 @@ public static class ImGui
     /// <param name="value">
     /// The scalar value.
     /// </param>
-    public static void PushStyleVar(ImGuiStyleVar style, float value)
-        => RawImGui.PushStyleVar(style, value);
+    public static void PushStyleVar(
+        ImGuiStyleVar style,
+        float value
+    ) => RawImGui.PushStyleVar(style, value);
 
     /// <summary>
     /// Pushes one two-component style override.
@@ -636,8 +670,10 @@ public static class ImGui
     /// <param name="value">
     /// The vector value.
     /// </param>
-    public static void PushStyleVar(ImGuiStyleVar style, Vector2 value)
-        => RawImGui.PushStyleVar(style, value);
+    public static void PushStyleVar(
+        ImGuiStyleVar style,
+        Vector2 value
+    ) => RawImGui.PushStyleVar(style, value);
 
     /// <summary>
     /// Pops style-variable overrides.
@@ -656,8 +692,10 @@ public static class ImGui
     /// <param name="spacing">
     /// The explicit spacing, or a negative value for the current style spacing.
     /// </param>
-    public static void SameLine(float offset = 0f, float spacing = -1f)
-        => RawImGui.SameLine(offset, spacing);
+    public static void SameLine(
+        float offset = 0f,
+        float spacing = -1f
+    ) => RawImGui.SameLine(offset, spacing);
 
     /// <summary>
     /// Draws a horizontal separator.
@@ -761,8 +799,7 @@ public static class ImGui
     /// <returns>
     /// <see langword="true"/> when the query succeeds.
     /// </returns>
-    public static bool IsItemHovered(ImGuiHoveredFlags flags = ImGuiHoveredFlags.None)
-        => RawImGui.IsItemHovered(flags);
+    public static bool IsItemHovered(ImGuiHoveredFlags flags = ImGuiHoveredFlags.None) => RawImGui.IsItemHovered(flags);
 
     /// <summary>
     /// Gets whether the previous item is active.
@@ -781,8 +818,7 @@ public static class ImGui
     /// <returns>
     /// <see langword="true"/> when the item was clicked.
     /// </returns>
-    public static bool IsItemClicked(ImGuiMouseButton button = ImGuiMouseButton.Left)
-        => RawImGui.IsItemClicked(button);
+    public static bool IsItemClicked(ImGuiMouseButton button = ImGuiMouseButton.Left) => RawImGui.IsItemClicked(button);
 
     /// <summary>
     /// Converts a floating-point RGBA color to Dear ImGui packed color order.
@@ -810,7 +846,12 @@ public static class ImGui
     /// <param name="thickness">
     /// The line thickness.
     /// </param>
-    public static void DrawLine(Vector2 start, Vector2 end, uint color, float thickness = 1f)
+    public static void DrawLine(
+        Vector2 start,
+        Vector2 end,
+        uint color,
+        float thickness = 1f
+    )
         => RawImGui.GetWindowDrawList().AddLine(start, end, color, thickness);
 
     /// <summary>
@@ -836,7 +877,8 @@ public static class ImGui
         Vector2 maximum,
         uint color,
         float rounding = 0f,
-        float thickness = 1f)
+        float thickness = 1f
+    )
         => RawImGui.GetWindowDrawList().AddRect(minimum, maximum, color, rounding, thickness);
 
     /// <summary>
@@ -858,7 +900,8 @@ public static class ImGui
         Vector2 minimum,
         Vector2 maximum,
         uint color,
-        float rounding = 0f)
+        float rounding = 0f
+    )
         => RawImGui.GetWindowDrawList().AddRectFilled(minimum, maximum, color, rounding);
 
     /// <summary>
@@ -873,12 +916,13 @@ public static class ImGui
     /// <param name="text">
     /// The text to draw.
     /// </param>
-    public static void DrawText(Vector2 position, uint color, string text)
-        => RawImGui.GetWindowDrawList().AddText(position, color, text);
+    public static void DrawText(
+        Vector2 position,
+        uint color,
+        string text
+    ) => RawImGui.GetWindowDrawList().AddText(position, color, text);
 
-    private static float LinearToSrgb(float value)
-        => value <= 0.0031308f ? value * 12.92f : 1.055f * MathF.Pow(value, 1f / 2.4f) - 0.055f;
+    private static float LinearToSrgb(float value) => value <= 0.0031308f ? value * 12.92f : 1.055f * MathF.Pow(value, 1f / 2.4f) - 0.055f;
 
-    private static float SrgbToLinear(float value)
-        => value <= 0.04045f ? value / 12.92f : MathF.Pow((value + 0.055f) / 1.055f, 2.4f);
+    private static float SrgbToLinear(float value) => value <= 0.04045f ? value / 12.92f : MathF.Pow((value + 0.055f) / 1.055f, 2.4f);
 }

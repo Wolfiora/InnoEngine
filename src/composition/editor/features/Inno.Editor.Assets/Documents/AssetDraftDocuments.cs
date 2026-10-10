@@ -58,9 +58,15 @@ public sealed class AssetDraftDocuments<TAsset> : IDisposable where TAsset : Ass
     /// <param name="label">
     /// Human-readable singular asset kind.
     /// </param>
-    public AssetDraftDocuments(AssetPipeline assets, SerializationRegistry serialization, EditorInteractions interactions,
-        string providerId, string historyKind, string extension, string label)
-    {
+    public AssetDraftDocuments(
+        AssetPipeline assets,
+        SerializationRegistry serialization,
+        EditorInteractions interactions,
+        string providerId,
+        string historyKind,
+        string extension,
+        string label
+    ) {
         ArgumentNullException.ThrowIfNull(assets);
         ArgumentNullException.ThrowIfNull(serialization);
         ArgumentNullException.ThrowIfNull(interactions);
@@ -108,7 +114,8 @@ public sealed class AssetDraftDocuments<TAsset> : IDisposable where TAsset : Ass
     {
         if (!path.localPath.EndsWith(m_extension, StringComparison.OrdinalIgnoreCase))
             throw new ArgumentException("The source extension does not belong to this document provider.", nameof(path));
-        if (!m_assets.TryGetInfo(path, out AssetInfo? info) || info is null) throw new IOException("The asset identity is unavailable.");
+        if (!m_assets.TryGetInfo(path, out AssetInfo? info) || info is null)
+            throw new IOException("The asset identity is unavailable.");
         m_interactions.documents.Open(path.ToString(), info.persistentId);
         return info.persistentId;
     }
@@ -136,8 +143,11 @@ public sealed class AssetDraftDocuments<TAsset> : IDisposable where TAsset : Ass
     /// <param name="finishGesture">
     /// True completes one history transaction; false continues the same active gesture.
     /// </param>
-    public void Replace(Guid assetId, TAsset candidate, bool finishGesture = true)
-        => Edit(m_drafts[assetId], candidate, finishGesture);
+    public void Replace(
+        Guid assetId,
+        TAsset candidate,
+        bool finishGesture = true
+    ) => Edit(m_drafts[assetId], candidate, finishGesture);
 
     /// <summary>
     /// Finishes the active edit gesture without saving or applying its draft.
@@ -156,27 +166,33 @@ public sealed class AssetDraftDocuments<TAsset> : IDisposable where TAsset : Ass
     /// <param name="finishGesture">
     /// Whether this sample completes the shared gesture.
     /// </param>
-    public void ReplaceMany(IReadOnlyDictionary<Guid, TAsset> candidates, bool finishGesture = true)
-    {
+    public void ReplaceMany(
+        IReadOnlyDictionary<Guid, TAsset> candidates,
+        bool finishGesture = true
+    ) {
         ArgumentNullException.ThrowIfNull(candidates);
-        if (m_activeGroup.Length != 0 && !m_activeGroup.ToHashSet().SetEquals(candidates.Keys)) CommitMany(m_activeGroup);
+        if (m_activeGroup.Length != 0 && !m_activeGroup.ToHashSet().SetEquals(candidates.Keys))
+            CommitMany(m_activeGroup);
         var encoded = new Dictionary<Guid, byte[]>();
         foreach (var pair in candidates)
         {
             Draft draft = m_drafts[pair.Key];
-            if (draft.readOnly) throw new InvalidOperationException("The selection contains a read-only asset.");
+            if (draft.readOnly)
+                throw new InvalidOperationException("The selection contains a read-only asset.");
             encoded.Add(pair.Key, m_sources.Encode(pair.Value));
         }
         foreach (var pair in encoded)
         {
             Draft draft = m_drafts[pair.Key];
-            if (draft.bytes.AsSpan().SequenceEqual(pair.Value)) continue;
+            if (draft.bytes.AsSpan().SequenceEqual(pair.Value))
+                continue;
             draft.gestureBefore ??= draft.bytes;
             draft.bytes = pair.Value;
             Changed(draft);
         }
         m_activeGroup = candidates.Keys.ToArray();
-        if (finishGesture) CommitMany(candidates.Keys);
+        if (finishGesture)
+            CommitMany(candidates.Keys);
     }
 
     /// <summary>
@@ -189,14 +205,19 @@ public sealed class AssetDraftDocuments<TAsset> : IDisposable where TAsset : Ass
     {
         ArgumentNullException.ThrowIfNull(assetIds);
         using var transaction = m_interactions.history.BeginTransaction("Edit " + m_label + " Selection");
-        foreach (Guid id in assetIds) Commit(m_drafts[id]);
+        foreach (Guid id in assetIds)
+            Commit(m_drafts[id]);
         transaction.Commit();
         m_activeGroup = [];
     }
 
-    private void Edit(Draft draft, TAsset candidate, bool finishGesture)
-    {
-        if (draft.readOnly) throw new InvalidOperationException("Copy this installed asset to the project before editing.");
+    private void Edit(
+        Draft draft,
+        TAsset candidate,
+        bool finishGesture
+    ) {
+        if (draft.readOnly)
+            throw new InvalidOperationException("Copy this installed asset to the project before editing.");
         byte[] next = m_sources.Encode(candidate);
         if (!draft.bytes.AsSpan().SequenceEqual(next))
         {
@@ -204,18 +225,24 @@ public sealed class AssetDraftDocuments<TAsset> : IDisposable where TAsset : Ass
             draft.bytes = next;
             Changed(draft);
         }
-        if (finishGesture) Commit(draft);
+        if (finishGesture)
+            Commit(draft);
     }
 
     private void Commit(Draft draft)
     {
         byte[]? before = draft.gestureBefore;
-        if (before is null) return;
+        if (before is null)
+            return;
         draft.gestureBefore = null;
-        if (before.AsSpan().SequenceEqual(draft.bytes)) return;
+        if (before.AsSpan().SequenceEqual(draft.bytes))
+            return;
         var payload = new ChangeData { assetId = draft.id, before = before, after = draft.bytes };
         var change = new EditorHistoryChange(m_historyKind, EditorHistoryPayload.FromBytes(m_serialization.Serialize(payload)));
-        try { m_interactions.history.RecordApplied("Edit " + m_label, change); }
+        try
+        {
+            m_interactions.history.RecordApplied("Edit " + m_label, change);
+        }
         catch
         {
             change.Dispose();
@@ -234,8 +261,12 @@ public sealed class AssetDraftDocuments<TAsset> : IDisposable where TAsset : Ass
     /// <param name="direction">
     /// Requested traversal direction.
     /// </param>
-    public void ValidateHistory(EditorHistoryChange change, EditorHistoryDirection direction)
-    { _ = ResolveHistory(change, direction); }
+    public void ValidateHistory(
+        EditorHistoryChange change,
+        EditorHistoryDirection direction
+    ) {
+        _ = ResolveHistory(change, direction);
+    }
 
     /// <summary>
     /// Applies a previously validated neutral record; failed recovery leaves the draft unchanged.
@@ -246,20 +277,27 @@ public sealed class AssetDraftDocuments<TAsset> : IDisposable where TAsset : Ass
     /// <param name="direction">
     /// Requested traversal direction.
     /// </param>
-    public void ApplyHistory(EditorHistoryChange change, EditorHistoryDirection direction)
-    {
+    public void ApplyHistory(
+        EditorHistoryChange change,
+        EditorHistoryDirection direction
+    ) {
         (Draft draft, ChangeData data) = ResolveHistory(change, direction);
         draft.bytes = direction == EditorHistoryDirection.Undo ? data.before : data.after;
         Changed(draft);
     }
 
-    private (Draft, ChangeData) ResolveHistory(EditorHistoryChange change, EditorHistoryDirection direction)
-    {
+    private (Draft, ChangeData) ResolveHistory(
+        EditorHistoryChange change,
+        EditorHistoryDirection direction
+    ) {
         ChangeData data = m_serialization.Deserialize<ChangeData>(change.payload.ReadBytes());
-        if (!m_drafts.TryGetValue(data.assetId, out Draft? draft)) throw new InvalidOperationException("Reopen the asset document to use its history.");
-        if (draft.gestureBefore is not null) throw new InvalidOperationException("Finish the active asset gesture first.");
+        if (!m_drafts.TryGetValue(data.assetId, out Draft? draft))
+            throw new InvalidOperationException("Reopen the asset document to use its history.");
+        if (draft.gestureBefore is not null)
+            throw new InvalidOperationException("Finish the active asset gesture first.");
         byte[] expected = direction == EditorHistoryDirection.Undo ? data.after : data.before;
-        if (!draft.bytes.AsSpan().SequenceEqual(expected)) throw new InvalidOperationException("The asset draft changed outside this history entry.");
+        if (!draft.bytes.AsSpan().SequenceEqual(expected))
+            throw new InvalidOperationException("The asset draft changed outside this history entry.");
         return (draft, data);
     }
 
@@ -268,10 +306,15 @@ public sealed class AssetDraftDocuments<TAsset> : IDisposable where TAsset : Ass
         m_interactions.documents.SetDirty(draft.documentId, draft.isDirty);
         try
         {
-            if (!draft.isDirty) { DeleteRecovery(draft.id); return; }
+            if (!draft.isDirty)
+            {
+                DeleteRecovery(draft.id);
+                return;
+            }
             AtomicFile.WriteAllBytes(RecoveryPath(draft.id), m_serialization.Serialize(new Recovery
             { assetId = draft.id, hash = draft.hash, baseline = draft.baseline, bytes = draft.bytes }));
-            if (draft.error.StartsWith("Recovery write failed:", StringComparison.Ordinal)) draft.error = "";
+            if (draft.error.StartsWith("Recovery write failed:", StringComparison.Ordinal))
+                draft.error = "";
         }
         catch (Exception error) when (Recoverable(error))
         {
@@ -292,7 +335,11 @@ public sealed class AssetDraftDocuments<TAsset> : IDisposable where TAsset : Ass
             DeleteRecovery(draft.id);
             return true;
         }
-        catch (Exception error) when (Recoverable(error)) { draft.error = error.Message; return false; }
+        catch (Exception error) when (Recoverable(error))
+        {
+            draft.error = error.Message;
+            return false;
+        }
     }
 
     private bool Revert(Draft draft)
@@ -313,7 +360,11 @@ public sealed class AssetDraftDocuments<TAsset> : IDisposable where TAsset : Ass
             DeleteRecovery(draft.id);
             return true;
         }
-        catch (Exception error) when (Recoverable(error)) { draft.error = error.Message; return false; }
+        catch (Exception error) when (Recoverable(error))
+        {
+            draft.error = error.Message;
+            return false;
+        }
     }
 
     private void RefreshPath(Draft draft)
@@ -326,20 +377,28 @@ public sealed class AssetDraftDocuments<TAsset> : IDisposable where TAsset : Ass
 
     private void Open(EditorDocumentContext document)
     {
-        if (m_drafts.ContainsKey(document.assetId)) return;
+        if (m_drafts.ContainsKey(document.assetId))
+            return;
         AssetPath path = AssetPath.Parse(document.assetPath);
-        if (m_assets.TryGetInfo(document.assetId, out AssetInfo? info) && info is not null) path = info.assetPath;
+        if (m_assets.TryGetInfo(document.assetId, out AssetInfo? info) && info is not null)
+            path = info.assetPath;
         Recovery? recovery = File.Exists(RecoveryPath(document.assetId))
             ? m_serialization.Deserialize<Recovery>(File.ReadAllBytes(RecoveryPath(document.assetId))) : null;
-        if (recovery is not null && recovery.assetId != document.assetId) throw new InvalidDataException("Asset recovery identity does not match its document.");
+        if (recovery is not null && recovery.assetId != document.assetId)
+            throw new InvalidDataException("Asset recovery identity does not match its document.");
         AssetSourceSnapshot? source = null;
-        try { source = m_sources.Read(path); }
+        try
+        {
+            source = m_sources.Read(path);
+        }
         catch (Exception error) when (recovery is not null && Recoverable(error)) { }
         var draft = new Draft(document.assetId, document.documentId, path, recovery?.bytes ?? source!.bytes,
             recovery?.baseline ?? source!.bytes, recovery?.hash ?? source!.contentHash, source?.isReadOnly ?? true);
-        if (recovery is not null && source?.contentHash != recovery.hash) draft.error = "Source changed externally. Recovery retained; resolve or Revert explicitly.";
+        if (recovery is not null && source?.contentHash != recovery.hash)
+            draft.error = "Source changed externally. Recovery retained; resolve or Revert explicitly.";
         m_drafts.Add(draft.id, draft);
-        if (draft.isDirty) m_interactions.documents.SetDirty(draft.documentId);
+        if (draft.isDirty)
+            m_interactions.documents.SetDirty(draft.documentId);
     }
 
     /// <summary>
@@ -347,7 +406,8 @@ public sealed class AssetDraftDocuments<TAsset> : IDisposable where TAsset : Ass
     /// </summary>
     public void Start()
     {
-        if (m_provider is not null) throw new InvalidOperationException("This draft provider is already started.");
+        if (m_provider is not null)
+            throw new InvalidOperationException("This draft provider is already started.");
         m_provider = m_interactions.documents.RegisterProvider(new Provider(this));
     }
 
@@ -376,11 +436,15 @@ public sealed class AssetDraftDocuments<TAsset> : IDisposable where TAsset : Ass
                 }
             }
             catch (Exception error) when (Recoverable(error))
-            { foreach (Draft draft in m_drafts.Values.Where(value => value.path == path)) draft.error = "Saved; import failed: " + error.Message; }
+            {
+                foreach (Draft draft in m_drafts.Values.Where(value => value.path == path))
+                    draft.error = "Saved; import failed: " + error.Message;
+            }
         }
         if (m_sourceRevision != m_assets.revision)
         {
-            foreach (Draft draft in m_drafts.Values) SynchronizeSource(draft);
+            foreach (Draft draft in m_drafts.Values)
+                SynchronizeSource(draft);
             m_sourceRevision = m_assets.revision;
         }
     }
@@ -392,7 +456,8 @@ public sealed class AssetDraftDocuments<TAsset> : IDisposable where TAsset : Ass
             RefreshPath(draft);
             AssetSourceSnapshot source = m_sources.Read(draft.path);
             draft.readOnly = source.isReadOnly;
-            if (draft.hash == source.contentHash) return;
+            if (draft.hash == source.contentHash)
+                return;
             if (draft.isDirty || draft.gestureBefore is not null)
             {
                 draft.error = "Source changed externally. Your draft is retained; Revert reloads it without overwriting the external edit.";
@@ -404,7 +469,10 @@ public sealed class AssetDraftDocuments<TAsset> : IDisposable where TAsset : Ass
             draft.error = "";
             Changed(draft);
         }
-        catch (Exception error) when (Recoverable(error)) { draft.error = error.Message; }
+        catch (Exception error) when (Recoverable(error))
+        {
+            draft.error = error.Message;
+        }
     }
 
     /// <summary>
@@ -413,13 +481,23 @@ public sealed class AssetDraftDocuments<TAsset> : IDisposable where TAsset : Ass
     public void Dispose()
     {
         CommitMany(m_activeGroup);
-        foreach (Draft draft in m_drafts.Values) { Commit(draft); if (draft.isDirty) Changed(draft); }
+        foreach (Draft draft in m_drafts.Values)
+        {
+            Commit(draft);
+            if (draft.isDirty)
+                Changed(draft);
+        }
         m_provider?.Dispose();
         m_provider = null;
     }
 
     private string RecoveryPath(Guid id) => Path.Combine(m_assets.libraryRoot, "Editor", "AssetDrafts", m_providerId, id.ToString("N") + ".inno");
-    private void DeleteRecovery(Guid id) { string path = RecoveryPath(id); if (File.Exists(path)) File.Delete(path); }
+    private void DeleteRecovery(Guid id)
+    {
+        string path = RecoveryPath(id);
+        if (File.Exists(path))
+            File.Delete(path);
+    }
     private static bool Recoverable(Exception error) => error is IOException or UnauthorizedAccessException or InvalidOperationException or ArgumentException or FormatException
         && Inno.Core.Execution.RetirementPendingException.Find(error) is null;
 
@@ -490,8 +568,23 @@ public override void Close(EditorDocumentContext context)
         internal string hash;
         internal byte[]? gestureBefore;
         internal long lastInspection = -1;
-        internal Draft(Guid id, Guid documentId, AssetPath path, byte[] bytes, byte[] baseline, string hash, bool readOnly)
-        { this.id = id; this.documentId = documentId; this.path = path; this.bytes = bytes; this.baseline = baseline; this.hash = hash; this.readOnly = readOnly; }
+        internal Draft(
+            Guid id,
+            Guid documentId,
+            AssetPath path,
+            byte[] bytes,
+            byte[] baseline,
+            string hash,
+            bool readOnly
+        ) {
+            this.id = id;
+            this.documentId = documentId;
+            this.path = path;
+            this.bytes = bytes;
+            this.baseline = baseline;
+            this.hash = hash;
+            this.readOnly = readOnly;
+        }
         /// <summary>
         /// Gets the persistent source identity.
         /// </summary>

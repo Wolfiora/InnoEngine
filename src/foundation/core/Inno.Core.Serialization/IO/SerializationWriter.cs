@@ -15,8 +15,8 @@ public sealed class SerializationWriter
         SerializationOperation operation,
         ObjectSerializationNode node,
         string path,
-        Type valueType)
-    {
+        Type valueType
+    ) {
         m_operation = operation;
         m_node = node;
         this.path = path;
@@ -56,10 +56,40 @@ public sealed class SerializationWriter
     /// <exception cref="InvalidOperationException">
     /// Thrown when the name is duplicated or the value is unsupported.
     /// </exception>
-    public void Write<TValue>(string name, TValue value)
-    {
+    public void Write<TValue>(
+        string name,
+        TValue value
+    ) => Write(name, value, typeof(TValue));
+
+    /// <summary>
+    /// Writes a value using its declared metadata type without constructing a generic method at runtime.
+    /// </summary>
+    /// <param name="name">
+    /// The unique non-empty member name.
+    /// </param>
+    /// <param name="value">
+    /// The value to encode, including null when permitted by the declared type.
+    /// </param>
+    /// <param name="declaredType">
+    /// The exact declaration whose converter and value semantics apply.
+    /// </param>
+    /// <exception cref="ArgumentNullException">
+    /// The declared type is null.
+    /// </exception>
+    /// <exception cref="ArgumentException">
+    /// The member name is empty.
+    /// </exception>
+    /// <exception cref="InvalidOperationException">
+    /// The operation has ended, the name is duplicated, or the value is unsupported.
+    /// </exception>
+    public void Write(
+        string name,
+        object? value,
+        Type declaredType
+    ) {
+        ArgumentNullException.ThrowIfNull(declaredType);
         ValidateName(name);
-        AddNode(name, ValuePipeline.Write(value, typeof(TValue), m_operation, AppendPath(name), allowDefaultObject: false));
+        AddNode(name, ValuePipeline.Write(value, declaredType, m_operation, AppendPath(name), allowDefaultObject: false));
     }
 
     /// <summary>
@@ -74,8 +104,10 @@ public sealed class SerializationWriter
     /// <exception cref="ArgumentNullException">
     /// Thrown when <paramref name="write"/> is null.
     /// </exception>
-    public void WriteObject(string name, Action<SerializationWriter> write)
-    {
+    public void WriteObject(
+        string name,
+        Action<SerializationWriter> write
+    ) {
         ArgumentNullException.ThrowIfNull(write);
         ValidateName(name);
         var child = new ObjectSerializationNode();
@@ -104,8 +136,8 @@ public sealed class SerializationWriter
     public void WriteObjectArray<TValue>(
         string name,
         IEnumerable<TValue> values,
-        Action<SerializationWriter, TValue> writeElement)
-    {
+        Action<SerializationWriter, TValue> writeElement
+    ) {
         ArgumentNullException.ThrowIfNull(values);
         ArgumentNullException.ThrowIfNull(writeElement);
         ValidateName(name);
@@ -148,8 +180,10 @@ public sealed class SerializationWriter
         }
     }
 
-    private void AddNode(string name, SerializationNode node)
-    {
+    private void AddNode(
+        string name,
+        SerializationNode node
+    ) {
         m_operation.EnsureActive();
         if (!m_node.values.TryAdd(name, node))
             throw new InvalidOperationException($"Serialization object '{path}' already contains key '{name}'.");

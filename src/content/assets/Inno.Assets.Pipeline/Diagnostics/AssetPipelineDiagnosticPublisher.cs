@@ -21,8 +21,8 @@ internal sealed class AssetPipelineDiagnosticPublisher
 
     internal void PublishSourceDatabaseFailure(
         Exception refreshException,
-        Exception recoveryException)
-    {
+        Exception recoveryException
+    ) {
         ArgumentNullException.ThrowIfNull(refreshException);
         ArgumentNullException.ThrowIfNull(recoveryException);
         m_diagnostics.Set(
@@ -35,6 +35,5 @@ internal sealed class AssetPipelineDiagnosticPublisher
             ]);
     }
 
-    internal void ResolveSourceDatabase()
-        => m_diagnostics.Clear(S_SOURCE_DATABASE);
+    internal void ResolveSourceDatabase() => m_diagnostics.Clear(S_SOURCE_DATABASE);
 }

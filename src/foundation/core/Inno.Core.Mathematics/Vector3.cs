@@ -38,8 +38,11 @@ public struct Vector3 : IEquatable<Vector3>
     /// <param name="z">
     /// The depth or third component.
     /// </param>
-    public Vector3(float x, float y, float z)
-    {
+    public Vector3(
+        float x,
+        float y,
+        float z
+    ) {
         this.x = x;
         this.y = y;
         this.z = z;
@@ -123,8 +126,10 @@ public struct Vector3 : IEquatable<Vector3>
     /// The validated vector3 that represents the completed operation.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Vector3 NormalizeSafe(Vector3 value, float epsilon = MathHelper.C_TOLERANCE)
-    {
+    public static Vector3 NormalizeSafe(
+        Vector3 value,
+        float epsilon = MathHelper.C_TOLERANCE
+    ) {
         float len = value.Length();
         return len > epsilon ? value / len : ZERO;
     }
@@ -143,7 +148,10 @@ public struct Vector3 : IEquatable<Vector3>
 
     // Dot product
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static float Dot(Vector3 a, Vector3 b) => SimdMath.Dot3(a.x, a.y, a.z, b.x, b.y, b.z);
+    public static float Dot(
+        Vector3 a,
+        Vector3 b
+    ) => SimdMath.Dot3(a.x, a.y, a.z, b.x, b.y, b.z);
 
     /// <summary>
     /// Calculates the unsigned angle in radians between two values.
@@ -158,8 +166,10 @@ public struct Vector3 : IEquatable<Vector3>
     /// The scalar result calculated from the supplied inputs.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static float Angle(Vector3 from, Vector3 to)
-    {
+    public static float Angle(
+        Vector3 from,
+        Vector3 to
+    ) {
         float denom = from.Length() * to.Length();
         if (denom <= MathHelper.C_TOLERANCE)
         {
@@ -187,8 +197,11 @@ public struct Vector3 : IEquatable<Vector3>
     /// The scalar result calculated from the supplied inputs.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static float SignedAngle(Vector3 from, Vector3 to, Vector3 axis)
-    {
+    public static float SignedAngle(
+        Vector3 from,
+        Vector3 to,
+        Vector3 axis
+    ) {
         float unsigned = Angle(from, to);
         Vector3 cross = Cross(from, to);
         float sign = MathF.Sign(Dot(axis, cross));
@@ -208,8 +221,10 @@ public struct Vector3 : IEquatable<Vector3>
     /// The validated vector3 that represents the completed operation.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Vector3 Project(Vector3 vector, Vector3 onto)
-    {
+    public static Vector3 Project(
+        Vector3 vector,
+        Vector3 onto
+    ) {
         float denom = Dot(onto, onto);
         if (denom <= MathHelper.C_TOLERANCE)
         {
@@ -233,7 +248,10 @@ public struct Vector3 : IEquatable<Vector3>
 
     // Cross product
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Vector3 Cross(Vector3 a, Vector3 b) => new(
+    public static Vector3 Cross(
+        Vector3 a,
+        Vector3 b
+    ) => new(
         a.y * b.z - a.z * b.y,
         a.z * b.x - a.x * b.z,
         a.x * b.y - a.y * b.x
@@ -253,7 +271,10 @@ public struct Vector3 : IEquatable<Vector3>
 
     // Distance
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static float Distance(Vector3 a, Vector3 b) => (a - b).Length();
+    public static float Distance(
+        Vector3 a,
+        Vector3 b
+    ) => (a - b).Length();
     /// <summary>
     /// Interpolates linearly between two values without clamping the interpolation factor.
     /// </summary>
@@ -272,7 +293,11 @@ public struct Vector3 : IEquatable<Vector3>
 
     // Lerp
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Vector3 Lerp(Vector3 a, Vector3 b, float t) =>
+    public static Vector3 Lerp(
+        Vector3 a,
+        Vector3 b,
+        float t
+    ) =>
         a + (b - a) * Math.Clamp(t, 0f, 1f);
     /// <summary>
     /// Reflects an incident value across the supplied normal.
@@ -289,7 +314,10 @@ public struct Vector3 : IEquatable<Vector3>
 
     // Reflect
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Vector3 Reflect(Vector3 dir, Vector3 normal) =>
+    public static Vector3 Reflect(
+        Vector3 dir,
+        Vector3 normal
+    ) =>
         dir - 2f * Dot(dir, normal) * normal;
     
     /// <summary>
@@ -303,8 +331,10 @@ public struct Vector3 : IEquatable<Vector3>
     /// The transformation matrix applied to the supplied value.
     /// </param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Vector3 Transform(Vector3 position, Matrix matrix)
-    {
+    public static Vector3 Transform(
+        Vector3 position,
+        Matrix matrix
+    ) {
         if (Sse.IsSupported || AdvSimd.IsSupported)
         {
             var v = Vector128.Create(position.x, position.y, position.z, 1f);
@@ -337,8 +367,10 @@ public struct Vector3 : IEquatable<Vector3>
     /// The validated vector3 that represents the completed operation.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Vector3 TransformNormal(Vector3 normal, Matrix matrix)
-    {
+    public static Vector3 TransformNormal(
+        Vector3 normal,
+        Matrix matrix
+    ) {
         if (Sse.IsSupported || AdvSimd.IsSupported)
         {
             var v = Vector128.Create(normal.x, normal.y, normal.z, 0f);
@@ -371,8 +403,10 @@ public struct Vector3 : IEquatable<Vector3>
     /// The validated vector3 that represents the completed operation.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Vector3 Transform(Vector3 value, Quaternion rotation)
-    {
+    public static Vector3 Transform(
+        Vector3 value,
+        Quaternion rotation
+    ) {
         float x = value.x, y = value.y, z = value.z;
         float qx = rotation.x, qy = rotation.y, qz = rotation.z, qw = rotation.w;
 
@@ -401,7 +435,10 @@ public struct Vector3 : IEquatable<Vector3>
 
     // Operators
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Vector3 operator +(Vector3 a, Vector3 b) => new(a.x + b.x, a.y + b.y, a.z + b.z);
+    public static Vector3 operator +(
+        Vector3 a,
+        Vector3 b
+    ) => new(a.x + b.x, a.y + b.y, a.z + b.z);
     /// <summary>
     /// Subtracts or negates the supplied value component by component.
     /// </summary>
@@ -415,7 +452,10 @@ public struct Vector3 : IEquatable<Vector3>
     /// The validated vector3 that represents the completed operation.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Vector3 operator -(Vector3 a, Vector3 b) => new(a.x - b.x, a.y - b.y, a.z - b.z);
+    public static Vector3 operator -(
+        Vector3 a,
+        Vector3 b
+    ) => new(a.x - b.x, a.y - b.y, a.z - b.z);
     /// <summary>
     /// Subtracts or negates the supplied value component by component.
     /// </summary>
@@ -440,7 +480,10 @@ public struct Vector3 : IEquatable<Vector3>
     /// The validated vector3 that represents the completed operation.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Vector3 operator *(Vector3 v, float s) => new(v.x * s, v.y * s, v.z * s);
+    public static Vector3 operator *(
+        Vector3 v,
+        float s
+    ) => new(v.x * s, v.y * s, v.z * s);
     /// <summary>
     /// Multiplies the supplied values according to their algebraic contract.
     /// </summary>
@@ -454,7 +497,10 @@ public struct Vector3 : IEquatable<Vector3>
     /// The validated vector3 that represents the completed operation.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Vector3 operator *(float s, Vector3 v) => v * s;
+    public static Vector3 operator *(
+        float s,
+        Vector3 v
+    ) => v * s;
     /// <summary>
     /// Divides the supplied value by the scalar divisor component by component.
     /// </summary>
@@ -468,7 +514,10 @@ public struct Vector3 : IEquatable<Vector3>
     /// The validated vector3 that represents the completed operation.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Vector3 operator /(Vector3 v, float s) => new(v.x / s, v.y / s, v.z / s);
+    public static Vector3 operator /(
+        Vector3 v,
+        float s
+    ) => new(v.x / s, v.y / s, v.z / s);
 
     /// <summary>
     /// Determines whether the supplied values are equal under the type's equality tolerance.
@@ -483,7 +532,10 @@ public struct Vector3 : IEquatable<Vector3>
     /// <see langword="true"/> when the requested condition is satisfied; otherwise, <see langword="false"/>.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool operator ==(Vector3 a, Vector3 b) =>
+    public static bool operator ==(
+        Vector3 a,
+        Vector3 b
+    ) =>
         MathHelper.AlmostEquals(a.x, b.x) &&
         MathHelper.AlmostEquals(a.y, b.y) &&
         MathHelper.AlmostEquals(a.z, b.z);
@@ -501,7 +553,10 @@ public struct Vector3 : IEquatable<Vector3>
     /// <see langword="true"/> when the requested condition is satisfied; otherwise, <see langword="false"/>.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool operator !=(Vector3 a, Vector3 b) => !(a == b);
+    public static bool operator !=(
+        Vector3 a,
+        Vector3 b
+    ) => !(a == b);
     
     /// <summary>
     /// Converts the supplied value to <see cref="System.Numerics.Vector3"/>.

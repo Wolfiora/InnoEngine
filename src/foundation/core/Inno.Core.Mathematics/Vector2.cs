@@ -28,8 +28,10 @@ public struct Vector2 : IEquatable<Vector2>
     /// <param name="y">
     /// The vertical or second component.
     /// </param>
-    public Vector2(float x, float y)
-    {
+    public Vector2(
+        float x,
+        float y
+    ) {
         this.x = x;
         this.y = y;
     }
@@ -94,8 +96,10 @@ public struct Vector2 : IEquatable<Vector2>
     /// The validated vector2 that represents the completed operation.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Vector2 NormalizeSafe(Vector2 value, float epsilon = MathHelper.C_TOLERANCE)
-    {
+    public static Vector2 NormalizeSafe(
+        Vector2 value,
+        float epsilon = MathHelper.C_TOLERANCE
+    ) {
         float len = value.Length();
         return len > epsilon ? value / len : ZERO;
     }
@@ -113,7 +117,10 @@ public struct Vector2 : IEquatable<Vector2>
     /// The scalar result calculated from the supplied inputs.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static float Dot(Vector2 a, Vector2 b) => SimdMath.Dot2(a.x, a.y, b.x, b.y);
+    public static float Dot(
+        Vector2 a,
+        Vector2 b
+    ) => SimdMath.Dot2(a.x, a.y, b.x, b.y);
 
     /// <summary>
     /// Calculates the unsigned angle in radians between two values.
@@ -128,8 +135,10 @@ public struct Vector2 : IEquatable<Vector2>
     /// The scalar result calculated from the supplied inputs.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static float Angle(Vector2 from, Vector2 to)
-    {
+    public static float Angle(
+        Vector2 from,
+        Vector2 to
+    ) {
         float denom = from.Length() * to.Length();
         if (denom <= MathHelper.C_TOLERANCE)
         {
@@ -154,8 +163,10 @@ public struct Vector2 : IEquatable<Vector2>
     /// The scalar result calculated from the supplied inputs.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static float SignedAngle(Vector2 from, Vector2 to)
-    {
+    public static float SignedAngle(
+        Vector2 from,
+        Vector2 to
+    ) {
         float unsigned = Angle(from, to);
         float sign = MathF.Sign(from.x * to.y - from.y * to.x);
         return unsigned * sign;
@@ -174,8 +185,10 @@ public struct Vector2 : IEquatable<Vector2>
     /// The validated vector2 that represents the completed operation.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Vector2 Project(Vector2 vector, Vector2 onto)
-    {
+    public static Vector2 Project(
+        Vector2 vector,
+        Vector2 onto
+    ) {
         float denom = Dot(onto, onto);
         if (denom <= MathHelper.C_TOLERANCE)
         {
@@ -201,8 +214,11 @@ public struct Vector2 : IEquatable<Vector2>
     /// The validated vector2 that represents the completed operation.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Vector2 Lerp(Vector2 a, Vector2 b, float t)
-        => new Vector2(a.x + (b.x - a.x) * t, a.y + (b.y - a.y) * t);
+    public static Vector2 Lerp(
+        Vector2 a,
+        Vector2 b,
+        float t
+    ) => new Vector2(a.x + (b.x - a.x) * t, a.y + (b.y - a.y) * t);
 
     /// <summary>
     /// Selects the minimum value independently for each component.
@@ -217,8 +233,10 @@ public struct Vector2 : IEquatable<Vector2>
     /// The validated vector2 that represents the completed operation.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Vector2 Min(Vector2 a, Vector2 b)
-        => new Vector2(MathF.Min(a.x, b.x), MathF.Min(a.y, b.y));
+    public static Vector2 Min(
+        Vector2 a,
+        Vector2 b
+    ) => new Vector2(MathF.Min(a.x, b.x), MathF.Min(a.y, b.y));
 
     /// <summary>
     /// Selects the maximum value independently for each component.
@@ -233,8 +251,10 @@ public struct Vector2 : IEquatable<Vector2>
     /// The validated vector2 that represents the completed operation.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Vector2 Max(Vector2 a, Vector2 b)
-        => new Vector2(MathF.Max(a.x, b.x), MathF.Max(a.y, b.y));
+    public static Vector2 Max(
+        Vector2 a,
+        Vector2 b
+    ) => new Vector2(MathF.Max(a.x, b.x), MathF.Max(a.y, b.y));
 
     /// <summary>
     /// Reflects an incident value across the supplied normal.
@@ -249,8 +269,10 @@ public struct Vector2 : IEquatable<Vector2>
     /// The validated vector2 that represents the completed operation.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Vector2 Reflect(Vector2 v, Vector2 n)
-        => v - 2f * Dot(v, n) * n;
+    public static Vector2 Reflect(
+        Vector2 v,
+        Vector2 n
+    ) => v - 2f * Dot(v, n) * n;
     
     /// <summary>
     /// Transforms the supplied value by the requested transformation.
@@ -265,8 +287,10 @@ public struct Vector2 : IEquatable<Vector2>
     /// The validated vector2 that represents the completed operation.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Vector2 Transform(Vector2 v, Matrix m)
-    {
+    public static Vector2 Transform(
+        Vector2 v,
+        Matrix m
+    ) {
         float x = m.m11 * v.x + m.m12 * v.y + m.m14;
         float y = m.m21 * v.x + m.m22 * v.y + m.m24;
         return new Vector2(x, y);
@@ -285,8 +309,10 @@ public struct Vector2 : IEquatable<Vector2>
     /// The validated vector2 that represents the completed operation.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Vector2 Transform(Vector2 value, Quaternion rotation)
-    {
+    public static Vector2 Transform(
+        Vector2 value,
+        Quaternion rotation
+    ) {
         float x = rotation.x;
         float y = rotation.y;
         float z = rotation.z;
@@ -313,7 +339,10 @@ public struct Vector2 : IEquatable<Vector2>
 
     // Operators
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Vector2 operator +(Vector2 a, Vector2 b) => new Vector2(a.x + b.x, a.y + b.y);
+    public static Vector2 operator +(
+        Vector2 a,
+        Vector2 b
+    ) => new Vector2(a.x + b.x, a.y + b.y);
     /// <summary>
     /// Subtracts or negates the supplied value component by component.
     /// </summary>
@@ -327,7 +356,10 @@ public struct Vector2 : IEquatable<Vector2>
     /// The validated vector2 that represents the completed operation.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Vector2 operator -(Vector2 a, Vector2 b) => new Vector2(a.x - b.x, a.y - b.y);
+    public static Vector2 operator -(
+        Vector2 a,
+        Vector2 b
+    ) => new Vector2(a.x - b.x, a.y - b.y);
     /// <summary>
     /// Subtracts or negates the supplied value component by component.
     /// </summary>
@@ -352,7 +384,10 @@ public struct Vector2 : IEquatable<Vector2>
     /// The validated vector2 that represents the completed operation.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Vector2 operator *(Vector2 v, float scalar) => new Vector2(v.x * scalar, v.y * scalar);
+    public static Vector2 operator *(
+        Vector2 v,
+        float scalar
+    ) => new Vector2(v.x * scalar, v.y * scalar);
     /// <summary>
     /// Multiplies the supplied values according to their algebraic contract.
     /// </summary>
@@ -366,7 +401,10 @@ public struct Vector2 : IEquatable<Vector2>
     /// The validated vector2 that represents the completed operation.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Vector2 operator *(float scalar, Vector2 v) => v * scalar;
+    public static Vector2 operator *(
+        float scalar,
+        Vector2 v
+    ) => v * scalar;
     /// <summary>
     /// Divides the supplied value by the scalar divisor component by component.
     /// </summary>
@@ -380,7 +418,10 @@ public struct Vector2 : IEquatable<Vector2>
     /// The validated vector2 that represents the completed operation.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Vector2 operator /(Vector2 v, float scalar) => new Vector2(v.x / scalar, v.y / scalar);
+    public static Vector2 operator /(
+        Vector2 v,
+        float scalar
+    ) => new Vector2(v.x / scalar, v.y / scalar);
 
     /// <summary>
     /// Determines whether the supplied values are equal under the type's equality tolerance.
@@ -395,7 +436,10 @@ public struct Vector2 : IEquatable<Vector2>
     /// <see langword="true"/> when the requested condition is satisfied; otherwise, <see langword="false"/>.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool operator ==(Vector2 a, Vector2 b) => MathHelper.AlmostEquals(a.x, b.x) && MathHelper.AlmostEquals(a.y, b.y);
+    public static bool operator ==(
+        Vector2 a,
+        Vector2 b
+    ) => MathHelper.AlmostEquals(a.x, b.x) && MathHelper.AlmostEquals(a.y, b.y);
     /// <summary>
     /// Determines whether the supplied values differ under the type's equality tolerance.
     /// </summary>
@@ -409,7 +453,10 @@ public struct Vector2 : IEquatable<Vector2>
     /// <see langword="true"/> when the requested condition is satisfied; otherwise, <see langword="false"/>.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool operator !=(Vector2 a, Vector2 b) => !(a == b);
+    public static bool operator !=(
+        Vector2 a,
+        Vector2 b
+    ) => !(a == b);
     
     /// <summary>
     /// Converts the supplied value to <see cref="System.Numerics.Vector2"/>.

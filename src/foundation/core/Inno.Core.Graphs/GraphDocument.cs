@@ -10,6 +10,7 @@ namespace Inno.Core.Graphs;
 public sealed class GraphNodeRecord
 {
     private readonly Dictionary<string, GraphSerializedValue> m_values = new(StringComparer.Ordinal);
+    private readonly ReadOnlyDictionary<string, GraphSerializedValue> m_valueView;
 
     /// <summary>
     /// Creates a graph node record.
@@ -20,11 +21,14 @@ public sealed class GraphNodeRecord
     /// <param name="definitionId">
     /// Stable node definition identifier.
     /// </param>
-    public GraphNodeRecord(GraphNodeId id, string definitionId)
-    {
+    public GraphNodeRecord(
+        GraphNodeId id,
+        string definitionId
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(definitionId);
         this.id = id;
         this.definitionId = definitionId;
+        m_valueView = new(m_values);
     }
 
     /// <summary>
@@ -45,7 +49,7 @@ public sealed class GraphNodeRecord
     /// <summary>
     /// Gets neutral serialized property values keyed by stable property identifier.
     /// </summary>
-    public IReadOnlyDictionary<string, GraphSerializedValue> values => new ReadOnlyDictionary<string, GraphSerializedValue>(m_values);
+    public IReadOnlyDictionary<string, GraphSerializedValue> values => m_valueView;
 
     /// <summary>
     /// Creates or replaces a neutral serialized property value.
@@ -56,8 +60,10 @@ public sealed class GraphNodeRecord
     /// <param name="value">
     /// Serialized value.
     /// </param>
-    public void SetValue(string propertyId, GraphSerializedValue value)
-    {
+    public void SetValue(
+        string propertyId,
+        GraphSerializedValue value
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(propertyId);
         ArgumentNullException.ThrowIfNull(value);
         m_values[propertyId] = value;
@@ -75,8 +81,10 @@ public sealed class GraphNodeRecord
     /// <returns>
     /// <see langword="true"/> when the property exists; otherwise <see langword="false"/>.
     /// </returns>
-    public bool TryGetValue(string propertyId, out GraphSerializedValue? value)
-    {
+    public bool TryGetValue(
+        string propertyId,
+        out GraphSerializedValue? value
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(propertyId);
         return m_values.TryGetValue(propertyId, out value);
     }
@@ -111,8 +119,10 @@ public readonly record struct GraphEndpoint
     /// <param name="portId">
     /// Port identifier within the node definition.
     /// </param>
-    public GraphEndpoint(GraphNodeId nodeId, GraphPortId portId)
-    {
+    public GraphEndpoint(
+        GraphNodeId nodeId,
+        GraphPortId portId
+    ) {
         this.nodeId = nodeId;
         this.portId = portId;
     }
@@ -145,8 +155,11 @@ public sealed class GraphEdgeRecord
     /// <param name="input">
     /// Destination endpoint.
     /// </param>
-    public GraphEdgeRecord(GraphEdgeId id, GraphEndpoint output, GraphEndpoint input)
-    {
+    public GraphEdgeRecord(
+        GraphEdgeId id,
+        GraphEndpoint output,
+        GraphEndpoint input
+    ) {
         this.id = id;
         this.output = output;
         this.input = input;
@@ -176,21 +189,35 @@ public sealed class GraphDocument
     private readonly List<GraphNodeRecord> m_nodes = [];
     private readonly List<GraphEdgeRecord> m_edges = [];
     private readonly Dictionary<string, GraphSerializedValue> m_metadata = new(StringComparer.Ordinal);
+    private readonly Dictionary<GraphNodeId, GraphNodeRecord> m_nodeIndex = [];
+    private readonly ReadOnlyCollection<GraphNodeRecord> m_nodeView;
+    private readonly ReadOnlyCollection<GraphEdgeRecord> m_edgeView;
+    private readonly ReadOnlyDictionary<string, GraphSerializedValue> m_metadataView;
+
+    /// <summary>
+    /// Creates an empty document with stable, read-only collection views.
+    /// </summary>
+    public GraphDocument()
+    {
+        m_nodeView = m_nodes.AsReadOnly();
+        m_edgeView = m_edges.AsReadOnly();
+        m_metadataView = new(m_metadata);
+    }
 
     /// <summary>
     /// Gets all node records in stable document order.
     /// </summary>
-    public IReadOnlyList<GraphNodeRecord> nodes => m_nodes.AsReadOnly();
+    public IReadOnlyList<GraphNodeRecord> nodes => m_nodeView;
 
     /// <summary>
     /// Gets all edge records in stable document order.
     /// </summary>
-    public IReadOnlyList<GraphEdgeRecord> edges => m_edges.AsReadOnly();
+    public IReadOnlyList<GraphEdgeRecord> edges => m_edgeView;
 
     /// <summary>
     /// Gets graph-level neutral metadata such as groups or comments.
     /// </summary>
-    public IReadOnlyDictionary<string, GraphSerializedValue> metadata => new ReadOnlyDictionary<string, GraphSerializedValue>(m_metadata);
+    public IReadOnlyDictionary<string, GraphSerializedValue> metadata => m_metadataView;
 
     /// <summary>
     /// Creates a deep neutral copy that shares no mutable node, edge, value, or metadata records.
@@ -223,6 +250,7 @@ public sealed class GraphDocument
         }
 
         List<GraphNodeRecord> nodes = [];
+        Dictionary<GraphNodeId, GraphNodeRecord> nodeIndex = [];
         foreach (GraphNodeRecord sourceNode in source.nodes)
         {
             var node = new GraphNodeRecord(sourceNode.id, sourceNode.definitionId)
@@ -235,6 +263,7 @@ public sealed class GraphDocument
             }
 
             nodes.Add(node);
+            nodeIndex.Add(node.id, node);
         }
 
         List<GraphEdgeRecord> edges = [];
@@ -251,6 +280,9 @@ public sealed class GraphDocument
 
         m_nodes.Clear();
         m_nodes.AddRange(nodes);
+        m_nodeIndex.Clear();
+        foreach ((GraphNodeId id, GraphNodeRecord node) in nodeIndex)
+            m_nodeIndex.Add(id, node);
         m_edges.Clear();
         m_edges.AddRange(edges);
         m_metadata.Clear();
@@ -272,7 +304,7 @@ public sealed class GraphDocument
     public void AddNode(GraphNodeRecord node)
     {
         ArgumentNullException.ThrowIfNull(node);
-        if (FindNode(node.id) is not null)
+        if (!m_nodeIndex.TryAdd(node.id, node))
         {
             throw new ArgumentException($"Node '{node.id}' already exists.", nameof(node));
         }
@@ -291,13 +323,12 @@ public sealed class GraphDocument
     /// </returns>
     public bool RemoveNode(GraphNodeId nodeId)
     {
-        int index = m_nodes.FindIndex(node => node.id == nodeId);
-        if (index < 0)
+        if (!m_nodeIndex.Remove(nodeId, out GraphNodeRecord? node))
         {
             return false;
         }
 
-        m_nodes.RemoveAt(index);
+        m_nodes.Remove(node);
         m_edges.RemoveAll(edge => edge.output.nodeId == nodeId || edge.input.nodeId == nodeId);
         return true;
     }
@@ -311,8 +342,7 @@ public sealed class GraphDocument
     /// <returns>
     /// The node record, or <see langword="null"/> when absent.
     /// </returns>
-    public GraphNodeRecord? FindNode(GraphNodeId nodeId)
-        => m_nodes.Find(node => node.id == nodeId);
+    public GraphNodeRecord? FindNode(GraphNodeId nodeId) => m_nodeIndex.GetValueOrDefault(nodeId);
 
     /// <summary>
     /// Adds an edge while preserving document order.
@@ -364,8 +394,10 @@ public sealed class GraphDocument
     /// <param name="value">
     /// Serialized metadata value.
     /// </param>
-    public void SetMetadata(string key, GraphSerializedValue value)
-    {
+    public void SetMetadata(
+        string key,
+        GraphSerializedValue value
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(key);
         ArgumentNullException.ThrowIfNull(value);
         m_metadata[key] = value;

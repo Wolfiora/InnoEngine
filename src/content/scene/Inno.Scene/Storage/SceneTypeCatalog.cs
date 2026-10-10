@@ -6,6 +6,8 @@ using System.Reflection;
 
 using Inno.Extensibility.Types;
 
+using Inno.Extensibility.Catalogs;
+
 namespace Inno.Scene;
 
 internal sealed class SceneTypeCatalog : IDisposable
@@ -20,8 +22,10 @@ internal sealed class SceneTypeCatalog : IDisposable
         m_registry = new SceneTypeRegistry(types);
     }
 
-    internal bool TryGetComponent(Type type, out SceneComponentTypeDescriptor? descriptor)
-    {
+    internal bool TryGetComponent(
+        Type type,
+        out SceneComponentTypeDescriptor? descriptor
+    ) {
         ArgumentNullException.ThrowIfNull(type);
         descriptor = null;
         return m_types.TryGetTypeRef(type, out TypeRef typeRef) &&
@@ -48,8 +52,10 @@ internal sealed class SceneTypeCatalog : IDisposable
             $"Component runtime type ID '{runtimeTypeId}' is not part of the active TypeCache generation.");
     }
 
-    internal bool TryGetSystem(Type type, out SceneSystemTypeDescriptor? descriptor)
-    {
+    internal bool TryGetSystem(
+        Type type,
+        out SceneSystemTypeDescriptor? descriptor
+    ) {
         ArgumentNullException.ThrowIfNull(type);
         descriptor = null;
         return m_types.TryGetTypeRef(type, out TypeRef typeRef) &&
@@ -66,6 +72,7 @@ internal sealed class SceneTypeCatalog : IDisposable
 
     internal Type Resolve(TypeRef typeRef) => m_types.Resolve(typeRef);
     internal TypeRef GetTypeRef(Type type) => m_types.GetTypeRef(type);
+    internal TypeCacheSnapshot snapshot => m_types.current;
 
     internal long generation => m_registry.snapshot.generation;
 
@@ -116,8 +123,8 @@ internal sealed class SceneTypeCatalog : IDisposable
                     componentTypeRef.runtimeId,
                     componentType.FullName ?? componentType.Name,
                     componentType.IsClass && !componentType.IsAbstract,
-                    componentType.IsDefined(typeof(AllowMultipleComponentAttribute), inherit: true),
-                    GetBehaviorPhases(componentType),
+                    types.GetAttribute<AllowMultipleComponentAttribute>(componentTypeRef, inherit: true) is not null,
+                    GetBehaviorPhases(types.GetMetadata(componentTypeRef)),
                     assignableConcreteRuntimeTypeIds,
                     assignableConcreteRuntimeTypeIds.ToFrozenSet());
                 componentsByRuntimeId.Add(descriptor.runtimeTypeId, descriptor);
@@ -135,7 +142,7 @@ internal sealed class SceneTypeCatalog : IDisposable
                     systemTypeRef.runtimeId,
                     systemType.FullName ?? systemType.Name,
                     systemType.IsClass && !systemType.IsAbstract,
-                    systemType.IsDefined(typeof(AllowMultipleSystemAttribute), inherit: false));
+                    types.GetAttribute<AllowMultipleSystemAttribute>(systemTypeRef, inherit: false) is not null);
                 systemsByRuntimeId.Add(descriptor.runtimeTypeId, descriptor);
             }
 
@@ -154,7 +161,10 @@ internal sealed class SceneTypeCatalog : IDisposable
         /// <param name="candidate">
         /// The candidate consumed by on activating; ownership remains with the caller unless explicitly stated otherwise.
         /// </param>
-        protected override void OnActivating(SceneTypeSnapshot? previous, SceneTypeSnapshot candidate)
+        protected override void OnActivating(
+            SceneTypeSnapshot? previous,
+            SceneTypeSnapshot candidate
+        )
             => SceneStore.InvalidateAllTypeCaches();
 
         /// <summary>
@@ -166,12 +176,15 @@ internal sealed class SceneTypeCatalog : IDisposable
         /// <param name="candidate">
         /// The candidate consumed by on activation rolled back; ownership remains with the caller unless explicitly stated otherwise.
         /// </param>
-        protected override void OnActivationRolledBack(SceneTypeSnapshot? previous, SceneTypeSnapshot candidate)
+        protected override void OnActivationRolledBack(
+            SceneTypeSnapshot? previous,
+            SceneTypeSnapshot candidate
+        )
             => SceneStore.InvalidateAllTypeCaches();
 
-        private static GameBehaviorLifecyclePhase GetBehaviorPhases(Type componentType)
+        private static GameBehaviorLifecyclePhase GetBehaviorPhases(TypeCatalogMetadata metadata)
         {
-            if (!typeof(GameBehavior).IsAssignableFrom(componentType))
+            if (!typeof(GameBehavior).IsAssignableFrom(metadata.type))
                 return GameBehaviorLifecyclePhase.None;
 
             GameBehaviorLifecyclePhase phases = GameBehaviorLifecyclePhase.None;
@@ -185,17 +198,11 @@ internal sealed class SceneTypeCatalog : IDisposable
             AddOverride("OnDestroy", GameBehaviorLifecyclePhase.Destroy);
             return phases;
 
-            void AddOverride(string callbackName, GameBehaviorLifecyclePhase phase)
-            {
-                MethodInfo? callback = componentType.GetMethod(
-                    callbackName,
-                    BindingFlags.Instance | BindingFlags.NonPublic,
-                    binder: null,
-                    Type.EmptyTypes,
-                    modifiers: null);
-                if (callback is not null &&
-                    callback.DeclaringType != typeof(GameBehavior) &&
-                    callback.GetBaseDefinition().DeclaringType == typeof(GameBehavior))
+            void AddOverride(
+                string callbackName,
+                GameBehaviorLifecyclePhase phase
+            ) {
+                if (metadata.parameterlessOverrides.Contains((callbackName, typeof(GameBehavior))))
                 {
                     phases |= phase;
                 }
@@ -208,7 +215,8 @@ internal sealed class SceneTypeCatalog : IDisposable
 internal sealed record SceneTypeSnapshot(
     long generation,
     FrozenDictionary<int, SceneComponentTypeDescriptor> componentsByRuntimeId,
-    FrozenDictionary<int, SceneSystemTypeDescriptor> systemsByRuntimeId);
+    FrozenDictionary<int, SceneSystemTypeDescriptor> systemsByRuntimeId
+);
 
 internal sealed record SceneComponentTypeDescriptor(
     int runtimeTypeId,
@@ -217,10 +225,9 @@ internal sealed record SceneComponentTypeDescriptor(
     bool allowsMultiple,
     GameBehaviorLifecyclePhase behaviorPhases,
     int[] assignableConcreteRuntimeTypeIds,
-    FrozenSet<int> assignableConcreteRuntimeTypeIdSet)
-{
-    internal bool IsAssignableFrom(int concreteRuntimeTypeId)
-        => assignableConcreteRuntimeTypeIdSet.Contains(concreteRuntimeTypeId);
+    FrozenSet<int> assignableConcreteRuntimeTypeIdSet
+) {
+    internal bool IsAssignableFrom(int concreteRuntimeTypeId) => assignableConcreteRuntimeTypeIdSet.Contains(concreteRuntimeTypeId);
 }
 
 [Flags]
@@ -244,4 +251,5 @@ internal sealed record SceneSystemTypeDescriptor(
     int runtimeTypeId,
     string displayName,
     bool isConcrete,
-    bool allowsMultiple);
+    bool allowsMultiple
+);

@@ -1,4 +1,4 @@
-using System;
+using Inno.Build.Managed;
 
 namespace Inno.Build;
 
@@ -11,11 +11,13 @@ public sealed class GameBuildPackageContext
         BuildProfile profile,
         string supportPackDirectory,
         string contentDirectory,
-        string outputDirectory)
-    {
+        ManagedDeploymentResult managedDeployment,
+        string outputDirectory
+    ) {
         this.profile = profile;
         this.supportPackDirectory = supportPackDirectory;
         this.contentDirectory = contentDirectory;
+        this.managedDeployment = managedDeployment;
         this.outputDirectory = outputDirectory;
     }
 
@@ -33,6 +35,11 @@ public sealed class GameBuildPackageContext
     /// Gets the source-free packaged content directory to deploy.
     /// </summary>
     public string contentDirectory { get; }
+
+    /// <summary>
+    /// Gets the verified managed publication produced independently of platform packaging.
+    /// </summary>
+    public ManagedDeploymentResult managedDeployment { get; }
 
     /// <summary>
     /// Gets the empty staging parent where the target must create exactly one output.

@@ -9,8 +9,10 @@ namespace Inno.Editor.Interactions;
 /// <param name="message">
 /// The user-facing validation diagnostic, or an empty string for a valid result.
 /// </param>
-public readonly record struct EditorValidationResult(bool isValid, string message)
-{
+public readonly record struct EditorValidationResult(
+    bool isValid,
+    string message
+) {
     /// <summary>
     /// Gets a successful validation result.
     /// </summary>
@@ -25,6 +27,5 @@ public readonly record struct EditorValidationResult(bool isValid, string messag
     /// <returns>
     /// An invalid result containing the supplied diagnostic.
     /// </returns>
-    public static EditorValidationResult Invalid(string message)
-        => new(false, message ?? string.Empty);
+    public static EditorValidationResult Invalid(string message) => new(false, message ?? string.Empty);
 }

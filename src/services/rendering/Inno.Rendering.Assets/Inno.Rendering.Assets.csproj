@@ -6,19 +6,18 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <WarningsAsErrors>$(WarningsAsErrors);CS1572;CS1573;CS1591</WarningsAsErrors>
   </PropertyGroup>
+
   <ItemGroup>
+    <ProjectReference Include="../../../foundation/extensibility/Inno.Extensibility.Types/Inno.Extensibility.Types.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../../foundation/scripting/Inno.Scripting.Api/Inno.Scripting.Api.csproj" PrivateAssets="compile" />
-    <ProjectReference Include="../../../foundation/core/Inno.Core.IO/Inno.Core.IO.csproj" PrivateAssets="compile" />
-    <ProjectReference Include="../Inno.Rendering.Shaders/Inno.Rendering.Shaders.csproj" />
-    <ProjectReference Include="..\..\..\foundation\core\Inno.Core.Serialization\Inno.Core.Serialization.csproj" PrivateAssets="compile" />
-    <ProjectReference Include="..\..\..\foundation\core\Inno.Core.Mathematics\Inno.Core.Mathematics.csproj" PrivateAssets="compile" />
-    <ProjectReference Include="..\..\..\content\assets\Inno.Assets\Inno.Assets.csproj" PrivateAssets="compile" />
-    <ProjectReference Include="..\..\..\content\assets\Inno.Assets.Pipeline\Inno.Assets.Pipeline.csproj" PrivateAssets="compile" />
   </ItemGroup>
+
   <ItemGroup>
-    <ProjectReference Include="..\Inno.Rendering\Inno.Rendering.csproj" />
-  </ItemGroup>
-  <ItemGroup>
+    <ProjectReference Include="../Inno.Rendering/Inno.Rendering.csproj" />
+    <ProjectReference Include="../../../content/assets/Inno.Assets/Inno.Assets.csproj" />
+    <ProjectReference Include="../../../content/references/Inno.References/Inno.References.csproj" />
+    <ProjectReference Include="../../../foundation/core/Inno.Core.Serialization/Inno.Core.Serialization.csproj" />
+    <ProjectReference Include="../../../foundation/core/Inno.Core.Mathematics/Inno.Core.Mathematics.csproj" />
     <ProjectReference Include="../../../foundation/core/Inno.Core.Diagnostics/Inno.Core.Diagnostics.csproj" />
   </ItemGroup>
 </Project>

@@ -7,19 +7,29 @@
     <WarningsAsErrors>$(WarningsAsErrors);CS1572;CS1573;CS1591</WarningsAsErrors>
     <InnoAssemblyScope>Editor</InnoAssemblyScope>
   </PropertyGroup>
+
   <ItemGroup>
     <ProjectReference
-      Include="..\..\..\..\foundation\core\Inno.Core.Serialization.Generators\Inno.Core.Serialization.Generators.csproj"
+      Include="../../../../foundation/core/Inno.Core.Logging/Inno.Core.Logging.csproj"
+      PrivateAssets="compile" />
+    <ProjectReference
+      Include="../../../../foundation/extensibility/Inno.Extensibility.Types/Inno.Extensibility.Types.csproj"
+      PrivateAssets="compile" />
+    <ProjectReference
+      Include="../../../../foundation/scripting/Inno.Scripting.Api/Inno.Scripting.Api.csproj"
+      PrivateAssets="compile" />
+    <ProjectReference Include="../Inno.Editor.Interactions/Inno.Editor.Interactions.csproj" PrivateAssets="compile" />
+    <ProjectReference
+      Include="../../../../foundation/core/Inno.Core.Serialization.Generators/Inno.Core.Serialization.Generators.csproj"
       OutputItemType="Analyzer"
-      ReferenceOutputAssembly="false" />
-    <ProjectReference Include="..\..\..\..\foundation\core\Inno.Core.Logging\Inno.Core.Logging.csproj" PrivateAssets="compile" />
-    <ProjectReference Include="..\..\..\..\foundation\extensibility\Inno.Extensibility.Types\Inno.Extensibility.Types.csproj" PrivateAssets="compile" />
-    <ProjectReference Include="..\..\..\..\foundation\scripting\Inno.Scripting.Api\Inno.Scripting.Api.csproj" PrivateAssets="compile" />
-    <ProjectReference Include="..\Inno.Editor.Interactions\Inno.Editor.Interactions.csproj" PrivateAssets="compile" />
+      ReferenceOutputAssembly="false"
+      PrivateAssets="compile" />
   </ItemGroup>
+
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\foundation\core\Inno.Core.Serialization\Inno.Core.Serialization.csproj" />
-    <ProjectReference Include="..\..\..\..\foundation\core\Inno.Core.Settings\Inno.Core.Settings.csproj" />
-    <ProjectReference Include="..\Inno.Editor.Core\Inno.Editor.Core.csproj" />
+    <ProjectReference Include="../../../../foundation/core/Inno.Core.Serialization/Inno.Core.Serialization.csproj" />
+    <ProjectReference Include="../../../../foundation/core/Inno.Core.Settings/Inno.Core.Settings.csproj" />
+    <ProjectReference Include="../Inno.Editor.Core/Inno.Editor.Core.csproj" />
+    <ProjectReference Include="../../../../foundation/extensibility/Inno.Extensibility.Catalogs/Inno.Extensibility.Catalogs.csproj" />
   </ItemGroup>
 </Project>

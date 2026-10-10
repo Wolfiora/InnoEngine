@@ -16,8 +16,8 @@ public sealed class SceneReloadDiagnostic
         Guid objectPersistentId,
         string propertyName,
         string previousPropertyType,
-        string currentPropertyType)
-    {
+        string currentPropertyType
+    ) {
         this.code = code;
         this.severity = severity;
         this.message = message;

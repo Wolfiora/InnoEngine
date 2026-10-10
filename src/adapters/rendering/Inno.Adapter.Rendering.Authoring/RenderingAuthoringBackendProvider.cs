@@ -1,4 +1,6 @@
+using System;
 using Inno.Rendering.Assets;
+using Inno.Rendering.Assets.Authoring;
 
 namespace Inno.Adapter.Rendering;
 
@@ -8,9 +10,25 @@ namespace Inno.Adapter.Rendering;
 public abstract class RenderingAuthoringBackendProvider
 {
     /// <summary>
+    /// Captures the registration identity assigned by the composition owner.
+    /// </summary>
+    /// <param name="id">
+    /// The assigned implementation identity.
+    /// </param>
+    /// <exception cref="ArgumentException">
+    /// The identity is unassigned.
+    /// </exception>
+    protected RenderingAuthoringBackendProvider(RenderingBackendId id)
+    {
+        if (!id.isValid)
+            throw new ArgumentException("A provider requires an assigned backend ID.", nameof(id));
+        this.id = id;
+    }
+
+    /// <summary>
     /// Gets the stable runtime implementation identity served by these tools.
     /// </summary>
-    public abstract RenderingBackendId id { get; }
+    public RenderingBackendId id { get; }
 
     /// <summary>
     /// Creates the shader toolchain for this implementation.

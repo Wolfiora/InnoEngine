@@ -1,97 +1,21 @@
 using Inno.Core.Execution;
+using Inno.Rendering;
+using Inno.Rendering.Assets;
 using System;
 using System.Threading;
 
-namespace Inno.Rendering;
-
-/// <summary>
-/// Reports read-only statistics for the most recently completed render frame.
-/// </summary>
-public sealed class RenderFrameStatistics
-{
-    /// <summary>
-    /// Creates an immutable frame statistics snapshot.
-    /// </summary>
-    /// <param name="frameIndex">
-    /// Monotonic render frame index.
-    /// </param>
-    /// <param name="viewCount">
-    /// Executed logical view count.
-    /// </param>
-    /// <param name="drawCount">
-    /// Recorded draw count.
-    /// </param>
-    /// <param name="dispatchCount">
-    /// Recorded compute dispatch count.
-    /// </param>
-    /// <param name="culledPassCount">
-    /// Passes removed by graph compilation.
-    /// </param>
-    /// <param name="allocationCounters">
-    /// Device-generation cumulative transient allocations at frame completion, or null when unavailable.
-    /// </param>
-    public RenderFrameStatistics(
-        ulong frameIndex,
-        int viewCount,
-        int drawCount,
-        int dispatchCount,
-        int culledPassCount,
-        RenderDeviceAllocationCounters? allocationCounters)
-    {
-        ArgumentOutOfRangeException.ThrowIfNegative(viewCount);
-        ArgumentOutOfRangeException.ThrowIfNegative(drawCount);
-        ArgumentOutOfRangeException.ThrowIfNegative(dispatchCount);
-        ArgumentOutOfRangeException.ThrowIfNegative(culledPassCount);
-        this.frameIndex = frameIndex;
-        this.viewCount = viewCount;
-        this.drawCount = drawCount;
-        this.dispatchCount = dispatchCount;
-        this.culledPassCount = culledPassCount;
-        this.allocationCounters = allocationCounters;
-    }
-
-    /// <summary>
-    /// Gets the monotonic render frame index.
-    /// </summary>
-    public ulong frameIndex { get; }
-
-    /// <summary>
-    /// Gets the executed logical view count.
-    /// </summary>
-    public int viewCount { get; }
-
-    /// <summary>
-    /// Gets the recorded draw count.
-    /// </summary>
-    public int drawCount { get; }
-
-    /// <summary>
-    /// Gets the recorded compute dispatch count.
-    /// </summary>
-    public int dispatchCount { get; }
-
-    /// <summary>
-    /// Gets passes removed by graph compilation.
-    /// </summary>
-    public int culledPassCount { get; }
-
-    /// <summary>
-    /// Gets the device-generation cumulative transient allocation snapshot at frame completion.
-    /// Null means the backend does not report allocation accounting; it does not mean zero allocations.
-    /// </summary>
-    public RenderDeviceAllocationCounters? allocationCounters { get; }
-}
+namespace Inno.Rendering.Runtime;
 
 /// <summary>
 /// Exposes current rendering configuration and immutable device state.
 /// </summary>
+[Inno.Extensibility.Types.StableTypeId("6310eecc-3492-572c-a2f7-e29ec16e65b9")]
 public static class GraphicsSettings
 {
     /// <summary>
     /// Gets current device capabilities, or <see langword="null"/> before device initialization.
     /// </summary>
-    public static GraphicsCapabilities? capabilities
-        => GraphicsSettingsExecutionContext.currentOrNull?.capabilities;
+    public static GraphicsCapabilities? capabilities => GraphicsSettingsExecutionContext.currentOrNull?.capabilities;
 
     /// <summary>
     /// Gets or sets the project default pipeline used by requests without an override.
@@ -105,10 +29,10 @@ public static class GraphicsSettings
     /// <summary>
     /// Gets statistics for the last completed frame, or <see langword="null"/> before the first frame.
     /// </summary>
-    public static RenderFrameStatistics? frameStatistics
-        => GraphicsSettingsExecutionContext.currentOrNull?.frameStatistics;
+    public static RenderFrameStatistics? frameStatistics => GraphicsSettingsExecutionContext.currentOrNull?.frameStatistics;
 }
 
+[Inno.Extensibility.Types.StableTypeId("1af0f9ea-f6cf-544c-a2c5-0c3c306c6780")]
 internal sealed class GraphicsSettingsState
 {
     private readonly object m_sync = new();
@@ -160,6 +84,7 @@ internal sealed class GraphicsSettingsState
     }
 }
 
+[Inno.Extensibility.Types.StableTypeId("0f145d08-b261-54bf-92aa-5ee6605d819e")]
 internal static class GraphicsSettingsExecutionContext
 {
     private static readonly ExecutionSlot<GraphicsSettingsState> S_CURRENT = new("state");

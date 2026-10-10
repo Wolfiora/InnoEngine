@@ -1,3 +1,5 @@
+using Inno.Adapter.Serialization.DotNet;
+using Inno.Adapter.Modules.DotNet;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -32,13 +34,11 @@ public sealed class GraphDocumentControllerTests : IDisposable
     {
         _ = typeof(GraphEditorModule);
         m_modules = new ModuleHost(new ModuleHostOptions
-        {
-            cacheDirectory = Path.Combine(m_testRoot, "Assemblies")
-        });
-        m_types = new TypeCatalog(m_modules);
-        m_serialization = new SerializationRegistry(m_types);
+        { catalogSource = new DotNetAssemblyCatalogSource(typeof(GraphDocumentControllerTests).Assembly)        });
+        m_types = new TypeCatalog(m_modules, new ReflectionTypeCatalogSource());
+        m_serialization = new SerializationRegistry(m_types, new ReflectionSerializationMetadataSource());
         m_runtime = new EditorInteractionRuntime(
-            new EditorContext(m_testRoot),
+            new EditorContext(m_testRoot, new EditorKeyboardPolicy(Inno.Core.Input.KeyModifier.Control, "Super")),
             m_types,
             m_logs,
             [m_serialization, m_sink, m_reloads]);
@@ -52,6 +52,9 @@ public sealed class GraphDocumentControllerTests : IDisposable
         m_types.Dispose();
         m_modules.Dispose();
         m_logs.Dispose();
+        GC.Collect();
+        GC.WaitForPendingFinalizers();
+        GC.Collect();
         if (Directory.Exists(m_testRoot))
             Directory.Delete(m_testRoot, recursive: true);
     }
@@ -70,8 +73,9 @@ public sealed class GraphDocumentControllerTests : IDisposable
         var rejection = new RejectionParticipant(reject);
         using IDisposable registration = m_reloads.Register(rejection);
         string directory = Path.Combine(AppContext.BaseDirectory, "Modules");
-        using (AssemblyReloadSession reload = m_modules.BeginReload([new AssemblyLoadRequest
+        using (AssemblyReloadSession reload = m_modules.BeginReload([new DotNetModuleSource
         {
+            artifactRootDirectory = Path.Combine(m_testRoot, "Assemblies"),
             moduleName = "GraphRecovery", domain = AssemblyDomain.InnoPlugin, scope = AssemblyScope.Runtime,
             mainAssemblyPath = Path.Combine(directory, "Inno.Extensibility.Modules.TestModule.dll"),
             preloadAssemblyPaths = [Path.Combine(directory, "Reloadable.PrivateDependency.dll")]
@@ -242,13 +246,19 @@ public sealed class GraphDocumentControllerTests : IDisposable
         GraphNodeId owner = controller.AddNode("test.owner", default);
         GraphNodeId child = controller.AddNode("test.child", default);
         GraphClipboardData copy = controller.Copy([owner, child]);
-        IReadOnlyList<GraphNodeId> created = controller.Paste(copy, new(10, 10), (node, remap) =>
+        IReadOnlyList<GraphNodeId> created = controller.Paste(copy, new(10, 10), (
+            node,
+            remap
+        ) =>
             node.SetValue("owner", new(System.Text.Encoding.UTF8.GetBytes(remap[owner].value))));
         Assert.Equal(created[0].value, System.Text.Encoding.UTF8.GetString(controller.document.FindNode(created[1])!.values["owner"].data.Span));
         Assert.True(history.Undo().succeeded);
         Assert.Equal(2, controller.document.nodes.Count);
         byte[] before = GraphDocumentCodec.Encode(controller.document, m_serialization);
-        Assert.Throws<InvalidOperationException>(() => controller.Paste(copy, default, (node, remap) => throw new InvalidOperationException("Rejected node remapping")));
+        Assert.Throws<InvalidOperationException>(() => controller.Paste(copy, default, (
+            node,
+            remap
+        ) => throw new InvalidOperationException("Rejected node remapping")));
         Assert.Equal(before, GraphDocumentCodec.Encode(controller.document, m_serialization));
     }
 
@@ -266,9 +276,14 @@ public sealed class GraphDocumentControllerTests : IDisposable
         public long residentBytes => 0;
         public long diskBytes => 0;
         public EditorHistoryTransaction BeginTransaction(string name) => throw new NotSupportedException();
-        public EditorHistoryResult Execute(string name, EditorHistoryChange change) => throw new NotSupportedException();
-        public void RecordApplied(string name, EditorHistoryChange change)
-        {
+        public EditorHistoryResult Execute(
+            string name,
+            EditorHistoryChange change
+        ) => throw new NotSupportedException();
+        public void RecordApplied(
+            string name,
+            EditorHistoryChange change
+        ) {
             _ = name;
             changes.Add(change);
         }
@@ -296,8 +311,10 @@ public sealed class GraphDocumentControllerTests : IDisposable
         private readonly GraphEditorModule m_graphs;
         private readonly GraphModuleSink m_sink;
 
-        private GraphModuleProbe(GraphEditorModule graphs, GraphModuleSink sink)
-        {
+        private GraphModuleProbe(
+            GraphEditorModule graphs,
+            GraphModuleSink sink
+        ) {
             m_graphs = graphs;
             m_sink = sink;
         }

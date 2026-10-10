@@ -7,13 +7,14 @@ internal readonly record struct SceneObjectPlacement(
     Guid sceneId,
     Guid objectId,
     Guid? parentId,
-    int siblingIndex);
+    int siblingIndex
+);
 
 internal sealed record SceneHierarchyHistoryData(
     SceneObjectPlacement[] before,
     SceneObjectPlacement[] after,
-    Guid selectedId)
-{
+    Guid selectedId
+) {
     internal byte[] Encode()
     {
         using var stream = new MemoryStream();
@@ -37,8 +38,10 @@ internal sealed record SceneHierarchyHistoryData(
         return new SceneHierarchyHistoryData(before, after, selectedId);
     }
 
-    private static void WritePlacements(BinaryWriter writer, SceneObjectPlacement[] placements)
-    {
+    private static void WritePlacements(
+        BinaryWriter writer,
+        SceneObjectPlacement[] placements
+    ) {
         writer.Write(placements.Length);
         for (int i = 0; i < placements.Length; i++)
         {

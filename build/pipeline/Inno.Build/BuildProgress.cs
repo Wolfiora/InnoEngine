@@ -25,7 +25,11 @@ public readonly record struct BuildProgress
     /// <exception cref="ArgumentOutOfRangeException">
     /// Thrown when fraction is outside the supported range.
     /// </exception>
-    public BuildProgress(string stage, double fraction, string message)
+    public BuildProgress(
+        string stage,
+        double fraction,
+        string message
+    )
         : this()
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(stage);

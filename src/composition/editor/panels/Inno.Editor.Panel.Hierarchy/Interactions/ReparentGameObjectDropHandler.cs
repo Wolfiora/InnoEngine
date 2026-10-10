@@ -23,8 +23,7 @@ internal sealed class ReparentGameObjectDropHandler(SceneEdits edits)
     /// <returns>
     /// The validated editor drop status that represents the completed operation.
     /// </returns>
-    protected override EditorDropStatus Query(
-        EditorDropContext<GameObject, HierarchyObjectDropTarget> context)
+    protected override EditorDropStatus Query(EditorDropContext<GameObject, HierarchyObjectDropTarget> context)
     {
         GameObject source = context.source;
         GameObject target = context.target.gameObject;
@@ -48,8 +47,7 @@ internal sealed class ReparentGameObjectDropHandler(SceneEdits edits)
     /// <returns>
     /// The validated editor drop result that represents the completed operation.
     /// </returns>
-    protected override EditorDropResult Drop(
-        EditorDropContext<GameObject, HierarchyObjectDropTarget> context)
+    protected override EditorDropResult Drop(EditorDropContext<GameObject, HierarchyObjectDropTarget> context)
     {
         GameObject source = context.source;
         GameObject target = context.target.gameObject;
@@ -75,8 +73,8 @@ internal sealed class ReparentGameObjectDropHandler(SceneEdits edits)
     private static void ApplyDrop(
         EditorDropContext<GameObject, HierarchyObjectDropTarget> context,
         Transform sourceTransform,
-        Transform targetTransform)
-    {
+        Transform targetTransform
+    ) {
         if (context.placement == EditorDropPlacement.Into)
         {
             if (IsDescendantOf(targetTransform, sourceTransform))
@@ -96,8 +94,10 @@ internal sealed class ReparentGameObjectDropHandler(SceneEdits edits)
             targetIndex + (context.placement == EditorDropPlacement.After ? 1 : 0));
     }
 
-    private static bool IsDescendantOf(Transform transform, Transform possibleAncestor)
-    {
+    private static bool IsDescendantOf(
+        Transform transform,
+        Transform possibleAncestor
+    ) {
         for (Transform? current = transform.parent; current is not null; current = current.parent)
         {
             if (ReferenceEquals(current, possibleAncestor))

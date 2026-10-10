@@ -1,0 +1,9 @@
+<Project>
+  <Import Project="../src/Directory.Build.props" />
+
+  <PropertyGroup>
+    <BindGenRoot Condition="'$(BindGenRoot)' == ''">$(MSBuildThisFileDirectory)../../BindGen-CS</BindGenRoot>
+    <BGCSRuntimeProject Condition="'$(BGCSRuntimeProject)' == ''">$(BindGenRoot)/src/BGCS.Runtime/BGCS.Runtime.csproj</BGCSRuntimeProject>
+    <NoWarn>$(NoWarn);CS8981</NoWarn>
+  </PropertyGroup>
+</Project>

@@ -12,8 +12,20 @@ internal sealed class EditorModalHost
 {
     private readonly Dictionary<string, Transition> m_transitions = new(StringComparer.Ordinal);
 
-    internal bool Update(IReadOnlyList<EditorModalExtension> modals, double now)
-    {
+    internal bool Update(
+        IReadOnlyList<EditorModalExtension> modals,
+        double now
+    ) {
+        bool newBlockingModalRequested = false;
+        for (int i = 0; i < modals.Count; i++)
+        {
+            if (modals[i].TryGetPresentation(out EditorModalExtension.Presentation candidate) &&
+                candidate.isVisible && candidate.blocksInteraction)
+            {
+                newBlockingModalRequested = true;
+                break;
+            }
+        }
         bool blocksInteraction = false;
         for (int i = 0; i < modals.Count; i++)
         {
@@ -21,7 +33,10 @@ internal sealed class EditorModalHost
             if (!extension.TryGetPresentation(out EditorModalExtension.Presentation presentation))
                 continue;
             Transition transition = GetTransition(extension.id);
-            transition.Update(presentation.isVisible, now);
+            if (newBlockingModalRequested && !presentation.isVisible)
+                transition.HideImmediately();
+            else
+                transition.Update(presentation.isVisible, now);
             if (presentation.blocksInteraction && transition.isVisible)
                 blocksInteraction = true;
         }
@@ -31,8 +46,8 @@ internal sealed class EditorModalHost
     internal void Draw(
         EditorContext context,
         IReadOnlyList<EditorModalExtension> modals,
-        double now)
-    {
+        double now
+    ) {
         for (int i = 0; i < modals.Count; i++)
         {
             EditorModalExtension extension = modals[i];
@@ -76,8 +91,17 @@ internal sealed class EditorModalHost
 
         internal bool isVisible { get; private set; }
 
-        internal void Update(bool requested, double now)
+        internal void HideImmediately()
         {
+            isVisible = false;
+            m_requested = false;
+            m_hideAt = double.PositiveInfinity;
+        }
+
+        internal void Update(
+            bool requested,
+            double now
+        ) {
             if (requested)
             {
                 if (!m_requested)

@@ -1,0 +1,19 @@
+{
+  "baseConfig": {
+    "url": "file://common.json"
+  },
+  "preset": "host-c,c-library,function-table",
+  "libName": "inno-ui",
+  "entryFiles": [
+    "../Native/Generated/include/Classes.h"
+  ],
+  "allowedHeaders": [
+    "../Native/Generated/include/Classes.h",
+    "../Native/Generated/include/common.h",
+    "../Native/Generated/include/enums.h"
+  ],
+  "includeFolders": [
+    "../Native/Generated/include"
+  ],
+  "outputPath": "../Generated"
+}

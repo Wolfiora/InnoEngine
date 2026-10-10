@@ -1,0 +1,108 @@
+using System;
+using Inno.Build.Managed;
+using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
+
+namespace Inno.Build.Windows;
+
+/// <summary>
+/// Packages a verified Windows x64 Support Pack as a portable application directory.
+/// </summary>
+public sealed class WindowsX64GameBuildTarget : IGameBuildTarget
+{
+    private static readonly IPlayerSupportPackValidator S_SUPPORT_PACK_VALIDATOR = new WindowsSupportPackValidator();
+
+
+    /// <summary>
+    /// Validates the target closure before runtime script compilation.
+    /// </summary>
+    /// <param name="directory">
+    /// The Support Pack directory selected by the build catalog.
+    /// </param>
+    /// <exception cref="System.IO.InvalidDataException">
+    /// The required platform inputs are incomplete or incompatible.
+    /// </exception>
+    public void Validate(string directory) => S_SUPPORT_PACK_VALIDATOR.Validate(directory);
+
+    /// <summary>
+    /// Gets the Windows x64 target identity.
+    /// </summary>
+    public BuildTargetId id => BuildTargetId.windowsX64;
+
+    /// <inheritdoc />
+    public ManagedDeploymentId defaultManagedDeployment => ManagedDeploymentId.coreClr;
+
+    /// <inheritdoc />
+    public string runtimeIdentifier => "win-x64";
+
+    /// <summary>
+    /// Gets the target name presented by authoring hosts.
+    /// </summary>
+    public string displayName => "Windows (x64)";
+
+
+
+    /// <summary>
+    /// Composes a Windows application directory in isolated staging.
+    /// </summary>
+    /// <param name="context">
+    /// The verified Support Pack, packaged content, and output staging paths.
+    /// </param>
+    /// <param name="cancellationToken">
+    /// The token that cancels composition before commit.
+    /// </param>
+    /// <returns>
+    /// The staged Windows application directory.
+    /// </returns>
+    public async ValueTask<string> PackageAsync(
+        GameBuildPackageContext context,
+        CancellationToken cancellationToken = default
+    ) {
+        ArgumentNullException.ThrowIfNull(context);
+        string application = Path.Combine(context.outputDirectory, context.profile.productName + "-Windows-x64");
+        await CopyDirectoryAsync(context.managedDeployment.outputDirectory, application, cancellationToken,
+            excludeCompilerReferences: true).ConfigureAwait(false);
+        string player = Path.Combine(application, "Inno.Player.Windows.exe");
+        if (!File.Exists(player))
+            throw new InvalidDataException("The Windows managed publication does not contain Inno.Player.Windows.exe.");
+        File.Move(player, Path.Combine(application, context.profile.productName + ".exe"));
+        await CopyDirectoryAsync(context.contentDirectory, Path.Combine(application, "Content"), cancellationToken,
+                excludeCompilerReferences: false)
+            .ConfigureAwait(false);
+        return application;
+    }
+
+    private static async ValueTask CopyDirectoryAsync(
+        string source,
+        string destination,
+        CancellationToken cancellationToken,
+        bool excludeCompilerReferences
+    ) {
+        Directory.CreateDirectory(destination);
+        foreach (string directory in Directory.EnumerateDirectories(source, "*", SearchOption.AllDirectories))
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            string relativePath = Path.GetRelativePath(source, directory);
+            if (excludeCompilerReferences && IsCompilerReferencePath(relativePath))
+                continue;
+            Directory.CreateDirectory(Path.Combine(destination, relativePath));
+        }
+        foreach (string file in Directory.EnumerateFiles(source, "*", SearchOption.AllDirectories))
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            string relativePath = Path.GetRelativePath(source, file);
+            if (excludeCompilerReferences && IsCompilerReferencePath(relativePath))
+                continue;
+            string target = Path.Combine(destination, relativePath);
+            Directory.CreateDirectory(Path.GetDirectoryName(target)!);
+            await using FileStream input = new(file, FileMode.Open, FileAccess.Read, FileShare.Read, 131072, true);
+            await using FileStream output = new(target, FileMode.CreateNew, FileAccess.Write, FileShare.None, 131072, true);
+            await input.CopyToAsync(output, cancellationToken).ConfigureAwait(false);
+        }
+    }
+
+    private static bool IsCompilerReferencePath(string relativePath)
+        => relativePath.Equals("References", StringComparison.OrdinalIgnoreCase)
+           || relativePath.StartsWith("References" + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase);
+}

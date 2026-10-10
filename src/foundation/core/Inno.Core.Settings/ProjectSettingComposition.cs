@@ -58,8 +58,8 @@ public sealed class ProjectSettingContributionContext
         string contributorId,
         ProjectSettingContributionSource source,
         IReadOnlySet<string> dependencies,
-        IReadOnlySet<string> overrides)
-    {
+        IReadOnlySet<string> overrides
+    ) {
         this.contributorId = contributorId;
         this.source = source;
         m_dependencies = dependencies;
@@ -111,8 +111,8 @@ public sealed class ProjectSettingContribution<TContribution>
 {
     internal ProjectSettingContribution(
         ProjectSettingContributionContext context,
-        TContribution value)
-    {
+        TContribution value
+    ) {
         this.context = context;
         this.value = value;
     }
@@ -140,13 +140,15 @@ public abstract class ProjectSettingComposer
         SerializationContext serializationContext,
         ISerializable baseline,
         ISerializable value,
-        out byte[] contributionData);
+        out byte[] contributionData
+    );
 
     internal abstract ISerializable Compose(
         SerializationRegistry serialization,
         SerializationContext serializationContext,
         ISerializable hostDefault,
-        IReadOnlyList<ProjectSettingCompositionEntry> contributions);
+        IReadOnlyList<ProjectSettingCompositionEntry> contributions
+    );
 }
 
 /// <summary>
@@ -174,7 +176,10 @@ public abstract class ProjectSettingComposer<TSetting, TContribution> : ProjectS
     /// <returns>
     /// A detached neutral contribution.
     /// </returns>
-    protected abstract TContribution CaptureContribution(TSetting baseline, TSetting value);
+    protected abstract TContribution CaptureContribution(
+        TSetting baseline,
+        TSetting value
+    );
 
     /// <summary>
     /// Gets whether a captured contribution contains no semantic operation.
@@ -198,7 +203,8 @@ public abstract class ProjectSettingComposer<TSetting, TContribution> : ProjectS
     /// </param>
     protected abstract void Compose(
         TSetting target,
-        IReadOnlyList<ProjectSettingContribution<TContribution>> contributions);
+        IReadOnlyList<ProjectSettingContribution<TContribution>> contributions
+    );
 
     internal sealed override Type settingType => typeof(TSetting);
 
@@ -207,8 +213,8 @@ public abstract class ProjectSettingComposer<TSetting, TContribution> : ProjectS
         SerializationContext serializationContext,
         ISerializable baseline,
         ISerializable value,
-        out byte[] contributionData)
-    {
+        out byte[] contributionData
+    ) {
         if (baseline is not TSetting typedBaseline || value is not TSetting typedValue)
         {
             throw new ArgumentException(
@@ -230,8 +236,8 @@ public abstract class ProjectSettingComposer<TSetting, TContribution> : ProjectS
         SerializationRegistry serialization,
         SerializationContext serializationContext,
         ISerializable hostDefault,
-        IReadOnlyList<ProjectSettingCompositionEntry> contributions)
-    {
+        IReadOnlyList<ProjectSettingCompositionEntry> contributions
+    ) {
         if (hostDefault is not TSetting target)
         {
             throw new ArgumentException(
@@ -259,4 +265,5 @@ public abstract class ProjectSettingComposer<TSetting, TContribution> : ProjectS
 
 internal sealed record ProjectSettingCompositionEntry(
     ProjectSettingContributionContext context,
-    byte[] data);
+    byte[] data
+);

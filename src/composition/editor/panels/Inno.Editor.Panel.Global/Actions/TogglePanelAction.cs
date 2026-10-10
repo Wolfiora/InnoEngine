@@ -11,6 +11,5 @@ internal sealed class TogglePanelAction : EditorArgumentAction<string>
     /// <param name="context">
     /// The operation scope that provides state, services, and ownership boundaries.
     /// </param>
-    protected override void Execute(EditorActionArgumentContext<string> context)
-        => _ = context.interactions.TogglePanel(context.argument);
+    protected override void Execute(EditorActionArgumentContext<string> context) => _ = context.interactions.TogglePanel(context.argument);
 }

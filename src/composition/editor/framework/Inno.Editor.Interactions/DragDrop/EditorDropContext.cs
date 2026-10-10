@@ -48,8 +48,8 @@ public sealed class EditorDropContext
         EditorDragData data,
         IdentityObject source,
         object target,
-        EditorDropPlacement placement = EditorDropPlacement.None)
-    {
+        EditorDropPlacement placement = EditorDropPlacement.None
+    ) {
         this.editor = editor ?? throw new ArgumentNullException(nameof(editor));
         this.interactions = interactions ?? throw new ArgumentNullException(nameof(interactions));
         ArgumentException.ThrowIfNullOrWhiteSpace(area);

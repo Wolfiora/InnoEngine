@@ -38,8 +38,8 @@ public readonly record struct RuntimeFrame
         float deltaTime,
         float unscaledDeltaTime,
         float timeScale,
-        bool isPaused)
-    {
+        bool isPaused
+    ) {
         this.frameIndex = frameIndex;
         this.time = time;
         this.unscaledTime = unscaledTime;

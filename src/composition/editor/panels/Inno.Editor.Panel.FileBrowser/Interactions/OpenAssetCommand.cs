@@ -48,6 +48,7 @@ internal sealed class OpenAssetCommand(AssetEditorModule assets) : EditorAction<
 
     private bool TryGetAssetContext(
         EditorActionContext<AssetFileEntry> context,
-        out AssetEditorContext? assetContext)
+        out AssetEditorContext? assetContext
+    )
         => assets.TryCreateContext(context.editor, context.target.assetPath.ToString(), out assetContext);
 }

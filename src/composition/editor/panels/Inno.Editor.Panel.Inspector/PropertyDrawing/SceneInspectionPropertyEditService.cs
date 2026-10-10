@@ -46,8 +46,8 @@ internal sealed class SceneInspectionPropertyEditService : IInspectionPropertyEd
         object owner,
         string propertyName,
         Action mutation,
-        string historyName)
-    {
+        string historyName
+    ) {
         ArgumentNullException.ThrowIfNull(owner);
         EngineObject sceneObject = owner as EngineObject ?? throw new ArgumentException(
             $"Scene property edits require an '{typeof(EngineObject).FullName}' owner.",

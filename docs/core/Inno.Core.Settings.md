@@ -1,174 +1,286 @@
 # Inno.Core.Settings
 
-[Core 索引](README.md) · [Wiki 首页](../README.md) · [Plugin](../plugins/Inno.Plugins.Authoring.md) · [Editor Settings](../editor/Inno.Editor.Settings.md)
+[分类索引](README.md) · [Wiki 首页](../README.md) · [本轮整改计划](../architecture/ARCHITECTURE_CLEANUP_PLAN_2026_10_06.md)
 
-`Inno.Core.Settings` 提供宿主中立、强类型、可热重载的 runtime/Plugin 项目设置。它不依赖 Editor、Rendering、Scene 或 Plugin Loader；Game Layers、Tags、渲染质量、输入映射及任意 Plugin 协议都只是普通设置定义。文档 IO 复用 [Inno.Core.IO](Inno.Core.IO.md)，领域层不再各自复制 staging/replace/rollback。
+## 职责与边界
 
-## Project Identity 与两类 ID
+SettingsDocumentStore、ProjectSettings 与 ProjectSettingsStore 接收 IByteDocumentStore，不要求物理文件名。创作宿主注入 FileByteDocumentStore；Player 从 content lease 捕获 bytes 后注入 ReadOnlyByteDocumentStore。写入只读来源明确失败；完整 SerializationContext 由 owner 提供。
 
-`ProjectIdentitySettings` 在 `Project/Identity/Project ID` 编辑当前项目命名空间。项目内容的逻辑身份保存 `ProjectLocalId`，需要对外表达时通过 `ProjectId.Qualify` 或 `Settings.QualifyId` 得到严格的 `projectId.name`。因此修改 Project ID 只改变解析结果，不改写 Scene、Prefab、Asset 或 Plugin contribution。
-Authoring Host 从项目目录名生成合法的初始 Project ID；空白或纯非 ASCII 名称使用 `inno.project`。该值是当前项目的 host default，用户在 Settings 中填写后才形成项目 override。Player 则以已验证 runtime manifest 的 Application ID 作为同一默认值，因此没有第二份可漂移身份。
-
-
-Game/Plugin 导出的根身份直接使用当前 `ProjectId`；Layer、Tag、Sorting Layer 等项目内子身份才组合为 `projectId.name`。`ProjectSettingId`、依赖 Plugin ID、Asset source ID 等跨项目协议身份仍由各自 owner 定义，不能误加当前 Project ID。`ProjectIdentitySettings` 标记为 `allowPluginContributions: false`，导出 `.iplugin` 时不会把宿主项目身份装进包，也不允许 Plugin 覆盖消费项目身份。
-
-## 定义与读取
+## 文档来源和代际
 
 ```csharp
-using InnoEngine.Reflection;
-using InnoEngine.Serialization;
-using InnoEngine.Settings;
-
-[StableTypeId("11111111-2222-3333-4444-555555555555")]
-[ProjectSettingDefinition("sample.rendering")]
-public sealed class SampleRenderingSettings : ISerializable
-{
-    [SerializableProperty]
-    public bool enableCompute { get; set; } = true;
-
-    public static ProjectSettingId settingId => new("sample.rendering");
-}
-
-SampleRenderingSettings settings =
-    Settings.Get<SampleRenderingSettings>(SampleRenderingSettings.settingId);
-```
-
-设置类型必须是带无参构造函数的非抽象 `ISerializable` class，并拥有 `StableTypeId`。`Get`/`TryGet` 每次返回隔离快照，调用方不能通过修改返回对象绕过 Apply，也不会把 Plugin generation 实例固定在 Host cache 中。
-
-有效值缓存实际只保存 `ProjectSettingId`、Stable Type ID 和独立 property bytes；读取时用当前 definition
-构造对象，并使用 owner context 恢复。缓存不保存 `ISerializable` 扩展实例，不能延长其 collectible ALC
-的生命周期。定义暂缺或同 Setting ID 对应不同 Stable Type ID 时，`TryGet/TryClone` 返回 false，
-项目覆盖记录仍保留。有效值 `Rebuild` 候选验证失败不覆盖 last-good bytes。
-
-### Owner context 与初始化顺序
-
-`ProjectSettings` 和 `ProjectSettingsStore` 构造时必须显式接收 `SerializationContext`。
-该参数用于默认值快照、replacement contribution、Composer contribution、clone 和恢复；Core 不引用 Assets
-也不自行拼接 resolver。空 context 仅用于经类型与测试证明不含 context-aware 引用的纯值宿主。
-
-Asset-aware Host 使用现有 owner factory：
-
-```csharp
-using Inno.Assets;
+using Inno.Core.IO;
+using Inno.Core.Serialization;
 using Inno.Core.Settings;
 
-using var settings = new ProjectSettingsStore(
-    settingsPath, types, serialization, defaultProjectId,
-    AssetSerializationContext.Create(assets));
-```
-
-Editor 与 Build 先创建 AssetPipeline，再创建 Settings，最后激活 Plugin；Player 先由 RuntimeSession
-创建只读 AssetDatabase，再组合 Settings 和依赖其配置的子系统。合法部署但尚未加载的 Asset 引用由
-Runtime Database 冷加载并保持 session pin；非法 closure/type 仍明确拒绝。Settings 中的 Missing Asset
-不会被写成 null，原 persistent ID 返回后下一次读取通过当前 owner 解析，无须持有旧 canonical instance。
-调用者长期保存的返回对象仍是调用者自身的 generation-local 所有权，不能跨 reload 留在静态/event/task 中。
-
-`ProjectSettingsStore.revision` 是单调递增的有效设置快照编号。需要长期观察变化的 Host/Plugin runtime 可以比较 revision 后重新 `Get`；核心不提供会把 collectible ALC subscriber 固定住的静态 change event。
-
-## 持久化、增量与合成
-
-```text
-设置类型的构造默认值
-  < 依赖拓扑顺序中的 Plugin 默认贡献
-  < Settings.Project.inno 中的项目 override
-```
-
-`Settings.Project.inno` 只保存项目 contribution。持久真相是 `ProjectSettingId`、Stable Type ID 和 Inno Serialization bytes；Editor UI 路径不是 runtime identity。
-
-Contributor 的依赖闭包、顺序和环检测复用 [Core Collections](Inno.Core.Collections.md) 的 `DependencyGraph<string>`。Settings 只在此之上增加 owner/override 与协议合成规则，不维护另一套拓扑实现。
-
-`ProjectSettingsContributor` 复制并冻结 dependencies/overrides；`settings` 每次返回含独立 payload bytes
-的只读快照。修改构造输入或 getter 返回的 `ProjectSettingRecord.propertyData` 不会改变已发布贡献。
-
-设置协议有两种组合方式：
-
-- 未声明 Composer：贡献是完整值，保持明确的 replacement 语义。两个无依赖关系的 Plugin 同时贡献同一 Setting ID 会冲突；后一个 Plugin 只有同时声明依赖与显式 override 才能替换。
-- 声明 Composer：贡献是协议自己定义的语义增量。不同 Plugin 可以修改同一设置中的不同 key；相同 operation 可去重；同一 key 的不兼容修改才冲突。冲突是否允许替换仍由依赖与显式 override 决定。
-
-这让 Settings Core 不需要知道 Layer、Tag、Input Map 或 Render Feature 的字段。每个可组合协议通过 `ProjectSettingComposer<TSetting, TContribution>` 定义三件事：从完整编辑值捕获 delta、判断 delta 是否为空、按依赖顺序组合 delta。`TContribution` 仍是普通 `ISerializable` 中立数据，不能保存 CLR `Type`、delegate 或 runtime 对象。
-
-```csharp
-using System.Collections.Generic;
-
-using InnoEngine.Serialization;
-using InnoEngine.Settings;
-
-internal sealed class SampleDelta : ISerializable
+static SettingsDocumentStore<TDocument> CreateStore<TDocument>(
+    IByteDocumentStore document,
+    SerializationRegistry serialization,
+    System.Func<TDocument> createDefault
+) where TDocument : class, ISerializable
 {
-    [SerializableProperty]
-    internal string[] additions { get; set; } = [];
-}
-
-[ProjectSettingComposer("sample.rendering")]
-internal sealed class SampleComposer
-    : ProjectSettingComposer<SampleRenderingSettings, SampleDelta>
-{
-    protected override SampleDelta CaptureContribution(
-        SampleRenderingSettings baseline,
-        SampleRenderingSettings value)
-    {
-        // Return only operations authored above the supplied baseline.
-        return new SampleDelta();
-    }
-
-    protected override bool IsEmpty(SampleDelta contribution)
-        => contribution.additions.Length == 0;
-
-    protected override void Compose(
-        SampleRenderingSettings target,
-        IReadOnlyList<ProjectSettingContribution<SampleDelta>> contributions)
-    {
-        // Apply dependency-ordered operations. Use contribution.context.CanOverride(ownerId)
-        // before replacing data owned by another Plugin.
-    }
+    return new SettingsDocumentStore<TDocument>(document, serialization, createDefault);
 }
 ```
 
-`ProjectSettingContributionContext.contributorId` 是当前贡献所有者；`source` 区分 Plugin 与 Project；`CanOverride(ownerId)` 统一执行“项目最高优先级”以及“Plugin 必须依赖并显式 override 原 owner”的规则。Composer 只负责协议内部的 key/operation 所有权，不读取 Plugin Loader，也不建立中央类型分支。
+FileByteDocumentStore 使用 AtomicFile；ReadOnlyByteDocumentStore 持有独立 bytes 并拒绝写入。Settings store 借用文档来源，不能偷偷选择另一文件。读取先验证当前格式，再生成独立数据；损坏不是默认值。ProjectSettingsStore 接收 owner 的完整 SerializationContext，贡献 snapshot 在统一 generation 候选成功后切换；暂时不可用的 settings 保留中立数据。
 
-Settings 自身的候选 Composer 构造、delta 解码、组合或恢复失败时，有效 snapshot 保持不变。
-Registry 随 TypeCache generation 原子切换，不长期保存旧 ALC 的类型或委托。
-Host 通过 `CreateReloadChange()` 把 Settings 加入共享五阶段 Generation 事务：Prepare 捕获中立有效值与 contributor/revision；Apply 以候选 definition 和完整 owner context 重建；失败在旧类型发布后 Restore 精确恢复旧值，不改写项目文档。成功 Complete 释放之前的快照。
-`unavailableSettings` 返回 definition 暂缺的项目/Plugin contribution 的隔离记录，不等同于 Unassigned。Setting ID 是语义协议，不虚构 object runtime ID；只有记录中的对象引用走 Reference/Identity。Foundation 仅引用 Foundation Reload，不反向依赖 Inno.References。
+创作 composition 注入可写来源；Player 从 content lease 捕获 Project Settings 并注入只读来源。Editor 与 Build 使用同一 Settings 协议，各宿主只决定文档介质。
 
-## 公开 API
+## 当前源码公开 API 清单
 
-| API | 说明 |
+只列当前源码的 public/protected 表面；内部实现不作为稳定 API。参数、返回、失败和 owner 以英文 XML 为准。
+
+### `Inno.Core.Settings.IProjectSettingsLookup`
+
+| 当前声明 | 行为 |
 | --- | --- |
-| `ProjectId` / `ProjectLocalId` / `ProjectScopedId` | 项目命名空间、本地稳定键与运行时 `projectId.name` 组合结果。 |
-| `ProjectIdentitySettings` | `Project/Identity` 中可编辑、不可由 Plugin 贡献的项目身份。 |
-| `SettingsFileNames` | 三个正式设置文档名的唯一来源。 |
-| `SettingsDocumentStore<T>` | 基于 Inno Serialization 与 Core.IO 的验证、capture、restore、原子 save。 |
-| `ProjectSettingId` | 跨路径、`.iplugin` 和 generation 稳定的设置协议 ID。 |
-| `ProjectSettingDefinitionAttribute` | 向 TypeCache 声明设置类型。 |
-| `ProjectSettingComposerAttribute` | 为一个 Setting ID 声明唯一的协议 Composer。 |
-| `ProjectSettingComposer<TSetting, TContribution>` | 定义语义 delta capture、empty 判断与确定性组合。 |
-| `ProjectSettingContribution<TContribution>` | 一个已解码 delta 及其所有权上下文。 |
-| `ProjectSettingContributionContext` | Contributor ID、来源与替换权限查询。 |
-| `ProjectSettingRecord` | Stable Type ID 与 Composer delta/full replacement bytes 的中立记录。 |
-| `ProjectSettingsContributor` | 依赖有序的 Plugin 默认贡献。 |
-| `ProjectSettingsDocument` | 项目最高优先级 contribution 的原生序列化文档。 |
-| `ProjectSettings` | Host 使用的实例服务：clone、合成、批量 Apply、恢复与原子写入。 |
-| `ProjectSettingsStore` | 项目级唯一读取入口与 Host transaction 边界。 |
-| `IProjectSettingsLookup` | Editor 与 Player 共用的最小只读有效设置边界。 |
-| `Settings` | 项目脚本使用的无状态读取门面，只解析当前异步执行作用域。 |
-| `ProjectSettingsExecutionContext` | Composition Root 使用的严格 LIFO Session 绑定边界。 |
+| [`Inno.Core.Settings.IProjectSettingsLookup`](../../src/foundation/core/Inno.Core.Settings/IProjectSettingsLookup.cs#L9) | Defines the read-only effective settings boundary shared by Editor and Player hosts. |
+| [`System.Guid Inno.Core.Settings.IProjectSettingsLookup.ownerId`](../../src/foundation/core/Inno.Core.Settings/IProjectSettingsLookup.cs#L14) | Gets the unique lifetime identity of this settings owner; revisions from different owners are not interchangeable. |
+| [`TSetting Inno.Core.Settings.IProjectSettingsLookup.Get<TSetting>(Inno.Core.Settings.ProjectSettingId id)`](../../src/foundation/core/Inno.Core.Settings/IProjectSettingsLookup.cs#L33) | Gets an isolated effective setting from the active extension generation. |
+| [`bool Inno.Core.Settings.IProjectSettingsLookup.TryGet<TSetting>(Inno.Core.Settings.ProjectSettingId id, out TSetting? setting)`](../../src/foundation/core/Inno.Core.Settings/IProjectSettingsLookup.cs#L52) | Tries to get an isolated effective setting from the active extension generation. |
+| [`long Inno.Core.Settings.IProjectSettingsLookup.revision`](../../src/foundation/core/Inno.Core.Settings/IProjectSettingsLookup.cs#L19) | Gets the monotonic revision of the active effective settings snapshot. |
 
-面向项目脚本的常用 API 是 `ProjectSettingId`、`ProjectSettingDefinitionAttribute` 和
-`Settings.Get/TryGet/revision`。`Settings` 不保存静态可变数据；Editor 与 Player Host 使用
-`ProjectSettingsExecutionContext.EnterScope(IProjectSettingsLookup)` 绑定当前 Session，并通过
-`AsyncLocal` 隔离并行异步流。记录、Contributor、文档替换、初始化和 Store 生命周期仍由
-Plugin/Host 基础设施拥有。
+### `Inno.Core.Settings.ProjectId`
 
-## Layer 与 Tag 的位置
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Core.Settings.ProjectId`](../../src/foundation/core/Inno.Core.Settings/ProjectIdentity.cs#L12) | Identifies one project namespace used to qualify project-authored logical names. |
+| [`Inno.Core.Settings.ProjectId.ProjectId(string value)`](../../src/foundation/core/Inno.Core.Settings/ProjectIdentity.cs#L20) | Creates a portable project identifier. |
+| [`Inno.Core.Settings.ProjectScopedId Inno.Core.Settings.ProjectId.Qualify(Inno.Core.Settings.ProjectLocalId name)`](../../src/foundation/core/Inno.Core.Settings/ProjectIdentity.cs#L84) | Qualifies a local project name beneath this project namespace. |
+| [`bool Inno.Core.Settings.ProjectId.isValid`](../../src/foundation/core/Inno.Core.Settings/ProjectIdentity.cs#L73) | Gets whether the value contains a usable identifier. |
+| [`override string Inno.Core.Settings.ProjectId.ToString()`](../../src/foundation/core/Inno.Core.Settings/ProjectIdentity.cs#L92) | Formats the canonical identifier. |
+| [`static Inno.Core.Settings.ProjectId Inno.Core.Settings.ProjectId.FromName(string name)`](../../src/foundation/core/Inno.Core.Settings/ProjectIdentity.cs#L37) | Creates a portable initial project identifier from a user-facing project name. |
+| [`string Inno.Core.Settings.ProjectId.value`](../../src/foundation/core/Inno.Core.Settings/ProjectIdentity.cs#L68) | Gets the canonical identifier text. |
 
-`GameLayerCatalog` 与 `GameTagCatalog` 是 `Inno.Scene` 提供的两个普通 Project Setting：
+### `Inno.Core.Settings.ProjectIdentitySettings`
 
-- Project Settings 保存可用 Layer/Tag 的定义。
-- Scene/Prefab 保存每个 GameObject 的 `layer` slot 与 `tag` value；定义只保存 project-independent local key，`GameLayerId` 与 Tag ID 在读取边界按当前 Project ID 解析。
-- 删除定义不会静默重写 Scene；旧 assignment 保留并产生 undefined diagnostic，用户可以恢复定义或显式修改对象。
-- Layer 保持固定 32-bit slot，因为 mask、碰撞过滤和批量查询需要稳定 bit identity；Tag 保持名称集合，因为它不承担位掩码语义。
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Core.Settings.ProjectId Inno.Core.Settings.ProjectIdentitySettings.id`](../../src/foundation/core/Inno.Core.Settings/ProjectIdentity.cs#L287) | Gets the validated project identifier. |
+| [`Inno.Core.Settings.ProjectIdentitySettings`](../../src/foundation/core/Inno.Core.Settings/ProjectIdentity.cs#L258) | Stores the editable identity namespace of the current project. |
+| [`Inno.Core.Settings.ProjectScopedId Inno.Core.Settings.ProjectIdentitySettings.Qualify(string name)`](../../src/foundation/core/Inno.Core.Settings/ProjectIdentity.cs#L298) | Qualifies a display name under the current project identifier. |
+| [`const string Inno.Core.Settings.ProjectIdentitySettings.settingProtocolId`](../../src/foundation/core/Inno.Core.Settings/ProjectIdentity.cs#L265) | Gets the immutable project-setting protocol value used by discovery metadata. |
+| [`static Inno.Core.Settings.ProjectSettingId Inno.Core.Settings.ProjectIdentitySettings.settingId`](../../src/foundation/core/Inno.Core.Settings/ProjectIdentity.cs#L272) | Gets the stable project setting protocol identity. |
+| [`string Inno.Core.Settings.ProjectIdentitySettings.projectId`](../../src/foundation/core/Inno.Core.Settings/ProjectIdentity.cs#L277) | Gets or sets the editable project namespace. |
 
-`GameLayerCatalog` 的 Composer 使用自动生成的 local layer ID、slot 与 interaction pair 作为 operation key；`GameTagCatalog` 使用 tag 名称及其确定性 local ID 作为 key。不同 Plugin 添加不同 Layer/Tag 时会自然合并；完全相同的声明去重；同一 ID、slot 或 interaction 的不兼容声明才冲突。这不是 Scene 专用持久化旁路，也不是 Settings Core 的 Plugin 特判；其他 Plugin 可以用同一个 Composer API 定义自己的 map、set、ordered list 或 graph 合并协议。
+### `Inno.Core.Settings.ProjectLocalId`
 
-[上一页：Inno.Core.Serialization](Inno.Core.Serialization.md) · [下一页：Core 索引](README.md)
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Core.Settings.ProjectLocalId`](../../src/foundation/core/Inno.Core.Settings/ProjectIdentity.cs#L124) | Stores the project-independent portion of one project-scoped identity. |
+| [`Inno.Core.Settings.ProjectLocalId.ProjectLocalId(string value)`](../../src/foundation/core/Inno.Core.Settings/ProjectIdentity.cs#L132) | Creates a portable local identity. |
+| [`override string Inno.Core.Settings.ProjectLocalId.ToString()`](../../src/foundation/core/Inno.Core.Settings/ProjectIdentity.cs#L193) | Formats the canonical local identity. |
+| [`static Inno.Core.Settings.ProjectLocalId Inno.Core.Settings.ProjectLocalId.FromName(string name)`](../../src/foundation/core/Inno.Core.Settings/ProjectIdentity.cs#L154) | Creates a deterministic portable local identity from a display name. |
+| [`string Inno.Core.Settings.ProjectLocalId.value`](../../src/foundation/core/Inno.Core.Settings/ProjectIdentity.cs#L143) | Gets the canonical local identity text. |
+
+### `Inno.Core.Settings.ProjectScopedId`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Core.Settings.ProjectId Inno.Core.Settings.ProjectScopedId.projectId`](../../src/foundation/core/Inno.Core.Settings/ProjectIdentity.cs#L234) | Gets the project namespace. |
+| [`Inno.Core.Settings.ProjectLocalId Inno.Core.Settings.ProjectScopedId.name`](../../src/foundation/core/Inno.Core.Settings/ProjectIdentity.cs#L239) | Gets the project-independent local identity. |
+| [`Inno.Core.Settings.ProjectScopedId`](../../src/foundation/core/Inno.Core.Settings/ProjectIdentity.cs#L208) | Combines a mutable project namespace with a stable project-independent local identity. |
+| [`Inno.Core.Settings.ProjectScopedId.ProjectScopedId(Inno.Core.Settings.ProjectId projectId, Inno.Core.Settings.ProjectLocalId name)`](../../src/foundation/core/Inno.Core.Settings/ProjectIdentity.cs#L219) | Creates a qualified project identity. |
+| [`override string Inno.Core.Settings.ProjectScopedId.ToString()`](../../src/foundation/core/Inno.Core.Settings/ProjectIdentity.cs#L252) | Formats the canonical qualified identity. |
+| [`string Inno.Core.Settings.ProjectScopedId.value`](../../src/foundation/core/Inno.Core.Settings/ProjectIdentity.cs#L244) | Gets the canonical projectId.name representation. |
+
+### `Inno.Core.Settings.ProjectSettingComposer`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Core.Settings.ProjectSettingComposer`](../../src/foundation/core/Inno.Core.Settings/ProjectSettingComposition.cs#L134) | Defines the non-generic base for a protocol-owned project setting composer. |
+
+### `Inno.Core.Settings.ProjectSettingComposer<TSetting, TContribution>`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Core.Settings.ProjectSettingComposer<TSetting, TContribution>`](../../src/foundation/core/Inno.Core.Settings/ProjectSettingComposition.cs#L163) | Lets one setting protocol define deterministic delta capture and multi-contributor composition. |
+| [`abstract TContribution Inno.Core.Settings.ProjectSettingComposer<TSetting, TContribution>.CaptureContribution(TSetting baseline, TSetting value)`](../../src/foundation/core/Inno.Core.Settings/ProjectSettingComposition.cs#L179) | Captures the contribution introduced by the supplied project setting value. |
+| [`abstract bool Inno.Core.Settings.ProjectSettingComposer<TSetting, TContribution>.IsEmpty(TContribution contribution)`](../../src/foundation/core/Inno.Core.Settings/ProjectSettingComposition.cs#L193) | Gets whether a captured contribution contains no semantic operation. |
+| [`abstract void Inno.Core.Settings.ProjectSettingComposer<TSetting, TContribution>.Compose(TSetting target, System.Collections.Generic.IReadOnlyList<Inno.Core.Settings.ProjectSettingContribution<TContribution>> contributions)`](../../src/foundation/core/Inno.Core.Settings/ProjectSettingComposition.cs#L204) | Composes dependency-ordered Plugin deltas and the optional final project delta into a host default. |
+
+### `Inno.Core.Settings.ProjectSettingComposerAttribute`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Core.Settings.ProjectSettingComposerAttribute`](../../src/foundation/core/Inno.Core.Settings/ProjectSettingComposition.cs#L12) | Declares the protocol-owned composer used to combine contributions for one project setting. Settings without a composer retain the default whole-value replacement behavior. |
+| [`Inno.Core.Settings.ProjectSettingComposerAttribute.ProjectSettingComposerAttribute(string settingId)`](../../src/foundation/core/Inno.Core.Settings/ProjectSettingComposition.cs#L21) | Creates a composer declaration for one stable setting protocol. |
+| [`Inno.Core.Settings.ProjectSettingId Inno.Core.Settings.ProjectSettingComposerAttribute.settingId`](../../src/foundation/core/Inno.Core.Settings/ProjectSettingComposition.cs#L30) | Gets the stable setting protocol composed by the attributed type. |
+
+### `Inno.Core.Settings.ProjectSettingContribution<TContribution>`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Core.Settings.ProjectSettingContribution<TContribution>`](../../src/foundation/core/Inno.Core.Settings/ProjectSettingComposition.cs#L109) | Provides one decoded contribution and its immutable composition context. |
+| [`Inno.Core.Settings.ProjectSettingContributionContext Inno.Core.Settings.ProjectSettingContribution<TContribution>.context`](../../src/foundation/core/Inno.Core.Settings/ProjectSettingComposition.cs#L123) | Gets the ownership and dependency context for this contribution. |
+| [`TContribution Inno.Core.Settings.ProjectSettingContribution<TContribution>.value`](../../src/foundation/core/Inno.Core.Settings/ProjectSettingComposition.cs#L128) | Gets the decoded protocol-owned contribution value. |
+
+### `Inno.Core.Settings.ProjectSettingContributionContext`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Core.Settings.ProjectSettingContributionContext`](../../src/foundation/core/Inno.Core.Settings/ProjectSettingComposition.cs#L52) | Exposes ownership and dependency information while a protocol-owned composer combines one contribution. |
+| [`Inno.Core.Settings.ProjectSettingContributionSource Inno.Core.Settings.ProjectSettingContributionContext.source`](../../src/foundation/core/Inno.Core.Settings/ProjectSettingComposition.cs#L77) | Gets the contribution source. |
+| [`bool Inno.Core.Settings.ProjectSettingContributionContext.CanOverride(string ownerId)`](../../src/foundation/core/Inno.Core.Settings/ProjectSettingComposition.cs#L94) | Gets whether this contribution may explicitly replace data owned by another contributor. |
+| [`bool Inno.Core.Settings.ProjectSettingContributionContext.isProject`](../../src/foundation/core/Inno.Core.Settings/ProjectSettingComposition.cs#L82) | Gets whether this is the project-authored highest-precedence contribution. |
+| [`string Inno.Core.Settings.ProjectSettingContributionContext.contributorId`](../../src/foundation/core/Inno.Core.Settings/ProjectSettingComposition.cs#L72) | Gets the stable Plugin ID, or project for the project-authored contribution. |
+
+### `Inno.Core.Settings.ProjectSettingContributionSource`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Core.Settings.ProjectSettingContributionSource`](../../src/foundation/core/Inno.Core.Settings/ProjectSettingComposition.cs#L36) | Identifies where one setting contribution originated. |
+| [`Inno.Core.Settings.ProjectSettingContributionSource.Plugin`](../../src/foundation/core/Inno.Core.Settings/ProjectSettingComposition.cs#L41) | The contribution is a default supplied by an activated Plugin. |
+| [`Inno.Core.Settings.ProjectSettingContributionSource.Project`](../../src/foundation/core/Inno.Core.Settings/ProjectSettingComposition.cs#L46) | The contribution is the project-authored delta with highest precedence. |
+
+### `Inno.Core.Settings.ProjectSettingDefinitionAttribute`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Core.Settings.ProjectSettingDefinitionAttribute`](../../src/foundation/core/Inno.Core.Settings/ProjectSettingContracts.cs#L47) | Declares a reloadable settings type under one stable protocol identity. |
+| [`Inno.Core.Settings.ProjectSettingDefinitionAttribute.ProjectSettingDefinitionAttribute(string id, bool allowPluginContributions = true)`](../../src/foundation/core/Inno.Core.Settings/ProjectSettingContracts.cs#L59) | Creates a project setting declaration. |
+| [`bool Inno.Core.Settings.ProjectSettingDefinitionAttribute.allowPluginContributions`](../../src/foundation/core/Inno.Core.Settings/ProjectSettingContracts.cs#L76) | Gets whether Plugin packages may contribute values to this protocol. |
+| [`string Inno.Core.Settings.ProjectSettingDefinitionAttribute.id`](../../src/foundation/core/Inno.Core.Settings/ProjectSettingContracts.cs#L71) | Gets the globally stable setting identifier. |
+
+### `Inno.Core.Settings.ProjectSettingId`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Core.Settings.ProjectSettingId`](../../src/foundation/core/Inno.Core.Settings/ProjectSettingContracts.cs#L11) | Identifies one host-neutral project setting protocol. |
+| [`Inno.Core.Settings.ProjectSettingId.ProjectSettingId(string value)`](../../src/foundation/core/Inno.Core.Settings/ProjectSettingContracts.cs#L19) | Creates a project setting identifier. |
+| [`bool Inno.Core.Settings.ProjectSettingId.isValid`](../../src/foundation/core/Inno.Core.Settings/ProjectSettingContracts.cs#L33) | Gets whether the identifier has a usable value. |
+| [`override string Inno.Core.Settings.ProjectSettingId.ToString()`](../../src/foundation/core/Inno.Core.Settings/ProjectSettingContracts.cs#L41) | Formats this value as a human-readable representation. |
+| [`string Inno.Core.Settings.ProjectSettingId.value`](../../src/foundation/core/Inno.Core.Settings/ProjectSettingContracts.cs#L28) | Gets or sets the globally stable setting value. |
+
+### `Inno.Core.Settings.ProjectSettingRecord`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Core.Settings.ProjectSettingId Inno.Core.Settings.ProjectSettingRecord.id`](../../src/foundation/core/Inno.Core.Settings/ProjectSettingContracts.cs#L113) | Gets or sets the stable setting identity. |
+| [`Inno.Core.Settings.ProjectSettingRecord`](../../src/foundation/core/Inno.Core.Settings/ProjectSettingContracts.cs#L82) | Stores one protocol-owned neutral setting contribution for persistence and composition. |
+| [`Inno.Core.Settings.ProjectSettingRecord.ProjectSettingRecord(Inno.Core.Settings.ProjectSettingId id, System.Guid stableTypeId, System.ReadOnlySpan<byte> propertyData)`](../../src/foundation/core/Inno.Core.Settings/ProjectSettingContracts.cs#L96) | Creates a setting record. |
+| [`System.Guid Inno.Core.Settings.ProjectSettingRecord.stableTypeId`](../../src/foundation/core/Inno.Core.Settings/ProjectSettingContracts.cs#L118) | Gets or sets the stable settings type identity. |
+| [`byte[] Inno.Core.Settings.ProjectSettingRecord.propertyData`](../../src/foundation/core/Inno.Core.Settings/ProjectSettingContracts.cs#L123) | Gets or sets the composer-owned payload or default complete-property payload. |
+
+### `Inno.Core.Settings.ProjectSettings`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Core.Settings.ProjectSettings`](../../src/foundation/core/Inno.Core.Settings/ProjectSettings.cs#L16) | Composes setting defaults, Plugin contributions, and project overrides atomically. |
+| [`Inno.Core.Settings.ProjectSettings.ProjectSettings(Inno.Core.IO.IByteDocumentStore documentStore, Inno.Extensibility.Types.TypeCatalog types, Inno.Core.Serialization.SerializationRegistry serialization, Inno.Core.Settings.ProjectId defaultProjectId, Inno.Core.Serialization.SerializationContext serializationContext, System.Collections.Generic.IReadOnlyList<Inno.Core.Settings.ProjectSettingsContributor>? contributors = null)`](../../src/foundation/core/Inno.Core.Settings/ProjectSettings.cs#L51) | Loads one project settings document and builds the initial effective snapshot. |
+| [`TSetting Inno.Core.Settings.ProjectSettings.Get<TSetting>(Inno.Core.Settings.ProjectSettingId id)`](../../src/foundation/core/Inno.Core.Settings/ProjectSettings.cs#L96) | Gets an isolated snapshot of a current-generation setting. |
+| [`bool Inno.Core.Settings.ProjectSettings.ApplyProjectOverrides(System.Collections.Generic.IReadOnlyDictionary<Inno.Core.Settings.ProjectSettingId, Inno.Core.Serialization.ISerializable> values, System.Collections.Generic.IReadOnlySet<Inno.Core.Settings.ProjectSettingId>? resets, System.Collections.Generic.IReadOnlyList<Inno.Core.Settings.ProjectSettingsContributor> contributors)`](../../src/foundation/core/Inno.Core.Settings/ProjectSettings.cs#L417) | Applies multiple project contributions and removals as one atomic document update. |
+| [`bool Inno.Core.Settings.ProjectSettings.HasProjectOverride(Inno.Core.Settings.ProjectSettingId id)`](../../src/foundation/core/Inno.Core.Settings/ProjectSettings.cs#L235) | Gets whether the project document explicitly contributes to one setting protocol. |
+| [`bool Inno.Core.Settings.ProjectSettings.TryCapture(Inno.Core.Settings.ProjectSettingId id, string contributorId, System.Collections.Generic.IReadOnlySet<string> declaredDependencies, System.Collections.Generic.IReadOnlySet<string> declaredOverrides, System.Collections.Generic.IReadOnlyList<Inno.Core.Settings.ProjectSettingsContributor> contributors, out Inno.Core.Settings.ProjectSettingRecord record)`](../../src/foundation/core/Inno.Core.Settings/ProjectSettings.cs#L164) | Captures and validates the project-authored delta as one prospective Plugin contribution. |
+| [`bool Inno.Core.Settings.ProjectSettings.TryClone(Inno.Core.Settings.ProjectSettingId id, out Inno.Core.Serialization.ISerializable? setting)`](../../src/foundation/core/Inno.Core.Settings/ProjectSettings.cs#L253) | Creates an isolated editable copy of one effective setting. |
+| [`bool Inno.Core.Settings.ProjectSettings.TryCloneComposedDefault(Inno.Core.Settings.ProjectSettingId id, System.Collections.Generic.IReadOnlyList<Inno.Core.Settings.ProjectSettingsContributor> contributors, out Inno.Core.Serialization.ISerializable? setting)`](../../src/foundation/core/Inno.Core.Settings/ProjectSettings.cs#L285) | Creates an isolated copy composed without the project-authored contribution. |
+| [`bool Inno.Core.Settings.ProjectSettings.TryGet<TSetting>(Inno.Core.Settings.ProjectSettingId id, out TSetting? setting)`](../../src/foundation/core/Inno.Core.Settings/ProjectSettings.cs#L120) | Tries to get an isolated snapshot of a current-generation setting. |
+| [`byte[] Inno.Core.Settings.ProjectSettings.CaptureDocument()`](../../src/foundation/core/Inno.Core.Settings/ProjectSettings.cs#L308) | Captures the native project contribution document. |
+| [`void Inno.Core.Settings.ProjectSettings.Dispose()`](../../src/foundation/core/Inno.Core.Settings/ProjectSettings.cs#L494) | Releases registry snapshots and generation-local setting objects. |
+| [`void Inno.Core.Settings.ProjectSettings.Rebuild(System.Collections.Generic.IReadOnlyList<Inno.Core.Settings.ProjectSettingsContributor> contributors, bool allowUnresolvedContributions = false)`](../../src/foundation/core/Inno.Core.Settings/ProjectSettings.cs#L323) | Atomically rebuilds effective settings for a new extension generation. |
+| [`void Inno.Core.Settings.ProjectSettings.RestoreDocument(System.ReadOnlySpan<byte> document, System.Collections.Generic.IReadOnlyList<Inno.Core.Settings.ProjectSettingsContributor> contributors)`](../../src/foundation/core/Inno.Core.Settings/ProjectSettings.cs#L481) | Atomically restores a native project settings document. |
+| [`void Inno.Core.Settings.ProjectSettings.SetProjectOverride(Inno.Core.Settings.ProjectSettingId id, Inno.Core.Serialization.ISerializable value, System.Collections.Generic.IReadOnlyList<Inno.Core.Settings.ProjectSettingsContributor> contributors)`](../../src/foundation/core/Inno.Core.Settings/ProjectSettings.cs#L391) | Persists one project-authored semantic contribution and rebuilds the effective value. |
+
+### `Inno.Core.Settings.ProjectSettingsContributor`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Core.Settings.ProjectSettingsContributor`](../../src/foundation/core/Inno.Core.Settings/ProjectSettingContracts.cs#L141) | Describes one dependency-ordered provider of default setting values. |
+| [`Inno.Core.Settings.ProjectSettingsContributor.ProjectSettingsContributor(string id, System.Collections.Generic.IEnumerable<string> dependencies, System.Collections.Generic.IEnumerable<string> overrides, System.Collections.Generic.IEnumerable<Inno.Core.Settings.ProjectSettingRecord> settings)`](../../src/foundation/core/Inno.Core.Settings/ProjectSettingContracts.cs#L160) | Creates one settings contributor. |
+| [`System.Collections.Generic.IReadOnlyList<Inno.Core.Settings.ProjectSettingRecord> Inno.Core.Settings.ProjectSettingsContributor.settings`](../../src/foundation/core/Inno.Core.Settings/ProjectSettingContracts.cs#L194) | Gets a detached read-only contribution snapshot, including independently owned payload bytes. |
+| [`System.Collections.Generic.IReadOnlyList<string> Inno.Core.Settings.ProjectSettingsContributor.dependencies`](../../src/foundation/core/Inno.Core.Settings/ProjectSettingContracts.cs#L184) | Gets contributors that must precede this contributor. |
+| [`System.Collections.Generic.IReadOnlyList<string> Inno.Core.Settings.ProjectSettingsContributor.overrides`](../../src/foundation/core/Inno.Core.Settings/ProjectSettingContracts.cs#L189) | Gets dependencies whose defaults may be replaced. |
+| [`string Inno.Core.Settings.ProjectSettingsContributor.id`](../../src/foundation/core/Inno.Core.Settings/ProjectSettingContracts.cs#L179) | Gets the stable contributor identity. |
+
+### `Inno.Core.Settings.ProjectSettingsDocument`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Core.Settings.ProjectSettingRecord[] Inno.Core.Settings.ProjectSettingsDocument.overrides`](../../src/foundation/core/Inno.Core.Settings/ProjectSettingContracts.cs#L134) | Gets or sets project-authored protocol contributions. |
+| [`Inno.Core.Settings.ProjectSettingsDocument`](../../src/foundation/core/Inno.Core.Settings/ProjectSettingContracts.cs#L129) | Stores project-authored setting contributions in one native document. |
+
+### `Inno.Core.Settings.ProjectSettingsExecutionContext`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Core.Settings.ProjectSettingsExecutionContext`](../../src/foundation/core/Inno.Core.Settings/ProjectSettingsExecutionContext.cs#L14) | Binds one host-owned settings lookup to the current asynchronous script execution context. |
+| [`static Inno.Core.Settings.IProjectSettingsLookup Inno.Core.Settings.ProjectSettingsExecutionContext.current`](../../src/foundation/core/Inno.Core.Settings/ProjectSettingsExecutionContext.cs#L24) | Gets the settings lookup bound to the current asynchronous execution context. |
+| [`static System.IDisposable Inno.Core.Settings.ProjectSettingsExecutionContext.EnterScope(Inno.Core.Settings.IProjectSettingsLookup settings)`](../../src/foundation/core/Inno.Core.Settings/ProjectSettingsExecutionContext.cs#L38) | Binds a settings lookup until the returned strict last-in-first-out scope is disposed. |
+
+### `Inno.Core.Settings.ProjectSettingsStore`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Core.Settings.ProjectId Inno.Core.Settings.ProjectSettingsStore.projectId`](../../src/foundation/core/Inno.Core.Settings/ProjectSettingsStore.cs#L90) | Gets the current project namespace. |
+| [`Inno.Core.Settings.ProjectScopedId Inno.Core.Settings.ProjectSettingsStore.QualifyId(string name)`](../../src/foundation/core/Inno.Core.Settings/ProjectSettingsStore.cs#L101) | Qualifies one local name under the current project namespace. |
+| [`Inno.Core.Settings.ProjectSettingsStore`](../../src/foundation/core/Inno.Core.Settings/ProjectSettingsStore.cs#L15) | Owns one project's effective settings, contributors, persistence, and generation revision. |
+| [`Inno.Core.Settings.ProjectSettingsStore.ProjectSettingsStore(Inno.Core.IO.IByteDocumentStore documentStore, Inno.Extensibility.Types.TypeCatalog types, Inno.Core.Serialization.SerializationRegistry serialization, Inno.Core.Settings.ProjectId defaultProjectId, Inno.Core.Serialization.SerializationContext serializationContext)`](../../src/foundation/core/Inno.Core.Settings/ProjectSettingsStore.cs#L48) | Creates a project settings store from one type and serialization generation owner. |
+| [`Inno.Extensibility.Reload.IGenerationChange Inno.Core.Settings.ProjectSettingsStore.CreateReloadChange()`](../../src/foundation/core/Inno.Core.Settings/ProjectSettingsStore.cs#L84) | Creates a five-phase settings change for the host's shared generation transaction. |
+| [`System.Collections.Generic.IReadOnlyList<Inno.Core.Settings.ProjectSettingRecord> Inno.Core.Settings.ProjectSettingsStore.unavailableSettings`](../../src/foundation/core/Inno.Core.Settings/ProjectSettingsStore.cs#L67) | Gets detached neutral contributions whose setting definitions are currently Missing. |
+| [`System.Guid Inno.Core.Settings.ProjectSettingsStore.ownerId`](../../src/foundation/core/Inno.Core.Settings/ProjectSettingsStore.cs#L25) | Gets the unique, non-persistent lifetime identity used with the effective snapshot revision. |
+| [`System.IDisposable Inno.Core.Settings.ProjectSettingsStore.EnterExecutionScope()`](../../src/foundation/core/Inno.Core.Settings/ProjectSettingsStore.cs#L137) | Binds this settings store to the current asynchronous script execution context. |
+| [`TSetting Inno.Core.Settings.ProjectSettingsStore.Get<TSetting>(Inno.Core.Settings.ProjectSettingId id)`](../../src/foundation/core/Inno.Core.Settings/ProjectSettingsStore.cs#L158) | Gets an isolated effective setting snapshot from the active extension generation. |
+| [`bool Inno.Core.Settings.ProjectSettingsStore.ApplyProjectOverrides(System.Collections.Generic.IReadOnlyDictionary<Inno.Core.Settings.ProjectSettingId, Inno.Core.Serialization.ISerializable> values, System.Collections.Generic.IReadOnlySet<Inno.Core.Settings.ProjectSettingId>? resets = null)`](../../src/foundation/core/Inno.Core.Settings/ProjectSettingsStore.cs#L419) | Applies a native batch of project-authored overrides and removals. |
+| [`bool Inno.Core.Settings.ProjectSettingsStore.HasProjectOverride(Inno.Core.Settings.ProjectSettingId id)`](../../src/foundation/core/Inno.Core.Settings/ProjectSettingsStore.cs#L206) | Gets whether the active project document explicitly overrides one setting protocol. |
+| [`bool Inno.Core.Settings.ProjectSettingsStore.TryCapture(Inno.Core.Settings.ProjectSettingId id, string contributorId, System.Collections.Generic.IReadOnlySet<string> declaredDependencies, System.Collections.Generic.IReadOnlySet<string> declaredOverrides, out Inno.Core.Settings.ProjectSettingRecord record)`](../../src/foundation/core/Inno.Core.Settings/ProjectSettingsStore.cs#L234) | Captures one normalized Plugin setting contribution from the project-authored delta. |
+| [`bool Inno.Core.Settings.ProjectSettingsStore.TryClone(Inno.Core.Settings.ProjectSettingId id, out Inno.Core.Serialization.ISerializable? setting)`](../../src/foundation/core/Inno.Core.Settings/ProjectSettingsStore.cs#L269) | Creates an isolated editable copy of one effective setting. |
+| [`bool Inno.Core.Settings.ProjectSettingsStore.TryCloneComposedDefault(Inno.Core.Settings.ProjectSettingId id, out Inno.Core.Serialization.ISerializable? setting)`](../../src/foundation/core/Inno.Core.Settings/ProjectSettingsStore.cs#L297) | Creates an isolated setting value without the project-authored override. |
+| [`bool Inno.Core.Settings.ProjectSettingsStore.TryGet<TSetting>(Inno.Core.Settings.ProjectSettingId id, out TSetting? setting)`](../../src/foundation/core/Inno.Core.Settings/ProjectSettingsStore.cs#L180) | Tries to get an isolated effective setting snapshot from the active extension generation. |
+| [`bool Inno.Core.Settings.ProjectSettingsStore.isInitialized`](../../src/foundation/core/Inno.Core.Settings/ProjectSettingsStore.cs#L106) | Gets whether project settings are initialized. |
+| [`byte[] Inno.Core.Settings.ProjectSettingsStore.CaptureDocument()`](../../src/foundation/core/Inno.Core.Settings/ProjectSettingsStore.cs#L319) | Captures the current native project override document. |
+| [`long Inno.Core.Settings.ProjectSettingsStore.revision`](../../src/foundation/core/Inno.Core.Settings/ProjectSettingsStore.cs#L119) | Gets the monotonic revision of the active effective settings snapshot. Runtime extensions may compare this value without registering reload-unsafe static delegates. |
+| [`void Inno.Core.Settings.ProjectSettingsStore.Dispose()`](../../src/foundation/core/Inno.Core.Settings/ProjectSettingsStore.cs#L462) | Shuts down settings and releases generation-scoped values. |
+| [`void Inno.Core.Settings.ProjectSettingsStore.Rebuild(System.Collections.Generic.IReadOnlyList<Inno.Core.Settings.ProjectSettingsContributor> contributors)`](../../src/foundation/core/Inno.Core.Settings/ProjectSettingsStore.cs#L332) | Rebuilds settings for one dependency-ordered extension generation. |
+| [`void Inno.Core.Settings.ProjectSettingsStore.RebuildCurrent(bool allowUnresolvedContributions = false)`](../../src/foundation/core/Inno.Core.Settings/ProjectSettingsStore.cs#L370) | Rebuilds effective settings after the active type catalog changes. |
+| [`void Inno.Core.Settings.ProjectSettingsStore.RestoreDocument(System.ReadOnlySpan<byte> document)`](../../src/foundation/core/Inno.Core.Settings/ProjectSettingsStore.cs#L440) | Restores a previously captured native project settings document. |
+| [`void Inno.Core.Settings.ProjectSettingsStore.SetContributors(System.Collections.Generic.IReadOnlyList<Inno.Core.Settings.ProjectSettingsContributor> contributors)`](../../src/foundation/core/Inno.Core.Settings/ProjectSettingsStore.cs#L351) | Publishes dependency-ordered default contributors for the next current-generation rebuild without constructing setting instances from types that may still be awaiting assembly activation. |
+| [`void Inno.Core.Settings.ProjectSettingsStore.SetProjectOverride(Inno.Core.Settings.ProjectSettingId id, Inno.Core.Serialization.ISerializable value, System.Collections.Generic.IReadOnlyList<Inno.Core.Settings.ProjectSettingsContributor> contributors)`](../../src/foundation/core/Inno.Core.Settings/ProjectSettingsStore.cs#L392) | Persists one project-authored override through the native settings document. |
+| [`void Inno.Core.Settings.ProjectSettingsStore.ValidateDocument(System.ReadOnlySpan<byte> document)`](../../src/foundation/core/Inno.Core.Settings/ProjectSettingsStore.cs#L456) | Validates one native project settings document without changing active state. |
+
+### `Inno.Core.Settings.Settings`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Core.Settings.Settings`](../../src/foundation/core/Inno.Core.Settings/Settings.cs#L14) | Provides script-facing project settings queries through the current runtime execution context. |
+| [`static Inno.Core.Settings.ProjectId Inno.Core.Settings.Settings.projectId`](../../src/foundation/core/Inno.Core.Settings/Settings.cs#L19) | Gets the current project namespace used to qualify project-authored logical names. |
+| [`static Inno.Core.Settings.ProjectScopedId Inno.Core.Settings.Settings.QualifyId(string name)`](../../src/foundation/core/Inno.Core.Settings/Settings.cs#L30) | Creates one complete project identity from a display or local name. |
+| [`static System.Guid Inno.Core.Settings.Settings.ownerId`](../../src/foundation/core/Inno.Core.Settings/Settings.cs#L43) | Gets the current owner's lifetime identity. Pair it with revision when caching an isolated settings snapshot. |
+| [`static TSetting Inno.Core.Settings.Settings.Get<TSetting>(Inno.Core.Settings.ProjectSettingId id)`](../../src/foundation/core/Inno.Core.Settings/Settings.cs#L60) | Gets an isolated effective setting from the current extension generation. |
+| [`static bool Inno.Core.Settings.Settings.TryGet<TSetting>(Inno.Core.Settings.ProjectSettingId id, out TSetting? setting)`](../../src/foundation/core/Inno.Core.Settings/Settings.cs#L83) | Tries to get an isolated effective setting from the current extension generation. |
+| [`static long Inno.Core.Settings.Settings.revision`](../../src/foundation/core/Inno.Core.Settings/Settings.cs#L38) | Gets the revision of the settings snapshot active in the current execution context. |
+
+### `Inno.Core.Settings.SettingsDocumentStore<TDocument>`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Core.Settings.SettingsDocumentStore<TDocument>`](../../src/foundation/core/Inno.Core.Settings/SettingsDocumentStore.cs#L15) | Provides validated current-format serialization and atomic persistence for one settings document type. |
+| [`Inno.Core.Settings.SettingsDocumentStore<TDocument>.SettingsDocumentStore(Inno.Core.IO.IByteDocumentStore document, Inno.Core.Serialization.SerializationRegistry serialization, System.Func<TDocument> createDefault, System.Action<TDocument>? validate = null)`](../../src/foundation/core/Inno.Core.Settings/SettingsDocumentStore.cs#L38) | Creates a type-safe settings document store. |
+| [`TDocument Inno.Core.Settings.SettingsDocumentStore<TDocument>.Deserialize(System.ReadOnlySpan<byte> data)`](../../src/foundation/core/Inno.Core.Settings/SettingsDocumentStore.cs#L132) | Deserializes and validates a native payload without changing the file. |
+| [`TDocument Inno.Core.Settings.SettingsDocumentStore<TDocument>.Load()`](../../src/foundation/core/Inno.Core.Settings/SettingsDocumentStore.cs#L69) | Loads the saved value, or creates a validated default when absent. |
+| [`TDocument Inno.Core.Settings.SettingsDocumentStore<TDocument>.LoadRequired()`](../../src/foundation/core/Inno.Core.Settings/SettingsDocumentStore.cs#L87) | Loads a required saved value. |
+| [`bool Inno.Core.Settings.SettingsDocumentStore<TDocument>.exists`](../../src/foundation/core/Inno.Core.Settings/SettingsDocumentStore.cs#L61) | Gets whether the document currently exists. |
+| [`byte[] Inno.Core.Settings.SettingsDocumentStore<TDocument>.Capture(TDocument document)`](../../src/foundation/core/Inno.Core.Settings/SettingsDocumentStore.cs#L116) | Serializes a validated document without changing the file. |
+| [`string Inno.Core.Settings.SettingsDocumentStore<TDocument>.documentName`](../../src/foundation/core/Inno.Core.Settings/SettingsDocumentStore.cs#L56) | Gets the source's logical diagnostic name without requiring a filesystem location. |
+| [`void Inno.Core.Settings.SettingsDocumentStore<TDocument>.Restore(System.ReadOnlySpan<byte> data)`](../../src/foundation/core/Inno.Core.Settings/SettingsDocumentStore.cs#L157) | Validates and atomically restores a native document payload. |
+| [`void Inno.Core.Settings.SettingsDocumentStore<TDocument>.Save(TDocument document)`](../../src/foundation/core/Inno.Core.Settings/SettingsDocumentStore.cs#L100) | Validates and atomically replaces the complete document. |
+
+### `Inno.Core.Settings.SettingsFileNames`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Core.Settings.SettingsFileNames`](../../src/foundation/core/Inno.Core.Settings/SettingsFileNames.cs#L6) | Defines the canonical project-root names of the independent settings documents. |
+| [`const string Inno.Core.Settings.SettingsFileNames.build`](../../src/foundation/core/Inno.Core.Settings/SettingsFileNames.cs#L21) | Gets the authoring build-default document name. |
+| [`const string Inno.Core.Settings.SettingsFileNames.editor`](../../src/foundation/core/Inno.Core.Settings/SettingsFileNames.cs#L11) | Gets the machine/editor preference document name. |
+| [`const string Inno.Core.Settings.SettingsFileNames.project`](../../src/foundation/core/Inno.Core.Settings/SettingsFileNames.cs#L16) | Gets the runtime project settings document name. |
+
+## 项目依赖
+
+- [Inno.Extensibility.Reload](../extensibility/Inno.Extensibility.Reload.md)：公开引用边界由实际签名核对。
+- [Inno.Extensibility.Types](../extensibility/Inno.Extensibility.Types.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Scripting.Api](../scripting/Inno.Scripting.Api.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Core.Collections](Inno.Core.Collections.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Core.IO](Inno.Core.IO.md)：公开引用边界由实际签名核对。
+- [Inno.Core.Serialization](Inno.Core.Serialization.md)：公开引用边界由实际签名核对。
+- [Inno.Core.Execution](Inno.Core.Execution.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Extensibility.Catalogs](../extensibility/Inno.Extensibility.Catalogs.md)：公开引用边界由实际签名核对。

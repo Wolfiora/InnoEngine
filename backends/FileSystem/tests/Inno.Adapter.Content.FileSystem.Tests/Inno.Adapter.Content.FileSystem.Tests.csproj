@@ -1,0 +1,42 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../../../../src/foundation/core/Inno.Core.IO/Inno.Core.IO.csproj" />
+    <ProjectReference Include="../../../../tests/content/fixtures/Inno.Content.Testing/Inno.Content.Testing.csproj" />
+    <ProjectReference Include="../../../../tests/content/fixtures/Inno.Content.CacheProbe/Inno.Content.CacheProbe.csproj" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="../../runtime/Inno.Adapter.Content.FileSystem/Inno.Adapter.Content.FileSystem.csproj" />
+    <ProjectReference Include="../../../../src/content/deployment/Inno.Content/Inno.Content.csproj" />
+  </ItemGroup>
+
+  <Target Name="CopyCacheProbe" AfterTargets="Build">
+    <MSBuild Projects="../../../../tests/content/fixtures/Inno.Content.CacheProbe/Inno.Content.CacheProbe.csproj"
+             Targets="GetTargetPath"
+             BuildInParallel="false">
+      <Output TaskParameter="TargetOutputs" ItemName="_CacheProbeAssembly" />
+    </MSBuild>
+    <Error Condition="'@(_CacheProbeAssembly->Count())' != '1'"
+           Text="The content cache probe must provide exactly one target assembly." />
+    <PropertyGroup>
+      <_CacheProbeDirectory>@(_CacheProbeAssembly->'%(RootDir)%(Directory)')</_CacheProbeDirectory>
+    </PropertyGroup>
+    <Error Condition="'$(_CacheProbeDirectory)' == ''"
+           Text="The content cache probe target directory is unavailable." />
+    <ItemGroup>
+      <CacheProbeFile Include="$(_CacheProbeDirectory)/*" />
+    </ItemGroup>
+    <Copy SourceFiles="@(CacheProbeFile)" DestinationFolder="$(OutDir)CacheProbe" />
+  </Target>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
+    <PackageReference Include="xunit" Version="2.6.6" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.5.6" PrivateAssets="all" />
+  </ItemGroup>
+</Project>

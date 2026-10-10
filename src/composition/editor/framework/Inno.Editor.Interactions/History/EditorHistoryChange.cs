@@ -30,8 +30,8 @@ public sealed class EditorHistoryChange : IDisposable
     public EditorHistoryChange(
         string kind,
         EditorHistoryPayload payload,
-        string? mergeKey = null)
-    {
+        string? mergeKey = null
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(kind);
         this.kind = kind;
         this.payload = payload ?? throw new ArgumentNullException(nameof(payload));
@@ -60,7 +60,8 @@ public sealed class EditorHistoryChange : IDisposable
     internal EditorHistoryChange Retain(
         EditorHistoryBlobStore store,
         int inlinePayloadThreshold,
-        bool canStoreOnDisk)
+        bool canStoreOnDisk
+    )
         => new(
             kind,
             payload.Retain(store, inlinePayloadThreshold, canStoreOnDisk),

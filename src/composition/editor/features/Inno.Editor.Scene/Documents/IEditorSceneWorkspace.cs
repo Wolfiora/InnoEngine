@@ -91,7 +91,10 @@ public interface IEditorSceneWorkspace
     /// <exception cref="System.InvalidOperationException">
     /// Thrown while Play Mode runtime copies are active or when the asset cannot be persisted.
     /// </exception>
-    string Save(GameScene scene, string currentDirectory);
+    string Save(
+        GameScene scene,
+        string currentDirectory
+    );
 
     /// <summary>
     /// Saves a scene into the requested asset directory.
@@ -108,7 +111,10 @@ public interface IEditorSceneWorkspace
     /// <exception cref="System.InvalidOperationException">
     /// Thrown while Play Mode runtime copies are active or when the asset cannot be persisted.
     /// </exception>
-    string SaveToDirectory(GameScene scene, string currentDirectory);
+    string SaveToDirectory(
+        GameScene scene,
+        string currentDirectory
+    );
 
     /// <summary>
     /// Captures a game object subtree as a prefab in the requested directory.
@@ -125,7 +131,10 @@ public interface IEditorSceneWorkspace
     /// <exception cref="System.InvalidOperationException">
     /// Thrown while Play Mode runtime copies are active or when the asset cannot be persisted.
     /// </exception>
-    string SavePrefab(GameObject gameObject, string currentDirectory);
+    string SavePrefab(
+        GameObject gameObject,
+        string currentDirectory
+    );
 
     /// <summary>
     /// Tries to get the current source-relative asset path of a saved scene.
@@ -139,5 +148,8 @@ public interface IEditorSceneWorkspace
     /// <returns>
     /// <see langword="true"/> when the scene is backed by a scene asset.
     /// </returns>
-    bool TryGetSourcePath(GameScene scene, out string relativePath);
+    bool TryGetSourcePath(
+        GameScene scene,
+        out string relativePath
+    );
 }

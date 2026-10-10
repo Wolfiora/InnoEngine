@@ -14,8 +14,10 @@ internal sealed class SceneSubtreeHistoryHandler : EditorHistoryHandler
     private readonly EditorSceneWorkspace m_workspace;
     private readonly Logger m_log;
 
-    internal SceneSubtreeHistoryHandler(EditorSceneWorkspace workspace, LogRouter logs)
-    {
+    internal SceneSubtreeHistoryHandler(
+        EditorSceneWorkspace workspace,
+        LogRouter logs
+    ) {
         m_workspace = workspace ?? throw new ArgumentNullException(nameof(workspace));
         ArgumentNullException.ThrowIfNull(logs);
         m_log = logs.CreateLogger<SceneSubtreeHistoryHandler>();
@@ -39,8 +41,8 @@ internal sealed class SceneSubtreeHistoryHandler : EditorHistoryHandler
     protected override EditorHistoryAvailability Query(
         EditorHistoryContext context,
         EditorHistoryChange change,
-        EditorHistoryDirection direction)
-    {
+        EditorHistoryDirection direction
+    ) {
         try
         {
             SceneSubtreeHistoryData data = SceneSubtreeHistoryData.Decode(change.payload.ReadBytes());
@@ -91,8 +93,8 @@ internal sealed class SceneSubtreeHistoryHandler : EditorHistoryHandler
     protected override EditorHistoryResult Apply(
         EditorHistoryContext context,
         EditorHistoryChange change,
-        EditorHistoryDirection direction)
-    {
+        EditorHistoryDirection direction
+    ) {
         try
         {
             SceneSubtreeHistoryData data = SceneSubtreeHistoryData.Decode(change.payload.ReadBytes());
@@ -208,6 +210,9 @@ internal sealed class SceneSubtreeHistoryHandler : EditorHistoryHandler
         }
     }
 
-    private static string JoinFailures(string failure, string cleanup)
+    private static string JoinFailures(
+        string failure,
+        string cleanup
+    )
         => string.IsNullOrWhiteSpace(cleanup) ? failure : $"{failure} {cleanup}";
 }

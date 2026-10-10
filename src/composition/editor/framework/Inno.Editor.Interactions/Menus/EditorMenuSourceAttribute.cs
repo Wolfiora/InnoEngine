@@ -20,8 +20,10 @@ public sealed class EditorMenuSourceAttribute : Attribute
     /// <exception cref="ArgumentException">
     /// Thrown when <paramref name="area"/> is empty.
     /// </exception>
-    public EditorMenuSourceAttribute(string area, int priority = 0)
-    {
+    public EditorMenuSourceAttribute(
+        string area,
+        int priority = 0
+    ) {
         if (string.IsNullOrWhiteSpace(area))
             throw new ArgumentException("An editor menu area is required.", nameof(area));
         this.area = area;

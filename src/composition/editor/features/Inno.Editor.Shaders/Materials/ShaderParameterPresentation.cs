@@ -56,9 +56,12 @@ public sealed class ShaderParameterPresentation : ISerializable
     /// <returns>
     /// The authored presentation, or ordinary visible, unbounded defaults.
     /// </returns>
-    public static ShaderParameterPresentation Read(GraphDocument graph, ShaderPropertyId propertyId,
-        SerializationRegistry serialization, SerializationContext context)
-    {
+    public static ShaderParameterPresentation Read(
+        GraphDocument graph,
+        ShaderPropertyId propertyId,
+        SerializationRegistry serialization,
+        SerializationContext context
+    ) {
         ArgumentNullException.ThrowIfNull(graph);
         return graph.metadata.TryGetValue(C_PREFIX + propertyId.value, out GraphSerializedValue? encoded)
             ? serialization.Deserialize<ShaderParameterPresentation>(ShaderGraphDocument.Decode<byte[]>(encoded!, serialization, context), context)
@@ -86,9 +89,13 @@ public sealed class ShaderParameterPresentation : ISerializable
     /// <exception cref="ArgumentException">
     /// The identity or range is invalid, or a bound cannot be represented by a scalar Shader Float.
     /// </exception>
-    public static void Write(GraphDocument graph, ShaderPropertyId propertyId, ShaderParameterPresentation presentation,
-        SerializationRegistry serialization, SerializationContext context)
-    {
+    public static void Write(
+        GraphDocument graph,
+        ShaderPropertyId propertyId,
+        ShaderParameterPresentation presentation,
+        SerializationRegistry serialization,
+        SerializationContext context
+    ) {
         ArgumentNullException.ThrowIfNull(graph);
         ArgumentNullException.ThrowIfNull(presentation);
         if (!propertyId.isValid || !double.IsFinite(presentation.minimum) || !double.IsFinite(presentation.maximum)

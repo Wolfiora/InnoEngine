@@ -43,8 +43,10 @@ internal sealed class ConverterRegistry : IDisposable
 
     internal ConverterRegistryLease Capture() => RequireRegistry().Capture();
 
-    internal static ConverterInvoker? ResolveSnapshot(ConverterRegistrySnapshot snapshot, Type valueType)
-    {
+    internal static ConverterInvoker? ResolveSnapshot(
+        ConverterRegistrySnapshot snapshot,
+        Type valueType
+    ) {
         var candidates = new List<ConverterCandidate>();
         for (int i = 0; i < snapshot.registrations.Count; i++)
         {
@@ -74,8 +76,8 @@ internal sealed class ConverterRegistry : IDisposable
         ConverterRegistrySnapshot snapshot,
         Type registeredType,
         Type valueType,
-        out ConverterCandidate? candidate)
-    {
+        out ConverterCandidate? candidate
+    ) {
         candidate = null;
         if (!TryGetConverterTargetPattern(registeredType, out Type targetPattern))
             throw new InvalidOperationException(
@@ -100,14 +102,10 @@ internal sealed class ConverterRegistry : IDisposable
                 arguments[i] = argument;
             }
 
-            try
-            {
-                closedConverterType = registeredType.MakeGenericType(arguments);
-            }
-            catch
-            {
+            Type? construction = snapshot.ConstructGenericType(registeredType, arguments);
+            if (construction is null)
                 return false;
-            }
+            closedConverterType = construction;
         }
 
         if (!TryGetConverterTargetPattern(closedConverterType, out Type targetType) || targetType.ContainsGenericParameters)
@@ -115,15 +113,8 @@ internal sealed class ConverterRegistry : IDisposable
         if (!targetType.IsAssignableFrom(valueType))
             return false;
 
-        object converter = GetOrCreateConverter(snapshot, closedConverterType);
-
-        Type invokerType = typeof(ConverterInvoker<>).MakeGenericType(targetType);
-        var invoker = (ConverterInvoker)Activator.CreateInstance(
-            invokerType,
-            BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic,
-            binder: null,
-            args: [converter, closedConverterType],
-            culture: null)!;
+        var converter = (SerializationConverter)GetOrCreateConverter(snapshot, closedConverterType);
+        ConverterInvoker invoker = converter.CreateInvoker();
         candidate = new ConverterCandidate(
             closedConverterType,
             GetTypeDistance(valueType, targetType),
@@ -131,15 +122,16 @@ internal sealed class ConverterRegistry : IDisposable
         return true;
     }
 
-    private static object GetOrCreateConverter(ConverterRegistrySnapshot snapshot, Type converterType)
-    {
+    private static object GetOrCreateConverter(
+        ConverterRegistrySnapshot snapshot,
+        Type converterType
+    ) {
         if (snapshot.converterInstances.TryGetValue(converterType, out object? converter))
             return converter;
 
         try
         {
-            converter = Activator.CreateInstance(converterType, nonPublic: true)
-                ?? throw new InvalidOperationException("Activator returned null.");
+            converter = snapshot.CreateInstance(converterType);
         }
         catch (Exception exception)
         {
@@ -152,8 +144,10 @@ internal sealed class ConverterRegistry : IDisposable
         return converter;
     }
 
-    private static bool TryGetConverterTargetPattern(Type converterType, out Type targetPattern)
-    {
+    private static bool TryGetConverterTargetPattern(
+        Type converterType,
+        out Type targetPattern
+    ) {
         for (Type? current = converterType; current is not null; current = current.BaseType)
         {
             if (!current.IsGenericType || current.GetGenericTypeDefinition() != typeof(SerializationConverter<>))
@@ -167,8 +161,11 @@ internal sealed class ConverterRegistry : IDisposable
         return false;
     }
 
-    private static bool TryUnify(Type pattern, Type concrete, Dictionary<Type, Type> bindings)
-    {
+    private static bool TryUnify(
+        Type pattern,
+        Type concrete,
+        Dictionary<Type, Type> bindings
+    ) {
         if (pattern.IsGenericParameter)
         {
             if (bindings.TryGetValue(pattern, out Type? existing))
@@ -200,28 +197,23 @@ internal sealed class ConverterRegistry : IDisposable
         return true;
     }
 
-    private static int GetTypeDistance(Type derivedType, Type targetType)
-    {
+    private static int GetTypeDistance(
+        Type derivedType,
+        Type targetType
+    ) {
         if (derivedType == targetType)
             return 0;
+        // Assignability was validated by the caller. Implemented interfaces share one rank,
+        // including variant constructions; class inheritance retains its exact depth.
+        if (targetType.IsInterface)
+            return 1;
 
-        var visited = new HashSet<Type> { derivedType };
-        var queue = new Queue<(Type type, int distance)>();
-        queue.Enqueue((derivedType, 0));
-        while (queue.Count > 0)
+        int distance = 1;
+        for (Type? current = derivedType.BaseType; current is not null; current = current.BaseType)
         {
-            (Type current, int distance) = queue.Dequeue();
-            IEnumerable<Type> nextTypes = current.BaseType is Type baseType
-                ? current.GetInterfaces().Append(baseType)
-                : current.GetInterfaces();
-            foreach (Type next in nextTypes)
-            {
-                if (!visited.Add(next))
-                    continue;
-                if (next == targetType)
-                    return distance + 1;
-                queue.Enqueue((next, distance + 1));
-            }
+            if (current == targetType)
+                return distance;
+            distance++;
         }
 
         return int.MaxValue;
@@ -230,7 +222,8 @@ internal sealed class ConverterRegistry : IDisposable
     private sealed record ConverterCandidate(
         Type converterType,
         int distance,
-        ConverterInvoker invoker);
+        ConverterInvoker invoker
+    );
 
     private sealed class ConverterTypeRegistry : TypeRegistry<ConverterRegistrySnapshot>
     {
@@ -287,7 +280,7 @@ internal sealed class ConverterRegistry : IDisposable
                 }
             }
 
-            return new ConverterRegistrySnapshot(registrations);
+            return new ConverterRegistrySnapshot(registrations, types);
         }
 
         /// <summary>
@@ -296,8 +289,7 @@ internal sealed class ConverterRegistry : IDisposable
         /// <param name="snapshot">
         /// The immutable state snapshot consumed by this operation.
         /// </param>
-        protected override void DisposeSnapshot(ConverterRegistrySnapshot snapshot)
-            => snapshot.Release();
+        protected override void DisposeSnapshot(ConverterRegistrySnapshot snapshot) => snapshot.Release();
     }
 
     private ConverterTypeRegistry RequireRegistry()
@@ -305,13 +297,26 @@ internal sealed class ConverterRegistry : IDisposable
             ? m_registry
             : throw new ObjectDisposedException(nameof(ConverterRegistry));
 
-    internal sealed class ConverterRegistrySnapshot(IReadOnlyList<Type> registrations)
+    internal sealed class ConverterRegistrySnapshot(
+        IReadOnlyList<Type> registrations,
+        TypeCacheSnapshot types
+    )
     {
+        private TypeCacheSnapshot? m_types = types;
         internal readonly object sync = new();
         internal readonly Dictionary<Type, ConverterInvoker?> cache = [];
         internal readonly Dictionary<Type, object> converterInstances = [];
         internal IReadOnlyList<Type> registrations = registrations;
         private int m_referenceCount = 1;
+
+        internal object CreateInstance(Type type)
+            => (m_types ?? throw new ObjectDisposedException(nameof(ConverterRegistrySnapshot))).CreateInstance(type);
+
+        internal Type? ConstructGenericType(
+            Type definition,
+            Type[] arguments
+        ) => (m_types ?? throw new ObjectDisposedException(nameof(ConverterRegistrySnapshot)))
+            .ConstructGenericType(definition, arguments);
 
         internal bool TryAcquire()
         {
@@ -359,6 +364,7 @@ internal sealed class ConverterRegistry : IDisposable
                 cache.Clear();
                 converterInstances.Clear();
                 registrations = Array.Empty<Type>();
+                m_types = null;
             }
         }
     }
@@ -411,8 +417,10 @@ internal abstract class ConverterInvoker
     /// <param name="converterType">
     /// The converter type consumed by converter invoker; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
-    protected ConverterInvoker(Type targetType, Type converterType)
-    {
+    protected ConverterInvoker(
+        Type targetType,
+        Type converterType
+    ) {
         this.targetType = targetType;
         this.converterType = converterType;
     }
@@ -425,38 +433,44 @@ internal abstract class ConverterInvoker
         SerializationOperation operation,
         string path,
         Type valueType,
-        object value);
+        object value
+    );
 
     internal abstract object Read(
         SerializationOperation operation,
         string path,
         Type valueType,
-        ObjectSerializationNode node);
+        ObjectSerializationNode node
+    );
 
     internal abstract void Restore(
         SerializationOperation operation,
         string path,
         Type valueType,
         ObjectSerializationNode node,
-        object target);
+        object target
+    );
 }
 
 internal sealed class ConverterInvoker<T> : ConverterInvoker
 {
     private readonly SerializationConverter<T> m_converter;
 
-    internal ConverterInvoker(object converter, Type converterType)
+    internal ConverterInvoker(
+        SerializationConverter<T> converter,
+        Type converterType
+    )
         : base(typeof(T), converterType)
     {
-        m_converter = (SerializationConverter<T>)converter;
+        m_converter = converter;
     }
 
     internal override SerializationNode Write(
         SerializationOperation operation,
         string path,
         Type valueType,
-        object value)
-    {
+        object value
+    ) {
         if (value is not T typed)
         {
             throw new InvalidOperationException(
@@ -472,8 +486,8 @@ internal sealed class ConverterInvoker<T> : ConverterInvoker
         SerializationOperation operation,
         string path,
         Type valueType,
-        ObjectSerializationNode node)
-    {
+        ObjectSerializationNode node
+    ) {
         T result = m_converter.Read(new SerializationReader(operation, node, path, valueType));
         if (result is null)
             throw new InvalidOperationException($"Converter '{converterType.FullName}' returned null at '{path}'.");
@@ -492,8 +506,8 @@ internal sealed class ConverterInvoker<T> : ConverterInvoker
         string path,
         Type valueType,
         ObjectSerializationNode node,
-        object target)
-    {
+        object target
+    ) {
         if (target is not T typed)
         {
             throw new InvalidOperationException(

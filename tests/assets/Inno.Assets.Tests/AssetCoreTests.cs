@@ -74,13 +74,23 @@ public sealed class AssetCoreTests
     [Fact]
     public void ArtifactKey_NormalizesAndComparesHexadecimalValues()
     {
-        var lower = new AssetArtifactKey("  abcd  ");
-        var upper = new AssetArtifactKey("ABCD");
+        var lower = new AssetArtifactKey("  " + new string('a', 64) + "  ");
+        var upper = new AssetArtifactKey(new string('A', 64));
 
-        Assert.Equal("ABCD", lower.value);
+        Assert.Equal(new string('A', 64), lower.value);
         Assert.Equal(lower, upper);
         Assert.False(lower.isEmpty);
         Assert.True(AssetArtifactKey.empty.isEmpty);
+    }
+
+    [Fact]
+    public void ArtifactKeyRejectsIncompleteFingerprintsAndPathSyntax()
+    {
+        Assert.Throws<ArgumentException>(() => new AssetArtifactKey("ABCD"));
+        Assert.Throws<ArgumentException>(() => new AssetArtifactKey(new string('G', 64)));
+        Assert.Throws<ArgumentException>(() => new AssetArtifactKey("../" + new string('A', 61)));
+        Assert.Throws<ArgumentException>(() => new AssetArtifactKey("C:" + new string('A', 62)));
+        Assert.True(new AssetArtifactKey(string.Empty).isEmpty);
     }
 
     [Fact]
@@ -94,8 +104,8 @@ public sealed class AssetCoreTests
             AssetImportStatus.Imported,
             "inno.editor.csharp-script",
             Guid.NewGuid(),
-            new AssetArtifactKey("AA"),
-            new AssetArtifactKey("BB"),
+            new AssetArtifactKey(new string('A', 64)),
+            new AssetArtifactKey(new string('B', 64)),
             new[] { "diagnostic" });
 
         Assert.Equal(id, info.persistentId);

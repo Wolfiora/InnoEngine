@@ -1,9 +1,13 @@
+using Inno.Core.IO;
+using Inno.Adapter.Serialization.DotNet;
+using Inno.Adapter.Modules.DotNet;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using Inno.Assets;
 using Inno.Assets.Pipeline;
 using Inno.Plugins.Authoring;
@@ -48,13 +52,11 @@ public sealed class PluginSourceServiceTests : IDisposable
         _ = typeof(TextAsset);
         _ = typeof(PluginSourceService);
         m_modules = new ModuleHost(new ModuleHostOptions
-        {
-            cacheDirectory = Path.Combine(m_root, "Assemblies")
-        });
-        m_types = new TypeCatalog(m_modules);
-        m_serialization = new SerializationRegistry(m_types);
+        { catalogSource = new DotNetAssemblyCatalogSource(typeof(PluginSourceServiceTests).Assembly)        });
+        m_types = new TypeCatalog(m_modules, new ReflectionTypeCatalogSource());
+        m_serialization = new SerializationRegistry(m_types, new ReflectionSerializationMetadataSource());
         m_settings = new ProjectSettingsStore(
-            Path.Combine(m_root, "Settings.Project.inno"),
+            new FileByteDocumentStore(Path.GetFullPath(Path.Combine(m_root, "Settings.Project.inno"))),
             m_types,
             m_serialization,
             new ProjectId("tests.plugins"),
@@ -73,6 +75,49 @@ public sealed class PluginSourceServiceTests : IDisposable
         m_identityScope.Dispose();
         if (Directory.Exists(m_root))
             Directory.Delete(m_root, recursive: true);
+    }
+
+    [Fact]
+    public void CorruptedMaterializedCacheIsRejectedAndCanBeRebuiltWithoutChangingPackageIdentity()
+    {
+        WritePlugin("cache.iplugin", Manifest("tests.cache"), TextContent("valid"));
+        var service = new PluginSourceService(m_serialization, m_plugins, m_library);
+        PluginScanResult first = service.Scan();
+        PluginCandidate candidate = Assert.Single(first.candidates);
+        string cachedFile = Directory.EnumerateFiles(candidate.sourceMount.rootPath, "*.txt", SearchOption.AllDirectories).Single();
+        byte[] original = System.IO.File.ReadAllBytes(cachedFile);
+        byte[] changed = original.ToArray();
+        changed[0] ^= 1;
+        System.IO.File.WriteAllBytes(cachedFile, changed);
+        PluginScanResult corrupted = service.Scan();
+        Assert.Empty(corrupted.candidates);
+        Assert.Contains("invalid bytes", Assert.Single(corrupted.diagnostics).message);
+        Directory.Delete(Path.GetDirectoryName(candidate.sourceMount.rootPath)!, recursive: true);
+        PluginScanResult restored = service.Scan();
+        Assert.Empty(restored.diagnostics);
+        Assert.Equal(candidate.contentHash, Assert.Single(restored.candidates).contentHash);
+        Assert.Equal(original, System.IO.File.ReadAllBytes(cachedFile));
+    }
+
+    [Fact]
+    public async Task ConcurrentScansPublishOneCompleteImmutableSnapshot()
+    {
+        WritePlugin("concurrent.iplugin", Manifest("tests.concurrent"), TextContent("complete"));
+        var service = new PluginSourceService(m_serialization, m_plugins, m_library);
+        using var start = new ManualResetEventSlim();
+        Task<PluginScanResult>[] scans = Enumerable.Range(0, 4).Select(_ => Task.Run(() =>
+        {
+            start.Wait();
+            return service.Scan();
+        })).ToArray();
+        start.Set();
+        PluginScanResult[] results = await Task.WhenAll(scans);
+        foreach (PluginScanResult result in results)
+        {
+            Assert.Empty(result.diagnostics);
+            Assert.Equal(Assert.Single(results[0].candidates).contentHash, Assert.Single(result.candidates).contentHash);
+        }
+        Assert.Empty(Directory.EnumerateFileSystemEntries(Path.Combine(m_library, "Plugins", ".staging")));
     }
 
     [Fact]

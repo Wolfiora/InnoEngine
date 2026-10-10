@@ -6,4 +6,5 @@ internal sealed record PrefabPropertyOverride(
     Guid sourceComponentId,
     string propertyName,
     byte[] value,
-    bool isOrphaned = false);
+    bool isOrphaned = false
+);

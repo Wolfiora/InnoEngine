@@ -21,8 +21,10 @@ public readonly record struct AudioProcessorParameter
     /// <param name="value">
     /// Neutral numeric value interpreted by the processor.
     /// </param>
-    public AudioProcessorParameter(AudioParameterId id, float value)
-    {
+    public AudioProcessorParameter(
+        AudioParameterId id,
+        float value
+    ) {
         if (!id.isValid)
             throw new ArgumentException("A valid parameter identifier is required.", nameof(id));
         this.id = id;
@@ -58,8 +60,8 @@ public sealed class AudioProcessorConfiguration
     /// </param>
     public AudioProcessorConfiguration(
         AudioProcessorId id,
-        IEnumerable<AudioProcessorParameter>? parameters = null)
-    {
+        IEnumerable<AudioProcessorParameter>? parameters = null
+    ) {
         if (!id.isValid)
             throw new ArgumentException("A valid processor identifier is required.", nameof(id));
         this.id = id;
@@ -109,8 +111,8 @@ public sealed class AudioBusDefinition
         AudioBusId? parent,
         float volume,
         bool muted,
-        IEnumerable<AudioProcessorConfiguration>? processors = null)
-    {
+        IEnumerable<AudioProcessorConfiguration>? processors = null
+    ) {
         if (!id.isValid)
             throw new ArgumentException("A valid bus identifier is required.", nameof(id));
         if (volume < 0f)
@@ -198,8 +200,12 @@ public sealed class AudioMixerBuilder
     /// <exception cref="ArgumentException">
     /// Thrown when the bus identifier is invalid or duplicated.
     /// </exception>
-    public void AddBus(AudioBusId id, AudioBusId parent, float volume = 1f, bool muted = false)
-    {
+    public void AddBus(
+        AudioBusId id,
+        AudioBusId parent,
+        float volume = 1f,
+        bool muted = false
+    ) {
         if (!id.isValid || id == AudioBusId.master)
             throw new ArgumentException("A valid non-master bus identifier is required.", nameof(id));
         if (m_buses.ContainsKey(id))
@@ -219,8 +225,10 @@ public sealed class AudioMixerBuilder
     /// <exception cref="KeyNotFoundException">
     /// Thrown when the bus is not defined.
     /// </exception>
-    public void AddProcessor(AudioBusId bus, AudioProcessorConfiguration processor)
-    {
+    public void AddProcessor(
+        AudioBusId bus,
+        AudioProcessorConfiguration processor
+    ) {
         ArgumentNullException.ThrowIfNull(processor);
         if (!m_buses.TryGetValue(bus, out AudioBusDefinition? definition))
             throw new KeyNotFoundException($"Audio bus '{bus}' is not defined.");
@@ -256,8 +264,8 @@ public sealed class AudioMixerBuilder
         AudioBusId id,
         ICollection<AudioBusDefinition> order,
         ISet<AudioBusId> visiting,
-        ISet<AudioBusId> visited)
-    {
+        ISet<AudioBusId> visited
+    ) {
         if (visited.Contains(id))
             return;
         if (!m_buses.TryGetValue(id, out AudioBusDefinition? definition))
@@ -294,8 +302,10 @@ public struct SerializedAudioExtensionState
     /// <param name="propertyData">
     /// Neutral serialized property bytes.
     /// </param>
-    public SerializedAudioExtensionState(Guid stableTypeId, ReadOnlySpan<byte> propertyData)
-    {
+    public SerializedAudioExtensionState(
+        Guid stableTypeId,
+        ReadOnlySpan<byte> propertyData
+    ) {
         this.stableTypeId = stableTypeId;
         this.propertyData = propertyData.ToArray();
     }
@@ -340,8 +350,8 @@ public struct AudioMixerFeatureConfiguration
     public AudioMixerFeatureConfiguration(
         string featureTypeId,
         SerializedAudioExtensionState? state = null,
-        bool enabled = true)
-    {
+        bool enabled = true
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(featureTypeId);
         this.featureTypeId = featureTypeId;
         this.state = state ?? new SerializedAudioExtensionState();

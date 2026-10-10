@@ -11,7 +11,8 @@ internal sealed class SettingsWindowModule(
     ProjectSettingsEditor projectSettings,
     BuildPipeline buildPipeline,
     BuildSettingsStore buildSettings,
-    EditorInteractions interactions) : EditorModule
+    EditorInteractions interactions
+) : EditorModule
 {
     private SettingsEditSession? m_session;
 
@@ -53,6 +54,5 @@ internal sealed class SettingsWindowModule(
     /// <param name="context">
     /// The context that supplies state and services for this operation.
     /// </param>
-    protected override void OnStop(EditorContext context)
-        => Close();
+    protected override void OnStop(EditorContext context) => Close();
 }

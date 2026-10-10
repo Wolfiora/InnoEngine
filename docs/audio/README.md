@@ -10,7 +10,7 @@ Audio 是引擎基础能力：游戏代码依赖后端中立契约，Host 在组
 | [Inno.Audio.Runtime](Inno.Audio.Runtime.md) | 调度、缓存、voice stealing、完成事件、原子有界的内容 Provider 接纳、预算统计与扩展 generation。 |
 | [Inno.Audio.Assets](Inno.Audio.Assets.md) | WAV、FLAC、MP3 的 metadata 与 `audio-data` Artifact 导入。 |
 | [Inno.Adapter.Audio](Inno.Adapter.Audio.md) | Audio backend 选择、创建参数与 factory contract。 |
-| [Inno.Adapter.Audio.MiniAudio](Inno.Adapter.Audio.MiniAudio.md) | 唯一 MiniAudio 运行时适配器；原生类型不离开程序集。 |
+| [Inno.Adapter.Audio.MiniAudio](../backends/MiniAudio/Inno.Adapter.Audio.MiniAudio.md) | 唯一 MiniAudio 运行时适配器；原生类型不离开程序集。 |
 | [Inno.Editor.Audio](../editor/Inno.Editor.Audio.md) | Edit/Play 独立设备 generation、预览与诊断。 |
 
 ```text

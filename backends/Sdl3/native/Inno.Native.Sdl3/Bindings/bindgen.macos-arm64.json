@@ -1,0 +1,7 @@
+{
+  "baseConfig": {
+    "url": "file://bindgen.json"
+  },
+  "targetId": "macos-arm64-darwin",
+  "outputPath": "../obj/macos-arm64/Generated"
+}

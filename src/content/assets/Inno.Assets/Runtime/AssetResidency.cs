@@ -28,7 +28,8 @@ public interface IAssetResidency
     /// </returns>
     ValueTask<AssetLease<TAsset>> AcquireAsync<TAsset>(
         AssetPath path,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
         where TAsset : AssetObject;
 
     /// <summary>
@@ -48,7 +49,8 @@ public interface IAssetResidency
     /// </returns>
     ValueTask<AssetLease<TAsset>> AcquireAsync<TAsset>(
         Guid persistentId,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
         where TAsset : AssetObject;
 
     /// <summary>
@@ -66,7 +68,10 @@ public interface IAssetResidency
     /// <exception cref="InvalidOperationException">
     /// Thrown when the requested artifact does not exist or fails verification.
     /// </exception>
-    ArtifactLease AcquireArtifact(Guid persistentId, string outputName);
+    ArtifactLease AcquireArtifact(
+        Guid persistentId,
+        string outputName
+    );
 }
 
 /// <summary>
@@ -89,7 +94,10 @@ public abstract class AssetResidencyProvider
     /// <returns>
     /// A lease that retains its value until release completes; a Pending callback is retried by the owning lifecycle.
     /// </returns>
-    protected static AssetLease<TAsset> CreateAssetLease<TAsset>(TAsset asset, Action release)
+    protected static AssetLease<TAsset> CreateAssetLease<TAsset>(
+        TAsset asset,
+        Action release
+    )
         where TAsset : AssetObject
         => new(asset, release);
 
@@ -99,14 +107,20 @@ public abstract class AssetResidencyProvider
     /// <param name="artifact">
     /// Verified artifact metadata retained by the lease.
     /// </param>
+    /// <param name="openRead">
+    /// Opens immutable bytes with an independent provider pin owned by the returned stream.
+    /// </param>
     /// <param name="release">
     /// Provider-owned release callback. Pending retirement must be retryable without repeating completed effects.
     /// </param>
     /// <returns>
     /// A lease that retains its value until release completes; a Pending callback is retried by the owning lifecycle.
     /// </returns>
-    protected static ArtifactLease CreateArtifactLease(AssetArtifactInfo artifact, Action release)
-        => new(artifact, release);
+    protected static ArtifactLease CreateArtifactLease(
+        AssetArtifactInfo artifact,
+        Func<Stream> openRead,
+        Action release
+    ) => new(artifact, openRead, release);
 }
 
 /// <summary>
@@ -120,8 +134,10 @@ public sealed class AssetLease<TAsset> : IDisposable
 {
     private readonly ResidencyLease<TAsset> m_residency;
 
-    internal AssetLease(TAsset asset, Action release)
-    {
+    internal AssetLease(
+        TAsset asset,
+        Action release
+    ) {
         m_residency = new ResidencyLease<TAsset>(asset, release);
     }
 
@@ -131,8 +147,7 @@ public sealed class AssetLease<TAsset> : IDisposable
     /// <exception cref="ObjectDisposedException">
     /// Thrown after the lease has been released.
     /// </exception>
-    public TAsset asset
-        => m_residency.value;
+    public TAsset asset => m_residency.value;
 
     /// <summary>
     /// Releases this caller's residency ownership, retaining its value and callback while the provider reports Pending.
@@ -156,17 +171,22 @@ public sealed class AssetLease<TAsset> : IDisposable
 public sealed class ArtifactLease : IDisposable
 {
     private readonly ResidencyLease<AssetArtifactInfo> m_residency;
+    private readonly object m_sync = new();
+    private Func<Stream>? m_openRead;
 
-    internal ArtifactLease(AssetArtifactInfo artifact, Action release)
-    {
+    internal ArtifactLease(
+        AssetArtifactInfo artifact,
+        Func<Stream> openRead,
+        Action release
+    ) {
         m_residency = new ResidencyLease<AssetArtifactInfo>(artifact, release);
+        m_openRead = openRead ?? throw new ArgumentNullException(nameof(openRead));
     }
 
     /// <summary>
     /// Gets verified metadata for the retained artifact.
     /// </summary>
-    public AssetArtifactInfo info
-        => m_residency.value;
+    public AssetArtifactInfo info => m_residency.value;
 
     /// <summary>
     /// Opens a read-only stream over the retained immutable artifact.
@@ -175,7 +195,35 @@ public sealed class ArtifactLease : IDisposable
     /// A new independently owned read stream.
     /// </returns>
     public Stream OpenRead()
-        => File.Open(info.absolutePath, FileMode.Open, FileAccess.Read, FileShare.Read);
+    {
+        lock (m_sync)
+        {
+            _ = m_residency.value;
+            return (m_openRead ?? throw new ObjectDisposedException(nameof(ArtifactLease)))();
+        }
+    }
+
+    /// <summary>
+    /// Reads one indexed payload through this lease's independently pinned stream.
+    /// </summary>
+    /// <returns>
+    /// Newly owned bytes with the exact indexed length; oversized or truncated payloads fail explicitly.
+    /// </returns>
+    /// <exception cref="InvalidDataException">
+    /// The payload exceeds the supported array size or does not have its indexed length.
+    /// </exception>
+    public byte[] ReadAllBytes()
+    {
+        long length = info.length;
+        if (length < 0 || length > Array.MaxLength)
+            throw new InvalidDataException("The artifact payload exceeds the supported array budget.");
+        using Stream input = OpenRead();
+        byte[] bytes = new byte[(int)length];
+        input.ReadExactly(bytes);
+        if (input.ReadByte() != -1)
+            throw new InvalidDataException("The artifact payload exceeds its indexed length.");
+        return bytes;
+    }
 
     /// <summary>
     /// Releases artifact ownership, retaining metadata and callback while the provider reports Pending.
@@ -183,6 +231,7 @@ public sealed class ArtifactLease : IDisposable
     /// <remarks>
     /// Pending may be wrapped in another exception; classify the complete failure with RetirementPendingException.Find.
     /// Ordinary sibling failures remain observable after a later release attempt succeeds.
+    /// New reads stop when release begins; already opened streams retain their independent provider pins.
     /// </remarks>
     /// <exception cref="RetirementPendingException">
     /// Provider retirement is unfinished or a concurrent release is in progress; retain this lease and retry at a safe point.
@@ -190,7 +239,12 @@ public sealed class ArtifactLease : IDisposable
     /// <exception cref="AggregateException">
     /// The provider reports a wrapped failure, or release completes with ordinary errors retained from earlier pending attempts.
     /// </exception>
-    public void Dispose() => m_residency.Dispose();
+    public void Dispose()
+    {
+        lock (m_sync)
+            m_openRead = null;
+        m_residency.Dispose();
+    }
 }
 
 /// <summary>
@@ -250,8 +304,11 @@ public readonly record struct AssetResidencyStatistics
     /// <param name="budgetBytes">
     /// Configured runtime payload budget.
     /// </param>
-    public AssetResidencyStatistics(int residentAssetCount, long residentBytes, long budgetBytes)
-    {
+    public AssetResidencyStatistics(
+        int residentAssetCount,
+        long residentBytes,
+        long budgetBytes
+    ) {
         this.residentAssetCount = residentAssetCount;
         this.residentBytes = residentBytes;
         this.budgetBytes = budgetBytes;

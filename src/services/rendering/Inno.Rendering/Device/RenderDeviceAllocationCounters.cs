@@ -31,8 +31,8 @@ public readonly record struct RenderDeviceAllocationCounters
         uint deviceGeneration,
         ulong textureAllocations,
         ulong bufferAllocations,
-        ulong frameBufferAllocations)
-    {
+        ulong frameBufferAllocations
+    ) {
         ArgumentOutOfRangeException.ThrowIfZero(deviceGeneration);
         this.deviceGeneration = deviceGeneration;
         this.textureAllocations = textureAllocations;

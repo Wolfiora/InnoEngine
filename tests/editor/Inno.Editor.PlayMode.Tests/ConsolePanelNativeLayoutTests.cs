@@ -1,3 +1,4 @@
+using Inno.Adapter.Modules.DotNet;
 using System;
 using System.IO;
 using System.Linq;
@@ -24,8 +25,10 @@ public sealed class ConsolePanelNativeLayoutTests
     [InlineData(true, 1f)]
     [InlineData(false, 1.5f)]
     [InlineData(true, 1.5f)]
-    public unsafe void RealConsoleKeepsCompleteLabelsOnFirstExpansionAndResize(bool diagnostic, float scale)
-    {
+    public unsafe void RealConsoleKeepsCompleteLabelsOnFirstExpansionAndResize(
+        bool diagnostic,
+        float scale
+    ) {
         string root = Path.Combine(Path.GetTempPath(), "InnoConsoleLayout", Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(root);
         _ = Assembly.Load("Inno.Editor.Panel.Logging");
@@ -37,14 +40,14 @@ public sealed class ConsolePanelNativeLayoutTests
             ImGuiApi.GetIO().BackendFlags |= ImGuiBackendFlags.RendererHasTextures;
             ImGuiApi.GetIO().Fonts.RendererHasTextures = true;
             ImGuiApi.GetStyle().ScaleAllSizes(scale);
-            using var modules = new ModuleHost(new() { cacheDirectory = Path.Combine(root, "Library", "Assemblies") });
-            using var types = new TypeCatalog(modules);
+            using var modules = new ModuleHost(new() { catalogSource = new DotNetAssemblyCatalogSource(typeof(ConsolePanelNativeLayoutTests).Assembly)});
+            using var types = new TypeCatalog(modules, new ReflectionTypeCatalogSource());
             using var logs = new LogRouter();
             var hub = new DiagnosticHub();
             using var console = new EditorConsole(logs, hub, new InactivePlayMode());
             console.Start();
             using var reporter = hub.CreateReporter(new("shader", "Rendering"));
-            using var runtime = new EditorInteractionRuntime(new EditorContext(root), types, logs, [console]);
+            using var runtime = new EditorInteractionRuntime(new EditorContext(root, new EditorKeyboardPolicy(Inno.Core.Input.KeyModifier.Control, "Super")), types, logs, [console]);
             runtime.Start();
             logs.Flush();
             console.Clear();

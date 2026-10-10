@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 namespace Inno.Adapter.Presentation;
 
 /// <summary>
@@ -6,10 +8,15 @@ namespace Inno.Adapter.Presentation;
 public interface IPresentationBackendFactory
 {
     /// <summary>
+    /// Gets the implementation identities available in this immutable factory snapshot.
+    /// </summary>
+    IReadOnlyList<PresentationBackendId> supportedBackends { get; }
+
+    /// <summary>
     /// Creates a presentation context over compatible platform and rendering adapters.
     /// </summary>
     /// <param name="backend">
-    /// Built-in presentation backend selected by the composition root.
+    /// Stable presentation implementation selected by the composition root.
     /// </param>
     /// <param name="options">
     /// Host-owned resources and presentation policy.
@@ -20,5 +27,8 @@ public interface IPresentationBackendFactory
     /// <exception cref="System.NotSupportedException">
     /// Thrown when the selected platform, rendering, and presentation backends are incompatible.
     /// </exception>
-    IPresentationContext CreateContext(PresentationBackend backend, PresentationBackendOptions options);
+    IPresentationContext CreateContext(
+        PresentationBackendId backend,
+        PresentationBackendOptions options
+    );
 }

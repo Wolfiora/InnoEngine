@@ -48,5 +48,8 @@ protected override void DisposeSnapshot(Snapshot snapshot)
         => DisposeExtensions(snapshot.registrations.Select(static entry => entry.provider));
 
     internal sealed record Snapshot(Registration[] registrations);
-    internal sealed record Registration(string id, EditorGizmoProvider provider);
+    internal sealed record Registration(
+        string id,
+        EditorGizmoProvider provider
+    );
 }

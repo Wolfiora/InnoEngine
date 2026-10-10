@@ -1,6 +1,6 @@
 # Scene API
 
-[Wiki 首页](../README.md) · [Runtime](../runtime/README.md) · [Rendering](../render/README.md)
+[Wiki 首页](../README.md) · [Runtime](../runtime/README.md) · [Rendering](../rendering/README.md)
 
 | 项目 | 职责 |
 | --- | --- |

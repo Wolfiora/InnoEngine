@@ -35,8 +35,10 @@ public readonly struct JobSchedulerOptions
     internal MainThreadWorkQueue CreateMainThreadQueue()
         => new(ResolvePositive(mainThreadCapacity, 65536), ResolvePositive(mainThreadDrainBudget, 4096));
 
-    private static int ResolvePositive(int value, int defaultValue)
-    {
+    private static int ResolvePositive(
+        int value,
+        int defaultValue
+    ) {
         ArgumentOutOfRangeException.ThrowIfNegative(value);
         return value == 0 ? defaultValue : value;
     }

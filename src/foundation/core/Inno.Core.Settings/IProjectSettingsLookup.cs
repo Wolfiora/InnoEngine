@@ -49,6 +49,9 @@ public interface IProjectSettingsLookup
     /// <see langword="true"/> when a compatible setting exists; otherwise,
     /// <see langword="false"/>.
     /// </returns>
-    bool TryGet<TSetting>(ProjectSettingId id, out TSetting? setting)
+    bool TryGet<TSetting>(
+        ProjectSettingId id,
+        out TSetting? setting
+    )
         where TSetting : class, ISerializable;
 }

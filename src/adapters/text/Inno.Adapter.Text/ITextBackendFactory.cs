@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Inno.Text;
 
 namespace Inno.Adapter.Text;
@@ -8,6 +9,11 @@ namespace Inno.Adapter.Text;
 public interface ITextBackendFactory
 {
     /// <summary>
+    /// Gets the exact registrations available in this composition snapshot.
+    /// </summary>
+    IReadOnlyList<TextBackendId> supportedBackends { get; }
+
+    /// <summary>
     /// Creates one caller-owned text backend.
     /// </summary>
     /// <param name="backend">
@@ -16,5 +22,5 @@ public interface ITextBackendFactory
     /// <returns>
     /// A newly allocated text backend.
     /// </returns>
-    ITextBackend CreateBackend(TextBackend backend);
+    ITextBackend CreateBackend(TextBackendId backend);
 }

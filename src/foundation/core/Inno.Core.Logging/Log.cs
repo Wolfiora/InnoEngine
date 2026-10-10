@@ -1,226 +1,291 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using System.Threading;
-
 using Inno.Extensibility.Modules;
 
 namespace Inno.Core.Logging;
 
 /// <summary>
-/// Convenience facade for writing logs with automatic source/category resolution.
+/// Writes script logs with compiler-provided source locations and the calling assembly's ownership.
 /// </summary>
 public static class Log
 {
     private const string C_DEFAULT_CATEGORY = "Unknown";
-
-    private sealed class TypeInfo
-    {
-        /// <summary>
-        /// Gets the assembly domain that produced this script log call.
-        /// </summary>
-        public required AssemblyDomain domain { get; init; }
-        /// <summary>
-        /// Gets the assembly scope captured for this script log call.
-        /// </summary>
-        public required AssemblyScope scope { get; init; }
-        /// <summary>
-        /// Gets text used for stable identity, presentation, or diagnostics by this contract.
-        /// </summary>
-        public required string category { get; init; }
-    }
-
-    private sealed class AssemblySource
-    {
-        /// <summary>
-        /// Gets the assembly domain that produced this script log call.
-        /// </summary>
-        public required AssemblyDomain domain { get; init; }
-        /// <summary>
-        /// Gets the assembly scope captured for this script log call.
-        /// </summary>
-        public required AssemblyScope scope { get; init; }
-    }
-
-    private static readonly ConditionalWeakTable<Type, TypeInfo> TYPE_INFO_CACHE = new();
-    private static readonly ConditionalWeakTable<Assembly, AssemblySource> ASSEMBLY_SOURCE_CACHE = new();
+    private static readonly ConditionalWeakTable<Assembly, AssemblySource> AssemblySources = new();
 
     /// <summary>
     /// Writes a debug-level message using the object's string representation.
     /// </summary>
     /// <param name="obj">
-    /// The object to log.
+    /// The object to log; null produces an empty message.
+    /// </param>
+    /// <param name="filePath">
+    /// The source file supplied by the compiler; its file name is the category.
+    /// </param>
+    /// <param name="lineNumber">
+    /// The source line supplied by the compiler.
     /// </param>
     [Conditional("DEBUG")]
     [MethodImpl(MethodImplOptions.NoInlining)]
-    public static void Debug(object? obj)
-        => Write(LogLevel.Debug, $"{obj}", null);
-    
+    public static void Debug(
+        object? obj,
+        [CallerFilePath] string filePath = "",
+        [CallerLineNumber] int lineNumber = 0
+    ) => Write(LogLevel.Debug, $"{obj}", null, Assembly.GetCallingAssembly(), filePath, lineNumber);
+
     /// <summary>
-    /// Writes a formatted debug-level message.
+    /// Writes a formatted debug-level message with its source location.
     /// </summary>
     /// <param name="message">
-    /// The composite format string.
+    /// The composite format string or final message.
     /// </param>
-    /// <param name="args">
-    /// The format arguments.
+    /// <param name="arguments">
+    /// Optional composite-format arguments; null preserves the message verbatim.
     /// </param>
+    /// <param name="filePath">
+    /// The source file supplied by the compiler; its file name is the category.
+    /// </param>
+    /// <param name="lineNumber">
+    /// The source line supplied by the compiler.
+    /// </param>
+    /// <exception cref="FormatException">
+    /// The composite format string is invalid for the supplied arguments.
+    /// </exception>
     [Conditional("DEBUG")]
     [MethodImpl(MethodImplOptions.NoInlining)]
-    public static void Debug(string message, params object[]? args)
-        => Write(LogLevel.Debug, message, args);
+    public static void Debug(
+        string message,
+        IReadOnlyList<object?>? arguments,
+        [CallerFilePath] string filePath = "",
+        [CallerLineNumber] int lineNumber = 0
+    ) => Write(LogLevel.Debug, message, arguments, Assembly.GetCallingAssembly(), filePath, lineNumber);
 
     /// <summary>
-    /// Writes an info-level message using the object's string representation.
+    /// Writes a info-level message using the object's string representation.
     /// </summary>
     /// <param name="obj">
-    /// The object to log.
+    /// The object to log; null produces an empty message.
+    /// </param>
+    /// <param name="filePath">
+    /// The source file supplied by the compiler; its file name is the category.
+    /// </param>
+    /// <param name="lineNumber">
+    /// The source line supplied by the compiler.
     /// </param>
     [MethodImpl(MethodImplOptions.NoInlining)]
-    public static void Info(object? obj)
-        => Write(LogLevel.Info, $"{obj}", null);
-    
-    /// <summary>
-    /// Writes a formatted info-level message.
-    /// </summary>
-    /// <param name="message">
-    /// The composite format string.
-    /// </param>
-    /// <param name="args">
-    /// The format arguments.
-    /// </param>
-    [MethodImpl(MethodImplOptions.NoInlining)]
-    public static void Info(string message, params object[]? args)
-        => Write(LogLevel.Info, message, args);
+    public static void Info(
+        object? obj,
+        [CallerFilePath] string filePath = "",
+        [CallerLineNumber] int lineNumber = 0
+    ) => Write(LogLevel.Info, $"{obj}", null, Assembly.GetCallingAssembly(), filePath, lineNumber);
 
     /// <summary>
-    /// Writes a warning-level message using the object's string representation.
-    /// </summary>
-    /// <param name="obj">
-    /// The object to log.
-    /// </param>
-    [MethodImpl(MethodImplOptions.NoInlining)]
-    public static void Warn(object? obj)
-        => Write(LogLevel.Warn, $"{obj}", null);
-    
-    /// <summary>
-    /// Writes a formatted warning-level message.
+    /// Writes a formatted info-level message with its source location.
     /// </summary>
     /// <param name="message">
-    /// The composite format string.
+    /// The composite format string or final message.
     /// </param>
-    /// <param name="args">
-    /// The format arguments.
+    /// <param name="arguments">
+    /// Optional composite-format arguments; null preserves the message verbatim.
     /// </param>
+    /// <param name="filePath">
+    /// The source file supplied by the compiler; its file name is the category.
+    /// </param>
+    /// <param name="lineNumber">
+    /// The source line supplied by the compiler.
+    /// </param>
+    /// <exception cref="FormatException">
+    /// The composite format string is invalid for the supplied arguments.
+    /// </exception>
     [MethodImpl(MethodImplOptions.NoInlining)]
-    public static void Warn(string message, params object[]? args)
-        => Write(LogLevel.Warn, message, args);
+    public static void Info(
+        string message,
+        IReadOnlyList<object?>? arguments,
+        [CallerFilePath] string filePath = "",
+        [CallerLineNumber] int lineNumber = 0
+    ) => Write(LogLevel.Info, message, arguments, Assembly.GetCallingAssembly(), filePath, lineNumber);
 
     /// <summary>
-    /// Writes an error-level message using the object's string representation.
+    /// Writes a warn-level message using the object's string representation.
     /// </summary>
     /// <param name="obj">
-    /// The object to log.
+    /// The object to log; null produces an empty message.
+    /// </param>
+    /// <param name="filePath">
+    /// The source file supplied by the compiler; its file name is the category.
+    /// </param>
+    /// <param name="lineNumber">
+    /// The source line supplied by the compiler.
     /// </param>
     [MethodImpl(MethodImplOptions.NoInlining)]
-    public static void Error(object? obj)
-        => Write(LogLevel.Error, $"{obj}", null);
-    
+    public static void Warn(
+        object? obj,
+        [CallerFilePath] string filePath = "",
+        [CallerLineNumber] int lineNumber = 0
+    ) => Write(LogLevel.Warn, $"{obj}", null, Assembly.GetCallingAssembly(), filePath, lineNumber);
+
     /// <summary>
-    /// Writes a formatted error-level message.
+    /// Writes a formatted warn-level message with its source location.
     /// </summary>
     /// <param name="message">
-    /// The composite format string.
+    /// The composite format string or final message.
     /// </param>
-    /// <param name="args">
-    /// The format arguments.
+    /// <param name="arguments">
+    /// Optional composite-format arguments; null preserves the message verbatim.
+    /// </param>
+    /// <param name="filePath">
+    /// The source file supplied by the compiler; its file name is the category.
+    /// </param>
+    /// <param name="lineNumber">
+    /// The source line supplied by the compiler.
+    /// </param>
+    /// <exception cref="FormatException">
+    /// The composite format string is invalid for the supplied arguments.
+    /// </exception>
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    public static void Warn(
+        string message,
+        IReadOnlyList<object?>? arguments,
+        [CallerFilePath] string filePath = "",
+        [CallerLineNumber] int lineNumber = 0
+    ) => Write(LogLevel.Warn, message, arguments, Assembly.GetCallingAssembly(), filePath, lineNumber);
+
+    /// <summary>
+    /// Writes a error-level message using the object's string representation.
+    /// </summary>
+    /// <param name="obj">
+    /// The object to log; null produces an empty message.
+    /// </param>
+    /// <param name="filePath">
+    /// The source file supplied by the compiler; its file name is the category.
+    /// </param>
+    /// <param name="lineNumber">
+    /// The source line supplied by the compiler.
     /// </param>
     [MethodImpl(MethodImplOptions.NoInlining)]
-    public static void Error(string message, params object[]? args)
-        => Write(LogLevel.Error, message, args);
+    public static void Error(
+        object? obj,
+        [CallerFilePath] string filePath = "",
+        [CallerLineNumber] int lineNumber = 0
+    ) => Write(LogLevel.Error, $"{obj}", null, Assembly.GetCallingAssembly(), filePath, lineNumber);
+
+    /// <summary>
+    /// Writes a formatted error-level message with its source location.
+    /// </summary>
+    /// <param name="message">
+    /// The composite format string or final message.
+    /// </param>
+    /// <param name="arguments">
+    /// Optional composite-format arguments; null preserves the message verbatim.
+    /// </param>
+    /// <param name="filePath">
+    /// The source file supplied by the compiler; its file name is the category.
+    /// </param>
+    /// <param name="lineNumber">
+    /// The source line supplied by the compiler.
+    /// </param>
+    /// <exception cref="FormatException">
+    /// The composite format string is invalid for the supplied arguments.
+    /// </exception>
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    public static void Error(
+        string message,
+        IReadOnlyList<object?>? arguments,
+        [CallerFilePath] string filePath = "",
+        [CallerLineNumber] int lineNumber = 0
+    ) => Write(LogLevel.Error, message, arguments, Assembly.GetCallingAssembly(), filePath, lineNumber);
 
     /// <summary>
     /// Writes a fatal-level message using the object's string representation.
     /// </summary>
     /// <param name="obj">
-    /// The object to log.
+    /// The object to log; null produces an empty message.
+    /// </param>
+    /// <param name="filePath">
+    /// The source file supplied by the compiler; its file name is the category.
+    /// </param>
+    /// <param name="lineNumber">
+    /// The source line supplied by the compiler.
     /// </param>
     [MethodImpl(MethodImplOptions.NoInlining)]
-    public static void Fatal(object? obj)
-        => Write(LogLevel.Fatal, $"{obj}", null);
+    public static void Fatal(
+        object? obj,
+        [CallerFilePath] string filePath = "",
+        [CallerLineNumber] int lineNumber = 0
+    ) => Write(LogLevel.Fatal, $"{obj}", null, Assembly.GetCallingAssembly(), filePath, lineNumber);
 
     /// <summary>
-    /// Writes a formatted fatal-level message.
+    /// Writes a formatted fatal-level message with its source location.
     /// </summary>
     /// <param name="message">
-    /// The composite format string.
+    /// The composite format string or final message.
     /// </param>
-    /// <param name="args">
-    /// The format arguments.
+    /// <param name="arguments">
+    /// Optional composite-format arguments; null preserves the message verbatim.
     /// </param>
+    /// <param name="filePath">
+    /// The source file supplied by the compiler; its file name is the category.
+    /// </param>
+    /// <param name="lineNumber">
+    /// The source line supplied by the compiler.
+    /// </param>
+    /// <exception cref="FormatException">
+    /// The composite format string is invalid for the supplied arguments.
+    /// </exception>
     [MethodImpl(MethodImplOptions.NoInlining)]
-    public static void Fatal(string message, params object[]? args)
-        => Write(LogLevel.Fatal, message, args);
+    public static void Fatal(
+        string message,
+        IReadOnlyList<object?>? arguments,
+        [CallerFilePath] string filePath = "",
+        [CallerLineNumber] int lineNumber = 0
+    ) => Write(LogLevel.Fatal, message, arguments, Assembly.GetCallingAssembly(), filePath, lineNumber);
 
     [MethodImpl(MethodImplOptions.NoInlining)]
-    private static void Write(LogLevel level, string message, params object[]? args)
-    {
+    private static void Write(
+        LogLevel level,
+        string message,
+        IReadOnlyList<object?>? arguments,
+        Assembly callerAssembly,
+        string filePath,
+        int lineNumber
+    ) {
         LogRouter router = LogRouter.current;
         if (!router.IsEnabled(level))
             return;
 
-        var stackTrace = new StackTrace(2, true);
-        StackFrame? sf = stackTrace.GetFrame(0);
-        var method = sf?.GetMethod();
-        var callerType = method?.DeclaringType;
-
-        AssemblyDomain domain = AssemblyDomain.InnoInternal;
-        AssemblyScope scope = AssemblyScope.Runtime;
-        string category = C_DEFAULT_CATEGORY;
-
-        if (callerType != null)
-        {
-            TypeInfo info = TYPE_INFO_CACHE.GetValue(callerType, static type =>
-            {
-                var src = ASSEMBLY_SOURCE_CACHE.GetValue(type.Assembly, static assembly =>
-                    new AssemblySource
-                    {
-                        domain = assembly.GetInnoAssemblyDomain(),
-                        scope = assembly.GetInnoAssemblyScope()
-                    });
-                return new TypeInfo
-                {
-                    domain = src.domain,
-                    scope = src.scope,
-                    category = type.Name
-                };
-            });
-
-            domain = info.domain;
-            scope = info.scope;
-            category = info.category;
-        }
-
-        var msg = (args == null || args.Length == 0) ? message : string.Format(message, args);
-
-        var file = C_DEFAULT_CATEGORY;
-        var line = 0;
-        var filePath = sf?.GetFileName();
-        file = string.IsNullOrWhiteSpace(filePath) ? C_DEFAULT_CATEGORY : filePath;
-        line = sf?.GetFileLineNumber() ?? 0;
-        
+        AssemblySource source = AssemblySources.GetValue(callerAssembly, static assembly => new AssemblySource(
+            assembly.GetInnoAssemblyDomain(), assembly.GetInnoAssemblyScope()));
+        string category = GetCategory(filePath);
+        string rendered = arguments is null || arguments.Count == 0
+            ? message : string.Format(message, arguments.ToArray());
         router.Dispatch(new LogEntry(
             level,
-            domain,
-            scope,
+            source.domain,
+            source.scope,
             category,
-            msg,
-            file,
-            line,
-            stackTrace.ToString(),
+            rendered,
+            string.IsNullOrWhiteSpace(filePath) ? C_DEFAULT_CATEGORY : filePath,
+            lineNumber,
+            new StackTrace(2, true).ToString(),
             LogSessionContext.current));
     }
 
+    private static string GetCategory(string filePath)
+    {
+        if (string.IsNullOrWhiteSpace(filePath))
+            return C_DEFAULT_CATEGORY;
+
+        // Compiler source paths belong to the authoring host, which can differ from the runtime host.
+        int fileNameStart = Math.Max(filePath.LastIndexOf('/'), filePath.LastIndexOf('\\')) + 1;
+        return Path.GetFileNameWithoutExtension(filePath.AsSpan(fileNameStart)).ToString();
+    }
+
+    private sealed record AssemblySource(
+        AssemblyDomain domain,
+        AssemblyScope scope
+    );
 }

@@ -21,8 +21,8 @@ reporter.Resolve("audio.device.lost");
 | --- | --- |
 | `Diagnostic(code, message, severity, semanticId?, objectId?, location?)` | 中立问题；semantic ID、persistent object ID 与文件位置各有独立语义 |
 | `DiagnosticHub.CreateReporter(source)` | 创建当前 producer registration，同 ID 的旧 registration 被撤销 |
-| `IDiagnosticReporter.Publish(diagnostic)` | 以 code + semanticId + objectId 更新同一问题，message 不参与身份 |
-| `Resolve(code, semanticId?, objectId?)` | 条件恢复后撤销指定问题 |
+| `IDiagnosticReporter.Publish(diagnostic)` | 以 code + semanticId + objectId 更新同一问题，message 不参与身份；内容完全相同时不重新通知 sink |
+| `Resolve(code, semanticId?, objectId?)` | 条件恢复后撤销指定问题；已撤销的身份重复 Resolve 不重新通知 sink |
 | `Replace(diagnostics)` | 冻结并替换整个问题集合，拒绝重复问题身份 |
 | `DiagnosticReporter.Dispose()` | 释放该 registration 的报告；不能清除同 ID 的较新 producer |
 
@@ -198,3 +198,129 @@ Action、Menu、Drag/Drop、Undo/Redo、Rename/Delete/Open 和 Inspector 单次�
 - [Inno.Core.Logging](Inno.Core.Logging.md)：追加式历史日志。
 - [Inno.Editor.Panel.Logging](../editor/Inno.Editor.Panel.Logging.md)：合并展示 Log 和当前 Diagnostics。
 - [Inno.Editor.Scripting](../editor/Inno.Editor.Scripting.md)：脚本编译和 reload 诊断生产者。
+
+## 当前源码公开 API 清单
+
+只列当前源码的 public/protected 表面；内部实现不作为稳定 API。参数、返回、失败和 owner 以英文 XML 为准。
+
+### `Inno.Core.Diagnostics.Diagnostic`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Core.Diagnostics.Diagnostic`](../../src/foundation/core/Inno.Core.Diagnostics/Diagnostic.cs#L8) | Represents one current issue reported by a compiler, importer, validator, or other diagnostic producer. |
+| [`Inno.Core.Diagnostics.Diagnostic.Diagnostic(string code, string message, Inno.Core.Diagnostics.DiagnosticSeverity severity, string? semanticId = null, System.Guid? objectId = null, Inno.Core.Diagnostics.DiagnosticLocation? location = null)`](../../src/foundation/core/Inno.Core.Diagnostics/Diagnostic.cs#L37) | Creates a neutral diagnostic while keeping protocol, object and file identities distinct. |
+| [`Inno.Core.Diagnostics.DiagnosticLocation? Inno.Core.Diagnostics.Diagnostic.location`](../../src/foundation/core/Inno.Core.Diagnostics/Diagnostic.cs#L170) | Gets the related source location, or when unavailable. |
+| [`Inno.Core.Diagnostics.DiagnosticSeverity Inno.Core.Diagnostics.Diagnostic.severity`](../../src/foundation/core/Inno.Core.Diagnostics/Diagnostic.cs#L155) | Gets the diagnostic severity. |
+| [`System.Guid? Inno.Core.Diagnostics.Diagnostic.objectId`](../../src/foundation/core/Inno.Core.Diagnostics/Diagnostic.cs#L62) | Gets the related persistent object identity, or null for a non-object issue. |
+| [`static Inno.Core.Diagnostics.Diagnostic Inno.Core.Diagnostics.Diagnostic.Error(string code, string message, Inno.Core.Diagnostics.DiagnosticLocation? location = null)`](../../src/foundation/core/Inno.Core.Diagnostics/Diagnostic.cs#L132) | Creates an error diagnostic value without publishing it. |
+| [`static Inno.Core.Diagnostics.Diagnostic Inno.Core.Diagnostics.Diagnostic.Info(string code, string message, Inno.Core.Diagnostics.DiagnosticLocation? location = null)`](../../src/foundation/core/Inno.Core.Diagnostics/Diagnostic.cs#L82) | Creates an informational diagnostic value without publishing it. |
+| [`static Inno.Core.Diagnostics.Diagnostic Inno.Core.Diagnostics.Diagnostic.Warning(string code, string message, Inno.Core.Diagnostics.DiagnosticLocation? location = null)`](../../src/foundation/core/Inno.Core.Diagnostics/Diagnostic.cs#L107) | Creates a warning diagnostic value without publishing it. |
+| [`string Inno.Core.Diagnostics.Diagnostic.code`](../../src/foundation/core/Inno.Core.Diagnostics/Diagnostic.cs#L160) | Gets the stable producer-defined code, or an empty string when unavailable. |
+| [`string Inno.Core.Diagnostics.Diagnostic.message`](../../src/foundation/core/Inno.Core.Diagnostics/Diagnostic.cs#L165) | Gets the human-readable diagnostic message. |
+| [`string? Inno.Core.Diagnostics.Diagnostic.semanticId`](../../src/foundation/core/Inno.Core.Diagnostics/Diagnostic.cs#L57) | Gets the related protocol identifier without treating it as a source file. |
+
+### `Inno.Core.Diagnostics.DiagnosticHub`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Core.Diagnostics.DiagnosticHub`](../../src/foundation/core/Inno.Core.Diagnostics/DiagnosticHub.cs#L12) | Owns one host's complete diagnostic state and its presentation subscriptions. |
+| [`Inno.Core.Diagnostics.DiagnosticReporter Inno.Core.Diagnostics.DiagnosticHub.CreateReporter(Inno.Core.Diagnostics.DiagnosticSource source)`](../../src/foundation/core/Inno.Core.Diagnostics/DiagnosticHub.cs#L43) | Activates a producer at an owner safe point, revoking any previous registration with the same ID. |
+| [`System.Action<System.Exception>? Inno.Core.Diagnostics.DiagnosticHub.sinkFailed`](../../src/foundation/core/Inno.Core.Diagnostics/DiagnosticHub.cs#L29) | Occurs when a diagnostic presentation sink fails and is quarantined. |
+| [`System.IDisposable Inno.Core.Diagnostics.DiagnosticHub.EnterScope()`](../../src/foundation/core/Inno.Core.Diagnostics/DiagnosticHub.cs#L87) | Binds this hub to the current asynchronous execution context. |
+| [`void Inno.Core.Diagnostics.DiagnosticHub.Clear(Inno.Core.Diagnostics.DiagnosticSource source)`](../../src/foundation/core/Inno.Core.Diagnostics/DiagnosticHub.cs#L191) | Clears the active report published by one producer. |
+| [`void Inno.Core.Diagnostics.DiagnosticHub.RegisterSink(Inno.Core.Diagnostics.IDiagnosticSink sink)`](../../src/foundation/core/Inno.Core.Diagnostics/DiagnosticHub.cs#L104) | Registers a sink and synchronously replays every active report before registration completes. |
+| [`void Inno.Core.Diagnostics.DiagnosticHub.Set(Inno.Core.Diagnostics.DiagnosticSource source, System.Collections.Generic.IEnumerable<Inno.Core.Diagnostics.Diagnostic> diagnostics)`](../../src/foundation/core/Inno.Core.Diagnostics/DiagnosticHub.cs#L157) | Atomically replaces the complete diagnostic state published by one producer. |
+| [`void Inno.Core.Diagnostics.DiagnosticHub.UnregisterSink(Inno.Core.Diagnostics.IDiagnosticSink sink)`](../../src/foundation/core/Inno.Core.Diagnostics/DiagnosticHub.cs#L135) | Unregisters a sink so it receives no future diagnostic changes. |
+
+### `Inno.Core.Diagnostics.DiagnosticLocation`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Core.Diagnostics.DiagnosticLocation`](../../src/foundation/core/Inno.Core.Diagnostics/DiagnosticLocation.cs#L8) | Identifies an optional source location associated with a diagnostic. |
+| [`Inno.Core.Diagnostics.DiagnosticLocation.DiagnosticLocation(string sourcePath, int line = 0, int column = 0)`](../../src/foundation/core/Inno.Core.Diagnostics/DiagnosticLocation.cs#L28) | Creates a source location. |
+| [`bool Inno.Core.Diagnostics.DiagnosticLocation.Equals(Inno.Core.Diagnostics.DiagnosticLocation other)`](../../src/foundation/core/Inno.Core.Diagnostics/DiagnosticLocation.cs#L68) | Determines whether this instance and the supplied value represent the same logical state. |
+| [`int Inno.Core.Diagnostics.DiagnosticLocation.column`](../../src/foundation/core/Inno.Core.Diagnostics/DiagnosticLocation.cs#L57) | Gets the one-based source column, or zero when it is unavailable. |
+| [`int Inno.Core.Diagnostics.DiagnosticLocation.line`](../../src/foundation/core/Inno.Core.Diagnostics/DiagnosticLocation.cs#L52) | Gets the one-based source line, or zero when it is unavailable. |
+| [`override bool Inno.Core.Diagnostics.DiagnosticLocation.Equals(object? obj)`](../../src/foundation/core/Inno.Core.Diagnostics/DiagnosticLocation.cs#L82) | Determines whether this instance and the supplied value represent the same logical state. |
+| [`override int Inno.Core.Diagnostics.DiagnosticLocation.GetHashCode()`](../../src/foundation/core/Inno.Core.Diagnostics/DiagnosticLocation.cs#L90) | Computes a hash code from the fields that participate in logical equality. |
+| [`static bool Inno.Core.Diagnostics.DiagnosticLocation.operator !=(Inno.Core.Diagnostics.DiagnosticLocation left, Inno.Core.Diagnostics.DiagnosticLocation right)`](../../src/foundation/core/Inno.Core.Diagnostics/DiagnosticLocation.cs#L121) | Determines whether two locations are different. |
+| [`static bool Inno.Core.Diagnostics.DiagnosticLocation.operator ==(Inno.Core.Diagnostics.DiagnosticLocation left, Inno.Core.Diagnostics.DiagnosticLocation right)`](../../src/foundation/core/Inno.Core.Diagnostics/DiagnosticLocation.cs#L104) | Determines whether two locations are equal. |
+| [`string Inno.Core.Diagnostics.DiagnosticLocation.sourcePath`](../../src/foundation/core/Inno.Core.Diagnostics/DiagnosticLocation.cs#L47) | Gets the source path associated with the diagnostic. |
+
+### `Inno.Core.Diagnostics.DiagnosticReport`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Core.Diagnostics.DiagnosticReport`](../../src/foundation/core/Inno.Core.Diagnostics/DiagnosticReport.cs#L10) | Represents the complete current diagnostic state published by one source. |
+| [`Inno.Core.Diagnostics.DiagnosticSource Inno.Core.Diagnostics.DiagnosticReport.source`](../../src/foundation/core/Inno.Core.Diagnostics/DiagnosticReport.cs#L25) | Gets the producer that owns this report. |
+| [`System.Collections.Generic.IReadOnlyList<Inno.Core.Diagnostics.Diagnostic> Inno.Core.Diagnostics.DiagnosticReport.diagnostics`](../../src/foundation/core/Inno.Core.Diagnostics/DiagnosticReport.cs#L30) | Gets the immutable diagnostics currently reported by the producer. |
+| [`System.DateTime Inno.Core.Diagnostics.DiagnosticReport.publishedAt`](../../src/foundation/core/Inno.Core.Diagnostics/DiagnosticReport.cs#L35) | Gets the time at which the report was published. |
+
+### `Inno.Core.Diagnostics.DiagnosticReporter`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Core.Diagnostics.DiagnosticReporter`](../../src/foundation/core/Inno.Core.Diagnostics/DiagnosticReporter.cs#L10) | Owns one revocable diagnostic producer registration and releases its current report on retirement. |
+| [`void Inno.Core.Diagnostics.DiagnosticReporter.Dispose()`](../../src/foundation/core/Inno.Core.Diagnostics/DiagnosticReporter.cs#L119) | Revokes this registration without clearing a newer registration for the same producer. |
+| [`void Inno.Core.Diagnostics.DiagnosticReporter.Publish(Inno.Core.Diagnostics.Diagnostic diagnostic)`](../../src/foundation/core/Inno.Core.Diagnostics/DiagnosticReporter.cs#L37) | Replaces the issue with the same code and target, without using its message as identity. |
+| [`void Inno.Core.Diagnostics.DiagnosticReporter.Replace(System.Collections.Generic.IEnumerable<Inno.Core.Diagnostics.Diagnostic> diagnostics)`](../../src/foundation/core/Inno.Core.Diagnostics/DiagnosticReporter.cs#L96) | Atomically replaces this producer's complete current issue set. |
+| [`void Inno.Core.Diagnostics.DiagnosticReporter.Resolve(string code, string? semanticId = null, System.Guid? objectId = null)`](../../src/foundation/core/Inno.Core.Diagnostics/DiagnosticReporter.cs#L70) | Resolves an issue after the represented condition no longer exists. |
+
+### `Inno.Core.Diagnostics.DiagnosticSeverity`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Core.Diagnostics.DiagnosticSeverity`](../../src/foundation/core/Inno.Core.Diagnostics/DiagnosticSeverity.cs#L6) | Defines the presentation severity of a diagnostic. |
+| [`Inno.Core.Diagnostics.DiagnosticSeverity.Error`](../../src/foundation/core/Inno.Core.Diagnostics/DiagnosticSeverity.cs#L21) | Describes an issue that prevents the associated operation from succeeding. |
+| [`Inno.Core.Diagnostics.DiagnosticSeverity.Info`](../../src/foundation/core/Inno.Core.Diagnostics/DiagnosticSeverity.cs#L11) | Describes useful information that does not indicate a problem. |
+| [`Inno.Core.Diagnostics.DiagnosticSeverity.Warning`](../../src/foundation/core/Inno.Core.Diagnostics/DiagnosticSeverity.cs#L16) | Describes a recoverable issue that should be reviewed. |
+
+### `Inno.Core.Diagnostics.DiagnosticSource`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Core.Diagnostics.DiagnosticSource`](../../src/foundation/core/Inno.Core.Diagnostics/DiagnosticSource.cs#L8) | Identifies one independent producer whose diagnostics replace its previous publication. |
+| [`Inno.Core.Diagnostics.DiagnosticSource.DiagnosticSource(string id, string displayName)`](../../src/foundation/core/Inno.Core.Diagnostics/DiagnosticSource.cs#L22) | Creates an immutable identity for one independently replaceable diagnostic producer. |
+| [`bool Inno.Core.Diagnostics.DiagnosticSource.Equals(Inno.Core.Diagnostics.DiagnosticSource other)`](../../src/foundation/core/Inno.Core.Diagnostics/DiagnosticSource.cs#L53) | Determines whether this instance and the supplied value represent the same logical state. |
+| [`override bool Inno.Core.Diagnostics.DiagnosticSource.Equals(object? obj)`](../../src/foundation/core/Inno.Core.Diagnostics/DiagnosticSource.cs#L64) | Determines whether this instance and the supplied value represent the same logical state. |
+| [`override int Inno.Core.Diagnostics.DiagnosticSource.GetHashCode()`](../../src/foundation/core/Inno.Core.Diagnostics/DiagnosticSource.cs#L72) | Computes a hash code from the fields that participate in logical equality. |
+| [`override string Inno.Core.Diagnostics.DiagnosticSource.ToString()`](../../src/foundation/core/Inno.Core.Diagnostics/DiagnosticSource.cs#L80) | Formats this value as a human-readable representation. |
+| [`static bool Inno.Core.Diagnostics.DiagnosticSource.operator !=(Inno.Core.Diagnostics.DiagnosticSource left, Inno.Core.Diagnostics.DiagnosticSource right)`](../../src/foundation/core/Inno.Core.Diagnostics/DiagnosticSource.cs#L111) | Determines whether two sources have different stable identifiers. |
+| [`static bool Inno.Core.Diagnostics.DiagnosticSource.operator ==(Inno.Core.Diagnostics.DiagnosticSource left, Inno.Core.Diagnostics.DiagnosticSource right)`](../../src/foundation/core/Inno.Core.Diagnostics/DiagnosticSource.cs#L94) | Determines whether two sources have the same stable identifier. |
+| [`string Inno.Core.Diagnostics.DiagnosticSource.displayName`](../../src/foundation/core/Inno.Core.Diagnostics/DiagnosticSource.cs#L42) | Gets the user-facing producer name. |
+| [`string Inno.Core.Diagnostics.DiagnosticSource.id`](../../src/foundation/core/Inno.Core.Diagnostics/DiagnosticSource.cs#L37) | Gets the stable machine-readable producer identifier. |
+
+### `Inno.Core.Diagnostics.Diagnostics`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Core.Diagnostics.Diagnostics`](../../src/foundation/core/Inno.Core.Diagnostics/Diagnostics.cs#L10) | Provides concise state-oriented diagnostic publication for the calling type. |
+| [`static void Inno.Core.Diagnostics.Diagnostics.Clear(System.Guid targetId, string group)`](../../src/foundation/core/Inno.Core.Diagnostics/Diagnostics.cs#L152) | Clears one targeted diagnostic group owned by the calling type. |
+| [`static void Inno.Core.Diagnostics.Diagnostics.Clear(string group)`](../../src/foundation/core/Inno.Core.Diagnostics/Diagnostics.cs#L137) | Clears one diagnostic group owned by the calling type. |
+| [`static void Inno.Core.Diagnostics.Diagnostics.Set(System.Guid targetId, string group, Inno.Core.Diagnostics.Diagnostic diagnostic, string? displayName = null)`](../../src/foundation/core/Inno.Core.Diagnostics/Diagnostics.cs#L83) | Atomically sets the complete current state of one targeted diagnostic group owned by the calling type. |
+| [`static void Inno.Core.Diagnostics.Diagnostics.Set(System.Guid targetId, string group, System.Collections.Generic.IEnumerable<Inno.Core.Diagnostics.Diagnostic> diagnostics, string? displayName = null)`](../../src/foundation/core/Inno.Core.Diagnostics/Diagnostics.cs#L115) | Atomically sets the complete current state of one targeted diagnostic group owned by the calling type. |
+| [`static void Inno.Core.Diagnostics.Diagnostics.Set(string group, Inno.Core.Diagnostics.Diagnostic diagnostic)`](../../src/foundation/core/Inno.Core.Diagnostics/Diagnostics.cs#L27) | Atomically sets the complete current state of one diagnostic group owned by the calling type. |
+| [`static void Inno.Core.Diagnostics.Diagnostics.Set(string group, System.Collections.Generic.IEnumerable<Inno.Core.Diagnostics.Diagnostic> diagnostics)`](../../src/foundation/core/Inno.Core.Diagnostics/Diagnostics.cs#L51) | Atomically sets the complete current state of one diagnostic group owned by the calling type. |
+
+### `Inno.Core.Diagnostics.IDiagnosticReporter`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Core.Diagnostics.IDiagnosticReporter`](../../src/foundation/core/Inno.Core.Diagnostics/IDiagnosticReporter.cs#L9) | Publishes current issues through an owner-bound producer, independently of presentation sinks. |
+| [`void Inno.Core.Diagnostics.IDiagnosticReporter.Publish(Inno.Core.Diagnostics.Diagnostic diagnostic)`](../../src/foundation/core/Inno.Core.Diagnostics/IDiagnosticReporter.cs#L17) | Replaces the issue with the same code and target, without using its message as identity. |
+| [`void Inno.Core.Diagnostics.IDiagnosticReporter.Replace(System.Collections.Generic.IEnumerable<Inno.Core.Diagnostics.Diagnostic> diagnostics)`](../../src/foundation/core/Inno.Core.Diagnostics/IDiagnosticReporter.cs#L43) | Atomically replaces this producer's complete current issue set. |
+| [`void Inno.Core.Diagnostics.IDiagnosticReporter.Resolve(string code, string? semanticId = null, System.Guid? objectId = null)`](../../src/foundation/core/Inno.Core.Diagnostics/IDiagnosticReporter.cs#L31) | Resolves an issue after the represented condition no longer exists. |
+
+### `Inno.Core.Diagnostics.IDiagnosticSink`
+
+| 当前声明 | 行为 |
+| --- | --- |
+| [`Inno.Core.Diagnostics.IDiagnosticSink`](../../src/foundation/core/Inno.Core.Diagnostics/IDiagnosticSink.cs#L6) | Receives complete diagnostic-state changes from a . |
+| [`void Inno.Core.Diagnostics.IDiagnosticSink.Clear(Inno.Core.Diagnostics.DiagnosticSource source)`](../../src/foundation/core/Inno.Core.Diagnostics/IDiagnosticSink.cs#L22) | Removes the current report for one diagnostic source. |
+| [`void Inno.Core.Diagnostics.IDiagnosticSink.Replace(Inno.Core.Diagnostics.DiagnosticReport report)`](../../src/foundation/core/Inno.Core.Diagnostics/IDiagnosticSink.cs#L14) | Replaces the current report for one diagnostic source. |
+
+## 项目依赖
+
+- [Inno.Scripting.Api](../scripting/Inno.Scripting.Api.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Core.Execution](Inno.Core.Execution.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Extensibility.Catalogs](../extensibility/Inno.Extensibility.Catalogs.md)：公开引用边界由实际签名核对。

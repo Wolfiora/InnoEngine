@@ -9,14 +9,15 @@ namespace Inno.Editor.Scene;
 internal sealed record ScenePropertyValueDelta(
     string propertyName,
     byte[] before,
-    byte[] after);
+    byte[] after
+);
 
 internal sealed record ScenePropertyHistoryData(
     Guid targetId,
     string propertyName,
     ScenePropertyValueDelta[] deltas,
-    long timestamp)
-{
+    long timestamp
+) {
     internal byte[] Encode()
     {
         using var stream = new MemoryStream();
@@ -39,8 +40,8 @@ internal sealed record ScenePropertyHistoryData(
     internal static ScenePropertyHistoryData Create(
         Guid targetId,
         string propertyName,
-        IReadOnlyList<ScenePropertyValueDelta> deltas)
-    {
+        IReadOnlyList<ScenePropertyValueDelta> deltas
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(propertyName);
         ArgumentNullException.ThrowIfNull(deltas);
         if (deltas.Count == 0)
@@ -79,14 +80,18 @@ internal sealed record ScenePropertyHistoryData(
         return new ScenePropertyHistoryData(targetId, propertyName, deltas, timestamp);
     }
 
-    private static void WriteBytes(BinaryWriter writer, byte[] bytes)
-    {
+    private static void WriteBytes(
+        BinaryWriter writer,
+        byte[] bytes
+    ) {
         writer.Write(bytes.Length);
         writer.Write(bytes);
     }
 
-    private static byte[] ReadBytes(BinaryReader reader, string name)
-    {
+    private static byte[] ReadBytes(
+        BinaryReader reader,
+        string name
+    ) {
         int length = reader.ReadInt32();
         if (length < 0 || length > reader.BaseStream.Length - reader.BaseStream.Position)
             throw new InvalidDataException($"Scene property history {name} value length is invalid.");

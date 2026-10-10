@@ -561,8 +561,7 @@ public static class EditorPalette
     /// <returns>
     /// The standard expanded-card base blended with the severity color.
     /// </returns>
-    public static Vector4 GetLogExpandedCard(Vector4 severityColor)
-        => Lerp(logExpandedBase, severityColor, 0.12f);
+    public static Vector4 GetLogExpandedCard(Vector4 severityColor) => Lerp(logExpandedBase, severityColor, 0.12f);
 
     /// <summary>
     /// Gets the expanded log card border derived from a severity color.
@@ -573,8 +572,7 @@ public static class EditorPalette
     /// <returns>
     /// The standard expanded-border base blended with the severity color.
     /// </returns>
-    public static Vector4 GetLogExpandedBorder(Vector4 severityColor)
-        => Lerp(logExpandedBorderBase, severityColor, 0.20f);
+    public static Vector4 GetLogExpandedBorder(Vector4 severityColor) => Lerp(logExpandedBorderBase, severityColor, 0.20f);
 
     /// <summary>
     /// Gets the separator color used inside an expanded log card.
@@ -585,8 +583,7 @@ public static class EditorPalette
     /// <returns>
     /// The card color blended toward the palette text color.
     /// </returns>
-    public static Vector4 GetLogSeparator(Vector4 cardColor)
-        => Lerp(cardColor, text, 0.12f);
+    public static Vector4 GetLogSeparator(Vector4 cardColor) => Lerp(cardColor, text, 0.12f);
 
     /// <summary>
     /// Linearly interpolates two palette colors using a clamped amount.
@@ -603,8 +600,11 @@ public static class EditorPalette
     /// <returns>
     /// The component-wise interpolated color.
     /// </returns>
-    public static Vector4 Lerp(Vector4 from, Vector4 to, float amount)
-    {
+    public static Vector4 Lerp(
+        Vector4 from,
+        Vector4 to,
+        float amount
+    ) {
         float value = Math.Clamp(amount, 0f, 1f);
         return new Vector4(
             from.X + (to.X - from.X) * value,
@@ -683,6 +683,9 @@ public static class EditorPalette
     /// <returns>
     /// The validated vector4 that represents the completed operation.
     /// </returns>
-    public static Vector4 WithOpacity(Vector4 color, float opacity)
+    public static Vector4 WithOpacity(
+        Vector4 color,
+        float opacity
+    )
         => new(color.X, color.Y, color.Z, Math.Clamp(opacity, opacityNone, opacityOpaque));
 }

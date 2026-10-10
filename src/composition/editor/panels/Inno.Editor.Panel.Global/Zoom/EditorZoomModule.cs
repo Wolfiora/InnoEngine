@@ -30,14 +30,11 @@ internal sealed class EditorZoomModule(EditorSettings settings) : EditorModule
 
     internal bool isActualSize => m_zoomStep == 0;
 
-    internal bool ZoomIn()
-        => SetStep(m_zoomStep + 1);
+    internal bool ZoomIn() => SetStep(m_zoomStep + 1);
 
-    internal bool ZoomOut()
-        => SetStep(m_zoomStep - 1);
+    internal bool ZoomOut() => SetStep(m_zoomStep - 1);
 
-    internal bool UseActualSize()
-        => SetStep(0);
+    internal bool UseActualSize() => SetStep(0);
 
     /// <summary>
     /// Initializes this feature when its owning runtime becomes active.

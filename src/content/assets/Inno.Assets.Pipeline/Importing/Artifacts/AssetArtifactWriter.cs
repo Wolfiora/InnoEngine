@@ -37,8 +37,8 @@ public sealed class AssetArtifactWriter
         string outputName,
         ReadOnlyMemory<byte> bytes,
         CancellationToken cancellationToken = default,
-        AssetDeploymentScope deploymentScope = AssetDeploymentScope.Runtime)
-    {
+        AssetDeploymentScope deploymentScope = AssetDeploymentScope.Runtime
+    ) {
         cancellationToken.ThrowIfCancellationRequested();
         if (string.IsNullOrWhiteSpace(outputName))
             throw new ArgumentException("An artifact output name is required.", nameof(outputName));
@@ -46,7 +46,8 @@ public sealed class AssetArtifactWriter
             throw new ArgumentException("The output deployment scope is invalid.", nameof(deploymentScope));
         if (!m_outputs.TryAdd(outputName, bytes.ToArray()))
             throw new InvalidOperationException($"Artifact output '{outputName}' was written more than once.");
-        if (deploymentScope == AssetDeploymentScope.AuthoringOnly) m_authoringOutputs.Add(outputName);
+        if (deploymentScope == AssetDeploymentScope.AuthoringOnly)
+            m_authoringOutputs.Add(outputName);
         return ValueTask.CompletedTask;
     }
 

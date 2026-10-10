@@ -91,8 +91,11 @@ internal sealed class NumericPropertyDrawer : IPropertyDrawer
         context.SetTextState(C_TEXT_STATE, text);
     }
 
-    private static bool TryConvert(string text, Type type, out object? value)
-    {
+    private static bool TryConvert(
+        string text,
+        Type type,
+        out object? value
+    ) {
         try
         {
             value = Convert.ChangeType(text, type, CultureInfo.InvariantCulture);
@@ -105,8 +108,12 @@ internal sealed class NumericPropertyDrawer : IPropertyDrawer
         }
     }
 
-    private static object? Clamp(object? value, Type type, double? minimum, double? maximum)
-    {
+    private static object? Clamp(
+        object? value,
+        Type type,
+        double? minimum,
+        double? maximum
+    ) {
         if (value is null || minimum is null || maximum is null)
             return value;
         double numeric = Convert.ToDouble(value, CultureInfo.InvariantCulture);

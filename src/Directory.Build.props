@@ -1,4 +1,5 @@
 <Project>
+  <Import Project="../Directory.Build.props" />
   <PropertyGroup Condition="'$(InnoAssemblyDomain)' == ''">
     <InnoAssemblyDomain>InnoInternal</InnoAssemblyDomain>
   </PropertyGroup>
@@ -8,14 +9,11 @@
   <PropertyGroup Condition="'$(InnoScriptApi)' == ''">
     <InnoScriptApi>None</InnoScriptApi>
   </PropertyGroup>
-  <PropertyGroup>
-    <BGCSRuntimeProject Condition="'$(BGCSRuntimeProject)' == '' and Exists('$(MSBuildThisFileDirectory)..\..\BindGen-CS\src\BGCS.Runtime\BGCS.Runtime.csproj')">$(MSBuildThisFileDirectory)..\..\BindGen-CS\src\BGCS.Runtime\BGCS.Runtime.csproj</BGCSRuntimeProject>
-  </PropertyGroup>
   <PropertyGroup Condition="'$(MSBuildProjectName)' != 'Inno.Core.Serialization.Generators'">
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <WarningsAsErrors>$(WarningsAsErrors);CS1570;CS1572;CS1573;CS1591</WarningsAsErrors>
   </PropertyGroup>
-  <ItemGroup Condition="'$(MSBuildProjectName)' != 'Inno.Core.Serialization.Generators'">
+  <ItemGroup Condition="'$(MSBuildProjectName)' != 'Inno.Core.Serialization.Generators' and '$(MSBuildProjectName)' != 'Inno.Runtime.Generators' and '$(MSBuildProjectName)' != 'Inno.Scripting.Compiler'">
     <ProjectReference
       Include="$(MSBuildThisFileDirectory)foundation/core/Inno.Core.Serialization.Generators/Inno.Core.Serialization.Generators.csproj"
       OutputItemType="Analyzer"

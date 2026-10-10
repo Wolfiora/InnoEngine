@@ -49,8 +49,8 @@ public static partial class ImGuiWidget
         bool defaultOpen = true,
         bool dimmed = false,
         float trailingControlWidth = 0f,
-        Action? drawContextMenu = null)
-    {
+        Action? drawContextMenu = null
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(id);
         ArgumentNullException.ThrowIfNull(title);
         if (trailingControlWidth < 0f)
@@ -209,8 +209,8 @@ public static partial class ImGuiWidget
         Vector2 min,
         Vector2 max,
         bool open,
-        bool dimmed = false)
-    {
+        bool dimmed = false
+    ) {
         Vector2 availableSize = Vector2.Max(Vector2.Zero, max - min);
         float buttonSize = MathF.Max(
             1f,
@@ -250,8 +250,11 @@ public static partial class ImGuiWidget
     /// <param name="dimmed">
     /// Whether content is visually disabled and non-interactive.
     /// </param>
-    public static void CardBody(string id, Action drawContent, bool dimmed = false)
-    {
+    public static void CardBody(
+        string id,
+        Action drawContent,
+        bool dimmed = false
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(id);
         ArgumentNullException.ThrowIfNull(drawContent);
 
