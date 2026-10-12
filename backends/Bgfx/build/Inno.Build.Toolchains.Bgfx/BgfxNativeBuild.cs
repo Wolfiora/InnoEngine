@@ -52,4 +52,36 @@ public static class BgfxNativeBuild
         BgfxNativeBuildProfile profile,
         CancellationToken cancellationToken = default
     ) => BgfxBuildSession.PublishAsync(context, profile, false, cancellationToken);
+
+    /// <summary>
+    /// Freezes runtime source, selected tools and profile arguments without generating or compiling.
+    /// </summary>
+    /// <param name="context">
+    /// The operation with an explicit SDK target and shared component options.
+    /// </param>
+    /// <param name="profile">
+    /// The borrowed immutable integration profile supplying tools, invocation and output layout.
+    /// </param>
+    /// <returns>
+    /// The same source declaration consumed by the runtime producer, without selected binding output.
+    /// </returns>
+    /// <exception cref="ArgumentNullException">
+    /// The context or profile is null.
+    /// </exception>
+    /// <exception cref="ArgumentException">
+    /// The profile target or required arguments are invalid.
+    /// </exception>
+    /// <exception cref="InvalidOperationException">
+    /// SDK tools or component options have not been selected.
+    /// </exception>
+    /// <exception cref="NotSupportedException">
+    /// The request uses unsupported linkage or component CMake options.
+    /// </exception>
+    /// <exception cref="System.IO.IOException">
+    /// A selected tool, build owner or required source checkout is unavailable.
+    /// </exception>
+    public static NativeBuildRecipe CreateRecipe(
+        NativeBuildContext context,
+        BgfxNativeBuildProfile profile
+    ) => new BgfxBuildRequest(context, profile, false).recipe;
 }

@@ -38,4 +38,4 @@ BGFX authoring toolchain、渲染 authoring contract 和 `ModuleHost`。不使�
 Fixture 依次释放 Registry、TypeCatalog、ModuleHost；临时目录只属于测试本身。
 
 这些测试不创建 GPU 设备：原生编译通过不是实际 GPU 数值/像素/性能验收；仍不覆盖完整资源布局/屏障、Shader Editor、GPU 反射或真实 collectible 插件的端到端卸载。
-后续补充矩阵与本机/GPU 验收见[实施记录](../issues/2026-09-11-unified-shader-implementation.md)。
+本机与 GPU 实测状态见[当前验收](../architecture/CURRENT_ACCEPTANCE.md)。

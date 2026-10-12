@@ -44,6 +44,7 @@ public sealed class BuildTaskRuntimeTask : Microsoft.Build.Utilities.Task, ICanc
 
     /// <summary>
     /// Gets or sets explicit name=value properties after product-specific global properties are removed.
+    /// Explicit values override removal of inherited properties with the same name.
     /// ArtifactsPath is owned by this task and cannot be overridden.
     /// </summary>
     public string[] Properties { get; set; } = [];
@@ -83,8 +84,12 @@ public sealed class BuildTaskRuntimeTask : Microsoft.Build.Utilities.Task, ICanc
             if (!File.Exists(project) || targets.Length == 0 || targets.Any(string.IsNullOrWhiteSpace))
                 throw new ArgumentException("A task project and nonempty build targets are required.");
             IDictionary properties = FreezeProperties(artifacts, removed);
-            bool restoreRequired = TaskRuntimeRequestKey.NeedsRestore(project, properties);
-            string? request = restoreRequired ? null : TaskRuntimeRequestKey.Capture(project, artifacts, targets, properties, token);
+            // MSBuild's API applies undefinitions to the final request. Explicit task
+            // properties must survive removal of identically named parent globals.
+            removed = removed.Where(name => !properties.Contains(name)).ToArray();
+            TaskRuntimeRequestSnapshot initial = TaskRuntimeRequestKey.Capture(project, artifacts, targets, properties, token);
+            bool restoreRequired = initial.needsRestore;
+            string? request = restoreRequired ? null : initial.key;
             if (request is not null && TaskRuntimeBuildScope.Read(engine, request, cancellation: token) is ITaskItem[] reused)
             {
                 TargetOutputs = reused;
@@ -121,10 +126,14 @@ public sealed class BuildTaskRuntimeTask : Microsoft.Build.Utilities.Task, ICanc
                     token.ThrowIfCancellationRequested();
                     if (!restored.Result)
                         return false;
-                    request = TaskRuntimeRequestKey.Capture(project, artifacts, targets, properties, token);
+
                 }
-                if (TaskRuntimeRequestKey.Capture(project, artifacts, targets, properties, token) != request)
+                TaskRuntimeRequestSnapshot locked = TaskRuntimeRequestKey.Capture(project, artifacts, targets, properties, token);
+                if (locked.needsRestore)
+                    throw new InvalidOperationException("Task-runtime dependencies are not restored.");
+                if (request is not null && locked.key != request)
                     throw new InvalidOperationException("Task-runtime inputs changed while waiting for build ownership.");
+                request = locked.key;
                 if (TaskRuntimeBuildScope.Read(engine, request, cancellation: token) is ITaskItem[] completed)
                 {
                     TargetOutputs = completed;
@@ -141,7 +150,7 @@ public sealed class BuildTaskRuntimeTask : Microsoft.Build.Utilities.Task, ICanc
                     .SelectMany(static output => output).ToArray();
                 if (TargetOutputs.Length == 0)
                     throw new InvalidDataException("The task project returned no runtime closure.");
-                if (TaskRuntimeRequestKey.Capture(project, artifacts, targets, properties, token) != request)
+                if (TaskRuntimeRequestKey.Capture(project, artifacts, targets, properties, token).key != request)
                     throw new InvalidOperationException("Task-runtime inputs changed during compilation; its preparation was not cached.");
                 TargetOutputs = TaskRuntimePreparation.Publish(cache, TargetOutputs, engine, token);
                 TaskRuntimePreparation.RegisterReader(load, TargetOutputs.Single(static item => item.GetMetadata("RelativePath") == "Inno.Build.Tasks.dll").ItemSpec);

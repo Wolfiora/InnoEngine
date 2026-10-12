@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Inno.Build.Toolchains;
@@ -56,17 +57,42 @@ public sealed class BgfxNativeProfileTests : IDisposable
         Assert.Throws<ArgumentException>(() => new BgfxBuildInvocation("compiler", [null!]));
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void SourceDeclarationFreezesRuntimeAndToolOptionsBeforeBindingExists(bool tools)
+    {
+        var profile = new FixtureProfile("fixture-new-target");
+        NativeBuildContext context = CreateContext(profile.targetId);
+        foreach (string source in new[] { "bgfx", "bx", "bimg" })
+            Directory.CreateDirectory(Path.Combine(m_root, "extern", source));
+        string project = Path.Combine(m_root, BgfxNativeBuild.componentDescriptor.toolchainProject);
+        Directory.CreateDirectory(Path.GetDirectoryName(project)!);
+        File.WriteAllText(project, "<Project />");
+        NativeBuildRecipe recipe = tools ? BgfxToolsBuild.CreateRecipe(context, profile)
+            : BgfxNativeBuild.CreateRecipe(context, profile);
+        Assert.Equal(tools ? "bgfx-tools" : "bgfx", recipe.component);
+        Assert.Equal(1, profile.invocationCount);
+        Assert.Contains(recipe.declarations, value => value == "generate=--with-shared-lib");
+        Assert.Equal(tools, recipe.declarations.Contains("generate=--with-tools"));
+        Assert.Contains(recipe.declarations, value => value == "compile=--sdk=fixture");
+        Assert.DoesNotContain(recipe.declarations, value => value.StartsWith("bindings=", StringComparison.Ordinal));
+        Assert.False(Directory.Exists(Path.Combine(m_root, "artifacts")));
+    }
+
     private NativeBuildContext CreateContext(string target)
     {
         string compiler = Path.Combine(m_root, "fixture-compiler");
         File.WriteAllText(compiler, "Not executable: this fixture stops before source preparation.");
         var selection = new NativeToolchainSelection(target, new BuildHostDescriptor("FixtureHost", "fixture-cpu"),
-            new Dictionary<string, string> { ["compiler"] = compiler }, new Dictionary<string, string>(), [], [], ".fixture", false);
+            new Dictionary<string, string> { ["compiler"] = compiler, ["genie"] = compiler }, new Dictionary<string, string>(), [], [], ".fixture", false);
         return new NativeBuildContext(m_root, "debug").WithToolchain(selection).WithComponentOptions(BgfxNativeBuild.componentDescriptor, new(NativeLibraryKind.Shared));
     }
 
     private sealed class FixtureProfile(string target) : BgfxNativeBuildProfile
     {
+        public override NativeToolchainSelection SelectTools(NativeBuildContext context) => context.RequireToolchain();
+
         public int invocationCount { get; private set; }
         public override string targetId => target;
         public override IReadOnlyList<string> generatorArguments => ["fixture-generator"];

@@ -23,7 +23,7 @@ public static class ImGuizmoToolchain
         bindingDefinition: "backends/ImGui/native/Inno.Native.ImGuizmo/Bindings/bindings.props");
 
     /// <summary>
-    /// Builds and installs the component for the current native host.
+    /// Builds and installs the component for the explicitly selected native target.
     /// </summary>
     /// <param name="context">
     /// The checkout and configuration whose sources and outputs belong to this operation.
@@ -54,21 +54,17 @@ public static class ImGuizmoToolchain
         ArgumentNullException.ThrowIfNull(context);
         ArgumentNullException.ThrowIfNull(imGui);
         NativeToolchainSelection selection = context.RequireToolchain();
-        if (context.RequireComponentOptions(componentDescriptor).libraryKind != NativeLibraryKind.Shared)
-            throw new NotSupportedException("This presentation recipe supports shared linkage only.");
+        NativeBuildRecipe sourceRecipe = CreateRecipe(context);
         if (imGui.component != "cimgui" || imGui.targetId != selection.targetId)
             throw new ArgumentException("The supplied ImGui product does not match this gizmo target.", nameof(imGui));
         string extension = selection.sharedLibraryExtension == ".dll" ? ".lib" : selection.sharedLibraryExtension;
         string[] libraries = imGui.files.Where(file => Path.GetExtension(file) == extension).ToArray();
         if (libraries.Length != 1)
             throw new InvalidOperationException("The ImGui product must provide exactly one link library.");
-        string cimguizmoDir = Path.Combine(context.engineRoot, "extern", "cimguizmo");
         string cimguiDir = Path.Combine(context.engineRoot, "extern", "cimgui");
-        CImguizmoBuildUtils.ValidateSource(cimguizmoDir, cimguiDir);
-        NativeBuildRecipe recipe = NativeBuildRecipe.CreateForComponent(context, componentDescriptor,
-            "cimguizmo", selection.targetId,
-            [cimguizmoDir, cimguiDir, libraries[0], Path.Combine(componentDescriptor.GetToolchainRoot(context.engineRoot), "CMakeLists.txt")],
-            [imGui.fingerprint]);
+        var recipe = new NativeBuildRecipe(sourceRecipe.owner, sourceRecipe.component, sourceRecipe.targetId,
+            sourceRecipe.inputs.Append(NativeBuildInput.FromPath(context.engineRoot, libraries[0])),
+            sourceRecipe.declarations.Append("dependency=" + imGui.fingerprint));
         return await NativeArtifactPublisher.PublishAsync(
             context,
             recipe,
@@ -89,4 +85,37 @@ public static class ImGuizmoToolchain
             }, cancellationToken).ConfigureAwait(false);
     }
 
+    /// <summary>
+    /// Declares gizmo source inputs before preparing bindings or its ImGui link dependency.
+    /// </summary>
+    /// <param name="context">
+    /// The operation with a frozen target SDK and explicit shared component options.
+    /// </param>
+    /// <returns>
+    /// The source recipe; execution adds the validated ImGui library and its artifact identity.
+    /// </returns>
+    /// <exception cref="ArgumentNullException">
+    /// The context is null.
+    /// </exception>
+    /// <exception cref="InvalidOperationException">
+    /// Required upstream source, SDK or component options are unavailable.
+    /// </exception>
+    /// <exception cref="NotSupportedException">
+    /// The requested linkage is not supported by this recipe.
+    /// </exception>
+    public static NativeBuildRecipe CreateRecipe(NativeBuildContext context)
+    {
+        ArgumentNullException.ThrowIfNull(context);
+        NativeToolchainSelection selection = context.RequireToolchain();
+        if (context.RequireComponentOptions(componentDescriptor).libraryKind != NativeLibraryKind.Shared)
+            throw new NotSupportedException("This presentation recipe supports shared linkage only.");
+        string source = componentDescriptor.GetToolchainRoot(context.engineRoot);
+        string upstream = Path.Combine(context.engineRoot, "extern", "cimguizmo");
+        string imGui = Path.Combine(context.engineRoot, "extern", "cimgui");
+        CImguizmoBuildUtils.ValidateSource(upstream, imGui);
+        return NativeBuildRecipe.CreateForComponent(context, componentDescriptor,
+            "cimguizmo", selection.targetId, [upstream, imGui, Path.Combine(source, "CMakeLists.txt")],
+            ["dependency=cimgui"], [Path.Combine(source, "CImguizmoBuildConstants.cs"),
+                Path.Combine(source, "CImguizmoBuildUtils.cs"), Path.Combine(source, "ImGuizmoToolchain.cs")]);
+    }
 }

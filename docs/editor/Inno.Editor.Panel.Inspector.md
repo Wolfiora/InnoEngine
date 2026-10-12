@@ -36,42 +36,24 @@ Default InspectionDrawer 直接调用 `InspectionDrawContext.DrawProperties()`�
 
 ```csharp
 using System;
+using Inno.Assets;
+using Inno.Editor.Inspection;
 
-[InspectionDrawer(typeof(AnimationController))]
-public sealed class AnimationControllerInspector
-    : InspectionDrawer<AnimationController>
+[InspectionDrawer(typeof(TextAsset), priority: 100)]
+public sealed class TextAssetDrawer : InspectionDrawer<TextAsset>
 {
-    public override string icon => ImGuiIcon.DiagramProject;
+    public override string icon => "T";
 
     protected override (string name, Action<string>? setter) BindName(
         InspectionDrawContext context,
-        AnimationController target)
-        => (target.name, value => target.name = value);
-
-    protected override string GetIcon(
-        InspectionDrawContext context,
-        AnimationController target)
-        => target.hasErrors ? ImGuiIcon.TriangleExclamation : icon;
-
-    protected override void DrawHeader(
-        InspectionDrawContext context,
-        AnimationController target)
-    {
-        ImGui.TextUnformatted($"States: {target.stateCount}");
-    }
+        TextAsset target
+    ) => (target.name, null);
 
     protected override void Draw(
         InspectionDrawContext context,
-        AnimationController target)
-    {
-    }
-}
-
-[PropertyDrawer(typeof(AnimationCurve))]
-public sealed class AnimationCurveDrawer : IPropertyDrawer
-{
-    public void Draw(PropertyDrawContext context)
-    {
+        TextAsset target
+    ) {
+        context.DrawProperties();
     }
 }
 ```
@@ -105,25 +87,35 @@ EditorScripts 使用 `InnoEditor.Inspection`，可声明 InspectionDrawer、Prop
 
 ## 当前源码公开 API 清单
 
-只列当前源码的 public/protected 表面；内部实现不作为稳定 API。参数、返回、失败和 owner 以英文 XML 为准。
+按类型列出当前 public 与可供外部派生实现使用的 protected 声明。签名包含 nullable、默认参数和泛型约束；源码链接可定位实现。表中的“—”表示该声明没有额外 XML 约束，不能据此推断线程安全或不会失败。生命周期与组合顺序见本页前文。
 
 ### `Inno.Editor.Panel.Inspector.AssetReferenceDropTarget`
 
-| 当前声明 | 行为 |
-| --- | --- |
-| [`Inno.Editor.Panel.Inspector.AssetReferenceDropTarget`](../../src/composition/editor/panels/Inno.Editor.Panel.Inspector/DragDrop/AssetReferenceDropTarget.cs#L8) | Provides an assignable asset-reference property drop target. |
-| [`Inno.Editor.Panel.Inspector.AssetReferenceDropTarget.AssetReferenceDropTarget(System.Type expectedType, System.Action<System.Guid> assign)`](../../src/composition/editor/panels/Inno.Editor.Panel.Inspector/DragDrop/AssetReferenceDropTarget.cs#L28) | Creates a drop target that validates an asset type and assigns its persistent identity to a property. |
-| [`System.Type Inno.Editor.Panel.Inspector.AssetReferenceDropTarget.expectedType`](../../src/composition/editor/panels/Inno.Editor.Panel.Inspector/DragDrop/AssetReferenceDropTarget.cs#L40) | Gets the required asset type. |
-| [`void Inno.Editor.Panel.Inspector.AssetReferenceDropTarget.Assign(System.Guid persistentId)`](../../src/composition/editor/panels/Inno.Editor.Panel.Inspector/DragDrop/AssetReferenceDropTarget.cs#L48) | Assigns a persistent asset identity to the represented property. |
+<!-- api: T:Inno.Editor.Panel.Inspector.AssetReferenceDropTarget e32498012ea2d470ecba5cd0d6d0bbbbbc6765cbe00b21afb2bc6b13a128b86c -->
+<!-- api: M:Inno.Editor.Panel.Inspector.AssetReferenceDropTarget.#ctor(System.Type,System.Action{System.Guid}) e1b790e2d01bf3e88d8edda6db070f2d9b6c1cc83581ff54dddf24118265be81 -->
+<!-- api: P:Inno.Editor.Panel.Inspector.AssetReferenceDropTarget.expectedType 778a13e3cca26233ebc9f3ea4a18266655d93b6c01fa5a9c0ef0780c0696b3fa -->
+<!-- api: M:Inno.Editor.Panel.Inspector.AssetReferenceDropTarget.Assign(System.Guid) 6b8025e79d6da3f901bf9d6ec355a82208b0bed65bb0e11cb1e037906ea4d327 -->
+
+| 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
+| --- | --- | --- | --- |
+| <a id="api-d72c6282bfc659c2"></a>[`public Inno.Editor.Panel.Inspector.AssetReferenceDropTarget.AssetReferenceDropTarget(System.Type expectedType, System.Action<System.Guid> assign)`](../../src/composition/editor/panels/Inno.Editor.Panel.Inspector/DragDrop/AssetReferenceDropTarget.cs#L28) | Creates a drop target that validates an asset type and assigns its persistent identity to a property.<br>`expectedType`：The runtime asset type accepted by the property.<br>`assign`：The callback that writes an accepted persistent identity to the property. | — | `System.ArgumentNullException`：Thrown when either argument is null.<br>`System.InvalidOperationException`：Thrown when the type does not belong to the active type catalog. |
+| <a id="api-2f36c4f1da64891c"></a>[`public void Inno.Editor.Panel.Inspector.AssetReferenceDropTarget.Assign(System.Guid persistentId)`](../../src/composition/editor/panels/Inno.Editor.Panel.Inspector/DragDrop/AssetReferenceDropTarget.cs#L48) | Assigns a persistent asset identity to the represented property.<br>`persistentId`：The stable persistent identity used for lookup. | — | — |
+| <a id="api-48390506697b388d"></a>[`public System.Type Inno.Editor.Panel.Inspector.AssetReferenceDropTarget.expectedType { get; }`](../../src/composition/editor/panels/Inno.Editor.Panel.Inspector/DragDrop/AssetReferenceDropTarget.cs#L40) | Gets the required asset type. | — | — |
+| <a id="api-1f4dfc47eff543a2"></a>[`public sealed class Inno.Editor.Panel.Inspector.AssetReferenceDropTarget`](../../src/composition/editor/panels/Inno.Editor.Panel.Inspector/DragDrop/AssetReferenceDropTarget.cs#L8) | Provides an assignable asset-reference property drop target. | — | — |
 
 ### `Inno.Editor.Panel.Inspector.EngineObjectReferenceDropTarget`
 
-| 当前声明 | 行为 |
-| --- | --- |
-| [`Inno.Editor.Panel.Inspector.EngineObjectReferenceDropTarget`](../../src/composition/editor/panels/Inno.Editor.Panel.Inspector/DragDrop/EngineObjectReferenceDropTarget.cs#L11) | Provides an assignable engine-object-reference property drop target. |
-| [`Inno.Editor.Panel.Inspector.EngineObjectReferenceDropTarget.EngineObjectReferenceDropTarget(System.Type expectedType, System.Action<Inno.Scene.EngineObject> assign)`](../../src/composition/editor/panels/Inno.Editor.Panel.Inspector/DragDrop/EngineObjectReferenceDropTarget.cs#L31) | Creates a drop target that validates and assigns an engine object to a serialized property. |
-| [`System.Type Inno.Editor.Panel.Inspector.EngineObjectReferenceDropTarget.expectedType`](../../src/composition/editor/panels/Inno.Editor.Panel.Inspector/DragDrop/EngineObjectReferenceDropTarget.cs#L43) | Gets the required engine object type. |
-| [`void Inno.Editor.Panel.Inspector.EngineObjectReferenceDropTarget.Assign(Inno.Scene.EngineObject value)`](../../src/composition/editor/panels/Inno.Editor.Panel.Inspector/DragDrop/EngineObjectReferenceDropTarget.cs#L51) | Assigns an accepted engine object to the represented property. |
+<!-- api: T:Inno.Editor.Panel.Inspector.EngineObjectReferenceDropTarget ceb10cfb96ee0c22669ea634c19d22308c56fce6e83e89d959590c744c7e5637 -->
+<!-- api: M:Inno.Editor.Panel.Inspector.EngineObjectReferenceDropTarget.#ctor(System.Type,System.Action{Inno.Scene.EngineObject}) 653e8db9f849419c5f3b5a53d8ed38cbaf074a05e685c71f2ba5ebb71685acba -->
+<!-- api: P:Inno.Editor.Panel.Inspector.EngineObjectReferenceDropTarget.expectedType 8c2002a21ac32c8260365626f0397c1d373db6530fd32f67e6875305719556f0 -->
+<!-- api: M:Inno.Editor.Panel.Inspector.EngineObjectReferenceDropTarget.Assign(Inno.Scene.EngineObject) 6b9ac1b1ef384a36f511242c3ba4d0297fc2bd4b8cdcfa42509afb39251c019f -->
+
+| 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
+| --- | --- | --- | --- |
+| <a id="api-acff67dfa6a7339c"></a>[`public Inno.Editor.Panel.Inspector.EngineObjectReferenceDropTarget.EngineObjectReferenceDropTarget(System.Type expectedType, System.Action<Inno.Scene.EngineObject> assign)`](../../src/composition/editor/panels/Inno.Editor.Panel.Inspector/DragDrop/EngineObjectReferenceDropTarget.cs#L31) | Creates a drop target that validates and assigns an engine object to a serialized property.<br>`expectedType`：The engine object type accepted by the property.<br>`assign`：The callback that writes an accepted object to the property. | — | `System.ArgumentNullException`：Thrown when either argument is null.<br>`System.InvalidOperationException`：Thrown when the type does not belong to the active type catalog. |
+| <a id="api-a783be18a1b91ee0"></a>[`public void Inno.Editor.Panel.Inspector.EngineObjectReferenceDropTarget.Assign(Inno.Scene.EngineObject value)`](../../src/composition/editor/panels/Inno.Editor.Panel.Inspector/DragDrop/EngineObjectReferenceDropTarget.cs#L51) | Assigns an accepted engine object to the represented property.<br>`value`：The concrete value read or transformed by this operation. | — | — |
+| <a id="api-af0659a33b66d9a5"></a>[`public System.Type Inno.Editor.Panel.Inspector.EngineObjectReferenceDropTarget.expectedType { get; }`](../../src/composition/editor/panels/Inno.Editor.Panel.Inspector/DragDrop/EngineObjectReferenceDropTarget.cs#L43) | Gets the required engine object type. | — | — |
+| <a id="api-379406779b0a6284"></a>[`public sealed class Inno.Editor.Panel.Inspector.EngineObjectReferenceDropTarget`](../../src/composition/editor/panels/Inno.Editor.Panel.Inspector/DragDrop/EngineObjectReferenceDropTarget.cs#L11) | Provides an assignable engine-object-reference property drop target. | — | — |
 
 ## 项目依赖
 

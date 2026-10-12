@@ -31,7 +31,7 @@ internal static class BuildComposition
         nativeContext = nativeContext.WithToolchain(await provider.ResolveAsync(
             nativeContext, context.host, context.toolsTarget.value, cancellationToken).ConfigureAwait(false));
         ProductNativeBuildPlan plan = StandardBuildDistribution.Create(context).build.ResolveNativeProduct(context.toolsTarget.value, "shader-tools");
-        var products = await plan.BuildAsync(nativeContext, cancellationToken).ConfigureAwait(false);
+        using var products = await plan.BuildAsync(nativeContext, cancellationToken).ConfigureAwait(false);
         await ProductNativeDeployment.InstallAsync(products, plan, AppContext.BaseDirectory, cancellationToken).ConfigureAwait(false);
     }
 

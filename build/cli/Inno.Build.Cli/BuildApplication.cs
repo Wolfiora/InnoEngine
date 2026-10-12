@@ -1,0 +1,95 @@
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+using Inno.Tooling.Architecture;
+
+namespace Inno.Build.Cli;
+
+/// <summary>
+/// Executes explicit engine and project build commands for a caller-owned development lifetime.
+/// </summary>
+public static class BuildApplication
+{
+    /// <summary>
+    /// Runs one build command without taking ownership of the caller's cancellation source.
+    /// </summary>
+    /// <param name="arguments">
+    /// The command and its documented options; help prints the supported command names.
+    /// </param>
+    /// <param name="cancellationToken">
+    /// Cancels owned work and preserves completed publications according to their pipeline contracts.
+    /// </param>
+    /// <returns>
+    /// Zero on success, two on cancellation, or one on a command or execution failure.
+    /// </returns>
+    /// <exception cref="ArgumentNullException">
+    /// The argument array is absent.
+    /// </exception>
+    public static async Task<int> Run(
+        string[] arguments,
+        CancellationToken cancellationToken
+    ) {
+        ArgumentNullException.ThrowIfNull(arguments);
+        if (arguments.Length == 0 || arguments[0] is "help" or "--help" or "-h")
+        {
+            Console.WriteLine("InnoEngine.Build <editor|clean|bindings|support-pack|game|plugin|scripts|import-sample|verify|verify-native|shader> [options]");
+            return 0;
+        }
+        try
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            string command = arguments[0];
+            string[] options = arguments[1..];
+            switch (command)
+            {
+                case "game":
+                case "plugin":
+                case "scripts":
+                case "import-sample":
+                    return await ProjectBuildWorkflow.RunAsync(arguments, cancellationToken);
+                case "verify":
+                    return ArchitectureValidator.Execute(options, cancellationToken);
+                case "verify-native":
+                    return await NativeBindingsVerification.RunAsync(options, cancellationToken);
+                case "editor":
+                case "clean":
+                case "bindings":
+                case "support-pack":
+                case "shader":
+                    BuildCommandLine parsed = BuildCommandLine.Parse(options);
+                    string[] specific = command switch
+                    {
+                        "editor" => ["clean"],
+                        "clean" => ["scope", "dry-run"],
+                        "bindings" => ["product"],
+                        "support-pack" => ["output"],
+                        "shader" => ["assets", "shader", "renderer", "output"],
+                        _ => []
+                    };
+                    parsed.Validate(["engine-root", "dotnet", "target", "tools-target", "configuration", ..specific]);
+                    var context = new BuildCommandContext(parsed);
+                    switch (command)
+                    {
+                        case "editor": await EditorBuildCommand.RunAsync(context, parsed, cancellationToken); break;
+                        case "clean": await CleanCommand.RunAsync(context, parsed, cancellationToken); break;
+                        case "bindings": await BindingCommand.RunAsync(context, parsed, cancellationToken); break;
+                        case "support-pack": await SupportPackCommand.RunAsync(context, parsed, cancellationToken); break;
+                        case "shader": await ShaderCommand.RunAsync(context, parsed, cancellationToken); break;
+                    }
+                    return 0;
+                default:
+                    throw new ArgumentException($"Unknown build command '{command}'.");
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            Console.Error.WriteLine("Build canceled; incomplete stages were not committed.");
+            return 2;
+        }
+        catch (Exception failure)
+        {
+            Console.Error.WriteLine(failure);
+            return 1;
+        }
+    }
+}

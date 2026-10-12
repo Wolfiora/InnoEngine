@@ -8,6 +8,17 @@ namespace Inno.Build.Toolchains.Bgfx;
 public abstract class BgfxNativeBuildProfile
 {
     /// <summary>
+    /// Adds the integration's explicit generator executable and its configuration inputs before preparation.
+    /// </summary>
+    /// <param name="context">
+    /// The requested target, checkout and already selected platform SDK.
+    /// </param>
+    /// <returns>
+    /// A frozen selection declaring the generator and all existing SDK commands.
+    /// </returns>
+    public abstract NativeToolchainSelection SelectTools(NativeBuildContext context);
+
+    /// <summary>
     /// Gets the exact native target accepted by this configuration.
     /// </summary>
     public abstract string targetId { get; }

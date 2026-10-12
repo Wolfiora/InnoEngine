@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using Inno.Core.IO;
 using Microsoft.Build.Framework;
@@ -9,7 +10,8 @@ using Microsoft.Build.Framework;
 namespace Inno.Build.TaskHosting;
 
 /// <summary>
-/// Coordinates SDK restore writes for the checkout's shared restore graph owner.
+/// Coordinates SDK restore writes for explicitly selected project closures.
+/// Parent solution entry points are excluded from these owned restores.
 /// </summary>
 public sealed class RestoreOwnedProjectTask : Microsoft.Build.Utilities.Task, ICancelableTask
 {
@@ -18,7 +20,7 @@ public sealed class RestoreOwnedProjectTask : Microsoft.Build.Utilities.Task, IC
     private bool m_finished;
 
     /// <summary>
-    /// Gets or sets projects with their explicit AdditionalProperties metadata.
+    /// Gets or sets projects with explicit AdditionalProperties and GlobalPropertiesToRemove metadata.
     /// </summary>
     [Required]
     public ITaskItem[] Projects { get; set; } = [];
@@ -79,7 +81,17 @@ public sealed class RestoreOwnedProjectTask : Microsoft.Build.Utilities.Task, IC
             var removed = new IList<string>[projects.Count];
             var versions = new string[projects.Count];
             for (int index = 0; index < removed.Length; index++)
-                removed[index] = Array.Empty<string>();
+            {
+                // NuGet static graph restore uses SolutionPath as its entry point when inherited
+                // from an IDE. This operation owns the selected project closure instead.
+                removed[index] = new[]
+                {
+                    "SolutionPath", "SolutionDir", "SolutionName", "SolutionFileName", "SolutionExt",
+                    "RestoreGraphProjectInput", "_RestoreSolutionFileUsed"
+                }.Concat(Projects[index].GetMetadata("GlobalPropertiesToRemove")
+                    .Split(';', StringSplitOptions.RemoveEmptyEntries))
+                    .Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
+            }
             BuildEngineResult result = engine.BuildProjectFilesInParallel(projects.ToArray(), ["Restore"],
                 globals.ToArray(), removed, versions, returnTargetOutputs: false);
             token.ThrowIfCancellationRequested();

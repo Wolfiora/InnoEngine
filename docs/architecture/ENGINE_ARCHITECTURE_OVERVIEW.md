@@ -1,13 +1,15 @@
 # InnoEngine 当前项目、平台与后端归属
 
-[架构索引](README.md) · [Wiki 首页](../README.md) · [执行计划](PLATFORM_OWNERSHIP_REFACTOR_PLAN.md) · [扩展指南](PLATFORM_EXTENSION_GUIDE.md)
+[架构索引](README.md) · [Wiki 首页](../README.md) · [扩展指南](PLATFORM_EXTENSION_GUIDE.md)
 
-本页根据当前源码及项目引用生成。源码归属与实机支持分别说明；本轮运行结果见平台归属验收记录。
+本页说明当前源码与项目归属。源码实现与实机支持分别说明；运行结果见[当前验收](CURRENT_ACCEPTANCE.md)。
 
 ## 目录职责
 
 | 位置 | 唯一职责 | 依赖约束 |
 | --- | --- | --- |
+| `entry` | 两个开发入口、当前宿主路由与准备 | 最外层便利边界，其他层不得引用。 |
+| `dependencies` | 固定 revision 的独立源依赖 | BGCS 不继承引擎 Native/产品 targets。 |
 | `src/foundation` | 事件、身份、序列化、值、目录与代际机制 | 不选择产品、平台或 backend。 |
 | `src/content` | 内容、Asset、引用、Scene、Animation | 内容读取通过中立 store 与 lease。 |
 | `src/services` | 中立领域契约与运行服务 | 不引用具体平台、Native 或 backend。 |
@@ -24,13 +26,19 @@ flowchart TD
     Product[平台产品入口] --> Host[共享 Editor Hosting / Player Runtime / Shell]
     Product --> Backend[所选共享 backend]
     Product --> System[所属平台系统接入]
+    Product --> RuntimeIntegration[所选运行集成]
+    RuntimeIntegration --> Backend
+    RuntimeIntegration --> System
     Host --> Domain[中立 Services / Runtime / Content]
     Backend --> Domain
     Backend --> Native[该 backend 的 Native facade 与绑定]
     Domain --> Foundation[Foundation]
     Distribution[Standard Build Distribution] --> PlatformBuild[各平台 Build Module]
     Distribution --> Managed[DotNet 部署实现]
-    PlatformBuild --> Recipe[共享 backend recipe]
+    Distribution --> BuildIntegration[所选构建集成]
+    Distribution --> Recipe[共享 backend recipe]
+    BuildIntegration --> PlatformBuild
+    BuildIntegration --> Recipe
     PlatformBuild --> Build[中立 Build / Composition / Toolchains]
 ```
 
@@ -40,7 +48,8 @@ flowchart TD
 
 当前发布目标为 `windows-x64`、`macos-arm64`、`browser-wasm`（描述明确为 wasm32）。Linux 仅贡献现有 Native SDK 能力。Desktop 不是注册目标。
 
-当前六个生产入口为 `Inno.Editor.Windows`、`Inno.Editor.MacOS`、`Inno.Player.Windows`、`Inno.Player.MacOS`、`Inno.Player.Browser`、`Inno.Build.Cli`。不同 CPU 不复制 Program。Solution 默认编译共享代码和测试；产品通过明确入口构建，其目标属性隔离于工具图。
+当前源码默认只有 `InnoEngine.Editor` 与 `InnoEngine.Build` 两个生产 Exe，均属于 `entry`。平台 Editor 与 Build.Cli 是组合库，Player 宿主源码由完整发布模板生成真正的游戏 Exe。
+Solution 默认 Debug/Release 只准备启动器；SourceDebug/SourceRelease 保留完整共享源码和测试构建。实际产品目标始终与工具图隔离，见[开发入口设计](DEVELOPMENT_ENTRY_ARCHITECTURE.md)。
 
 ## 运行与代际所有权
 
@@ -56,9 +65,13 @@ Core Events 是唯一事件机制；跨代 live object 经 Identity 解析。Mis
 | --- | --- |
 | facade / BGCS 定义 / 宿主绑定 | `backends/<component>/native/Inno.Native.*/`。 |
 | 目标桥与 managed source | Native 项目 `obj/<target>/<generationFingerprint>/`。 |
-| CMake/object 中间态 | 所属 backend toolchain `obj/native/<target>/<fingerprint>/`。 |
-| Native、bindings、managed、Support Pack、产品 | `artifacts` 按目标、部署和指纹隔离；最终输出仍由 BuildProfile 指定。 |
-| 验收日志与测量 | `artifacts/acceptance/2026-10-07-platform-ownership/`。 |
+| CMake/object 中间态 | 所属 backend toolchain `obj/native/<target>/<workspaceIdentity>/`，兼容输入复用同一工作目录。 |
+| 已校验 Native 产物 | `artifacts/native/<component>/<target>/<artifactFingerprint>/`。 |
+| Support Pack | 所选 Pack root 的 `<target>/<contentFingerprint>/`；内容包含发布引用与链接输入。 |
+| 产品部署 | 平台项目的实际 SDK 输出；开发入口的 `artifacts/products/editor/<target>/<configuration>/ready.json` 校验已准备部署。 |
+| 验收日志与测量 | `artifacts/acceptance/<runId>/`；当前结果从[当前验收](CURRENT_ACCEPTANCE.md)查看。 |
+
+目标绑定仍位于所属 Native 项目的 `obj`，不能把规划中的统一目录写成当前行为。目录与缓存限制见[构建缓存架构](BUILD_CACHE_ARCHITECTURE.md)。
 
 完整目录、哈希、exports、绑定身份与工具身份都参与验证。失败或取消不提交候选；相同部署不替换正在加载的 DLL。BGCS 独立维护，Inno 只消费其公开生成入口。
 
@@ -253,7 +266,7 @@ Core Events 是唯一事件机制；跨代 live object 经 Identity 解析。Mis
 
 新增 WindowsX86：补 Windows 的目标/SDK/ABI 支持，复用 Windows 产品与 packager，增加真实 BGFX/SDL 接入配置后验收并注册。换图形 backend：增加该 backend 与需要的 integration，替换 compiler/Native plan，平台 packager 不改。NS/iOS：真实 SDK、产品入口与 packaging 归平台包，backend 可复用时直接选择，仅实际差异进入 integration。Browser 换托管运行时只换部署 compiler 和 linker。
 
-Native 步骤显式声明 Static/Shared、有序组件参数和输入 bytes；SDL 应用统一窗口 owner/surface；ImGui 在 NewFrame 前刷新尺度，不维护 WindowsX64 返回 ABI。完整树与测试见[当前批准计划](BACKEND_PLATFORM_INTEGRATION_PLAN.md)，实机状态见[验收](BACKEND_PLATFORM_INTEGRATION_ACCEPTANCE.md)。
+Native 步骤显式声明 Static/Shared、有序组件参数和输入 bytes；SDL 应用统一窗口 owner/surface；ImGui 在 NewFrame 前刷新尺度，不维护 WindowsX64 返回 ABI。当前结构参见[平台扩展指南](PLATFORM_EXTENSION_GUIDE.md)，实测范围见[当前验收](CURRENT_ACCEPTANCE.md)。
 
 ## 当前集成程序集
 
@@ -267,4 +280,4 @@ Native 步骤显式声明 Static/Shared、有序组件参数和输入 bytes；SD
 
 ## Backend 运行与绑定生成程序集
 
-新增 Inno.Build.Bindings、Inno.Integration.Windows.Bgfx.Runtime、Inno.Integration.MacOS.Bgfx.Runtime、Inno.Integration.Browser.Bgfx.Runtime 四个库，无新增生产入口。Bindings 依赖 BGCS 公开库与中立 Toolchains；runtime integration 依赖所属 BGFX SPI 与中立 Platform。完整本轮结构与门禁见 BACKEND_RUNTIME_BOUNDARY_OPTIMIZATION_ACCEPTANCE.md。
+`Inno.Build.Bindings` 依赖 BGCS 公开库与中立 Toolchains；三个 BGFX runtime integration 分别属于 Windows、macOS 与 Browser，依赖所属 BGFX SPI 与中立 Platform。它们均为库。运行集成不携带绑定生成器或构建工具，具体契约见[平台扩展指南](PLATFORM_EXTENSION_GUIDE.md)。

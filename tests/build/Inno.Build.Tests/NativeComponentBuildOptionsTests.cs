@@ -87,7 +87,7 @@ public sealed class NativeComponentBuildOptionsTests
             string Identity(NativeComponentBuildOptions options)
             {
                 var context = new NativeBuildContext(root, "debug").WithComponentOptions(owner, options);
-                NativeBuildRecipe recipe = NativeBuildRecipe.CreateForComponent(context, owner, "fixture", "fixture-target", [], []);
+                NativeBuildRecipe recipe = NativeBuildRecipe.CreateForComponent(context, owner, "fixture", "fixture-target", [], [], [config]);
                 foreach (NativeBuildInput input in recipe.inputs)
                 {
                     if (File.Exists(input.physicalPath) || Directory.Exists(input.physicalPath))

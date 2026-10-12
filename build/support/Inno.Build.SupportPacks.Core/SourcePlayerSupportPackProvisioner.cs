@@ -103,13 +103,14 @@ public sealed class SourcePlayerSupportPackProvisioner : IPlayerSupportPackProvi
         BuildTargetId target,
         string supportPackRoot,
         CancellationToken cancellationToken = default
-    )
-        => _ = await m_publisher.PublishAsync(
+    ) {
+        using PlayerSupportPackLease installed = await m_publisher.PublishAsync(
             m_engineRoot,
             supportPackRoot,
             target,
             m_dotnetHost,
             cancellationToken).ConfigureAwait(false);
+    }
 
     private static bool IsEngineRoot(string path)
         => File.Exists(Path.Combine(path, "InnoEngine.sln")) &&

@@ -10,7 +10,7 @@ namespace Inno.Tooling.Architecture;
 
 internal static partial class ArchitectureRules
 {
-    private static readonly string[] S_SCAN_ROOTS = ["src", "backends", "platforms", "build", "tests"];
+    private static readonly string[] S_SCAN_ROOTS = ["entry", "src", "backends", "platforms", "build", "tests"];
     private static readonly string[] S_FORBIDDEN_PLAYER_PROJECT_FRAGMENTS =
     [
         "Inno.Editor.",
@@ -89,16 +89,16 @@ internal static partial class ArchitectureRules
     ) {
         var executables = new HashSet<string>(StringComparer.Ordinal)
         {
-            "Inno.Editor.Windows", "Inno.Editor.MacOS", "Inno.Player.Windows", "Inno.Player.MacOS", "Inno.Player.Browser", "Inno.Build.Cli"
+            "InnoEngine.Editor", "InnoEngine.Build"
         };
-        foreach (string rootName in new[] { "src", "backends", "platforms", "build", "tools" })
+        foreach (string rootName in new[] { "entry", "src", "backends", "platforms", "build", "tools" })
         {
             foreach (string project in EnumerateFiles(Path.Combine(repositoryRoot, rootName), "*.csproj"))
             {
                 XDocument document = XDocument.Load(project);
                 if (document.Descendants("OutputType").Any(static value => value.Value == "Exe")
                     && !executables.Contains(Path.GetFileNameWithoutExtension(project)))
-                    failures.Add($"{Relative(repositoryRoot, project)}: engine utilities must be libraries composed by Inno.Build.Cli.");
+                    failures.Add($"{Relative(repositoryRoot, project)}: only the Editor and Rebuild development entries may be executable projects.");
                 if (Path.GetFileNameWithoutExtension(project).StartsWith("Inno.Native.", StringComparison.Ordinal)
                     && Path.GetFileNameWithoutExtension(project).EndsWith(".Browser", StringComparison.Ordinal))
                     failures.Add($"{Relative(repositoryRoot, project)}: native targets must use binding profiles, not duplicate projects.");
@@ -342,7 +342,7 @@ internal static partial class ArchitectureRules
                                 or "$(BindGenRoot)/src/BGCS.Cpp2C/BGCS.Cpp2C.csproj",
                         _ => false
                     };
-                    string bindingProject = Path.Combine(Path.GetDirectoryName(repositoryRoot)!, "BindGen-CS",
+                    string bindingProject = Path.Combine(repositoryRoot, "dependencies", "BindGen-CS",
                         include["$(BindGenRoot)/".Length..]);
                     if (!permitted || !File.Exists(bindingProject))
                         failures.Add($"{node.relative}: external binding dependency '{include}' is unavailable or outside its generation boundary.");

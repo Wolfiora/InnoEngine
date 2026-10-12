@@ -3,7 +3,7 @@
     <TargetFramework>net9.0</TargetFramework>
     <ImplicitUsings>disable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <BindGenRoot Condition="'$(BindGenRoot)' == ''">$(MSBuildProjectDirectory)/../../../../BindGen-CS</BindGenRoot>
+
   </PropertyGroup>
 
   <ItemGroup>
@@ -15,7 +15,7 @@
 
   <Target Name="ComputeBindingImplementationIdentity" BeforeTargets="GetAssemblyAttributes">
     <ItemGroup>
-      <_BindingImplementationInput Include="$(MSBuildProjectDirectory)/**/*.cs" Exclude="$(MSBuildProjectDirectory)/bin/**;$(MSBuildProjectDirectory)/obj/**" />
+      <_BindingImplementationInput Include="$(MSBuildProjectDirectory)/**/*.cs" Exclude="$(MSBuildProjectDirectory)/bin/**;$(MSBuildProjectDirectory)/obj/**;$(MSBuildProjectDirectory)/NativeBindingGenerator.Inputs.cs;$(MSBuildProjectDirectory)/Identity/BindingInputPlanning.cs" />
       <_BindingImplementationInput Include="$(MSBuildProjectDirectory)/Inno.Build.Bindings.csproj" />
       <_BindingImplementationInput Include="$(MSBuildProjectDirectory)/../../toolchains/Inno.Build.Toolchains/Native/NativeBuildFingerprint.cs;$(MSBuildProjectDirectory)/../../toolchains/Inno.Build.Toolchains/Native/NativeBuildInput.cs;$(MSBuildProjectDirectory)/../../toolchains/Inno.Build.Toolchains/Native/NativeInputSnapshot.cs;$(MSBuildProjectDirectory)/../../toolchains/Inno.Build.Toolchains/Native/NativeInputReadCache.cs;$(MSBuildProjectDirectory)/../../toolchains/Inno.Build.Toolchains/Native/NativeBuildInputState.cs;$(MSBuildProjectDirectory)/../../toolchains/Inno.Build.Toolchains/Native/NativeInputVerificationScope.cs;$(MSBuildProjectDirectory)/../../toolchains/Inno.Build.Toolchains/BuildArtifactManifest.cs" />
     </ItemGroup>

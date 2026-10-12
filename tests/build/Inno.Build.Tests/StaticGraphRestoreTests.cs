@@ -12,8 +12,10 @@ namespace Inno.Build.Tests;
 
 public sealed class StaticGraphRestoreTests
 {
-    [Fact]
-    public async Task ProductRestoreAcceptsLargeInheritedProperties()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ProductRestoreAcceptsLargeInheritedProperties(bool inheritSolution)
     {
         string root = ToolchainEnvironment.FindRepoRoot();
         string host = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH")
@@ -32,7 +34,7 @@ public sealed class StaticGraphRestoreTests
                   <Target Name="Verify">
                     <MSBuild Projects="{SecurityElement.Escape(project)}"
                              Targets="RestoreProductTargetGraph"
-                             Properties="InnoRestoreFixtureMetadata={inheritedMetadata}"
+                             Properties="InnoRestoreFixtureMetadata={inheritedMetadata};SolutionPath={(inheritSolution ? SecurityElement.Escape(Path.Combine(root, "InnoEngine.sln")) : string.Empty)}"
                              BuildInParallel="false" />
                   </Target>
                 </Project>

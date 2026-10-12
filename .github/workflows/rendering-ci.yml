@@ -7,13 +7,18 @@ on:
       - ".github/workflows/rendering-ci.yml"
       - "build/**"
       - "extern/**"
-      - "native/**"
+      - "entry/**"
+      - "dependencies/**"
+      - "backends/**"
+      - "platforms/**"
       - "src/**"
       - "tools/**"
       - "docs/**"
       - "tests/**"
       - ".gitmodules"
       - "Directory.Build.props"
+      - "Directory.Build.targets"
+      - "Directory.Solution.props"
       - "InnoEngine.sln"
   push:
     branches:
@@ -22,13 +27,18 @@ on:
       - ".github/workflows/rendering-ci.yml"
       - "build/**"
       - "extern/**"
-      - "native/**"
+      - "entry/**"
+      - "dependencies/**"
+      - "backends/**"
+      - "platforms/**"
       - "src/**"
       - "tools/**"
       - "docs/**"
       - "tests/**"
       - ".gitmodules"
       - "Directory.Build.props"
+      - "Directory.Build.targets"
+      - "Directory.Solution.props"
       - "InnoEngine.sln"
 
 permissions:
@@ -42,7 +52,7 @@ jobs:
   rendering:
     name: ${{ matrix.platform }}
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 90
+    timeout-minutes: 180
     strategy:
       fail-fast: false
       matrix:
@@ -84,41 +94,32 @@ jobs:
       - name: Build native editor and Player dependencies
         shell: pwsh
         run: |
-          dotnet run --project build/toolchains/Inno.Build.Toolchains.Sdl3 -- build --config debug
-          dotnet run --project build/toolchains/Inno.Build.Toolchains.Sdl3 -- build --config release
-          dotnet run --project build/toolchains/Inno.Build.Toolchains.MiniAudio -- build --config debug
-          dotnet run --project build/toolchains/Inno.Build.Toolchains.MiniAudio -- build --config release
-          dotnet run --project build/toolchains/Inno.Build.Toolchains.Text -- build --config debug
-          dotnet run --project build/toolchains/Inno.Build.Toolchains.Text -- build --config release
-          dotnet run --project build/toolchains/Inno.Build.Toolchains.UI -- build --config debug
-          dotnet run --project build/toolchains/Inno.Build.Toolchains.UI -- build --config release
-          dotnet run --project build/toolchains/Inno.Build.Toolchains.ImGui -- build --config debug
-          dotnet run --project build/toolchains/Inno.Build.Toolchains.ImGuizmo -- build --config debug
-          dotnet run --project build/toolchains/Inno.Build.Toolchains.Bgfx -- native --config debug
-          dotnet run --project build/toolchains/Inno.Build.Toolchains.Bgfx -- native --config release
-          dotnet run --project build/toolchains/Inno.Build.Toolchains.Bgfx -- tools --config debug
-          dotnet run --project build/toolchains/Inno.Build.Toolchains.Bgfx -- tools --config release
+          dotnet run --project "entry/InnoEngine.Build/InnoEngine.Build.csproj" -- --configuration Debug
+          if ($LASTEXITCODE -ne 0) { throw "Debug host rebuild failed." }
+          dotnet run --project "entry/InnoEngine.Build/InnoEngine.Build.csproj" -- --configuration Release
+          if ($LASTEXITCODE -ne 0) { throw "Release host rebuild failed." }
 
       - name: Build managed solution
         shell: pwsh
-        run: dotnet build InnoEngine.sln --disable-build-servers -m:1 -nr:false
+        run: dotnet build InnoEngine.sln --configuration SourceDebug --disable-build-servers -m:1 -nr:false
 
       - name: Enforce source and compiled public API architecture boundaries
         shell: pwsh
-        run: dotnet run --project tools/Inno.Tooling.Architecture --no-build -- .
+        run: dotnet run --project "entry/InnoEngine.Build/InnoEngine.Build.csproj" --no-build -- verify .
 
       - name: Run complete test suite
         shell: pwsh
-        run: dotnet test InnoEngine.sln --no-build --no-restore --disable-build-servers -m:1 -nr:false
+        run: dotnet test InnoEngine.sln --configuration SourceDebug --no-build --no-restore --disable-build-servers -m:1 -nr:false
 
       - name: Generate source-independent Player Support Pack
         shell: pwsh
         run: |
           $supportPacks = Join-Path $env:RUNNER_TEMP "InnoSupportPacks"
-          dotnet run --project build/support/Inno.Build.SupportPacks --no-build -- `
+          dotnet run --project "entry/InnoEngine.Build/InnoEngine.Build.csproj" --no-build -- support-pack `
             --engine-root $PWD `
             --output $supportPacks `
             --target '${{ matrix.build_target }}' `
+            --tools-target '${{ matrix.build_target }}' `
             --dotnet (Get-Command dotnet).Source
           $expectedMiniAudio = if ($IsWindows) { "miniaudio-release.dll" } else { "libminiaudio-release.dylib" }
           $miniAudioFiles = @(Get-ChildItem `
@@ -137,7 +138,7 @@ jobs:
           New-Item -ItemType Directory -Force (Join-Path $smokeProject "Assets") | Out-Null
           $nativeLog = Join-Path $smokeProject "Logs/NativeRendering.log"
           New-Item -ItemType Directory -Force (Split-Path $nativeLog) | Out-Null
-          dotnet src/composition/editor/host/Inno.Editor.Application/bin/Debug/net9.0/Inno.Editor.Application.dll `
+          dotnet "entry/InnoEngine.Editor/bin/Debug/net9.0/InnoEngine.Editor.dll" `
             $smokeProject --smoke-frames 3 2>&1 | Tee-Object -FilePath $nativeLog
           if ($LASTEXITCODE -ne 0) {
             throw "Renderer smoke exited with code $LASTEXITCODE."

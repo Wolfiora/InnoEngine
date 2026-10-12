@@ -9,6 +9,7 @@ using Inno.Integration.MacOS.Sdl3;
 using Inno.Build.Toolchains.Bgfx.Tools;
 using System;
 using System.IO;
+using System.Threading;
 using Inno.Adapter.Authoring.Default;
 using Inno.Adapter.Default;
 using Inno.Adapter.Modules.DotNet;
@@ -32,12 +33,40 @@ using Inno.Shell;
 
 namespace Inno.Editor.MacOS;
 
-internal static class MacOSEditorComposition
+/// <summary>
+/// Composes the MacOS Editor from explicit platform integrations and shared product hosting.
+/// </summary>
+public static class MacOSEditorComposition
 {
-    internal static int Run(string[] arguments)
-    {
+    /// <summary>
+    /// Runs the platform Editor on the caller's main thread; no directory opens the native folder dialog.
+    /// </summary>
+    /// <param name="arguments">
+    /// An optional project directory and the shared Editor command-line options.
+    /// </param>
+    /// <returns>
+    /// Zero on normal exit or dialog cancellation, two on cancellation or invalid arguments, or one on startup failure.
+    /// </returns>
+    /// <param name="cancellationToken">
+    /// Cancels preparation or requests orderly shutdown of the shared Editor host.
+    /// An open native folder dialog retains its callback owner until the user completes or closes it.
+    /// </param>
+    public static int Run(
+        string[] arguments,
+        CancellationToken cancellationToken
+    ) {
         try
         {
+            ArgumentNullException.ThrowIfNull(arguments);
+            cancellationToken.ThrowIfCancellationRequested();
+            if (arguments.Length == 0)
+            {
+                using var picker = new Sdl3PlatformApplication(new MacOSSdl3HostIntegration());
+                string? selected = Sdl3FolderDialog.SelectFolder(picker);
+                if (selected is null)
+                    return 0;
+                arguments = [selected];
+            }
             EditorCommandLineOptions command = EditorCommandLineOptions.Parse(arguments);
             _ = MacOSApplicationLocations.userDataRoot;
             string project = Path.GetFullPath(command.projectDirectory);
@@ -49,7 +78,7 @@ internal static class MacOSEditorComposition
                 storage = new StorageBackendCatalog([new FileSystemStorageBackendProvider(persistentRoot)])
             }, [new BgfxAuthoringProvider(MacOSBgfxIntegration.shaderProfile)],
                 [new ImGuiPresentationProvider(new ImGuiInteractionOptions(commandKeyBehavior: true, horizontalWheelDirection: -1))]);
-            var buildContext = StandardBuildEnvironment.Capture(AppContext.BaseDirectory, BuildTargetId.macOSArm64);
+            var buildContext = StandardBuildEnvironment.Capture(Path.GetDirectoryName(typeof(MacOSEditorComposition).Assembly.Location)!, BuildTargetId.macOSArm64);
             var launch = new EditorLaunchOptions
             {
                 defaultBuildTarget = Inno.Build.BuildTargetId.macOSArm64,
@@ -74,7 +103,7 @@ internal static class MacOSEditorComposition
                 frameDriver = new PollingShellFrameDriver(),
                 distribution = StandardBuildDistribution.Create(buildContext).build,
                 buildContext = buildContext,
-                supportPackRoot = Path.Combine(AppContext.BaseDirectory, "SupportPacks"),
+                supportPackRoot = Path.Combine(Path.GetDirectoryName(typeof(MacOSEditorComposition).Assembly.Location)!, "SupportPacks"),
                 createEngineHost = CreateEngineHost,
                 createScriptModuleSource = deployment => CreateScriptModuleSource(project, deployment),
                 createSessionLogSink = (
@@ -85,7 +114,11 @@ internal static class MacOSEditorComposition
                 createHostLogSink = () => new ConsoleLogSink(useColors: true),
                 smokeFrameLimit = command.smokeFrameLimit
             };
-            return OwnerThreadExecution.Run(() => EditorApplication.RunAsync(launch));
+            return OwnerThreadExecution.Run(() => EditorApplication.RunAsync(launch, cancellationToken));
+        }
+        catch (OperationCanceledException)
+        {
+            return 2;
         }
         catch (ArgumentException exception)
         {

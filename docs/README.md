@@ -1,82 +1,54 @@
 # InnoEngine Wiki
 
-本文档按当前程序集与 bounded context 组织。公开契约以源码和英文 XML 为准；Wiki 解释 owner、依赖方向、组合方式和生命周期。历史项目、旧 namespace 和兼容入口不在 Wiki 中保留。
+从这里了解开发入口、引擎契约、资源所有权和扩展位置。正文描述当前源码；实现状态与已验证范围见[当前验收](architecture/CURRENT_ACCEPTANCE.md)，未解决项见[当前问题](architecture/CURRENT_ISSUES.md)。
 
-## 分类入口
+## 第一次使用
 
-| 分类 | 稳定职责 |
+1. 阅读[启动指南](platform/PRODUCT_STARTUP.md)，确认本机 SDK 和支持范围。
+2. 在 IDE 选择 [InnoEngine.Build](entry/InnoEngine.Build.md)，增量准备当前宿主的 Editor。
+3. 启动 [InnoEngine.Editor](entry/InnoEngine.Editor.md)。没有传入 Project 路径时打开目录选择窗口。
+4. 阅读[架构总览](architecture/ENGINE_ARCHITECTURE_OVERVIEW.md)，再进入所需项目页。
+
+引擎源码修改后运行 Build。游戏内容修改由导入和 reload 流程处理。清理使用显式命令，不属于默认构建。
+
+## 按职责阅读
+
+| 分类 | 内容 |
 | --- | --- |
-| [Core](core/README.md) | 无业务世界观的基础设施 |
-| [Extensibility](extensibility/README.md) | collectible module generation、Stable Type ID 与 Registry snapshot |
-| [Scripting](scripting/README.md) | 脚本 API、编译与原子 reload |
-| [Assets](assets/README.md) | Player-safe runtime assets 与 authoring pipeline |
-| [References](references/README.md) | 跨领域持久引用、Missing 与恢复事务 |
-| [Input](input/README.md) | 每 Session 的物理输入快照、脚本 façade 与通用 Core Events backend |
-| [Storage](storage/README.md) | 沙箱化应用持久数据契约、Runtime Subsystem 与文件系统 adapter |
-| [Animation](animation/README.md) | 后端中立 Clip、采样、混合、事件、资产与 Runtime Subsystem |
-| [Audio](audio/README.md) | 后端中立播放/Mixer 契约、Runtime、资产与 MiniAudio adapter |
-| [Text](text/README.md) | 字体资产、Unicode shaping、字形光栅化与 FreeType/HarfBuzz adapter |
-| [UI](ui/README.md) | RML 文档、交互、后端中立帧与 RmlUi adapter |
-| [Plugins](plugins/README.md) | Plugin manifest、安装源、只读 mount 与候选激活 |
-| [Scene](scene/README.md) | SceneWorld、GameBehavior、GameSystem、Scene/Prefab asset integration |
-| [Rendering](rendering/README.md) | 后端中立 Rendering、运行资产、独立创作层、Runtime 与 BGFX |
-| [Platform](platform/README.md) | 中立平台契约，以及各平台系统/产品/SDK 包 |
-| [Backends](backends/README.md) | 共享第三方实现、Native 和组件构建的唯一 owner |
-| [Runtime](runtime/README.md) | Subsystem Contracts、声明生成器、默认装配、EngineHost、RuntimeSession 与 Player |
-| [Editor](editor/README.md) | Editor feature、Panel、Play Mode、Diagnostics 与 Export UI |
-| [Build](build/README.md) | Build Pipeline、平台 target、Support Pack 与 toolchain |
-| [Native](native/README.md) | 原生绑定与动态库加载 |
-| [Architecture](architecture/README.md) | Foundation、Content/Services/Runtime、Adapter、Composition 的边界，以及 Identity、Missing、Undo/Redo 与 GC-safe reload 标准 |
-| [Architecture Tooling](tooling/README.md) | 可执行架构规则 |
-| [Issues](issues/README.md) | 唯一问题台账、审查记录与整改规格 |
+| [开发入口](entry/README.md) | 宿主路由、准备和启动 |
+| [Core](core/README.md) | 集合、身份、事件、序列化、IO 等基础机制 |
+| [Extensibility](extensibility/README.md) | Stable Type ID、模块和代际注册 |
+| [Scripting](scripting/README.md) | 脚本公开表面、编译和候选激活 |
+| [Assets](assets/README.md) | 内容读取、运行资产与创作流程 |
+| [References](references/README.md) | 持久引用、Missing 和恢复 |
+| [Scene](scene/README.md) | 对象、组件、系统、Scene 和 Prefab |
+| [Animation](animation/README.md) | 采样、混合和动画事件 |
+| [Input](input/README.md) | 输入快照、焦点与 Session 隔离 |
+| [Storage](storage/README.md) | 应用持久数据与存储生命周期 |
+| [Rendering](rendering/README.md) | 图形机制、运行资产、创作与运行服务 |
+| [Audio](audio/README.md) | 播放、混音、资产和运行服务 |
+| [Text](text/README.md) | 字体、文本布局和字形资源 |
+| [UI](ui/README.md) | 文档、输入、交互和增量资源 |
+| [Plugins](plugins/README.md) | 引擎的内容与源码扩展包机制 |
+| [Runtime](runtime/README.md) | Host、Session、Subsystem、Shell 和 Player |
+| [Editor](editor/README.md) | Feature、Panel、History、Workspace 和导出 |
+| [Platform](platform/README.md) | 系统契约、平台产品、SDK 和集成 |
+| [Backends](backends/README.md) | 共享实现、Native 边界和组件构建 |
+| [Native 导航](native/README.md) | 生成定义、互操作与加载 |
+| [Build](build/README.md) | 目标、内容编译、发布、Support Pack 和工具链 |
+| [架构](architecture/README.md) | 跨项目边界、生命周期与扩展指南 |
+| [测试与验证](testing/README.md) | 契约测试、fixture、运行前提与结果边界 |
+| [Tooling](tooling/README.md) | 架构、源码和文档验证 |
 
-Build 分类已覆盖新增的 [Inno.Build.SupportPacks.Core](build/Inno.Build.SupportPacks.Core.md) 项目页；源码工作区 Export 的缺包自动发布由该项目提供，发布契约与错误边界见对应页面。
-浏览器导出新增的 [Browser target](platform/Browser/Inno.Build.Browser.md)、[Browser Player](platform/Browser/Inno.Player.Browser.md)、[Browser storage](platform/Browser/Inno.Adapter.Storage.Browser.md) 以及 [统一 Native 绑定与目标 profile](native/README.md) 文档已纳入各分类索引；正式 FlappyBird 浏览器实测见 [Web Player 验收](architecture/WEB_PLAYER_ACCEPTANCE_2026_10_01.md)。
+## 扩展从哪里开始
 
-## 当前架构与覆盖
+- 添加平台：读[平台扩展指南](architecture/PLATFORM_EXTENSION_GUIDE.md)，提供系统与 SDK 实现，再组合可用后端。
+- 添加后端：实现所属领域的 Adapter 契约；确有平台差异时增加 integration。
+- 添加游戏模型或 Editor 功能：使用公开扩展协议、Stable ID 和现有注册机制。
+- 修改生命周期或跨代引用：先读[Identity 与热重载标准](architecture/IDENTITY_REFERENCE_RELOAD_STANDARD.md)。
 
-本轮执行范围见[平台归属计划](architecture/PLATFORM_OWNERSHIP_REFACTOR_PLAN.md)，源码位置见[项目总览](architecture/ENGINE_ARCHITECTURE_OVERVIEW.md)，新平台接入见[扩展指南](architecture/PLATFORM_EXTENSION_GUIDE.md)。当前全部生产项目均有独立 API 页；实际运行 gate 在本輪验收报告中单独记录。
+## 文档范围
 
-平台产品入口 → 共享 Host / 所选 backend / 平台系统；共同领域 → Foundation。Standard Distribution → 平台 Build Module / shared managed compiler；Build Composition 与共同构建机制不反向引用具体发行。
+每个项目只有一个权威项目页。项目页说明 API 行为、借用与转移、线程、失败和退出步骤；架构页解释跨项目规则。内部实现必须显式标注，不作为稳定扩展入口。
 
-Identity、Missing、History、collectible generation 仍遵循[热重载标准](architecture/IDENTITY_REFERENCE_RELOAD_STANDARD.md)。过往验收保存为历史证据，不代替当前迁移后的验收。
-
-## 当前格式与状态
-
-新增 [Text](text/README.md) 与 [UI](ui/README.md) 内建 Service 分类，分别覆盖契约、资产导入、Session Runtime、adapter、原生桥与测试项目页；Inno.Canvas 是独立 Project Plugin，提供 Scene 组件、完整默认 Shader/Material/Pipeline 与 Editor 模板。本轮 Windows 验收与 macOS 源码/组合检查分别记录；历史 macOS 结果不等于本轮实测。Linux 仅保留 Native 工具链能力。
-
-新增 [Inno.Editor.Annotations](editor/Inno.Editor.Annotations.md) 已包含独立项目页与 Editor 索引；展示标注不再归属 Core.Serialization。
-新增 [Inno.Rendering.Shaders](rendering/Inno.Rendering.Shaders.md) 已包含独立项目页与 Rendering 索引；
-当前实现源码接口、多实现快照、节点降低与 typed stage/资源/分支/循环，完整 Shader 图替换的未完成项单独记录，不以单元测试或原生编译通过代替产品验收。
-新增 [Shader Editor](editor/Inno.Editor.Panel.ShaderEditor.md) 与
-独立的 [Editor Shader 功能层](editor/Inno.Editor.Shaders.md)，以及
-可复用的 [原生资产草稿功能层](editor/Inno.Editor.Assets.md)，以及
-[内置 Shader 离线工具](backends/Bgfx/Inno.Build.Toolchains.Bgfx.Shaders.md) 已有项目页和分类索引。
-图资产替换、自动保存、原生启动记录以及尚未通过的验收见[当前 Shader 检查点](issues/2026-09-11-unified-shader-implementation.md)。
-
-- Project Settings、Editor Settings、Build Profile、Plugin Manifest、Catalog 与 Artifact 只支持当前源码格式。
-- `Assets` 是唯一可写创作源；`Plugins` 是只读安装源；`Library` 可完全重建。
-- API 变更必须同步源码 XML、所属项目页和索引。
-- 当前 C01–C18 收口状态在[最新验收报告](architecture/ENGINE_CLOSURE_IMPLEMENTATION_2026_09_08.md)维护；此前编号和历史证据保留于[2026-08-31 台账](issues/2026-08-31-complete-issue-register.md)。
-
-共享 [Player Runtime](runtime/Inno.Player.Runtime.md)、[统一 Build CLI](build/Inno.Build.Cli.md)、[MSBuild Tasks](build/Inno.Build.Tasks.md) 和 [Web 目标工具链](platform/Browser/Inno.Build.Browser.md) 均已包含独立项目页。
-
-[宿主 Native 构建组合](build/Inno.Build.Toolchains.md) 已加入 Build 分类：所有组件接受显式 checkout/configuration，
-桌面 Support Pack 主动准备 Release 输入，并统一使用可取消的隐藏子进程生命周期。
-
-本轮新增 [DotNet 模块来源](backends/DotNet/Inno.Adapter.Modules.DotNet.md)、[DotNet 序列化来源](backends/DotNet/Inno.Adapter.Serialization.DotNet.md)、[Managed 部署契约](build/Inno.Build.Managed.md) 与 [DotNet publishers](backends/DotNet/Inno.Build.Managed.DotNet.md)，均有独立项目页；执行与验收继续在 [平台重构计划](architecture/PLATFORM_RUNTIME_REFACTOR_PLAN.md) 记录。
-
-[RML 创作前端](backends/RmlUi/Inno.Adapter.UI.RmlUi.Authoring.md) 与组件内的
-[ImGui binding extension](backends/ImGui/Inno.Native.ImGui.BindingExtension.md) 已补齐独立项目页及分类索引。
-
-本轮新增 [Rendering Assets Authoring](rendering/Inno.Rendering.Assets.Authoring.md) 与 [Build Composition](build/Inno.Build.Composition.md) 已有独立项目页和完整当前源码 API 清单。
-
-## 平台与后端集成
-
-[批准计划](architecture/BACKEND_PLATFORM_INTEGRATION_PLAN.md) · [本轮验收](architecture/BACKEND_PLATFORM_INTEGRATION_ACCEPTANCE.md)。平台基础、共享 backend 与真实 integration 由独立程序集维护；七个 integration 已纳入平台分类索引。
-
-## Backend 运行边界与构建成本
-
-[实施计划](architecture/BACKEND_RUNTIME_BOUNDARY_OPTIMIZATION_PLAN.md) · [当前验收](architecture/BACKEND_RUNTIME_BOUNDARY_OPTIMIZATION_ACCEPTANCE.md)。
-
-新增 [绑定生成库](build/Inno.Build.Bindings.md) 与 [Windows](platform/Windows/Inno.Integration.Windows.Bgfx.Runtime.md)、[macOS](platform/MacOS/Inno.Integration.MacOS.Bgfx.Runtime.md)、[Browser](platform/Browser/Inno.Integration.Browser.Bgfx.Runtime.md) BGFX 运行接入，四个项目均有唯一 Wiki 页面。真实焦点/GUI、其他机器的结果独立标注。
+全量项目、API 和示例审查正在进行；有同名页面不代表其内容已经完整验收。历史执行记录保存在仓库的 records 目录，不作为当前 API 使用说明。当前格式随源码共同演进，不提供旧格式读取或旧接口转发。

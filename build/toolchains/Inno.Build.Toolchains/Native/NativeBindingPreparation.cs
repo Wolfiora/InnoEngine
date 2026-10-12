@@ -24,12 +24,12 @@ public static class NativeBindingPreparation
     /// Cancels generation and drains active work before returning.
     /// </param>
     /// <returns>
-    /// The complete generation map, or an empty map for a product with no generated bindings.
+    /// An owned generation closure, empty for a product without bindings. Retain it through final consumption.
     /// </returns>
     /// <exception cref="InvalidOperationException">
     /// The tool selection or required binding generator is absent.
     /// </exception>
-    public static async Task<IReadOnlyDictionary<string, NativeBindingGenerationDescriptor>> PrepareAsync(
+    public static async Task<NativeBindingGenerationResult> PrepareAsync(
         NativeBuildContext context,
         IReadOnlyList<NativeComponentDescriptor> components,
         CancellationToken cancellationToken
@@ -40,7 +40,7 @@ public static class NativeBindingPreparation
         NativeComponentDescriptor[] owners = components.Where(static owner => owner.bindingDefinition is not null)
             .DistinctBy(static owner => owner.nativeProject).ToArray();
         if (owners.Length == 0)
-            return new Dictionary<string, NativeBindingGenerationDescriptor>();
+            return new(new Dictionary<string, NativeBindingGenerationDescriptor>(), []);
         var request = new NativeBindingGenerationRequest(owners, context.RequireToolchain().targetId,
             NativeBindingOutputMode.TargetArtifacts);
         return await context.RequireBindingGenerator().GenerateAsync(context, request, cancellationToken).ConfigureAwait(false);

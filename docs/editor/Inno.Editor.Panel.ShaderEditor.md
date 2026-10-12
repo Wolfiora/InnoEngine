@@ -8,7 +8,7 @@
 
 画布右上角显示小地图：按当前节点与可视区域的世界坐标计算缩放，显示节点、连接和当前视口框；左键点击或拖动小地图可平移画布到对应位置。小地图使用独立 child 命中区，不让其上的点击、拖拽或滚轮穿入底层节点和画布导航。
 
-当前实现与完整验收必须区分：右键菜单、节点值编辑、捕获式平移、鼠标锚点缩放、框选、节点移动、连接、复制粘贴、显式保存已经接线；完整 UI 实操、所有高级节点/资源操作和最终渲染一致性尚待验收。详见[实施状态](../issues/2026-09-11-unified-shader-implementation.md)。
+当前实现与完整验收必须区分：右键菜单、节点值编辑、捕获式平移、鼠标锚点缩放、框选、节点移动、连接、复制粘贴、显式保存已经接线；完整 UI 实操、所有高级节点/资源操作和最终渲染一致性尚待验收。详见[当前验收](../architecture/CURRENT_ACCEPTANCE.md)。
 
 ## 初始化与生命周期
 
@@ -73,7 +73,7 @@ Inspector 的 Draft Preview 只在用户显式执行 Check 且当前草稿编译
 
 Pass/Variant、Technique/Role、自定义混合和能力要求在 Output Inspector 中编辑，不再通过“Create Pass”一次生成一组可重复 Output。存储读写、原子加法和 discard 节点通过显式 after/then 连线约束副作用顺序。右键沿用共享菜单与搜索，并分为 Create、View、Edit、Connections、Organize 与 Assets；分隔线只标示同级语义边界或插件贡献的顶级函数目录，不向父级和每个子项传播。Group 可被选中，拖动组标题会整体移动成员；组名位于独立 Header，Header 颜色取成员节点 Header 颜色的混合。Insert Reroute 在当前连接线上插入一个强类型、零运算的布线点，只整理长连线，不改变生成的 Shader 语义。Format 使用分层依赖布局和多轮端口感知的交叉最小化：输入在左、Output 在右，并按目标端口次序排列同层来源；它只改画布位置且可 Undo。源码导入设置通过 .imeta 与共享 History 编辑；`catalogPath`/`catalogOrder` 让插件把函数库放入自己的可读菜单分组。端口快照只保存中立类型/身份，缺失端口以红色保留，不按序号重连。
 
-菜单项的 enabled 状态统一来自 `EditorAction.Query`，不是表现层根据 label 猜测。显式 Vertex/Fragment/Compute Output 的查询检查资产只读状态、图是否已经交给领域 Target，以及对应 Stage Output 是否已经存在；每个显式 Stage 只允许一个，因此已存在的项保持可见但禁用。领域 Output 和其他插件节点通过相同 Action/Menu 模型及节点扩展注册进入菜单，通用 Editor 不判断 Rendering2D 类型。
+菜单项的 enabled 状态统一来自 `EditorAction.Query`，不是表现层根据 label 猜测。显式 Vertex/Fragment/Compute Output 的查询检查资产只读状态、图是否已经交给领域 Target，以及对应 Stage Output 是否已经存在；每个显式 Stage 只允许一个，因此已存在的项保持可见但禁用。领域 Output 和其他插件节点通过相同 Action/Menu 模型及节点扩展注册进入菜单，Editor 根据注册契约解析节点能力。
 
 `.ishadersource` 是显式函数库：Import Settings 中列出的每个函数名都是独立公开 API，未列出的函数是私有 helper；一个文件可以导出多个函数，右键 Create / Functions 按“插件目录 / 文件 / 函数”创建节点，不存在默认 Source 或隐式 `main`。节点的 Show in File Browser 只在引擎 File Browser 中定位资产，不启动操作系统或外部 IDE。顶部 Check 对当前草稿进行隔离编译，不保存、不发布；它使用与脚本/插件重载相同的默认固定宽度、居中位置、遮罩、淡入淡出和阻塞生命周期，不显示进度条。编译完成后无论成功或失败都自动关闭，结构化结果及源码位置统一发布到 Console，不在 Modal 内建立第二套诊断浏览器。
 

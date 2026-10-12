@@ -58,6 +58,7 @@ public static class StandardNativeBuildPlans
                 dependencies,
                 token
             ) => ImGuiToolchain.BuildAsync(context, token),
+            ImGuiToolchain.CreateRecipe,
             static (
                 relative,
                 target
@@ -68,6 +69,7 @@ public static class StandardNativeBuildPlans
                 dependencies,
                 token
             ) => ImGuizmoToolchain.BuildAsync(context, dependencies["cimgui"], token),
+            ImGuizmoToolchain.CreateRecipe,
             static (
                 relative,
                 target
@@ -110,6 +112,7 @@ public static class StandardNativeBuildPlans
                 dependencies,
                 token
             ) => BgfxToolsBuild.BuildAsync(context, profile, token),
+            context => BgfxToolsBuild.CreateRecipe(context, profile),
             static (
                 relative,
                 target
@@ -127,6 +130,7 @@ public static class StandardNativeBuildPlans
                 dependencies,
                 token
             ) => BgfxNativeBuild.BuildAsync(context, profile, token),
+            profile is null ? null : context => BgfxNativeBuild.CreateRecipe(context, profile),
             static (
                 relative,
                 target
@@ -137,6 +141,7 @@ public static class StandardNativeBuildPlans
                 dependencies,
                 token
             ) => Sdl3Toolchain.BuildAsync(context, token),
+            profile is null ? null : Sdl3Toolchain.CreateRecipe,
             static (
                 relative,
                 target
@@ -147,6 +152,7 @@ public static class StandardNativeBuildPlans
                 dependencies,
                 token
             ) => MiniAudioToolchain.BuildAsync(context, token),
+            profile is null ? null : MiniAudioToolchain.CreateRecipe,
             static (
                 relative,
                 target
@@ -157,6 +163,7 @@ public static class StandardNativeBuildPlans
                 dependencies,
                 token
             ) => TextToolchain.BuildAsync(context, token),
+            profile is null ? null : TextToolchain.CreateRecipe,
             static (
                 relative,
                 target
@@ -167,6 +174,7 @@ public static class StandardNativeBuildPlans
                 dependencies,
                 token
             ) => UiToolchain.BuildAsync(context, token),
+            profile is null ? null : UiToolchain.CreateRecipe,
             static (
                 relative,
                 target

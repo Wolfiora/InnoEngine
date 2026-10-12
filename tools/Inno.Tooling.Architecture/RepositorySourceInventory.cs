@@ -8,7 +8,7 @@ internal static class RepositorySourceInventory
 {
     private static readonly HashSet<string> ExcludedDirectories = new(StringComparer.OrdinalIgnoreCase)
     {
-        "bin", "obj", "Generated", "extern", "artifacts", ".git"
+        "bin", "obj", "Generated", "extern", "dependencies", "artifacts", ".git"
     };
 
     internal static IEnumerable<string> Files(

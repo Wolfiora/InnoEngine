@@ -44,18 +44,27 @@ BGCS 创建本次生成的候选 registry 与输出 staging；扩展只向指定
 
 ## 当前源码公开 API 清单
 
-只列当前源码的 public/protected 表面；内部实现不作为稳定 API。参数、返回、失败和 owner 以英文 XML 为准。
+按类型列出当前 public 与可供外部派生实现使用的 protected 声明。签名包含 nullable、默认参数和泛型约束；源码链接可定位实现。表中的“—”表示该声明没有额外 XML 约束，不能据此推断线程安全或不会失败。生命周期与组合顺序见本页前文。
 
 ### `Inno.Native.ImGui.Bindings.Extension.ImGuiBindingPlugin`
 
-| 当前声明 | 行为 |
-| --- | --- |
-| [`Inno.Native.ImGui.Bindings.Extension.ImGuiBindingPlugin`](../../../backends/ImGui/native/Inno.Native.ImGui/Bindings/Extension/ImGuiBindingPlugin.cs#L15) | Registers InnoEngine's explicit managed cimgui ABI layouts with BindGen-CS. |
-| [`int Inno.Native.ImGui.Bindings.Extension.ImGuiBindingPlugin.contractVersion`](../../../backends/ImGui/native/Inno.Native.ImGui/Bindings/Extension/ImGuiBindingPlugin.cs#L32) | Gets the BGCS plugin protocol version implemented by this extension. |
-| [`string Inno.Native.ImGui.Bindings.Extension.ImGuiBindingPlugin.GetCacheFingerprint()`](../../../backends/ImGui/native/Inno.Native.ImGui/Bindings/Extension/ImGuiBindingPlugin.cs#L49) | Fingerprints source templates so edits invalidate incremental binding output. |
-| [`string Inno.Native.ImGui.Bindings.Extension.ImGuiBindingPlugin.id`](../../../backends/ImGui/native/Inno.Native.ImGui/Bindings/Extension/ImGuiBindingPlugin.cs#L22) | Identifies the InnoEngine cimgui layout extension. |
-| [`string Inno.Native.ImGui.Bindings.Extension.ImGuiBindingPlugin.version`](../../../backends/ImGui/native/Inno.Native.ImGui/Bindings/Extension/ImGuiBindingPlugin.cs#L27) | Gets the extension implementation version. |
-| [`void Inno.Native.ImGui.Bindings.Extension.ImGuiBindingPlugin.Configure(BGCS.Core.Extensibility.IBindingPluginHost host)`](../../../backends/ImGui/native/Inno.Native.ImGui/Bindings/Extension/ImGuiBindingPlugin.cs#L40) | Registers the managed-layout emitter with the BGCS host. |
+<!-- api: T:Inno.Native.ImGui.Bindings.Extension.ImGuiBindingPlugin 22cd2044e92b4e5a8b047c35b3e864e17cdea28bb14310d830c986737b4213a2 -->
+<!-- api: P:Inno.Native.ImGui.Bindings.Extension.ImGuiBindingPlugin.id fd1e7e0736b7b5fc11a13819de8fa061a45ad3d78cf679e6faa466efa3a83ebf -->
+<!-- api: P:Inno.Native.ImGui.Bindings.Extension.ImGuiBindingPlugin.version 86c1de4b5035861f59cca45ef6cba348644a201860a0cd012dd0502581aaf15e -->
+<!-- api: P:Inno.Native.ImGui.Bindings.Extension.ImGuiBindingPlugin.contractVersion f4e5cebd20f78c71b51795749d1bae3b64a6aa35d969d50d763959a658cc3ce7 -->
+<!-- api: M:Inno.Native.ImGui.Bindings.Extension.ImGuiBindingPlugin.Configure(BGCS.Core.Extensibility.IBindingPluginHost) f398452638eca3da5f35ec787d002ce7ae6141e4d59e54d54036fee7f4fb62ca -->
+<!-- api: M:Inno.Native.ImGui.Bindings.Extension.ImGuiBindingPlugin.GetCacheFingerprint d6e03485b98b07fe70f66d4d2e0f5fbdaceec8746d199aee901846245bc693fa -->
+<!-- api: M:Inno.Native.ImGui.Bindings.Extension.ImGuiBindingPlugin.#ctor b8005a05e4874fbbafbb6dca6a8efc856545b5d6cdd0fa0b736e0f441f9d34ef -->
+
+| 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
+| --- | --- | --- | --- |
+| <a id="api-6efd1181bbabf400"></a>[`public Inno.Native.ImGui.Bindings.Extension.ImGuiBindingPlugin.ImGuiBindingPlugin()`](../../../backends/ImGui/native/Inno.Native.ImGui/Bindings/Extension/ImGuiBindingPlugin.cs#L15) | C# 隐式构造函数；按类型声明执行字段初始化和基类构造。 | — | — |
+| <a id="api-c8f0c28caa20cbaf"></a>[`public void Inno.Native.ImGui.Bindings.Extension.ImGuiBindingPlugin.Configure(BGCS.Core.Extensibility.IBindingPluginHost host)`](../../../backends/ImGui/native/Inno.Native.ImGui/Bindings/Extension/ImGuiBindingPlugin.cs#L40) | Registers the managed-layout emitter with the BGCS host.<br>`host`：The BGCS plugin service registry. | — | — |
+| <a id="api-9b278cc7a06beac8"></a>[`public string Inno.Native.ImGui.Bindings.Extension.ImGuiBindingPlugin.GetCacheFingerprint()`](../../../backends/ImGui/native/Inno.Native.ImGui/Bindings/Extension/ImGuiBindingPlugin.cs#L49) | Fingerprints source templates so edits invalidate incremental binding output.<br>返回：A deterministic hash sequence for the two managed layout templates. | — | — |
+| <a id="api-cfa42bd49211e316"></a>[`public int Inno.Native.ImGui.Bindings.Extension.ImGuiBindingPlugin.contractVersion { get; }`](../../../backends/ImGui/native/Inno.Native.ImGui/Bindings/Extension/ImGuiBindingPlugin.cs#L32) | Gets the BGCS plugin protocol version implemented by this extension. | — | — |
+| <a id="api-3b9391cc139b3794"></a>[`public string Inno.Native.ImGui.Bindings.Extension.ImGuiBindingPlugin.id { get; }`](../../../backends/ImGui/native/Inno.Native.ImGui/Bindings/Extension/ImGuiBindingPlugin.cs#L22) | Identifies the InnoEngine cimgui layout extension. | — | — |
+| <a id="api-dba1e971e034ab8c"></a>[`public string Inno.Native.ImGui.Bindings.Extension.ImGuiBindingPlugin.version { get; }`](../../../backends/ImGui/native/Inno.Native.ImGui/Bindings/Extension/ImGuiBindingPlugin.cs#L27) | Gets the extension implementation version. | — | — |
+| <a id="api-4e6d6c842609b636"></a>[`public sealed class Inno.Native.ImGui.Bindings.Extension.ImGuiBindingPlugin : BGCS.Core.Extensibility.IBindingPlugin, BGCS.Core.Extensibility.ICacheFingerprintProvider`](../../../backends/ImGui/native/Inno.Native.ImGui/Bindings/Extension/ImGuiBindingPlugin.cs#L15) | Registers InnoEngine's explicit managed cimgui ABI layouts with BindGen-CS. | — | — |
 
 ## 项目依赖
 

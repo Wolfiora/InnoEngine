@@ -1,6 +1,6 @@
 # Architecture Tooling
 
-[Wiki 首页](../README.md) · [Issues](../issues/README.md)
+[Wiki 首页](../README.md)
 
 | 项目 | 职责 |
 | --- | --- |

@@ -8,6 +8,7 @@ namespace Inno.Assets;
 public readonly struct AssetArtifactKey : IEquatable<AssetArtifactKey>
 {
     private const int C_SHA256_HEX_LENGTH = 64;
+    private readonly string? m_value;
 
     /// <summary>
     /// Creates an artifact key from a hexadecimal content fingerprint.
@@ -31,7 +32,7 @@ public readonly struct AssetArtifactKey : IEquatable<AssetArtifactKey>
                 if (digit is not (>= '0' and <= '9') and not (>= 'A' and <= 'F'))
                     throw new ArgumentException("An artifact key cannot contain non-hexadecimal characters.", nameof(value));
         }
-        this.value = normalized;
+        m_value = normalized;
     }
 
     /// <summary>
@@ -42,7 +43,7 @@ public readonly struct AssetArtifactKey : IEquatable<AssetArtifactKey>
     /// <summary>
     /// Gets the normalized SHA-256 hexadecimal fingerprint, or an empty value for an unassigned key.
     /// </summary>
-    public string value { get; } = string.Empty;
+    public string value => m_value ?? string.Empty;
 
     /// <summary>
     /// Gets whether the key is empty.
@@ -77,7 +78,7 @@ public readonly struct AssetArtifactKey : IEquatable<AssetArtifactKey>
     /// <returns>
     /// A hash code consistent with the implemented equality contract.
     /// </returns>
-    public override int GetHashCode() => StringComparer.Ordinal.GetHashCode(value ?? string.Empty);
+    public override int GetHashCode() => StringComparer.Ordinal.GetHashCode(value);
 
     /// <summary>
     /// Formats this value as a human-readable representation.
@@ -85,7 +86,7 @@ public readonly struct AssetArtifactKey : IEquatable<AssetArtifactKey>
     /// <returns>
     /// The human-readable representation of this value.
     /// </returns>
-    public override string ToString() => value ?? string.Empty;
+    public override string ToString() => value;
 
     /// <summary>
     /// Determines whether two artifact keys are equal.

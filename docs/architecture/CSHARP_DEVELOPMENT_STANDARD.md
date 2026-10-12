@@ -45,12 +45,21 @@
 - 自动格式化必须保留上述规则。
 
 ```csharp
-public void Register(
-    string serviceId,
-    IService service
-) {
-    ArgumentNullException.ThrowIfNull(service);
-    m_services.Add(serviceId, service);
+using System;
+using System.Collections.Generic;
+
+internal sealed class CommandSet
+{
+    private readonly Dictionary<string, Action> m_commands = new(StringComparer.Ordinal);
+
+    internal void Register(
+        string commandId,
+        Action command
+    ) {
+        ArgumentException.ThrowIfNullOrWhiteSpace(commandId);
+        ArgumentNullException.ThrowIfNull(command);
+        m_commands.Add(commandId, command);
+    }
 }
 ```
 

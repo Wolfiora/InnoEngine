@@ -1,5 +1,7 @@
 using System;
 using System.IO;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Inno.Build.SupportPacks;
@@ -76,7 +78,24 @@ public sealed class BrowserPlayerSupportPackSource : IPlayerSupportPackSource
             .ResolveAsync(nativeContext, m_host, target.value, cancellationToken).ConfigureAwait(false);
         DotNetSdkDescriptor sdk = await DotNetSdkResolver.ResolveAsync(
             tools.ResolveExecutable("dotnet"), project, cancellationToken).ConfigureAwait(false);
-        return new PreparationPlan(this, context.engineRoot, project, sdk, nativeContext.WithToolchain(tools));
+        nativeContext = nativeContext.WithToolchain(tools);
+        var properties = new Dictionary<string, string>
+        {
+            ["Configuration"] = "Release", ["InnoNativeTarget"] = target.value, ["InnoToolTarget"] = m_toolsTarget.value,
+            ["DebugType"] = "None", ["DebugSymbols"] = "false"
+        };
+        await ToolchainEnvironment.RunAsync(sdk.hostPath,
+            [sdk.cliPath, "restore", project, "--disable-build-servers", "-m:1", "-nodeReuse:false", "--nologo", "-v:quiet",
+                .. properties.Select(static pair => "-p:" + pair.Key + "=" + pair.Value)],
+            context.engineRoot, cancellationToken, DotNetSdkEnvironment.Create(sdk.hostPath, tools.environment)).ConfigureAwait(false);
+        string owner = BrowserToolchain.componentDescriptor.GetToolchainRoot(context.engineRoot);
+        PlayerSupportPackPreparationIdentity identity = await PlayerSupportPackPreparationIdentity.CaptureAsync(
+            nativeContext, m_nativePlan, sdk, project, properties,
+            [template, Path.Combine(owner, "BrowserToolchain.cs"), Path.Combine(owner, "BrowserNativeArtifacts.cs"),
+                Path.Combine(owner, "Native", "CMakeLists.txt"), Path.Combine(owner, "Native", "wasm_sjlj_shim.c"),
+                Path.Combine(owner, "SupportPacks", "BrowserPlayerSupportPackSource.cs"),
+                Path.Combine(owner, "SupportPacks", "BrowserSupportPackValidator.cs")], cancellationToken).ConfigureAwait(false);
+        return new PreparationPlan(this, context.engineRoot, project, sdk, nativeContext, identity);
     }
 
     private async ValueTask ExecuteAsync(
@@ -86,7 +105,7 @@ public sealed class BrowserPlayerSupportPackSource : IPlayerSupportPackSource
         CancellationToken cancellationToken
     ) {
         NativeToolchainSelection tools = nativeContext.RequireToolchain();
-        BrowserNativeArtifacts artifacts = await BrowserToolchain.BuildAsync(
+        using BrowserNativeArtifacts artifacts = await BrowserToolchain.BuildAsync(
             nativeContext, m_nativePlan, cancellationToken).ConfigureAwait(false);
         string profileRoot = Path.Combine(context.engineRoot, "artifacts", "managed", "browser-references", artifacts.fingerprint);
         using FileLease ownership = await FileLease.AcquireAsync(
@@ -152,8 +171,12 @@ public sealed class BrowserPlayerSupportPackSource : IPlayerSupportPackSource
         string engineRoot,
         string project,
         DotNetSdkDescriptor sdk,
-        NativeBuildContext native
-    ) : PlayerSupportPackPlan(owner.target) {
+        NativeBuildContext native,
+        PlayerSupportPackPreparationIdentity identity
+    ) : PlayerSupportPackPlan(owner.target, identity.fingerprint) {
+        /// <inheritdoc />
+        public override ValueTask VerifyInputsAsync(CancellationToken cancellationToken) => identity.VerifyAsync(cancellationToken);
+
         /// <inheritdoc />
         public override ValueTask PrepareAsync(
             string stagingDirectory,

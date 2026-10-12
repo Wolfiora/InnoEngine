@@ -373,25 +373,9 @@ namespace Inno.Native.ImGuizmo
         /// <summary>
         /// To be documented.
         /// </summary>
-        internal static void SetIDNative(int id)
-        {
-            ((delegate* unmanaged[Cdecl]<int, void>)funcTable[19])(id);
-        }
-
-        /// <summary>
-        /// To be documented.
-        /// </summary>
         internal static void PushIDNative(byte* strId)
         {
-            ((delegate* unmanaged[Cdecl]<byte*, void>)funcTable[20])(strId);
-        }
-
-        /// <summary>
-        /// To be documented.
-        /// </summary>
-        internal static void PushIDNative(byte* strIdBegin, byte* strIdEnd)
-        {
-            ((delegate* unmanaged[Cdecl]<byte*, byte*, void>)funcTable[21])(strIdBegin, strIdEnd);
+            ((delegate* unmanaged[Cdecl]<byte*, void>)funcTable[19])(strId);
         }
 
         /// <summary>
@@ -399,7 +383,7 @@ namespace Inno.Native.ImGuizmo
         /// </summary>
         internal static void PushIDNative(void* ptrId)
         {
-            ((delegate* unmanaged[Cdecl]<void*, void>)funcTable[22])(ptrId);
+            ((delegate* unmanaged[Cdecl]<void*, void>)funcTable[20])(ptrId);
         }
 
         /// <summary>
@@ -407,7 +391,7 @@ namespace Inno.Native.ImGuizmo
         /// </summary>
         internal static void PushIDNative(int intId)
         {
-            ((delegate* unmanaged[Cdecl]<int, void>)funcTable[23])(intId);
+            ((delegate* unmanaged[Cdecl]<int, void>)funcTable[21])(intId);
         }
 
         /// <summary>
@@ -415,7 +399,7 @@ namespace Inno.Native.ImGuizmo
         /// </summary>
         internal static void PopIDNative()
         {
-            ((delegate* unmanaged[Cdecl]<void>)funcTable[24])();
+            ((delegate* unmanaged[Cdecl]<void>)funcTable[22])();
         }
 
         /// <summary>
@@ -423,15 +407,7 @@ namespace Inno.Native.ImGuizmo
         /// </summary>
         internal static uint GetIDNative(byte* strId)
         {
-            return ((delegate* unmanaged[Cdecl]<byte*, uint>)funcTable[25])(strId);
-        }
-
-        /// <summary>
-        /// To be documented.
-        /// </summary>
-        internal static uint GetIDNative(byte* strIdBegin, byte* strIdEnd)
-        {
-            return ((delegate* unmanaged[Cdecl]<byte*, byte*, uint>)funcTable[26])(strIdBegin, strIdEnd);
+            return ((delegate* unmanaged[Cdecl]<byte*, uint>)funcTable[23])(strId);
         }
 
         /// <summary>
@@ -439,7 +415,7 @@ namespace Inno.Native.ImGuizmo
         /// </summary>
         internal static uint GetIDNative(void* ptrId)
         {
-            return ((delegate* unmanaged[Cdecl]<void*, uint>)funcTable[27])(ptrId);
+            return ((delegate* unmanaged[Cdecl]<void*, uint>)funcTable[24])(ptrId);
         }
 
         /// <summary>
@@ -447,7 +423,7 @@ namespace Inno.Native.ImGuizmo
         /// </summary>
         internal static Bool8 IsOverInterop(int op)
         {
-            return ((delegate* unmanaged[Cdecl]<int, Bool8>)funcTable[28])(op);
+            return ((delegate* unmanaged[Cdecl]<int, Bool8>)funcTable[25])(op);
         }
 
         internal static Bool8 IsOverNative(ImGuizmoOperation op)
@@ -460,7 +436,7 @@ namespace Inno.Native.ImGuizmo
         /// </summary>
         internal static void SetGizmoSizeClipSpaceNative(float value)
         {
-            ((delegate* unmanaged[Cdecl]<float, void>)funcTable[29])(value);
+            ((delegate* unmanaged[Cdecl]<float, void>)funcTable[26])(value);
         }
 
         /// <summary>
@@ -468,7 +444,7 @@ namespace Inno.Native.ImGuizmo
         /// </summary>
         internal static void AllowAxisFlipNative(Bool8 value)
         {
-            ((delegate* unmanaged[Cdecl]<Bool8, void>)funcTable[30])(value);
+            ((delegate* unmanaged[Cdecl]<Bool8, void>)funcTable[27])(value);
         }
 
         /// <summary>
@@ -476,7 +452,7 @@ namespace Inno.Native.ImGuizmo
         /// </summary>
         internal static void SetAxisLimitNative(float value)
         {
-            ((delegate* unmanaged[Cdecl]<float, void>)funcTable[31])(value);
+            ((delegate* unmanaged[Cdecl]<float, void>)funcTable[28])(value);
         }
 
         /// <summary>
@@ -484,7 +460,7 @@ namespace Inno.Native.ImGuizmo
         /// </summary>
         internal static void SetAxisMaskNative(Bool8 x, Bool8 y, Bool8 z)
         {
-            ((delegate* unmanaged[Cdecl]<Bool8, Bool8, Bool8, void>)funcTable[32])(x, y, z);
+            ((delegate* unmanaged[Cdecl]<Bool8, Bool8, Bool8, void>)funcTable[29])(x, y, z);
         }
 
         /// <summary>
@@ -492,7 +468,7 @@ namespace Inno.Native.ImGuizmo
         /// </summary>
         internal static void SetPlaneLimitNative(float value)
         {
-            ((delegate* unmanaged[Cdecl]<float, void>)funcTable[33])(value);
+            ((delegate* unmanaged[Cdecl]<float, void>)funcTable[30])(value);
         }
 
         /// <summary>
@@ -500,7 +476,7 @@ namespace Inno.Native.ImGuizmo
         /// </summary>
         internal static Bool8 IsOverNative(float* position, float pixelRadius)
         {
-            return ((delegate* unmanaged[Cdecl]<float*, float, Bool8>)funcTable[34])(position, pixelRadius);
+            return ((delegate* unmanaged[Cdecl]<float*, float, Bool8>)funcTable[31])(position, pixelRadius);
         }
 
         /// <summary>
@@ -508,7 +484,7 @@ namespace Inno.Native.ImGuizmo
         /// </summary>
         internal static Style* StyleStyleNative()
         {
-            return ((delegate* unmanaged[Cdecl]<Style*>)funcTable[35])();
+            return ((delegate* unmanaged[Cdecl]<Style*>)funcTable[32])();
         }
 
         /// <summary>
@@ -516,7 +492,7 @@ namespace Inno.Native.ImGuizmo
         /// </summary>
         internal static void StyleDestroyNative(Style* self)
         {
-            ((delegate* unmanaged[Cdecl]<Style*, void>)funcTable[36])(self);
+            ((delegate* unmanaged[Cdecl]<Style*, void>)funcTable[33])(self);
         }
 
         /// <summary>
@@ -524,7 +500,7 @@ namespace Inno.Native.ImGuizmo
         /// </summary>
         internal static Style* GetStyleNative()
         {
-            return ((delegate* unmanaged[Cdecl]<Style*>)funcTable[37])();
+            return ((delegate* unmanaged[Cdecl]<Style*>)funcTable[34])();
         }
     }
 
@@ -772,12 +748,6 @@ namespace Inno.Native.ImGuizmo
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void SetID(int id)
-        {
-            SetIDNative(id);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void PushID(byte* strId)
         {
             PushIDNative(strId);
@@ -796,32 +766,6 @@ namespace Inno.Native.ImGuizmo
             {
                 if (p_strId != 0)
                     Marshal.FreeCoTaskMem(p_strId);
-            }
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void PushID(byte* strIdBegin, byte* strIdEnd)
-        {
-            PushIDNative(strIdBegin, strIdEnd);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void PushID(string strIdBegin, string strIdEnd)
-        {
-            nint p_strIdBegin = 0;
-            nint p_strIdEnd = 0;
-            try
-            {
-                p_strIdBegin = strIdBegin is null ? 0 : Marshal.StringToCoTaskMemUTF8(strIdBegin);
-                p_strIdEnd = strIdEnd is null ? 0 : Marshal.StringToCoTaskMemUTF8(strIdEnd);
-                PushIDNative((byte*)p_strIdBegin, (byte*)p_strIdEnd);
-            }
-            finally
-            {
-                if (p_strIdBegin != 0)
-                    Marshal.FreeCoTaskMem(p_strIdBegin);
-                if (p_strIdEnd != 0)
-                    Marshal.FreeCoTaskMem(p_strIdEnd);
             }
         }
 
@@ -863,33 +807,6 @@ namespace Inno.Native.ImGuizmo
             {
                 if (p_strId != 0)
                     Marshal.FreeCoTaskMem(p_strId);
-            }
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static uint GetID(byte* strIdBegin, byte* strIdEnd)
-        {
-            uint ret = GetIDNative(strIdBegin, strIdEnd);
-            return ret;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static uint GetID(string strIdBegin, string strIdEnd)
-        {
-            nint p_strIdBegin = 0;
-            nint p_strIdEnd = 0;
-            try
-            {
-                p_strIdBegin = strIdBegin is null ? 0 : Marshal.StringToCoTaskMemUTF8(strIdBegin);
-                p_strIdEnd = strIdEnd is null ? 0 : Marshal.StringToCoTaskMemUTF8(strIdEnd);
-                return GetIDNative((byte*)p_strIdBegin, (byte*)p_strIdEnd);
-            }
-            finally
-            {
-                if (p_strIdBegin != 0)
-                    Marshal.FreeCoTaskMem(p_strIdBegin);
-                if (p_strIdEnd != 0)
-                    Marshal.FreeCoTaskMem(p_strIdEnd);
             }
         }
 
@@ -967,10 +884,10 @@ namespace Inno.Native.ImGuizmo
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Style* StyleStyle()
+        public static StylePtr StyleStyle()
         {
             Style* ret = StyleStyleNative();
-            return ret;
+            return new StylePtr(ret);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -989,10 +906,10 @@ namespace Inno.Native.ImGuizmo
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Style* GetStyle()
+        public static StylePtr GetStyle()
         {
             Style* ret = GetStyleNative();
-            return ret;
+            return new StylePtr(ret);
         }
     }
 
@@ -1001,7 +918,7 @@ namespace Inno.Native.ImGuizmo
         internal static global::BGCS.Runtime.FunctionTable funcTable = null !;
         public static void InitApi(global::BGCS.Runtime.INativeContext context)
         {
-            var candidate = new global::BGCS.Runtime.FunctionTable(context, 38);
+            var candidate = new global::BGCS.Runtime.FunctionTable(context, 35);
             try
             {
                 candidate.LoadRequired(0, "ImGuizmo_SetDrawlist");
@@ -1023,25 +940,22 @@ namespace Inno.Native.ImGuizmo
                 candidate.LoadRequired(16, "ImGuizmo_ViewManipulate_Float");
                 candidate.LoadRequired(17, "ImGuizmo_ViewManipulate_FloatPtr");
                 candidate.LoadRequired(18, "ImGuizmo_SetAlternativeWindow");
-                candidate.LoadRequired(19, "ImGuizmo_SetID");
-                candidate.LoadRequired(20, "ImGuizmo_PushID_Str");
-                candidate.LoadRequired(21, "ImGuizmo_PushID_StrStr");
-                candidate.LoadRequired(22, "ImGuizmo_PushID_Ptr");
-                candidate.LoadRequired(23, "ImGuizmo_PushID_Int");
-                candidate.LoadRequired(24, "ImGuizmo_PopID");
-                candidate.LoadRequired(25, "ImGuizmo_GetID_Str");
-                candidate.LoadRequired(26, "ImGuizmo_GetID_StrStr");
-                candidate.LoadRequired(27, "ImGuizmo_GetID_Ptr");
-                candidate.LoadRequired(28, "ImGuizmo_IsOver_OPERATION");
-                candidate.LoadRequired(29, "ImGuizmo_SetGizmoSizeClipSpace");
-                candidate.LoadRequired(30, "ImGuizmo_AllowAxisFlip");
-                candidate.LoadRequired(31, "ImGuizmo_SetAxisLimit");
-                candidate.LoadRequired(32, "ImGuizmo_SetAxisMask");
-                candidate.LoadRequired(33, "ImGuizmo_SetPlaneLimit");
-                candidate.LoadRequired(34, "ImGuizmo_IsOver_FloatPtr");
-                candidate.LoadRequired(35, "Style_Style");
-                candidate.LoadRequired(36, "Style_destroy");
-                candidate.LoadRequired(37, "ImGuizmo_GetStyle");
+                candidate.LoadRequired(19, "ImGuizmo_PushID_Str");
+                candidate.LoadRequired(20, "ImGuizmo_PushID_Ptr");
+                candidate.LoadRequired(21, "ImGuizmo_PushID_Int");
+                candidate.LoadRequired(22, "ImGuizmo_PopID");
+                candidate.LoadRequired(23, "ImGuizmo_GetID_Str");
+                candidate.LoadRequired(24, "ImGuizmo_GetID_Ptr");
+                candidate.LoadRequired(25, "ImGuizmo_IsOver_OPERATION");
+                candidate.LoadRequired(26, "ImGuizmo_SetGizmoSizeClipSpace");
+                candidate.LoadRequired(27, "ImGuizmo_AllowAxisFlip");
+                candidate.LoadRequired(28, "ImGuizmo_SetAxisLimit");
+                candidate.LoadRequired(29, "ImGuizmo_SetAxisMask");
+                candidate.LoadRequired(30, "ImGuizmo_SetPlaneLimit");
+                candidate.LoadRequired(31, "ImGuizmo_IsOver_FloatPtr");
+                candidate.LoadRequired(32, "Style_Style");
+                candidate.LoadRequired(33, "Style_destroy");
+                candidate.LoadRequired(34, "ImGuizmo_GetStyle");
             }
             catch
             {

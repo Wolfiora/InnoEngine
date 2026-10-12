@@ -62,13 +62,15 @@ public sealed class BrowserSupportPackTests : IDisposable
         Write(pack, "PlayerLink/Native/extra.a");
         Assert.Throws<InvalidDataException>(() => validator.Validate(pack));
         File.Delete(Path.Combine(pack, "PlayerLink", "Native", "extra.a"));
-        pack = await catalog.PublishAsync(BuildTargetId.browserWasm, pack, validator);
+        using PlayerSupportPackLease published = await catalog.PublishAsync(BuildTargetId.browserWasm, pack, validator);
+        pack = published.directory;
         Assert.False(File.Exists(Path.Combine(pack, "PlayerLink", "References", "BGCS.Runtime.dll")));
-        Assert.Equal(pack, catalog.Resolve(BuildTargetId.browserWasm, validator));
+        using PlayerSupportPackLease selected = catalog.Acquire(BuildTargetId.browserWasm, validator);
+        Assert.Equal(pack, selected.directory);
 
         File.Delete(Path.Combine(pack, "PlayerLink", "Native", "sdl3", "browser-wasm", "libSDL3.a"));
         InvalidDataException missingArchive = Assert.Throws<InvalidDataException>(
-            () => catalog.Resolve(BuildTargetId.browserWasm, validator));
+            () => catalog.Acquire(BuildTargetId.browserWasm, validator));
         Assert.Contains("libSDL3.a", missingArchive.Message, StringComparison.Ordinal);
     }
 

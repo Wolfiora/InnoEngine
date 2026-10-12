@@ -11,40 +11,54 @@ MacOS 平台与 BGFX 的构建接入 owner。依赖本平台的中立构建模�
 Standard Distribution 读取不可变 profile，绑定平台贡献和 compiler 工厂。compiler 借用当前创作 generation，不接管 Assets、Serialization 或 Types，不能跨 generation 缓存。产品组件列表由 StandardNativeBuildPlans 声明，integration 不重复注册发行。Player 产品不引用本构建期程序集；内容在发布时编译后通过中立 store 读取。
 
 ```csharp
-using Inno.Integration.MacOS.Bgfx;
+using Inno.Assets.Pipeline;
 using Inno.Build;
-using Inno.Build.Composition;
-using Inno.Build.Toolchains.Bgfx;
+using Inno.Core.Serialization;
+using Inno.Extensibility.Types;
+using Inno.Integration.MacOS.Bgfx;
 
-GameContentCompilerFactory compiler = MacOSBgfxIntegration.contentCompilerFactory;
-IGameContentCompiler scoped = compiler(assets, serialization, types);
+static IGameContentCompiler CreateCompiler(
+    AssetPipeline assets,
+    SerializationRegistry serialization,
+    TypeCatalog types
+) {
+    return MacOSBgfxIntegration.contentCompilerFactory(assets, serialization, types);
+}
 ```
 
 示例中的 assets/serialization/types 由创作 owner 提供。未知或不支持的 SDK、目标与图形能力明确失败；不自动选择宿主 OS。没有资源性 protected 扩展点；Native invocation 的行为实现仍属于 profile。
 
 ## 测试与平台状态
 
-Build 的 PlatformBackendIntegrationTests、BuildCompositionTests、NativeComponentBuildOptionsTests 与真实发布验证此契约。当前实机与未实测状态见[本轮验收](../../architecture/BACKEND_PLATFORM_INTEGRATION_ACCEPTANCE.md)。
+Build 的 PlatformBackendIntegrationTests、BuildCompositionTests、NativeComponentBuildOptionsTests 与真实发布验证此契约。当前实机与未实测状态见[当前验收](../../architecture/CURRENT_ACCEPTANCE.md)。
 
 ## 当前源码公开 API 清单
 
-只列当前源码的 public/protected 表面；内部实现不作为稳定 API。参数、返回、失败和 owner 以英文 XML 为准。
+按类型列出当前 public 与可供外部派生实现使用的 protected 声明。签名包含 nullable、默认参数和泛型约束；源码链接可定位实现。表中的“—”表示该声明没有额外 XML 约束，不能据此推断线程安全或不会失败。生命周期与组合顺序见本页前文。
 
 ### `Inno.Integration.MacOS.Bgfx.MacOSBgfxIntegration`
 
-| 当前声明 | 行为 |
-| --- | --- |
-| [`Inno.Integration.MacOS.Bgfx.MacOSBgfxIntegration`](../../../platforms/MacOS/integrations/Inno.Integration.MacOS.Bgfx/MacOSBgfxIntegration.cs#L11) | Connects platform publication facts to BGFX compilation without owning a product component list. |
-| [`static Inno.Build.Composition.GameContentCompilerFactory Inno.Integration.MacOS.Bgfx.MacOSBgfxIntegration.contentCompilerFactory`](../../../platforms/MacOS/integrations/Inno.Integration.MacOS.Bgfx/MacOSBgfxIntegration.cs#L26) | Gets the scoped factory for the currently supported Player graphics API closure. |
-| [`static Inno.Build.Toolchains.Bgfx.BgfxNativeBuildProfile Inno.Integration.MacOS.Bgfx.MacOSBgfxIntegration.nativeProfile`](../../../platforms/MacOS/integrations/Inno.Integration.MacOS.Bgfx/MacOSBgfxIntegration.cs#L16) | Gets the immutable SDK invocation for this platform and backend pairing. |
-| [`static Inno.Build.Toolchains.Bgfx.Tools.BgfxShaderTargetProfile Inno.Integration.MacOS.Bgfx.MacOSBgfxIntegration.shaderProfile`](../../../platforms/MacOS/integrations/Inno.Integration.MacOS.Bgfx/MacOSBgfxIntegration.cs#L21) | Gets the explicit shader configuration used by this integration. |
+<!-- api: T:Inno.Integration.MacOS.Bgfx.MacOSBgfxIntegration e79d6e6db610c23b402c597f3cb361c428c38ef45db1eede6416e80cd4d1a727 -->
+<!-- api: P:Inno.Integration.MacOS.Bgfx.MacOSBgfxIntegration.nativeProfile 7b77609fb0de2ec90486f068278d88433b06f9b93a713d1ff6580d27b98f7908 -->
+<!-- api: P:Inno.Integration.MacOS.Bgfx.MacOSBgfxIntegration.shaderProfile 3c236a3b0aa415f9cb8440d6bb0cdaaf5453775513c97053c927566e4bf1cda9 -->
+<!-- api: P:Inno.Integration.MacOS.Bgfx.MacOSBgfxIntegration.contentCompilerFactory 2197d1d00acf9d05cde60bbde8eba0596b304455284263f7786a57e06908d0be -->
+
+| 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
+| --- | --- | --- | --- |
+| <a id="api-719f8bddfe166076"></a>[`public static Inno.Build.Composition.GameContentCompilerFactory Inno.Integration.MacOS.Bgfx.MacOSBgfxIntegration.contentCompilerFactory { get; }`](../../../platforms/MacOS/integrations/Inno.Integration.MacOS.Bgfx/MacOSBgfxIntegration.cs#L26) | Gets the scoped factory for the currently supported Player graphics API closure. | — | — |
+| <a id="api-ea01b8b7db1ea2ed"></a>[`public static Inno.Build.Toolchains.Bgfx.BgfxNativeBuildProfile Inno.Integration.MacOS.Bgfx.MacOSBgfxIntegration.nativeProfile { get; }`](../../../platforms/MacOS/integrations/Inno.Integration.MacOS.Bgfx/MacOSBgfxIntegration.cs#L16) | Gets the immutable SDK invocation for this platform and backend pairing. | — | — |
+| <a id="api-f568dc483514d594"></a>[`public static Inno.Build.Toolchains.Bgfx.Tools.BgfxShaderTargetProfile Inno.Integration.MacOS.Bgfx.MacOSBgfxIntegration.shaderProfile { get; }`](../../../platforms/MacOS/integrations/Inno.Integration.MacOS.Bgfx/MacOSBgfxIntegration.cs#L21) | Gets the explicit shader configuration used by this integration. | — | — |
+| <a id="api-ac5d9a2d33522085"></a>[`public static class Inno.Integration.MacOS.Bgfx.MacOSBgfxIntegration`](../../../platforms/MacOS/integrations/Inno.Integration.MacOS.Bgfx/MacOSBgfxIntegration.cs#L11) | Connects platform publication facts to BGFX compilation without owning a product component list. | — | — |
 
 ### `Inno.Integration.MacOS.Bgfx.MacOSBgfxShaderProfiles`
 
-| 当前声明 | 行为 |
-| --- | --- |
-| [`Inno.Integration.MacOS.Bgfx.MacOSBgfxShaderProfiles`](../../../platforms/MacOS/integrations/Inno.Integration.MacOS.Bgfx/MacOSBgfxShaderProfiles.cs#L11) | Owns explicit MacOS shader dialects and offline product capabilities. |
-| [`static Inno.Build.Toolchains.Bgfx.Tools.BgfxShaderTargetProfile Inno.Integration.MacOS.Bgfx.MacOSBgfxShaderProfiles.target`](../../../platforms/MacOS/integrations/Inno.Integration.MacOS.Bgfx/MacOSBgfxShaderProfiles.cs#L16) | Gets the immutable configuration shared by this platform's products and publication module. |
+<!-- api: T:Inno.Integration.MacOS.Bgfx.MacOSBgfxShaderProfiles 610f3daeae38d0394fa64fc12fedfbc110dd77cf61a9792b1eadc9b45902cb9a -->
+<!-- api: P:Inno.Integration.MacOS.Bgfx.MacOSBgfxShaderProfiles.target d443560653a81c0acf0538e68a28494c3f526a8da1b3ad63d03a8a5562037b02 -->
+
+| 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
+| --- | --- | --- | --- |
+| <a id="api-03a4bfc089237d86"></a>[`public static Inno.Build.Toolchains.Bgfx.Tools.BgfxShaderTargetProfile Inno.Integration.MacOS.Bgfx.MacOSBgfxShaderProfiles.target { get; }`](../../../platforms/MacOS/integrations/Inno.Integration.MacOS.Bgfx/MacOSBgfxShaderProfiles.cs#L16) | Gets the immutable configuration shared by this platform's products and publication module. | — | — |
+| <a id="api-99a927d2bcd4a2da"></a>[`public static class Inno.Integration.MacOS.Bgfx.MacOSBgfxShaderProfiles`](../../../platforms/MacOS/integrations/Inno.Integration.MacOS.Bgfx/MacOSBgfxShaderProfiles.cs#L11) | Owns explicit MacOS shader dialects and offline product capabilities. | — | — |
 
 ## 项目依赖
 

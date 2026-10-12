@@ -11,6 +11,9 @@ namespace Inno.Build.Toolchains.MiniAudio;
 /// </summary>
 public static class MiniAudioToolchain
 {
+    private static readonly string[] S_ARGUMENTS = ["-DBUILD_SHARED_LIBS=ON", "-DMINIAUDIO_BUILD_EXAMPLES=OFF",
+        "-DMINIAUDIO_BUILD_TESTS=OFF", "-DMINIAUDIO_BUILD_TOOLS=OFF", "-DMINIAUDIO_NO_EXTRA_NODES=ON", "-DMINIAUDIO_INSTALL=OFF"];
+
     /// <summary>
     /// Gets the component's sole source, binding and intermediate owner.
     /// </summary>
@@ -49,12 +52,8 @@ public static class MiniAudioToolchain
     ) {
         ArgumentNullException.ThrowIfNull(context);
         NativeToolchainSelection selection = context.RequireToolchain();
-        if (context.RequireComponentOptions(componentDescriptor).libraryKind != NativeLibraryKind.Shared)
-            throw new NotSupportedException("This standalone producer requires shared linkage; static products use the declared aggregate recipe.");
         string source = componentDescriptor.GetToolchainRoot(context.engineRoot);
-        string[] arguments = ["-DBUILD_SHARED_LIBS=ON", "-DMINIAUDIO_BUILD_EXAMPLES=OFF", "-DMINIAUDIO_BUILD_TESTS=OFF", "-DMINIAUDIO_BUILD_TOOLS=OFF", "-DMINIAUDIO_NO_EXTRA_NODES=ON", "-DMINIAUDIO_INSTALL=OFF"];
-        NativeBuildRecipe recipe = NativeBuildRecipe.CreateForComponent(context, componentDescriptor,
-            "miniaudio", selection.targetId, [Path.Combine(context.engineRoot, "extern", "miniaudio"), Path.Combine(source, "CMakeLists.txt")], arguments);
+        NativeBuildRecipe recipe = CreateRecipe(context);
         return await NativeArtifactPublisher.PublishAsync(context, recipe,
             async (
                 scoped,
@@ -62,11 +61,44 @@ public static class MiniAudioToolchain
                 token
             ) => {
                 string build = await NativeCMakeExecutor.BuildAsync(scoped, componentDescriptor,
-                    source, "miniaudio", arguments, token).ConfigureAwait(false);
+                    source, "miniaudio", S_ARGUMENTS, token).ConfigureAwait(false);
                 string library = NativeCMakeExecutor.FindOutput(scoped, build, "*miniaudio" + selection.sharedLibraryExtension);
                 string name = ToolchainEnvironment.NormalizeOutputName(Path.GetFileName(library), scoped.configuration);
                 File.Copy(library, Path.Combine(output, name));
 
             }, cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Declares the standalone source, SDK and ordered options without compiling or generating bindings.
+    /// </summary>
+    /// <param name="context">
+    /// The operation with an explicit target toolchain and this component's shared-library options.
+    /// </param>
+    /// <returns>
+    /// A frozen declaration also consumed by BuildAsync; selected binding outputs are added by publication.
+    /// </returns>
+    /// <exception cref="ArgumentNullException">
+    /// The context is null.
+    /// </exception>
+    /// <exception cref="InvalidOperationException">
+    /// Target tools or component options have not been selected.
+    /// </exception>
+    /// <exception cref="NotSupportedException">
+    /// The request uses static rather than standalone shared linkage.
+    /// </exception>
+    /// <exception cref="FileNotFoundException">
+    /// The component's declared build project is absent from the checkout.
+    /// </exception>
+    public static NativeBuildRecipe CreateRecipe(NativeBuildContext context)
+    {
+        ArgumentNullException.ThrowIfNull(context);
+        NativeToolchainSelection selection = context.RequireToolchain();
+        if (context.RequireComponentOptions(componentDescriptor).libraryKind != NativeLibraryKind.Shared)
+            throw new NotSupportedException("This standalone producer requires shared linkage; static products use the declared aggregate recipe.");
+        string implementation = componentDescriptor.GetToolchainRoot(context.engineRoot);
+        return NativeBuildRecipe.CreateForComponent(context, componentDescriptor, "miniaudio", selection.targetId,
+            [Path.Combine(context.engineRoot, "extern", "miniaudio"), Path.Combine(implementation, "CMakeLists.txt")], S_ARGUMENTS,
+            [Path.Combine(implementation, "MiniAudioToolchain.cs")]);
     }
 }

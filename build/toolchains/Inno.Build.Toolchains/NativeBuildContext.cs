@@ -148,7 +148,7 @@ public sealed class NativeBuildContext
     /// </param>
     /// <returns>
     /// The absolute project-local obj/native path, without creating the directory. During publication,
-    /// the path also contains the operation's target and input fingerprint. A Windows producer receives
+    /// the path also contains the operation's target and compatible workspace identity. A Windows producer receives
     /// a temporary junction to the same physical directory so SDK tools can use bounded paths.
     /// </returns>
     /// <exception cref="ArgumentNullException">
@@ -178,6 +178,8 @@ public sealed class NativeBuildContext
     public NativeBuildStatistics statistics => m_inputState.statistics;
 
     internal NativeBuildInputState inputState => m_inputState;
+
+    internal IReadOnlyDictionary<string, NativeBindingGenerationDescriptor> selectedBindings => m_bindings;
 
     internal NativeCMakeSource.Preparation? sourcePreparation { get; private set; }
 
@@ -288,17 +290,16 @@ public sealed class NativeBuildContext
     /// Creates a scoped operation with an immutable, explicitly prepared target binding closure.
     /// </summary>
     /// <param name="bindings">
-    /// Completed generations indexed by their declared Native project locations.
+    /// Borrowed completed generations indexed by their Native owners. Retain this result until all derived contexts finish.
     /// </param>
     /// <returns>
     /// A context sharing the existing tool selection, inputs and statistics.
     /// </returns>
-    public NativeBuildContext WithBindings(IReadOnlyDictionary<string, NativeBindingGenerationDescriptor> bindings)
+    public NativeBuildContext WithBindings(NativeBindingGenerationResult bindings)
     {
         ArgumentNullException.ThrowIfNull(bindings);
         var scoped = new NativeBuildContext(this, RequireToolchain());
-        scoped.m_bindings = new ReadOnlyDictionary<string, NativeBindingGenerationDescriptor>(
-            new Dictionary<string, NativeBindingGenerationDescriptor>(bindings, StringComparer.Ordinal));
+        scoped.m_bindings = bindings;
         return scoped;
     }
 
@@ -313,6 +314,9 @@ public sealed class NativeBuildContext
     /// </returns>
     /// <exception cref="InvalidOperationException">
     /// The owner has no prepared generation in this operation.
+    /// </exception>
+    /// <exception cref="ObjectDisposedException">
+    /// The caller released the borrowed binding result before this operation finished.
     /// </exception>
     public NativeBindingGenerationDescriptor RequireBindings(NativeComponentDescriptor component) =>
         m_bindings.TryGetValue(component.nativeProject, out NativeBindingGenerationDescriptor? generation)

@@ -44,13 +44,9 @@ public static class ImGuiToolchain
     ) {
         ArgumentNullException.ThrowIfNull(context);
         NativeToolchainSelection selection = context.RequireToolchain();
-        if (context.RequireComponentOptions(componentDescriptor).libraryKind != NativeLibraryKind.Shared)
-            throw new NotSupportedException("This presentation recipe supports shared linkage only.");
-        string source = componentDescriptor.GetToolchainRoot(context.engineRoot);
         string upstream = Path.Combine(context.engineRoot, "extern", "cimgui");
         string[] arguments = ["-DINNO_CIMGUI_SOURCE_DIR=" + upstream, "-DBUILD_SHARED_LIBS=ON", "-DCIMGUI_VARGS0=ON"];
-        NativeBuildRecipe recipe = NativeBuildRecipe.CreateForComponent(context, componentDescriptor,
-            "cimgui", selection.targetId, [upstream, Path.Combine(source, "CMakeLists.txt")], arguments);
+        NativeBuildRecipe recipe = CreateRecipe(context);
         return await NativeArtifactPublisher.PublishAsync(context, recipe,
             async (
                 scoped,
@@ -70,5 +66,38 @@ public static class ImGuiToolchain
                     File.Copy(import, Path.Combine(link, Path.GetFileName(import)));
                 }
             }, cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Declares the selected source, tools and parameters without generating bindings or compiling native code.
+    /// </summary>
+    /// <param name="context">
+    /// The operation with a frozen target SDK and explicit shared component options.
+    /// </param>
+    /// <returns>
+    /// The source recipe; publication adds the selected binding outputs before computing artifact identity.
+    /// </returns>
+    /// <exception cref="ArgumentNullException">
+    /// The context is null.
+    /// </exception>
+    /// <exception cref="InvalidOperationException">
+    /// The target SDK or component options have not been assigned.
+    /// </exception>
+    /// <exception cref="NotSupportedException">
+    /// The component requests a linkage mode this recipe cannot produce.
+    /// </exception>
+    public static NativeBuildRecipe CreateRecipe(NativeBuildContext context)
+    {
+        ArgumentNullException.ThrowIfNull(context);
+        NativeToolchainSelection selection = context.RequireToolchain();
+        if (context.RequireComponentOptions(componentDescriptor).libraryKind != NativeLibraryKind.Shared)
+            throw new NotSupportedException("This presentation recipe supports shared linkage only.");
+        string source = componentDescriptor.GetToolchainRoot(context.engineRoot);
+        string upstream = Path.Combine(context.engineRoot, "extern", "cimgui");
+        return NativeBuildRecipe.CreateForComponent(context, componentDescriptor,
+            "cimgui", selection.targetId, [upstream, Path.Combine(source, "CMakeLists.txt")],
+            ["-DINNO_CIMGUI_SOURCE_DIR=" + upstream, "-DBUILD_SHARED_LIBS=ON", "-DCIMGUI_VARGS0=ON"],
+            [Path.Combine(source, "CimguiBuildConstants.cs"), Path.Combine(source, "CimguiBuildUtils.cs"),
+                Path.Combine(source, "CimguiSourceOverlay.cs"), Path.Combine(source, "ImGuiToolchain.cs")]);
     }
 }

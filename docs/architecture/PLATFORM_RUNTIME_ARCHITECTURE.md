@@ -1,8 +1,8 @@
 # 平台、运行时与构建分层
 
-[架构索引](README.md) · [Wiki 首页](../README.md) · [完整执行计划](PLATFORM_RUNTIME_REFACTOR_PLAN.md) · [Web 启动](WEB_PLAYER_ARCHITECTURE.md)
+[架构索引](README.md) · [Wiki 首页](../README.md) · [Web 启动](WEB_PLAYER_ARCHITECTURE.md)
 
-本文按当前源码说明运行、内容与代际契约。平台归属以[当前总览](ENGINE_ARCHITECTURE_OVERVIEW.md)和[扩展指南](PLATFORM_EXTENSION_GUIDE.md)为准；本轮实际 gate 另见平台归属验收。未来接入不能视为已实现或实测。
+本文按当前源码说明运行、内容与代际契约。平台归属以[当前总览](ENGINE_ARCHITECTURE_OVERVIEW.md)和[扩展指南](PLATFORM_EXTENSION_GUIDE.md)为准；实际验证结果见[当前验收](CURRENT_ACCEPTANCE.md)。未来接入不能视为已实现或实测。
 
 ## 1. 五个独立选择
 
@@ -80,7 +80,7 @@ Editor 和 Build 工作区在各自组合入口创建 DotNet 来源。
 
 ## 4. Player 与输入生命周期
 
-Desktop/Browser 的 Program 只进入各自 composition。共享 Player 校验逻辑代码部署与内容部署，
+Windows、macOS、Browser 的 Player 启动源码只进入各自 composition。共享 Player 校验逻辑代码部署与内容部署，
 再通过共同 EngineHost、RuntimeSession、Shell 和领域服务运行。
 静态模块激活不要求目录中存在动态 DLL；它校验构建模块目录与部署清单一致。
 
@@ -99,7 +99,7 @@ Editor Play Session 根据 Game View 的焦点与前景交互状态筛选事件�
 各领域使用稳定 ID、provider 与不可变 catalog。默认组合提供内置实现；显式空集合表示不安装实现，
 不能静默回退。未知 ID、重复 provider、缺失能力和 provider 返回空上下文都明确失败。
 Presentation 同样使用 `PresentationBackendId`、`PresentationBackendProvider` 和 `PresentationBackendCatalog`。
-具体 ImGui 实现由默认创作组合注册，核心不通过封闭 enum/switch 决定后端。
+产品入口显式向创作组合提供 Presentation provider，核心不通过封闭 enum/switch 决定后端。
 
 ## 6. 原生生成与发布所有权
 
@@ -161,7 +161,7 @@ BGCS 的测试、示例、Native/Wasm/AOT 调用证据属于 BGCS 仓库。
 - 模块/类型/reload 测试：成功、失败、Missing、强引用残留和 GC/Faulted gate。
 - Build 与 Core.IO 测试：真实进程退休、SDK 查询、内容身份、取消和发布所有权。
 - 生成器测试：生成代码编译、运行、私有 owner 访问和 AOT 目录。
-- FlappyBird：Windows NativeAOT、Web 解释执行/AOT 的实际导出和后台运行。
+- 产品验收：Windows NativeAOT、Web 解释执行/AOT 的实际导出与运行；当前执行状态见当前验收页。
 - BGCS 独立测试：托管测试、C/C++ ABI 调用、回调、ownership、Wasm/AOT 及注入错误后的失败报告。
 
 每项结果必须包含本次命令、环境、日志或 TRX 路径；历史报告单独保留。
@@ -172,7 +172,7 @@ BGCS 的测试、示例、Native/Wasm/AOT 调用证据属于 BGCS 仓库。
 当前选择使用单文件 `current` 的原子提交；读者选择一次具体目录后持续使用该完整目录。
 发布新内容保留旧目录，禁止用固定 target 目录替换正在被编译器或链接器读取的输入。
 原生构建产物校验与 Support Pack 指纹枚举复用 Core.IO 的无链接 owner-tree 契约。
-Windows 工具链使用短 junction 路径运行编译器；物理 owner 仍是组件 `obj/native/<target>/<fingerprint>`，
+Windows 工具链使用短 junction 路径运行编译器；物理 owner 仍是组件 `obj/native/<target>/<workspaceIdentity>`，
 构建退出时只删除已验证的 alias，不删除其目标。
 托管发布与原生 producer 共用 `ToolchainWorkingDirectory`，避免 Windows Mono AOT 等工具的传统长路径限制。
 SDK 从原始工程解析；`FileLease` 串行化同一执行路径，取消等待不删除另一操作的 alias。
@@ -219,7 +219,7 @@ Inno.Build.Composition 只承载中立组合契约与完整绑定机制；Inno.B
 
 共同 Task 引导隔离 RID/AOT/Wasm/IDE 属性，一次闭包同一工具身份只准备一次宿主。Native recipe 覆盖实际组件源码、SDK/tool、参数、BGCS 定义/实现和必需 exports；operation 共用初始输入扫描，等锁后及发布前重新验证稳定性。热命中仍校验完整产物内容，内容相同的部署保持 DLL 字节和 mtime。
 
-本轮结构和 API 已按上述职责调整；实际 gate 的当前状态见 [本轮验收](ARCHITECTURE_CLEANUP_ACCEPTANCE_2026_10_06.md)，不使用历史结果替代本轮实测。
+上述职责描述当前分层；实际 gate 的验证范围见 [当前验收](CURRENT_ACCEPTANCE.md)，不使用历史结果替代本轮实测。
 
 ## 平台与后端的连接边界
 
@@ -227,7 +227,7 @@ Inno.Build.Composition 只承载中立组合契约与完整绑定机制；Inno.B
 
 新增 WindowsX86：补 Windows 的目标/SDK/ABI 支持，复用 Windows 产品与 packager，增加真实 BGFX/SDL 接入配置后验收并注册。换图形 backend：增加该 backend 与需要的 integration，替换 compiler/Native plan，平台 packager 不改。NS/iOS：真实 SDK、产品入口与 packaging 归平台包，backend 可复用时直接选择，仅实际差异进入 integration。Browser 换托管运行时只换部署 compiler 和 linker。
 
-Native 步骤显式声明 Static/Shared、有序组件参数和输入 bytes；SDL 应用统一窗口 owner/surface；ImGui 在 NewFrame 前刷新尺度，不维护 WindowsX64 返回 ABI。完整树与测试见[当前批准计划](BACKEND_PLATFORM_INTEGRATION_PLAN.md)，实机状态见[验收](BACKEND_PLATFORM_INTEGRATION_ACCEPTANCE.md)。
+Native 步骤显式声明 Static/Shared、有序组件参数和输入 bytes；SDL 应用统一窗口 owner/surface；ImGui 在 NewFrame 前刷新尺度，不维护 WindowsX64 返回 ABI。当前结构参见[平台扩展指南](PLATFORM_EXTENSION_GUIDE.md)，实测范围见[当前验收](CURRENT_ACCEPTANCE.md)。
 
 ## 当前 backend 运行边界
 

@@ -86,7 +86,7 @@ public sealed class PrepareProductNativeTask : BuildTask, ICancelableTask
             NativeToolchainSelection toolchain = distribution.ResolveNativeToolchain(TargetId)
                 .ResolveAsync(context, execution.host, TargetId, cancellation.Token).AsTask().GetAwaiter().GetResult();
             context = context.WithToolchain(toolchain);
-            var products = plan.BuildAsync(context, cancellation.Token).GetAwaiter().GetResult();
+            using var products = plan.BuildAsync(context, cancellation.Token).GetAwaiter().GetResult();
             cancellation.Token.ThrowIfCancellationRequested();
             var generations = products.Select((
                 product,

@@ -28,6 +28,27 @@
   "functionPrefixes": [
     "ImGuizmo_"
   ],
+  "ignoredFunctions": [
+    "ImGuizmo_SetID",
+    "ImGuizmo_PushID_StrStr",
+    "ImGuizmo_GetID_StrStr"
+  ],
+  "marshallingMappings": {
+    "Style_Style": {
+      "return": {
+        "ownership": "Owned",
+        "cleanupFunction": "Style_destroy",
+        "allocatorKind": "NativeFunction",
+        "allocatorFunction": "Style_Style",
+        "requiresCleanup": true
+      }
+    },
+    "ImGuizmo_GetStyle": {
+      "return": {
+        "ownership": "Borrowed"
+      }
+    }
+  },
   "enumMappings": [
     {
       "exportedName": "OPERATION",
@@ -90,12 +111,6 @@
       "customVariations": []
     },
     {
-      "exportedName": "ImGuizmo_PushID_StrStr",
-      "friendlyName": "PushID",
-      "defaults": {},
-      "customVariations": []
-    },
-    {
       "exportedName": "ImGuizmo_PushID_Ptr",
       "friendlyName": "PushID",
       "defaults": {},
@@ -109,12 +124,6 @@
     },
     {
       "exportedName": "ImGuizmo_GetID_Str",
-      "friendlyName": "GetID",
-      "defaults": {},
-      "customVariations": []
-    },
-    {
-      "exportedName": "ImGuizmo_GetID_StrStr",
       "friendlyName": "GetID",
       "defaults": {},
       "customVariations": []

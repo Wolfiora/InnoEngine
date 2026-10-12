@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Xml.Linq;
+using Inno.Core.IO;
 
 namespace Inno.Build.Toolchains;
 
@@ -14,9 +15,10 @@ public sealed class NativeBindingGenerationDescriptor
 {
     /// <summary>
     /// Writes the exact native binding identities for a subsequent managed build without reselecting generations.
+    /// Identical content preserves the existing import timestamp; changed content is installed atomically.
     /// </summary>
     /// <param name="path">
-    /// The operation-owned MSBuild selection document.
+    /// The MSBuild selection document in an intermediate directory exclusively owned by the caller.
     /// </param>
     /// <param name="generations">
     /// Explicit checkout-relative native project paths and their complete selected generations.
@@ -30,6 +32,9 @@ public sealed class NativeBindingGenerationDescriptor
     /// <exception cref="ArgumentNullException">
     /// The generation or linkage closure is null.
     /// </exception>
+    /// <exception cref="IOException">
+    /// The selection cannot be read or its complete replacement cannot be installed.
+    /// </exception>
     public static void WriteSelection(
         string path,
         IReadOnlyDictionary<string, NativeBindingGenerationDescriptor> generations,
@@ -37,8 +42,13 @@ public sealed class NativeBindingGenerationDescriptor
     ) {
         XDocument document = CreateSelection(generations, linkage);
         string destination = Path.GetFullPath(path);
+        using var buffer = new MemoryStream();
+        document.Save(buffer);
+        byte[] content = buffer.ToArray();
+        if (File.Exists(destination) && File.ReadAllBytes(destination).AsSpan().SequenceEqual(content))
+            return;
         Directory.CreateDirectory(Path.GetDirectoryName(destination)!);
-        document.Save(destination);
+        AtomicFile.WriteAllBytes(destination, content);
     }
 
     /// <summary>
@@ -93,6 +103,11 @@ public sealed class NativeBindingGenerationDescriptor
     public required string bridgeDirectory { get; init; }
 
     /// <summary>
+    /// Gets the immutable artifact root protected by reading leases, or an empty value for mutable host sources.
+    /// </summary>
+    public required string artifactDirectory { get; init; }
+
+    /// <summary>
     /// Reads and validates the result of a completed component generation request.
     /// </summary>
     /// <param name="path">
@@ -113,7 +128,9 @@ public sealed class NativeBindingGenerationDescriptor
             File.ReadAllText(path)) ?? throw new InvalidDataException("The binding generation descriptor is empty.");
         if (string.IsNullOrWhiteSpace(descriptor.fingerprint)
             || string.IsNullOrWhiteSpace(descriptor.bindingsPath) || !Path.IsPathFullyQualified(descriptor.bindingsPath)
-            || !File.Exists(descriptor.bindingsPath) || descriptor.bridgeDirectory is null
+            || !File.Exists(descriptor.bindingsPath) || descriptor.bridgeDirectory is null || descriptor.artifactDirectory is null
+            || descriptor.artifactDirectory.Length > 0 && (!Path.IsPathFullyQualified(descriptor.artifactDirectory)
+                || Path.GetFullPath(descriptor.bindingsPath) != Path.Combine(Path.GetFullPath(descriptor.artifactDirectory), "Generated", "Bindings.cs"))
             || descriptor.bridgeDirectory.Length > 0 && (!Path.IsPathFullyQualified(descriptor.bridgeDirectory)
                 || !Directory.Exists(descriptor.bridgeDirectory)))
             throw new InvalidDataException("The binding generation descriptor does not identify complete outputs.");
@@ -164,6 +181,7 @@ public sealed class NativeBindingGenerationDescriptor
             document.Add(new XElement("PropertyGroup",
                 new XAttribute("Condition", "'$(MSBuildProjectName)' == '" + name + "'"),
                 new XElement("BindGenExpectedFingerprint", entry.Value.fingerprint),
+                new XElement("BindGenArtifactDirectory", entry.Value.artifactDirectory),
                 new XElement("InnoNativeLibraryKind", linkage[entry.Key]),
                 new XElement("BindGenOutputDirectory", Path.GetDirectoryName(entry.Value.bindingsPath))));
         }

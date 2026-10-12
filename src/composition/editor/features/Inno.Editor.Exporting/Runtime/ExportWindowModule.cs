@@ -24,7 +24,7 @@ internal sealed class ExportWindowModule : EditorModule
     private readonly Logger m_log;
     private readonly ConcurrentQueue<BuildProgress> m_progress = new();
     private CancellationTokenSource? m_cancellation;
-    private Task<string>? m_gamePreparation;
+    private Task<PlayerSupportPackLease>? m_gamePreparation;
     private Task<BuildResult>? m_gameExport;
     private Task<BuildResult>? m_pluginExport;
     private GameBuildRequest? m_pendingGameRequest;
@@ -189,7 +189,7 @@ internal sealed class ExportWindowModule : EditorModule
         }
         catch (Exception exception)
         {
-            m_gamePreparation = Task.FromException<string>(exception);
+            m_gamePreparation = Task.FromException<PlayerSupportPackLease>(exception);
         }
     }
 
@@ -279,14 +279,14 @@ internal sealed class ExportWindowModule : EditorModule
 
         CompletePluginExport();
         CompleteGameExport();
-        Task<string>? preparation = m_gamePreparation;
+        Task<PlayerSupportPackLease>? preparation = m_gamePreparation;
         m_gamePreparation = null;
         m_pendingGameRequest = null;
         if (preparation is not null)
         {
             try
             {
-                _ = preparation.GetAwaiter().GetResult();
+                using PlayerSupportPackLease prepared = preparation.GetAwaiter().GetResult();
             }
             catch (OperationCanceledException)
             {
@@ -401,13 +401,13 @@ internal sealed class ExportWindowModule : EditorModule
 
     private void CompleteGamePreparation()
     {
-        Task<string>? preparation = m_gamePreparation;
+        Task<PlayerSupportPackLease>? preparation = m_gamePreparation;
         if (preparation is null || !preparation.IsCompleted)
             return;
         m_gamePreparation = null;
         try
         {
-            _ = preparation.GetAwaiter().GetResult();
+            using PlayerSupportPackLease prepared = preparation.GetAwaiter().GetResult();
             m_cancellation!.Token.ThrowIfCancellationRequested();
             GameBuildRequest request = m_pendingGameRequest
                 ?? throw new InvalidOperationException("The prepared game build has no request.");

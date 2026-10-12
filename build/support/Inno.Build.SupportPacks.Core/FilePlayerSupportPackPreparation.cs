@@ -23,6 +23,7 @@ public sealed class FilePlayerSupportPackPreparation
     private readonly string m_templateFile;
     private readonly ProductNativeBuildPlan m_nativePlan;
     private readonly INativeToolchainProvider m_toolchainProvider;
+    private readonly IReadOnlyList<string> m_preparationInputs;
     private readonly BuildHostDescriptor m_host;
     private readonly INativeBindingGenerator m_bindingGenerator;
 
@@ -62,6 +63,9 @@ public sealed class FilePlayerSupportPackPreparation
     /// <param name="bindingGenerator">
     /// The borrowed generation service used by the frozen Native operation.
     /// </param>
+    /// <param name="preparationInputs">
+    /// The platform-owned preparation and validator implementation files included in source identity.
+    /// </param>
     /// <exception cref="ArgumentException">
     /// A platform identifier or required target string is blank.
     /// </exception>
@@ -79,7 +83,8 @@ public sealed class FilePlayerSupportPackPreparation
         ProductNativeBuildPlan nativePlan,
         INativeToolchainProvider toolchainProvider,
         BuildHostDescriptor host,
-        INativeBindingGenerator bindingGenerator
+        INativeBindingGenerator bindingGenerator,
+        IReadOnlyList<string> preparationInputs
     ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(target.value);
         ArgumentException.ThrowIfNullOrWhiteSpace(runtimeIdentifier);
@@ -96,6 +101,8 @@ public sealed class FilePlayerSupportPackPreparation
         m_nativePlan = nativePlan;
         m_toolchainProvider = toolchainProvider;
         ArgumentNullException.ThrowIfNull(bindingGenerator);
+        ArgumentNullException.ThrowIfNull(preparationInputs);
+        m_preparationInputs = Array.AsReadOnly(preparationInputs.ToArray());
         m_bindingGenerator = bindingGenerator;
         m_host = host;
         m_target = target;
@@ -138,7 +145,21 @@ public sealed class FilePlayerSupportPackPreparation
             native, m_host, m_nativePlatform, cancellationToken).ConfigureAwait(false);
         DotNetSdkDescriptor sdk = await DotNetSdkResolver.ResolveAsync(
             context.dotnetHost, project, cancellationToken).ConfigureAwait(false);
-        return new PreparationPlan(this, context.engineRoot, project, sdk, native.WithToolchain(selection));
+        native = native.WithToolchain(selection);
+        var properties = new Dictionary<string, string>
+        {
+            ["Configuration"] = "Release", ["RuntimeIdentifier"] = m_runtimeIdentifier,
+            ["DebugType"] = "None", ["DebugSymbols"] = "false",
+            ["InnoNativeTarget"] = m_target.value, ["InnoPrepareProductNative"] = "false"
+        };
+        await ToolchainEnvironment.RunAsync(sdk.hostPath,
+            [sdk.cliPath, "restore", project, "--disable-build-servers", "-m:1", "-nodeReuse:false", "--nologo", "-v:quiet",
+                .. properties.Select(static pair => "-p:" + pair.Key + "=" + pair.Value)],
+            context.engineRoot, cancellationToken, DotNetSdkEnvironment.Create(sdk.hostPath)).ConfigureAwait(false);
+        PlayerSupportPackPreparationIdentity identity = await PlayerSupportPackPreparationIdentity.CaptureAsync(
+            native, m_nativePlan, sdk, project, properties,
+            m_preparationInputs.Append(template).ToArray(), cancellationToken).ConfigureAwait(false);
+        return new PreparationPlan(this, context.engineRoot, project, sdk, native, identity);
     }
 
     private async ValueTask ExecuteAsync(
@@ -147,7 +168,7 @@ public sealed class FilePlayerSupportPackPreparation
         NativeBuildContext native,
         CancellationToken cancellationToken
     ) {
-        IReadOnlyList<NativeBuildProduct> products = await m_nativePlan.BuildAsync(native, cancellationToken).ConfigureAwait(false);
+        using ProductNativeBuildResult products = await m_nativePlan.BuildAsync(native, cancellationToken).ConfigureAwait(false);
         string bindingSelection = Path.Combine(context.stagingDirectory, "BindingSelection.props");
         NativeBindingGenerationDescriptor.WriteSelection(bindingSelection,
             m_nativePlan.steps.Select((
@@ -252,8 +273,12 @@ public sealed class FilePlayerSupportPackPreparation
         string engineRoot,
         string project,
         DotNetSdkDescriptor sdk,
-        NativeBuildContext native
-    ) : PlayerSupportPackPlan(owner.target) {
+        NativeBuildContext native,
+        PlayerSupportPackPreparationIdentity identity
+    ) : PlayerSupportPackPlan(owner.target, identity.fingerprint) {
+        /// <inheritdoc />
+        public override ValueTask VerifyInputsAsync(CancellationToken cancellationToken) => identity.VerifyAsync(cancellationToken);
+
         /// <inheritdoc />
         public override ValueTask PrepareAsync(
             string stagingDirectory,

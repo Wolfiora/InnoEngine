@@ -1,0 +1,170 @@
+using System;
+using System.IO;
+using System.Collections.Generic;
+using System.Linq;
+using System.Xml.Linq;
+using Microsoft.Build.Evaluation;
+using Microsoft.Build.Graph;
+using Microsoft.Build.Framework;
+using Microsoft.Build.Utilities;
+
+namespace Inno.Build.Toolchains;
+
+/// <summary>
+/// Captures an evaluated source graph inside its explicitly selected SDK process.
+/// </summary>
+public sealed class ManagedInputGraphTask : Task
+{
+    /// <summary>
+    /// Gets or sets the existing project whose graph is evaluated without running build targets.
+    /// </summary>
+    [Required]
+    public string ProjectPath { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Gets or sets the operation-owned snapshot destination.
+    /// </summary>
+    [Required]
+    public string OutputPath { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Gets or sets the compiler properties borrowed for this graph.
+    /// </summary>
+    public ITaskItem[] Properties { get; set; } = [];
+
+    /// <summary>
+    /// Writes complete source declarations and reports SDK evaluation failures.
+    /// </summary>
+    /// <returns>
+    /// True when the snapshot was written; false when evaluation failed.
+    /// </returns>
+    public override bool Execute()
+    {
+        try
+        {
+
+            var globals = (Properties ?? new Microsoft.Build.Framework.ITaskItem[0])
+                .ToDictionary(item => item.ItemSpec, item => item.GetMetadata("Value"), StringComparer.OrdinalIgnoreCase);
+            var result = new XElement("ManagedInputs");
+            var paths = new HashSet<string>(OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal);
+            var compilerProperties = new[] {
+                "TargetFramework", "TargetFrameworkMoniker", "RuntimeIdentifier", "Configuration", "AssemblyName", "OutputType",
+                "DefineConstants", "LangVersion", "Nullable", "AllowUnsafeBlocks", "Optimize", "CheckForOverflowUnderflow",
+                "PlatformTarget", "DebugType", "DebugSymbols", "Deterministic", "PathMap", "TargetType", "RootNamespace",
+                "TreatWarningsAsErrors", "WarningsAsErrors", "WarningsNotAsErrors", "NoWarn", "WarningLevel", "AnalysisLevel",
+                "RunAnalyzers", "RunAnalyzersDuringBuild", "EnableNETAnalyzers", "EnforceCodeStyleInBuild", "GenerateDocumentationFile",
+                "SignAssembly", "DelaySign", "PublicSign", "AssemblyOriginatorKeyFile", "KeyContainerName", "Features",
+                "EnableDefaultCompileItems", "GenerateAssemblyInfo", "GenerateTargetFrameworkAttribute", "ImplicitUsings",
+                "EnableDefaultEmbeddedResourceItems", "EmbeddedResourceUseDependentUponConvention", "TargetLatestRuntimePatch",
+                "NETCoreSdkVersion", "NetCoreTargetingPackRoot", "TargetingPackVersion", "InnoGeneratePlayerComposition",
+                "InnoBgfxShaderTarget", "InnoBgfxShaderApis", "InnoToolTarget"
+            };
+            using (var collection = new ProjectCollection())
+            {
+                var pending = new Queue<ProjectGraph>();
+                pending.Enqueue(new ProjectGraph(ProjectPath, globals, collection));
+                var visited = new HashSet<string>(StringComparer.Ordinal);
+                while (pending.Count != 0)
+                foreach (var node in pending.Dequeue().ProjectNodes.OrderBy(node => node.ProjectInstance.FullPath, StringComparer.Ordinal))
+                {
+                    var project = node.ProjectInstance;
+                    string identity = project.FullPath + "|" + string.Join(";", project.GlobalProperties.OrderBy(pair => pair.Key, StringComparer.Ordinal)
+                        .Select(pair => pair.Key + "=" + pair.Value));
+                    if (!visited.Add(identity))
+                        continue;
+                    foreach (var contribution in project.GetItems("InnoBuildInputProject"))
+                    {
+                        var selected = new Dictionary<string, string>(project.GlobalProperties, StringComparer.OrdinalIgnoreCase);
+                        foreach (string name in contribution.GetMetadataValue("GlobalPropertiesToRemove").Split(';', StringSplitOptions.RemoveEmptyEntries))
+                            selected.Remove(name);
+                        string dependency = Path.GetFullPath(contribution.EvaluatedInclude, Path.GetDirectoryName(project.FullPath));
+                        pending.Enqueue(new ProjectGraph(dependency, selected, collection));
+                    }
+                    string root = Path.GetDirectoryName(project.FullPath);
+                    paths.Add(project.FullPath);
+                    foreach (string import in project.ImportPaths)
+                        paths.Add(import);
+                    foreach (var property in project.GlobalProperties.OrderBy(pair => pair.Key, StringComparer.Ordinal))
+                        result.Add(new XElement("Declaration", project.FullPath + "|global:" + property.Key + "=" + property.Value));
+                    foreach (string name in compilerProperties)
+                        result.Add(new XElement("Declaration", project.FullPath + "|" + name + "=" + project.GetPropertyValue(name)));
+                    foreach (var item in project.Items)
+                    {
+                        bool source = new[] { "Compile", "EmbeddedResource", "Analyzer", "AdditionalFiles", "EditorConfigFiles",
+                            "GlobalAnalyzerConfigFiles", "AdditionalCompileInputs" }.Contains(item.ItemType);
+                        bool copy = new[] { "Always", "PreserveNewest" }.Contains(item.GetMetadataValue("CopyToOutputDirectory"));
+                        bool reference = item.ItemType == "Reference";
+                        bool policy = new[] { "PackageReference", "ProjectReference", "FrameworkReference", "CompilerVisibleProperty", "CompilerVisibleItemMetadata", "InnoBuildInputProject" }.Contains(item.ItemType);
+                        if (!source && !copy && !reference && !policy)
+                            continue;
+                        result.Add(new XElement("Declaration", project.FullPath + "|item:" + item.ItemType + "=" + item.EvaluatedInclude));
+                        if (item.ItemType == "CompilerVisibleProperty")
+                            result.Add(new XElement("Declaration", project.FullPath + "|compiler-visible:" + item.EvaluatedInclude + "=" + project.GetPropertyValue(item.EvaluatedInclude)));
+                        foreach (var metadata in item.Metadata.OrderBy(value => value.Name, StringComparer.Ordinal))
+                            result.Add(new XElement("Declaration", project.FullPath + "|metadata:" + item.ItemType + ":" + item.EvaluatedInclude
+                                + ":" + metadata.Name + "=" + metadata.EvaluatedValue));
+                        string file = reference ? item.GetMetadataValue("HintPath") : item.EvaluatedInclude;
+                        if (!source && !copy && !reference || string.IsNullOrEmpty(file))
+                            continue;
+                        file = Path.GetFullPath(file, root);
+                        // Generated native bindings have a separate selected-generation input contract.
+                        if (item.ItemType == "Compile" && project.GetPropertyValue("BindGenGeneratedBindings") == "true"
+                            && file == Path.Combine(root, "Generated", "Bindings.cs"))
+                            continue;
+                        if (!File.Exists(file))
+                        {
+                            // The SDK filters nonexistent ancestor configuration candidates before compilation.
+                            if (item.ItemType == "EditorConfigFiles" || item.ItemType == "GlobalAnalyzerConfigFiles")
+                            {
+                                result.Add(new XElement("Declaration", project.FullPath + "|absent-analyzer-config=" + file));
+                                continue;
+                            }
+                            throw new FileNotFoundException("Declared managed " + item.ItemType + " input is absent: " + file, file);
+                        }
+                        paths.Add(file);
+                    }
+                    foreach (var framework in project.GetItems("FrameworkReference"))
+                    {
+                        var known = project.GetItems("KnownFrameworkReference").SingleOrDefault(item => item.EvaluatedInclude == framework.EvaluatedInclude
+                            && item.GetMetadataValue("TargetFramework") == project.GetPropertyValue("TargetFramework"));
+                        if (known == null)
+                            throw new InvalidOperationException("A framework reference has no selected SDK targeting declaration.");
+                        string version = framework.GetMetadataValue("TargetingPackVersion");
+                        if (version.Length == 0)
+                            version = known.GetMetadataValue("TargetingPackVersion");
+                        string directory = Path.Combine(project.GetPropertyValue("NetCoreTargetingPackRoot"), known.GetMetadataValue("TargetingPackName"), version);
+                        if (!Directory.Exists(directory))
+                            throw new DirectoryNotFoundException("The selected SDK reference pack is absent: " + directory);
+                        foreach (string file in Directory.EnumerateFiles(directory, "*", SearchOption.AllDirectories))
+                            paths.Add(file);
+                    }
+                    // Restored dependency resolution is itself an input; package files are collected by the reader.
+                    string assets = project.GetPropertyValue("ProjectAssetsFile");
+                    if (assets.Length != 0)
+                        result.Add(new XElement("Assets", new XAttribute("Path", Path.GetFullPath(assets, root)),
+                            new XAttribute("Framework", project.GetPropertyValue("TargetFramework")),
+                            new XAttribute("Moniker", project.GetPropertyValue("TargetFrameworkMoniker")),
+                            new XAttribute("Runtime", project.GetPropertyValue("RuntimeIdentifier"))));
+                    for (var parent = new DirectoryInfo(root); parent != null; parent = parent.Parent)
+                    {
+                        string sdkSelection = Path.Combine(parent.FullName, "global.json");
+                        if (File.Exists(sdkSelection))
+                        {
+                            paths.Add(sdkSelection);
+                            break;
+                        }
+                    }
+                }
+            }
+            foreach (string path in paths.OrderBy(path => path, StringComparer.Ordinal))
+                result.Add(new XElement("Input", new XAttribute("Path", path)));
+            result.Save(OutputPath);
+            return true;
+        }
+        catch (Exception failure)
+        {
+            Log.LogErrorFromException(failure, true);
+            return false;
+        }
+    }
+}

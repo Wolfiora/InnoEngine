@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Text.Json;
 using Inno.Build.TaskHosting;
 using Inno.Core.IO;
 using Microsoft.Build.Framework;
@@ -148,6 +149,107 @@ public sealed class TaskRuntimeBuildTests : IDisposable
         Assert.True(second.Execute(), string.Join("\n", engine.errors));
         Assert.Equal(2, engine.builds);
         Assert.Equal("prepared-runtime", File.ReadAllText(second.TargetOutputs[0].ItemSpec));
+    }
+
+    [Theory]
+    [InlineData(false, 1)]
+    [InlineData(true, 2)]
+    public void BootstrapOwnershipIsForwardedWithoutHidingDerivedCompilerInputs(
+        bool affectsCompilation,
+        int expectedBuilds
+    ) {
+        if (affectsCompilation)
+            File.WriteAllText(m_project, "<Project><PropertyGroup><DefineConstants>$(InnoTaskBootstrapOwner)</DefineConstants>"
+                + "</PropertyGroup><ItemGroup><Compile Include=\"source.cs\" /></ItemGroup></Project>");
+        var engine = new RecordingEngine(static () => true);
+        foreach (string owner in new[] { new string('a', 32), new string('b', 32) })
+        {
+            BuildTaskRuntimeTask task = CreateTask(engine);
+            task.Properties = [..task.Properties, "InnoTaskBootstrapOwner=" + owner];
+            task.RemoveProperties = [..task.RemoveProperties, "InnoTaskBootstrapOwner"];
+            Assert.True(task.Execute(), string.Join("\n", engine.errors));
+            if (affectsCompilation || owner[0] == 'a')
+            {
+                Assert.Equal(owner, engine.properties!["InnoTaskBootstrapOwner"]);
+                Assert.DoesNotContain("InnoTaskBootstrapOwner", engine.removed!);
+            }
+        }
+        Assert.Equal(expectedBuilds, engine.builds);
+    }
+
+    [Theory]
+    [InlineData("AdditionalFiles")]
+    [InlineData("EditorConfigFiles")]
+    [InlineData("GlobalAnalyzerConfigFiles")]
+    [InlineData("AdditionalCompileInputs")]
+    public void CompilerInputChangesCannotReuseThePreviousRuntime(string itemType)
+    {
+        string input = Path.Combine(m_root, "compiler-input.txt");
+        File.WriteAllText(input, "value=one");
+        File.WriteAllText(m_project,
+            $"<Project><ItemGroup><Compile Include=\"source.cs\" /><{itemType} Include=\"compiler-input.txt\" /></ItemGroup></Project>");
+        var engine = new RecordingEngine(static () => true);
+        Assert.True(CreateTask(engine).Execute(), string.Join("\n", engine.errors));
+        Assert.True(CreateTask(engine).Execute(), string.Join("\n", engine.errors));
+        Assert.Equal(1, engine.builds);
+        DateTime timestamp = File.GetLastWriteTimeUtc(input);
+        File.WriteAllText(input, "value=two");
+        File.SetLastWriteTimeUtc(input, timestamp);
+        Assert.True(CreateTask(engine).Execute(), string.Join("\n", engine.errors));
+        Assert.Equal(2, engine.builds);
+    }
+
+    [Theory]
+    [InlineData("compile")]
+    [InlineData("runtime")]
+    [InlineData("analyzers")]
+    public void ResolvedPackageBytesCannotReuseThePreviousRuntime(string assetGroup)
+    {
+        string packageRoot = Path.Combine(m_root, "packages");
+        string packageDirectory = Path.Combine(packageRoot, "fixture", "1.0.0");
+        string relative = assetGroup == "analyzers" ? "analyzers/dotnet/cs/Fixture.dll" : "lib/net9.0/Fixture.dll";
+        string assembly = Path.Combine(packageDirectory, relative);
+        Directory.CreateDirectory(Path.GetDirectoryName(assembly)!);
+        File.WriteAllText(assembly, "package-one");
+        string unrelated = Path.Combine(packageDirectory, "lib", "net8.0", "Fixture.dll");
+        Directory.CreateDirectory(Path.GetDirectoryName(unrelated)!);
+        File.WriteAllText(unrelated, "unselected-one");
+        var package = new Dictionary<string, object> { ["type"] = "package" };
+        if (assetGroup != "analyzers")
+            package[assetGroup] = new Dictionary<string, object> { [relative] = new { } };
+        string assets = Path.Combine(m_root, "project.assets.json");
+        File.WriteAllText(assets, JsonSerializer.Serialize(new
+        {
+            targets = new Dictionary<string, object>
+            {
+                ["net9.0"] = new Dictionary<string, object>
+                {
+                    ["Fixture/1.0.0"] = package
+                }
+            },
+            libraries = new Dictionary<string, object>
+            {
+                ["Fixture/1.0.0"] = new { type = "package", path = "fixture/1.0.0", files = new[] { relative, "lib/net8.0/Fixture.dll" } }
+            },
+            packageFolders = new Dictionary<string, object> { [packageRoot] = new { } }
+        }));
+        File.WriteAllText(m_project,
+            "<Project><PropertyGroup><TargetFramework>net9.0</TargetFramework>"
+            + "<ProjectAssetsFile>" + assets + "</ProjectAssetsFile></PropertyGroup>"
+            + "<ItemGroup><Compile Include=\"source.cs\" /></ItemGroup></Project>");
+        var engine = new RecordingEngine(static () => true);
+        Assert.True(CreateTask(engine).Execute(), string.Join("\n", engine.errors));
+        File.WriteAllText(unrelated, "unselected-two");
+        Assert.True(CreateTask(engine).Execute(), string.Join("\n", engine.errors));
+        Assert.Equal(1, engine.builds);
+        DateTime timestamp = File.GetLastWriteTimeUtc(assembly);
+        File.WriteAllText(assembly, "package-two");
+        File.SetLastWriteTimeUtc(assembly, timestamp);
+        Assert.True(CreateTask(engine).Execute(), string.Join("\n", engine.errors));
+        Assert.Equal(2, engine.builds);
+        File.Delete(assembly);
+        Assert.False(CreateTask(engine).Execute());
+        Assert.Equal(2, engine.builds);
     }
 
     [Fact]

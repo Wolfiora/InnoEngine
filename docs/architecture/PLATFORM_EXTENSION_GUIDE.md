@@ -5,7 +5,7 @@
 当前平台基础模块声明目标、SDK 与打包；对应 BGFX integration 提供 `BgfxNativeBuildProfile`、
 `BgfxShaderTargetProfile` 和内容编译工厂。Standard Distribution 绑定平台与后端，
 共享 backend 不维护命名平台工厂或 Inno target 枚举。
-完整变更与实测边界见[当前集成整改验收](BACKEND_PLATFORM_INTEGRATION_ACCEPTANCE.md)。
+实测边界见[当前验收](CURRENT_ACCEPTANCE.md)。
 下面的接入结构仍须配合实际 SDK、第三方能力和设备验收，不能仅凭可组合配置宣称平台支持。
 
 ## 1. 一个归属位置，多个明确职责
@@ -69,7 +69,8 @@ platforms/NS/
 │  ├─ Packaging/
 │  └─ SupportPacks/
 ├─ integrations/                           仅有真实连接代码时建立
-│  ├─ Inno.Integration.NS.<GraphicsBackend>/
+│  ├─ Inno.Integration.NS.<GraphicsBackend>.Runtime/
+│  ├─ Inno.Integration.NS.<GraphicsBackend>/   实际 Native/Shader 构建接入
 │  └─ Inno.Integration.NS.<WindowBackend>/
 ├─ editor/Inno.Editor.NS.Tools/       确实有专属工具时添加
 ├─ tests/
@@ -77,6 +78,8 @@ platforms/NS/
 ```
 
 `Inno.Editor.NS.Tools` 表示已有 Windows/macOS Editor 的设备、资源、调试或发布工具，不表示 Editor 在 NS 上运行。Editor 功能实现继续复用共同 framework/features/panels。
+
+Player 源项目仍是发布输入库，其 `Program.cs` 由完整发布模板选入最终游戏；不为日常 IDE 再增加一个可执行入口。
 
 ### 接入顺序
 
@@ -142,7 +145,7 @@ backend 不引用 `Inno.Platform.NS`。它只消费领域 SPI 和所属 Native f
 - 不引入旧目录回退、兼容类型、空项目或 `Compile Link` 共享手写实现。
 - 新平台同步 Solution、架构分类、公开 XML、项目 Wiki、消费者和真实测试。
 
-当前执行证据见 [平台归属验收](PLATFORM_OWNERSHIP_REFACTOR_ACCEPTANCE.md)。
+当前执行证据见 [当前验收](CURRENT_ACCEPTANCE.md)。
 
 ## 平台与后端的连接边界
 
@@ -150,7 +153,7 @@ backend 不引用 `Inno.Platform.NS`。它只消费领域 SPI 和所属 Native f
 
 新增 WindowsX86：补 Windows 的目标/SDK/ABI 支持，复用 Windows 产品与 packager，增加真实 BGFX/SDL 接入配置后验收并注册。换图形 backend：增加该 backend 与需要的 integration，替换 compiler/Native plan，平台 packager 不改。NS/iOS：真实 SDK、产品入口与 packaging 归平台包，backend 可复用时直接选择，仅实际差异进入 integration。Browser 换托管运行时只换部署 compiler 和 linker。
 
-Native 步骤显式声明 Static/Shared、有序组件参数和输入 bytes；SDL 应用统一窗口 owner/surface；ImGui 在 NewFrame 前刷新尺度，不维护 WindowsX64 返回 ABI。完整树与测试见[当前批准计划](BACKEND_PLATFORM_INTEGRATION_PLAN.md)，实机状态见[验收](BACKEND_PLATFORM_INTEGRATION_ACCEPTANCE.md)。
+Native 步骤显式声明 Static/Shared、有序组件参数和输入 bytes；SDL 应用统一窗口 owner/surface；ImGui 在 NewFrame 前刷新尺度，不维护 WindowsX64 返回 ABI。实测范围见[当前验收](CURRENT_ACCEPTANCE.md)。
 
 ## 运行 surface 与构建 integration 分离
 
@@ -168,7 +171,8 @@ platforms/Windows/
 │  └─ Inno.Integration.Windows.Bgfx/
 │     ├─ WindowsBgfxIntegration.cs
 │     ├─ WindowsBgfxBuildProfile.cs
-│     └─ WindowsBgfxShaderProfiles.cs
+│     ├─ WindowsBgfxShaderProfiles.cs
+│     └─ WindowsBgfxToolContribution.cs
 ├─ editor/Inno.Editor.Windows/
 │  └─ WindowsEditorComposition.cs
 └─ player/Inno.Player.Windows/
@@ -185,21 +189,7 @@ backends/
 
 Windows、macOS、Browser 分别在自己的产品入口注入对应的 surface integration。
 运行期 Player 只需要运行集成；Shader、Native 编译配置由构建集成提供给发行组合。
-下面使用当前公开契约展示 Windows 的两个 factory；它们仍需要与 storage factory 一起传入完整的 Catalog options。
-
-```csharp
-using Inno.Adapter.Platform;
-using Inno.Adapter.Platform.Sdl3;
-using Inno.Adapter.Rendering;
-using Inno.Adapter.Rendering.Bgfx;
-using Inno.Integration.Windows.Bgfx.Runtime;
-using Inno.Integration.Windows.Sdl3;
-
-var platform = new PlatformBackendCatalog(
-    [new Sdl3PlatformBackendProvider(new WindowsSdl3HostIntegration())]);
-var rendering = new RenderingBackendCatalog(
-    [new BgfxRenderingBackendProvider(new WindowsBgfxSurfaceIntegration())]);
-```
+可编译的 [Windows backend catalog 组合例子](../platform/Windows/Inno.Editor.Windows.md#backend-catalog-组合)属于平台产品页，使用其真实项目引用。两个 factory 仍需要与 storage factory 一起传入完整的 Catalog options。
 
 新平台若确实使用 SDL 与 BGFX，就实现对应的 `ISdl3HostIntegration` 和 `IBgfxSurfaceIntegration`，
 然后在产品入口以同样方式注入。共同 `BgfxDevice` 不添加平台名称、ABI 白名单或 Browser 分支。
@@ -208,4 +198,4 @@ var rendering = new RenderingBackendCatalog(
 
 每个 surface descriptor 借用窗口 owner 的 handle。附加窗口关闭时，先移除输入和 callback 路由，
 再等待 renderer 的退休 Task，最后由原窗口 owner 销毁原生窗口。任务完成表达命令处理完成，不能当作通用 GPU fence。
-本轮实际证据和未实测项目见[运行边界验收](BACKEND_RUNTIME_BOUNDARY_OPTIMIZATION_ACCEPTANCE.md)。
+本轮实际证据和未实测项目见[当前验收](CURRENT_ACCEPTANCE.md)。

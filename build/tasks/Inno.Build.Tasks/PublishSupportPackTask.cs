@@ -69,10 +69,10 @@ public sealed class PublishSupportPackTask : BuildTask, ICancelableTask
             var context = new BuildCompositionContext(ToolchainEnvironment.ResolveExecutable(DotnetHost),
                 AppContext.BaseDirectory, execution.host, execution.toolsTarget,
                 new NativeBindingGenerator(ToolchainEnvironment.ResolveExecutable(DotnetHost)));
-            string installed = StandardBuildDistribution.Create(context).build.supportPacks.PublishAsync(
+            using PlayerSupportPackLease installed = StandardBuildDistribution.Create(context).build.supportPacks.PublishAsync(
                 EngineRoot, OutputRoot, new BuildTargetId(Target), DotnetHost, cancellation.Token)
                 .AsTask().GetAwaiter().GetResult();
-            Log.LogMessage(MessageImportance.Normal, "Installed Player Support Pack: {0}", installed);
+            Log.LogMessage(MessageImportance.Normal, "Installed Player Support Pack: {0}", installed.directory);
             return true;
         }
         catch (Exception failure)

@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Inno.Assets;
 
@@ -8,10 +10,10 @@ namespace Inno.Assets;
 public sealed class AssetRuntimeContentInfo
 {
     /// <summary>
-    /// Creates an immutable runtime content summary.
+    /// Creates an immutable runtime content summary with its own frozen source inventory.
     /// </summary>
     /// <param name="sources">
-    /// Source identities represented by the deployed catalog.
+    /// Source identities represented by the deployed catalog; their values are copied during construction.
     /// </param>
     /// <param name="assetCount">
     /// Number of runtime-scoped assets in the deployed catalog.
@@ -22,13 +24,17 @@ public sealed class AssetRuntimeContentInfo
     /// <param name="totalBytes">
     /// Total bytes copied into the runtime content root.
     /// </param>
+    /// <exception cref="ArgumentNullException">
+    /// The source inventory is absent.
+    /// </exception>
     public AssetRuntimeContentInfo(
         IReadOnlyList<AssetSourceId> sources,
         int assetCount,
         int artifactBundleCount,
         long totalBytes
     ) {
-        this.sources = sources;
+        ArgumentNullException.ThrowIfNull(sources);
+        this.sources = Array.AsReadOnly(sources.ToArray());
         this.assetCount = assetCount;
         this.artifactBundleCount = artifactBundleCount;
         this.totalBytes = totalBytes;

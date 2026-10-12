@@ -2,7 +2,7 @@
 
 [Wiki 首页](../README.md) · [UI](../ui/README.md) · [Runtime](../runtime/README.md)
 
-Text 是内建、后端中立的排版基础服务，不规定字体如何进入场景或如何绘制。字形 shaping 和 rasterization 由每个 Runtime Session 的服务持有；Canvas 等上层系统消费结果并选择渲染方式。
+Text 是内建、后端中立的排版基础服务，不规定字体如何进入场景或如何绘制。字形 shaping 和 rasterization 由每个 Runtime Session 的服务持有；调用方消费排版结果，并在自己的渲染流程中决定图集、绘制和显示方式。
 
 | 项目 | 职责 |
 | --- | --- |

@@ -1,18 +1,25 @@
+using System;
 using System.IO;
+using Inno.Build.Toolchains;
 
 namespace Inno.Build.Browser;
 
 /// <summary>
 /// Identifies the immutable native closure produced by one browser toolchain request.
 /// </summary>
-public sealed class BrowserNativeArtifacts
+public sealed class BrowserNativeArtifacts : IDisposable
 {
+    private readonly NativeBuildProduct m_product;
+    private readonly NativeBindingGenerationResult m_bindings;
+
     internal BrowserNativeArtifacts(
-        string fingerprint,
-        string directory
+        NativeBuildProduct product,
+        NativeBindingGenerationResult bindings
     ) {
-        this.fingerprint = fingerprint;
-        this.directory = directory;
+        m_product = product;
+        m_bindings = bindings;
+        fingerprint = product.fingerprint;
+        directory = Path.Combine(product.directory, "Outputs");
     }
 
     /// <summary>
@@ -29,4 +36,20 @@ public sealed class BrowserNativeArtifacts
     /// Gets the immutable MSBuild selection file used to reject mismatched managed binding inputs.
     /// </summary>
     public string bindingSelectionPath => Path.Combine(directory, "Metadata", "BindingSelection.props");
+
+    /// <summary>
+    /// Releases the complete archive closure after managed compilation and copying finish.
+    /// Published paths must not be accessed afterwards; repeated disposal has no effect.
+    /// </summary>
+    public void Dispose()
+    {
+        try
+        {
+            m_product.Dispose();
+        }
+        finally
+        {
+            m_bindings.Dispose();
+        }
+    }
 }

@@ -1,9 +1,7 @@
 using System;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
-using System.Threading.Tasks;
 using System.Xml.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -11,10 +9,11 @@ using Xunit;
 
 namespace Inno.Tooling.Architecture.Tests;
 
+[Collection("Architecture diagnostics")]
 public sealed class ArchitectureSymbolTests
 {
     [Fact]
-    public async Task InheritedDocumentationUsesTheOwningProjectInsteadOfACopiedDependency()
+    public void InheritedDocumentationUsesTheOwningProjectInsteadOfACopiedDependency()
     {
         using var fixture = new SymbolFixture();
         const string contractProject = "src/foundation/core/Inno.Core.Contract";
@@ -47,20 +46,20 @@ public sealed class ArchitectureSymbolTests
         File.WriteAllText(Path.ChangeExtension(copied, ".xml"), "<doc><members /></doc>");
 
         Assert.DoesNotContain("inheritdoc requires a documented overridden or implemented contract",
-            await fixture.Run(), StringComparison.Ordinal);
+            fixture.Run(), StringComparison.Ordinal);
     }
 
     [Theory]
     [InlineData("src/services/platform/Inno.Platform", true)]
     [InlineData("src/adapters/platform/Inno.Adapter.Platform", false)]
-    public async Task NativeSurfaceAbiRemainsInsideAdapterBoundary(
+    public void NativeSurfaceAbiRemainsInsideAdapterBoundary(
         string relative,
         bool rejected
     ) {
         using var fixture = new SymbolFixture();
         fixture.Compile(relative, Path.GetFileName(relative), "internal class Probe { }");
         fixture.WriteSource(relative, "internal class Probe { PlatformNativeHandles value; }");
-        string output = await fixture.Run();
+        string output = fixture.Run();
         Assert.Equal(rejected, output.Contains("native surface ABI belongs to platform adapters", StringComparison.Ordinal));
     }
 
@@ -73,7 +72,7 @@ public sealed class ArchitectureSymbolTests
     [InlineData("missing-summary", false)]
     [InlineData("missing-parameter", false)]
     [InlineData("missing-returns", false)]
-    public async Task InheritedDocumentationRequiresACompleteImplementedContract(
+    public void InheritedDocumentationRequiresACompleteImplementedContract(
         string scenario,
         bool accepted
     ) {
@@ -123,7 +122,7 @@ public sealed class ArchitectureSymbolTests
         fixture.Compile(relative, "Inno.Editor.Probe", source);
         fixture.WriteSource(relative, source);
 
-        string output = await fixture.Run();
+        string output = fixture.Run();
         Assert.Equal(!accepted, output.Contains(
             "inheritdoc requires a documented overridden or implemented contract", StringComparison.Ordinal));
     }
@@ -131,14 +130,14 @@ public sealed class ArchitectureSymbolTests
     [Theory]
     [InlineData("public enum InputBackend { BuiltIn }", true)]
     [InlineData("public readonly record struct InputBackendId(string value);", false)]
-    public async Task ReplaceableBackendContractsUseOpenIdentifiers(
+    public void ReplaceableBackendContractsUseOpenIdentifiers(
         string declaration,
         bool rejected
     ) {
         using var fixture = new SymbolFixture();
         fixture.Compile("src/adapters/input/Inno.Adapter.Input", "Inno.Adapter.Input",
             "namespace Inno.Adapter.Input; " + declaration);
-        string output = await fixture.Run();
+        string output = fixture.Run();
         Assert.Equal(rejected, output.Contains("replaceable backend selections require open IDs", StringComparison.Ordinal));
     }
 
@@ -166,7 +165,7 @@ public sealed class ArchitectureSymbolTests
     [InlineData("internal class Probe { public Raw value; }", false)]
     [InlineData("public class Probe { private class Nested { public Raw value; } }", false)]
     [InlineData("public class Probe { public int Read() => 0; }", false)]
-    public async Task SymbolAuditFollowsPublicShapesAndRespectsEffectiveAccessibility(
+    public void SymbolAuditFollowsPublicShapesAndRespectsEffectiveAccessibility(
         string declaration,
         bool rejected
     ) {
@@ -185,7 +184,7 @@ public sealed class ArchitectureSymbolTests
             namespace Inno.Audio;
             """ + declaration, native);
 
-        string output = await fixture.Run();
+        string output = fixture.Run();
         Assert.Equal(rejected, output.Contains("exposes native symbol", StringComparison.Ordinal));
         Assert.DoesNotContain("output is missing", output, StringComparison.Ordinal);
     }
@@ -194,14 +193,14 @@ public sealed class ArchitectureSymbolTests
     [InlineData("Inno.Native.Bgfx")]
     [InlineData("Inno.Native.Sdl3")]
     [InlineData("Inno.Native.MiniAudio")]
-    public async Task NativePolicyUsesAssemblyIdentityRatherThanSourceTypeNames(string assemblyName)
+    public void NativePolicyUsesAssemblyIdentityRatherThanSourceTypeNames(string assemblyName)
     {
         using var fixture = new SymbolFixture();
-        string native = fixture.Compile("native/" + assemblyName, assemblyName,
+        string native = fixture.Compile("backends/" + assemblyName["Inno.Native.".Length..] + "/native/" + assemblyName, assemblyName,
             "namespace Renamed; public struct NeutralLookingName { public int value; }");
         fixture.Compile("src/services/audio/Inno.Audio", "Inno.Audio",
             "namespace Inno.Audio; public class Probe { public Renamed.NeutralLookingName value; }", native);
-        Assert.Contains("exposes native symbol Renamed.NeutralLookingName", await fixture.Run(), StringComparison.Ordinal);
+        Assert.Contains("exposes native symbol Renamed.NeutralLookingName", fixture.Run(), StringComparison.Ordinal);
     }
 
     [Theory]
@@ -209,7 +208,7 @@ public sealed class ArchitectureSymbolTests
     [InlineData("Inno.Player", "Inno.Adapter.Rendering.Bgfx", true)]
     [InlineData("Inno.Editor.Hosting", "Inno.Adapter.Platform.Sdl3", true)]
     [InlineData("Inno.Shell", "Inno.Adapter.Audio", false)]
-    public async Task CompositionOnlyExposesNeutralAdapterContracts(
+    public void CompositionOnlyExposesNeutralAdapterContracts(
         string owner,
         string adapter,
         bool rejected
@@ -219,7 +218,7 @@ public sealed class ArchitectureSymbolTests
             "namespace Backend; public class Device { }");
         fixture.Compile("src/composition/" + owner, owner,
             "namespace Product; public class Probe { public Backend.Device device; }", implementation);
-        string output = await fixture.Run();
+        string output = fixture.Run();
         Assert.Equal(rejected, output.Contains("exposes concrete adapter", StringComparison.Ordinal));
     }
 
@@ -228,7 +227,7 @@ public sealed class ArchitectureSymbolTests
     [InlineData("public class Probe { public Value value; }", true, true)]
     [InlineData("public class Probe { protected Value Read() => null; }", true, true)]
     [InlineData("public class Probe { public Value value; }", false, false)]
-    public async Task EditorPublicReferencePolicyFollowsCompiledVisibility(
+    public void EditorPublicReferencePolicyFollowsCompiledVisibility(
         string declaration,
         bool privateReference,
         bool rejected
@@ -240,7 +239,7 @@ public sealed class ArchitectureSymbolTests
             "using Values; namespace Inno.Editor.Probe; " + declaration, dependency);
         fixture.AddReference("src/composition/editor/framework/Inno.Editor.Probe/Inno.Editor.Probe.csproj",
             "src/foundation/core/Inno.Core.Values/Inno.Core.Values.csproj", privateReference);
-        string output = await fixture.Run();
+        string output = fixture.Run();
         Assert.Equal(rejected, output.Contains("declare a direct public ProjectReference", StringComparison.Ordinal));
     }
 
@@ -249,7 +248,7 @@ public sealed class ArchitectureSymbolTests
     [InlineData("backends/Sdl3/runtime/Inno.Adapter.Platform.Sdl3", false)]
     [InlineData("backends/ImGui/runtime/Inno.Adapter.Presentation.ImGui.Sdl3", false)]
     [InlineData("backends/Sdl3/build/Inno.Build.Toolchains.Sdl3", false)]
-    public async Task SdlReferencesAreLimitedToTheActualPlatformAndPresentationOwners(
+    public void SdlReferencesAreLimitedToTheActualPlatformAndPresentationOwners(
         string relative,
         bool rejected
     ) {
@@ -258,14 +257,14 @@ public sealed class ArchitectureSymbolTests
         string projectName = Path.GetFileName(relative);
         fixture.Compile(relative, projectName, "internal class Probe { private Raw value; }", native);
         fixture.AddReference(relative + "/" + projectName + ".csproj", "backends/Sdl3/native/Inno.Native.Sdl3/Inno.Native.Sdl3.csproj", true);
-        string output = await fixture.Run();
+        string output = fixture.Run();
         Assert.Equal(rejected, output.Contains("SDL3 native code is restricted", StringComparison.Ordinal));
     }
 
     [Theory]
     [InlineData(true, false)]
     [InlineData(false, true)]
-    public async Task EditorImplementationReferencesRequireCompilePrivacy(
+    public void EditorImplementationReferencesRequireCompilePrivacy(
         bool privateReference,
         bool rejected
     ) {
@@ -277,7 +276,7 @@ public sealed class ArchitectureSymbolTests
             "using Values; namespace Inno.Editor.Probe; public class Probe { private Value value; }", dependency);
         fixture.AddReference(relative + "/Inno.Editor.Probe.csproj",
             "src/foundation/core/Inno.Core.Values/Inno.Core.Values.csproj", privateReference);
-        string output = await fixture.Run();
+        string output = fixture.Run();
         Assert.Equal(rejected, output.Contains("is an implementation dependency", StringComparison.Ordinal));
     }
 
@@ -285,7 +284,7 @@ public sealed class ArchitectureSymbolTests
     [InlineData(0, false)]
     [InlineData(1, true)]
     [InlineData(2, true)]
-    public async Task EditorReferenceGroupsKeepImplementationBeforePublicApi(
+    public void EditorReferenceGroupsKeepImplementationBeforePublicApi(
         int layout,
         bool rejected
     ) {
@@ -318,7 +317,7 @@ public sealed class ArchitectureSymbolTests
                 document.Save(path);
             }
         }
-        string output = await fixture.Run();
+        string output = fixture.Run();
         Assert.Equal(rejected, output.Contains("one implementation group followed by one public API group", StringComparison.Ordinal));
     }
 
@@ -328,7 +327,7 @@ public sealed class ArchitectureSymbolTests
     [InlineData("new System.IO.FileStream(\"payload\", System.IO.FileMode.Open);", true)]
     [InlineData("throw new System.IO.InvalidDataException(\"Invalid payload\");", false)]
     [InlineData("new System.IO.MemoryStream(new byte[] { 1 });", false)]
-    public async Task SharedContentIoChecksResolvedSymbolsInsteadOfIoNamespaceText(
+    public void SharedContentIoChecksResolvedSymbolsInsteadOfIoNamespaceText(
         string operation,
         bool rejected
     ) {
@@ -337,7 +336,7 @@ public sealed class ArchitectureSymbolTests
         string source = "internal class Probe { void Read() { " + operation + " } }";
         fixture.Compile(relative, "Inno.Content", source);
         fixture.WriteSource(relative, source);
-        string output = await fixture.Run();
+        string output = fixture.Run();
         Assert.Equal(rejected, output.Contains("shared content owners must receive reading contracts", StringComparison.Ordinal));
     }
 
@@ -401,32 +400,12 @@ public sealed class ArchitectureSymbolTests
 
         internal string PathFor(string relative) => Path.Combine(m_root, relative);
 
-        internal async Task<string> Run()
+        internal string Run()
         {
-            DirectoryInfo? repository = new(AppContext.BaseDirectory);
-            while (repository is not null && !File.Exists(Path.Combine(repository.FullName, "InnoEngine.sln")))
-                repository = repository.Parent;
-            Assert.NotNull(repository);
-            string dotnet = Path.GetFullPath("../../../dotnet", RuntimeEnvironment.GetRuntimeDirectory());
-            if (OperatingSystem.IsWindows()) dotnet += ".exe";
-            var start = new ProcessStartInfo(dotnet)
-            {
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
-                UseShellExecute = false,
-                CreateNoWindow = true
-            };
-            start.ArgumentList.Add(Path.Combine(repository!.FullName,
-                "build/cli/Inno.Build.Cli/bin/Debug/net9.0/Inno.Build.Cli.dll"));
-            start.ArgumentList.Add("verify");
-            start.ArgumentList.Add(m_root);
-            using Process process = Process.Start(start)!;
-            Task<string> output = process.StandardOutput.ReadToEndAsync();
-            Task<string> error = process.StandardError.ReadToEndAsync();
-            await process.WaitForExitAsync();
-            // The fixture deliberately omits product composition projects; only the audited boundary is asserted.
-            Assert.Equal(1, process.ExitCode);
-            return await output + await error;
+            (int exitCode, string output) = ArchitectureCommandFixture.Run(m_root);
+            // These fixtures deliberately omit the complete product composition.
+            Assert.Equal(1, exitCode);
+            return output;
         }
 
         public void Dispose()

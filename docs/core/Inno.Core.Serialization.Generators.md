@@ -31,21 +31,31 @@
 
 ## 当前源码公开 API 清单
 
-只列当前源码的 public/protected 表面；内部实现不作为稳定 API。参数、返回、失败和 owner 以英文 XML 为准。
+按类型列出当前 public 与可供外部派生实现使用的 protected 声明。签名包含 nullable、默认参数和泛型约束；源码链接可定位实现。表中的“—”表示该声明没有额外 XML 约束，不能据此推断线程安全或不会失败。生命周期与组合顺序见本页前文。
 
 ### `Inno.Core.Serialization.Generators.SerializationConverterGenerator`
 
-| 当前声明 | 行为 |
-| --- | --- |
-| [`Inno.Core.Serialization.Generators.SerializationConverterGenerator`](../../src/foundation/core/Inno.Core.Serialization.Generators/SerializationConverterGenerator.cs#L16) | Generates stateless serialization converters for explicitly annotated closed data-transfer types. |
-| [`void Inno.Core.Serialization.Generators.SerializationConverterGenerator.Initialize(Microsoft.CodeAnalysis.IncrementalGeneratorInitializationContext context)`](../../src/foundation/core/Inno.Core.Serialization.Generators/SerializationConverterGenerator.cs#L64) | Registers the incremental syntax and source-production pipeline. |
+<!-- api: T:Inno.Core.Serialization.Generators.SerializationConverterGenerator 87e78fe78cc35ac29846acf4d831654974053ef2e2ddb0286c04502bdabb01f5 -->
+<!-- api: M:Inno.Core.Serialization.Generators.SerializationConverterGenerator.Initialize(Microsoft.CodeAnalysis.IncrementalGeneratorInitializationContext) 35df1119527fc624fca9f2e122b27e003dc4d9fd0091a185a8361be0ffaa5b64 -->
+<!-- api: M:Inno.Core.Serialization.Generators.SerializationConverterGenerator.#ctor c9f3e1388a52741487744d1d3f592c5d58f9bec65069fdb10847cb625a5502a6 -->
+
+| 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
+| --- | --- | --- | --- |
+| <a id="api-5f1664c66d003541"></a>[`public Inno.Core.Serialization.Generators.SerializationConverterGenerator.SerializationConverterGenerator()`](../../src/foundation/core/Inno.Core.Serialization.Generators/SerializationConverterGenerator.cs#L17) | C# 隐式构造函数；按类型声明执行字段初始化和基类构造。 | — | — |
+| <a id="api-84626d9ea4c8c8b1"></a>[`public void Inno.Core.Serialization.Generators.SerializationConverterGenerator.Initialize(Microsoft.CodeAnalysis.IncrementalGeneratorInitializationContext context)`](../../src/foundation/core/Inno.Core.Serialization.Generators/SerializationConverterGenerator.cs#L64) | Registers the incremental syntax and source-production pipeline.<br>`context`：The Roslyn initialization context that receives generator registrations. | — | — |
+| <a id="api-a08888a2bac71405"></a>[`public sealed class Inno.Core.Serialization.Generators.SerializationConverterGenerator : Microsoft.CodeAnalysis.IIncrementalGenerator`](../../src/foundation/core/Inno.Core.Serialization.Generators/SerializationConverterGenerator.cs#L17) | Generates stateless serialization converters for explicitly annotated closed data-transfer types. | — | — |
 
 ### `Inno.Core.Serialization.Generators.SerializationMetadataGenerator`
 
-| 当前声明 | 行为 |
-| --- | --- |
-| [`Inno.Core.Serialization.Generators.SerializationMetadataGenerator`](../../src/foundation/core/Inno.Core.Serialization.Generators/SerializationMetadataGenerator.cs#L14) | Generates closed member access, restoration hooks and collection construction for static deployments. |
-| [`void Inno.Core.Serialization.Generators.SerializationMetadataGenerator.Initialize(Microsoft.CodeAnalysis.IncrementalGeneratorInitializationContext context)`](../../src/foundation/core/Inno.Core.Serialization.Generators/SerializationMetadataGenerator.cs#L33) | See the implemented contract. |
+<!-- api: T:Inno.Core.Serialization.Generators.SerializationMetadataGenerator a702c8a6f48e176dc8b6bdc191fee8a67bb472de9e8b382b799066e6598d3cc5 -->
+<!-- api: M:Inno.Core.Serialization.Generators.SerializationMetadataGenerator.Initialize(Microsoft.CodeAnalysis.IncrementalGeneratorInitializationContext) 476e7c294f5f915f9f9d1b99c11e0dce40b9df293bdb68529b8e32cff6520c9a -->
+<!-- api: M:Inno.Core.Serialization.Generators.SerializationMetadataGenerator.#ctor d35b528500a7460f521f8ce28cbaaffaa0b4ab357f884e38a1d657f74f79a418 -->
+
+| 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
+| --- | --- | --- | --- |
+| <a id="api-0b253547777ee5fe"></a>[`public Inno.Core.Serialization.Generators.SerializationMetadataGenerator.SerializationMetadataGenerator()`](../../src/foundation/core/Inno.Core.Serialization.Generators/SerializationMetadataGenerator.cs#L15) | C# 隐式构造函数；按类型声明执行字段初始化和基类构造。 | — | — |
+| <a id="api-4cd8656080cc0509"></a>[`public void Inno.Core.Serialization.Generators.SerializationMetadataGenerator.Initialize(Microsoft.CodeAnalysis.IncrementalGeneratorInitializationContext context)`](../../src/foundation/core/Inno.Core.Serialization.Generators/SerializationMetadataGenerator.cs#L33) | Called to initialize the generator and register generation steps via callbacks on the context<br>`context`：The Microsoft.CodeAnalysis.IncrementalGeneratorInitializationContext to register callbacks on | — | — |
+| <a id="api-0ba919101b60c047"></a>[`public sealed class Inno.Core.Serialization.Generators.SerializationMetadataGenerator : Microsoft.CodeAnalysis.IIncrementalGenerator`](../../src/foundation/core/Inno.Core.Serialization.Generators/SerializationMetadataGenerator.cs#L15) | Generates closed member access, restoration hooks and collection construction for static deployments. | — | — |
 
 ## 项目依赖
 

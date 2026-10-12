@@ -1,4 +1,6 @@
 <Project>
+  <!-- Only the binding owner consumes its selection as a compilation input. -->
+  <Import Project="$(InnoNativeBindingSelection)" Condition="'$(BindGenGeneratedBindings)' == 'true' and '$(InnoNativeBindingSelection)' != '' and Exists('$(InnoNativeBindingSelection)')" />
   <Import Project="$(MSBuildThisFileDirectory)build/msbuild/Inno.Build.Tasks.targets" />
 
   <PropertyGroup>
@@ -18,16 +20,16 @@
     <ProjectReference Update="$(BGCSRuntimeProject)">
       <AdditionalProperties>%(ProjectReference.AdditionalProperties);$(InnoInteropRuntimeProperties)</AdditionalProperties>
     </ProjectReference>
+    <!-- Only the project declaring the dependency owns its isolated restore. -->
+    <_InnoDirectInteropRuntimeReference Include="@(ProjectReference->WithMetadataValue('FullPath', '$(InnoInteropRuntimeProject)'))" />
   </ItemGroup>
 
   <!-- Path-based restore does not retain project-reference properties across graph traversal. -->
   <Target Name="RestoreInnoInteropRuntime"
           BeforeTargets="ResolveProjectReferences"
-          DependsOnTargets="IncludeTransitiveProjectReferences"
           Condition="'$(DesignTimeBuild)' != 'true' and '$(BuildProjectReferences)' != 'false'">
     <ItemGroup>
-      <_InnoInteropRuntimeReference Include="@(ProjectReference)"
-                                    Condition="'%(ProjectReference.FullPath)' == '$(InnoInteropRuntimeProject)'" />
+      <_InnoInteropRuntimeReference Include="@(_InnoDirectInteropRuntimeReference)" />
     </ItemGroup>
   </Target>
 
@@ -43,6 +45,9 @@
   <!-- The SDK adds runtime references after evaluation without the direct reference's metadata. -->
   <Target Name="ApplyInnoTransitiveReferenceProperties" AfterTargets="IncludeTransitiveProjectReferences">
     <ItemGroup>
+      <ProjectReference Update="@(_TransitiveProjectReferences)" Condition="'$(DesignTimeBuild)' != 'true'">
+        <AdditionalProperties>%(ProjectReference.AdditionalProperties);InnoTaskBootstrapOwner=$(InnoTaskBootstrapOwner)</AdditionalProperties>
+      </ProjectReference>
       <ProjectReference Update="@(_TransitiveProjectReferences)"
                         Condition="'$(InnoProductReferenceProperties)' != '' and '%(ProjectReference.OutputItemType)' != 'Analyzer'">
         <AdditionalProperties>%(ProjectReference.AdditionalProperties);$(InnoProductReferenceProperties)</AdditionalProperties>
@@ -54,6 +59,19 @@
       <ProjectReference Update="@(_TransitiveProjectReferences)"
                         Condition="'$(InnoNativeBindingSelection)' != '' and '%(ProjectReference.OutputItemType)' != 'Analyzer'">
         <AdditionalProperties>%(ProjectReference.AdditionalProperties);InnoNativeBindingSelection=$(InnoNativeBindingSelection)</AdditionalProperties>
+      </ProjectReference>
+    </ItemGroup>
+  </Target>
+
+  <!-- Keep one bootstrap build owner across this project invocation. Private task loads stay distinct.
+       Apply at execution time so read-only graph evaluation does not introduce transient input identities. -->
+  <Target Name="ShareInnoTaskBootstrapOwner"
+          BeforeTargets="AssignProjectConfiguration;_GetProjectReferenceTargetFrameworkProperties;ResolveProjectReferences"
+          AfterTargets="IncludeTransitiveProjectReferences"
+          Condition="'$(DesignTimeBuild)' != 'true'">
+    <ItemGroup>
+      <ProjectReference Update="@(ProjectReference)">
+        <AdditionalProperties>%(ProjectReference.AdditionalProperties);InnoTaskBootstrapOwner=$(InnoTaskBootstrapOwner)</AdditionalProperties>
       </ProjectReference>
     </ItemGroup>
   </Target>
@@ -70,7 +88,7 @@
   <ItemGroup>
     <ProjectReference Update="@(ProjectReference)">
       <PrivateAssets Condition="'%(ProjectReference.OutputItemType)' == 'Analyzer'">all</PrivateAssets>
-      <GlobalPropertiesToRemove Condition="'%(ProjectReference.OutputItemType)' == 'Analyzer'">%(ProjectReference.GlobalPropertiesToRemove);$(InnoTaskExcludedProperties)</GlobalPropertiesToRemove>
+      <GlobalPropertiesToRemove Condition="'%(ProjectReference.OutputItemType)' == 'Analyzer'">%(ProjectReference.GlobalPropertiesToRemove);$(InnoCompilerToolExcludedProperties)</GlobalPropertiesToRemove>
     </ProjectReference>
   </ItemGroup>
   <PropertyGroup Condition="'$(BindGenGeneratedBindings)' == 'true'">
@@ -123,6 +141,8 @@
         DotnetHost="$(InnoBindingDotnetHost)" DescriptorOutputPath="$(BindGenDescriptorOutput)" ExpectedFingerprint="$(BindGenExpectedFingerprint)">
       <Output TaskParameter="GeneratedBindings" PropertyName="BindGenGeneratedSource" />
       <Output TaskParameter="GenerationFingerprint" PropertyName="BindGenGenerationFingerprint" />
+      <Output TaskParameter="GenerationFingerprint" PropertyName="BindGenExpectedFingerprint" />
+      <Output TaskParameter="ArtifactDirectory" PropertyName="BindGenArtifactDirectory" />
       <Output TaskParameter="NativeBridgeDirectory" PropertyName="BindGenNativeBridgeDirectory" />
     </Inno.Build.Tasks.GenerateBindingsTask>
     <PropertyGroup>
@@ -143,7 +163,22 @@
   <Target Name="EnsureBindGenBindings" DependsOnTargets="GenerateBindings"
       Condition="'$(BindGenGeneratedBindings)' == 'true' and '$(DesignTimeBuild)' != 'true' and (('$(InnoBindingOutputMode)' == 'TargetArtifacts' and '$(InnoNativeBindingSelection)' == '') or !Exists('$(BindGenOutputDirectory)/Bindings.cs'))" />
 
-  <Target Name="ValidateBindGenBindings" BeforeTargets="CoreCompile" DependsOnTargets="EnsureBindGenBindings" Condition="'$(BindGenGeneratedBindings)' == 'true'">
+  <Target Name="MaterializeBindGenBindings" DependsOnTargets="EnsureBindGenBindings;PrepareInnoTaskPublisher"
+      Condition="'$(BindGenGeneratedBindings)' == 'true' and '$(DesignTimeBuild)' != 'true'">
+    <Inno.Build.TaskHosting.MaterializeBindingsTask
+        Source="$([System.IO.Path]::GetFullPath('$(BindGenOutputDirectory)/Bindings.cs'))"
+        IntermediateDirectory="$([System.IO.Path]::GetFullPath('$(IntermediateOutputPath)', '$(MSBuildProjectDirectory)'))"
+        ComponentProject="$(MSBuildProjectFullPath)" ArtifactDirectory="$(BindGenArtifactDirectory)"
+        Fingerprint="$(BindGenExpectedFingerprint)">
+      <Output TaskParameter="MaterializedSource" PropertyName="BindGenCompileSource" />
+    </Inno.Build.TaskHosting.MaterializeBindingsTask>
+    <ItemGroup>
+      <Compile Remove="@(Compile)" Condition="'%(Compile.Filename)%(Compile.Extension)' == 'Bindings.cs'" />
+      <Compile Include="$(BindGenCompileSource)" Link="Generated/Bindings.cs" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="ValidateBindGenBindings" BeforeTargets="CoreCompile" DependsOnTargets="EnsureBindGenBindings;MaterializeBindGenBindings" Condition="'$(BindGenGeneratedBindings)' == 'true'">
     <Error Condition="'$(InnoNativeBindingSelection)' != '' and '$(InnoNativeLibraryKind)' != 'Static' and '$(InnoNativeLibraryKind)' != 'Shared'"
            Text="The selected native component must declare its exact Static or Shared linkage." />
     <ItemGroup>
@@ -178,7 +213,7 @@
     DependsOnTargets="PrepareInnoBuildTaskHost"
     Condition="'$(InnoProductId)' != '' and '$(InnoPrepareProductNative)' != 'false' and '$(DesignTimeBuild)' != 'true' and '$(InnoNativeBindingSelection)' == ''">
     <PropertyGroup>
-      <_InnoOwnedProductBindingSelection>$(InnoTaskLoadDirectory)/NativeBindingSelection.props</_InnoOwnedProductBindingSelection>
+      <_InnoOwnedProductBindingSelection>$([System.IO.Path]::GetFullPath('$(IntermediateOutputPath)NativeBindingSelection.props', '$(MSBuildProjectDirectory)'))</_InnoOwnedProductBindingSelection>
     </PropertyGroup>
     <Inno.Build.Tasks.PrepareProductNativeTask
       EngineRoot="$(MSBuildThisFileDirectory)"
@@ -198,12 +233,6 @@
         <AdditionalProperties>%(_MSBuildProjectReferenceExistent.AdditionalProperties);InnoNativeBindingSelection=$(InnoNativeBindingSelection)</AdditionalProperties>
       </_MSBuildProjectReferenceExistent>
     </ItemGroup>
-  </Target>
-
-  <!-- Build can be nested inside Publish. The private task reader owns the selection until its final consumer. -->
-  <Target Name="ReleasePublishBindingSelection" AfterTargets="Publish" DependsOnTargets="PublishProductNativeDeployment"
-      Condition="'$(_InnoOwnedProductBindingSelection)' != ''">
-    <Delete Files="$(_InnoOwnedProductBindingSelection)" />
   </Target>
 
   <Target

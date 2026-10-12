@@ -1,4 +1,5 @@
 <Project>
+  <Import Project="build/msbuild/Inno.Dependencies.props" />
   <Import Project="$(InnoProductBuildProperties)" Condition="'$(InnoProductBuildProperties)' != ''" />
   <PropertyGroup>
     <Deterministic>true</Deterministic>
@@ -7,15 +8,14 @@
     <RestoreSerializeGlobalProperties>true</RestoreSerializeGlobalProperties>
     <PathMap>$(PathMap);$(MSBuildThisFileDirectory)=/_/InnoEngine/</PathMap>
   </PropertyGroup>
-  <Import Project="$(InnoNativeBindingSelection)" Condition="'$(InnoNativeBindingSelection)' != '' and Exists('$(InnoNativeBindingSelection)')" />
   <PropertyGroup>
     <DefaultItemExcludes>$(DefaultItemExcludes);$(MSBuildProjectDirectory)/obj/**;$(MSBuildProjectDirectory)/bin/**</DefaultItemExcludes>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(InnoNativeTarget)' != '' and '$(UseArtifactsOutput)' != 'true' and '$(ArtifactsPath)' == ''">
+  <PropertyGroup Condition="'$(InnoNativeTarget)' != '' and '$(IsRoslynComponent)' != 'true' and '$(UseArtifactsOutput)' != 'true' and '$(ArtifactsPath)' == ''">
     <BaseIntermediateOutputPath>obj/$(InnoNativeTarget)/</BaseIntermediateOutputPath>
     <BaseOutputPath>bin/$(InnoNativeTarget)/</BaseOutputPath>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(InnoNativeTarget)' != '' and '$(InnoNativeBuildFingerprint)' != '' and '$(UseArtifactsOutput)' != 'true' and '$(ArtifactsPath)' == ''">
+  <PropertyGroup Condition="'$(InnoNativeTarget)' != '' and '$(IsRoslynComponent)' != 'true' and '$(InnoNativeBuildFingerprint)' != '' and '$(UseArtifactsOutput)' != 'true' and '$(ArtifactsPath)' == ''">
     <BaseIntermediateOutputPath>obj/$(InnoNativeTarget)/$(InnoNativeBuildFingerprint)/</BaseIntermediateOutputPath>
     <BaseOutputPath>bin/$(InnoNativeTarget)/$(InnoNativeBuildFingerprint)/</BaseOutputPath>
   </PropertyGroup>

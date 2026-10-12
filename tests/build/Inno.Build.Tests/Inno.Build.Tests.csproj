@@ -6,7 +6,16 @@
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
   </PropertyGroup>
+  <!-- Wiki script references use the same shared feature closure as real Editor products. -->
+  <Import Project="../../../src/composition/editor/EditorProduct.props" />
   <ItemGroup>
+    <ProjectReference Include="../../../entry/Inno.Entry.Bootstrap/Inno.Entry.Bootstrap.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../../backends/Sdl3/build/Inno.Build.Toolchains.Sdl3/Inno.Build.Toolchains.Sdl3.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../../backends/MiniAudio/build/Inno.Build.Toolchains.MiniAudio/Inno.Build.Toolchains.MiniAudio.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../../backends/Text/build/Inno.Build.Toolchains.Text/Inno.Build.Toolchains.Text.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../../backends/RmlUi/build/Inno.Build.Toolchains.UI/Inno.Build.Toolchains.UI.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../../src/composition/editor/hosting/Inno.Editor.Hosting/Inno.Editor.Hosting.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../../build/cli/Inno.Build.Cli/Inno.Build.Cli.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../../build/bindings/Inno.Build.Bindings/Inno.Build.Bindings.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../../backends/Bgfx/build/Inno.Build.Toolchains.Bgfx.Tools/Inno.Build.Toolchains.Bgfx.Tools.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../../backends/Bgfx/build/Inno.Build.Toolchains.Bgfx/Inno.Build.Toolchains.Bgfx.csproj" PrivateAssets="compile" />
@@ -20,9 +29,6 @@
     <ProjectReference Include="../../../backends/DotNet/build/Inno.Build.Managed.DotNet/Inno.Build.Managed.DotNet.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../../build/tasks/Inno.Build.Tasks/Inno.Build.Tasks.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../../build/tasks/Inno.Build.TaskHosting/Inno.Build.TaskHosting.csproj" PrivateAssets="compile" />
-    <ProjectReference Include="../../../src/composition/editor/features/Inno.Editor.Exporting/Inno.Editor.Exporting.csproj" PrivateAssets="compile" />
-    <ProjectReference Include="../../../src/composition/editor/framework/Inno.Editor.Core/Inno.Editor.Core.csproj" PrivateAssets="compile" />
-    <ProjectReference Include="../../../src/composition/editor/framework/Inno.Editor.Interactions/Inno.Editor.Interactions.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../../backends/ImGui/native/Inno.Native.ImGui/Inno.Native.ImGui.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../../build/toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../../platforms/Browser/build/Inno.Build.Browser/Inno.Build.Browser.csproj" PrivateAssets="compile" />

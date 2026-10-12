@@ -9,6 +9,9 @@ namespace Inno.Integration.Windows.Bgfx;
 internal sealed class WindowsBgfxBuildProfile : BgfxNativeBuildProfile
 {
     /// <inheritdoc />
+    public override NativeToolchainSelection SelectTools(NativeBuildContext context) => WindowsBgfxToolContribution.Select(context);
+
+    /// <inheritdoc />
     public override string targetId => WindowsBuildModule.target.id.value;
     /// <inheritdoc />
     public override IReadOnlyList<string> generatorArguments => ["vs2022"];

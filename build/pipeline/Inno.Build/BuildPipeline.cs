@@ -185,7 +185,8 @@ public sealed class BuildPipeline
     /// Cancellation before the Pack installation commits.
     /// </param>
     /// <returns>
-    /// The verified target Pack directory. No authoring asset database operations run during preparation.
+    /// Reading ownership of the verified Pack, to be disposed after starting its consuming build.
+    /// No authoring asset database operations run during preparation.
     /// </returns>
     /// <exception cref="NotSupportedException">
     /// No game target is registered for the requested identity.
@@ -199,7 +200,7 @@ public sealed class BuildPipeline
     /// <exception cref="InvalidDataException">
     /// An installed or newly published Pack fails deployment validation.
     /// </exception>
-    public async ValueTask<string> EnsurePlayerSupportPackAsync(
+    public async ValueTask<PlayerSupportPackLease> EnsurePlayerSupportPackAsync(
         BuildTargetId target,
         ManagedDeploymentId? deployment,
         CancellationToken cancellationToken = default

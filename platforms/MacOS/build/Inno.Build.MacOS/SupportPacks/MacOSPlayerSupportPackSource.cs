@@ -38,7 +38,9 @@ public sealed class MacOSPlayerSupportPackSource : IPlayerSupportPackSource
             new MacOSSupportPackValidator(),
             "platforms/MacOS/player/Inno.Player.MacOS/Inno.Player.MacOS.csproj",
             "platforms/MacOS/build/Inno.Build.MacOS/Templates/MacOSPlayer.project.xml",
-            nativePlan, new MacOSNativeToolchainProvider(dotnetHost), host, bindingGenerator);
+            nativePlan, new MacOSNativeToolchainProvider(dotnetHost), host, bindingGenerator,
+            ["platforms/MacOS/build/Inno.Build.MacOS/SupportPacks/MacOSPlayerSupportPackSource.cs",
+                "platforms/MacOS/build/Inno.Build.MacOS/SupportPacks/MacOSSupportPackValidator.cs"]);
     }
 
     /// <inheritdoc />

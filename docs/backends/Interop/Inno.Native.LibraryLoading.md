@@ -22,17 +22,26 @@ resolver 的注册状态使用弱 Assembly key；不会因登记 collectible bin
 
 ```csharp
 using System;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using Inno.Native.LibraryLoading;
 
-IntPtr library = NativeDllLoader.LoadNativeDll(libraryName, bindingOwner);
-try
-{
-    IntPtr function = NativeLibrary.GetExport(library, symbolName);
-}
-finally
-{
-    NativeLibrary.Free(library);
+static void UseDeployedSymbol(
+    string libraryName,
+    Assembly bindingOwner,
+    string symbolName,
+    Action<nint> useWhileLoaded
+) {
+    nint library = NativeDllLoader.LoadNativeDll(libraryName, bindingOwner);
+    try
+    {
+        nint function = NativeLibrary.GetExport(library, symbolName);
+        useWhileLoaded(function);
+    }
+    finally
+    {
+        NativeLibrary.Free(library);
+    }
 }
 ```
 
@@ -45,22 +54,29 @@ Native handle 只存在于所属 Native/Adapter 边界，不进入服务层或�
 
 ## 当前源码公开 API 清单
 
-只列当前源码的 public/protected 表面；内部实现不作为稳定 API。参数、返回、失败和 owner 以英文 XML 为准。
+按类型列出当前 public 与可供外部派生实现使用的 protected 声明。签名包含 nullable、默认参数和泛型约束；源码链接可定位实现。表中的“—”表示该声明没有额外 XML 约束，不能据此推断线程安全或不会失败。生命周期与组合顺序见本页前文。
 
 ### `Inno.Native.LibraryLoading.NativeDllConstants`
 
-| 当前声明 | 行为 |
-| --- | --- |
-| [`Inno.Native.LibraryLoading.NativeDllConstants`](../../../backends/Interop/native/Inno.Native.LibraryLoading/NativeDllConstants.cs#L6) | Shared constants for native dll layout. |
-| [`const string Inno.Native.LibraryLoading.NativeDllConstants.NATIVE_DIR_NAME`](../../../backends/Interop/native/Inno.Native.LibraryLoading/NativeDllConstants.cs#L11) | Output folder name for native binaries. |
+<!-- api: T:Inno.Native.LibraryLoading.NativeDllConstants 20426c0568bf0fd21fbe715f748b24e2b0db4c480902bd7867208d31680b16f4 -->
+<!-- api: F:Inno.Native.LibraryLoading.NativeDllConstants.NATIVE_DIR_NAME 491a10f8cc2d6c75008daa779aaf1144e2129aada856dd6b4a2f7ad9ee427414 -->
+
+| 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
+| --- | --- | --- | --- |
+| <a id="api-3a95f4e3dc365390"></a>[`public const string Inno.Native.LibraryLoading.NativeDllConstants.NATIVE_DIR_NAME = "native"`](../../../backends/Interop/native/Inno.Native.LibraryLoading/NativeDllConstants.cs#L11) | Output folder name for native binaries. | — | — |
+| <a id="api-8f3034abd4fd8251"></a>[`public static class Inno.Native.LibraryLoading.NativeDllConstants`](../../../backends/Interop/native/Inno.Native.LibraryLoading/NativeDllConstants.cs#L6) | Shared constants for native dll layout. | — | — |
 
 ### `Inno.Native.LibraryLoading.NativeDllLoader`
 
-| 当前声明 | 行为 |
-| --- | --- |
-| [`Inno.Native.LibraryLoading.NativeDllLoader`](../../../backends/Interop/native/Inno.Native.LibraryLoading/NativeDllLoader.cs#L16) | Loads explicitly deployed native binaries without changing the application or consulting repository caches. |
-| [`static nint Inno.Native.LibraryLoading.NativeDllLoader.LoadNativeDll(string libraryName, System.Reflection.Assembly bindingAssembly)`](../../../backends/Interop/native/Inno.Native.LibraryLoading/NativeDllLoader.cs#L46) | Loads a native library from the output native folder and registers its binding owner's import resolver. |
-| [`static string Inno.Native.LibraryLoading.NativeDllLoader.FindNativeFile(string fileName)`](../../../backends/Interop/native/Inno.Native.LibraryLoading/NativeDllLoader.cs#L88) | Finds a file under the output native folder. |
+<!-- api: T:Inno.Native.LibraryLoading.NativeDllLoader 6c93dd3d26373308fa8f20fb7d904c23255d5b168e23a209224e63b3d1e22d33 -->
+<!-- api: M:Inno.Native.LibraryLoading.NativeDllLoader.LoadNativeDll(System.String,System.Reflection.Assembly) 67f290dbe38ba9044bc0d8f940a5f7fbe8d0fbfbd2368b6af05e8807db43f50d -->
+<!-- api: M:Inno.Native.LibraryLoading.NativeDllLoader.FindNativeFile(System.String) b31632c087365cc2564ee9864b016acd6b8d3a1617910d5502c031dbc5e2a154 -->
+
+| 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
+| --- | --- | --- | --- |
+| <a id="api-d4f6de88f4f13a13"></a>[`public static string Inno.Native.LibraryLoading.NativeDllLoader.FindNativeFile(string fileName)`](../../../backends/Interop/native/Inno.Native.LibraryLoading/NativeDllLoader.cs#L88) | Finds a file under the output native folder.<br>返回：Full path to the file.<br>`fileName`：Exact file name to locate. | — | `System.ArgumentException`：The file name is empty, contains a path or contains a wildcard.<br>`System.IO.FileNotFoundException`：No file with this exact name is deployed for the current process target.<br>`System.IO.InvalidDataException`：The deployment contains multiple matching files for the current target. |
+| <a id="api-f972652e32085530"></a>[`public static nint Inno.Native.LibraryLoading.NativeDllLoader.LoadNativeDll(string libraryName, System.Reflection.Assembly bindingAssembly)`](../../../backends/Interop/native/Inno.Native.LibraryLoading/NativeDllLoader.cs#L46) | Loads a native library from the output native folder and registers its binding owner's import resolver.<br>返回：A caller-owned handle. Transfer it to one native context or release it with NativeLibrary.Free.<br>`libraryName`：Library name without platform extension.<br>`bindingAssembly`：The explicit assembly containing imports for this library; stack inspection is never required. | — | `System.ArgumentNullException`：The binding assembly is null.<br>`System.ArgumentException`：The library name is empty, contains a path or contains a wildcard.<br>`System.DllNotFoundException`：No library matching the current process target is deployed.<br>`System.IO.InvalidDataException`：Multiple deployed files match the requested library and process target. |
+| <a id="api-a59b5df50444484c"></a>[`public static class Inno.Native.LibraryLoading.NativeDllLoader`](../../../backends/Interop/native/Inno.Native.LibraryLoading/NativeDllLoader.cs#L16) | Loads explicitly deployed native binaries without changing the application or consulting repository caches. | — | — |
 
 ## 项目依赖
 

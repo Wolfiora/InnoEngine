@@ -10,14 +10,18 @@
   <ItemGroup>
     <ProjectReference Include="../../../../src/foundation/core/Inno.Core.IO/Inno.Core.IO.csproj" />
     <ProjectReference Include="../../../../tests/content/fixtures/Inno.Content.Testing/Inno.Content.Testing.csproj" />
-    <ProjectReference Include="../../../../tests/content/fixtures/Inno.Content.CacheProbe/Inno.Content.CacheProbe.csproj" ReferenceOutputAssembly="false" />
     <ProjectReference Include="../../runtime/Inno.Adapter.Content.FileSystem/Inno.Adapter.Content.FileSystem.csproj" />
     <ProjectReference Include="../../../../src/content/deployment/Inno.Content/Inno.Content.csproj" />
   </ItemGroup>
 
   <Target Name="CopyCacheProbe" AfterTargets="Build">
     <MSBuild Projects="../../../../tests/content/fixtures/Inno.Content.CacheProbe/Inno.Content.CacheProbe.csproj"
+             Targets="Restore;Build"
+             Properties="InnoContentProbeExecutable=true;Configuration=$(Configuration)"
+             BuildInParallel="false" />
+    <MSBuild Projects="../../../../tests/content/fixtures/Inno.Content.CacheProbe/Inno.Content.CacheProbe.csproj"
              Targets="GetTargetPath"
+             Properties="InnoContentProbeExecutable=true;Configuration=$(Configuration)"
              BuildInParallel="false">
       <Output TaskParameter="TargetOutputs" ItemName="_CacheProbeAssembly" />
     </MSBuild>

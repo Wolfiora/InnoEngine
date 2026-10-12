@@ -25,19 +25,25 @@ var rendering = new BgfxRenderingBackendProvider(new BrowserBgfxSurfaceIntegrati
 
 ## 验证入口
 
-BgfxSurfaceIntegrationTests 通过公开 SPI 验证未知 surface、错误角色和组合；BgfxSurfaceRetirementTests 验证真实窗口/命令退休。本轮结果见[当前验收](../../architecture/BACKEND_RUNTIME_BOUNDARY_OPTIMIZATION_ACCEPTANCE.md)。
+BgfxSurfaceIntegrationTests 通过公开 SPI 验证未知 surface、错误角色和组合；BgfxSurfaceRetirementTests 验证真实窗口/命令退休。本轮结果见[当前验收](../../architecture/CURRENT_ACCEPTANCE.md)。
 
 ## 当前源码公开 API 清单
 
-只列当前源码 public/protected 表面；内部机制不是稳定 API，参数、返回、失败及所有权以英文 XML 为准。
+按类型列出当前 public 与可供外部派生实现使用的 protected 声明。签名包含 nullable、默认参数和泛型约束；源码链接可定位实现。表中的“—”表示该声明没有额外 XML 约束，不能据此推断线程安全或不会失败。生命周期与组合顺序见本页前文。
 
 ### `Inno.Integration.Browser.Bgfx.Runtime.BrowserBgfxSurfaceIntegration`
 
-| 当前声明 | 行为 |
-| --- | --- |
-| [`Inno.Adapter.Rendering.Bgfx.BgfxSurfaceDescriptor Inno.Integration.Browser.Bgfx.Runtime.BrowserBgfxSurfaceIntegration.Resolve(Inno.Adapter.Platform.PlatformNativeHandles handles, Inno.Adapter.Rendering.Bgfx.BgfxSurfaceRole role)`](../../../platforms/Browser/integrations/Inno.Integration.Browser.Bgfx.Runtime/BrowserBgfxSurfaceIntegration.cs#L35) | Validates this system's borrowed surface ABI before native renderer ownership is acquired. |
-| [`Inno.Integration.Browser.Bgfx.Runtime.BrowserBgfxSurfaceIntegration`](../../../platforms/Browser/integrations/Inno.Integration.Browser.Bgfx.Runtime/BrowserBgfxSurfaceIntegration.cs#L10) | Connects the Browser surface ABI to BGFX without exposing native BGFX types. |
-| [`bool Inno.Integration.Browser.Bgfx.Runtime.BrowserBgfxSurfaceIntegration.supportsAdditionalSurfaces`](../../../platforms/Browser/integrations/Inno.Integration.Browser.Bgfx.Runtime/BrowserBgfxSurfaceIntegration.cs#L15) | Gets whether this system integration permits additional window surfaces. |
+<!-- api: T:Inno.Integration.Browser.Bgfx.Runtime.BrowserBgfxSurfaceIntegration cbbd955b19b3f880ea7510cb3de93afe5cdfe6a1325e496a8eade71385503bbe -->
+<!-- api: P:Inno.Integration.Browser.Bgfx.Runtime.BrowserBgfxSurfaceIntegration.supportsAdditionalSurfaces 2b17c3bc09c094cd53067594e5ed7755650985d749c086e5a7235be03d934b44 -->
+<!-- api: M:Inno.Integration.Browser.Bgfx.Runtime.BrowserBgfxSurfaceIntegration.Resolve(Inno.Adapter.Platform.PlatformNativeHandles,Inno.Adapter.Rendering.Bgfx.BgfxSurfaceRole) 69a14be3e457319732453169509ce2e678344eb77a226f49946336f6975dddea -->
+<!-- api: M:Inno.Integration.Browser.Bgfx.Runtime.BrowserBgfxSurfaceIntegration.#ctor 7da88a2257fef2fa79879bfb59afbdec8a0f31b66f04322d1a6daec6129c718a -->
+
+| 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
+| --- | --- | --- | --- |
+| <a id="api-b370fc9b3aa2e8c7"></a>[`public Inno.Integration.Browser.Bgfx.Runtime.BrowserBgfxSurfaceIntegration.BrowserBgfxSurfaceIntegration()`](../../../platforms/Browser/integrations/Inno.Integration.Browser.Bgfx.Runtime/BrowserBgfxSurfaceIntegration.cs#L10) | C# 隐式构造函数；按类型声明执行字段初始化和基类构造。 | — | — |
+| <a id="api-7ad4d13770d6a191"></a>[`public Inno.Adapter.Rendering.Bgfx.BgfxSurfaceDescriptor Inno.Integration.Browser.Bgfx.Runtime.BrowserBgfxSurfaceIntegration.Resolve(Inno.Adapter.Platform.PlatformNativeHandles handles, Inno.Adapter.Rendering.Bgfx.BgfxSurfaceRole role)`](../../../platforms/Browser/integrations/Inno.Integration.Browser.Bgfx.Runtime/BrowserBgfxSurfaceIntegration.cs#L35) | Validates this system's borrowed surface ABI before native renderer ownership is acquired.<br>返回：The validated handle binding and reset capability, without transferring window ownership.<br>`handles`：The platform window owner's immutable borrowed handles.<br>`role`：The requested primary or additional presentation role. | — | `System.NotSupportedException`：The surface ABI or requested presentation role is not supported by this integration.<br>`System.ArgumentException`：The requested role or native window handle is invalid. |
+| <a id="api-50d2e36029f8a377"></a>[`public bool Inno.Integration.Browser.Bgfx.Runtime.BrowserBgfxSurfaceIntegration.supportsAdditionalSurfaces { get; }`](../../../platforms/Browser/integrations/Inno.Integration.Browser.Bgfx.Runtime/BrowserBgfxSurfaceIntegration.cs#L15) | Gets whether this system integration permits additional window surfaces. | — | — |
+| <a id="api-2aba3054d9219bf5"></a>[`public sealed class Inno.Integration.Browser.Bgfx.Runtime.BrowserBgfxSurfaceIntegration : Inno.Adapter.Rendering.Bgfx.IBgfxSurfaceIntegration`](../../../platforms/Browser/integrations/Inno.Integration.Browser.Bgfx.Runtime/BrowserBgfxSurfaceIntegration.cs#L10) | Connects the Browser surface ABI to BGFX without exposing native BGFX types. | — | — |
 
 ## 项目依赖
 

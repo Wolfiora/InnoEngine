@@ -45,23 +45,35 @@ static UiDocumentAnalysis AnalyzeRml(UiDocumentSourceFile source)
 
 ## 当前源码公开 API 清单
 
-只列当前源码的 public/protected 表面；内部实现不作为稳定 API。参数、返回、失败和 owner 以英文 XML 为准。
+按类型列出当前 public 与可供外部派生实现使用的 protected 声明。签名包含 nullable、默认参数和泛型约束；源码链接可定位实现。表中的“—”表示该声明没有额外 XML 约束，不能据此推断线程安全或不会失败。生命周期与组合顺序见本页前文。
 
 ### `Inno.Adapter.UI.RmlUi.Authoring.RmlUiDocumentFrontend`
 
-| 当前声明 | 行为 |
-| --- | --- |
-| [`Inno.Adapter.UI.RmlUi.Authoring.RmlUiDocumentFrontend`](../../../backends/RmlUi/runtime/Inno.Adapter.UI.RmlUi.Authoring/RmlUiDocumentFrontend.cs#L18) | Validates RML source for the bundled RmlUi runtime adapter. |
-| [`Inno.UI.Assets.UiDocumentAnalysis Inno.Adapter.UI.RmlUi.Authoring.RmlUiDocumentFrontend.Analyze(Inno.UI.Assets.UiDocumentSourceFile source)`](../../../backends/RmlUi/runtime/Inno.Adapter.UI.RmlUi.Authoring/RmlUiDocumentFrontend.cs#L51) | Analyzes source text and returns validated output with diagnostics. |
-| [`Inno.UI.UiDocumentLanguageId Inno.Adapter.UI.RmlUi.Authoring.RmlUiDocumentFrontend.languageId`](../../../backends/RmlUi/runtime/Inno.Adapter.UI.RmlUi.Authoring/RmlUiDocumentFrontend.cs#L40) | Gets the RML source language identifier accepted by this frontend. |
+<!-- api: T:Inno.Adapter.UI.RmlUi.Authoring.RmlUiDocumentFrontend 1029b539cd61ca6c51a5dde1cca657d6b17535294f5474a52455a27032e637c4 -->
+<!-- api: P:Inno.Adapter.UI.RmlUi.Authoring.RmlUiDocumentFrontend.languageId fa6f0ad9b56e115afa5083cd12902356e997089d5c7c3bb2505a4edd7aa59c9d -->
+<!-- api: M:Inno.Adapter.UI.RmlUi.Authoring.RmlUiDocumentFrontend.Analyze(Inno.UI.Assets.UiDocumentSourceFile) 1f674408428624ea3de46e3298d8e1207c486e2ed755e37f0f689d990f3c5437 -->
+<!-- api: M:Inno.Adapter.UI.RmlUi.Authoring.RmlUiDocumentFrontend.#ctor 02784d64733b1175e31858e4a9dd99ef7788d079023d31a9a5ac552658740889 -->
+
+| 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
+| --- | --- | --- | --- |
+| <a id="api-0cec84033786467b"></a>[`public Inno.Adapter.UI.RmlUi.Authoring.RmlUiDocumentFrontend.RmlUiDocumentFrontend()`](../../../backends/RmlUi/runtime/Inno.Adapter.UI.RmlUi.Authoring/RmlUiDocumentFrontend.cs#L18) | C# 隐式构造函数；按类型声明执行字段初始化和基类构造。 | — | — |
+| <a id="api-7b36357ef46ecef0"></a>[`public Inno.UI.Assets.UiDocumentAnalysis Inno.Adapter.UI.RmlUi.Authoring.RmlUiDocumentFrontend.Analyze(Inno.UI.Assets.UiDocumentSourceFile source)`](../../../backends/RmlUi/runtime/Inno.Adapter.UI.RmlUi.Authoring/RmlUiDocumentFrontend.cs#L51) | Analyzes source text and returns validated output with diagnostics.<br>返回：The validated ui document analysis that represents the completed operation.<br>`source`：The source value or location read by this operation. | — | — |
+| <a id="api-ca9b5b7b698076cf"></a>[`public Inno.UI.UiDocumentLanguageId Inno.Adapter.UI.RmlUi.Authoring.RmlUiDocumentFrontend.languageId { get; }`](../../../backends/RmlUi/runtime/Inno.Adapter.UI.RmlUi.Authoring/RmlUiDocumentFrontend.cs#L40) | Gets the RML source language identifier accepted by this frontend. | — | — |
+| <a id="api-2eab4a2725cc5e3f"></a>[`public sealed class Inno.Adapter.UI.RmlUi.Authoring.RmlUiDocumentFrontend : Inno.UI.Assets.IUiDocumentFrontend`](../../../backends/RmlUi/runtime/Inno.Adapter.UI.RmlUi.Authoring/RmlUiDocumentFrontend.cs#L18) | Validates RML source for the bundled RmlUi runtime adapter. | — | — |
 
 ### `Inno.Adapter.UI.RmlUi.Authoring.RmlUiDocumentImporter`
 
-| 当前声明 | 行为 |
-| --- | --- |
-| [`Inno.Adapter.UI.RmlUi.Authoring.RmlUiDocumentImporter`](../../../backends/RmlUi/runtime/Inno.Adapter.UI.RmlUi.Authoring/RmlUiDocumentImporter.cs#L14) | Maps the conventional .rml extension to explicit RML and RmlUi identities. |
-| [`override System.Collections.Generic.IReadOnlyList<string> Inno.Adapter.UI.RmlUi.Authoring.RmlUiDocumentImporter.supportedExtensions`](../../../backends/RmlUi/runtime/Inno.Adapter.UI.RmlUi.Authoring/RmlUiDocumentImporter.cs#L20) | Gets the normalized source extensions accepted by this importer. |
-| [`override System.Threading.Tasks.ValueTask Inno.Adapter.UI.RmlUi.Authoring.RmlUiDocumentImporter.ImportAsync(Inno.Assets.Pipeline.AssetImportContext context, Inno.Assets.Pipeline.AssetImportWriter<Inno.UI.UiDocumentAsset> output, System.Threading.CancellationToken cancellationToken)`](../../../backends/RmlUi/runtime/Inno.Adapter.UI.RmlUi.Authoring/RmlUiDocumentImporter.cs#L37) | Imports source content into a validated runtime asset and artifact set. |
+<!-- api: T:Inno.Adapter.UI.RmlUi.Authoring.RmlUiDocumentImporter d5f14ce704b46951a081a87c2b37d3de946c661f125190929dfa88df0c8075a3 -->
+<!-- api: P:Inno.Adapter.UI.RmlUi.Authoring.RmlUiDocumentImporter.supportedExtensions db7572c19a55d86c5995fe9feb14c47f9392868d0a5b64b8b6cf0ffe77bb0d09 -->
+<!-- api: M:Inno.Adapter.UI.RmlUi.Authoring.RmlUiDocumentImporter.ImportAsync(Inno.Assets.Pipeline.AssetImportContext,Inno.Assets.Pipeline.AssetImportWriter{Inno.UI.UiDocumentAsset},System.Threading.CancellationToken) 4fa06c6f4e186853d9601f0c4087a63616b7803efe21e743d4882f4763cac14a -->
+<!-- api: M:Inno.Adapter.UI.RmlUi.Authoring.RmlUiDocumentImporter.#ctor bf45aa28a62ee98bbc5847b7d48cbe6a990adeef8c1d010d7e7771ec04991b63 -->
+
+| 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
+| --- | --- | --- | --- |
+| <a id="api-a12cab916d465e7c"></a>[`public Inno.Adapter.UI.RmlUi.Authoring.RmlUiDocumentImporter.RmlUiDocumentImporter()`](../../../backends/RmlUi/runtime/Inno.Adapter.UI.RmlUi.Authoring/RmlUiDocumentImporter.cs#L15) | C# 隐式构造函数；按类型声明执行字段初始化和基类构造。 | — | — |
+| <a id="api-2a3b11632adc0373"></a>[`protected override System.Threading.Tasks.ValueTask Inno.Adapter.UI.RmlUi.Authoring.RmlUiDocumentImporter.ImportAsync(Inno.Assets.Pipeline.AssetImportContext context, Inno.Assets.Pipeline.AssetImportWriter<Inno.UI.UiDocumentAsset> output, System.Threading.CancellationToken cancellationToken)`](../../../backends/RmlUi/runtime/Inno.Adapter.UI.RmlUi.Authoring/RmlUiDocumentImporter.cs#L37) | Imports source content into a validated runtime asset and artifact set.<br>返回：An asynchronous operation that completes after all requested work has finished.<br>`context`：The context that supplies state and services for this operation.<br>`output`：The import output writer that receives runtime data and dependency declarations.<br>`cancellationToken`：The token that cancels the operation before it commits. | — | — |
+| <a id="api-68da99369a801b4d"></a>[`public override System.Collections.Generic.IReadOnlyList<string> Inno.Adapter.UI.RmlUi.Authoring.RmlUiDocumentImporter.supportedExtensions { get; }`](../../../backends/RmlUi/runtime/Inno.Adapter.UI.RmlUi.Authoring/RmlUiDocumentImporter.cs#L20) | Gets the normalized source extensions accepted by this importer. | — | — |
+| <a id="api-f2dcb3cd00496c25"></a>[`public sealed class Inno.Adapter.UI.RmlUi.Authoring.RmlUiDocumentImporter : Inno.Assets.Pipeline.AssetImporter<Inno.UI.UiDocumentAsset>`](../../../backends/RmlUi/runtime/Inno.Adapter.UI.RmlUi.Authoring/RmlUiDocumentImporter.cs#L15) | Maps the conventional .rml extension to explicit RML and RmlUi identities. | — | — |
 
 ## 项目依赖
 

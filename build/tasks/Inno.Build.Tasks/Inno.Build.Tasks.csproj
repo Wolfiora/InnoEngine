@@ -4,7 +4,7 @@
     <ImplicitUsings>disable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
-    <BindGenRoot Condition="'$(BindGenRoot)' == ''">$(MSBuildProjectDirectory)/../../../../BindGen-CS</BindGenRoot>
+
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="../../bindings/Inno.Build.Bindings/Inno.Build.Bindings.csproj" PrivateAssets="compile" />

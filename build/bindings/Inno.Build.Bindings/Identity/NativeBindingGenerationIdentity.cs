@@ -23,15 +23,15 @@ internal static class NativeBindingGenerationIdentity
     internal static string Compute(
         CsCodeGeneratorConfig managed,
         Cpp2CGeneratorConfig? bridge,
-        string configPath,
-        string bridgeConfigPath,
+        BindingGenerationConfiguration definition,
         string outputRoot,
         NativeBuildContext context,
-        string definitionPath,
         string? hostBridgeRoot,
         CancellationToken cancellationToken,
         IReadOnlyList<string>? excludedDirectories = null
     ) {
+        string configPath = definition.configPath;
+        string bridgeConfigPath = definition.bridgePath ?? string.Empty;
         string managedBase = Path.GetDirectoryName(Path.GetFullPath(configPath))!;
         string bridgeBase = bridge is null ? managedBase : Path.GetDirectoryName(Path.GetFullPath(bridgeConfigPath))!;
         string? bridgeOutput = bridge is null ? null : Resolve(bridge.outputPath, bridgeBase!);
@@ -94,8 +94,10 @@ internal static class NativeBindingGenerationIdentity
             lowering);
         return NativeBuildFingerprint.Create(
             context,
-            [fingerprint],
-            inputs.Concat(new[] { definitionPath, configPath, bridgeConfigPath, managedCompiler, bridgeCompiler }
+            [fingerprint, definition.component.nativeProject, definition.request.targetId,
+                definition.request.outputMode.ToString(), Path.GetRelativePath(context.engineRoot, definition.definition),
+                definition.extensionProject ?? string.Empty, hostBridgeRoot ?? string.Empty],
+            inputs.Concat(new[] { configPath, bridgeConfigPath, managedCompiler, bridgeCompiler }
                 .OfType<string>().Where(static path => path.Length != 0))
                 .Select(path => NativeBuildInput.FromPath(context.engineRoot, path)),
             cancellationToken);

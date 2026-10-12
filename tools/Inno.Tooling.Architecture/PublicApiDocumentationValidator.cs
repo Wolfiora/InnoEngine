@@ -122,7 +122,7 @@ internal static class PublicApiDocumentationValidator
         return false;
     }
 
-    private static IEnumerable<ISymbol> InheritedMembers(ISymbol symbol)
+    internal static IEnumerable<ISymbol> InheritedMembers(ISymbol symbol)
     {
         ISymbol? overridden = symbol switch
         {

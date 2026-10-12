@@ -6,6 +6,7 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="../../../src/foundation/core/Inno.Core.IO/Inno.Core.IO.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj" PrivateAssets="compile" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.Build" Version="17.12.50" PrivateAssets="all" ExcludeAssets="runtime" />

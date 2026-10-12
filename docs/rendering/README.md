@@ -21,4 +21,4 @@ Rendering Core 是后端中立机制，不内建 2D/3D/PBR/Forward/Deferred/Came
 
 目标是所有 `.ishader` 由图定义，源码仅为函数节点，Material 只保存 Shader 引用与参数。
 Shader 图已成为唯一创作格式；旧 MaterialGraph 和全文源码 Shader API 已移除。验收状态与未完成项目详见
-[统一 Shader 实施记录](../issues/2026-09-11-unified-shader-implementation.md)。只有 BGFX adapter 和对应 toolchain 可以引用 BGFX Native。
+[当前验收](../architecture/CURRENT_ACCEPTANCE.md)。只有 BGFX adapter 和对应 toolchain 可以引用 BGFX Native。

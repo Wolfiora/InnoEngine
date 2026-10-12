@@ -62,54 +62,63 @@ public static class BrowserToolchain
                 || !step.component.staticBuild.targetIds.Contains(tools.targetId, StringComparer.Ordinal))
                 throw new InvalidOperationException($"Component '{step.id}' has no selected static build capability.");
 
-        IReadOnlyDictionary<string, NativeBindingGenerationDescriptor> generations = await NativeBindingPreparation.PrepareAsync(
+        NativeBindingGenerationResult generations = await NativeBindingPreparation.PrepareAsync(
             context, plan.steps.Select(static step => step.component).ToArray(), cancellationToken).ConfigureAwait(false);
-        context = context.WithBindings(generations).WithComponentOptions(componentDescriptor, new(NativeLibraryKind.Static));
-        string owner = componentDescriptor.GetToolchainRoot(context.engineRoot);
-        string[] inputs = plan.steps.SelectMany(step => step.component.staticBuild!.inputPaths
-                .Append(step.component.staticBuild.cmakeFile)
-                .Select(path => Path.GetFullPath(path, context.engineRoot))
-                .Append(step.component.GetToolchainRoot(context.engineRoot))
-                .Concat(step.options.inputPaths.Select(path => Path.GetFullPath(path, context.engineRoot))))
-            .Concat(generations.Values.Select(static generation => generation.bindingsPath))
-            .Concat(generations.Values.Where(static generation => generation.bridgeDirectory.Length != 0)
-                .Select(static generation => generation.bridgeDirectory))
-            .Append(Path.Combine(owner, "Native", "CMakeLists.txt"))
-            .Distinct(StringComparer.Ordinal).ToArray();
-        string[] declarations = plan.steps.Select(step => step.id + "=" + step.component.staticBuild!.cmakeFile)
-            .Concat(plan.steps.SelectMany(static step => new[] { step.id + ":library=" + step.options.libraryKind }
-                .Concat(step.options.cmakeArguments.Select(argument => step.id + ":argument=" + argument))))
-            .Concat(generations.OrderBy(static pair => pair.Key, StringComparer.Ordinal)
-                .Select(static pair => pair.Key + "=" + pair.Value.fingerprint))
-            .Append("product=" + plan.productId).ToArray();
-        NativeBuildRecipe recipe = NativeBuildRecipe.CreateForComponent(
-            context, componentDescriptor, "browser", tools.targetId, inputs, declarations,
-            [Path.Combine(owner, "BrowserToolchain.cs"), Path.Combine(owner, "BrowserNativeArtifacts.cs")]);
-        NativeBuildProduct product = await NativeArtifactPublisher.PublishAsync(context, recipe,
-            async (
-                scoped,
-                output,
-                token
-            ) => {
-                string intermediate = scoped.GetNativeBuildRoot(componentDescriptor);
-                Directory.CreateDirectory(intermediate);
-                string selection = Path.Combine(intermediate, "Components.cmake");
-                NativeCMakeSource sources = await NativeCMakeExecutor.PrepareSourceAsync(
-                    scoped, componentDescriptor, token).ConfigureAwait(false);
-                WriteComponentSelection(selection, scoped.engineRoot, sources, plan, generations);
-                string build = await NativeCMakeExecutor.BuildAsync(scoped, componentDescriptor,
-                    Path.Combine(owner, "Native"), null,
-                    ["-DINNO_COMPONENT_SELECTION=" + selection, "-DCMAKE_INSTALL_PREFIX=" + output,
-                        "-DPython3_EXECUTABLE=" + tools.ResolveExecutable("python")], token).ConfigureAwait(false);
-                await ToolchainEnvironment.RunAsync(scoped, tools.ResolveExecutable("cmake"),
-                    ["--install", build, "--component", "Inno"], scoped.engineRoot, token,
-                    tools.environment).ConfigureAwait(false);
-                ValidateNativeOutputs(output, tools.targetId, plan);
-                NativeBindingGenerationDescriptor.WriteSelection(Path.Combine(output, "Metadata", "BindingSelection.props"), generations,
-                    plan.steps.Where(step => generations.ContainsKey(step.component.nativeProject))
-                        .ToDictionary(static step => step.component.nativeProject, static step => step.options.libraryKind, StringComparer.Ordinal));
-            }, cancellationToken).ConfigureAwait(false);
-        return new BrowserNativeArtifacts(product.fingerprint, Path.Combine(product.directory, "Outputs"));
+        try
+        {
+            context = context.WithBindings(generations).WithComponentOptions(componentDescriptor, new(NativeLibraryKind.Static));
+            string owner = componentDescriptor.GetToolchainRoot(context.engineRoot);
+            string[] inputs = plan.steps.SelectMany(step => step.component.staticBuild!.inputPaths
+                    .Append(step.component.staticBuild.cmakeFile)
+                    .Select(path => Path.GetFullPath(path, context.engineRoot))
+                    .Concat(step.options.inputPaths.Select(path => Path.GetFullPath(path, context.engineRoot))))
+                .Concat(generations.Values.Select(static generation => generation.bindingsPath))
+                .Concat(generations.Values.Where(static generation => generation.bridgeDirectory.Length != 0)
+                    .Select(static generation => generation.bridgeDirectory))
+                .Append(Path.Combine(owner, "Native", "CMakeLists.txt"))
+                .Distinct(StringComparer.Ordinal).ToArray();
+            string[] declarations = plan.steps.Select(step => step.id + "=" + step.component.staticBuild!.cmakeFile)
+                .Concat(plan.steps.SelectMany(static step => step.component.staticBuild!.archiveNames
+                    .Select(name => step.id + ":archive=" + name)))
+                .Concat(plan.steps.SelectMany(static step => new[] { step.id + ":library=" + step.options.libraryKind }
+                    .Concat(step.options.cmakeArguments.Select(argument => step.id + ":argument=" + argument))))
+                .Concat(generations.OrderBy(static pair => pair.Key, StringComparer.Ordinal)
+                    .Select(static pair => pair.Key + "=" + pair.Value.fingerprint))
+                .Append("product=" + plan.productId).ToArray();
+            NativeBuildRecipe recipe = NativeBuildRecipe.CreateForComponent(
+                context, componentDescriptor, "browser", tools.targetId, inputs, declarations,
+                [Path.Combine(owner, "BrowserToolchain.cs"), Path.Combine(owner, "BrowserNativeArtifacts.cs")]);
+            NativeBuildProduct product = await NativeArtifactPublisher.PublishAsync(context, recipe,
+                async (
+                    scoped,
+                    output,
+                    token
+                ) => {
+                    string intermediate = scoped.GetNativeBuildRoot(componentDescriptor);
+                    Directory.CreateDirectory(intermediate);
+                    string selection = Path.Combine(intermediate, "Components.cmake");
+                    NativeCMakeSource sources = await NativeCMakeExecutor.PrepareSourceAsync(
+                        scoped, componentDescriptor, token).ConfigureAwait(false);
+                    WriteComponentSelection(selection, scoped.engineRoot, sources, plan, generations);
+                    string build = await NativeCMakeExecutor.BuildAsync(scoped, componentDescriptor,
+                        Path.Combine(owner, "Native"), null,
+                        ["-DINNO_COMPONENT_SELECTION=" + selection, "-DCMAKE_INSTALL_PREFIX=" + output,
+                            "-DPython3_EXECUTABLE=" + tools.ResolveExecutable("python")], token).ConfigureAwait(false);
+                    await ToolchainEnvironment.RunAsync(scoped, tools.ResolveExecutable("cmake"),
+                        ["--install", build, "--component", "Inno"], scoped.engineRoot, token,
+                        tools.environment).ConfigureAwait(false);
+                    ValidateNativeOutputs(output, tools.targetId, plan);
+                    NativeBindingGenerationDescriptor.WriteSelection(Path.Combine(output, "Metadata", "BindingSelection.props"), generations,
+                        plan.steps.Where(step => generations.ContainsKey(step.component.nativeProject))
+                            .ToDictionary(static step => step.component.nativeProject, static step => step.options.libraryKind, StringComparer.Ordinal));
+                }, cancellationToken).ConfigureAwait(false);
+            return new BrowserNativeArtifacts(product, generations);
+        }
+        catch
+        {
+            generations.Dispose();
+            throw;
+        }
     }
 
     private static void WriteComponentSelection(

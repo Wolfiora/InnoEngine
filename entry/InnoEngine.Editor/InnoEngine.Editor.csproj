@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <AssemblyName>InnoEngine.Editor</AssemblyName>
+    <RootNamespace>InnoEngine.Editor</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../Inno.Entry.Bootstrap/Inno.Entry.Bootstrap.csproj" />
+  </ItemGroup>
+</Project>

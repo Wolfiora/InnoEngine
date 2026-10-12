@@ -36,6 +36,7 @@ internal static class TargetBindingGeneration
     ) => new()
     {
         fingerprint = fingerprint,
+        artifactDirectory = destination,
         bindingsPath = Path.Combine(destination, "Generated", "Bindings.cs"),
         bridgeDirectory = hasBridge ? Path.Combine(destination, "Native") : string.Empty
     };

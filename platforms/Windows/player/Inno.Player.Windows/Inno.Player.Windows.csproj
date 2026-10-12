@@ -11,7 +11,7 @@
     <TargetFramework>net9.0</TargetFramework>
     <ImplicitUsings>disable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <OutputType>Exe</OutputType>
+    <OutputType>Library</OutputType>
     <InnoGeneratePlayerComposition>true</InnoGeneratePlayerComposition>
   </PropertyGroup>
   <ItemGroup>

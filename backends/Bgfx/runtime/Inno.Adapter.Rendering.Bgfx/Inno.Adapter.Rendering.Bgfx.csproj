@@ -57,5 +57,9 @@
   </ItemGroup>
   <ItemGroup>
     <_CompositionShaderApi Include="$(InnoBgfxShaderApis)" Condition="'$(InnoBgfxShaderApis)' != ''" />
+    <AdditionalCompileInputs Include="Shaders/**/*" />
+    <InnoBuildInputProject Include="../../../../build/tasks/Inno.Build.Tasks/Inno.Build.Tasks.csproj">
+      <GlobalPropertiesToRemove>RuntimeIdentifier;InnoNativeTarget;InnoProductTarget;InnoProductBuildProperties;InnoNativeBindingSelection;InnoNativeBuildFingerprint</GlobalPropertiesToRemove>
+    </InnoBuildInputProject>
   </ItemGroup>
 </Project>

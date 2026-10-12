@@ -23,18 +23,21 @@ BgfxNativeBuildProfile profile = LinuxBgfxIntegration.CreateNativeProfile("linux
 
 ## 测试与平台状态
 
-Build 的 PlatformBackendIntegrationTests、BuildCompositionTests、NativeComponentBuildOptionsTests 与真实发布验证此契约。当前实机与未实测状态见[本轮验收](../../architecture/BACKEND_PLATFORM_INTEGRATION_ACCEPTANCE.md)。
+Build 的 PlatformBackendIntegrationTests、BuildCompositionTests、NativeComponentBuildOptionsTests 与真实发布验证此契约。当前实机与未实测状态见[当前验收](../../architecture/CURRENT_ACCEPTANCE.md)。
 
 ## 当前源码公开 API 清单
 
-只列当前源码的 public/protected 表面；内部实现不作为稳定 API。参数、返回、失败和 owner 以英文 XML 为准。
+按类型列出当前 public 与可供外部派生实现使用的 protected 声明。签名包含 nullable、默认参数和泛型约束；源码链接可定位实现。表中的“—”表示该声明没有额外 XML 约束，不能据此推断线程安全或不会失败。生命周期与组合顺序见本页前文。
 
 ### `Inno.Integration.Linux.Bgfx.LinuxBgfxIntegration`
 
-| 当前声明 | 行为 |
-| --- | --- |
-| [`Inno.Integration.Linux.Bgfx.LinuxBgfxIntegration`](../../../platforms/Linux/integrations/Inno.Integration.Linux.Bgfx/LinuxBgfxIntegration.cs#L9) | Connects the implemented Linux SDK targets to BGFX tool builds without registering a Player. |
-| [`static Inno.Build.Toolchains.Bgfx.BgfxNativeBuildProfile Inno.Integration.Linux.Bgfx.LinuxBgfxIntegration.CreateNativeProfile(string targetId)`](../../../platforms/Linux/integrations/Inno.Integration.Linux.Bgfx/LinuxBgfxIntegration.cs#L23) | Resolves SDK invocation data for an implemented Linux native target. |
+<!-- api: T:Inno.Integration.Linux.Bgfx.LinuxBgfxIntegration a4fd94cf0e22098324a9e37ce56d7dbf1f45e481cd04c387b279bf247c91ac19 -->
+<!-- api: M:Inno.Integration.Linux.Bgfx.LinuxBgfxIntegration.CreateNativeProfile(System.String) b8de05f4d2c8c5b3531ed7428afb484945a0ae8d90050df0412f9c19e3c20830 -->
+
+| 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
+| --- | --- | --- | --- |
+| <a id="api-4df4e94876f1a4f6"></a>[`public static Inno.Build.Toolchains.Bgfx.BgfxNativeBuildProfile Inno.Integration.Linux.Bgfx.LinuxBgfxIntegration.CreateNativeProfile(string targetId)`](../../../platforms/Linux/integrations/Inno.Integration.Linux.Bgfx/LinuxBgfxIntegration.cs#L23) | Resolves SDK invocation data for an implemented Linux native target.<br>返回：Immutable backend configuration; unsupported targets fail without tool execution.<br>`targetId`：The explicitly requested native target. | — | `System.NotSupportedException`：The native target is not implemented by this module. |
+| <a id="api-611747c573a75b06"></a>[`public static class Inno.Integration.Linux.Bgfx.LinuxBgfxIntegration`](../../../platforms/Linux/integrations/Inno.Integration.Linux.Bgfx/LinuxBgfxIntegration.cs#L9) | Connects the implemented Linux SDK targets to BGFX tool builds without registering a Player. | — | — |
 
 ## 项目依赖
 

@@ -11,7 +11,8 @@
     <TargetFramework>net9.0</TargetFramework>
     <ImplicitUsings>disable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <OutputType>Exe</OutputType>
+    <OutputType>Library</OutputType>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <InnoAssemblyScope>Editor</InnoAssemblyScope>
   </PropertyGroup>
   <ItemGroup>
@@ -20,16 +21,20 @@
     <ProjectReference Include="../../integrations/Inno.Integration.Windows.Bgfx/Inno.Integration.Windows.Bgfx.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../../../backends/ImGui/runtime/Inno.Adapter.Presentation.ImGui.Bgfx/Inno.Adapter.Presentation.ImGui.Bgfx.csproj" PrivateAssets="compile" />
 
-    <ProjectReference Include="../../build/Inno.Build.Windows/Inno.Build.Windows.csproj" />
-    <ProjectReference Include="../../../../src/composition/editor/hosting/Inno.Editor.Hosting/Inno.Editor.Hosting.csproj" />
-    <ProjectReference Include="../../../../src/composition/adapters/Inno.Adapter.Authoring.Default/Inno.Adapter.Authoring.Default.csproj" />
-    <ProjectReference Include="../../../../backends/FileSystem/runtime/Inno.Adapter.Storage.FileSystem/Inno.Adapter.Storage.FileSystem.csproj" />
-    <ProjectReference Include="../../../../backends/DotNet/runtime/Inno.Adapter.Modules.DotNet/Inno.Adapter.Modules.DotNet.csproj" />
-    <ProjectReference Include="../../../../backends/DotNet/runtime/Inno.Adapter.Serialization.DotNet/Inno.Adapter.Serialization.DotNet.csproj" />
-    <ProjectReference Include="../../../../build/distributions/Inno.Build.Distribution.Standard/Inno.Build.Distribution.Standard.csproj" />
-    <ProjectReference Include="../../../../src/foundation/core/Inno.Core.Execution/Inno.Core.Execution.csproj" />
-    <ProjectReference Include="../../runtime/Inno.Platform.Windows/Inno.Platform.Windows.csproj" />
-    <ProjectReference Include="../../../../backends/Bgfx/build/Inno.Build.Toolchains.Bgfx.Tools/Inno.Build.Toolchains.Bgfx.Tools.csproj" />
+    <ProjectReference Include="../../build/Inno.Build.Windows/Inno.Build.Windows.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../../../src/composition/editor/hosting/Inno.Editor.Hosting/Inno.Editor.Hosting.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../../../src/composition/adapters/Inno.Adapter.Authoring.Default/Inno.Adapter.Authoring.Default.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../../../backends/FileSystem/runtime/Inno.Adapter.Storage.FileSystem/Inno.Adapter.Storage.FileSystem.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../../../backends/DotNet/runtime/Inno.Adapter.Modules.DotNet/Inno.Adapter.Modules.DotNet.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../../../backends/DotNet/runtime/Inno.Adapter.Serialization.DotNet/Inno.Adapter.Serialization.DotNet.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../../../build/distributions/Inno.Build.Distribution.Standard/Inno.Build.Distribution.Standard.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../../../src/foundation/core/Inno.Core.Execution/Inno.Core.Execution.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../runtime/Inno.Platform.Windows/Inno.Platform.Windows.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../../../backends/Bgfx/build/Inno.Build.Toolchains.Bgfx.Tools/Inno.Build.Toolchains.Bgfx.Tools.csproj" PrivateAssets="compile" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../../../src/foundation/core/Inno.Core.Serialization/Inno.Core.Serialization.csproj" />
+    <ProjectReference Include="../../../../src/foundation/extensibility/Inno.Extensibility.Catalogs/Inno.Extensibility.Catalogs.csproj" />
   </ItemGroup>
   <Import Project="../../../../src/composition/editor/EditorProduct.props" />
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />

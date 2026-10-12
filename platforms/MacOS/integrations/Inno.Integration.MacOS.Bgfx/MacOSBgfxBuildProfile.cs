@@ -9,6 +9,9 @@ namespace Inno.Integration.MacOS.Bgfx;
 internal sealed class MacOSBgfxBuildProfile : BgfxNativeBuildProfile
 {
     /// <inheritdoc />
+    public override NativeToolchainSelection SelectTools(NativeBuildContext context) => MacOSBgfxToolContribution.Select(context);
+
+    /// <inheritdoc />
     public override string targetId => MacOSBuildModule.target.id.value;
     /// <inheritdoc />
     public override IReadOnlyList<string> generatorArguments => ["--gcc=osx-arm64", "gmake"];

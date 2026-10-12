@@ -32,3 +32,7 @@ Windows、MacOS、Browser 的 target/source/validator/template 属于各平台 B
 ## 共享绑定生成
 
 - [Inno.Build.Bindings](Inno.Build.Bindings.md)：唯一 BGCS 消费实现，供中立生成契约组合。
+
+## CI 依赖图
+
+- [NuGet 依赖图提交](DEPENDENCY_SUBMISSION.md)：完整准备同级 BGCS 源码与 SDK，解释自动扫描失败原因和仓库设置切换。

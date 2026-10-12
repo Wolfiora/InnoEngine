@@ -4,32 +4,41 @@
 
 Build your game's rendering models, gameplay systems, and Editor tools on a shared foundation. InnoEngine provides backend-neutral mechanisms, explicit platform composition, and a common asset and plugin workflow.
 
-[Get started](#get-started--windows-x64) · [Wiki](docs/README.md) · [Architecture](docs/architecture/ENGINE_ARCHITECTURE_OVERVIEW.md) · [Extend the engine](docs/architecture/PLATFORM_EXTENSION_GUIDE.md)
+[Get started](#get-started) · [Wiki](docs/README.md) · [Architecture](docs/architecture/ENGINE_ARCHITECTURE_OVERVIEW.md) · [Extend the engine](docs/architecture/PLATFORM_EXTENSION_GUIDE.md)
 
-![InnoEngine Editor](preview.png)
+![InnoEngine.Editor](preview.png)
 
-> Active development. APIs and project data evolve together. Current validation and outstanding device checks are recorded in the [acceptance report](docs/architecture/BACKEND_RUNTIME_BOUNDARY_OPTIMIZATION_ACCEPTANCE.md).
+> Active development. APIs and project data evolve together. See [current validation and limitations](docs/architecture/CURRENT_ACCEPTANCE.md) before relying on a product path.
 
-## Get started · Windows x64
+## Get started
 
-**Requirements:** Git, .NET 9 SDK for InnoEngine, and Visual Studio 2022 with **Desktop development with C++**, Windows SDK, and C++ CMake tools. BindGen-CS declares its own SDK in `global.json` (currently .NET 10).
+**Requirements:** Git, the project's .NET 9 SDK, and the Native SDK for your host: Visual Studio C++ / Windows SDK on Windows x64, or Xcode command line tools on macOS ARM64.
 
-Keep the engine, binding generator, and samples beside each other:
-
-```powershell
+```sh
 git clone --recurse-submodules https://github.com/Wolfiora/InnoEngine.git
-git clone https://github.com/FLwolfy/BindGen-CS.git
-git clone https://github.com/Wolfiora/InnoEngine.Samples.git
 cd InnoEngine
-
-dotnet run --project platforms/Windows/editor/Inno.Editor.Windows -c Debug -- ../InnoEngine.Samples/FlappyBird
 ```
 
-The first build prepares native libraries, bindings, and Editor shaders automatically. Open the FlappyBird scene and press **Play**.
+Open **InnoEngine.sln** in Rider or Visual Studio. Choose one of two startup projects:
 
-In an IDE, select **Inno.Editor.Windows** as the startup project and pass the sample's absolute directory as its first program argument. Build that project explicitly; platform products are intentionally excluded from the default solution build.
+| Start | What it does |
+|---|---|
+| **InnoEngine.Editor** | Starts the validated prepared Editor and opens a project-folder picker; builds on first preparation. |
+| **InnoEngine.Build** | Incrementally prepares the host Editor. Cleaning requires an explicit command or `--clean`. |
 
-For macOS startup and Windows/Web game exports, see [Product startup](docs/platform/PRODUCT_STARTUP.md). Players run the exported game, including its code and content.
+The same commands work from a terminal:
+
+```sh
+dotnet run --project "entry/InnoEngine.Build/InnoEngine.Build.csproj"
+dotnet run --project "entry/InnoEngine.Editor/InnoEngine.Editor.csproj"
+```
+
+BindGen-CS is a pinned source submodule under `dependencies/`; a separate sibling checkout is unnecessary. A plain clone initializes missing submodules on the first entry run. Initial preparation needs network access and can take time.
+After changing engine or backend source, run InnoEngine.Build. Prepared Editor startup validates its deployed files and does not invoke MSBuild or native compilers. Game scripts and assets use the Editor's import and reload workflow. Player support packs are prepared separately when exporting a game or requesting `support-pack`.
+
+Have a project already? Pass its directory after `--`. To try FlappyBird, clone [InnoEngine.Samples](https://github.com/Wolfiora/InnoEngine.Samples) separately and select its FlappyBird folder. Linux currently offers Native tooling rebuilds; an Editor has not been implemented.
+
+[Startup, advanced commands, and game exports →](docs/platform/PRODUCT_STARTUP.md) · [Current acceptance](docs/architecture/CURRENT_ACCEPTANCE.md)
 
 ## Product targets
 
@@ -39,7 +48,7 @@ For macOS startup and Windows/Web game exports, see [Product startup](docs/platf
 | macOS ARM64 | Editor, Player | CoreCLR, NativeAOT |
 | Browser Wasm32 / WebGL 2 | Player | Mono Wasm, Mono Wasm AOT |
 
-Windows and Web have publish-and-run evidence. macOS actual-host validation and remaining GUI, DPI, and audio device checks are tracked separately in the acceptance report. Linux currently contributes native tooling only.
+The current build/cache refactor still requires the Windows and Web product matrix to be rerun. macOS needs validation on a macOS host. GUI, DPI, and audio device checks are tracked separately; Linux currently contributes native tooling only.
 
 ## Built to compose
 
@@ -51,6 +60,8 @@ Windows and Web have publish-and-run evidence. macOS actual-host validation and 
 Author under `Assets/`; install `.iplugin` packages under `Plugins/`. Installed plugin content enters the existing asset pipeline as read-only sources. [Plugin workflow →](docs/plugins/Inno.Plugins.Authoring.md)
 
 ```text
+entry/       Two development launchers and host dispatch
+dependencies/ Pinned independent source dependencies
 src/         Shared foundation, content, services, runtime, and product hosting
 backends/    Reusable adapters, native bindings, and component build recipes
 platforms/   System/SDK integration, product entry points, and packaging

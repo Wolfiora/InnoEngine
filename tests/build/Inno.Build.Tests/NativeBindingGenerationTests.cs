@@ -43,6 +43,29 @@ public sealed class NativeBindingGenerationTests : IDisposable
     }
 
     [Fact]
+    public void IdenticalSelectionPreservesTheImportTimestampAndChangedSelectionReplacesIt()
+    {
+        string output = Path.Combine(m_root, "BindingSelection.props");
+        var generations = new Dictionary<string, NativeBindingGenerationDescriptor>
+        {
+            ["Inno.Native.Text.csproj"] = SelectedGeneration("selected")
+        };
+        var linkage = new Dictionary<string, NativeLibraryKind> { ["Inno.Native.Text.csproj"] = NativeLibraryKind.Shared };
+        NativeBindingGenerationDescriptor.WriteSelection(output, generations, linkage);
+        DateTime originalTime = DateTime.UtcNow.AddMinutes(-1);
+        File.SetLastWriteTimeUtc(output, originalTime);
+        DateTime actualTime = File.GetLastWriteTimeUtc(output);
+        NativeBindingGenerationDescriptor.WriteSelection(output, generations, linkage);
+        Assert.Equal(actualTime, File.GetLastWriteTimeUtc(output));
+        NativeBindingGenerationDescriptor.ValidateSelection(output, generations, linkage);
+
+        linkage["Inno.Native.Text.csproj"] = NativeLibraryKind.Static;
+        NativeBindingGenerationDescriptor.WriteSelection(output, generations, linkage);
+        Assert.NotEqual(actualTime, File.GetLastWriteTimeUtc(output));
+        NativeBindingGenerationDescriptor.ValidateSelection(output, generations, linkage);
+    }
+
+    [Fact]
     public void PublicationRejectsChangedOrIncompleteManagedSelection()
     {
         string output = Path.Combine(m_root, "BindingSelection.props");
@@ -124,6 +147,39 @@ public sealed class NativeBindingGenerationTests : IDisposable
         Assert.NotEqual(first.fingerprint, changed.fingerprint);
         Assert.Equal(original, File.ReadAllText(first.bindingsPath));
         Assert.NotEqual(original, File.ReadAllText(changed.bindingsPath));
+    }
+
+    [Fact]
+    public async Task UnselectedTargetMappingDoesNotInvalidateTheSelectedGeneration()
+    {
+        string config = CreateConfig("int sample(int value);");
+        var owner = new NativeComponentDescriptor("fixture", "Fixture.csproj", "Fixture.csproj", bindingDefinition: "bindings.props");
+        var request = new NativeBindingGenerationRequest([owner], "fixture-target", NativeBindingOutputMode.TargetArtifacts);
+        NativeBindingGenerationDescriptor first = await GenerateAsync();
+        string definitionPath = Path.Combine(m_root, "bindings.props");
+        XDocument definition = XDocument.Load(definitionPath);
+        definition.Root!.Element("ItemGroup")!.Add(new XElement("InnoBindingTarget",
+            new XAttribute("Include", "unselected-target"), new XElement("Config", "unselected.json")));
+        definition.Save(definitionPath);
+
+        var unchangedContext = new NativeBuildContext(m_root, "release");
+        using (NativeBindingGenerationResult unchanged = await new NativeBindingGenerator("dotnet")
+            .GenerateAsync(unchangedContext, request, CancellationToken.None))
+        {
+            Assert.Equal(first.fingerprint, unchanged[owner.nativeProject].fingerprint);
+            Assert.Equal(0, unchangedContext.statistics.bindingGenerations);
+        }
+
+        File.WriteAllText(Path.Combine(m_root, "selected.json"),
+            File.ReadAllText(config).Replace("Fixture.Native", "Fixture.Selected", StringComparison.Ordinal));
+        definition.Root.Element("ItemGroup")!.Elements("InnoBindingTarget")
+            .Single(target => target.Attribute("Include")!.Value == "fixture-target")
+            .Element("Config")!.Value = "selected.json";
+        definition.Save(definitionPath);
+        NativeBindingGenerationDescriptor changed = await GenerateAsync();
+        Assert.NotEqual(first.fingerprint, changed.fingerprint);
+        Assert.Contains("Fixture.Selected", File.ReadAllText(changed.bindingsPath));
+        Assert.Contains("Fixture.Native", File.ReadAllText(first.bindingsPath));
     }
 
     [Fact]
@@ -233,6 +289,7 @@ public sealed class NativeBindingGenerationTests : IDisposable
         => new()
         {
             fingerprint = fingerprint,
+            artifactDirectory = Path.Combine(Path.GetTempPath(), "SelectedGeneration", fingerprint),
             bindingsPath = Path.Combine(Path.GetTempPath(), "SelectedGeneration", fingerprint, "Generated", "Bindings.cs"),
             bridgeDirectory = string.Empty
         };
@@ -262,7 +319,7 @@ public sealed class NativeBindingGenerationTests : IDisposable
         var owner = new NativeComponentDescriptor("fixture", "Fixture.csproj", "Fixture.csproj", bindingDefinition: "bindings.props");
         var fingerprints = expected is null ? null : new Dictionary<string, string> { [owner.nativeProject] = expected };
         var request = new NativeBindingGenerationRequest([owner], "fixture-target", mode, checkOnly, fingerprints);
-        var result = await new NativeBindingGenerator("dotnet").GenerateAsync(
+        using var result = await new NativeBindingGenerator("dotnet").GenerateAsync(
             new NativeBuildContext(m_root, "release"), request, cancellation);
         return result[owner.nativeProject];
     }

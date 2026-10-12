@@ -9,7 +9,7 @@ namespace Inno.Build.Bindings;
 /// <summary>
 /// Executes the shared facade-to-C-to-managed binding workflow independently of MSBuild.
 /// </summary>
-public sealed class NativeBindingGenerator : INativeBindingGenerator
+public sealed partial class NativeBindingGenerator : INativeBindingGenerator
 {
     private readonly string m_dotnetHost;
 
@@ -29,7 +29,7 @@ public sealed class NativeBindingGenerator : INativeBindingGenerator
     }
 
     /// <inheritdoc />
-    public async ValueTask<IReadOnlyDictionary<string, NativeBindingGenerationDescriptor>> GenerateAsync(
+    public async ValueTask<NativeBindingGenerationResult> GenerateAsync(
         NativeBuildContext context,
         NativeBindingGenerationRequest request,
         CancellationToken cancellationToken

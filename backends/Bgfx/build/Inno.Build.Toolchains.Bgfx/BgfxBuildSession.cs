@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Inno.Core.IO;
 
 namespace Inno.Build.Toolchains.Bgfx;
 
@@ -14,39 +15,10 @@ internal static class BgfxBuildSession
         bool includeTools,
         CancellationToken cancellationToken
     ) {
-        ArgumentNullException.ThrowIfNull(context);
-        context.RequireToolchain();
-        ArgumentNullException.ThrowIfNull(profile);
-        if (profile.targetId != context.RequireToolchain().targetId)
-            throw new ArgumentException("The BGFX profile does not match the frozen toolchain target.", nameof(profile));
-        NativeComponentBuildOptions options = context.RequireComponentOptions(BgfxNativeBuild.componentDescriptor);
-        if (options.libraryKind != NativeLibraryKind.Shared || options.cmakeArguments.Count != 0)
-            throw new NotSupportedException("The standalone graphics recipe requires shared linkage and its explicit generation profile.");
-        string artifactToken = profile.artifactPathToken;
-        ArgumentException.ThrowIfNullOrWhiteSpace(artifactToken);
-        string[] generatorArguments = profile.generatorArguments?.ToArray()
-            ?? throw new ArgumentException("The BGFX profile has no generator arguments.", nameof(profile));
-        if (generatorArguments.Length == 0 || generatorArguments.Any(static value => value is null))
-            throw new ArgumentException("The BGFX profile requires assigned generator arguments.", nameof(profile));
-        string[] generate = includeTools
-            ? ["--with-shared-lib", "--with-tools", .. generatorArguments]
-            : ["--with-shared-lib", .. generatorArguments];
-        BgfxBuildInvocation invocation = profile.CreateBuildInvocation(context, includeTools)
-            ?? throw new ArgumentException("The BGFX profile returned no SDK invocation.", nameof(profile));
-        string compiler = context.RequireToolchain().ResolveExecutable(invocation.tool);
-        string[] declarations = ["artifact=" + artifactToken,
-            .. generate.Select(static value => "generate=" + value),
-            "compiler=" + compiler, .. invocation.arguments.Select(static value => "compile=" + value)];
-        string external = Path.Combine(context.engineRoot, "extern");
-        string bgfx = Path.Combine(external, "bgfx");
-        string bx = Path.Combine(external, "bx");
-        string bimg = Path.Combine(external, "bimg");
-        BgfxBuildUtils.ValidateSubmodules(bgfx, bx, bimg);
-        string genie = ResolveGenie(context);
-        NativeBuildRecipe recipe = NativeBuildRecipe.CreateForComponent(context, BgfxNativeBuild.componentDescriptor, includeTools ? "bgfx-tools" : "bgfx", context.RequireToolchain().targetId, [bgfx, bx, bimg, genie, Path.Combine(context.engineRoot, "build", "toolchains", "Inno.Build.Toolchains", "Native", "NativeInputMaterializer.cs")], declarations);
+        var request = new BgfxBuildRequest(context, profile, includeTools);
         return await NativeArtifactPublisher.PublishAsync(
-            context,
-            recipe,
+            request.context,
+            request.recipe,
             async (
                 scoped,
                 output,
@@ -54,30 +26,18 @@ internal static class BgfxBuildSession
             ) => {
                 string snapshot = Path.Combine(scoped.GetNativeBuildRoot(BgfxNativeBuild.componentDescriptor), "Sources");
                 foreach (string component in new[] { "bgfx", "bx", "bimg" })
-                    await CopySourcesAsync(scoped, Path.Combine(external, component), Path.Combine(snapshot, component), token).ConfigureAwait(false);
+                    await CopySourcesAsync(scoped, Path.Combine(request.externalDirectory, component), Path.Combine(snapshot, component), token).ConfigureAwait(false);
                 string source = Path.Combine(snapshot, "bgfx");
-                await ToolchainEnvironment.RunAsync(scoped, genie, generate, source, token).ConfigureAwait(false);
-                await ToolchainEnvironment.RunAsync(scoped, compiler, invocation.arguments, source, token).ConfigureAwait(false);
+                await ToolchainEnvironment.RunAsync(scoped, request.genie, request.generatorArguments, source, token).ConfigureAwait(false);
+                await ToolchainEnvironment.RunAsync(scoped, request.compiler, request.invocation.arguments, source, token).ConfigureAwait(false);
                 token.ThrowIfCancellationRequested();
                 if (includeTools)
-                    CopyTools(source, output, artifactToken, scoped);
+                    CopyTools(source, output, request.artifactToken, scoped);
                 else
                     BuildArtifactCopier.CopyArtifacts(source, output, scoped.configuration,
                         new(".build", ["bgfx-shared-lib"], [".dll", ".dylib", ".so"],
-                            [artifactToken], ToolchainEnvironment.NormalizeOutputName));
+                            [request.artifactToken], ToolchainEnvironment.NormalizeOutputName));
             }, cancellationToken).ConfigureAwait(false);
-    }
-
-    private static string ResolveGenie(NativeBuildContext context)
-    {
-        if (context.RequireToolchain().TryResolveExecutable("genie", out string configured))
-            return configured;
-        BuildHostDescriptor host = context.RequireToolchain().host;
-        string platform = host.system == "Windows" ? "windows" : host.system == "MacOS" ? "darwin" : "linux";
-        if (host.system == "Linux" && host.architecture == "arm64")
-            throw new FileNotFoundException("The selected toolchain must declare a host-native ARM64 GENie executable.");
-        return ToolchainEnvironment.ResolveExecutable(Path.Combine(context.engineRoot, "extern", "bx",
-            "tools", "bin", platform, host.system == "Windows" ? "genie.exe" : "genie"));
     }
 
     private static async Task CopySourcesAsync(
@@ -87,6 +47,25 @@ internal static class BgfxBuildSession
         CancellationToken cancellationToken
     ) {
         Directory.CreateDirectory(destination);
+        // Sources are exclusively owned by this workspace; generated build trees remain intact.
+        foreach (string previous in Directory.EnumerateFileSystemEntries(destination))
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            string name = Path.GetFileName(previous);
+            if (name is ".git" or ".build" or "bin" or "obj")
+                continue;
+            string current = Path.Combine(source, name);
+            if (File.Exists(current) || Directory.Exists(current))
+                continue;
+            string owned = PathBoundary.RequireUnlinkedPath(destination, previous);
+            if (Directory.Exists(owned))
+            {
+                _ = PathBoundary.EnumerateFiles(owned).ToArray();
+                Directory.Delete(owned, recursive: true);
+            }
+            else
+                File.Delete(owned);
+        }
         foreach (string file in Directory.EnumerateFiles(source))
         {
             cancellationToken.ThrowIfCancellationRequested();

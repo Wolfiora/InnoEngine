@@ -9,7 +9,7 @@ Scene、玩法、内容、Input、Rendering、Audio、Text、UI、Storage 使用
 ```text
 Editor / CLI / MSBuild
 → StandardBuildDistribution
-→ BrowserBuildModule + 所选 managed compiler
+→ BrowserBuildModule + 所选 backend integration + managed compiler
 → 共享内容/代码 pipeline
 → backend-owned static recipe + 同一目标绑定闭包
 → Browser 包装/校验/原子提交
@@ -43,13 +43,12 @@ SDL、BGFX、MiniAudio、Text、RmlUi 在各自 backend 维护一份源码。组
 
 ## 构建入口
 
-生产入口共六个，构建程序只保留 Inno.Build.Cli。示例中的 SDK 必须具有工程需要的 Wasm workload，路径按本机安装填写：
+日常入口为 InnoEngine.Editor 和 InnoEngine.Build。Browser 发布通过 Build 入口调用构建应用库；所选 SDK 必须具有工程需要的 Wasm workload。下面使用当前宿主的离线工具目标，游戏目标明确为 Browser：
 
 ```powershell
-dotnet build build/cli/Inno.Build.Cli/Inno.Build.Cli.csproj -c Release -m:1
-dotnet build/cli/Inno.Build.Cli/bin/Release/net9.0/Inno.Build.Cli.dll game `
-  --tools-target windows-x64 --target browser-wasm --deployment mono-wasm `
-  --project <project-directory> --support-packs <support-pack-root> --output <output-directory>
+dotnet run --project entry/InnoEngine.Build/InnoEngine.Build.csproj -- game `
+  --target browser-wasm --deployment mono-wasm `
+  --project "<project-directory>" --support-packs "<support-pack-root>" --output "<output-directory>"
 ```
 
 `mono-wasm-aot` 选择 AOT；作者工具目标独立于游戏目标，导出 Browser 不改变当前 Editor 的 Native 或 ImGui Shader。内容 metadata 从同一 catalog 读取 Pack 身份，不重复维护 content-pack.txt，不先写入另一份 /Content 再解压。
@@ -60,4 +59,4 @@ dotnet build/cli/Inno.Build.Cli/bin/Release/net9.0/Inno.Build.Cli.dll game `
 
 将来接入 CoreCLR WebAssembly 需要新的部署 compiler 和匹配 SDK/link resolver，重新验证启动、回调、异常、interop与实际游戏。Browser宿主及共同领域可以复用，不在Scene、Rendering或Input增加runtime switch。当前不宣称这个未来部署已实现，也不提供 Browser Editor。
 
-本轮解释执行、AOT、音频、持久化、昼夜颜色、光照和星光的实际结果见平台归属验收；启动成功不能代替视觉与玩法验证。
+解释执行、AOT、音频、持久化、昼夜颜色、光照和星光的实际结果见[当前验收](CURRENT_ACCEPTANCE.md)；启动成功不能代替视觉与玩法验证。

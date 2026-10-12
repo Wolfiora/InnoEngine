@@ -13,6 +13,9 @@ internal sealed class LinuxBgfxBuildProfile : BgfxNativeBuildProfile
     internal LinuxBgfxBuildProfile(string targetId) => m_targetId = targetId;
 
     /// <inheritdoc />
+    public override NativeToolchainSelection SelectTools(NativeBuildContext context) => LinuxBgfxToolContribution.Select(context);
+
+    /// <inheritdoc />
     public override string targetId => m_targetId;
     /// <inheritdoc />
     public override IReadOnlyList<string> generatorArguments => m_targetId == "linux-x64" ? ["--gcc=linux-gcc", "gmake"] : ["--gcc=linux-arm-gcc", "gmake"];

@@ -29,6 +29,10 @@ public sealed class ProductNativeBuildStep
     /// <param name="build">
     /// The awaited standalone producer, or null when the component is executed by a static aggregate.
     /// </param>
+    /// <param name="createRecipe">
+    /// Declares the standalone producer's source inputs without creating generated outputs,
+    /// or null for a component whose complete source definition is owned by a static aggregate.
+    /// </param>
     /// <param name="deploymentPath">
     /// Maps a relative output and target to a deployment path, or null for build-only inputs.
     /// </param>
@@ -44,6 +48,7 @@ public sealed class ProductNativeBuildStep
         NativeComponentBuildOptions options,
         IReadOnlyList<string> dependencies,
         Func<NativeBuildContext, IReadOnlyDictionary<string, NativeBuildProduct>, CancellationToken, Task<NativeBuildProduct>>? build,
+        Func<NativeBuildContext, NativeBuildRecipe>? createRecipe,
         Func<string, string, string?> deploymentPath
     ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(id);
@@ -56,6 +61,8 @@ public sealed class ProductNativeBuildStep
         ArgumentNullException.ThrowIfNull(dependencies);
         if (build is null && component.staticBuild is null)
             throw new ArgumentException("Aggregate-only steps require a real static build definition.", nameof(build));
+        if ((build is null) != (createRecipe is null))
+            throw new ArgumentException("A standalone producer requires its own source declaration; aggregate steps use their static definition.", nameof(createRecipe));
         ArgumentNullException.ThrowIfNull(deploymentPath);
         if (dependencies.Any(string.IsNullOrWhiteSpace) || dependencies.Distinct(StringComparer.Ordinal).Count() != dependencies.Count)
             throw new ArgumentException("Component dependencies must be assigned and unique.", nameof(dependencies));
@@ -64,6 +71,7 @@ public sealed class ProductNativeBuildStep
         this.options = options;
         this.dependencies = Array.AsReadOnly(dependencies.ToArray());
         this.build = build;
+        this.createRecipe = createRecipe;
         this.deploymentPath = deploymentPath;
     }
 
@@ -91,6 +99,12 @@ public sealed class ProductNativeBuildStep
     /// Gets the standalone producer, or null for a component owned by a static aggregate executor.
     /// </summary>
     public Func<NativeBuildContext, IReadOnlyDictionary<string, NativeBuildProduct>, CancellationToken, Task<NativeBuildProduct>>? build { get; }
+
+    /// <summary>
+    /// Gets the producer's source declaration, or null when a static aggregate owns the component recipe.
+    /// The declaration must not generate bindings, run a compiler or create staging.
+    /// </summary>
+    public Func<NativeBuildContext, NativeBuildRecipe>? createRecipe { get; }
 
     /// <summary>
     /// Gets the explicit output layout policy; null results exclude build-only files.

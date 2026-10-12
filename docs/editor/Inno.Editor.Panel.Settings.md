@@ -40,28 +40,59 @@ Reset Editor 恢复字段定义的 `defaultValue`。Reset Project 删除项目 o
 Editor-only 字段：
 
 ```csharp
-[EditorSettingPath("Editor/MyTool/Snap")]
+using Inno.Editor.ImGui;
+using Inno.Editor.Settings;
+
+[EditorSettingPath("Editor/Authoring/Snap")]
 public sealed class SnapSetting : EditorSetting
 {
-    // Define defaultValue and OnDraw(EditorSettingObject).
+    public override EditorSettingObject defaultValue
+    {
+        get
+        {
+            var value = new EditorSettingObject();
+            value.SetAsBoolean("value", true);
+            return value;
+        }
+    }
+
+    protected override void OnDraw(EditorSettingObject setting)
+    {
+        bool value = setting.GetAsBoolean("value", true);
+        if (ImGui.Checkbox("##snap", ref value))
+            setting.SetAsBoolean("value", value);
+    }
 }
 ```
 
 Runtime/Plugin 字段：
 
 ```csharp
-[ProjectSettingPath("Project/MyPlugin/Rendering")]
-public sealed class RenderingSettingsEditor
-    : ProjectSettingEditor<MyRenderingSettings>
+using Inno.Core.Serialization;
+using Inno.Core.Settings;
+using Inno.Editor.ImGui;
+using Inno.Editor.Settings;
+
+[ProjectSettingDefinition("example.gameplay")]
+public sealed class GameplaySettings : ISerializable
 {
-    protected override void OnDraw(MyRenderingSettings setting)
+    [SerializableProperty]
+    public bool enabled { get; set; } = true;
+}
+
+[ProjectSettingPath("Project/Gameplay/Enabled")]
+public sealed class GameplaySettingsEditor : ProjectSettingEditor<GameplaySettings>
+{
+    protected override void OnDraw(GameplaySettings setting)
     {
-        // Draw through InnoEditor.ImGui and mutate only this staged snapshot.
+        bool enabled = setting.enabled;
+        if (ImGui.Checkbox("##enabled", ref enabled))
+            setting.enabled = enabled;
     }
 }
 ```
 
-`ProjectSettingId` 由 `MyRenderingSettings` 的 `ProjectSettingDefinitionAttribute` 提供，Editor presentation 不重复 override 常量身份。
+`ProjectSettingId` 由 `GameplaySettings` 的 `ProjectSettingDefinitionAttribute` 提供，Editor presentation 不重复 override 常量身份。
 
 同一个 `ProjectSettingId` 可以注册多个 `ProjectSettingEditor<TSetting>` presentation，前提是它们使用完全相同的 `TSetting`。不同 presentation 可以使用同一 `pagePath` 和不同 `section`，由 frontend 绘制为同级、全宽的分节横线；它们共享一个 staged setting、Reset、dirty 判断与 Apply，不复制运行时配置对象。Renderer 与 Sorting Layers 这类同属一个设置协议、但视觉上应分节的内容应采用这种组合方式，不应在 `OnDraw` 内手写嵌套 separator。
 

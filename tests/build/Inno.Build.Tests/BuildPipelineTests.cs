@@ -544,7 +544,7 @@ public sealed class BuildPipelineTests : IDisposable
         var catalog = new PlayerSupportPackCatalog(m_supportPackRoot);
 
         InvalidDataException exception = Assert.Throws<InvalidDataException>(
-            () => catalog.Resolve(BuildTargetId.macOSArm64, new Inno.Build.MacOS.MacOSSupportPackValidator()));
+            () => catalog.Acquire(BuildTargetId.macOSArm64, new Inno.Build.MacOS.MacOSSupportPackValidator()));
 
         Assert.Contains("forbidden build-time file", exception.Message, StringComparison.OrdinalIgnoreCase);
     }
@@ -590,7 +590,7 @@ public sealed class BuildPipelineTests : IDisposable
             CreateSupportPack(target, "Inno.Player.MacOS"));
 
         BuildPipeline pipeline = CreatePipeline(provisioner);
-        _ = await pipeline.EnsurePlayerSupportPackAsync(BuildTargetId.macOSArm64, deployment: null);
+        using PlayerSupportPackLease prepared = await pipeline.EnsurePlayerSupportPackAsync(BuildTargetId.macOSArm64, deployment: null);
         BuildResult result = await pipeline.BuildGameAsync(new GameBuildRequest
         {
             profile = CreateProfile(BuildTargetId.macOSArm64),
@@ -610,7 +610,7 @@ public sealed class BuildPipelineTests : IDisposable
         using var cancellation = new CancellationTokenSource();
         var provisioner = new PendingSupportPackProvisioner();
         BuildPipeline pipeline = CreatePipeline(provisioner);
-        Task<string> preparation = pipeline.EnsurePlayerSupportPackAsync(
+        Task<PlayerSupportPackLease> preparation = pipeline.EnsurePlayerSupportPackAsync(
             BuildTargetId.macOSArm64, deployment: null, cancellation.Token).AsTask();
         try
         {
@@ -731,7 +731,7 @@ public sealed class BuildPipelineTests : IDisposable
         var catalog = new PlayerSupportPackCatalog(m_supportPackRoot);
 
         InvalidDataException exception = Assert.Throws<InvalidDataException>(
-            () => catalog.Resolve(BuildTargetId.macOSArm64, new Inno.Build.MacOS.MacOSSupportPackValidator()));
+            () => catalog.Acquire(BuildTargetId.macOSArm64, new Inno.Build.MacOS.MacOSSupportPackValidator()));
 
         Assert.Contains("libminiaudio-release.dylib", exception.Message, StringComparison.Ordinal);
     }
@@ -744,7 +744,7 @@ public sealed class BuildPipelineTests : IDisposable
         var catalog = new PlayerSupportPackCatalog(m_supportPackRoot);
 
         InvalidDataException exception = Assert.Throws<InvalidDataException>(
-            () => catalog.Resolve(BuildTargetId.macOSArm64, new Inno.Build.MacOS.MacOSSupportPackValidator()));
+            () => catalog.Acquire(BuildTargetId.macOSArm64, new Inno.Build.MacOS.MacOSSupportPackValidator()));
 
         Assert.Contains("foreign native runtime", exception.Message, StringComparison.Ordinal);
     }
@@ -759,7 +759,7 @@ public sealed class BuildPipelineTests : IDisposable
         var catalog = new PlayerSupportPackCatalog(m_supportPackRoot);
 
         InvalidDataException exception = Assert.Throws<InvalidDataException>(
-            () => catalog.Resolve(BuildTargetId.macOSArm64, new Inno.Build.MacOS.MacOSSupportPackValidator()));
+            () => catalog.Acquire(BuildTargetId.macOSArm64, new Inno.Build.MacOS.MacOSSupportPackValidator()));
 
         Assert.Contains(nativeRuntime, exception.Message, StringComparison.Ordinal);
     }
@@ -910,7 +910,7 @@ public sealed class BuildPipelineTests : IDisposable
         IPlayerSupportPackValidator validator = target == BuildTargetId.macOSArm64
             ? new Inno.Build.MacOS.MacOSSupportPackValidator()
             : new Inno.Build.Windows.WindowsSupportPackValidator();
-        _ = new PlayerSupportPackCatalog(m_supportPackRoot).PublishAsync(
+        using PlayerSupportPackLease published = new PlayerSupportPackCatalog(m_supportPackRoot).PublishAsync(
             target, directory, validator).AsTask().GetAwaiter().GetResult();
     }
 

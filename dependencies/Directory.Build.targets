@@ -1,0 +1,3 @@
+<Project>
+  <!-- Independently maintained dependency projects must not inherit engine Native/product targets. -->
+</Project>

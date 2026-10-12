@@ -13,19 +13,7 @@ namespace Inno.Build.TaskHosting;
 
 internal static class TaskRuntimeRequestKey
 {
-    internal static bool NeedsRestore(
-        string project,
-        IDictionary properties
-    ) {
-        var globals = properties.Cast<DictionaryEntry>().ToDictionary(
-            static entry => (string)entry.Key, static entry => (string)entry.Value!, StringComparer.OrdinalIgnoreCase);
-        using var collection = new ProjectCollection();
-        var graph = new ProjectGraph(project, globals, collection);
-        return graph.ProjectNodes.Any(static node => node.ProjectInstance.GetPropertyValue("ProjectAssetsFile") is string assets
-            && assets.Length != 0 && !File.Exists(assets));
-    }
-
-    internal static string Capture(
+    internal static TaskRuntimeRequestSnapshot Capture(
         string project,
         string artifacts,
         IReadOnlyList<string> targets,
@@ -36,10 +24,15 @@ internal static class TaskRuntimeRequestKey
             static entry => (string)entry.Key, static entry => (string)entry.Value!, StringComparer.OrdinalIgnoreCase);
         using var collection = new ProjectCollection();
         var graph = new ProjectGraph(project, globals, collection);
+        bool needsRestore = graph.ProjectNodes.Any(static node => node.ProjectInstance.GetPropertyValue("ProjectAssetsFile") is string assets
+            && assets.Length != 0 && !File.Exists(assets));
         StringComparer paths = OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal;
         var inputs = new HashSet<string>(paths);
         var declarations = new List<string> { project, artifacts, string.Join(";", targets) };
-        declarations.AddRange(globals.OrderBy(static entry => entry.Key, StringComparer.OrdinalIgnoreCase)
+        // Execution ownership reaches nested tool builds, but is not a compiler input itself.
+        // Evaluated source, imports and compiler properties below still capture any derived behavior.
+        declarations.AddRange(globals.Where(static entry => IsInputProperty(entry.Key))
+            .OrderBy(static entry => entry.Key, StringComparer.OrdinalIgnoreCase)
             .Select(static entry => entry.Key + "=" + entry.Value));
         foreach (var node in graph.ProjectNodes.OrderBy(static node => node.ProjectInstance.FullPath, paths))
         {
@@ -47,17 +40,18 @@ internal static class TaskRuntimeRequestKey
             var instance = node.ProjectInstance;
             inputs.Add(instance.FullPath);
             foreach (string import in instance.ImportPaths)
-                if (!import.EndsWith(".nuget.g.props", StringComparison.OrdinalIgnoreCase)
-                    && !import.EndsWith(".nuget.g.targets", StringComparison.OrdinalIgnoreCase))
-                    inputs.Add(import);
-            declarations.AddRange(instance.GlobalProperties.OrderBy(static entry => entry.Key, StringComparer.OrdinalIgnoreCase)
+                inputs.Add(import);
+            TaskRuntimePackageInputs.Collect(instance, inputs, cancellation);
+            declarations.AddRange(instance.GlobalProperties.Where(static entry => IsInputProperty(entry.Key))
+                .OrderBy(static entry => entry.Key, StringComparer.OrdinalIgnoreCase)
                 .Select(entry => instance.FullPath + "|" + entry.Key + "=" + entry.Value));
             foreach (string property in new[] { "TargetFramework", "DefineConstants", "LangVersion", "Nullable", "PathMap",
                 "NETCoreSdkVersion", "MSBuildToolsPath", "MSBuildSDKsPath", "TreatWarningsAsErrors", "Optimize" })
                 declarations.Add(instance.FullPath + "|" + property + "=" + instance.GetPropertyValue(property));
             foreach (var item in instance.Items)
             {
-                bool source = item.ItemType is "Compile" or "EmbeddedResource" or "Analyzer";
+                bool source = item.ItemType is "Compile" or "EmbeddedResource" or "Analyzer"
+                    or "AdditionalFiles" or "EditorConfigFiles" or "GlobalAnalyzerConfigFiles" or "AdditionalCompileInputs";
                 bool copy = item.GetMetadataValue("CopyToOutputDirectory") is "Always" or "PreserveNewest";
                 if (source || copy)
                 {
@@ -106,6 +100,9 @@ internal static class TaskRuntimeRequestKey
             using FileStream stream = File.OpenRead(input);
             digest.AppendData(SHA256.HashData(stream));
         }
-        return Convert.ToHexString(digest.GetHashAndReset());
+        return new TaskRuntimeRequestSnapshot(Convert.ToHexString(digest.GetHashAndReset()), needsRestore);
     }
+
+    private static bool IsInputProperty(string name)
+        => !string.Equals(name, "InnoTaskBootstrapOwner", StringComparison.OrdinalIgnoreCase);
 }

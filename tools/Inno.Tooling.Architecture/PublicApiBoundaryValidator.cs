@@ -15,7 +15,7 @@ internal static class PublicApiBoundaryValidator
         string configuration,
         ICollection<string> failures
     ) {
-        Project[] projects = new[] { "src", "backends", "platforms", "build" }
+        Project[] projects = new[] { "entry", "src", "backends", "platforms", "build" }
             .SelectMany(folder => RepositorySourceInventory.Files(Path.Combine(root, folder), "*.csproj"))
             .Where(path => !path.Split(Path.DirectorySeparatorChar).Any(segment => segment is "bin" or "obj"))
             // Binding extensions run only while generating source; they are not runtime or solution assemblies.
@@ -28,19 +28,38 @@ internal static class PublicApiBoundaryValidator
         string[] platform = ((string?)AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES") ?? string.Empty).Split(Path.PathSeparator);
         foreach (string path in platform.Where(File.Exists))
             references[Path.GetFileNameWithoutExtension(path)] = MetadataReference.CreateFromFile(path);
+        // Public generator and analyzer contracts require the compiler metadata used by this audit.
+        foreach (string path in new[] { typeof(Compilation).Assembly.Location, typeof(CSharpCompilation).Assembly.Location })
+            references[Path.GetFileNameWithoutExtension(path)] = MetadataReference.CreateFromFile(path);
         foreach (Project project in projects)
         {
             if (File.Exists(project.output))
                 references[project.name] = MetadataReference.CreateFromFile(project.output);
-            else
+            else if (!project.product)
                 failures.Add($"{Path.GetRelativePath(root, project.path)}: public API symbol audit requires a {configuration} solution build; output is missing.");
         }
         CSharpCompilation compilation = CSharpCompilation.Create("Inno.Architecture.SymbolAudit", references: references.Values,
             options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
-        foreach (Project project in projects.Where(project => project.path.Contains(Path.DirectorySeparatorChar + "src" + Path.DirectorySeparatorChar, StringComparison.Ordinal)))
+        foreach (Project project in projects.Where(project => project.product
+            || project.path.Contains(Path.DirectorySeparatorChar + "src" + Path.DirectorySeparatorChar, StringComparison.Ordinal)))
         {
-            if (!references.TryGetValue(project.name, out PortableExecutableReference? assemblyReference) ||
-                compilation.GetAssemblyOrModuleSymbol(assemblyReference) is not IAssemblySymbol assembly)
+            IAssemblySymbol assembly;
+            bool compiledContract = false;
+            if (references.TryGetValue(project.name, out PortableExecutableReference? assemblyReference)
+                && compilation.GetAssemblyOrModuleSymbol(assemblyReference) is IAssemblySymbol compiledAssembly)
+            {
+                assembly = compiledAssembly;
+                compiledContract = true;
+            }
+            else if (project.product)
+            {
+                // Foreign product SDKs are not needed to audit the public composition contract.
+                SyntaxTree[] sources = RepositorySourceInventory.Files(Path.GetDirectoryName(project.path)!, "*.cs")
+                    .Select(path => CSharpSyntaxTree.ParseText(File.ReadAllText(path), path: path)).ToArray();
+                assembly = CSharpCompilation.Create(project.name, sources, references.Values,
+                    new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary, allowUnsafe: true)).Assembly;
+            }
+            else
                 continue;
             var dependencies = new HashSet<string>(StringComparer.Ordinal);
             foreach (INamedTypeSymbol type in Types(assembly.GlobalNamespace))
@@ -103,7 +122,9 @@ internal static class PublicApiBoundaryValidator
                 foreach (XElement reference in project.references)
                 {
                     string dependency = Path.GetFileNameWithoutExtension(reference.Attribute("Include")?.Value.Replace('\\', '/') ?? string.Empty);
-                    if (byName.ContainsKey(dependency) && !dependencies.Contains(dependency) && !IsCompilePrivate(reference))
+                    // Source-only foreign product inspection cannot prove that generated public contracts are absent.
+                    if (compiledContract && byName.ContainsKey(dependency)
+                        && !dependencies.Contains(dependency) && !IsCompilePrivate(reference))
                         failures.Add($"{Path.GetRelativePath(root, project.path)}: {dependency} is an implementation dependency; declare PrivateAssets=compile.");
                 }
             }
@@ -114,6 +135,11 @@ internal static class PublicApiBoundaryValidator
             ) {
                 if (value is null)
                     return;
+                if (value.TypeKind == TypeKind.Error)
+                {
+                    failures.Add($"{Path.GetRelativePath(root, project.path)}: {member.ToDisplayString()} has an unresolved public signature type {value.ToDisplayString()}.");
+                    return;
+                }
                 switch (value)
                 {
                     case IArrayTypeSymbol array: Inspect(array.ElementType, member); return;
@@ -170,7 +196,8 @@ internal static class PublicApiBoundaryValidator
         string path,
         string name,
         string output,
-        XElement[] references
+        XElement[] references,
+        bool product
     ) {
         internal static Project Read(
             string path,
@@ -179,9 +206,10 @@ internal static class PublicApiBoundaryValidator
             XDocument document = XDocument.Load(path);
             string name = document.Descendants("AssemblyName").FirstOrDefault()?.Value ?? Path.GetFileNameWithoutExtension(path);
             string framework = document.Descendants("TargetFramework").FirstOrDefault()?.Value ?? "net9.0";
+            string? target = document.Descendants("InnoProductTarget").FirstOrDefault()?.Value;
             return new Project(path, name, Path.Combine(Path.GetDirectoryName(path)!,
-                name == "Inno.Player.Browser" ? "bin/browser-wasm" : "bin", configuration, framework, name + ".dll"),
-                document.Descendants("ProjectReference").ToArray());
+                target is null ? "bin" : Path.Combine("bin", target), configuration, framework, name + ".dll"),
+                document.Descendants("ProjectReference").ToArray(), document.Descendants("InnoProductId").Any());
         }
     }
 }

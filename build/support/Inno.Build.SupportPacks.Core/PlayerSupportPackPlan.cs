@@ -16,19 +16,50 @@ public abstract class PlayerSupportPackPlan
     /// <param name="target">
     /// The nonempty target whose closure this plan prepares.
     /// </param>
+    /// <param name="preparationIdentity">
+    /// The complete lowercase SHA-256 input identity captured without preparing product output.
+    /// </param>
     /// <exception cref="ArgumentException">
     /// The target has no stable identity.
     /// </exception>
-    protected PlayerSupportPackPlan(BuildTargetId target)
-    {
+    protected PlayerSupportPackPlan(
+        BuildTargetId target,
+        string preparationIdentity
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(target.value);
+        if (preparationIdentity is null || preparationIdentity.Length != 64
+            || System.Linq.Enumerable.Any(preparationIdentity, static character => !char.IsAsciiHexDigitLower(character)))
+            throw new ArgumentException("A Support Pack requires a complete lowercase source input identity.", nameof(preparationIdentity));
         this.target = target;
+        this.preparationIdentity = preparationIdentity;
     }
 
     /// <summary>
     /// Gets the immutable target checked by the publisher before creating output.
     /// </summary>
     public BuildTargetId target { get; }
+
+    /// <summary>
+    /// Gets the complete source preparation identity, independently of the resulting Pack content fingerprint.
+    /// </summary>
+    public string preparationIdentity { get; }
+
+    /// <summary>
+    /// Freshly verifies the planned source graph after an ownership wait or preparation work.
+    /// </summary>
+    /// <param name="cancellationToken">
+    /// Cancels verification before selecting any Pack.
+    /// </param>
+    /// <returns>
+    /// Completion only when all current inputs still match the frozen preparation identity.
+    /// </returns>
+    /// <exception cref="InvalidOperationException">
+    /// The planned inputs changed and cannot be accepted.
+    /// </exception>
+    /// <exception cref="OperationCanceledException">
+    /// Verification was canceled.
+    /// </exception>
+    public abstract ValueTask VerifyInputsAsync(CancellationToken cancellationToken);
 
     /// <summary>
     /// Executes frozen inputs in publisher-owned staging without selecting tools again.

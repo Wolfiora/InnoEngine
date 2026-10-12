@@ -16,21 +16,25 @@
 空白区域、Scene 和 GameObject 使用同一个 area，target 类型区分匹配：
 
 ```csharp
-internal static class SceneExportInteractionIds
-{
-    internal const string C_EXPORT = "scene/export";
-    internal const string C_HIERARCHY_AREA = "panel/scene.hierarchy";
-}
+using Inno.Editor.Interactions;
+using Inno.Editor.Scene;
+using Inno.Scene;
 
-[EditorAction(SceneExportInteractionIds.C_EXPORT, SceneExportInteractionIds.C_HIERARCHY_AREA)]
-[EditorMenu(SceneExportInteractionIds.C_HIERARCHY_AREA, "Export/Scene Package", order: 500)]
-public sealed class ExportSceneAction : EditorAction<GameScene>
+[EditorAction("sample/scene/activate", "panel/scene.hierarchy")]
+[EditorMenu("panel/scene.hierarchy", "Set Active Scene", order: 500)]
+public sealed class ActivateSceneAction : EditorAction<GameScene>
 {
+    private readonly IEditorSceneWorkspace m_workspace;
+
+    public ActivateSceneAction(IEditorSceneWorkspace workspace)
+        => m_workspace = workspace;
+
     protected override void Execute(EditorActionContext<GameScene> context)
-    {
-    }
+        => m_workspace.SetActiveScene(context.target);
 }
 ```
+
+本例由宿主扩展激活器注入现有 Scene workspace；切换 active Scene 属于导航，不创建内容 Undo。菜单目标必须是当前 workspace 中的已加载 Scene。
 
 同一路径可由其他 target 类型贡献不同 Action。只有 `Query` 可见的最具体实现进入菜单。
 
@@ -78,23 +82,31 @@ EditorScripts 使用 `InnoEditor.Hierarchy` 获取公开 drop target；Attribute
 
 ## 当前源码公开 API 清单
 
-只列当前源码的 public/protected 表面；内部实现不作为稳定 API。参数、返回、失败和 owner 以英文 XML 为准。
+按类型列出当前 public 与可供外部派生实现使用的 protected 声明。签名包含 nullable、默认参数和泛型约束；源码链接可定位实现。表中的“—”表示该声明没有额外 XML 约束，不能据此推断线程安全或不会失败。生命周期与组合顺序见本页前文。
 
 ### `Inno.Editor.Panel.Hierarchy.HierarchyObjectDropTarget`
 
-| 当前声明 | 行为 |
-| --- | --- |
-| [`Inno.Editor.Panel.Hierarchy.HierarchyObjectDropTarget`](../../src/composition/editor/panels/Inno.Editor.Panel.Hierarchy/Interactions/HierarchyObjectDropTarget.cs#L11) | Identifies a game object hierarchy drop target. |
-| [`Inno.Editor.Panel.Hierarchy.HierarchyObjectDropTarget.HierarchyObjectDropTarget(Inno.Scene.GameObject gameObject)`](../../src/composition/editor/panels/Inno.Editor.Panel.Hierarchy/Interactions/HierarchyObjectDropTarget.cs#L22) | Creates a hierarchy drop target representing one live game object row. |
-| [`Inno.Scene.GameObject Inno.Editor.Panel.Hierarchy.HierarchyObjectDropTarget.gameObject`](../../src/composition/editor/panels/Inno.Editor.Panel.Hierarchy/Interactions/HierarchyObjectDropTarget.cs#L30) | Gets the target game object. |
+<!-- api: T:Inno.Editor.Panel.Hierarchy.HierarchyObjectDropTarget 15c7707d4ce6f3f9fe02e0a43f1612d3d7e497076bafb494a2e1d2aae84ca4cf -->
+<!-- api: M:Inno.Editor.Panel.Hierarchy.HierarchyObjectDropTarget.#ctor(Inno.Scene.GameObject) 0d31f36c3a00a3ed8e9836a2f3df8c0c478c39f80be7e6f39c0db7e7add56b43 -->
+<!-- api: P:Inno.Editor.Panel.Hierarchy.HierarchyObjectDropTarget.gameObject 253035626711ef11dc31af24276ab33048a6715342af0e129f58771ddc7057c3 -->
+
+| 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
+| --- | --- | --- | --- |
+| <a id="api-91a27db89734994e"></a>[`public Inno.Editor.Panel.Hierarchy.HierarchyObjectDropTarget.HierarchyObjectDropTarget(Inno.Scene.GameObject gameObject)`](../../src/composition/editor/panels/Inno.Editor.Panel.Hierarchy/Interactions/HierarchyObjectDropTarget.cs#L22) | Creates a hierarchy drop target representing one live game object row.<br>`gameObject`：The game object represented by the target row. | — | `System.ArgumentNullException`：Thrown when gameObject is null. |
+| <a id="api-ec612092b5d3515e"></a>[`public Inno.Scene.GameObject Inno.Editor.Panel.Hierarchy.HierarchyObjectDropTarget.gameObject { get; }`](../../src/composition/editor/panels/Inno.Editor.Panel.Hierarchy/Interactions/HierarchyObjectDropTarget.cs#L30) | Gets the target game object. | — | — |
+| <a id="api-9bd18483af53fd25"></a>[`public sealed class Inno.Editor.Panel.Hierarchy.HierarchyObjectDropTarget`](../../src/composition/editor/panels/Inno.Editor.Panel.Hierarchy/Interactions/HierarchyObjectDropTarget.cs#L11) | Identifies a game object hierarchy drop target. | — | — |
 
 ### `Inno.Editor.Panel.Hierarchy.HierarchySceneDropTarget`
 
-| 当前声明 | 行为 |
-| --- | --- |
-| [`Inno.Editor.Panel.Hierarchy.HierarchySceneDropTarget`](../../src/composition/editor/panels/Inno.Editor.Panel.Hierarchy/Interactions/HierarchySceneDropTarget.cs#L11) | Identifies a scene row or scene root hierarchy drop target. |
-| [`Inno.Editor.Panel.Hierarchy.HierarchySceneDropTarget.HierarchySceneDropTarget(Inno.Scene.GameScene scene)`](../../src/composition/editor/panels/Inno.Editor.Panel.Hierarchy/Interactions/HierarchySceneDropTarget.cs#L22) | Creates a hierarchy drop target representing one loaded scene row or root. |
-| [`Inno.Scene.GameScene Inno.Editor.Panel.Hierarchy.HierarchySceneDropTarget.scene`](../../src/composition/editor/panels/Inno.Editor.Panel.Hierarchy/Interactions/HierarchySceneDropTarget.cs#L30) | Gets the target scene. |
+<!-- api: T:Inno.Editor.Panel.Hierarchy.HierarchySceneDropTarget 6dcfa56ee2b7fb2c9b6cbf7a0efd55e2d4aab2fea416214c587b79db306715cd -->
+<!-- api: M:Inno.Editor.Panel.Hierarchy.HierarchySceneDropTarget.#ctor(Inno.Scene.GameScene) d5c48102e124cb07f38825a947029656e68959a7f7004cf5d047617caee0eede -->
+<!-- api: P:Inno.Editor.Panel.Hierarchy.HierarchySceneDropTarget.scene 1a42b012a5b3a656cd2adeb91f2f5e3602ea99be4e2a4ef591e9d2dea8f8a45d -->
+
+| 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
+| --- | --- | --- | --- |
+| <a id="api-741e7235d3f3d8b3"></a>[`public Inno.Editor.Panel.Hierarchy.HierarchySceneDropTarget.HierarchySceneDropTarget(Inno.Scene.GameScene scene)`](../../src/composition/editor/panels/Inno.Editor.Panel.Hierarchy/Interactions/HierarchySceneDropTarget.cs#L22) | Creates a hierarchy drop target representing one loaded scene row or root.<br>`scene`：The loaded scene represented by the target. | — | `System.ArgumentNullException`：Thrown when scene is null. |
+| <a id="api-357da9dd8b24a4c0"></a>[`public Inno.Scene.GameScene Inno.Editor.Panel.Hierarchy.HierarchySceneDropTarget.scene { get; }`](../../src/composition/editor/panels/Inno.Editor.Panel.Hierarchy/Interactions/HierarchySceneDropTarget.cs#L30) | Gets the target scene. | — | — |
+| <a id="api-d713793e6ceab109"></a>[`public sealed class Inno.Editor.Panel.Hierarchy.HierarchySceneDropTarget`](../../src/composition/editor/panels/Inno.Editor.Panel.Hierarchy/Interactions/HierarchySceneDropTarget.cs#L11) | Identifies a scene row or scene root hierarchy drop target. | — | — |
 
 ## 项目依赖
 

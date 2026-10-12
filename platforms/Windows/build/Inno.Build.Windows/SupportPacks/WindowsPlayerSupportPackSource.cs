@@ -38,7 +38,9 @@ public sealed class WindowsPlayerSupportPackSource : IPlayerSupportPackSource
             new WindowsSupportPackValidator(),
             "platforms/Windows/player/Inno.Player.Windows/Inno.Player.Windows.csproj",
             "platforms/Windows/build/Inno.Build.Windows/Templates/WindowsPlayer.project.xml",
-            nativePlan, new WindowsNativeToolchainProvider(dotnetHost), host, bindingGenerator);
+            nativePlan, new WindowsNativeToolchainProvider(dotnetHost), host, bindingGenerator,
+            ["platforms/Windows/build/Inno.Build.Windows/SupportPacks/WindowsPlayerSupportPackSource.cs",
+                "platforms/Windows/build/Inno.Build.Windows/SupportPacks/WindowsSupportPackValidator.cs"]);
     }
 
     /// <inheritdoc />

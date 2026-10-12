@@ -47,7 +47,7 @@ public sealed class BindingSelectionLifetimeTests
     }
 
     [Fact]
-    public async Task SelectionRemainsOwnedThroughBuildAndIsReleasedAfterPublish()
+    public async Task SelectionRemainsProductOwnedThroughBuildAndPublish()
     {
         string engine = ToolchainEnvironment.FindRepoRoot();
         string root = Path.Combine(Path.GetTempPath(), "InnoSelectionLifetime", Guid.NewGuid().ToString("N"));
@@ -81,7 +81,7 @@ public sealed class BindingSelectionLifetimeTests
             await Execute("build");
             Assert.True(File.Exists(selection));
             await Execute("publish");
-            Assert.False(File.Exists(selection));
+            Assert.True(File.Exists(selection));
 
             async Task Execute(string command)
             {

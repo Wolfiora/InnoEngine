@@ -16,19 +16,24 @@ public sealed class NativeCMakeSource
 {
     private readonly string m_engineRoot;
     private readonly HashSet<string> m_paths;
+    private readonly NativeBindingInputPaths m_bindings;
 
     private NativeCMakeSource(
         string engineRoot,
         string root,
-        IReadOnlyList<NativeInputSnapshot.Entry> entries
+        IReadOnlyList<NativeInputSnapshot.Entry> entries,
+        NativeBindingInputPaths bindings
     ) {
         m_engineRoot = Path.TrimEndingDirectorySeparator(engineRoot);
+        m_bindings = bindings;
         this.root = root;
         m_paths = new(OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal);
         foreach (NativeInputSnapshot.Entry entry in entries)
         {
             string path = Path.GetFullPath(entry.physicalPath);
-            while (!m_paths.Comparer.Equals(path, m_engineRoot) && m_paths.Add(path))
+            while (!m_paths.Comparer.Equals(path, m_engineRoot)
+                && (IsCheckoutPath(m_engineRoot, path) || m_bindings.ResolveRelative(path) is not null)
+                && m_paths.Add(path))
                 path = Path.GetDirectoryName(path)!;
         }
         m_paths.Add(m_engineRoot);
@@ -40,19 +45,19 @@ public sealed class NativeCMakeSource
     public string root { get; }
 
     /// <summary>
-    /// Resolves a declared checkout file or directory to its copied counterpart.
+    /// Resolves a declared checkout or selected binding input to its copied counterpart.
     /// </summary>
     /// <param name="path">
     /// An absolute recipe input path. External SDK paths retain their original location.
     /// </param>
     /// <returns>
-    /// The copied checkout input, or the unchanged external SDK location.
+    /// The copied checkout or binding input, or the unchanged external SDK location.
     /// </returns>
     /// <exception cref="ArgumentException">
     /// The path is empty or relative.
     /// </exception>
     /// <exception cref="InvalidOperationException">
-    /// A checkout path was not declared by the recipe.
+    /// A checkout or selected binding path was not declared by the recipe.
     /// </exception>
     public string ResolvePath(string path)
     {
@@ -60,10 +65,10 @@ public sealed class NativeCMakeSource
         if (!Path.IsPathFullyQualified(path))
             throw new ArgumentException("A CMake input path must be absolute.", nameof(path));
         string absolute = Path.GetFullPath(path);
-        if (!IsCheckoutPath(m_engineRoot, absolute))
+        if (!IsCheckoutPath(m_engineRoot, absolute) && m_bindings.ResolveRelative(absolute) is null)
             return absolute;
         return m_paths.Contains(absolute)
-            ? PathBoundary.Resolve(root, Path.GetRelativePath(m_engineRoot, absolute))
+            ? PathBoundary.Resolve(root, m_bindings.ResolveRelative(absolute) ?? Path.GetRelativePath(m_engineRoot, absolute))
             : throw new InvalidOperationException("A CMake source was not declared by the native recipe: " + absolute);
     }
 
@@ -102,38 +107,39 @@ public sealed class NativeCMakeSource
         CancellationToken cancellationToken
     ) {
         StringComparer comparer = OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal;
+        var bindings = new NativeBindingInputPaths(context);
         NativeInputSnapshot.Entry[] entries = snapshot.entries
-            .Where(entry => IsCheckoutPath(context.engineRoot, entry.physicalPath))
+            .Where(entry => IsCheckoutPath(context.engineRoot, entry.physicalPath)
+                || bindings.ResolveRelative(entry.physicalPath) is not null)
             .GroupBy(static entry => entry.physicalPath, comparer)
             .Select(group => new NativeInputSnapshot.Entry(
-                "engine/" + Path.GetRelativePath(context.engineRoot, group.Key).Replace('\\', '/'),
+                "engine/" + (bindings.ResolveRelative(group.Key) ?? Path.GetRelativePath(context.engineRoot, group.Key).Replace('\\', '/')),
                 group.Key, group.First().hash))
             .OrderBy(static entry => entry.logicalPath, StringComparer.Ordinal).ToArray();
         if (entries.Length == 0)
-            throw new InvalidOperationException("The native recipe declares no checkout source inputs.");
+            throw new InvalidOperationException("The native recipe declares no checkout or selected binding inputs.");
+        if (entries.Select(static entry => entry.logicalPath).Distinct(comparer).Count() != entries.Length)
+            throw new InvalidOperationException("Native inputs cannot share a copied workspace location.");
         string root = Path.Combine(context.GetNativeBuildRoot(component), "Sources");
         if (Directory.Exists(root) && IsComplete(context, root, entries, cancellationToken))
-            return new(context.engineRoot, root, entries);
-        string candidate = root + ".staging-" + Guid.NewGuid().ToString("N");
-        Directory.CreateDirectory(candidate);
-        try
+            return new(context.engineRoot, root, entries, bindings);
+        Directory.CreateDirectory(root);
+        var expected = new HashSet<string>(entries.Select(static entry => entry.logicalPath["engine/".Length..]), comparer);
+        foreach (string file in PathBoundary.EnumerateFiles(root))
         {
-            foreach (NativeInputSnapshot.Entry entry in entries)
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-                string destination = PathBoundary.Resolve(candidate, entry.logicalPath["engine/".Length..]);
-                await NativeInputMaterializer.CopyAsync(context, entry.physicalPath,
-                    destination, cancellationToken).ConfigureAwait(false);
-            }
             cancellationToken.ThrowIfCancellationRequested();
-            AtomicDirectory.Install(candidate, root);
-            return new(context.engineRoot, root, entries);
+            string relative = Path.GetRelativePath(root, file).Replace('\\', '/');
+            if (!expected.Contains(relative))
+                File.Delete(file);
         }
-        finally
+        foreach (NativeInputSnapshot.Entry entry in entries)
         {
-            if (Directory.Exists(candidate))
-                Directory.Delete(candidate, recursive: true);
+            cancellationToken.ThrowIfCancellationRequested();
+            string destination = PathBoundary.Resolve(root, entry.logicalPath["engine/".Length..]);
+            await NativeInputMaterializer.CopyAsync(context, entry.physicalPath, destination, cancellationToken).ConfigureAwait(false);
         }
+        cancellationToken.ThrowIfCancellationRequested();
+        return new(context.engineRoot, root, entries, bindings);
     }
 
     private static bool IsCheckoutPath(

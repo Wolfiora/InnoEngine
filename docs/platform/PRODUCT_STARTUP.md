@@ -1,104 +1,97 @@
-# 产品启动与 Solution 的 “not built”
+# 启动 Editor、构建与发布游戏
 
-[平台索引](README.md) · [Wiki 首页](../README.md) · [Build CLI](../build/Inno.Build.Cli.md) · [当前计划复核](../architecture/PLATFORM_OWNERSHIP_PLAN_AUDIT_2026_10_08.md)
+[平台索引](README.md) · [Wiki 首页](../README.md) · [开发入口](../entry/README.md)
 
-## 1. 哪些项目可以启动
+## 从零开始
 
-| 项目 | 产品/环境 | 实际启动方式 |
-| --- | --- | --- |
-| `Inno.Editor.Windows` | Windows x64 Editor | 明确构建本项目；第一个程序参数传 Project 目录。 |
-| `Inno.Editor.MacOS` | Apple Silicon macOS Editor | 在 macOS 上明确构建本项目；第一个程序参数传 Project 目录。 |
-| `Inno.Player.Windows` | Windows 游戏宿主 | `game` 导出游戏后，运行输出中的游戏名 `.exe`。 |
-| `Inno.Player.MacOS` | macOS 游戏宿主 | 在 macOS 上导出游戏，打开输出的 `.app`。 |
-| `Inno.Player.Browser` | Browser Wasm32 游戏宿主 | 导出 Web 游戏，通过 HTTP 服务打开网页。 |
-| `Inno.Build.Cli` | 构建命令 | 运行 `engine`、`game`、`support-pack`、`verify` 等明确命令。 |
-
-这六个项目是生产可执行入口。`Inno.Editor.Hosting`、`Inno.Player.Runtime`、平台 Build 模块与 backend 项目都是库。
-Linux 当前只有 Native 工具链贡献；没有完整 Linux Editor/Player。WindowsX86/Arm64、MacOSX64、iOS、NS 没有已实现的产品入口。
-
-## 2. “not built” 的准确含义
-
-当前 `InnoEngine.sln` 的 Debug/Release 配置给五个平台产品项目声明了 `ActiveCfg`，没有声明 `Build.0`。
-它们保留在 Solution 中，但默认整 Solution Build 跳过这些项目。其余共享库、工具、测试按各自配置构建。
-这是一项**批量构建选择**，不表示项目废弃、目标不支持、代码错误或项目不能启动。
-
-当前实现连本机 Windows 两个产品也采用明确产品构建。这比计划只排除外国宿主/Browser 的最低要求更严格，
-避免同一批构建混合中立库、产品 Native 目标及发布属性。没有为改善 IDE 显示而恢复隐式目标。
-
-在 IDE 中选择本机 Editor 的启动配置，设置程序参数，并把启动前构建设为该 Editor 项目及依赖。
-如果 IDE 配置只执行默认 Solution Build，应该先显式执行该产品的 Build；不要因为旧 `.exe` 仍存在就跳过构建。
-仅设置 Startup Project 不应被当成产品已经成功构建的证据。
-
-## 3. 当前 Windows Editor：FlappyBird
-
-在 InnoEngine 仓库根目录执行以下 PowerShell。当前电脑的验收 SDK 路径如下；其他电脑选择其工程要求的 .NET 9 SDK。
-
-```powershell
-$dotnet = 'C:/Users/23842/AppData/Local/InnoWebDotnet/dotnet.exe'
-& $dotnet run --project platforms/Windows/editor/Inno.Editor.Windows/Inno.Editor.Windows.csproj -c Debug -- 'C:/Dev/GameEngineDev/InnoEngine.Samples/FlappyBird'
-```
-
-等效 IDE 配置：启动项目 `Inno.Editor.Windows`；程序参数为 `C:/Dev/GameEngineDev/InnoEngine.Samples/FlappyBird`。
-**Editor 的目录是位置参数**。`--project` 是 Build CLI 的参数，不能传给 Editor。
-
-普通产品 Build/Publish 自动准备匹配的 Native、绑定与 Editor Shader。首次构建需要原生 SDK/依赖，可能耗时较长。
-已有构建时可运行对应 `bin/windows-x64/Debug/net9.0/Inno.Editor.Windows.exe` 并传入同一 Project 参数。
-
-可选验证参数：`--graphics-api d3d11`、`--smoke-frames 120`。普通开发不需要设置 frame limit。
-
-## 4. 导出与运行 Windows Player
-
-Player 项目只定义平台宿主；游戏脚本/Plugin 闭包、静态注册与内容由导出流程组合。
-源码项目直接 Run 不会导入创作 Project，也没有自动寻找 Project 的逻辑。缺少内容 metadata 会明确失败。
-无需向源码 Player 的 bin 手工复制游戏资产；统一导出得到完整、经过校验的发布布局。
-
-```powershell
-$dotnet = 'C:/Users/23842/AppData/Local/InnoWebDotnet/dotnet.exe'
-$env:DOTNET_HOST_PATH = $dotnet
-& $dotnet run --project build/cli/Inno.Build.Cli/Inno.Build.Cli.csproj -- game --tools-target windows-x64 --project 'C:/Dev/GameEngineDev/InnoEngine.Samples/FlappyBird' --support-packs artifacts/support-packs --target windows-x64 --deployment coreclr --startup-scene FlappyBird/FlappyBird.iscene --output artifacts/games
-& './artifacts/games/FlappyBird-Windows-x64/FlappyBird.exe'
-```
-
-需要 NativeAOT 时把 `--deployment coreclr` 改为 `--deployment nativeaot`；仍使用同一个 Windows Player 源码入口。
-CLI 的 Project 命令从 `DOTNET_HOST_PATH` 或 PATH 取得 host；`--dotnet` 当前属于 `engine/support-pack` 等引擎命令。
-本指南显式设置 host，避免将一个未被 Project 命令读取的参数当成有效选择。
-
-## 5. 导出与打开 Web Player
-
-Windows 作者主机使用 `--tools-target windows-x64`，游戏目标独立为 `browser-wasm`。
-所选 .NET 9 SDK 需要 wasm-tools，构建宿主需要可用 CMake/Ninja；目标 Native/绑定由导出流程冻结并链接。
-
-```powershell
-$dotnet = 'C:/Users/23842/AppData/Local/InnoWebDotnet/dotnet.exe'
-$env:DOTNET_HOST_PATH = $dotnet
-& $dotnet run --project build/cli/Inno.Build.Cli/Inno.Build.Cli.csproj -- game --tools-target windows-x64 --project 'C:/Dev/GameEngineDev/InnoEngine.Samples/FlappyBird' --support-packs artifacts/support-packs --target browser-wasm --deployment mono-wasm --startup-scene FlappyBird/FlappyBird.iscene --output artifacts/games
-python -m http.server 8080 --bind 127.0.0.1 --directory artifacts/games/FlappyBird-Web
-```
-
-然后打开 `http://127.0.0.1:8080/`。`python` 示例要求可用 Python 3，也可以使用现有静态 HTTP 服务；不自动打开或控制用户浏览器。
-Web AOT 使用 `--deployment mono-wasm-aot`。HTTP 服务是本地查看发布结果的工具，不是引擎启动层。
-在服务终端按 Ctrl+C 停止。当前 Web 解释执行/AOT 证据来自 owned headless 浏览器，不替代用户 GPU/声学听音验收。
-
-## 6. macOS：在对应机器上执行
-
-Apple Silicon macOS、.NET 9、Xcode command line tools 与所需 CMake 等工具准备好后，在仓库根目录执行：
+准备 Git、仓库 global.json 声明的 .NET SDK 和当前宿主 Native SDK。Windows x64 使用 Visual Studio C++ 与 Windows SDK；macOS ARM64 使用 Xcode 工具链。
 
 ```sh
-dotnet run --project platforms/MacOS/editor/Inno.Editor.MacOS/Inno.Editor.MacOS.csproj -c Debug -- /absolute/InnoEngine.Samples/FlappyBird
-dotnet run --project build/cli/Inno.Build.Cli/Inno.Build.Cli.csproj -- game --tools-target macos-arm64 --project /absolute/InnoEngine.Samples/FlappyBird --support-packs artifacts/support-packs --target macos-arm64 --deployment coreclr --startup-scene FlappyBird/FlappyBird.iscene --output artifacts/games
-open artifacts/games/FlappyBird.app
+git clone --recurse-submodules https://github.com/Wolfiora/InnoEngine.git
+cd InnoEngine
 ```
 
-这是根据当前入口和打包源码列出的操作方式。本轮 Windows 环境未执行 macOS Native/产品运行，不能据此宣称实机通过。
-在 Windows 上运行 macOS 入口会被系统服务/SDK 边界拒绝；勾选 Solution 的 Build 不会获得 macOS SDK。
+打开 InnoEngine.sln，日常启动项目只有：
 
-## 7. 构建、运行和发布的区别
+| 项目 | 操作 |
+| --- | --- |
+| **InnoEngine.Build** | 增量准备当前宿主 Editor，成功后记录实际部署。 |
+| **InnoEngine.Editor** | 验证并启动已准备 Editor；无 Project 参数时选择项目目录。 |
 
-```text
-Editor 项目 Build → Native/绑定/Shader 与共享 Editor 功能 → 传 Project 路径 → 编辑与 Play
-Player 宿主源码 + 游戏代码闭包 + 内容 Pack → 目标/部署发布 → 运行发布产品
-Solution 默认 Build → 共享库、工具、测试 → 不隐式选择或启动平台产品
+Rider 可使用仓库的两个共享 .run 配置，VS 可选择同名启动项目。用户以前保存的个人启动配置需要自行整理，源码不会删除 IDE 私有配置。
+
+BGCS 位于 dependencies/BindGen-CS，使用固定 revision。普通 clone 后首次准备会初始化缺失子模块，因此需要网络；已初始化的用户修改保留。入口不安装系统 SDK。
+
+## 日常操作
+
+```sh
+dotnet run --project entry/InnoEngine.Build/InnoEngine.Build.csproj
+dotnet run --project entry/InnoEngine.Editor/InnoEngine.Editor.csproj
+dotnet run --project entry/InnoEngine.Editor/InnoEngine.Editor.csproj -- /absolute/MyGame
 ```
 
-新的产品/平台必须明确声明目标、SDK、后端、启动和包装；不同 CPU 可以复用同一产品源码。
-完整接入边界及当前剩余问题见[扩展指南](../architecture/PLATFORM_EXTENSION_GUIDE.md)和[计划复核](../architecture/PLATFORM_OWNERSHIP_PLAN_AUDIT_2026_10_08.md)。
+引擎源码修改后运行 Build。游戏脚本和资产修改由 Editor 导入、编译与 reload 处理。没有传项目目录时弹出目录选择窗口，取消正常退出。
+
+Debug/Release 分别准备并启动：
+
+```sh
+dotnet run --configuration Release --project entry/InnoEngine.Build/InnoEngine.Build.csproj
+dotnet run --configuration Release --project entry/InnoEngine.Editor/InnoEngine.Editor.csproj
+```
+
+Build 的 `--configuration Release` 可以覆盖所构建产品的配置；Editor 跟随其入口编译配置。两者配置一致才能复用相同准备结果。
+
+## 显式清理
+
+```sh
+dotnet run --project entry/InnoEngine.Build/InnoEngine.Build.csproj -- --clean
+dotnet run --project entry/InnoEngine.Build/InnoEngine.Build.csproj -- clean --scope product --dry-run
+```
+
+第一条清理当前选定 Editor 工作状态后构建。第二条只预览。默认 Build 不清理。
+
+产品清理先检查目标与 SDK，再取得 owner 保护；活动 Editor 阻止对应产品被删除。其他目标、Native/Binding 缓存、有效 Support Pack、游戏输出、日志和全局 SDK 缓存保留。Ctrl+C 取消后不会提交半成品。
+
+缓存预算清理仍在实现，当前状态见[问题台账](../architecture/CURRENT_ISSUES.md)。
+
+## 支持状态与 not built
+
+| 宿主 | Editor / 默认 Build |
+| --- | --- |
+| Windows x64 | 路由至 Windows Editor 产品。 |
+| macOS ARM64 | 路由至 macOS Editor 产品；本轮实机验证另行记录。 |
+| Linux x64 / ARM64 | 没有完整 Editor；已有 Native 工具能力不能视为 Editor 支持。 |
+| 其他 CPU/平台 | 未注册的产品明确拒绝。 |
+
+默认 Solution Debug/Release 只构建两个入口及轻量依赖。其他项目显示 **not built** 表示本次配置未选中它，不代表废弃或编译失败。`SourceDebug`/`SourceRelease` 面向共享源码和测试。
+
+平台 Editor 与 CLI 是应用库；Player 项目是发布源码输入。最终 Player Exe 由平台模板生成，包含游戏代码、内容和匹配的 Native 产物，不作为日常 IDE 启动项目。
+
+## Support Pack 与游戏发布
+
+```sh
+dotnet run --project entry/InnoEngine.Build/InnoEngine.Build.csproj -- support-pack --target windows-x64
+dotnet run --project entry/InnoEngine.Build/InnoEngine.Build.csproj -- game --tools-target windows-x64 --project /absolute/MyGame --target windows-x64 --deployment coreclr --startup-scene Scenes/Main.iscene --output artifacts/games
+```
+
+Pack 是目标编译、链接与运行输入，不包含游戏内容。可单独准备，也可由游戏发布获取。准备前缓存优化尚未完整验收；NativeAOT 和 Web AOT 的最终游戏编译与链接仍需要执行。
+
+macOS 产品目标为 `macos-arm64`。Browser 目标为 `browser-wasm`，部署选 `mono-wasm` 或 `mono-wasm-aot`，实际发布需要匹配的 workload 和 Emscripten。网页通过 HTTP 服务运行，不能把 Browser 源码库当作独立网页游戏启动。
+
+## Native 文件在哪里
+
+| 内容 | 位置与 owner |
+| --- | --- |
+| 第三方源码 | extern，构建不修改它。 |
+| 可复用工作区 | backend Toolchain 的 `obj/native/<target>/<workspaceIdentity>`。 |
+| 校验后产物 | `artifacts/native/<component>/<target>/<artifactFingerprint>`。 |
+| 生成绑定 | 当前位于 backend Native 项目的 `obj/<target>/<generationFingerprint>/`；HostSource 位于同项目的 `Generated/`。 |
+| Pack | `artifacts/support-packs/<target>/<contentFingerprint>`。 |
+| Editor 部署 | 平台项目 SDK 输出；ready.json 指向并校验实际部署。 |
+| Windows 短路径 | Temp/InnoTools 下由工具 owner 建立的工作区别名。 |
+
+短路径 junction 不代表另一份完整 Native 缓存。正常结束删除本次别名，实际工作区继续复用；不能递归删除 junction 来“腾出”对应工作区空间。源码、工作区和成品缓存各有独立职责，不使用混合 .libs 目录。
+
+最终用户运行发布后的 Player 时不执行开发入口、MSBuild、BGCS 或 C++ 编译。发布方式决定是否需要外部 .NET 运行时。
+
+相邻页面：[构建命令](../build/Inno.Build.Cli.md) · [平台扩展](../architecture/PLATFORM_EXTENSION_GUIDE.md) · [当前验收](../architecture/CURRENT_ACCEPTANCE.md)

@@ -8,22 +8,34 @@ namespace Inno.Build.Toolchains;
 /// <summary>
 /// Identifies one complete, integrity-checked native artifact and its exact published file closure.
 /// </summary>
-public sealed class NativeBuildProduct
+public sealed class NativeBuildProduct : IDisposable
 {
+    private readonly BuildArtifactReadLease m_readLease;
+
     internal NativeBuildProduct(
         string component,
         string targetId,
         string fingerprint,
         string directory,
-        NativeBindingGenerationDescriptor? bindingGeneration
+        NativeBindingGenerationDescriptor? bindingGeneration,
+        BuildArtifactReadLease readLease
     ) {
         this.component = component;
         this.targetId = targetId;
         this.fingerprint = fingerprint;
         this.directory = directory;
         this.bindingGeneration = bindingGeneration;
-        files = Array.AsReadOnly(Directory.EnumerateFiles(Path.Combine(directory, "Outputs"),
-            "*", SearchOption.AllDirectories).Order(StringComparer.Ordinal).ToArray());
+        m_readLease = readLease;
+        try
+        {
+            files = Array.AsReadOnly(Directory.EnumerateFiles(Path.Combine(directory, "Outputs"),
+                "*", SearchOption.AllDirectories).Order(StringComparer.Ordinal).ToArray());
+        }
+        catch
+        {
+            readLease.Dispose();
+            throw;
+        }
     }
 
     /// <summary>
@@ -56,4 +68,10 @@ public sealed class NativeBuildProduct
     /// Gets the exact absolute output file paths validated by the publisher.
     /// </summary>
     public IReadOnlyList<string> files { get; }
+
+    /// <summary>
+    /// Releases the artifact after all deployment, compilation and linking consumers finish.
+    /// File paths must not be used afterwards; repeated disposal has no effect.
+    /// </summary>
+    public void Dispose() => m_readLease.Dispose();
 }

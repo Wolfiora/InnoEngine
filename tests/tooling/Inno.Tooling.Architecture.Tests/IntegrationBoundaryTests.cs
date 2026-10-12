@@ -1,11 +1,10 @@
 using System;
-using System.Diagnostics;
 using System.IO;
-using System.Threading.Tasks;
 using Xunit;
 
 namespace Inno.Tooling.Architecture.Tests;
 
+[Collection("Architecture diagnostics")]
 public sealed class IntegrationBoundaryTests
 {
     [Theory]
@@ -19,7 +18,7 @@ public sealed class IntegrationBoundaryTests
     [InlineData("build/toolchains/Probe", "build/bindings/Inno.Build.Bindings", "neutral toolchains cannot depend", true)]
     [InlineData("build/bindings/Inno.Build.Bindings", "build/tasks/Inno.Build.Tasks", "binding generation cannot depend", true)]
     [InlineData("platforms/Windows/build/Probe", "build/bindings/Inno.Build.Bindings", "platform modules must borrow", true)]
-    public async Task CliChecksActualPlatformIntegrationProjectReferences(
+    public void CliChecksActualPlatformIntegrationProjectReferences(
         string owner,
         string dependency,
         string expected,
@@ -32,20 +31,7 @@ public sealed class IntegrationBoundaryTests
             File.WriteAllText(Path.Combine(root, "InnoEngine.sln"), "Microsoft Visual Studio Solution File, Format Version 12.00");
             string destination = CreateProject(dependency, string.Empty);
             CreateProject(owner, "<ItemGroup><ProjectReference Include=\"" + Path.GetRelativePath(Path.Combine(root, owner), destination).Replace('\\', '/') + "\" /></ItemGroup>");
-            DirectoryInfo? checkout = new(AppContext.BaseDirectory);
-            while (checkout is not null && !File.Exists(Path.Combine(checkout.FullName, "InnoEngine.sln")))
-                checkout = checkout.Parent;
-            Assert.NotNull(checkout);
-            string host = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH") ?? "dotnet";
-            var start = new ProcessStartInfo(host) { RedirectStandardOutput = true, RedirectStandardError = true, UseShellExecute = false, CreateNoWindow = true };
-            start.ArgumentList.Add(Path.Combine(checkout!.FullName, "build/cli/Inno.Build.Cli/bin/Debug/net9.0/Inno.Build.Cli.dll"));
-            start.ArgumentList.Add("verify");
-            start.ArgumentList.Add(root);
-            using var process = Process.Start(start)!;
-            Task<string> output = process.StandardOutput.ReadToEndAsync();
-            Task<string> error = process.StandardError.ReadToEndAsync();
-            await process.WaitForExitAsync();
-            string report = await output + await error;
+            (_, string report) = ArchitectureCommandFixture.Run(root);
             Assert.Equal(rejected, report.Contains(expected, StringComparison.Ordinal));
             Assert.DoesNotContain("explicit project dependency is missing", report);
 

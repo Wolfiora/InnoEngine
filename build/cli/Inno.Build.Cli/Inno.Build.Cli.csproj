@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <OutputType>Exe</OutputType>
+    <OutputType>Library</OutputType>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <TargetFramework>net9.0</TargetFramework>
     <ImplicitUsings>disable</ImplicitUsings>
     <Nullable>enable</Nullable>
@@ -44,11 +45,7 @@
     <ProjectReference Include="../../../backends/DotNet/runtime/Inno.Adapter.Modules.DotNet/Inno.Adapter.Modules.DotNet.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../../backends/DotNet/runtime/Inno.Adapter.Serialization.DotNet/Inno.Adapter.Serialization.DotNet.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../managed/Inno.Build.Managed/Inno.Build.Managed.csproj" PrivateAssets="compile" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="../../../src/foundation/extensibility/Inno.Extensibility.Catalogs/Inno.Extensibility.Catalogs.csproj" />
-  </ItemGroup>
-  <ItemGroup>
+    <ProjectReference Include="../../../src/foundation/extensibility/Inno.Extensibility.Catalogs/Inno.Extensibility.Catalogs.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../distributions/Inno.Build.Distribution.Standard/Inno.Build.Distribution.Standard.csproj" PrivateAssets="compile" />
   </ItemGroup>
 </Project>

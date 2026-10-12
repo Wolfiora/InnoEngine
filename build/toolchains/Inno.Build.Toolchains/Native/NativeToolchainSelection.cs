@@ -145,6 +145,41 @@ public sealed class NativeToolchainSelection
     public bool multiConfiguration { get; }
 
     /// <summary>
+    /// Adds integration-owned tools without changing the platform SDK or replacing existing commands.
+    /// </summary>
+    /// <param name="tools">
+    /// Explicit absolute executables required by the selected backend integration.
+    /// </param>
+    /// <param name="inputs">
+    /// Integration implementation and configuration files participating in tool selection.
+    /// </param>
+    /// <returns>
+    /// A new immutable selection containing both the platform and integration inputs.
+    /// </returns>
+    /// <exception cref="ArgumentException">
+    /// A contribution conflicts with an already selected command.
+    /// </exception>
+    /// <exception cref="FileNotFoundException">
+    /// A contributed tool or input does not exist.
+    /// </exception>
+    public NativeToolchainSelection WithTools(
+        IReadOnlyDictionary<string, string> tools,
+        IEnumerable<string> inputs
+    ) {
+        ArgumentNullException.ThrowIfNull(tools);
+        ArgumentNullException.ThrowIfNull(inputs);
+        var combined = new Dictionary<string, string>(m_tools, StringComparer.Ordinal);
+        foreach ((string name, string executable) in tools)
+        {
+            if (combined.TryGetValue(name, out string? existing) && existing != executable)
+                throw new ArgumentException($"Integration tool '{name}' conflicts with the frozen SDK selection.", nameof(tools));
+            combined[name] = executable;
+        }
+        return new NativeToolchainSelection(targetId, host, combined, environment, inputPaths.Concat(inputs),
+            cmakeArguments, sharedLibraryExtension, multiConfiguration);
+    }
+
+    /// <summary>
     /// Resolves an executable from the frozen selection rather than a mutable process PATH.
     /// </summary>
     /// <param name="name">

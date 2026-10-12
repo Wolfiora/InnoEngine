@@ -6,20 +6,15 @@
     <InnoPrepareProductNative>false</InnoPrepareProductNative>
     <InnoProductBuildProperties>$(MSBuildThisFileDirectory)../../build/Inno.Build.Browser/ProductBuild.props</InnoProductBuildProperties>
   </PropertyGroup>
-  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk.WebAssembly" />
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
   <PropertyGroup>
-    <OutputType>Exe</OutputType>
+    <OutputType>Library</OutputType>
     <InnoGeneratePlayerComposition>true</InnoGeneratePlayerComposition>
     <TargetFramework>net9.0-browser</TargetFramework>
     <ImplicitUsings>disable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <AssemblyName>Inno.Player.Browser</AssemblyName>
-    <RuntimeIdentifier>browser-wasm</RuntimeIdentifier>
-    <WasmBuildNative>true</WasmBuildNative>
-    <PublishTrimmed>true</PublishTrimmed>
-    <TrimMode>partial</TrimMode>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <EmccFlags>-sSUPPORT_LONGJMP=wasm -sMIN_WEBGL_VERSION=2 -sMAX_WEBGL_VERSION=2 -sFULL_ES3=1</EmccFlags>
   </PropertyGroup>
   <Target Name="ValidateBrowserNativeDeployment" BeforeTargets="PrepareForPublish;Publish">
     <Error Condition="'$(InnoBrowserNativeRoot)' == ''" Text="Browser publication requires an explicit native product closure. Use Inno.Build.Cli to build or export the Player." />
@@ -53,5 +48,5 @@
   <ItemGroup>
     <ProjectReference Include="../../../../src/foundation/extensibility/Inno.Extensibility.Catalogs/Inno.Extensibility.Catalogs.csproj" />
   </ItemGroup>
-  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk.WebAssembly" />
+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 </Project>

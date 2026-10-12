@@ -70,13 +70,14 @@ internal static partial class NativeBindingsVerification
                 repositoryRoot, cancellationToken, DotNetSdkEnvironment.Create(options.dotnet));
 
             var native = await BuildNativeDependenciesAsync(repositoryRoot, options, nativeConfiguration, cancellationToken);
+            using ProductNativeBuildResult nativeOwnership = native.products;
 
             Console.WriteLine("[inno-bindings] Build the complete InnoEngine solution.");
             await ToolchainEnvironment.RunAsync(
                 options.dotnet,
                 [
                     "build", Path.Combine(repositoryRoot, "InnoEngine.sln"),
-                    "--configuration", options.configuration,
+                    "--configuration", "Source" + options.configuration,
                     "--no-restore",
                     "-m:1", "-nodeReuse:false", "--disable-build-servers",
                     $"-p:BGCSRuntimeProject={bindGenRuntimeProject}",
@@ -183,7 +184,7 @@ internal static partial class NativeBindingsVerification
         Console.WriteLine("[inno-bindings] No hand-authored native imports exist outside generated binding roots.");
     }
 
-    private static async Task<(ProductNativeBuildPlan plan, IReadOnlyList<NativeBuildProduct> products)> BuildNativeDependenciesAsync(
+    private static async Task<(ProductNativeBuildPlan plan, ProductNativeBuildResult products)> BuildNativeDependenciesAsync(
         string repositoryRoot,
         NativeVerificationOptions options,
         string nativeConfiguration,

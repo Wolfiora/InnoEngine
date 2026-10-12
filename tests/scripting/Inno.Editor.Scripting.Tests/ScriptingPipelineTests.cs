@@ -519,8 +519,11 @@ public sealed class ScriptingPipelineTests : IDisposable
             }
             """);
 
-        ScriptCompilationResult authoring = m_fixture.Compile();
+        using ScriptReloadHost reload = m_fixture.CreateReloadHost();
+        reload.Start();
+        ScriptCompilationResult authoring = m_fixture.CompilePending(reload);
         Assert.True(authoring.success, FormatDiagnostics(authoring));
+        Assert.True(reload.ApplyPendingReload());
         string authoringAssembly = Path.Combine(authoring.outputDirectory!, "Inno.GameScripts.dll");
         Assert.True(ContainsCustomAttribute(authoringAssembly, nameof(HeaderAttribute)));
         Assert.True(ContainsCustomAttribute(authoringAssembly, nameof(TextAttribute)));

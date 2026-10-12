@@ -57,7 +57,7 @@ internal sealed class NativeVerificationOptions
         string engineRoot = Path.GetFullPath(string.IsNullOrWhiteSpace(selectedRoot) ? ToolchainEnvironment.FindRepoRoot() : selectedRoot);
         string bindGenRoot = Path.GetFullPath(values.GetValueOrDefault(
             "bindgen-root",
-            Path.Combine(Directory.GetParent(engineRoot)!.FullName, "BindGen-CS")));
+            Path.Combine(engineRoot, "dependencies", "BindGen-CS")));
         string configuration = values.GetValueOrDefault("configuration", C_DEFAULT_CONFIGURATION);
         if (configuration is not ("Debug" or "Release"))
             throw new ArgumentException("--configuration must be either Debug or Release.");

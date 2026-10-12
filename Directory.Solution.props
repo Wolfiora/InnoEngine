@@ -3,4 +3,23 @@
     <RestoreUseStaticGraphEvaluation>true</RestoreUseStaticGraphEvaluation>
     <RestoreSerializeGlobalProperties>true</RestoreSerializeGlobalProperties>
   </PropertyGroup>
+  <!-- Development configurations restore only the bootstrap closure, before source dependencies exist. -->
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug' or '$(Configuration)' == 'Release'">
+    <!-- Static solution restore walks unselected source projects instead of these explicit entry points. -->
+    <RestoreUseStaticGraphEvaluation>false</RestoreUseStaticGraphEvaluation>
+    <_InnoEditorRestoreProject>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)entry/InnoEngine.Editor/InnoEngine.Editor.csproj'))</_InnoEditorRestoreProject>
+    <_InnoBuildRestoreProject>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)entry/InnoEngine.Build/InnoEngine.Build.csproj'))</_InnoBuildRestoreProject>
+    <RestoreGraphProjectInput>$(_InnoEditorRestoreProject);$(_InnoBuildRestoreProject)</RestoreGraphProjectInput>
+  </PropertyGroup>
+
+  <!-- Product roots restore through their explicit target builds, never through a neutral source batch. -->
+  <ItemGroup Condition="'$(Configuration)' == 'SourceDebug' or '$(Configuration)' == 'SourceRelease'">
+    <_InnoSourceRestoreProject
+      Include="$(MSBuildThisFileDirectory)entry/**/*.csproj;$(MSBuildThisFileDirectory)src/**/*.csproj;$(MSBuildThisFileDirectory)backends/**/*.csproj;$(MSBuildThisFileDirectory)platforms/**/*.csproj;$(MSBuildThisFileDirectory)build/**/*.csproj;$(MSBuildThisFileDirectory)tools/**/*.csproj;$(MSBuildThisFileDirectory)tests/**/*.csproj"
+      Exclude="$(MSBuildThisFileDirectory)**/bin/**;$(MSBuildThisFileDirectory)**/obj/**;$(MSBuildThisFileDirectory)platforms/**/editor/**/*.csproj;$(MSBuildThisFileDirectory)platforms/**/player/**/*.csproj" />
+  </ItemGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'SourceDebug' or '$(Configuration)' == 'SourceRelease'">
+    <RestoreUseStaticGraphEvaluation>false</RestoreUseStaticGraphEvaluation>
+    <RestoreGraphProjectInput>@(_InnoSourceRestoreProject)</RestoreGraphProjectInput>
+  </PropertyGroup>
 </Project>

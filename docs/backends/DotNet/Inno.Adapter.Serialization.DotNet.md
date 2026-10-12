@@ -21,11 +21,11 @@
 using Inno.Adapter.Serialization.DotNet;
 using Inno.Core.Serialization;
 
-using var serialization = new SerializationRegistry(types, new ReflectionSerializationMetadataSource());
-byte[] data = serialization.Serialize(state, ownerContext);
+static ISerializationMetadataSource CreateMetadata()
+    => new ReflectionSerializationMetadataSource();
 ```
 
-`types` 是已经初始化的 `TypeCatalog`，`ownerContext` 由对象 owner 提供完整引用解析服务。Registry 在构造时建立 Converter generation；退出时先退休使用它的 Session，再释放 Registry 和类型目录。
+组合入口将该来源交给 [SerializationRegistry](../../core/Inno.Core.Serialization.md)，并提供已初始化的类型目录。序列化上下文由对象 owner 提供完整引用解析服务。Registry 在构造时建立 Converter generation；退出时先退休使用它的 Session，再释放 Registry 和类型目录。
 
 来源按 `Type` 弱缓存元数据，不把 collectible 类型保存在强静态表中。成员顺序、重复键检查、属性可见性和恢复回调验证与静态来源遵循相同契约。恢复通知在完整操作成功后提交；构造或回调失败传播到调用方事务。
 
@@ -39,14 +39,19 @@ byte[] data = serialization.Serialize(state, ownerContext);
 
 ## 当前源码公开 API 清单
 
-只列当前源码的 public/protected 表面；内部实现不作为稳定 API。参数、返回、失败和 owner 以英文 XML 为准。
+按类型列出当前 public 与可供外部派生实现使用的 protected 声明。签名包含 nullable、默认参数和泛型约束；源码链接可定位实现。表中的“—”表示该声明没有额外 XML 约束，不能据此推断线程安全或不会失败。生命周期与组合顺序见本页前文。
 
 ### `Inno.Adapter.Serialization.DotNet.ReflectionSerializationMetadataSource`
 
-| 当前声明 | 行为 |
-| --- | --- |
-| [`Inno.Adapter.Serialization.DotNet.ReflectionSerializationMetadataSource`](../../../backends/DotNet/runtime/Inno.Adapter.Serialization.DotNet/ReflectionSerializationMetadataSource.cs#L13) | Supplies desktop authoring member access through weakly cached runtime reflection metadata. |
-| [`Inno.Core.Serialization.SerializationTypeMetadata Inno.Adapter.Serialization.DotNet.ReflectionSerializationMetadataSource.GetMetadata(System.Type type)`](../../../backends/DotNet/runtime/Inno.Adapter.Serialization.DotNet/ReflectionSerializationMetadataSource.cs#L18) | See the implemented contract. |
+<!-- api: T:Inno.Adapter.Serialization.DotNet.ReflectionSerializationMetadataSource bbf64c98a309adde145bc285cb71a3494107e3bbc46236000af761e5d484a0f7 -->
+<!-- api: M:Inno.Adapter.Serialization.DotNet.ReflectionSerializationMetadataSource.GetMetadata(System.Type) a0a6ec0840bc7fa9fd6f0a326b0d8b46be38c2630dbda492a0fd3e0c6f83cb54 -->
+<!-- api: M:Inno.Adapter.Serialization.DotNet.ReflectionSerializationMetadataSource.#ctor 4fb1880451a4de96fa1618384f56b7cb660d78f677c9a1bf9cc10d6ef620f28f -->
+
+| 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
+| --- | --- | --- | --- |
+| <a id="api-8391889e4c2aac48"></a>[`public Inno.Adapter.Serialization.DotNet.ReflectionSerializationMetadataSource.ReflectionSerializationMetadataSource()`](../../../backends/DotNet/runtime/Inno.Adapter.Serialization.DotNet/ReflectionSerializationMetadataSource.cs#L13) | C# 隐式构造函数；按类型声明执行字段初始化和基类构造。 | — | — |
+| <a id="api-1c221ab1a4e02d70"></a>[`public Inno.Core.Serialization.SerializationTypeMetadata Inno.Adapter.Serialization.DotNet.ReflectionSerializationMetadataSource.GetMetadata(System.Type type)`](../../../backends/DotNet/runtime/Inno.Adapter.Serialization.DotNet/ReflectionSerializationMetadataSource.cs#L18) | Resolves a complete serialization shape for the current declaration.<br>返回：Immutable access metadata; an unsupported declaration throws instead of probing another provider.<br>`type`：The exact closed declaration, including its generic arguments. | — | — |
+| <a id="api-556fca6b315e8257"></a>[`public sealed class Inno.Adapter.Serialization.DotNet.ReflectionSerializationMetadataSource : Inno.Core.Serialization.ISerializationMetadataSource`](../../../backends/DotNet/runtime/Inno.Adapter.Serialization.DotNet/ReflectionSerializationMetadataSource.cs#L13) | Supplies desktop authoring member access through weakly cached runtime reflection metadata. | — | — |
 
 ## 项目依赖
 

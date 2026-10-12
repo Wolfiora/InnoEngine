@@ -17,6 +17,7 @@ internal sealed class BindingGenerationOperation : IDisposable
     private readonly NativeBindingGenerationRequest m_request;
     private readonly string m_dotnetHost;
     private readonly List<FileLease> m_leases = [];
+    private readonly List<IDisposable> m_reading = [];
     private readonly List<BindingGenerationPublication> m_publications = [];
 
     internal BindingGenerationOperation(
@@ -29,7 +30,7 @@ internal sealed class BindingGenerationOperation : IDisposable
         m_dotnetHost = dotnetHost;
     }
 
-    internal async ValueTask<IReadOnlyDictionary<string, NativeBindingGenerationDescriptor>> ExecuteAsync(CancellationToken cancellation)
+    internal async ValueTask<NativeBindingGenerationResult> ExecuteAsync(CancellationToken cancellation)
     {
         BindingGenerationConfiguration[] definitions = m_request.components.Select(component =>
             BindingDefinitionReader.Read(m_context, component, m_request)).ToArray();
@@ -52,6 +53,7 @@ internal sealed class BindingGenerationOperation : IDisposable
         m_context.RecordBindingBatch();
         Verify(definitions, fingerprints, m_context.BeginInputVerification("binding-locks"), cancellation);
         Dictionary<string, NativeBindingGenerationDescriptor> results = new(StringComparer.Ordinal);
+        HashSet<string> protectedTargets = new(StringComparer.Ordinal);
         for (int index = 0; index < definitions.Length; index++)
         {
             cancellation.ThrowIfCancellationRequested();
@@ -62,10 +64,20 @@ internal sealed class BindingGenerationOperation : IDisposable
             if (m_request.outputMode == NativeBindingOutputMode.TargetArtifacts)
             {
                 string destination = Path.Combine(output, fingerprint);
-                if (!m_request.checkOnly && BuildArtifactManifest.IsComplete(destination, fingerprint, ["Native", "Generated"], m_context))
+                try
                 {
-                    results.Add(definition.component.nativeProject, TargetBindingGeneration.Describe(destination, fingerprint, loaded.bridge is not null));
-                    continue;
+                    m_reading.Add(await BuildArtifactReadLease.AcquireAsync(destination, fingerprint,
+                        ["Native", "Generated"], cancellation, m_context).ConfigureAwait(false));
+                    protectedTargets.Add(destination);
+                    if (!m_request.checkOnly)
+                    {
+                        results.Add(definition.component.nativeProject, TargetBindingGeneration.Describe(destination, fingerprint, loaded.bridge is not null));
+                        continue;
+                    }
+                }
+                catch (InvalidDataException)
+                {
+                    // Invalid output is repaired only after exclusive artifact ownership is acquired at commit.
                 }
                 var publication = BindingGenerationPublication.CreateTarget(destination, cancellation);
                 m_publications.Add(publication);
@@ -81,6 +93,7 @@ internal sealed class BindingGenerationOperation : IDisposable
                 results.Add(definition.component.nativeProject, new NativeBindingGenerationDescriptor
                 {
                     fingerprint = fingerprint, bindingsPath = Path.Combine(output, "Bindings.cs"),
+                    artifactDirectory = string.Empty,
                     bridgeDirectory = publication.nativeDestination ?? string.Empty
                 });
             }
@@ -89,8 +102,35 @@ internal sealed class BindingGenerationOperation : IDisposable
         cancellation.ThrowIfCancellationRequested();
         foreach (BindingGenerationPublication publication in m_publications)
             if (!m_request.checkOnly)
-                publication.Commit();
-        return new ReadOnlyDictionary<string, NativeBindingGenerationDescriptor>(results);
+            {
+                if (m_request.outputMode == NativeBindingOutputMode.TargetArtifacts)
+                {
+                    using BuildArtifactWriteLease mutation = await BuildArtifactWriteLease.AcquireAsync(
+                        publication.managedDestination, cancellation).ConfigureAwait(false);
+                    publication.Commit();
+                }
+                else
+                    publication.Commit();
+            }
+        if (m_request.outputMode == NativeBindingOutputMode.TargetArtifacts)
+        {
+            foreach (NativeBindingGenerationDescriptor descriptor in results.Values)
+            {
+                string directory = descriptor.artifactDirectory;
+                if (!protectedTargets.Contains(directory))
+                    m_reading.Add(await BuildArtifactReadLease.AcquireAsync(directory, descriptor.fingerprint,
+                        ["Native", "Generated"], cancellation, m_context).ConfigureAwait(false));
+            }
+        }
+        else
+        {
+            // Mutable host sources stay protected by their generation owner until the consumer finishes.
+            m_reading.AddRange(m_leases);
+            m_leases.Clear();
+        }
+        var result = new NativeBindingGenerationResult(results, m_reading);
+        m_reading.Clear();
+        return result;
     }
 
     /// <summary>
@@ -99,6 +139,17 @@ internal sealed class BindingGenerationOperation : IDisposable
     public void Dispose()
     {
         List<Exception> failures = [];
+        for (int index = m_reading.Count - 1; index >= 0; index--)
+        {
+            try
+            {
+                m_reading[index].Dispose();
+            }
+            catch (Exception failure)
+            {
+                failures.Add(failure);
+            }
+        }
         for (int index = m_publications.Count - 1; index >= 0; index--)
         {
             try
@@ -146,8 +197,8 @@ internal sealed class BindingGenerationOperation : IDisposable
         CancellationToken cancellation
     ) {
         var loaded = definition.Load(context);
-        return NativeBindingGenerationIdentity.Compute(loaded.managed, loaded.bridge, definition.configPath,
-            definition.bridgePath ?? string.Empty, definition.GetOutputRoot(context), context, definition.definition,
+        return NativeBindingGenerationIdentity.Compute(loaded.managed, loaded.bridge, definition,
+            definition.GetOutputRoot(context), context,
             loaded.hostBridgeRoot, cancellation, m_publications.SelectMany(static publication => publication.stagingPaths).ToArray());
     }
 }

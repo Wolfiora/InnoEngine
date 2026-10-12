@@ -15,11 +15,12 @@ namespace Inno.Tooling.Architecture;
 /// </summary>
 public static partial class ArchitectureValidator
 {
-    private static readonly string[] S_PRODUCTION_ROOTS = ["src", "backends", "platforms", "build", "tools"];
+    private static readonly string[] S_PRODUCTION_ROOTS = ["entry", "src", "backends", "platforms", "build", "tools"];
     private static readonly HashSet<string> S_IGNORED_DIRECTORIES = new(StringComparer.OrdinalIgnoreCase)
     {
         "bin",
         "obj",
+        "dependencies",
         "Generated"
     };
     private static readonly HashSet<string> S_FORBIDDEN_DIRECTORY_NAMES = new(StringComparer.OrdinalIgnoreCase)
@@ -35,7 +36,8 @@ public static partial class ArchitectureValidator
     /// Executes repository validation or an explicitly requested documentation maintenance operation.
     /// </summary>
     /// <param name="arguments">
-    /// The optional repository path, configuration, XML maintenance flag, explicit SDK and evaluated graph output.
+    /// The optional repository path, configuration, XML maintenance flag, explicit SDK, evaluated graph output,
+    /// and Wiki inventories with explicitly selected runtime and editor script reference assemblies.
     /// </param>
     /// <param name="cancellationToken">
     /// Cancels owned SDK evaluation processes and drains them before returning.
@@ -52,12 +54,20 @@ public static partial class ArchitectureValidator
     /// <exception cref="OperationCanceledException">
     /// The caller cancels evaluated SDK project inspection.
     /// </exception>
+    /// <exception cref="InvalidDataException">
+    /// A selected Wiki script reference is not the declared logical API assembly.
+    /// </exception>
     public static int Execute(
         string[] arguments,
         CancellationToken cancellationToken = default
     ) {
         ArgumentNullException.ThrowIfNull(arguments);
         bool expandXml = false;
+        bool wiki = false;
+        string? wikiInventoryPath = null;
+        string? wikiExamplesPath = null;
+        string? wikiRuntimeReference = null;
+        string? wikiEditorReference = null;
         string configuration = "Debug";
         bool selectedConfiguration = false;
         string? dotnetHost = null;
@@ -68,6 +78,16 @@ public static partial class ArchitectureValidator
             string argument = arguments[index];
             if (argument == "--expand-xml" && !expandXml)
                 expandXml = true;
+            else if (argument == "--wiki" && !wiki)
+                wiki = true;
+            else if (argument == "--wiki-api" && wikiInventoryPath is null && index + 1 < arguments.Length)
+                wikiInventoryPath = arguments[++index];
+            else if (argument == "--wiki-examples" && wikiExamplesPath is null && index + 1 < arguments.Length)
+                wikiExamplesPath = arguments[++index];
+            else if (argument == "--wiki-runtime-reference" && wikiRuntimeReference is null && index + 1 < arguments.Length)
+                wikiRuntimeReference = arguments[++index];
+            else if (argument == "--wiki-editor-reference" && wikiEditorReference is null && index + 1 < arguments.Length)
+                wikiEditorReference = arguments[++index];
             else if (argument == "--dotnet" && dotnetHost is null && index + 1 < arguments.Length)
                 dotnetHost = arguments[++index];
             else if (argument == "--project-graph" && projectGraphPath is null && index + 1 < arguments.Length)
@@ -85,10 +105,13 @@ public static partial class ArchitectureValidator
             else if (!argument.StartsWith("--", StringComparison.Ordinal) && paths.Count == 0)
                 paths.Add(argument);
             else
-                throw new ArgumentException("Usage: verify [engine-root] [--configuration Debug|Release] [--expand-xml] [--dotnet SDK] [--project-graph output.json]", nameof(arguments));
+                throw new ArgumentException("Usage: verify [engine-root] [--configuration Debug|Release] [--expand-xml] [--dotnet SDK] [--project-graph output.json] [--wiki] [--wiki-api inventory.json] [--wiki-examples examples.json] [--wiki-runtime-reference assembly.dll] [--wiki-editor-reference assembly.dll]", nameof(arguments));
         }
         if (projectGraphPath is not null && dotnetHost is null)
             throw new ArgumentException("Evaluated project graph output requires an explicitly selected --dotnet SDK.", nameof(arguments));
+        if ((wikiInventoryPath is not null || wikiExamplesPath is not null
+            || wikiRuntimeReference is not null || wikiEditorReference is not null) && !wiki)
+            throw new ArgumentException("Wiki API inventory requires --wiki validation.", nameof(arguments));
         string repositoryRoot = ResolveRepositoryRoot(paths);
         if (expandXml)
         {
@@ -98,7 +121,22 @@ public static partial class ArchitectureValidator
         }
         List<string> failures = [];
 
-        var documentationModels = new DocumentationSourceModels(repositoryRoot, configuration);
+        WikiProjectReferences? evaluatedReferences = !wiki || dotnetHost is null ? null
+            : new WikiProjectReferences(repositoryRoot, configuration, dotnetHost);
+        var documentationModels = new DocumentationSourceModels(repositoryRoot, configuration,
+            evaluatedReferences, cancellationToken, failures);
+        if (wiki)
+        {
+            IReadOnlyList<WikiProjectPage> pages = WikiProjectCoverageValidator.Validate(repositoryRoot, failures);
+            WikiContentBoundaryValidator.Validate(repositoryRoot, failures);
+            WikiLinkValidator.Validate(repositoryRoot, failures);
+            WikiApiCoverageValidator.Validate(repositoryRoot, pages, documentationModels,
+                wikiInventoryPath, failures, cancellationToken);
+            WikiExampleValidator.Validate(repositoryRoot, pages, documentationModels,
+                new WikiScriptReferences(wikiRuntimeReference, wikiEditorReference),
+                evaluatedReferences,
+                wikiExamplesPath, failures, cancellationToken);
+        }
         foreach (string rootName in S_PRODUCTION_ROOTS)
         {
             string root = Path.Combine(repositoryRoot, rootName);
@@ -510,7 +548,7 @@ public static partial class ArchitectureValidator
             string sourceRoot = projectPath[..projectPath.IndexOf('/')];
             string? expectedPath = sourceRoot switch
             {
-                "tools" => sourceRoot,
+                "tools" or "entry" => sourceRoot,
                 "backends" or "platforms" => Path.GetDirectoryName(Path.GetDirectoryName(projectPath))?.Replace('\\', '/'),
                 "build" => Path.GetDirectoryName(Path.GetDirectoryName(projectPath))?.Replace('\\', '/'),
                 _ => ClassifySourceSolutionPath(projectName)
@@ -528,7 +566,7 @@ public static partial class ArchitectureValidator
             if (!string.Equals(actualPath, expectedPath, StringComparison.Ordinal))
                 failures.Add($"{projectPath}: expected Solution Folder '{expectedPath}', found '{actualPath}'.");
 
-            string physicalGroup = sourceRoot == "tools"
+            string physicalGroup = sourceRoot is "tools" or "entry"
                 ? sourceRoot
                 : Path.GetDirectoryName(Path.GetDirectoryName(projectPath))?
                     .Replace('\\', '/').TrimEnd('/') ?? string.Empty;

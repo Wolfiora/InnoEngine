@@ -19,10 +19,11 @@
 WindowsX64 示例（在仓库根执行，SDK 沿工程 `global.json` 解析）：
 
 ```powershell
+$productProperties = (Resolve-Path 'platforms/Windows/build/Inno.Build.Windows/EditorProduct.props').Path
 dotnet test backends/Bgfx/tests/Inno.Adapter.Rendering.Bgfx.Tests/Inno.Adapter.Rendering.Bgfx.Tests.csproj `
   -p:InnoNativeTarget=windows-x64 `
   -p:InnoToolTarget=windows-x64 `
-  -p:InnoProductBuildProperties=C:/Dev/GameEngineDev/InnoEngine/platforms/Windows/build/Inno.Build.Windows/EditorProduct.props
+  "-p:InnoProductBuildProperties=$productProperties"
 ```
 
 涉及实际 Native 调用时，使用发行组合解析同一目标的 `ProductNativeBuildPlan`，并经 `ProductNativeDeployment.InstallAsync` 准备该测试输出。测试配置不会向共享 backend 增加默认平台；macOS 实机应选择所属产品的属性和工具宿主，不能运行 Windows 产物替代验收。

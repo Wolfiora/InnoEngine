@@ -99,6 +99,15 @@ public sealed class OwnedRestoreTests : IDisposable
         Assert.True(Create(new RecordingEngine(static () => true)).Execute());
     }
 
+    [Fact]
+    public void RestoreRemovesTheParentSolutionEntryPoint()
+    {
+        var engine = new RecordingEngine(static () => true);
+        Assert.True(Create(engine).Execute());
+        Assert.Contains("SolutionPath", engine.removed!);
+        Assert.Contains("RestoreGraphProjectInput", engine.removed!);
+    }
+
     private RestoreOwnedProjectTask Create(RecordingEngine engine)
     {
         var project = new TaskItem(m_project);
@@ -119,6 +128,7 @@ public sealed class OwnedRestoreTests : IDisposable
         internal int builds => m_builds;
         internal bool reacquired { get; private set; }
         internal IDictionary? properties { get; private set; }
+        internal IList<string>? removed { get; private set; }
         public bool ContinueOnError => false;
         public int LineNumberOfTaskNode => 0;
         public int ColumnNumberOfTaskNode => 0;
@@ -142,6 +152,7 @@ public sealed class OwnedRestoreTests : IDisposable
             Assert.True(reacquired);
             Assert.Equal("Restore", Assert.Single(targets));
             properties = globals[0];
+            this.removed = removed[0];
             Interlocked.Increment(ref m_builds);
             return new BuildEngineResult(restore(), []);
         }

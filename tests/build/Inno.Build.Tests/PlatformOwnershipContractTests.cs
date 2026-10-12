@@ -50,7 +50,7 @@ public sealed class PlatformOwnershipContractTests
             Assert.NotNull(step.component.staticBuild);
         });
         Assert.Throws<ArgumentException>(() => new ProductNativeBuildStep("fixture", Step("fixture", []).component, new(NativeLibraryKind.Static),
-            [], null, static (
+            [], null, null, static (
                 relative,
                 target
             ) => relative));
@@ -169,6 +169,7 @@ public sealed class PlatformOwnershipContractTests
             completed,
             cancellation
         ) => throw new Xunit.Sdk.XunitException("Preflight must not execute a component producer."),
+        static context => throw new Xunit.Sdk.XunitException("Preflight must reject missing tools before source declaration."),
         static (
             relative,
             target

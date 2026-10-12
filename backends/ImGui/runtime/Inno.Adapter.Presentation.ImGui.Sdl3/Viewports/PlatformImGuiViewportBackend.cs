@@ -182,7 +182,7 @@ internal sealed unsafe partial class PlatformImGuiViewportBackend : IDisposable
     }
 
     /// <summary>
-    /// Synchronizes a secondary viewport's geometry, framebuffer scale, and renderer output.
+    /// Synchronizes a secondary viewport's drawable scale and renderer output.
     /// </summary>
     /// <param name="windowId">
     /// The SDL window identifier owned by the viewport.
@@ -209,15 +209,8 @@ internal sealed unsafe partial class PlatformImGuiViewportBackend : IDisposable
             return;
         }
 
-        var x = 0;
-        var y = 0;
-        _ = SDL.GetWindowPosition(data.window, ref x, ref y);
-
-        bool geometryChanged = viewport.Handle->Pos != new Vector2(x, y) || viewport.Handle->Size != new Vector2(width, height);
-        viewport.Handle->Pos = new Vector2(x, y);
-        viewport.Handle->WorkPos = new Vector2(x, y);
-        viewport.Handle->Size = new Vector2(width, height);
-        viewport.Handle->WorkSize = new Vector2(width, height);
+        // ImGui owns requested geometry. Native move/resize events request reconciliation
+        // through the platform getters; metric refresh must not overwrite an active drag.
         Vector2 framebufferScale = GetWindowFramebufferScale(data.window);
         if (framebufferScale.X > 0 && framebufferScale.Y > 0)
         {
@@ -225,13 +218,6 @@ internal sealed unsafe partial class PlatformImGuiViewportBackend : IDisposable
                 viewport.Handle->DpiScale = GetWindowDpiScale(data.window);
             viewport.Handle->FramebufferScale = framebufferScale;
         }
-        if (geometryChanged)
-        {
-            viewport.Handle->PlatformRequestMove = 1;
-            viewport.Handle->PlatformRequestResize = 1;
-        }
-
-
         int pixelWidth = 0;
         int pixelHeight = 0;
         SDL.GetWindowSizeInPixels(data.window, ref pixelWidth, ref pixelHeight);

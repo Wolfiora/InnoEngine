@@ -43,8 +43,6 @@ public sealed class NativeBindingCompilationTests
             string sources = Path.Combine(root, "compile-sources.txt");
             string project = Path.Combine(root, "Fixture.csproj");
             new XDocument(new XElement("Project", new XAttribute("Sdk", "Microsoft.NET.Sdk"),
-                new XElement("Import", new XAttribute("Project", "$(InnoNativeBindingSelection)"),
-                    new XAttribute("Condition", "'$(InnoNativeBindingSelection)' != '' and Exists('$(InnoNativeBindingSelection)')")),
                 new XElement("PropertyGroup",
                     new XElement("TargetFramework", "net9.0"),
                     new XElement("AllowUnsafeBlocks", "true"),
@@ -56,7 +54,7 @@ public sealed class NativeBindingCompilationTests
                     new XElement("InnoBindingTargetId", "fixture-target"),
                     new XElement("InnoBindingEngineRoot", root),
                     new XElement("InnoBindingDefinition", definition),
-                    new XElement("BindGenRoot", Path.Combine(engine, "..", "BindGen-CS")),
+                    new XElement("BindGenRoot", Path.Combine(engine, "dependencies", "BindGen-CS")),
                     new XElement("InnoBindingOutputMode", "TargetArtifacts")),
                 new XElement("Import", new XAttribute("Project", definition)),
                 new XElement("Import", new XAttribute("Project", Path.Combine(engine, "Directory.Build.targets"))),
@@ -73,8 +71,11 @@ public sealed class NativeBindingCompilationTests
             Assert.Equal(1, output.Split("INNO-TASK-HOST verified", StringSplitOptions.None).Length - 1);
             string selected = Assert.Single(File.ReadAllLines(sources)
                 .Where(static path => Path.GetFileName(path) == "Bindings.cs"));
-            Assert.StartsWith(Path.Combine(root, "obj", "fixture-target") + Path.DirectorySeparatorChar, selected);
+            Assert.Equal(Path.Combine(root, "obj", "Release", "net9.0", "bindings", "Bindings.cs"), selected);
             Assert.True(File.Exists(selected), output);
+            string artifact = Assert.Single(Directory.GetDirectories(Path.Combine(root, "obj", "fixture-target")));
+            string publishedSource = Path.Combine(artifact, "Generated", "Bindings.cs");
+            Assert.Equal(File.ReadAllBytes(publishedSource), File.ReadAllBytes(selected));
             Assert.True(File.Exists(Path.Combine(root, "bin", "Release", "net9.0", "Fixture.dll")), output);
 
             string selection = Path.Combine(root, "SelectedBindings.props");
@@ -83,8 +84,9 @@ public sealed class NativeBindingCompilationTests
                 {
                     [project] = new()
                     {
-                        fingerprint = Directory.GetParent(Path.GetDirectoryName(selected)!)!.Name,
-                        bindingsPath = selected,
+                        fingerprint = Path.GetFileName(artifact),
+                        artifactDirectory = artifact,
+                        bindingsPath = publishedSource,
                         bridgeDirectory = string.Empty
                     }
                 }, new Dictionary<string, NativeLibraryKind> { [project] = NativeLibraryKind.Shared });
@@ -92,6 +94,7 @@ public sealed class NativeBindingCompilationTests
             Assert.True(reused == 0, reuseOutput);
             Assert.Equal(selected, Assert.Single(File.ReadAllLines(sources)
                 .Where(static path => Path.GetFileName(path) == "Bindings.cs")));
+            Assert.DoesNotContain("INNO-BINDINGS-PREPARE", reuseOutput);
             Assert.DoesNotContain("INNO-TASK-RUNTIME", reuseOutput);
 
             string staticSelection = Path.Combine(root, "StaticBindings.props");
@@ -100,8 +103,9 @@ public sealed class NativeBindingCompilationTests
                 {
                     [project] = new()
                     {
-                        fingerprint = Directory.GetParent(Path.GetDirectoryName(selected)!)!.Name,
-                        bindingsPath = selected,
+                        fingerprint = Path.GetFileName(artifact),
+                        artifactDirectory = artifact,
+                        bindingsPath = publishedSource,
                         bridgeDirectory = string.Empty
                     }
                 }, new Dictionary<string, NativeLibraryKind> { [project] = NativeLibraryKind.Static });

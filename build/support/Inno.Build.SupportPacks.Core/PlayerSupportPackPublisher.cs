@@ -56,7 +56,7 @@ public sealed class PlayerSupportPackPublisher
     /// Cancels preparation before directory installation begins.
     /// </param>
     /// <returns>
-    /// The absolute installed pack directory after successful validation.
+    /// Reading ownership of the verified pack; the caller disposes it after consuming its files.
     /// </returns>
     /// <remarks>
     /// Writers targeting the same pack share an exclusive, cancelable preparation lease.
@@ -77,7 +77,7 @@ public sealed class PlayerSupportPackPublisher
     /// <exception cref="OperationCanceledException">
     /// Preparation was canceled; the installed pack is unchanged.
     /// </exception>
-    public async ValueTask<string> PublishAsync(
+    public async ValueTask<PlayerSupportPackLease> PublishAsync(
         string engineRoot,
         string outputRoot,
         BuildTargetId target,
@@ -103,6 +103,20 @@ public sealed class PlayerSupportPackPublisher
         using FileLease ownership = await FileLease.AcquireAsync(
             Path.Combine(output, target.value + ".lock"), Timeout.InfiniteTimeSpan, cancellationToken)
             .ConfigureAwait(false);
+        await plan.VerifyInputsAsync(cancellationToken).ConfigureAwait(false);
+        var catalog = new PlayerSupportPackCatalog(output);
+        string? prepared = PlayerSupportPackPreparationIndex.Read(output, target.value, plan.preparationIdentity);
+        if (prepared is not null)
+        {
+            try
+            {
+                return await catalog.SelectAsync(target, prepared, source, plan.VerifyInputsAsync, cancellationToken).ConfigureAwait(false);
+            }
+            catch (InvalidDataException)
+            {
+                // Missing or damaged output must be prepared again under the same publication owner.
+            }
+        }
         string transaction = Path.Combine(output, ".support-pack-" + Guid.NewGuid().ToString("N"));
         string staging = Path.Combine(transaction, target.value);
         try
@@ -112,8 +126,19 @@ public sealed class PlayerSupportPackPublisher
             await plan.PrepareAsync(staging, cancellationToken)
                 .ConfigureAwait(false);
             cancellationToken.ThrowIfCancellationRequested();
-            return await new PlayerSupportPackCatalog(output).PublishAsync(
-                target, staging, source, cancellationToken).ConfigureAwait(false);
+            PlayerSupportPackLease published = await catalog.PublishAsync(target, staging, source, cancellationToken,
+                plan.VerifyInputsAsync).ConfigureAwait(false);
+            try
+            {
+                PlayerSupportPackPreparationIndex.Write(output, target.value, plan.preparationIdentity,
+                    Path.GetFileName(published.directory));
+                return published;
+            }
+            catch
+            {
+                published.Dispose();
+                throw;
+            }
         }
         finally
         {

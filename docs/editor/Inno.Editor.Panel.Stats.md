@@ -14,12 +14,17 @@ Panel 通过 `[EditorPanel]` 自动发现；Application 不需要注册。除时
 或其他工具无需让 Stats Panel 增加引用和类型分支。
 
 ```csharp
-context.statistics.Publish(new EditorStatistic(
-    new EditorStatisticId("sample.streaming.pending"),
-    new EditorStatisticGroupId("sample.streaming"),
-    "Streaming",
-    "Pending Requests",
-    pendingCount.ToString()));
+using Inno.Editor.Core;
+
+static void PublishPending(
+    EditorContext context,
+    int pendingCount
+) {
+    context.statistics.Publish(new EditorStatistic(
+        new EditorStatisticId("sample.streaming.pending"),
+        new EditorStatisticGroupId("sample.streaming"),
+        "Streaming", "Pending Requests", pendingCount.ToString()));
+}
 ```
 
 同一帧重复发布相同 ID 时最后值替换之前值。交换保留一个 completed-frame handoff，使贡献者

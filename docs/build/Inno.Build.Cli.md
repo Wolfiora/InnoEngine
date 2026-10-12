@@ -1,119 +1,82 @@
 # Inno.Build.Cli
 
-[Build 索引](README.md) · [Wiki 首页](../README.md) · [Support Pack 核心](Inno.Build.SupportPacks.Core.md) · [发行组合](Inno.Build.Distribution.Standard.md)
+[Build 索引](README.md) · [Wiki 首页](../README.md) · [开发 Build 入口](../entry/InnoEngine.Build.md)
 
 ## 职责与边界
 
-引擎工具的唯一进程入口。组件 Native 工具链、Shader 编译、Support Pack 发布与架构验证都是库，由此组合。CLI 是作者端 composition root，可以加载 Editor 编译参考闭包；通用 Build 库禁止引用 Editor，Player 不包含本项目。
+统一构建应用库，接收明确命令并组合现有 Build、发行、工具链和创作服务。它由 `InnoEngine.Build` 调用，不是第三个 IDE 日常启动项目。
 
-## 命令
+通用 Build 和运行时不得反向引用 CLI。平台、内容编译器、Native 组件与托管部署的注册属于标准发行组合；命令不维护第二套注册表。
+
+## 快速使用
+
+从仓库根目录运行：
 
 ```sh
-dotnet run --project build/cli/Inno.Build.Cli -- engine --target windows-x64 --tools-target windows-x64 --configuration Release
-dotnet run --project build/cli/Inno.Build.Cli -- support-pack --target browser-wasm --tools-target windows-x64 --dotnet /absolute/sdk/dotnet
-dotnet run --project build/cli/Inno.Build.Cli -- game --project /project/FlappyBird --support-packs /packs --target browser-wasm --tools-target windows-x64 --output /output
-dotnet run --project build/cli/Inno.Build.Cli -- verify .
+dotnet run --project entry/InnoEngine.Build/InnoEngine.Build.csproj -- editor --configuration Release
+dotnet run --project entry/InnoEngine.Build/InnoEngine.Build.csproj -- clean --scope product --dry-run
+dotnet run --project entry/InnoEngine.Build/InnoEngine.Build.csproj -- support-pack --target windows-x64
+dotnet run --project entry/InnoEngine.Build/InnoEngine.Build.csproj -- verify .
 ```
 
-| 命令 | 功能 |
+开发入口补齐宿主、SDK 和 checkout 参数。直接嵌入 `BuildApplication` 时，调用者需要提供相应命令所要求的明确上下文；空参数只显示帮助。
+
+| 命令 | 行为 |
 | --- | --- |
-| `engine` | 根据明确工具目标生成绑定并构建对应 Editor 产品（普通 MSBuild 准备 Native/工具），再准备独立请求的游戏目标 Support Pack。 |
-| `clean` | 清理工作区各项目的 bin/obj 和 artifacts 下的 native/managed/support-packs/builds，保留正在执行 CLI 的输出。 |
-| `bindings` | 根据 `--target` 与 `--product` 解析发行声明的普通 Native 产品闭包，再通过组件 BGCS 配置生成绑定。 |
-| `support-pack` | 通过与 Editor 相同的发布器准备、校验并以带回滚的事务安装目标 Pack。 |
-| `game` | 先准备目标 Support Pack，再冻结脚本与内容并通过注册平台输出游戏。 |
-| `plugin` / `scripts` / `import-sample` | 项目作者端流程，共用现有引擎领域服务。 |
-| `shader` | 调用统一 Shader 图编译库。 |
-| `verify` / `verify-native` | 架构检查及 Native 完整性验收。 |
+| `editor` | 增量构建选定 Editor；可用布尔 `--clean` 先清理所选产品。 |
+| `clean --scope product` | 预检 SDK 和目标，清理产品拥有的工作状态；`--dry-run` 预览同一计划。 |
+| `bindings` | 从发行声明的产品组件集合准备统一绑定。 |
+| `support-pack` | 独立准备并校验目标 Pack，不包含游戏内容。 |
+| `game` | 准备 Pack，再在创作 owner thread 捕获生成状态并发布游戏。 |
+| `plugin`、`scripts`、`import-sample` | 使用既有创作服务执行项目操作。 |
+| `shader` | 调用选中目标的 Shader 编译工具。 |
+| `verify`、`verify-native` | 执行架构检查或 Native 生成与实际消费验证。 |
 
-`verify-native` 将本次完整 solution 构建的 CLI 输出写入独立的 `artifacts/build-tools/verification/<runId>`，保持正在运行的验证入口可用。它不覆盖自身 DLL，也不跳过 CLI 编译；这避免 Windows 文件锁导致验证器不能构建完整 solution。
+`clean --scope cache` 和自动预算回收尚在实现；当前不能按已支持命令使用。未知、重复、缺值以及不属于该命令的参数会被拒绝。
 
-solution 的默认 Debug/Release 构建覆盖共享库、工具和测试。五个平台产品入口保留可见性，但不参加默认批量构建；Windows、macOS Editor 通过其明确产品项目构建，Player 通过 `support-pack` / `game` 的目标请求构建和发布。直接编译 Browser 而未提供 Native 绑定选择及指纹会明确失败。Web 解释执行和 AOT 的导出验收独立执行，不把宿主 solution 成功当作 Web 成功。
+Editor 配置独立于游戏发布配置。Support Pack 保持 Release 准备语义；Browser 的最终链接与 workload 由明确的 Browser 发布目标选择。
 
-`--engine-root`、`--dotnet`、`--configuration`、`--output` 用于引擎流程；`verify-native` 也接受显式 `--engine-root`。
-全部组件通过 `NativeBuildContext` 使用选中 checkout 的源码、overlay、按指纹隔离的中间态与原生产物。
-显式根目录不会再触发对 CLI 程序集所在仓库的隐式解析；未指定时才发现默认 checkout。
-项目命令的详细参数由 `help` 输出和源码解析器定义。Ctrl+C 取消当前 Native/managed 子进程树，
-等待退出并排空输出，再以退出码 2 结束；不进入后续阶段或发布未完成的 staging。
-Debug `engine` 构建所选 Editor Debug，但 Windows/macOS Support Pack 独立准备 Release runtime closure。
+## 公开 API
 
-`bindings` 默认请求 `--product editor`；不存在的目标/产品组合在 SDK 或 staging 准备前失败。Browser 的静态绑定与原生聚合由 `support-pack --target browser-wasm` 所属请求准备，不注册普通 Editor Native 产品。CLI、MSBuild 与 Editor 不各自维护另一份产品组件列表。
+| 声明 | 行为与结果 | 所有权/线程 | 失败或限制 |
+| --- | --- | --- | --- |
+| `BuildApplication` | 提供一次构建命令的应用边界。 | 不创建应用窗口，不是 Runtime 服务。 | 不向脚本导出。 |
+| `Run(string[] arguments, CancellationToken cancellationToken) : Task<int>` | 执行命令并汇总退出结果。0 为成功，1 为命令或执行失败，2 为取消。 | 借用令牌；所属进程、workspace 和读取 leases 在结束前释放。Ctrl+C 订阅由外部入口负责。 | null 数组抛 `ArgumentNullException`。取消和失败不提交半成品。 |
 
-所有 dotnet 子进程复用 `DotNetSdkEnvironment` 隔离父 IDE/MSBuild 的 SDK 身份，同时保留所选 Native SDK 环境。消费者工程与引擎工程可以声明不同 SDK；各自依据自己的工程规则解析，不继承父进程已经加载的 MSBuild。
+## 初始化与所有权
 
-`game` 的两阶段协调属于 CLI composition root：先调用
-`BuildPipeline.EnsurePlayerSupportPackAsync`，再在当前 authoring owner thread 调用 `BuildGameAsync`。
-CLI 没有 UI scheduler，因此在入口等待准备任务完成；通用 Build 服务不会在捕获 snapshot 时隐式阻塞异步 provisioner。
-Editor 使用同一准备 API，并在后续 owner-thread update 启动 build，准备期间仍可显示进度和接收取消。
+命令先获得发行定义和明确工具目标，再创建对应工作流程。项目命令准备离线工具后打开创作 workspace，不创建 SDL 窗口或 ImGui 呈现。
 
-## API 和生命周期
+`game` 先等待 `EnsurePlayerSupportPackAsync`，持有其读取 lease，再在当前 owner thread 启动 `BuildGameAsync`。游戏构建另行取得 Pack 读取保护并持有至编译、链接和打包完成。这样准备阶段可以异步运行，创作快照仍按线程协议捕获。
 
-本项目不提供 public/protected API。对程序调用者稳定的入口属于各构建库，不通过反射调用 CLI 内部类型。进程退出码 0 表示成功，1 表示失败，2 表示取消。
+Native 构建结果由 `ProductNativeBuildResult` 唯一拥有；部署完成后释放所有产物 leases。Shader 命令也必须在工具进程结束后才释放其工具产物。
 
-Web 源码构建需要同一 .NET 9 SDK 的 wasm-tools，以及 PATH 上可用的 CMake/Ninja。不携带用户机器上的工具路径。原生产物可重建，不是提交到源码树的发布输入。
+## 失败、取消与缓存
 
-`import-sample` 驱动同一个 AssetSampleImportTransaction：owner 捕获与发布、后台准备与 preflight，完整保留 `~` 目录名。CLI 入口轮询已完成 phase；成功或异常退出前使用 Core RetirementBarrier 等待 Rollback/Dispose，包括取消后的私有目录清理。不保留旧的同步 AssetPipeline.ImportSample 接口。
-CLI 的 Ctrl+C token 在准备、preflight 等待和最终发布前检查；取消后先排空事务，再返回取消退出码。
+产品清理只能处理明确产品、目标与配置；不能清空整个仓库的 bin/obj 或删除其他有效 Pack。活动产品通过 lease 阻止破坏性清理。
 
+SDK 子进程环境与父 IDE 隔离。取消时终止所属进程树并等待退出，再释放 staging 和读取保护。产物身份使用实际内容哈希；最终发布与可复用 Native 工作目录有不同身份。
 
-项目命令先由 `BuildComposition` 准备明确工具目标的离线 Shader 工具闭包，再创建 authoring workspace。
-CLI 不创建窗口、运行设备或 ImGui presentation，也不准备 SDL、ImGui、ImGuizmo 等 Editor Native 产品。
-CLI 的原生配置与其实际编译配置一致；游戏目标与 managed deployment 独立选择。
-`engine` 复用 Editor 的普通 MSBuild 原生准备与部署目标，输出目录由 `TargetDir` 决定。默认 Support Pack 根为 `artifacts/support-packs`。
-运行时加载器只读取部署树，项目命令不依赖隐式的 Native 复制或仓库 fallback。
+Support Pack 准备前缓存、缓存预算回收和完整性能矩阵尚未验收，状态以[当前问题](../architecture/CURRENT_ISSUES.md)为准。
 
+## 扩展与验证
 
+新增目标、backend 或部署 compiler 在[标准发行组合](Inno.Build.Distribution.Standard.md)接入。新增命令只组合既有公开边界，不在解析器实现编译或目录退休。
 
+命令契约由 `DevelopmentEntryCommandTests` 验证；Pack、Native、Task 和发布回归位于 Build 测试项目。Windows、Browser 产品运行与其他平台实机证据分别报告，不能以 CLI 编译成功替代。
 
-
-
-
-## 本轮边界与所有权
-
-唯一生产构建 Program；通过 Inno.Build.Composition 获得 target/deployment/support-pack distribution。CLI 只注入 SDK、目录和 authoring services，不重复注册内置平台名单，不进行第二次 native 安装。
+相邻页面：[Build Pipeline](Inno.Build.md) · [Toolchains](Inno.Build.Toolchains.md) · [Support Pack](Inno.Build.SupportPacks.Core.md) · [Task Hosting](Inno.Build.TaskHosting.md)
 
 ## 当前源码公开 API 清单
 
-只列当前源码 public/protected 表面；内部机制不是稳定 API，参数、返回、失败及所有权以英文 XML 为准。
+按类型列出当前 public 与可供外部派生实现使用的 protected 声明。签名包含 nullable、默认参数和泛型约束；源码链接可定位实现。表中的“—”表示该声明没有额外 XML 约束，不能据此推断线程安全或不会失败。生命周期与组合顺序见本页前文。
 
-## 项目依赖
+### `Inno.Build.Cli.BuildApplication`
 
-- [Inno.Build.Bindings](Inno.Build.Bindings.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Build.Toolchains.Bgfx](../backends/Bgfx/Inno.Build.Toolchains.Bgfx.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Build.Composition](Inno.Build.Composition.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Build.Toolchains](Inno.Build.Toolchains.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Editor.Annotations](../editor/Inno.Editor.Annotations.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Editor.Core](../editor/Inno.Editor.Core.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Editor.Interactions](../editor/Inno.Editor.Interactions.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Editor.Inspection](../editor/Inno.Editor.Inspection.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Editor.Settings](../editor/Inno.Editor.Settings.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Editor.Graph](../editor/Inno.Editor.Graph.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Editor.ImGui](../editor/Inno.Editor.ImGui.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Editor.Scene](../editor/Inno.Editor.Scene.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Editor.Rendering](../editor/Inno.Editor.Rendering.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Editor.PlayMode](../editor/Inno.Editor.PlayMode.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Editor.Panel.FileBrowser](../editor/Inno.Editor.Panel.FileBrowser.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Editor.Panel.ShaderEditor](../editor/Inno.Editor.Panel.ShaderEditor.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Editor.Panel.Hierarchy](../editor/Inno.Editor.Panel.Hierarchy.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Editor.Panel.Inspector](../editor/Inno.Editor.Panel.Inspector.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Extensibility.Modules](../extensibility/Inno.Extensibility.Modules.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Build](Inno.Build.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Assets.Pipeline](../assets/Inno.Assets.Pipeline.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Core.Identity](../core/Inno.Core.Identity.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Core.Settings](../core/Inno.Core.Settings.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Plugins.Authoring](../plugins/Inno.Plugins.Authoring.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Runtime](../runtime/Inno.Runtime.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Scene.Assets](../scene/Inno.Scene.Assets.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Audio.Assets](../audio/Inno.Audio.Assets.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Text.Assets](../text/Inno.Text.Assets.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.UI.Assets](../ui/Inno.UI.Assets.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Adapter.UI.RmlUi.Authoring](../backends/RmlUi/Inno.Adapter.UI.RmlUi.Authoring.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Scripting.Compiler](../scripting/Inno.Scripting.Compiler.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Build.Toolchains.Bgfx.Shaders](../backends/Bgfx/Inno.Build.Toolchains.Bgfx.Shaders.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Build.Toolchains.Bgfx.Tools](../backends/Bgfx/Inno.Build.Toolchains.Bgfx.Tools.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Tooling.Architecture](../tooling/Inno.Tooling.Architecture.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Adapter.Modules.DotNet](../backends/DotNet/Inno.Adapter.Modules.DotNet.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Adapter.Serialization.DotNet](../backends/DotNet/Inno.Adapter.Serialization.DotNet.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Build.Managed](Inno.Build.Managed.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Extensibility.Catalogs](../extensibility/Inno.Extensibility.Catalogs.md)：公开引用边界由实际签名核对。
-- [Inno.Build.Distribution.Standard](Inno.Build.Distribution.Standard.md)：实现依赖，PrivateAssets="compile"。
+<!-- api: T:Inno.Build.Cli.BuildApplication 5feb127b395302e89588037726f079518b465572b5636555e0e8d5f923b0f9f8 -->
+<!-- api: M:Inno.Build.Cli.BuildApplication.Run(System.String[],System.Threading.CancellationToken) 400f0d36b86664da5273e2b1f0f60687598f4e14cfe48080468bb8994a762531 -->
+
+| 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
+| --- | --- | --- | --- |
+| <a id="api-93c6a267497d2f98"></a>[`public static System.Threading.Tasks.Task<int> Inno.Build.Cli.BuildApplication.Run(string[] arguments, System.Threading.CancellationToken cancellationToken)`](../../build/cli/Inno.Build.Cli/BuildApplication.cs#L28) | Runs one build command without taking ownership of the caller's cancellation source.<br>返回：Zero on success, two on cancellation, or one on a command or execution failure.<br>`arguments`：The command and its documented options; help prints the supported command names.<br>`cancellationToken`：Cancels owned work and preserves completed publications according to their pipeline contracts. | — | `System.ArgumentNullException`：The argument array is absent. |
+| <a id="api-df8e541fac90a97d"></a>[`public static class Inno.Build.Cli.BuildApplication`](../../build/cli/Inno.Build.Cli/BuildApplication.cs#L11) | Executes explicit engine and project build commands for a caller-owned development lifetime. | — | — |

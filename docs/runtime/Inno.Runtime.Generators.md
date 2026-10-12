@@ -30,28 +30,43 @@ SerializationConverterGenerator 另外输出本程序集的 RuntimeSerialization
 
 ## 当前源码公开 API 清单
 
-只列当前源码的 public/protected 表面；内部实现不作为稳定 API。参数、返回、失败和 owner 以英文 XML 为准。
+按类型列出当前 public 与可供外部派生实现使用的 protected 声明。签名包含 nullable、默认参数和泛型约束；源码链接可定位实现。表中的“—”表示该声明没有额外 XML 约束，不能据此推断线程安全或不会失败。生命周期与组合顺序见本页前文。
 
 ### `Inno.Runtime.Generators.RuntimeFactoryGenerator`
 
-| 当前声明 | 行为 |
-| --- | --- |
-| [`Inno.Runtime.Generators.RuntimeFactoryGenerator`](../../src/runtime/generators/Inno.Runtime.Generators/Registration/RuntimeFactoryGenerator.cs#L12) | Composes explicit assembly-local metadata catalogs for a Player entry project selected by its build. |
-| [`void Inno.Runtime.Generators.RuntimeFactoryGenerator.Initialize(Microsoft.CodeAnalysis.IncrementalGeneratorInitializationContext context)`](../../src/runtime/generators/Inno.Runtime.Generators/Registration/RuntimeFactoryGenerator.cs#L16) | See the implemented contract. |
+<!-- api: T:Inno.Runtime.Generators.RuntimeFactoryGenerator 570fef67bd1c5c0aa2e497e378d8e3f1965366a5a5739078f488ddb78bc92b2c -->
+<!-- api: M:Inno.Runtime.Generators.RuntimeFactoryGenerator.Initialize(Microsoft.CodeAnalysis.IncrementalGeneratorInitializationContext) 7b820400eecf40ef89876d97793959d3e3f37b013483457aaa6d1587e5deb9b5 -->
+<!-- api: M:Inno.Runtime.Generators.RuntimeFactoryGenerator.#ctor d949ff89e15bbe9c3a89bd8004124dfc3d2402767ca896edd650880006a859a4 -->
+
+| 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
+| --- | --- | --- | --- |
+| <a id="api-f8e2cda4cdc0768b"></a>[`public Inno.Runtime.Generators.RuntimeFactoryGenerator.RuntimeFactoryGenerator()`](../../src/runtime/generators/Inno.Runtime.Generators/Registration/RuntimeFactoryGenerator.cs#L13) | C# 隐式构造函数；按类型声明执行字段初始化和基类构造。 | — | — |
+| <a id="api-d9bd2a7732188aa3"></a>[`public void Inno.Runtime.Generators.RuntimeFactoryGenerator.Initialize(Microsoft.CodeAnalysis.IncrementalGeneratorInitializationContext context)`](../../src/runtime/generators/Inno.Runtime.Generators/Registration/RuntimeFactoryGenerator.cs#L16) | Called to initialize the generator and register generation steps via callbacks on the context<br>`context`：The Microsoft.CodeAnalysis.IncrementalGeneratorInitializationContext to register callbacks on | — | — |
+| <a id="api-5508a99212991841"></a>[`public sealed class Inno.Runtime.Generators.RuntimeFactoryGenerator : Microsoft.CodeAnalysis.IIncrementalGenerator`](../../src/runtime/generators/Inno.Runtime.Generators/Registration/RuntimeFactoryGenerator.cs#L13) | Composes explicit assembly-local metadata catalogs for a Player entry project selected by its build. | — | — |
 
 ### `Inno.Runtime.Generators.RuntimeModuleCatalogGenerator`
 
-| 当前声明 | 行为 |
-| --- | --- |
-| [`Inno.Runtime.Generators.RuntimeModuleCatalogGenerator`](../../src/runtime/generators/Inno.Runtime.Generators/Registration/RuntimeModuleCatalogGenerator.cs#L13) | Emits a local, explicit type and construction catalog for statically deployed managed assemblies. |
-| [`void Inno.Runtime.Generators.RuntimeModuleCatalogGenerator.Initialize(Microsoft.CodeAnalysis.IncrementalGeneratorInitializationContext context)`](../../src/runtime/generators/Inno.Runtime.Generators/Registration/RuntimeModuleCatalogGenerator.cs#L22) | Registers deterministic catalog generation from the current assembly's declared symbols. |
+<!-- api: T:Inno.Runtime.Generators.RuntimeModuleCatalogGenerator b03246f77c5198204594dec7955771775ed32a8084cbc449ad1a2b85770146c1 -->
+<!-- api: M:Inno.Runtime.Generators.RuntimeModuleCatalogGenerator.Initialize(Microsoft.CodeAnalysis.IncrementalGeneratorInitializationContext) a8a3562b05077d33f188a746a6bd79ff5d38af9e61b97ed3b1162596ff2445ec -->
+<!-- api: M:Inno.Runtime.Generators.RuntimeModuleCatalogGenerator.#ctor 91680322f697eec06122858ae0cda74baf8f2dd93b6c39c921923137f3776baf -->
+
+| 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
+| --- | --- | --- | --- |
+| <a id="api-740008bc3f0e923b"></a>[`public Inno.Runtime.Generators.RuntimeModuleCatalogGenerator.RuntimeModuleCatalogGenerator()`](../../src/runtime/generators/Inno.Runtime.Generators/Registration/RuntimeModuleCatalogGenerator.cs#L14) | C# 隐式构造函数；按类型声明执行字段初始化和基类构造。 | — | — |
+| <a id="api-289dd1ea975bce09"></a>[`public void Inno.Runtime.Generators.RuntimeModuleCatalogGenerator.Initialize(Microsoft.CodeAnalysis.IncrementalGeneratorInitializationContext context)`](../../src/runtime/generators/Inno.Runtime.Generators/Registration/RuntimeModuleCatalogGenerator.cs#L22) | Registers deterministic catalog generation from the current assembly's declared symbols.<br>`context`：The compiler's incremental registration boundary. | — | — |
+| <a id="api-f2e81d19a9af8c96"></a>[`public sealed class Inno.Runtime.Generators.RuntimeModuleCatalogGenerator : Microsoft.CodeAnalysis.IIncrementalGenerator`](../../src/runtime/generators/Inno.Runtime.Generators/Registration/RuntimeModuleCatalogGenerator.cs#L14) | Emits a local, explicit type and construction catalog for statically deployed managed assemblies. | — | — |
 
 ### `Inno.Runtime.Generators.RuntimeSubsystemGenerator`
 
-| 当前声明 | 行为 |
-| --- | --- |
-| [`Inno.Runtime.Generators.RuntimeSubsystemGenerator`](../../src/runtime/generators/Inno.Runtime.Generators/RuntimeSubsystemGenerator.cs#L14) | Generates deterministic, reflection-free catalogs from local strongly typed subsystem declarations. |
-| [`void Inno.Runtime.Generators.RuntimeSubsystemGenerator.Initialize(Microsoft.CodeAnalysis.IncrementalGeneratorInitializationContext context)`](../../src/runtime/generators/Inno.Runtime.Generators/RuntimeSubsystemGenerator.cs#L26) | Registers incremental discovery of composition methods and catalog declarations. |
+<!-- api: T:Inno.Runtime.Generators.RuntimeSubsystemGenerator d91c4ebedb8b81936f72b75cf19e39f6b95939620e5e4832edc376ce2eae24c5 -->
+<!-- api: M:Inno.Runtime.Generators.RuntimeSubsystemGenerator.Initialize(Microsoft.CodeAnalysis.IncrementalGeneratorInitializationContext) 5fdb44bb3d5feb9501e294a04f509ed6118cd6080e79ffeea8790e0f4e00b506 -->
+<!-- api: M:Inno.Runtime.Generators.RuntimeSubsystemGenerator.#ctor e07053cb1a4e18f6ecae9b6df7fa96f50de9a34b67b66e3b539dee5aefccbf0b -->
+
+| 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
+| --- | --- | --- | --- |
+| <a id="api-37a09f7fa365d6fe"></a>[`public Inno.Runtime.Generators.RuntimeSubsystemGenerator.RuntimeSubsystemGenerator()`](../../src/runtime/generators/Inno.Runtime.Generators/RuntimeSubsystemGenerator.cs#L15) | C# 隐式构造函数；按类型声明执行字段初始化和基类构造。 | — | — |
+| <a id="api-0e27f86c72cc1348"></a>[`public void Inno.Runtime.Generators.RuntimeSubsystemGenerator.Initialize(Microsoft.CodeAnalysis.IncrementalGeneratorInitializationContext context)`](../../src/runtime/generators/Inno.Runtime.Generators/RuntimeSubsystemGenerator.cs#L26) | Registers incremental discovery of composition methods and catalog declarations.<br>`context`：The compiler-owned incremental generation context. | — | — |
+| <a id="api-320cc7c2d65360bb"></a>[`public sealed class Inno.Runtime.Generators.RuntimeSubsystemGenerator : Microsoft.CodeAnalysis.IIncrementalGenerator`](../../src/runtime/generators/Inno.Runtime.Generators/RuntimeSubsystemGenerator.cs#L15) | Generates deterministic, reflection-free catalogs from local strongly typed subsystem declarations. | — | — |
 
 ## 项目依赖
 

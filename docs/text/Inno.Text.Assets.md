@@ -12,15 +12,21 @@
 
 ## 当前源码公开 API 清单
 
-只列当前源码的 public/protected 表面；内部实现不作为稳定 API。参数、返回、失败和 owner 以英文 XML 为准。
+按类型列出当前 public 与可供外部派生实现使用的 protected 声明。签名包含 nullable、默认参数和泛型约束；源码链接可定位实现。表中的“—”表示该声明没有额外 XML 约束，不能据此推断线程安全或不会失败。生命周期与组合顺序见本页前文。
 
 ### `Inno.Text.Assets.FontImporter`
 
-| 当前声明 | 行为 |
-| --- | --- |
-| [`Inno.Text.Assets.FontImporter`](../../src/services/text/Inno.Text.Assets/FontImporter.cs#L15) | Imports OpenType fonts into compact metadata and immutable encoded font artifacts. |
-| [`override System.Collections.Generic.IReadOnlyList<string> Inno.Text.Assets.FontImporter.supportedExtensions`](../../src/services/text/Inno.Text.Assets/FontImporter.cs#L21) | Gets the supported OpenType source extensions. |
-| [`override System.Threading.Tasks.ValueTask Inno.Text.Assets.FontImporter.ImportAsync(Inno.Assets.Pipeline.AssetImportContext context, Inno.Assets.Pipeline.AssetImportWriter<Inno.Text.FontAsset> output, System.Threading.CancellationToken cancellationToken)`](../../src/services/text/Inno.Text.Assets/FontImporter.cs#L38) | Validates the source container and emits runtime metadata plus encoded font data. |
+<!-- api: T:Inno.Text.Assets.FontImporter 550c947138e75fe96f9ae533890adac3ceca05a30e333f61ff4656f17504c287 -->
+<!-- api: P:Inno.Text.Assets.FontImporter.supportedExtensions c79e4558d0f8b06a7b17d8813e97acddafcb30cb2f7c21301f994ecc3a729f8d -->
+<!-- api: M:Inno.Text.Assets.FontImporter.ImportAsync(Inno.Assets.Pipeline.AssetImportContext,Inno.Assets.Pipeline.AssetImportWriter{Inno.Text.FontAsset},System.Threading.CancellationToken) 758ccdd86e98e2cc3241988968ac8daad50999e8166b81598cfb75a9f7fc1839 -->
+<!-- api: M:Inno.Text.Assets.FontImporter.#ctor 648b45149e24f73a4ffe3195cf20190ae1fc414f4c7d8a6e6918b54a3eeda827 -->
+
+| 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
+| --- | --- | --- | --- |
+| <a id="api-d55e485df986749e"></a>[`public Inno.Text.Assets.FontImporter.FontImporter()`](../../src/services/text/Inno.Text.Assets/FontImporter.cs#L16) | C# 隐式构造函数；按类型声明执行字段初始化和基类构造。 | — | — |
+| <a id="api-0ab65585af4f0788"></a>[`protected override System.Threading.Tasks.ValueTask Inno.Text.Assets.FontImporter.ImportAsync(Inno.Assets.Pipeline.AssetImportContext context, Inno.Assets.Pipeline.AssetImportWriter<Inno.Text.FontAsset> output, System.Threading.CancellationToken cancellationToken)`](../../src/services/text/Inno.Text.Assets/FontImporter.cs#L38) | Validates the source container and emits runtime metadata plus encoded font data.<br>返回：An operation that completes after both artifacts are staged.<br>`context`：The source import context.<br>`output`：The candidate artifact writer.<br>`cancellationToken`：Cancellation observed by artifact writes. | — | — |
+| <a id="api-91b4822cbda82ce0"></a>[`public override System.Collections.Generic.IReadOnlyList<string> Inno.Text.Assets.FontImporter.supportedExtensions { get; }`](../../src/services/text/Inno.Text.Assets/FontImporter.cs#L21) | Gets the supported OpenType source extensions. | — | — |
+| <a id="api-bb62dea43dbbbe91"></a>[`public sealed class Inno.Text.Assets.FontImporter : Inno.Assets.Pipeline.AssetImporter<Inno.Text.FontAsset>`](../../src/services/text/Inno.Text.Assets/FontImporter.cs#L16) | Imports OpenType fonts into compact metadata and immutable encoded font artifacts. | — | — |
 
 ## 项目依赖
 

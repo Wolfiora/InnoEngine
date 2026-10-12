@@ -14,7 +14,7 @@ HttpPlayerContentSource 先读取 owned manifest/catalog metadata，再取得并
 
 创建的 stream/store、任务和 callback 由产品/共享 Player 明确接管。退出停止新工作、取消下载、注销回调、提交存储并释放 Session 和设备。Browser Editor 没有实现或注册。
 
-本项目的 `OutputType=Exe` 表示托管入口，实际由网页宿主启动。直接 Build 需要冻结的 Native binding 选择与指纹；发布还需要原生 archive 闭包。通过统一 `game` 导出，再使用 HTTP 服务打开输出的 `index.html`，不能直接运行 Windows `.exe` 或以 `file://` 加载。详见[产品启动指南](../PRODUCT_STARTUP.md)。
+本源码项目使用普通 Microsoft.NET.Sdk，`OutputType=Library`；Program 保留为发布源码输入，不作为 IDE 启动项。真正的 Browser Player 由使用 WebAssembly SDK 的 Exe 发布模板生成。直接 Build 仍需要冻结的 Native binding 选择与指纹；发布还需要 archive 闭包与对应 workload。通过统一 `game` 导出，再使用 HTTP 服务打开输出的 `index.html`。详见[产品启动指南](../PRODUCT_STARTUP.md)。
 
 ## 当前源码公开 API 清单
 

@@ -56,11 +56,14 @@ public static class NativeArtifactPublisher
         NativeComponentDescriptor owner = recipe.owner;
         NativeBindingGenerationDescriptor? bindingGeneration = owner.bindingDefinition is null
             ? null : context.RequireBindings(owner);
+        if (bindingGeneration is not null)
+            recipe = recipe.WithBindingGeneration(context.engineRoot, bindingGeneration);
         string component = recipe.component;
         string targetId = recipe.targetId;
         NativeInputSnapshot snapshot = context.inputState.CaptureInitial(recipe.inputs, cancellationToken);
         string fingerprint = NativeBuildFingerprint.Create(recipe.declarations, snapshot);
-        NativeBuildContext scoped = context.WithIdentity(owner, targetId, fingerprint);
+        string workspaceIdentity = NativeWorkspaceIdentity.Create(context, recipe, snapshot);
+        NativeBuildContext scoped = context.WithIdentity(owner, targetId, workspaceIdentity);
         string intermediate = scoped.GetNativeBuildRoot(owner);
         string destination = Path.Combine(context.engineRoot, "artifacts", "native", component, targetId, fingerprint);
         using FileLease ownership = await FileLease.AcquireAsync(intermediate + ".lock",
@@ -69,8 +72,10 @@ public static class NativeArtifactPublisher
         if (NativeBuildFingerprint.Create(context.BeginInputVerification("native-lock:" + component),
             recipe.declarations, recipe.inputs, cancellationToken) != fingerprint)
             throw new InvalidOperationException($"Native inputs for '{component}' changed while waiting for ownership.");
-        if (BuildArtifactManifest.IsComplete(destination, fingerprint, ["Outputs"], context))
-            return new(component, targetId, fingerprint, destination, bindingGeneration);
+        BuildArtifactReadLease? cached = await BuildArtifactReadLease.TryAcquireAsync(
+            destination, fingerprint, ["Outputs"], context, cancellationToken).ConfigureAwait(false);
+        if (cached is not null)
+            return new(component, targetId, fingerprint, destination, bindingGeneration, cached);
 
         string staging = destination + ".staging-" + Guid.NewGuid().ToString("N");
         string output = Path.Combine(staging, "Outputs");
@@ -89,8 +94,12 @@ public static class NativeArtifactPublisher
                 throw new InvalidOperationException($"Native inputs for '{component}' changed during preparation; the candidate was not published.");
             BuildArtifactManifest.Write(staging, fingerprint, ["Outputs"], context);
             cancellationToken.ThrowIfCancellationRequested();
-            AtomicDirectory.Install(staging, destination);
-            return new(component, targetId, fingerprint, destination, bindingGeneration);
+            using (BuildArtifactWriteLease publication = await BuildArtifactWriteLease.AcquireAsync(destination,
+                cancellationToken).ConfigureAwait(false))
+                AtomicDirectory.Install(staging, destination);
+            return new(component, targetId, fingerprint, destination, bindingGeneration,
+                await BuildArtifactReadLease.TryAcquireAsync(destination, fingerprint, ["Outputs"], context, cancellationToken).ConfigureAwait(false)
+                    ?? throw new InvalidDataException("The published Native artifact changed before reading ownership was acquired."));
         }
         finally
         {

@@ -79,6 +79,12 @@ public sealed class GenerateBindingsTask : BuildTask, ICancelableTask
     public string NativeBridgeDirectory { get; private set; } = string.Empty;
 
     /// <summary>
+    /// Gets the protected immutable artifact root, or an empty value for host-source generation.
+    /// </summary>
+    [Output]
+    public string ArtifactDirectory { get; private set; } = string.Empty;
+
+    /// <summary>
     /// Cancels owned work before retiring the task cancellation source.
     /// </summary>
     public void Cancel()
@@ -126,13 +132,15 @@ public sealed class GenerateBindingsTask : BuildTask, ICancelableTask
             Dictionary<string, string>? expected = ExpectedFingerprint.Length == 0 ? null
                 : new(StringComparer.Ordinal) { [owner.nativeProject] = ExpectedFingerprint };
             var request = new NativeBindingGenerationRequest([owner], TargetId, mode, CheckOnly, expected);
-            NativeBindingGenerationDescriptor result = generator.GenerateAsync(context, request, cancellation)
-                .AsTask().GetAwaiter().GetResult()[owner.nativeProject];
+            using NativeBindingGenerationResult closure = generator.GenerateAsync(context, request, cancellation)
+                .AsTask().GetAwaiter().GetResult();
+            NativeBindingGenerationDescriptor result = closure[owner.nativeProject];
             if (DescriptorOutputPath.Length != 0)
                 result.Write(DescriptorOutputPath);
             GeneratedBindings = result.bindingsPath;
             GenerationFingerprint = result.fingerprint;
             NativeBridgeDirectory = result.bridgeDirectory;
+            ArtifactDirectory = result.artifactDirectory;
             Log.LogMessage(MessageImportance.High,
                 "INNO-BINDINGS-PREPARE project={0} fingerprint={1} batches={2} generations={3}",
                 project, result.fingerprint, context.statistics.bindingBatches, context.statistics.bindingGenerations);

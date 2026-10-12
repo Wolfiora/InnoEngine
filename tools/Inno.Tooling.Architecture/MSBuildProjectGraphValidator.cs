@@ -14,8 +14,7 @@ internal static class MSBuildProjectGraphValidator
 {
     private static readonly HashSet<string> ExecutableProducts = new(StringComparer.Ordinal)
     {
-        "Inno.Editor.Windows", "Inno.Editor.MacOS", "Inno.Player.Windows",
-        "Inno.Player.MacOS", "Inno.Player.Browser", "Inno.Build.Cli"
+        "InnoEngine.Editor", "InnoEngine.Build"
     };
 
     internal static async Task ValidateAsync(
@@ -28,7 +27,7 @@ internal static class MSBuildProjectGraphValidator
     ) {
         if (!Path.IsPathFullyQualified(dotnetHost) || !File.Exists(dotnetHost))
             throw new ArgumentException("Architecture SDK evaluation requires an existing absolute dotnet executable.", nameof(dotnetHost));
-        string[] projects = new[] { "src", "backends", "platforms", "build", "tools", "tests" }
+        string[] projects = new[] { "entry", "src", "backends", "platforms", "build", "tools", "tests" }
             .SelectMany(owner => RepositorySourceInventory.Files(Path.Combine(root, owner), "*.csproj"))
             .Order(StringComparer.Ordinal).ToArray();
         var evaluated = new List<EvaluatedProject>();

@@ -94,6 +94,31 @@ public sealed class AssetCoreTests
     }
 
     [Fact]
+    public void DefaultArtifactKeyHasTheSameValueAndEqualityAsAnExplicitEmptyKey()
+    {
+        AssetArtifactKey unassigned = default;
+        var empty = new AssetArtifactKey(string.Empty);
+        Assert.Equal(string.Empty, unassigned.value);
+        Assert.Equal(empty, unassigned);
+        Assert.True(empty == unassigned);
+        Assert.False(empty != unassigned);
+        Assert.Equal(empty.GetHashCode(), unassigned.GetHashCode());
+        Assert.Single(new HashSet<AssetArtifactKey> { unassigned, empty });
+    }
+
+    [Fact]
+    public void RuntimeContentSummaryOwnsItsFrozenSourceInventory()
+    {
+        var sources = new List<AssetSourceId> { AssetSourceId.project };
+        var summary = new AssetRuntimeContentInfo(sources, 2, 1, 4);
+        sources[0] = new AssetSourceId("replacement");
+        sources.Clear();
+        Assert.Equal(AssetSourceId.project, Assert.Single(summary.sources));
+        Assert.Throws<NotSupportedException>(() => ((IList<AssetSourceId>)summary.sources).Clear());
+        Assert.Throws<ArgumentNullException>(() => new AssetRuntimeContentInfo(null!, 0, 0, 0));
+    }
+
+    [Fact]
     public void AssetInfo_ExposesAnImmutableCatalogSnapshot()
     {
         Guid id = Guid.NewGuid();

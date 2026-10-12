@@ -69,7 +69,8 @@ internal sealed class GameBuildPipeline
         ValidateOutputRoot(outputRoot);
         cancellationToken.ThrowIfCancellationRequested();
         progress?.Report(new BuildProgress("support-pack", 0.01d, "Checking the prepared Player Support Pack."));
-        string supportPack = m_supportPacks.Resolve(request.profile.target, target);
+        using PlayerSupportPackLease supportPackLease = m_supportPacks.Acquire(request.profile.target, target, cancellationToken);
+        string supportPack = supportPackLease.directory;
         m_assets.WaitForIdle();
         AssetPath startupPath = AssetPath.Parse(request.profile.startupScene);
         if (!m_assets.TryGetAssetType(startupPath, out Type? sceneType) || sceneType != typeof(SceneAsset))

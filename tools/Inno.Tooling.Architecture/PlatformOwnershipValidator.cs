@@ -14,7 +14,7 @@ internal static class PlatformOwnershipValidator
         string root,
         ICollection<string> failures
     ) {
-        string[] roots = ["src", "backends", "platforms", "build", "tools", "tests"];
+        string[] roots = ["entry", "src", "backends", "platforms", "build", "tools", "tests"];
         var projects = roots.SelectMany(owner => RepositorySourceInventory.Files(Path.Combine(root, owner), "*.csproj"))
             .ToDictionary(path => Path.GetFullPath(path), StringComparer.OrdinalIgnoreCase);
         foreach (string path in projects.Keys)
@@ -67,6 +67,11 @@ internal static class PlatformOwnershipValidator
     ) {
         bool shared = relative.StartsWith("src/", StringComparison.Ordinal)
             && !relative.StartsWith("src/composition/adapters/", StringComparison.Ordinal);
+        if (!relative.StartsWith("entry/", StringComparison.Ordinal)
+            && !relative.StartsWith("tests/", StringComparison.Ordinal)
+            && !relative.Contains("/tests/", StringComparison.Ordinal)
+            && dependency.StartsWith("entry/", StringComparison.Ordinal))
+            failures.Add($"{relative}: production mechanisms cannot depend on the development entry {dependency}.");
         string[] segments = relative.Split('/');
         bool platformBase = relative.StartsWith("platforms/", StringComparison.Ordinal)
             && segments.Length > 2 && segments[2] is "build" or "runtime";

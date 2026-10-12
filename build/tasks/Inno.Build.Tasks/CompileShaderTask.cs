@@ -94,7 +94,8 @@ public sealed class CompileShaderTask : BuildTask, ICancelableTask
             BgfxShaderTargetProfile platform = StandardBuildDistribution.Create(execution).ResolveShaderTarget(new BuildTargetId(Target));
             if (!GraphicsApi.TryParse(Renderer, out GraphicsApi renderer))
                 throw new ArgumentException("The shader platform or rendering API is invalid.");
-            ToolRunner tools = PrepareTools(cancellation.Token, out string compilerFingerprint);
+            ToolRunner tools = PrepareTools(cancellation.Token, out string compilerFingerprint, out BuildArtifactReadLease toolLease);
+            using BuildArtifactReadLease toolOwnership = toolLease;
             CompileProduct(tools, compilerFingerprint, platform, renderer, cancellation.Token);
             return true;
         }
@@ -124,7 +125,8 @@ public sealed class CompileShaderTask : BuildTask, ICancelableTask
 
     private ToolRunner PrepareTools(
         CancellationToken cancellationToken,
-        out string compilerFingerprint
+        out string compilerFingerprint,
+        out BuildArtifactReadLease reading
     ) {
         NativeBuildContext context = new(EngineRoot, Configuration.ToLowerInvariant());
         var execution = StandardBuildEnvironment.Capture(AppContext.BaseDirectory, new BuildTargetId(ToolTarget));
@@ -145,8 +147,9 @@ public sealed class CompileShaderTask : BuildTask, ICancelableTask
             var distribution = StandardBuildDistribution.Create(execution).build;
             context = context.WithToolchain(distribution.ResolveNativeToolchain(ToolTarget)
                 .ResolveAsync(context, execution.host, ToolTarget, cancellationToken).AsTask().GetAwaiter().GetResult());
-            NativeBuildProduct product = distribution.ResolveNativeProduct(ToolTarget, "shader-tools")
-                .BuildAsync(context, cancellationToken).GetAwaiter().GetResult().Single();
+            using ProductNativeBuildResult products = distribution.ResolveNativeProduct(ToolTarget, "shader-tools")
+                .BuildAsync(context, cancellationToken).GetAwaiter().GetResult();
+            NativeBuildProduct product = products.Single();
             record = [product.directory, product.fingerprint, .. product.files];
             engine.RegisterTaskObject(cacheKey, record, RegisteredTaskObjectLifetime.Build, allowEarlyCollection: false);
             Log.LogMessage(MessageImportance.High,
@@ -154,15 +157,25 @@ public sealed class CompileShaderTask : BuildTask, ICancelableTask
                 product.fingerprint, context.statistics.hashedFiles, context.statistics.hashedBytes,
                 context.statistics.nativeProcesses);
         }
-        string extension = execution.host.system == "Windows" ? ".exe" : string.Empty;
-        Dictionary<BgfxTool, string> executables = [];
-        foreach (BgfxTool tool in Enum.GetValues<BgfxTool>())
+        reading = BuildArtifactReadLease.AcquireAsync(record[0], record[1], ["Outputs"], cancellationToken)
+            .AsTask().GetAwaiter().GetResult();
+        try
         {
-            string name = tool.ToString().ToLowerInvariant() + "-" + context.configuration + extension;
-            executables.Add(tool, record.Skip(2).Single(path => Path.GetFileName(path) == name));
+            string extension = execution.host.system == "Windows" ? ".exe" : string.Empty;
+            Dictionary<BgfxTool, string> executables = [];
+            foreach (BgfxTool tool in Enum.GetValues<BgfxTool>())
+            {
+                string name = tool.ToString().ToLowerInvariant() + "-" + context.configuration + extension;
+                executables.Add(tool, record.Skip(2).Single(path => Path.GetFileName(path) == name));
+            }
+            compilerFingerprint = record[1];
+            return new ToolRunner(executables);
         }
-        compilerFingerprint = record[1];
-        return new ToolRunner(executables);
+        catch
+        {
+            reading.Dispose();
+            throw;
+        }
     }
 
     private void CompileProduct(

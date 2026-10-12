@@ -8,6 +8,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="Managed/ManagedBuildInputs.targets" />
+    <EmbeddedResource Include="Managed/ManagedInputGraphTask.cs.txt" LogicalName="Inno.Build.Toolchains.Managed.ManagedInputGraphTask.cs.txt" WithCulture="false" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="../../../src/foundation/extensibility/Inno.Extensibility.Catalogs/Inno.Extensibility.Catalogs.csproj" />
     <ProjectReference Include="../../../src/foundation/core/Inno.Core.IO/Inno.Core.IO.csproj" />
   </ItemGroup>
