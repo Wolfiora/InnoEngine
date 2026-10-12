@@ -27,7 +27,7 @@ public sealed class BindingDefinitionTests : IDisposable
     [InlineData("<Target Name=\"Execute\" />")]
     public async Task ExecutableOrNonLiteralDefinitionsFailBeforeOutputCreation(string body)
     {
-        File.WriteAllText(Path.Combine(m_root, "bindings.props"), "<Project>" + body + "</Project>");
+        File.WriteAllText(Path.Combine(m_root, "bindings.props"), "<Project><PropertyGroup><InnoNativeComponentId>fixture</InnoNativeComponentId></PropertyGroup>" + body + "</Project>");
         var descriptor = new NativeComponentDescriptor("fixture", "Fixture.csproj", "Fixture.csproj", bindingDefinition: "bindings.props");
         var request = new NativeBindingGenerationRequest([descriptor], "fixture", NativeBindingOutputMode.HostSource);
         await Assert.ThrowsAsync<InvalidDataException>(async () => await new NativeBindingGenerator("dotnet")
@@ -39,7 +39,7 @@ public sealed class BindingDefinitionTests : IDisposable
     public async Task UndeclaredTargetNeverFallsBackToTheHostAbi()
     {
         File.WriteAllText(Path.Combine(m_root, "bindings.props"), """
-            <Project><PropertyGroup><InnoBindingHostConfig>config.json</InnoBindingHostConfig></PropertyGroup></Project>
+            <Project><PropertyGroup><InnoNativeComponentId>fixture</InnoNativeComponentId><InnoBindingHostConfig>config.json</InnoBindingHostConfig></PropertyGroup></Project>
             """);
         var descriptor = new NativeComponentDescriptor("fixture", "Fixture.csproj", "Fixture.csproj", bindingDefinition: "bindings.props");
         var request = new NativeBindingGenerationRequest([descriptor], "unknown", NativeBindingOutputMode.TargetArtifacts);

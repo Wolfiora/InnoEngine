@@ -19,6 +19,7 @@ public sealed class PlayerSupportPackPreparationIdentity
     private readonly string m_project;
     private readonly IReadOnlyDictionary<string, string> m_properties;
     private readonly IReadOnlyList<string> m_inputs;
+    private ManagedBuildInputSnapshot? m_managed;
 
     private PlayerSupportPackPreparationIdentity(
         NativeBuildContext context,
@@ -101,6 +102,18 @@ public sealed class PlayerSupportPackPreparationIdentity
     }
 
     /// <summary>
+    /// Creates the exclusively owned fixed managed execution planned by this preparation identity.
+    /// </summary>
+    /// <param name="cancellationToken">
+    /// Cancels materialization without changing any installed Pack.
+    /// </param>
+    /// <returns>
+    /// Caller-owned input copies for compilation and source extraction.
+    /// </returns>
+    public ValueTask<ManagedBuildExecution> CreateExecutionAsync(CancellationToken cancellationToken = default)
+        => (m_managed ?? throw new InvalidOperationException("Managed preparation was not captured.")).CreateExecutionAsync(cancellationToken);
+
+    /// <summary>
     /// Freshly verifies the complete current source input closure after waiting or preparing output.
     /// </summary>
     /// <param name="cancellationToken">
@@ -139,6 +152,7 @@ public sealed class PlayerSupportPackPreparationIdentity
                 cancellation).ConfigureAwait(false));
         ManagedBuildInputSnapshot managed = await ManagedBuildInputSnapshot.CaptureAsync(context, m_sdk, m_project,
             m_properties, cancellation).ConfigureAwait(false);
+        m_managed ??= managed;
         declarations.Add("managed=" + managed.fingerprint);
         string root = Path.Combine(context.engineRoot, "build", "support", "Inno.Build.SupportPacks.Core");
         IEnumerable<string> inputs = m_inputs.Concat(new[] { "FilePlayerSupportPackPreparation.cs", "PlayerSupportPackFiles.cs",

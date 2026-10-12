@@ -6,6 +6,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Inno.Native.LibraryLoading;
+using Inno.Build.Toolchains;
 
 namespace Inno.Build.Toolchains.Bgfx.Tools;
 
@@ -107,9 +108,11 @@ public sealed class ToolRunner
         ArgumentNullException.ThrowIfNull(arguments);
         cancellationToken.ThrowIfCancellationRequested();
         string toolPath = ResolveToolPath(tool);
+        using ToolchainWorkingDirectory execution = await ToolchainWorkingDirectory.OpenAsync(
+            Path.GetDirectoryName(toolPath)!, cancellationToken).ConfigureAwait(false);
         var startInfo = new ProcessStartInfo
         {
-            FileName = toolPath,
+            FileName = Path.Combine(execution.toolPath, Path.GetFileName(toolPath)),
             WorkingDirectory = workingDirectory ?? AppContext.BaseDirectory,
             RedirectStandardOutput = true,
             RedirectStandardError = true,
@@ -164,7 +167,7 @@ public sealed class ToolRunner
             return m_executables.TryGetValue(tool, out string? executable)
                 ? executable : throw new FileNotFoundException($"The selected distribution has no '{tool}' executable.");
         string name = tool.ToString().ToLowerInvariant() + GetConfigSuffix();
-        return NativeDllLoader.FindNativeFile(OperatingSystem.IsWindows() ? name + ".exe" : name);
+        return NativeDllLoader.FindNativeFile(name);
     }
 
     private static string GetConfigSuffix()

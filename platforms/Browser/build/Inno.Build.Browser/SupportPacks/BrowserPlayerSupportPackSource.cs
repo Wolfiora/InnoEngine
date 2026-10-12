@@ -102,11 +102,15 @@ public sealed class BrowserPlayerSupportPackSource : IPlayerSupportPackSource
         PlayerSupportPackBuildContext context,
         string project,
         NativeBuildContext nativeContext,
+        PlayerSupportPackPreparationIdentity identity,
         CancellationToken cancellationToken
     ) {
         NativeToolchainSelection tools = nativeContext.RequireToolchain();
         using BrowserNativeArtifacts artifacts = await BrowserToolchain.BuildAsync(
             nativeContext, m_nativePlan, cancellationToken).ConfigureAwait(false);
+        using ManagedBuildExecution execution = await identity.CreateExecutionAsync(cancellationToken).ConfigureAwait(false);
+        context = new PlayerSupportPackBuildContext(execution.engineRoot, context.stagingDirectory, context.sdk);
+        project = execution.project;
         string profileRoot = Path.Combine(context.engineRoot, "artifacts", "managed", "browser-references", artifacts.fingerprint);
         using FileLease ownership = await FileLease.AcquireAsync(
             profileRoot + ".lock", Timeout.InfiniteTimeSpan, cancellationToken).ConfigureAwait(false);
@@ -124,6 +128,7 @@ public sealed class BrowserPlayerSupportPackSource : IPlayerSupportPackSource
         CopyLinkTemplate(context.engineRoot, context.stagingDirectory, artifacts, project);
         await PlayerSupportPackFiles.CopyPlayerSourcesAsync(context, project,
             Path.Combine(context.stagingDirectory, "PlayerLink"), cancellationToken, tools.environment).ConfigureAwait(false);
+        await execution.VerifyAsync(cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc />
@@ -182,7 +187,7 @@ public sealed class BrowserPlayerSupportPackSource : IPlayerSupportPackSource
             string stagingDirectory,
             CancellationToken cancellationToken
         ) => owner.ExecuteAsync(new PlayerSupportPackBuildContext(engineRoot, stagingDirectory, sdk),
-            project, native, cancellationToken);
+            project, native, identity, cancellationToken);
     }
 
 }

@@ -11,7 +11,7 @@
 
 共同 targets 为一次根项目构建分配独立的 publisher 编译目录，并在执行项目引用目标及嵌套 Task runtime 准备时传递同一 owner。相同配置的依赖项目复用这次编译；每个实际加载边界仍复制到自己的私有目录。下一次根项目构建使用新的编译 owner，不依赖上次的可变中间态。
 owner 表示本次执行的所有权，其随机值本身不进入完整 Task runtime 的输入指纹。请求求值仍保留该属性；若导入文件、源码选择或 `DefineConstants` 等实际编译输入由它改变，这些求值结果仍参与指纹，不能误用上次结果。Design-time Build 不准备 publisher。
-`BuildTaskRuntimeTask` 使用同一共享 bootstrap 根的 `FileLease` 协调完整 Task 项目编译；等待时通过 MSBuild `Yield`/`Reacquire` 释放节点，失败、取消或异常都释放写 lease。
+`BuildTaskRuntimeTask` 使用同一 `artifacts/build-tools/tasks/workspaces/shared` 根的 `FileLease` 协调完整 Task 项目编译；等待时通过 MSBuild `Yield`/`Reacquire` 释放节点，失败、取消或异常都释放写 lease。
 SDK 与项目构建仍由当前 MSBuild engine 执行，保留明确属性和移除产品属性的机制，不创建第二个 CLI 或通过 PATH 重新选择 SDK。完整 Task 项目返回实际运行文件的逻辑路径及 SHA-256。
 工具引导和 `RestoreOwnedProjectTask` 移除父 IDE 的 `SolutionPath`、相关 Solution metadata 与 restore graph entry point。
 NuGet 静态图据此只读取本次明确选择的 project closure；Windows Editor 不会因为内部 Task restore 意外访问 Browser Player。
@@ -24,13 +24,15 @@ MSBuild 从已验证的不可变快照准备自己的私有加载目录。宿主
 退出后，后续 publisher 只退休所有 owner 已退出的 reader；只有不存在引用且取得 snapshot lease 时才退休其来源快照。
 无法检查 owner、文件仍被 loader 持有或另一 publisher 持有 lease 时保留缓存，不能影响已经完成的当前发布。
 
+独立输入还原项目通过 `InnoBuildInputRestoreProject` 显式声明。Task 在编译身份冻结前完成主图及这些依赖的 Restore，编译阶段禁止再次进行同一还原；编译后继续重新检查完整输入。Host、load、publisher 和编译 workspace 进入相同预算系统；进程声明继续保护私有加载目录及其来源。
+
 ## 公开 API
 
 | API | 语义 |
 | --- | --- |
 | `BuildTaskRuntimeTask` | 一次实例协调一次共享编译；调用者提供支持 Yield 的真实 MSBuild engine。 |
 | `ProjectFile` / `Targets` | 绝对任务项目位置及返回完整 runtime 的有序目标；目标为空或项目不存在明确失败。 |
-| `ArtifactsDirectory` | 绝对共享编译 owner；任务直接设置 ArtifactsPath，并在此取得 build.lock。 |
+| `ArtifactsDirectory` | 绝对共享编译 owner；任务直接设置 ArtifactsPath，并取得该目录外的 `<ArtifactsDirectory>.lock`。 |
 | `Properties` / `RemoveProperties` | 明确 name=value 编译属性及从父构建移除的全局属性；显式值优先于同名父属性移除。拒绝重复声明和 ArtifactsPath 覆盖。 |
 | `TargetOutputs` | 成功返回的实际文件及原始哈希 metadata；失败不发布闭包。 |
 | `PublishTaskHostTask` | 一次实例用于一次 MSBuild 发布；依赖通过公开 Task 属性及 `BuildEngine` 注入。 |

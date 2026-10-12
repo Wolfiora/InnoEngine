@@ -1,5 +1,6 @@
 <Project>
   <PropertyGroup>
+    <InnoNativeComponentId>sdl3</InnoNativeComponentId>
     <InnoBindingHostConfig>bindgen.json</InnoBindingHostConfig>
   </PropertyGroup>
 

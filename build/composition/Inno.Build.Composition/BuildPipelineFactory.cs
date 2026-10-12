@@ -2,6 +2,7 @@ using System;
 using Inno.Assets.Pipeline;
 using Inno.Build.SupportPacks;
 using Inno.Core.Settings;
+using Inno.Core.Logging;
 using Inno.Plugins.Authoring;
 using Inno.Runtime;
 using Inno.Scripting.Compiler;
@@ -56,11 +57,13 @@ public static class BuildPipelineFactory
         ArgumentNullException.ThrowIfNull(context);
         ArgumentNullException.ThrowIfNull(distribution);
         ArgumentNullException.ThrowIfNull(engine);
+        Logger logger = engine.logs.CreateLogger<SourcePlayerSupportPackProvisioner>();
         return new BuildPipeline(
             assets, plugins, settings, engine.serialization, engine.generations, compiler, supportPackRoot,
             distribution.CreateBindings(assets, engine.serialization, engine.types),
             distribution.managedDeployments,
             SourcePlayerSupportPackProvisioner.TryCreateForHost(
-                context.applicationDirectory, distribution.supportPacks, context.dotnetHost));
+                context.applicationDirectory, distribution.supportPacks, context.dotnetHost,
+                diagnostic => logger.Write(LogLevel.Warn, diagnostic)));
     }
 }

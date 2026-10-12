@@ -31,6 +31,10 @@ internal sealed class NativeInputReadCache
         => m_hashes.TryGetValue(path, out byte[]? hash) ? hash
             : throw new InvalidOperationException($"Native input '{path}' was not frozen by this operation's recipe.");
 
+    internal NativeInputSnapshot CaptureRecordedInputs(string engineRoot)
+        => new(m_hashes.Select(entry => new NativeInputSnapshot.Entry(
+            NativeBuildInput.FromPath(engineRoot, entry.Key).logicalPath, entry.Key, entry.Value)));
+
     internal IReadOnlyList<(string relative, string physical)> Enumerate(
         string path,
         CancellationToken cancellationToken

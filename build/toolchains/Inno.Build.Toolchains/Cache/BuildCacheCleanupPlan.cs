@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -16,6 +17,7 @@ public sealed class BuildCacheCleanupPlan
     private readonly BuildCacheOwnerDescriptor[] m_owners;
     private readonly BuildCachePolicy m_policy;
     private readonly string m_workspace;
+    private readonly Stopwatch m_elapsed;
 
     private BuildCacheCleanupPlan(
         string workspace,
@@ -23,11 +25,13 @@ public sealed class BuildCacheCleanupPlan
         BuildCachePolicy policy,
         IReadOnlyList<BuildCacheArtifactDescriptor> candidates,
         long totalBytes,
-        long protectedBytes
+        long protectedBytes,
+        Stopwatch elapsed
     ) {
         m_workspace = workspace;
         m_owners = owners;
         m_policy = policy;
+        m_elapsed = elapsed;
         this.candidates = candidates;
         this.totalBytes = totalBytes;
         this.protectedBytes = protectedBytes;
@@ -81,12 +85,40 @@ public sealed class BuildCacheCleanupPlan
     /// <exception cref="OperationCanceledException">
     /// Planning was canceled.
     /// </exception>
+    /// <exception cref="TimeoutException">
+    /// Inventory exceeded the complete operation budget; no artifact was removed.
+    /// </exception>
     public static BuildCacheCleanupPlan Create(
         string workspace,
         IReadOnlyList<BuildCacheOwnerDescriptor> owners,
         BuildCachePolicy policy,
         bool retireAll = false,
         CancellationToken cancellationToken = default
+    ) {
+        ArgumentNullException.ThrowIfNull(policy);
+        using var bounded = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        bounded.CancelAfter(policy.timeBudget);
+        Stopwatch elapsed = Stopwatch.StartNew();
+        try
+        {
+            BuildCacheCleanupPlan plan = CreateCore(workspace, owners, policy, retireAll, bounded.Token, elapsed);
+            if (elapsed.Elapsed >= policy.timeBudget)
+                throw new TimeoutException("Cache inventory exceeded its operation time budget; no artifact was retired.");
+            return plan;
+        }
+        catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
+        {
+            throw new TimeoutException("Cache inventory exceeded its operation time budget; no artifact was retired.");
+        }
+    }
+
+    private static BuildCacheCleanupPlan CreateCore(
+        string workspace,
+        IReadOnlyList<BuildCacheOwnerDescriptor> owners,
+        BuildCachePolicy policy,
+        bool retireAll,
+        CancellationToken cancellationToken,
+        Stopwatch elapsed
     ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(workspace);
         ArgumentNullException.ThrowIfNull(owners);
@@ -116,7 +148,7 @@ public sealed class BuildCacheCleanupPlan
             selected.Add(artifact);
             proposed = checked(proposed + artifact.bytes);
         }
-        return new(root, frozen, policy, Array.AsReadOnly(selected.ToArray()), total, protectedSize);
+        return new(root, frozen, policy, Array.AsReadOnly(selected.ToArray()), total, protectedSize, elapsed);
     }
 
     /// <summary>
@@ -142,10 +174,15 @@ public sealed class BuildCacheCleanupPlan
         CancellationToken cancellationToken = default
     ) {
         cancellationToken.ThrowIfCancellationRequested();
+        TimeSpan remaining = m_policy.timeBudget - m_elapsed.Elapsed;
+        if (!dryRun && remaining <= TimeSpan.Zero)
+            return ValueTask.FromResult(new BuildCacheCleanupResult([], candidates.Select(static entry => entry.directory),
+                new Dictionary<string, string>(), 0, true));
         return dryRun
             ? ValueTask.FromResult(new BuildCacheCleanupResult([], candidates.Select(static entry => entry.directory),
                 new Dictionary<string, string>(), 0, false))
-            : BuildCacheRetirement.ExecuteAsync(m_workspace, m_owners, m_policy, candidates, cancellationToken);
+            : BuildCacheRetirement.ExecuteAsync(m_workspace, m_owners,
+                new BuildCachePolicy(m_policy.maximumBytes, m_policy.minimumFreeBytes, remaining), candidates, cancellationToken);
     }
 
     private static void ValidateOwners(

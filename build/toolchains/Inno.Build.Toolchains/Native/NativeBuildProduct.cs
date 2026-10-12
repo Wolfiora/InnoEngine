@@ -18,6 +18,7 @@ public sealed class NativeBuildProduct : IDisposable
         string fingerprint,
         string directory,
         NativeBindingGenerationDescriptor? bindingGeneration,
+        string? sharedLibraryExtension,
         BuildArtifactReadLease readLease
     ) {
         this.component = component;
@@ -25,6 +26,7 @@ public sealed class NativeBuildProduct : IDisposable
         this.fingerprint = fingerprint;
         this.directory = directory;
         this.bindingGeneration = bindingGeneration;
+        this.sharedLibraryExtension = sharedLibraryExtension;
         m_readLease = readLease;
         try
         {
@@ -63,6 +65,11 @@ public sealed class NativeBuildProduct : IDisposable
     /// Managed consumers must retain this selection rather than resolve a new generation after native preparation.
     /// </summary>
     public NativeBindingGenerationDescriptor? bindingGeneration { get; }
+
+    /// <summary>
+    /// Gets the shared-library suffix declared by the selected SDK, or null for an SDK-independent producer.
+    /// </summary>
+    public string? sharedLibraryExtension { get; }
 
     /// <summary>
     /// Gets the exact absolute output file paths validated by the publisher.

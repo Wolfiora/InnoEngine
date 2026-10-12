@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text.Json;
+using System.Text;
 using Inno.Core.IO;
 
 namespace Inno.Build.Toolchains;
@@ -46,8 +47,18 @@ public static class BuildArtifactManifest
         Dictionary<string, string> files = ReadFiles(directory, outputDirectories, context);
         if (files.Count == 0)
             throw new InvalidDataException("A completed artifact must contain output files.");
-        File.WriteAllText(Path.Combine(directory, C_FILE_NAME), JsonSerializer.Serialize(
-            new Manifest { fingerprint = fingerprint, files = files }));
+        using var bytes = new MemoryStream();
+        using (var writer = new Utf8JsonWriter(bytes))
+        {
+            writer.WriteStartObject();
+            writer.WriteString("fingerprint", fingerprint);
+            writer.WriteStartObject("files");
+            foreach (var file in files.OrderBy(static pair => pair.Key, StringComparer.Ordinal))
+                writer.WriteString(file.Key, file.Value);
+            writer.WriteEndObject();
+            writer.WriteEndObject();
+        }
+        File.WriteAllText(Path.Combine(directory, C_FILE_NAME), Encoding.UTF8.GetString(bytes.ToArray()));
     }
 
     /// <summary>
@@ -83,20 +94,28 @@ public static class BuildArtifactManifest
         string path = Path.Combine(directory, C_FILE_NAME);
         if (!File.Exists(path))
             return false;
-        Manifest? manifest;
+        Dictionary<string, string> expected;
         try
         {
-            manifest = JsonSerializer.Deserialize<Manifest>(File.ReadAllText(path));
+            using JsonDocument manifest = JsonDocument.Parse(File.ReadAllBytes(path));
+            JsonElement data = manifest.RootElement;
+            if (!data.EnumerateObject().Select(static entry => entry.Name).Order(StringComparer.Ordinal)
+                .SequenceEqual(new[] { "files", "fingerprint" }, StringComparer.Ordinal)
+                || data.GetProperty("fingerprint").GetString() != fingerprint)
+                return false;
+            expected = data.GetProperty("files").EnumerateObject()
+                .ToDictionary(static entry => entry.Name, static entry => entry.Value.GetString()!, StringComparer.Ordinal);
         }
-        catch (JsonException)
+        catch (Exception failure) when (failure is JsonException or InvalidOperationException or ArgumentException)
         {
             return false;
         }
-        if (manifest?.fingerprint != fingerprint || manifest.files is null || manifest.files.Count == 0)
+        if (expected.Count == 0)
             return false;
         Dictionary<string, string> files = ReadFiles(directory, outputDirectories, context);
-        return files.Count == manifest.files.Count
-            && files.All(pair => manifest.files.TryGetValue(pair.Key, out string? value) && pair.Value == value);
+        return files.Count == expected.Count
+            && PathBoundary.EnumerateFiles(directory).Count() == files.Count + 1
+            && files.All(pair => expected.TryGetValue(pair.Key, out string? value) && pair.Value == value);
     }
 
     private static Dictionary<string, string> ReadFiles(
@@ -125,19 +144,18 @@ public static class BuildArtifactManifest
                 context?.RecordOutputRead(input.Position);
             }
         }
+        if (files.Count == 0)
+            return files;
+        foreach (string path in PathBoundary.EnumerateFiles(root).Order(StringComparer.Ordinal))
+        {
+            string relative = Path.GetRelativePath(root, path).Replace('\\', '/');
+            if (relative == C_FILE_NAME || files.ContainsKey(relative))
+                continue;
+            using FileStream input = File.OpenRead(path);
+            files.Add(relative, Convert.ToHexStringLower(SHA256.HashData(input)));
+            context?.RecordOutputRead(input.Position);
+        }
         return files;
     }
 
-    private sealed class Manifest
-    {
-        /// <summary>
-        /// Gets the immutable input identity assigned by the artifact owner.
-        /// </summary>
-        public required string fingerprint { get; init; }
-
-        /// <summary>
-        /// Gets each relative output path and the SHA-256 of its completed bytes.
-        /// </summary>
-        public required Dictionary<string, string> files { get; init; }
-    }
 }

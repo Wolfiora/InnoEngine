@@ -213,7 +213,7 @@ public sealed class NativeBindingGenerationTests : IDisposable
         WriteDefinition(bridge);
         await Assert.ThrowsAnyAsync<Exception>(() => GenerateAsync());
         Assert.Equal(original, File.ReadAllText(first.bindingsPath));
-        Assert.Single(Directory.GetDirectories(Path.Combine(m_root, "obj", "fixture-target")));
+        Assert.Single(Directory.GetDirectories(Path.Combine(m_root, "artifacts", "bindings", "fixture", "fixture-target")));
     }
 
     [Fact]
@@ -265,7 +265,7 @@ public sealed class NativeBindingGenerationTests : IDisposable
         cancellation.Cancel();
         await Assert.ThrowsAnyAsync<OperationCanceledException>(() => GenerateAsync(cancellation: cancellation.Token));
         Assert.Equal(original, File.ReadAllText(first.bindingsPath));
-        Assert.Single(Directory.GetDirectories(Path.Combine(m_root, "obj", "fixture-target")));
+        Assert.Single(Directory.GetDirectories(Path.Combine(m_root, "artifacts", "bindings", "fixture", "fixture-target")));
     }
 
     [Fact]
@@ -327,7 +327,7 @@ public sealed class NativeBindingGenerationTests : IDisposable
     private void WriteDefinition(string? bridge = null)
     {
         new XDocument(new XElement("Project",
-            new XElement("PropertyGroup", new XElement("InnoBindingHostConfig", "bindgen.json"),
+            new XElement("PropertyGroup", new XElement("InnoNativeComponentId", "fixture"), new XElement("InnoBindingHostConfig", "bindgen.json"),
                 bridge is null ? null : new XElement("InnoBindingHostBridge", Path.GetFileName(bridge))),
             new XElement("ItemGroup", new XElement("InnoBindingTarget", new XAttribute("Include", "fixture-target"),
                 new XElement("Config", "bindgen.json"),

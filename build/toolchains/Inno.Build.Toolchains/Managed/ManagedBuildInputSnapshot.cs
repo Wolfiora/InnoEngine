@@ -37,6 +37,25 @@ public sealed class ManagedBuildInputSnapshot
     public string fingerprint { get; }
 
     /// <summary>
+    /// Materializes the operation's declared repository inputs into an exclusively owned source workspace.
+    /// Compilers and source extraction must use the returned project and root, never the mutable checkout.
+    /// </summary>
+    /// <param name="cancellationToken">
+    /// Cancels ownership acquisition or verified copying before execution ownership is returned.
+    /// </param>
+    /// <returns>
+    /// Caller-owned fixed execution inputs. Dispose only after all compiler and source consumers finish.
+    /// </returns>
+    /// <exception cref="InvalidOperationException">
+    /// An input differs from its planned bytes while being copied.
+    /// </exception>
+    /// <exception cref="ArgumentException">
+    /// The project does not belong to the operation's source root.
+    /// </exception>
+    public ValueTask<ManagedBuildExecution> CreateExecutionAsync(CancellationToken cancellationToken = default)
+        => ManagedBuildExecution.CreateAsync(m_context, m_sdk, m_project, m_properties, cancellationToken);
+
+    /// <summary>
     /// Evaluates an explicit managed graph using its frozen SDK and hashes its declared compilation inputs.
     /// </summary>
     /// <param name="context">

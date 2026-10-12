@@ -1,8 +1,6 @@
 using System;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
-using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Runtime.CompilerServices;
@@ -38,10 +36,13 @@ public static class NativeDllLoader
     /// The library name is empty, contains a path or contains a wildcard.
     /// </exception>
     /// <exception cref="DllNotFoundException">
-    /// No library matching the current process target is deployed.
+    /// The selected native library cannot be loaded by the current process.
     /// </exception>
     /// <exception cref="InvalidDataException">
-    /// Multiple deployed files match the requested library and process target.
+    /// The product's explicit native deployment index is malformed.
+    /// </exception>
+    /// <exception cref="FileNotFoundException">
+    /// The product index, exact logical library entry or its payload is absent.
     /// </exception>
     public static IntPtr LoadNativeDll(
         string libraryName,
@@ -51,24 +52,13 @@ public static class NativeDllLoader
         ArgumentNullException.ThrowIfNull(bindingAssembly);
         ValidateFileName(libraryName);
         RegisterResolverOnce(bindingAssembly);
-        var candidateNames = GetLibraryFileNames(libraryName);
-        foreach (var root in GetSearchRoots())
-        {
-            foreach (var name in candidateNames)
-            {
-                var match = FindPreferredTargetFile(root, name);
-                if (match != null)
-                {
-                    return NativeLibrary.Load(match);
-                }
-            }
-        }
-
-        throw new DllNotFoundException($"Native library not found under native output: {libraryName}");
+        string nativeRoot = Path.Combine(S_OUTPUT_ROOT, NativeDllConstants.NATIVE_DIR_NAME);
+        NativeDeploymentIndex index = ReadIndex(nativeRoot);
+        return NativeLibrary.Load(index.ResolveLibrary(nativeRoot, libraryName));
     }
 
     /// <summary>
-    /// Finds a file under the output native folder.
+    /// Resolves an exact tool or resource alias from the product's explicit native deployment index.
     /// </summary>
     /// <param name="fileName">
     /// Exact file name to locate.
@@ -80,24 +70,16 @@ public static class NativeDllLoader
     /// The file name is empty, contains a path or contains a wildcard.
     /// </exception>
     /// <exception cref="FileNotFoundException">
-    /// No file with this exact name is deployed for the current process target.
+    /// The index, alias or selected payload is absent.
     /// </exception>
     /// <exception cref="InvalidDataException">
-    /// The deployment contains multiple matching files for the current target.
+    /// The product's explicit deployment index is malformed.
     /// </exception>
     public static string FindNativeFile(string fileName)
     {
         ValidateFileName(fileName);
-        foreach (var root in GetSearchRoots())
-        {
-            var match = FindPreferredTargetFile(root, fileName);
-            if (match != null)
-            {
-                return match;
-            }
-        }
-
-        throw new FileNotFoundException($"Native file not found under search roots: {fileName}");
+        string nativeRoot = Path.Combine(S_OUTPUT_ROOT, NativeDllConstants.NATIVE_DIR_NAME);
+        return ReadIndex(nativeRoot).ResolveFile(nativeRoot, fileName);
     }
 
     private static void RegisterResolverOnce(Assembly targetAssembly)
@@ -119,104 +101,18 @@ public static class NativeDllLoader
         Assembly assembly,
         DllImportSearchPath? searchPath
     ) {
-        var candidateNames = GetLibraryFileNames(libraryName);
-        foreach (var root in GetSearchRoots())
-        {
-            foreach (var name in candidateNames)
-            {
-                var match = FindPreferredTargetFile(root, name);
-                if (match != null)
-                {
-                    return NativeLibrary.Load(match);
-                }
-            }
-        }
-
-        return IntPtr.Zero;
+        string nativeRoot = Path.Combine(S_OUTPUT_ROOT, NativeDllConstants.NATIVE_DIR_NAME);
+        NativeDeploymentIndex index = ReadIndex(nativeRoot);
+        return index.libraries.ContainsKey(libraryName)
+            ? NativeLibrary.Load(index.ResolveLibrary(nativeRoot, libraryName)) : IntPtr.Zero;
     }
 
-    private static IReadOnlyList<string> GetLibraryFileNames(string libraryName)
+    private static NativeDeploymentIndex ReadIndex(string nativeRoot)
     {
-        var names = new List<string>();
-        if (libraryName.Contains('.'))
-        {
-            names.Add(libraryName);
-        }
-
-        if (OperatingSystem.IsWindows())
-        {
-            names.Add($"{libraryName}.dll");
-            if (!libraryName.StartsWith("lib", StringComparison.OrdinalIgnoreCase))
-            {
-                names.Add($"lib{libraryName}.dll");
-            }
-            return names;
-        }
-
-        if (OperatingSystem.IsMacOS())
-        {
-            names.Add($"lib{libraryName}.dylib");
-            names.Add($"{libraryName}.dylib");
-            return names;
-        }
-
-        names.Add($"lib{libraryName}.so");
-        names.Add($"{libraryName}.so");
-        return names;
-    }
-
-    private static IEnumerable<string> GetSearchRoots()
-    {
-        var baseDir = S_OUTPUT_ROOT;
-        var nativeRoot = Path.Combine(baseDir, NativeDllConstants.NATIVE_DIR_NAME);
-        if (Directory.Exists(nativeRoot))
-        {
-            yield return nativeRoot;
-        }
-    }
-
-    private static string? FindPreferredTargetFile(
-        string root,
-        string fileName
-    ) {
-        var candidates = Directory
-            .EnumerateFiles(root, fileName, SearchOption.AllDirectories)
-            .ToArray();
-        if (candidates.Length == 0)
-        {
-            return null;
-        }
-
-        string targetSegment = $"/{GetTargetPlatformIdentifier()}/";
-        string[] matching = candidates.Where(path =>
-            NormalizePath(path).Contains(targetSegment, StringComparison.OrdinalIgnoreCase)).ToArray();
-        return matching.Length switch
-        {
-            0 => null,
-            1 => matching[0],
-            _ => throw new InvalidDataException($"Native deployment contains multiple '{fileName}' files for '{GetTargetPlatformIdentifier()}'.")
-        };
-    }
-
-    private static string GetTargetPlatformIdentifier()
-    {
-        string operatingSystem = OperatingSystem.IsMacOS()
-            ? "macos"
-            : OperatingSystem.IsWindows()
-                ? "windows"
-                : OperatingSystem.IsLinux()
-                    ? "linux"
-                    : throw new PlatformNotSupportedException("Native library loading supports Windows, macOS, and Linux.");
-        string architecture = RuntimeInformation.ProcessArchitecture switch
-        {
-            Architecture.X64 => "x64",
-            Architecture.Arm64 => "arm64",
-            Architecture.X86 => "x86",
-            Architecture.Arm => "arm",
-            _ => throw new PlatformNotSupportedException(
-                $"Unsupported native architecture: {RuntimeInformation.ProcessArchitecture}.")
-        };
-        return $"{operatingSystem}-{architecture}";
+        string path = Path.Combine(nativeRoot, NativeDeploymentIndex.C_FILE_NAME);
+        if (!File.Exists(path))
+            throw new FileNotFoundException("The product has no explicit native deployment index. Prepare the product before starting it.", path);
+        return NativeDeploymentIndex.Decode(File.ReadAllBytes(path));
     }
 
     [UnconditionalSuppressMessage("SingleFile", "IL3000",
@@ -226,8 +122,6 @@ public static class NativeDllLoader
         string location = typeof(NativeDllLoader).Assembly.Location;
         return string.IsNullOrEmpty(location) ? AppContext.BaseDirectory : Path.GetDirectoryName(location)!;
     }
-
-    private static string NormalizePath(string path) => path.Replace('\\', '/');
 
     private static void ValidateFileName(string fileName)
     {

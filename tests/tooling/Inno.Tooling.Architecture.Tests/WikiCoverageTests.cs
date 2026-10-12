@@ -126,6 +126,26 @@ public sealed class WikiCoverageTests : IDisposable
     }
 
     [Fact]
+    public void OwnedApiFragmentsContributeExactSignaturesWithoutDuplicatingProjectPages()
+    {
+        string inventory = Path.Combine(m_root, "api.json");
+        _ = Run(inventory);
+        using JsonDocument document = JsonDocument.Parse(File.ReadAllText(inventory));
+        string markers = string.Join('\n', document.RootElement.EnumerateArray().Select(entry =>
+            $"<!-- api: {entry.GetProperty("id").GetString()} {entry.GetProperty("signatureHash").GetString()} -->"));
+        Write("docs/core/Inno.Core.Probe.Api/ABI-01.md", markers);
+        Write("docs/core/Inno.Core.Probe.md", "<!-- api-include: Inno.Core.Probe.Api/ABI-01.md -->\r\n");
+        string output = Run();
+        Assert.DoesNotContain("no current signature mapping", output, StringComparison.Ordinal);
+        Assert.DoesNotContain("requires one authoritative page", output, StringComparison.Ordinal);
+        Write("docs/core/Inno.Core.Probe.Api/ABI-01.md", markers
+            + "\n<!-- api-include: ../Inno.Core.Probe.md -->");
+        Assert.Contains("unique Markdown page", Assert.Throws<InvalidDataException>(() => Run()).Message, StringComparison.Ordinal);
+        Write("docs/core/Inno.Core.Probe.md", "<!-- api-include: ../../outside.md -->");
+        Assert.Contains("within the current Wiki", Assert.Throws<InvalidDataException>(() => Run()).Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void TypeModifiersAndRefReturnsParticipateInSignatureIdentity()
     {
         const string sourcePath = "src/foundation/core/Inno.Core.Probe/Probe.cs";

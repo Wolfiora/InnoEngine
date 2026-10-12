@@ -30,6 +30,10 @@ Wiki 通过引擎自己的公开契约解释能力，不依赖外部插件产品
 
 具体第三方实现名称放在对应 backend、Native、integration 或工具链页；中立服务页按其能力和契约说明职责。已删除的 API、项目路径和命令不能继续作为可用方法出现。
 
+## 大型 ABI 参考
+
+Native 项目保持一个权威项目页，先解释初始化、借用地址、callback、线程和退出顺序。完整 ABI 声明可以位于该项目的 `.Api` 子目录，按类型和函数分组；项目页通过明确 `api-include` 声明纳入签名门禁。引用只能指向当前 Wiki 内唯一 Markdown 页面，包含循环和越界直接失败。移动引用时必须修复入站锚点，不能复制第二份权威 API。分页不等于函数行为已经逐项核对；缺少原生语义的部分仍需从当前 facade/header 与真实消费验证。
+
 ## 当前验证方式
 
 通过 Build 的 `verify` 命令执行 `--wiki` 检查，可额外提供 `--wiki-api <json>` 和 `--wiki-examples <json>` 导出清单。`--dotnet <绝对路径>` 与 `--project-graph <json>` 检查有效 MSBuild 项目图。

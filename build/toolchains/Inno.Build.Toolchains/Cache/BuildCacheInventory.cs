@@ -8,7 +8,7 @@ namespace Inno.Build.Toolchains;
 
 internal sealed class BuildCacheInventory
 {
-    internal static readonly StringComparer pathComparer = OperatingSystem.IsWindows() || OperatingSystem.IsMacOS()
+    internal static readonly StringComparer pathComparer = OperatingSystem.IsWindows()
         ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal;
 
     private BuildCacheInventory()
@@ -38,10 +38,8 @@ internal sealed class BuildCacheInventory
                 BuildCacheCleanupPlan.RequireChild(owner.directory, artifact.leasePath);
                 if (BuildCacheCleanupPlan.IsContained(artifact.directory, owner.coordinationPath))
                     throw new InvalidDataException("An artifact cannot contain its owner's persistent coordination file.");
-                foreach (var other in result.artifacts.Keys)
-                    if (BuildCacheCleanupPlan.IsContained(other, artifact.directory) || BuildCacheCleanupPlan.IsContained(artifact.directory, other))
-                        throw new InvalidDataException("Cache artifacts must have disjoint ownership boundaries.");
-                result.artifacts.Add(artifact.directory, (owner, artifact));
+                if (!result.artifacts.TryAdd(artifact.directory, (owner, artifact)))
+                    throw new InvalidDataException("A cache artifact has repeated ownership.");
             }
             foreach (string path in owner.ReadProtectedArtifacts(cancellation))
             {
@@ -49,14 +47,27 @@ internal sealed class BuildCacheInventory
                 result.roots.Add(Path.TrimEndingDirectorySeparator(Path.GetFullPath(path)));
             }
         }
+        bool HasArtifactAncestor(string path)
+        {
+            for (string? current = path; current is not null; current = Path.GetDirectoryName(current))
+                if (result.artifacts.ContainsKey(current))
+                    return true;
+            return false;
+        }
+        foreach (string directory in result.artifacts.Keys)
+            if (Path.GetDirectoryName(directory) is string parent && HasArtifactAncestor(parent))
+                throw new InvalidDataException("Cache artifacts must have disjoint ownership boundaries.");
         var leasePaths = new HashSet<string>(pathComparer);
         foreach (var entry in result.artifacts.Values)
         {
             if (!leasePaths.Add(entry.artifact.leasePath)
                 || owners.Any(owner => pathComparer.Equals(owner.coordinationPath, entry.artifact.leasePath))
-                || result.artifacts.Keys.Any(path => BuildCacheCleanupPlan.IsContained(path, entry.artifact.leasePath)))
+                || HasArtifactAncestor(entry.artifact.leasePath))
                 throw new InvalidDataException("Artifact leases must be distinct persistent files outside all retired directories.");
         }
+        foreach (string root in result.roots)
+            if (!result.artifacts.ContainsKey(root))
+                throw new InvalidDataException($"Protected cache root '{root}' has no registered artifact owner.");
         var incoming = result.artifacts.Keys.ToDictionary(static path => path, static _ => 0, pathComparer);
         foreach (var entry in result.artifacts.Values)
             foreach (string dependency in entry.artifact.dependencies.Distinct(pathComparer))
@@ -87,7 +98,9 @@ internal sealed class BuildCacheInventory
         var pending = new Stack<string>(roots);
         while (pending.TryPop(out string? path))
         {
-            if (!artifacts.TryGetValue(path, out var entry) || !protectedPaths.Add(path))
+            if (!artifacts.TryGetValue(path, out var entry))
+                throw new InvalidDataException($"Protected cache path '{path}' has no registered artifact owner.");
+            if (!protectedPaths.Add(path))
                 continue;
             foreach (string dependency in entry.artifact.dependencies)
                 pending.Push(dependency);

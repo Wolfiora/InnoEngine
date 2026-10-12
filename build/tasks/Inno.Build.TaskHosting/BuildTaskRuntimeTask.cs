@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using Inno.Core.IO;
+using Inno.Build.Toolchains;
 using Microsoft.Build.Framework;
 
 namespace Inno.Build.TaskHosting;
@@ -77,18 +78,22 @@ public sealed class BuildTaskRuntimeTask : Microsoft.Build.Utilities.Task, ICanc
             string project = RequireAbsolute(ProjectFile);
             string artifacts = RequireAbsolute(ArtifactsDirectory);
             string load = RequireAbsolute(LoadDirectory);
-            string cache = Path.Combine(Path.GetDirectoryName(artifacts)!, "hosts");
-            PathBoundary.RequireUnlinkedPath(Path.Combine(Path.GetDirectoryName(artifacts)!, "loads"), load);
+            string taskRoot = Path.GetDirectoryName(Path.GetDirectoryName(load))!;
+            string cache = Path.Combine(Path.GetDirectoryName(taskRoot)!, "hosts");
+            PathBoundary.RequireUnlinkedPath(taskRoot, load);
             string[] targets = Targets.ToArray();
             string[] removed = RemoveProperties.ToArray();
             if (!File.Exists(project) || targets.Length == 0 || targets.Any(string.IsNullOrWhiteSpace))
                 throw new ArgumentException("A task project and nonempty build targets are required.");
             IDictionary properties = FreezeProperties(artifacts, removed);
+            // Explicit owned input restores finish before the compiler identity is frozen.
+            properties["InnoInteropRuntimeRestore"] = "false";
             // MSBuild's API applies undefinitions to the final request. Explicit task
             // properties must survive removal of identically named parent globals.
             removed = removed.Where(name => !properties.Contains(name)).ToArray();
             TaskRuntimeRequestSnapshot initial = TaskRuntimeRequestKey.Capture(project, artifacts, targets, properties, token);
             bool restoreRequired = initial.needsRestore;
+            bool restoreRequested = targets.Contains("Restore", StringComparer.OrdinalIgnoreCase);
             string? request = restoreRequired ? null : initial.key;
             if (request is not null && TaskRuntimeBuildScope.Read(engine, request, cancellation: token) is ITaskItem[] reused)
             {
@@ -101,7 +106,7 @@ public sealed class BuildTaskRuntimeTask : Microsoft.Build.Utilities.Task, ICanc
             engine.Yield();
             try
             {
-                ownership = FileLease.AcquireAsync(Path.Combine(artifacts, "build.lock"),
+                ownership = FileLease.AcquireAsync(artifacts + ".lock",
                     Timeout.InfiniteTimeSpan, token).AsTask().GetAwaiter().GetResult();
             }
             finally
@@ -119,7 +124,8 @@ public sealed class BuildTaskRuntimeTask : Microsoft.Build.Utilities.Task, ICanc
             using (ownership)
             {
                 token.ThrowIfCancellationRequested();
-                if (restoreRequired)
+                Directory.CreateDirectory(artifacts);
+                if (restoreRequired || restoreRequested)
                 {
                     BuildEngineResult restored = engine.BuildProjectFilesInParallel([project], ["Restore"],
                         [properties], [removed], [null!], returnTargetOutputs: false);
@@ -128,10 +134,24 @@ public sealed class BuildTaskRuntimeTask : Microsoft.Build.Utilities.Task, ICanc
                         return false;
 
                 }
+                foreach (TaskRuntimeRestoreRequest inputRestore in initial.restoreRequests
+                    .DistinctBy(static input => input.project + "|" + string.Join(";", input.properties
+                        .OrderBy(static property => property.Key, StringComparer.OrdinalIgnoreCase)
+                        .Select(static property => property.Key + "=" + property.Value))))
+                {
+                    var inputProperties = new Hashtable(StringComparer.OrdinalIgnoreCase);
+                    foreach (var property in inputRestore.properties)
+                        inputProperties[property.Key] = property.Value;
+                    BuildEngineResult restored = engine.BuildProjectFilesInParallel([inputRestore.project], ["Restore"],
+                        [inputProperties], [inputRestore.removedProperties.ToArray()], [null!], returnTargetOutputs: false);
+                    token.ThrowIfCancellationRequested();
+                    if (!restored.Result)
+                        return false;
+                }
                 TaskRuntimeRequestSnapshot locked = TaskRuntimeRequestKey.Capture(project, artifacts, targets, properties, token);
                 if (locked.needsRestore)
                     throw new InvalidOperationException("Task-runtime dependencies are not restored.");
-                if (request is not null && locked.key != request)
+                if (!restoreRequested && !restoreRequired && request is not null && locked.key != request)
                     throw new InvalidOperationException("Task-runtime inputs changed while waiting for build ownership.");
                 request = locked.key;
                 if (TaskRuntimeBuildScope.Read(engine, request, cancellation: token) is ITaskItem[] completed)
@@ -141,7 +161,10 @@ public sealed class BuildTaskRuntimeTask : Microsoft.Build.Utilities.Task, ICanc
                     Log.LogMessage(MessageImportance.High, "INNO-TASK-RUNTIME reused {0}", request);
                     return true;
                 }
-                BuildEngineResult result = engine.BuildProjectFilesInParallel([project], targets,
+                string[] compilationTargets = targets.Where(static target => !target.Equals("Restore", StringComparison.OrdinalIgnoreCase)).ToArray();
+                if (compilationTargets.Length == 0)
+                    throw new ArgumentException("Task-runtime preparation requires a publication target after restore.", nameof(Targets));
+                BuildEngineResult result = engine.BuildProjectFilesInParallel([project], compilationTargets,
                     [properties], [removed], [null!], returnTargetOutputs: true);
                 token.ThrowIfCancellationRequested();
                 if (!result.Result)
@@ -150,10 +173,15 @@ public sealed class BuildTaskRuntimeTask : Microsoft.Build.Utilities.Task, ICanc
                     .SelectMany(static output => output).ToArray();
                 if (TargetOutputs.Length == 0)
                     throw new InvalidDataException("The task project returned no runtime closure.");
-                if (TaskRuntimeRequestKey.Capture(project, artifacts, targets, properties, token).key != request)
-                    throw new InvalidOperationException("Task-runtime inputs changed during compilation; its preparation was not cached.");
-                TargetOutputs = TaskRuntimePreparation.Publish(cache, TargetOutputs, engine, token);
+                TaskRuntimeRequestSnapshot compiled = TaskRuntimeRequestKey.Capture(project, artifacts, targets, properties, token);
+                if (compiled.key != request)
+                    throw new InvalidOperationException("Task-runtime inputs changed during compilation; its preparation was not cached. "
+                        + locked.DescribeChanges(compiled));
+                TargetOutputs = TaskRuntimePreparation.Publish(cache, TargetOutputs, engine, load, token);
                 TaskRuntimePreparation.RegisterReader(load, TargetOutputs.Single(static item => item.GetMetadata("RelativePath") == "Inno.Build.Tasks.dll").ItemSpec);
+                var workspaces = new BuildCachePublisher(Path.GetDirectoryName(artifacts)!);
+                using (workspaces.AcquireUseAsync(token).AsTask().GetAwaiter().GetResult())
+                    workspaces.Record(artifacts, artifacts + ".lock", [], null, token);
                 TaskRuntimeBuildScope.Register(engine, request, TargetOutputs);
                 Log.LogMessage(MessageImportance.High, "INNO-TASK-RUNTIME prepared {0}", request);
             }

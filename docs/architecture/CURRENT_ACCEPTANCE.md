@@ -8,17 +8,21 @@
 
 | 范围 | 已取得的证据 | 限制 |
 | --- | --- | --- |
-| 开发入口 | `InnoEngine.Editor`、`InnoEngine.Build` 与 CLI 闭包编译成功；准备后 Editor 不执行构建 | Build 入口仍有托管准备开销 |
+| 开发入口 | `InnoEngine.Editor`、`InnoEngine.Build` 与 CLI 闭包编译成功；准备后 Editor 不执行构建 | 当前 Build 工具准备复用的第二次实测 8.86 秒、无 CLI 再编译；完整产品矩阵待执行 |
 | Solution 与架构 | 当前 232/232 个项目的真实 SDK 求值图通过；重新编译后 11 项选定架构回归通过；只有两个日常生产可执行，无失效路径、游离项目或空 Folder | 严格 Wiki 和产品运行门禁单独执行 |
 | Native 输入与 workspace | 内容哈希、阶段重新验证、同长度同 mtime 修改、CMake object 复用和取消保护已有回归 | 每次完整 Build 的输入读取成本仍需要收口 |
 | 绑定与 Task | 精确 generation 消费、读取保护、嵌套 owner、并行 SDK 图和私有载入目录回归通过 | 跨节点与完整成本矩阵尚未闭合 |
-| Support Pack | Windows 准备及热命中已有成功证据；本次探针进一步核查输入和提交失败边界 | 托管输入 A→B→A 窗口、提交后索引/清理异常仍未处理 |
-| 缓存生命周期 | Native、Binding、Pack 消费持有读取保护；损坏及取消已有专项回归 | 保护根遗漏的安全失败尚未实现；标准发行的保护根登记和自动/手动清理仍未接入 |
+| Support Pack | Windows 准备及热命中已有成功证据；本次探针进一步核查输入和提交失败边界 | 固定执行与提交后诊断的专项回归已修复；本轮完整 Windows/Browser Pack 与最终游戏发布仍待闭合 |
+| 缓存生命周期 | Native、Binding、Pack 消费持有读取保护；损坏及取消已有专项回归 | 遗漏根已拒绝；Native、绑定、Pack 与 workspace 登记、手动/自动退休已接入并有回归；实际产品与完整预算范围仍待核对 |
 | Wiki | 历史记录迁出；全部项目已有页面；四个 Native 页已有可折叠 ABI 索引；资产与缓存公开契约已补齐 | 全量行为审查、生成 API 覆盖和部分精确目标引用尚未通过严格门禁 |
 
 专项测试数量存在重叠；不能将不同筛选批次简单相加作为唯一测试总数。
 
-## Windows 当前运行证据
+## 本轮专项验收
+
+基准 kernel 提交 `e17a4a419721a283b3c9a8e3a856ffefa7b7acac`。77 项关键回归和 38 项 owner 集成回归分别通过，数量有重叠。232 项有效 SDK 图检查完成；本轮严格 Wiki 检查报告 81 条问题，当前正在修复并复验，不能标记最终通过。详细过程见[本轮记录](../../records/architecture/acceptance/BUILD_ENTRY_CACHE_WIKI_REMEDIATION_2026_10_12.md)。
+
+## 此前 Windows 运行证据（不替代最新源码验收）
 
 - Debug Editor 普通 Build、准备后启动、正常退出及重新打开已有实际结果。
 - 真实界面已检查一次 Play、GameView 按钮输入、停止、浮动窗口创建/位移/关闭，以及带附加窗口的最终退出。测试后恢复原有项目设置。
@@ -29,7 +33,7 @@
 
 ## 尚未完成
 
-- managed 输入冻结执行，以及剩余缓存依赖、预算和清理机制。
+- 实际 Pack 固定源码执行，以及缓存完整预算范围、依赖与实构建回收证据。
 - 全量 Wiki 严格门禁、逐页行为审查与最终 API/示例映射。
 - 当前源码的完整 Editor 性能矩阵、定量 viewport 拖动/resize/DPI、完整 reload/GC barrier。
 - Windows CoreCLR、NativeAOT 和 Browser 解释执行/AOT 的最终发布及实际运行。

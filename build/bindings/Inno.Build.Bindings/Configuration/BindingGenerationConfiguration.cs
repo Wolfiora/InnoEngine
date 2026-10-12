@@ -54,7 +54,7 @@ internal sealed class BindingGenerationConfiguration
     internal string GetOutputRoot(NativeBuildContext context)
     {
         if (request.outputMode == NativeBindingOutputMode.TargetArtifacts)
-            return Path.Combine(component.GetNativeRoot(context.engineRoot), "obj", request.targetId);
+            return Path.Combine(context.engineRoot, "artifacts", "bindings", component.id, request.targetId);
         var managed = new ConfigLoader().Load(configPath);
         return NativeBindingGenerationIdentity.Resolve(BindingConfigurationPaths.Expand(managed.outputPath,
             context.toolchain?.environment)!, Path.GetDirectoryName(configPath)!);

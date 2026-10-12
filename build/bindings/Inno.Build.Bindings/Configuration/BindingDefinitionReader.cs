@@ -30,7 +30,7 @@ internal static class BindingDefinitionReader
             {
                 foreach (XElement property in group.Elements())
                 {
-                    if (property.Name.LocalName is not ("InnoBindingHostConfig" or "InnoBindingHostBridge" or "InnoBindingExtensionProject")
+                    if (property.Name.LocalName is not ("InnoNativeComponentId" or "InnoBindingHostConfig" or "InnoBindingHostBridge" or "InnoBindingExtensionProject")
                         || property.Attributes().Any() || property.HasElements || !properties.TryAdd(property.Name.LocalName, property.Value))
                         throw new InvalidDataException("A binding definition has an unknown or repeated property.");
                 }
@@ -52,6 +52,8 @@ internal static class BindingDefinitionReader
             else
                 throw new InvalidDataException("A binding definition cannot contain executable build logic.");
         }
+        if (!properties.TryGetValue("InnoNativeComponentId", out string? componentId) || componentId != component.id)
+            throw new InvalidDataException("The binding definition must declare the requested component identity.");
         if (!properties.TryGetValue("InnoBindingHostConfig", out string? hostConfig))
             throw new InvalidDataException("A binding definition requires its explicit host configuration.");
         properties.TryGetValue("InnoBindingHostBridge", out string? hostBridge);

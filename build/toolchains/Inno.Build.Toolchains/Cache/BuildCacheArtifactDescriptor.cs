@@ -21,7 +21,7 @@ public sealed class BuildCacheArtifactDescriptor
     /// The absolute persistent file used by this entry's actual producer and readers for Core.IO coordination.
     /// </param>
     /// <param name="bytes">
-    /// The sum of file lengths used for cache budgeting, excluding coordination files.
+    /// The publisher-recorded sum of owned file lengths, captured under writing ownership for cache budgeting.
     /// It does not measure allocated disk blocks or count shared hardlinks as recovered volume space.
     /// </param>
     /// <param name="lastUseUtc">

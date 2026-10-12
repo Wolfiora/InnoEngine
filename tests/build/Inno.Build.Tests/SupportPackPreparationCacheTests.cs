@@ -30,20 +30,20 @@ public sealed class SupportPackPreparationCacheTests : IDisposable
         string output = Path.Combine(m_root, "Packs");
         var publisher = new PlayerSupportPackPublisher([m_source]);
         string directory;
-        using (PlayerSupportPackLease first = await publisher.PublishAsync(m_root, output, S_TARGET, "unused"))
+        using (PlayerSupportPackPublication first = await publisher.PublishAsync(m_root, output, S_TARGET, "unused"))
             directory = first.directory;
-        using (PlayerSupportPackLease repeated = await publisher.PublishAsync(m_root, output, S_TARGET, "unused"))
+        using (PlayerSupportPackPublication repeated = await publisher.PublishAsync(m_root, output, S_TARGET, "unused"))
             Assert.Equal(directory, repeated.directory);
         Assert.Equal(1, m_source.preparations);
         string file = Path.Combine(directory, "References", "Inno.Fixture.dll");
         DateTime timestamp = File.GetLastWriteTimeUtc(file);
         File.WriteAllText(file, "other");
         File.SetLastWriteTimeUtc(file, timestamp);
-        using (PlayerSupportPackLease repaired = await publisher.PublishAsync(m_root, output, S_TARGET, "unused"))
+        using (PlayerSupportPackPublication repaired = await publisher.PublishAsync(m_root, output, S_TARGET, "unused"))
             Assert.Equal("first", File.ReadAllText(Path.Combine(repaired.directory, "References", "Inno.Fixture.dll")));
         Assert.Equal(2, m_source.preparations);
         File.WriteAllText(Path.Combine(directory, "References", "Extra.dll"), "extra");
-        using (PlayerSupportPackLease repaired = await publisher.PublishAsync(m_root, output, S_TARGET, "unused"))
+        using (PlayerSupportPackPublication repaired = await publisher.PublishAsync(m_root, output, S_TARGET, "unused"))
             Assert.Single(Directory.EnumerateFiles(Path.Combine(repaired.directory, "References")));
         Assert.Equal(3, m_source.preparations);
         Assert.Empty(Directory.EnumerateDirectories(output, ".support-pack-*"));
@@ -54,7 +54,7 @@ public sealed class SupportPackPreparationCacheTests : IDisposable
     {
         string output = Path.Combine(m_root, "Packs");
         var publisher = new PlayerSupportPackPublisher([m_source]);
-        PlayerSupportPackLease[] readers = await Task.WhenAll(Enumerable.Range(0, 4)
+        PlayerSupportPackPublication[] readers = await Task.WhenAll(Enumerable.Range(0, 4)
             .Select(_ => publisher.PublishAsync(m_root, output, S_TARGET, "unused").AsTask()));
         try
         {
@@ -63,7 +63,7 @@ public sealed class SupportPackPreparationCacheTests : IDisposable
         }
         finally
         {
-            foreach (PlayerSupportPackLease reader in readers)
+            foreach (PlayerSupportPackPublication reader in readers)
                 reader.Dispose();
         }
     }
@@ -77,7 +77,7 @@ public sealed class SupportPackPreparationCacheTests : IDisposable
         var publisher = new PlayerSupportPackPublisher([m_source]);
         if (cacheHit)
         {
-            using PlayerSupportPackLease prior = await publisher.PublishAsync(m_root, output, S_TARGET, "unused");
+            using PlayerSupportPackPublication prior = await publisher.PublishAsync(m_root, output, S_TARGET, "unused");
         }
         string current = Path.Combine(output, S_TARGET.value, "current");
         string? previous = File.Exists(current) ? File.ReadAllText(current) : null;
@@ -89,13 +89,63 @@ public sealed class SupportPackPreparationCacheTests : IDisposable
     }
 
     [Fact]
+    public async Task PreparationIndexFailureReportsCommittedPublicationWithoutThrowing()
+    {
+        string output = Path.Combine(m_root, "Packs");
+        var publisher = new PlayerSupportPackPublisher([m_source]);
+        using (PlayerSupportPackPublication first = await publisher.PublishAsync(m_root, output, S_TARGET, "unused"))
+            Assert.Empty(first.diagnostics);
+        string current = Path.Combine(output, S_TARGET.value, "current");
+        string previous = File.ReadAllText(current);
+        File.WriteAllText(Path.Combine(m_root, "input.txt"), "other");
+        m_source.onPrepared = _ =>
+        {
+            string index = Path.Combine(output, S_TARGET.value, ".preparations");
+            Directory.Move(index, index + ".saved");
+            File.WriteAllText(index, "blocked");
+        };
+        using PlayerSupportPackPublication published = await publisher.PublishAsync(m_root, output, S_TARGET, "unused");
+        Assert.NotEqual(previous, File.ReadAllText(current));
+        Assert.Contains(published.diagnostics, static message => message.Contains("preparation index", StringComparison.Ordinal));
+        Assert.Equal("other", File.ReadAllText(Path.Combine(published.directory, "References", "Inno.Fixture.dll")));
+        using PlayerSupportPackLease selected = new PlayerSupportPackCatalog(output).Acquire(S_TARGET, m_source);
+        Assert.Equal(published.directory, selected.directory);
+    }
+
+    [Fact]
+    public async Task PostCommitStagingCleanupFailurePreservesReadingOwnership()
+    {
+        if (!OperatingSystem.IsWindows())
+            return;
+        string output = Path.Combine(m_root, "Packs");
+        FileStream? blocker = null;
+        m_source.onPrepared = staging =>
+        {
+            string file = Path.Combine(Path.GetDirectoryName(staging)!, "owned-cleanup.bin");
+            blocker = new FileStream(file, FileMode.CreateNew, FileAccess.Write, FileShare.None);
+        };
+        try
+        {
+            using PlayerSupportPackPublication published = await new PlayerSupportPackPublisher([m_source])
+                .PublishAsync(m_root, output, S_TARGET, "unused");
+            Assert.Contains(published.diagnostics, static message => message.Contains("could not be removed", StringComparison.Ordinal));
+            Assert.True(File.Exists(Path.Combine(published.directory, "References", "Inno.Fixture.dll")));
+            Assert.Single(Directory.EnumerateDirectories(output, ".support-pack-*"));
+        }
+        finally
+        {
+            blocker?.Dispose();
+        }
+    }
+
+    [Fact]
     public async Task ChangedInputAfterOwnershipWaitNeverEntersPreparation()
     {
         string output = Path.Combine(m_root, "Packs");
         Directory.CreateDirectory(output);
         var entered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         m_source.onPlan = entered.SetResult;
-        Task<PlayerSupportPackLease> waiting;
+        Task<PlayerSupportPackPublication> waiting;
         using (FileLease owner = await FileLease.AcquireAsync(Path.Combine(output, S_TARGET.value + ".lock"), TimeSpan.FromSeconds(5)))
         {
             waiting = new PlayerSupportPackPublisher([m_source]).PublishAsync(m_root, output, S_TARGET, "unused").AsTask();
@@ -117,6 +167,7 @@ public sealed class SupportPackPreparationCacheTests : IDisposable
         public int preparations => m_preparations;
         public Action? onPlan { get; set; }
         public Action? onValidate { get; set; }
+        public Action<string>? onPrepared { get; set; }
         public BuildTargetId target => S_TARGET;
 
         public ValueTask<PlayerSupportPackPlan> CreatePlanAsync(
@@ -159,6 +210,7 @@ public sealed class SupportPackPreparationCacheTests : IDisposable
                 string references = Path.Combine(stagingDirectory, "References");
                 Directory.CreateDirectory(references);
                 File.WriteAllText(Path.Combine(references, "Inno.Fixture.dll"), content);
+                owner.onPrepared?.Invoke(stagingDirectory);
                 return ValueTask.CompletedTask;
             }
         }

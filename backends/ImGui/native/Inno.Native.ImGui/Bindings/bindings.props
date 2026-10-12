@@ -1,5 +1,6 @@
 <Project>
   <PropertyGroup>
+    <InnoNativeComponentId>cimgui</InnoNativeComponentId>
     <InnoBindingHostConfig>bindgen.json</InnoBindingHostConfig>
     <InnoBindingExtensionProject>Extension/Inno.Native.ImGui.BindingExtension.csproj</InnoBindingExtensionProject>
   </PropertyGroup>

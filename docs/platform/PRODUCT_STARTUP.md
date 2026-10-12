@@ -85,7 +85,7 @@ macOS 产品目标为 `macos-arm64`。Browser 目标为 `browser-wasm`，部署�
 | 第三方源码 | extern，构建不修改它。 |
 | 可复用工作区 | backend Toolchain 的 `obj/native/<target>/<workspaceIdentity>`。 |
 | 校验后产物 | `artifacts/native/<component>/<target>/<artifactFingerprint>`。 |
-| 生成绑定 | 当前位于 backend Native 项目的 `obj/<target>/<generationFingerprint>/`；HostSource 位于同项目的 `Generated/`。 |
+| 生成绑定 | 当前位于 `artifacts/bindings/<component>/<target>/<generationFingerprint>/`；HostSource 位于同项目的 `Generated/`。 |
 | Pack | `artifacts/support-packs/<target>/<contentFingerprint>`。 |
 | Editor 部署 | 平台项目 SDK 输出；ready.json 指向并校验实际部署。 |
 | Windows 短路径 | Temp/InnoTools 下由工具 owner 建立的工作区别名。 |

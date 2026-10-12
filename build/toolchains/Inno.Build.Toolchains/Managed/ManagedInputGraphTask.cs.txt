@@ -109,6 +109,7 @@ public sealed class ManagedInputGraphTask : Task
                         file = Path.GetFullPath(file, root);
                         // Generated native bindings have a separate selected-generation input contract.
                         if (item.ItemType == "Compile" && project.GetPropertyValue("BindGenGeneratedBindings") == "true"
+                            && project.GetPropertyValue("InnoNativeTarget").Length != 0
                             && file == Path.Combine(root, "Generated", "Bindings.cs"))
                             continue;
                         if (!File.Exists(file))

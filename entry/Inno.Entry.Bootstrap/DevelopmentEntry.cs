@@ -144,9 +144,16 @@ public static class DevelopmentEntry
             {
                 using var lease = await FileLease.AcquireAsync(LockPath(root), TimeSpan.FromMinutes(10), cancellation.Token)
                     .ConfigureAwait(false);
-                await DevelopmentDependencies.PrepareAsync(root, cancellation.Token).ConfigureAwait(false);
-                await BuildAsync(root, dotnet, C_BUILD_PROJECT, cancellation.Token).ConfigureAwait(false);
-                string path = await GetAssemblyPathAsync(root, dotnet, C_BUILD_PROJECT, Configuration(), cancellation.Token).ConfigureAwait(false);
+                string? path = DevelopmentBuildTool.Open(root, Configuration(), dotnet, cancellation.Token);
+                if (path is null)
+                {
+                    await DevelopmentDependencies.PrepareAsync(root, cancellation.Token).ConfigureAwait(false);
+                    await BuildAsync(root, dotnet, C_BUILD_PROJECT, cancellation.Token).ConfigureAwait(false);
+                    path = await GetAssemblyPathAsync(root, dotnet, C_BUILD_PROJECT, Configuration(), cancellation.Token).ConfigureAwait(false);
+                    DevelopmentBuildTool.Record(root, Configuration(), dotnet, path, cancellation.Token);
+                }
+                else
+                    Console.WriteLine("Using verified prepared Build tool.");
                 using var application = new DevelopmentApplication(path);
                 Func<string[], CancellationToken, Task<int>> run = application
                     .GetEntry<Func<string[], CancellationToken, Task<int>>>("Inno.Build.Cli.BuildApplication");

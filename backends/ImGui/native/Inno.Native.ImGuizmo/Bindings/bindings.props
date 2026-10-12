@@ -1,5 +1,6 @@
 <Project>
   <PropertyGroup>
+    <InnoNativeComponentId>cimguizmo</InnoNativeComponentId>
     <InnoBindingHostConfig>bindgen.json</InnoBindingHostConfig>
   </PropertyGroup>
 

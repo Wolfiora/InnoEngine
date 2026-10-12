@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using Inno.Build.SupportPacks;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -13,8 +14,10 @@ internal static class SupportPackCommand
         CancellationToken cancellationToken
     ) {
         string output = options.Read("output", Path.Combine(context.root, "artifacts", "support-packs"));
-        using PlayerSupportPackLease pack = await context.distribution.supportPacks.PublishAsync(context.root, output, context.target,
+        using PlayerSupportPackPublication pack = await context.distribution.supportPacks.PublishAsync(context.root, output, context.target,
             context.composition.dotnetHost, cancellationToken).ConfigureAwait(false);
         Console.WriteLine(pack.directory);
+        foreach (string diagnostic in pack.diagnostics)
+            Console.Error.WriteLine(diagnostic);
     }
 }

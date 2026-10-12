@@ -26,7 +26,7 @@ public static class StandardNativeBuildPlans
     /// <param name="profile">
     /// The selected integration-owned BGFX SDK invocation for standalone component builds.
     /// </param>
-    public static ProductNativeBuildPlan CreatePlayer(BgfxNativeBuildProfile profile) => new("player", CreatePlayerSteps(RequireProfile(profile)));
+    public static ProductNativeBuildPlan CreatePlayer(BgfxNativeBuildProfile profile) => new("player", CreatePlayerSteps(RequireProfile(profile)), StandardNativeDeployment.CreateMetadata);
 
     /// <summary>
     /// Selects only the offline graphics compiler component needed for shader publication.
@@ -37,7 +37,7 @@ public static class StandardNativeBuildPlans
     /// <param name="profile">
     /// The selected integration-owned BGFX SDK invocation for standalone component builds.
     /// </param>
-    public static ProductNativeBuildPlan CreateShaderTools(BgfxNativeBuildProfile profile) => new("shader-tools", [CreateShaderToolsStep(RequireProfile(profile))]);
+    public static ProductNativeBuildPlan CreateShaderTools(BgfxNativeBuildProfile profile) => new("shader-tools", [CreateShaderToolsStep(RequireProfile(profile))], StandardNativeDeployment.CreateMetadata);
 
     /// <summary>
     /// Composes the shared runtime closure and the Editor's presentation and authoring tools.
@@ -74,7 +74,7 @@ public static class StandardNativeBuildPlans
                 relative,
                 target
             ) => RuntimePath("cimguizmo", relative, target)));
-        return new("editor", steps);
+        return new("editor", steps, StandardNativeDeployment.CreateMetadata);
     }
 
     /// <summary>

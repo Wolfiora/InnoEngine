@@ -36,7 +36,7 @@ public sealed class NativeBindingCompilationTests
             File.WriteAllText(Path.Combine(root, "InnoEngine.sln"), string.Empty);
             string definition = Path.Combine(root, "bindings.props");
             new XDocument(new XElement("Project",
-                new XElement("PropertyGroup", new XElement("InnoBindingHostConfig", "bindgen.json")),
+                new XElement("PropertyGroup", new XElement("InnoNativeComponentId", "fixture"), new XElement("InnoBindingHostConfig", "bindgen.json")),
                 new XElement("ItemGroup", new XElement("InnoBindingTarget", new XAttribute("Include", "fixture-target"),
                     new XElement("Config", "bindgen.json")))))
                 .Save(definition);
@@ -73,7 +73,7 @@ public sealed class NativeBindingCompilationTests
                 .Where(static path => Path.GetFileName(path) == "Bindings.cs"));
             Assert.Equal(Path.Combine(root, "obj", "Release", "net9.0", "bindings", "Bindings.cs"), selected);
             Assert.True(File.Exists(selected), output);
-            string artifact = Assert.Single(Directory.GetDirectories(Path.Combine(root, "obj", "fixture-target")));
+            string artifact = Assert.Single(Directory.GetDirectories(Path.Combine(root, "artifacts", "bindings", "fixture", "fixture-target")));
             string publishedSource = Path.Combine(artifact, "Generated", "Bindings.cs");
             Assert.Equal(File.ReadAllBytes(publishedSource), File.ReadAllBytes(selected));
             Assert.True(File.Exists(Path.Combine(root, "bin", "Release", "net9.0", "Fixture.dll")), output);

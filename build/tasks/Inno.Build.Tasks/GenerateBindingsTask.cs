@@ -26,6 +26,11 @@ public sealed class GenerateBindingsTask : BuildTask, ICancelableTask
     [Required]
     public string EngineRoot { get; set; } = string.Empty;
     /// <summary>
+    /// Gets or sets the stable component identity declared by the sole binding definition.
+    /// </summary>
+    [Required]
+    public string ComponentId { get; set; } = string.Empty;
+    /// <summary>
     /// Gets or sets the absolute Native owner project, which must belong to this checkout.
     /// </summary>
     [Required]
@@ -111,7 +116,7 @@ public sealed class GenerateBindingsTask : BuildTask, ICancelableTask
             string root = Path.GetFullPath(EngineRoot);
             string project = Path.GetRelativePath(root, Path.GetFullPath(ComponentProject)).Replace('\\', '/');
             string definition = Path.GetRelativePath(root, Path.GetFullPath(BindingDefinition)).Replace('\\', '/');
-            var owner = new NativeComponentDescriptor(Path.GetFileNameWithoutExtension(project), project, project,
+            var owner = new NativeComponentDescriptor(ComponentId, project, project,
                 bindingDefinition: definition);
             var context = new NativeBuildContext(root, "release");
             INativeBindingGenerator generator = new NativeBindingGenerator(DotnetHost);

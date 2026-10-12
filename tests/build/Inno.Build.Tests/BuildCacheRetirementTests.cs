@@ -188,11 +188,8 @@ public sealed class BuildCacheRetirementTests : IDisposable
     {
         OwnedCache owner = AddOwner("native");
         BuildCacheArtifactDescriptor artifact = owner.Add("generation", 3);
-        BuildCacheCleanupPlan bounded = BuildCacheCleanupPlan.Create(m_root, [owner.descriptor],
-            new(0, 0, TimeSpan.FromTicks(1)), retireAll: true);
-        BuildCacheCleanupResult result = await bounded.ExecuteAsync();
-        Assert.True(result.timeLimitReached);
-        Assert.Empty(result.retired);
+        Assert.Throws<TimeoutException>(() => BuildCacheCleanupPlan.Create(m_root, [owner.descriptor],
+            new(0, 0, TimeSpan.FromTicks(1)), retireAll: true));
         using var cancellation = new CancellationTokenSource();
         cancellation.Cancel();
         await Assert.ThrowsAnyAsync<OperationCanceledException>(
@@ -214,6 +211,21 @@ public sealed class BuildCacheRetirementTests : IDisposable
         Assert.Throws<IOException>(() => CreatePlan());
         Assert.True(Directory.Exists(first.directory));
         Assert.True(Directory.Exists(second.directory));
+    }
+
+    [Fact]
+    public async Task UnregisteredProtectionRootsRejectPlanningAndFreshExecution()
+    {
+        OwnedCache owner = AddOwner("native");
+        BuildCacheArtifactDescriptor artifact = owner.Add("generation", 3);
+        string omitted = Path.Combine(owner.descriptor.directory, "omitted-current");
+        Directory.CreateDirectory(omitted);
+        BuildCacheCleanupPlan prior = CreatePlan();
+        owner.roots.Add(omitted);
+        Assert.Throws<InvalidDataException>(() => CreatePlan());
+        await Assert.ThrowsAsync<InvalidDataException>(() => prior.ExecuteAsync().AsTask());
+        Assert.True(Directory.Exists(artifact.directory));
+        Assert.True(Directory.Exists(omitted));
     }
 
     [Fact]

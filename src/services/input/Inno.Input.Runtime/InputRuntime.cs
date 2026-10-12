@@ -40,7 +40,7 @@ public sealed class InputRuntime : RuntimeSubsystem, IInputService
         OwnFrameScope(InputExecutionContext.EnterScope(this));
     }
     /// <summary>
-    /// Releases the storage backend after owned work has quiesced.
+    /// Releases the input backend after its frame scope and owned work have quiesced.
     /// </summary>
     protected override void OnStop() => m_backend.Dispose();
 }

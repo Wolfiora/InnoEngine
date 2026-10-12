@@ -66,6 +66,10 @@ public static class NativeArtifactPublisher
         NativeBuildContext scoped = context.WithIdentity(owner, targetId, workspaceIdentity);
         string intermediate = scoped.GetNativeBuildRoot(owner);
         string destination = Path.Combine(context.engineRoot, "artifacts", "native", component, targetId, fingerprint);
+        var cache = new BuildCachePublisher(Path.Combine(context.engineRoot, "artifacts", "native"));
+        using FileLease cacheUse = await cache.AcquireUseAsync(cancellationToken).ConfigureAwait(false);
+        var workspaces = new BuildCachePublisher(Path.Combine(owner.GetToolchainRoot(context.engineRoot), "obj", "native"));
+        using FileLease workspaceUse = await workspaces.AcquireUseAsync(cancellationToken).ConfigureAwait(false);
         using FileLease ownership = await FileLease.AcquireAsync(intermediate + ".lock",
             Timeout.InfiniteTimeSpan, cancellationToken).ConfigureAwait(false);
         cancellationToken.ThrowIfCancellationRequested();
@@ -75,7 +79,30 @@ public static class NativeArtifactPublisher
         BuildArtifactReadLease? cached = await BuildArtifactReadLease.TryAcquireAsync(
             destination, fingerprint, ["Outputs"], context, cancellationToken).ConfigureAwait(false);
         if (cached is not null)
-            return new(component, targetId, fingerprint, destination, bindingGeneration, cached);
+        {
+            Record(cached, workspaceChanged: false);
+            return new(component, targetId, fingerprint, destination, bindingGeneration, context.toolchain?.sharedLibraryExtension, cached);
+        }
+
+        void Record(
+            BuildArtifactReadLease reading,
+            bool workspaceChanged
+        ) {
+            try
+            {
+                cache.Record(destination, destination + ".read.lock",
+                    bindingGeneration is { artifactDirectory.Length: > 0 } ? [bindingGeneration.artifactDirectory] : [],
+                    component + "/" + targetId + "/" + context.configuration, cancellationToken);
+                if (workspaceChanged && Directory.Exists(intermediate))
+                    workspaces.Record(intermediate, intermediate + ".lock", [],
+                        targetId + "/" + context.configuration, cancellationToken);
+            }
+            catch
+            {
+                reading.Dispose();
+                throw;
+            }
+        }
 
         string staging = destination + ".staging-" + Guid.NewGuid().ToString("N");
         string output = Path.Combine(staging, "Outputs");
@@ -97,9 +124,10 @@ public static class NativeArtifactPublisher
             using (BuildArtifactWriteLease publication = await BuildArtifactWriteLease.AcquireAsync(destination,
                 cancellationToken).ConfigureAwait(false))
                 AtomicDirectory.Install(staging, destination);
-            return new(component, targetId, fingerprint, destination, bindingGeneration,
-                await BuildArtifactReadLease.TryAcquireAsync(destination, fingerprint, ["Outputs"], context, cancellationToken).ConfigureAwait(false)
-                    ?? throw new InvalidDataException("The published Native artifact changed before reading ownership was acquired."));
+            BuildArtifactReadLease reading = await BuildArtifactReadLease.TryAcquireAsync(destination, fingerprint, ["Outputs"], context, cancellationToken).ConfigureAwait(false)
+                ?? throw new InvalidDataException("The published Native artifact changed before reading ownership was acquired.");
+            Record(reading, workspaceChanged: true);
+            return new(component, targetId, fingerprint, destination, bindingGeneration, context.toolchain?.sharedLibraryExtension, reading);
         }
         finally
         {

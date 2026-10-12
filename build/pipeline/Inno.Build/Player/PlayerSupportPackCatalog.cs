@@ -236,9 +236,20 @@ public sealed class PlayerSupportPackCatalog
         }
         else if (verifyInputs is not null)
             await VerifySelectionInputsAsync(verifyInputs, cancellationToken).ConfigureAwait(false);
-        cancellationToken.ThrowIfCancellationRequested();
-        AtomicFile.WriteAllBytes(Path.Combine(targetRoot, "current"), Encoding.UTF8.GetBytes(fingerprint));
-        return AcquireArtifact(destination, fingerprint, target, validator, cancellationToken);
+        PlayerSupportPackLease reading = AcquireArtifact(destination, fingerprint, target, validator, cancellationToken);
+        try
+        {
+            if (verifyInputs is not null)
+                await VerifySelectionInputsAsync(verifyInputs, cancellationToken).ConfigureAwait(false);
+            cancellationToken.ThrowIfCancellationRequested();
+            AtomicFile.WriteAllBytes(Path.Combine(targetRoot, "current"), Encoding.UTF8.GetBytes(fingerprint));
+            return reading;
+        }
+        catch
+        {
+            reading.Dispose();
+            throw;
+        }
     }
 
     private static async ValueTask VerifySelectionInputsAsync(

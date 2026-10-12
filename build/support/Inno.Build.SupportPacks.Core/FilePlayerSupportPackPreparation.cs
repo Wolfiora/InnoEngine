@@ -166,10 +166,14 @@ public sealed class FilePlayerSupportPackPreparation
         PlayerSupportPackBuildContext context,
         string project,
         NativeBuildContext native,
+        PlayerSupportPackPreparationIdentity identity,
         CancellationToken cancellationToken
     ) {
         using ProductNativeBuildResult products = await m_nativePlan.BuildAsync(native, cancellationToken).ConfigureAwait(false);
-        string bindingSelection = Path.Combine(context.stagingDirectory, "BindingSelection.props");
+        using ManagedBuildExecution execution = await identity.CreateExecutionAsync(cancellationToken).ConfigureAwait(false);
+        context = new PlayerSupportPackBuildContext(execution.engineRoot, context.stagingDirectory, context.sdk);
+        project = execution.project;
+        string bindingSelection = Path.Combine(Path.GetDirectoryName(execution.project)!, "obj", "support-pack", "BindingSelection.props");
         NativeBindingGenerationDescriptor.WriteSelection(bindingSelection,
             m_nativePlan.steps.Select((
                 step,
@@ -203,7 +207,7 @@ public sealed class FilePlayerSupportPackPreparation
         PlayerSupportPackFiles.CopyReferences(
             buildOutput,
             Path.Combine(context.stagingDirectory, "References"), Path.GetFileNameWithoutExtension(project));
-        CopyNativeRuntime(products, context.stagingDirectory);
+        await CopyNativeRuntimeAsync(products, context.stagingDirectory, cancellationToken).ConfigureAwait(false);
         string link = Path.Combine(context.stagingDirectory, "PlayerLink");
         Directory.CreateDirectory(link);
         File.Copy(Inno.Core.IO.PathBoundary.Resolve(context.engineRoot, m_templateFile), Path.Combine(link, "Player.csproj"));
@@ -217,6 +221,7 @@ public sealed class FilePlayerSupportPackPreparation
         string runtime = Path.Combine(buildOutput, "BGCS.Runtime.dll");
         File.Copy(runtime, Path.Combine(references, "BGCS.Runtime.dll"));
         await CopyNativeToTemplateAsync(context.stagingDirectory, link, cancellationToken).ConfigureAwait(false);
+        await execution.VerifyAsync(cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -227,11 +232,11 @@ public sealed class FilePlayerSupportPackPreparation
     /// </param>
     public void Validate(string directory) => m_validator.Validate(directory);
 
-    private void CopyNativeRuntime(
+    private async ValueTask CopyNativeRuntimeAsync(
         IReadOnlyList<NativeBuildProduct> products,
-        string staging
+        string staging,
+        CancellationToken cancellationToken
     ) {
-        string destination = Path.Combine(staging, "native");
         foreach (NativeBuildProduct product in products)
         {
             if (product.targetId != m_nativePlatform)
@@ -242,12 +247,7 @@ public sealed class FilePlayerSupportPackPreparation
                     $"Native runtime product '{product.component}' and '{m_target}' is empty.");
             }
         }
-        foreach ((string relative, string source) in m_nativePlan.CreateDeploymentFiles(products))
-        {
-            string output = Path.Combine(destination, relative);
-            Directory.CreateDirectory(Path.GetDirectoryName(output)!);
-            File.Copy(source, output);
-        }
+        await ProductNativeDeployment.InstallAsync(products, m_nativePlan, staging, cancellationToken).ConfigureAwait(false);
     }
 
     private static async ValueTask CopyNativeToTemplateAsync(
@@ -284,7 +284,7 @@ public sealed class FilePlayerSupportPackPreparation
             string stagingDirectory,
             CancellationToken cancellationToken
         ) => owner.ExecuteAsync(new PlayerSupportPackBuildContext(engineRoot, stagingDirectory, sdk),
-            project, native, cancellationToken);
+            project, native, identity, cancellationToken);
     }
 
 }

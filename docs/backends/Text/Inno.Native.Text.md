@@ -67,7 +67,7 @@ public static class FontMeasurement
 
 ## 静态目标
 
-同一项目通过 `text.bridge.browser-wasm.json` 和 `bindgen.browser-wasm.json` 选择 wasm32 ABI 与静态符号解析，复用共同 facade 和映射。目标编译使用 `INNO_STATIC_NATIVE`，不初始化动态 loader。Host profile 通过类型初始化装载对应配置的库。目标 C 桥和 managed 源属于同一 `obj/browser-wasm/<generationFingerprint>`，分别位于 `Native` 和 `Generated/Bindings.cs`，不会覆盖宿主生成物。CMake 中间文件属于 Text 或 Browser toolchain 的目标与指纹目录。
+同一项目通过 `text.bridge.browser-wasm.json` 和 `bindgen.browser-wasm.json` 选择 wasm32 ABI 与静态符号解析，复用共同 facade 和映射。目标编译使用 `INNO_STATIC_NATIVE`，不初始化动态 loader。Host profile 通过类型初始化装载对应配置的库。目标 C 桥和 managed 源属于同一 `artifacts/bindings/text/browser-wasm/<generationFingerprint>`，分别位于 `Native` 和 `Generated/Bindings.cs`，不会覆盖宿主生成物。CMake 中间文件属于 Text 或 Browser toolchain 的目标与指纹目录。
 
 ## 源码归属
 

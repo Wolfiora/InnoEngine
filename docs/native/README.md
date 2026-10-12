@@ -10,7 +10,8 @@ backends/<component>/native/Inno.Native.<component>/
 ├─ Native/Generated                   宿主 C 桥生成物
 ├─ Bindings                           共同定义、明确目标 profile、生成扩展
 ├─ Generated/Bindings.cs              宿主 managed 生成物
-└─ obj/<target>/<generationFingerprint>/
+
+artifacts/bindings/<component>/<target>/<generationFingerprint>/
    ├─ Native                         选定目标桥
    └─ Generated/Bindings.cs           选定目标 managed source
 ```

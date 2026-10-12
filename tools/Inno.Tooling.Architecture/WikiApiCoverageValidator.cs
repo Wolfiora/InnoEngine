@@ -5,6 +5,7 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Xml.Linq;
 using Microsoft.CodeAnalysis;
@@ -41,7 +42,7 @@ internal static class WikiApiCoverageValidator
         var inventory = new List<WikiApiEntry>();
         foreach (WikiProjectPage project in projects.Where(static entry => !entry.isTest))
         {
-            string page = File.ReadAllText(project.page);
+            string page = ReadApiSurface(root, project.page, new HashSet<string>(StringComparer.Ordinal), cancellationToken);
             var seen = new HashSet<string>(StringComparer.Ordinal);
             string directory = Path.GetDirectoryName(project.project)!;
             Compilation? compilation = models.GetCompilation(directory);
@@ -98,6 +99,27 @@ internal static class WikiApiCoverageValidator
             File.WriteAllText(output, JsonSerializer.Serialize(inventory,
                 new JsonSerializerOptions { WriteIndented = true }));
         }
+    }
+
+    private static string ReadApiSurface(
+        string root,
+        string page,
+        HashSet<string> visited,
+        CancellationToken cancellation
+    ) {
+        cancellation.ThrowIfCancellationRequested();
+        string absolute = Path.GetFullPath(page);
+        string relative = Path.GetRelativePath(Path.Combine(root, "docs"), absolute);
+        if (Path.IsPathRooted(relative) || relative == ".."
+            || relative.StartsWith(".." + Path.DirectorySeparatorChar, StringComparison.Ordinal)
+            || Path.GetExtension(absolute) != ".md" || !visited.Add(absolute))
+            throw new InvalidDataException("A Wiki API inclusion must be a unique Markdown page within the current Wiki.");
+        string text = File.ReadAllText(absolute);
+        var content = new StringBuilder(text);
+        foreach (Match include in Regex.Matches(text, @"(?m)^<!-- api-include: (?<path>[^\r\n]+) -->\r?$", RegexOptions.CultureInvariant))
+            content.AppendLine().Append(ReadApiSurface(root, Path.GetFullPath(include.Groups["path"].Value,
+                Path.GetDirectoryName(absolute)!), visited, cancellation));
+        return content.ToString();
     }
 
     private static bool HasUnresolvedContract(ISymbol symbol)

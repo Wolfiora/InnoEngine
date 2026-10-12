@@ -111,7 +111,7 @@ native/Inno.Native.<component>/
   Bindings/<facade>.bridge*.json          C++ 到 C 的桥定义
   Native/Generated                       宿主生成 C 桥
   Generated/Bindings.cs                  宿主单文件 managed 绑定
-  obj/<target>/<generationFingerprint>/
+  artifacts/bindings/<component>/<target>/<generationFingerprint>/
     Native                              目标生成 C 桥
     Generated/Bindings.cs               同一身份的 managed 绑定
     generation-manifest.json            精确文件集合及内容散列

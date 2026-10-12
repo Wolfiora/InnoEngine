@@ -28,6 +28,7 @@ internal static class TaskRuntimeRequestKey
             && assets.Length != 0 && !File.Exists(assets));
         StringComparer paths = OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal;
         var inputs = new HashSet<string>(paths);
+        var restoreRequests = new List<TaskRuntimeRestoreRequest>();
         var declarations = new List<string> { project, artifacts, string.Join(";", targets) };
         // Execution ownership reaches nested tool builds, but is not a compiler input itself.
         // Evaluated source, imports and compiler properties below still capture any derived behavior.
@@ -38,6 +39,25 @@ internal static class TaskRuntimeRequestKey
         {
             cancellation.ThrowIfCancellationRequested();
             var instance = node.ProjectInstance;
+            foreach (var item in instance.GetItems("InnoBuildInputRestoreProject"))
+            {
+                string restoreProject = Path.GetFullPath(item.EvaluatedInclude, Path.GetDirectoryName(instance.FullPath)!);
+                var restoreProperties = new Dictionary<string, string>(instance.GlobalProperties, StringComparer.OrdinalIgnoreCase);
+                string[] removedProperties = item.GetMetadataValue("GlobalPropertiesToRemove")
+                    .Split(';', StringSplitOptions.RemoveEmptyEntries);
+                foreach (string removedProperty in removedProperties)
+                    restoreProperties.Remove(removedProperty);
+                foreach (string declaration in item.GetMetadataValue("AdditionalProperties")
+                    .Split(';', StringSplitOptions.RemoveEmptyEntries))
+                {
+                    int separator = declaration.IndexOf('=');
+                    if (separator <= 0)
+                        throw new ArgumentException("Owned input restore requires name=value properties.");
+                    restoreProperties[declaration[..separator]] = ProjectCollection.Unescape(declaration[(separator + 1)..]);
+                }
+                restoreRequests.Add(new(restoreProject,
+                    new System.Collections.ObjectModel.ReadOnlyDictionary<string, string>(restoreProperties), removedProperties));
+            }
             inputs.Add(instance.FullPath);
             foreach (string import in instance.ImportPaths)
                 inputs.Add(import);
@@ -91,6 +111,7 @@ internal static class TaskRuntimeRequestKey
             foreach (string path in Directory.EnumerateFiles(compiler))
                 inputs.Add(path);
         using var digest = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
+        var hashes = new Dictionary<string, string>(paths);
         foreach (string declaration in declarations)
             digest.AppendData(Encoding.UTF8.GetBytes(declaration + "\n"));
         foreach (string input in inputs.Order(paths))
@@ -98,9 +119,12 @@ internal static class TaskRuntimeRequestKey
             cancellation.ThrowIfCancellationRequested();
             digest.AppendData(Encoding.UTF8.GetBytes(input + "\n"));
             using FileStream stream = File.OpenRead(input);
-            digest.AppendData(SHA256.HashData(stream));
+            byte[] hash = SHA256.HashData(stream);
+            digest.AppendData(hash);
+            hashes.Add(input, Convert.ToHexString(hash));
         }
-        return new TaskRuntimeRequestSnapshot(Convert.ToHexString(digest.GetHashAndReset()), needsRestore);
+        return new TaskRuntimeRequestSnapshot(Convert.ToHexString(digest.GetHashAndReset()), needsRestore,
+            new System.Collections.ObjectModel.ReadOnlyDictionary<string, string>(hashes), declarations.AsReadOnly(), restoreRequests.AsReadOnly());
     }
 
     private static bool IsInputProperty(string name)

@@ -123,7 +123,7 @@ public sealed class BindingGenerationBatchTests : IDisposable
         await Assert.ThrowsAnyAsync<Exception>(async () => await generator.GenerateAsync(
             new NativeBuildContext(m_root, "release"), request, CancellationToken.None));
         Assert.Equal(original, File.ReadAllText(completed[first.nativeProject].bindingsPath));
-        Assert.Single(Directory.GetDirectories(Path.Combine(m_root, "first", "obj", "fixture")));
+        Assert.Single(Directory.GetDirectories(Path.Combine(m_root, "artifacts", "bindings", "first", "fixture")));
         using var cancellation = new CancellationTokenSource();
         cancellation.Cancel();
         await Assert.ThrowsAnyAsync<OperationCanceledException>(async () => await generator.GenerateAsync(
@@ -166,7 +166,7 @@ public sealed class BindingGenerationBatchTests : IDisposable
 
         Assert.Contains(variable, failure.Message);
         Assert.Equal(source, File.ReadAllText(result[component.nativeProject].bindingsPath));
-        Assert.Single(Directory.GetDirectories(Path.Combine(m_root, "sdk-component", "obj", "fixture")));
+        Assert.Single(Directory.GetDirectories(Path.Combine(m_root, "artifacts", "bindings", "sdk-component", "fixture")));
         Assert.Empty(Directory.GetDirectories(m_root, ".bgcs-staging-*", SearchOption.AllDirectories));
     }
 
@@ -209,8 +209,8 @@ public sealed class BindingGenerationBatchTests : IDisposable
         string owner = Path.Combine(m_root, name);
         Directory.CreateDirectory(owner);
         File.WriteAllText(Path.Combine(owner, name + ".csproj"), "<Project />");
-        File.WriteAllText(Path.Combine(owner, "bindings.props"), """
-            <Project><PropertyGroup><InnoBindingHostConfig>bindgen.json</InnoBindingHostConfig></PropertyGroup>
+        File.WriteAllText(Path.Combine(owner, "bindings.props"), $"""
+            <Project><PropertyGroup><InnoNativeComponentId>{name}</InnoNativeComponentId><InnoBindingHostConfig>bindgen.json</InnoBindingHostConfig></PropertyGroup>
             <ItemGroup><InnoBindingTarget Include="fixture"><Config>bindgen.json</Config></InnoBindingTarget></ItemGroup></Project>
             """);
         File.WriteAllText(Path.Combine(owner, "bindgen.json"), """

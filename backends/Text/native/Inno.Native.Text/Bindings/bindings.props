@@ -1,5 +1,6 @@
 <Project>
   <PropertyGroup>
+    <InnoNativeComponentId>text</InnoNativeComponentId>
     <InnoBindingHostConfig>bindgen.json</InnoBindingHostConfig>
     <InnoBindingHostBridge>text.bridge.json</InnoBindingHostBridge>
   </PropertyGroup>

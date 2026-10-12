@@ -420,8 +420,8 @@ internal static partial class ArchitectureRules
             || targetPath.StartsWith("build/pipeline/Inno.Build.Platform.", StringComparison.Ordinal)
             || target.name == "Inno.Build.Managed.DotNet"))
             failures.Add($"{sourcePath}: the build pipeline must receive providers instead of referencing {targetPath}.");
-        if (IsNativeProject(sourcePath) &&
-            !IsNativeProject(targetPath))
+        if (IsNativeProject(sourcePath) && !IsNativeProject(targetPath)
+            && !(project.name == "Inno.Native.LibraryLoading" && target.name == "Inno.Core.IO"))
         {
             failures.Add($"{sourcePath}: Native cannot reference upper-layer project {targetPath}.");
         }

@@ -41,5 +41,5 @@ Editor 构建先校验目标和 SDK，再取得产品/目标/配置对应的独�
 ## 当前限制与验证
 
 Windows x64、macOS ARM64 有 Editor 组合；Linux 没有完整 Editor，默认构建明确拒绝。
-缓存预算与 `clean --scope cache` 的整改尚在进行，不能将产品清理当作缓存回收。
+`clean --scope cache --dry-run` 预览登记 owner 的无引用候选，去掉 `--dry-run` 执行有界退休。`--cache-budget-gib`、`--cache-min-free-gib` 与 `--cache-time-seconds` 覆盖预算；保护集合超过预算时不会强制删除。产品清理与缓存退休分别执行。
 本次产品、性能与运行验收状态见[当前验收](../architecture/CURRENT_ACCEPTANCE.md)。

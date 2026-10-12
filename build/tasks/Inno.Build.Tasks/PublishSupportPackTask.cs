@@ -5,6 +5,7 @@ using Inno.Build;
 using Inno.Build.Composition;
 using Inno.Build.Distribution.Standard;
 using Inno.Build.Toolchains;
+using Inno.Build.SupportPacks;
 using Microsoft.Build.Framework;
 using BuildTask = Microsoft.Build.Utilities.Task;
 
@@ -69,10 +70,12 @@ public sealed class PublishSupportPackTask : BuildTask, ICancelableTask
             var context = new BuildCompositionContext(ToolchainEnvironment.ResolveExecutable(DotnetHost),
                 AppContext.BaseDirectory, execution.host, execution.toolsTarget,
                 new NativeBindingGenerator(ToolchainEnvironment.ResolveExecutable(DotnetHost)));
-            using PlayerSupportPackLease installed = StandardBuildDistribution.Create(context).build.supportPacks.PublishAsync(
+            using PlayerSupportPackPublication installed = StandardBuildDistribution.Create(context).build.supportPacks.PublishAsync(
                 EngineRoot, OutputRoot, new BuildTargetId(Target), DotnetHost, cancellation.Token)
                 .AsTask().GetAwaiter().GetResult();
             Log.LogMessage(MessageImportance.Normal, "Installed Player Support Pack: {0}", installed.directory);
+            foreach (string diagnostic in installed.diagnostics)
+                Log.LogWarning(diagnostic);
             return true;
         }
         catch (Exception failure)

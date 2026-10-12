@@ -1,5 +1,6 @@
 <Project>
   <PropertyGroup>
+    <InnoNativeComponentId>bgfx</InnoNativeComponentId>
     <InnoBindingHostConfig>bindgen.json</InnoBindingHostConfig>
   </PropertyGroup>
 

@@ -41,10 +41,23 @@ internal static class ManagedInputEvaluatorPreparation
         string[] declarations = ["managed-input-evaluator", "net9.0", "Release", sdk.sdkIdentity, code];
         string fingerprint = NativeBuildFingerprint.Create(context, declarations, inputs, cancellation);
         string directory = Path.Combine(context.engineRoot, "artifacts", "build-tools", "managed-inputs", "evaluators", fingerprint);
+        var cache = new BuildCachePublisher(Path.GetDirectoryName(directory)!);
+        using FileLease activity = await cache.AcquireUseAsync(cancellation).ConfigureAwait(false);
         BuildArtifactReadLease? existing = await BuildArtifactReadLease.TryAcquireAsync(directory, fingerprint,
             ["Outputs"], context, cancellation).ConfigureAwait(false);
         if (existing is not null)
-            return new(directory, fingerprint, existing);
+        {
+            try
+            {
+                cache.Record(directory, directory + ".read.lock", [], sdk.sdkIdentity, cancellation);
+                return new(directory, fingerprint, existing);
+            }
+            catch
+            {
+                existing.Dispose();
+                throw;
+            }
+        }
         using (FileLease generation = await FileLease.AcquireAsync(directory + ".generation.lock",
             Timeout.InfiniteTimeSpan, cancellation).ConfigureAwait(false))
         {
@@ -89,8 +102,18 @@ internal static class ManagedInputEvaluatorPreparation
                 }
             }
         }
-        return new(directory, fingerprint, await BuildArtifactReadLease.AcquireAsync(directory,
-            fingerprint, ["Outputs"], cancellation, context).ConfigureAwait(false));
+        BuildArtifactReadLease reading = await BuildArtifactReadLease.AcquireAsync(directory,
+            fingerprint, ["Outputs"], cancellation, context).ConfigureAwait(false);
+        try
+        {
+            cache.Record(directory, directory + ".read.lock", [], sdk.sdkIdentity, cancellation);
+            return new(directory, fingerprint, reading);
+        }
+        catch
+        {
+            reading.Dispose();
+            throw;
+        }
 
         void Verify(string phase)
         {

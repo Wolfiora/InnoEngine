@@ -153,6 +153,7 @@ public sealed class NativeBuildRecipe
         paths.Add(Path.Combine(commonRoot, "Managed", "DotNetSdkEnvironment.cs"));
         paths.Add(Path.Combine(commonRoot, "Cache", "BuildArtifactReadLease.cs"));
         paths.Add(Path.Combine(commonRoot, "Cache", "BuildArtifactWriteLease.cs"));
+        paths.Add(Path.Combine(commonRoot, "Cache", "BuildCachePublisher.cs"));
         string ioRoot = Path.Combine(context.engineRoot, "src", "foundation", "core", "Inno.Core.IO");
         paths.AddRange(new[] { "AtomicDirectory.cs", "AtomicFile.cs", "FileSystemRename.cs", "FileLease.cs", "PathBoundary.cs" }
             .Select(file => Path.Combine(ioRoot, file)));

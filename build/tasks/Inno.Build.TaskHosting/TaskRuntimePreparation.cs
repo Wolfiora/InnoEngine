@@ -6,6 +6,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using Inno.Core.IO;
+using Inno.Build.Toolchains;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 
@@ -20,11 +21,14 @@ internal static class TaskRuntimePreparation
         string cache,
         ITaskItem[] inputs,
         IBuildEngine4 engine,
+        string load,
         CancellationToken cancellation
     ) {
         RuntimeFile[] files = FreezeFiles(inputs);
         string fingerprint = Fingerprint(files);
         string destination = Path.Combine(cache, fingerprint);
+        var publisher = new BuildCachePublisher(cache);
+        using FileLease activity = publisher.AcquireUseAsync(cancellation).AsTask().GetAwaiter().GetResult();
         using FileLease lease = FileLease.AcquireAsync(destination + ".lock", Timeout.InfiniteTimeSpan, cancellation)
             .AsTask().GetAwaiter().GetResult();
         ValidateSources(files, cancellation);
@@ -38,6 +42,8 @@ internal static class TaskRuntimePreparation
             item.SetMetadata("FileHash", file.hash);
             return (ITaskItem)item;
         }).ToArray();
+        publisher.Record(destination, destination + ".lock", [], null, cancellation);
+        RegisterReader(load, Path.Combine(destination, "Runtime", "Inno.Build.Tasks.dll"));
         TaskRuntimeBuildScope.Register(engine, "publication:" + cache + "/" + fingerprint, output);
         return output;
     }
@@ -141,18 +147,20 @@ internal static class TaskRuntimePreparation
         string load,
         string assembly
     ) {
-        RegisterProcessOwner(load);
         Directory.CreateDirectory(load);
         AtomicFile.WriteAllBytes(Path.Combine(load, "source-host.txt"), Encoding.UTF8.GetBytes(assembly));
+        string operation = Path.GetDirectoryName(load)!;
+        string root = Path.GetDirectoryName(operation)!;
+        string host = Path.GetDirectoryName(Path.GetDirectoryName(assembly))!;
+        var hostPublisher = new BuildCachePublisher(Path.GetDirectoryName(host)!);
+        using FileLease activity = hostPublisher.AcquireUseAsync().AsTask().GetAwaiter().GetResult();
+        new BuildCachePublisher(root).RecordProcessUse(operation, operation + ".lock", [host]);
     }
 
     internal static void RegisterProcessOwner(string directory)
     {
         string operation = Path.GetDirectoryName(directory)!;
-        string owners = Path.Combine(operation, "owners");
-        Directory.CreateDirectory(owners);
-        string process = Environment.ProcessId.ToString(System.Globalization.CultureInfo.InvariantCulture);
-        AtomicFile.WriteAllBytes(Path.Combine(owners, process + ".pid"), Encoding.UTF8.GetBytes(process));
+        new BuildCachePublisher(Path.GetDirectoryName(operation)!).RecordProcessUse(operation, operation + ".lock", []);
     }
 
     internal sealed record RuntimeFile(

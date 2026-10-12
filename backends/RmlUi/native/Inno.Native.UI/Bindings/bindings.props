@@ -1,5 +1,6 @@
 <Project>
   <PropertyGroup>
+    <InnoNativeComponentId>ui</InnoNativeComponentId>
     <InnoBindingHostConfig>bindgen.json</InnoBindingHostConfig>
     <InnoBindingHostBridge>rmlui.bridge.json</InnoBindingHostBridge>
   </PropertyGroup>

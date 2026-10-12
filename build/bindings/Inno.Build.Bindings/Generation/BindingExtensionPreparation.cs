@@ -13,7 +13,16 @@ namespace Inno.Build.Bindings;
 
 internal static class BindingExtensionPreparation
 {
-    internal static async ValueTask<string> PrepareAsync(
+    internal sealed class Result(
+        string assembly,
+        BuildArtifactReadLease reading
+    ) : IDisposable {
+        internal string assembly { get; } = assembly;
+        /// <inheritdoc />
+        public void Dispose() => reading.Dispose();
+    }
+
+    internal static async ValueTask<Result> PrepareAsync(
         NativeBuildContext context,
         string project,
         string dotnetHost,
@@ -51,6 +60,8 @@ internal static class BindingExtensionPreparation
         string fingerprint = NativeBuildFingerprint.Create(context, declarations, inputs, cancellation);
         string destination = Path.Combine(context.engineRoot, "artifacts", "build-tools", "bindings", "extensions",
             Path.GetFileNameWithoutExtension(project), fingerprint);
+        var cache = new BuildCachePublisher(Path.Combine(context.engineRoot, "artifacts", "build-tools", "bindings", "extensions"));
+        using FileLease activity = await cache.AcquireUseAsync(cancellation).ConfigureAwait(false);
         using FileLease lease = await FileLease.AcquireAsync(destination + ".lock", Timeout.InfiniteTimeSpan, cancellation).ConfigureAwait(false);
         Verify("extension-lock");
         string output = Path.Combine(destination, "Outputs");
@@ -63,14 +74,19 @@ internal static class BindingExtensionPreparation
                 Directory.CreateDirectory(candidate);
                 string intermediates = Path.Combine(context.engineRoot, "artifacts", "build-tools", "bindings", "intermediate",
                     Path.GetFileNameWithoutExtension(project), fingerprint);
+                var workspaces = new BuildCachePublisher(Path.Combine(context.engineRoot, "artifacts", "build-tools", "bindings", "intermediate"));
+                using FileLease workspaceActivity = await workspaces.AcquireUseAsync(cancellation).ConfigureAwait(false);
+                using FileLease workspaceWriting = await FileLease.AcquireAsync(intermediates + ".lock", Timeout.InfiniteTimeSpan, cancellation).ConfigureAwait(false);
                 context.RecordManagedProcess();
                 await ToolchainEnvironment.RunAsync(sdk.hostPath,
                     [sdk.cliPath, "build", project, "--configuration", "Release", "--output", candidate,
                         "--artifacts-path", intermediates, "--disable-build-servers", "-m:1", "-nodeReuse:false"],
                     context.engineRoot, cancellation, DotNetSdkEnvironment.Create(sdk.hostPath)).ConfigureAwait(false);
+                workspaces.Record(intermediates, intermediates + ".lock", [], Path.GetFileNameWithoutExtension(project) + "/" + sdk.sdkIdentity, cancellation);
                 Verify("extension-build");
                 BuildArtifactManifest.Write(staging, fingerprint, ["Outputs"], context);
                 cancellation.ThrowIfCancellationRequested();
+                using BuildArtifactWriteLease writing = await BuildArtifactWriteLease.AcquireAsync(destination, cancellation).ConfigureAwait(false);
                 AtomicDirectory.Install(staging, destination);
             }
             finally
@@ -82,7 +98,18 @@ internal static class BindingExtensionPreparation
         string assembly = Path.Combine(output, Path.GetFileNameWithoutExtension(project) + ".dll");
         if (!File.Exists(assembly))
             throw new InvalidDataException("The binding extension did not produce its declared assembly.");
-        return assembly;
+        BuildArtifactReadLease reading = await BuildArtifactReadLease.AcquireAsync(destination, fingerprint,
+            ["Outputs"], cancellation, context).ConfigureAwait(false);
+        try
+        {
+            cache.Record(destination, destination + ".read.lock", [], Path.GetFileNameWithoutExtension(project) + "/" + sdk.sdkIdentity, cancellation);
+            return new(assembly, reading);
+        }
+        catch
+        {
+            reading.Dispose();
+            throw;
+        }
 
         void Verify(string phase)
         {

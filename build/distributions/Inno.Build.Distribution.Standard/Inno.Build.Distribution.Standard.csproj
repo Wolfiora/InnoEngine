@@ -6,6 +6,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="../../../backends/Interop/native/Inno.Native.LibraryLoading/Inno.Native.LibraryLoading.csproj" PrivateAssets="compile" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="../../bindings/Inno.Build.Bindings/Inno.Build.Bindings.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../../platforms/Windows/integrations/Inno.Integration.Windows.Bgfx/Inno.Integration.Windows.Bgfx.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../../platforms/MacOS/integrations/Inno.Integration.MacOS.Bgfx/Inno.Integration.MacOS.Bgfx.csproj" PrivateAssets="compile" />

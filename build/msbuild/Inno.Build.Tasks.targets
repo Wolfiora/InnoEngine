@@ -59,7 +59,7 @@
   <Target Name="PrepareInnoBuildTaskHost" DependsOnTargets="PrepareInnoTaskPublisher" Condition="'$(DesignTimeBuild)' != 'true'">
     <Inno.Build.TaskHosting.BuildTaskRuntimeTask
       ProjectFile="$([System.IO.Path]::GetFullPath('$(InnoTaskProject)'))"
-      ArtifactsDirectory="$([System.IO.Path]::GetFullPath('$(InnoTaskArtifacts)/bootstrap'))"
+      ArtifactsDirectory="$([System.IO.Path]::GetFullPath('$(InnoTaskArtifacts)/workspaces/shared'))"
       LoadDirectory="$([System.IO.Path]::GetFullPath('$(InnoTaskLoadDirectory)'))"
       Targets="Restore;PublishInnoBuildTaskHost"
       Properties="$(InnoTaskHostProperties);InnoTaskBootstrapOwner=$(InnoTaskBootstrapOwner)"

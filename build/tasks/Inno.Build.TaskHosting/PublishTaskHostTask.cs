@@ -7,6 +7,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using Inno.Core.IO;
+using Inno.Build.Toolchains;
 using Microsoft.Build.Framework;
 
 namespace Inno.Build.TaskHosting;
@@ -79,6 +80,8 @@ public sealed partial class PublishTaskHostTask : Microsoft.Build.Utilities.Task
             TaskRuntimePreparation.RuntimeFile[] files = FreezeFiles();
             string fingerprint = TaskRuntimePreparation.Fingerprint(files);
             string destination = Path.Combine(cache, fingerprint);
+            var publisherCache = new BuildCachePublisher(cache);
+            using FileLease activity = publisherCache.AcquireUseAsync(cancellation).AsTask().GetAwaiter().GetResult();
             bool prepared = BuildEngine is IBuildEngine4 engine
                 && TaskRuntimeBuildScope.Read(engine, "publication:" + cache + "/" + fingerprint, verifyOutputs: false)
                     is ITaskItem[] publication
@@ -96,6 +99,9 @@ public sealed partial class PublishTaskHostTask : Microsoft.Build.Utilities.Task
                 TaskRuntimePreparation.ValidateSources(files, cancellation);
             }
             PublishedAssembly = Path.Combine(destination, "Runtime", "Inno.Build.Tasks.dll");
+            using (FileLease ownership = FileLease.AcquireAsync(destination + ".lock", Timeout.InfiniteTimeSpan, cancellation)
+                .AsTask().GetAwaiter().GetResult())
+                publisherCache.Record(destination, destination + ".lock", [], null, cancellation);
             RegisterReader(load, PublishedAssembly);
             RetireReaders(owner, destination);
             Log.LogMessage(MessageImportance.Normal, "INNO-TASK-HOST verified {0}", fingerprint);

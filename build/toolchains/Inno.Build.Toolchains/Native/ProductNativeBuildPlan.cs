@@ -24,6 +24,9 @@ public sealed class ProductNativeBuildPlan
     /// <param name="steps">
     /// Unique, dependency-ordered component operations.
     /// </param>
+    /// <param name="deploymentMetadata">
+    /// Optional product-owned metadata preparation, without backend discovery.
+    /// </param>
     /// <exception cref="ArgumentException">
     /// The product, component identity or dependency ordering is invalid.
     /// </exception>
@@ -32,7 +35,8 @@ public sealed class ProductNativeBuildPlan
     /// </exception>
     public ProductNativeBuildPlan(
         string productId,
-        IReadOnlyList<ProductNativeBuildStep> steps
+        IReadOnlyList<ProductNativeBuildStep> steps,
+        NativeDeploymentMetadataFactory? deploymentMetadata = null
     ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(productId);
         ArgumentNullException.ThrowIfNull(steps);
@@ -47,6 +51,7 @@ public sealed class ProductNativeBuildPlan
         this.productId = productId;
         m_steps = steps.ToArray();
         this.steps = Array.AsReadOnly(m_steps);
+        this.deploymentMetadata = deploymentMetadata;
     }
 
     /// <summary>
@@ -58,6 +63,11 @@ public sealed class ProductNativeBuildPlan
     /// Gets the frozen dependency-ordered component closure.
     /// </summary>
     public IReadOnlyList<ProductNativeBuildStep> steps { get; }
+
+    /// <summary>
+    /// Gets the product's explicit metadata preparation, or null when no metadata is required.
+    /// </summary>
+    public NativeDeploymentMetadataFactory? deploymentMetadata { get; }
 
     /// <summary>
     /// Resolves the complete selected source recipe closure before binding generation or native compilation.

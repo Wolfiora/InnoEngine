@@ -63,7 +63,22 @@ public static class ProductNativeDeployment
         cancellationToken.ThrowIfCancellationRequested();
         ValidateProducts(closure, cancellationToken);
         IReadOnlyDictionary<string, string> files = plan.CreateDeploymentFiles(closure);
-        if (HasSameFiles(destination, files, cancellationToken))
+        IReadOnlyDictionary<string, byte[]> contributed = plan.deploymentMetadata?.Invoke(closure, files)
+            ?? new Dictionary<string, byte[]>();
+        var metadata = new Dictionary<string, byte[]>(StringComparer.Ordinal);
+        StringComparer paths = OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal;
+        var payloadPaths = files.Keys.Select(relative => PathBoundary.Resolve(destination, relative)).ToHashSet(paths);
+        var metadataPaths = new HashSet<string>(paths);
+        foreach ((string relative, byte[] content) in contributed)
+        {
+            if (string.IsNullOrWhiteSpace(relative) || relative.Replace('\\', '/').Split('/').Any(static part => part is "" or "." or ".."))
+                throw new InvalidDataException("Native deployment metadata must use literal relative file paths.");
+            string path = PathBoundary.Resolve(destination, relative);
+            if (payloadPaths.Contains(path) || !metadataPaths.Add(path))
+                throw new InvalidDataException("Native deployment metadata cannot replace a payload file.");
+            metadata.Add(relative, content?.ToArray() ?? throw new InvalidDataException("Native deployment metadata has no bytes."));
+        }
+        if (HasSameFiles(destination, files, metadata, cancellationToken))
         {
             ValidateProducts(closure, cancellationToken);
             cancellationToken.ThrowIfCancellationRequested();
@@ -83,6 +98,12 @@ public static class ProductNativeDeployment
                     await source.CopyToAsync(target, cancellationToken).ConfigureAwait(false);
                 if (!OperatingSystem.IsWindows())
                     File.SetUnixFileMode(output, File.GetUnixFileMode(file));
+            }
+            foreach ((string relative, byte[] bytes) in metadata)
+            {
+                string output = PathBoundary.Resolve(staging, relative);
+                Directory.CreateDirectory(Path.GetDirectoryName(output)!);
+                await File.WriteAllBytesAsync(output, bytes, cancellationToken).ConfigureAwait(false);
             }
             ValidateProducts(closure, cancellationToken);
             cancellationToken.ThrowIfCancellationRequested();
@@ -110,6 +131,7 @@ public static class ProductNativeDeployment
     private static bool HasSameFiles(
         string directory,
         IReadOnlyDictionary<string, string> files,
+        IReadOnlyDictionary<string, byte[]> metadata,
         CancellationToken cancellationToken
     ) {
         if (!Directory.Exists(directory))
@@ -118,7 +140,15 @@ public static class ProductNativeDeployment
         foreach (string deployed in PathBoundary.EnumerateFiles(directory))
         {
             cancellationToken.ThrowIfCancellationRequested();
-            if (!files.TryGetValue(Path.GetRelativePath(directory, deployed), out string? source)
+            string relative = Path.GetRelativePath(directory, deployed);
+            if (metadata.TryGetValue(relative, out byte[]? bytes))
+            {
+                if (!File.ReadAllBytes(deployed).AsSpan().SequenceEqual(bytes))
+                    return false;
+                count++;
+                continue;
+            }
+            if (!files.TryGetValue(relative, out string? source)
                 || new FileInfo(deployed).Length != new FileInfo(source).Length)
                 return false;
             using FileStream deployedStream = File.OpenRead(deployed);
@@ -130,6 +160,6 @@ public static class ProductNativeDeployment
             count++;
         }
         cancellationToken.ThrowIfCancellationRequested();
-        return count == files.Count;
+        return count == files.Count + metadata.Count;
     }
 }

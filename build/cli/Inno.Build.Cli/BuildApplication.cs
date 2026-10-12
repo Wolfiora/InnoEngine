@@ -1,4 +1,7 @@
 using System;
+using System.Collections.Generic;
+using System.IO;
+using Inno.Build.Toolchains;
 using System.Threading;
 using System.Threading.Tasks;
 using Inno.Tooling.Architecture;
@@ -10,6 +13,47 @@ namespace Inno.Build.Cli;
 /// </summary>
 public static class BuildApplication
 {
+    /// <summary>
+    /// Inspects the selected SDK's evaluated Build-tool input closure without compiling or preparing Native products.
+    /// </summary>
+    /// <param name="engineRoot">
+    /// The absolute source checkout.
+    /// </param>
+    /// <param name="configuration">
+    /// The explicit Debug or Release compiler configuration.
+    /// </param>
+    /// <param name="dotnetHost">
+    /// The selected managed SDK executable.
+    /// </param>
+    /// <param name="cancellationToken">
+    /// Cancels evaluation and input hashing.
+    /// </param>
+    /// <returns>
+    /// The content identity of the actual source graph, restored dependencies, compiler and SDK.
+    /// </returns>
+    /// <exception cref="IOException">
+    /// A required source, SDK or restored dependency cannot be read.
+    /// </exception>
+    /// <exception cref="InvalidOperationException">
+    /// The SDK cannot evaluate the current graph.
+    /// </exception>
+    /// <exception cref="OperationCanceledException">
+    /// Inspection was canceled.
+    /// </exception>
+    public static async Task<string> ReadInputIdentityAsync(
+        string engineRoot,
+        string configuration,
+        string dotnetHost,
+        CancellationToken cancellationToken
+    ) {
+        string project = Path.Combine(engineRoot, "build", "cli", "Inno.Build.Cli", "Inno.Build.Cli.csproj");
+        DotNetSdkDescriptor sdk = await DotNetSdkResolver.ResolveAsync(dotnetHost, project, cancellationToken).ConfigureAwait(false);
+        ManagedBuildInputSnapshot snapshot = await ManagedBuildInputSnapshot.CaptureAsync(
+            new NativeBuildContext(engineRoot, configuration.ToLowerInvariant()), sdk, project,
+            new Dictionary<string, string> { ["Configuration"] = configuration }, cancellationToken).ConfigureAwait(false);
+        return snapshot.fingerprint;
+    }
+
     /// <summary>
     /// Runs one build command without taking ownership of the caller's cancellation source.
     /// </summary>
@@ -66,7 +110,8 @@ public static class BuildApplication
                         "shader" => ["assets", "shader", "renderer", "output"],
                         _ => []
                     };
-                    parsed.Validate(["engine-root", "dotnet", "target", "tools-target", "configuration", ..specific]);
+                    parsed.Validate(["engine-root", "dotnet", "target", "tools-target", "configuration",
+                        "cache-budget-gib", "cache-min-free-gib", "cache-time-seconds", ..specific]);
                     var context = new BuildCommandContext(parsed);
                     switch (command)
                     {
@@ -75,6 +120,17 @@ public static class BuildApplication
                         case "bindings": await BindingCommand.RunAsync(context, parsed, cancellationToken); break;
                         case "support-pack": await SupportPackCommand.RunAsync(context, parsed, cancellationToken); break;
                         case "shader": await ShaderCommand.RunAsync(context, parsed, cancellationToken); break;
+                    }
+                    if (command is "editor" or "support-pack" or "bindings" or "shader")
+                    {
+                        try
+                        {
+                            await CleanCommand.CleanCachesAsync(context, parsed, automatic: true, cancellationToken).ConfigureAwait(false);
+                        }
+                        catch (Exception cleanupFailure)
+                        {
+                            Console.Error.WriteLine($"Build succeeded; automatic cache cleanup was deferred: {cleanupFailure.Message}");
+                        }
                     }
                     return 0;
                 default:

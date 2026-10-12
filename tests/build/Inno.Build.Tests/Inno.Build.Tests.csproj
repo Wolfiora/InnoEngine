@@ -9,6 +9,10 @@
   <!-- Wiki script references use the same shared feature closure as real Editor products. -->
   <Import Project="../../../src/composition/editor/EditorProduct.props" />
   <ItemGroup>
+    <ProjectReference Include="../../../backends/Interop/native/Inno.Native.LibraryLoading/Inno.Native.LibraryLoading.csproj" PrivateAssets="compile" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="../../../entry/Inno.Entry.Bootstrap/Inno.Entry.Bootstrap.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../../backends/Sdl3/build/Inno.Build.Toolchains.Sdl3/Inno.Build.Toolchains.Sdl3.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../../backends/MiniAudio/build/Inno.Build.Toolchains.MiniAudio/Inno.Build.Toolchains.MiniAudio.csproj" PrivateAssets="compile" />

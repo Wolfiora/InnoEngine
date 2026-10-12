@@ -2,6 +2,11 @@
   <!-- Only the binding owner consumes its selection as a compilation input. -->
   <Import Project="$(InnoNativeBindingSelection)" Condition="'$(BindGenGeneratedBindings)' == 'true' and '$(InnoNativeBindingSelection)' != '' and Exists('$(InnoNativeBindingSelection)')" />
   <Import Project="$(MSBuildThisFileDirectory)build/msbuild/Inno.Build.Tasks.targets" />
+  <ItemGroup Condition="'$(BindGenGeneratedBindings)' == 'true'">
+    <InnoBuildInputProject Include="$(InnoTaskPublisherProject)">
+      <GlobalPropertiesToRemove>$(InnoTaskExcludedProperties);RuntimeIdentifier;InnoNativeTarget;InnoProductBuildProperties;InnoNativeBindingSelection;InnoNativeBuildFingerprint</GlobalPropertiesToRemove>
+    </InnoBuildInputProject>
+  </ItemGroup>
 
   <PropertyGroup>
     <InnoInteropRuntimeTarget Condition="'$(InnoNativeTarget)' == ''">neutral</InnoInteropRuntimeTarget>
@@ -22,6 +27,7 @@
     </ProjectReference>
     <!-- Only the project declaring the dependency owns its isolated restore. -->
     <_InnoDirectInteropRuntimeReference Include="@(ProjectReference->WithMetadataValue('FullPath', '$(InnoInteropRuntimeProject)'))" />
+    <InnoBuildInputRestoreProject Include="@(_InnoDirectInteropRuntimeReference)" />
   </ItemGroup>
 
   <!-- Path-based restore does not retain project-reference properties across graph traversal. -->
@@ -36,7 +42,7 @@
   <Target Name="RestoreInnoInteropRuntimeOwned"
           AfterTargets="RestoreInnoInteropRuntime"
           DependsOnTargets="PrepareInnoTaskPublisher"
-          Condition="'@(_InnoInteropRuntimeReference)' != ''">
+          Condition="'@(_InnoInteropRuntimeReference)' != '' and '$(InnoInteropRuntimeRestore)' != 'false'">
     <Inno.Build.TaskHosting.RestoreOwnedProjectTask
       Projects="@(_InnoInteropRuntimeReference)"
       LockPath="$(MSBuildThisFileDirectory)artifacts/managed/restore-graphs/write.lock" />
@@ -136,7 +142,7 @@
   <Target Name="BuildBindingGenerator" DependsOnTargets="ValidateBindingGenerator;PrepareInnoBuildTaskHost" Condition="'$(BindGenGeneratedBindings)' == 'true' and '$(DesignTimeBuild)' != 'true'" />
 
   <Target Name="GenerateBindings" DependsOnTargets="BuildBindingGenerator" Condition="'$(BindGenGeneratedBindings)' == 'true' and '$(DesignTimeBuild)' != 'true'">
-    <Inno.Build.Tasks.GenerateBindingsTask EngineRoot="$(InnoBindingEngineRoot)" ComponentProject="$(MSBuildProjectFullPath)"
+    <Inno.Build.Tasks.GenerateBindingsTask EngineRoot="$(InnoBindingEngineRoot)" ComponentProject="$(MSBuildProjectFullPath)" ComponentId="$(InnoNativeComponentId)"
         BindingDefinition="$(InnoBindingDefinition)" TargetId="$(InnoBindingTargetId)" OutputMode="$(InnoBindingOutputMode)"
         DotnetHost="$(InnoBindingDotnetHost)" DescriptorOutputPath="$(BindGenDescriptorOutput)" ExpectedFingerprint="$(BindGenExpectedFingerprint)">
       <Output TaskParameter="GeneratedBindings" PropertyName="BindGenGeneratedSource" />
@@ -155,7 +161,7 @@
   </Target>
 
   <Target Name="CheckBindings" DependsOnTargets="BuildBindingGenerator" Condition="'$(BindGenGeneratedBindings)' == 'true' and '$(DesignTimeBuild)' != 'true'">
-    <Inno.Build.Tasks.GenerateBindingsTask EngineRoot="$(InnoBindingEngineRoot)" ComponentProject="$(MSBuildProjectFullPath)"
+    <Inno.Build.Tasks.GenerateBindingsTask EngineRoot="$(InnoBindingEngineRoot)" ComponentProject="$(MSBuildProjectFullPath)" ComponentId="$(InnoNativeComponentId)"
         BindingDefinition="$(InnoBindingDefinition)" TargetId="$(InnoBindingTargetId)" OutputMode="$(InnoBindingOutputMode)"
         DotnetHost="$(InnoBindingDotnetHost)" CheckOnly="true" ExpectedFingerprint="$(BindGenExpectedFingerprint)" />
   </Target>

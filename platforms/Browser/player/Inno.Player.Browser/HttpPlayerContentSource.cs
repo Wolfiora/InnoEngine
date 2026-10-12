@@ -22,7 +22,18 @@ internal sealed class HttpPlayerContentSource : IPlayerContentSource
         m_client = client ?? throw new ArgumentNullException(nameof(client));
     }
 
-    /// <inheritdoc />
+    /// <summary>
+    /// Reads independently owned deployment metadata from the platform's explicit content source.
+    /// </summary>
+    /// <param name="cancellationToken">
+    /// Cancels acquisition before content preparation starts.
+    /// </param>
+    /// <returns>
+    /// Owned manifest and catalog bytes; missing, unreadable or oversized documents fail the operation.
+    /// </returns>
+    /// <exception cref="System.OperationCanceledException">
+    /// Metadata acquisition was canceled.
+    /// </exception>
     public async ValueTask<PlayerContentMetadata> ReadMetadataAsync(CancellationToken cancellationToken = default)
     {
         using MemoryStream manifest = await DownloadAsync("runtime.manifest", C_METADATA_LIMIT, cancellationToken);
@@ -31,7 +42,30 @@ internal sealed class HttpPlayerContentSource : IPlayerContentSource
             catalog.GetBuffer().AsSpan(0, checked((int)catalog.Length)));
     }
 
-    /// <inheritdoc />
+    /// <summary>
+    /// Opens the catalog's exact pack through this platform's verified content reader.
+    /// </summary>
+    /// <param name="pack">
+    /// The exact validated deployment identity; no other pack is substituted.
+    /// </param>
+    /// <param name="scope">
+    /// The required application namespace for cache isolation.
+    /// </param>
+    /// <param name="serialization">
+    /// The active serialization generation borrowed during preparation.
+    /// </param>
+    /// <param name="cancellationToken">
+    /// Cancels acquisition before store ownership transfers.
+    /// </param>
+    /// <returns>
+    /// A caller-owned immutable content store; dispose it after all consumers and leases finish.
+    /// </returns>
+    /// <exception cref="System.IO.InvalidDataException">
+    /// Pack inventory, lengths or content hashes fail validation.
+    /// </exception>
+    /// <exception cref="System.OperationCanceledException">
+    /// Preparation was canceled.
+    /// </exception>
     public async ValueTask<IRuntimeContentStore> PrepareAsync(
         ContentPackDescriptor pack,
         StorageScope scope,

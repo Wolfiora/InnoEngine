@@ -64,7 +64,7 @@ Core Events 是唯一事件机制；跨代 live object 经 Identity 解析。Mis
 | 内容 | Owner |
 | --- | --- |
 | facade / BGCS 定义 / 宿主绑定 | `backends/<component>/native/Inno.Native.*/`。 |
-| 目标桥与 managed source | Native 项目 `obj/<target>/<generationFingerprint>/`。 |
+| 目标桥与 managed source | `artifacts/bindings/<component>/<target>/<generationFingerprint>/`。 |
 | CMake/object 中间态 | 所属 backend toolchain `obj/native/<target>/<workspaceIdentity>/`，兼容输入复用同一工作目录。 |
 | 已校验 Native 产物 | `artifacts/native/<component>/<target>/<artifactFingerprint>/`。 |
 | Support Pack | 所选 Pack root 的 `<target>/<contentFingerprint>/`；内容包含发布引用与链接输入。 |

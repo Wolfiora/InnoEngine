@@ -2,7 +2,7 @@
 
 [Native 索引](README.md) · [构建验收](../build/Inno.Build.Cli.md) · [Wiki 首页](../README.md)
 
-每个 `Inno.Native.XXX` 项目独立拥有 BGCS 配置与两个 MSBuild 入口。宿主生成结果为同一项目的 `Generated/Bindings.cs`，明确目标 profile 使用 `obj/<target>/<generationFingerprint>/Generated/Bindings.cs`。
+每个 `Inno.Native.XXX` 项目独立拥有 BGCS 配置与两个 MSBuild 入口。宿主生成结果为同一项目的 `Generated/Bindings.cs`，明确目标 profile 使用 `artifacts/bindings/<component>/<target>/<generationFingerprint>/Generated/Bindings.cs`。
 目标构建先解析实际输入身份，再检查对应生成物的精确文件集合及 SHA-256；文件损坏或输入变化时重新生成。
 普通宿主 `dotnet build` 只在 checked-in 文件缺失时生成。文件头的 `ABI reference target` 记录解析目标，不代表其他目标已通过 ABI 验收。
 
@@ -13,12 +13,12 @@ BGCS 已生成明确宽度、所有权和转换的 ABI carrier；运行时不得
 以 SDL3 为例，在仓库根目录运行：
 
 ```shell
-dotnet build native/Inno.Native.Sdl3/Inno.Native.Sdl3.csproj -t:GenerateBindings -c Release
-dotnet build native/Inno.Native.Sdl3/Inno.Native.Sdl3.csproj -t:CheckBindings -c Release
-dotnet build native/Inno.Native.Sdl3/Inno.Native.Sdl3.csproj -c Release
+dotnet build backends/Sdl3/native/Inno.Native.Sdl3/Inno.Native.Sdl3.csproj -t:GenerateBindings -c Release
+dotnet build backends/Sdl3/native/Inno.Native.Sdl3/Inno.Native.Sdl3.csproj -t:CheckBindings -c Release
+dotnet build backends/Sdl3/native/Inno.Native.Sdl3/Inno.Native.Sdl3.csproj -c Release
 ```
 
-其他项目只需替换 `.csproj` 路径。`GenerateBindings` 运行该项目的 BGCS 配置；`CheckBindings` 在临时目录重新生成并比较当前文件，不改写 `Generated/`。默认查找同级的 `BindGen-CS` 仓库；若位置不同，加上 `-p:BindGenRoot=/absolute/path/to/BindGen-CS`。直接使用所选 SDK 的 dotnet 可执行文件，不通过另一套生成器 Program 或固定 SDK 路径。
+其他项目只需替换 `.csproj` 路径。`GenerateBindings` 运行该项目的 BGCS 配置；`CheckBindings` 在临时目录重新生成并比较当前文件，不改写 `Generated/`。默认使用 `dependencies/BindGen-CS` 的固定 revision；生成规则与引擎产品 targets 隔离。直接使用所选 SDK 的 dotnet 可执行文件，不通过另一套生成器 Program 或固定 SDK 路径。
 
 | 项目 | 项目内配置 | 项目内特殊扩展 |
 | --- | --- | --- |
@@ -40,11 +40,11 @@ Cpp2C 的主机编译器与 BGCS 的 libclang 必须使用兼容的标准库和 
 
 ## 目标 profile 与输出隔离
 
-Bgfx、Sdl3、MiniAudio、Text、UI 各只有一个 Native 项目。Bindings/common.json 保存共同声明与映射，bindgen.json 为宿主 profile，bindgen.browser-wasm.json 为 wasm32/static profile；后者的实际输出由 Task 的输入指纹确定，为各项目 `obj/browser-wasm/<generationFingerprint>/Generated/Bindings.cs`，不覆盖宿主 `Generated/Bindings.cs`。所有文件来自 BGCS，不手写 DllImport 或修改生成代码。
+Bgfx、Sdl3、MiniAudio、Text、UI 各只有一个 Native 项目。Bindings/common.json 保存共同声明与映射，bindgen.json 为宿主 profile，bindgen.browser-wasm.json 为 wasm32/static profile；后者的实际输出由 Task 的输入指纹确定，为`artifacts/bindings/<component>/browser-wasm/<generationFingerprint>/Generated/Bindings.cs`，不覆盖宿主 `Generated/Bindings.cs`。所有文件来自 BGCS，不手写 DllImport 或修改生成代码。
 
 InnoNativeTarget 通过 ProjectReference 传播，bin/obj 按目标隔离。UI Cpp2C 的 rmlui.bridge.browser-wasm.json 继承相同 facade 定义并使用实际 Emscripten sysroot；不会在 Web profile 中混用主机 C++ 头文件。Cpp2C 的 include/sysroot/compiler 配置支持环境变量展开，与生成器配置的路径语义一致。
 
-UI 的目标 C++ 桥输出为所属 Native 项目的 `obj/browser-wasm/<generationFingerprint>/Native`，宿主桥仍为 `Native/Generated`。
+UI 的目标 C++ 桥输出为`artifacts/bindings/ui/browser-wasm/<generationFingerprint>/Native`，宿主桥仍为 `Native/Generated`。
 目标桥和 managed binding 在共同 staging 内完成后一起提交；失败和取消不改变已完成的 generation。
 MSBuild 使用 `GeneratedBindings` 输出参数选择 Compile item，避免沿用调用前求值的固定路径。
 目标生成完成后按 Compile item 身份移除原绑定，再加入选中的源；编译前要求恰好一份 `Bindings.cs`。

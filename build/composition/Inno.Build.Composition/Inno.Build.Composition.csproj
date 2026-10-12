@@ -8,6 +8,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="../../../src/foundation/core/Inno.Core.Logging/Inno.Core.Logging.csproj" PrivateAssets="compile" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="../../toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj" />
     <ProjectReference Include="../../pipeline/Inno.Build/Inno.Build.csproj" />
     <ProjectReference Include="../../managed/Inno.Build.Managed/Inno.Build.Managed.csproj" />

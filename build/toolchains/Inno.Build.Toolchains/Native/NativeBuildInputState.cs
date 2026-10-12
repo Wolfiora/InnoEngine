@@ -68,6 +68,12 @@ internal sealed class NativeBuildInputState
             return m_initialInputs.GetFrozenHash(path);
     }
 
+    internal NativeInputSnapshot CaptureRecordedInputs(string engineRoot)
+    {
+        lock (m_gate)
+            return m_initialInputs.CaptureRecordedInputs(engineRoot);
+    }
+
     internal void RecordReuse(string phase)
     {
         lock (m_gate)

@@ -23,6 +23,7 @@ public sealed class BindingToolchainTaskTests : IDisposable
         var task = new GenerateBindingsTask
         {
             EngineRoot = m_root,
+            ComponentId = "fixture",
             ComponentProject = Path.Combine(m_root, "Fixture.csproj"),
             BindingDefinition = Path.Combine(m_root, "bindings.props"),
             TargetId = "unregistered-fixture",

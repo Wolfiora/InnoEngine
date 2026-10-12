@@ -37,7 +37,7 @@ Browser 目标稳定 ID 仍是 `browser-wasm`，描述明确为 wasm32；这个 
 
 SDL、BGFX、MiniAudio、Text、RmlUi 在各自 backend 维护一份源码。组件的 StaticLibraries.cmake 声明自己的源、依赖、语义选项和 archive；Browser 聚合只组合选定组件、SDK约束、异常/longjmp及最终链接要求。
 
-目标 C 桥与 managed 单文件位于 Native owner 的 `obj/browser-wasm/<generationFingerprint>`。Browser managed 发布消费同一次准备的 BindingSelection，发现身份不一致时失败。CMake 中间态属于 Browser 构建 owner 的 `obj/native`；完整 archive 闭包按目标/指纹位于 artifacts，不覆盖宿主生成物。
+目标 C 桥与 managed 单文件位于 `artifacts/bindings/<component>/browser-wasm/<generationFingerprint>`。Browser managed 发布消费同一次准备的 BindingSelection，发现身份不一致时失败。CMake 中间态属于 Browser 构建 owner 的 `obj/native`；完整 archive 闭包按目标/指纹位于 artifacts，不覆盖宿主生成物。
 
 `wasm_sjlj_shim.c` 属于当前 SDK 的 ABI/link 边界，不能进入玩法或服务层。更换 runtime/SDK 必须重新验收 interop、异常、回调和最终链接，不能凭成功编译声称可运行。
 

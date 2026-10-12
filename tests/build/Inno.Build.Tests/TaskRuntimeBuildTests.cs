@@ -76,7 +76,7 @@ public sealed class TaskRuntimeBuildTests : IDisposable
         RecordingEngine engine = new(() => true);
         BuildTaskRuntimeTask canceled = CreateTask(engine);
         using (FileLease lease = await FileLease.AcquireAsync(
-            Path.Combine(m_root, "bootstrap", "build.lock"), TimeSpan.FromSeconds(10)))
+            Path.Combine(m_root, "bootstrap") + ".lock", TimeSpan.FromSeconds(10)))
         {
             Task<bool> execution = Task.Factory.StartNew(canceled.Execute,
                 CancellationToken.None, TaskCreationOptions.LongRunning, TaskScheduler.Default);
@@ -265,6 +265,24 @@ public sealed class TaskRuntimeBuildTests : IDisposable
         Assert.Equal(2, engine.builds);
     }
 
+    [Fact]
+    public void DeclaredIndependentRestoresFinishBeforeCompilationAndAreNotRepeatedOnReuse()
+    {
+        string dependency = Path.Combine(m_root, "Dependency.csproj");
+        File.WriteAllText(dependency, "<Project />");
+        File.WriteAllText(m_project, "<Project><ItemGroup><Compile Include=\"source.cs\" />"
+            + "<InnoBuildInputRestoreProject Include=\"Dependency.csproj\">"
+            + "<AdditionalProperties>OwnedRestore=true</AdditionalProperties></InnoBuildInputRestoreProject>"
+            + "</ItemGroup></Project>");
+        var engine = new RecordingEngine(static () => true);
+        Assert.True(CreateTask(engine).Execute(), string.Join("\n", engine.errors));
+        Assert.Equal(new[] { m_project + ":Restore", dependency + ":Restore", m_project + ":PublishInnoBuildTaskHost" }, engine.requests);
+        Assert.Equal("false", engine.properties!["InnoInteropRuntimeRestore"]);
+        Assert.True(CreateTask(engine).Execute(), string.Join("\n", engine.errors));
+        Assert.Equal(3, engine.requests.Count);
+        Assert.Equal(1, engine.builds);
+    }
+
     private BuildTaskRuntimeTask CreateTask(RecordingEngine engine)
     {
         engine.outputPath = Path.Combine(m_root, "Inno.Build.Tasks.dll");
@@ -294,6 +312,7 @@ public sealed class TaskRuntimeBuildTests : IDisposable
         internal IDictionary? properties { get; private set; }
         internal IList<string>? removed { get; private set; }
         internal ConcurrentBag<BuildErrorEventArgs> errors { get; } = [];
+        internal List<string> requests { get; } = [];
         public bool ContinueOnError => false;
         public int LineNumberOfTaskNode => 0;
         public int ColumnNumberOfTaskNode => 0;
@@ -314,13 +333,15 @@ public sealed class TaskRuntimeBuildTests : IDisposable
             bool returnTargetOutputs
         ) {
             Assert.True(reacquired);
-            Interlocked.Increment(ref m_builds);
+            requests.Add(projects[0] + ":" + string.Join(";", targets));
+            if (returnTargetOutputs)
+                Interlocked.Increment(ref m_builds);
             properties = globalProperties[0];
             removed = removeGlobalProperties[0];
             TaskItem output = new(outputPath);
             output.SetMetadata("FileHash", Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(outputPath))));
             output.SetMetadata("RelativePath", "Inno.Build.Tasks.dll");
-            return new(m_build(), [new Dictionary<string, ITaskItem[]> { [targets[^1]] = [output] }]);
+            return new(!returnTargetOutputs || m_build(), [new Dictionary<string, ITaskItem[]> { [targets[^1]] = [output] }]);
         }
 
         public object GetRegisteredTaskObject(

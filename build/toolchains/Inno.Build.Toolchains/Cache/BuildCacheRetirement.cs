@@ -29,6 +29,8 @@ internal static class BuildCacheRetirement
         long reclaimed = 0;
         Stopwatch elapsed = Stopwatch.StartNew();
         bool limited = false;
+        using var bounded = CancellationTokenSource.CreateLinkedTokenSource(cancellation);
+        bounded.CancelAfter(policy.timeBudget);
         try
         {
             foreach (BuildCacheOwnerDescriptor owner in owners.OrderBy(static entry => entry.coordinationPath, StringComparer.Ordinal))
@@ -47,10 +49,11 @@ internal static class BuildCacheRetirement
                     return new([], proposed.Keys, failures, 0, false);
                 }
             }
-            BuildCacheInventory fresh = BuildCacheInventory.Read(workspace, owners, cancellation);
+            BuildCacheInventory fresh = BuildCacheInventory.Read(workspace, owners, bounded.Token);
             HashSet<string> protectedPaths = fresh.Protect(fresh.roots);
+            protectedPaths.UnionWith(fresh.Protect(fresh.artifacts.Keys.Except(proposed.Keys, BuildCacheInventory.pathComparer)));
             var active = new List<string>();
-            foreach (string path in fresh.artifacts.Keys.Where(path => !protectedPaths.Contains(path)).Order(StringComparer.Ordinal))
+            foreach (string path in fresh.artifacts.Keys.Where(path => proposed.ContainsKey(path) && !protectedPaths.Contains(path)).Order(StringComparer.Ordinal))
             {
                 cancellation.ThrowIfCancellationRequested();
                 if (elapsed.Elapsed >= policy.timeBudget)
@@ -118,6 +121,10 @@ internal static class BuildCacheRetirement
             }
             skipped.UnionWith(proposed.Keys.Except(retired, BuildCacheInventory.pathComparer));
             return new(retired, skipped, failures, reclaimed, limited);
+        }
+        catch (OperationCanceledException) when (!cancellation.IsCancellationRequested)
+        {
+            return new(retired, proposed.Keys.Except(retired, BuildCacheInventory.pathComparer), failures, reclaimed, true);
         }
         finally
         {

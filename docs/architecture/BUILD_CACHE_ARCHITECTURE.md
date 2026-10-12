@@ -13,14 +13,14 @@
 | `extern/` | 第三方源代码；构建只读 |
 | `backends/<组件>/native/<项目>/Bindings/` | 当前组件的生成定义和配置 |
 | `backends/<组件>/native/<项目>/Generated/` | HostSource 的 managed 生成输出 |
-| `backends/<组件>/native/<项目>/obj/<target>/<fingerprint>/` | 当前 TargetArtifacts 生成缓存；含 Native、Generated 和完整性清单 |
+| `artifacts/bindings/<component>/<target>/<fingerprint>/` | 当前 TargetArtifacts 生成缓存；含 Native、Generated 和完整性清单 |
 | `backends/<组件>/build/<项目>/obj/native/<target>/<workspaceIdentity>/` | 当前组件的固定输入副本与可复用 Native 编译工作目录 |
 | `artifacts/native/<component>/<target>/<fingerprint>/` | 验证后的 Native 成品 |
 | Support Pack root 下的 `<target>/<fingerprint>/` | 完整发布输入；`current` 原子选择当前内容身份 |
 | `artifacts/products/editor/<target>/<configuration>/ready.json` | Editor 部署文件清单与内容哈希；不代替 Native 缓存验证 |
 | `artifacts/build-tools/tasks/` | Task 引导工作目录、不可变运行闭包和私有载入目录 |
 
-目标绑定缓存尚未统一迁至 `artifacts/bindings`；这里记录当前实现。不得同时建立第二条旧目录读取路径。
+目标绑定统一由显式组件 ID 选择。MSBuild 与直接生成读取同一份 `Bindings/bindings.props`，不存在旧目录读取路径。
 
 Windows 工具执行可能使用用户 Temp 下的短路径 junction。它指向组件实际工作目录，由 `ToolchainWorkingDirectory` 取得独占使用权；进程停止后释放别名，保留实际输入和编译结果。别名与真实目录不能重复计入磁盘占用。
 
@@ -52,21 +52,25 @@ MSBuild 的 `MaterializeBindingsTask` 在保护期间把选定绑定复制到 SD
 - Native 和绑定输出通过完整文件集合与内容哈希验证；支持共享读取与独占修复协调。
 - Support Pack 在准备前计算实际输入身份，查询准备索引，并验证完整 Pack 内容后取得读取保护；真实 Windows 第二次请求已确认跳过实际准备。
 - Task runtime 已有 Build 生命周期成功结果复用；同一根构建的轻量 publisher 共用编译 owner，各消费边界仍使用独立载入目录。跨入口准备、产品构建和私有 Task 构建的成本仍需分别测量。
-- 缓存预算与退休基础契约已有实现和回归；实际 publisher/产品保护根登记、压力回收和 `clean --scope cache` 仍未接入，自动回收尚未启用。
+- Native、目标绑定、Support Pack、managed workspace、图求值工具、生成扩展及 Task 缓存发布者通过 `BuildCachePublisher` 登记实际产物、读取锁和当前根；标准发行提供这些 owner，CLI 支持 `clean --scope cache --dry-run` 及实际清理。成功 Editor、绑定、Shader 或 Pack 命令执行有界压力回收。
 
 ## 退休契约
 
 `BuildCacheOwnerDescriptor` 明确登记一个 publisher 的物理边界、持久协调 lease、产物清单及当前保护根。清理机制不通过目录名、后缀或时间戳猜测 owner。登记者必须提供真实的所有权证据，在同一协调 lease 下更新根，并在更新期间保留所引用产物的读取保护。
 
-`BuildCacheArtifactDescriptor` 是只读的目录、真实 producer/reader lease、文件大小、最后使用时间及依赖描述。Native 成品可以提供自己的读取保护路径，可复用 workspace 提供既有编译独占 lease；清理不会另猜一个锁。时间仅决定回收顺序，不参与缓存完整性判断。当前根及其全部依赖受保护；无法确认的依赖、重叠所有权、位于待删目录中的锁或循环依赖会在删除前失败。
+`BuildCacheArtifactDescriptor` 是只读的目录、真实 producer/reader lease、发布者在写权限下记录的文件大小、最后使用时间及依赖描述。预算读取登记大小，完整性仍独立验证实际文件集合与内容哈希；大小不是缓存有效性的证据。Native 成品可以提供自己的读取保护路径，可复用 workspace 提供既有编译独占 lease；清理不会另猜一个锁。时间仅决定回收顺序，不参与缓存完整性判断。当前根及其全部依赖受保护；无法确认的依赖、重叠所有权、位于待删目录中的锁或循环依赖会在删除前失败。
 
 `BuildCacheCleanupPlan` 冻结预览候选。执行时重新读取 owner 清单和保护根，以零等待取得独占 artifact lease；活动 reader 或正在更新的 owner 会使对应工作跳过。活动父产物即使不在预算候选中，其依赖也会被保护。失败的父产物同样保留依赖。持久锁文件始终留在原位置。
 
-`BuildCachePolicy` 默认使用 64 GiB 的登记文件预算、20 GiB 的实际磁盘空闲阈值及 5 秒的退休工作预算。达到时间预算后不开始下一项操作，已经执行的文件系统操作仍须完成。当前保护集合超过预算时，不强制删除。
+`BuildCachePolicy` 默认使用 64 GiB 的登记文件预算、20 GiB 的实际磁盘空闲阈值及 5 秒的完整清理操作预算（包含清单读取）。达到时间预算后不开始下一项操作，已经执行的文件系统操作仍须完成。当前保护集合超过预算时，不强制删除。
 
 `BuildCacheCleanupResult.retiredBytes` 是已删除产物声明的逻辑文件大小，不是实际释放的磁盘块数。Hardlink、压缩及其他进程活动会影响真实回收量；磁盘报告必须另行记录卷的实际可用空间。
 
-以上是当前可供构建 owner 接入的公开机制。标准发行和 CLI 的完整登记链尚未接入，不能据此使用尚未实现的缓存清理命令。
+登记记录保存于 publisher 根目录，不进入产物内容哈希。发布者在实际变更后记录大小，清理不为预算重复遍历整个源码工作区。最终删除前仍逐项检查路径与 reparse point。
+
+Task 的 host、load、publisher 和 shared workspace 分别拥有独立登记根。`RecordProcessUse` 在共享协调权限内记录既有进程声明及目录依赖；活动或不可确认的进程保护对应目录，load 同时保护它所用的 host。PID 被其他进程复用时会保守延后退休，不因此删除仍可能被使用的目录。编译 workspace 使用外部持久 lease，不能把删除协调文件当作清理。
+
+共享 owner lease 覆盖发布与读取交接，退休取得同一路径的独占保护。无法解析的 current root 或依赖会拒绝整次删除。未由当前 publisher 登记的目录不归自动清理；不会把历史目录年龄当作所有权证据。
 
 不能依据文件年龄或目录名任意删除构建缓存，也不能删除锁文件来解锁。手动排查只处理已经明确失去 owner 的本轮中间输出；NuGet、SDK、用户和浏览器全局缓存不属于本系统管理范围。
 

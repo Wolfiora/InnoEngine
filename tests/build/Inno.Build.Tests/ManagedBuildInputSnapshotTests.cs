@@ -31,6 +31,43 @@ public sealed class ManagedBuildInputSnapshotTests : IDisposable
     }
 
     [Fact]
+    public async Task FixedExecutionCompilesPlannedBytesWhenTheOriginalSourceChangesAndReturns()
+    {
+        Write("Vendor/bin/tool.dat", "owned vendor tool");
+        string fixture = Path.Combine(m_root, "App", "App.csproj");
+        File.WriteAllText(fixture, File.ReadAllText(fixture).Replace("</Project>",
+            "<ItemGroup><AdditionalFiles Include=\"../Vendor/bin/tool.dat\" /></ItemGroup></Project>", StringComparison.Ordinal));
+        string project = Path.Combine(m_root, "App", "App.csproj");
+        string dotnet = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH") ?? ToolchainEnvironment.ResolveExecutable("dotnet");
+        DotNetSdkDescriptor sdk = await DotNetSdkResolver.ResolveAsync(dotnet, project);
+        await ToolchainEnvironment.RunAsync(sdk.hostPath, [sdk.cliPath, "restore", project, "--nologo", "-v:quiet"],
+            m_root, CancellationToken.None, DotNetSdkEnvironment.Create(sdk.hostPath));
+        var context = new NativeBuildContext(m_root, "release");
+        ManagedBuildInputSnapshot snapshot = await ManagedBuildInputSnapshot.CaptureAsync(context, sdk, project,
+            new System.Collections.Generic.Dictionary<string, string> { ["Configuration"] = "Release" });
+        using ManagedBuildExecution execution = await snapshot.CreateExecutionAsync();
+        Assert.Equal("owned vendor tool", File.ReadAllText(Path.Combine(execution.engineRoot, "Vendor", "bin", "tool.dat")));
+        string original = Path.Combine(m_root, "App", "App.cs");
+        File.WriteAllText(original, "public sealed class Changed { }");
+        Assert.Contains("class App", File.ReadAllText(Path.Combine(Path.GetDirectoryName(execution.project)!, "App.cs")), StringComparison.Ordinal);
+        await ToolchainEnvironment.RunAsync(sdk.hostPath,
+            [sdk.cliPath, "build", execution.project, "--configuration", "Release", "--disable-build-servers",
+                "-m:1", "-nodeReuse:false", "--nologo", "-v:quiet"], execution.engineRoot, CancellationToken.None,
+            DotNetSdkEnvironment.Create(sdk.hostPath));
+        File.WriteAllText(original, "public sealed class App { }");
+        await snapshot.VerifyAsync();
+        await execution.VerifyAsync();
+        string output = Path.Combine(Path.GetDirectoryName(execution.project)!, "bin", "Release", "net9.0", "App.dll");
+        using FileStream stream = File.OpenRead(output);
+        using var image = new System.Reflection.PortableExecutable.PEReader(stream);
+        System.Reflection.Metadata.MetadataReader metadata = System.Reflection.Metadata.PEReaderExtensions.GetMetadataReader(image);
+        string[] names = System.Linq.Enumerable.ToArray(System.Linq.Enumerable.Select(metadata.TypeDefinitions,
+            handle => metadata.GetString(metadata.GetTypeDefinition(handle).Name)));
+        Assert.Contains("App", names);
+        Assert.DoesNotContain("Changed", names);
+    }
+
+    [Fact]
     public async Task SelectedSdkGraphDetectsSameLengthSourceResourceImportAndNewFilesWithoutCompiling()
     {
         string project = Path.Combine(m_root, "App", "App.csproj");

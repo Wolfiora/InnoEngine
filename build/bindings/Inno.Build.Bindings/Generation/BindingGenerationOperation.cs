@@ -37,7 +37,11 @@ internal sealed class BindingGenerationOperation : IDisposable
         Dictionary<string, string> extensions = new(StringComparer.Ordinal);
         foreach (string project in definitions.Select(static definition => definition.extensionProject)
             .OfType<string>().Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal))
-            extensions.Add(project, await BindingExtensionPreparation.PrepareAsync(m_context, project, m_dotnetHost, cancellation).ConfigureAwait(false));
+        {
+            BindingExtensionPreparation.Result extension = await BindingExtensionPreparation.PrepareAsync(m_context, project, m_dotnetHost, cancellation).ConfigureAwait(false);
+            m_reading.Add(extension);
+            extensions.Add(project, extension.assembly);
+        }
         foreach (BindingGenerationConfiguration definition in definitions)
             definition.extensionAssembly = definition.extensionProject is null ? null : extensions[definition.extensionProject];
         string[] fingerprints = definitions.Select(definition => Compute(definition, m_context, cancellation)).ToArray();
@@ -50,6 +54,11 @@ internal sealed class BindingGenerationOperation : IDisposable
         foreach (string path in definitions.Select(definition => Path.Combine(
             definition.component.GetNativeRoot(m_context.engineRoot), "obj", "bindings", "generation.lock")).Order(paths))
             m_leases.Add(await FileLease.AcquireAsync(path, Timeout.InfiniteTimeSpan, cancellation).ConfigureAwait(false));
+        if (m_request.outputMode == NativeBindingOutputMode.TargetArtifacts)
+        {
+            var cache = new BuildCachePublisher(Path.Combine(m_context.engineRoot, "artifacts", "bindings"));
+            m_leases.Add(await cache.AcquireUseAsync(cancellation).ConfigureAwait(false));
+        }
         m_context.RecordBindingBatch();
         Verify(definitions, fingerprints, m_context.BeginInputVerification("binding-locks"), cancellation);
         Dictionary<string, NativeBindingGenerationDescriptor> results = new(StringComparer.Ordinal);
@@ -127,6 +136,16 @@ internal sealed class BindingGenerationOperation : IDisposable
             // Mutable host sources stay protected by their generation owner until the consumer finishes.
             m_reading.AddRange(m_leases);
             m_leases.Clear();
+        }
+        if (m_request.outputMode == NativeBindingOutputMode.TargetArtifacts && !m_request.checkOnly)
+        {
+            var cache = new BuildCachePublisher(Path.Combine(m_context.engineRoot, "artifacts", "bindings"));
+            foreach (BindingGenerationConfiguration definition in definitions)
+            {
+                NativeBindingGenerationDescriptor generation = results[definition.component.nativeProject];
+                cache.Record(generation.artifactDirectory, generation.artifactDirectory + ".read.lock", [],
+                    definition.component.id + "/" + m_request.targetId, cancellation);
+            }
         }
         var result = new NativeBindingGenerationResult(results, m_reading);
         m_reading.Clear();

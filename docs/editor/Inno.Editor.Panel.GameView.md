@@ -10,7 +10,7 @@ Play Mode 使用与 Edit Session 分离的 Input backend。Game View 每帧向 `
 
 `IEditorGameScenePresentation` 的 owner 是 `Inno.Editor.Scene`。Editing、Compiling 和尚未提交完成的 Preparing 阶段返回 Edit Session；Play Scene 全部物化成功后一次切换到隔离 Runtime Session；停止时先切回 Edit Session，再释放 Play 世界。Game View、Scene View、Hierarchy、Inspector、Selection 与 Gizmo 因此观察并操作同一个脚本驱动 runtime graph。Play workspace 禁止持久化且使用独立 History 分支，所以这些临时修改不会污染 Edit 文档；Panel 不访问 `RuntimeSession`，PlayMode 也不依赖 Rendering。
 
-内容尺寸变化会在渲染安全点 resize `RenderTexture`。输出直接作为 BGFX ImGui texture 合成，不做 CPU 回读。`Editor/Appearance/Viewports/Game Background` 是 Game View 的默认背景色，并通过中立 `EditorViewportPresentation` 交给渲染模型。
+内容尺寸变化会在渲染安全点 resize `RenderTexture`。输出通过 presentation 合成到界面，不做 CPU 回读。`Editor/Appearance/Viewports/Game Background` 是 Game View 的默认背景色，并通过中立 `EditorViewportPresentation` 交给渲染模型。
 
 `Project/Player/Presentation` 编辑项目级 `GamePresentationSettings`，由 Game View 与导出 Player 共同消费。默认参考帧为 `1280×720` 且开启 `Preserve Aspect Ratio`：Panel 先在可用区域内计算完整可见的最大内接矩形，以该内矩形对应的物理像素尺寸申请 composition target，再把输出居中合成，剩余区域绘制纯黑 letterbox/pillarbox。关闭后 target 直接跟随 Panel 完整尺寸。该流程不会先把图像拉伸再遮罩，因此各模型投影使用的 aspect 与最终显示严格一致；同一项目设置进入部署内容，Player resize 后也计算完全相同的 content viewport。
 

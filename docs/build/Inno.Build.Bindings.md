@@ -58,7 +58,7 @@ CLI 和 MSBuild 的 TargetArtifacts 请求先通过同一发行解析明确目�
 
 ## 输出与所有权
 
-HostSource 使用组件已有 `Generated/Bindings.cs` 及 `Native/Generated`。TargetArtifacts 使用组件 `obj/<target>/<fingerprint>/Generated`、`Native` 与完整性 manifest。候选由批次 owner 清理；已完整发布的独立缓存可留存。生成锁位于组件 `obj/bindings/generation.lock`，锁文件保留。扩展产物位于 `artifacts/build-tools/bindings/extensions`，拥有独立完整性、源码/SDK 身份与 lease。
+HostSource 使用组件已有 `Generated/Bindings.cs` 及 `Native/Generated`。TargetArtifacts 使用`artifacts/bindings/<component>/<target>/<fingerprint>/Generated`、`Native` 与完整性 manifest。候选由批次 owner 清理；已完整发布的独立缓存可留存。生成锁位于组件 `obj/bindings/generation.lock`，锁文件保留。扩展产物位于 `artifacts/build-tools/bindings/extensions`，拥有独立完整性、源码/SDK 身份与 lease。
 
 CheckOnly 生成候选并比较完整输出，不能改写当前产物。对外请求不暴露 BGCS/MSBuild 类型。`WithBindingGenerator` 不接管 provider 生命周期。GenerateAsync 返回成功的只读完整映射；参数、缺 SDK、错误定义、损坏或变化输入和取消均明确失败。没有 provider 的实际生成请求在 staging 前失败。
 

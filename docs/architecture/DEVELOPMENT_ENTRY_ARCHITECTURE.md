@@ -28,6 +28,7 @@ entry/
    ├─ DevelopmentBuildRequest.cs
    ├─ DevelopmentHost.cs
    ├─ DevelopmentDependencies.cs
+   ├─ DevelopmentBuildTool.cs
    ├─ DevelopmentProduct.cs
    ├─ DevelopmentApplication.cs
    └─ DevelopmentProcess.cs
@@ -61,7 +62,11 @@ entry/
 
 产品清理先验证目标与 SDK，再按实际 SDK 输出位置建立清理计划，取得产品独占保护后执行。它使对应 receipt 失效，不清除其他产品、Native、Binding 或 Support Pack 缓存。活动 Editor 持有产品读取保护，清理不能直接移除其文件。
 
-完整命令和当前限制见 [InnoEngine.Build](../entry/InnoEngine.Build.md)。缓存预算回收与 Pack 准备前命中仍处于本轮实现阶段，不能把它们当作已验收行为。
+完整命令和当前限制见 [InnoEngine.Build](../entry/InnoEngine.Build.md)。Native、绑定、Pack 和 workspace 发布者记录明确的 ownership；缓存清理只管理登记产物，完整产品与性能验收结果单独列出。
+
+## Build 工具准备复用
+
+Build 工具拥有独立 `artifacts/entry/build/<configuration>/ready.json`，包含源码身份与真实部署清单。有效部署先验证实际哈希，再通过可退休检查上下文调用公开输入检查入口；相同 SDK、源码、资源、imports 和引用身份命中时直接执行工具，不再次编译 CLI。源码或 SDK 改变时重新准备。检查上下文成功卸载后才能加载实际应用，失败进入明确停止状态。
 
 ## IDE 配置
 
