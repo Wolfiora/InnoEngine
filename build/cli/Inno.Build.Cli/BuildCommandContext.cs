@@ -4,7 +4,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Inno.Build;
-using Inno.Build.Bindings;
 using Inno.Build.Composition;
 using Inno.Build.Distribution.Standard;
 using Inno.Build.Toolchains;
@@ -22,12 +21,10 @@ internal sealed class BuildCommandContext
         configuration = options.Read("configuration", "Release");
         ToolchainEnvironment.ValidateConfiguration(configuration.ToLowerInvariant());
         configuration = configuration.Equals("debug", StringComparison.OrdinalIgnoreCase) ? "Debug" : "Release";
-        target = new BuildTargetId(options.Require("target"));
         toolsTarget = new BuildTargetId(options.Require("tools-target"));
+        target = new BuildTargetId(options.Read("target", toolsTarget.value));
         string dotnet = ToolchainEnvironment.ResolveExecutable(options.Read("dotnet", "dotnet"));
-        BuildCompositionContext captured = StandardBuildEnvironment.Capture(AppContext.BaseDirectory, toolsTarget);
-        composition = new BuildCompositionContext(dotnet, captured.applicationDirectory, captured.host, toolsTarget,
-            new NativeBindingGenerator(dotnet));
+        composition = StandardBuildEnvironment.Capture(Path.GetDirectoryName(typeof(BuildApplication).Assembly.Location)!, toolsTarget, dotnet);
         distribution = StandardBuildDistribution.Create(composition).build;
     }
 

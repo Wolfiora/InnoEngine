@@ -35,4 +35,4 @@ Windows、MacOS、Browser 的 target/source/validator/template 属于各平台 B
 
 ## CI 依赖图
 
-- [NuGet 依赖图提交](DEPENDENCY_SUBMISSION.md)：完整准备同级 BGCS 源码与 SDK，解释自动扫描失败原因和仓库设置切换。
+- [NuGet 依赖图提交](DEPENDENCY_SUBMISSION.md)：固定包版本、锁文件还原与 CI snapshot 提交。

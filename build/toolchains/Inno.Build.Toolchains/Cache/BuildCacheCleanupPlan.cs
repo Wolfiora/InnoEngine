@@ -70,6 +70,10 @@ public sealed class BuildCacheCleanupPlan
     /// <param name="cancellationToken">
     /// Cancels planning before any directory is removed.
     /// </param>
+    /// <param name="targetId">
+    /// An exact producer-declared target filter, or null to manage all registered scopes.
+    /// Outside-scope generations and their dependencies remain protected.
+    /// </param>
     /// <returns>
     /// A fixed proposal; execution rechecks ownership, roots and active readers before deletion.
     /// </returns>
@@ -93,6 +97,7 @@ public sealed class BuildCacheCleanupPlan
         IReadOnlyList<BuildCacheOwnerDescriptor> owners,
         BuildCachePolicy policy,
         bool retireAll = false,
+        string? targetId = null,
         CancellationToken cancellationToken = default
     ) {
         ArgumentNullException.ThrowIfNull(policy);
@@ -101,7 +106,7 @@ public sealed class BuildCacheCleanupPlan
         Stopwatch elapsed = Stopwatch.StartNew();
         try
         {
-            BuildCacheCleanupPlan plan = CreateCore(workspace, owners, policy, retireAll, bounded.Token, elapsed);
+            BuildCacheCleanupPlan plan = CreateCore(workspace, owners, policy, retireAll, targetId, bounded.Token, elapsed);
             if (elapsed.Elapsed >= policy.timeBudget)
                 throw new TimeoutException("Cache inventory exceeded its operation time budget; no artifact was retired.");
             return plan;
@@ -117,6 +122,7 @@ public sealed class BuildCacheCleanupPlan
         IReadOnlyList<BuildCacheOwnerDescriptor> owners,
         BuildCachePolicy policy,
         bool retireAll,
+        string? targetId,
         CancellationToken cancellationToken,
         Stopwatch elapsed
     ) {
@@ -131,6 +137,12 @@ public sealed class BuildCacheCleanupPlan
         ValidateOwners(root, frozen);
         BuildCacheInventory inventory = BuildCacheInventory.Read(root, frozen, cancellationToken);
         HashSet<string> protectedPaths = inventory.Protect(inventory.roots);
+        if (targetId is not null)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(targetId);
+            protectedPaths.UnionWith(inventory.Protect(inventory.artifacts.Values
+                .Where(entry => entry.artifact.targetId != targetId).Select(static entry => entry.artifact.directory)));
+        }
         long total = inventory.artifacts.Values.Sum(static entry => entry.artifact.bytes);
         long protectedSize = protectedPaths.Sum(path => inventory.artifacts[path].artifact.bytes);
         long free = new DriveInfo(Path.GetPathRoot(root)!).AvailableFreeSpace;

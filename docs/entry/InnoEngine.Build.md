@@ -7,6 +7,8 @@
 日常构建可执行入口。无参数时增量构建当前宿主的 Editor；清理由明确参数控制。
 入口只静态引用 Bootstrap，将明确目标交给共享构建应用，不在 backend 中推导平台。
 
+Build 进程使用一次性优化 JIT（`TieredCompilation=false`）。这是构建宿主的执行策略：本机 .NET 9 在多次 collectible 工具检查与分层优化期间出现过原生访问违例；固定 JIT 策略避免该路径，仍执行完整输入验证、加载 owner 和 GC 退休检查。Editor 与 Player 不继承此设置。
+
 ## 快速使用
 
 从仓库根目录执行：
@@ -40,6 +42,6 @@ Editor 构建先校验目标和 SDK，再取得产品/目标/配置对应的独�
 
 ## 当前限制与验证
 
-Windows x64、macOS ARM64 有 Editor 组合；Linux 没有完整 Editor，默认构建明确拒绝。
+Windows x64、macOS ARM64 有 Editor 组合；其他宿主默认构建明确拒绝。
 `clean --scope cache --dry-run` 预览登记 owner 的无引用候选，去掉 `--dry-run` 执行有界退休。`--cache-budget-gib`、`--cache-min-free-gib` 与 `--cache-time-seconds` 覆盖预算；保护集合超过预算时不会强制删除。产品清理与缓存退休分别执行。
 本次产品、性能与运行验收状态见[当前验收](../architecture/CURRENT_ACCEPTANCE.md)。

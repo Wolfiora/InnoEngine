@@ -7,10 +7,10 @@
 验证以下项目的公开行为与组合契约。该程序集属于测试闭包，不进入 Editor 或 Player 发行；测试类、fixture 和断言辅助类型不属于稳定产品 API。
 
 - [Inno.Adapter.Platform.Sdl3](../backends/Sdl3/Inno.Adapter.Platform.Sdl3.md)
-- [Inno.Integration.Windows.Sdl3](../platform/Windows/Inno.Integration.Windows.Sdl3.md)
-- [Inno.Integration.Windows.Bgfx.Runtime](../platform/Windows/Inno.Integration.Windows.Bgfx.Runtime.md)
-- [Inno.Integration.MacOS.Bgfx.Runtime](../platform/MacOS/Inno.Integration.MacOS.Bgfx.Runtime.md)
-- [Inno.Integration.Browser.Bgfx.Runtime](../platform/Browser/Inno.Integration.Browser.Bgfx.Runtime.md)
+- [Inno.Integration.WindowsX64.Sdl3](../platform/WindowsX64/Inno.Integration.WindowsX64.Sdl3.md)
+- [Inno.Integration.WindowsX64.Bgfx.Runtime](../platform/WindowsX64/Inno.Integration.WindowsX64.Bgfx.Runtime.md)
+- [Inno.Integration.MacOSArm64.Bgfx.Runtime](../platform/MacOSArm64/Inno.Integration.MacOSArm64.Bgfx.Runtime.md)
+- [Inno.Integration.BrowserWasm32.Bgfx.Runtime](../platform/BrowserWasm32/Inno.Integration.BrowserWasm32.Bgfx.Runtime.md)
 - [Inno.Extensibility.Modules](../extensibility/Inno.Extensibility.Modules.md)
 - [Inno.Build.Toolchains.Bgfx.Tools](../backends/Bgfx/Inno.Build.Toolchains.Bgfx.Tools.md)
 - [Inno.Adapter.Rendering.Bgfx](../backends/Bgfx/Inno.Adapter.Rendering.Bgfx.md)
@@ -25,12 +25,18 @@
 从仓库根目录运行：
 
 ```powershell
-dotnet test backends/Bgfx/tests/Inno.Adapter.Rendering.Bgfx.Tests/Inno.Adapter.Rendering.Bgfx.Tests.csproj --configuration Debug --disable-build-servers -m:1 -nodeReuse:false
+$productProps = Join-Path $PWD 'platforms/WindowsX64/build/Inno.Build.WindowsX64/EditorProduct.props'
+dotnet test backends/Bgfx/tests/Inno.Adapter.Rendering.Bgfx.Tests/Inno.Adapter.Rendering.Bgfx.Tests.csproj --configuration Debug "-p:InnoProductBuildProperties=$productProps" -p:InnoNativeTarget=windows-x64 -p:InnoToolTarget=windows-x64 -p:InnoTestNativeProduct=editor -p:InnoTestNativeTarget=windows-x64 --filter 'ProcessIsolation!=Required' --disable-build-servers -m:1 -nodeReuse:false
+$tests = 'backends/Bgfx/tests/Inno.Adapter.Rendering.Bgfx.Tests/bin/Debug/net9.0/Inno.Adapter.Rendering.Bgfx.Tests.dll'
+dotnet test $tests --filter 'FullyQualifiedName~BgfxDeviceTests'
+dotnet test $tests --filter 'FullyQualifiedName~MultiThreadedSurfaceAcknowledgesDestructionAfterTheFollowingSubmission'
+dotnet test $tests --filter 'FullyQualifiedName~InlineSurfaceUsesTheSameConservativeAcknowledgment'
+dotnet test $tests --filter 'FullyQualifiedName~InvalidIntegrationFailsBeforeTakingTheProcessOwner'
 ```
 
 包含 Native 或窗口相关消费；执行前准备匹配目标与配置的原生产物。缺库、缺 SDK 或无法建立真实窗口属于未通过/未执行，不能记为通过。
 
-可以用 `--filter FullyQualifiedName~方法名` 选择下表的场景；完整项目验证仍使用上面的命令。
+可以用 `--filter FullyQualifiedName~方法名` 选择下表的场景。完整验证包含上面的所有进程：单线程 BGFX 的进程状态不能在退出设备后重新初始化，必须保持该真实约束。产品 props 同时选择嵌入 Shader 与绑定目标；中立 SourceDebug Adapter 不具备窗口产品的目标 Shader，不能用于替代这一部署。
 
 ## 源码场景
 

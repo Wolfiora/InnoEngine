@@ -1,0 +1,22 @@
+{
+  "version": 1,
+  "dependencies": {
+    "net9.0": {
+      "inno.core.io": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Extensibility.Catalogs": "[1.0.0, )"
+        }
+      },
+      "inno.entry.bootstrap": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Core.IO": "[1.0.0, )"
+        }
+      },
+      "inno.extensibility.catalogs": {
+        "type": "Project"
+      }
+    }
+  }
+}

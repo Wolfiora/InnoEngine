@@ -161,6 +161,9 @@ internal sealed class SceneSystemScheduler
             throw new InvalidOperationException("The GameSystem being replaced is not registered.");
         if (TryGetEntry(replacement, out _))
             throw new InvalidOperationException("The replacement GameSystem is already registered.");
+        previous.ValidateIdentityForReplacement();
+        if (replacement.identity.runtimeId is not null)
+            throw new InvalidOperationException("The replacement GameSystem already has a registered identity.");
 
         bool attachedHere = replacement.ownerScene is null;
         if (attachedHere)

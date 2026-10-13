@@ -15,7 +15,7 @@ namespace Inno.Entry.Bootstrap;
 
 internal static class DevelopmentBuildTool
 {
-    internal static string? Open(
+    internal static DevelopmentBuildToolLease? Open(
         string root,
         string configuration,
         string dotnet,
@@ -24,24 +24,44 @@ internal static class DevelopmentBuildTool
         Receipt? receipt = Read(root, configuration);
         if (receipt is null || !File.Exists(receipt.assembly))
             return null;
-        if (!SameFiles(receipt.files, ReadFiles(Path.GetDirectoryName(receipt.assembly)!, cancellation)))
+        string relative = Path.GetRelativePath(Path.Combine(root, "artifacts", "build-tools", "cli", "hosts"), receipt.assembly);
+        if (Path.IsPathRooted(relative) || relative.StartsWith("..", StringComparison.Ordinal))
             return null;
-        string? current = Probe(receipt.assembly, root, configuration, dotnet, cancellation);
-        return current == receipt.inputs ? receipt.assembly : null;
+        DevelopmentBuildToolLease? reading = new(receipt.assembly, cancellation);
+        try
+        {
+            if (!File.Exists(receipt.assembly)
+                || !SameFiles(receipt.files, ReadFiles(Path.GetDirectoryName(receipt.assembly)!, cancellation)))
+                return null;
+            string? current = Probe(receipt.assembly, root, configuration, dotnet, cancellation);
+            if (current != receipt.inputs)
+                return null;
+            DevelopmentBuildToolLease accepted = reading;
+            reading = null;
+            return accepted;
+        }
+        finally
+        {
+            reading?.Dispose();
+        }
     }
 
-    internal static void Record(
+    internal static string Record(
         string root,
         string configuration,
         string dotnet,
         string assembly,
         CancellationToken cancellation
     ) {
+        (string publication, WeakReference publicationMonitor) = Publish(assembly, root, configuration, dotnet, cancellation);
+        VerifyRetirement(publicationMonitor);
+        assembly = publication;
         string inputs = Probe(assembly, root, configuration, dotnet, cancellation)
             ?? throw new InvalidDataException("The prepared Build tool cannot verify its evaluated input closure.");
         var receipt = new Receipt(assembly, inputs, ReadFiles(Path.GetDirectoryName(assembly)!, cancellation));
         AtomicFile.WriteAllBytes(Path.Combine(root, "artifacts", "entry", "build", configuration, "ready.json"),
             JsonSerializer.SerializeToUtf8Bytes(receipt));
+        return assembly;
     }
 
     private static Receipt? Read(
@@ -71,6 +91,12 @@ internal static class DevelopmentBuildTool
         CancellationToken cancellation
     ) {
         (string? identity, WeakReference monitor) = ReadIdentity(assembly, root, configuration, dotnet, cancellation);
+        VerifyRetirement(monitor);
+        return identity;
+    }
+
+    private static void VerifyRetirement(WeakReference monitor)
+    {
         for (int attempt = 0; attempt < 8 && monitor.IsAlive; attempt++)
         {
             Thread.Sleep(10);
@@ -80,7 +106,30 @@ internal static class DevelopmentBuildTool
         }
         if (monitor.IsAlive)
             throw new InvalidOperationException("Build input inspection did not retire its load context; restart the entry.");
-        return identity;
+    }
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static (string path, WeakReference monitor) Publish(
+        string assembly,
+        string root,
+        string configuration,
+        string dotnet,
+        CancellationToken cancellation
+    ) {
+        var load = new InspectionContext(assembly);
+        var monitor = new WeakReference(load);
+        try
+        {
+            Type type = load.LoadFromAssemblyPath(assembly).GetType("Inno.Build.Cli.BuildApplication", throwOnError: true)!;
+            MethodInfo method = type.GetMethod("PublishRuntimeAsync", BindingFlags.Public | BindingFlags.Static)
+                ?? throw new MissingMethodException(type.FullName, "PublishRuntimeAsync");
+            var publish = method.CreateDelegate<Func<string, string, string, string, CancellationToken, Task<string>>>();
+            return (publish(root, configuration, dotnet, assembly, cancellation).GetAwaiter().GetResult(), monitor);
+        }
+        finally
+        {
+            load.Unload();
+        }
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]

@@ -20,7 +20,7 @@ dotnet run --project "entry/InnoEngine.Editor/InnoEngine.Editor.csproj" -- /abso
 原生对话框没有程序化取消入口；运行取消在用户选择或关闭对话框后生效，callback owner 保留至原生完成。
 修改引擎/backend 源码后运行 InnoEngine.Build，完成后再启动 Editor。普通启动使用已经构建的产品，不扫描 SDK 或自动编译引擎源码。游戏脚本/资产仍由 Editor 既有导入与 reload 流程处理。
 Debug 与 Release 的准备记录隔离；Release Build 不代表已准备 Debug Editor。
-Windows x64 与 macOS ARM64 有真实 Editor 组合。Linux 只支持 Native tooling，打开 Editor 会明确失败。
+Windows x64 与 macOS ARM64 有真实 Editor 组合。未实现的宿主明确拒绝启动。
 
 ## API、所有权与失败
 

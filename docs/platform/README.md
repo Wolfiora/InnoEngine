@@ -8,10 +8,9 @@
 
 | 平台包 | 当前范围 |
 | --- | --- |
-| [Windows](Windows/README.md) | WindowsX64 Editor 与 Player，CoreCLR / NativeAOT。 |
-| [MacOS](MacOS/README.md) | MacOSArm64 Editor 与 Player；本轮 Windows 环境未实测 macOS。 |
-| [Browser](Browser/README.md) | Wasm32 Player，解释执行 / AOT；不提供 Browser Editor。 |
-| [Linux](Linux/README.md) | 现有 Native 工具链能力，不注册完整 Player。 |
+| [WindowsX64](WindowsX64/README.md) | Editor 与 Player，CoreCLR / NativeAOT。 |
+| [MacOSArm64](MacOSArm64/README.md) | Editor 与 Player；本轮 Windows 环境未实测 macOS。 |
+| [BrowserWasm32](BrowserWasm32/README.md) | Player，解释执行 / AOT；不提供 Browser Editor。 |
 
 ## 中立契约
 

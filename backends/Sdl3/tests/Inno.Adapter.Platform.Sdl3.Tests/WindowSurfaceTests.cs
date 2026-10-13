@@ -1,4 +1,4 @@
-using Inno.Integration.Windows.Sdl3;
+using Inno.Integration.WindowsX64.Sdl3;
 using Inno.Adapter.Platform;
 using Inno.Platform;
 using Xunit;
@@ -10,7 +10,7 @@ public sealed class WindowSurfaceTests
     [Fact]
     public void OwnedAndBorrowedWrappersUseTheSameHostSurfaceResolution()
     {
-        var host = new WindowsSdl3HostIntegration();
+        var host = new WindowsX64Sdl3HostIntegration();
         using var app = new Sdl3PlatformApplication(host);
         using var window = app.CreateWindow(new PlatformWindowOptions
         { title = "Surface contract", width = 40, height = 40, visible = false });

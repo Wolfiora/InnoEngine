@@ -8,14 +8,14 @@
 
 ## 组合、生命周期与扩展
 
-`StandardBuildDistribution.Create(context)` 注册 WindowsX64、MacOSArm64、BrowserWasm32 游戏目标，以及仅提供 Native 工具链的 Linux 能力。CoreCLR、NativeAOT、Mono Wasm 解释执行/AOT 的实现注册一次。Editor 产品入口、CLI 和 MSBuild Task 调用同一入口。
+`StandardBuildDistribution.Create(context, tools)` 注册 WindowsX64、MacOSArm64、BrowserWasm32 游戏目标。CoreCLR、NativeAOT、Mono Wasm 解释执行/AOT 的实现注册一次。Editor 产品入口、CLI 和 MSBuild Task 调用同一入口。`tools` 为 null 时使用应用显式部署索引；项目 CLI 传入同一受保护工具产品的 runner，发行将其借给内容 compiler 工厂。
 
 `StandardBuildDistribution` 实例的 `build` 提供中立发行契约；`ResolveShaderTarget(target)` 从同一个
 平台绑定列表取得具体 Shader 配置。共享 Build Composition 不引用 BGFX。平台与 Shader ID 不一致在组合阶段失败。
 
 `StandardNativeBuildPlans.CreatePlayer(profile)` / `CreateEditor(profile)` / `CreateShaderTools(profile)` 声明 Player、Editor 和 Shader tools 的准确组件闭包。Player 不包括 ImGui、ImGuizmo 或离线工具；Editor 在 Player 能力之上增加呈现和创作工具。Shader tools 仅选择离线编译器。闭包是 immutable plan，执行前先冻结目标绑定与 SDK。
 `CreateStaticPlayer(nativeOptions)` 提供 Browser 聚合闭包，每个 step 有真实 `staticBuild`，`build` 为 null；
-独立执行器拒绝这种闭包，Browser aggregate 才负责构建。Linux 仅注册已有 Native SDK 与 Shader tools，不宣称完整 Player。
+独立执行器拒绝这种闭包，Browser aggregate 才负责构建。
 
 ```csharp
 using Inno.Build.Composition;
@@ -27,7 +27,7 @@ static BuildDistribution CreateStandard(BuildCompositionContext context)
 }
 ```
 
-`StandardBuildEnvironment.Capture` 只记录实际执行宿主；调用者必须明确提供 tools target。新增平台注册位置只有这里，领域服务和共享 Editor 不修改。注册不等于 SDK 已存在或设备验收已通过。
+`StandardBuildEnvironment.Capture(applicationDirectory, toolsTarget, dotnetHost)` 记录实际执行宿主与选定 SDK；调用者必须明确提供 tools target。`dotnetHost` 可明确选择拥有所需 workload 的 SDK，省略时使用当前工具进程选定的 host。导出目标仍独立声明。新增平台注册位置只有这里，领域服务和共享 Editor 不修改。注册不等于 SDK 已存在或设备验收已通过。
 
 ## 缓存与部署组合
 
@@ -57,7 +57,7 @@ Windows Editor 导出 Browser 游戏时，离线工具仍需能在 Windows 执�
 
 ## 当前源码公开 API 清单
 
-按功能类型核对全部公开与可扩展 protected 声明。类型的组合与所有权从前文工作流进入。
+签名来自当前 SDK 求值与语义符号；按类型列出 public/protected 契约。工作流与生命周期见本页前文。
 
 ### `Inno.Build.Distribution.Standard.StandardBuildCaches`
 
@@ -66,32 +66,32 @@ Windows Editor 导出 Browser 游戏时，离线工具仍需能在 Windows 执�
 
 | 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
 | --- | --- | --- | --- |
-| <a id="api-b6b67ab9377b97be"></a>[`public static System.Collections.Generic.IReadOnlyList<Inno.Build.Toolchains.BuildCacheOwnerDescriptor> Inno.Build.Distribution.Standard.StandardBuildCaches.CreateOwners(string engineRoot, System.Collections.Generic.IReadOnlyList<Inno.Build.Toolchains.NativeComponentDescriptor> components)`](../../build/distributions/Inno.Build.Distribution.Standard/StandardBuildCaches.cs#L22) | Registers exact Native, binding and Support Pack ownership recorded by their publishers. Unrecorded directories remain outside the cleanup authority.<br>返回：Immutable owner registrations with current-generation and transitive dependency protection.<br>`engineRoot`：The absolute engine checkout containing the artifact roots.<br>`components`：The actual registered component owners; shared toolchain roots are registered once. | — | T:System.ArgumentException: The root is blank or relative. |
-| <a id="api-ea6d9e002cae9c43"></a>[`public static class Inno.Build.Distribution.Standard.StandardBuildCaches`](../../build/distributions/Inno.Build.Distribution.Standard/StandardBuildCaches.cs#L12) | Registers the standard distribution's actual immutable artifact publishers for coordinated cleanup. | — | — |
+| <a id="api-b6b67ab9377b97be"></a>[`public static System.Collections.Generic.IReadOnlyList<Inno.Build.Toolchains.BuildCacheOwnerDescriptor> Inno.Build.Distribution.Standard.StandardBuildCaches.CreateOwners(string engineRoot, System.Collections.Generic.IReadOnlyList<Inno.Build.Toolchains.NativeComponentDescriptor> components)`](../../build/distributions/Inno.Build.Distribution.Standard/StandardBuildCaches.cs#L30) | Registers exact Native, binding and Support Pack ownership recorded by their publishers. Unrecorded directories remain outside the cleanup authority.<br>返回：Immutable owner registrations with current-generation and transitive dependency protection.<br>`engineRoot`：The absolute engine checkout containing the artifact roots.<br>`components`：The actual registered component owners; shared toolchain roots are registered once. | 约束由所属类型与本页生命周期定义。 | `System.ArgumentException`：The root is blank or relative. |
+| <a id="api-ea6d9e002cae9c43"></a>[`public static class Inno.Build.Distribution.Standard.StandardBuildCaches`](../../build/distributions/Inno.Build.Distribution.Standard/StandardBuildCaches.cs#L12) | Registers the standard distribution's actual immutable artifact publishers for coordinated cleanup. | 约束由所属类型与本页生命周期定义。 | 具体失败按方法与类型契约处理。 |
 
 ### `Inno.Build.Distribution.Standard.StandardBuildDistribution`
 
 <!-- api: T:Inno.Build.Distribution.Standard.StandardBuildDistribution 30950658a0f6e43303b5fa9aaece0172f155d97f5afa911a82f07da7b2d28a45 -->
 <!-- api: P:Inno.Build.Distribution.Standard.StandardBuildDistribution.build ef7c994c8a067a0f2d5e137f23cda77f86bd61400062ca75382c414934f6031c -->
-<!-- api: M:Inno.Build.Distribution.Standard.StandardBuildDistribution.Create(Inno.Build.Composition.BuildCompositionContext) 139785accdc3428f22685bb135933386ed70a161ed95aa107a518ebe41386218 -->
+<!-- api: M:Inno.Build.Distribution.Standard.StandardBuildDistribution.Create(Inno.Build.Composition.BuildCompositionContext,Inno.Build.Toolchains.Bgfx.Tools.ToolRunner) de68ca30c9323e7a37c0dc06a21517f49fd1bbc2a5a8b6d45e959b9ee9c25300 -->
 <!-- api: M:Inno.Build.Distribution.Standard.StandardBuildDistribution.ResolveShaderTarget(Inno.Build.BuildTargetId) a705cc7b662b6cba4b163c0b2fe95802b0bc0202a76fa905edbdf589b31f9ab0 -->
 
 | 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
 | --- | --- | --- | --- |
-| <a id="api-ac1b1561d55ae21d"></a>[`public static Inno.Build.Distribution.Standard.StandardBuildDistribution Inno.Build.Distribution.Standard.StandardBuildDistribution.Create(Inno.Build.Composition.BuildCompositionContext context)`](../../build/distributions/Inno.Build.Distribution.Standard/StandardBuildDistribution.cs#L48) | Composes one explicit binding per implemented platform without resolving tools.<br>返回：A frozen standard distribution with backend configuration bound to the same platform identities.<br>`context`：The explicitly selected SDK and execution host. | — | — |
-| <a id="api-eaf0b5b001274dff"></a>[`public Inno.Build.Toolchains.Bgfx.Tools.BgfxShaderTargetProfile Inno.Build.Distribution.Standard.StandardBuildDistribution.ResolveShaderTarget(Inno.Build.BuildTargetId target)`](../../build/distributions/Inno.Build.Distribution.Standard/StandardBuildDistribution.cs#L90) | Resolves explicitly registered shader configuration independently of tool execution target.<br>返回：The borrowed immutable configuration; unavailable targets fail before native preparation.<br>`target`：The artifact's actual publication target. | — | T:System.NotSupportedException: The distribution has no shader configuration for this target. |
-| <a id="api-2ee139cff662ba02"></a>[`public Inno.Build.Composition.BuildDistribution Inno.Build.Distribution.Standard.StandardBuildDistribution.build { get; }`](../../build/distributions/Inno.Build.Distribution.Standard/StandardBuildDistribution.cs#L37) | Gets the neutral distribution borrowed by product hosts and shared pipeline mechanisms. | — | — |
-| <a id="api-a86fde7406b2e1bb"></a>[`public sealed class Inno.Build.Distribution.Standard.StandardBuildDistribution`](../../build/distributions/Inno.Build.Distribution.Standard/StandardBuildDistribution.cs#L22) | Binds platform publication and backend configuration once at the standard distribution boundary. | — | — |
+| <a id="api-bf845cdc31dae974"></a>[`public static Inno.Build.Distribution.Standard.StandardBuildDistribution Inno.Build.Distribution.Standard.StandardBuildDistribution.Create(Inno.Build.Composition.BuildCompositionContext context, Inno.Build.Toolchains.Bgfx.Tools.ToolRunner? tools = null)`](../../build/distributions/Inno.Build.Distribution.Standard/StandardBuildDistribution.cs#L51) | Composes one explicit binding per implemented platform without resolving tools.<br>返回：A frozen standard distribution with backend configuration bound to the same platform identities.<br>`context`：The explicitly selected SDK and execution host.<br>`tools`：Borrowed frozen content-compilation tools, or null to consume this application's explicit deployment. | 约束由所属类型与本页生命周期定义。 | 具体失败按方法与类型契约处理。 |
+| <a id="api-eaf0b5b001274dff"></a>[`public Inno.Build.Toolchains.Bgfx.Tools.BgfxShaderTargetProfile Inno.Build.Distribution.Standard.StandardBuildDistribution.ResolveShaderTarget(Inno.Build.BuildTargetId target)`](../../build/distributions/Inno.Build.Distribution.Standard/StandardBuildDistribution.cs#L105) | Resolves explicitly registered shader configuration independently of tool execution target.<br>返回：The borrowed immutable configuration; unavailable targets fail before native preparation.<br>`target`：The artifact's actual publication target. | 约束由所属类型与本页生命周期定义。 | `System.NotSupportedException`：The distribution has no shader configuration for this target. |
+| <a id="api-2ee139cff662ba02"></a>[`public Inno.Build.Composition.BuildDistribution Inno.Build.Distribution.Standard.StandardBuildDistribution.build { get; }`](../../build/distributions/Inno.Build.Distribution.Standard/StandardBuildDistribution.cs#L37) | Gets the neutral distribution borrowed by product hosts and shared pipeline mechanisms. | 约束由所属类型与本页生命周期定义。 | 具体失败按方法与类型契约处理。 |
+| <a id="api-a86fde7406b2e1bb"></a>[`public sealed class Inno.Build.Distribution.Standard.StandardBuildDistribution`](../../build/distributions/Inno.Build.Distribution.Standard/StandardBuildDistribution.cs#L22) | Binds platform publication and backend configuration once at the standard distribution boundary. | 约束由所属类型与本页生命周期定义。 | 具体失败按方法与类型契约处理。 |
 
 ### `Inno.Build.Distribution.Standard.StandardBuildEnvironment`
 
 <!-- api: T:Inno.Build.Distribution.Standard.StandardBuildEnvironment 394337b4425899a30bb2d41c27a9dd2aeb0d3d5acf91e15945d186b2ec9f442e -->
-<!-- api: M:Inno.Build.Distribution.Standard.StandardBuildEnvironment.Capture(System.String,Inno.Build.BuildTargetId) 4a30f3929099aee6cb6ab3ad3af5d2fa2de83999343b540422578ef16c76da93 -->
+<!-- api: M:Inno.Build.Distribution.Standard.StandardBuildEnvironment.Capture(System.String,Inno.Build.BuildTargetId,System.String) ffdd261f9c1dda713fd996b771830e607b5788e277217e39e3a41d22bd1b4dba -->
 
 | 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
 | --- | --- | --- | --- |
-| <a id="api-5e096221c19ed040"></a>[`public static Inno.Build.Composition.BuildCompositionContext Inno.Build.Distribution.Standard.StandardBuildEnvironment.Capture(string applicationDirectory, Inno.Build.BuildTargetId toolsTarget)`](../../build/distributions/Inno.Build.Distribution.Standard/StandardBuildEnvironment.cs#L33) | Resolves the selected managed host and captures execution capabilities at the composition boundary.<br>返回：A frozen execution context; publication targets must be selected independently.<br>`applicationDirectory`：The product or tool's installed location used for source provisioning.<br>`toolsTarget`：The native target explicitly selected for executable build tools, independently of exported games. | — | T:System.PlatformNotSupportedException: The distribution has no build execution integration for this system or processor.<br>T:System.IO.FileNotFoundException: The selected managed SDK host cannot be located. |
-| <a id="api-34ce61062e19e5cc"></a>[`public static class Inno.Build.Distribution.Standard.StandardBuildEnvironment`](../../build/distributions/Inno.Build.Distribution.Standard/StandardBuildEnvironment.cs#L13) | Captures the actual machine running distribution tools without choosing an output target. | — | — |
+| <a id="api-25327c3983a2684a"></a>[`public static Inno.Build.Composition.BuildCompositionContext Inno.Build.Distribution.Standard.StandardBuildEnvironment.Capture(string applicationDirectory, Inno.Build.BuildTargetId toolsTarget, string? dotnetHost = null)`](../../build/distributions/Inno.Build.Distribution.Standard/StandardBuildEnvironment.cs#L36) | Resolves the selected managed host and captures execution capabilities at the composition boundary.<br>返回：A frozen execution context; publication targets must be selected independently.<br>`applicationDirectory`：The product or tool's installed location used for source provisioning.<br>`toolsTarget`：The native target explicitly selected for executable build tools, independently of exported games.<br>`dotnetHost`：An explicit managed SDK executable, or null to use the current tool process's selected host. | 约束由所属类型与本页生命周期定义。 | `System.PlatformNotSupportedException`：The distribution has no build execution integration for this system or processor.<br>`System.IO.FileNotFoundException`：The selected managed SDK host cannot be located. |
+| <a id="api-34ce61062e19e5cc"></a>[`public static class Inno.Build.Distribution.Standard.StandardBuildEnvironment`](../../build/distributions/Inno.Build.Distribution.Standard/StandardBuildEnvironment.cs#L13) | Captures the actual machine running distribution tools without choosing an output target. | 约束由所属类型与本页生命周期定义。 | 具体失败按方法与类型契约处理。 |
 
 ### `Inno.Build.Distribution.Standard.StandardNativeBuildPlans`
 
@@ -103,26 +103,24 @@ Windows Editor 导出 Browser 游戏时，离线工具仍需能在 Windows 执�
 
 | 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
 | --- | --- | --- | --- |
-| <a id="api-b5897980618c5052"></a>[`public static Inno.Build.Toolchains.ProductNativeBuildPlan Inno.Build.Distribution.Standard.StandardNativeBuildPlans.CreateEditor(Inno.Build.Toolchains.Bgfx.BgfxNativeBuildProfile profile)`](../../build/distributions/Inno.Build.Distribution.Standard/StandardNativeBuildPlans.cs#L51) | Composes the shared runtime closure and the Editor's presentation and authoring tools.<br>返回：A fresh immutable Editor plan with the ImGuizmo dependency declared explicitly.<br>`profile`：The selected integration-owned BGFX SDK invocation for standalone component builds. | — | — |
-| <a id="api-47dae7cb628b2853"></a>[`public static Inno.Build.Toolchains.ProductNativeBuildPlan Inno.Build.Distribution.Standard.StandardNativeBuildPlans.CreatePlayer(Inno.Build.Toolchains.Bgfx.BgfxNativeBuildProfile profile)`](../../build/distributions/Inno.Build.Distribution.Standard/StandardNativeBuildPlans.cs#L29) | Composes the standard Player's reusable native components with explicit deployment policies.<br>返回：A fresh immutable Player plan without resolving tools or touching source files.<br>`profile`：The selected integration-owned BGFX SDK invocation for standalone component builds. | — | — |
-| <a id="api-7fe23ed93edc6bc2"></a>[`public static Inno.Build.Toolchains.ProductNativeBuildPlan Inno.Build.Distribution.Standard.StandardNativeBuildPlans.CreateShaderTools(Inno.Build.Toolchains.Bgfx.BgfxNativeBuildProfile profile)`](../../build/distributions/Inno.Build.Distribution.Standard/StandardNativeBuildPlans.cs#L40) | Selects only the offline graphics compiler component needed for shader publication.<br>返回：An immutable tool product without runtime or Editor presentation dependencies.<br>`profile`：The selected integration-owned BGFX SDK invocation for standalone component builds. | — | — |
-| <a id="api-6f2c88d15309aa11"></a>[`public static Inno.Build.Toolchains.ProductNativeBuildPlan Inno.Build.Distribution.Standard.StandardNativeBuildPlans.CreateStaticPlayer(Inno.Build.Toolchains.NativeComponentBuildOptions graphicsOptions)`](../../build/distributions/Inno.Build.Distribution.Standard/StandardNativeBuildPlans.cs#L95) | Declares the real static component closure consumed by an explicit aggregate executor.<br>返回：A Player closure with static recipes and no unused standalone producers.<br>`graphicsOptions`：The selected platform and graphics integration's explicit static component configuration. | — | T:System.ArgumentNullException: Graphics configuration is null.<br>T:System.ArgumentException: Graphics configuration requests shared rather than static linkage. |
-| <a id="api-9b544a3d7e56a71a"></a>[`public static class Inno.Build.Distribution.Standard.StandardNativeBuildPlans`](../../build/distributions/Inno.Build.Distribution.Standard/StandardNativeBuildPlans.cs#L18) | Declares the standard product closures while keeping backend selection out of shared build mechanisms. | — | — |
+| <a id="api-b5897980618c5052"></a>[`public static Inno.Build.Toolchains.ProductNativeBuildPlan Inno.Build.Distribution.Standard.StandardNativeBuildPlans.CreateEditor(Inno.Build.Toolchains.Bgfx.BgfxNativeBuildProfile profile)`](../../build/distributions/Inno.Build.Distribution.Standard/StandardNativeBuildPlans.cs#L51) | Composes the shared runtime closure and the Editor's presentation and authoring tools.<br>返回：A fresh immutable Editor plan with the ImGuizmo dependency declared explicitly.<br>`profile`：The selected integration-owned BGFX SDK invocation for standalone component builds. | 约束由所属类型与本页生命周期定义。 | 具体失败按方法与类型契约处理。 |
+| <a id="api-47dae7cb628b2853"></a>[`public static Inno.Build.Toolchains.ProductNativeBuildPlan Inno.Build.Distribution.Standard.StandardNativeBuildPlans.CreatePlayer(Inno.Build.Toolchains.Bgfx.BgfxNativeBuildProfile profile)`](../../build/distributions/Inno.Build.Distribution.Standard/StandardNativeBuildPlans.cs#L29) | Composes the standard Player's reusable native components with explicit deployment policies.<br>返回：A fresh immutable Player plan without resolving tools or touching source files.<br>`profile`：The selected integration-owned BGFX SDK invocation for standalone component builds. | 约束由所属类型与本页生命周期定义。 | 具体失败按方法与类型契约处理。 |
+| <a id="api-7fe23ed93edc6bc2"></a>[`public static Inno.Build.Toolchains.ProductNativeBuildPlan Inno.Build.Distribution.Standard.StandardNativeBuildPlans.CreateShaderTools(Inno.Build.Toolchains.Bgfx.BgfxNativeBuildProfile profile)`](../../build/distributions/Inno.Build.Distribution.Standard/StandardNativeBuildPlans.cs#L40) | Selects only the offline graphics compiler component needed for shader publication.<br>返回：An immutable tool product without runtime or Editor presentation dependencies.<br>`profile`：The selected integration-owned BGFX SDK invocation for standalone component builds. | 约束由所属类型与本页生命周期定义。 | 具体失败按方法与类型契约处理。 |
+| <a id="api-6f2c88d15309aa11"></a>[`public static Inno.Build.Toolchains.ProductNativeBuildPlan Inno.Build.Distribution.Standard.StandardNativeBuildPlans.CreateStaticPlayer(Inno.Build.Toolchains.NativeComponentBuildOptions graphicsOptions)`](../../build/distributions/Inno.Build.Distribution.Standard/StandardNativeBuildPlans.cs#L95) | Declares the real static component closure consumed by an explicit aggregate executor.<br>返回：A Player closure with static recipes and no unused standalone producers.<br>`graphicsOptions`：The selected platform and graphics integration's explicit static component configuration. | 约束由所属类型与本页生命周期定义。 | `System.ArgumentNullException`：Graphics configuration is null.<br>`System.ArgumentException`：Graphics configuration requests shared rather than static linkage. |
+| <a id="api-9b544a3d7e56a71a"></a>[`public static class Inno.Build.Distribution.Standard.StandardNativeBuildPlans`](../../build/distributions/Inno.Build.Distribution.Standard/StandardNativeBuildPlans.cs#L18) | Declares the standard product closures while keeping backend selection out of shared build mechanisms. | 约束由所属类型与本页生命周期定义。 | 具体失败按方法与类型契约处理。 |
 
 ## 项目依赖
 
 - [Inno.Build.Bindings](Inno.Build.Bindings.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Integration.Windows.Bgfx](../platform/Windows/Inno.Integration.Windows.Bgfx.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Integration.MacOS.Bgfx](../platform/MacOS/Inno.Integration.MacOS.Bgfx.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Integration.Browser.Bgfx](../platform/Browser/Inno.Integration.Browser.Bgfx.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Integration.Linux.Bgfx](../platform/Linux/Inno.Integration.Linux.Bgfx.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Integration.WindowsX64.Bgfx](../platform/WindowsX64/Inno.Integration.WindowsX64.Bgfx.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Integration.MacOSArm64.Bgfx](../platform/MacOSArm64/Inno.Integration.MacOSArm64.Bgfx.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Integration.BrowserWasm32.Bgfx](../platform/BrowserWasm32/Inno.Integration.BrowserWasm32.Bgfx.md)：实现依赖，PrivateAssets="compile"。
 - [Inno.Build.Toolchains.Bgfx.Tools](../backends/Bgfx/Inno.Build.Toolchains.Bgfx.Tools.md)：公开引用边界由实际签名核对。
 - [Inno.Build.Composition](Inno.Build.Composition.md)：公开引用边界由实际签名核对。
 - [Inno.Build.Managed.DotNet](../backends/DotNet/Inno.Build.Managed.DotNet.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Build.Windows](../platform/Windows/Inno.Build.Windows.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Build.MacOS](../platform/MacOS/Inno.Build.MacOS.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Build.Browser](../platform/Browser/Inno.Build.Browser.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Build.Linux](../platform/Linux/Inno.Build.Linux.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Build.WindowsX64](../platform/WindowsX64/Inno.Build.WindowsX64.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Build.MacOSArm64](../platform/MacOSArm64/Inno.Build.MacOSArm64.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Build.BrowserWasm32](../platform/BrowserWasm32/Inno.Build.BrowserWasm32.md)：实现依赖，PrivateAssets="compile"。
 - [Inno.Build.Toolchains.Bgfx](../backends/Bgfx/Inno.Build.Toolchains.Bgfx.md)：公开引用边界由实际签名核对。
 - [Inno.Build.Toolchains.ImGui](../backends/ImGui/Inno.Build.Toolchains.ImGui.md)：实现依赖，PrivateAssets="compile"。
 - [Inno.Build.Toolchains.ImGuizmo](../backends/ImGui/Inno.Build.Toolchains.ImGuizmo.md)：实现依赖，PrivateAssets="compile"。

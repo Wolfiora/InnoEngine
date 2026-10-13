@@ -1,5 +1,4 @@
 <Project>
-  <Import Project="Inno.Dependencies.props" Condition="'$(_InnoDependenciesImported)' != 'true'" />
   <PropertyGroup>
 
     <InnoTaskProject>$(MSBuildThisFileDirectory)../tasks/Inno.Build.Tasks/Inno.Build.Tasks.csproj</InnoTaskProject>
@@ -12,8 +11,9 @@
     <InnoTaskHostAssembly>$(InnoTaskLoadDirectory)/Inno.Build.Tasks.dll</InnoTaskHostAssembly>
     <InnoTaskPublisherDirectory>$(InnoTaskArtifacts)/publishers/$(InnoTaskLoadId)/$(Configuration)</InnoTaskPublisherDirectory>
     <InnoTaskPublisherAssembly>$(InnoTaskPublisherDirectory)/Inno.Build.TaskHosting.dll</InnoTaskPublisherAssembly>
-    <InnoTaskHostProperties>Configuration=$(Configuration);BindGenRoot=$([System.IO.Path]::GetFullPath('$(BindGenRoot)'));BuildProjectReferences=true</InnoTaskHostProperties>
+    <InnoTaskHostProperties>Configuration=$(Configuration);BuildProjectReferences=true</InnoTaskHostProperties>
     <InnoCompilerToolExcludedProperties>InnoProductId;InnoProductTarget;InnoProductBuildProperties;InnoBgfxShaderTarget;InnoBgfxShaderApis;InnoImGuiShaderTarget;InnoImGuiShaderApis;InnoProductRestore;InnoToolTarget;InnoPrepareProductNative;InnoNativeTarget;InnoNativeBuildFingerprint;InnoNativeBindingSelection;InnoNativeLibraryKind;RuntimeIdentifier;RuntimeIdentifiers;TargetFramework;TargetFrameworks;InnoBindingEngineRoot;InnoBindingDefinition;InnoBindingTargetId;InnoBindingOutputMode;InnoBindingDotnetHost;BindGenOutputDirectory;BindGenGeneratedSource;BindGenGenerationFingerprint;BindGenNativeBridgeDirectory;BindGenDescriptorOutput;BindGenExpectedFingerprint;DebugType;DebugSymbols;DefineConstants;PublishAot;RunAOTCompilation;PublishTrimmed;SelfContained;PublishSingleFile;PublishDir;WasmBuildNative;InnoGeneratePlayerComposition;ArtifactsPivots;UseArtifactsOutput;MSBuildProjectExtensionsPath;BaseOutputPath;BaseIntermediateOutputPath;OutputPath;IntermediateOutputPath;IsCrossTargetingBuild</InnoCompilerToolExcludedProperties>
+    <InnoCompilerToolExcludedProperties>$(InnoCompilerToolExcludedProperties);InnoBuildCliOutputPath;InnoShaderToolSourceRoot;NuGetLockFilePath</InnoCompilerToolExcludedProperties>
     <!-- Compiler references stay in the solution build; private task preparation owns a separate graph. -->
     <InnoTaskExcludedProperties>$(InnoCompilerToolExcludedProperties);BuildingInsideVisualStudio;BuildingSolutionFile;CurrentSolutionConfigurationContents;DesignTimeBuild</InnoTaskExcludedProperties>
     <!-- Tool restore has its own project closure, independent of the IDE solution. -->

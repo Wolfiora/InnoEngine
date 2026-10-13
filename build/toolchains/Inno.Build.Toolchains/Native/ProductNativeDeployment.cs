@@ -107,7 +107,14 @@ public static class ProductNativeDeployment
             }
             ValidateProducts(closure, cancellationToken);
             cancellationToken.ThrowIfCancellationRequested();
-            AtomicDirectory.Install(staging, destination);
+            try
+            {
+                AtomicDirectory.Install(staging, destination);
+            }
+            catch (DirectoryCleanupException cleanupFailure)
+            {
+                Console.Error.WriteLine(cleanupFailure.Message);
+            }
         }
         finally
         {

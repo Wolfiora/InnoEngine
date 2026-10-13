@@ -33,7 +33,7 @@ public sealed class RuntimeSessionTests : IDisposable
         using RuntimeSession session = host.CreateSession(options);
 
         using (session.EnterExecutionScope())
-            Log.Info("session-inline-delivery");
+            Log.Info(typeof(RuntimeSessionTests), "session-inline-delivery");
 
         string file = Assert.Single(Directory.GetFiles(Path.Combine(m_root, "Persistent", "inline", "Logs")));
         using var stream = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);

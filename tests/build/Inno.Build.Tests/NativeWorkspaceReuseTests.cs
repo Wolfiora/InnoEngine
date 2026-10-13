@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Inno.Build.Toolchains;
-using Inno.Build.Windows;
+using Inno.Build.WindowsX64;
 using Xunit;
 
 namespace Inno.Build.Tests;
@@ -169,7 +169,7 @@ public sealed class NativeWorkspaceReuseTests : IDisposable
     {
         if (!OperatingSystem.IsWindows())
             return;
-        NativeToolchainSelection tools = await new WindowsNativeToolchainProvider(
+        NativeToolchainSelection tools = await new WindowsX64NativeToolchainProvider(
             ToolchainEnvironment.ResolveExecutable("dotnet")).ResolveAsync(new(m_root, "release"),
             new BuildHostDescriptor("Windows", "x64"), "windows-x64", CancellationToken.None);
         string source = Path.Combine(m_root, "Source");

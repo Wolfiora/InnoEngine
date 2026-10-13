@@ -221,7 +221,7 @@ public sealed class BuildPipeline
     /// Prepare current packs with EnsurePlayerSupportPackAsync before invoking this method on the
     /// authoring owner's thread. The synchronous snapshot phase never waits for asynchronous provisioning.
     /// Coordinate readers and writers of the output directory during its two installation moves.
-    /// Backup cleanup failures preserve the installed candidate and report its remaining backup.
+    /// Post-commit backup, staging and progress observer failures are warnings on the successful result.
     /// </remarks>
     /// <param name="request">
     /// The exact profile, destination, and activated runtime compilation generation.
@@ -245,7 +245,7 @@ public sealed class BuildPipeline
     /// The target Support Pack is present but invalid.
     /// </exception>
     /// <exception cref="IOException">
-    /// Output installation fails, or cleanup of the previous output's backup fails after commit.
+    /// Output installation fails before a complete candidate is committed.
     /// </exception>
     /// <exception cref="AggregateException">
     /// Output installation and restoration both fail; the previous tree remains at the reported backup path.

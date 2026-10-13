@@ -22,7 +22,11 @@ internal static class DevelopmentBuildRequest
         result.AddRange(implicitEditor ? arguments : arguments[1..]);
         AddDefault(result, "--engine-root", root);
         AddDefault(result, "--dotnet", dotnet);
-        AddDefault(result, "--target", host.target);
+        int scopeIndex = result.IndexOf("--scope");
+        bool globalCacheCleanup = command == "clean" && scopeIndex >= 0
+            && scopeIndex + 1 < result.Count && result[scopeIndex + 1] == "cache";
+        if (!globalCacheCleanup)
+            AddDefault(result, "--target", host.target);
         AddDefault(result, "--tools-target", host.target);
         AddDefault(result, "--configuration", command is "editor" or "clean" ? configuration : "Release");
         return result.ToArray();

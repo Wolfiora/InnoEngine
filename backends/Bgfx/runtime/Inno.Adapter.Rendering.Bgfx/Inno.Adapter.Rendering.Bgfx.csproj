@@ -24,7 +24,7 @@
     <Error Condition="'$(InnoBgfxShaderTarget)' == '' or '@(_CompositionShaderApi)' == ''"
            Text="BGFX composition shader compilation requires the product's explicit shader platform and graphics API set." />
     <CompileShaderTask
-      EngineRoot="$(MSBuildProjectDirectory)/../../../.."
+      EngineRoot="$(InnoShaderToolSourceRoot)"
       Configuration="$(Configuration)"
       AssetRoot="$(MSBuildProjectDirectory)/Shaders"
       ShaderPath="Composition.ishader"
@@ -33,7 +33,7 @@
       OutputFile="$(_InnoShaderIntermediateRoot)/Shaders/Composition/%(_CompositionShaderApi.Identity)/Outputs/Composition.%(_CompositionShaderApi.Identity).bin"
       ToolTarget="$(InnoToolTarget)" />
     <CompileShaderTask
-      EngineRoot="$(MSBuildProjectDirectory)/../../../.."
+      EngineRoot="$(InnoShaderToolSourceRoot)"
       Configuration="$(Configuration)"
       AssetRoot="$(MSBuildProjectDirectory)/Shaders"
       ShaderPath="OutputTransfer.ishader"

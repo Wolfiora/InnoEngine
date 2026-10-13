@@ -1,4 +1,4 @@
-using Inno.Integration.MacOS.Bgfx;
+using Inno.Integration.MacOSArm64.Bgfx;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -162,7 +162,7 @@ public sealed class ShaderResourceIrTests
     private static async Task<ShaderStageToolResult> Compile(ShaderIrStage stage, GraphicsCapability features = GraphicsCapability.Compute
         | GraphicsCapability.StorageBuffer | GraphicsCapability.StorageTexture | GraphicsCapability.Texture2DArray | GraphicsCapability.Texture3D)
     {
-        var toolchain = new BgfxShadercToolchain(Inno.Integration.MacOS.Bgfx.MacOSBgfxShaderProfiles.target);
+        var toolchain = new BgfxShadercToolchain(Inno.Integration.MacOSArm64.Bgfx.MacOSArm64BgfxShaderProfiles.target);
         var capabilities = new GraphicsCapabilities(GraphicsApi.Metal, features, new GraphicsLimits(256, 8, 8192, 16),
             Enum.GetValues<RenderTextureFormat>(), Enum.GetValues<RenderTextureFormat>(), Enum.GetValues<RenderTextureFormat>(),
             Enum.GetValues<RenderTextureFormat>(), false, false);

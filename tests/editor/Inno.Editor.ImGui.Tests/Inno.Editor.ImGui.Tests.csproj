@@ -15,7 +15,7 @@
     <ProjectReference Include="../../../backends/ImGui/runtime/Inno.Adapter.Presentation.ImGui.Sdl3/Inno.Adapter.Presentation.ImGui.Sdl3.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../../backends/Sdl3/runtime/Inno.Adapter.Platform.Sdl3/Inno.Adapter.Platform.Sdl3.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../../backends/Sdl3/native/Inno.Native.Sdl3/Inno.Native.Sdl3.csproj" PrivateAssets="compile" />
-    <ProjectReference Include="../../../platforms/Windows/integrations/Inno.Integration.Windows.Sdl3/Inno.Integration.Windows.Sdl3.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../../platforms/WindowsX64/integrations/Inno.Integration.WindowsX64.Sdl3/Inno.Integration.WindowsX64.Sdl3.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../../src/composition/editor/presentation/Inno.Editor.ImGui/Inno.Editor.ImGui.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../../backends/ImGui/native/Inno.Native.ImGui/Inno.Native.ImGui.csproj" PrivateAssets="compile" />
   </ItemGroup>

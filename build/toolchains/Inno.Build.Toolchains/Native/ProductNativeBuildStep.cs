@@ -36,6 +36,9 @@ public sealed class ProductNativeBuildStep
     /// <param name="deploymentPath">
     /// Maps a relative output and target to a deployment path, or null for build-only inputs.
     /// </param>
+    /// <param name="configuration">
+    /// An explicit component configuration, or null to use the product configuration.
+    /// </param>
     /// <exception cref="ArgumentException">
     /// The identity or dependency set is invalid.
     /// </exception>
@@ -49,7 +52,8 @@ public sealed class ProductNativeBuildStep
         IReadOnlyList<string> dependencies,
         Func<NativeBuildContext, IReadOnlyDictionary<string, NativeBuildProduct>, CancellationToken, Task<NativeBuildProduct>>? build,
         Func<NativeBuildContext, NativeBuildRecipe>? createRecipe,
-        Func<string, string, string?> deploymentPath
+        Func<string, string, string?> deploymentPath,
+        string? configuration = null
     ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(id);
         ArgumentNullException.ThrowIfNull(component);
@@ -64,6 +68,8 @@ public sealed class ProductNativeBuildStep
         if ((build is null) != (createRecipe is null))
             throw new ArgumentException("A standalone producer requires its own source declaration; aggregate steps use their static definition.", nameof(createRecipe));
         ArgumentNullException.ThrowIfNull(deploymentPath);
+        if (configuration is not null)
+            ToolchainEnvironment.ValidateConfiguration(configuration);
         if (dependencies.Any(string.IsNullOrWhiteSpace) || dependencies.Distinct(StringComparer.Ordinal).Count() != dependencies.Count)
             throw new ArgumentException("Component dependencies must be assigned and unique.", nameof(dependencies));
         this.id = id;
@@ -73,6 +79,7 @@ public sealed class ProductNativeBuildStep
         this.build = build;
         this.createRecipe = createRecipe;
         this.deploymentPath = deploymentPath;
+        this.configuration = configuration;
     }
 
     /// <summary>
@@ -110,4 +117,9 @@ public sealed class ProductNativeBuildStep
     /// Gets the explicit output layout policy; null results exclude build-only files.
     /// </summary>
     public Func<string, string, string?> deploymentPath { get; }
+
+    /// <summary>
+    /// Gets the step's explicit configuration, or null to borrow the containing product configuration.
+    /// </summary>
+    public string? configuration { get; }
 }

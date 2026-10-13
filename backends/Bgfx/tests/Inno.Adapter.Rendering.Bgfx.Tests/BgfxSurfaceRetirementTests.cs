@@ -1,7 +1,7 @@
 using System;
 using Inno.Adapter.Platform;
 using Inno.Adapter.Platform.Sdl3;
-using Inno.Integration.Windows.Sdl3;
+using Inno.Integration.WindowsX64.Sdl3;
 using Inno.Platform;
 using Inno.Rendering;
 using Xunit;
@@ -9,6 +9,7 @@ using Xunit;
 namespace Inno.Adapter.Rendering.Bgfx.Tests;
 
 [Collection("Windowed BGFX")]
+[Trait("ProcessIsolation", "Required")]
 public sealed class BgfxSurfaceRetirementTests
 {
     [Fact]
@@ -20,7 +21,7 @@ public sealed class BgfxSurfaceRetirementTests
     [Fact]
     public void InvalidIntegrationFailsBeforeTakingTheProcessOwner()
     {
-        using var application = new Sdl3PlatformApplication(new WindowsSdl3HostIntegration());
+        using var application = new Sdl3PlatformApplication(new WindowsX64Sdl3HostIntegration());
         using var window = application.CreateWindow(new PlatformWindowOptions
         {
             title = "Invalid integration", width = 100, height = 90, visible = false
@@ -43,7 +44,7 @@ public sealed class BgfxSurfaceRetirementTests
 
     private static void VerifyRetirement(bool inline)
     {
-        using var application = new Sdl3PlatformApplication(new WindowsSdl3HostIntegration());
+        using var application = new Sdl3PlatformApplication(new WindowsX64Sdl3HostIntegration());
         using var primary = application.CreateWindow(new PlatformWindowOptions
         {
             title = "Primary surface", width = 100, height = 90, visible = false

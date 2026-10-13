@@ -1,0 +1,156 @@
+using Inno.Adapter.Rendering;
+using Inno.Adapter.Rendering.Bgfx;
+using Inno.Integration.WindowsX64.Bgfx.Runtime;
+using Inno.Adapter.Presentation.ImGui;
+using Inno.Integration.WindowsX64.Bgfx;
+using Inno.Adapter.Platform;
+using Inno.Adapter.Platform.Sdl3;
+using Inno.Integration.WindowsX64.Sdl3;
+using Inno.Build.Toolchains.Bgfx.Tools;
+using System;
+using System.IO;
+using System.Threading;
+using Inno.Adapter.Authoring.Default;
+using Inno.Adapter.Default;
+using Inno.Adapter.Modules.DotNet;
+using Inno.Adapter.Presentation;
+using Inno.Adapter.Serialization.DotNet;
+using Inno.Adapter.Storage;
+using Inno.Adapter.Storage.FileSystem;
+using Inno.Build;
+using Inno.Build.Distribution.Standard;
+using Inno.Core.Execution;
+using Inno.Core.Logging;
+using Inno.Editor.Hosting;
+using Inno.Editor.Core;
+using Inno.Core.Input;
+using Inno.Extensibility.Modules;
+using Inno.Platform;
+using Inno.Platform.WindowsX64;
+using Inno.Runtime;
+using Inno.Scripting.Compiler;
+using Inno.Shell;
+
+namespace Inno.Editor.WindowsX64;
+
+/// <summary>
+/// Composes the Windows Editor from explicit platform integrations and shared product hosting.
+/// </summary>
+public static class WindowsX64EditorComposition
+{
+    /// <summary>
+    /// Runs the platform Editor on the caller's main thread; no directory opens the native folder dialog.
+    /// </summary>
+    /// <param name="arguments">
+    /// An optional project directory and the shared Editor command-line options.
+    /// </param>
+    /// <returns>
+    /// Zero on normal exit or dialog cancellation, two on cancellation or invalid arguments, or one on startup failure.
+    /// </returns>
+    /// <param name="cancellationToken">
+    /// Cancels preparation or requests orderly shutdown of the shared Editor host.
+    /// An open native folder dialog retains its callback owner until the user completes or closes it.
+    /// </param>
+    public static int Run(
+        string[] arguments,
+        CancellationToken cancellationToken
+    ) {
+        try
+        {
+            ArgumentNullException.ThrowIfNull(arguments);
+            cancellationToken.ThrowIfCancellationRequested();
+            if (arguments.Length == 0)
+            {
+                using var picker = new Sdl3PlatformApplication(new WindowsX64Sdl3HostIntegration());
+                string? selected = Sdl3FolderDialog.SelectFolder(picker);
+                if (selected is null)
+                    return 0;
+                arguments = [selected];
+            }
+            EditorCommandLineOptions command = EditorCommandLineOptions.Parse(arguments);
+            _ = WindowsX64ApplicationLocations.userDataRoot;
+            string project = Path.GetFullPath(command.projectDirectory);
+            string persistentRoot = Path.Combine(project, "Library", "PersistentData");
+            var adapters = new DefaultAuthoringAdapterCatalog(new DefaultAdapterCatalogOptions
+            {
+                platform = new PlatformBackendCatalog([new Sdl3PlatformBackendProvider(new WindowsX64Sdl3HostIntegration())]),
+                rendering = new RenderingBackendCatalog([new BgfxRenderingBackendProvider(new WindowsX64BgfxSurfaceIntegration())]),
+                storage = new StorageBackendCatalog([new FileSystemStorageBackendProvider(persistentRoot)])
+            }, [new BgfxAuthoringProvider(WindowsX64BgfxIntegration.shaderProfile)],
+                [new ImGuiPresentationProvider(new ImGuiInteractionOptions(commandKeyBehavior: false, horizontalWheelDirection: 1))]);
+            var buildContext = StandardBuildEnvironment.Capture(Path.GetDirectoryName(typeof(WindowsX64EditorComposition).Assembly.Location)!, BuildTargetId.windowsX64);
+            var launch = new EditorLaunchOptions
+            {
+                defaultBuildTarget = Inno.Build.BuildTargetId.windowsX64,
+                projectDirectory = project,
+                keyboard = new EditorKeyboardPolicy(KeyModifier.Control, "Super"),
+                adapterCatalog = adapters,
+                shell = new ShellOptions
+                {
+                    adapters = StandardAdapterSelection.Create(StorageBackendId.fileSystem),
+                    window = new PlatformWindowOptions
+                    {
+                        title = "Inno Editor",
+                        width = 1600,
+                        height = 900,
+                        resizable = true,
+                        highPixelDensity = true
+                    },
+                    preferredGraphicsApi = command.graphicsApi,
+                    sRgbBackbuffer = true
+                },
+                presentation = PresentationBackendId.imGui,
+                frameDriver = new PollingShellFrameDriver(),
+                distribution = StandardBuildDistribution.Create(buildContext).build,
+                buildContext = buildContext,
+                supportPackRoot = Path.Combine(Path.GetDirectoryName(typeof(WindowsX64EditorComposition).Assembly.Location)!, "SupportPacks"),
+                createEngineHost = CreateEngineHost,
+                createScriptModuleSource = deployment => CreateScriptModuleSource(project, deployment),
+                createSessionLogSink = (
+                    kind,
+                    session
+                ) => new FileLogSink(Path.Combine(persistentRoot,
+                    kind == RuntimeSessionKind.Play ? "inno.editor.play" : "inno.editor", "Logs", session.ToString())),
+                createHostLogSink = () => new ConsoleLogSink(useColors: true),
+                smokeFrameLimit = command.smokeFrameLimit
+            };
+            return OwnerThreadExecution.Run(() => EditorApplication.RunAsync(launch, cancellationToken));
+        }
+        catch (OperationCanceledException)
+        {
+            return 2;
+        }
+        catch (ArgumentException exception)
+        {
+            Console.Error.WriteLine(exception.Message);
+            return 2;
+        }
+        catch (Exception exception)
+        {
+            Console.Error.WriteLine($"[{DateTime.Now:O}] Unhandled exception:{Environment.NewLine}{exception}");
+            return 1;
+        }
+    }
+
+    private static EngineHost CreateEngineHost()
+        => new EngineHostBuilder().UseMetadataSources(
+            new DotNetAssemblyCatalogSource(typeof(WindowsX64EditorComposition).Assembly),
+            new ReflectionTypeCatalogSource(),
+            new ReflectionSerializationMetadataSource()).Build();
+
+    private static IModuleSource CreateScriptModuleSource(
+        string project,
+        ScriptModuleDeployment deployment
+    ) => new DotNetModuleSource
+    {
+        artifactRootDirectory = Path.Combine(project, "Library", "Assemblies"),
+        moduleName = deployment.moduleName,
+        mainAssemblyPath = deployment.mainAssemblyPath,
+        domain = deployment.domain,
+        scope = deployment.scope,
+        preloadAssemblyPaths = deployment.preloadAssemblyPaths,
+        upstreamModuleNames = deployment.upstreamModuleNames,
+        assemblyScopes = deployment.assemblyScopes,
+        collectible = true
+    };
+}

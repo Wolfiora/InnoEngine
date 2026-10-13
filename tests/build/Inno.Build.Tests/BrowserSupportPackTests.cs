@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using Inno.Build;
 using Inno.Build.Distribution.Standard;
@@ -22,15 +23,17 @@ public sealed class BrowserSupportPackTests : IDisposable
     [Fact]
     public async Task BrowserPackRequiresItsStaticGameLinkerClosure()
     {
-        ProductNativeBuildPlan plan = StandardNativeBuildPlans.CreateStaticPlayer(Inno.Integration.Browser.Bgfx.BrowserBgfxIntegration.nativeOptions);
-        var validator = new Inno.Build.Browser.BrowserSupportPackValidator(plan);
+        ProductNativeBuildPlan plan = StandardNativeBuildPlans.CreateStaticPlayer(Inno.Integration.BrowserWasm32.Bgfx.BrowserWasm32BgfxIntegration.nativeOptions);
+        IPlayerSupportPackValidator validator = StandardBuildDistribution.Create(
+            StandardBuildEnvironment.Capture(AppContext.BaseDirectory, BuildTargetId.windowsX64)).build.platforms
+            .Single(static platform => platform.descriptor.id == BuildTargetId.browserWasm).supportPackSource;
         string pack = Path.Combine(m_root, "candidate");
         Write(pack, "References/Inno.Runtime.dll");
         Write(pack, "PlayerLink/Player.csproj");
         Write(pack, "PlayerLink/Program.cs");
-        Write(pack, "PlayerLink/BrowserPlayerComposition.cs");
+        Write(pack, "PlayerLink/BrowserWasm32PlayerComposition.cs");
         Write(pack, "PlayerLink/HttpPlayerContentSource.cs");
-        Write(pack, "PlayerLink/BrowserBridge.cs");
+        Write(pack, "PlayerLink/BrowserWasm32Bridge.cs");
         Write(pack, "PlayerLink/global.json");
         Write(pack, "PlayerLink/Analyzers/Inno.Runtime.Generators.dll");
         Write(pack, "PlayerLink/Analyzers/Inno.Core.Serialization.Generators.dll");
@@ -43,7 +46,11 @@ public sealed class BrowserSupportPackTests : IDisposable
             "Inno.Native.Bgfx.dll", "Inno.Native.MiniAudio.dll",
             "Inno.Native.Sdl3.dll", "Inno.Native.Text.dll", "Inno.Native.UI.dll"
         })
+        {
             Write(pack, "PlayerLink/References/" + binding);
+            Write(pack, "References/" + binding);
+        }
+        Write(pack, "PlayerLink/References/BGCS.Runtime.dll");
         foreach (ProductNativeBuildStep step in plan.steps)
             foreach (string archive in step.component.staticBuild!.archiveNames)
                 Write(pack, $"PlayerLink/Native/{step.id}/browser-wasm/{archive}");
@@ -64,7 +71,7 @@ public sealed class BrowserSupportPackTests : IDisposable
         File.Delete(Path.Combine(pack, "PlayerLink", "Native", "extra.a"));
         using PlayerSupportPackLease published = await catalog.PublishAsync(BuildTargetId.browserWasm, pack, validator);
         pack = published.directory;
-        Assert.False(File.Exists(Path.Combine(pack, "PlayerLink", "References", "BGCS.Runtime.dll")));
+        Assert.True(File.Exists(Path.Combine(pack, "PlayerLink", "References", "BGCS.Runtime.dll")));
         using PlayerSupportPackLease selected = catalog.Acquire(BuildTargetId.browserWasm, validator);
         Assert.Equal(pack, selected.directory);
 

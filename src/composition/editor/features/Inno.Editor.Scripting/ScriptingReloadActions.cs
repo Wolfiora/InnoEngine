@@ -16,7 +16,7 @@ internal sealed class ReloadScriptingAction(EditorScripting scripting) : EditorA
     /// The validated editor action state that represents the completed operation.
     /// </returns>
     protected override EditorActionState Query(EditorActionContext context)
-        => scripting.isAvailable ? EditorActionState.enabled : EditorActionState.disabled;
+        => scripting.canReload ? EditorActionState.enabled : EditorActionState.disabled;
 
     /// <summary>
     /// Executes the prepared operation and publishes only a completed result.
@@ -41,7 +41,7 @@ internal sealed class ReloadPluginsAction(EditorScripting scripting) : EditorAct
     /// The validated editor action state that represents the completed operation.
     /// </returns>
     protected override EditorActionState Query(EditorActionContext context)
-        => scripting.isAvailable ? EditorActionState.enabled : EditorActionState.disabled;
+        => scripting.canReload ? EditorActionState.enabled : EditorActionState.disabled;
 
     /// <summary>
     /// Executes the prepared operation and publishes only a completed result.

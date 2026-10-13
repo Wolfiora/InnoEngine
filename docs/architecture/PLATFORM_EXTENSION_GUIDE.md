@@ -44,7 +44,7 @@ flowchart TD
 | 实际组件闭包 | `ProductNativeBuildPlan` |
 | 托管执行与最终链接 | `IManagedDeploymentCompiler` |
 
-Stable target ID 不通过项目名称、CPU 或宿主 OS 拼接。当前完整发布目标是 `windows-x64`、`macos-arm64`、`browser-wasm`；最后一个明确声明 wasm32。Linux 只有 Native SDK 贡献，不是完整游戏发行。
+Stable target ID 不通过项目名称、CPU 或宿主 OS 拼接。当前完整发布目标是 `windows-x64`、`macos-arm64`、`browser-wasm`；最后一个明确声明 wasm32。
 
 ## 2. 以后添加 NS 的具体位置
 
@@ -111,9 +111,9 @@ backend 不引用 `Inno.Platform.NS`。它只消费领域 SPI 和所属 Native f
 
 ## 4. 新增同平台 CPU
 
-例如 WindowsArm64：增加真实目标描述、ABI profile、SDK 参数、runtime/compiler 能力和验收。复用 `Inno.Editor.Windows`、`Inno.Player.Windows` 与 Windows 系统位置服务。
+例如 WindowsArm64：建立真实的 `platforms/WindowsArm64` 目标包，提供目标描述、ABI profile、SDK 参数、runtime/compiler 能力和薄产品组合，完成验收后注册。当前 `Inno.Editor.WindowsX64`、`Inno.Player.WindowsX64` 以及其 integration 明确属于 X64，不能作为 Arm64 的产品实现或反向引用入口。
 
-仅当项目框架、入口或系统生命周期确实不同，才增加产品项目。不得复制一份 Editor、SDL、BGFX 或生成器。Native、binding、managed 与产品产物以明确目标和指纹隔离。
+复用的是共同 Editor Hosting、Player Runtime、共享 backend 及中立构建机制。只有新增 CPU 后确实出现相同系统操作时，才把这些操作提取到独立、真实的共同 SDK/系统实现 owner，由两个目标包共同消费；不得通过另一个目标包复用。新入口只声明该目标的组合，不复制 Editor、SDL、BGFX 或生成器业务。Native、binding、managed 与产品产物以明确目标和指纹隔离。
 
 产品的图形编译配置同样由平台明确注入：Player 的 `InnoProductBuildProperties` 指向所属平台的 `ProductBuild.props`，声明 Shader target 与 API 集合；Editor 的 `EditorProduct.props` 导入该配置并声明 ImGui 使用的 API。新 CPU 可以复用已验证的配置；需要不同配置时只调整平台 owner，不在共享 BGFX/ImGui backend 添加目标判断。工具引导保持宿主配置，游戏导出继续使用自己的目标贡献。
 
@@ -151,7 +151,7 @@ backend 不引用 `Inno.Platform.NS`。它只消费领域 SPI 和所属 Native f
 
 平台基础 build/runtime 不引用 backend；共享 backend 不引用平台/integration。实际 SDK 与 backend 连接归 `platforms/<platform>/integrations/Inno.Integration.<platform>.<backend>`；产品和 Standard Distribution 选择它。IGameBuildTarget 只验证和打包，IGameContentCompiler 由所选 backend 提供，GameBuildContribution 绑定两者；BuildDistribution.CreateBindings 返回完整绑定。
 
-新增 WindowsX86：补 Windows 的目标/SDK/ABI 支持，复用 Windows 产品与 packager，增加真实 BGFX/SDL 接入配置后验收并注册。换图形 backend：增加该 backend 与需要的 integration，替换 compiler/Native plan，平台 packager 不改。NS/iOS：真实 SDK、产品入口与 packaging 归平台包，backend 可复用时直接选择，仅实际差异进入 integration。Browser 换托管运行时只换部署 compiler 和 linker。
+新增 WindowsX86：建立独立目标包，补齐 SDK、32 位 ABI、薄产品组合和实际 BGFX/SDL 接入，复用共同产品功能与已经提取的 SDK/布局机制，完成验收后注册；不能引用 WindowsX64 目标包或沿用其固定 ABI validator。换图形 backend：增加该 backend 与需要的 integration，替换 compiler/Native plan，平台 packager 不改。NS/iOS：真实 SDK、产品入口与 packaging 归平台包，backend 可复用时直接选择，仅实际差异进入 integration。Browser 换托管运行时只换部署 compiler 和 linker。
 
 Native 步骤显式声明 Static/Shared、有序组件参数和输入 bytes；SDL 应用统一窗口 owner/surface；ImGui 在 NewFrame 前刷新尺度，不维护 WindowsX64 返回 ABI。实测范围见[当前验收](CURRENT_ACCEPTANCE.md)。
 
@@ -162,21 +162,21 @@ Native 步骤显式声明 Static/Shared、有序组件参数和输入 bytes；SD
 ### 当前 Windows 的实际组合
 
 ```text
-platforms/Windows/
+platforms/WindowsX64/
 ├─ integrations/
-│  ├─ Inno.Integration.Windows.Sdl3/
-│  │  └─ WindowsSdl3HostIntegration.cs
-│  ├─ Inno.Integration.Windows.Bgfx.Runtime/
-│  │  └─ WindowsBgfxSurfaceIntegration.cs
-│  └─ Inno.Integration.Windows.Bgfx/
-│     ├─ WindowsBgfxIntegration.cs
-│     ├─ WindowsBgfxBuildProfile.cs
-│     ├─ WindowsBgfxShaderProfiles.cs
-│     └─ WindowsBgfxToolContribution.cs
-├─ editor/Inno.Editor.Windows/
-│  └─ WindowsEditorComposition.cs
-└─ player/Inno.Player.Windows/
-   └─ WindowsPlayerComposition.cs
+│  ├─ Inno.Integration.WindowsX64.Sdl3/
+│  │  └─ WindowsX64Sdl3HostIntegration.cs
+│  ├─ Inno.Integration.WindowsX64.Bgfx.Runtime/
+│  │  └─ WindowsX64BgfxSurfaceIntegration.cs
+│  └─ Inno.Integration.WindowsX64.Bgfx/
+│     ├─ WindowsX64BgfxIntegration.cs
+│     ├─ WindowsX64BgfxBuildProfile.cs
+│     ├─ WindowsX64BgfxShaderProfiles.cs
+│     └─ WindowsX64BgfxToolContribution.cs
+├─ editor/Inno.Editor.WindowsX64/
+│  └─ WindowsX64EditorComposition.cs
+└─ player/Inno.Player.WindowsX64/
+   └─ WindowsX64PlayerComposition.cs
 
 backends/
 ├─ Sdl3/runtime/Inno.Adapter.Platform.Sdl3/
@@ -189,7 +189,7 @@ backends/
 
 Windows、macOS、Browser 分别在自己的产品入口注入对应的 surface integration。
 运行期 Player 只需要运行集成；Shader、Native 编译配置由构建集成提供给发行组合。
-可编译的 [Windows backend catalog 组合例子](../platform/Windows/Inno.Editor.Windows.md#backend-catalog-组合)属于平台产品页，使用其真实项目引用。两个 factory 仍需要与 storage factory 一起传入完整的 Catalog options。
+可编译的 [Windows backend catalog 组合例子](../platform/WindowsX64/Inno.Editor.WindowsX64.md#backend-catalog-组合)属于平台产品页，使用其真实项目引用。两个 factory 仍需要与 storage factory 一起传入完整的 Catalog options。
 
 新平台若确实使用 SDL 与 BGFX，就实现对应的 `ISdl3HostIntegration` 和 `IBgfxSurfaceIntegration`，
 然后在产品入口以同样方式注入。共同 `BgfxDevice` 不添加平台名称、ABI 白名单或 Browser 分支。

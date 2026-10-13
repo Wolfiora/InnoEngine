@@ -4,6 +4,8 @@
 
 Game View 是开放 kind `inno.editor.viewport.game` 的通用 viewport host。Panel 不查找内建 Camera，也不解释 Scene。Panel 从 `IEditorGameScenePresentation` 捕获内容范围，并提供输出尺寸、viewport 和指针输入。匹配的输出贡献者把这些数据交给 `IRenderModel`，由模型决定内容采集、帧数据与图构建。
 
+Panel 在单次绘制期间借用 `EditorPlayModeLoop.EnterPresentationScope()`：Playing 时，内容采集和交互使用同一 Play Session 的 Identity、UI 和音频服务；退出绘制立即恢复 Edit 作用域。Editor 模块更新、脚本激活和重载事务不进入这个呈现作用域。
+
 Play Mode 使用与 Edit Session 分离的 Input backend。Game View 每帧向 `EditorGameInputCapture` 报告所属 presentation viewport、画面矩形、ImGui 前景悬停状态与焦点；Host 通过 `IPresentationContext.TryGetWindowId` 解析主窗口或独立窗口。键盘与文本只在 Game View 获得焦点时进入 Play Session；鼠标仅在画面处于前景并被命中时开始输入，按住后的移动与释放保持完整。失焦、隐藏或关闭 Game View 时发送焦点释放事件，清空已按下的按键和鼠标按钮。渲染模型收到的 `RenderOutputInput` 使用同一焦点与命中条件。
 
 `IViewContentSource` 负责提供可采集内容；输出贡献者负责提出视图请求；`IRenderModel` 负责将请求与内容组合成渲染工作。只有内容来源而没有匹配的输出贡献者或模型时，Game View 显示无可用输出状态。多个模型接受同一个 Game View 输出时必须指定 `RenderOutputRoute`，否则显示诊断。

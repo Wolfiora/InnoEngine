@@ -3,10 +3,12 @@ using System.IO;
 using System.Collections.Generic;
 using System.Linq;
 using System.Xml.Linq;
+using System.Text.Json;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Graph;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
+using NuGet.Frameworks;
 
 namespace Inno.Build.Toolchains;
 
@@ -57,7 +59,7 @@ public sealed class ManagedInputGraphTask : Task
                 "EnableDefaultCompileItems", "GenerateAssemblyInfo", "GenerateTargetFrameworkAttribute", "ImplicitUsings",
                 "EnableDefaultEmbeddedResourceItems", "EmbeddedResourceUseDependentUponConvention", "TargetLatestRuntimePatch",
                 "NETCoreSdkVersion", "NetCoreTargetingPackRoot", "TargetingPackVersion", "InnoGeneratePlayerComposition",
-                "InnoBgfxShaderTarget", "InnoBgfxShaderApis", "InnoToolTarget"
+                "InnoBgfxShaderTarget", "InnoBgfxShaderApis", "InnoToolTarget", "InnoShaderToolSourceRoot", "NuGetLockFilePath"
             };
             using (var collection = new ProjectCollection())
             {
@@ -84,6 +86,15 @@ public sealed class ManagedInputGraphTask : Task
                     paths.Add(project.FullPath);
                     foreach (string import in project.ImportPaths)
                         paths.Add(import);
+                    string packageLock = project.GetPropertyValue("NuGetLockFilePath");
+                    if (packageLock.Length != 0)
+                    {
+                        packageLock = Path.GetFullPath(packageLock, root);
+                        if (File.Exists(packageLock))
+                            paths.Add(packageLock);
+                        else
+                            result.Add(new XElement("Declaration", project.FullPath + "|absent-package-lock=" + packageLock));
+                    }
                     foreach (var property in project.GlobalProperties.OrderBy(pair => pair.Key, StringComparer.Ordinal))
                         result.Add(new XElement("Declaration", project.FullPath + "|global:" + property.Key + "=" + property.Value));
                     foreach (string name in compilerProperties)
@@ -127,9 +138,12 @@ public sealed class ManagedInputGraphTask : Task
                     foreach (var framework in project.GetItems("FrameworkReference"))
                     {
                         var known = project.GetItems("KnownFrameworkReference").SingleOrDefault(item => item.EvaluatedInclude == framework.EvaluatedInclude
-                            && item.GetMetadataValue("TargetFramework") == project.GetPropertyValue("TargetFramework"));
+                            && NuGetFramework.Parse(item.GetMetadataValue("TargetFramework")).DotNetFrameworkName
+                                == project.GetPropertyValue("TargetFrameworkMoniker"));
                         if (known == null)
-                            throw new InvalidOperationException("A framework reference has no selected SDK targeting declaration.");
+                            throw new InvalidOperationException("Framework reference '" + framework.EvaluatedInclude
+                                + "' has no SDK targeting declaration for '" + project.GetPropertyValue("TargetFrameworkMoniker")
+                                + "' in '" + project.FullPath + "'.");
                         string version = framework.GetMetadataValue("TargetingPackVersion");
                         if (version.Length == 0)
                             version = known.GetMetadataValue("TargetingPackVersion");
@@ -142,10 +156,25 @@ public sealed class ManagedInputGraphTask : Task
                     // Restored dependency resolution is itself an input; package files are collected by the reader.
                     string assets = project.GetPropertyValue("ProjectAssetsFile");
                     if (assets.Length != 0)
-                        result.Add(new XElement("Assets", new XAttribute("Path", Path.GetFullPath(assets, root)),
-                            new XAttribute("Framework", project.GetPropertyValue("TargetFramework")),
-                            new XAttribute("Moniker", project.GetPropertyValue("TargetFrameworkMoniker")),
-                            new XAttribute("Runtime", project.GetPropertyValue("RuntimeIdentifier"))));
+                    {
+                        assets = Path.GetFullPath(assets, root);
+                        var selectedFramework = NuGetFramework.ParseComponents(project.GetPropertyValue("TargetFrameworkMoniker"),
+                            project.GetPropertyValue("TargetPlatformMoniker"));
+                        string runtime = project.GetPropertyValue("RuntimeIdentifier");
+                        using var restored = JsonDocument.Parse(File.ReadAllText(assets));
+                        string selectedTarget = restored.RootElement.GetProperty("targets").EnumerateObject()
+                            .Select(target => target.Name).SingleOrDefault(target =>
+                            {
+                                int separator = target.IndexOf('/');
+                                string framework = separator < 0 ? target : target.Substring(0, separator);
+                                string targetRuntime = separator < 0 ? string.Empty : target.Substring(separator + 1);
+                                return targetRuntime == runtime && NuGetFramework.Parse(framework).Equals(selectedFramework);
+                            });
+                        if (selectedTarget == null)
+                            throw new InvalidDataException("Restored graph '" + assets + "' has no target for '"
+                                + selectedFramework.GetShortFolderName() + "' with runtime '" + runtime + "'.");
+                        result.Add(new XElement("Assets", new XAttribute("Path", assets), new XAttribute("Target", selectedTarget)));
+                    }
                     for (var parent = new DirectoryInfo(root); parent != null; parent = parent.Parent)
                     {
                         string sdkSelection = Path.Combine(parent.FullName, "global.json");

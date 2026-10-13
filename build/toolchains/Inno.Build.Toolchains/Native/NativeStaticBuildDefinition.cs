@@ -24,6 +24,9 @@ public sealed class NativeStaticBuildDefinition
     /// <param name="archiveNames">
     /// The exact archive file names required after installation.
     /// </param>
+    /// <param name="nativeSourceDirectory">
+    /// The declared checkout-relative root used by the component's native CMake fragment, or null when no such fragment is consumed.
+    /// </param>
     /// <exception cref="ArgumentException">
     /// A path escapes its root or an archive name is invalid or duplicated.
     /// </exception>
@@ -34,12 +37,17 @@ public sealed class NativeStaticBuildDefinition
         string cmakeFile,
         IEnumerable<string> inputPaths,
         IEnumerable<string> archiveNames,
-        IEnumerable<string> targetIds
+        IEnumerable<string> targetIds,
+        string? nativeSourceDirectory = null
     ) {
         ArgumentNullException.ThrowIfNull(inputPaths);
         ArgumentNullException.ThrowIfNull(archiveNames);
         this.cmakeFile = ValidatePath(cmakeFile);
         this.inputPaths = Array.AsReadOnly(inputPaths.Select(ValidatePath).Distinct(StringComparer.Ordinal).ToArray());
+        this.nativeSourceDirectory = nativeSourceDirectory is null ? null : ValidatePath(nativeSourceDirectory);
+        if (this.nativeSourceDirectory is not null && !this.inputPaths.Any(path => path == this.nativeSourceDirectory
+            || path.StartsWith(this.nativeSourceDirectory + "/", StringComparison.Ordinal)))
+            throw new ArgumentException("The native source root must contain declared static recipe inputs.", nameof(nativeSourceDirectory));
         string[] archives = archiveNames.Select(ValidatePath).ToArray();
         if (archives.Length == 0 || archives.Any(static name => name.Contains('/') || !name.EndsWith(".a", StringComparison.Ordinal))
             || archives.Distinct(StringComparer.OrdinalIgnoreCase).Count() != archives.Length)
@@ -62,6 +70,11 @@ public sealed class NativeStaticBuildDefinition
     /// Gets the immutable complete source dependency paths relative to the checkout.
     /// </summary>
     public IReadOnlyList<string> inputPaths { get; }
+
+    /// <summary>
+    /// Gets the declared native fragment's source root, or null when the recipe only consumes its other inputs.
+    /// </summary>
+    public string? nativeSourceDirectory { get; }
 
     /// <summary>
     /// Gets the exact required output closure within this component's target directory.

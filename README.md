@@ -33,10 +33,10 @@ dotnet run --project "entry/InnoEngine.Build/InnoEngine.Build.csproj"
 dotnet run --project "entry/InnoEngine.Editor/InnoEngine.Editor.csproj"
 ```
 
-BindGen-CS is a pinned source submodule under `dependencies/`; a separate sibling checkout is unnecessary. A plain clone initializes missing submodules on the first entry run. Initial preparation needs network access and can take time.
+BGCS is restored from pinned NuGet packages. Native third-party sources remain Git submodules under `extern/`; first preparation initializes missing sources. Initial preparation needs network access and can take time.
 After changing engine or backend source, run InnoEngine.Build. Prepared Editor startup validates its deployed files and does not invoke MSBuild or native compilers. Game scripts and assets use the Editor's import and reload workflow. Player support packs are prepared separately when exporting a game or requesting `support-pack`.
 
-Have a project already? Pass its directory after `--`. To try FlappyBird, clone [InnoEngine.Samples](https://github.com/Wolfiora/InnoEngine.Samples) separately and select its FlappyBird folder. Linux currently offers Native tooling rebuilds; an Editor has not been implemented.
+Have a project already? Pass its directory after `--`. To try FlappyBird, clone [InnoEngine.Samples](https://github.com/Wolfiora/InnoEngine.Samples) separately and select its FlappyBird folder.
 
 [Startup, advanced commands, and game exports →](docs/platform/PRODUCT_STARTUP.md) · [Current acceptance](docs/architecture/CURRENT_ACCEPTANCE.md)
 
@@ -48,7 +48,7 @@ Have a project already? Pass its directory after `--`. To try FlappyBird, clone 
 | macOS ARM64 | Editor, Player | CoreCLR, NativeAOT |
 | Browser Wasm32 / WebGL 2 | Player | Mono Wasm, Mono Wasm AOT |
 
-The current build/cache refactor still requires the Windows and Web product matrix to be rerun. macOS needs validation on a macOS host. GUI, DPI, and audio device checks are tracked separately; Linux currently contributes native tooling only.
+The current build/cache refactor still requires the Windows and Web product matrix to be rerun. macOS needs validation on a macOS host. GUI, DPI, and audio device checks are tracked separately.
 
 ## Built to compose
 
@@ -61,7 +61,6 @@ Author under `Assets/`; install `.iplugin` packages under `Plugins/`. Installed 
 
 ```text
 entry/       Two development launchers and host dispatch
-dependencies/ Pinned independent source dependencies
 src/         Shared foundation, content, services, runtime, and product hosting
 backends/    Reusable adapters, native bindings, and component build recipes
 platforms/   System/SDK integration, product entry points, and packaging

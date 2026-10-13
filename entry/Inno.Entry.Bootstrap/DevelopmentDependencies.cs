@@ -32,8 +32,5 @@ internal static class DevelopmentDependencies
             await DevelopmentProcess.RunAsync("git", arguments.ToArray(), root,
                 capture: false, cancellationToken).ConfigureAwait(false);
         }
-        string runtime = Path.Combine(root, "dependencies", "BindGen-CS", "src", "BGCS.Runtime", "BGCS.Runtime.csproj");
-        if (!File.Exists(runtime))
-            throw new FileNotFoundException("Initialize the pinned BindGen-CS submodule before building products.", runtime);
     }
 }

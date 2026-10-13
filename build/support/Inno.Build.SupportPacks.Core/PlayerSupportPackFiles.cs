@@ -127,17 +127,29 @@ public static class PlayerSupportPackFiles
         string destination,
         string productAssemblyName
     ) {
-        string[] files = Directory.Exists(buildOutput)
-            ? Directory.EnumerateFiles(buildOutput, "Inno.*.dll")
-                .Where(file => !Path.GetFileName(file).StartsWith("Inno.Plugin.", StringComparison.Ordinal)
-                    && Path.GetFileName(file) is not "Inno.GameScripts.dll" and not "Inno.EditorScripts.dll"
-                    && Path.GetFileNameWithoutExtension(file) != productAssemblyName)
-                .Order(StringComparer.Ordinal).ToArray()
-            : [];
+        string dependencyFile = Path.Combine(buildOutput, productAssemblyName + ".deps.json");
+        if (!File.Exists(dependencyFile))
+            throw new InvalidDataException("Player build has no SDK-selected runtime dependency closure.");
+        using JsonDocument dependencies = JsonDocument.Parse(File.ReadAllBytes(dependencyFile));
+        JsonElement root = dependencies.RootElement;
+        string target = root.GetProperty("runtimeTarget").GetProperty("name").GetString()
+            ?? throw new InvalidDataException("Player dependencies have no explicit runtime target.");
+        string[] files = root.GetProperty("targets").GetProperty(target).EnumerateObject()
+            .Where(static dependency => dependency.Value.TryGetProperty("runtime", out _))
+            .SelectMany(static dependency => dependency.Value.GetProperty("runtime").EnumerateObject()
+                .Select(static asset => Path.GetFileName(asset.Name)))
+            .Where(name => name.EndsWith(".dll", StringComparison.OrdinalIgnoreCase)
+                && Path.GetFileNameWithoutExtension(name) != productAssemblyName)
+            .Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal)
+            .Select(name => PathBoundary.Resolve(buildOutput, name)).ToArray();
         if (files.Length == 0)
             throw new InvalidDataException("Player build produced no target compilation references.");
         Directory.CreateDirectory(destination);
         foreach (string file in files)
+        {
+            if (!File.Exists(file))
+                throw new InvalidDataException($"Selected Player dependency '{Path.GetFileName(file)}' was not deployed by the SDK.");
             File.Copy(file, Path.Combine(destination, Path.GetFileName(file)));
+        }
     }
 }

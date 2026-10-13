@@ -1,6 +1,6 @@
 # Browser Player：共享运行流与平台边界
 
-[架构索引](README.md) · [Wiki 首页](../README.md) · [Browser 平台包](../platform/Browser/README.md) · [扩展指南](PLATFORM_EXTENSION_GUIDE.md)
+[架构索引](README.md) · [Wiki 首页](../README.md) · [Browser 平台包](../platform/BrowserWasm32/README.md) · [扩展指南](PLATFORM_EXTENSION_GUIDE.md)
 
 ## 当前组合
 
@@ -9,13 +9,13 @@ Scene、玩法、内容、Input、Rendering、Audio、Text、UI、Storage 使用
 ```text
 Editor / CLI / MSBuild
 → StandardBuildDistribution
-→ BrowserBuildModule + 所选 backend integration + managed compiler
+→ BrowserWasm32BuildModule + 所选 backend integration + managed compiler
 → 共享内容/代码 pipeline
 → backend-owned static recipe + 同一目标绑定闭包
 → Browser 包装/校验/原子提交
 
-页面 main.js / BrowserBridge
-→ BrowserPlayerComposition
+页面 main.js / BrowserWasm32Bridge
+→ BrowserWasm32PlayerComposition
 → PlayerApplication / Shell / EngineHost / RuntimeSession
 → 同一领域运行服务与 Core Events
 ```

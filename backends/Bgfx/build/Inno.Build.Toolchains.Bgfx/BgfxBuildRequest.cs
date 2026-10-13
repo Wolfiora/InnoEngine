@@ -17,7 +17,8 @@ internal sealed class BgfxBuildRequest
         if (profile.targetId != initial.targetId)
             throw new ArgumentException("The BGFX profile does not match the frozen toolchain target.", nameof(profile));
         context = operation.WithToolchain(profile.SelectTools(operation));
-        NativeComponentBuildOptions options = context.RequireComponentOptions(BgfxNativeBuild.componentDescriptor);
+        component = includeTools ? BgfxToolsBuild.componentDescriptor : BgfxNativeBuild.componentDescriptor;
+        NativeComponentBuildOptions options = context.RequireComponentOptions(component);
         if (options.libraryKind != NativeLibraryKind.Shared || options.cmakeArguments.Count != 0)
             throw new NotSupportedException("The standalone graphics recipe requires shared linkage and its explicit generation profile.");
         artifactToken = profile.artifactPathToken;
@@ -41,8 +42,8 @@ internal sealed class BgfxBuildRequest
         string[] declarations = ["artifact=" + artifactToken,
             .. generatorArguments.Select(static value => "generate=" + value),
             "compiler=" + compiler, .. invocation.arguments.Select(static value => "compile=" + value)];
-        string implementation = BgfxNativeBuild.componentDescriptor.GetToolchainRoot(context.engineRoot);
-        recipe = NativeBuildRecipe.CreateForComponent(context, BgfxNativeBuild.componentDescriptor,
+        string implementation = component.GetToolchainRoot(context.engineRoot);
+        recipe = NativeBuildRecipe.CreateForComponent(context, component,
             includeTools ? "bgfx-tools" : "bgfx", tools.targetId, [bgfx, bx, bimg, genie], declarations,
             new[] { "BgfxBuildConstants.cs", "BgfxBuildInvocation.cs", "BgfxBuildRequest.cs", "BgfxBuildSession.cs",
                 "BgfxBuildUtils.cs", "BgfxNativeBuild.cs", "BgfxNativeBuildProfile.cs", "BgfxToolsBuild.cs" }
@@ -50,6 +51,7 @@ internal sealed class BgfxBuildRequest
     }
 
     internal NativeBuildContext context { get; }
+    internal NativeComponentDescriptor component { get; }
     internal NativeBuildRecipe recipe { get; }
     internal string[] generatorArguments { get; }
     internal BgfxBuildInvocation invocation { get; }

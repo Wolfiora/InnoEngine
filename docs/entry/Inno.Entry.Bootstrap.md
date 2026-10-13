@@ -24,6 +24,8 @@
 
 Editor 持有 checkout 与产品共享读取保护；Build 与产品清理分别取得对应独占保护。准备失败不发布 ready.json，已退出 owner 的锁文件仍保留。不要通过删除锁文件解锁。
 
+已准备 Build 工具先取得 publication 读取保护，再校验清单和当前源码输入身份；保护持续覆盖载入、命令执行与卸载。首次引导的独占 SDK 输出仅用于创建固定输入的不可变 publication，载入检查退休后由入口清理；长期编译 workspace 与 publication 分别登记 owner，不能混作临时输出。
+
 配置和产物布局见[开发入口架构](../architecture/DEVELOPMENT_ENTRY_ARCHITECTURE.md)。Bootstrap 不是 collectible 游戏模块管理器，不能替代 Runtime 的 generation 和退休协议。
 
 ## 内部实现（非公开）
@@ -34,7 +36,7 @@ Editor 持有 checkout 与产品共享读取保护；Build 与产品清理分别
 - `DevelopmentProcess`：隔离 SDK 进程环境，取消后等待退出。
 - `DevelopmentProduct`：校验完整部署、原子记录准备结果。
 - `DevelopmentApplication`：按依赖解析器加载应用，调用公开应用入口。
-- `DevelopmentBuildTool`：校验 Build 部署完整哈希并通过可退休检查上下文读取当前 SDK 的输入身份。命中后不编译 CLI；检查上下文必须经过 Full GC、finalizers、Full GC 并确认不可达后才能加载实际工具或重新准备。
+- `DevelopmentBuildTool`：校验 Build 部署完整哈希并通过可退休检查上下文读取当前 SDK 的输入身份。准备使用独占 SDK 工作目录；完整结果发布到 `artifacts/build-tools/cli/hosts` 后才载入。命中后不编译 CLI；检查上下文必须经过 Full GC、finalizers、Full GC 并确认不可达后才能加载实际工具或重新准备。执行期间保留 publication 读取 lease；进程 reader 登记保护已载入的程序集至进程退出。
 
 ## 扩展与验证
 

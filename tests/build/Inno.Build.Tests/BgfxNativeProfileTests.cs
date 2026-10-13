@@ -72,12 +72,25 @@ public sealed class BgfxNativeProfileTests : IDisposable
         NativeBuildRecipe recipe = tools ? BgfxToolsBuild.CreateRecipe(context, profile)
             : BgfxNativeBuild.CreateRecipe(context, profile);
         Assert.Equal(tools ? "bgfx-tools" : "bgfx", recipe.component);
+        Assert.Equal(tools ? null : BgfxNativeBuild.componentDescriptor.bindingDefinition, recipe.owner.bindingDefinition);
         Assert.Equal(1, profile.invocationCount);
         Assert.Contains(recipe.declarations, value => value == "generate=--with-shared-lib");
         Assert.Equal(tools, recipe.declarations.Contains("generate=--with-tools"));
         Assert.Contains(recipe.declarations, value => value == "compile=--sdk=fixture");
         Assert.DoesNotContain(recipe.declarations, value => value.StartsWith("bindings=", StringComparison.Ordinal));
         Assert.False(Directory.Exists(Path.Combine(m_root, "artifacts")));
+    }
+
+    [Fact]
+    public async Task OfflineToolsDoNotRequestRuntimeBindings()
+    {
+        NativeComponentDescriptor tools = BgfxToolsBuild.componentDescriptor;
+        Assert.Equal(BgfxNativeBuild.componentDescriptor.nativeProject, tools.nativeProject);
+        Assert.Equal(BgfxNativeBuild.componentDescriptor.toolchainProject, tools.toolchainProject);
+        Assert.Null(tools.bindingDefinition);
+        using NativeBindingGenerationResult generations = await NativeBindingPreparation.PrepareAsync(
+            CreateContext("fixture-new-target"), [tools], CancellationToken.None);
+        Assert.Empty(generations);
     }
 
     private NativeBuildContext CreateContext(string target)

@@ -1,5 +1,7 @@
 # Inno.Editor.Panel.SceneView
 
+Scene View 的单次绘制通过 `EditorPlayModeLoop.EnterPresentationScope()` 使用实际呈现世界的执行服务，Playing 时与 Play Session 的 UI/音频/Identity owner 一致。绘制结束恢复 Edit 作用域；该实现依赖不进入 Panel 的公开 API。
+
 [Editor 索引](README.md) · [Editor Rendering](Inno.Editor.Rendering.md) · [Game View](Inno.Editor.Panel.GameView.md)
 
 Scene View 是通用 viewport host。它使用开放 kind `inno.editor.viewport.scene` 收集所有活动 `[EditorViewportContributorExtension]`，并把尺寸、Editor context 和交互服务交给 Editor Rendering 的模型合成流程。

@@ -4,6 +4,8 @@
 
 `Inno.Editor.Scripting` 把 Project 与已激活 `.iplugin` Mount 中的 C# source、assembly definition 当成正式资产，再把它们编译为可回滚的 collectible Script Module。文件发现和变化来源是统一 Asset Database；该项目没有自己的 `FileSystemWatcher`，也不递归扫描 Project 目录。
 
+Play Session 未退休时，手动 Reload 禁用，自动变化保留最新请求。等待状态只记录一次 Info，不显示阻塞编译 Modal；停止按钮与快捷键继续可用。完整回到 Editing 后再编译、激活并验证旧 generation 退休，此时才显示独占进度。待处理状态仍阻止依赖最新编译结果的发布，不能把等待当作新代已就绪。
+
 ## Source 资产
 
 | Source | Asset | Importer | Named outputs |
@@ -153,7 +155,7 @@ public sealed class PlayerController : GameBehavior
 
     protected override void Update()
     {
-        Log.Debug("Speed: {0}", [m_speed]);
+        Log.Debug(typeof(PlayerController), "Speed: {0}", [m_speed]);
     }
 }
 ```
@@ -239,6 +241,12 @@ Serialized state 使用逐成员兼容迁移：成员类型保持兼容时恢复
 如果候选 generation 缺少 live Component/System，Scene participant 会把对象变为 host-owned missing placeholder，并继续保存 `TypeRef`（落盘仅原逻辑 Stable ID）、原类型名、property bytes、asset dependencies、persistent ID、顺序和图引用。placeholder 身份和 missing 标志不进入 Scene schema，类型消失/恢复本身不改变 clean Scene 的 dirty 状态。类型删除、插件移除、Scene/Prefab round-trip 都不会持有旧 ALC；相同 Stable ID 返回时 `isValid` 自动恢复并原位重建。`INNOHR0002` 完全由 Scene feature 按当前 loaded Scene 与 TypeCache generation 对账：打开带 Missing 的 `.iscene` 后，在 Scene workspace 下一次安全更新就会出现在 Console，不需要等待 Recompile/Reload。每次协调 reload 完成还会请求各领域刷新诊断，因此无变化 Recompile 后仍会重新发布用户 Clear 掉但依然成立的 Missing；类型恢复后该组立即解除。恢复构造、identity 转移、property restore 或失败清理不完整时仍精确回滚到原占位对象。
 
 无法自动迁移 static 字段、后台 Thread/Task、第三方事件订阅或外部裸 CLR 引用。用户代码需要在 `OnDisable` 释放这些资源。
+
+## PlayMode 与 Reload
+
+手动 Scripts/Plugins Reload 在 Play 未完整退休时禁用；执行入口再次检查准入。自动脚本或安装包变化只更新待处理请求，不自动停止游戏。停止成功后推进最新请求；强引用残留导致 Faulted 时要求完整重启 Host。
+
+被拒绝的 `RequestCompilation` 返回失败 ticket，不替换当前已接受 ticket。成功 ticket 必须完成新代激活与旧代 Full GC/finalizers/Full GC 弱监测，不能以编译成功代替 Reload 成功。
 
 ## 当前源码公开 API 清单
 

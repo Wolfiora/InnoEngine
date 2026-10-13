@@ -3,7 +3,6 @@
 
   <PropertyGroup>
 
-    <BGCSRuntimeProject Condition="'$(BGCSRuntimeProject)' == ''">$(BindGenRoot)/src/BGCS.Runtime/BGCS.Runtime.csproj</BGCSRuntimeProject>
     <NoWarn>$(NoWarn);CS8981</NoWarn>
   </PropertyGroup>
 </Project>

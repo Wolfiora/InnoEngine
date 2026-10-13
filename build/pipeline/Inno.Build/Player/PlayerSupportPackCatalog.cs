@@ -232,7 +232,14 @@ public sealed class PlayerSupportPackCatalog
                 await VerifySelectionInputsAsync(verifyInputs, cancellationToken).ConfigureAwait(false);
             cancellationToken.ThrowIfCancellationRequested();
             PathBoundary.RequireUnlinkedPath(targetRoot, destination);
-            AtomicDirectory.Install(staging, destination);
+            try
+            {
+                AtomicDirectory.Install(staging, destination);
+            }
+            catch (DirectoryCleanupException cleanupFailure)
+            {
+                Console.Error.WriteLine(cleanupFailure.Message);
+            }
         }
         else if (verifyInputs is not null)
             await VerifySelectionInputsAsync(verifyInputs, cancellationToken).ConfigureAwait(false);

@@ -10,7 +10,7 @@ on:
       - "**/global.json"
       - "InnoEngine.sln"
       - ".gitmodules"
-      - "dependencies/**"
+      - "**/packages*.lock.json"
       - ".github/workflows/nuget-dependencies.yml"
   push:
     branches:
@@ -24,7 +24,7 @@ on:
       - "**/global.json"
       - "InnoEngine.sln"
       - ".gitmodules"
-      - "dependencies/**"
+      - "**/packages*.lock.json"
       - ".github/workflows/nuget-dependencies.yml"
 
 permissions:
@@ -55,31 +55,13 @@ jobs:
           path: InnoEngine
           persist-credentials: false
 
-      - name: Initialize the pinned BGCS source
-        run: git submodule update --init dependencies/BindGen-CS
-
-      - name: Install BGCS SDK
-        uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68
-        with:
-          global-json-file: InnoEngine/dependencies/BindGen-CS/global.json
-
       - name: Install engine SDK
         uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68
         with:
           global-json-file: InnoEngine/global.json
 
-      - name: Validate source dependencies
-        shell: bash
-        run: |
-          set -euo pipefail
-          for project in BGCS BGCS.Cpp2C BGCS.Runtime; do
-            test -f "dependencies/BindGen-CS/src/$project/$project.csproj"
-          done
-          dotnet --version
-          git -C dependencies/BindGen-CS rev-parse HEAD
-
       - name: Restore the complete solution
-        run: dotnet restore InnoEngine.sln --disable-parallel -p:Configuration=SourceDebug
+        run: dotnet restore InnoEngine.sln --locked-mode --disable-parallel -p:Configuration=SourceDebug
 
       - name: Submit resolved NuGet dependencies
         if: github.event_name != 'pull_request'

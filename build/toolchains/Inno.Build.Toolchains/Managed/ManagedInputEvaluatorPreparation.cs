@@ -33,7 +33,7 @@ internal static class ManagedInputEvaluatorPreparation
         using var reader = new StreamReader(source);
         string code = await reader.ReadToEndAsync(cancellation).ConfigureAwait(false);
         string sdkRoot = Path.GetDirectoryName(sdk.cliPath)!;
-        string[] assemblies = ["Microsoft.Build.dll", "Microsoft.Build.Framework.dll", "Microsoft.Build.Utilities.Core.dll"];
+        string[] assemblies = ["Microsoft.Build.dll", "Microsoft.Build.Framework.dll", "Microsoft.Build.Utilities.Core.dll", "NuGet.Frameworks.dll"];
         NativeBuildInput[] inputs = assemblies.Select(name => NativeBuildInput.FromPath(context.engineRoot, Path.Combine(sdkRoot, name)))
             .Concat(new[] { sdk.cliPath, sdk.hostPath, Path.Combine(sdkRoot, "Roslyn", "bincore"),
                 Path.Combine(sdkRoot, "Microsoft.NETCoreSdk.BundledVersions.props") }
@@ -49,7 +49,7 @@ internal static class ManagedInputEvaluatorPreparation
         {
             try
             {
-                cache.Record(directory, directory + ".read.lock", [], sdk.sdkIdentity, cancellation);
+                cache.Record(directory, directory + ".read.lock", [], sdk.sdkIdentity, null, cancellation);
                 return new(directory, fingerprint, existing);
             }
             catch
@@ -93,7 +93,14 @@ internal static class ManagedInputEvaluatorPreparation
                         Directory.Delete(intermediate, recursive: true);
                     BuildArtifactManifest.Write(candidate, fingerprint, ["Outputs"], context);
                     using BuildArtifactWriteLease mutation = await BuildArtifactWriteLease.AcquireAsync(directory, cancellation).ConfigureAwait(false);
-                    AtomicDirectory.Install(candidate, directory);
+                    try
+                    {
+                        AtomicDirectory.Install(candidate, directory);
+                    }
+                    catch (DirectoryCleanupException cleanupFailure)
+                    {
+                        Console.Error.WriteLine(cleanupFailure.Message);
+                    }
                 }
                 finally
                 {
@@ -106,7 +113,7 @@ internal static class ManagedInputEvaluatorPreparation
             fingerprint, ["Outputs"], cancellation, context).ConfigureAwait(false);
         try
         {
-            cache.Record(directory, directory + ".read.lock", [], sdk.sdkIdentity, cancellation);
+            cache.Record(directory, directory + ".read.lock", [], sdk.sdkIdentity, null, cancellation);
             return new(directory, fingerprint, reading);
         }
         catch

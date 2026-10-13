@@ -1,5 +1,5 @@
 using System;
-using Inno.Integration.Windows.Sdl3;
+using Inno.Integration.WindowsX64.Sdl3;
 using Inno.Adapter.Platform;
 using Inno.Native.Sdl3;
 using Inno.Platform;
@@ -42,7 +42,7 @@ public sealed unsafe class HostIntegrationTests
 
     private sealed class FailingHost : ISdl3HostIntegration
     {
-        private readonly WindowsSdl3HostIntegration m_inner = new();
+        private readonly WindowsX64Sdl3HostIntegration m_inner = new();
         internal bool failSurface = true;
         internal uint lastId;
         internal int calls;

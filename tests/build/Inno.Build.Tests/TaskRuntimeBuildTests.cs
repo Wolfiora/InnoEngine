@@ -277,7 +277,7 @@ public sealed class TaskRuntimeBuildTests : IDisposable
         var engine = new RecordingEngine(static () => true);
         Assert.True(CreateTask(engine).Execute(), string.Join("\n", engine.errors));
         Assert.Equal(new[] { m_project + ":Restore", dependency + ":Restore", m_project + ":PublishInnoBuildTaskHost" }, engine.requests);
-        Assert.Equal("false", engine.properties!["InnoInteropRuntimeRestore"]);
+        Assert.DoesNotContain("InnoInteropRuntimeRestore", engine.properties!.Keys.Cast<string>());
         Assert.True(CreateTask(engine).Execute(), string.Join("\n", engine.errors));
         Assert.Equal(3, engine.requests.Count);
         Assert.Equal(1, engine.builds);

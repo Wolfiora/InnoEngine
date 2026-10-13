@@ -70,7 +70,7 @@
 - `backends/<component>`：共享 backend 的 runtime、native、build recipe、组件测试；每个组件只有一个源码 owner。
 - `platforms/<platform>`：系统与 SDK 接入、明确目标、Editor/Player 薄入口、布局和 Support Pack；不得引用另一个平台。
 - `src/composition`：默认引擎、Shell、Player 与 Editor 组合入口。
-- `entry`：两个轻量开发入口与当前宿主路由；其他生产层不得反向引用它。`dependencies`：固定 revision 的独立源依赖，不能继承引擎 Native/产品构建 targets。
+- `entry`：两个轻量开发入口与当前宿主路由；其他生产层不得反向引用它。BGCS 包族由 `Inno.Packages.props` 固定 NuGet 版本；不提供源码依赖入口。
 - `build`、`tools`、`tests`：中立统一构建、具体发行注册、验证库和跨组件契约测试。
 - 新文件尽量放置在匹配现有分层与职责目录。
 
@@ -236,7 +236,7 @@ public void AAA(
 ## 26. Solution 与项目文件整理
 
 - Solution Folder 与实际架构职责对应，删除没有有效项目或 Solution Items 的空分组；小型项目集合避免无必要的单项目包装层。
-- `entry`、`src`、`backends`、`platforms`、`build`、`tools` 与 `tests` 中的创作源码项目必须纳入 Solution，包括绑定生成扩展和测试 fixture；`obj`、`artifacts` 及 dependencies/extern 的独立第三方源码项目不纳入。没有入站 ProjectReference 不代表项目无用，清理前必须核对宿主入口、MSBuild 工具调用与生成配置。
+- `entry`、`src`、`backends`、`platforms`、`build`、`tools` 与 `tests` 中的创作源码项目必须纳入 Solution，包括绑定生成扩展和测试 fixture；`obj`、`artifacts` 及 extern 的独立第三方源码项目不纳入。没有入站 ProjectReference 不代表项目无用，清理前必须核对宿主入口、MSBuild 工具调用与生成配置。
 - `.csproj`、`.props`、`.targets` 使用两空格缩进，顶层职责块以空行分隔，长属性列表逐属性换行，ProjectReference 相对路径使用 `/`。
 - 只合并条件和引用可见性一致的相邻引用分组。不得重排 Import、Property、Target 或改变条件、metadata 和求值顺序；Editor 公开与实现引用边界必须保留。
 - 详细规则见 `docs/architecture/CSHARP_DEVELOPMENT_STANDARD.md`；整理后核对有效 XML、Solution 项目身份与配置，并运行受影响构建及架构验证。
@@ -263,9 +263,6 @@ public void AAA(
 - NativeBuildContext 冻结实际 host、target、toolchain、组件位置及绑定。recipe 通过描述读取所属源码；CMake 参数仅由 NativeCMakeExecutor 组合，底层进程工具不能隐式增添目标参数。普通 Build/Publish 通过 PrepareProductNativeTask 准备完整匹配闭包，design-time 不执行 Native。
 - 托管工具进程统一使用 DotNetSdkEnvironment 隔离父 IDE/MSBuild 的 SDK resolver、加载程序集及扩展根变量，并保留已选 Native SDK 环境。进程 override 的 null 明确移除继承变量，空字符串仍表示显式空值；不得通过污染父进程或锁定所有消费者 SDK 来规避隔离问题。SDK 由所属工程声明解析，产品 Native 准备策略由产品项目声明，共同 targets 不判断具体平台 ID。
 - 工程选定的 SDK 必须冻结实际 CLI 入口，并由该入口执行发布；短路径、junction 或临时工作目录不能再次解析另一个 SDK。记录 SDK identity 与 CLI 路径，不能复制 global.json 或改写消费者 SDK 来掩盖执行差异。
-- 引用独立 BGCS.Runtime 源码时，Inno 的消费规则必须将输出放在本 checkout 的 artifacts/managed/interop，并按 SDK、目标、ABI 与真实编译属性隔离。不得把产品产物写进 BGCS 仓库的普通 bin/obj，也不能让不同 DebugType/AOT/运行目标争用同一输出；BGCS 的独立构建和源码保持独立。
-- SDK 自动加入的间接 interop ProjectReference 与直接引用必须采用相同产物隔离属性；仅修改求值阶段的直接 ProjectReference 不能作为完整隔离验收。验证普通产品 Build 的实际引用闭包，不能只检查静态项目项。
-- 外部消费者的普通 restore 不保留逐引用隔离 metadata；共同 interop 消费规则在编译引用前准备同一隔离还原。不得复制 assets、改动 BGCS 工程或要求消费者换 SDK；回归必须包含仓库外、普通 restore 的真实构建。
 - 多职责平台模块必须显式声明实际参与 Native recipe 的实现闭包，不能因修改 Support Pack 或包装代码使无关原生归档失效。校验器消费已冻结的组件产物声明，不重复维护另一份 backend 文件名单。
 - 日常开发只有 `entry/InnoEngine.Editor` 的 InnoEngine.Editor 与 `entry/InnoEngine.Build` 的 InnoEngine.Build 两个可执行项目。`entry` 独立负责当前开发宿主的 OS/CPU 路由、依赖初始化、项目构建和公开应用入口调用；不得将这种便利路由下放到共享领域、backend 或构建目标。平台 Editor 和 Build.Cli 是库；Player 宿主源码是发布输入，只有完整发布模板生成可执行游戏。测试进程 fixture 仅由所属测试消费的隔离构建产生，不成为 IDE 日常启动项目。CPU 扩展复用所属平台产品，不复制 Program/backend；只有真实框架或启动差异才新建项目。
 - Editor 产品的 Shader 平台/API 配置归所属平台，由显式产品构建属性传递；共享 ImGui 后端不维护命名平台或 CPU 选择表。Shader 增量必须校验内容、工具与产物完整性，并复用现有哈希、lease 和原子发布；不能仅根据时间戳跳过验证。
@@ -296,4 +293,4 @@ public void AAA(
 - 初始、批次锁后/生成后及各 Native 锁后/编译后分别 fresh 校验；只在同一明确阶段去重完整内容读取，不能跨等待/执行复用旧结果。可变源码必须复制固定，不以 hardlink 伪装不可变输入。
 - 冷 CMake producer 通过共同 executor 固定 recipe 声明的工作区输入；Browser 聚合的组件 include、bridge 与参数必须解析到同一复制树。热缓存命中不复制，外部 SDK 与输出保持自己的位置和 owner，不用字符串替换整个仓库根来误重定向输出。
 - Task runtime 只在 IBuildEngine4 Build 生命周期、同一完整请求身份内复用成功不可变 publication；registry 只存 BCL 数据，不持有 SDK owner、lease 或私有 ALC 类型。每个实际载入边界仍有独立 owner；失败/取消不缓存。共享 restore 写入由 Core.IO lease 协调，等待时 Yield/Reacquire，保留锁文件。
-- 独立并发托管构建必须通过 SDK 的明确 ArtifactsPath 使用各自 bin/obj owner；共同规则不得覆盖该输出选择。外部 interop 编译与还原采用相同 operation owner，Native 内容寻址缓存仍通过自身 lease 共享。普通 IDE bin/obj 仅属于一个活动构建，不能把两个独立进程同时写同一路径视为受支持的并发模式。
+- 独立并发托管构建必须通过 SDK 的明确 ArtifactsPath 使用各自 bin/obj owner；共同规则不得覆盖该输出选择。NuGet Runtime 资产按产品真实 Restore 图选择，Native 内容寻址缓存仍通过自身 lease 共享。普通 IDE bin/obj 仅属于一个活动构建，不能把两个独立进程同时写同一路径视为受支持的并发模式。

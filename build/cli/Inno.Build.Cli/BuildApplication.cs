@@ -11,7 +11,7 @@ namespace Inno.Build.Cli;
 /// <summary>
 /// Executes explicit engine and project build commands for a caller-owned development lifetime.
 /// </summary>
-public static class BuildApplication
+public static partial class BuildApplication
 {
     /// <summary>
     /// Inspects the selected SDK's evaluated Build-tool input closure without compiling or preparing Native products.

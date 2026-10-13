@@ -1,5 +1,5 @@
 using System;
-using Inno.Integration.Windows.Sdl3;
+using Inno.Integration.WindowsX64.Sdl3;
 using Inno.Native.Sdl3;
 using Inno.Platform;
 using Xunit;
@@ -15,7 +15,7 @@ public sealed unsafe class Sdl3WindowOperationsTests
         bool resizable,
         bool highPixelDensity
     ) {
-        using var application = new Sdl3PlatformApplication(new WindowsSdl3HostIntegration());
+        using var application = new Sdl3PlatformApplication(new WindowsX64Sdl3HostIntegration());
         var options = new PlatformWindowOptions
         {
             title = "Shared SDL creation",

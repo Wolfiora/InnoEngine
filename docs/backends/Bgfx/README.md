@@ -19,7 +19,7 @@
 WindowsX64 示例（在仓库根执行，SDK 沿工程 `global.json` 解析）：
 
 ```powershell
-$productProperties = (Resolve-Path 'platforms/Windows/build/Inno.Build.Windows/EditorProduct.props').Path
+$productProperties = (Resolve-Path 'platforms/WindowsX64/build/Inno.Build.WindowsX64/EditorProduct.props').Path
 dotnet test backends/Bgfx/tests/Inno.Adapter.Rendering.Bgfx.Tests/Inno.Adapter.Rendering.Bgfx.Tests.csproj `
   -p:InnoNativeTarget=windows-x64 `
   -p:InnoToolTarget=windows-x64 `

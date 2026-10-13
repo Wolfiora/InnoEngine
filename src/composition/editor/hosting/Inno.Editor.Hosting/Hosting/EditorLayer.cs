@@ -100,20 +100,14 @@ internal sealed class EditorLayer : Layer
     /// </param>
     public override void OnLateUpdate(float deltaTime)
     {
-        using (m_playModeLoop.EnterPresentationScope())
-            m_runtime.Update(new EditorFrame(deltaTime, m_totalTime, isFocused));
-
-        using (m_playModeLoop.EnterPresentationScope())
-        {
-            m_presentation.RenderFrame(m_runtime.Draw);
-            SaveLayoutIfChanged();
-        }
+        m_runtime.Update(new EditorFrame(deltaTime, m_totalTime, isFocused));
+        m_presentation.RenderFrame(m_runtime.Draw);
+        SaveLayoutIfChanged();
     }
 
     private void HandleKeyPressed(KeyPressedEvent keyEvent)
     {
-        using (m_playModeLoop.EnterPresentationScope())
-            m_runtime.HandleKeyPressed(keyEvent);
+        m_runtime.HandleKeyPressed(keyEvent);
     }
 
     internal bool PrepareShutdown()

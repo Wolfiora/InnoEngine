@@ -44,9 +44,10 @@ internal static class ShaderCommand
         string extension = native.RequireToolchain().host.system == "Windows" ? ".exe" : string.Empty;
         var executables = Enum.GetValues<BgfxTool>().ToDictionary(static tool => tool,
             tool => product.files.Single(file => Path.GetFileName(file) == tool.ToString().ToLowerInvariant()
-                + "-" + native.configuration + extension));
+                + extension));
+        string includes = Path.GetDirectoryName(product.files.Single(file => Path.GetFileName(file) == "bgfx_shader.sh"))!;
         ShaderArtifactBuilder.Compile(options.Require("assets"), options.Require("shader"),
-            platform, renderer, options.Require("output"), new ToolRunner(executables), cancellationToken);
+            platform, renderer, options.Require("output"), new ToolRunner(executables, includes), cancellationToken);
         return;
         
     }

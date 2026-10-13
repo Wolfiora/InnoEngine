@@ -102,11 +102,25 @@ public abstract class EngineObject : IdentityObject
 
     internal Guid ReleaseIdentityForReplacement()
     {
-        if (m_isDestroyed)
-            throw new InvalidOperationException($"Destroyed object '{GetType().FullName}' cannot be replaced.");
+        ValidateIdentityForReplacement();
         Guid persistentId = identity.persistentId;
         if (!IdentityAllocator.current.Unregister(this))
             throw new InvalidOperationException($"Identity release failed for '{GetType().FullName}'.");
         return persistentId;
+    }
+
+    internal void ValidateIdentityForReplacement()
+    {
+        if (m_isDestroyed)
+            throw new InvalidOperationException($"Destroyed object '{GetType().FullName}' cannot be replaced.");
+        RuntimeIdentity? owner = identity.runtimeIdentity;
+        IdentityAllocator allocator = IdentityAllocator.current;
+        if (owner is not RuntimeIdentity registered || registered.domainId != allocator.domainId
+            || !ReferenceEquals(allocator.Get<EngineObject>(registered), this))
+        {
+            throw new InvalidOperationException(
+                $"Identity replacement for '{GetType().FullName}' requires its owning domain "
+                + $"'{owner?.domainId.ToString() ?? "detached"}', but the current domain is '{allocator.domainId}'.");
+        }
     }
 }

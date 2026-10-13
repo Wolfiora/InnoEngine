@@ -388,4 +388,4 @@ public static class FontMeasurement
 ## 项目依赖
 
 - [Inno.Native.LibraryLoading](../Interop/Inno.Native.LibraryLoading.md)：实现依赖，PrivateAssets="compile"。
-- `$(BGCSRuntimeProject)`：公开引用边界由实际签名核对。
+- `BGCS.Runtime`：通过固定版本 NuGet 包提供互操作运行时，不引用生成器。

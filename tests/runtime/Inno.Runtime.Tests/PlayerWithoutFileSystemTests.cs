@@ -45,9 +45,9 @@ public sealed partial class PlayerWithoutFileSystemTests
             createLogSink = _ => secondLog
         });
         using (first.EnterExecutionScope())
-            Log.Info("first");
+            Log.Info(typeof(PlayerWithoutFileSystemTests), "first");
         using (second.EnterExecutionScope())
-            Log.Info("second");
+            Log.Info(typeof(PlayerWithoutFileSystemTests), "second");
         first.Tick(0.01f);
         second.Tick(0.02f);
         Assert.Equal("first", Assert.Single(firstLog.messages));

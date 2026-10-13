@@ -43,7 +43,7 @@ public sealed class NativeBuildContext
     ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(engineRoot);
         ToolchainEnvironment.ValidateConfiguration(configuration);
-        this.engineRoot = Path.GetFullPath(engineRoot);
+        this.engineRoot = Path.TrimEndingDirectorySeparator(Path.GetFullPath(engineRoot));
         if (!File.Exists(Path.Combine(this.engineRoot, ToolchainLayout.C_REPOSITORY_MARKER_FILE)))
             throw new DirectoryNotFoundException($"Engine checkout is unavailable at '{this.engineRoot}'.");
         this.configuration = configuration;
@@ -86,6 +86,22 @@ public sealed class NativeBuildContext
         m_fingerprint = origin.m_fingerprint;
         m_toolDirectory = origin.m_toolDirectory;
     }
+
+    private NativeBuildContext(
+        NativeBuildContext origin,
+        string configuration,
+        NativeToolchainSelection? toolchain
+    ) : this(origin.engineRoot, configuration) {
+        m_inputState = origin.m_inputState;
+        sourcePreparation = origin.sourcePreparation;
+        m_bindingGenerator = origin.m_bindingGenerator;
+        m_verification = origin.m_verification;
+        m_component = origin.m_component;
+        m_componentOptions = origin.m_componentOptions;
+        this.toolchain = toolchain;
+        m_bindings = origin.m_bindings;
+    }
+
 
     private NativeBuildContext(
         NativeBuildContext origin,
@@ -229,6 +245,21 @@ public sealed class NativeBuildContext
         ArgumentNullException.ThrowIfNull(toolchain);
         return new(this, toolchain);
     }
+
+    /// <summary>
+    /// Selects an explicit component configuration while borrowing this operation's frozen SDK and input state.
+    /// </summary>
+    /// <param name="configuration">
+    /// The debug or release configuration owned by the product step.
+    /// </param>
+    /// <returns>
+    /// A derived context with no inherited workspace or artifact identity from another configuration.
+    /// </returns>
+    /// <exception cref="ArgumentException">
+    /// The requested configuration is unsupported.
+    /// </exception>
+    public NativeBuildContext WithConfiguration(string configuration) => new(this, configuration, toolchain);
+
 
     /// <summary>
     /// Requires an explicit selection before a component can build or start a native tool.

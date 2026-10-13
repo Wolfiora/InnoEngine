@@ -1,6 +1,0 @@
-<Project>
-  <PropertyGroup>
-    <_InnoDependenciesImported>true</_InnoDependenciesImported>
-    <BindGenRoot Condition="'$(BindGenRoot)' == ''">$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)../../dependencies/BindGen-CS'))</BindGenRoot>
-  </PropertyGroup>
-</Project>

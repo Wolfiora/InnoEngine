@@ -20,6 +20,25 @@ namespace Inno.Build.Tests;
 
 public sealed class BuildCompositionTests
 {
+    [Theory]
+    [InlineData("windows-x64")]
+    [InlineData("macos-arm64")]
+    public void EditorAndStandaloneShaderToolsShareTheSameBindingFreeReleaseProducer(string target)
+    {
+        var context = new BuildCompositionContext("explicit-sdk", Path.GetFullPath(Path.GetTempPath()),
+            new BuildHostDescriptor("Windows", "x64"), new BuildTargetId("windows-x64"), new NativeBindingGenerator("explicit-sdk"));
+        BuildDistribution distribution = StandardBuildDistribution.Create(context).build;
+        ProductNativeBuildStep editor = Assert.Single(distribution.ResolveNativeProduct(target, "editor").steps,
+            static step => step.id == "bgfx-tools");
+        ProductNativeBuildStep standalone = Assert.Single(distribution.ResolveNativeProduct(target, "shader-tools").steps);
+        Assert.Equal("release", editor.configuration);
+        Assert.Equal(editor.configuration, standalone.configuration);
+        Assert.Same(editor.component, standalone.component);
+        Assert.Null(editor.component.bindingDefinition);
+        Assert.Equal(editor.options.libraryKind, standalone.options.libraryKind);
+        Assert.Equal(editor.options.cmakeArguments, standalone.options.cmakeArguments);
+    }
+
     [Fact]
     public void EveryHostObtainsTheSameFrozenBuiltInDistribution()
     {
@@ -43,7 +62,7 @@ public sealed class BuildCompositionTests
     {
         var first = new FixtureTarget(new BuildTargetId("fixture-a"));
         var second = new FixtureTarget(new BuildTargetId("fixture-b"));
-        ProductNativeBuildPlan complete = StandardNativeBuildPlans.CreatePlayer(Inno.Integration.Windows.Bgfx.WindowsBgfxIntegration.nativeProfile);
+        ProductNativeBuildPlan complete = StandardNativeBuildPlans.CreatePlayer(Inno.Integration.WindowsX64.Bgfx.WindowsX64BgfxIntegration.nativeProfile);
         var reduced = new ProductNativeBuildPlan("player", [complete.steps[0]]);
         ProductNativeBuildPlan[] products = [complete];
         var firstContribution = new BuildPlatformContribution(Descriptor(first), () => first, first, new FixtureToolchain(), nativeProducts: products);

@@ -115,10 +115,10 @@ internal static partial class ArchitectureRules
                     failures.Add($"{Relative(repositoryRoot, sourcePath)}: shared code must receive host capabilities through contracts.");
             }
         }
-        string browserProject = Path.Combine(repositoryRoot, "platforms/Browser/player/Inno.Player.Browser/Inno.Player.Browser.csproj");
+        string browserProject = Path.Combine(repositoryRoot, "platforms/BrowserWasm32/player/Inno.Player.BrowserWasm32/Inno.Player.BrowserWasm32.csproj");
         if (File.Exists(browserProject) &&
             XDocument.Load(browserProject).Descendants("Compile").Any(static item => item.Attribute("Link") is not null))
-            failures.Add("Inno.Player.Browser: shared Player source must be consumed through Inno.Player.Runtime.");
+            failures.Add("Inno.Player.BrowserWasm32: shared Player source must be consumed through Inno.Player.Runtime.");
     }
 
     private static void ValidateBindingTargetOutputs(
@@ -323,6 +323,7 @@ internal static partial class ArchitectureRules
         {
             XDocument document = XDocument.Load(node.path);
             ValidateProjectProperties(node, document, failures);
+            PackageDependencyBoundaryValidator.Validate(node.relative, document, failures);
             foreach (XElement reference in document.Descendants("ProjectReference"))
             {
                 if (string.Equals((string?)reference.Attribute("ReferenceOutputAssembly"), "false", StringComparison.OrdinalIgnoreCase))
@@ -330,30 +331,6 @@ internal static partial class ArchitectureRules
                 string? include = reference.Attribute("Include")?.Value;
                 if (string.IsNullOrWhiteSpace(include))
                     continue;
-                if (include.StartsWith("$(BindGenRoot)/", StringComparison.Ordinal))
-                {
-                    bool permitted = node.relative switch
-                    {
-                        "backends/ImGui/native/Inno.Native.ImGui/Bindings/Extension/Inno.Native.ImGui.BindingExtension.csproj"
-                            => include is "$(BindGenRoot)/src/BGCS/BGCS.csproj"
-                                or "$(BindGenRoot)/src/BGCS.Core/BGCS.Core.csproj",
-                        "build/bindings/Inno.Build.Bindings/Inno.Build.Bindings.csproj"
-                            => include is "$(BindGenRoot)/src/BGCS/BGCS.csproj"
-                                or "$(BindGenRoot)/src/BGCS.Cpp2C/BGCS.Cpp2C.csproj",
-                        _ => false
-                    };
-                    string bindingProject = Path.Combine(repositoryRoot, "dependencies", "BindGen-CS",
-                        include["$(BindGenRoot)/".Length..]);
-                    if (!permitted || !File.Exists(bindingProject))
-                        failures.Add($"{node.relative}: external binding dependency '{include}' is unavailable or outside its generation boundary.");
-                    continue;
-                }
-                if (include == "$(BGCSRuntimeProject)")
-                {
-                    if (!node.relative.StartsWith("backends/", StringComparison.Ordinal))
-                        failures.Add($"{node.relative}: the interop runtime dependency belongs to a backend boundary.");
-                    continue;
-                }
                 string normalizedInclude = include
                     .Replace('\\', Path.DirectorySeparatorChar)
                     .Replace('/', Path.DirectorySeparatorChar);
@@ -691,7 +668,7 @@ internal static partial class ArchitectureRules
            name.StartsWith("Inno.Adapter.Presentation.ImGui.Sdl3", StringComparison.Ordinal) ||
            name.StartsWith("Inno.Build.Toolchains.Sdl3", StringComparison.Ordinal) ||
            name.StartsWith("Inno.Native.Sdl3", StringComparison.Ordinal) ||
-           name is "Inno.Integration.Windows.Sdl3" or "Inno.Integration.MacOS.Sdl3" or "Inno.Integration.Browser.Sdl3" ||
+           name is "Inno.Integration.WindowsX64.Sdl3" or "Inno.Integration.MacOSArm64.Sdl3" or "Inno.Integration.BrowserWasm32.Sdl3" ||
            name.EndsWith(".Tests", StringComparison.Ordinal);
 
     private static bool IsAllowedMiniAudioConsumer(string name)

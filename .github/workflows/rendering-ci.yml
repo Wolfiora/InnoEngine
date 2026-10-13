@@ -8,7 +8,6 @@ on:
       - "build/**"
       - "extern/**"
       - "entry/**"
-      - "dependencies/**"
       - "backends/**"
       - "platforms/**"
       - "src/**"
@@ -19,6 +18,7 @@ on:
       - "Directory.Build.props"
       - "Directory.Build.targets"
       - "Directory.Solution.props"
+      - "Directory.Solution.targets"
       - "InnoEngine.sln"
   push:
     branches:
@@ -28,7 +28,6 @@ on:
       - "build/**"
       - "extern/**"
       - "entry/**"
-      - "dependencies/**"
       - "backends/**"
       - "platforms/**"
       - "src/**"
@@ -39,6 +38,7 @@ on:
       - "Directory.Build.props"
       - "Directory.Build.targets"
       - "Directory.Solution.props"
+      - "Directory.Solution.targets"
       - "InnoEngine.sln"
 
 permissions:

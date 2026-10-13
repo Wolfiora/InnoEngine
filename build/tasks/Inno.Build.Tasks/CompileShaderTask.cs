@@ -128,7 +128,7 @@ public sealed class CompileShaderTask : BuildTask, ICancelableTask
         out string compilerFingerprint,
         out BuildArtifactReadLease reading
     ) {
-        NativeBuildContext context = new(EngineRoot, Configuration.ToLowerInvariant());
+        NativeBuildContext context = new(EngineRoot, "release");
         var execution = StandardBuildEnvironment.Capture(AppContext.BaseDirectory, new BuildTargetId(ToolTarget));
         context = context.WithBindingGenerator(execution.bindingGenerator);
         string cacheKey = "Inno.Build.ShaderTools|" + context.engineRoot + "|" + context.configuration + "|" + ToolTarget;
@@ -138,6 +138,8 @@ public sealed class CompileShaderTask : BuildTask, ICancelableTask
             "native", ToolTarget + "-" + context.configuration + ".lock");
         using FileLease lease = FileLease.AcquireAsync(leasePath, Timeout.InfiniteTimeSpan, cancellationToken)
             .GetAwaiter().GetResult();
+        using FileLease publicationUse = new BuildCachePublisher(Path.Combine(context.engineRoot, "artifacts", "native"))
+            .AcquireUseAsync(cancellationToken).AsTask().GetAwaiter().GetResult();
         // Only neutral file names cross task load contexts. MSBuild releases the record when this build ends.
         string[]? record = engine.GetRegisteredTaskObject(cacheKey, RegisteredTaskObjectLifetime.Build) as string[];
         if (record is not null && (record.Length < 3 || !BuildArtifactManifest.IsComplete(record[0], record[1], ["Outputs"])))
@@ -165,11 +167,12 @@ public sealed class CompileShaderTask : BuildTask, ICancelableTask
             Dictionary<BgfxTool, string> executables = [];
             foreach (BgfxTool tool in Enum.GetValues<BgfxTool>())
             {
-                string name = tool.ToString().ToLowerInvariant() + "-" + context.configuration + extension;
+                string name = tool.ToString().ToLowerInvariant() + extension;
                 executables.Add(tool, record.Skip(2).Single(path => Path.GetFileName(path) == name));
             }
             compilerFingerprint = record[1];
-            return new ToolRunner(executables);
+            string includes = Path.GetDirectoryName(record.Skip(2).Single(path => Path.GetFileName(path) == "bgfx_shader.sh"))!;
+            return new ToolRunner(executables, includes);
         }
         catch
         {
@@ -214,7 +217,14 @@ public sealed class CompileShaderTask : BuildTask, ICancelableTask
                 throw new InvalidDataException("Shader inputs changed during compilation; the candidate was not published.");
             BuildArtifactManifest.Write(candidate, fingerprint, ["Outputs"]);
             cancellationToken.ThrowIfCancellationRequested();
-            AtomicDirectory.Install(candidate, directory);
+            try
+            {
+                AtomicDirectory.Install(candidate, directory);
+            }
+            catch (DirectoryCleanupException cleanupFailure)
+            {
+                Log.LogWarning(cleanupFailure.Message);
+            }
             Log.LogMessage(MessageImportance.Normal, "INNO-SHADER published {0}: {1}", Renderer, fingerprint);
         }
         finally

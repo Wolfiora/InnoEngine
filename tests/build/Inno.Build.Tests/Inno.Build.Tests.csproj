@@ -23,10 +23,9 @@
     <ProjectReference Include="../../../build/bindings/Inno.Build.Bindings/Inno.Build.Bindings.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../../backends/Bgfx/build/Inno.Build.Toolchains.Bgfx.Tools/Inno.Build.Toolchains.Bgfx.Tools.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../../backends/Bgfx/build/Inno.Build.Toolchains.Bgfx/Inno.Build.Toolchains.Bgfx.csproj" PrivateAssets="compile" />
-    <ProjectReference Include="../../../platforms/Linux/integrations/Inno.Integration.Linux.Bgfx/Inno.Integration.Linux.Bgfx.csproj" PrivateAssets="compile" />
-    <ProjectReference Include="../../../platforms/Browser/integrations/Inno.Integration.Browser.Bgfx/Inno.Integration.Browser.Bgfx.csproj" PrivateAssets="compile" />
-    <ProjectReference Include="../../../platforms/MacOS/integrations/Inno.Integration.MacOS.Bgfx/Inno.Integration.MacOS.Bgfx.csproj" PrivateAssets="compile" />
-    <ProjectReference Include="../../../platforms/Windows/integrations/Inno.Integration.Windows.Bgfx/Inno.Integration.Windows.Bgfx.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../../platforms/BrowserWasm32/integrations/Inno.Integration.BrowserWasm32.Bgfx/Inno.Integration.BrowserWasm32.Bgfx.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../../platforms/MacOSArm64/integrations/Inno.Integration.MacOSArm64.Bgfx/Inno.Integration.MacOSArm64.Bgfx.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../../platforms/WindowsX64/integrations/Inno.Integration.WindowsX64.Bgfx/Inno.Integration.WindowsX64.Bgfx.csproj" PrivateAssets="compile" />
 
     <ProjectReference Include="../../../build/composition/Inno.Build.Composition/Inno.Build.Composition.csproj" />
     <ProjectReference Include="../../../backends/FileSystem/runtime/Inno.Adapter.Content.FileSystem/Inno.Adapter.Content.FileSystem.csproj" />
@@ -35,10 +34,10 @@
     <ProjectReference Include="../../../build/tasks/Inno.Build.TaskHosting/Inno.Build.TaskHosting.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../../backends/ImGui/native/Inno.Native.ImGui/Inno.Native.ImGui.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../../build/toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj" PrivateAssets="compile" />
-    <ProjectReference Include="../../../platforms/Browser/build/Inno.Build.Browser/Inno.Build.Browser.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../../platforms/BrowserWasm32/build/Inno.Build.BrowserWasm32/Inno.Build.BrowserWasm32.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../../build/pipeline/Inno.Build/Inno.Build.csproj" PrivateAssets="compile" />
-    <ProjectReference Include="../../../platforms/MacOS/build/Inno.Build.MacOS/Inno.Build.MacOS.csproj" PrivateAssets="compile" />
-    <ProjectReference Include="../../../platforms/Windows/build/Inno.Build.Windows/Inno.Build.Windows.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../../platforms/MacOSArm64/build/Inno.Build.MacOSArm64/Inno.Build.MacOSArm64.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../../platforms/WindowsX64/build/Inno.Build.WindowsX64/Inno.Build.WindowsX64.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../../src/content/assets/Inno.Assets.Pipeline/Inno.Assets.Pipeline.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../../src/content/assets/Inno.Assets/Inno.Assets.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../../src/runtime/plugins/Inno.Plugins.Authoring/Inno.Plugins.Authoring.csproj" PrivateAssets="compile" />
@@ -57,6 +56,7 @@
     <ProjectReference Include="../../../build/support/Inno.Build.SupportPacks.Core/Inno.Build.SupportPacks.Core.csproj" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="BGCS.Runtime" Version="[$(InnoBgcsPackageVersion)]" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
     <PackageReference Include="Microsoft.Build" Version="17.12.50" />
     <PackageReference Include="Microsoft.Build.Framework" Version="17.12.50" />

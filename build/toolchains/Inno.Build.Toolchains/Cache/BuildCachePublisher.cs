@@ -76,6 +76,9 @@ public sealed class BuildCachePublisher
     /// <param name="cancellationToken">
     /// Cancels before metadata selection.
     /// </param>
+    /// <param name="targetId">
+    /// The producer's product target, or null for a shared host generation.
+    /// </param>
     /// <exception cref="IOException">
     /// An owned path escapes the boundary or crosses a link.
     /// </exception>
@@ -87,9 +90,12 @@ public sealed class BuildCachePublisher
         string leasePath,
         IReadOnlyList<string> dependencies,
         string? currentKey,
+        string? targetId,
         CancellationToken cancellationToken = default
     ) {
         ArgumentNullException.ThrowIfNull(dependencies);
+        if (targetId is not null)
+            ArgumentException.ThrowIfNullOrWhiteSpace(targetId);
         BuildCacheCleanupPlan.RequireChild(m_root, directory);
         BuildCacheCleanupPlan.RequireChild(m_root, leasePath);
         if (!Directory.Exists(directory))
@@ -103,7 +109,7 @@ public sealed class BuildCachePublisher
             bytes = checked(bytes + new FileInfo(file).Length);
         }
         var metadata = new Entry(relative, Path.GetRelativePath(m_root, leasePath), DateTime.UtcNow,
-            dependencies.Select(Path.GetFullPath).ToArray(), bytes);
+            dependencies.Select(Path.GetFullPath).ToArray(), bytes, targetId);
         AtomicFile.WriteAllBytes(Path.Combine(m_root, Key(relative) + ".cache.json"), WriteEntry(metadata));
         if (currentKey is not null)
             AtomicFile.WriteAllBytes(Path.Combine(m_root, Key(currentKey) + ".current"), Encoding.UTF8.GetBytes(relative));
@@ -158,7 +164,7 @@ public sealed class BuildCachePublisher
         Directory.CreateDirectory(owners);
         string process = Environment.ProcessId.ToString(System.Globalization.CultureInfo.InvariantCulture);
         AtomicFile.WriteAllBytes(Path.Combine(owners, process + ".pid"), Encoding.UTF8.GetBytes(process));
-        Record(directory, leasePath, dependencies, null, cancellationToken);
+        Record(directory, leasePath, dependencies, null, null, cancellationToken);
     }
 
     private IReadOnlyList<BuildCacheArtifactDescriptor> ReadArtifacts(CancellationToken cancellation)
@@ -177,7 +183,7 @@ public sealed class BuildCachePublisher
                 throw new InvalidDataException("Cache ownership metadata does not match its identity.");
             if (!Directory.Exists(directory))
                 continue;
-            result.Add(new(directory, lease, entry.bytes, entry.lastUseUtc, entry.dependencies));
+            result.Add(new(directory, lease, entry.targetId, entry.bytes, entry.lastUseUtc, entry.dependencies));
         }
         return result;
     }
@@ -233,6 +239,7 @@ public sealed class BuildCachePublisher
             writer.WriteString("leasePath", entry.leasePath);
             writer.WriteString("lastUseUtc", entry.lastUseUtc);
             writer.WriteNumber("bytes", entry.bytes);
+            writer.WriteString("targetId", entry.targetId);
             writer.WriteStartArray("dependencies");
             foreach (string dependency in entry.dependencies)
                 writer.WriteStringValue(dependency);
@@ -247,14 +254,14 @@ public sealed class BuildCachePublisher
         using JsonDocument document = JsonDocument.Parse(File.ReadAllBytes(path));
         JsonElement root = document.RootElement;
         if (!root.EnumerateObject().Select(static property => property.Name).Order(StringComparer.Ordinal)
-            .SequenceEqual(new[] { "bytes", "dependencies", "directory", "lastUseUtc", "leasePath" }, StringComparer.Ordinal))
+            .SequenceEqual(new[] { "bytes", "dependencies", "directory", "lastUseUtc", "leasePath", "targetId" }, StringComparer.Ordinal))
             throw new InvalidDataException("Cache ownership requires one complete current record.");
         long bytes = root.GetProperty("bytes").GetInt64();
         if (bytes < 0)
             throw new InvalidDataException("Recorded cache size cannot be negative.");
         return new(root.GetProperty("directory").GetString()!, root.GetProperty("leasePath").GetString()!,
             root.GetProperty("lastUseUtc").GetDateTime(), root.GetProperty("dependencies").EnumerateArray()
-                .Select(static dependency => dependency.GetString()!).ToArray(), bytes);
+                .Select(static dependency => dependency.GetString()!).ToArray(), bytes, root.GetProperty("targetId").GetString());
     }
 
     private sealed record Entry(
@@ -262,6 +269,7 @@ public sealed class BuildCachePublisher
         string leasePath,
         DateTime lastUseUtc,
         string[] dependencies,
-        long bytes
+        long bytes,
+        string? targetId
     );
 }

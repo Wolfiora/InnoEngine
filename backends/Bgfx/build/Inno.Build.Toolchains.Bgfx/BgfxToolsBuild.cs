@@ -10,6 +10,14 @@ namespace Inno.Build.Toolchains.Bgfx;
 public static class BgfxToolsBuild
 {
     /// <summary>
+    /// Gets the offline-tool producer sharing BGFX source and recipe owners without consuming runtime bindings.
+    /// </summary>
+    public static NativeComponentDescriptor componentDescriptor { get; } = new(
+        "bgfx-tools",
+        BgfxNativeBuild.componentDescriptor.nativeProject,
+        BgfxNativeBuild.componentDescriptor.toolchainProject);
+
+    /// <summary>
     /// Builds and installs graphics artifacts using explicit platform-owned SDK configuration.
     /// </summary>
     /// <param name="context">

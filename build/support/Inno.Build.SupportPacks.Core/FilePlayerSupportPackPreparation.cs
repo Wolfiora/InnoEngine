@@ -150,6 +150,7 @@ public sealed class FilePlayerSupportPackPreparation
         {
             ["Configuration"] = "Release", ["RuntimeIdentifier"] = m_runtimeIdentifier,
             ["DebugType"] = "None", ["DebugSymbols"] = "false",
+            ["InnoShaderToolSourceRoot"] = context.engineRoot,
             ["InnoNativeTarget"] = m_target.value, ["InnoPrepareProductNative"] = "false"
         };
         await ToolchainEnvironment.RunAsync(sdk.hostPath,
@@ -187,19 +188,13 @@ public sealed class FilePlayerSupportPackPreparation
                 index
             ) => products[index].bindingGeneration is not null)
                 .ToDictionary(static step => step.component.nativeProject, static step => step.options.libraryKind, StringComparer.Ordinal));
-        try
-        {
-            await ToolchainEnvironment.RunAsync(context.sdk.hostPath,
+        await ToolchainEnvironment.RunAsync(context.sdk.hostPath,
             [context.sdk.cliPath, "build", project, "--disable-build-servers", "-m:1", "-nodeReuse:false", "--configuration", "Release",
                 "--runtime", m_runtimeIdentifier, "--nologo", "-p:DebugType=None", "-p:DebugSymbols=false",
                 "-p:InnoNativeTarget=" + m_target.value, "-p:InnoPrepareProductNative=false",
+                "-p:InnoShaderToolSourceRoot=" + native.engineRoot,
                 "-p:InnoNativeBindingSelection=" + bindingSelection],
             context.engineRoot, cancellationToken, DotNetSdkEnvironment.Create(context.sdk.hostPath)).ConfigureAwait(false);
-        }
-        finally
-        {
-            File.Delete(bindingSelection);
-        }
         string buildOutput = (await ToolchainEnvironment.CaptureOutputAsync(context.sdk.hostPath,
             [context.sdk.cliPath, "msbuild", project, "-getProperty:TargetDir", "-p:Configuration=Release", "-p:RuntimeIdentifier=" + m_runtimeIdentifier,
                 "-p:InnoNativeTarget=" + m_target.value, "-p:DesignTimeBuild=true", "-nologo"],
@@ -218,8 +213,6 @@ public sealed class FilePlayerSupportPackPreparation
         Directory.CreateDirectory(references);
         foreach (string reference in Directory.EnumerateFiles(Path.Combine(context.stagingDirectory, "References"), "*.dll"))
             File.Copy(reference, Path.Combine(references, Path.GetFileName(reference)));
-        string runtime = Path.Combine(buildOutput, "BGCS.Runtime.dll");
-        File.Copy(runtime, Path.Combine(references, "BGCS.Runtime.dll"));
         await CopyNativeToTemplateAsync(context.stagingDirectory, link, cancellationToken).ConfigureAwait(false);
         await execution.VerifyAsync(cancellationToken).ConfigureAwait(false);
     }

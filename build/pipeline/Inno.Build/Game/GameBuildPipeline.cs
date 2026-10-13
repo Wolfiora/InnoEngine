@@ -13,6 +13,7 @@ using Inno.Assets.Pipeline;
 using Inno.Plugins.Authoring;
 using Inno.Core.Serialization;
 using Inno.Core.Settings;
+using Inno.Core.IO;
 using Inno.Extensibility.Modules;
 using Inno.Runtime;
 using Inno.Scene;
@@ -96,6 +97,8 @@ internal sealed class GameBuildPipeline
         using var stagingCancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         Task<AssetRuntimeContentInfo>? assetExportTask = null;
         Task? targetContentTask = null;
+        var publicationDiagnostics = new List<BuildDiagnostic>();
+        bool committed = false;
         try
         {
             CancellationToken stagingToken = stagingCancellation.Token;
@@ -235,8 +238,24 @@ internal sealed class GameBuildPipeline
                 throw new DirectoryNotFoundException("The game target did not create its declared output directory.");
             stagingToken.ThrowIfCancellationRequested();
             string final = Path.Combine(outputRoot, Path.GetFileName(normalizedComposed));
-            BuildFileSystem.InstallDirectoryAtomically(normalizedComposed, final);
-            progress?.Report(new BuildProgress("commit", 1d, "Game build completed."));
+            try
+            {
+                BuildFileSystem.InstallDirectoryAtomically(normalizedComposed, final);
+            }
+            catch (DirectoryCleanupException cleanupFailure)
+            {
+                publicationDiagnostics.Add(new(BuildDiagnosticSeverity.Warning, "INNO-BUILD-CLEANUP", cleanupFailure.Message));
+            }
+            committed = true;
+            try
+            {
+                progress?.Report(new BuildProgress("commit", 1d, "Game build completed."));
+            }
+            catch (Exception observerFailure)
+            {
+                publicationDiagnostics.Add(new(BuildDiagnosticSeverity.Warning, "INNO-BUILD-PROGRESS",
+                    $"The complete game was committed, but its progress observer failed: {observerFailure.Message}"));
+            }
             return BuildResult.Success(
                 final,
                 request.profile.target,
@@ -244,15 +263,24 @@ internal sealed class GameBuildPipeline
                 assetInfo.assetCount,
                 assetInfo.artifactBundleCount,
                 assemblies.Length,
-                embeddedPluginCount: 0);
+                embeddedPluginCount: 0,
+                diagnostics: publicationDiagnostics.AsReadOnly());
         }
         finally
         {
             stagingCancellation.Cancel();
             await ObserveCompletionAsync(assetExportTask).ConfigureAwait(false);
             await ObserveCompletionAsync(targetContentTask).ConfigureAwait(false);
-            if (Directory.Exists(staging))
-                Directory.Delete(staging, recursive: true);
+            try
+            {
+                if (Directory.Exists(staging))
+                    Directory.Delete(staging, recursive: true);
+            }
+            catch (Exception cleanupFailure) when (committed && cleanupFailure is IOException or UnauthorizedAccessException)
+            {
+                publicationDiagnostics.Add(new(BuildDiagnosticSeverity.Warning, "INNO-BUILD-CLEANUP",
+                    $"The complete game was committed, but staging cleanup was deferred for '{staging}': {cleanupFailure.Message}"));
+            }
         }
     }
 

@@ -175,37 +175,7 @@ public sealed partial class BgfxShadercToolchain : IShaderCompilerToolchain
             _ => throw new ArgumentOutOfRangeException(nameof(stage), stage, "A single shader stage is required.")
         };
 
-    private static string ResolveBgfxShaderInclude()
-    {
-        string owner = Path.GetDirectoryName(typeof(BgfxShadercToolchain).Assembly.Location) ?? AppContext.BaseDirectory;
-        string deployed = Path.Combine(
-            owner,
-            "native",
-            "bgfx",
-            "includes",
-            "bgfx_shader.sh");
-        if (File.Exists(deployed))
-            return deployed;
-
-        string[] starts = [owner, AppContext.BaseDirectory, Directory.GetCurrentDirectory()];
-        foreach (string start in starts)
-        {
-            for (DirectoryInfo? directory = new(start); directory is not null; directory = directory.Parent)
-            {
-                string candidate = Path.Combine(
-                    directory.FullName,
-                    "extern",
-                    "bgfx",
-                    "src",
-                    "bgfx_shader.sh");
-                if (File.Exists(candidate))
-                    return candidate;
-            }
-        }
-
-        throw new FileNotFoundException(
-            "Unable to resolve the BGFX shader include 'bgfx_shader.sh' from the application or repository root.");
-    }
+    private string ResolveBgfxShaderInclude() => m_tools.ResolveShaderInclude("bgfx_shader.sh");
 }
 
 internal sealed record BgfxShadercResult(

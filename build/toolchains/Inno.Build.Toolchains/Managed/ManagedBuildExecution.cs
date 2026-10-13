@@ -21,6 +21,7 @@ public sealed class ManagedBuildExecution : IDisposable
     private readonly BuildCachePublisher m_cache;
     private readonly string m_workspace;
     private readonly string m_currentKey;
+    private readonly string? m_targetId;
     private int m_disposed;
 
     private ManagedBuildExecution(
@@ -30,7 +31,8 @@ public sealed class ManagedBuildExecution : IDisposable
         IReadOnlyList<NativeInputSnapshot.Entry> inputs,
         BuildCachePublisher cache,
         string workspace,
-        string currentKey
+        string currentKey,
+        string? targetId
     ) {
         m_ownership = ownership;
         this.engineRoot = engineRoot;
@@ -39,6 +41,7 @@ public sealed class ManagedBuildExecution : IDisposable
         m_cache = cache;
         m_workspace = workspace;
         m_currentKey = currentKey;
+        m_targetId = targetId;
     }
 
     /// <summary>
@@ -94,7 +97,7 @@ public sealed class ManagedBuildExecution : IDisposable
             try
             {
                 using FileLease activity = m_cache.AcquireUseAsync().AsTask().GetAwaiter().GetResult();
-                m_cache.Record(m_workspace, m_workspace + ".lock", [], m_currentKey);
+                m_cache.Record(m_workspace, m_workspace + ".lock", [], m_currentKey, m_targetId);
             }
             finally
             {
@@ -152,7 +155,8 @@ public sealed class ManagedBuildExecution : IDisposable
                 File.WriteAllText(marker, "Managed execution source owner.", new UTF8Encoding(false));
             AtomicFile.WriteAllBytes(metadata, JsonSerializer.SerializeToUtf8Bytes(paths.Order(StringComparer.Ordinal).ToArray()));
             return new(ownership, sourceRoot, PathBoundary.Resolve(sourceRoot, entry), fixedInputs.AsReadOnly(),
-                cache, workspace, project + "/" + context.configuration);
+                cache, workspace, project + "/" + context.configuration,
+                properties.TryGetValue("InnoNativeTarget", out string? targetId) ? targetId : context.toolchain?.targetId);
         }
         catch
         {

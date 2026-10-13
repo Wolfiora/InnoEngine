@@ -15,7 +15,7 @@ public sealed class EditorShaderProfileTests
     public async Task SdkAddedReferencesRetainTheProductTargetAndShaderProfile()
     {
         string root = ToolchainEnvironment.FindRepoRoot();
-        string profile = Path.Combine(root, "platforms", "Windows", "build", "Inno.Build.Windows", "EditorProduct.props");
+        string profile = Path.Combine(root, "platforms", "WindowsX64", "build", "Inno.Build.WindowsX64", "EditorProduct.props");
         string backend = Path.Combine(root, "backends", "Sdl3", "runtime",
             "Inno.Adapter.Platform.Sdl3", "Inno.Adapter.Platform.Sdl3.csproj");
         string host = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH") ?? ToolchainEnvironment.ResolveExecutable("dotnet");
@@ -25,7 +25,8 @@ public sealed class EditorShaderProfileTests
                 "-p:InnoNativeTarget=windows-x64"], root, CancellationToken.None, DotNetSdkEnvironment.Create(host));
         using JsonDocument document = JsonDocument.Parse(output);
         JsonElement references = document.RootElement.GetProperty("Items").GetProperty("ProjectReference");
-        Assert.Contains(references.EnumerateArray(), reference => reference.GetProperty("Filename").GetString() == "BGCS.Runtime");
+        Assert.Contains(references.EnumerateArray(), reference => reference.GetProperty("Filename").GetString() == "Inno.Native.Sdl3");
+        Assert.DoesNotContain(references.EnumerateArray(), reference => reference.GetProperty("Filename").GetString() == "BGCS.Runtime");
         Assert.All(references.EnumerateArray().Where(reference =>
             !reference.TryGetProperty("OutputItemType", out JsonElement kind) || kind.GetString() != "Analyzer"), reference =>
         {
@@ -45,9 +46,9 @@ public sealed class EditorShaderProfileTests
     }
 
     [Theory]
-    [InlineData("Windows", "windows-x64", 4)]
-    [InlineData("MacOS", "macos-arm64", 3)]
-    [InlineData("Browser", "browser-wasm", 1)]
+    [InlineData("WindowsX64", "windows-x64", 4)]
+    [InlineData("MacOSArm64", "macos-arm64", 3)]
+    [InlineData("BrowserWasm32", "browser-wasm", 1)]
     public async Task SharedCompositionShadersConsumeExplicitProductFacts(
         string platform,
         string shaderPlatform,
@@ -69,8 +70,8 @@ public sealed class EditorShaderProfileTests
     }
 
     [Theory]
-    [InlineData("Windows", "windows-x64", "fixture-new-cpu", 4)]
-    [InlineData("MacOS", "macos-arm64", "fixture-new-cpu", 3)]
+    [InlineData("WindowsX64", "windows-x64", "fixture-new-cpu", 4)]
+    [InlineData("MacOSArm64", "macos-arm64", "fixture-new-cpu", 3)]
     public async Task BackendConsumesAProductProfileWithoutSelectingAKnownNativeTarget(
         string platform,
         string shaderPlatform,
@@ -96,5 +97,20 @@ public sealed class EditorShaderProfileTests
                 || kind.GetString() != "Analyzer"), reference =>
             Assert.Contains("InnoProductBuildProperties=" + profile,
                 reference.GetProperty("AdditionalProperties").GetString()));
+    }
+
+    [Fact]
+    public async Task FrozenProductSourcesKeepTheExplicitOfflineToolOwner()
+    {
+        string root = ToolchainEnvironment.FindRepoRoot();
+        string backend = Path.Combine(root, "backends", "Bgfx", "runtime",
+            "Inno.Adapter.Rendering.Bgfx", "Inno.Adapter.Rendering.Bgfx.csproj");
+        string host = ToolchainEnvironment.ResolveExecutable("dotnet");
+        string selectedOwner = Path.Combine(root, "artifacts", "fixture-tool-source-owner");
+        string selected = await ToolchainEnvironment.CaptureOutputAsync(host,
+            ["msbuild", backend, "-nologo", "-nodeReuse:false", "-p:DesignTimeBuild=true",
+                "-p:InnoShaderToolSourceRoot=" + selectedOwner, "-getProperty:InnoShaderToolSourceRoot"],
+            root, CancellationToken.None, DotNetSdkEnvironment.Create(host));
+        Assert.Equal(selectedOwner, selected.Trim());
     }
 }

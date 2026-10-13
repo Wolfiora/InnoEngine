@@ -6,6 +6,7 @@ using Inno.Build;
 using Inno.Build.Composition;
 using Inno.Build.Toolchains;
 using Inno.Build.Distribution.Standard;
+using Inno.Build.Toolchains.Bgfx.Tools;
 using Inno.Core.Settings;
 using Inno.Plugins.Authoring;
 using Inno.Runtime;
@@ -21,7 +22,7 @@ internal static class BuildComposition
     private const string C_HOST_CONFIGURATION = "release";
 #endif
 
-    internal static async Task PrepareNativeAsync(
+    internal static async Task<ProductNativeBuildResult> PrepareNativeAsync(
         BuildCompositionContext context,
         CancellationToken cancellationToken
     ) {
@@ -31,8 +32,7 @@ internal static class BuildComposition
         nativeContext = nativeContext.WithToolchain(await provider.ResolveAsync(
             nativeContext, context.host, context.toolsTarget.value, cancellationToken).ConfigureAwait(false));
         ProductNativeBuildPlan plan = StandardBuildDistribution.Create(context).build.ResolveNativeProduct(context.toolsTarget.value, "shader-tools");
-        using var products = await plan.BuildAsync(nativeContext, cancellationToken).ConfigureAwait(false);
-        await ProductNativeDeployment.InstallAsync(products, plan, AppContext.BaseDirectory, cancellationToken).ConfigureAwait(false);
+        return await plan.BuildAsync(nativeContext, cancellationToken).ConfigureAwait(false);
     }
 
     internal static BuildPipeline CreatePipeline(
@@ -42,9 +42,10 @@ internal static class BuildComposition
         PluginEnvironment plugins,
         ProjectSettingsStore settings,
         ScriptCompiler compiler,
-        string supportPackRoot
+        string supportPackRoot,
+        ToolRunner tools
     ) {
         return BuildPipelineFactory.Create(
-            context, StandardBuildDistribution.Create(context).build, engine, assets, plugins, settings, compiler, supportPackRoot);
+            context, StandardBuildDistribution.Create(context, tools).build, engine, assets, plugins, settings, compiler, supportPackRoot);
     }
 }

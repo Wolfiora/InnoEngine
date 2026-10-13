@@ -9,6 +9,7 @@ using Inno.Editor.Core;
 using Inno.Editor.ImGui;
 using Inno.Editor.ImGui.ImGuiWidget;
 using Inno.Editor.Interactions;
+using Inno.Editor.PlayMode;
 using Inno.Editor.Rendering;
 using Inno.Editor.Scene;
 using Inno.Editor.Settings;
@@ -44,6 +45,7 @@ internal sealed class SceneViewPanel : EditorPanel
     private readonly EditorInteractions m_interactions;
     private readonly SceneEdits m_sceneEdits;
     private readonly IEditorGameScenePresentation m_scenePresentation;
+    private readonly EditorPlayModeLoop m_playModeLoop;
     private readonly EditorSettings m_settings;
     private Vector4 m_backgroundColor;
     private NavigationDrag m_navigationDrag;
@@ -60,12 +62,14 @@ internal sealed class SceneViewPanel : EditorPanel
         EditorInteractions interactions,
         SceneEdits sceneEdits,
         IEditorGameScenePresentation scenePresentation,
+        EditorPlayModeLoop playModeLoop,
         EditorSettings settings
     ) {
         m_rendering = rendering ?? throw new ArgumentNullException(nameof(rendering));
         m_interactions = interactions ?? throw new ArgumentNullException(nameof(interactions));
         m_sceneEdits = sceneEdits ?? throw new ArgumentNullException(nameof(sceneEdits));
         m_scenePresentation = scenePresentation ?? throw new ArgumentNullException(nameof(scenePresentation));
+        m_playModeLoop = playModeLoop ?? throw new ArgumentNullException(nameof(playModeLoop));
         m_settings = settings ?? throw new ArgumentNullException(nameof(settings));
     }
 
@@ -87,6 +91,7 @@ internal sealed class SceneViewPanel : EditorPanel
     /// </param>
     protected override void OnDraw(EditorContext context)
     {
+        using IDisposable presentationScope = m_playModeLoop.EnterPresentationScope();
         _ = context;
         if (m_gestureTarget is not null && !NativeImGui.IsMouseDown(ImGuiMouseButton.Left))
             CommitGesture();

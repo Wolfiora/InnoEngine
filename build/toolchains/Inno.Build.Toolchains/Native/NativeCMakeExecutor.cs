@@ -122,13 +122,20 @@ public static class NativeCMakeExecutor
         configure.Add("-DINNO_LIBRARY_KIND=" + options.libraryKind.ToString().ToUpperInvariant());
         configure.AddRange(componentArguments.Select(sources.ResolveDefinition));
         configure.AddRange(options.cmakeArguments.Select(sources.ResolveDefinition));
-        await ToolchainEnvironment.RunAsync(context, "cmake", configure,
-            context.engineRoot, cancellationToken).ConfigureAwait(false);
+        var environment = new Dictionary<string, string>(selection.environment, StringComparer.Ordinal);
+        if (selection.TryResolveExecutable("python", out _))
+        {
+            // Keep derived bytecode in the SDK-sensitive workspace, outside the source toolchain.
+            // A different SDK source identity selects another workspace and cannot reuse stale bytecode.
+            environment["PYTHONPYCACHEPREFIX"] = Path.Combine(buildDirectory, "PythonCache");
+        }
+        await ToolchainEnvironment.RunAsync(context, selection.ResolveExecutable("cmake"), configure,
+            context.engineRoot, cancellationToken, environment).ConfigureAwait(false);
         List<string> build = ["--build", buildDirectory, "--config", buildType];
         if (target is not null)
             build.AddRange(["--target", target]);
-        await ToolchainEnvironment.RunAsync(context, "cmake", build,
-            context.engineRoot, cancellationToken).ConfigureAwait(false);
+        await ToolchainEnvironment.RunAsync(context, selection.ResolveExecutable("cmake"), build,
+            context.engineRoot, cancellationToken, environment).ConfigureAwait(false);
         return buildDirectory;
     }
 

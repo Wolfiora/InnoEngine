@@ -16,6 +16,7 @@ namespace Inno.Build.Toolchains.Bgfx.Tools;
 public sealed class ToolRunner
 {
     private readonly IReadOnlyDictionary<BgfxTool, string>? m_executables;
+    private readonly string? m_includesDirectory;
 
     /// <summary>
     /// Creates a runner for tools explicitly deployed with the current application.
@@ -29,15 +30,23 @@ public sealed class ToolRunner
     /// <param name="executables">
     /// Tool identities mapped to existing absolute executable paths; the collection is copied.
     /// </param>
+    /// <param name="includesDirectory">
+    /// The absolute shader include directory belonging to the same protected tool product.
+    /// </param>
     /// <exception cref="ArgumentException">
     /// An identity is unsupported or an executable path is relative.
     /// </exception>
     /// <exception cref="FileNotFoundException">
     /// A declared executable is unavailable.
     /// </exception>
-    public ToolRunner(IReadOnlyDictionary<BgfxTool, string> executables)
-    {
+    public ToolRunner(
+        IReadOnlyDictionary<BgfxTool, string> executables,
+        string includesDirectory
+    ) {
         ArgumentNullException.ThrowIfNull(executables);
+        ArgumentException.ThrowIfNullOrWhiteSpace(includesDirectory);
+        if (!Path.IsPathFullyQualified(includesDirectory) || !Directory.Exists(includesDirectory))
+            throw new ArgumentException("The selected shader include directory must exist at an absolute path.", nameof(includesDirectory));
         Dictionary<BgfxTool, string> snapshot = [];
         foreach ((BgfxTool tool, string path) in executables)
         {
@@ -48,6 +57,7 @@ public sealed class ToolRunner
             snapshot.Add(tool, Path.GetFullPath(path));
         }
         m_executables = new ReadOnlyDictionary<BgfxTool, string>(snapshot);
+        m_includesDirectory = Path.GetFullPath(includesDirectory);
     }
 
     /// <summary>
@@ -161,22 +171,21 @@ public sealed class ToolRunner
         }
     }
 
+    internal string ResolveShaderInclude(string name)
+    {
+        if (name is not ("bgfx_shader.sh" or "bgfx_compute.sh"))
+            throw new ArgumentException("The shader include is not part of this backend's declared tool product.", nameof(name));
+        string path = m_includesDirectory is null ? NativeDllLoader.FindNativeFile(name) : Path.Combine(m_includesDirectory, name);
+        return File.Exists(path) ? path : throw new FileNotFoundException("A selected shader include is unavailable.", path);
+    }
+
     private string ResolveToolPath(BgfxTool tool)
     {
         if (m_executables is not null)
             return m_executables.TryGetValue(tool, out string? executable)
                 ? executable : throw new FileNotFoundException($"The selected distribution has no '{tool}' executable.");
-        string name = tool.ToString().ToLowerInvariant() + GetConfigSuffix();
+        string name = tool.ToString().ToLowerInvariant();
         return NativeDllLoader.FindNativeFile(name);
-    }
-
-    private static string GetConfigSuffix()
-    {
-#if DEBUG
-        return "-debug";
-#else
-        return "-release";
-#endif
     }
 
 }

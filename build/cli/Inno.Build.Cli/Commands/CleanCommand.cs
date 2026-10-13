@@ -49,7 +49,9 @@ internal static class CleanCommand
         BuildCacheCleanupPlan plan = BuildCacheCleanupPlan.Create(context.root,
             StandardBuildCaches.CreateOwners(context.root, context.distribution.platforms.SelectMany(static platform => platform.nativeProducts.Values)
                 .SelectMany(static product => product.steps).Select(static step => step.component).ToArray()),
-            policy, retireAll: !automatic, cancellationToken: cancellation);
+            policy, retireAll: !automatic,
+            targetId: !automatic && options.Has("target") ? options.Require("target") : null,
+            cancellationToken: cancellation);
         bool dryRun = options.Has("dry-run");
         if (dryRun)
             foreach (BuildCacheArtifactDescriptor artifact in plan.candidates)

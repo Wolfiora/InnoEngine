@@ -5,7 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using Inno.Build.Toolchains;
-using Inno.Build.Browser;
+using Inno.Build.BrowserWasm32;
 using Xunit;
 
 namespace Inno.Build.Tests;

@@ -1,6 +1,6 @@
 using System;
 using System.IO;
-using System.Runtime.InteropServices;
+using Inno.Native.LibraryLoading;
 
 using Xunit;
 
@@ -29,45 +29,9 @@ public sealed class ToolRunnerTests
         Assert.Throws<FileNotFoundException>(() => new ToolRunner().Run((BgfxTool)999, ["--help"]));
     }
 
-    private static string GetConfigSuffix()
-    {
-#if DEBUG
-        return "-debug";
-#else
-        return "-release";
-#endif
-    }
-
     private static void AssertToolExists(string toolName)
     {
-        var platform = GetPlatformIdentifier();
-        var toolsDir = Path.Combine(AppContext.BaseDirectory, "native", "bgfx", platform, "tools");
-        var suffix = GetConfigSuffix();
-        var primaryName = $"{toolName}{suffix}";
-        var primaryPath = Path.Combine(toolsDir, OperatingSystem.IsWindows() ? $"{primaryName}.exe" : primaryName);
-
-        Assert.True(
-            File.Exists(primaryPath),
-            $"Tool missing: {toolName} (expected: {primaryPath})");
-    }
-
-    private static string GetPlatformIdentifier()
-    {
-        string operatingSystem = OperatingSystem.IsMacOS()
-            ? "osx"
-            : OperatingSystem.IsWindows()
-                ? "windows"
-                : OperatingSystem.IsLinux()
-                    ? "linux"
-                    : throw new PlatformNotSupportedException();
-        string architecture = RuntimeInformation.OSArchitecture switch
-        {
-            Architecture.X64 => "x64",
-            Architecture.Arm64 => "arm64",
-            Architecture.X86 => "x86",
-            Architecture.Arm => "arm",
-            _ => throw new PlatformNotSupportedException()
-        };
-        return $"{operatingSystem}-{architecture}";
+        string path = NativeDllLoader.FindNativeFile(toolName);
+        Assert.True(File.Exists(path), $"The selected tool '{toolName}' is unavailable at '{path}'.");
     }
 }

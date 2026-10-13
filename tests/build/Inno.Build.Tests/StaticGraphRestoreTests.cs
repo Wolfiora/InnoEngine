@@ -24,7 +24,7 @@ public sealed class StaticGraphRestoreTests
         string owner = Path.Combine(Path.GetTempPath(), "InnoStaticGraphRestoreTests");
         string fixture = PathBoundary.Resolve(owner, Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(fixture);
-        string project = Path.Combine(root, "platforms", "Windows", "editor", "Inno.Editor.Windows", "Inno.Editor.Windows.csproj");
+        string project = Path.Combine(root, "platforms", "WindowsX64", "editor", "Inno.Editor.WindowsX64", "Inno.Editor.WindowsX64.csproj");
         string driver = Path.Combine(fixture, "Restore.proj");
         string inheritedMetadata = new('R', 65536);
         try

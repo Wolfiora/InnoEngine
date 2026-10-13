@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Text.Json;
 using Inno.Core.IO;
 
 namespace Inno.Build.Toolchains;
@@ -76,6 +77,23 @@ public static class NativeArtifactPublisher
         if (NativeBuildFingerprint.Create(context.BeginInputVerification("native-lock:" + component),
             recipe.declarations, recipe.inputs, cancellationToken) != fingerprint)
             throw new InvalidOperationException($"Native inputs for '{component}' changed while waiting for ownership.");
+        Directory.CreateDirectory(intermediate);
+        AtomicFile.WriteAllBytes(Path.Combine(intermediate, "recipe.json"), JsonSerializer.SerializeToUtf8Bytes(new
+        {
+            component,
+            targetId,
+            context.configuration,
+            workspaceIdentity,
+            artifactFingerprint = fingerprint,
+            recipe.owner.nativeProject,
+            recipe.owner.toolchainProject,
+            recipe.declarations,
+            inputs = snapshot.entries.Select(static entry => new
+            {
+                entry.logicalPath,
+                hash = Convert.ToHexStringLower(entry.hash)
+            })
+        }));
         BuildArtifactReadLease? cached = await BuildArtifactReadLease.TryAcquireAsync(
             destination, fingerprint, ["Outputs"], context, cancellationToken).ConfigureAwait(false);
         if (cached is not null)
@@ -92,10 +110,10 @@ public static class NativeArtifactPublisher
             {
                 cache.Record(destination, destination + ".read.lock",
                     bindingGeneration is { artifactDirectory.Length: > 0 } ? [bindingGeneration.artifactDirectory] : [],
-                    component + "/" + targetId + "/" + context.configuration, cancellationToken);
+                    component + "/" + targetId + "/" + context.configuration, targetId, cancellationToken);
                 if (workspaceChanged && Directory.Exists(intermediate))
                     workspaces.Record(intermediate, intermediate + ".lock", [],
-                        targetId + "/" + context.configuration, cancellationToken);
+                        targetId + "/" + context.configuration, targetId, cancellationToken);
             }
             catch
             {
@@ -123,7 +141,16 @@ public static class NativeArtifactPublisher
             cancellationToken.ThrowIfCancellationRequested();
             using (BuildArtifactWriteLease publication = await BuildArtifactWriteLease.AcquireAsync(destination,
                 cancellationToken).ConfigureAwait(false))
-                AtomicDirectory.Install(staging, destination);
+            {
+                try
+                {
+                    AtomicDirectory.Install(staging, destination);
+                }
+                catch (DirectoryCleanupException cleanupFailure)
+                {
+                    Console.Error.WriteLine(cleanupFailure.Message);
+                }
+            }
             BuildArtifactReadLease reading = await BuildArtifactReadLease.TryAcquireAsync(destination, fingerprint, ["Outputs"], context, cancellationToken).ConfigureAwait(false)
                 ?? throw new InvalidDataException("The published Native artifact changed before reading ownership was acquired.");
             Record(reading, workspaceChanged: true);

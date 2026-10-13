@@ -9,10 +9,13 @@ using System.Threading.Tasks;
 using Inno.Assets;
 using Inno.Assets.Pipeline;
 using Inno.Core.Identity;
+using Inno.Core.Events;
+using Inno.Core.Input;
 using Inno.Core.Execution;
 using Inno.Core.Mathematics;
 using Inno.Core.Serialization;
 using Inno.Editor.Interactions;
+using Inno.Editor.Core;
 using Inno.Editor.Scene;
 using Inno.Editor.Scripting;
 using Inno.Extensibility.Types;
@@ -68,6 +71,78 @@ public sealed class EditorPlayModeTests : IDisposable
         m_engineHost.Dispose();
         if (Directory.Exists(m_projectRoot))
             Directory.Delete(m_projectRoot, recursive: true);
+    }
+
+    [Fact]
+    public void PlayShortcutStopsTheSessionFromAFocusedGameView()
+    {
+        using var harness = new PlayModeHarness(
+            m_projectRoot,
+            m_engineHost,
+            new FakeScriptCompilation(EditorScriptCompilationState.Ready),
+            new FakeScenePlayMode());
+        using var modules = new Inno.Extensibility.Modules.ModuleHost(
+            new Inno.Extensibility.Modules.ModuleHostOptions
+            {
+                catalogSource = new DotNetAssemblyCatalogSource(typeof(EditorPlayModeController).Assembly)
+            });
+        using var types = new TypeCatalog(modules, new ReflectionTypeCatalogSource());
+        using var interactions = new EditorInteractionRuntime(
+            new EditorContext(m_projectRoot, new EditorKeyboardPolicy(KeyModifier.Control, "Super")),
+            types,
+            m_engineHost.logs,
+            [harness.playMode]);
+        interactions.Start();
+        Assert.True(harness.playMode.EnterPlayMode());
+        harness.Update();
+        harness.Update();
+        Assert.Equal(EditorPlayModeState.Playing, harness.playMode.state);
+        interactions.interactions.For("editor/game-view").Focus();
+        interactions.HandleKeyPressed(new KeyPressedEvent(0, KeyCode.P, KeyModifier.Control));
+        Assert.Equal(EditorPlayModeState.Stopping, harness.playMode.state);
+        harness.Update();
+        Assert.Equal(EditorPlayModeState.Editing, harness.playMode.state);
+    }
+
+    [Fact]
+    public void ReloadGuardPreservesStartupCompilationAndPinsThePlayingGeneration()
+    {
+        var scripting = new FakeScriptCompilation(EditorScriptCompilationState.Ready);
+        using var harness = new PlayModeHarness(m_projectRoot, m_engineHost, scripting, new FakeScenePlayMode());
+        var reloads = new EditorReloadCoordinator();
+        using IDisposable registration = reloads.RegisterGuard((IEditorReloadGuard)harness.playMode);
+        Assert.True(reloads.CanRequestReload(out _));
+        Assert.True(harness.playMode.EnterPlayMode());
+        Assert.False(reloads.CanRequestReload(out string? reason));
+        Assert.Contains("Stop Play Mode", reason);
+        Assert.True(reloads.CanActivateReload(out _));
+        harness.Update();
+        Assert.Equal(EditorPlayModeState.Preparing, harness.playMode.state);
+        Assert.False(reloads.CanActivateReload(out _));
+        harness.Update();
+        Assert.Equal(EditorPlayModeState.Playing, harness.playMode.state);
+        Assert.False(m_engineHost.generations.TryAcquireChange("automatic reload", out _));
+        Assert.False(reloads.CanActivateReload(out _));
+        Assert.True(harness.playMode.ExitPlayMode());
+        Assert.False(reloads.CanActivateReload(out _));
+        harness.Update();
+        Assert.Equal(EditorPlayModeState.Editing, harness.playMode.state);
+        Assert.True(reloads.CanActivateReload(out _));
+        m_engineHost.generations.EnsureReady("reload after stop");
+    }
+
+    [Fact]
+    public void ReleasingGuardRegistrationDoesNotRetainItsBlockingState()
+    {
+        using var harness = new PlayModeHarness(m_projectRoot, m_engineHost,
+            new FakeScriptCompilation(EditorScriptCompilationState.Compiling), new FakeScenePlayMode());
+        var reloads = new EditorReloadCoordinator();
+        IDisposable registration = reloads.RegisterGuard((IEditorReloadGuard)harness.playMode);
+        Assert.True(harness.playMode.EnterPlayMode());
+        Assert.False(reloads.CanRequestReload(out _));
+        registration.Dispose();
+        registration.Dispose();
+        Assert.True(reloads.CanRequestReload(out _));
     }
 
     [Fact]

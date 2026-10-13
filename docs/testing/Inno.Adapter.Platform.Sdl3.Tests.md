@@ -8,7 +8,7 @@
 
 - [Inno.Adapter.Platform.Sdl3](../backends/Sdl3/Inno.Adapter.Platform.Sdl3.md)
 - [Inno.Native.Sdl3](../backends/Sdl3/Inno.Native.Sdl3.md)
-- [Inno.Integration.Windows.Sdl3](../platform/Windows/Inno.Integration.Windows.Sdl3.md)
+- [Inno.Integration.WindowsX64.Sdl3](../platform/WindowsX64/Inno.Integration.WindowsX64.Sdl3.md)
 
 ## 运行
 

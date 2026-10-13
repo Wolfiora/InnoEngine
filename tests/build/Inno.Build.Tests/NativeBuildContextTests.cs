@@ -12,6 +12,25 @@ public sealed class NativeBuildContextTests : IDisposable
 {
     private readonly string m_root = Path.Combine(Path.GetTempPath(), "InnoNativeBuildTests", Guid.NewGuid().ToString("N"));
 
+    [Fact]
+    public void EquivalentCheckoutSpellingsHaveOneRecipeIdentity()
+    {
+        CreateCheckout();
+        var owner = new NativeComponentDescriptor("fixture", "native/fixture.csproj", "build/fixture.csproj");
+        Directory.CreateDirectory(Path.Combine(m_root, "build"));
+        File.WriteAllText(Path.Combine(m_root, "build", "fixture.csproj"), "<Project />");
+        NativeBuildContext Context(string path) => new NativeBuildContext(path, "release")
+            .WithComponentOptions(owner, new(NativeLibraryKind.Shared));
+        var plain = Context(m_root);
+        var separated = Context(m_root + Path.DirectorySeparatorChar);
+        Assert.Equal(plain.engineRoot, separated.engineRoot);
+        NativeBuildRecipe first = NativeBuildRecipe.CreateForComponent(plain, owner, "fixture", "fixture-target", [], [], []);
+        NativeBuildRecipe second = NativeBuildRecipe.CreateForComponent(separated, owner, "fixture", "fixture-target", [], [], []);
+        Assert.Equal(first.declarations, second.declarations);
+        Assert.Equal(NativeBuildFingerprint.Create(first.declarations, []), NativeBuildFingerprint.Create(second.declarations, []));
+        Assert.Contains("executionRoot=" + Path.GetFullPath(m_root), first.declarations);
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(m_root))
@@ -55,8 +74,8 @@ public sealed class NativeBuildContextTests : IDisposable
         var context = new NativeBuildContext(m_root, "debug");
 
         await Assert.ThrowsAnyAsync<OperationCanceledException>(() => editor
-            ? StandardNativeBuildPlans.CreateEditor(Inno.Integration.Windows.Bgfx.WindowsBgfxIntegration.nativeProfile).BuildAsync(context, cancellation.Token)
-            : StandardNativeBuildPlans.CreatePlayer(Inno.Integration.Windows.Bgfx.WindowsBgfxIntegration.nativeProfile).BuildAsync(context, cancellation.Token));
+            ? StandardNativeBuildPlans.CreateEditor(Inno.Integration.WindowsX64.Bgfx.WindowsX64BgfxIntegration.nativeProfile).BuildAsync(context, cancellation.Token)
+            : StandardNativeBuildPlans.CreatePlayer(Inno.Integration.WindowsX64.Bgfx.WindowsX64BgfxIntegration.nativeProfile).BuildAsync(context, cancellation.Token));
 
         Assert.Single(Directory.EnumerateFileSystemEntries(m_root));
     }
@@ -67,7 +86,7 @@ public sealed class NativeBuildContextTests : IDisposable
         CreateCheckout();
         var context = new NativeBuildContext(m_root, "release");
         InvalidOperationException failure = await Assert.ThrowsAsync<InvalidOperationException>(
-            () => StandardNativeBuildPlans.CreatePlayer(Inno.Integration.Windows.Bgfx.WindowsBgfxIntegration.nativeProfile).BuildAsync(context, CancellationToken.None));
+            () => StandardNativeBuildPlans.CreatePlayer(Inno.Integration.WindowsX64.Bgfx.WindowsX64BgfxIntegration.nativeProfile).BuildAsync(context, CancellationToken.None));
         Assert.Contains("explicit target toolchain", failure.Message, StringComparison.Ordinal);
         Assert.Single(Directory.EnumerateFileSystemEntries(m_root));
     }

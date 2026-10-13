@@ -21,8 +21,8 @@ public sealed class BuildCachePublisherTests : IDisposable
         string unrelated = Create("native", "unregistered");
         using (await publisher.AcquireUseAsync())
         {
-            publisher.Record(old, old + ".read.lock", [], "editor");
-            publisher.Record(current, current + ".read.lock", [], "editor");
+            publisher.Record(old, old + ".read.lock", [], "editor", null);
+            publisher.Record(current, current + ".read.lock", [], "editor", null);
         }
         using (BuildArtifactReadLease reading = await BuildArtifactReadLease.AcquireAsync(old, "old", ["Outputs"]))
         {
@@ -48,14 +48,14 @@ public sealed class BuildCachePublisherTests : IDisposable
         string newNative = Create("native", "current");
         using (await bindings.AcquireUseAsync())
         {
-            bindings.Record(oldBinding, oldBinding + ".read.lock", [], "component");
-            bindings.Record(newBinding, newBinding + ".read.lock", [], "component");
+            bindings.Record(oldBinding, oldBinding + ".read.lock", [], "component", null);
+            bindings.Record(newBinding, newBinding + ".read.lock", [], "component", null);
         }
         using (await native.AcquireUseAsync())
-            native.Record(oldNative, oldNative + ".read.lock", [oldBinding], "component");
+            native.Record(oldNative, oldNative + ".read.lock", [oldBinding], "component", null);
         Assert.Empty(Plan().candidates);
         using (await native.AcquireUseAsync())
-            native.Record(newNative, newNative + ".read.lock", [newBinding], "component");
+            native.Record(newNative, newNative + ".read.lock", [newBinding], "component", null);
         BuildCacheCleanupResult result = await Plan().ExecuteAsync();
         Assert.Equal(2, result.retired.Count);
         Assert.Contains(oldNative, result.retired);
@@ -70,7 +70,7 @@ public sealed class BuildCachePublisherTests : IDisposable
         var publisher = new BuildCachePublisher(Path.Combine(m_root, "artifacts", "native"));
         string artifact = Create("native", "candidate");
         using var activity = await publisher.AcquireUseAsync();
-        publisher.Record(artifact, artifact + ".read.lock", [], null);
+        publisher.Record(artifact, artifact + ".read.lock", [], null, null);
         BuildCacheCleanupResult result = await Plan().ExecuteAsync();
         Assert.Empty(result.retired);
         Assert.True(Directory.Exists(artifact));
@@ -87,7 +87,7 @@ public sealed class BuildCachePublisherTests : IDisposable
         File.WriteAllText(Path.Combine(load, "runtime.dll"), "private bytes");
         var hosts = new BuildCachePublisher(Path.GetDirectoryName(host)!);
         using (await hosts.AcquireUseAsync())
-            hosts.Record(host, host + ".lock", [], null);
+            hosts.Record(host, host + ".lock", [], null, null);
         new BuildCachePublisher(Path.GetDirectoryName(load)!).RecordProcessUse(load, load + ".lock", [host]);
         Assert.Empty(Plan().candidates);
         Assert.Empty((await Plan().ExecuteAsync()).retired);
@@ -102,13 +102,13 @@ public sealed class BuildCachePublisherTests : IDisposable
         var publisher = new BuildCachePublisher(Path.Combine(m_root, "artifacts", "native"));
         string artifact = Create("native", "owned");
         using (await publisher.AcquireUseAsync())
-            publisher.Record(artifact, artifact + ".read.lock", [], null);
+            publisher.Record(artifact, artifact + ".read.lock", [], null, null);
         long recorded = Plan().totalBytes;
         File.WriteAllText(Path.Combine(artifact, "Outputs", "payload"), "corrupted and larger");
         Assert.Equal(recorded, Plan().totalBytes);
         Assert.False(BuildArtifactManifest.IsComplete(artifact, "owned", ["Outputs"]));
         using (await publisher.AcquireUseAsync())
-            publisher.Record(artifact, artifact + ".read.lock", [], null);
+            publisher.Record(artifact, artifact + ".read.lock", [], null, null);
         Assert.True(Plan().totalBytes > recorded);
     }
 

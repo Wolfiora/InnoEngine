@@ -25,7 +25,7 @@ public sealed class ArchitectureCommandTests
             Directory.CreateDirectory(project);
             File.WriteAllText(Path.Combine(project, Path.GetFileName(project) + ".csproj"),
                 "<Project Sdk=\"Microsoft.NET.Sdk\"><PropertyGroup><TargetFramework>net9.0</TargetFramework></PropertyGroup>"
-                + "<ItemGroup><ProjectReference Include=\"$(BGCSRuntimeProject)\" /></ItemGroup></Project>");
+                + "<ItemGroup><PackageReference Include=\"BGCS.Runtime\" Version=\"[2.1.0]\" /></ItemGroup></Project>");
             (_, string output) = ArchitectureCommandFixture.Run(root);
             Assert.Equal(rejected, output.Contains("the interop runtime dependency belongs", StringComparison.Ordinal));
             Assert.DoesNotContain("does not resolve to a repository project", output, StringComparison.Ordinal);
@@ -51,7 +51,7 @@ public sealed class ArchitectureCommandTests
             Directory.CreateDirectory(root);
             File.WriteAllText(Path.Combine(root, "InnoEngine.sln"), "Microsoft Visual Studio Solution File, Format Version 12.00");
             string relative = scenario == "target"
-                ? "platforms/Windows/player/Inno.Player.Windows"
+                ? "platforms/WindowsX64/player/Inno.Player.WindowsX64"
                 : "src/foundation/core/Inno.Core.Probe";
             string project = Path.Combine(root, relative);
             Directory.CreateDirectory(project);
@@ -64,11 +64,11 @@ public sealed class ArchitectureCommandTests
             string imported;
             if (scenario == "reference")
             {
-                string upper = Path.Combine(root, "platforms/MacOS/runtime/Probe");
+                string upper = Path.Combine(root, "platforms/MacOSArm64/runtime/Probe");
                 Directory.CreateDirectory(upper);
                 File.WriteAllText(Path.Combine(upper, "Probe.csproj"),
                     "<Project Sdk=\"Microsoft.NET.Sdk\"><PropertyGroup><TargetFramework>net9.0</TargetFramework></PropertyGroup></Project>");
-                imported = "<ItemGroup Condition=\"'$(MSBuildProjectName)' == 'Inno.Core.Probe'\"><ProjectReference Include=\"$(MSBuildThisFileDirectory)platforms/MacOS/runtime/Probe/Probe.csproj\" /></ItemGroup>";
+                imported = "<ItemGroup Condition=\"'$(MSBuildProjectName)' == 'Inno.Core.Probe'\"><ProjectReference Include=\"$(MSBuildThisFileDirectory)platforms/MacOSArm64/runtime/Probe/Probe.csproj\" /></ItemGroup>";
             }
             else if (scenario == "source")
             {

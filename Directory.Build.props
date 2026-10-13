@@ -1,8 +1,9 @@
 <Project>
-  <Import Project="build/msbuild/Inno.Dependencies.props" />
+  <Import Project="build/msbuild/Inno.Packages.props" />
   <Import Project="$(InnoProductBuildProperties)" Condition="'$(InnoProductBuildProperties)' != ''" />
   <PropertyGroup>
     <Deterministic>true</Deterministic>
+    <InnoShaderToolSourceRoot Condition="'$(InnoShaderToolSourceRoot)' == ''">$(MSBuildThisFileDirectory)</InnoShaderToolSourceRoot>
     <RestoreUseStaticGraphEvaluation>true</RestoreUseStaticGraphEvaluation>
     <!-- Preserve all global properties without placing IDE-sized values on the command line. -->
     <RestoreSerializeGlobalProperties>true</RestoreSerializeGlobalProperties>
@@ -10,6 +11,9 @@
   </PropertyGroup>
   <PropertyGroup>
     <DefaultItemExcludes>$(DefaultItemExcludes);$(MSBuildProjectDirectory)/obj/**;$(MSBuildProjectDirectory)/bin/**</DefaultItemExcludes>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(MSBuildProjectName)' == 'Inno.Build.Cli' and '$(InnoBuildCliOutputPath)' != ''">
+    <BaseIntermediateOutputPath>$(InnoBuildCliOutputPath)/obj/</BaseIntermediateOutputPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(InnoNativeTarget)' != '' and '$(IsRoslynComponent)' != 'true' and '$(UseArtifactsOutput)' != 'true' and '$(ArtifactsPath)' == ''">
     <BaseIntermediateOutputPath>obj/$(InnoNativeTarget)/</BaseIntermediateOutputPath>

@@ -1,4 +1,5 @@
 <Project>
+  <Import Project="../build/msbuild/Inno.Packages.props" />
   <PropertyGroup Condition="'$(InnoAssemblyDomain)' == ''">
     <InnoAssemblyDomain>InnoInternal</InnoAssemblyDomain>
   </PropertyGroup>

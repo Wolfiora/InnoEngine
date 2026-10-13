@@ -33,6 +33,7 @@ internal sealed class GameViewPanel : EditorPanel
     private readonly EditorRenderingModule m_rendering;
     private readonly IEditorGameScenePresentation m_scenePresentation;
     private readonly IEditorPlayMode m_playMode;
+    private readonly EditorPlayModeLoop m_playModeLoop;
     private readonly EditorGameInputCapture m_inputCapture;
     private readonly EditorSettings m_editorSettings;
     private readonly ProjectSettingsStore m_projectSettings;
@@ -45,6 +46,7 @@ internal sealed class GameViewPanel : EditorPanel
         EditorRenderingModule rendering,
         IEditorGameScenePresentation scenePresentation,
         IEditorPlayMode playMode,
+        EditorPlayModeLoop playModeLoop,
         EditorGameInputCapture inputCapture,
         EditorSettings editorSettings,
         ProjectSettingsStore projectSettings
@@ -52,6 +54,7 @@ internal sealed class GameViewPanel : EditorPanel
         m_rendering = rendering ?? throw new ArgumentNullException(nameof(rendering));
         m_scenePresentation = scenePresentation ?? throw new ArgumentNullException(nameof(scenePresentation));
         m_playMode = playMode ?? throw new ArgumentNullException(nameof(playMode));
+        m_playModeLoop = playModeLoop ?? throw new ArgumentNullException(nameof(playModeLoop));
         m_inputCapture = inputCapture ?? throw new ArgumentNullException(nameof(inputCapture));
         m_editorSettings = editorSettings ?? throw new ArgumentNullException(nameof(editorSettings));
         m_projectSettings = projectSettings ?? throw new ArgumentNullException(nameof(projectSettings));
@@ -75,6 +78,7 @@ internal sealed class GameViewPanel : EditorPanel
     /// </param>
     protected override void OnDraw(EditorContext context)
     {
+        using IDisposable presentationScope = m_playModeLoop.EnterPresentationScope();
         _ = context;
         Vector2 available = NativeImGui.GetContentRegionAvail();
         if (available.X <= 0f || available.Y <= 0f)

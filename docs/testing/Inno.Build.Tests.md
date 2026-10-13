@@ -4,7 +4,11 @@
 
 ## 本轮构建边界回归
 
+`SolutionBootstrapOwnershipTests` 使用两个真实 MSBuild fixture 项目验证一次 Solution 操作共用 bootstrap owner，下一次操作产生新 owner。`BuildToolRuntimePublicationTests` 使用真实 SDK 部署验证不可变 publication、相同内容复用、原编译输出可写及预取消。`BgfxNativeProfileTests` 验证工具生产者复用源码 owner，却不请求 Runtime 绑定；发行测试验证 Editor 与独立工具使用同一 Release 步骤。
+
 绑定增量回归使用真实 SDK 检查：新的绑定选择文件不会使中立项目重编译；相同选择保持 import 时间戳；产品选择在 Build/Publish 后仍可核对。生成回归同时检查未选目标映射不失效、选中配置变化仍产生独立 generation。
+
+`ManagedBuildInputSnapshotTests` 使用真实 SDK 恢复验证平台限定 TFM、基础 framework reference pack 与实际 NuGet target 的语义选择。`ShaderToolSelectionTests` 通过公开集成 profile 验证改变未执行的托管 SDK 不改变 Native 工具输入；静态 recipe 测试拒绝未声明的 Native source root。
 
 架构命令路由通过公开 `BuildApplication.Run` 验证；负向源码必须返回失败，不得启动 Task runtime 准备或创建构建产物。规则正反例由架构测试项目直接验证。
 
@@ -21,10 +25,9 @@ Wiki 验收 Host 导入实际产品使用的共享 `EditorProduct.props`，通�
 - [Inno.Build.Bindings](../build/Inno.Build.Bindings.md)
 - [Inno.Build.Toolchains.Bgfx.Tools](../backends/Bgfx/Inno.Build.Toolchains.Bgfx.Tools.md)
 - [Inno.Build.Toolchains.Bgfx](../backends/Bgfx/Inno.Build.Toolchains.Bgfx.md)
-- [Inno.Integration.Linux.Bgfx](../platform/Linux/Inno.Integration.Linux.Bgfx.md)
-- [Inno.Integration.Browser.Bgfx](../platform/Browser/Inno.Integration.Browser.Bgfx.md)
-- [Inno.Integration.MacOS.Bgfx](../platform/MacOS/Inno.Integration.MacOS.Bgfx.md)
-- [Inno.Integration.Windows.Bgfx](../platform/Windows/Inno.Integration.Windows.Bgfx.md)
+- [Inno.Integration.BrowserWasm32.Bgfx](../platform/BrowserWasm32/Inno.Integration.BrowserWasm32.Bgfx.md)
+- [Inno.Integration.MacOSArm64.Bgfx](../platform/MacOSArm64/Inno.Integration.MacOSArm64.Bgfx.md)
+- [Inno.Integration.WindowsX64.Bgfx](../platform/WindowsX64/Inno.Integration.WindowsX64.Bgfx.md)
 - [Inno.Build.Composition](../build/Inno.Build.Composition.md)
 - [Inno.Adapter.Content.FileSystem](../backends/FileSystem/Inno.Adapter.Content.FileSystem.md)
 - [Inno.Build.Managed.DotNet](../backends/DotNet/Inno.Build.Managed.DotNet.md)
@@ -36,10 +39,10 @@ Wiki 验收 Host 导入实际产品使用的共享 `EditorProduct.props`，通�
 - [Inno.Editor.Interactions](../editor/Inno.Editor.Interactions.md)
 - [Inno.Native.ImGui](../backends/ImGui/Inno.Native.ImGui.md)
 - [Inno.Build.Toolchains](../build/Inno.Build.Toolchains.md)
-- [Inno.Build.Browser](../platform/Browser/Inno.Build.Browser.md)
+- [Inno.Build.BrowserWasm32](../platform/BrowserWasm32/Inno.Build.BrowserWasm32.md)
 - [Inno.Build](../build/Inno.Build.md)
-- [Inno.Build.MacOS](../platform/MacOS/Inno.Build.MacOS.md)
-- [Inno.Build.Windows](../platform/Windows/Inno.Build.Windows.md)
+- [Inno.Build.MacOSArm64](../platform/MacOSArm64/Inno.Build.MacOSArm64.md)
+- [Inno.Build.WindowsX64](../platform/WindowsX64/Inno.Build.WindowsX64.md)
 - [Inno.Assets.Pipeline](../assets/Inno.Assets.Pipeline.md)
 - [Inno.Assets](../assets/Inno.Assets.md)
 - [Inno.Plugins.Authoring](../plugins/Inno.Plugins.Authoring.md)
@@ -76,7 +79,6 @@ dotnet test tests/build/Inno.Build.Tests/Inno.Build.Tests.csproj --configuration
 
 | 测试文件 | 场景入口示例 |
 | --- | --- |
-| [InteropRestoreOwnershipTests.cs](../../tests/build/Inno.Build.Tests/InteropRestoreOwnershipTests.cs) | 真实 SDK 求值后的直接/传递 BGCS Runtime 引用仍存在；只有直接引用 owner 负责隔离 restore |
 | [BgfxNativeProfileTests.cs](../../tests/build/Inno.Build.Tests/BgfxNativeProfileTests.cs) | `OpenTargetAcceptsItsExplicitSdkInvocationBeforeSourceValidation`、`ForeignTargetIsRejectedBeforeInvokingTheProfile`、`InvocationOwnsAnImmutableArgumentSnapshot` |
 | [BindingDefinitionTests.cs](../../tests/build/Inno.Build.Tests/BindingDefinitionTests.cs) | `ExecutableOrNonLiteralDefinitionsFailBeforeOutputCreation`、`UndeclaredTargetNeverFallsBackToTheHostAbi` |
 | [BindingGenerationBatchTests.cs](../../tests/build/Inno.Build.Tests/BindingGenerationBatchTests.cs) | `OneBatchReusesSharedReadsOnlyWithinEachFreshPhase`、`ActiveConsumersBlockReplacementAndReleaseAllowsRepair`、`AFailedBatchPublishesNoPartialClosureAndPreservesEarlierOutputs`、`FrozenSdkPathsSelectIndependentHeadersWithoutChangingTheProcessEnvironment` |
@@ -92,7 +94,6 @@ dotnet test tests/build/Inno.Build.Tests/Inno.Build.Tests.csproj --configuration
 | [EditorShaderProfileTests.cs](../../tests/build/Inno.Build.Tests/EditorShaderProfileTests.cs) | `SdkAddedReferencesRetainTheProductTargetAndShaderProfile`、`SharedCompositionShadersConsumeExplicitProductFacts`、`BackendConsumesAProductProfileWithoutSelectingAKnownNativeTarget` |
 | [FileProductPublicationTests.cs](../../tests/build/Inno.Build.Tests/FileProductPublicationTests.cs) | `SingleFilePublicationRetainsTheNativeClosureAndRejectsMissingInputs` |
 | [GameContentCompilerBindingTests.cs](../../tests/build/Inno.Build.Tests/GameContentCompilerBindingTests.cs) | `BindingRejectsMissingOrMismatchedComponentsBeforeAnyWork`、`ContentCompilerCanBeReplacedWithoutChangingPlatformPackaging` |
-| [InteropRuntimeIsolationTests.cs](../../tests/build/Inno.Build.Tests/InteropRuntimeIsolationTests.cs) | `ExternalConsumerBuildPreparesItsIsolatedRuntimeRestore`、`SdkAddedRuntimeReferencesRetainConsumerIsolation`、`RestoreRetainsTheReferencedRuntimeArtifactProfile`、`ReferencedRuntimeSeparatesSdkTargetAbiAndCompilationProfiles` |
 | [ManagedDeploymentTests.cs](../../tests/build/Inno.Build.Tests/ManagedDeploymentTests.cs) | `OpenProviderCatalogDispatchesCustomIdentityWithoutPlatformBranches`、`CapabilityInputsAndPublicationArtifactsAreImmutable` |
 | [NativeArtifactIdentityTests.cs](../../tests/build/Inno.Build.Tests/NativeArtifactIdentityTests.cs) | `MultipurposeRecipeOwnerIncludesOnlyItsDeclaredImplementationClosure`、`FingerprintPreservesDeclarationOrderAndChangesForSourceOrSdkIdentity`、`LogicalInputsCanMoveWithoutChangingIdentityAndSameTimestampTamperingInvalidatesIt`、`ManifestChecksIdentityBytesAndTheCompleteOutputSet` |
 | [NativeArtifactPublicationTests.cs](../../tests/build/Inno.Build.Tests/NativeArtifactPublicationTests.cs) | `RepairWaitsForReadersAndCancellationPreservesThePinnedDirectory`、`MaterializationPreservesIdenticalTimestampsAndRejectsChangesAfterTheSourceSnapshot`、`CanceledMaterializationPreservesTheOwnedIntermediate`、`SdkDirectoryAliasesContributeContentAndDirectoryCyclesFailBeforeProducingOutput` |
@@ -144,3 +145,7 @@ dotnet test tests/build/Inno.Build.Tests/Inno.Build.Tests.csproj --configuration
 ## 缓存退休
 
 `BuildCacheRetirementTests` 通过公开 owner、提案及 FileLease 协议验证跨 owner 依赖保护、活动 reader、候选外活动父产物、预览后保护根变化、忙碌 owner、清单变化、取消、时间预算和无效所有权。测试还检查持久锁文件与未登记用户目录保持存在。它验证退休基础协议，不代表标准发行和自动回收已经接入。
+
+## NuGet、目标与闭包验证
+
+`NuGetBindingDependencyTests` 验证固定 Runtime 包和 Restore 内容身份；`SupportPackClosureValidationTests` 验证任意后端组、精确静态归档及 Browser 对象 ABI。平台 fixture 单独验证 PE/Mach-O 的目标拒绝，不冒充 foreign 产品运行证据。

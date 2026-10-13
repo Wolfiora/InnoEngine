@@ -165,12 +165,14 @@ public sealed class FileSystemSafetyTests : IDisposable
         File.SetAttributes(lockedFile, FileAttributes.ReadOnly);
         try
         {
-            IOException failure = Assert.Throws<IOException>(() => AtomicDirectory.Install(candidate, destination));
+            DirectoryCleanupException failure = Assert.Throws<DirectoryCleanupException>(() => AtomicDirectory.Install(candidate, destination));
 
             Assert.Contains("installed", failure.Message, StringComparison.OrdinalIgnoreCase);
             Assert.Equal("current", File.ReadAllText(Path.Combine(destination, "current.txt")));
             Assert.False(Directory.Exists(candidate));
             string backup = Assert.Single(Directory.EnumerateDirectories(m_root, "destination.backup-*"));
+            Assert.Equal(destination, failure.installedDirectory);
+            Assert.Equal(backup, failure.backupDirectory);
             Assert.Equal("previous", File.ReadAllText(Path.Combine(backup, "locked.txt")));
         }
         finally

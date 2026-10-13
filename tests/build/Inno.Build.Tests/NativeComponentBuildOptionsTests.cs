@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Inno.Build.Toolchains;
-using Inno.Integration.Browser.Bgfx;
+using Inno.Integration.BrowserWasm32.Bgfx;
 using Inno.Build.Distribution.Standard;
 using Xunit;
 
@@ -59,9 +59,20 @@ public sealed class NativeComponentBuildOptionsTests
     }
 
     [Fact]
+    public void StaticRecipesDeclareOnlyNativeSourceRootsThatTheyActuallyConsume()
+    {
+        var source = new NativeStaticBuildDefinition("build/Static.cmake", ["native/include", "native/src"],
+            ["libfixture.a"], ["fixture-target"], "native");
+        Assert.Equal("native", source.nativeSourceDirectory);
+        Assert.Null(new NativeStaticBuildDefinition("build/Static.cmake", ["vendor"], ["libfixture.a"], ["fixture-target"]).nativeSourceDirectory);
+        Assert.Throws<ArgumentException>(() => new NativeStaticBuildDefinition("build/Static.cmake", ["vendor"],
+            ["libfixture.a"], ["fixture-target"], "undeclared/native"));
+    }
+
+    [Fact]
     public void ProductPlanDeclaresStaticArchivesAndDoesNotGuessLinkageFromTheHost()
     {
-        ProductNativeBuildPlan plan = StandardNativeBuildPlans.CreateStaticPlayer(BrowserBgfxIntegration.nativeOptions);
+        ProductNativeBuildPlan plan = StandardNativeBuildPlans.CreateStaticPlayer(BrowserWasm32BgfxIntegration.nativeOptions);
         Assert.All(plan.steps, static step => {
             Assert.Equal(NativeLibraryKind.Static, step.options.libraryKind);
             Assert.Contains("browser-wasm", step.component.staticBuild!.targetIds);

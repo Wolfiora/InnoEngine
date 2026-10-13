@@ -52,7 +52,7 @@ public static class DevelopmentEntry
                     InitializeLease(productLeasePath, cancellation.Token);
                     productLease = FileLease.AcquireSharedAsync(productLeasePath,
                         TimeSpan.FromSeconds(10), cancellation.Token).GetAwaiter().GetResult();
-                    string? path = DevelopmentProduct.Open(root, host.target, Configuration(), cancellation.Token);
+                    string? path = DevelopmentProduct.Open(root, host.target, Configuration(), host.editorAssembly!, cancellation.Token);
                     if (path is null)
                     {
                         productLease.Dispose();
@@ -65,7 +65,7 @@ public static class DevelopmentEntry
                             using FileLease productPreparation = FileLease.AcquireAsync(productLeasePath,
                                 TimeSpan.FromSeconds(10), cancellation.Token).GetAwaiter().GetResult();
                             // Another preparation may have completed while this caller waited for ownership.
-                            if (DevelopmentProduct.Open(root, host.target, Configuration(), cancellation.Token) is null)
+                            if (DevelopmentProduct.Open(root, host.target, Configuration(), host.editorAssembly!, cancellation.Token) is null)
                             {
                                 string dotnet = DevelopmentProcess.ResolveDotnet();
                                 DevelopmentDependencies.PrepareAsync(root, cancellation.Token).GetAwaiter().GetResult();
@@ -79,7 +79,7 @@ public static class DevelopmentEntry
                             .GetAwaiter().GetResult();
                         productLease = FileLease.AcquireSharedAsync(productLeasePath,
                             TimeSpan.FromSeconds(10), cancellation.Token).GetAwaiter().GetResult();
-                        path = DevelopmentProduct.Open(root, host.target, Configuration(), cancellation.Token)
+                        path = DevelopmentProduct.Open(root, host.target, Configuration(), host.editorAssembly!, cancellation.Token)
                             ?? throw new IOException("The Editor deployment changed before startup. Run InnoEngine.Build.");
                     }
                     Console.WriteLine($"Starting prepared Editor ({host.target}/{Configuration()}). Engine source changes require InnoEngine.Build.");
@@ -111,7 +111,7 @@ public static class DevelopmentEntry
         }
         catch (Exception failure)
         {
-            Console.Error.WriteLine(failure.Message);
+            Console.Error.WriteLine(failure);
             return 1;
         }
     }
@@ -144,17 +144,42 @@ public static class DevelopmentEntry
             {
                 using var lease = await FileLease.AcquireAsync(LockPath(root), TimeSpan.FromMinutes(10), cancellation.Token)
                     .ConfigureAwait(false);
-                string? path = DevelopmentBuildTool.Open(root, Configuration(), dotnet, cancellation.Token);
-                if (path is null)
+                DevelopmentBuildToolLease? preparedTool = DevelopmentBuildTool.Open(root, Configuration(), dotnet, cancellation.Token);
+                if (preparedTool is null)
                 {
                     await DevelopmentDependencies.PrepareAsync(root, cancellation.Token).ConfigureAwait(false);
-                    await BuildAsync(root, dotnet, C_BUILD_PROJECT, cancellation.Token).ConfigureAwait(false);
-                    path = await GetAssemblyPathAsync(root, dotnet, C_BUILD_PROJECT, Configuration(), cancellation.Token).ConfigureAwait(false);
-                    DevelopmentBuildTool.Record(root, Configuration(), dotnet, path, cancellation.Token);
+                    string workspaceRoot = Path.Combine(root, "artifacts", "build-tools", "cli", "workspaces");
+                    string output = Path.Combine(workspaceRoot, Guid.NewGuid().ToString("N"));
+                    string property = "-p:InnoBuildCliOutputPath=" + output + Path.DirectorySeparatorChar;
+                    try
+                    {
+                        await DevelopmentProcess.RunAsync(dotnet,
+                            ["build", Path.GetFullPath(C_BUILD_PROJECT, root), "--configuration", Configuration(),
+                                "--disable-build-servers", "-m:1", "-nodeReuse:false", property],
+                            root, capture: false, cancellation.Token).ConfigureAwait(false);
+                        string path = await DevelopmentProcess.RunAsync(dotnet,
+                            ["msbuild", Path.GetFullPath(C_BUILD_PROJECT, root), "-nologo", "-getProperty:TargetPath",
+                                "-p:Configuration=" + Configuration(), property], root, capture: true, cancellation.Token).ConfigureAwait(false);
+                        path = DevelopmentBuildTool.Record(root, Configuration(), dotnet, path, cancellation.Token);
+                        preparedTool = new DevelopmentBuildToolLease(path, cancellation.Token);
+                    }
+                    finally
+                    {
+                        try
+                        {
+                            if (Directory.Exists(output))
+                                Directory.Delete(PathBoundary.RequireUnlinkedPath(workspaceRoot, output), recursive: true);
+                        }
+                        catch (Exception cleanupFailure) when (cleanupFailure is IOException or UnauthorizedAccessException)
+                        {
+                            Console.Error.WriteLine($"Build bootstrap cleanup was deferred for '{output}': {cleanupFailure.Message}");
+                        }
+                    }
                 }
                 else
                     Console.WriteLine("Using verified prepared Build tool.");
-                using var application = new DevelopmentApplication(path);
+                using DevelopmentBuildToolLease toolReading = preparedTool;
+                using var application = new DevelopmentApplication(toolReading.assemblyPath);
                 Func<string[], CancellationToken, Task<int>> run = application
                     .GetEntry<Func<string[], CancellationToken, Task<int>>>("Inno.Build.Cli.BuildApplication");
                 int result = await run(command, cancellation.Token).ConfigureAwait(false);
@@ -181,7 +206,7 @@ public static class DevelopmentEntry
         }
         catch (Exception failure)
         {
-            Console.Error.WriteLine(failure.Message);
+            Console.Error.WriteLine(failure);
             return 1;
         }
     }

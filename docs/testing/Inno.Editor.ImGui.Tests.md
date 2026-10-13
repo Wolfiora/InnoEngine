@@ -10,7 +10,7 @@
 - [Inno.Adapter.Presentation.ImGui.Sdl3](../backends/ImGui/Inno.Adapter.Presentation.ImGui.Sdl3.md)
 - [Inno.Adapter.Platform.Sdl3](../backends/Sdl3/Inno.Adapter.Platform.Sdl3.md)
 - [Inno.Native.Sdl3](../backends/Sdl3/Inno.Native.Sdl3.md)
-- [Inno.Integration.Windows.Sdl3](../platform/Windows/Inno.Integration.Windows.Sdl3.md)
+- [Inno.Integration.WindowsX64.Sdl3](../platform/WindowsX64/Inno.Integration.WindowsX64.Sdl3.md)
 - [Inno.Editor.ImGui](../editor/Inno.Editor.ImGui.md)
 - [Inno.Native.ImGui](../backends/ImGui/Inno.Native.ImGui.md)
 

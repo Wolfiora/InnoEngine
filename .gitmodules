@@ -28,6 +28,3 @@
 [submodule "extern/harfbuzz"]
 	path = extern/harfbuzz
 	url = https://github.com/harfbuzz/harfbuzz.git
-[submodule "dependencies/BindGen-CS"]
-	path = dependencies/BindGen-CS
-	url = https://github.com/FLwolfy/BindGen-CS.git

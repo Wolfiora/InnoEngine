@@ -13,7 +13,7 @@
   <ItemGroup>
     <ProjectReference Include="../../runtime/Inno.Adapter.Platform.Sdl3/Inno.Adapter.Platform.Sdl3.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../native/Inno.Native.Sdl3/Inno.Native.Sdl3.csproj" PrivateAssets="compile" />
-    <ProjectReference Include="../../../../platforms/Windows/integrations/Inno.Integration.Windows.Sdl3/Inno.Integration.Windows.Sdl3.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../../../platforms/WindowsX64/integrations/Inno.Integration.WindowsX64.Sdl3/Inno.Integration.WindowsX64.Sdl3.csproj" PrivateAssets="compile" />
   </ItemGroup>
 
   <ItemGroup>

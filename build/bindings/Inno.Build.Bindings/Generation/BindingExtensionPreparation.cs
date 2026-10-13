@@ -82,12 +82,19 @@ internal static class BindingExtensionPreparation
                     [sdk.cliPath, "build", project, "--configuration", "Release", "--output", candidate,
                         "--artifacts-path", intermediates, "--disable-build-servers", "-m:1", "-nodeReuse:false"],
                     context.engineRoot, cancellation, DotNetSdkEnvironment.Create(sdk.hostPath)).ConfigureAwait(false);
-                workspaces.Record(intermediates, intermediates + ".lock", [], Path.GetFileNameWithoutExtension(project) + "/" + sdk.sdkIdentity, cancellation);
+                workspaces.Record(intermediates, intermediates + ".lock", [], Path.GetFileNameWithoutExtension(project) + "/" + sdk.sdkIdentity, null, cancellation);
                 Verify("extension-build");
                 BuildArtifactManifest.Write(staging, fingerprint, ["Outputs"], context);
                 cancellation.ThrowIfCancellationRequested();
                 using BuildArtifactWriteLease writing = await BuildArtifactWriteLease.AcquireAsync(destination, cancellation).ConfigureAwait(false);
-                AtomicDirectory.Install(staging, destination);
+                try
+                {
+                    AtomicDirectory.Install(staging, destination);
+                }
+                catch (DirectoryCleanupException cleanupFailure)
+                {
+                    Console.Error.WriteLine(cleanupFailure.Message);
+                }
             }
             finally
             {
@@ -102,7 +109,7 @@ internal static class BindingExtensionPreparation
             ["Outputs"], cancellation, context).ConfigureAwait(false);
         try
         {
-            cache.Record(destination, destination + ".read.lock", [], Path.GetFileNameWithoutExtension(project) + "/" + sdk.sdkIdentity, cancellation);
+            cache.Record(destination, destination + ".read.lock", [], Path.GetFileNameWithoutExtension(project) + "/" + sdk.sdkIdentity, null, cancellation);
             return new(assembly, reading);
         }
         catch

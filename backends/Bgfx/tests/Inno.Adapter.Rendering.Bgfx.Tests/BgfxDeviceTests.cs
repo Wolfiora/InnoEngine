@@ -7,6 +7,7 @@ using Xunit;
 namespace Inno.Adapter.Rendering.Bgfx.Tests;
 
 [Collection(BgfxDeviceCollection.name)]
+[Trait("ProcessIsolation", "Required")]
 public sealed class BgfxDeviceTests
 {
     private static readonly RenderPhaseId C_FIRST = new("tests.first");

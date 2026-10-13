@@ -1,8 +1,8 @@
 using System;
 using Inno.Adapter.Platform;
-using Inno.Integration.Browser.Bgfx.Runtime;
-using Inno.Integration.MacOS.Bgfx.Runtime;
-using Inno.Integration.Windows.Bgfx.Runtime;
+using Inno.Integration.BrowserWasm32.Bgfx.Runtime;
+using Inno.Integration.MacOSArm64.Bgfx.Runtime;
+using Inno.Integration.WindowsX64.Bgfx.Runtime;
 using Xunit;
 
 namespace Inno.Adapter.Rendering.Bgfx.Tests;
@@ -12,9 +12,9 @@ public sealed class BgfxSurfaceIntegrationTests
     [Fact]
     public void EachIntegrationValidatesItsOwnAbiAndRole()
     {
-        var windows = new WindowsBgfxSurfaceIntegration();
-        var macOS = new MacOSBgfxSurfaceIntegration();
-        var browser = new BrowserBgfxSurfaceIntegration();
+        var windows = new WindowsX64BgfxSurfaceIntegration();
+        var macOS = new MacOSArm64BgfxSurfaceIntegration();
+        var browser = new BrowserWasm32BgfxSurfaceIntegration();
         Assert.Equal((nint)42, windows.Resolve(new((nint)42, handleKind: PlatformNativeHandleId.win32),
             BgfxSurfaceRole.Primary).windowHandle);
         Assert.True(windows.supportsAdditionalSurfaces);

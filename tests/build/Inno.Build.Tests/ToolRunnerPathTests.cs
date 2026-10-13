@@ -22,7 +22,7 @@ public sealed class ToolRunnerPathTests
         {
             File.Copy(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.System), "where.exe"), executable);
             Assert.True(executable.Length > 260);
-            var runner = new ToolRunner(new Dictionary<BgfxTool, string> { [BgfxTool.Shaderc] = executable });
+            var runner = new ToolRunner(new Dictionary<BgfxTool, string> { [BgfxTool.Shaderc] = executable }, directory);
             ToolRunResult result = await runner.RunAsync(BgfxTool.Shaderc, ["/?"], root);
             Assert.Equal(0, result.exitCode);
             Assert.True(File.Exists(executable));

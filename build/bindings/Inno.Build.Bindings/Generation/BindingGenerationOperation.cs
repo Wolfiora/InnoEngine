@@ -144,7 +144,7 @@ internal sealed class BindingGenerationOperation : IDisposable
             {
                 NativeBindingGenerationDescriptor generation = results[definition.component.nativeProject];
                 cache.Record(generation.artifactDirectory, generation.artifactDirectory + ".read.lock", [],
-                    definition.component.id + "/" + m_request.targetId, cancellation);
+                    definition.component.id + "/" + m_request.targetId, m_request.targetId, cancellation);
             }
         }
         var result = new NativeBindingGenerationResult(results, m_reading);

@@ -6,10 +6,10 @@
 
 验证以下项目的公开行为与组合契约。该程序集属于测试闭包，不进入 Editor 或 Player 发行；测试类、fixture 和断言辅助类型不属于稳定产品 API。
 
-- [Inno.Integration.MacOS.Bgfx](../platform/MacOS/Inno.Integration.MacOS.Bgfx.md)
+- [Inno.Integration.MacOSArm64.Bgfx](../platform/MacOSArm64/Inno.Integration.MacOSArm64.Bgfx.md)
 - [Inno.Content.Testing 项目](../../tests/content/fixtures/Inno.Content.Testing/Inno.Content.Testing.csproj)
 - [Inno.Build.Toolchains.Bgfx.Tools](../backends/Bgfx/Inno.Build.Toolchains.Bgfx.Tools.md)
-- [Inno.Build.MacOS](../platform/MacOS/Inno.Build.MacOS.md)
+- [Inno.Build.MacOSArm64](../platform/MacOSArm64/Inno.Build.MacOSArm64.md)
 - [Inno.Rendering.Assets](../rendering/Inno.Rendering.Assets.md)
 - [Inno.Core.Serialization](../core/Inno.Core.Serialization.md)
 - [Inno.Extensibility.Modules](../extensibility/Inno.Extensibility.Modules.md)

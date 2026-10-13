@@ -167,7 +167,7 @@ public sealed class PlayerSupportPackPublisher
         ) {
             try
             {
-                cache.Record(pack.directory, pack.directory + ".read.lock", [], target.value);
+                cache.Record(pack.directory, pack.directory + ".read.lock", [], target.value, target.value);
             }
             catch (Exception failure) when (failure is IOException or UnauthorizedAccessException)
             {

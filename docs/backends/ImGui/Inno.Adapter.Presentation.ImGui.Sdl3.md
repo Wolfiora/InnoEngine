@@ -3033,7 +3033,7 @@ CreateImGuiContext 必须显式传入 ImGuiInteractionOptions，窗口必须属�
 - [Inno.Core.Execution](../../core/Inno.Core.Execution.md)：实现依赖，PrivateAssets="compile"。
 - [Inno.Native.Sdl3](../Sdl3/Inno.Native.Sdl3.md)：公开引用边界由实际签名核对。
 - [Inno.Native.ImGui](Inno.Native.ImGui.md)：公开引用边界由实际签名核对。
-- `$(BGCSRuntimeProject)`：公开引用边界由实际签名核对。
+- `BGCS.Runtime`：通过固定版本 NuGet 包提供互操作运行时，不引用生成器。
 - [Inno.Adapter.Platform](../../platform/Inno.Adapter.Platform.md)：公开引用边界由实际签名核对。
 - [Inno.Adapter.Presentation](../../platform/Inno.Adapter.Presentation.md)：公开引用边界由实际签名核对。
 - [Inno.Platform](../../platform/Inno.Platform.md)：公开引用边界由实际签名核对。

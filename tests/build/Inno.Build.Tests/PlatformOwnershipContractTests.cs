@@ -1,5 +1,5 @@
 using Inno.Build.Bindings;
-using Inno.Integration.Browser.Bgfx;
+using Inno.Integration.BrowserWasm32.Bgfx;
 using System;
 using System.IO;
 using System.Threading;
@@ -8,8 +8,8 @@ using Inno.Build.Composition;
 using Inno.Build.Distribution.Standard;
 using Inno.Build.SupportPacks;
 using Inno.Build.Toolchains;
-using Inno.Build.Windows;
-using Inno.Build.MacOS;
+using Inno.Build.WindowsX64;
+using Inno.Build.MacOSArm64;
 using Xunit;
 
 namespace Inno.Build.Tests;
@@ -25,9 +25,9 @@ public sealed class PlatformOwnershipContractTests
         string sdk = Path.Combine(output, "unavailable-dotnet.exe");
         var host = unsupportedHost ? new BuildHostDescriptor("MacOS", "arm64")
             : new BuildHostDescriptor("Windows", "x64");
-        var source = new WindowsPlayerSupportPackSource(
-            StandardNativeBuildPlans.CreatePlayer(Inno.Integration.Windows.Bgfx.WindowsBgfxIntegration.nativeProfile),
-            host, sdk, new NativeBindingGenerator(sdk));
+        var source = new WindowsX64PlayerSupportPackSource(
+            StandardNativeBuildPlans.CreatePlayer(Inno.Integration.WindowsX64.Bgfx.WindowsX64BgfxIntegration.nativeProfile),
+            host, sdk, new NativeBindingGenerator(sdk), new WindowsX64SupportPackValidator());
         var publisher = new PlayerSupportPackPublisher([source]);
 
         if (unsupportedHost)
@@ -43,7 +43,7 @@ public sealed class PlatformOwnershipContractTests
     [Fact]
     public void StaticComponentsHaveOneAggregateOwnerAndNoUnusedStandaloneProducer()
     {
-        ProductNativeBuildPlan plan = StandardNativeBuildPlans.CreateStaticPlayer(Inno.Integration.Browser.Bgfx.BrowserBgfxIntegration.nativeOptions);
+        ProductNativeBuildPlan plan = StandardNativeBuildPlans.CreateStaticPlayer(Inno.Integration.BrowserWasm32.Bgfx.BrowserWasm32BgfxIntegration.nativeOptions);
 
         Assert.All(plan.steps, static step => {
             Assert.Null(step.build);
@@ -63,9 +63,9 @@ public sealed class PlatformOwnershipContractTests
             new BuildHostDescriptor("Windows", "x64"), BuildTargetId.windowsX64, new NativeBindingGenerator("explicit-sdk"));
         StandardBuildDistribution distribution = StandardBuildDistribution.Create(context);
 
-        Assert.Same(BrowserBgfxShaderProfiles.target,
+        Assert.Same(BrowserWasm32BgfxShaderProfiles.target,
             distribution.ResolveShaderTarget(BuildTargetId.browserWasm));
-        Assert.Equal("shader-tools", distribution.build.ResolveNativeProduct("linux-arm64", "shader-tools").productId);
+        Assert.Throws<NotSupportedException>(() => distribution.build.ResolveNativeProduct("linux-arm64", "shader-tools"));
         Assert.Throws<NotSupportedException>(() => distribution.ResolveShaderTarget(new("unregistered-target")));
         Assert.Throws<NotSupportedException>(() => distribution.build.ResolveNativeProduct("browser-wasm", "shader-tools"));
     }
@@ -84,10 +84,10 @@ public sealed class PlatformOwnershipContractTests
         Assert.Contains(BuildTargetId.browserWasm, first.availableTargets);
         Assert.DoesNotContain(new BuildTargetId("desktop"), first.availableTargets);
         Assert.DoesNotContain(new BuildTargetId("linux-x64"), first.availableTargets);
-        Assert.NotNull(first.ResolveNativeToolchain("linux-x64"));
+        Assert.Throws<NotSupportedException>(() => first.ResolveNativeToolchain("linux-x64"));
         Assert.Throws<NotSupportedException>(() => first.ResolveNativeToolchain("fixture-unregistered"));
-        Assert.Equal("x64", WindowsBuildModule.target.architecture);
-        Assert.Equal("arm64", MacOSBuildModule.target.architecture);
+        Assert.Equal("x64", WindowsX64BuildModule.target.architecture);
+        Assert.Equal("arm64", MacOSArm64BuildModule.target.architecture);
     }
 
     [Theory]
@@ -107,8 +107,8 @@ public sealed class PlatformOwnershipContractTests
             var context = new NativeBuildContext(root, "debug");
             var host = new BuildHostDescriptor(system, architecture);
             INativeToolchainProvider provider = target == "macos-arm64"
-                ? new MacOSNativeToolchainProvider("deliberately-unavailable-sdk")
-                : new WindowsNativeToolchainProvider("deliberately-unavailable-sdk");
+                ? new MacOSArm64NativeToolchainProvider("deliberately-unavailable-sdk")
+                : new WindowsX64NativeToolchainProvider("deliberately-unavailable-sdk");
 
             await Assert.ThrowsAsync<PlatformNotSupportedException>(() =>
                 provider.ResolveAsync(context, host, target, CancellationToken.None).AsTask());

@@ -1,4 +1,12 @@
 <Project>
+  <PropertyGroup>
+    <!-- Evaluate after product declarations so explicit target restores never overwrite neutral locks. -->
+    <_InnoPackageLockScope>$(InnoNativeTarget)</_InnoPackageLockScope>
+    <_InnoPackageLockScope Condition="'$(RuntimeIdentifier)' != ''">$(_InnoPackageLockScope).$(RuntimeIdentifier)</_InnoPackageLockScope>
+    <_InnoPackageLockScope>$([System.String]::Copy('$(_InnoPackageLockScope)').Trim('.'))</_InnoPackageLockScope>
+    <NuGetLockFilePath Condition="'$(NuGetLockFilePath)' == ''">$(MSBuildProjectDirectory)/packages.lock.json</NuGetLockFilePath>
+    <NuGetLockFilePath Condition="'$(_InnoPackageLockScope)' != ''">$(MSBuildProjectDirectory)/packages.$(_InnoPackageLockScope).lock.json</NuGetLockFilePath>
+  </PropertyGroup>
   <!-- Only the binding owner consumes its selection as a compilation input. -->
   <Import Project="$(InnoNativeBindingSelection)" Condition="'$(BindGenGeneratedBindings)' == 'true' and '$(InnoNativeBindingSelection)' != '' and Exists('$(InnoNativeBindingSelection)')" />
   <Import Project="$(MSBuildThisFileDirectory)build/msbuild/Inno.Build.Tasks.targets" />
@@ -9,45 +17,9 @@
   </ItemGroup>
 
   <PropertyGroup>
-    <InnoInteropRuntimeTarget Condition="'$(InnoNativeTarget)' == ''">neutral</InnoInteropRuntimeTarget>
-    <InnoInteropRuntimeTarget Condition="'$(InnoNativeTarget)' != ''">$(InnoNativeTarget)</InnoInteropRuntimeTarget>
-    <InnoInteropRuntimeOwner Condition="'$(ArtifactsPath)' == ''">$(MSBuildThisFileDirectory)artifacts/managed</InnoInteropRuntimeOwner>
-    <InnoInteropRuntimeOwner Condition="'$(ArtifactsPath)' != ''">$(ArtifactsPath)</InnoInteropRuntimeOwner>
-    <InnoInteropRuntimeArtifacts>$(InnoInteropRuntimeOwner)/interop/$(NETCoreSdkVersion)/$(InnoInteropRuntimeTarget)/abi-$(InnoNativeBuildFingerprint)/rid-$(RuntimeIdentifier)/tfm-$(TargetFramework)/d-$(DebugType)-$(DebugSymbols)_a-$(PublishAot)_s-$(SelfContained)_t-$(PublishTrimmed)</InnoInteropRuntimeArtifacts>
-    <InnoInteropRuntimeRestore>$(InnoInteropRuntimeOwner)/interop/$(NETCoreSdkVersion)/restore/rid-$(RuntimeIdentifier)/tfm-$(TargetFramework)/BGCS.Runtime/</InnoInteropRuntimeRestore>
-    <InnoInteropRuntimeProject>$([System.IO.Path]::GetFullPath('$(BindGenRoot)/src/BGCS.Runtime/BGCS.Runtime.csproj'))</InnoInteropRuntimeProject>
-    <InnoInteropRuntimeProperties>UseArtifactsOutput=true;ArtifactsPath=$(InnoInteropRuntimeArtifacts);MSBuildProjectExtensionsPath=$(InnoInteropRuntimeRestore)</InnoInteropRuntimeProperties>
     <InnoProductReferenceProperties Condition="'$(InnoNativeTarget)' != ''">InnoNativeTarget=$(InnoNativeTarget);InnoToolTarget=$(InnoToolTarget)</InnoProductReferenceProperties>
     <InnoProductReferenceProperties Condition="'$(InnoProductBuildProperties)' != ''">$(InnoProductReferenceProperties);InnoProductBuildProperties=$(InnoProductBuildProperties)</InnoProductReferenceProperties>
   </PropertyGroup>
-
-  <ItemGroup Condition="'$(BGCSRuntimeProject)' != ''">
-    <ProjectReference Update="$(BGCSRuntimeProject)">
-      <AdditionalProperties>%(ProjectReference.AdditionalProperties);$(InnoInteropRuntimeProperties)</AdditionalProperties>
-    </ProjectReference>
-    <!-- Only the project declaring the dependency owns its isolated restore. -->
-    <_InnoDirectInteropRuntimeReference Include="@(ProjectReference->WithMetadataValue('FullPath', '$(InnoInteropRuntimeProject)'))" />
-    <InnoBuildInputRestoreProject Include="@(_InnoDirectInteropRuntimeReference)" />
-  </ItemGroup>
-
-  <!-- Path-based restore does not retain project-reference properties across graph traversal. -->
-  <Target Name="RestoreInnoInteropRuntime"
-          BeforeTargets="ResolveProjectReferences"
-          Condition="'$(DesignTimeBuild)' != 'true' and '$(BuildProjectReferences)' != 'false'">
-    <ItemGroup>
-      <_InnoInteropRuntimeReference Include="@(_InnoDirectInteropRuntimeReference)" />
-    </ItemGroup>
-  </Target>
-
-  <Target Name="RestoreInnoInteropRuntimeOwned"
-          AfterTargets="RestoreInnoInteropRuntime"
-          DependsOnTargets="PrepareInnoTaskPublisher"
-          Condition="'@(_InnoInteropRuntimeReference)' != '' and '$(InnoInteropRuntimeRestore)' != 'false'">
-    <Inno.Build.TaskHosting.RestoreOwnedProjectTask
-      Projects="@(_InnoInteropRuntimeReference)"
-      LockPath="$(MSBuildThisFileDirectory)artifacts/managed/restore-graphs/write.lock" />
-  </Target>
-
   <!-- The SDK adds runtime references after evaluation without the direct reference's metadata. -->
   <Target Name="ApplyInnoTransitiveReferenceProperties" AfterTargets="IncludeTransitiveProjectReferences">
     <ItemGroup>
@@ -57,10 +29,6 @@
       <ProjectReference Update="@(_TransitiveProjectReferences)"
                         Condition="'$(InnoProductReferenceProperties)' != '' and '%(ProjectReference.OutputItemType)' != 'Analyzer'">
         <AdditionalProperties>%(ProjectReference.AdditionalProperties);$(InnoProductReferenceProperties)</AdditionalProperties>
-      </ProjectReference>
-      <ProjectReference Update="@(_TransitiveProjectReferences)"
-                        Condition="'%(ProjectReference.FullPath)' == '$(InnoInteropRuntimeProject)'">
-        <AdditionalProperties>%(ProjectReference.AdditionalProperties);$(InnoInteropRuntimeProperties)</AdditionalProperties>
       </ProjectReference>
       <ProjectReference Update="@(_TransitiveProjectReferences)"
                         Condition="'$(InnoNativeBindingSelection)' != '' and '%(ProjectReference.OutputItemType)' != 'Analyzer'">

@@ -9,7 +9,7 @@
 | `InnoEngine.Editor` | 验证已准备的当前宿主 Editor 并启动；缺失或损坏时准备产品。 |
 | `InnoEngine.Build` | 增量构建当前宿主 Editor；`--clean` 才先清理所选产品工作状态。 |
 
-Windows x64 与 macOS ARM64 路由到已实现的 Editor 组合。Linux 保留已有 Native 工具能力，当前没有完整 Editor；入口明确报告不支持，不能选择其他平台产品。独立发布命令使用明确目标，不用宿主覆盖游戏目标。
+Windows x64 与 macOS ARM64 路由到已实现的 Editor 组合。未实现宿主明确报告不支持，不选择其他平台产品。独立发布命令使用明确目标，不用宿主覆盖游戏目标。
 
 ## 文件与依赖
 

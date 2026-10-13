@@ -106,7 +106,7 @@ public static class StandardNativeBuildPlans
         return profile;
     }
 
-    private static ProductNativeBuildStep CreateShaderToolsStep(BgfxNativeBuildProfile profile) => new("bgfx-tools", BgfxNativeBuild.componentDescriptor, new(NativeLibraryKind.Shared), [],
+    private static ProductNativeBuildStep CreateShaderToolsStep(BgfxNativeBuildProfile profile) => new("bgfx-tools", BgfxToolsBuild.componentDescriptor, new(NativeLibraryKind.Shared), [],
             (
                 context,
                 dependencies,
@@ -117,7 +117,8 @@ public static class StandardNativeBuildPlans
                 relative,
                 target
             ) => relative.StartsWith("includes" + Path.DirectorySeparatorChar, System.StringComparison.Ordinal)
-                ? Path.Combine("bgfx", relative) : Path.Combine("bgfx", target, "tools", relative));
+                ? Path.Combine("bgfx", relative) : Path.Combine("bgfx", target, "tools", relative),
+            configuration: "release");
 
     private static List<ProductNativeBuildStep> CreatePlayerSteps(
         BgfxNativeBuildProfile? profile,

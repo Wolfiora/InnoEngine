@@ -24,6 +24,9 @@ public sealed class BuildCacheArtifactDescriptor
     /// The publisher-recorded sum of owned file lengths, captured under writing ownership for cache budgeting.
     /// It does not measure allocated disk blocks or count shared hardlinks as recovered volume space.
     /// </param>
+    /// <param name="targetId">
+    /// The explicit product target, or null for a shared host artifact that target-scoped cleanup must preserve.
+    /// </param>
     /// <param name="lastUseUtc">
     /// The publisher's last recorded use, used only to order retirement.
     /// </param>
@@ -42,6 +45,7 @@ public sealed class BuildCacheArtifactDescriptor
     public BuildCacheArtifactDescriptor(
         string directory,
         string leasePath,
+        string? targetId,
         long bytes,
         DateTime lastUseUtc,
         IReadOnlyList<string> dependencies
@@ -54,10 +58,13 @@ public sealed class BuildCacheArtifactDescriptor
             throw new ArgumentException("Cache artifact paths must be absolute.");
         if (bytes < 0)
             throw new ArgumentOutOfRangeException(nameof(bytes));
+        if (targetId is not null && string.IsNullOrWhiteSpace(targetId))
+            throw new ArgumentException("A declared cache target cannot be blank.", nameof(targetId));
         if (lastUseUtc.Kind != DateTimeKind.Utc)
             throw new ArgumentException("Cache use timestamps must be UTC.", nameof(lastUseUtc));
         this.directory = Path.TrimEndingDirectorySeparator(Path.GetFullPath(directory));
         this.leasePath = Path.GetFullPath(leasePath);
+        this.targetId = targetId;
         this.bytes = bytes;
         this.lastUseUtc = lastUseUtc;
         this.dependencies = new ReadOnlyCollection<string>(dependencies.Select(static path =>
@@ -73,6 +80,11 @@ public sealed class BuildCacheArtifactDescriptor
     /// Gets the exact existing producer/reader coordination path; retirement does not infer another lock protocol.
     /// </summary>
     public string leasePath { get; }
+
+    /// <summary>
+    /// Gets the producer-declared target, or null when this artifact is shared by host operations.
+    /// </summary>
+    public string? targetId { get; }
 
     /// <summary>
     /// Gets the logical file size used for budgeting, without weakening content validation.

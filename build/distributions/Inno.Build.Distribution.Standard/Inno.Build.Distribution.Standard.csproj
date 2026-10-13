@@ -11,17 +11,15 @@
 
   <ItemGroup>
     <ProjectReference Include="../../bindings/Inno.Build.Bindings/Inno.Build.Bindings.csproj" PrivateAssets="compile" />
-    <ProjectReference Include="../../../platforms/Windows/integrations/Inno.Integration.Windows.Bgfx/Inno.Integration.Windows.Bgfx.csproj" PrivateAssets="compile" />
-    <ProjectReference Include="../../../platforms/MacOS/integrations/Inno.Integration.MacOS.Bgfx/Inno.Integration.MacOS.Bgfx.csproj" PrivateAssets="compile" />
-    <ProjectReference Include="../../../platforms/Browser/integrations/Inno.Integration.Browser.Bgfx/Inno.Integration.Browser.Bgfx.csproj" PrivateAssets="compile" />
-    <ProjectReference Include="../../../platforms/Linux/integrations/Inno.Integration.Linux.Bgfx/Inno.Integration.Linux.Bgfx.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../../platforms/WindowsX64/integrations/Inno.Integration.WindowsX64.Bgfx/Inno.Integration.WindowsX64.Bgfx.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../../platforms/MacOSArm64/integrations/Inno.Integration.MacOSArm64.Bgfx/Inno.Integration.MacOSArm64.Bgfx.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../../platforms/BrowserWasm32/integrations/Inno.Integration.BrowserWasm32.Bgfx/Inno.Integration.BrowserWasm32.Bgfx.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../../backends/Bgfx/build/Inno.Build.Toolchains.Bgfx.Tools/Inno.Build.Toolchains.Bgfx.Tools.csproj" />
     <ProjectReference Include="../../composition/Inno.Build.Composition/Inno.Build.Composition.csproj" />
     <ProjectReference Include="../../../backends/DotNet/build/Inno.Build.Managed.DotNet/Inno.Build.Managed.DotNet.csproj" PrivateAssets="compile" />
-    <ProjectReference Include="../../../platforms/Windows/build/Inno.Build.Windows/Inno.Build.Windows.csproj" PrivateAssets="compile" />
-    <ProjectReference Include="../../../platforms/MacOS/build/Inno.Build.MacOS/Inno.Build.MacOS.csproj" PrivateAssets="compile" />
-    <ProjectReference Include="../../../platforms/Browser/build/Inno.Build.Browser/Inno.Build.Browser.csproj" PrivateAssets="compile" />
-    <ProjectReference Include="../../../platforms/Linux/build/Inno.Build.Linux/Inno.Build.Linux.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../../platforms/WindowsX64/build/Inno.Build.WindowsX64/Inno.Build.WindowsX64.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../../platforms/MacOSArm64/build/Inno.Build.MacOSArm64/Inno.Build.MacOSArm64.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../../platforms/BrowserWasm32/build/Inno.Build.BrowserWasm32/Inno.Build.BrowserWasm32.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../../backends/Bgfx/build/Inno.Build.Toolchains.Bgfx/Inno.Build.Toolchains.Bgfx.csproj" />
     <ProjectReference Include="../../../backends/ImGui/build/Inno.Build.Toolchains.ImGui/Inno.Build.Toolchains.ImGui.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../../backends/ImGui/build/Inno.Build.Toolchains.ImGuizmo/Inno.Build.Toolchains.ImGuizmo.csproj" PrivateAssets="compile" />

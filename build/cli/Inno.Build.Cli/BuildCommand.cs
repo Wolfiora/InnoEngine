@@ -42,6 +42,8 @@ internal sealed class BuildCommand
 
     internal BuildTargetId toolsTarget => new(Require(m_values, "tools-target"));
 
+    internal string? dotnetHost => m_values.GetValueOrDefault("dotnet");
+
     internal BuildTargetId gameTarget => new(Require(m_values, "target"));
 
     internal string? profilePath => m_values.GetValueOrDefault("profile");
@@ -74,10 +76,21 @@ internal sealed class BuildCommand
                 values.Add(key, bool.TrueString);
                 continue;
             }
-            if (++index >= args.Count)
+            if (++index >= args.Count || args[index].StartsWith("--", StringComparison.Ordinal))
                 throw new ArgumentException($"Argument '--{key}' requires a value.");
             values.Add(key, args[index]);
         }
+        string[] specific = kind switch
+        {
+            BuildCommandKind.Game => ["target", "profile", "deployment", "startup-scene"],
+            BuildCommandKind.Plugin => ["display-name", "dependencies", "include-dependencies"],
+            BuildCommandKind.ImportSample => ["source"],
+            _ => []
+        };
+        var allowed = new HashSet<string>(["tools-target", "dotnet", "project", "support-packs", "output", ..specific], StringComparer.Ordinal);
+        foreach (string key in values.Keys)
+            if (!allowed.Contains(key))
+                throw new ArgumentException($"Unknown argument '--{key}' for '{args[0]}'.");
         return new BuildCommand(kind, values);
     }
 
@@ -119,8 +132,8 @@ internal sealed class BuildCommand
 
     private static string Usage()
         => "Usage:\n"
-           + "  Inno.Build.Cli game --tools-target <native-target> --project <dir> --support-packs <dir> --output <dir> [--profile <BuildProfile.inno>] --target <target> [--deployment <provider-id>] [--startup-scene <scene>]\n"
-           + "  Inno.Build.Cli plugin --tools-target <native-target> --project <dir> --output <package.iplugin> --display-name <name> [--dependencies <id,id>] [--include-dependencies]\n"
-           + "  Inno.Build.Cli import-sample --tools-target <native-target> --project <dir> --source <plugin-id::~Sample>\n"
-           + "  Inno.Build.Cli scripts --tools-target <native-target> --project <dir> --output <dir>";
+           + "  InnoEngine.Build game --tools-target <native-target> --project <dir> --support-packs <dir> --output <dir> [--profile <BuildProfile.inno>] --target <target> [--deployment <provider-id>] [--startup-scene <scene>]\n"
+           + "  InnoEngine.Build plugin --tools-target <native-target> --project <dir> --output <package.iplugin> --display-name <name> [--dependencies <id,id>] [--include-dependencies]\n"
+           + "  InnoEngine.Build import-sample --tools-target <native-target> --project <dir> --source <plugin-id::~Sample>\n"
+           + "  InnoEngine.Build scripts --tools-target <native-target> --project <dir> --output <dir>";
 }

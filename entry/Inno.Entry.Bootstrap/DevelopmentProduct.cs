@@ -15,6 +15,7 @@ internal static class DevelopmentProduct
         string root,
         string target,
         string configuration,
+        string assemblyName,
         CancellationToken cancellationToken
     ) {
         string receiptPath = ReceiptPath(root, target, configuration);
@@ -33,7 +34,7 @@ internal static class DevelopmentProduct
             || receipt.files is null || receipt.files.Count == 0 || string.IsNullOrEmpty(receipt.assemblyPath))
             return null;
         string path = Path.GetFullPath(receipt.assemblyPath, root);
-        if (!IsChild(root, path) || !File.Exists(path))
+        if (!IsChild(root, path) || !File.Exists(path) || Path.GetFileNameWithoutExtension(path) != assemblyName)
             return null;
         PathBoundary.RequireUnlinkedPath(root, path);
         string directory = Path.GetDirectoryName(path)!;

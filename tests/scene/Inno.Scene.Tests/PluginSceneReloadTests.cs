@@ -10,6 +10,7 @@ using Inno.Extensibility.Modules;
 using Inno.Extensibility.Types;
 using Inno.Scene;
 using Inno.Scene.Components;
+using Inno.Core.Identity;
 using Inno.References;
 
 using Xunit;
@@ -121,6 +122,34 @@ public sealed class PluginSceneReloadTests : IDisposable
         GameComponent original = owner.AddComponent(type);
         SetValue(original, 47);
         return (original.identity.persistentId, type.FullName!);
+    }
+
+    [Fact]
+    public void ForeignAllocatorFailsBeforeReplacingAnEditComponentAndRollbackRestoresItsState()
+    {
+        m_activeModule = m_modules.Load(CreateRequest());
+        GameScene scene = m_world.LoadNewScene("Owned Edit Scene");
+        GameObject owner = scene.CreateObject("Owned Component");
+        _ = AttachPluginComponent(owner);
+        GameComponent previous = owner.GetComponents().Single(component => component is not Transform);
+        Identity previousIdentity = previous.identity;
+        using AssemblyReloadSession removal = m_modules.BeginReload([], [CreateRequest().moduleName]);
+        ISceneReloadStateTransfer transfer = m_reload.Capture(removal.context.GetContext<TypeCacheReloadContext>());
+        transfer.PrepareForActivation();
+        removal.Activate();
+        using (new IdentityAllocator().EnterScope())
+        {
+            Exception failure = Assert.ThrowsAny<Exception>(() => transfer.Apply());
+            Assert.Contains("domain", failure.ToString(), StringComparison.OrdinalIgnoreCase);
+            Assert.Same(previous, owner.GetComponents().Single(component => component is not Transform));
+            Assert.Equal(previousIdentity, previous.identity);
+        }
+        transfer.RollbackStructure();
+        removal.Rollback();
+        transfer.RestorePreviousState();
+        Assert.Same(previous, owner.GetComponents().Single(component => component is not Transform));
+        Assert.Equal(previousIdentity, previous.identity);
+        Assert.Equal(47, GetValue(previous));
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]

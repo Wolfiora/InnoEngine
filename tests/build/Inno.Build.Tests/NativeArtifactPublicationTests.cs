@@ -7,7 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Inno.Build.Toolchains;
 using Inno.Core.IO;
-using Inno.Build.Windows;
+using Inno.Build.WindowsX64;
 using Xunit;
 
 namespace Inno.Build.Tests;
@@ -328,7 +328,7 @@ public sealed class NativeArtifactPublicationTests : IDisposable
         if (!OperatingSystem.IsWindows())
             return;
         NativeBuildContext unresolved = CreateContext();
-        NativeToolchainSelection tools = await new WindowsNativeToolchainProvider(Environment.GetEnvironmentVariable("DOTNET_HOST_PATH") ?? ToolchainEnvironment.ResolveExecutable("dotnet")).ResolveAsync(
+        NativeToolchainSelection tools = await new WindowsX64NativeToolchainProvider(Environment.GetEnvironmentVariable("DOTNET_HOST_PATH") ?? ToolchainEnvironment.ResolveExecutable("dotnet")).ResolveAsync(
             unresolved, new BuildHostDescriptor("Windows", "x64"), "windows-x64", CancellationToken.None);
         NativeBuildContext context = unresolved.WithToolchain(tools).WithComponentOptions(
             new NativeComponentDescriptor("fixture", "build/toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj",

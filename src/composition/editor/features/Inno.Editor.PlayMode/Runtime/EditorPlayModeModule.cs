@@ -100,7 +100,7 @@ internal sealed class EditorPlayModeModule : EditorModule, IEditorPlayMode
     /// </param>
     protected override void OnStart(EditorContext context)
     {
-        m_reloadRegistration = m_reloads.Register(m_controller);
+        m_reloadRegistration = m_reloads.RegisterGuard(m_controller);
         try
         {
             m_loop.Attach(m_controller);

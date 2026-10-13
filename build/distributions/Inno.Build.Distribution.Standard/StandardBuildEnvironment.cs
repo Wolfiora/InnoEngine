@@ -21,6 +21,9 @@ public static class StandardBuildEnvironment
     /// <param name="toolsTarget">
     /// The native target explicitly selected for executable build tools, independently of exported games.
     /// </param>
+    /// <param name="dotnetHost">
+    /// An explicit managed SDK executable, or null to use the current tool process's selected host.
+    /// </param>
     /// <returns>
     /// A frozen execution context; publication targets must be selected independently.
     /// </returns>
@@ -32,7 +35,8 @@ public static class StandardBuildEnvironment
     /// </exception>
     public static BuildCompositionContext Capture(
         string applicationDirectory,
-        BuildTargetId toolsTarget
+        BuildTargetId toolsTarget,
+        string? dotnetHost = null
     ) {
         string system = OperatingSystem.IsWindows() ? "Windows"
             : OperatingSystem.IsMacOS() ? "MacOS"
@@ -45,7 +49,7 @@ public static class StandardBuildEnvironment
             Architecture.X86 => "x86",
             _ => throw new PlatformNotSupportedException("This processor has no standard build host integration.")
         };
-        string host = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH") ?? "dotnet";
+        string host = dotnetHost ?? Environment.GetEnvironmentVariable("DOTNET_HOST_PATH") ?? "dotnet";
         host = ToolchainEnvironment.ResolveExecutable(host);
         return new BuildCompositionContext(host, applicationDirectory, new BuildHostDescriptor(system, architecture), toolsTarget, new NativeBindingGenerator(host));
     }

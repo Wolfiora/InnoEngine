@@ -4,7 +4,7 @@ using System.Numerics;
 using Inno.Adapter.Platform;
 using Inno.Adapter.Platform.Sdl3;
 using Inno.Adapter.Presentation.ImGui;
-using Inno.Integration.Windows.Sdl3;
+using Inno.Integration.WindowsX64.Sdl3;
 using Inno.Native.ImGui;
 using Inno.Native.Sdl3;
 using Inno.Platform;
@@ -22,7 +22,7 @@ public sealed unsafe class ViewportMetricsTests
     [InlineData(true)]
     public void FrameRefreshesDrawableMetricsWithoutAPlatformScaleCallback(bool commandKeys)
     {
-        using var application = new Sdl3PlatformApplication(new WindowsSdl3HostIntegration());
+        using var application = new Sdl3PlatformApplication(new WindowsX64Sdl3HostIntegration());
         using var window = application.CreateWindow(new PlatformWindowOptions
         { title = "Viewport metrics", width = 320, height = 240, visible = false, highPixelDensity = true });
         using var context = application.CreateImGuiContext(window, ImGuiContextFlags.EnableViewports,
@@ -50,7 +50,7 @@ public sealed unsafe class ViewportMetricsTests
     [Fact]
     public void MetricRefreshPreservesRequestedViewportGeometry()
     {
-        using var application = new Sdl3PlatformApplication(new WindowsSdl3HostIntegration());
+        using var application = new Sdl3PlatformApplication(new WindowsX64Sdl3HostIntegration());
         using var window = application.CreateWindow(new PlatformWindowOptions
         { title = "Viewport geometry owner", width = 320, height = 240, visible = false });
         using var context = application.CreateImGuiContext(window, ImGuiContextFlags.EnableViewports,
@@ -84,7 +84,7 @@ public sealed unsafe class ViewportMetricsTests
     [Fact]
     public void DetachedWindowAppliesRequestsAfterPlatformEventReconciliation()
     {
-        using var application = new Sdl3PlatformApplication(new WindowsSdl3HostIntegration());
+        using var application = new Sdl3PlatformApplication(new WindowsX64Sdl3HostIntegration());
         using var window = application.CreateWindow(new PlatformWindowOptions
         { title = "Viewport movement", width = 320, height = 240, visible = false });
         using var context = application.CreateImGuiContext(window, ImGuiContextFlags.EnableViewports,
@@ -125,7 +125,7 @@ public sealed unsafe class ViewportMetricsTests
     [Fact]
     public void LogicalDpiTransitionRetainsThePreviousScaleUntilImGuiStartsItsFrame()
     {
-        using var application = new Sdl3PlatformApplication(new WindowsSdl3HostIntegration());
+        using var application = new Sdl3PlatformApplication(new WindowsX64Sdl3HostIntegration());
         using var window = application.CreateWindow(new PlatformWindowOptions
         { title = "Logical DPI transition", width = 320, height = 240, visible = false });
         using var context = application.CreateImGuiContext(window, ImGuiContextFlags.EnableViewports,
@@ -144,7 +144,7 @@ public sealed unsafe class ViewportMetricsTests
     [Fact]
     public void ViewportCallbacksRegisterOneSurfaceAndReleaseItBeforeNativeDestruction()
     {
-        using var application = new Sdl3PlatformApplication(new WindowsSdl3HostIntegration());
+        using var application = new Sdl3PlatformApplication(new WindowsX64Sdl3HostIntegration());
         using var window = application.CreateWindow(new PlatformWindowOptions
         { title = "Viewport ownership", width = 320, height = 240, visible = false });
         var renderer = new FixtureRenderer();

@@ -1668,7 +1668,7 @@ public sealed class ScriptingPipelineTests : IDisposable
     }
 
     [Fact]
-    public void PluginReloadQuiescesPlaySessionBeforeRetiringItsAssemblyGeneration()
+    public void PluginReloadWaitsForPlaySessionRetirementBeforeActivatingItsAssemblyGeneration()
     {
         using var fixture = new ScriptingFixture(WriteUnavailableGenerationPlugin);
         var reloads = new EditorReloadCoordinator();
@@ -1678,6 +1678,7 @@ public sealed class ScriptingPipelineTests : IDisposable
         Assert.True(initial.success, FormatDiagnostics(initial));
         Assert.True(reload.ApplyPendingReload());
 
+        CompleteUnloadVerification(reload);
         var scenes = new PluginPlayScene(fixture);
         var history = new CountingHistoryIsolation();
         using var playMode = new EditorPlayModeController(
@@ -1697,19 +1698,31 @@ public sealed class ScriptingPipelineTests : IDisposable
             new ReadyScriptCompilation(),
             history,
             fixture.host.logs);
-        using IDisposable registration = reloads.Register(playMode);
+        using IDisposable registration = reloads.RegisterGuard(playMode);
         Assert.True(playMode.EnterPlayMode());
         playMode.AdvanceTransition();
         playMode.AdvanceTransition();
         Assert.Equal(EditorPlayModeState.Playing, playMode.state);
 
-        ScriptCompilationResult replacement = fixture.CompilePendingPluginReload(reload);
-        Assert.True(replacement.success, FormatDiagnostics(replacement));
-        Assert.True(reload.ApplyPendingReload());
+        reload.ReloadPlugins();
+        Assert.True(reload.isCompilationPending);
+        Assert.False(reloads.CanRequestReload(out _));
+        Assert.False(reloads.CanActivateReload(out _));
+        playMode.Tick(1f / 60f);
+        Assert.Equal(EditorPlayModeState.Playing, playMode.state);
+        Assert.Equal(0, scenes.restoreCount);
+        Assert.True(playMode.ExitPlayMode());
+        Assert.False(reloads.CanActivateReload(out _));
+        playMode.AdvanceTransition();
+        playMode.AdvanceTransition();
 
         Assert.Equal(EditorPlayModeState.Editing, playMode.state);
         Assert.Equal(1, scenes.restoreCount);
         Assert.Equal(1, history.disposeCount);
+        Assert.True(reloads.CanActivateReload(out _));
+        ScriptCompilationResult replacement = fixture.CompilePending(reload);
+        Assert.True(replacement.success, FormatDiagnostics(replacement));
+        Assert.True(reload.ApplyPendingReload());
         CompleteUnloadVerification(reload);
     }
 
@@ -1822,7 +1835,7 @@ public sealed class ScriptingPipelineTests : IDisposable
             createLogSink = _ => new FileLogSink(Path.Combine(Path.Combine(fixture.projectRoot, "Persistent", "tests.content-soak"), "Logs")),
             jobExecutionMode = RuntimeJobExecutionMode.SingleThread, referenceResolvers = [fixture.assets]
         }, scenes, new ReadyScriptCompilation(), history, fixture.host.logs);
-        using IDisposable registration = reloads.Register(play);
+        using IDisposable registration = reloads.RegisterGuard(play);
         for (int iteration = 0; iteration < 8; iteration++)
         {
             Assert.True(play.EnterPlayMode());
@@ -1909,6 +1922,62 @@ public sealed class ScriptingPipelineTests : IDisposable
         }
     }
 
+    [Fact]
+    public void EditorQueuesLatestAutomaticChangeWithoutReplacingAcceptedTicketWhileReloadIsBlocked()
+    {
+        using var fixture = new ScriptingFixture(enableFileSystemWatcher: true, fileWatcherFlushDelayMs: 0);
+        fixture.WriteVersionedBehavior(1);
+        fixture.Rescan();
+        var reloads = new EditorReloadCoordinator();
+        using EditorInteractionRuntime runtime = fixture.CreateEditorRuntime(reloads);
+        runtime.Start();
+        IEditorScriptCompilation scripting = Assert.IsAssignableFrom<IEditorScriptCompilation>(ScriptingCompilationProbe.compilation);
+        PumpEditorUntil(fixture, runtime, () => scripting.state == EditorScriptCompilationState.Ready,
+            () => $"{scripting.state}: {scripting.status}; ticket={scripting.currentTicket?.state}", timeoutMilliseconds: 120000);
+        ScriptCompilationResult initial = Assert.IsType<ScriptCompilationResult>(scripting.lastCompilation);
+        IScriptCompilationTicket? accepted = scripting.currentTicket;
+        var guard = new DeferredReloadGuard();
+        using IDisposable registration = reloads.RegisterGuard(guard);
+        using (fixture.host.generations.AcquireRead("fixture active Play session"))
+        {
+            Assert.Equal(ScriptCompilationTicketState.Failed, scripting.RequestCompilation().state);
+            Assert.Same(accepted, scripting.currentTicket);
+            fixture.WriteVersionedBehavior(2);
+            fixture.Rescan();
+            fixture.WriteVersionedBehavior(3);
+            fixture.Rescan();
+            for (int frame = 0; frame < 30; frame++)
+            {
+                fixture.assets.Update();
+                using (fixture.editorSession.EnterExecutionScope())
+                    runtime.Update(new EditorFrame(1f / 60f, frame / 60f, true));
+                Thread.Sleep(5);
+            }
+            Assert.Same(initial, scripting.lastCompilation);
+            Assert.Same(accepted, scripting.currentTicket);
+            Assert.Contains("fixture active Play", scripting.status);
+            AssertCompilationModalHidden(runtime);
+        }
+        guard.isBlocked = false;
+        PumpEditorUntil(fixture, runtime,
+            () => scripting.state == EditorScriptCompilationState.Ready && !ReferenceEquals(initial, scripting.lastCompilation),
+            () => $"{scripting.state}: {scripting.status}; ticket={scripting.currentTicket?.state}", timeoutMilliseconds: 120000);
+        Assert.Equal(GenerationState.Ready, fixture.host.generations.state);
+        Assert.Equal(3, ReadLatestVersion(fixture));
+    }
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static int ReadLatestVersion(ScriptingFixture fixture)
+        => ReadVersion(fixture.ResolveActiveType("VersionedBehavior"));
+
+    private sealed class DeferredReloadGuard : IEditorReloadGuard
+    {
+        internal bool isBlocked { get; set; } = true;
+        public bool canRequestReload => !isBlocked;
+        public bool canActivateReload => !isBlocked;
+        public string? blockingReason => isBlocked ? "Waiting for fixture active Play to retire." : null;
+    }
+
     [MethodImpl(MethodImplOptions.NoInlining)]
     private static List<Type> RetainActiveScriptType(ScriptingFixture fixture)
         => [fixture.ResolveActiveType("VersionedBehavior")];
@@ -1925,13 +1994,14 @@ public sealed class ScriptingPipelineTests : IDisposable
         EditorInteractionRuntime runtime,
         Func<bool> completed,
         Func<string> status,
-        bool focused = true
+        bool focused = true,
+        int timeoutMilliseconds = 15000
     ) {
         long started = Environment.TickCount64;
         int frame = 0;
         while (!completed())
         {
-            Assert.True(Environment.TickCount64 - started < 15000, status());
+            Assert.True(Environment.TickCount64 - started < timeoutMilliseconds, status());
             fixture.assets.Update();
             using (fixture.editorSession.EnterExecutionScope())
                 runtime.Update(new EditorFrame(1f / 60f, frame++ / 60f, focused));

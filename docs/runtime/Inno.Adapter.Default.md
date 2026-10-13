@@ -42,7 +42,7 @@ static IAdapterCatalog Compose(
 
 `Validate` 在初始化原生服务前检查全部选择。Provider 属于 composition 生命周期；catalog 不负责释放 provider；每次创建返回的服务由调用方拥有和释放。Provider 不存入跨 generation 的全局缓存。
 
-浏览器入口在 options 中注入包含 BrowserStorageBackendProvider 的 storage factory，同时选择 `StorageBackendId.browser`；桌面选择 `StorageBackendId.fileSystem`。不同实现保持明确 ID，同一领域服务 API、输入和 Player 生命周期保持共用。
+浏览器入口在 options 中注入包含 BrowserWasm32StorageBackendProvider 的 storage factory，同时选择 `StorageBackendId.browser`；桌面选择 `StorageBackendId.fileSystem`。不同实现保持明确 ID，同一领域服务 API、输入和 Player 生命周期保持共用。
 
 ## 显式运行实现选择
 

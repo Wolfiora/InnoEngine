@@ -35,5 +35,5 @@ public sealed class BgfxAuthoringProvider : RenderingAuthoringBackendProvider
     public override IShaderCompilerToolchain CreateShaderCompilerToolchain() => new BgfxShadercToolchain(m_target, m_tools);
 
     /// <inheritdoc />
-    public override ITextureTargetCompiler CreateTextureTargetCompiler() => new BgfxTextureTargetCompiler();
+    public override ITextureTargetCompiler CreateTextureTargetCompiler() => new BgfxTextureTargetCompiler(m_tools);
 }

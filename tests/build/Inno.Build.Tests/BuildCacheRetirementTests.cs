@@ -16,6 +16,38 @@ public sealed class BuildCacheRetirementTests : IDisposable
     private readonly List<OwnedCache> m_owners = [];
 
     [Fact]
+    public async Task TargetCleanupPreservesOtherTargetsSharedArtifactsAndTheirDependencies()
+    {
+        OwnedCache owner = AddOwner("targeted");
+        BuildCacheArtifactDescriptor shared = owner.Add("shared", 2);
+        BuildCacheArtifactDescriptor requiredByMac = owner.Add("windows-dependency", 3, targetId: "windows-x64");
+        BuildCacheArtifactDescriptor mac = owner.Add("mac", 4, [requiredByMac.directory], "macos-arm64");
+        BuildCacheArtifactDescriptor obsoleteWindows = owner.Add("windows-obsolete", 5, targetId: "windows-x64");
+        BuildCacheCleanupPlan plan = BuildCacheCleanupPlan.Create(m_root, [owner.descriptor], new(0, 0),
+            retireAll: true, targetId: "windows-x64");
+        Assert.Equal(obsoleteWindows.directory, Assert.Single(plan.candidates).directory);
+        BuildCacheCleanupResult result = await plan.ExecuteAsync();
+        Assert.Equal(obsoleteWindows.directory, Assert.Single(result.retired));
+        Assert.True(Directory.Exists(shared.directory));
+        Assert.True(Directory.Exists(mac.directory));
+        Assert.True(Directory.Exists(requiredByMac.directory));
+    }
+
+    [Fact]
+    public async Task FreshTargetChangePreventsRetiringAnOriginalCandidate()
+    {
+        OwnedCache owner = AddOwner("retargeted");
+        BuildCacheArtifactDescriptor original = owner.Add("candidate", 2, targetId: "windows-x64");
+        BuildCacheCleanupPlan plan = BuildCacheCleanupPlan.Create(m_root, [owner.descriptor], new(0, 0),
+            retireAll: true, targetId: "windows-x64");
+        owner.artifacts[0] = new(original.directory, original.leasePath, "macos-arm64",
+            original.bytes, original.lastUseUtc, original.dependencies);
+        BuildCacheCleanupResult result = await plan.ExecuteAsync();
+        Assert.Empty(result.retired);
+        Assert.True(Directory.Exists(original.directory));
+    }
+
+    [Fact]
     public async Task CurrentRootsProtectDependenciesAcrossOwners()
     {
         OwnedCache bindings = AddOwner("bindings");
@@ -68,7 +100,7 @@ public sealed class BuildCacheRetirementTests : IDisposable
         OwnedCache owner = AddOwner("workspaces");
         BuildCacheArtifactDescriptor artifact = owner.Add("workspace", 6);
         string producerLease = Path.Combine(owner.descriptor.directory, "producer.lock");
-        owner.artifacts[0] = new(artifact.directory, producerLease, artifact.bytes, artifact.lastUseUtc, []);
+        owner.artifacts[0] = new(artifact.directory, producerLease, artifact.targetId, artifact.bytes, artifact.lastUseUtc, []);
         BuildCacheCleanupPlan plan = CreatePlan();
         using (FileLease producer = await FileLease.AcquireAsync(producerLease, TimeSpan.Zero))
         {
@@ -89,10 +121,10 @@ public sealed class BuildCacheRetirementTests : IDisposable
         BuildCacheArtifactDescriptor first = owner.Add("first", 2);
         BuildCacheArtifactDescriptor second = owner.Add("second", 2);
         owner.artifacts[0] = new(first.directory, Path.Combine(first.directory, "inside.lock"),
-            first.bytes, first.lastUseUtc, []);
+            first.targetId, first.bytes, first.lastUseUtc, []);
         Assert.Throws<InvalidDataException>(() => CreatePlan());
         owner.artifacts[0] = first;
-        owner.artifacts[1] = new(second.directory, first.leasePath, second.bytes, second.lastUseUtc, []);
+        owner.artifacts[1] = new(second.directory, first.leasePath, second.targetId, second.bytes, second.lastUseUtc, []);
         Assert.Throws<InvalidDataException>(() => CreatePlan());
         Assert.True(Directory.Exists(first.directory));
         Assert.True(Directory.Exists(second.directory));
@@ -161,7 +193,7 @@ public sealed class BuildCacheRetirementTests : IDisposable
         OwnedCache owner = AddOwner("native");
         BuildCacheArtifactDescriptor artifact = owner.Add("generation", 3);
         BuildCacheCleanupPlan plan = CreatePlan();
-        owner.artifacts[0] = new(artifact.directory, artifact.leasePath, 4, artifact.lastUseUtc, []);
+        owner.artifacts[0] = new(artifact.directory, artifact.leasePath, artifact.targetId, 4, artifact.lastUseUtc, []);
 
         BuildCacheCleanupResult result = await plan.ExecuteAsync();
 
@@ -203,11 +235,11 @@ public sealed class BuildCacheRetirementTests : IDisposable
         OwnedCache owner = AddOwner("native");
         BuildCacheArtifactDescriptor first = owner.Add("first", 2);
         BuildCacheArtifactDescriptor second = owner.Add("second", 2, [first.directory]);
-        owner.artifacts[0] = new(first.directory, first.leasePath, first.bytes, first.lastUseUtc, [second.directory]);
+        owner.artifacts[0] = new(first.directory, first.leasePath, first.targetId, first.bytes, first.lastUseUtc, [second.directory]);
         Assert.Throws<ArgumentException>(() => CreatePlan());
-        owner.artifacts[0] = new(first.directory, first.leasePath, first.bytes, first.lastUseUtc, [Path.Combine(m_root, "unregistered")]);
+        owner.artifacts[0] = new(first.directory, first.leasePath, first.targetId, first.bytes, first.lastUseUtc, [Path.Combine(m_root, "unregistered")]);
         Assert.Throws<InvalidDataException>(() => CreatePlan());
-        owner.artifacts[0] = new(m_root, first.leasePath, 2, DateTime.UtcNow, []);
+        owner.artifacts[0] = new(m_root, first.leasePath, null, 2, DateTime.UtcNow, []);
         Assert.Throws<IOException>(() => CreatePlan());
         Assert.True(Directory.Exists(first.directory));
         Assert.True(Directory.Exists(second.directory));
@@ -283,13 +315,14 @@ public sealed class BuildCacheRetirementTests : IDisposable
         internal BuildCacheArtifactDescriptor Add(
             string name,
             int bytes,
-            IReadOnlyList<string>? dependencies = null
+            IReadOnlyList<string>? dependencies = null,
+            string? targetId = null
         ) {
             string directory = Path.Combine(descriptor.directory, name);
             Directory.CreateDirectory(Path.Combine(directory, "Outputs"));
             File.WriteAllBytes(Path.Combine(directory, "Outputs", "payload.bin"), new byte[bytes]);
             var used = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc).AddSeconds(artifacts.Count);
-            var artifact = new BuildCacheArtifactDescriptor(directory, directory + ".read.lock", bytes, used, dependencies ?? []);
+            var artifact = new BuildCacheArtifactDescriptor(directory, directory + ".read.lock", targetId, bytes, used, dependencies ?? []);
             artifacts.Add(artifact);
             return artifact;
         }

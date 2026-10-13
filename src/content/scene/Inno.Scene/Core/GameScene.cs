@@ -663,6 +663,9 @@ public sealed class GameScene : EngineObject, ISerializable
             ?? throw new InvalidOperationException("The component being replaced is detached.");
         if (!Contains(owner) || previous is Transform || replacement is Transform)
             throw new InvalidOperationException("Only attached non-Transform components can be hot reloaded.");
+        previous.ValidateIdentityForReplacement();
+        if (replacement.identity.runtimeId is not null)
+            throw new InvalidOperationException("The replacement component already has a registered identity.");
         bool attachedHere = replacement.ownerOrNull is null;
         if (attachedHere)
             replacement.Attach(owner);

@@ -22,7 +22,7 @@
     </PropertyGroup>
     <Error Condition="'$(InnoImGuiShaderTarget)' == '' or '@(_ImGuiShaderApi)' == ''" Text="ImGui shader compilation requires the Editor product's explicit shader platform and graphics API set." />
     <CompileShaderTask
-      EngineRoot="$(MSBuildProjectDirectory)/../../../.."
+      EngineRoot="$(InnoShaderToolSourceRoot)"
       Configuration="$(Configuration)"
       AssetRoot="$(MSBuildProjectDirectory)/Shaders"
       ShaderPath="ImGui.ishader"

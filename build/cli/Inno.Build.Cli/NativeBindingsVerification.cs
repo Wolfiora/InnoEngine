@@ -9,6 +9,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reflection;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
@@ -31,12 +33,9 @@ internal static partial class NativeBindingsVerification
         try
         {
             NativeVerificationOptions options = NativeVerificationOptions.Parse(args);
-            string bindGenRoot = Path.GetFullPath(options.bindGenRoot);
             string repositoryRoot = options.engineRoot;
             IReadOnlyList<string> bindingProjects = DiscoverBindingProjects(repositoryRoot, options.target);
-            string bindGenRuntimeProject = Path.Combine(
-                bindGenRoot, "src", "BGCS.Runtime", "BGCS.Runtime.csproj");
-            ValidateInputs(bindingProjects, bindGenRuntimeProject);
+            ValidateInputs(bindingProjects);
 
             string target = options.target;
             string nativeConfiguration = options.configuration.ToLowerInvariant();
@@ -47,7 +46,7 @@ internal static partial class NativeBindingsVerification
                 await ToolchainEnvironment.RunAsync(options.dotnet,
                     ["build", project,
                         "--configuration", options.configuration, "-t:CheckBindings",
-                        $"-p:BindGenRoot={bindGenRoot}", $"-p:BindGenDotNetHost={options.dotnet}",
+                        $"-p:BindGenDotNetHost={options.dotnet}",
                         $"-p:InnoNativeTarget={target}", $"-p:InnoToolTarget={target}", "--nologo"],
                     repositoryRoot, cancellationToken, DotNetSdkEnvironment.Create(options.dotnet));
             }
@@ -59,7 +58,6 @@ internal static partial class NativeBindingsVerification
                 options.dotnet,
                 [
                     "restore", Path.Combine(repositoryRoot, "InnoEngine.sln"),
-                    $"-p:BGCSRuntimeProject={bindGenRuntimeProject}",
                     $"-p:InnoToolTarget={target}",
                     $"-p:InnoBuildCliOutputPath={cliOutput}",
                     "-p:BuildInParallel=false",
@@ -80,7 +78,6 @@ internal static partial class NativeBindingsVerification
                     "--configuration", "Source" + options.configuration,
                     "--no-restore",
                     "-m:1", "-nodeReuse:false", "--disable-build-servers",
-                    $"-p:BGCSRuntimeProject={bindGenRuntimeProject}",
                     $"-p:InnoToolTarget={target}",
                     $"-p:InnoBuildCliOutputPath={cliOutput}",
                     "-p:TreatWarningsAsErrors=true",
@@ -92,7 +89,6 @@ internal static partial class NativeBindingsVerification
             await RunTestsAsync(repositoryRoot, options, testProjects, native.products, native.plan, cancellationToken);
             string reportPath = await WriteReportAsync(
                 repositoryRoot,
-                bindGenRoot,
                 target,
                 bindingProjects,
                 testProjects.Count,
@@ -111,19 +107,14 @@ internal static partial class NativeBindingsVerification
         }
     }
 
-    private static void ValidateInputs(
-        IReadOnlyList<string> bindingProjects,
-        string bindGenRuntimeProject
-    ) {
+    private static void ValidateInputs(IReadOnlyList<string> bindingProjects)
+    {
         foreach (string project in bindingProjects)
         {
             string definition = Path.Combine(Path.GetDirectoryName(project)!, "Bindings", "bindings.props");
             if (!File.Exists(definition))
                 throw new FileNotFoundException("The sole component binding definition was not found.", definition);
         }
-        if (!File.Exists(bindGenRuntimeProject))
-            throw new FileNotFoundException("The BindGen-CS runtime project was not found.", bindGenRuntimeProject);
-
     }
 
     private static IReadOnlyList<string> DiscoverBindingProjects(
@@ -131,7 +122,10 @@ internal static partial class NativeBindingsVerification
         string targetId
     ) {
         var execution = StandardBuildEnvironment.Capture(AppContext.BaseDirectory, new BuildTargetId(targetId));
-        string[] projects = StandardBuildDistribution.Create(execution).build.ResolveNativeProduct(targetId, "editor").steps
+        BuildDistribution distribution = StandardBuildDistribution.Create(execution).build;
+        string product = distribution.platforms.Single(platform => platform.descriptor.id.value == targetId).editorProject
+            is null ? "player" : "editor";
+        string[] projects = distribution.ResolveNativeProduct(targetId, product).steps
             .Select(step => Path.GetFullPath(step.component.nativeProject, repositoryRoot))
             .Distinct(StringComparer.Ordinal).Where(File.Exists)
             .Where(project => XDocument.Load(project).Descendants("BindGenGeneratedBindings")
@@ -258,7 +252,6 @@ internal static partial class NativeBindingsVerification
 
     private static async Task<string> WriteReportAsync(
         string repositoryRoot,
-        string bindGenRoot,
         string target,
         IReadOnlyList<string> bindingProjects,
         int testProjectCount,
@@ -267,12 +260,13 @@ internal static partial class NativeBindingsVerification
     ) {
         string innoRevision = (await ToolchainEnvironment.CaptureOutputAsync(
             "git", ["-C", repositoryRoot, "rev-parse", "HEAD"], repositoryRoot, cancellationToken)).Trim();
-        string bindGenRevision = (await ToolchainEnvironment.CaptureOutputAsync(
-            "git", ["-C", bindGenRoot, "rev-parse", "HEAD"], bindGenRoot, cancellationToken)).Trim();
+        Assembly bindingImplementation = typeof(NativeBindingGenerator).Assembly;
+        string packageVersion = bindingImplementation.GetCustomAttributes<AssemblyMetadataAttribute>()
+            .Single(static metadata => metadata.Key == "Inno.BindingPackageVersion").Value
+            ?? throw new InvalidDataException("The binding implementation has no frozen package version.");
+        string implementationHash = Convert.ToHexStringLower(SHA256.HashData(File.ReadAllBytes(bindingImplementation.Location)));
         bool innoDirty = !string.IsNullOrWhiteSpace(await ToolchainEnvironment.CaptureOutputAsync(
             "git", ["-C", repositoryRoot, "status", "--porcelain", "--untracked-files=all"], repositoryRoot, cancellationToken));
-        bool bindGenDirty = !string.IsNullOrWhiteSpace(await ToolchainEnvironment.CaptureOutputAsync(
-            "git", ["-C", bindGenRoot, "status", "--porcelain", "--untracked-files=all"], bindGenRoot, cancellationToken));
         DateTimeOffset generatedAt = DateTimeOffset.UtcNow;
         string reportDirectory = Path.Combine(
             repositoryRoot, "artifacts", "bindings", "acceptance", target);
@@ -286,7 +280,7 @@ internal static partial class NativeBindingsVerification
             source = new
             {
                 innoEngine = new { revision = innoRevision, workingTreeDirty = innoDirty },
-                bindGenCs = new { revision = bindGenRevision, workingTreeDirty = bindGenDirty }
+                bindingPackages = new { version = packageVersion, implementationHash }
             },
             bindingProjects = bindingProjects.Select(Path.GetFileNameWithoutExtension).ToArray(),
             nativeBuilds = nativePlan.steps.Select(static step => step.component.id).ToArray(),
@@ -314,7 +308,7 @@ internal static partial class NativeBindingsVerification
             - Status: **passed**
             - Generated at: `{generatedAt:O}`
             - InnoEngine: `{innoRevision}` (working tree dirty: `{innoDirty.ToString().ToLowerInvariant()}`)
-            - BindGen-CS: `{bindGenRevision}` (working tree dirty: `{bindGenDirty.ToString().ToLowerInvariant()}`)
+            - BGCS NuGet packages: `{packageVersion}` (binding implementation SHA-256: `{implementationHash}`)
             - Binding projects: {string.Join(", ", bindingProjects.Select(Path.GetFileNameWithoutExtension))}
             - Native builds: {string.Join(", ", nativePlan.steps.Select(static step => step.component.id))}
             - Native test projects: {testProjectCount}

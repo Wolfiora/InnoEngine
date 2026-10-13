@@ -6,7 +6,7 @@
 
 验证以下项目的公开行为与组合契约。该程序集属于测试闭包，不进入 Editor 或 Player 发行；测试类、fixture 和断言辅助类型不属于稳定产品 API。
 
-- [Inno.Integration.Windows.Sdl3](../platform/Windows/Inno.Integration.Windows.Sdl3.md)
+- [Inno.Integration.WindowsX64.Sdl3](../platform/WindowsX64/Inno.Integration.WindowsX64.Sdl3.md)
 - [Inno.Adapter.Platform.Sdl3](../backends/Sdl3/Inno.Adapter.Platform.Sdl3.md)
 - [Inno.Input](../input/Inno.Input.md)
 - [Inno.Input.Runtime](../input/Inno.Input.Runtime.md)

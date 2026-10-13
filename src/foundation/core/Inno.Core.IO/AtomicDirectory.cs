@@ -82,8 +82,10 @@ public static class AtomicDirectory
     /// The candidate directory does not exist.
     /// </exception>
     /// <exception cref="IOException">
-    /// Installation fails, or a committed installation's backup cannot be removed.
-    /// A cleanup failure explicitly identifies the installed destination and remaining backup.
+    /// Installation fails before the candidate becomes authoritative.
+    /// </exception>
+    /// <exception cref="DirectoryCleanupException">
+    /// Installation committed, but the old backup could not be removed. The installed tree remains complete.
     /// </exception>
     /// <exception cref="UnauthorizedAccessException">
     /// The operating system denies access before the candidate can be installed.
@@ -144,9 +146,7 @@ public static class AtomicDirectory
         }
         catch (Exception cleanupFailure) when (cleanupFailure is IOException or UnauthorizedAccessException)
         {
-            throw new IOException(
-                $"Directory '{target}' was installed, but backup cleanup failed. The remaining backup is at '{backup}'.",
-                cleanupFailure);
+            throw new DirectoryCleanupException(target, backup, cleanupFailure);
         }
     }
 

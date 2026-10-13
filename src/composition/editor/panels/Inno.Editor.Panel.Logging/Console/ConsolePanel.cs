@@ -336,8 +336,7 @@ internal sealed class ConsolePanel : EditorPanel
 
         string content = isOpen ? entry.displayMessage : m_content.GetFirstLine(entry.displayMessage);
         string repeatText = repeatCount > 1 ? $" (x{repeatCount})" : string.Empty;
-        string kind = entry.kind == EditorConsoleEntryKind.Diagnostic ? "Issue" : "Log";
-        string prefix = $"{levelIcon} [{entry.level}] [{kind}] ";
+        string prefix = $"{levelIcon} [{entry.level}] ";
         string toggleText = isOpen ? "▼" : "▶";
 
         float toggleW = NativeImGui.CalcTextSize(toggleText).X + EditorWidget.style.logDisclosurePadding.X * 2f;

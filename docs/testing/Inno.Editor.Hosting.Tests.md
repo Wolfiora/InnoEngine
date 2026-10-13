@@ -7,9 +7,9 @@
 验证以下项目的公开行为与组合契约。该程序集属于测试闭包，不进入 Editor 或 Player 发行；测试类、fixture 和断言辅助类型不属于稳定产品 API。
 
 - [Inno.Build.Bindings](../build/Inno.Build.Bindings.md)
-- [Inno.Integration.Windows.Bgfx.Runtime](../platform/Windows/Inno.Integration.Windows.Bgfx.Runtime.md)
+- [Inno.Integration.WindowsX64.Bgfx.Runtime](../platform/WindowsX64/Inno.Integration.WindowsX64.Bgfx.Runtime.md)
 - [Inno.Adapter.Presentation.ImGui.Bgfx](../backends/ImGui/Inno.Adapter.Presentation.ImGui.Bgfx.md)
-- [Inno.Integration.Windows.Sdl3](../platform/Windows/Inno.Integration.Windows.Sdl3.md)
+- [Inno.Integration.WindowsX64.Sdl3](../platform/WindowsX64/Inno.Integration.WindowsX64.Sdl3.md)
 - [Inno.Editor.Hosting](../editor/Inno.Editor.Hosting.md)
 - [Inno.Adapter.Authoring.Default](../runtime/Inno.Adapter.Authoring.Default.md)
 - [Inno.Build.Toolchains.Bgfx.Tools](../backends/Bgfx/Inno.Build.Toolchains.Bgfx.Tools.md)

@@ -24,7 +24,7 @@ internal static class BgfxBuildSession
                 output,
                 token
             ) => {
-                string snapshot = Path.Combine(scoped.GetNativeBuildRoot(BgfxNativeBuild.componentDescriptor), "Sources");
+                string snapshot = Path.Combine(scoped.GetNativeBuildRoot(request.component), "Sources");
                 foreach (string component in new[] { "bgfx", "bx", "bimg" })
                     await CopySourcesAsync(scoped, Path.Combine(request.externalDirectory, component), Path.Combine(snapshot, component), token).ConfigureAwait(false);
                 string source = Path.Combine(snapshot, "bgfx");
@@ -98,7 +98,7 @@ internal static class BgfxBuildSession
                 .Where(file => file.Replace('\\', '/').Contains(artifactToken, StringComparison.Ordinal)).ToArray();
             if (candidates.Length != 1)
                 throw new FileNotFoundException($"Expected one '{name}' tool for {context.RequireToolchain().targetId}/{configuration}; found {candidates.Length}.");
-            string destination = Path.Combine(output, name + "-" + configuration + extension);
+            string destination = Path.Combine(output, name + extension);
             File.Copy(candidates[0], destination);
             if (!OperatingSystem.IsWindows())
                 File.SetUnixFileMode(destination, File.GetUnixFileMode(candidates[0]));

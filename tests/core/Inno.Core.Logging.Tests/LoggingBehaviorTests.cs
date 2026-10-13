@@ -41,13 +41,28 @@ public sealed class LoggingBehaviorTests : IDisposable
         ) => failure = exception;
         router.RegisterSink(failing);
         router.RegisterSink(healthy);
-        Log.Warn("inline message");
+        Log.Warn(typeof(LoggingBehaviorTests), "inline message");
         Assert.NotNull(failure);
         Assert.Single(healthy.entries);
         router.Flush();
         Assert.Single(healthy.entries);
         router.UnregisterSink(healthy);
     }
+
+    [Fact]
+    public void ExplicitOwnershipAcceptsStaticSourcesAndRejectsMissingTypes()
+    {
+        using var sink = new ProbeSink();
+        m_router.RegisterSink(sink);
+        Log.Info(typeof(StaticLogSource), "Explicit static source");
+        Assert.Throws<ArgumentNullException>(() => Log.Info(null!, "Missing source"));
+        m_router.Flush();
+        LogEntry entry = Assert.Single(sink.entries);
+        Assert.Equal(Inno.Extensibility.Modules.AssemblyDomain.InnoInternal, entry.domain);
+        Assert.Equal("Explicit static source", entry.message);
+        m_router.UnregisterSink(sink);
+    }
+
 
     [Fact]
     public void UnknownDeliveryPoliciesFailAtConstruction()
@@ -63,7 +78,7 @@ public sealed class LoggingBehaviorTests : IDisposable
     {
         using var sink = new ProbeSink();
         m_router.RegisterSink(sink);
-        Log.Info("Portable source", filePath: sourcePath, lineNumber: 42);
+        Log.Info(typeof(LoggingBehaviorTests), "Portable source", filePath: sourcePath, lineNumber: 42);
         m_router.Flush();
 
         LogEntry entry = Assert.Single(sink.entries);
@@ -99,8 +114,8 @@ public sealed class LoggingBehaviorTests : IDisposable
         try
         {
             Console.SetError(broken);
-            Log.Info("first");
-            Log.Info("second");
+            Log.Info(typeof(LoggingBehaviorTests), "first");
+            Log.Info(typeof(LoggingBehaviorTests), "second");
             await Task.Run(router.Flush).WaitAsync(TimeSpan.FromSeconds(5));
 
             Assert.Equal(1, failing.receiveCount);
@@ -120,7 +135,7 @@ public sealed class LoggingBehaviorTests : IDisposable
         using var sink = new ProbeSink();
         m_router.RegisterSink(sink);
 
-        Log.Info("message-{0}", [42]);
+        Log.Info(typeof(LoggingBehaviorTests), "message-{0}", [42]);
 
         Assert.True(sink.WaitForCount(1, TimeSpan.FromSeconds(2)));
         Assert.Contains(sink.entries, e => e.message == "message-42" && e.level == LogLevel.Info);
@@ -133,8 +148,8 @@ public sealed class LoggingBehaviorTests : IDisposable
         using var sink = new ProbeSink();
         m_router.RegisterSink(sink);
 
-        Log.Info("plain");
-        Log.Warn("formatted-{0}", [73]);
+        Log.Info(typeof(LoggingBehaviorTests), "plain");
+        Log.Warn(typeof(LoggingBehaviorTests), "formatted-{0}", [73]);
         m_router.Flush();
 
         Assert.Equal(2, sink.entries.Length);
@@ -158,8 +173,8 @@ public sealed class LoggingBehaviorTests : IDisposable
         m_router.RegisterSink(sink);
         m_router.SetMinimumLevel(LogLevel.Warn);
 
-        Log.Info("suppressed");
-        Log.Warn("visible");
+        Log.Info(typeof(LoggingBehaviorTests), "suppressed");
+        Log.Warn(typeof(LoggingBehaviorTests), "visible");
 
         Assert.True(sink.WaitForCount(1, TimeSpan.FromSeconds(2)));
         Assert.Single(sink.entries);
@@ -174,8 +189,8 @@ public sealed class LoggingBehaviorTests : IDisposable
         using var sink = new ProbeSink();
         m_router.RegisterSink(sink);
 
-        Log.Info("before-flush-1");
-        Log.Info("before-flush-2");
+        Log.Info(typeof(LoggingBehaviorTests), "before-flush-1");
+        Log.Info(typeof(LoggingBehaviorTests), "before-flush-2");
         m_router.Flush();
 
         Assert.Contains(sink.entries, static entry => entry.message == "before-flush-1");
@@ -186,7 +201,7 @@ public sealed class LoggingBehaviorTests : IDisposable
     [Fact]
     public void LogRouterFlushCompletesWithoutRegisteredSinks()
     {
-        Log.Info("discarded-before-flush");
+        Log.Info(typeof(LoggingBehaviorTests), "discarded-before-flush");
 
         m_router.Flush();
     }
@@ -206,8 +221,8 @@ public sealed class LoggingBehaviorTests : IDisposable
         try
         {
             Console.SetOut(output);
-            Log.Warn("console-warning");
-            Log.Error("console-error");
+            Log.Warn(typeof(LoggingBehaviorTests), "console-warning");
+            Log.Error(typeof(LoggingBehaviorTests), "console-error");
             m_router.Flush();
 
             Assert.Null(failure);
@@ -236,8 +251,8 @@ public sealed class LoggingBehaviorTests : IDisposable
         m_router.RegisterSink(failing);
         m_router.RegisterSink(healthy);
 
-        Log.Info("first");
-        Log.Info("second");
+        Log.Info(typeof(LoggingBehaviorTests), "first");
+        Log.Info(typeof(LoggingBehaviorTests), "second");
         m_router.Flush();
 
         Assert.Same(failing, reportedSink);
@@ -257,7 +272,7 @@ public sealed class LoggingBehaviorTests : IDisposable
         m_router.RegisterSink(sink);
 
         for (var i = 0; i < 80; i++)
-            Log.Warn("line-{0}", [i]);
+            Log.Warn(typeof(LoggingBehaviorTests), "line-{0}", [i]);
 
         m_router.Flush();
         m_router.UnregisterSink(sink);
@@ -328,4 +343,6 @@ public sealed class LoggingBehaviorTests : IDisposable
             throw new InvalidOperationException("Expected sink failure.");
         }
     }
+
+    private static class StaticLogSource;
 }

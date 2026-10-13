@@ -95,7 +95,8 @@ public sealed class ProductNativeBuildPlan
         var recipes = new List<NativeBuildRecipe>(m_steps.Length);
         foreach (ProductNativeBuildStep step in m_steps)
         {
-            NativeBuildContext selected = context.WithComponentOptions(step.component, step.options);
+            NativeBuildContext configured = step.configuration is string configuration ? context.WithConfiguration(configuration) : context;
+            NativeBuildContext selected = configured.WithComponentOptions(step.component, step.options);
             NativeBuildRecipe recipe;
             if (step.createRecipe is not null)
                 recipe = step.createRecipe(selected);
@@ -158,7 +159,8 @@ public sealed class ProductNativeBuildPlan
             foreach (ProductNativeBuildStep step in m_steps)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                NativeBuildProduct product = await step.build!(context.WithComponentOptions(step.component, step.options), borrowed, cancellationToken).ConfigureAwait(false);
+                NativeBuildContext configured = step.configuration is string configuration ? context.WithConfiguration(configuration) : context;
+                NativeBuildProduct product = await step.build!(configured.WithComponentOptions(step.component, step.options), borrowed, cancellationToken).ConfigureAwait(false);
                 if (product.component != step.id || product.targetId != toolchain.targetId)
                 {
                     product.Dispose();

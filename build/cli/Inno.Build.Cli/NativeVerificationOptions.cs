@@ -12,25 +12,21 @@ internal sealed class NativeVerificationOptions
 
     private NativeVerificationOptions(
         string engineRoot,
-        string bindGenRoot,
         string configuration,
         string dotnet,
         string target
     ) {
         this.engineRoot = engineRoot;
-        this.bindGenRoot = bindGenRoot;
         this.configuration = configuration;
         this.dotnet = dotnet;
         this.target = target;
     }
 
     internal static string usage
-        => "Usage: dotnet run --project build/cli/Inno.Build.Cli -- verify-native "
-           + "--target <native-target> [--engine-root <dir>] [--bindgen-root <dir>] [--configuration <Debug|Release>] [--dotnet <path>]";
+        => "Usage: dotnet run --project entry/InnoEngine.Build/InnoEngine.Build.csproj -- verify-native "
+           + "--target <native-target> [--engine-root <dir>] [--configuration <Debug|Release>] [--dotnet <path>]";
 
     internal string engineRoot { get; }
-
-    internal string bindGenRoot { get; }
 
     internal string configuration { get; }
 
@@ -55,9 +51,6 @@ internal sealed class NativeVerificationOptions
 
         string selectedRoot = values.GetValueOrDefault("engine-root", string.Empty);
         string engineRoot = Path.GetFullPath(string.IsNullOrWhiteSpace(selectedRoot) ? ToolchainEnvironment.FindRepoRoot() : selectedRoot);
-        string bindGenRoot = Path.GetFullPath(values.GetValueOrDefault(
-            "bindgen-root",
-            Path.Combine(engineRoot, "dependencies", "BindGen-CS")));
         string configuration = values.GetValueOrDefault("configuration", C_DEFAULT_CONFIGURATION);
         if (configuration is not ("Debug" or "Release"))
             throw new ArgumentException("--configuration must be either Debug or Release.");
@@ -65,11 +58,11 @@ internal sealed class NativeVerificationOptions
 
         if (!values.TryGetValue("target", out string? target) || string.IsNullOrWhiteSpace(target))
             throw new ArgumentException("--target requires an explicit implemented native target.");
-        string[] knownKeys = ["engine-root", "bindgen-root", "configuration", "dotnet", "target"];
+        string[] knownKeys = ["engine-root", "configuration", "dotnet", "target"];
         string? unknownKey = values.Keys.FirstOrDefault(key => !knownKeys.Contains(key, StringComparer.Ordinal));
         if (unknownKey != null)
             throw new ArgumentException($"Unknown argument '--{unknownKey}'.{Environment.NewLine}{usage}");
-        return new NativeVerificationOptions(engineRoot, bindGenRoot, configuration, dotnet, target);
+        return new NativeVerificationOptions(engineRoot, configuration, dotnet, target);
     }
 
     private static string ResolveDotnet()

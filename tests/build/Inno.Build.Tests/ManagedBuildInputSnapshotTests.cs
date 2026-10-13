@@ -30,6 +30,31 @@ public sealed class ManagedBuildInputSnapshotTests : IDisposable
         Write("Tool/Tool.cs", "public sealed class Tool { }");
     }
 
+    [Theory]
+    [InlineData("net9.0-browser")]
+    [InlineData("netstandard2.0")]
+    public async Task FrameworkSelectionUsesTheSdkAndRestoredTargetSemantics(string framework)
+    {
+        string project = Path.Combine(m_root, "App", "App.csproj");
+        File.WriteAllText(project, File.ReadAllText(project).Replace("<TargetFramework>net9.0</TargetFramework>",
+            "<TargetFramework>" + framework + "</TargetFramework>", StringComparison.Ordinal));
+        string shared = Path.Combine(m_root, "Shared", "Shared.csproj");
+        File.WriteAllText(shared, File.ReadAllText(shared).Replace("<TargetFramework>net9.0</TargetFramework>",
+            "<TargetFramework>" + framework + "</TargetFramework>", StringComparison.Ordinal));
+        string dotnet = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH") ?? ToolchainEnvironment.ResolveExecutable("dotnet");
+        DotNetSdkDescriptor sdk = await DotNetSdkResolver.ResolveAsync(dotnet, project);
+        await ToolchainEnvironment.RunAsync(sdk.hostPath, [sdk.cliPath, "restore", project, "--nologo", "-v:quiet"],
+            m_root, CancellationToken.None, DotNetSdkEnvironment.Create(sdk.hostPath));
+
+        ManagedBuildInputSnapshot snapshot = await ManagedBuildInputSnapshot.CaptureAsync(
+            new NativeBuildContext(m_root, "release"), sdk, project,
+            new Dictionary<string, string> { ["Configuration"] = "Release" });
+
+        Assert.NotEmpty(snapshot.fingerprint);
+        await snapshot.VerifyAsync();
+        Assert.False(Directory.Exists(Path.Combine(m_root, "App", "bin")));
+    }
+
     [Fact]
     public async Task FixedExecutionCompilesPlannedBytesWhenTheOriginalSourceChangesAndReturns()
     {

@@ -24,6 +24,7 @@ public sealed class BgfxGameContentCompiler : IGameContentCompiler
     private readonly BgfxShaderTargetProfile m_platform;
     private readonly GraphicsApi[] m_backends;
     private readonly SerializationRegistry m_serialization;
+    private readonly ToolRunner m_tools;
 
     /// <summary>
     /// Creates a compiler using explicit target profiles and the selected runtime API closure.
@@ -43,19 +44,28 @@ public sealed class BgfxGameContentCompiler : IGameContentCompiler
     /// <param name="backends">
     /// The nonempty renderer closure to publish.
     /// </param>
-    /// <exception name="ArgumentException">
+    /// <param name="tools">
+    /// Borrowed frozen executables and shader includes; retain their product owner through compilation.
+    /// </param>
+    /// <exception cref="ArgumentException">
     /// A renderer is missing, duplicated or not deployable.
+    /// </exception>
+    /// <exception cref="ArgumentNullException">
+    /// A required authoring service, profile, renderer collection, or borrowed tool runner is null.
     /// </exception>
     public BgfxGameContentCompiler(
         AssetPipeline assets,
         SerializationRegistry serialization,
         TypeCatalog types,
         BgfxShaderTargetProfile platform,
-        IEnumerable<GraphicsApi> backends
+        IEnumerable<GraphicsApi> backends,
+        ToolRunner tools
     ) {
         ArgumentNullException.ThrowIfNull(assets);
         ArgumentNullException.ThrowIfNull(serialization);
         ArgumentNullException.ThrowIfNull(backends);
+        ArgumentNullException.ThrowIfNull(tools);
+        m_tools = tools;
         GraphicsApi[] snapshot = backends.Distinct().ToArray();
         if (snapshot.Length == 0)
             throw new ArgumentException("At least one Player graphics backend is required.", nameof(backends));
@@ -103,7 +113,7 @@ public sealed class BgfxGameContentCompiler : IGameContentCompiler
         ContentSnapshot snapshot = CaptureSnapshot();
         string outputRoot = Path.GetFullPath(context.outputDirectory);
         Directory.CreateDirectory(outputRoot);
-        var shaderCompiler = new ShaderCompiler(new BgfxShadercToolchain(m_platform));
+        var shaderCompiler = new ShaderCompiler(new BgfxShadercToolchain(m_platform, m_tools));
         foreach (GraphicsApi backend in m_backends.Order())
         {
             GraphicsCapabilities capabilities = m_platform.Resolve(backend).capabilities;
@@ -148,7 +158,7 @@ public sealed class BgfxGameContentCompiler : IGameContentCompiler
             }
         }
 
-        var textureCompiler = new BgfxTextureTargetCompiler();
+        var textureCompiler = new BgfxTextureTargetCompiler(m_tools);
         foreach (TextureInput texture in snapshot.textures)
         {
             cancellationToken.ThrowIfCancellationRequested();

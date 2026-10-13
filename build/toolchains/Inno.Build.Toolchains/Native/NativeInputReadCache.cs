@@ -109,7 +109,7 @@ internal sealed class NativeInputReadCache
             foreach (string child in Directory.EnumerateDirectories(physicalRoot))
             {
                 string name = Path.GetFileName(child);
-                if (name is ".git" or ".build" or "bin" or "obj")
+                if (name is ".git" or ".build" or "bin" or "obj" or "__pycache__")
                     continue;
                 EnumerateDirectory(Path.Combine(directory, name), relativeRoot + name + "/", files, ancestors, cancellationToken);
             }

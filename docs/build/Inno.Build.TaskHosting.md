@@ -9,14 +9,14 @@
 
 ## 初始化与所有权
 
-共同 targets 为一次根项目构建分配独立的 publisher 编译目录，并在执行项目引用目标及嵌套 Task runtime 准备时传递同一 owner。相同配置的依赖项目复用这次编译；每个实际加载边界仍复制到自己的私有目录。下一次根项目构建使用新的编译 owner，不依赖上次的可变中间态。
+Solution 命令构建通过 `Directory.Solution.targets` 为同一次构建传递统一 bootstrap owner。单项目构建在项目引用闭包内传递其 owner。共同 targets 为该 owner 分配独立的 publisher 编译目录，并在执行项目引用目标及嵌套 Task runtime 准备时传递同一 owner。相同配置的依赖项目复用这次编译；每个实际加载边界仍复制到自己的私有目录。下一次根项目构建使用新的编译 owner，不依赖上次的可变中间态。
 owner 表示本次执行的所有权，其随机值本身不进入完整 Task runtime 的输入指纹。请求求值仍保留该属性；若导入文件、源码选择或 `DefineConstants` 等实际编译输入由它改变，这些求值结果仍参与指纹，不能误用上次结果。Design-time Build 不准备 publisher。
 `BuildTaskRuntimeTask` 使用同一 `artifacts/build-tools/tasks/workspaces/shared` 根的 `FileLease` 协调完整 Task 项目编译；等待时通过 MSBuild `Yield`/`Reacquire` 释放节点，失败、取消或异常都释放写 lease。
 SDK 与项目构建仍由当前 MSBuild engine 执行，保留明确属性和移除产品属性的机制，不创建第二个 CLI 或通过 PATH 重新选择 SDK。完整 Task 项目返回实际运行文件的逻辑路径及 SHA-256。
 工具引导和 `RestoreOwnedProjectTask` 移除父 IDE 的 `SolutionPath`、相关 Solution metadata 与 restore graph entry point。
 NuGet 静态图据此只读取本次明确选择的 project closure；Windows Editor 不会因为内部 Task restore 意外访问 Browser Player。
 外层 Solution restore 保留自己的 entry point，按开发入口或中立源码配置选择闭包；实际 Browser 发布工程才要求 Wasm workload。
-BGCS Runtime 的隔离 restore 由直接声明该引用的项目负责。SDK 后续加入的传递引用继续获得目标和输出属性，但不再让每个下游 Feature/Panel 重复引导 publisher 执行相同 restore。
+BGCS.Runtime 由产品的真实 NuGet Restore 图解析，不存在源码 Runtime 的独立还原入口。
 Analyzer 引用保留 Solution 构建上下文，只移除产品与输出属性；它们属于编译依赖，不采用私有 Task 引导的独立 Solution 策略。
 Publisher 在 fingerprint lease 下验证来源及缓存，发布完整 staging，然后登记当前进程的私有 reader。
 MSBuild 从已验证的不可变快照准备自己的私有加载目录。宿主快照按内容身份共享，加载目录按进程保留。

@@ -23,7 +23,8 @@ public static class UiToolchain
             "backends/RmlUi/build/Inno.Build.Toolchains.UI/Native/StaticLibraries.cmake",
             ["extern/freetype", "extern/harfbuzz", "extern/RmlUi", "backends/RmlUi/native/Inno.Native.UI/Native/include", "backends/RmlUi/native/Inno.Native.UI/Native/src", "backends/RmlUi/native/Inno.Native.UI/Native/CMakeLists.txt"],
             ["libinno-ui.a", "librmlui.a"],
-            ["browser-wasm"]),
+            ["browser-wasm"],
+            nativeSourceDirectory: "backends/RmlUi/native/Inno.Native.UI"),
         bindingDefinition: "backends/RmlUi/native/Inno.Native.UI/Bindings/bindings.props");
 
     /// <summary>

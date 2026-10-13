@@ -54,7 +54,6 @@ public sealed class NativeBindingCompilationTests
                     new XElement("InnoBindingTargetId", "fixture-target"),
                     new XElement("InnoBindingEngineRoot", root),
                     new XElement("InnoBindingDefinition", definition),
-                    new XElement("BindGenRoot", Path.Combine(engine, "dependencies", "BindGen-CS")),
                     new XElement("InnoBindingOutputMode", "TargetArtifacts")),
                 new XElement("Import", new XAttribute("Project", definition)),
                 new XElement("Import", new XAttribute("Project", Path.Combine(engine, "Directory.Build.targets"))),

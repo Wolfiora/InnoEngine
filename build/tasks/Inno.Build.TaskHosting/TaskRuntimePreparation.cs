@@ -42,7 +42,7 @@ internal static class TaskRuntimePreparation
             item.SetMetadata("FileHash", file.hash);
             return (ITaskItem)item;
         }).ToArray();
-        publisher.Record(destination, destination + ".lock", [], null, cancellation);
+        publisher.Record(destination, destination + ".lock", [], null, null, cancellation);
         RegisterReader(load, Path.Combine(destination, "Runtime", "Inno.Build.Tasks.dll"));
         TaskRuntimeBuildScope.Register(engine, "publication:" + cache + "/" + fingerprint, output);
         return output;
@@ -128,7 +128,14 @@ internal static class TaskRuntimePreparation
                 throw new InvalidDataException("The copied task runtime did not match its selected closure.");
             ValidateSources(files, cancellation);
             cancellation.ThrowIfCancellationRequested();
-            AtomicDirectory.Install(staging, destination);
+            try
+            {
+                AtomicDirectory.Install(staging, destination);
+            }
+            catch (DirectoryCleanupException cleanupFailure)
+            {
+                Console.Error.WriteLine(cleanupFailure.Message);
+            }
         }
         finally
         {

@@ -1,4 +1,4 @@
-using Inno.Integration.MacOS.Bgfx;
+using Inno.Integration.MacOSArm64.Bgfx;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -173,7 +173,7 @@ public sealed class ShaderTypedNativeCompilationTests
     {
         var builder = new ShaderIrBuilder();
         ShaderIrStage stage = Fragment(builder, Color(builder, 1f));
-        var toolchain = new BgfxShadercToolchain(Inno.Integration.MacOS.Bgfx.MacOSBgfxShaderProfiles.target);
+        var toolchain = new BgfxShadercToolchain(Inno.Integration.MacOSArm64.Bgfx.MacOSArm64BgfxShaderProfiles.target);
         var target = toolchain.CreateTarget(Capabilities(GraphicsCapability.None));
         await Assert.ThrowsAnyAsync<OperationCanceledException>(async () =>
             await toolchain.CompileAsync(new ShaderStageToolRequest(stage, target), new CancellationToken(true)));
@@ -199,7 +199,7 @@ public sealed class ShaderTypedNativeCompilationTests
     private static async Task<ShaderStageToolResult> Compile(ShaderIrStage stage,
         GraphicsCapability capabilities = GraphicsCapability.Compute | GraphicsCapability.Instancing | GraphicsCapability.Texture2DArray | GraphicsCapability.Texture3D)
     {
-        var compiler = new ShaderCompiler(new BgfxShadercToolchain(Inno.Integration.MacOS.Bgfx.MacOSBgfxShaderProfiles.target));
+        var compiler = new ShaderCompiler(new BgfxShadercToolchain(Inno.Integration.MacOSArm64.Bgfx.MacOSArm64BgfxShaderProfiles.target));
         return await compiler.CompileAsync(stage, compiler.CreateTarget(Capabilities(capabilities)));
     }
 

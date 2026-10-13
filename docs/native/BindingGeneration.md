@@ -18,7 +18,7 @@ dotnet build backends/Sdl3/native/Inno.Native.Sdl3/Inno.Native.Sdl3.csproj -t:Ch
 dotnet build backends/Sdl3/native/Inno.Native.Sdl3/Inno.Native.Sdl3.csproj -c Release
 ```
 
-其他项目只需替换 `.csproj` 路径。`GenerateBindings` 运行该项目的 BGCS 配置；`CheckBindings` 在临时目录重新生成并比较当前文件，不改写 `Generated/`。默认使用 `dependencies/BindGen-CS` 的固定 revision；生成规则与引擎产品 targets 隔离。直接使用所选 SDK 的 dotnet 可执行文件，不通过另一套生成器 Program 或固定 SDK 路径。
+其他项目只需替换 `.csproj` 路径。`GenerateBindings` 运行该项目的 BGCS 配置；`CheckBindings` 在临时目录重新生成并比较当前文件，不改写 `Generated/`。生成器与 Runtime 均使用 `Inno.Packages.props` 固定的 NuGet 包版本；包内容与实际程序集参与生成身份。直接使用所选 SDK 的 dotnet 可执行文件，不通过另一套生成器 Program 或固定 SDK 路径。
 
 | 项目 | 项目内配置 | 项目内特殊扩展 |
 | --- | --- | --- |

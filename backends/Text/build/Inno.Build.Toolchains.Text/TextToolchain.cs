@@ -23,7 +23,8 @@ public static class TextToolchain
             "backends/Text/build/Inno.Build.Toolchains.Text/Native/StaticLibraries.cmake",
             ["extern/freetype", "extern/harfbuzz", "backends/Text/native/Inno.Native.Text/Native/include", "backends/Text/native/Inno.Native.Text/Native/src", "backends/Text/native/Inno.Native.Text/Native/CMakeLists.txt"],
             ["libinno-text.a", "libfreetype.a", "libharfbuzz.a"],
-            ["browser-wasm"]),
+            ["browser-wasm"],
+            nativeSourceDirectory: "backends/Text/native/Inno.Native.Text"),
         bindingDefinition: "backends/Text/native/Inno.Native.Text/Bindings/bindings.props");
 
     /// <summary>

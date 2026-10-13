@@ -1,4 +1,5 @@
 using Inno.Build.Composition;
+using Inno.Build.Toolchains.Bgfx.Tools;
 using Inno.Core.IO;
 using Inno.Extensibility.Modules;
 using Inno.Adapter.Modules.DotNet;
@@ -148,7 +149,8 @@ internal sealed class BuildWorkspace : IDisposable
     internal static BuildWorkspace Open(
         string projectDirectory,
         string supportPackRoot,
-        BuildCompositionContext context
+        BuildCompositionContext context,
+        ToolRunner tools
     ) {
         string projectRoot = Path.GetFullPath(projectDirectory);
         string assetsRoot = Path.Combine(projectRoot, "Assets");
@@ -223,7 +225,7 @@ internal sealed class BuildWorkspace : IDisposable
             engine.generations.Wait();
             assets.CompleteExtensionDiscovery();
             assets.Rescan();
-            BuildPipeline pipeline = BuildComposition.CreatePipeline(context, engine, assets, plugins, settings, compiler, supportPackRoot);
+            BuildPipeline pipeline = BuildComposition.CreatePipeline(context, engine, assets, plugins, settings, compiler, supportPackRoot, tools);
             return new BuildWorkspace(engine, settings, assets, plugins, compiler, projectRoot, pipeline);
         }
         catch

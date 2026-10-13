@@ -76,12 +76,11 @@ internal static class ManagedBuildInputReader
         inputs.Add(NativeBuildInput.FromPath(context.engineRoot, assets));
         using JsonDocument document = JsonDocument.Parse(File.ReadAllText(assets));
         JsonElement root = document.RootElement;
-        string runtime = (string)selected.Attribute("Runtime")!;
-        string suffix = runtime.Length == 0 ? string.Empty : "/" + runtime;
         JsonElement targets = root.GetProperty("targets");
-        if (!targets.TryGetProperty((string)selected.Attribute("Framework")! + suffix, out JsonElement target)
-            && !targets.TryGetProperty((string)selected.Attribute("Moniker")! + suffix, out target))
-            throw new InvalidDataException("The restored graph does not contain the requested managed target.");
+        string selectedTarget = (string)selected.Attribute("Target")!;
+        if (!targets.TryGetProperty(selectedTarget, out JsonElement target))
+            throw new InvalidDataException($"Restored graph '{assets}' does not contain target '{selectedTarget}'. "
+                + "Available targets: " + string.Join(", ", targets.EnumerateObject().Select(static item => item.Name)) + ".");
         string[] folders = root.GetProperty("packageFolders").EnumerateObject().Select(static folder => folder.Name).ToArray();
         JsonElement libraries = root.GetProperty("libraries");
         foreach (JsonProperty dependency in target.EnumerateObject())

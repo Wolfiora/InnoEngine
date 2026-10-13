@@ -20,7 +20,7 @@ cd InnoEngine
 
 Rider 可使用仓库的两个共享 .run 配置，VS 可选择同名启动项目。用户以前保存的个人启动配置需要自行整理，源码不会删除 IDE 私有配置。
 
-BGCS 位于 dependencies/BindGen-CS，使用固定 revision。普通 clone 后首次准备会初始化缺失子模块，因此需要网络；已初始化的用户修改保留。入口不安装系统 SDK。
+BGCS 通过固定版本 NuGet 包恢复；Native 第三方源码位于 extern，首次准备初始化缺失子模块。入口不安装系统 SDK。
 
 ## 日常操作
 
@@ -52,15 +52,14 @@ dotnet run --project entry/InnoEngine.Build/InnoEngine.Build.csproj -- clean --s
 
 产品清理先检查目标与 SDK，再取得 owner 保护；活动 Editor 阻止对应产品被删除。其他目标、Native/Binding 缓存、有效 Support Pack、游戏输出、日志和全局 SDK 缓存保留。Ctrl+C 取消后不会提交半成品。
 
-缓存预算清理仍在实现，当前状态见[问题台账](../architecture/CURRENT_ISSUES.md)。
+缓存清理仅处理已登记 owner 的可退休产物。`clean --scope cache --target windows-x64 --dry-run` 预览该目标；不传 target 检查所有 owner。共享宿主工具及未选目标的依赖仍受保护。实际验证状态见[问题台账](../architecture/CURRENT_ISSUES.md)。
 
 ## 支持状态与 not built
 
 | 宿主 | Editor / 默认 Build |
 | --- | --- |
-| Windows x64 | 路由至 Windows Editor 产品。 |
-| macOS ARM64 | 路由至 macOS Editor 产品；本轮实机验证另行记录。 |
-| Linux x64 / ARM64 | 没有完整 Editor；已有 Native 工具能力不能视为 Editor 支持。 |
+| Windows x64 | 路由至 `Inno.Editor.WindowsX64` 产品库。 |
+| macOS ARM64 | 路由至 `Inno.Editor.MacOSArm64` 产品库；实机验证另行记录。 |
 | 其他 CPU/平台 | 未注册的产品明确拒绝。 |
 
 默认 Solution Debug/Release 只构建两个入口及轻量依赖。其他项目显示 **not built** 表示本次配置未选中它，不代表废弃或编译失败。`SourceDebug`/`SourceRelease` 面向共享源码和测试。

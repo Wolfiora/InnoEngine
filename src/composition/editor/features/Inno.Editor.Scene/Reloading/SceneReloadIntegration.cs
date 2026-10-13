@@ -53,6 +53,7 @@ internal static class SceneReloadIntegration
         public IGenerationChange Capture(AssemblyReloadContext context)
         {
             ArgumentNullException.ThrowIfNull(context);
+            using IDisposable scope = m_runtimeSession.EnterExecutionScope();
             TypeCacheReloadContext typeReload = context.GetContext<TypeCacheReloadContext>();
             return new SceneReloadTransaction(
                 m_runtimeSession,
@@ -63,8 +64,10 @@ internal static class SceneReloadIntegration
         /// Recomputes diagnostics from the current candidate without publishing partial state.
         /// </summary>
         public void RefreshDiagnostics()
-            => SceneStateDiagnosticPublisher.PublishMissingElements(
-                m_runtimeSession.scenes.loadedScenes);
+        {
+            using IDisposable scope = m_runtimeSession.EnterExecutionScope();
+            SceneStateDiagnosticPublisher.PublishMissingElements(m_runtimeSession.scenes.loadedScenes);
+        }
     }
 
     private sealed class SceneReloadTransaction(
@@ -77,6 +80,7 @@ internal static class SceneReloadIntegration
         /// </summary>
         public void PrepareForActivation()
         {
+            using IDisposable scope = runtimeSession.EnterExecutionScope();
             migration.PrepareForActivation();
             foreach (object retiredObject in migration.retiredObjects)
                 runtimeSession.StopCoroutines(retiredObject);
@@ -85,13 +89,18 @@ internal static class SceneReloadIntegration
         /// <summary>
         /// Applies a validated change atomically at the caller-controlled commit point.
         /// </summary>
-        public void Apply() => migration.Apply();
+        public void Apply()
+        {
+            using IDisposable scope = runtimeSession.EnterExecutionScope();
+            migration.Apply();
+        }
 
         /// <summary>
         /// Finalizes candidate activation and releases temporary transaction state.
         /// </summary>
         public void Complete()
         {
+            using IDisposable scope = runtimeSession.EnterExecutionScope();
             migration.Complete();
             SceneStateDiagnosticPublisher.PublishReload(migration.diagnostics);
             SceneStateDiagnosticPublisher.PublishMissingElements(
@@ -101,13 +110,18 @@ internal static class SceneReloadIntegration
         /// <summary>
         /// Restores the state captured before the current transaction began.
         /// </summary>
-        public void RollbackStructure() => migration.RollbackStructure();
+        public void RollbackStructure()
+        {
+            using IDisposable scope = runtimeSession.EnterExecutionScope();
+            migration.RollbackStructure();
+        }
 
         /// <summary>
         /// Restores the state captured before the current transaction began.
         /// </summary>
         public void RestorePreviousState()
         {
+            using IDisposable scope = runtimeSession.EnterExecutionScope();
             migration.RestorePreviousState();
             SceneStateDiagnosticPublisher.PublishMissingElements(
                 runtimeSession.scenes.loadedScenes);

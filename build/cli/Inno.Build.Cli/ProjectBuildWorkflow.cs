@@ -1,6 +1,10 @@
 using Inno.Build.Composition;
 using Inno.Build.Distribution.Standard;
 using System;
+using System.IO;
+using System.Linq;
+using Inno.Build.Toolchains;
+using Inno.Build.Toolchains.Bgfx.Tools;
 using System.Threading;
 using System.Threading.Tasks;
 using Inno.Build;
@@ -14,9 +18,16 @@ internal static class ProjectBuildWorkflow
         CancellationToken cancellationToken
     ) {
         BuildCommand command = BuildCommand.Parse(arguments);
-        BuildCompositionContext context = StandardBuildEnvironment.Capture(AppContext.BaseDirectory, command.toolsTarget);
-        await BuildComposition.PrepareNativeAsync(context, cancellationToken).ConfigureAwait(false);
-        using BuildWorkspace workspace = BuildWorkspace.Open(command.projectDirectory, command.supportPackRoot, context);
+        string application = Path.GetDirectoryName(typeof(BuildApplication).Assembly.Location)!;
+        BuildCompositionContext context = StandardBuildEnvironment.Capture(application, command.toolsTarget, command.dotnetHost);
+        using ProductNativeBuildResult products = await BuildComposition.PrepareNativeAsync(context, cancellationToken).ConfigureAwait(false);
+        NativeBuildProduct product = products.Single();
+        string extension = context.host.system == "Windows" ? ".exe" : string.Empty;
+        var executables = Enum.GetValues<BgfxTool>().ToDictionary(static tool => tool,
+            tool => product.files.Single(file => Path.GetFileName(file) == tool.ToString().ToLowerInvariant() + extension));
+        string includes = Path.GetDirectoryName(product.files.Single(file => Path.GetFileName(file) == "bgfx_shader.sh"))!;
+        var tools = new ToolRunner(executables, includes);
+        using BuildWorkspace workspace = BuildWorkspace.Open(command.projectDirectory, command.supportPackRoot, context, tools);
         if (command.kind == BuildCommandKind.ImportSample)
         {
             Console.WriteLine(workspace.ImportSample(command.sampleSource, cancellationToken));

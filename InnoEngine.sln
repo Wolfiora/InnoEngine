@@ -1,4 +1,4 @@
-﻿
+
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31903.59
@@ -101,7 +101,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "toolchains", "toolchains", 
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "platforms", "platforms", "{09EED61A-9D24-5383-84FA-FCC170E01C2E}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Browser", "Browser", "{AFDE356F-C9E2-5802-B759-87439F7BD36E}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "BrowserWasm32", "BrowserWasm32", "{AFDE356F-C9E2-5802-B759-87439F7BD36E}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{CD5BA62A-95E1-516B-B821-25CE5DA99B4E}"
 EndProject
@@ -109,11 +109,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "player", "player", "{616CDA
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "runtime", "runtime", "{E44EA74A-E105-5387-ADCD-2592F483E278}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Linux", "Linux", "{93E91E25-4452-50F5-AE02-7E133D60BEDE}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{89E8BE6C-052F-52B9-84BA-692955F2F252}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "MacOS", "MacOS", "{73E40398-CF2F-57DD-91B8-DC258D279AB7}"
+
+
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "MacOSArm64", "MacOSArm64", "{73E40398-CF2F-57DD-91B8-DC258D279AB7}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{FBD3F202-1101-5533-B4F9-09FCF8E585A0}"
 EndProject
@@ -123,7 +121,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "player", "player", "{BEDC73
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "runtime", "runtime", "{B33CAD5B-F8B3-56CE-8332-B97E31CA577D}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Windows", "Windows", "{57ED5667-C8FA-55A8-92B2-25DA7BED8CEA}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "WindowsX64", "WindowsX64", "{57ED5667-C8FA-55A8-92B2-25DA7BED8CEA}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{13A98915-EF40-5BAE-8DE0-C236022286D8}"
 EndProject
@@ -373,29 +371,28 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inno.Build.Tasks", "build\t
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inno.Build.Toolchains", "build\toolchains\Inno.Build.Toolchains\Inno.Build.Toolchains.csproj", "{DF8281A8-B54A-485C-A9D5-AFBE9F5EFD8B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inno.Build.Browser", "platforms\Browser\build\Inno.Build.Browser\Inno.Build.Browser.csproj", "{F15CA143-388C-4270-8927-C5960404ABFF}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inno.Build.BrowserWasm32", "platforms\BrowserWasm32\build\Inno.Build.BrowserWasm32\Inno.Build.BrowserWasm32.csproj", "{F15CA143-388C-4270-8927-C5960404ABFF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inno.Player.Browser", "platforms\Browser\player\Inno.Player.Browser\Inno.Player.Browser.csproj", "{A4C34F99-1808-455E-A875-A568C5377FA4}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inno.Player.BrowserWasm32", "platforms\BrowserWasm32\player\Inno.Player.BrowserWasm32\Inno.Player.BrowserWasm32.csproj", "{A4C34F99-1808-455E-A875-A568C5377FA4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inno.Adapter.Storage.Browser", "platforms\Browser\runtime\Inno.Adapter.Storage.Browser\Inno.Adapter.Storage.Browser.csproj", "{2F1AC3B9-2B84-4005-AE1F-0666D2B4A73C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inno.Adapter.Storage.BrowserWasm32", "platforms\BrowserWasm32\runtime\Inno.Adapter.Storage.BrowserWasm32\Inno.Adapter.Storage.BrowserWasm32.csproj", "{2F1AC3B9-2B84-4005-AE1F-0666D2B4A73C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inno.Build.Linux", "platforms\Linux\build\Inno.Build.Linux\Inno.Build.Linux.csproj", "{798DEC30-883C-5978-B4E0-E7F284B981B6}"
+
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inno.Build.MacOSArm64", "platforms\MacOSArm64\build\Inno.Build.MacOSArm64\Inno.Build.MacOSArm64.csproj", "{B31542D9-1C42-45E7-B84E-15B12233B5B1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inno.Build.MacOS", "platforms\MacOS\build\Inno.Build.MacOS\Inno.Build.MacOS.csproj", "{B31542D9-1C42-45E7-B84E-15B12233B5B1}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inno.Editor.MacOSArm64", "platforms\MacOSArm64\editor\Inno.Editor.MacOSArm64\Inno.Editor.MacOSArm64.csproj", "{E6754133-EAC9-51C8-845E-22603E87AA4B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inno.Editor.MacOS", "platforms\MacOS\editor\Inno.Editor.MacOS\Inno.Editor.MacOS.csproj", "{E6754133-EAC9-51C8-845E-22603E87AA4B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inno.Player.MacOSArm64", "platforms\MacOSArm64\player\Inno.Player.MacOSArm64\Inno.Player.MacOSArm64.csproj", "{8D3177DC-969A-51AC-90EF-2B30B2895077}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inno.Player.MacOS", "platforms\MacOS\player\Inno.Player.MacOS\Inno.Player.MacOS.csproj", "{8D3177DC-969A-51AC-90EF-2B30B2895077}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inno.Platform.MacOSArm64", "platforms\MacOSArm64\runtime\Inno.Platform.MacOSArm64\Inno.Platform.MacOSArm64.csproj", "{DA1AF7E1-3E84-52FE-99FD-FDB9CFA319F5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inno.Platform.MacOS", "platforms\MacOS\runtime\Inno.Platform.MacOS\Inno.Platform.MacOS.csproj", "{DA1AF7E1-3E84-52FE-99FD-FDB9CFA319F5}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inno.Build.WindowsX64", "platforms\WindowsX64\build\Inno.Build.WindowsX64\Inno.Build.WindowsX64.csproj", "{622F67C2-8526-4ACC-BBEF-9D49BCA4F05B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inno.Build.Windows", "platforms\Windows\build\Inno.Build.Windows\Inno.Build.Windows.csproj", "{622F67C2-8526-4ACC-BBEF-9D49BCA4F05B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inno.Editor.WindowsX64", "platforms\WindowsX64\editor\Inno.Editor.WindowsX64\Inno.Editor.WindowsX64.csproj", "{6A9B07FF-1531-5CFA-88BD-8F944356492B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inno.Editor.Windows", "platforms\Windows\editor\Inno.Editor.Windows\Inno.Editor.Windows.csproj", "{6A9B07FF-1531-5CFA-88BD-8F944356492B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inno.Player.WindowsX64", "platforms\WindowsX64\player\Inno.Player.WindowsX64\Inno.Player.WindowsX64.csproj", "{60FD606B-CE9A-4804-9852-98DA35708B4E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inno.Player.Windows", "platforms\Windows\player\Inno.Player.Windows\Inno.Player.Windows.csproj", "{60FD606B-CE9A-4804-9852-98DA35708B4E}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inno.Platform.Windows", "platforms\Windows\runtime\Inno.Platform.Windows\Inno.Platform.Windows.csproj", "{E30D6907-1A7B-508F-9E8A-C3A60CF114FB}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inno.Platform.WindowsX64", "platforms\WindowsX64\runtime\Inno.Platform.WindowsX64\Inno.Platform.WindowsX64.csproj", "{E30D6907-1A7B-508F-9E8A-C3A60CF114FB}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inno.Adapter.Audio", "src\adapters\audio\Inno.Adapter.Audio\Inno.Adapter.Audio.csproj", "{4E8C7B8E-E69F-4966-8122-5532D42DE15A}"
 EndProject
@@ -715,37 +712,35 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inno.Build.TaskHosting", "b
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "integrations", "integrations", "{B26E1C1B-5E3C-4DC2-B00F-FEF50A846D70}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inno.Integration.Windows.Bgfx", "platforms\Windows\integrations\Inno.Integration.Windows.Bgfx\Inno.Integration.Windows.Bgfx.csproj", "{D4C3575E-C0CF-4177-BDBF-A1A4FE82281B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inno.Integration.WindowsX64.Bgfx", "platforms\WindowsX64\integrations\Inno.Integration.WindowsX64.Bgfx\Inno.Integration.WindowsX64.Bgfx.csproj", "{D4C3575E-C0CF-4177-BDBF-A1A4FE82281B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inno.Integration.Windows.Sdl3", "platforms\Windows\integrations\Inno.Integration.Windows.Sdl3\Inno.Integration.Windows.Sdl3.csproj", "{48ECEAFA-ABFF-43A3-A3B4-84CB32006622}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inno.Integration.WindowsX64.Sdl3", "platforms\WindowsX64\integrations\Inno.Integration.WindowsX64.Sdl3\Inno.Integration.WindowsX64.Sdl3.csproj", "{48ECEAFA-ABFF-43A3-A3B4-84CB32006622}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "integrations", "integrations", "{A6784A8A-7F05-9E97-1DDF-82C8B2A66C7B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inno.Integration.MacOS.Bgfx", "platforms\MacOS\integrations\Inno.Integration.MacOS.Bgfx\Inno.Integration.MacOS.Bgfx.csproj", "{5D27588F-0D7F-4965-BA43-2C1933C2F42A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inno.Integration.MacOSArm64.Bgfx", "platforms\MacOSArm64\integrations\Inno.Integration.MacOSArm64.Bgfx\Inno.Integration.MacOSArm64.Bgfx.csproj", "{5D27588F-0D7F-4965-BA43-2C1933C2F42A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inno.Integration.MacOS.Sdl3", "platforms\MacOS\integrations\Inno.Integration.MacOS.Sdl3\Inno.Integration.MacOS.Sdl3.csproj", "{31E43D16-F58C-447D-BCB7-1D8B1A316C73}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inno.Integration.MacOSArm64.Sdl3", "platforms\MacOSArm64\integrations\Inno.Integration.MacOSArm64.Sdl3\Inno.Integration.MacOSArm64.Sdl3.csproj", "{31E43D16-F58C-447D-BCB7-1D8B1A316C73}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "integrations", "integrations", "{42F8736C-5572-855A-4499-035A6E1A1528}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inno.Integration.Browser.Bgfx", "platforms\Browser\integrations\Inno.Integration.Browser.Bgfx\Inno.Integration.Browser.Bgfx.csproj", "{6B901CD0-FD3F-46AC-888C-1A500F325B4B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inno.Integration.BrowserWasm32.Bgfx", "platforms\BrowserWasm32\integrations\Inno.Integration.BrowserWasm32.Bgfx\Inno.Integration.BrowserWasm32.Bgfx.csproj", "{6B901CD0-FD3F-46AC-888C-1A500F325B4B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inno.Integration.Browser.Sdl3", "platforms\Browser\integrations\Inno.Integration.Browser.Sdl3\Inno.Integration.Browser.Sdl3.csproj", "{9864FB21-85EE-43E5-9856-1E9B927CD3AA}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inno.Integration.BrowserWasm32.Sdl3", "platforms\BrowserWasm32\integrations\Inno.Integration.BrowserWasm32.Sdl3\Inno.Integration.BrowserWasm32.Sdl3.csproj", "{9864FB21-85EE-43E5-9856-1E9B927CD3AA}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "integrations", "integrations", "{FEB82488-3A2D-9CE6-454E-B7DC84A6C771}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inno.Integration.Linux.Bgfx", "platforms\Linux\integrations\Inno.Integration.Linux.Bgfx\Inno.Integration.Linux.Bgfx.csproj", "{662387E7-9BB2-4DF9-9A48-9ABE0BC21F63}"
-EndProject
+
+
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inno.Adapter.Platform.Sdl3.Tests", "backends\Sdl3\tests\Inno.Adapter.Platform.Sdl3.Tests\Inno.Adapter.Platform.Sdl3.Tests.csproj", "{8CDC7538-F772-4C4B-97E1-E11ACD378543}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "bindings", "bindings", "{EA9FBFE3-44DA-4D2A-7F4A-75F1BCDD44DB}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inno.Build.Bindings", "build\bindings\Inno.Build.Bindings\Inno.Build.Bindings.csproj", "{4EBCAE79-5CE6-4145-AD41-688A4B91FF61}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inno.Integration.Windows.Bgfx.Runtime", "platforms\Windows\integrations\Inno.Integration.Windows.Bgfx.Runtime\Inno.Integration.Windows.Bgfx.Runtime.csproj", "{C3B08772-01F8-43F2-B4A9-F232DA818503}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inno.Integration.WindowsX64.Bgfx.Runtime", "platforms\WindowsX64\integrations\Inno.Integration.WindowsX64.Bgfx.Runtime\Inno.Integration.WindowsX64.Bgfx.Runtime.csproj", "{C3B08772-01F8-43F2-B4A9-F232DA818503}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inno.Integration.MacOS.Bgfx.Runtime", "platforms\MacOS\integrations\Inno.Integration.MacOS.Bgfx.Runtime\Inno.Integration.MacOS.Bgfx.Runtime.csproj", "{C12916CB-DAAD-4F9D-A1B5-F7E799CC4AFD}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inno.Integration.MacOSArm64.Bgfx.Runtime", "platforms\MacOSArm64\integrations\Inno.Integration.MacOSArm64.Bgfx.Runtime\Inno.Integration.MacOSArm64.Bgfx.Runtime.csproj", "{C12916CB-DAAD-4F9D-A1B5-F7E799CC4AFD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inno.Integration.Browser.Bgfx.Runtime", "platforms\Browser\integrations\Inno.Integration.Browser.Bgfx.Runtime\Inno.Integration.Browser.Bgfx.Runtime.csproj", "{366E1DAE-B081-43BB-A8F6-4E7A32BFD064}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inno.Integration.BrowserWasm32.Bgfx.Runtime", "platforms\BrowserWasm32\integrations\Inno.Integration.BrowserWasm32.Bgfx.Runtime\Inno.Integration.BrowserWasm32.Bgfx.Runtime.csproj", "{366E1DAE-B081-43BB-A8F6-4E7A32BFD064}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "entry", "entry", "{FB6B5AAC-8FC0-40B6-993E-9B06BD070F2B}"
 EndProject
@@ -965,10 +960,6 @@ Global
 		{2F1AC3B9-2B84-4005-AE1F-0666D2B4A73C}.SourceDebug|Any CPU.Build.0 = Debug|Any CPU
 		{2F1AC3B9-2B84-4005-AE1F-0666D2B4A73C}.SourceRelease|Any CPU.ActiveCfg = Release|Any CPU
 		{2F1AC3B9-2B84-4005-AE1F-0666D2B4A73C}.SourceRelease|Any CPU.Build.0 = Release|Any CPU
-		{798DEC30-883C-5978-B4E0-E7F284B981B6}.SourceDebug|Any CPU.ActiveCfg = Debug|Any CPU
-		{798DEC30-883C-5978-B4E0-E7F284B981B6}.SourceDebug|Any CPU.Build.0 = Debug|Any CPU
-		{798DEC30-883C-5978-B4E0-E7F284B981B6}.SourceRelease|Any CPU.ActiveCfg = Release|Any CPU
-		{798DEC30-883C-5978-B4E0-E7F284B981B6}.SourceRelease|Any CPU.Build.0 = Release|Any CPU
 		{B31542D9-1C42-45E7-B84E-15B12233B5B1}.SourceDebug|Any CPU.ActiveCfg = Debug|Any CPU
 		{B31542D9-1C42-45E7-B84E-15B12233B5B1}.SourceDebug|Any CPU.Build.0 = Debug|Any CPU
 		{B31542D9-1C42-45E7-B84E-15B12233B5B1}.SourceRelease|Any CPU.ActiveCfg = Release|Any CPU
@@ -1649,10 +1640,6 @@ Global
 		{9864FB21-85EE-43E5-9856-1E9B927CD3AA}.SourceDebug|Any CPU.Build.0 = Debug|Any CPU
 		{9864FB21-85EE-43E5-9856-1E9B927CD3AA}.SourceRelease|Any CPU.ActiveCfg = Release|Any CPU
 		{9864FB21-85EE-43E5-9856-1E9B927CD3AA}.SourceRelease|Any CPU.Build.0 = Release|Any CPU
-		{662387E7-9BB2-4DF9-9A48-9ABE0BC21F63}.SourceDebug|Any CPU.ActiveCfg = Debug|Any CPU
-		{662387E7-9BB2-4DF9-9A48-9ABE0BC21F63}.SourceDebug|Any CPU.Build.0 = Debug|Any CPU
-		{662387E7-9BB2-4DF9-9A48-9ABE0BC21F63}.SourceRelease|Any CPU.ActiveCfg = Release|Any CPU
-		{662387E7-9BB2-4DF9-9A48-9ABE0BC21F63}.SourceRelease|Any CPU.Build.0 = Release|Any CPU
 		{8CDC7538-F772-4C4B-97E1-E11ACD378543}.SourceDebug|Any CPU.ActiveCfg = Debug|Any CPU
 		{8CDC7538-F772-4C4B-97E1-E11ACD378543}.SourceDebug|Any CPU.Build.0 = Debug|Any CPU
 		{8CDC7538-F772-4C4B-97E1-E11ACD378543}.SourceRelease|Any CPU.ActiveCfg = Release|Any CPU
@@ -2197,16 +2184,6 @@ Global
 		{2F1AC3B9-2B84-4005-AE1F-0666D2B4A73C}.Release|x64.Build.0 = Release|Any CPU
 		{2F1AC3B9-2B84-4005-AE1F-0666D2B4A73C}.Release|x86.ActiveCfg = Release|Any CPU
 		{2F1AC3B9-2B84-4005-AE1F-0666D2B4A73C}.Release|x86.Build.0 = Release|Any CPU
-		{798DEC30-883C-5978-B4E0-E7F284B981B6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{798DEC30-883C-5978-B4E0-E7F284B981B6}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{798DEC30-883C-5978-B4E0-E7F284B981B6}.Debug|x64.Build.0 = Debug|Any CPU
-		{798DEC30-883C-5978-B4E0-E7F284B981B6}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{798DEC30-883C-5978-B4E0-E7F284B981B6}.Debug|x86.Build.0 = Debug|Any CPU
-		{798DEC30-883C-5978-B4E0-E7F284B981B6}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{798DEC30-883C-5978-B4E0-E7F284B981B6}.Release|x64.ActiveCfg = Release|Any CPU
-		{798DEC30-883C-5978-B4E0-E7F284B981B6}.Release|x64.Build.0 = Release|Any CPU
-		{798DEC30-883C-5978-B4E0-E7F284B981B6}.Release|x86.ActiveCfg = Release|Any CPU
-		{798DEC30-883C-5978-B4E0-E7F284B981B6}.Release|x86.Build.0 = Release|Any CPU
 		{B31542D9-1C42-45E7-B84E-15B12233B5B1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{B31542D9-1C42-45E7-B84E-15B12233B5B1}.Debug|x64.ActiveCfg = Debug|Any CPU
 		{B31542D9-1C42-45E7-B84E-15B12233B5B1}.Debug|x64.Build.0 = Debug|Any CPU
@@ -3935,16 +3912,6 @@ Global
 		{9864FB21-85EE-43E5-9856-1E9B927CD3AA}.Release|x64.Build.0 = Release|Any CPU
 		{9864FB21-85EE-43E5-9856-1E9B927CD3AA}.Release|x86.ActiveCfg = Release|Any CPU
 		{9864FB21-85EE-43E5-9856-1E9B927CD3AA}.Release|x86.Build.0 = Release|Any CPU
-		{662387E7-9BB2-4DF9-9A48-9ABE0BC21F63}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{662387E7-9BB2-4DF9-9A48-9ABE0BC21F63}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{662387E7-9BB2-4DF9-9A48-9ABE0BC21F63}.Debug|x64.Build.0 = Debug|Any CPU
-		{662387E7-9BB2-4DF9-9A48-9ABE0BC21F63}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{662387E7-9BB2-4DF9-9A48-9ABE0BC21F63}.Debug|x86.Build.0 = Debug|Any CPU
-		{662387E7-9BB2-4DF9-9A48-9ABE0BC21F63}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{662387E7-9BB2-4DF9-9A48-9ABE0BC21F63}.Release|x64.ActiveCfg = Release|Any CPU
-		{662387E7-9BB2-4DF9-9A48-9ABE0BC21F63}.Release|x64.Build.0 = Release|Any CPU
-		{662387E7-9BB2-4DF9-9A48-9ABE0BC21F63}.Release|x86.ActiveCfg = Release|Any CPU
-		{662387E7-9BB2-4DF9-9A48-9ABE0BC21F63}.Release|x86.Build.0 = Release|Any CPU
 		{8CDC7538-F772-4C4B-97E1-E11ACD378543}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{8CDC7538-F772-4C4B-97E1-E11ACD378543}.Debug|x64.ActiveCfg = Debug|Any CPU
 		{8CDC7538-F772-4C4B-97E1-E11ACD378543}.Debug|x64.Build.0 = Debug|Any CPU
@@ -4053,8 +4020,6 @@ Global
 		{CD5BA62A-95E1-516B-B821-25CE5DA99B4E} = {AFDE356F-C9E2-5802-B759-87439F7BD36E}
 		{616CDA4F-CD14-57FC-AF34-731C33F808E8} = {AFDE356F-C9E2-5802-B759-87439F7BD36E}
 		{E44EA74A-E105-5387-ADCD-2592F483E278} = {AFDE356F-C9E2-5802-B759-87439F7BD36E}
-		{93E91E25-4452-50F5-AE02-7E133D60BEDE} = {09EED61A-9D24-5383-84FA-FCC170E01C2E}
-		{89E8BE6C-052F-52B9-84BA-692955F2F252} = {93E91E25-4452-50F5-AE02-7E133D60BEDE}
 		{73E40398-CF2F-57DD-91B8-DC258D279AB7} = {09EED61A-9D24-5383-84FA-FCC170E01C2E}
 		{FBD3F202-1101-5533-B4F9-09FCF8E585A0} = {73E40398-CF2F-57DD-91B8-DC258D279AB7}
 		{5DEDD9AF-D145-5E23-81AD-1A00A5552AF9} = {73E40398-CF2F-57DD-91B8-DC258D279AB7}
@@ -4185,7 +4150,6 @@ Global
 		{F15CA143-388C-4270-8927-C5960404ABFF} = {CD5BA62A-95E1-516B-B821-25CE5DA99B4E}
 		{A4C34F99-1808-455E-A875-A568C5377FA4} = {616CDA4F-CD14-57FC-AF34-731C33F808E8}
 		{2F1AC3B9-2B84-4005-AE1F-0666D2B4A73C} = {E44EA74A-E105-5387-ADCD-2592F483E278}
-		{798DEC30-883C-5978-B4E0-E7F284B981B6} = {89E8BE6C-052F-52B9-84BA-692955F2F252}
 		{B31542D9-1C42-45E7-B84E-15B12233B5B1} = {FBD3F202-1101-5533-B4F9-09FCF8E585A0}
 		{E6754133-EAC9-51C8-845E-22603E87AA4B} = {5DEDD9AF-D145-5E23-81AD-1A00A5552AF9}
 		{8D3177DC-969A-51AC-90EF-2B30B2895077} = {BEDC7350-98C9-5D7A-B709-C4CBE77E8A36}
@@ -4361,8 +4325,6 @@ Global
 		{42F8736C-5572-855A-4499-035A6E1A1528} = {AFDE356F-C9E2-5802-B759-87439F7BD36E}
 		{6B901CD0-FD3F-46AC-888C-1A500F325B4B} = {42F8736C-5572-855A-4499-035A6E1A1528}
 		{9864FB21-85EE-43E5-9856-1E9B927CD3AA} = {42F8736C-5572-855A-4499-035A6E1A1528}
-		{FEB82488-3A2D-9CE6-454E-B7DC84A6C771} = {93E91E25-4452-50F5-AE02-7E133D60BEDE}
-		{662387E7-9BB2-4DF9-9A48-9ABE0BC21F63} = {FEB82488-3A2D-9CE6-454E-B7DC84A6C771}
 		{8CDC7538-F772-4C4B-97E1-E11ACD378543} = {4206EE6B-B760-5F52-9598-FD0544152FDF}
 		{EA9FBFE3-44DA-4D2A-7F4A-75F1BCDD44DB} = {2B7C1D5F-CDE5-5F2A-948A-E031EE5BDEC7}
 		{4EBCAE79-5CE6-4145-AD41-688A4B91FF61} = {EA9FBFE3-44DA-4D2A-7F4A-75F1BCDD44DB}

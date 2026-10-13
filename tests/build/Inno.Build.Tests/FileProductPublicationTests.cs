@@ -22,7 +22,7 @@ public sealed class FileProductPublicationTests : IDisposable
         string projectRoot = Path.Combine(m_root, new string('p', 70), new string('p', 70), "PlayerLink");
         Directory.CreateDirectory(projectRoot);
         string project = Path.Combine(projectRoot, "Player.csproj");
-        File.Copy(Path.Combine(engine, "platforms", "Windows", "build", "Inno.Build.Windows", "Templates", "WindowsPlayer.project.xml"), project);
+        File.Copy(Path.Combine(engine, "platforms", "WindowsX64", "build", "Inno.Build.WindowsX64", "Templates", "WindowsX64Player.project.xml"), project);
         File.Copy(Path.Combine(engine, "global.json"), Path.Combine(m_root, "global.json"));
         File.WriteAllText(Path.Combine(projectRoot, "Program.cs"), "using System; Console.WriteLine(\"Published\");");
         File.WriteAllText(Path.Combine(projectRoot, "PlayerDeploymentDefinition.g.cs"), "// The fixture has no game registrations.");

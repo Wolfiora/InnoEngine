@@ -9,7 +9,6 @@
 | 位置 | 唯一职责 | 依赖约束 |
 | --- | --- | --- |
 | `entry` | 两个开发入口、当前宿主路由与准备 | 最外层便利边界，其他层不得引用。 |
-| `dependencies` | 固定 revision 的独立源依赖 | BGCS 不继承引擎 Native/产品 targets。 |
 | `src/foundation` | 事件、身份、序列化、值、目录与代际机制 | 不选择产品、平台或 backend。 |
 | `src/content` | 内容、Asset、引用、Scene、Animation | 内容读取通过中立 store 与 lease。 |
 | `src/services` | 中立领域契约与运行服务 | 不引用具体平台、Native 或 backend。 |
@@ -46,7 +45,7 @@ flowchart TD
 
 维护归属是 Windows/MacOS/Browser；真正的运行目标包含架构和 ABI。产品决定 Editor 或 Player 闭包；managed deployment 决定 CoreCLR、NativeAOT 或 Mono Wasm 解释执行/AOT。工具宿主只决定所选工具能在哪里执行。
 
-当前发布目标为 `windows-x64`、`macos-arm64`、`browser-wasm`（描述明确为 wasm32）。Linux 仅贡献现有 Native SDK 能力。Desktop 不是注册目标。
+当前发布目标为 `windows-x64`、`macos-arm64`、`browser-wasm`（描述明确为 wasm32）。Desktop 不是注册目标。
 
 当前源码默认只有 `InnoEngine.Editor` 与 `InnoEngine.Build` 两个生产 Exe，均属于 `entry`。平台 Editor 与 Build.Cli 是组合库，Player 宿主源码由完整发布模板生成真正的游戏 Exe。
 Solution 默认 Debug/Release 只准备启动器；SourceDebug/SourceRelease 保留完整共享源码和测试构建。实际产品目标始终与工具图隔离，见[开发入口设计](DEVELOPMENT_ENTRY_ARCHITECTURE.md)。
@@ -231,18 +230,17 @@ Core Events 是唯一事件机制；跨代 live object 经 Identity 解析。Mis
 
 ### platforms
 
-- `Inno.Build.Browser`：[`platforms/Browser/build/Inno.Build.Browser/Inno.Build.Browser.csproj`](../../platforms/Browser/build/Inno.Build.Browser/Inno.Build.Browser.csproj)。
-- `Inno.Player.Browser`：[`platforms/Browser/player/Inno.Player.Browser/Inno.Player.Browser.csproj`](../../platforms/Browser/player/Inno.Player.Browser/Inno.Player.Browser.csproj)。
-- `Inno.Adapter.Storage.Browser`：[`platforms/Browser/runtime/Inno.Adapter.Storage.Browser/Inno.Adapter.Storage.Browser.csproj`](../../platforms/Browser/runtime/Inno.Adapter.Storage.Browser/Inno.Adapter.Storage.Browser.csproj)。
-- `Inno.Build.Linux`：[`platforms/Linux/build/Inno.Build.Linux/Inno.Build.Linux.csproj`](../../platforms/Linux/build/Inno.Build.Linux/Inno.Build.Linux.csproj)。
-- `Inno.Build.MacOS`：[`platforms/MacOS/build/Inno.Build.MacOS/Inno.Build.MacOS.csproj`](../../platforms/MacOS/build/Inno.Build.MacOS/Inno.Build.MacOS.csproj)。
-- `Inno.Editor.MacOS`：[`platforms/MacOS/editor/Inno.Editor.MacOS/Inno.Editor.MacOS.csproj`](../../platforms/MacOS/editor/Inno.Editor.MacOS/Inno.Editor.MacOS.csproj)。
-- `Inno.Player.MacOS`：[`platforms/MacOS/player/Inno.Player.MacOS/Inno.Player.MacOS.csproj`](../../platforms/MacOS/player/Inno.Player.MacOS/Inno.Player.MacOS.csproj)。
-- `Inno.Platform.MacOS`：[`platforms/MacOS/runtime/Inno.Platform.MacOS/Inno.Platform.MacOS.csproj`](../../platforms/MacOS/runtime/Inno.Platform.MacOS/Inno.Platform.MacOS.csproj)。
-- `Inno.Build.Windows`：[`platforms/Windows/build/Inno.Build.Windows/Inno.Build.Windows.csproj`](../../platforms/Windows/build/Inno.Build.Windows/Inno.Build.Windows.csproj)。
-- `Inno.Editor.Windows`：[`platforms/Windows/editor/Inno.Editor.Windows/Inno.Editor.Windows.csproj`](../../platforms/Windows/editor/Inno.Editor.Windows/Inno.Editor.Windows.csproj)。
-- `Inno.Player.Windows`：[`platforms/Windows/player/Inno.Player.Windows/Inno.Player.Windows.csproj`](../../platforms/Windows/player/Inno.Player.Windows/Inno.Player.Windows.csproj)。
-- `Inno.Platform.Windows`：[`platforms/Windows/runtime/Inno.Platform.Windows/Inno.Platform.Windows.csproj`](../../platforms/Windows/runtime/Inno.Platform.Windows/Inno.Platform.Windows.csproj)。
+- `Inno.Build.BrowserWasm32`：[`platforms/BrowserWasm32/build/Inno.Build.BrowserWasm32/Inno.Build.BrowserWasm32.csproj`](../../platforms/BrowserWasm32/build/Inno.Build.BrowserWasm32/Inno.Build.BrowserWasm32.csproj)。
+- `Inno.Player.BrowserWasm32`：[`platforms/BrowserWasm32/player/Inno.Player.BrowserWasm32/Inno.Player.BrowserWasm32.csproj`](../../platforms/BrowserWasm32/player/Inno.Player.BrowserWasm32/Inno.Player.BrowserWasm32.csproj)。
+- `Inno.Adapter.Storage.BrowserWasm32`：[`platforms/BrowserWasm32/runtime/Inno.Adapter.Storage.BrowserWasm32/Inno.Adapter.Storage.BrowserWasm32.csproj`](../../platforms/BrowserWasm32/runtime/Inno.Adapter.Storage.BrowserWasm32/Inno.Adapter.Storage.BrowserWasm32.csproj)。
+- `Inno.Build.MacOSArm64`：[`platforms/MacOSArm64/build/Inno.Build.MacOSArm64/Inno.Build.MacOSArm64.csproj`](../../platforms/MacOSArm64/build/Inno.Build.MacOSArm64/Inno.Build.MacOSArm64.csproj)。
+- `Inno.Editor.MacOSArm64`：[`platforms/MacOSArm64/editor/Inno.Editor.MacOSArm64/Inno.Editor.MacOSArm64.csproj`](../../platforms/MacOSArm64/editor/Inno.Editor.MacOSArm64/Inno.Editor.MacOSArm64.csproj)。
+- `Inno.Player.MacOSArm64`：[`platforms/MacOSArm64/player/Inno.Player.MacOSArm64/Inno.Player.MacOSArm64.csproj`](../../platforms/MacOSArm64/player/Inno.Player.MacOSArm64/Inno.Player.MacOSArm64.csproj)。
+- `Inno.Platform.MacOSArm64`：[`platforms/MacOSArm64/runtime/Inno.Platform.MacOSArm64/Inno.Platform.MacOSArm64.csproj`](../../platforms/MacOSArm64/runtime/Inno.Platform.MacOSArm64/Inno.Platform.MacOSArm64.csproj)。
+- `Inno.Build.WindowsX64`：[`platforms/WindowsX64/build/Inno.Build.WindowsX64/Inno.Build.WindowsX64.csproj`](../../platforms/WindowsX64/build/Inno.Build.WindowsX64/Inno.Build.WindowsX64.csproj)。
+- `Inno.Editor.WindowsX64`：[`platforms/WindowsX64/editor/Inno.Editor.WindowsX64/Inno.Editor.WindowsX64.csproj`](../../platforms/WindowsX64/editor/Inno.Editor.WindowsX64/Inno.Editor.WindowsX64.csproj)。
+- `Inno.Player.WindowsX64`：[`platforms/WindowsX64/player/Inno.Player.WindowsX64/Inno.Player.WindowsX64.csproj`](../../platforms/WindowsX64/player/Inno.Player.WindowsX64/Inno.Player.WindowsX64.csproj)。
+- `Inno.Platform.WindowsX64`：[`platforms/WindowsX64/runtime/Inno.Platform.WindowsX64/Inno.Platform.WindowsX64.csproj`](../../platforms/WindowsX64/runtime/Inno.Platform.WindowsX64/Inno.Platform.WindowsX64.csproj)。
 
 ### build
 
@@ -270,13 +268,12 @@ Native 步骤显式声明 Static/Shared、有序组件参数和输入 bytes；SD
 
 ## 当前集成程序集
 
-- `Inno.Integration.Windows.Bgfx`：`platforms/Windows/integrations/Inno.Integration.Windows.Bgfx/`。构建接入。
-- `Inno.Integration.Windows.Sdl3`：`platforms/Windows/integrations/Inno.Integration.Windows.Sdl3/`。运行宿主接入。
-- `Inno.Integration.MacOS.Bgfx`：`platforms/MacOS/integrations/Inno.Integration.MacOS.Bgfx/`。构建接入。
-- `Inno.Integration.MacOS.Sdl3`：`platforms/MacOS/integrations/Inno.Integration.MacOS.Sdl3/`。运行宿主接入。
-- `Inno.Integration.Browser.Bgfx`：`platforms/Browser/integrations/Inno.Integration.Browser.Bgfx/`。构建接入。
-- `Inno.Integration.Browser.Sdl3`：`platforms/Browser/integrations/Inno.Integration.Browser.Sdl3/`。运行宿主接入。
-- `Inno.Integration.Linux.Bgfx`：`platforms/Linux/integrations/Inno.Integration.Linux.Bgfx/`。构建接入。
+- `Inno.Integration.WindowsX64.Bgfx`：`platforms/WindowsX64/integrations/Inno.Integration.WindowsX64.Bgfx/`。构建接入。
+- `Inno.Integration.WindowsX64.Sdl3`：`platforms/WindowsX64/integrations/Inno.Integration.WindowsX64.Sdl3/`。运行宿主接入。
+- `Inno.Integration.MacOSArm64.Bgfx`：`platforms/MacOSArm64/integrations/Inno.Integration.MacOSArm64.Bgfx/`。构建接入。
+- `Inno.Integration.MacOSArm64.Sdl3`：`platforms/MacOSArm64/integrations/Inno.Integration.MacOSArm64.Sdl3/`。运行宿主接入。
+- `Inno.Integration.BrowserWasm32.Bgfx`：`platforms/BrowserWasm32/integrations/Inno.Integration.BrowserWasm32.Bgfx/`。构建接入。
+- `Inno.Integration.BrowserWasm32.Sdl3`：`platforms/BrowserWasm32/integrations/Inno.Integration.BrowserWasm32.Sdl3/`。运行宿主接入。
 
 ## Backend 运行与绑定生成程序集
 

@@ -1,5 +1,7 @@
 # Inno.Build.Cli
 
+Build 首次准备的 SDK 输出登记为进程拥有的 bootstrap workspace。正在检查或加载时不能退休；进程退出后由同一缓存 owner 回收。即时清理遇到仍被映射的 DLL 时报告延期，不把临时输出变成长久无主缓存。
+
 [Build 索引](README.md) · [Wiki 首页](../README.md) · [开发 Build 入口](../entry/InnoEngine.Build.md)
 
 ## 职责与边界
@@ -20,6 +22,8 @@ dotnet run --project entry/InnoEngine.Build/InnoEngine.Build.csproj -- verify .
 ```
 
 开发入口补齐宿主、SDK 和 checkout 参数。直接嵌入 `BuildApplication` 时，调用者需要提供相应命令所要求的明确上下文；空参数只显示帮助。
+
+项目命令支持 `--dotnet <absolute-sdk-host>`，内容工具、Pack 准备及最终发布共用该冻结 SDK 选择。未声明的参数与缺值立即失败；不能靠改变产品目标来选择工具宿主。SDK 与 workload 的安装是开发环境准备，产物缓存清理不删除 SDK。
 
 | 命令 | 行为 |
 | --- | --- |
@@ -45,6 +49,10 @@ Editor 配置独立于游戏发布配置。Support Pack 保持 Release 准备语
 
 `ReadInputIdentityAsync(engineRoot, configuration, dotnetHost, cancellationToken)` 供轻量启动器验证当前工具源码图与 SDK 身份。它不编译 CLI，也不准备 Native；返回字符串不转移任何 SDK 或加载上下文 owner。
 
+`PublishRuntimeAsync(engineRoot, configuration, dotnetHost, assemblyPath, cancellationToken)` 通过 bootstrap 部署进入准备实现，再使用 operation 固定的源副本编译实际 CLI，验证输入与完整部署后原子发布到 `artifacts/build-tools/cli/hosts`。身份同时覆盖当前输入和实际输出内容；返回的路径由进程 reader 登记保护至进程退出。Bootstrap 保留读取 lease 后再载入，普通源码编译不再覆盖执行中的工具程序集。
+
+已有完整 publication 在共享读取保护下复用，不申请写入锁。只有缺失或损坏的产物才等待独占修复；读取验证、登记进程依赖和交付路径始终由同一次 owner 保护覆盖，活动消费者不会因另一个相同请求而被迫退出。
+
 ## 初始化与所有权
 
 命令先获得发行定义和明确工具目标，再创建对应工作流程。项目命令准备离线工具后打开创作 workspace，不创建 SDL 窗口或 ImGui 呈现。
@@ -52,6 +60,8 @@ Editor 配置独立于游戏发布配置。Support Pack 保持 Release 准备语
 `game` 先等待 `EnsurePlayerSupportPackAsync`，持有其读取 lease，再在当前 owner thread 启动 `BuildGameAsync`。游戏构建另行取得 Pack 读取保护并持有至编译、链接和打包完成。这样准备阶段可以异步运行，创作快照仍按线程协议捕获。
 
 Native 构建结果由 `ProductNativeBuildResult` 唯一拥有；部署完成后释放所有产物 leases。Shader 命令也必须在工具进程结束后才释放其工具产物。
+
+项目命令借用所选离线工具的实际 executable/include 路径，保留 Native 结果至整个内容编译结束。工具不复制进启动入口或不可变 CLI publication；内容 compiler 工厂接收同一 `ToolRunner`。运行于哪个 Debug/Release 配置不会重新决定工具文件名。
 
 ## 失败、取消与缓存
 
@@ -71,16 +81,18 @@ Support Pack 准备前缓存、缓存预算回收和完整性能矩阵尚未验�
 
 ## 当前源码公开 API 清单
 
-按功能类型核对全部公开与可扩展 protected 声明。类型的组合与所有权从前文工作流进入。
+签名来自当前 SDK 求值与语义符号；按类型列出 public/protected 契约。工作流与生命周期见本页前文。
 
 ### `Inno.Build.Cli.BuildApplication`
 
 <!-- api: T:Inno.Build.Cli.BuildApplication 5feb127b395302e89588037726f079518b465572b5636555e0e8d5f923b0f9f8 -->
 <!-- api: M:Inno.Build.Cli.BuildApplication.ReadInputIdentityAsync(System.String,System.String,System.String,System.Threading.CancellationToken) cb8bf5db30a3f23c4fc7ad15f8fab0ab5599b4c6555002c3a82e17c0ae9a7bac -->
 <!-- api: M:Inno.Build.Cli.BuildApplication.Run(System.String[],System.Threading.CancellationToken) 400f0d36b86664da5273e2b1f0f60687598f4e14cfe48080468bb8994a762531 -->
+<!-- api: M:Inno.Build.Cli.BuildApplication.PublishRuntimeAsync(System.String,System.String,System.String,System.String,System.Threading.CancellationToken) 4169ad168cc31e038669e453e77f78c9e3b242f952ee52b4dcdbf32ee92a5465 -->
 
 | 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
 | --- | --- | --- | --- |
-| <a id="api-27377f124c175bc4"></a>[`public static System.Threading.Tasks.Task<string> Inno.Build.Cli.BuildApplication.ReadInputIdentityAsync(string engineRoot, string configuration, string dotnetHost, System.Threading.CancellationToken cancellationToken)`](../../build/cli/Inno.Build.Cli/BuildApplication.cs#L27) | Inspects the selected SDK's evaluated Build-tool input closure without compiling or preparing Native products.<br>返回：The content identity of the actual source graph, restored dependencies, compiler and SDK.<br>`engineRoot`：The absolute source checkout.<br>`configuration`：The explicit Debug or Release compiler configuration.<br>`dotnetHost`：The selected managed SDK executable.<br>`cancellationToken`：Cancels evaluation and input hashing. | — | T:System.IO.IOException: A required source, SDK or restored dependency cannot be read.<br>T:System.InvalidOperationException: The SDK cannot evaluate the current graph.<br>T:System.OperationCanceledException: Inspection was canceled. |
-| <a id="api-93c6a267497d2f98"></a>[`public static System.Threading.Tasks.Task<int> Inno.Build.Cli.BuildApplication.Run(string[] arguments, System.Threading.CancellationToken cancellationToken)`](../../build/cli/Inno.Build.Cli/BuildApplication.cs#L56) | Runs one build command without taking ownership of the caller's cancellation source.<br>返回：Zero on success, two on cancellation, or one on a command or execution failure.<br>`arguments`：The command and its documented options; help prints the supported command names.<br>`cancellationToken`：Cancels owned work and preserves completed publications according to their pipeline contracts. | — | T:System.ArgumentNullException: The argument array is absent. |
-| <a id="api-df8e541fac90a97d"></a>[`public static class Inno.Build.Cli.BuildApplication`](../../build/cli/Inno.Build.Cli/BuildApplication.cs#L14) | Executes explicit engine and project build commands for a caller-owned development lifetime. | — | — |
+| <a id="api-63086cb70f872795"></a>[`public static System.Threading.Tasks.Task<string> Inno.Build.Cli.BuildApplication.PublishRuntimeAsync(string engineRoot, string configuration, string dotnetHost, string assemblyPath, System.Threading.CancellationToken cancellationToken)`](../../build/cli/Inno.Build.Cli/BuildApplication.Runtime.cs#L55) | Publishes a verified Build-tool deployment before the development entry loads it for the process lifetime.<br>返回：The immutable assembly path, protected by a registered reader for the current process lifetime.<br>`engineRoot`：The absolute checkout owning the tool's evaluated source graph and caches.<br>`configuration`：The explicit Debug or Release configuration used to prepare this deployment.<br>`dotnetHost`：The selected managed SDK executable used to verify current inputs.<br>`assemblyPath`：The built CLI assembly in an exclusively owned, freshly prepared SDK output directory.<br>`cancellationToken`：Cancels copying or ownership acquisition before publication. | The bootstrap deployment provides this preparation implementation. The accepted tool is compiled again from operation-fixed repository inputs before publication, never from a mutable checkout. | `System.ArgumentException`：A path or configuration is invalid or outside the checkout.<br>`System.IO.IOException`：Input or output files cannot be verified, copied, or published.<br>`System.InvalidOperationException`：The evaluated inputs or deployment change during publication.<br>`System.TimeoutException`：Another reader or producer retains mutation ownership beyond the bounded wait.<br>`System.OperationCanceledException`：The operation is canceled before commit. |
+| <a id="api-27377f124c175bc4"></a>[`public static System.Threading.Tasks.Task<string> Inno.Build.Cli.BuildApplication.ReadInputIdentityAsync(string engineRoot, string configuration, string dotnetHost, System.Threading.CancellationToken cancellationToken)`](../../build/cli/Inno.Build.Cli/BuildApplication.cs#L43) | Inspects the selected SDK's evaluated Build-tool input closure without compiling or preparing Native products.<br>返回：The content identity of the actual source graph, restored dependencies, compiler and SDK.<br>`engineRoot`：The absolute source checkout.<br>`configuration`：The explicit Debug or Release compiler configuration.<br>`dotnetHost`：The selected managed SDK executable.<br>`cancellationToken`：Cancels evaluation and input hashing. | 约束由所属类型与本页生命周期定义。 | `System.IO.IOException`：A required source, SDK or restored dependency cannot be read.<br>`System.InvalidOperationException`：The SDK cannot evaluate the current graph.<br>`System.OperationCanceledException`：Inspection was canceled. |
+| <a id="api-93c6a267497d2f98"></a>[`public static System.Threading.Tasks.Task<int> Inno.Build.Cli.BuildApplication.Run(string[] arguments, System.Threading.CancellationToken cancellationToken)`](../../build/cli/Inno.Build.Cli/BuildApplication.cs#L72) | Runs one build command without taking ownership of the caller's cancellation source.<br>返回：Zero on success, two on cancellation, or one on a command or execution failure.<br>`arguments`：The command and its documented options; help prints the supported command names.<br>`cancellationToken`：Cancels owned work and preserves completed publications according to their pipeline contracts. | 约束由所属类型与本页生命周期定义。 | `System.ArgumentNullException`：The argument array is absent. |
+| <a id="api-df8e541fac90a97d"></a>[`public static class Inno.Build.Cli.BuildApplication`](../../build/cli/Inno.Build.Cli/BuildApplication.cs#L14) | Executes explicit engine and project build commands for a caller-owned development lifetime. | 约束由所属类型与本页生命周期定义。 | 具体失败按方法与类型契约处理。 |

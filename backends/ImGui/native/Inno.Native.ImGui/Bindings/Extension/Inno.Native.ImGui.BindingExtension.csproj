@@ -6,8 +6,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="$(BindGenRoot)/src/BGCS/BGCS.csproj" />
-    <ProjectReference Include="$(BindGenRoot)/src/BGCS.Core/BGCS.Core.csproj" />
+    <PackageReference Include="BGCS" Version="[$(InnoBgcsPackageVersion)]" />
+    <PackageReference Include="BGCS.Core" Version="[$(InnoBgcsPackageVersion)]" />
   </ItemGroup>
 
   <ItemGroup>

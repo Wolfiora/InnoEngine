@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
+using Inno.Core.IO;
 
 namespace Inno.Build.TaskHosting;
 
@@ -16,17 +17,34 @@ internal static class TaskRuntimeBuildScope
     internal static ITaskItem[]? Read(
         IBuildEngine4 engine,
         string identity,
+        string load,
         bool verifyOutputs = true,
         CancellationToken cancellation = default
     ) {
         if (engine.GetRegisteredTaskObject(C_PREFIX + identity, RegisteredTaskObjectLifetime.Build) is not string[][] rows)
             return null;
         ITaskItem[] outputs = Restore(rows);
-        if (verifyOutputs && !TaskRuntimePreparation.IsComplete(
-            Path.GetDirectoryName(outputs.Single(static item => item.GetMetadata("RelativePath") == "Inno.Build.Tasks.dll").ItemSpec)!,
-            TaskRuntimePreparation.FreezeFiles(outputs), cancellation))
+        string assembly = outputs.Single(static item => item.GetMetadata("RelativePath") == "Inno.Build.Tasks.dll").ItemSpec;
+        string runtime = Path.GetDirectoryName(assembly)!;
+        string publication = Path.GetDirectoryName(runtime)!;
+        string owner = Path.GetDirectoryName(publication)!;
+        if (!Directory.Exists(publication))
             return null;
-        return outputs;
+        try
+        {
+            using FileLease activity = FileLease.AcquireSharedAsync(Path.Combine(owner, "owner.lock"), TimeSpan.Zero, cancellation)
+                .AsTask().GetAwaiter().GetResult();
+            using FileLease reading = FileLease.AcquireSharedAsync(publication + ".lock", TimeSpan.Zero, cancellation)
+                .AsTask().GetAwaiter().GetResult();
+            if (verifyOutputs && !TaskRuntimePreparation.IsComplete(runtime, TaskRuntimePreparation.FreezeFiles(outputs), cancellation))
+                return null;
+            TaskRuntimePreparation.RegisterReader(load, assembly);
+            return outputs;
+        }
+        catch (TimeoutException)
+        {
+            return null;
+        }
     }
 
     internal static void Register(

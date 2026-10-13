@@ -7,11 +7,11 @@
     <IsTestProject>true</IsTestProject>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="../../../platforms/MacOS/integrations/Inno.Integration.MacOS.Bgfx/Inno.Integration.MacOS.Bgfx.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../../platforms/MacOSArm64/integrations/Inno.Integration.MacOSArm64.Bgfx/Inno.Integration.MacOSArm64.Bgfx.csproj" PrivateAssets="compile" />
 
     <ProjectReference Include="../../content/fixtures/Inno.Content.Testing/Inno.Content.Testing.csproj" />
     <ProjectReference Include="../../../backends/Bgfx/build/Inno.Build.Toolchains.Bgfx.Tools/Inno.Build.Toolchains.Bgfx.Tools.csproj" />
-    <ProjectReference Include="../../../platforms/MacOS/build/Inno.Build.MacOS/Inno.Build.MacOS.csproj" />
+    <ProjectReference Include="../../../platforms/MacOSArm64/build/Inno.Build.MacOSArm64/Inno.Build.MacOSArm64.csproj" />
     <ProjectReference Include="../../../src/services/rendering/Inno.Rendering.Assets/Inno.Rendering.Assets.csproj" />
     <ProjectReference Include="../../../src/foundation/core/Inno.Core.Serialization/Inno.Core.Serialization.csproj" />
     <ProjectReference Include="../../../src/foundation/extensibility/Inno.Extensibility.Modules/Inno.Extensibility.Modules.csproj" />

@@ -10,6 +10,26 @@ public sealed class NativeArtifactIdentityTests : IDisposable
     private readonly string m_root = Path.Combine(Path.GetTempPath(), "InnoNativeArtifactTests", Guid.NewGuid().ToString("N"));
 
     [Fact]
+    public void PythonBytecodeIsDerivedWhileSourceAndExplicitCompilerInputsRemainVerified()
+    {
+        string script = Write("sdk/compiler.py", "print('one')");
+        string compiler = Write("sdk/bin/clang", "compiler-one");
+        var inputs = new[]
+        {
+            new NativeBuildInput("sdk", Path.GetDirectoryName(script)!),
+            new NativeBuildInput("sdk/bin", Path.GetDirectoryName(compiler)!)
+        };
+        string original = NativeBuildFingerprint.Create(["wasm32"], inputs);
+        Write("sdk/__pycache__/compiler.cpython-311.pyc", "derived-bytecode");
+        Assert.Equal(original, NativeBuildFingerprint.Create(["wasm32"], inputs));
+        File.WriteAllText(script, "print('two')");
+        Assert.NotEqual(original, NativeBuildFingerprint.Create(["wasm32"], inputs));
+        File.WriteAllText(script, "print('one')");
+        File.WriteAllText(compiler, "compiler-two");
+        Assert.NotEqual(original, NativeBuildFingerprint.Create(["wasm32"], inputs));
+    }
+
+    [Fact]
     public void MultipurposeRecipeOwnerIncludesOnlyItsDeclaredImplementationClosure()
     {
         Write("InnoEngine.sln", "fixture");
