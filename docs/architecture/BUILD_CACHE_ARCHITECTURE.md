@@ -78,6 +78,8 @@ MSBuild 的 `MaterializeBindingsTask` 在保护期间把选定绑定复制到 SD
 
 登记记录保存于 publisher 根目录，不进入产物内容哈希。发布者在实际变更后记录大小，清理不为预算重复遍历整个源码工作区。最终删除前仍逐项检查路径与 reparse point。
 
+Unix 编译器在可复用 workspace 中生成的库名称文件别名由内部缓存清单验证：链条始终位于同一 owned workspace，最终指向普通文件；目录链接、逃逸、循环和悬空链接被拒绝。预算只累计实际文件，退休删除别名本身，不沿链接遍历。不可变发布内容和进程工作目录不允许此例外。Native workspace 的验证在最终 candidate 提交前执行。
+
 Task 的 host、load、publisher 和 shared workspace 分别拥有独立登记根。`RecordProcessUse` 在共享协调权限内记录 PID 与 UTC 启动 ticks 及目录依赖；活动或不可确认的进程保护对应目录，load 同时保护它所用的 host。PID 相同而启动时间不同表示原生命周期已经结束；权限或身份无法确认时延期退休。编译 workspace 使用外部持久 lease，不能把删除协调文件当作清理。
 
 预算使用完成 writer 登记的 workspace 大小；未完成的零大小登记与进程工作目录逐项读取，并在读取中检查时间预算。这些大小只服务预算，不参与 Native/Pack 完整性命中。真正退休时取得独占权、重新核对依赖与路径，再统计实际文件字节；卷空间变化另行测量，不能把 hardlink 的逻辑字节视为实际回收量。

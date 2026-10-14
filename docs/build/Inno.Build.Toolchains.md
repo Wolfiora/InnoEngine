@@ -20,6 +20,8 @@ Native 工作目录中的 `recipe.json` 是内部诊断资料，记录实际有�
 
 每个 `BuildCachePublisher` 显式选择 `BuildCacheArtifactRole`：不可变产物的当前根保护实际部署；可重用 workspace 的偏好记录不永久钉住空闲目录；进程工作目录由 PID 与启动时间、生产 lease 和依赖保护。活动编译仍由独占 workspace lease 保护。临时 claim 必须在首次 payload 写入前建立，不把未经登记的历史目录纳入清理。
 
+可重用 workspace 允许编译器生成的文件符号链接，例如 Unix dylib 的名称别名。完整链接链必须留在同一 workspace 并终止于普通文件；目录链接、越界、循环及悬空链接拒绝登记和退休。别名不重复计算目标文件字节。不可变产物和进程工作目录仍拒绝全部链接；Native candidate 发布前先验证 workspace。
+
 完整 Native 热命中采用内部批次路径：预读候选及依赖选择，释放预读 lease 后按规范路径取得全部 workspace 锁，再取得完整产物 reader，并使用一个新的 `native-product-lock` 校验阶段。相同物理输入只完整哈希一次，各组件的逻辑输入、参数顺序和指纹仍分别验证。任一缺失或损坏都释放完整候选集合并进入原有冷路径；冷路径的锁后和编译后 fresh 校验不复用批次缓存。
 
 `ProductNativeBuildStep.bindDependencies` 由 backend 提供需要依赖产物的最终 recipe 变换，与真实编译共用同一实现。共享 executor 不推断组件名、文件名或库类型。返回的产品闭包仍唯一拥有全部 Native 和 Binding leases。

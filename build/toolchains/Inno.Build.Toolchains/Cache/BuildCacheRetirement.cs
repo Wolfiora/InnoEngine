@@ -108,12 +108,7 @@ internal static class BuildCacheRetirement
                         continue;
                     }
                     // Inspect every nested entry before recursive removal; do not follow junctions.
-                    long actualBytes = 0;
-                    foreach (string file in PathBoundary.EnumerateFiles(path))
-                    {
-                        bounded.Token.ThrowIfCancellationRequested();
-                        actualBytes = checked(actualBytes + new FileInfo(file).Length);
-                    }
+                    long actualBytes = BuildCacheFileInventory.Measure(path, current.artifact.role, bounded.Token);
                     Directory.Delete(path, recursive: true);
                     reclaimed = checked(reclaimed + actualBytes);
                     retired.Add(path);

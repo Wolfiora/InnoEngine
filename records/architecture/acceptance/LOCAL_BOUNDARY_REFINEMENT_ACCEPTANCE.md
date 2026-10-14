@@ -80,3 +80,7 @@ MacOSArm64 Native/产品本机未实测；新的 macOS runner 结果独立记录
 提交 1e921fcc 的 NuGet run 38541975031 成功。Engine run 38541975019 的 macOS 在首次 BindingExtension 编译后拒绝输入变化：首次宿主 Restore 新建 lock 文件，原先目录身份在 Restore 前计算。修复在共享 Restore lease 中先完成所选 SDK 的 Release Restore，再冻结扩展目录，保留锁后及编译后 fresh 校验。
 
 真实扩展 fixture 的生成和热身份检查通过；首次同进程用例在删除已加载 DLL 时失败，因此改为父进程持有已登记临时目录、子进程执行公开生成 API、退出后清理。最终独立进程用例 1/1 通过，证据 extension-restore-isolated.trx；没有更改 BGCS、跳过哈希或用 GC/JIT 开关掩盖 DLL 生命周期。远端最终结果仍等待后续 revision 验证。
+
+提交 3dff6853 的 NuGet run 38546460829 成功；绑定批次 6/6、架构测试 122/122 本机复验通过。macOS Engine job 115793622505 已完成生成及 SDL 编译，随后登记 CMake workspace 中 libSDL3.dylib 符号链接时失败。修复按生命周期区分清单：仅 workspace 允许同一目录边界内最终指向普通文件的文件别名，不重复计数；目录链接、越界、循环、悬空链接及 immutable/process 内容中的链接继续拒绝。Native workspace 在最终产物提交前完成验证。Windows 缓存回归 16 通过、2 个 Unix 文件链接用例明确 Skip；Unix 行为等待新 macOS run 实测，不能将 Skip 计为通过。
+
+加入 NativeArtifactPublicationTests 复验后，最终 workspace-link-final.trx 为 26 通过、2 Skip、0 失败；Toolchains 编译 0 errors / 0 warnings。退休与登记共用同一内部角色清单，不放宽 Core.IO 的通用无链接边界，也不允许最终 Native 产物保存符号链接。

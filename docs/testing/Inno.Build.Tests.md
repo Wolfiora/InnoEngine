@@ -14,6 +14,8 @@
 
 `BindingExtensionPreparationTests.ExtensionRestoreCompletesBeforeItsInputInventoryIsFrozen` 通过实际扩展项目验证首次 Restore 产生的 lock 文件先进入输入身份，再执行生成和热请求复用。扩展加载使用独立测试进程，父进程在子进程退出后清理其预先登记的目录；构建后的 fresh 校验继续检查真实变化。
 
+`BuildCacheWorkspaceLinkTests` 验证 workspace 文件别名不重复计数、安全退休，以及越界、循环、悬空、不可变产物与目录链接的拒绝规则。文件链接用例仅在 Unix 文件系统执行，Windows 明确标为 Skip；目录链接拒绝在 Windows 使用 junction 实测。
+
 `ManagedBuildInputSnapshotTests` 使用真实 SDK 恢复验证平台限定 TFM、基础 framework reference pack 与实际 NuGet target 的语义选择。`ShaderToolSelectionTests` 通过公开集成 profile 验证改变未执行的托管 SDK 不改变 Native 工具输入；静态 recipe 测试拒绝未声明的 Native source root。
 
 架构命令路由通过公开 `BuildApplication.Run` 验证；负向源码必须返回失败，不得启动 Task runtime 准备或创建构建产物。规则正反例由架构测试项目直接验证。

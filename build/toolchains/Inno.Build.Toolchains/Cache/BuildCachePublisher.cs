@@ -92,11 +92,16 @@ public sealed class BuildCachePublisher
     /// The producer's product target, or null for a shared host generation.
     /// </param>
     /// <exception cref="IOException">
-    /// An owned path escapes the boundary or crosses a link.
+    /// An owned path escapes the boundary, crosses a directory link, or contains an invalid file link.
     /// </exception>
     /// <exception cref="DirectoryNotFoundException">
     /// The completed generation is absent.
     /// </exception>
+    /// <remarks>
+    /// Reusable workspaces may contain compiler-created file aliases only when their complete link chain
+    /// resolves to a regular file within the same workspace. Aliases are not counted as duplicate payloads.
+    /// Immutable artifacts and process working directories reject all links.
+    /// </remarks>
     public void Record(
         string directory,
         string leasePath,
@@ -114,12 +119,7 @@ public sealed class BuildCachePublisher
             throw new DirectoryNotFoundException(directory);
         cancellationToken.ThrowIfCancellationRequested();
         string relative = Path.GetRelativePath(m_root, directory).Replace('\\', '/');
-        long bytes = 0;
-        foreach (string file in PathBoundary.EnumerateFiles(directory))
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            bytes = checked(bytes + new FileInfo(file).Length);
-        }
+        long bytes = BuildCacheFileInventory.Measure(directory, m_role, cancellationToken);
         var metadata = new Entry(relative, Path.GetRelativePath(m_root, leasePath), DateTime.UtcNow,
             dependencies.Select(Path.GetFullPath).ToArray(), bytes, targetId);
         AtomicFile.WriteAllBytes(Path.Combine(m_root, Key(relative) + ".cache.json"), WriteEntry(metadata));
@@ -247,14 +247,14 @@ public sealed class BuildCachePublisher
             // has zero bytes and must be inspected; this metadata never validates Native contents.
             long bytes = m_role == BuildCacheArtifactRole.ImmutableArtifact
                 || m_role == BuildCacheArtifactRole.ReusableWorkspace && entry.bytes > 0
-                ? entry.bytes : MeasureFiles(directory, cancellation);
+                ? entry.bytes : BuildCacheFileInventory.Measure(directory, m_role, cancellation);
             result.Add(new(directory, lease, entry.targetId, bytes, entry.lastUseUtc, entry.dependencies, m_role));
         }
         foreach (ProcessOwnedDirectoryDescriptor working in ProcessOwnedDirectory.ReadClaims(m_root, cancellation))
         {
             if (result.Any(entry => BuildCacheInventory.pathComparer.Equals(entry.directory, working.directory)))
                 continue;
-            long bytes = MeasureFiles(working.directory, cancellation);
+            long bytes = BuildCacheFileInventory.Measure(working.directory, BuildCacheArtifactRole.ProcessWorkingDirectory, cancellation);
             result.Add(new(working.directory, working.leasePath, null, bytes, Directory.GetLastWriteTimeUtc(working.directory), [], BuildCacheArtifactRole.ProcessWorkingDirectory));
         }
         return result;
@@ -306,19 +306,6 @@ public sealed class BuildCachePublisher
         {
             return true;
         }
-    }
-
-    private static long MeasureFiles(
-        string directory,
-        CancellationToken cancellation
-    ) {
-        long bytes = 0;
-        foreach (string file in PathBoundary.EnumerateFiles(directory))
-        {
-            cancellation.ThrowIfCancellationRequested();
-            bytes = checked(bytes + new FileInfo(file).Length);
-        }
-        return bytes;
     }
 
     private static string Key(string value) => Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(value)));

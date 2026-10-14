@@ -98,22 +98,17 @@ public static class NativeArtifactPublisher
             destination, fingerprint, ["Outputs"], context, cancellationToken).ConfigureAwait(false);
         if (cached is not null)
         {
-            Record(cached, workspaceChanged: false);
+            Record(cached);
             return new(component, targetId, fingerprint, destination, bindingGeneration, context.toolchain?.sharedLibraryExtension, cached);
         }
 
-        void Record(
-            BuildArtifactReadLease reading,
-            bool workspaceChanged
-        ) {
+        void Record(BuildArtifactReadLease reading)
+        {
             try
             {
                 cache.Record(destination, destination + ".read.lock",
                     bindingGeneration is { artifactDirectory.Length: > 0 } ? [bindingGeneration.artifactDirectory] : [],
                     component + "/" + targetId + "/" + context.configuration, targetId, cancellationToken);
-                if (workspaceChanged && Directory.Exists(intermediate))
-                    workspaces.Record(intermediate, intermediate + ".lock", [],
-                        targetId + "/" + context.configuration, targetId, cancellationToken);
             }
             catch
             {
@@ -138,6 +133,9 @@ public static class NativeArtifactPublisher
             if (NativeBuildFingerprint.Create(context.BeginInputVerification("native-build:" + component),
                 recipe.declarations, recipe.inputs, cancellationToken) != fingerprint)
                 throw new InvalidOperationException($"Native inputs for '{component}' changed during preparation; the candidate was not published.");
+            // Validate compiler workspace links before publishing the immutable candidate.
+            workspaces.Record(intermediate, intermediate + ".lock", [],
+                targetId + "/" + context.configuration, targetId, cancellationToken);
             BuildArtifactManifest.Write(staging, fingerprint, ["Outputs"], context);
             cancellationToken.ThrowIfCancellationRequested();
             using (BuildArtifactWriteLease publication = await BuildArtifactWriteLease.AcquireAsync(destination,
@@ -154,7 +152,7 @@ public static class NativeArtifactPublisher
             }
             BuildArtifactReadLease reading = await BuildArtifactReadLease.TryAcquireAsync(destination, fingerprint, ["Outputs"], context, cancellationToken).ConfigureAwait(false)
                 ?? throw new InvalidDataException("The published Native artifact changed before reading ownership was acquired.");
-            Record(reading, workspaceChanged: true);
+            Record(reading);
             return new(component, targetId, fingerprint, destination, bindingGeneration, context.toolchain?.sharedLibraryExtension, reading);
         }
         finally
