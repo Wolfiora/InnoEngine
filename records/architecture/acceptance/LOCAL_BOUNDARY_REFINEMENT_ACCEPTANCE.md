@@ -76,3 +76,7 @@ MacOSArm64 Native/产品本机未实测；新的 macOS runner 结果独立记录
 源码提交 73b9c7b0d256b94954aca2fe42fb6266bacba1c6 的文件树与本地原提交 c3281e40 完全一致。NuGet run 38538859631 已成功；Engine run 38538859621 的 Windows/macOS 都缺声明为辅助输入的 TaskHosting 源码 assets，说明只 Restore CLI 根项目仍不完整。
 
 后续修复使用现有 SDK graph evaluator 的独立准备阶段：从 InnoBuildInputProject 与其清理后的属性发现辅助输入，使用同一 SDK Restore，然后重新建立只读 Capture。没有平台分支或写死 TaskHosting 名称。新 fixture 证明仅声明、从未 Restore 的辅助项目在 publication 前得到还原并实际消费，1/1 通过。远端后续结果仍以新 revision 的 run 为准。
+
+提交 1e921fcc 的 NuGet run 38541975031 成功。Engine run 38541975019 的 macOS 在首次 BindingExtension 编译后拒绝输入变化：首次宿主 Restore 新建 lock 文件，原先目录身份在 Restore 前计算。修复在共享 Restore lease 中先完成所选 SDK 的 Release Restore，再冻结扩展目录，保留锁后及编译后 fresh 校验。
+
+真实扩展 fixture 的生成和热身份检查通过；首次同进程用例在删除已加载 DLL 时失败，因此改为父进程持有已登记临时目录、子进程执行公开生成 API、退出后清理。最终独立进程用例 1/1 通过，证据 extension-restore-isolated.trx；没有更改 BGCS、跳过哈希或用 GC/JIT 开关掩盖 DLL 生命周期。远端最终结果仍等待后续 revision 验证。

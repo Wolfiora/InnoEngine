@@ -99,6 +99,8 @@ static async ValueTask InspectBindingsAsync(
 
 生成器和 BindingExtension 的 RuntimeIdentifier 使用所选 SDK 的 NETCoreSdkRuntimeIdentifier，独立于游戏发布 target。NuGet Restore 选择实际宿主 Native 包资产；不以文件名列表删掉其他平台 DLL。Runtime 与生成器继续分开，Player 不携带 BGCS 生成器。
 
+BindingExtension 在冻结输入目录前，先在共享 Restore 协调 lease 内完成 Release 宿主 Restore。首次构建产生的宿主 lock 文件因此属于初始身份；构建后的 fresh 校验仍拒绝之后发生的输入变化，不把正常 Restore 写入误判为编译期间修改。
+
 ## 当前源码公开 API 清单
 
 按类型列出当前 public 与可供外部派生实现使用的 protected 声明。签名包含 nullable、默认参数和泛型约束；源码链接可定位实现。表中的“—”表示该声明没有额外 XML 约束，不能据此推断线程安全或不会失败。生命周期与组合顺序见本页前文。

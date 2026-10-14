@@ -29,6 +29,16 @@ internal static class BindingExtensionPreparation
         CancellationToken cancellation
     ) {
         DotNetSdkDescriptor sdk = await DotNetSdkResolver.ResolveAsync(dotnetHost, project, cancellation).ConfigureAwait(false);
+        // Restore may create a host-specific lock file. It must finish before the input inventory is frozen.
+        using (FileLease restore = await FileLease.AcquireAsync(
+                   Path.Combine(context.engineRoot, "artifacts", "managed", "restore-graphs", "write.lock"),
+                   TimeSpan.FromMinutes(10), cancellation).ConfigureAwait(false))
+        {
+            context.RecordManagedProcess();
+            await ToolchainEnvironment.RunAsync(sdk.hostPath,
+                [sdk.cliPath, "restore", project, "--disable-parallel", "-p:Configuration=Release", "-m:1", "-nodeReuse:false"],
+                context.engineRoot, cancellation, DotNetSdkEnvironment.Create(sdk.hostPath)).ConfigureAwait(false);
+        }
         string source = Path.GetDirectoryName(project)!;
         List<string> paths =
         [
