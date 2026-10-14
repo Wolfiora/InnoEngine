@@ -41,7 +41,7 @@ internal static class ManagedInputEvaluatorPreparation
         string[] declarations = ["managed-input-evaluator", "net9.0", "Release", sdk.sdkIdentity, code];
         string fingerprint = NativeBuildFingerprint.Create(context, declarations, inputs, cancellation);
         string directory = Path.Combine(context.engineRoot, "artifacts", "build-tools", "managed-inputs", "evaluators", fingerprint);
-        var cache = new BuildCachePublisher(Path.GetDirectoryName(directory)!);
+        var cache = new BuildCachePublisher(Path.GetDirectoryName(directory)!, BuildCacheArtifactRole.ImmutableArtifact);
         using FileLease activity = await cache.AcquireUseAsync(cancellation).ConfigureAwait(false);
         BuildArtifactReadLease? existing = await BuildArtifactReadLease.TryAcquireAsync(directory, fingerprint,
             ["Outputs"], context, cancellation).ConfigureAwait(false);
@@ -64,7 +64,8 @@ internal static class ManagedInputEvaluatorPreparation
             Verify("managed-evaluator-lock");
             if (!BuildArtifactManifest.IsComplete(directory, fingerprint, ["Outputs"], context))
             {
-                string candidate = directory + ".staging-" + Guid.NewGuid().ToString("N");
+                using ProcessOwnedDirectory candidateOwner = await ProcessOwnedDirectory.CreateAsync(Path.GetDirectoryName(directory)!, cancellation).ConfigureAwait(false);
+                string candidate = candidateOwner.directory;
                 try
                 {
                     Directory.CreateDirectory(candidate);
@@ -104,8 +105,7 @@ internal static class ManagedInputEvaluatorPreparation
                 }
                 finally
                 {
-                    if (Directory.Exists(candidate))
-                        Directory.Delete(candidate, recursive: true);
+                    candidateOwner.Dispose();
                 }
             }
         }

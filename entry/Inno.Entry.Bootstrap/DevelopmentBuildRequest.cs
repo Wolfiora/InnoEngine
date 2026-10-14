@@ -5,6 +5,21 @@ namespace Inno.Entry.Bootstrap;
 
 internal static class DevelopmentBuildRequest
 {
+    internal static string? ReadDotnet(string[] arguments)
+    {
+        string? selected = null;
+        for (int index = 0; index < arguments.Length; index++)
+        {
+            if (arguments[index] != "--dotnet")
+                continue;
+            if (selected is not null || index + 1 >= arguments.Length
+                || arguments[index + 1].StartsWith("--", StringComparison.Ordinal))
+                throw new ArgumentException("The --dotnet option requires one explicit SDK executable.", nameof(arguments));
+            selected = arguments[++index];
+        }
+        return selected;
+    }
+
     internal static string[] Create(
         string[] arguments,
         DevelopmentHost host,

@@ -156,6 +156,9 @@ public sealed class ProductNativeBuildPlan
         try
         {
             context = context.WithBindings(bindings);
+            if (await ProductNativeCacheLookup.TryAcquireAsync(context, m_steps, cancellationToken).ConfigureAwait(false)
+                is IReadOnlyList<NativeBuildProduct> cached)
+                return new ProductNativeBuildResult(cached, bindings);
             foreach (ProductNativeBuildStep step in m_steps)
             {
                 cancellationToken.ThrowIfCancellationRequested();

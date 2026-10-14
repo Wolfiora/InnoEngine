@@ -1,5 +1,7 @@
 # Inno.Entry.Bootstrap
 
+Build 入口借用命令中明确的 `--dotnet`，将同一 SDK 传给工具 inspection、工具 publication 与实际构建。未指定时使用当前宿主 SDK。重复、缺值或不存在的 SDK 在 checkout 写 lease 前失败；这不是另一个产品或后端选择入口。
+
 [入口索引](README.md) · [Wiki 首页](../README.md) · [Core.IO](../core/Inno.Core.IO.md)
 
 ## 职责与边界

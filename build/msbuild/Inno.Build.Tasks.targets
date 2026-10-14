@@ -29,8 +29,29 @@
   <UsingTask TaskName="Inno.Build.TaskHosting.PublishTaskHostTask" AssemblyFile="$(InnoTaskPublisherAssembly)" />
   <UsingTask TaskName="Inno.Build.TaskHosting.BuildTaskRuntimeTask" AssemblyFile="$(InnoTaskPublisherAssembly)" />
   <UsingTask TaskName="Inno.Build.TaskHosting.RestoreOwnedProjectTask" AssemblyFile="$(InnoTaskPublisherAssembly)" />
+  <!-- This adapter uses the normally built Foundation assembly before private SDK outputs exist. -->
+  <UsingTask TaskName="Inno.Build.TaskHosting.TaskRuntimeBootstrapOwner"
+             TaskFactory="RoslynCodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)/Microsoft.Build.Tasks.Core.dll">
+    <Task>
+      <Code Type="Class" Language="cs" Source="$(MSBuildThisFileDirectory)../tasks/Inno.Build.TaskHosting/TaskRuntimeBootstrapOwner.cs" />
+    </Task>
+  </UsingTask>
 
   <Target Name="PrepareInnoTaskPublisher" Condition="'$(DesignTimeBuild)' != 'true'">
+    <PropertyGroup>
+      <_InnoFoundationExcludedProperties>$([System.String]::Copy('$(InnoTaskExcludedProperties)').Replace(';InnoTaskBootstrapOwner', ''))</_InnoFoundationExcludedProperties>
+    </PropertyGroup>
+    <MSBuild Projects="$(MSBuildThisFileDirectory)../../src/foundation/core/Inno.Core.IO/Inno.Core.IO.csproj"
+             Targets="Restore;Build" Properties="Configuration=$(Configuration);ArtifactsPath=;UseArtifactsOutput=false;InnoTaskBootstrapOwner=$(InnoTaskBootstrapOwner)"
+             RemoveProperties="$(_InnoFoundationExcludedProperties);ArtifactsPath" />
+    <Inno.Build.TaskHosting.TaskRuntimeBootstrapOwner Root="$([System.IO.Path]::GetFullPath('$(InnoTaskArtifacts)/publishers'))"
+        Identity="$(InnoTaskBootstrapOwner)"
+        FoundationAssembly="$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)../../src/foundation/core/Inno.Core.IO/bin/$(Configuration)/net9.0/Inno.Core.IO.dll'))">
+      <Output TaskParameter="Directory" PropertyName="_InnoClaimedBootstrap" />
+    </Inno.Build.TaskHosting.TaskRuntimeBootstrapOwner>
+    <PropertyGroup>
+      <InnoTaskBootstrapDirectory>$(_InnoClaimedBootstrap)/$(Configuration)</InnoTaskBootstrapDirectory>
+    </PropertyGroup>
     <Error Condition="!$([System.Text.RegularExpressions.Regex]::IsMatch('$(InnoTaskBootstrapOwner)', '^[a-f0-9]{32}$'))"
            Text="Task bootstrap ownership requires one generated operation identity." />
     <MSBuild Projects="$(InnoTaskPublisherProject)" Targets="Restore;PublishInnoTaskPublisherBootstrap"

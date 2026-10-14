@@ -9,8 +9,30 @@ namespace Inno.Entry.Bootstrap;
 
 internal static class DevelopmentProcess
 {
-    internal static string ResolveDotnet()
+    internal static string ResolveDotnet(string? selected)
     {
+        if (selected is not null)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(selected);
+            if (Path.IsPathFullyQualified(selected) || selected.Contains(Path.DirectorySeparatorChar)
+                || selected.Contains(Path.AltDirectorySeparatorChar))
+            {
+                string explicitHost = Path.GetFullPath(selected);
+                return File.Exists(explicitHost) ? explicitHost
+                    : throw new FileNotFoundException("The selected .NET SDK executable is absent.", explicitHost);
+            }
+            foreach (string directory in (Environment.GetEnvironmentVariable("PATH") ?? string.Empty).Split(Path.PathSeparator))
+            {
+                if (directory.Length == 0)
+                    continue;
+                string executable = Path.Combine(directory, selected);
+                if (File.Exists(executable))
+                    return Path.GetFullPath(executable);
+                if (OperatingSystem.IsWindows() && Path.GetExtension(selected).Length == 0 && File.Exists(executable + ".exe"))
+                    return Path.GetFullPath(executable + ".exe");
+            }
+            throw new FileNotFoundException("The selected .NET SDK executable is not on PATH.", selected);
+        }
         string? configured = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH");
         if (!string.IsNullOrWhiteSpace(configured) && Path.IsPathFullyQualified(configured) && File.Exists(configured))
             return configured;

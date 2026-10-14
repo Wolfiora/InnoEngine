@@ -92,8 +92,8 @@ internal sealed class GameBuildPipeline
         progress?.Report(new BuildProgress("snapshot", 0.05d, "Captured the combined authoring generation."));
 
         Directory.CreateDirectory(outputRoot);
-        string staging = Path.Combine(outputRoot, ".inno-build-" + Guid.NewGuid().ToString("N"));
-        Directory.CreateDirectory(staging);
+        using ProcessOwnedDirectory stagingOwner = await ProcessOwnedDirectory.CreateAsync(outputRoot, cancellationToken).ConfigureAwait(false);
+        string staging = stagingOwner.directory;
         using var stagingCancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         Task<AssetRuntimeContentInfo>? assetExportTask = null;
         Task? targetContentTask = null;
@@ -273,8 +273,7 @@ internal sealed class GameBuildPipeline
             await ObserveCompletionAsync(targetContentTask).ConfigureAwait(false);
             try
             {
-                if (Directory.Exists(staging))
-                    Directory.Delete(staging, recursive: true);
+                stagingOwner.Dispose();
             }
             catch (Exception cleanupFailure) when (committed && cleanupFailure is IOException or UnauthorizedAccessException)
             {

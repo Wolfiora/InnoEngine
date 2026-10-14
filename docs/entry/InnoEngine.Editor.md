@@ -4,6 +4,8 @@
 
 ## 职责与依赖
 
+指定 Project 后可使用 `--window-visible false --smoke-frames 60` 执行后台生命周期验证。默认仍显示 Editor；无 Project 时仍打开目录选择。后台结果不能替代交互、焦点和视觉验收。
+
 唯一 Editor 开发可执行项目。`Program` 内部调用 `DevelopmentEntry.RunEditor`，只依赖 Bootstrap。
 启动时验证当前目标/配置的已准备产品，通过公开 `Run` 调用平台组合。有效产品启动不执行 Git、MSBuild、绑定生成或 Native 编译。
 首次缺少有效准备记录，或部署文件缺失/损坏时，才初始化缺失子模块并构建当前宿主的 Editor。

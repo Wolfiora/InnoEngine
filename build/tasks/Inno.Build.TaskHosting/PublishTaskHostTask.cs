@@ -80,7 +80,7 @@ public sealed partial class PublishTaskHostTask : Microsoft.Build.Utilities.Task
             TaskRuntimePreparation.RuntimeFile[] files = FreezeFiles();
             string fingerprint = TaskRuntimePreparation.Fingerprint(files);
             string destination = Path.Combine(cache, fingerprint);
-            var publisherCache = new BuildCachePublisher(cache);
+            var publisherCache = new BuildCachePublisher(cache, BuildCacheArtifactRole.ImmutableArtifact);
             using FileLease activity = publisherCache.AcquireUseAsync(cancellation).AsTask().GetAwaiter().GetResult();
             bool prepared = BuildEngine is IBuildEngine4 engine
                 && TaskRuntimeBuildScope.Read(engine, "publication:" + cache + "/" + fingerprint, load, verifyOutputs: false, cancellation: cancellation)

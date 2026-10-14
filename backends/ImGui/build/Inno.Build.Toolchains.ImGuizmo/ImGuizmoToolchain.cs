@@ -62,9 +62,7 @@ public static class ImGuizmoToolchain
         if (libraries.Length != 1)
             throw new InvalidOperationException("The ImGui product must provide exactly one link library.");
         string cimguiDir = Path.Combine(context.engineRoot, "extern", "cimgui");
-        var recipe = new NativeBuildRecipe(sourceRecipe.owner, sourceRecipe.component, sourceRecipe.targetId,
-            sourceRecipe.inputs.Append(NativeBuildInput.FromPath(context.engineRoot, libraries[0])),
-            sourceRecipe.declarations.Append("dependency=" + imGui.fingerprint));
+        NativeBuildRecipe recipe = BindImGui(context, sourceRecipe, imGui);
         return await NativeArtifactPublisher.PublishAsync(
             context,
             recipe,
@@ -117,5 +115,44 @@ public static class ImGuizmoToolchain
             "cimguizmo", selection.targetId, [upstream, imGui, Path.Combine(source, "CMakeLists.txt")],
             ["dependency=cimgui"], [Path.Combine(source, "CImguizmoBuildConstants.cs"),
                 Path.Combine(source, "CImguizmoBuildUtils.cs"), Path.Combine(source, "ImGuizmoToolchain.cs")]);
+    }
+
+    /// <summary>
+    /// Freezes the exact ImGui link input for both compilation and complete product cache lookup.
+    /// </summary>
+    /// <param name="context">
+    /// The operation owning the explicit target SDK.
+    /// </param>
+    /// <param name="sourceRecipe">
+    /// The component's previously declared source recipe.
+    /// </param>
+    /// <param name="imGui">
+    /// The borrowed, integrity-checked dependency matching this target.
+    /// </param>
+    /// <returns>
+    /// A recipe including the selected link library and dependency fingerprint.
+    /// </returns>
+    /// <exception cref="ArgumentException">
+    /// The dependency belongs to a different component or target.
+    /// </exception>
+    /// <exception cref="InvalidOperationException">
+    /// The dependency does not expose exactly one link library.
+    /// </exception>
+    public static NativeBuildRecipe BindImGui(
+        NativeBuildContext context,
+        NativeBuildRecipe sourceRecipe,
+        NativeBuildProduct imGui
+    ) {
+        ArgumentNullException.ThrowIfNull(context);
+        ArgumentNullException.ThrowIfNull(sourceRecipe);
+        ArgumentNullException.ThrowIfNull(imGui);
+        NativeToolchainSelection selection = context.RequireToolchain();
+        if (imGui.component != "cimgui" || imGui.targetId != selection.targetId)
+            throw new ArgumentException("The supplied ImGui product does not match this gizmo target.", nameof(imGui));
+        string extension = selection.sharedLibraryExtension == ".dll" ? ".lib" : selection.sharedLibraryExtension;
+        string[] libraries = imGui.files.Where(file => Path.GetExtension(file) == extension).ToArray();
+        if (libraries.Length != 1)
+            throw new InvalidOperationException("The ImGui product must provide exactly one link library.");
+        return sourceRecipe.WithDependency(NativeBuildInput.FromPath(context.engineRoot, libraries[0]), imGui.fingerprint);
     }
 }

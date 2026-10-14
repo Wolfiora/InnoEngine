@@ -2,13 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection;
-using System.Runtime.CompilerServices;
-using System.Runtime.Loader;
 using System.Security.Cryptography;
 using System.Text.Json;
 using System.Threading;
-using System.Threading.Tasks;
 using Inno.Core.IO;
 
 namespace Inno.Entry.Bootstrap;
@@ -53,9 +49,8 @@ internal static class DevelopmentBuildTool
         string assembly,
         CancellationToken cancellation
     ) {
-        (string publication, WeakReference publicationMonitor) = Publish(assembly, root, configuration, dotnet, cancellation);
-        VerifyRetirement(publicationMonitor);
-        assembly = publication;
+        assembly = DevelopmentBuildWorkerProcess.Execute("publish", assembly, root, configuration, dotnet, cancellation);
+        using var reading = new DevelopmentBuildToolLease(assembly, cancellation);
         string inputs = Probe(assembly, root, configuration, dotnet, cancellation)
             ?? throw new InvalidDataException("The prepared Build tool cannot verify its evaluated input closure.");
         var receipt = new Receipt(assembly, inputs, ReadFiles(Path.GetDirectoryName(assembly)!, cancellation));
@@ -90,75 +85,14 @@ internal static class DevelopmentBuildTool
         string dotnet,
         CancellationToken cancellation
     ) {
-        (string? identity, WeakReference monitor) = ReadIdentity(assembly, root, configuration, dotnet, cancellation);
-        VerifyRetirement(monitor);
-        return identity;
-    }
-
-    private static void VerifyRetirement(WeakReference monitor)
-    {
-        for (int attempt = 0; attempt < 8 && monitor.IsAlive; attempt++)
-        {
-            Thread.Sleep(10);
-            GC.Collect();
-            GC.WaitForPendingFinalizers();
-            GC.Collect();
-        }
-        if (monitor.IsAlive)
-            throw new InvalidOperationException("Build input inspection did not retire its load context; restart the entry.");
-    }
-
-    [MethodImpl(MethodImplOptions.NoInlining)]
-    private static (string path, WeakReference monitor) Publish(
-        string assembly,
-        string root,
-        string configuration,
-        string dotnet,
-        CancellationToken cancellation
-    ) {
-        var load = new InspectionContext(assembly);
-        var monitor = new WeakReference(load);
         try
         {
-            Type type = load.LoadFromAssemblyPath(assembly).GetType("Inno.Build.Cli.BuildApplication", throwOnError: true)!;
-            MethodInfo method = type.GetMethod("PublishRuntimeAsync", BindingFlags.Public | BindingFlags.Static)
-                ?? throw new MissingMethodException(type.FullName, "PublishRuntimeAsync");
-            var publish = method.CreateDelegate<Func<string, string, string, string, CancellationToken, Task<string>>>();
-            return (publish(root, configuration, dotnet, assembly, cancellation).GetAwaiter().GetResult(), monitor);
-        }
-        finally
-        {
-            load.Unload();
-        }
-    }
-
-    [MethodImpl(MethodImplOptions.NoInlining)]
-    private static (string? identity, WeakReference monitor) ReadIdentity(
-        string assembly,
-        string root,
-        string configuration,
-        string dotnet,
-        CancellationToken cancellation
-    ) {
-        var load = new InspectionContext(assembly);
-        var monitor = new WeakReference(load);
-        try
-        {
-            Type type = load.LoadFromAssemblyPath(assembly).GetType("Inno.Build.Cli.BuildApplication", throwOnError: true)!;
-            MethodInfo? method = type.GetMethod("ReadInputIdentityAsync", BindingFlags.Public | BindingFlags.Static);
-            if (method is null)
-                return (null, monitor);
-            var inspect = method.CreateDelegate<Func<string, string, string, CancellationToken, Task<string>>>();
-            return (inspect(root, configuration, dotnet, cancellation).GetAwaiter().GetResult(), monitor);
+            return DevelopmentBuildWorkerProcess.Execute("inspect", assembly, root, configuration, dotnet, cancellation);
         }
         catch (Exception failure) when (failure is IOException or InvalidOperationException or ArgumentException)
         {
             Console.WriteLine($"Build preparation is required: {failure.Message}");
-            return (null, monitor);
-        }
-        finally
-        {
-            load.Unload();
+            return null;
         }
     }
 
@@ -189,23 +123,4 @@ internal static class DevelopmentBuildTool
         Dictionary<string, string> files
     );
 
-    private sealed class InspectionContext(string assembly) : AssemblyLoadContext(isCollectible: true)
-    {
-        private readonly AssemblyDependencyResolver m_resolver = new(assembly);
-
-        /// <summary>
-        /// Resolves only dependencies selected by this prepared tool's deployment.
-        /// </summary>
-        /// <param name="name">
-        /// The requested assembly identity.
-        /// </param>
-        /// <returns>
-        /// The deployment assembly, or null for a shared runtime dependency.
-        /// </returns>
-        protected override Assembly? Load(AssemblyName name)
-        {
-            string? path = m_resolver.ResolveAssemblyToPath(name);
-            return path is null ? null : LoadFromAssemblyPath(path);
-        }
-    }
 }

@@ -26,13 +26,41 @@ namespace Inno.Build.Tests;
 public sealed class RepositoryWikiTests
 {
     [Fact]
+    public void CliLogicalRuntimeReferencesIncludeAnimation()
+    {
+        string project = Path.Combine(Path.GetTempPath(), "InnoCliWikiContracts", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(project);
+        try
+        {
+            GenerateReferences(project, typeof(BuildApplication).Assembly);
+            string assembly = Directory.EnumerateFiles(Path.Combine(project, "Library", "ScriptApi"),
+                "Inno.ScriptApi.Runtime.dll", SearchOption.AllDirectories).Single();
+            using FileStream stream = File.OpenRead(assembly);
+            using var image = new PEReader(stream);
+            MetadataReader metadata = image.GetMetadataReader();
+            string[] types = metadata.TypeDefinitions.Select(handle =>
+            {
+                TypeDefinition type = metadata.GetTypeDefinition(handle);
+                return metadata.GetString(type.Namespace) + "." + metadata.GetString(type.Name);
+            }).ToArray();
+            Assert.Contains("InnoEngine.Animation.Animation", types);
+            Assert.Contains("InnoEngine.Animation.AnimationClipAsset", types);
+        }
+        finally
+        {
+            Directory.Delete(project, recursive: true);
+        }
+    }
+
+    [Fact]
     public void LogicalEditorReferencesIncludeTheSharedProductFeatures()
     {
         string project = Path.Combine(Path.GetTempPath(), "InnoWikiContracts", Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(project);
         try
         {
-            GenerateReferences(project);
+            GenerateReferences(project, typeof(RepositoryWikiTests).Assembly,
+                typeof(EditorApplication).Assembly, typeof(BuildApplication).Assembly);
             string assembly = Directory.EnumerateFiles(Path.Combine(project, "Library", "ScriptApi"),
                 "Inno.ScriptApi.Editor.dll", SearchOption.AllDirectories).Single();
             using FileStream stream = File.OpenRead(assembly);
@@ -63,7 +91,8 @@ public sealed class RepositoryWikiTests
         Directory.CreateDirectory(project);
         try
         {
-            GenerateReferences(project);
+            GenerateReferences(project, typeof(RepositoryWikiTests).Assembly,
+                typeof(EditorApplication).Assembly, typeof(BuildApplication).Assembly);
             string references = Path.Combine(project, "Library", "ScriptApi");
             string runtime = Directory.EnumerateFiles(references, "Inno.ScriptApi.Runtime.dll", SearchOption.AllDirectories).Single();
             string editor = Directory.EnumerateFiles(references, "Inno.ScriptApi.Editor.dll", SearchOption.AllDirectories).Single();
@@ -84,8 +113,10 @@ public sealed class RepositoryWikiTests
         }
     }
 
-    private static void GenerateReferences(string project)
-    {
+    private static void GenerateReferences(
+        string project,
+        params System.Reflection.Assembly[] roots
+    ) {
         string assetsRoot = Path.Combine(project, "Assets");
         string pluginsRoot = Path.Combine(project, "Plugins");
         string libraryRoot = Path.Combine(project, "Library");
@@ -95,8 +126,7 @@ public sealed class RepositoryWikiTests
         var identities = new IdentityAllocator();
         using IDisposable identityScope = identities.EnterScope();
         using EngineHost host = new EngineHostBuilder().UseMetadataSources(
-            new DotNetAssemblyCatalogSource(typeof(RepositoryWikiTests).Assembly,
-                typeof(EditorApplication).Assembly, typeof(BuildApplication).Assembly),
+            new DotNetAssemblyCatalogSource(roots),
             new ReflectionTypeCatalogSource(), new ReflectionSerializationMetadataSource()).Build();
         using IDisposable diagnostics = host.diagnostics.EnterScope();
         var sources = new PluginSourceService(host.serialization, pluginsRoot, libraryRoot);

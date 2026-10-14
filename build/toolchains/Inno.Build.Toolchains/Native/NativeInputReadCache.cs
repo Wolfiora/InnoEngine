@@ -14,6 +14,7 @@ internal sealed class NativeInputReadCache
     private readonly string m_phase;
     private readonly Dictionary<string, IReadOnlyList<(string relative, string physical)>> m_roots;
     private readonly Dictionary<string, byte[]> m_hashes;
+    private readonly Dictionary<string, string> m_physicalPaths;
 
     internal NativeInputReadCache(
         NativeBuildInputState state,
@@ -23,12 +24,13 @@ internal sealed class NativeInputReadCache
         m_phase = phase;
         m_roots = new(pathComparer);
         m_hashes = new(pathComparer);
+        m_physicalPaths = new(pathComparer);
     }
 
     internal StringComparer pathComparer => OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal;
 
     internal byte[] GetFrozenHash(string path)
-        => m_hashes.TryGetValue(path, out byte[]? hash) ? hash
+        => m_hashes.TryGetValue(ResolvePhysicalPath(path), out byte[]? hash) ? hash
             : throw new InvalidOperationException($"Native input '{path}' was not frozen by this operation's recipe.");
 
     internal NativeInputSnapshot CaptureRecordedInputs(string engineRoot)
@@ -57,6 +59,7 @@ internal sealed class NativeInputReadCache
         string path,
         CancellationToken cancellationToken
     ) {
+        path = ResolvePhysicalPath(path);
         if (m_hashes.TryGetValue(path, out byte[]? hash))
         {
             m_state.RecordReuse(m_phase);
@@ -84,6 +87,23 @@ internal sealed class NativeInputReadCache
             m_state.RecordHash(bytes, m_phase);
             ArrayPool<byte>.Shared.Return(buffer);
         }
+    }
+
+    private string ResolvePhysicalPath(string path)
+    {
+        string absolute = Path.GetFullPath(path);
+        if (m_physicalPaths.TryGetValue(absolute, out string? resolved))
+            return resolved;
+        string? parent = Path.GetDirectoryName(absolute);
+        if (parent is null)
+            return absolute;
+        string physicalParent = ResolvePhysicalPath(parent);
+        string candidate = Path.Combine(physicalParent, Path.GetFileName(absolute));
+        FileSystemInfo info = Directory.Exists(candidate) ? new DirectoryInfo(candidate) : new FileInfo(candidate);
+        resolved = (info.Attributes & FileAttributes.ReparsePoint) != 0
+            ? info.ResolveLinkTarget(returnFinalTarget: true)?.FullName ?? candidate : candidate;
+        m_physicalPaths.Add(absolute, resolved);
+        return resolved;
     }
 
     private void EnumerateDirectory(

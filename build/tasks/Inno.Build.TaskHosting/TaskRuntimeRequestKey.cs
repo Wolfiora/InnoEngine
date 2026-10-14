@@ -98,7 +98,7 @@ internal static class TaskRuntimeRequestKey
                 }
             }
         }
-        string sdkRoot = Path.GetDirectoryName(typeof(ProjectGraph).Assembly.Location)!;
+        string sdkRoot = graph.EntryPointNodes.Single().ProjectInstance.GetPropertyValue("MSBuildToolsPath");
         foreach (string name in new[] { "Microsoft.Build.dll", "Microsoft.Build.Framework.dll", "Microsoft.Build.Utilities.Core.dll",
             "Microsoft.Build.Tasks.Core.dll", "MSBuild.runtimeconfig.json", "MSBuild.deps.json" })
         {

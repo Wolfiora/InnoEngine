@@ -138,7 +138,7 @@ public sealed class CompileShaderTask : BuildTask, ICancelableTask
             "native", ToolTarget + "-" + context.configuration + ".lock");
         using FileLease lease = FileLease.AcquireAsync(leasePath, Timeout.InfiniteTimeSpan, cancellationToken)
             .GetAwaiter().GetResult();
-        using FileLease publicationUse = new BuildCachePublisher(Path.Combine(context.engineRoot, "artifacts", "native"))
+        using FileLease publicationUse = new BuildCachePublisher(Path.Combine(context.engineRoot, "artifacts", "native"), BuildCacheArtifactRole.ImmutableArtifact)
             .AcquireUseAsync(cancellationToken).AsTask().GetAwaiter().GetResult();
         // Only neutral file names cross task load contexts. MSBuild releases the record when this build ends.
         string[]? record = engine.GetRegisteredTaskObject(cacheKey, RegisteredTaskObjectLifetime.Build) as string[];
@@ -206,7 +206,9 @@ public sealed class CompileShaderTask : BuildTask, ICancelableTask
             Log.LogMessage(MessageImportance.Normal, "INNO-SHADER reused {0}: {1}", Renderer, fingerprint);
             return;
         }
-        string candidate = directory + ".candidate-" + Guid.NewGuid().ToString("N");
+        using ProcessOwnedDirectory candidateOwner = ProcessOwnedDirectory.CreateAsync(Path.GetDirectoryName(directory)!, cancellationToken)
+            .AsTask().GetAwaiter().GetResult();
+        string candidate = candidateOwner.directory;
         string candidateOutputs = Path.Combine(candidate, "Outputs");
         Directory.CreateDirectory(candidateOutputs);
         try
@@ -229,8 +231,7 @@ public sealed class CompileShaderTask : BuildTask, ICancelableTask
         }
         finally
         {
-            if (Directory.Exists(candidate))
-                Directory.Delete(candidate, recursive: true);
+            candidateOwner.Dispose();
         }
     }
 }

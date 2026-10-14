@@ -77,16 +77,17 @@ public static partial class BuildApplication
         using ManagedBuildExecution execution = await snapshot.CreateExecutionAsync(cancellationToken).ConfigureAwait(false);
         string workspaceIdentity = NativeBuildFingerprint.Create(["build-tool-workspace", execution.project, sdk.sdkIdentity, configuration], []);
         string compilerWorkspace = Path.Combine(workspaceRoot, workspaceIdentity);
-        var workspaces = new BuildCachePublisher(workspaceRoot);
+        var workspaces = new BuildCachePublisher(workspaceRoot, BuildCacheArtifactRole.ReusableWorkspace);
         using FileLease workspaceUse = await workspaces.AcquireUseAsync(cancellationToken).ConfigureAwait(false);
         string bootstrapWorkspace = Path.Combine(workspaceRoot,
             Path.GetRelativePath(workspaceRoot, source).Split(Path.DirectorySeparatorChar)[0]);
         workspaces.RecordProcessUse(bootstrapWorkspace, bootstrapWorkspace + ".lock", [], cancellationToken);
         using FileLease compilerOwnership = await FileLease.AcquireAsync(compilerWorkspace + ".lock",
             TimeSpan.FromMinutes(10), cancellationToken).ConfigureAwait(false);
+        workspaces.BeginWorkingDirectory(compilerWorkspace, compilerWorkspace + ".lock", null, cancellationToken);
         string preparedOutput = Path.Combine(compilerWorkspace, "Runtime");
         await ToolchainEnvironment.RunAsync(sdk.hostPath,
-            [sdk.cliPath, "build", execution.project, "--configuration", configuration, "-m:4", "-nodeReuse:false",
+            [sdk.cliPath, "build", execution.project, "--configuration", configuration, "--disable-build-servers", "-m:1", "-nodeReuse:false",
                 "-p:InnoBuildCliOutputPath=" + preparedOutput + Path.DirectorySeparatorChar],
             execution.engineRoot, cancellationToken, DotNetSdkEnvironment.Create(sdk.hostPath)).ConfigureAwait(false);
         await execution.VerifyAsync(cancellationToken).ConfigureAwait(false);
@@ -100,7 +101,7 @@ public static partial class BuildApplication
             .Select(static pair => pair.Key + "=" + pair.Value).Prepend(inputs), []);
         string cacheRoot = Path.Combine(root, "artifacts", "build-tools", "cli", "hosts");
         string destination = Path.Combine(cacheRoot, configuration.ToLowerInvariant(), fingerprint);
-        var cache = new BuildCachePublisher(cacheRoot);
+        var cache = new BuildCachePublisher(cacheRoot, BuildCacheArtifactRole.ImmutableArtifact);
         using FileLease activity = await cache.AcquireUseAsync(cancellationToken).ConfigureAwait(false);
         BuildArtifactReadLease? reading = await TryReadRuntimeAsync(destination, fingerprint, cancellationToken).ConfigureAwait(false);
         try
@@ -111,7 +112,8 @@ public static partial class BuildApplication
                 {
                     if (!BuildArtifactManifest.IsComplete(destination, fingerprint, ["Outputs"]))
                     {
-                        string staging = destination + ".staging-" + Guid.NewGuid().ToString("N");
+                        using ProcessOwnedDirectory candidateOwner = await ProcessOwnedDirectory.CreateAsync(cacheRoot, cancellationToken).ConfigureAwait(false);
+                        string staging = candidateOwner.directory;
                         string outputs = Path.Combine(staging, "Outputs");
                         Directory.CreateDirectory(outputs);
                         try
@@ -145,8 +147,7 @@ public static partial class BuildApplication
                         }
                         finally
                         {
-                            if (Directory.Exists(staging))
-                                Directory.Delete(PathBoundary.RequireUnlinkedPath(cacheRoot, staging), recursive: true);
+                            candidateOwner.Dispose();
                         }
                     }
                 }
@@ -156,8 +157,7 @@ public static partial class BuildApplication
             cache.Record(destination, destination + ".read.lock", [], configuration, null, cancellationToken);
             string readersRoot = Path.Combine(root, "artifacts", "build-tools", "cli", "readers");
             string reader = Path.Combine(readersRoot, Guid.NewGuid().ToString("N"));
-            Directory.CreateDirectory(reader);
-            new BuildCachePublisher(readersRoot).RecordProcessUse(reader, reader + ".lock", [destination], cancellationToken);
+            new BuildCachePublisher(readersRoot, BuildCacheArtifactRole.ProcessWorkingDirectory).RecordProcessUse(reader, reader + ".lock", [destination], cancellationToken);
             return Path.Combine(destination, "Outputs", Path.GetFileName(assembly));
         }
         finally

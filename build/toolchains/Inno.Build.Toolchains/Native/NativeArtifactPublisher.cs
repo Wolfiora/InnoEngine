@@ -67,9 +67,9 @@ public static class NativeArtifactPublisher
         NativeBuildContext scoped = context.WithIdentity(owner, targetId, workspaceIdentity);
         string intermediate = scoped.GetNativeBuildRoot(owner);
         string destination = Path.Combine(context.engineRoot, "artifacts", "native", component, targetId, fingerprint);
-        var cache = new BuildCachePublisher(Path.Combine(context.engineRoot, "artifacts", "native"));
+        var cache = new BuildCachePublisher(Path.Combine(context.engineRoot, "artifacts", "native"), BuildCacheArtifactRole.ImmutableArtifact);
         using FileLease cacheUse = await cache.AcquireUseAsync(cancellationToken).ConfigureAwait(false);
-        var workspaces = new BuildCachePublisher(Path.Combine(owner.GetToolchainRoot(context.engineRoot), "obj", "native"));
+        var workspaces = new BuildCachePublisher(Path.Combine(owner.GetToolchainRoot(context.engineRoot), "obj", "native"), BuildCacheArtifactRole.ReusableWorkspace);
         using FileLease workspaceUse = await workspaces.AcquireUseAsync(cancellationToken).ConfigureAwait(false);
         using FileLease ownership = await FileLease.AcquireAsync(intermediate + ".lock",
             Timeout.InfiniteTimeSpan, cancellationToken).ConfigureAwait(false);
@@ -77,7 +77,7 @@ public static class NativeArtifactPublisher
         if (NativeBuildFingerprint.Create(context.BeginInputVerification("native-lock:" + component),
             recipe.declarations, recipe.inputs, cancellationToken) != fingerprint)
             throw new InvalidOperationException($"Native inputs for '{component}' changed while waiting for ownership.");
-        Directory.CreateDirectory(intermediate);
+        workspaces.BeginWorkingDirectory(intermediate, intermediate + ".lock", targetId, cancellationToken);
         AtomicFile.WriteAllBytes(Path.Combine(intermediate, "recipe.json"), JsonSerializer.SerializeToUtf8Bytes(new
         {
             component,
@@ -122,7 +122,8 @@ public static class NativeArtifactPublisher
             }
         }
 
-        string staging = destination + ".staging-" + Guid.NewGuid().ToString("N");
+        using ProcessOwnedDirectory candidateOwner = await ProcessOwnedDirectory.CreateAsync(Path.Combine(context.engineRoot, "artifacts", "native"), cancellationToken).ConfigureAwait(false);
+        string staging = candidateOwner.directory;
         string output = Path.Combine(staging, "Outputs");
         Directory.CreateDirectory(output);
         try
@@ -158,8 +159,7 @@ public static class NativeArtifactPublisher
         }
         finally
         {
-            if (Directory.Exists(staging))
-                Directory.Delete(staging, recursive: true);
+            candidateOwner.Dispose();
         }
     }
 

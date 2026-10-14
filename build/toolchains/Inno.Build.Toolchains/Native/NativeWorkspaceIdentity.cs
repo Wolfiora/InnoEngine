@@ -11,7 +11,7 @@ internal static class NativeWorkspaceIdentity
         NativeBuildRecipe recipe,
         NativeInputSnapshot snapshot
     ) {
-        string[] tools = context.toolchain?.inputPaths.Select(Path.GetFullPath).ToArray() ?? [];
+        string[] tools = (recipe.toolchain ?? context.toolchain)?.inputPaths.Select(Path.GetFullPath).ToArray() ?? [];
         StringComparison comparison = OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
         var configuration = new NativeInputSnapshot(snapshot.entries.Where(entry => tools.Any(tool =>
             string.Equals(entry.physicalPath, tool, comparison)

@@ -56,7 +56,7 @@ internal sealed class BindingGenerationOperation : IDisposable
             m_leases.Add(await FileLease.AcquireAsync(path, Timeout.InfiniteTimeSpan, cancellation).ConfigureAwait(false));
         if (m_request.outputMode == NativeBindingOutputMode.TargetArtifacts)
         {
-            var cache = new BuildCachePublisher(Path.Combine(m_context.engineRoot, "artifacts", "bindings"));
+            var cache = new BuildCachePublisher(Path.Combine(m_context.engineRoot, "artifacts", "bindings"), BuildCacheArtifactRole.ImmutableArtifact);
             m_leases.Add(await cache.AcquireUseAsync(cancellation).ConfigureAwait(false));
         }
         m_context.RecordBindingBatch();
@@ -88,14 +88,14 @@ internal sealed class BindingGenerationOperation : IDisposable
                 {
                     // Invalid output is repaired only after exclusive artifact ownership is acquired at commit.
                 }
-                var publication = BindingGenerationPublication.CreateTarget(destination, cancellation);
+                var publication = BindingGenerationPublication.CreateTarget(Path.Combine(m_context.engineRoot, "artifacts", "bindings"), destination, cancellation);
                 m_publications.Add(publication);
                 TargetBindingGeneration.Generate(m_context, definition, loaded, publication, fingerprint, cancellation);
                 results.Add(definition.component.nativeProject, TargetBindingGeneration.Describe(destination, fingerprint, loaded.bridge is not null));
             }
             else
             {
-                var publication = BindingGenerationPublication.CreateHost(output, loaded.bridge is null ? null
+                var publication = BindingGenerationPublication.CreateHost(Path.Combine(m_context.engineRoot, "artifacts", "bindings"), output, loaded.bridge is null ? null
                     : NativeBindingGenerationIdentity.Resolve(loaded.bridge.outputPath, loaded.bridge.configDirectory!), cancellation);
                 m_publications.Add(publication);
                 HostBindingGeneration.Generate(m_context, definition, loaded, publication, fingerprint, cancellation);
@@ -139,7 +139,7 @@ internal sealed class BindingGenerationOperation : IDisposable
         }
         if (m_request.outputMode == NativeBindingOutputMode.TargetArtifacts && !m_request.checkOnly)
         {
-            var cache = new BuildCachePublisher(Path.Combine(m_context.engineRoot, "artifacts", "bindings"));
+            var cache = new BuildCachePublisher(Path.Combine(m_context.engineRoot, "artifacts", "bindings"), BuildCacheArtifactRole.ImmutableArtifact);
             foreach (BindingGenerationConfiguration definition in definitions)
             {
                 NativeBindingGenerationDescriptor generation = results[definition.component.nativeProject];

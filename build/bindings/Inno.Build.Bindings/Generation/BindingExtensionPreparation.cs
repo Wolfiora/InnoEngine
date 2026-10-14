@@ -60,23 +60,25 @@ internal static class BindingExtensionPreparation
         string fingerprint = NativeBuildFingerprint.Create(context, declarations, inputs, cancellation);
         string destination = Path.Combine(context.engineRoot, "artifacts", "build-tools", "bindings", "extensions",
             Path.GetFileNameWithoutExtension(project), fingerprint);
-        var cache = new BuildCachePublisher(Path.Combine(context.engineRoot, "artifacts", "build-tools", "bindings", "extensions"));
+        var cache = new BuildCachePublisher(Path.Combine(context.engineRoot, "artifacts", "build-tools", "bindings", "extensions"), BuildCacheArtifactRole.ImmutableArtifact);
         using FileLease activity = await cache.AcquireUseAsync(cancellation).ConfigureAwait(false);
         using FileLease lease = await FileLease.AcquireAsync(destination + ".lock", Timeout.InfiniteTimeSpan, cancellation).ConfigureAwait(false);
         Verify("extension-lock");
         string output = Path.Combine(destination, "Outputs");
         if (!BuildArtifactManifest.IsComplete(destination, fingerprint, ["Outputs"], context))
         {
-            string staging = destination + ".staging-" + Guid.NewGuid().ToString("N");
+            using ProcessOwnedDirectory candidateOwner = await ProcessOwnedDirectory.CreateAsync(Path.Combine(context.engineRoot, "artifacts", "build-tools", "bindings", "extensions"), cancellation).ConfigureAwait(false);
+            string staging = candidateOwner.directory;
             try
             {
                 string candidate = Path.Combine(staging, "Outputs");
                 Directory.CreateDirectory(candidate);
                 string intermediates = Path.Combine(context.engineRoot, "artifacts", "build-tools", "bindings", "intermediate",
                     Path.GetFileNameWithoutExtension(project), fingerprint);
-                var workspaces = new BuildCachePublisher(Path.Combine(context.engineRoot, "artifacts", "build-tools", "bindings", "intermediate"));
+                var workspaces = new BuildCachePublisher(Path.Combine(context.engineRoot, "artifacts", "build-tools", "bindings", "intermediate"), BuildCacheArtifactRole.ReusableWorkspace);
                 using FileLease workspaceActivity = await workspaces.AcquireUseAsync(cancellation).ConfigureAwait(false);
                 using FileLease workspaceWriting = await FileLease.AcquireAsync(intermediates + ".lock", Timeout.InfiniteTimeSpan, cancellation).ConfigureAwait(false);
+                workspaces.BeginWorkingDirectory(intermediates, intermediates + ".lock", null, cancellation);
                 context.RecordManagedProcess();
                 await ToolchainEnvironment.RunAsync(sdk.hostPath,
                     [sdk.cliPath, "build", project, "--configuration", "Release", "--output", candidate,
@@ -98,8 +100,7 @@ internal static class BindingExtensionPreparation
             }
             finally
             {
-                if (Directory.Exists(staging))
-                    Directory.Delete(staging, recursive: true);
+                candidateOwner.Dispose();
             }
         }
         string assembly = Path.Combine(output, Path.GetFileNameWithoutExtension(project) + ".dll");

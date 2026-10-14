@@ -84,8 +84,8 @@ public static class ProductNativeDeployment
             cancellationToken.ThrowIfCancellationRequested();
             return;
         }
-        string staging = destination + ".staging-" + Guid.NewGuid().ToString("N");
-        Directory.CreateDirectory(staging);
+        using ProcessOwnedDirectory stagingOwner = await ProcessOwnedDirectory.CreateAsync(Path.GetDirectoryName(destination)!, cancellationToken).ConfigureAwait(false);
+        string staging = stagingOwner.directory;
         try
         {
             foreach ((string relative, string file) in files)
@@ -118,8 +118,7 @@ public static class ProductNativeDeployment
         }
         finally
         {
-            if (Directory.Exists(staging))
-                Directory.Delete(staging, recursive: true);
+            stagingOwner.Dispose();
         }
     }
 

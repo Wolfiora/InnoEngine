@@ -120,11 +120,13 @@ public sealed class ManagedBuildExecution : IDisposable
             sdk.hostPath, sdk.sdkIdentity, sdk.cliPath }.Concat(properties.OrderBy(static pair => pair.Key, StringComparer.Ordinal)
                 .Select(static pair => pair.Key + "=" + pair.Value)), []);
         string workspace = Path.Combine(context.engineRoot, "artifacts", "managed", "workspaces", identity);
-        var cache = new BuildCachePublisher(Path.Combine(context.engineRoot, "artifacts", "managed", "workspaces"));
+        var cache = new BuildCachePublisher(Path.Combine(context.engineRoot, "artifacts", "managed", "workspaces"), BuildCacheArtifactRole.ReusableWorkspace);
         using FileLease cacheUse = await cache.AcquireUseAsync(cancellation).ConfigureAwait(false);
         FileLease ownership = await FileLease.AcquireAsync(workspace + ".lock", Timeout.InfiniteTimeSpan, cancellation).ConfigureAwait(false);
         try
         {
+            cache.BeginWorkingDirectory(workspace, workspace + ".lock",
+                properties.TryGetValue("InnoNativeTarget", out string? selectedTarget) ? selectedTarget : context.toolchain?.targetId, cancellation);
             string sourceRoot = Path.Combine(workspace, "Sources");
             string metadata = Path.Combine(workspace, "inputs.json");
             NativeInputSnapshot captured = context.inputState.CaptureRecordedInputs(context.engineRoot);

@@ -387,6 +387,27 @@
           "Inno.UI.Assets": "[1.0.0, )"
         }
       },
+      "inno.animation": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Assets": "[1.0.0, )",
+          "Inno.Core.Events": "[1.0.0, )",
+          "Inno.Core.Execution": "[1.0.0, )",
+          "Inno.Core.Serialization": "[1.0.0, )",
+          "Inno.Extensibility.Catalogs": "[1.0.0, )",
+          "Inno.Extensibility.Types": "[1.0.0, )",
+          "Inno.Scripting.Api": "[1.0.0, )"
+        }
+      },
+      "inno.animation.assets": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Animation": "[1.0.0, )",
+          "Inno.Assets.Pipeline": "[1.0.0, )",
+          "Inno.Core.Serialization": "[1.0.0, )",
+          "Inno.Extensibility.Catalogs": "[1.0.0, )"
+        }
+      },
       "inno.assets": {
         "type": "Project",
         "dependencies": {

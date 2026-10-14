@@ -33,6 +33,9 @@ public sealed class BuildCacheArtifactDescriptor
     /// <param name="dependencies">
     /// Absolute artifact directories required by this generation.
     /// </param>
+    /// <param name="role">
+    /// The producer-declared lifetime; workspace preference alone does not pin an immutable product.
+    /// </param>
     /// <exception cref="ArgumentException">
     /// A path is relative or the timestamp is not UTC.
     /// </exception>
@@ -48,7 +51,8 @@ public sealed class BuildCacheArtifactDescriptor
         string? targetId,
         long bytes,
         DateTime lastUseUtc,
-        IReadOnlyList<string> dependencies
+        IReadOnlyList<string> dependencies,
+        BuildCacheArtifactRole role
     ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(directory);
         ArgumentException.ThrowIfNullOrWhiteSpace(leasePath);
@@ -67,6 +71,9 @@ public sealed class BuildCacheArtifactDescriptor
         this.targetId = targetId;
         this.bytes = bytes;
         this.lastUseUtc = lastUseUtc;
+        if (!Enum.IsDefined(role))
+            throw new ArgumentOutOfRangeException(nameof(role));
+        this.role = role;
         this.dependencies = new ReadOnlyCollection<string>(dependencies.Select(static path =>
             Path.TrimEndingDirectorySeparator(Path.GetFullPath(path))).ToArray());
     }
@@ -90,6 +97,11 @@ public sealed class BuildCacheArtifactDescriptor
     /// Gets the logical file size used for budgeting, without weakening content validation.
     /// </summary>
     public long bytes { get; }
+
+    /// <summary>
+    /// Gets the declared lifetime used for retirement and preferred-workspace accounting.
+    /// </summary>
+    public BuildCacheArtifactRole role { get; }
 
     /// <summary>
     /// Gets the UTC use timestamp, which is never used to validate cached content.

@@ -73,7 +73,12 @@ public static class StandardNativeBuildPlans
             static (
                 relative,
                 target
-            ) => RuntimePath("cimguizmo", relative, target)));
+            ) => RuntimePath("cimguizmo", relative, target),
+            bindDependencies: static (
+                context,
+                recipe,
+                dependencies
+            ) => ImGuizmoToolchain.BindImGui(context, recipe, dependencies["cimgui"])));
         return new("editor", steps, StandardNativeDeployment.CreateMetadata);
     }
 

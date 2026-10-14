@@ -130,7 +130,8 @@ public sealed class SupportPackPreparationCacheTests : IDisposable
                 .PublishAsync(m_root, output, S_TARGET, "unused");
             Assert.Contains(published.diagnostics, static message => message.Contains("could not be removed", StringComparison.Ordinal));
             Assert.True(File.Exists(Path.Combine(published.directory, "References", "Inno.Fixture.dll")));
-            Assert.Single(Directory.EnumerateDirectories(output, ".support-pack-*"));
+            ProcessOwnedDirectoryDescriptor retained = Assert.Single(ProcessOwnedDirectory.ReadClaims(output));
+            Assert.True(File.Exists(Path.Combine(retained.directory, "owned-cleanup.bin")));
         }
         finally
         {

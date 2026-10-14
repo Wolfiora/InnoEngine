@@ -39,6 +39,10 @@ public sealed class ProductNativeBuildStep
     /// <param name="configuration">
     /// An explicit component configuration, or null to use the product configuration.
     /// </param>
+    /// <param name="bindDependencies">
+    /// Optional backend-owned transformation adding the exact published dependency inputs to its source recipe.
+    /// It must not generate outputs or execute tools.
+    /// </param>
     /// <exception cref="ArgumentException">
     /// The identity or dependency set is invalid.
     /// </exception>
@@ -53,7 +57,8 @@ public sealed class ProductNativeBuildStep
         Func<NativeBuildContext, IReadOnlyDictionary<string, NativeBuildProduct>, CancellationToken, Task<NativeBuildProduct>>? build,
         Func<NativeBuildContext, NativeBuildRecipe>? createRecipe,
         Func<string, string, string?> deploymentPath,
-        string? configuration = null
+        string? configuration = null,
+        Func<NativeBuildContext, NativeBuildRecipe, IReadOnlyDictionary<string, NativeBuildProduct>, NativeBuildRecipe>? bindDependencies = null
     ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(id);
         ArgumentNullException.ThrowIfNull(component);
@@ -80,6 +85,7 @@ public sealed class ProductNativeBuildStep
         this.createRecipe = createRecipe;
         this.deploymentPath = deploymentPath;
         this.configuration = configuration;
+        this.bindDependencies = bindDependencies;
     }
 
     /// <summary>
@@ -122,4 +128,10 @@ public sealed class ProductNativeBuildStep
     /// Gets the step's explicit configuration, or null to borrow the containing product configuration.
     /// </summary>
     public string? configuration { get; }
+
+    /// <summary>
+    /// Gets the backend-owned dependency transformation, or null for an independent source recipe.
+    /// The supplied products are borrowed only during recipe construction.
+    /// </summary>
+    public Func<NativeBuildContext, NativeBuildRecipe, IReadOnlyDictionary<string, NativeBuildProduct>, NativeBuildRecipe>? bindDependencies { get; }
 }

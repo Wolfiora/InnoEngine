@@ -14,6 +14,8 @@
 
 配置先完整预检：目标注册、selection、配对创作 provider、presentation、键盘约定和正 frame limit。预取消不创建 Project、不启动 Native、不调用资源工厂。错误配置不能落盘创建半成品。
 
+`EditorCommandLineOptions` 默认显示窗口。明确传入 Project 后，`--window-visible false --smoke-frames 60` 可以在隐藏窗口中运行同一 Host、设备和退出流程，不操作桌面焦点；它验证初始化和生命周期，不能证明 GUI、视觉或声学效果。可见性不是平台选择，也不替代正常交互验收。
+
 ```csharp
 using System.Threading;
 using System.Threading.Tasks;
@@ -45,6 +47,8 @@ Project 创作 IO 属于创作服务；OS 用户位置由平台产品提供。�
 
 ### `Inno.Editor.Hosting.EditorCommandLineOptions`
 
+<!-- api: P:Inno.Editor.Hosting.EditorCommandLineOptions.windowVisible 8b3cff7e40c4b8932296da36d374053ae1fdb5b08af7e1a2ebebc2ef72278a4e -->
+
 <!-- api: T:Inno.Editor.Hosting.EditorCommandLineOptions fd15e5fd61d89471431593d80cd25cc48cce63b8249ae3eb5cf4191719d6ec0a -->
 <!-- api: P:Inno.Editor.Hosting.EditorCommandLineOptions.projectDirectory d83304e24c2ae152e6692a7ccbc45b43bd7b06d162ffb774630c7287ebfc97f4 -->
 <!-- api: P:Inno.Editor.Hosting.EditorCommandLineOptions.smokeFrameLimit d2f91776ab75dd1ad0976a408f2b09cb5cb949897e8901072dbbe6a78ded490a -->
@@ -53,6 +57,7 @@ Project 创作 IO 属于创作服务；OS 用户位置由平台产品提供。�
 
 | 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
 | --- | --- | --- | --- |
+| <a id="api-17cdafb64bf2912c"></a>[`public bool Inno.Editor.Hosting.EditorCommandLineOptions.windowVisible { get; private init; }`](../../src/composition/editor/hosting/Inno.Editor.Hosting/EditorCommandLineOptions.cs#L27) | 是否显示真实平台窗口；默认 true，false 保留同一 Editor 初始化、帧循环与退出。 | 启动配置不可变；产品组合将值传给 PlatformWindowOptions。 | 参数解析失败发生在创建设备前；隐藏运行不验证 GUI 或焦点。 |
 | <a id="api-0d2fbb58476a4b3e"></a>[`public static Inno.Editor.Hosting.EditorCommandLineOptions Inno.Editor.Hosting.EditorCommandLineOptions.Parse(string[] arguments)`](../../src/composition/editor/hosting/Inno.Editor.Hosting/EditorCommandLineOptions.cs#L41) | Parses the common Editor command line without selecting a platform.<br>返回：The immutable project startup configuration.<br>`arguments`：The project path followed by optional name/value pairs. | — | `System.ArgumentException`：The project or an option is missing, repeated or invalid. |
 | <a id="api-1071da5e2056ccf2"></a>[`public Inno.Rendering.GraphicsApi? Inno.Editor.Hosting.EditorCommandLineOptions.graphicsApi { get; private init; }`](../../src/composition/editor/hosting/Inno.Editor.Hosting/EditorCommandLineOptions.cs#L27) | Gets an explicit renderer preference, or null for backend policy. | — | — |
 | <a id="api-29f225c5e1e36c31"></a>[`public string Inno.Editor.Hosting.EditorCommandLineOptions.projectDirectory { get; }`](../../src/composition/editor/hosting/Inno.Editor.Hosting/EditorCommandLineOptions.cs#L17) | Gets the caller-selected authoring project. | — | — |

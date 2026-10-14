@@ -4,6 +4,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Inno.Build.Toolchains;
+using Inno.Core.IO;
 using Xunit;
 
 namespace Inno.Build.Tests;
@@ -127,7 +128,10 @@ public sealed class ManagedBuildInputSnapshotTests : IDisposable
         await Assert.ThrowsAsync<InvalidOperationException>(() => original.VerifyAsync().AsTask());
         Assert.False(Directory.Exists(Path.Combine(m_root, "App", "bin")));
         Assert.All(Directory.EnumerateDirectories(Path.Combine(m_root, "artifacts", "build-tools", "managed-inputs")),
-            static directory => Assert.Equal("evaluators", Path.GetFileName(directory)));
+            static directory => Assert.Contains(Path.GetFileName(directory), new[] { "evaluators", "requests" }));
+        string requests = Path.Combine(m_root, "artifacts", "build-tools", "managed-inputs", "requests");
+        Assert.Empty(ProcessOwnedDirectory.ReadClaims(requests));
+        Assert.Empty(Directory.EnumerateDirectories(requests));
         Assert.Single(Directory.EnumerateDirectories(Path.Combine(m_root, "artifacts", "build-tools", "managed-inputs", "evaluators")));
 
         Task<ManagedBuildInputSnapshot> Capture(

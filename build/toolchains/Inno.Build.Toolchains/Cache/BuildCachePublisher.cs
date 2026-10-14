@@ -1,7 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
@@ -19,6 +17,7 @@ namespace Inno.Build.Toolchains;
 public sealed class BuildCachePublisher
 {
     private readonly string m_root;
+    private readonly BuildCacheArtifactRole m_role;
 
     /// <summary>
     /// Creates a publisher for one absolute, non-overlapping cache boundary.
@@ -26,15 +25,23 @@ public sealed class BuildCachePublisher
     /// <param name="directory">
     /// The cache root exclusively controlled by this publisher.
     /// </param>
+    /// <param name="role">
+    /// The lifetime declared for this publisher's completed entries.
+    /// </param>
     /// <exception cref="ArgumentException">
     /// The directory is blank or relative.
     /// </exception>
-    public BuildCachePublisher(string directory)
-    {
+    public BuildCachePublisher(
+        string directory,
+        BuildCacheArtifactRole role
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(directory);
         if (!Path.IsPathFullyQualified(directory))
             throw new ArgumentException("A cache publisher requires an absolute root.", nameof(directory));
         m_root = Path.TrimEndingDirectorySeparator(Path.GetFullPath(directory));
+        if (!Enum.IsDefined(role))
+            throw new ArgumentOutOfRangeException(nameof(role));
+        m_role = role;
     }
 
     /// <summary>
@@ -128,6 +135,53 @@ public sealed class BuildCachePublisher
         => new(id, m_root, Path.Combine(m_root, "owner.lock"), ReadArtifacts, ReadRoots);
 
     /// <summary>
+    /// Records a reusable workspace before its first payload write while the caller holds activity and producer leases.
+    /// Existing unregistered directories are rejected, rather than adopted by cleanup authority.
+    /// </summary>
+    /// <param name="directory">
+    /// The new or previously registered workspace within this publisher root.
+    /// </param>
+    /// <param name="leasePath">
+    /// The caller's persistent exclusive producer lease outside the workspace.
+    /// </param>
+    /// <param name="targetId">
+    /// The explicit product target, or null for shared host work.
+    /// </param>
+    /// <param name="cancellationToken">
+    /// Cancels registration before payload writes.
+    /// </param>
+    /// <exception cref="InvalidOperationException">
+    /// The publisher does not manage reusable workspaces or an existing directory has no current registration.
+    /// </exception>
+    /// <exception cref="IOException">
+    /// The workspace escapes its boundary or ownership cannot be written.
+    /// </exception>
+    public void BeginWorkingDirectory(
+        string directory,
+        string leasePath,
+        string? targetId,
+        CancellationToken cancellationToken = default
+    ) {
+        if (m_role != BuildCacheArtifactRole.ReusableWorkspace)
+            throw new InvalidOperationException("Working registration requires a reusable workspace publisher.");
+        BuildCacheCleanupPlan.RequireChild(m_root, directory);
+        BuildCacheCleanupPlan.RequireChild(m_root, leasePath);
+        cancellationToken.ThrowIfCancellationRequested();
+        string relative = Path.GetRelativePath(m_root, directory).Replace('\\', '/');
+        string record = Path.Combine(m_root, Key(relative) + ".cache.json");
+        if (Directory.Exists(directory) && !File.Exists(record))
+            throw new InvalidOperationException($"An existing unregistered workspace cannot be adopted: '{directory}'.");
+        if (File.Exists(record) && ReadEntry(record).directory != relative)
+            throw new InvalidDataException("Working ownership has an inconsistent directory identity.");
+        AtomicFile.WriteAllBytes(record, WriteEntry(new(relative, Path.GetRelativePath(m_root, leasePath).Replace('\\', '/'), DateTime.UtcNow, [], 0, targetId)));
+        Directory.CreateDirectory(directory);
+        string owners = Path.Combine(directory, "owners");
+        Directory.CreateDirectory(owners);
+        ProcessOwnerStamp stamp = ProcessOwnerStamp.CaptureCurrent();
+        AtomicFile.WriteAllBytes(Path.Combine(owners, stamp.processId + ".pid"), JsonSerializer.SerializeToUtf8Bytes(stamp));
+    }
+
+    /// <summary>
     /// Registers a process-owned loader directory and its dependencies before returning it to a loader.
     /// Retirement preserves the directory until every recorded process has exited.
     /// </summary>
@@ -162,8 +216,9 @@ public sealed class BuildCachePublisher
             .AsTask().GetAwaiter().GetResult();
         string owners = Path.Combine(directory, "owners");
         Directory.CreateDirectory(owners);
-        string process = Environment.ProcessId.ToString(System.Globalization.CultureInfo.InvariantCulture);
-        AtomicFile.WriteAllBytes(Path.Combine(owners, process + ".pid"), Encoding.UTF8.GetBytes(process));
+        ProcessOwnerStamp stamp = ProcessOwnerStamp.CaptureCurrent();
+        string process = stamp.processId.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        AtomicFile.WriteAllBytes(Path.Combine(owners, process + ".pid"), JsonSerializer.SerializeToUtf8Bytes(stamp));
         Record(directory, leasePath, dependencies, null, null, cancellationToken);
     }
 
@@ -183,7 +238,19 @@ public sealed class BuildCachePublisher
                 throw new InvalidDataException("Cache ownership metadata does not match its identity.");
             if (!Directory.Exists(directory))
                 continue;
-            result.Add(new(directory, lease, entry.targetId, entry.bytes, entry.lastUseUtc, entry.dependencies));
+            // Completed workspaces are measured by their sole writer. An unfinished registration
+            // has zero bytes and must be inspected; this metadata never validates Native contents.
+            long bytes = m_role == BuildCacheArtifactRole.ImmutableArtifact
+                || m_role == BuildCacheArtifactRole.ReusableWorkspace && entry.bytes > 0
+                ? entry.bytes : MeasureFiles(directory, cancellation);
+            result.Add(new(directory, lease, entry.targetId, bytes, entry.lastUseUtc, entry.dependencies, m_role));
+        }
+        foreach (ProcessOwnedDirectoryDescriptor working in ProcessOwnedDirectory.ReadClaims(m_root, cancellation))
+        {
+            if (result.Any(entry => BuildCacheInventory.pathComparer.Equals(entry.directory, working.directory)))
+                continue;
+            long bytes = MeasureFiles(working.directory, cancellation);
+            result.Add(new(working.directory, working.leasePath, null, bytes, Directory.GetLastWriteTimeUtc(working.directory), [], BuildCacheArtifactRole.ProcessWorkingDirectory));
         }
         return result;
     }
@@ -193,7 +260,8 @@ public sealed class BuildCachePublisher
         List<string> result = [];
         if (!Directory.Exists(m_root))
             return result;
-        foreach (string path in Directory.EnumerateFiles(m_root, "*.current").Order(StringComparer.Ordinal))
+        foreach (string path in m_role == BuildCacheArtifactRole.ImmutableArtifact
+            ? Directory.EnumerateFiles(m_root, "*.current").Order(StringComparer.Ordinal) : Enumerable.Empty<string>())
         {
             cancellation.ThrowIfCancellationRequested();
             PathBoundary.RequireUnlinkedPath(m_root, path);
@@ -206,25 +274,46 @@ public sealed class BuildCachePublisher
             Entry entry = ReadEntry(path);
             string directory = PathBoundary.Resolve(m_root, entry.directory);
             string owners = Path.Combine(directory, "owners");
-            if (Directory.Exists(owners) && PathBoundary.EnumerateFiles(owners)
+            if (m_role != BuildCacheArtifactRole.ReusableWorkspace && Directory.Exists(owners) && PathBoundary.EnumerateFiles(owners)
                 .Where(static file => Path.GetExtension(file) == ".pid").Any(IsProcessAlive))
                 result.Add(directory);
         }
+        foreach (ProcessOwnedDirectoryDescriptor working in ProcessOwnedDirectory.ReadClaims(m_root, cancellation))
+            if (working.ownerState != ProcessOwnerState.Exited)
+                result.Add(working.directory);
         return result;
     }
 
     private static bool IsProcessAlive(string marker)
     {
-        if (!int.TryParse(File.ReadAllText(marker), out int processId) || processId <= 0)
-            return true;
         try
         {
-            using Process process = Process.GetProcessById(processId);
-            return !process.HasExited;
+            using JsonDocument document = JsonDocument.Parse(File.ReadAllBytes(marker));
+            JsonElement root = document.RootElement;
+            if (!root.EnumerateObject().Select(static property => property.Name).Order(StringComparer.Ordinal)
+                .SequenceEqual(new[] { "processId", "startedUtcTicks" }, StringComparer.Ordinal))
+                return true;
+            var stamp = new ProcessOwnerStamp(root.GetProperty("processId").GetInt32(), root.GetProperty("startedUtcTicks").GetInt64());
+            return stamp.Query() != ProcessOwnerState.Exited;
         }
-        catch (ArgumentException) { return false; }
-        catch (InvalidOperationException) { return false; }
-        catch (Win32Exception) { return true; }
+        catch (Exception exception) when (exception is JsonException or ArgumentException or InvalidOperationException
+            or IOException or UnauthorizedAccessException or FormatException or OverflowException)
+        {
+            return true;
+        }
+    }
+
+    private static long MeasureFiles(
+        string directory,
+        CancellationToken cancellation
+    ) {
+        long bytes = 0;
+        foreach (string file in PathBoundary.EnumerateFiles(directory))
+        {
+            cancellation.ThrowIfCancellationRequested();
+            bytes = checked(bytes + new FileInfo(file).Length);
+        }
+        return bytes;
     }
 
     private static string Key(string value) => Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(value)));

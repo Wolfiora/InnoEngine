@@ -91,7 +91,7 @@ internal static class BuildCacheRetirement
                 BuildCacheArtifactDescriptor original = proposed[path];
                 if (protectedPaths.Contains(path) || !artifactLeases.ContainsKey(path)
                     || original.bytes != current.artifact.bytes || original.lastUseUtc != current.artifact.lastUseUtc
-                    || original.targetId != current.artifact.targetId
+                    || original.targetId != current.artifact.targetId || original.role != current.artifact.role
                     || !BuildCacheInventory.pathComparer.Equals(original.leasePath, current.artifact.leasePath)
                     || !original.dependencies.SequenceEqual(current.artifact.dependencies, BuildCacheInventory.pathComparer))
                 {
@@ -108,10 +108,14 @@ internal static class BuildCacheRetirement
                         continue;
                     }
                     // Inspect every nested entry before recursive removal; do not follow junctions.
+                    long actualBytes = 0;
                     foreach (string file in PathBoundary.EnumerateFiles(path))
-                        cancellation.ThrowIfCancellationRequested();
+                    {
+                        bounded.Token.ThrowIfCancellationRequested();
+                        actualBytes = checked(actualBytes + new FileInfo(file).Length);
+                    }
                     Directory.Delete(path, recursive: true);
-                    reclaimed = checked(reclaimed + current.artifact.bytes);
+                    reclaimed = checked(reclaimed + actualBytes);
                     retired.Add(path);
                 }
                 catch (Exception failure) when (failure is IOException or UnauthorizedAccessException)

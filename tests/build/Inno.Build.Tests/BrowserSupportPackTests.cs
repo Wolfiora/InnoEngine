@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using Inno.Build;
 using Inno.Build.Distribution.Standard;
@@ -87,6 +88,13 @@ public sealed class BrowserSupportPackTests : IDisposable
     ) {
         string path = Path.Combine(pack, relativePath);
         Directory.CreateDirectory(Path.GetDirectoryName(path)!);
-        File.WriteAllText(path, "fixture");
+        if (relativePath.EndsWith(".a", StringComparison.Ordinal))
+        {
+            string header = "fixture.o/".PadRight(16) + "0".PadRight(12) + "0".PadRight(6)
+                + "0".PadRight(6) + "100644".PadRight(8) + "8".PadRight(10) + "`\n";
+            File.WriteAllBytes(path, [.. Encoding.ASCII.GetBytes("!<arch>\n" + header), .. "\0asm\u0001\0\0\0"u8]);
+        }
+        else
+            File.WriteAllText(path, "fixture");
     }
 }

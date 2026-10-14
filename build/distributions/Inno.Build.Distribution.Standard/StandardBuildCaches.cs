@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Inno.Build.Toolchains;
+using Inno.Build.BrowserWasm32;
 
 namespace Inno.Build.Distribution.Standard;
 
@@ -37,25 +38,28 @@ public static class StandardBuildCaches
             throw new ArgumentException("Cache registration requires an absolute checkout.", nameof(engineRoot));
         var owners = new List<BuildCacheOwnerDescriptor>
         {
-            new BuildCachePublisher(Path.Combine(engineRoot, "artifacts", "native")).Describe("native"),
-            new BuildCachePublisher(Path.Combine(engineRoot, "artifacts", "bindings")).Describe("bindings"),
-            new BuildCachePublisher(Path.Combine(engineRoot, "artifacts", "support-packs")).Describe("support-packs"),
-            new BuildCachePublisher(Path.Combine(engineRoot, "artifacts", "managed", "workspaces")).Describe("managed-workspaces"),
-            new BuildCachePublisher(Path.Combine(engineRoot, "artifacts", "build-tools", "managed-inputs", "evaluators")).Describe("managed-evaluators"),
-            new BuildCachePublisher(Path.Combine(engineRoot, "artifacts", "build-tools", "bindings", "extensions")).Describe("binding-extensions"),
-            new BuildCachePublisher(Path.Combine(engineRoot, "artifacts", "build-tools", "bindings", "intermediate")).Describe("binding-workspaces"),
-            new BuildCachePublisher(Path.Combine(engineRoot, "artifacts", "build-tools", "cli", "hosts")).Describe("build-tool-hosts"),
-            new BuildCachePublisher(Path.Combine(engineRoot, "artifacts", "build-tools", "cli", "readers")).Describe("build-tool-readers"),
-            new BuildCachePublisher(Path.Combine(engineRoot, "artifacts", "build-tools", "cli", "workspaces")).Describe("build-tool-workspaces"),
-            new BuildCachePublisher(Path.Combine(engineRoot, "artifacts", "build-tools", "tasks", "hosts")).Describe("task-hosts"),
-            new BuildCachePublisher(Path.Combine(engineRoot, "artifacts", "build-tools", "tasks", "loads")).Describe("task-loads"),
-            new BuildCachePublisher(Path.Combine(engineRoot, "artifacts", "build-tools", "tasks", "publishers")).Describe("task-publishers"),
-            new BuildCachePublisher(Path.Combine(engineRoot, "artifacts", "build-tools", "tasks", "workspaces")).Describe("task-workspaces")
+            new BuildCachePublisher(Path.Combine(engineRoot, "artifacts", "entry", "workers"), BuildCacheArtifactRole.ProcessWorkingDirectory).Describe("entry-workers"),
+            new BuildCachePublisher(Path.Combine(engineRoot, "artifacts", "native"), BuildCacheArtifactRole.ImmutableArtifact).Describe("native"),
+            new BuildCachePublisher(Path.Combine(engineRoot, "artifacts", "bindings"), BuildCacheArtifactRole.ImmutableArtifact).Describe("bindings"),
+            new BuildCachePublisher(Path.Combine(engineRoot, "artifacts", "support-packs"), BuildCacheArtifactRole.ImmutableArtifact).Describe("support-packs"),
+            new BuildCachePublisher(Path.Combine(engineRoot, "artifacts", "managed", "workspaces"), BuildCacheArtifactRole.ReusableWorkspace).Describe("managed-workspaces"),
+            new BuildCachePublisher(Path.Combine(engineRoot, "artifacts", "build-tools", "managed-inputs", "evaluators"), BuildCacheArtifactRole.ImmutableArtifact).Describe("managed-evaluators"),
+            new BuildCachePublisher(Path.Combine(engineRoot, "artifacts", "build-tools", "managed-inputs", "requests"), BuildCacheArtifactRole.ProcessWorkingDirectory).Describe("managed-input-requests"),
+            new BuildCachePublisher(Path.Combine(engineRoot, "artifacts", "build-tools", "bindings", "extensions"), BuildCacheArtifactRole.ImmutableArtifact).Describe("binding-extensions"),
+            new BuildCachePublisher(Path.Combine(engineRoot, "artifacts", "build-tools", "bindings", "intermediate"), BuildCacheArtifactRole.ReusableWorkspace).Describe("binding-workspaces"),
+            new BuildCachePublisher(Path.Combine(engineRoot, "artifacts", "build-tools", "cli", "hosts"), BuildCacheArtifactRole.ImmutableArtifact).Describe("build-tool-hosts"),
+            new BuildCachePublisher(Path.Combine(engineRoot, "artifacts", "build-tools", "cli", "readers"), BuildCacheArtifactRole.ProcessWorkingDirectory).Describe("build-tool-readers"),
+            new BuildCachePublisher(Path.Combine(engineRoot, "artifacts", "build-tools", "cli", "workspaces"), BuildCacheArtifactRole.ReusableWorkspace).Describe("build-tool-workspaces"),
+            new BuildCachePublisher(Path.Combine(engineRoot, "artifacts", "build-tools", "tasks", "hosts"), BuildCacheArtifactRole.ImmutableArtifact).Describe("task-hosts"),
+            new BuildCachePublisher(Path.Combine(engineRoot, "artifacts", "build-tools", "tasks", "loads"), BuildCacheArtifactRole.ProcessWorkingDirectory).Describe("task-loads"),
+            new BuildCachePublisher(Path.Combine(engineRoot, "artifacts", "build-tools", "tasks", "publishers"), BuildCacheArtifactRole.ProcessWorkingDirectory).Describe("task-publishers"),
+            new BuildCachePublisher(Path.Combine(engineRoot, "artifacts", "build-tools", "tasks", "workspaces"), BuildCacheArtifactRole.ReusableWorkspace).Describe("task-workspaces")
         };
-        foreach (string project in components.Select(static component => component.toolchainProject).Distinct(StringComparer.Ordinal))
+        NativeComponentDescriptor[] workspaceComponents = components.Append(BrowserWasm32Toolchain.componentDescriptor).ToArray();
+        foreach (string project in workspaceComponents.Select(static component => component.toolchainProject).Distinct(StringComparer.Ordinal))
         {
-            NativeComponentDescriptor component = components.First(value => value.toolchainProject == project);
-            owners.Add(new BuildCachePublisher(Path.Combine(component.GetToolchainRoot(engineRoot), "obj", "native"))
+            NativeComponentDescriptor component = workspaceComponents.First(value => value.toolchainProject == project);
+            owners.Add(new BuildCachePublisher(Path.Combine(component.GetToolchainRoot(engineRoot), "obj", "native"), BuildCacheArtifactRole.ReusableWorkspace)
                 .Describe("workspace:" + project));
         }
         return owners.AsReadOnly();

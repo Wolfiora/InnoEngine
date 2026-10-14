@@ -12,6 +12,7 @@
 Solution 命令构建通过 `Directory.Solution.targets` 为同一次构建传递统一 bootstrap owner。单项目构建在项目引用闭包内传递其 owner。共同 targets 为该 owner 分配独立的 publisher 编译目录，并在执行项目引用目标及嵌套 Task runtime 准备时传递同一 owner。相同配置的依赖项目复用这次编译；每个实际加载边界仍复制到自己的私有目录。下一次根项目构建使用新的编译 owner，不依赖上次的可变中间态。
 owner 表示本次执行的所有权，其随机值本身不进入完整 Task runtime 的输入指纹。请求求值仍保留该属性；若导入文件、源码选择或 `DefineConstants` 等实际编译输入由它改变，这些求值结果仍参与指纹，不能误用上次结果。Design-time Build 不准备 publisher。
 `BuildTaskRuntimeTask` 使用同一 `artifacts/build-tools/tasks/workspaces/shared` 根的 `FileLease` 协调完整 Task 项目编译；等待时通过 MSBuild `Yield`/`Reacquire` 释放节点，失败、取消或异常都释放写 lease。
+私有 Task 编译明确禁用共享 C# compiler server；可复用源码 workspace 的 SDK 子进程同样使用 `--disable-build-servers`。编译完成后不会让另一个长寿命编译宿主持有 workspace 中的生成器 DLL。普通 IDE 的编译服务器配置不由此改变。
 SDK 与项目构建仍由当前 MSBuild engine 执行，保留明确属性和移除产品属性的机制，不创建第二个 CLI 或通过 PATH 重新选择 SDK。完整 Task 项目返回实际运行文件的逻辑路径及 SHA-256。
 工具引导和 `RestoreOwnedProjectTask` 移除父 IDE 的 `SolutionPath`、相关 Solution metadata 与 restore graph entry point。
 NuGet 静态图据此只读取本次明确选择的 project closure；Windows Editor 不会因为内部 Task restore 意外访问 Browser Player。
@@ -82,6 +83,10 @@ BuildTaskRuntimeTask 在 IBuildEngine4 的 Build registry 注册 BCL string[][] 
 
 ## 当前源码公开 API 清单
 
+独立 bootstrap 在 private SDK 输出第一次写入前，通过薄 `TaskRuntimeBootstrapOwner` 调用 Foundation 的公共进程目录协议。Foundation 使用项目正常 bin/obj 构建；适配任务由当前 SDK 的 inline factory 编译，避免先准备完整 Task runtime 才能登记其临时输出的循环。这里只动态调用公开方法；没有私有反射或第二份 owner writer。后续 private publisher 和 load 登记复用同一 claim 与进程身份。
+
+有效 Task publication 的请求索引在 SDK Build 前验证并复用；跨 Build 复用仍重新捕获当前源文件、包、SDK 和编译属性身份。复用时先取得 host activity 和 publication reader，验证完整输出，再登记本次私有 load 的依赖。Build 生命周期 registry 只保存 BCL 数据，不保存 lease 或 ALC。Restore 后、独立锁等待后和实际编译后的 fresh 校验仍保留。损坏索引或输出不成为成功命中。
+
 按类型列出当前 public 与可供外部派生实现使用的 protected 声明。签名包含 nullable、默认参数和泛型约束；源码链接可定位实现。表中的“—”表示该声明没有额外 XML 约束，不能据此推断线程安全或不会失败。生命周期与组合顺序见本页前文。
 
 ### `Inno.Build.TaskHosting.BuildTaskRuntimeTask`
@@ -100,17 +105,17 @@ BuildTaskRuntimeTask 在 IBuildEngine4 的 Build registry 注册 BCL string[][] 
 
 | 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
 | --- | --- | --- | --- |
-| <a id="api-4f350c8ca30259bc"></a>[`public Inno.Build.TaskHosting.BuildTaskRuntimeTask.BuildTaskRuntimeTask()`](../../build/tasks/Inno.Build.TaskHosting/BuildTaskRuntimeTask.cs#L15) | C# 隐式构造函数；按类型声明执行字段初始化和基类构造。 | — | — |
-| <a id="api-09a77c1ac5da17ab"></a>[`public void Inno.Build.TaskHosting.BuildTaskRuntimeTask.Cancel()`](../../build/tasks/Inno.Build.TaskHosting/BuildTaskRuntimeTask.cs#L180) | Cancels an ownership wait without racing retirement of the cancellation source. | — | — |
-| <a id="api-94e4e76de32f1d3e"></a>[`public override bool Inno.Build.TaskHosting.BuildTaskRuntimeTask.Execute()`](../../build/tasks/Inno.Build.TaskHosting/BuildTaskRuntimeTask.cs#L69) | Serializes shared writes across processes while yielding the MSBuild node during ownership waits.<br>返回：True after a complete build; false with a logged error after failure or cancellation. | — | — |
-| <a id="api-c4e5dfbeda0505e4"></a>[`public string Inno.Build.TaskHosting.BuildTaskRuntimeTask.ArtifactsDirectory { get; set; }`](../../build/tasks/Inno.Build.TaskHosting/BuildTaskRuntimeTask.cs#L31) | Gets or sets the absolute shared intermediate owner, also supplied as ArtifactsPath. | — | — |
-| <a id="api-9a721288367b48a5"></a>[`public string Inno.Build.TaskHosting.BuildTaskRuntimeTask.LoadDirectory { get; set; }`](../../build/tasks/Inno.Build.TaskHosting/BuildTaskRuntimeTask.cs#L37) | Gets or sets the private reader location registered before returning an immutable runtime. | — | — |
-| <a id="api-eb6622ae93b2bdd1"></a>[`public string Inno.Build.TaskHosting.BuildTaskRuntimeTask.ProjectFile { get; set; }`](../../build/tasks/Inno.Build.TaskHosting/BuildTaskRuntimeTask.cs#L25) | Gets or sets the task project whose complete runtime is built by the calling MSBuild engine. | — | — |
-| <a id="api-cd916444f9a72d7b"></a>[`public string[] Inno.Build.TaskHosting.BuildTaskRuntimeTask.Properties { get; set; }`](../../build/tasks/Inno.Build.TaskHosting/BuildTaskRuntimeTask.cs#L50) | 显式 name=value 属性在移除父构建属性后应用，同名显式值优先。ArtifactsPath 由 Task 独占，不能覆盖。 | — | — |
-| <a id="api-2aa6626ed21fc71d"></a>[`public string[] Inno.Build.TaskHosting.BuildTaskRuntimeTask.RemoveProperties { get; set; }`](../../build/tasks/Inno.Build.TaskHosting/BuildTaskRuntimeTask.cs#L55) | Gets or sets parent global properties that must not enter the host tool build. | — | — |
-| <a id="api-fb0edd64fec02d2f"></a>[`public Microsoft.Build.Framework.ITaskItem[] Inno.Build.TaskHosting.BuildTaskRuntimeTask.TargetOutputs { get; private set; }`](../../build/tasks/Inno.Build.TaskHosting/BuildTaskRuntimeTask.cs#L61) | Gets the returned runtime files and their hash metadata after successful compilation. | — | — |
-| <a id="api-e2761437678872f8"></a>[`public string[] Inno.Build.TaskHosting.BuildTaskRuntimeTask.Targets { get; set; }`](../../build/tasks/Inno.Build.TaskHosting/BuildTaskRuntimeTask.cs#L43) | Gets or sets the ordered targets returning the complete hashed runtime closure. | — | — |
-| <a id="api-3c145afa5eec3ea4"></a>[`public sealed class Inno.Build.TaskHosting.BuildTaskRuntimeTask : Microsoft.Build.Utilities.Task, Microsoft.Build.Framework.ICancelableTask`](../../build/tasks/Inno.Build.TaskHosting/BuildTaskRuntimeTask.cs#L15) | Coordinates shared task-runtime compilation before immutable publication and private loading. | — | — |
+| <a id="api-4f350c8ca30259bc"></a>[`public Inno.Build.TaskHosting.BuildTaskRuntimeTask.BuildTaskRuntimeTask()`](../../build/tasks/Inno.Build.TaskHosting/BuildTaskRuntimeTask.cs#L16) | C# 隐式构造函数；按类型声明执行字段初始化和基类构造。 | — | — |
+| <a id="api-09a77c1ac5da17ab"></a>[`public void Inno.Build.TaskHosting.BuildTaskRuntimeTask.Cancel()`](../../build/tasks/Inno.Build.TaskHosting/BuildTaskRuntimeTask.cs#L213) | Cancels an ownership wait without racing retirement of the cancellation source. | — | — |
+| <a id="api-94e4e76de32f1d3e"></a>[`public override bool Inno.Build.TaskHosting.BuildTaskRuntimeTask.Execute()`](../../build/tasks/Inno.Build.TaskHosting/BuildTaskRuntimeTask.cs#L70) | Serializes shared writes across processes while yielding the MSBuild node during ownership waits.<br>返回：True after a complete build; false with a logged error after failure or cancellation. | — | — |
+| <a id="api-c4e5dfbeda0505e4"></a>[`public string Inno.Build.TaskHosting.BuildTaskRuntimeTask.ArtifactsDirectory { get; set; }`](../../build/tasks/Inno.Build.TaskHosting/BuildTaskRuntimeTask.cs#L32) | Gets or sets the absolute shared intermediate owner, also supplied as ArtifactsPath. | — | — |
+| <a id="api-9a721288367b48a5"></a>[`public string Inno.Build.TaskHosting.BuildTaskRuntimeTask.LoadDirectory { get; set; }`](../../build/tasks/Inno.Build.TaskHosting/BuildTaskRuntimeTask.cs#L38) | Gets or sets the private reader location registered before returning an immutable runtime. | — | — |
+| <a id="api-eb6622ae93b2bdd1"></a>[`public string Inno.Build.TaskHosting.BuildTaskRuntimeTask.ProjectFile { get; set; }`](../../build/tasks/Inno.Build.TaskHosting/BuildTaskRuntimeTask.cs#L26) | Gets or sets the task project whose complete runtime is built by the calling MSBuild engine. | — | — |
+| <a id="api-cd916444f9a72d7b"></a>[`public string[] Inno.Build.TaskHosting.BuildTaskRuntimeTask.Properties { get; set; }`](../../build/tasks/Inno.Build.TaskHosting/BuildTaskRuntimeTask.cs#L51) | 显式 name=value 属性在移除父构建属性后应用，同名显式值优先。ArtifactsPath 由 Task 独占，不能覆盖。 | — | — |
+| <a id="api-2aa6626ed21fc71d"></a>[`public string[] Inno.Build.TaskHosting.BuildTaskRuntimeTask.RemoveProperties { get; set; }`](../../build/tasks/Inno.Build.TaskHosting/BuildTaskRuntimeTask.cs#L56) | Gets or sets parent global properties that must not enter the host tool build. | — | — |
+| <a id="api-fb0edd64fec02d2f"></a>[`public Microsoft.Build.Framework.ITaskItem[] Inno.Build.TaskHosting.BuildTaskRuntimeTask.TargetOutputs { get; private set; }`](../../build/tasks/Inno.Build.TaskHosting/BuildTaskRuntimeTask.cs#L62) | Gets the returned runtime files and their hash metadata after successful compilation. | — | — |
+| <a id="api-e2761437678872f8"></a>[`public string[] Inno.Build.TaskHosting.BuildTaskRuntimeTask.Targets { get; set; }`](../../build/tasks/Inno.Build.TaskHosting/BuildTaskRuntimeTask.cs#L44) | Gets or sets the ordered targets returning the complete hashed runtime closure. | — | — |
+| <a id="api-3c145afa5eec3ea4"></a>[`public sealed class Inno.Build.TaskHosting.BuildTaskRuntimeTask : Microsoft.Build.Utilities.Task, Microsoft.Build.Framework.ICancelableTask`](../../build/tasks/Inno.Build.TaskHosting/BuildTaskRuntimeTask.cs#L16) | Coordinates shared task-runtime compilation before immutable publication and private loading. | — | — |
 
 ### `Inno.Build.TaskHosting.MaterializeBindingsTask`
 
@@ -152,15 +157,15 @@ BuildTaskRuntimeTask 在 IBuildEngine4 的 Build registry 注册 BCL string[][] 
 
 | 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
 | --- | --- | --- | --- |
-| <a id="api-64a83f71a923936b"></a>[`public Inno.Build.TaskHosting.PublishTaskHostTask.PublishTaskHostTask()`](../../build/tasks/Inno.Build.TaskHosting/PublishTaskHostTask.cs#L18) | C# 隐式构造函数；按类型声明执行字段初始化和基类构造。 | — | — |
-| <a id="api-c66051fe232266e1"></a>[`public void Inno.Build.TaskHosting.PublishTaskHostTask.Cancel()`](../../build/tasks/Inno.Build.TaskHosting/PublishTaskHostTask.cs#L122) | Cancels ownership waits and unpublished copies without racing token retirement. | — | — |
-| <a id="api-8134b8f157f6c713"></a>[`public override bool Inno.Build.TaskHosting.PublishTaskHostTask.Execute()`](../../build/tasks/Inno.Build.TaskHosting/PublishTaskHostTask.cs#L61) | Verifies sources and cached files, publishes a complete candidate under exclusive ownership, and registers the private reader before returning its shared runtime.<br>返回：True when a complete runtime was published or reused; false with a logged error otherwise. | — | — |
-| <a id="api-100a520324c68aca"></a>[`public string Inno.Build.TaskHosting.PublishTaskHostTask.CacheDirectory { get; set; }`](../../build/tasks/Inno.Build.TaskHosting/PublishTaskHostTask.cs#L34) | Gets or sets the absolute owner of content-addressed, shared task runtime snapshots. | — | — |
-| <a id="api-1a63ce224cb7903e"></a>[`public Microsoft.Build.Framework.ITaskItem[] Inno.Build.TaskHosting.PublishTaskHostTask.InputFiles { get; set; }`](../../build/tasks/Inno.Build.TaskHosting/PublishTaskHostTask.cs#L28) | Gets or sets the frozen runtime files, each declaring RelativePath and FileHash metadata. | — | — |
-| <a id="api-0d9ad49213c70af8"></a>[`public string Inno.Build.TaskHosting.PublishTaskHostTask.LoadDirectory { get; set; }`](../../build/tasks/Inno.Build.TaskHosting/PublishTaskHostTask.cs#L40) | Gets or sets the absolute private load directory whose parent receives this process's ownership marker. | — | — |
-| <a id="api-6465ee9dda416a69"></a>[`public string Inno.Build.TaskHosting.PublishTaskHostTask.PublishedAssembly { get; private set; }`](../../build/tasks/Inno.Build.TaskHosting/PublishTaskHostTask.cs#L52) | Gets the verified immutable task assembly path after successful publication. | — | — |
-| <a id="api-89c47e64b5a8aabe"></a>[`public string Inno.Build.TaskHosting.PublishTaskHostTask.PublisherDirectory { get; set; }`](../../build/tasks/Inno.Build.TaskHosting/PublishTaskHostTask.cs#L46) | Gets or sets an optional private bootstrap directory to register under the same process ownership. An empty value leaves the caller's publisher assembly lifetime outside this cache. | — | — |
-| <a id="api-16b3e5e4461b4feb"></a>[`public sealed class Inno.Build.TaskHosting.PublishTaskHostTask : Microsoft.Build.Utilities.Task, Microsoft.Build.Framework.ICancelableTask`](../../build/tasks/Inno.Build.TaskHosting/PublishTaskHostTask.cs#L18) | Publishes one immutable task runtime per content identity before a build loads its private closure. This bootstrap depends only on filesystem primitives and never loads the task runtime being built. | — | — |
+| <a id="api-64a83f71a923936b"></a>[`public Inno.Build.TaskHosting.PublishTaskHostTask.PublishTaskHostTask()`](../../build/tasks/Inno.Build.TaskHosting/PublishTaskHostTask.cs#L19) | C# 隐式构造函数；按类型声明执行字段初始化和基类构造。 | — | — |
+| <a id="api-c66051fe232266e1"></a>[`public void Inno.Build.TaskHosting.PublishTaskHostTask.Cancel()`](../../build/tasks/Inno.Build.TaskHosting/PublishTaskHostTask.cs#L128) | Cancels ownership waits and unpublished copies without racing token retirement. | — | — |
+| <a id="api-8134b8f157f6c713"></a>[`public override bool Inno.Build.TaskHosting.PublishTaskHostTask.Execute()`](../../build/tasks/Inno.Build.TaskHosting/PublishTaskHostTask.cs#L62) | Verifies sources and cached files, publishes a complete candidate under exclusive ownership, and registers the private reader before returning its shared runtime.<br>返回：True when a complete runtime was published or reused; false with a logged error otherwise. | — | — |
+| <a id="api-100a520324c68aca"></a>[`public string Inno.Build.TaskHosting.PublishTaskHostTask.CacheDirectory { get; set; }`](../../build/tasks/Inno.Build.TaskHosting/PublishTaskHostTask.cs#L35) | Gets or sets the absolute owner of content-addressed, shared task runtime snapshots. | — | — |
+| <a id="api-1a63ce224cb7903e"></a>[`public Microsoft.Build.Framework.ITaskItem[] Inno.Build.TaskHosting.PublishTaskHostTask.InputFiles { get; set; }`](../../build/tasks/Inno.Build.TaskHosting/PublishTaskHostTask.cs#L29) | Gets or sets the frozen runtime files, each declaring RelativePath and FileHash metadata. | — | — |
+| <a id="api-0d9ad49213c70af8"></a>[`public string Inno.Build.TaskHosting.PublishTaskHostTask.LoadDirectory { get; set; }`](../../build/tasks/Inno.Build.TaskHosting/PublishTaskHostTask.cs#L41) | Gets or sets the absolute private load directory whose parent receives this process's ownership marker. | — | — |
+| <a id="api-6465ee9dda416a69"></a>[`public string Inno.Build.TaskHosting.PublishTaskHostTask.PublishedAssembly { get; private set; }`](../../build/tasks/Inno.Build.TaskHosting/PublishTaskHostTask.cs#L53) | Gets the verified immutable task assembly path after successful publication. | — | — |
+| <a id="api-89c47e64b5a8aabe"></a>[`public string Inno.Build.TaskHosting.PublishTaskHostTask.PublisherDirectory { get; set; }`](../../build/tasks/Inno.Build.TaskHosting/PublishTaskHostTask.cs#L47) | Gets or sets an optional private bootstrap directory to register under the same process ownership. An empty value leaves the caller's publisher assembly lifetime outside this cache. | — | — |
+| <a id="api-16b3e5e4461b4feb"></a>[`public sealed class Inno.Build.TaskHosting.PublishTaskHostTask : Microsoft.Build.Utilities.Task, Microsoft.Build.Framework.ICancelableTask`](../../build/tasks/Inno.Build.TaskHosting/PublishTaskHostTask.cs#L19) | Publishes one immutable task runtime per content identity before a build loads its private closure. This bootstrap depends only on filesystem primitives and never loads the task runtime being built. | — | — |
 
 ### `Inno.Build.TaskHosting.RegisterTaskPublisherTask`
 
@@ -212,3 +217,24 @@ Owned restore 移除实际引用声明的 `GlobalPropertiesToRemove` 和父 Solu
 Task 请求身份同时读取 SDK 还原清单、所选目标的编译/运行/构建资产和包内 C# analyzer 输入。校验实际字节，不把包版本字符串或缓存时间戳当作完整性证明。选中资产缺失立即失败；不从其他框架选择替代 DLL。包内未选框架的普通 DLL 不进入该目标的文件集合。
 
 这是 Task 运行闭包的内部输入分析；它尚不是 Support Pack 的完整准备身份。任意自定义 target 在执行时生成的新输入，仍需由其实际编译流程声明和验证。
+
+
+## 进程与构建所有权 API
+
+| 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
+| --- | --- | --- | --- |
+| <a id="api-4e36554364566d29"></a>[`public sealed class Inno.Build.TaskHosting.TaskRuntimeBootstrapOwner : Microsoft.Build.Utilities.Task`](../../build/tasks/Inno.Build.TaskHosting/TaskRuntimeBootstrapOwner.cs#L12) | 轻量 SDK Task 适配，不包含另一套 claim writer。 | SDK 调用 Core.IO 的公开 claim；只交付 BCL 字符串，不保存 ALC 或 lease。 | 初始化/边界失败报告 MSBuild error，并阻止 payload 编译。 |
+| <a id="api-e44083ab7509d2ff"></a>[`public string Inno.Build.TaskHosting.TaskRuntimeBootstrapOwner.Root { get; set; }`](../../build/tasks/Inno.Build.TaskHosting/TaskRuntimeBootstrapOwner.cs#L18) | 标准发行登记的绝对 publisher 根。 | SDK 调用 Core.IO 的公开 claim；只交付 BCL 字符串，不保存 ALC 或 lease。 | 初始化/边界失败报告 MSBuild error，并阻止 payload 编译。 |
+| <a id="api-6cb80b7cfa19243c"></a>[`public string Inno.Build.TaskHosting.TaskRuntimeBootstrapOwner.Identity { get; set; }`](../../build/tasks/Inno.Build.TaskHosting/TaskRuntimeBootstrapOwner.cs#L24) | 引用图共享的当前操作 GUID，不能每个 target 重新生成。 | SDK 调用 Core.IO 的公开 claim；只交付 BCL 字符串，不保存 ALC 或 lease。 | 初始化/边界失败报告 MSBuild error，并阻止 payload 编译。 |
+| <a id="api-4c7de22179e2ea95"></a>[`public string Inno.Build.TaskHosting.TaskRuntimeBootstrapOwner.FoundationAssembly { get; set; }`](../../build/tasks/Inno.Build.TaskHosting/TaskRuntimeBootstrapOwner.cs#L30) | 当前 SDK 构建的 Foundation 程序集路径，用于调用公开 Core.IO 入口。 | SDK 调用 Core.IO 的公开 claim；只交付 BCL 字符串，不保存 ALC 或 lease。 | 初始化/边界失败报告 MSBuild error，并阻止 payload 编译。 |
+| <a id="api-ac8a6472636a0774"></a>[`public string Inno.Build.TaskHosting.TaskRuntimeBootstrapOwner.Directory { get; private set; }`](../../build/tasks/Inno.Build.TaskHosting/TaskRuntimeBootstrapOwner.cs#L36) | 首次 payload 前已经登记的 bootstrap 目录。 | SDK 调用 Core.IO 的公开 claim；只交付 BCL 字符串，不保存 ALC 或 lease。 | 初始化/边界失败报告 MSBuild error，并阻止 payload 编译。 |
+| <a id="api-65479adfba3085af"></a>[`public override bool Inno.Build.TaskHosting.TaskRuntimeBootstrapOwner.Execute()`](../../build/tasks/Inno.Build.TaskHosting/TaskRuntimeBootstrapOwner.cs#L44) | 建立当前进程 claim，成功返回 true；失败记录诊断并返回 false。 | SDK 调用 Core.IO 的公开 claim；只交付 BCL 字符串，不保存 ALC 或 lease。 | 初始化/边界失败报告 MSBuild error，并阻止 payload 编译。 |
+| <a id="api-b8337cdb3323d9d9"></a>[`public Inno.Build.TaskHosting.TaskRuntimeBootstrapOwner.TaskRuntimeBootstrapOwner()`](../../build/tasks/Inno.Build.TaskHosting/TaskRuntimeBootstrapOwner.cs#L12) | 创建尚未配置的 SDK Task；执行前设置 Required 属性。 | SDK 调用 Core.IO 的公开 claim；只交付 BCL 字符串，不保存 ALC 或 lease。 | 初始化/边界失败报告 MSBuild error，并阻止 payload 编译。 |
+
+<!-- api: T:Inno.Build.TaskHosting.TaskRuntimeBootstrapOwner 6c885efa1310f5c64df9c9d750c2741d682ac57330e2a1037baa70c9ece8d88b -->
+<!-- api: P:Inno.Build.TaskHosting.TaskRuntimeBootstrapOwner.Root cb738fb5bb94c4605d56ceec74da71011624901a5ec6b4b17be6a21832a2adc6 -->
+<!-- api: P:Inno.Build.TaskHosting.TaskRuntimeBootstrapOwner.Identity 9d9a33375fdb66a11c1982e7eb507ae212a07a7bba38d609e6905a5b0de6e114 -->
+<!-- api: P:Inno.Build.TaskHosting.TaskRuntimeBootstrapOwner.FoundationAssembly 68eb508d0b15d2c62cacbd3e28b2c450b0fd6dc4946db56fbb42d72ba9c47330 -->
+<!-- api: P:Inno.Build.TaskHosting.TaskRuntimeBootstrapOwner.Directory 8ded160ca212b760915954fe9ca6860aa34c7df69bcbfcf57c9ed55f4f80f593 -->
+<!-- api: M:Inno.Build.TaskHosting.TaskRuntimeBootstrapOwner.Execute a92eb78bb503eed207c7e3cc3013c09a0821af431cbe2af8843d596681160a11 -->
+<!-- api: M:Inno.Build.TaskHosting.TaskRuntimeBootstrapOwner.#ctor e8d9c89fcf975310aa42199c9caccd7c15f394dd6a435b96571cd2b3ba1809c0 -->

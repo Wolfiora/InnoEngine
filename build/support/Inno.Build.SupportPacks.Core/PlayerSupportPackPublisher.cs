@@ -99,7 +99,7 @@ public sealed class PlayerSupportPackPublisher
         if (plan is null || plan.target != target)
             throw new InvalidDataException("The Support Pack plan does not match its registered target.");
         cancellationToken.ThrowIfCancellationRequested();
-        var cache = new BuildCachePublisher(Path.GetFullPath(outputRoot));
+        var cache = new BuildCachePublisher(Path.GetFullPath(outputRoot), BuildCacheArtifactRole.ImmutableArtifact);
         using FileLease cacheUse = await cache.AcquireUseAsync(cancellationToken).ConfigureAwait(false);
         string output = Path.GetFullPath(outputRoot);
         Directory.CreateDirectory(output);
@@ -124,7 +124,8 @@ public sealed class PlayerSupportPackPublisher
         // A hit verifies fresh inputs inside SelectAsync after output verification and before
         // selection. No mutable source is consumed between ownership acquisition and that gate.
         await plan.VerifyInputsAsync(cancellationToken).ConfigureAwait(false);
-        string transaction = Path.Combine(output, ".support-pack-" + Guid.NewGuid().ToString("N"));
+        using ProcessOwnedDirectory stagingOwner = await ProcessOwnedDirectory.CreateAsync(output, cancellationToken).ConfigureAwait(false);
+        string transaction = stagingOwner.directory;
         string staging = Path.Combine(transaction, target.value);
         PlayerSupportPackLease? published = null;
         List<string> diagnostics = [];
@@ -151,8 +152,7 @@ public sealed class PlayerSupportPackPublisher
         {
             try
             {
-                if (Directory.Exists(transaction))
-                    Directory.Delete(transaction, recursive: true);
+                stagingOwner.Dispose();
             }
             catch (Exception failure) when (failure is IOException or UnauthorizedAccessException)
             {

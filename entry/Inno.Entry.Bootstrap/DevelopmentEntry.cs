@@ -67,7 +67,7 @@ public static class DevelopmentEntry
                             // Another preparation may have completed while this caller waited for ownership.
                             if (DevelopmentProduct.Open(root, host.target, Configuration(), host.editorAssembly!, cancellation.Token) is null)
                             {
-                                string dotnet = DevelopmentProcess.ResolveDotnet();
+                                string dotnet = DevelopmentProcess.ResolveDotnet(null);
                                 DevelopmentDependencies.PrepareAsync(root, cancellation.Token).GetAwaiter().GetResult();
                                 BuildAsync(root, dotnet, host.editorProject!, cancellation.Token).GetAwaiter().GetResult();
                                 path = GetAssemblyPathAsync(root, dotnet, host.editorProject!, Configuration(), cancellation.Token)
@@ -84,7 +84,7 @@ public static class DevelopmentEntry
                     }
                     Console.WriteLine($"Starting prepared Editor ({host.target}/{Configuration()}). Engine source changes require InnoEngine.Build.");
                     using var application = new DevelopmentApplication(path);
-                    Func<string[], CancellationToken, int> run = application.GetEntry<Func<string[], CancellationToken, int>>(editorEntryType);
+                    Func<string[], CancellationToken, int> run = application.GetEntry<Func<string[], CancellationToken, int>>(editorEntryType, "Run");
                     return run(arguments, cancellation.Token);
                 }
                 finally
@@ -121,6 +121,7 @@ public static class DevelopmentEntry
     /// </summary>
     /// <param name="arguments">
     /// No arguments selects an incremental Editor build. Use --clean to clean the selected product first.
+    /// An explicit --dotnet selects the SDK for both Build-tool preparation and the requested command.
     /// </param>
     /// <returns>
     /// Zero on success, two on cancellation, or one on preparation or build failure.
@@ -131,13 +132,15 @@ public static class DevelopmentEntry
     public static async Task<int> RunBuildAsync(string[] arguments)
     {
         ArgumentNullException.ThrowIfNull(arguments);
+        if (arguments.Length > 0 && arguments[0] == DevelopmentBuildWorker.C_ARGUMENT)
+            return await DevelopmentBuildWorker.RunAsync(arguments).ConfigureAwait(false);
         try
         {
             if (ShowInformation(arguments, editor: false))
                 return 0;
             DevelopmentHost host = DevelopmentHost.Resolve();
             string root = FindRoot();
-            string dotnet = DevelopmentProcess.ResolveDotnet();
+            string dotnet = DevelopmentProcess.ResolveDotnet(DevelopmentBuildRequest.ReadDotnet(arguments));
             string[] command = DevelopmentBuildRequest.Create(arguments, host, root, dotnet, Configuration());
             using var cancellation = CreateCancellation(out ConsoleCancelEventHandler onCancel);
             try
@@ -149,7 +152,8 @@ public static class DevelopmentEntry
                 {
                     await DevelopmentDependencies.PrepareAsync(root, cancellation.Token).ConfigureAwait(false);
                     string workspaceRoot = Path.Combine(root, "artifacts", "build-tools", "cli", "workspaces");
-                    string output = Path.Combine(workspaceRoot, Guid.NewGuid().ToString("N"));
+                    ProcessOwnedDirectory working = await ProcessOwnedDirectory.CreateAsync(workspaceRoot, cancellation.Token).ConfigureAwait(false);
+                    string output = working.directory;
                     string property = "-p:InnoBuildCliOutputPath=" + output + Path.DirectorySeparatorChar;
                     try
                     {
@@ -167,8 +171,7 @@ public static class DevelopmentEntry
                     {
                         try
                         {
-                            if (Directory.Exists(output))
-                                Directory.Delete(PathBoundary.RequireUnlinkedPath(workspaceRoot, output), recursive: true);
+                            working.Dispose();
                         }
                         catch (Exception cleanupFailure) when (cleanupFailure is IOException or UnauthorizedAccessException)
                         {
@@ -181,7 +184,7 @@ public static class DevelopmentEntry
                 using DevelopmentBuildToolLease toolReading = preparedTool;
                 using var application = new DevelopmentApplication(toolReading.assemblyPath);
                 Func<string[], CancellationToken, Task<int>> run = application
-                    .GetEntry<Func<string[], CancellationToken, Task<int>>>("Inno.Build.Cli.BuildApplication");
+                    .GetEntry<Func<string[], CancellationToken, Task<int>>>("Inno.Build.Cli.BuildApplication", "Run");
                 int result = await run(command, cancellation.Token).ConfigureAwait(false);
                 if (result == 0 && host.editorProject is not null
                     && command[0] == "editor" && command[Array.IndexOf(command, "--target") + 1] == host.target)
@@ -286,7 +289,7 @@ public static class DevelopmentEntry
             Console.WriteLine($"Checkout: {FindRoot()}");
             return true;
         }
-        Console.WriteLine(editor ? "InnoEngine.Editor [project-directory] [--graphics-api API] [--smoke-frames COUNT]"
+        Console.WriteLine(editor ? "InnoEngine.Editor [project-directory] [--graphics-api API] [--window-visible true|false] [--smoke-frames COUNT]"
             : "InnoEngine.Build [editor] [--configuration Debug|Release] [--clean]\n"
                 + "InnoEngine.Build clean --scope product [--dry-run]\n"
                 + "InnoEngine.Build <game|plugin|scripts|bindings|support-pack|verify|verify-native|shader> [options]");

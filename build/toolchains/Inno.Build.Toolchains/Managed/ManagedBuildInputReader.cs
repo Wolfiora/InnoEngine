@@ -19,8 +19,9 @@ internal static class ManagedBuildInputReader
         IReadOnlyDictionary<string, string> properties,
         CancellationToken cancellation
     ) {
-        string requests = Path.Combine(context.engineRoot, "artifacts", "build-tools", "managed-inputs");
-        string request = Path.Combine(requests, Guid.NewGuid().ToString("N"));
+        string requests = Path.Combine(context.engineRoot, "artifacts", "build-tools", "managed-inputs", "requests");
+        using ProcessOwnedDirectory requestOwner = await ProcessOwnedDirectory.CreateAsync(requests, cancellation).ConfigureAwait(false);
+        string request = requestOwner.directory;
         string manifest = Path.Combine(request, "Inputs.xml");
         string entry = Path.Combine(request, "Capture.proj");
         Directory.CreateDirectory(request);
@@ -59,8 +60,7 @@ internal static class ManagedBuildInputReader
         }
         finally
         {
-            if (Directory.Exists(request))
-                Directory.Delete(request, recursive: true);
+            requestOwner.Dispose();
         }
     }
 

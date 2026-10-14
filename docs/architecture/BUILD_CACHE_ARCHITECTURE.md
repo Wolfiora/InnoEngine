@@ -8,6 +8,14 @@
 
 ## 当前目录归属
 
+缓存登记区分不可变产物、可重用 workspace 与进程工作目录。只有不可变产物的当前选择形成长期保护根；workspace 的偏好不会阻止空闲目录退休。活动编译的独占 lease、活动进程的 PID/启动时间和完整依赖仍优先保护。
+
+临时 request、生成 staging 和 Build worker 在首次 payload 写入前取得进程 claim；稳定 workspace 先由 `BeginWorkingDirectory` 建立生产者登记，再写入源码或 SDK 输出。已有但未登记的目录明确拒绝自动认领。工作目录的实际大小在清理清点时测量，半成品的旧尺寸记录不代表预算或完整性。
+
+进程 claim 使用显式 JSON 字段读写，不依赖反射式序列化或运行时代码生成，因此可被 NativeAOT 产品消费。损坏的子进程记录产生 `Unknown`，保留目录；不能把无法读取的 owner 当成已经退出。
+
+权限错误、损坏 owner 和无法验证的进程身份均保留。旧 PID-only 记录不作为当前身份解释；未经证明的历史目录不会因一次目录扫描获得删除权限。
+
 | 位置 | 内容与 owner |
 | --- | --- |
 | `extern/` | 第三方源代码；构建只读 |
@@ -70,7 +78,9 @@ MSBuild 的 `MaterializeBindingsTask` 在保护期间把选定绑定复制到 SD
 
 登记记录保存于 publisher 根目录，不进入产物内容哈希。发布者在实际变更后记录大小，清理不为预算重复遍历整个源码工作区。最终删除前仍逐项检查路径与 reparse point。
 
-Task 的 host、load、publisher 和 shared workspace 分别拥有独立登记根。`RecordProcessUse` 在共享协调权限内记录既有进程声明及目录依赖；活动或不可确认的进程保护对应目录，load 同时保护它所用的 host。PID 被其他进程复用时会保守延后退休，不因此删除仍可能被使用的目录。编译 workspace 使用外部持久 lease，不能把删除协调文件当作清理。
+Task 的 host、load、publisher 和 shared workspace 分别拥有独立登记根。`RecordProcessUse` 在共享协调权限内记录 PID 与 UTC 启动 ticks 及目录依赖；活动或不可确认的进程保护对应目录，load 同时保护它所用的 host。PID 相同而启动时间不同表示原生命周期已经结束；权限或身份无法确认时延期退休。编译 workspace 使用外部持久 lease，不能把删除协调文件当作清理。
+
+预算使用完成 writer 登记的 workspace 大小；未完成的零大小登记与进程工作目录逐项读取，并在读取中检查时间预算。这些大小只服务预算，不参与 Native/Pack 完整性命中。真正退休时取得独占权、重新核对依赖与路径，再统计实际文件字节；卷空间变化另行测量，不能把 hardlink 的逻辑字节视为实际回收量。
 
 共享 owner lease 覆盖发布与读取交接，退休取得同一路径的独占保护。无法解析的 current root 或依赖会拒绝整次删除。未由当前 publisher 登记的目录不归自动清理；不会把历史目录年龄当作所有权证据。
 

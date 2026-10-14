@@ -27,11 +27,13 @@ internal sealed class DevelopmentApplication : IDisposable
 
     internal Assembly assembly { get; }
 
-    internal T GetEntry<T>(string typeName) where T : Delegate
-    {
+    internal T GetEntry<T>(
+        string typeName,
+        string methodName
+    ) where T : Delegate {
         Type type = assembly.GetType(typeName, throwOnError: true)!;
-        MethodInfo method = type.GetMethod("Run", BindingFlags.Public | BindingFlags.Static)
-            ?? throw new MissingMethodException(typeName, "Run");
+        MethodInfo method = type.GetMethod(methodName, BindingFlags.Public | BindingFlags.Static)
+            ?? throw new MissingMethodException(typeName, methodName);
         return method.CreateDelegate<T>();
     }
 

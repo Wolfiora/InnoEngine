@@ -22,6 +22,11 @@ public sealed class EditorCommandLineOptions
     public int? smokeFrameLimit { get; private init; }
 
     /// <summary>
+    /// Gets whether the platform window is shown; hidden execution retains the same Editor lifecycle.
+    /// </summary>
+    public bool windowVisible { get; private init; } = true;
+
+    /// <summary>
     /// Gets an explicit renderer preference, or null for backend policy.
     /// </summary>
     public GraphicsApi? graphicsApi { get; private init; }
@@ -40,19 +45,22 @@ public sealed class EditorCommandLineOptions
     /// </exception>
     public static EditorCommandLineOptions Parse(string[] arguments)
     {
-        if (!TryGetRunOptions(arguments, out string? project, out int? smoke, out GraphicsApi? graphics))
-            throw new ArgumentException("Usage: Editor <project-directory> [--graphics-api <renderer-id>] [--smoke-frames <positive-count>].", nameof(arguments));
-        return new EditorCommandLineOptions(project) { smokeFrameLimit = smoke, graphicsApi = graphics };
+        if (!TryGetRunOptions(arguments, out string? project, out int? smoke, out GraphicsApi? graphics, out bool visible))
+            throw new ArgumentException("Usage: Editor <project-directory> [--graphics-api <renderer-id>] [--window-visible <true|false>] [--smoke-frames <positive-count>].", nameof(arguments));
+        return new EditorCommandLineOptions(project) { smokeFrameLimit = smoke, graphicsApi = graphics, windowVisible = visible };
     }
     private static bool TryGetRunOptions(
         string[] args,
         [NotNullWhen(true)] out string? projectDirectory,
         out int? smokeFrameLimit,
-        out GraphicsApi? graphicsApi
+        out GraphicsApi? graphicsApi,
+        out bool windowVisible
     ) {
         ArgumentNullException.ThrowIfNull(args);
         smokeFrameLimit = null;
         graphicsApi = null;
+        windowVisible = true;
+        bool hasVisibility = false;
         projectDirectory = args.Length > 0 ? args[0] : null;
         if (projectDirectory is null)
             return false;
@@ -76,6 +84,13 @@ public sealed class EditorCommandLineOptions
                 if (graphicsApi is not null || !TryParseGraphicsApi(args[index + 1], out GraphicsApi parsedApi))
                     return false;
                 graphicsApi = parsedApi;
+                continue;
+            }
+            if (string.Equals(args[index], "--window-visible", StringComparison.Ordinal))
+            {
+                if (hasVisibility || !bool.TryParse(args[index + 1], out windowVisible))
+                    return false;
+                hasVisibility = true;
                 continue;
             }
             return false;

@@ -31,7 +31,7 @@ public sealed class PreparedEditorStartupTests
         if (!windows && !mac)
             return;
         string target = windows ? "windows-x64" : "macos-arm64";
-        string platform = windows ? "Windows" : "MacOS";
+        string platform = windows ? "WindowsX64" : "MacOSArm64";
         string root = Path.Combine(Path.GetTempPath(), "InnoPreparedEntryTests", Guid.NewGuid().ToString("N"));
         string product = Path.Combine(root, "Product");
         string launch = Path.Combine(root, "Launch");

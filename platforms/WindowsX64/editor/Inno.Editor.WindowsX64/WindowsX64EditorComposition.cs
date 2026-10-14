@@ -93,6 +93,7 @@ public static class WindowsX64EditorComposition
                         title = "Inno Editor",
                         width = 1600,
                         height = 900,
+                        visible = command.windowVisible,
                         resizable = true,
                         highPixelDensity = true
                     },

@@ -110,10 +110,10 @@ internal sealed class BuildWorkspace : IDisposable
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToArray();
         string destination = Path.GetFullPath(outputDirectory);
-        string staging = destination + ".staging-" + Guid.NewGuid().ToString("N");
-        string backup = destination + ".backup-" + Guid.NewGuid().ToString("N");
         Directory.CreateDirectory(Path.GetDirectoryName(destination)!);
-        Directory.CreateDirectory(staging);
+        using ProcessOwnedDirectory stagingOwner = ProcessOwnedDirectory.CreateAsync(Path.GetDirectoryName(destination)!)
+            .AsTask().GetAwaiter().GetResult();
+        string staging = stagingOwner.directory;
         try
         {
             foreach (string assembly in assemblies)
@@ -123,25 +123,18 @@ internal sealed class BuildWorkspace : IDisposable
                 if (File.Exists(symbols))
                     File.Copy(symbols, Path.Combine(staging, Path.GetFileName(symbols)));
             }
-            if (Directory.Exists(destination))
-                Directory.Move(destination, backup);
             try
             {
-                Directory.Move(staging, destination);
+                AtomicDirectory.Install(staging, destination);
             }
-            catch
+            catch (DirectoryCleanupException cleanupFailure)
             {
-                if (Directory.Exists(backup))
-                    Directory.Move(backup, destination);
-                throw;
+                Console.Error.WriteLine(cleanupFailure.Message);
             }
         }
         finally
         {
-            if (Directory.Exists(staging))
-                Directory.Delete(staging, recursive: true);
-            if (Directory.Exists(destination) && Directory.Exists(backup))
-                Directory.Delete(backup, recursive: true);
+            stagingOwner.Dispose();
         }
         return destination;
     }

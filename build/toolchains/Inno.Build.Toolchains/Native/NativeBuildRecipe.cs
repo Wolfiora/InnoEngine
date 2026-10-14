@@ -10,6 +10,7 @@ namespace Inno.Build.Toolchains;
 /// </summary>
 public sealed class NativeBuildRecipe
 {
+    internal NativeToolchainSelection? toolchain { get; private init; }
     /// <summary>
     /// Creates a complete recipe without inferring implementation identity from an assembly MVID.
     /// </summary>
@@ -141,7 +142,7 @@ public sealed class NativeBuildRecipe
             .Select(file => Path.Combine(commonRoot, file)));
         paths.AddRange(new[]
         {
-            "NativeArtifactPublisher.cs", "NativeBuildFingerprint.cs", "NativeBuildInput.cs", "NativeWorkspaceIdentity.cs", "NativeBindingInputPaths.cs",
+            "NativeArtifactPublisher.cs", "ProductNativeCacheLookup.cs", "NativeBuildFingerprint.cs", "NativeBuildInput.cs", "NativeWorkspaceIdentity.cs", "NativeBindingInputPaths.cs",
             "NativeBuildInputState.cs", "NativeInputSnapshot.cs", "NativeInputReadCache.cs", "NativeInputVerificationScope.cs", "NativeBuildPhaseStatistics.cs", "NativeBuildProduct.cs",
             "NativeBuildStatistics.cs", "NativeToolchainSelection.cs", "NativeBuildRecipe.cs", "ProductNativeBuildResult.cs",
             "NativeCMakeExecutor.cs", "NativeCMakeSource.cs", "NativeComponentBuildOptions.cs", "ProductNativeBuildStep.cs", "ProductNativeBuildPlan.cs", "NativeInputMaterializer.cs", "NativeBindingGenerationDescriptor.cs",
@@ -155,12 +156,40 @@ public sealed class NativeBuildRecipe
         paths.Add(Path.Combine(commonRoot, "Cache", "BuildArtifactWriteLease.cs"));
         paths.Add(Path.Combine(commonRoot, "Cache", "BuildCachePublisher.cs"));
         string ioRoot = Path.Combine(context.engineRoot, "src", "foundation", "core", "Inno.Core.IO");
-        paths.AddRange(new[] { "AtomicDirectory.cs", "AtomicFile.cs", "DirectoryCleanupException.cs", "FileSystemRename.cs", "FileLease.cs", "PathBoundary.cs" }
+        paths.AddRange(new[] { "AtomicDirectory.cs", "AtomicFile.cs", "DirectoryCleanupException.cs", "FileSystemRename.cs", "FileLease.cs", "PathBoundary.cs",
+            "ProcessOwnerStamp.cs", "ProcessOwnerState.cs", "ProcessOwnedDirectory.cs", "ProcessOwnedDirectoryDescriptor.cs" }
             .Select(file => Path.Combine(ioRoot, file)));
         return new NativeBuildRecipe(owner, component, targetId,
             paths.Select(path => NativeBuildInput.FromPath(context.engineRoot, path)),
             new[] { component, targetId, context.configuration, "executionRoot=" + context.engineRoot }.Concat(declarations)
-                .Concat(options.declarations).Concat(context.toolchain?.declarations ?? []));
+                .Concat(options.declarations).Concat(context.toolchain?.declarations ?? [])) { toolchain = context.toolchain };
+    }
+
+    /// <summary>
+    /// Adds one explicitly selected published dependency while preserving the recipe's frozen execution tools.
+    /// </summary>
+    /// <param name="input">
+    /// The dependency file whose bytes participate in compilation.
+    /// </param>
+    /// <param name="fingerprint">
+    /// The immutable dependency artifact identity selected by the product.
+    /// </param>
+    /// <returns>
+    /// A new declaration with the dependency input and identity; this recipe is unchanged.
+    /// </returns>
+    /// <exception cref="ArgumentException">
+    /// The dependency identity is empty.
+    /// </exception>
+    /// <exception cref="ArgumentNullException">
+    /// The input is null.
+    /// </exception>
+    public NativeBuildRecipe WithDependency(
+        NativeBuildInput input,
+        string fingerprint
+    ) {
+        ArgumentNullException.ThrowIfNull(input);
+        ArgumentException.ThrowIfNullOrWhiteSpace(fingerprint);
+        return new(owner, component, targetId, inputs.Append(input), declarations.Append("dependency=" + fingerprint)) { toolchain = this.toolchain };
     }
 
     /// <summary>
@@ -175,7 +204,7 @@ public sealed class NativeBuildRecipe
             generated = generated.Append(NativeBuildInput.FromPath(engineRoot, generation.bridgeDirectory));
         return new NativeBuildRecipe(owner, component, targetId, inputs.Concat(generated),
             declarations.Append("bindings=" + generation.fingerprint)
-                .Append("bindingBridgeRoot=" + generation.bridgeDirectory));
+                .Append("bindingBridgeRoot=" + generation.bridgeDirectory)) { toolchain = this.toolchain };
     }
 
     private static void ValidateSegment(string value)

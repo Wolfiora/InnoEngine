@@ -2,39 +2,52 @@
 
 [架构索引](README.md) · [Wiki 首页](../README.md) · [问题台账](CURRENT_ISSUES.md)
 
-## 当前执行范围
+## 当前范围
 
-本轮基线为 `a82fb6b9ed50405029ea653c1d5283854ef2ca0e`，分支 `kernel`，2026-10-13 更新。用户已取消本轮 GUI 与 Computer Use 验收。源码整改及以下非 GUI 功能门禁已通过，未发现新的阻止源码提交的架构或功能缺陷；完整原计划仍有性能测量和磁盘清理剩余项，不能描述为所有验收全部完成。详细过程位于 [验收记录](../../records/architecture/acceptance/FINAL_PLATFORM_RELOAD_NUGET_ACCEPTANCE.md)。
+2026-10-14，kernel 基线 `b488d5d8588ec56e6ca1ab50bb1f30c680e81e8f` 后的构建成本、工具宿主与缓存生命周期整改。没有自动提交。本轮不执行 Computer Use、桌面焦点、视觉或声学验收；后台与 headless 结果仅证明对应的非 GUI 行为。
 
-## 已取得的新证据
+详细命令、首次失败、修复及回收过程见[本轮验收记录](../../records/architecture/acceptance/BUILD_COST_TOOL_HOST_DISK_CLOSURE_ACCEPTANCE.md)。历史结果不冒充当前通过证据。
 
-| 范围 | 本轮结果 |
+## 已验证能力
+
+| 范围 | 当前结果 |
 | --- | --- |
-| Reload guard / Play generation | 最新 PlayMode 53 项与 Hosting 6 项通过；GUI 已确认 Playing 禁用 Reload、自动变化暂存、停止后激活和 GC 完成。GameView 聚焦的停止快捷键修复另通过公开路由测试。 |
-| Scene Plugin Missing / recovery | 2 项 owner/rollback 回归通过；Missing/recovery 与真实 Plugin reload 已复验。 |
-| Cache / Task / platform composition | 62 项专项测试通过。 |
-| BGCS NuGet 消费 | 绑定库和 CLI 编译通过；包族固定 2.1.0，包内容记录在锁文件。 |
-| 目标与源码依赖删除 | 当前目标 WindowsX64、MacOSArm64、BrowserWasm32；源码依赖目录和未选择的平台模块已删除。 |
-| 架构规则 | 最新完整架构 122 项通过；SourceDebug/SourceRelease 均 0 errors、0 warnings。 |
-| Wiki / Solution | 完整严格 Wiki 门禁 2 项通过：352 页、45,548 个公开/可扩展符号、189 段示例。有效图和 Solution 均为 230 个项目，无遗漏项目或空 Solution Folder。 |
-| Console / 窗口生命周期 | Console 原生布局 4 项、窗口/退休回归 40 项通过；标题仅显示等级，类型在详情。 |
-| Windows Player | 最新 CoreCLR、NativeAOT 发布通过，各两次 360 帧后台运行正常退出，stderr 为空；存储跨启动递增、音频 DSP 时钟推进。后台运行不等于视觉或声学验收。 |
-| Browser Player | 最新解释执行/AOT 最终发布通过，AOT 链接包含 88 个程序集；此前网页实际运行证据保留，最新日志 API 修正后的交互未重跑。 |
-| 公开消费者 | 最新源码编译、Plugin 导出和脚本 API 消费通过。 |
-| Editor 部署 | Debug 558 个、Release 507 个 payload 哈希一致，无缺失或额外文件；锁文件按入口协议排除。 |
-| 包一致性 | 653 份锁文件中的 286 条 BGCS 包记录均为固定 2.1.0；生成器不进入 Player 运行闭包。 |
-| 磁盘回收 | 最新正式 owner 清理实际释放 11.54 GiB。额外历史目录删除被自动审批拒绝，未达到约 200 GB 可用空间目标。 |
+| 源码配置 | 最新 SourceDebug / SourceRelease 均 0 errors、0 warnings。 |
+| 构建契约 | 完整套件、受影响复验、SDK 准入与实际 CLI 引用测试按名称合并后 325 个唯一用例、剩余失败 0。重叠测试不累加。 |
+| 工具进程 | 默认 JIT；30 轮 fixture、10 次真实身份检查、非法 nonce、崩溃、终止及真实十分钟截止通过。 |
+| 热 Native | 三次热 Build 的 compiler、binding generation、materialization、完整 Task 编译均为 0；哈希、exports 和原子发布门禁保留。 |
+| 失效与并发 | 同长度/mtime、损坏、取消、并发契约通过；两个实际 Editor Build 正常完成；小 Native 修改复用兼容 workspace。 |
+| Support Pack | Windows 与 Browser 第二次相同请求复用同一内容身份，无 Native、绑定或 Player 编译。显式 SDK 同时用于工具与实际命令。 |
+| Windows Player | CoreCLR、NativeAOT 重新发布；各两次 360 帧后台运行正常退出、stderr 为空、存储递增、DSP 时钟推进。 |
+| Browser Player | 解释执行/AOT 重新发布；各两次隔离 headless 运行，输入、持久化、帧推进、冻结/恢复通过，JS errors=0。 |
+| Editor | Debug 三次、Release 一次 120 帧后台运行正常退出；有效部署直接启动，无 Native、绑定或 Pack 准备。 |
+| 公开消费 | 当前公开契约的源码编译与 Plugin 导出通过；Wiki 不以外部产品解释引擎职责。 |
+| Wiki | 严格 CLI 校验使用实际生成的裁剪 references：45,592 个符号、190 段示例，错误 0；项目图 230/230，架构测试 122/122。 |
+| owner | PID/启动 ticks、首次写入前 claim、读取保护、角色区分及安全退休通过；活动、损坏或未知 owner 保留。 |
 
-NativeAOT 实测发现并修复了 `Assembly.GetCallingAssembly()` 不可用问题。静态日志 API 现在显式借用来源类型，例如 `Log.Info(typeof(PlayerController), "Started.")`，日志记录不持有该类型或程序集。详见 [Logging](../core/Inno.Core.Logging.md)。
+NativeAOT 发现 owner 记录的反射式 JSON 读取违反裁剪要求，已改为显式读写，实际重新发布与运行通过。
 
-## 尚未完成
+## 测量
 
-三次热 Editor Build 为 281.564、194.049、251.685 秒，Native compiler 均未启动。完整构建仍为分钟级，不能宣称性能问题全部消失。此前 Release 真实启动从进程记录到首帧约 10.15 秒，没有 Native、绑定或 Pack 准备；不能以 `--status` 的宿主查询时间冒充 Editor 启动耗时。
+| 项目 | 实际结果 |
+| --- | --- |
+| Debug 热 Build | 119.047 / 146.297 / 138.343 秒，中位数 138.343 秒。 |
+| Native 串行 / 批次 | 38.225 / 11.976 秒；读取 14.730 / 5.228 GB；两者 compiler=0。 |
+| 小 Native 修改 | 179.015 秒、2 个工具进程、9,821 字节复制；原字节与 mtime 恢复后热命中。 |
+| Pack 第二次请求 | Windows 32.188 秒；Browser SDK 修正后 32.578 秒。 |
+| Debug 首帧 | 最后清理后独立启动 7.268 / 3.665 / 3.626 秒；每次 120 帧正常退出，无 Native/Task/Pack 准备。 |
+| Release 首帧 | 最后清理后独立启动 7.072 秒；120 帧正常退出。 |
 
-相同 Support Pack 请求返回同一内容身份，未重新执行 Native compiler、绑定生成或 Player managed Build；请求仍包含项目求值、哈希和完整性验证。真实小 Native 修改后的产品级耗时仍缺独立测量，公开边界的 workspace 复用测试不能替代该性能数据。
+首帧包含部署校验、Host 与项目初始化，不是宿主查询时间。不同冷准备、SDK 切换及并行负载结果不混入热构建统计。
 
-最新 GUI、完整焦点/DPI/视觉/声学矩阵按用户要求未执行。额外历史中间目录删除被自动审批拒绝，空间目标仍未完成，见 [磁盘报告](../../records/architecture/acceptance/DISK_CLEANUP_20261013.md)。当前可以提交已通过源码门禁的修改，提交说明须保留限制；没有自动提交，也不将未执行项写成通过。
+## 限制与提交判断
 
-MacOSArm64 只在 Windows 上进行源码、项目与组合核查；Native/Editor/Player 实机运行 **未实测**。未实现宿主不注册产品。声学听音与多屏 DPI 必须单列实际设备条件。
+已执行的非 GUI 源码、契约和产品路径通过。完整哈希、项目求值仍有分钟级热 Build 成本，不能称引擎或构建绝无问题。提交说明应保留实际环境与未实测范围。
 
-默认 Solution 的平台库显示 not built，仅表示未参加当前配置的批量构建。两个开发入口与独立产品准备方式见 [启动说明](../platform/PRODUCT_STARTUP.md)。
+最后正式缓存清理实际增加 14,342,897,664 字节，清理后可用 65,568,768,000 字节；逻辑退休量不等同于卷增加量。恢复 **200,000,000,000 字节**可用空间尚未达成：37 个历史目录删除被自动审批拒绝，未绕过、未补写 owner，未清理用户、SDK 或 NuGet 缓存。
+
+MacOSArm64 Native / Editor / Player 实机 **未实测**。GUI、完整焦点/DPI/视觉与声学按用户要求不执行；远端 CI 以实际远端记录为准。
+
+平台 not built 表示未参加当前 Solution 配置的批量构建。两个入口与产品启动链见[启动说明](../platform/PRODUCT_STARTUP.md)。
+
+Web headless 启动保留第三方 WebGL 能力查询和 ScriptProcessorNode 弃用警告，JS errors=0；不据此宣称没有警告或视觉/听感通过。实际 CLI 创作闭包已补齐 Animation 引用，重新生成和全例编译通过。

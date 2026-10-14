@@ -119,7 +119,7 @@ public sealed class TaskRuntimeBuildTests : IDisposable
     }
 
     [Fact]
-    public void ReuseIsLimitedToOneBuildAndRejectsSameLengthSameTimeSourceChanges()
+    public void ValidPublicationIsReusedAcrossBuildsAndRejectsSameLengthSameTimeSourceChanges()
     {
         var engine = new RecordingEngine(static () => true);
         Assert.True(CreateTask(engine).Execute(), string.Join("\n", engine.errors));
@@ -135,7 +135,7 @@ public sealed class TaskRuntimeBuildTests : IDisposable
         Assert.Equal(2, engine.builds);
         var nextBuild = new RecordingEngine(static () => true);
         Assert.True(CreateTask(nextBuild).Execute(), string.Join("\n", nextBuild.errors));
-        Assert.Equal(1, nextBuild.builds);
+        Assert.Equal(0, nextBuild.builds);
     }
 
     [Fact]
