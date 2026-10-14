@@ -6,5 +6,6 @@ internal sealed record DevelopmentBuildWorkerRequest(
     string dotnet,
     string assembly,
     string operation,
-    string nonce
+    string nonce,
+    string tool
 );

@@ -67,7 +67,9 @@ public sealed class ManagedInputGraphTask : Task
                 pending.Enqueue(new ProjectGraph(ProjectPath, globals, collection));
                 var visited = new HashSet<string>(StringComparer.Ordinal);
                 while (pending.Count != 0)
-                foreach (var node in pending.Dequeue().ProjectNodes.OrderBy(node => node.ProjectInstance.FullPath, StringComparer.Ordinal))
+                foreach (var node in pending.Dequeue().ProjectNodes.OrderBy(node => node.ProjectInstance.FullPath, StringComparer.Ordinal)
+                    .ThenBy(node => string.Join(";", node.ProjectInstance.GlobalProperties.OrderBy(pair => pair.Key, StringComparer.Ordinal)
+                        .Select(pair => pair.Key + "=" + pair.Value)), StringComparer.Ordinal))
                 {
                     var project = node.ProjectInstance;
                     string identity = project.FullPath + "|" + string.Join(";", project.GlobalProperties.OrderBy(pair => pair.Key, StringComparer.Ordinal)

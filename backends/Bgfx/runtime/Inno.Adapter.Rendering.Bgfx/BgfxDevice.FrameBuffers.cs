@@ -77,7 +77,7 @@ sealed unsafe partial class BgfxDevice
                     frameBuffer,
                     pass.name,
                     signature,
-                    m_backendFrame));
+                    m_submissionSequence));
                 m_graphFrameBuffers.Add(frameBuffer);
                 bgfx.set_view_frame_buffer(viewId, frameBuffer);
             }
@@ -140,7 +140,7 @@ sealed unsafe partial class BgfxDevice
             if (!matches)
                 continue;
 
-            cached.lastUsedFrame = m_backendFrame;
+            cached.lastUsedSubmission = m_submissionSequence;
             return cached.handle;
         }
 
@@ -153,7 +153,7 @@ sealed unsafe partial class BgfxDevice
         {
             CachedGraphFrameBuffer cached = m_graphFrameBufferCache[index];
             if (!string.Equals(cached.passName, passName, StringComparison.Ordinal)
-                || cached.lastUsedFrame == m_backendFrame)
+                || cached.lastUsedSubmission == m_submissionSequence)
             {
                 continue;
             }
@@ -231,12 +231,12 @@ sealed unsafe partial class BgfxDevice
         bgfx.FrameBufferHandle handle,
         string passName,
         GraphAttachmentSignature[] attachments,
-        uint lastUsedFrame
+        ulong lastUsedSubmission
     ) {
         internal bgfx.FrameBufferHandle handle { get; } = handle;
         internal string passName { get; } = passName;
         internal GraphAttachmentSignature[] attachments { get; } = attachments;
-        internal uint lastUsedFrame { get; set; } = lastUsedFrame;
+        internal ulong lastUsedSubmission { get; set; } = lastUsedSubmission;
 
         internal bool ContainsTexture(ushort textureIndex)
         {

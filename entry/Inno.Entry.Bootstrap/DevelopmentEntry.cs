@@ -12,7 +12,6 @@ namespace Inno.Entry.Bootstrap;
 /// </summary>
 public static class DevelopmentEntry
 {
-    private const string C_BUILD_PROJECT = "build/cli/Inno.Build.Cli/Inno.Build.Cli.csproj";
 
     /// <summary>
     /// Runs the validated prepared Editor on the original main thread, building it when preparation is absent.
@@ -147,24 +146,29 @@ public static class DevelopmentEntry
             {
                 using var lease = await FileLease.AcquireAsync(LockPath(root), TimeSpan.FromMinutes(10), cancellation.Token)
                     .ConfigureAwait(false);
-                DevelopmentBuildToolLease? preparedTool = DevelopmentBuildTool.Open(root, Configuration(), dotnet, cancellation.Token);
+                int scopeIndex = Array.IndexOf(command, "--scope");
+                bool cacheMaintenance = command[0] == "clean" && scopeIndex >= 0
+                    && scopeIndex + 1 < command.Length && command[scopeIndex + 1] == "cache";
+                DevelopmentToolDefinition tool = cacheMaintenance ? DevelopmentToolDefinition.Maintenance : DevelopmentToolDefinition.Build;
+                DevelopmentBuildToolLease? preparedTool = DevelopmentBuildTool.Open(root, tool, Configuration(), dotnet, cancellation.Token);
                 if (preparedTool is null)
                 {
-                    await DevelopmentDependencies.PrepareAsync(root, cancellation.Token).ConfigureAwait(false);
-                    string workspaceRoot = Path.Combine(root, "artifacts", "build-tools", "cli", "workspaces");
+                    if (!cacheMaintenance)
+                        await DevelopmentDependencies.PrepareAsync(root, cancellation.Token).ConfigureAwait(false);
+                    string workspaceRoot = Path.Combine(root, "artifacts", "build-tools", tool.cacheName, "workspaces");
                     ProcessOwnedDirectory working = await ProcessOwnedDirectory.CreateAsync(workspaceRoot, cancellation.Token).ConfigureAwait(false);
                     string output = working.directory;
-                    string property = "-p:InnoBuildCliOutputPath=" + output + Path.DirectorySeparatorChar;
+                    string property = "-p:InnoBuildToolOutputPath=" + output + Path.DirectorySeparatorChar;
                     try
                     {
                         await DevelopmentProcess.RunAsync(dotnet,
-                            ["build", Path.GetFullPath(C_BUILD_PROJECT, root), "--configuration", Configuration(),
+                            ["build", Path.GetFullPath(tool.project, root), "--configuration", Configuration(), "-p:InnoBuildToolProject=" + tool.assemblyName,
                                 "--disable-build-servers", "-m:1", "-nodeReuse:false", property],
                             root, capture: false, cancellation.Token).ConfigureAwait(false);
                         string path = await DevelopmentProcess.RunAsync(dotnet,
-                            ["msbuild", Path.GetFullPath(C_BUILD_PROJECT, root), "-nologo", "-getProperty:TargetPath",
-                                "-p:Configuration=" + Configuration(), property], root, capture: true, cancellation.Token).ConfigureAwait(false);
-                        path = DevelopmentBuildTool.Record(root, Configuration(), dotnet, path, cancellation.Token);
+                            ["msbuild", Path.GetFullPath(tool.project, root), "-nologo", "-getProperty:TargetPath",
+                                "-p:Configuration=" + Configuration(), "-p:InnoBuildToolProject=" + tool.assemblyName, property], root, capture: true, cancellation.Token).ConfigureAwait(false);
+                        path = DevelopmentBuildTool.Record(root, tool, Configuration(), dotnet, path, cancellation.Token);
                         preparedTool = new DevelopmentBuildToolLease(path, cancellation.Token);
                     }
                     finally
@@ -184,7 +188,7 @@ public static class DevelopmentEntry
                 using DevelopmentBuildToolLease toolReading = preparedTool;
                 using var application = new DevelopmentApplication(toolReading.assemblyPath);
                 Func<string[], CancellationToken, Task<int>> run = application
-                    .GetEntry<Func<string[], CancellationToken, Task<int>>>("Inno.Build.Cli.BuildApplication", "Run");
+                    .GetEntry<Func<string[], CancellationToken, Task<int>>>(tool.applicationType, "Run");
                 int result = await run(command, cancellation.Token).ConfigureAwait(false);
                 if (result == 0 && host.editorProject is not null
                     && command[0] == "editor" && command[Array.IndexOf(command, "--target") + 1] == host.target)

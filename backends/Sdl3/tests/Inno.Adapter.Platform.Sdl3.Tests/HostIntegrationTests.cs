@@ -42,7 +42,7 @@ public sealed unsafe class HostIntegrationTests
 
     private sealed class FailingHost : ISdl3HostIntegration
     {
-        private readonly WindowsX64Sdl3HostIntegration m_inner = new();
+        private readonly ISdl3HostIntegration m_inner = NativeHostFixture.Create();
         internal bool failSurface = true;
         internal uint lastId;
         internal int calls;

@@ -10,6 +10,8 @@ sealed partial class RenderGraphBuilder
         if (pass.index < m_frozenPassCount || pass.index >= m_passes.Count
             || !ReferenceEquals(m_passes[pass.index], pass))
             throw new InvalidOperationException("The pass declaration was committed or removed by rollback.");
+        if (pass.index < m_analysis.passCount)
+            m_analysis.Reset();
         InvalidateValidation();
     }
 
@@ -39,6 +41,7 @@ sealed partial class RenderGraphBuilder
                 m_nameScopes.RemoveRange(scope.nameScopeCount, m_nameScopes.Count - scope.nameScopeCount);
             m_frozenPassCount = Math.Min(m_frozenPassCount, m_passes.Count);
             InvalidateValidation();
+            m_analysis.Reset();
             m_validation = scope.validation;
             m_validatedRevision = m_revision;
         }
@@ -80,7 +83,7 @@ sealed partial class RenderGraphBuilder
     {
         if (m_validation is not null && m_validatedRevision == m_revision)
             return m_validation;
-        m_validation = RenderGraphValidator.Validate(m_capabilities, m_textures, m_buffers, m_passes, m_outputs);
+        m_validation = RenderGraphValidator.Validate(m_capabilities, m_textures, m_buffers, m_passes, m_outputs, m_analysis);
         m_validatedRevision = m_revision;
         return m_validation;
     }

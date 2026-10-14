@@ -11,6 +11,7 @@
 - [Inno.Adapter.Platform.Sdl3](../backends/Sdl3/Inno.Adapter.Platform.Sdl3.md)
 - [Inno.Native.Sdl3](../backends/Sdl3/Inno.Native.Sdl3.md)
 - [Inno.Integration.WindowsX64.Sdl3](../platform/WindowsX64/Inno.Integration.WindowsX64.Sdl3.md)
+- [Inno.Integration.MacOSArm64.Sdl3](../platform/MacOSArm64/Inno.Integration.MacOSArm64.Sdl3.md)
 - [Inno.Editor.ImGui](../editor/Inno.Editor.ImGui.md)
 - [Inno.Native.ImGui](../backends/ImGui/Inno.Native.ImGui.md)
 
@@ -50,3 +51,7 @@ dotnet test tests/editor/Inno.Editor.ImGui.Tests/Inno.Editor.ImGui.Tests.csproj 
 - [项目文件](../../tests/editor/Inno.Editor.ImGui.Tests/Inno.Editor.ImGui.Tests.csproj)：框架、引用和实际构建配置。
 - [架构索引](../architecture/README.md)：所属层及禁止依赖。
 - [当前验收](../architecture/CURRENT_ACCEPTANCE.md)：实际运行状态与环境限制。
+
+## 明确宿主的 Native 验证
+
+WindowsX64 与 MacOSArm64 窗口 fixture 分别使用真实 Win32/Cocoa 集成，不借用另一个平台的 surface。CI 通过 `tests/Invoke-IsolatedTests.ps1` 的 `Target` 和 `ProductProperties` 参数选择产品闭包；`ProcessIsolation=Required` 用例分别运行，避免污染第三方进程级状态。未准备产品时的缺库不是通过证据。

@@ -84,6 +84,28 @@ public sealed class FileSystemSafetyTests : IDisposable
     }
 
     [Fact]
+    public void OwnershipRejectsCaseAliasesIndependentlyOfVolumeSemantics()
+    {
+        string owned = Path.Combine(m_root, "Owned");
+        string sibling = Path.Combine(m_root, "owned", "value.bin");
+        Assert.Throws<IOException>(() => PathBoundary.RequireContained(owned, sibling));
+        Assert.Throws<IOException>(() => PathBoundary.RequireUnlinkedPath(owned, sibling));
+        Assert.Throws<IOException>(() => PathBoundary.Resolve(owned, "../owned/value.bin"));
+        Assert.Equal(Path.Combine(owned, "value.bin"), PathBoundary.RequireUnlinkedPath(owned, Path.Combine(owned, "value.bin")));
+    }
+
+    [Fact]
+    public void AtomicFileRejectsDifferentlySpelledParentBeforeRenaming()
+    {
+        string parent = Path.Combine(m_root, "Owned");
+        Directory.CreateDirectory(parent);
+        string candidate = Path.Combine(parent, "candidate.bin");
+        File.WriteAllText(candidate, "candidate");
+        Assert.Throws<ArgumentException>(() => AtomicFile.Install(candidate, Path.Combine(m_root, "owned", "target.bin")));
+        Assert.Equal("candidate", File.ReadAllText(candidate));
+    }
+
+    [Fact]
     public void DirectoryInstallReplacesACompleteTreeWithoutLeavingBackupDirectories()
     {
         string candidate = Path.Combine(m_root, "candidate");

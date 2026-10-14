@@ -21,7 +21,7 @@ public sealed unsafe class ViewportRetirementTests
     {
         // A failed retirement intentionally retains dependencies until the host process restarts.
         // Run this contract in its own test process, rather than forcing unsafe cleanup.
-        var application = new Sdl3PlatformApplication(new WindowsX64Sdl3HostIntegration());
+        var application = new Sdl3PlatformApplication(NativeHostFixture.Create());
         var window = application.CreateWindow(new PlatformWindowOptions
         {
             title = "Faulted retirement", width = 320, height = 240, visible = false
@@ -49,7 +49,7 @@ public sealed unsafe class ViewportRetirementTests
     [Fact]
     public void DetachedWindowRemainsAliveUntilRenderingAcknowledgesRetirement()
     {
-        using var application = new Sdl3PlatformApplication(new WindowsX64Sdl3HostIntegration());
+        using var application = new Sdl3PlatformApplication(NativeHostFixture.Create());
         using var window = application.CreateWindow(new PlatformWindowOptions
         {
             title = "Retirement owner", width = 320, height = 240, visible = false
@@ -83,7 +83,7 @@ public sealed unsafe class ViewportRetirementTests
     [Fact]
     public void IncompleteDrainRetainsContextOwnershipAndCanFinishAtTheNextSafetyPoint()
     {
-        using var application = new Sdl3PlatformApplication(new WindowsX64Sdl3HostIntegration());
+        using var application = new Sdl3PlatformApplication(NativeHostFixture.Create());
         using var window = application.CreateWindow(new PlatformWindowOptions
         {
             title = "Pending drain", width = 320, height = 240, visible = false
@@ -116,7 +116,7 @@ public sealed unsafe class ViewportRetirementTests
     [Fact]
     public void CreationFailureIsReportedAtAManagedSafetyPointAfterCleanup()
     {
-        using var application = new Sdl3PlatformApplication(new WindowsX64Sdl3HostIntegration());
+        using var application = new Sdl3PlatformApplication(NativeHostFixture.Create());
         using var window = application.CreateWindow(new PlatformWindowOptions
         {
             title = "Failed creation", width = 320, height = 240, visible = false

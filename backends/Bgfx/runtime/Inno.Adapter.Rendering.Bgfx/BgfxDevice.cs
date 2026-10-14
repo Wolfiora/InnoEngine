@@ -97,6 +97,8 @@ public sealed unsafe partial class BgfxDevice : RenderDevice, IRenderDevice, IRe
                 ? bgfx.ResetFlags.SrgbBackbuffer
                 : bgfx.ResetFlags.None));
 
+        bgfx.RendererType? preferredRenderer = options.preferredBackend is GraphicsApi backend
+            ? BgfxCapabilityMapper.ToNativeRenderer(backend) : null;
         m_processLease = BgfxProcessDeviceLease.Acquire(options.forceSingleThreaded);
         bool nativeInitialized = false;
         try
@@ -104,14 +106,13 @@ public sealed unsafe partial class BgfxDevice : RenderDevice, IRenderDevice, IRe
             if (options.forceSingleThreaded)
             {
                 bgfx.render_frame(0);
+                m_processLease.MarkSingleThreadedEntered();
             }
 
             bgfx.Init init;
             bgfx.init_ctor(&init);
-            if (options.preferredBackend.HasValue)
-            {
-                init.type = BgfxCapabilityMapper.ToNativeRenderer(options.preferredBackend.Value);
-            }
+            if (preferredRenderer.HasValue)
+                init.type = preferredRenderer.Value;
 
             if (options.window is not null)
                 BgfxSurfaceBinding.Apply(ref init, primarySurface);
@@ -123,7 +124,6 @@ public sealed unsafe partial class BgfxDevice : RenderDevice, IRenderDevice, IRe
                 throw new InvalidOperationException("BGFX device initialization failed.");
             }
             nativeInitialized = true;
-            m_processLease.MarkInitialized();
 
             generation = unchecked((uint)Interlocked.Increment(ref s_nextGeneration));
             if (generation == 0)

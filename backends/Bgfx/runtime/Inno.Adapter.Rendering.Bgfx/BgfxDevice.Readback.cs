@@ -68,7 +68,7 @@ sealed unsafe partial class BgfxDevice
                 rowPitch,
                 byteCount,
                 (nint)data,
-                readyFrame));
+                checked(m_submissionSequence + unchecked(readyFrame - m_backendFrame))));
         return CreateRenderTextureReadbackHandle(id, generation);
     }
 
@@ -93,7 +93,7 @@ sealed unsafe partial class BgfxDevice
         if (!m_textureReadbacks.TryGetValue(GetHandleIdentity(readback).value, out PendingTextureReadback? pending))
             throw new ArgumentException("Texture readback is not active on this device.", nameof(readback));
         result = null;
-        if (m_backendFrame < pending.readyFrame)
+        if (m_submissionSequence < pending.readySubmission)
             return false;
         m_textureReadbacks.Remove(GetHandleIdentity(readback).value);
         try
@@ -133,7 +133,7 @@ sealed unsafe partial class BgfxDevice
     {
         foreach ((ulong id, PendingTextureReadback pending) in m_textureReadbacks.ToArray())
         {
-            if (!pending.canceled || m_backendFrame < pending.readyFrame)
+            if (!pending.canceled || m_submissionSequence < pending.readySubmission)
                 continue;
             NativeMemory.Free((void*)pending.data);
             m_textureReadbacks.Remove(id);
@@ -152,14 +152,14 @@ sealed unsafe partial class BgfxDevice
         int rowPitch,
         int byteCount,
         nint data,
-        uint readyFrame
+        ulong readySubmission
     ) {
         internal RenderTextureDescriptor descriptor { get; } = descriptor;
         internal int mipLevel { get; } = mipLevel;
         internal int rowPitch { get; } = rowPitch;
         internal int byteCount { get; } = byteCount;
         internal nint data { get; } = data;
-        internal uint readyFrame { get; } = readyFrame;
+        internal ulong readySubmission { get; } = readySubmission;
         internal bool canceled { get; set; }
     }
 

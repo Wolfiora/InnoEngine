@@ -21,20 +21,20 @@ public sealed class BgfxSurfaceRetirementTests
     [Fact]
     public void InvalidIntegrationFailsBeforeTakingTheProcessOwner()
     {
-        using var application = new Sdl3PlatformApplication(new WindowsX64Sdl3HostIntegration());
+        using var application = new Sdl3PlatformApplication(NativeHostFixture.Create());
         using var window = application.CreateWindow(new PlatformWindowOptions
         {
             title = "Invalid integration", width = 100, height = 90, visible = false
         });
         Assert.Throws<ArgumentException>(() => new BgfxDevice(new BgfxDeviceOptions
         {
-            preferredBackend = GraphicsApi.Direct3D11,
+            preferredBackend = OperatingSystem.IsWindows() ? GraphicsApi.Direct3D11 : GraphicsApi.Metal,
             window = window,
             surfaceIntegration = new InvalidIntegration()
         }));
         using var device = new BgfxDevice(new BgfxDeviceOptions
         {
-            preferredBackend = GraphicsApi.Direct3D11,
+            preferredBackend = OperatingSystem.IsWindows() ? GraphicsApi.Direct3D11 : GraphicsApi.Metal,
             window = window,
             surfaceIntegration = new FixtureIntegration()
         });
@@ -44,7 +44,7 @@ public sealed class BgfxSurfaceRetirementTests
 
     private static void VerifyRetirement(bool inline)
     {
-        using var application = new Sdl3PlatformApplication(new WindowsX64Sdl3HostIntegration());
+        using var application = new Sdl3PlatformApplication(NativeHostFixture.Create());
         using var primary = application.CreateWindow(new PlatformWindowOptions
         {
             title = "Primary surface", width = 100, height = 90, visible = false
@@ -56,7 +56,7 @@ public sealed class BgfxSurfaceRetirementTests
         var integration = new FixtureIntegration();
         using var device = new BgfxDevice(new BgfxDeviceOptions
         {
-            preferredBackend = GraphicsApi.Direct3D11,
+            preferredBackend = OperatingSystem.IsWindows() ? GraphicsApi.Direct3D11 : GraphicsApi.Metal,
             window = primary,
             surfaceIntegration = integration,
             forceSingleThreaded = inline,

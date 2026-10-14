@@ -46,21 +46,9 @@ internal static class CleanCommand
             NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture);
         var policy = new BuildCachePolicy(ReadBytes("cache-budget-gib", 64L << 30), ReadBytes("cache-min-free-gib", 20L << 30),
             TimeSpan.FromSeconds(seconds));
-        BuildCacheCleanupPlan plan = BuildCacheCleanupPlan.Create(context.root,
-            StandardBuildCaches.CreateOwners(context.root, context.distribution.platforms.SelectMany(static platform => platform.nativeProducts.Values)
-                .SelectMany(static product => product.steps).Select(static step => step.component).ToArray()),
-            policy, retireAll: !automatic,
-            targetId: !automatic && options.Has("target") ? options.Require("target") : null,
-            cancellationToken: cancellation);
-        bool dryRun = options.Has("dry-run");
-        if (dryRun)
-            foreach (BuildCacheArtifactDescriptor artifact in plan.candidates)
-                Console.WriteLine($"Would retire {artifact.directory} ({artifact.bytes} bytes)");
-        BuildCacheCleanupResult result = await plan.ExecuteAsync(dryRun, cancellation).ConfigureAwait(false);
-        Console.WriteLine($"Cache: {plan.totalBytes} bytes; protected {plan.protectedBytes}; reclaimed {result.retiredBytes}; skipped {result.skipped.Count}.");
-        foreach (var failure in result.failures)
-            Console.Error.WriteLine($"Cache retirement failed: {failure.Key}: {failure.Value}");
-        if (!automatic && result.failures.Count != 0)
-            throw new InvalidOperationException("Explicit cache cleanup completed with failures.");
+        StandardBuildCaches.CreateOwners(context.root, context.distribution.platforms.SelectMany(static platform => platform.nativeProducts.Values)
+            .SelectMany(static product => product.steps).Select(static step => step.component).ToArray());
+        await BuildMaintenanceApplication.CleanAsync(context.root, policy, !automatic, options.Has("dry-run"),
+            !automatic && options.Has("target") ? options.Require("target") : null, cancellation).ConfigureAwait(false);
     }
 }

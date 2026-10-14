@@ -121,8 +121,7 @@ sealed unsafe partial class BgfxDevice
     private void EnqueueDestroy(DeferredResource resource)
         => m_deferredResources.Add(resource with
         {
-            eligibleFrame = m_backendFrame
-                + checked((uint)m_deferredDestroyFrames)
+            eligibleSubmission = checked(m_submissionSequence + (ulong)m_deferredDestroyFrames)
         });
 
     private void EnqueuePipelineDestroy(BgfxPipelineResource pipeline) => EnqueueDestroy(DeferredResource.ForProgram(pipeline.program));
@@ -137,7 +136,7 @@ sealed unsafe partial class BgfxDevice
         List<DeferredResource> pending = [];
         foreach (DeferredResource resource in m_deferredResources)
         {
-            if (!force && resource.eligibleFrame > m_backendFrame)
+            if (!force && resource.eligibleSubmission > m_submissionSequence)
             {
                 pending.Add(resource);
                 continue;
@@ -241,7 +240,7 @@ sealed unsafe partial class BgfxDevice
     private readonly record struct DeferredResource(
         DeferredResourceKind kind,
         ushort index,
-        uint eligibleFrame
+        ulong eligibleSubmission
     ) {
         /// <summary>
         /// Creates a deferred resource record for the supplied texture handle.

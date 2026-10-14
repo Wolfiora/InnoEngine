@@ -11,20 +11,34 @@ internal static partial class RenderGraphValidator
         IReadOnlyList<RenderTextureRecord> textures,
         IReadOnlyList<RenderBufferRecord> buffers,
         IReadOnlyList<RenderPassRecord> passes,
-        IReadOnlySet<RenderResourceKey> outputs
+        IReadOnlySet<RenderResourceKey> outputs,
+        RenderGraphValidationWorkspace analysis
     ) {
-        List<RenderGraphDiagnostic> diagnostics = [];
-        ValidateResources(capabilities, textures, buffers, diagnostics);
-        ValidatePasses(capabilities, textures, buffers, passes, diagnostics);
-        List<HashSet<int>> dependencies = CreateEdgeSets(passes.Count);
-        List<HashSet<int>> dataDependencies = CreateEdgeSets(passes.Count);
-        BuildResourceDependencies(textures, buffers, passes, outputs, dependencies, dataDependencies, diagnostics);
-        BuildPhaseDependencies(passes, dependencies);
+        List<RenderGraphDiagnostic> diagnostics = analysis.diagnostics;
+        ValidateResources(capabilities, textures, buffers, diagnostics, analysis.textureCount, analysis.bufferCount);
+        ValidatePasses(capabilities, textures, buffers, passes, diagnostics, analysis.passCount);
+        while (analysis.dependencies.Count < passes.Count)
+        {
+            analysis.dependencies.Add([]);
+            analysis.dataDependencies.Add([]);
+        }
+        BuildResourceDependencies(textures, buffers, passes, analysis, diagnostics);
+        BuildPhaseDependencies(passes, analysis.dependencies, analysis.passCount);
+        analysis.textureCount = textures.Count;
+        analysis.bufferCount = buffers.Count;
+        analysis.passCount = passes.Count;
+        // End-of-graph output and scheduling diagnostics are revision-local, not prefix state.
+        diagnostics = new List<RenderGraphDiagnostic>(diagnostics);
+        foreach (RenderResourceKey output in outputs)
+            if (!analysis.initialized.Contains(output))
+                diagnostics.Add(new RenderGraphDiagnostic("RENDER_GRAPH_OUTPUT_UNINITIALIZED",
+                    $"Graph output '{GetResourceName(output, textures, buffers)}' has no stored contents at the end of the graph.",
+                    DiagnosticSeverity.Error, resourceName: GetResourceName(output, textures, buffers)));
         if (ContainsErrors(diagnostics))
             return CreateState(null);
 
-        HashSet<int> livePasses = FindLivePasses(textures, buffers, passes, outputs, dataDependencies);
-        List<int>? schedule = TopologicalSort(passes.Count, livePasses, dependencies);
+        HashSet<int> livePasses = FindLivePasses(textures, buffers, passes, outputs, analysis);
+        List<int>? schedule = TopologicalSort(passes.Count, livePasses, analysis);
         if (schedule is null)
         {
             diagnostics.Add(new RenderGraphDiagnostic(
@@ -57,10 +71,13 @@ internal static partial class RenderGraphValidator
         GraphicsCapabilities capabilities,
         IReadOnlyList<RenderTextureRecord> textures,
         IReadOnlyList<RenderBufferRecord> buffers,
-        List<RenderGraphDiagnostic> diagnostics
+        List<RenderGraphDiagnostic> diagnostics,
+        int textureStart,
+        int bufferStart
     ) {
-        foreach (RenderTextureRecord texture in textures)
+        for (int textureIndex = textureStart; textureIndex < textures.Count; textureIndex++)
         {
+            RenderTextureRecord texture = textures[textureIndex];
             RenderTextureDescriptor descriptor = texture.descriptor;
             if (descriptor.width > capabilities.limits.maxTextureSize
                 || descriptor.height > capabilities.limits.maxTextureSize
@@ -151,8 +168,9 @@ internal static partial class RenderGraphValidator
             }
         }
 
-        foreach (RenderBufferRecord buffer in buffers)
+        for (int bufferIndex = bufferStart; bufferIndex < buffers.Count; bufferIndex++)
         {
+            RenderBufferRecord buffer = buffers[bufferIndex];
             if ((buffer.descriptor.usage & RenderBufferUsage.Storage) != 0
                 && !capabilities.Supports(GraphicsCapability.StorageBuffer))
             {
@@ -182,10 +200,12 @@ internal static partial class RenderGraphValidator
         IReadOnlyList<RenderTextureRecord> textures,
         IReadOnlyList<RenderBufferRecord> buffers,
         IReadOnlyList<RenderPassRecord> passes,
-        List<RenderGraphDiagnostic> diagnostics
+        List<RenderGraphDiagnostic> diagnostics,
+        int passStart
     ) {
-        foreach (RenderPassRecord pass in passes)
+        for (int passIndex = passStart; passIndex < passes.Count; passIndex++)
         {
+            RenderPassRecord pass = passes[passIndex];
             if (pass.kind == RenderPassKind.Compute && !capabilities.Supports(GraphicsCapability.Compute))
             {
                 diagnostics.Add(new RenderGraphDiagnostic(

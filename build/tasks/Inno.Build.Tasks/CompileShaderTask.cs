@@ -149,8 +149,9 @@ public sealed class CompileShaderTask : BuildTask, ICancelableTask
             var distribution = StandardBuildDistribution.Create(execution).build;
             context = context.WithToolchain(distribution.ResolveNativeToolchain(ToolTarget)
                 .ResolveAsync(context, execution.host, ToolTarget, cancellationToken).AsTask().GetAwaiter().GetResult());
-            using ProductNativeBuildResult products = distribution.ResolveNativeProduct(ToolTarget, "shader-tools")
-                .BuildAsync(context, cancellationToken).GetAwaiter().GetResult();
+            ProductNativeBuildPlan plan = distribution.ResolveNativeProduct(ToolTarget, "shader-tools");
+            StandardBuildCaches.CreateOwners(context.engineRoot, plan.steps.Select(static step => step.component).ToArray());
+            using ProductNativeBuildResult products = plan.BuildAsync(context, cancellationToken).GetAwaiter().GetResult();
             NativeBuildProduct product = products.Single();
             record = [product.directory, product.fingerprint, .. product.files];
             engine.RegisterTaskObject(cacheKey, record, RegisteredTaskObjectLifetime.Build, allowEarlyCollection: false);

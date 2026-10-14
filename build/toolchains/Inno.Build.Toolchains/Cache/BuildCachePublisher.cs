@@ -45,6 +45,11 @@ public sealed class BuildCachePublisher
     }
 
     /// <summary>
+    /// Gets the declared lifecycle used by this publisher's inventory and maintenance registration.
+    /// </summary>
+    public BuildCacheArtifactRole role => m_role;
+
+    /// <summary>
     /// Pins publisher activity until publication, reading handoff and current-root updates finish.
     /// </summary>
     /// <param name="cancellationToken">

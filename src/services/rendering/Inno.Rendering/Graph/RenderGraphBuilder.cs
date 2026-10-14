@@ -19,6 +19,7 @@ public sealed partial class RenderGraphBuilder
     private readonly List<(long id, string name)> m_nameScopes = [];
     private readonly List<RenderGraphMutationScope> m_mutations = [];
     private readonly List<RenderResourceKey> m_addedOutputs = [];
+    private readonly RenderGraphValidationWorkspace m_analysis = new();
     private RenderGraphValidationState? m_validation;
     private long m_revision;
     private long m_validatedRevision = -1;

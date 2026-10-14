@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -16,19 +17,21 @@ public sealed class ManagedBuildInputSnapshot
     private readonly DotNetSdkDescriptor m_sdk;
     private readonly string m_project;
     private readonly IReadOnlyDictionary<string, string> m_properties;
+    private readonly string[] m_declarations;
 
     private ManagedBuildInputSnapshot(
         NativeBuildContext context,
         DotNetSdkDescriptor sdk,
         string project,
         IReadOnlyDictionary<string, string> properties,
-        string fingerprint
+        ManagedBuildInputCapture captured
     ) {
         m_context = context;
         m_sdk = sdk;
         m_project = project;
         m_properties = properties;
-        this.fingerprint = fingerprint;
+        fingerprint = captured.fingerprint;
+        m_declarations = captured.declarations;
     }
 
     /// <summary>
@@ -105,7 +108,7 @@ public sealed class ManagedBuildInputSnapshot
             throw new FileNotFoundException("The managed input entry project is absent.", selected);
         var frozen = new System.Collections.ObjectModel.ReadOnlyDictionary<string, string>(
             properties.ToDictionary(static pair => pair.Key, static pair => pair.Value, StringComparer.OrdinalIgnoreCase));
-        string identity = await ManagedBuildInputReader.CaptureAsync(context, sdk, selected, frozen,
+        ManagedBuildInputCapture identity = await ManagedBuildInputReader.CaptureAsync(context, sdk, selected, frozen,
             cancellationToken).ConfigureAwait(false);
         return new(context, sdk, selected, frozen, identity);
     }
@@ -127,10 +130,27 @@ public sealed class ManagedBuildInputSnapshot
     /// </exception>
     public async ValueTask VerifyAsync(CancellationToken cancellationToken = default)
     {
-        string current = await ManagedBuildInputReader.CaptureAsync(
+        ManagedBuildInputCapture current = await ManagedBuildInputReader.CaptureAsync(
             m_context.BeginInputVerification("managed-inputs"), m_sdk, m_project, m_properties,
             cancellationToken).ConfigureAwait(false);
-        if (current != fingerprint)
-            throw new InvalidOperationException("Managed compilation inputs changed after planning; the candidate cannot be accepted.");
+        if (current.fingerprint != fingerprint)
+        {
+            var changed = new List<string>();
+            foreach (NativeInputSnapshot.Entry input in m_context.inputState.CaptureRecordedInputs(m_context.engineRoot).entries)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                if (!File.Exists(input.physicalPath))
+                    changed.Add(input.logicalPath + " (missing)");
+                else
+                {
+                    using FileStream stream = File.OpenRead(input.physicalPath);
+                    if (!SHA256.HashData(stream).AsSpan().SequenceEqual(input.hash))
+                        changed.Add(input.logicalPath);
+                }
+            }
+            throw new InvalidOperationException("Managed compilation inputs changed after planning; the candidate cannot be accepted. "
+                + (changed.Count == 0 ? "Changed declarations: " + string.Join("; ", current.declarations.Except(m_declarations).Select(static item => "added " + item)
+                    .Concat(m_declarations.Except(current.declarations).Select(static item => "removed " + item)).Take(20)) : "Changed files: " + string.Join(", ", changed)));
+        }
     }
 }

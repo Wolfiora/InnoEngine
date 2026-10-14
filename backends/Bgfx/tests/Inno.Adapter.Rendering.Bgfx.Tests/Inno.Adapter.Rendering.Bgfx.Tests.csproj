@@ -8,6 +8,7 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
+    <ProjectReference Include="../../../../platforms/MacOSArm64/integrations/Inno.Integration.MacOSArm64.Sdl3/Inno.Integration.MacOSArm64.Sdl3.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../../Interop/native/Inno.Native.LibraryLoading/Inno.Native.LibraryLoading.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../../Sdl3/runtime/Inno.Adapter.Platform.Sdl3/Inno.Adapter.Platform.Sdl3.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../../../platforms/WindowsX64/integrations/Inno.Integration.WindowsX64.Sdl3/Inno.Integration.WindowsX64.Sdl3.csproj" PrivateAssets="compile" />
@@ -42,5 +43,5 @@
     <ProjectReference Include="../../../../src/services/rendering/Inno.Rendering.Assets/Inno.Rendering.Assets.csproj" />
     <ProjectReference Include="../../../../src/services/rendering/Inno.Rendering.Assets.Authoring/Inno.Rendering.Assets.Authoring.csproj" />
   </ItemGroup>
-  <Import Project="../../../../tests/NativeProductDeployment.targets" />
+
 </Project>

@@ -65,7 +65,7 @@ internal static class TaskRuntimeRequestKey
             declarations.AddRange(instance.GlobalProperties.Where(static entry => IsInputProperty(entry.Key))
                 .OrderBy(static entry => entry.Key, StringComparer.OrdinalIgnoreCase)
                 .Select(entry => instance.FullPath + "|" + entry.Key + "=" + entry.Value));
-            foreach (string property in new[] { "TargetFramework", "DefineConstants", "LangVersion", "Nullable", "PathMap",
+            foreach (string property in new[] { "TargetFramework", "RuntimeIdentifier", "NETCoreSdkRuntimeIdentifier", "DefineConstants", "LangVersion", "Nullable", "PathMap",
                 "NETCoreSdkVersion", "MSBuildToolsPath", "MSBuildSDKsPath", "TreatWarningsAsErrors", "Optimize" })
                 declarations.Add(instance.FullPath + "|" + property + "=" + instance.GetPropertyValue(property));
             foreach (var item in instance.Items)

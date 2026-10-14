@@ -27,19 +27,21 @@ internal static class DevelopmentBuildWorker
             using var cancellation = new CancellationTokenSource(TimeSpan.FromMinutes(10));
             using DevelopmentBuildToolLease? reading = request.operation == "inspect"
                 ? new DevelopmentBuildToolLease(request.assembly, cancellation.Token) : null;
-            using var application = new DevelopmentApplication(request.assembly);
+            DevelopmentToolDefinition tool = DevelopmentToolDefinition.Select(request.tool);
+            string implementation = Path.Combine(Path.GetDirectoryName(request.assembly)!, "Inno.Build.Toolchains.dll");
+            using var application = new DevelopmentApplication(implementation);
             string? result;
             if (request.operation == "inspect")
             {
-                var inspect = application.GetEntry<Func<string, string, string, CancellationToken, Task<string>>>(
-                    "Inno.Build.Cli.BuildApplication", "ReadInputIdentityAsync");
-                result = await inspect(request.root, request.configuration, request.dotnet, cancellation.Token).ConfigureAwait(false);
+                var inspect = application.GetEntry<Func<string, string, string, string, string, CancellationToken, Task<string>>>(
+                    "Inno.Build.Toolchains.ManagedToolRuntime", "ReadInputIdentityAsync");
+                result = await inspect(request.root, request.configuration, request.dotnet, tool.project, tool.cacheName, cancellation.Token).ConfigureAwait(false);
             }
             else
             {
-                var publish = application.GetEntry<Func<string, string, string, string, CancellationToken, Task<string>>>(
-                    "Inno.Build.Cli.BuildApplication", "PublishRuntimeAsync");
-                result = await publish(request.root, request.configuration, request.dotnet, request.assembly, cancellation.Token).ConfigureAwait(false);
+                var publish = application.GetEntry<Func<string, string, string, string, string, string, CancellationToken, Task<string>>>(
+                    "Inno.Build.Toolchains.ManagedToolRuntime", "PublishRuntimeAsync");
+                result = await publish(request.root, request.configuration, request.dotnet, request.assembly, tool.project, tool.cacheName, cancellation.Token).ConfigureAwait(false);
             }
             AtomicFile.WriteAllBytes(Path.Combine(directory, "response.json"),
                 JsonSerializer.SerializeToUtf8Bytes(new DevelopmentBuildWorkerResponse(request.nonce, result)));
@@ -68,10 +70,11 @@ internal static class DevelopmentBuildWorker
         string directory = Path.GetDirectoryName(requestPath)!;
         if (Path.GetDirectoryName(directory) != workers || Path.GetFileName(requestPath) != "request.json")
             throw new InvalidDataException("The request is outside the claimed worker directory.");
-        string hosts = Path.Combine(request.root, "artifacts", "build-tools", "cli", "hosts");
-        string outputs = Path.Combine(request.root, "artifacts", "build-tools", "cli", "workspaces");
+        DevelopmentToolDefinition tool = DevelopmentToolDefinition.Select(request.tool);
+        string hosts = Path.Combine(request.root, "artifacts", "build-tools", tool.cacheName, "hosts");
+        string outputs = Path.Combine(request.root, "artifacts", "build-tools", tool.cacheName, "workspaces");
         string assembly = Path.GetFullPath(request.assembly);
-        if (Path.GetFileName(assembly) != "Inno.Build.Cli.dll" || !File.Exists(assembly)
+        if (Path.GetFileName(assembly) != tool.assemblyName + ".dll" || !File.Exists(assembly)
             || !(IsChild(hosts, assembly) || IsChild(outputs, assembly)))
             throw new InvalidDataException("The worker assembly is outside the Build tool's publication or bootstrap output.");
         PathBoundary.RequireUnlinkedPath(request.root, assembly);

@@ -51,12 +51,12 @@ sealed unsafe partial class BgfxDevice
             m_transientTexturePool.Add(new PooledTransientTexture(
                 m_transientTextureSlotDescriptors[slot],
                 texture,
-                m_backendFrame,
+                m_submissionSequence,
                 slot));
         }
 
         foreach ((int slot, BgfxBufferResource buffer) in m_transientBufferSlots)
-            m_transientBufferPool.Add(new PooledTransientBuffer(buffer, m_backendFrame, slot));
+            m_transientBufferPool.Add(new PooledTransientBuffer(buffer, m_submissionSequence, slot));
 
         m_transientTextureSlots.Clear();
         m_transientTextureSlotDescriptors.Clear();
@@ -68,7 +68,7 @@ sealed unsafe partial class BgfxDevice
         for (int index = m_graphFrameBufferCache.Count - 1; index >= 0; index--)
         {
             CachedGraphFrameBuffer cached = m_graphFrameBufferCache[index];
-            if (!CacheEntryExpired(cached.lastUsedFrame))
+            if (!CacheEntryExpired(cached.lastUsedSubmission))
                 continue;
             EnqueueDestroy(DeferredResource.ForFrameBuffer(cached.handle));
             m_graphFrameBufferCache.RemoveAt(index);
@@ -77,7 +77,7 @@ sealed unsafe partial class BgfxDevice
         for (int index = m_transientTexturePool.Count - 1; index >= 0; index--)
         {
             PooledTransientTexture pooled = m_transientTexturePool[index];
-            if (!CacheEntryExpired(pooled.lastUsedFrame))
+            if (!CacheEntryExpired(pooled.lastUsedSubmission))
                 continue;
             RemoveCachedFrameBuffersReferencing(pooled.handle.idx);
             EnqueueDestroy(DeferredResource.ForTexture(pooled.handle));
@@ -87,25 +87,25 @@ sealed unsafe partial class BgfxDevice
         for (int index = m_transientBufferPool.Count - 1; index >= 0; index--)
         {
             PooledTransientBuffer pooled = m_transientBufferPool[index];
-            if (!CacheEntryExpired(pooled.lastUsedFrame))
+            if (!CacheEntryExpired(pooled.lastUsedSubmission))
                 continue;
             EnqueueDestroy(DeferredResource.ForBuffer(pooled.resource));
             m_transientBufferPool.RemoveAt(index);
         }
     }
 
-    private bool CacheEntryExpired(uint lastUsedFrame) => unchecked(m_backendFrame - lastUsedFrame) > C_TRANSIENT_CACHE_RETENTION_FRAMES;
+    private bool CacheEntryExpired(ulong lastUsedSubmission) => m_submissionSequence - lastUsedSubmission > C_TRANSIENT_CACHE_RETENTION_FRAMES;
 
     private readonly record struct PooledTransientTexture(
         RenderTextureDescriptor descriptor,
         bgfx.TextureHandle handle,
-        uint lastUsedFrame,
+        ulong lastUsedSubmission,
         int physicalSlot
     );
 
     private readonly record struct PooledTransientBuffer(
         BgfxBufferResource resource,
-        uint lastUsedFrame,
+        ulong lastUsedSubmission,
         int physicalSlot
     );
 

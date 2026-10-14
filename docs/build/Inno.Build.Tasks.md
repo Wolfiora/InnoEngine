@@ -93,6 +93,10 @@ PrepareProductNativeTask.BindingSelectionInputPath 指向托管编译实际消�
 直接使用 --no-build 发布产品必须显式提供其托管编译使用的 selection，不能隐式换成当前 Native generation。
 这是当前输入契约，不提供旧输出推导或 fallback。
 
+## Task 宿主 RID
+
+Task 运行图按所选 SDK 的 NETCoreSdkRuntimeIdentifier 恢复依赖。产品的 Browser/AOT/RID 属性在进入 Task 引导前移除；请求身份额外记录工具 RuntimeIdentifier 与 SDK RID。私有 load owner、publisher 读取保护和 Build 生命周期复用保持独立。
+
 ## 当前源码公开 API 清单
 
 按功能类型核对全部公开与可扩展 protected 声明。类型的组合与所有权从前文工作流进入。
@@ -230,3 +234,5 @@ PrepareProductNativeTask.BindingSelectionInputPath 指向托管编译实际消�
 - [Inno.Build.Toolchains.Bgfx.Shaders](../backends/Bgfx/Inno.Build.Toolchains.Bgfx.Shaders.md)：实现依赖，PrivateAssets="compile"。
 - [Inno.Extensibility.Catalogs](../extensibility/Inno.Extensibility.Catalogs.md)：公开引用边界由实际签名核对。
 - [Inno.Build.Distribution.Standard](Inno.Build.Distribution.Standard.md)：实现依赖，PrivateAssets="compile"。
+
+Native 产品与离线 Shader 工具完成 SDK 预检后，按已选择计划登记 publisher roots，复用标准发行的唯一缓存 owner 定义。登记不认领未记录的历史目录，也不创建第二份后端闭包。

@@ -25,10 +25,10 @@ internal sealed class BgfxProcessDeviceLease : IDisposable
         {
             if (s_active is not null)
                 throw new InvalidOperationException("Only one BGFX device may own the native process runtime.");
-            if (singleThreaded && s_singleThreadedRuntimeConsumed)
+            if (s_singleThreadedRuntimeConsumed)
             {
                 throw new InvalidOperationException(
-                    "BGFX single-threaded mode cannot be initialized again in the same process.");
+                    "BGFX cannot be initialized again after this process entered single-threaded mode.");
             }
 
             var lease = new BgfxProcessDeviceLease(singleThreaded);
@@ -37,7 +37,7 @@ internal sealed class BgfxProcessDeviceLease : IDisposable
         }
     }
 
-    internal void MarkInitialized()
+    internal void MarkSingleThreadedEntered()
     {
         lock (S_SYNC)
         {
@@ -49,7 +49,7 @@ internal sealed class BgfxProcessDeviceLease : IDisposable
     }
 
     /// <summary>
-    /// Releases the process runtime for a later device after native shutdown has completed.
+    /// Releases active ownership after native shutdown; a consumed inline runtime remains unavailable.
     /// </summary>
     public void Dispose()
     {

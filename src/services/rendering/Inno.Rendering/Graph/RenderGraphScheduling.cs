@@ -11,10 +11,12 @@ internal static partial class RenderGraphValidator
         IReadOnlyList<RenderBufferRecord> buffers,
         IReadOnlyList<RenderPassRecord> passes,
         IReadOnlySet<RenderResourceKey> outputs,
-        IReadOnlyList<HashSet<int>> dataDependencies
+        RenderGraphValidationWorkspace analysis
     ) {
-        Stack<int> pending = [];
-        HashSet<int> live = [];
+        Stack<int> pending = analysis.pending;
+        HashSet<int> live = analysis.live;
+        pending.Clear();
+        live.Clear();
         for (int passIndex = 0; passIndex < passes.Count; passIndex++)
         {
             RenderPassRecord pass = passes[passIndex];
@@ -42,7 +44,7 @@ internal static partial class RenderGraphValidator
                 continue;
             }
 
-            foreach (int dependency in dataDependencies[passIndex])
+            foreach (int dependency in analysis.dataDependencies[passIndex])
             {
                 pending.Push(dependency);
             }
@@ -54,18 +56,24 @@ internal static partial class RenderGraphValidator
     private static List<int>? TopologicalSort(
         int passCount,
         IReadOnlySet<int> livePasses,
-        IReadOnlyList<HashSet<int>> dependencies
+        RenderGraphValidationWorkspace analysis
     ) {
-        int[] inDegrees = new int[passCount];
-        List<List<int>> dependants = new(passCount);
+        List<int> inDegrees = analysis.inDegrees;
+        List<List<int>> dependants = analysis.dependants;
+        while (inDegrees.Count < passCount)
+        {
+            inDegrees.Add(0);
+            dependants.Add([]);
+        }
         for (int i = 0; i < passCount; i++)
         {
-            dependants.Add([]);
+            inDegrees[i] = 0;
+            dependants[i].Clear();
         }
 
         foreach (int passIndex in livePasses)
         {
-            foreach (int dependency in dependencies[passIndex])
+            foreach (int dependency in analysis.dependencies[passIndex])
             {
                 if (!livePasses.Contains(dependency))
                 {
@@ -77,27 +85,28 @@ internal static partial class RenderGraphValidator
             }
         }
 
-        SortedSet<int> ready = [];
+        PriorityQueue<int, int> ready = analysis.ready;
+        ready.Clear();
         foreach (int passIndex in livePasses)
         {
             if (inDegrees[passIndex] == 0)
             {
-                ready.Add(passIndex);
+                ready.Enqueue(passIndex, passIndex);
             }
         }
 
-        List<int> result = [];
+        List<int> result = analysis.schedule;
+        result.Clear();
         while (ready.Count != 0)
         {
-            int passIndex = ready.Min;
-            ready.Remove(passIndex);
+            int passIndex = ready.Dequeue();
             result.Add(passIndex);
             foreach (int dependant in dependants[passIndex])
             {
                 inDegrees[dependant]--;
                 if (inDegrees[dependant] == 0)
                 {
-                    ready.Add(dependant);
+                    ready.Enqueue(dependant, dependant);
                 }
             }
         }

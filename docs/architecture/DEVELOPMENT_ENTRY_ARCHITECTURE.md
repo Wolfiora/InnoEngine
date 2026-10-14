@@ -66,7 +66,7 @@ entry/
 
 ## Build 工具准备复用
 
-Build 工具拥有独立 `artifacts/entry/build/<configuration>/ready.json`，包含源码身份与真实部署清单。有效部署先验证实际哈希，再通过可退休检查上下文调用公开输入检查入口；相同 SDK、源码、资源、imports 和引用身份命中时直接执行工具，不再次编译 CLI。源码或 SDK 改变时重新准备。检查上下文成功卸载后才能加载实际应用，失败进入明确停止状态。
+Build 工具记录位于 `artifacts/entry/build/<tool>/<configuration>/ready.json`。工具定义只由开发入口显式选择：cache clean 使用 maintenance，其余构建命令使用 cli。有效部署在读取保护下验证实际文件与输入身份；检查和发布在普通 worker 进程中调用中立 ManagedToolRuntime，进程退出完成隔离。没有 collectible 检查 ALC 或旧 receipt fallback。首次发布显式 Restore 源码根图；只构建私有 bootstrap 并不能提供该源码图的 assets。
 
 ## IDE 配置
 

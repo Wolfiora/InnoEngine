@@ -11,6 +11,7 @@
   <!-- Only the binding owner consumes its selection as a compilation input. -->
   <Import Project="$(InnoNativeBindingSelection)" Condition="'$(BindGenGeneratedBindings)' == 'true' and '$(InnoNativeBindingSelection)' != '' and Exists('$(InnoNativeBindingSelection)')" />
   <Import Project="$(MSBuildThisFileDirectory)build/msbuild/Inno.Build.Tasks.targets" />
+  <Import Project="$(MSBuildThisFileDirectory)tests/NativeProductDeployment.targets" Condition="'$(IsTestProject)' == 'true'" />
   <ItemGroup Condition="'$(BindGenGeneratedBindings)' == 'true'">
     <InnoBuildInputProject Include="$(InnoTaskPublisherProject)">
       <GlobalPropertiesToRemove>$(InnoTaskExcludedProperties);RuntimeIdentifier;InnoNativeTarget;InnoProductBuildProperties;InnoNativeBindingSelection;InnoNativeBuildFingerprint</GlobalPropertiesToRemove>

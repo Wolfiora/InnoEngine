@@ -4,9 +4,19 @@
 
 2026-10-14：本轮构建成本、owner、SDK 一致性和 NativeAOT 消费已有当前源码的契约与运行证据。以下限制保留，不能用本机通过推断所有环境没有问题。
 
+本轮[五项局部整改](../../records/architecture/acceptance/LOCAL_BOUNDARY_REFINEMENT_ACCEPTANCE.md)已实现，本机受影响门禁与首次失败的复验通过。历史审查保留在记录区，不作为当前未修复 API 指南。
+
+| 整改 | 当前状态 |
+| --- | --- |
+| 文件系统大小写边界 | Core.IO 使用严格 ownership 拼写，不从 OS 猜测目录等价；本机契约通过。macOS 不同卷格式实测仍待独立环境。 |
+| RenderGraph 验证 | 已接受前缀与 graph scratch 复用，完整候选继续验证；32 contributor fixture 58,920 bytes/frame、0.311 ms/frame。 |
+| 工具宿主资产 | 明确 SDK host RID，实际 CLI deployment 167,948,917 bytes；不手动删除包资产。 |
+| 维护命令 | cache clean 选择中立 Toolchains 维护闭包及明确 publisher catalog，不准备完整 CLI/后端图。 |
+| BGFX 长期帧号 | 普通资源/readback/cache 使用单调提交序号；实际 Noop 与 surface 退休通过。未执行数十亿帧运行。 |
+
 | 项目 | 状态与边界 |
 | --- | --- |
-| 200 GB 空间目标 | 未达成。37 个历史目录约 55.11 GB 逻辑占用，删除被自动审批拒绝；未绕过或认领。正式回收实际卷结果见本轮记录。 |
+| 200 GB 空间目标 | 未达成。本轮另回收约 17.96 GB 实际卷空间，本轮清理后空闲约 83.03 GB；单靠当前 InnoEngine 可清理范围不足以达到 200 GB。37 个历史目录仍按审批拒绝保留，未绕过或认领。 |
 | Web 第三方警告 | 隔离 headless 有 WebGL 能力查询与 ScriptProcessorNode 弃用警告；JS errors=0、非 GUI 功能通过，不等同于零告警。 |
 | 热 Build 成本 | 中位数 138.343 秒，Native / binding / 完整 Task 编译为 0；SDK 求值与完整哈希仍有成本。 |
 | 自动回收预算 | 五秒预算可能安全延期；显式清理用独立预算。延期不误报已成功产品，也不扩大删除边界。 |

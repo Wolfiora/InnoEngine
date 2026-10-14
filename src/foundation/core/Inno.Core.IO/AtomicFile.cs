@@ -71,12 +71,12 @@ public static class AtomicFile
         string target = NormalizeDestination(destination);
         if (!File.Exists(candidate))
             throw new FileNotFoundException("The atomic file candidate does not exist.", candidate);
-        if (string.Equals(candidate, target, PathComparison()))
+        if (string.Equals(candidate, target, StringComparison.OrdinalIgnoreCase))
             throw new ArgumentException("The atomic file candidate and destination must be different paths.", nameof(source));
 
         string candidateDirectory = Path.GetDirectoryName(candidate)!;
         string targetDirectory = Path.GetDirectoryName(target)!;
-        if (!string.Equals(candidateDirectory, targetDirectory, PathComparison()))
+        if (!string.Equals(candidateDirectory, targetDirectory, StringComparison.Ordinal))
             throw new ArgumentException(
                 "Atomic file installation requires the candidate and destination to share a directory.",
                 nameof(source));
@@ -95,8 +95,4 @@ public static class AtomicFile
         return destination;
     }
 
-    private static StringComparison PathComparison()
-        => OperatingSystem.IsWindows() || OperatingSystem.IsMacOS()
-            ? StringComparison.OrdinalIgnoreCase
-            : StringComparison.Ordinal;
 }

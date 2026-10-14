@@ -12,8 +12,8 @@ public sealed unsafe class WindowOwnershipTests
     [Fact]
     public void ApplicationDirectoryContainsOnlyCreatedOrAdoptedWindows()
     {
-        using var first = new Sdl3PlatformApplication(new WindowsX64Sdl3HostIntegration());
-        using var second = new Sdl3PlatformApplication(new WindowsX64Sdl3HostIntegration());
+        using var first = new Sdl3PlatformApplication(NativeHostFixture.Create());
+        using var second = new Sdl3PlatformApplication(NativeHostFixture.Create());
         using var window = first.CreateWindow(new PlatformWindowOptions
         { title = "Owned surface", width = 40, height = 40, visible = false });
         Assert.Single(first.GetWindows());
@@ -26,7 +26,7 @@ public sealed unsafe class WindowOwnershipTests
     [Fact]
     public void AdoptedWindowIsInvalidatedBeforeItsOriginalOwnerDestroysIt()
     {
-        using var app = new Sdl3PlatformApplication(new WindowsX64Sdl3HostIntegration());
+        using var app = new Sdl3PlatformApplication(NativeHostFixture.Create());
         SDLWindow native = SDL.CreateWindow("Borrowed surface", 40, 40, SDLWindowFlags.Hidden);
         Assert.False(native.IsNull);
         uint id = SDL.GetWindowID(native);
@@ -54,8 +54,8 @@ public sealed unsafe class WindowOwnershipTests
     [Fact]
     public void CrossApplicationReleaseAndCrossThreadCreationAreRejected()
     {
-        using var first = new Sdl3PlatformApplication(new WindowsX64Sdl3HostIntegration());
-        using var second = new Sdl3PlatformApplication(new WindowsX64Sdl3HostIntegration());
+        using var first = new Sdl3PlatformApplication(NativeHostFixture.Create());
+        using var second = new Sdl3PlatformApplication(NativeHostFixture.Create());
         using var window = first.CreateWindow(new PlatformWindowOptions
         { title = "Thread owner", width = 40, height = 40, visible = false });
         Assert.Throws<ArgumentException>(() => second.ReleaseWindow(window));

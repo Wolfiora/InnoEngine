@@ -13,14 +13,15 @@ internal static class DevelopmentBuildTool
 {
     internal static DevelopmentBuildToolLease? Open(
         string root,
+        DevelopmentToolDefinition tool,
         string configuration,
         string dotnet,
         CancellationToken cancellation
     ) {
-        Receipt? receipt = Read(root, configuration);
+        Receipt? receipt = Read(root, tool, configuration);
         if (receipt is null || !File.Exists(receipt.assembly))
             return null;
-        string relative = Path.GetRelativePath(Path.Combine(root, "artifacts", "build-tools", "cli", "hosts"), receipt.assembly);
+        string relative = Path.GetRelativePath(Path.Combine(root, "artifacts", "build-tools", tool.cacheName, "hosts"), receipt.assembly);
         if (Path.IsPathRooted(relative) || relative.StartsWith("..", StringComparison.Ordinal))
             return null;
         DevelopmentBuildToolLease? reading = new(receipt.assembly, cancellation);
@@ -29,7 +30,7 @@ internal static class DevelopmentBuildTool
             if (!File.Exists(receipt.assembly)
                 || !SameFiles(receipt.files, ReadFiles(Path.GetDirectoryName(receipt.assembly)!, cancellation)))
                 return null;
-            string? current = Probe(receipt.assembly, root, configuration, dotnet, cancellation);
+            string? current = Probe(receipt.assembly, root, tool, configuration, dotnet, cancellation);
             if (current != receipt.inputs)
                 return null;
             DevelopmentBuildToolLease accepted = reading;
@@ -44,26 +45,28 @@ internal static class DevelopmentBuildTool
 
     internal static string Record(
         string root,
+        DevelopmentToolDefinition tool,
         string configuration,
         string dotnet,
         string assembly,
         CancellationToken cancellation
     ) {
-        assembly = DevelopmentBuildWorkerProcess.Execute("publish", assembly, root, configuration, dotnet, cancellation);
+        assembly = DevelopmentBuildWorkerProcess.Execute("publish", assembly, root, configuration, dotnet, tool.cacheName, cancellation);
         using var reading = new DevelopmentBuildToolLease(assembly, cancellation);
-        string inputs = Probe(assembly, root, configuration, dotnet, cancellation)
+        string inputs = Probe(assembly, root, tool, configuration, dotnet, cancellation)
             ?? throw new InvalidDataException("The prepared Build tool cannot verify its evaluated input closure.");
         var receipt = new Receipt(assembly, inputs, ReadFiles(Path.GetDirectoryName(assembly)!, cancellation));
-        AtomicFile.WriteAllBytes(Path.Combine(root, "artifacts", "entry", "build", configuration, "ready.json"),
+        AtomicFile.WriteAllBytes(Path.Combine(root, "artifacts", "entry", "build", tool.cacheName, configuration, "ready.json"),
             JsonSerializer.SerializeToUtf8Bytes(receipt));
         return assembly;
     }
 
     private static Receipt? Read(
         string root,
+        DevelopmentToolDefinition tool,
         string configuration
     ) {
-        string path = Path.Combine(root, "artifacts", "entry", "build", configuration, "ready.json");
+        string path = Path.Combine(root, "artifacts", "entry", "build", tool.cacheName, configuration, "ready.json");
         if (!File.Exists(path))
             return null;
         try
@@ -81,13 +84,14 @@ internal static class DevelopmentBuildTool
     private static string? Probe(
         string assembly,
         string root,
+        DevelopmentToolDefinition tool,
         string configuration,
         string dotnet,
         CancellationToken cancellation
     ) {
         try
         {
-            return DevelopmentBuildWorkerProcess.Execute("inspect", assembly, root, configuration, dotnet, cancellation);
+            return DevelopmentBuildWorkerProcess.Execute("inspect", assembly, root, configuration, dotnet, tool.cacheName, cancellation);
         }
         catch (Exception failure) when (failure is IOException or InvalidOperationException or ArgumentException)
         {

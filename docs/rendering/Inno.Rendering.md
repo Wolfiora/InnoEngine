@@ -35,6 +35,12 @@ static RenderGraphValidationResult ValidateGraph(RenderGraphBuilder graph)
 
 `tests/rendering/Inno.Rendering.Tests` 验证完整图语义、mutation rollback、revision 失效与严格二进制协议；架构验证器禁止本项目引用资产或实现层。
 
+## 图内增量验证
+
+已接受的 pass 冻结后，内部 frame-local workspace 保存资源初始化状态、读写依赖和 phase 关系。下一贡献只分析新增声明；完整候选仍执行输出有效性、live pass、拓扑排序、cycle 和 view limit 检查。未来 phase 可以向先前 pass 增加依赖，不能因为前缀曾通过就跳过新关系。
+
+修改尚未冻结的已分析 pass，或事务回滚时，内部分析重置并在需要时重建。对外 Validate 结果仍是当前 revision 的不可变快照；Compile 只分配一次最终图。scratch 不进入静态缓存，也不保存 extension 对象或回调。
+
 ## 当前源码公开 API 清单
 
 按类型列出当前 public 与可供外部派生实现使用的 protected 声明。签名包含 nullable、默认参数和泛型约束；源码链接可定位实现。表中的“—”表示该声明没有额外 XML 约束，不能据此推断线程安全或不会失败。生命周期与组合顺序见本页前文。

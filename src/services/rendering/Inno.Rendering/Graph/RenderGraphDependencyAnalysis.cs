@@ -10,15 +10,13 @@ internal static partial class RenderGraphValidator
         IReadOnlyList<RenderTextureRecord> textures,
         IReadOnlyList<RenderBufferRecord> buffers,
         IReadOnlyList<RenderPassRecord> passes,
-        IReadOnlySet<RenderResourceKey> outputs,
-        IReadOnlyList<HashSet<int>> dependencies,
-        IReadOnlyList<HashSet<int>> dataDependencies,
+        RenderGraphValidationWorkspace analysis,
         List<RenderGraphDiagnostic> diagnostics
     ) {
-        Dictionary<RenderResourceKey, int> lastWriters = [];
-        Dictionary<RenderResourceKey, List<int>> readers = [];
-        HashSet<RenderResourceKey> initialized = [];
-        for (int textureIndex = 0; textureIndex < textures.Count; textureIndex++)
+        Dictionary<RenderResourceKey, int> lastWriters = analysis.lastWriters;
+        Dictionary<RenderResourceKey, List<int>> readers = analysis.readers;
+        HashSet<RenderResourceKey> initialized = analysis.initialized;
+        for (int textureIndex = analysis.textureCount; textureIndex < textures.Count; textureIndex++)
         {
             if (textures[textureIndex].imported)
             {
@@ -26,7 +24,7 @@ internal static partial class RenderGraphValidator
             }
         }
 
-        for (int bufferIndex = 0; bufferIndex < buffers.Count; bufferIndex++)
+        for (int bufferIndex = analysis.bufferCount; bufferIndex < buffers.Count; bufferIndex++)
         {
             if (buffers[bufferIndex].imported)
             {
@@ -34,12 +32,14 @@ internal static partial class RenderGraphValidator
             }
         }
 
-        for (int passIndex = 0; passIndex < passes.Count; passIndex++)
+        for (int passIndex = analysis.passCount; passIndex < passes.Count; passIndex++)
         {
             RenderPassRecord pass = passes[passIndex];
-            IReadOnlyList<RenderResourceUse> uniqueUses = [.. UniqueUses(pass.resources)];
-            foreach (RenderResourceUse use in uniqueUses)
+            analysis.uniqueUses.Clear();
+            foreach (RenderResourceUse use in pass.resources)
             {
+                if (!analysis.uniqueUses.Add(use.key))
+                    continue;
                 bool reads = use.access is RenderResourceAccess.Read or RenderResourceAccess.ReadWrite;
                 bool writes = use.access is RenderResourceAccess.Write or RenderResourceAccess.ReadWrite;
 
@@ -55,7 +55,7 @@ internal static partial class RenderGraphValidator
 
                 if (lastWriters.TryGetValue(use.key, out int writer))
                 {
-                    AddDependency(writer, passIndex, dependencies, dataDependencies);
+                    AddDependency(writer, passIndex, analysis.dependencies, analysis.dataDependencies);
                 }
 
                 if (writes)
@@ -64,7 +64,7 @@ internal static partial class RenderGraphValidator
                     {
                         foreach (int reader in previousReaders)
                         {
-                            AddDependency(reader, passIndex, dependencies, dataDependencies);
+                            AddDependency(reader, passIndex, analysis.dependencies, analysis.dataDependencies);
                         }
 
                         previousReaders.Clear();
@@ -84,7 +84,7 @@ internal static partial class RenderGraphValidator
                 }
             }
 
-            foreach (RenderResourceUse use in uniqueUses)
+            foreach (RenderResourceUse use in pass.resources)
             {
                 bool writes = use.access is RenderResourceAccess.Write or RenderResourceAccess.ReadWrite;
                 if (!writes)
@@ -103,18 +103,6 @@ internal static partial class RenderGraphValidator
             }
         }
 
-        foreach (RenderResourceKey output in outputs)
-        {
-            if (!initialized.Contains(output))
-            {
-                string resourceName = GetResourceName(output, textures, buffers);
-                diagnostics.Add(new RenderGraphDiagnostic(
-                    "RENDER_GRAPH_OUTPUT_UNINITIALIZED",
-                    $"Graph output '{resourceName}' has no stored contents at the end of the graph.",
-                    DiagnosticSeverity.Error,
-                    resourceName: resourceName));
-            }
-        }
     }
 
     private static bool StoresResult(
@@ -136,12 +124,13 @@ internal static partial class RenderGraphValidator
 
     private static void BuildPhaseDependencies(
         IReadOnlyList<RenderPassRecord> passes,
-        IReadOnlyList<HashSet<int>> dependencies
+        IReadOnlyList<HashSet<int>> dependencies,
+        int passStart
     ) {
         for (int passIndex = 0; passIndex < passes.Count; passIndex++)
         {
             RenderPassRecord pass = passes[passIndex];
-            for (int targetIndex = 0; targetIndex < passes.Count; targetIndex++)
+            for (int targetIndex = passIndex < passStart ? passStart : 0; targetIndex < passes.Count; targetIndex++)
             {
                 if (passIndex == targetIndex)
                 {
@@ -162,18 +151,6 @@ internal static partial class RenderGraphValidator
         }
     }
 
-    private static IEnumerable<RenderResourceUse> UniqueUses(IReadOnlyList<RenderResourceUse> uses)
-    {
-        HashSet<RenderResourceKey> emitted = [];
-        foreach (RenderResourceUse use in uses)
-        {
-            if (emitted.Add(use.key))
-            {
-                yield return use;
-            }
-        }
-    }
-
     private static bool IsImported(
         RenderResourceKey key,
         IReadOnlyList<RenderTextureRecord> textures,
@@ -187,17 +164,6 @@ internal static partial class RenderGraphValidator
         IReadOnlyList<RenderBufferRecord> buffers
     )
         => key.isTexture ? textures[key.index].name : buffers[key.index].name;
-
-    private static List<HashSet<int>> CreateEdgeSets(int count)
-    {
-        List<HashSet<int>> result = new(count);
-        for (int i = 0; i < count; i++)
-        {
-            result.Add([]);
-        }
-
-        return result;
-    }
 
     private static void AddDependency(
         int dependency,

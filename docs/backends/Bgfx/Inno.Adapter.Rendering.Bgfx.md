@@ -98,6 +98,14 @@ Metal、D3D、Vulkan 等 BGFX renderer 不要求分别维护业务 Shader：同�
 
 当前唯一源码 owner：`backends/Bgfx/runtime/Inno.Adapter.Rendering.Bgfx/Inno.Adapter.Rendering.Bgfx.csproj`。共同领域与平台产品通过明确契约组合，本项目不提供旧目录兼容入口。
 
+## 提交序号与长期运行
+
+内部资源退休、readback 等待和缓存保留采用 managed ulong 单调提交序号。BGFX 的 uint frame 仅保留为 Native 协议与公开诊断值；read_texture 返回的未来 frame 在请求时通过无符号模差转换成单调 deadline，完成和取消清理均不直接比较两个 uint frame。
+
+BGFX 的 inline 模式会消耗进程全局启动状态；设备退出后禁止用任何线程策略在同一进程重新初始化。需要新模式时应重启宿主，不重置第三方静态字段。Native 测试通过 ProcessIsolation trait 使用独立 testhost。
+
+窗口 surface Task 的完成仍表示渲染命令已处理、窗口使用已解除，不是通用 GPU fence。关闭流程保留 owner thread、安全点、最终 drain 和超时保护。
+
 ## 当前源码公开 API 清单
 
 按类型列出当前 public 与可供外部派生实现使用的 protected 声明。签名包含 nullable、默认参数和泛型约束；源码链接可定位实现。表中的“—”表示该声明没有额外 XML 约束，不能据此推断线程安全或不会失败。生命周期与组合顺序见本页前文。

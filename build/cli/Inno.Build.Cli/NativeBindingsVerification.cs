@@ -59,7 +59,8 @@ internal static partial class NativeBindingsVerification
                 [
                     "restore", Path.Combine(repositoryRoot, "InnoEngine.sln"),
                     $"-p:InnoToolTarget={target}",
-                    $"-p:InnoBuildCliOutputPath={cliOutput}",
+                    "-p:InnoBuildToolProject=Inno.Build.Cli",
+                    $"-p:InnoBuildToolOutputPath={cliOutput}",
                     "-p:BuildInParallel=false",
                     "/m:1",
                     "/nodeReuse:false",
@@ -79,7 +80,8 @@ internal static partial class NativeBindingsVerification
                     "--no-restore",
                     "-m:1", "-nodeReuse:false", "--disable-build-servers",
                     $"-p:InnoToolTarget={target}",
-                    $"-p:InnoBuildCliOutputPath={cliOutput}",
+                    "-p:InnoBuildToolProject=Inno.Build.Cli",
+                    $"-p:InnoBuildToolOutputPath={cliOutput}",
                     "-p:TreatWarningsAsErrors=true",
                     "--nologo"
                 ],

@@ -494,6 +494,13 @@
           "Inno.Scripting.Api": "[1.0.0, )"
         }
       },
+      "inno.integration.macosarm64.sdl3": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Adapter.Platform.Sdl3": "[1.0.0, )",
+          "Inno.Native.Sdl3": "[1.0.0, )"
+        }
+      },
       "inno.integration.windowsx64.sdl3": {
         "type": "Project",
         "dependencies": {

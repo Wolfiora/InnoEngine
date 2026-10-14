@@ -58,6 +58,12 @@ static IByteDocumentStore CreateDocument(string absolutePath)
 
 文件路径的选择属于调用此 factory 的宿主。`tests/core/Inno.Core.IO.Tests` 覆盖 lease 协调、取消、原子写入、只读文档与读取 pin。
 
+## 规范拼写与文件系统所有权
+
+PathBoundary 对规范化绝对路径使用 ordinal 拼写比较，不根据宿主系统推测卷是否区分大小写。调用者应从同一 root 构造子路径；即使卷忽略大小写，root 的大小写别名仍被拒绝。RequireUnlinkedPath 使用已通过边界校验的后缀逐段检查链接，不通过大小写不确定的相对路径推导检查对象。
+
+AtomicFile.Install 要求两个 parent 的规范拼写完全一致；候选与目标名称仅大小写不同也会安全拒绝。路径检查不提供对外部进程改写目录的保护；参与者仍须持有 owner lease。
+
 ## 当前源码公开 API 清单
 
 签名来自当前 SDK 求值与语义符号；按类型列出 public/protected 契约。工作流与生命周期见本页前文。

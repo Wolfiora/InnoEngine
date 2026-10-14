@@ -12,8 +12,9 @@
   <PropertyGroup>
     <DefaultItemExcludes>$(DefaultItemExcludes);$(MSBuildProjectDirectory)/obj/**;$(MSBuildProjectDirectory)/bin/**</DefaultItemExcludes>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(MSBuildProjectName)' == 'Inno.Build.Cli' and '$(InnoBuildCliOutputPath)' != ''">
-    <BaseIntermediateOutputPath>$(InnoBuildCliOutputPath)/obj/</BaseIntermediateOutputPath>
+  <PropertyGroup Condition="'$(MSBuildProjectName)' == '$(InnoBuildToolProject)' and '$(InnoBuildToolOutputPath)' != ''">
+    <BaseIntermediateOutputPath>$(InnoBuildToolOutputPath)/obj/</BaseIntermediateOutputPath>
+    <OutputPath>$(InnoBuildToolOutputPath)</OutputPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(InnoNativeTarget)' != '' and '$(IsRoslynComponent)' != 'true' and '$(UseArtifactsOutput)' != 'true' and '$(ArtifactsPath)' == ''">
     <BaseIntermediateOutputPath>obj/$(InnoNativeTarget)/</BaseIntermediateOutputPath>

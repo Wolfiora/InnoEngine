@@ -8,6 +8,8 @@
 
 详细命令、首次失败、修复及回收过程见[本轮验收记录](../../records/architecture/acceptance/BUILD_COST_TOOL_HOST_DISK_CLOSURE_ACCEPTANCE.md)。历史结果不冒充当前通过证据。
 
+后续审查发现的五项局部边界现已实现修复，本机新证据与具体限制见[局部整改报告](../../records/architecture/acceptance/LOCAL_BOUNDARY_REFINEMENT_ACCEPTANCE.md)。下面产品与性能表属于上一轮已完成结果；本轮提交判断以新报告的具体范围为准。
+
 ## 已验证能力
 
 | 范围 | 当前结果 |

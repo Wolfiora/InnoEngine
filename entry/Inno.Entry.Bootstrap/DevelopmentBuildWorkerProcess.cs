@@ -14,6 +14,7 @@ internal static class DevelopmentBuildWorkerProcess
         string root,
         string configuration,
         string dotnet,
+        string tool,
         CancellationToken cancellation
     ) {
         using var bounded = CancellationTokenSource.CreateLinkedTokenSource(cancellation);
@@ -23,7 +24,7 @@ internal static class DevelopmentBuildWorkerProcess
         try
         {
             string nonce = Guid.NewGuid().ToString("N");
-            var request = new DevelopmentBuildWorkerRequest(root, configuration, dotnet, assembly, operation, nonce);
+            var request = new DevelopmentBuildWorkerRequest(root, configuration, dotnet, assembly, operation, nonce, tool);
             string requestPath = Path.Combine(working.directory, "request.json");
             AtomicFile.WriteAllBytes(requestPath, JsonSerializer.SerializeToUtf8Bytes(request));
             string entry = Path.Combine(AppContext.BaseDirectory, "InnoEngine.Build.dll");

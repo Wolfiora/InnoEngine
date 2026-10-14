@@ -15,7 +15,7 @@ public sealed unsafe class Sdl3WindowOperationsTests
         bool resizable,
         bool highPixelDensity
     ) {
-        using var application = new Sdl3PlatformApplication(new WindowsX64Sdl3HostIntegration());
+        using var application = new Sdl3PlatformApplication(NativeHostFixture.Create());
         var options = new PlatformWindowOptions
         {
             title = "Shared SDL creation",

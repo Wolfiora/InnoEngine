@@ -38,7 +38,7 @@ Editor 持有 checkout 与产品共享读取保护；Build 与产品清理分别
 - `DevelopmentProcess`：隔离 SDK 进程环境，取消后等待退出。
 - `DevelopmentProduct`：校验完整部署、原子记录准备结果。
 - `DevelopmentApplication`：按依赖解析器加载应用，调用公开应用入口。
-- `DevelopmentBuildTool`：校验 Build 部署完整哈希并通过可退休检查上下文读取当前 SDK 的输入身份。准备使用独占 SDK 工作目录；完整结果发布到 `artifacts/build-tools/cli/hosts` 后才载入。命中后不编译 CLI；检查上下文必须经过 Full GC、finalizers、Full GC 并确认不可达后才能加载实际工具或重新准备。执行期间保留 publication 读取 lease；进程 reader 登记保护已载入的程序集至进程退出。
+- `DevelopmentBuildTool`：按明确工具定义校验部署与源码身份。输入检查、发布各在同一 Build 可执行程序的独立 worker 中完成；采用普通进程生命周期，退出后释放工具程序集。cache clean 选择轻量 Toolchains 应用，其余命令选择 CLI，二者各自拥有 receipt、workspace 与 publication。
 
 ## 扩展与验证
 

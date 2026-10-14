@@ -5,16 +5,65 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
-using Inno.Build.Toolchains;
 using Inno.Core.IO;
 
-namespace Inno.Build.Cli;
+namespace Inno.Build.Toolchains;
 
 /// <summary>
 /// Prepares immutable Build-tool deployments through the application's fixed-input publication boundary.
 /// </summary>
-public static partial class BuildApplication
+public static class ManagedToolRuntime
 {
+    /// <summary>
+    /// Inspects the selected SDK's evaluated Build-tool input closure without compiling or preparing Native products.
+    /// </summary>
+    /// <param name="engineRoot">
+    /// The absolute source checkout.
+    /// </param>
+    /// <param name="configuration">
+    /// The explicit Debug or Release compiler configuration.
+    /// </param>
+    /// <param name="dotnetHost">
+    /// The selected managed SDK executable.
+    /// </param>
+    /// <param name="relativeProject">
+    /// The explicit checkout-relative managed tool project.
+    /// </param>
+    /// <param name="cacheName">
+    /// The dedicated publisher identity validated for this tool.
+    /// </param>
+    /// <param name="cancellationToken">
+    /// Cancels evaluation and input hashing.
+    /// </param>
+    /// <returns>
+    /// The content identity of the actual source graph, restored dependencies, compiler and SDK.
+    /// </returns>
+    /// <exception cref="IOException">
+    /// A required source, SDK or restored dependency cannot be read.
+    /// </exception>
+    /// <exception cref="InvalidOperationException">
+    /// The SDK cannot evaluate the current graph.
+    /// </exception>
+    /// <exception cref="OperationCanceledException">
+    /// Inspection was canceled.
+    /// </exception>
+    public static async Task<string> ReadInputIdentityAsync(
+        string engineRoot,
+        string configuration,
+        string dotnetHost,
+        string relativeProject,
+        string cacheName,
+        CancellationToken cancellationToken
+    ) {
+        ValidateDefinition(relativeProject, cacheName);
+        string project = PathBoundary.Resolve(engineRoot, relativeProject);
+        DotNetSdkDescriptor sdk = await DotNetSdkResolver.ResolveAsync(dotnetHost, project, cancellationToken).ConfigureAwait(false);
+        ManagedBuildInputSnapshot snapshot = await ManagedBuildInputSnapshot.CaptureAsync(
+            new NativeBuildContext(engineRoot, configuration.ToLowerInvariant()), sdk, project,
+            Properties(configuration, project), cancellationToken).ConfigureAwait(false);
+        return snapshot.fingerprint;
+    }
+
     /// <summary>
     /// Publishes a verified Build-tool deployment before the development entry loads it for the process lifetime.
     /// </summary>
@@ -28,7 +77,13 @@ public static partial class BuildApplication
     /// The selected managed SDK executable used to verify current inputs.
     /// </param>
     /// <param name="assemblyPath">
-    /// The built CLI assembly in an exclusively owned, freshly prepared SDK output directory.
+    /// The bootstrap tool assembly in an exclusively owned, freshly prepared SDK output directory.
+    /// </param>
+    /// <param name="relativeProject">
+    /// The explicitly selected tool project relative to the checkout.
+    /// </param>
+    /// <param name="cacheName">
+    /// The dedicated publisher name, consisting only of ASCII letters and hyphens.
     /// </param>
     /// <param name="cancellationToken">
     /// Cancels copying or ownership acquisition before publication.
@@ -60,20 +115,37 @@ public static partial class BuildApplication
         string configuration,
         string dotnetHost,
         string assemblyPath,
+        string relativeProject,
+        string cacheName,
         CancellationToken cancellationToken
     ) {
         cancellationToken.ThrowIfCancellationRequested();
         ToolchainEnvironment.ValidateConfiguration(configuration.ToLowerInvariant());
         string root = Path.GetFullPath(engineRoot);
+        ValidateDefinition(relativeProject, cacheName);
         string assembly = PathBoundary.RequireUnlinkedPath(root, assemblyPath);
         string source = Path.GetDirectoryName(assembly)!;
-        string workspaceRoot = Path.Combine(root, "artifacts", "build-tools", "cli", "workspaces");
+        string workspaceRoot = Path.Combine(root, "artifacts", "build-tools", cacheName, "workspaces");
+        BuildCacheOwnerCatalog.Register(root, workspaceRoot, cacheName + "-tool-workspaces", BuildCacheArtifactRole.ReusableWorkspace, cancellationToken);
+        BuildCacheOwnerCatalog.Register(root, Path.Combine(root, "artifacts", "build-tools", cacheName, "hosts"),
+            cacheName + "-tool-hosts", BuildCacheArtifactRole.ImmutableArtifact, cancellationToken);
+        BuildCacheOwnerCatalog.Register(root, Path.Combine(root, "artifacts", "build-tools", cacheName, "readers"),
+            cacheName + "-tool-readers", BuildCacheArtifactRole.ProcessWorkingDirectory, cancellationToken);
         PathBoundary.RequireUnlinkedPath(workspaceRoot, source);
-        string project = Path.Combine(root, "build", "cli", "Inno.Build.Cli", "Inno.Build.Cli.csproj");
+        string project = PathBoundary.Resolve(root, relativeProject);
         DotNetSdkDescriptor sdk = await DotNetSdkResolver.ResolveAsync(dotnetHost, project, cancellationToken).ConfigureAwait(false);
+        // Bootstrap output owns its own assets; source planning requires the root graph's actual restore.
+        using (FileLease restore = await FileLease.AcquireAsync(Path.Combine(root, "artifacts", "managed", "restore-graphs", "write.lock"),
+                   TimeSpan.FromMinutes(10), cancellationToken).ConfigureAwait(false))
+        {
+            await ToolchainEnvironment.RunAsync(sdk.hostPath,
+                [sdk.cliPath, "restore", project, "--disable-parallel", "-p:Configuration=" + configuration,
+                    "-p:InnoBuildToolProject=" + Path.GetFileNameWithoutExtension(project), "-m:1", "-nodeReuse:false"],
+                root, cancellationToken, DotNetSdkEnvironment.Create(sdk.hostPath)).ConfigureAwait(false);
+        }
         ManagedBuildInputSnapshot snapshot = await ManagedBuildInputSnapshot.CaptureAsync(
             new NativeBuildContext(root, configuration.ToLowerInvariant()), sdk, project,
-            new Dictionary<string, string> { ["Configuration"] = configuration }, cancellationToken).ConfigureAwait(false);
+            Properties(configuration, project), cancellationToken).ConfigureAwait(false);
         using ManagedBuildExecution execution = await snapshot.CreateExecutionAsync(cancellationToken).ConfigureAwait(false);
         string workspaceIdentity = NativeBuildFingerprint.Create(["build-tool-workspace", execution.project, sdk.sdkIdentity, configuration], []);
         string compilerWorkspace = Path.Combine(workspaceRoot, workspaceIdentity);
@@ -86,20 +158,23 @@ public static partial class BuildApplication
             TimeSpan.FromMinutes(10), cancellationToken).ConfigureAwait(false);
         workspaces.BeginWorkingDirectory(compilerWorkspace, compilerWorkspace + ".lock", null, cancellationToken);
         string preparedOutput = Path.Combine(compilerWorkspace, "Runtime");
+        using ProcessOwnedDirectory deploymentOwner = await ProcessOwnedDirectory.CreateAsync(workspaceRoot, cancellationToken).ConfigureAwait(false);
+        string deployment = Path.Combine(deploymentOwner.directory, "Deployment");
         await ToolchainEnvironment.RunAsync(sdk.hostPath,
-            [sdk.cliPath, "build", execution.project, "--configuration", configuration, "--disable-build-servers", "-m:1", "-nodeReuse:false",
-                "-p:InnoBuildCliOutputPath=" + preparedOutput + Path.DirectorySeparatorChar],
+            [sdk.cliPath, "publish", execution.project, "--configuration", configuration, "--output", deployment,
+                "--disable-build-servers", "-m:1", "-nodeReuse:false",
+                "-p:InnoBuildToolProject=" + Path.GetFileNameWithoutExtension(project), "-p:InnoBuildToolOutputPath=" + preparedOutput + Path.DirectorySeparatorChar],
             execution.engineRoot, cancellationToken, DotNetSdkEnvironment.Create(sdk.hostPath)).ConfigureAwait(false);
         await execution.VerifyAsync(cancellationToken).ConfigureAwait(false);
         await snapshot.VerifyAsync(cancellationToken).ConfigureAwait(false);
         workspaces.Record(compilerWorkspace, compilerWorkspace + ".lock", [], null, null, cancellationToken);
-        source = Path.Combine(preparedOutput, "net9.0");
-        assembly = Path.Combine(source, "Inno.Build.Cli.dll");
+        source = deployment;
+        assembly = Path.Combine(source, Path.GetFileNameWithoutExtension(project) + ".dll");
         string inputs = snapshot.fingerprint;
         IReadOnlyDictionary<string, string> files = ReadDeployment(source, cancellationToken);
         string fingerprint = NativeBuildFingerprint.Create(files.OrderBy(static pair => pair.Key, StringComparer.Ordinal)
             .Select(static pair => pair.Key + "=" + pair.Value).Prepend(inputs), []);
-        string cacheRoot = Path.Combine(root, "artifacts", "build-tools", "cli", "hosts");
+        string cacheRoot = Path.Combine(root, "artifacts", "build-tools", cacheName, "hosts");
         string destination = Path.Combine(cacheRoot, configuration.ToLowerInvariant(), fingerprint);
         var cache = new BuildCachePublisher(cacheRoot, BuildCacheArtifactRole.ImmutableArtifact);
         using FileLease activity = await cache.AcquireUseAsync(cancellationToken).ConfigureAwait(false);
@@ -155,7 +230,7 @@ public static partial class BuildApplication
                     .ConfigureAwait(false);
             }
             cache.Record(destination, destination + ".read.lock", [], configuration, null, cancellationToken);
-            string readersRoot = Path.Combine(root, "artifacts", "build-tools", "cli", "readers");
+            string readersRoot = Path.Combine(root, "artifacts", "build-tools", cacheName, "readers");
             string reader = Path.Combine(readersRoot, Guid.NewGuid().ToString("N"));
             new BuildCachePublisher(readersRoot, BuildCacheArtifactRole.ProcessWorkingDirectory).RecordProcessUse(reader, reader + ".lock", [destination], cancellationToken);
             return Path.Combine(destination, "Outputs", Path.GetFileName(assembly));
@@ -204,5 +279,24 @@ public static partial class BuildApplication
     ) {
         if (expected.Count != actual.Count || actual.Any(pair => !expected.TryGetValue(pair.Key, out string? hash) || hash != pair.Value))
             throw new InvalidOperationException("The Build-tool deployment changed during publication.");
+    }
+    private static IReadOnlyDictionary<string, string> Properties(
+        string configuration,
+        string project
+    ) => new Dictionary<string, string>
+    {
+        ["Configuration"] = configuration,
+        ["InnoBuildToolProject"] = Path.GetFileNameWithoutExtension(project)
+    };
+
+    private static void ValidateDefinition(
+        string relativeProject,
+        string cacheName
+    ) {
+        ArgumentException.ThrowIfNullOrWhiteSpace(relativeProject);
+        ArgumentException.ThrowIfNullOrWhiteSpace(cacheName);
+        if (Path.IsPathRooted(relativeProject) || !relativeProject.EndsWith(".csproj", StringComparison.Ordinal)
+            || cacheName.Any(static character => !(character is >= 'a' and <= 'z' or '-')))
+            throw new ArgumentException("A managed tool requires a contained project and an explicit publisher name.");
     }
 }

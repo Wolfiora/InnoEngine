@@ -13,6 +13,7 @@ using Xunit;
 
 namespace Inno.Build.Tests;
 
+[Collection("Build pipeline serialization")]
 public sealed class DevelopmentBuildWorkerTests
 {
     [Theory]
@@ -33,16 +34,17 @@ public sealed class DevelopmentBuildWorkerTests
             string previous = Path.Combine(Path.GetDirectoryName(assembly)!, "previous-publication");
             File.WriteAllText(previous, "complete");
             string code = "using System; using System.IO; using System.Threading; using System.Threading.Tasks; "
-                + "namespace Inno.Build.Cli; public static class BuildApplication { "
-                + "public static async Task<string> ReadInputIdentityAsync(string root, string configuration, string dotnet, CancellationToken token) { "
+                + "namespace Inno.Build.Toolchains; public static class ManagedToolRuntime { "
+                + "public static async Task<string> ReadInputIdentityAsync(string root, string configuration, string dotnet, string project, string cacheName, CancellationToken token) { "
                 + "File.WriteAllText(Path.Combine(root, \"worker-started\"), \"ready\"); "
                 + (crash ? "Environment.Exit(23); " : "await Task.Delay(Timeout.Infinite, token); ")
                 + "return \"unexpected\"; } }";
             string[] framework = ((string)AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES")!).Split(Path.PathSeparator);
-            CSharpCompilation compilation = CSharpCompilation.Create("Inno.Build.Cli", [CSharpSyntaxTree.ParseText(code)],
+            CSharpCompilation compilation = CSharpCompilation.Create("Inno.Build.Toolchains", [CSharpSyntaxTree.ParseText(code)],
                 framework.Select(static path => MetadataReference.CreateFromFile(path)), new(OutputKind.DynamicallyLinkedLibrary));
             using (FileStream output = File.Create(assembly))
                 Assert.True(compilation.Emit(output).Success);
+            File.Copy(assembly, Path.Combine(Path.GetDirectoryName(assembly)!, "Inno.Build.Toolchains.dll"));
             using (await FileLease.AcquireAsync(Path.GetDirectoryName(Path.GetDirectoryName(assembly))! + ".read.lock", TimeSpan.FromSeconds(5))) { }
             string workers = Path.Combine(root, "artifacts", "entry", "workers");
             using ProcessOwnedDirectory working = await ProcessOwnedDirectory.CreateAsync(workers);
@@ -52,7 +54,7 @@ public sealed class DevelopmentBuildWorkerTests
                 Path.Combine(ToolchainEnvironment.FindRepoRoot(), "entry", "InnoEngine.Build", "InnoEngine.Build.csproj"), CancellationToken.None);
             await File.WriteAllBytesAsync(request, JsonSerializer.SerializeToUtf8Bytes(new
             {
-                root, configuration = "Debug", dotnet = sdk.hostPath, assembly, operation = "inspect", nonce
+                root, configuration = "Debug", dotnet = sdk.hostPath, assembly, operation = "inspect", nonce, tool = "cli"
             }));
             using Process process = new() { StartInfo = new ProcessStartInfo(sdk.hostPath)
             {
@@ -112,7 +114,7 @@ public sealed class DevelopmentBuildWorkerTests
     public async Task TenRealInspectionsExitWithoutRetainingTheToolsInTheParent()
     {
         string root = ToolchainEnvironment.FindRepoRoot();
-        string receipt = Path.Combine(root, "artifacts", "entry", "build", "Debug", "ready.json");
+        string receipt = Path.Combine(root, "artifacts", "entry", "build", "cli", "Debug", "ready.json");
         using JsonDocument ready = JsonDocument.Parse(File.ReadAllBytes(receipt));
         string assembly = ready.RootElement.GetProperty("assembly").GetString()!;
         string publication = Path.GetDirectoryName(Path.GetDirectoryName(assembly))!;
@@ -129,7 +131,7 @@ public sealed class DevelopmentBuildWorkerTests
             string nonce = Guid.NewGuid().ToString("N");
             await File.WriteAllBytesAsync(request, JsonSerializer.SerializeToUtf8Bytes(new
             {
-                root, configuration = "Debug", dotnet = sdk.hostPath, assembly, operation = "inspect", nonce
+                root, configuration = "Debug", dotnet = sdk.hostPath, assembly, operation = "inspect", nonce, tool = "cli"
             }), cancellation.Token);
             using Process process = new() { StartInfo = new ProcessStartInfo(sdk.hostPath)
             {
@@ -174,14 +176,15 @@ public sealed class DevelopmentBuildWorkerTests
             File.WriteAllText(Path.Combine(root, "InnoEngine.sln"), "fixture");
             string assembly = Path.Combine(root, "artifacts", "build-tools", "cli", "workspaces", "fixture", "Inno.Build.Cli.dll");
             Directory.CreateDirectory(Path.GetDirectoryName(assembly)!);
-            string code = "using System.Threading; using System.Threading.Tasks; namespace Inno.Build.Cli; public static class BuildApplication { "
-                + "public static Task<string> ReadInputIdentityAsync(string root, string configuration, string dotnet, CancellationToken token) => Task.FromResult(\"fixture-identity\"); "
-                + "public static Task<string> PublishRuntimeAsync(string root, string configuration, string dotnet, string assembly, CancellationToken token) => Task.FromResult(assembly); }";
+            string code = "using System.Threading; using System.Threading.Tasks; namespace Inno.Build.Toolchains; public static class ManagedToolRuntime { "
+                + "public static Task<string> ReadInputIdentityAsync(string root, string configuration, string dotnet, string project, string cacheName, CancellationToken token) => Task.FromResult(\"fixture-identity\"); "
+                + "public static Task<string> PublishRuntimeAsync(string root, string configuration, string dotnet, string assembly, string project, string cacheName, CancellationToken token) => Task.FromResult(assembly); }";
             string[] framework = ((string)AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES")!).Split(Path.PathSeparator);
-            CSharpCompilation compilation = CSharpCompilation.Create("Inno.Build.Cli", [CSharpSyntaxTree.ParseText(code)],
+            CSharpCompilation compilation = CSharpCompilation.Create("Inno.Build.Toolchains", [CSharpSyntaxTree.ParseText(code)],
                 framework.Select(static path => MetadataReference.CreateFromFile(path)), new(OutputKind.DynamicallyLinkedLibrary));
             using (FileStream output = File.Create(assembly))
                 Assert.True(compilation.Emit(output).Success);
+            File.Copy(assembly, Path.Combine(Path.GetDirectoryName(assembly)!, "Inno.Build.Toolchains.dll"));
             string entry = Path.Combine(ToolchainEnvironment.FindRepoRoot(), "entry", "InnoEngine.Build", "bin", "Debug", "net9.0", "InnoEngine.Build.dll");
             DotNetSdkDescriptor sdk = await DotNetSdkResolver.ResolveAsync("dotnet",
                 Path.Combine(ToolchainEnvironment.FindRepoRoot(), "entry", "InnoEngine.Build", "InnoEngine.Build.csproj"), CancellationToken.None);
@@ -196,7 +199,7 @@ public sealed class DevelopmentBuildWorkerTests
                 string nonce = Guid.NewGuid().ToString("N");
                 string operation = index % 2 == 0 ? "inspect" : "publish";
                 string request = Path.Combine(working.directory, "request.json");
-                await File.WriteAllBytesAsync(request, JsonSerializer.SerializeToUtf8Bytes(new { root, configuration = "Debug", dotnet, assembly, operation, nonce }), cancellation.Token);
+                await File.WriteAllBytesAsync(request, JsonSerializer.SerializeToUtf8Bytes(new { root, configuration = "Debug", dotnet, assembly, operation, nonce, tool = "cli" }), cancellation.Token);
                 using Process process = new() { StartInfo = new ProcessStartInfo(dotnet) { UseShellExecute = false, CreateNoWindow = true, RedirectStandardError = true } };
                 process.StartInfo.ArgumentList.Add(entry);
                 process.StartInfo.ArgumentList.Add("--internal-build-worker");

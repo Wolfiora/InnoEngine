@@ -153,3 +153,7 @@ dotnet test tests/build/Inno.Build.Tests/Inno.Build.Tests.csproj --configuration
 ## NuGet、目标与闭包验证
 
 `NuGetBindingDependencyTests` 验证固定 Runtime 包和 Restore 内容身份；`SupportPackClosureValidationTests` 验证任意后端组、精确静态归档及 Browser 对象 ABI。平台 fixture 单独验证 PE/Mach-O 的目标拒绝，不冒充 foreign 产品运行证据。
+
+## 轻量维护闭包
+
+BuildCacheOwnerCatalogTests 通过正式 publisher 登记验证目录角色、损坏拒绝、预览/退休一致性及未登记目录保留。开发工具 publication 测试消费中立 ManagedToolRuntime；CLI 专用准备 API 已删除。

@@ -7,6 +7,11 @@ namespace Inno.Core.IO;
 /// <summary>
 /// Resolves paths while enforcing an explicit filesystem ownership boundary.
 /// </summary>
+/// <remarks>
+/// Ownership uses ordinal spelling on every filesystem, including case-insensitive volumes.
+/// Callers must retain the root's spelling when constructing child paths. Case aliases are
+/// deliberately rejected: operating-system identity does not determine volume case semantics.
+/// </remarks>
 public static class PathBoundary
 {
     /// <summary>
@@ -85,9 +90,12 @@ public static class PathBoundary
         string candidate = RequireContained(root, path);
         string current = Path.GetFullPath(root);
         Inspect(current);
-        string relative = Path.GetRelativePath(current, candidate);
-        if (relative != ".")
+        string normalizedRoot = Path.TrimEndingDirectorySeparator(current);
+        if (!string.Equals(normalizedRoot, candidate, StringComparison.Ordinal))
         {
+            string prefix = Path.EndsInDirectorySeparator(normalizedRoot)
+                ? normalizedRoot : normalizedRoot + Path.DirectorySeparatorChar;
+            string relative = candidate[prefix.Length..];
             foreach (string segment in relative.Split(Path.DirectorySeparatorChar))
             {
                 current = Path.Combine(current, segment);
@@ -158,11 +166,8 @@ public static class PathBoundary
         string candidate
     ) {
         string prefix = Path.EndsInDirectorySeparator(root) ? root : root + Path.DirectorySeparatorChar;
-        StringComparison comparison = OperatingSystem.IsWindows() || OperatingSystem.IsMacOS()
-            ? StringComparison.OrdinalIgnoreCase
-            : StringComparison.Ordinal;
-        if (!string.Equals(candidate, root, comparison)
-            && !candidate.StartsWith(prefix, comparison))
+        if (!string.Equals(candidate, root, StringComparison.Ordinal)
+            && !candidate.StartsWith(prefix, StringComparison.Ordinal))
         {
             throw new IOException($"Path '{candidate}' escapes filesystem boundary '{root}'.");
         }

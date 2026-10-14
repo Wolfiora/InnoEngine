@@ -2,10 +2,14 @@
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    <!-- Native package assets belong to the selected SDK host, independently of the game target. -->
+    <RuntimeIdentifier>$(NETCoreSdkRuntimeIdentifier)</RuntimeIdentifier>
+    <SelfContained>false</SelfContained>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <TargetFramework>net9.0</TargetFramework>
     <ImplicitUsings>disable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <OutputPath Condition="'$(InnoBuildCliOutputPath)' != ''">$(InnoBuildCliOutputPath)</OutputPath>
+    <OutputPath Condition="'$(InnoBuildToolProject)' == '$(MSBuildProjectName)' and '$(InnoBuildToolOutputPath)' != ''">$(InnoBuildToolOutputPath)</OutputPath>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="../../bindings/Inno.Build.Bindings/Inno.Build.Bindings.csproj" PrivateAssets="compile" />

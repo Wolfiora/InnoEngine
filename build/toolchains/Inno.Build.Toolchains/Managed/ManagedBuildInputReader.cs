@@ -12,7 +12,7 @@ namespace Inno.Build.Toolchains;
 
 internal static class ManagedBuildInputReader
 {
-    internal static async ValueTask<string> CaptureAsync(
+    internal static async ValueTask<ManagedBuildInputCapture> CaptureAsync(
         NativeBuildContext context,
         DotNetSdkDescriptor sdk,
         string project,
@@ -56,7 +56,7 @@ internal static class ManagedBuildInputReader
                 .Prepend("sdk=" + sdk.sdkIdentity).Prepend("project=" + project).ToArray();
             // Evaluator implementation participates without depending on unrelated tool assembly MVIDs.
             declarations = declarations.Append("evaluator=" + evaluator.fingerprint).ToArray();
-            return NativeBuildFingerprint.Create(context, declarations, inputs, cancellation);
+            return new ManagedBuildInputCapture(NativeBuildFingerprint.Create(context, declarations, inputs, cancellation), declarations);
         }
         finally
         {

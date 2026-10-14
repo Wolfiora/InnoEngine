@@ -41,7 +41,7 @@ env:
 jobs:
   dependencies:
     name: Restore and submit NuGet dependencies
-    runs-on: ubuntu-24.04
+    runs-on: windows-2022
     timeout-minutes: 30
     permissions:
       contents: write

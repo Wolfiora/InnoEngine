@@ -73,3 +73,9 @@
 - [Inno.Text.Tests](../text/Inno.Text.Tests.md)
 - [Inno.Tooling.Architecture.Tests](../tooling/Inno.Tooling.Architecture.Tests.md)
 - [Inno.UI.Tests](../ui/Inno.UI.Tests.md)
+
+## Native 进程隔离
+
+`tests/Invoke-IsolatedTests.ps1` 先执行普通套件，再按 `ProcessIsolation=Required` 的发现结果为每个用例启动独立 testhost。BGFX 线程模式和故意保留 Faulted owner 的用例不能与其他 Native 生命周期共用进程。发现、执行和失败均使用真实 SDK 测试入口；不改写生产状态来复用 testhost。
+
+Native 测试部署在成功 Build 后执行；CI 的目标 Build 明确设置 InnoTestNativeProduct / InnoTestNativeTarget。--no-build 直接消费已准备程序集，不提前 ResolveReferences，不执行重复 Native 准备。

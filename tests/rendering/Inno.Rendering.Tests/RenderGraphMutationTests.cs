@@ -121,6 +121,59 @@ public sealed class RenderGraphMutationTests
             Enum.GetValues<RenderTextureFormat>(), Enum.GetValues<RenderTextureFormat>(),
             [], [], false, false));
 
+    [Fact]
+    public void AcceptedFuturePhaseOrderingStillDetectsALaterCycleAndRollsBack()
+    {
+        var graph = CreateGraph();
+        graph.AddRasterPass("First", new("first"), 0, Execute).HasSideEffect().Before(new("future"));
+        using (RenderGraphMutationScope accepted = graph.BeginMutationScope())
+            accepted.Commit();
+        using (graph.BeginMutationScope())
+        {
+            graph.AddRasterPass("Future", new("future"), 0, Execute).HasSideEffect().Before(new("first"));
+            Assert.Contains(graph.Validate().diagnostics, diagnostic => diagnostic.code == "RENDER_GRAPH_CYCLE");
+        }
+        using (RenderGraphMutationScope next = graph.BeginMutationScope())
+        {
+            graph.AddRasterPass("Valid", new("future"), 0, Execute).HasSideEffect();
+            next.Commit();
+        }
+        Assert.Equal(new[] { "First", "Valid" }, graph.Compile().graph!.passes.Select(static pass => pass.name));
+    }
+
+    [Fact]
+    public void IncrementalSharedResourceAnalysisMatchesTheCompleteGraph()
+    {
+        string[] Build(bool incremental)
+        {
+            var graph = CreateGraph();
+            RenderTextureHandle texture = graph.CreateTexture("Shared", Descriptor());
+            for (int index = 0; index < 12; index++)
+            {
+                using RenderGraphMutationScope? mutation = incremental ? graph.BeginMutationScope() : null;
+                graph.AddRasterPass("Writer" + index, new("write"), 0, Execute)
+                    .UseColorAttachment(texture, 0, index == 0 ? RenderLoadAction.Clear : RenderLoadAction.Load);
+                graph.AddRasterPass("Reader" + index, new("read"), 0, Execute).ReadTexture(texture).HasSideEffect();
+                mutation?.Commit();
+            }
+            graph.MarkOutput(texture);
+            return graph.Compile().graph!.passes.Select(static pass => pass.name).ToArray();
+        }
+        Assert.Equal(Build(false), Build(true));
+    }
+
+    [Fact]
+    public void EditingAnUncommittedValidatedPassRebuildsItsAnalysis()
+    {
+        var graph = CreateGraph();
+        RasterPassBuilder first = graph.AddRasterPass("First", new("first"), 0, Execute);
+        first.HasSideEffect();
+        graph.AddRasterPass("Last", new("last"), 0, Execute).HasSideEffect();
+        Assert.True(graph.Validate().isValid);
+        first.After(new("last"));
+        Assert.Equal(new[] { "Last", "First" }, graph.Compile().graph!.passes.Select(static pass => pass.name));
+    }
+
     private static RenderTextureDescriptor Descriptor()
         => new(32, 32, RenderTextureFormat.RGBA8, RenderTextureUsage.ColorAttachment | RenderTextureUsage.Sampled);
 

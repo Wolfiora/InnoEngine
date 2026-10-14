@@ -95,6 +95,10 @@ static async ValueTask InspectBindingsAsync(
 
 `BindingDefinitionTests`、`BindingGenerationBatchTests`、`NativeBindingGenerationTests`、`NativeBindingCompilationTests` 覆盖定义、bridge、扩展/消费、冻结 SDK 路径、CheckOnly、失败、取消、篡改和输出保护。生成业务 fixture 直接测试公开生成库；MSBuild 入口另由实际项目构建验证。实际结果见当前验收报告。
 
+## 生成工具宿主资产
+
+生成器和 BindingExtension 的 RuntimeIdentifier 使用所选 SDK 的 NETCoreSdkRuntimeIdentifier，独立于游戏发布 target。NuGet Restore 选择实际宿主 Native 包资产；不以文件名列表删掉其他平台 DLL。Runtime 与生成器继续分开，Player 不携带 BGCS 生成器。
+
 ## 当前源码公开 API 清单
 
 按类型列出当前 public 与可供外部派生实现使用的 protected 声明。签名包含 nullable、默认参数和泛型约束；源码链接可定位实现。表中的“—”表示该声明没有额外 XML 约束，不能据此推断线程安全或不会失败。生命周期与组合顺序见本页前文。
