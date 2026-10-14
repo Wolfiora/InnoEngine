@@ -57,6 +57,40 @@ public sealed class ManagedBuildInputSnapshotTests : IDisposable
     }
 
     [Fact]
+    public async Task CheckoutAliasPreservesOwnedSourcesWhileSharingPhysicalInputReads()
+    {
+        string alias = m_root + "-alias";
+        try
+        {
+            if (OperatingSystem.IsWindows())
+                await ToolchainEnvironment.RunAsync("powershell.exe",
+                    ["-NoProfile", "-NonInteractive", "-Command",
+                        "New-Item -ItemType Junction -Path '" + alias + "' -Target '" + m_root + "' | Out-Null"],
+                    m_root, CancellationToken.None);
+            else
+                Directory.CreateSymbolicLink(alias, m_root);
+            string project = Path.Combine(alias, "App", "App.csproj");
+            string dotnet = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH") ?? ToolchainEnvironment.ResolveExecutable("dotnet");
+            DotNetSdkDescriptor sdk = await DotNetSdkResolver.ResolveAsync(dotnet, project);
+            await ToolchainEnvironment.RunAsync(sdk.hostPath, [sdk.cliPath, "restore", project, "--nologo", "-v:quiet"],
+                alias, CancellationToken.None, DotNetSdkEnvironment.Create(sdk.hostPath));
+            var context = new NativeBuildContext(alias, "release");
+            ManagedBuildInputSnapshot snapshot = await ManagedBuildInputSnapshot.CaptureAsync(context, sdk, project,
+                new Dictionary<string, string> { ["Configuration"] = "Release" });
+            using ManagedBuildExecution execution = await snapshot.CreateExecutionAsync();
+            Assert.Contains("class App", File.ReadAllText(Path.Combine(execution.engineRoot, "App", "App.cs")), StringComparison.Ordinal);
+            Assert.Contains("class Shared", File.ReadAllText(Path.Combine(execution.engineRoot, "Shared", "Shared.cs")), StringComparison.Ordinal);
+            await snapshot.VerifyAsync();
+            await execution.VerifyAsync();
+        }
+        finally
+        {
+            if (Directory.Exists(alias))
+                Directory.Delete(alias, recursive: false);
+        }
+    }
+
+    [Fact]
     public async Task FixedExecutionCompilesPlannedBytesWhenTheOriginalSourceChangesAndReturns()
     {
         Write("Vendor/bin/tool.dat", "owned vendor tool");

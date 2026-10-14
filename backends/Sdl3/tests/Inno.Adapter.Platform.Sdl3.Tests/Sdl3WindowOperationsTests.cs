@@ -15,6 +15,9 @@ public sealed unsafe class Sdl3WindowOperationsTests
         bool resizable,
         bool highPixelDensity
     ) {
+        if (NativeWindowTestHost.RunIfRequired(nameof(Sdl3WindowOperationsTests) + "." + nameof(CreationPreservesOptionsAndLeavesRegistrationToTheOwner) + "." + resizable + "." + highPixelDensity))
+            return;
+
         using var application = new Sdl3PlatformApplication(NativeHostFixture.Create());
         var options = new PlatformWindowOptions
         {

@@ -11,6 +11,9 @@ public sealed class WindowSurfaceTests
     [Fact]
     public void OwnedAndBorrowedWrappersUseTheSameHostSurfaceResolution()
     {
+        if (NativeWindowTestHost.RunIfRequired(nameof(WindowSurfaceTests) + "." + nameof(OwnedAndBorrowedWrappersUseTheSameHostSurfaceResolution)))
+            return;
+
         var host = NativeHostFixture.Create();
         using var app = new Sdl3PlatformApplication(host);
         using var window = app.CreateWindow(new PlatformWindowOptions

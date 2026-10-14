@@ -96,9 +96,11 @@ internal static partial class ArchitectureRules
             foreach (string project in EnumerateFiles(Path.Combine(repositoryRoot, rootName), "*.csproj"))
             {
                 XDocument document = XDocument.Load(project);
+                bool test = Relative(repositoryRoot, project).Contains("/tests/", StringComparison.Ordinal)
+                    && document.Descendants("IsTestProject").Any(static value => value.Value == "true");
                 if (document.Descendants("OutputType").Any(static value => value.Value == "Exe")
-                    && !executables.Contains(Path.GetFileNameWithoutExtension(project)))
-                    failures.Add($"{Relative(repositoryRoot, project)}: only the Editor and Rebuild development entries may be executable projects.");
+                    && !test && !executables.Contains(Path.GetFileNameWithoutExtension(project)))
+                    failures.Add($"{Relative(repositoryRoot, project)}: only the Editor and Build development entries may be production executable projects.");
                 if (Path.GetFileNameWithoutExtension(project).StartsWith("Inno.Native.", StringComparison.Ordinal)
                     && Path.GetFileNameWithoutExtension(project).EndsWith(".Browser", StringComparison.Ordinal))
                     failures.Add($"{Relative(repositoryRoot, project)}: native targets must use binding profiles, not duplicate projects.");

@@ -45,6 +45,11 @@ internal static class WikiApiCoverageValidator
             string page = ReadApiSurface(root, project.page, new HashSet<string>(StringComparer.Ordinal), cancellationToken);
             var seen = new HashSet<string>(StringComparer.Ordinal);
             string directory = Path.GetDirectoryName(project.project)!;
+            if (models.IsExcludedProduct(directory))
+            {
+                Console.WriteLine($"Wiki product '{Path.GetRelativePath(root, project.project)}' is outside the selected target; API compilation was not evaluated.");
+                continue;
+            }
             Compilation? compilation = models.GetCompilation(directory);
             foreach (SyntaxTree tree in compilation?.SyntaxTrees ?? [])
             {

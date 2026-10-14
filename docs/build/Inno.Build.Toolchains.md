@@ -1177,3 +1177,7 @@ ManagedToolRuntime 是中立工具 publication 的唯一实现，接收明确项
 有效 MSBuild 图的节点按项目路径与完整 global properties 排序，避免同路径多配置节点的无序枚举造成错误失效。参数、include 与编译项顺序继续参与身份；验证失败会报告文件或声明变化。内部 capture 只服务诊断，不构成新的公开缓存权威。
 
 工具 publication 在固定输入前，使用同一 SDK 还原入口项目及 InnoBuildInputProject 声明的辅助输入项目。辅助项目来自有效图，清理的 global properties 保持一致；Capture/Verify 本身仍只读取，不通过缺 assets 的 fallback 掩盖错误。
+
+### 输入路径别名与创作归属
+
+同一校验阶段按最终物理路径去重哈希，但保留每次读取的原路径和 checkout 相对逻辑身份。macOS 的 `/var` 别名、目录链接与 Windows junction 不会把所属源码误记成外部 SDK 输入；固定编译副本仍按所属源码布局准备。独立锁等待、编译及提交后重新校验，不跨阶段复用内容结论。

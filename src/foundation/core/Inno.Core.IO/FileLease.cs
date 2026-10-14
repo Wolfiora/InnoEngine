@@ -87,6 +87,11 @@ public sealed class FileLease : IDisposable
     ) => await AcquireCoreAsync(path, timeout, FileMode.Open, FileAccess.Read,
         FileShare.Read, cancellationToken).ConfigureAwait(false);
 
+    /// <summary>
+    /// Releases ownership; repeated disposal has no effect and the lease file is retained.
+    /// </summary>
+    public void Dispose() => m_stream.Dispose();
+
     private static async ValueTask<FileLease> AcquireCoreAsync(
         string path,
         TimeSpan timeout,
@@ -116,7 +121,7 @@ public sealed class FileLease : IDisposable
                 }
                 return new FileLease(stream);
             }
-            catch (IOException failure) when ((failure.HResult & 0xffff) is 11 or 32 or 33)
+            catch (IOException failure) when (IsCompetingOwnership(failure))
             {
                 if (timeout != Timeout.InfiniteTimeSpan && elapsed.Elapsed >= timeout)
                     throw new TimeoutException($"File ownership timed out at '{path}'.", failure);
@@ -129,8 +134,9 @@ public sealed class FileLease : IDisposable
         }
     }
 
-    /// <summary>
-    /// Releases ownership; repeated disposal has no effect and the lease file is retained.
-    /// </summary>
-    public void Dispose() => m_stream.Dispose();
+    private static bool IsCompetingOwnership(IOException failure)
+        // .NET reports Unix flock contention as raw errno; Darwin uses EWOULDBLOCK 35.
+        => OperatingSystem.IsWindows() ? (failure.HResult & 0xffff) is 32 or 33
+            : failure.HResult == (OperatingSystem.IsMacOS() ? 35 : 11);
+
 }

@@ -296,3 +296,7 @@ AtomicFile.Install 要求两个 parent 的规范拼写完全一致；候选与�
 <!-- api: F:Inno.Core.IO.ProcessOwnerState.Active 9250ebf74d79d28f36fb73eeae6e73cbb7dbf627bd28f89501f71556b5f8914a -->
 <!-- api: F:Inno.Core.IO.ProcessOwnerState.Exited 0bb1a037f834d7fff9b9d43172cf9c500301dc02de51a9caa59d2316a7b428fe -->
 <!-- api: F:Inno.Core.IO.ProcessOwnerState.Unknown 230441c073783d8f482c910eebd83a605e7b49fc4663e09024ff8bfbe195a869 -->
+
+### Unix 文件租约竞争
+
+`FileLease` 只对真实的共享/独占竞争执行有界等待和取消。Windows 使用 sharing/lock violation；.NET 的 Unix `flock` 竞争异常携带原始 errno，macOS 为 35。权限、路径和其他 IO 错误立即返回，锁文件保持原位，避免 Unix inode 被替换后出现双 owner。

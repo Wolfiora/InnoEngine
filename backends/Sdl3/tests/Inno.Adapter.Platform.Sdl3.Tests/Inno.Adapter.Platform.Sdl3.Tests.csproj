@@ -5,6 +5,9 @@
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
+    <OutputType>Exe</OutputType>
+    <GenerateProgramFile>false</GenerateProgramFile>
+    <StartupObject>Inno.Adapter.Platform.Sdl3.Tests.NativeWindowTestHost</StartupObject>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <InnoTestNativeProduct>player</InnoTestNativeProduct>
     <InnoTestNativeTarget>windows-x64</InnoTestNativeTarget>

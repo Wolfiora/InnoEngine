@@ -27,3 +27,7 @@
 不再作为待实现项：Native 热批次、Task publication 提前复用、默认 JIT worker、首次写入前 owner、SDK 参数一致性、AOT owner JSON、最新 Windows/Web 后台运行、公开消费与严格 Wiki。
 
 历史 Reload/Identity、Console、明确目标与 BGCS NuGet 化记录保留；当前行为以项目页为准。完整证据见[本轮验收](../../records/architecture/acceptance/BUILD_COST_TOOL_HOST_DISK_CLOSURE_ACCEPTANCE.md)。
+
+### 最新 CI 范围
+
+最新已完成的 Windows/macOS CI 在 Native、托管和基础架构阶段通过，完整测试阶段仍有跨平台失败，整改及新结果见[当前局部验收报告](../../records/architecture/acceptance/LOCAL_BOUNDARY_REFINEMENT_ACCEPTANCE.md)。目标限定 Wiki 验证只证明共同项目与所选产品编译；外国产品的未执行记录不计为通过，完整目标覆盖需要各自环境。

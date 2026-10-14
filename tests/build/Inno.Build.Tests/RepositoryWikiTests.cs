@@ -96,13 +96,26 @@ public sealed class RepositoryWikiTests
             string references = Path.Combine(project, "Library", "ScriptApi");
             string runtime = Directory.EnumerateFiles(references, "Inno.ScriptApi.Runtime.dll", SearchOption.AllDirectories).Single();
             string editor = Directory.EnumerateFiles(references, "Inno.ScriptApi.Editor.dll", SearchOption.AllDirectories).Single();
-            int result = await BuildApplication.Run(
-                ["verify", repository, "--wiki", "--dotnet", ToolchainEnvironment.ResolveExecutable("dotnet"),
-                    "--wiki-api", Path.Combine(owner, "api.json"),
-                    "--wiki-examples", Path.Combine(owner, "examples.json"),
-                    "--wiki-runtime-reference", runtime, "--wiki-editor-reference", editor],
-                CancellationToken.None);
-            Assert.True(result == 0, $"Current Wiki validation failed; inventories are retained at '{owner}'.");
+            string target = OperatingSystem.IsWindows() ? "windows-x64" : "macos-arm64";
+            TextWriter previousError = Console.Error;
+            using var errors = new StringWriter();
+            int result;
+            try
+            {
+                Console.SetError(errors);
+                result = await BuildApplication.Run(
+                    ["verify", repository, "--wiki", "--wiki-target", target, "--dotnet", ToolchainEnvironment.ResolveExecutable("dotnet"),
+                        "--wiki-api", Path.Combine(owner, "api.json"),
+                        "--wiki-examples", Path.Combine(owner, "examples.json"),
+                        "--wiki-runtime-reference", runtime, "--wiki-editor-reference", editor],
+                    CancellationToken.None);
+            }
+            finally
+            {
+                Console.SetError(previousError);
+                File.WriteAllText(Path.Combine(owner, "validation-errors.txt"), errors.ToString());
+            }
+            Assert.True(result == 0, $"Current Wiki validation failed; inventories are retained at '{owner}'.\n{errors}");
         }
         finally
         {

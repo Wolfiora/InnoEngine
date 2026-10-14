@@ -19,6 +19,9 @@ public sealed unsafe class ViewportRetirementTests
     [Trait("ProcessIsolation", "Required")]
     public void FaultedRetirementRetainsWindowRendererAndApplicationOwners()
     {
+        if (NativeWindowTestHost.RunIfRequired(nameof(ViewportRetirementTests) + "." + nameof(FaultedRetirementRetainsWindowRendererAndApplicationOwners)))
+            return;
+
         // A failed retirement intentionally retains dependencies until the host process restarts.
         // Run this contract in its own test process, rather than forcing unsafe cleanup.
         var application = new Sdl3PlatformApplication(NativeHostFixture.Create());
@@ -49,6 +52,9 @@ public sealed unsafe class ViewportRetirementTests
     [Fact]
     public void DetachedWindowRemainsAliveUntilRenderingAcknowledgesRetirement()
     {
+        if (NativeWindowTestHost.RunIfRequired(nameof(ViewportRetirementTests) + "." + nameof(DetachedWindowRemainsAliveUntilRenderingAcknowledgesRetirement)))
+            return;
+
         using var application = new Sdl3PlatformApplication(NativeHostFixture.Create());
         using var window = application.CreateWindow(new PlatformWindowOptions
         {
@@ -83,6 +89,9 @@ public sealed unsafe class ViewportRetirementTests
     [Fact]
     public void IncompleteDrainRetainsContextOwnershipAndCanFinishAtTheNextSafetyPoint()
     {
+        if (NativeWindowTestHost.RunIfRequired(nameof(ViewportRetirementTests) + "." + nameof(IncompleteDrainRetainsContextOwnershipAndCanFinishAtTheNextSafetyPoint)))
+            return;
+
         using var application = new Sdl3PlatformApplication(NativeHostFixture.Create());
         using var window = application.CreateWindow(new PlatformWindowOptions
         {
@@ -116,6 +125,9 @@ public sealed unsafe class ViewportRetirementTests
     [Fact]
     public void CreationFailureIsReportedAtAManagedSafetyPointAfterCleanup()
     {
+        if (NativeWindowTestHost.RunIfRequired(nameof(ViewportRetirementTests) + "." + nameof(CreationFailureIsReportedAtAManagedSafetyPointAfterCleanup)))
+            return;
+
         using var application = new Sdl3PlatformApplication(NativeHostFixture.Create());
         using var window = application.CreateWindow(new PlatformWindowOptions
         {

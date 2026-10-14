@@ -126,6 +126,53 @@ public sealed class WikiCoverageTests : IDisposable
     }
 
     [Fact]
+    public async Task ExplicitWikiTargetRecordsForeignProductsWithoutSubstitutingTheirReferences()
+    {
+        string project = Path.Combine(m_root, "src/foundation/core/Inno.Core.Probe/Inno.Core.Probe.csproj");
+        File.WriteAllText(project, File.ReadAllText(project).Replace("</PropertyGroup>",
+            "<InnoProductTarget>fixture-foreign</InnoProductTarget></PropertyGroup>", StringComparison.Ordinal));
+        Write("docs/core/Inno.Core.Probe.md", "# Probe\n\n```csharp\nAbsentType.Run();\n```\n");
+        string host = Path.GetFullPath(Path.Combine(RuntimeEnvironment.GetRuntimeDirectory(), "..", "..", "..",
+            OperatingSystem.IsWindows() ? "dotnet.exe" : "dotnet"));
+        string examples = Path.Combine(m_root, "scoped-examples.json");
+        string excluded = Run(Path.Combine(m_root, "scoped-api.json"), "--dotnet", host,
+            "--wiki-target", "fixture-selected", "--wiki-examples", examples);
+        Assert.Contains("outside the selected target", excluded, StringComparison.Ordinal);
+        using JsonDocument skipped = JsonDocument.Parse(File.ReadAllText(examples));
+        JsonElement example = skipped.RootElement.EnumerateArray().Single();
+        Assert.Equal("foreign-product", example.GetProperty("referenceMode").GetString());
+        Assert.Contains("Not evaluated", example.GetProperty("notEvaluatedReason").GetString(), StringComparison.Ordinal);
+        Assert.Equal(0, example.GetProperty("errors").GetArrayLength());
+
+        var start = new ProcessStartInfo(host)
+        {
+            UseShellExecute = false, CreateNoWindow = true,
+            RedirectStandardOutput = true, RedirectStandardError = true
+        };
+        foreach (string argument in new[] { "build", project, "--disable-build-servers", "-m:1", "-nr:false", "--nologo", "-v:quiet" })
+            start.ArgumentList.Add(argument);
+        using Process process = Process.Start(start)!;
+        Task<string> output = process.StandardOutput.ReadToEndAsync();
+        Task<string> error = process.StandardError.ReadToEndAsync();
+        using var timeout = new CancellationTokenSource(TimeSpan.FromMinutes(1));
+        try
+        {
+            await process.WaitForExitAsync(timeout.Token);
+            Assert.True(process.ExitCode == 0, await output + await error);
+        }
+        finally
+        {
+            if (!process.HasExited)
+                process.Kill(entireProcessTree: true);
+            await process.WaitForExitAsync();
+            await Task.WhenAll(output, error);
+        }
+        string selected = Run(null, "--dotnet", host, "--wiki-target", "fixture-foreign", "--wiki-examples", examples);
+        Assert.Contains("example 1 at line", selected, StringComparison.Ordinal);
+        Assert.DoesNotContain("outside the selected target", selected, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void OwnedApiFragmentsContributeExactSignaturesWithoutDuplicatingProjectPages()
     {
         string inventory = Path.Combine(m_root, "api.json");

@@ -103,6 +103,9 @@ internal sealed class DocumentationSourceModels
 
     internal bool IsUnavailable(string projectDirectory) => m_unavailableProjects.Contains(projectDirectory);
 
+    internal bool IsExcludedProduct(string projectDirectory)
+        => m_projectReferences?.IsExcludedProduct(Directory.EnumerateFiles(projectDirectory, "*.csproj").Single()) == true;
+
     internal IReadOnlyList<MetadataReference> frameworkReferences => m_frameworkReferences;
 
     internal SemanticModel? GetModel(string path)
@@ -118,6 +121,8 @@ internal sealed class DocumentationSourceModels
 
     internal CSharpCompilation? GetCompilation(string projectDirectory)
     {
+        if (IsExcludedProduct(projectDirectory))
+            return null;
         if (m_unavailableProjects.Contains(projectDirectory))
             return null;
         if (!string.Equals(projectDirectory, m_projectDirectory, StringComparison.OrdinalIgnoreCase))

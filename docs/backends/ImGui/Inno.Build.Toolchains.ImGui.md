@@ -58,3 +58,7 @@ static Task<NativeBuildProduct> PrepareComponentAsync(
 
 - [Inno.Build.Toolchains](../../build/Inno.Build.Toolchains.md)：公开引用边界由实际签名核对。
 - [Inno.Extensibility.Catalogs](../../extensibility/Inno.Extensibility.Catalogs.md)：公开引用边界由实际签名核对。
+
+### 动态库命名
+
+组件 CMake 显式使用无自动前缀的 `libcimgui` 输出名，Debug/Release 后缀由配置声明。Windows 与 macOS 的实际部署索引都包含运行绑定请求的精确名称；loader 不猜测替代文件名。

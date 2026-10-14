@@ -21,6 +21,9 @@ public sealed unsafe class HostIntegrationTests
     [Fact]
     public void WrappingFailureDestroysOnlyTheNewlyOwnedWindow()
     {
+        if (NativeWindowTestHost.RunIfRequired(nameof(HostIntegrationTests) + "." + nameof(WrappingFailureDestroysOnlyTheNewlyOwnedWindow)))
+            return;
+
         var host = new FailingHost();
         using var app = new Sdl3PlatformApplication(host);
         Assert.Throws<InvalidOperationException>(() => app.CreateWindow(new PlatformWindowOptions
@@ -32,6 +35,9 @@ public sealed unsafe class HostIntegrationTests
     [Fact]
     public void SingleWindowCapabilityRejectsCreationBeforeCallingHostAgain()
     {
+        if (NativeWindowTestHost.RunIfRequired(nameof(HostIntegrationTests) + "." + nameof(SingleWindowCapabilityRejectsCreationBeforeCallingHostAgain)))
+            return;
+
         var host = new FailingHost { failSurface = false };
         using var app = new Sdl3PlatformApplication(host);
         using var window = app.CreateWindow(new PlatformWindowOptions

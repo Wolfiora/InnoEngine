@@ -15,14 +15,16 @@ public sealed class EditorShaderProfileTests
     public async Task SdkAddedReferencesRetainTheProductTargetAndShaderProfile()
     {
         string root = ToolchainEnvironment.FindRepoRoot();
-        string profile = Path.Combine(root, "platforms", "WindowsX64", "build", "Inno.Build.WindowsX64", "EditorProduct.props");
+        string platform = OperatingSystem.IsWindows() ? "WindowsX64" : "MacOSArm64";
+        string target = OperatingSystem.IsWindows() ? "windows-x64" : "macos-arm64";
+        string profile = Path.Combine(root, "platforms", platform, "build", "Inno.Build." + platform, "EditorProduct.props");
         string backend = Path.Combine(root, "backends", "Sdl3", "runtime",
             "Inno.Adapter.Platform.Sdl3", "Inno.Adapter.Platform.Sdl3.csproj");
         string host = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH") ?? ToolchainEnvironment.ResolveExecutable("dotnet");
         string output = await ToolchainEnvironment.CaptureOutputAsync(host,
             ["msbuild", backend, "-nologo", "-nodeReuse:false", "-t:IncludeTransitiveProjectReferences",
                 "-getItem:ProjectReference", "-p:InnoProductBuildProperties=" + profile,
-                "-p:InnoNativeTarget=windows-x64"], root, CancellationToken.None, DotNetSdkEnvironment.Create(host));
+                "-p:InnoNativeTarget=" + target], root, CancellationToken.None, DotNetSdkEnvironment.Create(host));
         using JsonDocument document = JsonDocument.Parse(output);
         JsonElement references = document.RootElement.GetProperty("Items").GetProperty("ProjectReference");
         Assert.Contains(references.EnumerateArray(), reference => reference.GetProperty("Filename").GetString() == "Inno.Native.Sdl3");
@@ -31,7 +33,7 @@ public sealed class EditorShaderProfileTests
             !reference.TryGetProperty("OutputItemType", out JsonElement kind) || kind.GetString() != "Analyzer"), reference =>
         {
             string properties = reference.GetProperty("AdditionalProperties").GetString()!;
-            Assert.Contains("InnoNativeTarget=windows-x64", properties);
+            Assert.Contains("InnoNativeTarget=" + target, properties);
             Assert.Contains("InnoProductBuildProperties=" + profile, properties);
         });
         Assert.All(references.EnumerateArray().Where(reference =>

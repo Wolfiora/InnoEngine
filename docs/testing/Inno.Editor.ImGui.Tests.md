@@ -55,3 +55,7 @@ dotnet test tests/editor/Inno.Editor.ImGui.Tests/Inno.Editor.ImGui.Tests.csproj 
 ## 明确宿主的 Native 验证
 
 WindowsX64 与 MacOSArm64 窗口 fixture 分别使用真实 Win32/Cocoa 集成，不借用另一个平台的 surface。CI 通过 `tests/Invoke-IsolatedTests.ps1` 的 `Target` 和 `ProductProperties` 参数选择产品闭包；`ProcessIsolation=Required` 用例分别运行，避免污染第三方进程级状态。未准备产品时的缺库不是通过证据。
+
+### 主线程与独立退休用例
+
+macOS 的 SDL/viewport 用例由测试程序集的主线程进程入口执行，保留实际 SDL、ImGui 与可替换公开 renderer 断言。故障退休用例独立退出，不强制释放仍被保留的 owner；普通 xUnit worker 不承担 Cocoa 主线程职责。该验证不等于人工焦点、视觉或拖动观感验收。

@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Threading;
+using System.Xml.Linq;
 using Inno.Build.Toolchains;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -15,6 +16,7 @@ internal sealed class WikiProjectReferences
     private readonly string m_root;
     private readonly string m_configuration;
     private readonly string m_dotnetHost;
+    private readonly string? m_target;
     private readonly Dictionary<string, CSharpCompilation> m_compilations = new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<string, string[]> m_sources = new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<string, string> m_outputs = new(StringComparer.OrdinalIgnoreCase);
@@ -22,13 +24,23 @@ internal sealed class WikiProjectReferences
     internal WikiProjectReferences(
         string root,
         string configuration,
-        string dotnetHost
+        string dotnetHost,
+        string? target = null
     ) {
         if (!Path.IsPathFullyQualified(dotnetHost) || !File.Exists(dotnetHost))
             throw new ArgumentException("Wiki SDK inspection requires an existing absolute dotnet executable.", nameof(dotnetHost));
         m_root = root;
         m_configuration = configuration;
         m_dotnetHost = dotnetHost;
+        m_target = target;
+    }
+
+    internal bool IsExcludedProduct(string project)
+    {
+        if (m_target is null)
+            return false;
+        string? target = XDocument.Load(project).Descendants("InnoProductTarget").FirstOrDefault()?.Value;
+        return target is not null && !string.Equals(target, m_target, StringComparison.Ordinal);
     }
 
     internal CSharpCompilation GetCompilation(

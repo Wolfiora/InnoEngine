@@ -28,10 +28,10 @@ internal static class WikiExampleValidator
         foreach (string pagePath in RepositorySourceInventory.Files(Path.Combine(root, "docs"), "*.md"))
         {
             owners.TryGetValue(Path.GetFullPath(pagePath), out WikiProjectPage? project);
+            bool excluded = project is not null && models.IsExcludedProduct(Path.GetDirectoryName(project.project)!);
             string[] lines = File.ReadAllLines(pagePath);
-            string? source = project is null ? null
-                : RepositorySourceInventory.Files(Path.GetDirectoryName(project.project)!, "*.cs").FirstOrDefault();
-            Compilation? owner = source is null ? null : models.GetModel(source)?.Compilation;
+            Compilation? owner = project is null ? null
+                : models.GetCompilation(Path.GetDirectoryName(project.project)!);
             CSharpCompilation? compiler = owner as CSharpCompilation;
             if (project is null)
                 compiler = CSharpCompilation.Create("WikiGuide", references: models.frameworkReferences,
@@ -50,6 +50,12 @@ internal static class WikiExampleValidator
                 var diagnostics = new List<string>();
                 string referenceMode = project is null ? "framework" : "host";
                 string referenceIdentity = string.Empty;
+                if (excluded)
+                {
+                    results.Add(new WikiExampleResult(page, example, start + 1, "foreign-product", referenceIdentity, [],
+                        "Not evaluated: product target differs from the explicitly selected Wiki target."));
+                    continue;
+                }
                 if (index == lines.Length)
                     diagnostics.Add("The C# example has no closing fence.");
                 if (compiler is null)
@@ -125,6 +131,7 @@ internal static class WikiExampleValidator
         int line,
         string referenceMode,
         string referenceIdentity,
-        IReadOnlyList<string> errors
+        IReadOnlyList<string> errors,
+        string? notEvaluatedReason = null
     );
 }

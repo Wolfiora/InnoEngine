@@ -38,6 +38,7 @@ public static partial class ArchitectureValidator
     /// <param name="arguments">
     /// The optional repository path, configuration, XML maintenance flag, explicit SDK, evaluated graph output,
     /// and Wiki inventories with explicitly selected runtime and editor script reference assemblies.
+    /// --wiki-target limits product compilation to that explicit target; shared Wiki checks remain complete.
     /// </param>
     /// <param name="cancellationToken">
     /// Cancels owned SDK evaluation processes and drains them before returning.
@@ -68,6 +69,7 @@ public static partial class ArchitectureValidator
         string? wikiExamplesPath = null;
         string? wikiRuntimeReference = null;
         string? wikiEditorReference = null;
+        string? wikiTarget = null;
         string configuration = "Debug";
         bool selectedConfiguration = false;
         string? dotnetHost = null;
@@ -88,6 +90,8 @@ public static partial class ArchitectureValidator
                 wikiRuntimeReference = arguments[++index];
             else if (argument == "--wiki-editor-reference" && wikiEditorReference is null && index + 1 < arguments.Length)
                 wikiEditorReference = arguments[++index];
+            else if (argument == "--wiki-target" && wikiTarget is null && index + 1 < arguments.Length)
+                wikiTarget = arguments[++index];
             else if (argument == "--dotnet" && dotnetHost is null && index + 1 < arguments.Length)
                 dotnetHost = arguments[++index];
             else if (argument == "--project-graph" && projectGraphPath is null && index + 1 < arguments.Length)
@@ -105,13 +109,15 @@ public static partial class ArchitectureValidator
             else if (!argument.StartsWith("--", StringComparison.Ordinal) && paths.Count == 0)
                 paths.Add(argument);
             else
-                throw new ArgumentException("Usage: verify [engine-root] [--configuration Debug|Release] [--expand-xml] [--dotnet SDK] [--project-graph output.json] [--wiki] [--wiki-api inventory.json] [--wiki-examples examples.json] [--wiki-runtime-reference assembly.dll] [--wiki-editor-reference assembly.dll]", nameof(arguments));
+                throw new ArgumentException("Usage: verify [engine-root] [--configuration Debug|Release] [--expand-xml] [--dotnet SDK] [--project-graph output.json] [--wiki] [--wiki-target targetId] [--wiki-api inventory.json] [--wiki-examples examples.json] [--wiki-runtime-reference assembly.dll] [--wiki-editor-reference assembly.dll]", nameof(arguments));
         }
         if (projectGraphPath is not null && dotnetHost is null)
             throw new ArgumentException("Evaluated project graph output requires an explicitly selected --dotnet SDK.", nameof(arguments));
         if ((wikiInventoryPath is not null || wikiExamplesPath is not null
-            || wikiRuntimeReference is not null || wikiEditorReference is not null) && !wiki)
+            || wikiRuntimeReference is not null || wikiEditorReference is not null || wikiTarget is not null) && !wiki)
             throw new ArgumentException("Wiki API inventory requires --wiki validation.", nameof(arguments));
+        if (wikiTarget is not null && (dotnetHost is null || string.IsNullOrWhiteSpace(wikiTarget)))
+            throw new ArgumentException("Target-scoped Wiki compilation requires a nonempty target and an explicit --dotnet SDK.", nameof(arguments));
         string repositoryRoot = ResolveRepositoryRoot(paths);
         if (expandXml)
         {
@@ -122,7 +128,7 @@ public static partial class ArchitectureValidator
         List<string> failures = [];
 
         WikiProjectReferences? evaluatedReferences = !wiki || dotnetHost is null ? null
-            : new WikiProjectReferences(repositoryRoot, configuration, dotnetHost);
+            : new WikiProjectReferences(repositoryRoot, configuration, dotnetHost, wikiTarget);
         var documentationModels = new DocumentationSourceModels(repositoryRoot, configuration,
             evaluatedReferences, cancellationToken, failures);
         if (wiki)

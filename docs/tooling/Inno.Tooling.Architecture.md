@@ -98,3 +98,7 @@ BGCS/Cpp2C target profile 必须显式声明 Native owner 内的输出目录，�
 ## 缺失目标契约的诊断
 
 显式 SDK Wiki 检查使用该项目实际求值的引用。目标引用缺失时，记录项目与文件路径，继续检查其他可用项目和示例，最终仍返回失败。缺失项目不计为 API 覆盖，也不会被误报成全部符号已删除。输出清单必须与本次诊断一起阅读；仅有清单文件不能证明全仓通过。
+
+### 明确目标的 Wiki 验证
+
+`verify --wiki --dotnet <SDK> --wiki-target <targetId>` 对共同项目与所选产品执行真实 SDK/API/示例编译，同时保持全仓项目页面、导航、链接和内容边界检查。其他产品目标不会借用宿主 DLL；它们的示例清单标记 `foreign-product` 和 `notEvaluatedReason`，API 编译在日志中明确记录未执行。省略 `--wiki-target` 时仍要求全部产品的真实引用闭包，不自动忽略缺失引用。CI 的 WindowsX64 与 MacOSArm64 job 分别覆盖各自产品；BrowserWasm32 产品编译须单独具备对应环境，目标限定成功不能称为全目标编译通过。

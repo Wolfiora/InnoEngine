@@ -6,6 +6,9 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
+    <OutputType>Exe</OutputType>
+    <GenerateProgramFile>false</GenerateProgramFile>
+    <StartupObject>Inno.Editor.ImGui.Tests.NativeWindowTestHost</StartupObject>
     <InnoAssemblyScope>Editor</InnoAssemblyScope>
     <InnoTestNativeProduct>editor</InnoTestNativeProduct>
     <InnoTestNativeTarget>windows-x64</InnoTestNativeTarget>

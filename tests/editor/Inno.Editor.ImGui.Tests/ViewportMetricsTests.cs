@@ -22,6 +22,9 @@ public sealed unsafe class ViewportMetricsTests
     [InlineData(true)]
     public void FrameRefreshesDrawableMetricsWithoutAPlatformScaleCallback(bool commandKeys)
     {
+        if (NativeWindowTestHost.RunIfRequired(nameof(ViewportMetricsTests) + "." + nameof(FrameRefreshesDrawableMetricsWithoutAPlatformScaleCallback) + "." + commandKeys))
+            return;
+
         using var application = new Sdl3PlatformApplication(NativeHostFixture.Create());
         using var window = application.CreateWindow(new PlatformWindowOptions
         { title = "Viewport metrics", width = 320, height = 240, visible = false, highPixelDensity = true });
@@ -50,6 +53,9 @@ public sealed unsafe class ViewportMetricsTests
     [Fact]
     public void MetricRefreshPreservesRequestedViewportGeometry()
     {
+        if (NativeWindowTestHost.RunIfRequired(nameof(ViewportMetricsTests) + "." + nameof(MetricRefreshPreservesRequestedViewportGeometry)))
+            return;
+
         using var application = new Sdl3PlatformApplication(NativeHostFixture.Create());
         using var window = application.CreateWindow(new PlatformWindowOptions
         { title = "Viewport geometry owner", width = 320, height = 240, visible = false });
@@ -84,6 +90,9 @@ public sealed unsafe class ViewportMetricsTests
     [Fact]
     public void DetachedWindowAppliesRequestsAfterPlatformEventReconciliation()
     {
+        if (NativeWindowTestHost.RunIfRequired(nameof(ViewportMetricsTests) + "." + nameof(DetachedWindowAppliesRequestsAfterPlatformEventReconciliation)))
+            return;
+
         using var application = new Sdl3PlatformApplication(NativeHostFixture.Create());
         using var window = application.CreateWindow(new PlatformWindowOptions
         { title = "Viewport movement", width = 320, height = 240, visible = false });
@@ -125,6 +134,9 @@ public sealed unsafe class ViewportMetricsTests
     [Fact]
     public void LogicalDpiTransitionRetainsThePreviousScaleUntilImGuiStartsItsFrame()
     {
+        if (NativeWindowTestHost.RunIfRequired(nameof(ViewportMetricsTests) + "." + nameof(LogicalDpiTransitionRetainsThePreviousScaleUntilImGuiStartsItsFrame)))
+            return;
+
         using var application = new Sdl3PlatformApplication(NativeHostFixture.Create());
         using var window = application.CreateWindow(new PlatformWindowOptions
         { title = "Logical DPI transition", width = 320, height = 240, visible = false });
@@ -144,6 +156,9 @@ public sealed unsafe class ViewportMetricsTests
     [Fact]
     public void ViewportCallbacksRegisterOneSurfaceAndReleaseItBeforeNativeDestruction()
     {
+        if (NativeWindowTestHost.RunIfRequired(nameof(ViewportMetricsTests) + "." + nameof(ViewportCallbacksRegisterOneSurfaceAndReleaseItBeforeNativeDestruction)))
+            return;
+
         using var application = new Sdl3PlatformApplication(NativeHostFixture.Create());
         using var window = application.CreateWindow(new PlatformWindowOptions
         { title = "Viewport ownership", width = 320, height = 240, visible = false });

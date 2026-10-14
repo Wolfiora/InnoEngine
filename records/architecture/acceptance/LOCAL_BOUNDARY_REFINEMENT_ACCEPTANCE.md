@@ -90,3 +90,22 @@ MacOSArm64 Native/产品本机未实测；新的 macOS runner 结果独立记录
 先前 Windows job 115778668157 已通过 Native、托管及架构阶段，完整套件返回 12 项失败：Build fixture 的时序/共享输出竞争、runner 上 SDK 10 的隐式选择、Wiki 验证，以及 Reload fixture 的错误 domain。Build 用例顺序调度，显式并发契约不删减；CI 将 .NET 9 安装到独立目录并始终上传测试/Wiki 证据。Reload 用例在创建编辑场景及组件时进入所属 Edit Session，保留生产 Identity owner 拒绝规则，单项复验 1/1 通过（scene-reload-owner-fixture.trx）。Wiki 及后续完整 CI 仍需新 revision 实际结果，不能把这些诊断写成全绿。
 
 顺序调度后的受影响 SDK/ownership/restore/publication 回归为 30/30（serialized-sdk-regression.trx）；真正的并发、取消及锁等待断言仍执行。独立 SDK 安装使用 setup-dotnet 的 DOTNET_INSTALL_DIR 正式入口，未改变引擎目标框架或通过 JIT/错误忽略参数绕过失败。
+
+## 81ebb653 的远端完整套件与跨平台修复
+
+Engine run 38558695831 的 Windows 完整套件只剩 RepositoryWikiTests 失败；该 Build 程序集为 331 passed、2 Unix 权限环境 Skip、1 failed。macOS 的 177 个失败以实际上传 TRX 分组，不按重复日志行累加。Native Debug/Release、托管 SourceDebug 与基础架构阶段在两个 runner 均通过；NuGet run 38558695699 成功。失败未标记为通过。
+
+- Darwin 的 .NET 9 flock 竞争异常使用原始 errno 35，原实现只识别 11/Windows 错误。FileLease 按当前系统的真实竞争码等待；权限、路径等错误仍立即失败。[.NET Unix 文件实现](https://raw.githubusercontent.com/dotnet/runtime/v9.0.20/src/libraries/System.Private.CoreLib/src/Microsoft/Win32/SafeHandles/SafeFileHandle.Unix.cs)与[错误转换](https://raw.githubusercontent.com/dotnet/runtime/v9.0.20/src/libraries/Common/src/Interop/Unix/Interop.IOErrors.cs)支持该判断。
+- macOS /var 的最终物理路径不能覆盖 checkout 创作归属。读取仍按最终路径去重，但冻结清单保存原始读取映射；增加真实目录别名的固定 Managed execution 用例。
+- ImGui 的 macOS 文件名原为 cimgui-debug.dylib，绑定请求 libcimgui-debug。CMake 明确 PREFIX 空、OUTPUT_NAME libcimgui，修复实际生产输出，未添加 loader 猜测或 alias fallback。
+- Cocoa 要求进程主线程；xUnit worker 不能初始化视频。SDL/viewport 用例由测试程序集的明确主线程入口直接执行原断言，故障用例仍独立退出。没有生产 Program、反射、假窗口驱动或跳过真实断言。
+- SDK 引用测试选择实际宿主产品配置；单文件发布 fixture 使用宿主模板和 Native 文件扩展名，不在 macOS 发布 Windows 组合。
+- Wiki gate 原先尝试编译未准备的外国产品引用。显式 --wiki-target 限定产品编译，并保留全部共同项目及全仓页面/链接/内容检查；未选目标示例明确标记 foreign-product / notEvaluatedReason，不能计为编译通过。省略限定仍严格要求全部实际引用；不拿宿主 DLL 填补外国目标。CI Windows/macOS 各自检查所属目标。新增正反例确保所选目标的错误示例仍失败。Wiki 示例直接取所属 SDK compilation，不依赖不稳定的文件枚举选出一个不在 Compile 中的文件。
+
+当前修改的命令和结果继续写入 results；远端通过必须由新 commit 对应 workflow 证明。GUI、Computer Use、人工焦点/视觉/声音不执行。
+
+当前 SourceDebug 全仓构建 0 errors / 0 warnings。目录别名、固定输入、SDK profile 与单文件发布 15/15；Core.IO 21/21；Windows 强制独立主线程 SDL 10/10、viewport 9/9 与故障退休 1/1；明确启用实际 ImGui/ImGuizmo 构建 1/1；架构 123/123。新增测试入口没有进入生产清单。第一次架构失败暴露 backend/tests 的测试 Exe 被误判为生产，分类已修正并重新通过。SDK 主进程仍加载输出时发生的一次本地重建冲突已停止该 owner，源码固定后重跑通过；不把失败日志删除或计为通过。Wiki 及后续远端仍在验证中。
+
+WindowsX64 明确目标 Wiki 门禁已通过（wiki-target-scope-repaired.trx，12m26s）：45,598 符号、190 段实际编译示例、0 错误；其他产品 API 编译明确未执行。该轮有独立 BGCS 任务及 Release Build 并行负载，不作性能比较。新记录保留 validation-errors.txt。SourceDebug 与受影响契约已通过；Release 全仓构建尚在运行，新远端 CI 尚未通过。
+
+SourceRelease 全仓构建也已通过，0 errors / 0 warnings（source-release-ci-followup.log，12m55s）。本轮新提交前的编译与受影响非 GUI 门禁通过；Windows 明确目标 Wiki、真实 Native 构建及主线程测试均有新证据。新的 GitHub CI 尚需提交后执行，不宣称其已通过。

@@ -53,3 +53,7 @@ MacOSArm64 Native / Editor / Player 实机 **未实测**。GUI、完整焦点/DP
 平台 not built 表示未参加当前 Solution 配置的批量构建。两个入口与产品启动链见[启动说明](../platform/PRODUCT_STARTUP.md)。
 
 Web headless 启动保留第三方 WebGL 能力查询和 ScriptProcessorNode 弃用警告，JS errors=0；不据此宣称没有警告或视觉/听感通过。实际 CLI 创作闭包已补齐 Animation 引用，重新生成和全例编译通过。
+
+### 最新 CI 范围
+
+最新已完成的 Windows/macOS CI 在 Native、托管和基础架构阶段通过，完整测试阶段仍有跨平台失败，整改及新结果见[当前局部验收报告](../../records/architecture/acceptance/LOCAL_BOUNDARY_REFINEMENT_ACCEPTANCE.md)。目标限定 Wiki 验证只证明共同项目与所选产品编译；外国产品的未执行记录不计为通过，完整目标覆盖需要各自环境。

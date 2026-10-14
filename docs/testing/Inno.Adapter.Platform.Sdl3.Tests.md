@@ -51,3 +51,7 @@ dotnet test backends/Sdl3/tests/Inno.Adapter.Platform.Sdl3.Tests/Inno.Adapter.Pl
 ## 明确宿主的 Native 验证
 
 WindowsX64 与 MacOSArm64 窗口 fixture 分别使用真实 Win32/Cocoa 集成，不借用另一个平台的 surface。CI 通过 `tests/Invoke-IsolatedTests.ps1` 的 `Target` 和 `ProductProperties` 参数选择产品闭包；`ProcessIsolation=Required` 用例分别运行，避免污染第三方进程级状态。未准备产品时的缺库不是通过证据。
+
+### macOS 主线程契约
+
+Cocoa 窗口操作必须位于进程主线程。窗口用例通过同一测试程序集的独立进程入口，在主线程直接执行已声明的测试方法和原有断言；不使用反射、dummy video driver 或生产测试入口。单个用例失败、异常及超时均导致测试失败。Windows 可通过 `INNO_TEST_MAIN_THREAD_HOST=1` 验证该调度路径。
