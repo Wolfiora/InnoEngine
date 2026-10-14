@@ -6,7 +6,7 @@
 
 2026-10-14，基线 `48b33e5d089e8a1500f03d1abae69fd61ffa9d62`。五项局部整改已实现，本机受影响源码、公开边界、实际 Native、后台 Editor、Wiki 与缓存回收通过。不使用 Computer Use，不执行 GUI/视觉/声学验收，不合并 master。
 
-证据：`artifacts/acceptance/local-boundary-refinement/20261014-implementation/`。提交使用仓库配置的 Aaron Liao <hsuankailiao@gmail.com> 同时作为 author/committer；不添加 Co-authored-by 或 AI footer。远端 CI 必须以新提交的实际 run 为准；本机结果不能替代远端。
+证据：`artifacts/acceptance/local-boundary-refinement/20261014-implementation/`。本地原提交使用仓库配置 Gmail；通过已授权 GitHub 连接发布时，author/committer 均为 Aaron Liao，主邮箱 2384288968@qq.com，关联同一 FLwolfy 账户（ID 124116176）；不添加 Co-authored-by 或 AI footer。远端 CI 必须以新提交的实际 run 为准；本机结果不能替代远端。
 
 ## 五项整改
 
@@ -70,3 +70,9 @@ CLI 当前 deployment 167,953,222 bytes（原 1,163,319,881）；维护 deployme
 MacOSArm64 Native/产品本机未实测；新的 macOS runner 结果独立记录，不替代用户设备验收。GUI/焦点/DPI/拖动观感/视觉/听音按用户要求未执行。uint 回绕未跑数十亿帧，只验证代码时间转换与普通实际 Native 生命周期。Windows/Web 上一轮产品结果保留为历史证据，不声称本轮重新执行整个 AOT/发布矩阵。
 
 没有发现需要推翻整体分层的新问题；上述结论限定于已核查和已运行范围，不能证明所有设备、长期运行和所有未来扩展都没有缺陷。Glass.aiff 在当前 Windows 不存在，提示音未播放。
+
+## 远端首次运行与后续修复
+
+源码提交 73b9c7b0d256b94954aca2fe42fb6266bacba1c6 的文件树与本地原提交 c3281e40 完全一致。NuGet run 38538859631 已成功；Engine run 38538859621 的 Windows/macOS 都缺声明为辅助输入的 TaskHosting 源码 assets，说明只 Restore CLI 根项目仍不完整。
+
+后续修复使用现有 SDK graph evaluator 的独立准备阶段：从 InnoBuildInputProject 与其清理后的属性发现辅助输入，使用同一 SDK Restore，然后重新建立只读 Capture。没有平台分支或写死 TaskHosting 名称。新 fixture 证明仅声明、从未 Restore 的辅助项目在 publication 前得到还原并实际消费，1/1 通过。远端后续结果仍以新 revision 的 run 为准。

@@ -142,6 +142,8 @@ public static class ManagedToolRuntime
                 [sdk.cliPath, "restore", project, "--disable-parallel", "-p:Configuration=" + configuration,
                     "-p:InnoBuildToolProject=" + Path.GetFileNameWithoutExtension(project), "-m:1", "-nodeReuse:false"],
                 root, cancellationToken, DotNetSdkEnvironment.Create(sdk.hostPath)).ConfigureAwait(false);
+            await ManagedBuildInputReader.RestoreContributionsAsync(new NativeBuildContext(root, configuration.ToLowerInvariant()),
+                sdk, project, Properties(configuration, project), cancellationToken).ConfigureAwait(false);
         }
         ManagedBuildInputSnapshot snapshot = await ManagedBuildInputSnapshot.CaptureAsync(
             new NativeBuildContext(root, configuration.ToLowerInvariant()), sdk, project,

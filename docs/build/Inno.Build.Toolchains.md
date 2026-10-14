@@ -1173,3 +1173,5 @@ ManagedToolRuntime 是中立工具 publication 的唯一实现，接收明确项
 <!-- api: P:Inno.Build.Toolchains.ProductNativeBuildStep.bindDependencies e484ffc25dffb84e5d9d8d1534268c24c2b91eacf75ce15191d56e8367e33017 -->
 
 有效 MSBuild 图的节点按项目路径与完整 global properties 排序，避免同路径多配置节点的无序枚举造成错误失效。参数、include 与编译项顺序继续参与身份；验证失败会报告文件或声明变化。内部 capture 只服务诊断，不构成新的公开缓存权威。
+
+工具 publication 在固定输入前，使用同一 SDK 还原入口项目及 InnoBuildInputProject 声明的辅助输入项目。辅助项目来自有效图，清理的 global properties 保持一致；Capture/Verify 本身仍只读取，不通过缺 assets 的 fallback 掩盖错误。

@@ -17,6 +17,41 @@ namespace Inno.Build.Tests;
 public sealed class BuildToolRuntimePublicationTests
 {
     [Fact]
+    public async Task PublicationRestoresDeclaredAuxiliaryInputsBeforeFreezingTheGraph()
+    {
+        string root = Path.Combine(Path.GetTempPath(), "InnoToolInputRestore", Guid.NewGuid().ToString("N"));
+        try
+        {
+            Directory.CreateDirectory(Path.Combine(root, "Tool"));
+            Directory.CreateDirectory(Path.Combine(root, "Auxiliary"));
+            File.WriteAllText(Path.Combine(root, "InnoEngine.sln"), "fixture");
+            File.WriteAllText(Path.Combine(root, "Tool", "Tool.csproj"),
+                "<Project Sdk=\"Microsoft.NET.Sdk\"><PropertyGroup><TargetFramework>net9.0</TargetFramework></PropertyGroup>"
+                + "<ItemGroup><InnoBuildInputProject Include=\"../Auxiliary/Auxiliary.csproj\" /></ItemGroup></Project>");
+            File.WriteAllText(Path.Combine(root, "Tool", "Value.cs"), "public class Value {}");
+            File.WriteAllText(Path.Combine(root, "Auxiliary", "Auxiliary.csproj"),
+                "<Project Sdk=\"Microsoft.NET.Sdk\"><PropertyGroup><TargetFramework>net9.0</TargetFramework></PropertyGroup></Project>");
+            File.WriteAllText(Path.Combine(root, "Auxiliary", "Input.cs"), "public class Input {}");
+            string host = ToolchainEnvironment.ResolveExecutable("dotnet");
+            using ProcessOwnedDirectory bootstrap = await ProcessOwnedDirectory.CreateAsync(Path.Combine(root, "artifacts", "build-tools", "fixture", "workspaces"));
+            await ToolchainEnvironment.RunAsync(host,
+                ["build", Path.Combine(root, "Tool", "Tool.csproj"), "--output", bootstrap.directory, "--disable-build-servers", "-m:1", "-nodeReuse:false"],
+                root, CancellationToken.None, DotNetSdkEnvironment.Create(host));
+            string assets = Path.Combine(root, "Auxiliary", "obj", "project.assets.json");
+            Assert.False(File.Exists(assets));
+            string published = await ManagedToolRuntime.PublishRuntimeAsync(root, "Debug", host,
+                Path.Combine(bootstrap.directory, "Tool.dll"), "Tool/Tool.csproj", "fixture", CancellationToken.None);
+            Assert.True(File.Exists(assets));
+            Assert.True(File.Exists(published));
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+                Directory.Delete(PathBoundary.RequireUnlinkedPath(Path.GetTempPath(), root), recursive: true);
+        }
+    }
+
+    [Fact]
     public async Task RealToolInputsRemainStableAcrossFreshGraphEvaluations()
     {
         string root = ToolchainEnvironment.FindRepoRoot();

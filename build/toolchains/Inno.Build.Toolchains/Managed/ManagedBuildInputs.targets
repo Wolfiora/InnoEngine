@@ -2,6 +2,6 @@
   <UsingTask TaskName="Inno.Build.Toolchains.ManagedInputGraphTask" AssemblyFile="$(InnoInputEvaluator)" />
 
   <Target Name="CaptureManagedInputs">
-    <Inno.Build.Toolchains.ManagedInputGraphTask ProjectPath="$(InnoInputProject)" OutputPath="$(InnoInputOutput)" Properties="@(InnoInputProperty)" />
+    <Inno.Build.Toolchains.ManagedInputGraphTask ProjectPath="$(InnoInputProject)" OutputPath="$(InnoInputOutput)" Properties="@(InnoInputProperty)" RestoreContributions="$(InnoRestoreContributions)" />
   </Target>
 </Project>

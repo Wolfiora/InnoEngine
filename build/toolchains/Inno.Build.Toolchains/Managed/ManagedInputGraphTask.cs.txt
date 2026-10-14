@@ -35,6 +35,11 @@ public sealed class ManagedInputGraphTask : Task
     public ITaskItem[] Properties { get; set; } = [];
 
     /// <summary>
+    /// Gets or sets whether declared auxiliary input projects are restored before source capture.
+    /// </summary>
+    public bool RestoreContributions { get; set; }
+
+    /// <summary>
     /// Writes complete source declarations and reports SDK evaluation failures.
     /// </summary>
     /// <returns>
@@ -66,6 +71,7 @@ public sealed class ManagedInputGraphTask : Task
                 var pending = new Queue<ProjectGraph>();
                 pending.Enqueue(new ProjectGraph(ProjectPath, globals, collection));
                 var visited = new HashSet<string>(StringComparer.Ordinal);
+                var restoredContributions = new HashSet<string>(StringComparer.Ordinal);
                 while (pending.Count != 0)
                 foreach (var node in pending.Dequeue().ProjectNodes.OrderBy(node => node.ProjectInstance.FullPath, StringComparer.Ordinal)
                     .ThenBy(node => string.Join(";", node.ProjectInstance.GlobalProperties.OrderBy(pair => pair.Key, StringComparer.Ordinal)
@@ -82,8 +88,20 @@ public sealed class ManagedInputGraphTask : Task
                         foreach (string name in contribution.GetMetadataValue("GlobalPropertiesToRemove").Split(';', StringSplitOptions.RemoveEmptyEntries))
                             selected.Remove(name);
                         string dependency = Path.GetFullPath(contribution.EvaluatedInclude, Path.GetDirectoryName(project.FullPath));
+                        string restoreKey = dependency + "|" + string.Join(";", selected.OrderBy(pair => pair.Key, StringComparer.Ordinal)
+                            .Select(pair => pair.Key + "=" + pair.Value));
+                        if (RestoreContributions && restoredContributions.Add(restoreKey))
+                        {
+                            var restoreProperties = new System.Collections.Hashtable(StringComparer.OrdinalIgnoreCase);
+                            foreach (var property in selected)
+                                restoreProperties[property.Key] = property.Value;
+                            if (!BuildEngine.BuildProjectFile(dependency, new[] { "Restore" }, restoreProperties, null))
+                                throw new InvalidOperationException("Declared input contribution restore failed: " + dependency);
+                        }
                         pending.Enqueue(new ProjectGraph(dependency, selected, collection));
                     }
+                    if (RestoreContributions)
+                        continue;
                     string root = Path.GetDirectoryName(project.FullPath);
                     paths.Add(project.FullPath);
                     foreach (string import in project.ImportPaths)
