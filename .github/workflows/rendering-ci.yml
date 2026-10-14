@@ -80,6 +80,8 @@ jobs:
 
       - name: Install .NET SDK
         uses: actions/setup-dotnet@v4
+        env:
+          DOTNET_INSTALL_DIR: ${{ runner.temp }}/inno-dotnet
         with:
           dotnet-version: 9.0.x
 
@@ -191,6 +193,16 @@ jobs:
         with:
           name: rendering-smoke-${{ matrix.platform }}
           path: ${{ runner.temp }}/InnoRenderingSmoke/Logs/**
+          if-no-files-found: warn
+
+      - name: Upload contract and Wiki evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: contract-evidence-${{ matrix.build_target }}
+          path: |
+            artifacts/acceptance/ci-tests/**
+            artifacts/acceptance/wiki-gate/**
           if-no-files-found: warn
 
       - name: Upload Player E2E output

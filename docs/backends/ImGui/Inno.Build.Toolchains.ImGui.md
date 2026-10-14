@@ -29,6 +29,8 @@ static Task<NativeBuildProduct> PrepareComponentAsync(
 
 具体组件只读取 context.engineRoot，CMake/overlay 与产物目录不从工具程序集位置选择。取消检查发生在进程启动和产物复制前；已安装的可重建产物不作为成功发布的替代品。
 
+窗口背景的源码变换只读取 `NativeCMakeExecutor.PrepareSourceAsync` 的冻结上游副本。生成的 `imgui.cpp` 属于组件 workspace，经明确 CMake 参数传入；CMake 工程本身始终来自 recipe 声明的冻结文件。不复制第二份生成工程，不把 workspace 路径伪装成外部 SDK，也不改写 `extern`。相同变换结果保留时间戳；变换实现与声明参与组件身份。
+
 ## 源码归属
 
 当前唯一源码 owner：`backends/ImGui/build/Inno.Build.Toolchains.ImGui/Inno.Build.Toolchains.ImGui.csproj`。共同领域与平台产品通过明确契约组合，本项目不提供旧目录兼容入口。

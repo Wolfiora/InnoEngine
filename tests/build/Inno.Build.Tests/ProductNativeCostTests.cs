@@ -18,6 +18,25 @@ namespace Inno.Build.Tests;
 public sealed class ProductNativeCostTests
 {
     [Fact]
+    public async Task RealPresentationBuildUsesDeclaredCMakeAndFrozenWindowSource()
+    {
+        if (Environment.GetEnvironmentVariable("INNO_ACCEPTANCE_IMGUI_BUILD") is null)
+            return;
+        string root = ToolchainEnvironment.FindRepoRoot();
+        ProductNativeBuildStep[] steps = StandardNativeBuildPlans.CreateEditor(WindowsX64BgfxIntegration.nativeProfile).steps
+            .Where(static step => step.id is "cimgui" or "cimguizmo").ToArray();
+        var plan = new ProductNativeBuildPlan("presentation-acceptance", steps);
+        using var cancellation = new CancellationTokenSource(TimeSpan.FromMinutes(15));
+        var context = new NativeBuildContext(root, "debug").WithBindingGenerator(new NativeBindingGenerator("dotnet"));
+        NativeToolchainSelection sdk = await new WindowsX64NativeToolchainProvider("dotnet").ResolveAsync(context,
+            new BuildHostDescriptor("Windows", "x64"), "windows-x64", cancellation.Token);
+        context = context.WithToolchain(sdk);
+        using ProductNativeBuildResult result = await plan.BuildAsync(context, cancellation.Token);
+        Assert.Equal(2, result.Count);
+        Assert.All(result, product => Assert.Contains(product.files, file => Path.GetExtension(file) == ".dll"));
+    }
+
+    [Fact]
     public async Task RealHotProductBatchReadsLessThanSequentialPublicProducers()
     {
         if (Environment.GetEnvironmentVariable("INNO_ACCEPTANCE_NATIVE_COST") is not string evidence)

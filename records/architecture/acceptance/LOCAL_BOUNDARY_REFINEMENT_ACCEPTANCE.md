@@ -84,3 +84,9 @@ MacOSArm64 Native/产品本机未实测；新的 macOS runner 结果独立记录
 提交 3dff6853 的 NuGet run 38546460829 成功；绑定批次 6/6、架构测试 122/122 本机复验通过。macOS Engine job 115793622505 已完成生成及 SDL 编译，随后登记 CMake workspace 中 libSDL3.dylib 符号链接时失败。修复按生命周期区分清单：仅 workspace 允许同一目录边界内最终指向普通文件的文件别名，不重复计数；目录链接、越界、循环、悬空链接及 immutable/process 内容中的链接继续拒绝。Native workspace 在最终产物提交前完成验证。Windows 缓存回归 16 通过、2 个 Unix 文件链接用例明确 Skip；Unix 行为等待新 macOS run 实测，不能将 Skip 计为通过。
 
 加入 NativeArtifactPublicationTests 复验后，最终 workspace-link-final.trx 为 26 通过、2 Skip、0 失败；Toolchains 编译 0 errors / 0 warnings。退休与登记共用同一内部角色清单，不放宽 Core.IO 的通用无链接边界，也不允许最终 Native 产物保存符号链接。
+
+提交 af3ad428 的 macOS job 115807017981 已编译 SDL、Text、UI 及 BGFX 工具，随后拒绝 ImGui 的未声明生成 CMake 目录。整改保持 CMake 工程为 recipe 声明的冻结文件，窗口源码变换读取冻结上游副本，经明确参数传入组件 workspace 生成文件。删除两份无调用方的内部构建辅助文件。显式启用 INNO_ACCEPTANCE_IMGUI_BUILD 后的 WindowsX64 ImGui/ImGuizmo 真实构建 1/1 通过（imgui-overlay-cold-build.trx），不能用普通套件中的未启用结果冒充实际构建。实际 recipe 也覆盖缓存文件清单实现。
+
+先前 Windows job 115778668157 已通过 Native、托管及架构阶段，完整套件返回 12 项失败：Build fixture 的时序/共享输出竞争、runner 上 SDK 10 的隐式选择、Wiki 验证，以及 Reload fixture 的错误 domain。Build 用例顺序调度，显式并发契约不删减；CI 将 .NET 9 安装到独立目录并始终上传测试/Wiki 证据。Reload 用例在创建编辑场景及组件时进入所属 Edit Session，保留生产 Identity owner 拒绝规则，单项复验 1/1 通过（scene-reload-owner-fixture.trx）。Wiki 及后续完整 CI 仍需新 revision 实际结果，不能把这些诊断写成全绿。
+
+顺序调度后的受影响 SDK/ownership/restore/publication 回归为 30/30（serialized-sdk-regression.trx）；真正的并发、取消及锁等待断言仍执行。独立 SDK 安装使用 setup-dotnet 的 DOTNET_INSTALL_DIR 正式入口，未改变引擎目标框架或通过 JIT/错误忽略参数绕过失败。

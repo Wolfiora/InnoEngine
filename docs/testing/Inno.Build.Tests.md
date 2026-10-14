@@ -4,9 +4,13 @@
 
 ## 本轮构建边界回归
 
+测试程序集按顺序调度用例，避免 SDK fixture 同时写共享 checkout 的 bin/obj。锁、取消、并发 publication 和两次构建的竞争仍由各用例显式创建，顺序调度不减少这些并发契约。Engine CI 使用独立的 .NET 9 安装目录，避免临时项目在 runner 上隐式选到另一主版本 SDK；测试及 Wiki 失败证据始终上传。
+
 `ProcessOwnershipTests` 检查启动 ticks、严格 claim、登记/退休协调、首次写入、损坏子进程记录与空闲 workspace 的预算语义。`DevelopmentBuildWorkerTests` 通过实际进程入口执行三十轮默认 JIT 生命周期、十次真实工具检查、非法 nonce、崩溃、强制终止和实际十分钟截止；失败后保留上次完整 publication，不使用私有反射或测试入口。`GeneratorRestoreScopeTests` 用真实 SDK 验证共享生成器的 lock 和 obj 不随产品目标改变。
 
 `ProductNativeCacheLookupTests` 验证完整热命中批次、损坏回退及并发；`NativeVerificationPhaseTests` 验证逻辑输入保留、物理读取去重和阶段隔离。`ProductNativeCostTests` 只有显式设置 `INNO_ACCEPTANCE_NATIVE_COST` 时才执行真实产品串行/批次对照，普通测试运行不能当作该性能验收通过。
+
+`ProductNativeCostTests.RealPresentationBuildUsesDeclaredCMakeAndFrozenWindowSource` 仅在显式设置 `INNO_ACCEPTANCE_IMGUI_BUILD` 时执行 WindowsX64 ImGui/ImGuizmo 实际构建。普通套件不算这项真实编译通过；macOS 对应的冷构建由 Engine CI 的真实 Editor 准备路径验证。
 
 `SolutionBootstrapOwnershipTests` 使用两个真实 MSBuild fixture 项目验证一次 Solution 操作共用 bootstrap owner，下一次操作产生新 owner。`BuildToolRuntimePublicationTests` 使用真实 SDK 部署验证不可变 publication、相同内容复用、原编译输出可写及预取消。`BgfxNativeProfileTests` 验证工具生产者复用源码 owner，却不请求 Runtime 绑定；发行测试验证 Editor 与独立工具使用同一 Release 步骤。
 

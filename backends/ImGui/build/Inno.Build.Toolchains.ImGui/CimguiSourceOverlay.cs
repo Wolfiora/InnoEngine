@@ -21,10 +21,10 @@ internal static class CimguiSourceOverlay
 
         string directory = Path.Combine(context.GetNativeBuildRoot(ImGuiToolchain.componentDescriptor), "Source");
         Directory.CreateDirectory(directory);
-        File.WriteAllText(Path.Combine(directory, "imgui.cpp"), source);
-        string toolchainDirectory = ImGuiToolchain.componentDescriptor.GetToolchainRoot(context.engineRoot);
-        File.Copy(Path.Combine(toolchainDirectory, "CMakeLists.txt"), Path.Combine(directory, "CMakeLists.txt"), overwrite: true);
-        return directory;
+        string output = Path.Combine(directory, "imgui.cpp");
+        if (!File.Exists(output) || File.ReadAllText(output) != source)
+            File.WriteAllText(output, source);
+        return output;
     }
 
     private static string ReplaceOnce(

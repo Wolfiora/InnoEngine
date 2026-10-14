@@ -1436,6 +1436,7 @@ public sealed class ScriptingPipelineTests : IDisposable
         using EditorInteractionRuntime runtime = m_fixture.CreateEditorRuntime(reloads);
         runtime.Start();
         _ = Assert.IsAssignableFrom<IEditorSceneWorkspace>(SceneReloadProbe.workspace);
+        using IDisposable sceneScope = m_fixture.editorSession.EnterExecutionScope();
         GameScene scene = m_fixture.editorSession.scenes.LoadNewSceneAdditive("Reload Test");
         GameObject gameObject = scene.CreateObject("Reload Target");
         RetiredScriptObject retired = AttachReloadableBehavior(m_fixture, gameObject);

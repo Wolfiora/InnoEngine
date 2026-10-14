@@ -53,8 +53,11 @@ public static class ImGuiToolchain
                 output,
                 token
             ) => {
+                NativeCMakeSource sources = await NativeCMakeExecutor.PrepareSourceAsync(scoped, componentDescriptor, token).ConfigureAwait(false);
+                string windowSource = CimguiSourceOverlay.Prepare(scoped, sources.ResolvePath(upstream));
                 string build = await NativeCMakeExecutor.BuildAsync(scoped, componentDescriptor,
-                    CimguiSourceOverlay.Prepare(scoped, upstream), "cimgui", arguments, token).ConfigureAwait(false);
+                    componentDescriptor.GetToolchainRoot(scoped.engineRoot), "cimgui",
+                    [.. arguments, "-DINNO_IMGUI_WINDOW_SOURCE=" + windowSource], token).ConfigureAwait(false);
                 string library = NativeCMakeExecutor.FindOutput(scoped, build, "*cimgui-" + scoped.configuration + selection.sharedLibraryExtension);
                 string name = ToolchainEnvironment.NormalizeOutputName(Path.GetFileName(library), scoped.configuration);
                 File.Copy(library, Path.Combine(output, name));
@@ -96,8 +99,7 @@ public static class ImGuiToolchain
         string upstream = Path.Combine(context.engineRoot, "extern", "cimgui");
         return NativeBuildRecipe.CreateForComponent(context, componentDescriptor,
             "cimgui", selection.targetId, [upstream, Path.Combine(source, "CMakeLists.txt")],
-            ["-DINNO_CIMGUI_SOURCE_DIR=" + upstream, "-DBUILD_SHARED_LIBS=ON", "-DCIMGUI_VARGS0=ON"],
-            [Path.Combine(source, "CimguiBuildConstants.cs"), Path.Combine(source, "CimguiBuildUtils.cs"),
-                Path.Combine(source, "CimguiSourceOverlay.cs"), Path.Combine(source, "ImGuiToolchain.cs")]);
+            ["-DINNO_CIMGUI_SOURCE_DIR=" + upstream, "-DBUILD_SHARED_LIBS=ON", "-DCIMGUI_VARGS0=ON", "window-source=continuous-background"],
+            [Path.Combine(source, "CimguiSourceOverlay.cs"), Path.Combine(source, "ImGuiToolchain.cs")]);
     }
 }
