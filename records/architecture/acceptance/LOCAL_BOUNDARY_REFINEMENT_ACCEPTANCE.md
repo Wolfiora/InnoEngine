@@ -109,3 +109,11 @@ Engine run 38558695831 的 Windows 完整套件只剩 RepositoryWikiTests 失败
 WindowsX64 明确目标 Wiki 门禁已通过（wiki-target-scope-repaired.trx，12m26s）：45,598 符号、190 段实际编译示例、0 错误；其他产品 API 编译明确未执行。该轮有独立 BGCS 任务及 Release Build 并行负载，不作性能比较。新记录保留 validation-errors.txt。SourceDebug 与受影响契约已通过；Release 全仓构建尚在运行，新远端 CI 尚未通过。
 
 SourceRelease 全仓构建也已通过，0 errors / 0 warnings（source-release-ci-followup.log，12m55s）。本轮新提交前的编译与受影响非 GUI 门禁通过；Windows 明确目标 Wiki、真实 Native 构建及主线程测试均有新证据。新的 GitHub CI 尚需提交后执行，不宣称其已通过。
+
+## dd828bd0 的完整远端结果
+
+Engine run 38589373455 的 Windows 普通套件仍仅 Wiki 失败：WindowsX64PlayerContentSource.PrepareAsync 的 inheritdoc 无法在 runner 当前引用闭包中解析到契约说明；Build 程序集 332 passed、2 Skip、1 failed。实际约束不改变，Windows 内部 source 采用与 macOS 相同的完整英文 metadata/pack 所有权、参数、取消和失败说明；本机源码架构复验通过。
+
+macOS job115939828795 在 Native、托管和基础架构通过后，target test closure 编译遇到 CSC CS1504：System.Security.Cryptography.HashAlgorithmNames.HashAlgorithmToPal 缺失。测试未开始，不能宣布前一轮177项失败已全部解决。具体运行时根因尚未确认；重新执行同一 revision 的 macOS job，新的 job116000075113 已开始。Windows 原 job在新 attempt中映射为116000076247，保留原失败。没有关闭 JIT、弱化哈希或忽略编译错误；CI 增加非敏感 dotnet --info 和明确编译器属性记录，固定非共享编译进程选择。NuGet run38589373988 已成功。
+
+Windows 内部内容 source 的完整 XML 在源码架构用例中通过（windows-player-xml-contract.trx）。直接 Player Build 还触发离线 shader-tools 冷编译；仅注释变更不需要该额外冷构建，已取消所属进程并保留日志，不将取消记为编译成功。新生成的三份 windows-x64 NuGet lock 保留为当前图，BGCS.Runtime 固定 2.1.0。CI 编译器属性探测命令在本机执行通过，workflow 缩进人工复核；本机没有 YAML parser，解析有效性由 GitHub workflow 校验。

@@ -119,7 +119,16 @@ jobs:
         shell: pwsh
         run: |
           $properties = Join-Path $PWD '${{ matrix.product_properties }}'
+          New-Item -ItemType Directory -Force 'artifacts/acceptance/ci-tests' | Out-Null
+          dotnet --info | Set-Content 'artifacts/acceptance/ci-tests/dotnet-info.txt'
+          dotnet msbuild 'backends/ImGui/native/Inno.Native.ImGui/Bindings/Extension/Inno.Native.ImGui.BindingExtension.csproj' `
+            -nologo -m:1 -nr:false -p:DesignTimeBuild=true -p:UseSharedCompilation=false `
+            -p:InnoNativeTarget='${{ matrix.build_target }}' `
+            -getProperty:MSBuildRuntimeType,MSBuildRuntimeVersion,NETCoreSdkVersion,CscToolPath,CscToolExe,UseSharedCompilation,NETCoreSdkRuntimeIdentifier `
+            | Set-Content 'artifacts/acceptance/ci-tests/compiler-selection.json'
+          if ($LASTEXITCODE -ne 0) { throw "Compiler selection inspection failed." }
           dotnet build InnoEngine.sln --configuration SourceDebug --disable-build-servers -m:1 -nr:false `
+            -p:UseSharedCompilation=false `
             -p:InnoNativeTarget='${{ matrix.build_target }}' -p:InnoToolTarget='${{ matrix.build_target }}' `
             -p:InnoProductBuildProperties=$properties -p:InnoTestNativeProduct=editor -p:InnoTestNativeTarget='${{ matrix.build_target }}'
           if ($LASTEXITCODE -ne 0) { throw "Target test closure compilation failed." }

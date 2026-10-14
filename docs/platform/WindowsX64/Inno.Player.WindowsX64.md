@@ -30,3 +30,5 @@ Windows Player 的平台产品组合与发布源码。源码项目为 Library，
 - [Inno.Adapter.Content.FileSystem](../../backends/FileSystem/Inno.Adapter.Content.FileSystem.md)：公开引用边界由实际签名核对。
 - [Inno.Adapter.Storage.FileSystem](../../backends/FileSystem/Inno.Adapter.Storage.FileSystem.md)：公开引用边界由实际签名核对。
 - [Inno.Platform.WindowsX64](Inno.Platform.WindowsX64.md)：公开引用边界由实际签名核对。
+
+内容 source 的内部实现明确记录 metadata bytes 与 content store 的所有权、取消和完整性失败；这些成员不作为额外公开扩展 API。
