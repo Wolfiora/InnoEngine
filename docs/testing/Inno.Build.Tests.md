@@ -1,5 +1,7 @@
 # Inno.Build.Tests
 
+桌面发布协议先通过真实 SDK 求值确认每个 Native Content 的 TargetPath 非空且等于完整相对布局，再执行单文件发布、内容校验和缺失输入拒绝。Windows 的默认目标路径推导不能代替这项跨平台契约检查。
+
 `FileProductPublicationTests` 在当前 SDK 宿主上分别消费 WindowsX64 和 MacOSArm64 的实际发布模板，验证 `.dll` / `.dylib` 相对路径、无末尾分隔符的 `PublishDir`、精确文件保留和缺失输入拒绝。fixture 文件用于发布协议检查，不代替跨平台 Native 互操作或设备运行证据。
 
 [测试索引](README.md) · [Wiki 首页](../README.md) · [当前验收](../architecture/CURRENT_ACCEPTANCE.md)

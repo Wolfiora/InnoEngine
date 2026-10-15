@@ -19,7 +19,7 @@
     <AssemblyMetadata Include="Inno.AssemblyScope" Value="Runtime" />
     <_PlayerNativeRuntime Include="native/**/*" />
     <Content Include="@(_PlayerNativeRuntime)" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest"
-             TargetPath="%(_PlayerNativeRuntime.Identity)" ExcludeFromSingleFile="true" />
+             TargetPath="%(Identity)" ExcludeFromSingleFile="true" />
   </ItemGroup>
   <Target Name="ValidateGameCodeComposition" BeforeTargets="ResolveReferences">
     <Error Condition="'$(InnoGameManagedRoot)' == '' or '@(_GameAssembly)' == '' or !Exists('PlayerDeploymentDefinition.g.cs')"

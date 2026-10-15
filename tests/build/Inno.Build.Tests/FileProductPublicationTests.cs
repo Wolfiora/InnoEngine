@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
@@ -52,6 +53,14 @@ public sealed class FileProductPublicationTests : IDisposable
                 new XAttribute("Condition", $"'$(NETCoreSdkVersion)' != '{selectedSdk.sdkIdentity}'"),
                 new XAttribute("Text", "Publication changed the project-selected SDK."))));
         definition.Save(project);
+        string evaluated = await ToolchainEnvironment.CaptureOutputAsync(selectedSdk.hostPath,
+            [selectedSdk.cliPath, "msbuild", project, "-getItem:Content", "-nologo"],
+            projectRoot, timeout.Token, DotNetSdkEnvironment.Create(selectedSdk.hostPath));
+        using (JsonDocument items = JsonDocument.Parse(evaluated))
+        {
+            JsonElement content = Assert.Single(items.RootElement.GetProperty("Items").GetProperty("Content").EnumerateArray());
+            Assert.Equal(nativeRelative, content.GetProperty("TargetPath").GetString());
+        }
         string output = Path.Combine(m_root, "Published");
         ManagedDeploymentResult result;
         try

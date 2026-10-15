@@ -149,3 +149,11 @@ Host单项目编译0错误0警告，源码/项目架构72/72通过。两个本�
 aaeb57ca 的 macOS job116225097629 共同套件仍有两个桌面模板的发布布局失败，NormalizeDirectory 修复不足；不能把 Windows 的两项通过视为 macOS 通过。两份模板现为 Native Content 明确声明 TargetPath 等于所选布局的相对路径，不让 SDK 从物理目录或别名推断目标位置。输出校验仍检查同一精确路径，失败消息增加实际 publish root；fixture 在失败时记录真实输出文件清单，再保留原始 SDK 异常，不放宽 Native 闭包或只检查 basename。
 
 Windows 用实际两份模板再次发布、检查 bytes、无末尾分隔符验证及缺失输入拒绝，2/2通过（explicit-native-target-path.trx）。macOS 必须以新的 runner 结果确认；尚未通过时不宣称此次修复已在 macOS 实测。
+
+## SDK Content 元数据的求值根因
+
+c9efaa3c 的 Windows PR CI 全部通过：2,055 passed、18个环境Skip、0 failed，Support Pack及Direct3D11/sRGB/三帧/退出smoke通过。macOS job116261597072的实际输出诊断证明Native文件被复制到发布根，而非声明的相对布局，仍有两项失败。
+
+本机直接执行SDK `-getItem:Content`，确认先前使用另一item类型限定的 `%(_PlayerNativeRuntime.Identity)` 在新建Content元数据时求值为空；Windows默认路径推导掩盖了这个错误。改为当前item的 `%(Identity)` 后，SDK返回完整且非空的TargetPath。回归在发布前使用公开SDK求值入口断言TargetPath与实际相对布局一致，再保留原发布、内容、无分隔符及缺失输入断言；不修改原生文件布局或靠basename回退。
+
+同一head的push macOS job116261573608另有Roslyn内部MissingMethodException（CSharpSyntaxNodeCache.GetNodeFlags），PR macOS在同一编译阶段已通过。其运行时根因未确认，不能把70行重复堆栈当作70个源码错误；未通过JIT、analyzer或弱化哈希规避，也未以失败run冒充通过。
