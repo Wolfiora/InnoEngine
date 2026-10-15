@@ -1,7 +1,6 @@
 using System;
 using Inno.Adapter.Platform;
 using Inno.Adapter.Platform.Sdl3;
-using Inno.Integration.WindowsX64.Sdl3;
 using Inno.Platform;
 using Inno.Rendering;
 using Xunit;
@@ -13,14 +12,27 @@ namespace Inno.Adapter.Rendering.Bgfx.Tests;
 public sealed class BgfxSurfaceRetirementTests
 {
     [Fact]
-    public void MultiThreadedSurfaceAcknowledgesDestructionAfterTheFollowingSubmission() => VerifyRetirement(false);
+    public void MultiThreadedSurfaceAcknowledgesDestructionAfterTheFollowingSubmission()
+    {
+        if (NativeWindowTestHost.RunIfRequired(nameof(BgfxSurfaceRetirementTests) + "." + nameof(MultiThreadedSurfaceAcknowledgesDestructionAfterTheFollowingSubmission)))
+            return;
+        VerifyRetirement(false);
+    }
 
     [Fact]
-    public void InlineSurfaceUsesTheSameConservativeAcknowledgment() => VerifyRetirement(true);
+    public void InlineSurfaceUsesTheSameConservativeAcknowledgment()
+    {
+        if (NativeWindowTestHost.RunIfRequired(nameof(BgfxSurfaceRetirementTests) + "." + nameof(InlineSurfaceUsesTheSameConservativeAcknowledgment)))
+            return;
+        VerifyRetirement(true);
+    }
 
     [Fact]
     public void InvalidIntegrationFailsBeforeTakingTheProcessOwner()
     {
+        if (NativeWindowTestHost.RunIfRequired(nameof(BgfxSurfaceRetirementTests) + "." + nameof(InvalidIntegrationFailsBeforeTakingTheProcessOwner)))
+            return;
+
         using var application = new Sdl3PlatformApplication(NativeHostFixture.Create());
         using var window = application.CreateWindow(new PlatformWindowOptions
         {

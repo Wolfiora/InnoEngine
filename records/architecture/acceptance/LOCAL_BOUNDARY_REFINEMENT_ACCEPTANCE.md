@@ -129,3 +129,5 @@ macOS 的 Native、源码、基础架构和 Wiki 已通过；上传 TRX 为 2,04
 viewport 用例改为与所属 SDL 应用主窗口的 surface kind 比较；Windows 强制独立主线程复验 1/1。61 项源码/公共边界回归通过。workflow 在读取严格 current 内容身份后，分别要求 pack/native 和 pack/PlayerLink/native 各一份 MiniAudio，比较真实 SHA-256；本机当前有效 Pack 的两处计数与哈希通过。五个 PowerShell script block 经矩阵表达式替换后解析通过，GitHub YAML 解析及完整新 CI 仍待提交后验证。
 
 这些修复不放宽 Native 闭包、平台 ABI、内容哈希、读取 lease 或 exports 规则；不创建第三份 Native 输入，不改 BGCS、extern、框架或生成绑定。新的 commit 仍须完整 CI、Support Pack 和 renderer smoke 实际通过后才能标记收口。
+
+提交后的后续独立进程检查发现，三个 BGFX surface 退休用例也创建真实 Cocoa 窗口，之前尚未进入的独立阶段仍会从 xUnit worker 调用。按已验证的 SDL/viewport 测试方式补齐本测试程序集的明确主线程入口，直接调用原三个断言；生产启动项目不增加。Windows 强制相同子进程路径复验 3/3，源码/项目架构门禁继续复验。没有用缺平台时 return、假窗口或反射跳过真实渲染。
