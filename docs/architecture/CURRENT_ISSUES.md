@@ -30,4 +30,6 @@
 
 ### 最新 CI 范围
 
-最新已完成的 Windows CI 共同与独立测试全部通过，随后 Support Pack 的重复计数检查失败；macOS 共同套件仍有发布路径与 surface fixture 两项失败。整改及新结果见[当前局部验收报告](../../records/architecture/acceptance/LOCAL_BOUNDARY_REFINEMENT_ACCEPTANCE.md)，新提交仍须完整重跑。目标限定 Wiki 验证只证明共同项目与所选产品编译；外国产品的未执行记录不计为通过，完整目标覆盖需要各自环境。
+远端验收要求 Windows/macOS 的源码、架构、完整契约、所选 Pack 和实际渲染 smoke 全部通过；结果必须对应 [PR 当前 head](https://github.com/Wolfiora/InnoEngine/pull/11/checks)。每轮失败、修复与实测记录见[局部验收报告](../../records/architecture/acceptance/LOCAL_BOUNDARY_REFINEMENT_ACCEPTANCE.md)，旧 revision 的成功不代替新 revision。目标限定 Wiki 验证只证明共同项目与所选产品编译；外国产品的未执行记录不计为通过，完整目标覆盖需要各自环境。
+
+BGCS 正在独立重构；按当前验收范围，新增第三方库与 Binding 专项矩阵留待新包切换后执行。现有引擎功能、稳定性、架构与非 GUI 性能检查继续执行；不因该范围调整跳过当前仓库的 CI 门禁。

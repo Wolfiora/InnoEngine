@@ -56,4 +56,6 @@ Web headless 启动保留第三方 WebGL 能力查询和 ScriptProcessorNode 弃
 
 ### 最新 CI 范围
 
-最新已完成的 Windows/macOS CI 在 Native、托管和基础架构阶段通过，完整测试阶段仍有跨平台失败，整改及新结果见[当前局部验收报告](../../records/architecture/acceptance/LOCAL_BOUNDARY_REFINEMENT_ACCEPTANCE.md)。目标限定 Wiki 验证只证明共同项目与所选产品编译；外国产品的未执行记录不计为通过，完整目标覆盖需要各自环境。
+当前提交的远端状态以 [PR Checks](https://github.com/Wolfiora/InnoEngine/pull/11/checks) 为准；具体 revision、失败、修复和证据见[局部验收报告](../../records/architecture/acceptance/LOCAL_BOUNDARY_REFINEMENT_ACCEPTANCE.md)。不将上一轮通过结果套用于后续源码。目标限定 Wiki 验证只证明共同项目与所选产品编译；外国产品的未执行记录不计为通过，完整目标覆盖需要各自环境。
+
+BGCS 新包切换前暂停新增第三方库与 Binding 专项验收。主要引擎功能、稳定性、性能、架构和当前 CI 仍在验收范围；GUI、视觉与声学不执行。

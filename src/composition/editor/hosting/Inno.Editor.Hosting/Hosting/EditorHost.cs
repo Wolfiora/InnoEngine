@@ -496,6 +496,7 @@ internal sealed class EditorHost : ShellHost
         BootLog(
             $"Rendering initialized with {renderDevice.capabilities.backend} "
             + $"(views={renderDevice.capabilities.limits.maxViews}).");
+        BootLog($"Primary presentation encodes sRGB: {renderDevice.primaryPresentationEncodesSrgb}.");
         BootLog(
             $"AssetPipeline initialized={activeAuthoring.assets.isInitialized} "
             + $"root='{activeAuthoring.assets.assetRoot}'.");

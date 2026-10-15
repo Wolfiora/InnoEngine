@@ -131,3 +131,15 @@ viewport 用例改为与所属 SDL 应用主窗口的 surface kind 比较；Wind
 这些修复不放宽 Native 闭包、平台 ABI、内容哈希、读取 lease 或 exports 规则；不创建第三份 Native 输入，不改 BGCS、extern、框架或生成绑定。新的 commit 仍须完整 CI、Support Pack 和 renderer smoke 实际通过后才能标记收口。
 
 提交后的后续独立进程检查发现，三个 BGFX surface 退休用例也创建真实 Cocoa 窗口，之前尚未进入的独立阶段仍会从 xUnit worker 调用。按已验证的 SDL/viewport 测试方式补齐本测试程序集的明确主线程入口，直接调用原三个断言；生产启动项目不增加。Windows 强制相同子进程路径复验 3/3，源码/项目架构门禁继续复验。没有用缺平台时 return、假窗口或反射跳过真实渲染。
+
+## 渲染 smoke 的实际能力与验收范围
+
+2d122c24 的 Windows job116224092465 已通过完整共同/独立套件及所选 Support Pack，Editor 也完成三帧并正常退出。最后的 workflow 检查却要求 BGFX 调试文本 `[x] sRGB Back Buffer` 和 `BGFX Shutdown complete.`；上传日志实际只有 Host 诊断，没有第三方调试文本。该失败不是 sRGB 功能已被证实损坏。
+
+Host 现在从中立 IRenderDevice.primaryPresentationEncodesSrgb 记录实际能力；workflow 继续要求该值为 True、实际后端匹配、完成三帧、无 teardown failure 和进程成功退出。EditorApplication 的 using 在返回前完成 Shell/设备释放，任何释放异常仍使运行失败。删除对第三方调试文字的强制依赖，保留可见 BGFX FATAL 检查；未引入具体后端类型或编译宏到 Hosting。最新提交仍须以自己的完整 CI 结果证明通过。
+
+当前 aaeb57ca 的 Windows CoreCLR/NativeAOT、Web 解释执行/AOT 已重新发布。Windows 两种产品各运行两次、每次360帧，storage 连续递增、音频 DSP 时钟推进、stderr 为空、退出码0。Web 解释执行/AOT各两次headless运行通过：storage 0→1→2、Space回调、180帧周期探针、冻结期间停止推进并恢复、JS errors=0。实际日志在本轮 results/current-web-runtime.json；SwiftShader及机器并行负载下的帧耗时不用于GPU性能结论。验收驱动首次把 `.build-logs` 误算为产品目录，已按实际 index.html 选择；RAF 计数读取会扰动冻结测量，改为观察真实 managed gameplay 帧日志，在冻结期间不执行页面代码。失败日志全部保留，不能将失败尝试当成通过。
+
+按用户最新要求，BGCS 新包切换前暂停新增第三方库与 Binding 专项矩阵；重点为引擎功能、稳定性、性能、架构、低耦合与扩展边界。当前仓库的完整 CI 不以此减项。GUI、焦点、视觉与声学不执行。最新正式缓存清理回收9,157,611,520实际字节，清理后75,901,960,192字节可用；200GB仍未达到，37个历史拒绝目录没有被清理或补登记。
+
+Host单项目编译0错误0警告，源码/项目架构72/72通过。两个本机源码构建命令并发写入相同obj曾触发CS2012/MSB3491；保留失败日志后改为串行复验，不把此执行冲突描述为功能回归通过。

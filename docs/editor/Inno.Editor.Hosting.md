@@ -16,6 +16,8 @@
 
 `EditorCommandLineOptions` 默认显示窗口。明确传入 Project 后，`--window-visible false --smoke-frames 60` 可以在隐藏窗口中运行同一 Host、设备和退出流程，不操作桌面焦点；它验证初始化和生命周期，不能证明 GUI、视觉或声学效果。可见性不是平台选择，也不替代正常交互验收。
 
+启动诊断直接记录设备的 `primaryPresentationEncodesSrgb` 中立能力。Smoke 验证实际后端、颜色输出能力、完成帧数、错误诊断和正常退出；不依赖第三方调试构建是否输出某一条英文日志。`RunAsync` 返回前由 `using` 释放 Shell，设备释放失败会传播，不能仅凭产品资源的 Dispose 日志判断整个设备已经释放。
+
 ```csharp
 using System.Threading;
 using System.Threading.Tasks;

@@ -192,11 +192,8 @@ jobs:
           }
 
           $native = Get-Content -Raw $nativeLog
-          if ($native -notmatch '\[x\] sRGB Back Buffer') {
+          if ($boot -notmatch 'Primary presentation encodes sRGB: True\.') {
             throw "Renderer smoke did not enable the sRGB backbuffer contract."
-          }
-          if ($native -notmatch 'BGFX Shutdown complete\.') {
-            throw "Renderer smoke did not complete BGFX shutdown."
           }
           if ($native -match 'BGFX FATAL') {
             throw "Renderer smoke reported a BGFX fatal diagnostic."
