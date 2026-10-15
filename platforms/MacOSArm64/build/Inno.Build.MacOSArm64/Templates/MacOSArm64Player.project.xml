@@ -19,7 +19,7 @@
     <AssemblyMetadata Include="Inno.AssemblyScope" Value="Runtime" />
     <_PlayerNativeRuntime Include="native/**/*" />
     <Content Include="@(_PlayerNativeRuntime)" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest"
-             ExcludeFromSingleFile="true" />
+             TargetPath="%(_PlayerNativeRuntime.Identity)" ExcludeFromSingleFile="true" />
   </ItemGroup>
   <Target Name="ValidateGameCodeComposition" BeforeTargets="ResolveReferences">
     <Error Condition="'$(InnoGameManagedRoot)' == '' or '@(_GameAssembly)' == '' or !Exists('PlayerDeploymentDefinition.g.cs')"
@@ -34,6 +34,6 @@
       <_InnoNativePublishRoot>$([MSBuild]::NormalizeDirectory('$(PublishDir)'))</_InnoNativePublishRoot>
     </PropertyGroup>
     <Error Condition="!Exists('$(_InnoNativePublishRoot)%(_PlayerNativeRuntime.Identity)')"
-           Text="MacOS Player publication did not deploy native runtime '%(_PlayerNativeRuntime.Identity)'." />
+           Text="MacOS Player publication did not deploy native runtime '%(_PlayerNativeRuntime.Identity)' under '$(_InnoNativePublishRoot)'." />
   </Target>
 </Project>

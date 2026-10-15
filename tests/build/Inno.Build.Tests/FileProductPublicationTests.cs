@@ -53,8 +53,20 @@ public sealed class FileProductPublicationTests : IDisposable
                 new XAttribute("Text", "Publication changed the project-selected SDK."))));
         definition.Save(project);
         string output = Path.Combine(m_root, "Published");
-        ManagedDeploymentResult result = await compiler.CompileAsync(new ManagedDeploymentRequest(
-            project, RuntimeInformation.RuntimeIdentifier, code, output, Path.Combine(m_root, "Logs")), timeout.Token);
+        ManagedDeploymentResult result;
+        try
+        {
+            result = await compiler.CompileAsync(new ManagedDeploymentRequest(
+                project, RuntimeInformation.RuntimeIdentifier, code, output, Path.Combine(m_root, "Logs")), timeout.Token);
+        }
+        catch (InvalidOperationException exception)
+        {
+            string[] observed = Directory.Exists(output)
+                ? Directory.GetFiles(output, "*", SearchOption.AllDirectories)
+                : [];
+            string layout = string.Join(", ", Array.ConvertAll(observed, file => Path.GetRelativePath(output, file)));
+            throw new InvalidOperationException($"Publication output '{output}' contained [{layout}].", exception);
+        }
         string deployed = Path.Combine(output, nativeRelative);
         Assert.Contains(nativeRelative, result.files);
         Assert.Equal(File.ReadAllBytes(nativeInput), File.ReadAllBytes(deployed));

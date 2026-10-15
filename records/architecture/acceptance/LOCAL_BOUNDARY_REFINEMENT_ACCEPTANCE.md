@@ -143,3 +143,9 @@ Host 现在从中立 IRenderDevice.primaryPresentationEncodesSrgb 记录实际�
 按用户最新要求，BGCS 新包切换前暂停新增第三方库与 Binding 专项矩阵；重点为引擎功能、稳定性、性能、架构、低耦合与扩展边界。当前仓库的完整 CI 不以此减项。GUI、焦点、视觉与声学不执行。最新正式缓存清理回收9,157,611,520实际字节，清理后75,901,960,192字节可用；200GB仍未达到，37个历史拒绝目录没有被清理或补登记。
 
 Host单项目编译0错误0警告，源码/项目架构72/72通过。两个本机源码构建命令并发写入相同obj曾触发CS2012/MSB3491；保留失败日志后改为串行复验，不把此执行冲突描述为功能回归通过。
+
+## Native 发布目标路径的显式声明
+
+aaeb57ca 的 macOS job116225097629 共同套件仍有两个桌面模板的发布布局失败，NormalizeDirectory 修复不足；不能把 Windows 的两项通过视为 macOS 通过。两份模板现为 Native Content 明确声明 TargetPath 等于所选布局的相对路径，不让 SDK 从物理目录或别名推断目标位置。输出校验仍检查同一精确路径，失败消息增加实际 publish root；fixture 在失败时记录真实输出文件清单，再保留原始 SDK 异常，不放宽 Native 闭包或只检查 basename。
+
+Windows 用实际两份模板再次发布、检查 bytes、无末尾分隔符验证及缺失输入拒绝，2/2通过（explicit-native-target-path.trx）。macOS 必须以新的 runner 结果确认；尚未通过时不宣称此次修复已在 macOS 实测。
