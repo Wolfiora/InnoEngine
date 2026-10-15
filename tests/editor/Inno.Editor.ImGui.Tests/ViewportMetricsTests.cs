@@ -175,7 +175,7 @@ public sealed unsafe class ViewportMetricsTests
             Assert.True(context.TryGetWindowId(viewport.ID, out uint id));
             Assert.Equal(target.windowId, id);
             Assert.Equal(target.nativeHandles.windowHandle, (nint)viewport.PlatformHandleRaw);
-            Assert.Equal(PlatformNativeHandleId.win32, target.nativeHandles.handleKind);
+            Assert.Equal(window.nativeHandles.handleKind, target.nativeHandles.handleKind);
         }
         finally
         {

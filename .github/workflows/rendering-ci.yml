@@ -145,13 +145,19 @@ jobs:
             --tools-target '${{ matrix.build_target }}' `
             --dotnet (Get-Command dotnet).Source
           $expectedMiniAudio = if ($IsWindows) { "miniaudio-release.dll" } else { "libminiaudio-release.dylib" }
-          $miniAudioFiles = @(Get-ChildItem `
-            -Path (Join-Path $supportPacks '${{ matrix.build_target }}') `
-            -Recurse `
-            -File `
-            -Filter $expectedMiniAudio)
-          if ($miniAudioFiles.Count -ne 1) {
-            throw "Expected exactly one '$expectedMiniAudio' in the generated Support Pack, found $($miniAudioFiles.Count)."
+          $targetRoot = Join-Path $supportPacks '${{ matrix.build_target }}'
+          $fingerprint = (Get-Content -LiteralPath (Join-Path $targetRoot 'current') -Raw).Trim()
+          if ($fingerprint -cnotmatch '^[0-9a-f]{64}$') {
+            throw 'The Support Pack selection has no valid content identity.'
+          }
+          $selectedPack = Join-Path $targetRoot $fingerprint
+          $runtimeFiles = @(Get-ChildItem -LiteralPath (Join-Path $selectedPack 'native') -Recurse -File -Filter $expectedMiniAudio)
+          $linkFiles = @(Get-ChildItem -LiteralPath (Join-Path $selectedPack 'PlayerLink/native') -Recurse -File -Filter $expectedMiniAudio)
+          if ($runtimeFiles.Count -ne 1 -or $linkFiles.Count -ne 1) {
+            throw "Expected one '$expectedMiniAudio' in each selected runtime and PlayerLink closure."
+          }
+          if ((Get-FileHash -LiteralPath $runtimeFiles[0].FullName).Hash -cne (Get-FileHash -LiteralPath $linkFiles[0].FullName).Hash) {
+            throw 'The runtime and PlayerLink Native inputs do not match.'
           }
 
       - name: Run real renderer smoke

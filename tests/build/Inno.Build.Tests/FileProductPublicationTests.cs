@@ -15,11 +15,14 @@ public sealed class FileProductPublicationTests : IDisposable
 {
     private readonly string m_root = Path.Combine(Path.GetTempPath(), "InnoFileProductPublicationTests", Guid.NewGuid().ToString("N"));
 
-    [Fact]
-    public async Task SingleFilePublicationRetainsTheNativeClosureAndRejectsMissingInputs()
-    {
+    [Theory]
+    [InlineData("WindowsX64", "fixture.dll")]
+    [InlineData("MacOSArm64", "libfixture.dylib")]
+    public async Task SingleFilePublicationRetainsTheNativeClosureAndRejectsMissingInputs(
+        string platform,
+        string nativeFileName
+    ) {
         string engine = ToolchainEnvironment.FindRepoRoot();
-        string platform = OperatingSystem.IsWindows() ? "WindowsX64" : "MacOSArm64";
         string projectRoot = Path.Combine(m_root, new string('p', 70), new string('p', 70), "PlayerLink");
         Directory.CreateDirectory(projectRoot);
         string project = Path.Combine(projectRoot, "Player.csproj");
@@ -32,8 +35,7 @@ public sealed class FileProductPublicationTests : IDisposable
         Directory.CreateDirectory(code);
         string sourceAssembly = typeof(ManagedDeploymentId).Assembly.Location;
         File.Copy(sourceAssembly, Path.Combine(code, Path.GetFileName(sourceAssembly)));
-        string nativeRelative = Path.Combine("native", "fixture", "target",
-            OperatingSystem.IsWindows() ? "fixture.dll" : "libfixture.dylib");
+        string nativeRelative = Path.Combine("native", "fixture", "target", nativeFileName);
         string nativeInput = Path.Combine(projectRoot, nativeRelative);
         Directory.CreateDirectory(Path.GetDirectoryName(nativeInput)!);
         File.Copy(sourceAssembly, nativeInput);
@@ -56,6 +58,11 @@ public sealed class FileProductPublicationTests : IDisposable
         string deployed = Path.Combine(output, nativeRelative);
         Assert.Contains(nativeRelative, result.files);
         Assert.Equal(File.ReadAllBytes(nativeInput), File.ReadAllBytes(deployed));
+        // PublishDir is also supplied by external SDK callers without a trailing separator.
+        await ToolchainEnvironment.RunAsync(selectedSdk.hostPath,
+            [selectedSdk.cliPath, "msbuild", project, "-target:ValidateNativePublicationOutput",
+                "-p:PublishDir=" + output, "-nologo", "-m:1", "-nodeReuse:false"],
+            projectRoot, timeout.Token, DotNetSdkEnvironment.Create(selectedSdk.hostPath));
         string[] executionPaths = File.ReadAllLines(Path.Combine(m_root, "Logs", "managed-working-directory.txt"));
         Assert.Equal(projectRoot, executionPaths[0]);
         if (OperatingSystem.IsWindows())

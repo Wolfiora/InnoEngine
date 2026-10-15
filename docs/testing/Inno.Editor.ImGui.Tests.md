@@ -25,6 +25,8 @@ dotnet test tests/editor/Inno.Editor.ImGui.Tests/Inno.Editor.ImGui.Tests.csproj 
 
 包含 Native 或窗口相关消费；执行前准备匹配目标与配置的原生产物。缺库、缺 SDK 或无法建立真实窗口属于未通过/未执行，不能记为通过。
 
+viewport 回调的 surface kind 与同一 SDL 应用主窗口对照，分别由实际宿主集成提供 Win32 或 Cocoa；共同窗口契约不把 Win32 写成所有平台的预期。
+
 可以用 `--filter FullyQualifiedName~方法名` 选择下表的场景；完整项目验证仍使用上面的命令。
 
 ## 源码场景

@@ -1,5 +1,7 @@
 # Inno.Build.Tests
 
+`FileProductPublicationTests` 在当前 SDK 宿主上分别消费 WindowsX64 和 MacOSArm64 的实际发布模板，验证 `.dll` / `.dylib` 相对路径、无末尾分隔符的 `PublishDir`、精确文件保留和缺失输入拒绝。fixture 文件用于发布协议检查，不代替跨平台 Native 互操作或设备运行证据。
+
 [测试索引](README.md) · [Wiki 首页](../README.md) · [当前验收](../architecture/CURRENT_ACCEPTANCE.md)
 
 ## 本轮构建边界回归

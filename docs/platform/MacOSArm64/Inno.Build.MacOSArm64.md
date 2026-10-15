@@ -14,6 +14,8 @@ MacOS SDK、已实现发布目标、Support Pack、布局和模板的唯一平�
 
 Support Pack source 复用共同 FilePlayerSupportPackPreparation，注入产品项目、模板、平台布局、SDK provider 和精确 Native plan。validator 在提交前核对源代码、generator、managed/native 闭包与平台文件类型。最终玩家布局由对应 target 创建；失败和取消保留旧完整输出。
 
+发布模板使用 MSBuild 的路径规范化组合 `PublishDir` 与精确 Native 相对路径，不依赖末尾分隔符。Pack 本体与 `PlayerLink` 各保留一份相同内容的 Native 输入，分别服务部署和最终链接；CI 只检查 `current` 选中的完整 generation，逐一校验两处文件数量与内容哈希。
+
 新增同平台 CPU 先实现真实 SDK、ABI、布局与 runtime 支持，再增加目标贡献；不复制产品、Editor 或共享 backend。打包/签名只有存在真实实现时增加文件，不建立空目录。
 
 本项目为库，无 Program；共享 Build 不反向引用它。测试通过公开 target/provider/source 验证正向与缺 SDK、错宿主、错误闭包路径。

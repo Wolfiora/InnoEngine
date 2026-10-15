@@ -117,3 +117,15 @@ Engine run 38589373455 的 Windows 普通套件仍仅 Wiki 失败：WindowsX64Pl
 macOS job115939828795 在 Native、托管和基础架构通过后，target test closure 编译遇到 CSC CS1504：System.Security.Cryptography.HashAlgorithmNames.HashAlgorithmToPal 缺失。测试未开始，不能宣布前一轮177项失败已全部解决。具体运行时根因尚未确认；重新执行同一 revision 的 macOS job，新的 job116000075113 已开始。Windows 原 job在新 attempt中映射为116000076247，保留原失败。没有关闭 JIT、弱化哈希或忽略编译错误；CI 增加非敏感 dotnet --info 和明确编译器属性记录，固定非共享编译进程选择。NuGet run38589373988 已成功。
 
 Windows 内部内容 source 的完整 XML 在源码架构用例中通过（windows-player-xml-contract.trx）。直接 Player Build 还触发离线 shader-tools 冷编译；仅注释变更不需要该额外冷构建，已取消所属进程并保留日志，不将取消记为编译成功。新生成的三份 windows-x64 NuGet lock 保留为当前图，BGCS.Runtime 固定 2.1.0。CI 编译器属性探测命令在本机执行通过，workflow 缩进人工复核；本机没有 YAML parser，解析有效性由 GitHub workflow 校验。
+
+## ecac2463 的完整远端结果与发布布局修复
+
+Engine run 38608685636：Windows Native、源码、架构、共同与独立进程测试全部通过，日志合计 2,054 passed、18 Skip、0 failed（18 项为 16 个 Metal 环境用例及两个 Unix 文件链接权限用例）。Support Pack 命令成功生成内容身份，但 workflow 随后递归统计整个目标目录，误把 Pack 本体和 PlayerLink 中各自必需的 miniaudio-release.dll 判为重复，尚未运行 renderer smoke。NuGet run 38608685756 成功。
+
+macOS 的 Native、源码、基础架构和 Wiki 已通过；上传 TRX 为 2,044 passed、2 failed、0 Skip。剩余失败分别是单文件发布后的 Native 路径验证、viewport fixture 将 Cocoa 错写为 Win32。旧 revision 的 macOS 重跑也完成测试，未再出现 HashAlgorithmToPal 方法缺失；其运行时根因仍未确认，不能将一次未复现描述成已找出根因。新 runner 实际 SDK 9.0.319、CoreCLR 9.0.21、osx-arm64，编译器选择记录 UseSharedCompilation=false；dotnet host 自身为 10.0.13，不等于 SDK 或引擎框架已升级。
+
+整改：两个桌面发布模板通过 NormalizeDirectory 得到明确的发布根，再验证每一个精确 Native 相对路径；不依赖 PublishDir 末尾分隔符、不添加文件名 fallback。发布 fixture 在当前 SDK 宿主分别消费两份真实模板，并单独调用公开 SDK target 验证无末尾分隔符的参数；Windows 新复验 2/2。首次 NormalizePath 嵌套 condition 存在 MSBuild 引号错误，保留失败日志，改为 target 内单一私有 property 后重新通过，不将失败算成成功。该 fixture 只验证发布协议，不把 PE 测试输入伪称 macOS Native 实机调用。
+
+viewport 用例改为与所属 SDL 应用主窗口的 surface kind 比较；Windows 强制独立主线程复验 1/1。61 项源码/公共边界回归通过。workflow 在读取严格 current 内容身份后，分别要求 pack/native 和 pack/PlayerLink/native 各一份 MiniAudio，比较真实 SHA-256；本机当前有效 Pack 的两处计数与哈希通过。五个 PowerShell script block 经矩阵表达式替换后解析通过，GitHub YAML 解析及完整新 CI 仍待提交后验证。
+
+这些修复不放宽 Native 闭包、平台 ABI、内容哈希、读取 lease 或 exports 规则；不创建第三份 Native 输入，不改 BGCS、extern、框架或生成绑定。新的 commit 仍须完整 CI、Support Pack 和 renderer smoke 实际通过后才能标记收口。

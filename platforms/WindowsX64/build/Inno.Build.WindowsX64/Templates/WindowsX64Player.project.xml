@@ -30,7 +30,10 @@
            Text="Windows Player publication requires an explicitly deployed native runtime closure." />
   </Target>
   <Target Name="ValidateNativePublicationOutput" AfterTargets="Publish">
-    <Error Condition="!Exists('$(PublishDir)%(_PlayerNativeRuntime.Identity)')"
+    <PropertyGroup>
+      <_InnoNativePublishRoot>$([MSBuild]::NormalizeDirectory('$(PublishDir)'))</_InnoNativePublishRoot>
+    </PropertyGroup>
+    <Error Condition="!Exists('$(_InnoNativePublishRoot)%(_PlayerNativeRuntime.Identity)')"
            Text="Windows Player publication did not deploy native runtime '%(_PlayerNativeRuntime.Identity)'." />
   </Target>
 </Project>

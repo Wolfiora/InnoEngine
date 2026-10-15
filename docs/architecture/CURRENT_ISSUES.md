@@ -30,4 +30,4 @@
 
 ### 最新 CI 范围
 
-最新已完成的 Windows/macOS CI 在 Native、托管和基础架构阶段通过，完整测试阶段仍有跨平台失败，整改及新结果见[当前局部验收报告](../../records/architecture/acceptance/LOCAL_BOUNDARY_REFINEMENT_ACCEPTANCE.md)。目标限定 Wiki 验证只证明共同项目与所选产品编译；外国产品的未执行记录不计为通过，完整目标覆盖需要各自环境。
+最新已完成的 Windows CI 共同与独立测试全部通过，随后 Support Pack 的重复计数检查失败；macOS 共同套件仍有发布路径与 surface fixture 两项失败。整改及新结果见[当前局部验收报告](../../records/architecture/acceptance/LOCAL_BOUNDARY_REFINEMENT_ACCEPTANCE.md)，新提交仍须完整重跑。目标限定 Wiki 验证只证明共同项目与所选产品编译；外国产品的未执行记录不计为通过，完整目标覆盖需要各自环境。
