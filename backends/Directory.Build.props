@@ -2,7 +2,6 @@
   <Import Project="../src/Directory.Build.props" />
 
   <PropertyGroup>
-
     <NoWarn>$(NoWarn);CS8981</NoWarn>
   </PropertyGroup>
 </Project>

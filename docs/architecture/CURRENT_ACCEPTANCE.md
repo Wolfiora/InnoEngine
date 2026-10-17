@@ -2,60 +2,49 @@
 
 [架构索引](README.md) · [Wiki 首页](../README.md) · [问题台账](CURRENT_ISSUES.md)
 
-## 当前范围
+## 基线与结论
 
-2026-10-14，kernel 基线 `b488d5d8588ec56e6ca1ab50bb1f30c680e81e8f` 后的构建成本、工具宿主与缓存生命周期整改。没有自动提交。本轮不执行 Computer Use、桌面焦点、视觉或声学验收；后台与 headless 结果仅证明对应的非 GUI 行为。
+2026-10-15，生产源码基线 `2f3fbc487520bc9eee28a35b588fd0f952a8cd8d`。本次标注审查没有修改生产源码或tests，没有使用Computer Use。
 
-详细命令、首次失败、修复及回收过程见[本轮验收记录](../../records/architecture/acceptance/BUILD_COST_TOOL_HOST_DISK_CLOSURE_ACCEPTANCE.md)。历史结果不冒充当前通过证据。
+**Windows当前完整CI通过；PR整体未通过。** macOS独立BGFX单线程Metal用例超时，后续阶段未到达。BGCS新包/Binding/第三方专项按要求暂缓；GUI、焦点、视觉与声学不执行。
 
-后续审查发现的五项局部边界现已实现修复，本机新证据与具体限制见[局部整改报告](../../records/architecture/acceptance/LOCAL_BOUNDARY_REFINEMENT_ACCEPTANCE.md)。下面产品与性能表属于上一轮已完成结果；本轮提交判断以新报告的具体范围为准。
+具体问题和关闭条件见[问题台账](CURRENT_ISSUES.md)及[完整审查](../../records/architecture/acceptance/CURRENT_ENGINE_OPEN_ITEMS_2026_10_15.md)。不同revision的成功不合并成“最终全部通过”。
 
-## 已验证能力
+## 当前head的远端证据
 
-| 范围 | 当前结果 |
+| 范围 | 实际结果 |
 | --- | --- |
-| 源码配置 | 最新 SourceDebug / SourceRelease 均 0 errors、0 warnings。 |
-| 构建契约 | 完整套件、受影响复验、SDK 准入与实际 CLI 引用测试按名称合并后 325 个唯一用例、剩余失败 0。重叠测试不累加。 |
-| 工具进程 | 默认 JIT；30 轮 fixture、10 次真实身份检查、非法 nonce、崩溃、终止及真实十分钟截止通过。 |
-| 热 Native | 三次热 Build 的 compiler、binding generation、materialization、完整 Task 编译均为 0；哈希、exports 和原子发布门禁保留。 |
-| 失效与并发 | 同长度/mtime、损坏、取消、并发契约通过；两个实际 Editor Build 正常完成；小 Native 修改复用兼容 workspace。 |
-| Support Pack | Windows 与 Browser 第二次相同请求复用同一内容身份，无 Native、绑定或 Player 编译。显式 SDK 同时用于工具与实际命令。 |
-| Windows Player | CoreCLR、NativeAOT 重新发布；各两次 360 帧后台运行正常退出、stderr 为空、存储递增、DSP 时钟推进。 |
-| Browser Player | 解释执行/AOT 重新发布；各两次隔离 headless 运行，输入、持久化、帧推进、冻结/恢复通过，JS errors=0。 |
-| Editor | Debug 三次、Release 一次 120 帧后台运行正常退出；有效部署直接启动，无 Native、绑定或 Pack 准备。 |
-| 公开消费 | 当前公开契约的源码编译与 Plugin 导出通过；Wiki 不以外部产品解释引擎职责。 |
-| Wiki | 严格 CLI 校验使用实际生成的裁剪 references：45,592 个符号、190 段示例，错误 0；项目图 230/230，架构测试 122/122。 |
-| owner | PID/启动 ticks、首次写入前 claim、读取保护、角色区分及安全退休通过；活动、损坏或未知 owner 保留。 |
+| Windows PR/push | 源码、架构、完整测试、所选Pack和D3D11/sRGB三帧/正常退出均通过。 |
+| Windows测试/Wiki | push上传82份TRX：2055 passed、0 failed、18环境Skip；45598符号、190段实际编译示例、Wiki错误0。覆盖不证明每段语义文档充分。 |
+| macOS源码/共同套件 | Native Debug/Release、SourceDebug、架构与共同套件通过，包括两份桌面模板的SDK求值/发布协议及Wiki。 |
+| macOS独立阶段 | 已上传2068 passed、1 failed；inline Metal surface子进程90秒超时；其后隔离、Pack、renderer smoke未执行。 |
+| NuGet | dependency graph与自动依赖提交均success。 |
+| 项目图 | 230跟踪项目纳入Solution；架构测试123 passed；日常生产入口仍只有Editor/Build。 |
 
-NativeAOT 发现 owner 记录的反射式 JSON 读取违反裁剪要求，已改为显式读写，实际重新发布与运行通过。
+[PR Engine run38699587876](https://github.com/Wolfiora/InnoEngine/actions/runs/38699587876) · [push Engine run38699580441](https://github.com/Wolfiora/InnoEngine/actions/runs/38699580441) · [当前Checks](https://github.com/Wolfiora/InnoEngine/pull/11/checks)
 
-## 测量
+## 产品与测量的确切范围
 
-| 项目 | 实际结果 |
+| revision/范围 | 证据与限制 |
 | --- | --- |
-| Debug 热 Build | 119.047 / 146.297 / 138.343 秒，中位数 138.343 秒。 |
-| Native 串行 / 批次 | 38.225 / 11.976 秒；读取 14.730 / 5.228 GB；两者 compiler=0。 |
-| 小 Native 修改 | 179.015 秒、2 个工具进程、9,821 字节复制；原字节与 mtime 恢复后热命中。 |
-| Pack 第二次请求 | Windows 32.188 秒；Browser SDK 修正后 32.578 秒。 |
-| Debug 首帧 | 最后清理后独立启动 7.268 / 3.665 / 3.626 秒；每次 120 帧正常退出，无 Native/Task/Pack 准备。 |
-| Release 首帧 | 最后清理后独立启动 7.072 秒；120 帧正常退出。 |
+| aaeb57ca四条产品 | CoreCLR、NativeAOT、Web解释执行/AOT均发布并各运行两次；存储、回调、帧推进、暂停/恢复与退出通过。Web为隔离headless/SwiftShader；后续模板有独立回归，最终四条产品仍需在最终组合及新包复验。 |
+| c9efaa3c热Build | 465.297 / 575.609 / 777.781秒；Native compiler、binding generation、完整Task重编译、materialization均0；每次输入哈希5,227,563,904字节，仍有一个managed准备/检查进程。 |
+| 同次机器负载 | CPU79–100%、可用物理内存约0.67–0.83GB；不能与旧空闲结果作同条件比较，亦不能未经剖析把全部耗时归于外部。 |
+| 已准备Editor | 首帧约4.08 / 3.98 / 4.57秒，120帧退出，无完整Native/Binding/Pack准备；后台空项目不证明大项目加载或真实UI体验。 |
+| 前缀验证fixture | 32 contributors：371104→58920 bytes/frame，1.57957→0.3108766 ms/frame，最终Compile=1；中立CPU路径。 |
+| 本次录制fixture | 单pass 1000 Draw：串行约1.6KB/帧，并行约107.8KB；10000 Draw并行约1.15MB。统计全部线程且验证回放，无Native后端，不作为GPU结果。 |
 
-首帧包含部署校验、Host 与项目初始化，不是宿主查询时间。不同冷准备、SDK 切换及并行负载结果不混入热构建统计。
+原始证据：`artifacts/acceptance/local-boundary-refinement/20261014-implementation/`；本次补充：`artifacts/acceptance/framework-open-items/20261015-review/`。过程见[局部验收](../../records/architecture/acceptance/LOCAL_BOUNDARY_REFINEMENT_ACCEPTANCE.md)及[上轮验收](../../records/architecture/acceptance/BUILD_COST_TOOL_HOST_DISK_CLOSURE_ACCEPTANCE.md)，旧结果不覆盖当前结论。
 
-## 限制与提交判断
+## 当前不能宣称的完成项
 
-已执行的非 GUI 源码、契约和产品路径通过。完整哈希、项目求值仍有分钟级热 Build 成本，不能称引擎或构建绝无问题。提交说明应保留实际环境与未实测范围。
+- 新BGCS七组件生成、ABI/exports、AOT/回调及失败路径未专项验收；当前NuGet固定2.1.0，不能外推未来包。
+- macOS最终产品/后续隔离、特殊文件系统、多小时稳定性及真实GPU性能未闭合。
+- viewport拖动、焦点、DPI、视觉和听音没有实际复验。
+- 200GB空间目标未达到；历史拒绝目录保留，没有绕过删除，当前采样见问题台账。
 
-最后正式缓存清理实际增加 14,342,897,664 字节，清理后可用 65,568,768,000 字节；逻辑退休量不等同于卷增加量。恢复 **200,000,000,000 字节**可用空间尚未达成：37 个历史目录删除被自动审批拒绝，未绕过、未补写 owner，未清理用户、SDK 或 NuGet 缓存。
+当前kernel是已有Windows和主要功能证据的阶段成果；**master合并条件尚未满足**。暂停专项、旧revision成功和文档覆盖率不能代替剩余失败与未知项。平台not built及两入口说明见[启动说明](../platform/PRODUCT_STARTUP.md)。
 
-MacOSArm64 Native / Editor / Player 实机 **未实测**。GUI、完整焦点/DPI/视觉与声学按用户要求不执行；远端 CI 以实际远端记录为准。
+## 普通工程与 entry 简化（2026-10-17）
 
-平台 not built 表示未参加当前 Solution 配置的批量构建。两个入口与产品启动链见[启动说明](../platform/PRODUCT_STARTUP.md)。
-
-Web headless 启动保留第三方 WebGL 能力查询和 ScriptProcessorNode 弃用警告，JS errors=0；不据此宣称没有警告或视觉/听感通过。实际 CLI 创作闭包已补齐 Animation 引用，重新生成和全例编译通过。
-
-### 最新 CI 范围
-
-当前提交的远端状态以 [PR Checks](https://github.com/Wolfiora/InnoEngine/pull/11/checks) 为准；具体 revision、失败、修复和证据见[局部验收报告](../../records/architecture/acceptance/LOCAL_BOUNDARY_REFINEMENT_ACCEPTANCE.md)。不将上一轮通过结果套用于后续源码。目标限定 Wiki 验证只证明共同项目与所选产品编译；外国产品的未执行记录不计为通过，完整目标覆盖需要各自环境。
-
-BGCS 新包切换前暂停新增第三方库与 Binding 专项验收。主要引擎功能、稳定性、性能、架构和当前 CI 仍在验收范围；GUI、视觉与声学不执行。
+两个入口已切换为正常项目引用和直接调用。229 个项目全部纳入 Solution，当前宿主产品通过 entry 构建；旧 Bootstrap、启动 receipt 路径、CLI worker 和共享 .run 已删除。既有支持条件下的 Editor/Build 编译、15 个 Native 部署文件及仓库静态架构检查通过。普通首次 Native/BGCS 准备按约定暂缓；Rider 与 macOS 实机未验收。详见[本轮报告](../../records/architecture/acceptance/ENTRY_PROJECT_BUILD_SIMPLIFICATION_ACCEPTANCE.md)。

@@ -97,15 +97,15 @@ jobs:
             throw "Runner architecture '$actual' does not match required '${{ matrix.architecture }}'."
           }
 
-      - name: Build native editor and Player dependencies
+      - name: Build host Editor in Debug and Release
         shell: pwsh
         run: |
           dotnet build "entry/InnoEngine.Build/InnoEngine.Build.csproj" --disable-build-servers -m:1 -nr:false
           if ($LASTEXITCODE -ne 0) { throw "Build entry preparation failed." }
-          dotnet run --project "entry/InnoEngine.Build/InnoEngine.Build.csproj" --no-build -- --configuration Debug
-          if ($LASTEXITCODE -ne 0) { throw "Debug host rebuild failed." }
-          dotnet run --project "entry/InnoEngine.Build/InnoEngine.Build.csproj" --no-build -- --configuration Release
-          if ($LASTEXITCODE -ne 0) { throw "Release host rebuild failed." }
+          dotnet run --project "entry/InnoEngine.Build/InnoEngine.Build.csproj" --no-build -- editor --configuration Debug
+          if ($LASTEXITCODE -ne 0) { throw "Debug host Editor build failed." }
+          dotnet run --project "entry/InnoEngine.Build/InnoEngine.Build.csproj" --no-build -- editor --configuration Release
+          if ($LASTEXITCODE -ne 0) { throw "Release host Editor build failed." }
 
       - name: Build managed solution
         shell: pwsh

@@ -102,3 +102,7 @@ BGCS/Cpp2C target profile 必须显式声明 Native owner 内的输出目录，�
 ### 明确目标的 Wiki 验证
 
 `verify --wiki --dotnet <SDK> --wiki-target <targetId>` 对共同项目与所选产品执行真实 SDK/API/示例编译，同时保持全仓项目页面、导航、链接和内容边界检查。其他产品目标不会借用宿主 DLL；它们的示例清单标记 `foreign-product` 和 `notEvaluatedReason`，API 编译在日志中明确记录未执行。省略 `--wiki-target` 时仍要求全部产品的真实引用闭包，不自动忽略缺失引用。CI 的 WindowsX64 与 MacOSArm64 job 分别覆盖各自产品；BrowserWasm32 产品编译须单独具备对应环境，目标限定成功不能称为全目标编译通过。
+
+## 开发入口项目边界
+
+项目归属检查要求 entry 仅包含两个普通可执行项目：Editor 以宿主条件项目引用选择真实产品，Build 直接引用共享 CLI。共同生产层不得反向依赖 entry；backend、平台基础模块与 integration 的原有边界继续检查。

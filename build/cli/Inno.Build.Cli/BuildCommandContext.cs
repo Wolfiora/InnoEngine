@@ -44,12 +44,12 @@ internal sealed class BuildCommandContext
         var native = new NativeBuildContext(root, configuration.ToLowerInvariant());
         await distribution.ResolveNativeToolchain(target.value).ResolveAsync(native, composition.host,
             target.value, cancellationToken).ConfigureAwait(false);
-        return Path.GetFullPath(project, root);
+        return Path.Combine(root, "entry", "InnoEngine.Editor", "InnoEngine.Editor.csproj");
     }
 
     internal string[] ProductArguments(string project) =>
     [
-        project, "--configuration", configuration, "-p:InnoNativeTarget=" + target.value,
-        "-p:InnoToolTarget=" + toolsTarget.value, "--disable-build-servers", "-m:1", "-nodeReuse:false"
+        project, "--configuration", configuration,
+        "--disable-build-servers", "-m:1", "-nodeReuse:false"
     ];
 }

@@ -1,7 +1,5 @@
 # Inno.Build.Cli
 
-Build 首次准备的 SDK 输出登记为进程拥有的 bootstrap workspace。正在检查或加载时不能退休；进程退出后由同一缓存 owner 回收。即时清理遇到仍被映射的 DLL 时报告延期，不把临时输出变成长久无主缓存。
-
 [Build 索引](README.md) · [Wiki 首页](../README.md) · [开发 Build 入口](../entry/InnoEngine.Build.md)
 
 ## 职责与边界
@@ -23,13 +21,14 @@ dotnet run --project entry/InnoEngine.Build/InnoEngine.Build.csproj -- support-p
 dotnet run --project entry/InnoEngine.Build/InnoEngine.Build.csproj -- verify .
 ```
 
-开发入口补齐宿主、SDK 和 checkout 参数。直接嵌入 `BuildApplication` 时，调用者需要提供相应命令所要求的明确上下文；空参数只显示帮助。
+开发入口补齐宿主与默认配置；SDK 和 checkout 由命令的正常上下文解析。直接嵌入 `BuildApplication` 时，调用者需要提供相应命令所要求的明确上下文；空参数只显示帮助。
 
 项目命令支持 `--dotnet <absolute-sdk-host>`，内容工具、Pack 准备及最终发布共用该冻结 SDK 选择。未声明的参数与缺值立即失败；不能靠改变产品目标来选择工具宿主。SDK 与 workload 的安装是开发环境准备，产物缓存清理不删除 SDK。
 
 | 命令 | 行为 |
 | --- | --- |
-| `editor` | 增量构建选定 Editor；可用布尔 `--clean` 先清理所选产品。 |
+| `support` | 准备所选目标的 Editor 或 Player 支持产物，不构建整个 Editor 托管产品。 |
+| `editor` | 增量构建 Editor entry 及其依赖；可用布尔 `--clean` 先清理所选产品。 |
 | `clean --scope product` | 预检 SDK 和目标，清理产品拥有的工作状态；`--dry-run` 预览同一计划。 |
 | `bindings` | 从发行声明的产品组件集合准备统一绑定。 |
 | `support-pack` | 独立准备并校验目标 Pack，不包含游戏内容。 |
@@ -49,7 +48,7 @@ Editor 配置独立于游戏发布配置。Support Pack 保持 Release 准备语
 | `BuildApplication` | 提供一次构建命令的应用边界。 | 不创建应用窗口，不是 Runtime 服务。 | 不向脚本导出。 |
 | `Run(string[] arguments, CancellationToken cancellationToken) : Task<int>` | 执行命令并汇总退出结果。0 为成功，1 为命令或执行失败，2 为取消。 | 借用令牌；所属进程、workspace 和读取 leases 在结束前释放。Ctrl+C 订阅由外部入口负责。 | null 数组抛 `ArgumentNullException`。取消和失败不提交半成品。 |
 
-工具输入检查与不可变发布属于 [Toolchains 的 ManagedToolRuntime](Inno.Build.Toolchains.md)。CLI 只拥有构建命令；Bootstrap 通过独立 worker 消费中立准备机制。cache clean 通过轻量维护入口读取实际登记，不需要准备本项目的完整创作闭包。
+CLI 由 entry 正常项目引用并直接调用。其支持准备复用标准 Native plan，工具生命周期由 SDK 工程与具体命令管理；没有额外的 CLI worker 或启动 publication。
 
 ## 初始化与所有权
 
@@ -59,7 +58,7 @@ Editor 配置独立于游戏发布配置。Support Pack 保持 Release 准备语
 
 Native 构建结果由 `ProductNativeBuildResult` 唯一拥有；部署完成后释放所有产物 leases。Shader 命令也必须在工具进程结束后才释放其工具产物。
 
-项目命令借用所选离线工具的实际 executable/include 路径，保留 Native 结果至整个内容编译结束。工具不复制进启动入口或不可变 CLI publication；内容 compiler 工厂接收同一 `ToolRunner`。运行于哪个 Debug/Release 配置不会重新决定工具文件名。
+项目命令借用所选离线工具的实际 executable/include 路径，保留 Native 结果至整个内容编译结束。按命令取得的工具不会形成第二份 CLI 启动 publication；内容 compiler 工厂接收同一 `ToolRunner`。运行于哪个 Debug/Release 配置不会重新决定工具文件名。
 
 ## 失败、取消与缓存
 

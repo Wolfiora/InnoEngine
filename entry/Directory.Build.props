@@ -1,11 +1,10 @@
 <Project>
   <Import Project="../Directory.Build.props" />
+
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
     <ImplicitUsings>disable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <!-- Entry builds share neutral output paths; nested references must not write them concurrently. -->
-    <BuildInParallel>false</BuildInParallel>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <WarningsAsErrors>$(WarningsAsErrors);CS1570;CS1572;CS1573;CS1591</WarningsAsErrors>
   </PropertyGroup>

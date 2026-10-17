@@ -10,13 +10,12 @@
 
 测试程序集按顺序调度用例，避免 SDK fixture 同时写共享 checkout 的 bin/obj。锁、取消、并发 publication 和两次构建的竞争仍由各用例显式创建，顺序调度不减少这些并发契约。Engine CI 使用独立的 .NET 9 安装目录，避免临时项目在 runner 上隐式选到另一主版本 SDK；测试及 Wiki 失败证据始终上传。
 
-`ProcessOwnershipTests` 检查启动 ticks、严格 claim、登记/退休协调、首次写入、损坏子进程记录与空闲 workspace 的预算语义。`DevelopmentBuildWorkerTests` 通过实际进程入口执行三十轮默认 JIT 生命周期、十次真实工具检查、非法 nonce、崩溃、强制终止和实际十分钟截止；失败后保留上次完整 publication，不使用私有反射或测试入口。`GeneratorRestoreScopeTests` 用真实 SDK 验证共享生成器的 lock 和 obj 不随产品目标改变。
 
 `ProductNativeCacheLookupTests` 验证完整热命中批次、损坏回退及并发；`NativeVerificationPhaseTests` 验证逻辑输入保留、物理读取去重和阶段隔离。`ProductNativeCostTests` 只有显式设置 `INNO_ACCEPTANCE_NATIVE_COST` 时才执行真实产品串行/批次对照，普通测试运行不能当作该性能验收通过。
 
 `ProductNativeCostTests.RealPresentationBuildUsesDeclaredCMakeAndFrozenWindowSource` 仅在显式设置 `INNO_ACCEPTANCE_IMGUI_BUILD` 时执行 WindowsX64 ImGui/ImGuizmo 实际构建。普通套件不算这项真实编译通过；macOS 对应的冷构建由 Engine CI 的真实 Editor 准备路径验证。
 
-`SolutionBootstrapOwnershipTests` 使用两个真实 MSBuild fixture 项目验证一次 Solution 操作共用 bootstrap owner，下一次操作产生新 owner。`BuildToolRuntimePublicationTests` 使用真实 SDK 部署验证不可变 publication、相同内容复用、原编译输出可写及预取消。`BgfxNativeProfileTests` 验证工具生产者复用源码 owner，却不请求 Runtime 绑定；发行测试验证 Editor 与独立工具使用同一 Release 步骤。
+`SolutionBootstrapOwnershipTests` 使用两个真实 MSBuild fixture 项目验证一次 Solution 操作共用 bootstrap owner，下一次操作产生新 owner。`BgfxNativeProfileTests` 验证工具生产者复用源码 owner，却不请求 Runtime 绑定；发行测试验证 Editor 与独立工具使用同一 Release 步骤。
 
 绑定增量回归使用真实 SDK 检查：新的绑定选择文件不会使中立项目重编译；相同选择保持 import 时间戳；产品选择在 Build/Publish 后仍可核对。生成回归同时检查未选目标映射不失效、选中配置变化仍产生独立 generation。
 
@@ -28,7 +27,6 @@
 
 架构命令路由通过公开 `BuildApplication.Run` 验证；负向源码必须返回失败，不得启动 Task runtime 准备或创建构建产物。规则正反例由架构测试项目直接验证。
 
-`PreparedEditorStartupTests` 在独立进程调用公开 `DevelopmentEntry.RunEditor`：真实准备记录包含精确文件哈希，fixture 应用检查两份读取保护在整个运行期间生效，并分别验证正常退出与异常退出后的释放。同长度、同时间戳的内容篡改仍会阻止启动。该测试不创建真实窗口，不代表 SDL/BGFX 或 GUI 已验收。
 
 Wiki 验收 Host 导入实际产品使用的共享 `EditorProduct.props`，通过公开 Catalog 与 ScriptCompiler 生成逻辑脚本引用。专项测试检查 Settings、Shaders 等已声明的产品扩展确实进入 `InnoEditor.*` 契约，不以手写类型白名单或实现侧 namespace 补齐失败示例。该组合不启动平台窗口或 Native 设备。
 
@@ -36,7 +34,6 @@ Wiki 验收 Host 导入实际产品使用的共享 `EditorProduct.props`，通�
 
 验证以下项目的公开行为与组合契约。该程序集属于测试闭包，不进入 Editor 或 Player 发行；测试类、fixture 和断言辅助类型不属于稳定产品 API。
 
-- [Inno.Entry.Bootstrap](../entry/Inno.Entry.Bootstrap.md)
 - [Inno.Build.Cli](../build/Inno.Build.Cli.md)
 - [Inno.Build.Bindings](../build/Inno.Build.Bindings.md)
 - [Inno.Build.Toolchains.Bgfx.Tools](../backends/Bgfx/Inno.Build.Toolchains.Bgfx.Tools.md)
@@ -167,5 +164,3 @@ dotnet test tests/build/Inno.Build.Tests/Inno.Build.Tests.csproj --configuration
 `NuGetBindingDependencyTests` 验证固定 Runtime 包和 Restore 内容身份；`SupportPackClosureValidationTests` 验证任意后端组、精确静态归档及 Browser 对象 ABI。平台 fixture 单独验证 PE/Mach-O 的目标拒绝，不冒充 foreign 产品运行证据。
 
 ## 轻量维护闭包
-
-BuildCacheOwnerCatalogTests 通过正式 publisher 登记验证目录角色、损坏拒绝、预览/退休一致性及未登记目录保留。开发工具 publication 测试消费中立 ManagedToolRuntime；CLI 专用准备 API 已删除。

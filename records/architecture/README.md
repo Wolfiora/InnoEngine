@@ -12,3 +12,6 @@
 记录区保留当时事实，不把后续目录变化回写成历史已完成行为。
 
 - [五项局部边界与 Kernel CI 收口](acceptance/LOCAL_BOUNDARY_REFINEMENT_ACCEPTANCE.md)：当前改动、新验收与提交身份。
+- [当前真实问题与待确认项](acceptance/CURRENT_ENGINE_OPEN_ITEMS_2026_10_15.md)：确认问题、条件性风险、BGCS/平台/GUI延期矩阵及新增并行录制测量。
+
+- [普通工程构建与 entry 启动简化验收（2026-10-17）](acceptance/ENTRY_PROJECT_BUILD_SIMPLIFICATION_ACCEPTANCE.md)：项目配置、直接启动、既有支持条件下的编译及独立的未验收项目。

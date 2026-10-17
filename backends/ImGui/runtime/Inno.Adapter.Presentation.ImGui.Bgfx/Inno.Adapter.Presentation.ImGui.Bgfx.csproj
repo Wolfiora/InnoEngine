@@ -7,15 +7,18 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <WarningsAsErrors>$(WarningsAsErrors);CS1572;CS1573;CS1591</WarningsAsErrors>
   </PropertyGroup>
+
   <ItemGroup>
     <ProjectReference Include="../../native/Inno.Native.ImGui/Inno.Native.ImGui.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../../Bgfx/runtime/Inno.Adapter.Rendering.Bgfx/Inno.Adapter.Rendering.Bgfx.csproj" PrivateAssets="compile" />
   </ItemGroup>
+
   <ItemGroup>
     <ProjectReference Include="../../../../src/adapters/presentation/Inno.Adapter.Presentation/Inno.Adapter.Presentation.csproj" />
     <ProjectReference Include="../Inno.Adapter.Presentation.ImGui.Sdl3/Inno.Adapter.Presentation.ImGui.Sdl3.csproj" />
     <ProjectReference Include="../../../../src/services/rendering/Inno.Rendering/Inno.Rendering.csproj" />
   </ItemGroup>
+
   <Target Name="CompileImGuiShaderGraphs" DependsOnTargets="PrepareInnoBuildTaskHost" Condition="'$(InnoNativeTarget)' != '' and '$(DesignTimeBuild)' != 'true'">
     <PropertyGroup>
       <_InnoShaderIntermediateRoot>$([System.IO.Path]::GetFullPath('$(IntermediateOutputPath)', '$(MSBuildProjectDirectory)'))</_InnoShaderIntermediateRoot>
@@ -31,6 +34,7 @@
       OutputFile="$(_InnoShaderIntermediateRoot)/Shaders/%(_ImGuiShaderApi.Identity)/Outputs/%(_ImGuiShaderApi.Identity).bin"
       ToolTarget="$(InnoToolTarget)" />
   </Target>
+
   <Target Name="IncludeImGuiShaderArtifacts" Condition="'$(InnoNativeTarget)' != '' and '$(DesignTimeBuild)' != 'true'" BeforeTargets="AssignTargetPaths" DependsOnTargets="CompileImGuiShaderGraphs">
     <ItemGroup>
       <EmbeddedResource Include="@(_ImGuiShaderApi-&gt;'$(IntermediateOutputPath)Shaders/%(Identity)/Outputs/%(Identity).bin')">
@@ -38,12 +42,15 @@
       </EmbeddedResource>
     </ItemGroup>
   </Target>
+
   <ItemGroup>
     <ProjectReference Include="../../../../src/foundation/extensibility/Inno.Extensibility.Catalogs/Inno.Extensibility.Catalogs.csproj" />
   </ItemGroup>
+
   <ItemGroup>
     <ProjectReference Include="../../../Sdl3/runtime/Inno.Adapter.Platform.Sdl3/Inno.Adapter.Platform.Sdl3.csproj" />
   </ItemGroup>
+
   <ItemGroup>
     <_ImGuiShaderApi Include="$(InnoImGuiShaderApis)" Condition="'$(InnoImGuiShaderApis)' != ''" />
   </ItemGroup>

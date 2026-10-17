@@ -1,7 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.IO;
-using Inno.Build.Toolchains;
 using System.Threading;
 using System.Threading.Tasks;
 using Inno.Tooling.Architecture;
@@ -35,7 +32,10 @@ public static partial class BuildApplication
         ArgumentNullException.ThrowIfNull(arguments);
         if (arguments.Length == 0 || arguments[0] is "help" or "--help" or "-h")
         {
-            Console.WriteLine("InnoEngine.Build <editor|clean|bindings|support-pack|game|plugin|scripts|import-sample|verify|verify-native|shader> [options]");
+            Console.WriteLine("InnoEngine.Build <support|editor|clean|bindings|support-pack|game|plugin|scripts|import-sample|verify|verify-native|shader> [options]");
+            Console.WriteLine("Default entry command: support --product editor (current SDK host and entry configuration).");
+            Console.WriteLine("support --product editor|player --target TARGET: prepare reusable target support without building the Editor's managed source.");
+            Console.WriteLine("editor [--clean]: build the complete Editor entry and its dependencies.");
             return 0;
         }
         try
@@ -54,6 +54,7 @@ public static partial class BuildApplication
                     return ArchitectureValidator.Execute(options, cancellationToken);
                 case "verify-native":
                     return await NativeBindingsVerification.RunAsync(options, cancellationToken);
+                case "support":
                 case "editor":
                 case "clean":
                 case "bindings":
@@ -62,6 +63,7 @@ public static partial class BuildApplication
                     BuildCommandLine parsed = BuildCommandLine.Parse(options);
                     string[] specific = command switch
                     {
+                        "support" => ["product"],
                         "editor" => ["clean"],
                         "clean" => ["scope", "dry-run"],
                         "bindings" => ["product"],
@@ -74,13 +76,14 @@ public static partial class BuildApplication
                     var context = new BuildCommandContext(parsed);
                     switch (command)
                     {
+                        case "support": await SupportBuildCommand.RunAsync(context, parsed, cancellationToken); break;
                         case "editor": await EditorBuildCommand.RunAsync(context, parsed, cancellationToken); break;
                         case "clean": await CleanCommand.RunAsync(context, parsed, cancellationToken); break;
                         case "bindings": await BindingCommand.RunAsync(context, parsed, cancellationToken); break;
                         case "support-pack": await SupportPackCommand.RunAsync(context, parsed, cancellationToken); break;
                         case "shader": await ShaderCommand.RunAsync(context, parsed, cancellationToken); break;
                     }
-                    if (command is "editor" or "support-pack" or "bindings" or "shader")
+                    if (command is "support" or "editor" or "support-pack" or "bindings" or "shader")
                     {
                         try
                         {

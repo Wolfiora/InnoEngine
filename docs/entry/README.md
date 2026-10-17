@@ -1,12 +1,12 @@
 # 开发入口
 
-[Wiki 首页](../README.md) · [产品启动](../platform/PRODUCT_STARTUP.md) · [架构](../architecture/ENGINE_ARCHITECTURE_OVERVIEW.md)
+[Wiki 首页](../README.md) · [产品启动](../platform/PRODUCT_STARTUP.md) · [启动架构](../architecture/DEVELOPMENT_ENTRY_ARCHITECTURE.md)
 
 | 项目 | 职责 |
 | --- | --- |
-| [InnoEngine.Editor](InnoEngine.Editor.md) | 选择当前宿主的 Editor；未指定项目时打开目录选择窗口。 |
-| [InnoEngine.Build](InnoEngine.Build.md) | 当前宿主增量构建，以及显式清理、Support Pack 和游戏发布命令。 |
-| [Inno.Entry.Bootstrap](Inno.Entry.Bootstrap.md) | 共享开发启动机制，不进入游戏或领域运行闭包。 |
+| [InnoEngine.Editor](InnoEngine.Editor.md) | 普通可执行项目；构建当前宿主 Editor 依赖并在主线程启动。 |
+| [InnoEngine.Build](InnoEngine.Build.md) | 普通可执行项目；默认准备当前宿主支持产物，提供显式构建和发布命令。 |
 
-`entry` 是最外层开发便利边界。其 OS/CPU 判断选择一个明确目标，再调用已有构建和平台产品机制。
-共享领域、backend、Editor Hosting 和 Player Runtime 不依赖它。
+安装仓库要求的 .NET SDK 与当前平台工具链，递归 clone 后，用 Rider 或 Visual Studio 打开 Solution，选择 InnoEngine.Editor 运行即可。不需要共享 .run、外部脚本或先运行 Build。
+
+两个入口使用真实 ProjectReference。宿主选择发生在项目求值阶段，普通 C# 由 SDK 增量构建；Native 支持由现有产品构建机制准备。其他生产层不引用 entry。

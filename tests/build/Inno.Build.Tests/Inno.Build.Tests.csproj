@@ -6,14 +6,15 @@
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
   </PropertyGroup>
+
   <!-- Wiki script references use the same shared feature closure as real Editor products. -->
   <Import Project="../../../src/composition/editor/EditorProduct.props" />
+
   <ItemGroup>
     <ProjectReference Include="../../../backends/Interop/native/Inno.Native.LibraryLoading/Inno.Native.LibraryLoading.csproj" PrivateAssets="compile" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="../../../entry/Inno.Entry.Bootstrap/Inno.Entry.Bootstrap.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../../backends/Sdl3/build/Inno.Build.Toolchains.Sdl3/Inno.Build.Toolchains.Sdl3.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../../backends/MiniAudio/build/Inno.Build.Toolchains.MiniAudio/Inno.Build.Toolchains.MiniAudio.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../../backends/Text/build/Inno.Build.Toolchains.Text/Inno.Build.Toolchains.Text.csproj" PrivateAssets="compile" />
@@ -52,9 +53,11 @@
     <ProjectReference Include="../../../src/content/scene/Inno.Scene.Assets/Inno.Scene.Assets.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../../src/runtime/scripting/Inno.Scripting.Compiler/Inno.Scripting.Compiler.csproj" PrivateAssets="compile" />
   </ItemGroup>
+
   <ItemGroup>
     <ProjectReference Include="../../../build/support/Inno.Build.SupportPacks.Core/Inno.Build.SupportPacks.Core.csproj" />
   </ItemGroup>
+
   <ItemGroup>
     <PackageReference Include="BGCS.Runtime" Version="[$(InnoBgcsPackageVersion)]" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
@@ -67,12 +70,15 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
   </ItemGroup>
+
   <ItemGroup>
     <ProjectReference Include="../../../backends/DotNet/runtime/Inno.Adapter.Modules.DotNet/Inno.Adapter.Modules.DotNet.csproj" PrivateAssets="compile" />
   </ItemGroup>
+
   <ItemGroup>
     <ProjectReference Include="../../../backends/DotNet/runtime/Inno.Adapter.Serialization.DotNet/Inno.Adapter.Serialization.DotNet.csproj" PrivateAssets="compile" />
   </ItemGroup>
+
   <ItemGroup>
     <ProjectReference Include="../../../build/distributions/Inno.Build.Distribution.Standard/Inno.Build.Distribution.Standard.csproj" PrivateAssets="compile" />
   </ItemGroup>

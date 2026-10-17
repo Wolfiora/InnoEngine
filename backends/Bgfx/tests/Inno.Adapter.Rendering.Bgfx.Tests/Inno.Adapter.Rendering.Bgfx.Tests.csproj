@@ -10,6 +10,7 @@
     <StartupObject>Inno.Adapter.Rendering.Bgfx.Tests.NativeWindowTestHost</StartupObject>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
+
   <ItemGroup>
     <ProjectReference Include="../../../../platforms/MacOSArm64/integrations/Inno.Integration.MacOSArm64.Sdl3/Inno.Integration.MacOSArm64.Sdl3.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../../Interop/native/Inno.Native.LibraryLoading/Inno.Native.LibraryLoading.csproj" PrivateAssets="compile" />
@@ -23,10 +24,14 @@
     <ProjectReference Include="../../runtime/Inno.Adapter.Rendering.Bgfx/Inno.Adapter.Rendering.Bgfx.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../../ImGui/runtime/Inno.Adapter.Presentation.ImGui.Bgfx/Inno.Adapter.Presentation.ImGui.Bgfx.csproj" PrivateAssets="compile" />
   </ItemGroup>
+
   <ItemGroup>
-    <None Include="../../../ImGui/runtime/Inno.Adapter.Presentation.ImGui.Bgfx/Shaders/Fragment.ishadersource"
-          Link="ShaderFixtures/ImGuiFragment.ishadersource" CopyToOutputDirectory="PreserveNewest" />
+    <None
+      Include="../../../ImGui/runtime/Inno.Adapter.Presentation.ImGui.Bgfx/Shaders/Fragment.ishadersource"
+      Link="ShaderFixtures/ImGuiFragment.ishadersource"
+      CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
+
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
     <PackageReference Include="xunit" Version="2.6.6" />
@@ -35,9 +40,11 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
   </ItemGroup>
+
   <ItemGroup>
     <ProjectReference Include="../../../DotNet/runtime/Inno.Adapter.Modules.DotNet/Inno.Adapter.Modules.DotNet.csproj" PrivateAssets="compile" />
   </ItemGroup>
+
   <ItemGroup>
     <ProjectReference Include="../../../DotNet/runtime/Inno.Adapter.Serialization.DotNet/Inno.Adapter.Serialization.DotNet.csproj" PrivateAssets="compile" />
   </ItemGroup>

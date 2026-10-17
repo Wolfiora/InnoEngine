@@ -1,83 +1,45 @@
-# 开发入口与产品准备
+# 开发入口与普通工程构建
 
 [架构索引](README.md) · [Wiki 首页](../README.md) · [入口项目](../entry/README.md)
 
-## 两个日常入口
+## 日常流程
 
-| 入口 | 默认行为 |
-| --- | --- |
-| `InnoEngine.Editor` | 验证已准备的当前宿主 Editor 并启动；缺失或损坏时准备产品。 |
-| `InnoEngine.Build` | 增量构建当前宿主 Editor；`--clean` 才先清理所选产品工作状态。 |
-
-Windows x64 与 macOS ARM64 路由到已实现的 Editor 组合。未实现宿主明确报告不支持，不选择其他平台产品。独立发布命令使用明确目标，不用宿主覆盖游戏目标。
-
-## 文件与依赖
+安装必要 SDK 与当前平台工具链，递归 clone，打开 InnoEngine.sln，选择 InnoEngine.Editor 运行。IDE 使用正常项目图构建，随后运行 Program；无游戏目录参数时打开项目选择窗口。
 
 ```text
-entry/
-├─ Directory.Build.props
-├─ Directory.Build.targets
-├─ InnoEngine.Editor/
-│  ├─ InnoEngine.Editor.csproj
-│  └─ Program.cs
-├─ InnoEngine.Build/
-│  ├─ InnoEngine.Build.csproj
-│  └─ Program.cs
-└─ Inno.Entry.Bootstrap/
-   ├─ DevelopmentEntry.cs
-   ├─ DevelopmentBuildRequest.cs
-   ├─ DevelopmentHost.cs
-   ├─ DevelopmentDependencies.cs
-   ├─ DevelopmentBuildTool.cs
-   ├─ DevelopmentProduct.cs
-   ├─ DevelopmentApplication.cs
-   └─ DevelopmentProcess.cs
+InnoEngine.Editor (Exe)
+└─ 当前 SDK 宿主的 Editor 产品 (Library)
+   ├─ 共同 Editor、Runtime、Content 与 Services
+   ├─ 所选 backend 与运行 integration
+   └─ 统一 Native 支持准备与显式部署
+
+InnoEngine.Build (Exe)
+└─ Inno.Build.Cli (Library)
+   └─ 标准发行组合与中立构建机制
 ```
 
-两个入口只引用 Bootstrap。Bootstrap 使用 BCL 与 Core.IO，不静态引用完整 Editor、Build 或 Native 生成工具图。其他生产项目不引用 entry。
+## 宿主选择与项目图
 
-平台 Editor 和 CLI 保持库，提供公开应用入口。Bootstrap 加载选定的已构建应用；平台产品负责实际后端与 integration 组合。Player 源项目是发布输入，最终 Exe 由平台发布模板生成。
+entry 的 MSBuild 属性读取 SDK 的实际宿主 RID，明确映射 win-x64 到 windows-x64、osx-arm64 到 macos-arm64。条件 ProjectReference 与编译常量选择相同产品；其他宿主明确拒绝。不通过目录名拼接 RID，不向所有共同项目注入宿主 RID。
 
-## Editor 启动
+当前宿主 Editor 通过 entry 依赖构建，平台产品不重复作为 Solution 顶级构建入口。entry 只对自己的依赖解除 Solution 未勾选项目的引用屏蔽；其他平台产品不会因此被隐式选中。
 
-```text
-解析宿主和配置
-→ 取得 checkout 读取保护
-→ 检查产品 receipt 与实际部署清单
-→ 有效：取得产品读取保护并再次验证
-→ 无效：转为独占准备，完成后记录部署清单
-→ 在原主线程启动平台 Editor
-→ 应用退出后释放产品和 checkout 保护
-```
+默认 Debug/Release 正常选择共同源码、工具和适用测试项目。SourceDebug/SourceRelease 保留源码批量验证用途，不构建 Editor entry。项目未改变时由 SDK 增量跳过；没有选入配置与已经最新是不同状态。
 
-产品记录位于 `artifacts/products/editor/<target>/<configuration>/ready.json`。它保存实际部署文件及哈希；只有标记文件而没有匹配部署不能启动。验证不扫描整个第三方源码闭包，也不运行 Native compiler 或生成器。
+标准构建发行组合保留三个发布目标的可移植规则。编译 macOS 打包规则只产生 C# 类库，不解析 macOS Native SDK；真正的 SDK 与宿主能力在请求该目标构建时验证。
 
-产品程序集仍位于平台项目的 SDK 输出目录。ready.json 是启动入口的部署记录，不是 Native 缓存有效性的权威依据。
+## Native 与运行输出
 
-修改引擎源码后运行 Build。启动入口使用已准备部署，不自动重新构建全部源码。未传游戏 Project 路径时，由平台 Editor 打开目录选择窗口；选择取消可以正常退出。
+平台产品是支持准备的唯一 owner。普通 Build 复用统一 Native plan、绑定选择、完整性检查和原子发布；Design-time build 不执行 Native。产品将完整 native 目录作为传递内容输出，SDK 部署至 entry，加载器继续消费显式部署索引。
 
-## Build 与清理
+Program 直接调用平台 Run，不执行源码扫描、子 MSBuild、工具 worker 或预构建产品发现。Editor 主线程、取消和产品读取 owner 保持明确；SDK 与工具权限问题在构建或显式命令中报告。
 
-默认增量构建。Editor 配置跟随开发入口的 Debug/Release，允许显式覆盖；Support Pack 保持自己的 Release 准备语义，不随 Editor 默认构建附带发布。
+## Build 命令与清理
 
-产品清理先验证目标与 SDK，再按实际 SDK 输出位置建立清理计划，取得产品独占保护后执行。它使对应 receipt 失效，不清除其他产品、Native、Binding 或 Support Pack 缓存。活动 Editor 持有产品读取保护，清理不能直接移除其文件。
+默认 Build 准备宿主 Editor 支持。support 显式选择产品与目标；editor 执行完整 entry 工程构建。产品 clean 只清理选定 entry 与平台产品的输出、中间目录，先取得对应产品独占 lease。缓存退休继续由现有 owner、依赖与读取保护机制负责。
 
-完整命令和当前限制见 [InnoEngine.Build](../entry/InnoEngine.Build.md)。Native、绑定、Pack 和 workspace 发布者记录明确的 ownership；缓存清理只管理登记产物，完整产品与性能验收结果单独列出。
+## 扩展与验证
 
-## Build 工具准备复用
+新增 Editor 宿主时先实现真实平台产品，再增加 entry 的项目引用与编译选择；共同领域、backend 和共享 Hosting 不增加宿主判断。新增发布目标仍通过标准发行组合注册。
 
-Build 工具记录位于 `artifacts/entry/build/<tool>/<configuration>/ready.json`。工具定义只由开发入口显式选择：cache clean 使用 maintenance，其余构建命令使用 cli。有效部署在读取保护下验证实际文件与输入身份；检查和发布在普通 worker 进程中调用中立 ManagedToolRuntime，进程退出完成隔离。没有 collectible 检查 ALC 或旧 receipt fallback。首次发布显式 Restore 源码根图；只构建私有 bootstrap 并不能提供该源码图的 assets。
-
-## IDE 配置
-
-默认 Debug/Release Solution 配置构建两个入口及轻量依赖。`SourceDebug`/`SourceRelease` 用于共享源码和测试闭包。平台产品通过明确产品构建执行，Browser 发布使用独立目标和 workload。
-
-IDE 的 `not built` 表示该项目未被本次 Solution 配置选中，不表示它失效或缺少用途。源码中的平台产品库、测试探针和工具库不应作为日常启动项；两个共享 .run 配置对应两个入口。
-
-## 失败、退出与扩展
-
-缺 SDK、未实现宿主或无效参数在产品清理前报告。取消等待和子进程执行时，当前 operation 排空自己创建的任务；锁文件持久保留，不能通过删除锁文件解锁。
-
-首次 clone 需要 Git、仓库声明的 .NET SDK 与对应 Native SDK；缺失的固定 revision 子模块由准备流程初始化，入口不安装系统 SDK。新宿主只有在产品实现可用后才加入 `DevelopmentHost`。新增 backend 或游戏发布目标在发行与平台组合注册，不修改共同入口业务。
-
-本次实际验证范围见[当前验收](CURRENT_ACCEPTANCE.md)。
+本轮只检查项目图、入口编译、部署与帮助命令，不执行 GUI、完整产品矩阵或第三方绑定专项验收。独立引擎 Publish 与安装布局另行处理。

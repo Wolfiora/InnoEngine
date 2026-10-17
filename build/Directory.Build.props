@@ -1,11 +1,14 @@
 <Project>
   <Import Project="../Directory.Build.props" />
+
   <PropertyGroup Condition="'$(InnoAssemblyDomain)' == ''">
     <InnoAssemblyDomain>InnoInternal</InnoAssemblyDomain>
   </PropertyGroup>
+
   <PropertyGroup Condition="'$(InnoAssemblyScope)' == ''">
     <InnoAssemblyScope>Runtime</InnoAssemblyScope>
   </PropertyGroup>
+
   <PropertyGroup>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <WarningsAsErrors>$(WarningsAsErrors);CS1570;CS1572;CS1573;CS1591</WarningsAsErrors>

@@ -15,23 +15,27 @@
   </ItemGroup>
 
   <Target Name="CopyCacheProbe" AfterTargets="Build">
-    <MSBuild Projects="../../../../tests/content/fixtures/Inno.Content.CacheProbe/Inno.Content.CacheProbe.csproj"
-             Targets="Restore;Build"
-             Properties="InnoContentProbeExecutable=true;Configuration=$(Configuration)"
-             BuildInParallel="false" />
-    <MSBuild Projects="../../../../tests/content/fixtures/Inno.Content.CacheProbe/Inno.Content.CacheProbe.csproj"
-             Targets="GetTargetPath"
-             Properties="InnoContentProbeExecutable=true;Configuration=$(Configuration)"
-             BuildInParallel="false">
+    <MSBuild
+      Projects="../../../../tests/content/fixtures/Inno.Content.CacheProbe/Inno.Content.CacheProbe.csproj"
+      Targets="Restore;Build"
+      Properties="InnoContentProbeExecutable=true;Configuration=$(Configuration)"
+      BuildInParallel="false" />
+    <MSBuild
+      Projects="../../../../tests/content/fixtures/Inno.Content.CacheProbe/Inno.Content.CacheProbe.csproj"
+      Targets="GetTargetPath"
+      Properties="InnoContentProbeExecutable=true;Configuration=$(Configuration)"
+      BuildInParallel="false">
       <Output TaskParameter="TargetOutputs" ItemName="_CacheProbeAssembly" />
     </MSBuild>
-    <Error Condition="'@(_CacheProbeAssembly->Count())' != '1'"
-           Text="The content cache probe must provide exactly one target assembly." />
+    <Error
+      Condition="'@(_CacheProbeAssembly->Count())' != '1'"
+      Text="The content cache probe must provide exactly one target assembly." />
     <PropertyGroup>
       <_CacheProbeDirectory>@(_CacheProbeAssembly->'%(RootDir)%(Directory)')</_CacheProbeDirectory>
     </PropertyGroup>
-    <Error Condition="'$(_CacheProbeDirectory)' == ''"
-           Text="The content cache probe target directory is unavailable." />
+    <Error
+      Condition="'$(_CacheProbeDirectory)' == ''"
+      Text="The content cache probe target directory is unavailable." />
     <ItemGroup>
       <CacheProbeFile Include="$(_CacheProbeDirectory)/*" />
     </ItemGroup>

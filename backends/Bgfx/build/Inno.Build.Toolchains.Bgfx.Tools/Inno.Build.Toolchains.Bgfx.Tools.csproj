@@ -33,6 +33,7 @@
   <ItemGroup>
     <ProjectReference Include="../../../../src/services/rendering/Inno.Rendering.Assets.Authoring/Inno.Rendering.Assets.Authoring.csproj" />
   </ItemGroup>
+
   <ItemGroup>
     <ProjectReference Include="../../../../src/adapters/rendering/Inno.Adapter.Rendering.Authoring/Inno.Adapter.Rendering.Authoring.csproj" />
   </ItemGroup>

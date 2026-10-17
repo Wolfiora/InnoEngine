@@ -21,6 +21,7 @@ internal static class PlatformOwnershipValidator
         {
             string relative = Path.GetRelativePath(root, path).Replace('\\', '/');
             XDocument project = XDocument.Load(path);
+            ValidateEntryProject(relative, project, failures);
             bool product = project.Descendants("OutputType").Any(static item => item.Value == "Exe");
             if (product && relative.StartsWith("platforms/", StringComparison.Ordinal)
                 && (!project.Descendants("InnoProductId").Any() || !project.Descendants("InnoProductTarget").Any()))
@@ -121,5 +122,31 @@ internal static class PlatformOwnershipValidator
                 || dependency.StartsWith("build/distributions/", StringComparison.Ordinal)
                 || dependency.StartsWith("src/composition/adapters/", StringComparison.Ordinal)))
             failures.Add($"{relative}: shared Editor hosting must receive concrete services {dependency}.");
+    }
+
+    private static void ValidateEntryProject(
+        string relative,
+        XDocument project,
+        ICollection<string> failures
+    ) {
+        if (!relative.StartsWith("entry/", StringComparison.Ordinal))
+            return;
+        XElement[] references = project.Descendants("ProjectReference").ToArray();
+        if (relative == "entry/InnoEngine.Editor/InnoEngine.Editor.csproj")
+        {
+            XElement[] products = references.Where(static reference =>
+                reference.Attribute("Include")?.Value.Contains("/editor/", StringComparison.Ordinal) == true).ToArray();
+            if (products.Length != 2 || products.Any(static reference =>
+                reference.Attribute("Condition")?.Value.Contains("$(InnoDevelopmentTarget)", StringComparison.Ordinal) != true))
+                failures.Add($"{relative}: Editor startup must select its implemented host product through conditional project references.");
+        }
+        else if (relative == "entry/InnoEngine.Build/InnoEngine.Build.csproj")
+        {
+            if (!references.Any(static reference =>
+                reference.Attribute("Include")?.Value.EndsWith("/Inno.Build.Cli.csproj", StringComparison.Ordinal) == true))
+                failures.Add($"{relative}: Build startup must reference the shared CLI application directly.");
+        }
+        else
+            failures.Add($"{relative}: only the two ordinary executable entry projects are maintained.");
     }
 }

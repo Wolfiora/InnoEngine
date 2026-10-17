@@ -23,9 +23,6 @@ internal static class ProductCleanExecutor
         cancellationToken.ThrowIfCancellationRequested();
         foreach (string directory in plan.directories)
             PathBoundary.RequireUnlinkedPath(plan.root, directory);
-        Console.WriteLine($"{(dryRun ? "Would invalidate" : "Invalidating")} {plan.receipt}");
-        if (!dryRun)
-            File.Delete(plan.receipt);
         foreach (string directory in plan.directories)
         {
             cancellationToken.ThrowIfCancellationRequested();

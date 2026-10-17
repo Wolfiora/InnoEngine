@@ -1,10 +1,13 @@
 <Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="../DevelopmentHost.props" />
+
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <AssemblyName>InnoEngine.Build</AssemblyName>
     <RootNamespace>InnoEngine.Build</RootNamespace>
   </PropertyGroup>
+
   <ItemGroup>
-    <ProjectReference Include="../Inno.Entry.Bootstrap/Inno.Entry.Bootstrap.csproj" />
+    <ProjectReference Include="../../build/cli/Inno.Build.Cli/Inno.Build.Cli.csproj" PrivateAssets="compile" />
   </ItemGroup>
 </Project>

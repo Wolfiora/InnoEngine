@@ -5,7 +5,8 @@
     DependsOnTargets="PrepareInnoBuildTaskHost"
     Condition="'$(InnoTestNativeProduct)' != '' and '$(InnoNativeTarget)' != '' and '$(DesignTimeBuild)' != 'true' and '$(VSTestListTests)' != 'true'">
     <ItemGroup>
-      <_InnoNativeTestReference Include="@(ReferenceCopyLocalPaths)"
+      <_InnoNativeTestReference
+        Include="@(ReferenceCopyLocalPaths)"
         Condition="$([System.String]::Copy('%(Filename)').StartsWith('Inno.Native.')) and '%(Filename)' != 'Inno.Native.LibraryLoading'" />
     </ItemGroup>
     <Inno.Build.Tasks.PrepareProductNativeTask

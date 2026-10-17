@@ -11,10 +11,12 @@
     <ProjectReference Include="../../../../build/pipeline/Inno.Build/Inno.Build.csproj" />
     <ProjectReference Include="../../../../build/managed/Inno.Build.Managed/Inno.Build.Managed.csproj" />
   </ItemGroup>
+
   <ItemGroup>
     <ProjectReference Include="../../../../build/toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj" />
     <ProjectReference Include="../../../../src/foundation/core/Inno.Core.IO/Inno.Core.IO.csproj" PrivateAssets="compile" />
   </ItemGroup>
+
   <ItemGroup>
     <ProjectReference Include="../../../../build/composition/Inno.Build.Composition/Inno.Build.Composition.csproj" />
     <ProjectReference Include="../../../../build/support/Inno.Build.SupportPacks.Core/Inno.Build.SupportPacks.Core.csproj" />

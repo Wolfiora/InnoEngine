@@ -12,10 +12,10 @@ Build your game's rendering models, gameplay systems, and Editor tools on a shar
 
 ## Get started
 
-**Requirements:** Git, the project's .NET 9 SDK, and the Native SDK for your host: Visual Studio C++ / Windows SDK on Windows x64, or Xcode command line tools on macOS ARM64.
+**Requirements:** Git, a native x64/ARM64 .NET 9 SDK, and your host's C++ toolchain. Windows x64 requires Visual Studio 2022 C++ desktop tools, Windows SDK, and C++ CMake tools. macOS ARM64 requires Xcode command line tools and CMake on PATH. [Host setup and first launch](docs/platform/PRODUCT_STARTUP.md#from-zero).
 
 ```sh
-git clone --recurse-submodules https://github.com/Wolfiora/InnoEngine.git
+git clone --branch kernel --recurse-submodules https://github.com/Wolfiora/InnoEngine.git
 cd InnoEngine
 ```
 
@@ -23,18 +23,16 @@ Open **InnoEngine.sln** in Rider or Visual Studio. Choose one of two startup pro
 
 | Start | What it does |
 |---|---|
-| **InnoEngine.Editor** | Starts the validated prepared Editor and opens a project-folder picker; builds on first preparation. |
-| **InnoEngine.Build** | Incrementally prepares the host Editor. Cleaning requires an explicit command or `--clean`. |
+| **InnoEngine.Editor** | Builds the current host Editor through project references and opens a project-folder picker. |
+| **InnoEngine.Build** | Prepares host Editor support by default; `editor` builds the complete Editor. Cleaning is explicit. |
 
 The same commands work from a terminal:
 
 ```sh
-dotnet run --project "entry/InnoEngine.Build/InnoEngine.Build.csproj"
 dotnet run --project "entry/InnoEngine.Editor/InnoEngine.Editor.csproj"
 ```
 
-BGCS is restored from pinned NuGet packages. Native third-party sources remain Git submodules under `extern/`; first preparation initializes missing sources. Initial preparation needs network access and can take time.
-After changing engine or backend source, run InnoEngine.Build. Prepared Editor startup validates its deployed files and does not invoke MSBuild or native compilers. Game scripts and assets use the Editor's import and reload workflow. Player support packs are prepared separately when exporting a game or requesting `support-pack`.
+Use the branch containing these changes; the command above selects `kernel`. BGCS is restored from pinned NuGet packages, and third-party sources are submodules under `extern/`. The first build needs network access and prepares native support and bindings before opening a window. Subsequent builds compile changed C# dependencies and reuse valid support caches. No prior Build run, shared `.run` file, or Browser workload is required for a desktop Editor. Game scripts and assets use import and reload; game exports prepare their own Player support packs.
 
 Have a project already? Pass its directory after `--`. To try FlappyBird, clone [InnoEngine.Samples](https://github.com/Wolfiora/InnoEngine.Samples) separately and select its FlappyBird folder.
 

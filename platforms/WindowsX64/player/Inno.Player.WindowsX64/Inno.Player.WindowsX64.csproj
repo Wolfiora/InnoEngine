@@ -6,7 +6,9 @@
     <InnoToolTarget Condition="'$(InnoToolTarget)' == ''">windows-x64</InnoToolTarget>
     <InnoProductBuildProperties>$(MSBuildThisFileDirectory)../../build/Inno.Build.WindowsX64/ProductBuild.props</InnoProductBuildProperties>
   </PropertyGroup>
+
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
     <ImplicitUsings>disable</ImplicitUsings>
@@ -15,6 +17,7 @@
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <InnoGeneratePlayerComposition>true</InnoGeneratePlayerComposition>
   </PropertyGroup>
+
   <ItemGroup>
     <ProjectReference Include="../../integrations/Inno.Integration.WindowsX64.Bgfx.Runtime/Inno.Integration.WindowsX64.Bgfx.Runtime.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../integrations/Inno.Integration.WindowsX64.Sdl3/Inno.Integration.WindowsX64.Sdl3.csproj" PrivateAssets="compile" />
@@ -26,8 +29,10 @@
     <ProjectReference Include="../../../../backends/FileSystem/runtime/Inno.Adapter.Storage.FileSystem/Inno.Adapter.Storage.FileSystem.csproj" />
     <ProjectReference Include="../../runtime/Inno.Platform.WindowsX64/Inno.Platform.WindowsX64.csproj" />
   </ItemGroup>
+
   <ItemGroup>
     <CompilerVisibleProperty Include="InnoGeneratePlayerComposition" />
   </ItemGroup>
+
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 </Project>

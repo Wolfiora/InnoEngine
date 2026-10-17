@@ -711,6 +711,7 @@
           "Inno.Audio.Assets": "[1.0.0, )",
           "Inno.Build": "[1.0.0, )",
           "Inno.Build.Bindings": "[1.0.0, )",
+          "Inno.Build.BrowserWasm32": "[1.0.0, )",
           "Inno.Build.Composition": "[1.0.0, )",
           "Inno.Build.Distribution.Standard": "[1.0.0, )",
           "Inno.Build.Managed": "[1.0.0, )",

@@ -47,3 +47,7 @@ MacOS Editor 的平台产品组合库。选择明确运行目标、共享 backen
 - [Inno.Core.Execution](../../core/Inno.Core.Execution.md)：实现依赖，PrivateAssets="compile"。
 - [Inno.Platform.MacOSArm64](Inno.Platform.MacOSArm64.md)：实现依赖，PrivateAssets="compile"。
 - [Inno.Build.Toolchains.Bgfx.Tools](../../backends/Bgfx/Inno.Build.Toolchains.Bgfx.Tools.md)：实现依赖，PrivateAssets="compile"。
+
+## 开发工程调用
+
+统一 Editor entry 以条件 ProjectReference 引用本库，并在主线程直接调用 Run。Native 支持仍由本产品准备，其 native 目录通过 SDK 内容输出传递到 entry；不依赖预构建启动记录或运行时子 MSBuild。默认 Solution 中本产品不作为第二个独立构建根。

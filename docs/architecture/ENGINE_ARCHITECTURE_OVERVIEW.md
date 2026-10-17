@@ -48,7 +48,7 @@ flowchart TD
 当前发布目标为 `windows-x64`、`macos-arm64`、`browser-wasm`（描述明确为 wasm32）。Desktop 不是注册目标。
 
 当前源码默认只有 `InnoEngine.Editor` 与 `InnoEngine.Build` 两个生产 Exe，均属于 `entry`。平台 Editor 与 Build.Cli 是组合库，Player 宿主源码由完整发布模板生成真正的游戏 Exe。
-Solution 默认 Debug/Release 只准备启动器；SourceDebug/SourceRelease 保留完整共享源码和测试构建。实际产品目标始终与工具图隔离，见[开发入口设计](DEVELOPMENT_ENTRY_ARCHITECTURE.md)。
+Solution 默认 Debug/Release 正常构建共同源码、工具及测试，Editor entry 通过条件项目引用构建当前宿主产品；SourceDebug/SourceRelease 保留不启动 Editor 产品的源码验证。具体产品与工具宿主独立选择，见[开发入口设计](DEVELOPMENT_ENTRY_ARCHITECTURE.md)。
 
 ## 运行与代际所有权
 
@@ -67,7 +67,7 @@ Core Events 是唯一事件机制；跨代 live object 经 Identity 解析。Mis
 | CMake/object 中间态 | 所属 backend toolchain `obj/native/<target>/<workspaceIdentity>/`，兼容输入复用同一工作目录。 |
 | 已校验 Native 产物 | `artifacts/native/<component>/<target>/<artifactFingerprint>/`。 |
 | Support Pack | 所选 Pack root 的 `<target>/<contentFingerprint>/`；内容包含发布引用与链接输入。 |
-| 产品部署 | 平台项目的实际 SDK 输出；开发入口的 `artifacts/products/editor/<target>/<configuration>/ready.json` 校验已准备部署。 |
+| 产品部署 | 平台项目的实际 SDK 输出，通过 ProjectReference 传递到 Editor entry 的 SDK 输出目录；启动直接调用产品 Run。 |
 | 验收日志与测量 | `artifacts/acceptance/<runId>/`；当前结果从[当前验收](CURRENT_ACCEPTANCE.md)查看。 |
 
 目标绑定仍位于所属 Native 项目的 `obj`，不能把规划中的统一目录写成当前行为。目录与缓存限制见[构建缓存架构](BUILD_CACHE_ARCHITECTURE.md)。

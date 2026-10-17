@@ -38,7 +38,6 @@ public static class StandardBuildCaches
             throw new ArgumentException("Cache registration requires an absolute checkout.", nameof(engineRoot));
         var owners = new List<BuildCacheOwnerDescriptor>
         {
-            Describe(new BuildCachePublisher(Path.Combine(engineRoot, "artifacts", "entry", "workers"), BuildCacheArtifactRole.ProcessWorkingDirectory), "entry-workers"),
             Describe(new BuildCachePublisher(Path.Combine(engineRoot, "artifacts", "native"), BuildCacheArtifactRole.ImmutableArtifact), "native"),
             Describe(new BuildCachePublisher(Path.Combine(engineRoot, "artifacts", "bindings"), BuildCacheArtifactRole.ImmutableArtifact), "bindings"),
             Describe(new BuildCachePublisher(Path.Combine(engineRoot, "artifacts", "support-packs"), BuildCacheArtifactRole.ImmutableArtifact), "support-packs"),
@@ -47,9 +46,6 @@ public static class StandardBuildCaches
             Describe(new BuildCachePublisher(Path.Combine(engineRoot, "artifacts", "build-tools", "managed-inputs", "requests"), BuildCacheArtifactRole.ProcessWorkingDirectory), "managed-input-requests"),
             Describe(new BuildCachePublisher(Path.Combine(engineRoot, "artifacts", "build-tools", "bindings", "extensions"), BuildCacheArtifactRole.ImmutableArtifact), "binding-extensions"),
             Describe(new BuildCachePublisher(Path.Combine(engineRoot, "artifacts", "build-tools", "bindings", "intermediate"), BuildCacheArtifactRole.ReusableWorkspace), "binding-workspaces"),
-            Describe(new BuildCachePublisher(Path.Combine(engineRoot, "artifacts", "build-tools", "cli", "hosts"), BuildCacheArtifactRole.ImmutableArtifact), "cli-tool-hosts"),
-            Describe(new BuildCachePublisher(Path.Combine(engineRoot, "artifacts", "build-tools", "cli", "readers"), BuildCacheArtifactRole.ProcessWorkingDirectory), "cli-tool-readers"),
-            Describe(new BuildCachePublisher(Path.Combine(engineRoot, "artifacts", "build-tools", "cli", "workspaces"), BuildCacheArtifactRole.ReusableWorkspace), "cli-tool-workspaces"),
             Describe(new BuildCachePublisher(Path.Combine(engineRoot, "artifacts", "build-tools", "tasks", "hosts"), BuildCacheArtifactRole.ImmutableArtifact), "task-hosts"),
             Describe(new BuildCachePublisher(Path.Combine(engineRoot, "artifacts", "build-tools", "tasks", "loads"), BuildCacheArtifactRole.ProcessWorkingDirectory), "task-loads"),
             Describe(new BuildCachePublisher(Path.Combine(engineRoot, "artifacts", "build-tools", "tasks", "publishers"), BuildCacheArtifactRole.ProcessWorkingDirectory), "task-publishers"),

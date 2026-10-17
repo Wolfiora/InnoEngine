@@ -6,9 +6,11 @@
     <AssemblyName>Inno.Rendering.Runtime.Reload.TestModule</AssemblyName>
     <InnoAssemblyDomain>InnoPlugin</InnoAssemblyDomain>
   </PropertyGroup>
+
   <ItemGroup>
     <ProjectReference Include="../../../../src/services/rendering/Inno.Rendering/Inno.Rendering.csproj" PrivateAssets="compile" />
   </ItemGroup>
+
   <ItemGroup>
     <ProjectReference Include="../../../../src/foundation/extensibility/Inno.Extensibility.Catalogs/Inno.Extensibility.Catalogs.csproj" />
   </ItemGroup>

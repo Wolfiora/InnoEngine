@@ -10,7 +10,7 @@
 
 缓存登记区分不可变产物、可重用 workspace 与进程工作目录。只有不可变产物的当前选择形成长期保护根；workspace 的偏好不会阻止空闲目录退休。活动编译的独占 lease、活动进程的 PID/启动时间和完整依赖仍优先保护。
 
-临时 request、生成 staging 和 Build worker 在首次 payload 写入前取得进程 claim；稳定 workspace 先由 `BeginWorkingDirectory` 建立生产者登记，再写入源码或 SDK 输出。已有但未登记的目录明确拒绝自动认领。工作目录的实际大小在清理清点时测量，半成品的旧尺寸记录不代表预算或完整性。
+临时 request、生成 staging 和 Task 私有加载目录 在首次 payload 写入前取得进程 claim；稳定 workspace 先由 `BeginWorkingDirectory` 建立生产者登记，再写入源码或 SDK 输出。已有但未登记的目录明确拒绝自动认领。工作目录的实际大小在清理清点时测量，半成品的旧尺寸记录不代表预算或完整性。
 
 进程 claim 使用显式 JSON 字段读写，不依赖反射式序列化或运行时代码生成，因此可被 NativeAOT 产品消费。损坏的子进程记录产生 `Unknown`，保留目录；不能把无法读取的 owner 当成已经退出。
 
@@ -25,7 +25,8 @@
 | `backends/<组件>/build/<项目>/obj/native/<target>/<workspaceIdentity>/` | 当前组件的固定输入副本与可复用 Native 编译工作目录 |
 | `artifacts/native/<component>/<target>/<fingerprint>/` | 验证后的 Native 成品 |
 | Support Pack root 下的 `<target>/<fingerprint>/` | 完整发布输入；`current` 原子选择当前内容身份 |
-| `artifacts/products/editor/<target>/<configuration>/ready.json` | Editor 部署文件清单与内容哈希；不代替 Native 缓存验证 |
+| `artifacts/products/editor/<target>/<configuration>/product.lock` | 正在运行的 Editor 与显式产品 clean 之间的读取/独占协调；不保存部署 receipt |
+| `entry/InnoEngine.Editor/bin/<Configuration>/net9.0/` | SDK 构建的可运行入口、所选产品程序集和传递的 native 部署 |
 | `artifacts/build-tools/tasks/` | Task 引导工作目录、不可变运行闭包和私有载入目录 |
 
 目标绑定统一由显式组件 ID 选择。MSBuild 与直接生成读取同一份 `Bindings/bindings.props`，不存在旧目录读取路径。
@@ -61,7 +62,7 @@ MSBuild 的 `MaterializeBindingsTask` 在保护期间把选定绑定复制到 SD
 
 - Native 和绑定输出通过完整文件集合与内容哈希验证；支持共享读取与独占修复协调。
 - Support Pack 在准备前计算实际输入身份，查询准备索引，并验证完整 Pack 内容后取得读取保护；真实 Windows 第二次请求已确认跳过实际准备。
-- Task runtime 已有 Build 生命周期成功结果复用；同一根构建的轻量 publisher 共用编译 owner，各消费边界仍使用独立载入目录。跨入口准备、产品构建和私有 Task 构建的成本仍需分别测量。
+- Task runtime 已有 Build 生命周期成功结果复用；同一根构建的轻量 publisher 共用编译 owner，各消费边界仍使用独立载入目录。普通 entry 的 C# 构建、产品 Native 准备和私有 Task 构建的成本分别记录；entry 不再维护 CLI 启动 publication。
 - Native、目标绑定、Support Pack、managed workspace、图求值工具、生成扩展及 Task 缓存发布者通过 `BuildCachePublisher` 登记实际产物、读取锁和当前根；标准发行提供这些 owner，CLI 支持 `clean --scope cache --dry-run` 及实际清理。成功 Editor、绑定、Shader 或 Pack 命令执行有界压力回收。
 
 ## 退休契约
