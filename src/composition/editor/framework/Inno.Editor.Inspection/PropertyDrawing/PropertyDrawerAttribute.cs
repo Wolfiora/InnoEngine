@@ -38,8 +38,11 @@ public sealed class PropertyDrawerAttribute : Attribute
     /// <exception cref="ArgumentNullException">
     /// Thrown when <paramref name="targetType"/> is <see langword="null"/>.
     /// </exception>
-    public PropertyDrawerAttribute(Type targetType, bool useForChildren = false, int priority = 0)
-    {
+    public PropertyDrawerAttribute(
+        Type targetType,
+        bool useForChildren = false,
+        int priority = 0
+    ) {
         this.targetType = targetType ?? throw new ArgumentNullException(nameof(targetType));
         this.useForChildren = useForChildren;
         this.priority = priority;

@@ -28,8 +28,10 @@ public sealed class EngineObjectReferenceDropTarget
     /// <exception cref="InvalidOperationException">
     /// Thrown when the type does not belong to the active type catalog.
     /// </exception>
-    public EngineObjectReferenceDropTarget(Type expectedType, Action<EngineObject> assign)
-    {
+    public EngineObjectReferenceDropTarget(
+        Type expectedType,
+        Action<EngineObject> assign
+    ) {
         ArgumentNullException.ThrowIfNull(expectedType);
         m_expectedType = expectedType;
         m_assign = assign ?? throw new ArgumentNullException(nameof(assign));

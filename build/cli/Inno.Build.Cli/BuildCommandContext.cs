@@ -1,0 +1,55 @@
+using System;
+using System.IO;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using Inno.Build;
+using Inno.Build.Composition;
+using Inno.Build.Distribution.Standard;
+using Inno.Build.Toolchains;
+
+namespace Inno.Build.Cli;
+
+internal sealed class BuildCommandContext
+{
+    internal BuildCommandContext(BuildCommandLine options)
+    {
+        string selectedRoot = options.Read("engine-root", string.Empty);
+        root = Path.GetFullPath(string.IsNullOrWhiteSpace(selectedRoot) ? ToolchainEnvironment.FindRepoRoot() : selectedRoot);
+        if (!File.Exists(Path.Combine(root, "InnoEngine.sln")))
+            throw new DirectoryNotFoundException($"Engine checkout is unavailable at '{root}'.");
+        configuration = options.Read("configuration", "Release");
+        ToolchainEnvironment.ValidateConfiguration(configuration.ToLowerInvariant());
+        configuration = configuration.Equals("debug", StringComparison.OrdinalIgnoreCase) ? "Debug" : "Release";
+        toolsTarget = new BuildTargetId(options.Require("tools-target"));
+        target = new BuildTargetId(options.Read("target", toolsTarget.value));
+        string dotnet = ToolchainEnvironment.ResolveExecutable(options.Read("dotnet", "dotnet"));
+        composition = StandardBuildEnvironment.Capture(Path.GetDirectoryName(typeof(BuildApplication).Assembly.Location)!, toolsTarget, dotnet);
+        distribution = StandardBuildDistribution.Create(composition).build;
+    }
+
+    internal string root { get; }
+    internal string configuration { get; }
+    internal BuildTargetId target { get; }
+    internal BuildTargetId toolsTarget { get; }
+    internal BuildCompositionContext composition { get; }
+    internal BuildDistribution distribution { get; }
+
+    internal async Task<string> PreflightEditorAsync(CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        BuildPlatformContribution? platform = distribution.platforms.SingleOrDefault(value => value.descriptor.id == target);
+        string project = platform?.editorProject
+            ?? throw new NotSupportedException($"Target '{target}' does not provide an Editor product.");
+        var native = new NativeBuildContext(root, configuration.ToLowerInvariant());
+        await distribution.ResolveNativeToolchain(target.value).ResolveAsync(native, composition.host,
+            target.value, cancellationToken).ConfigureAwait(false);
+        return Path.Combine(root, "entry", "InnoEngine.Editor", "InnoEngine.Editor.csproj");
+    }
+
+    internal string[] ProductArguments(string project) =>
+    [
+        project, "--configuration", configuration,
+        "--disable-build-servers", "-m:1", "-nodeReuse:false"
+    ];
+}

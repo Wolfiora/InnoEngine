@@ -123,8 +123,12 @@ public readonly record struct RenderClearColor
     /// <param name="a">
     /// Alpha channel.
     /// </param>
-    public RenderClearColor(float r, float g, float b, float a = 1f)
-    {
+    public RenderClearColor(
+        float r,
+        float g,
+        float b,
+        float a = 1f
+    ) {
         this.r = r;
         this.g = g;
         this.b = b;
@@ -180,8 +184,8 @@ public sealed class RenderGraphDiagnostic
         string message,
         DiagnosticSeverity severity,
         string? passName = null,
-        string? resourceName = null)
-    {
+        string? resourceName = null
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(code);
         ArgumentException.ThrowIfNullOrWhiteSpace(message);
         this.code = code;
@@ -236,12 +240,16 @@ internal enum RenderResourceUseKind
     DepthStencilAttachment
 }
 
-internal readonly record struct RenderResourceKey(bool isTexture, int index);
+internal readonly record struct RenderResourceKey(
+    bool isTexture,
+    int index
+);
 
 internal sealed record RenderResourceUse(
     RenderResourceKey key,
     RenderResourceAccess access,
-    RenderResourceUseKind kind);
+    RenderResourceUseKind kind
+);
 
 internal sealed record RenderAttachment(
     RenderTextureHandle texture,
@@ -253,10 +261,12 @@ internal sealed record RenderAttachment(
     RenderStoreAction storeAction,
     RenderClearColor clearColor,
     float clearDepth,
-    byte clearStencil);
+    byte clearStencil
+);
 
 internal sealed class RenderPassRecord
 {
+    internal required int index { get; init; }
     /// <summary>
     /// Gets the human-readable name used for presentation and diagnostics.
     /// </summary>
@@ -319,10 +329,14 @@ internal sealed record RenderTextureRecord(
     string name,
     RenderTextureDescriptor descriptor,
     bool imported,
-    PersistentTextureHandle persistentHandle);
+    PersistentTextureHandle persistentHandle,
+    ulong allocationId
+);
 
 internal sealed record RenderBufferRecord(
     string name,
     RenderBufferDescriptor descriptor,
     bool imported,
-    PersistentBufferHandle persistentHandle);
+    PersistentBufferHandle persistentHandle,
+    ulong allocationId
+);

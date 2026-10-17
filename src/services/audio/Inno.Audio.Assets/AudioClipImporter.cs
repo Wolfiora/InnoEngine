@@ -37,8 +37,8 @@ public sealed class AudioClipImporter : AssetImporter<AudioClipAsset>
     protected override async ValueTask ImportAsync(
         AssetImportContext context,
         AssetImportWriter<AudioClipAsset> output,
-        CancellationToken cancellationToken)
-    {
+        CancellationToken cancellationToken
+    ) {
         AudioClipMetadata metadata = context.extension switch
         {
             ".wav" => ReadWav(context.sourceBytes.Span),
@@ -196,8 +196,8 @@ public sealed class AudioClipImporter : AssetImporter<AudioClipAsset>
         out int frameLength,
         out int sampleRate,
         out int samples,
-        out int channels)
-    {
+        out int channels
+    ) {
         frameLength = 0;
         sampleRate = 0;
         samples = 0;

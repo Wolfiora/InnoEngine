@@ -63,8 +63,11 @@ internal sealed class FileBrowserChangeTracker(AssetEditorModule assets)
         }
     }
 
-    private void ApplyMove(EditorContext context, string oldPath, string newPath)
-    {
+    private void ApplyMove(
+        EditorContext context,
+        string oldPath,
+        string newPath
+    ) {
         oldPath = Normalize(oldPath);
         newPath = Normalize(newPath);
         if (string.IsNullOrEmpty(oldPath) || string.IsNullOrEmpty(newPath))
@@ -88,8 +91,10 @@ internal sealed class FileBrowserChangeTracker(AssetEditorModule assets)
         assets.browser.Select(context, Combine(newPath, selectedSuffix));
     }
 
-    private void ApplyRemoval(EditorContext context, string removedPath)
-    {
+    private void ApplyRemoval(
+        EditorContext context,
+        string removedPath
+    ) {
         removedPath = Normalize(removedPath);
         if (string.IsNullOrEmpty(removedPath))
             return;
@@ -117,12 +122,17 @@ internal sealed class FileBrowserChangeTracker(AssetEditorModule assets)
         assets.browser.SetCurrentDirectory(fallback);
     }
 
-    private static bool IsSameOrDescendant(string path, string ancestor)
+    private static bool IsSameOrDescendant(
+        string path,
+        string ancestor
+    )
         => string.Equals(path, ancestor, StringComparison.OrdinalIgnoreCase) ||
            path.StartsWith(ancestor + "/", StringComparison.OrdinalIgnoreCase);
 
-    private static string Combine(string left, string right)
-        => string.IsNullOrEmpty(right) ? left : $"{left}/{right}";
+    private static string Combine(
+        string left,
+        string right
+    ) => string.IsNullOrEmpty(right) ? left : $"{left}/{right}";
 
     private static string Normalize(string? path)
         => string.IsNullOrWhiteSpace(path)

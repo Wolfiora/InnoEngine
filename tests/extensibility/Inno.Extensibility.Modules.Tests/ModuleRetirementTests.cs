@@ -1,3 +1,4 @@
+using Inno.Adapter.Modules.DotNet;
 using System;
 using System.IO;
 using System.Linq;
@@ -21,13 +22,13 @@ public sealed class ModuleRetirementTests
     public void PendingParticipantDoesNotBeginUnloadingEitherLiveGeneration(string phase)
     {
         string cache = Path.Combine(Path.GetTempPath(), "InnoModuleRetirement", Guid.NewGuid().ToString("N"));
-        var modules = new ModuleHost(new ModuleHostOptions { cacheDirectory = cache });
-        var types = new TypeCatalog(modules);
-        AssemblyModuleHandle handle = modules.Load(Request("V1"));
+        var modules = new ModuleHost(new ModuleHostOptions { catalogSource = new DotNetAssemblyCatalogSource(typeof(ModuleRetirementTests).Assembly)});
+        var types = new TypeCatalog(modules, new ReflectionTypeCatalogSource());
+        AssemblyModuleHandle handle = modules.Load(Request("V1", cache));
         var participant = new Participant();
         using IDisposable registration = modules.RegisterCatalogParticipant(participant);
         participant.phase = phase;
-        var reload = modules.BeginReload(handle, Request("V2"));
+        var reload = modules.BeginReload(handle, Request("V2", cache));
         AssemblyLoadContext previous = Context(reload.context.previousCatalog);
         AssemblyLoadContext candidate = Context(reload.context.candidateCatalog);
         int unloads = 0;
@@ -64,15 +65,15 @@ public sealed class ModuleRetirementTests
     public void WrappedPendingKeepsBothCollectibleContextsAndPreservesTheOriginalFailure(string phase)
     {
         string cache = Path.Combine(Path.GetTempPath(), "InnoWrappedRetirement", Guid.NewGuid().ToString("N"));
-        var modules = new ModuleHost(new ModuleHostOptions { cacheDirectory = cache });
-        var types = new TypeCatalog(modules);
-        AssemblyModuleHandle handle = modules.Load(Request("V1"));
+        var modules = new ModuleHost(new ModuleHostOptions { catalogSource = new DotNetAssemblyCatalogSource(typeof(ModuleRetirementTests).Assembly)});
+        var types = new TypeCatalog(modules, new ReflectionTypeCatalogSource());
+        AssemblyModuleHandle handle = modules.Load(Request("V1", cache));
         var participant = new Participant();
         using IDisposable registration = modules.RegisterCatalogParticipant(participant);
         participant.phase = phase;
         participant.failure = new AggregateException(new InvalidOperationException("completed sibling"),
             new InvalidOperationException("native owner", new RetirementTimeoutException("callback still active")));
-        var reload = modules.BeginReload(handle, Request("V2"));
+        var reload = modules.BeginReload(handle, Request("V2", cache));
         int unloads = 0;
         Context(reload.context.previousCatalog).Unloading += _ => unloads++;
         Context(reload.context.candidateCatalog).Unloading += _ => unloads++;
@@ -102,16 +103,16 @@ public sealed class ModuleRetirementTests
     public void CatalogParticipantErrorsBeforePendingDoNotDisappearOrUnloadEitherContext(string phase)
     {
         string cache = Path.Combine(Path.GetTempPath(), "InnoCatalogRetirement", Guid.NewGuid().ToString("N"));
-        var modules = new ModuleHost(new ModuleHostOptions { cacheDirectory = cache });
-        var types = new TypeCatalog(modules);
-        AssemblyModuleHandle handle = modules.Load(Request("V1"));
+        var modules = new ModuleHost(new ModuleHostOptions { catalogSource = new DotNetAssemblyCatalogSource(typeof(ModuleRetirementTests).Assembly)});
+        var types = new TypeCatalog(modules, new ReflectionTypeCatalogSource());
+        AssemblyModuleHandle handle = modules.Load(Request("V1", cache));
         var ordinary = new Participant { failure = new InvalidOperationException("earlier catalog cleanup") };
         var pending = new Participant();
         using IDisposable first = modules.RegisterCatalogParticipant(phase == "complete" ? ordinary : pending);
         using IDisposable second = modules.RegisterCatalogParticipant(phase == "complete" ? pending : ordinary);
         ordinary.phase = phase;
         pending.phase = phase;
-        var reload = modules.BeginReload(handle, Request("V2"));
+        var reload = modules.BeginReload(handle, Request("V2", cache));
         int unloads = 0;
         Context(reload.context.previousCatalog).Unloading += _ => unloads++;
         Context(reload.context.candidateCatalog).Unloading += _ => unloads++;
@@ -134,14 +135,14 @@ public sealed class ModuleRetirementTests
     public void RejectedCatalogActivationRemainsVisibleWhenItsRollbackIsPending()
     {
         string cache = Path.Combine(Path.GetTempPath(), "InnoRejectedRetirement", Guid.NewGuid().ToString("N"));
-        var modules = new ModuleHost(new ModuleHostOptions { cacheDirectory = cache });
-        var types = new TypeCatalog(modules);
-        AssemblyModuleHandle handle = modules.Load(Request("V1"));
+        var modules = new ModuleHost(new ModuleHostOptions { catalogSource = new DotNetAssemblyCatalogSource(typeof(ModuleRetirementTests).Assembly)});
+        var types = new TypeCatalog(modules, new ReflectionTypeCatalogSource());
+        AssemblyModuleHandle handle = modules.Load(Request("V1", cache));
         var participant = new Participant();
         using IDisposable registration = modules.RegisterCatalogParticipant(participant);
         participant.phase = "rollback";
         participant.activationFailure = new InvalidOperationException("catalog activation rejected");
-        var reload = modules.BeginReload(handle, Request("V2"));
+        var reload = modules.BeginReload(handle, Request("V2", cache));
         int unloads = 0;
         Context(reload.context.previousCatalog).Unloading += _ => unloads++;
         Context(reload.context.candidateCatalog).Unloading += _ => unloads++;
@@ -154,11 +155,15 @@ public sealed class ModuleRetirementTests
         Assert.NotNull(RetirementPendingException.Find(Assert.ThrowsAny<Exception>(modules.Dispose)));
     }
 
-    private static AssemblyLoadRequest Request(string variant)
+    private static DotNetModuleSource Request(
+        string variant,
+        string artifactRootDirectory
+    )
     {
         string directory = Path.Combine(AppContext.BaseDirectory, "Modules", variant);
-        return new AssemblyLoadRequest
+        return new DotNetModuleSource
         {
+            artifactRootDirectory = artifactRootDirectory,
             moduleName = "RetirementTests",
             mainAssemblyPath = Path.Combine(directory, "Inno.Extensibility.Modules.TestModule.dll"),
             preloadAssemblyPaths = [Path.Combine(directory, "Reloadable.PrivateDependency.dll")],

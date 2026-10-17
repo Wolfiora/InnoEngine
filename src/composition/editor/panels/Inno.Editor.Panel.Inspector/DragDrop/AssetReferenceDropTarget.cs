@@ -25,8 +25,10 @@ public sealed class AssetReferenceDropTarget
     /// <exception cref="InvalidOperationException">
     /// Thrown when the type does not belong to the active type catalog.
     /// </exception>
-    public AssetReferenceDropTarget(Type expectedType, Action<Guid> assign)
-    {
+    public AssetReferenceDropTarget(
+        Type expectedType,
+        Action<Guid> assign
+    ) {
         ArgumentNullException.ThrowIfNull(expectedType);
         m_expectedType = expectedType;
         m_assign = assign ?? throw new ArgumentNullException(nameof(assign));

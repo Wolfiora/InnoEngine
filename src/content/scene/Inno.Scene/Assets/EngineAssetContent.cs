@@ -27,8 +27,8 @@ public sealed class EngineAssetContent
     /// </exception>
     public EngineAssetContent(
         ReadOnlySpan<byte> payload,
-        IReadOnlyList<AssetDependency> dependencies)
-    {
+        IReadOnlyList<AssetDependency> dependencies
+    ) {
         ArgumentNullException.ThrowIfNull(dependencies);
         if (payload.IsEmpty)
             throw new ArgumentException("Engine asset content cannot be empty.", nameof(payload));

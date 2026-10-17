@@ -15,8 +15,10 @@ internal sealed class FrameStatisticsSampler
     internal float deltaTime { get; private set; }
     internal float framesPerSecond { get; private set; }
 
-    internal void Update(float totalTime, float frameDeltaTime)
-    {
+    internal void Update(
+        float totalTime,
+        float frameDeltaTime
+    ) {
         if (!float.IsFinite(frameDeltaTime) || frameDeltaTime <= 0f)
             return;
 

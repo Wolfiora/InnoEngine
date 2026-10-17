@@ -7,5 +7,8 @@ internal delegate bool CoroutineWaitDelegate(CoroutineScheduler scheduler);
 /// </summary>
 public abstract class YieldInstruction
 {
-    internal abstract CoroutineWaitDelegate CreateWaiter(double now, ulong frame);
+    internal abstract CoroutineWaitDelegate CreateWaiter(
+        double now,
+        ulong frame
+    );
 }

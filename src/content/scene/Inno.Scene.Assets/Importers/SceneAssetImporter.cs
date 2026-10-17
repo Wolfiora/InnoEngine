@@ -41,8 +41,8 @@ internal sealed class SceneAssetImporter : AssetImporter<SceneAsset>
     protected override async ValueTask ImportAsync(
         AssetImportContext context,
         AssetImportWriter<SceneAsset> output,
-        CancellationToken cancellationToken)
-    {
+        CancellationToken cancellationToken
+    ) {
         EngineResourceEnvelope envelope = context.serialization.Deserialize<EngineResourceEnvelope>(
             context.sourceBytes.ToArray());
         envelope.Validate(EngineResourceEnvelope.C_SCENE_KIND);
@@ -72,8 +72,8 @@ internal sealed class SceneAssetImporter : AssetImporter<SceneAsset>
     protected override ValueTask<ReadOnlyMemory<byte>?> ExportAsync(
         AssetExportContext context,
         SceneAsset asset,
-        CancellationToken cancellationToken)
-    {
+        CancellationToken cancellationToken
+    ) {
         EngineAssetContent content = asset.CaptureContent();
         return ValueTask.FromResult<ReadOnlyMemory<byte>?>(context.serialization.Serialize(
             new EngineResourceEnvelope

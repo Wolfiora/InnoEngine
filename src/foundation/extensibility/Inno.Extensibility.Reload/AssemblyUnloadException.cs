@@ -30,7 +30,8 @@ public sealed class AssemblyUnloadException : InvalidOperationException
     public AssemblyUnloadException(
         IReadOnlyList<string> retainedGenerations,
         TimeSpan elapsed,
-        int collectionAttempts)
+        int collectionAttempts
+    )
         : base(CreateMessage(retainedGenerations, elapsed, collectionAttempts))
     {
         ArgumentNullException.ThrowIfNull(retainedGenerations);
@@ -59,8 +60,8 @@ public sealed class AssemblyUnloadException : InvalidOperationException
     private static string CreateMessage(
         IReadOnlyList<string> retainedGenerations,
         TimeSpan elapsed,
-        int collectionAttempts)
-    {
+        int collectionAttempts
+    ) {
         ArgumentNullException.ThrowIfNull(retainedGenerations);
         if (retainedGenerations.Count == 0)
             throw new ArgumentException("An unload failure requires at least one retained generation.", nameof(retainedGenerations));

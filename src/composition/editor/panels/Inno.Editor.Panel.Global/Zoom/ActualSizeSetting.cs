@@ -34,8 +34,7 @@ internal sealed class ActualSizeSetting : EditorSetting
     /// <summary>
     /// Gets the user-facing explanation of this feature or setting.
     /// </summary>
-    public override string description
-        => "Set the editor's actual font, spacing, control, and window size.";
+    public override string description => "Set the editor's actual font, spacing, control, and window size.";
 
     /// <summary>
     /// Draws this feature using the current editor presentation context.
@@ -61,7 +60,7 @@ internal sealed class ActualSizeSetting : EditorSetting
         }
         finally
         {
-            NativeImGui.EndCombo();
+            EditorWidget.EndBoundedCombo();
         }
     }
 

@@ -1,0 +1,18 @@
+{
+  "entryFiles": [
+    "../Native/include/TextRuntime.hpp"
+  ],
+  "allowedHeaders": [
+    "../Native/include/TextRuntime.hpp"
+  ],
+  "includeFolders": [
+    "../Native/include"
+  ],
+  "outputPath": "../Native/Generated",
+  "languageStandard": "c++17",
+  "generateBuildManifest": false,
+  "generateCSharpBindings": false,
+  "namePrefix": "inno_text_",
+  "parseSystemIncludes": false,
+  "parseComments": false
+}

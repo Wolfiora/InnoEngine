@@ -71,8 +71,8 @@ public sealed class InputSnapshot
         Vector2 mouseDelta = default,
         Vector2 scrollDelta = default,
         KeyModifier modifiers = KeyModifier.None,
-        IEnumerable<string>? textInput = null)
-    {
+        IEnumerable<string>? textInput = null
+    ) {
         if (frameIndex < 0)
             throw new ArgumentOutOfRangeException(nameof(frameIndex));
         this.frameIndex = frameIndex;

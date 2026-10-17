@@ -25,7 +25,7 @@ public interface IEditorConsole
     EditorConsoleSnapshot Capture();
 
     /// <summary>
-    /// Removes all retained logs and current diagnostic reports.
+    /// Removes retained logs while keeping currently reported issues visible until their owners resolve them.
     /// </summary>
     void Clear();
 }

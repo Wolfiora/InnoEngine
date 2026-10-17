@@ -250,15 +250,22 @@ public sealed class ShaderSourceNodeCompiler : IShaderNodeCompiler
         var ports = new List<ShaderNodePort>();
         foreach (ShaderSourceParameter parameter in function.parameters)
         {
-            if (parameter.direction != ShaderSourceParameterDirection.Output) Add("input." + parameter.name, parameter.type, GraphPortDirection.Input);
-            if (parameter.direction != ShaderSourceParameterDirection.Input) Add("output." + parameter.name, parameter.type, GraphPortDirection.Output);
+            if (parameter.direction != ShaderSourceParameterDirection.Output)
+                Add("input." + parameter.name, parameter.type, GraphPortDirection.Input);
+            if (parameter.direction != ShaderSourceParameterDirection.Input)
+                Add("output." + parameter.name, parameter.type, GraphPortDirection.Output);
         }
-        if (function.returnType.id != "void") Add("return", function.returnType, GraphPortDirection.Output);
+        if (function.returnType.id != "void")
+            Add("return", function.returnType, GraphPortDirection.Output);
         return ports.AsReadOnly();
-        void Add(string name, ShaderSourceType type, GraphPortDirection direction)
-        {
+        void Add(
+            string name,
+            ShaderSourceType type,
+            GraphPortDirection direction
+        ) {
             ports.Add(new(name, type, direction, required: false));
-            foreach (ShaderSourceField field in type.fields) Add(name + "." + field.name, field.type, direction);
+            foreach (ShaderSourceField field in type.fields)
+                Add(name + "." + field.name, field.type, direction);
         }
     }
     /// <summary>
@@ -279,23 +286,29 @@ public sealed class ShaderSourceNodeCompiler : IShaderNodeCompiler
                 arguments.Add(parameter.name, Resolve("input." + parameter.name, parameter.type));
         IReadOnlyDictionary<string, ShaderIrValue> values = context.builder.Call(module, context.description.implementationId, arguments);
         var outputs = new Dictionary<string, ShaderIrValue>(StringComparer.Ordinal);
-        foreach ((string name, ShaderIrValue value) in values) Add(name, value);
+        foreach ((string name, ShaderIrValue value) in values)
+            Add(name, value);
         return outputs;
 
-        ShaderIrValue Resolve(string name, ShaderSourceType type)
-        {
+        ShaderIrValue Resolve(
+            string name,
+            ShaderSourceType type
+        ) {
             if (context.inputs.TryGetValue(name, out ShaderIrValue? aggregate))
             {
                 if (context.inputs.Keys.Any(key => key.StartsWith(name + ".", StringComparison.Ordinal)))
                     throw new InvalidOperationException($"'{name}' connects both its aggregate and a member; choose one representation explicitly.");
                 return aggregate;
             }
-            if (type.fields.Count == 0) return context.Input(name);
+            if (type.fields.Count == 0)
+                return context.Input(name);
             return context.builder.Construct(type, type.fields.Select(field => Resolve(name + "." + field.name, field.type)).ToArray());
         }
 
-        void Add(string name, ShaderIrValue value)
-        {
+        void Add(
+            string name,
+            ShaderIrValue value
+        ) {
             outputs.Add(name, value);
             for (int index = 0; index < value.type.fields.Count; index++)
                 Add(name + "." + value.type.fields[index].name, context.builder.Extract(value, index));
@@ -305,8 +318,10 @@ public sealed class ShaderSourceNodeCompiler : IShaderNodeCompiler
     private static ShaderSourceModuleAnalysis RequireModule(ShaderNodeDescriptionContext context)
     {
         ShaderSourceModuleAnalysis? module = context.sourceModule;
-        if (module is null) throw new InvalidOperationException("The source module is unassigned or unavailable; its stored reference and connections must remain intact.");
-        if (!module.succeeded) throw new InvalidOperationException("The source module has no valid common interface: " + string.Join("; ", module.diagnostics.Select(static value => value.message)));
+        if (module is null)
+            throw new InvalidOperationException("The source module is unassigned or unavailable; its stored reference and connections must remain intact.");
+        if (!module.succeeded)
+            throw new InvalidOperationException("The source module has no valid common interface: " + string.Join("; ", module.diagnostics.Select(static value => value.message)));
         return module;
     }
 }

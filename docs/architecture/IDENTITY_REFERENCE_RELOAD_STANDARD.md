@@ -2,7 +2,7 @@
 
 [架构治理](README.md) · [完整项目架构 Overview](ENGINE_ARCHITECTURE_OVERVIEW.md) · [Wiki 首页](../README.md)
 
-> 最初审计快照：2026-09-06。强制不变量持续生效，历史缺口与拟议 API 不是当前实现状态；实际收口以 [2026-09-08 实现交付与集中验收](ENGINE_CLOSURE_IMPLEMENTATION_2026_09_08.md) 为准。
+> 本页定义持续生效的身份、Missing、事务与退休要求；规范要求不等于本轮全部实测通过。当前证据范围见 [当前验收](CURRENT_ACCEPTANCE.md)。
 > 文中“必须”和“禁止”是架构约束；“当前实现”与“当前缺口”来自本次源码审计。
 
 ## 一、适用范围与最终不变量
@@ -231,7 +231,7 @@ Inno.References
 `PluginRecoveryHelper` 等平行 owner。
 
 2026-09-07 本轮验收补充：Asset ID 缺失不再按 path 认领别的对象；tombstone 保留中立状态/依赖；Recovery 补偿包含失败 participant 自身且释放引用；Registry 候选创建与退休失败已接入统一 Fault gate，并增加真实 ALC 保留根测试。
-**这些修复不代表跨域生产 Recovery 已完成**：各 owner 的 Missing slots 尚未全部接到该事务，详见[当前验收阻断表](ENGINE_CLOSURE_ACCEPTANCE_2026_09_07.md)。此标准不因已有测试全绿而降级。
+跨域 Recovery 必须逐一验证参与者和失败补偿，不能由单个领域测试通过推导完整覆盖。当前未执行的范围见[当前验收](CURRENT_ACCEPTANCE.md)。
 
 ### 5.3 Serialization Context 的唯一组合入口
 
@@ -708,144 +708,13 @@ resolved
 - shadow generation storage 在成功后清理。
 - shutdown 对仍 Pending/Faulted generation 聚合报告，不静默退出。
 
-## 十四、当前实现审计
+## 十四、验收与变更要求
 
-| 区域 | 当前可复用基础 | 与目标标准的差距 |
-| --- | --- | --- |
-| Core Identity | persistent ID、generation runtime ID、显式 domain、`RuntimeIdentity`、per-session allocator 和 stale 检查 | 继续审计尚未跨边界的领域二级索引，禁止产生第二权威 owner |
-| Scene | `EngineObject : IdentityObject`；共享五阶段 Recovery 已接真实 element/Asset slots；replacement 保留 persistent ID；Missing 保留结构和 bytes | 继续扩展全域批次、复杂嵌套引用与失败组合 |
-| Assets | `AssetObject` 与 `AssetFileEntry` 均进入 Identity；candidate source identity dormant/activate/rollback；统一 Asset resolver/context | durable tombstone 与跨领域 Missing 的批量 recovery participant 仍需继续统一 |
-| Type identity | `TypeRef` 已区分 stable/runtime type ID | 它是类型身份，不应被误当作 object Identity；跨域恢复仍需共享 transaction |
-| Missing Scene type | `MissingGameComponent`、`MissingGameSystem` 保存 Stable Type ID、bytes、dependencies 并可在 reload 恢复 | Graph/Settings/Plugin unavailable 状态仍需完成共享 recovery participant 接入 |
-| Editor DragDrop | domain-qualified runtime ID payload、allocator re-resolution、stale rejection 和 reload cancellation 已完成 | 新增 drag source 必须先成为当前 authoring/scene identity domain 的成员 |
-| Editor History | stable kind、中立 bytes、persistent ID、candidate handler map、统一 Asset context；Missing Component/System Undo/Redo 与恢复已接通 | Graph/Settings/Plugin availability 等跨领域 Missing 自动恢复仍需补齐 coverage |
-| Reload | 公共 `AssemblyUnloadBarrier`、弱 probe、双 GC、专用异常和 Faulted gate 已实现 | 继续扩展 Plugin uninstall/rollback/shutdown 的 soak 与 intentional-leak coverage |
-| Plugins/Scripting | Plugin ID、source identity、Stable Type ID、collectible ALC、closure reload 和严格 GC gate 已存在 | Plugin unavailable 与通用 Missing recovery 仍需补齐领域 participant |
+修改 identity、resolver、Missing 或 reload 时，必须执行上方测试矩阵，并同步领域调用方与退出顺序。测试通过数不能替代跨域生产事务、失败补偿和旧 ALC 不可达证据。
 
-因此后续不是推翻现有系统：runtime token、Asset context 与 reload completion 已收口；剩余工作是把既有
-Scene/Graph/Settings/Plugin Missing 表示接入共享 recovery transaction，而不是删除它们保存的领域结构。
+当前执行状态统一维护在 [当前验收](CURRENT_ACCEPTANCE.md) 与 [当前问题](CURRENT_ISSUES.md)。本页不维护第二份阶段进度或历史测试计数。
 
-## 十五、实施顺序
-
-### 阶段 A：锁定语义与机器规则（已完成）
-
-- 采用本文身份分类，禁止 runtime ID 持久化。
-- 为 Identity domain、persistent reference、Missing 和 unload barrier 增加 Architecture 规则。
-- 修正文档/API 中把 object identity、type identity、semantic ID 和 handle 混称的地方。
-
-### 阶段 B：统一 identity-aware Editor interaction（已完成）
-
-- 给所有可拖拽 authoring/scene model 提供 identity-bearing live record。
-- 用 runtime ID payload 替换 `Guid` token + managed source table。
-- 统一 resolver routing、stale rejection 和 reload cancellation。
-
-### 阶段 C：建立 `Inno.References`（基础协议与 Asset/Runtime owner 已完成）
-
-- 建立 reference descriptor、resolver catalog、resolution state、missing state 和 recovery transaction。
-- Assets、Scene、Scripting、Plugins 只贡献领域 resolver/adapter。
-- 建立 Runtime/Editor/History 的完整 Serialization Context owner。
-
-### 阶段 D：迁移 Missing 与 History（Asset context 已完成，跨领域 recovery 继续）
-
-- 保留现有 Scene Missing 能力，但改为共享 recovery transaction。
-- 补齐 Asset tombstone、Plugin/Importer unavailable、Graph/Settings opaque extension state。
-- 让所有 History handler 使用统一 context，并覆盖 Missing barrier/recovery。
-
-### 阶段 E：升级 reload completion（Scripting 主路径已完成）
-
-- 把 `AssemblyUnloadMonitor` 提升为不可绕过的 unload barrier。
-- 让 Complete、Rollback、Unload 和 shutdown 产生的 monitor 全部加入 barrier。
-- 移除 timeout 后清空 observation 的成功路径。
-- 增加 `AssemblyUnloadException` 和 Runtime/Editor Faulted policy。
-- 审计并清除全部 host-owned ALC roots。
-
-### 阶段 F：全链验收（macOS 持续执行，Windows 由 CI 执行）
-
-- Scripting、Plugin、Asset、Scene、Editor、Rendering、Audio 分别运行 remove/recover/Undo/Redo 测试。
-- 运行 intentional leak tests，证明未回收一定抛异常。
-- 运行连续 reload soak，证明成功一定意味着旧 ALC 已消失。
-- macOS ARM64 与 Windows x64 都运行相同规则。
-
-## 十六、验收标准与早期执行快照
-
-下方复选框保留早期执行快照，不是当前未完成清单。强制标准不变；后续 Settings/Graph/Plugin 生产事务、强引用矩阵、关闭时 GC 屏障及最终运行结果统一见[当前交付与验收](ENGINE_CLOSURE_IMPLEMENTATION_2026_09_08.md)。不能把旧复选框或旧测试计数当作当前状态。
-
-2026-09-07 续轮补充：[Runtime/Play 退休与共享 IO 的新证据](ENGINE_CLOSURE_CONTINUATION_2026_09_07.md)。
-启动失败和 Play Stop 不再丢失 Pending owner；退休 deadline 失败关闭共享 generation gate。
-本次追加已把通用 Layer/Module/Panel、Type/Assembly Registry 接到 Core 退休机制；未退休信号不再被普通错误聚合掩盖。
-共享 `EnsureRetirementSafe()` 同时保护 Runtime/metadata 的退出；deadline 失败后重复 Dispose 仍不得提前销毁依赖。
-这些变化仍不等价于以下跨领域 Missing-slot Recovery 已完成，相关未完成项继续保持未勾选。
-2026-09-08 追加已完成 Scene + Asset-reference + History 的实际五阶段 Recovery 生产链；全域复选项继续按完整范围判断。
-
-同日后续追加：Asset Source Mount 候选也已使用 `ReferenceRecoveryTransaction`，候选 canonical object
-在激活前只持有 persistent ID，不能抢占活动 runtime 注册；Missing 与原 `.imeta` 返回经过同一引用槽解析。
-Source Complete/Rollback 与 Pipeline shutdown 使用 Core lifetime/barrier；Authoring Loader 与 Runtime Database
-保留 Pending unload 的对象、payload 和下层所有权。Assembly Catalog/Importer 现也复用隔离 Source candidate，
-已有 Plugin compilation candidate 只被验证、不重复取得发布所有权。候选 `.imeta` 与中立诊断在提交/激活前不写入
-活动状态；失败直接恢复原 loader，不再延迟到 GetLoader 时 Rescan。Settings、Graph 与 Plugin availability
-的共同生产事务仍未完成，C07 保持部分完成。
-
-2026-09-07 本轮收口补充：Module/Script/Editor 共用 GenerationCoordinator；
-Build/Export 持有跨 await 的 read lease，自动 Catalog refresh 使用互斥 change reservation 并在读租约期间延后。
-Registry/Module 的退休和回滚清理错误会聚合抛出并 Fault，不再仅写日志后继续。
-这些实现不等于下列 Missing/Recovery 项已全部通过；跨域生产路径统一仍以
-[实施记录 C07](ENGINE_CONSOLIDATION_IMPLEMENTATION.md)的未关闭项为准。
-
-Settings 的 effective cache 已改为 Stable Type ID + property bytes，查询只创建当前 definition 的临时快照；
-Store 必须从 Editor/Build 的 AssetPipeline 或 Player 的 RuntimeSession.assets 取得完整 owner context。
-Compose、replacement、contribution 与 clone 共用此 context，真实脚本卸载测试覆盖第二个未主动 Rebuild 的 Store。
-这关闭了实例缓存/丢失 resolver 缺口，但 Settings/Graph/Plugin availability 的共同 Recovery participant 仍未完成。
-
-Audio Provider 的内容收集使用 invocation-scoped、有界 context，返回后清空 Clip 引用并撤销跨帧提交；
-只有整批验证成功的 snapshot 能进入当前 Update。不得用长期保存此 collector 代替 Identity 解析。
-
-共享 `AssetLease<T>`/`ArtifactLease` 保留直接或包装 Pending 的 value 与回调，并串行化并发/重入释放；
-`RetentionScope` 与 Audio Clip cache 复用 Core `LifetimeScope`，不在 native Clip 退出前释放 Artifact，
-也不在 Artifact Pending 重试时重复销毁 native Clip。Runtime Database 的 lease 计数与预算 eviction
-分阶段推进，每个租约只递减一次。取消 preload 在清理 Pending 期间保留等待者。后续 C06 批次已将
-Aggregate/InnerException 分类传播到 Core、Registry、Catalog、Reference recovery 与 Host 退出链；
-相邻普通错误以及激活失败原因也必须随 Pending 保留。具体执行结果以累积报告的最新验收段为准；
-这不等于失败 startup 与真实设备 callback/Task 的完整强引用 soak 矩阵已经关闭。
-
-### Identity 与索引
-
-- [ ] 所有跨 UI/回调/队列/帧边界的 live object 寻址经过 Identity。
-- [x] ImGui DragDrop payload bytes 是 Identity runtime ID，payload type 同时限定 identity domain。
-- [x] runtime ID 从不进入持久状态或 History。
-- [ ] domain 二级索引不成为 live object 的第二权威来源。
-- [ ] persistent ID、Stable Type ID、semantic ID、handle 和 content key 没有混用。
-
-### Missing 与恢复
-
-- [ ] Asset、Script Type、Plugin、Importer、Graph/Settings extension 缺失时数据仍完整。
-- [x] `Inno.References` 在 API 中严格区分 Missing、Unassigned、TypeMismatch 和 Invalid。
-- [ ] 同一 identity 恢复后自动重建，取得新 runtime ID。
-- [ ] 自动 Missing/Recovery 不制造 dirty/history noise。
-- [ ] 恢复失败保持原 Missing 状态并发布精确诊断。
-
-### Undo/Redo
-
-- [x] History 只保存 stable identity 和 neutral bytes。
-- [ ] 暂时 Missing 只形成可恢复 barrier，不丢弃或跳过记录。
-- [ ] 恢复后原 Undo/Redo 自动可用。
-- [x] 所有 Asset-aware Scene/History/Play handler 使用 owner 创建的完整 Serialization Context。
-- [ ] Missing placeholder 的创建、删除、移动和属性修改可逆。
-
-### Reload 与 GC
-
-- [x] Scripting reload Success 前所有退休 ALC monitor 均 Completed。
-- [x] Pending monitor 不会因 timeout 被遗忘。
-- [ ] GC barrier 期间禁止重叠 reload、Play、Build 和 Export。
-- [x] ALC retention 抛 `AssemblyUnloadException` 并进入 Faulted。
-- [ ] static/event/task/thread/native callback 等强引用有自动化泄漏测试。
-- [ ] 成功 reload 后旧 generation shadow storage 已清理。
-
-最终原则：
-
-> 瞬时访问使用 Identity runtime ID；持久意图使用 persistent ID 和 Stable ID；暂时不可用保留为 Missing；
-> 当前 generation 负责解析和恢复；旧 generation 只有在 GC 证明完全不可达后才算真正结束。
-
-## 2026-09-08 生产映射
+## 生产事务与静态运行
 
 GraphEditorModule 以独立 IdentityAllocator 解析 live document，资源集合承担 session 的强引用所有权，History 保存 Guid persistent ID 和中立 Graph bytes，Panel 不保存跨代 AssetObject。Graph 文档源的 Missing 保留脏数据，定义缺席的 node record 不删除。
 
@@ -853,6 +722,42 @@ SettingsStore.CreateReloadChange 捕获 neutral effective values/contributors/re
 
 Editor participant Capture 在共享 Prepare 内执行，失败只补偿已尝试阶段；代码使用 IGenerationChange，禁止两段无所有权 activate/restore Action 替代事务。Plugin 后台 scan、Lifetime completion、Jobs callback 与 Rendering owners 统一 Pending/timeout 所有权。公开 XML/Wiki 的“只读”是正常托管契约，不能作为对抗不受信任 unsafe 代码的沙箱保证。
 
-ScriptReloadHost 关闭前先等待共享 GenerationCoordinator 完成上一批 AwaitingCollection，再发布模块卸载；退休失败继续抛异常并封锁 Host，不清除 monitor 后伪装关闭成功。此顺序由真实脚本双代卸载回归和非空原生 Editor 600 帧退出验证覆盖。
+ScriptReloadHost 关闭前先等待共享 GenerationCoordinator 完成上一批 AwaitingCollection，再发布模块卸载；退休失败继续抛异常并封锁 Host，不清除 monitor 后伪装关闭成功。该顺序需要真实脚本双代卸载和非空原生 Editor 退出回归；本轮执行结果单独记录，不能沿用历史帧数作为当前证据。
 
 自动编译必须区分源输入变化和当前候选的发布通知回声，不能由 Assembly/Asset Catalog 自身重新发布而无限排队。Editor 编译票据与进度 UI 也参与完整 GC 完成语义：先发布、后回收、最后成功；外部边界已经推进完成屏障时，Editor 仍须完成 deferred ticket。退休失败显式进入 Failed 并解除忙碌弹窗，不能被遗留 compilation request 覆盖，也不能因关闭弹窗就放开 Faulted Host 门禁。
+
+Editor 菜单的单一 `Reload Scripts` 只排队变化感知的脚本重编译；没有变化时不创建新 ALC，有变化时仍通过同一个 candidate transaction 和 Full GC → Finalizers → Full GC 的卸载屏障。Rendering 的帧级诊断只描述当前帧失败，下一帧恢复后按 issue identity 撤销；Render generation/extension 候选失败仍保持独立的长期问题，直到对应候选恢复。单文件 Player 中框架程序集可能不列入 `TRUSTED_PLATFORM_ASSEMBLIES`，ModuleHost 只接受默认 ALC 内、具有已知框架强签名的 System/Microsoft.Win32 程序集作为该场景的 BCL 契约。
+
+## 宿主加载上下文
+
+ModuleHost 的宿主目录、依赖预载与共享程序集解析以 `typeof(ModuleHost).Assembly` 所属 ALC 为准。隔离 MSBuild Task 不从默认 ALC 引入第二份引擎契约；框架程序集仍通过受信任的默认 ALC 解析。浏览器静态链接入口和桌面 collectible 激活使用同一个 ModuleHost，不改变 candidate、退休或 Faulted 的行为。
+
+`HostLoadContextTests.IsolatedHostDiscoversItsOwnTypesAndReleasesItsContext` 通过实际隔离 ALC 中的公开 ModuleHost/TypeCatalog 验证类型归属和完整释放；Full GC → Finalizers → Full GC 与弱 monitor 必须通过。测试入口不代表本轮已经执行，实测边界见[当前验收](CURRENT_ACCEPTANCE.md)。
+
+## 导出任务退休
+
+Editor Export 停止必须等准备、构建和取消后的清理任务全部完成，才释放取消源和依赖服务。
+Module 复用现有 Pending/退休屏障；退出时完成的 Support Pack 准备不得启动新构建。
+已完成但仍报告 `RetirementPendingException` 的任务不能作为普通失败清空。
+
+
+## Sample 导入的共享事务边界
+
+Sample 后台快照复用 generation read lease、Serialization generation 和 Core LifetimeScope。后台候选 Catalog/导入/索引完成后，owner-thread 采用与发布复用现有 AssetSourceMountTransaction / ReferenceRecoveryTransaction，不新增 resolver 或候选资产数据库；preflight 通过 IAssetSourceSnapshot 捕获编译输入，成功前不切换活动索引或 Identity。
+
+取消 / Editor stop 必须先 drain，再 rollback、完成后台私有目录清理并释放租约。Sample Module 的 stop 先于 Scripting，读租约期间自动编译保留请求并延后；Faulted 或退休 timeout 不能清空仍被任务使用的 dependency。History 只保存 remap 后的目录、sidecar 和中立 archive bytes。
+已经完成但报告 Pending ownership 的后台任务必须保留为 Core lifetime 的失败任务并 Fault Host，不能转换成普通业务失败后释放其 generation。普通验证失败与取消只在后台消费者已经结束时进入可恢复 rollback。
+
+## 编译产物与加载策略
+
+Compiler 只发布不可变 `ScriptModuleDeployment`，不创建 ALC 或引用 DotNet Adapter。Reload 的组合工厂将产物转换为 `IModuleSource`，共同 ModuleHost/GenerationCoordinator 继续拥有候选、原子发布和 Full GC → finalizers → Full GC 退休屏障。工厂不能提前激活模块，也不能在 Faulted gate 外开启新的加载事务。
+
+
+## 内容与帧临时状态的 owner 复核
+
+
+Contributor snapshot、scratch、内容读取流与异步 clip 准备属于各自 owner。帧固定 snapshot 后，下一帧才接受注册变化；所有 scratch 引用在 finally 清空。取消 clip/content 准备后必须完成任务退休，不能让 callback 或下载 continuation 持有已卸载 extension。
+
+内容 store 的 reader generation 与代码 TypeCache/Assembly generation 具有不同语义：reader pin 只保护冻结内容，不成为 live object 第二索引；跨 generation live object 仍通过 Core.Identity 重新解析。Settings 与 Asset 引用使用 owner 的完整 SerializationContext。只读 Pack 与 Asset lease 不公开物理路径。
+
+本轮职责迁移保留显式 Stable Type ID，并固定迁移前推导出的持久 DTO ID；内部 parser、临时键和生成 catalog 不进入持久协议。退出顺序和 GC barrier 继续按本页原规范执行，不能把缓存 reader 已释放当作 collectible ALC 已退休。

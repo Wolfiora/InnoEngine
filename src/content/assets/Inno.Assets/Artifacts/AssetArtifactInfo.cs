@@ -14,9 +14,6 @@ public sealed class AssetArtifactInfo
     /// <param name="outputName">
     /// The stable output name used for artifact lookup.
     /// </param>
-    /// <param name="absolutePath">
-    /// The absolute path of the immutable artifact file.
-    /// </param>
     /// <param name="contentHash">
     /// The normalized content fingerprint used for integrity verification.
     /// </param>
@@ -26,13 +23,11 @@ public sealed class AssetArtifactInfo
     public AssetArtifactInfo(
         AssetArtifactKey key,
         string outputName,
-        string absolutePath,
         string contentHash,
-        long length)
-    {
+        long length
+    ) {
         this.key = key;
         this.outputName = outputName ?? string.Empty;
-        this.absolutePath = absolutePath ?? string.Empty;
         this.contentHash = contentHash ?? string.Empty;
         this.length = length;
     }
@@ -46,11 +41,6 @@ public sealed class AssetArtifactInfo
     /// Gets the stable output name.
     /// </summary>
     public string outputName { get; }
-
-    /// <summary>
-    /// Gets the absolute immutable output path.
-    /// </summary>
-    public string absolutePath { get; }
 
     /// <summary>
     /// Gets the output content fingerprint.

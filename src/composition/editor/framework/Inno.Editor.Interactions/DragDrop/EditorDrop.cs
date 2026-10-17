@@ -136,8 +136,11 @@ public sealed class EditorDropContext<TSource, TTarget>
     where TSource : class
     where TTarget : class
 {
-    internal EditorDropContext(EditorDropContext context, TSource source, TTarget target)
-    {
+    internal EditorDropContext(
+        EditorDropContext context,
+        TSource source,
+        TTarget target
+    ) {
         untyped = context;
         this.source = source;
         this.target = target;

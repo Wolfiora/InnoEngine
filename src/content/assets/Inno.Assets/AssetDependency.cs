@@ -26,8 +26,11 @@ public readonly struct AssetDependency : IEquatable<AssetDependency>
     /// Thrown when <paramref name="persistentId"/> is empty.
     /// </exception>
     [ScriptingApiIgnore]
-    public AssetDependency(Guid persistentId, TypeRef type, string lastKnownPath)
-    {
+    public AssetDependency(
+        Guid persistentId,
+        TypeRef type,
+        string lastKnownPath
+    ) {
         if (persistentId == Guid.Empty)
             throw new ArgumentException("An asset dependency requires a persistent identity.", nameof(persistentId));
         this.persistentId = persistentId;
@@ -93,7 +96,10 @@ public readonly struct AssetDependency : IEquatable<AssetDependency>
     /// <returns>
     /// <see langword="true"/> when both descriptors reference the same persistent asset; otherwise, <see langword="false"/>.
     /// </returns>
-    public static bool operator ==(AssetDependency left, AssetDependency right) => left.Equals(right);
+    public static bool operator ==(
+        AssetDependency left,
+        AssetDependency right
+    ) => left.Equals(right);
 
     /// <summary>
     /// Determines whether two descriptors refer to different persistent assets.
@@ -107,5 +113,8 @@ public readonly struct AssetDependency : IEquatable<AssetDependency>
     /// <returns>
     /// <see langword="true"/> when the descriptors reference different persistent assets; otherwise, <see langword="false"/>.
     /// </returns>
-    public static bool operator !=(AssetDependency left, AssetDependency right) => !left.Equals(right);
+    public static bool operator !=(
+        AssetDependency left,
+        AssetDependency right
+    ) => !left.Equals(right);
 }

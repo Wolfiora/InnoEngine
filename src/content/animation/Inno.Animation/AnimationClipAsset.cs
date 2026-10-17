@@ -22,8 +22,10 @@ public struct AnimationKeyframe
     /// <param name="value">
     /// Value sampled at the keyframe time.
     /// </param>
-    public AnimationKeyframe(float time, AnimationValue value)
-    {
+    public AnimationKeyframe(
+        float time,
+        AnimationValue value
+    ) {
         if (!float.IsFinite(time) || time < 0f)
             throw new ArgumentOutOfRangeException(nameof(time));
         this.time = time;
@@ -70,8 +72,8 @@ public sealed class AnimationTrack : ISerializable
     public AnimationTrack(
         string bindingId,
         AnimationInterpolation interpolation,
-        IEnumerable<AnimationKeyframe> keyframes)
-    {
+        IEnumerable<AnimationKeyframe> keyframes
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(bindingId);
         ArgumentNullException.ThrowIfNull(keyframes);
         this.bindingId = bindingId;

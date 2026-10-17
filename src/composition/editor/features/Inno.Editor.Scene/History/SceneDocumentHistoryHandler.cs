@@ -12,8 +12,10 @@ internal sealed class SceneDocumentHistoryHandler : EditorHistoryHandler
     private readonly Logger m_log;
     private readonly EditorSceneWorkspace m_workspace;
 
-    internal SceneDocumentHistoryHandler(EditorSceneWorkspace workspace, LogRouter logs)
-    {
+    internal SceneDocumentHistoryHandler(
+        EditorSceneWorkspace workspace,
+        LogRouter logs
+    ) {
         m_workspace = workspace ?? throw new ArgumentNullException(nameof(workspace));
         ArgumentNullException.ThrowIfNull(logs);
         m_log = logs.CreateLogger<SceneDocumentHistoryHandler>();
@@ -37,8 +39,8 @@ internal sealed class SceneDocumentHistoryHandler : EditorHistoryHandler
     protected override EditorHistoryAvailability Query(
         EditorHistoryContext context,
         EditorHistoryChange change,
-        EditorHistoryDirection direction)
-    {
+        EditorHistoryDirection direction
+    ) {
         try
         {
             SceneDocumentHistoryData data = SceneDocumentHistoryData.Decode(change.payload.ReadBytes());
@@ -85,8 +87,8 @@ internal sealed class SceneDocumentHistoryHandler : EditorHistoryHandler
     protected override EditorHistoryResult Apply(
         EditorHistoryContext context,
         EditorHistoryChange change,
-        EditorHistoryDirection direction)
-    {
+        EditorHistoryDirection direction
+    ) {
         SceneDocumentHistoryData data;
         try
         {
@@ -169,8 +171,8 @@ internal sealed class SceneDocumentHistoryHandler : EditorHistoryHandler
         EditorSceneWorkspace workspace,
         Guid sceneId,
         DocumentMutation mutation,
-        EditorSceneWorkspace.SceneDocumentSnapshot? original)
-    {
+        EditorSceneWorkspace.SceneDocumentSnapshot? original
+    ) {
         if (mutation == DocumentMutation.Restored)
         {
             GameScene? restored = workspace.Find<GameScene>(sceneId);

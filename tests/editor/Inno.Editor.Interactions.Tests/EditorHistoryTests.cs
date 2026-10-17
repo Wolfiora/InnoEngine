@@ -1,3 +1,4 @@
+using Inno.Adapter.Modules.DotNet;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -266,12 +267,10 @@ public sealed class EditorHistoryTests
             Directory.CreateDirectory(Path.Combine(m_projectRoot, "Assets"));
             NeutralValueHistoryHandler.Reset();
             m_modules = new ModuleHost(new ModuleHostOptions
-            {
-                cacheDirectory = Path.Combine(m_projectRoot, "Library", "Assemblies")
-            });
-            types = new TypeCatalog(m_modules);
+            { catalogSource = new DotNetAssemblyCatalogSource(typeof(EditorHistoryTests).Assembly)            });
+            types = new TypeCatalog(m_modules, new ReflectionTypeCatalogSource());
             runtime = new EditorInteractionRuntime(
-                new EditorContext(m_projectRoot),
+                new EditorContext(m_projectRoot, new EditorKeyboardPolicy(Inno.Core.Input.KeyModifier.Control, "Super")),
                 types,
                 m_logs,
                 [types]);
@@ -308,8 +307,8 @@ public sealed class NeutralValueHistoryHandler : EditorHistoryHandler
         int slot,
         int before,
         int after,
-        string? mergeKey = null)
-    {
+        string? mergeKey = null
+    ) {
         byte[] bytes = new byte[sizeof(int) * 3];
         BitConverter.GetBytes(slot).CopyTo(bytes, 0);
         BitConverter.GetBytes(before).CopyTo(bytes, sizeof(int));
@@ -320,13 +319,22 @@ public sealed class NeutralValueHistoryHandler : EditorHistoryHandler
     public static int GetValue(int slot)
         => S_VALUES.TryGetValue(slot, out int value) ? value : 0;
 
-    public static void SetValue(int slot, int value)
+    public static void SetValue(
+        int slot,
+        int value
+    )
         => S_VALUES[slot] = value;
 
-    public static void Block(int slot, EditorHistoryDirection direction)
+    public static void Block(
+        int slot,
+        EditorHistoryDirection direction
+    )
         => S_BLOCKED.Add((slot, direction));
 
-    public static void Unblock(int slot, EditorHistoryDirection direction)
+    public static void Unblock(
+        int slot,
+        EditorHistoryDirection direction
+    )
         => S_BLOCKED.Remove((slot, direction));
 
     public static void Reset()
@@ -338,7 +346,8 @@ public sealed class NeutralValueHistoryHandler : EditorHistoryHandler
     protected override EditorHistoryAvailability Query(
         EditorHistoryContext context,
         EditorHistoryChange change,
-        EditorHistoryDirection direction)
+        EditorHistoryDirection direction
+    )
         => change.payload.length >= sizeof(int) * 3
             ? EditorHistoryAvailability.Available()
             : EditorHistoryAvailability.Unavailable("The neutral value payload is truncated.");
@@ -346,8 +355,8 @@ public sealed class NeutralValueHistoryHandler : EditorHistoryHandler
     protected override EditorHistoryResult Apply(
         EditorHistoryContext context,
         EditorHistoryChange change,
-        EditorHistoryDirection direction)
-    {
+        EditorHistoryDirection direction
+    ) {
         byte[] bytes = change.payload.ReadBytes();
         int slot = BitConverter.ToInt32(bytes, 0);
         if (S_BLOCKED.Contains((slot, direction)))
@@ -362,8 +371,8 @@ public sealed class NeutralValueHistoryHandler : EditorHistoryHandler
     protected override bool TryMerge(
         EditorHistoryChange older,
         EditorHistoryChange newer,
-        out EditorHistoryChange? merged)
-    {
+        out EditorHistoryChange? merged
+    ) {
         byte[] olderBytes = older.payload.ReadBytes();
         byte[] newerBytes = newer.payload.ReadBytes();
         int slot = BitConverter.ToInt32(olderBytes, 0);

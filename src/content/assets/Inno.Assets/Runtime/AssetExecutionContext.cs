@@ -21,8 +21,7 @@ public static class AssetExecutionContext
     /// <exception cref="InvalidOperationException">
     /// Thrown when no asset lookup is active for the caller.
     /// </exception>
-    public static IAssetLookup current
-        => S_CURRENT_SCOPE.current;
+    public static IAssetLookup current => S_CURRENT_SCOPE.current;
 
     /// <summary>
     /// Binds an asset lookup until the returned strict last-in-first-out scope is disposed.

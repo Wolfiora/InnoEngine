@@ -68,8 +68,8 @@ public sealed class AssetImportContext
         IAssetReferenceResolver references,
         Func<string, Type, AssetObject?> dependencyResolver,
         Func<string, ReadOnlyMemory<byte>> sourceReader,
-        IAssetArtifactLookup artifacts)
-    {
+        IAssetArtifactLookup artifacts
+    ) {
         assetPath = AssetPath.Parse(relativePath ?? throw new ArgumentNullException(nameof(relativePath)));
         this.absolutePath = absolutePath ?? throw new ArgumentNullException(nameof(absolutePath));
         this.sourceBytes = sourceBytes;
@@ -103,8 +103,10 @@ public sealed class AssetImportContext
     /// <returns>
     /// A caller-owned lease that must be disposed after reading.
     /// </returns>
-    public ArtifactLease AcquireArtifact(Guid assetId, string outputName)
-    {
+    public ArtifactLease AcquireArtifact(
+        Guid assetId,
+        string outputName
+    ) {
         DependsOnArtifact(assetId);
         return m_artifacts.AcquireArtifact(assetId, outputName);
     }
@@ -211,8 +213,7 @@ public sealed class AssetImportContext
     /// <returns>
     /// Decoded UTF-8 text without an optional byte-order mark.
     /// </returns>
-    public string ReadSourceUtf8Text(AssetPath path)
-        => DecodeUtf8(ReadSourceBytes(path).Span);
+    public string ReadSourceUtf8Text(AssetPath path) => DecodeUtf8(ReadSourceBytes(path).Span);
 
     private static string DecodeUtf8(ReadOnlySpan<byte> bytes)
     {
@@ -316,8 +317,10 @@ public sealed class AssetImportContext
     /// <param name="fingerprint">
     /// The current deterministic input fingerprint.
     /// </param>
-    public void DependsOnCustomInput(string key, string fingerprint)
-    {
+    public void DependsOnCustomInput(
+        string key,
+        string fingerprint
+    ) {
         if (string.IsNullOrWhiteSpace(key))
             throw new ArgumentException("A custom dependency key is required.", nameof(key));
         m_importDependencies.Add(new AssetImportDependency(
@@ -342,4 +345,5 @@ internal enum AssetImportDependencyKind
 internal readonly record struct AssetImportDependency(
     AssetImportDependencyKind kind,
     string key,
-    string fingerprint);
+    string fingerprint
+);

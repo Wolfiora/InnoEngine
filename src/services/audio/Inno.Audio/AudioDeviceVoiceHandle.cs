@@ -5,8 +5,10 @@ namespace Inno.Audio;
 /// </summary>
 public readonly record struct AudioDeviceVoiceHandle
 {
-    internal AudioDeviceVoiceHandle(ulong value, uint deviceGeneration)
-    {
+    internal AudioDeviceVoiceHandle(
+        ulong value,
+        uint deviceGeneration
+    ) {
         this.value = value;
         this.deviceGeneration = deviceGeneration;
     }

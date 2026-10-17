@@ -52,8 +52,8 @@ public sealed class SerializedProperty
         Action<object?> setter,
         PropertyVisibility visibility,
         bool canRead,
-        bool canWrite)
-    {
+        bool canWrite
+    ) {
         this.name = name;
         this.propertyType = propertyType;
         this.visibility = visibility;

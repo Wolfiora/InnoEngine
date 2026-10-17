@@ -33,8 +33,8 @@ public static class EditorDragDropRenderer
     public static bool Source(
         EditorInteraction interaction,
         EditorDragData data,
-        Action? drawPreview = null)
-    {
+        Action? drawPreview = null
+    ) {
         ArgumentNullException.ThrowIfNull(data);
         return EditorWidget.DragDropSource(
             GetPayloadType(data.sourceIdentity.domainId),
@@ -56,8 +56,8 @@ public static class EditorDragDropRenderer
     /// </returns>
     public static EditorDropWidgetResult Target(
         EditorInteraction interaction,
-        EditorDropPlacement placement = EditorDropPlacement.None)
-    {
+        EditorDropPlacement placement = EditorDropPlacement.None
+    ) {
         if (!interaction.TryGetActiveDragIdentity(out RuntimeIdentity activeIdentity))
             return EditorDropWidgetResult.none;
         bool delivered = EditorWidget.DragDropTarget(
@@ -101,8 +101,8 @@ public readonly record struct EditorDropWidgetResult
     public EditorDropWidgetResult(
         bool isPreviewing,
         EditorDropStatus status,
-        EditorDropResult result)
-    {
+        EditorDropResult result
+    ) {
         this.isPreviewing = isPreviewing;
         this.status = status;
         this.result = result;

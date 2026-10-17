@@ -16,11 +16,6 @@ public static class ToolchainLayout
     public const string C_EXTERNAL_DIRECTORY_NAME = "extern";
 
     /// <summary>
-    /// Identifies the rebuildable native output directory.
-    /// </summary>
-    public const string C_OUTPUT_DIRECTORY_NAME = ".lib";
-
-    /// <summary>
     /// Identifies the normalized debug configuration token.
     /// </summary>
     public const string C_DEBUG_CONFIGURATION = "debug";

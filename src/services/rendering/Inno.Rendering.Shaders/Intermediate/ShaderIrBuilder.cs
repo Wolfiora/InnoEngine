@@ -46,15 +46,19 @@ public sealed partial class ShaderIrBuilder
     /// <exception cref="ArgumentException">
     /// The name is empty, type is void, or this input was already declared with another type.
     /// </exception>
-    public ShaderIrValue Input(string name, ShaderSourceType type)
-    {
+    public ShaderIrValue Input(
+        string name,
+        ShaderSourceType type
+    ) {
         EnsureWritable();
-        if (m_parent is not null) throw new InvalidOperationException("Stage inputs must be declared in the root region and captured by nested regions.");
+        if (m_parent is not null)
+            throw new InvalidOperationException("Stage inputs must be declared in the root region and captured by nested regions.");
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
         RequireValueType(type);
         if (m_inputs.TryGetValue(name, out ShaderIrValue? previous))
         {
-            if (!type.IsEquivalentTo(previous.type)) throw new ArgumentException($"Input '{name}' changed type.", nameof(type));
+            if (!type.IsEquivalentTo(previous.type))
+                throw new ArgumentException($"Input '{name}' changed type.", nameof(type));
             return previous;
         }
         ShaderIrValue output = NewValue(type);
@@ -77,7 +81,8 @@ public sealed partial class ShaderIrBuilder
     /// </exception>
     public ShaderIrValue Constant(float value)
     {
-        if (!float.IsFinite(value)) throw new ArgumentOutOfRangeException(nameof(value), "Shader constants must be finite.");
+        if (!float.IsFinite(value))
+            throw new ArgumentOutOfRangeException(nameof(value), "Shader constants must be finite.");
         return ConstantBits("float", BitConverter.SingleToUInt32Bits(value));
     }
 
@@ -132,11 +137,15 @@ public sealed partial class ShaderIrBuilder
     /// <exception cref="ArgumentException">
     /// Operands belong to another builder, differ in type, or the operation is invalid for them.
     /// </exception>
-    public ShaderIrValue Binary(ShaderIrOperation operation, ShaderIrValue left, ShaderIrValue right)
-    {
+    public ShaderIrValue Binary(
+        ShaderIrOperation operation,
+        ShaderIrValue left,
+        ShaderIrValue right
+    ) {
         RequireOwned(left);
         RequireOwned(right);
-        if (!left.type.IsEquivalentTo(right.type)) throw new ArgumentException("Binary operands require identical types; conversions must be explicit.", nameof(right));
+        if (!left.type.IsEquivalentTo(right.type))
+            throw new ArgumentException("Binary operands require identical types; conversions must be explicit.", nameof(right));
         bool numeric = TryNumeric(left.type, out string scalar, out int columns, out int rows);
         bool scalarValue = columns == 1 && rows == 1;
         bool comparison = operation is ShaderIrOperation.Equal or ShaderIrOperation.LessThan;
@@ -148,7 +157,8 @@ public sealed partial class ShaderIrBuilder
             ShaderIrOperation.LessThan => numeric && scalarValue && scalar != "bool",
             _ => false
         };
-        if (!permitted) throw new ArgumentException($"Operation '{operation}' is not defined for '{left.type.id}'.", nameof(operation));
+        if (!permitted)
+            throw new ArgumentException($"Operation '{operation}' is not defined for '{left.type.id}'.", nameof(operation));
         ShaderIrValue output = NewValue(comparison ? ShaderSourceType.Atomic("bool") : left.type);
         m_instructions.Add(new(operation, [left, right], [output]));
         return output;
@@ -172,8 +182,11 @@ public sealed partial class ShaderIrBuilder
     /// <exception cref="ArgumentException">
     /// The condition is not bool or selected value types differ.
     /// </exception>
-    public ShaderIrValue Select(ShaderIrValue condition, ShaderIrValue whenTrue, ShaderIrValue whenFalse)
-    {
+    public ShaderIrValue Select(
+        ShaderIrValue condition,
+        ShaderIrValue whenTrue,
+        ShaderIrValue whenFalse
+    ) {
         RequireOwned(condition);
         RequireOwned(whenTrue);
         RequireOwned(whenFalse);
@@ -201,18 +214,27 @@ public sealed partial class ShaderIrBuilder
     /// <exception cref="ArgumentException">
     /// The type is not an aggregate or members have incorrect count or types.
     /// </exception>
-    public ShaderIrValue Construct(ShaderSourceType type, params ShaderIrValue[] members)
-    {
+    public ShaderIrValue Construct(
+        ShaderSourceType type,
+        params ShaderIrValue[] members
+    ) {
         RequireValueType(type);
         ArgumentNullException.ThrowIfNull(members);
-        foreach (ShaderIrValue member in members) RequireOwned(member);
+        foreach (ShaderIrValue member in members)
+            RequireOwned(member);
         ShaderSourceType[] expected;
-        if (type.elementType is not null) expected = Enumerable.Repeat(type.elementType, type.elementCount).ToArray();
-        else if (type.fields.Count != 0) expected = type.fields.Select(static field => field.type).ToArray();
+        if (type.elementType is not null)
+            expected = Enumerable.Repeat(type.elementType, type.elementCount).ToArray();
+        else if (type.fields.Count != 0)
+            expected = type.fields.Select(static field => field.type).ToArray();
         else if (TryNumeric(type, out string scalar, out int columns, out int rows) && columns * rows > 1)
             expected = Enumerable.Repeat(ShaderSourceType.Atomic(scalar), columns * rows).ToArray();
-        else throw new ArgumentException("Construction requires a vector, matrix, structure or array type.", nameof(type));
-        if (expected.Length != members.Length || expected.Where((value, index) => !value.IsEquivalentTo(members[index].type)).Any())
+        else
+            throw new ArgumentException("Construction requires a vector, matrix, structure or array type.", nameof(type));
+        if (expected.Length != members.Length || expected.Where((
+            value,
+            index
+        ) => !value.IsEquivalentTo(members[index].type)).Any())
             throw new ArgumentException("Aggregate members do not match the complete type layout.", nameof(members));
         ShaderIrValue output = NewValue(type);
         m_instructions.Add(new(ShaderIrOperation.Construct, members, [output]));
@@ -237,24 +259,36 @@ public sealed partial class ShaderIrBuilder
     /// <exception cref="ArgumentOutOfRangeException">
     /// The member index is outside the aggregate layout.
     /// </exception>
-    public ShaderIrValue Extract(ShaderIrValue value, int memberIndex)
-    {
+    public ShaderIrValue Extract(
+        ShaderIrValue value,
+        int memberIndex
+    ) {
         RequireOwned(value);
         ArgumentOutOfRangeException.ThrowIfNegative(memberIndex);
         ShaderSourceType type = value.type;
         int count;
         ShaderSourceType memberType;
-        if (type.elementType is not null) { count = type.elementCount; memberType = type.elementType; }
+        if (type.elementType is not null)
+        {
+            count = type.elementCount;
+            memberType = type.elementType;
+        }
         else if (type.fields.Count != 0)
         {
             count = type.fields.Count;
-            if (memberIndex >= count) throw new ArgumentOutOfRangeException(nameof(memberIndex));
+            if (memberIndex >= count)
+                throw new ArgumentOutOfRangeException(nameof(memberIndex));
             memberType = type.fields[memberIndex].type;
         }
         else if (TryNumeric(type, out string scalar, out int columns, out int rows) && columns * rows > 1)
-        { count = columns; memberType = ShaderSourceType.Atomic(rows == 1 ? scalar : scalar + rows); }
-        else throw new ArgumentException("Extraction requires a vector, matrix, structure or array.", nameof(value));
-        if (memberIndex >= count) throw new ArgumentOutOfRangeException(nameof(memberIndex));
+        {
+            count = columns;
+            memberType = ShaderSourceType.Atomic(rows == 1 ? scalar : scalar + rows);
+        }
+        else
+            throw new ArgumentException("Extraction requires a vector, matrix, structure or array.", nameof(value));
+        if (memberIndex >= count)
+            throw new ArgumentOutOfRangeException(nameof(memberIndex));
         ShaderIrValue output = NewValue(memberType);
         m_instructions.Add(new(ShaderIrOperation.Extract, [value], [output], memberIndex: memberIndex));
         return output;
@@ -278,19 +312,23 @@ public sealed partial class ShaderIrBuilder
     /// <exception cref="ArgumentException">
     /// The module failed, implementation is absent, or input names/types do not match.
     /// </exception>
-    public IReadOnlyDictionary<string, ShaderIrValue> Call(ShaderSourceModuleAnalysis module, string implementationId,
-        IReadOnlyDictionary<string, ShaderIrValue> inputs)
-    {
+    public IReadOnlyDictionary<string, ShaderIrValue> Call(
+        ShaderSourceModuleAnalysis module,
+        string implementationId,
+        IReadOnlyDictionary<string, ShaderIrValue> inputs
+    ) {
         EnsureWritable();
         ArgumentNullException.ThrowIfNull(module);
         ArgumentException.ThrowIfNullOrWhiteSpace(implementationId);
         ArgumentNullException.ThrowIfNull(inputs);
-        if (!module.succeeded) throw new ArgumentException("A source call requires a fully validated module interface.", nameof(module));
+        if (!module.succeeded)
+            throw new ArgumentException("A source call requires a fully validated module interface.", nameof(module));
         ShaderSourceImplementationAnalysis source = module.implementations.FirstOrDefault(value => value.implementationId == implementationId)
             ?? throw new ArgumentException($"Implementation '{implementationId}' is not part of this module.", nameof(implementationId));
         ShaderSourceFunction function = source.analysis.function!;
         ShaderSourceParameter[] parameters = function.parameters.Where(static value => value.direction != ShaderSourceParameterDirection.Output).ToArray();
-        if (parameters.Length != inputs.Count) throw new ArgumentException("Source inputs must match every input/inout parameter exactly.", nameof(inputs));
+        if (parameters.Length != inputs.Count)
+            throw new ArgumentException("Source inputs must match every input/inout parameter exactly.", nameof(inputs));
         var operands = new List<ShaderIrValue>();
         foreach (ShaderSourceParameter parameter in parameters)
         {
@@ -302,7 +340,8 @@ public sealed partial class ShaderIrBuilder
             operands.Add(value);
         }
         var outputs = new Dictionary<string, ShaderIrValue>(StringComparer.Ordinal);
-        if (function.returnType.id != "void") outputs.Add("return", NewValue(function.returnType));
+        if (function.returnType.id != "void")
+            outputs.Add("return", NewValue(function.returnType));
         foreach (ShaderSourceParameter parameter in function.parameters)
             if (parameter.direction != ShaderSourceParameterDirection.Input)
                 outputs.Add("output." + parameter.name, NewValue(parameter.type));
@@ -333,8 +372,10 @@ public sealed partial class ShaderIrBuilder
         return new(m_instructions, outputs);
     }
 
-    private ShaderIrValue ConstantBits(string type, ulong bits)
-    {
+    private ShaderIrValue ConstantBits(
+        string type,
+        ulong bits
+    ) {
         ShaderIrValue output = NewValue(ShaderSourceType.Atomic(type));
         m_instructions.Add(new(ShaderIrOperation.Constant, [], [output], constantBits: bits));
         return output;
@@ -351,36 +392,59 @@ public sealed partial class ShaderIrBuilder
         EnsureWritable();
         ArgumentNullException.ThrowIfNull(value);
         for (ShaderIrBuilder? scope = this; scope is not null; scope = scope.m_parent)
-            if (ReferenceEquals(value.owner, scope.m_owner)) return;
+            if (ReferenceEquals(value.owner, scope.m_owner))
+                return;
         throw new ArgumentException("The value is outside this region's visible scope.", nameof(value));
     }
 
     private void EnsureWritable()
     {
-        if (m_closed) throw new InvalidOperationException("A completed nested region cannot be edited after its callback returns.");
-        if (m_buildingChild) throw new InvalidOperationException("An enclosing builder cannot be mutated while its nested region is being constructed.");
+        if (m_closed)
+            throw new InvalidOperationException("A completed nested region cannot be edited after its callback returns.");
+        if (m_buildingChild)
+            throw new InvalidOperationException("An enclosing builder cannot be mutated while its nested region is being constructed.");
     }
 
     private static void RequireValueType(ShaderSourceType type)
     {
         ArgumentNullException.ThrowIfNull(type);
-        if (type.id == "void") throw new ArgumentException("Void is not a value type.", nameof(type));
+        if (type.id == "void")
+            throw new ArgumentException("Void is not a value type.", nameof(type));
     }
 
-    private static bool TryNumeric(ShaderSourceType type, out string scalar, out int columns, out int rows)
-    {
+    private static bool TryNumeric(
+        ShaderSourceType type,
+        out string scalar,
+        out int columns,
+        out int rows
+    ) {
         scalar = string.Empty;
         columns = rows = 1;
-        if (type.elementType is not null || type.fields.Count != 0) return false;
+        if (type.elementType is not null || type.fields.Count != 0)
+            return false;
         foreach (string name in new[] { "float", "int", "uint", "bool" })
         {
-            if (!type.id.StartsWith(name, StringComparison.Ordinal)) continue;
+            if (!type.id.StartsWith(name, StringComparison.Ordinal))
+                continue;
             ReadOnlySpan<char> shape = type.id.AsSpan(name.Length);
-            if (shape.Length == 0) { scalar = name; return true; }
+            if (shape.Length == 0)
+            {
+                scalar = name;
+                return true;
+            }
             if (shape.Length == 1 && shape[0] is >= '2' and <= '4')
-            { scalar = name; columns = shape[0] - '0'; return true; }
+            {
+                scalar = name;
+                columns = shape[0] - '0';
+                return true;
+            }
             if (name == "float" && shape.Length == 3 && shape[0] is >= '2' and <= '4' && shape[1] == 'x' && shape[2] is >= '2' and <= '4')
-            { scalar = name; columns = shape[0] - '0'; rows = shape[2] - '0'; return true; }
+            {
+                scalar = name;
+                columns = shape[0] - '0';
+                rows = shape[2] - '0';
+                return true;
+            }
         }
         return false;
     }

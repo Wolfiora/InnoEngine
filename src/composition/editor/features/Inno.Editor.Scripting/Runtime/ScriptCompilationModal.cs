@@ -17,7 +17,7 @@ internal sealed class ScriptCompilationModal(EditorScripting scripting) : Editor
     /// <summary>
     /// Gets whether this implementation is visible.
     /// </summary>
-    public override bool isVisible => scripting.isCompiling;
+    public override bool isVisible => scripting.requiresExclusiveProgress;
 
     /// <summary>
     /// Gets whether blocks interaction is enabled for this implementation.

@@ -1,0 +1,26 @@
+<Project>
+  <PropertyGroup Condition="'$(InnoContentProbeExecutable)' == 'true'">
+    <BaseIntermediateOutputPath>obj/process/</BaseIntermediateOutputPath>
+    <BaseOutputPath>bin/process/</BaseOutputPath>
+  </PropertyGroup>
+
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+
+  <PropertyGroup>
+    <!-- The test consumer owns its isolated executable build; the Solution exposes a library fixture. -->
+    <OutputType>Library</OutputType>
+    <OutputType Condition="'$(InnoContentProbeExecutable)' == 'true'">Exe</OutputType>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+    <DefaultItemExcludes>$(DefaultItemExcludes);bin/**;obj/**</DefaultItemExcludes>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../Inno.Content.Testing/Inno.Content.Testing.csproj" />
+    <ProjectReference Include="../../../../backends/FileSystem/runtime/Inno.Adapter.Content.FileSystem/Inno.Adapter.Content.FileSystem.csproj" />
+  </ItemGroup>
+
+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+</Project>

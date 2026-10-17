@@ -1,0 +1,73 @@
+name: NuGet dependency graph
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "**/*.csproj"
+      - "**/*.props"
+      - "**/*.targets"
+      - "**/global.json"
+      - "InnoEngine.sln"
+      - ".gitmodules"
+      - "**/packages*.lock.json"
+      - ".github/workflows/nuget-dependencies.yml"
+  push:
+    branches:
+      - master
+      - main
+      - kernel
+    paths:
+      - "**/*.csproj"
+      - "**/*.props"
+      - "**/*.targets"
+      - "**/global.json"
+      - "InnoEngine.sln"
+      - ".gitmodules"
+      - "**/packages*.lock.json"
+      - ".github/workflows/nuget-dependencies.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: nuget-dependencies-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  DOTNET_CLI_TELEMETRY_OPTOUT: "1"
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: "1"
+
+jobs:
+  dependencies:
+    name: Restore and submit NuGet dependencies
+    runs-on: windows-2022
+    timeout-minutes: 30
+    permissions:
+      contents: write
+    defaults:
+      run:
+        working-directory: InnoEngine
+    steps:
+      - name: Checkout engine
+        uses: actions/checkout@f548e57e544e1ff5a4c46bf1e1b8685f8e4a348a
+        with:
+          path: InnoEngine
+          persist-credentials: false
+
+      - name: Install engine SDK
+        uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68
+        with:
+          global-json-file: InnoEngine/global.json
+
+      - name: Restore the complete solution
+        run: dotnet restore InnoEngine.sln --locked-mode --disable-parallel -p:Configuration=SourceDebug
+
+      - name: Submit resolved NuGet dependencies
+        if: github.event_name != 'pull_request'
+        uses: actions/component-detection-dependency-submission-action@98beaea5a1227f3db476e4c9ca959a0cacd7ac4f
+        with:
+          filePath: InnoEngine
+          directoryExclusionList: extern
+          detectorsCategories: NuGet
+          correlator: inno-nuget

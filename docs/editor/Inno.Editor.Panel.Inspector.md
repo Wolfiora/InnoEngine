@@ -26,7 +26,7 @@ GameObject Header 的第二行包含 Active、项目 Tag picker 和 Layer picker
 
 Layer 页面以紧凑表格显示 slot、globally stable ID、name 与 remove action；未使用 slot 收口到 `Add layer...`。Tag 页面提供统一 Add 与定义列表，并与 Layer 表格共享相同的 cell padding、plain-cell frame inset、header background、Action 列宽和 inner borders。GameObject Header 的 Layer/Tag selector 与 Layer 添加 selector 都使用共享 menu popup contract，具有与右键菜单一致的 padding、颜色和 work-area-bounded 滚动行为。Apply 时两者分别由协议 Composer 捕获 sparse layer/interaction operations 与 tag additions/removals，所以多个 Plugin 可以修改同一设置而不互相覆盖整个集合。两者只是普通强类型 Project Setting Drawer，不创建 Asset、metadata 或 feature 专属持久化通道。
 
-Inspector Panel 关闭根 window padding，使外层纵向 scrollbar 贴紧 Dock body 边缘；所有 Target Header、卡片和 Drawer 正文统一放在 `ConstrainedContent` 中，由容器准确恢复一层标准 window padding，不再出现零间距或 Panel/child 双层空隙。该 auto-resize child 的显式 content width 始终等于 viewport 扣除左右 padding 后的宽度，并禁用自身 scrollbar/scroll input；因此 Inspector 在所有 target（包括 GameBehavior/GameSystem）下都不会产生横向 scroll range，也不需要逐帧重置 `scrollX`。长卡片标题会在右侧操作区之前裁剪，属性 label 和多轴数值字段会按真实可用宽度收缩，任何 Drawer 都不能把纵向滚动父级撑宽。
+Inspector Panel 关闭根 window padding 与根窗口滚动，由填满正文的 content child 独占纵向滚动，使 scrollbar 贴紧 Dock body 边缘；所有 Target Header、卡片和 Drawer 正文统一放在 `ConstrainedContent` 中，由容器准确恢复一层标准 window padding，不再出现零间距或 Panel/child 双层空隙。该 auto-resize child 的显式 content width 始终等于 viewport 扣除左右 padding 后的宽度，并禁用自身 scrollbar/scroll input；因此 Inspector 在所有 target（包括 GameBehavior/GameSystem）下都不会产生横向 scroll range，也不需要逐帧重置 `scrollX`。长卡片标题会在右侧操作区之前裁剪，属性 label 在共享 2:3 列内换行，多轴数值字段会按真实可用宽度收缩，任何 Drawer 都不能把纵向滚动父级撑宽。
 
 `GameLayerCatalog` 仍保留对称 interaction matrix API 与 source 数据，因为自定义物理、感知或查询系统可以显式调用 `CanInteract`/`SetInteraction`；当前引擎没有内建系统自动消费这些规则。因此 Inspector 不再显示 `Layer Interactions` 区域，项目只需要 layer 分类时无需配置它。
 
@@ -36,42 +36,24 @@ Default InspectionDrawer 直接调用 `InspectionDrawContext.DrawProperties()`�
 
 ```csharp
 using System;
+using Inno.Assets;
+using Inno.Editor.Inspection;
 
-[InspectionDrawer(typeof(AnimationController))]
-public sealed class AnimationControllerInspector
-    : InspectionDrawer<AnimationController>
+[InspectionDrawer(typeof(TextAsset), priority: 100)]
+public sealed class TextAssetDrawer : InspectionDrawer<TextAsset>
 {
-    public override string icon => ImGuiIcon.DiagramProject;
+    public override string icon => "T";
 
     protected override (string name, Action<string>? setter) BindName(
         InspectionDrawContext context,
-        AnimationController target)
-        => (target.name, value => target.name = value);
-
-    protected override string GetIcon(
-        InspectionDrawContext context,
-        AnimationController target)
-        => target.hasErrors ? ImGuiIcon.TriangleExclamation : icon;
-
-    protected override void DrawHeader(
-        InspectionDrawContext context,
-        AnimationController target)
-    {
-        ImGui.TextUnformatted($"States: {target.stateCount}");
-    }
+        TextAsset target
+    ) => (target.name, null);
 
     protected override void Draw(
         InspectionDrawContext context,
-        AnimationController target)
-    {
-    }
-}
-
-[PropertyDrawer(typeof(AnimationCurve))]
-public sealed class AnimationCurveDrawer : IPropertyDrawer
-{
-    public void Draw(PropertyDrawContext context)
-    {
+        TextAsset target
+    ) {
+        context.DrawProperties();
     }
 }
 ```
@@ -102,3 +84,60 @@ Selectable 的内部 ImGui ID 使用 Persistent ID，因此两个目录中同名
 ## Scripting API
 
 EditorScripts 使用 `InnoEditor.Inspection`，可声明 InspectionDrawer、PropertyDrawer 并使用 draw context。Facade 由 `Inno.Editor.Inspection` 提供；本项目只补充引用 drop target，Attribute 与运行时 API 共用项目根目录 `InspectorInteractionIds` 中的 `const string`。具体内建 Panel、Registry snapshot 和内部 metadata cache 不导出。
+
+## 当前源码公开 API 清单
+
+按类型列出当前 public 与可供外部派生实现使用的 protected 声明。签名包含 nullable、默认参数和泛型约束；源码链接可定位实现。表中的“—”表示该声明没有额外 XML 约束，不能据此推断线程安全或不会失败。生命周期与组合顺序见本页前文。
+
+### `Inno.Editor.Panel.Inspector.AssetReferenceDropTarget`
+
+<!-- api: T:Inno.Editor.Panel.Inspector.AssetReferenceDropTarget e32498012ea2d470ecba5cd0d6d0bbbbbc6765cbe00b21afb2bc6b13a128b86c -->
+<!-- api: M:Inno.Editor.Panel.Inspector.AssetReferenceDropTarget.#ctor(System.Type,System.Action{System.Guid}) e1b790e2d01bf3e88d8edda6db070f2d9b6c1cc83581ff54dddf24118265be81 -->
+<!-- api: P:Inno.Editor.Panel.Inspector.AssetReferenceDropTarget.expectedType 778a13e3cca26233ebc9f3ea4a18266655d93b6c01fa5a9c0ef0780c0696b3fa -->
+<!-- api: M:Inno.Editor.Panel.Inspector.AssetReferenceDropTarget.Assign(System.Guid) 6b8025e79d6da3f901bf9d6ec355a82208b0bed65bb0e11cb1e037906ea4d327 -->
+
+| 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
+| --- | --- | --- | --- |
+| <a id="api-d72c6282bfc659c2"></a>[`public Inno.Editor.Panel.Inspector.AssetReferenceDropTarget.AssetReferenceDropTarget(System.Type expectedType, System.Action<System.Guid> assign)`](../../src/composition/editor/panels/Inno.Editor.Panel.Inspector/DragDrop/AssetReferenceDropTarget.cs#L28) | Creates a drop target that validates an asset type and assigns its persistent identity to a property.<br>`expectedType`：The runtime asset type accepted by the property.<br>`assign`：The callback that writes an accepted persistent identity to the property. | — | `System.ArgumentNullException`：Thrown when either argument is null.<br>`System.InvalidOperationException`：Thrown when the type does not belong to the active type catalog. |
+| <a id="api-2f36c4f1da64891c"></a>[`public void Inno.Editor.Panel.Inspector.AssetReferenceDropTarget.Assign(System.Guid persistentId)`](../../src/composition/editor/panels/Inno.Editor.Panel.Inspector/DragDrop/AssetReferenceDropTarget.cs#L48) | Assigns a persistent asset identity to the represented property.<br>`persistentId`：The stable persistent identity used for lookup. | — | — |
+| <a id="api-48390506697b388d"></a>[`public System.Type Inno.Editor.Panel.Inspector.AssetReferenceDropTarget.expectedType { get; }`](../../src/composition/editor/panels/Inno.Editor.Panel.Inspector/DragDrop/AssetReferenceDropTarget.cs#L40) | Gets the required asset type. | — | — |
+| <a id="api-1f4dfc47eff543a2"></a>[`public sealed class Inno.Editor.Panel.Inspector.AssetReferenceDropTarget`](../../src/composition/editor/panels/Inno.Editor.Panel.Inspector/DragDrop/AssetReferenceDropTarget.cs#L8) | Provides an assignable asset-reference property drop target. | — | — |
+
+### `Inno.Editor.Panel.Inspector.EngineObjectReferenceDropTarget`
+
+<!-- api: T:Inno.Editor.Panel.Inspector.EngineObjectReferenceDropTarget ceb10cfb96ee0c22669ea634c19d22308c56fce6e83e89d959590c744c7e5637 -->
+<!-- api: M:Inno.Editor.Panel.Inspector.EngineObjectReferenceDropTarget.#ctor(System.Type,System.Action{Inno.Scene.EngineObject}) 653e8db9f849419c5f3b5a53d8ed38cbaf074a05e685c71f2ba5ebb71685acba -->
+<!-- api: P:Inno.Editor.Panel.Inspector.EngineObjectReferenceDropTarget.expectedType 8c2002a21ac32c8260365626f0397c1d373db6530fd32f67e6875305719556f0 -->
+<!-- api: M:Inno.Editor.Panel.Inspector.EngineObjectReferenceDropTarget.Assign(Inno.Scene.EngineObject) 6b9ac1b1ef384a36f511242c3ba4d0297fc2bd4b8cdcfa42509afb39251c019f -->
+
+| 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
+| --- | --- | --- | --- |
+| <a id="api-acff67dfa6a7339c"></a>[`public Inno.Editor.Panel.Inspector.EngineObjectReferenceDropTarget.EngineObjectReferenceDropTarget(System.Type expectedType, System.Action<Inno.Scene.EngineObject> assign)`](../../src/composition/editor/panels/Inno.Editor.Panel.Inspector/DragDrop/EngineObjectReferenceDropTarget.cs#L31) | Creates a drop target that validates and assigns an engine object to a serialized property.<br>`expectedType`：The engine object type accepted by the property.<br>`assign`：The callback that writes an accepted object to the property. | — | `System.ArgumentNullException`：Thrown when either argument is null.<br>`System.InvalidOperationException`：Thrown when the type does not belong to the active type catalog. |
+| <a id="api-a783be18a1b91ee0"></a>[`public void Inno.Editor.Panel.Inspector.EngineObjectReferenceDropTarget.Assign(Inno.Scene.EngineObject value)`](../../src/composition/editor/panels/Inno.Editor.Panel.Inspector/DragDrop/EngineObjectReferenceDropTarget.cs#L51) | Assigns an accepted engine object to the represented property.<br>`value`：The concrete value read or transformed by this operation. | — | — |
+| <a id="api-af0659a33b66d9a5"></a>[`public System.Type Inno.Editor.Panel.Inspector.EngineObjectReferenceDropTarget.expectedType { get; }`](../../src/composition/editor/panels/Inno.Editor.Panel.Inspector/DragDrop/EngineObjectReferenceDropTarget.cs#L43) | Gets the required engine object type. | — | — |
+| <a id="api-379406779b0a6284"></a>[`public sealed class Inno.Editor.Panel.Inspector.EngineObjectReferenceDropTarget`](../../src/composition/editor/panels/Inno.Editor.Panel.Inspector/DragDrop/EngineObjectReferenceDropTarget.cs#L11) | Provides an assignable engine-object-reference property drop target. | — | — |
+
+## 项目依赖
+
+- [Inno.Editor.Inspection](Inno.Editor.Inspection.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Editor.Scene](Inno.Editor.Scene.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Editor.PlayMode](Inno.Editor.PlayMode.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Editor.ImGui](Inno.Editor.ImGui.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Editor.Settings](Inno.Editor.Settings.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Assets](../assets/Inno.Assets.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Assets.Pipeline](../assets/Inno.Assets.Pipeline.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Core.Diagnostics](../core/Inno.Core.Diagnostics.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Core.Logging](../core/Inno.Core.Logging.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Core.Identity](../core/Inno.Core.Identity.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Extensibility.Types](../extensibility/Inno.Extensibility.Types.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Extensibility.Modules](../extensibility/Inno.Extensibility.Modules.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Core.Settings](../core/Inno.Core.Settings.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Scripting.Api](../scripting/Inno.Scripting.Api.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Scene.Assets](../scene/Inno.Scene.Assets.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Adapter.Presentation.ImGui.Sdl3](../backends/ImGui/Inno.Adapter.Presentation.ImGui.Sdl3.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Native.ImGui](../backends/ImGui/Inno.Native.ImGui.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Editor.Core](Inno.Editor.Core.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Editor.Interactions](Inno.Editor.Interactions.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Scene](../scene/Inno.Scene.md)：公开引用边界由实际签名核对。
+- [Inno.Core.Serialization](../core/Inno.Core.Serialization.md)：公开引用边界由实际签名核对。
+- [Inno.Extensibility.Catalogs](../extensibility/Inno.Extensibility.Catalogs.md)：公开引用边界由实际签名核对。

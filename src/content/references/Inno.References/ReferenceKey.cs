@@ -19,8 +19,10 @@ public readonly struct ReferenceKey : IEquatable<ReferenceKey>
     /// <exception cref="ArgumentException">
     /// Thrown when the owner identity or path is empty.
     /// </exception>
-    public ReferenceKey(Guid ownerPersistentId, string path)
-    {
+    public ReferenceKey(
+        Guid ownerPersistentId,
+        string path
+    ) {
         if (ownerPersistentId == Guid.Empty)
             throw new ArgumentException("A reference key requires a non-empty owner identity.", nameof(ownerPersistentId));
         if (string.IsNullOrWhiteSpace(path))
@@ -90,7 +92,10 @@ public readonly struct ReferenceKey : IEquatable<ReferenceKey>
     /// <returns>
     /// <see langword="true"/> when the keys are equal; otherwise, <see langword="false"/>.
     /// </returns>
-    public static bool operator ==(ReferenceKey left, ReferenceKey right) => left.Equals(right);
+    public static bool operator ==(
+        ReferenceKey left,
+        ReferenceKey right
+    ) => left.Equals(right);
 
     /// <summary>
     /// Determines whether two reference keys are different.
@@ -104,5 +109,8 @@ public readonly struct ReferenceKey : IEquatable<ReferenceKey>
     /// <returns>
     /// <see langword="true"/> when the keys are different; otherwise, <see langword="false"/>.
     /// </returns>
-    public static bool operator !=(ReferenceKey left, ReferenceKey right) => !left.Equals(right);
+    public static bool operator !=(
+        ReferenceKey left,
+        ReferenceKey right
+    ) => !left.Equals(right);
 }

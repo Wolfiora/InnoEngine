@@ -120,7 +120,7 @@ internal abstract class IconSetting : EditorSetting
             }
             finally
             {
-                NativeImGui.EndCombo();
+                EditorWidget.EndBoundedCombo();
             }
         }
     }
@@ -167,8 +167,8 @@ internal abstract class IconSetting : EditorSetting
         Vector2 origin,
         string glyph,
         string text,
-        float iconSlotWidth)
-    {
+        float iconSlotWidth
+    ) {
         ImGuiStylePtr style = NativeImGui.GetStyle();
         ImFontPtr font = NativeImGui.GetFont();
         float fontSize = NativeImGui.GetFontSize();
@@ -194,8 +194,7 @@ internal sealed class SceneIconSetting() : IconSetting(ImGuiIcon.Cubes)
     /// <summary>
     /// Gets the user-facing explanation of this feature or setting.
     /// </summary>
-    public override string description
-        => "Selects the icon used wherever the editor presents a scene document or loaded scene.";
+    public override string description => "Selects the icon used wherever the editor presents a scene document or loaded scene.";
 }
 
 [EditorSettingPath("Editor/Appearance/Icons/GameObject")]
@@ -204,8 +203,7 @@ internal sealed class GameObjectIconSetting() : IconSetting(ImGuiIcon.Cube)
     /// <summary>
     /// Gets the user-facing explanation of this feature or setting.
     /// </summary>
-    public override string description
-        => "Selects the icon used wherever the editor presents a scene GameObject.";
+    public override string description => "Selects the icon used wherever the editor presents a scene GameObject.";
 }
 
 [EditorSettingPath("Editor/Appearance/Icons/Prefab")]
@@ -214,8 +212,7 @@ internal sealed class PrefabIconSetting() : IconSetting(ImGuiIcon.DiceD6)
     /// <summary>
     /// Gets the user-facing explanation of this feature or setting.
     /// </summary>
-    public override string description
-        => "Selects the icon used wherever the editor presents a reusable prefab object.";
+    public override string description => "Selects the icon used wherever the editor presents a reusable prefab object.";
 }
 
 [EditorSettingPath("Editor/Appearance/Icons/Layers")]
@@ -224,8 +221,7 @@ internal sealed class LayersIconSetting() : IconSetting(ImGuiIcon.LayerGroup)
     /// <summary>
     /// Gets the user-facing explanation of this feature or setting.
     /// </summary>
-    public override string description
-        => "Selects the icon used wherever the editor presents a project layer configuration.";
+    public override string description => "Selects the icon used wherever the editor presents a project layer configuration.";
 }
 
 [EditorSettingPath("Editor/Appearance/Icons/Folder")]
@@ -234,8 +230,7 @@ internal sealed class FolderIconSetting() : IconSetting(ImGuiIcon.Folder)
     /// <summary>
     /// Gets the user-facing explanation of this feature or setting.
     /// </summary>
-    public override string description
-        => "Selects the icon used wherever the editor presents a source directory.";
+    public override string description => "Selects the icon used wherever the editor presents a source directory.";
 }
 
 [EditorSettingPath("Editor/Appearance/Icons/File")]
@@ -244,8 +239,7 @@ internal sealed class FileIconSetting() : IconSetting(ImGuiIcon.File)
     /// <summary>
     /// Gets the user-facing explanation of this feature or setting.
     /// </summary>
-    public override string description
-        => "Selects the icon used wherever the editor presents a generic source file.";
+    public override string description => "Selects the icon used wherever the editor presents a generic source file.";
 }
 
 [EditorSettingPath("Editor/Appearance/Icons/Shader")]
@@ -254,8 +248,7 @@ internal sealed class ShaderIconSetting() : IconSetting(ImGuiIcon.Shader)
     /// <summary>
     /// Gets the user-facing explanation of this feature or setting.
     /// </summary>
-public override string description
-        => "Selects the icon used consistently for Shader graph assets and their Inspector headers.";
+public override string description => "Selects the icon used consistently for Shader graph assets and their Inspector headers.";
 }
 
 [EditorSettingPath("Editor/Appearance/Icons/ShaderSource")]
@@ -274,8 +267,7 @@ internal sealed class MaterialIconSetting() : IconSetting(ImGuiIcon.Palette)
     /// <summary>
     /// Gets the user-facing explanation of this feature or setting.
     /// </summary>
-public override string description
-        => "Selects the icon used consistently for Material assets and their Inspector headers.";
+public override string description => "Selects the icon used consistently for Material assets and their Inspector headers.";
 }
 
 [EditorSettingPath("Editor/Appearance/Icons/RenderPipeline")]
@@ -284,6 +276,5 @@ internal sealed class RenderPipelineIconSetting() : IconSetting(ImGuiIcon.Rupiah
     /// <summary>
     /// Gets the user-facing explanation of this feature or setting.
     /// </summary>
-public override string description
-        => "Selects the icon used consistently for Render Pipeline assets and their Inspector headers.";
+public override string description => "Selects the icon used consistently for Render Pipeline assets and their Inspector headers.";
 }

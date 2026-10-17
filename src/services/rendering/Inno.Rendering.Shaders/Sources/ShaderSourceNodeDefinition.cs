@@ -35,8 +35,12 @@ public sealed class ShaderSourceNodeDefinition : GraphNodeDefinition
             Add("return", "Result", function.returnType, GraphPortDirection.Output);
         m_ports = ports.AsReadOnly();
 
-        void Add(string id, string label, ShaderSourceType type, GraphPortDirection direction)
-        {
+        void Add(
+            string id,
+            string label,
+            ShaderSourceType type,
+            GraphPortDirection direction
+        ) {
             ports.Add(new(new GraphPortId(id), label, TypeIdentity(type), direction,
                 direction == GraphPortDirection.Input ? GraphPortCapacity.Single : GraphPortCapacity.Multiple));
             // Aggregate and member ports coexist so collapsing presentation never changes edge identity.
@@ -67,7 +71,8 @@ public sealed class ShaderSourceNodeDefinition : GraphNodeDefinition
 
     private static string TypeIdentity(ShaderSourceType type)
     {
-        if (type.elementType is null && type.fields.Count == 0 && type.storage is null) return type.id;
+        if (type.elementType is null && type.fields.Count == 0 && type.storage is null)
+            return type.id;
         var canonical = new StringBuilder();
         Write(type);
         return "inno.shader.aggregate." + Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(canonical.ToString())));
@@ -75,7 +80,8 @@ public sealed class ShaderSourceNodeDefinition : GraphNodeDefinition
         void Write(ShaderSourceType value)
         {
             canonical.Append(value.id.Length).Append(':').Append(value.id).Append('[').Append(value.elementCount).Append(']');
-            if (value.elementType is not null) Write(value.elementType);
+            if (value.elementType is not null)
+                Write(value.elementType);
             if (value.storage is ShaderStorageType storage)
             {
                 canonical.Append('(').Append((int)storage.access).Append(',').Append(storage.format.HasValue ? (int)storage.format.Value : -1)

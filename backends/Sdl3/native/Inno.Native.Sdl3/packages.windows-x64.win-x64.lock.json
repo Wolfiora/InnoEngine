@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "dependencies": {
+    "net9.0": {
+      "BGCS.Runtime": {
+        "type": "Direct",
+        "requested": "[2.1.0, 2.1.0]",
+        "resolved": "2.1.0",
+        "contentHash": "+FKMO+FW6aH+taP/dclqyPSmHWMqTErJfjsw6aGzq4kyW+/7XJ0wzxiCiIQCt/tBxaShHRucOCRs8t8zfba5Sw=="
+      },
+      "inno.core.io": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Extensibility.Catalogs": "[1.0.0, )"
+        }
+      },
+      "inno.extensibility.catalogs": {
+        "type": "Project"
+      },
+      "inno.native.libraryloading": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Core.IO": "[1.0.0, )"
+        }
+      }
+    },
+    "net9.0/win-x64": {}
+  }
+}

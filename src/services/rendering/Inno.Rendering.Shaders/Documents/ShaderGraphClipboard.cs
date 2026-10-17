@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Inno.Core.Graphs;
 using Inno.Core.Serialization;
+using Inno.Rendering.Assets;
 
 namespace Inno.Rendering.Shaders;
 
@@ -29,14 +30,19 @@ public static class ShaderGraphClipboard
     /// <returns>
     /// Detached fragment retaining source declarations for a later paste.
     /// </returns>
-    public static GraphDocument Copy(GraphDocument graph, IEnumerable<GraphNodeId> nodes, SerializationRegistry serialization, SerializationContext context)
-    {
+    public static GraphDocument Copy(
+        GraphDocument graph,
+        IEnumerable<GraphNodeId> nodes,
+        SerializationRegistry serialization,
+        SerializationContext context
+    ) {
         GraphDocument fragment = graph.Clone();
         HashSet<GraphNodeId> selected = [.. nodes];
         HashSet<string> stages = fragment.nodes.Where(node => selected.Contains(node.id) && node.definitionId == ShaderGraphDocument.outputDefinitionId)
             .Select(static node => node.id.value).ToHashSet(StringComparer.Ordinal);
         foreach (GraphNodeRecord node in fragment.nodes.ToArray())
-            if (!selected.Contains(node.id) && !stages.Contains(ShaderGraphDocument.Read(node, "stage", "", serialization, context))) fragment.RemoveNode(node.id);
+            if (!selected.Contains(node.id) && !stages.Contains(ShaderGraphDocument.Read(node, "stage", "", serialization, context)))
+                fragment.RemoveNode(node.id);
         return fragment;
     }
 
@@ -64,9 +70,14 @@ public static class ShaderGraphClipboard
     /// <returns>
     /// A complete candidate suitable for one History transaction.
     /// </returns>
-    public static ShaderGraphPasteResult Paste(GraphDocument graph, GraphDocument fragment, bool preserveExternalStageReferences,
-        GraphNodeId? activeStage, SerializationRegistry serialization, SerializationContext context)
-    {
+    public static ShaderGraphPasteResult Paste(
+        GraphDocument graph,
+        GraphDocument fragment,
+        bool preserveExternalStageReferences,
+        GraphNodeId? activeStage,
+        SerializationRegistry serialization,
+        SerializationContext context
+    ) {
         GraphDocument candidate = graph.Clone();
         ShaderDefinition? definition = candidate.metadata.ContainsKey(ShaderGraphDocument.definitionKey) ? ShaderGraphDocument.ReadDefinition(candidate, serialization, context) : null;
         ShaderDefinition? source = fragment.metadata.ContainsKey(ShaderGraphDocument.definitionKey) ? ShaderGraphDocument.ReadDefinition(fragment, serialization, context) : null;
@@ -79,11 +90,14 @@ public static class ShaderGraphClipboard
             foreach (ShaderGraphPassProgram program in ShaderGraphPrograms.Read(fragment, serialization, context))
             {
                 GraphNodeId[] copiedStages = program.stages.Select(static id => new GraphNodeId(id)).Where(remap.ContainsKey).ToArray();
-                if (copiedStages.Length == 0) continue;
+                if (copiedStages.Length == 0)
+                    continue;
                 int index = Array.FindIndex(source.passes, pass => pass.name == program.pass);
-                if (index < 0) continue;
+                if (index < 0)
+                    continue;
                 string destination = program.pass;
-                for (int suffix = 2; definition.passes.Any(pass => pass.name == destination); suffix++) destination = program.pass + " " + suffix;
+                for (int suffix = 2; definition.passes.Any(pass => pass.name == destination); suffix++)
+                    destination = program.pass + " " + suffix;
                 passes.Add(program.pass, destination);
                 ShaderPassDefinition pass = source.passes[index];
                 pass.name = destination;
@@ -97,7 +111,8 @@ public static class ShaderGraphClipboard
             {
                 ShaderTechniquePass[] mappings = technique.passes.Where(mapping => passes.ContainsKey(mapping.passName))
                     .Select(mapping => new ShaderTechniquePass(mapping.role, passes[mapping.passName])).ToArray();
-                if (mappings.Length == 0) continue;
+                if (mappings.Length == 0)
+                    continue;
                 string id = technique.id.value;
                 for (int suffix = 2; definition.techniques.Any(value => value.id.value == id); suffix++)
                     id = technique.id.value + "-" + suffix;
@@ -108,12 +123,15 @@ public static class ShaderGraphClipboard
         foreach (GraphNodeRecord node in fragment.nodes)
         {
             var clone = new GraphNodeRecord(remap[node.id], node.definitionId) { position = new(node.position.x + 32, node.position.y + 32) };
-            foreach (var value in node.values) clone.SetValue(value.Key, value.Value.Clone());
+            foreach (var value in node.values)
+                clone.SetValue(value.Key, value.Value.Clone());
             string stage = ShaderGraphDocument.Read(node, "stage", "", serialization, context);
             if (stage.Length != 0)
             {
-                if (remap.TryGetValue(new(stage), out GraphNodeId mapped)) stage = mapped.value;
-                else if ((!preserveExternalStageReferences || candidate.FindNode(new(stage)) is null) && targetStage is GraphNodeId target) stage = target.value;
+                if (remap.TryGetValue(new(stage), out GraphNodeId mapped))
+                    stage = mapped.value;
+                else if ((!preserveExternalStageReferences || candidate.FindNode(new(stage)) is null) && targetStage is GraphNodeId target)
+                    stage = target.value;
                 clone.SetValue("stage", ShaderGraphDocument.Encode(stage, serialization, context));
             }
             candidate.AddNode(clone);
@@ -151,7 +169,13 @@ public static class ShaderGraphClipboard
 /// </summary>
 public sealed class ShaderGraphPasteResult
 {
-    internal ShaderGraphPasteResult(GraphDocument graph, GraphNodeId[] nodes) { document = graph; insertedNodes = Array.AsReadOnly(nodes); }
+    internal ShaderGraphPasteResult(
+        GraphDocument graph,
+        GraphNodeId[] nodes
+    ) {
+        document = graph;
+        insertedNodes = Array.AsReadOnly(nodes);
+    }
     /// <summary>
     /// Gets the complete detached candidate; the caller owns its subsequent edits.
     /// </summary>

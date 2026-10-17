@@ -20,8 +20,8 @@ public readonly record struct EditorDropResult
     public EditorDropResult(
         bool accepted,
         object? selectionTarget = null,
-        object? revealTarget = null)
-    {
+        object? revealTarget = null
+    ) {
         this.accepted = accepted;
         this.selectionTarget = selectionTarget;
         this.revealTarget = revealTarget;
@@ -59,6 +59,9 @@ public readonly record struct EditorDropResult
     /// <returns>
     /// An accepted drop result containing the supplied presentation requests.
     /// </returns>
-    public static EditorDropResult Accepted(object? selectionTarget = null, object? revealTarget = null)
+    public static EditorDropResult Accepted(
+        object? selectionTarget = null,
+        object? revealTarget = null
+    )
         => new(true, selectionTarget, revealTarget);
 }

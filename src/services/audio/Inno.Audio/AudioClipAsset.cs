@@ -34,8 +34,8 @@ public readonly record struct AudioClipMetadata
         int channels,
         int sampleRate,
         long frameCount,
-        long encodedByteLength)
-    {
+        long encodedByteLength
+    ) {
         if (!codec.isValid)
             throw new ArgumentException("A valid codec identifier is required.", nameof(codec));
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(channels);
@@ -177,8 +177,8 @@ public sealed class AudioClipAsset : AssetObject
     /// </param>
     protected override void OnRuntimePayloadChanged(
         ReadOnlyMemory<byte> previousPayload,
-        ReadOnlyMemory<byte> currentPayload)
-    {
+        ReadOnlyMemory<byte> currentPayload
+    ) {
         m_metadata = currentPayload.IsEmpty
             ? null
             : AudioClipMetadataCodec.Decode(currentPayload.Span);

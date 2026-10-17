@@ -29,8 +29,7 @@ public abstract class EditorDocumentProvider
     /// <param name="context">
     /// Stable document context owned by the host.
     /// </param>
-    public virtual void Open(EditorDocumentContext context)
-        => ArgumentNullException.ThrowIfNull(context);
+    public virtual void Open(EditorDocumentContext context) => ArgumentNullException.ThrowIfNull(context);
 
     /// <summary>
     /// Saves all document changes to its asset source.
@@ -75,6 +74,5 @@ public abstract class EditorDocumentProvider
     /// <param name="context">
     /// Stable document context owned by the host.
     /// </param>
-    public virtual void Close(EditorDocumentContext context)
-        => ArgumentNullException.ThrowIfNull(context);
+    public virtual void Close(EditorDocumentContext context) => ArgumentNullException.ThrowIfNull(context);
 }

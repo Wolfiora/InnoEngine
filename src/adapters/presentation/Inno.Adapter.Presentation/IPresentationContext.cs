@@ -10,6 +10,23 @@ namespace Inno.Adapter.Presentation;
 public interface IPresentationContext : IRenderFrameGraphContributor, IDisposable
 {
     /// <summary>
+    /// Resolves the platform window that owns a presentation viewport.
+    /// </summary>
+    /// <param name="viewportId">
+    /// The presentation viewport identity.
+    /// </param>
+    /// <param name="windowId">
+    /// The owning platform window identity when available.
+    /// </param>
+    /// <returns>
+    /// <see langword="true"/> when the viewport has a live platform window.
+    /// </returns>
+    bool TryGetWindowId(
+        uint viewportId,
+        out uint windowId
+    );
+
+    /// <summary>
     /// Disables or redirects backend-owned layout-file persistence.
     /// </summary>
     /// <param name="filePath">
@@ -37,7 +54,10 @@ public interface IPresentationContext : IRenderFrameGraphContributor, IDisposabl
     /// <returns>
     /// <see langword="true"/> when layout text was captured.
     /// </returns>
-    bool TryCaptureLayout(out string settings, bool force = false);
+    bool TryCaptureLayout(
+        out string settings,
+        bool force = false
+    );
 
     /// <summary>
     /// Builds one presentation frame by invoking the host draw callback.
@@ -78,6 +98,9 @@ public interface IPresentationContext : IRenderFrameGraphContributor, IDisposabl
     /// <param name="size">
     /// Destination size in logical presentation units.
     /// </param>
-    void DrawImage(PresentationTextureHandle texture, Vector2 size);
+    void DrawImage(
+        PresentationTextureHandle texture,
+        Vector2 size
+    );
 
 }

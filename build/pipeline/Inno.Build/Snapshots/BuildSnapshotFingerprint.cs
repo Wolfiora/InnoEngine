@@ -17,8 +17,8 @@ internal static class BuildSnapshotFingerprint
         IReadOnlyList<string> runtimeAssemblies,
         IReadOnlyList<PluginCandidate> plugins,
         ReadOnlyMemory<byte> projectSettings,
-        CancellationToken cancellationToken)
-    {
+        CancellationToken cancellationToken
+    ) {
         using IncrementalHash hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
         Append(hash, assetRevision.ToString(System.Globalization.CultureInfo.InvariantCulture));
         hash.AppendData(projectSettings.Span);
@@ -46,8 +46,8 @@ internal static class BuildSnapshotFingerprint
 
     internal static bool MatchesPlugins(
         IReadOnlyList<PluginCandidate> expected,
-        IReadOnlyList<PluginCandidate> actual)
-    {
+        IReadOnlyList<PluginCandidate> actual
+    ) {
         if (expected.Count != actual.Count)
             return false;
         for (int index = 0; index < expected.Count; index++)
@@ -61,8 +61,10 @@ internal static class BuildSnapshotFingerprint
         return true;
     }
 
-    private static void Append(IncrementalHash hash, string value)
-    {
+    private static void Append(
+        IncrementalHash hash,
+        string value
+    ) {
         byte[] bytes = Encoding.UTF8.GetBytes(value);
         hash.AppendData(BitConverter.GetBytes(bytes.Length));
         hash.AppendData(bytes);

@@ -49,8 +49,8 @@ public sealed class EditorAudioHost : IEditorAudioHost
         IAssetArtifactLookup artifacts,
         DiagnosticHub diagnostics,
         Func<IAudioDevice> deviceFactory,
-        Func<AudioProjectSettings>? settingsProvider = null)
-    {
+        Func<AudioProjectSettings>? settingsProvider = null
+    ) {
         m_types = types ?? throw new ArgumentNullException(nameof(types));
         m_artifacts = artifacts ?? throw new ArgumentNullException(nameof(artifacts));
         m_diagnostics = diagnostics ?? throw new ArgumentNullException(nameof(diagnostics));
@@ -73,8 +73,10 @@ public sealed class EditorAudioHost : IEditorAudioHost
         return new EditorAudioRuntimeFactory(this, session);
     }
 
-    private AudioRuntime CreateRuntime(RuntimeSession session, RuntimeSubsystemContext context)
-    {
+    private AudioRuntime CreateRuntime(
+        RuntimeSession session,
+        RuntimeSubsystemContext context
+    ) {
         ObjectDisposedException.ThrowIf(m_disposed, this);
         ArgumentNullException.ThrowIfNull(session);
         if (m_sessions.ContainsKey(session))
@@ -142,8 +144,7 @@ public sealed class EditorAudioHost : IEditorAudioHost
     /// <returns>
     /// A strict last-in-first-out execution scope.
     /// </returns>
-    public IDisposable EnterExecutionScope(RuntimeSession session)
-        => GetRuntime(session).EnterExecutionScope();
+    public IDisposable EnterExecutionScope(RuntimeSession session) => GetRuntime(session).EnterExecutionScope();
 
     /// <summary>
     /// Starts an Editor-owned preview voice through an active Edit Mode session.
@@ -163,8 +164,8 @@ public sealed class EditorAudioHost : IEditorAudioHost
     public AudioVoiceHandle PlayPreview(
         RuntimeSession session,
         AudioClipAsset clip,
-        AudioPlayOptions? options = null)
-    {
+        AudioPlayOptions? options = null
+    ) {
         ArgumentNullException.ThrowIfNull(session);
         ArgumentNullException.ThrowIfNull(clip);
         if (session.options.kind != RuntimeSessionKind.Edit)
@@ -184,8 +185,10 @@ public sealed class EditorAudioHost : IEditorAudioHost
     /// <returns>
     /// <see langword="true"/> when a live preview was stopped.
     /// </returns>
-    public bool StopPreview(RuntimeSession session, AudioVoiceHandle voice)
-    {
+    public bool StopPreview(
+        RuntimeSession session,
+        AudioVoiceHandle voice
+    ) {
         ArgumentNullException.ThrowIfNull(session);
         if (session.options.kind != RuntimeSessionKind.Edit)
             return false;
@@ -244,8 +247,10 @@ public sealed class EditorAudioHost : IEditorAudioHost
             : throw new InvalidOperationException("The runtime session has no active Editor audio lease.");
     }
 
-    private void ReleaseRuntime(RuntimeSession session, AudioRuntime runtime)
-    {
+    private void ReleaseRuntime(
+        RuntimeSession session,
+        AudioRuntime runtime
+    ) {
         if (!m_sessions.TryGetValue(session, out AudioRuntime? active) ||
             !ReferenceEquals(active, runtime))
         {
@@ -266,7 +271,10 @@ public sealed class EditorAudioHost : IEditorAudioHost
         }
     }
 
-    private sealed class EditorAudioRuntimeFactory(EditorAudioHost owner, RuntimeSession session)
+    private sealed class EditorAudioRuntimeFactory(
+        EditorAudioHost owner,
+        RuntimeSession session
+    )
         : IRuntimeSubsystemFactory
     {
         /// <summary>
@@ -298,7 +306,11 @@ public sealed class EditorAudioHost : IEditorAudioHost
 
 
 
-    private sealed class SessionAudioRegistration(EditorAudioHost owner, RuntimeSession session, AudioRuntime runtime) : IDisposable
+    private sealed class SessionAudioRegistration(
+        EditorAudioHost owner,
+        RuntimeSession session,
+        AudioRuntime runtime
+    ) : IDisposable
     {
         /// <summary>
         /// Removes only this session's runtime registration from the editor audio owner.

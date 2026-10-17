@@ -27,7 +27,8 @@ internal sealed class DefaultInspectionDrawer : InspectionDrawer<object>
     /// </returns>
     protected override (string name, Action<string>? setter) BindName(
         InspectionDrawContext context,
-        object target)
+        object target
+    )
         => (target.GetType().Name, null);
 
     /// <summary>
@@ -39,7 +40,10 @@ internal sealed class DefaultInspectionDrawer : InspectionDrawer<object>
     /// <param name="target">
     /// The existing target that receives the validated result.
     /// </param>
-    protected override void DrawHeader(InspectionDrawContext context, object target)
+    protected override void DrawHeader(
+        InspectionDrawContext context,
+        object target
+    )
         => NativeImGui.TextUnformatted(target.GetType().FullName ?? target.GetType().Name);
 
     /// <summary>
@@ -51,8 +55,10 @@ internal sealed class DefaultInspectionDrawer : InspectionDrawer<object>
     /// <param name="target">
     /// The existing target that receives the validated result.
     /// </param>
-    protected override void Draw(InspectionDrawContext context, object target)
-    {
+    protected override void Draw(
+        InspectionDrawContext context,
+        object target
+    ) {
         context.DrawProperties();
     }
 }

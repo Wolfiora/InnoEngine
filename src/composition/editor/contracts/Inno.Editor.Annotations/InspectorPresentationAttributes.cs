@@ -35,8 +35,10 @@ public sealed class HeaderAttribute : InspectorPresentationAttribute
     /// <param name="description">
     /// Optional explanatory text displayed when the title is hovered.
     /// </param>
-    public HeaderAttribute(string title, string description = "")
-    {
+    public HeaderAttribute(
+        string title,
+        string description = ""
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(title);
         this.title = title;
         this.description = description ?? string.Empty;
@@ -164,8 +166,10 @@ public sealed class RangeAttribute : InspectorPresentationAttribute
     /// <param name="maximum">
     /// Inclusive upper bound.
     /// </param>
-    public RangeAttribute(double minimum, double maximum)
-    {
+    public RangeAttribute(
+        double minimum,
+        double maximum
+    ) {
         if (!double.IsFinite(minimum))
             throw new ArgumentOutOfRangeException(nameof(minimum));
         if (!double.IsFinite(maximum) || maximum < minimum)
@@ -265,7 +269,10 @@ public sealed class ShowIfAttribute : InspectorPresentationAttribute
     /// <param name="expectedValue">
     /// Compile-time value required for visibility.
     /// </param>
-    public ShowIfAttribute(string memberName, object? expectedValue)
+    public ShowIfAttribute(
+        string memberName,
+        object? expectedValue
+    )
         : this(memberName, InspectorCondition.Equal, expectedValue)
     {
     }
@@ -279,13 +286,19 @@ public sealed class ShowIfAttribute : InspectorPresentationAttribute
     /// <param name="condition">
     /// Comparison applied to the sibling value.
     /// </param>
-    public ShowIfAttribute(string memberName, InspectorCondition condition)
+    public ShowIfAttribute(
+        string memberName,
+        InspectorCondition condition
+    )
         : this(memberName, condition, null)
     {
     }
 
-    private ShowIfAttribute(string memberName, InspectorCondition condition, object? expectedValue)
-    {
+    private ShowIfAttribute(
+        string memberName,
+        InspectorCondition condition,
+        object? expectedValue
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(memberName);
         this.memberName = memberName;
         this.condition = condition;
@@ -334,7 +347,10 @@ public sealed class HideIfAttribute : InspectorPresentationAttribute
     /// <param name="expectedValue">
     /// Compile-time value that hides the property.
     /// </param>
-    public HideIfAttribute(string memberName, object? expectedValue)
+    public HideIfAttribute(
+        string memberName,
+        object? expectedValue
+    )
         : this(memberName, InspectorCondition.Equal, expectedValue)
     {
     }
@@ -348,13 +364,19 @@ public sealed class HideIfAttribute : InspectorPresentationAttribute
     /// <param name="condition">
     /// Comparison applied to the sibling value.
     /// </param>
-    public HideIfAttribute(string memberName, InspectorCondition condition)
+    public HideIfAttribute(
+        string memberName,
+        InspectorCondition condition
+    )
         : this(memberName, condition, null)
     {
     }
 
-    private HideIfAttribute(string memberName, InspectorCondition condition, object? expectedValue)
-    {
+    private HideIfAttribute(
+        string memberName,
+        InspectorCondition condition,
+        object? expectedValue
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(memberName);
         this.memberName = memberName;
         this.condition = condition;
@@ -413,7 +435,10 @@ public sealed class HelpBoxAttribute : InspectorPresentationAttribute
     /// <param name="messageType">
     /// Visual severity.
     /// </param>
-    public HelpBoxAttribute(string text, InspectorMessageType messageType = InspectorMessageType.Info)
+    public HelpBoxAttribute(
+        string text,
+        InspectorMessageType messageType = InspectorMessageType.Info
+    )
         : this(text, messageType, string.Empty, InspectorCondition.Truthy, null)
     {
     }
@@ -437,7 +462,8 @@ public sealed class HelpBoxAttribute : InspectorPresentationAttribute
         string text,
         string conditionMember,
         InspectorCondition condition,
-        InspectorMessageType messageType = InspectorMessageType.Info)
+        InspectorMessageType messageType = InspectorMessageType.Info
+    )
         : this(text, messageType, conditionMember, condition, null)
     {
     }
@@ -461,7 +487,8 @@ public sealed class HelpBoxAttribute : InspectorPresentationAttribute
         string text,
         string conditionMember,
         object? expectedValue,
-        InspectorMessageType messageType = InspectorMessageType.Info)
+        InspectorMessageType messageType = InspectorMessageType.Info
+    )
         : this(text, messageType, conditionMember, InspectorCondition.Equal, expectedValue)
     {
     }
@@ -471,8 +498,8 @@ public sealed class HelpBoxAttribute : InspectorPresentationAttribute
         InspectorMessageType messageType,
         string conditionMember,
         InspectorCondition condition,
-        object? expectedValue)
-    {
+        object? expectedValue
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(text);
         this.text = text;
         this.messageType = messageType;

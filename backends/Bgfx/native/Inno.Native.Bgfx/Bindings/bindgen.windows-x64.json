@@ -1,0 +1,7 @@
+{
+  "baseConfig": {
+    "url": "file://bindgen.json"
+  },
+  "targetId": "windows-x64-msvc",
+  "outputPath": "../obj/windows-x64/Generated"
+}

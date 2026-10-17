@@ -9,6 +9,7 @@ using Inno.Editor.Shaders;
 using Inno.Rendering;
 using ImGuiApi = Inno.Native.ImGui.ImGui;
 using Widget = Inno.Editor.ImGui.ImGuiWidget.ImGuiWidget;
+using Inno.Rendering.Assets;
 
 namespace Inno.Editor.Panel.ShaderEditor;
 
@@ -31,7 +32,10 @@ public override string icon => "S";
     /// <returns>
     /// The validated text representation owned by the caller.
     /// </returns>
-protected override string GetIcon(InspectionDrawContext context, AssetFileEntry target) => icons.GetIcon(target);
+protected override string GetIcon(
+    InspectionDrawContext context,
+    AssetFileEntry target
+) => icons.GetIcon(target);
     /// <summary>
     /// Checks whether this drawer supports the selected Inspector target.
     /// </summary>
@@ -55,7 +59,10 @@ protected override bool CanInspect(AssetFileEntry target)
     /// <returns>
     /// The validated (string name, actionstring? setter) that represents the completed operation.
     /// </returns>
-protected override (string name, Action<string>? setter) BindName(InspectionDrawContext context, AssetFileEntry target)
+protected override (string name, Action<string>? setter) BindName(
+    InspectionDrawContext context,
+    AssetFileEntry target
+)
         => (target.nameWithoutExtension, null);
     /// <summary>
     /// Renders the value presentation for the current editor frame.
@@ -66,8 +73,10 @@ protected override (string name, Action<string>? setter) BindName(InspectionDraw
     /// <param name="target">
     /// The existing target that receives the validated result.
     /// </param>
-protected override void Draw(InspectionDrawContext context, AssetFileEntry target)
-    {
+protected override void Draw(
+    InspectionDrawContext context,
+    AssetFileEntry target
+) {
         if (context.interactions.TryGetModule<ShaderEditorDocuments>(out var documents))
         {
             if (documents!.TryOpen(target, out ShaderEditorDocuments.Draft draft))
@@ -97,7 +106,10 @@ public override string icon => "S";
     /// <returns>
     /// The validated text representation owned by the caller.
     /// </returns>
-protected override string GetIcon(InspectionDrawContext context, ShaderInspectionSelection target)
+protected override string GetIcon(
+    InspectionDrawContext context,
+    ShaderInspectionSelection target
+)
         => context.interactions.TryGetModule<ShaderEditorDocuments>(out var documents) && documents is not null
             && documents.assets.TryGetInfo(target.assetId, out AssetInfo? info) && info is not null
             && documents.assets.TryGetFileSystemEntry(info.assetPath, out AssetFileEntry entry) ? icons.GetIcon(entry) : icon;
@@ -113,8 +125,10 @@ protected override string GetIcon(InspectionDrawContext context, ShaderInspectio
     /// <returns>
     /// The validated (string name, actionstring? setter) that represents the completed operation.
     /// </returns>
-protected override (string name, Action<string>? setter) BindName(InspectionDrawContext context, ShaderInspectionSelection target)
-    {
+protected override (string name, Action<string>? setter) BindName(
+    InspectionDrawContext context,
+    ShaderInspectionSelection target
+) {
         if (context.interactions.TryGetModule<ShaderEditorDocuments>(out var documents) && documents is not null
             && documents.assets.TryGetInfo(target.assetId, out AssetInfo? info) && info is not null)
             return (Path.GetFileName(info.assetPath.localPath), null);
@@ -129,8 +143,10 @@ protected override (string name, Action<string>? setter) BindName(InspectionDraw
     /// <param name="target">
     /// The existing target that receives the validated result.
     /// </param>
-protected override void DrawHeader(InspectionDrawContext context, ShaderInspectionSelection target)
-    {
+protected override void DrawHeader(
+    InspectionDrawContext context,
+    ShaderInspectionSelection target
+) {
         if (!context.interactions.TryGetModule<ShaderEditorDocuments>(out var documents) || documents is null
             || !documents.assets.TryGetInfo(target.assetId, out AssetInfo? info) || info is null
             || !documents.assets.TryGetFileSystemEntry(info.assetPath, out AssetFileEntry entry))
@@ -157,12 +173,18 @@ protected override void DrawHeader(InspectionDrawContext context, ShaderInspecti
     /// <param name="target">
     /// The existing target that receives the validated result.
     /// </param>
-protected override void Draw(InspectionDrawContext context, ShaderInspectionSelection target)
-    {
-        if (!context.interactions.TryGetModule<ShaderEditorDocuments>(out var documents) || documents is null) return;
+protected override void Draw(
+    InspectionDrawContext context,
+    ShaderInspectionSelection target
+) {
+        if (!context.interactions.TryGetModule<ShaderEditorDocuments>(out var documents) || documents is null)
+            return;
         if (!documents.assets.TryGetInfo(target.assetId, out AssetInfo? info) || info is null
             || !documents.assets.TryGetFileSystemEntry(info.assetPath, out AssetFileEntry entry))
-        { ImGuiApi.TextWrapped("Shader source unavailable. Selection identities are retained."); return; }
+        {
+            ImGuiApi.TextWrapped("Shader source unavailable. Selection identities are retained.");
+            return;
+        }
         if (documents.TryOpen(entry, out ShaderEditorDocuments.Draft draft))
             new ShaderEditorCanvas(documents, draft).DrawInspector(context, target.nodes);
         else
@@ -189,7 +211,10 @@ public override string icon => "S";
     /// <returns>
     /// The validated text representation owned by the caller.
     /// </returns>
-protected override string GetIcon(InspectionDrawContext context, ShaderAsset target)
+protected override string GetIcon(
+    InspectionDrawContext context,
+    ShaderAsset target
+)
         => context.interactions.TryGetModule<ShaderEditorDocuments>(out var documents) && documents is not null
             && documents.assets.TryGetFileSystemEntry(target.assetPath, out AssetFileEntry entry) ? icons.GetIcon(entry) : icon;
     /// <summary>
@@ -204,7 +229,10 @@ protected override string GetIcon(InspectionDrawContext context, ShaderAsset tar
     /// <returns>
     /// The validated (string name, actionstring? setter) that represents the completed operation.
     /// </returns>
-protected override (string name, Action<string>? setter) BindName(InspectionDrawContext context, ShaderAsset target) => (target.name, null);
+protected override (string name, Action<string>? setter) BindName(
+    InspectionDrawContext context,
+    ShaderAsset target
+) => (target.name, null);
     /// <summary>
     /// Renders the value presentation for the current editor frame.
     /// </summary>
@@ -214,10 +242,14 @@ protected override (string name, Action<string>? setter) BindName(InspectionDraw
     /// <param name="target">
     /// The existing target that receives the validated result.
     /// </param>
-protected override void Draw(InspectionDrawContext context, ShaderAsset target)
-    {
-        if (!context.interactions.TryGetModule<ShaderEditorDocuments>(out var documents) || documents is null) return;
-        if (!documents.assets.TryGetFileSystemEntry(target.assetPath, out AssetFileEntry entry)) return;
+protected override void Draw(
+    InspectionDrawContext context,
+    ShaderAsset target
+) {
+        if (!context.interactions.TryGetModule<ShaderEditorDocuments>(out var documents) || documents is null)
+            return;
+        if (!documents.assets.TryGetFileSystemEntry(target.assetPath, out AssetFileEntry entry))
+            return;
         if (documents.TryOpen(entry, out ShaderEditorDocuments.Draft draft))
             new ShaderEditorCanvas(documents, draft).DrawInspector(context, []);
         else

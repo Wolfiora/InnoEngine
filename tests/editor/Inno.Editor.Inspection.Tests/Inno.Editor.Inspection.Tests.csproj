@@ -7,7 +7,9 @@
     <IsTestProject>true</IsTestProject>
     <InnoAssemblyScope>Editor</InnoAssemblyScope>
   </PropertyGroup>
+
   <ItemGroup>
+    <ProjectReference Include="../../../backends/DotNet/runtime/Inno.Adapter.Serialization.DotNet/Inno.Adapter.Serialization.DotNet.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../../src/composition/editor/framework/Inno.Editor.Inspection/Inno.Editor.Inspection.csproj" />
     <ProjectReference Include="../../../src/composition/editor/framework/Inno.Editor.Interactions/Inno.Editor.Interactions.csproj" />
     <ProjectReference Include="../../../src/composition/editor/framework/Inno.Editor.Core/Inno.Editor.Core.csproj" />
@@ -16,9 +18,11 @@
     <ProjectReference Include="../../../src/foundation/extensibility/Inno.Extensibility.Types/Inno.Extensibility.Types.csproj" />
     <ProjectReference Include="../../../src/foundation/extensibility/Inno.Extensibility.Modules/Inno.Extensibility.Modules.csproj" />
   </ItemGroup>
+
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
     <PackageReference Include="xunit" Version="2.6.6" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.5.6" PrivateAssets="all" />
   </ItemGroup>
+<ItemGroup><ProjectReference Include="../../../backends/DotNet/runtime/Inno.Adapter.Modules.DotNet/Inno.Adapter.Modules.DotNet.csproj" PrivateAssets="compile" /></ItemGroup>
 </Project>

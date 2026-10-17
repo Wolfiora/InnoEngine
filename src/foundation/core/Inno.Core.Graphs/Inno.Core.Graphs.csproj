@@ -6,12 +6,15 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <WarningsAsErrors>$(WarningsAsErrors);CS1572;CS1573;CS1591</WarningsAsErrors>
   </PropertyGroup>
+
   <ItemGroup>
-    <ProjectReference Include="..\..\scripting\Inno.Scripting.Api\Inno.Scripting.Api.csproj" PrivateAssets="compile" />
-    <ProjectReference Include="..\Inno.Core.Serialization\Inno.Core.Serialization.csproj" PrivateAssets="compile" />
-    <ProjectReference Include="..\Inno.Core.Collections\Inno.Core.Collections.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../scripting/Inno.Scripting.Api/Inno.Scripting.Api.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../Inno.Core.Serialization/Inno.Core.Serialization.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../Inno.Core.Collections/Inno.Core.Collections.csproj" PrivateAssets="compile" />
   </ItemGroup>
+
   <ItemGroup>
     <ProjectReference Include="../Inno.Core.Diagnostics/Inno.Core.Diagnostics.csproj" />
+    <ProjectReference Include="../../extensibility/Inno.Extensibility.Catalogs/Inno.Extensibility.Catalogs.csproj" />
   </ItemGroup>
 </Project>

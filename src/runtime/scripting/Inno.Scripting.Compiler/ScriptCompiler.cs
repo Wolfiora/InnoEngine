@@ -40,8 +40,8 @@ public sealed class ScriptCompiler
     public ScriptCompiler(
         ScriptCompilerOptions options,
         AssetPipeline assets,
-        PluginEnvironment plugins)
-    {
+        PluginEnvironment plugins
+    ) {
         ArgumentNullException.ThrowIfNull(options);
         ArgumentNullException.ThrowIfNull(assets);
         ArgumentNullException.ThrowIfNull(plugins);
@@ -72,6 +72,11 @@ public sealed class ScriptCompiler
     /// <summary>
     /// Compiles a complete runtime and editor candidate generation without activating it.
     /// </summary>
+    /// <remarks>
+    /// Source discovery captures live inputs on the owner thread. Reference generation, Roslyn and
+    /// artifact writes run in the background; progress observers must accept callbacks from either thread.
+    /// Retain the source generation until the returned operation drains, including after cancellation.
+    /// </remarks>
     /// <param name="progress">
     /// Optional observer for monotonic compiler progress.
     /// </param>
@@ -84,9 +89,15 @@ public sealed class ScriptCompiler
     /// <exception cref="OperationCanceledException">
     /// Thrown when <paramref name="cancellationToken"/> is canceled.
     /// </exception>
+    /// <param name="sourceSnapshot">
+    /// Optional isolated authoring sources. Capture on its owner thread and keep its transaction
+    /// alive until compilation drains; null selects the current Plugin candidate or active sources.
+    /// </param>
     public ValueTask<ScriptCompilationResult> CompileAuthoringGenerationAsync(
         IProgress<ScriptCompilationProgress>? progress = null,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default,
+        IAssetSourceSnapshot? sourceSnapshot = null
+    )
         => ScriptCompilerEngine.CompileAsync(
             m_options,
             m_assets,
@@ -95,8 +106,12 @@ public sealed class ScriptCompiler
             targetRuntimeDirectory: null,
             progress is null
                 ? null
-                : (fraction, stage) => progress.Report(new ScriptCompilationProgress(fraction, stage)),
-            cancellationToken);
+                : (
+                    fraction,
+                    stage
+                ) => progress.Report(new ScriptCompilationProgress(fraction, stage)),
+            cancellationToken,
+            sourceSnapshot);
 
     /// <summary>
     /// Compiles only the runtime assembly closure required by a deployed Player and binds it to that Player runtime.
@@ -128,8 +143,8 @@ public sealed class ScriptCompiler
     public ValueTask<ScriptCompilationResult> CompileRuntimeDeploymentAsync(
         string targetRuntimeDirectory,
         IProgress<ScriptCompilationProgress>? progress = null,
-        CancellationToken cancellationToken = default)
-    {
+        CancellationToken cancellationToken = default
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(targetRuntimeDirectory);
         return ScriptCompilerEngine.CompileAsync(
             m_options,
@@ -139,7 +154,10 @@ public sealed class ScriptCompiler
             targetRuntimeDirectory: targetRuntimeDirectory,
             progress is null
                 ? null
-                : (fraction, stage) => progress.Report(new ScriptCompilationProgress(fraction, stage)),
+                : (
+                    fraction,
+                    stage
+                ) => progress.Report(new ScriptCompilationProgress(fraction, stage)),
             cancellationToken);
     }
 

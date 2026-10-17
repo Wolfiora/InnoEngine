@@ -34,25 +34,43 @@ public sealed class InspectorAttributeDrawerRegistry : IDisposable
         EditorInteractions interactions,
         TypeCatalog types,
         SerializationRegistry serialization,
-        IEnumerable<object> drawerServices)
-    {
+        IEnumerable<object> drawerServices
+    ) {
         m_registry = new AttributeTypeRegistry(interactions, types, serialization, drawerServices);
     }
 
-    internal void Update(InspectorAttributeDrawContext context, IReadOnlyList<Attribute> attributes)
-        => Apply(context, attributes, static (drawer, value) => drawer.Update(value));
+    internal void Update(
+        InspectorAttributeDrawContext context,
+        IReadOnlyList<Attribute> attributes
+    )
+        => Apply(context, attributes, static (
+            drawer,
+            value
+        ) => drawer.Update(value));
 
-    internal void DrawBefore(InspectorAttributeDrawContext context, IReadOnlyList<Attribute> attributes)
-        => Apply(context, attributes, static (drawer, value) => drawer.DrawBefore(value));
+    internal void DrawBefore(
+        InspectorAttributeDrawContext context,
+        IReadOnlyList<Attribute> attributes
+    )
+        => Apply(context, attributes, static (
+            drawer,
+            value
+        ) => drawer.DrawBefore(value));
 
-    internal void DrawAfter(InspectorAttributeDrawContext context, IReadOnlyList<Attribute> attributes)
-        => Apply(context, attributes, static (drawer, value) => drawer.DrawAfter(value));
+    internal void DrawAfter(
+        InspectorAttributeDrawContext context,
+        IReadOnlyList<Attribute> attributes
+    )
+        => Apply(context, attributes, static (
+            drawer,
+            value
+        ) => drawer.DrawAfter(value));
 
     private void Apply(
         InspectorAttributeDrawContext context,
         IReadOnlyList<Attribute> attributes,
-        Action<IInspectorAttributeDrawer, InspectorAttributeDrawContext> callback)
-    {
+        Action<IInspectorAttributeDrawer, InspectorAttributeDrawContext> callback
+    ) {
         for (int index = 0; index < attributes.Count; index++)
         {
             Attribute attribute = attributes[index];
@@ -79,7 +97,8 @@ public sealed class InspectorAttributeDrawerRegistry : IDisposable
             EditorInteractions interactions,
             TypeCatalog types,
             SerializationRegistry serialization,
-            IEnumerable<object> services)
+            IEnumerable<object> services
+        )
             : base(types)
         {
             m_interactions = interactions ?? throw new ArgumentNullException(nameof(interactions));
@@ -156,8 +175,10 @@ public sealed class InspectorAttributeDrawerRegistry : IDisposable
         protected override void DisposeSnapshot(Registration[] snapshot)
             => DisposeExtensions(snapshot.Select(static registration => registration.drawer));
 
-        private IInspectorAttributeDrawer CreateDrawer(Type drawerType, TypeCacheSnapshot types)
-        {
+        private IInspectorAttributeDrawer CreateDrawer(
+            Type drawerType,
+            TypeCacheSnapshot types
+        ) {
             ConstructorInfo[] constructors = drawerType.GetConstructors(
                 BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
             if (constructors.Length != 1)
@@ -200,8 +221,8 @@ public sealed class InspectorAttributeDrawerRegistry : IDisposable
     private static void EnsureNoConflict(
         IReadOnlyList<Registration> registrations,
         InspectorAttributeDrawerAttribute attribute,
-        Type drawerType)
-    {
+        Type drawerType
+    ) {
         foreach (Registration existing in registrations)
         {
             if (existing.targetType == attribute.targetType && existing.priority == attribute.priority)
@@ -218,5 +239,6 @@ public sealed class InspectorAttributeDrawerRegistry : IDisposable
         bool useForChildren,
         int priority,
         Type drawerType,
-        IInspectorAttributeDrawer drawer);
+        IInspectorAttributeDrawer drawer
+    );
 }

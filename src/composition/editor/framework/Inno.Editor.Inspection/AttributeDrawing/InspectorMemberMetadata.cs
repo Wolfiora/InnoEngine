@@ -13,8 +13,10 @@ internal static class InspectorMemberMetadata
     private static readonly ConditionalWeakTable<Type, TypeMembers> S_MEMBERS = new();
     private static readonly ConditionalWeakTable<MemberInfo, AttributesBox> S_ATTRIBUTES = new();
 
-    internal static MemberInfo? Resolve(Type ownerType, string memberName)
-    {
+    internal static MemberInfo? Resolve(
+        Type ownerType,
+        string memberName
+    ) {
         ArgumentNullException.ThrowIfNull(ownerType);
         ArgumentException.ThrowIfNullOrWhiteSpace(memberName);
         return S_MEMBERS.GetValue(ownerType, static type => new TypeMembers(type)).members
@@ -30,7 +32,10 @@ internal static class InspectorMemberMetadata
     private static Attribute[] BuildAttributes(MemberInfo member)
         => member.GetCustomAttributes(inherit: true)
             .OfType<Attribute>()
-            .Select(static (attribute, index) => new OrderedAttribute(
+            .Select(static (
+                attribute,
+                index
+            ) => new OrderedAttribute(
                 attribute,
                 attribute is Inno.Editor.Annotations.InspectorPresentationAttribute presentation
                     ? presentation.order
@@ -43,8 +48,7 @@ internal static class InspectorMemberMetadata
 
     private sealed class AttributesBox
     {
-        internal AttributesBox(MemberInfo member)
-            => attributes = BuildAttributes(member);
+        internal AttributesBox(MemberInfo member) => attributes = BuildAttributes(member);
 
         internal Attribute[] attributes { get; }
     }
@@ -71,5 +75,9 @@ internal static class InspectorMemberMetadata
         internal IReadOnlyDictionary<string, MemberInfo> members { get; }
     }
 
-    private readonly record struct OrderedAttribute(Attribute attribute, int order, int index);
+    private readonly record struct OrderedAttribute(
+        Attribute attribute,
+        int order,
+        int index
+    );
 }

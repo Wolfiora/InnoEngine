@@ -18,8 +18,8 @@ internal static class DiagnosticCallerResolver
     internal static DiagnosticSource Resolve(
         string group,
         Guid? targetId = null,
-        string? displayName = null)
-    {
+        string? displayName = null
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(group);
         if (targetId == Guid.Empty)
             throw new ArgumentException("A diagnostic target identifier cannot be empty.", nameof(targetId));

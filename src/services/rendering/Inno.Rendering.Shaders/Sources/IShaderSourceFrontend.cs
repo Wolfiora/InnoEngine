@@ -17,7 +17,11 @@ namespace Inno.Rendering.Shaders;
 /// <param name="column">
 /// One-based source column.
 /// </param>
-public readonly record struct ShaderSourcePosition(string assetPath, int line, int column);
+public readonly record struct ShaderSourcePosition(
+    string assetPath,
+    int line,
+    int column
+);
 
 /// <summary>
 /// Reports a frontend problem without retaining a language-specific exception or parser.
@@ -34,7 +38,12 @@ public readonly record struct ShaderSourcePosition(string assetPath, int line, i
 /// <param name="location">
 /// Original source position.
 /// </param>
-public sealed record ShaderSourceDiagnostic(string code, DiagnosticSeverity severity, string message, ShaderSourcePosition location);
+public sealed record ShaderSourceDiagnostic(
+    string code,
+    DiagnosticSeverity severity,
+    string message,
+    ShaderSourcePosition location
+);
 
 /// <summary>
 /// Contains immutable source text supplied by the asset candidate's controlled source resolver.
@@ -45,7 +54,10 @@ public sealed record ShaderSourceDiagnostic(string code, DiagnosticSeverity seve
 /// <param name="text">
 /// UTF-8 decoded immutable source text.
 /// </param>
-public sealed record ShaderSourceFile(string assetPath, string text);
+public sealed record ShaderSourceFile(
+    string assetPath,
+    string text
+);
 
 /// <summary>
 /// Reads dependencies only from the current source candidate and records their import dependencies.
@@ -64,7 +76,10 @@ public interface IShaderSourceResolver
     /// <returns>
     /// A resolved immutable source snapshot.
     /// </returns>
-    ShaderSourceFile ReadInclude(string includingFile, string include);
+    ShaderSourceFile ReadInclude(
+        string includingFile,
+        string include
+    );
 }
 
 /// <summary>
@@ -87,9 +102,12 @@ public sealed class ShaderSourceRequest
     /// <param name="defines">
     /// Target and variant preprocessing inputs, or null for no defines.
     /// </param>
-    public ShaderSourceRequest(ShaderSourceFile source, string entryPoint, IShaderSourceResolver resolver,
-        IReadOnlyDictionary<string, string>? defines = null)
-    {
+    public ShaderSourceRequest(
+        ShaderSourceFile source,
+        string entryPoint,
+        IShaderSourceResolver resolver,
+        IReadOnlyDictionary<string, string>? defines = null
+    ) {
         this.source = source ?? throw new ArgumentNullException(nameof(source));
         ArgumentException.ThrowIfNullOrWhiteSpace(source.assetPath);
         ArgumentNullException.ThrowIfNull(source.text);
@@ -134,9 +152,11 @@ public sealed class ShaderSourceAnalysis
     /// <param name="diagnostics">
     /// All problems discovered by the frontend.
     /// </param>
-    public ShaderSourceAnalysis(ShaderSourceFunction? function, IEnumerable<string> dependencies,
-        IEnumerable<ShaderSourceDiagnostic> diagnostics)
-    {
+    public ShaderSourceAnalysis(
+        ShaderSourceFunction? function,
+        IEnumerable<string> dependencies,
+        IEnumerable<ShaderSourceDiagnostic> diagnostics
+    ) {
         ArgumentNullException.ThrowIfNull(dependencies);
         ArgumentNullException.ThrowIfNull(diagnostics);
         this.function = function;

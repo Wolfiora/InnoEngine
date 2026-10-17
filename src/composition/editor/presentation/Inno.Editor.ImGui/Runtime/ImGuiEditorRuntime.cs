@@ -52,7 +52,8 @@ public sealed class ImGuiEditorRuntime : EditorRuntime
         EditorContext context,
         TypeCatalog types,
         LogRouter logs,
-        IEnumerable<object> hostServices)
+        IEnumerable<object> hostServices
+    )
         : base(context ?? throw new ArgumentNullException(nameof(context)))
     {
         ArgumentNullException.ThrowIfNull(types);
@@ -191,11 +192,14 @@ public sealed class ImGuiEditorRuntime : EditorRuntime
         m_dockspaceSize = size;
     }
 
-    private static unsafe void ResizeDockSplits(ImGuiDockNodePtr node, Vector2 size,
-        float separator, Vector2 minimumWindowSize)
-    {
-        ImGuiDockNodePtr first = new(node.ChildNodes[0].Handle);
-        ImGuiDockNodePtr second = new(node.ChildNodes[1].Handle);
+    private static unsafe void ResizeDockSplits(
+        ImGuiDockNodePtr node,
+        Vector2 size,
+        float separator,
+        Vector2 minimumWindowSize
+    ) {
+        ImGuiDockNodePtr first = new(node.ChildNodes[0].handle);
+        ImGuiDockNodePtr second = new(node.ChildNodes[1].handle);
         if (first == ImGuiDockNodePtr.Null || second == ImGuiDockNodePtr.Null
             || node.SplitAxis is not (ImGuiAxis.X or ImGuiAxis.Y))
             return;
@@ -248,7 +252,7 @@ public sealed class ImGuiEditorRuntime : EditorRuntime
             return;
         // Text widgets own editing keys, including Backspace and clipboard/history gestures.
         // Explicit document save remains available without first leaving an input field.
-        HotKeyGesture save = HotKeyGesture.Primary(KeyCode.S);
+        HotKeyGesture save = HotKeyGesture.Primary(KeyCode.S, context.keyboard);
         if (NativeImGui.GetIO().WantTextInput && (keyEvent.key != save.key || keyEvent.modifiers != save.modifiers))
             return;
         m_runtime.HandleKeyPressed(keyEvent);
@@ -265,8 +269,14 @@ public sealed class ImGuiEditorRuntime : EditorRuntime
         if (m_disposed)
             return;
         m_modals.Clear();
-        try { m_runtime.Dispose(); }
-        catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null) { throw; }
+        try
+        {
+            m_runtime.Dispose();
+        }
+        catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null)
+        {
+            throw;
+        }
         catch
         {
             m_disposed = true;

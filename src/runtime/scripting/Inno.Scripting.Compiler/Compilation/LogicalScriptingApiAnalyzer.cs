@@ -108,8 +108,10 @@ public sealed class LogicalScriptingApiAnalyzer : DiagnosticAnalyzer
             usingDirective.GlobalKeyword.GetLocation()));
     }
 
-    private static void AnalyzeUsing(SyntaxNodeAnalysisContext context, ScriptApiMap map)
-    {
+    private static void AnalyzeUsing(
+        SyntaxNodeAnalysisContext context,
+        ScriptApiMap map
+    ) {
         var usingDirective = (UsingDirectiveSyntax)context.Node;
         if (usingDirective.Name is null)
             return;
@@ -124,8 +126,10 @@ public sealed class LogicalScriptingApiAnalyzer : DiagnosticAnalyzer
             namespaceName));
     }
 
-    private static void AnalyzeTypeReference(SyntaxNodeAnalysisContext context, ScriptApiMap map)
-    {
+    private static void AnalyzeTypeReference(
+        SyntaxNodeAnalysisContext context,
+        ScriptApiMap map
+    ) {
         if (context.Node.AncestorsAndSelf().OfType<UsingDirectiveSyntax>().Any() ||
             context.Node.Ancestors().Any(static ancestor =>
                 ancestor is QualifiedNameSyntax or AliasQualifiedNameSyntax))
@@ -152,8 +156,8 @@ public sealed class LogicalScriptingApiAnalyzer : DiagnosticAnalyzer
 
     private static void AnalyzeQualifiedTypeReference(
         SyntaxNodeAnalysisContext context,
-        ScriptApiMap map)
-    {
+        ScriptApiMap map
+    ) {
         if (context.Node.AncestorsAndSelf().OfType<UsingDirectiveSyntax>().Any() ||
             context.Node.Parent is QualifiedNameSyntax or AliasQualifiedNameSyntax)
         {
@@ -177,7 +181,8 @@ public sealed class LogicalScriptingApiAnalyzer : DiagnosticAnalyzer
 
     private static ScriptApiNamespaceMap? FindByImplementationNamespace(
         ScriptApiMap map,
-        string namespaceName)
+        string namespaceName
+    )
         => map.namespaces
             .SelectMany(mapping => mapping.implementationNamespaces.Select(
                 implementation => new { mapping, implementation }))
@@ -187,8 +192,10 @@ public sealed class LogicalScriptingApiAnalyzer : DiagnosticAnalyzer
             .Select(static candidate => candidate.mapping)
             .FirstOrDefault();
 
-    private static bool HasLogicalUsing(SyntaxNode node, string apiNamespace)
-    {
+    private static bool HasLogicalUsing(
+        SyntaxNode node,
+        string apiNamespace
+    ) {
         var usings = new List<UsingDirectiveSyntax>();
         if (node.SyntaxTree.GetRoot() is CompilationUnitSyntax compilationUnit)
             usings.AddRange(compilationUnit.Usings);

@@ -26,8 +26,7 @@ public sealed class EditorPlayModeLoop
     /// <returns>
     /// A scope that must be disposed after the current editor presentation phase completes.
     /// </returns>
-    public IDisposable EnterPresentationScope()
-        => m_owner?.EnterPresentationScope() ?? S_EMPTY_SCOPE;
+    public IDisposable EnterPresentationScope() => m_owner?.EnterPresentationScope() ?? S_EMPTY_SCOPE;
 
     /// <summary>
     /// Drains the active Play session before the product tears down editor modules, history or presentation.

@@ -79,8 +79,11 @@ public readonly record struct EditorViewportShortcut
     /// <param name="repeat">
     /// Whether the platform generated an auto-repeat press.
     /// </param>
-    public EditorViewportShortcut(KeyCode key, KeyModifier modifiers = KeyModifier.None, bool repeat = false)
-    {
+    public EditorViewportShortcut(
+        KeyCode key,
+        KeyModifier modifiers = KeyModifier.None,
+        bool repeat = false
+    ) {
         this.key = key;
         this.modifiers = modifiers;
         this.repeat = repeat;
@@ -134,8 +137,8 @@ public readonly record struct EditorViewportPointerEvent
         Vector2 screenPosition,
         Vector2 worldPosition,
         int button,
-        KeyModifier modifiers)
-    {
+        KeyModifier modifiers
+    ) {
         this.pointerId = pointerId;
         this.phase = phase;
         this.screenPosition = screenPosition;
@@ -227,8 +230,10 @@ public abstract class EditorViewportTool
     /// <param name="pointer">
     /// Immutable pointer sample.
     /// </param>
-    public virtual void OnPointerDown(EditorViewportToolContext context, EditorViewportPointerEvent pointer)
-    {
+    public virtual void OnPointerDown(
+        EditorViewportToolContext context,
+        EditorViewportPointerEvent pointer
+    ) {
         ArgumentNullException.ThrowIfNull(context);
     }
 
@@ -241,8 +246,10 @@ public abstract class EditorViewportTool
     /// <param name="pointer">
     /// Immutable pointer sample.
     /// </param>
-    public virtual void OnPointerMove(EditorViewportToolContext context, EditorViewportPointerEvent pointer)
-    {
+    public virtual void OnPointerMove(
+        EditorViewportToolContext context,
+        EditorViewportPointerEvent pointer
+    ) {
         ArgumentNullException.ThrowIfNull(context);
     }
 
@@ -255,8 +262,10 @@ public abstract class EditorViewportTool
     /// <param name="pointer">
     /// Immutable pointer sample.
     /// </param>
-    public virtual void OnPointerUp(EditorViewportToolContext context, EditorViewportPointerEvent pointer)
-    {
+    public virtual void OnPointerUp(
+        EditorViewportToolContext context,
+        EditorViewportPointerEvent pointer
+    ) {
         ArgumentNullException.ThrowIfNull(context);
     }
 
@@ -269,8 +278,10 @@ public abstract class EditorViewportTool
     /// <param name="pointer">
     /// Immutable pointer sample.
     /// </param>
-    public virtual void OnPointerCancel(EditorViewportToolContext context, EditorViewportPointerEvent pointer)
-    {
+    public virtual void OnPointerCancel(
+        EditorViewportToolContext context,
+        EditorViewportPointerEvent pointer
+    ) {
         ArgumentNullException.ThrowIfNull(context);
         context.CompleteHistoryGesture(commit: false);
         context.ReleasePointer();
@@ -288,8 +299,10 @@ public abstract class EditorViewportTool
     /// <returns>
     /// <see langword="true"/> when the tool consumed the key.
     /// </returns>
-    public virtual bool OnShortcut(EditorViewportToolContext context, EditorViewportShortcut shortcut)
-    {
+    public virtual bool OnShortcut(
+        EditorViewportToolContext context,
+        EditorViewportShortcut shortcut
+    ) {
         ArgumentNullException.ThrowIfNull(context);
         return false;
     }
@@ -300,6 +313,5 @@ public abstract class EditorViewportTool
     /// <param name="context">
     /// Gesture and coordinate context.
     /// </param>
-    public virtual void DrawOverlay(EditorViewportToolContext context)
-        => ArgumentNullException.ThrowIfNull(context);
+    public virtual void DrawOverlay(EditorViewportToolContext context) => ArgumentNullException.ThrowIfNull(context);
 }

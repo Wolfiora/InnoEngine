@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "dependencies": {
+    "net9.0": {
+      "inno.core.io": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Extensibility.Catalogs": "[1.0.0, )"
+        }
+      },
+      "inno.extensibility.catalogs": {
+        "type": "Project"
+      }
+    },
+    "net9.0/win-x64": {}
+  }
+}

@@ -11,6 +11,58 @@ namespace Inno.Core.Events.Tests;
 
 public sealed class EventDispatcherBehaviorTests
 {
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void RoutedMovementSharesGlobalConsumptionAcrossDispatchers(bool consumeRouted)
+    {
+        var source = new MouseMovedEvent(17, 240f, 180f);
+        MouseMovedEvent routed = source.WithPosition(40f, 30f);
+        MouseMovedEvent routedAgain = routed.WithPosition(4f, 3f);
+        var platform = new EventDispatcher();
+        var game = new EventDispatcher();
+        using EventHub platformHub = platform.CreateHub();
+        using EventHub gameHub = game.CreateHub();
+        int deliveries = 0;
+        platformHub.Listen<MouseMovedEvent>(_ => deliveries++);
+        gameHub.Listen<MouseMovedEvent>(_ => deliveries++);
+
+        (consumeRouted ? routedAgain : source).HandleInGlobal();
+        platform.Emit(source);
+        game.Emit(routed);
+
+        Assert.Equal(0, deliveries);
+        Assert.True(source.isGlobalHandled);
+        Assert.True(routed.isGlobalHandled);
+        Assert.True(routedAgain.isGlobalHandled);
+        Assert.Equal(17u, routed.windowId);
+        Assert.Equal(40f, routed.x);
+        Assert.Equal(30f, routed.y);
+        Assert.Equal(240f, source.x);
+        Assert.Equal(180f, source.y);
+    }
+
+    [Fact]
+    public void RoutedMovementKeepsHubConsumptionLocalToEachRepresentation()
+    {
+        var source = new MouseMovedEvent(17, 240f, 180f);
+        MouseMovedEvent routed = source.WithPosition(40f, 30f);
+        var platform = new EventDispatcher();
+        var game = new EventDispatcher();
+        using EventHub platformHub = platform.CreateHub();
+        using EventHub gameHub = game.CreateHub();
+        platformHub.Listen<MouseMovedEvent>(value => value.HandleInHub());
+        int deliveries = 0;
+        gameHub.Listen<MouseMovedEvent>(_ => deliveries++);
+
+        platform.Emit(source);
+        game.Emit(routed);
+
+        Assert.Equal(1, deliveries);
+        Assert.False(source.isGlobalHandled);
+        Assert.False(routed.isGlobalHandled);
+    }
+
     [Fact]
     public void CreateHub_ProducesValidHub()
     {

@@ -10,8 +10,11 @@ public sealed class EditorHistoryTransaction : IDisposable
     private EditorHistory? m_owner;
     private bool m_completed;
 
-    internal EditorHistoryTransaction(EditorHistory owner, string name, Guid id)
-    {
+    internal EditorHistoryTransaction(
+        EditorHistory owner,
+        string name,
+        Guid id
+    ) {
         m_owner = owner;
         this.name = name;
         this.id = id;

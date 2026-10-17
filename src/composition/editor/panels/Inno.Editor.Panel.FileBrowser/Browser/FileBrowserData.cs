@@ -24,7 +24,8 @@ internal enum FileBrowserEntryScopeFilter
 internal readonly record struct FileBrowserDisplayEntry(
     AssetFileEntry entry,
     string displayName,
-    bool isPluginRoot = false);
+    bool isPluginRoot = false
+);
 
 internal sealed class FileBrowserData(AssetEditorModule assets)
 {
@@ -32,8 +33,8 @@ internal sealed class FileBrowserData(AssetEditorModule assets)
         EditorContext context,
         FileBrowserEntryTypeFilter typeFilter,
         FileBrowserEntryScopeFilter scopeFilter,
-        string searchFilter)
-    {
+        string searchFilter
+    ) {
         List<FileBrowserDisplayEntry> entries = [];
         if (assets.browser.root == AssetBrowserRoot.Plugins &&
             string.IsNullOrEmpty(assets.browser.currentDirectory))
@@ -51,7 +52,10 @@ internal sealed class FileBrowserData(AssetEditorModule assets)
 
         ApplyTypeFilter(entries, typeFilter);
         ApplySearchFilter(entries, searchFilter);
-        entries.Sort(static (left, right) =>
+        entries.Sort(static (
+            left,
+            right
+        ) =>
         {
             int byName = string.Compare(
                 left.displayName,
@@ -74,8 +78,8 @@ internal sealed class FileBrowserData(AssetEditorModule assets)
 
     private static void ApplyTypeFilter(
         List<FileBrowserDisplayEntry> entries,
-        FileBrowserEntryTypeFilter typeFilter)
-    {
+        FileBrowserEntryTypeFilter typeFilter
+    ) {
         switch (typeFilter)
         {
             case FileBrowserEntryTypeFilter.FoldersOnly:
@@ -89,8 +93,8 @@ internal sealed class FileBrowserData(AssetEditorModule assets)
 
     private static void ApplySearchFilter(
         List<FileBrowserDisplayEntry> entries,
-        string searchFilter)
-    {
+        string searchFilter
+    ) {
         string filter = searchFilter.Trim();
         if (!string.IsNullOrEmpty(filter))
         {
@@ -101,8 +105,8 @@ internal sealed class FileBrowserData(AssetEditorModule assets)
 
     private void CollectPluginRoots(
         List<FileBrowserDisplayEntry> entries,
-        FileBrowserEntryScopeFilter scopeFilter)
-    {
+        FileBrowserEntryScopeFilter scopeFilter
+    ) {
         AssetSourceMount[] mounts = assets.pipeline.sourceMounts
             .Where(mount => assets.IsPluginSource(mount.id))
             .OrderBy(static mount => mount.id.value, StringComparer.OrdinalIgnoreCase)
@@ -121,8 +125,8 @@ internal sealed class FileBrowserData(AssetEditorModule assets)
 
     private void CollectEntriesRecursive(
         string directory,
-        List<FileBrowserDisplayEntry> entries)
-    {
+        List<FileBrowserDisplayEntry> entries
+    ) {
         IReadOnlyList<AssetFileEntry> children = GetVisibleChildren(directory);
         for (int i = 0; i < children.Count; i++)
         {
@@ -136,7 +140,10 @@ internal sealed class FileBrowserData(AssetEditorModule assets)
     internal List<AssetFileEntry> SortTreeEntries(IReadOnlyList<AssetFileEntry> entries)
     {
         List<AssetFileEntry> sorted = new(entries);
-        sorted.Sort(static (left, right) =>
+        sorted.Sort(static (
+            left,
+            right
+        ) =>
         {
             if (left.isDirectory != right.isDirectory)
                 return left.isDirectory ? -1 : 1;

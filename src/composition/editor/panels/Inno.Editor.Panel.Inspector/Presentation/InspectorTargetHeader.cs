@@ -34,8 +34,10 @@ internal sealed class InspectorTargetHeader
     /// <param name="selectedTarget">
     /// The current inspection target used to render the header.
     /// </param>
-    internal object? Resolve(EditorInteractions interactions, object? selectedTarget)
-        => m_lock.Resolve(interactions, selectedTarget);
+    internal object? Resolve(
+        EditorInteractions interactions,
+        object? selectedTarget
+    ) => m_lock.Resolve(interactions, selectedTarget);
 
     /// <summary>
     /// Draws the common framed header for a resolved Inspector target.
@@ -56,8 +58,8 @@ internal sealed class InspectorTargetHeader
         IInspectionDrawer drawer,
         InspectionDrawContext context,
         bool readOnly,
-        string? notice)
-    {
+        string? notice
+    ) {
         ArgumentNullException.ThrowIfNull(drawer);
         ArgumentNullException.ThrowIfNull(context);
         EditorWidget.HeaderSurface(
@@ -65,8 +67,14 @@ internal sealed class InspectorTargetHeader
             () =>
             {
                 NativeImGui.BeginDisabled(readOnly);
-                try { DrawContent(drawer, context); }
-                finally { NativeImGui.EndDisabled(); }
+                try
+                {
+                    DrawContent(drawer, context);
+                }
+                finally
+                {
+                    NativeImGui.EndDisabled();
+                }
                 if (notice is null)
                     return;
                 NativeImGui.Spacing();
@@ -78,8 +86,10 @@ internal sealed class InspectorTargetHeader
             spanWindowPadding: true);
     }
 
-    private void DrawContent(IInspectionDrawer drawer, InspectionDrawContext context)
-    {
+    private void DrawContent(
+        IInspectionDrawer drawer,
+        InspectionDrawContext context
+    ) {
         NativeImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing, EditorWidget.style.compactItemSpacing);
         NativeImGui.PushStyleVar(ImGuiStyleVar.FramePadding, EditorWidget.style.compactFramePadding);
         try
@@ -111,8 +121,8 @@ internal sealed class InspectorTargetHeader
     private void DrawNameRow(
         IInspectionDrawer drawer,
         InspectionDrawContext context,
-        float rowHeight)
-    {
+        float rowHeight
+    ) {
         Vector2 lockSize = EditorWidget.GetCompactIconSize();
         float itemSpacing = NativeImGui.GetStyle().ItemSpacing.X;
         float nameWidth = MathF.Max(
@@ -159,8 +169,10 @@ internal sealed class InspectorTargetHeader
             m_lock.Toggle(context.interactions, context.target);
     }
 
-    private static void DrawIcon(string icon, float slotSize)
-    {
+    private static void DrawIcon(
+        string icon,
+        float slotSize
+    ) {
         Vector2 minimum = NativeImGui.GetCursorScreenPos();
         EditorWidget.AddGlyphCentered(
             NativeImGui.GetWindowDrawList(),
@@ -175,8 +187,8 @@ internal sealed class InspectorTargetHeader
     private static void DrawCustomRow(
         IInspectionDrawer drawer,
         InspectionDrawContext context,
-        float rowHeight)
-    {
+        float rowHeight
+    ) {
         ImGuiWindowFlags flags = ImGuiWindowFlags.NoScrollbar |
                                  ImGuiWindowFlags.NoScrollWithMouse |
                                  ImGuiWindowFlags.NoSavedSettings;

@@ -75,8 +75,10 @@ internal sealed class CreateAssetFolderCommand(AssetEditorModule assets) : Edito
         _ = interaction.Execute(FileBrowserInteractionIds.C_RENAME);
     }
 
-    private static string Combine(string parent, string name)
-        => string.IsNullOrEmpty(parent) ? name : $"{parent}/{name}";
+    private static string Combine(
+        string parent,
+        string name
+    ) => string.IsNullOrEmpty(parent) ? name : $"{parent}/{name}";
 
     private static string Normalize(string? path)
         => string.IsNullOrWhiteSpace(path)

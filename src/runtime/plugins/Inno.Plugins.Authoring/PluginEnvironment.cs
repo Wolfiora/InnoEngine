@@ -119,8 +119,8 @@ public sealed class PluginEnvironment : IDisposable
         string pluginRoot,
         string libraryRoot,
         PluginScanResult initialScan,
-        GenerationCoordinator generations)
-    {
+        GenerationCoordinator generations
+    ) {
         ArgumentNullException.ThrowIfNull(assets);
         ArgumentNullException.ThrowIfNull(settings);
         ArgumentNullException.ThrowIfNull(serialization);
@@ -264,7 +264,8 @@ public sealed class PluginEnvironment : IDisposable
         }
         catch (Exception candidateFailure)
         {
-            if (m_generations.state == GenerationState.Faulted) throw;
+            if (m_generations.state == GenerationState.Faulted)
+                throw;
             try
             {
                 if (pendingAssigned)
@@ -300,8 +301,7 @@ public sealed class PluginEnvironment : IDisposable
     /// The Host is not ready for a new generation.
     /// </exception>
     [ScriptingApiIgnore]
-    public void ApplyPendingChange()
-        => m_generations.Execute("Plugin availability", new AvailabilityPublication(), [CreateReloadChange()]);
+    public void ApplyPendingChange() => m_generations.Execute("Plugin availability", new AvailabilityPublication(), [CreateReloadChange()]);
 
     /// <summary>
     /// Gets whether a source-mount candidate is waiting for successful script generation activation.
@@ -361,8 +361,8 @@ public sealed class PluginEnvironment : IDisposable
     [ScriptingApiIgnore]
     public bool TryGetCompilationPlugin(
         AssetSourceId source,
-        out PluginCandidate? plugin)
-    {
+        out PluginCandidate? plugin
+    ) {
         plugin = compilationPlugins.FirstOrDefault(candidate => candidate.sourceMount.id == source);
         return plugin is not null;
     }
@@ -379,8 +379,10 @@ public sealed class PluginEnvironment : IDisposable
     /// <returns>
     /// <see langword="true"/> when an active Plugin owns the source.
     /// </returns>
-    public bool TryGet(AssetSourceId source, out PluginCandidate? plugin)
-        => m_catalog.TryGet(source, out plugin);
+    public bool TryGet(
+        AssetSourceId source,
+        out PluginCandidate? plugin
+    ) => m_catalog.TryGet(source, out plugin);
 
     /// <summary>
     /// Provisionally publishes at the shared generation safety point; the owning change must roll back failures.
@@ -463,9 +465,18 @@ public sealed class PluginEnvironment : IDisposable
         RollbackPending();
         List<Exception> failures = [];
         m_shutdown ??= new RetirementBarrier("Plugin installation reconciliation");
-        try { m_shutdown.Wait(m_background.Dispose); }
-        catch (Exception pending) when (RetirementPendingException.Find(pending) is not null) { throw; }
-        catch (Exception failure) { failures.Add(failure); }
+        try
+        {
+            m_shutdown.Wait(m_background.Dispose);
+        }
+        catch (Exception pending) when (RetirementPendingException.Find(pending) is not null)
+        {
+            throw;
+        }
+        catch (Exception failure)
+        {
+            failures.Add(failure);
+        }
         FileSystemWatcher? watcher;
         lock (m_sync)
         {
@@ -481,8 +492,14 @@ public sealed class PluginEnvironment : IDisposable
             m_reconciliation = null;
             ActivationCandidateChanged = null;
         }
-        try { watcher?.Dispose(); }
-        catch (Exception failure) { failures.Add(failure); }
+        try
+        {
+            watcher?.Dispose();
+        }
+        catch (Exception failure)
+        {
+            failures.Add(failure);
+        }
         m_catalog.Shutdown();
         GC.SuppressFinalize(this);
         if (failures.Count > 0)
@@ -509,8 +526,10 @@ public sealed class PluginEnvironment : IDisposable
         return watcher;
     }
 
-    private void OnPluginSourceChanged(object sender, FileSystemEventArgs arguments)
-    {
+    private void OnPluginSourceChanged(
+        object sender,
+        FileSystemEventArgs arguments
+    ) {
         _ = sender;
         _ = arguments;
         lock (m_sync)
@@ -522,8 +541,10 @@ public sealed class PluginEnvironment : IDisposable
         }
     }
 
-    private void OnPluginSourceWatcherError(object sender, ErrorEventArgs arguments)
-    {
+    private void OnPluginSourceWatcherError(
+        object sender,
+        ErrorEventArgs arguments
+    ) {
         _ = sender;
         _ = arguments;
         lock (m_sync)
@@ -548,8 +569,14 @@ public sealed class PluginEnvironment : IDisposable
         m_reconciliation = m_background.RunAsync<string?>(async cancellation => await Task.Run(() =>
         {
             cancellation.ThrowIfCancellationRequested();
-            try { return ComputeInstallationFingerprint(pluginRoot); }
-            catch (Exception failure) when (failure is IOException or UnauthorizedAccessException) { return null; }
+            try
+            {
+                return ComputeInstallationFingerprint(pluginRoot);
+            }
+            catch (Exception failure) when (failure is IOException or UnauthorizedAccessException)
+            {
+                return null;
+            }
         }, cancellation).ConfigureAwait(false));
     }
 
@@ -692,8 +719,8 @@ public sealed class PluginEnvironment : IDisposable
     private void TryInitialRollback(
         Action rollback,
         string stage,
-        ICollection<Exception> failures)
-    {
+        ICollection<Exception> failures
+    ) {
         try
         {
             rollback();
@@ -708,11 +735,12 @@ public sealed class PluginEnvironment : IDisposable
         }
     }
 
-    private PluginScanResult CreateActiveScanSnapshot()
-        => new(m_catalog.activePlugins.ToArray(), []);
+    private PluginScanResult CreateActiveScanSnapshot() => new(m_catalog.activePlugins.ToArray(), []);
 
-    private bool RequiresCodeReload(PluginScanResult previous, PluginScanResult candidate)
-    {
+    private bool RequiresCodeReload(
+        PluginScanResult previous,
+        PluginScanResult candidate
+    ) {
         Dictionary<string, string> oldCode = PluginSourceService.GetActivatableCandidates(previous)
             .Where(static plugin => plugin.containsCode)
             .ToDictionary(static plugin => plugin.manifest.pluginId, static plugin => plugin.contentHash, StringComparer.Ordinal);
@@ -768,8 +796,8 @@ public sealed class PluginEnvironment : IDisposable
         PluginScanResult candidateScan,
         AssetSourceMountTransaction assets,
         string previousFingerprint,
-        string candidateFingerprint)
-    {
+        string candidateFingerprint
+    ) {
         internal PluginScanResult previousScan { get; } = previousScan;
         internal PluginScanResult candidateScan { get; } = candidateScan;
         internal AssetSourceMountTransaction assets { get; } = assets;

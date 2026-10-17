@@ -12,13 +12,18 @@ namespace Inno.Editor.Panel.Hierarchy;
 
 internal sealed class HierarchyDropVisual
 {
-    internal EditorDropPlacement GetScenePlacement(in TreeNodeResult result, float mouseY)
+    internal EditorDropPlacement GetScenePlacement(
+        in TreeNodeResult result,
+        float mouseY
+    )
         => mouseY >= (result.min.Y + result.max.Y) * 0.5f
             ? EditorDropPlacement.After
             : EditorDropPlacement.Before;
 
-    internal EditorDropPlacement GetObjectPlacement(in TreeNodeResult result, float mouseY)
-    {
+    internal EditorDropPlacement GetObjectPlacement(
+        in TreeNodeResult result,
+        float mouseY
+    ) {
         float height = MathF.Max(1f, result.max.Y - result.min.Y);
         float relativeY = (mouseY - result.min.Y) / height;
         if (relativeY < 0.25f)
@@ -26,8 +31,10 @@ internal sealed class HierarchyDropVisual
         return relativeY > 0.75f ? EditorDropPlacement.After : EditorDropPlacement.Into;
     }
 
-    internal void Draw(in TreeNodeResult result, EditorDropVisual visual)
-    {
+    internal void Draw(
+        in TreeNodeResult result,
+        EditorDropVisual visual
+    ) {
         switch (visual)
         {
             case EditorDropVisual.InsertBefore:

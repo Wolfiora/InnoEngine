@@ -40,8 +40,12 @@ public struct Color : IEquatable<Color>
     /// <param name="a">
     /// The first operand or interpolation endpoint.
     /// </param>
-    public Color(float r, float g, float b, float a = 1f)
-    {
+    public Color(
+        float r,
+        float g,
+        float b,
+        float a = 1f
+    ) {
         this.r = Math.Clamp(r, 0.0f, 1.0f);
         this.g = Math.Clamp(g, 0.0f, 1.0f);
         this.b = Math.Clamp(b, 0.0f, 1.0f);
@@ -66,8 +70,12 @@ public struct Color : IEquatable<Color>
     /// <returns>
     /// The validated color that represents the completed operation.
     /// </returns>
-    public static Color FromBytes(byte r, byte g, byte b, byte a = 255)
-    {
+    public static Color FromBytes(
+        byte r,
+        byte g,
+        byte b,
+        byte a = 255
+    ) {
         return new Color(r / 255f, g / 255f, b / 255f, a / 255f);
     }
     
@@ -193,8 +201,10 @@ public struct Color : IEquatable<Color>
     /// <returns>
     /// The validated color that represents the completed operation.
     /// </returns>
-    public static Color operator *(Color c, float factor)
-    {
+    public static Color operator *(
+        Color c,
+        float factor
+    ) {
         return new Color(
             c.r * factor,
             c.g * factor,
@@ -216,8 +226,10 @@ public struct Color : IEquatable<Color>
     /// <see langword="true"/> when the requested condition is satisfied; otherwise, <see langword="false"/>.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool operator ==(Color a, Color b)
-    {
+    public static bool operator ==(
+        Color a,
+        Color b
+    ) {
         return MathHelper.AlmostEquals(a.r, b.r) &&
                MathHelper.AlmostEquals(a.g, b.g) &&
                MathHelper.AlmostEquals(a.b, b.b) &&
@@ -237,7 +249,10 @@ public struct Color : IEquatable<Color>
     /// <see langword="true"/> when the requested condition is satisfied; otherwise, <see langword="false"/>.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool operator !=(Color a, Color b) => !(a == b);
+    public static bool operator !=(
+        Color a,
+        Color b
+    ) => !(a == b);
 
     /// <summary>
     /// Determines whether this value and the supplied value represent the same logical state.

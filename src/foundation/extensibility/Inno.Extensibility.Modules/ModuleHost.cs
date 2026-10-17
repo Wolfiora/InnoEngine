@@ -4,10 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.Loader;
 
-using Inno.Extensibility.Modules.Internal;
-using Inno.Extensibility.Modules.Loading;
 using Inno.Core.Collections;
 using Inno.Core.Execution;
 using Inno.Extensibility.Reload;
@@ -22,10 +19,8 @@ public sealed class ModuleHost : IDisposable
     private readonly object m_sync = new();
     private readonly AssemblyCatalogCoordinator m_catalogs = new();
     private readonly Dictionary<AssemblyModuleHandle, AssemblyModuleEntry> m_modules = [];
-    private readonly List<AssemblyUnloadMonitor> m_pendingUnloads = [];
-    private readonly HashSet<string> m_trustedPlatformAssemblies = GetTrustedPlatformAssemblyNames();
 
-    private ModuleHostOptions m_options = new();
+    private readonly ModuleHostOptions m_options;
     private AssemblyCatalogSnapshot m_currentCatalog = new(0, []);
     private long m_catalogVersion;
     private volatile bool m_hostCatalogDirty;
@@ -64,7 +59,7 @@ public sealed class ModuleHost : IDisposable
     }
 
     /// <summary>
-    /// Creates a module host, discovers host assemblies, and publishes the first catalog.
+    /// Creates a module host, discovers assemblies in its owning load context, and publishes the first catalog.
     /// </summary>
     /// <param name="options">
     /// The validated configuration that controls this operation.
@@ -72,23 +67,15 @@ public sealed class ModuleHost : IDisposable
     public ModuleHost(ModuleHostOptions options)
     {
         ArgumentNullException.ThrowIfNull(options);
-        if (string.IsNullOrWhiteSpace(options.cacheDirectory))
-            throw new ArgumentException("Assembly cache directory is required.", nameof(options));
 
         lock (m_sync)
         {
             m_options = new ModuleHostOptions
             {
-                cacheDirectory = Path.GetFullPath(options.cacheDirectory),
-                preloadEntryAssemblyDependencies = options.preloadEntryAssemblyDependencies
+                catalogSource = options.catalogSource
             };
-            Directory.CreateDirectory(m_options.cacheDirectory);
-            CleanupRetiredShadowDirectories();
-            CleanupStaleShadowDirectories();
-            if (m_options.preloadEntryAssemblyDependencies)
-                PreloadInnoHostDependencies();
-
-            AppDomain.CurrentDomain.AssemblyLoad += OnAssemblyLoaded;
+            ArgumentNullException.ThrowIfNull(m_options.catalogSource);
+            m_options.catalogSource.changed += OnAssemblyLoaded;
             m_assemblyLoadSubscribed = true;
             isInitialized = true;
             m_hostCatalogDirty = true;
@@ -181,7 +168,7 @@ public sealed class ModuleHost : IDisposable
     /// <returns>
     /// The validated assembly module handle that represents the completed operation.
     /// </returns>
-    public AssemblyModuleHandle Load(AssemblyLoadRequest request)
+    public AssemblyModuleHandle Load(IModuleSource request)
     {
         ArgumentNullException.ThrowIfNull(request);
         lock (m_sync)
@@ -228,8 +215,10 @@ public sealed class ModuleHost : IDisposable
     /// <returns>
     /// The validated assembly module handle that represents the completed operation.
     /// </returns>
-    public AssemblyModuleHandle Register(string moduleName, IReadOnlyList<Assembly> assemblies)
-    {
+    public AssemblyModuleHandle Register(
+        string moduleName,
+        IReadOnlyList<Assembly> assemblies
+    ) {
         if (string.IsNullOrWhiteSpace(moduleName))
             throw new ArgumentException("Module name is required.", nameof(moduleName));
         ArgumentNullException.ThrowIfNull(assemblies);
@@ -270,9 +259,10 @@ public sealed class ModuleHost : IDisposable
                 domain = domain,
                 scope = scope,
                 assemblies = assemblies.Distinct().ToArray(),
-                assemblyScopes = assemblies
-                    .Distinct()
-                    .ToDictionary(static assembly => assembly, _ => scope)
+                assemblyScopes = assemblies.Distinct().ToDictionary(static assembly => assembly, _ => scope),
+                contribution = new ModuleCatalogContribution(moduleName, domain, scope,
+                    assemblies.Distinct().ToArray(),
+                    assemblies.Distinct().ToDictionary(static assembly => assembly, _ => scope))
             };
             m_modules.Add(handle, module);
             try
@@ -302,8 +292,8 @@ public sealed class ModuleHost : IDisposable
     /// </returns>
     public AssemblyReloadSession BeginReload(
         AssemblyModuleHandle module,
-        AssemblyLoadRequest request)
-    {
+        IModuleSource request
+    ) {
         ArgumentNullException.ThrowIfNull(request);
         lock (m_sync)
         {
@@ -342,7 +332,7 @@ public sealed class ModuleHost : IDisposable
     /// <exception cref="ArgumentException">
     /// Thrown when the request set is empty or contains duplicate module names.
     /// </exception>
-    public AssemblyReloadSession BeginReload(IReadOnlyList<AssemblyLoadRequest> requests)
+    public AssemblyReloadSession BeginReload(IReadOnlyList<IModuleSource> requests)
     {
         ArgumentNullException.ThrowIfNull(requests);
         lock (m_sync)
@@ -372,9 +362,9 @@ public sealed class ModuleHost : IDisposable
     /// Thrown when no change is requested, a name is duplicated, or one module is both replaced and removed.
     /// </exception>
     public AssemblyReloadSession BeginReload(
-        IReadOnlyList<AssemblyLoadRequest> requests,
-        IReadOnlyList<string> removedModuleNames)
-    {
+        IReadOnlyList<IModuleSource> requests,
+        IReadOnlyList<string> removedModuleNames
+    ) {
         ArgumentNullException.ThrowIfNull(requests);
         ArgumentNullException.ThrowIfNull(removedModuleNames);
         lock (m_sync)
@@ -394,7 +384,7 @@ public sealed class ModuleHost : IDisposable
     /// <returns>
     /// The validated assembly unload monitor that represents the completed operation.
     /// </returns>
-    public AssemblyUnloadMonitor Unload(AssemblyModuleHandle module)
+    public IAssemblyUnloadProbe Unload(AssemblyModuleHandle module)
     {
         lock (m_sync)
         {
@@ -432,7 +422,7 @@ public sealed class ModuleHost : IDisposable
     /// <exception cref="ArgumentException">
     /// Thrown when a handle is duplicated or is not active.
     /// </exception>
-    public AssemblyUnloadMonitor Unload(IReadOnlyList<AssemblyModuleHandle> modules)
+    public IAssemblyUnloadProbe Unload(IReadOnlyList<AssemblyModuleHandle> modules)
     {
         ArgumentNullException.ThrowIfNull(modules);
         lock (m_sync)
@@ -470,7 +460,7 @@ public sealed class ModuleHost : IDisposable
             var monitors = unloadOrder.Select(BeginUnload).ToArray();
             return monitors.Length == 1
                 ? monitors[0]
-                : new AssemblyUnloadMonitor(monitors);
+                : new CompositeAssemblyUnloadProbe(monitors);
         }
     }
 
@@ -554,7 +544,10 @@ public sealed class ModuleHost : IDisposable
                 m_reloadInProgress = false;
                 if (activationFailure is AggregateException)
                     generations.Fault(activationFailure);
-                try { state.refresh.Rollback(); }
+                try
+                {
+                    state.refresh.Rollback();
+                }
                 catch (Exception failure) when (RetirementPendingException.Find(failure) is not null)
                 {
                     RetainFailedRetirement(failure, state);
@@ -576,7 +569,7 @@ public sealed class ModuleHost : IDisposable
         }
     }
 
-    internal AssemblyUnloadMonitor Complete(ReloadState state)
+    internal IAssemblyUnloadProbe Complete(ReloadState state)
     {
         lock (m_sync)
         {
@@ -587,7 +580,10 @@ public sealed class ModuleHost : IDisposable
             state.finished = true;
             m_reloadInProgress = false;
             Exception? cleanupFailure = null;
-            try { state.refresh.Complete(); }
+            try
+            {
+                state.refresh.Complete();
+            }
             catch (Exception failure) when (RetirementPendingException.Find(failure) is not null)
             {
                 RetainFailedRetirement(failure, state);
@@ -598,7 +594,7 @@ public sealed class ModuleHost : IDisposable
                 cleanupFailure = exception;
                 generations.Fault(exception);
             }
-            AssemblyUnloadMonitor monitor = BeginUnloadReverse(
+            IAssemblyUnloadProbe monitor = BeginUnloadReverse(
                 state.previousModules
                     .OfType<AssemblyModuleEntry>()
                     .Concat(state.removedModules)
@@ -625,7 +621,10 @@ public sealed class ModuleHost : IDisposable
 
             state.finished = true;
             m_reloadInProgress = false;
-            try { state.refresh.Rollback(); }
+            try
+            {
+                state.refresh.Rollback();
+            }
             catch (Exception failure) when (RetirementPendingException.Find(failure) is not null)
             {
                 RetainFailedRetirement(failure, state);
@@ -645,15 +644,15 @@ public sealed class ModuleHost : IDisposable
     }
 
     private AssemblyReloadSession BeginReloadLocked(
-        IReadOnlyList<AssemblyLoadRequest> requests,
+        IReadOnlyList<IModuleSource> requests,
         IReadOnlyList<string> removedModuleNames,
-        IReadOnlyDictionary<string, AssemblyModuleHandle>? forcedHandles)
-    {
+        IReadOnlyDictionary<string, AssemblyModuleHandle>? forcedHandles
+    ) {
         if (requests.Count == 0 && removedModuleNames.Count == 0)
             throw new ArgumentException("At least one module change is required.", nameof(requests));
         if (requests.Any(static request => request is null))
             throw new ArgumentException("Module reload requests cannot contain null entries.", nameof(requests));
-        AssemblyLoadRequest[] orderedRequests = OrderReloadRequests(requests);
+        IModuleSource[] orderedRequests = OrderReloadRequests(requests);
         if (orderedRequests.Select(static request => request.moduleName).Distinct(StringComparer.Ordinal).Count() !=
             orderedRequests.Length)
         {
@@ -684,7 +683,7 @@ public sealed class ModuleHost : IDisposable
         {
             for (int i = 0; i < orderedRequests.Length; i++)
             {
-                AssemblyLoadRequest request = orderedRequests[i];
+                IModuleSource request = orderedRequests[i];
                 AssemblyModuleEntry? previous = FindPreviousModule(request, forcedHandles);
                 previousModules[i] = previous;
                 AssemblyModuleHandle handle = previous?.handle ?? new AssemblyModuleHandle(Guid.NewGuid());
@@ -723,9 +722,9 @@ public sealed class ModuleHost : IDisposable
     }
 
     private AssemblyModuleEntry? FindPreviousModule(
-        AssemblyLoadRequest request,
-        IReadOnlyDictionary<string, AssemblyModuleHandle>? forcedHandles)
-    {
+        IModuleSource request,
+        IReadOnlyDictionary<string, AssemblyModuleHandle>? forcedHandles
+    ) {
         if (forcedHandles is not null && forcedHandles.TryGetValue(request.moduleName, out AssemblyModuleHandle handle))
             return m_modules[handle];
         AssemblyModuleEntry? previous = m_modules.Values.SingleOrDefault(module =>
@@ -740,9 +739,9 @@ public sealed class ModuleHost : IDisposable
     }
 
     private IReadOnlyList<AssemblyModuleEntry> GetUpstreamModules(
-        AssemblyLoadRequest request,
-        IReadOnlyList<AssemblyModuleEntry> stagedCandidates)
-    {
+        IModuleSource request,
+        IReadOnlyList<AssemblyModuleEntry> stagedCandidates
+    ) {
         IEnumerable<AssemblyModuleEntry> effectiveModules = m_modules.Values
             .Where(active => stagedCandidates.All(candidate => candidate.handle != active.handle))
             .Concat(stagedCandidates);
@@ -763,7 +762,7 @@ public sealed class ModuleHost : IDisposable
         }).ToArray();
     }
 
-    private int GetReloadOrder(AssemblyLoadRequest request)
+    private int GetReloadOrder(IModuleSource request)
         => request.domain switch
         {
             AssemblyDomain.InnoPlugin => 0,
@@ -772,13 +771,15 @@ public sealed class ModuleHost : IDisposable
             _ => throw new ArgumentException("InnoInternal assemblies cannot be loaded into a collectible module.")
         };
 
-    private AssemblyLoadRequest[] OrderReloadRequests(
-        IReadOnlyList<AssemblyLoadRequest> requests)
+    private IModuleSource[] OrderReloadRequests(IReadOnlyList<IModuleSource> requests)
     {
-        Dictionary<string, AssemblyLoadRequest> byName = requests.ToDictionary(
+        Dictionary<string, IModuleSource> byName = requests.ToDictionary(
             static request => request.moduleName,
             StringComparer.Ordinal);
-        IComparer<string> ordering = Comparer<string>.Create((left, right) =>
+        IComparer<string> ordering = Comparer<string>.Create((
+            left,
+            right
+        ) =>
         {
             int domainOrder = GetReloadOrder(byName[left]).CompareTo(GetReloadOrder(byName[right]));
             return domainOrder != 0
@@ -786,13 +787,13 @@ public sealed class ModuleHost : IDisposable
                 : StringComparer.Ordinal.Compare(left, right);
         });
         var graph = new DependencyGraph<string>(StringComparer.Ordinal, ordering);
-        foreach (AssemblyLoadRequest request in requests)
+        foreach (IModuleSource request in requests)
         {
             graph.AddNode(request.moduleName);
             foreach (string dependencyName in request.upstreamModuleNames
                          .OrderBy(static value => value, StringComparer.Ordinal))
             {
-                if (!byName.TryGetValue(dependencyName, out AssemblyLoadRequest? dependency))
+                if (!byName.TryGetValue(dependencyName, out IModuleSource? dependency))
                     continue;
                 if (GetReloadOrder(dependency) > GetReloadOrder(request))
                 {
@@ -891,7 +892,10 @@ public sealed class ModuleHost : IDisposable
                 else
                 {
                     m_currentCatalog = previous;
-                    try { refresh.Rollback(); }
+                    try
+                    {
+                        refresh.Rollback();
+                    }
                     catch (Exception pending) when (RetirementPendingException.Find(pending) is not null)
                     {
                         RetainFailedRetirement(pending, (refresh, previous));
@@ -917,20 +921,17 @@ public sealed class ModuleHost : IDisposable
 
     private AssemblyCatalogSnapshot BuildCatalog(
         IReadOnlyDictionary<AssemblyModuleHandle, AssemblyModuleEntry> replacements,
-        IReadOnlySet<AssemblyModuleHandle>? removed = null)
-    {
+        IReadOnlySet<AssemblyModuleHandle>? removed = null
+    ) {
         Assembly[] assemblies = GetActiveAssemblies(replacements, removed ?? new HashSet<AssemblyModuleHandle>());
         return new AssemblyCatalogSnapshot(++m_catalogVersion, assemblies);
     }
 
     private Assembly[] GetActiveAssemblies(
         IReadOnlyDictionary<AssemblyModuleHandle, AssemblyModuleEntry> replacements,
-        IReadOnlySet<AssemblyModuleHandle> removed)
-    {
-        IEnumerable<Assembly> host = AppDomain.CurrentDomain.GetAssemblies()
-            .Where(static assembly => !assembly.IsDynamic)
-            .Where(static assembly => AssemblyLoadContext.GetLoadContext(assembly) == AssemblyLoadContext.Default)
-            .Where(IsDiscoverableHostAssembly);
+        IReadOnlySet<AssemblyModuleHandle> removed
+    ) {
+        IEnumerable<Assembly> host = m_options.catalogSource.GetAssemblies();
         IEnumerable<AssemblyModuleEntry> modules = m_modules.Values
             .Where(module => !removed.Contains(module.handle))
             .Select(module => replacements.GetValueOrDefault(module.handle, module))
@@ -939,364 +940,78 @@ public sealed class ModuleHost : IDisposable
         return host.Concat(moduleAssemblies).Distinct().ToArray();
     }
 
+
+
+
+
+
     private AssemblyModuleEntry StageModule(
         AssemblyModuleHandle handle,
-        AssemblyLoadRequest request,
+        IModuleSource source,
         int generation,
         IReadOnlyList<AssemblyModuleEntry> upstreamModules,
-        IReadOnlyDictionary<string, PlannedAssembly> plannedAssemblies)
-    {
-        CleanupRetiredShadowDirectories();
-        ValidateRequest(request);
-        string generationDirectory = Path.Combine(
-            m_options.cacheDirectory,
-            SanitizePathSegment(request.moduleName),
-            generation.ToString(System.Globalization.CultureInfo.InvariantCulture) + "-" + Guid.NewGuid().ToString("N"));
-        Directory.CreateDirectory(generationDirectory);
-
-        string[] sourcePaths = new[] { request.mainAssemblyPath }
-            .Concat(request.preloadAssemblyPaths)
-            .Select(Path.GetFullPath)
-            .Distinct(StringComparer.OrdinalIgnoreCase)
-            .ToArray();
-        var shadowPathsByName = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        var explicitShadowPaths = new List<string>(sourcePaths.Length);
-        foreach (string sourcePath in sourcePaths)
-        {
-            string assemblyName = AssemblyName.GetAssemblyName(sourcePath).Name
-                ?? throw new InvalidOperationException($"Assembly '{sourcePath}' has no simple name.");
-            if (shadowPathsByName.ContainsKey(assemblyName))
-                throw new InvalidOperationException($"Module contains duplicate assembly name '{assemblyName}'.");
-            string shadowPath = CopyAssemblyArtifacts(sourcePath, generationDirectory, assemblyName);
-            shadowPathsByName.Add(assemblyName, shadowPath);
-            explicitShadowPaths.Add(shadowPath);
-        }
-
-        string mainSourcePath = Path.GetFullPath(request.mainAssemblyPath);
-        string mainShadowPath = explicitShadowPaths[sourcePaths
-            .Select((path, index) => (path, index))
-            .First(pair => string.Equals(pair.path, mainSourcePath, StringComparison.OrdinalIgnoreCase)).index];
-        IReadOnlyDictionary<string, Assembly> sharedAssemblies = BuildSharedAssemblies(
-            request,
-            upstreamModules,
-            shadowPathsByName.Keys);
-        var loadContext = new ModuleLoadContext(
-            $"{request.moduleName}#{generation}",
-            mainShadowPath,
-            request.collectible,
-            sharedAssemblies,
-            shadowPathsByName.Values);
-
+        IReadOnlyDictionary<string, PlannedAssembly> plannedAssemblies
+    ) {
+        ValidateRequest(source);
+        var context = new ModuleSourceContext(
+            generation, m_options.catalogSource,
+            upstreamModules.Select(static module => module.contribution).ToArray(),
+            m_modules.Values.Select(static module => module.contribution).ToArray(),
+            plannedAssemblies.ToDictionary(static pair => pair.Key,
+                static pair => new ModuleAssemblyDescriptor(pair.Value.domain, pair.Value.scope),
+                StringComparer.OrdinalIgnoreCase),
+            generations.TrackRetirement);
+        ModuleCatalogContribution contribution = source.Prepare(context);
         try
         {
-            var assemblies = new List<Assembly>(explicitShadowPaths.Count)
-            {
-                loadContext.LoadFromAssemblyPath(mainShadowPath)
-            };
-            foreach (string shadowPath in explicitShadowPaths)
-            {
-                string name = AssemblyName.GetAssemblyName(shadowPath).Name ?? string.Empty;
-                if (assemblies.Any(assembly => string.Equals(
-                        assembly.GetName().Name,
-                        name,
-                        StringComparison.OrdinalIgnoreCase)))
-                    continue;
-                assemblies.Add(loadContext.LoadFromAssemblyPath(shadowPath));
-            }
-
-            Assembly[] loadedAssemblies = assemblies.Distinct().ToArray();
-            var loadedScopes = new Dictionary<Assembly, AssemblyScope>(ReferenceEqualityComparer.Instance);
-            foreach (Assembly assembly in loadedAssemblies)
-            {
-                string simpleName = assembly.GetName().Name ?? string.Empty;
-                AssemblyScope assemblyScope = request.assemblyScopes.GetValueOrDefault(simpleName, request.scope);
-                if (request.domain == AssemblyDomain.InnoScripting &&
-                    (!assembly.TryGetInnoAssemblyClassification(
-                         out AssemblyDomain declaredDomain,
-                         out AssemblyScope declaredScope) ||
-                     declaredDomain != AssemblyDomain.InnoScripting ||
-                     declaredScope != assemblyScope))
-                {
-                    throw new InvalidDataException(
-                        $"Script assembly '{simpleName}' does not declare its requested domain and scope metadata.");
-                }
-                assembly.RegisterInnoAssemblyClassification(request.domain, assemblyScope);
-                loadedScopes.Add(assembly, assemblyScope);
-            }
-            ValidateLoadedModule(
-                request,
-                loadedAssemblies,
-                loadedScopes,
-                sharedAssemblies,
-                upstreamModules,
-                plannedAssemblies);
-
+            if (contribution.moduleName != source.moduleName || contribution.domain != source.domain ||
+                contribution.scope != source.scope || (contribution.lifetime is not null) != source.collectible)
+                throw new InvalidOperationException("A module source changed its declared ownership during preparation.");
+            foreach (Assembly assembly in contribution.assemblies)
+                assembly.RegisterInnoAssemblyClassification(contribution.domain, contribution.assemblyScopes[assembly]);
             return new AssemblyModuleEntry
             {
-                handle = handle,
-                moduleName = request.moduleName,
-                generation = generation,
-                externallyOwned = false,
-                collectible = request.collectible,
-                domain = request.domain,
-                scope = request.scope,
-                assemblies = loadedAssemblies,
-                assemblyScopes = loadedScopes,
-                upstreamModuleNames = request.upstreamModuleNames.ToArray(),
-                loadContext = loadContext,
-                shadowDirectory = generationDirectory
+                handle = handle, moduleName = source.moduleName, generation = generation,
+                externallyOwned = contribution.lifetime is null, collectible = source.collectible,
+                domain = source.domain, scope = source.scope, assemblies = contribution.assemblies.ToArray(),
+                assemblyScopes = contribution.assemblyScopes, upstreamModuleNames = source.upstreamModuleNames.ToArray(),
+                contribution = contribution
             };
         }
         catch
         {
-            if (request.collectible)
-            {
-                var reference = new WeakReference(loadContext, trackResurrection: false);
-                loadContext.Unload();
-                m_pendingUnloads.Add(new AssemblyUnloadMonitor(reference, generationDirectory));
-                CleanupRetiredShadowDirectories();
-            }
+            if (contribution.lifetime is not null)
+                generations.TrackRetirement(contribution.lifetime.BeginRetirement());
             throw;
         }
     }
 
-    private IReadOnlyDictionary<string, Assembly> BuildSharedAssemblies(
-        AssemblyLoadRequest request,
-        IReadOnlyList<AssemblyModuleEntry> upstreamModules,
-        IEnumerable<string> ownedNames)
-    {
-        var result = AppDomain.CurrentDomain.GetAssemblies()
-            .Where(static assembly => !assembly.IsDynamic)
-            .Where(static assembly => AssemblyLoadContext.GetLoadContext(assembly) == AssemblyLoadContext.Default)
-            .GroupBy(static assembly => assembly.GetName().Name!, StringComparer.OrdinalIgnoreCase)
-            .ToDictionary(static group => group.Key, static group => group.First(), StringComparer.OrdinalIgnoreCase);
-        var owned = new HashSet<string>(ownedNames, StringComparer.OrdinalIgnoreCase);
-        foreach (string ownedName in owned)
-        {
-            if (result.ContainsKey(ownedName))
-            {
-                throw new InvalidDataException(
-                    $"Module assembly '{ownedName}' duplicates an assembly already loaded in the default context.");
-            }
-        }
+    private void OnAssemblyLoaded() => m_hostCatalogDirty = true;
 
-        foreach (AssemblyModuleEntry upstream in upstreamModules)
-        {
-            foreach (Assembly assembly in upstream.assemblies)
-            {
-                if (request.scope == AssemblyScope.Runtime &&
-                    upstream.assemblyScopes[assembly] == AssemblyScope.Editor)
-                {
-                    continue;
-                }
-                string name = assembly.GetName().Name ?? string.Empty;
-                if (owned.Contains(name) || !result.TryAdd(name, assembly))
-                    throw new InvalidDataException($"Reload graph contains duplicate managed assembly name '{name}'.");
-            }
-        }
-        return result;
+    private IAssemblyUnloadProbe BeginUnload(AssemblyModuleEntry module)
+    {
+        IAssemblyUnloadProbe probe = module.contribution.lifetime?.BeginRetirement()
+            ?? new CompositeAssemblyUnloadProbe([]);
+        generations.TrackRetirement(probe);
+        return probe;
     }
 
-    private void ValidateLoadedModule(
-        AssemblyLoadRequest request,
-        IReadOnlyList<Assembly> assemblies,
-        IReadOnlyDictionary<Assembly, AssemblyScope> assemblyScopes,
-        IReadOnlyDictionary<string, Assembly> sharedAssemblies,
-        IReadOnlyList<AssemblyModuleEntry> upstreamModules,
-        IReadOnlyDictionary<string, PlannedAssembly> plannedAssemblies)
+    private IAssemblyUnloadProbe BeginUnloadReverse(IReadOnlyList<AssemblyModuleEntry> modules)
     {
-        var ownByName = assemblies.ToDictionary(
-            static assembly => assembly.GetName().Name ?? string.Empty,
-            StringComparer.OrdinalIgnoreCase);
-        ValidateOwnedDependencyGraph(ownByName);
-        var forbiddenDownstreamNames = m_modules.Values
-            .Where(module => request.domain == AssemblyDomain.InnoPlugin
-                ? module.domain == AssemblyDomain.InnoScripting
-                : request.scope == AssemblyScope.Runtime && module.scope == AssemblyScope.Editor)
-            .SelectMany(static module => module.assemblies)
-            .Select(static assembly => assembly.GetName().Name ?? string.Empty)
-            .ToHashSet(StringComparer.OrdinalIgnoreCase);
-        var upstreamByName = upstreamModules
-            .SelectMany(module => module.assemblies.Select(assembly => (module, assembly)))
-            .ToDictionary(
-                static pair => pair.assembly.GetName().Name ?? string.Empty,
-                static pair => pair,
-                StringComparer.OrdinalIgnoreCase);
-
-        foreach (Assembly assembly in assemblies)
-        {
-            AssemblyScope sourceScope = assemblyScopes[assembly];
-            foreach (AssemblyName reference in assembly.GetReferencedAssemblies())
-            {
-                string name = reference.Name ?? string.Empty;
-                if (ownByName.TryGetValue(name, out Assembly? ownedDependency))
-                {
-                    if (sourceScope == AssemblyScope.Runtime &&
-                        assemblyScopes[ownedDependency] == AssemblyScope.Editor)
-                    {
-                        throw new InvalidDataException(
-                            $"Runtime assembly '{assembly.GetName().Name}' cannot reference editor assembly '{name}'.");
-                    }
-                    continue;
-                }
-                if (forbiddenDownstreamNames.Contains(name))
-                {
-                    throw new InvalidDataException(
-                        $"Assembly '{assembly.GetName().Name}' has a forbidden downstream reference to '{name}'.");
-                }
-                if (upstreamByName.TryGetValue(name, out var upstream))
-                {
-                    if (sourceScope == AssemblyScope.Runtime &&
-                        upstream.module.assemblyScopes[upstream.assembly] == AssemblyScope.Editor)
-                    {
-                        throw new InvalidDataException(
-                            $"Runtime assembly '{assembly.GetName().Name}' cannot reference editor assembly '{name}'.");
-                    }
-                    continue;
-                }
-                if (plannedAssemblies.TryGetValue(name, out PlannedAssembly planned))
-                {
-                    if (request.domain == AssemblyDomain.InnoPlugin &&
-                        planned.domain == AssemblyDomain.InnoScripting)
-                    {
-                        throw new InvalidDataException(
-                            $"Plugin assembly '{assembly.GetName().Name}' cannot reference project script assembly '{name}'.");
-                    }
-                    if (sourceScope == AssemblyScope.Runtime && planned.scope == AssemblyScope.Editor)
-                    {
-                        throw new InvalidDataException(
-                            $"Runtime assembly '{assembly.GetName().Name}' cannot reference editor assembly '{name}'.");
-                    }
-                    throw new InvalidDataException(
-                        $"Assembly '{assembly.GetName().Name}' has an unavailable downstream reference to '{name}'.");
-                }
-                if (m_trustedPlatformAssemblies.Contains(name))
-                    continue;
-                if (sharedAssemblies.TryGetValue(name, out Assembly? sharedAssembly))
-                {
-                    if (!sharedAssembly.TryGetInnoAssemblyClassification(
-                            out AssemblyDomain sharedDomain,
-                            out AssemblyScope sharedScope) ||
-                        sharedDomain != AssemblyDomain.InnoInternal)
-                    {
-                        throw new InvalidDataException(
-                            $"Assembly '{assembly.GetName().Name}' can only share BCL or InnoInternal contracts, not '{name}'.");
-                    }
-                    if (sourceScope == AssemblyScope.Runtime && sharedScope == AssemblyScope.Editor)
-                    {
-                        throw new InvalidDataException(
-                            $"Runtime assembly '{assembly.GetName().Name}' cannot reference editor contract '{name}'.");
-                    }
-                    continue;
-                }
-                throw new InvalidDataException(
-                    $"Assembly '{assembly.GetName().Name}' references unavailable assembly '{name}'. " +
-                    "Include the dependency in its module or load an InnoInternal contract in the host.");
-            }
-        }
-    }
-
-    private void ValidateOwnedDependencyGraph(IReadOnlyDictionary<string, Assembly> assemblies)
-    {
-        var graph = new DependencyGraph<string>(
-            StringComparer.OrdinalIgnoreCase,
-            StringComparer.Ordinal);
-        foreach (string name in assemblies.Keys)
-            graph.AddNode(name);
-        foreach ((string name, Assembly assembly) in assemblies)
-        {
-            foreach (AssemblyName reference in assembly.GetReferencedAssemblies())
-            {
-                if (reference.Name is string dependency && assemblies.ContainsKey(dependency))
-                    graph.AddDependency(name, dependency);
-            }
-        }
-        if (graph.TryFindCycle(out IReadOnlyList<string> cycle))
-        {
-            throw new InvalidDataException(
-                $"Module assembly reference cycle: {string.Join(" -> ", cycle)}.");
-        }
-    }
-
-    private string CopyAssemblyArtifacts(
-        string sourcePath,
-        string destinationDirectory,
-        string assemblyName)
-    {
-        string destinationPath = Path.Combine(destinationDirectory, assemblyName + ".dll");
-        File.Copy(sourcePath, destinationPath, overwrite: true);
-        string sourcePdb = Path.ChangeExtension(sourcePath, ".pdb");
-        if (File.Exists(sourcePdb))
-            File.Copy(sourcePdb, Path.Combine(destinationDirectory, Path.GetFileName(sourcePdb)), overwrite: true);
-        string sourceDeps = Path.ChangeExtension(sourcePath, ".deps.json");
-        if (File.Exists(sourceDeps))
-            File.Copy(sourceDeps, Path.Combine(destinationDirectory, Path.GetFileName(sourceDeps)), overwrite: true);
-        return destinationPath;
-    }
-
-    private AssemblyUnloadMonitor BeginUnload(AssemblyModuleEntry module)
-    {
-        if (module.externallyOwned || module.loadContext is null || !module.collectible)
-            return new AssemblyUnloadMonitor(loadContext: null);
-
-        var reference = new WeakReference(module.loadContext, trackResurrection: false);
-        module.loadContext.Unload();
-        var monitor = new AssemblyUnloadMonitor(
-            reference,
-            module.shadowDirectory,
-            $"{module.moduleName} ({module.domain}/{module.scope}, generation {module.generation})");
-        m_pendingUnloads.Add(monitor);
-        generations.TrackRetirement(monitor);
-        CleanupRetiredShadowDirectories();
-        return monitor;
-    }
-
-    private AssemblyUnloadMonitor BeginUnloadReverse(IReadOnlyList<AssemblyModuleEntry> modules)
-    {
-        var monitors = new List<AssemblyUnloadMonitor>(modules.Count);
+        var monitors = new List<IAssemblyUnloadProbe>(modules.Count);
         for (int i = modules.Count - 1; i >= 0; i--)
             monitors.Add(BeginUnload(modules[i]));
         return monitors.Count == 1
             ? monitors[0]
-            : new AssemblyUnloadMonitor(monitors);
+            : new CompositeAssemblyUnloadProbe(monitors);
     }
 
-    private void CleanupRetiredShadowDirectories()
-    {
-        for (int i = m_pendingUnloads.Count - 1; i >= 0; i--)
-        {
-            if (m_pendingUnloads[i].TryCleanupShadowDirectory())
-                m_pendingUnloads.RemoveAt(i);
-        }
-    }
 
-    private void CleanupStaleShadowDirectories()
-    {
-        foreach (string directory in Directory.EnumerateDirectories(m_options.cacheDirectory))
-        {
-            try
-            {
-                Directory.Delete(directory, recursive: true);
-            }
-            catch (IOException)
-            {
-                // A still-reachable load context can keep its shadow files locked until a later refresh.
-            }
-            catch (UnauthorizedAccessException)
-            {
-                // A later manager initialization can retry cleanup after external file handles are released.
-            }
-        }
-    }
 
-    private void ValidateRequest(AssemblyLoadRequest request)
+    private void ValidateRequest(IModuleSource request)
     {
         if (string.IsNullOrWhiteSpace(request.moduleName))
             throw new ArgumentException("Module name is required.", nameof(request));
-        if (string.IsNullOrWhiteSpace(request.mainAssemblyPath))
-            throw new ArgumentException("Main assembly path is required.", nameof(request));
-        if (!request.collectible)
-            throw new ArgumentException("Plugin and scripting modules must use a collectible load context.", nameof(request));
         if (!Enum.IsDefined(request.domain) || request.domain == AssemblyDomain.InnoInternal)
             throw new ArgumentException("A reloadable module must belong to InnoPlugin or InnoScripting.", nameof(request));
         if (!Enum.IsDefined(request.scope) || request.assemblyScopes.Values.Any(static scope => !Enum.IsDefined(scope)))
@@ -1311,36 +1026,18 @@ public sealed class ModuleHost : IDisposable
                 nameof(request));
         }
 
-        foreach (string path in new[] { request.mainAssemblyPath }.Concat(request.preloadAssemblyPaths))
-        {
-            if (string.IsNullOrWhiteSpace(path) || !File.Exists(path))
-                throw new FileNotFoundException("A module assembly does not exist.", path);
-            try
-            {
-                _ = AssemblyName.GetAssemblyName(path);
-            }
-            catch (BadImageFormatException exception)
-            {
-                throw new ArgumentException($"Module file '{path}' is not a managed assembly.", nameof(request), exception);
-            }
-        }
+        _ = request.GetAssemblyNames();
     }
 
-    private IReadOnlyDictionary<string, PlannedAssembly> BuildPlannedAssemblyMap(
-        IReadOnlyList<AssemblyLoadRequest> requests)
+    private IReadOnlyDictionary<string, PlannedAssembly> BuildPlannedAssemblyMap(IReadOnlyList<IModuleSource> requests)
     {
         var result = new Dictionary<string, PlannedAssembly>(StringComparer.OrdinalIgnoreCase);
-        foreach (AssemblyLoadRequest request in requests)
+        foreach (IModuleSource request in requests)
         {
             ValidateRequest(request);
             var ownedNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            foreach (string path in new[] { request.mainAssemblyPath }
-                         .Concat(request.preloadAssemblyPaths)
-                         .Select(Path.GetFullPath)
-                         .Distinct(StringComparer.OrdinalIgnoreCase))
+            foreach (string name in request.GetAssemblyNames())
             {
-                string name = AssemblyName.GetAssemblyName(path).Name
-                    ?? throw new InvalidOperationException($"Assembly '{path}' has no simple name.");
                 ownedNames.Add(name);
                 AssemblyScope scope = request.assemblyScopes.GetValueOrDefault(name, request.scope);
                 if (!result.TryAdd(name, new PlannedAssembly(request.domain, scope)))
@@ -1356,15 +1053,7 @@ public sealed class ModuleHost : IDisposable
         return result;
     }
 
-    private static HashSet<string> GetTrustedPlatformAssemblyNames()
-    {
-        string paths = AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES") as string ?? string.Empty;
-        return paths.Split(Path.PathSeparator, StringSplitOptions.RemoveEmptyEntries)
-            .Select(Path.GetFileNameWithoutExtension)
-            .OfType<string>()
-            .Where(static name => !string.IsNullOrWhiteSpace(name))
-            .ToHashSet(StringComparer.OrdinalIgnoreCase);
-    }
+
 
     private void ValidateUniqueModuleName(string moduleName)
     {
@@ -1374,8 +1063,10 @@ public sealed class ModuleHost : IDisposable
             throw new InvalidOperationException($"Assembly module '{moduleName}' is already active.");
     }
 
-    private void ValidateUniqueReloadBoundary(AssemblyDomain domain, AssemblyScope scope)
-    {
+    private void ValidateUniqueReloadBoundary(
+        AssemblyDomain domain,
+        AssemblyScope scope
+    ) {
         if (domain == AssemblyDomain.InnoPlugin)
             return;
         if (m_modules.Values.Any(module => module.domain == domain && module.scope == scope))
@@ -1386,9 +1077,9 @@ public sealed class ModuleHost : IDisposable
     }
 
     private void ValidateReloadClosure(
-        IReadOnlyList<AssemblyLoadRequest> requests,
-        IReadOnlyList<AssemblyModuleEntry> removedModules)
-    {
+        IReadOnlyList<IModuleSource> requests,
+        IReadOnlyList<AssemblyModuleEntry> removedModules
+    ) {
         bool reloadsPlugins = requests.Any(static request => request.domain == AssemblyDomain.InnoPlugin) ||
                               removedModules.Any(static module => module.domain == AssemblyDomain.InnoPlugin);
         bool reloadsRuntime = requests.Any(static request =>
@@ -1510,88 +1201,21 @@ public sealed class ModuleHost : IDisposable
         }
     }
 
-    private bool IsDiscoverableHostAssembly(Assembly assembly)
-    {
-        return assembly.TryGetInnoAssemblyClassification(
-                   out AssemblyDomain domain,
-                   out _) &&
-               domain == AssemblyDomain.InnoInternal;
-    }
 
-    private void PreloadInnoHostDependencies()
-    {
-        Assembly? entry = Assembly.GetEntryAssembly();
-        Assembly[] roots = AppDomain.CurrentDomain.GetAssemblies()
-            .Where(static assembly => !assembly.IsDynamic)
-            .Where(static assembly => AssemblyLoadContext.GetLoadContext(assembly) == AssemblyLoadContext.Default)
-            .Where(assembly => ReferenceEquals(assembly, entry) ||
-                               (assembly.GetName().Name ?? string.Empty).StartsWith(
-                                   "Inno.",
-                                   StringComparison.Ordinal))
-            .Distinct()
-            .ToArray();
-        if (roots.Length == 0)
-            return;
 
-        var visited = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        var pending = new Queue<Assembly>();
-        foreach (Assembly root in roots)
-        {
-            string rootName = root.GetName().Name ?? string.Empty;
-            if (!string.IsNullOrEmpty(rootName))
-                visited.Add(rootName);
-            pending.Enqueue(root);
-        }
-        foreach (AssemblyName dependency in HostDependencyManifest.GetInnoRuntimeAssemblies(roots))
-            TryEnqueueHostAssembly(dependency, visited, pending);
 
-        while (pending.Count > 0)
-        {
-            Assembly assembly = pending.Dequeue();
-            foreach (AssemblyName reference in assembly.GetReferencedAssemblies())
-                TryEnqueueHostAssembly(reference, visited, pending);
-        }
-    }
 
-    private void TryEnqueueHostAssembly(
-        AssemblyName assemblyName,
-        ISet<string> visited,
-        Queue<Assembly> pending)
-    {
-        string name = assemblyName.Name ?? string.Empty;
-        if (!name.StartsWith("Inno.", StringComparison.Ordinal) || !visited.Add(name))
-            return;
-        try
-        {
-            pending.Enqueue(Assembly.Load(assemblyName));
-        }
-        catch (FileNotFoundException)
-        {
-            // Optional engine modules can be absent from a host deployment.
-        }
-    }
+    private readonly record struct PlannedAssembly(
+        AssemblyDomain domain,
+        AssemblyScope scope
+    );
 
-    private string SanitizePathSegment(string value)
-    {
-        char[] invalid = Path.GetInvalidFileNameChars();
-        return new string(value.Select(character => invalid.Contains(character) ? '_' : character).ToArray());
-    }
-
-    private readonly record struct PlannedAssembly(AssemblyDomain domain, AssemblyScope scope);
-
-    private void OnAssemblyLoaded(object? sender, AssemblyLoadEventArgs args)
-    {
-        if (!args.LoadedAssembly.IsDynamic &&
-            AssemblyLoadContext.GetLoadContext(args.LoadedAssembly) == AssemblyLoadContext.Default &&
-            IsDiscoverableHostAssembly(args.LoadedAssembly))
-            m_hostCatalogDirty = true;
-    }
 
     private void ShutdownLocked()
     {
         if (m_assemblyLoadSubscribed)
         {
-            AppDomain.CurrentDomain.AssemblyLoad -= OnAssemblyLoaded;
+            m_options.catalogSource.changed -= OnAssemblyLoaded;
             m_assemblyLoadSubscribed = false;
         }
 
@@ -1619,6 +1243,7 @@ public sealed class ModuleHost : IDisposable
             BeginUnload(module);
         }
         m_modules.Clear();
+        m_options.catalogSource.Dispose();
         isInitialized = false;
         m_hostCatalogDirty = false;
         m_catalogTransitionInProgress = false;
@@ -1628,8 +1253,10 @@ public sealed class ModuleHost : IDisposable
         m_currentCatalog = new AssemblyCatalogSnapshot(0, []);
     }
 
-    private void RetainFailedRetirement(Exception failure, object owner)
-    {
+    private void RetainFailedRetirement(
+        Exception failure,
+        object owner
+    ) {
         m_retirementFailure = failure;
         m_retainedRetirement = owner;
         generations.Fault(failure);

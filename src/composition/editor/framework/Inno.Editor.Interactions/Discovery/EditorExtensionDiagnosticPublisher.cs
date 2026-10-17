@@ -13,8 +13,10 @@ internal sealed class EditorExtensionDiagnosticPublisher : IDisposable
     private readonly Dictionary<string, string> m_panelFailures = new(StringComparer.Ordinal);
     private string m_publishedState = string.Empty;
 
-    internal void ReportPanelFailure(string panelId, Exception exception)
-    {
+    internal void ReportPanelFailure(
+        string panelId,
+        Exception exception
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(panelId);
         ArgumentNullException.ThrowIfNull(exception);
         m_panelFailures[panelId] = exception.Message;

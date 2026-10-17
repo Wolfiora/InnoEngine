@@ -35,8 +35,8 @@ internal sealed class FileBrowserTree
         FileBrowserDragDrop dragDrop,
         FileBrowserRename rename,
         FileBrowserContextMenu contextMenu,
-        AssetEditorModule assets)
-    {
+        AssetEditorModule assets
+    ) {
         m_data = data;
         m_navigation = navigation;
         m_dragDrop = dragDrop;
@@ -49,8 +49,8 @@ internal sealed class FileBrowserTree
         EditorContext context,
         string relativePath,
         string label,
-        bool isRoot)
-    {
+        bool isRoot
+    ) {
         List<AssetFileEntry> sorted = m_data.SortTreeEntries(
             m_data.GetVisibleChildren(relativePath));
         bool isDirectory = isRoot || IsDirectoryPath(m_assets.pipeline, relativePath);
@@ -145,8 +145,8 @@ internal sealed class FileBrowserTree
 
     internal void DrawPluginRoot(
         EditorContext context,
-        IReadOnlyList<AssetSourceMount> sourceMounts)
-    {
+        IReadOnlyList<AssetSourceMount> sourceMounts
+    ) {
         AssetSourceMount[] plugins = sourceMounts
             .Where(mount => m_assets.IsPluginSource(mount.id))
             .OrderBy(static mount => mount.id.value, StringComparer.OrdinalIgnoreCase)
@@ -199,8 +199,8 @@ internal sealed class FileBrowserTree
         string icon,
         bool isCurrentDirectory,
         bool editing,
-        float rowHeight)
-    {
+        float rowHeight
+    ) {
         if (!editing)
         {
             EditorWidget.IconText(icon, label, isCurrentDirectory);
@@ -236,8 +236,7 @@ internal sealed class FileBrowserTree
         m_currentDirectoryOpenRequest = false;
     }
 
-    internal void RequestOpenRoot()
-        => m_rootOpenRequest = true;
+    internal void RequestOpenRoot() => m_rootOpenRequest = true;
 
     internal void RequestOpenTreeToPath(string path)
     {
@@ -253,8 +252,8 @@ internal sealed class FileBrowserTree
     private bool ShouldOpenTreeEntry(
         string relativePath,
         bool isRoot,
-        bool isDirectory)
-    {
+        bool isDirectory
+    ) {
         if (!isDirectory)
             return false;
         if (isRoot)

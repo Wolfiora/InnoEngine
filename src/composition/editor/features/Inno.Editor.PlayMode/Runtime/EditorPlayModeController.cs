@@ -27,7 +27,7 @@ namespace Inno.Editor.PlayMode;
 /// </remarks>
 public sealed class EditorPlayModeController :
     IEditorPlayMode,
-    IEditorReloadParticipant,
+    IEditorReloadGuard,
     IDisposable
 {
     private readonly IEditorHistoryIsolation m_history;
@@ -40,6 +40,7 @@ public sealed class EditorPlayModeController :
 
     private IDisposable? m_historyIsolation;
     private IDisposable? m_sceneLease;
+    private IDisposable? m_generationLease;
     private IDisposable? m_retirementReservation;
     private RetirementBarrier? m_retirement;
     private List<Exception>? m_retirementFailures;
@@ -87,8 +88,8 @@ public sealed class EditorPlayModeController :
         IEditorScriptCompilation scripting,
         IEditorHistoryIsolation history,
         LogRouter logs,
-        IEditorAudioHost? audio = null)
-    {
+        IEditorAudioHost? audio = null
+    ) {
         m_engineHost = engineHost ?? throw new ArgumentNullException(nameof(engineHost));
         m_runtimeOptions = runtimeOptions ?? throw new ArgumentNullException(nameof(runtimeOptions));
         if (runtimeOptions.kind != RuntimeSessionKind.Play)
@@ -114,6 +115,18 @@ public sealed class EditorPlayModeController :
     /// Gets whether isolated runtime scenes are actively simulating.
     /// </summary>
     public bool isPlaying => m_state == EditorPlayModeState.Playing;
+
+    /// <inheritdoc />
+    bool IEditorReloadGuard.canRequestReload => !m_disposed && m_state == EditorPlayModeState.Editing;
+
+    /// <inheritdoc />
+    bool IEditorReloadGuard.canActivateReload => !m_disposed
+        && m_state is EditorPlayModeState.Editing or EditorPlayModeState.Compiling
+        && m_runtimeSession is null && m_sceneLease is null && m_generationLease is null;
+
+    /// <inheritdoc />
+    string? IEditorReloadGuard.blockingReason => m_state == EditorPlayModeState.Editing
+        ? null : "Stop Play Mode and wait for its runtime session to retire before reloading scripts or Plugins.";
 
     /// <summary>
     /// Gets the most recent transition or simulation failure.
@@ -240,42 +253,16 @@ public sealed class EditorPlayModeController :
             if (m_state != EditorPlayModeState.Editing)
                 CompleteEditingTransition();
         }
-        catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null) { throw; }
+        catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null)
+        {
+            throw;
+        }
         catch (Exception failure)
         {
             m_engineHost.generations.Fault(failure);
             throw;
         }
         m_disposed = true;
-    }
-
-    /// <summary>
-    /// Captures the Play Mode quiescence operation required before an assembly generation switch.
-    /// </summary>
-    /// <param name="context">
-    /// The prepared assembly reload context whose candidate will replace the active generation.
-    /// </param>
-    /// <returns>
-    /// A transaction that synchronously releases the transient Play session before candidate activation.
-    /// </returns>
-    /// <exception cref="ArgumentNullException">
-    /// Thrown when <paramref name="context"/> is <see langword="null"/>.
-    /// </exception>
-    /// <exception cref="ObjectDisposedException">
-    /// Thrown after the controller has been disposed.
-    /// </exception>
-    IGenerationChange IEditorReloadParticipant.Capture(AssemblyReloadContext context)
-    {
-        ArgumentNullException.ThrowIfNull(context);
-        ObjectDisposedException.ThrowIf(m_disposed, this);
-        return new PlayModeReloadTransaction(this);
-    }
-
-    /// <summary>
-    /// Republishes diagnostics owned by Play Mode after an assembly generation transition.
-    /// </summary>
-    void IEditorReloadParticipant.RefreshDiagnostics()
-    {
     }
 
     private void AdvanceCompilation()
@@ -312,6 +299,7 @@ public sealed class EditorPlayModeController :
         {
             m_historyIsolation = m_history.BeginHistoryIsolation();
             m_runtimeSession = m_engineHost.CreateSession(m_runtimeOptions);
+            m_generationLease = m_engineHost.generations.AcquireRead("active Play Mode session");
             using (m_runtimeSession.EnterExecutionScope())
                 m_sceneLease = m_scenes.BeginPlayMode(m_runtimeSession);
             m_activeSessionId = m_runtimeSession.sessionId;
@@ -363,6 +351,9 @@ public sealed class EditorPlayModeController :
     {
         if (m_startupRetirementFailure is not null)
             throw m_startupRetirementFailure;
+        // The owner thread hands admission to the retirement reservation before it can process another frame.
+        m_generationLease?.Dispose();
+        m_generationLease = null;
         if (m_sceneLease is null && m_runtimeSession is null && m_historyIsolation is null)
             return;
         if (m_retirementReservation is null && m_engineHost.generations.state == GenerationState.Ready)
@@ -426,8 +417,10 @@ public sealed class EditorPlayModeController :
         }
     }
 
-    private void RunSimulation(Action<RuntimeSession> callback, string phase)
-    {
+    private void RunSimulation(
+        Action<RuntimeSession> callback,
+        string phase
+    ) {
         if (m_state != EditorPlayModeState.Playing)
             return;
         RuntimeSession session = m_runtimeSession
@@ -524,7 +517,10 @@ public sealed class EditorPlayModeController :
             throw new AggregateException("One or more Play Mode state observers failed.", failures);
     }
 
-    private static void DisposeResource<T>(ref T? resource, ref List<Exception>? failures)
+    private static void DisposeResource<T>(
+        ref T? resource,
+        ref List<Exception>? failures
+    )
         where T : class, IDisposable
     {
         T? owned = resource;
@@ -534,7 +530,10 @@ public sealed class EditorPlayModeController :
         {
             owned.Dispose();
         }
-        catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null) { throw; }
+        catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null)
+        {
+            throw;
+        }
         catch (Exception exception)
         {
             failures ??= [];
@@ -546,7 +545,8 @@ public sealed class EditorPlayModeController :
     private sealed class PresentationScope(
         IDisposable sessionScope,
         IDisposable? audioScope,
-        IDisposable uiScope) : IDisposable
+        IDisposable uiScope
+    ) : IDisposable
     {
         private IDisposable? m_sessionScope = sessionScope;
         private IDisposable? m_audioScope = audioScope;
@@ -578,55 +578,6 @@ public sealed class EditorPlayModeController :
                     session?.Dispose();
                 }
             }
-        }
-    }
-
-    private sealed class PlayModeReloadTransaction(EditorPlayModeController owner)
-        : IGenerationChange
-    {
-        private bool m_prepared;
-
-        /// <summary>
-        /// Releases the isolated Play world before the candidate generation becomes active.
-        /// </summary>
-        public void PrepareForActivation()
-        {
-            if (m_prepared)
-                return;
-            owner.Quiesce();
-            m_prepared = true;
-        }
-
-        /// <summary>
-        /// Completes the state transition already committed during preparation.
-        /// </summary>
-        public void Apply()
-        {
-        }
-
-        /// <summary>
-        /// Releases transaction state after a successful assembly generation switch.
-        /// </summary>
-        public void Complete()
-        {
-        }
-
-        /// <summary>
-        /// Preserves Edit Mode when candidate activation is rolled back.
-        /// </summary>
-        public void RollbackStructure()
-        {
-        }
-
-        /// <summary>
-        /// Preserves Edit Mode after the previous assembly generation is restored.
-        /// </summary>
-        /// <remarks>
-        /// A running simulation is transient state and is intentionally never reconstructed after
-        /// an assembly reload request has quiesced it.
-        /// </remarks>
-        public void RestorePreviousState()
-        {
         }
     }
 }

@@ -45,8 +45,8 @@ public sealed class ReferenceRecoveryTransaction : IGenerationChange
     public ReferenceRecoveryTransaction(
         ReferenceCatalog catalog,
         IEnumerable<SerializedMissingState> missingStates,
-        IEnumerable<IReferenceRecoveryParticipant> participants)
-    {
+        IEnumerable<IReferenceRecoveryParticipant> participants
+    ) {
         ArgumentNullException.ThrowIfNull(catalog);
         ArgumentNullException.ThrowIfNull(missingStates);
         ArgumentNullException.ThrowIfNull(participants);
@@ -195,7 +195,10 @@ public sealed class ReferenceRecoveryTransaction : IGenerationChange
 
     private void Invoke(Action operation)
     {
-        try { operation(); }
+        try
+        {
+            operation();
+        }
         catch (Exception failure) when (RetirementPendingException.Find(failure) is not null)
         {
             m_retirementFailure = failure;
@@ -203,9 +206,14 @@ public sealed class ReferenceRecoveryTransaction : IGenerationChange
         }
     }
 
-    private void Attempt(Action operation, ICollection<Exception> failures)
-    {
-        try { Invoke(operation); }
+    private void Attempt(
+        Action operation,
+        ICollection<Exception> failures
+    ) {
+        try
+        {
+            Invoke(operation);
+        }
         catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null)
         {
             if (failures.Count > 0)
@@ -215,11 +223,16 @@ public sealed class ReferenceRecoveryTransaction : IGenerationChange
             }
             throw;
         }
-        catch (Exception exception) { failures.Add(exception); }
+        catch (Exception exception)
+        {
+            failures.Add(exception);
+        }
     }
 
-    private static void ThrowFailures(List<Exception> failures, string message)
-    {
+    private static void ThrowFailures(
+        List<Exception> failures,
+        string message
+    ) {
         if (failures.Count > 0)
             throw new AggregateException(message, failures);
     }

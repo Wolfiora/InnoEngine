@@ -59,7 +59,10 @@ public interface IAssetLookup
     /// <see langword="true"/> when the lookup contains a compatible asset; otherwise,
     /// <see langword="false"/>.
     /// </returns>
-    bool TryLoad<TAsset>(AssetPath path, out TAsset? asset)
+    bool TryLoad<TAsset>(
+        AssetPath path,
+        out TAsset? asset
+    )
         where TAsset : AssetObject;
 
     /// <summary>
@@ -78,6 +81,9 @@ public interface IAssetLookup
     /// <see langword="true"/> when the lookup contains a compatible asset; otherwise,
     /// <see langword="false"/>.
     /// </returns>
-    bool TryLoad<TAsset>(Guid persistentId, out TAsset? asset)
+    bool TryLoad<TAsset>(
+        Guid persistentId,
+        out TAsset? asset
+    )
         where TAsset : AssetObject;
 }

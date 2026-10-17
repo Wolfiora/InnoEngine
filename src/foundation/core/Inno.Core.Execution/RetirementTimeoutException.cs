@@ -16,5 +16,8 @@ public sealed class RetirementTimeoutException : RetirementPendingException
     /// <param name="innerException">
     /// The complete failure that prevented retirement, or null when no underlying exception is available.
     /// </param>
-    public RetirementTimeoutException(string message, Exception? innerException = null) : base(message, innerException) { }
+    public RetirementTimeoutException(
+        string message,
+        Exception? innerException = null
+    ) : base(message, innerException) { }
 }

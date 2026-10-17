@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using Inno.Rendering.Assets;
+using Inno.Rendering.Assets.Authoring;
 
 namespace Inno.Adapter.Rendering;
 
@@ -26,8 +27,8 @@ public sealed class RenderingAuthoringBackendCatalog : IRenderingAuthoringBacken
     /// </exception>
     public RenderingAuthoringBackendCatalog(
         IRenderingBackendFactory runtime,
-        IEnumerable<RenderingAuthoringBackendProvider> providers)
-    {
+        IEnumerable<RenderingAuthoringBackendProvider> providers
+    ) {
         ArgumentNullException.ThrowIfNull(runtime);
         ArgumentNullException.ThrowIfNull(providers);
         foreach (RenderingAuthoringBackendProvider provider in providers)

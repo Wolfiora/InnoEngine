@@ -150,8 +150,7 @@ public sealed class Transform : GameComponent
     /// <exception cref="InvalidOperationException">
     /// Thrown for hierarchy cycles, cross-scene parents, or a non-invertible parent hierarchy.
     /// </exception>
-    public void SetParent(Transform? parent)
-        => gameObject.scene.SetParent(this, parent, worldPositionStays: true);
+    public void SetParent(Transform? parent) => gameObject.scene.SetParent(this, parent, worldPositionStays: true);
 
     /// <summary>
     /// Moves this transform within its current sibling collection.
@@ -159,8 +158,7 @@ public sealed class Transform : GameComponent
     /// <param name="siblingIndex">
     /// Requested zero-based sibling index.
     /// </param>
-    public void SetSiblingIndex(int siblingIndex)
-        => gameObject.scene.SetSiblingIndex(this, siblingIndex);
+    public void SetSiblingIndex(int siblingIndex) => gameObject.scene.SetSiblingIndex(this, siblingIndex);
 
     /// <summary>
     /// Atomically applies world-space translation, rotation, and scale.
@@ -174,8 +172,11 @@ public sealed class Transform : GameComponent
     /// <param name="scale">
     /// Requested world-space scale.
     /// </param>
-    public void SetWorldTransform(Vector3 position, Quaternion rotation, Vector3 scale)
-        => ApplyWorld(position, rotation.normalized, scale);
+    public void SetWorldTransform(
+        Vector3 position,
+        Quaternion rotation,
+        Vector3 scale
+    ) => ApplyWorld(position, rotation.normalized, scale);
 
     /// <summary>
     /// Transforms a local-space point through the complete parent hierarchy.
@@ -186,8 +187,7 @@ public sealed class Transform : GameComponent
     /// <returns>
     /// The corresponding world-space point.
     /// </returns>
-    public Vector3 TransformPoint(Vector3 point)
-        => Vector3.Transform(point, m_localToWorldMatrix);
+    public Vector3 TransformPoint(Vector3 point) => Vector3.Transform(point, m_localToWorldMatrix);
 
     /// <summary>
     /// Transforms a world-space point into this transform's local space.
@@ -198,8 +198,7 @@ public sealed class Transform : GameComponent
     /// <returns>
     /// The corresponding local-space point.
     /// </returns>
-    public Vector3 InverseTransformPoint(Vector3 point)
-        => Vector3.Transform(point, worldToLocalMatrix);
+    public Vector3 InverseTransformPoint(Vector3 point) => Vector3.Transform(point, worldToLocalMatrix);
 
     /// <summary>
     /// Restores this instance to its initial reusable state.
@@ -234,15 +233,20 @@ public sealed class Transform : GameComponent
 
     internal int IndexOfChild(Transform child) => m_children.IndexOf(child);
 
-    internal void MoveChild(int currentIndex, int targetIndex)
-    {
+    internal void MoveChild(
+        int currentIndex,
+        int targetIndex
+    ) {
         Transform child = m_children[currentIndex];
         m_children.RemoveAt(currentIndex);
         m_children.Insert(targetIndex, child);
     }
 
-    internal void ApplyWorld(Vector3 position, Quaternion rotation, Vector3 scale)
-    {
+    internal void ApplyWorld(
+        Vector3 position,
+        Quaternion rotation,
+        Vector3 scale
+    ) {
         if (m_parent is null)
         {
             m_localPosition = position;
@@ -309,7 +313,10 @@ public sealed class Transform : GameComponent
             m_children[i].RecomputeWorldFromLocal();
     }
 
-    private static float SafeDivide(float numerator, float denominator)
+    private static float SafeDivide(
+        float numerator,
+        float denominator
+    )
         => MathHelper.AlmostEquals(denominator, 0f) ? 0f : numerator / denominator;
 
     private static void EnsureInvertible(Matrix matrix)

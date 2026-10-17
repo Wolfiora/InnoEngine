@@ -49,8 +49,10 @@ public sealed class AssetDependencyCollection
     public IReadOnlyList<AssetDependency> dependencies
         => m_dependencies.Values.OrderBy(static dependency => dependency.persistentId).ToArray();
 
-    internal void Add(AssetObject asset, TypeCatalog types)
-    {
+    internal void Add(
+        AssetObject asset,
+        TypeCatalog types
+    ) {
         ArgumentNullException.ThrowIfNull(asset);
         ArgumentNullException.ThrowIfNull(types);
         Guid persistentId = asset.identity.persistentId;
@@ -76,7 +78,8 @@ public sealed class AssetDependencyCollection
     /// </param>
     public void Add(AssetDependency dependency)
     {
-        if (dependency.persistentId == Guid.Empty) throw new ArgumentException("A dependency requires a persistent asset identity.", nameof(dependency));
+        if (dependency.persistentId == Guid.Empty)
+            throw new ArgumentException("A dependency requires a persistent asset identity.", nameof(dependency));
         m_dependencies[dependency.persistentId] = includeLastKnownPaths ? dependency
             : new AssetDependency(dependency.persistentId, dependency.type, string.Empty);
     }

@@ -4,10 +4,14 @@
     <ImplicitUsings>disable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
+
   <ItemGroup>
-    <ProjectReference Include="..\..\core\Inno.Core.Execution\Inno.Core.Execution.csproj" PrivateAssets="compile" />
-    <ProjectReference Include="..\..\core\Inno.Core.Collections\Inno.Core.Collections.csproj" PrivateAssets="compile" />
-    <ProjectReference Include="..\Inno.Extensibility.Reload\Inno.Extensibility.Reload.csproj" />
+    <ProjectReference Include="../../core/Inno.Core.Execution/Inno.Core.Execution.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../core/Inno.Core.Collections/Inno.Core.Collections.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../Inno.Extensibility.Reload/Inno.Extensibility.Reload.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="../Inno.Extensibility.Catalogs/Inno.Extensibility.Catalogs.csproj" />
+  </ItemGroup>
 </Project>

@@ -38,8 +38,8 @@ public sealed class ScriptSourceAsset : AssetObject
     internal ScriptSourceAsset(
         ScriptAssemblyScope scope,
         string[] declaredTypeNames,
-        string[] parseDiagnostics)
-    {
+        string[] parseDiagnostics
+    ) {
         this.scope = scope;
         this.declaredTypeNames = declaredTypeNames;
         this.parseDiagnostics = parseDiagnostics;

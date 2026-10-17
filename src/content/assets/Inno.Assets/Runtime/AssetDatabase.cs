@@ -10,6 +10,7 @@ using Inno.Core.Execution;
 using Inno.Core.Identity;
 using Inno.Extensibility.Types;
 using Inno.Core.Serialization;
+using Inno.Content;
 
 namespace Inno.Assets;
 
@@ -29,7 +30,6 @@ public sealed partial class AssetDatabase : AssetResidencyProvider,
     IAssetResidency
 {
     private readonly AssetRuntimeOwner m_runtimeOwner;
-    private readonly ArtifactRetention m_artifactRetention = new();
     private readonly object m_sync = new();
     private readonly Dictionary<AssetPath, RuntimeAssetRecord> m_recordsByPath = [];
     private readonly Dictionary<Guid, RuntimeAssetRecord> m_recordsById = [];
@@ -38,7 +38,7 @@ public sealed partial class AssetDatabase : AssetResidencyProvider,
     private readonly SerializationContext m_serializationContext;
     private TypeCacheSnapshot? m_types;
     private readonly IdentityAllocator m_identities;
-    private readonly string m_artifactRoot;
+    private readonly IRuntimeContentStore m_content;
     private readonly long m_residencyBudgetBytes;
     private readonly long m_preparationBudgetBytes;
     private long m_accessSequence;
@@ -61,20 +61,28 @@ public sealed partial class AssetDatabase : AssetResidencyProvider,
     /// <typeparam name="TValue">
     /// Serialized asset object type receiving restored properties.
     /// </typeparam>
-    public void RestoreProperties<TValue>(Guid stableTypeId, byte[] propertyData, TValue target) where TValue : class, ISerializable
+    public void RestoreProperties<TValue>(
+        Guid stableTypeId,
+        byte[] propertyData,
+        TValue target
+    ) where TValue : class, ISerializable
     {
         ObjectDisposedException.ThrowIf(m_disposed, this);
         ArgumentNullException.ThrowIfNull(target);
         if (m_types!.GetTypeRef(target.GetType()).stableId != stableTypeId)
             throw new InvalidOperationException("The asset property payload has an incompatible stable type identity.");
-        m_serialization.Decode(propertyData, reader => { reader.RestoreProperties(target); return true; }, m_serializationContext);
+        m_serialization.Decode(propertyData, reader =>
+        {
+            reader.RestoreProperties(target);
+            return true;
+        }, m_serializationContext);
     }
 
     /// <summary>
-    /// Creates a read-only runtime asset database from one materialized content pack.
+    /// Creates a read-only runtime asset database from one verified immutable content store.
     /// </summary>
-    /// <param name="contentRoot">
-    /// The verified runtime content root containing <c>AssetDatabase</c> and <c>Artifacts</c> directories.
+    /// <param name="content">
+    /// The borrowed content store; its owner closes it after this database and all outstanding reads retire.
     /// </param>
     /// <param name="serialization">
     /// The immutable converter generation pinned by the owning runtime session.
@@ -91,9 +99,6 @@ public sealed partial class AssetDatabase : AssetResidencyProvider,
     /// <param name="preparationBudgetBytes">
     /// Maximum encoded payload bytes reserved by unfinished cold-load closures, independently of residency.
     /// </param>
-    /// <exception cref="ArgumentException">
-    /// Thrown when <paramref name="contentRoot"/> is empty.
-    /// </exception>
     /// <exception cref="ArgumentNullException">
     /// Thrown when <paramref name="serialization"/> is null.
     /// </exception>
@@ -101,20 +106,20 @@ public sealed partial class AssetDatabase : AssetResidencyProvider,
     /// Thrown when the deployed catalog or its runtime artifact closure is incomplete or malformed.
     /// </exception>
     public AssetDatabase(
-        string contentRoot,
+        IRuntimeContentStore content,
         SerializationGeneration serialization,
         TypeCacheSnapshot types,
         IdentityAllocator identities,
         long residencyBudgetBytes = long.MaxValue,
-        long preparationBudgetBytes = 64L * 1024 * 1024)
-    {
-        ArgumentException.ThrowIfNullOrWhiteSpace(contentRoot);
+        long preparationBudgetBytes = 64L * 1024 * 1024
+    ) {
+        ArgumentNullException.ThrowIfNull(content);
         ArgumentNullException.ThrowIfNull(serialization);
         ArgumentNullException.ThrowIfNull(types);
         ArgumentNullException.ThrowIfNull(identities);
         ArgumentOutOfRangeException.ThrowIfNegative(residencyBudgetBytes);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(preparationBudgetBytes);
-        string root = Path.GetFullPath(contentRoot);
+        m_content = content;
         m_serialization = serialization;
         m_runtimeOwner = new(this);
         m_serializationContext = AssetSerializationContext.Create(new PreparedAssetResolver(this));
@@ -122,11 +127,8 @@ public sealed partial class AssetDatabase : AssetResidencyProvider,
         m_identities = identities;
         m_residencyBudgetBytes = residencyBudgetBytes;
         m_preparationBudgetBytes = preparationBudgetBytes;
-        m_artifactRoot = Path.Combine(root, "Artifacts");
-        string catalogPath = Path.Combine(root, "AssetDatabase", "Catalog.snapshot");
-        if (!File.Exists(catalogPath))
-            throw new InvalidDataException($"Runtime asset catalog '{catalogPath}' does not exist.");
-        RuntimeAssetCatalog catalog = m_serialization.Deserialize<RuntimeAssetCatalog>(File.ReadAllBytes(catalogPath));
+        RuntimeAssetCatalog catalog = m_serialization.Deserialize<RuntimeAssetCatalog>(
+            ReadContent(new ContentKey("AssetDatabase/Catalog.snapshot")));
         for (int index = 0; index < catalog.entries.Length; index++)
         {
             RuntimeAssetData data = m_serialization.Deserialize<RuntimeAssetData>(catalog.entries[index]);
@@ -232,7 +234,10 @@ public sealed partial class AssetDatabase : AssetResidencyProvider,
     /// <exception cref="ObjectDisposedException">
     /// Thrown when this database has been disposed.
     /// </exception>
-    public bool TryLoad<TAsset>(AssetPath path, out TAsset? asset)
+    public bool TryLoad<TAsset>(
+        AssetPath path,
+        out TAsset? asset
+    )
         where TAsset : AssetObject
     {
         lock (m_sync)
@@ -268,7 +273,10 @@ public sealed partial class AssetDatabase : AssetResidencyProvider,
     /// <exception cref="ObjectDisposedException">
     /// Thrown when this database has been disposed.
     /// </exception>
-    public bool TryLoad<TAsset>(Guid persistentId, out TAsset? asset)
+    public bool TryLoad<TAsset>(
+        Guid persistentId,
+        out TAsset? asset
+    )
         where TAsset : AssetObject
     {
         lock (m_sync)
@@ -320,7 +328,8 @@ public sealed partial class AssetDatabase : AssetResidencyProvider,
     /// </returns>
     public ValueTask<AssetLease<TAsset>> AcquireAsync<TAsset>(
         AssetPath path,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
         where TAsset : AssetObject
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -350,7 +359,8 @@ public sealed partial class AssetDatabase : AssetResidencyProvider,
     /// </returns>
     public ValueTask<AssetLease<TAsset>> AcquireAsync<TAsset>(
         Guid persistentId,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
         where TAsset : AssetObject
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -406,7 +416,7 @@ public sealed partial class AssetDatabase : AssetResidencyProvider,
     /// The exact artifact output name.
     /// </param>
     /// <param name="artifact">
-    /// Receives verified output metadata and its absolute immutable path when successful.
+    /// Receives verified output metadata without prescribing a physical deployment location.
     /// </param>
     /// <returns>
     /// <see langword="true"/> when the deployed bundle contains the requested output; otherwise,
@@ -418,8 +428,8 @@ public sealed partial class AssetDatabase : AssetResidencyProvider,
     public bool TryGetArtifact(
         Guid persistentId,
         string outputName,
-        out AssetArtifactInfo? artifact)
-    {
+        out AssetArtifactInfo? artifact
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(outputName);
         lock (m_sync)
         {
@@ -431,11 +441,10 @@ public sealed partial class AssetDatabase : AssetResidencyProvider,
                 string.Equals(candidate.name, outputName, StringComparison.Ordinal));
             if (string.IsNullOrWhiteSpace(output.name))
                 return false;
-            string artifactPath = GetVerifiedOutputPath(record, output);
+            _ = GetVerifiedOutputKey(record, output);
             artifact = new AssetArtifactInfo(
                 new AssetArtifactKey(record.artifactKey),
                 output.name,
-                artifactPath,
                 output.contentHash,
                 output.length);
             return true;
@@ -454,14 +463,22 @@ public sealed partial class AssetDatabase : AssetResidencyProvider,
     /// <returns>
     /// A lease over the verified deployed artifact.
     /// </returns>
-    public ArtifactLease AcquireArtifact(Guid persistentId, string outputName)
-    {
-        if (!TryGetArtifact(persistentId, outputName, out AssetArtifactInfo? artifact) || artifact is null)
+    public ArtifactLease AcquireArtifact(
+        Guid persistentId,
+        string outputName
+    ) {
+        lock (m_sync)
         {
-            throw new InvalidOperationException(
-                $"Runtime asset '{persistentId:D}' has no verified artifact output '{outputName}'.");
+            if (!TryGetArtifact(persistentId, outputName, out AssetArtifactInfo? artifact) || artifact is null)
+            {
+                throw new InvalidOperationException(
+                    $"Runtime asset '{persistentId:D}' has no verified artifact output '{outputName}'.");
+            }
+            RuntimeAssetRecord record = m_recordsById[persistentId];
+            RuntimeArtifactOutput output = ReadArtifactManifest(record).outputs.Single(candidate => candidate.name == outputName);
+            ContentReadLease content = m_content.Acquire(GetVerifiedOutputKey(record, output));
+            return CreateArtifactLease(artifact, content.OpenRead, content.Dispose);
         }
-        return m_artifactRetention.Retain(artifact);
     }
 
     /// <summary>
@@ -503,8 +520,14 @@ public sealed partial class AssetDatabase : AssetResidencyProvider,
                         m_retirement.Own(new RuntimeAssetRetirement(this, record));
             }
             CancelPendingLoads();
-            try { m_retirement.Dispose(); }
-            catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null) { throw; }
+            try
+            {
+                m_retirement.Dispose();
+            }
+            catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null)
+            {
+                throw;
+            }
             catch
             {
                 FinishRetirement();
@@ -524,8 +547,11 @@ public sealed partial class AssetDatabase : AssetResidencyProvider,
         m_disposed = true;
     }
 
-    private TAsset LoadRecord<TAsset>(RuntimeAssetRecord record, bool pin,
-        IReadOnlyDictionary<Guid, byte[]>? preparedPayloads = null)
+    private TAsset LoadRecord<TAsset>(
+        RuntimeAssetRecord record,
+        bool pin,
+        IReadOnlyDictionary<Guid, byte[]>? preparedPayloads = null
+    )
         where TAsset : AssetObject
     {
         if (record.isRetiring)
@@ -569,16 +595,17 @@ public sealed partial class AssetDatabase : AssetResidencyProvider,
         }
     }
 
-    private void PrepareShells(RuntimeAssetRecord record, ICollection<RuntimeAssetRecord> created)
-    {
+    private void PrepareShells(
+        RuntimeAssetRecord record,
+        ICollection<RuntimeAssetRecord> created
+    ) {
         if (record.asset is not null)
             return;
         Type type = ResolveType(record);
         AssetObject asset;
         try
         {
-            asset = (AssetObject)(Activator.CreateInstance(type, nonPublic: true)
-                ?? throw new InvalidOperationException("Activator returned null."));
+            asset = (AssetObject)m_types!.CreateInstance(type);
         }
         catch (Exception exception)
         {
@@ -594,8 +621,10 @@ public sealed partial class AssetDatabase : AssetResidencyProvider,
             PrepareShells(m_recordsById[record.dependencies[index].persistentId], created);
     }
 
-    private void Hydrate(RuntimeAssetRecord record, IReadOnlyDictionary<Guid, byte[]>? preparedPayloads)
-    {
+    private void Hydrate(
+        RuntimeAssetRecord record,
+        IReadOnlyDictionary<Guid, byte[]>? preparedPayloads
+    ) {
         AssetObject asset = record.asset!;
         m_serialization.Decode(record.assetState, reader =>
         {
@@ -609,7 +638,7 @@ public sealed partial class AssetDatabase : AssetResidencyProvider,
         {
             RuntimeArtifactOutput output = ReadArtifactManifest(record).outputs.Single(candidate =>
                 string.Equals(candidate.name, "runtime", StringComparison.Ordinal));
-            payload = File.ReadAllBytes(GetVerifiedOutputPath(record, output));
+            payload = ReadContent(GetVerifiedOutputKey(record, output));
         }
         m_runtimeOwner.Initialize(asset, record.path, record.sourceHash, payload, isMissing: false, version: 1);
         record.runtimeBytes = payload.LongLength;
@@ -625,8 +654,10 @@ public sealed partial class AssetDatabase : AssetResidencyProvider,
         m_dependencyRetention[record.asset!] = dependencies;
     }
 
-    private void ReleaseLease(RuntimeAssetRecord record, ref bool released)
-    {
+    private void ReleaseLease(
+        RuntimeAssetRecord record,
+        ref bool released
+    ) {
         lock (m_sync)
         {
             if (m_disposed || m_retirement is not null)
@@ -680,12 +711,30 @@ public sealed partial class AssetDatabase : AssetResidencyProvider,
             ?? throw new InvalidOperationException("Only a materialized asset can be evicted.");
         record.isRetiring = true;
         List<Exception> failures = [];
-        try { m_runtimeOwner.Release(asset); }
-        catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null) { throw; }
-        catch (Exception failure) { failures.Add(failure); }
-        try { m_identities.Unregister(asset); }
-        catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null) { throw; }
-        catch (Exception failure) { failures.Add(failure); }
+        try
+        {
+            m_runtimeOwner.Release(asset);
+        }
+        catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null)
+        {
+            throw;
+        }
+        catch (Exception failure)
+        {
+            failures.Add(failure);
+        }
+        try
+        {
+            m_identities.Unregister(asset);
+        }
+        catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null)
+        {
+            throw;
+        }
+        catch (Exception failure)
+        {
+            failures.Add(failure);
+        }
         m_dependencyRetention.Remove(asset);
         record.asset = null;
         m_residentBytes -= record.runtimeBytes;
@@ -700,12 +749,17 @@ public sealed partial class AssetDatabase : AssetResidencyProvider,
         Guid stableTypeId,
         string lastKnownPath,
         Type expectedType,
-        string propertyPath)
+        string propertyPath
+    )
         => ResolveReference(persistentId, stableTypeId, expectedType, propertyPath, requirePrepared: false);
 
-    private AssetObject ResolveReference(Guid persistentId, Guid stableTypeId, Type expectedType,
-        string propertyPath, bool requirePrepared)
-    {
+    private AssetObject ResolveReference(
+        Guid persistentId,
+        Guid stableTypeId,
+        Type expectedType,
+        string propertyPath,
+        bool requirePrepared
+    ) {
         lock (m_sync)
         {
             EnsureActive();
@@ -723,8 +777,10 @@ public sealed partial class AssetDatabase : AssetResidencyProvider,
         }
     }
 
-    private RuntimeAssetRecord ValidateRecord(RuntimeAssetData data, int index)
-    {
+    private RuntimeAssetRecord ValidateRecord(
+        RuntimeAssetData data,
+        int index
+    ) {
         if (data.persistentId == Guid.Empty)
             throw new InvalidDataException($"Runtime catalog entry {index} has no persistent identity.");
         if (data.stableAssetTypeId == Guid.Empty)
@@ -785,42 +841,52 @@ public sealed partial class AssetDatabase : AssetResidencyProvider,
                 $"Runtime artifact bundle '{record.artifactKey}' does not contain one complete asset-state/runtime pair.");
         }
         foreach (RuntimeArtifactOutput output in manifest.outputs)
-            _ = GetVerifiedOutputPath(record, output);
+            _ = GetVerifiedOutputKey(record, output);
     }
 
     private RuntimeArtifactManifest ReadArtifactManifest(RuntimeAssetRecord record)
     {
-        string manifestPath = Path.Combine(GetBundleRoot(record.artifactKey), "manifest");
-        if (!File.Exists(manifestPath))
-            throw new InvalidDataException($"Runtime artifact bundle '{record.artifactKey}' has no manifest.");
-        return m_serialization.Deserialize<RuntimeArtifactManifest>(File.ReadAllBytes(manifestPath));
+        ContentKey key = new(GetBundleRoot(record.artifactKey) + "/manifest");
+        return m_serialization.Deserialize<RuntimeArtifactManifest>(ReadContent(key));
     }
 
-    private string GetVerifiedOutputPath(RuntimeAssetRecord record, RuntimeArtifactOutput output)
-    {
+    private ContentKey GetVerifiedOutputKey(
+        RuntimeAssetRecord record,
+        RuntimeArtifactOutput output
+    ) {
         if (string.IsNullOrWhiteSpace(output.name) || string.IsNullOrWhiteSpace(output.fileName)
-            || Path.GetFileName(output.fileName) != output.fileName)
+            || output.fileName.Contains('/') || output.fileName.Contains('\\'))
         {
             throw new InvalidDataException($"Runtime artifact bundle '{record.artifactKey}' contains an invalid output path.");
         }
-        string path = Path.Combine(GetBundleRoot(record.artifactKey), "outputs", output.fileName);
-        if (!File.Exists(path))
+        ContentKey key = new(GetBundleRoot(record.artifactKey) + "/outputs/" + output.fileName);
+        if (!m_content.index.TryGetEntry(key, out ContentEntry? entry))
             throw new InvalidDataException($"Runtime artifact output '{record.artifactKey}/{output.name}' is missing.");
-        var info = new FileInfo(path);
-        if (info.Length != output.length)
+        if (entry!.length != output.length)
             throw new InvalidDataException($"Runtime artifact output '{record.artifactKey}/{output.name}' has an invalid length.");
-        using FileStream stream = File.OpenRead(path);
-        string hash = Convert.ToHexString(SHA256.HashData(stream));
-        if (!string.Equals(hash, output.contentHash, StringComparison.OrdinalIgnoreCase))
+        if (!string.Equals(entry.contentHash, output.contentHash, StringComparison.OrdinalIgnoreCase))
             throw new InvalidDataException($"Runtime artifact output '{record.artifactKey}/{output.name}' failed hash verification.");
-        return path;
+        return key;
     }
 
-    private string GetBundleRoot(string key)
-        => Path.Combine(m_artifactRoot, key[..2].ToLowerInvariant(), key[2..4].ToLowerInvariant(), key);
+    private static string GetBundleRoot(string key)
+        => "Artifacts/" + key[..2].ToLowerInvariant() + "/" + key[2..4].ToLowerInvariant() + "/" + key;
 
-    private void EnsureActive()
-        => ObjectDisposedException.ThrowIf(m_disposed || m_retirement is not null, this);
+    private byte[] ReadContent(ContentKey key)
+    {
+        using ContentReadLease lease = m_content.Acquire(key);
+        if (lease.entry.length > Array.MaxLength)
+            throw new InvalidDataException($"Content '{key}' exceeds the supported array budget.");
+        using Stream input = lease.OpenRead();
+        byte[] bytes = new byte[(int)lease.entry.length];
+        input.ReadExactly(bytes);
+        if (input.ReadByte() != -1 || !string.Equals(Convert.ToHexString(SHA256.HashData(bytes)),
+            lease.entry.contentHash, StringComparison.Ordinal))
+            throw new InvalidDataException($"Content '{key}' failed integrity verification.");
+        return bytes;
+    }
+
+    private void EnsureActive() => ObjectDisposedException.ThrowIf(m_disposed || m_retirement is not null, this);
 
     private sealed class PreparedAssetResolver(AssetDatabase owner) : IAssetReferenceResolver
     {
@@ -845,12 +911,20 @@ public sealed partial class AssetDatabase : AssetResidencyProvider,
         /// <returns>
         /// The already prepared canonical shell, or an exception for an undeclared reference.
         /// </returns>
-        public AssetObject Resolve(Guid persistentId, Guid stableTypeId, string lastKnownPath,
-            Type expectedType, string propertyPath)
+        public AssetObject Resolve(
+            Guid persistentId,
+            Guid stableTypeId,
+            string lastKnownPath,
+            Type expectedType,
+            string propertyPath
+        )
             => owner.ResolveReference(persistentId, stableTypeId, expectedType, propertyPath, requirePrepared: true);
     }
 
-    private sealed class RuntimeAssetRetirement(AssetDatabase owner, RuntimeAssetRecord record) : IDisposable
+    private sealed class RuntimeAssetRetirement(
+        AssetDatabase owner,
+        RuntimeAssetRecord record
+    ) : IDisposable
     {
         /// <summary>
         /// Retains a canonical runtime record until its unload hook finishes.
@@ -869,8 +943,8 @@ public sealed partial class AssetDatabase : AssetResidencyProvider,
         Guid stableTypeId,
         string artifactKey,
         byte[] assetState,
-        AssetDependency[] dependencies)
-    {
+        AssetDependency[] dependencies
+    ) {
         internal Guid persistentId { get; } = persistentId;
         internal AssetPath path { get; } = path;
         internal string sourceHash { get; } = sourceHash;

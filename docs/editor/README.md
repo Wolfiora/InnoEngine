@@ -33,8 +33,8 @@ Editor 采用“被动核心 → 后端无关交互 → ImGui 表现 → 独立 
 | [Inno.Editor.Shaders](Inno.Editor.Shaders.md) | 可复用 Shader 节点呈现协议与 generation-scoped Drawer 注册。 |
 | [Inno.Editor.Assets](Inno.Editor.Assets.md) | Material/Pipeline 共用的原生资产草稿、显式保存与中立 History 生命周期。 |
 | [Inno.Editor.Panel.ShaderEditor](Inno.Editor.Panel.ShaderEditor.md) | Shader 图画布、模板创建菜单、手势历史与显式 Save/Revert；完整验收进行中。 |
-| [Inno.Editor.Application](Inno.Editor.Application.md) | Platform、EngineHost/Edit Session、Build、ImGui 和全部 feature 的组合根。 |
-| [Inno.Editor.Build.Cli](Inno.Editor.Build.Cli.md) | 与 Editor 共用作者端脚本 API 和构建服务的无界面入口。 |
+| [Inno.Editor.Hosting](Inno.Editor.Hosting.md) | 共享启动、EngineHost/Edit Session 与全部功能生命周期；平台产品注入后端、系统规则和构建组合。 |
+| [Inno.Build.Cli](../build/Inno.Build.Cli.md) | 与 Editor 共用作者端脚本 API 和构建服务的无界面入口。 |
 
 ## 依赖方向
 
@@ -68,7 +68,7 @@ flowchart TD
     Exporting --> Application
     PlayMode --> Application
     Audio --> Application
-    Panels --> Application["Inno.Editor.Application"]
+    Panels --> Application["Inno.Editor.Hosting"]
     Scripting --> Application
     ImGui --> Application
 ```
@@ -98,3 +98,7 @@ flowchart TD
 - 新检查器：业务项目引用 `Inno.Editor.Inspection`，继承 `InspectionDrawer<TTarget>` 或实现 `IPropertyDrawer` 并添加对应 Attribute；无需引用 Inspector Panel。
 
 具体例子见 [Interactions](Inno.Editor.Interactions.md) 与各 Panel 页面。EditorScripts 必须显式 `using InnoEditor.*;`；项目完全禁止 global using。
+
+## 当前项目页
+
+- [Inno.Editor.Diagnostics](Inno.Editor.Diagnostics.md)

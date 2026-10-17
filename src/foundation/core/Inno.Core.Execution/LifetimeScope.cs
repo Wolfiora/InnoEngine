@@ -43,15 +43,36 @@ public sealed class LifetimeScope : IDisposable, IAsyncDisposable
     /// <summary>
     /// Gets retained work records, including faults awaiting final retirement reporting.
     /// </summary>
-    public int trackedWorkCount { get { lock (m_sync) return m_tasks.Count(static task => !task.IsCompletedSuccessfully && !task.IsCanceled); } }
+    public int trackedWorkCount
+    {
+        get
+        {
+            lock (m_sync)
+                return m_tasks.Count(static task => !task.IsCompletedSuccessfully && !task.IsCanceled);
+        }
+    }
     /// <summary>
     /// Gets the largest simultaneous retained work count.
     /// </summary>
-    public int peakTrackedWorkCount { get { lock (m_sync) return m_peakTrackedWork; } }
+    public int peakTrackedWorkCount
+    {
+        get
+        {
+            lock (m_sync)
+                return m_peakTrackedWork;
+        }
+    }
     /// <summary>
     /// Gets work registrations rejected before ownership transfer by finite capacity.
     /// </summary>
-    public long rejectedWorkCount { get { lock (m_sync) return m_rejectedWork; } }
+    public long rejectedWorkCount
+    {
+        get
+        {
+            lock (m_sync)
+                return m_rejectedWork;
+        }
+    }
 
     /// <summary>
     /// Gets cancellation shared by work owned by this lifetime.
@@ -134,8 +155,8 @@ public sealed class LifetimeScope : IDisposable, IAsyncDisposable
     /// </exception>
     public Task<TResult> RunAsync<TResult>(
         Func<CancellationToken, ValueTask<TResult>> operation,
-        CancellationToken cancellationToken = default)
-    {
+        CancellationToken cancellationToken = default
+    ) {
         ArgumentNullException.ThrowIfNull(operation);
         var completion = new TaskCompletionSource<TResult>(TaskCreationOptions.RunContinuationsAsynchronously);
         TrackCore(completion.Task, observeCompletion: false);
@@ -164,7 +185,10 @@ public sealed class LifetimeScope : IDisposable, IAsyncDisposable
             m_stopping = true;
             m_canceling = true;
         }
-        try { m_cancellation.Cancel(); }
+        try
+        {
+            m_cancellation.Cancel();
+        }
         catch (Exception exception) when (RetirementPendingException.Find(exception) is not null)
         {
             lock (m_sync)
@@ -210,8 +234,14 @@ public sealed class LifetimeScope : IDisposable, IAsyncDisposable
         }
         try
         {
-            try { Cancel(); }
-            catch (Exception exception) when (RetirementPendingException.Find(exception) is not null) { throw; }
+            try
+            {
+                Cancel();
+            }
+            catch (Exception exception) when (RetirementPendingException.Find(exception) is not null)
+            {
+                throw;
+            }
             catch (Exception) { /* Cancel retained ordinary callback failures for the final report. */ }
             RetireResources();
         }
@@ -237,13 +267,22 @@ public sealed class LifetimeScope : IDisposable, IAsyncDisposable
     /// </exception>
     public async ValueTask DisposeAsync()
     {
-        try { Cancel(); }
-        catch (Exception exception) when (RetirementPendingException.Find(exception) is not null) { throw; }
+        try
+        {
+            Cancel();
+        }
+        catch (Exception exception) when (RetirementPendingException.Find(exception) is not null)
+        {
+            throw;
+        }
         catch (Exception) { /* Cancel retained ordinary callback failures for the final report. */ }
         Task[] pending;
         lock (m_sync)
             pending = m_tasks.ToArray();
-        try { await Task.WhenAll(pending).ConfigureAwait(false); }
+        try
+        {
+            await Task.WhenAll(pending).ConfigureAwait(false);
+        }
         catch { /* Dispose observes every fault after all work has completed. */ }
         Dispose();
     }
@@ -279,13 +318,19 @@ public sealed class LifetimeScope : IDisposable, IAsyncDisposable
                     break;
                 resource = m_resources[^1];
             }
-            try { resource.Dispose(); }
+            try
+            {
+                resource.Dispose();
+            }
             catch (Exception exception) when (RetirementPendingException.Find(exception) is not null)
             {
                 RetirementPendingException.CollectCompletedFailures(exception, m_retirementFailures);
                 throw;
             }
-            catch (Exception exception) { m_retirementFailures.Add(exception); }
+            catch (Exception exception)
+            {
+                m_retirementFailures.Add(exception);
+            }
             lock (m_sync)
                 m_resources.RemoveAt(m_resources.Count - 1);
         }
@@ -300,14 +345,17 @@ public sealed class LifetimeScope : IDisposable, IAsyncDisposable
         }
     }
 
-    private void TrackCore(Task task, bool observeCompletion)
-    {
+    private void TrackCore(
+        Task task,
+        bool observeCompletion
+    ) {
         ArgumentNullException.ThrowIfNull(task);
         lock (m_sync)
         {
             EnsureAccepting();
             m_tasks.RemoveAll(static completed => completed.IsCompletedSuccessfully || completed.IsCanceled);
-            if (m_tasks.Contains(task)) return;
+            if (m_tasks.Contains(task))
+                return;
             if (m_tasks.Count >= m_maxTrackedWork)
             {
                 m_rejectedWork++;
@@ -315,8 +363,10 @@ public sealed class LifetimeScope : IDisposable, IAsyncDisposable
             }
             m_tasks.Add(task);
             m_peakTrackedWork = Math.Max(m_peakTrackedWork, m_tasks.Count);
-            if (!observeCompletion) return;
-            if (ExecutionContext.IsFlowSuppressed()) ObserveCompletion(task);
+            if (!observeCompletion)
+                return;
+            if (ExecutionContext.IsFlowSuppressed())
+                ObserveCompletion(task);
             else
             {
                 using AsyncFlowControl flow = ExecutionContext.SuppressFlow();
@@ -326,11 +376,16 @@ public sealed class LifetimeScope : IDisposable, IAsyncDisposable
     }
 
     private void ObserveCompletion(Task task)
-        => _ = task.ContinueWith(static (completed, state) =>
+        => _ = task.ContinueWith(static (
+            completed,
+            state
+        ) =>
         {
-            if (!completed.IsCompletedSuccessfully && !completed.IsCanceled) return;
+            if (!completed.IsCompletedSuccessfully && !completed.IsCanceled)
+                return;
             var owner = (LifetimeScope)state!;
-            lock (owner.m_sync) owner.m_tasks.Remove(completed);
+            lock (owner.m_sync)
+                owner.m_tasks.Remove(completed);
         }, this, CancellationToken.None, TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default);
 
     private void EnsureAccepting()
@@ -342,8 +397,8 @@ public sealed class LifetimeScope : IDisposable, IAsyncDisposable
     private async Task CompleteOperationAsync<TResult>(
         Func<CancellationToken, ValueTask<TResult>> operation,
         CancellationToken cancellationToken,
-        TaskCompletionSource<TResult> completion)
-    {
+        TaskCompletionSource<TResult> completion
+    ) {
         try
         {
             TResult result;

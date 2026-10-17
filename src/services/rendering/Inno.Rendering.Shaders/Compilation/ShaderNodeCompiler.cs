@@ -22,7 +22,12 @@ namespace Inno.Rendering.Shaders;
 /// <param name="required">
 /// Whether an input must be connected; alternative aggregate/member inputs validate in their compiler.
 /// </param>
-public sealed record ShaderNodePort(string id, ShaderSourceType type, GraphPortDirection direction, bool required = true);
+public sealed record ShaderNodePort(
+    string id,
+    ShaderSourceType type,
+    GraphPortDirection direction,
+    bool required = true
+);
 
 /// <summary>
 /// Defines one shader node's typed ports and lowering; drawing belongs to a separate editor extension.
@@ -64,9 +69,14 @@ public sealed class ShaderNodeDescriptionContext
     private readonly SerializationRegistry m_serialization;
     private readonly SerializationContext m_context;
 
-    internal ShaderNodeDescriptionContext(GraphNodeRecord node, SerializationRegistry serialization, SerializationContext context,
-        ShaderSourceModuleAnalysis? sourceModule, string implementationId, ShaderIrStageInput? stageInput)
-    {
+    internal ShaderNodeDescriptionContext(
+        GraphNodeRecord node,
+        SerializationRegistry serialization,
+        SerializationContext context,
+        ShaderSourceModuleAnalysis? sourceModule,
+        string implementationId,
+        ShaderIrStageInput? stageInput
+    ) {
         m_node = node;
         m_serialization = serialization;
         m_context = context;
@@ -111,8 +121,10 @@ public sealed class ShaderNodeDescriptionContext
     /// <returns>
     /// The deserialized value or the supplied absent-property default.
     /// </returns>
-    public T Read<T>(string id, T defaultValue)
-    {
+    public T Read<T>(
+        string id,
+        T defaultValue
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(id);
         return m_node.TryGetValue(id, out GraphSerializedValue? value)
             ? m_serialization.Decode(value!.data.Span, reader => reader.Read<T>("value"), m_context)
@@ -125,9 +137,11 @@ public sealed class ShaderNodeDescriptionContext
 /// </summary>
 public sealed class ShaderNodeLoweringContext
 {
-    internal ShaderNodeLoweringContext(ShaderNodeDescriptionContext description, ShaderIrBuilder builder,
-        IReadOnlyDictionary<string, ShaderIrValue> inputs)
-    {
+    internal ShaderNodeLoweringContext(
+        ShaderNodeDescriptionContext description,
+        ShaderIrBuilder builder,
+        IReadOnlyDictionary<string, ShaderIrValue> inputs
+    ) {
         this.description = description;
         this.builder = builder;
         this.inputs = new ReadOnlyDictionary<string, ShaderIrValue>(new Dictionary<string, ShaderIrValue>(inputs, StringComparer.Ordinal));

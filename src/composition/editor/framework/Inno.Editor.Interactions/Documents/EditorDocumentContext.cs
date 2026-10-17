@@ -11,8 +11,12 @@ public sealed class EditorDocumentContext
 {
     private readonly Dictionary<string, string> m_viewParameters = new(StringComparer.Ordinal);
 
-    internal EditorDocumentContext(Guid documentId, Guid assetId, string assetPath, string providerId)
-    {
+    internal EditorDocumentContext(
+        Guid documentId,
+        Guid assetId,
+        string assetPath,
+        string providerId
+    ) {
         this.documentId = documentId;
         this.assetId = assetId;
         this.assetPath = assetPath;
@@ -58,8 +62,7 @@ public sealed class EditorDocumentContext
     /// <summary>
     /// Gets an immutable snapshot of stable view parameters.
     /// </summary>
-    public IReadOnlyDictionary<string, string> viewParameters
-        => new Dictionary<string, string>(m_viewParameters, StringComparer.Ordinal);
+    public IReadOnlyDictionary<string, string> viewParameters => new Dictionary<string, string>(m_viewParameters, StringComparer.Ordinal);
 
     /// <summary>
     /// Adds or replaces one stable scalar or JSON-formatted view parameter.
@@ -70,8 +73,10 @@ public sealed class EditorDocumentContext
     /// <param name="value">
     /// Persistent scalar or JSON-formatted value.
     /// </param>
-    public void SetViewParameter(string key, string value)
-    {
+    public void SetViewParameter(
+        string key,
+        string value
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(key);
         ArgumentNullException.ThrowIfNull(value);
         m_viewParameters[key] = value;
@@ -89,8 +94,10 @@ public sealed class EditorDocumentContext
     /// <returns>
     /// <see langword="true"/> when the parameter exists.
     /// </returns>
-    public bool TryGetViewParameter(string key, out string value)
-    {
+    public bool TryGetViewParameter(
+        string key,
+        out string value
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(key);
         return m_viewParameters.TryGetValue(key, out value!);
     }

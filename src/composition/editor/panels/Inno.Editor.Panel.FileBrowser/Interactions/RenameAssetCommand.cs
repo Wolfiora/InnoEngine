@@ -14,7 +14,10 @@ namespace Inno.Editor.Panel.FileBrowser;
 [EditorAction(FileBrowserInteractionIds.C_RENAME, priority: 100)]
 [EditorMenu(FileBrowserInteractionIds.C_AREA, "Rename", order: 100)]
 [EditorShortcut(FileBrowserInteractionIds.C_AREA, KeyCode.F2)]
-internal sealed class RenameAssetCommand(AssetEditorModule assets, LogRouter logs) :
+internal sealed class RenameAssetCommand(
+    AssetEditorModule assets,
+    LogRouter logs
+) :
     EditorPresentationAction<AssetFileEntry, InlineRenamePresentation>
 {
     private readonly Logger m_log = (logs ?? throw new ArgumentNullException(nameof(logs)))
@@ -104,8 +107,7 @@ internal sealed class RenameAssetCommand(AssetEditorModule assets, LogRouter log
     /// <summary>
     /// Cancels pending presentation state when its editor surface disappears.
     /// </summary>
-    protected override void OnPresentationLost()
-        => _ = TryCommit(keepActiveWhenInvalid: false);
+    protected override void OnPresentationLost() => _ = TryCommit(keepActiveWhenInvalid: false);
 
     private bool TryCommit(bool keepActiveWhenInvalid)
     {
@@ -142,6 +144,7 @@ internal sealed class RenameAssetCommand(AssetEditorModule assets, LogRouter log
 
     private bool TryGetAssetContext(
         EditorActionContext<AssetFileEntry> context,
-        out AssetEditorContext? assetContext)
+        out AssetEditorContext? assetContext
+    )
         => assets.TryCreateContext(context.editor, context.target.assetPath.ToString(), out assetContext);
 }

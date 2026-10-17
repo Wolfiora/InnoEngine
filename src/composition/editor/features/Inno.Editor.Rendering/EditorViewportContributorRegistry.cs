@@ -64,9 +64,11 @@ internal sealed class EditorViewportContributorRegistry
     internal sealed record Snapshot(
         long revision,
         Registration[] registrations,
-        IReadOnlyDictionary<EditorViewportKindId, Registration[]> byKind);
+        IReadOnlyDictionary<EditorViewportKindId, Registration[]> byKind
+    );
 
     internal sealed record Registration(
         EditorViewportContributorExtensionAttribute attribute,
-        EditorViewportContributor contributor);
+        EditorViewportContributor contributor
+    );
 }

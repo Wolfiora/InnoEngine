@@ -30,8 +30,10 @@ public sealed class RetirementBarrier
     /// <exception cref="ArgumentException">
     /// The owner name is empty or the timeout is not positive.
     /// </exception>
-    public RetirementBarrier(string owner, TimeSpan? timeout = null)
-    {
+    public RetirementBarrier(
+        string owner,
+        TimeSpan? timeout = null
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(owner);
         m_owner = owner;
         m_timeout = timeout ?? TimeSpan.FromSeconds(30);

@@ -1,0 +1,13 @@
+<Project>
+  <!-- A solution operation owns one bootstrap graph; private task load directories remain independent. -->
+  <Target Name="ShareSolutionTaskBootstrapOwner" BeforeTargets="ValidateSolutionConfiguration">
+    <PropertyGroup>
+      <InnoTaskBootstrapOwner Condition="'$(InnoTaskBootstrapOwner)' == ''">$([System.Guid]::NewGuid().ToString('N'))</InnoTaskBootstrapOwner>
+    </PropertyGroup>
+    <ItemGroup>
+      <ProjectReference Update="@(ProjectReference)">
+        <AdditionalProperties>%(ProjectReference.AdditionalProperties);InnoTaskBootstrapOwner=$(InnoTaskBootstrapOwner)</AdditionalProperties>
+      </ProjectReference>
+    </ItemGroup>
+  </Target>
+</Project>

@@ -5,6 +5,7 @@ using Inno.Editor.Rendering;
 using Inno.Rendering;
 
 using Xunit;
+using Inno.Rendering.Runtime;
 
 namespace Inno.Editor.Scripting.Tests;
 

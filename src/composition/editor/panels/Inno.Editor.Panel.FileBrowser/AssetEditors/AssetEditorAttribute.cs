@@ -23,8 +23,11 @@ public sealed class AssetEditorAttribute : Attribute
     /// <exception cref="ArgumentNullException">
     /// Thrown when <paramref name="assetType"/> is <see langword="null"/>.
     /// </exception>
-    public AssetEditorAttribute(Type assetType, bool useForChildren = false, int priority = 0)
-    {
+    public AssetEditorAttribute(
+        Type assetType,
+        bool useForChildren = false,
+        int priority = 0
+    ) {
         this.assetType = assetType ?? throw new ArgumentNullException(nameof(assetType));
         this.useForChildren = useForChildren;
         this.priority = priority;

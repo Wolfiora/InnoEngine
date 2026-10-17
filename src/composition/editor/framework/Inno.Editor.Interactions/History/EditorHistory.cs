@@ -43,8 +43,10 @@ internal sealed class EditorHistory : IEditorHistory, IDisposable
     /// <exception cref="ArgumentOutOfRangeException">
     /// Thrown when an option contains an invalid capacity.
     /// </exception>
-    internal EditorHistory(EditorHistoryOptions options, Logger log)
-    {
+    internal EditorHistory(
+        EditorHistoryOptions options,
+        Logger log
+    ) {
         ArgumentNullException.ThrowIfNull(options);
         m_log = log ?? throw new ArgumentNullException(nameof(log));
         options.Validate();
@@ -167,8 +169,8 @@ internal sealed class EditorHistory : IEditorHistory, IDisposable
         string name,
         Func<EditorHistoryResult> execute,
         Func<EditorHistoryResult> undo,
-        object? mergeKey = null)
-    {
+        object? mergeKey = null
+    ) {
         EnsureMutable();
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
         ArgumentNullException.ThrowIfNull(execute);
@@ -203,8 +205,10 @@ internal sealed class EditorHistory : IEditorHistory, IDisposable
     /// <exception cref="ArgumentNullException">
     /// Thrown when <paramref name="change"/> is <see langword="null"/>.
     /// </exception>
-    public EditorHistoryResult Execute(string name, EditorHistoryChange change)
-    {
+    public EditorHistoryResult Execute(
+        string name,
+        EditorHistoryChange change
+    ) {
         EnsureMutable();
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
         ArgumentNullException.ThrowIfNull(change);
@@ -259,8 +263,10 @@ internal sealed class EditorHistory : IEditorHistory, IDisposable
     /// <exception cref="ArgumentNullException">
     /// Thrown when <paramref name="change"/> is <see langword="null"/>.
     /// </exception>
-    public void RecordApplied(string name, EditorHistoryChange change)
-    {
+    public void RecordApplied(
+        string name,
+        EditorHistoryChange change
+    ) {
         EnsureMutable();
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
         ArgumentNullException.ThrowIfNull(change);
@@ -300,8 +306,8 @@ internal sealed class EditorHistory : IEditorHistory, IDisposable
         T before,
         T after,
         Action<T> apply,
-        object mergeKey)
-    {
+        object mergeKey
+    ) {
         EnsureMutable();
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
         ArgumentNullException.ThrowIfNull(apply);
@@ -449,8 +455,8 @@ internal sealed class EditorHistory : IEditorHistory, IDisposable
     private EditorHistoryResult Transition(
         List<EditorHistoryOperation> source,
         List<EditorHistoryOperation> destination,
-        bool undo)
-    {
+        bool undo
+    ) {
         EnsureMutable();
         if (m_transactions.Count != 0)
             return EditorHistoryResult.Failure("Undo and Redo are unavailable while a transaction is active.");
@@ -521,8 +527,10 @@ internal sealed class EditorHistory : IEditorHistory, IDisposable
             [result.message]);
     }
 
-    internal void Attach(EditorContext editor, EditorInteractions interactions)
-    {
+    internal void Attach(
+        EditorContext editor,
+        EditorInteractions interactions
+    ) {
         ArgumentNullException.ThrowIfNull(editor);
         ArgumentNullException.ThrowIfNull(interactions);
         m_context = new EditorHistoryContext(editor, interactions);
@@ -540,13 +548,15 @@ internal sealed class EditorHistory : IEditorHistory, IDisposable
             m_options.inlinePayloadThreshold,
             !string.IsNullOrWhiteSpace(m_options.cacheDirectory));
 
-    private bool TryGetHandler(string kind, out EditorHistoryHandler? handler)
-        => m_handlers.TryGetValue(kind, out handler);
+    private bool TryGetHandler(
+        string kind,
+        out EditorHistoryHandler? handler
+    ) => m_handlers.TryGetValue(kind, out handler);
 
     private EditorHistoryAvailability Query(
         EditorHistoryChange change,
-        EditorHistoryDirection direction)
-    {
+        EditorHistoryDirection direction
+    ) {
         if (m_context is null)
             return EditorHistoryAvailability.Unavailable("The editor history is not attached to an interaction runtime.");
         if (!TryGetHandler(change.kind, out EditorHistoryHandler? handler) || handler is null)
@@ -566,8 +576,8 @@ internal sealed class EditorHistory : IEditorHistory, IDisposable
 
     private EditorHistoryResult Apply(
         EditorHistoryChange change,
-        EditorHistoryDirection direction)
-    {
+        EditorHistoryDirection direction
+    ) {
         EditorHistoryAvailability availability = Query(change, direction);
         if (!availability.isAvailable)
             return EditorHistoryResult.Failure(availability.message);
@@ -578,8 +588,8 @@ internal sealed class EditorHistory : IEditorHistory, IDisposable
     private bool TryMerge(
         EditorHistoryChange older,
         EditorHistoryChange newer,
-        out EditorHistoryChange? merged)
-    {
+        out EditorHistoryChange? merged
+    ) {
         merged = null;
         if (!string.Equals(older.kind, newer.kind, StringComparison.Ordinal) ||
             older.mergeKey is null ||
@@ -617,8 +627,8 @@ internal sealed class EditorHistory : IEditorHistory, IDisposable
 
     private static void DiscardRuntimeBoundEntries(
         List<EditorHistoryOperation> undo,
-        List<EditorHistoryOperation> redo)
-    {
+        List<EditorHistoryOperation> redo
+    ) {
         int newestUnsafe = undo.FindLastIndex(static operation => !operation.isReloadSafe);
         if (newestUnsafe >= 0)
         {
@@ -647,8 +657,8 @@ internal sealed class EditorHistory : IEditorHistory, IDisposable
 
     private string? GetUnavailableReason(
         IReadOnlyList<EditorHistoryOperation> operations,
-        EditorHistoryDirection direction)
-    {
+        EditorHistoryDirection direction
+    ) {
         if (operations.Count == 0)
             return null;
         EditorHistoryOperation operation = operations[^1];
@@ -665,8 +675,8 @@ internal sealed class EditorHistory : IEditorHistory, IDisposable
 
     private static long Sum(
         IReadOnlyList<EditorHistoryOperation> operations,
-        Func<EditorHistoryOperation, long> selector)
-    {
+        Func<EditorHistoryOperation, long> selector
+    ) {
         long total = 0L;
         for (int i = 0; i < operations.Count; i++)
             total = checked(total + selector(operations[i]));
@@ -676,8 +686,8 @@ internal sealed class EditorHistory : IEditorHistory, IDisposable
     private EditorHistoryResult Invoke(
         Func<EditorHistoryResult> callback,
         string name,
-        string transition)
-    {
+        string transition
+    ) {
         try
         {
             EditorHistoryResult result = callback();
@@ -709,8 +719,8 @@ internal sealed class EditorHistory : IEditorHistory, IDisposable
     internal sealed class HandlerUpdate(
         EditorHistory owner,
         IReadOnlyDictionary<string, EditorHistoryHandler> previous,
-        IReadOnlyDictionary<string, EditorHistoryHandler> candidate)
-    {
+        IReadOnlyDictionary<string, EditorHistoryHandler> candidate
+    ) {
         private bool m_activated;
         private bool m_finished;
 
@@ -758,9 +768,13 @@ internal sealed class EditorHistory : IEditorHistory, IDisposable
         List<EditorHistoryOperation> undo,
         List<EditorHistoryOperation> redo,
         bool isFaulted,
-        string? faultReason);
+        string? faultReason
+    );
 
-    private sealed class Isolation(EditorHistory owner, IsolationState state) : IDisposable
+    private sealed class Isolation(
+        EditorHistory owner,
+        IsolationState state
+    ) : IDisposable
     {
         private EditorHistory? m_owner = owner;
 
@@ -787,8 +801,8 @@ internal sealed class EditorHistory : IEditorHistory, IDisposable
             string operationName,
             Func<EditorHistoryResult> undo,
             Func<EditorHistoryResult> redo,
-            object? mergeKey)
-        {
+            object? mergeKey
+        ) {
             name = operationName;
             m_undo = undo;
             m_redo = redo;
@@ -843,8 +857,11 @@ internal sealed class EditorHistory : IEditorHistory, IDisposable
         private readonly string m_name;
         private EditorHistoryChange m_change;
 
-        internal DataOperation(EditorHistory owner, string operationName, EditorHistoryChange change)
-        {
+        internal DataOperation(
+            EditorHistory owner,
+            string operationName,
+            EditorHistoryChange change
+        ) {
             m_owner = owner;
             m_name = operationName;
             m_change = owner.RetainChange(change);
@@ -888,8 +905,7 @@ internal sealed class EditorHistory : IEditorHistory, IDisposable
         /// <returns>
         /// The validated editor history result that represents the completed operation.
         /// </returns>
-        protected override EditorHistoryResult Undo()
-            => m_owner.Apply(m_change, EditorHistoryDirection.Undo);
+        protected override EditorHistoryResult Undo() => m_owner.Apply(m_change, EditorHistoryDirection.Undo);
 
         /// <summary>
         /// Reapplies the state represented by this history operation.
@@ -897,8 +913,7 @@ internal sealed class EditorHistory : IEditorHistory, IDisposable
         /// <returns>
         /// The validated editor history result that represents the completed operation.
         /// </returns>
-        protected override EditorHistoryResult Redo()
-            => m_owner.Apply(m_change, EditorHistoryDirection.Redo);
+        protected override EditorHistoryResult Redo() => m_owner.Apply(m_change, EditorHistoryDirection.Redo);
 
         /// <summary>
         /// Attempts to merge without changing state when the operation cannot complete.
@@ -959,8 +974,8 @@ internal sealed class EditorHistory : IEditorHistory, IDisposable
             T before,
             T after,
             Action<T> apply,
-            object mergeKey)
-        {
+            object mergeKey
+        ) {
             name = operationName;
             m_before = before;
             m_after = after;
@@ -1020,7 +1035,10 @@ internal sealed class EditorHistory : IEditorHistory, IDisposable
         }
     }
 
-    private sealed class TransactionOperation(string operationName, Guid transactionId) : EditorHistoryOperation
+    private sealed class TransactionOperation(
+        string operationName,
+        Guid transactionId
+    ) : EditorHistoryOperation
     {
         private readonly List<EditorHistoryOperation> m_children = [];
 
@@ -1051,14 +1069,12 @@ internal sealed class EditorHistory : IEditorHistory, IDisposable
         /// <summary>
         /// Gets the estimated resident-memory cost in bytes.
         /// </summary>
-        public override long estimatedMemorySize
-            => Sum(m_children, static operation => operation.estimatedMemorySize);
+        public override long estimatedMemorySize => Sum(m_children, static operation => operation.estimatedMemorySize);
 
         /// <summary>
         /// Gets the estimated spill-file cost in bytes.
         /// </summary>
-        public override long estimatedDiskSize
-            => Sum(m_children, static operation => operation.estimatedDiskSize);
+        public override long estimatedDiskSize => Sum(m_children, static operation => operation.estimatedDiskSize);
 
         internal void Add(EditorHistoryOperation operation) => m_children.Add(operation);
 
@@ -1121,8 +1137,8 @@ internal sealed class EditorHistory : IEditorHistory, IDisposable
         private static EditorHistoryResult InvokeChild(
             Func<EditorHistoryResult> callback,
             string childName,
-            string transition)
-        {
+            string transition
+        ) {
             try
             {
                 return callback();
@@ -1137,8 +1153,8 @@ internal sealed class EditorHistory : IEditorHistory, IDisposable
         private static EditorHistoryResult CombineFailure(
             EditorHistoryResult original,
             IReadOnlyList<string> compensationFailures,
-            string transition)
-        {
+            string transition
+        ) {
             if (original.statePreserved && compensationFailures.Count == 0)
                 return original;
             string compensation = compensationFailures.Count == 0

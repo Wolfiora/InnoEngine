@@ -64,8 +64,12 @@ public struct RectInt : IEquatable<RectInt>
     /// <param name="height">
     /// The height in logical units or pixels required by this operation.
     /// </param>
-    public RectInt(int x, int y, int width, int height)
-    {
+    public RectInt(
+        int x,
+        int y,
+        int width,
+        int height
+    ) {
         this.x = x;
         this.y = y;
         this.width = width;
@@ -121,8 +125,10 @@ public struct RectInt : IEquatable<RectInt>
     /// <see langword="true"/> when the operation succeeds or its condition is satisfied; otherwise, <see langword="false"/>.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public bool Contains(int px, int py)
-    {
+    public bool Contains(
+        int px,
+        int py
+    ) {
         return px >= left && px < right &&
                py >= top && py < bottom;
     }
@@ -152,8 +158,10 @@ public struct RectInt : IEquatable<RectInt>
     /// The validated rect int that represents the completed operation.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static RectInt FromMinMax(Vector2Int min, Vector2Int max)
-    {
+    public static RectInt FromMinMax(
+        Vector2Int min,
+        Vector2Int max
+    ) {
         return new RectInt(min.x, min.y, max.x - min.x, max.y - min.y);
     }
 
@@ -170,8 +178,10 @@ public struct RectInt : IEquatable<RectInt>
     /// The validated rect int that represents the completed operation.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static RectInt Union(RectInt a, RectInt b)
-    {
+    public static RectInt Union(
+        RectInt a,
+        RectInt b
+    ) {
         int minX = Math.Min(a.left, b.left);
         int minY = Math.Min(a.top, b.top);
         int maxX = Math.Max(a.right, b.right);
@@ -195,8 +205,11 @@ public struct RectInt : IEquatable<RectInt>
     /// <see langword="true"/> when the requested condition is satisfied; otherwise, <see langword="false"/>.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool TryIntersect(RectInt a, RectInt b, out RectInt intersection)
-    {
+    public static bool TryIntersect(
+        RectInt a,
+        RectInt b,
+        out RectInt intersection
+    ) {
         int minX = Math.Max(a.left, b.left);
         int minY = Math.Max(a.top, b.top);
         int maxX = Math.Min(a.right, b.right);
@@ -225,7 +238,10 @@ public struct RectInt : IEquatable<RectInt>
     /// <see langword="true"/> when the requested condition is satisfied; otherwise, <see langword="false"/>.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool operator ==(RectInt a, RectInt b) => a.Equals(b);
+    public static bool operator ==(
+        RectInt a,
+        RectInt b
+    ) => a.Equals(b);
     /// <summary>
     /// Determines whether the supplied values differ under the type's equality tolerance.
     /// </summary>
@@ -239,7 +255,10 @@ public struct RectInt : IEquatable<RectInt>
     /// <see langword="true"/> when the requested condition is satisfied; otherwise, <see langword="false"/>.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool operator !=(RectInt a, RectInt b) => !a.Equals(b);
+    public static bool operator !=(
+        RectInt a,
+        RectInt b
+    ) => !a.Equals(b);
 
     /// <summary>
     /// Adds the supplied values component by component.
@@ -254,7 +273,10 @@ public struct RectInt : IEquatable<RectInt>
     /// The validated rect int that represents the completed operation.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static RectInt operator +(RectInt a, RectInt b) => new RectInt(a.x + b.x, a.y + b.y, a.width + b.width, a.height + b.height);
+    public static RectInt operator +(
+        RectInt a,
+        RectInt b
+    ) => new RectInt(a.x + b.x, a.y + b.y, a.width + b.width, a.height + b.height);
 
     /// <summary>
     /// Subtracts or negates the supplied value component by component.
@@ -269,7 +291,10 @@ public struct RectInt : IEquatable<RectInt>
     /// The validated rect int that represents the completed operation.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static RectInt operator -(RectInt a, RectInt b) => new RectInt(a.x - b.x, a.y - b.y, a.width - b.width, a.height - b.height);
+    public static RectInt operator -(
+        RectInt a,
+        RectInt b
+    ) => new RectInt(a.x - b.x, a.y - b.y, a.width - b.width, a.height - b.height);
 
     /// <summary>
     /// Converts the supplied value to <see cref="Rectangle"/>.

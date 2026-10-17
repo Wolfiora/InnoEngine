@@ -1,3 +1,4 @@
+using Inno.Adapter.Modules.DotNet;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -18,8 +19,8 @@ public sealed class RegistryRetirementTests
     public void PendingBatchDoesNotRepeatCompletedResourcesOrReleaseLowerDependenciesEarly()
     {
         string cache = Path.Combine(Path.GetTempPath(), "InnoRegistryRetirement", Guid.NewGuid().ToString("N"));
-        using var modules = new ModuleHost(new ModuleHostOptions { cacheDirectory = cache });
-        using var types = new TypeCatalog(modules);
+        using var modules = new ModuleHost(new ModuleHostOptions { catalogSource = new DotNetAssemblyCatalogSource(typeof(RegistryRetirementTests).Assembly)});
+        using var types = new TypeCatalog(modules, new ReflectionTypeCatalogSource());
         var calls = new List<string>();
         int pendingAttempts = 0;
         var first = new Resource(() => calls.Add("first"));
@@ -51,8 +52,8 @@ public sealed class RegistryRetirementTests
     public void DeadlineFailureRetainsDependenciesAndPermanentlyRejectsFurtherRetirement(bool clear)
     {
         string cache = Path.Combine(Path.GetTempPath(), "InnoRegistryRetirement", Guid.NewGuid().ToString("N"));
-        var modules = new ModuleHost(new ModuleHostOptions { cacheDirectory = cache });
-        var types = new TypeCatalog(modules);
+        var modules = new ModuleHost(new ModuleHostOptions { catalogSource = new DotNetAssemblyCatalogSource(typeof(RegistryRetirementTests).Assembly)});
+        var types = new TypeCatalog(modules, new ReflectionTypeCatalogSource());
         int released = 0;
         int attempts = 0;
         var registry = new Registry(types, () =>

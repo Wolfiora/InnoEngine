@@ -10,8 +10,10 @@ internal static class EditorSettingsHistory
 {
     internal const string C_KIND = "editor.settings.apply";
 
-    internal static EditorHistoryChange CreateChange(ReadOnlySpan<byte> before, ReadOnlySpan<byte> after)
-    {
+    internal static EditorHistoryChange CreateChange(
+        ReadOnlySpan<byte> before,
+        ReadOnlySpan<byte> after
+    ) {
         byte[] payload = new byte[sizeof(int) + before.Length + after.Length];
         BinaryPrimitives.WriteInt32LittleEndian(payload, before.Length);
         before.CopyTo(payload.AsSpan(sizeof(int), before.Length));
@@ -19,8 +21,7 @@ internal static class EditorSettingsHistory
         return new EditorHistoryChange(C_KIND, EditorHistoryPayload.FromBytes(payload));
     }
 
-    internal static (ReadOnlyMemory<byte> Before, ReadOnlyMemory<byte> After) Read(
-        EditorHistoryChange change)
+    internal static (ReadOnlyMemory<byte> Before, ReadOnlyMemory<byte> After) Read(EditorHistoryChange change)
     {
         byte[] payload = change.payload.ReadBytes();
         if (payload.Length < sizeof(int))
@@ -55,8 +56,8 @@ internal sealed class EditorSettingsHistoryHandler(EditorSettings settings) : Ed
     protected override EditorHistoryAvailability Query(
         EditorHistoryContext context,
         EditorHistoryChange change,
-        EditorHistoryDirection direction)
-    {
+        EditorHistoryDirection direction
+    ) {
         try
         {
             (ReadOnlyMemory<byte> before, ReadOnlyMemory<byte> after) = EditorSettingsHistory.Read(change);
@@ -89,8 +90,8 @@ internal sealed class EditorSettingsHistoryHandler(EditorSettings settings) : Ed
     protected override EditorHistoryResult Apply(
         EditorHistoryContext context,
         EditorHistoryChange change,
-        EditorHistoryDirection direction)
-    {
+        EditorHistoryDirection direction
+    ) {
         byte[] original = settings.CaptureDocument();
         try
         {

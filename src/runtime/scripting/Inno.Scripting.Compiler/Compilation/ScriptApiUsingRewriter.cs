@@ -18,8 +18,8 @@ internal sealed class ScriptApiUsingRewriter : CSharpSyntaxRewriter
 
     internal ScriptApiUsingRewriter(
         IReadOnlyList<ScriptApiNamespaceMapping> mappings,
-        IReadOnlyList<ScriptApiTypeMapping> typeMappings)
-    {
+        IReadOnlyList<ScriptApiTypeMapping> typeMappings
+    ) {
         m_mappings = mappings
             .GroupBy(static mapping => mapping.apiNamespace, StringComparer.Ordinal)
             .ToDictionary(
@@ -143,8 +143,8 @@ internal sealed class ScriptApiUsingRewriter : CSharpSyntaxRewriter
 
     private SyntaxNode? VisitWithUsings(
         SyntaxList<UsingDirectiveSyntax> usings,
-        Func<SyntaxNode?> visit)
-    {
+        Func<SyntaxNode?> visit
+    ) {
         IReadOnlyDictionary<string, string> previous = m_activeSimpleTypeMappings;
         m_activeSimpleTypeMappings = CreateSimpleTypeMappings(usings, previous);
         try
@@ -159,8 +159,8 @@ internal sealed class ScriptApiUsingRewriter : CSharpSyntaxRewriter
 
     private IReadOnlyDictionary<string, string> CreateSimpleTypeMappings(
         SyntaxList<UsingDirectiveSyntax> usings,
-        IReadOnlyDictionary<string, string> inherited)
-    {
+        IReadOnlyDictionary<string, string> inherited
+    ) {
         var candidates = inherited
             .ToDictionary(static pair => pair.Key, static pair => pair.Value, StringComparer.Ordinal);
         var ambiguous = new HashSet<string>(StringComparer.Ordinal);

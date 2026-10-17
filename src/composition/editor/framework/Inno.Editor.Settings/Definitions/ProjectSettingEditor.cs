@@ -68,8 +68,7 @@ public abstract class ProjectSettingEditor
     /// Thrown when <paramref name="value"/> has another runtime type.
     /// </exception>
     [ScriptingApiIgnore]
-    public bool Draw(ISerializable value)
-        => DrawValue(value);
+    public bool Draw(ISerializable value) => DrawValue(value);
 
     /// <summary>
     /// Compares two exact-type values through their native serialized property data.
@@ -87,14 +86,19 @@ public abstract class ProjectSettingEditor
     /// Thrown when either value has another runtime type.
     /// </exception>
     [ScriptingApiIgnore]
-    public bool ValuesEqual(ISerializable left, ISerializable right)
-        => ValueEquals(left, right);
+    public bool ValuesEqual(
+        ISerializable left,
+        ISerializable right
+    ) => ValueEquals(left, right);
 
     internal abstract Type valueType { get; }
 
     internal abstract bool DrawValue(ISerializable value);
 
-    internal abstract bool ValueEquals(ISerializable left, ISerializable right);
+    internal abstract bool ValueEquals(
+        ISerializable left,
+        ISerializable right
+    );
 
     internal SerializationRegistry serialization
         => m_serialization ?? throw new InvalidOperationException(
@@ -123,8 +127,10 @@ public abstract class ProjectSettingEditor
         m_settingId = id;
     }
 
-    internal void BindPlacement(string placementPath, int placementOrder)
-    {
+    internal void BindPlacement(
+        string placementPath,
+        int placementOrder
+    ) {
         string normalized = EditorSettingsPathUtility.Normalize(placementPath);
         if (m_path is not null &&
             (!string.Equals(m_path, normalized, StringComparison.Ordinal) || m_order != placementOrder))
@@ -191,8 +197,10 @@ public abstract class ProjectSettingEditor<TSetting> : ProjectSettingEditor
             serialization.CapturePropertiesData(setting));
     }
 
-    internal sealed override bool ValueEquals(ISerializable left, ISerializable right)
-    {
+    internal sealed override bool ValueEquals(
+        ISerializable left,
+        ISerializable right
+    ) {
         ValidateValue(left);
         ValidateValue(right);
         return serialization.CapturePropertiesData(left).AsSpan().SequenceEqual(

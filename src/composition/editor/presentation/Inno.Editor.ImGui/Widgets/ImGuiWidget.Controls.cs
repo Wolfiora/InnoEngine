@@ -46,8 +46,10 @@ public static partial class ImGuiWidget
     /// <exception cref="ArgumentNullException">
     /// Thrown when <paramref name="label"/> is <see langword="null"/>.
     /// </exception>
-    public static void LabelChip(string label, Vector4 background)
-    {
+    public static void LabelChip(
+        string label,
+        Vector4 background
+    ) {
         ArgumentNullException.ThrowIfNull(label);
         Vector2 size = GetLabelChipSize(label);
         Vector2 minimum = NativeImGui.GetCursorScreenPos();
@@ -99,8 +101,11 @@ public static partial class ImGuiWidget
     /// <exception cref="ArgumentNullException">
     /// Thrown when <paramref name="label"/> is <see langword="null"/>.
     /// </exception>
-    public static void TypeBadge(string label, Vector4 accent, string? tooltip = null)
-    {
+    public static void TypeBadge(
+        string label,
+        Vector4 accent,
+        string? tooltip = null
+    ) {
         ArgumentNullException.ThrowIfNull(label);
         Vector2 size = GetTypeBadgeSize(label);
         Vector2 minimum = NativeImGui.GetCursorScreenPos();
@@ -152,8 +157,8 @@ public static partial class ImGuiWidget
         string id,
         ref bool value,
         float size = -1f,
-        string? tooltip = null)
-    {
+        string? tooltip = null
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(id);
         if (size < 0f)
             size = style.compactCheckboxSize;
@@ -234,8 +239,8 @@ public static partial class ImGuiWidget
     public static bool Checkbox(
         string label,
         ref bool value,
-        string? tooltip = null)
-    {
+        string? tooltip = null
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(label);
         bool changed = NativeImGui.Checkbox(label, ref value);
         DrawItemTooltip(tooltip);
@@ -254,8 +259,10 @@ public static partial class ImGuiWidget
     /// <returns>
     /// <see langword="true"/> when the button is pressed.
     /// </returns>
-    public static bool CenteredButton(string label, float topPadding = 0f)
-    {
+    public static bool CenteredButton(
+        string label,
+        float topPadding = 0f
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(label);
         if (topPadding < 0f)
         {
@@ -288,8 +295,11 @@ public static partial class ImGuiWidget
     /// <exception cref="ArgumentNullException">
     /// Thrown when <paramref name="overlay"/> is <see langword="null"/>.
     /// </exception>
-    public static void CenteredProgressBar(float fraction, Vector2 size, string overlay)
-    {
+    public static void CenteredProgressBar(
+        float fraction,
+        Vector2 size,
+        string overlay
+    ) {
         ArgumentNullException.ThrowIfNull(overlay);
 
         NativeImGui.ProgressBar(fraction, size, string.Empty);

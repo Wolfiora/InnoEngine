@@ -22,7 +22,13 @@ namespace Inno.UI;
 /// <param name="color">
 /// The uint value used to initialize this instance.
 /// </param>
-public readonly record struct UiVertex(float x, float y, float u, float v, uint color);
+public readonly record struct UiVertex(
+    float x,
+    float y,
+    float u,
+    float v,
+    uint color
+);
 
 /// <summary>
 /// Defines an integer clipping rectangle in UI surface coordinates.
@@ -39,7 +45,12 @@ public readonly record struct UiVertex(float x, float y, float u, float v, uint 
 /// <param name="height">
 /// The height in logical units or pixels required by this operation.
 /// </param>
-public readonly record struct UiClipRectangle(int x, int y, int width, int height);
+public readonly record struct UiClipRectangle(
+    int x,
+    int y,
+    int width,
+    int height
+);
 
 /// <summary>
 /// Publishes one immutable mesh generation to a rendering plugin.
@@ -49,8 +60,12 @@ public sealed class UiMeshUpdate
     private readonly IReadOnlyList<UiVertex> m_vertices;
     private readonly IReadOnlyList<uint> m_indices;
 
-    internal UiMeshUpdate(UiMeshHandle mesh, ulong revision, UiVertex[] vertices, uint[] indices)
-    {
+    internal UiMeshUpdate(
+        UiMeshHandle mesh,
+        ulong revision,
+        UiVertex[] vertices,
+        uint[] indices
+    ) {
         this.mesh = mesh;
         this.revision = revision;
         m_vertices = new ReadOnlyCollection<UiVertex>(vertices);
@@ -82,8 +97,13 @@ public sealed class UiTextureUpdate
 {
     private readonly byte[] m_pixels;
 
-    internal UiTextureUpdate(UiTextureHandle texture, ulong revision, int width, int height, byte[] pixels)
-    {
+    internal UiTextureUpdate(
+        UiTextureHandle texture,
+        ulong revision,
+        int width,
+        int height,
+        byte[] pixels
+    ) {
         this.texture = texture;
         this.revision = revision;
         this.width = width;
@@ -132,7 +152,8 @@ public readonly record struct UiDrawCommand(
     UiMeshHandle mesh,
     UiTextureHandle texture,
     bool scissorEnabled,
-    UiClipRectangle scissor);
+    UiClipRectangle scissor
+);
 
 /// <summary>
 /// Contains incremental resource changes and ordered draw commands for one UI context.
@@ -150,8 +171,8 @@ public sealed class UiRenderFrame
         UiMeshHandle[] releasedMeshes,
         UiTextureUpdate[] textureUpdates,
         UiTextureHandle[] releasedTextures,
-        UiDrawCommand[] commands)
-    {
+        UiDrawCommand[] commands
+    ) {
         m_meshUpdates = new ReadOnlyCollection<UiMeshUpdate>(meshUpdates);
         m_releasedMeshes = new ReadOnlyCollection<UiMeshHandle>(releasedMeshes);
         m_textureUpdates = new ReadOnlyCollection<UiTextureUpdate>(textureUpdates);
@@ -176,8 +197,10 @@ public sealed class UiRenderFrame
     /// <returns>
     /// An immutable retirement frame.
     /// </returns>
-    public static UiRenderFrame CreateRetirement(UiMeshHandle[] meshes, UiTextureHandle[] textures)
-    {
+    public static UiRenderFrame CreateRetirement(
+        UiMeshHandle[] meshes,
+        UiTextureHandle[] textures
+    ) {
         ArgumentNullException.ThrowIfNull(meshes);
         ArgumentNullException.ThrowIfNull(textures);
         if (Array.Exists(meshes, static value => !value.isValid))
@@ -238,11 +261,17 @@ public sealed class UiRenderFrameBuilder
     /// <param name="indices">
     /// Owned index array; the caller must not mutate it afterward.
     /// </param>
-    public void AddMeshUpdate(UiMeshHandle mesh, ulong revision, UiVertex[] vertices, uint[] indices)
-    {
+    public void AddMeshUpdate(
+        UiMeshHandle mesh,
+        ulong revision,
+        UiVertex[] vertices,
+        uint[] indices
+    ) {
         EnsureMutable();
-        if (!mesh.isValid) throw new ArgumentException("A mesh update requires an assigned handle.", nameof(mesh));
-        if (revision == 0) throw new ArgumentOutOfRangeException(nameof(revision));
+        if (!mesh.isValid)
+            throw new ArgumentException("A mesh update requires an assigned handle.", nameof(mesh));
+        if (revision == 0)
+            throw new ArgumentOutOfRangeException(nameof(revision));
         ArgumentNullException.ThrowIfNull(vertices);
         ArgumentNullException.ThrowIfNull(indices);
         if (vertices.Length == 0 || indices.Length == 0)
@@ -262,7 +291,8 @@ public sealed class UiRenderFrameBuilder
     public void AddReleasedMesh(UiMeshHandle mesh)
     {
         EnsureMutable();
-        if (!mesh.isValid) throw new ArgumentException("A released mesh requires an assigned handle.", nameof(mesh));
+        if (!mesh.isValid)
+            throw new ArgumentException("A released mesh requires an assigned handle.", nameof(mesh));
         m_releasedMeshes.Add(mesh);
     }
 
@@ -284,11 +314,18 @@ public sealed class UiRenderFrameBuilder
     /// <param name="pixels">
     /// Owned tightly packed premultiplied RGBA8 pixels.
     /// </param>
-    public void AddTextureUpdate(UiTextureHandle texture, ulong revision, int width, int height, byte[] pixels)
-    {
+    public void AddTextureUpdate(
+        UiTextureHandle texture,
+        ulong revision,
+        int width,
+        int height,
+        byte[] pixels
+    ) {
         EnsureMutable();
-        if (!texture.isValid) throw new ArgumentException("A texture update requires an assigned handle.", nameof(texture));
-        if (revision == 0) throw new ArgumentOutOfRangeException(nameof(revision));
+        if (!texture.isValid)
+            throw new ArgumentException("A texture update requires an assigned handle.", nameof(texture));
+        if (revision == 0)
+            throw new ArgumentOutOfRangeException(nameof(revision));
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(width);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(height);
         ArgumentNullException.ThrowIfNull(pixels);
@@ -306,7 +343,8 @@ public sealed class UiRenderFrameBuilder
     public void AddReleasedTexture(UiTextureHandle texture)
     {
         EnsureMutable();
-        if (!texture.isValid) throw new ArgumentException("A released texture requires an assigned handle.", nameof(texture));
+        if (!texture.isValid)
+            throw new ArgumentException("A released texture requires an assigned handle.", nameof(texture));
         m_releasedTextures.Add(texture);
     }
 
@@ -319,7 +357,8 @@ public sealed class UiRenderFrameBuilder
     public void AddCommand(UiDrawCommand command)
     {
         EnsureMutable();
-        if (!command.mesh.isValid) throw new ArgumentException("A draw command requires an assigned mesh.", nameof(command));
+        if (!command.mesh.isValid)
+            throw new ArgumentException("A draw command requires an assigned mesh.", nameof(command));
         m_commands.Add(command);
     }
 

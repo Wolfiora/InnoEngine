@@ -12,8 +12,7 @@ internal sealed class AudioDeviceCandidate : IDisposable
 
     internal AudioDeviceCandidate(IAudioDevice device) => m_device = device;
 
-    internal AudioMixerOwner Prepare(AudioMixerOwner previous)
-        => m_mixer = previous.PrepareReplacement(m_device!);
+    internal AudioMixerOwner Prepare(AudioMixerOwner previous) => m_mixer = previous.PrepareReplacement(m_device!);
 
     internal void Commit()
     {
@@ -26,13 +25,31 @@ internal sealed class AudioDeviceCandidate : IDisposable
     /// </summary>
     public void Dispose()
     {
-        try { m_mixer?.Dispose(); }
-        catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null) { throw; }
-        catch (Exception exception) { m_failures.Add(exception); }
+        try
+        {
+            m_mixer?.Dispose();
+        }
+        catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null)
+        {
+            throw;
+        }
+        catch (Exception exception)
+        {
+            m_failures.Add(exception);
+        }
         m_mixer = null;
-        try { m_device?.Dispose(); }
-        catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null) { throw; }
-        catch (Exception exception) { m_failures.Add(exception); }
+        try
+        {
+            m_device?.Dispose();
+        }
+        catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null)
+        {
+            throw;
+        }
+        catch (Exception exception)
+        {
+            m_failures.Add(exception);
+        }
         m_device = null;
         if (m_failures.Count == 0)
             return;

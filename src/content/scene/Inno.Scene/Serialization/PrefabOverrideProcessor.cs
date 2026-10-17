@@ -16,8 +16,8 @@ internal static class PrefabOverrideProcessor
         PrefabConnectionRecord connection,
         GameScene scene,
         SerializationContext context,
-        SceneGraphReferenceMap storageReferences)
-    {
+        SceneGraphReferenceMap storageReferences
+    ) {
         ArgumentNullException.ThrowIfNull(connection);
         ArgumentNullException.ThrowIfNull(scene);
         ArgumentNullException.ThrowIfNull(context);
@@ -64,8 +64,8 @@ internal static class PrefabOverrideProcessor
     internal static void Reconcile(
         PrefabConnectionRecord connection,
         GameObject instanceRoot,
-        SerializationContext context)
-    {
+        SerializationContext context
+    ) {
         ArgumentNullException.ThrowIfNull(connection);
         ArgumentNullException.ThrowIfNull(instanceRoot);
         ArgumentNullException.ThrowIfNull(context);
@@ -80,7 +80,7 @@ internal static class PrefabOverrideProcessor
             InstantiateSource(connection.sourceAsset, context);
         try
         {
-            MarkOrphanedOverrides(connection, sourceConnection, sourceScene);
+            MarkOrphanedOverrides(connection, sourceConnection, sourceScene, context);
             RemoveDeletedSourceObjects(connection, sourceConnection, scene, instanceRoot);
             CreateNewSourceObjects(connection, sourceConnection, scene, sourceScene);
             RemoveDeletedSourceComponents(connection, sourceConnection, scene);
@@ -111,8 +111,8 @@ internal static class PrefabOverrideProcessor
         PrefabConnectionRecord sourceConnection,
         GameScene scene,
         GameScene sourceScene,
-        PrefabOverrideSet overrides)
-    {
+        PrefabOverrideSet overrides
+    ) {
         foreach ((Guid sourceId, Guid sourceRuntimeId) in sourceConnection.objectIdentities)
         {
             GameObject? sourceObject = sourceScene.FindObject(sourceRuntimeId);
@@ -151,8 +151,8 @@ internal static class PrefabOverrideProcessor
         SceneGraphReferenceMap currentReferences,
         SceneGraphReferenceMap sourceReferences,
         SceneGraphReferenceMap storageReferences,
-        PrefabOverrideSet overrides)
-    {
+        PrefabOverrideSet overrides
+    ) {
         foreach ((Guid sourceId, Guid sourceRuntimeId) in sourceConnection.componentIdentities)
         {
             GameComponent? sourceComponent = sourceScene.FindComponent(sourceRuntimeId);
@@ -167,11 +167,11 @@ internal static class PrefabOverrideProcessor
                 continue;
             }
 
-            IReadOnlyList<SerializedPropertyValueCodec.PropertyMember> members =
-                SerializedPropertyValueCodec.GetMembers(sourceComponent.GetType());
+            IReadOnlyList<SerializationMemberMetadata> members =
+                SerializedPropertyValueCodec.GetMembers(sourceComponent.GetType(), context);
             for (int memberIndex = 0; memberIndex < members.Count; memberIndex++)
             {
-                SerializedPropertyValueCodec.PropertyMember member = members[memberIndex];
+                SerializationMemberMetadata member = members[memberIndex];
                 byte[] sourceValue;
                 byte[] currentValue;
                 try
@@ -222,8 +222,8 @@ internal static class PrefabOverrideProcessor
     private static void CaptureAdditions(
         PrefabConnectionRecord connection,
         GameScene scene,
-        PrefabOverrideSet overrides)
-    {
+        PrefabOverrideSet overrides
+    ) {
         if (!connection.objectIdentities.TryGetValue(connection.sourceRootId, out Guid rootRuntimeId))
             return;
         GameObject? root = scene.FindObject(rootRuntimeId);
@@ -251,8 +251,8 @@ internal static class PrefabOverrideProcessor
     private static void PreserveOrphanedOverrides(
         PrefabOverrideSet previous,
         PrefabConnectionRecord sourceConnection,
-        PrefabOverrideSet current)
-    {
+        PrefabOverrideSet current
+    ) {
         foreach (PrefabPropertyOverride property in previous.properties)
         {
             if (!sourceConnection.componentIdentities.ContainsKey(property.sourceComponentId))
@@ -274,8 +274,9 @@ internal static class PrefabOverrideProcessor
     private static void MarkOrphanedOverrides(
         PrefabConnectionRecord connection,
         PrefabConnectionRecord sourceConnection,
-        GameScene sourceScene)
-    {
+        GameScene sourceScene,
+        SerializationContext context
+    ) {
         foreach (PrefabPropertyOverride property in connection.overrides.properties.ToArray())
         {
             bool hasProperty = false;
@@ -284,7 +285,7 @@ internal static class PrefabOverrideProcessor
                     out Guid sourceRuntimeId) &&
                 sourceScene.FindComponent(sourceRuntimeId) is GameComponent sourceComponent)
             {
-                hasProperty = SerializedPropertyValueCodec.GetMembers(sourceComponent.GetType())
+                hasProperty = SerializedPropertyValueCodec.GetMembers(sourceComponent.GetType(), context)
                     .Any(member => string.Equals(
                         member.name,
                         property.propertyName,
@@ -310,8 +311,8 @@ internal static class PrefabOverrideProcessor
         PrefabConnectionRecord connection,
         PrefabConnectionRecord sourceConnection,
         GameScene scene,
-        GameObject instanceRoot)
-    {
+        GameObject instanceRoot
+    ) {
         Guid[] removedSourceIds = connection.objectIdentities.Keys
             .Where(sourceId =>
                 connection.overrides.IsObjectRemoved(sourceId) ||
@@ -341,8 +342,8 @@ internal static class PrefabOverrideProcessor
         PrefabConnectionRecord connection,
         PrefabConnectionRecord sourceConnection,
         GameScene scene,
-        GameScene sourceScene)
-    {
+        GameScene sourceScene
+    ) {
         foreach ((Guid sourceId, Guid sourceRuntimeId) in sourceConnection.objectIdentities)
         {
             if (connection.objectIdentities.ContainsKey(sourceId) || connection.overrides.IsObjectRemoved(sourceId))
@@ -367,8 +368,8 @@ internal static class PrefabOverrideProcessor
     private static void RemoveDeletedSourceComponents(
         PrefabConnectionRecord connection,
         PrefabConnectionRecord sourceConnection,
-        GameScene scene)
-    {
+        GameScene scene
+    ) {
         Guid[] removedSourceIds = connection.componentIdentities.Keys
             .Where(sourceId =>
                 connection.overrides.IsComponentRemoved(sourceId) ||
@@ -390,8 +391,8 @@ internal static class PrefabOverrideProcessor
         PrefabConnectionRecord connection,
         PrefabConnectionRecord sourceConnection,
         GameScene scene,
-        GameScene sourceScene)
-    {
+        GameScene sourceScene
+    ) {
         foreach ((Guid sourceId, Guid sourceRuntimeId) in sourceConnection.componentIdentities)
         {
             if (connection.componentIdentities.ContainsKey(sourceId) ||
@@ -421,8 +422,8 @@ internal static class PrefabOverrideProcessor
         GameScene sourceScene,
         SerializationContext context,
         SceneGraphReferenceMap sourceReferences,
-        SceneGraphReferenceMap targetReferences)
-    {
+        SceneGraphReferenceMap targetReferences
+    ) {
         foreach ((Guid sourceId, Guid sourceRuntimeId) in sourceConnection.componentIdentities)
         {
             if (!connection.componentIdentities.TryGetValue(sourceId, out Guid targetRuntimeId))
@@ -435,11 +436,11 @@ internal static class PrefabOverrideProcessor
                 continue;
             }
 
-            IReadOnlyList<SerializedPropertyValueCodec.PropertyMember> members =
-                SerializedPropertyValueCodec.GetMembers(sourceComponent.GetType());
+            IReadOnlyList<SerializationMemberMetadata> members =
+                SerializedPropertyValueCodec.GetMembers(sourceComponent.GetType(), context);
             for (int memberIndex = 0; memberIndex < members.Count; memberIndex++)
             {
-                SerializedPropertyValueCodec.PropertyMember member = members[memberIndex];
+                SerializationMemberMetadata member = members[memberIndex];
                 if (connection.overrides.IsPropertyOverridden(sourceId, member.name))
                     continue;
                 byte[] value = SerializedPropertyValueCodec.Encode(
@@ -462,8 +463,8 @@ internal static class PrefabOverrideProcessor
         PrefabConnectionRecord sourceConnection,
         GameScene scene,
         GameScene sourceScene,
-        GameObject instanceRoot)
-    {
+        GameObject instanceRoot
+    ) {
         foreach ((Guid sourceId, Guid sourceRuntimeId) in sourceConnection.objectIdentities)
         {
             if (!connection.objectIdentities.TryGetValue(sourceId, out Guid targetRuntimeId))
@@ -512,8 +513,10 @@ internal static class PrefabOverrideProcessor
         scene.RecomputeActiveSubtree(instanceRoot);
     }
 
-    private static void RefreshInstanceInfo(PrefabConnectionRecord connection, GameObject instanceRoot)
-    {
+    private static void RefreshInstanceInfo(
+        PrefabConnectionRecord connection,
+        GameObject instanceRoot
+    ) {
         GameScene scene = instanceRoot.scene;
         foreach ((Guid sourceId, Guid runtimeId) in connection.objectIdentities)
         {
@@ -536,8 +539,8 @@ internal static class PrefabOverrideProcessor
 
     private static SceneGraphReferenceMap CreateComparisonReferences(
         GameScene scene,
-        PrefabConnectionRecord connection)
-    {
+        PrefabConnectionRecord connection
+    ) {
         EngineObject[] allObjects = scene.GetOwnedObjects()
             .SelectMany(static gameObject => gameObject.GetComponents().Cast<EngineObject>().Prepend(gameObject))
             .ToArray();
@@ -561,8 +564,8 @@ internal static class PrefabOverrideProcessor
 
     private static SceneGraphReferenceMap CreateTargetReferences(
         GameScene scene,
-        PrefabConnectionRecord connection)
-    {
+        PrefabConnectionRecord connection
+    ) {
         SceneGraphReferenceMap references = CreateComparisonReferences(scene, connection);
         foreach ((Guid sourceId, Guid runtimeId) in connection.objectIdentities)
         {
@@ -579,8 +582,10 @@ internal static class PrefabOverrideProcessor
         return references;
     }
 
-    private static Guid GetMappedParentId(GameObject gameObject, PrefabConnectionRecord connection)
-    {
+    private static Guid GetMappedParentId(
+        GameObject gameObject,
+        PrefabConnectionRecord connection
+    ) {
         Transform? parent = gameObject.transform.parent;
         if (parent is null)
             return Guid.Empty;
@@ -595,8 +600,8 @@ internal static class PrefabOverrideProcessor
 
     private static (GameScene scene, GameObject root, PrefabConnectionRecord connection) InstantiateSource(
         AssetObject sourceAsset,
-        SerializationContext context)
-    {
+        SerializationContext context
+    ) {
         var sourceScene = new GameScene(
             SceneWorld.current.typeCatalog,
             "Prefab Source Comparison",

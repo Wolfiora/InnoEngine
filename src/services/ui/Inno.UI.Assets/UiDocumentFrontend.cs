@@ -19,8 +19,11 @@ namespace Inno.UI.Assets;
 /// <param name="readSource">
 /// Reads and records an optional isolated source dependency.
 /// </param>
-public sealed record UiDocumentSourceFile(string assetPath, string text,
-    Func<Inno.Assets.AssetPath, string>? readSource = null);
+public sealed record UiDocumentSourceFile(
+    string assetPath,
+    string text,
+    Func<Inno.Assets.AssetPath, string>? readSource = null
+);
 
 /// <summary>
 /// Reports a language-neutral source problem.
@@ -37,7 +40,12 @@ public sealed record UiDocumentSourceFile(string assetPath, string text,
 /// <param name="column">
 /// One-based source column.
 /// </param>
-public sealed record UiDocumentDiagnostic(string code, string message, int line, int column);
+public sealed record UiDocumentDiagnostic(
+    string code,
+    string message,
+    int line,
+    int column
+);
 
 /// <summary>
 /// One font asset declared by a UI document language frontend.
@@ -54,7 +62,12 @@ public sealed record UiDocumentDiagnostic(string code, string message, int line,
 /// <param name="weight">
 /// CSS-compatible face weight.
 /// </param>
-public sealed record UiDocumentFontDeclaration(string assetPath, string family, Inno.Text.TextFontStyle style, int weight);
+public sealed record UiDocumentFontDeclaration(
+    string assetPath,
+    string family,
+    Inno.Text.TextFontStyle style,
+    int weight
+);
 
 /// <summary>
 /// Returns validated text without retaining parser or implementation objects.
@@ -73,9 +86,11 @@ public sealed class UiDocumentAnalysis
     /// <param name="fonts">
     /// Font assets declared by the document.
     /// </param>
-    public UiDocumentAnalysis(string? text, IEnumerable<UiDocumentDiagnostic> diagnostics,
-        IEnumerable<UiDocumentFontDeclaration>? fonts = null)
-    {
+    public UiDocumentAnalysis(
+        string? text,
+        IEnumerable<UiDocumentDiagnostic> diagnostics,
+        IEnumerable<UiDocumentFontDeclaration>? fonts = null
+    ) {
         this.text = text;
         this.diagnostics = new ReadOnlyCollection<UiDocumentDiagnostic>(diagnostics?.ToArray()
             ?? throw new ArgumentNullException(nameof(diagnostics)));
@@ -157,7 +172,10 @@ public sealed class UiDocumentFrontendCatalog
     /// <returns>
     /// Neutral analysis result.
     /// </returns>
-    public UiDocumentAnalysis Analyze(UiDocumentLanguageId language, UiDocumentSourceFile source)
+    public UiDocumentAnalysis Analyze(
+        UiDocumentLanguageId language,
+        UiDocumentSourceFile source
+    )
         => m_frontends.TryGetValue(language, out IUiDocumentFrontend? frontend)
             ? frontend.Analyze(source) ?? throw new InvalidOperationException($"UI language '{language}' returned no analysis.")
             : throw new NotSupportedException($"UI document language '{language}' is unavailable.");
@@ -188,8 +206,10 @@ public sealed class UiDocumentFrontendRegistry : TypeRegistry<UiDocumentFrontend
     /// <returns>
     /// Detached neutral analysis.
     /// </returns>
-    public UiDocumentAnalysis Analyze(UiDocumentLanguageId language, UiDocumentSourceFile source)
-    {
+    public UiDocumentAnalysis Analyze(
+        UiDocumentLanguageId language,
+        UiDocumentSourceFile source
+    ) {
         using IDisposable operation = m_types.AcquireOperation("Analyze UI document source");
         return current.Analyze(language, source);
     }

@@ -6,6 +6,5 @@ namespace Inno.Engine.Default;
 internal static class RenderingSubsystem
 {
     [RuntimeSubsystemRegistration("inno.runtime.rendering")]
-    internal static IRuntimeSubsystemFactory Create(RenderRuntime context)
-        => new RenderRuntimeFactory(_ => context);
+    internal static IRuntimeSubsystemFactory Create(RenderRuntime context) => new RenderRuntimeFactory(_ => context);
 }

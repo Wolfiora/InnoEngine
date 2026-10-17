@@ -22,8 +22,7 @@ internal sealed class EngineObjectReferenceDropHandler(RuntimeSession runtimeSes
     /// <returns>
     /// The validated editor drop status that represents the completed operation.
     /// </returns>
-    protected override EditorDropStatus Query(
-        EditorDropContext<EngineObject, EngineObjectReferenceDropTarget> context)
+    protected override EditorDropStatus Query(EditorDropContext<EngineObject, EngineObjectReferenceDropTarget> context)
         => Resolve(context) is null
             ? EditorDropStatus.rejected
             : EditorDropStatus.Accept();
@@ -37,8 +36,7 @@ internal sealed class EngineObjectReferenceDropHandler(RuntimeSession runtimeSes
     /// <returns>
     /// The validated editor drop result that represents the completed operation.
     /// </returns>
-    protected override EditorDropResult Drop(
-        EditorDropContext<EngineObject, EngineObjectReferenceDropTarget> context)
+    protected override EditorDropResult Drop(EditorDropContext<EngineObject, EngineObjectReferenceDropTarget> context)
     {
         EngineObject? value = Resolve(context);
         if (value is null)
@@ -47,8 +45,7 @@ internal sealed class EngineObjectReferenceDropHandler(RuntimeSession runtimeSes
         return EditorDropResult.Accepted();
     }
 
-    private EngineObject? Resolve(
-        EditorDropContext<EngineObject, EngineObjectReferenceDropTarget> context)
+    private EngineObject? Resolve(EditorDropContext<EngineObject, EngineObjectReferenceDropTarget> context)
     {
         EngineObject source = context.source;
         if (source.isDestroyed)

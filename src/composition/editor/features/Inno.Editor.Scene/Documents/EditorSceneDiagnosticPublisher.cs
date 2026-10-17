@@ -11,12 +11,16 @@ internal sealed class EditorSceneDiagnosticPublisher : IDisposable
 {
     private const string C_RESTORE_GROUP = "Scene Workspace Restore";
     private const string C_SYNCHRONIZATION_GROUP = "Scene Synchronization";
+    private const string C_DIRTY_CHECK_GROUP = "Scene Dirty Check";
 
     private readonly Dictionary<Guid, string> m_synchronizationStates = [];
+    private readonly Dictionary<Guid, string> m_dirtyCheckStates = [];
     private string m_restoreState = string.Empty;
 
-    internal bool PublishRestoreFailure(string code, string message)
-    {
+    internal bool PublishRestoreFailure(
+        string code,
+        string message
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(code);
         ArgumentException.ThrowIfNullOrWhiteSpace(message);
         string state = $"{code}:{message}";
@@ -35,8 +39,10 @@ internal sealed class EditorSceneDiagnosticPublisher : IDisposable
         m_restoreState = string.Empty;
     }
 
-    internal bool PublishSynchronizationFailure(GameScene scene, Exception exception)
-    {
+    internal bool PublishSynchronizationFailure(
+        GameScene scene,
+        Exception exception
+    ) {
         ArgumentNullException.ThrowIfNull(scene);
         ArgumentNullException.ThrowIfNull(exception);
         Guid targetId = scene.identity.persistentId;
@@ -62,6 +68,30 @@ internal sealed class EditorSceneDiagnosticPublisher : IDisposable
         Diagnostics.Clear(sceneId, C_SYNCHRONIZATION_GROUP);
     }
 
+    internal bool PublishDirtyCheckFailure(
+        GameScene scene,
+        Exception exception
+    ) {
+        ArgumentNullException.ThrowIfNull(scene);
+        ArgumentNullException.ThrowIfNull(exception);
+        Guid targetId = scene.identity.persistentId;
+        string state = exception.ToString();
+        if (m_dirtyCheckStates.TryGetValue(targetId, out string? previous) &&
+            string.Equals(previous, state, StringComparison.Ordinal))
+            return false;
+        Diagnostics.Set(targetId, C_DIRTY_CHECK_GROUP,
+            Diagnostic.Error("SCENE-DIRTY-CHECK", exception.Message), scene.name);
+        m_dirtyCheckStates[targetId] = state;
+        return true;
+    }
+
+    internal void ResolveDirtyCheck(Guid sceneId)
+    {
+        if (!m_dirtyCheckStates.Remove(sceneId))
+            return;
+        Diagnostics.Clear(sceneId, C_DIRTY_CHECK_GROUP);
+    }
+
     internal void RetainSynchronizationTargets(IReadOnlySet<Guid> sceneIds)
     {
         ArgumentNullException.ThrowIfNull(sceneIds);
@@ -70,6 +100,11 @@ internal sealed class EditorSceneDiagnosticPublisher : IDisposable
             .ToArray();
         for (int i = 0; i < removed.Length; i++)
             ResolveSynchronization(removed[i]);
+        Guid[] removedDirtyChecks = m_dirtyCheckStates.Keys
+            .Where(id => !sceneIds.Contains(id))
+            .ToArray();
+        for (int i = 0; i < removedDirtyChecks.Length; i++)
+            ResolveDirtyCheck(removedDirtyChecks[i]);
     }
 
     /// <summary>
@@ -80,5 +115,7 @@ internal sealed class EditorSceneDiagnosticPublisher : IDisposable
         ResolveRestore();
         foreach (Guid sceneId in m_synchronizationStates.Keys.ToArray())
             ResolveSynchronization(sceneId);
+        foreach (Guid sceneId in m_dirtyCheckStates.Keys.ToArray())
+            ResolveDirtyCheck(sceneId);
     }
 }

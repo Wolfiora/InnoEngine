@@ -56,8 +56,7 @@ internal sealed class EditorSettingsCatalog : TypeRegistry<EditorSettingsCatalog
     /// <param name="snapshot">
     /// The immutable state snapshot consumed by this operation.
     /// </param>
-    protected override void DisposeSnapshot(Snapshot snapshot)
-        => DisposeExtensions(snapshot.definitions);
+    protected override void DisposeSnapshot(Snapshot snapshot) => DisposeExtensions(snapshot.definitions);
 
     private EditorSetting CreateDefinition(Type type)
     {
@@ -73,5 +72,6 @@ internal sealed class EditorSettingsCatalog : TypeRegistry<EditorSettingsCatalog
     internal sealed record Snapshot(
         long revision,
         EditorSetting[] definitions,
-        IReadOnlyDictionary<string, EditorSetting> byPath);
+        IReadOnlyDictionary<string, EditorSetting> byPath
+    );
 }

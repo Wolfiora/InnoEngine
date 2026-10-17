@@ -86,7 +86,7 @@ internal sealed class EngineObjectReferencePropertyDrawer : IPropertyDrawer
         }
         finally
         {
-            NativeImGui.EndCombo();
+            EditorWidget.EndBoundedCombo();
         }
     }
 

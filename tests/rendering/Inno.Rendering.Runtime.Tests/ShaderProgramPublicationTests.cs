@@ -4,6 +4,8 @@ using System.Linq;
 using Inno.Core.Serialization;
 using Inno.Rendering;
 using Xunit;
+using Inno.Rendering.Assets;
+using Inno.Rendering.Runtime;
 
 namespace Inno.Rendering.Runtime.Tests;
 

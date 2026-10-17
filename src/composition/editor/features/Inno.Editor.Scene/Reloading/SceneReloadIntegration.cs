@@ -17,8 +17,8 @@ internal static class SceneReloadIntegration
         RuntimeSession runtimeSession,
         SerializationRegistry serialization,
         IAssetReferenceResolver assets,
-        EditorReloadCoordinator reloads)
-    {
+        EditorReloadCoordinator reloads
+    ) {
         ArgumentNullException.ThrowIfNull(runtimeSession);
         ArgumentNullException.ThrowIfNull(serialization);
         ArgumentNullException.ThrowIfNull(assets);
@@ -35,8 +35,8 @@ internal static class SceneReloadIntegration
         internal SceneReloadParticipant(
             RuntimeSession runtimeSession,
             SerializationRegistry serialization,
-            IAssetReferenceResolver assets)
-        {
+            IAssetReferenceResolver assets
+        ) {
             m_runtimeSession = runtimeSession;
             m_reload = new SceneReloadService(runtimeSession.scenes, serialization, assets);
         }
@@ -53,6 +53,7 @@ internal static class SceneReloadIntegration
         public IGenerationChange Capture(AssemblyReloadContext context)
         {
             ArgumentNullException.ThrowIfNull(context);
+            using IDisposable scope = m_runtimeSession.EnterExecutionScope();
             TypeCacheReloadContext typeReload = context.GetContext<TypeCacheReloadContext>();
             return new SceneReloadTransaction(
                 m_runtimeSession,
@@ -63,19 +64,23 @@ internal static class SceneReloadIntegration
         /// Recomputes diagnostics from the current candidate without publishing partial state.
         /// </summary>
         public void RefreshDiagnostics()
-            => SceneStateDiagnosticPublisher.PublishMissingElements(
-                m_runtimeSession.scenes.loadedScenes);
+        {
+            using IDisposable scope = m_runtimeSession.EnterExecutionScope();
+            SceneStateDiagnosticPublisher.PublishMissingElements(m_runtimeSession.scenes.loadedScenes);
+        }
     }
 
     private sealed class SceneReloadTransaction(
         RuntimeSession runtimeSession,
-        ISceneReloadStateTransfer migration) : IGenerationChange
+        ISceneReloadStateTransfer migration
+    ) : IGenerationChange
     {
         /// <summary>
         /// Builds and validates candidate state without changing the active generation.
         /// </summary>
         public void PrepareForActivation()
         {
+            using IDisposable scope = runtimeSession.EnterExecutionScope();
             migration.PrepareForActivation();
             foreach (object retiredObject in migration.retiredObjects)
                 runtimeSession.StopCoroutines(retiredObject);
@@ -85,13 +90,17 @@ internal static class SceneReloadIntegration
         /// Applies a validated change atomically at the caller-controlled commit point.
         /// </summary>
         public void Apply()
-            => migration.Apply();
+        {
+            using IDisposable scope = runtimeSession.EnterExecutionScope();
+            migration.Apply();
+        }
 
         /// <summary>
         /// Finalizes candidate activation and releases temporary transaction state.
         /// </summary>
         public void Complete()
         {
+            using IDisposable scope = runtimeSession.EnterExecutionScope();
             migration.Complete();
             SceneStateDiagnosticPublisher.PublishReload(migration.diagnostics);
             SceneStateDiagnosticPublisher.PublishMissingElements(
@@ -102,13 +111,17 @@ internal static class SceneReloadIntegration
         /// Restores the state captured before the current transaction began.
         /// </summary>
         public void RollbackStructure()
-            => migration.RollbackStructure();
+        {
+            using IDisposable scope = runtimeSession.EnterExecutionScope();
+            migration.RollbackStructure();
+        }
 
         /// <summary>
         /// Restores the state captured before the current transaction began.
         /// </summary>
         public void RestorePreviousState()
         {
+            using IDisposable scope = runtimeSession.EnterExecutionScope();
             migration.RestorePreviousState();
             SceneStateDiagnosticPublisher.PublishMissingElements(
                 runtimeSession.scenes.loadedScenes);

@@ -26,6 +26,7 @@ public abstract class TypeRegistry<TSnapshot> : IDisposable
     private bool m_activationInProgress;
     private bool m_disposed;
     private List<object>? m_candidateResources;
+    private TypeCacheSnapshot? m_candidateTypes;
     private readonly TimeSpan m_retirementTimeout;
     private Exception? m_retirementFailure;
     private object? m_retainedRetirement;
@@ -45,8 +46,10 @@ public abstract class TypeRegistry<TSnapshot> : IDisposable
     /// <exception cref="ArgumentOutOfRangeException">
     /// The retirement timeout is not positive.
     /// </exception>
-    protected TypeRegistry(TypeCatalog types, TimeSpan? retirementTimeout = null)
-    {
+    protected TypeRegistry(
+        TypeCatalog types,
+        TimeSpan? retirementTimeout = null
+    ) {
         ArgumentNullException.ThrowIfNull(types);
         m_retirementTimeout = retirementTimeout ?? TimeSpan.FromSeconds(30);
         if (m_retirementTimeout <= TimeSpan.Zero)
@@ -95,7 +98,10 @@ public abstract class TypeRegistry<TSnapshot> : IDisposable
             }
             catch (Exception activationFailure)
             {
-                try { transaction.Rollback(); }
+                try
+                {
+                    transaction.Rollback();
+                }
                 catch (Exception rollbackFailure)
                 {
                     throw new AggregateException("Registry refresh and rollback failed.", activationFailure, rollbackFailure);
@@ -237,8 +243,10 @@ public abstract class TypeRegistry<TSnapshot> : IDisposable
     /// Implementations may perform fallible lifecycle work here. They must keep enough local state for
     /// <see cref="OnActivationRolledBack"/> to reverse every completed step.
     /// </remarks>
-    protected virtual void OnActivating(TSnapshot? previous, TSnapshot candidate)
-    {
+    protected virtual void OnActivating(
+        TSnapshot? previous,
+        TSnapshot candidate
+    ) {
     }
 
     /// <summary>
@@ -254,8 +262,10 @@ public abstract class TypeRegistry<TSnapshot> : IDisposable
     /// Ordinary failures are reported through <see cref="OnCleanupFailed"/> and aggregated across registries.
     /// Unfinished retirement retains dependencies and stops further rollback until the host is restarted.
     /// </remarks>
-    protected virtual void OnActivationRolledBack(TSnapshot? previous, TSnapshot candidate)
-    {
+    protected virtual void OnActivationRolledBack(
+        TSnapshot? previous,
+        TSnapshot candidate
+    ) {
     }
 
     /// <summary>
@@ -271,8 +281,10 @@ public abstract class TypeRegistry<TSnapshot> : IDisposable
     /// This is a cleanup-only phase and must not perform fallible publication work. Exceptions are reported
     /// through <see cref="OnCleanupFailed"/> and cannot cause the completed activation to roll back.
     /// </remarks>
-    protected virtual void OnActivationCompleted(TSnapshot? previous, TSnapshot currentSnapshot)
-    {
+    protected virtual void OnActivationCompleted(
+        TSnapshot? previous,
+        TSnapshot currentSnapshot
+    ) {
     }
 
     /// <summary>
@@ -300,7 +312,10 @@ public abstract class TypeRegistry<TSnapshot> : IDisposable
     /// <remarks>
     /// This callback is diagnostic only. Exceptions raised by an override are ignored so cleanup can continue.
     /// </remarks>
-    protected virtual void OnCleanupFailed(string phase, Exception exception)
+    protected virtual void OnCleanupFailed(
+        string phase,
+        Exception exception
+    )
         => Trace.TraceError(
             "Type registry '{0}' failed during {1}: {2}",
             GetType().FullName,
@@ -342,8 +357,8 @@ public abstract class TypeRegistry<TSnapshot> : IDisposable
 
         try
         {
-            return OwnCandidateExtension((TExtension)(Activator.CreateInstance(type, nonPublic: true)
-                ?? throw new InvalidOperationException("Activator returned null.")));
+            TypeCacheSnapshot snapshot = m_candidateTypes ?? m_types.current;
+            return OwnCandidateExtension((TExtension)snapshot.CreateInstance(type));
         }
         catch (Exception exception)
         {
@@ -411,8 +426,10 @@ public abstract class TypeRegistry<TSnapshot> : IDisposable
     /// <exception cref="RetirementTimeoutException">
     /// The operation exceeded its deadline. Its closure stays owned and further retirement or refresh is blocked.
     /// </exception>
-    protected void RetireResource(string owner, Action retire)
-    {
+    protected void RetireResource(
+        string owner,
+        Action retire
+    ) {
         EnsureRetirementSafe();
         ArgumentException.ThrowIfNullOrWhiteSpace(owner);
         ArgumentNullException.ThrowIfNull(retire);
@@ -427,8 +444,10 @@ public abstract class TypeRegistry<TSnapshot> : IDisposable
         }
     }
 
-    private ITypeRegistryTransaction Prepare(TypeCacheSnapshot types, bool allowDisposed)
-    {
+    private ITypeRegistryTransaction Prepare(
+        TypeCacheSnapshot types,
+        bool allowDisposed
+    ) {
         EnsureRetirementSafe();
         lock (m_sync)
         {
@@ -445,6 +464,7 @@ public abstract class TypeRegistry<TSnapshot> : IDisposable
 
             m_activationInProgress = true;
             m_candidateResources = [];
+            m_candidateTypes = types;
             try
             {
                 TSnapshot candidate = Build(types);
@@ -458,8 +478,14 @@ public abstract class TypeRegistry<TSnapshot> : IDisposable
             catch (Exception failure)
             {
                 m_activationInProgress = false;
-                try { DisposeExtensions(m_candidateResources); }
-                catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null) { throw; }
+                try
+                {
+                    DisposeExtensions(m_candidateResources);
+                }
+                catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null)
+                {
+                    throw;
+                }
                 catch (Exception cleanup)
                 {
                     ReportCleanupFailure("candidate construction rollback", cleanup);
@@ -471,12 +497,15 @@ public abstract class TypeRegistry<TSnapshot> : IDisposable
             {
                 m_candidateResources.Clear();
                 m_candidateResources = null;
+                m_candidateTypes = null;
             }
         }
     }
 
-    private void RollbackActivation(TSnapshot? previous, TSnapshot candidate)
-    {
+    private void RollbackActivation(
+        TSnapshot? previous,
+        TSnapshot candidate
+    ) {
         try
         {
             OnActivationRolledBack(previous, candidate);
@@ -506,8 +535,10 @@ public abstract class TypeRegistry<TSnapshot> : IDisposable
         }
     }
 
-    private void CompleteActivation(TSnapshot? previous, TSnapshot candidate)
-    {
+    private void CompleteActivation(
+        TSnapshot? previous,
+        TSnapshot candidate
+    ) {
         try
         {
             OnActivationCompleted(previous, candidate);
@@ -524,8 +555,10 @@ public abstract class TypeRegistry<TSnapshot> : IDisposable
         }
     }
 
-    private void ReportCleanupFailure(string phase, Exception exception)
-    {
+    private void ReportCleanupFailure(
+        string phase,
+        Exception exception
+    ) {
         m_types.ReportGenerationFailure(exception);
         try
         {
@@ -547,8 +580,11 @@ public abstract class TypeRegistry<TSnapshot> : IDisposable
             m_types.EnsureRetirementSafe();
     }
 
-    private void RetainFailedRetirement(Exception failure, object owner, string phase)
-    {
+    private void RetainFailedRetirement(
+        Exception failure,
+        object owner,
+        string phase
+    ) {
         m_retirementFailure = failure;
         m_retainedRetirement = owner;
         ReportCleanupFailure(phase, failure);
@@ -565,8 +601,7 @@ public abstract class TypeRegistry<TSnapshot> : IDisposable
         /// <returns>
         /// The validated itype registry transaction that represents the completed operation.
         /// </returns>
-        public ITypeRegistryTransaction Prepare(TypeCacheSnapshot types)
-            => owner.Prepare(types, allowDisposed: true);
+        public ITypeRegistryTransaction Prepare(TypeCacheSnapshot types) => owner.Prepare(types, allowDisposed: true);
     }
 
     private sealed class RegistryTransaction(
@@ -574,7 +609,8 @@ public abstract class TypeRegistry<TSnapshot> : IDisposable
         TSnapshot candidate,
         long candidateVersion,
         TSnapshot? previous,
-        long previousVersion) : ITypeRegistryTransaction
+        long previousVersion
+    ) : ITypeRegistryTransaction
     {
         private bool m_activated;
         private bool m_activationStarted;
@@ -618,7 +654,10 @@ public abstract class TypeRegistry<TSnapshot> : IDisposable
             }
             catch (Exception activationFailure)
             {
-                try { Rollback(); }
+                try
+                {
+                    Rollback();
+                }
                 catch (Exception rollbackFailure)
                 {
                     var combined = new AggregateException("Registry activation and rollback failed.", activationFailure, rollbackFailure);
@@ -701,16 +740,24 @@ public abstract class TypeRegistry<TSnapshot> : IDisposable
             ThrowCleanupFailures(failures);
         }
 
-        private static void Attempt(Action action, List<Exception> failures)
-        {
-            try { action(); }
+        private static void Attempt(
+            Action action,
+            List<Exception> failures
+        ) {
+            try
+            {
+                action();
+            }
             catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null)
             {
                 if (failures.Count > 0)
                     throw new AggregateException("Registry retirement remains pending after earlier cleanup failures.", [.. failures, pendingRetirement]);
                 throw;
             }
-            catch (Exception exception) { failures.Add(exception); }
+            catch (Exception exception)
+            {
+                failures.Add(exception);
+            }
         }
 
         private static void ThrowCleanupFailures(List<Exception> failures)

@@ -12,8 +12,10 @@ internal sealed class ResidencyLease<TValue> : IDisposable where TValue : class
     private List<Exception>? m_completedFailures;
     private bool m_releasing;
 
-    internal ResidencyLease(TValue value, Action release)
-    {
+    internal ResidencyLease(
+        TValue value,
+        Action release
+    ) {
         m_value = value ?? throw new ArgumentNullException(nameof(value));
         m_release = release ?? throw new ArgumentNullException(nameof(release));
     }
@@ -45,7 +47,10 @@ internal sealed class ResidencyLease<TValue> : IDisposable where TValue : class
             m_releasing = true;
             release = m_release;
         }
-        try { release(); }
+        try
+        {
+            release();
+        }
         catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null)
         {
             m_completedFailures ??= [];

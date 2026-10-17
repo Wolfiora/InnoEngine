@@ -63,8 +63,10 @@ public struct Identity
         m_registryRef = null;
     }
 
-    internal void Bind(IdentityRegistry registry, int runtimeId)
-    {
+    internal void Bind(
+        IdentityRegistry registry,
+        int runtimeId
+    ) {
         if (persistentId == Guid.Empty)
             persistentId = Guid.NewGuid();
 

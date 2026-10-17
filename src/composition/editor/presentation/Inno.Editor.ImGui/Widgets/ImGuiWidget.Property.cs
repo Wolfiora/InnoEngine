@@ -27,9 +27,6 @@ public static partial class ImGuiWidget
     /// <param name="drawValue">
     /// Value control callback.
     /// </param>
-    /// <param name="labelWidth">
-    /// Optional fixed label column width.
-    /// </param>
     /// <param name="tooltip">
     /// Optional hover help displayed from the property label.
     /// </param>
@@ -43,19 +40,13 @@ public static partial class ImGuiWidget
         string id,
         string label,
         Action drawValue,
-        float labelWidth = -1f,
-        string? tooltip = null)
-    {
+        string? tooltip = null
+    ) {
         ArgumentNullException.ThrowIfNull(label);
         PropertyRow(
             id,
-            () =>
-            {
-                NativeImGui.TextUnformatted(label);
-                DrawItemTooltip(tooltip);
-            },
-            drawValue,
-            labelWidth);
+            () => PropertyLabel(label, tooltip),
+            drawValue);
     }
 
     /// <summary>
@@ -70,9 +61,6 @@ public static partial class ImGuiWidget
     /// <param name="drawValue">
     /// Value control callback.
     /// </param>
-    /// <param name="labelWidth">
-    /// Optional fixed label column width.
-    /// </param>
     /// <exception cref="ArgumentException">
     /// Thrown when <paramref name="id"/> is empty or whitespace.
     /// </exception>
@@ -82,9 +70,8 @@ public static partial class ImGuiWidget
     public static void PropertyRow(
         string id,
         Action drawLabel,
-        Action drawValue,
-        float labelWidth = -1f)
-    {
+        Action drawValue
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(id);
         ArgumentNullException.ThrowIfNull(drawLabel);
         ArgumentNullException.ThrowIfNull(drawValue);
@@ -99,19 +86,7 @@ public static partial class ImGuiWidget
 
         try
         {
-            float availableWidth = MathF.Max(1f, NativeImGui.GetContentRegionAvail().X);
-            float desiredLabelWidth = labelWidth > 0f
-                ? labelWidth
-                : Math.Clamp(availableWidth * style.propertyLabelRatio,
-                    style.propertyLabelMinimumWidth,
-                    style.propertyLabelMaximumWidth);
-            float tablePadding = NativeImGui.GetStyle().CellPadding.X * 2f;
-            float maximumLabelWidth = MathF.Max(
-                1f,
-                availableWidth - style.axisValueMinimumWidth - tablePadding);
-            float resolvedLabelWidth = MathF.Min(desiredLabelWidth, maximumLabelWidth);
-            NativeImGui.TableSetupColumn("##label", ImGuiTableColumnFlags.WidthFixed, resolvedLabelWidth);
-            NativeImGui.TableSetupColumn("##value", ImGuiTableColumnFlags.WidthStretch, 1f);
+            SetupPropertyColumns();
             NativeImGui.TableNextRow();
             NativeImGui.TableSetColumnIndex(0);
             NativeImGui.AlignTextToFramePadding();
@@ -124,6 +99,38 @@ public static partial class ImGuiWidget
         {
             NativeImGui.EndTable();
         }
+    }
+
+    /// <summary>
+    /// Configures the label and input columns of an active table with a shared two-to-three ratio.
+    /// A following fixed-width action column may be added by the caller.
+    /// </summary>
+    public static void SetupPropertyColumns()
+    {
+        NativeImGui.TableSetupColumn("##label", ImGuiTableColumnFlags.WidthStretch, style.propertyLabelRatio);
+        NativeImGui.TableSetupColumn("##value", ImGuiTableColumnFlags.WidthStretch, 1f - style.propertyLabelRatio);
+    }
+
+    /// <summary>
+    /// Draws a label within its current table cell, wrapping when the column is narrow.
+    /// </summary>
+    /// <param name="label">
+    /// Visible label text.
+    /// </param>
+    /// <param name="tooltip">
+    /// Optional explanation shown while the label is hovered.
+    /// </param>
+    /// <exception cref="ArgumentNullException">
+    /// Thrown when <paramref name="label"/> is null.
+    /// </exception>
+    public static void PropertyLabel(
+        string label,
+        string? tooltip = null
+    ) {
+        ArgumentNullException.ThrowIfNull(label);
+        NativeImGui.AlignTextToFramePadding();
+        WrappedText(label);
+        DrawItemTooltip(tooltip);
     }
 
     /// <summary>
@@ -145,8 +152,8 @@ public static partial class ImGuiWidget
     public static void MetadataValue(
         string metadata,
         Action drawValue,
-        string? tooltip = null)
-    {
+        string? tooltip = null
+    ) {
         ArgumentNullException.ThrowIfNull(metadata);
         ArgumentNullException.ThrowIfNull(drawValue);
         NativeImGui.AlignTextToFramePadding();
@@ -178,8 +185,8 @@ public static partial class ImGuiWidget
     public static void MetadataValue(
         string metadata,
         string value,
-        string? tooltip = null)
-    {
+        string? tooltip = null
+    ) {
         ArgumentNullException.ThrowIfNull(metadata);
         ArgumentNullException.ThrowIfNull(value);
         NativeImGui.PushStyleColor(ImGuiCol.Text, EditorPalette.textDisabled);
@@ -215,8 +222,13 @@ public static partial class ImGuiWidget
     /// <returns>
     /// <see langword="true"/> when the value changed.
     /// </returns>
-    public static bool AxisDragFloat(string id, string axis, ref float value, float width, float speed = 0.1f)
-    {
+    public static bool AxisDragFloat(
+        string id,
+        string axis,
+        ref float value,
+        float width,
+        float speed = 0.1f
+    ) {
         DrawAxisPrefix(id, axis, width);
         return CompactDragFloat($"##axis_float_{id}_{axis}", ref value, speed);
     }
@@ -247,8 +259,8 @@ public static partial class ImGuiWidget
         ref float value,
         float speed = 0.1f,
         float? minimum = null,
-        float? maximum = null)
-    {
+        float? maximum = null
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(label);
         ValidateFloatBounds(minimum, maximum);
         bool bounded = minimum.HasValue;
@@ -289,8 +301,8 @@ public static partial class ImGuiWidget
         string label,
         ref float value,
         float minimum,
-        float maximum)
-    {
+        float maximum
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(label);
         ValidateFloatBounds(minimum, maximum);
         ImGuiSliderFlags flags = ImGuiSliderFlags.NoRoundToFormat | ImGuiSliderFlags.AlwaysClamp;
@@ -336,8 +348,13 @@ public static partial class ImGuiWidget
     /// <returns>
     /// <see langword="true"/> when the value changed.
     /// </returns>
-    public static bool AxisDragInt(string id, string axis, ref int value, float width, float speed = 1f)
-    {
+    public static bool AxisDragInt(
+        string id,
+        string axis,
+        ref int value,
+        float width,
+        float speed = 1f
+    ) {
         DrawAxisPrefix(id, axis, width);
         return NativeImGui.DragInt($"##axis_int_{id}_{axis}", ref value, speed);
     }
@@ -351,8 +368,10 @@ public static partial class ImGuiWidget
     /// <param name="draw">
     /// Drawing callback.
     /// </param>
-    public static void Disabled(bool disabled, Action draw)
-    {
+    public static void Disabled(
+        bool disabled,
+        Action draw
+    ) {
         ArgumentNullException.ThrowIfNull(draw);
         NativeImGui.BeginDisabled(disabled);
         try
@@ -377,8 +396,11 @@ public static partial class ImGuiWidget
     /// <param name="y">
     /// Marker Y coordinate.
     /// </param>
-    public static void InsertionLine(float fromX, float toX, float y)
-    {
+    public static void InsertionLine(
+        float fromX,
+        float toX,
+        float y
+    ) {
         uint color = NativeImGui.GetColorU32(ImGuiCol.DragDropTarget);
         NativeImGui.GetForegroundDrawList().AddLine(
             new Vector2(fromX, y),
@@ -397,8 +419,10 @@ public static partial class ImGuiWidget
     /// <param name="max">
     /// Maximum target coordinate.
     /// </param>
-    public static void DropTargetHighlight(Vector2 min, Vector2 max)
-    {
+    public static void DropTargetHighlight(
+        Vector2 min,
+        Vector2 max
+    ) {
         NativeImGui.GetForegroundDrawList().AddRect(
             min,
             max,
@@ -452,8 +476,11 @@ public static partial class ImGuiWidget
         return builder.ToString();
     }
 
-    private static void DrawAxisPrefix(string id, string axis, float width)
-    {
+    private static void DrawAxisPrefix(
+        string id,
+        string axis,
+        float width
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(id);
         ArgumentException.ThrowIfNullOrWhiteSpace(axis);
 
@@ -492,11 +519,14 @@ public static partial class ImGuiWidget
         Vector2 maximum = minimum + new Vector2(
             MathF.Max(1f, NativeImGui.CalcItemWidth()),
             NativeImGui.GetFrameHeight());
-        return NativeImGui.IsMouseHoveringRect(minimum, maximum, true);
+        return NativeImGui.IsWindowHovered(ImGuiHoveredFlags.RootAndChildWindows)
+            && NativeImGui.IsMouseHoveringRect(minimum, maximum, true);
     }
 
-    private static void ValidateFloatBounds(float? minimum, float? maximum)
-    {
+    private static void ValidateFloatBounds(
+        float? minimum,
+        float? maximum
+    ) {
         if (minimum.HasValue != maximum.HasValue)
         {
             throw new ArgumentException("Floating-point bounds must either both be supplied or both be omitted.");

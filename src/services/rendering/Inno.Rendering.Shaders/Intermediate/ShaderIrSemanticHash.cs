@@ -45,19 +45,28 @@ internal static class ShaderIrSemanticHash
             {
                 writer.Write((int)instruction.operation);
                 writer.Write(instruction.inputs.Count);
-                foreach (ShaderIrValue input in instruction.inputs) writer.Write(input.index);
+                foreach (ShaderIrValue input in instruction.inputs)
+                    writer.Write(input.index);
                 writer.Write(instruction.outputs.Count);
-                foreach (ShaderIrValue output in instruction.outputs) { writer.Write(output.index); WriteType(output.type); }
+                foreach (ShaderIrValue output in instruction.outputs)
+                {
+                    writer.Write(output.index);
+                    WriteType(output.type);
+                }
                 writer.Write(instruction.inputName ?? string.Empty);
                 writer.Write(instruction.constantBits);
                 writer.Write(instruction.memberIndex);
                 writer.Write(instruction.source?.contentHash ?? string.Empty);
                 writer.Write(instruction.regions.Count);
-                foreach (ShaderIrBlock region in instruction.regions) WriteBlock(region);
+                foreach (ShaderIrBlock region in instruction.regions)
+                    WriteBlock(region);
             }
             writer.Write(block.outputs.Count);
             foreach (var output in block.outputs.OrderBy(static value => value.Key, StringComparer.Ordinal))
-            { writer.Write(output.Key); writer.Write(output.Value.index); }
+            {
+                writer.Write(output.Key);
+                writer.Write(output.Value.index);
+            }
         }
 
         void WriteType(ShaderSourceType type)
@@ -65,9 +74,14 @@ internal static class ShaderIrSemanticHash
             writer.Write(type.id);
             writer.Write(type.elementCount);
             writer.Write(type.elementType is not null);
-            if (type.elementType is not null) WriteType(type.elementType);
+            if (type.elementType is not null)
+                WriteType(type.elementType);
             writer.Write(type.fields.Count);
-            foreach (ShaderSourceField field in type.fields) { writer.Write(field.name); WriteType(field.type); }
+            foreach (ShaderSourceField field in type.fields)
+            {
+                writer.Write(field.name);
+                WriteType(field.type);
+            }
             writer.Write(type.storage is not null);
             if (type.storage is ShaderStorageType storage)
             {

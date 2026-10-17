@@ -1,3 +1,8 @@
+using Inno.Content.Testing;
+using Inno.Content;
+using Inno.Core.IO;
+using Inno.Adapter.Serialization.DotNet;
+using Inno.Adapter.Modules.DotNet;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -73,16 +78,26 @@ public sealed class SettingsReferenceTests
         File.WriteAllBytes(document, fixture.settings.CaptureDocument());
         using SerializationGeneration serialization = fixture.serialization.CaptureGeneration();
         var identities = new IdentityAllocator();
-        using var database = new AssetDatabase(content, serialization, fixture.types.current, identities);
+        using ContentTestStore contentStore = ContentTestStore.FromDirectory(content);
+        using var database = new AssetDatabase(contentStore, serialization, fixture.types.current, identities);
         Assert.Null(identities.Get<AssetObject>(clip.identity.persistentId));
 
-        using var settings = new ProjectSettingsStore(document, fixture.types, fixture.serialization,
+        using ContentReadLease settingsLease = contentStore.Acquire(new Inno.Content.ContentKey("Settings.Project.inno"));
+        using Stream settingsInput = settingsLease.OpenRead();
+        byte[] settingsBytes = new byte[checked((int)settingsLease.entry.length)];
+        settingsInput.ReadExactly(settingsBytes);
+        using var settings = new ProjectSettingsStore(new ReadOnlyByteDocumentStore("Settings.Project.inno", settingsBytes), fixture.types, fixture.serialization,
             new ProjectId("tests.deployed.settings"), AssetSerializationContext.Create(database));
 
         TextAsset runtime = Assert.IsType<TextAsset>(settings.Get<ClipSettingsBase>(id).clip);
         Assert.Equal("deployed", runtime.content);
         Assert.Same(runtime, identities.Get<AssetObject>(clip.identity.persistentId));
         Assert.NotSame(clip, runtime);
+        byte[] previous = settings.CaptureDocument();
+        ClipSettingsBase changed = composed ? new ComposedClipSettings() : new ClipSettings();
+        changed.clip = null;
+        Assert.Throws<NotSupportedException>(() => settings.SetProjectOverride(id, changed, []));
+        Assert.Equal(previous, settings.CaptureDocument());
     }
 
     [Fact]
@@ -152,7 +167,7 @@ public sealed class SettingsReferenceTests
     {
         using var fixture = new Fixture();
         Assert.Throws<ArgumentNullException>(() => new ProjectSettingsStore(
-            Path.Combine(fixture.root, "Rejected.inno"), fixture.types, fixture.serialization,
+            new FileByteDocumentStore(Path.GetFullPath(Path.Combine(fixture.root, "Rejected.inno"))), fixture.types, fixture.serialization,
             new ProjectId("tests.rejected"), null!));
     }
 
@@ -170,13 +185,13 @@ public sealed class SettingsReferenceTests
             assetRoot = Path.Combine(root, "Assets");
             Directory.CreateDirectory(assetRoot);
             m_identityScope = m_identities.EnterScope();
-            m_modules = new ModuleHost(new ModuleHostOptions { cacheDirectory = Path.Combine(root, "Modules") });
-            types = new TypeCatalog(m_modules);
-            serialization = new SerializationRegistry(types);
+            m_modules = new ModuleHost(new ModuleHostOptions { catalogSource = new DotNetAssemblyCatalogSource(typeof(SettingsReferenceTests).Assembly)});
+            types = new TypeCatalog(m_modules, new ReflectionTypeCatalogSource());
+            serialization = new SerializationRegistry(types, new ReflectionSerializationMetadataSource());
             assets = new AssetPipeline(m_modules, types, serialization, m_identities, m_diagnostics, m_logs,
                 AssetPipelineOptions.Create(assetRoot, Path.Combine(root, "Library")) with { enableFileSystemWatcher = false });
             context = AssetSerializationContext.Create(assets);
-            settings = new ProjectSettingsStore(Path.Combine(root, "Settings.Project.inno"), types,
+            settings = new ProjectSettingsStore(new FileByteDocumentStore(Path.GetFullPath(Path.Combine(root, "Settings.Project.inno"))), types,
                 serialization, new ProjectId("tests.settings.references"), context);
         }
 

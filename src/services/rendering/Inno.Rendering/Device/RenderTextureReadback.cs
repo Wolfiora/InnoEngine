@@ -7,8 +7,10 @@ namespace Inno.Rendering;
 /// </summary>
 public readonly record struct RenderTextureReadbackHandle
 {
-    internal RenderTextureReadbackHandle(ulong value, uint deviceGeneration)
-    {
+    internal RenderTextureReadbackHandle(
+        ulong value,
+        uint deviceGeneration
+    ) {
         this.value = value;
         this.deviceGeneration = deviceGeneration;
     }
@@ -48,8 +50,8 @@ public sealed class RenderTextureReadbackResult
         RenderTextureDescriptor descriptor,
         int mipLevel,
         int rowPitch,
-        ReadOnlySpan<byte> data)
-    {
+        ReadOnlySpan<byte> data
+    ) {
         ArgumentNullException.ThrowIfNull(descriptor);
         ArgumentOutOfRangeException.ThrowIfNegative(mipLevel);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(rowPitch);

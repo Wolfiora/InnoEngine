@@ -20,8 +20,8 @@ internal sealed class SceneGraphReferenceMap
         GameScene scene,
         IEnumerable<EngineObject>? allowedObjects = null,
         IReadOnlyDictionary<EngineObject, Guid>? sourceIds = null,
-        GameObject? captureRoot = null)
-    {
+        GameObject? captureRoot = null
+    ) {
         m_scene = scene ?? throw new ArgumentNullException(nameof(scene));
         m_captureRoot = captureRoot;
         if (allowedObjects is null)
@@ -38,8 +38,7 @@ internal sealed class SceneGraphReferenceMap
         }
     }
 
-    internal static SceneGraphReferenceMap current
-        => C_CURRENT.current;
+    internal static SceneGraphReferenceMap current => C_CURRENT.current;
 
     internal static bool TryGetCurrent(out SceneGraphReferenceMap? references)
     {
@@ -56,8 +55,10 @@ internal sealed class SceneGraphReferenceMap
         return C_CURRENT.Suspend();
     }
 
-    internal EngineReferenceToken Capture(EngineObject engineObject, string path)
-    {
+    internal EngineReferenceToken Capture(
+        EngineObject engineObject,
+        string path
+    ) {
         ArgumentNullException.ThrowIfNull(engineObject);
         if (engineObject.isDestroyed ||
             !m_allowedObjects.Contains(engineObject) ||
@@ -93,8 +94,11 @@ internal sealed class SceneGraphReferenceMap
         return new EngineReferenceToken(kind, sourceId);
     }
 
-    internal EngineObject Resolve(EngineReferenceToken token, Type expectedType, string path)
-    {
+    internal EngineObject Resolve(
+        EngineReferenceToken token,
+        Type expectedType,
+        string path
+    ) {
         if (!m_objectBySourceId.TryGetValue(token.sourceId, out EngineObject? engineObject))
         {
             throw new InvalidOperationException(
@@ -109,8 +113,10 @@ internal sealed class SceneGraphReferenceMap
         return engineObject;
     }
 
-    internal void Register(Guid sourceId, EngineObject engineObject)
-    {
+    internal void Register(
+        Guid sourceId,
+        EngineObject engineObject
+    ) {
         if (!m_objectBySourceId.TryAdd(sourceId, engineObject) &&
             !ReferenceEquals(m_objectBySourceId[sourceId], engineObject))
         {

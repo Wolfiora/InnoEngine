@@ -106,8 +106,14 @@ public abstract class EditorModule : IDisposable
         if (!m_started)
             return;
         m_active = false;
-        try { OnStop(context); }
-        catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null) { throw; }
+        try
+        {
+            OnStop(context);
+        }
+        catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null)
+        {
+            throw;
+        }
         catch
         {
             m_started = false;
@@ -196,13 +202,31 @@ public abstract class EditorModule : IDisposable
             return;
         if (m_context is not null)
         {
-            try { Stop(m_context); }
-            catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null) { throw; }
-            catch (Exception exception) { m_retirementFailures.Add(exception); }
+            try
+            {
+                Stop(m_context);
+            }
+            catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null)
+            {
+                throw;
+            }
+            catch (Exception exception)
+            {
+                m_retirementFailures.Add(exception);
+            }
         }
-        try { OnDispose(); }
-        catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null) { throw; }
-        catch (Exception exception) { m_retirementFailures.Add(exception); }
+        try
+        {
+            OnDispose();
+        }
+        catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null)
+        {
+            throw;
+        }
+        catch (Exception exception)
+        {
+            m_retirementFailures.Add(exception);
+        }
         m_disposed = true;
         GC.SuppressFinalize(this);
         if (m_retirementFailures.Count > 0)

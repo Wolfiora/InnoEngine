@@ -38,14 +38,11 @@ internal sealed class ConsolePanelContent
         };
     }
 
-    internal Vector4 GetCollapsedBgColor()
-        => EditorPalette.logCollapsedCard;
+    internal Vector4 GetCollapsedBgColor() => EditorPalette.logCollapsedCard;
 
-    internal Vector4 GetCollapsedBorderColor()
-        => EditorPalette.logCollapsedBorder;
+    internal Vector4 GetCollapsedBorderColor() => EditorPalette.logCollapsedBorder;
 
-    internal Vector4 GetExpandedBgColor(Vector4 levelColor)
-        => EditorPalette.GetLogExpandedCard(levelColor);
+    internal Vector4 GetExpandedBgColor(Vector4 levelColor) => EditorPalette.GetLogExpandedCard(levelColor);
 
     internal string GetFirstLine(string text)
     {
@@ -59,8 +56,10 @@ internal sealed class ConsolePanelContent
         return text;
     }
 
-    internal string FitTextWithEllipsis(string text, float maxWidth)
-    {
+    internal string FitTextWithEllipsis(
+        string text,
+        float maxWidth
+    ) {
         const string c_ellipsis = "...";
         if (string.IsNullOrEmpty(text))
             return string.Empty;

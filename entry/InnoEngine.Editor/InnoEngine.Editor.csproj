@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="../DevelopmentHost.props" />
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <AssemblyName>InnoEngine.Editor</AssemblyName>
+    <RootNamespace>InnoEngine.Editor</RootNamespace>
+    <!-- The host product is built through this reference, rather than as a second solution root. -->
+    <OnlyReferenceAndBuildProjectsEnabledInSolutionConfiguration>false</OnlyReferenceAndBuildProjectsEnabledInSolutionConfiguration>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference
+      Include="../../platforms/WindowsX64/editor/Inno.Editor.WindowsX64/Inno.Editor.WindowsX64.csproj"
+      Condition="'$(InnoDevelopmentTarget)' == 'windows-x64'"
+      PrivateAssets="compile" />
+    <ProjectReference
+      Include="../../platforms/MacOSArm64/editor/Inno.Editor.MacOSArm64/Inno.Editor.MacOSArm64.csproj"
+      Condition="'$(InnoDevelopmentTarget)' == 'macos-arm64'"
+      PrivateAssets="compile" />
+    <ProjectReference Include="../../src/foundation/core/Inno.Core.IO/Inno.Core.IO.csproj" PrivateAssets="compile" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AssemblyMetadata
+      Include="Inno.Editor.ProductLock"
+      Value="$([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)/../../artifacts/products/editor/$(InnoDevelopmentTarget)/$(Configuration)/product.lock'))" />
+  </ItemGroup>
+</Project>

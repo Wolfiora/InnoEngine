@@ -22,8 +22,10 @@ internal sealed class ComponentEditorTarget
     /// <exception cref="ArgumentNullException">
     /// Thrown when either argument is <see langword="null"/>.
     /// </exception>
-    internal ComponentEditorTarget(GameObject gameObject, GameComponent component)
-    {
+    internal ComponentEditorTarget(
+        GameObject gameObject,
+        GameComponent component
+    ) {
         this.gameObject = gameObject ?? throw new ArgumentNullException(nameof(gameObject));
         this.component = component ?? throw new ArgumentNullException(nameof(component));
     }

@@ -62,6 +62,5 @@ public sealed class RuntimeContentCatalog : ISerializable
             throw new InvalidDataException("Runtime content catalog contains invalid deployment counts.");
     }
 
-    private static bool IsSha256(string value)
-        => value is { Length: 64 } && value.All(static character => Uri.IsHexDigit(character));
+    private static bool IsSha256(string value) => value is { Length: 64 } && value.All(static character => Uri.IsHexDigit(character));
 }

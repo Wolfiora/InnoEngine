@@ -59,3 +59,17 @@ static bool SaveScene(GameScene scene, SerializationRegistry serialization, Asse
 
 局部元素恢复及 Missing Undo 的完整公开 API 见 [Inno.Scene](Inno.Scene.md)，
 Editor 使用方式见 [Inno.Editor.Scene](../editor/Inno.Editor.Scene.md)。
+
+## 当前源码公开 API 清单
+
+只列当前源码的 public/protected 表面；内部实现不作为稳定 API。参数、返回、失败和 owner 以英文 XML 为准。
+
+本项目没有公开入口，通过组合或扩展发现使用内部实现。
+
+## 项目依赖
+
+- [Inno.Assets.Pipeline](../assets/Inno.Assets.Pipeline.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Assets](../assets/Inno.Assets.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Core.Serialization](../core/Inno.Core.Serialization.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Scene](Inno.Scene.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Extensibility.Catalogs](../extensibility/Inno.Extensibility.Catalogs.md)：公开引用边界由实际签名核对。

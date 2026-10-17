@@ -6,10 +6,10 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <WarningsAsErrors>$(WarningsAsErrors);CS1572;CS1573;CS1591</WarningsAsErrors>
   </PropertyGroup>
+
   <ItemGroup>
-    <ProjectReference Include="..\Inno.Input\Inno.Input.csproj" />
-  </ItemGroup>
-  <ItemGroup>
+    <ProjectReference Include="../Inno.Input/Inno.Input.csproj" />
     <ProjectReference Include="../../../runtime/contracts/Inno.Runtime.Contracts/Inno.Runtime.Contracts.csproj" />
+    <ProjectReference Include="../../../foundation/extensibility/Inno.Extensibility.Catalogs/Inno.Extensibility.Catalogs.csproj" />
   </ItemGroup>
 </Project>

@@ -30,8 +30,8 @@ public sealed class EditorMenuAttribute : Attribute
         string area,
         string path,
         int order = 0,
-        bool separatorBefore = false)
-    {
+        bool separatorBefore = false
+    ) {
         if (string.IsNullOrWhiteSpace(area))
             throw new ArgumentException("An editor menu area is required.", nameof(area));
         this.area = area;

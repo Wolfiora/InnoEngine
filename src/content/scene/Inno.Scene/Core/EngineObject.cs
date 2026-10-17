@@ -29,8 +29,10 @@ public abstract class EngineObject : IdentityObject
     /// <returns>
     /// <see langword="true"/> when both operands refer to the same live object or both behave as null.
     /// </returns>
-    public static bool operator ==(EngineObject? left, EngineObject? right)
-    {
+    public static bool operator ==(
+        EngineObject? left,
+        EngineObject? right
+    ) {
         if (ReferenceEquals(left, right))
             return true;
         if (ReferenceEquals(left, null))
@@ -52,7 +54,10 @@ public abstract class EngineObject : IdentityObject
     /// <returns>
     /// <see langword="true"/> when the operands do not represent the same object.
     /// </returns>
-    public static bool operator !=(EngineObject? left, EngineObject? right) => !(left == right);
+    public static bool operator !=(
+        EngineObject? left,
+        EngineObject? right
+    ) => !(left == right);
 
     /// <summary>
     /// Compares this instance to another object using reference identity.
@@ -97,11 +102,25 @@ public abstract class EngineObject : IdentityObject
 
     internal Guid ReleaseIdentityForReplacement()
     {
-        if (m_isDestroyed)
-            throw new InvalidOperationException($"Destroyed object '{GetType().FullName}' cannot be replaced.");
+        ValidateIdentityForReplacement();
         Guid persistentId = identity.persistentId;
         if (!IdentityAllocator.current.Unregister(this))
             throw new InvalidOperationException($"Identity release failed for '{GetType().FullName}'.");
         return persistentId;
+    }
+
+    internal void ValidateIdentityForReplacement()
+    {
+        if (m_isDestroyed)
+            throw new InvalidOperationException($"Destroyed object '{GetType().FullName}' cannot be replaced.");
+        RuntimeIdentity? owner = identity.runtimeIdentity;
+        IdentityAllocator allocator = IdentityAllocator.current;
+        if (owner is not RuntimeIdentity registered || registered.domainId != allocator.domainId
+            || !ReferenceEquals(allocator.Get<EngineObject>(registered), this))
+        {
+            throw new InvalidOperationException(
+                $"Identity replacement for '{GetType().FullName}' requires its owning domain "
+                + $"'{owner?.domainId.ToString() ?? "detached"}', but the current domain is '{allocator.domainId}'.");
+        }
     }
 }

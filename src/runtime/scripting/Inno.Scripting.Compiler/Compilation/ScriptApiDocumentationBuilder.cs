@@ -14,10 +14,11 @@ internal static class ScriptApiDocumentationBuilder
         string assemblyName,
         IReadOnlyList<ScriptApiTypeExport> exports,
         IReadOnlyDictionary<string, string> namespaceMappings,
-        IReadOnlyList<ScriptApiTypeMapping> typeMappings)
-    {
+        IReadOnlyList<ScriptApiTypeMapping> typeMappings
+    ) {
         var outputMembers = new List<XElement>();
         var emittedNames = new HashSet<string>(StringComparer.Ordinal);
+        (string source, string target)[] replacements = CreateIdentityReplacements(namespaceMappings, typeMappings);
         foreach (IGrouping<Assembly, ScriptApiTypeExport> group in exports.GroupBy(
                      static export => export.type.Assembly))
         {
@@ -36,7 +37,7 @@ internal static class ScriptApiDocumentationBuilder
                 foreach (XElement member in members.Where(member => BelongsToType(member, typeName)))
                 {
                     var copy = new XElement(member);
-                    RewriteDocumentationIdentities(copy, namespaceMappings, typeMappings);
+                    RewriteDocumentationIdentities(copy, replacements);
                     string? name = copy.Attribute("name")?.Value;
                     if (name is not null && emittedNames.Add(name))
                         outputMembers.Add(copy);
@@ -84,19 +85,22 @@ internal static class ScriptApiDocumentationBuilder
         File.Move(temporaryPath, outputPath, overwrite: true);
     }
 
-    private static bool BelongsToType(XElement member, string typeName)
-    {
+    private static bool BelongsToType(
+        XElement member,
+        string typeName
+    ) {
         string? name = member.Attribute("name")?.Value;
         if (string.IsNullOrEmpty(name) || name.Length < 3 || name[1] != ':')
             return false;
-        string declarationName = name[2..];
+        ReadOnlySpan<char> declarationName = name.AsSpan(2);
         return name[0] == 'T'
-            ? string.Equals(declarationName, typeName, StringComparison.Ordinal)
-            : declarationName.StartsWith(typeName + ".", StringComparison.Ordinal);
+            ? declarationName.Equals(typeName, StringComparison.Ordinal)
+            : declarationName.Length > typeName.Length &&
+              declarationName[typeName.Length] == '.' &&
+              declarationName.StartsWith(typeName, StringComparison.Ordinal);
     }
 
-    private static string GetDocumentationTypeName(Type type)
-        => (type.FullName ?? type.Name).Replace('+', '.');
+    private static string GetDocumentationTypeName(Type type) => (type.FullName ?? type.Name).Replace('+', '.');
 
     private static string GetRuntimeTypeName(Type type)
     {
@@ -108,8 +112,8 @@ internal static class ScriptApiDocumentationBuilder
         ICollection<XElement> outputMembers,
         ISet<string> emittedNames,
         string memberName,
-        string summary)
-    {
+        string summary
+    ) {
         if (!emittedNames.Add(memberName))
             return;
         outputMembers.Add(new XElement(
@@ -120,47 +124,33 @@ internal static class ScriptApiDocumentationBuilder
 
     private static void RewriteDocumentationIdentities(
         XElement member,
-        IReadOnlyDictionary<string, string> namespaceMappings,
-        IReadOnlyList<ScriptApiTypeMapping> typeMappings)
-    {
+        IReadOnlyList<(string source, string target)> replacements
+    ) {
         foreach (XAttribute attribute in member.DescendantsAndSelf().Attributes())
         {
             if (attribute.Name.LocalName is not ("name" or "cref"))
                 continue;
-            attribute.Value = RewriteTypeNames(
-                RewriteNamespace(attribute.Value, namespaceMappings),
-                typeMappings);
+            string value = attribute.Value;
+            foreach ((string source, string target) in replacements)
+                value = value.Replace(source, target, StringComparison.Ordinal);
+            attribute.Value = value;
         }
     }
 
-    private static string RewriteNamespace(
-        string value,
-        IReadOnlyDictionary<string, string> namespaceMappings)
-    {
-        foreach ((string implementationNamespace, string apiNamespace) in namespaceMappings
-                     .OrderByDescending(static pair => pair.Key.Length))
-        {
-            value = value.Replace(
-                implementationNamespace,
-                apiNamespace,
-                StringComparison.Ordinal);
-        }
-        return value;
-    }
-
-    private static string RewriteTypeNames(
-        string value,
-        IReadOnlyList<ScriptApiTypeMapping> typeMappings)
-    {
-        foreach (ScriptApiTypeMapping mapping in typeMappings
-                     .OrderByDescending(static mapping =>
-                         mapping.apiNamespace.Length + mapping.implementationName.Length))
-        {
-            value = value.Replace(
-                mapping.apiNamespace + "." + mapping.implementationName,
-                mapping.apiNamespace + "." + mapping.apiName,
-                StringComparison.Ordinal);
-        }
-        return value;
+    private static (string source, string target)[] CreateIdentityReplacements(
+        IReadOnlyDictionary<string, string> namespaceMappings,
+        IReadOnlyList<ScriptApiTypeMapping> typeMappings
+    ) {
+        // Freeze the ordered rewrite once per document; unchanged names need no replacement.
+        return namespaceMappings
+            .OrderByDescending(static pair => pair.Key.Length)
+            .Select(static pair => (source: pair.Key, target: pair.Value))
+            .Concat(typeMappings
+                .OrderByDescending(static mapping => mapping.apiNamespace.Length + mapping.implementationName.Length)
+                .Select(static mapping => (
+                    source: mapping.apiNamespace + "." + mapping.implementationName,
+                    target: mapping.apiNamespace + "." + mapping.apiName)))
+            .Where(static replacement => !string.Equals(replacement.source, replacement.target, StringComparison.Ordinal))
+            .ToArray();
     }
 }

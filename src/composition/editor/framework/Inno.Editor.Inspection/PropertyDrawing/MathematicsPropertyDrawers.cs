@@ -20,13 +20,21 @@ internal static class ComponentFieldDrawer
             (NativeImGui.GetContentRegionAvail().X - spacing * (count - 1)) / count);
     }
 
-    internal static bool Float(string path, string label, ref float value, float width)
-    {
+    internal static bool Float(
+        string path,
+        string label,
+        ref float value,
+        float width
+    ) {
         return EditorWidget.AxisDragFloat(path, label, ref value, width);
     }
 
-    internal static bool Int(string path, string label, ref int value, float width)
-    {
+    internal static bool Int(
+        string path,
+        string label,
+        ref int value,
+        float width
+    ) {
         return EditorWidget.AxisDragInt(path, label, ref value, width);
     }
 

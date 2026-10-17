@@ -18,8 +18,10 @@ internal sealed class AssetCatalogStore
     private string m_journalPath;
     private long m_revision;
 
-    internal AssetCatalogStore(string libraryRoot, SerializationRegistry serialization)
-    {
+    internal AssetCatalogStore(
+        string libraryRoot,
+        SerializationRegistry serialization
+    ) {
         ArgumentNullException.ThrowIfNull(serialization);
         m_serialization = serialization;
         m_databaseRoot = string.Empty;
@@ -28,8 +30,10 @@ internal sealed class AssetCatalogStore
         Bind(libraryRoot);
     }
 
-    internal AssetCatalogStore(string libraryRoot, SerializationGeneration serialization)
-    {
+    internal AssetCatalogStore(
+        string libraryRoot,
+        SerializationGeneration serialization
+    ) {
         ArgumentNullException.ThrowIfNull(serialization);
         m_serializationGeneration = serialization;
         m_databaseRoot = string.Empty;
@@ -145,8 +149,7 @@ internal sealed class AssetCatalogStore
         return IOFile.Exists(m_snapshotPath) ? m_snapshotPath : null;
     }
 
-    private static string GetDatabaseRoot(string libraryRoot)
-        => Path.Combine(Path.GetFullPath(libraryRoot), "AssetDatabase");
+    private static string GetDatabaseRoot(string libraryRoot) => Path.Combine(Path.GetFullPath(libraryRoot), "AssetDatabase");
 
     private byte[][] SerializeEntries(AssetMeta[] entries)
     {

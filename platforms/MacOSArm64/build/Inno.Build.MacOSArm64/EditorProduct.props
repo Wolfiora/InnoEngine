@@ -1,0 +1,8 @@
+<Project>
+  <Import Project="ProductBuild.props" />
+
+  <PropertyGroup>
+    <InnoImGuiShaderTarget>$(InnoBgfxShaderTarget)</InnoImGuiShaderTarget>
+    <InnoImGuiShaderApis>$(InnoBgfxShaderApis)</InnoImGuiShaderApis>
+  </PropertyGroup>
+</Project>

@@ -55,8 +55,10 @@ public sealed class ExecutionSlot<TValue>
     /// <exception cref="ArgumentNullException">
     /// The value is null.
     /// </exception>
-    public IDisposable Enter(TValue value, bool threadAffine = false)
-    {
+    public IDisposable Enter(
+        TValue value,
+        bool threadAffine = false
+    ) {
         ArgumentNullException.ThrowIfNull(value);
         var binding = new Binding(this, value, m_current.Value, threadAffine);
         m_current.Value = binding;
@@ -104,8 +106,13 @@ public sealed class ExecutionSlot<TValue>
         private TValue m_value;
         private bool m_active = true;
 
-        internal Binding(ExecutionSlot<TValue> slot, TValue value, Binding? parent, bool threadAffine, bool assigned = true)
-        {
+        internal Binding(
+            ExecutionSlot<TValue> slot,
+            TValue value,
+            Binding? parent,
+            bool threadAffine,
+            bool assigned = true
+        ) {
             m_slot = slot;
             m_value = value;
             m_parent = parent;

@@ -6,9 +6,14 @@
     <InnoAssemblyDomain>InnoPlugin</InnoAssemblyDomain>
     <InnoAssemblyScope>Editor</InnoAssemblyScope>
   </PropertyGroup>
+
   <ItemGroup>
     <ProjectReference Include="../../../../src/content/assets/Inno.Assets.Pipeline/Inno.Assets.Pipeline.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../../../src/content/assets/Inno.Assets/Inno.Assets.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../../../src/foundation/extensibility/Inno.Extensibility.Types/Inno.Extensibility.Types.csproj" PrivateAssets="compile" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../../../../src/foundation/extensibility/Inno.Extensibility.Catalogs/Inno.Extensibility.Catalogs.csproj" />
   </ItemGroup>
 </Project>

@@ -23,8 +23,8 @@ internal sealed class EditorExtensionActivator
         IEnumerable<Type> moduleTypes,
         IEnumerable<Type> activeTypes,
         IEnumerable<object> hostServices,
-        IEnumerable<object>? retainedInstances = null)
-    {
+        IEnumerable<object>? retainedInstances = null
+    ) {
         m_context = context ?? throw new ArgumentNullException(nameof(context));
         m_interactions = interactions ?? throw new ArgumentNullException(nameof(interactions));
         m_moduleTypes = moduleTypes
@@ -51,15 +51,16 @@ internal sealed class EditorExtensionActivator
         return CanCreate(type, new HashSet<Type>());
     }
 
-    internal EditorModule CreateModule(Type type)
-        => (EditorModule)Create(type, typeof(EditorModule));
+    internal EditorModule CreateModule(Type type) => (EditorModule)Create(type, typeof(EditorModule));
 
     internal TExtension CreateExtension<TExtension>(Type type)
         where TExtension : class
         => (TExtension)Create(type, typeof(TExtension));
 
-    private bool CanCreate(Type type, HashSet<Type> visiting)
-    {
+    private bool CanCreate(
+        Type type,
+        HashSet<Type> visiting
+    ) {
         if (m_instances.ContainsKey(type))
         {
             return true;
@@ -110,8 +111,10 @@ internal sealed class EditorExtensionActivator
         return result;
     }
 
-    private object Create(Type type, Type contract)
-    {
+    private object Create(
+        Type type,
+        Type contract
+    ) {
         if (m_instances.TryGetValue(type, out object? existing))
         {
             if (!contract.IsInstanceOfType(existing))
@@ -151,8 +154,10 @@ internal sealed class EditorExtensionActivator
         }
     }
 
-    private object Resolve(Type parameterType, Type ownerType)
-    {
+    private object Resolve(
+        Type parameterType,
+        Type ownerType
+    ) {
         if (parameterType == typeof(EditorContext))
             return m_context;
         if (IsInteractionContract(parameterType))
@@ -203,9 +208,11 @@ internal sealed class EditorExtensionActivator
         return constructors[0];
     }
 
-    private static bool IsInteractionContract(Type type)
-        => type != typeof(object) && type.IsAssignableFrom(typeof(EditorInteractions));
+    private static bool IsInteractionContract(Type type) => type != typeof(object) && type.IsAssignableFrom(typeof(EditorInteractions));
 
-    private static InvalidOperationException CreateContractException(Type type, Type contract)
+    private static InvalidOperationException CreateContractException(
+        Type type,
+        Type contract
+    )
         => new($"Editor extension '{type.FullName}' must be a non-abstract '{contract.FullName}'.");
 }

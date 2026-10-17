@@ -14,8 +14,8 @@ internal sealed record SceneSubtreeHistoryData(
     byte[] subtree,
     SceneIncomingReferenceState[] incomingReferences,
     Guid? selectedBefore,
-    Guid? selectedAfter)
-{
+    Guid? selectedAfter
+) {
     internal byte[] Encode()
     {
         using var stream = new MemoryStream();
@@ -80,14 +80,18 @@ internal sealed record SceneSubtreeHistoryData(
             selectedAfter);
     }
 
-    private static void WriteBytes(BinaryWriter writer, byte[] bytes)
-    {
+    private static void WriteBytes(
+        BinaryWriter writer,
+        byte[] bytes
+    ) {
         writer.Write(bytes.Length);
         writer.Write(bytes);
     }
 
-    private static byte[] ReadBytes(BinaryReader reader, string name)
-    {
+    private static byte[] ReadBytes(
+        BinaryReader reader,
+        string name
+    ) {
         int length = reader.ReadInt32();
         if (length < 0 || length > reader.BaseStream.Length - reader.BaseStream.Position)
             throw new InvalidDataException($"Scene subtree history {name} length is invalid.");
@@ -97,13 +101,14 @@ internal sealed record SceneSubtreeHistoryData(
         return bytes;
     }
 
-    private static void WriteGuid(BinaryWriter writer, Guid? value)
-    {
+    private static void WriteGuid(
+        BinaryWriter writer,
+        Guid? value
+    ) {
         writer.Write(value.HasValue);
         if (value.HasValue)
             writer.Write(value.Value.ToByteArray());
     }
 
-    private static Guid? ReadGuid(BinaryReader reader)
-        => reader.ReadBoolean() ? new Guid(reader.ReadBytes(16)) : null;
+    private static Guid? ReadGuid(BinaryReader reader) => reader.ReadBoolean() ? new Guid(reader.ReadBytes(16)) : null;
 }

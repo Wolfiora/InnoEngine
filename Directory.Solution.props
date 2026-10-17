@@ -1,0 +1,20 @@
+<Project>
+  <PropertyGroup>
+    <RestoreUseStaticGraphEvaluation>false</RestoreUseStaticGraphEvaluation>
+    <RestoreSerializeGlobalProperties>true</RestoreSerializeGlobalProperties>
+  </PropertyGroup>
+
+  <!-- Restore source roots normally; the Editor entry contributes only its selected host product. -->
+  <ItemGroup>
+    <_InnoSourceRestoreProject
+      Include="$(MSBuildThisFileDirectory)entry/**/*.csproj;$(MSBuildThisFileDirectory)src/**/*.csproj;$(MSBuildThisFileDirectory)backends/**/*.csproj;$(MSBuildThisFileDirectory)platforms/**/*.csproj;$(MSBuildThisFileDirectory)build/**/*.csproj;$(MSBuildThisFileDirectory)tools/**/*.csproj;$(MSBuildThisFileDirectory)tests/**/*.csproj"
+      Exclude="$(MSBuildThisFileDirectory)**/bin/**;$(MSBuildThisFileDirectory)**/obj/**;$(MSBuildThisFileDirectory)platforms/**/editor/**/*.csproj;$(MSBuildThisFileDirectory)platforms/**/player/**/*.csproj" />
+    <_InnoSourceRestoreProject
+      Remove="$(MSBuildThisFileDirectory)entry/InnoEngine.Editor/InnoEngine.Editor.csproj"
+      Condition="'$(Configuration)' == 'SourceDebug' or '$(Configuration)' == 'SourceRelease'" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <RestoreGraphProjectInput>@(_InnoSourceRestoreProject)</RestoreGraphProjectInput>
+  </PropertyGroup>
+</Project>

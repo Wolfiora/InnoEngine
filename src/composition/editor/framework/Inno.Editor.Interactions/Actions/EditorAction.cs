@@ -58,8 +58,7 @@ public abstract class EditorAction : IDisposable
         }
     }
 
-    internal bool IsActiveFor(object? target)
-        => m_isActive && Equals(m_activeTarget, target);
+    internal bool IsActiveFor(object? target) => m_isActive && Equals(m_activeTarget, target);
 
     /// <summary>
     /// Activates this action for a target and cancels any operation it previously owned.
@@ -111,8 +110,7 @@ public abstract class EditorAction : IDisposable
     /// <returns>
     /// The current presentation and availability state.
     /// </returns>
-    protected virtual EditorActionState Query(EditorActionContext context)
-        => EditorActionState.enabled;
+    protected virtual EditorActionState Query(EditorActionContext context) => EditorActionState.enabled;
 
     /// <summary>
     /// Executes the action for the supplied context.
@@ -241,8 +239,7 @@ public abstract class EditorAction<TTarget, TArgument> : EditorAction
     /// <returns>
     /// The current presentation and availability state.
     /// </returns>
-    protected virtual EditorActionState Query(EditorActionContext<TTarget, TArgument> context)
-        => EditorActionState.enabled;
+    protected virtual EditorActionState Query(EditorActionContext<TTarget, TArgument> context) => EditorActionState.enabled;
 
     /// <summary>
     /// Executes the action for a typed target and argument.
@@ -265,8 +262,8 @@ public abstract class EditorAction<TTarget, TArgument> : EditorAction
 
     private static bool TryCreate(
         EditorActionContext context,
-        out EditorActionContext<TTarget, TArgument> typed)
-    {
+        out EditorActionContext<TTarget, TArgument> typed
+    ) {
         if (context.target is TTarget target && context.argument is TArgument argument)
         {
             typed = new EditorActionContext<TTarget, TArgument>(context, target, argument);
@@ -326,8 +323,7 @@ public abstract class EditorArgumentAction<TArgument> : EditorAction
     /// <returns>
     /// The current presentation and availability state.
     /// </returns>
-    protected virtual EditorActionState Query(EditorActionArgumentContext<TArgument> context)
-        => EditorActionState.enabled;
+    protected virtual EditorActionState Query(EditorActionArgumentContext<TArgument> context) => EditorActionState.enabled;
 
     /// <summary>
     /// Executes the action for a typed argument.
@@ -448,8 +444,7 @@ public abstract class EditorAction<TTarget> : EditorAction
     /// <returns>
     /// The current presentation and availability state.
     /// </returns>
-    protected virtual EditorActionState Query(EditorActionContext<TTarget> context)
-        => EditorActionState.enabled;
+    protected virtual EditorActionState Query(EditorActionContext<TTarget> context) => EditorActionState.enabled;
 
     /// <summary>
     /// Executes the action for a strongly typed target.

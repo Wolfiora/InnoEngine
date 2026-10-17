@@ -26,7 +26,12 @@ internal sealed class RenderPresentationComposer
         m_initializedRegions.Add(new PresentationRegion(request.target, request.viewport));
     }
 
-    private static bool Overlaps(RenderViewport left, RenderViewport right)
+    internal void Clear() => m_initializedRegions.Clear();
+
+    private static bool Overlaps(
+        RenderViewport left,
+        RenderViewport right
+    )
         => (long)left.x < (long)right.x + right.width
            && (long)right.x < (long)left.x + left.width
            && (long)left.y < (long)right.y + right.height
@@ -34,5 +39,6 @@ internal sealed class RenderPresentationComposer
 
     private readonly record struct PresentationRegion(
         RenderTarget target,
-        RenderViewport viewport);
+        RenderViewport viewport
+    );
 }

@@ -52,8 +52,10 @@ internal sealed class AssetCreationMenu(AssetEditorModule assets) : EditorMenuSo
     /// <param name="builder">
     /// The builder consumed by build; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
-public override void Build(EditorMenuContext context, EditorMenuBuilder builder)
-    {
+public override void Build(
+    EditorMenuContext context,
+    EditorMenuBuilder builder
+) {
         IReadOnlyList<AssetCreationRegistry.Registration> templates = assets.creationTemplates;
         var declaredGroups = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         foreach (AssetCreationRegistry.Registration registration in templates)

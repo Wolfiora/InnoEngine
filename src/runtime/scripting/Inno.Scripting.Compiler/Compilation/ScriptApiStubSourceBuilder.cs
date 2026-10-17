@@ -32,7 +32,8 @@ internal static class ScriptApiStubSourceBuilder
 
     internal static string BuildImplementation(
         ScriptApiAssembly export,
-        IReadOnlySet<Type> exportedTypes)
+        IReadOnlySet<Type> exportedTypes
+    )
         => Build(
             export.exports.Select(static value => value.type).ToArray(),
             exportedTypes,
@@ -43,7 +44,8 @@ internal static class ScriptApiStubSourceBuilder
     internal static string BuildLogical(
         IReadOnlyList<ScriptApiTypeExport> exports,
         IReadOnlySet<Type> exportedTypes,
-        IReadOnlyDictionary<string, string> namespaceMappings)
+        IReadOnlyDictionary<string, string> namespaceMappings
+    )
         => Build(
             exports.Select(static value => value.type).ToArray(),
             exportedTypes,
@@ -56,8 +58,8 @@ internal static class ScriptApiStubSourceBuilder
         IReadOnlySet<Type> exportedTypes,
         Version version,
         IReadOnlyDictionary<string, string>? namespaceMappings,
-        IReadOnlyDictionary<Type, string>? typeNames)
-    {
+        IReadOnlyDictionary<Type, string>? typeNames
+    ) {
         s_exportedTypes = exportedTypes;
         s_namespaceMappings = namespaceMappings;
         s_typeNames = typeNames;
@@ -90,8 +92,10 @@ internal static class ScriptApiStubSourceBuilder
         }
     }
 
-    private static void AppendType(StringBuilder builder, Type type)
-    {
+    private static void AppendType(
+        StringBuilder builder,
+        Type type
+    ) {
         if (type.IsEnum)
         {
             AppendEnum(builder, type);
@@ -140,8 +144,10 @@ internal static class ScriptApiStubSourceBuilder
         builder.AppendLine("}");
     }
 
-    private static void AppendAttributeUsage(StringBuilder builder, Type type)
-    {
+    private static void AppendAttributeUsage(
+        StringBuilder builder,
+        Type type
+    ) {
         if (!typeof(Attribute).IsAssignableFrom(type))
             return;
         AttributeUsageAttribute usage = type.GetCustomAttribute<AttributeUsageAttribute>(inherit: true)
@@ -155,8 +161,10 @@ internal static class ScriptApiStubSourceBuilder
             .AppendLine(")]");
     }
 
-    private static void AppendEnum(StringBuilder builder, Type type)
-    {
+    private static void AppendEnum(
+        StringBuilder builder,
+        Type type
+    ) {
         builder.Append("public enum ")
             .Append(GetTypeName(type))
             .Append(" : ")
@@ -175,8 +183,10 @@ internal static class ScriptApiStubSourceBuilder
         builder.AppendLine("}");
     }
 
-    private static void AppendDelegate(StringBuilder builder, Type type)
-    {
+    private static void AppendDelegate(
+        StringBuilder builder,
+        Type type
+    ) {
         MethodInfo invoke = type.GetMethod("Invoke")
             ?? throw new InvalidOperationException($"Delegate '{type.FullName}' has no Invoke method.");
         builder.Append("public delegate ")
@@ -190,8 +200,10 @@ internal static class ScriptApiStubSourceBuilder
         builder.AppendLine(";");
     }
 
-    private static void AppendNamedType(StringBuilder builder, Type type)
-    {
+    private static void AppendNamedType(
+        StringBuilder builder,
+        Type type
+    ) {
         builder.Append(GetTypeName(type));
         Type[] arguments = type.GetGenericArguments()
             .Where(static argument => argument.DeclaringMethod is null)
@@ -214,8 +226,10 @@ internal static class ScriptApiStubSourceBuilder
         builder.Append('>');
     }
 
-    private static void AppendBaseTypes(StringBuilder builder, Type type)
-    {
+    private static void AppendBaseTypes(
+        StringBuilder builder,
+        Type type
+    ) {
         var baseTypes = new List<Type>();
         if (type.IsClass &&
             !type.IsStaticClass() &&
@@ -240,8 +254,10 @@ internal static class ScriptApiStubSourceBuilder
             .Append(string.Join(", ", baseTypes.Distinct().Select(FormatType)));
     }
 
-    private static bool CanExposeInterface(Type type, Type interfaceType)
-    {
+    private static bool CanExposeInterface(
+        Type type,
+        Type interfaceType
+    ) {
         if (type.IsInterface)
             return true;
         InterfaceMapping mapping = type.GetInterfaceMap(interfaceType);
@@ -250,8 +266,8 @@ internal static class ScriptApiStubSourceBuilder
 
     private static void AppendGenericConstraints(
         StringBuilder builder,
-        IEnumerable<Type> genericParameters)
-    {
+        IEnumerable<Type> genericParameters
+    ) {
         foreach (Type parameter in genericParameters)
         {
             GenericParameterAttributes attributes = parameter.GenericParameterAttributes;
@@ -277,8 +293,10 @@ internal static class ScriptApiStubSourceBuilder
         }
     }
 
-    private static void AppendFields(StringBuilder builder, Type type)
-    {
+    private static void AppendFields(
+        StringBuilder builder,
+        Type type
+    ) {
         foreach (FieldInfo field in type.GetFields(C_DECLARED_MEMBERS))
         {
             if (!IsVisible(field) || field.IsSpecialName)
@@ -309,8 +327,10 @@ internal static class ScriptApiStubSourceBuilder
         }
     }
 
-    private static void AppendConstructors(StringBuilder builder, Type type)
-    {
+    private static void AppendConstructors(
+        StringBuilder builder,
+        Type type
+    ) {
         if (type.IsStaticClass() || type.IsInterface)
             return;
         foreach (ConstructorInfo constructor in type.GetConstructors(C_DECLARED_MEMBERS))
@@ -332,8 +352,10 @@ internal static class ScriptApiStubSourceBuilder
         }
     }
 
-    private static void AppendProperties(StringBuilder builder, Type type)
-    {
+    private static void AppendProperties(
+        StringBuilder builder,
+        Type type
+    ) {
         foreach (PropertyInfo property in type.GetProperties(C_DECLARED_MEMBERS))
         {
             MethodInfo? getter = IsVisible(property.GetMethod) ? property.GetMethod : null;
@@ -377,8 +399,8 @@ internal static class ScriptApiStubSourceBuilder
         StringBuilder builder,
         string keyword,
         MethodInfo? method,
-        string propertyAccessibility)
-    {
+        string propertyAccessibility
+    ) {
         if (method is null)
             return;
         builder.Append("        ");
@@ -392,8 +414,10 @@ internal static class ScriptApiStubSourceBuilder
             builder.AppendLine(" => throw new global::System.NotImplementedException();");
     }
 
-    private static void AppendEvents(StringBuilder builder, Type type)
-    {
+    private static void AppendEvents(
+        StringBuilder builder,
+        Type type
+    ) {
         foreach (EventInfo eventInfo in type.GetEvents(C_DECLARED_MEMBERS))
         {
             MethodInfo? accessor = MoreVisible(eventInfo.AddMethod, eventInfo.RemoveMethod);
@@ -417,8 +441,10 @@ internal static class ScriptApiStubSourceBuilder
         }
     }
 
-    private static void AppendMethods(StringBuilder builder, Type type)
-    {
+    private static void AppendMethods(
+        StringBuilder builder,
+        Type type
+    ) {
         foreach (MethodInfo method in type.GetMethods(C_DECLARED_MEMBERS))
         {
             if (!IsVisible(method) ||
@@ -467,8 +493,10 @@ internal static class ScriptApiStubSourceBuilder
         }
     }
 
-    private static void AppendConversionOperator(StringBuilder builder, MethodInfo method)
-    {
+    private static void AppendConversionOperator(
+        StringBuilder builder,
+        MethodInfo method
+    ) {
         builder.Append("    public static ")
             .Append(method.Name == "op_Implicit" ? "implicit" : "explicit")
             .Append(" operator ")
@@ -478,8 +506,11 @@ internal static class ScriptApiStubSourceBuilder
         builder.AppendLine(") => throw new global::System.NotImplementedException();");
     }
 
-    private static void AppendOperator(StringBuilder builder, MethodInfo method, string symbol)
-    {
+    private static void AppendOperator(
+        StringBuilder builder,
+        MethodInfo method,
+        string symbol
+    ) {
         builder.Append("    public static ")
             .Append(FormatParameterType(method.ReturnParameter))
             .Append(" operator ")
@@ -489,8 +520,11 @@ internal static class ScriptApiStubSourceBuilder
         builder.AppendLine(") => throw new global::System.NotImplementedException();");
     }
 
-    private static void AppendMethodModifiers(StringBuilder builder, MethodInfo method, bool declaringTypeIsInterface)
-    {
+    private static void AppendMethodModifiers(
+        StringBuilder builder,
+        MethodInfo method,
+        bool declaringTypeIsInterface
+    ) {
         if (method.IsStatic)
         {
             builder.Append("static ");
@@ -510,16 +544,20 @@ internal static class ScriptApiStubSourceBuilder
             builder.Append("virtual ");
     }
 
-    private static void AppendMethodBody(StringBuilder builder, MethodInfo method)
-    {
+    private static void AppendMethodBody(
+        StringBuilder builder,
+        MethodInfo method
+    ) {
         if (method.IsAbstract)
             builder.AppendLine(";");
         else
             builder.AppendLine(" => throw new global::System.NotImplementedException();");
     }
 
-    private static void AppendParameters(StringBuilder builder, IReadOnlyList<ParameterInfo> parameters)
-    {
+    private static void AppendParameters(
+        StringBuilder builder,
+        IReadOnlyList<ParameterInfo> parameters
+    ) {
         for (int i = 0; i < parameters.Count; i++)
         {
             if (i > 0)
@@ -551,8 +589,7 @@ internal static class ScriptApiStubSourceBuilder
         => method is not null &&
            (method.IsPublic || method.IsFamily || method.IsFamilyOrAssembly);
 
-    private static bool IsVisible(FieldInfo field)
-        => field.IsPublic || field.IsFamily || field.IsFamilyOrAssembly;
+    private static bool IsVisible(FieldInfo field) => field.IsPublic || field.IsFamily || field.IsFamilyOrAssembly;
 
     private static string GetAccessibility(MethodBase method)
     {
@@ -572,8 +609,10 @@ internal static class ScriptApiStubSourceBuilder
         return "protected";
     }
 
-    private static MethodInfo? MoreVisible(MethodInfo? first, MethodInfo? second)
-    {
+    private static MethodInfo? MoreVisible(
+        MethodInfo? first,
+        MethodInfo? second
+    ) {
         if (!IsVisible(first))
             return IsVisible(second) ? second : null;
         if (!IsVisible(second))
@@ -581,31 +620,45 @@ internal static class ScriptApiStubSourceBuilder
         return VisibilityRank(first!) >= VisibilityRank(second!) ? first : second;
     }
 
-    private static int VisibilityRank(MethodBase method)
-        => method.IsPublic ? 3 : method.IsFamilyOrAssembly ? 2 : method.IsFamily ? 1 : 0;
+    private static int VisibilityRank(MethodBase method) => method.IsPublic ? 3 : method.IsFamilyOrAssembly ? 2 : method.IsFamily ? 1 : 0;
 
-    private static string FormatType(Type type)
-        => FormatType(type, null);
+    private static string FormatType(Type type) => FormatType(type, null);
 
     private static string FormatParameterType(ParameterInfo parameter)
         => FormatType(parameter.ParameterType, s_nullability!.Create(parameter), new(parameter.GetCustomAttributesData(), parameter.Member));
 
-    private static void AppendFlowAttributes(StringBuilder builder, IEnumerable<CustomAttributeData> attributes)
-    {
+    private static void AppendFlowAttributes(
+        StringBuilder builder,
+        IEnumerable<CustomAttributeData> attributes
+    ) {
         foreach (CustomAttributeData attribute in attributes)
         {
+            if (attribute.AttributeType.Namespace == "System.Runtime.CompilerServices"
+                && attribute.AttributeType.Name is "CallerFilePathAttribute" or "CallerLineNumberAttribute"
+                    or "CallerMemberNameAttribute" or "CallerArgumentExpressionAttribute")
+            {
+                builder.Append("[global::").Append(attribute.AttributeType.FullName).Append('(')
+                    .Append(string.Join(", ", attribute.ConstructorArguments.Select(static argument =>
+                        FormatConstant(argument.Value, argument.ArgumentType))))
+                    .Append(")] ");
+                continue;
+            }
             if (attribute.AttributeType.Namespace != "System.Diagnostics.CodeAnalysis"
                 || attribute.AttributeType.Name is not ("AllowNullAttribute" or "DisallowNullAttribute"
                     or "MaybeNullAttribute" or "NotNullAttribute" or "NotNullWhenAttribute"
-                    or "MaybeNullWhenAttribute" or "NotNullIfNotNullAttribute" or "DoesNotReturnIfAttribute")) continue;
+                    or "MaybeNullWhenAttribute" or "NotNullIfNotNullAttribute" or "DoesNotReturnIfAttribute"))
+                        continue;
             builder.Append("[global::").Append(attribute.AttributeType.FullName).Append('(')
                 .Append(string.Join(", ", attribute.ConstructorArguments.Select(static argument => FormatConstant(argument.Value, argument.ArgumentType))))
                 .Append(")] ");
         }
     }
 
-    private static string FormatType(Type type, NullabilityInfo? nullability, NullableAnnotations? annotations = null)
-    {
+    private static string FormatType(
+        Type type,
+        NullabilityInfo? nullability,
+        NullableAnnotations? annotations = null
+    ) {
         if (type.IsByRef || type.IsPointer)
         {
             string suffix = type.IsPointer ? "*" : string.Empty;
@@ -627,7 +680,10 @@ internal static class ScriptApiStubSourceBuilder
         Type definition = type.GetGenericTypeDefinition();
         string name = FormatNamedTypeName(definition, removeGenericArities: true);
         return "global::" + name + "<" +
-               string.Join(", ", type.GetGenericArguments().Select((argument, index) =>
+               string.Join(", ", type.GetGenericArguments().Select((
+                   argument,
+                   index
+               ) =>
                    FormatType(argument, nullability?.GenericTypeArguments.ElementAtOrDefault(index), annotations))) + ">" + annotation;
     }
 
@@ -637,8 +693,10 @@ internal static class ScriptApiStubSourceBuilder
         private readonly byte m_context;
         private int m_index;
 
-        internal NullableAnnotations(IEnumerable<CustomAttributeData> attributes, MemberInfo owner)
-        {
+        internal NullableAnnotations(
+            IEnumerable<CustomAttributeData> attributes,
+            MemberInfo owner
+        ) {
             CustomAttributeData? transform = attributes.FirstOrDefault(static attribute =>
                 attribute.AttributeType.FullName == "System.Runtime.CompilerServices.NullableAttribute");
             m_flags = transform?.ConstructorArguments[0].Value switch
@@ -651,7 +709,8 @@ internal static class ScriptApiStubSourceBuilder
             {
                 CustomAttributeData? context = current.GetCustomAttributesData().FirstOrDefault(static attribute =>
                     attribute.AttributeType.FullName == "System.Runtime.CompilerServices.NullableContextAttribute");
-                if (context is null) continue;
+                if (context is null)
+                    continue;
                 m_context = (byte)context.ConstructorArguments[0].Value!;
                 break;
             }
@@ -659,14 +718,17 @@ internal static class ScriptApiStubSourceBuilder
 
         internal byte Next(Type type)
         {
-            if (type.IsValueType && !type.IsGenericType) return 0;
+            if (type.IsValueType && !type.IsGenericType)
+                return 0;
             int index = m_index++;
             return index < m_flags.Length ? m_flags[index] : m_context;
         }
     }
 
-    private static string FormatNamedTypeName(Type type, bool removeGenericArities)
-    {
+    private static string FormatNamedTypeName(
+        Type type,
+        bool removeGenericArities
+    ) {
         string implementationNamespace = type.Namespace ?? string.Empty;
         if (s_typeNames is not null && s_typeNames.TryGetValue(type, out string? typeName))
         {
@@ -727,11 +789,15 @@ internal static class ScriptApiStubSourceBuilder
         return IsApiNamedType(type);
     }
 
-    private static void RejectUnclosedMember(MemberInfo member, Type dependency)
-        => RejectUnclosedMember(member, new[] { dependency });
+    private static void RejectUnclosedMember(
+        MemberInfo member,
+        Type dependency
+    ) => RejectUnclosedMember(member, new[] { dependency });
 
-    private static void RejectUnclosedMember(MemberInfo member, IEnumerable<Type> dependencies)
-    {
+    private static void RejectUnclosedMember(
+        MemberInfo member,
+        IEnumerable<Type> dependencies
+    ) {
         if (member.IsDefined(typeof(ScriptingApiIgnoreAttribute), inherit: false))
             return;
         string missing = string.Join(
@@ -790,8 +856,10 @@ internal static class ScriptApiStubSourceBuilder
         return s_exportedTypes?.Contains(type) == true;
     }
 
-    private static string FormatConstant(object? value, Type type)
-    {
+    private static string FormatConstant(
+        object? value,
+        Type type
+    ) {
         if (value is null || value == DBNull.Value || value == Missing.Value)
             return "default";
         if (type.IsEnum)
@@ -814,11 +882,12 @@ internal static class ScriptApiStubSourceBuilder
         };
     }
 
-    private static string FormatNumericConstant(object value)
-        => Convert.ToString(value, CultureInfo.InvariantCulture) ?? "0";
+    private static string FormatNumericConstant(object value) => Convert.ToString(value, CultureInfo.InvariantCulture) ?? "0";
 
-    private static bool TryGetOperator(string name, out string? symbol)
-    {
+    private static bool TryGetOperator(
+        string name,
+        out string? symbol
+    ) {
         symbol = name switch
         {
             "op_Addition" => "+",
@@ -849,8 +918,7 @@ internal static class ScriptApiStubSourceBuilder
         return symbol is not null;
     }
 
-    private static string EscapeIdentifier(string value)
-        => C_KEYWORDS.Contains(value) ? "@" + value : value;
+    private static string EscapeIdentifier(string value) => C_KEYWORDS.Contains(value) ? "@" + value : value;
 
     private static string RemoveArity(string value)
     {

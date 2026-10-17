@@ -33,8 +33,10 @@ public sealed class BuildProfileStore
     /// <exception cref="ArgumentNullException">
     /// Thrown when <paramref name="serialization"/> is <see langword="null"/>.
     /// </exception>
-    public BuildProfileStore(string path, SerializationRegistry serialization)
-    {
+    public BuildProfileStore(
+        string path,
+        SerializationRegistry serialization
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(path);
         ArgumentNullException.ThrowIfNull(serialization);
         m_path = Path.GetFullPath(path);

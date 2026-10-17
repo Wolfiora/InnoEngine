@@ -21,8 +21,10 @@ public sealed class EditorModuleAttribute : Attribute
     /// <exception cref="ArgumentException">
     /// Thrown when <paramref name="id"/> is empty.
     /// </exception>
-    public EditorModuleAttribute(string id, int order = 0)
-    {
+    public EditorModuleAttribute(
+        string id,
+        int order = 0
+    ) {
         if (string.IsNullOrWhiteSpace(id))
             throw new ArgumentException("An editor module identifier is required.", nameof(id));
         this.id = id;

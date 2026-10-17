@@ -16,8 +16,7 @@ internal sealed class ExportPluginAction(ExportWindowModule window) : EditorActi
     /// <param name="context">
     /// The context that supplies state and services for this operation.
     /// </param>
-    protected override void Execute(EditorActionContext context)
-        => window.OpenPlugin();
+    protected override void Execute(EditorActionContext context) => window.OpenPlugin();
 }
 
 [EditorAction(ExportInteractionIds.C_EXPORT_GAME)]
@@ -30,6 +29,5 @@ internal sealed class ExportGameAction(ExportWindowModule window) : EditorAction
     /// <param name="context">
     /// The context that supplies state and services for this operation.
     /// </param>
-    protected override void Execute(EditorActionContext context)
-        => window.OpenGame();
+    protected override void Execute(EditorActionContext context) => window.OpenGame();
 }

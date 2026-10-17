@@ -6,6 +6,8 @@ Assets 分成真实部署边界：Player-safe runtime contract 与 authoring pip
 
 | 项目 | 职责 |
 | --- | --- |
+| [Inno.Content](Inno.Content.md) | 平台中立内容 key、完整 Pack 索引、验证与读取租约 |
+| [Inno.Adapter.Content.FileSystem](../backends/FileSystem/Inno.Adapter.Content.FileSystem.md) | 完整哈希验证、跨进程缓存发布与 reader 退休 |
 | [Inno.Assets](Inno.Assets.md) | identity、reference、runtime catalog、Artifact metadata、AssetDatabase、runtime asset types |
 | [Inno.Assets.Pipeline](Inno.Assets.Pipeline.md) | Source Mount、watcher、Importer、dependency graph、Artifact writer、incremental import/export |
 

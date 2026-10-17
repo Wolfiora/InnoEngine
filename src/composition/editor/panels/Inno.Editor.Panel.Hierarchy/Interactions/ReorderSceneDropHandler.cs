@@ -10,7 +10,8 @@ namespace Inno.Editor.Panel.Hierarchy;
 [EditorDrop(HierarchyInteractionIds.C_AREA)]
 internal sealed class ReorderSceneDropHandler(
     IEditorSceneWorkspace workspace,
-    SceneEdits edits)
+    SceneEdits edits
+)
     : EditorDrop<GameScene, HierarchySceneDropTarget>
 {
     /// <summary>
@@ -22,8 +23,7 @@ internal sealed class ReorderSceneDropHandler(
     /// <returns>
     /// The validated editor drop status that represents the completed operation.
     /// </returns>
-    protected override EditorDropStatus Query(
-        EditorDropContext<GameScene, HierarchySceneDropTarget> context)
+    protected override EditorDropStatus Query(EditorDropContext<GameScene, HierarchySceneDropTarget> context)
     {
         GameScene source = context.source;
         GameScene target = context.target.scene;
@@ -44,8 +44,7 @@ internal sealed class ReorderSceneDropHandler(
     /// <returns>
     /// The validated editor drop result that represents the completed operation.
     /// </returns>
-    protected override EditorDropResult Drop(
-        EditorDropContext<GameScene, HierarchySceneDropTarget> context)
+    protected override EditorDropResult Drop(EditorDropContext<GameScene, HierarchySceneDropTarget> context)
     {
         GameScene source = context.source;
         GameScene target = context.target.scene;
@@ -59,8 +58,10 @@ internal sealed class ReorderSceneDropHandler(
         return EditorDropResult.Accepted(source);
     }
 
-    private static int IndexOf(System.Collections.Generic.IReadOnlyList<GameScene> scenes, GameScene scene)
-    {
+    private static int IndexOf(
+        System.Collections.Generic.IReadOnlyList<GameScene> scenes,
+        GameScene scene
+    ) {
         for (int index = 0; index < scenes.Count; index++)
         {
             if (ReferenceEquals(scenes[index], scene))

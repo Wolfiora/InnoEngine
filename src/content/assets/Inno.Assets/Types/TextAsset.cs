@@ -38,8 +38,10 @@ public sealed class TextAsset : AssetObject
     /// <param name="languageHint">
     /// Language or format hint.
     /// </param>
-    public TextAsset(string content, string languageHint = "plain")
-    {
+    public TextAsset(
+        string content,
+        string languageHint = "plain"
+    ) {
         this.content = content ?? string.Empty;
         this.languageHint = languageHint ?? "plain";
     }

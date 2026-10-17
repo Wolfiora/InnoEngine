@@ -26,8 +26,12 @@ public readonly record struct UiContextOptions
     /// <param name="density">
     /// The positive density-independent pixel ratio.
     /// </param>
-    public UiContextOptions(string name, int width, int height, float density = 1f)
-    {
+    public UiContextOptions(
+        string name,
+        int width,
+        int height,
+        float density = 1f
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(width);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(height);
@@ -74,9 +78,13 @@ public sealed class UiDocumentSource
     /// <param name="sourceUri">
     /// Virtual source address used only for diagnostics and relative dependency identity.
     /// </param>
-    public UiDocumentSource(UiDocumentLanguageId language, string text, string sourceUri = "memory://ui-document")
-    {
-        if (!language.isValid) throw new ArgumentException("A document source requires an assigned language.", nameof(language));
+    public UiDocumentSource(
+        UiDocumentLanguageId language,
+        string text,
+        string sourceUri = "memory://ui-document"
+    ) {
+        if (!language.isValid)
+            throw new ArgumentException("A document source requires an assigned language.", nameof(language));
         ArgumentException.ThrowIfNullOrWhiteSpace(text);
         ArgumentException.ThrowIfNullOrWhiteSpace(sourceUri);
         this.language = language;
@@ -112,9 +120,12 @@ public readonly record struct UiDocumentFragment
     /// <param name="text">
     /// Complete fragment text.
     /// </param>
-    public UiDocumentFragment(UiDocumentLanguageId language, string text)
-    {
-        if (!language.isValid) throw new ArgumentException("A document fragment requires an assigned language.", nameof(language));
+    public UiDocumentFragment(
+        UiDocumentLanguageId language,
+        string text
+    ) {
+        if (!language.isValid)
+            throw new ArgumentException("A document fragment requires an assigned language.", nameof(language));
         ArgumentNullException.ThrowIfNull(text);
         this.language = language;
         this.text = text;
@@ -149,8 +160,11 @@ public sealed class UiTextureData
     /// <param name="pixels">
     /// Tightly packed RGBA8 pixels.
     /// </param>
-    public UiTextureData(int width, int height, ReadOnlySpan<byte> pixels)
-    {
+    public UiTextureData(
+        int width,
+        int height,
+        ReadOnlySpan<byte> pixels
+    ) {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(width);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(height);
         if (pixels.Length != checked(width * height * 4))
@@ -226,8 +240,11 @@ public sealed class UiEvent : Inno.Core.Events.Event
     /// <param name="targetId">
     /// The target element identifier, which can be empty.
     /// </param>
-    public UiEvent(UiEventType type, UiDocumentHandle document, string targetId)
-    {
+    public UiEvent(
+        UiEventType type,
+        UiDocumentHandle document,
+        string targetId
+    ) {
         this.type = type;
         this.document = document;
         this.targetId = targetId ?? throw new ArgumentNullException(nameof(targetId));
@@ -289,8 +306,8 @@ public sealed class UiInputSnapshot
         IReadOnlyCollection<KeyCode> keysReleased,
         IReadOnlyCollection<MouseButton> buttonsPressed,
         IReadOnlyCollection<MouseButton> buttonsReleased,
-        IReadOnlyList<string> textInput)
-    {
+        IReadOnlyList<string> textInput
+    ) {
         this.mousePosition = mousePosition;
         this.scrollDelta = scrollDelta;
         this.modifiers = modifiers;

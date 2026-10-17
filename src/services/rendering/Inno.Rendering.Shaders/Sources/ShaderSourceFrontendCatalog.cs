@@ -53,8 +53,10 @@ public sealed class ShaderSourceFrontendCatalog
     /// <exception cref="NotSupportedException">
     /// The requested language provider is unavailable.
     /// </exception>
-    public ShaderSourceAnalysis Analyze(string languageId, ShaderSourceRequest request)
-    {
+    public ShaderSourceAnalysis Analyze(
+        string languageId,
+        ShaderSourceRequest request
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(languageId);
         ArgumentNullException.ThrowIfNull(request);
         return m_frontends.TryGetValue(languageId, out IShaderSourceFrontend? frontend)
@@ -110,7 +112,8 @@ public sealed class ShaderSourceFrontendCatalog
             }
             results.Add(new(request, analysis, resolver.files, resolver.includes));
             diagnostics.AddRange(analysis.diagnostics);
-            if (!analysis.succeeded) continue;
+            if (!analysis.succeeded)
+                continue;
             if (common is null)
             {
                 common = analysis.function;

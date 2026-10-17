@@ -42,10 +42,17 @@ public sealed class EditorPlanarNavigation
     /// <returns>
     /// Whether this canvas owns the current pointer gesture.
     /// </returns>
-    public bool Update(bool hovered, bool primaryPressed, bool middlePressed, bool primaryDown, bool middleDown,
-        bool alt, bool allowAltPrimary = true)
-    {
-        if (isPanning && !(m_primary ? primaryDown : middleDown)) Cancel();
+    public bool Update(
+        bool hovered,
+        bool primaryPressed,
+        bool middlePressed,
+        bool primaryDown,
+        bool middleDown,
+        bool alt,
+        bool allowAltPrimary = true
+    ) {
+        if (isPanning && !(m_primary ? primaryDown : middleDown))
+            Cancel();
         if (!isPanning && hovered && (middlePressed || allowAltPrimary && alt && primaryPressed))
         {
             m_primary = !middlePressed;
@@ -74,10 +81,14 @@ public sealed class EditorPlanarNavigation
     /// <exception cref="ArgumentOutOfRangeException">
     /// Input is non-finite or sensitivity is not positive.
     /// </exception>
-    public static float WheelFactor(float wheel, float sensitivity = 0.16f)
-    {
-        if (!float.IsFinite(wheel)) throw new ArgumentOutOfRangeException(nameof(wheel));
-        if (!float.IsFinite(sensitivity) || sensitivity <= 0) throw new ArgumentOutOfRangeException(nameof(sensitivity));
+    public static float WheelFactor(
+        float wheel,
+        float sensitivity = 0.16f
+    ) {
+        if (!float.IsFinite(wheel))
+            throw new ArgumentOutOfRangeException(nameof(wheel));
+        if (!float.IsFinite(sensitivity) || sensitivity <= 0)
+            throw new ArgumentOutOfRangeException(nameof(sensitivity));
         return MathF.Exp(Math.Clamp(wheel * sensitivity, -20f, 20f));
     }
 
@@ -102,12 +113,20 @@ public sealed class EditorPlanarNavigation
     /// <exception cref="ArgumentOutOfRangeException">
     /// An input is non-finite or a scale is not positive.
     /// </exception>
-    public static Vector2 ZoomOrigin(Vector2 origin, Vector2 pivot, float previousScale, float nextScale)
-    {
-        if (!float.IsFinite(origin.X) || !float.IsFinite(origin.Y)) throw new ArgumentOutOfRangeException(nameof(origin));
-        if (!float.IsFinite(pivot.X) || !float.IsFinite(pivot.Y)) throw new ArgumentOutOfRangeException(nameof(pivot));
-        if (!float.IsFinite(previousScale) || previousScale <= 0) throw new ArgumentOutOfRangeException(nameof(previousScale));
-        if (!float.IsFinite(nextScale) || nextScale <= 0) throw new ArgumentOutOfRangeException(nameof(nextScale));
+    public static Vector2 ZoomOrigin(
+        Vector2 origin,
+        Vector2 pivot,
+        float previousScale,
+        float nextScale
+    ) {
+        if (!float.IsFinite(origin.X) || !float.IsFinite(origin.Y))
+            throw new ArgumentOutOfRangeException(nameof(origin));
+        if (!float.IsFinite(pivot.X) || !float.IsFinite(pivot.Y))
+            throw new ArgumentOutOfRangeException(nameof(pivot));
+        if (!float.IsFinite(previousScale) || previousScale <= 0)
+            throw new ArgumentOutOfRangeException(nameof(previousScale));
+        if (!float.IsFinite(nextScale) || nextScale <= 0)
+            throw new ArgumentOutOfRangeException(nameof(nextScale));
         return pivot - (pivot - origin) * (nextScale / previousScale);
     }
 }

@@ -24,7 +24,10 @@ public sealed class ShaderTargetRegistry : IDisposable
     /// The authoring catalog, which must outlive this registry.
     /// </param>
     public ShaderTargetRegistry(TypeCatalog types)
-    { m_types = types ?? throw new ArgumentNullException(nameof(types)); m_registry = new(types); }
+    {
+        m_types = types ?? throw new ArgumentNullException(nameof(types));
+        m_registry = new(types);
+    }
 
     /// <summary>
     /// Gets detached stable target identities available in the current generation.
@@ -62,16 +65,20 @@ public sealed class ShaderTargetRegistry : IDisposable
     /// <exception cref="InvalidOperationException">
     /// The target returns an invalid result.
     /// </exception>
-    public GraphDocument Expand(GraphDocument document, SerializationRegistry serialization, SerializationContext context,
-        CancellationToken cancellationToken = default)
-    {
+    public GraphDocument Expand(
+        GraphDocument document,
+        SerializationRegistry serialization,
+        SerializationContext context,
+        CancellationToken cancellationToken = default
+    ) {
         ArgumentNullException.ThrowIfNull(document);
         ArgumentNullException.ThrowIfNull(serialization);
         ArgumentNullException.ThrowIfNull(context);
         using IDisposable operation = m_types.AcquireOperation("Expand shader target");
         cancellationToken.ThrowIfCancellationRequested();
         string id = ShaderGraphDocument.ReadTarget(document, serialization, context);
-        if (id.Length == 0) return document.Clone();
+        if (id.Length == 0)
+            return document.Clone();
         if (!m_registry.snapshot.TryGetValue(id, out ShaderTarget? target))
             throw new ShaderTargetUnavailableException(id);
         GraphDocument expanded = target.Expand(new(document.Clone(), serialization, context), cancellationToken)
@@ -134,7 +141,6 @@ protected override IReadOnlyDictionary<string, ShaderTarget> Build(TypeCacheSnap
         /// <param name="snapshot">
         /// The immutable state snapshot consumed by this operation.
         /// </param>
-protected override void DisposeSnapshot(IReadOnlyDictionary<string, ShaderTarget> snapshot)
-            => DisposeExtensions(snapshot.Values);
+protected override void DisposeSnapshot(IReadOnlyDictionary<string, ShaderTarget> snapshot) => DisposeExtensions(snapshot.Values);
     }
 }

@@ -3,7 +3,7 @@ using System;
 namespace Inno.Core.Serialization;
 
 /// <summary>
-/// Marks a parameterless instance method to run after a complete restore operation succeeds.
+/// Marks one nonvirtual instance method to run after restoration succeeds, optionally receiving its SerializationContext.
 /// </summary>
 [AttributeUsage(AttributeTargets.Method, Inherited = true)]
 public sealed class OnSerializableRestored : Attribute;

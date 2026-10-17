@@ -7,7 +7,8 @@ namespace Inno.Editor.Panel.Hierarchy;
 [EditorAction(HierarchyInteractionIds.C_OPEN, priority: 200)]
 internal sealed class OpenPrefabAssetAction(
     IEditorSceneWorkspace workspace,
-    SceneEdits edits) : EditorAction<PrefabAsset, string>
+    SceneEdits edits
+) : EditorAction<PrefabAsset, string>
 {
     /// <summary>
     /// Evaluates whether the requested change can be applied to the current generation.

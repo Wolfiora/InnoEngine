@@ -22,8 +22,10 @@ internal sealed class AssetObjectConverter : SerializationConverter<AssetObject>
     /// <param name="value">
     /// The concrete value read or transformed by this operation.
     /// </param>
-    public override void Write(SerializationWriter writer, AssetObject value)
-    {
+    public override void Write(
+        SerializationWriter writer,
+        AssetObject value
+    ) {
         ArgumentNullException.ThrowIfNull(writer);
         ArgumentNullException.ThrowIfNull(value);
         Guid persistentId = value.identity.persistentId;

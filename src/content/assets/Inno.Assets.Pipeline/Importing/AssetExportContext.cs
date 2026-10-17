@@ -14,8 +14,8 @@ public sealed class AssetExportContext
     internal AssetExportContext(
         TypeCatalog types,
         SerializationRegistry serialization,
-        Inno.Assets.IAssetArtifactLookup artifacts)
-    {
+        Inno.Assets.IAssetArtifactLookup artifacts
+    ) {
         this.types = types ?? throw new ArgumentNullException(nameof(types));
         this.serialization = serialization ?? throw new ArgumentNullException(nameof(serialization));
         this.artifacts = artifacts ?? throw new ArgumentNullException(nameof(artifacts));

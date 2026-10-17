@@ -9,8 +9,7 @@ internal sealed class DiagnosticsSettingsPage : EditorSetting
     /// <summary>
     /// Gets the user-facing explanation of this feature or setting.
     /// </summary>
-    public override string description
-        => "Configure diagnostic presentation and retention behavior for this editor.";
+    public override string description => "Configure diagnostic presentation and retention behavior for this editor.";
 }
 
 [EditorSettingPath("Editor/Diagnostics/Console")]
@@ -19,8 +18,7 @@ internal sealed class ConsoleSettingsPage : EditorSetting
     /// <summary>
     /// Gets the user-facing explanation of this feature or setting.
     /// </summary>
-    public override string description
-        => "Configure how the Console retains ordinary logs across editor workflows.";
+    public override string description => "Configure how the Console retains ordinary logs across editor workflows.";
 }
 
 [EditorSettingPath(C_PATH)]
@@ -65,6 +63,5 @@ internal sealed class ClearConsoleOnPlaySetting : EditorSetting
             setting.SetAsBoolean("value", value);
     }
 
-    internal static bool Read(EditorSettings settings)
-        => settings.Get(C_PATH).GetAsBoolean("value", true);
+    internal static bool Read(EditorSettings settings) => settings.Get(C_PATH).GetAsBoolean("value", true);
 }

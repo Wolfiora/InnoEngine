@@ -34,8 +34,8 @@ public sealed class EditorDragContext
         EditorContext editor,
         EditorInteractions interactions,
         string area,
-        EditorDragData data)
-    {
+        EditorDragData data
+    ) {
         this.editor = editor ?? throw new ArgumentNullException(nameof(editor));
         this.interactions = interactions ?? throw new ArgumentNullException(nameof(interactions));
         ArgumentException.ThrowIfNullOrWhiteSpace(area);

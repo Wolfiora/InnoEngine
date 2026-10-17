@@ -45,7 +45,10 @@ public abstract class ShaderTarget
     /// <returns>
     /// A detached graph for the common typed compiler; all required capabilities belong in its pass contracts.
     /// </returns>
-    public abstract GraphDocument Expand(ShaderTargetContext context, CancellationToken cancellationToken);
+    public abstract GraphDocument Expand(
+        ShaderTargetContext context,
+        CancellationToken cancellationToken
+    );
 }
 
 /// <summary>
@@ -53,8 +56,15 @@ public abstract class ShaderTarget
 /// </summary>
 public sealed class ShaderTargetContext
 {
-    internal ShaderTargetContext(GraphDocument document, SerializationRegistry serialization, SerializationContext references)
-    { this.document = document; this.serialization = serialization; this.references = references; }
+    internal ShaderTargetContext(
+        GraphDocument document,
+        SerializationRegistry serialization,
+        SerializationContext references
+    ) {
+        this.document = document;
+        this.serialization = serialization;
+        this.references = references;
+    }
 
     /// <summary>
     /// Gets a private document copy; expansion cannot modify the authored source.

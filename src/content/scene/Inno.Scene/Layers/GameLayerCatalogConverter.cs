@@ -21,8 +21,10 @@ internal sealed class GameLayerCatalogConverter : SerializationConverter<GameLay
     /// <param name="value">
     /// The concrete value read or transformed by this operation.
     /// </param>
-    public override void Write(SerializationWriter writer, GameLayerCatalog value)
-    {
+    public override void Write(
+        SerializationWriter writer,
+        GameLayerCatalog value
+    ) {
         ArgumentNullException.ThrowIfNull(writer);
         ArgumentNullException.ThrowIfNull(value);
         writer.Write(

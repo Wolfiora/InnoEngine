@@ -37,8 +37,10 @@ public static class SceneContentSource
     /// <returns>
     /// A caller-owned scope that retains no scene instances.
     /// </returns>
-    public static ContentReadScope CreateScope(IEnumerable<GameScene> scenes, GameScene? activeScene)
-    {
+    public static ContentReadScope CreateScope(
+        IEnumerable<GameScene> scenes,
+        GameScene? activeScene
+    ) {
         ArgumentNullException.ThrowIfNull(scenes);
         return new ContentReadScope(scenes.Select(static scene => scene.identity), activeScene?.identity.persistentId);
     }

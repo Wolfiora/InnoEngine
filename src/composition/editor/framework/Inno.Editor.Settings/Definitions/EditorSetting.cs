@@ -133,8 +133,10 @@ public abstract class EditorSetting
         => m_boundDefaultValue?.Copy()
            ?? throw new InvalidOperationException($"Settings page '{path}' does not own a value.");
 
-    internal void BindPlacement(string placementPath, int placementOrder)
-    {
+    internal void BindPlacement(
+        string placementPath,
+        int placementOrder
+    ) {
         string normalized = EditorSettingsPathUtility.Normalize(placementPath);
         if (m_path is not null &&
             (!string.Equals(m_path, normalized, StringComparison.Ordinal) || m_order != placementOrder))

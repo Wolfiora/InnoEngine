@@ -5,8 +5,11 @@ namespace Inno.Editor.Interactions;
 
 internal static class EditorTypeDistance
 {
-    internal static bool TryGet(Type actualType, Type registeredType, out int distance)
-    {
+    internal static bool TryGet(
+        Type actualType,
+        Type registeredType,
+        out int distance
+    ) {
         if (actualType == registeredType)
         {
             distance = 0;

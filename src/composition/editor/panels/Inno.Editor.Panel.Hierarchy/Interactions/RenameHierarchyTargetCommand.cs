@@ -142,8 +142,10 @@ internal sealed class RenameHierarchyTargetCommand(SceneEdits edits) :
             _ => false
         };
 
-    private static bool TryGetName(EngineObject target, out string name)
-    {
+    private static bool TryGetName(
+        EngineObject target,
+        out string name
+    ) {
         name = target switch
         {
             GameScene scene when IsAvailable(scene) => scene.name,

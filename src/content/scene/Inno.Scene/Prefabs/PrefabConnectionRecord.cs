@@ -14,8 +14,8 @@ internal sealed class PrefabConnectionRecord
         AssetObject sourceAsset,
         Guid sourceRootId,
         bool isVariant,
-        PrefabOverrideSet? overrides = null)
-    {
+        PrefabOverrideSet? overrides = null
+    ) {
         this.sourceAsset = sourceAsset ?? throw new ArgumentNullException(nameof(sourceAsset));
         this.sourceRootId = sourceRootId;
         this.isVariant = isVariant;
@@ -29,14 +29,18 @@ internal sealed class PrefabConnectionRecord
     internal IReadOnlyDictionary<Guid, Guid> objectIdentities => m_objectIdentities;
     internal IReadOnlyDictionary<Guid, Guid> componentIdentities => m_componentIdentities;
 
-    internal void MapObject(Guid sourceId, GameObject gameObject)
-    {
+    internal void MapObject(
+        Guid sourceId,
+        GameObject gameObject
+    ) {
         ArgumentNullException.ThrowIfNull(gameObject);
         m_objectIdentities[sourceId] = gameObject.identity.persistentId;
     }
 
-    internal void MapComponent(Guid sourceId, GameComponent component)
-    {
+    internal void MapComponent(
+        Guid sourceId,
+        GameComponent component
+    ) {
         ArgumentNullException.ThrowIfNull(component);
         m_componentIdentities[sourceId] = component.identity.persistentId;
     }

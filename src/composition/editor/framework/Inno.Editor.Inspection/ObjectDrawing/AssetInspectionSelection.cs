@@ -19,7 +19,8 @@ public sealed class AssetInspectionSelection
     {
         ArgumentNullException.ThrowIfNull(assetIds);
         Guid[] values = assetIds.Distinct().ToArray();
-        if (values.Length == 0 || values.Contains(Guid.Empty)) throw new ArgumentException("Select at least one persistent asset.", nameof(assetIds));
+        if (values.Length == 0 || values.Contains(Guid.Empty))
+            throw new ArgumentException("Select at least one persistent asset.", nameof(assetIds));
         this.assetIds = Array.AsReadOnly(values);
     }
     /// <summary>

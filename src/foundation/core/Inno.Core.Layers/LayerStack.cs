@@ -87,8 +87,7 @@ public sealed class LayerStack : IDisposable
     /// <exception cref="ObjectDisposedException">
     /// Thrown when this stack has been disposed.
     /// </exception>
-    public void PushOverlay(Layer overlay)
-        => Insert(overlay, m_layers.Count, isBaseLayer: false);
+    public void PushOverlay(Layer overlay) => Insert(overlay, m_layers.Count, isBaseLayer: false);
 
     /// <summary>
     /// Detaches a base layer from this stack.
@@ -275,8 +274,11 @@ public sealed class LayerStack : IDisposable
         ThrowFailures(failures, "One or more layers failed to detach while disposing the stack.");
     }
 
-    private void Insert(Layer layer, int index, bool isBaseLayer)
-    {
+    private void Insert(
+        Layer layer,
+        int index,
+        bool isBaseLayer
+    ) {
         EnsureActive();
         ArgumentNullException.ThrowIfNull(layer);
         if (layer.isAttached || Find(layer) >= 0)
@@ -330,8 +332,14 @@ public sealed class LayerStack : IDisposable
         {
             failures = [exception];
         }
-        try { entry.events.Dispose(); }
-        catch (Exception exception) { (failures ??= []).Add(exception); }
+        try
+        {
+            entry.events.Dispose();
+        }
+        catch (Exception exception)
+        {
+            (failures ??= []).Add(exception);
+        }
         m_layers.RemoveAt(index);
         if (index < m_baseLayerCount)
             m_baseLayerCount--;
@@ -385,8 +393,10 @@ public sealed class LayerStack : IDisposable
             throw new InvalidOperationException("Layer retirement is pending; resume Clear or Dispose before using this stack.");
     }
 
-    private static void ThrowFailures(List<Exception>? failures, string message)
-    {
+    private static void ThrowFailures(
+        List<Exception>? failures,
+        string message
+    ) {
         if (failures is null)
             return;
         if (failures.Count == 1)
@@ -394,5 +404,8 @@ public sealed class LayerStack : IDisposable
         throw new AggregateException(message, failures);
     }
 
-    private sealed record Entry(Layer layer, EventHub events);
+    private sealed record Entry(
+        Layer layer,
+        EventHub events
+    );
 }

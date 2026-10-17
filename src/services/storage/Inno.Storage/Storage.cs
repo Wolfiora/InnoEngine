@@ -19,8 +19,7 @@ public static class StorageExecutionContext
     /// <exception cref="InvalidOperationException">
     /// Thrown when no storage scope is active.
     /// </exception>
-    public static IApplicationStorage current
-        => S_CURRENT_SCOPE.current;
+    public static IApplicationStorage current => S_CURRENT_SCOPE.current;
 
     /// <summary>
     /// Binds a storage service until the returned strict last-in-first-out scope is disposed.
@@ -56,7 +55,10 @@ public static class Storage
     /// <returns>
     /// <see langword="true"/> when the value exists.
     /// </returns>
-    public static ValueTask<bool> ExistsAsync(StorageKey key, CancellationToken cancellationToken = default)
+    public static ValueTask<bool> ExistsAsync(
+        StorageKey key,
+        CancellationToken cancellationToken = default
+    )
         => StorageExecutionContext.current.ExistsAsync(key, cancellationToken);
 
     /// <summary>
@@ -71,7 +73,10 @@ public static class Storage
     /// <returns>
     /// The stored bytes, or <see langword="null"/> when absent.
     /// </returns>
-    public static ValueTask<byte[]?> ReadAsync(StorageKey key, CancellationToken cancellationToken = default)
+    public static ValueTask<byte[]?> ReadAsync(
+        StorageKey key,
+        CancellationToken cancellationToken = default
+    )
         => StorageExecutionContext.current.ReadAsync(key, cancellationToken);
 
     /// <summary>
@@ -92,7 +97,8 @@ public static class Storage
     public static ValueTask WriteAsync(
         StorageKey key,
         ReadOnlyMemory<byte> value,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
         => StorageExecutionContext.current.WriteAsync(key, value, cancellationToken);
 
     /// <summary>
@@ -107,7 +113,10 @@ public static class Storage
     /// <returns>
     /// <see langword="true"/> when a value was deleted.
     /// </returns>
-    public static ValueTask<bool> DeleteAsync(StorageKey key, CancellationToken cancellationToken = default)
+    public static ValueTask<bool> DeleteAsync(
+        StorageKey key,
+        CancellationToken cancellationToken = default
+    )
         => StorageExecutionContext.current.DeleteAsync(key, cancellationToken);
 
     /// <summary>
@@ -124,6 +133,7 @@ public static class Storage
     /// </returns>
     public static ValueTask<IReadOnlyList<StorageKey>> ListAsync(
         StorageKey? prefix = null,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
         => StorageExecutionContext.current.ListAsync(prefix, cancellationToken);
 }

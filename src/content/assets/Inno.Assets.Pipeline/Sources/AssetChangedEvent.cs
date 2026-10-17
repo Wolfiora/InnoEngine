@@ -14,8 +14,11 @@ namespace Inno.Assets.Pipeline;
 /// <param name="oldRelativePath">
 /// Old path for rename operations.
 /// </param>
-public readonly struct AssetChangedEvent(string relativePath, WatcherChangeTypes changeType, string oldRelativePath = "")
-{
+public readonly struct AssetChangedEvent(
+    string relativePath,
+    WatcherChangeTypes changeType,
+    string oldRelativePath = ""
+) {
     /// <summary>
     /// Changed path relative to watched root.
     /// </summary>

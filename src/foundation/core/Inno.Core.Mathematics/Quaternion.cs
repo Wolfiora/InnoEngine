@@ -42,8 +42,12 @@ public struct Quaternion : IEquatable<Quaternion>
     /// <param name="w">
     /// The homogeneous or fourth component.
     /// </param>
-    public Quaternion(float x, float y, float z, float w)
-    {
+    public Quaternion(
+        float x,
+        float y,
+        float z,
+        float w
+    ) {
         this.x = x;
         this.y = y;
         this.z = z;
@@ -91,7 +95,8 @@ public struct Quaternion : IEquatable<Quaternion>
     public static Quaternion Normalize(Quaternion q)
     {
         float len = q.Length();
-        if (len < 1e-6f) return identity;
+        if (len < 1e-6f)
+            return identity;
         return new Quaternion(q.x / len, q.y / len, q.z / len, q.w / len);
     }
 
@@ -105,8 +110,7 @@ public struct Quaternion : IEquatable<Quaternion>
     /// The validated quaternion that represents the completed operation.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Quaternion Conjugate(Quaternion q)
-        => new Quaternion(-q.x, -q.y, -q.z, q.w);
+    public static Quaternion Conjugate(Quaternion q) => new Quaternion(-q.x, -q.y, -q.z, q.w);
 
     /// <summary>
     /// Calculates the inverse rotation represented by the supplied quaternion.
@@ -121,7 +125,8 @@ public struct Quaternion : IEquatable<Quaternion>
     public static Quaternion Inverse(Quaternion q)
     {
         float lenSq = q.LengthSquared();
-        if (lenSq < 1e-6f) return identity;
+        if (lenSq < 1e-6f)
+            return identity;
         var conj = Conjugate(q);
         return new Quaternion(conj.x / lenSq, conj.y / lenSq, conj.z / lenSq, conj.w / lenSq);
     }
@@ -141,8 +146,11 @@ public struct Quaternion : IEquatable<Quaternion>
     /// <returns>
     /// The validated quaternion that represents the completed operation.
     /// </returns>
-    public static Quaternion Slerp(Quaternion a, Quaternion b, float t)
-    {
+    public static Quaternion Slerp(
+        Quaternion a,
+        Quaternion b,
+        float t
+    ) {
         float dot = a.x * b.x + a.y * b.y + a.z * b.z + a.w * b.w;
 
         if (dot < 0f)
@@ -192,8 +200,10 @@ public struct Quaternion : IEquatable<Quaternion>
     /// The validated quaternion that represents the completed operation.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Quaternion CreateFromAxisAngle(Vector3 axis, float angle)
-    {
+    public static Quaternion CreateFromAxisAngle(
+        Vector3 axis,
+        float angle
+    ) {
         axis = axis.normalized;
         float halfAngle = angle * 0.5f;
         float sin = MathF.Sin(halfAngle);
@@ -273,8 +283,10 @@ public struct Quaternion : IEquatable<Quaternion>
     /// The validated quaternion that represents the completed operation.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Quaternion LookRotation(Vector3 forward, Vector3 up)
-    {
+    public static Quaternion LookRotation(
+        Vector3 forward,
+        Vector3 up
+    ) {
         Vector3 z = Vector3.NormalizeSafe(forward);
         Vector3 x = Vector3.NormalizeSafe(Vector3.Cross(up, z));
         Vector3 y = Vector3.Cross(z, x);
@@ -313,7 +325,11 @@ public struct Quaternion : IEquatable<Quaternion>
     /// The validated quaternion that represents the completed operation.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Quaternion CreateFromYawPitchRoll(float yaw, float pitch, float roll)
+    public static Quaternion CreateFromYawPitchRoll(
+        float yaw,
+        float pitch,
+        float roll
+    )
         => FromEulerAnglesZYX(new Vector3(pitch, yaw, roll));
 
     /// <summary>
@@ -345,8 +361,7 @@ public struct Quaternion : IEquatable<Quaternion>
     /// <returns>
     /// The validated vector3 that represents the completed operation.
     /// </returns>
-    public Vector3 ToEulerAnglesXYZDegrees()
-        => ToEulerAnglesXYZ() * (180f / MathF.PI);
+    public Vector3 ToEulerAnglesXYZDegrees() => ToEulerAnglesXYZ() * (180f / MathF.PI);
 
     /// <summary>
     /// Converts this value to its euler angles zyx representation.
@@ -524,8 +539,10 @@ public struct Quaternion : IEquatable<Quaternion>
     /// <returns>
     /// The validated quaternion that represents the completed operation.
     /// </returns>
-    public static Quaternion operator *(Quaternion a, Quaternion b)
-    {
+    public static Quaternion operator *(
+        Quaternion a,
+        Quaternion b
+    ) {
         return new Quaternion(
             a.w * b.x + a.x * b.w + a.y * b.z - a.z * b.y,
             a.w * b.y - a.x * b.z + a.y * b.w + a.z * b.x,
@@ -546,7 +563,10 @@ public struct Quaternion : IEquatable<Quaternion>
     /// <returns>
     /// <see langword="true"/> when the requested condition is satisfied; otherwise, <see langword="false"/>.
     /// </returns>
-    public static bool operator ==(Quaternion a, Quaternion b)
+    public static bool operator ==(
+        Quaternion a,
+        Quaternion b
+    )
         => MathHelper.AlmostEquals(a.x, b.x) &&
            MathHelper.AlmostEquals(a.y, b.y) &&
            MathHelper.AlmostEquals(a.z, b.z) &&
@@ -564,8 +584,10 @@ public struct Quaternion : IEquatable<Quaternion>
     /// <returns>
     /// <see langword="true"/> when the requested condition is satisfied; otherwise, <see langword="false"/>.
     /// </returns>
-    public static bool operator !=(Quaternion a, Quaternion b)
-        => !(a == b);
+    public static bool operator !=(
+        Quaternion a,
+        Quaternion b
+    ) => !(a == b);
     
     /// <summary>
     /// Converts the supplied value to <see cref="System.Numerics.Quaternion"/>.
@@ -616,8 +638,7 @@ public struct Quaternion : IEquatable<Quaternion>
     /// <returns>
     /// The scalar result calculated from the supplied inputs.
     /// </returns>
-    public override int GetHashCode()
-        => HashCode.Combine(x, y, z, w);
+    public override int GetHashCode() => HashCode.Combine(x, y, z, w);
 
     /// <summary>
     /// Formats this value as a human-readable component list.
@@ -625,6 +646,5 @@ public struct Quaternion : IEquatable<Quaternion>
     /// <returns>
     /// The validated text representation owned by the caller.
     /// </returns>
-    public override string ToString()
-        => $"({x:F3}, {y:F3}, {z:F3}, {w:F3})";
+    public override string ToString() => $"({x:F3}, {y:F3}, {z:F3}, {w:F3})";
 }

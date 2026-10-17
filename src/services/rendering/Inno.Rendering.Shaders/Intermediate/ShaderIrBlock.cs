@@ -10,8 +10,11 @@ namespace Inno.Rendering.Shaders;
 /// </summary>
 public sealed class ShaderIrValue
 {
-    internal ShaderIrValue(object owner, int index, ShaderSourceType type)
-    {
+    internal ShaderIrValue(
+        object owner,
+        int index,
+        ShaderSourceType type
+    ) {
         this.owner = owner;
         this.index = index;
         this.type = type;
@@ -132,10 +135,16 @@ public enum ShaderIrOperation
 /// </summary>
 public sealed class ShaderIrInstruction
 {
-    internal ShaderIrInstruction(ShaderIrOperation operation, IEnumerable<ShaderIrValue> inputs,
-        IEnumerable<ShaderIrValue> outputs, string? inputName = null, ulong constantBits = 0, int memberIndex = 0,
-        ShaderSourceImplementationAnalysis? source = null, IEnumerable<ShaderIrBlock>? regions = null)
-    {
+    internal ShaderIrInstruction(
+        ShaderIrOperation operation,
+        IEnumerable<ShaderIrValue> inputs,
+        IEnumerable<ShaderIrValue> outputs,
+        string? inputName = null,
+        ulong constantBits = 0,
+        int memberIndex = 0,
+        ShaderSourceImplementationAnalysis? source = null,
+        IEnumerable<ShaderIrBlock>? regions = null
+    ) {
         this.operation = operation;
         this.inputs = Array.AsReadOnly(inputs.ToArray());
         this.outputs = Array.AsReadOnly(outputs.ToArray());
@@ -191,8 +200,10 @@ public sealed class ShaderIrInstruction
 /// </summary>
 public sealed class ShaderIrBlock
 {
-    internal ShaderIrBlock(IEnumerable<ShaderIrInstruction> instructions, IReadOnlyDictionary<string, ShaderIrValue> outputs)
-    {
+    internal ShaderIrBlock(
+        IEnumerable<ShaderIrInstruction> instructions,
+        IReadOnlyDictionary<string, ShaderIrValue> outputs
+    ) {
         this.instructions = Array.AsReadOnly(instructions.ToArray());
         this.outputs = new ReadOnlyDictionary<string, ShaderIrValue>(new Dictionary<string, ShaderIrValue>(outputs, StringComparer.Ordinal));
     }

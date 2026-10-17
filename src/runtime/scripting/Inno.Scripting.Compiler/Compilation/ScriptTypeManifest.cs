@@ -5,7 +5,8 @@ namespace Inno.Scripting.Compiler;
 
 internal sealed record ScriptTypeManifest(
     string assemblyName,
-    IReadOnlyList<ScriptTypeManifestEntry> types);
+    IReadOnlyList<ScriptTypeManifestEntry> types
+);
 
 internal sealed record ScriptTypeManifestEntry(
     string typeName,
@@ -16,13 +17,16 @@ internal sealed record ScriptTypeManifestEntry(
     int line,
     int column,
     bool explicitIdentity,
-    bool canonicalSource);
+    bool canonicalSource
+);
 
 internal sealed record ScriptTypeMapping(
     string typeName,
-    Guid stableTypeId);
+    Guid stableTypeId
+);
 
 internal sealed record ScriptTypeAnalysisResult(
     ScriptTypeManifest manifest,
     IReadOnlyList<ScriptTypeMapping> mappings,
-    IReadOnlyList<ScriptDiagnostic> diagnostics);
+    IReadOnlyList<ScriptDiagnostic> diagnostics
+);

@@ -74,8 +74,8 @@ internal sealed class SceneInspectionModule : EditorModule
         TypeCatalog types,
         SerializationRegistry serialization,
         RuntimeSession runtimeSession,
-        LogRouter logs)
-    {
+        LogRouter logs
+    ) {
         System.ArgumentNullException.ThrowIfNull(interactions);
         System.ArgumentNullException.ThrowIfNull(edits);
         System.ArgumentNullException.ThrowIfNull(assetIcons);
@@ -118,8 +118,8 @@ internal sealed class SceneInspectionModule : EditorModule
         EditorContext editorContext,
         object target,
         out IInspectionDrawer? drawer,
-        out InspectionDrawContext? drawContext)
-    {
+        out InspectionDrawContext? drawContext
+    ) {
         if (target is AssetFileEntry { isDirectory: false } entry &&
             m_assets.TryLoad(entry.assetPath, out AssetObject? asset) &&
             asset is not null &&
